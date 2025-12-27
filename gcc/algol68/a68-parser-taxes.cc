@@ -890,6 +890,10 @@ tax_identity_dec (NODE_T *p, MOID_T **m)
 	  tax_identity_dec (SUB (p), m);
 	  tax_identity_dec (NEXT (p), m);
 	}
+      else if (IS (p, PUBLIC_SYMBOL))
+	{
+	  tax_identity_dec (NEXT (p), m);
+	}
       else if (IS (p, DECLARER))
 	{
 	  tax_tags (SUB (p));
@@ -937,6 +941,10 @@ tax_variable_dec (NODE_T *p, int *q, MOID_T **m, bool e)
       if (IS (p, VARIABLE_DECLARATION))
 	{
 	  tax_variable_dec (SUB (p), q, m, e);
+	  tax_variable_dec (NEXT (p), q, m, e);
+	}
+      else if (IS (p, PUBLIC_SYMBOL))
+	{
 	  tax_variable_dec (NEXT (p), q, m, e);
 	}
       else if (IS (p, DECLARER))
@@ -1009,7 +1017,7 @@ tax_proc_variable_dec (NODE_T *p, int *q, bool e)
 	  *q = ATTRIBUTE (SUB (p));
 	  tax_proc_variable_dec (NEXT (p), q, true);
 	}
-      else if (a68_is_one_of (p, PROC_SYMBOL, COMMA_SYMBOL, STOP))
+      else if (a68_is_one_of (p, PUBLIC_SYMBOL, PROC_SYMBOL, COMMA_SYMBOL, STOP))
 	{
 	  tax_proc_variable_dec (NEXT (p), q, e);
 	}
@@ -1059,7 +1067,7 @@ tax_proc_dec (NODE_T *p)
 	  tax_proc_dec (SUB (p));
 	  tax_proc_dec (NEXT (p));
 	}
-      else if (a68_is_one_of (p, PROC_SYMBOL, COMMA_SYMBOL, STOP))
+      else if (a68_is_one_of (p, PUBLIC_SYMBOL, PROC_SYMBOL, COMMA_SYMBOL, STOP))
 	{
 	  tax_proc_dec (NEXT (p));
 	}
@@ -1136,7 +1144,7 @@ tax_op_dec (NODE_T *p, MOID_T **m)
 	{
 	  tax_op_dec (NEXT (p), m);
 	}
-      else if (IS (p, COMMA_SYMBOL))
+      else if (a68_is_one_of (p, PUBLIC_SYMBOL, COMMA_SYMBOL, STOP))
 	{
 	  tax_op_dec (NEXT (p), m);
 	}
@@ -1211,7 +1219,7 @@ tax_brief_op_dec (NODE_T *p)
 	  tax_brief_op_dec (SUB (p));
 	  tax_brief_op_dec (NEXT (p));
 	}
-      else if (a68_is_one_of (p, OP_SYMBOL, COMMA_SYMBOL, STOP))
+      else if (a68_is_one_of (p, PUBLIC_SYMBOL, OP_SYMBOL, COMMA_SYMBOL, STOP))
 	{
 	  tax_brief_op_dec (NEXT (p));
 	}
@@ -1247,7 +1255,7 @@ static void tax_prio_dec (NODE_T *p)
 	  tax_prio_dec (SUB (p));
 	  tax_prio_dec (NEXT (p));
 	}
-      else if (a68_is_one_of (p, PRIO_SYMBOL, COMMA_SYMBOL, STOP))
+      else if (a68_is_one_of (p, PUBLIC_SYMBOL, PRIO_SYMBOL, COMMA_SYMBOL, STOP))
 	{
 	  tax_prio_dec (NEXT (p));
 	}

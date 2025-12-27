@@ -4,5 +4,6 @@ module Foo = def pub int idpublic = 10;
                  real varprivate := 3.14;
                  pub proc lala = (int a, b) int: a + b;
                  pub proc lele := (int a, b) int: a - b;
+                 pub proc(int,int)int lili := (int a, b) int: a * b;
                  skip
              fed

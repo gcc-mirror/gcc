@@ -168,7 +168,7 @@ a68_elaborate_bold_tags (NODE_T *p)
 static NODE_T *
 skip_pack_declarer (NODE_T *p)
 {
-  /* Skip () REF [] REF FLEX [] [] ...  */
+  /* Skip PUB () REF [] REF FLEX [] [] ...  */
   while (p != NO_NODE
 	 && (a68_is_one_of (p, SUB_SYMBOL, OPEN_SYMBOL, REF_SYMBOL,
 			    FLEX_SYMBOL, SHORT_SYMBOL, LONG_SYMBOL, STOP)))
@@ -354,10 +354,7 @@ a68_extract_indicants (NODE_T *p)
 		    {
 		      NODE_T *pub_node = q;
 		      extract_revelation (NEXT (pub_node), true /* is_public */);
-		      /* XXX get rid of this crap.  */
-		      PREVIOUS (NEXT (pub_node)) = PREVIOUS (pub_node);
-		      if (PREVIOUS (pub_node) != NO_NODE)
-			NEXT (PREVIOUS (pub_node)) = NEXT (pub_node);
+		      FORWARD (q);
 		      FORWARD (q);
 		    }
 		}

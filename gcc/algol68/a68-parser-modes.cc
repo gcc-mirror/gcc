@@ -766,7 +766,7 @@ get_mode_from_proc_variables (NODE_T *p)
 	  get_mode_from_proc_variables (SUB (p));
 	  get_mode_from_proc_variables (NEXT (p));
 	}
-      else if (IS (p, QUALIFIER) || IS (p, PROC_SYMBOL) || IS (p, COMMA_SYMBOL))
+      else if (IS (p, PUBLIC_SYMBOL) || IS (p, QUALIFIER) || IS (p, PROC_SYMBOL) || IS (p, COMMA_SYMBOL))
 	{
 	  get_mode_from_proc_variables (NEXT (p));
 	}

@@ -2900,13 +2900,6 @@ a68_bottom_up_error_check (NODE_T *p)
 	    a68_error (p, "incorrect number of pictures for A",
 		       ATTRIBUTE (p));
 	}
-      else if (IS (p, PUBLIC_SYMBOL))
-	{
-	  /* These should have been removed by a68_bottom_up_coalesce_pub and
-	     by a68_extract_indicants.  */
-	  /* XXX get rid of this.  */
-	  gcc_unreachable ();
-	}
       else if (a68_is_one_of (p, DEFINING_INDICANT, DEFINING_IDENTIFIER, DEFINING_OPERATOR, STOP))
 	{
 	  if (PUBLICIZED (p) && !PUBLIC_RANGE (TABLE (p)))
@@ -3002,33 +2995,5 @@ a68_rearrange_goto_less_jumps (NODE_T *p)
 	    }
 	}
       a68_rearrange_goto_less_jumps (SUB (p));
-    }
-}
-
-/*
- * Remove PUBLIC_SYMBOLs resulting from reductions from the tree.  Note that
- * the defining indicants, identifiers and operators have been already marked
- * as publicized or not publicized by the extract routines.
- */
-
-void
-a68_bottom_up_coalesce_pub (NODE_T *p)
-{
-  for (; p != NO_NODE; FORWARD (p))
-    {
-      if (a68_is_one_of (p,
-			 MODE_DECLARATION, PROCEDURE_DECLARATION, PRIORITY_DECLARATION,
-			 PROCEDURE_VARIABLE_DECLARATION, BRIEF_OPERATOR_DECLARATION,
-			 OPERATOR_DECLARATION,  IDENTITY_DECLARATION,
-			 VARIABLE_DECLARATION, STOP))
-	{
-	  if (SUB (p) != NO_NODE && IS (SUB (p), PUBLIC_SYMBOL))
-	    {
-	      NODE_T *public_symbol = SUB (p);
-	      SUB (p) = NEXT (public_symbol);
-	      PREVIOUS (NEXT (public_symbol)) = NO_NODE;
-	    }
-	}
-      a68_bottom_up_coalesce_pub (SUB (p));
     }
 }

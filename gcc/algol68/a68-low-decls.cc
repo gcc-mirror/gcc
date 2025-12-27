@@ -48,6 +48,10 @@
                         equals symbol, declarer;
                         mode symbol, defining indicant,
 			equals symbol, void symbol;
+			public symbol, mode symbol, defining indicant,
+                        equals symbol, declarer;
+                        public symbol, mode symbol, defining indicant,
+			equals symbol, void symbol;
                         mode declaration, comma symbol,
 			defining indicant, equals symbol, declarer;
                         mode declaration, comma symbol,
@@ -71,8 +75,16 @@ a68_lower_mode_declaration (NODE_T *p, LOW_CTX_T ctx)
     }
   else
     {
-      gcc_assert (IS (SUB (p), MODE_SYMBOL));
-      defining_indicant = NEXT (SUB (p));
+      if (IS (SUB (p), PUBLIC_SYMBOL))
+	{
+	  gcc_assert (IS (NEXT (SUB (p)), MODE_SYMBOL));
+	  defining_indicant = NEXT (NEXT (SUB (p)));
+	}
+      else
+	{
+	  gcc_assert (IS (SUB (p), MODE_SYMBOL));
+	  defining_indicant = NEXT (SUB (p));
+	}
     }
 
   /* Create a TYPE_DECL declaration for the defined mode and chain it in the
@@ -99,6 +111,12 @@ a68_lower_mode_declaration (NODE_T *p, LOW_CTX_T ctx)
      			    qualifier, declarer, defining identiifer;
 			    qualifier, declarer, defining identifier;
 			    declarer, defining identifier, assign symbol, unit;
+			    declarer, defining identifier;
+			    public symbol, qualifier, declarer, defining identifier,
+                            assign symbol, unit;
+     			    public symbol, qualifier, declarer, defining identiifer;
+			    qualifier, declarer, defining identifier;
+			    public symbol, declarer, defining identifier, assign symbol, unit;
 			    declarer, defining identifier;
 			    variable declaration, comma symbol,
 			    defining identifier, assign symbol, unit;
@@ -135,21 +153,29 @@ a68_lower_variable_declaration (NODE_T *p, LOW_CTX_T ctx)
       sub_expr = a68_lower_tree (SUB (p), new_ctx);
       defining_identifier = NEXT (NEXT (SUB (p)));
     }
-  else if (IS (SUB (p), QUALIFIER))
-    {
-      /* The qualifier determines what kind of generator is used in the
-	 variable declaration.  This is already annotated in the tax entry for
-	 the definining identifier.  */
-      declarer = NEXT (SUB (p));
-      defining_identifier = NEXT (NEXT (SUB (p)));
-    }
-  else if (IS (SUB (p), DECLARER))
-    {
-      declarer = SUB (p);
-      defining_identifier = NEXT (SUB (p));
-    }
   else
-    gcc_unreachable ();
+    {
+      NODE_T *q = SUB (p);
+
+      if (IS (q, PUBLIC_SYMBOL))
+	FORWARD (q);
+ 
+      if (IS (q, QUALIFIER))
+	{
+	  /* The qualifier determines what kind of generator is used in the
+	     variable declaration.  This is already annotated in the tax entry
+	     for the definining identifier.  */
+	  declarer = NEXT (q);
+	  defining_identifier = NEXT (NEXT (q));
+	}
+      else if (IS (q, DECLARER))
+	{
+	  declarer = q;
+	  defining_identifier = NEXT (q);
+	}
+      else
+	gcc_unreachable ();
+    }
 
   /* Communicate declarer upward.  */
   if (ctx.declarer != NULL)
@@ -281,6 +307,8 @@ a68_lower_variable_declaration (NODE_T *p, LOW_CTX_T ctx)
 
      identity declaration : declarer, defining identifier,
                             equals symbol, unit;
+			    public symbol, declarer, defining identifier,
+			    equals symbol, unit;
                             identity declaration, comma symbol,
 			    defining identifier, equals symbol, unit;
 
@@ -308,6 +336,10 @@ a68_lower_identity_declaration (NODE_T *p, LOW_CTX_T ctx)
   if (IS (SUB (p), IDENTITY_DECLARATION))
     {
       sub_expr = a68_lower_tree (SUB (p), ctx);
+      defining_identifier = NEXT (NEXT (SUB (p)));
+    }
+  else if (IS (SUB (p), PUBLIC_SYMBOL))
+    {
       defining_identifier = NEXT (NEXT (SUB (p)));
     }
   else if (IS (SUB (p), DECLARER))
@@ -443,6 +475,7 @@ a68_lower_declaration_list (NODE_T *p, LOW_CTX_T ctx)
 /* Lower a procedure declaration.
 
      procedure declaration : proc symbol, defining identifier, assign symbol, routine text;
+                             public symbol, proc symbol, defining identifier, assign symbol, routine text;
                              procedure declaration, comma symbol,
 			     defining identifier, equals symbol, routine text.
 
@@ -456,6 +489,10 @@ a68_lower_procedure_declaration (NODE_T *p, LOW_CTX_T ctx)
   if (IS (SUB (p), PROCEDURE_DECLARATION))
     {
       sub_func_decl = a68_lower_tree (SUB (p), ctx);
+      defining_identifier = NEXT (NEXT (SUB (p)));
+    }
+  else if (IS (SUB (p), PUBLIC_SYMBOL))
+    {
       defining_identifier = NEXT (NEXT (SUB (p)));
     }
   else if (IS (SUB (p), PROC_SYMBOL))
@@ -493,6 +530,8 @@ a68_lower_procedure_declaration (NODE_T *p, LOW_CTX_T ctx)
      procedure variable declaration
        : proc symbol, defining identifier, assign symbol, routine text;
          qualifier, proc symbol, defining identifier, assign symbol, routine text;
+	 public symbol, proc symbol, defining identifier, assign symbol, routine text;
+         public symbol, qualifier, proc symbol, defining identifier, assign symbol, routine text;
 	 procedure variable declaration, comma symbol, defining identiier, assign symbol, routine text.
 
    This lowers into the declaration of a VAR_DECL which is a pointer to the
@@ -508,15 +547,24 @@ a68_lower_procedure_variable_declaration (NODE_T *p, LOW_CTX_T ctx)
       sub_decl = a68_lower_tree (SUB (p), ctx);
       defining_identifier = NEXT (NEXT (SUB (p)));
     }
-  else if (IS (SUB (p), PROC_SYMBOL))
-    defining_identifier = NEXT (SUB (p));
-  else if (IS (SUB (p), QUALIFIER))
-    /* The qualifier determines what kind of generator is used in the variable
-       declaration.  This is already annotated in the tax entry for the
-       definining identifier.  */
-    defining_identifier = NEXT (NEXT (SUB (p)));
   else
-    gcc_unreachable ();
+    {
+      NODE_T *q = SUB (p);
+
+      if (IS (q, PUBLIC_SYMBOL))
+	FORWARD (q);
+
+      if (IS (q, PROC_SYMBOL))
+	defining_identifier = NEXT (q);
+      else if (IS (q, QUALIFIER))
+	/* The qualifier determines what kind of generator is used in the
+	   variable declaration.  This is already annotated in the tax entry
+	   for the definining identifier.  */
+	defining_identifier = NEXT (NEXT (q));
+      else
+	gcc_unreachable ();
+    }
+
   NODE_T *routine_text = NEXT (NEXT (defining_identifier));
 
   /* The routine text lowers into a pointer to function.  */
@@ -590,6 +638,7 @@ a68_lower_priority_declaration (NODE_T *p ATTRIBUTE_UNUSED,
 
      brief operator declaration
        : op symbol, defining operator, equals symbol, routine text;
+         public symbol, op symbol, defining operator, equals symbol, routine text;
          brief operator declaration, comma symbol, defining operator, equals symbol, routine text.
 
    The declarations low in a series of FUNCTION_DECLs, one per declared
@@ -607,7 +656,15 @@ a68_lower_brief_operator_declaration (NODE_T *p, LOW_CTX_T ctx)
       defining_operator = NEXT (NEXT (SUB (p)));
     }
   else
-    defining_operator = NEXT (SUB (p));
+    {
+      if (IS (SUB (p), PUBLIC_SYMBOL))
+	{
+	  gcc_assert (IS (NEXT (SUB (p)), OP_SYMBOL));
+	  defining_operator = NEXT (NEXT (SUB (p)));
+	}
+      else
+	defining_operator = NEXT (SUB (p));
+    }
   NODE_T *routine_text = NEXT (NEXT (defining_operator));
 
   /* Lower the routine text to get a function decl.  */
@@ -634,6 +691,7 @@ a68_lower_brief_operator_declaration (NODE_T *p, LOW_CTX_T ctx)
 /* Lower an operator declaration.
 
      operator declaration : operator plan, defining operator, equals symbol, unit;
+                            public symbol, operator plan, defining operator, equals symbol, unit;
                             operator declaration, comma symbol, defining operator, equals symbol, unit.
 
    Each operator declaration lowers into a declaration.  */
@@ -650,7 +708,12 @@ a68_lower_operator_declaration (NODE_T *p, LOW_CTX_T ctx)
       defining_operator = NEXT (NEXT (SUB (p)));
     }
   else
-    defining_operator = NEXT (SUB (p));
+    {
+      if (IS (SUB (p), PUBLIC_SYMBOL))
+	defining_operator = NEXT (NEXT (SUB (p)));
+      else
+	defining_operator = NEXT (SUB (p));
+    }
   NODE_T *unit = NEXT (NEXT (defining_operator));
 
   tree op_decl = TAX_TREE_DECL (TAX (defining_operator));

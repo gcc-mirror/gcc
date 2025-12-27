@@ -522,7 +522,6 @@ a68_parser (const char *filename)
       //      printf ("AFTER PRELIMINARY SYMBOL TABLE SETUP\n");
       //      a68_dump_parse_tree (TOP_NODE (&A68_JOB), true);
       a68_bottom_up_parser (TOP_NODE (&A68_JOB));
-      a68_bottom_up_coalesce_pub (TOP_NODE (&A68_JOB));
       renum = 0;
       renumber_nodes (TOP_NODE (&A68_JOB), &renum);
     }
