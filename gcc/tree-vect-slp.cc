@@ -8888,7 +8888,7 @@ vec_slp_has_scalar_use (bb_vec_info bb_vinfo, tree def,
 			hash_map<tree, int> &scalar_use_map,
 			int depth = 0)
 {
-  const int depth_limit = 2;
+  const int depth_limit = 3;
   imm_use_iterator use_iter;
   gimple *use_stmt;
 
