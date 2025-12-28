@@ -32,6 +32,6 @@ DEF_VX_BINARY_CASE_3_WRAP(T, AVG_CEIL_FUNC_WRAP(T), avg_ceil, VX_BINARY_FUNC_BOD
 /* { dg-final { scan-assembler {vremu.vx} } } */
 /* { dg-final { scan-assembler {vmaxu.vx} } } */
 /* { dg-final { scan-assembler {vminu.vx} } } */
-/* { dg-final { scan-assembler-not {vsaddu.vx} } } */
+/* { dg-final { scan-assembler {vsaddu.vx} } } */
 /* { dg-final { scan-assembler {vssubu.vx} } } */
 /* { dg-final { scan-assembler {vaaddu.vx} } } */

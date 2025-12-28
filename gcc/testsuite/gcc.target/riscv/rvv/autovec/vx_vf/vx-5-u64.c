@@ -34,4 +34,7 @@ DEF_VX_BINARY_CASE_3_WRAP(T, AVG_CEIL_FUNC_WRAP(T), avg_ceil, VX_BINARY_FUNC_BOD
 /* { dg-final { scan-assembler {vminu.vx} } } */
 /* { dg-final { scan-assembler-not {vsaddu.vx} } } */
 /* { dg-final { scan-assembler-not {vssubu.vx} } } */
-/* { dg-final { scan-assembler-not {vaaddu.vx} } } */
+/* { dg-final { scan-assembler {vaaddu.vx} { target { no-opts {
+     "-mrvv-max-lmul=m2"
+     "-mrvv-max-lmul=m4"
+   } } } } } */
