@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fomit-frame-pointer -fno-fuse-ops-with-volatile-access" } */
+/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target *-*-* } {^\t?\.} } } */
 
