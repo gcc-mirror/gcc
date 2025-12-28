@@ -1,3 +1,10 @@
+2025-12-27  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* ga68-alloc.c: Include ga68.h before all includes.
+	* ga68-error.c: Likewise.
+	* ga68-standenv.c: Likewise.
+	* ga68-unistr.c:  Likewise.
+
 2025-12-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* ga68-unistr.c (_libga68_u32_cmp): Add `static' specifier.

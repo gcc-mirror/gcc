@@ -1,3 +1,18 @@
+2025-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/123114
+	* simplify-rtx.cc (simplify_context::simplify_relational_operation):
+	Verify XEXP (XEXP (op0, 0), 0) mode and use CONST0_RTX (cmp_mode)
+	instead of CONST0_RTX (mode).
+
+2025-12-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Revert:
+	2025-12-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* ifcvt.cc (noce_process_if_block): Move noce_try_cond_zero_arith
+	last.
+
 2025-12-26  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR target/123283

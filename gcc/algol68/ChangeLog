@@ -1,3 +1,101 @@
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-taxes.cc (tax_module_dec): Do not handle
+	DEFINING_MODULE_INDICANT.
+	* a68-exports.cc (a68_add_module_to_moif): Do not mangle module
+	names in module extracts.
+	(add_pub_revelations_to_moif): New function.
+	(a68_do_exports): Simplify and call add_pub_revelations_to_moif.
+	* a68-imports.cc (a68_decode_moifs): Add all decoded moifs to the
+	global list TOP_MOIF.
+	* a68-parser-extract.cc (extract_revelation): Recurse to import
+	extracts from publicized modules.
+	(a68_extract_indicants): Do not add symbol table entries for
+	defining modules.
+	* a68-types.h (struct TAG_T): Remove field EXPORTED.
+	(EXPORTED): Remove macro.
+	(TOP_MOIF): Define.
+	* a68-parser.cc (a68_parser): Initialize global list of moifs.
+	(a68_new_tag): Do not initialize EXPORTED.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-top-down.cc (a68_top_down_parser): Stop parsing after
+	longjump.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-bottom-up.cc (a68_bottom_up_error_check): Do not
+	check for the absence of public-symbols.
+	(a68_bottom_up_coalesce_pub): Removed function.
+	* a68-parser.cc (a68_parser): Do not call
+	a68_bottom_up_coalesce_pub
+	* a68-parser-extract.cc (a68_extract_indicants): Adapt to the
+	presence of public-symbols.
+	* a68-parser-modes.cc (get_mode_from_proc_variables): Likewise.
+	* a68-parser-taxes.cc (tax_variable_dec): Likewise.
+	(tax_proc_variable_dec): Likewise.
+	(tax_op_dec): Likewise
+	(tax_prio_dec): Likewise.
+	* a68-low-decls.cc (a68_lower_mode_declaration): Adapt to the
+	presence of public-symbols.
+	(a68_lower_variable_declaration): Likewise.
+	(a68_lower_identity_declaration): Likewise.
+	(a68_lower_procedure_declaration): Likewise.
+	(a68_lower_procedure_variable_declaration): Likewise.
+	(a68_lower_brief_operator_declaration): Likewise.
+	(a68_lower_operator_declaration): Likewise.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-moids-misc.cc (a68_pack_soids_in_moid): Return the result of
+	a68_register_extra_mode.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-extract.cc (a68_extract_indicants): Do not
+	detect_redefined_keyword for accessed modules.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-scope.cc (scope_access_clause): New function.
+	(scope_enclosed_clause): Use scope_access_clause.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-bottom-up.cc (reduce_enclosed_clauses): Reduce joined
+	list of revelations.
+	* a68-low-clauses.cc (a68_lower_revelation_ludes): New function.
+	(a68_lower_access_clause): Use a68_lower_revelation_ludes.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-extract.cc (a68_extract_indicants): Fix
+	MODE_DECLARATION to MODULE_DECLARATION typo.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-top-down.cc (top_down_access): An access clause may
+	be nested in another access clause.
+	* a68-parser-extract.cc (a68_extract_indicants): Coalesce 'pub'
+	symbols.
+	(a68_extract_indicants): Nested access are not allowed in module
+	texts.
+	* a68-parser-bottom-up.cc (expected_module_text): New function.
+	(reduce_prelude_packet): Use expected_module_text.
+	(a68_bottom_up_error_check): Add comment.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-types.h (struct MOIF_T): Add chain_next to GTY info.
+	* a68-imports.cc (a68_decode_modes): Mode offsets are relative to
+	the start of the moif, not the start of the exports.
+	(a68_decode_moifs): Renamed from a68_decode_moif and changed to
+	decode multiple moifs from the exports.
+	(a68_open_packet): Call a68_decode_moifs and look for the right
+	moif.
+	* a68-exports.cc (a68_moif_new): Initialize NEXT (moif).
+
 2025-12-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* a68.h (a68_file_size): Changed to use file descriptor.

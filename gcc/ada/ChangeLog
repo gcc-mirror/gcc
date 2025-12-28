@@ -1,3 +1,9 @@
+2025-12-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/123306
+	* sem_ch12.adb (Analyze_One_Association): Immediately freeze the
+	root type of mutably tagged types used as actual type parameters.
+
 2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	PR ada/123088

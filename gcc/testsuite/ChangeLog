@@ -1,3 +1,60 @@
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/modules/module22bar.a68: New test.
+	* algol68/execute/modules/module22foo.a68: Likewise.
+	* algol68/execute/modules/program-22.a68: Likewise.
+	* algol68/compile/modules/program-11.a68: Adjust test to
+	publicized modules.
+	* algol68/compile/modules/program-error-multiple-delaration-module-1.a68:
+	Likewise.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/error-loop-1.a68: New test.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/module-2.a68: Expand test a little.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/pack-soids-in-moid-1.a68: New test.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/modules/program-error-multiple-delaration-module-1.a68:
+	New test.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/modules/module10.a68: New test.
+	* algol68/execute/modules/program-18.a68: Likewise.
+	* algol68/execute/modules/module18c.a68: Likewise.
+	* algol68/execute/modules/module18b.a68: Likewise.
+	* algol68/execute/modules/module18a.a68: Likewise.
+	* algol68/compile/modules/program-11.a68: Likewise.
+	* algol68/compile/modules/program-10.a68: Likewise.
+	* algol68/compile/modules/module12.a68: Likewise.
+	* algol68/compile/modules/module11.a68: Likewise.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/error-module-nested-access-1.a68: New test.
+	* algol68/execute/modules/program-21.a68: Likewise.
+
+2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/modules/module17.a68: New test.
+
+2025-12-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/123114
+	* gcc.dg/pr123114.c: New test.
+
+2025-12-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/specs/mutably_tagged1.ads: New test.
+
 2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gnat.dg/aggr34.adb: New test.
