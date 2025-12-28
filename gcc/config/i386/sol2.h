@@ -68,9 +68,9 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_CPU64_DEFAULT_SPEC "-xarch=generic64"
 #endif
 
+#if !HAVE_GNU_AS
 /* Since Studio 12.6, as needs -xbrace_comment=no so its AVX512 syntax is
    fully compatible with gas.  */
-#ifdef HAVE_AS_XBRACE_COMMENT_OPTION
 #define ASM_XBRACE_COMMENT_SPEC "-xbrace_comment=no"
 #else
 #define ASM_XBRACE_COMMENT_SPEC ""

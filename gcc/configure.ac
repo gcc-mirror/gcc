@@ -4950,11 +4950,6 @@ foo:	nop
        ;;
     esac
 
-    gcc_GAS_CHECK_FEATURE([-xbrace_comment], gcc_cv_as_ix86_xbrace_comment,
-      [-xbrace_comment=no], [.text],,
-      [AC_DEFINE(HAVE_AS_XBRACE_COMMENT_OPTION, 1,
-		[Define if your assembler supports -xbrace_comment option.])])
-
     gcc_GAS_CHECK_FEATURE([filds and fists mnemonics],
        gcc_cv_as_ix86_filds,,
        [filds (%ebp); fists (%ebp)],,
