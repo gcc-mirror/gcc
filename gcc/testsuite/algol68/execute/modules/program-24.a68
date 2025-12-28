@@ -1,0 +1,2 @@
+{ dg-modules module24 }
+access Module_24 (assert (2+3 * 4+1 = 25))
