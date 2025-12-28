@@ -3157,9 +3157,6 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
   if (!noce_simple_bbs (if_info))
     return false;
 
-  if (!REG_P (XEXP (cond, 0)) || !rtx_equal_p (XEXP (cond, 1), const0_rtx))
-    return false;
-
   a = copy_rtx (if_info->a);
   b = copy_rtx (if_info->b);
 
