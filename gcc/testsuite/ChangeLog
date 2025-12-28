@@ -1,3 +1,7 @@
+2025-12-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/specs/mutably_tagged1.ads: New test.
+
 2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gnat.dg/aggr34.adb: New test.
