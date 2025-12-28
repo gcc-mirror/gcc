@@ -1356,49 +1356,65 @@ a68_decode_moifs (const char *data, size_t size, const char **errstr)
 MOIF_T *
 a68_open_packet (const char *module)
 {
-  /* Look in the modules location maps to see if there is an entry for MODULE.
-     If there is one, use the specified filename.  Otherwise canonicalize the
-     module name to a file name.  */
-  char *filename;
-  const char **pfilename = A68_MODULE_FILES->get (module);
-  if (pfilename == NULL)
-    {
-      /* Turn the module indicant in MODULE to lower-case.  */
-      filename = (char *) alloca (strlen (module) + 1);
-      size_t i = 0;
-      for (; i < strlen (module); i++)
-	filename[i] = TOLOWER (module[i]);
-      filename[i] = '\0';
-    }
-  else
-    {
-      size_t len = strlen (*pfilename) + 1;
-      filename = (char *) alloca (len);
-      memcpy (filename, *pfilename, len);
-    }
+  /* We may have a suitable moif already decoded for the requested module.  If
+     so, use it.  */
 
-  /* Try to read exports data in a buffer.  */
-  char *exports_data;
-  size_t exports_data_size;
-  exports_data = a68_get_packet_exports (std::string (filename),
-					 std::string ("."),
-					 &exports_data_size);
-  if (exports_data == NULL)
-    return NULL;
-
-  /* Got some data.  Decode it into a list of moif.  */
-  const char *errstr = NULL;
-  if (!a68_decode_moifs (exports_data, exports_data_size, &errstr))
-    {
-      a68_error (NO_NODE, "%s", errstr);
-      return NULL;
-    }
-
-  /* The androids we are looking for are likely to be now in the global
-     list.  */
   MOIF_T *moif = TOP_MOIF (&A68_JOB);
-  while (moif != NO_MOIF && strcmp (NAME (moif), module) != 0)
-    FORWARD (moif);
+  while (moif != NO_MOIF)
+    {
+      if (strcmp (NAME (moif), module) == 0)
+	break;
+      FORWARD (moif);
+    }
+
+  /* If we didn't find already decoded exports for the requested module, look
+     in the modules location maps to see if there is an entry for MODULE.  If
+     there is one, use the specified filename.  Otherwise canonicalize the
+     module name to a file name.  */
+
+  if (moif == NO_MOIF)
+    {
+      char *filename;
+      const char **pfilename = A68_MODULE_FILES->get (module);
+      if (pfilename == NULL)
+	{
+	  /* Turn the module indicant in MODULE to lower-case.  */
+	  filename = (char *) alloca (strlen (module) + 1);
+	  size_t i = 0;
+	  for (; i < strlen (module); i++)
+	    filename[i] = TOLOWER (module[i]);
+	  filename[i] = '\0';
+	}
+      else
+	{
+	  size_t len = strlen (*pfilename) + 1;
+	  filename = (char *) alloca (len);
+	  memcpy (filename, *pfilename, len);
+	}
+
+      /* Try to read exports data in a buffer.  */
+      char *exports_data;
+      size_t exports_data_size;
+      exports_data = a68_get_packet_exports (std::string (filename),
+					     std::string ("."),
+					     &exports_data_size);
+      if (exports_data == NULL)
+	return NULL;
+
+      /* Got some data.  Decode it into a list of moif.  */
+      const char *errstr = NULL;
+      if (!a68_decode_moifs (exports_data, exports_data_size, &errstr))
+	{
+	  a68_error (NO_NODE, "%s", errstr);
+	  return NULL;
+	}
+
+      /* The androids we are looking for are likely to be now in the global
+	 list.  */
+      moif = TOP_MOIF (&A68_JOB);
+      while (moif != NO_MOIF && strcmp (NAME (moif), module) != 0)
+	FORWARD (moif);
+    }
 
   /* If we got a moif, we need to make sure that it doesn't introduce new modes
      that are equivalent to any mode in the compiler's mode list.  If it does,
