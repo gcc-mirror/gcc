@@ -1,0 +1,6 @@
+{ dg-modules "module23foo module23bar" }
+
+access Module23Bar
+begin assert (foo = 10);
+      assert (bar = 20)
+end

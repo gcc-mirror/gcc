@@ -204,12 +204,6 @@ extract_revelation (NODE_T *q, const char *module, TAG_T *tag)
   if (tag != NO_TAG)
     MOIF (tag) = moif;
 
-  /* First thing to do is to extract the revelations of publicized modules in
-     this moif.  This leads to recursive calls of this function.  */
-
-  for (EXTRACT_T *e : MODULES (moif))
-    extract_revelation (q, EXTRACT_SYMBOL (e), NO_TAG);
-
   /* Store all the modes from the MOIF in the moid list.
 
      The front-end depends on being able to compare any two modes by pointer
@@ -225,9 +219,22 @@ extract_revelation (NODE_T *q, const char *module, TAG_T *tag)
 	{
 	  MOID_T *r = a68_register_extra_mode (&TOP_MOID (&A68_JOB), m);
 	  if (r != m)
-	    gcc_unreachable ();
+	    {
+	      printf ("r: %s\n", a68_moid_to_string (r, 80, NO_NODE, false));
+	      printf ("m: %s\n", a68_moid_to_string (m, 80, NO_NODE, false));
+	      gcc_unreachable ();
+	    }
 	}
     }
+
+  /* Second thing to do is to extract the revelations of publicized modules in
+     this moif.  This leads to recursive calls of this function.  Note that
+     this should be done _after_ the modes get added to the global list of
+     modes so mode deduplication in a68_open_packet in the recursive
+     extract_revelation calls is properly done.  */
+
+  for (EXTRACT_T *e : MODULES (moif))
+    extract_revelation (q, EXTRACT_SYMBOL (e), NO_TAG);
 
   /* Store mode indicants from the MOIF in the symbol table,
      and also in the moid list.  */

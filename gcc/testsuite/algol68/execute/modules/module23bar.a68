@@ -1,0 +1,7 @@
+module Module23Bar = access pub Module23Foo
+def
+    pub mode BarMode = ref FooMode;
+    pub int bar = foo + 10;
+    skip
+fed
+

@@ -1,0 +1,5 @@
+module Module23Foo =
+def pub mode FooMode = struct (string name, doc);
+    pub int foo = 10;
+    skip
+fed

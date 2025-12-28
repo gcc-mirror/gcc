@@ -1110,26 +1110,6 @@ a68_decode_modes (MOIF_T *moif, encoded_modes_map_t &encoded_modes,
       vec_safe_push (MODES (moif), em->moid);
     }
 
-  /* Next step is to see if equivalent modes the any of the modes in the moif
-      DIM already exist in the compiler's mode list.  In that case, replace the
-      DIM moif's mode with the existing mode anywhere in the moif.  */
-  for (MOID_T *m : MODES (moif))
-    {
-      MOID_T *r = a68_search_equivalent_mode (m);
-      if (r != NO_MOID)
-	{
-	  a68_replace_equivalent_mode (MODES (moif), m, r);
-
-	  /* Update encoded_modes to reflect the replacement.  */
-	  for (auto entry : encoded_modes)
-	    {
-	      struct encoded_mode *em = entry.second;
-	      if (em->moid == m)
-		em->moid = r;
-	    }
-	}
-    }
-
   *errstr = NULL;
   *ppos = pos;
   return true;
@@ -1419,5 +1399,41 @@ a68_open_packet (const char *module)
   MOIF_T *moif = TOP_MOIF (&A68_JOB);
   while (moif != NO_MOIF && strcmp (NAME (moif), module) != 0)
     FORWARD (moif);
+
+  /* If we got a moif, we need to make sure that it doesn't introduce new modes
+     that are equivalent to any mode in the compiler's mode list.  If it does,
+     we replace the mode everywhere in the moif.  */
+
+  if (moif != NO_MOIF)
+    {
+      for (MOID_T *m : MODES (moif))
+	{
+	  MOID_T *r = a68_search_equivalent_mode (m);
+	  if (r != NO_MOID)
+	    {
+	      a68_replace_equivalent_mode (MODES (moif), m, r);
+
+	      /* Update extracts to reflect the replacement.  */
+	      for (EXTRACT_T *e : INDICANTS (moif))
+		{
+		  if (EXTRACT_MODE (e) == m)
+		    EXTRACT_MODE (e) = r;
+		}
+
+	      for (EXTRACT_T *e : IDENTIFIERS (moif))
+		{
+		  if (EXTRACT_MODE (e) == m)
+		    EXTRACT_MODE (e) = r;
+		}
+
+	      for (EXTRACT_T *e : OPERATORS (moif))
+		{
+		  if (EXTRACT_MODE (e) == m)
+		    EXTRACT_MODE (e) = r;
+		}
+	    }
+	}
+    }
+
   return moif;
 }
