@@ -407,7 +407,6 @@ modules and separated compilation support provided by this compiler.
 @menu
 * Packets::                  Compilation units.
 * Modules::                  Facilities for bottom-up programming.
-* Holes::                    Facilities for top-down programming.
 * Particular programs::      The main program.
 * The standard environment:: Environment conforming a full program.
 @end menu
@@ -417,37 +416,45 @@ modules and separated compilation support provided by this compiler.
 @cindex packet
 @cindex compilation unit
 
-Each Algol 68 source file contains a @dfn{packet}.  Packets therefore
-play the role of @dfn{compilation units}, and each packet can be
-compiled separately to an object file.  A set of compiled object files
-can then be linked in the usual fashion into an executable, archive or
-shared object by the system linker, without the need of any
-language-specific link editor or build system.
+Each Algol 68 source file, which are files using the file extension
+@file{.a68}, contains the definition of a so-called @dfn{packet}.
+Packets therefore play the role of @dfn{compilation units}, and each
+packet can be compiled separately to an object file.  A set of
+compiled object files can then be linked in the usual fashion into an
+executable, archive or shared object by the system linker, without the
+need of any language-specific link editor or build system.
 
 @noindent
-This compiler supports three different kind of packets:
+This compiler supports two different kind of packets:
 
 @itemize @minus
 @item
 @dfn{Particular programs} constitute the entry point of a program.
-They correspond to the @code{main} function of other languages like C.
+They roughly speaking correspond to the @code{main} function of other
+languages like C.
 
 @xref{Particular programs}.
 
 @item
-@dfn{Prelude packets} contain the definition of one or more modules,
-which @dfn{publicize} definitions of modes, procedures, variables,
-operators and even the publicized definitions of other modules.  The
-modules defined at the top-level of a prelude packet can be accessed
-by other packets via an @code{@B{access}} construct.  Prelude packets
-are so-called because their contents get stuffed in the
+@dfn{Prelude packets} contain the definition of @dfn{modules}, which
+@dfn{publicize} definitions of modes, procedures, variables, operators
+and even the publicized definitions of other modules.  Each prelude
+packet defines a single packet, defined at the top-level, which can be
+accessed by other packets (be them particular programs or other
+prelude packets) via an @code{@B{access}} construct.  Prelude packets
+are so-called because their contents get conceptually stuffed in the
 @dfn{user-prelude} in the case of user-defined modules, or the
 @dfn{library-prelude} in the case of module packets provided by the
 compiler.  They are usually used to compose libraries that can be used
 in a bottom-up fashion.
 
 @xref{Modules}.
+@end itemize
 
+Future versions of this compiler will eventually support a third kind
+of packet, oriented to top-down development:
+
+@itemize @minus
 @item
 @dfn{Stuffing packets} contain the definition of an @dfn{actual hole},
 an @code{@B{egg}} construct, that can be stuffed in a matching
@@ -456,7 +463,6 @@ Formal holes are used in order to achieve separated compilation in a
 top-bottom fashion, and also to invoke procedures written in other
 languages, such as C functions or Fortran subroutines.
 
-@xref{Holes}.
 @end itemize
 
 A @dfn{collection of packets}, all of which must be compatible with
@@ -484,6 +490,7 @@ conform bigger components.
 * Writing modules::                Writing modules.
 * Accessing modules::              Using the definitions of a module.
 * Module activation::              How and when modules execute.
+* Modules and exports::            How the compiler searches for modules.
 * Modules and libraries::          Using modules to conform libraries.
 * Modules and protection::         When block structure is not enough.
 @end menu
@@ -492,33 +499,31 @@ conform bigger components.
 @subsection Writing modules
 
 A @dfn{definition module} is a construct that provides access to a set
-of publicized definitions.  They can appear anywhere, but are
-typically found in the outer reach and compiled separately, in which
-case they conform a prelude packet (@pxref{Packets}).  They are
-composed of a prelude and a postlude.  The publicized definitions
-appear in the module's prelude.
+of publicized definitions.  They appear in the outer reach of a
+prelude packet and constitute its only contents (@pxref{Packets}).
+They are composed of a prelude and a postlude.  The publicized
+definitions appear in the module's prelude.
 
 Consider for example the following definition module, which implements
 a very simple logging facility:
 
 @example
 @B{module} @B{Logger} =
-   @B{def} @B{int} fd = stderr;
-       @B{pub} @B{string} originator;
-       @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
-              fputs (fd, (originator /= "" | ": ") + msg + "\n");
+@B{def} @B{int} fd = stderr;
+    @B{pub} @B{string} originator;
+    @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
+           fputs (fd, (originator /= "" | ": ") + msg + "'n");
 
-       log ("beginning of log\n");
-   @B{postlude}
-       log ("end of log\n");
-   @B{fed}
+    log ("beginning of log'n");
+@B{postlude}
+    log ("end of log'n");
+@B{fed}
 @end example
 
 @noindent
 The @dfn{module text} delimited by @code{@B{def}} and @code{@B{fed}}
 gets ascribed to the module indicator @code{@B{Logger}}.  Module
-indicators are bold tags.  Once defined, the module @code{@B{Logger}}
-is accessible anywhere within its reach.
+indicators are bold tags.
 
 The @dfn{prelude} of the module spans from @code{@B{def}} to either
 @code{@B{postlude}}, or to @code{@B{fed}} in case of modules not
@@ -531,7 +536,7 @@ them.  Publicized declarations are marked by preceding them with
 @code{@B{pub}}.
 
 In our example the module prelude consists on three declarations and
-one unit.  The indicator @code{fd} is not publicized and is to be used
+one unit.  The tag @code{fd} is not publicized and is to be used
 internally by the module.  The indicators @code{originator} and
 @code{log}, on the other hand, are publicized and conform the
 interface of the module.  Note how the range of the prelude also
@@ -546,14 +551,14 @@ module accesses are not allowed, just units.
 @node Accessing modules
 @subsection Accessing modules
 
-Once a module is defined (@pxref{Writing modules}) it can be accessed,
-provided it is within reach, using an @dfn{access clause}.  The access
-clause identifies the modules to access and then makes the publicized
+Once a module is defined (@pxref{Writing modules}) it can be accessed
+from other packets using an @dfn{access clause}.  The access clause
+identifies the modules to access and then makes the publicized
 definitions of these modules visible within a @dfn{control clause}.
 
 For example, this is how we could use the logger definition module
-defined in a previous section to log the progress of some program that
-reads an input file and writes some output file:
+defined in a previous section to log the progress of some particular
+program that reads an input file and writes some output file:
 
 @example
 @B{access} @B{Logger}
@@ -589,17 +594,17 @@ logger and json modules accessible like this:
 
 @example
 @B{access} @B{Logger}, @B{JSON}
-@B{begin} # Identify ourselves with the program name #
+@B{begin} @{ Identify ourselves with the program name @}
       originator := argv (1);
 
       @B{JSONVal} data;
 
-      # Read input file.  #
+      @{ Read input file.  @}
       @B{if} data := json_from_file (argv (2));
-         data = json no val
+         data = json_no_val
       @B{then} log ("error parsing input file"); stop @B{fi};
 
-      # Write output file.  #
+      @{ Write output file.  @}
       @B{if} @B{not} json_to_file (argv (3), data)
       @B{then} log ("error writing output file"); stop @B{fi};
 
@@ -609,10 +614,10 @@ logger and json modules accessible like this:
 
 @noindent
 In this version of the program the access clause includes the module
-indicator @code{@B{json}}, and that makes the mode indicator
-@code{@B{jsonval}} and the tags @code{@B{json no val}}, @code{json
-from file} and @code{json to file} visible within the program's
-closed clause.
+indicator @code{@B{JSON}}, and that makes the mode indicator
+@code{@B{jsonval}} and the tags @code{json_no_val},
+@code{json_from_file} and @code{json_to_file} visible within the
+program's closed clause.
 
 Note that the following two access clauses are not equivalent:
 
@@ -671,50 +676,51 @@ value becomes the value yielded by the access clause.
 
 @subsubsection Modules accessing other modules
 
-A definition module may itself access other modules.  This is done by
-placing the module text as a controlled clause of an access clause.
+Up to this point we have seen particular programs accessing modules,
+but a definition module may itself access other modules.  This is done
+by placing the module text as a controlled clause of an access clause.
 Suppose we rewrite our logger module so it uses JSON internally to log
 JSON objects rather than raw strings.  We could do it this way:
 
 @example
-@B{module} @B{logger} =
-   @B{access} @B{json}
+@B{module} @B{Logger} =
+   @B{access} @B{JSON}
    @B{def} @B{int} fd = stderr;
        @B{pub} @B{string} originator;
        @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
-              fputs (fd, json array (json string (originator),
-                                     json string (msg)));
+              fputs (fd, json_array (json_string (originator),
+                                     json_string (msg)));
 
-       log (json string ("beginning of log\n"));
+       log (json_string ("beginning of log'n"));
    @B{postlude}
-       log (json string ("end of log\n"));
+       log (json_string ("end of log'n"));
    @B{fed}
 @end example
 
 @noindent
-Note how this version of @code{@B{logger}} uses a few definitions
-publicized by the @code{@B{json}} module.
+Note how this version of @code{@B{Logger}} uses a few definitions
+publicized by the @code{@B{JSON}} module.
 
-A program accessing @code{@B{logger}} will not see the definitions
-publicized by the @code{@B{json}} module.  If that is what we
+A program accessing @code{@B{Logger}} will not see the definitions
+publicized by the @code{@B{JSON}} module.  If that is what we
 intended, for example to allow the users of the logger to tweak their
 own JSON, we would need to specify it this way:
 
 @example
-@B{module} @B{logger} =
-   @B{access} @B{pub} @B{json}
+@B{module} @B{Logger} =
+   @B{access} @B{pub} @B{JSON}
    @B{def} @B{c} ...as before... @B{c} @B{fed}
 @end example
 
 @noindent
-In this version the definitions publicized by @code{@B{json}} become
-visible to programs accessing @code{@B{logger}}.
+In this version the definitions publicized by @code{@B{JSON}} become
+visible to programs accessing @code{@B{Logger}}.
 
 @node Module activation
 @subsection Module activation
 
 In all the examples seen so far the modules were accessed just once.
-In these cases, accessing the module via an access-clause caused the
+In these cases, accessing the module via an access-clause causes the
 @dfn{activation} of the module.
 
 Activating a module involves elaborating all the declarations and
@@ -733,20 +739,20 @@ more than once in the same program.  The following program, that makes
 use of the @code{@B{logger}} module, exemplifies this:
 
 @example
-@B{access} @B{logger}
+@B{access} @B{Logger}
 @B{begin} originator := argv (1);
       log ("executing program");
       @B{c} ... @B{c}
-      @B{access} @B{logger} (originator := argv (1) + ":subtask";
+      @B{access} @B{Logger} (originator := argv (1) + ":subtask";
                      log ("doing subtask")
                      @B{c} ... @B{c})
 @B{end}
 @end example
 
 @noindent
-In this program the module @code{@B{logger}} is accessed twice.  The
+In this program the module @code{@B{Logger}} is accessed twice.  The
 code is obviously written assuming that the inner access clause
-triggers a new activation of the @code{@B{logger}} module, allocating
+triggers a new activation of the @code{@B{Logger}} module, allocating
 new storage and executing its prelude.  This would result in the
 following log contents:
 
@@ -778,43 +784,43 @@ the logger to support several originators that can be nested, we would
 need to add support for it in the definition module.  Something like:
 
 @example
-@B{module} @B{logger} =
-   @B{def} @B{int} fd = stderr, max originators = 10;
+@B{module} @B{Logger} =
+   @B{def} @B{int} fd = stderr, max_originators = 10;
        @B{int} orig := 0;
-       [max originators]@B{string} originators;
+       [max_originators]@B{string} originators;
 
-       @B{pub} @B{proc} push originator = (@B{string} str) @B{void}:
-              (@B{assert} (orig < max originators);
+       @B{pub} @B{proc} push_originator = (@B{string} str) @B{void}:
+              (@B{assert} (orig < max_originators);
                orig +:= 1;
                originators[orig] := str);
-       @B{pub} @B{proc} pop originator = @B{void}:
-              (@B{assert} (max originators > 0);
+       @B{pub} @B{proc} pop_originator = @B{void}:
+              (@B{assert} (max_originators > 0);
                orig -:= 1);
        @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
-              fputs (fd, (originator[orig] /= "" | ": ") + msg + "\n");
+              fputs (fd, (originator[orig] /= "" | ": ") + msg + "'n");
 
-       log ("beginning of log\n");
+       log ("beginning of log'n");
    @B{postlude}
-       log ("end of log\n");
+       log ("end of log'n");
    @B{fed}
 @end example
 
 @noindent
-Note how in this version of @code{@B{logger}} @code{originators} acts
+Note how in this version of @code{@B{Logger}} @code{originators} acts
 as a stack of originator strings, and it is not publicized.  The
 management of the stack is done via a pair of publicized procedures
-@code{push originator} and @code{pop originator}.  Our program will
+@code{push_originator} and @code{pop_originator}.  Our program will
 now look like:
 
 @example
-@B{access} @B{logger}
-@B{begin} push originator (argv (1));
+@B{access} @B{Logger}
+@B{begin} push_originator (argv (1));
       log ("executing program");
       @B{c} ... @B{c}
-      @B{access} @B{logger} (push originator ("subtask");
+      @B{access} @B{logger} (push_originator ("subtask");
                      log ("doing subtask")
                      @B{c} ... @B{c};
-                     pop originator)
+                     pop_originator)
 @B{end}
 @end example
 
@@ -828,55 +834,147 @@ a.out:subtask: doing subtask
 a.out: end of log
 @end example
 
+@node Modules and exports
+@subsection Modules and exports
+@cindex exports
 
---------------------------------------------------------------
+As we have seen, each Algol 68 source file contains either a
+particular program or a prelude packet.  Prelude packets consist on
+the definition of a single top-level module, that is itself identified
+by a module indicant.
 
-module-indications are used to find interface-definitions of modules:
+Consider for example a source file called @file{trilean.a68} that
+implements strong Kleene three-valued (``trilean'') logic.  It does so
+by the mean of a definition module called @code{@B{Trilean}}.  A
+sketch of such a file may look like this:
 
-  ACCESS FOO SKIP
+@example
+@B{module} @B{Trilean} =
+@B{def}
+    @B{pub} @B{mode} @B{Tril} = @B{int};
 
-Looks for (in order):
+    @B{pub} @B{Tril} dontknow = 0, yes = 1, no = 2;
 
-  foo.m68
-  foo.o
-  libfoo.so
+    @B{pub} @B{prio} @B{AND3} = 3, @B{OR3} = 3, @B{XOR3} = 3;
 
-Should we use instead:
+    @B{pub} @B{op} @B{NOT3} = (@B{Tril} a) @B{Tril}:
+       (a + 1 | dontknow, no, yes);
 
-  ACCESS "foo" SKIP
+    @B{C} ... other definitions ... @B{C}
+@B{fed}
+@end example
 
-That would use for module indicators the same syntax than hole
-indicators.
+The module indicant @code{@B{Trilean}} identifies the module.  If we
+now compile this file to an object file using GCC:
 
-Modules get accessed, invoked and revoked.
+@example
+$ ga68 -c trilean.a68
+@end example
 
-Access clauses:
+The result of the compilation is an object file @file{trilean.o}, plus
+some @dfn{exports information} which is placed in a section in the
+object file, named @code{.a68_exports}.  The exports information
+describes the interface provided by the @code{@B{Trilean}} module
+defined in the compilation unit.  This includes all the modes,
+identifiers, priorities, operators, etc, that are publicized by the
+module.  The particular encoding used to hold these exports is highly
+compact and not easy readable by persons; instead, it is designed to
+be read back by GCC when it builds another compilation unit that, in
+turn, needs to access the @code{@B{Trilean}} module.
 
-: ACCESS A, B <enclosed clause>
+Consider the following sketched particular program that resides in a
+source file @file{main.a68}, and that uses trilean logic:
 
-Where A and B are ``revelations''.
+@example
+@B{access} @B{Trilean}
+@B{begin}
+      @B{C} ... @B{C}
+@B{end}
+@end example
 
-In
+When this program gets compiled by GCC using @code{ga68 -c
+program.a68}, the compiler finds the access clause and needs to locate
+some exports for the module @code{@B{Trilean}}.  To do so, it searches
+in the modules search path, composed by the current working directory,
+some system directories and all directories specified in @option{-I}
+and @option{-L} options, looking for files called @file{trilean.m68},
+@file{trilean.so}, @file{trilean.a} and @file{trilean.o}, in that
+order, where:
 
-: MODULE A = ACCESS B DEF ... FED
+@table @file
+@item trilean.m68
+Is a stand-alone file expected to contain export data for one or more
+modules.
+@item trilean.so
+Is a DSO, or shared object, expected to contain a @code{.a68_exports}
+section with exports data for one or more modules.
+@item trilean.a
+Is an archive, whose constituent object files may contain
+@code{.a68_exports} sections with exports data for one or more
+modules.
+@item trilean.o
+Is an object file expected to contain export data for one or more
+modules in a @code{.a68_exports} section.
+@end table
 
-Doesn't reveals any contents of B.  Whereas in:
+The files are tried in order, and if export data for the requested
+module @code{@B{Trilean}} is found, it is read in, decoded, and used
+to compile @file{main.a68} into @file{main.o}.
 
-: MODULE A = ACCESS PUB B DEF .. FED
+The last step in obtaining an executable for our program would be to
+use GCC to do a link like @code{ga68 trilean.o main.o -o main}.
 
-The module A is also revealing B's public declarations.  So accessing
-A provides access to B.
+Module indicants such as @code{@B{Trilean}} are bold words in the
+language.  This means that, independently of the stropping regime
+used, they are constituted by a bold letter followed by a sequence of
+zero or more bold letters and digits.  Using the modern stropping
+supported by the GNU Algol 68 compiler, this means that all of
+@code{@B{Trilean}}, @code{@B{TRILEAN}} and @code{@B{Tri_lean}} denote
+exactly the same module indicant, @b{trilean}.
 
-User-defined preludes go to the user-prelude.
+The mapping from module indicant to the ``base name'' used to locate
+the module exports is quite straightforward: the bold letters are
+transformed to lower-case letters, and the bold digits are just normal
+digits.  Therefore, the exports for the module
+@code{@B{GRAMP_Grammar}} would looked in files
+@file{grampgrammar.m68}, @file{libgrampgrammar.so}, etc.
 
-Invocation and revocation:: How modules are executed.
+But often this default, straightforward mapping, is not what we need.
 
-It is possible for a definition module to not publicize any
-definition.  Such modules would be used only for the side effects
-produced from executing the prelude and postlude when the module gets
-invoked and revoked. XXX: provide an example?
+Suppose for example that a shared object installed in the system,
+@file{liba68goodies.so}, provides many facilities in the form of
+several modules, including a @code{@B{Trilean}} module.  We want to
+use the trilean implementation of liba68goodies in our program
+@file{main.a68}.  If we just @code{@B{access} @B{Trilean}} GCC will
+look for @file{trilean.m68} etc, but wont even consider looking in
+@file{liba68goodies.so}.  Accessing @code{@B{A68Goodies}} is obviously
+not a solution, as the module we want is @code{@B{Trilean}} and there
+may not even be a module called @code{@B{A68Goodies}} in
+@file{liba68goodies.so}.
 
-XXX
+The solution for this is to use the @dfn{modules map} of the compiler.
+This map is an association or map between module indicants and
+base-names.  When it comes to access some module, the compiler looks
+in the map.  If there is an entry for the module's indicant, then it
+fetches the base-name to use for looking for the module's export data.
+If there is not an entry for the module's indicant then the default,
+straightforward mapping described above is attempted.
+
+By default the map is empty, but we can add entries by using the
+@option{-fmodules-map=} and @option{-fmodules-map-file=} command-line
+options.  The first option expects entries to be added to the map in a
+string in the command-line, whereas the second option expects the name
+of a file containing the entries to add to the map.  In both cases the
+format describing the entries is exactly the same (@pxref{Module
+search options}).
+
+In our case, we could compile our main program specifying an entry in
+the map telling the compiler where to find the trilean and logging
+modules:
+
+@example
+$ ga68 -fmodules-map="a68goodies=Trilean,Logger" -c main.a68
+@end example
 
 @node Modules and libraries
 @subsection Modules and libraries
@@ -897,12 +995,6 @@ identify user-defined modes and operators, such as @code{JSON},
 
 XXX
 
-@node Holes
-@section Holes
-@cindex hole
-
-XXX
-
 @node Particular programs
 @section Particular programs
 @cindex particular program
@@ -913,7 +1005,7 @@ by a set of zero or more labels.  For example:
 
 @example
 hello:
-@B{begin} puts ("Hello, world!\n")
+@B{begin} puts ("Hello, world!'n")
 @B{end}
 @end example
 
@@ -924,7 +1016,7 @@ following program, that prints out its command line arguments:
 
 @example
 @B{for} i @B{to} argc
-@B{do} puts (argv (i) + "\n") @B{od}
+@B{do} puts (argv (i) + "'n") @B{od}
 @end example
 
 @menu
@@ -960,7 +1052,7 @@ world'' on the standard output and then returns to the operating
 system with a success status:
 
 @example
-@B{begin} puts ("Hello world\n")
+@B{begin} puts ("Hello world'n")
 @B{end}
 @end example
 
