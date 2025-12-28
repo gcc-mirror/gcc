@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #define CPP_SPEC "%(cpp_subtarget)"
 
 #undef CC1_SPEC
-#define CC1_SPEC "%(cc1_cpu) " ASAN_CC1_SPEC \
+#define CC1_SPEC "%(cc1_cpu) " ASAN_CC1_SPEC SCTF_CC1_SPEC \
   " %{mx32:%e-mx32 is not supported on Solaris}"
 
 /* GNU as understands --32 and --64, but the native Solaris

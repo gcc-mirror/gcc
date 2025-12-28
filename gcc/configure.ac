@@ -6435,6 +6435,17 @@ AC_DEFINE_UNQUOTED(LD_COMPRESS_DEBUG_OPTION, "$gcc_cv_ld_compress_debug_option",
 [Define to the linker option to enable compressed debug sections.])
 AC_MSG_RESULT($gcc_cv_ld_compress_debug)
 
+AC_MSG_CHECKING(linker support for -z ctf)
+gcc_cv_ld_ctf=no
+# Check for Solaris ld 1.3315 introduced in Solaris 11.4 SRU 84.  ld -z ctf
+# already went in in SRU 81, but lacked GNU CTF to Solaris CTF conversion.
+if $gcc_cv_ld --help 2>&1 | grep -- '-z ctf' > /dev/null \
+  && test x$gnu_ld = xno && test "$ld_vers_minor" -ge 3315; then
+  gcc_cv_ld_ctf=yes
+  AC_DEFINE(HAVE_LD_CTF, 1, [Define if your linker supports -z ctf.])
+fi
+AC_MSG_RESULT($gcc_cv_ld_ctf)
+
 if test x"$ld64_flag" = x"yes"; then
 
   # Set defaults for possibly untestable items.

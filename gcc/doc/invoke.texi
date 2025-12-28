@@ -1445,7 +1445,7 @@ See RS/6000 and PowerPC Options.
 
 @emph{Solaris 2 Options} (@ref{Solaris 2 Options})
 @gccoptlist{-mclear-hwcap  -mno-clear-hwcap  -mimpure-text  -mno-impure-text
--pthreads}
+-gsctf -pthreads}
 
 @emph{SPARC Options} (@ref{SPARC Options})
 @gccoptlist{-mcpu=@var{cpu-type}
@@ -34574,6 +34574,12 @@ using @option{-mimpure-text}, you should compile all source code with
 These switches are supported in addition to the above on Solaris 2:
 
 @table @gcctabopt
+@opindex gsctf
+@item -gsctf
+Generate Solaris CTF.  Needs to be used both for compilation and
+linking.  See @command{ctf(7)} for more information.  This is only
+supported since Solaris 11.4 SRU 84 where the necessary toolchain
+support was added.
 @opindex pthreads
 @item -pthreads
 This is a synonym for @option{-pthread}.

@@ -1797,6 +1797,12 @@
 #endif
 
 
+/* Define if your linker supports -z ctf. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_CTF
+#endif
+
+
 /* Define if your linker supports --demangle option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_DEMANGLE

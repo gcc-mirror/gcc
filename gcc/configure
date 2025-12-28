@@ -33154,6 +33154,21 @@ _ACEOF
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_compress_debug" >&5
 $as_echo "$gcc_cv_ld_compress_debug" >&6; }
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking linker support for -z ctf" >&5
+$as_echo_n "checking linker support for -z ctf... " >&6; }
+gcc_cv_ld_ctf=no
+# Check for Solaris ld 1.3315 introduced in Solaris 11.4 SRU 84.  ld -z ctf
+# already went in in SRU 81, but lacked GNU CTF to Solaris CTF conversion.
+if $gcc_cv_ld --help 2>&1 | grep -- '-z ctf' > /dev/null \
+  && test x$gnu_ld = xno && test "$ld_vers_minor" -ge 3315; then
+  gcc_cv_ld_ctf=yes
+
+$as_echo "#define HAVE_LD_CTF 1" >>confdefs.h
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_ctf" >&5
+$as_echo "$gcc_cv_ld_ctf" >&6; }
+
 if test x"$ld64_flag" = x"yes"; then
 
   # Set defaults for possibly untestable items.

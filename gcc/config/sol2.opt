@@ -27,6 +27,10 @@ Driver Joined
 Ym,
 Driver Joined
 
+gsctf
+Driver RejectNegative
+Generate Solaris CTF.
+
 mclear-hwcap
 Target
 Clear hardware capabilities when linking.
