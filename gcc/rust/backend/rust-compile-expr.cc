@@ -499,7 +499,25 @@ CompileExpr::visit (HIR::StructExprStruct &struct_expr)
       return;
     }
 
-  rust_assert (tyty->is_unit ());
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyty);
+  TyTy::VariantDef *variant = nullptr;
+  if (adt->is_enum ())
+    {
+      // unwrap variant and ensure that it can be resolved
+      HirId variant_id;
+      bool ok = ctx->get_tyctx ()->lookup_variant_definition (
+	struct_expr.get_struct_name ().get_mappings ().get_hirid (),
+	&variant_id);
+      rust_assert (ok);
+
+      ok = adt->lookup_variant_by_id (variant_id, &variant);
+      rust_assert (ok);
+    }
+  else
+    {
+      rust_assert (tyty->is_unit ());
+    }
+
   translated = unit_expression (struct_expr.get_locus ());
 }
 

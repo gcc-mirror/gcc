@@ -1604,7 +1604,6 @@ VariantDef::get_field_at_index (size_t index)
 std::vector<StructFieldType *> &
 VariantDef::get_fields ()
 {
-  rust_assert (type != NUM);
   return fields;
 }
 
