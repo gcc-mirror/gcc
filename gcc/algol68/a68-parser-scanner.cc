@@ -1663,13 +1663,37 @@ get_next_token (bool in_format,
 	}
       else if (is_radix_char (ref_l, ref_s, &c))
 	{
+	  /* Parse the radix, which is expressed in base 10.  */
 	  (sym++)[0] = c;
+	  char *end;
+	  int64_t radix = strtol (A68_PARSER (scan_buf), &end, 10);
+	  gcc_assert (end != A68_PARSER (scan_buf) && *end == 'r');
+
+	  /* Get the rest of the bits literal.  Typographical display features
+	     are allowed in the reference language between the digit symbols
+	     composing the denotation.  However, in SUPPER stropping this could
+	     lead to confusing situations like:
+
+	       while bitmask /= 16r0 do ~ od
+
+	     Where the scanner would recognize a bits denotation 16r0d and then
+	     the parser would complain about a missing 'do'.  This is not a
+	     problem in UPPER stropping since D is not a valid hexadecimal
+	     digit.
+
+	     To avoid confusing errors, in SUPPER stropping we do not allow
+	     typographical display features in bits denotations when the radix
+	     is 16.  */
 	  c = next_char (ref_l, ref_s, true);
-	  /* This is valid for both UPPER and SUPPER stropping.  */
-	  while (ISDIGIT (c) || strchr ("abcdef", c) != NO_TEXT)
+	  while (((radix == 2 && (c == '0' || c == '1'))
+		  || (radix == 4 && (c >= '0' && c <= '3'))
+		  || (radix == 8 && (c >= '0' && c <= '7'))
+		  || (radix == 16 && (ISDIGIT (c) || strchr ("abcdef", c) != NO_TEXT))))
 	    {
 	      (sym++)[0] = c;
-	      c = next_char (ref_l, ref_s, true);
+	      c = next_char (ref_l, ref_s,
+			     OPTION_STROPPING (&A68_JOB) != SUPPER_STROPPING
+			     || radix != 16);
 	    }
 	  *att = BITS_DENOTATION;
 	}

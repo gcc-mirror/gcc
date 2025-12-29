@@ -1,0 +1,3 @@
+{ Make sure that in supper stropping the bits
+  denotation is parsed as 16rab and not 16rabd  }
+while bits foo; foo /= 16r ab do ~ od

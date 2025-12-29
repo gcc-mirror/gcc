@@ -1,7 +1,7 @@
 # { dg-options "-fstropping=upper" }  #
 # Environment enquiries for SIZETY BITs #
-BEGIN ASSERT (max bits /= 10r0);
+BEGIN ASSERT (max bits /= 2r0);
       # XXX use LENG max bits below #
-      ASSERT (long max bits >= LONG 10r0);
-      ASSERT (long long max bits >= LONG LONG 10r0)
+      ASSERT (long max bits >= LONG 16r0);
+      ASSERT (long long max bits >= LONG LONG 4r0)
 END

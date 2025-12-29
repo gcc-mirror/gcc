@@ -1312,7 +1312,10 @@ that, when they appear between symbols, are of no significance and do
 not alter the meaning of the program.  However, when a space or a tab
 appear in string or character denotations, they represent the
 @code{space symbol} and the @code{tab symbol}
-respectively@footnote{The @code{tab symbol} is a GNU extension}.
+respectively@footnote{The @code{tab symbol} is a GNU extension}.  The
+different stropping regimes, however, may impose specific restrictions
+on where typographical display features may or may not
+appear. @xref{Stropping regimes}.
 
 @node Worthy characters
 @section Worthy characters
@@ -1697,6 +1700,23 @@ as @code{letter-c-letter-r-letter-c-digit-three-digit-two}.
 The underscore characters are not really part of the tag, but part of
 the stropping.  For example, both @code{goto found_zero} and
 @code{goto foundzero} jump to the same label.
+
+In general, typographical display features are allowed between any
+symbol in the written program.  In SUPPER stropping, however, it is
+not allowed to place spaces or tab characters between the constituent
+digits of bits denotations when the radix is 16.  This is to avoid
+confusing situations like the following invalid program:
+
+@example
+@B{while} bitmask /= 16r0 @B{do} ~ @B{od}
+@end example
+
+@noindent
+Where the bits denotation would be interpreted as @code{16r0d} rather
+than @code{16r0}, leading to a syntax error.  Note however that
+typographical display features are still allowed between the radix
+part and the digits, so @code{16r aabb} is valid also in SUPPER
+stropping.
 
 The @code{recsel output records} procedure, encoded in SUPPER
 stropping, looks like below.
