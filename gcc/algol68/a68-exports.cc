@@ -254,7 +254,7 @@ a68_asm_output_mode (MOID_T *m, const char *module_label)
 
   static long int cnt;
   static char label[100];
-  ASM_GENERATE_INTERNAL_LABEL (label, "LM", cnt++);
+  ASM_GENERATE_INTERNAL_LABEL (label, "LMD", cnt++);
   ASM_LABEL (m) = ggc_strdup (label);
 
   if (IS_REF(m) || IS_FLEX (m))
