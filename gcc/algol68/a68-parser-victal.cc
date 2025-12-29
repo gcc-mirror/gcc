@@ -90,6 +90,10 @@ victal_check_mode_dec (NODE_T *p)
 	  victal_check_mode_dec (SUB (p));
 	  victal_check_mode_dec (NEXT (p));
 	}
+      else if (IS (p, PUBLIC_SYMBOL))
+	{
+	  victal_check_mode_dec (NEXT (p));
+	}
       else if (a68_is_one_of (p, MODE_SYMBOL, DEFINING_INDICANT, STOP)
                || a68_is_one_of (p, EQUALS_SYMBOL, COMMA_SYMBOL, STOP))
 	{
@@ -117,6 +121,9 @@ victal_check_variable_dec (NODE_T *p)
 	}
       else
 	{
+	  if (IS (p, PUBLIC_SYMBOL))
+	    FORWARD (p);
+
 	  if (IS (p, QUALIFIER))
 	    FORWARD (p);
 
@@ -147,7 +154,8 @@ victal_check_identity_dec (NODE_T * p)
 	  victal_check_identity_dec (SUB (p));
 	  victal_check_identity_dec (NEXT (p));
 	}
-      else if (a68_is_one_of (p, DEFINING_IDENTIFIER, EQUALS_SYMBOL, COMMA_SYMBOL, STOP))
+      else if (a68_is_one_of (p, PUBLIC_SYMBOL, DEFINING_IDENTIFIER, EQUALS_SYMBOL, COMMA_SYMBOL,
+			      STOP))
 	victal_check_identity_dec (NEXT (p));
       else if (IS (p, UNIT))
 	a68_victal_checker (SUB (p));

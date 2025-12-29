@@ -1,0 +1,5 @@
+module Foo =
+def pub op - = ([3]int a) int: skip; { dg-error "formal bounds expected" }
+    op + = ([3]int a) int: skip;     { dg-error "formal bounds expected" }
+    skip
+fed

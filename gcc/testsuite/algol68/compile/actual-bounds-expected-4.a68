@@ -1,0 +1,15 @@
+{ Check that the victal pass handles publicized mode declarations
+  properly.  }
+
+module Foo =
+def pub mode M1 = ref[]int;
+    pub mode M2 = []int;             { dg-error "actual bounds expected" }
+    mode M3 = []real;                { dg-error "actual bounds expected" }
+    pub []int v1;                    { dg-error "actual bounds expected" }
+    []int v2;                        { dg-error "actual bounds expected" }
+    pub []int a1 = ([]int v; v);     { dg-error "actual bounds expected" }
+    []int a2 = ([]int v; v);         { dg-error "actual bounds expected" }
+    pub op - = ([3]int a) int: skip; { dg-error "formal bounds expected" }
+    op + = ([3]int a) int: skip;     { dg-error "formal bounds expected" }
+    skip
+fed
