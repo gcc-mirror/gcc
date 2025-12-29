@@ -1126,9 +1126,9 @@ string_table::get_original_name (const char *name) const
 
   /* Try to find a function from the current TU.  */
   gcc_checking_assert (clash->second.length () >= 1);
-  if (symtab_node *n
-      = cgraph_node::get_for_asmname (get_identifier (stripped->second));
-      n && is_a<cgraph_node *> (n))
+  symtab_node *n
+    = cgraph_node::get_for_asmname (get_identifier (stripped->second));
+  if (n && is_a<cgraph_node *> (n))
     for (cgraph_node *cn = dyn_cast<cgraph_node *> (n); cn;)
       {
 	/* Check if there is a symbol in the current TU that has the same name
