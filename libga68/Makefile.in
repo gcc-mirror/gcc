@@ -121,6 +121,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gcc-plugin.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
+	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
@@ -357,9 +358,9 @@ infodir = @infodir@
 install_sh = @install_sh@
 libdir = @libdir@
 libexecdir = @libexecdir@
-libga68_VERSION = @libga68_VERSION@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_host_flags = @lt_host_flags@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 multi_basedir = @multi_basedir@
@@ -395,6 +396,12 @@ GCC_DIR = $(TOP_GCCDIR)/gcc
 A68_SRC = $(GCC_DIR)/algol68
 A68_FOR_TARGET = @A68_FOR_TARGET@
 A68_BUILDDIR := $(shell pwd)
+@LIBGA68_USE_SYMVER_FALSE@version_arg = 
+@LIBGA68_USE_SYMVER_GNU_TRUE@@LIBGA68_USE_SYMVER_TRUE@version_arg = -Wl,--version-script=$(srcdir)/ga68.map
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@version_arg = -Wl,-M,ga68.map-sun
+@LIBGA68_USE_SYMVER_FALSE@version_dep = 
+@LIBGA68_USE_SYMVER_GNU_TRUE@@LIBGA68_USE_SYMVER_TRUE@version_dep = $(srcdir)/ga68.map
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@version_dep = ga68.map-sun
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
@@ -462,10 +469,10 @@ libga68_la_SOURCES = libga68.c \
 
 libga68_la_LIBTOOLFLAGS = 
 libga68_la_CFLAGS = $(LIBGA68_GCFLAGS) $(LIBGA68_BOEHM_GC_INCLUDES)
-libga68_la_LDFLAGS = -version-info $(libga68_VERSION) \
-    $(extra_darwin_ldflags_libga68)
+libga68_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+		     $(version_arg) $(lt_host_flags) $(extra_darwin_ldflags_libga68)
 
-libga68_la_DEPENDENCIES = libga68.spec
+libga68_la_DEPENDENCIES = libga68.spec $(version_dep)
 libga68_la_LIBADD = $(LIBGA68_BOEHM_GC_LIBS)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
@@ -868,6 +875,13 @@ uninstall-am: uninstall-toolexeclibDATA \
 
 .PRECIOUS: Makefile
 
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@ga68.map-sun : $(srcdir)/ga68.map \
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@		$(top_srcdir)/../contrib/make_sunver.pl \
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@		$(libga68_la_OBJECTS) $(libga68_la_LIBADD)
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@	perl $(top_srcdir)/../contrib/make_sunver.pl \
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@	  $(srcdir)/ga68.map \
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@	  $(libga68_la_OBJECTS) $(libga68_la_LIBADD) \
+@LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@	> $@ || (rm -f $@ ; exit 1)
 
 # target overrides
 -include $(tmake_file)

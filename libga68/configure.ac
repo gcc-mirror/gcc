@@ -155,6 +155,7 @@ AC_PROG_INSTALL
 
 # Initialize libtool.
 LT_INIT
+ACX_LT_HOST_FLAGS
 
 AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
 
@@ -162,7 +163,7 @@ AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
 # Do compilation tests using the C compiler and preprocessor.
-AC_LANG_C([C])
+AC_LANG([C])
 
 # Allow the user to set CC_FOR_BUILD in the environment.
 CC_FOR_BUILD=${CC_FOR_BUILD:-gcc}
@@ -179,9 +180,51 @@ GCC_BASE_VER
 SPEC_LIBGA68_DEPS="$LIBS"
 AC_SUBST(SPEC_LIBGA68_DEPS)
 
-# libga68 soname version
-libga68_VERSION=2:0:0
-AC_SUBST(libga68_VERSION)
+AC_MSG_CHECKING([whether symbol versioning is supported])
+AC_ARG_ENABLE(symvers,
+AS_HELP_STRING([--disable-symvers],
+  [disable symbol versioning for libga68]),
+ga68_use_symver=$enableval,
+ga68_use_symver=yes)
+if test "x$ga68_use_symver" != xno; then
+  if test x$gcc_no_link = xyes; then
+    # If we cannot link, we cannot build shared libraries, so do not use
+    # symbol versioning.
+    ga68_use_symver=no
+  else
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+    cat > conftest.map <<EOF
+FOO_1.0 {
+  global: *foo*; bar; local: *;
+};
+EOF
+    AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foo;]], [[]])],
+		   [ga68_use_symver=gnu],[ga68_use_symver=no])
+    if test x$ga68_use_symver = xno; then
+      case "$target_os" in
+        solaris2*)
+          LDFLAGS="$save_LDFLAGS"
+          LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+          # Sun ld cannot handle wildcards and treats all entries as undefined.
+          cat > conftest.map <<EOF
+FOO_1.0 {
+  global: foo; local: *;
+};
+EOF
+          AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foo;]], [[]])],
+			 [ga68_use_symver=sun],[ga68_use_symver=no])
+	  ;;
+      esac
+    fi
+    LDFLAGS="$save_LDFLAGS"
+  fi
+fi
+
+AC_MSG_RESULT($ga68_use_symver)
+AM_CONDITIONAL(LIBGA68_USE_SYMVER, [test "x$ga68_use_symver" != xno])
+AM_CONDITIONAL(LIBGA68_USE_SYMVER_GNU, [test "x$ga68_use_symver" = xgnu])
+AM_CONDITIONAL(LIBGA68_USE_SYMVER_SUN, [test "x$ga68_use_symver" = xsun])
 
 # The Boehm GC
 

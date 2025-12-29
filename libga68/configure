@@ -638,7 +638,12 @@ LIBGA68_BOEHM_GC_LIBS
 LIBGA68_BOEHM_GC_INCLUDES
 LIBGA68_GCFLAGS
 extra_darwin_ldflags_libga68
-libga68_VERSION
+LIBGA68_USE_SYMVER_SUN_FALSE
+LIBGA68_USE_SYMVER_SUN_TRUE
+LIBGA68_USE_SYMVER_GNU_FALSE
+LIBGA68_USE_SYMVER_GNU_TRUE
+LIBGA68_USE_SYMVER_FALSE
+LIBGA68_USE_SYMVER_TRUE
 SPEC_LIBGA68_DEPS
 get_gcc_base_ver
 CC_FOR_BUILD
@@ -646,6 +651,7 @@ enable_static
 enable_shared
 ENABLE_DARWIN_AT_RPATH_FALSE
 ENABLE_DARWIN_AT_RPATH_TRUE
+lt_host_flags
 OTOOL64
 OTOOL
 LIPO
@@ -798,6 +804,7 @@ with_gnu_ld
 enable_libtool_lock
 enable_darwin_at_rpath
 with_gcc_major_version_only
+enable_symvers
 enable_algol68_gc
 with_target_bdw_gc
 with_target_bdw_gc_include
@@ -1451,6 +1458,7 @@ Optional Features:
   --enable-darwin-at-rpath
                           install libraries with @rpath/library-name, requires
                           rpaths to be added to executables
+  --disable-symvers       disable symbol versioning for libga68
   --enable-algol68-gc     enable use of Boehm's garbage collector with the GNU
                           Algol runtime
 
@@ -12593,7 +12601,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12596 "configure"
+#line 12604 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12699,7 +12707,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12702 "configure"
+#line 12710 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12937,6 +12945,28 @@ CC="$lt_save_CC"
 
 
 
+
+
+case $host in
+  *-cygwin* | *-mingw*)
+    # 'host' will be top-level target in the case of a target lib,
+    # we must compare to with_cross_host to decide if this is a native
+    # or cross-compiler and select where to install dlls appropriately.
+    if test -n "$with_cross_host" &&
+	test x"$with_cross_host" != x"no"; then
+      lt_host_flags='-no-undefined -bindir "$(toolexeclibdir)"';
+    else
+      lt_host_flags='-no-undefined -bindir "$(bindir)"';
+    fi
+    ;;
+  *)
+    lt_host_flags=
+    ;;
+esac
+
+
+
+
  if test x$enable_darwin_at_rpath = xyes; then
   ENABLE_DARWIN_AT_RPATH_TRUE=
   ENABLE_DARWIN_AT_RPATH_FALSE='#'
@@ -13100,8 +13130,113 @@ fi
 SPEC_LIBGA68_DEPS="$LIBS"
 
 
-# libga68 soname version
-libga68_VERSION=2:0:0
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether symbol versioning is supported" >&5
+$as_echo_n "checking whether symbol versioning is supported... " >&6; }
+# Check whether --enable-symvers was given.
+if test "${enable_symvers+set}" = set; then :
+  enableval=$enable_symvers; ga68_use_symver=$enableval
+else
+  ga68_use_symver=yes
+fi
+
+if test "x$ga68_use_symver" != xno; then
+  if test x$gcc_no_link = xyes; then
+    # If we cannot link, we cannot build shared libraries, so do not use
+    # symbol versioning.
+    ga68_use_symver=no
+  else
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS -fPIC -shared -Wl,--version-script,./conftest.map"
+    cat > conftest.map <<EOF
+FOO_1.0 {
+  global: *foo*; bar; local: *;
+};
+EOF
+    if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ga68_use_symver=gnu
+else
+  ga68_use_symver=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    if test x$ga68_use_symver = xno; then
+      case "$target_os" in
+        solaris2*)
+          LDFLAGS="$save_LDFLAGS"
+          LDFLAGS="$LDFLAGS -fPIC -shared -Wl,-M,./conftest.map"
+          # Sun ld cannot handle wildcards and treats all entries as undefined.
+          cat > conftest.map <<EOF
+FOO_1.0 {
+  global: foo; local: *;
+};
+EOF
+          if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+int foo;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ga68_use_symver=sun
+else
+  ga68_use_symver=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	  ;;
+      esac
+    fi
+    LDFLAGS="$save_LDFLAGS"
+  fi
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ga68_use_symver" >&5
+$as_echo "$ga68_use_symver" >&6; }
+ if test "x$ga68_use_symver" != xno; then
+  LIBGA68_USE_SYMVER_TRUE=
+  LIBGA68_USE_SYMVER_FALSE='#'
+else
+  LIBGA68_USE_SYMVER_TRUE='#'
+  LIBGA68_USE_SYMVER_FALSE=
+fi
+
+ if test "x$ga68_use_symver" = xgnu; then
+  LIBGA68_USE_SYMVER_GNU_TRUE=
+  LIBGA68_USE_SYMVER_GNU_FALSE='#'
+else
+  LIBGA68_USE_SYMVER_GNU_TRUE='#'
+  LIBGA68_USE_SYMVER_GNU_FALSE=
+fi
+
+ if test "x$ga68_use_symver" = xsun; then
+  LIBGA68_USE_SYMVER_SUN_TRUE=
+  LIBGA68_USE_SYMVER_SUN_FALSE='#'
+else
+  LIBGA68_USE_SYMVER_SUN_TRUE='#'
+  LIBGA68_USE_SYMVER_SUN_FALSE=
+fi
 
 
 # The Boehm GC
@@ -13475,6 +13610,18 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ENABLE_DARWIN_AT_RPATH_TRUE}" && test -z "${ENABLE_DARWIN_AT_RPATH_FALSE}"; then
   as_fn_error $? "conditional \"ENABLE_DARWIN_AT_RPATH\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGA68_USE_SYMVER_TRUE}" && test -z "${LIBGA68_USE_SYMVER_FALSE}"; then
+  as_fn_error $? "conditional \"LIBGA68_USE_SYMVER\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGA68_USE_SYMVER_GNU_TRUE}" && test -z "${LIBGA68_USE_SYMVER_GNU_FALSE}"; then
+  as_fn_error $? "conditional \"LIBGA68_USE_SYMVER_GNU\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${LIBGA68_USE_SYMVER_SUN_TRUE}" && test -z "${LIBGA68_USE_SYMVER_SUN_FALSE}"; then
+  as_fn_error $? "conditional \"LIBGA68_USE_SYMVER_SUN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

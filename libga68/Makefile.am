@@ -44,6 +44,27 @@ endif
 
 A68_BUILDDIR := $(shell pwd)
 
+if LIBGA68_USE_SYMVER
+if LIBGA68_USE_SYMVER_GNU
+version_arg = -Wl,--version-script=$(srcdir)/ga68.map
+version_dep = $(srcdir)/ga68.map
+endif
+if LIBGA68_USE_SYMVER_SUN
+version_arg = -Wl,-M,ga68.map-sun
+version_dep = ga68.map-sun
+ga68.map-sun : $(srcdir)/ga68.map \
+		$(top_srcdir)/../contrib/make_sunver.pl \
+		$(libga68_la_OBJECTS) $(libga68_la_LIBADD)
+	perl $(top_srcdir)/../contrib/make_sunver.pl \
+	  $(srcdir)/ga68.map \
+	  $(libga68_la_OBJECTS) $(libga68_la_LIBADD) \
+	> $@ || (rm -f $@ ; exit 1)
+endif
+else
+version_arg =
+version_dep =
+endif
+
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
@@ -111,9 +132,9 @@ libga68_la_SOURCES = libga68.c \
                      ga68.h
 libga68_la_LIBTOOLFLAGS =
 libga68_la_CFLAGS = $(LIBGA68_GCFLAGS) $(LIBGA68_BOEHM_GC_INCLUDES)
-libga68_la_LDFLAGS = -version-info $(libga68_VERSION) \
-    $(extra_darwin_ldflags_libga68)
-libga68_la_DEPENDENCIES = libga68.spec
+libga68_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+		     $(version_arg) $(lt_host_flags) $(extra_darwin_ldflags_libga68)
+libga68_la_DEPENDENCIES = libga68.spec $(version_dep)
 libga68_la_LIBADD = $(LIBGA68_BOEHM_GC_LIBS)
 
 # target overrides
