@@ -8300,7 +8300,9 @@ $as_echo "$lt_cv_cc_needs_belf" >&6; }
     CFLAGS="$SAVE_CFLAGS"
   fi
   ;;
-sparc*-*solaris*)
+*-*solaris*)
+  # Find out what ABI is being produced by ac_compile, and set linker
+  # options accordingly.
   # Find out which ABI we are using.
   echo 'int i;' > conftest.$ac_ext
   if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_compile\""; } >&5
@@ -8311,7 +8313,20 @@ sparc*-*solaris*)
     case `/usr/bin/file conftest.o` in
     *64-bit*)
       case $lt_cv_prog_gnu_ld in
-      yes*) LD="${LD-ld} -m elf64_sparc" ;;
+      yes*)
+        case $host in
+        i?86-*-solaris*|x86_64-*-solaris*)
+          LD="${LD-ld} -m elf_x86_64"
+          ;;
+        sparc*-*-solaris*)
+          LD="${LD-ld} -m elf64_sparc"
+          ;;
+        esac
+        # GNU ld 2.21 introduced _sol2 emulations.  Use them if available.
+        if ${LD-ld} -V | grep _sol2 >/dev/null 2>&1; then
+          LD=${LD-ld}_sol2
+        fi
+        ;;
       *)
 	if ${LD-ld} -64 -r -o conftest2.o conftest.o >/dev/null 2>&1; then
 	  LD="${LD-ld} -64"
@@ -12654,7 +12669,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12657 "configure"
+#line 12672 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12760,7 +12775,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12763 "configure"
+#line 12778 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16443,7 +16458,7 @@ $as_echo "$glibcxx_cv_atomic_word" >&6; }
     # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16446 "configure"
+#line 16461 "configure"
 #include "${glibcxx_srcdir}/config/$atomic_word_dir/atomic_word.h"
 int main()
 {
@@ -16589,7 +16604,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16592 "configure"
+#line 16607 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16631,7 +16646,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16634 "configure"
+#line 16649 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -53990,7 +54005,7 @@ $as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
     CXXFLAGS='-O0 -S'
 
     cat > conftest.$ac_ext << EOF
-#line 53993 "configure"
+#line 54008 "configure"
 #include <stddef.h>
 int main()
 {
