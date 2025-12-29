@@ -1,3 +1,26 @@
+2025-12-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_ctf): New check.
+	(gcc_cv_have_ctfmerge): Likewise.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.h (SCTF_CC1_SPEC): Define.
+	(LINK_SCTF_SPEC): Define.
+	(LINK_SPEC): Add LINK_SCTF_SPEC.
+	* config/i386/sol2.h (CC1_SPEC): Add SCTF_CC1_SPEC.
+	* config/sparc/sol2.h: Likewise.
+	* config/sol2.opt (gsctf): Declare.
+	* config/sol2.opt.urls: Regenerate.
+	* doc/invoke.texi (Option Summary): Add -gsctf.
+	(Solaris 2 Options): Document it.
+
+2025-12-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_ix86_xbrace_comment): Remove.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/sol2.h (ASM_XBRACE_COMMENT_SPEC): Adapt guard.
+
 2025-12-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/123114

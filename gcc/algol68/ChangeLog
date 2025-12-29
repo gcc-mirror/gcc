@@ -1,3 +1,25 @@
+2025-12-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* ga68.texi (Packets): Update to specify only particular programs
+	and prelude packets are currently supported.
+	(Writing modules): Few updates.
+	(Module activation): Likewise.
+	(Modules and exports): New section.
+
+2025-12-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-imports.cc (a68_open_packet): Use already decoded moifs
+	if present.
+
+2025-12-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-imports.cc (a68_decode_modes): Do not deduplicate imported
+	modes here.
+	(a68_open_packet): Do it here.
+	* a68-parser-extract.cc (extract_revelation): Recurse into
+	publicized modules after interning modes in the current module,
+	not before.
+
 2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* a68-parser-taxes.cc (tax_module_dec): Do not handle

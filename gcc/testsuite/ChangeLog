@@ -1,3 +1,33 @@
+2025-12-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/modules/module24.a68: New file.
+	* algol68/execute/modules/program-24.a68: New test.
+
+2025-12-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/modules/module23bar.a68: New test.
+	* algol68/execute/modules/module23foo.a68: Likewise.
+	* algol68/execute/modules/program-23.a68: Likewise.
+
+2025-12-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/20040112-1.c: Add dg-add-options
+	check_function_bodies.
+	* gcc.target/i386/pr122343-1a.c: Likewise.
+	* gcc.target/i386/pr122343-1b.c: Likewise.
+	* gcc.target/i386/pr122343-2a.c: Likewise.
+	* gcc.target/i386/pr122343-2b.c: Likewise.
+	* gcc.target/i386/pr122343-3.c: Likewise.
+	* gcc.target/i386/pr122343-4a.c: Likewise.
+	* gcc.target/i386/pr122343-4b.c: Likewise.
+	* gcc.target/i386/pr122343-5a.c: Likewise.
+	* gcc.target/i386/pr122343-5b.c: Likewise.
+	* gcc.target/i386/pr122343-6a.c: Likewise.
+	* gcc.target/i386/pr122343-6b.c: Likewise.
+	* gcc.target/i386/pr122343-7.c: Likewise.
+	* gcc.target/i386/pr122675-1.c: Likewise.
+	(dg-options): Add -fomit-frame-pointer.
+
 2025-12-27  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* algol68/execute/modules/module22bar.a68: New test.
