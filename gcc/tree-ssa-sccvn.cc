@@ -2316,7 +2316,13 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
   /* Make sure to interpret in a type that has a range covering the whole
      access size.  */
   if (INTEGRAL_TYPE_P (vr->type) && maxsizei != TYPE_PRECISION (vr->type))
-    type = build_nonstandard_integer_type (maxsizei, TYPE_UNSIGNED (type));
+    {
+      if (TREE_CODE (vr->type) == BITINT_TYPE
+	  && maxsizei > MAX_FIXED_MODE_SIZE)
+	type = build_bitint_type (maxsizei, TYPE_UNSIGNED (type));
+      else
+	type = build_nonstandard_integer_type (maxsizei, TYPE_UNSIGNED (type));
+    }
   tree val;
   if (BYTES_BIG_ENDIAN)
     {
