@@ -976,28 +976,71 @@ get_non_local_environs (NODE_T *p, int max)
     }
 }
 
+/* Scope a module text.  */
+
+static void
+scope_module_text (NODE_T *p)
+{
+  for (; p != NO_NODE; FORWARD (p))
+    {
+      if (IS (p, DEF_PART) || IS (p, POSTLUDE_PART))
+	{
+	  NODE_T *clause = NEXT (SUB (p));
+	  gcc_assert (IS (clause, ENQUIRY_CLAUSE) || IS (clause, SERIAL_CLAUSE));
+	  scope_serial_clause (clause, NO_VAR, true /* terminator */);
+	}
+    }
+}
+
+/* Scope a module declaration.  */
+
+static void
+scope_module_declaration (NODE_T *p)
+{
+  for (; p != NO_NODE; FORWARD (p))
+    {
+      if (IS (p, MODULE_TEXT))
+	scope_module_text (SUB (p));
+      else
+	scope_module_declaration (SUB (p));
+    }
+}
+
+/* Scope a particular program.  */
+
+static void
+scope_particular_program (NODE_T *p)
+{
+  scope_enclosed_clause (SUB (SUB (p)), NO_VAR);
+}
+
+/* Scope a prelude packet.  */
+
+static void
+scope_prelude_packet (NODE_T *p)
+{
+  gcc_assert (IS (SUB (p), MODULE_DECLARATION));
+  scope_module_declaration (SUB (p));
+}
+
 /* The static scope checker.  */
 
 void
 a68_scope_checker (NODE_T *p)
 {
-  if (SUB (p))
-    {
-      if (IS (SUB (p), PARTICULAR_PROGRAM))
-	p = SUB (p);
-      else if (IS (SUB (p), PRELUDE_PACKET))
-	{
-	  /* XXX writeme.  */
-	  return;
-	}
-    }
-
   /* Establish scopes of routine texts and format texts.  */
   get_youngest_environs (p);
   /* Find non-local environs.  */
   get_non_local_environs (p, PRIMAL_SCOPE);
   /* PROC and FORMAT identities can now be assigned a scope.  */
   bind_scope_to_tags (p);
+
   /* Now check evertyhing else.  */
-  scope_enclosed_clause (SUB (p), NO_VAR);
+  gcc_assert (IS (p, PACKET));
+  if (IS (SUB (p), PARTICULAR_PROGRAM))
+    scope_particular_program (SUB (p));
+  else if (IS (SUB (p), PRELUDE_PACKET))
+    scope_prelude_packet (SUB (p));
+  else
+    gcc_unreachable ();
 }

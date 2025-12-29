@@ -1,0 +1,11 @@
+{ dg-options "-Wscope" }
+
+{ Scope violation in module prelude. }
+
+module Module =
+def proc increase = (ref int i) ref int:
+       (int j := i;
+        j); { dg-warning "scope violation" }
+    increase (loc int)
+fed
+   

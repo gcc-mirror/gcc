@@ -1,0 +1,13 @@
+{ dg-options "-Wscope" }
+
+{ Scope violation in module postlude.  }
+
+module Module =
+def
+    skip
+postlude
+    proc increase = (ref int i) ref int:
+       (int j := i;
+        j); { dg-warning "scope violation" }
+    increase (loc int)
+fed
