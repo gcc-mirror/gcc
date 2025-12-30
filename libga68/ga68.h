@@ -33,9 +33,16 @@
 # endif
 #endif
 
+#ifdef HAVE_ATTRIBUTE_VISIBILITY
+# define GA68_HIDDEN __attribute__ ((__visibility__ ("hidden")))
+#else
+# define GA68_HIDDEN
+#endif
+
 /* ga68-error.c  */
 
 void _libga68_abort (const char *fmt, ...)
+  GA68_HIDDEN
   __attribute__ ((__format__ (__printf__, 1, 2), __nonnull__ (1),
 		  __noreturn__));
 
@@ -61,12 +68,12 @@ void _libga68_bounds_mismatch (const char *filename, unsigned int lineno,
 
 /* ga68-alloc.c  */
 
-void _libga68_init_heap (void);
+void _libga68_init_heap (void) GA68_HIDDEN;
 void *_libga68_malloc (size_t size);
-void *_libga68_malloc_internal (size_t size);
-void *_libga68_realloc (void *ptr, size_t size);
-void *_libga68_realloc_unchecked (void *ptr, size_t size);
-void _libga68_free_internal (void *ptr);
+void *_libga68_malloc_internal (size_t size) GA68_HIDDEN;
+void *_libga68_realloc (void *ptr, size_t size) GA68_HIDDEN;
+void *_libga68_realloc_unchecked (void *ptr, size_t size) GA68_HIDDEN;
+void _libga68_free_internal (void *ptr) GA68_HIDDEN;
 
 /* ga68-standenv.c  */
 
@@ -106,10 +113,10 @@ long long int _libga68_posixlseek (int fd, long long int offset, int whence);
 
 int _libga68_u32_cmp2 (const uint32_t *s1, size_t n1, size_t stride1,
 		       const uint32_t *s2, size_t n2, size_t stride2);
-int _libga68_u8_uctomb (uint8_t *s, uint32_t uc, ptrdiff_t n);
-int _libga68_u8_mbtouc (uint32_t *puc, const uint8_t *s, size_t n);
+int _libga68_u8_uctomb (uint8_t *s, uint32_t uc, ptrdiff_t n) GA68_HIDDEN;
+int _libga68_u8_mbtouc (uint32_t *puc, const uint8_t *s, size_t n) GA68_HIDDEN;
 uint8_t *_libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
-			     uint8_t *resultbuf, size_t *lengthp);
+			     uint8_t *resultbuf, size_t *lengthp) GA68_HIDDEN;
 uint32_t *_libga68_u8_to_u32 (const uint8_t *s, size_t n,
 			      uint32_t *resultbuf, size_t *lengthp);
 

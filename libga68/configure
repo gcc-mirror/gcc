@@ -12991,6 +12991,43 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 CC_FOR_BUILD=${CC_FOR_BUILD:-gcc}
 
 
+# Check whether the target supports hidden visibility.
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the target supports hidden visibility" >&5
+$as_echo_n "checking whether the target supports hidden visibility... " >&6; }
+if ${libga68_cv_have_attribute_visibility+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  save_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -Werror"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+void __attribute__((visibility("hidden"))) foo(void) { }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libga68_cv_have_attribute_visibility=yes
+else
+  libga68_cv_have_attribute_visibility=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CFLAGS="$save_CFLAGS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libga68_cv_have_attribute_visibility" >&5
+$as_echo "$libga68_cv_have_attribute_visibility" >&6; }
+  if test $libga68_cv_have_attribute_visibility = yes; then
+
+$as_echo "#define HAVE_ATTRIBUTE_VISIBILITY 1" >>confdefs.h
+
+  fi
+
 # Search for needed functions in host libraries.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing malloc" >&5
 $as_echo_n "checking for library containing malloc... " >&6; }
