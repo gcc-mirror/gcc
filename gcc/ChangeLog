@@ -1,3 +1,41 @@
+2025-12-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* ifcvt.cc (noce_try_cond_zero_arith): Remove restriction on comparison
+	against 0.
+
+2025-12-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123308
+	* ifcvt.cc (noce_try_cond_zero_arith): If noce_emit_cmove fails
+	for a lowpart subreg case, then try the full reg cmove and
+	take the lowpart subreg afterwards.
+
+2025-12-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* ifcvt.cc (noce_try_cond_zero_arith): Don't swap if_info->cond
+	but use it directly with if_info->rev_cond.
+
+2025-12-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* auto-profile.cc (string_table::get_original_name): Avoid using
+	init-statement in selection statement.
+
+2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
+2025-12-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (*setcc_qi): Force output setzucc for
+	reg operand[0].
+	(*setcc_qi_slp): Likewise.
+
+2025-12-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123295
+	* lra-eliminations.cc (lra_eliminate_regs_1): For a debug
+	insn, create a raw SUBREG if simplify_gen_subreg fails.
+
 2025-12-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_ctf): New check.

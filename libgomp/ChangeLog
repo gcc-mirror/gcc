@@ -1,3 +1,7 @@
+2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
 2025-12-24  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/lib/libgomp.exp (check_effective_target_omp_usm):

@@ -1,3 +1,19 @@
+2025-12-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure.ac: New test to determine if symbol versioning is
+	supported.
+	* Makefile.am: Use result of above test to add appropriate linker
+	flags.
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+	* ga68.map: New file.
+	* libtool-version: New file.
+
+2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
 2025-12-27  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* ga68-alloc.c: Include ga68.h before all includes.

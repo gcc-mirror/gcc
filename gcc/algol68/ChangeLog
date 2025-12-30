@@ -1,3 +1,31 @@
+2025-12-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-scanner.cc (get_next_token): Bits denotation parsing
+	fixes.
+	* ga68.texi (SUPPER stropping): Document special rule for bits
+	denotations with radix 16.
+
+2025-12-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-victal.cc (victal_check_mode_dec): Mind publicized
+	declarations.
+	(victal_check_variable_dec): Likewise.
+	(victal_check_identity_dec): Likewise.
+
+2025-12-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-scope.cc (scope_module_text): New function.
+	(scope_module_declaration): Likewise.
+	(scope_particular_program): Likewise.
+	(scope_prelude_packet): Likewise.
+	(a68_scope_checker): Call scope_particular_program and
+	scope_prelude_packet.
+
+2025-12-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-exports.cc (a68_asm_output_mode): Use .LMDnn labels for
+	modes instead of .LMnn.
+
 2025-12-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* ga68.texi (Packets): Update to specify only particular programs

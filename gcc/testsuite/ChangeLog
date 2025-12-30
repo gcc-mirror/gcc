@@ -1,3 +1,51 @@
+2025-12-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/error-radix-1.a68: New test.
+	* algol68/compile/radix-hex-upper-1.a68: Likewise.
+	* algol68/compile/radix-hex-supper-1.a68: Likewise.
+	* algol68/compile/error-radix-4.a68: Likewise.
+	* algol68/compile/error-radix-3.a68: Likewise.
+	* algol68/compile/error-radix-2.a68: Likewise.
+	* algol68/execute/environment-enquiries-6.a68: Do not use radix 10
+	in bits denotations.
+
+2025-12-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/actual-bounds-expected-4.a68: New test.
+	* algol68/compile/formal-bounds-expected-1.a68: Likewise.
+
+2025-12-29  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/123080
+	* g++.dg/cpp2a/lambda-requires6.C: New test.
+	* g++.dg/cpp2a/lambda-requires6a.C: New test.
+
+2025-12-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119097
+	PR c++/120005
+	* g++.dg/cpp0x/constexpr-cast.C: Adjust diagnostics.
+	* g++.dg/warn/overflow-warn-1.C: Fix diagnostic checks.
+	* g++.dg/warn/overflow-warn-3.C: Likewise.
+	* g++.dg/warn/overflow-warn-4.C: Likewise.
+	* g++.dg/modules/internal-8_a.C: Remove xfails, supplement with
+	additional testcases.
+	* g++.dg/modules/internal-8_b.C: New test.
+
+2025-12-29  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/warning-scope-module-1.a68: New test.
+	* algol68/compile/warning-scope-module-2.a68: Likewise.
+
+2025-12-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-zu-3.c: New test.
+
+2025-12-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123295
+	* gcc.dg/pr123295-1.c: New test.
+
 2025-12-28  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* algol68/execute/modules/module24.a68: New file.

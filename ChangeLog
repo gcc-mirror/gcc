@@ -1,3 +1,8 @@
+2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* libtool.m4: Cherry-pick libtool commit
+	9196966580f6853a31187a7a3c7e7ff36ef08982.
+
 2025-12-19  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR bootstrap/12407

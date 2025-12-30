@@ -1,3 +1,40 @@
+2025-12-29  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/123080
+	* parser.cc (cp_parser_skip_to_end_of_statement): Don't abort
+	implicit templates during tentative parsing.
+	(cp_parser_lambda_declarator_opt): Add cleanup for
+	fully_implicit_function_template_p before parsing
+	trailing_requires_clause.
+
+2025-12-29  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119097
+	PR c++/120005
+	* constexpr.cc (potential_constant_expression_1): Fall back to
+	location from parent expression if needed.
+	* cp-gimplify.cc (enum fold_flags): Add ff_only_non_odr.
+	(cp_fold_data::cp_fold_data): Assert invariant for flags.
+	(cp_fold_omp_clause_refs_r): New function.
+	(cp_fold_r): Specially handle OMP_CLAUSE_DECL.
+	(cp_fold_function_non_odr_use): New function.
+	(cp_fold_non_odr_use_1): New function.
+	(cp_fold_maybe_rvalue): Fold non-ODR uses when requested.
+	(cp_fold_non_odr_use): New function.
+	(fold_caches): Increase number of caches.
+	(get_fold_cache): Use a new cache for non-ODR use walks.
+	(cp_fold): Skip most folding for non-ODR use walks; always
+	fold constant-initialized references; remove dead code to
+	fold __builtin_source_location.
+	* cp-tree.h (cp_fold_function_non_odr_use): Declare.
+	(cp_fold_non_odr_use): Declare.
+	* decl.cc (finish_function): Fold non-ODR uses before saving
+	constexpr fundef.  Invoke PLUGIN_PRE_GENERICIZE before this
+	folding.
+	* ptree.cc (cxx_print_xnode): Handle TU_LOCAL_ENTITY.
+	* tree.cc (bot_manip): Propagate TREE_CONSTANT.
+	* typeck2.cc (digest_nsdmi_init): Fold non-ODR uses in NSDMIs.
+
 2025-12-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122819
