@@ -3129,6 +3129,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
 
   NOTE ("data_transfer_init");
 
+  check_for_recursive (dtp);
+
   ionml = ((cf & IOPARM_DT_IONML_SET) != 0) ? dtp->u.p.ionml : NULL;
 
   memset (&dtp->u.p, 0, sizeof (dtp->u.p));

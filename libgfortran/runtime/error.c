@@ -633,6 +633,10 @@ translate_error (int code)
       p = "Bad ID in WAIT statement";
       break;
 
+    case LIBERROR_RECURSIVE_IO:
+      p = "Recursive I/O not allowed";
+      break;
+
     default:
       p = "Unknown error code";
       break;

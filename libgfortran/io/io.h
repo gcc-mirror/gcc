@@ -782,8 +782,8 @@ internal_proto(close_unit);
 extern gfc_unit *set_internal_unit (st_parameter_dt *, gfc_unit *, int);
 internal_proto(set_internal_unit);
 
-extern void stash_internal_unit (st_parameter_dt *);
-internal_proto(stash_internal_unit);
+extern void check_for_recursive (st_parameter_dt *dtp);
+internal_proto(check_for_recursive);
 
 extern gfc_unit *find_unit (int);
 internal_proto(find_unit);
