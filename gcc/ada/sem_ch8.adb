@@ -3678,13 +3678,34 @@ package body Sem_Ch8 is
       then
          --  Do not mention the renaming if it comes from an instance
 
-         if not Is_Actual then
-            Error_Msg_N ("expect valid subprogram name in renaming", N);
-         else
+         if Is_Actual then
             Error_Msg_NE ("no visible subprogram for formal&", N, Nam);
+         else
+            Error_Msg_N ("expect valid subprogram name in renaming", N);
          end if;
 
          return;
+
+      --  RM 8.5.4(6): A name that denotes a formal parameter of the subprogram
+      --  specification is not allowed within Nam. But this was not enforced by
+      --  GNAT historically, so we restrict it to direct names.
+
+      elsif Nkind (Nam) = N_Identifier and then not Is_Actual then
+         declare
+            F : Node_Id;
+
+         begin
+            F := First_Formal (New_S);
+            while Present (F) loop
+               if Chars (F) = Chars (Nam) then
+                  Error_Msg_NE
+                    ("formal parameter& cannot be used in renaming", N, F);
+                  return;
+               end if;
+
+               Next_Formal (F);
+            end loop;
+         end;
       end if;
 
       --  Find the renamed entity that matches the given specification. Disable
