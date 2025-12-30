@@ -22703,7 +22703,7 @@ single precision and to 32 bits for double precision.
 Enable or disable generation of additional code to track speculative
 execution through conditional branches.  The tracking state can then
 be used by the compiler when expanding calls to
-@code{__builtin_speculation_safe_copy} to permit a more efficient code
+@code{__builtin_speculation_safe_value} to permit a more efficient code
 sequence to be generated.
 
 @opindex moutline-atomics
