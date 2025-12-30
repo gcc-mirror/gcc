@@ -39,6 +39,9 @@
 
 --  See file s-htable.ads for full documentation of the interface
 
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
+
 with System.HTable;
 
 package GNAT.HTable is

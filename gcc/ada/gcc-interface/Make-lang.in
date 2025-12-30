@@ -57,7 +57,6 @@ WARN_ADAFLAGS= -W -Wall
 # checks fully active.
 
 STAGE1=False
-GNATBIND_FLAGS=
 GNATLIB=
 
 ifeq ($(CROSS),)
@@ -65,7 +64,6 @@ ifeq ($(CROSS),)
 
   ifeq ($(if $(wildcard ../stage_current),$(shell cat ../stage_current),stage1),stage1)
     STAGE1=True
-    GNATBIND_FLAGS=-t
   endif
 else
   ADAFLAGS=$(COMMON_ADAFLAGS)
@@ -478,10 +476,15 @@ GNAT_ADA_OBJS =	\
  ada/warnsw.o	\
  ada/widechar.o \
  ada/gnat.o	\
+ ada/g-byorma.o \
  ada/g-dynhta.o	\
  ada/g-graphs.o	\
+ ada/g-htable.o \
  ada/g-lists.o	\
  ada/g-sets.o	\
+ ada/g-spchge.o \
+ ada/g-speche.o \
+ ada/g-u3spch.o \
  ada/s-pehage.o	\
  ada/s-utf_32.o
 
@@ -514,14 +517,9 @@ GNAT_ADA_OBJS+= \
  ada/libgnat/a-nubinu.o	\
  ada/libgnat/a-numeri.o	\
  ada/libgnat/ada.o	\
- ada/libgnat/g-byorma.o	\
  ada/libgnat/g-cstyin.o	\
  ada/libgnat/g-heasor.o	\
- ada/libgnat/g-htable.o	\
- ada/libgnat/g-spchge.o	\
- ada/libgnat/g-speche.o	\
  ada/libgnat/g-table.o	\
- ada/libgnat/g-u3spch.o	\
  ada/libgnat/i-c.o	\
  ada/libgnat/i-cstrin.o	\
  ada/libgnat/interfac.o	\
@@ -659,15 +657,18 @@ GNATBIND_OBJS = \
  ada/uintp.o      \
  ada/uname.o      \
  ada/urealp.o     \
+ ada/version.o    \
  ada/warnsw.o     \
  ada/widechar.o   \
  ada/gnat.o       \
+ ada/g-byorma.o   \
  ada/g-dynhta.o   \
- ada/g-lists.o    \
  ada/g-graphs.o   \
+ ada/g-hesora.o   \
+ ada/g-htable.o   \
+ ada/g-lists.o    \
  ada/g-sets.o     \
  ada/s-resfil.o   \
- ada/version.o    \
  ada/s-utf_32.o
 
 ifeq ($(STAGE1),False)
@@ -686,10 +687,7 @@ GNATBIND_OBJS +=  \
  ada/libgnat/a-nubinu.o   \
  ada/libgnat/a-numeri.o   \
  ada/libgnat/ada.o        \
- ada/libgnat/g-byorma.o   \
  ada/libgnat/g-cstyin.o   \
- ada/libgnat/g-hesora.o   \
- ada/libgnat/g-htable.o   \
  ada/libgnat/i-c.o        \
  ada/libgnat/i-cstrin.o   \
  ada/libgnat/interfac.o   \
@@ -1167,7 +1165,7 @@ $(check_acats_targets): check-acats%:
 
 ada/b_gnat1.adb : $(GNAT1_ADA_OBJS)
         # Old gnatbind do not allow a path for -o.
-	$(GNATBIND) $(GNATBIND_FLAGS) $(ADA_INCLUDES) -o b_gnat1.adb -n ada/gnat1drv.ali
+	$(GNATBIND) $(ADA_INCLUDES) -o b_gnat1.adb -n ada/gnat1drv.ali
 	$(MV) b_gnat1.adb b_gnat1.ads ada/
 
 ada/b_gnat1.o : ada/b_gnat1.adb
@@ -1178,7 +1176,7 @@ ada/b_gnat1.o : ada/b_gnat1.adb
 
 ada/b_gnatb.adb : $(GNATBIND_OBJS) ada/gnatbind.o
         # Old gnatbind do not allow a path for -o.
-	$(GNATBIND) $(GNATBIND_FLAGS) $(ADA_INCLUDES) -o b_gnatb.adb ada/gnatbind.ali
+	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatb.adb ada/gnatbind.ali
 	$(MV) b_gnatb.adb b_gnatb.ads ada/
 
 ada/b_gnatb.o : ada/b_gnatb.adb
@@ -1249,11 +1247,22 @@ ADA_GENERATED_FILES = \
   ada/seinfo.ads ada/seinfo_tables.ads ada/seinfo_tables.adb \
   ada/sinfo-nodes.ads ada/sinfo-nodes.adb \
   ada/einfo-entities.ads ada/einfo-entities.adb \
-  ada/gnat.ads ada/g-dynhta.ads ada/g-dynhta.adb \
-  ada/g-dyntab.ads ada/g-dyntab.adb ada/g-graphs.ads ada/g-graphs.adb \
-  ada/g-lists.ads ada/g-lists.adb ada/g-sets.ads ada/g-sets.adb \
-  ada/s-rident.ads ada/s-pehage.ads ada/s-pehage.adb \
-  ada/s-resfil.ads ada/s-resfil.adb ada/s-utf_32.ads ada/s-utf_32.adb
+  ada/gnat.ads \
+  ada/g-byorma.ads ada/g-byorma.adb \
+  ada/g-dynhta.ads ada/g-dynhta.adb \
+  ada/g-dyntab.ads ada/g-dyntab.adb \
+  ada/g-graphs.ads ada/g-graphs.adb \
+  ada/g-hesora.ads ada/g-hesora.adb \
+  ada/g-htable.ads ada/g-htable.adb \
+  ada/g-lists.ads ada/g-lists.adb \
+  ada/g-sets.ads ada/g-sets.adb \
+  ada/g-spchge.ads ada/g-spchge.adb \
+  ada/g-speche.ads ada/g-speche.adb \
+  ada/g-u3spch.ads ada/g-u3spch.adb \
+  ada/s-pehage.ads ada/s-pehage.adb \
+  ada/s-resfil.ads ada/s-resfil.adb \
+  ada/s-rident.ads \
+  ada/s-utf_32.ads ada/s-utf_32.adb
 
 # Only used to manually trigger the creation of the generated files.
 .PHONY:

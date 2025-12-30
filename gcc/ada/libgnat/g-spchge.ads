@@ -37,6 +37,9 @@
 --  codes for ASCII characters in the range 16#20#..16#7F# have their normal
 --  expected encoding values (e.g. the Pos value 16#31# must be digit 1).
 
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
+
 package GNAT.Spelling_Checker_Generic is
    pragma Pure;
 

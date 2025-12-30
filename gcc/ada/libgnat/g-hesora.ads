@@ -40,6 +40,9 @@
 --  worst case and is in place with no additional storage required. See
 --  the body for exact details of the algorithm used.
 
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
+
 package GNAT.Heap_Sort_A is
    pragma Preelaborate;
 

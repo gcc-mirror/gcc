@@ -34,6 +34,9 @@
 --  This package provides a utility routine for checking for bad spellings
 --  for the case of String arguments.
 
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
+
 package GNAT.Spelling_Checker is
    pragma Pure;
 

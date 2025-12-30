@@ -34,6 +34,9 @@
 --  This package provides a utility routine for checking for bad spellings
 --  for the case of System.WCh_Cnv.UTF_32_String arguments.
 
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
+
 with System.WCh_Cnv;
 
 package GNAT.UTF_32_Spelling_Checker is

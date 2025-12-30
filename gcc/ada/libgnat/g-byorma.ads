@@ -61,6 +61,9 @@
 --     cases depend on the first character of the XML file being < so that the
 --     encoding of this character can be recognized.
 
+--  Note: this unit is used during bootstrap, see ADA_GENERATED_FILES in
+--  gcc-interface/Make-lang.in for details on the constraints.
+
 package GNAT.Byte_Order_Mark is
 
    type BOM_Kind is
