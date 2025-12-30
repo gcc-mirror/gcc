@@ -3440,8 +3440,11 @@ riscv_legitimize_const_move (machine_mode mode, rtx dest, rtx src)
   src = force_const_mem (mode, src);
 
   /* When using explicit relocs, constant pool references are sometimes
-     not legitimate addresses.  */
-  riscv_split_symbol (dest, XEXP (src, 0), mode, &XEXP (src, 0));
+     not legitimate addresses.   If DEST is not a suitable register (ie,
+     not a Pmode pseudo), then let RISCV_SPLIT_SYMBOL generate a fresh
+     temporary.  */
+  riscv_split_symbol (GET_MODE (dest) == Pmode ? dest : NULL_RTX,
+		      XEXP (src, 0), mode, &XEXP (src, 0));
   riscv_emit_move (dest, src);
 }
 
