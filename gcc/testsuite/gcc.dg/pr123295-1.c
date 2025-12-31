@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile  { target int128 } } */
 /* { dg-options "-Wno-psabi -O1 -g" } */
 
 typedef unsigned long V __attribute__((__vector_size__(64)));
