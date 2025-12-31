@@ -648,7 +648,7 @@
 		     (match_operand:SI 2 "arith_operand" "rI")))]
   ""
 {
-  if (TARGET_64BIT && <MODE>mode == SImode)
+  if (TARGET_64BIT && <MODE>mode == SImode && can_create_pseudo_p ())
     {
       rtx t = gen_reg_rtx (DImode);
       emit_insn (gen_<optab>si3_extend (t, operands[1], operands[2]));
@@ -666,7 +666,7 @@
 		     (match_operand:GPR 2 "register_operand" "r")))]
   ""
 {
-  if (TARGET_64BIT && <MODE>mode == SImode)
+  if (TARGET_64BIT && <MODE>mode == SImode && can_create_pseudo_p ())
     {
       rtx t = gen_reg_rtx (DImode);
       emit_insn (gen_<optab>si3_extend (t, operands[1], operands[2]));
@@ -751,7 +751,7 @@
 		 (match_operand:SI 2 "plus_si_operand"  "r,I,La,Le,Lb")))]
   ""
 {
-  if (TARGET_64BIT)
+  if (TARGET_64BIT && can_create_pseudo_p ())
     {
       if (CONST_INT_P (operands[2]) && !IMM12_INT (operands[2])
 	  && ADDU16I_OPERAND (INTVAL (operands[2])))
@@ -1066,7 +1066,8 @@
 		     (match_operand:GPR 2 "register_operand")))]
   ""
 {
- if (GET_MODE (operands[0]) == SImode && TARGET_64BIT)
+ if (GET_MODE (operands[0]) == SImode && TARGET_64BIT
+     && can_create_pseudo_p ())
   {
     if (ISA_HAS_DIV32)
       {
