@@ -963,7 +963,8 @@ ForeverStack<N>::stream_rib (std::stringstream &stream, const Rib &rib,
 template <Namespace N>
 void
 ForeverStack<N>::stream_node (std::stringstream &stream, unsigned indentation,
-			      const ForeverStack<N>::Node &node) const
+			      const ForeverStack<N>::Node &node,
+			      unsigned depth) const
 {
   auto indent = std::string (indentation, ' ');
   auto next = std::string (indentation + 4, ' ');
@@ -982,12 +983,12 @@ ForeverStack<N>::stream_node (std::stringstream &stream, unsigned indentation,
     {
       auto link = kv.first;
       auto child = kv.second;
-      stream << indent << "Link (" << link.id << ", "
+      stream << indent << "Link " << depth << " (" << link.id << ", "
 	     << (link.path.has_value () ? link.path.value ().as_string ()
 					: "<anon>")
 	     << "):\n";
 
-      stream_node (stream, indentation + 4, child);
+      stream_node (stream, indentation + 4, child, depth + 1);
 
       stream << '\n';
     }

@@ -787,7 +787,7 @@ private:
   void stream_rib (std::stringstream &stream, const Rib &rib,
 		   const std::string &next, const std::string &next_next) const;
   void stream_node (std::stringstream &stream, unsigned indentation,
-		    const Node &node) const;
+		    const Node &node, unsigned depth = 0) const;
 
   /* Helper types and functions for `resolve_path` */
 
