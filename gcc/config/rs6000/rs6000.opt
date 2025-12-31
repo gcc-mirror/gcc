@@ -309,11 +309,11 @@ Target Var(TARGET_ALTIVEC_VRSAVE) Save
 Generate VRSAVE instructions when generating AltiVec code.
 
 mvrsave=no
-Target RejectNegative Alias(mvrsave) NegativeAlias Warn(%<-mvrsave=no%> is deprecated; use %<-mno-vrsave%> instead)
+Target Undocumented RejectNegative Alias(mvrsave) NegativeAlias Warn(%<-mvrsave=no%> is deprecated; use %<-mno-vrsave%> instead)
 Deprecated option.  Use -mno-vrsave instead.
 
 mvrsave=yes
-Target RejectNegative Alias(mvrsave) Warn(%<-mvrsave=yes%> is deprecated; use %<-mvrsave%> instead)
+Target Undocumented RejectNegative Alias(mvrsave) Warn(%<-mvrsave=yes%> is deprecated; use %<-mvrsave%> instead)
 Deprecated option.  Use -mvrsave instead.
 
 mblock-move-inline-limit=
