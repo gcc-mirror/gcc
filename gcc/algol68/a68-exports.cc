@@ -352,7 +352,7 @@ a68_asm_output_mode (MOID_T *m, const char *module_label)
   else if (IS_UNION (m))
     {
       dw2_asm_output_data (1, GA68_MODE_UNION, "union");
-      dw2_asm_output_data (2, DIM (m), "nmodes");
+      dw2_asm_output_data (2, a68_count_pack_members (PACK (m)), "nmodes");
       for (PACK_T *p = PACK (m); p != NO_PACK; FORWARD (p))
 	dw2_asm_output_delta (PTR_SIZE, ASM_LABEL (MOID (p)), module_label, "united mode");
     }
