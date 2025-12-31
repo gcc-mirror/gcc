@@ -538,7 +538,7 @@
   "TARGET_ZVKNED || TARGET_ZVKSED"
   "v<vv_ins_name>.<ins_type>\t%0,%2"
   [(set_attr "type" "v<vv_ins_name>")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<V_VLSI_S_X2>")])
 
 (define_insn "@pred_crypto_vv<vv_ins_name><ins_type>x4<mode>_scalar"
  [(set (match_operand:<V_VLSI_S_X4> 0 "register_operand"      "=&vr")
@@ -556,7 +556,7 @@
  "TARGET_ZVKNED || TARGET_ZVKSED"
  "v<vv_ins_name>.<ins_type>\t%0,%2"
  [(set_attr "type" "v<vv_ins_name>")
-  (set_attr "mode" "<MODE>")])
+  (set_attr "mode" "<V_VLSI_S_X4>")])
 
 (define_insn "@pred_crypto_vv<vv_ins_name><ins_type>x8<mode>_scalar"
  [(set (match_operand:<V_VLSI_S_X8> 0 "register_operand"      "=&vr")
@@ -574,7 +574,7 @@
  "TARGET_ZVKNED || TARGET_ZVKSED"
  "v<vv_ins_name>.<ins_type>\t%0,%2"
  [(set_attr "type" "v<vv_ins_name>")
-  (set_attr "mode" "<MODE>")])
+  (set_attr "mode" "<V_VLSI_S_X8>")])
 
 (define_insn "@pred_crypto_vv<vv_ins_name><ins_type>x16<mode>_scalar"
  [(set (match_operand:<V_VLSI_S_X16> 0 "register_operand"      "=&vr")
@@ -592,7 +592,7 @@
  "TARGET_ZVKNED || TARGET_ZVKSED"
  "v<vv_ins_name>.<ins_type>\t%0,%2"
  [(set_attr "type" "v<vv_ins_name>")
-  (set_attr "mode" "<MODE>")])
+  (set_attr "mode" "<V_VLSI_S_X16>")])
 
 ;; vaeskf1.vi vsm4k.vi
 (define_insn "@pred_crypto_vi<vi_ins_name><mode>_scalar"
