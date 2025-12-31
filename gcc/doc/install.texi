@@ -2128,7 +2128,7 @@ not be built.  This is most useful when combined with @code{all} or
 @code{default}.  A language disabled in this way will be disabled even
 if it is also included without the leading caret earlier or later in
 the argument to @option{--enable-languages}.  An attempt to disable a
-language that is a prerequisite for an enabled languaged---(whether
+language that is a prerequisite for an enabled language---(whether
 the latter language was enabled explicitly, or implicitly via the
 @code{default} or @code{all} directives)---is invalid.
 
