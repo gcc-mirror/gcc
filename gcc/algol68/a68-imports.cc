@@ -1405,7 +1405,7 @@ a68_open_packet (const char *module)
       const char *errstr = NULL;
       if (!a68_decode_moifs (exports_data, exports_data_size, &errstr))
 	{
-	  a68_error (NO_NODE, "%s", errstr);
+	  a68_error (NO_NODE, "Y", errstr);
 	  return NULL;
 	}
 
