@@ -1,3 +1,28 @@
+2025-12-30  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gcc-interface/Make-lang.in (GNATBIND_FLAGS): Delete.
+	(GNAT_ADA_OBJS): Move g-byorma.o, g-htable.o, g-spchge.o,
+	g-speche.o and g-u3spch.o to STAGE1 list.
+	(GNATBIND_OBJS): Move g-byorma.o, g-hesora.o and g-htable.o
+	to STAGE1 list.
+	(ada/b_gnat1.adb): Do not pass GNATBIND_FLAGS to gnatbind.
+	(ada/b_gnatb.adb): Likewise.
+	(ADA_GENERATED_FILES): Add g-byorma.ad[sb], g-hesora.ad[sb],
+	g-htable.ad[sb], g-spchge.ad[sb], g-speche.ad[sb], g-u3spch.ad[sb]
+	and alphabetize.
+	* libgnat/g-byorma.ads: Add note to head comment.
+	* libgnat/g-hesora.ads: Likewise.
+	* libgnat/g-htable.ads: Likewise.
+	* libgnat/g-spchge.ads: Likewise.
+	* libgnat/g-speche.ads: Likewise.
+	* libgnat/g-u3spch.ads: Likewise.
+
+2025-12-30  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/15605
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Give an error if the
+	name is also that of a formal parameter of the specification.
+
 2025-12-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	PR ada/123306

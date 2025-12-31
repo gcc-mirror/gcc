@@ -1,3 +1,10 @@
+2025-12-30  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123318
+	* config/riscv/riscv.cc (riscv_legitimize_const_move): Force
+	riscv_split_symbol to generate a new temporary if the provided
+	one isn't Pmode.
+
 2025-12-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* ifcvt.cc (noce_try_cond_zero_arith): Remove restriction on comparison

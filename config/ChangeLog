@@ -1,3 +1,8 @@
+2025-12-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* acx.m4: Define ACX_PROG_A68 rather than ACX_PROG_GA68.
+	(ACX_PROG_A68): Set A68 rather than GA68.
+
 2025-12-09  John Ericson  <git@johnericson.me>
 
 	* gthr.m4: Create new GCC_AC_THREAD_MODEL macro

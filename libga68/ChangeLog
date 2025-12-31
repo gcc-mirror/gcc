@@ -1,3 +1,34 @@
+2025-12-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* m4/autoconf.m4: New file.
+	* configure.ac: Expand AC_PROG_A68.
+	* configure: Regenerate.
+	* Makefile.am: Add rules to build Algol 68 sources and to
+	build the transput module.
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Include m4/autoconf.m4.
+	* sppp.awk: New file.
+	* transput.a68.in: Likewise.
+
+2025-12-30  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* acinclude.m4: New file. Add visibility attribute test.
+	* configure.ac: Use the new test.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Likewise.
+	* config.h.in: Likewise.
+	* configure: Likewise.
+	* ga68.h (GA68_HIDDEN): New macro.
+	(_libga68_abort): Add visibility hidden attribute.
+	(_libga68_init_heap): Likewise.
+	(_libga68_malloc_internal): Likewise.
+	(_libga68_realloc): Likewise.
+	(_libga68_realloc_unchecked): Likewise.
+	(_libga68_free_internal): Likewise.
+	(_libga68_u8_uctomb): Likewise.
+	(_libga68_u8_mbtouc): Likewise.
+	(_libga68_u32_to_u8): Likewise.
+
 2025-12-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* configure.ac: New test to determine if symbol versioning is

@@ -1,3 +1,20 @@
+2025-12-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* Makefile.def (flags_to_pass): Rename GA68, GA68FLAGS,
+	GA68_FOR_TARGET, GA68FLAGS_FOR_TARGET to A68, A68FLAGS,
+	A68_FOR_TARGET and A68FLAGS_FOR_TARGET.
+	* Makefile.tpl: Use A68, A68FLAGS, A68_FOR_BUILD and
+	A68_FOR_TARGET rather than GA68, GA68FLAGS, GA68_FOR_BUILD and
+	GA68_FOR_TARGET.
+	* Makefile.in: Regenerate.
+	* configure.ac: Set A68_FOR_BUILD rather than GA68_FOR_BUILD, and
+	invoke ACX_PROG_A68 rather than ACX_PROG_GA68.
+	Subst A68_FOR_BUILD rather than GA68_FOR_BUILD.
+	Subst A68 and A68FLAGS rather than GA68 and GA68FLAGS.
+	Set A68_FOR_TARGET rather than GA68_FOR_TARGET.
+	* configure: Regenerate.
+	* config-ml.in: Handle A68FLAGS and define A68 in sub-configures.
+
 2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* libtool.m4: Cherry-pick libtool commit
