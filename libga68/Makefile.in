@@ -467,14 +467,15 @@ libga68_la_SOURCES = libga68.c \
                      ga68-posix.c \
                      ga68-alloc.c \
                      ga68-error.c \
-                     ga68-standenv.c
+                     ga68-standenv.c \
+                     ga68.h
 
 libga68_la_LIBTOOLFLAGS = 
 libga68_la_CFLAGS = $(LIBGA68_GCFLAGS) $(LIBGA68_BOEHM_GC_INCLUDES)
 libga68_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 		     $(version_arg) $(lt_host_flags) $(extra_darwin_ldflags_libga68)
 
-libga68_la_DEPENDENCIES = libga68.spec $(version_dep)
+libga68_la_DEPENDENCIES = libga68.spec $(version_dep) transput.lo
 libga68_la_LIBADD = $(LIBGA68_BOEHM_GC_LIBS) transput.lo
 
 # Rules to build the Algol 68 code in the library.
