@@ -327,7 +327,14 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc,
   else
     fragment
       = expand_decl_macro (invoc.get_locus (), invoc_data, *rdef, semicolon);
-
+  // fix: if the expansion is failing, we must replace the marco with an empty
+  // error or node
+  // makes sure that it doesn't panic on Rouge macro (it -> Lowering Phase)
+  // added the parsing errors in gcc/testsuite/rust/compile/issue-4213.rs
+  if (fragment.is_error ())
+    {
+      fragment = AST::Fragment::create_empty ();
+    }
   set_expanded_fragment (std::move (fragment));
 }
 
