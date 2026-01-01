@@ -34,20 +34,44 @@ BEGIN {
 }
 
 /^[ \t]*\{[ \t]*iter[ \t]+/ {
-    if (match ($0, /[ \t]*\{[ \t]*iter[ \t]+([a-zA-Z_]+)[\t ]*(\{.*\}[ \t]*){1,}[ \t]*\}/, matches) == 0)
+    line=$0
+    if (match (line, /[ \t\*\{[ \t]*iter[ \t]+/) == 0)
         error(FNR ": invalid iter")
-
-    iter_name = matches[1]
-    iter_alts = matches[2]
+    line = substr (line, RSTART + RLENGTH)
+    # Iterator name.  #
+    if (match (line, /[a-zA-Z_]+/) == 0)
+        error(FNR ": expected iterator name")
+    iter_name = substr (line, RSTART, RLENGTH)
+    line = substr (line, RSTART + RLENGTH)
+    # Blanks.  #
+    if (match (line, /[\t ]*/) == 0)
+        error(FNR ": invalid iter")
+    line = substr (line, RSTART + RLENGTH)
+    # Iterator alternatives.  #
+    if (match (line, /\{.*\}/) == 0)
+        error(FNR ": expected iterator alternatives")
+    iter_alts = substr (line, RSTART, RLENGTH)
+    line = substr (line, RSTART + RLENGTH)
 
     # Count and collect alternatives.  #
     iter_num_alternatives = 0
-    while (match (iter_alts, /[ \t]*\{([^\}]*)\}/, matches) > 0)
-    {      
+    while (match (iter_alts, /[ \t]*\{([^\}]*)\}/) > 0)
+    {
         iter_num_alternatives++
-        iter_alts = substr (iter_alts, RSTART + RLENGTH)
         iter_names[iter_name] = 1
-        iterators[iter_name,iter_num_alternatives] = matches[1]
+        # Skip prefix.  #
+        if (match (iter_alts, /[ \t]*\{/) == 0)
+            error(FNR ": invalid iterator alternative")
+        iter_alts = substr (iter_alts, RSTART + RLENGTH)
+        # Get alternative contents.  #
+        if (match (iter_alts, /[^\}]*/) == 0)
+            error(FNR ": invalid iterator alternative")
+        iterators[iter_name,iter_num_alternatives] = substr (iter_alts, RSTART, RLENGTH)
+        iter_alts = substr (iter_alts, RSTART + RLENGTH)
+        # Skip trailer.  #
+        if (match (iter_alts, /\}/) == 0)
+            error(FNR ": invalid iterator alternative")
+        iter_alts = substr (iter_alts, RSTART + RLENGTH)
     }
 
     if (in_iter == 1)
@@ -63,8 +87,25 @@ BEGIN {
 
 /^[ \t]*\{[ \t]*reti/ {
     separator = ""
-    if (match ($0, /[ \t]*\{[ \t]*reti[ \t]+\{([^\}]*)\}/, matches) > 0)
-        separator = matches[1]
+    line = $0
+    if (match (line, /[ \t]*\{[ \t]*reti[ \t]*\{/) > 0)
+    {
+        # Extract separator. #
+        line = substr (line, RSTART + RLENGTH)
+        if (match (line, /[^\}]*/) == 0)
+            error(FNR ": invalid separator in reti")
+        separator = substr (line, RSTART, RLENGTH)
+        line = substr (line, RSTART + RLENGTH)
+        # Skip suffix
+        if (match (line, /\}/) == 0)
+            error(FNR ": expected closing } in reti separator")
+    }
+    else
+    {
+        # No separator.  #
+        if (match (line, /[ \t]*\{[ \t]*reti[ \t]*\}/) == 0)
+            error(FNR ": invalid reti")
+    }
 
     for (nalt = 1; nalt <= num_alternatives; nalt++)
     {
