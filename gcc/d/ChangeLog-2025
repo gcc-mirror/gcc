@@ -1,0 +1,470 @@
+2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* lang.opt.urls: Regenerate.
+
+2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* d-attribs.cc (d_handle_no_sanitize_attribute): Use
+	'sanitize_code_type' instead of 'unsigned int'.
+
+2025-08-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* d-codegen.cc (build_filename_from_loc): Use
+	build_string_literal() to build a null-terminated string for
+	the filename.
+
+2025-08-06  Sam James  <sam@gentoo.org>
+
+	* Make-lang.in (ALL_DFLAGS): Don't use ALIASING_FLAGS.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* d-diagnostic.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* d-diagnostic.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Update to add
+	"m_" prefix to fields of diagnostic_info throughout.
+
+2025-07-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* toir.cc: Pass null pointer to
+	parse_{input,output}_constraint().
+
+2025-04-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/103044
+	* d-tree.h (build_clear_padding_call): New prototype.
+	* d-codegen.cc (build_clear_padding_call): New function.
+	(build_memset_call): Remove generated call to __builtin_memcpy.
+	(build_address): Replace generated call to __builtin_memset with
+	__builtin_clear_padding.
+	(build_array_from_exprs): Likewise.
+	* expr.cc (ExprVisitor::visit (AssignExp *)): Remove generated call to
+	__builtin_memset.
+	(ExprVisitor::visit (ArrayLiteralExp *)): Likewise.  Insert call to
+	__builtin_clear_padding after copying array into GC memory.
+	(ExprVisitor::visit (StructLiteralExp *)): Remove generated call to
+	__builtin_memset.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Likewise.
+
+2025-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 956e73d64e.
+
+2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119826
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Propagate flags of main
+	enum types to all forward-referenced variants.
+
+2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119799
+	* decl.cc (DeclVisitor::visit (VarDeclaration *)): Check front-end
+	type size before building the VAR_DECL.  Allow C symbols to have a
+	size of `0'.
+
+2025-04-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119817
+	* imports.cc (ImportVisitor::visit (OverloadSet *)): Don't push
+	NULL_TREE to vector of import symbols.
+
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/109023
+	* d-compiler.cc: Include dmd/errors.h.
+	(Compiler::onImport): Implement.
+	* d-lang.cc (d_handle_option): Handle -finclude-imports.
+	(d_parse_file): Run semantic on included imports.
+	* gdc.texi: Document -finclude-imports.
+	* lang.opt: Add finclude-imports.
+	* lang.opt.urls: Regenerate.
+
+2025-04-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119758
+	* d-lang.cc (d_parse_file): Use endswith in test for -fonly= argument.
+	* d-spec.cc (lang_specific_driver): Rework -fonly= and pass all input
+	files to the front-end compiler when the option is seen.
+
+2025-04-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 1b34fea478.
+
+2025-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118309
+	* modules.cc: Include debug.h
+	(d_finish_compilation): Call debug_hooks->type_decl on all TYPE_DECLs.
+	* types.cc: Remove toplev.h include.
+	(finish_aggregate_type): Don't call rest_of_type_compilation or
+	rest_of_decl_compilation on type.
+	(TypeVisitor::visit (TypeEnum *)): Likewise.
+
+2025-04-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117832
+	* d-tree.h (build_padded_constructor): New prototype.
+	* d-codegen.cc (build_padded_constructor): New function.
+	(d_array_value): Call it.
+	(build_memset_call): Likewise.
+	(build_struct_literal): Likewise.
+	(underlying_complex_expr): Likewise.
+	(build_array_from_val): Likewise.
+	(build_array_from_exprs): Likewise.
+	(d_build_call): Likewise.
+	(get_frame_for_symbol): Likewise.
+	* d-convert.cc (convert_for_rvalue): Likewise.
+	(convert_for_assignment): Likewise.
+	* decl.cc (class DeclVisitor): Likewise.
+	* expr.cc (class ExprVisitor): Likewise.
+	* modules.cc (layout_moduleinfo): Likewise.
+	* typeinfo.cc (class TypeInfoVisitor): Likewise.
+
+2025-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 51816cd01d.
+
+2025-04-06  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* lang.opt.urls: Regenerate.
+
+2025-04-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd ed17b3e95d.
+
+2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd c6863be720.
+	* dmd/VERSION: Bump version to v2.111.0.
+
+2025-03-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117002
+	* decl.cc (aggregate_initializer_decl): Set explicit decl alignment of
+	class instance.
+	* expr.cc (ExprVisitor::visit (NewExp *)): Likewise.
+	* types.cc (TypeVisitor::visit (TypeClass *)): Mark the record type of
+	classes as packed.
+
+2025-03-30  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* lang.opt.urls: Regenerate.
+
+2025-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 02a64d2e13.
+
+2025-03-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/117621
+	* types.cc (finish_aggregate_type): Propagate TYPE_PACKED to variants.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 032e24446b.
+	* dmd/VERSION: Bump version to v2.111.0-rc.1.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 9d2f034398.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 94950cae58.
+	* d-lang.cc (d_handle_option): Add case for CppStdRevisionCpp23.
+	* gdc.texi: Document -fextern-std=c++23.
+	* lang.opt (fextern-std=): Add c++23.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 8db14cf846.
+
+2025-03-22  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* runtime.def (INVARIANT): Update signature of run-time function.
+
+2025-03-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118545
+	* d-lang.cc (d_handle_option): Adjust quoted options.
+
+2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd fde0f8c40a.
+
+2025-03-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 51be8bb729.
+
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 603225372b.
+	* dmd/VERSION: Bump version to v2.111.0-beta.1.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	* decl.cc (Class DeclVisitor): Likewise.
+	(maybe_build_decl_tree): Likewise.
+	(get_vtable_decl): Likewise.
+	(layout_class_initializer): Likewise.
+	* expr.cc (class ExprVisitor): Likewise.
+	(ExprVisitor::visit (NewExp *)): Implement placement new for class,
+	struct, and pointer types.
+	* modules.cc (get_internal_fn): Update for new front-end interface.
+
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 53a1cc8d13.
+	* d-tree.h (create_typeinfo): Change second parameter to Scope *.
+	(speculative_type_p): Remove prototype.
+	* d-frontend.cc (getTypeInfoType): Adjust.
+	* decl.cc: Include dmd/typinf.h.
+	(DeclVisitor::visit (TypeInfoDeclaration *)): Update for new front-end
+	interface.
+	* typeinfo.cc (create_typeinfo): Likewise.
+	(class SpeculativeTypeVisitor): Remove class.
+	(speculative_type_p): Remove function.
+
+2025-03-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd ffbad272b6.
+	* d-tree.h (make_location_t): Add overload taking a const SourceLoc &.
+	* d-codegen.cc (make_location_t): Likewise.
+	* d-diagnostic.cc (d_diagnostic_report_diagnostic): Change first
+	parameter type to const SourceLoc &.
+	(verrorReport): Update for new front-end interface.
+	(verrorReportSupplemental): Likewise.
+	* d-frontend.cc (eval_builtin): Likewise.
+	(getTypeInfoType): Likewise.
+	* d-lang.cc (d_parse_file): Likewise.
+	* d-target.cc (Target::va_listType): Likewise.
+	(Target::getTargetInfo): Likewise.
+	* decl.cc (build_decl_tree): Likewise.
+	* imports.cc (ImportVisitor::visit (Module *)): Likewise.
+	* modules.cc (get_internal_fn): Likewise.
+
+2025-03-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd d29e3eca45.
+	* d-codegen.cc (can_elide_copy_p): Update for new front-end interface.
+	* d-lang.cc (d_handle_option): Likewise.
+	* expr.cc (class ExprVisitor): Likewise.
+
+2025-03-15  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream b7e3b3b617.
+
+2025-03-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/119139
+	* decl.cc (get_symbol_decl): Don't set TREE_READONLY for __result
+	declarations.
+
+2025-02-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/116961
+	* d-codegen.cc (build_float_cst): Change new_value type from real_t to
+	real_value.
+	* d-ctfloat.cc (CTFloat::fabs): Default initialize the return value.
+	(CTFloat::ldexp): Likewise.
+	(CTFloat::parse): Likewise.
+	* d-longdouble.cc (longdouble::add): Likewise.
+	(longdouble::sub): Likewise.
+	(longdouble::mul): Likewise.
+	(longdouble::div): Likewise.
+	(longdouble::mod): Likewise.
+	(longdouble::neg): Likewise.
+	* d-port.cc (Port::isFloat32LiteralOutOfRange): Likewise.
+	(Port::isFloat64LiteralOutOfRange): Likewise.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118654
+	* implement-d.texi: Document CET version and traits key.
+
+2025-02-25  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (check_gdc_parallelize): Increase to 128.
+
+2025-01-29  Arsen Arsenović  <arsen@aarsen.me>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR d/118477
+	* Make-lang.in (DCOMPILE, DPOSTCOMPILE): Use $(basename $(@F))
+	instead of $(*F).
+
+2025-01-22  Arsen Arsenović  <arsen@aarsen.me>
+
+	* lang-specs.h: Replace %{nostdinc*} with %{nostdinc}.
+
+2025-01-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/114434
+	* expr.cc (ExprVisitor::visit (PtrExp *)): Get the offset as a
+	dinteger_t rather than a size_t.
+	(ExprVisitor::visit (SymOffExp *)): Likewise.
+
+2025-01-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd d115713410.
+
+2025-01-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/115249
+	* typeinfo.cc (create_tinfo_types): Update internal Typenfo
+	representation.
+	(TypeInfoVisitor::visit (TypeInfoClassDeclaration *)): Likewise.
+
+2025-01-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/118438
+	PR d/118448
+	PR d/118449
+	* dmd/MERGE: Merge upstream dmd d6f693b46a.
+	* d-incpath.cc (add_import_paths): Update for new front-end interface.
+
+2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd c7902293d7.
+	* dmd/VERSION: Bump version to v2.110.0-rc.1.
+
+2025-01-12  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd c57da0cf59.
+	* d-codegen.cc (can_elide_copy_p): New.
+	(d_build_call): Use it.
+	* d-lang.cc (d_post_options): Update for new front-end interface.
+
+2025-01-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 82a5d2a7c4.
+	* d-lang.cc (d_handle_option): Handle new option `-fpreview=safer'.
+	* expr.cc (ExprVisitor::NewExp): Remove gcc_unreachable for the
+	generation of `_d_newThrowable'.
+	* lang.opt: Add -fpreview=safer.
+
+2025-01-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 2b89c2909d.
+	* Make-lang.in (D_FRONTEND_OBJS): Rename d/basicmangle.o to
+	d/mangle-basic.o, d/cppmangle.o to d/mangle-cpp.o, and d/dmangle.o to
+	d/mangle-package.o.
+	(d/mangle-%.o): New rule.
+	* d-builtins.cc (maybe_set_builtin_1): Update for new front-end
+	interface.
+	* d-diagnostic.cc (verrorReport): Likewise.
+	(verrorReportSupplemental): Likewise.
+	* d-frontend.cc (getTypeInfoType): Likewise.
+	* d-lang.cc (d_init_options): Likewise.
+	(d_handle_option): Likewise.
+	(d_post_options): Likewise.
+	* d-target.cc (TargetC::contributesToAggregateAlignment): New.
+	* d-tree.h (create_typeinfo): Adjust prototype.
+	* decl.cc (layout_struct_initializer): Update for new front-end
+	interface.
+	* typeinfo.cc (create_typeinfo): Remove generate parameter.
+	* types.cc (layout_aggregate_members): Update for new front-end
+	interface.
+
+2025-01-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 4ccb01fde5.
+	* Make-lang.in (D_FRONTEND_OBJS): Rename d/foreachvar.o to
+	d/visitor-foreachvar.o, d/visitor.o to d/visitor-package.o, and
+	d/statement_rewrite_walker.o to d/visitor-statement_rewrite_walker.o.
+	(D_FRONTEND_OBJS): Rename
+	d/{parsetime,permissive,postorder,transitive}visitor.o to
+	d/visitor-{parsetime,permissive,postorder,transitive}.o.
+	(D_FRONTEND_OBJS): Remove d/sapply.o.
+	(d.tags): Add dmd/common/*.h.
+	(d/visitor-%.o:): New rule.
+	* d-codegen.cc (get_frameinfo): Update for new front-end interface.
+
+2025-01-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 6884b433d2.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	(d_build_builtins_module): Likewise.
+	(matches_builtin_type): Likewise.
+	(covariant_with_builtin_type_p): Likewise.
+	* d-codegen.cc (lower_struct_comparison): Likewise.
+	(call_side_effect_free_p): Likewise.
+	* d-compiler.cc (Compiler::paintAsType): Likewise.
+	* d-convert.cc (convert_expr): Likewise.
+	(convert_for_assignment): Likewise.
+	* d-target.cc (Target::isVectorTypeSupported): Likewise.
+	(Target::isVectorOpSupported): Likewise.
+	(Target::isReturnOnStack): Likewise.
+	* decl.cc (get_symbol_decl): Likewise.
+	* expr.cc (build_return_dtor): Likewise.
+	* imports.cc (class ImportVisitor): Likewise.
+	* toir.cc (class IRVisitor): Likewise.
+	* types.cc (class TypeVisitor): Likewise.
+
+2025-01-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 34875cd6e1.
+	* dmd/VERSION: Bump version to v2.110.0-beta.1.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/deps.o, d/timetrace.o.
+	* decl.cc (class DeclVisitor): Update for new front-end interface.
+	* expr.cc (class ExprVisitor): Likewise
+	* typeinfo.cc (check_typeinfo_type): Likewise.
+
+2025-01-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 66b93fc24a.
+	* dmd/VERSION: Bump version to v2.109.1.
+	* d-builtins.cc (build_frontend_type): Update for new front-end
+	interface.
+	(matches_builtin_type): Likewise.
+	* d-codegen.cc (identity_compare_p): Likewise.
+	(call_side_effect_free_p): Likewise.
+	* d-convert.cc (convert_expr): Likewise.
+	(check_valist_conversion): Likewise.
+	* d-lang.cc (d_types_compatible_p): Likewise.
+	* d-target.cc (Target::isVectorTypeSupported): Likewise.
+	(Target::isReturnOnStack): Likewise.
+	(Target::preferPassByRef): Likewise.
+	* decl.cc (class DeclVisitor): Likewise.
+	* expr.cc (class ExprVisitor): Likewise.
+	* typeinfo.cc (class TypeInfoVisitor): Likewise.
+	* types.cc (class TypeVisitor): Likewise.
+
+2025-01-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::finish_vtable): Update for new front-end
+	interface.
+	* dmd/MERGE: Merge upstream dmd 07bc5b9b3c.
+	* dmd/VERSION: Bump version to v2.109.0.
+
+2025-01-05  Iain Buclaw  <ibuclaw@symmetryinvestments.com>
+
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/attribsem.o,
+	d/common-charactertables.o, d/common-identifiertables.o.
+	* d-attribs.cc (apply_user_attributes): Update for new front-end
+	interface.
+	* d-builtins.cc (d_init_versions): Predefine CppRuntime_GNU.
+	* d-incpath.cc (add_globalpaths): Update for new front-end interface.
+	(add_filepaths): Likewise.
+	(add_import_paths): Likewise.
+	* d-lang.cc (d_post_options): Likewise.
+	* dmd/MERGE: Merge upstream dmd c11e1d1708.
+	* dmd/VERSION: Bump version to v2.108.1.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gdc.texi: Bump @copyrights-d year.
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

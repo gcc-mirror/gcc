@@ -1,0 +1,3466 @@
+2025-12-22  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/122957
+	* interface.cc (gfc_match_generic_spec): Issue an error
+	so that users do not use -fdefault-integer-8 with DTIO.
+
+2025-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/123253
+	* expr.cc (gfc_check_vardef_context): Replace simple check by a
+	scan through the association targets for a dummy argument.
+
+2025-12-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/123201
+	* trans-expr.cc (conv_dummy_value): Convert string of length 1 to a
+	single character for passing as actual argument.
+
+2025-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121472
+	* trans.cc (gfc_finalize_tree_expr): Replace !derived->components
+	check with TYPE_SIZE_UNIT check for zero-size types.
+
+2025-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121475
+	* trans.cc (gfc_finalize_tree_expr): Add logic to allow the
+	function result to be resolved in resolve.cc
+	(generate_component_assignments).
+
+2025-12-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Add default to switch.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Add default: with
+	gcc_unreachable () to avoid spurious -Wmaybe-uninitialized warnings.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.texi: Fix typo, transfered -> transferred.
+	* resolve.cc (resolve_where): Fix comment typo, outmost -> outermost.
+
+2025-12-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71565
+	* expr.cc (gfc_check_vardef_context): Fix treatment of INTENT(IN)
+	checks for ASSOCIATE variables.  Correct checking of PROTECTED
+	objects, as subobjects inherit the PROTECTED attribute.
+
+2025-12-19  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/92613
+	* cpp.cc (gfc_cpp_preprocess): Skip libcpp for -fpreprocessed.
+	Error out for -fpreprocessed -E.
+	* f95-lang.cc (gfc_init): Skip libcpp init for -fpreprocessed.
+	* scanner.cc (gfc_new_file): Load source directly if preprocessed.
+	* invoke.texi (Preprocessing Options): Document -fpreprocessed.
+
+2025-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_clause_uses_allocators): Accept
+	multiple clause-argument-specifications separated by ';'.
+
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_assumes): Handle
+	no_openmp_constructs clause.
+	* gfortran.h (struct gfc_omp_assumptions): Add
+	no_openmp_constructs.
+	* openmp.cc (gfc_match_dupl_check): For free-form
+	Fortran, avoid substring matching.
+	(gfc_match_omp_clauses): Match no_openmp_constructs clause.
+	Remove no longer needed 'needs_space', match 'order' followed by
+	parenthesis instead of 'order' with parenthesis; reorder 'order'
+	and 'ordering' clauses for free-form Fortran.
+	(gfc_match_omp_assumes): Handle no_openmp_constructs clause.
+
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Handle
+	device_type clause.
+	* openmp.cc (gfc_match_omp_clauses): Reorder to
+	match 'device' after 'device_...' to avoid parse
+	errors.
+	(OMP_TARGET_CLAUSES): Add device_type clause.
+	* trans-openmp.cc (gfc_trans_omp_clauses,
+	gfc_split_omp_clauses): Handle device_type clause.
+
+2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_clause_uses_allocators): Mention
+	new syntax in deprecation warning.
+
+2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* intrinsic.texi (OpenMP Modules OMP_LIB and OMP_LIB_KINDS): Link
+	also to OpenMP 6.0, move 'partially supported' to the end of the
+	list of OpenMP versions. Mark 'omp_lock_hint_...' and
+	'omp_atv_sequential' constants as deprecated.
+
+2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* openmp.cc (resolve_omp_clauses): Handle omp_null_allocator.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Mention it in a comment.
+
+2025-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/107406
+	* parse.cc (check_component): Adjust the error check to
+	require a codimension if the allocatable type has
+	a non-coarray LOCK_TYPE component.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/123098
+	* openmp.cc (gfc_match_omp_clause_reduction): Only emit
+	-Wdeprecated-openmp warning for '-' if !openacc.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* openmp.cc (gfc_match_omp_clause_reduction,
+	gfc_match_omp_clause_uses_allocators, gfc_match_omp_clauses,
+	match_omp_metadirective, gfc_match_omp_parallel_master,
+	gfc_match_omp_parallel_master_taskloop,
+	gfc_match_omp_parallel_master_taskloop_simd,
+	gfc_match_omp_master, gfc_match_omp_master_taskloop,
+	gfc_match_omp_master_taskloop_simd, resolve_omp_clauses): Formatting
+	fixes.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-expr.cc (gfc_conv_procedure_call): Fix comment typo, passe
+	-> pass.
+
+2025-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/107142
+	* match.cc (gfc_match_type_spec): Change original declaration
+	to static match_type_spec and call from gfc_match_type_spec,
+	where the gfc_current_ns is stashed and restored after call.
+	(gfc_match_type_is): Before emitting the syntax error message
+	check if there are any pending error messages and use them
+	instead.
+
+2025-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/110012
+	* decl.cc (gfc_get_pdt_instance): Continue to loop through the
+	type parameters components if param_list is null and the
+	parameter is not KIND with a default initializer.
+	* resolve.cc (resolve_fl_derived): If the data component is a
+	PDT template, find the instance and build the class.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* gfortran.texi: Bump version and clarify implementation status.
+	* intrinsic.texi: Bump version and note deprecation of
+	'omp_proc_bind_master'.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_clause_reduction): Deprecate '-'
+	operator for reductions.
+	(gfc_match_omp_clause_uses_allocators): Deprecate
+	allocator(traits) pattern for 'uses_allocators'.
+	(gfc_match_omp_clauses): Deprecate 'sink' and 'source' for
+	'depend' clause. Deprecate list items as arguments with 'linear'
+	clause. Deprecate non-comma-separated modifiers for the map
+	clause. Deprecate 'to' clause with declare target.
+	(gfc_match_omp_declare_target): Whitespace.
+	(match_omp_metadirective): Deprecate 'default' clause on
+	metadirectives.
+	(resolve_omp_clauses): Deprecate executable allocate directives.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* cpp.cc (cpp_define_builtins): Bump _OPENMP version.
+	* invoke.texi: Update docs for '-Wdeprecated-openmp'.
+	* lang.opt (Wdeprecated-openmp): Add warning.
+	* lang.opt.urls: Regenerated.
+	* openmp.cc (gfc_match_omp_clauses): Deprecate master affinity
+	policy.
+	(gfc_match_omp_parallel_master): Deprecate master construct.
+	(gfc_match_omp_parallel_master_taskloop): Ditto.
+	(gfc_match_omp_parallel_master_taskloop_simd): Ditto.
+	(gfc_match_omp_master): Ditto.
+	(gfc_match_omp_master_taskloop): Ditto.
+	(gfc_match_omp_master_taskloop_simd): Ditto.
+	(resolve_omp_clauses): Warn for deprecated use of
+	{use,is}_device_ptr.
+
+2025-12-08  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/123025
+	* decl.cc (match_char_length): Add a check for the
+	obsolete '*' style of character declarations in the
+	alternate branch of checking so we dont miss two
+	use cases:
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122693
+	* array.cc (gfc_match_array_constructor): Stash and restore
+	gfc_current_ns after the call to 'gfc_match_type_spec'.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122670
+	* decl.cc (gfc_get_pdt_instance): Ensure that, in an interface
+	body, PDT instances imported implicitly if the template has
+	been explicitly imported.
+	* module.cc (read_module): If a PDT template appears in a use
+	only statement, implicitly add the instances as well.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122669
+	* resolve.cc (resolve_allocate_deallocate): Mold expressions
+	with an array reference and a constant size must be resolved
+	for each allocate object.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122578
+	* primary.cc (gfc_match_varspec): Try to resolve a typebound
+	generic procedure selector expression to provide the associate
+	name with a type. Also, resolve component calls. In both cases,
+	make a copy of the selector expression to guard against changes
+	made by gfc_resolve_expr.
+
+2025-12-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122977
+	* expr.cc (gfc_is_simply_contiguous): For an associate variable
+	check whether the associate target is contiguous.
+	* resolve.cc (resolve_symbol): Skip array type check for an
+	associate variable when	the target has the contiguous attribute.
+
+2025-12-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (resolve_omp_clauses): Permit zero with
+	DYN_GROUPPRIVATE clause.
+	* trans-openmp.cc (fallback): Generate TREE code
+	for DYN_GROUPPRIVATE and remove 'sorry'.
+
+2025-12-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103371
+	* decl.cc (gfc_get_pdt_instance): Remove the requirement that
+	PDT components be of the same type as the enclosing type. Apply
+	initializers other than the default to PDT components.
+	* primary.cc (gfc_match_rvalue): Make combination of the two
+	actual_arglists conditional on 'type_spec_list' having been
+	seen as well together with applying component names to all the
+	arguments.
+	* trans-decl.cc (gfc_init_default_dt): Add 'pdt_ok' to the args
+	and use it to signal that a PDT can be default initialized.
+	(gfc_init_default_pdt): New function to check that a pdt is OK
+	for default intialization before calling gfc_init_default_dt.
+	(gfc_trans_deferred_vars): Use gfc_init_default_pdt.
+	* trans.h: Add bool 'pdt_ok' to prototype with defaul value of
+	false.
+
+2025-12-01  Christopher Albert  <albert@tugraz.at>
+	    Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR fortran/107721
+	PR fortran/102417
+	* arith.cc (eval_intrinsic): Call gfc_check_constructor_type on
+	array constructor operands with explicit type-spec to ensure
+	element type conversion before operations.  Resolve character
+	array constructors before CONCAT operations.
+	(reduce_binary_ac, reduce_binary_ca, reduce_binary_aa): Preserve
+	character length info in result arrays.
+	* array.cc (check_constructor_type): Simplify non-constant
+	expressions before type checking to handle parenthesized elements.
+	Handle nested character array constructors with explicit type-spec
+	when outer constructor has no type-spec.
+	(gfc_resolve_character_array_constructor): Recursively propagate
+	type-spec to nested array constructors.  If the nested constructor
+	has an explicit type-spec, resolve it first before propagating
+	the outer type-spec.
+
+2025-12-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.texi (Default exponents): Remove spurious @menu entry.
+
+2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* lang.opt.urls: Regenerate.
+
+2025-11-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c/122892
+	* openmp.cc (gfc_resolve_omp_allocate): Reject non-local
+	static variables with cgroup/pteam/thread allocators.
+	* parse.cc: Permit OMP ALLOCATE in BLOCK DATA.
+
+2025-11-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* dump-parse-tree.cc (show_attr): Handle OpenMP's 'local' clause
+	and the 'groupprivate' directive.
+	(show_omp_clauses): Handle dyn_groupprivate.
+	* frontend-passes.cc (gfc_code_walker): Walk dyn_groupprivate.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_GROUPPRIVATE.
+	(enum gfc_omp_fallback, gfc_add_omp_groupprivate,
+	gfc_add_omp_declare_target_local): New.
+	* match.h (gfc_match_omp_groupprivate): New.
+	* module.cc (enum ab_attribute, mio_symbol_attribute, load_commons,
+	write_common_0): Handle 'groupprivate' + declare target's 'local'.
+	* openmp.cc (gfc_omp_directives): Add 'groupprivate'.
+	(gfc_free_omp_clauses): Free dyn_groupprivate.
+	(enum omp_mask2): Add OMP_CLAUSE_LOCAL and OMP_CLAUSE_DYN_GROUPPRIVATE.
+	(gfc_match_omp_clauses): Match them.
+	(OMP_TARGET_CLAUSES): Add OMP_CLAUSE_DYN_GROUPPRIVATE.
+	(OMP_DECLARE_TARGET_CLAUSES): Add OMP_CLAUSE_LOCAL.
+	(gfc_match_omp_declare_target): Handle groupprivate + fixes.
+	(gfc_match_omp_threadprivate): Code move to and calling now ...
+	(gfc_match_omp_thread_group_private): ... this new function.
+	Also handle groupprivate.
+	(gfc_match_omp_groupprivate): New.
+	(resolve_omp_clauses): Resolve dyn_groupprivate.
+	* parse.cc (decode_omp_directive): Match groupprivate.
+	(case_omp_decl, parse_spec, gfc_ascii_statement): Handle it.
+	* resolve.cc (resolve_symbol): Handle groupprivate.
+	* symbol.cc (gfc_check_conflict, gfc_copy_attr): Handle 'local'
+	and 'groupprivate'.
+	(gfc_add_omp_groupprivate, gfc_add_omp_declare_target_local): New.
+	* trans-common.cc (build_common_decl,
+	accumulate_equivalence_attributes): Print 'sorry' for
+	groupprivate and declare target's local.
+	* trans-decl.cc (add_attributes_to_decl): Likewise..
+	* trans-openmp.cc (gfc_trans_omp_clauses): Print 'sorry' for
+	dyn_groupprivate.
+	(fallback): Process declare target with link/local as
+	done for 'enter'.
+
+2025-11-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104650
+	* decl.cc (gfc_get_pdt_instance): If the PDT template has
+	finalizers, make a new f2k_derived namespace for this intance
+	and copy the template namespace into it. Set the instance
+	template_sym field to point to the template.
+	* expr.cc (gfc_check_pointer_assign): Allow array value pointer
+	lvalues to point to scalar null expressions in initialization.
+	* gfortran.h : Add the template_sym field to gfc_symbol.
+	* resolve.cc (gfc_resolve_finalizers): For a pdt_type, copy the
+	final subroutines with the same type argument into the pdt_type
+	finalizer list. Prevent final subroutine type checking and
+	creation of the vtab for pdt_templates.
+	* symbol.cc (gfc_free_symbol): Do not call gfc_free_namespace
+	for pdt_type with finalizers. Instead, free the finalizers and
+	the namespace.
+
+2025-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122766
+	* decl.cc (gfc_match_decl_type_spec): A pdt_type found while
+	parsing a contains section can only arise from the typespec of
+	a function declaration. This can be retained in the typespec.
+	Once we are parsing the function, the first reference to this
+	derived type will find that it has no symtree. Provide it with
+	one so that gfc_use_derived does not complain and, again,retain
+	it in the typespec.
+
+2025-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32365
+	* parse.cc (parse_executable): Reject declaration/OpenMP
+	specification statements seen after executable code
+	unconditionally, keeping the legacy DATA diagnostic as
+	a warning.
+
+2025-11-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122709
+	* resolve.cc (resolve_assoc_var): If the associate target is a
+	contiguous pointer, so is the associate variable.
+
+2025-11-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Remove section "Experimental features for future
+	Fortran revisions". Move documentation of UNSIGNED into Extensions.
+	Mention flang compatibility.
+
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.cc (gfc_parse_file): Avoid arithmetics or
+	bitwise operations between enumerators from different enums.
+
+2025-11-14  Yuao Ma  <c8ef@outlook.com>
+
+	* trans-expr.cc (conv_dummy_value): Add check for NULL allocatable.
+
+2025-11-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/117070
+	* array.cc (check_constructor): Allow procedures as potential
+	target of a procedure pointer.
+
+2025-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* openmp.cc (is_predefined_allocator): Use GOMP_OMP_PREDEF_ALLOC_MAX
+	and GOMP_OMPX_PREDEF_ALLOC_MIN/MAX instead of hardcoded values in the
+	comment.
+
+2025-11-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/122638
+	* gfortran.texi (OpenMP): Fix syntax.
+	* intrinsic.texi (UINT): Fix syntax.
+
+2025-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/96255
+	* match.cc (apply_typespec_to_iterator): Call gfc_set_sym_referenced
+	for both new and shadow iterator symbols.
+
+2025-11-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/119677
+	* intrinsic.texi (OpenMP Modules): Add omp_default_device.
+	* openmp.cc (gfc_resolve_omp_context_selector): Accept
+	omp_default_device as conforming device number.
+
+2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/96255
+	* resolve.cc (gfc_resolve_forall): Delete outer_sym
+
+2025-11-11  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/90519
+	* trans-expr.cc (strip_parentheses): New helper function to strip
+	INTRINSIC_PARENTHESES operators from expressions.
+	(is_runtime_conformable): Use strip_parentheses to handle cases
+	like a = (a) when checking for self-assignment.
+	(gfc_trans_assignment_1): Strip parentheses before checking if
+	expr2 is a variable, ensuring deep_copy is enabled for cases like
+	a = (a). Also strip parentheses when checking for self-assignment
+	to avoid use-after-free in finalization.
+	(gfc_trans_scalar_assign): Add comment about parentheses handling.
+	* class.cc (generate_finalization_wrapper): Create separate result
+	symbol for finalizer wrapper functions instead of self-referencing
+	the procedure symbol, avoiding ICE in gimplify_call_expr.
+
+2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/96255
+	* gfortran.h (gfc_forall_iterator): Add bool shadow field.
+	* match.cc (apply_typespec_to_iterator): New helper function to
+	consolidate shadow variable creation logic.
+	(match_forall_header): Add type-spec parsing for DO CONCURRENT
+	and FORALL. Create shadow variables when type-spec differs from
+	outer scope. Replace duplicated code with apply_typespec_to_iterator.
+	* resolve.cc (replace_in_expr_recursive): New function to recursively
+	walk expressions and replace symbol references.
+	(replace_in_code_recursive): New function to recursively walk code
+	blocks and replace symbol references.
+	(gfc_replace_forall_variable): New entry point for shadow variable
+	substitution.
+	(gfc_resolve_assign_in_forall): Skip many-to-one assignment warning
+	for DO CONCURRENT.
+	(gfc_count_forall_iterators): Handle both EXEC_FORALL and
+	EXEC_DO_CONCURRENT with assertion.
+	(gfc_resolve_forall): Skip F2018 obsolescence warning for DO
+	CONCURRENT. Fix memory allocation check. Add NULL checks for shadow
+	variables. Implement shadow variable walker.
+	(gfc_resolve_code): Set gfc_do_concurrent_flag for DO CONCURRENT
+	constructs to enable constraint checking.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* lang.opt.urls: Regenerated.
+
+2025-11-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113338
+	* decl.cc (gfc_verify_c_interop_param): Allow further types of
+	dummy argument without the VALUE attribute as specified in
+	F2018 18.3.6 item (5).
+
+2025-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* trans-array.cc (seen_derived_types): Move to file scope and
+	preserve/restore around generate_element_copy_wrapper.
+	* trans-intrinsic.cc (conv_intrinsic_atomic_op): Reuse
+	gfc_trans_force_lval when forcing addressable CAF temps.
+
+2025-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* trans-array.cc (get_copy_helper_function_type): New function to
+	create function type for element copy helpers.
+	(get_copy_helper_pointer_type): New function to create pointer type
+	for element copy helpers.
+	(generate_element_copy_wrapper): New function to generate runtime
+	helper for element-wise deep copying of recursive types.
+	(structure_alloc_comps): Detect recursive allocatable array
+	components and use runtime helper instead of inline recursion.
+	Add includes for cgraph.h and function.h.
+	* trans-decl.cc (gfor_fndecl_cfi_deep_copy_array): New declaration
+	for runtime deep copy helper.
+	(gfc_build_builtin_function_decls): Initialize the runtime helper
+	declaration.
+	* trans-intrinsic.cc (conv_intrinsic_atomic_op): Enhance handling of
+	constant values in coarray atomic operations by detecting and
+	materializing address-of-constant expressions.
+	* trans.h (gfor_fndecl_cfi_deep_copy_array): Add external declaration.
+
+2025-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122566
+	* decl.cc (gfc_get_pdt_instance): Add non-PDT type exstention.
+
+2025-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122501
+	PR fortran/122524
+	* primary.cc (gfc_convert_to_structure_constructor): Correct
+	whitespace issue.
+	(gfc_match_rvalue): Remove the attempt to match specific procs
+	before filling out PDT constructor. Instead, defer this until
+	resolution with the condition that there not be a following
+	arglist and more than one procedure in the generic interface.
+
+2025-11-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/122570
+	* openmp.cc (resolve_omp_metadirective): Fix 'skip' of
+	never matchable metadirective variants.
+
+2025-11-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122564
+	* resolve.cc (resolve_locality_spec): Delete temporary hash_set.
+
+2025-11-04  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/122369
+	PR fortran/122508
+	* gfortran.h (gfc_rebind_label): Declare new function.
+	* parse.cc (parse_omp_metadirective_body): Rebind labels to the outer
+	region. Maintain a vector of metadirective regions.
+	(gfc_parse_file): Initialise it.
+	* parse.h (GFC_PARSE_H): Declare it.
+	* symbol.cc (gfc_get_st_label): Look for existing labels in outer
+	metadirective regions.
+	(gfc_rebind_label): Define new function.
+	(gfc_define_st_label): Accept duplicate labels in metadirective body.
+	(gfc_reference_st_label): Accept shared DO termination labels in
+	metadirective body.
+
+2025-11-03  Steve Kargl  <kargls@comcast.net>
+
+	PR fortran/122513
+	* resolve.cc (check_default_none_expr): Do not allow an
+	iterator in a locality spec. Allow a named constant to be
+	used within the loop.
+
+2025-11-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/78640
+	* resolve.cc (resolve_fl_procedure): Check function result of a
+	pure function against F2018:C1585.
+
+2025-10-31  Yuao Ma  <c8ef@outlook.com>
+
+	* intrinsic.texi: Fix typo.
+	* trans-intrinsic.cc (conv_intrinsic_atomic_cas): Remove unreachable
+	code.
+
+2025-10-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122452
+	* primary.cc (gfc_match_rvalue): Give priority to specific
+	procedures in a generic interface with the same name as a
+	PDT template. If found, use as the procedure instead of the
+	constructor generated from the PDT template.
+
+2025-10-30  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc: Cleanup obsolete comment.
+
+2025-10-29  Yuao Ma  <c8ef@outlook.com>
+
+	* trans-expr.cc (gfc_conv_gfc_desc_to_cfi_desc): Remove unreachable
+	code.
+
+2025-10-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122165
+	* primary.cc (gfc_match_varspec): If the previous component ref
+	was a type specification parameter, a type inquiry ref cannot
+	follow.
+
+2025-10-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122433
+	PR fortran/122434
+	* decl.cc (gfc_get_pdt_instance): Prevent a PDT component of
+	the same type as the template from being converted into an
+	instance.
+	* resolve.cc (gfc_impure_variable): The result of a pure
+	function is a valid allocate object since it is pure.
+
+2025-10-28  Yuao Ma  <c8ef@outlook.com>
+
+	PR fortran/122342
+	* trans-const.cc (gfc_conv_constant): Create a variable for the
+	non-char pointer.
+
+2025-10-28  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/122439
+	* openmp.cc (gfc_resolve_omp_context_selector): Skip selectors that have
+	OMP_TRAIT_INVALID.
+
+2025-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/922290
+	PR fortran/95541
+	* resolve.cc (resolve_typebound_intrinsic_op): Add pdt_template
+	to the list of preemted specifics.
+	* trans-stmt.cc (trans_associate_var): PDT array and string
+	components are separately allocated for each element of a PDT
+	array, so copy in and copy out the selector expression.
+
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/122325
+	* options.cc (gfc_init_options_struct): Set flag_complex_method
+	to fortran rules.
+
+2025-10-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122290
+	* decl.cc (variable_decl): Matching component initializer
+	expressions in PDT templates should be done with gfc_match_expr
+	to avoid reduction too early. If the expression type is unknown
+	copy the component typespec.
+	(gfc_get_pdt_instance): Change comment from a TODO to an
+	explanation. Insert parameter values in initializers. For
+	components that are not marked with PDT attributes, do the
+	full reduction for init expressions.
+	* primary.cc (gfc_match_actual_arglist): Convert PDT kind exprs
+	using the component initializer.
+	* resolve.cc (resolve_typebound_intrinsic_op): Preempt
+	gfc_check_new_interface for pdt_types as well as entities used
+	in submodules.
+	* simplify.cc (get_kind): Remove PDT kind conversion.
+
+2025-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114023
+	* trans-expr.cc (gfc_trans_pointer_assignment): Always set dtype
+	when remapping a pointer.  For unlimited polymorphic LHS use
+	elem_len from RHS.
+	* trans-intrinsic.cc (gfc_conv_is_contiguous_expr): Extend inline
+	generated code for IS_CONTIGUOUS for pointer arguments to detect
+	when span differs from the element size.
+
+2025-10-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122386
+	* dependency.cc (gfc_ref_needs_temporary_p): Revert r16-518.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_transfer): Force temporary
+	for SOURCE not being a simply-contiguous array.
+
+2025-10-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/121452
+	* openmp.cc (resolve_omp_do): Allow CONTINUE as end statement of a
+	perfectly nested loop.
+
+2025-10-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR c/120180
+	PR fortran/122306
+	* gfortran.h (enum gfc_exec_op): Add EXEC_OMP_FIRST_OPENMP_EXEC and
+	EXEC_OMP_LAST_OPENMP_EXEC.
+	* openmp.cc (gfc_match_omp_context_selector): Remove static. Remove
+	checks on score. Add cleanup. Remove checks on trait properties.
+	(gfc_match_omp_context_selector_specification): Remove static. Adjust
+	calls to gfc_match_omp_context_selector.
+	(gfc_match_omp_declare_variant): Adjust call to
+	gfc_match_omp_context_selector_specification.
+	(match_omp_metadirective): Likewise.
+	(icode_code_error_callback): Reject all statements except
+	'assume' and 'metadirective'.
+	(gfc_resolve_omp_context_selector): New function.
+	(resolve_omp_metadirective): Skip metadirectives which context selectors
+	can be statically resolved to false. Replace metadirective by its body
+	if only 'nothing' remains.
+	(gfc_resolve_omp_declare): Call gfc_resolve_omp_context_selector for
+	each variant.
+
+2025-10-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_omp_directive): Add comment to 'allocate';
+	add 6.x unimplemented directives as comment-out entries.
+
+2025-10-18  Yuao Ma  <c8ef@outlook.com>
+
+	* resolve.cc (resolve_conditional): Allow character in cond-expr.
+	* trans-const.cc (gfc_conv_constant): Handle want_pointer.
+	* trans-expr.cc (gfc_conv_conditional_expr): Fill se->string_length.
+	(gfc_conv_string_parameter): Handle COND_EXPR tree code.
+
+2025-10-17  Josef Melcr  <jmelcr02@gmail.com>
+
+	* f95-lang.cc (ATTR_CALLBACK_GOMP_LIST): New attr list
+	corresponding to the list in builtin-attrs.def.
+
+2025-10-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121191
+	* trans-array.cc (has_parameterized_comps): New function which
+	checks if a derived type has parameterized components.
+	( gfc_deallocate_pdt_comp): Use it to prevent deallocation of
+	PDTs if there are no parameterized components.
+
+2025-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/95543
+	PR fortran/103748
+	* decl.cc (insert_parameter_exprs): Guard param->expr before
+	using it.
+	(gfc_get_pdt_instance): Substitute paramaters in kind default
+	initializers.
+	(gfc_match_decl_type_spec): Emit an error if a type paramter
+	specification list appears in a variable declaraion with a
+	non-parameterized type.
+	* primary.cc (gfc_match_rvalue): Emit an error if a type spec
+	list is empty.
+
+2025-10-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50377
+	PR fortran/122257
+	* resolve.cc (resolve_actual_arglist): Initialize variable.
+
+2025-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50377
+	* resolve.cc (resolve_actual_arglist): Check procedure actual
+	arguments.
+
+2025-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122206
+	* trans-types.cc (gfc_get_function_type): Do not clobber an
+	existing procedure interface.
+
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Define INCLUDE_VECTOR.
+
+2025-10-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/49111
+	* decl.cc (verify_bind_c_sym): Modify condition for generation of
+	accessibility warning, and adjust warning message.
+
+2025-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93175
+	PR fortran/102240
+	PR fortran/102686
+	* array.cc (match_array_element_spec): For pdt templates, call
+	gfc_correct_parm_expr to elimante extraneous symbols from the
+	bound expressions.
+	* decl.cc (correct_parm_expr, gfc_correct_parm_expr): New fcns
+	that remove symbols that are not PDT parameters from the type
+	specification expressions.
+	(insert_parameter_exprs): Process function symbols as if they
+	are variables in the substitution with parameter expressions.
+	(gfc_get_pdt_instance): Make sure that the parameter list of
+	PDT components is updated as the instance is built. Move the
+	construction of pdt_strings down a bit in the function and
+	remove the tie up with pdt_arrays.
+	* gfortran.h: Add prototype for gfc_correct_parm_expr.
+	* resolve.cc (resolve_component): Skip testing for constant
+	specification expressions in pdt_template component string
+	lengths and pdt_strings.
+	* trans-array.cc (structure_alloc_comps): Remove testing for
+	deferred parameters and instead make sure that components of
+	PDT type have parameters substituted with the parameter exprs
+	of the enclosing PDT.
+
+2025-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102901
+	* trans-array.cc (structure_alloc_comps): Do not use
+	gfc_check_pdt_dummy with pointer or allocatable components.
+
+2025-10-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107968
+	* trans-io.cc (gfc_trans_transfer): Also scalarize I/O of section
+	of an array pointer.
+
+2025-10-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122089
+	* decl.cc (gfc_get_pdt_instance): If gfc_extract_int is true an
+	error has occurred because the kind expr was not provided. Use
+	the template in this case and return MATCH_YES.
+
+2025-10-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122080
+	* trans-array.cc (gfc_conv_array_parameter): Wrap the derivation of
+	bounds and strides for the descriptor of an optional dummy array
+	argument by a test on argument presence when it is supposed to be
+	passed to an optional argument.
+
+2025-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122089
+	* decl.cc (gfc_get_pdt_instance): If the pdt_template is use
+	associated, 'module' field should be copied to this instance.
+
+2025-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102241
+	* gfortran.h: Add symbol attribute 'pdt_comp'.
+	* module.cc : Add 'pdt_comp' to 'ab_attribute' and 'attr_bits'.
+	(mio_symbol_attribute): Set 'pdt_comp'.
+	* resolve.cc (resolve_component): If a PDT component is found
+	in a non-PDT type, generate the PDT instance, if necessary, and
+	set the 'pdt_comp' attribute. Fix some whitespace issues.
+	* trans-decl.cc (gfc_get_symbol_decl, gfc_trans_deferred_vars):
+	If 'pdt_comp' set, initialize the PDT components.
+	* trans-stmt.cc (gfc_trans_deallocate): Verify that a typespec
+	parameter list is available for PDT components of ordinary
+	derived types.
+
+2025-09-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87908
+	* interface.cc (check_interface0): Revert changes.
+
+2025-09-26  Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR fortran/122002
+	* decl.cc (gfc_get_pdt_instance): Initialize 'instance' to NULL
+	and set 'kind_value' to zero before calling gfc_extract_int.
+	* primary.cc (gfc_match_rvalue): Intitialize 'ctr_arglist' to
+	NULL and test for default values if gfc_get_pdt_instance
+	returns NULL.
+
+2025-09-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121939
+	* trans-types.cc (gfc_init_types): Set string flag for all
+	character types.
+
+2025-09-24  Mikael Morin  <morin-mikael@orange.fr>
+
+	PR fortran/122046
+	* symbol.cc (gfc_get_procedure_ns): Try to find the namespace
+	among the list of contained namespaces before returning the
+	value from the formal_ns field.
+
+2025-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87908
+	* interface.cc (check_interface0): If a vtable is found in the
+	interface list, check that it is either a subroutine or a
+	function. Let resolve.cc do any further checking.
+
+2025-09-22  Steve Kargl  <pault@gcc.gnu.org>
+
+	PR fortran/103508
+	* decl.cc (gfc_match_end): Remove only the current partial
+	rather than removing the entire sibling chain.
+
+2025-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109010
+	* st.cc (gfc_free_statement): Also free components expr3 and expr4.
+
+2025-09-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/121161
+	* invoke.texi: Mention that -ffrontend-optimize is required
+	for -fexternal-blas64.
+	* options.cc (gfc_post_options): Fatal error if -fexternal-blas64
+	is specified without -ffrontend-optimize.
+	* trans-types.cc (gfc_init_kinds): Fatal error if -fexternal-blas64
+	is specified on a system which does not have 64-bit ptrdiff_t.
+
+2025-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108581
+	* trans-array.cc (gfc_conv_expr_descriptor): Take the dynamic
+	string length into account when deriving the dataptr offset for
+	a deferred-length character array.
+
+2025-09-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83746
+	* trans-decl.cc (gfc_trans_deferred_vars): If a procedure with
+	an non-allocatable, non-pointer explicit PDT result has no
+	default initializer, the parameterized components should be
+	allocated.
+
+2025-09-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83746
+	* trans-array.cc (structure_alloc_comps): Add the pre and post
+	blocks to 'fnblock' for all the evaluations of parameterized
+	expressions in PDT component allocatation.
+
+2025-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121948
+	* decl.cc (gfc_get_pdt_instance): Copy the contents of 'tb' and
+	not the pointer.
+	* primary.cc (gfc_match_rvalue): If there is only one actual
+	argument list, use if for the type spec parameter values. If
+	this fails try the default type specification values and use
+	the actual arguments for the component values.
+	* resolve.cc (build_init_assign): Don't initialize implicit PDT
+	function results.
+
+2025-09-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.cc (optimize_namespace): Handle
+	flag_external_blas64.
+	(call_external_blas): If flag_external_blas is set, use
+	gfc_integer_4_kind as the argument kind, gfc_integer_8_kind otherwise.
+	* gfortran.h (gfc_integer_8_kind): Define.
+	* invoke.texi: Document -fexternal-blas64.
+	* lang.opt: Add -fexternal-blas64.
+	* lang.opt.urls: Regenerated.
+	* options.cc (gfc_post_options): -fexternal-blas is incompatible
+	with -fexternal-blas64.
+
+2025-09-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83763
+	* trans-decl.cc (gfc_trans_deferred_vars): Ensure that the
+	parameterized components of PDTs that do not have allocatable
+	components are deallocated on leaving scope.
+	* trans-expr.cc (gfc_trans_assignment_1): Do a dependency check
+	on PDT assignments. If there is a dependency between lhs and
+	rhs, deallocate the lhs parameterized components after the rhs
+	has been evaluated.
+
+2025-09-14  Yuao Ma  <c8ef@outlook.com>
+
+	* dump-parse-tree.cc (show_expr): Add support for EXPR_CONDITIONAL.
+	* expr.cc (gfc_get_conditional_expr): Add cond-expr constructor.
+	(gfc_copy_expr, free_expr0, gfc_is_constant_expr,
+	simplify_conditional, gfc_simplify_expr, gfc_check_init_expr,
+	check_restricted, gfc_traverse_expr): Add support for EXPR_CONDITIONAL.
+	* frontend-passes.cc (gfc_expr_walker): Ditto.
+	* gfortran.h (enum expr_t): Add EXPR_CONDITIONAL.
+	(gfc_get_operator_expr): Format fix.
+	(gfc_get_conditional_expr): New decl.
+	* matchexp.cc
+	(match_conditional, match_primary): Parsing for EXPR_CONDITIONAL.
+	* module.cc (mio_expr): Add support for EXPR_CONDITIONAL.
+	* resolve.cc (resolve_conditional, gfc_resolve_expr): Ditto.
+	* trans-array.cc (gfc_walk_conditional_expr, gfc_walk_subexpr): Ditto.
+	* trans-expr.cc
+	(gfc_conv_conditional_expr): Codegen for EXPR_CONDITIONAL.
+	(gfc_apply_interface_mapping_to_expr, gfc_conv_expr,
+	gfc_conv_expr_reference): Add support for EXPR_CONDITIONAL.
+
+2025-09-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121616
+	* primary.cc (gfc_variable_attr): Properly set dimension attribute
+	from a component ref.
+
+2025-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-intrinsic.cc (conv_intrinsic_fstat_lstat_stat_sub): Init
+	some variables.
+
+2025-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* check.cc (error_unsupported_kind): Helper function to report an
+	unsupported kind of an argument.
+	(check_minrange4): Helper function to report if an integer variable
+	does not have a decimal range of at least four.
+	(gfc_check_fstat): Adjust checks for generalization of instrinsic
+	function FSTAT.
+	(gfc_check_fstat_sub): Likewise for subroutine FSTAT.
+	(gfc_check_stat): Likewise for functio STAT.
+	(gfc_check_stat_sub): Likewise for subroutine STAT.
+	* intrinsic.texi: Document generalized versions of intrinsics
+	STAT/LSTAT/FSTAT.
+	* iresolve.cc (gfc_resolve_stat): STAT function result shall have
+	the same kind as the VALUES argument.
+	(gfc_resolve_lstat): Likewise for LSTAT.
+	(gfc_resolve_fstat): Likewise for FSTAT.
+	(gfc_resolve_stat_sub): Resolve proper library subroutine for STAT.
+	(gfc_resolve_lstat_sub): Likewise for LSTAT.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Declare
+	fndecls for required subroutines in runtine library.
+	* trans-intrinsic.cc (conv_intrinsic_fstat_lstat_stat_sub): Emit
+	runtime wrapper code for the library functions, taking care of
+	possible kind conversion of the optional STATUS argument of the
+	subroutine versions of the intrinsics.
+	(gfc_conv_intrinsic_subroutine): Use it.
+	* trans.h (GTY): Declare prototypes.
+
+2025-09-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84008
+	* decl.cc (insert_parameter_exprs): Correct the typespec of new
+	variable declarations, where the type is set to BT_PROCEDURE as
+	a precaution for resolution of the whole program unit.
+
+2025-09-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84119
+	* resolve.cc (reset_array_ref_to_scalar): New function using
+	chunk broken out from gfc_resolve_ref.
+	(gfc_resolve_ref): Call the new function, the first time for
+	PDT type parameters and the second time for LEN inquiry refs.
+
+2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84432
+	PR fortran/114815
+	* expr.cc (gfc_check_assign_symbol): Check that components in a
+	PDT with a default initializer have type and length parameters
+	that reduce to constant integer expressions.
+	* trans-expr.cc (gfc_trans_assignment_1): Parameterized
+	components cannot have default initializers so they must be
+	allocated after initialization.
+
+2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83762
+	PR fortran/102457
+	* decl.cc (gfc_get_pdt_instance): Check that variable PDT parm
+	expressions are of type integer. Note that the symbol must be
+	tested since the expression often appears as BT_PROCEDURE.
+
+2025-09-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121263
+	* trans-intrinsic.cc (gfc_conv_intrinsic_transfer): For an
+	unlimited polymorphic SOURCE to TRANSFER use saved descriptor
+	if possible.
+
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89707
+	* decl.cc (gfc_get_pdt_instance): Copy the typebound procedure
+	field from the PDT template. If the template interface has
+	kind=0, provide the new instance with an interface with a type
+	spec that points to that of the parameterized component.
+	(match_ppc_decl): When 'saved_kind_expr' this is a PDT and the
+	expression should be copied to the component kind_expr.
+	* gfortran.h: Define gfc_get_tbp.
+
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87669
+	* expr.cc (gfc_spec_list_type): If no LEN components are seen,
+	unconditionally return 'SPEC_ASSUMED'. This suppresses an
+	invalid error in match.cc(gfc_match_type_is).
+
+2025-09-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121727
+	* trans-expr.cc (gfc_const_length_character_type_p): New helper
+	function.
+	(conv_dummy_value): Use it to determine if a character actual
+	argument has a constant length.  If a character actual argument is
+	constant and longer than the dummy, truncate it at compile time.
+
+2025-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99709
+	* trans-array.cc (structure_alloc_comps): For the case
+	COPY_ALLOC_COMP, do a deep copy of non-allocatable PDT arrays
+	Suppress the use of 'duplicate_allocatable' for PDT arrays.
+	* trans-expr.cc (conv_dummy_value): When passing to a PDT dummy
+	with the VALUE attribute, do a deep copy to ensure that
+	parameterized components are reallocated.
+
+2025-08-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93330
+	* interface.cc (get_sym_storage_size): Add argument size_known to
+	indicate that the storage size could be successfully determined.
+	(get_expr_storage_size): Likewise.
+	(gfc_compare_actual_formal): Use them to handle zero-sized dummy
+	and actual arguments.
+	If a character formal argument has the pointer or allocatable
+	attribute, or is an array that is not assumed or explicit size,
+	we generate an error by default unless -std=legacy is specified,
+	which falls back to just giving a warning.
+	If -Wcharacter-truncation is given, warn on a character actual
+	argument longer than the dummy.  Generate an error for too short
+	scalar character arguments if -std=f* is given instead of just a
+	warning.
+
+2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82843
+	* intrinsic.cc (gfc_convert_type_warn): If the 'from_ts' is a
+	PDT instance, copy the derived type to the target ts.
+	* resolve.cc (gfc_resolve_ref): A PDT component in a component
+	reference can be that of the pdt_template. Unconditionally use
+	component of the PDT instance to ensure that the backend_decl
+	is set during translation. Likewise if a component is
+	encountered that is a PDT template type, use the component
+	parmeters to convert to the correct PDT instance.
+
+2025-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82205
+	* decl.cc (gfc_get_pdt_instance): Copy the default initializer
+	for components that are not PDT parameters or parameterized. If
+	any component is a pointer or allocatable set the attributes
+	'pointer_comp' or 'alloc_comp' of the new PDT instance.
+	* primary.cc (gfc_match_rvalue): Implement the correct form of
+	PDT constructors with 'name (type parms)(component values)'.
+	* trans-array.cc (structure_alloc_comps): Apply scalar default
+	initializers. Array initializers await the coming change in PDT
+	representation.
+	* trans-io.cc (transfer_expr): Do not output the type parms of
+	a PDT in list directed output.
+
+2025-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/114611
+	* io.cc: Issue an error on use of the H descriptor in
+	a format with -std=f95 or higher. Otherwise, issue a
+	warning.
+
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118839
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Error if variant
+	is the same as base.
+
+2025-08-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_declare_variant): Make check for a
+	missing "match" clause unconditional.
+
+2025-08-21  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/121627
+	* module.cc (create_int_parameter_array):  Avoid NULL
+	pointer dereference and enhance error message.
+
+2025-08-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84122
+	PR fortran/85942
+	* parse.cc (parse_derived): PDT type parameters are not allowed
+	an explicit access specification and must appear before a
+	PRIVATE statement. If a PRIVATE statement is seen, mark all the
+	other components as PRIVATE.
+	* simplify.cc (get_kind): Convert a PDT KIND component into a
+	specification expression using the default initializer.
+
+2025-08-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* intrinsic.texi: Correct the example given for FRACTION.
+	Move the TEAM_NUMBER section to after the TANPI to align
+	with the order gven in the index.
+
+2025-08-16  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR fortran/107421
+	* trans-common.cc (build_common_decl): Call set_decl_tls_model
+	after processing a variable.
+	* trans-decl.cc (gfc_finish_var_decl): Likewise.
+	(get_proc_pointer_decl): Likewise.
+
+2025-08-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89092
+	* resolve.cc (was_declared): Add subroutine attribute.
+
+2025-08-12  Yuao Ma  <c8ef@outlook.com>
+
+	* check.cc (gfc_check_c_f_pointer): Check lower arg legitimacy.
+	* intrinsic.cc (add_subroutines): Teach c_f_pointer about lower arg.
+	* intrinsic.h (gfc_check_c_f_pointer): Add lower arg.
+	* intrinsic.texi: Update lower arg for c_f_pointer.
+	* trans-intrinsic.cc (conv_isocbinding_subroutine): Add logic handle lower.
+
+2025-08-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121398
+	* resolve.cc (check_pdt_args): New function.
+	(check_generic_tbp_ambiguity): Use it to ensure that args to
+	typebound procedures that do not have the same declared type as
+	the containing derived type have 'pass1/2' set to null. This
+	avoids false ambiguity errors.
+	(resolve_typebound_procedure): Do not generate a wrong type
+	error for typebound procedures marked as pass if they are of a
+	different declared type to the containing pdt_type.
+
+2025-08-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.h (gfc_case): Fix comment typo, singe -> single.
+
+2025-08-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121182
+	* decl.cc (match_generic_stmt): New function based on original
+	gfc_match_generic but feeding namespace rather than typebound
+	generics.
+	(match_typebound_generic): Renamed original gfc_match_generic.
+	(gfc_match_generic): New function that selects between type
+	bound generic and other generic statements and calls one of the
+	above two functions as appropriate.
+	* parse.cc (decode_specification_statement): Allow generic
+	statements.
+	(parse_spec): Accept a generic statement in a specification
+	block.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-stmt.cc (trans_associate_var): Remove overwrite of
+	the polymorphic associate variable's array descriptor offset.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (trans_array_constructor): Remove the update of
+	the array descriptor upper bound after array constructor
+	expansion.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (gfc_conv_expr_descriptor): Remove
+	isolated initialization of the span field before passing to
+	the function that will do the initialization.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-decl.cc (gfc_trans_deferred_vars): Don't default
+	initialize the span of local pointer arrays.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-stmt.cc (trans_associate_var): Remove overwrite of the
+	span field of the associate variable's array descriptor.
+
+2025-08-05  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-expr.cc (gfc_trans_pointer_assignment): Remove overwrite
+	of the span after assignment of the array descriptor in the
+	polymorphic function result to non-polymorphic pointer case.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.h (gfc_se): Remove field use_offset.
+	* trans-expr.cc (gfc_conv_intrinsic_to_class): Remove use_offset
+	initialization.
+	(gfc_conv_procedure_call): Likewise.
+	* trans-stmt.cc (trans_associate_var): Likewise.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_alloc_allocatable_for_assignment): Use the
+	offset setter instead of generating a write to the offset.
+	(gfc_conv_array_parameter): Use the offset setter instead of
+	generating a write to the value returned by the offset getter.
+	* trans-expr.cc (gfc_trans_alloc_subarray_assign): Likewise.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_descriptor_data_addr): Remove.
+	* trans-array.h (gfc_conv_descriptor_data_addr): Remove.
+	* trans-decl.cc (gfc_trans_deferred_vars): Use
+	gfc_conv_descriptor_data_get.
+
+2025-08-05  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_finalize_tree_expr): Use the data setter instead
+	of writing to the value returned by the data getter.
+	* trans-decl.cc (gfc_trans_deferred_vars): Likewise.
+	* trans-stmt.cc (trans_associate_var): Use the data setter
+	instead of writing to the value dereferenced from the data
+	address.
+
+2025-08-01  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-decl.cc (gfc_trans_deferred_vars): Fix closing brace in
+	a comment.
+
+2025-07-31  Mikael Morin  <morin-mikael@orange.fr>
+
+	PR fortran/121342
+	* trans-expr.cc (gfc_conv_subref_array_arg): Remove offset
+	update.
+	(gfc_conv_procedure_call): For polymorphic functions, move the
+	scalarizer descriptor information...
+	* trans-array.cc (gfc_add_loop_ss_code): ... here, and evaluate
+	the bounds to fresh variables.
+	(get_class_info_from_ss): Remove offset update.
+	(gfc_conv_ss_startstride): Don't set a zero value for function
+	result upper bounds.
+	(late_set_loop_bounds): New.
+	(gfc_conv_loop_setup): If the bounds of a function result have
+	been set, and no other array provided loop bounds for a
+	dimension, use the function result bounds as loop bounds for
+	that dimension.
+	(gfc_set_delta): Don't skip delta setting for polymorphic
+	function results.
+
+2025-07-30  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-array.cc (gfc_array_init_size): Remove the nelems
+	argument.
+	(gfc_array_allocate): Update caller.  Remove the nelems
+	argument.
+	* trans-stmt.cc (gfc_trans_allocate): Update caller.  Remove the
+	nelems variable.
+	* trans-array.h (gfc_array_allocate): Update prototype.
+
+2025-07-30  Yuao Ma  <c8ef@outlook.com>
+
+	* check.cc (gfc_check_split): Argument check for SPLIT.
+	* gfortran.h (enum gfc_isym_id): Define GFC_ISYM_SPLIT.
+	* intrinsic.cc (add_subroutines): Register SPLIT intrinsic.
+	* intrinsic.h (gfc_check_split): New decl.
+	(gfc_resolve_split): Ditto.
+	* intrinsic.texi: SPLIT documentation.
+	* iresolve.cc (gfc_resolve_split): Add resolved_sym for SPLIT.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Add decl for
+	SPLIT in libgfortran.
+	* trans-intrinsic.cc (conv_intrinsic_split): SPLIT codegen.
+	(gfc_conv_intrinsic_subroutine): Handle SPLIT case.
+	* trans.h (GTY): Declare gfor_fndecl_string_split{, _char4}.
+
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-expr.cc (gfc_trans_assignment_1): Use the same condition
+	to set the is_alloc_lhs flag and to decide to generate
+	reallocation code.  Add explicit call to gfc_fix_class_refs
+	before evaluating the condition.
+
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-array.cc (set_factored_descriptor_value): Also trigger
+	the saving of the previously selected reference on encountering
+	an INDIRECT_REF.  Extract the saving code...
+	(save_ref): ... here as a new function.
+
+2025-07-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/121185
+	* trans-expr.cc (gfc_get_class_from_expr): Give up class
+	container lookup on the second COMPONENT_REF after an array
+	descriptor.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Make diagnostics::context::m_source_printing private.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc: Update usage of "diagnostic_info" to explicitly refer to
+	"diagnostics::diagnostic_info".
+	* error.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc: Update for diagnostic_t becoming
+	enum class diagnostics::kind.
+	* error.cc: Likewise.
+	* options.cc: Likewise.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.cc: Update for renaming of
+	diagnostic_option_id to diagnostics::option_id.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for move of diagnostic-color.h to
+	diagnostics/color.h.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for diagnostic_context becoming
+	diagnostics::context.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update to add "m_" prefix to fields of
+	diagnostic_info throughout.
+
+2025-07-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Update for move of diagnostics output formats into
+	namespace "diagnostics" as "sinks".
+	* gfortran.h: Likewise.
+
+2025-07-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121203
+	* trans-expr.cc (gfc_conv_procedure_call): Obtain the character
+	length of an assumed character length procedure from the typespec
+	of the actual argument even if there is no explicit interface.
+
+2025-07-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-decl.cc (gfc_trans_deferred_vars): Fix indentation.
+
+2025-07-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119106
+	* expr.cc (simplify_constructor): Do not simplify constants.
+	(gfc_simplify_expr): Continue to simplify expression when an
+	iterator is present.
+
+2025-07-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_ss_descriptor): Move the descriptor
+	expression initialisation...
+	(set_factored_descriptor_value): ... to this new function.
+	Before initialisation, walk the reference expression passed as
+	argument and save some of its subexpressions to a variable.
+	(substitute_t): New struct.
+	(maybe_substitute_expr): New function.
+	(substitute_subexpr_in_expr): New function.
+
+2025-07-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121145
+	* trans-expr.cc (gfc_conv_procedure_call): Do not create pointer
+	check for proc-pointer actual passed to optional dummy.
+
+2025-07-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121060
+	* interface.cc (matching_typebound_op): Defer determination of
+	specific procedure until resolution by returning NULL.
+
+2025-07-16  Steve Kargl  <sgk@troutmask.apl.washington.edu>
+
+	* decl.cc (gfc_match_import): Correct minor whitespace snafu
+	and fix NULL pointer dereferences in two places.
+
+2025-07-15  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR fortran/104428
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Check that proc_st
+	is non-NULL before dereferencing.  Add line number to error message.
+
+2025-07-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* gfortran.h (gfc_symbol): Remove field allocated_in_scope.
+	* trans-array.cc (gfc_array_allocate): Don't set it.
+	(gfc_alloc_allocatable_for_assignment): Likewise.
+	Generate the unallocated descriptor bounds initialisation
+	before the opening of the reallocation code block.  Create a
+	variable and use it as additional condition to the unallocated
+	descriptor bounds initialisation.
+
+2025-07-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_conv_ss_descriptor): Don't evaluate
+	offset and data to a variable if is_alloc_lhs is set.  Move the
+	existing evaluation decision condition for data...
+	(save_descriptor_data): ... here as a new predicate.
+	(evaluate_bound): Add argument save_value.  Omit the evaluation
+	of the value to a variable if that argument isn't set.
+	(gfc_conv_expr_descriptor): Update caller.
+	(gfc_conv_section_startstride): Update caller.  Set save_value
+	if is_alloc_lhs is not set.  Omit the evaluation of stride to a
+	variable if save_value isn't set.
+	(gfc_set_delta): Omit the evaluation of delta to a variable
+	if is_alloc_lhs is set.
+	(gfc_is_reallocatable_lhs): Return false if flag_realloc_lhs
+	isn't set.
+	(gfc_alloc_allocatable_for_assignment): Don't update
+	the variables that may be stored in saved_offset, delta, and
+	data.  Call instead...
+	(update_reallocated_descriptor): ... this new procedure.
+	* trans-expr.cc (gfc_trans_assignment_1): Don't omit setting the
+	is_alloc_lhs flag if the right hand side is an intrinsic
+	function.  Clear the flag if the right hand side is scalar.
+
+2025-07-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-expr.cc (gfc_trans_assignment_1): Generate array
+	reallocation code before entering the scalarisation loops.
+
+2025-07-15  Filip Kastl  <fkastl@suse.cz>
+
+	* resolve.cc (resolve_select_type): Fix indentation.
+
+2025-07-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* invoke.texi (-Wsurprising): Note about OpenACC warning
+	related to PARAMATER.
+	* openmp.cc (resolve_omp_clauses, gfc_resolve_oacc_declare):
+	Accept PARAMETER for OpenACC but add surprising warning.
+	* trans-openmp.cc (gfc_trans_omp_variable_list,
+	gfc_trans_omp_clauses): Ignore PARAMETER inside clauses.
+
+2025-07-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/106035
+	* decl.cc (build_sym): Emit an error if a symbol associated by
+	an IMPORT, ONLY or IMPORT, all statement is being redeclared.
+	(gfc_match_import): Parse and check the F2018 versions of the
+	IMPORT statement. For scopes other than and interface body, if
+	the symbol cannot be found in the host scope, generate it and
+	set it up such that gfc_fixup_sibling_symbols can transfer its
+	'imported attribute' if it turnes out to be a not yet parsed
+	procedure. Test for violations of C897-8100.
+	* gfortran.h : Add 'import_only' to the gfc_symtree structure.
+	Add the enum, 'importstate', which is used for values the new
+	field 'import_state' in gfc_namespace.
+	* parse.cc (gfc_fixup_sibling_symbols): Transfer the attribute
+	'imported' to the new symbol.
+	* resolve.cc (check_sym_import_status, check_import_status):
+	New functions to test symbols and expressions for violations of
+	F2018:C8102.
+	(resolve_call): Test the 'resolved_sym' against C8102 by a call
+	to 'check_sym_import_status'.
+	(gfc_resolve_expr): If the expression is OK and an IMPORT
+	statement has been registered in the current scope, test C102
+	by calling 'check_import_status'.
+	(resolve_select_type): Test the declared derived type in TYPE
+	IS and CLASS IS statements.
+
+2025-07-08  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120637
+	* class.cc (finalize_component): Return true, when a finalizable
+	component was detect and do not free it.
+
+2025-07-07  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-intrinsic.cc (conv_intrinsic_move_alloc): Add pre and
+	post code for the FROM and TO arguments.
+
+2025-07-04  Martin Jambor  <mjambor@suse.cz>
+
+	* io.cc (format_asterisk): Add a brace around static initialization
+	location part of the field locus.
+
+2025-07-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* resolve.cc (resolve_operator): Remove conformability check,
+	because it is not in the standard.
+
+2025-07-01  Harald Anlauf  <anlauf@gmx.de>
+
+	* coarray.cc (check_add_new_component): Treat pure and elemental
+	intrinsic functions the same as non-intrinsic ones.
+	(create_caf_add_data_parameter_type): Fix front-end memleaks.
+	* trans-intrinsic.cc (conv_caf_func_index): Likewise.
+
+2025-07-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120847
+	* coarray.cc (check_add_new_comp_handle_array): Make the count
+	of components static to be able to create more than one.  Create
+	an array component only for array expressions.
+
+2025-07-01  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120843
+	* resolve.cc (resolve_operator): Report inconsistent coranks
+	only when not referencing this_image.
+	(gfc_op_rank_conformable): Treat coranks as inconformable only
+	when a coindex other then implicit this_image is used.
+
+2025-06-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120784
+	* interface.cc (gfc_match_end_interface): Detect empty local_name.
+
+2025-06-26  Martin Jambor  <mjambor@suse.cz>
+
+	* match.cc (gfc_match_nullify): Initialize p to NULL;
+
+2025-06-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* trans.cc (gfc_allocate_using_malloc): Prevent possible memory
+	leak when allocation was already done.
+
+2025-06-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* resolve.cc (resolve_fl_derived0): Do not create the token
+	component when not in coarray lib mode.
+	* trans-types.cc: Do not access the token when not in coarray
+	lib mode.
+
+2025-06-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120711
+	* trans-array.cc (gfc_trans_array_ctor_element): Store the value
+	of the offset for reuse.
+
+2025-06-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-stmt.cc (gfc_trans_call_acc_attach_detach): New.
+	(gfc_trans_call): Call it.
+
+2025-06-24  Harald Anlauf  <anlauf@gmx.de>
+	    Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/120743
+	* trans-expr.cc (gfc_conv_substring): Substring indices are of
+	type gfc_charlen_type_node.  Convert to size_type_node for
+	pointer arithmetic only after offset adjustments have been made.
+
+2025-06-24  Mikael Morin  <morin-mikael@orange.fr>
+
+	* misc.cc (gfc_var_name_for_select_type_temp): New function.
+	* gfortran.h (gfc_var_name_for_select_type_temp): Declare it.
+	* resolve.cc (resolve_select_type): Pick a discriminating name
+	from the SELECT TYPE variable reference and use it in the name
+	of the temporary variable that is generated.  Truncate name to
+	the buffer size.
+	* match.cc (select_type_set_tmp): Likewise.  Pass the
+	discriminating name...
+	(select_intrinsic_set_tmp): ... to this function.  Use the
+	discriminating name likewise.  Augment the buffer size to match
+	that of select_type_set_tmp and resolve_select_type.
+
+2025-06-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (OACC_WAIT_CLAUSES): Add if clause.
+	* trans-openmp.cc (gfc_trans_oacc_wait_directive): Handle it.
+
+2025-06-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120784
+	* interface.cc (gfc_match_end_interface): If a use-associated
+	symbol is renamed, use the local_name for checking.
+
+2025-06-19  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/120713
+	* trans-array.cc (gfc_trans_deferred_array): Statically
+	initialize deferred length variable for SAVEd character arrays.
+
+2025-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* check.cc (gfc_check_fstat): Extend checks to INTENT(OUT) arguments.
+	(gfc_check_fstat_sub): Likewise.
+	(gfc_check_stat): Likewise.
+	(gfc_check_stat_sub): Likewise.
+	* intrinsic.texi: Adjust documentation.
+
+2025-06-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/51961
+	* resolve.cc (conformable_arrays): Use modified rank check when
+	MOLD= expression is given.
+
+2025-06-12  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113152
+	* intrinsic.texi: Document new half-revolution trigonometric
+	functions. Reorder doc for atand.
+
+2025-06-06  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* f95-lang.cc (ATTR_PURE_NOTHROW_LIST): Define.
+	* trans-expr.cc (get_builtin_fn): Handle omp_get_num_devices
+	and omp_get_intrinsic_device.
+	* gfortran.h (gfc_option_t): Add disable_omp_... for them.
+	* options.cc (gfc_handle_option): Handle them with
+	-fno-builtin-.
+
+2025-06-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/120483
+	* trans-expr.cc (gfc_conv_substring): Use pointer arithmetic on
+	static allocatable char arrays.
+
+2025-06-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99838
+	* data.cc (gfc_assign_data_value): For a new initializer use the
+	location from the constructor as fallback.
+
+2025-05-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102599
+	PR fortran/114022
+	* expr.cc (simplify_complex_array_inquiry_ref): Helper function for
+	simplification of inquiry references (%re/%im) of constant complex
+	arrays.
+	(find_inquiry_ref): Use it for handling %re/%im inquiry references
+	of complex arrays.
+	(scalarize_intrinsic_call): Fix frontend memleak.
+	* primary.cc (gfc_match_varspec): When the reference is NULL, the
+	previous simplification has succeeded in evaluating inquiry
+	references also of arrays.
+
+2025-05-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120355
+	* interface.cc (compare_parameter): If the global function has a
+	result clause, take typespec from there for the comparison against
+	the dummy argument.
+
+2025-05-30  Julian Brown  <julian@codesourcery.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* parse.cc (tree.h, fold-const.h, tree-hash-traits.h): Add includes
+	(for additions to omp-general.h).
+
+2025-05-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc(check_c_ptr_2): Rephrase error message
+	for clarity.
+
+2025-05-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/113152
+	* simplify.cc (gfc_simplify_cospi, gfc_simplify_sinpi): Avoid using
+	mpfr_fmod_ui in the MPFR < 4.2.0 version.
+
+2025-05-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119856
+	* io.cc: Set missing comma error checks to STD_STD_LEGACY.
+
+2025-05-28  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113152
+	* gfortran.h (enum gfc_isym_id): Add new enum.
+	* intrinsic.cc (add_functions): Register new intrinsics. Changing the call
+	from gfc_resolve_trigd{,2} to gfc_resolve_trig{,2}.
+	* intrinsic.h (gfc_simplify_acospi, gfc_simplify_asinpi,
+	gfc_simplify_asinpi, gfc_simplify_atanpi, gfc_simplify_atan2pi,
+	gfc_simplify_cospi, gfc_simplify_sinpi, gfc_simplify_tanpi): New.
+	(gfc_resolve_trig): Rename from gfc_resolve_trigd.
+	(gfc_resolve_trig2): Rename from gfc_resolve_trigd2.
+	* iresolve.cc (gfc_resolve_trig): Rename from gfc_resolve_trigd.
+	(gfc_resolve_trig2): Rename from gfc_resolve_trigd2.
+	* mathbuiltins.def: Add 7 new math builtins and re-align.
+	* simplify.cc (gfc_simplify_acos, gfc_simplify_asin,
+	gfc_simplify_acosd, gfc_simplify_asind): Revise error message.
+	(gfc_simplify_acospi, gfc_simplify_asinpi,
+	gfc_simplify_asinpi, gfc_simplify_atanpi, gfc_simplify_atan2pi,
+	gfc_simplify_cospi, gfc_simplify_sinpi, gfc_simplify_tanpi): New.
+
+2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* primary.cc (gfc_match_varspec): Correct order of logic.
+
+2025-05-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc (gfc_check_c_associated): Use new helper functions.
+	Only call check_c_ptr_1 if optional c_ptr_2 tests succeed.
+	(check_c_ptr_1): Handle only c_ptr_1 checks.
+	(check_c_ptr_2): Expand checks for c_ptr_2 and handle cases
+	where there is no derived pointer in the gfc_expr and check
+	the inmod_sym_id only if it exists.
+	* misc.cc (gfc_typename): Handle the case for BT_VOID rather
+	than throw an internal error.
+
+2025-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101735
+	* expr.cc (find_inquiry_ref): If an inquiry reference applies to
+	a substring, use that, and calculate substring length if needed.
+	* primary.cc (extend_ref): Also handle attaching to end of
+	reference chain for appending.
+	(gfc_match_varspec): Discrimate between arrays of character and
+	substrings of them.  If a substring is taken from a character
+	component of a derived type, get the proper typespec so that
+	inquiry references work correctly.
+	(gfc_match_rvalue): Handle corner case where we hit a seemingly
+	dangling '%' and missed an inquiry reference. Try another match.
+
+2025-05-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/116792
+	* error.cc (gfc_diagnostic_start_span): Update for diagnostic.h
+	changes.
+
+2025-05-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120099
+	* trans-types.cc (gfc_return_by_reference): Intrinsic functions
+	returning complex numbers may return their result by reference
+	with -ff2c.
+
+2025-05-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/85750
+	* resolve.cc (resolve_symbol): Reorder conditions when to apply
+	default-initializers.
+
+2025-05-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_omp_deep_mapping_do): Handle SSA_NAME if
+	a def_stmt is available.
+
+2025-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120139
+	* dump-parse-tree.cc (get_c_type_name): If no constant
+	size of an array exists, output an asterisk.
+
+2025-05-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120107
+	* dump-parse-tree.cc (write_type): Do not dump non-interoperable
+	types.
+
+2025-05-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120225
+	* simplify.cc (gfc_simplify_cotand): Fix used argument in
+	mpfr_tanu call.
+
+2025-05-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120225
+	* simplify.cc: Include "trigd_fe.inc" only with MPFR < 4.2.0.
+	(rad2deg, rad2deg): Only define if MPFR < 4.2.0.
+	(gfc_simplify_acosd, gfc_simplify_asind, gfc_simplify_atand,
+	gfc_simplify_atan2d, gfc_simplify_cosd, gfc_simplify_tand,
+	gfc_simplify_cotand): Use mpfr_...u functions with MPFR >= 4.2.0.
+
+2025-05-13  Yuao Ma  <c8ef@outlook.com>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/113413
+	* intrinsic.cc (do_check): Minor doc polish.
+	(add_functions): Add atand(y, x) mapping.
+	* intrinsic.texi: Update atand example.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+	    Daniil Kochergin  <daniil2472s@gmail.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/120191
+	* trans-intrinsic.cc (strip_kind_from_actual): Remove.
+	(gfc_conv_intrinsic_minmaxloc): Don't call strip_kind_from_actual.
+	Free and clear kind_arg->expr if non-NULL.  Set back_arg->name to
+	"%VAL" instead of a loop looking for last argument.  Remove actual
+	variable, use array_arg instead.  Free and clear dim_arg->expr if
+	non-NULL for BT_CHARACTER cases instead of using a loop.
+
+2025-05-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/120163
+	* gfortran.h: Add formal_resolved to gfc_symbol.
+	* resolve.cc (gfc_resolve_formal_arglist): Set it.
+	(resolve_function): Do not call gfc_get_formal_from_actual_arglist
+	if we already resolved a formal arglist.
+	(resolve_call): Likewise.
+
+2025-05-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102891
+	* dependency.cc (gfc_ref_needs_temporary_p): Within an array
+	reference, inquiry references of complex variables generally
+	need a temporary.
+
+2025-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120193
+	* trans-types.cc (gfc_init_types): For flag_unsigned use
+	build_distinct_type_copy or build_variant_type_copy from
+	gfc_character_types[index_char] if index_char > -1 instead of
+	gfc_character_types[index_char] or
+	gfc_build_unsigned_type (&gfc_unsigned_kinds[index]).
+
+2025-05-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/120179
+	* match.cc (gfc_match_do): Do not attempt to match end-of-statement
+	twice.
+
+2025-05-07  Paul Thomas  <pault@gcc.gnu.org>
+	    and Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/119948
+	* primary.cc (match_variable): Module procedures with sym the
+	same as result can be treated as variables, although marked
+	external.
+
+2025-05-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/120049
+	* check.cc (gfc_check_c_associated): Modify checks to avoid
+	ICE and allow use, intrinsic :: iso_c_binding from a separate
+	module file.
+
+2025-05-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119928
+	* interface.cc (gfc_check_dummy_characteristics): Do not issue
+	error if one dummy symbol has been generated from an actual
+	argument and the other one has OPTIONAL, INTENT, ALLOCATABLE,
+	POINTER, TARGET, VALUE, ASYNCHRONOUS or CONTIGUOUS.
+	(gfc_get_formal_from_actual_arglist): Do nothing if symbol
+	is a class.
+
+2025-05-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119986
+	* expr.cc (is_subref_array): When searching for array references,
+	do not terminate early so that inquiry references to complex
+	components work.
+	* primary.cc (gfc_variable_attr): A substring reference can refer
+	to either a scalar or array character variable.  Adjust search
+	accordingly.
+
+2025-05-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/119948
+	* resolve.cc (gfc_impure_variable): The result of a module
+	procedure with an interface declaration is not impure even if
+	the current namespace is not the same as the symbol's.
+
+2025-04-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/102900
+	* trans-decl.cc (gfc_generate_function_code): Use sym->result
+	when generating fake result decl for functions returning
+	allocatable or pointer results.
+	* trans-expr.cc (gfc_conv_procedure_call): When checking the
+	pointer status of an actual argument passed to a non-allocatable,
+	non-pointer dummy which is of type CLASS, do not check the
+	class container of the actual if it is just a procedure pointer.
+	(gfc_trans_pointer_assignment): Fix treatment of assignment to
+	NULL of a procedure pointer.
+
+2025-04-23  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119200
+	* check.cc (gfc_check_lcobound): Use locus from intrinsic_where.
+	(gfc_check_image_index): Same.
+	(gfc_check_num_images): Same.
+	(gfc_check_team_number): Same.
+	(gfc_check_this_image): Same.
+	(gfc_check_ucobound): Same.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* match.cc (match_exit_cycle): Allow to exit team block.
+	(gfc_match_end_team): Create end_team node also without
+	parameter list.
+	* trans-intrinsic.cc (conv_stat_and_team): Team and team_number
+	only need to be a single pointer.
+	* trans-stmt.cc (trans_associate_var): Create a mapping coarray
+	token for coarray associations or it is not addressed correctly.
+	* trans.h (enum gfc_coarray_regtype): Add mapping mode to
+	coarray register.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* check.cc (gfc_check_image_index): Check for team or
+	team_number correctnes.
+	(gfc_check_num_images): Same.
+	* gfortran.texi: Update documentation on num_images' API
+	function.
+	* intrinsic.cc (add_functions): Update signature of image_index
+	and num_images.  Both can take either a team handle or number.
+	* intrinsic.h (gfc_check_num_images): Update signature to take
+	either team or team_number.
+	(gfc_check_image_index): Can take coarray, subscripts and team
+	or team number now.
+	(gfc_simplify_image_index): Same.
+	(gfc_simplify_num_images): Same.
+	(gfc_resolve_image_index): Same.
+	* intrinsic.texi: Update documentation of num_images() Fortran
+	function.
+	* iresolve.cc (gfc_resolve_image_index): Update signature.
+	* simplify.cc (gfc_simplify_num_images): Update signature and
+	remove undocumented failed argument.
+	(gfc_simplify_image_index): Add team or team number argument.
+	* trans-intrinsic.cc (conv_stat_and_team): Because being
+	optional teams need to be a pointer to the opaque pointer.
+	(conv_caf_sendget): Correct call; was two arguments short.
+	(trans_image_index): Support team or team_number.
+	(trans_num_images): Same.
+	(conv_intrinsic_cobound): Adapt to changed signature of
+	num_images in call.
+	* trans-stmt.cc (gfc_trans_sync): Same.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87326
+	* check.cc (gfc_check_this_image): Check the three different
+	parameter lists possible for this_image and sort them correctly.
+	* gfortran.texi: Update documentation on this_image's API.
+	* intrinsic.cc (add_functions): Update this_image's signature.
+	(check_specific): Add specific check for this_image.
+	* intrinsic.h (gfc_check_this_image): Change to flexible
+	argument list.
+	* intrinsic.texi: Update documentation on this_image().
+	* iresolve.cc (gfc_resolve_this_image): Resolve the different
+	arguments.
+	* simplify.cc (gfc_simplify_this_image): Simplify the simplify
+	routine.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Update
+	signature of this_image.
+	* trans-expr.cc (gfc_caf_get_image_index): Use correct signature
+	of this_image.
+	* trans-intrinsic.cc (trans_this_image): Adapt to correct
+	signature.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/88154
+	PR fortran/88960
+	PR fortran/97210
+	PR fortran/103001
+	* check.cc (team_type_check): Check a type for being team_type
+	from the iso_fortran_env module.
+	(gfc_check_image_status): Use team_type check.
+	(gfc_check_get_team): Check for level argument.
+	(gfc_check_team_number): Use team_type check.
+	* expr.cc (gfc_check_assign): Add treatment for returning
+	team_type in caf-single mode.
+	* gfortran.texi: Add/Update documentation for get_team and
+	team_number API functions.
+	* intrinsic.cc (add_functions): Update get_team signature.
+	* intrinsic.h (gfc_resolve_get_team): Add prototype.
+	* intrinsic.texi: Add/Update documentation for get_team and
+	team_number Fortran functions.
+	* iresolve.cc (gfc_resolve_get_team): Resolve return type to be
+	of type team_type.
+	* iso-fortran-env.def: Update STAT_LOCK constants.  They have
+	nothing to do with files.  Add level constants for get_team.
+	* libgfortran.h: Add level and unlock_stat constants.
+	* simplify.cc (gfc_simplify_get_team): Simply to correct return
+	type team_type.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Update
+	get_team and image_status API prototypes to correct signatures.
+	* trans-intrinsic.cc (conv_intrinsic_image_status): Translate
+	second parameter correctly.
+	(conv_intrinsic_team_number): Translate optional single team
+	argument correctly.
+	(gfc_conv_intrinsic_function): Add translation of get_team.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87326
+	PR fortran/87556
+	PR fortran/88254
+	PR fortran/103796
+	* coarray.cc (split_expr_at_caf_ref): Treat polymorphic types
+	correctly.  Ensure resolve of expression after coindex.
+	(create_allocated_callback): Fix parameter of allocated function
+	for coarrays.
+	(coindexed_expr_callback): Improve detection of coarrays in
+	allocated function.
+	* decl.cc (gfc_match_end): Add team block matching.
+	* dump-parse-tree.cc (show_code_node): Dump change team block as
+	such.
+	* frontend-passes.cc (gfc_code_walker): Recognice team block.
+	* gfortran.texi: Add documentation for team api functions.
+	* intrinsic.texi: Add documentation about team_type in
+	iso_fortran_env module.
+	* iso-fortran-env.def (team_type): Use helper to get pointer
+	kind.
+	* match.cc (gfc_match_associate): Factor out matching of
+	association list, because it is used in change team as well.
+	(check_coarray_assoc): Ensure, that the association is to a
+	coarray.
+	(match_association_list): Match a list of association either in
+	associate or in change team.
+	(gfc_match_form_team): Match form team correctly include
+	new_index.
+	(gfc_match_change_team): Match change team with association
+	list.
+	(gfc_match_end_team): Match end team including stat and errmsg.
+	(gfc_match_return): Prevent return from team block.
+	* parse.cc (decode_statement): Sort team block.
+	(next_statement): Same.
+	(check_statement_label): Same.
+	(accept_statement): Same.
+	(verify_st_order): Same.
+	(parse_associate): Renamed to move_associates_to_block...
+	(move_associates_to_block): ... to enable reuse for change team.
+	(parse_change_team): Parse it as block.
+	(parse_executable): Same.
+	* parse.h (enum gfc_compile_state): Add team block as compiler
+	state.
+	* resolve.cc (resolve_scalar_argument): New function to resolve
+	an argument to a statement as a scalar.
+	(resolve_form_team): Resolve its members.
+	(resolve_change_team): Same.
+	(resolve_branch): Prevent branch from jumping out of team block.
+	(check_team): Removed.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Add stat and
+	errmsg to team API functions and update their arguments.
+	* trans-expr.cc (gfc_trans_subcomponent_assign): Also null the
+	token when moving memory or an allocated() will not detect a
+	free.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_caf_is_present_remote):
+	Adapt to signature change no longer a pointer-pointer.
+	* trans-stmt.cc (gfc_trans_form_team): Translate a form team
+	including new_index.
+	(gfc_trans_change_team): Translate a change team as a block.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87939
+	* check.cc (gfc_check_move_alloc): Add stat and errmsg to
+	move_alloc.
+	* dump-parse-tree.cc (show_sync_stat): New helper function.
+	(show_code_node): Use show_sync_stat to print stat and errmsg.
+	* gfortran.h (struct sync_stat): New struct to unify stat and
+	errmsg handling.
+	* intrinsic.cc (add_subroutines): Correct signature of
+	move_alloc.
+	* intrinsic.h (gfc_check_move_alloc): Correct signature of
+	check_move_alloc.
+	* match.cc (match_named_arg): Match an optional argument to a
+	statement.
+	(match_stat_errmsg): Match a stat= or errmsg= named argument.
+	(gfc_match_critical): Use match_stat_errmsg to match the named
+	arguments.
+	(gfc_match_sync_team): Same.
+	* resolve.cc (resolve_team_argument): Resolve an expr to have
+	type TEAM_TYPE from iso_fortran_env.
+	(resolve_scalar_variable_as_arg): Resolve an argument as a
+	scalar type.
+	(resolve_sync_stat): Resolve stat and errmsg expressions.
+	(resolve_sync_team): Resolve a sync team statement using
+	sync_stat helper.
+	(resolve_end_team): Same.
+	(resolve_critical): Same.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Correct
+	sync_team signature.
+	* trans-intrinsic.cc (conv_intrinsic_move_alloc): Store stat
+	an errmsg optional arguments in helper struct and use helper
+	to translate.
+	* trans-stmt.cc (trans_exit): Implement DRY pattern for
+	generating an _exit().
+	(gfc_trans_sync_stat): Translate stat and errmsg contents.
+	(gfc_trans_end_team): Use helper to translate stat and errmsg.
+	(gfc_trans_sync_team): Same.
+	(gfc_trans_critical): Same.
+	* trans-stmt.h (gfc_trans_sync_stat): New function.
+	* trans.cc (gfc_deallocate_with_status): Parameterize check at
+	runtime to allow unallocated (co-)array when freeing a
+	structure.
+	(gfc_deallocate_scalar_with_status): Same and also add errmsg.
+	* trans.h (gfc_deallocate_with_status): Signature changes.
+	(gfc_deallocate_scalar_with_status): Same.
+
+2025-04-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/119836
+	* resolve.cc (check_pure_function): Fix checking for
+	an impure subprogram within a DO CONCURRENT construct.
+	(pure_subroutine): Ditto.
+
+2025-04-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106948
+	* resolve.cc (gfc_pure_function): If a function has been resolved,
+	but esym is not yet set, look at its attributes to see whether it
+	is pure or elemental.
+
+2025-04-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* f95-lang.cc (LANG_HOOKS_OMP_DEEP_MAPPING,
+	LANG_HOOKS_OMP_DEEP_MAPPING_P, LANG_HOOKS_OMP_DEEP_MAPPING_CNT):
+	Define.
+	* openmp.cc (gfc_match_omp_clause_reduction): Fix location setting.
+	(resolve_omp_clauses): Permit allocatable components, reject
+	them and polymorphic variables in PRIVATE/FIRSTPRIVATE.
+	* trans-decl.cc (add_clause): Set clause location.
+	* trans-openmp.cc (gfc_has_alloc_comps): Add ptr_ok and
+	shallow_alloc_only Boolean arguments.
+	(gfc_omp_replace_alloc_by_to_mapping): New.
+	(gfc_omp_private_outer_ref, gfc_walk_alloc_comps,
+	gfc_omp_clause_default_ctor, gfc_omp_clause_copy_ctor,
+	gfc_omp_clause_assign_op, gfc_omp_clause_dtor): Update call to it.
+	(gfc_omp_finish_clause): Minor cleanups, improve location data,
+	handle allocatable components.
+	(gfc_omp_deep_mapping_map, gfc_omp_deep_mapping_item,
+	gfc_omp_deep_mapping_comps, gfc_omp_gen_simple_loop,
+	gfc_omp_get_array_size, gfc_omp_elmental_loop,
+	gfc_omp_deep_map_kind_p, gfc_omp_deep_mapping_int_p,
+	gfc_omp_deep_mapping_p, gfc_omp_deep_mapping_do,
+	gfc_omp_deep_mapping_cnt, gfc_omp_deep_mapping): New.
+	(gfc_trans_omp_array_section): Save array descriptor in case
+	deep-mapping lang hook will need it.
+	(gfc_trans_omp_clauses): Likewise; use better clause location data.
+	* trans.h (gfc_omp_deep_mapping_p, gfc_omp_deep_mapping_cnt,
+	gfc_omp_deep_mapping): Add function prototypes.
+
+2025-04-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119669
+	* interface.cc (compare_parameter): Error when mismatch between
+	formal argument as subroutine and function.  If the dummy
+	argument is a known function, set its typespec.
+
+2025-04-12  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR fortran/101602
+	* trans-stmt.cc (gfc_trans_concurrent_locality_spec): Fix
+	'static_assert'.
+
+2025-04-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119656
+	* interface.cc (gfc_compare_actual_formal): Fix front-end memleak
+	when searching for matching interfaces.
+	* trans-expr.cc (gfc_conv_procedure_call): If there is a formal
+	dummy corresponding to an absent argument, use its type, and only
+	fall back to inferred type otherwise.
+
+2025-04-09  Paul Thomas  <pault@gcc.gnu.org>
+	    and Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR fortran/119460
+	* iresolve.cc (generate_reduce_op_wrapper): Increase the size
+	of 'tname'. Change intent of 'a' and 'b' to intent_in.
+	* trans-decl.cc (add_argument_checking): Do not test artificial
+	formal symbols.
+	* trans-expr.cc (gfc_conv_procedure_call): Remove reduce_scalar
+	and the blocks triggered by it.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_function): Set the
+	result of non-character, scalar reduce to be allocatable.
+
+2025-04-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/101602
+	* resolve.cc (resolve_locality_spec): Remove 'sorry, unimplemented'.
+	* trans-stmt.cc (struct symbol_and_tree_t): New.
+	(gfc_trans_concurrent_locality_spec): New.
+	(gfc_trans_forall_1): Call it; update to handle local and local_init.
+	* trans-decl.cc (gfc_start_saved_local_decls,
+	gfc_stop_saved_local_decls): New; moved code from ...
+	(gfc_process_block_locals): ... here. Call it.
+	* trans.h (gfc_start_saved_local_decls,
+	gfc_stop_saved_local_decls): Declare.
+
+2025-04-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/118965
+	* openmp.cc (gfc_parser_omp_clause_init_modifiers): Fix some
+	inconsistent code indentation.  Remove code for recognizing
+	clauses	without modifiers.  Diagnose prefer_type without a
+	following paren.  Adjust error message for an unrecognized modifier.
+	Diagnose missing target/targetsync modifier.
+	(gfc_match_omp_init): Fix more inconsistent code indentation.
+
+2025-03-28  Harald Anlauf  <anlauf@gmx.de>
+
+	* check.cc (gfc_invalid_boz): Correct spelling of compiler flag in
+	hint to -fallow-invalid-boz.
+
+2025-03-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118796
+	* resolve.cc: Do not apply default initialization to a derived-type
+	function result if the resolved function is use-associated.
+
+2025-03-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119419
+	* dump-parse-tree.cc (write_funptr_fcn): New function.
+	(write_type): Invoke it for C_FUNPTR.
+	(write_interop_decl): Do not dump vtabs.
+
+2025-03-25  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Remove accidental
+	redeclaration of pref.
+
+2025-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* resolve.cc (resolve_procedure_expression): Remove extraneous space
+	from the middle of diagnostics.
+
+2025-03-21  Paul-Antoine Arras  <parras@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Make OMP_CLAUSE_DESTROY and
+	OMP_CLAUSE_INIT addressable.
+	* types.def (BT_FN_VOID_INT_INT_PTR_PTR_PTR_INT_PTR_INT_PTR_UINT_PTR):
+	New.
+
+2025-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119406
+	* resolve.cc (resolve_locality_spec): Add space in error
+	message.
+
+2025-03-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119403
+	* interface.cc (compare_parameter): Fix typo.
+
+2025-03-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85836
+	* check.cc (get_ul_from_cst_cl): New function used in
+	check_operation.
+	(check_operation): New function used in check_reduce and
+	check_co_reduce.
+	(gfc_check_co_reduce): Use it.
+	(gfc_check_reduce): New function.
+	(gfc_check_rename): Add prototype for intrinsic with 6 arguments.
+	* gfortran.h : Add isym id for reduce and prototype for f6.
+	* intrinsic.cc (do_check): Add another argument expression and use
+	it in the call to the six argument specific check.
+	(add_sym_6): New function.
+	(add_functions): Add the discription of the reduce intrinsic and
+	add it to the intrinsic list.
+	* intrinsic.h : Add prototypes for gfc_check_reduce and
+	gfc_resolve_reduce.
+	* iresolve.cc (generate_reduce_op_wrapper): Generate a wrapper
+	subroutine for the 'operation' function to enable the library
+	implementation to be type agnostic and use pointer arithmetic
+	throughout.
+	(gfc_resolve_reduce): New function.
+	* trans-expr.cc (gfc_conv_procedure_call): Add flag for scalar
+	reduce. Generate a return variable 'sr' for scalar reduce, pass its
+	address to the library function and return it as the scalar result.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_function): Array valued
+	reduce is called in same way as reshape. Fall through for call to
+	the scalar version.
+
+2025-03-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119380
+	* trans-array.cc (structure_alloc_comps): Prevent freeing of
+	procedure pointer components.
+
+2025-03-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119349
+	* trans-expr.cc (gfc_conv_procedure_call): Prevent deallocation
+	of array temporary for polymorphic temporary argument.
+
+2025-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/116706
+	* trans-array.cc (gfc_is_reallocatable_lhs): Fix check on
+	allocatable components of derived type or class objects.
+
+2025-03-19  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/119272
+	* resolve.cc (resolve_compcall): Postpone error report when
+	symbol is not resolved yet for component call resolve.
+
+2025-03-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119338
+	* resolve.cc (resolve_allocate_expr): Check F2003:C626: Type-spec
+	in ALLOCATE of an assumed-length character dummy argument shall be
+	an asterisk.
+
+2025-03-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/60560
+	* expr.cc (gfc_traverse_expr): Do not descend into length type
+	parameter for negative values of auxiliary parameter f.
+	* resolve.cc (gfc_find_var_in_expr): New helper function to check
+	dependence of an expression on given variable.
+	(resolve_allocate_expr): Use it to determine if array bounds in an
+	ALLOCATE statement depend explicitly on a variable.
+
+2025-03-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* module.cc (mio_omp_declare_simd_clauses): New, moved from ...
+	(mio_omp_declare_simd): ... here. Update call, write empty '( )'
+	if there is no declare simd but a declare variant.
+	(mio_omp_declare_variant): New.
+	(mio_symbol): Call it.
+	* openmp.cc (gfc_match_omp_context_selector): Add comment about
+	module.cc to TODO note.
+	* trans-stmt.h (gfc_trans_omp_declare_variant): Take additional
+	parent_ns argument.
+	* trans-decl.cc (create_function_arglist,
+	gfc_create_function_decl): Update call.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Take new
+	argument, add some special case handling for attr.use_assoc.
+
+2025-03-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119118
+	* dependency.cc (contains_forall_index_p): Let loop over elements
+	of a constructor update its control variable.  Handle REF_INQUIRY
+	in switch statement.
+	(gfc_contains_implied_index_p): Likewise.
+
+2025-03-12  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/98903
+	* array.cc (gfc_copy_array_ref): Copy team, team_type and stat.
+	(match_team_or_stat): Match a single team(_number)= or stat=.
+	(gfc_match_array_ref): Add switching to image_selector_parsing
+	and error handling when indices come after named arguments.
+	* coarray.cc (move_coarray_ref): Move also team_type.
+	* expr.cc (gfc_free_ref_list): Free team and stat expression.
+	(gfc_find_team_co): Find team or team_number in array-ref.
+	* gfortran.h (enum gfc_array_ref_team_type): New enum to
+	distinguish unset, team or team_number expression.
+	(gfc_find_team_co): Default searching to team= expressions.
+	* resolve.cc (resolve_array_ref): Check for type correctness of
+	team(_number) and stats in coindices.
+	* trans-array.cc (gfc_conv_array_ref): Ensure stat is cleared
+	when fcoarray=single is used.
+	* trans-intrinsic.cc (conv_stat_and_team): Including team_number
+	in conversion.
+	(gfc_conv_intrinsic_caf_get): Propagate team_number to ABI
+	routine.
+	(conv_caf_send_to_remote): Same.
+	(conv_caf_sendget): Same.
+
+2025-03-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119199
+	* decl.cc (gfc_match_save): Reject SAVE statement of a COMMON block
+	when in a BLOCK construct.
+	* trans-common.cc (translate_common): Avoid NULL pointer dereference.
+
+2025-03-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119078
+	* frontend-passes.cc (check_against_globals): Do not check
+	for abstract interfaces or dummy arguments.
+	* resolve.cc (gfc_verify_binding_labels): Adjust comment.
+	Do not put abstract interfaces or dummy argument into global
+	namespace.
+
+2025-03-10  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107143
+	* dependency.cc (check_data_pointer_types): Do not just compare
+	for derived type, but for same derived type.
+
+2025-03-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119157
+	* gfortran.h (gfc_pop_undo_symbol): Remove prototype.
+	* interface.cc (gfc_get_formal_from_actual_arglist): Use
+	gfc_commit_symbol() instead of gfc_pop_undo_symbol().
+	* symbol.cc (gfc_pop_undo_symbol): Remove.
+
+2025-03-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119157
+	* gfortran.h (gfc_symbol): Make ext_dummy_arglist_mismatch a
+	one-bit bitfield
+	(gfc_pop_undo_symbol): Declare prototype.
+	* symbol.cc (gfc_pop_undo_symbol): New function.
+	* interface.cc (gfc_get_formal_from_actual_arglist): Call it
+	for artificially introduced formal variables.
+
+2025-03-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/119054
+	* resolve.cc (resolve_elemental_actual): When checking other
+	actual arguments to elemental procedures, don't check
+	attributes of literals and function calls.
+
+2025-03-06  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/119118
+	* dependency.cc (gfc_contains_implied_index_p): Helper function to
+	determine if an expression has a dependence on an implied-do index.
+	* dependency.h (gfc_contains_implied_index_p): Add prototype.
+	* trans-expr.cc (gfc_conv_substring): Adjust logic to not generate
+	substring bounds checks before implied-do indices have been
+	substituted.
+
+2025-03-05  Mark Wielaard  <mark@klomp.org>
+
+	* lang.opt.urls: Regenerated.
+
+2025-03-05  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/104684
+	* trans-array.cc (gfc_conv_expr_descriptor): Look at the
+	lang-specific akind and do a view convert when only the akind
+	attribute differs between pointer and allocatable array.
+
+2025-03-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/119049
+	PR fortran/119074
+	* dump-parse-tree.cc (seen_conflict): New static varaible.
+	(gfc_dump_external_c_prototypes): Initialize it. If it was
+	set, write out a warning that -std=c23 will not work.
+	(write_proc): Move the work of actually writing out the
+	formal arglist to...
+	(write_formal_arglist): New function. Handle external dummy
+	parameters and their argument lists. If there were mismatched
+	arguments, output an empty argument list in pre-C23 style.
+	* gfortran.h (struct gfc_symbol): Add ext_dummy_arglist_mismatch
+	flag and formal_at.
+	* invoke.texi: Document -Wexternal-argument-mismatch.
+	* lang.opt: Put it in.
+	* resolve.cc (resolve_function): If warning about external
+	argument mismatches, build a formal from actual arglist the
+	first time around, and later compare and warn.
+	(resolve_call): Likewise
+
+2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/103391
+	* trans-expr.cc (gfc_trans_assignment_1): Do not use poly assign
+	for pointer arrays on lhs (as it is done for allocatables
+	already).
+
+2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77872
+	* trans-expr.cc (gfc_get_tree_for_caf_expr): Pick up token from
+	decl when it is present there for class types.
+
+2025-03-04  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/77872
+	* trans-expr.cc (gfc_conv_procedure_call): Use attr instead of
+	doing type check and branching for BT_CLASS.
+
+2025-03-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/101577
+	* symbol.cc (verify_bind_c_derived_type): Generate error message
+	for derived type with no components in standard conformance mode,
+	indicating that this is a GNU extension.
+
+2025-03-03  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118747
+	* trans-array.cc (gfc_trans_array_ctor_element): Remove copy to
+	temporary variable.
+	* trans-expr.cc (gfc_conv_procedure_call): Use references to
+	array members instead of copies when freeing after use.
+	Formatting fix.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* intrinsic.texi: Fix inconsistent capitalization of argument
+	names and other minor copy-editing.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/47928
+	* intrinsic.texi: Move the "Standard" subheading farther down.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/47928
+	* gfortran.texi: Move all the "Syntax" subheadings ahead of
+	"Description", and rename to "Synopsis".
+	* intrinsic.texi: Likewise.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/47928
+	* intrinsic.texi: Put a blank line between "@item @emph{}"
+	subheadings, but not more than one.
+
+2025-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR fortran/47928
+	* gfortran.texi: Consistently use "@emph{Notes}:" instead of
+	other spellings.
+	* intrinsic.texi: Likewise.  Also fix an inconsistent capitalization
+	and remove a redundant "Standard" entry.
+
+2025-03-01  Harald Anlauf  <anlauf@gmx.de>
+
+	* match.cc (gfc_match_nullify): Free matched expression when
+	cleaning up.
+	* primary.cc (match_variable): Initialize result to NULL.
+
+2025-02-28  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118730
+	* resolve.cc: Mark unused derived type variable with finalizers
+	referenced to execute finalizer when leaving scope.
+
+2025-02-27  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118789
+	* trans-stmt.cc (trans_associate_var): Compare pointed to types when
+	expr to associate is already a pointer.
+
+2025-02-26  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/108233
+	* trans-expr.cc (gfc_trans_assignment_1): Remove SAVE_EXPR on lhs.
+
+2025-02-25  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (fixup_comp_refs): For class types set correct
+	component (class) type.
+	(split_expr_at_caf_ref): Provide location.
+	* trans-intrinsic.cc (conv_caf_send_to_remote): Look at
+	generated formal argument and not declared one to detect
+	descriptor arrays.
+	(conv_caf_sendget): Same.
+
+2025-02-25  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* trans-intrinsic.cc (conv_caf_sendget): Use the size of data
+	transferred between the two images and not the descritor's size.
+
+2025-02-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/48958
+	* trans-array.cc (gfc_trans_deferred_array): Initialize the data
+	component of non-saved pointers when -fcheck=pointer is set.
+
+2025-02-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* trans-array.cc (gfc_full_array_size): Obtain the rank from
+	the array descriptor for assumed rank.
+	(gfc_tree_array_size): Likewise; permit expr = NULL to operate
+	only the tree.
+	(gfc_conv_descriptor_stride_get): Update for added assumed-rank
+	array types.
+	* trans-openmp.cc (gfc_omp_finish_clause): Likewise.
+	* trans-types.cc (gfc_build_array_type, gfc_get_derived_type,
+	gfc_get_array_descr_info): Likewise.
+	* trans.h (enum gfc_array_kind): Add
+	GFC_ARRAY_ASSUMED_RANK_{ALLOCATABLE,POINTER{,_CONT}}.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* gfortran.texi: Remove deprecated functions from documentation.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Remove
+	decprecated function decls.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_exponent): Remove
+	deprecated/no longer needed routines.
+	* trans.h: Remove unused decls.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (rewrite_caf_send): Rewrite to
+	transfer_between_remotes when both sides of the assignment have
+	a coarray.
+	(coindexed_code_callback): Prevent duplicate rewrite.
+	* gfortran.texi: Add documentation for transfer_between_remotes.
+	* intrinsic.cc (add_subroutines): Add intrinsic symbol for
+	caf_sendget to allow easy rewrite to transfer_between_remotes.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Add
+	prototype for transfer_between_remotes.
+	* trans-intrinsic.cc (conv_caf_vector_subscript_elem): Mark as
+	deprecated.
+	(conv_caf_vector_subscript): Same.
+	(compute_component_offset): Same.
+	(conv_expr_ref_to_caf_ref): Same.
+	(conv_stat_and_team): Extract stat and team from expr.
+	(gfc_conv_intrinsic_caf_get): Use conv_stat_and_team.
+	(conv_caf_send_to_remote): Same.
+	(has_ref_after_cafref): Mark as deprecated.
+	(conv_caf_sendget): Translate to transfer_between_remotes.
+	* trans.h: Add prototype for transfer_between_remotes.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (move_coarray_ref): Move the coarray reference out
+	of the given one.  Especially when there is a regular array ref.
+	(fixup_comp_refs): Move components refs to a derived type where
+	the codim has been removed, aka a new type.
+	(split_expr_at_caf_ref): Correctly split the reference chain.
+	(remove_caf_ref): Simplify.
+	(create_get_callback): Fix some deficiencies.
+	(create_allocated_callback): Adapt to new signature of split.
+	(create_send_callback): New function.
+	(rewrite_caf_send): Rewrite a call to caf_send to
+	caf_send_to_remote.
+	(coindexed_code_callback): Treat caf_send and caf_sendget
+	correctly.
+	* gfortran.h (enum gfc_isym_id): Add SENDGET-isym.
+	* gfortran.texi: Add documentation for send_to_remote.
+	* resolve.cc (gfc_resolve_code): No longer generate send_by_ref
+	when allocatable coarray (component) is on the lhs.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Add
+	caf_send_to_remote decl.
+	* trans-intrinsic.cc (conv_caf_func_index): Ensure the static
+	variables created are not in a block-scope.
+	(conv_caf_send_to_remote): Translate caf_send_to_remote calls.
+	(conv_caf_send): Renamed to conv_caf_sendget.
+	(conv_caf_sendget): Renamed from conv_caf_send.
+	(gfc_conv_intrinsic_subroutine): Branch correctly for
+	conv_caf_send and sendget.
+	* trans.h: Correct decl.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (create_allocated_callback): Add creating remote
+	side procedure for checking allocation status of coarray.
+	(rewrite_caf_allocated): Rewrite ALLOCATED on coarray to use caf
+	routine.
+	(coindexed_expr_callback): Exempt caf_is_present_on_remote from
+	being rewritten again.
+	* gfortran.h (enum gfc_isym_id): Add caf_is_present_on_remote
+	id.
+	* gfortran.texi: Add documentation for caf_is_present_on_remote.
+	* intrinsic.cc (add_functions): Add caf_is_present_on_remote
+	symbol.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Define
+	interface of caf_is_present_on_remote.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_caf_is_present_remote):
+	Translate caf_is_present_on_remote.
+	(trans_caf_is_present): Remove.
+	(caf_this_image_ref): Remove.
+	(gfc_conv_allocated): Take out coarray treatment, because that
+	is rewritten to caf_is_present_on_remote now.
+	(gfc_conv_intrinsic_function): Handle caf_is_present_on_remote
+	calls.
+	* trans.h: Add symbol for caf_is_present_on_remote and remove
+	old one.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* coarray.cc (get_arrayspec_from_expr): Treat array result of
+	function calls correctly.
+	(remove_coarray_from_derived_type): Prevent memory loss.
+	(add_caf_get_from_remote): Correct locus.
+	(find_comp): New function to find or create a new component in a
+	derived type.
+	(check_add_new_comp_handle_array): Handle allocatable arrays or
+	non-pure/non-elemental functions in indexes of coarrays.
+	(check_add_new_component): Use above function.
+	(create_get_parameter_type): Rename to
+	create_caf_add_data_parameter_type.
+	(create_caf_add_data_parameter_type): Renaming of variable and
+	make the additional data a coarray.
+	(remove_caf_ref): Factor out to reuse in other caf-functions.
+	(create_get_callback): Use function factored out, set locus
+	correctly and ensure a kind is set for parameters.
+	(add_caf_get_intrinsic): Rename to add_caf_get_from_remote and
+	rename some variables.
+	(coindexed_expr_callback): Skip over function created by the
+	rewriter.
+	(coindexed_code_callback): Filter some intrinsics not to
+	process.
+	(gfc_coarray_rewrite): Rewrite also contained functions.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_caf_get): Reflect
+	changed order on caf_get_from_remote ().
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* gfortran.texi: Rename caf_get_by_ct to caf_get_from_remote.
+	* trans-decl.cc (gfc_build_builtin_function_decls): Rename
+	intrinsic.
+	* trans-intrinsic.cc (conv_caf_func_index): Factor out
+	functionality to be reused by other caf-functions.
+	(conv_caf_add_call_data): Same.
+	(gfc_conv_intrinsic_caf_get): Use functions factored out.
+	* trans.h: Rename intrinsic symbol.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* Make-lang.in: Add coarray.cc.
+	* coarray.cc: New file.
+	* gfortran.h (gfc_coarray_rewrite): New procedure.
+	* parse.cc (rewrite_expr_tree): Add entrypoint for rewriting
+	expression trees.
+	* resolve.cc (gfc_resolve_ref): Remove caf_lhs handling.
+	(get_arrayspec_from_expr): Moved to rewrite.cc.
+	(remove_coarray_from_derived_type): Same.
+	(convert_coarray_class_to_derived_type): Same.
+	(split_expr_at_caf_ref): Same.
+	(check_add_new_component): Same.
+	(create_get_parameter_type): Same.
+	(create_get_callback): Same.
+	(add_caf_get_intrinsic): Same.
+	(resolve_variable): Remove caf_lhs handling.
+
+2025-02-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/115271
+	* gfortran.h (gfc_omp_namelist): Change need_device_ptr to adj_args
+	union and add more flags.
+	* openmp.cc (gfc_match_omp_declare_variant,
+	gfc_resolve_omp_declare): For adjust_args, handle need_device_addr
+	and numeric values/ranges besides dummy argument names.
+	(resolve_omp_dispatch): Remove bogus a adjust_args check.
+	* trans-decl.cc (gfc_handle_omp_declare_variant): New.
+	(gfc_generate_module_vars, gfc_generate_function_code): Call it.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Handle numeric
+	values/ranges besides dummy argument names.
+
+2025-02-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118862
+	* trans-expr.cc (gfc_conv_cst_int_power): Use functions for
+	unsigned wide integer.
+	(gfc_conv_cst_uint_power): Avoid generating the mask if it would
+	overflow an unsigned HOST_WIDE_INT.  Format fixes.
+
+2025-02-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.cc (show_attr): Remove double output
+	of attr->save.
+
+2025-02-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118080
+	* gfortran.texi: Adjust documentation.
+	* trans-decl.cc (create_function_arglist): Adjust to pass hidden
+	presence flag also for derived type dummies with VALUE,OPTIONAL
+	attribute.
+	* trans-expr.cc (gfc_conv_expr_present): Expect hidden presence
+	flag also for derived type dummies with VALUE,OPTIONAL attribute.
+	(conv_cond_temp): Adjust to allow derived types.
+	(conv_dummy_value): Extend to handle derived type dummies with
+	VALUE,OPTIONAL attribute.
+	(gfc_conv_procedure_call): Adjust for actual arguments passed to
+	derived type dummies with VALUE,OPTIONAL attribute.
+	* trans-types.cc (gfc_get_function_type): Adjust fndecl for
+	hidden presence flag.
+
+2025-02-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/117430
+	* resolve.cc (resolve_transfer): Change gfc_notify_std to
+	gfc_error.
+
+2025-02-15  Andrew Pinski  <pinskia@gcc.gnu.org>
+
+	PR fortran/118159
+	* invoke.texi: Remove mention of defunct web site for Coco.
+
+2025-02-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.cc (check_externals_procedure): Copy
+	typespec from old to new symbol.
+
+2025-02-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118845
+	* interface.cc (compare_parameter): If the formal attribute has been
+	generated from an actual argument list, also output an pointer to
+	there in case of an error.
+	(gfc_get_formal_from_actual_arglist): Set function and subroutine
+	attributes and (if it is a function) the typespec from the actual
+	argument.
+
+2025-02-11  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Update call to
+	omp_check_context_selector.
+	(gfc_trans_omp_metadirective): Likewise.
+
+2025-02-10  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/24878
+	* interface.cc (compare_parameter): Better wording on
+	error message.
+
+2025-02-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/56423
+	* resolve.cc (resolve_structure_cons): Check rank of pointer target;
+	reject pointer target with vector subscripts.
+
+2025-02-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/24878
+	* interface.cc (compare_parameter): Check global subroutines
+	passed as actual arguments for subroutine / function and
+	function type.
+
+2025-02-08  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/107067
+	* parse.cc (parse_omp_do): Diagnose missing "OMP END METADIRECTIVE"
+	after loop.
+	(parse_omp_structured_block): Likewise for strictly structured block.
+	(parse_omp_metadirective_body): Use better test for variants ending
+	at different places.  Issue a user diagnostic at the end if any
+	were inconsistent, instead of calling gcc_assert.
+
+2025-02-07  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/59252
+	* trans-expr.cc (gfc_trans_subcomponent_assign): Initialize
+	allocatable non-deferred character with NULL properly.
+
+2025-02-07  Tomáš Trnka  <trnka@scm.com>
+
+	PR fortran/116829
+	* trans-decl.cc (init_intent_out_dt): Always call
+	gfc_init_default_dt() for BT_DERIVED to apply s->value if the
+	symbol isn't allocatable. Also simplify the logic a bit.
+
+2025-02-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118750
+	* resolve.cc (resolve_assoc_var): If the target expression has
+	a rank, do not use gfc_expression_rank, since it will return 0
+	if the function is elemental. Resolution will have produced the
+	correct rank.
+
+2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118740
+	* openmp.cc (gfc_match_omp_context_selector, match_omp_metadirective):
+	Change sorry to sorry_at and use gfc_current_locus as location.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Likewise, but use n->where.
+
+2025-02-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118745
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Use
+	append_args_list in the condition for the append_arg location.
+
+2025-02-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/47485
+	* cpp.cc: fix -MT/-MQ adding additional target instead of
+	replacing the default.
+
+2025-02-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* arith.cc (arith_power): Handle modular arithmetic for
+	BT_UNSIGNED.
+	(eval_intrinsic):  Error for unsigned exponentiation with
+	-pedantic.
+	* expr.cc (gfc_type_convert_binary): Use type of first
+	argument for unsigned exponentiation.
+	* gfortran.texi: Mention arithmetic exponentiation.
+	* resolve.cc (resolve_operator): Allow unsigned exponentiation.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Build
+	declarations for unsigned exponentiation.
+	* trans-expr.cc (gfc_conv_cst_uint_power): New function.
+	(gfc_conv_power_op): Call it.  Handle unsigned exponentiation.
+	* trans.h (gfor_fndecl_unsigned_pow_list):  Add declaration.
+
+2025-02-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/93289
+	* decl.cc (gfc_set_constant_character_len): Downgrade different
+	string lengths in character array constructor to legacy extension.
+
+2025-01-31  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108454
+	* resolve.cc (resolve_common_blocks): Initialize variable.
+	(resolve_symbol): If a symbol is already registered with a COMMON
+	block, do not search for an interface with the same name.
+
+2025-01-31  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/118714
+	* parse.cc (parse_omp_dispatch): Add missing pop_state.
+
+2025-01-30  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+	    Paul-Antoine Arras  <pa@codesourcery.com>
+
+	PR middle-end/112779
+	PR middle-end/113904
+	* decl.cc (gfc_match_end): Handle COMP_OMP_BEGIN_METADIRECTIVE and
+	COMP_OMP_METADIRECTIVE.
+	* dump-parse-tree.cc (show_omp_node): Handle EXEC_OMP_METADIRECTIVE.
+	(show_code_node): Likewise.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_METADIRECTIVE,
+	ST_OMP_BEGIN_METADIRECTIVE, and ST_OMP_END_METADIRECTIVE.
+	(struct gfc_omp_clauses): Rename target_first_st_is_teams to
+	target_first_st_is_teams_or_meta.
+	(struct gfc_omp_variant): New.
+	(gfc_get_omp_variant): New.
+	(struct gfc_st_label): Add omp_region field.
+	(enum gfc_exec_op): Add EXEC_OMP_METADIRECTIVE.
+	(struct gfc_code): Add omp_variants fields.
+	(gfc_free_omp_variants): Declare.
+	(match_omp_directive): Declare.
+	(is_omp_declarative_stmt): Declare.
+	* io.cc (format_asterisk): Adjust initializer.
+	* match.h (gfc_match_omp_begin_metadirective): Declare.
+	(gfc_match_omp_metadirective): Declare.
+	* openmp.cc (gfc_omp_directives): Uncomment metadirective.
+	(gfc_match_omp_eos): Adjust to match context selectors.
+	(gfc_free_omp_variants): New.
+	(gfc_match_omp_clauses): Remove context_selector parameter and adjust
+	to use gfc_match_omp_eos instead.
+	(match_omp): Adjust call to gfc_match_omp_clauses.
+	(gfc_match_omp_context_selector): Add metadirective_p parameter and
+	adjust error-checking.  Adjust matching of simd clauses.
+	(gfc_match_omp_context_selector_specification): Adjust parameters
+	so it can be used for metadirective as well as declare variant.
+	(match_omp_metadirective): New.
+	(gfc_match_omp_begin_metadirective): New.
+	(gfc_match_omp_metadirective): New.
+	(resolve_omp_metadirective): New.
+	(resolve_omp_target): Handle metadirectives.
+	(gfc_resolve_omp_directive): Handle EXEC_OMP_METADIRECTIVE.
+	* parse.cc (gfc_matching_omp_context_selector): New.
+	(gfc_in_omp_metadirective_body): New.
+	(gfc_omp_region_count): New.
+	(decode_omp_directive): Handle ST_OMP_BEGIN_METADIRECTIVE and
+	ST_OMP_METADIRECTIVE.
+	(match_omp_directive): New.
+	(case_omp_structured_block): Define.
+	(case_omp_do): Define.
+	(gfc_ascii_statement): Handle ST_OMP_BEGIN_METADIRECTIVE,
+	ST_OMP_END_METADIRECTIVE, and ST_OMP_METADIRECTIVE.
+	(accept_statement):  Handle ST_OMP_METADIRECTIVE and
+	ST_OMP_BEGIN_METADIRECTIVE.
+	(gfc_omp_end_stmt): New, split from...
+	(parse_omp_do): ...here, and...
+	(parse_omp_structured_block): ...here.  Handle metadirectives,
+	plus "allocate", "atomic", and "dispatch" which were missing.
+	(parse_omp_oacc_atomic): Handle "end metadirective".
+	(parse_openmp_allocate_block): Likewise.
+	(parse_omp_dispatch): Likewise.
+	(parse_omp_metadirective_body): New.
+	(parse_executable): Handle metadirective.  Use new case macros
+	defined above.
+	(gfc_parse_file): Initialize metadirective state.
+	(is_omp_declarative_stmt): New.
+	* parse.h (enum gfc_compile_state): Add COMP_OMP_METADIRECTIVE
+	and COMP_OMP_BEGIN_METADIRECTIVE.
+	(gfc_omp_end_stmt): Declare.
+	(gfc_matching_omp_context_selector): Declare.
+	(gfc_in_omp_metadirective_body): Declare.
+	(gfc_omp_metadirective_region_count): Declare.
+	* resolve.cc (gfc_resolve_code): Handle EXEC_OMP_METADIRECTIVE.
+	* st.cc (gfc_free_statement): Likewise.
+	* symbol.cc (compare_st_labels): Handle labels within a metadirective
+	body.
+	(gfc_get_st_label): Likewise.
+	* trans-decl.cc (gfc_get_label_decl): Encode the metadirective region
+	in the label_name.
+	* trans-openmp.cc (gfc_trans_omp_directive): Handle
+	EXEC_OMP_METADIRECTIVE.
+	(gfc_trans_omp_set_selector): New, split/adapted from code....
+	(gfc_trans_omp_declare_variant): ...here.
+	(gfc_trans_omp_metadirective): New.
+	* trans-stmt.h 	(gfc_trans_omp_metadirective): Declare.
+	* trans.cc (trans_code): Handle EXEC_OMP_METADIRECTIVE.
+
+2025-01-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h (gfc_omp_declare_variant): Add append_args_list.
+	* openmp.cc (gfc_parser_omp_clause_init_modifiers): New;
+	splitt of from ...
+	(gfc_match_omp_init): ... here; call it.
+	(gfc_match_omp_declare_variant): Update to handle append_args
+	clause; some syntax handling fixes.
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Handle
+	append_args clause; add some diagnostic.
+
+2025-01-29  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118683
+	* trans-expr.cc (gfc_conv_procedure_call): The bounds update for
+	passing to assumed-rank dummies shall also handle component
+	references besides inquiry references.
+
+2025-01-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/110993
+	* frontend-passes.cc (check_externals_procedure): Do not compare
+	interfaces of a non-bind(C) procedure against a bind(C) global one.
+	(check_against_globals): Use local name from rename-on-use in the
+	search for interfaces.
+
+2025-01-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/118640
+	* resolve.cc (generate_component_assignments): Make sure that
+	the rhs temporary does not pick up the optional attribute from
+	the lhs.
+
+2025-01-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_omp_directives): Uncomment unroll and tile lines
+	as the directives are by now implemented.
+
+2025-01-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* openmp.cc (resolve_omp_atomic): Fix typo in error message.
+
+2025-01-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/58857
+	* class.cc (gfc_find_derived_vtab): Declare some frontend generated
+	variables and procedures (_vtab, _copy, _deallocate) as artificial.
+	(find_intrinsic_vtab): Likewise.
+	* trans-decl.cc (check_block_data_decls): New helper function.
+	(gfc_generate_block_data): Use it to emit warnings for variables
+	declared in a BLOCK DATA program unit but not in a COMMON block.
+
+2025-01-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/118613
+	* trans-intrinsic.cc (gfc_conv_intrinsic_minmaxval): Adjust algorithm
+	for inlined version of MINLOC and MAXLOC so that arguments are only
+	evaluted once, and create temporaries where necessary.  Document
+	change of algorithm.
+
+2025-01-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/96087
+	* trans-decl.cc (gfc_get_symbol_decl): If a dummy is missing a
+	backend decl, it is likely that it has come from a module proc
+	interface. Look for the formal symbol by name in the containing
+	proc and use its backend decl.
+	* trans-expr.cc (gfc_apply_interface_mapping_to_expr): For the
+	same reason, match the name, rather than the symbol address to
+	perform the mapping.
+
+2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107122
+	* openmp.cc (resolve_omp_clauses): Add 'with' to error message text.
+
+2025-01-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/81978
+	* trans-array.cc (gfc_conv_array_parameter): Do not copy back data
+	if actual array parameter has the PARAMETER attribute.
+	* trans-expr.cc (gfc_conv_subref_array_arg): Likewise.
+
+2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118321
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Honor hidden
+	arguments for append_arg's need_device_ptr.
+
+2025-01-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118359
+	* dump-parse-tree.cc (show_external_symbol): New function.
+	(write_type): Add prototype, put in restrictions on what not to dump.
+	(has_cfi_cdesc): New function.
+	(need_iso_fortran_binding): New function.
+	(gfc_dump_c_prototypes): Adjust to take only a file output.  Add
+	"#include <ISO_Fortran_binding.h" if CFI_cdesc_t is found.
+	Traverse global namespaces to dump types and the globalsymol list
+	to dump external symbols.
+	(gfc_dump_external_c_prototypes): Traverse global namespaces.
+	(get_c_type_name): Handle CFI_cdesc_t.
+	(write_proc): Also pass array spec to get_c_type_name.
+	* gfortran.h (gfc_dump_c_prototypes): Adjust prototype.
+	* parse.cc (gfc_parse_file): Adjust call to gfc_dump_c_prototypes.
+
+2025-01-16  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* openmp.cc (gfc_omp_absent_contains_clause): Use an Oxford comma
+	in the message.
+
+2025-01-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/118441
+	* trans-intrinsic.cc (gfc_get_symbol_for_expr): Use
+	gfc_new_charlen for character-returning functions.
+
+2025-01-15  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71884
+	* resolve.cc (resolve_allocate_expr): Reject intrinsic NULL as
+	source-expr.
+
+2025-01-14  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Marcel Vollweiler  <marcel@codesourcery.com>
+
+	PR middle-end/114596
+	PR middle-end/112779
+	PR middle-end/113904
+	* trans-openmp.cc (gfc_trans_omp_declare_variant): Update for changes
+	to omp-general.h interfaces.
+
+2025-01-14  Anuj Mohite  <anujmohite001@gmail.com>
+
+	* dump-parse-tree.cc (show_code_node):  Updated to use
+	c->ext.concur.forall_iterator instead of c->ext.forall_iterator.
+	* frontend-passes.cc (index_interchange): Updated to
+	use c->ext.concur.forall_iterator instead of c->ext.forall_iterator.
+	(gfc_code_walker): Likewise.
+	* gfortran.h (enum locality_type): Added new enum for locality types
+	in DO CONCURRENT constructs.
+	* match.cc (match_simple_forall): Updated to use
+	new_st.ext.concur.forall_iterator instead of new_st.ext.forall_iterator.
+	(gfc_match_forall): Likewise.
+	(gfc_match_do):  Implemented support for matching DO CONCURRENT locality
+	specifiers (LOCAL, LOCAL_INIT, SHARED, DEFAULT(NONE), and REDUCE).
+	* parse.cc (parse_do_block): Updated to use
+	new_st.ext.concur.forall_iterator instead of new_st.ext.forall_iterator.
+	* resolve.cc (struct check_default_none_data): Added struct
+	check_default_none_data.
+	(do_concur_locality_specs_f2023): New function to check compliance
+	with F2023's C1133 constraint for DO CONCURRENT.
+	(check_default_none_expr): New function to check DEFAULT(NONE)
+	compliance.
+	(resolve_locality_spec): New function to resolve locality specs.
+	(gfc_count_forall_iterators): Updated to use
+	code->ext.concur.forall_iterator.
+	(gfc_resolve_forall): Updated to use code->ext.concur.forall_iterator.
+	* st.cc (gfc_free_statement): Updated to free locality specifications
+	and use p->ext.concur.forall_iterator.
+	* trans-stmt.cc (gfc_trans_forall_1): Updated to use
+	code->ext.concur.forall_iterator.
+
+2025-01-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.cc (show_attr): Fix typos for in_equivalence.
+
+2025-01-13  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_declare_variant): Match comma after directive
+	name and between clauses. Emit more useful diagnostics.
+
+2025-01-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* dump-parse-tree.cc (show_attr): Dump all symbol attributes.
+
+2025-01-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/115788
+	* check.cc (gfc_check_out_of_range): Check arguments to intrinsic.
+	* expr.cc (free_expr0): Fix a memleak with unsigned literals.
+	* gfortran.h (enum gfc_isym_id): Define GFC_ISYM_OUT_OF_RANGE.
+	* gfortran.texi: Add OUT_OF_RANGE to list of intrinsics supporting
+	UNSIGNED.
+	* intrinsic.cc (add_functions): Add Fortran prototype.  Break some
+	nearby lines with excessive length.
+	* intrinsic.h (gfc_check_out_of_range): Add prototypes.
+	* intrinsic.texi: Fortran documentation of OUT_OF_RANGE.
+	* simplify.cc (gfc_simplify_out_of_range): Compile-time simplification
+	of OUT_OF_RANGE.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_out_of_range): Generate
+	inline expansion of runtime code for OUT_OF_RANGE.
+	(gfc_conv_intrinsic_function): Use it.
+
+2025-01-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/118432
+	* frontend-passes.cc (doloop_code): Select correct member
+	of co->ext.union for inquire.
+
+2025-01-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h: Add OMP_LIST_INTEROP to the unnamed OMP_LIST_ enum.
+	* openmp.cc (gfc_match_omp_variable_list): Add reverse_order
+	boolean argument, defaulting to false.
+	(enum omp_mask2, OMP_DISPATCH_CLAUSES): Add OMP_CLAUSE_INTEROP.
+	(gfc_match_omp_clauses, resolve_omp_clauses): Handle dispatch's
+	'interop' clause.
+	* trans-decl.cc (gfc_get_extern_function_decl): Use sym->declared_at
+	instead input_location as DECL_SOURCE_LOCATION.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle OMP_LIST_INTEROP.
+
+2025-01-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/108434
+	* class.cc (generate_finalization_wrapper): To avoid memory
+	leaks from callocs, return immediately if the derived type
+	error flag is set.
+	* decl.cc (build_struct): If the declaration of a derived type
+	or class component does not have a deferred arrayspec, correct,
+	set the error flag of the derived type and emit an immediate
+	error.
+
+2025-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/118337
+	* module.cc (use_iso_fortran_env_module): Add a comment explaining
+	the optimization performed.  Add gcc_checking_assert that i was
+	incremented for all the elements.  Formatting fix.
+
+2025-01-09  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/118337
+	* resolve.cc (resolve_fl_derived0): Exempt vtypes from cycle
+	detection.
+
+2025-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/118337
+	* module.cc (COMPAT_MOD_VERSIONS): Define.
+	(use_iso_fortran_env_module): Don't assume all NAMED_INTCSTs come
+	first followed by NAMED_UINTCSTs.
+	(gfc_use_module): Accept also COMPAT_MOD_VERSIONS for compatibility.
+	* iso-c-binding.def: Reorder entries so that the GCC 14 ones come
+	before the ones new in GCC 15.
+	* iso-fortran-env.def: Likewise.
+
+2025-01-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* types.def (BT_FN_PTRMODE_PTR_INT_PTR): Add.
+
+2025-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/118337
+	* module.cc (MOD_VERSION): Bump to "16".
+
+2025-01-07  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* intrinsic.texi (ISO_FORTRAN_ENV):  Also mention INT8 in the
+	text. Document UINT8, UINT16, UINT32 and UINT64.
+	(ISO_C_BINDING): New table for unsigned KIND numbers.
+
+2025-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/114612
+	* trans-array.cc (structure_alloc_comps): Ensure deep copy is
+	also done for types having cycles.
+
+2025-01-07  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/116669
+	* class.cc (gfc_find_derived_vtab): Use attr to determine cyclic
+	type dependendies.
+	* expr.cc (gfc_has_default_initializer): Prevent endless
+	recursion by storing already visited derived types.
+	* resolve.cc (resolve_cyclic_derived_type): Determine if a type
+	is used in its hierarchy in a cyclic way.
+	(resolve_fl_derived0): Call resolve_cyclic_derived_type.
+	(resolve_fl_derived): Ensure vtab is generated when cyclic
+	derived types have allocatable components.
+	* trans-array.cc (structure_alloc_comps): Prevent endless loop
+	for derived type cycles.
+	* trans-expr.cc (gfc_get_ultimate_alloc_ptr_comps_caf_token):
+	Off topic, just prevent memory leaks.
+
+2025-01-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: New subsection "Generating C prototypes from
+	Fortran".
+
+2025-01-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/106692
+	* trans-expr.cc (gfc_conv_expr_op): Inhibit excessive optimization
+	of Cray pointers by treating them as volatile in comparisons.
+
+2025-01-03  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* intrinsic.texi (ATAN): Add missing verb.
+
+2025-01-02  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (OMP_DISPATCH_CLAUSES): Add OMP_CLAUSE_HAS_DEVICE_ADDR.
+
+2025-01-02  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Handle novariants and nocontext
+	clauses.
+	(show_omp_node): Handle EXEC_OMP_DISPATCH.
+	(show_code_node): Likewise.
+	* frontend-passes.cc (gfc_code_walker): Handle novariants and nocontext.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_DISPATCH.
+	(symbol_attribute): Add omp_declare_variant_need_device_ptr.
+	(gfc_omp_clauses): Add novariants and nocontext.
+	(gfc_omp_declare_variant): Add need_device_ptr_arg_list.
+	(enum gfc_exec_op): Add EXEC_OMP_DISPATCH.
+	* match.h (gfc_match_omp_dispatch): Declare.
+	* openmp.cc (gfc_free_omp_clauses): Free novariants and nocontext
+	clauses.
+	(gfc_free_omp_declare_variant_list): Free need_device_ptr_arg_list
+	namelist.
+	(enum omp_mask2): Add OMP_CLAUSE_NOVARIANTS and OMP_CLAUSE_NOCONTEXT.
+	(gfc_match_omp_clauses): Handle OMP_CLAUSE_NOVARIANTS and
+	OMP_CLAUSE_NOCONTEXT.
+	(OMP_DISPATCH_CLAUSES): Define.
+	(gfc_match_omp_dispatch): New function.
+	(gfc_match_omp_declare_variant): Parse adjust_args.
+	(resolve_omp_clauses): Handle adjust_args, novariants and nocontext.
+	Adjust handling of OMP_LIST_IS_DEVICE_PTR.
+	(icode_code_error_callback): Handle EXEC_OMP_DISPATCH.
+	(omp_code_to_statement): Likewise.
+	(resolve_omp_dispatch): New function.
+	(gfc_resolve_omp_directive): Handle EXEC_OMP_DISPATCH.
+	* parse.cc (decode_omp_directive): Match dispatch.
+	(next_statement): Handle ST_OMP_DISPATCH.
+	(gfc_ascii_statement): Likewise.
+	(parse_omp_dispatch): New function.
+	(parse_executable): Handle ST_OMP_DISPATCH.
+	* resolve.cc (gfc_resolve_blocks): Handle EXEC_OMP_DISPATCH.
+	* st.cc (gfc_free_statement): Likewise.
+	* trans-decl.cc (create_function_arglist): Declare.
+	(gfc_get_extern_function_decl): Call it.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Handle novariants and
+	nocontext.
+	(replace_omp_dispatch_call): New function.
+	(gfc_trans_omp_dispatch): New function.
+	(gfc_trans_omp_directive): Handle EXEC_OMP_DISPATCH.
+	(gfc_trans_omp_declare_variant): Handle adjust_args.
+	* trans.cc (trans_code): Handle EXEC_OMP_DISPATCH:.
+
+2025-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortranspec.cc (lang_specific_driver): Update copyright notice
+	dates.
+	* gfc-internals.texi: Bump @copying's copyright year.
+	* gfortran.texi: Ditto.
+	* intrinsic.texi: Ditto.
+	* invoke.texi: Ditto.
+
+2025-01-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.texi (Function ABI Documentation): Make menu ordering
+	consistent with subsection ordering.
+
+2025-01-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gfortran.texi: Clean up that/which usage throughout the file.
+	* intrinsic.texi: Likewise.
+	* invoke.texi: Likewise.
+
+2025-01-01  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* intrinsic.texi: Grammar and markup fixes throughout
+	the file.
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

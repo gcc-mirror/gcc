@@ -1,0 +1,607 @@
+2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure: Regenerate.
+
+2025-12-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/122936
+	* io/list_read.c (finish_list_read): Remove the use of hit_eof
+	and free_line. Simplify the logic. Add comments to clarify.
+
+2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/90374
+	PR libfortran/90374
+	* io/format.c (parse_format_list): Set exponent width to unspecified.
+
+2025-11-09  Mark Wielaard  <mark@klomp.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2025-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* Makefile.in: Keep continuation indentation within 80 columns.
+	* aclocal.m4: Regenerate.
+	* libgfortran.h: Drop unused forward declaration.
+
+2025-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* Makefile.am: Add runtime/deep_copy.c to source files.
+	* Makefile.in: Regenerate.
+	* gfortran.map: Export _gfortran_cfi_deep_copy_array symbol.
+	* libgfortran.h: Add prototype for internal_deep_copy_array.
+	* runtime/deep_copy.c: New file implementing runtime deep copy
+	helper for recursive allocatable array components.
+
+2025-11-03  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87669
+	* intrinsics/extends_type_of.c (is_extension_of): Use the vptr
+	rather than the hash value to identify the types.
+
+2025-08-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/121234
+	* io/list_read.c (read_character): Add checks to bypass eating
+	semicolons when reading strings with decimal mode 'point'
+	(list_formatted_read_scalar): Likewise.
+
+2025-07-30  Yuao Ma  <c8ef@outlook.com>
+
+	* gfortran.map: Add split symbol.
+	* intrinsics/string_intrinsics_inc.c (string_split):
+	Runtime support for SPLIT.
+
+2025-06-18  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* intrinsics/stat.c (stat_i4_sub_0): Fix argument names.  Rename
+	SARRAY to VALUES also in error message.  When array VALUES is
+	KIND=4, get only stat components that do not overflow INT32_MAX,
+	otherwise set the corresponding VALUES elements to -1.
+	(stat_i4_sub): Fix argument names.
+	(lstat_i4_sub): Likewise.
+	(stat_i8_sub_0): Likewise.
+	(stat_i8_sub): Likewise.
+	(lstat_i8_sub): Likewise.
+	(stat_i4): Likewise.
+	(stat_i8): Likewise.
+	(lstat_i4): Likewise.
+	(lstat_i8): Likewise.
+	(fstat_i4_sub): Likewise.
+	(fstat_i8_sub): Likewise.
+	(fstat_i4): Likewise.
+	(fstat_i8): Likewise.
+
+2025-06-11  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/116400
+	* Makefile.am: Simplify logic.
+	* Makefile.in: Regenerate.
+	* regenerate.sh: Add some checks.
+
+2025-06-10  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/116400
+	* Makefile.am: Remove source file regeneration rules.
+	* Makefile.in: Regenerate.
+	* regenerate.sh: New file.
+
+2025-06-07  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR libfortran/116400
+	* generated/iall_i1.c: Regenerate.
+	* generated/iall_i16.c: Regenerate.
+	* generated/iall_i2.c: Regenerate.
+	* generated/iall_i4.c: Regenerate.
+	* generated/iall_i8.c: Regenerate.
+	* generated/iany_i1.c: Regenerate.
+	* generated/iany_i16.c: Regenerate.
+	* generated/iany_i2.c: Regenerate.
+	* generated/iany_i4.c: Regenerate.
+	* generated/iany_i8.c: Regenerate.
+	* generated/iparity_i1.c: Regenerate.
+	* generated/iparity_i16.c: Regenerate.
+	* generated/iparity_i2.c: Regenerate.
+	* generated/iparity_i4.c: Regenerate.
+	* generated/iparity_i8.c: Regenerate.
+	* generated/matmulavx128_c10.c: Regenerate.
+	* generated/matmulavx128_c16.c: Regenerate.
+	* generated/matmulavx128_c17.c: Regenerate.
+	* generated/matmulavx128_c4.c: Regenerate.
+	* generated/matmulavx128_c8.c: Regenerate.
+	* generated/matmulavx128_i1.c: Regenerate.
+	* generated/matmulavx128_i16.c: Regenerate.
+	* generated/matmulavx128_i2.c: Regenerate.
+	* generated/matmulavx128_i4.c: Regenerate.
+	* generated/matmulavx128_i8.c: Regenerate.
+	* generated/matmulavx128_r10.c: Regenerate.
+	* generated/matmulavx128_r16.c: Regenerate.
+	* generated/matmulavx128_r17.c: Regenerate.
+	* generated/matmulavx128_r4.c: Regenerate.
+	* generated/matmulavx128_r8.c: Regenerate.
+	* generated/maxloc1_16_i1.c: Regenerate.
+	* generated/maxloc1_16_i16.c: Regenerate.
+	* generated/maxloc1_16_i2.c: Regenerate.
+	* generated/maxloc1_16_i4.c: Regenerate.
+	* generated/maxloc1_16_i8.c: Regenerate.
+	* generated/maxloc1_16_r10.c: Regenerate.
+	* generated/maxloc1_16_r16.c: Regenerate.
+	* generated/maxloc1_16_r17.c: Regenerate.
+	* generated/maxloc1_16_r4.c: Regenerate.
+	* generated/maxloc1_16_r8.c: Regenerate.
+	* generated/maxloc1_4_i1.c: Regenerate.
+	* generated/maxloc1_4_i16.c: Regenerate.
+	* generated/maxloc1_4_i2.c: Regenerate.
+	* generated/maxloc1_4_i4.c: Regenerate.
+	* generated/maxloc1_4_i8.c: Regenerate.
+	* generated/maxloc1_4_r10.c: Regenerate.
+	* generated/maxloc1_4_r16.c: Regenerate.
+	* generated/maxloc1_4_r17.c: Regenerate.
+	* generated/maxloc1_4_r4.c: Regenerate.
+	* generated/maxloc1_4_r8.c: Regenerate.
+	* generated/maxloc1_8_i1.c: Regenerate.
+	* generated/maxloc1_8_i16.c: Regenerate.
+	* generated/maxloc1_8_i2.c: Regenerate.
+	* generated/maxloc1_8_i4.c: Regenerate.
+	* generated/maxloc1_8_i8.c: Regenerate.
+	* generated/maxloc1_8_r10.c: Regenerate.
+	* generated/maxloc1_8_r16.c: Regenerate.
+	* generated/maxloc1_8_r17.c: Regenerate.
+	* generated/maxloc1_8_r4.c: Regenerate.
+	* generated/maxloc1_8_r8.c: Regenerate.
+	* generated/maxval_i1.c: Regenerate.
+	* generated/maxval_i16.c: Regenerate.
+	* generated/maxval_i2.c: Regenerate.
+	* generated/maxval_i4.c: Regenerate.
+	* generated/maxval_i8.c: Regenerate.
+	* generated/maxval_r10.c: Regenerate.
+	* generated/maxval_r16.c: Regenerate.
+	* generated/maxval_r17.c: Regenerate.
+	* generated/maxval_r4.c: Regenerate.
+	* generated/maxval_r8.c: Regenerate.
+	* generated/minloc1_16_i1.c: Regenerate.
+	* generated/minloc1_16_i16.c: Regenerate.
+	* generated/minloc1_16_i2.c: Regenerate.
+	* generated/minloc1_16_i4.c: Regenerate.
+	* generated/minloc1_16_i8.c: Regenerate.
+	* generated/minloc1_16_r10.c: Regenerate.
+	* generated/minloc1_16_r16.c: Regenerate.
+	* generated/minloc1_16_r17.c: Regenerate.
+	* generated/minloc1_16_r4.c: Regenerate.
+	* generated/minloc1_16_r8.c: Regenerate.
+	* generated/minloc1_4_i1.c: Regenerate.
+	* generated/minloc1_4_i16.c: Regenerate.
+	* generated/minloc1_4_i2.c: Regenerate.
+	* generated/minloc1_4_i4.c: Regenerate.
+	* generated/minloc1_4_i8.c: Regenerate.
+	* generated/minloc1_4_r10.c: Regenerate.
+	* generated/minloc1_4_r16.c: Regenerate.
+	* generated/minloc1_4_r17.c: Regenerate.
+	* generated/minloc1_4_r4.c: Regenerate.
+	* generated/minloc1_4_r8.c: Regenerate.
+	* generated/minloc1_8_i1.c: Regenerate.
+	* generated/minloc1_8_i16.c: Regenerate.
+	* generated/minloc1_8_i2.c: Regenerate.
+	* generated/minloc1_8_i4.c: Regenerate.
+	* generated/minloc1_8_i8.c: Regenerate.
+	* generated/minloc1_8_r10.c: Regenerate.
+	* generated/minloc1_8_r16.c: Regenerate.
+	* generated/minloc1_8_r17.c: Regenerate.
+	* generated/minloc1_8_r4.c: Regenerate.
+	* generated/minloc1_8_r8.c: Regenerate.
+	* generated/minval_i1.c: Regenerate.
+	* generated/minval_i16.c: Regenerate.
+	* generated/minval_i2.c: Regenerate.
+	* generated/minval_i4.c: Regenerate.
+	* generated/minval_i8.c: Regenerate.
+	* generated/minval_r10.c: Regenerate.
+	* generated/minval_r16.c: Regenerate.
+	* generated/minval_r17.c: Regenerate.
+	* generated/minval_r4.c: Regenerate.
+	* generated/minval_r8.c: Regenerate.
+	* generated/norm2_r10.c: Regenerate.
+	* generated/norm2_r16.c: Regenerate.
+	* generated/norm2_r17.c: Regenerate.
+	* generated/norm2_r4.c: Regenerate.
+	* generated/norm2_r8.c: Regenerate.
+	* generated/parity_l1.c: Regenerate.
+	* generated/parity_l16.c: Regenerate.
+	* generated/parity_l2.c: Regenerate.
+	* generated/parity_l4.c: Regenerate.
+	* generated/parity_l8.c: Regenerate.
+
+2025-06-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119856
+	* io/format.c (parse_format_list): Set the fmt->error
+	message for missing comma.
+	(parse_format): Do not cache the parsed format string
+	if a previous error ocurred.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120196
+	* m4/ifindloc2.m4 (header1, header2): For back use i > 0 rather than
+	i >= 0 as for condition.
+	* generated/findloc2_s1.c: Regenerate.
+	* generated/findloc2_s4.c: Regenerate.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* m4/ifunction-s.m4 (SCALAR_ARRAY_FUNCTION): Don't multiply
+	GFC_DESCRIPTOR_EXTENT(array,) by string_len.
+	* generated/maxloc1_4_s1.c: Regenerate.
+	* generated/maxloc1_4_s4.c: Regenerate.
+	* generated/maxloc1_8_s1.c: Regenerate.
+	* generated/maxloc1_8_s4.c: Regenerate.
+	* generated/maxloc1_16_s1.c: Regenerate.
+	* generated/maxloc1_16_s4.c: Regenerate.
+	* generated/minloc1_4_s1.c: Regenerate.
+	* generated/minloc1_4_s4.c: Regenerate.
+	* generated/minloc1_8_s1.c: Regenerate.
+	* generated/minloc1_8_s4.c: Regenerate.
+	* generated/minloc1_16_s1.c: Regenerate.
+	* generated/minloc1_16_s4.c: Regenerate.
+
+2025-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/120191
+	* m4/maxloc2s.m4: For smaxloc2 call maxloc2 if mask is NULL or *mask.
+	Swap back and len arguments.
+	* m4/minloc2s.m4: Likewise.
+	* generated/maxloc2_4_s1.c: Regenerate.
+	* generated/maxloc2_4_s4.c: Regenerate.
+	* generated/maxloc2_8_s1.c: Regenerate.
+	* generated/maxloc2_8_s4.c: Regenerate.
+	* generated/maxloc2_16_s1.c: Regenerate.
+	* generated/maxloc2_16_s4.c: Regenerate.
+	* generated/minloc2_4_s1.c: Regenerate.
+	* generated/minloc2_4_s4.c: Regenerate.
+	* generated/minloc2_8_s1.c: Regenerate.
+	* generated/minloc2_8_s4.c: Regenerate.
+	* generated/minloc2_16_s1.c: Regenerate.
+	* generated/minloc2_16_s4.c: Regenerate.
+
+2025-05-10  Yuao Ma  <c8ef@outlook.com>
+
+	* io/read.c (read_f): Comment typo, explict -> explicit.
+
+2025-05-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120158
+	* m4/iparm.m4 (atype_min): For atype_name starting with
+	GFC_UINTEGER define to 0.
+	* generated/maxloc0_16_m1.c: Regenerate.
+	* generated/maxloc0_16_m2.c: Regenerate.
+	* generated/maxloc0_16_m4.c: Regenerate.
+	* generated/maxloc0_16_m8.c: Regenerate.
+	* generated/maxloc0_16_m16.c: Regenerate.
+	* generated/maxloc0_4_m1.c: Regenerate.
+	* generated/maxloc0_4_m2.c: Regenerate.
+	* generated/maxloc0_4_m4.c: Regenerate.
+	* generated/maxloc0_4_m8.c: Regenerate.
+	* generated/maxloc0_4_m16.c: Regenerate.
+	* generated/maxloc0_8_m1.c: Regenerate.
+	* generated/maxloc0_8_m2.c: Regenerate.
+	* generated/maxloc0_8_m4.c: Regenerate.
+	* generated/maxloc0_8_m8.c: Regenerate.
+	* generated/maxloc0_8_m16.c: Regenerate.
+	* generated/maxloc1_16_m1.c: Regenerate.
+	* generated/maxloc1_16_m2.c: Regenerate.
+	* generated/maxloc1_16_m4.c: Regenerate.
+	* generated/maxloc1_16_m8.c: Regenerate.
+	* generated/maxloc1_16_m16.c: Regenerate.
+	* generated/maxloc1_4_m1.c: Regenerate.
+	* generated/maxloc1_4_m2.c: Regenerate.
+	* generated/maxloc1_4_m4.c: Regenerate.
+	* generated/maxloc1_4_m8.c: Regenerate.
+	* generated/maxloc1_4_m16.c: Regenerate.
+	* generated/maxloc1_8_m1.c: Regenerate.
+	* generated/maxloc1_8_m2.c: Regenerate.
+	* generated/maxloc1_8_m4.c: Regenerate.
+	* generated/maxloc1_8_m8.c: Regenerate.
+	* generated/maxloc1_8_m16.c: Regenerate.
+	* generated/maxval_m1.c: Regenerate.
+	* generated/maxval_m2.c: Regenerate.
+	* generated/maxval_m4.c: Regenerate.
+	* generated/maxval_m8.c: Regenerate.
+	* generated/maxval_m16.c: Regenerate.
+
+2025-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120153
+	* Makefile.am (i_maxloc1_c): Add generated/maxloc1_16_m16.c.
+	* intrinsics/random.c (arandom_m16): Use #ifdef HAVE_GFC_UINTEGER_16
+	guard rather than #ifdef GFC_HAVE_GFC_UINTEGER_16.
+	* gfortran.map (GFORTRAN_15): Remove _gfortran_arandom_m16,
+	_gfortran_maxloc1_16_m16, _gfortran_mmaxloc1_16_m16 and
+	_gfortran_smaxloc1_16_m16.
+	(GFORTRAN_15.2): New symbol version, add those 4 symbols to it.
+	* generated/maxloc1_16_m16.c: New file.
+	* Makefile.in: Regenerate.
+
+2025-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/120152
+	* Makefile.am (i_maxloc1_c): Readd generated/maxloc1_4_i8.c,
+	generated/maxloc1_8_i8.c, generated/maxloc1_16_i8.c,
+	generated/maxloc1_4_i16.c, generated/maxloc1_8_i16.c.  Move
+	generated/maxloc1_16_i16.c entry earlier in the list.
+	* Makefile.in: Regenerated.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add mapping mode to coarray's register.
+	* caf/single.c (_gfortran_caf_register): Create a token sharing
+	another token's memory.
+	(check_team): Check team parameters to coindexed expressions are
+	valid.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_num_images): Correct prototype.
+	* caf/single.c (_gfortran_caf_num_images): Default
+	implementation.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87326
+	* caf/libcaf.h (_gfortran_caf_this_image): Correct prototype.
+	* caf/single.c (struct caf_single_team): Add new_index of image.
+	(_gfortran_caf_this_image): Return the image index in the given team.
+	(_gfortran_caf_form_team): Set new_index in team structure.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/88154
+	PR fortran/88960
+	PR fortran/97210
+	PR fortran/103001
+	* caf/libcaf.h: Add constants for get_team's level argument and
+	update stat values for failed images.
+	(_gfortran_caf_team_number): Add prototype.
+	(_gfortran_caf_get_team): Same.
+	* caf/single.c (_gfortran_caf_team_number): Get the given team's
+	team number.
+	(_gfortran_caf_get_team): Get the current team or the team given
+	by level when the argument is present.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87326
+	PR fortran/87556
+	PR fortran/88254
+	PR fortran/103796
+	* caf/libcaf.h: Remove commented block.
+	(_gfortran_caf_form_team): Allow for all relevant arguments.
+	(_gfortran_caf_change_team): Same.
+	(_gfortran_caf_end_team): Same.
+	(_gfortran_caf_sync_team): Same.
+	* caf/single.c (struct caf_single_team): Team handling
+	structures.
+	(_gfortran_caf_init): Initialize initial team.
+	(free_team_list): Free all teams and the memory they hold.
+	(_gfortran_caf_finalize): Free initial and sibling teams.
+	(_gfortran_caf_register): Add memory registered to current team.
+	(_gfortran_caf_deregister): Unregister memory from current team.
+	(_gfortran_caf_is_present_on_remote): Check token's memptr for
+	llocation.  May have been deallocated by an end team.
+	(_gfortran_caf_form_team): Push a new team stub to the list.
+	(_gfortran_caf_change_team): Push a formed team on top of the
+	ctive teams stack.
+	(_gfortran_caf_end_team): End the active team, free all memory
+	allocated during its livespan.
+	(_gfortran_caf_sync_team): Take stat and errmsg into account.
+
+2025-04-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/87939
+	* caf/single.c (_gfortran_caf_lock): Correct stat value, if
+	lock is already locked by current image.
+	(_gfortran_caf_unlock): Correct stat value, if lock is not
+	locked.
+
+2025-04-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119502
+	* io/close.c (st_close): Issue an error and avoid
+	calling close_share when there is no stream assigned.
+	* io/open.c (st_open): If there is no stream assigned
+	to the unit, unlock the unit and issue an error.
+
+2025-04-09  Paul Thomas  <pault@gcc.gnu.org>
+	    and Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR libfortran/119460
+	* intrinsics/reduce.c (reduce): Correct error message about
+	mismatch between dim and the rank of array. Output the values
+	of both. Correct the evaluation of the result stride and
+	extent.
+	(reduce_scalar): The front end treats the result as an
+	allocatable so eliminate memcpy and free. Return the base-addr
+	of the local descriptor.
+	(reduce_c): Correct the type of the string lengths.
+	(reduce_scalar_c): Correct the type of the string lengths.Test
+	to see if 'res' is allocated. If not then return the base_addr
+	of the local descriptor.
+
+2025-04-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/119408
+	* acinclude.m4: When checking for __float128 support, determine
+	whether the current architecture is LoongArch.  If so, return false.
+	* configure: Regenerate.
+
+2025-03-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* intrinsics/reduce.c (reduce_scalar_c): Correct type of parameter DIM.
+
+2025-03-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR libfortran/85836
+	* Makefile.am : Add reduce.c
+	* Makefile.in : Regenerated
+	* gfortran.map : Add _gfortran_reduce, _gfortran_reduce_scalar,
+	_gfortran_reduce_c and _gfortran_reduce_scalar_c to the list.
+	* intrinsics/reduce.c (reduce, reduce_scalar, reduce_c,
+	reduce_scalar_c): New functions and prototypes
+
+2025-02-27  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/107635
+	* config/t-nvptx: New.
+	* configure.host [nvptx] (tmake_file): Add it.
+
+2025-02-21  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	PR fortran/107635
+	* caf/single.c: Replace alloca with __builtin_alloca.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_get): Removed because deprecated.
+	(_gfortran_caf_send): Same.
+	(_gfortran_caf_sendget): Same.
+	(_gfortran_caf_send_by_ref): Same.
+	* caf/single.c (assign_char4_from_char1): Same.
+	(assign_char1_from_char4): Same.
+	(convert_type): Same.
+	(defined): Same.
+	(_gfortran_caf_get): Same.
+	(_gfortran_caf_send): Same.
+	(_gfortran_caf_sendget): Same.
+	(copy_data): Same.
+	(get_for_ref): Same.
+	(_gfortran_caf_get_by_ref): Same.
+	(send_by_ref): Same.
+	(_gfortran_caf_send_by_ref): Same.
+	(_gfortran_caf_sendget_by_ref): Same.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add prototype for transfer_between_remotes.
+	* caf/single.c: Implement transfer_between_remotes.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h: Add/Correct prototypes for caf_get_from_remote,
+	caf_send_to_remote.
+	* caf/single.c (struct accessor_hash_t): Rename accessor_t to
+	getter_t.
+	(_gfortran_caf_register_accessor): Use new name of getter_t.
+	(_gfortran_caf_send_to_remote): New function for sending data to
+	coarray on a remote image.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_is_present_on_remote): Add new
+	function.
+	(_gfortran_caf_is_present): Remove deprecated one.
+	* caf/single.c (struct accessor_hash_t): Add function ptr access
+	for remote side call.
+	(_gfortran_caf_is_present_on_remote): Added.
+	(_gfortran_caf_is_present): Removed.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_register_accessor): Reflect
+	changed parameter order.
+	* caf/single.c (struct accessor_hash_t): Same.
+	(_gfortran_caf_register_accessor): Call accessor using a token
+	for accessing arrays with a descriptor on the source side.
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/libcaf.h (_gfortran_caf_get_by_ref): Remove from ABI.
+	This function is replaced by caf_get_from_remote ().
+	(_gfortran_caf_get_remote_function_index): Use better name.
+	* caf/single.c (_gfortran_caf_finalize): Free internal data.
+	(_gfortran_caf_get_by_ref): Remove from public interface, but
+	keep it, because it is still used by sendget ().
+
+2025-02-20  Andre Vehreschild  <vehre@gcc.gnu.org>
+
+	* caf/single.c (_gfortran_caf_finalize): Free memory preventing
+	leaks.
+	(_gfortran_caf_get_by_ct): Fix constness.
+	* caf/libcaf.h (_gfortran_caf_register_accessor): Fix constness.
+
+2025-02-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/114618
+	* io/transfer.c (formatted_transfer_scalar_write): Change name
+	of vriable 'pos' to 'tab_pos' to improve clarity. Add new
+	variable next_pos when calculating the maximum position.
+	Update the calculation of pending spaces.
+
+2025-02-04  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* Makefile.am: Add files for unsigned exponentiation.
+	* Makefile.in: Regenerate.
+	* gfortran.map: Add functions for unsigned exponentiation.
+	* generated/pow_m16_m1.c: New file.
+	* generated/pow_m16_m16.c: New file.
+	* generated/pow_m16_m2.c: New file.
+	* generated/pow_m16_m4.c: New file.
+	* generated/pow_m16_m8.c: New file.
+	* generated/pow_m1_m1.c: New file.
+	* generated/pow_m1_m16.c: New file.
+	* generated/pow_m1_m2.c: New file.
+	* generated/pow_m1_m4.c: New file.
+	* generated/pow_m1_m8.c: New file.
+	* generated/pow_m2_m1.c: New file.
+	* generated/pow_m2_m16.c: New file.
+	* generated/pow_m2_m2.c: New file.
+	* generated/pow_m2_m4.c: New file.
+	* generated/pow_m2_m8.c: New file.
+	* generated/pow_m4_m1.c: New file.
+	* generated/pow_m4_m16.c: New file.
+	* generated/pow_m4_m2.c: New file.
+	* generated/pow_m4_m4.c: New file.
+	* generated/pow_m4_m8.c: New file.
+	* generated/pow_m8_m1.c: New file.
+	* generated/pow_m8_m16.c: New file.
+	* generated/pow_m8_m2.c: New file.
+	* generated/pow_m8_m4.c: New file.
+	* generated/pow_m8_m8.c: New file.
+	* m4/powu.m4: New file.
+
+2025-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118571
+	* io/write.c (write_utf8_char4): Adjust the src_len to the
+	format width w_len when greater than zero.
+
+2025-01-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/118536
+	* io/transfer.c (formatted_transfer_scalar_write): Handle UNSIGNED
+	in G formatting.
+
+2025-01-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/118406
+	* runtime/string.c (gfc_itoa): Handle unsigned integers larger than
+	(10^19 * 2^64).
+
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
