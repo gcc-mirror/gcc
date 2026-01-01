@@ -1151,7 +1151,7 @@ print_version (void)
 {
   fnotice (stdout, "gcov %s%s\n", pkgversion_string, version_string);
   fnotice (stdout, "JSON format version: %s\n", GCOV_JSON_FORMAT_VERSION);
-  fprintf (stdout, "Copyright %s 2025 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2026 Free Software Foundation, Inc.\n",
 	   _("(C)"));
   fnotice (stdout,
 	   _("This is free software; see the source for copying conditions.  There is NO\n\
