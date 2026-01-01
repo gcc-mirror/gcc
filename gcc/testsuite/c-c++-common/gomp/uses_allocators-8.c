@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-fdump-tree-original" }
 
 //#include <omp.h>
 
@@ -53,7 +54,8 @@ const omp_alloctrait_t t2[] = {};
    ;
 }
 
-// { dg-final { scan-tree-dump "#pragma omp target uses_allocators\\(memspace\\(1\\), traits\\(\\) : my4\\) uses_allocators\\(memspace\\(\\), traits\\(t2\\) : my3\\) uses_allocators\\(memspace\\(\\), traits\\(\\) : my2\\) uses_allocators\\(memspace\\(3\\), traits\\(t\\) : my\\)" "original" } }
+// { dg-final { scan-tree-dump "#pragma omp target uses_allocators\\(memspace\\(1\\), traits\\(\\) : my4\\) uses_allocators\\(memspace\\(\\), traits\\(t2\\) : my3\\) uses_allocators\\(memspace\\(\\), traits\\(\\) : my2\\) uses_allocators\\(memspace\\(3\\), traits\\(t\\) : my\\)" "original" { target c } } }
+// { dg-final { scan-tree-dump "#pragma omp target uses_allocators\\(memspace\\(omp_large_cap_mem_space\\), traits\\(\\) : my4\\) uses_allocators\\(memspace\\(\\), traits\\(t2\\) : my3\\) uses_allocators\\(memspace\\(\\), traits\\(\\) : my2\\) uses_allocators\\(memspace\\(omp_high_bw_mem_space\\), traits\\(t\\) : my\\)" "original" { target c++ } } }
 
 
-// { dg-message "sorry, unimplemented: 'uses_allocators' clause" "" { target *-*-* } 52 }
+// { dg-message "sorry, unimplemented: 'uses_allocators' clause" "" { target *-*-* } 53 }
