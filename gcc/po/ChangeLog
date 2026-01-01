@@ -3491,7 +3491,7 @@ Sun Oct 31 17:17:18 1999  Jeffrey A Law  (law@cygnus.com)
 	Fix names of those files which are now living in egcs's
 	libiberty/include directories.
 
-Copyright (C) 1999-2025 Free Software Foundation, Inc.
+Copyright (C) 1999-2026 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

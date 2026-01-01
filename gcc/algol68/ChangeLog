@@ -488,9 +488,8 @@
 	* a68-exports.cc: Likewise.
 	* ga68-exports.pk: Likewise.
 	* a68-diagnostics.cc: Likewise.
-
 
-Copyright (C) 2025 Free Software Foundation, Inc.
+Copyright (C) 2025-2026 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

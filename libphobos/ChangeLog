@@ -2427,7 +2427,7 @@
 	* testsuite/lib/libphobos.exp: New file.
 	* testsuite/testsuite_flags.in: New file.
 
-Copyright (C) 2018-2025 Free Software Foundation, Inc.
+Copyright (C) 2018-2026 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -4379,7 +4379,7 @@
 	LANG_HOOKS_REGISTER_BUILTIN_TYPE, LANG_HOOKS_WRITE_GLOBALS):
 	Move to c-objc-common.h.
 
-Copyright (C) 2004-2025 Free Software Foundation, Inc.
+Copyright (C) 2004-2026 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright
