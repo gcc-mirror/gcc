@@ -1,3 +1,13 @@
+2025-12-31  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/121485
+	* gcc.target/riscv/rvv/vsetvl/pr121485.c: New test.
+
+2025-12-31  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/123334
+	* gcc.dg/pr123295-1.c: Require int128.
+
 2025-12-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* algol68/execute/char-in-string-1.a68: New test.
