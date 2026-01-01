@@ -1894,6 +1894,11 @@ public:
      call.  */
   static cgraph_edge *make_direct (cgraph_edge *edge, cgraph_node *callee);
 
+  /* Returns the next speculative_id based on currently in use
+     for the given statement for the edge.
+     Returns 0 if no speculative edges exist for this statement. */
+  int get_next_speculative_id ();
+
   /* Turn edge into speculative call calling N2. Update
      the profile so the direct call is taken COUNT times
      with FREQUENCY.  speculative_id is used to link direct calls with their

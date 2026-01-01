@@ -3865,7 +3865,7 @@ ipa_devirt (void)
 		continue;
 	      }
 	    bool first = true;
-	    unsigned speculative_id = 0;
+	    unsigned speculative_id = e->get_next_speculative_id ();
 	    for (cgraph_node * likely_target: likely_targets)
 	      {
 		if (!devirt_target_ok_p (likely_target, &stats))
@@ -3940,7 +3940,8 @@ ipa_devirt (void)
 
 		update = true;
 		e->make_speculative (likely_tgt_node,
-				     e->count.apply_scale (8, 10));
+				     e->count.apply_scale (8, 10),
+				     e->get_next_speculative_id ());
 	      }
 	  }
       if (update)
