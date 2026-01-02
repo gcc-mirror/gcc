@@ -1402,16 +1402,28 @@ See RS/6000 and PowerPC Options.
 
 @emph{S/390 and zSeries Options} (@ref{S/390 and zSeries Options})
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type}
--mhard-float  -msoft-float  -mhard-dfp  -mno-hard-dfp
+-mhard-float  -msoft-float  -mhard-dfp
 -mlong-double-64  -mlong-double-128
--mbackchain  -mno-backchain  -mpacked-stack  -mno-packed-stack
--msmall-exec  -mno-small-exec  -mmvcle  -mno-mvcle
--m64  -m31  -mdebug  -mno-debug  -mesa  -mzarch
+-mbackchain  -mpacked-stack
+-msmall-exec  -mmvcle
+-m64  -m31  -mdebug  -mesa  -mzarch
 -mhtm  -mvx  -mzvector
--mtpf-trace  -mno-tpf-trace  -mtpf-trace-skip  -mno-tpf-trace-skip
+-mtpf-trace  -mtpf-trace-skip  -mmain
 -mfused-madd  -mno-fused-madd
--mwarn-framesize  -mwarn-dynamicstack  -mstack-size  -mstack-guard
--mhotpatch=@var{halfwords},@var{halfwords}}
+-mwarn-framesize=@var{framesize}  -mwarn-dynamicstack
+-mstack-size=@var{stack-size}  -mno-stack-size
+-mstack-guard=@var{stack-guard}  -mno-stack-guard
+-mstack-protector-guard=@var{guard}
+-mstack-protector-guard-record
+-mhotpatch=@var{pre-halfwords},@var{post-halfwords}
+-mno-pic-data-is-text-relative
+-mindirect-branch=@var{choice}
+-mindirect-branch-jump=@var{choice}  -mindirect-branch-call=@var{choice}
+-mfunction-return=@var{choice}
+-mfunction-return-mem=@var{choice}  -mfunction-return-reg=@var{choice}
+-mindirect-branch-table
+-mfentry  -mrecord-mcount  -mnop-mcount
+-mpreserve-args  -munaliged-symbols}
 
 @emph{SH Options} (@ref{SH Options})
 @gccoptlist{-m1  -m2  -m2e
@@ -34046,8 +34058,8 @@ available with the vector extension facility introduced with the IBM
 z13 machine generation.
 This option changes the ABI for some vector type values with regard to
 alignment and calling conventions.  In case vector type values are
-being used in an ABI-relevant context a GAS @samp{.gnu_attribute}
-command will be added to mark the resulting binary with the ABI used.
+being used in an ABI-relevant context, a GAS @samp{.gnu_attribute}
+command is added to mark the resulting binary with the ABI used.
 @option{-mvx} is enabled by default when using @option{-march=z13}.
 
 @opindex mzvector
@@ -34059,12 +34071,12 @@ builtins using instructions available with the vector extension
 facility introduced with the IBM z13 machine generation.
 This option adds support for @samp{vector} to be used as a keyword to
 define vector type variables and arguments.  @samp{vector} is only
-available when GNU extensions are enabled.  It will not be expanded
+available when GNU extensions are enabled.  It is not expanded
 when requesting strict standard compliance e.g.@: with @option{-std=c99}.
-In addition to the GCC low-level builtins @option{-mzvector} enables
+In addition to the GCC low-level builtins, @option{-mzvector} enables
 a set of builtins added for compatibility with AltiVec-style
 implementations like Power and Cell.  In order to make use of these
-builtins the header file @file{vecintrin.h} needs to be included.
+builtins, you must include the header file @file{vecintrin.h}.
 @option{-mzvector} is disabled by default.
 
 @opindex mmvcle
@@ -34125,6 +34137,12 @@ routines providing the ability of selectively skipping function trace
 entries for the TPF OS.  This option is off by default, even when
 compiling for the TPF OS and specifying @option{-mtpf-trace}.
 
+@opindex mmain
+@opindex mno-main
+@item -mmain
+For TPF OS target, use this option when linking to add the startup code
+and other linker options to produce a main object.
+
 @opindex mfused-madd
 @opindex mno-fused-madd
 @item -mfused-madd
@@ -34135,43 +34153,59 @@ hardware floating point is used.
 
 @opindex mwarn-framesize
 @item -mwarn-framesize=@var{framesize}
-Emit a warning if the current function exceeds the given frame size.  Because
-this is a compile-time check it doesn't need to be a real problem when the program
-runs.  It is intended to identify functions that most probably cause
-a stack overflow.  It is useful to be used in an environment with limited stack
-size e.g.@: the linux kernel.
+Emit a warning if the current function exceeds the given frame size.
+Because this is a compile-time check it doesn't need to be a real
+problem when the program runs.  It is intended to identify functions
+hat most probably cause a stack overflow.  It is useful for
+environments with limited stack size e.g.@: the Linux kernel.
+
+A value of zero disables this warning; that is the default.
 
 @opindex mwarn-dynamicstack
+@opindex mno-warn-dynamicstack
 @item -mwarn-dynamicstack
+@itemx -mno-warn-dynamicstack
 Emit a warning if the function calls @code{alloca} or uses dynamically-sized
 arrays.  This is generally a bad idea with a limited stack size.
 
 @opindex mstack-guard
 @opindex mstack-size
+@opindex mno-stack-guard
+@opindex mno-stack-size
 @item -mstack-guard=@var{stack-guard}
 @itemx -mstack-size=@var{stack-size}
-If these options are provided the S/390 back end emits additional instructions in
-the function prologue that trigger a trap if the stack size is @var{stack-guard}
-bytes above the @var{stack-size} (remember that the stack on S/390 grows downward).
+@itemx -mno-stack-guard
+@itemx -mno-stack-size
+If these options are enabled, the S/390 back end emits additional
+instructions in the function prologue that trigger a trap if the stack
+size is @var{stack-guard} bytes above the @var{stack-size} (remember that
+the stack on S/390 grows downward).
 If the @var{stack-guard} option is omitted the smallest power of 2 larger than
 the frame size of the compiled function is chosen.
-These options are intended to be used to help debugging stack overflow problems.
-The additionally emitted code causes only little overhead and hence can also be
-used in production-like systems without greater performance degradation.  The given
-values have to be exact powers of 2 and @var{stack-size} has to be greater than
-@var{stack-guard} without exceeding 64k.
-In order to be efficient the extra code makes the assumption that the stack starts
-at an address aligned to the value given by @var{stack-size}.
-The @var{stack-guard} option can only be used in conjunction with @var{stack-size}.
+
+These options are intended to be used to help debugging stack overflow
+problems.  The additionally emitted code causes only little overhead and
+hence can also be used in production-like systems without greater
+performance degradation.
+
+The given values have to be exact powers of 2
+and @var{stack-size} has to be greater than @var{stack-guard} without
+exceeding 64k.
+In order to be efficient the extra code makes the assumption that the
+stack starts at an address aligned to the value given by @var{stack-size}.
+
+The @option{-mstack-guard=} option can only be used in conjunction with
+@option{-mstack-size=}.  You can override these options on the command line
+with @option{-mno-stack-guard} and @option{-mno-stack-size}, respectively.
 
 @opindex mhotpatch
 @item -mhotpatch=@var{pre-halfwords},@var{post-halfwords}
 If the hotpatch option is enabled, a ``hot-patching'' function
 prologue is generated for all functions in the compilation unit.
-The funtion label is prepended with the given number of two-byte
+The function label is prepended with the given number of two-byte
 NOP instructions (@var{pre-halfwords}, maximum 1000000).  After
 the label, 2 * @var{post-halfwords} bytes are appended, using the
-largest NOP like instructions the architecture allows (maximum
+largest NOP-like instructions the architecture allows (maximum
 1000000).
 
 If both arguments are zero, hotpatching is disabled.
@@ -34179,12 +34213,25 @@ If both arguments are zero, hotpatching is disabled.
 This option can be overridden for individual functions with the
 @code{hotpatch} attribute.
 
+@opindex mpic-data-is-text-relative
+@opindex mno-pic-data-is-text-relative
+@item -mpic-data-is-text-relative
+@itemx -mno-pic-data-is-text-relative
+When compiling for S/390 with @option{-fpic} or @option{-fPIC}, normally
+GCC emits code using relative addressing between code and data.  However,
+for hotpatching it might be required to introduce new @code{.text} parts
+while using the existing @code{.data} and @code{.bss} sections.
+In this case, use @option{-mno-pic-data-is-text-relative} to force
+addressing through the GOT instead.
+
 @opindex mstack-protector-guard
 @opindex mstack-protector-guard-record
+@opindex mno-stack-protector-guard-record
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-record
+
 Generate stack protection code using canary at @var{guard}.  Supported
-locations are @var{global} for a global canary or @var{tls} for a per-thread
+locations are @samp{global} for a global canary or @samp{tls} for a per-thread
 canary in the TLS block (the default).
 
 Option @option{-mstack-protector-guard-record} results in the generation of
@@ -34192,6 +34239,97 @@ section @code{__stack_protector_loc} containing pointers to all instructions
 which load the address of the global guard.  Thus, this option has only an
 effect in conjunction with @option{-mstack-protector-guard=global}.  The
 intended use is for the Linux kernel.
+
+@opindex mindirect-branch
+@opindex mindirect-branch-jump
+@opindex mindirect-branch-call
+@opindex mfunction-return
+@opindex mfunction-return-mem
+@opindex mfunction-return-reg
+@item -mindirect-branch=@var{choice}
+@itemx -mindirect-branch-jump=@var{choice}
+@itemx -mindirect-branch-call=@var{choice}
+@itemx -mfunction-return=@var{choice}
+@itemx -mfunction-return-mem=@var{choice}
+@itemx -mfunction-return-reg=@var{choice}
+This group of options addresses security vulnerabilities related to
+speculative execution and indirect branch prediction by enabling replacement
+of indirect branches and function returns with direct branches to a thunk.
+
+Specifying a @var{choice} of @samp{keep} causes generation of the
+default code.  @samp{thunk} triggers generation of out-of-line thunks
+and replaces the formerly indirect branch with a direct branch to the
+thunk.  @samp{thunk-extern} does the branch replacement like @samp{thunk}
+but does not emit the thunks.  @samp{thunk-inline} is only available with
+@option{-mindirect-branch-jump}; it should be used in preference
+to @samp{thunk} in user-space applications to support correct stack
+unwinding and exception handling.
+
+@option{-mindirect-branch} sets the value of @option{-mindirect-branch-jump}
+and @option{-mindirect-branch-call}.
+@option{-mfunction-return} sets the value of @option{-mfunction-return-reg}
+and @option{-mfunction-return-mem.}
+
+All of these options can also be set on a per-function basis using
+function attributes.
+
+@opindex mindirect-branch-table
+@opindex mno-indirect-branch-table
+@item -mindirect-branch-table
+@itemx -mno-indirect-branch-table
+
+This option is useful in conjunction with the
+@option{-mindirect-branch} and @option{-mfunction-return} options.
+When enabled, it causes generation of tables pointing to the branch
+locations which have been patched by those options.  The tables are
+emitted in sections named @code{.s390_indirect_jump},
+@code{.s390_indirect_call}, @code{.s390_return_reg}, and
+@code{.s390_return_mem}.  Each section consists of an array of 32-bit
+elements; each entry holds the offset from the entry to the patched
+location.
+
+@opindex mfentry
+@opindex mno-fentry
+@item -mfentry
+@itemx -mno-fentry
+When used in conjunction with the @option{-pg} option, emit profiling code
+using the @code{__fentry__} hook provided by GLIBC 2.29 or later.
+This is only available for 64-bit code.  If this option is not enabled,
+profiling uses the less efficient @code{_mcount} hook instead.
+
+@opindex mrecord-mcount
+@opindex mno-record-mcount
+@item -mrecord-mcount
+@itemx -mno-record-mcount
+When enabled, generate a @code{__mcount_loc} section with the locations
+of all generated profiling calls to @code{_mcount} or @code{__fentry__}.
+
+@opindex mnop-mcount
+@opindex mno-nop-mcount
+@item mnop-mcount
+@itemx mno-nop-mcount
+Instead of generating calls to @code{_mcount} or @code{__fentry__}
+with @option{-pg}, insert a sequence no-op instructions of the same length
+at the locations where the calls would have been inserted.  This can be used
+in conjunction with the @option{-mrecord-mcount} option to patch the call
+sequences into the object file without recompiling it.
+
+@opindex mpreserve-args
+@opindex mno-preserve-args
+@item -mpreserve-args
+@itemx -mno-preserve-args
+When enabled, save all argument registers to the stack, and generate
+corresponding CFI information.  This is useful for applications that
+want to implement their own stack unwinding and need access to function
+arguments.
+
+@opindex munaligned-symbols
+@opindex mno-unaligned-symbols
+@item -munaligned-symbols
+@itemx -mno-unaligned-symbols
+Assume that external symbols with a natural alignment of 1 are potentially
+unaligned.  By default, all symbols without explicit alignment are assumed
+to be aligned on a 2-byte boundary as mandated by the IBM Z ABI.
 @end table
 
 @node SH Options

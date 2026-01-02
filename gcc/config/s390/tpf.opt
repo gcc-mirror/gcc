@@ -22,20 +22,22 @@ mtpf-trace
 Target Mask(TPF_PROFILING)
 Enable TPF-OS tracing code.
 
+; Except for -mtpf-trace-skip, the other mtpf-trace-hook-* options are
+; for debugging purposes and are explicitly undocumented.
 mtpf-trace-hook-prologue-check=
-Target RejectNegative Joined UInteger Var(s390_tpf_trace_hook_prologue_check) Init(TPF_TRACE_PROLOGUE_CHECK)
+Target Undocumented RejectNegative Joined UInteger Var(s390_tpf_trace_hook_prologue_check) Init(TPF_TRACE_PROLOGUE_CHECK)
 Set the trace check address for prologue tpf hook
 
 mtpf-trace-hook-prologue-target=
-Target RejectNegative Joined UInteger Var(s390_tpf_trace_hook_prologue_target) Init(TPF_TRACE_PROLOGUE_TARGET)
+Target Undocumented RejectNegative Joined UInteger Var(s390_tpf_trace_hook_prologue_target) Init(TPF_TRACE_PROLOGUE_TARGET)
 Set the trace jump address for prologue tpf hook
 
 mtpf-trace-hook-epilogue-check=
-Target RejectNegative Joined UInteger Var(s390_tpf_trace_hook_epilogue_check) Init(TPF_TRACE_EPILOGUE_CHECK)
+Target Undocumented RejectNegative Joined UInteger Var(s390_tpf_trace_hook_epilogue_check) Init(TPF_TRACE_EPILOGUE_CHECK)
 Set the trace check address for epilogue tpf hook
 
 mtpf-trace-hook-epilogue-target=
-Target RejectNegative Joined UInteger Var(s390_tpf_trace_hook_epilogue_target) Init(TPF_TRACE_EPILOGUE_TARGET)
+Target Undocumented RejectNegative Joined UInteger Var(s390_tpf_trace_hook_epilogue_target) Init(TPF_TRACE_EPILOGUE_TARGET)
 Set the trace jump address for epilogue tpf hook
 
 mtpf-trace-skip

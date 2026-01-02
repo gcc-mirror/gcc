@@ -247,8 +247,9 @@ mzarch
 Target RejectNegative Negative(mesa) Mask(ZARCH)
 z/Architecture.
 
+; This option was added to fix some testsuite failures.
 mbranch-cost=
-Target Joined RejectNegative UInteger Var(s390_branch_cost) Init(1) Save
+Target Undocumented Joined RejectNegative UInteger Var(s390_branch_cost) Init(1) Save
 Set the branch costs for conditional branch instructions.  Reasonable
 values are small, non-negative integers.  The default branch cost is
 1.
