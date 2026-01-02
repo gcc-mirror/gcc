@@ -1,5 +1,5 @@
 /* Branch Target Identification for RISCV architecture.
-   Copyright (C) 2019-2025 Free Software Foundation, Inc.
+   Copyright (C) 2019-2026 Free Software Foundation, Inc.
    Based on ARM target.
 
    This file is part of GCC.

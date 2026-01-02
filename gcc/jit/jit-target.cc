@@ -1,5 +1,5 @@
 /* jit-target.cc -- Target interface for the jit front end.
-   Copyright (C) 2023 Free Software Foundation, Inc.
+   Copyright (C) 2023-2026 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

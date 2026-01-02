@@ -1,7 +1,7 @@
 // { dg-do run { target c++20 } }
 // { dg-additional-options "-DSTART_DAY=-50000 -DEND_DAY=50000 -DSTART_YMD=1833y/February/8d" { target simulator } }
 
-// Copyright (C) 2021-2025 Free Software Foundation, Inc.
+// Copyright (C) 2021-2026 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

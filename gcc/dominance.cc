@@ -1,5 +1,5 @@
 /* Calculate (post)dominators in slightly super-linear time.
-   Copyright (C) 2000-2025 Free Software Foundation, Inc.
+   Copyright (C) 2000-2026 Free Software Foundation, Inc.
    Contributed by Michael Matz (matz@ifh.de).
 
    This file is part of GCC.

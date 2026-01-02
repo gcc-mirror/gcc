@@ -1,5 +1,5 @@
 /* Oversized reductions lock variable
-   Copyright (C) 2017-2025 Free Software Foundation, Inc.
+   Copyright (C) 2017-2026 Free Software Foundation, Inc.
    Contributed by Mentor Graphics.
 
    This file is part of the GNU Offloading and Multi Processing Library

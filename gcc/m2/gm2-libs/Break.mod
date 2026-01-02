@@ -1,6 +1,6 @@
 (* Break.mod provides a dummy compatibility library for legacy systems.
 
-Copyright (C) 2001-2025 Free Software Foundation, Inc.
+Copyright (C) 2001-2026 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

@@ -1,5 +1,5 @@
 ;; Machine description for optimization of RVV auto-vectorization.
-;; Copyright (C) 2023-2025 Free Software Foundation, Inc.
+;; Copyright (C) 2023-2026 Free Software Foundation, Inc.
 ;; Contributed by Juzhe Zhong (juzhe.zhong@rivai.ai), RiVAI Technologies Ltd.
 
 ;; This file is part of GCC.

@@ -1,6 +1,6 @@
 ;; Machine Description for LARCH Loongson ASX ASE
 ;;
-;; Copyright (C) 2018-2025 Free Software Foundation, Inc.
+;; Copyright (C) 2018-2026 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;

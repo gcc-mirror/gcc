@@ -1,6 +1,6 @@
 `/* Support routines for the intrinsic power (**) operator
    for UNSIGNED, using modulo arithmetic.
-   Copyright (C) 2025 Free Software Foundation, Inc.
+   Copyright (C) 2025-2026 Free Software Foundation, Inc.
    Contributed by Thomas Koenig.
 
 This file is part of the GNU Fortran 95 runtime library (libgfortran).

@@ -805,6 +805,7 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libcpp', LibCppFilter())
         self.add_dir ('libdecnumber')
         # libffi is imported from upstream.
+        self.add_dir ('libga68')
         self.add_dir ('libgcc', LibGCCFilter())
         self.add_dir ('libgfortran')
         # libgo is imported from upstream.
@@ -835,6 +836,7 @@ class GCCCmdLine (CmdLine):
             'libcpp',
             'libdecnumber',
             'libgcc',
+            'libga68',
             'libgfortran',
             'libgomp',
             'libgrust',

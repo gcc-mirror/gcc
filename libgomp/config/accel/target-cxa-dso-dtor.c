@@ -1,6 +1,6 @@
 /* Host/device compatibility: Itanium C++ ABI, DSO Object Destruction API
 
-   Copyright (C) 2025 Free Software Foundation, Inc.
+   Copyright (C) 2025-2026 Free Software Foundation, Inc.
 
    This file is part of the GNU Offloading and Multi Processing Library
    (libgomp).

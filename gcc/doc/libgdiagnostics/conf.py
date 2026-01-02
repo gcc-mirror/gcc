@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = u'libgdiagnostics'
-copyright = u'2024-2025 Free Software Foundation, Inc.'
+copyright = u'2024-2026 Free Software Foundation, Inc.'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

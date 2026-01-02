@@ -1,6 +1,6 @@
 (* StringFileSysOp.mod provides procedures to manipulate the file system.
 
-Copyright (C) 2025 Free Software Foundation, Inc.
+Copyright (C) 2025-2026 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
 
 This file is part of GNU Modula-2.

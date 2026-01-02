@@ -1,5 +1,5 @@
 /* Libcalls to Algol 68 run-time functions.
-   Copyright (C) 2006-2025 Free Software Foundation, Inc.
+   Copyright (C) 2006-2026 Free Software Foundation, Inc.
    Copyright (C) 2025 Jose E. Marchesi.
 
    Written by Jose E. Marchesi.

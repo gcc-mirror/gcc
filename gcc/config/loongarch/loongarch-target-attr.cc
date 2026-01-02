@@ -1,5 +1,5 @@
 /* Subroutines used for LoongArch code generation.
-   Copyright (C) 2025 Free Software Foundation, Inc.
+   Copyright (C) 2025-2026 Free Software Foundation, Inc.
    Contributed by Loongson Ltd.
    Based on AArch64 target for GNU compiler.
 

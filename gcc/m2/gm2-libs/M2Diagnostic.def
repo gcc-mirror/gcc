@@ -1,6 +1,6 @@
 (* M2Diagnotic provides memory and time diagnosics to the user.
 
-Copyright (C) 2024 Free Software Foundation, Inc.
+Copyright (C) 2024-2026 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
 
 This file is part of GNU Modula-2.

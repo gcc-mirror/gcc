@@ -1,5 +1,5 @@
 /* Character conversion functions for the Algol 68 front-end.
-   Copyright (C) 1999-2002, 2006-2007, 2009-2024 Free Software Foundation, Inc.
+   Copyright (C) 1999-2026 Free Software Foundation, Inc.
    Copyright (C) 2025 Jose E. Marchesi.
 
    The code in this file has been adapted from the unistr gnulib module,

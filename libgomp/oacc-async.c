@@ -1,6 +1,6 @@
 /* OpenACC Runtime Library Definitions.
 
-   Copyright (C) 2013-2025 Free Software Foundation, Inc.
+   Copyright (C) 2013-2026 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded.
 

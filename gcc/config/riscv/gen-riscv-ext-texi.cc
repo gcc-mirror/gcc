@@ -51,7 +51,7 @@ print_ext_doc_entry (const std::string &ext_name, const std::string &full_name,
 int
 main ()
 {
-  puts ("@c Copyright (C) 2025 Free Software Foundation, Inc.");
+  puts ("@c Copyright (C) 2025-2026 Free Software Foundation, Inc.");
   puts ("@c This is part of the GCC manual.");
   puts ("@c For copying conditions, see the file gcc/doc/include/fdl.texi.");
   puts ("");

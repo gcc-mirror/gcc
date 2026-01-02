@@ -1,6 +1,6 @@
 /* m2type.h header file for m2type.cc.
 
-Copyright (C) 2012-2025 Free Software Foundation, Inc.
+Copyright (C) 2012-2026 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius@glam.ac.uk>.
 
 This file is part of GNU Modula-2.

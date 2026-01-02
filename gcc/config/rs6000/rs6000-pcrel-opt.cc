@@ -1,5 +1,5 @@
 /* Subroutines used support the pc-relative linker optimization.
-   Copyright (C) 2020-2025 Free Software Foundation, Inc.
+   Copyright (C) 2020-2026 Free Software Foundation, Inc.
 
    This file is part of GCC.
 

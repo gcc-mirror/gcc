@@ -1,5 +1,5 @@
 (* M2PathName.mod maintain a dictionary of named paths.
-Copyright (C) 2023-2025 Free Software Foundation, Inc.
+Copyright (C) 2023-2026 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.

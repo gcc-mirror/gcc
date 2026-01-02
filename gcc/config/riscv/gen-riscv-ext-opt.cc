@@ -9,7 +9,7 @@ main ()
 {
   puts ("; Target options for the RISC-V port of the compiler");
   puts (";");
-  puts ("; Copyright (C) 2025 Free Software Foundation, Inc.");
+  puts ("; Copyright (C) 2025-2026 Free Software Foundation, Inc.");
   puts (";");
   puts ("; This file is part of GCC.");
   puts (";");

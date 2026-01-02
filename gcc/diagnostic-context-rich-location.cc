@@ -2,7 +2,7 @@
    with diagnostic context events, but only if the path is actually to be
    used.
 
-   Copyright (C) 2025 Free Software Foundation, Inc.
+   Copyright (C) 2025-2026 Free Software Foundation, Inc.
    Contributed by Qing Zhao<qing.zhao@oracle.com>
 
 This file is part of GCC.

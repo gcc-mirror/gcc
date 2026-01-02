@@ -1,4 +1,4 @@
-cc Copyright (C) 2002-2025 Free Software Foundation, Inc.
+cc Copyright (C) 2002-2026 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 

@@ -1,5 +1,5 @@
 /* libga68 unicode support routines.
-   Copyright (C) 2009-2025 Free Software Foundation, Inc.
+   Copyright (C) 2009-2026 Free Software Foundation, Inc.
    Copyright (C) 2025 Jose E. Marchesi.
 
    GCC is free software; you can redistribute it and/or modify it under the

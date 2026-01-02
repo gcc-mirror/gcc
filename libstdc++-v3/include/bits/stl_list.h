@@ -1,6 +1,6 @@
 // List implementation -*- C++ -*-
 
-// Copyright (C) 2001-2025 Free Software Foundation, Inc.
+// Copyright (C) 2001-2026 Free Software Foundation, Inc.
 // Copyright The GNU Toolchain Authors.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free

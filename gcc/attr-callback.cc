@@ -1,5 +1,5 @@
 /* Callback attribute handling
-   Copyright (C) 2025 Free Software Foundation, Inc.
+   Copyright (C) 2025-2026 Free Software Foundation, Inc.
    Contributed by Josef Melcr <jmelcr@gcc.gnu.org>
 
    This file is part of GCC.

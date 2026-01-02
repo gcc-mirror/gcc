@@ -1,5 +1,5 @@
 ;; Machine Description for shared bits common to Neon and MVE.
-;; Copyright (C) 2006-2025 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2026 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.

@@ -1,5 +1,5 @@
 /* AArch64 SIMD pragma builtins
-   Copyright (C) 2024-2025 Free Software Foundation, Inc.
+   Copyright (C) 2024-2026 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.

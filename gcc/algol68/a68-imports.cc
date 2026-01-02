@@ -1,6 +1,6 @@
 /* Importing Algol 68 module interfaces.
    Copyright (C) 2025 Jose E. Marchesi.
-   Copyright (C) 2010-2025 Free Software Foundation, Inc.
+   Copyright (C) 2010-2026 Free Software Foundation, Inc.
 
    Written by Jose E. Marchesi.
 

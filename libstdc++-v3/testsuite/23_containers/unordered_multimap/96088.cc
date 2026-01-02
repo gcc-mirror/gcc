@@ -2,7 +2,7 @@
 // { dg-require-effective-target std_allocator_new }
 // { dg-require-effective-target c++20 { target powerpc-ibm-aix* } }
 
-// Copyright (C) 2021-2025 Free Software Foundation, Inc.
+// Copyright (C) 2021-2026 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

@@ -1,5 +1,5 @@
 /* Definitions for <stdint.h> types on systems using Cygwin.
-   Copyright (C) 2009-2025 Free Software Foundation, Inc.
+   Copyright (C) 2009-2026 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

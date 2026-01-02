@@ -1,6 +1,6 @@
 ## Makefile for the VTV library.
 ##
-## Copyright (C) 2013-2025 Free Software Foundation, Inc.
+## Copyright (C) 2013-2026 Free Software Foundation, Inc.
 ##
 ## Process this file with automake to produce Makefile.in.
 ##

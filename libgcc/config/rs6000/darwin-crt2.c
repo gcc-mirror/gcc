@@ -1,5 +1,5 @@
 /* KeyMgr backwards-compatibility support for Darwin.
-   Copyright (C) 2001-2025 Free Software Foundation, Inc.
+   Copyright (C) 2001-2026 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
