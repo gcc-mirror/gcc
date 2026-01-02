@@ -1,3 +1,14 @@
+2026-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119136
+	* gfortran.dg/pr119136.f90: New test.
+
+2026-01-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR testsuite/123299
+	* c-c++-common/gomp/uses_allocators-8.c: Add missing
+	-fdump-tree-original and add C++ version of scan-tree-dump.
+
 
 Copyright (C) 2026 Free Software Foundation, Inc.
 

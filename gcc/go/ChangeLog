@@ -1,3 +1,7 @@
+2026-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gccgo.texi: Bump @copyrights-go year.
+
 2025-12-12  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* lang.opt.urls: Regenerate.

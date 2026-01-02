@@ -1,3 +1,7 @@
+2026-01-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sppp.awk: Fix non-portable uses of 'match'.
+
 2025-12-31  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* Makefile.in: Regenerate.

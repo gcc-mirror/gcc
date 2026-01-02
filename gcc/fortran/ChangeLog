@@ -1,3 +1,17 @@
+2026-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119136
+	* libgfortran.h: Add enum for new LIBERROR_RECURSIVE_IO.
+
+2026-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortranspec.cc (lang_specific_driver): Update copyright notice
+	dates.
+	* gfc-internals.texi: Bump @copying's copyright year.
+	* gfortran.texi: Ditto.
+	* intrinsic.texi: Ditto.
+	* invoke.texi: Ditto.
+
 
 Copyright (C) 2026 Free Software Foundation, Inc.
 

@@ -1,3 +1,25 @@
+2026-01-01  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* cgraph.cc (cgraph_edge::get_next_speculative_id): New.
+	* cgraph.h (cgraph_edge::get_next_speculative_id): New.
+	* ipa-devirt.cc (ipa_devirt): Use get_next_speculative_id
+	in make_speculative.
+
+2026-01-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.cc (process_command): Update copyright notice dates.
+	* gcov-dump.cc (print_version): Ditto.
+	* gcov.cc (print_version): Ditto.
+	* gcov-tool.cc (print_version): Ditto.
+	* gengtype.cc (create_file): Ditto.
+	* doc/cpp.texi: Bump @copying's copyright year.
+	* doc/cppinternals.texi: Ditto.
+	* doc/gcc.texi: Ditto.
+	* doc/gccint.texi: Ditto.
+	* doc/gcov.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
 
 Copyright (C) 2026 Free Software Foundation, Inc.
 
