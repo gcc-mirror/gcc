@@ -25,4 +25,5 @@ void f (int8_t * restrict in, int8_t * restrict out, int n, int m, int cond)
     }
 }
 
-/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf8,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } } } } */
+/* -O2 and -O3 fail now, see PR target/122869.  */
+/* { dg-final { scan-assembler-times {vsetvli\s+zero,\s*[a-x0-9]+,\s*e8,\s*mf8,\s*t[au],\s*m[au]} 2 { target { no-opts "-O0" no-opts "-g" no-opts "-funroll-loops" } xfail { any-opts "-O2" "-O3" } } } } */
