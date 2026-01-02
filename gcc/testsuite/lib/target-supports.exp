@@ -13735,8 +13735,9 @@ proc check_effective_target_arm_v8_3a_complex_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_COMPLEX)
 	    #error "__ARM_FEATURE_COMPLEX not defined"
 	    #endif
-	} "$flags $cpu_unset -march=armv8.3-a"] } {
-	    set et_arm_v8_3a_complex_neon_flags "$flags $cpu_unset -march=armv8.3-a"
+	    #include <complex.h>
+	} "$flags $cpu_unset -march=armv8.3-a+simd"] } {
+	    set et_arm_v8_3a_complex_neon_flags "$flags $cpu_unset -march=armv8.3-a+simd"
 	    return 1;
 	}
     }
@@ -13782,9 +13783,13 @@ proc check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache { } {
 	    #if !defined (__ARM_FEATURE_COMPLEX)
 	    #error "__ARM_FEATURE_COMPLEX not defined"
 	    #endif
-	} "$flags $cpu_unset -march=armv8.3-a+fp16"] } {
+	    #if !defined (__ARM_FEATURE_FP16_VECTOR_ARITHMETIC)
+	    #error "__ARM_FEATURE_FP16_VECTOR_ARITHMETIC not defined"
+	    #endif
+	    #include <complex.h>
+	} "$flags $cpu_unset -march=armv8.3-a+fp16+simd"] } {
 	    set et_arm_v8_3a_fp16_complex_neon_flags \
-			"$flags $cpu_unset -march=armv8.3-a+fp16"
+			"$flags $cpu_unset -march=armv8.3-a+fp16+simd"
 	    return 1;
 	}
     }

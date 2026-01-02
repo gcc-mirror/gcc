@@ -10,7 +10,7 @@ void add90 (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
     }
 }
 
-/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_ADD_ROT90" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "add new stmt: \[^\n\r]*COMPLEX_ADD_ROT90" 1 "vect" } } */
 
 void add270 (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
 {
@@ -24,7 +24,7 @@ void add270 (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
     }
 }
 
-/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_ADD_ROT270" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "add new stmt: \[^\n\r]*COMPLEX_ADD_ROT270" 1 "vect" } } */
 
 void addMixed (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N])
 {
@@ -55,7 +55,7 @@ void add90HandUnrolled (TYPE a[restrict N], TYPE b[restrict N],
     }
 }
 
-/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_ADD_ROT90" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "add new stmt: \[^\n\r]*COMPLEX_ADD_ROT90" 1 "vect" } } */
 
 void add90Hybrid (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N],
 		  TYPE d[restrict N])
@@ -72,4 +72,4 @@ void add90Hybrid (TYPE a[restrict N], TYPE b[restrict N], TYPE c[restrict N],
     }
 }
 
-/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_ADD_ROT90" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "add new stmt: \[^\n\r]*COMPLEX_ADD_ROT90" 2 "vect" } } */

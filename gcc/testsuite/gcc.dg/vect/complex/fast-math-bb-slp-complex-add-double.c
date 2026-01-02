@@ -9,8 +9,8 @@
 #define N 16
 #include "complex-add-template.c"
 
-/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_ADD_ROT90" 1 "slp1" { target { vect_complex_add_double } } } } */
-/* { dg-final { scan-tree-dump-times "stmt.*COMPLEX_ADD_ROT270" 1 "slp1" { target { vect_complex_add_double } } } } */
+/* { dg-final { scan-tree-dump-times "add new stmt: \[^\n\r]*COMPLEX_ADD_ROT90" 32 "slp1" { target { vect_complex_add_double } } } } */
+/* { dg-final { scan-tree-dump-times "add new stmt: \[^\n\r]*COMPLEX_ADD_ROT270" 32 "slp1" { target { vect_complex_add_double } } } } */
 
 /* { dg-final { scan-tree-dump "Found COMPLEX_ADD_ROT270" "slp1" } } */
 /* { dg-final { scan-tree-dump "Found COMPLEX_ADD_ROT90" "slp1" } } */
