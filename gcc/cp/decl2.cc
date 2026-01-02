@@ -1480,11 +1480,14 @@ is_late_template_attribute (tree attr, tree decl)
   if (is_attribute_p ("weak", name))
     return true;
 
-  /* Attributes used and unused are applied directly to typedefs for the
-     benefit of maybe_warn_unused_local_typedefs.  */
+  /* Attributes used and unused or std attribute maybe_unused are applied
+     directly to typedefs for the benefit of
+     maybe_warn_unused_local_typedefs.  */
   if (TREE_CODE (decl) == TYPE_DECL
       && (is_attribute_p ("unused", name)
-	  || is_attribute_p ("used", name)))
+	  || is_attribute_p ("used", name)
+	  || (is_attribute_p ("maybe_unused", name)
+	      && get_attribute_namespace (attr) == NULL_TREE)))
     return false;
 
   /* Attribute tls_model wants to modify the symtab.  */
