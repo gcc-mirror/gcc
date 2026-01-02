@@ -114,7 +114,11 @@ BEGIN {
         {
             while (sub ("\\{" iter_name "\\}", iterators[iter_name,nalt], output)) {}
         }
-        printf "%s%s\n", substr (output, 0, length(output) - 1), nalt < num_alternatives ? separator : ""
+        if (nalt < num_alternatives)
+            sep = separator
+        else
+            sep = ""
+        printf "%s%s\n", substr (output, 0, length(output) - 1), sep
     }
 
     for (key in iter_names) delete iter_names[key]
