@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2013-2025 Free Software Foundation, Inc.
+# Copyright (C) 2013-2026 Free Software Foundation, Inc.
 #
 # This script is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -657,7 +657,8 @@ class LibPhobosFilter (GenericFilter):
         self.skip_files |= set ([
                 # Source modules imported from upstream.
                 'object.d',
-                '__builtins.di'
+                '__builtins.di',
+                '__importc_builtins.di',
                 ])
 
         self.skip_dirs |= set ([
@@ -700,6 +701,15 @@ class LibStdCxxFilter (GenericFilter):
             return re.compile ('// \(C\) Copyright Jeremy Siek')
         return GenericFilter.get_line_filter (self, dir, filename)
 
+class LibGRustFilter (GenericFilter):
+    def __init__ (self):
+        GenericFilter.__init__ (self)
+
+        self.skip_files |= set ([
+                'arm-intrinsics.html',
+                '.cargo-checksum.json',
+                ])
+
 class ContribFilter(GenericFilter):
     def __init__ (self):
         GenericFilter.__init__ (self)
@@ -731,6 +741,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('AdaCore')
         self.add_external_author ('Advanced Micro Devices Inc.')
         self.add_external_author ('Ami Tavory and Vladimir Dreizin, IBM-HRL.')
+        self.add_external_author ('Andrew Gallant, bluss and Nicolas Koch')
         self.add_external_author ('Cavium Networks.')
         self.add_external_author ('David Malcolm')
         self.add_external_author ('Faraday Technology Corp.')
@@ -741,6 +752,9 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Intel Corporation')
         self.add_external_author ('Information Technology Industry Council.')
         self.add_external_author ('James Theiler, Brian Gough')
+        self.add_external_author ('Jose E. Marchesi')
+        self.add_external_author ('Jose E. Marchesi.')
+        self.add_external_author ('J. Marcel van der Veer.')
         self.add_external_author ('Makoto Matsumoto and Takuji Nishimura,')
         self.add_external_author ('Mentor Graphics Corporation')
         self.add_external_author ('National Research Council of Canada.')
@@ -753,12 +767,15 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Silicon Graphics')
         self.add_external_author ('Stephen L. Moshier')
         self.add_external_author ('Sun Microsystems, Inc. All rights reserved.')
+        self.add_external_author ('Symas Corporation')
         self.add_external_author ('The D Language Foundation, All Rights Reserved')
         self.add_external_author ('The fast_float authors')
         self.add_external_author ('The Go Authors.  All rights reserved.')
         self.add_external_author ('The Go Authors. All rights reserved.')
         self.add_external_author ('The Go Authors.')
         self.add_external_author ('The Regents of the University of California.')
+        self.add_external_author ('The Rust Project Developers')
+        self.add_external_author ('The Rust Project Developers. See the COPYRIGHT')
         self.add_external_author ('Ulf Adams')
         self.add_external_author ('Unicode, Inc.')
         self.add_external_author ('University of Illinois at Urbana-Champaign.')
@@ -792,7 +809,7 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libgfortran')
         # libgo is imported from upstream.
         self.add_dir ('libgomp')
-        self.add_dir ('libgrust')
+        self.add_dir ('libgrust', LibGRustFilter())
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
         self.add_dir ('libobjc')
