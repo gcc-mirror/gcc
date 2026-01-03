@@ -12074,6 +12074,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	    && strict
 	    && !TYPE_P (e)
 	    && !type_dependent_expression_p (e)
+	    && CLASS_TYPE_P (TREE_TYPE (e))
 	    && TYPE_POLYMORPHIC_P (TREE_TYPE (e)))
           {
             if (flags & tf_error)
