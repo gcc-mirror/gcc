@@ -1,3 +1,8 @@
+2026-01-02  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/121485
+	* gcc.target/riscv/rvv/vsetvl/pr121485.c: New test.
+
 2025-12-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gnat.dg/specs/mutably_tagged1.ads: New test.
