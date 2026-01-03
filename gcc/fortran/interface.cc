@@ -4849,6 +4849,10 @@ matching_typebound_op (gfc_expr** tb_base,
 	else
 	  derived = base->expr->ts.u.derived;
 
+	/* A use associated derived type is resolvable during parsing.  */
+	if (derived && derived->attr.use_assoc && !gfc_current_ns->resolved)
+	  gfc_resolve_symbol (derived);
+
 	if (op == INTRINSIC_USER)
 	  {
 	    gfc_symtree* tb_uop;
