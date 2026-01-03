@@ -324,7 +324,8 @@ delete_unit (gfc_unit *old)
 }
 
 /* get_gfc_unit_from_root()-- Given an integer, return a pointer
-   to the unit structure. Returns NULL if the unit does not exist.  */
+   to the unit structure. Returns NULL if the unit does not exist,
+   otherwise returns a locked unit. */
 
 static inline gfc_unit *
 get_gfc_unit_from_unit_root (int n)
@@ -343,34 +344,6 @@ get_gfc_unit_from_unit_root (int n)
         break;
     }
   return p;
-}
-
-/* Recursive I/O is not allowed. Check to see if the UNIT exists and if
-   so, check if the UNIT is locked already.  This check does not apply
-   to DTIO.  */
-void
-check_for_recursive (st_parameter_dt *dtp)
-{
-  gfc_unit *p;
-
-  p = get_gfc_unit_from_unit_root(dtp->common.unit);
-  if (p != NULL)
-    {
-      if (!(dtp->common.flags & IOPARM_DT_HAS_INTERNAL_UNIT))
-      /* The unit p is external.  */
-	{
-	  /* Check if this is a parent I/O.  */
-	  if (p->child_dtio == 0)
-	    {
-	      if (TRYLOCK(&p->lock))
-		{
-		  generate_error (&dtp->common, LIBERROR_RECURSIVE_IO, NULL);
-		  return;
-		}
-	      UNLOCK(&p->lock);
-	    }
-	}
-    }
 }
 
 /* get_gfc_unit()-- Given an integer, return a pointer to the unit
