@@ -5753,7 +5753,9 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	  eltinit = (perform_implicit_conversion_flags
 		     (elttype, eltinit, complain,
 		      LOOKUP_IMPLICIT|LOOKUP_NO_NARROWING));
-	  if (CLASS_TYPE_P (elttype) && new_ctx.object)
+	  if (CLASS_TYPE_P (elttype)
+	      && new_ctx.object
+	      && !error_operand_p (eltinit))
 	    /* Clarify what object is being initialized (118285).  */
 	    eltinit = build2 (INIT_EXPR, elttype, new_ctx.object, eltinit);
 	  eltinit = cxx_eval_constant_expression (&new_ctx, eltinit, lval,
