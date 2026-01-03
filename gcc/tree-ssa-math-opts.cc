@@ -4083,7 +4083,7 @@ build_saturation_binary_arith_call_and_replace (gimple_stmt_iterator *gsi,
 						internal_fn fn, tree lhs,
 						tree op_0, tree op_1)
 {
-  if (direct_internal_fn_supported_p (fn, TREE_TYPE (lhs), OPTIMIZE_FOR_BOTH))
+  if (direct_internal_fn_supported_p (fn, TREE_TYPE (op_0), OPTIMIZE_FOR_BOTH))
     {
       gcall *call = gimple_build_call_internal (fn, 2, op_0, op_1);
       gimple_call_set_lhs (call, lhs);
