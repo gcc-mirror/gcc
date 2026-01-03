@@ -1,3 +1,9 @@
+2026-01-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123277
+	* decl2.cc (is_late_template_attribute): Return false also for
+	[[maybe_unused]] attribute on TYPE_DECLs to dependent types.
+
 
 Copyright (C) 2026 Free Software Foundation, Inc.
 

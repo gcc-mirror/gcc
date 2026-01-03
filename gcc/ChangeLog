@@ -1,3 +1,8 @@
+2026-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(INCLUDE_ALGORITHM): Define.
+
 2026-01-01  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* cgraph.cc (cgraph_edge::get_next_speculative_id): New.

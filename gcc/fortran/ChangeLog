@@ -1,3 +1,10 @@
+2026-01-02  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/101399
+	* io.cc (match_io): If the -Wtabs option is used, then Issue a
+	warning for a <tab> character following a 'print' statement;
+	otherwise ignore the <tab>.
+
 2026-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/119136

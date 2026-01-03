@@ -1,3 +1,7 @@
+2026-01-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* sppp.awk: Avoid conditional expression.
+
 2026-01-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* sppp.awk: Fix non-portable uses of 'match'.
