@@ -2284,6 +2284,19 @@ again:
       && opnum != 0)
     return;
 
+  /* It is not profitability to factor out vec_perm with
+     constant masks (operand 2).  The target might not support it
+     and that might be invalid to do as such. Also with constants
+     masks, the number of elements of the mask type does not need
+     to match tne number of elements of other operands and can be
+     arbitrary integral vector type so factoring that out can't work.
+     Note in the case where one mask is a constant and the other is not,
+     the next check for compatiable types will reject the case the
+     constant mask has the incompatible type.  */
+  if (arg1_op.code == VEC_PERM_EXPR && opnum == 2
+      && TREE_CODE (new_arg0) == VECTOR_CST
+      && TREE_CODE (new_arg1) == VECTOR_CST)
+    return;
 
   if (!types_compatible_p (TREE_TYPE (new_arg0), TREE_TYPE (new_arg1)))
     return;
