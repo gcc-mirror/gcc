@@ -3853,10 +3853,9 @@ package body Sem_Aggr is
          --  is present.
 
          if Nkind (Comp) = N_Iterated_Element_Association then
-
             --  Create a temporary scope to avoid some modifications from
-            --  escaping the Analyze call below. The original Tree will be
-            --  reanalyzed later.
+            --  escaping the Preanalyze call below. The original tree will
+            --  be reanalyzed later.
 
             Ent := New_Internal_Entity
                      (E_Loop, Current_Scope, Sloc (Comp), 'L');
@@ -3868,8 +3867,7 @@ package body Sem_Aggr is
                Copy := Copy_Separate_Tree (Comp);
                Set_Parent (Copy, Parent (Comp));
 
-               Analyze
-                 (Loop_Parameter_Specification (Copy));
+               Preanalyze (Loop_Parameter_Specification (Copy));
 
                if Present (Iterator_Specification (Copy)) then
                   Loop_Param_Id :=
@@ -3880,9 +3878,11 @@ package body Sem_Aggr is
                end if;
 
                Id_Name := Chars (Loop_Param_Id);
+
             else
                Copy := Copy_Separate_Tree (Iterator_Specification (Comp));
-               Analyze (Copy);
+
+               Preanalyze (Copy);
 
                Loop_Param_Id := Defining_Identifier (Copy);
 
@@ -3903,17 +3903,19 @@ package body Sem_Aggr is
                        & "(RM22 4.3.5(24))",
                      Comp);
                else
-                  Preanalyze_And_Resolve (New_Copy_Tree (Key_Expr), Key_Type);
+                  Preanalyze_And_Resolve
+                    (Copy_Separate_Tree (Key_Expr), Key_Type);
                end if;
             end if;
+
             End_Scope;
 
             Typ := Etype (Loop_Param_Id);
 
          elsif Present (Iterator_Specification (Comp)) then
             --  Create a temporary scope to avoid some modifications from
-            --  escaping the Analyze call below. The original Tree will be
-            --  reanalyzed later.
+            --  escaping the Preanalyze call below. The original tree will
+            --  be reanalyzed later.
 
             Ent := New_Internal_Entity
                      (E_Loop, Current_Scope, Sloc (Comp), 'L');
