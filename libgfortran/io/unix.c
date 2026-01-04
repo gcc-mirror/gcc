@@ -1791,11 +1791,11 @@ retry:
   RWUNLOCK (&unit_rwlock);
   if (u != NULL)
     {
-      LOCK (&u->lock);
+      LOCK_UNIT (u);
       if (u->closed)
 	{
 	  RDLOCK (&unit_rwlock);
-	  UNLOCK (&u->lock);
+	  UNLOCK_UNIT (u);
 	  if (predec_waiting_locked (u) == 0)
 	    free (u);
 	  goto retry;
@@ -1825,7 +1825,7 @@ flush_all_units_1 (gfc_unit *u, int min_unit)
 	    return u;
 	  if (u->s)
 	    sflush (u->s);
-	  UNLOCK (&u->lock);
+	  UNLOCK_UNIT (u);
 	}
       u = u->right;
     }
@@ -1848,7 +1848,7 @@ flush_all_units (void)
       if (u == NULL)
 	return;
 
-      LOCK (&u->lock);
+      LOCK_UNIT (u);
 
       min_unit = u->unit_number + 1;
 
@@ -1856,13 +1856,13 @@ flush_all_units (void)
 	{
 	  sflush (u->s);
 	  WRLOCK (&unit_rwlock);
-	  UNLOCK (&u->lock);
+	  UNLOCK_UNIT (u);
 	  (void) predec_waiting_locked (u);
 	}
       else
 	{
 	  WRLOCK (&unit_rwlock);
-	  UNLOCK (&u->lock);
+	  UNLOCK_UNIT (u);
 	  if (predec_waiting_locked (u) == 0)
 	    free (u);
 	}
