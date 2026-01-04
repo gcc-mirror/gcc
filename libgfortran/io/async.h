@@ -175,6 +175,11 @@
     INTERN_UNLOCK (mutex);						\
   }while (0)
 
+#define UNLOCK_UNIT(unit) do { \
+  unit->self = 0;							\
+  UNLOCK(&(unit)->lock);						\
+  } while(0)
+
 #define TRYLOCK(mutex) ({						\
 			 char status[200];				\
 			 int res;					\
@@ -198,6 +203,30 @@
 			 res;						\
     })
 
+#define TRYLOCK_UNIT(unit) ({					\
+			 char status[200];				\
+			 int res;					\
+			 aio_lock_debug *curr;				\
+			 __gthread_mutex_t *mutex = &(unit)->lock;	\
+			 res = __gthread_mutex_trylock (mutex);		\
+			 INTERN_LOCK (&debug_queue_lock);		\
+			 if (res) {					\
+			   if ((curr = IN_DEBUG_QUEUE (mutex))) {	\
+			     sprintf (status, DEBUG_RED "%s():%d" DEBUG_NORM, curr->func, curr->line);	\
+			   } else					\
+			     sprintf (status, DEBUG_RED "unknown" DEBUG_NORM);	\
+			 }						\
+			 else {						\
+			   sprintf (status, DEBUG_GREEN "unlocked" DEBUG_NORM);	\
+			   MUTEX_DEBUG_ADD (mutex);			\
+			 }						\
+			 DEBUG_PRINTF ("%s%-44s prev: %-35s %20s():%-5d %18p\n", aio_prefix, \
+				      DEBUG_DARKRED "TRYLOCK: " DEBUG_NORM #unit, status, __FUNCTION__, __LINE__, \
+				      (void *) mutex);			\
+			 INTERN_UNLOCK (&debug_queue_lock);		\
+			 res;						\
+    })
+
 #define LOCK(mutex) do {						\
     char status[200];							\
     CHECK_LOCK (mutex, status);						\
@@ -208,6 +237,12 @@
     MUTEX_DEBUG_ADD (mutex);						\
     INTERN_UNLOCK (&debug_queue_lock);					\
     DEBUG_PRINTF ("%s" DEBUG_RED "ACQ:" DEBUG_NORM " %-30s %78p\n", aio_prefix, #mutex, mutex); \
+  } while (0)
+
+
+#define LOCK_UNIT(unit) do {		\
+    LOCK (&(unit)->lock);		\
+    (unit)->self = __gthread_self ();	\
   } while (0)
 
 #ifdef __GTHREAD_RWLOCK_INIT
@@ -341,8 +376,29 @@
 #define DEBUG_LINE(...)
 #define T_ERROR(func, ...) func(__VA_ARGS__)
 #define LOCK(mutex) INTERN_LOCK (mutex)
+#define LOCK_UNIT(unit) do {				    \
+    if (__gthread_active_p ()) {			    \
+      LOCK (&(unit)->lock); (unit)->self = __gthread_self ();	\
+    }								\
+  } while(0)
 #define UNLOCK(mutex) INTERN_UNLOCK (mutex)
+#define UNLOCK_UNIT(unit) do {						\
+    if (__gthread_active_p ()) {					\
+      (unit)->self = 0 ; UNLOCK(&(unit)->lock);				\
+    }									\
+  } while(0)
 #define TRYLOCK(mutex) (__gthread_mutex_trylock (mutex))
+#define TRYLOCK_UNIT(unit) ({					\
+      int res;							\
+      if (__gthread_active_p ()) {				\
+	res = __gthread_mutex_trylock (&(unit)->lock);		\
+	if (!res)						\
+	  (unit)->self = __gthread_self ();			\
+      }								\
+      else							\
+	res = 0;						\
+      res;							\
+    })
 #ifdef __GTHREAD_RWLOCK_INIT
 #define RDLOCK(rwlock) INTERN_RDLOCK (rwlock)
 #define WRLOCK(rwlock) INTERN_WRLOCK (rwlock)
