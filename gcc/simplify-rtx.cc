@@ -4793,6 +4793,43 @@ simplify_ashift:
 	  rtx new_op1 = immed_wide_int_const (c, int_mode);
 	  return simplify_gen_binary (MULT, int_mode, op0, new_op1);
 	}
+
+      /* If we're shifting left a signed bitfield extraction and the
+	 shift count + bitfield size is a natural integral mode and
+	 the field starts at offset 0 (counting from the LSB), then
+	 this can be simplified to a sign extension of a left shift.
+
+	 Some ISAs (RISC-V 64-bit) have inherent support for such
+	 instructions and it's better for various optimizations to
+	 express as a SIGN_EXTEND rather than a shifted SIGN_EXTRACT.  */
+      if (GET_CODE (op0) == SIGN_EXTRACT
+	  && REG_P (XEXP (op0, 0))
+	  /* The size of the bitfield, the location of the bitfield and
+	     shift count must be CONST_INTs.  */
+	  && CONST_INT_P (op1)
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (XEXP (op0, 2)))
+	{
+	  int size = INTVAL (op1) + INTVAL (XEXP (op0, 1));
+	  machine_mode smaller_mode;
+	  /* Now we need to verify the size of the bitfield plus the shift
+	     count is an integral mode and smaller than MODE.  This is
+	     requirement for using SIGN_EXTEND.  We also need to verify the
+	     field starts at bit location 0 and that the subreg lowpart also
+	     starts at zero.  */
+	  if (int_mode_for_size (size, size).exists (&smaller_mode)
+	      && mode > smaller_mode
+	      && (subreg_lowpart_offset (smaller_mode, mode).to_constant ()
+		  == UINTVAL (XEXP (op0, 2)))
+	      && XEXP (op0, 2) == CONST0_RTX (mode))
+	    {
+	      /* Everything passed.  So we just need to get the subreg of the
+		 original input, shift it and sign extend the result.  */
+	      rtx op = gen_lowpart (smaller_mode, XEXP (op0, 0));
+	      rtx x = gen_rtx_ASHIFT (smaller_mode, op, op1);
+	      return gen_rtx_SIGN_EXTEND (mode, x);
+	    }
+	}
       goto canonicalize_shift;
 
     case LSHIFTRT:
