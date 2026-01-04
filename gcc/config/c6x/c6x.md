@@ -274,12 +274,16 @@
 (define_cpu_unit "l1w,s1w" "c6x_1")
 (define_query_cpu_unit "m1" "c6x_m1")
 (define_cpu_unit "m1w" "c6x_m1")
+(define_cpu_unit "m1dp" "c6x_m1")
+(define_cpu_unit "m1spdp" "c6x_m1")
 (define_cpu_unit "t1" "c6x_t1")
 (define_query_cpu_unit "d2,l2,s2" "c6x_2")
 (define_cpu_unit "x2" "c6x_2")
 (define_cpu_unit "l2w,s2w" "c6x_2")
 (define_query_cpu_unit "m2" "c6x_m2")
 (define_cpu_unit "m2w" "c6x_m2")
+(define_cpu_unit "m2dp" "c6x_m1")
+(define_cpu_unit "m2spdp" "c6x_m2")
 (define_cpu_unit "t2" "c6x_t2")
 ;; A special set of units used to identify specific reservations, rather than
 ;; just units.

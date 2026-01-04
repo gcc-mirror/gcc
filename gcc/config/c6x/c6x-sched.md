@@ -218,21 +218,21 @@
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "a"))))
-  "(m1)*4,nothing*4,m1w*2")
+  "(m1)*4+m1dp*4,m1spdp*3,nothing,m1w*2")
 
 (define_insn_reservation "mpyspdp_m1n" 7
   (and (eq_attr "type" "mpyspdp")
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "a"))))
-  "(m1)*2,nothing*3,m1w*2")
+  "(m1)*3+m1spdp*3,m1dp,nothing,m1w*2")
 
 (define_insn_reservation "mpysp2dp_m1n" 5
   (and (eq_attr "type" "mpysp2dp")
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "a"))))
-  "m1,nothing*2,m1w*2")
+  "(m1)*2+m1dp*2+m1spdp*2,nothing,m1w*2")
 
 ;; Definitions for side 2, cross n
 
@@ -451,21 +451,21 @@
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "b"))))
-  "(m2)*4,nothing*4,m2w*2")
+  "(m2)*4+m2dp*4,m2spdp*3,nothing,m2w*2")
 
 (define_insn_reservation "mpyspdp_m2n" 7
   (and (eq_attr "type" "mpyspdp")
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "b"))))
-  "(m2)*2,nothing*3,m2w*2")
+  "(m2)*3+m2spdp*3,m2dp,nothing,m2w*2")
 
 (define_insn_reservation "mpysp2dp_m2n" 5
   (and (eq_attr "type" "mpysp2dp")
        (and (eq_attr "cross" "n")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "b"))))
-  "m2,nothing*2,m2w*2")
+  "(m2)*2+m2dp*2+m2spdp*2,nothing,m2w*2")
 
 ;; Definitions for side 1, cross y
 
@@ -684,21 +684,21 @@
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "a"))))
-  "(m1+x1)*4,nothing*4,m1w*2")
+  "(m1+x1)*4+m1dp*4,m1spdp*3,nothing,m1w*2")
 
 (define_insn_reservation "mpyspdp_m1y" 7
   (and (eq_attr "type" "mpyspdp")
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "a"))))
-  "(m1+x1)*2,nothing*3,m1w*2")
+  "(m1+x1)*3+m1spdp*3,m1dp,nothing,m1w*2")
 
 (define_insn_reservation "mpysp2dp_m1y" 5
   (and (eq_attr "type" "mpysp2dp")
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "a"))))
-  "m1+x1,nothing*2,m1w*2")
+  "(m1+x1)*2+m1dp*2+m1spdp*2,nothing,m1w*2")
 
 ;; Definitions for side 2, cross y
 
@@ -917,18 +917,18 @@
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "b"))))
-  "(m2+x2)*4,nothing*4,m2w*2")
+  "(m2+x2)*4+m2dp*4,m2spdp*3,nothing,m2w*2")
 
 (define_insn_reservation "mpyspdp_m2y" 7
   (and (eq_attr "type" "mpyspdp")
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "b"))))
-  "(m2+x2)*2,nothing*3,m2w*2")
+  "(m2+x2)*3+m2spdp*3,m2dp,nothing,m2w*2")
 
 (define_insn_reservation "mpysp2dp_m2y" 5
   (and (eq_attr "type" "mpysp2dp")
        (and (eq_attr "cross" "y")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "b"))))
-  "m2+x2,nothing*2,m2w*2")
+  "(m2+x2)*2+m2dp*2+m2spdp*2,nothing,m2w*2")

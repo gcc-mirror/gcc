@@ -213,18 +213,18 @@
        (and (eq_attr "cross" "_CROSS_")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "_RF_"))))
-  "(m_N__CUNIT_)*4,nothing*4,m_N_w*2")
+  "(m_N__CUNIT_)*4+m_N_dp*4,m_N_spdp*3,nothing,m_N_w*2")
 
 (define_insn_reservation "mpyspdp_m_N__CROSS_" 7
   (and (eq_attr "type" "mpyspdp")
        (and (eq_attr "cross" "_CROSS_")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "_RF_"))))
-  "(m_N__CUNIT_)*2,nothing*3,m_N_w*2")
+  "(m_N__CUNIT_)*3+m_N_spdp*3,m_N_dp,nothing,m_N_w*2")
 
 (define_insn_reservation "mpysp2dp_m_N__CROSS_" 5
   (and (eq_attr "type" "mpysp2dp")
        (and (eq_attr "cross" "_CROSS_")
 	    (and (eq_attr "units" "m")
 		 (eq_attr "dest_regfile" "_RF_"))))
-  "m_N__CUNIT_,nothing*2,m_N_w*2")
+  "(m_N__CUNIT_)*2+m_N_dp*2+m_N_spdp*2,nothing,m_N_w*2")
