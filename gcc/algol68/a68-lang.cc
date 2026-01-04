@@ -632,6 +632,9 @@ a68_post_options (const char **filename ATTRIBUTE_UNUSED)
   if (flag_bounds_check)
     OPTION_BOUNDS_CHECKING (&A68_JOB) = true;
 
+  /* No psABI change warnings for Algol 68.  */
+  warn_psabi = 0;
+
   return false;
 }
 
