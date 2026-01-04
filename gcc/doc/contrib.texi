@@ -318,6 +318,9 @@ Ben Elliston for his work to move the Objective-C runtime into its
 own subdirectory and for his work on autoconf.
 
 @item
+Oleg Endo for continued development and maintenance of the SuperH back-end.
+
+@item
 Revital Eres for work on the PowerPC 750CL port.
 
 @item
@@ -532,6 +535,9 @@ Mark Klein for PA improvements.
 
 @item
 Thomas Koenig for various bug fixes.
+
+@item
+Kazumoto Kojima for continued development and maintenance of the SuperH back-end.
 
 @item
 Bruce Korb for the new and improved fixincludes code.
