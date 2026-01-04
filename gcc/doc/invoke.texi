@@ -1427,21 +1427,25 @@ See RS/6000 and PowerPC Options.
 
 @emph{SH Options} (@ref{SH Options})
 @gccoptlist{-m1  -m2  -m2e
--m2a-nofpu  -m2a-single-only  -m2a-single  -m2a
+-m2a  -m2a-nofpu  -m2a-single  -m2a-single-only
 -m3  -m3e
--m4-nofpu  -m4-single-only  -m4-single  -m4
--m4a-nofpu  -m4a-single-only  -m4a-single  -m4a  -m4al
+-m4  -m4-nofpu  -m4-single  -m4-single-only
+-m4-100  -m4-100-nofpu  -m4-100-single  -m4-100-single-only
+-m4-200  -m4-200-nofpu  -m4-200-single  -m4-200-single-only
+-m4-300  -m4-300-nofpu  -m4-300-single  -m4-300-single-only
+-m4-340  -m4-400  -m4-500
+-m4a  -m4al  -m4a-nofpu  -m4a-single  -m4a-single-only
 -mb  -ml  -mdalign  -mrelax
--mbigtable  -mfmovd  -mrenesas  -mno-renesas  -mnomacsave
--mieee  -mno-ieee  -mbitops  -misize  -minline-ic_invalidate  -mpadstruct
+-mbigtable  -mbitops  -mfmovd  -mrenesas  -mnomacsave
+-mieee  -misize  -minline-ic_invalidate
 -mprefergot  -musermode  -multcost=@var{number}  -mdiv=@var{strategy}
 -mdivsi3_libfunc=@var{name}  -mfixed-range=@var{register-range}
 -maccumulate-outgoing-args
 -matomic-model=@var{atomic-model}
--mbranch-cost=@var{num}  -mzdcbranch  -mno-zdcbranch
+-mbranch-cost=@var{num}  -mzdcbranch
 -mcbranch-force-delay-slot
--mfused-madd  -mno-fused-madd  -mfsca  -mno-fsca  -mfsrra  -mno-fsrra
--mpretend-cmove  -mtas}
+-mfsca  -mfsrra
+-mpretend-cmove  -mfdpic  -mtas  -mlra}
 
 @emph{Solaris 2 Options} (@ref{Solaris 2 Options})
 @gccoptlist{-mclear-hwcap  -mno-clear-hwcap  -mimpure-text  -mno-impure-text
@@ -34520,14 +34524,13 @@ Enable the use of the instruction @code{fmovd}.  Check @option{-mdalign} for
 alignment constraints.
 
 @opindex mrenesas
-@item -mrenesas
-Comply with the calling conventions defined by Renesas.
-
 @opindex mno-renesas
-@item -mno-renesas
-Comply with the calling conventions defined for GCC before the Renesas
-conventions were available.  This option is the default for all
-targets of the SH toolchain.
+@item -mrenesas
+@itemx -mno-renesas
+Comply with the calling conventions defined by Renesas.  The default for all
+targets of the SH toolchain is @option{-mno-renesas}, which uses the
+calling conventions defined for GCC before the Renesas conventions were
+available.
 
 @opindex mnomacsave
 @item -mnomacsave
@@ -34546,13 +34549,16 @@ floating-point greater-equal and less-equal comparisons.  The implicit settings
 can be overridden by specifying either @option{-mieee} or @option{-mno-ieee}.
 
 @opindex minline-ic_invalidate
+@opindex mno-inline-ic_invalidate
 @item -minline-ic_invalidate
+@itemx -mno-inline-ic_invalidate
 Inline code to invalidate instruction cache entries after setting up
 nested function trampolines.
-This option has no effect if @option{-musermode} is in effect and the selected
-code generation option (e.g.@: @option{-m4}) does not allow the use of the @code{icbi}
-instruction.
-If the selected code generation option does not allow the use of the @code{icbi}
+This option has no effect if @option{-musermode} is in effect and the
+selected code generation option (e.g.@: @option{-m4}) does not allow
+the use of the @code{icbi} instruction.
+If the selected code generation option does not allow the use of the
+@code{icbi}
 instruction, and @option{-musermode} is not in effect, the inlined code
 manipulates the instruction cache address array directly with an associative
 write.  This not only requires privileged mode at run time, but it also
@@ -34562,15 +34568,10 @@ fails if the cache line had been mapped via the TLB and has become unmapped.
 @item -misize
 Dump instruction size and location in the assembly code.
 
-@opindex mpadstruct
-@item -mpadstruct
-This option is deprecated.  It pads structures to multiple of 4 bytes,
-which is incompatible with the SH ABI@.
-
 @opindex matomic-model=@var{model}
 @item -matomic-model=@var{model}
-Sets the model of atomic operations and additional parameters as a comma
-separated list.  For details on the atomic built-in functions see
+Sets the model of atomic operations and additional parameters as a
+comma-separated list.  For details on the atomic built-in functions see
 @ref{__atomic Builtins}.  The following models and parameters are supported:
 
 @table @samp
@@ -34580,7 +34581,7 @@ Disable compiler generated atomic sequences and emit library calls for atomic
 operations.  This is the default if the target is not @code{sh*-*-linux*}.
 
 @item soft-gusa
-Generate GNU/Linux compatible gUSA software atomic sequences for the atomic
+Generate GNU/Linux-compatible gUSA software atomic sequences for the atomic
 built-in functions.  The generated atomic sequences require additional support
 from the interrupt/exception handling code of the system and are only suitable
 for SH3* and SH4* single-core systems.  This option is enabled by default when
@@ -34594,8 +34595,8 @@ Generate software atomic sequences that use a variable in the thread control
 block.  This is a variation of the gUSA sequences which can also be used on
 SH1* and SH2* targets.  The generated atomic sequences require additional
 support from the interrupt/exception handling code of the system and are only
-suitable for single-core systems.  When using this model, the @samp{gbr-offset=}
-parameter has to be specified as well.
+suitable for single-core systems.  When using this model,
+the @samp{gbr-offset=} parameter has to be specified as well.
 
 @item soft-imask
 Generate software atomic sequences that temporarily disable interrupts by
@@ -34608,8 +34609,9 @@ required.  This model is enabled by default when the target is
 @item hard-llcs
 Generate hardware atomic sequences using the @code{movli.l} and @code{movco.l}
 instructions only.  This is only available on SH4A and is suitable for
-multi-core systems.  Since the hardware instructions support only 32 bit atomic
-variables access to 8 or 16 bit variables is emulated with 32 bit accesses.
+multi-core systems.
+Since the hardware instructions support only 32-bit atomic
+variables, access to 8- or 16-bit variables is emulated with 32-bit accesses.
 Code compiled with this option is also compatible with other software
 atomic model interrupt/exception handling systems if executed on an SH4A
 system.  Additional support from the interrupt/exception handling code of the
@@ -34647,7 +34649,7 @@ the Global Offset Table instead of the Procedure Linkage Table.
 @opindex mno-usermode
 @item -musermode
 @itemx -mno-usermode
-Don't allow (allow) the compiler generating privileged mode code.  Specifying
+Don't allow (allow) the compiler to generate privileged mode code.  Specifying
 @option{-musermode} also implies @option{-mno-inline-ic_invalidate} if the
 inlined code would not work in user mode.  @option{-musermode} is the default
 when the target is @code{sh*-*-linux*}.  If the target is SH1* or SH2*
@@ -34655,7 +34657,7 @@ when the target is @code{sh*-*-linux*}.  If the target is SH1* or SH2*
 
 @opindex multcost=@var{number}
 @item -multcost=@var{number}
-Set the cost to assume for a multiply insn.
+Set the cost to assume for a multiply instruction.
 
 @opindex mdiv=@var{strategy}
 @item -mdiv=@var{strategy}
@@ -34674,35 +34676,40 @@ SH2A and SHcompact.
 Calls a library function that performs the operation in double precision
 floating point.  Division by zero causes a floating-point exception.  This is
 the default for SHcompact with FPU.  Specifying this for targets that do not
-have a double precision FPU defaults to @code{call-div1}.
+have a double-precision FPU defaults to @code{call-div1}.
 
 @item call-table
 Calls a library function that uses a lookup table for small divisors and
-the @code{div1} instruction with case distinction for larger divisors.  Division
-by zero calculates an unspecified result and does not trap.  This is the default
+the @code{div1} instruction with case distinction for larger divisors.
+Division by zero calculates an unspecified result and does not trap.
+This is the default
 for SH4.  Specifying this for targets that do not have dynamic shift
 instructions defaults to @code{call-div1}.
 
 @end table
 
-When a division strategy has not been specified the default strategy is
+When a division strategy has not been specified, the default strategy is
 selected based on the current target.  For SH2A the default strategy is to
 use the @code{divs} and @code{divu} instructions instead of library function
 calls.
 
 @opindex maccumulate-outgoing-args
+@opindex mno-accumulate-outgoing-args
 @item -maccumulate-outgoing-args
+@item -mno-accumulate-outgoing-args
 Reserve space once for outgoing arguments in the function prologue rather
-than around each call.  Generally beneficial for performance and size.  Also
-needed for unwinding to avoid changing the stack frame around conditional code.
+than around each call.  This is generally beneficial for performance and
+size, and also needed for unwinding to avoid changing the stack frame
+around conditional code.  @option{-maccumulate-outgoing-args} is
+enabled the default.
 
 @opindex mdivsi3_libfunc=@var{name}
 @item -mdivsi3_libfunc=@var{name}
 Set the name of the library function used for 32-bit signed division to
 @var{name}.
-This only affects the name used in the @samp{call} division strategies, and
-the compiler still expects the same sets of input/output/clobbered registers as
-if this option were not present.
+This only affects the name used in the @samp{call} division strategies,
+and the compiler still expects the same sets of input/output/clobbered
+registers as if this option were not present.
 
 @opindex mfixed-range
 @item -mfixed-range=@var{register-range}
@@ -34726,26 +34733,16 @@ is being compiled for.
 Assume (do not assume) that zero displacement conditional branch instructions
 @code{bt} and @code{bf} are fast.  If @option{-mzdcbranch} is specified, the
 compiler prefers zero displacement branch code sequences.  This is
-enabled by default when generating code for SH4 and SH4A.  It can be explicitly
-disabled by specifying @option{-mno-zdcbranch}.
+enabled by default when generating code for SH4 and SH4A.
+It can be explicitly disabled by specifying @option{-mno-zdcbranch}.
 
 @opindex mcbranch-force-delay-slot
 @item -mcbranch-force-delay-slot
-Force the usage of delay slots for conditional branches, which stuffs the delay
-slot with a @code{nop} if a suitable instruction cannot be found.  By default
+Force the usage of delay slots for conditional branches, which stuffs the
+delay slot with a @code{nop} if a suitable instruction cannot be found.
+By default
 this option is disabled.  It can be enabled to work around hardware bugs as
 found in the original SH7055.
-
-@opindex mfused-madd
-@opindex mno-fused-madd
-@item -mfused-madd
-@itemx -mno-fused-madd
-Generate code that uses (does not use) the floating-point multiply and
-accumulate instructions.  These instructions are generated by default
-if hardware floating point is used.  The machine-dependent
-@option{-mfused-madd} option is now mapped to the machine-independent
-@option{-ffp-contract=fast} option, and @option{-mno-fused-madd} is
-mapped to @option{-ffp-contract=off}.
 
 @opindex mfsca
 @opindex mno-fsca
@@ -34753,8 +34750,9 @@ mapped to @option{-ffp-contract=off}.
 @itemx -mno-fsca
 Allow or disallow the compiler to emit the @code{fsca} instruction for sine
 and cosine approximations.  The option @option{-mfsca} must be used in
-combination with @option{-funsafe-math-optimizations}.  It is enabled by default
-when generating code for SH4A.  Using @option{-mno-fsca} disables sine and cosine
+combination with @option{-funsafe-math-optimizations}.
+It is enabled by default when generating code for SH4A.
+Using @option{-mno-fsca} disables sine and cosine
 approximations even if @option{-funsafe-math-optimizations} is in effect.
 
 @opindex mfsrra
@@ -34762,21 +34760,34 @@ approximations even if @option{-funsafe-math-optimizations} is in effect.
 @item -mfsrra
 @itemx -mno-fsrra
 Allow or disallow the compiler to emit the @code{fsrra} instruction for
-reciprocal square root approximations.  The option @option{-mfsrra} must be used
-in combination with @option{-funsafe-math-optimizations} and
-@option{-ffinite-math-only}.  It is enabled by default when generating code for
-SH4A.  Using @option{-mno-fsrra} disables reciprocal square root approximations
-even if @option{-funsafe-math-optimizations} and @option{-ffinite-math-only} are
-in effect.
+reciprocal square root approximations.  The option @option{-mfsrra}
+must be used in combination with @option{-funsafe-math-optimizations} and
+@option{-ffinite-math-only}.
+It is enabled by default when generating code for SH4A.
+Using @option{-mno-fsrra} disables reciprocal square root approximations
+even if @option{-funsafe-math-optimizations} and @option{-ffinite-math-only}
+are in effect.
 
 @opindex mpretend-cmove
+@opindex mno-pretend-cmove
 @item -mpretend-cmove
-Prefer zero-displacement conditional branches for conditional move instruction
-patterns.  This can result in faster code on the SH4 processor.
+@itemx -mno-pretend-cmove
+Prefer or don't prefer zero-displacement conditional branches for
+conditional move instruction patterns.
+This can result in faster code on the SH4 processor.
 
-@opindex fdpic
+@opindex mfdpic
+@opindex mnofdpic
 @item -mfdpic
+@itemx -mno-fdpic
 Generate code using the FDPIC ABI.
+
+@opindex mlra
+@opindex mno-lra
+@item -mlra
+@itemx -mno-lra
+Use the new LRA register allocator.  By default, the old ``reload''
+allocator is used.
 
 @end table
 

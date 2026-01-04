@@ -227,7 +227,7 @@ Target RejectNegative Joined Var(sh_fixed_range_str)
 Specify range of registers to make fixed.
 
 mhitachi
-Target RejectNegative Mask(HITACHI)
+Target Undocumented RejectNegative Mask(HITACHI)
 Follow Renesas (formerly Hitachi) / SuperH calling conventions.
 
 mieee
@@ -253,7 +253,7 @@ Mark MAC register as call-clobbered.
 ;; ??? This option is not useful, but is retained in case there are people
 ;; who are still relying on it.  It may be deleted in the future.
 mpadstruct
-Target RejectNegative Mask(PADSTRUCT)
+Target Undocumented RejectNegative Mask(PADSTRUCT)
 Make structs a multiple of 4 bytes (warning: ABI altered).
 
 mprefergot
