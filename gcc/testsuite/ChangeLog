@@ -1,3 +1,67 @@
+2026-01-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/42196
+	* gcc.c-torture/compile/pr42196-4.c: New test.
+
+2026-01-03  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* lib/algol68.exp (algol68_link_flags): Remove unused
+	variables and move finding the link spec file to...
+	(algol68_init): Here and make it multilib aware.  Set always
+	used compiler flags here from algol68_target_compile.
+
+2026-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123372
+	* gcc.dg/tree-ssa/pr123372.c: New test.
+
+2026-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/123326
+	* g++.dg/cpp2a/constexpr-dtor19.C: New test.
+
+2026-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123347
+	* g++.dg/cpp1y/pr123347.C: New test.
+
+2026-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123331
+	* g++.dg/other/pr123331.C: New test.
+
+2026-01-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/specs/aggr10.ads: New test.
+
+2026-01-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/121507
+	* gcc.dg/pr121507.c: New test.
+
+2026-01-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/121081
+	* gcc.dg/pr121081.c: New test.
+
+2026-01-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/117687
+	* gcc.dg/Wzero-as-null-pointer-constant-2.c: New test.
+
+2026-01-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/123352
+	* gfortran.dg/associate_78.f90: New test.
+
+2026-01-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Revert:
+	2026-01-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119136
+	* gfortran.dg/pr119136.f90: New test.
+
 2026-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/123277

@@ -1,3 +1,24 @@
+2026-01-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/123352
+	* gfortran.h: Add prototype for gfc_resolve_symbol.
+	* interface.cc (matching_typebound_op): If the current
+	namespace has not been resolved and the derived type is use
+	associated, resolve the derived type with gfc_resolve_symbol.
+	* match.cc (match_association_list): If the associate name is
+	unknown type and the selector is an operator expression, copy
+	the selector and call gfc_extend_expr. Replace the selector if
+	there is a match, otherwise free the copy.
+	* resolve.cc (gfc_resolve_symbol): New function.
+
+2026-01-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Revert:
+	2026-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119136
+	* libgfortran.h: Add enum for new LIBERROR_RECURSIVE_IO.
+
 2026-01-02  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/101399

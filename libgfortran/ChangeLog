@@ -1,3 +1,18 @@
+2026-01-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Revert:
+	2026-01-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/119136
+	* io/io.h: Delete prototype for unused stash_internal_unit.
+	(check_for_recursive): Add prototype for this new function.
+	* io/transfer.c (data_transfer_init): Add call to new
+	check_for_recursive.
+	* io/unit.c (delete_unit): Fix comment.
+	(check_for_recursive): Add new function.
+	* runtime/error.c (translate_error): Add translation for
+	"Recursive I/O not allowed runtime error message.
+
 2026-01-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/119136

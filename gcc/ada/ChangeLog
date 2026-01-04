@@ -1,3 +1,10 @@
+2026-01-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/123371
+	* sem_aggr.adb (Resolve_Iterated_Association): Call Preanalyze
+	instead of Analyze consistently, as well as Copy_Separate_Tree
+	instead of New_Copy_Tree.
+
 2026-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gnat_ugn.texi: Bump @copying's copyright year.
