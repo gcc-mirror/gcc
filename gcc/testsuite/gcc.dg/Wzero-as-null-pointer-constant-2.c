@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target bitint } } */
 /* { dg-options "-std=c23 -Wzero-as-null-pointer-constant" } */
 
 void foo(void*);
