@@ -1,3 +1,7 @@
+2026-01-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/specs/aggr10.ads: New test.
+
 2026-01-02  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR target/121485
