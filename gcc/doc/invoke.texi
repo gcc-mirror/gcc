@@ -164,6 +164,7 @@ listing and explanation of the binary and decimal byte size prefixes.
 * Link Options::        Specifying libraries and so on.
 * Directory Options::   Where to find header files and libraries.
                         Where to find the compiler executable files.
+* Picolibc Options::    Select compile and link options when using picolibc.
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
 * Developer Options::   Printing GCC configuration info, statistics, and
@@ -802,6 +803,11 @@ Objective-C and Objective-C++ Dialects}.
 --include-with-prefix-before=@var{prefix}
 --no-canonical-prefixes  --no-standard-includes
 --prefix=@var{prefix}  --sysroot=@var{dir}}
+
+@item Picolibc Options
+@xref{Picolibc Options,,Options for use with Picolibc}.
+@gccoptlist{--oslib=@var{library} --crt0=@r{[}none@r{|}minimal@r{|}hosted@r{|}semihost@r{]}
+--printf=@r{[}d@r{|}f@r{|}l@r{|}i@r{|}m@r{]} --scanf=@r{[}d@r{|}f@r{|}l@r{|}i@r{|}m@r{]}}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
@@ -20261,6 +20267,69 @@ headers may for example be found in
 @file{@var{dir}/@var{suffix}/usr/include} instead of
 @file{@var{dir}/usr/include}.  This option disables the addition of
 such a suffix.
+
+@end table
+
+@node Picolibc Options
+@section Options for use with Picolibc
+@cindex picolibc options
+@cindex options, picolibc
+
+These options control compilation and linking when using picolibc:
+
+@table @gcctabopt
+@opindex oslib
+@item --oslib=@var{library}
+Search the library named @var{library} after the C library, permitting
+symbols undefined by the C library to be defined by this library. The
+C library, libgcc and this library are placed between
+@option{--start-group} and @option{--end-group} flags so that each can
+refer to symbols in the others. For many targets, picolibc provides a
+@samp{semihost} variant (specified with @option{--oslib=semihost})
+which provides enough basic OS functionality to support console and
+file I/O when run in an emulator or when using an in-circuit debugger.
+
+@opindex crt0
+@item --crt0=@r{[}none@r{|}minimal@r{|}hosted@r{|}semihost@r{]}
+Replace the default @file{crt0.o} name with
+@file{crt0-@var{variant}.o}. The @samp{none} variant provides no
+startup code at all, allowing the user to supply their
+own. @samp{minimal} performs basic memory setup but does not invoke
+any constructors. When no @option{-crt0} option is provided, the
+default initialization code adds calls to all
+constructors. @samp{hosted} adds a call to @code{exit} when
+@code{main} returns. @samp{semihost} accesses a command line parameter
+supplied via the semihosting interface and splits that into arguments
+at whitespace boundaries, passing the resulting array of strings to
+main in @code{argc} and @code{argv}. On some targets, including
+aarch64, arc, arm, loongarch, m68k, riscv, super-h and x86,
+@samp{semihost} also traps hardware exceptions and prints information
+to the console. Note that @option{--crt0=semihost} depends upon APIs
+provided by @option{--oslib=semihost}.
+
+@opindex printf
+@item --printf=@r{[}d@r{|}f@r{|}l@r{|}i@r{|}m@r{]}
+Select the printf variant. Picolibc provides five different printf
+variants which offer decreasing levels of functionality along with
+decreasing code size. @samp{d} is the default level, offering full C17
+and POSIX.1-2024 conformance. @samp{f} provides the same feature set,
+but supports @code{float} values instead of @code{double} which are
+passed using the @code{printf_float} macro. @samp{l} elides all
+floating point and POSIX positional parameter support. @samp{i} limits
+integers to those no larger than @code{long}. @samp{m} removes support
+for most formatting options including width and precision. The formats
+and arguments are still parsed correctly, but output does not respect
+those parameters.
+
+@opindex scanf
+@item --scanf=@r{[}d@r{|}f@r{|}l@r{|}i@r{|}m@r{]}
+Select the scanf variant. Picolibc provides five different scanf
+variants which offer decreasing levels of functionality along with
+decreasing code size. @samp{d} is the default level, offering full C17
+and POSIX.1-2024 conformance. @samp{f} removes support for
+@code{double} values. @samp{l} elides all floating point
+support. @samp{i} limits integers to those no larger than
+@code{long}. @samp{m} removes support for @code{%[} conversion specifiers.
 
 @end table
 

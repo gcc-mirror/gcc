@@ -3697,6 +3697,24 @@ case ${target} in
 	;;
 esac
 
+# picolibc systems
+case "${target}_${with_picolibc}" in
+*-picolibc-*|*_yes)
+	default_use_cxa_atexit=yes
+	use_gcc_stdint=none
+	# add newlib-stdint.h if not already present
+	case "${tm_file}" in
+	*newlib-stdint.h*)
+		;;
+	*)
+		tm_file="${tm_file} newlib-stdint.h"
+		;;
+	esac
+	tm_file="${tm_file} picolibc-spec.h"
+	extra_options="${extra_options} picolibc.opt"
+	;;
+esac
+
 # Assume the existence of indirect function support and allow the use of the
 # resolver attribute.
 case ${target} in

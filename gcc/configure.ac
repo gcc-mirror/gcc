@@ -1221,6 +1221,9 @@ AC_ARG_WITH(multilib-generator,
 :,
 with_multilib_generator=default)
 
+AC_ARG_WITH(picolibc,
+[AS_HELP_STRING([--with-picolibc], [Support for picolibc, including command line options and spec rules])])
+
 # -------------------------
 # Checks for other programs
 # -------------------------

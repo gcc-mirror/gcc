@@ -188,6 +188,14 @@ give to GCC into options for GCC to pass to the CPP@.
 Do not define this macro if it does not need to do anything.
 @end defmac
 
+@defmac LIBC_CPP_SPEC
+A C string constant which is appended to the value of
+@code{CPP_SPEC}. @code{LIBC_CPP_SPEC} is intended to depend upon the
+C library in use.
+
+Do not define this macro if it does not need to do anything.
+@end defmac
+
 @defmac CPLUSPLUS_CPP_SPEC
 This macro is just like @code{CPP_SPEC}, but is used for C++, rather
 than C@.  If you do not define this macro, then the value of
@@ -250,6 +258,14 @@ see @file{mips.h} for instance.
 A C string constant that tells the GCC driver program options to
 pass to the linker.  It can also specify how to translate options you
 give to GCC into options for GCC to pass to the linker.
+
+Do not define this macro if it does not need to do anything.
+@end defmac
+
+@defmac LIBC_LINK_SPEC
+A C string constant which is appended to the value of
+@code{LINK_SPEC}. @code{LIBC_LINK_SPEC} is intended to depend upon the
+C library in use.
 
 Do not define this macro if it does not need to do anything.
 @end defmac
