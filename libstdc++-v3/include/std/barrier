@@ -114,6 +114,12 @@ It looks different from literature pseudocode for two main reasons:
 	_M_state.store(_M_alloc_state().release(), memory_order_release);
     }
 
+    ~__tree_barrier_base()
+    { delete[] _M_state.load(memory_order_relaxed); }
+
+    __tree_barrier_base(const __tree_barrier_base&&) = delete;
+    __tree_barrier_base& operator=(const __tree_barrier_base&&) = delete;
+
     unique_ptr<__state_t[]>
     _M_alloc_state()
     {
