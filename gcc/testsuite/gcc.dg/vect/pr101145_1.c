@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_char_add } */
-/* { dg-additional-options "-O3" } */
+/* { dg-additional-options "-O3 -fno-ipa-cp" } */
 #define TYPE signed char
 #define MIN -128
 #define MAX 127

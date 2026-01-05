@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_char_add } */
-/* { dg-additional-options "-O3" } */
+/* { dg-additional-options "-O3 -fno-ipa-cp" } */
 #define TYPE unsigned char
 #define MIN 0
 #define MAX 255

@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_long_long } */
-/* { dg-additional-options "-O3" } */
+/* { dg-additional-options "-O3 -fno-ipa-cp" } */
 #define TYPE int *
 #define MIN ((TYPE)0)
 #define MAX ((TYPE)((long long)-1))

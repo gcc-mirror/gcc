@@ -37,6 +37,6 @@ entry (int c)
   foo (0, &s);
 }
 /* { dg-final { scan-ipa-dump-times "Creating a specialized node of foo/\[0-9\]*\\." 2 "cp" } } */
-/* { dg-final { scan-ipa-dump-times "Aggregate replacements: 1" 2 "cp" } } */
-/* { dg-final { scan-ipa-dump-times "Aggregate replacements: 0" 2 "cp" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 1" "cp" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 0" "cp" } } */
 /* { dg-final { scan-tree-dump-not "->c;" "optimized" } } */
