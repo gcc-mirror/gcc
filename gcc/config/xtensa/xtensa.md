@@ -2616,12 +2616,10 @@
    (set_attr "length"	"3")])
 
 (define_insn "return"
-  [(return)
-   (use (reg:SI A0_REG))]
-  "reload_completed
-   && (TARGET_WINDOWED_ABI
-       || compute_frame_size (get_frame_size ()) == 0
-       || epilogue_completed)"
+  [(return)]
+  "TARGET_WINDOWED_ABI
+   || compute_frame_size (get_frame_size ()) == 0
+   || epilogue_completed"
 {
   return TARGET_WINDOWED_ABI ?
       (TARGET_DENSITY ? "retw.n" : "retw") :
@@ -2685,7 +2683,6 @@
   "!TARGET_WINDOWED_ABI"
 {
   xtensa_expand_epilogue ();
-  emit_use (gen_rtx_REG (SImode, A0_REG));
   DONE;
 })
 

@@ -522,6 +522,10 @@ typedef struct xtensa_args
 /* Stack pointer value doesn't matter at exit.  */
 #define EXIT_IGNORE_STACK 1
 
+/* The "return" pattern requires A0 register as return address, and is
+   also required so that restoring A0 in the epilogue is not dead code.  */
+#define EPILOGUE_USES(REGNO) ((REGNO) == A0_REG)
+
 /* Size in bytes of the trampoline, as an integer.  Make sure this is
    a multiple of TRAMPOLINE_ALIGNMENT to avoid -Wpadded warnings.  */
 #define TRAMPOLINE_SIZE (TARGET_WINDOWED_ABI ? \
