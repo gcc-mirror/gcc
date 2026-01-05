@@ -5,19 +5,19 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cpplib 12.1-b20220213\n"
+"Project-Id-Version: cpplib 15.1-b20250316\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-03-14 22:05+0000\n"
-"PO-Revision-Date: 2023-01-15 07:01+0100\n"
+"PO-Revision-Date: 2026-01-04 14:10+0100\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <(nothing)>\n"
 "Language: ka\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.2.2\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"X-Generator: Poedit 3.8\n"
 
 #: charset.cc:759
 #, gcc-internal-format, gfc-internal-format
@@ -64,40 +64,34 @@ msgstr ""
 #: charset.cc:1595
 #, gcc-internal-format
 msgid "%<\\N%> not followed by %<{%>"
-msgstr ""
+msgstr "%<\\N%>-ს არ მოჰყვება %<{%>"
 
 #: charset.cc:1625
 msgid "empty named universal character escape sequence; treating it as separate tokens"
 msgstr ""
 
 #: charset.cc:1632
-#, fuzzy
-#| msgid "incomplete universal character name %.*s"
 msgid "empty named universal character escape sequence"
-msgstr "დაუსრულებელი უნივერსალური სიმბოლოს სახელი %.*s"
+msgstr "ცარიელი სახელიანი უნივერსალური სიმბოლოს სპეციალური მიმდევრობა"
 
 #: charset.cc:1639
-#, fuzzy
-#| msgid "universal character %.*s is not valid in an identifier"
 msgid "named universal character escapes are only valid in C++23"
-msgstr "უნივერსალური სიმბოლო %.*s იდენტიფიკატორში დაუშვებელია"
+msgstr "სახელიანი უნივერსალური სიმბოლოს დამუშავება, მხოლოდ, C++23-შია სწორი"
 
 #: charset.cc:1659
-#, fuzzy, gcc-internal-format
-#| msgid "%.*s is not a valid universal character"
+#, gcc-internal-format
 msgid "%<\\N{%.*s}%> is not a valid universal character; treating it as separate tokens"
-msgstr "%.*s სწორი უნივერსალური სიმბოლო არაა"
+msgstr "%<\\N{%.*s}%> სწორი უნივერსალური სიმბოლო არაა. აღქმული იქნება ცალკე ტოკენებად"
 
 #: charset.cc:1665
-#, fuzzy, gcc-internal-format
-#| msgid "%.*s is not a valid universal character"
+#, gcc-internal-format
 msgid "%<\\N{%.*s}%> is not a valid universal character"
-msgstr "%.*s სწორი უნივერსალური სიმბოლო არაა"
+msgstr "%<\\N{%.*s}%> სწორი უნივერსალური სიმბოლო არაა"
 
 #: charset.cc:1675
 #, gcc-internal-format
 msgid "did you mean %<\\N{%s}%>?"
-msgstr ""
+msgstr "გულისხმობდით %<\\N{%s}%>?"
 
 #: charset.cc:1693
 #, gcc-internal-format
@@ -110,10 +104,9 @@ msgid "%<\\N{%> not terminated with %<}%> after %.*s"
 msgstr ""
 
 #: charset.cc:1710
-#, fuzzy, gcc-internal-format
-#| msgid "In _cpp_valid_ucn but not a UCN"
+#, gcc-internal-format
 msgid "in %<_cpp_valid_ucn%> but not a UCN"
-msgstr "არსებობს _cpp_valid_ucn -ში, მაგრამ არა UCN"
+msgstr "%<_cpp_valid_ucn%>-ში, მაგრამ არა UCN"
 
 #: charset.cc:1753
 msgid "empty delimited escape sequence; treating it as separate tokens"
@@ -153,16 +146,14 @@ msgid "%.*s is not a valid universal character"
 msgstr "%.*s სწორი უნივერსალური სიმბოლო არაა"
 
 #: charset.cc:1834 charset.cc:1838
-#, fuzzy, gcc-internal-format
-#| msgid "%.*s is not a valid universal character"
+#, gcc-internal-format
 msgid "%.*s is not a valid universal character name before C23"
-msgstr "%.*s სწორი უნივერსალური სიმბოლო არაა"
+msgstr "%.*s სწორი უნივერსალური სიმბოლო არაა C23-მდე"
 
 #: charset.cc:1854 lex.cc:2096
-#, fuzzy, gcc-internal-format
-#| msgid "'$' in identifier or number"
+#, gcc-internal-format
 msgid "%<$%> in identifier or number"
-msgstr "\"$\" იდენტიფიკატორში ან რიცხვში"
+msgstr "%<$%> იდენტიფიკატორში ან რიცხვში"
 
 #: charset.cc:1864
 #, gcc-internal-format
@@ -219,7 +210,7 @@ msgstr "თექვსმეტობითი სპეციალური �
 #: charset.cc:2247
 #, gcc-internal-format
 msgid "%<\\o%> not followed by %<{%>"
-msgstr ""
+msgstr "%<\\o%>-ს არ მოჰყვება %<{%>"
 
 #: charset.cc:2305
 #, gcc-internal-format
@@ -241,22 +232,19 @@ msgid "the meaning of %<\\a%> is different in traditional C"
 msgstr ""
 
 #: charset.cc:2410
-#, fuzzy, gcc-internal-format
-#| msgid "non-ISO-standard escape sequence, '\\%c'"
+#, gcc-internal-format
 msgid "non-ISO-standard escape sequence, %<\\%c%>"
-msgstr "არა-ISO-სტანდარტის სპეციალური მიმდევრობა, '\\%c'"
+msgstr "არა-ISO-სტანდარტის სპეციალური მიმდევრობა, %<\\%c%>"
 
 #: charset.cc:2418
-#, fuzzy, gcc-internal-format
-#| msgid "unknown escape sequence: '\\%c'"
+#, gcc-internal-format
 msgid "unknown escape sequence: %<\\%c%>"
-msgstr "უცნობი სპეციალური მიმდევრობა: '\\%c'"
+msgstr "უცნობი სპეციალური მიმდევრობა: %<\\%c%>"
 
 #: charset.cc:2428
-#, fuzzy, gcc-internal-format
-#| msgid "unknown escape sequence: '\\%s'"
+#, gcc-internal-format
 msgid "unknown escape sequence: %<\\%s%>"
-msgstr "უცნობი სპეციალური მიმდევრობა: '\\%s'"
+msgstr "უცნობი სპეციალური მიმდევრობა: %<\\%s%>"
 
 #: charset.cc:2436
 msgid "converting escape sequence to execution character set"
@@ -301,10 +289,9 @@ msgid "failure to convert %s to %s"
 msgstr "%s-ის %s-ში გადაყვანის შეცდომა"
 
 #: directives.cc:243
-#, fuzzy, gcc-internal-format
-#| msgid "extra tokens at end of #%s directive"
+#, gcc-internal-format
 msgid "extra tokens at end of %<#%s%> directive"
-msgstr "დამატებითი კოდები #%s დირექტივის ბოლოში"
+msgstr "დამატებითი ტოკენები %<#%s%> დირექტივის ბოლოში"
 
 #: directives.cc:286
 #, gcc-internal-format, gfc-internal-format
@@ -312,35 +299,30 @@ msgid "extra tokens at end of #%s directive"
 msgstr "დამატებითი კოდები #%s დირექტივის ბოლოში"
 
 #: directives.cc:396
-#, fuzzy, gcc-internal-format
-#| msgid "#%s is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> is a GCC extension"
-msgstr "#%s GCC-ის გაფართოებაა"
+msgstr "%<#%s%> GCC-ის გაფართოებაა"
 
 #: directives.cc:404 directives.cc:2686 directives.cc:2725
-#, fuzzy, gcc-internal-format
-#| msgid "#%s before C++23 is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> before C++23 is a GCC extension"
-msgstr "#%s -ი C++23 -ის შემდეგ GCC -ის გაფართოებაა"
+msgstr "%<#%s%> C++23-მდე GCC-ის გაფართოებაა"
 
 #: directives.cc:409 directives.cc:415 directives.cc:1374 directives.cc:2690
 #: directives.cc:2730
-#, fuzzy, gcc-internal-format
-#| msgid "#%s before C++23 is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> before C23 is a GCC extension"
-msgstr "#%s -ი C++23 -ის შემდეგ GCC -ის გაფართოებაა"
+msgstr "%<#%s%> C23-მდე GCC-ის გაფართოებაა"
 
 #: directives.cc:423
-#, fuzzy, gcc-internal-format
-#| msgid "#%s is a deprecated GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> is a deprecated GCC extension"
-msgstr "#%s GCC-ის მოძველებული გაფართოებაა"
+msgstr "%<#%s%> GCC-ის მოძველებული გაფართოებაა"
 
 #: directives.cc:436
-#, fuzzy, gcc-internal-format
-#| msgid "suggest not using #elif in traditional C"
+#, gcc-internal-format
 msgid "suggest not using %<#elif%> in traditional C"
-msgstr "რჩევა, ტრადიციულ C-ში არ გამოიყენოთ #elif"
+msgstr "რჩევა, ტრადიციულ C-ში არ გამოიყენოთ %<#elif%>"
 
 #: directives.cc:439
 #, gcc-internal-format
@@ -371,16 +353,14 @@ msgid "invalid preprocessing directive #%s"
 msgstr "არასწორი პრეპროცესორის დირექტივა #%s"
 
 #: directives.cc:656
-#, fuzzy, gcc-internal-format
-#| msgid "\"%s\" cannot be used as a macro name"
+#, gcc-internal-format
 msgid "%qs cannot be used as a macro name"
-msgstr "\"%s\" -ს მაკროს სახელში ვერ გამოიყენებთ"
+msgstr "%qs-ს მაკროს სახელად ვერ გამოიყენებთ"
 
 #: directives.cc:663
-#, fuzzy, gcc-internal-format
-#| msgid "\"%s\" cannot be used as a macro name"
+#, gcc-internal-format
 msgid "%qs cannot be used as a macro name as it is an operator in C++"
-msgstr "\"%s\" -ს მაკროს სახელში ვერ გამოიყენებთ"
+msgstr "%qs მაკროს სახელად ვერ გამოიყენებთ, რადგან ის ოპერატორია C++-ში"
 
 #: directives.cc:666
 #, gcc-internal-format
@@ -392,22 +372,19 @@ msgid "macro names must be identifiers"
 msgstr "მაკროს სახელები იდენტიფიკატორებს უნდა წარმოადგენდნენ"
 
 #: directives.cc:743 directives.cc:747
-#, fuzzy, gcc-internal-format
-#| msgid "undefining \"%s\""
+#, gcc-internal-format
 msgid "undefining %qs"
-msgstr "\"%s\"-ის აღწერის გაუქმება"
+msgstr "%qs-ის აღწერის გაუქმება"
 
 #: directives.cc:805
-#, fuzzy, gcc-internal-format
-#| msgid "missing terminating > character"
+#, gcc-internal-format
 msgid "missing terminating %<>%> character"
-msgstr "დამაბოლოებელი > სიმბოლო აღმოჩენილი არაა"
+msgstr "დამაბოლოებელი სიმბოლო %<>%> აღმოჩენილი არაა"
 
 #: directives.cc:865
-#, fuzzy, gcc-internal-format
-#| msgid "#%s expects \"FILENAME\" or <FILENAME>"
+#, gcc-internal-format
 msgid "%<#%s%> expects %<\"FILENAME\"%> or %<<FILENAME>%>"
-msgstr "#%s მოელის \"FILENAME\"-ს ან <FILENAME>-ს"
+msgstr "%<#%s%> მოელის %<\"FILENAME\"%>-ს ან %<<FILENAME>%>-ს"
 
 #: directives.cc:911 directives.cc:1391
 #, gcc-internal-format, gfc-internal-format
@@ -420,26 +397,23 @@ msgid "%<#include%> nested depth %u exceeds maximum of %u (use %<-fmax-include-d
 msgstr ""
 
 #: directives.cc:965
-#, fuzzy, gcc-internal-format
-#| msgid "#include_next in primary source file"
+#, gcc-internal-format
 msgid "%<#include_next%> in primary source file"
-msgstr "#include_next კოდის ძირითად ფაილში"
+msgstr "%<#include_next%> კოდის ძირითად ფაილში"
 
 #: directives.cc:1037 directives.cc:1059 directives.cc:1062 directives.cc:1065
 #, gcc-internal-format, gfc-internal-format
 msgid "unbalanced '%c'"
-msgstr ""
+msgstr "დაუბალანსებელი '%c'"
 
 #: directives.cc:1120 directives.cc:1311
 #, gcc-internal-format
 msgid "expected %<)%>"
-msgstr ""
+msgstr "მოველოდი %<)%>"
 
 #: directives.cc:1126 directives.cc:1177
-#, fuzzy
-#| msgid "expected parameter name, found \"%s\""
 msgid "expected parameter name"
-msgstr "მოველოდი პარამეტრის სახელს, მივიღე \"%s\""
+msgstr "მოველოდი პარამეტრის სახელს"
 
 #: directives.cc:1137
 #, gcc-internal-format
@@ -454,13 +428,12 @@ msgstr ""
 #: directives.cc:1168
 #, gcc-internal-format
 msgid "expected %<:%>"
-msgstr ""
+msgstr "მოველოდი %<:%>"
 
 #: directives.cc:1235
-#, fuzzy, gcc-internal-format
-#| msgid "duplicate macro parameter \"%s\""
+#, gcc-internal-format
 msgid "duplicate embed parameter '%.*s%s%.*s'"
-msgstr "დუბლირებული მაკროს პარამეტრი \"%s\""
+msgstr "დუბლირებული ჩაშენებული პარამეტრი '%.*s%s%.*s'"
 
 #: directives.cc:1247
 #, gcc-internal-format
@@ -470,70 +443,60 @@ msgstr ""
 #: directives.cc:1256
 #, gcc-internal-format
 msgid "expected %<(%>"
-msgstr ""
+msgstr "მოველოდი %<(%>"
 
 #: directives.cc:1269
 #, gcc-internal-format
 msgid "too large %<gnu::offset%> argument"
-msgstr ""
+msgstr "მეტისმეტად დიდი %<gnu::offset%>-ის არგუმენტი"
 
 #: directives.cc:1316
-#, fuzzy
-#| msgid "empty character constant"
 msgid "expected character string literal"
-msgstr "ცარიელი სიმბოლური მუდმივა"
+msgstr "მოველოდი სიმბოლოს სტრიქონის ლიტერალს"
 
 #: directives.cc:1361
-#, fuzzy, gcc-internal-format
-#| msgid "suggest not using #elif in traditional C"
+#, gcc-internal-format
 msgid "%<#embed%> not supported in traditional C"
-msgstr "რჩევა, ტრადიციულ C-ში არ გამოიყენოთ #elif"
+msgstr "ტრადიციულ C-ში %<#embed%> მხარდაჭერილი არაა"
 
 #: directives.cc:1370
-#, fuzzy, gcc-internal-format
-#| msgid "#%s before C++23 is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> before C++26 is a GCC extension"
-msgstr "#%s -ი C++23 -ის შემდეგ GCC -ის გაფართოებაა"
+msgstr "%<#%s%> C++26-მდე GCC-ის გაფართოებაა"
 
 #: directives.cc:1379
-#, fuzzy, gcc-internal-format
-#| msgid "#%s is a GCC extension"
+#, gcc-internal-format
 msgid "%<#%s%> is a C23 feature"
-msgstr "#%s GCC-ის გაფართოებაა"
+msgstr "%<#%s%> C23-ის თვისებაა"
 
 #: directives.cc:1436
-#, fuzzy, gcc-internal-format
-#| msgid "invalid flag \"%s\" in line directive"
+#, gcc-internal-format
 msgid "invalid flag %qs in line directive"
-msgstr "არასწორი ალამი \"%s' ხაზის დირექტივაში"
+msgstr "არასწორი ალამი %qs ხაზის დირექტივაში"
 
 #: directives.cc:1504
-#, fuzzy, gcc-internal-format
-#| msgid "unexpected end of file after #line"
+#, gcc-internal-format
 msgid "unexpected end of file after %<#line%>"
-msgstr "ფაილის მოულოდნელი დასასრული #line-ის შემდეგ"
+msgstr "ფაილის მოულოდნელი დასასრული %<#line%>-ის შემდეგ"
 
 #: directives.cc:1507
-#, fuzzy, gcc-internal-format
-#| msgid "\"%s\" after #line is not a positive integer"
+#, gcc-internal-format
 msgid "%qs after %<#line%> is not a positive integer"
-msgstr "\"%s\" #line-ის შემდეგ დადებითი მთელი რიცხვი არაა"
+msgstr "%qs %<#line%>-ის შემდეგ დადებითი მთელი რიცხვი არაა"
 
 #: directives.cc:1513 directives.cc:1516
 msgid "line number out of range"
 msgstr "ხაზის ნომერი დიაპაზონს გარეთაა"
 
 #: directives.cc:1529 directives.cc:1610
-#, fuzzy, gcc-internal-format
-#| msgid "\"%s\" is not a valid filename"
+#, gcc-internal-format
 msgid "%qs is not a valid filename"
-msgstr "'%s' არასწორი ფაილის სახელია"
+msgstr "%qs არასწორი ფაილის სახელია"
 
 #: directives.cc:1570
-#, fuzzy, gcc-internal-format
-#| msgid "\"%s\" after # is not a positive integer"
+#, gcc-internal-format
 msgid "%qs after %<#%> is not a positive integer"
-msgstr "\"%s\" #-ის შემდეგ დადებითი მთელი რიცხვი არაა"
+msgstr "%qs %<#%>-ის შემდეგ დადებითი მთელი რიცხვი არაა"
 
 #: directives.cc:1637
 #, gcc-internal-format
@@ -566,44 +529,38 @@ msgid "registering %qs as both a pragma and a pragma namespace"
 msgstr ""
 
 #: directives.cc:1836
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma %s %s is already registered"
+#, gcc-internal-format
 msgid "%<#pragma %s %s%> is already registered"
-msgstr "#pragma %s %s უკვე რეგისტრირებულია"
+msgstr "%<#pragma %s %s%> უკვე რეგისტრირებულია"
 
 #: directives.cc:1839
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma %s is already registered"
+#, gcc-internal-format
 msgid "%<#pragma %s%> is already registered"
-msgstr "#pragma %s უკვე დარეგისტრირებულია"
+msgstr "%<#pragma %s%> უკვე დარეგისტრირებულია"
 
 #: directives.cc:1870
 msgid "registering pragma with NULL handler"
 msgstr ""
 
 #: directives.cc:2088
-#, fuzzy, gcc-internal-format
-#| msgid "#pragma once in main file"
+#, gcc-internal-format
 msgid "%<#pragma once%> in main file"
-msgstr "#pragma ერთხელ მთავარ ფაილში"
+msgstr "%<#pragma once%> მთავარ ფაილში"
 
 #: directives.cc:2158
-#, fuzzy, gcc-internal-format
-#| msgid "invalid #pragma push_macro directive"
+#, gcc-internal-format
 msgid "invalid %<#pragma %s_macro%> directive"
-msgstr "არასწორი #pragma push_macro დირექტივა"
+msgstr "არასწორი დირექტივა %<#pragma %s_macro%>"
 
 #: directives.cc:2237
-#, fuzzy, gcc-internal-format
-#| msgid "invalid \"#pragma GCC %s\" directive"
+#, gcc-internal-format
 msgid "invalid %<#pragma GCC poison%> directive"
-msgstr "არასწორი \"#pragma GCC %s\" დირექტივა"
+msgstr "არასწორი დირექტორივა %<#pragma GCC poison%>"
 
 #: directives.cc:2246
-#, fuzzy, gcc-internal-format
-#| msgid "invalid built-in macro \"%s\""
+#, gcc-internal-format
 msgid "poisoning existing macro %qs"
-msgstr "არასწორი ჩაშენებული მაკრო \"%s\""
+msgstr "მოიწამლება არსებული მაკრო %qs"
 
 #: directives.cc:2268
 #, gcc-internal-format
@@ -621,10 +578,9 @@ msgid "current file is older than %s"
 msgstr "მიმდინარე ფაილი ძველია, ვიდრე %s"
 
 #: directives.cc:2321
-#, fuzzy, gcc-internal-format
-#| msgid "invalid \"#pragma GCC %s\" directive"
+#, gcc-internal-format
 msgid "invalid %<#pragma GCC %s%> directive"
-msgstr "არასწორი \"#pragma GCC %s\" დირექტივა"
+msgstr "არასწორი დირექტივა %<#pragma GCC %s%>"
 
 #: directives.cc:2541
 #, gcc-internal-format
@@ -632,54 +588,48 @@ msgid "%<_Pragma%> takes a parenthesized string literal"
 msgstr ""
 
 #: directives.cc:2624
-#, fuzzy, gcc-internal-format
-#| msgid "#else without #if"
+#, gcc-internal-format
 msgid "%<#else%> without %<#if%>"
-msgstr "#else -ს #if -ი აკლია"
+msgstr "%<#else%> %<#if%>-ის გარეშე"
 
 #: directives.cc:2629
-#, fuzzy, gcc-internal-format
-#| msgid "#else after #else"
+#, gcc-internal-format
 msgid "%<#else%> after %<#else%>"
-msgstr "#else-ი #else-ის შემდეგ"
+msgstr "%<#else%> %<#else%>-ის შემდეგ"
 
 #: directives.cc:2631 directives.cc:2666
 msgid "the conditional began here"
 msgstr "პირობა აქ იწყება"
 
 #: directives.cc:2657
-#, fuzzy, gcc-internal-format
-#| msgid "#%s without #if"
+#, gcc-internal-format
 msgid "%<#%s%> without %<#if%>"
-msgstr "#%s -ი #if -ის გარეშე"
+msgstr "%<#%s%> %<#if%>-ის გარეშე"
 
 #: directives.cc:2663
-#, fuzzy, gcc-internal-format
-#| msgid "#%s after #else"
+#, gcc-internal-format
 msgid "%<#%s%> after %<#else%>"
-msgstr "#%s-ი #else -ის შემდეგ"
+msgstr "%<#%s%> %<#else%>-ის შემდეგ"
 
 #: directives.cc:2767
-#, fuzzy, gcc-internal-format
-#| msgid "#endif without #if"
+#, gcc-internal-format
 msgid "%<#endif%> without %<#if%>"
-msgstr "#endif -ი #if -ის გარეშე"
+msgstr "%<#endif%> %<#if%>-ის შემდეგ"
 
 #: directives.cc:2852
 #, gcc-internal-format
 msgid "missing %<(%> after predicate"
-msgstr ""
+msgstr "აკლია %<(%> პრედიკატის შემდეგ"
 
 #: directives.cc:2870
 #, gcc-internal-format
 msgid "missing %<)%> to complete answer"
-msgstr ""
+msgstr "კითხვის დასრულებას %<)%> აკლია"
 
 #: directives.cc:2882
-#, fuzzy, gcc-internal-format
-#| msgid "predicate's answer is empty"
+#, gcc-internal-format
 msgid "predicate%'s answer is empty"
-msgstr "პრედიკატის პასუხი ცარიელია"
+msgstr "predicate%'s-ის პასუხი ცარიელია"
 
 #: directives.cc:2912
 msgid "assertion without predicate"
@@ -892,26 +842,23 @@ msgid "impossible operator '%u'"
 msgstr "შეუძლებელი ოპერატორი '%u'"
 
 #: expr.cc:1759
-#, fuzzy, gcc-internal-format
-#| msgid "missing ')' in expression"
+#, gcc-internal-format
 msgid "missing %<)%> in expression"
-msgstr "გამოსახულებას ')' აკლია"
+msgstr "გამოსახულებას %<)%> აკლია"
 
 #: expr.cc:1788
-#, fuzzy, gcc-internal-format
-#| msgid "'?' without following ':'"
+#, gcc-internal-format
 msgid "%<?%> without following %<:%>"
-msgstr "'?' -ი მომყოლი ':'-ის გარეშე"
+msgstr "%<?%> მომყოლი %<:%>-ის გარეშე"
 
 #: expr.cc:1798
 msgid "integer overflow in preprocessor expression"
 msgstr ""
 
 #: expr.cc:1803
-#, fuzzy, gcc-internal-format
-#| msgid "missing ')' in expression"
+#, gcc-internal-format
 msgid "missing %<(%> in expression"
-msgstr "გამოსახულებას ')' აკლია"
+msgstr "გამოსახულებას %<(%> აკლია"
 
 #: expr.cc:1835
 #, gcc-internal-format
@@ -933,10 +880,9 @@ msgid "comma operator in operand of #%s"
 msgstr ""
 
 #: expr.cc:2335
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "division by zero in #if"
+#, gcc-internal-format, gfc-internal-format
 msgid "division by zero in #%s"
-msgstr "ნულზე გაყოფა #if -ში"
+msgstr "ნულზე გაყოფა #%s -ში"
 
 #: files.cc:530
 #, gcc-internal-format
@@ -1041,7 +987,7 @@ msgstr ""
 
 #: lex.cc:1109 lex.cc:1145
 msgid "trailing whitespace"
-msgstr ""
+msgstr "თეთრი ჰარე ბოლოში"
 
 #: lex.cc:1116
 msgid "backslash-newline at end of file"
@@ -1095,42 +1041,39 @@ msgid "UTF-8 vs UCN mismatch when closing a context by %qs"
 msgstr ""
 
 #: lex.cc:1715
-#, fuzzy, gcc-internal-format
-#| msgid "\"%s\" is closing an unopened context"
+#, gcc-internal-format
 msgid "%qs is closing an unopened context"
-msgstr "\"%s\" გაუხსნელ კონტექსტს ხურავს"
+msgstr "%qs გაუხსნელ კონტექსტს ხურავს"
 
 #: lex.cc:1719
-#, fuzzy, gcc-internal-format
-#| msgid "found problematic Unicode character \"%s\""
+#, gcc-internal-format
 msgid "found problematic Unicode character %qs"
-msgstr "აღმოჩენილია პრობლემატური უნიკოდის სიმბოლო \"%s\""
+msgstr "აღმოჩენილია პრობლემატური უნიკოდის სიმბოლო %qs"
 
 #: lex.cc:1749 lex.cc:1755
 #, gcc-internal-format
 msgid "invalid UTF-8 character %<<%x>%>"
-msgstr ""
+msgstr "არასწორი UTF-8 სიმბოლო %<<%x>%>"
 
 #: lex.cc:1765 lex.cc:1771
 #, gcc-internal-format
 msgid "invalid UTF-8 character %<<%x><%x>%>"
-msgstr ""
+msgstr "არასწორი UTF-8 სიმბოლო %<<%x><%x>%>"
 
 #: lex.cc:1781 lex.cc:1787
 #, gcc-internal-format
 msgid "invalid UTF-8 character %<<%x><%x><%x>%>"
-msgstr ""
+msgstr "არასწორი UTF-8 სიმბოლო %<<%x><%x><%x>%>"
 
 #: lex.cc:1797 lex.cc:1803
 #, gcc-internal-format
 msgid "invalid UTF-8 character %<<%x><%x><%x><%x>%>"
-msgstr ""
+msgstr "არასწორი UTF-8 სიმბოლო %<<%x><%x><%x><%x>%>"
 
 #: lex.cc:1885
-#, fuzzy, gcc-internal-format
-#| msgid "\"/*\" within comment"
+#, gcc-internal-format
 msgid "%</*%> within comment"
-msgstr "\"/*\" კომენტარში"
+msgstr "%</*%> კომენტარში"
 
 #: lex.cc:1990
 #, gcc-internal-format, gfc-internal-format
@@ -1142,28 +1085,24 @@ msgid "null character(s) ignored"
 msgstr "ნულოვანი შეტყობინებები გამოტოვებულია"
 
 #: lex.cc:2063
-#, fuzzy, gcc-internal-format
-#| msgid "`%.*s' is not in NFKC"
+#, gcc-internal-format
 msgid "%<%.*s%> is not in NFKC"
-msgstr "`%.*s'-ი NFKC-ში არაა"
+msgstr "%<%.*s%> NFKC-ში არაა"
 
 #: lex.cc:2066 lex.cc:2069
-#, fuzzy, gcc-internal-format
-#| msgid "`%.*s' is not in NFC"
+#, gcc-internal-format
 msgid "%<%.*s%> is not in NFC"
-msgstr "`%.*s' -ი NFC-ში არაა"
+msgstr "%<%.*s%> NFC-ში არაა"
 
 #: lex.cc:2158
-#, fuzzy, gcc-internal-format
-#| msgid "__VA_OPT__ is not available until C++20"
+#, gcc-internal-format
 msgid "%<__VA_OPT__%> is not available until C++20"
-msgstr "__VA_OPT__ -ი C++20-მდე ხელმიუწვდომელია"
+msgstr "%<__VA_OPT__%> C++20-მდე ხელმიუწვდომელია"
 
 #: lex.cc:2161
-#, fuzzy, gcc-internal-format
-#| msgid "__VA_OPT__ is not available until C++20"
+#, gcc-internal-format
 msgid "%<__VA_OPT__%> is not available until C23"
-msgstr "__VA_OPT__ -ი C++20-მდე ხელმიუწვდომელია"
+msgstr "%<__VA_OPT__%> C23-მდე ხელმისაწვდომი არაა"
 
 #: lex.cc:2169
 #, gcc-internal-format
@@ -1171,14 +1110,13 @@ msgid "%<__VA_OPT__%> can only appear in the expansion of a C++20 variadic macro
 msgstr ""
 
 #: lex.cc:2186
-#, fuzzy, gcc-internal-format
-#| msgid "attempt to use poisoned \"%s\""
+#, gcc-internal-format
 msgid "attempt to use poisoned %qs"
-msgstr "მოწამლული \"%s\"-ის გამოყენების მცდელობა"
+msgstr "მოწამლული %qs-ის გამოყენების მცდელობა"
 
 #: lex.cc:2191
 msgid "poisoned here"
-msgstr ""
+msgstr "მოწამლული აქაა"
 
 #: lex.cc:2201
 #, gcc-internal-format
@@ -1311,21 +1249,19 @@ msgid "%<__VA_OPT__%> must be followed by an open parenthesis"
 msgstr ""
 
 #: macro.cc:235
-#, fuzzy, gcc-internal-format
-#| msgid "unterminated __VA_OPT__"
+#, gcc-internal-format
 msgid "unterminated %<__VA_OPT__%>"
-msgstr "დაუსრულებელი __VA_OPT__"
+msgstr "დაუსრულებელი %<__VA_OPT__%>"
 
 #: macro.cc:396
-#, fuzzy, gcc-internal-format
-#| msgid "%s in preprocessing directive"
+#, gcc-internal-format
 msgid "%qs used outside of preprocessing directive"
-msgstr "%s პრეპროცესორის დირექტივაში"
+msgstr "%qs გამოიყენება პრეპროცესორის დირექტივის გარეთ"
 
 #: macro.cc:407
 #, gcc-internal-format
 msgid "missing %<(%> before %qs operand"
-msgstr ""
+msgstr "აკლია %<(%> ოპერანდამდე %qs"
 
 #: macro.cc:425
 #, gcc-internal-format
@@ -1335,25 +1271,22 @@ msgstr ""
 #: macro.cc:454
 #, gcc-internal-format
 msgid "missing %<)%> after %qs operand"
-msgstr ""
+msgstr "აკლია %<)%> ოპერანდის %qs შემდეგ"
 
 #: macro.cc:499
-#, fuzzy, gcc-internal-format
-#| msgid "empty filename in #%s"
+#, gcc-internal-format
 msgid "empty filename in %qs"
-msgstr "ფაილის ცარიელი სახელი #%s -ში"
+msgstr "ფაილის ცარიელი სახელი %qs-ში"
 
 #: macro.cc:533
-#, fuzzy, gcc-internal-format
-#| msgid "macro \"%s\" is not used"
+#, gcc-internal-format
 msgid "macro %qs is not used"
-msgstr "მაკრო \"%s\" არ გამოიყენება"
+msgstr "მაკრო %qs არ გამოიყენება"
 
 #: macro.cc:572 macro.cc:888
-#, fuzzy, gcc-internal-format
-#| msgid "invalid built-in macro \"%s\""
+#, gcc-internal-format
 msgid "invalid built-in macro %qs"
-msgstr "არასწორი ჩაშენებული მაკრო \"%s\""
+msgstr "არასწორი ჩაშენებული მაკრო %qs"
 
 #: macro.cc:579 macro.cc:687
 #, gcc-internal-format
@@ -1374,16 +1307,14 @@ msgid "%<__COUNTER__%> expanded inside directive with %<-fdirectives-only%>"
 msgstr ""
 
 #: macro.cc:760
-#, fuzzy, gcc-internal-format
-#| msgid "suggest not using #elif in traditional C"
+#, gcc-internal-format
 msgid "%<__has_embed%> not supported in traditional C"
-msgstr "რჩევა, ტრადიციულ C-ში არ გამოიყენოთ #elif"
+msgstr "ტრადიციულ C-ში %<__has_embed%> მხარდაჭერილი არაა"
 
 #: macro.cc:1007
-#, fuzzy, gcc-internal-format
-#| msgid "invalid string literal, ignoring final '\\'"
+#, gcc-internal-format
 msgid "invalid string literal, ignoring final %<\\%>"
-msgstr "არასწორი სტრიქონი ლიტერალი. ბოლო '\\' გამოტოვებული იქნება"
+msgstr "არასწორი სტრიქონი ლიტერალი. ბოლო %<\\%> გამოტოვებული იქნება"
 
 #: macro.cc:1071
 #, gcc-internal-format
@@ -1411,10 +1342,9 @@ msgid "macro %qs passed %u arguments, but takes just %u"
 msgstr ""
 
 #: macro.cc:1223
-#, fuzzy, gcc-internal-format
-#| msgid "macro \"%s\" defined here"
+#, gcc-internal-format
 msgid "macro %qs defined here"
-msgstr "მაკრო \"%s\" აქაა აღწერილი"
+msgstr "მაკრო %qs აქაა აღწერილი"
 
 #: macro.cc:1417 traditional.cc:822
 #, gcc-internal-format
@@ -1442,38 +1372,33 @@ msgid "%qc in module name or partition comes from or after macro expansion"
 msgstr ""
 
 #: macro.cc:3481
-#, fuzzy, gcc-internal-format
-#| msgid "duplicate macro parameter \"%s\""
+#, gcc-internal-format
 msgid "duplicate macro parameter %qs"
-msgstr "დუბლირებული მაკროს პარამეტრი \"%s\""
+msgstr "დუბლირებული მაკროს პარამეტრი %qs"
 
 #: macro.cc:3563
-#, fuzzy, gcc-internal-format
-#| msgid "expected parameter name, found \"%s\""
+#, gcc-internal-format
 msgid "expected parameter name, found %qs"
-msgstr "მოველოდი პარამეტრის სახელს, მივიღე \"%s\""
+msgstr "მოველოდი პარამეტრის სახელს, მივიღე %qs"
 
 #: macro.cc:3564
-#, fuzzy, gcc-internal-format
-#| msgid "expected ',' or ')', found \"%s\""
+#, gcc-internal-format
 msgid "expected %<,%> or %<)%>, found %qs"
-msgstr "მოველოდი ','-ს ან ')'-ს. აღმოჩენილია \"%s\""
+msgstr "მოველოდი %<,%> or %<)%>, აღმოჩენილია %qs"
 
 #: macro.cc:3565
 msgid "expected parameter name before end of line"
 msgstr "ხაზის ბოლომდე პარამეტრს მოველოდი"
 
 #: macro.cc:3566
-#, fuzzy, gcc-internal-format
-#| msgid "expected ')' before end of line"
+#, gcc-internal-format
 msgid "expected %<)%> before end of line"
-msgstr "ხაზის ბოლომდე ')'-ს მოველოდი"
+msgstr "ხაზის ბოლომდე %<)%>-ს მოველოდი"
 
 #: macro.cc:3567
-#, fuzzy, gcc-internal-format
-#| msgid "expected ')' after \"...\""
+#, gcc-internal-format
 msgid "expected %<)%> after %<...%>"
-msgstr "\"...\"-ის შემდეგ ')'-ს მოველოდი"
+msgstr "მოველოდი %<)%> %<...%>-ის შემდეგ"
 
 #: macro.cc:3624
 msgid "anonymous variadic macros were introduced in C++11"
@@ -1514,20 +1439,18 @@ msgid "%<#%> is not followed by a macro parameter"
 msgstr ""
 
 #: macro.cc:3961
-#, fuzzy, gcc-internal-format
-#| msgid "\"%s\" redefined"
+#, gcc-internal-format
 msgid "%qs redefined"
-msgstr "\"%s\" ხელახლა აღიწერა"
+msgstr "%qs ხელახლა აღიწერა"
 
 #: macro.cc:3965
 msgid "this is the location of the previous definition"
 msgstr "ეს წინა აღწერის მდებარეობაა"
 
 #: macro.cc:4103
-#, fuzzy, gcc-internal-format
-#| msgid "suggest not using #elif in traditional C"
+#, gcc-internal-format
 msgid "macro argument %qs would be stringified in traditional C"
-msgstr "რჩევა, ტრადიციულ C-ში არ გამოიყენოთ #elif"
+msgstr "მაკროს არგუმენტი %qs ტრადიციულ C-ში სტრიქონში უნდა გადაიყვანოთ"
 
 #: pch.cc:90 pch.cc:342 pch.cc:356 pch.cc:374 pch.cc:380 pch.cc:389 pch.cc:396
 msgid "while writing precompiled header"
