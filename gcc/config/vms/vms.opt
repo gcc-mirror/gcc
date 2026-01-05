@@ -20,7 +20,7 @@ HeaderInclude
 config/vms/vms-opts.h
 
 map
-Target RejectNegative
+Target Undocumented RejectNegative
 
 mmalloc64
 Target Var(flag_vms_malloc64) Init(1)
