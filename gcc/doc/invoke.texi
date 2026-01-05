@@ -1456,20 +1456,15 @@ See RS/6000 and PowerPC Options.
 -mtune=@var{cpu-type}
 -mcmodel=@var{code-model}
 -mmemory-model=@var{mem-model}
--m32  -m64  -mapp-regs  -mno-app-regs
--mfaster-structs  -mno-faster-structs  -mflat  -mno-flat
--mfpu  -mno-fpu  -mhard-float  -msoft-float
+-m32  -m64  -mptr32  -mptr64  -mapp-regs
+-mfaster-structs  -mflat
+-mfpu  -mhard-float  -msoft-float
 -mhard-quad-float  -msoft-quad-float
--mstack-bias  -mno-stack-bias
--mstd-struct-return  -mno-std-struct-return
--munaligned-doubles  -mno-unaligned-doubles
--muser-mode  -mno-user-mode
--mv8plus  -mno-v8plus  -mvis  -mno-vis
--mvis2  -mno-vis2
--mvis3  -mno-vis3  -mvis3b  -mno-vis3b
--mvis4  -mno-vis4  -mvis4b  -mno-vis4b
--mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  -mfsmuld  -mno-fsmuld
--mpopc  -mno-popc  -msubxc  -mno-subxc
+-mstack-bias  -mstd-struct-return
+-munaligned-doubles  -muser-mode
+-mv8plus  -mvis
+-mvis2  -mvis3  -mvis3b  -mvis4  -mvis4b
+-mcbcond  -mfmaf  -mfsmuld  -mpopc  -msubxc
 -mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc}
 
 @emph{System V Options} (@ref{System V Options})
@@ -35213,6 +35208,13 @@ Generate code for a 32-bit or 64-bit environment.
 The 32-bit environment sets int, long and pointer to 32 bits.
 The 64-bit environment sets int to 32 bits and long and pointer
 to 64 bits.
+
+@opindex mptr32
+@opindex mptr64
+@item -mptr32
+@itemx -mptr64
+Use 32- or 64-bit pointers, respectively.  Unlike the @option{-m32} and
+@option{-m64} options, this affects only the pointer size and not the ABI.
 
 @opindex mcmodel=
 @item -mcmodel=@var{which}
