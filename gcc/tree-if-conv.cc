@@ -1006,6 +1006,19 @@ ifcvt_can_predicate (gimple *stmt)
   if (gimple_assign_single_p (stmt))
     return ifcvt_can_use_mask_load_store (stmt);
 
+  if (gimple_call_builtin_p (stmt))
+    if (tree callee = gimple_call_fndecl (stmt))
+      {
+	auto ifn = associated_internal_fn (callee);
+	auto cond_ifn = get_conditional_internal_fn (ifn);
+	tree type = TREE_TYPE (gimple_call_fntype (stmt));
+	return (cond_ifn != IFN_LAST
+		&& vectorized_internal_fn_supported_p (cond_ifn, type));
+      }
+
+  if (!is_gimple_assign (stmt))
+    return false;
+
   tree_code code = gimple_assign_rhs_code (stmt);
   tree lhs_type = TREE_TYPE (gimple_assign_lhs (stmt));
   tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
@@ -1148,6 +1161,23 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 		    need_to_predicate = true;
 		    return true;
 		  }
+	  }
+
+	/* Check if the call can trap and if so require predication.  */
+	if (gimple_could_trap_p (stmt))
+	  {
+	    if (ifcvt_can_predicate (stmt))
+	      {
+		gimple_set_plf (stmt, GF_PLF_2, true);
+		need_to_predicate = true;
+		return true;
+	      }
+	    else
+	      {
+		if (dump_file && (dump_flags & TDF_DETAILS))
+		  fprintf (dump_file, "stmt could trap...\n");
+		return false;
+	      }
 	  }
 
 	/* There are some IFN_s that are used to replace builtins but have the
@@ -2840,20 +2870,38 @@ value_available_p (gimple *stmt, hash_set<tree_ssa_name_hash> *ssa_names,
    SSA names defined earlier in STMT's block.  */
 
 static gimple *
-predicate_rhs_code (gassign *stmt, tree mask, tree cond,
+predicate_rhs_code (gimple *stmt, tree mask, tree cond,
 		    hash_set<tree_ssa_name_hash> *ssa_names)
 {
-  tree lhs = gimple_assign_lhs (stmt);
-  tree_code code = gimple_assign_rhs_code (stmt);
-  unsigned int nops = gimple_num_ops (stmt);
-  internal_fn cond_fn = get_conditional_internal_fn (code);
+  internal_fn cond_fn;
+  if (is_gimple_assign (stmt))
+    {
+      tree_code code = gimple_assign_rhs_code (stmt);
+      cond_fn = get_conditional_internal_fn (code);
+    }
+  else if (tree callee = gimple_call_fndecl (stmt))
+    {
+      auto ifn = associated_internal_fn (callee);
+      cond_fn = get_conditional_internal_fn (ifn);
+    }
+  else
+    return NULL;
+
+  if (cond_fn == IFN_LAST)
+    {
+      gcc_assert (!gimple_could_trap_p (stmt));
+      return NULL;
+    }
+
+  tree lhs = gimple_get_lhs (stmt);
+  unsigned int nops = gimple_num_args (stmt) + 1;
 
   /* Construct the arguments to the conditional internal function.   */
   auto_vec<tree, 8> args;
   args.safe_grow (nops + 1, true);
   args[0] = mask;
-  for (unsigned int i = 1; i < nops; ++i)
-    args[i] = gimple_op (stmt, i);
+  for (unsigned int i = 0; i < nops - 1; ++i)
+    args[i+1] = gimple_arg (stmt, i);
   args[nops] = NULL_TREE;
 
   /* Look for uses of the result to see whether they are COND_EXPRs that can
@@ -3030,8 +3078,9 @@ predicate_statements (loop_p loop)
 
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
 	{
-	  gassign *stmt = dyn_cast <gassign *> (gsi_stmt (gsi));
-	  if (!stmt)
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (!is_gimple_assign (stmt)
+	      && !gimple_call_builtin_p (stmt))
 	    ;
 	  else if (is_false_predicate (cond)
 		   && gimple_vdef (stmt))
@@ -3042,9 +3091,14 @@ predicate_statements (loop_p loop)
 	      continue;
 	    }
 	  else if (gimple_plf (stmt, GF_PLF_2)
-		   && is_gimple_assign (stmt))
+		   && (is_gimple_assign (stmt)
+		       || gimple_call_builtin_p (stmt)))
 	    {
-	      tree lhs = gimple_assign_lhs (stmt);
+	      tree lhs = gimple_get_lhs (stmt);
+	      /* ?? Assume that calls without an LHS are not data processing
+		 and so no issues with traps.  */
+	      if (!lhs)
+		continue;
 	      tree mask;
 	      gimple *new_stmt;
 	      gimple_seq stmts = NULL;
@@ -3080,11 +3134,14 @@ predicate_statements (loop_p loop)
 		  vect_masks.safe_push (mask);
 		}
 	      if (gimple_assign_single_p (stmt))
-		new_stmt = predicate_load_or_store (&gsi, stmt, mask);
+		new_stmt = predicate_load_or_store (&gsi,
+						    as_a <gassign *> (stmt),
+						    mask);
 	      else
 		new_stmt = predicate_rhs_code (stmt, mask, cond, &ssa_names);
 
-	      gsi_replace (&gsi, new_stmt, true);
+	      if (new_stmt)
+		gsi_replace (&gsi, new_stmt, true);
 	    }
 	  else if (gimple_needing_rewrite_undefined (stmt))
 	    rewrite_to_defined_unconditional (&gsi);
