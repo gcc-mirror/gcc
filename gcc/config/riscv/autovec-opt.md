@@ -1915,7 +1915,7 @@
  [(set (match_operand:VWEXTI_D       0 "register_operand")
        (plus:VWEXTI_D
 	 (vec_duplicate:VWEXTI_D
-	   (any_extend:<VEL>
+	   (zero_extend:<VEL>
 	     (match_operand:<VSUBEL> 2 "register_operand")))
 	   (match_operand:VWEXTI_D   1 "register_operand")))]
   "TARGET_VECTOR && TARGET_64BIT && can_create_pseudo_p ()"
@@ -1936,7 +1936,7 @@
        (minus:VWEXTI_D
 	 (match_operand:VWEXTI_D     1 "register_operand")
 	 (vec_duplicate:VWEXTI_D
-	   (any_extend:<VEL>
+	   (zero_extend:<VEL>
 	     (match_operand:<VSUBEL> 2 "register_operand")))))]
   "TARGET_VECTOR && TARGET_64BIT && can_create_pseudo_p ()"
   "#"
