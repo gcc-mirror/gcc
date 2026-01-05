@@ -1,3 +1,29 @@
+2026-01-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/123377
+	* gcc.dg/uninit-pred-7_a.c: Add
+	`--param logical-op-non-short-circuit=1` to the options.
+	* gcc.dg/uninit-pred-7_a_a.c: New test.
+
+2026-01-04  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/122608
+	* gcc.target/i386/pr110701.c: the pattern added is now folding
+	an XOR into the ifcond and the assembler isn't emitting an
+	'andl' anymore. The test was turned into a runtime test
+	instead.
+	* gcc.dg/torture/pr122608.c: New test.
+
+2026-01-04  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123010
+	* gcc.target/riscv/pr123010.c: New test.
+
+2026-01-04  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/Wzero-as-null-pointer-constant-2.c: Require effective
+	target bitint.
+
 2026-01-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/42196

@@ -1,3 +1,60 @@
+2026-01-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* configure: Regenerate.
+
+2026-01-04  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/riscv.cc (riscv_conditional_register_usage): Revert
+	patch that made VXRM a global register.
+
+2026-01-04  Keith Packard  <keithp@keithp.com>
+
+	* config.gcc: Add clause for picolibc.
+	* config/picolibc-spec.h: New file.
+	* config/picolibc.opt: Likewise.
+	* config/picolibc.opt.urls: Likewise.
+	* configure.ac: Add support for --with-picolibc.
+	* configure: Rebuilt.
+	* doc/invoke.texi: Document picolibc options.
+	* doc/tm.texi.in (LIBC_CPP_SPEC): Document.
+	(LIBC_LINK_SPEC): Similarly.
+	* doc/tm.texi: Rebuilt.
+	* gcc.cc (LIBC_CPP_SPEC): Provide default definition.
+	(LIBC_LINK_SPEC): Likewise.
+	(cpp_spec): Include LIBC_CPP_SPEC.
+	(link_spec): Similarly for LIBC_LINK_SPEC.
+
+2026-01-04  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* doc/contrib.texi: Add Kazumoto & Oleg.
+
+2026-01-04  Richard Braun  <rbraun@sceen.net>
+
+	* config/c6x/c6x-sched.md.in (mpydp_m_N__CROSS_,
+	mpyspdp_m_N__CROSS_, mpysp2dp_m_N__CROSS_): Update reservations.
+	* config/c6x/c6x-sched.md: Regenerated.
+	* config/c6x/c6x.md (m1dp, m1spdp, m2dp, m2spdp): New CPU units.
+
+2026-01-04  Kalvis Duckmanton  <kalvisd@gmail.com>
+
+	* config/host-netbsd.cc (netbsd_gt_pch_use_address): Support PCH
+	loading at addresses other than its preferred address.
+	* config/host-openbsd.cc (openbsd_gt_pch_use_address): Likewise.
+
+2026-01-04  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/122608
+	* match.pd (`(c ? a : b) op d -> c ? (a op d) : (b op d)`): New
+	pattern.
+	(`d op (c ? a : b) -> c ? (d op a) : (d op b)`): Likewise
+
+2026-01-04  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123010
+	* simplify-rtx.cc (simplify_binary_operation_1, case ASHIFT): Simplify
+	case where a left shift of the sign extracted field can be turned into
+	a sign extension of a left shift.
+
 2026-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/123372

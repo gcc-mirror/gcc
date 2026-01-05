@@ -1,3 +1,7 @@
+2026-01-04  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-lang.cc (a68_post_options): Disable psABI warnings.
+
 2025-12-31  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* a68-exports.cc (a68_asm_output_mode): Do not rely on DIM to
