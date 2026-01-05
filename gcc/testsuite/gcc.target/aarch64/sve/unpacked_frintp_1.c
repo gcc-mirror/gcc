@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -moverride=sve_width=2048 -ftree-vectorize" } */
+/* { dg-options "-O2 -moverride=sve_width=2048 -ftree-vectorize -fno-trapping-math" } */
 
 #include <stdint.h>
 
@@ -20,8 +20,8 @@ TEST_FN (__builtin_ceilf16, _Float16, uint32_t, 64)
 
 TEST_FN (__builtin_ceilf32, float, uint64_t, 32)
 
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.s} 1 } } */
-/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.d} 2 } } */
+/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.s} 0 } } */
+/* { dg-final { scan-assembler-times {\tptrue\tp[0-7]\.d} 0 } } */
 
 /* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+\.d} 2 } } */
 /* { dg-final { scan-assembler-times {\tld1h\tz[0-9]+\.s} 2 } } */
