@@ -17488,6 +17488,15 @@ private:
      support unrolling of the inner loop independently from the outerloop during
      outer-loop vectorization which tends to lead to pipeline bubbles.  */
   bool m_loop_fully_scalar_dup = false;
+
+  /* If m_loop_fully_scalar_dup is true then this variable contains the number
+     of statements we estimate to be duplicate.  We only increase the cost of
+     the seeds because we don't want to overly pessimist the loops.  */
+  uint64_t m_num_dup_stmts = 0;
+
+  /* If m_loop_fully_scalar_dup this contains the total number of leaf stmts
+     found in the SLP tree.  */
+  uint64_t m_num_total_stmts = 0;
 };
 
 aarch64_vector_costs::aarch64_vector_costs (vec_info *vinfo,
@@ -18477,6 +18486,43 @@ aarch64_stp_sequence_cost (unsigned int count, vect_cost_for_stmt kind,
     }
 }
 
+/* Determine probabilistically whether the STMT is one tht could possible be
+   made into a by lane operation later on.  We can't be sure, but certain
+   operations have a higher chance.  */
+
+static bool
+aarch64_possible_by_lane_insn_p (vec_info *m_vinfo, gimple *stmt)
+{
+  if (!gimple_has_lhs (stmt))
+    return false;
+
+  use_operand_p use_p;
+  imm_use_iterator iter;
+  tree var = gimple_get_lhs (stmt);
+  FOR_EACH_IMM_USE_FAST (use_p, iter, var)
+    {
+      gimple *new_stmt = USE_STMT (use_p);
+      auto stmt_info = vect_stmt_to_vectorize (m_vinfo->lookup_stmt (new_stmt));
+      auto rep_stmt = STMT_VINFO_STMT (stmt_info);
+      /* Re-association is a problem here, since lane instructions are only
+	 supported as the last operand, as such we put duplicate operands
+	 last.  We could check the other operand for invariancy, but it may not
+	 be an outer-loop defined invariant.  For now just checking the last
+	 operand catches all the cases and we can expand if needed.  */
+      if (is_gimple_assign (rep_stmt))
+	switch (gimple_assign_rhs_code (rep_stmt))
+	  {
+	  case MULT_EXPR:
+	    return operand_equal_p (gimple_assign_rhs2 (new_stmt), var, 0);
+	  case DOT_PROD_EXPR:
+	    return operand_equal_p (gimple_assign_rhs3 (new_stmt), var, 0);
+	  default:
+	    continue;
+	  }
+    }
+  return false;
+}
+
 unsigned
 aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				     stmt_vec_info stmt_info, slp_tree node,
@@ -18509,7 +18555,10 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	analyze_loop_vinfo (loop_vinfo);
 
       m_analyzed_vinfo = true;
-      if (in_inner_loop_p)
+
+      /* We should only apply the heuristic for invariant values on the inner
+	 most loop in a nested loop nest.  */
+      if (in_inner_loop_p && loop_vinfo)
 	m_loop_fully_scalar_dup = true;
     }
 
@@ -18518,17 +18567,21 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
      try to vectorize.  */
   if (in_inner_loop_p
       && node
-      && m_loop_fully_scalar_dup
       && SLP_TREE_LANES (node) == 1
       && !SLP_TREE_CHILDREN (node).exists ())
     {
-      /* Check if load is a duplicate.  */
-      if (gimple_vuse (stmt_info->stmt)
-	  && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_INVARIANT)
-	;
-      else if (SLP_TREE_DEF_TYPE (node) == vect_constant_def
-	       || SLP_TREE_DEF_TYPE (node) == vect_external_def)
-	;
+      m_num_total_stmts++;
+      gimple *stmt = STMT_VINFO_STMT (stmt_info);
+      /* Check if load is a duplicate that will be duplicated inside the
+	 current loop.  */
+      if (gimple_vuse (stmt)
+	  && SLP_TREE_MEMORY_ACCESS_TYPE (node) == VMAT_INVARIANT
+	  && !aarch64_possible_by_lane_insn_p (m_vinfo, stmt))
+	m_num_dup_stmts++;
+      else if ((SLP_TREE_DEF_TYPE (node) == vect_constant_def
+		|| SLP_TREE_DEF_TYPE (node) == vect_external_def)
+	       && !aarch64_possible_by_lane_insn_p (m_vinfo, stmt))
+	m_num_dup_stmts++;
       else
 	m_loop_fully_scalar_dup = false;
     }
@@ -18898,8 +18951,16 @@ adjust_body_cost (loop_vec_info loop_vinfo,
     threshold = CEIL (threshold, aarch64_estimated_sve_vq ());
 
   /* Increase the cost of the vector code if it looks like the vector code has
-     limited throughput due to outer-loop vectorization.  */
-  if (m_loop_fully_scalar_dup)
+     limited throughput due to outer-loop vectorization.  As a rough estimate we
+     require at least half the operations be a duplicate expression.  This is an
+     attempt ot strike a balance between scalar and vector costing wrt to outer
+     loop vectorization.  The vectorizer applies a rather huge penalty to scalar
+     costing when doing outer-loop vectorization (See
+     LOOP_VINFO_INNER_LOOP_COST_FACTOR) and because of this accurate costing
+     becomes rather hard.  the 50% here allows us to amortize the cost on longer
+     loop bodies where the majority of the inputs are not a broadcast.  */
+  if (m_loop_fully_scalar_dup
+      && (m_num_dup_stmts * 2 >= m_num_total_stmts))
     {
       body_cost *= estimated_vf;
       if (dump_enabled_p ())
