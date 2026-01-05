@@ -43,7 +43,8 @@ Parser<ManagedTokenSource>::parse_token_tree ()
 	// Parse delimited token tree
 	auto delim_token_tree = parse_delim_token_tree ();
 	if (!delim_token_tree)
-	  return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
+	  return tl::unexpected<Parse::Error::Node> (
+	    Parse::Error::Node::CHILD_ERROR);
 
 	// TODO: use move rather than copy constructor
 	return std::unique_ptr<AST::DelimTokenTree> (
@@ -61,7 +62,7 @@ Parser<ManagedTokenSource>::parse_token_tree ()
 			"non-delimiter tokens"));
 
       lexer.skip_token ();
-      return tl::unexpected (Parse::Error::Node::MALFORMED);
+      return tl::unexpected<Parse::Error::Node> (Parse::Error::Node::MALFORMED);
     default:
       // parse token itself as TokenTree
       lexer.skip_token ();
@@ -99,7 +100,7 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
 			"delimited token tree)",
 			t->get_token_description ()));
 
-      return tl::unexpected (Parse::Error::Node::MALFORMED);
+      return tl::unexpected<Parse::Error::Node> (Parse::Error::Node::MALFORMED);
     }
 
   // parse actual token tree vector - 0 or more
@@ -115,7 +116,8 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
     {
       auto tok_tree = parse_token_tree ();
       if (!tok_tree)
-	return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
+	return tl::unexpected<Parse::Error::Node> (
+	  Parse::Error::Node::CHILD_ERROR);
 
       token_trees_in_tree.push_back (std::move (tok_tree.value ()));
 
@@ -150,7 +152,7 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
 		      : (delim_type == AST::SQUARE ? "]" : "}")));
       add_error (std::move (error));
 
-      return tl::unexpected (Parse::Error::Node::MALFORMED);
+      return tl::unexpected<Parse::Error::Node> (Parse::Error::Node::MALFORMED);
     }
 }
 

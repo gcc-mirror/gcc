@@ -327,7 +327,7 @@ Parser<ManagedTokenSource>::parse_identifier_or_keyword_token ()
   else
     {
       add_error (Error (t->get_locus (), "expected keyword or identifier"));
-      return tl::unexpected (Parse::Error::Node::MALFORMED);
+      return tl::unexpected<Parse::Error::Node> (Parse::Error::Node::MALFORMED);
     }
 }
 
@@ -4904,7 +4904,8 @@ Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
     {
       auto block_expr = parse_block_expr ();
       if (block_expr)
-	else_expr = tl::optional{std::move (block_expr.value ())};
+	else_expr = tl::optional<std::unique_ptr<AST::Expr>>{
+	  std::move (block_expr.value ())};
       else
 	else_expr = tl::nullopt;
     }
@@ -7081,7 +7082,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 			      t->get_token_description ()));
 
 	    // skip somewhere?
-	    return tl::unexpected (Parse::Error::Node::MALFORMED);
+	    return tl::unexpected<Parse::Error::Node> (
+	      Parse::Error::Node::MALFORMED);
 	  }
 	break;
       }
@@ -7125,7 +7127,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 	      = parse_macro_invocation_partial (std::move (path),
 						std::move (outer_attrs));
 	    if (invoc == nullptr)
-	      return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
+	      return tl::unexpected<Parse::Error::Node> (
+		Parse::Error::Node::CHILD_ERROR);
 
 	    if (restrictions.consume_semi && maybe_skip_token (SEMICOLON))
 	      {
@@ -7182,7 +7185,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 	}
       else
 	{
-	  return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
+	  return tl::unexpected<Parse::Error::Node> (
+	    Parse::Error::Node::CHILD_ERROR);
 	}
     }
 
@@ -7200,7 +7204,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
   if (expr)
     return ExprOrStmt (std::move (expr.value ()));
   else
-    return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
+    return tl::unexpected<Parse::Error::Node> (Parse::Error::Node::CHILD_ERROR);
 }
 
 } // namespace Rust

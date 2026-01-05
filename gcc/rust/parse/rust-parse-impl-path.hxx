@@ -37,7 +37,7 @@ Parser<ManagedTokenSource>::parse_simple_path ()
   // don't parse anything if not a path upfront
   if (!is_simple_path_segment (lexer.peek_token ()->get_id ())
       && !is_simple_path_segment (lexer.peek_token (1)->get_id ()))
-    return tl::unexpected (Parse::Error::Node::MALFORMED);
+    return tl::unexpected<Parse::Error::Node> (Parse::Error::Node::MALFORMED);
 
   /* Checks for opening scope resolution (i.e. global scope fully-qualified
    * path) */
@@ -54,7 +54,7 @@ Parser<ManagedTokenSource>::parse_simple_path ()
   auto segment = parse_simple_path_segment ();
 
   if (!segment)
-    return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
+    return tl::unexpected<Parse::Error::Node> (Parse::Error::Node::CHILD_ERROR);
 
   // get location if not gotten already
   if (locus == UNKNOWN_LOCATION)
@@ -75,7 +75,8 @@ Parser<ManagedTokenSource>::parse_simple_path ()
 	  if (new_segment.error ().kind == Error::INVALID_SIMPLE_PATH_TOKEN)
 	    break; /* Could be end of path */
 	  else	   /* Any other error is an hard error */
-	    return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
+	    return tl::unexpected<Parse::Error::Node> (
+	      Parse::Error::Node::CHILD_ERROR);
 	}
 
       segments.push_back (std::move (new_segment.value ()));
