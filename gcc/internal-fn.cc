@@ -4829,7 +4829,12 @@ get_conditional_len_internal_fn (tree_code code)
   T (FMA) \
   T (FMS) \
   T (FNMA) \
-  T (FNMS)
+  T (FNMS) \
+  T (SQRT) \
+  T (ROUND) \
+  T (FLOOR) \
+  T (RINT) \
+  T (CEIL)
 
 /* Return a function that only performs internal function FN when a
    certain condition is met and that uses a given fallback value otherwise.
@@ -5129,8 +5134,18 @@ internal_fn_else_index (internal_fn fn)
     {
     case IFN_COND_NEG:
     case IFN_COND_NOT:
+    case IFN_COND_SQRT:
+    case IFN_COND_CEIL:
+    case IFN_COND_FLOOR:
+    case IFN_COND_ROUND:
+    case IFN_COND_RINT:
     case IFN_COND_LEN_NEG:
     case IFN_COND_LEN_NOT:
+    case IFN_COND_LEN_SQRT:
+    case IFN_COND_LEN_CEIL:
+    case IFN_COND_LEN_FLOOR:
+    case IFN_COND_LEN_ROUND:
+    case IFN_COND_LEN_RINT:
       return 2;
 
     case IFN_LEN_LOAD:

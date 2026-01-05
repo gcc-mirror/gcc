@@ -7362,8 +7362,18 @@ operand 0, otherwise (operand 2 + operand 3) is moved.
 
 @cindex @code{cond_neg@var{mode}} instruction pattern
 @cindex @code{cond_one_cmpl@var{mode}} instruction pattern
+@cindex @code{cond_sqrt@var{mode}} instruction pattern
+@cindex @code{cond_ceil@var{mode}} instruction pattern
+@cindex @code{cond_floor@var{mode}} instruction pattern
+@cindex @code{cond_round@var{mode}} instruction pattern
+@cindex @code{cond_rint@var{mode}} instruction pattern
 @item @samp{cond_neg@var{mode}}
 @itemx @samp{cond_one_cmpl@var{mode}}
+@itemx @samp{cond_sqrt@var{mode}}
+@itemx @samp{cond_ceil@var{mode}}
+@itemx @samp{cond_floor@var{mode}}
+@itemx @samp{cond_round@var{mode}}
+@itemx @samp{cond_rint@var{mode}}
 When operand 1 is true, perform an operation on operands 2 and
 store the result in operand 0, otherwise store operand 3 in operand 0.
 The operation works elementwise if the operands are vectors.
@@ -7487,8 +7497,18 @@ for (i = 0; i < GET_MODE_NUNITS (@var{m}); i++)
 
 @cindex @code{cond_len_neg@var{mode}} instruction pattern
 @cindex @code{cond_len_one_cmpl@var{mode}} instruction pattern
+@cindex @code{cond_len_sqrt@var{mode}} instruction pattern
+@cindex @code{cond_len_ceil@var{mode}} instruction pattern
+@cindex @code{cond_len_floor@var{mode}} instruction pattern
+@cindex @code{cond_len_round@var{mode}} instruction pattern
+@cindex @code{cond_len_rint@var{mode}} instruction pattern
 @item @samp{cond_len_neg@var{mode}}
 @itemx @samp{cond_len_one_cmpl@var{mode}}
+@itemx @samp{cond_len_sqrt@var{mode}}
+@itemx @samp{cond_len_ceil@var{mode}}
+@itemx @samp{cond_len_floor@var{mode}}
+@itemx @samp{cond_len_round@var{mode}}
+@itemx @samp{cond_len_rint@var{mode}}
 When operand 1 is true and element index < operand 4 + operand 5, perform an operation on operands 1 and
 store the result in operand 0, otherwise store operand 2 in operand 0.
 The operation only works for the operands are vectors.
