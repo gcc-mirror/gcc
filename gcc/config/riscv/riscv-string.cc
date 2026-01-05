@@ -1249,7 +1249,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
 	       && length > riscv_memcpy_size_threshold)
 	return false;
     }
-  else
+  else if (riscv_memmove_size_threshold != -1)
     return false;
 
   /* Inlining general memmove is a pessimisation: we can't avoid having to
@@ -1641,7 +1641,7 @@ expand_vec_setmem (rtx dst_in, rtx length_in, rtx fill_value_in)
 	  && length > riscv_memset_size_threshold)
 	return false;
     }
-  else
+  else if (riscv_memset_size_threshold != -1)
     return false;
 
   rtx dst_addr = copy_addr_to_reg (XEXP (dst_in, 0));
