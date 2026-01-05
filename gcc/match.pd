@@ -10266,6 +10266,64 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
    (IFN_FMA @0 @1 @2))))
 
+(if (canonicalize_math_after_vectorization_p ())
+ (for fmas (IFN_COND_FMA)
+  (simplify
+   (fmas:c @3 (negate @0) @1 @2 @4)
+   (IFN_COND_FNMA @3 @0 @1 @2 @4))
+  (simplify
+   (fmas @3 @0 @1 (negate @2) @4)
+   (IFN_COND_FMS @0 @1 @2 @4))
+  (simplify
+   (fmas:c @3 (negate @0) @1 (negate @2) @4)
+   (IFN_COND_FNMS @3 @0 @1 @2 @4))
+  (simplify
+   (negate (fmas@3 @4 @0 @1 @2 @5))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+    (IFN_COND_FNMS @4 @0 @1 @2 @5))))
+
+ (simplify
+  (IFN_COND_FMS:c @3 (negate @0) @1 @2 @4)
+  (IFN_COND_FNMS @3 @0 @1 @2 @4))
+ (simplify
+  (IFN_COND_FMS @3 @0 @1 (negate @2) @4)
+  (IFN_COND_FMA @3 @0 @1 @2 @4))
+ (simplify
+  (IFN_COND_FMS:c @3 (negate @0) @1 (negate @2) @4)
+  (IFN_COND_FNMA @3 @0 @1 @2 @4))
+ (simplify
+  (negate (IFN_FMS@3 @4 @0 @1 @2 @5))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+    (IFN_COND_FNMA @4 @0 @1 @2 @5)))
+
+ (simplify
+  (IFN_COND_FNMA:c @3 (negate @0) @1 @2 @4)
+  (IFN_COND_FMA @3 @0 @1 @2 @4))
+ (simplify
+  (IFN_COND_FNMA @3 @0 @1 (negate @2) @4)
+  (IFN_COND_FNMS @3 @0 @1 @2 @4))
+ (simplify
+  (IFN_COND_FNMA:c @3 (negate @0) @1 (negate @2) @4)
+  (IFN_COND_FMS @3 @0 @1 @2 @4))
+ (simplify
+  (negate (IFN_COND_FNMA@3 @4 @0 @1 @2 @5))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+   (IFN_COND_FMS @4 @0 @1 @2 @5)))
+
+ (simplify
+  (IFN_COND_FNMS:c @3 (negate @0) @1 @2 @4)
+  (IFN_COND_FMS @3 @0 @1 @2 @4))
+ (simplify
+  (IFN_COND_FNMS @3 @0 @1 (negate @2) @4)
+  (IFN_COND_FNMA @3 @0 @1 @2 @4))
+ (simplify
+  (IFN_COND_FNMS:c @3 (negate @0) @1 (negate @2) @4)
+  (IFN_COND_FMA @3 @0 @1 @2 @4))
+ (simplify
+  (negate (IFN_COND_FNMS@3 @4 @0 @1 @2 @5))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+   (IFN_COND_FMA @4 @0 @1 @2 @5))))
+
 /* CLZ simplifications.  */
 (for clz (CLZ)
  (for op (eq ne)
