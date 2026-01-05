@@ -69,7 +69,7 @@ Target RejectNegative InverseMask(SV_MODE)
 Generate code for the user mode.
 
 menable-trampolines
-Target RejectNegative
+Target Undocumented RejectNegative
 Only retained for backward compatibility.
 
 Mask(MCM)

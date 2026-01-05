@@ -1487,7 +1487,7 @@ See RS/6000 and PowerPC Options.
 -mvaxc-alignment  -mqmath}
 
 @emph{Visium Options} (@ref{Visium Options})
-@gccoptlist{-mdebug  -msim  -mfpu  -mno-fpu  -mhard-float  -msoft-float
+@gccoptlist{-mdebug  -msim  -mfpu  -mhard-float  -msoft-float
 -mcpu=@var{cpu-type}  -mtune=@var{cpu-type}  -msv-mode  -muser-mode}
 
 @emph{VMS Options} (@ref{VMS Options})
@@ -35611,16 +35611,16 @@ and subtraction.
 
 @opindex mdebug
 @item -mdebug
-A program which performs file I/O and is destined to run on an MCM target
-should be linked with this option.  It causes the libraries libc.a and
-libdebug.a to be linked.  The program should be run on the target under
-the control of the GDB remote debugging stub.
+Use this option when linking programs that perform file I/O and are
+destined to run on an MCM target.  It causes the libraries
+@file{libc.a} and @file{libdebug.a} to be linked.  You should run program
+on the the target under the control of the GDB remote debugging stub.
 
 @opindex msim
 @item -msim
-A program which performs file I/O and is destined to run on the simulator
-should be linked with option.  This causes libraries libc.a and libsim.a to
-be linked.
+Use this option when linking programs that perform file I/O and are
+destined to run on the simulator.  It causes the libraries
+@file{libc.a} and @file{libsim.a} to be linked.
 
 @opindex mfpu
 @opindex mhard-float
