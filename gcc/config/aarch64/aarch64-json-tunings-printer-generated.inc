@@ -287,6 +287,7 @@ serialize_branch_costs (const T &branch_costs)
 
   SERIALIZE_INTEGER_FIELD (branch_costs_obj, "predictable", branch_costs.predictable);
   SERIALIZE_INTEGER_FIELD (branch_costs_obj, "unpredictable", branch_costs.unpredictable);
+  SERIALIZE_INTEGER_FIELD (branch_costs_obj, "br_mispredict_factor", branch_costs.br_mispredict_factor);
 
   return branch_costs_obj;
 }

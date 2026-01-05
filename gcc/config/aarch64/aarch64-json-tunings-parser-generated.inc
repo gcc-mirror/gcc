@@ -237,6 +237,7 @@ parse_branch_costs (const json::object *jo, T &branch_costs)
 {
   PARSE_INTEGER_FIELD (jo, "predictable", branch_costs.predictable);
   PARSE_INTEGER_FIELD (jo, "unpredictable", branch_costs.unpredictable);
+  PARSE_INTEGER_FIELD (jo, "br_mispredict_factor", branch_costs.br_mispredict_factor);
 }
 
 template <typename T>

@@ -222,7 +222,11 @@ static const char *schema_json = R"json(
 	}
       }
     },
-    "branch_costs": { "predictable": "int", "unpredictable": "int" },
+    "branch_costs": {
+      "predictable": "int",
+      "unpredictable": "int",
+      "br_mispredict_factor": "int"
+    },
     "approx_modes": { "division": "int", "sqrt": "int", "recip_sqrt": "int" },
     "sve_width": "uint",
     "memmov_cost": {

@@ -125,13 +125,6 @@ static const struct cpu_vector_cost generic_armv8_a_vector_cost =
   nullptr /* issue_info  */
 };
 
-/* Generic costs for branch instructions.  */
-static const struct cpu_branch_cost generic_armv8_a_branch_cost =
-{
-  1,  /* Predictable.  */
-  3   /* Unpredictable.  */
-};
-
 /* Generic approximation modes.  */
 static const cpu_approx_modes generic_armv8_a_approx_modes =
 {
@@ -158,7 +151,7 @@ static const struct tune_params generic_armv8_a_tunings =
   &generic_armv8_a_addrcost_table,
   &generic_armv8_a_regmove_cost,
   &generic_armv8_a_vector_cost,
-  &generic_armv8_a_branch_cost,
+  &generic_branch_cost,
   &generic_armv8_a_approx_modes,
   SVE_NOT_IMPLEMENTED, /* sve_width  */
   { 4, /* load_int.  */

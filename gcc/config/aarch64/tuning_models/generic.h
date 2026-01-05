@@ -128,7 +128,8 @@ static const struct cpu_vector_cost generic_vector_cost =
 static const struct cpu_branch_cost generic_branch_cost =
 {
   1,  /* Predictable.  */
-  3   /* Unpredictable.  */
+  3,  /* Unpredictable.  */
+  6, /* br_mispredict_factor.  */
 };
 
 /* Generic approximation modes.  */
