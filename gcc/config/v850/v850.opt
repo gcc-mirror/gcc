@@ -33,7 +33,7 @@ Target Mask(BIG_SWITCH)
 Use 4 byte entries in switch tables.
 
 mdebug
-Target Mask(DEBUG)
+Target Undocumented Mask(DEBUG)
 Enable backend debugging.
 
 mdisable-callt
@@ -42,14 +42,15 @@ Do not use the callt instruction (default).
 
 mep
 Target Mask(EP)
-Reuse r30 on a per function basis.
+Reuse r30 on a per-function basis.
 
 mghs
 Target RejectNegative InverseMask(GCC_ABI) MaskExists
+Alias for -mrh850-abi.
 
 mlong-calls
 Target Mask(LONG_CALLS)
-Prohibit PC relative function calls.
+Prohibit PC-relative function calls.
 
 mprolog-function
 Target Mask(PROLOG_FUNCTION)
@@ -78,15 +79,16 @@ mtda-
 Target RejectNegative Joined Undocumented Alias(mtda=)
 
 mno-strict-align
-Target Mask(NO_STRICT_ALIGN)
+Target RejectNegative Mask(NO_STRICT_ALIGN)
 Do not enforce strict alignment.
 
 mjump-tables-in-data-section
 Target Mask(JUMP_TABLES_IN_DATA_SECTION)
 Put jump tables for switch statements into the .data section rather than the .code section.
 
+; Not used or documented anywhere.
 mUS-bit-set
-Target Mask(US_BIT_SET)
+Target Undocumented Mask(US_BIT_SET)
 
 mv850
 Target RejectNegative Mask(V850)
