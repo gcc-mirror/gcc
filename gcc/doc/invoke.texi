@@ -1495,7 +1495,7 @@ See RS/6000 and PowerPC Options.
 -mpointer-size=@var{size}}
 
 @emph{VxWorks Options} (@ref{VxWorks Options})
-@gccoptlist{-mrtp  -msmp  -non-static  -Bstatic  -Bdynamic
+@gccoptlist{-mrtp  -msmp  -mvthreads  -non-static  -Bstatic  -Bdynamic
 -Xbind-lazy  -Xbind-now}
 
 @emph{x86 Options} (@ref{x86 Options})
@@ -35723,6 +35723,10 @@ Select SMP runtimes for linking.  Not available on architectures other
 than PowerPC, nor on VxWorks version 7 or later, in which the selection
 is part of the VxWorks build configuration and the library paths are the
 same for either choice.
+
+@opindex mvthreads
+@item -mvthreads
+Link against the VxWorks AE vThread runtime environment.
 
 @opindex non-static
 @item -non-static
