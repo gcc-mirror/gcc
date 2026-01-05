@@ -4966,7 +4966,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 				&& (sym->ts.u.derived->attr.alloc_comp
 				    || gfc_is_finalizable (sym->ts.u.derived,
 							   NULL));
-      if (sym->assoc)
+      if (sym->assoc || sym->attr.vtab)
 	continue;
 
       /* Set the vptr of unlimited polymorphic pointer variables so that
@@ -7982,6 +7982,19 @@ done_finally:
      gfc_add_block_to_block (finally, &block);
 }
 
+
+static void
+emit_not_set_warning (gfc_symbol *sym)
+{
+  if (warn_return_type > 0 && sym == sym->result)
+    gfc_warning (OPT_Wreturn_type,
+		 "Return value of function %qs at %L not set",
+		 sym->name, &sym->declared_at);
+  if (warn_return_type > 0)
+    suppress_warning (sym->backend_decl);
+}
+
+
 /* Generate code for a function.  */
 
 void
@@ -8203,6 +8216,20 @@ gfc_generate_function_code (gfc_namespace * ns)
   tmp = gfc_trans_code (ns->code);
   gfc_add_expr_to_block (&body, tmp);
 
+  /* This permits the return value to be correctly initialized, even when the
+     function result was not referenced.  */
+  if (sym->abr_modproc_decl
+      && sym->ts.type == BT_DERIVED
+      && sym->ts.u.derived->attr.pdt_type
+      && !sym->attr.allocatable
+      && sym->result == sym
+      && get_proc_result (sym) == NULL_TREE)
+    {
+      gfc_get_fake_result_decl (sym->result, 0);
+      /* TODO: move to the appropriate place in resolve.cc.  */
+      emit_not_set_warning (sym);
+    }
+
   if (TREE_TYPE (DECL_RESULT (fndecl)) != void_type_node
       || (sym->result && sym->result != sym
 	  && sym->result->ts.type == BT_DERIVED
@@ -8275,15 +8302,9 @@ gfc_generate_function_code (gfc_namespace * ns)
 	}
 
       if (result == NULL_TREE || artificial_result_decl)
-	{
-	  /* TODO: move to the appropriate place in resolve.cc.  */
-	  if (warn_return_type > 0 && sym == sym->result)
-	    gfc_warning (OPT_Wreturn_type,
-			 "Return value of function %qs at %L not set",
-			 sym->name, &sym->declared_at);
-	  if (warn_return_type > 0)
-	    suppress_warning (sym->backend_decl);
-	}
+	/* TODO: move to the appropriate place in resolve.cc.  */
+	emit_not_set_warning (sym);
+
       if (result != NULL_TREE)
 	gfc_add_expr_to_block (&body, gfc_generate_return ());
     }
