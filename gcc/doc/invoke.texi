@@ -1483,7 +1483,8 @@ See RS/6000 and PowerPC Options.
 -mno-strict-align  -mjump-tables-in-data-section}
 
 @emph{VAX Options} (@ref{VAX Options})
-@gccoptlist{-munix  -mgnu  -md  -md-float  -mg  -mg-float  -mlra}
+@gccoptlist{-munix  -mgnu  -md  -md-float  -mg  -mg-float  -mlra
+-mvaxc-alignment  -mqmath}
 
 @emph{Visium Options} (@ref{Visium Options})
 @gccoptlist{-mdebug  -msim  -mfpu  -mno-fpu  -mhard-float  -msoft-float
@@ -35589,6 +35590,17 @@ instead of D_floating.
 @itemx -mno-lra
 Enable Local Register Allocation.  This is still experimental for the VAX,
 so by default the compiler uses standard reload.
+
+@opindex mvaxc-alignment
+@item -mvaxc-alignment
+Use VAXC conventions for alignment of structure members.
+
+@opindex mqmath
+@opindex mno-qmath
+@item -mqmath
+@itemx -mno-qmath
+Enable or disable new instruction patterns for 64-bit integer addition
+and subtraction.
 @end table
 
 @node Visium Options

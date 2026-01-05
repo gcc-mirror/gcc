@@ -24,6 +24,6 @@
 ; Please try to keep this file in ASCII collating order.
 
 mno-asm-pic
-Target RejectNegative
+Target RejectNegative Undocumented
 
 ; This comment is to ensure we retain the blank line above.
