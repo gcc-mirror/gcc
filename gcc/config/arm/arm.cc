@@ -5039,7 +5039,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
   int set_zero_bit_copies = 0;
   int insns = 0, neg_insns, inv_insns;
   unsigned HOST_WIDE_INT temp1, temp2;
-  unsigned HOST_WIDE_INT remainder = val & 0xffffffff;
+  unsigned HOST_WIDE_INT remainder = val & HOST_WIDE_INT_UC (0xffffffff);
   struct four_ints *immediates;
   struct four_ints pos_immediates, neg_immediates, inv_immediates;
 
@@ -5057,7 +5057,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
       break;
 
     case IOR:
-      if (remainder == 0xffffffff)
+      if (remainder == HOST_WIDE_INT_UC (0xffffffff))
 	{
 	  if (generate)
 	    emit_constant_insn (cond,
@@ -5084,7 +5084,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 	    emit_constant_insn (cond, gen_rtx_SET (target, const0_rtx));
 	  return 1;
 	}
-      if (remainder == 0xffffffff)
+      if (remainder == HOST_WIDE_INT_UC (0xffffffff))
 	{
 	  if (reload_completed && rtx_equal_p (target, source))
 	    return 0;
@@ -5096,7 +5096,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
       break;
 
     case XOR:
-      if (remainder == 0)
+      if (remainder == HOST_WIDE_INT_0U)
 	{
 	  if (reload_completed && rtx_equal_p (target, source))
 	    return 0;
@@ -5105,7 +5105,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 	  return 1;
 	}
 
-      if (remainder == 0xffffffff)
+      if (remainder == HOST_WIDE_INT_UC (0xffffffff))
 	{
 	  if (generate)
 	    emit_constant_insn (cond,
@@ -5119,7 +5119,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
     case MINUS:
       /* We treat MINUS as (val - source), since (source - val) is always
 	 passed as (source + (-val)).  */
-      if (remainder == 0)
+      if (remainder == HOST_WIDE_INT_0U)
 	{
 	  if (generate)
 	    emit_constant_insn (cond,
@@ -5186,7 +5186,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
   /* Count number of leading zeros.  */
   for (i = 31; i >= 0; i--)
     {
-      if ((remainder & (1 << i)) == 0)
+      if ((remainder & (HOST_WIDE_INT_1U << i)) == 0)
 	clear_sign_bit_copies++;
       else
 	break;
@@ -5195,7 +5195,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
   /* Count number of leading 1's.  */
   for (i = 31; i >= 0; i--)
     {
-      if ((remainder & (1 << i)) != 0)
+      if ((remainder & (HOST_WIDE_INT_1U << i)) != 0)
 	set_sign_bit_copies++;
       else
 	break;
@@ -5204,7 +5204,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
   /* Count number of trailing zero's.  */
   for (i = 0; i <= 31; i++)
     {
-      if ((remainder & (1 << i)) == 0)
+      if ((remainder & (HOST_WIDE_INT_1U << i)) == 0)
 	clear_zero_bit_copies++;
       else
 	break;
@@ -5213,7 +5213,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
   /* Count number of trailing 1's.  */
   for (i = 0; i <= 31; i++)
     {
-      if ((remainder & (1 << i)) != 0)
+      if ((remainder & (HOST_WIDE_INT_1U << i)) != 0)
 	set_zero_bit_copies++;
       else
 	break;
@@ -5244,7 +5244,7 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 	    }
 	  /* For an inverted constant, we will need to set the low bits,
 	     these will be shifted out of harm's way.  */
-	  temp1 |= (1 << (set_sign_bit_copies - 1)) - 1;
+	  temp1 |= (HOST_WIDE_INT_1U << (set_sign_bit_copies - 1)) - 1;
 	  if (const_ok_for_arm (~temp1))
 	    {
 	      if (generate)
@@ -5266,15 +5266,18 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 	{
 	  int topshift = clear_sign_bit_copies & ~1;
 
-	  temp1 = ARM_SIGN_EXTEND ((remainder + (0x00800000 >> topshift))
-				   & (0xff000000 >> topshift));
+	  temp1 = ARM_SIGN_EXTEND ((remainder
+				    + (HOST_WIDE_INT_UC (0x00800000)
+				       >> topshift))
+				   & (HOST_WIDE_INT_UC (0xff000000)
+				      >> topshift));
 
 	  /* If temp1 is zero, then that means the 9 most significant
 	     bits of remainder were 1 and we've caused it to overflow.
 	     When topshift is 0 we don't need to do anything since we
 	     can borrow from 'bit 32'.  */
 	  if (temp1 == 0 && topshift != 0)
-	    temp1 = 0x80000000 >> (topshift - 1);
+	    temp1 = HOST_WIDE_INT_UC (0x80000000) >> (topshift - 1);
 
 	  temp2 = ARM_SIGN_EXTEND (temp1 - remainder);
 
@@ -5299,15 +5302,16 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 	 word.  We only look for the simplest cases, to do more would cost
 	 too much.  Be careful, however, not to generate this when the
 	 alternative would take fewer insns.  */
-      if (val & 0xffff0000)
+      if (val & HOST_WIDE_INT_UC (0xffff0000))
 	{
-	  temp1 = remainder & 0xffff0000;
-	  temp2 = remainder & 0x0000ffff;
+	  temp1 = remainder & HOST_WIDE_INT_UC (0xffff0000);
+	  temp2 = remainder & HOST_WIDE_INT_UC (0x0000ffff);
 
 	  /* Overlaps outside this range are best done using other methods.  */
 	  for (i = 9; i < 24; i++)
 	    {
-	      if ((((temp2 | (temp2 << i)) & 0xffffffff) == remainder)
+	      if ((((temp2 | (temp2 << i)) & HOST_WIDE_INT_UC (0xffffffff))
+		   == remainder)
 		  && !const_ok_for_arm (temp2))
 		{
 		  rtx new_src = (subtargets
@@ -5432,7 +5436,8 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 
       */
       if (set_zero_bit_copies > 8
-	  && (remainder & ((1 << set_zero_bit_copies) - 1)) == remainder)
+	  && ((remainder & ((HOST_WIDE_INT_1U << set_zero_bit_copies) - 1))
+	      == remainder))
 	{
 	  if (generate)
 	    {
@@ -5490,11 +5495,12 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
       /* See if two shifts will do 2 or more insn's worth of work.  */
       if (clear_sign_bit_copies >= 16 && clear_sign_bit_copies < 24)
 	{
-	  HOST_WIDE_INT shift_mask = ((0xffffffff
-				       << (32 - clear_sign_bit_copies))
-				      & 0xffffffff);
+	  unsigned HOST_WIDE_INT shift_mask
+	    = ((HOST_WIDE_INT_UC (0xffffffff)
+		<< (32 - clear_sign_bit_copies))
+	       & HOST_WIDE_INT_UC (0xffffffff));
 
-	  if ((remainder | shift_mask) != 0xffffffff)
+	  if ((remainder | shift_mask) != HOST_WIDE_INT_UC (0xffffffff))
 	    {
 	      HOST_WIDE_INT new_val
 	        = ARM_SIGN_EXTEND (remainder | shift_mask);
@@ -5528,9 +5534,10 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
 
       if (clear_zero_bit_copies >= 16 && clear_zero_bit_copies < 24)
 	{
-	  HOST_WIDE_INT shift_mask = (1 << clear_zero_bit_copies) - 1;
+	  unsigned HOST_WIDE_INT shift_mask
+	    = (HOST_WIDE_INT_1U << clear_zero_bit_copies) - 1;
 
-	  if ((remainder | shift_mask) != 0xffffffff)
+	  if ((remainder | shift_mask) != HOST_WIDE_INT_UC (0xffffffff))
 	    {
 	      HOST_WIDE_INT new_val
 	        = ARM_SIGN_EXTEND (remainder | shift_mask);
@@ -5578,13 +5585,17 @@ arm_gen_constant (enum rtx_code code, machine_mode mode, rtx cond,
     insns = optimal_immediate_sequence (code, remainder, &pos_immediates);
 
   if (can_negate)
-    neg_insns = optimal_immediate_sequence (code, (-remainder) & 0xffffffff,
+    neg_insns = optimal_immediate_sequence (code,
+					    (-remainder
+					     & HOST_WIDE_INT_UC (0xffffffff)),
 					    &neg_immediates);
   else
     neg_insns = 99;
 
   if (can_invert || final_invert)
-    inv_insns = optimal_immediate_sequence (code, remainder ^ 0xffffffff,
+    inv_insns = optimal_immediate_sequence (code,
+					    (remainder
+					     ^ HOST_WIDE_INT_UC (0xffffffff)),
 					    &inv_immediates);
   else
     inv_insns = 99;
@@ -5680,7 +5691,7 @@ arm_const_double_prefer_rsbs_rsc (rtx op)
   if (TARGET_THUMB || !CONST_INT_P (op))
     return false;
   HOST_WIDE_INT hi, lo;
-  lo = UINTVAL (op) & 0xffffffffULL;
+  lo = UINTVAL (op) & HOST_WIDE_INT_UC (0xffffffff);
   hi = UINTVAL (op) >> 32;
   return const_ok_for_arm (lo) && const_ok_for_arm (hi);
 }
