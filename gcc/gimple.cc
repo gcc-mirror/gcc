@@ -2406,14 +2406,32 @@ gimple_could_trap_p_1 (const gimple *s, bool include_mem, bool include_stores)
       return gimple_asm_volatile_p (as_a <const gasm *> (s));
 
     case GIMPLE_CALL:
-      if (gimple_call_internal_p (s))
-	return false;
-      t = gimple_call_fndecl (s);
-      /* Assume that indirect and calls to weak functions may trap.  */
-      if (!t || !DECL_P (t) || DECL_WEAK (t))
-	return true;
-      return false;
+      {
+	if (gimple_call_internal_p (s))
+	  return false;
+	t = gimple_call_fndecl (s);
+	/* Assume that indirect and calls to weak functions may trap.  */
+	if (!t || !DECL_P (t) || DECL_WEAK (t))
+	  return true;
 
+	/* Any floating point builtin operation could trap.  */
+	if (gimple_call_builtin_p (s))
+	  {
+	    if (fndecl_built_in_p (t, BUILT_IN_NORMAL))
+	      switch (DECL_FUNCTION_CODE (t))
+		{
+		CASE_FLT_FN (BUILT_IN_COPYSIGN):
+		CASE_FLT_FN_FLOATN_NX (BUILT_IN_COPYSIGN):
+		  return false;
+		default:
+		  break;
+		}
+	    tree type = TREE_TYPE (gimple_call_fntype (s));
+	    bool fp_operation = FLOAT_TYPE_P (type);
+	    return fp_operation && flag_trapping_math;
+	  }
+	return false;
+      }
     case GIMPLE_ASSIGN:
       op = gimple_assign_rhs_code (s);
 
