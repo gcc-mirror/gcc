@@ -464,7 +464,6 @@ AttributeChecker::check_attribute (const AST::Attribute &attribute)
   else if (result.name == Attrs::DEPRECATED)
     check_deprecated_attribute (attribute);
 }
-
 void
 AttributeChecker::check_attributes (const AST::AttrVec &attributes)
 {
@@ -876,8 +875,17 @@ AttributeChecker::visit (AST::Function &fun)
 	    }
 	}
       else if (result.name == "no_mangle")
-	check_no_mangle_function (attribute, fun);
-
+	{
+	  if (attribute.has_attr_input ())
+	    {
+	      rust_error_at (attribute.get_locus (),
+			     "malformed %<no_mangle%> attribute input");
+	      rust_inform (attribute.get_locus (),
+			   "must be of the form: %<#[no_mangle]%>");
+	    }
+	  else
+	    check_no_mangle_function (attribute, fun);
+	}
       else if (result.name == Attrs::LINK_NAME)
 	{
 	  if (!attribute.has_attr_input ())
