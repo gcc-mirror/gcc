@@ -1,4 +1,4 @@
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 /* { dg-options "-fstack-protector" } */
 /* { dg-require-effective-target fstack_protector } */
 

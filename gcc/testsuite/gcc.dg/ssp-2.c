@@ -1,4 +1,4 @@
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 /* { dg-options "-fstack-protector" } */
 /* { dg-options "-fstack-protector -Wl,-multiply_defined,suppress" { target *-*-darwin* } } */
 /* { dg-prune-output "-multiply_defined is obsolete" } */
