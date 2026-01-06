@@ -1006,8 +1006,10 @@ ifcvt_can_predicate (gimple *stmt)
   if (gimple_assign_single_p (stmt))
     return ifcvt_can_use_mask_load_store (stmt);
 
+  tree callee;
   if (gimple_call_builtin_p (stmt))
-    if (tree callee = gimple_call_fndecl (stmt))
+    if ((callee = gimple_call_fndecl (stmt))
+	&& fndecl_built_in_p (callee, BUILT_IN_NORMAL))
       {
 	auto ifn = associated_internal_fn (callee);
 	auto cond_ifn = get_conditional_internal_fn (ifn);
