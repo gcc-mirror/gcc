@@ -7123,6 +7123,13 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	}
       reduc_chain_length++;
     }
+  if (!slp_for_stmt_info)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "only noop-conversions in the reduction chain.\n");
+      return false;
+    }
   stmt_info = SLP_TREE_REPRESENTATIVE (slp_for_stmt_info);
 
   /* PHIs should not participate in patterns.  */
