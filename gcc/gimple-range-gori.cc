@@ -383,6 +383,28 @@ gori_map::exports (basic_block bb)
   return m_outgoing[bb->index];
 }
 
+// Return the bitmap vector of all exports AND their dependencies from BB
+// in TMPBIT.  Calculate if necessary.  Return TMPBIT.
+
+bitmap
+gori_map::exports_and_deps (basic_block bb, bitmap tmpbit)
+{
+  if (bb->index >= (signed int)m_outgoing.length () || !m_outgoing[bb->index])
+    calculate_gori (bb);
+  bitmap_copy (tmpbit, m_outgoing[bb->index]);
+  if (!bitmap_empty_p (tmpbit))
+    {
+      tree name;
+      FOR_EACH_GORI_EXPORT_NAME (this, bb, name)
+	{
+	  bitmap dep = get_def_chain (name);
+	  if (dep)
+	    bitmap_ior_into (tmpbit, dep);
+	}
+    }
+  return tmpbit;
+}
+
 // Return the bitmap vector of all imports to BB.  Calculate if necessary.
 
 bitmap
