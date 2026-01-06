@@ -2730,6 +2730,8 @@ again:
   LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
   LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
   LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = false;
+  LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo) = false;
+
   if (loop_vinfo->scan_map)
     loop_vinfo->scan_map->empty ();
 
