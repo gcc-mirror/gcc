@@ -225,16 +225,19 @@ malign-double
 Target Mask(ALIGN_DOUBLE) Save
 Align some doubles on dword boundary.
 
+; Does nothing.
 malign-functions=
-Target RejectNegative Joined UInteger
+Target Undocumented RejectNegative Joined UInteger
 Function starts are aligned to this power of 2.
 
+; Does nothing.
 malign-jumps=
-Target RejectNegative Joined UInteger
+Target Undocumented RejectNegative Joined UInteger
 Jump targets are aligned to this power of 2.
 
+; Does nothing.
 malign-loops=
-Target RejectNegative Joined UInteger
+Target Undocumented RejectNegative Joined UInteger
 Loop code aligned to this power of 2.
 
 malign-stringops
@@ -277,7 +280,7 @@ EnumValue
 Enum(asm_dialect) String(att) Value(ASM_ATT)
 
 mbranch-cost=
-Target RejectNegative Joined UInteger Var(ix86_branch_cost) IntegerRange(0, 5)
+Target Undocumented RejectNegative Joined UInteger Var(ix86_branch_cost) IntegerRange(0, 5)
 Branches are this expensive (arbitrary units).
 
 mlarge-data-threshold=
@@ -328,8 +331,13 @@ mfancy-math-387
 Target RejectNegative InverseMask(NO_FANCY_MATH_387, USE_FANCY_MATH_387) Save
 Generate sin, cos, sqrt for FPU.
 
+; This option seems deliberately undocumented as other options added in
+; the same commit were properly documented in the manual.
+; DRAP is usually used only in functions that do dynamic stack
+; allocation (e.g. alloca), this makes it happen everywhere.  Maybe it
+; was intended for debugging?
 mforce-drap
-Target Var(ix86_force_drap)
+Target Undocumented Var(ix86_force_drap)
 Always use Dynamic Realigned Argument Pointer (DRAP) to realign stack.
 
 mfp-ret-in-387
@@ -599,8 +607,8 @@ the function.
 
 mstv
 Target Mask(STV) Save
-Disable Scalar to Vector optimization pass transforming 64-bit integer
-computations into a vector ones.
+Enable Scalar to Vector optimization pass transforming 64-bit integer
+computations into vector ones.
 
 -param=x86-stv-max-visits=
 Target Joined UInteger Var(x86_stv_max_visits) Init(10000) IntegerRange(1, 1000000) Param
@@ -726,27 +734,27 @@ Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built
 
 mavx512cd
 Target Mask(ISA_AVX512CD) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation.
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512CD built-in functions and code generation.
 
 mavx512dq
 Target Mask(ISA_AVX512DQ) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation.
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512DQ built-in functions and code generation.
 
 mavx512bw
 Target Mask(ISA_AVX512BW) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512BW built-in functions and code generation.
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BW built-in functions and code generation.
 
 mavx512vl
 Target Mask(ISA_AVX512VL) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation.
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VL built-in functions and code generation.
 
 mavx512ifma
 Target Mask(ISA_AVX512IFMA) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation.
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512IFMA built-in functions and code generation.
 
 mavx512vbmi
 Target Mask(ISA_AVX512VBMI) Var(ix86_isa_flags) Save
-Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VBMI built-in functions and code generation.
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI built-in functions and code generation.
 
 mavx512vpopcntdq
 Target Mask(ISA_AVX512VPOPCNTDQ) Var(ix86_isa_flags) Save

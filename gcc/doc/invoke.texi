@@ -1503,15 +1503,15 @@ See RS/6000 and PowerPC Options.
 -mtune-ctrl=@var{feature-list}  -mdump-tune-features  -mno-default
 -mfpmath=@var{unit}
 -masm=@var{dialect}  -mno-fancy-math-387
--mno-fp-ret-in-387  -m80387  -mhard-float  -msoft-float
--mno-wide-multiply  -mrtd  -malign-double
+-mno-fp-ret-in-387  -m80387  -mhard-float  -msoft-float  -mieee-fp
+-mrtd  -malign-double
 -mpreferred-stack-boundary=@var{num}
 -mincoming-stack-boundary=@var{num}
--mcld  -mcx16  -msahf  -mmovbe  -mcrc32 -mmwait
+-mcld  -mcx16  -msahf  -mmovbe  -mcrc32  -mmwait
 -mrecip  -mrecip=@var{opt}
--mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt}
+-mvzeroupper  -mstv  -mprefer-avx128  -mprefer-vector-width=@var{opt}
 -mpartial-vector-fp-math
--mmove-max=@var{bits} -mstore-max=@var{bits}
+-mmove-max=@var{bits}  -mstore-max=@var{bits}
 -mnoreturn-no-callee-saved-registers
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx
 -mavx2  -mavx512f  -mavx512cd  -mavx512vl
@@ -1520,40 +1520,47 @@ See RS/6000 and PowerPC Options.
 -mptwrite  -mclflushopt  -mclwb  -mxsavec  -mxsaves
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop
 -madx  -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mhle  -mlwp
--mmwaitx  -mclzero  -mpku  -mthreads  -mgfni  -mvaes  -mwaitpkg
--mshstk -mmanual-endbr -mcet-switch -mforce-indirect-call
--mavx512vbmi2 -mavx512bf16 -menqcmd
+-mmwaitx  -mclzero  -mpku  -mgfni  -mvaes  -mwaitpkg
+-mshstk  -mmanual-endbr  -mcet-switch  -mforce-indirect-call
+-mavx512vbmi2  -mavx512bf16  -menqcmd
 -mvpclmulqdq  -mavx512bitalg  -mmovdiri  -mmovdir64b  -mavx512vpopcntdq
 -mavx512vnni  -mprfchw  -mrdpid
--mrdseed  -msgx -mavx512vp2intersect -mserialize -mtsxldtrk
--mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni -mamx-fp8
--mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
--mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mapxf
--musermsr -mavx10.1 -mavx10.2 -mamx-avx512 -mamx-tf32 -mmovrs -mamx-movrs
--mavx512bmm -mcldemote -mms-bitfields -mno-align-stringops -minline-all-stringops
+-mrdseed  -msgx  -mavx512vp2intersect  -mserialize  -mtsxldtrk
+-mamx-tile  -mamx-int8  -mamx-bf16  -muintr  -mhreset
+-mavxvnni  -mamx-fp8  -mavx512fp16  -mavxifma  -mavxvnniint8
+-mavxneconvert  -mcmpccxadd  -mamx-fp16  -mprefetchi  -mraoint
+-mamx-complex  -mavxvnniint16  -msm3  -msha512  -msm4  -mapxf
+-musermsr  -mavx10.1  -mavx10.2  -mamx-avx512  -mamx-tf32  -mmovrs
+-mamx-movrs  -mavx512bmm  -mcldemote  -mms-bitfields
+-mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
--mkl -mwidekl
+-mkl  -mwidekl
 -mmemcpy-strategy=@var{strategy}  -mmemset-strategy=@var{strategy}
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double
 -m96bit-long-double  -mlong-double-64  -mlong-double-80  -mlong-double-128
 -mregparm=@var{num}  -msseregparm
 -mveclibabi=@var{type}  -mvect8-ret-in-mem
--mpc32  -mpc64  -mpc80  -mdaz-ftz -mstackrealign
+-mpc32  -mpc64  -mpc80  -mdaz-ftz  -mstackrealign  -mstack-arg-probe
 -momit-leaf-frame-pointer  -mno-red-zone  -mno-tls-direct-seg-refs
 -mcmodel=@var{code-model}  -mabi=@var{name}  -maddress-mode=@var{mode}
 -m32  -m64  -mx32  -m16  -miamcu  -mlarge-data-threshold=@var{num}
 -msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv
--minstrument-return=@var{type} -mfentry-name=@var{name} -mfentry-section=@var{name}
+-minstrument-return=@var{type}  -mrecord-return
+-mfentry-name=@var{name}  -mfentry-section=@var{name}
+-mskip-rax-setup
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard}
 -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}
 -mstack-protector-guard-symbol=@var{symbol}
--mgeneral-regs-only  -mcall-ms2sysv-xlogues -mrelax-cmpxchg-loop
+-mgeneral-regs-only  -mcall-ms2sysv-xlogues  -mtls-dialect=@var{type}
+-mrelax-cmpxchg-loop
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice}
--mindirect-branch-register -mharden-sls=@var{choice}
--mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access
--munroll-only-small-loops -mlam=@var{choice}}
+-mindirect-branch-register  -mharden-sls=@var{choice}
+-mindirect-branch-cs-prefix  -mapx-inline-asm-use-gpr32
+-mgather  -mscatter
+-mneeded  -mno-direct-extern-access
+-munroll-only-small-loops  -mdispatch-scheduler  -mlam=@var{choice}}
 
 @emph{x86 Windows Options}
 See Cygwin and MinGW Options.
@@ -26814,8 +26821,11 @@ specifies that the @code{dllimport} attribute should be ignored.
 
 @opindex mthreads
 @item -mthreads
-This option is available for MinGW targets. It specifies
-that MinGW-specific thread support is to be used.
+Support thread-safe exception handling on MinGW.  Programs that rely
+on thread-safe exception handling must compile and link all code with the
+@option{-mthreads} option.  When compiling, @option{-mthreads} defines
+@option{-D_MT}; when linking, it links in a special thread helper library
+@option{-lmingwthrd} which cleans up per-thread exception-handling data.
 
 @opindex municode
 @opindex mno-unicode
@@ -35757,7 +35767,11 @@ is defined for compatibility with Diab.
 @subsection x86 Options
 @cindex x86 Options
 
-These @samp{-m} options are defined for the x86 family of computers.
+This section documents @option{-m} options available for the x86 family
+of computers.
+
+The following group of options allows compilation to target a specific
+processor.
 
 @table @gcctabopt
 
@@ -36378,10 +36392,583 @@ instruction set applicable to all processors.  In contrast,
 @option{-mtune} indicates the processor (or, in this case, collection of
 processors) for which the code is optimized.
 @end table
+@end table
 
-@opindex mcpu
-@item -mcpu=@var{cpu-type}
-A deprecated synonym for @option{-mtune}.
+The following options allow more detailed control over which instruction
+set extensions are targeted by GCC.
+Each has a corresponding @option{-mno-} option to disable use of these
+instructions.
+
+These extensions are also available as built-in functions: see
+@ref{x86 Built-in Functions}, for details of the functions enabled and
+disabled by these switches.
+
+These options enable GCC to use these extended instructions in
+generated code.  Applications that
+perform run-time CPU detection must compile separate files for each
+supported architecture, using the appropriate flags.  In particular,
+the file containing the CPU detection code should be compiled without
+these options.
+
+To control whether 387 or SSE/AVX instructions are generated
+automatically for floating-point arithmetic, see @option{-mfpmath=}, below.
+
+@table @gcctabopt
+@opindex mmmx
+@opindex mno-mmx
+@item -mmmx
+Support MMX built-in functions.
+
+@opindex msse
+@opindex mno-sse
+@item -msse
+Support MMX and SSE built-in functions and code generation.
+
+@opindex msse2
+@opindex mno-sse2
+@item -msse2
+Support MMX, SSE and SSE2 built-in functions and code generation.
+
+@opindex msse3
+@opindex mno-sse3
+@item -msse3
+Support MMX, SSE, SSE2 and SSE3 built-in functions and code generation.
+
+@opindex mssse3
+@opindex mno-ssse3
+@item -mssse3
+Support MMX, SSE, SSE2, SSE3 and SSSE3 built-in functions and code generation.
+
+@opindex msse4.1
+@opindex mno-sse4.1
+@item -msse4.1
+Support MMX, SSE, SSE2, SSE3, SSSE3 and SSE4.1 built-in functions and
+code generation.
+
+@opindex msse4.2
+@opindex mno-sse4.2
+@item -msse4.2
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions
+and code generation.
+
+@opindex msse4
+@opindex mno-sse4
+@item -msse4
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1 and SSE4.2 built-in functions
+and code generation.
+
+Note that @option{-msse4} enables both SSE4.1 and SSE4.2 support,
+while @option{-mno-sse4} turns off those features; neither form of the
+option affects SSE4A support, controlled separately by
+@option{-msse4a}.
+
+@opindex msse4a
+@opindex mno-sse4a
+@item -msse4a
+Support MMX, SSE, SSE2, SSE3 and SSE4A built-in functions and code generation.
+
+@opindex mavx
+@opindex mno-avx
+@item -mavx
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2 and AVX built-in
+functions and code generation.
+
+@opindex mavx2
+@opindex mno-avx2
+@item -mavx2
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2
+built-in functions and code generation.
+
+@opindex mavx512f
+@opindex mno-avx512f
+@item -mavx512f
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and
+AVX512F built-in functions and code generation.
+
+@opindex mavx512cd
+@opindex mno-avx512cd
+@item -mavx512cd
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX512F and AVX512CD built-in functions and code generation.
+
+@opindex mavx512vl
+@opindex mno-avx512vl
+@item -mavx512vl
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX512F and AVX512VL built-in functions and code generation.
+
+@opindex mavx512bw
+@opindex mno-avx512bw
+@item -mavx512bw
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX512F and AVX512BW built-in functions and code generation.
+
+@opindex mavx512dq
+@opindex mno-avx512dq
+@item -mavx512dq
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX512F and AVX512DQ built-in functions and code generation.
+
+@opindex mavx512ifma
+@opindex mno-avx512ifma
+@item -mavx512ifma
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX512F and AVX512IFMA built-in functions and code generation.
+
+@opindex mavx512vbmi
+@opindex mno-avx512vbmi
+@item -mavx512vbmi
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX512F and AVX512VBMI built-in functions and code generation.
+
+@opindex mavx512vpopcntdq
+@opindex mno-avx512vpopcntdq
+@item -mavx512vpopcntdq
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX512F and AVX512VPOPCNTDQ built-in functions and code generation.
+
+@opindex mavx512vp2intersect
+@opindex mno-avx512vp2intersect
+@item -mavx512vp2intersect
+Support AVX512VP2INTERSECT built-in functions and code generation.
+
+@opindex mavx512vnni
+@opindex mno-avx512vnni
+@item -mavx512vnni
+Support AVX512VNNI built-in functions and code generation.
+
+@opindex mavx512vbmi2
+@opindex mno-avx512vbmi2
+@item -mavx512vbmi2
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F
+and AVX512VBMI2 built-in functions and code generation.
+
+@opindex mavx512bf16
+@opindex mno-avx512bf16
+@item -mavx512bf16
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
+AVX512BF16 built-in functions and code generation.
+
+@opindex mavx512fp16
+@opindex mno-avx512fp16
+@item -mavx512fp16
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
+AVX512-FP16 built-in functions and code generation.
+
+@opindex mavx512bitalg
+@opindex mno-avx512bitalg
+@item -mavx512bitalg
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and
+AVX512BITALG built-in functions and code generation.
+
+@opindex mavx512bmm
+@opindex mno-avx512bmm
+@item -mavx512bmm
+Support AVX512BMM built-in functions and code generation.
+
+@opindex mavxvnni
+@opindex mno-avxvnni
+@item -mavxvnni
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
+AVXVNNI built-in functions and code generation.
+
+@opindex mavxifma
+@opindex mno-avxifma
+@item -mavxifma
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
+AVXIFMA built-in functions and code generation.
+
+@opindex mavxvnniint8
+@opindex mno-avxvnniint8
+@item -mavxvnniint8
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and
+AVXVNNIINT8 built-in functions and code generation.
+
+@opindex mavxneconvert
+@opindex mno-avxneconvert
+@item -mavxneconvert
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
+AVXNECONVERT build-in functions and code generation.
+
+@opindex mavxvnniint16
+@opindex mno-avxvnniint16
+@item -mavxvnniint16
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and
+AVXVNNIINT16 built-in functions and code generation.
+
+@opindex mavx10.1
+@opindex mno-avx10.1
+@item -mavx10.1
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+and AVX10.1 built-in functions and code generation.
+
+@opindex mavx10.2
+@opindex mno-avx10.2
+@item -mavx10.2
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX10.1 and AVX10.2 built-in functions and code generation.
+
+@opindex msha
+@opindex mno-sha
+@item -msha
+Support SHA1 and SHA256 built-in functions and code generation.
+
+@opindex maes
+@opindex mno-aes
+@item -maes
+Support AES built-in functions and code generation.
+
+@opindex mpclmul
+@opindex mno-pclmul
+@item -mpclmul
+Support PCLMUL built-in functions and code generation.
+
+@opindex mclflushopt
+@opindex mno-clflushopt
+@item -mclflushopt
+Support CLFLUSHOPT instructions.
+
+@opindex mclwb
+@opindex mno-clwb
+@item -mclwb
+Support CLWB instruction.
+
+@opindex mfsgsbase
+@opindex mno-fsgsbase
+@item -mfsgsbase
+Support FSGSBASE built-in functions and code generation.
+
+@opindex mptwrite
+@opindex mno-ptwrite
+@item -mptwrite
+Support PTWRITE built-in functions and code generation.
+
+@opindex mrdrnd
+@opindex mno-rdrnd
+@item -mrdrnd
+Support RDRND built-in functions and code generation.
+
+@opindex mf16c
+@opindex mno-f16c
+@item -mf16c
+Support F16C built-in functions and code generation.
+
+@opindex mfma
+@opindex mno-fma
+@item -mfma
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA
+built-in functions and code generation.
+
+@opindex mfma4
+@opindex mno-fma4
+@item -mfma4
+Support FMA4 built-in functions and code generation.
+
+@opindex mpconfig
+@opindex mno-pconfig
+@item -mpconfig
+Support PCONFIG built-in functions and code generation.
+
+@opindex mwbnoinvd
+@opindex mno-wbnoinvd
+@item -mwbnoinvd
+Support WBNOINVD built-in functions and code generation.
+
+@opindex mprfchw
+@opindex mno-prfchw
+@item -mprfchw
+Support PREFETCHW instruction.
+
+@opindex mrdpid
+@opindex mno-rdpid
+@item -mrdpid
+Support RDPID built-in functions and code generation.
+
+@opindex mrdseed
+@opindex mno-rdseed
+@item -mrdseed
+Support RDSEED instruction.
+
+@opindex msgx
+@opindex mno-sgx
+@item -msgx
+Support SGX built-in functions and code generation.
+
+@opindex mxop
+@opindex mno-xop
+@item -mxop
+Support XOP built-in functions and code generation.
+
+@opindex mlwp
+@opindex mno-lwp
+@item -mlwp
+Support LWP built-in functions and code generation.
+
+@opindex m3dnow
+@opindex mno-3dnow
+@item -m3dnow
+Support 3DNow! built-in functions.
+
+@opindex m3dnowa
+@opindex mno-3dnowa
+@item -m3dnowa
+Support Athlon 3Dnow! built-in functions.
+
+@opindex mpopcnt
+@opindex mno-popcnt
+@item -mpopcnt
+Support code generation of popcnt instruction.
+
+@opindex mabm
+@opindex mno-abm
+@item -mabm
+Support code generation of Advanced Bit Manipulation (ABM) instructions.
+
+@opindex madx
+@opindex mno-adx
+@item -madx
+Support flag-preserving add-carry instructions.
+
+@opindex mbmi
+@opindex mno-bmi
+@item -mbmi
+Support BMI built-in functions and code generation.
+
+@opindex mbmi2
+@opindex mno-bmi2
+@item -mbmi2
+Support BMI2 built-in functions and code generation.
+
+@opindex mlzcnt
+@opindex mno-lzcnt
+@item -mlzcnt
+Support LZCNT built-in function and code generation.
+
+@opindex mfxsr
+@opindex mno-fxsr
+@item -mfxsr
+Support FXSAVE and FXRSTOR instructions.
+
+@opindex mxsave
+@opindex mno-xsave
+@item -mxsave
+Support XSAVE and XRSTOR instructions.
+
+@opindex mxsaveopt
+@opindex mno-xsaveopt
+@item -mxsaveopt
+Support XSAVEOPT instruction.
+
+@opindex mxsavec
+@opindex mno-xsavec
+@item -mxsavec
+Support XSAVEC instructions.
+
+@opindex mxsaves
+@opindex mno-xsaves
+@item -mxsaves
+Support XSAVES and XRSTORS instructions.
+
+@opindex mrtm
+@opindex mno-rtm
+@item -mrtm
+Support RTM built-in functions and code generation.
+
+@opindex mhle
+@opindex mno-hle
+@item -mhle
+Support Hardware Lock Elision prefixes.
+
+@opindex mtbm
+@opindex mno-tbm
+@item -mtbm
+Support TBM built-in functions and code generation.
+
+@opindex mmwaitx
+@opindex mno-mwaitx
+@item -mmwaitx
+Support MWAITX and MONITORX built-in functions and code generation.
+
+@opindex mclzero
+@opindex mno-clzero
+@item -mclzero
+Support CLZERO built-in functions and code generation.
+
+@opindex mpku
+@opindex mno-pku
+@item -mpku
+Support PKU built-in functions and code generation.
+
+@opindex mgfni
+@opindex mno-gfni
+@item -mgfni
+Support GFNI built-in functions and code generation.
+
+@opindex mvaes
+@opindex mno-vaes
+@item -mvaes
+Support VAES built-in functions and code generation.
+
+@opindex mwaitpkg
+@opindex mno-waitpkg
+@item -mwaitpkg
+Support WAITPKG built-in functions and code generation.
+
+@opindex mvpclmulqdq
+@opindex mno-vpclmulqdq
+@item -mvpclmulqdq
+Support VPCLMULQDQ built-in functions and code generation.
+
+@opindex mmovdiri
+@opindex mno-movdiri
+@item -mmovdiri
+Support MOVDIRI built-in functions and code generation.
+
+@opindex mmovdir64b
+@opindex mno-movdir64b
+@item -mmovdir64b
+Support MOVDIR64B built-in functions and code generation.
+
+@opindex menqcmd
+@opindex mno-enqcmd
+@item -menqcmd
+Support ENQCMD built-in functions and code generation.
+
+@opindex muintr
+@opindex mno-uintr
+@item -muintr
+Support UINTR built-in functions and code generation.
+
+@opindex mtsxldtrk
+@opindex mno-tsxldtrk
+@item -mtsxldtrk
+Support TSXLDTRK built-in functions and code generation.
+
+@opindex mcldemote
+@opindex mno-cldemote
+@item -mcldemote
+Support CLDEMOTE built-in functions and code generation.
+
+@opindex mserialize
+@opindex mno-serialize
+@item -mserialize
+Support SERIALIZE built-in functions and code generation.
+
+@opindex mamx-tile
+@opindex mno-amx-tile
+@item -mamx-tile
+Support AMX-TILE built-in functions and code generation.
+
+@opindex mamx-int8
+@opindex mno-amx-int8
+@item -mamx-int8
+Support AMX-INT8 built-in functions and code generation.
+
+@opindex mamx-bf16
+@opindex mno-amx-bf16
+@item -mamx-bf16
+Support AMX-BF16 built-in functions and code generation.
+
+@opindex mhreset
+@opindex mno-hreset
+@item -mhreset
+Support HRESET built-in functions and code generation.
+
+@opindex mkl
+@opindex mno-kl
+@item -mkl
+Support KL built-in functions and code generation.
+
+@opindex mwidekl
+@opindex mno-widekl
+@item -mwidekl
+Support WIDEKL built-in functions and code generation.
+
+@opindex mcmpccxadd
+@opindex mno-cmpccxadd
+@item -mcmpccxadd
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and
+CMPCCXADD build-in functions and code generation.
+
+@opindex mamx-fp16
+@opindex mno-amx-fp16
+@item -mamx-fp16
+Support AMX-FP16 built-in functions and code generation.
+
+@opindex mprefetchi
+@opindex mno-prefetchi
+@item -mprefetchi
+Support PREFETCHI built-in functions and code generation.
+
+@opindex mraoint
+@opindex mno-raoint
+@item -mraoint
+Support RAOINT built-in functions and code generation.
+
+@opindex mamx-complex
+@opindex mno-amx-complex
+@item -mamx-complex
+Support AMX-COMPLEX built-in functions and code generation.
+
+@opindex msm3
+@opindex mno-sm3
+@item -msm3
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and
+SM3 built-in functions and code generation.
+
+@opindex msm4
+@opindex mno-sm4
+@item -msm4
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and
+SM4 built-in functions and code generation.
+
+@opindex msha512
+@opindex mno-sha512
+@item -msha512
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and
+SHA512 built-in functions and code generation.
+
+@opindex mapxf
+@opindex mno-apxf
+@item -mapxf
+Support code generation for APX features, including EGPR, PUSH2POP2,
+NDD, PPX, NF, CCMP and ZU.
+
+@opindex musermsr
+@opindex mno-usermsr
+@item -musermsr
+Support USER_MSR built-in functions and code generation.
+
+@opindex mamx-avx512
+@opindex mno-amx-avx512
+@item -mamx-avx512
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX10.1, AVX10.2 and AMX-AVX512 built-in functions and code generation.
+
+@opindex mamx-tf32
+@opindex mno-amx-tf32
+@item -mamx-tf32
+Support AMX-TF32 built-in functions and code generation.
+
+@opindex mamx-fp8
+@opindex mno-amx-fp8
+@item -mamx-fp8
+Support AMX-FP8 built-in functions and code generation.
+
+@opindex mmovrs
+@opindex mno-movrs
+@item -mmovrs
+Support MOVRS built-in functions and code generation.
+
+@opindex mamx-movrs
+@opindex mno-amx-movrs
+@item -mamx-movrs
+Support AMX-MOVRS built-in functions and code generation.
+@end table
+
+These additional options are available for the x86 processor family.
+
+@table @gcctabopt
 
 @opindex mfpmath
 @item -mfpmath=@var{unit}
@@ -36390,8 +36977,9 @@ for @var{unit} are:
 
 @table @samp
 @item 387
-Use the standard 387 floating-point coprocessor present on the majority of chips and
-emulated otherwise.  Code compiled with this option runs almost everywhere.
+Use the standard 387 floating-point coprocessor present on the majority
+of chips and emulated otherwise.
+Code compiled with this option runs almost everywhere.
 The temporary results are computed in 80-bit precision instead of the precision
 specified by the type, resulting in slightly different results compared to most
 of other chips.  See @option{-ffloat-store} for more detailed description.
@@ -36401,24 +36989,31 @@ This is the default choice for non-Darwin x86-32 targets.
 @item sse
 Use scalar floating-point instructions present in the SSE instruction set.
 This instruction set is supported by Pentium III and newer chips,
-and in the AMD line
-by Athlon-4, Athlon XP and Athlon MP chips.  The earlier version of the SSE
+and in the AMD line by Athlon-4, Athlon XP and Athlon MP chips.
+The earlier version of the SSE
 instruction set supports only single-precision arithmetic, thus the double and
-extended-precision arithmetic are still done using 387.  A later version, present
-only in Pentium 4 and AMD x86-64 chips, supports double-precision
-arithmetic too.
+extended-precision arithmetic are still done using 387.
+A later version, present only in Pentium 4 and AMD x86-64 chips,
+supports double-precision arithmetic too.
 
-For the x86-32 compiler, you must use @option{-march=@var{cpu-type}}, @option{-msse}
+For the x86-32 compiler, you must use @option{-march=@var{cpu-type}},
+@option{-msse}
 or @option{-msse2} switches to enable SSE extensions and make this option
 effective.  For the x86-64 compiler, these extensions are enabled by default.
 
-The resulting code should be considerably faster in the majority of cases and avoid
+The resulting code should be considerably faster in the majority of cases
+and avoid
 the numerical instability problems of 387 code, but may break some existing
 code that expects temporaries to be 80 bits.
 
 This is the default choice for the x86-64 compiler, Darwin x86-32 targets,
 and the default choice for x86-32 targets with the SSE2 instruction set
 when @option{-ffast-math} is enabled.
+
+GCC depresses SSE instructions when @option{-mavx} (or another option
+enabling AVX extensions) is used.  Instead, it
+generates new AVX instructions or AVX equivalents for all SSE instructions
+when needed.
 
 @item sse,387
 @itemx sse+387
@@ -36429,14 +37024,6 @@ amount of available registers, and on chips with separate execution units for
 still experimental, because the GCC register allocator does not model separate
 functional units well, resulting in unstable performance.
 @end table
-
-@opindex masm=@var{dialect}
-@item -masm=@var{dialect}
-Output assembly instructions using selected @var{dialect}.  Also affects
-which dialect is used for basic @code{asm} (@pxref{Basic Asm}) and
-extended @code{asm} (@pxref{Extended Asm}). Supported choices (in dialect
-order) are @samp{att} or @samp{intel}. The default is @samp{att}. Darwin does
-not support @samp{intel}.
 
 @opindex mieee-fp
 @opindex mno-ieee-fp
@@ -36452,7 +37039,7 @@ comparison is unordered.
 @itemx -mhard-float
 Generate output containing 80387 instructions for floating point.
 
-@opindex no-80387
+@opindex mno-80387
 @opindex msoft-float
 @item -mno-80387
 @itemx -msoft-float
@@ -36573,6 +37160,7 @@ objects larger than @var{threshold} are placed in large data sections.  The
 default is 65535.
 
 @opindex mrtd
+@opindex mno-rtd
 @item -mrtd
 Use a different function-calling convention, in which functions that
 take a fixed number of arguments return with the @code{ret @var{num}}
@@ -36623,6 +37211,7 @@ modules with the same value, including any libraries.  This includes
 the system libraries and startup modules.
 
 @opindex mvect8-ret-in-mem
+@opindex mno-vect8-ret-in-mem
 @item -mvect8-ret-in-mem
 Return 8-byte vectors in memory instead of MMX registers.  This is the
 default on VxWorks to match the ABI of the Sun Studio compilers until
@@ -36655,16 +37244,20 @@ loss of accuracy, typically through so-called ``catastrophic cancellation'',
 when this option is used to set the precision to less than extended precision.
 
 @opindex mdaz-ftz
+@opindex mno-daz-ftz
 @item -mdaz-ftz
-
-The flush-to-zero (FTZ) and denormals-are-zero (DAZ) flags in the MXCSR register
-are used to control floating-point calculations.SSE and AVX instructions
-including scalar and vector instructions could benefit from enabling the FTZ
-and DAZ flags when @option{-mdaz-ftz} is specified. Don't set FTZ/DAZ flags
-when @option{-mno-daz-ftz} or @option{-shared} is specified, @option{-mdaz-ftz}
-will set FTZ/DAZ flags even with @option{-shared}.
+@itemx -mno-daz-ftz
+The flush-to-zero (FTZ) and denormals-are-zero (DAZ) flags in the
+MXCSR register are used to control floating-point calculations.  The
+@option{-Ofast}, @option{-ffast-math}, or
+@option{-funsafe-math-optimizations} options normally link in startup code
+that sets these flags except when building a shared library
+(@option{-shared}).  You can use the @option{-mdaz-ftz} and
+@option{-mno-daz-ftz} options to explicitly enable or disable setting
+these flags, regardless of other options passed to GCC.
 
 @opindex mstackrealign
+@opindex mno-stackrealign
 @item -mstackrealign
 Realign the stack at entry.  On the x86, the @option{-mstackrealign}
 option generates an alternate prologue and epilogue that realigns the
@@ -36672,6 +37265,11 @@ run-time stack if necessary.  This supports mixing legacy codes that keep
 4-byte stack alignment with modern codes that keep 16-byte stack alignment for
 SSE compatibility.  See also the attribute @code{force_align_arg_pointer},
 applicable to individual functions.
+
+@opindex mstack-arg-probe
+@opindex mno-stack-arg-probe
+@item -mstack-arg-probe
+Emit stack probing code in the function prologue.
 
 @opindex mpreferred-stack-boundary
 @item -mpreferred-stack-boundary=@var{num}
@@ -36719,349 +37317,6 @@ increases code size.  Code that is sensitive to stack space usage, such
 as embedded systems and operating system kernels, may want to reduce the
 preferred alignment to @option{-mpreferred-stack-boundary=2}.
 
-@need 200
-@opindex mmmx
-@item -mmmx
-@need 200
-@opindex msse
-@itemx -msse
-@need 200
-@opindex msse2
-@itemx -msse2
-@need 200
-@opindex msse3
-@itemx -msse3
-@need 200
-@opindex mssse3
-@itemx -mssse3
-@need 200
-@opindex msse4
-@itemx -msse4
-@need 200
-@opindex msse4a
-@itemx -msse4a
-@need 200
-@opindex msse4.1
-@itemx -msse4.1
-@need 200
-@opindex msse4.2
-@itemx -msse4.2
-@need 200
-@opindex mavx
-@itemx -mavx
-@need 200
-@opindex mavx2
-@itemx -mavx2
-@need 200
-@opindex mavx512f
-@itemx -mavx512f
-@need 200
-@opindex mavx512cd
-@itemx -mavx512cd
-@need 200
-@opindex mavx512vl
-@itemx -mavx512vl
-@need 200
-@opindex mavx512bw
-@itemx -mavx512bw
-@need 200
-@opindex mavx512dq
-@itemx -mavx512dq
-@need 200
-@opindex mavx512ifma
-@itemx -mavx512ifma
-@need 200
-@opindex mavx512vbmi
-@itemx -mavx512vbmi
-@need 200
-@opindex msha
-@itemx -msha
-@need 200
-@opindex maes
-@itemx -maes
-@need 200
-@opindex mpclmul
-@itemx -mpclmul
-@need 200
-@opindex mclflushopt
-@itemx -mclflushopt
-@need 200
-@opindex mclwb
-@itemx -mclwb
-@need 200
-@opindex mfsgsbase
-@itemx -mfsgsbase
-@need 200
-@opindex mptwrite
-@itemx -mptwrite
-@need 200
-@opindex mrdrnd
-@itemx -mrdrnd
-@need 200
-@opindex mf16c
-@itemx -mf16c
-@need 200
-@opindex mfma
-@itemx -mfma
-@need 200
-@opindex mpconfig
-@itemx -mpconfig
-@need 200
-@opindex mwbnoinvd
-@itemx -mwbnoinvd
-@need 200
-@opindex mfma4
-@itemx -mfma4
-@need 200
-@opindex mprfchw
-@itemx -mprfchw
-@need 200
-@opindex mrdpid
-@itemx -mrdpid
-@need 200
-@opindex mrdseed
-@itemx -mrdseed
-@need 200
-@opindex msgx
-@itemx -msgx
-@need 200
-@opindex mxop
-@itemx -mxop
-@need 200
-@opindex mlwp
-@itemx -mlwp
-@need 200
-@opindex m3dnow
-@itemx -m3dnow
-@need 200
-@opindex m3dnowa
-@itemx -m3dnowa
-@need 200
-@opindex mpopcnt
-@itemx -mpopcnt
-@need 200
-@opindex mabm
-@itemx -mabm
-@need 200
-@opindex madx
-@itemx -madx
-@need 200
-@opindex mbmi
-@itemx -mbmi
-@need 200
-@opindex mbmi2
-@itemx -mbmi2
-@need 200
-@opindex mlzcnt
-@itemx -mlzcnt
-@need 200
-@opindex mfxsr
-@itemx -mfxsr
-@need 200
-@opindex mxsave
-@itemx -mxsave
-@need 200
-@opindex mxsaveopt
-@itemx -mxsaveopt
-@need 200
-@opindex mxsavec
-@itemx -mxsavec
-@need 200
-@opindex mxsaves
-@itemx -mxsaves
-@need 200
-@opindex mrtm
-@itemx -mrtm
-@need 200
-@opindex mhle
-@itemx -mhle
-@need 200
-@opindex mtbm
-@itemx -mtbm
-@need 200
-@opindex mmwaitx
-@itemx -mmwaitx
-@need 200
-@opindex mclzero
-@itemx -mclzero
-@need 200
-@opindex mpku
-@itemx -mpku
-@need 200
-@opindex mavx512vbmi2
-@itemx -mavx512vbmi2
-@need 200
-@opindex mavx512bf16
-@itemx -mavx512bf16
-@need 200
-@opindex mavx512fp16
-@itemx -mavx512fp16
-@need 200
-@opindex mgfni
-@itemx -mgfni
-@need 200
-@opindex mvaes
-@itemx -mvaes
-@need 200
-@opindex mwaitpkg
-@itemx -mwaitpkg
-@need 200
-@opindex mvpclmulqdq
-@itemx -mvpclmulqdq
-@need 200
-@opindex mavx512bitalg
-@itemx -mavx512bitalg
-@need 200
-@opindex mmovdiri
-@itemx -mmovdiri
-@need 200
-@opindex mmovdir64b
-@itemx -mmovdir64b
-@need 200
-@opindex menqcmd
-@opindex muintr
-@itemx -menqcmd
-@itemx -muintr
-@need 200
-@opindex mtsxldtrk
-@itemx -mtsxldtrk
-@need 200
-@opindex mavx512vpopcntdq
-@itemx -mavx512vpopcntdq
-@need 200
-@opindex mavx512vp2intersect
-@itemx -mavx512vp2intersect
-@need 200
-@opindex mavx512vnni
-@itemx -mavx512vnni
-@need 200
-@opindex mavxvnni
-@itemx -mavxvnni
-@need 200
-@opindex mcldemote
-@itemx -mcldemote
-@need 200
-@opindex mserialize
-@itemx -mserialize
-@need 200
-@opindex mamx-tile
-@itemx -mamx-tile
-@need 200
-@opindex mamx-int8
-@itemx -mamx-int8
-@need 200
-@opindex mamx-bf16
-@itemx -mamx-bf16
-@need 200
-@opindex mhreset
-@opindex mkl
-@itemx -mhreset
-@itemx -mkl
-@need 200
-@opindex mwidekl
-@itemx -mwidekl
-@need 200
-@opindex mavxifma
-@itemx -mavxifma
-@need 200
-@opindex mavxvnniint8
-@itemx -mavxvnniint8
-@need 200
-@opindex mavxneconvert
-@itemx -mavxneconvert
-@need 200
-@opindex mcmpccxadd
-@itemx -mcmpccxadd
-@need 200
-@opindex mamx-fp16
-@itemx -mamx-fp16
-@need 200
-@opindex mprefetchi
-@itemx -mprefetchi
-@need 200
-@opindex mraoint
-@itemx -mraoint
-@need 200
-@opindex mamx-complex
-@itemx -mamx-complex
-@need 200
-@opindex mavxvnniint16
-@itemx -mavxvnniint16
-@need 200
-@opindex msm3
-@itemx -msm3
-@need 200
-@opindex msha512
-@itemx -msha512
-@need 200
-@opindex msm4
-@itemx -msm4
-@need 200
-@opindex mapxf
-@itemx -mapxf
-@need 200
-@opindex musermsr
-@itemx -musermsr
-@need 200
-@opindex mavx10.1
-@itemx -mavx10.1
-@need 200
-@opindex mavx10.2
-@itemx -mavx10.2
-@need 200
-@opindex mamx-avx512
-@itemx -mamx-avx512
-@need 200
-@opindex mamx-tf32
-@itemx -mamx-tf32
-@need 200
-@itemx -mamx-fp8
-@opindex mamx-fp8
-@need 200
-@opindex mmovrs
-@itemx -mmovrs
-@need 200
-@opindex mamx-movrs
-@itemx -mamx-movrs
-@need 200
-@opindex mavx512bmm
-@itemx -mavx512bmm
-These switches enable the use of instructions in the MMX, SSE,
-AVX512CD, AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, SHA, AES,
-PCLMUL, CLFLUSHOPT, CLWB, FSGSBASE, PTWRITE, RDRND, F16C, FMA, PCONFIG,
-WBNOINVD, FMA4, PREFETCHW, RDPID, RDSEED, SGX, XOP, LWP, 3DNow!@:,
-enhanced 3DNow!@:, POPCNT, ABM, ADX, BMI, BMI2, LZCNT, FXSR, XSAVE, XSAVEOPT,
-XSAVEC, XSAVES, RTM, HLE, TBM, MWAITX, CLZERO, PKU, AVX512VBMI2, GFNI, VAES,
-WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16, ENQCMD,
-AVX512VPOPCNTDQ, AVX512VNNI, SERIALIZE, UINTR, HRESET, AMXTILE, AMXINT8,
-AMXBF16, KL, WIDEKL, AVXVNNI, AVX512-FP16, AVXIFMA, AVXVNNIINT8, AVXNECONVERT,
-CMPCCXADD, AMX-FP16, PREFETCHI, RAOINT, AMX-COMPLEX, AVXVNNIINT16, SM3, SHA512,
-SM4, APX_F, USER_MSR, AVX10.1, AVX10.2, AMX-AVX512, AMX-TF32, AMX-FP8, MOVRS,
-AMX-MOVRS, AVX512BMM or CLDEMOTE extended instruction sets. Each has a
-corresponding @option{-mno-} option to disable use of these instructions.
-
-These extensions are also available as built-in functions: see
-@ref{x86 Built-in Functions}, for details of the functions enabled and
-disabled by these switches.
-
-Note that @option{-msse4} enables both SSE4.1 and SSE4.2 support,
-while @option{-mno-sse4} turns off those features; neither form of the
-option affects SSE4A support, controlled separately by
-@option{-msse4a}.
-
-To generate SSE/SSE2 instructions automatically from floating-point
-code (as opposed to 387 instructions), see @option{-mfpmath=sse}.
-
-GCC depresses SSEx instructions when @option{-mavx} is used. Instead, it
-generates new AVX instructions or AVX equivalence for all SSEx instructions
-when needed.
-
-These options enable GCC to use these extended instructions in
-generated code, even without @option{-mfpmath=sse}.  Applications that
-perform run-time CPU detection must compile separate files for each
-supported architecture, using the appropriate flags.  In particular,
-the file containing the CPU detection code should be compiled without
-these options.
 
 @opindex mdump-tune-features
 @item -mdump-tune-features
@@ -37071,10 +37326,10 @@ tuning features and default settings. The names can be used in
 
 @opindex mtune-ctrl=@var{feature-list}
 @item -mtune-ctrl=@var{feature-list}
-This option is used to do fine grain control of x86 code generation features.
-@var{feature-list} is a comma separated list of @var{feature} names. See also
-@option{-mdump-tune-features}. When specified, the @var{feature} is turned
-on if it is not preceded with @samp{^}, otherwise, it is turned off.
+This option is used to do fine-grain control of x86 code generation features.
+@var{feature-list} is a comma-separated list of @var{feature} names. See also
+@option{-mdump-tune-features}.  When specified, the @var{feature} is turned
+on if it is not preceded with @samp{^}; otherwise, it is turned off.
 @option{-mtune-ctrl=@var{feature-list}} is intended to be used by GCC
 developers. Using it may lead to code paths not covered by testing and can
 potentially result in compiler ICEs or runtime errors.
@@ -37085,6 +37340,7 @@ This option instructs GCC to turn off all tunable features. See also
 @option{-mtune-ctrl=@var{feature-list}} and @option{-mdump-tune-features}.
 
 @opindex mcld
+@opindex mno-cld
 @item -mcld
 This option instructs GCC to emit a @code{cld} instruction in the prologue
 of functions that use string instructions.  String instructions depend on
@@ -37099,13 +37355,23 @@ instructions can be suppressed with the @option{-mno-cld} compiler option
 in this case.
 
 @opindex mvzeroupper
+@opindex mno-vzeroupper
 @item -mvzeroupper
 This option instructs GCC to emit a @code{vzeroupper} instruction
 before a transfer of control flow out of the function to minimize
 the AVX to SSE transition penalty as well as remove unnecessary @code{zeroupper}
 intrinsics.
 
+@opindex mstv
+@opindex mno-stv
+@item -mstv
+@itemx -mno-stv
+Enable/disable Scalar to Vectorization pass transforming 64-bit
+integer computation into vector ones.  This optimization is restricted
+to @option{-O2} and higher.
+
 @opindex mprefer-avx128
+@opindex mno-prefer-avx128
 @item -mprefer-avx128
 This option instructs GCC to use 128-bit AVX instructions instead of
 256-bit AVX instructions in the auto-vectorizer.
@@ -37116,7 +37382,9 @@ This option instructs GCC to use @var{opt}-bit vector width in instructions
 instead of default on the selected platform.
 
 @opindex mpartial-vector-fp-math
+@opindex mno-partial-vector-fp-math
 @item -mpartial-vector-fp-math
+@itemx -mno-partial-vector-fp-math
 This option enables GCC to generate floating-point operations that might
 affect the set of floating-point status flags on partial vectors, where
 vector elements reside in the low part of the 128-bit SSE register.  Unless
@@ -37159,6 +37427,7 @@ Prefer 512-bit vector width for instructions.
 @end table
 
 @opindex mnoreturn-no-callee-saved-registers
+@opindex mno-noreturn-no-callee-saved-registers
 @item -mnoreturn-no-callee-saved-registers
 This option optimizes functions with @code{noreturn} attribute or
 @code{_Noreturn} specifier by not saving in the function prologue callee-saved
@@ -37168,6 +37437,7 @@ register).  This option can interfere with debugging of the caller of the
 is not enabled by default.
 
 @opindex mcx16
+@opindex mno-cx16
 @item -mcx16
 This option enables GCC to generate @code{CMPXCHG16B} instructions in 64-bit
 code to implement compare-and-exchange operations on 16-byte aligned 128-bit
@@ -37177,6 +37447,7 @@ machine word in size.  The compiler uses this instruction to implement
 128-bit integers, a library call is always used.
 
 @opindex msahf
+@opindex mno-sahf
 @item -msahf
 This option enables generation of @code{SAHF} instructions in 64-bit code.
 Early Intel Pentium 4 CPUs with Intel 64 support,
@@ -37189,28 +37460,33 @@ In 64-bit mode, the @code{SAHF} instruction is used to optimize @code{fmod},
 see @ref{Other Builtins} for details.
 
 @opindex mmovbe
+@opindex mno-movbe
 @item -mmovbe
 This option enables use of the @code{movbe} instruction to optimize
 byte swapping of four and eight byte entities.
 
 @opindex mshstk
+@opindex mno-shstk
 @item -mshstk
 The @option{-mshstk} option enables shadow stack built-in functions
 from x86 Control-flow Enforcement Technology (CET).
 
 @opindex mcrc32
+@opindex mno-crc32
 @item -mcrc32
 This option enables built-in functions @code{__builtin_ia32_crc32qi},
 @code{__builtin_ia32_crc32hi}, @code{__builtin_ia32_crc32si} and
 @code{__builtin_ia32_crc32di} to generate the @code{crc32} machine instruction.
 
 @opindex mmwait
+@opindex mno-mwait
 @item -mmwait
 This option enables built-in functions @code{__builtin_ia32_monitor},
 and @code{__builtin_ia32_mwait} to generate the @code{monitor} and
 @code{mwait} machine instructions.
 
 @opindex mrecip
+@opindex mno-recip
 @item -mrecip
 This option enables use of @code{RCPSS} and @code{RSQRTSS} instructions
 (and their vectorized variants @code{RCPPS} and @code{RSQRTPS})
@@ -37233,7 +37509,7 @@ for vectorized single-float division and vectorized @code{sqrtf(@var{x})}
 already with @option{-ffast-math} (or the above option combination), and
 doesn't need @option{-mrecip}.
 
-@opindex mrecip=opt
+@opindex mrecip=
 @item -mrecip=@var{opt}
 This option controls which reciprocal estimate instructions
 may be used.  @var{opt} is a comma-separated list of options, which may
@@ -37329,13 +37605,23 @@ You can control this behavior for specific functions by
 using the function attributes @code{ms_abi} and @code{sysv_abi}.
 @xref{Function Attributes}.
 
+@opindex masm=@var{dialect}
+@item -masm=@var{dialect}
+Output assembly instructions using selected @var{dialect}.  Also affects
+which dialect is used for basic @code{asm} (@pxref{Basic Asm}) and
+extended @code{asm} (@pxref{Extended Asm}). Supported choices (in dialect
+order) are @samp{att} or @samp{intel}. The default is @samp{att}. Darwin does
+not support @samp{intel}.
+
 @opindex mforce-indirect-call
+@opindex mno-force-indirect-call
 @item -mforce-indirect-call
 Force all calls to functions to be indirect. This is useful
 when using Intel Processor Trace where it generates more precise timing
 information for function calls.
 
 @opindex mmanual-endbr
+@opindex mno-manual-endbr
 @item -mmanual-endbr
 Insert ENDBR instruction at function entry only via the @code{cf_check}
 function attribute. This is useful when used with the option
@@ -37343,6 +37629,7 @@ function attribute. This is useful when used with the option
 function entry.
 
 @opindex mcet-switch
+@opindex mno-cet-switch
 @item -mcet-switch
 By default, CET instrumentation is turned off on switch statements that
 use a jump table and indirect branch track is disabled.  Since jump
@@ -37381,20 +37668,13 @@ by default.  In some cases disabling it may improve performance because of
 improved scheduling and reduced dependencies.
 
 @opindex maccumulate-outgoing-args
+@opindex mno-accumulate-outgoing-args
 @item -maccumulate-outgoing-args
 If enabled, the maximum amount of space required for outgoing arguments is
 computed in the function prologue.  This is faster on most modern CPUs
 because of reduced dependencies, improved scheduling and reduced stack usage
 when the preferred stack boundary is not equal to 2.  The drawback is a notable
 increase in code size.  This switch implies @option{-mno-push-args}.
-
-@opindex mthreads
-@item -mthreads
-Support thread-safe exception handling on MinGW.  Programs that rely
-on thread-safe exception handling must compile and link all code with the
-@option{-mthreads} option.  When compiling, @option{-mthreads} defines
-@option{-D_MT}; when linking, it links in a special thread helper library
-@option{-lmingwthrd} which cleans up per-thread exception-handling data.
 
 @opindex mms-bitfields
 @opindex mno-ms-bitfields
@@ -37498,11 +37778,11 @@ Taking this into account, it is important to note the following:
 @enumerate
 @item If a zero-length bit-field follows a normal bit-field, the type of the
 zero-length bit-field may affect the alignment of the structure as whole. For
-example, @code{t2} has a size of 4 bytes, since the zero-length bit-field follows a
-normal bit-field, and is of type short.
+example, @code{t2} has a size of 4 bytes, since the zero-length bit-field
+follows a normal bit-field, and is of type short.
 
-@item Even if a zero-length bit-field is not followed by a normal bit-field, it may
-still affect the alignment of the structure:
+@item Even if a zero-length bit-field is not followed by a normal bit-field,
+it may still affect the alignment of the structure:
 
 @smallexample
 struct
@@ -37540,6 +37820,7 @@ code size and improves performance in case the destination is already aligned,
 but GCC doesn't know about it.
 
 @opindex minline-all-stringops
+@opindex mno-inline-all-stringops
 @item -minline-all-stringops
 By default GCC inlines string operations only when the destination is
 known to be aligned to least a 4-byte boundary.
@@ -37550,6 +37831,7 @@ The option enables inline expansion of @code{strlen} for all
 pointer alignments.
 
 @opindex minline-stringops-dynamically
+@opindex mno-inline-stringops-dynamically
 @item -minline-stringops-dynamically
 For string operations of unknown size, use run-time checks with
 inline code for small blocks and a library call for large blocks.
@@ -37576,31 +37858,34 @@ Always use a library call.
 
 @opindex mmemcpy-strategy=@var{strategy}
 @item -mmemcpy-strategy=@var{strategy}
-Override the internal decision heuristic to decide if @code{__builtin_memcpy}
-should be inlined and what inline algorithm to use when the expected size
-of the copy operation is known. @var{strategy}
-is a comma-separated list of @var{alg}:@var{max_size}:@var{dest_align} triplets.
-@var{alg} is specified in @option{-mstringop-strategy}, @var{max_size} specifies
-the max byte size with which inline algorithm @var{alg} is allowed.  For the last
-triplet, the @var{max_size} must be @code{-1}. The @var{max_size} of the triplets
-in the list must be specified in increasing order.  The minimal byte size for
-@var{alg} is @code{0} for the first triplet and @code{@var{max_size} + 1} of the
-preceding range.
+Override the internal decision heuristic to decide if
+@code{__builtin_memcpy} should be inlined and what inline algorithm to
+use when the expected size of the copy operation is known.
+@var{strategy} is a comma-separated list of
+@var{alg}:@var{max_size}:@var{dest_align} triplets.  @var{alg} is
+specified in @option{-mstringop-strategy}, @var{max_size} specifies
+the max byte size with which inline algorithm @var{alg} is allowed.
+For the last triplet, the @var{max_size} must be @code{-1}.
+The @var{max_size} of the triplets in the list must be specified in
+increasing order.  The minimal byte size for @var{alg} is @code{0} for
+the first triplet and @code{@var{max_size} + 1} of the preceding range.
 
 @opindex mmemset-strategy=@var{strategy}
 @item -mmemset-strategy=@var{strategy}
-The option is similar to @option{-mmemcpy-strategy=} except that it is to control
-@code{__builtin_memset} expansion.
+This option is similar to @option{-mmemcpy-strategy=} except that it
+controls the @code{__builtin_memset} expansion.
 
 @opindex momit-leaf-frame-pointer
+@opindex mno-omit-leaf-frame-pointer
 @item -momit-leaf-frame-pointer
 Don't keep the frame pointer in a register for leaf functions.  This
 avoids the instructions to save, set up, and restore frame pointers and
 makes an extra register available in leaf functions.  The option
-@option{-momit-leaf-frame-pointer} removes the frame pointer for leaf functions,
-which might make debugging harder.
+@option{-momit-leaf-frame-pointer} removes the frame pointer for leaf
+functions, which might make debugging harder.
 
 @opindex mtls-direct-seg-refs
+@opindex mno-tls-direct-seg-refs
 @item -mtls-direct-seg-refs
 @itemx -mno-tls-direct-seg-refs
 Controls whether TLS variables may be accessed with offsets from the
@@ -37612,12 +37897,14 @@ segment to cover the entire TLS area.
 For systems that use the GNU C Library, the default is on.
 
 @opindex msse2avx
+@opindex mno-sse2avx
 @item -msse2avx
 @itemx -mno-sse2avx
 Specify that the assembler should encode SSE instructions with VEX
 prefix.  The option @option{-mavx} turns this on by default.
 
 @opindex mfentry
+@opindex mno-fentry
 @item -mfentry
 @itemx -mno-fentry
 If profiling is active (@option{-pg}), put the profiling
@@ -37626,55 +37913,58 @@ Note: On x86 architectures the attribute @code{ms_hook_prologue}
 isn't possible at the moment for @option{-mfentry} and @option{-pg}.
 
 @opindex mrecord-mcount
+@opindex mno-record-mcount
 @item -mrecord-mcount
 @itemx -mno-record-mcount
-If profiling is active (@option{-pg}), generate a __mcount_loc section
-that contains pointers to each profiling call. This is useful for
-automatically patching and out calls.
+If profiling is active (@option{-pg}), generate a section that contains
+pointers to each profiling call; this is useful for automatically patching
+the calls.  You can use the @option{mfentry-section=} option to set the
+name of the section; it defaults to @samp{__mcount_loc}.
 
 @opindex mnop-mcount
+@opindex mno-nop-mcount
 @item -mnop-mcount
 @itemx -mno-nop-mcount
 If profiling is active (@option{-pg}), generate the calls to
-the profiling functions as NOPs. This is useful when they
+the profiling functions as NOPs.  This is useful when they
 should be patched in later dynamically. This is likely only
 useful together with @option{-mrecord-mcount}.
 
 @opindex minstrument-return
 @item -minstrument-return=@var{type}
-Instrument function exit in -pg -mfentry instrumented functions with
-call to specified function. This only instruments true returns ending
-with ret, but not sibling calls ending with jump. Valid types
-are @var{none} to not instrument, @var{call} to generate a call to __return__,
-or @var{nop5} to generate a 5 byte nop.
+With @option{-pg -mfentry}, instrument function exits according to
+@var{type}, which may be one of @samp{none} to not instrument,
+@samp{call} to generate a call to @code{__return__}, or @samp{nop5} to
+generate a 5-byte nop sequence.  This option only instruments true
+returns ending with a @code{ret}, not sibling calls via a jump.
 
 @opindex mrecord-return
+@opindex mno-record-return
 @item -mrecord-return
 @itemx -mno-record-return
-Generate a __return_loc section pointing to all return instrumentation code.
+Generate a @code{__return_loc} section pointing to all return instrumentation
+code.
 
 @opindex mfentry-name
 @item -mfentry-name=@var{name}
-Set name of __fentry__ symbol called at function entry for -pg -mfentry functions.
+Set name of @code{__fentry__} symbol called at function entry for
+@option{-pg -mfentry} functions.
 
 @opindex mfentry-section
 @item -mfentry-section=@var{name}
-Set name of section to record -mrecord-mcount calls (default __mcount_loc).
+Set name of section to record @option{-mrecord-mcount} calls.  The
+default is @samp{__mcount_loc}.
 
 @opindex mskip-rax-setup
+@opindex mno-skip-rax-setup
 @item -mskip-rax-setup
 @itemx -mno-skip-rax-setup
 When generating code for the x86-64 architecture with SSE extensions
 disabled, @option{-mskip-rax-setup} can be used to skip setting up RAX
 register when there are no variable arguments passed in vector registers.
 
-@strong{Warning:} Since RAX register is used to avoid unnecessarily
-saving vector registers on stack when passing variable arguments, the
-impacts of this option are callees may waste some stack space,
-misbehave or jump to a random location.  GCC 4.4 or newer don't have
-those issues, regardless the RAX register value.
-
 @opindex m8bit-idiv
+@opindex mno-8bit-idiv
 @item -m8bit-idiv
 @itemx -mno-8bit-idiv
 On some processors, like Intel Atom, 8-bit unsigned integer divide is
@@ -37684,7 +37974,9 @@ to 255, 8-bit unsigned integer divide is used instead of
 32-bit/64-bit integer divide.
 
 @opindex mavx256-split-unaligned-load
+@opindex mno-avx256-split-unaligned-load
 @opindex mavx256-split-unaligned-store
+@opindex mno-avx256-split-unaligned-store
 @item -mavx256-split-unaligned-load
 @itemx -mavx256-split-unaligned-store
 Split 32-byte AVX unaligned load and store.
@@ -37719,6 +38011,7 @@ prevents the compiler from using floating-point, vector, mask and bound
 registers.
 
 @opindex mrelax-cmpxchg-loop
+@opindex mno-relax-cmpxchg-loop
 @item -mrelax-cmpxchg-loop
 When emitting a compare-and-swap loop for @ref{__sync Builtins}
 and @ref{__atomic Builtins} lacking a native instruction, optimize
@@ -37768,6 +38061,7 @@ not be reachable in the large code model.
 
 
 @opindex mindirect-branch-register
+@opindex mno-indirect-branch-register
 @item -mindirect-branch-register
 Force indirect call and jump via register.
 
@@ -37780,20 +38074,27 @@ hardening.  @samp{return} enables SLS hardening for function returns.
 @samp{all} enables all SLS hardening.
 
 @opindex mindirect-branch-cs-prefix
+@opindex mno-indirect-branch-cs-prefix
 @item -mindirect-branch-cs-prefix
 Add CS prefix to call and jmp to indirect thunk with branch target in
-r8-r15 registers so that the call and jmp instruction length is 6 bytes
-to allow them to be replaced with @samp{lfence; call *%r8-r15} or
-@samp{lfence; jmp *%r8-r15} at run-time.
+r8-r15 registers, so that the call and jmp instruction length is 6 bytes.
+This allows them to potentially be replaced with @samp{lfence; call *%r8-r15}
+or @samp{lfence; jmp *%r8-r15} at run time.
 
 @opindex mapx-inline-asm-use-gpr32
+@opindex mno-apx-inline-asm-use-gpr32
 @item -mapx-inline-asm-use-gpr32
-For inline asm support with APX, by default the EGPR feature was
-disabled to prevent potential illegal instruction with EGPR occurs.
-To invoke egpr usage in inline asm, use new compiler option
--mapx-inline-asm-use-gpr32 and user should ensure the instruction
-supports EGPR.
+By default, EGPR usage is disabled in inline asm constraints as GCC cannot
+be aware of whether the asm instructions support GP32 or not.
+If your inline asm can handle EGPR, use @option{-mapx-inline-asm-use-gpr32}.
 
+@opindex mgather
+@opindex mno-gather
+@opindex mscatter
+@opindex mno-scatter
+@item -mgather
+@itemx -mscatter
+Enable vectorization for gather and scatter instructions, respectively.
 @end table
 
 These @samp{-m} switches are supported in addition to the above
@@ -37804,12 +38105,10 @@ on x86-64 processors in 64-bit environments.
 @opindex m64
 @opindex mx32
 @opindex m16
-@opindex miamcu
 @item -m32
 @itemx -m64
 @itemx -mx32
 @itemx -m16
-@itemx -miamcu
 Generate code for a 16-bit, 32-bit or 64-bit environment.
 The @option{-m32} option sets @code{int}, @code{long}, and pointer types
 to 32 bits, and
@@ -37828,7 +38127,10 @@ The @option{-m16} option is the same as @option{-m32}, except for that
 it outputs the @code{.code16gcc} assembly directive at the beginning of
 the assembly output so that the binary can run in 16-bit mode.
 
-The @option{-miamcu} option generates code which conforms to Intel MCU
+@opindex miamcu
+@opindex mno-iamcu
+@item -miamcu
+The @option{-miamcu} option generates code that conforms to Intel MCU
 psABI.  It requires the @option{-m32} option to be turned on.
 
 @opindex mno-red-zone
@@ -37880,6 +38182,7 @@ and x32 environments.  It is the default address mode for 32-bit and
 x32 environments.
 
 @opindex mneeded
+@opindex mno-needed
 @item -mneeded
 @itemx -mno-needed
 Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property for Linux target to
@@ -37888,7 +38191,7 @@ indicate the micro-architecture ISA level required to execute the binary.
 @opindex mno-direct-extern-access
 @opindex mdirect-extern-access
 @item -mno-direct-extern-access
-Without @option{-fpic} nor @option{-fPIC}, always use the GOT pointer
+Without @option{-fpic} or @option{-fPIC}, always use the GOT pointer
 to access external symbols.  With @option{-fpic} or @option{-fPIC},
 treat access to protected symbols as local symbols.  The default is
 @option{-mdirect-extern-access}.
@@ -37901,10 +38204,19 @@ protected symbols are used in shared libraries and executable.
 @opindex munroll-only-small-loops
 @opindex mno-unroll-only-small-loops
 @item -munroll-only-small-loops
-Controls conservative small loop unrolling. It is default enabled by
-O2, and unrolls loop with less than 4 insns by 1 time. Explicit
--f[no-]unroll-[all-]loops would disable this flag to avoid any
-unintended unrolling behavior that user does not want.
+@itemx -mno-unroll-only-small-loops
+Controls conservative small loop unrolling.  It is enabled by default with
+@option{-O2}, and unrolls loops with less than 4 instructions by 1 time.
+This gives better utilization of the instruction decoding pipeline on modern
+processors.  You can disable this with @option{-mno-unroll-only-small-loops},
+and it is also disabled if the more general options @option{-funroll-loops}
+or @option{-funroll-all-loops} are either enabled or explicitly disabled.
+
+@opindex mdispatch-scheduler
+@item -mdispatch-scheduler
+Enable instruction scheduling.  This is only supported on @samp{bdver1},
+@samp{bdver2}, @samp{bdver3}, @samp{bdver4}, and @samp{znver1} processors and
+additionally requires @option{-fschedule-insns -fsched-pressure}.
 
 @opindex mlam
 @item -mlam=@var{choice}
