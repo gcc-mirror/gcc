@@ -61,7 +61,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_warn_printf);
       NEXT_PASS (pass_warn_nonnull_compare);
       NEXT_PASS (pass_early_warn_uninitialized);
-      NEXT_PASS (pass_warn_access, /*early=*/true);
+      NEXT_PASS (pass_warn_access, /*early=*/true, /*check_dangling=*/true);
       NEXT_PASS (pass_ubsan);
       NEXT_PASS (pass_nothrow);
       NEXT_PASS (pass_rebuild_cgraph_edges);
@@ -216,7 +216,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_object_sizes);
       NEXT_PASS (pass_post_ipa_warn);
       /* Must run before loop unrolling.  */
-      NEXT_PASS (pass_warn_access, /*early=*/true);
+      NEXT_PASS (pass_warn_access, /*early=*/false, /*check_dangling=*/true);
       /* Profile count may overflow as a result of inlinining very large
          loop nests.  This pass should run before any late pass that makes
 	 use of profile.  */
@@ -451,7 +451,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_gimple_isel);
   NEXT_PASS (pass_harden_conditional_branches);
   NEXT_PASS (pass_harden_compares);
-  NEXT_PASS (pass_warn_access, /*early=*/false);
+  NEXT_PASS (pass_warn_access, /*early=*/false, /*check_dangling=*/false);
   NEXT_PASS (pass_cleanup_cfg_post_optimizing);
   NEXT_PASS (pass_warn_function_noreturn);
 
