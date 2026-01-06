@@ -908,6 +908,7 @@ enum aarch64_builtins
   AARCH64_BUILTIN_STSHH_DI,
   AARCH64_BUILTIN_STSHH_SF,
   AARCH64_BUILTIN_STSHH_DF,
+  AARCH64_BUILTIN_PLDIR,
   AARCH64_BUILTIN_MAX
 };
 
@@ -2527,6 +2528,15 @@ aarch64_init_pcdphint_builtins (void)
   aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DF]
     = aarch64_general_add_builtin ("__builtin_aarch64_stshh_df", ftype,
 				   AARCH64_BUILTIN_STSHH_DF);
+
+  tree cv_argtype = build_qualified_type (void_type_node, TYPE_QUAL_CONST
+					  | TYPE_QUAL_VOLATILE);
+  cv_argtype = build_pointer_type (cv_argtype);
+
+  ftype = build_function_type_list (void_type_node, cv_argtype, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_PLDIR]
+    = aarch64_general_add_builtin ("__builtin_aarch64_pldir", ftype,
+				   AARCH64_BUILTIN_PLDIR);
 }
 
 /* Initialize all builtins in the AARCH64_BUILTIN_GENERAL group.  */
@@ -4082,6 +4092,15 @@ aarch64_expand_stshh_builtin (tree exp, int fcode)
   expand_insn (icode, 4, ops);
 }
 
+void
+aarch64_expand_pldir_builtin (tree exp)
+{
+  expand_operand ops[1];
+  rtx addr = expand_normal (CALL_EXPR_ARG (exp, 0));
+  create_input_operand (&ops[0], addr, Pmode);
+  expand_insn (CODE_FOR_aarch64_pldir, 1, ops);
+}
+
 /* Expand CALL_EXPR EXP, given that it is a call to the function described
    by BUILTIN_DATA, and return the function's return value.  Put the result
    in TARGET if convenient.  */
@@ -4581,6 +4600,12 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_BUILTIN_STSHH_DF:
       aarch64_expand_stshh_builtin (exp, fcode);
       return target;
+
+    case AARCH64_BUILTIN_PLDIR:
+      {
+	aarch64_expand_pldir_builtin (exp);
+	return target;
+      }
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)

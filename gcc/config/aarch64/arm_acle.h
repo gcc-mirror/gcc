@@ -108,6 +108,13 @@ __pldx (unsigned int __access, unsigned int __cache, unsigned int __rettn,
   return __builtin_aarch64_pldx (__access, __cache, __rettn, __addr);
 }
 
+__extension__ extern __inline void
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+__pldir (void const volatile *__addr)
+{
+  return __builtin_aarch64_pldir (__addr);
+}
+
 __extension__ extern __inline unsigned long
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 __revl (unsigned long __value)
