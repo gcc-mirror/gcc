@@ -864,6 +864,17 @@ AttributeChecker::visit (AST::Function &fun)
 	{
 	  check_crate_type (name, attribute);
 	}
+      else if (result.name == Attrs::TARGET_FEATURE)
+	{
+	  if (!attribute.has_attr_input ())
+	    {
+	      rust_error_at (attribute.get_locus (),
+			     "malformed %<target_feature%> attribute input");
+	      rust_inform (attribute.get_locus (),
+			   "must be of the form: %<#[target_feature(enable = "
+			   "\"name\")]%>");
+	    }
+	}
       else if (result.name == "no_mangle")
 	check_no_mangle_function (attribute, fun);
 
