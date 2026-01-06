@@ -1901,6 +1901,32 @@ Parser<ManagedTokenSource>::null_denotation (AST::AttrVec outer_attrs,
 	return null_denotation_path (std::move (path), std::move (outer_attrs),
 				     restrictions);
       }
+    case HASH:
+      {
+	// Parse outer attributes and then the expression that follows
+	AST::AttrVec attrs = parse_outer_attributes ();
+
+	// Merge with any existing outer attributes
+	if (!outer_attrs.empty ())
+	  attrs.insert (attrs.begin (), outer_attrs.begin (),
+			outer_attrs.end ());
+
+	// Try to parse the expression that should follow the attributes
+	auto expr = parse_expr (std::move (attrs), restrictions);
+	if (!expr)
+	  {
+	    /* If parsing failed and we're at a semicolon, provide a better
+	     * error
+	     */
+	    const_TokenPtr next_tok = lexer.peek_token ();
+	    if (next_tok->get_id () == SEMICOLON)
+	      add_error (Error (next_tok->get_locus (),
+				"expected expression, found %<;%>"));
+	    return tl::unexpected<Parse::Error::Expr> (
+	      Parse::Error::Expr::CHILD_ERROR);
+	  }
+	return expr;
+      }
     default:
       if (tok->get_id () == LEFT_SHIFT)
 	{
