@@ -2247,10 +2247,6 @@ check_open_constraints (gfc_open *open, locus *where)
   /* Checks on the BLANK specifier.  */
   if (open->blank)
     {
-      if (!gfc_notify_std (GFC_STD_F2003, "BLANK= at %L "
-			   "not allowed in Fortran 95", &open->blank->where))
-	return false;
-
       if (open->blank->expr_type == EXPR_CONSTANT)
 	{
 	  static const char *blank[] = { "ZERO", "NULL", NULL };
