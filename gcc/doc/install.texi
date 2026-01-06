@@ -232,9 +232,8 @@ compiler, and versions prior to 4.8 allow bootstrapping with an ISO
 C89 compiler.
 
 If you need to build an intermediate version of GCC in order to
-bootstrap current GCC, consider GCC 9.5: it can build the current Ada
-and D compilers, and was also the version that declared C++17 support
-stable.
+bootstrap current GCC, consider GCC 9.5: it can build the current D
+compiler, and was also the version that declared C++17 support stable.
 
 To build all languages in a cross-compiler or other configuration where
 3-stage bootstrap is not performed, you need to start with an existing
@@ -265,7 +264,7 @@ the specified architecture string is non-canonical, then you will need
 @item @anchor{GNAT-prerequisite}GNAT
 
 In order to build GNAT, the Ada compiler, you need a working GNAT
-compiler (GCC version 5.1 or later).
+compiler (GCC version 5.4 or later).
 
 This includes GNAT tools such as @command{gnatmake} and
 @command{gnatlink}, since the Ada front end is written in Ada and
@@ -305,13 +304,13 @@ to HTML is done with mandoc, available at
 @uref{https://mandoc.bsd.lv}.
 
 The COBOL runtime library. libgcobol, requires libxml2 2.9 or later.
-It implements support for @code{XML PARSE}.  
+It implements support for @code{XML PARSE}.
 
 Because ISO COBOL defines strict requirements for numerical precision,
 gcobol computes with 128-bit operands.  This requirement applies to
 both host and target. For integers, gcobol requires the platform to
 support the GCC @code{__int128} type.  For floating point it uses
-@code{_Float128} or similar.  
+@code{_Float128} or similar.
 
 gcobol has so far been tested on two architectures only: x86_64 and
 aarch64 with little-endian encoding.
@@ -3235,8 +3234,8 @@ version 2.21 or later).
 
 @item @samp{bootstrap-lto-noplugin}
 This option is similar to @code{bootstrap-lto}, but is intended for
-hosts that do not support the linker plugin.  Without the linker plugin 
-static libraries are not compiled with link-time optimizations.  Since 
+hosts that do not support the linker plugin.  Without the linker plugin
+static libraries are not compiled with link-time optimizations.  Since
 the GCC middle end and back end are in @file{libbackend.a} this means
 that only the front end is actually LTO optimized.
 
@@ -3899,7 +3898,7 @@ GNU Compiler Collection on your machine.
 Note that this list of install notes is @emph{not} a list of supported
 hosts or targets.  Not all supported hosts and targets are listed
 here, only the ones that require host-specific or target-specific
-information have to. 
+information have to.
 
 @ifhtml
 @itemize
@@ -4319,7 +4318,7 @@ Renesas H8/300 series of processors.
 @heading hppa64-hp-hpux11*
 Only the 64-bit @samp{hppa} target is supported on HP-UX.  Support
 for 32-bit @samp{hppa} was discontinued in GCC 13.
- 
+
 We require using gas on all hppa platforms.
 
 It may be helpful to configure GCC with the
