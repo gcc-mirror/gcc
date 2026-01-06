@@ -322,9 +322,11 @@ object_sizes_set_temp (struct object_size_info *osi, unsigned varno)
   tree val = object_sizes_get (osi, varno);
 
   if (size_initval_p (val, osi->object_size_type))
-    object_sizes_set (osi, varno,
-		      make_ssa_name (sizetype),
-		      make_ssa_name (sizetype));
+    {
+      val = make_ssa_name (sizetype);
+      tree wholeval = make_ssa_name (sizetype);
+      object_sizes_set (osi, varno, val, wholeval);
+    }
 }
 
 /* Initialize OFFSET_LIMIT variable.  */
