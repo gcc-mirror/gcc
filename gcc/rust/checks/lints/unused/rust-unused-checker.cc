@@ -117,5 +117,12 @@ UnusedChecker::visit (HIR::StructPatternFieldIdent &pattern)
 		     pattern.get_identifier ().as_string ().c_str ());
 }
 
+void
+UnusedChecker::visit (HIR::EmptyStmt &stmt)
+{
+  rust_warning_at (stmt.get_locus (), OPT_Wunused_variable,
+		   "unnecessary trailing semicolons");
+}
+
 } // namespace Analysis
 } // namespace Rust

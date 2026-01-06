@@ -43,6 +43,7 @@ private:
   virtual void visit (HIR::IdentifierPattern &identifier) override;
   virtual void visit (HIR::AssignmentExpr &identifier) override;
   virtual void visit (HIR::StructPatternFieldIdent &identifier) override;
+  virtual void visit (HIR::EmptyStmt &stmt) override;
 };
 } // namespace Analysis
 } // namespace Rust
