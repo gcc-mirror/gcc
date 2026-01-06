@@ -5822,13 +5822,20 @@ AC_LANG_SAVE
   AC_MSG_CHECKING([whether flockfile and putc_unlocked are defined in <stdio.h>])
   AC_TRY_COMPILE([
   #include <stdio.h>
+  #if __has_include(<newlib.h>)
+  # ifdef __CYGWIN__
+    // Cygwin has working flockfile
+  # else
+  #  error No usable flockfile on most newlib targets
+  # endif
+  #endif
   ],[
     FILE* f = ::fopen("", "");
     ::flockfile(f);
     ::putc_unlocked(' ', f);
     ::funlockfile(f);
     ::fclose(f);
-  ], [ac_stdio_locking=yes], [ac_stdio_locking=no])
+  ],[ac_stdio_locking=yes],[ac_stdio_locking=no])
   AC_MSG_RESULT($ac_stdio_locking)
 
   if test "$ac_stdio_locking" = yes; then

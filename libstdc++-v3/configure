@@ -55051,6 +55051,13 @@ $as_echo_n "checking whether flockfile and putc_unlocked are defined in <stdio.h
 /* end confdefs.h.  */
 
   #include <stdio.h>
+  #if __has_include(<newlib.h>)
+  # ifdef __CYGWIN__
+    // Cygwin has working flockfile
+  # else
+  #  error No usable flockfile on most newlib targets
+  # endif
+  #endif
 
 int
 main ()
