@@ -3,6 +3,7 @@
 ! { dg-options "-fno-inline" }
 ! { dg-additional-options "-msse2" { target sse2_runtime } }
 ! { dg-additional-options "-mavx" { target avx_runtime } }
+! { dg-warning "Specification of the list items as arguments to the modifiers at \\(1\\) is deprecated; since OpenMP 5.2, use 'linear\\(x, y : ref\\)' \\\[-Wdeprecated-openmp\\\]" "" { target *-*-* } 24 }
 
   real :: a(1024), b(1024), c(1024)
   integer :: i
@@ -20,7 +21,7 @@
 contains
   real function foo (x, y)
     real :: x, y
-    !$omp declare simd linear (ref (x, y)) ! { dg-warning "Specification of the list items as arguments to the modifiers at \\(1\\) is deprecated since OpenMP 5.2 \\\[-Wdeprecated-openmp\\\]" }
+    !$omp declare simd linear (ref (x, y))
     foo = x + y
   end function
 end

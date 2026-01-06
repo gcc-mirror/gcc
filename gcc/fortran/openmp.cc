@@ -3481,11 +3481,6 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  gfc_current_locus = old_loc;
 		  break;
 		}
-	      if (old_linear_modifier)
-		gfc_warning (OPT_Wdeprecated_openmp,
-			     "Specification of the list items as arguments to "
-			     "the modifiers at %L is deprecated since "
-			     "OpenMP 5.2", &saved_loc);
 	      if (linear_op != OMP_LINEAR_DEFAULT)
 		{
 		  if (gfc_match (" :") == MATCH_YES)
@@ -3508,6 +3503,52 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      *head = NULL;
 		      goto error;
 		    }
+		}
+	      if (old_linear_modifier)
+		{
+		  char var_names[512]{};
+		  int count, offset = 0;
+		  for (gfc_omp_namelist *n = *head; n; n = n->next)
+		    {
+		      if (!n->next)
+			count = snprintf (var_names + offset,
+					  sizeof (var_names) - offset,
+					  "%s", n->sym->name);
+		      else
+			count = snprintf (var_names + offset,
+					  sizeof (var_names) - offset,
+					  "%s, ", n->sym->name);
+		      if (count < 0 || count >= ((int)sizeof (var_names))
+						- offset)
+			{
+			  snprintf (var_names, 512, "%s, ..., ",
+				    (*head)->sym->name);
+			  while (n->next)
+			    n = n->next;
+			  offset = strlen (var_names);
+			  snprintf (var_names + offset,
+				    sizeof (var_names) - offset,
+				    "%s", n->sym->name);
+			  break;
+			}
+		      offset += count;
+		    }
+		  char *var_names_for_warn = var_names;
+		  const char *op_name;
+		  switch (linear_op)
+		    {
+		      case OMP_LINEAR_REF: op_name = "ref"; break;
+		      case OMP_LINEAR_VAL: op_name = "val"; break;
+		      case OMP_LINEAR_UVAL: op_name = "uval"; break;
+		      default: gcc_unreachable ();
+		    }
+		  gfc_warning (OPT_Wdeprecated_openmp,
+			       "Specification of the list items as "
+			       "arguments to the modifiers at %L is "
+			       "deprecated; since OpenMP 5.2, use "
+			       "%<linear(%s : %s%s)%>", &saved_loc,
+			       var_names_for_warn, op_name,
+			       step == nullptr ? "" : ", step(...)");
 		}
 	      else if (end_colon)
 		{
