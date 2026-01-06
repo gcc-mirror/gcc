@@ -1857,7 +1857,7 @@ tagged_types_tu_compatible_p (const_tree t1, const_tree t2,
   /* When forming equivalence classes for TYPE_CANONICAL in C23, we treat
      structs with the same tag as equivalent, but only when they are targets
      of pointers inside other structs.  */
-  if (data->equiv && data->pointedto)
+  if (data->equiv && data->pointedto && NULL_TREE != c_type_tag (t1))
     return true;
 
   /* Different types without tag are incompatible except as an anonymous
