@@ -407,6 +407,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
    but are incompatible with -mtrack-speculation. */
 #define TARGET_CMPBR (AARCH64_HAVE_ISA (CMPBR) && !aarch64_track_speculation)
 
+/* PCDPHINT instructions are enabled through +pcdphint.  */
+#define TARGET_PCDPHINT AARCH64_HAVE_ISA (PCDPHINT)
+
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */
 #ifndef TARGET_FIX_ERR_A53_835769_DEFAULT

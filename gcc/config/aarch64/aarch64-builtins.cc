@@ -901,6 +901,13 @@ enum aarch64_builtins
   AARCH64_BUILTIN_GCSPR,
   AARCH64_BUILTIN_GCSPOPM,
   AARCH64_BUILTIN_GCSSS,
+  /* Armv9.6-A builtins.  */
+  AARCH64_BUILTIN_STSHH_QI,
+  AARCH64_BUILTIN_STSHH_HI,
+  AARCH64_BUILTIN_STSHH_SI,
+  AARCH64_BUILTIN_STSHH_DI,
+  AARCH64_BUILTIN_STSHH_SF,
+  AARCH64_BUILTIN_STSHH_DF,
   AARCH64_BUILTIN_MAX
 };
 
@@ -2466,6 +2473,62 @@ aarch64_init_gcs_builtins (void)
 				   AARCH64_BUILTIN_GCSSS);
 }
 
+/* Add builtins for FEAT_PCDPHINT.  */
+
+static void
+aarch64_init_pcdphint_builtins (void)
+{
+  tree ftype;
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node,
+				    unsigned_char_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_QI]
+    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_qi", ftype,
+				   AARCH64_BUILTIN_STSHH_QI);
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node,
+				    short_unsigned_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_HI]
+    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_hi", ftype,
+				   AARCH64_BUILTIN_STSHH_HI);
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_SI]
+    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_si", ftype,
+				   AARCH64_BUILTIN_STSHH_SI);
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node,
+				    long_long_unsigned_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DI]
+    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_di", ftype,
+				   AARCH64_BUILTIN_STSHH_DI);
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node,
+				    float_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_SF]
+    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_sf", ftype,
+				   AARCH64_BUILTIN_STSHH_SF);
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node,
+				    double_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DF]
+    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_df", ftype,
+				   AARCH64_BUILTIN_STSHH_DF);
+}
+
 /* Initialize all builtins in the AARCH64_BUILTIN_GENERAL group.  */
 
 void
@@ -2514,6 +2577,7 @@ aarch64_general_init_builtins (void)
 				   AARCH64_BUILTIN_CHKFEAT);
 
   aarch64_init_gcs_builtins ();
+  aarch64_init_pcdphint_builtins ();
 
   if (in_lto_p)
     handle_arm_acle_h ();
@@ -3968,6 +4032,56 @@ aarch64_expand_tbl_tbx (vec<expand_operand> &ops, int unspec)
   return result;
 }
 
+void
+aarch64_expand_stshh_builtin (tree exp, int fcode)
+{
+  machine_mode mode = TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (exp, 1)));
+  rtx val = expand_normal (CALL_EXPR_ARG (exp, 1));
+  rtx mem_order = expand_normal (CALL_EXPR_ARG (exp, 2));
+  rtx ret = expand_normal (CALL_EXPR_ARG (exp, 3));
+
+  require_const_argument (exp, 3, 0, 2);
+  require_const_argument (exp, 2, 0, 6);
+  if (seen_error ())
+    return;
+
+  switch (fcode)
+    {
+      case AARCH64_BUILTIN_STSHH_SF:
+	{
+	  val = force_lowpart_subreg (SImode, val, SFmode);
+	  mode = SImode;
+	  break;
+	}
+      case AARCH64_BUILTIN_STSHH_DF:
+	{
+	  val = force_lowpart_subreg (DImode, val, DFmode);
+	  mode = DImode;
+	  break;
+	}
+      default:
+	{
+	  if (val != CONST0_RTX (mode))
+	    val = force_reg (mode, val);
+	  break;
+	}
+    }
+
+  rtx addr = expand_normal (CALL_EXPR_ARG (exp, 0));
+  addr = convert_memory_address (Pmode, addr);
+  rtx mem  = gen_rtx_MEM (mode, addr);
+  set_mem_align (mem, GET_MODE_ALIGNMENT (mode));
+
+  expand_operand ops[4];
+  enum insn_code icode = code_for_aarch64_atomic_store_stshh (mode);
+  create_output_operand (&ops[0], mem, mode);
+  create_input_operand (&ops[1], val, mode);
+  create_input_operand (&ops[2], mem_order, SImode);
+  create_input_operand (&ops[3], ret, SImode);
+
+  expand_insn (icode, 4, ops);
+}
+
 /* Expand CALL_EXPR EXP, given that it is a call to the function described
    by BUILTIN_DATA, and return the function's return value.  Put the result
    in TARGET if convenient.  */
@@ -4458,6 +4572,15 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_BUILTIN_GCSPOPM:
     case AARCH64_BUILTIN_GCSSS:
       return aarch64_expand_gcs_builtin (exp, target, fcode, ignore);
+
+    case AARCH64_BUILTIN_STSHH_QI:
+    case AARCH64_BUILTIN_STSHH_HI:
+    case AARCH64_BUILTIN_STSHH_SI:
+    case AARCH64_BUILTIN_STSHH_DI:
+    case AARCH64_BUILTIN_STSHH_SF:
+    case AARCH64_BUILTIN_STSHH_DF:
+      aarch64_expand_stshh_builtin (exp, fcode);
+      return target;
     }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)

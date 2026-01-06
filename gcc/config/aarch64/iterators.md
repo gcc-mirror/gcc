@@ -1336,6 +1336,7 @@
     UNSPECV_LDA			; Represent an atomic load or load-acquire.
     UNSPECV_LDAP		; Represent an atomic acquire load with RCpc semantics.
     UNSPECV_STL			; Represent an atomic store or store-release.
+    UNSPECV_STSHH		; Represent an atomic store with an stshh hint.
     UNSPECV_ATOMIC_CMPSW	; Represent an atomic compare swap.
     UNSPECV_ATOMIC_EXCHG	; Represent an atomic exchange.
     UNSPECV_ATOMIC_CAS		; Represent an atomic CAS.

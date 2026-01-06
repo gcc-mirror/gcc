@@ -751,6 +751,30 @@
   [(set_attr "arch" "*,rcpc8_4")]
 )
 
+(define_insn "@aarch64_atomic_store_stshh<mode>"
+  [(set (match_operand:ALLI 0 "aarch64_rcpc_memory_operand" "=Q,Ust")
+    (unspec_volatile:ALLI
+       [(match_operand:ALLI 1 "aarch64_reg_or_zero" "rZ,rZ")
+       (match_operand:SI 2 "const_int_operand")			;; model
+       (match_operand:SI 3 "const_int_operand")]		;; ret_policy
+      UNSPECV_STSHH))]
+  ""
+  {
+    if (INTVAL (operands[3]) == 0)
+      output_asm_insn ("stshh\tkeep", operands);
+    else
+      output_asm_insn ("stshh\tstrm", operands);
+    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+    if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
+      return "str<atomic_sfx>\t%<w>1, %0";
+    else if (which_alternative == 0)
+      return "stlr<atomic_sfx>\t%<w>1, %0";
+    else
+      return "stlur<atomic_sfx>\t%<w>1, %0";
+  }
+  [(set_attr "arch" "*,rcpc8_4")]
+)
+
 (define_insn "@aarch64_load_exclusive<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
     (zero_extend:SI
