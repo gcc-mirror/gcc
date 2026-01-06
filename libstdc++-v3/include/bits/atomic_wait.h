@@ -226,10 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      else if constexpr (sizeof(_Tp) == sizeof(__UINT64_TYPE__))
 		return __builtin_bit_cast(_Tp, (__UINT64_TYPE__)_M_old);
 	      else
-		{
-		  static_assert(false); // Unsupported size
-		  return {};
-		}
+		static_assert(false); // Unsupported size
 	    }
 
 	  if constexpr (!__platform_wait_uses_type<_Tp>)
