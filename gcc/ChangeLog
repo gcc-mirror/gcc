@@ -1,3 +1,94 @@
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* tree-vect-stmts.cc (vectorizable_call): Handle trapping math.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* tree-if-conv.cc (ifcvt_can_predicate): Support gimple_call_builtin_p.
+	(if_convertible_stmt_p, predicate_rhs_code,
+	predicate_statements): Likewise.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* match.pd: Add COND_FMA to COND_FMS rewrite rules.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* doc/md.texi: Document them
+	* internal-fn.cc (FOR_EACH_COND_FN_PAIR, internal_fn_else_index): Add
+	SQRT, CEIL, FLOOR, ROUND and RINT.
+	* internal-fn.def (IFN_COND_SQRT, IFN_COND_CEIL, IFN_COND_FLOOR,
+	IFN_COND_ROUND, IFN_COND_RINT, IFN_COND_LEN_SQRT, IFN_COND_LEN_CEIL,
+	IFN_COND_LEN_FLOOR, IFN_COND_LEN_ROUND, IFN_COND_LEN_RINT): New.
+	* optabs.def (cond_rint_optab, cond_sqrt_optab, cond_round_optab,
+	cond_ceil_optab, cond_floor_optab, cond_len_rint_optab,
+	cond_len_sqrt_optab, cond_len_round_optab, cond_len_ceil_optab,
+	cond_len_floor_optab): New.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* gimple.cc (gimple_could_trap_p_1): Handle __builtin_ calls.
+
+2026-01-05  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/riscv-string.cc (expand_block_move): Restore using
+	inlined memcpy/memmove for unknown counts if the param hasn't been
+	specified.
+	(expand_vec_setmem): Similarly for memset.
+
+2026-01-05  Pan Li  <pan2.li@intel.com>
+
+	PR target/123317
+	* config/riscv/autovec-opt.md: Take zero_extend for
+	both the vwaddu and vwsubu wx pattern.
+
+2026-01-05  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* config/aarch64/aarch64-sme.md
+	(aarch64_sme_write_zt): Add TARGET_STREAMING requirement.
+	(aarch64_sme_lut_zt): Ditto.
+
+2026-01-05  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* doc/invoke.texi: Fix incorrect function name.
+
+2026-01-05  Pan Li  <pan2.li@intel.com>
+
+	* tree-vect-slp.cc (vec_slp_has_scalar_use): Adjust the
+	depth_limit from 2 to 3.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121290
+	* config/aarch64/aarch64.cc (aarch64_possible_by_lane_insn_p): New.
+	(aarch64_vector_costs): Add m_num_dup_stmts and m_num_total_stmts.
+	(aarch64_vector_costs::add_stmt_cost): Use them.
+	(adjust_body_cost): Likewise.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/123017
+	* config/aarch64/aarch64-json-schema.h: Add br_mispredict_factor.
+	* config/aarch64/aarch64-json-tunings-parser-generated.inc
+	(parse_branch_costs): Add br_mispredict_factor.
+	* config/aarch64/aarch64-json-tunings-printer-generated.inc
+	(serialize_branch_costs): Add br_mispredict_factor.
+	* config/aarch64/aarch64-protos.h (struct cpu_branch_cost): Add
+	br_mispredict_factor.
+	* config/aarch64/aarch64.cc (aarch64_max_noce_ifcvt_seq_cost,
+	aarch64_noce_conversion_profitable_p,
+	TARGET_MAX_NOCE_IFCVT_SEQ_COST,
+	TARGET_NOCE_CONVERSION_PROFITABLE_P): New.
+	* config/aarch64/tuning_models/generic.h (generic_branch_cost): Add
+	br_mispredict_factor.
+	* config/aarch64/tuning_models/generic_armv8_a.h: Remove
+	generic_armv8_a_branch_cost and use generic_branch_cost.
+
 2026-01-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* configure: Regenerate.

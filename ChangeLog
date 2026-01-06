@@ -1,3 +1,8 @@
+2026-01-05  Filip Kastl  <fkastl@suse.cz>
+
+	* MAINTAINERS: Put <jeffrey.law@oss.qualcomm.com> before
+	<jeffreyalaw@gmail.com>.
+
 2025-12-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* Makefile.def (flags_to_pass): Rename GA68, GA68FLAGS,

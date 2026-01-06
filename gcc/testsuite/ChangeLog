@@ -1,3 +1,79 @@
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* gcc.target/aarch64/sve/pr122103_4.c: New test.
+	* gcc.target/aarch64/sve/pr122103_5.c: New test.
+	* gcc.target/aarch64/sve/pr122103_6.c: New test.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* gcc.target/aarch64/sve/pr122103_1.c: New test.
+	* gcc.target/aarch64/sve/pr122103_2.c: New test.
+	* gcc.target/aarch64/sve/pr122103_3.c: New test.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* gcc.target/aarch64/sve/unpacked_frinta_1.c: Add -fno-trapping-math.
+	* gcc.target/aarch64/sve/unpacked_frinti_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintm_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintp_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintx_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_frintz_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_frinta_2.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_13.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_14.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_15.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_16.c: Likewise.
+	* gcc.target/i386/avx-pr93078.c: Likewise.
+	* gcc.target/i386/avx512f-pr93078.c: Likewise.
+
+2026-01-05  Pan Li  <pan2.li@intel.com>
+
+	PR target/123317
+	* gcc.target/riscv/rvv/autovec/pr123317-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr123317-run-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr123317-run-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr123317-run-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr123317-run.h: New test.
+
+2026-01-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Adjust the
+	asm check.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+
+2026-01-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/sat_add-cost-1.c: New test.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121290
+	* gcc.target/aarch64/pr121290.c: Move to...
+	* gcc.target/aarch64/pr121290_1.c: ...here.
+	* g++.target/aarch64/pr121290_1.C: New test.
+	* gcc.target/aarch64/pr121290_2.c: New test.
+
+2026-01-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/123017
+	* gcc.target/aarch64/pr123017_1.c: New test.
+	* gcc.target/aarch64/pr123017_2.c: New test.
+	* gcc.target/aarch64/pr123017_3.c: New test.
+	* gcc.target/aarch64/pr123017_4.c: New test.
+	* gcc.target/aarch64/pr123017_5.c: New test.
+	* gcc.target/aarch64/pr123017_6.c: New test.
+	* gcc.target/aarch64/pr123017_7.c: New test.
+
+2026-01-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/123071
+	* gfortran.dg/pdt_79.f03: New test.
+
 2026-01-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR testsuite/123377

@@ -1,3 +1,19 @@
+2026-01-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/123071
+	* resolve.cc (resolve_typebound_function): Make sure that the
+	class declared type is resolved.
+	(resolve_allocate_deallocate): Any kind of expr3 array ref will
+	need resolution not just constant size refs.
+	* trans-decl.cc (gfc_trans_deferred_vars): Exclude vtabs from
+	initialization.
+	(emit_not_set_warning): New function using code extracted from
+	gfc_generate_function_code.
+	(gfc_generate_function_code): PDT module procedures results
+	that have not been referenced must have the fake_result_decl
+	added to the symbol and emit_not_set_warning called. Likewise
+	replace explicit code with call to emit_not_set_warning.
+
 2026-01-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/123352
