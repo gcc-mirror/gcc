@@ -8012,7 +8012,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    && VECTOR_BOOLEAN_TYPE_P (type)
 	    && SCALAR_INT_MODE_P (TYPE_MODE (type))
 	    && (elt = uniform_vector_p (exp))
-	    && !VECTOR_TYPE_P (TREE_TYPE (elt)))
+	    && !VECTOR_TYPE_P (TREE_TYPE (elt))
+	    && !BYTES_BIG_ENDIAN)
 	  {
 	    rtx op0 = force_reg (TYPE_MODE (TREE_TYPE (elt)),
 				 expand_normal (elt));
@@ -8022,7 +8023,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    /* Ensure no excess bits are set.
 	       GCN needs this for nunits < 64.
 	       x86 needs this for nunits < 8.  */
-	    auto nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
+	    unsigned int nunits = TYPE_VECTOR_SUBPARTS (type).to_constant ();
 	    if (maybe_ne (GET_MODE_PRECISION (mode), nunits))
 	      tmp = expand_binop (mode, and_optab, tmp,
 				  GEN_INT ((HOST_WIDE_INT_1U << nunits) - 1),
