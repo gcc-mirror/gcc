@@ -2645,7 +2645,8 @@ autofdo_source_profile::offline_unrealized_inlines ()
 	  if (dump_file)
 	    fprintf (dump_file, "Removing optimized out function %s\n",
 		     afdo_string_table->get_symbol_name (f->symbol_name ()));
-	  remove_function_instance (index_inst);
+	  if (in_map)
+	    remove_function_instance (index_inst);
 	  f->clear_in_worklist ();
 	  delete f;
 	}
