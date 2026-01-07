@@ -11,4 +11,4 @@ int main ()
     res[i] = k[i] != (i == 0);
 }
 
-/* { dg-final { scan-tree-dump "optimized: loop vectorized" "vect" } } */
+/* { dg-final { scan-tree-dump "optimized: loop vectorized" "vect" { target vect_bool_cmp } } } */

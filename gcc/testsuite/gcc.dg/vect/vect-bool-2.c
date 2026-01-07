@@ -14,4 +14,4 @@ void foo ()
     }
 }
 
-/* { dg-final { scan-tree-dump "optimized: loop vectorized" "vect" } } */
+/* { dg-final { scan-tree-dump "optimized: loop vectorized" "vect" { target vect_bool_cmp } } } */
