@@ -72,7 +72,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
     nested_exception& operator=(const nested_exception&) noexcept = default;
 
 #if __cplusplus >= 202400L
-    constexpr virtual ~nested_exception() noexcept {}
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~nested_exception() noexcept {}
 #else
     virtual ~nested_exception() noexcept;
 #endif

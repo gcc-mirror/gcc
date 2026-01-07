@@ -107,7 +107,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
       void* _M_exception_object;
 
 #if __cplusplus >= 202400L
-      constexpr explicit exception_ptr(void* __e) noexcept
+      [[__gnu__::__gnu_inline__]]
+      constexpr inline explicit exception_ptr(void* __e) noexcept
       : _M_exception_object(__e)
       {
 	if (_M_exception_object)

@@ -258,11 +258,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   public:
 #if __cpp_lib_constexpr_exceptions >= 202502L
-    constexpr explicit
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit
     logic_error(const string& __arg) _GLIBCXX_TXN_SAFE
     : _M_msg(__arg) {}
 
-    constexpr explicit
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit
     logic_error(const char* __arg) _GLIBCXX_TXN_SAFE
     : _M_msg(__arg) {}
 
@@ -271,9 +273,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr logic_error(const logic_error&) noexcept = default;
     constexpr logic_error& operator=(const logic_error&) noexcept = default;
 
-    constexpr virtual ~logic_error() _GLIBCXX_TXN_SAFE_DYN noexcept { }
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~logic_error() _GLIBCXX_TXN_SAFE_DYN noexcept { }
 
-    constexpr virtual const char*
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual const char*
     what() const _GLIBCXX_TXN_SAFE_DYN noexcept
     {
       return _M_msg.c_str();
@@ -319,15 +323,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
 #if __cpp_lib_constexpr_exceptions >= 202502L
-    constexpr explicit domain_error(const string& __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit domain_error(const string& __arg)
+      _GLIBCXX_TXN_SAFE
     : logic_error(__arg) { }
-    constexpr explicit domain_error(const char* __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit domain_error(const char* __arg) _GLIBCXX_TXN_SAFE
     : logic_error(__arg) { }
     constexpr domain_error(const domain_error&) = default;
     constexpr domain_error& operator=(const domain_error&) = default;
     constexpr domain_error(domain_error&&) = default;
     constexpr domain_error& operator=(domain_error&&) = default;
-    constexpr virtual ~domain_error() _GLIBCXX_NOTHROW { }
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~domain_error() noexcept { }
 #else
     explicit domain_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
@@ -346,15 +354,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
 #if __cpp_lib_constexpr_exceptions >= 202502L
-    constexpr explicit invalid_argument(const string& __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit invalid_argument(const string& __arg)
+      _GLIBCXX_TXN_SAFE
     : logic_error(__arg) { }
-    constexpr explicit invalid_argument(const char* __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit invalid_argument(const char* __arg)
+      _GLIBCXX_TXN_SAFE
     : logic_error(__arg) { }
     constexpr invalid_argument(const invalid_argument&) = default;
     constexpr invalid_argument& operator=(const invalid_argument&) = default;
     constexpr invalid_argument(invalid_argument&&) = default;
     constexpr invalid_argument& operator=(invalid_argument&&) = default;
-    constexpr virtual ~invalid_argument() _GLIBCXX_NOTHROW { }
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~invalid_argument() noexcept { }
 #else
     explicit invalid_argument(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
@@ -374,15 +387,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
 #if __cpp_lib_constexpr_exceptions >= 202502L
-    constexpr explicit length_error(const string& __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit length_error(const string& __arg)
+      _GLIBCXX_TXN_SAFE
     : logic_error(__arg) { }
-    constexpr explicit length_error(const char* __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit length_error(const char* __arg) _GLIBCXX_TXN_SAFE
     : logic_error(__arg) { }
     constexpr length_error(const length_error&) = default;
     constexpr length_error& operator=(const length_error&) = default;
     constexpr length_error(length_error&&) = default;
     constexpr length_error& operator=(length_error&&) = default;
-    constexpr virtual ~length_error() _GLIBCXX_NOTHROW { }
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~length_error() noexcept { }
 #else
     explicit length_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
@@ -402,15 +419,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
 #if __cpp_lib_constexpr_exceptions >= 202502L
-    constexpr explicit out_of_range(const string& __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit out_of_range(const string& __arg)
+      _GLIBCXX_TXN_SAFE
     : logic_error(__arg) { }
-    constexpr explicit out_of_range(const char* __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit out_of_range(const char* __arg) _GLIBCXX_TXN_SAFE
     : logic_error(__arg) { }
     constexpr out_of_range(const out_of_range&) = default;
     constexpr out_of_range& operator=(const out_of_range&) = default;
     constexpr out_of_range(out_of_range&&) = default;
     constexpr out_of_range& operator=(out_of_range&&) = default;
-    constexpr virtual ~out_of_range() _GLIBCXX_NOTHROW { }
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~out_of_range() noexcept { }
 #else
     explicit out_of_range(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
@@ -435,11 +456,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   public:
 #if __cpp_lib_constexpr_exceptions >= 202502L
-    constexpr explicit
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit
     runtime_error(const string& __arg) _GLIBCXX_TXN_SAFE
     : _M_msg(__arg) {}
 
-    constexpr explicit
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit
     runtime_error(const char* __arg) _GLIBCXX_TXN_SAFE
     : _M_msg(__arg) {}
 
@@ -448,9 +471,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr runtime_error(const runtime_error&) noexcept = default;
     runtime_error& operator=(const runtime_error&) noexcept = default;
 
-    constexpr virtual ~runtime_error() _GLIBCXX_TXN_SAFE_DYN noexcept { }
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~runtime_error() _GLIBCXX_TXN_SAFE_DYN noexcept
+    {}
 
-    constexpr virtual const char*
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual const char*
     what() const _GLIBCXX_TXN_SAFE_DYN noexcept
     {
       return _M_msg.c_str();
@@ -495,15 +521,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
 #if __cpp_lib_constexpr_exceptions >= 202502L
-    constexpr explicit overflow_error(const string& __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit overflow_error(const string& __arg)
+      _GLIBCXX_TXN_SAFE
     : runtime_error(__arg) { }
-    constexpr explicit overflow_error(const char* __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit overflow_error(const char* __arg)
+      _GLIBCXX_TXN_SAFE
     : runtime_error(__arg) { }
     constexpr overflow_error(const overflow_error&) = default;
     constexpr overflow_error& operator=(const overflow_error&) = default;
     constexpr overflow_error(overflow_error&&) = default;
     constexpr overflow_error& operator=(overflow_error&&) = default;
-    constexpr virtual ~overflow_error() noexcept { }
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~overflow_error() noexcept { }
 #else
     explicit overflow_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L
@@ -522,15 +553,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
 #if __cpp_lib_constexpr_exceptions >= 202502L
-    constexpr explicit underflow_error(const string& __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit underflow_error(const string& __arg)
+      _GLIBCXX_TXN_SAFE
     : runtime_error(__arg) { }
-    constexpr explicit underflow_error(const char* __arg) _GLIBCXX_TXN_SAFE
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline explicit underflow_error(const char* __arg)
+      _GLIBCXX_TXN_SAFE
     : runtime_error(__arg) { }
     constexpr underflow_error(const underflow_error&) = default;
     constexpr underflow_error& operator=(const underflow_error&) = default;
     constexpr underflow_error(underflow_error&&) = default;
     constexpr underflow_error& operator=(underflow_error&&) = default;
-    constexpr virtual ~underflow_error() noexcept { }
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~underflow_error() noexcept { }
 #else
     explicit underflow_error(const string& __arg) _GLIBCXX_TXN_SAFE;
 #if __cplusplus >= 201103L

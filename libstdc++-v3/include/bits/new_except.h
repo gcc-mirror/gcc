@@ -62,9 +62,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if __cplusplus >= 202400L
-    constexpr virtual ~bad_alloc() noexcept {}
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~bad_alloc() noexcept {}
 
-    constexpr virtual const char* what() const noexcept
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual const char* what() const noexcept
     {
       return "std::bad_alloc";
     }
@@ -85,9 +87,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX26_CONSTEXPR bad_array_new_length() throw() { }
 
 #if __cplusplus >= 202400L
-    constexpr virtual ~bad_array_new_length() noexcept {}
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual ~bad_array_new_length() noexcept {}
 
-    constexpr virtual const char* what() const noexcept
+    [[__gnu__::__gnu_inline__]]
+    constexpr inline virtual const char* what() const noexcept
     {
       return "std::bad_array_new_length";
     }
