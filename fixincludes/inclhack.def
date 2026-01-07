@@ -341,24 +341,6 @@ fix = {
 };
 
 /*
- * Solaris <sys/varargs.h> is a DDK (aka kernel-land) header providing
- * the same interface as <stdarg.h>.  No idea why they couldn't have just
- * used the standard header.
- */
-fix = {
-    hackname = AAB_solaris_sys_varargs_h;
-    files    = "sys/varargs.h";
-    mach     = '*-*-solaris*';
-    replace  = <<-  _EndOfHeader_
-	#ifdef __STDC__
-	  #include <stdarg.h>
-	#else
-	  #include <varargs.h>
-	#endif
-	_EndOfHeader_;
-};
-
-/*
  *  Fix non-ANSI memcpy declaration that conflicts with gcc's builtin
  *  declaration on Sun OS 4.x.  We must only fix this on Sun OS 4.x, because
  *  many other systems have similar text but correct versions of the file.
@@ -2346,8 +2328,8 @@ fix = {
     bypass    = '_GCC_(PTRDIFF|SIZE|WCHAR)_T';
     select    = "^[ \t]*typedef[ \t]+.*[ \t](ptrdiff|size|wchar)_t;";
     c_fix     = gnu_type;
-    /* The Solaris 10 headers already define these types correctly.  */
-    mach   = '*-*-solaris2.1[0-9]*';
+    /* The Solaris 10+ headers already define these types correctly.  */
+    mach   = '*-*-solaris2*';
     not_machine = true;
 
     test_text = "typedef long int ptrdiff_t; /* long int */\n"
@@ -3895,133 +3877,6 @@ fix = {
 };
 
 /*
- *  Solaris 10+ <sys/feature_tests.h> defines _RESTRICT_KYWD as restrict
- *  for C99.  This is wrong for C++, which needs many C99 features, but
- *  only supports __restrict.
- */
-fix = {
-    hackname  = solaris___restrict;
-    files     = sys/feature_tests.h;
-    select    = "#define[ \t]*_RESTRICT_KYWD[ \t]*restrict";
-    mach      = "*-*-solaris2*";
-    c_fix     = format;
-    c_fix_arg = "#ifdef __cplusplus\n#define\t_RESTRICT_KYWD\t__restrict\n"
-    	        "#else\n%0\n#endif";
-    test_text = "#define	_RESTRICT_KYWD	restrict";
-};
-
-/*
- * Solaris 10+ complex.h defines _Complex_I and _Imaginary_I in terms of
- * themselves, which are Sun Studio compiler intrinsics.  Remove _Imaginary_I
- * and imaginary definitions which are not supported by GCC.
- */
-fix = {
-    hackname  = solaris_complex;
-    mach      = "*-*-solaris2.*";
-    files     = complex.h;
-    select    = "#define[ \t]_Complex_I[ \t]_Complex_I";
-    sed	      = "s/#define[ \t]_Complex_I[ \t]_Complex_I/"
-		"#define\t_Complex_I\t(__extension__ 1.0iF)/";
-    sed	      = "/#define[ \t]_Imaginary_I[ \t]_Imaginary_I/d";
-    sed	      = "/#define[ \t]imaginary[ \t]_Imaginary/d";
-    sed       = "s/#define[ \t]I[ \t]\\{1,\\}_Imaginary_I/#define\tI\t\t_Complex_I/";
-    test_text = "#define	_Complex_I	_Complex_I\n"
-    		"#define	complex		_Complex\n"
-		"#define	_Imaginary_I	_Imaginary_I\n"
-		"#define	imaginary	_Imaginary\n"
-		"#undef	I\n"
-		"#define	I		_Imaginary_I";
-};
-
-/*
- * Solaris 10+ <complex.h> is wrapped in #ifndef __cplusplus.  Wrap in
- * extern "C" instead so libstdc++ can use it.
- */
-fix = {
-    hackname  = solaris_complex_cxx;
-    mach      = "*-*-solaris2.*";
-    files     = complex.h;
-    sed	      = "/#if[ \t]*!defined(__cplusplus)/c\\\n"
-    		"#ifdef\t__cplusplus\\\nextern \"C\" {\\\n#endif";
-    sed	      = "/#endif[ \t]*\\/\\* !defined(__cplusplus) \\*\\//c\\\n"
-		"#ifdef\t__cplusplus\\\n}\\\n#endif";
-    test_text = "#if !defined(__cplusplus)\n"
-		"#endif	/* !defined(__cplusplus) */";
-};
-
-/*
- *  g++ rejects functions declared with both C and C++ linkage.
- */
-fix = {
-    hackname  = solaris_cxx_linkage;
-    mach      = '*-*-solaris2*';
-    files     = "iso/stdlib_iso.h";
-    select    = "(#if __cplusplus >= 199711L)\n"
-	        "(extern \"C\\+\\+\" \\{\n)"
-	        "(.*(bsearch|qsort).*)";
-    c_fix     = format;
-    c_fix_arg = "%1 && !__GNUG__\n%2%3";
-
-    test_text =
-    "#if __cplusplus >= 199711L\n"
-    "extern \"C++\" {\n"
-    "	void *bsearch(const void *, const void *, size_t, size_t,";
-};
-
-/*
- *  Solaris <iso/stdio_iso.h> doesn't declare getc for C++ with
- *  _STRICT_STDC, but uses it.
- */
-fix = {
-    hackname  = solaris_getc_strict_stdc;
-    mach      = "*-*-solaris2*";
-    files     = "iso/stdio_iso.h";
-    select    = "(.*&& )!defined\\(_STRICT_STDC\\)(.*)";
-    c_fix     = format;
-    c_fix_arg = "%1(!defined(_STRICT_STDC) || (__cplusplus >= 199711L))%2";
-
-    test_text =
-    "#if	!defined(_REENTRANT) && !defined(_LP64) && !defined(_STRICT_STDC)";
-};
-
-/*
- *  Solaris <iso/stdio_iso.h> should deprecate gets before C11.
- */
-fix = {
-    hackname  = solaris_gets_c11;
-    mach      = "*-*-solaris2*";
-    files     = "iso/stdio_iso.h";
-    select    = "(extern char[ \t]*\\*gets\\(char \\*\\));";
-
-    c_fix     = format;
-    c_fix_arg = "#if __STDC_VERSION__ < 201112L && __cplusplus < 201402L\n"
-    		"%1 __attribute__((__deprecated__));\n"
-		"#endif";
-
-    test_text = "extern char	*gets(char *);";
-};
-
-/*
- *  Solaris <iso/stdio_iso.h> shouldn't declare gets for C++14.
- */
-fix = {
-    hackname  = solaris_gets_cxx14;
-    mach      = "*-*-solaris2*";
-    files     = "iso/stdio_iso.h";
-    select    = <<- _EOSelect_
-(#if __STDC_VERSION__ < 201112L)
-(extern char	\*gets\(char \*\) __ATTR_DEPRECATED;)
-_EOSelect_;
-    c_fix     = format;
-    c_fix_arg = "%1 && __cplusplus < 201402L\n%2";
-
-    test_text = <<- _EOText_
-#if __STDC_VERSION__ < 201112L
-extern char	*gets(char *) __ATTR_DEPRECATED;
-_EOText_;
-};
-
-/*
  * Sun Solaris 2 has a version of sys/int_const.h that defines
  * UINT8_C and UINT16_C to unsigned constants.
  */
@@ -4062,23 +3917,6 @@ fix = {
 
 /*
  * Sun Solaris 2 has a version of sys/int_limits.h that defines
- * INT_FAST16 limits to wrong values for sys/int_types.h.
- */
-fix = {
-    hackname  = solaris_int_limits_2;
-    files     = sys/int_limits.h;
-    mach      = '*-*-solaris2*';
-    c_fix     = format;
-    c_fix_arg = "#define\t%1_FAST16_%2 %132_%2";
-    select    = "^#define[ \t]+(INT|UINT)_FAST16_(MAX|MIN)[ \t](INT|UINT)16.*";
-    test_text =
-    "#define	INT_FAST16_MAX INT16_MAX\n"
-    "#define	UINT_FAST16_MAX UINT16_MAX\n"
-    "#define	INT_FAST16_MIN	INT16_MIN";
-};
-
-/*
- * Sun Solaris 2 has a version of sys/int_limits.h that defines
  * SIZE_MAX as unsigned long.
  */
 fix = {
@@ -4090,210 +3928,6 @@ fix = {
     select    = "^#define[ \t]+SIZE_MAX[ \t]+4294967295UL";
     test_text =
     "#define	SIZE_MAX	4294967295UL";
-};
-
-/*
- * Sun Solaris 10 defines several C99 math macros in terms of
- * builtins specific to the Studio compiler, in particular not
- * compatible with the GNU compiler.
- */
-fix = {
-    hackname = solaris_math_1;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tHUGE_VA%1\t(__builtin_huge_va%2())";
-    c_fix_arg = "^#define[ \t]+HUGE_VA([LF]+)[ \t]+__builtin_huge_va([lf]+)";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	HUGE_VAL\n"
-    "#define	HUGE_VAL	__builtin_huge_val\n"
-    "#undef	HUGE_VALF\n"
-    "#define	HUGE_VALF	__builtin_huge_valf\n"
-    "#undef	HUGE_VALL\n"
-    "#define	HUGE_VALL	__builtin_huge_vall";
-};
-
-/*
- * On Solaris 11, if you do isinf(NaN) you'll get a floating point
- * exception.  Provide an alternative using GCC's builtin.
- */
-fix = {
-    hackname  = solaris_math_10;
-    select    = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files     = iso/math_c99.h;
-    c_fix     = format;
-    c_fix_arg = "#define\tisinf(x) __builtin_isinf(x)";
-    c_fix_arg = "^#define[ \t]+isinf\\(x\\)[ \t]+__extension__\\([ \t]*\\\\\n"
-                "[ \t]*\\{[ \t]*__typeof\\(x\\)[ \t]*__x_i[ \t]*=[ \t]*\\(x\\);"
-                    "[ \t]*\\\\\n"
-                "[ \t]*__x_i[ \t]*==[ \t]*\\(__typeof\\(__x_i\\)\\)[ \t]*"
-                    "INFINITY[ \t]*\\|\\|[ \t]*\\\\\n"
-                "[ \t]*__x_i[ \t]*==[ \t]*\\(__typeof\\(__x_i\\)\\)[ \t]*"
-                    "\\(-INFINITY\\);[ \t]*\\}\\)";
-    test_text =
-    '#pragma ident	"@(#)math_c99.h	1.12	07/01/21 SMI"'"\n"
-    "#undef	isinf\n"
-    "#define	isinf(x)	__extension__( \\\\\n"
-    "			{ __typeof(x) __x_i = (x); \\\\\n"
-    "			__x_i == (__typeof(__x_i)) INFINITY || \\\\\n"
-    "			__x_i == (__typeof(__x_i)) (-INFINITY); })";
-};
-
-/*
- * Solaris math INFINITY
- */
-fix = {
-    hackname = solaris_math_2;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tINFINITY\t(__builtin_inff())";
-    c_fix_arg = "^#define[ \t]+INFINITY[ \t]+__builtin_infinity";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	INFINITY\n"
-    "#define	INFINITY	__builtin_infinity";
-};
-
-/*
- * Solaris math NAN
- */
-fix = {
-    hackname = solaris_math_3;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tNAN\t\t(__builtin_nanf(\"\"))";
-    c_fix_arg = "^#define[ \t]+NAN[ \t]+__builtin_nan";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	NAN\n"
-    "#define	NAN	__builtin_nan";
-};
-
-/*
- * Solaris math fpclassify
- */
-fix = {
-    hackname = solaris_math_4;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tfpclassify(x) \\\n"
-                "  __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, "
-                    "FP_SUBNORMAL, FP_ZERO, (x))";
-    c_fix_arg = "^#define[ \t]+fpclassify\\(x\\)[ \t]+__builtin_fpclassify\\(x\\)";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	fpclassify\n"
-    "#define	fpclassify(x)	__builtin_fpclassify(x)";
-};
-
-/*
- * Solaris math signbit
- */
-fix = {
-    hackname = solaris_math_8;
-    select = '@\(#\)math_c99\.h' "[ \t]+1\\.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\tsignbit(x)\t(sizeof(x) == sizeof(float) \\\n"
-                "\t\t\t   ? __builtin_signbitf(x) \\\n"
-                "\t\t\t   : sizeof(x) == sizeof(long double) \\\n"
-                "\t\t\t     ? __builtin_signbitl(x) \\\n"
-                "\t\t\t     : __builtin_signbit(x))";
-    c_fix_arg = "^#define[ \t]+signbit\\(x\\)[ \t]+__builtin_signbit\\(x\\)";
-    test_text = <<- _EOText_
-	#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"
-	#undef	signbit
-	#define	signbit(x)	__builtin_signbit(x)
-	_EOText_;
-};
-
-/*
- * Solaris math comparison macros
- */
-fix = {
-    hackname = solaris_math_9;
-    select = '@\(#\)math_c99.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    bypass = "__GNUC__";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = "#define\t%1(x, y)%2__builtin_%1(x, y)";
-    c_fix_arg = "^#define[ \t]+([a-z]+)\\(x, y\\)([ \t]+)\\(\\(x\\) "
-                    "__builtin_[a-z]+\\(y\\)\\)";
-    test_text =
-    '#ident	"@(#)math_c99.h	1.9	04/11/01 SMI"'"\n"
-    "#undef	isgreater\n"
-    "#define	isgreater(x, y)		((x) __builtin_isgreater(y))\n"
-    "#undef	isgreaterequal\n"
-    "#define	isgreaterequal(x, y)	((x) __builtin_isgreaterequal(y))\n"
-    "#undef	isless\n"
-    "#define	isless(x, y)		((x) __builtin_isless(y))\n"
-    "#undef	islessequal\n"
-    "#define	islessequal(x, y)	((x) __builtin_islessequal(y))\n"
-    "#undef	islessgreater\n"
-    "#define	islessgreater(x, y)	((x) __builtin_islessgreater(y))\n"
-    "#undef	isunordered\n"
-    "#define	isunordered(x, y)	((x) __builtin_isunordered(y))";
-};
-
-/*
- * Newer Solaris 10/11 GCC signbit implementations cause strict-aliasing
- * warnings.
- */
-fix = {
-    hackname = solaris_math_11;
-    select = '@\(#\)math_c99\.h' "[ \t]+1\\.[0-9]+[ \t]+[0-9/]+ ";
-    files = iso/math_c99.h;
-    c_fix = format;
-    c_fix_arg = << _EOArg_
-#undef	signbit
-#define	signbit(x)	(sizeof(x) == sizeof(float) \
-			   ? __builtin_signbitf(x) \
-			   : sizeof(x) == sizeof(long double) \
-			     ? __builtin_signbitl(x) \
-			     : __builtin_signbit(x))
-_EOArg_;
-    c_fix_arg = << _EOArg_
-^#undef[ 	]+signbit
-#if defined\(__sparc\)
-#define[ 	]+signbit\(x\)[ 	]+__extension__\( \\
-[ 	]+\{[ 	]*__typeof\(x\)[ 	]*__x_s[ 	]*=[ 	]*\(x\);[ 	]*\\
-[ 	]+\(int\)[ 	]*\(\*\(unsigned[ 	]*\*\)[ 	]*\&__x_s[ 	]*>>[ 	]*31\);[ 	]*\}\)
-#elif defined\(__i386\) \|\| defined\(__amd64\)
-#define[ 	]+signbit\(x\)[ 	]+__extension__\( \\
-[ 	]+\{ __typeof\(x\) __x_s = \(x\); \\
-[ 	]+\(sizeof \(__x_s\) == sizeof \(float\) \? \\
-[ 	]+\(int\) \(\*\(unsigned \*\) \&__x_s >> 31\) : \\
-[ 	]+sizeof \(__x_s\) == sizeof \(double\) \? \\
-[ 	]+\(int\) \(\(\(unsigned \*\) \&__x_s\)\[1\] >> 31\) : \\
-[ 	]+\(int\) \(\(\(unsigned short \*\) \&__x_s\)\[4\] >> 15\)\); \}\)
-#endif
-_EOArg_;
-    test_text = << _EOText_
-/* @(#)math_c99.h	1.14	13/03/27 */
-#undef	signbit
-#if defined(__sparc)
-#define	signbit(x)	__extension__( \\
-				{ __typeof(x) __x_s = (x); \\
-				(int) (*(unsigned *) &__x_s >> 31); })
-#elif defined(__i386) || defined(__amd64)
-#define	signbit(x)	__extension__( \\
-			{ __typeof(x) __x_s = (x); \\
-			(sizeof (__x_s) == sizeof (float) ? \\
-			(int) (*(unsigned *) &__x_s >> 31) : \\
-			sizeof (__x_s) == sizeof (double) ? \\
-			(int) (((unsigned *) &__x_s)[1] >> 31) : \\
-			(int) (((unsigned short *) &__x_s)[4] >> 15)); })
-#endif
-_EOText_;
 };
 
 /*
@@ -4315,40 +3949,6 @@ _EOText_;
 };
 
 /*
- * Sun Solaris defines PTHREAD_ONCE_INIT as an array containing a
- * structure.  As such, it need two levels of brackets, but only
- * contains one.  Wrap the macro definition in an extra layer.
- */
-fix = {
-    hackname = solaris_once_init_1;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    mach = '*-*-solaris*';
-    c_fix = format;
-    c_fix_arg = "%1{%2}%3";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_ONCE_INIT[ \t]+\\{)([^}]+)(\\})[ \t]*$";
-    test_text =
-    '#pragma ident	"@(#)pthread.h	1.37	04/09/28 SMI"'"\n"
-    "#define PTHREAD_ONCE_INIT\t{0, 0, 0, PTHREAD_ONCE_NOTDONE}";
-};
-
-/*
- * Solaris 10+ <spawn.h> uses char *const argv[_RESTRICT_KYWD] in the
- * posix_spawn declarations, which doesn't work with C++.
- */
-fix = {
-    hackname  = solaris_posix_spawn_restrict;
-    files     = spawn.h;
-    mach      = '*-*-solaris2*';
-    c_fix     = format;
-    c_fix_arg = "%1*_RESTRICT_KYWD %2%3";
-    select    = "(.*[ \t]+)([a-z]+)\\[_RESTRICT_KYWD\\](.*)";
-    test_text =
-    "char *const argv[_RESTRICT_KYWD],\n"
-    "char *const envp[_RESTRICT_KYWD]);";
-};
-
-/*
  *  The pow overloads with int were removed in C++ 2011 DR 550.
  */
 fix = {
@@ -4363,100 +3963,6 @@ fix = {
     test_text =
     "	inline long double pow(long double __X, int __Y) { return\n"
     "		__powl(__X, (long double) (__Y)); }";
-};
-
-/*
- * Sun Solaris defines PTHREAD_RWLOCK_INITIALIZER with a "0" for some
- *  fields of the pthread_rwlock_t structure, which are of type
- *  upad64_t, which itself is typedef'd to int64_t, but with __STDC__
- *  defined (e.g. by -ansi) it is a union. So change the initializer
- *  to "{0}" instead.
- */
-fix = {
-    hackname = solaris_rwlock_init_1;
-    select = '@\(#\)pthread.h' "[ \t]+1.[0-9]+[ \t]+[0-9/]+ SMI";
-    files = pthread.h;
-    mach = '*-*-solaris*';
-    c_fix = format;
-    c_fix_arg = "#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)\n"
-                "%0\n"
-                "#else\n"
-                "%1{0, 0, 0, {{0}, {0}, {0}}, {{0}, {0}}, {{0}, {0}}}\n"
-                "#endif";
-    c_fix_arg = "(^#define[ \t]+PTHREAD_RWLOCK_INITIALIZER[ \t]+)"
-                "\\{0, 0, 0, \\{0, 0, 0\\}, \\{0, 0\\}, \\{0, 0\\}\\}[ \t]*$";
-
-    test_text =
-    '#ident "@(#)pthread.h  1.26  98/04/12 SMI"'"\n"
-    "#define PTHREAD_RWLOCK_INITIALIZER\t{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}";
-};
-
-/*
- * Before Solaris 10, <stdio.h> lacks declarations of std::__filbuf and
- * std::__flsbuf, but <iso/stdio_iso.h> uses them.
- */
-fix = {
-    hackname  = solaris_std___filbuf;
-    files     = stdio.h;
-    mach      = '*-*-solaris2*';
-    bypass    = "using std::__filbuf";
-    select    = "(using std::perror;\n)(#endif)";
-    c_fix     = format;
-    c_fix_arg = "%1#ifndef _LP64\n"
-		"using std::__filbuf;\n"
-		"using std::__flsbuf;\n"
-		"#endif\n%2";
-
-    test_text = "using std::perror;\n"
-		"#endif";
-};
-
-/*
- *  Solaris <stdio.h> shouldn't use std::gets for C++14.
- */
-fix = {
-    hackname  = solaris_std_gets_cxx14;
-    mach      = "*-*-solaris2*";
-    files     = "stdio.h";
-    select    = "using std::gets;";
-
-    c_fix     = format;
-    c_fix_arg = "#if __cplusplus < 201402L\n%0\n#endif";
-
-    test_text = "using std::gets;";
-};
-
-/*
- * Sun Solaris 8 has what appears to be some gross workaround for
- * some old version of their c++ compiler.  G++ doesn't want it
- * either, but doesn't want to be tied to SunPRO version numbers.
- */
-fix = {
-    hackname = solaris_stdio_tag;
-    files    = stdio_tag.h;
-
-    select   = '__cplusplus < 54321L';
-    /* In Solaris 10, the code in stdio_tag.h is conditionalized on 
-       "!defined(__GNUC__)" so we no longer need to fix it.  */
-    bypass   = '__GNUC__';
-    sed      = 's/defined(__cplusplus) && (__cplusplus < 54321L)/0/';
-
-    test_text = "#if\tdefined(__cplusplus) && (__cplusplus < 54321L)";
-};
-
-/*
- *  Solaris <stdlib.h> shouldn't use _Noreturn, breaks with C++.
- */
-fix = {
-    hackname  = solaris_stdlib_noreturn;
-    mach      = "*-*-solaris2*";
-    files     = "iso/stdlib_c99.h";
-    select    = "(extern) _Noreturn (void quick_exit\\(int\\));";
-
-    c_fix     = format;
-    c_fix_arg = "%1 %2 __attribute__((__noreturn__));";
-
-    test_text = "extern _Noreturn void quick_exit(int);";
 };
 
 /*
@@ -4481,10 +3987,10 @@ fix = {
     files    = stdio.h;
     bypass   = "include.*(stdarg\.h|machine/ansi\.h|_stdio\.h)";
     /*
-     * On Solaris 10, this fix is unncessary; <stdio.h> includes
+     * On Solaris 10+, this fix is unncessary; <stdio.h> includes
      * <iso/stdio_iso.h>, which includes <sys/va_list.h>.
       */
-    mach     = '*-*-solaris2.1[0-9]*';
+    mach     = '*-*-solaris2*';
     not_machine = true;
 
     c_fix     = wrap;
@@ -4507,11 +4013,10 @@ fix = {
     files    = stdio.h;
     bypass   = '__gnuc_va_list|_BSD_VA_LIST_|__DJ_va_list|_G_va_list|_stdio.h';
     /* 
-     * On Solaris 10, the definition in 
-     * <stdio.h> is guarded appropriately by the _XPG4 feature macro; 
-     * there is therefore no need for this fix there.
+     * On Solaris 10+, the definition in <stdio.h> is guarded appropriately
+     * by the _XPG4 feature macro.
      */
-    mach = '*-*-solaris2.1[0-9]*';
+    mach = '*-*-solaris2*';
     not_machine = true;
 
     /*
@@ -4562,6 +4067,9 @@ fix = {
     /* Don't fix, if we use va_list from stdarg.h, or if the use is
        otherwise protected.  */
     bypass   = 'include <stdarg\.h>|#ifdef va_start';
+    /* Only used in comments.  */
+    mach   = '*-*-solaris2.1[0-9]*';
+    not_machine = true;
 
     /*
      * Use __gnuc_va_list in arg types in place of va_list.
@@ -4667,6 +4175,9 @@ fix = {
 
     c_fix     = format;
     c_fix_arg = "%1 defined(__STRICT_ANSI__)";
+    /* The Solaris 10+ headers only use this if !__GNUC__.  */
+    mach   = '*-*-solaris2*';
+    not_machine = true;
 
     test_text = "#if __STDC__ == 1 /* is std C\n */\nint foo;\n#endif";
 };

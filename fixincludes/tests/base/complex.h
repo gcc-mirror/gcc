@@ -19,21 +19,3 @@
 #define _Complex_I (__extension__ 1.0iF)
 
 #endif  /* HPUX_IMAGINARY_I_CHECK */
-
-
-#if defined( SOLARIS_COMPLEX_CHECK )
-#define _Complex_I (__extension__ 1.0iF)
-#define	complex		_Complex
-#undef	I
-#define	I		_Complex_I
-#endif  /* SOLARIS_COMPLEX_CHECK */
-
-
-#if defined( SOLARIS_COMPLEX_CXX_CHECK )
-#ifdef	__cplusplus
-extern "C" {
-#endif
-#ifdef	__cplusplus
-}
-#endif
-#endif  /* SOLARIS_COMPLEX_CXX_CHECK */

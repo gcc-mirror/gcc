@@ -87,23 +87,6 @@ extern int rename(const char *_old, const char *_new);
 #endif  /* RS6000_PARAM_CHECK */
 
 
-#if defined( SOLARIS_STD___FILBUF_CHECK )
-using std::perror;
-#ifndef _LP64
-using std::__filbuf;
-using std::__flsbuf;
-#endif
-#endif
-#endif  /* SOLARIS_STD___FILBUF_CHECK */
-
-
-#if defined( SOLARIS_STD_GETS_CXX14_CHECK )
-#if __cplusplus < 201402L
-using std::gets;
-#endif
-#endif  /* SOLARIS_STD_GETS_CXX14_CHECK */
-
-
 #if defined( STDIO_STDARG_H_CHECK )
 
 #endif  /* STDIO_STDARG_H_CHECK */

@@ -96,22 +96,6 @@ extern int __sigsetjmp (struct __jmp_buf_tag *__env, int __savemask);
 #endif  /* PTHREAD_INCOMPLETE_STRUCT_ARGUMENT_CHECK */
 
 
-#if defined( SOLARIS_ONCE_INIT_1_CHECK )
-#pragma ident	"@(#)pthread.h	1.37	04/09/28 SMI"
-#define PTHREAD_ONCE_INIT	{{0, 0, 0, PTHREAD_ONCE_NOTDONE}}
-#endif  /* SOLARIS_ONCE_INIT_1_CHECK */
-
-
-#if defined( SOLARIS_RWLOCK_INIT_1_CHECK )
-#ident "@(#)pthread.h  1.26  98/04/12 SMI"
-#if __STDC__ - 0 == 0 && !defined(_NO_LONGLONG)
-#define PTHREAD_RWLOCK_INITIALIZER	{0, 0, 0, {0, 0, 0}, {0, 0}, {0, 0}}
-#else
-#define PTHREAD_RWLOCK_INITIALIZER	{0, 0, 0, {{0}, {0}, {0}}, {{0}, {0}}, {{0}, {0}}}
-#endif
-#endif  /* SOLARIS_RWLOCK_INIT_1_CHECK */
-
-
 #if defined( THREAD_KEYWORD_CHECK )
 extern int pthread_create (pthread_t *__restrict __thr,
 extern int pthread_kill (pthread_t __thr, int __signo);
