@@ -273,6 +273,10 @@ Percentage penalty the recursive functions will receive when they are evaluated 
 Common Joined UInteger Var(param_ipa_cp_single_call_penalty) Init(15) IntegerRange(0, 100) Param Optimization
 Percentage penalty functions containing a single call to another function will receive when they are evaluated for cloning.
 
+-param=ipa-cp-sweeps=
+Common Joined UInteger Var(param_ipa_cp_sweeps) Init(3) IntegerRange(1, 100) Param Optimization
+The number of times the interprocedural constant propagation will traverse all functions to make cloning decisions.
+
 -param=ipa-cp-unit-growth=
 Common Joined UInteger Var(param_ipa_cp_unit_growth) Init(10) Param Optimization
 How much can given compilation unit grow because of the interprocedural constant propagation (in percent).

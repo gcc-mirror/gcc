@@ -17522,6 +17522,10 @@ are evaluated for cloning.
 Percentage penalty functions containing a single call to another
 function will receive when they are evaluated for cloning.
 
+@item ipa-cp-sweeps
+The number of times the interprocedural constant propagation will traverse
+all functions to make cloning decisions.
+
 @item ipa-max-agg-items
 IPA-CP is also capable to propagate a number of scalar values passed
 in an aggregate. @option{ipa-max-agg-items} controls the maximum

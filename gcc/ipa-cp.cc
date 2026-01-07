@@ -151,6 +151,10 @@ object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
 
 static long overall_size, orig_overall_size;
 
+/* The maximum number of IPA-CP decision sweeps that any node requested in its
+   param.  */
+static int max_number_sweeps;
+
 /* Node name to unique clone suffix number map.  */
 static hash_map<const char *, unsigned> *clone_num_suffixes;
 
@@ -3376,12 +3380,14 @@ incorporate_penalties (cgraph_node *node, ipa_node_params *info,
 
 /* Return true if cloning NODE is a good idea, given the estimated TIME_BENEFIT
    and SIZE_COST and with the sum of frequencies of incoming edges to the
-   potential new clone in FREQUENCIES.  */
+   potential new clone in FREQUENCIES.  CUR_SWEEP is the number of the current
+   sweep of IPA-CP over the call-graph in the decision stage.  */
 
 static bool
 good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 			    sreal freq_sum, profile_count count_sum,
-			    int size_cost, bool called_without_ipa_profile)
+			    int size_cost, bool called_without_ipa_profile,
+			    int cur_sweep)
 {
   gcc_assert (count_sum.ipa () == count_sum);
   if (count_sum.quality () == AFDO)
@@ -3396,7 +3402,9 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
   gcc_assert (size_cost > 0);
 
   ipa_node_params *info = ipa_node_params_sum->get (node);
+  int num_sweeps = opt_for_fn (node->decl, param_ipa_cp_sweeps);
   int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
+  eval_threshold = (eval_threshold * num_sweeps) / cur_sweep;
   /* If we know the execution IPA execution counts, we can estimate overall
      speedup of the program.  */
   if (count_sum.nonzero_p ())
@@ -3551,20 +3559,25 @@ perform_estimation_of_a_value (cgraph_node *node,
   val->local_size_cost = size;
 }
 
-/* Get the overall limit oof growth based on parameters extracted from growth.
-   it does not really make sense to mix functions with different overall growth
-   limits but it is possible and if it happens, we do not want to select one
-   limit at random.  */
+/* Get the overall limit of growth based on parameters extracted from growth,
+   and CUR_SWEEP, which is the number of the current sweep of IPA-CP over the
+   call-graph in the decision stage.  It does not really make sense to mix
+   functions with different overall growth limits or even number of sweeps but
+   it is possible and if it happens, we do not want to select one limit at
+   random, so get the limits from NODE.  */
 
 static long
-get_max_overall_size (cgraph_node *node)
+get_max_overall_size (cgraph_node *node, int cur_sweep)
 {
   long max_new_size = orig_overall_size;
   long large_unit = opt_for_fn (node->decl, param_ipa_cp_large_unit_insns);
   if (max_new_size < large_unit)
     max_new_size = large_unit;
+  int num_sweeps = opt_for_fn (node->decl, param_ipa_cp_sweeps);
+  gcc_assert (cur_sweep <= num_sweeps);
   int unit_growth = opt_for_fn (node->decl, param_ipa_cp_unit_growth);
-  max_new_size += max_new_size * unit_growth / 100 + 1;
+  max_new_size += ((max_new_size * unit_growth * cur_sweep)
+		   / num_sweeps) / 100 + 1;
   return max_new_size;
 }
 
@@ -4022,6 +4035,10 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
 	unsigned nlattices = ipa_get_param_count (info);
 	info->lattices.safe_grow_cleared (nlattices, true);
 	initialize_node_lattices (node);
+
+	int num_sweeps = opt_for_fn (node->decl, param_ipa_cp_sweeps);
+	if (max_number_sweeps < num_sweeps)
+	  max_number_sweeps = num_sweeps;
       }
     ipa_size_summary *s = ipa_size_summaries->get (node);
     if (node->definition && !node->alias && s != NULL)
@@ -5783,13 +5800,14 @@ ipcp_val_agg_replacement_ok_p (vec<ipa_argagg_value, va_gc> *,
    parameter itself, otherwise it is stored at the given OFFSET of the
    parameter.  AVALS describes the other already known values.  SELF_GEN_CLONES
    is a vector which contains clones created for self-recursive calls with an
-   arithmetic pass-through jump function.  */
+   arithmetic pass-through jump function.  CUR_SWEEP is the number of the
+   current sweep of the call-graph during the decision stage.  */
 
 template <typename valtype>
 static bool
 decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 		    ipcp_value<valtype> *val, ipa_auto_call_arg_values *avals,
-		    vec<cgraph_node *> *self_gen_clones)
+		    vec<cgraph_node *> *self_gen_clones, int cur_sweep)
 {
   int caller_count;
   sreal freq_sum;
@@ -5802,7 +5820,8 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
       perhaps_add_new_callers (node, val);
       return false;
     }
-  else if (val->local_size_cost + overall_size > get_max_overall_size (node))
+  else if (val->local_size_cost + overall_size
+	   > get_max_overall_size (node, cur_sweep))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "   Ignoring candidate value because "
@@ -5850,10 +5869,10 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
   if (!good_cloning_opportunity_p (node, val->local_time_benefit,
 				   freq_sum, count_sum,
 				   val->local_size_cost,
-				   called_without_ipa_profile)
+				   called_without_ipa_profile, cur_sweep)
       && !good_cloning_opportunity_p (node, val->prop_time_benefit,
 				      freq_sum, count_sum, val->prop_size_cost,
-				      called_without_ipa_profile))
+				      called_without_ipa_profile, cur_sweep))
     return false;
 
   if (dump_file)
@@ -5914,16 +5933,18 @@ ipa_range_contains_p (const vrange &r, tree val)
   return r.contains_p (val);
 }
 
-/* Decide whether and what specialized clones of NODE should be created.  */
+/* Decide whether and what specialized clones of NODE should be created.
+   CUR_SWEEP is the number of the current sweep of the call-graph during the
+   decision stage.  */
 
 static bool
-decide_whether_version_node (struct cgraph_node *node)
+decide_whether_version_node (struct cgraph_node *node, int cur_sweep)
 {
   ipa_node_params *info = ipa_node_params_sum->get (node);
   int i, count = ipa_get_param_count (info);
   bool ret = false;
 
-  if (count == 0)
+  if (info->node_dead || count == 0)
     return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -5974,7 +5995,7 @@ decide_whether_version_node (struct cgraph_node *node)
 		  continue;
 		}
 	      ret |= decide_about_value (node, i, -1, val, &avals,
-					 &self_gen_clones);
+					 &self_gen_clones, cur_sweep);
 	    }
 	}
 
@@ -5990,7 +6011,7 @@ decide_whether_version_node (struct cgraph_node *node)
 		    || !aglat->is_single_const ()))
 	      for (val = aglat->values; val; val = val->next)
 		ret |= decide_about_value (node, i, aglat->offset, val, &avals,
-					   &self_gen_clones);
+					   &self_gen_clones, cur_sweep);
 	}
 
       if (!ctxlat->bottom
@@ -5999,7 +6020,7 @@ decide_whether_version_node (struct cgraph_node *node)
 	  ipcp_value<ipa_polymorphic_call_context> *val;
 	  for (val = ctxlat->values; val; val = val->next)
 	    ret |= decide_about_value (node, i, -1, val, &avals,
-				       &self_gen_clones);
+				       &self_gen_clones, cur_sweep);
 	}
     }
 
@@ -6049,9 +6070,10 @@ decide_whether_version_node (struct cgraph_node *node)
 	}
       else if (good_cloning_opportunity_p (node, time, stats.freq_sum,
 					   stats.count_sum, size,
-					   stats.called_without_ipa_profile))
+					   stats.called_without_ipa_profile,
+					   cur_sweep))
 	{
-	  if (size + overall_size <= get_max_overall_size (node))
+	  if (size + overall_size <= get_max_overall_size (node, cur_sweep))
 	    {
 	      if (!dbg_cnt (ipa_cp_values))
 		return ret;
@@ -6277,26 +6299,38 @@ ipcp_decision_stage (class ipa_topo_info *topo)
   int i;
 
   if (dump_file)
-    fprintf (dump_file, "\nIPA decision stage:\n\n");
+    fprintf (dump_file, "\nIPA decision stage (%i sweeps):\n",
+	     max_number_sweeps);
 
-  for (i = topo->nnodes - 1; i >= 0; i--)
+  for (int cur_sweep = 1; cur_sweep <= max_number_sweeps; cur_sweep++)
     {
-      struct cgraph_node *node = topo->order[i];
-      bool change = false, iterate = true;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "\nIPA decision sweep number %i (out of %i):\n",
+		 cur_sweep, max_number_sweeps);
 
-      while (iterate)
+      for (i = topo->nnodes - 1; i >= 0; i--)
 	{
-	  struct cgraph_node *v;
-	  iterate = false;
-	  for (v = node; v; v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
-	    if (v->has_gimple_body_p ()
-		&& ipcp_versionable_function_p (v))
-	      iterate |= decide_whether_version_node (v);
+	  struct cgraph_node *node = topo->order[i];
+	  bool change = false, iterate = true;
 
-	  change |= iterate;
+	  while (iterate)
+	    {
+	      struct cgraph_node *v;
+	      iterate = false;
+	      for (v = node;
+		   v;
+		   v = ((struct ipa_dfs_info *) v->aux)->next_cycle)
+		if (v->has_gimple_body_p ()
+		    && ipcp_versionable_function_p (v)
+		    && (cur_sweep
+			<= opt_for_fn (node->decl, param_ipa_cp_sweeps)))
+		  iterate |= decide_whether_version_node (v, cur_sweep);
+
+	      change |= iterate;
+	    }
+	  if (change)
+	    identify_dead_nodes (node);
 	}
-      if (change)
-	identify_dead_nodes (node);
     }
 
   /* Currently, the primary use of callback edges is constant propagation.
