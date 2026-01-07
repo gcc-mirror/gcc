@@ -9609,6 +9609,7 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 }
 
 
+static stmtblock_t *final_block;
 static tree
 gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
 				 gfc_expr * expr)
@@ -9679,6 +9680,13 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
 
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &se.post);
+
+  if (final_block && expr->expr_type == EXPR_ARRAY)
+    {
+      tree data_ptr;
+      data_ptr = gfc_conv_descriptor_data_get (dest);
+      gfc_add_expr_to_block (final_block, gfc_call_free (data_ptr));
+    }
 
   if (expr->expr_type != EXPR_VARIABLE)
     gfc_conv_descriptor_data_set (&block, se.expr,
@@ -10385,6 +10393,10 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 
   if (!init)
     {
+      if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.pdt_type
+	  && expr->must_finalize)
+	final_block = &se->finalblock;
+
       /* Create a temporary variable and fill it in.  */
       se->expr = gfc_create_var (type, expr->ts.u.derived->name);
       /* The symtree in expr is NULL, if the code to generate is for
@@ -10392,6 +10404,7 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
       tmp = gfc_trans_structure_assign (se->expr, expr, expr->symtree != NULL,
 					se->want_coarray);
       gfc_add_expr_to_block (&se->pre, tmp);
+      final_block = NULL;
       return;
     }
 
@@ -13291,6 +13304,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       /* Deallocate the lhs parameterized components if required.  */
       if (dealloc
 	  && !expr1->symtree->n.sym->attr.associate_var
+	  && expr2->expr_type != EXPR_ARRAY
 	  && ((expr1->ts.type == BT_DERIVED
 	       && expr1->ts.u.derived
 	       && expr1->ts.u.derived->attr.pdt_type)

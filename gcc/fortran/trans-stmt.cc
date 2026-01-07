@@ -6926,7 +6926,8 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
       if ((code->expr3->ts.type == BT_DERIVED
 	   || code->expr3->ts.type == BT_CLASS)
 	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_obj_created)
-	  && code->expr3->ts.u.derived->attr.alloc_comp
+	  && (code->expr3->ts.u.derived->attr.alloc_comp
+	      || code->expr3->ts.u.derived->attr.pdt_type)
 	  && !code->expr3->must_finalize
 	  && !code->ext.alloc.expr3_not_explicit)
 	{
@@ -7975,7 +7976,7 @@ gfc_trans_deallocate (gfc_code *code)
 				       se.expr, expr->rank);
 
       if (tmp)
-	gfc_add_expr_to_block (&block, tmp);
+	gfc_add_expr_to_block (&se.pre, tmp);
 
       if (flag_coarray == GFC_FCOARRAY_LIB
 	  || flag_coarray == GFC_FCOARRAY_SINGLE)

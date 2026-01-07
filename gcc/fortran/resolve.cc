@@ -7786,6 +7786,22 @@ resolve_typebound_function (gfc_expr* e)
   if (!gfc_resolve_ref (e))
     return false;
 
+  /* It can happen that a generic, typebound procedure is marked as overridable
+     with all of the specific procedures being non-overridable. If this is the
+     case, it is safe to resolve the compcall.  */
+  if (!expr && overridable
+      && e->value.compcall.tbp->is_generic
+      && e->value.compcall.tbp->u.generic->specific
+      && e->value.compcall.tbp->u.generic->specific->non_overridable)
+    {
+      gfc_tbp_generic *g = e->value.compcall.tbp->u.generic;
+      for (; g; g = g->next)
+	if (!g->specific->non_overridable)
+	  break;
+      if (g == NULL && resolve_compcall (e, &name))
+	return true;
+    }
+
   /* Get the CLASS declared type.  */
   declared = get_declared_from_expr (&class_ref, &new_ref, e, true);
 

@@ -1711,12 +1711,16 @@ gfc_get_symbol_decl (gfc_symbol * sym)
      declaration of the entity and memory allocated/deallocated.  */
   if ((sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
       && sym->param_list != NULL
-      && gfc_current_ns == sym->ns
+      && (gfc_current_ns == sym->ns
+	  || (gfc_current_ns == sym->ns->parent
+	      && gfc_current_ns->proc_name->attr.flavor != FL_MODULE))
       && !(sym->attr.use_assoc || sym->attr.dummy))
     gfc_defer_symbol_init (sym);
 
   if ((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_comp)
-      && gfc_current_ns == sym->ns
+      && (gfc_current_ns == sym->ns
+	  || (gfc_current_ns == sym->ns->parent
+	      && gfc_current_ns->proc_name->attr.flavor != FL_MODULE))
       && !(sym->attr.use_assoc || sym->attr.dummy))
     gfc_defer_symbol_init (sym);
 
@@ -4596,25 +4600,37 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc,
 }
 
 
-/* Initialize a PDT, when all the components have an initializer.  */
-static void
-gfc_init_default_pdt (gfc_symbol *sym, stmtblock_t *block, bool dealloc)
+/* Initialize a PDT, either when the symbol has a value or when all the
+   components have an initializer.  */
+static tree
+gfc_init_default_pdt (gfc_symbol *sym, bool dealloc)
 {
+  stmtblock_t block;
+  tree tmp;
+  gfc_component *c;
+
+  if (sym->value && sym->value->symtree
+      && sym->value->symtree->n.sym
+      && !sym->value->symtree->n.sym->attr.artificial)
+    {
+      tmp = gfc_trans_assignment (gfc_lval_expr_from_sym (sym),
+				  sym->value, false, false, true);
+      return tmp;
+    }
+
+  if (!dealloc || !sym->value)
+    return NULL_TREE;
+
   /* Allowed in the case where all the components have initializers and
      there are no LEN components.  */
-  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
-    {
-      gfc_component *c = sym->ts.u.derived->components;
-      if (!dealloc || !sym->value || sym->value->expr_type != EXPR_STRUCTURE)
-	return;
-      for (; c; c = c->next)
-	if (c->attr.pdt_len || !c->initializer)
-	  return;
-    }
-  else
-    return;
-  gfc_init_default_dt (sym, block, dealloc, true);
-  return;
+  c = sym->ts.u.derived->components;
+  for (; c; c = c->next)
+    if (c->attr.pdt_len || !c->initializer)
+      return NULL_TREE;
+
+  gfc_init_block (&block);
+  gfc_init_default_dt (sym, &block, dealloc, true);
+  return gfc_finish_block (&block);
 }
 
 
@@ -4998,9 +5014,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	{
 	  is_pdt_type = true;
 	  gfc_init_block (&tmpblock);
+
 	  if (!sym->attr.dummy && !sym->attr.pointer)
 	    {
-	      if (!sym->attr.allocatable)
+	      tmp = gfc_init_default_pdt (sym, true);
+	      if (!sym->attr.allocatable && tmp == NULL_TREE)
 		{
 		  tmp = gfc_allocate_pdt_comp (sym->ts.u.derived,
 					       sym->backend_decl,
@@ -5008,9 +5026,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					       sym->param_list);
 		  gfc_add_expr_to_block (&tmpblock, tmp);
 		}
-
-	      if (is_pdt_type)
-		gfc_init_default_pdt (sym, &tmpblock, true);
+	      else if (tmp != NULL_TREE)
+		gfc_add_expr_to_block (&tmpblock, tmp);
 
 	      if (!sym->attr.result && !sym->ts.u.derived->attr.alloc_comp)
 		tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived,

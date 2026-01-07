@@ -54,8 +54,8 @@ contains
       if (mt%k /= 4) stop 3
       if (mt%j /= 42) stop 4
     end associate
-  end subroutine
+  end subroutine                ! { dg-warning ".mapped_tensor. is used uninitialized" }
 
 end
-! { dg-final { scan-tree-dump-times "mapped_tensor.j = 42" 1 "original" } }
+! { dg-final { scan-tree-dump-times "Pdttensor_t_4.2.j = 42" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "struct Pdttensor_t_4 mt" 1 "original" } }

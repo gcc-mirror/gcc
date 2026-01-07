@@ -2248,6 +2248,11 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock,
 	    {
 	      /* Scalar values.  */
 	      gfc_init_se (&se, NULL);
+	      if (c->expr->ts.type == BT_DERIVED
+		  && c->expr->ts.u.derived->attr.pdt_type
+		  && c->expr->expr_type == EXPR_STRUCTURE)
+		c->expr->must_finalize = 1;
+
 	      gfc_trans_array_ctor_element (&body, desc, *poffset,
 					    &se, c->expr);
 
@@ -3088,6 +3093,10 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   finalize_required = expr->must_finalize;
   if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp)
     finalize_required = true;
+
+  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.pdt_type)
+   finalize_required = true;
+
   gfc_trans_array_constructor_value (&outer_loop->pre,
 				     finalize_required ? &finalblock : NULL,
 				     type, desc, c, &offset, &offsetvar,
