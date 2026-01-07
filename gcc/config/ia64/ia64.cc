@@ -578,6 +578,9 @@ static const scoped_attribute_specs *const ia64_attribute_table[] =
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P ia64_function_value_regno_p
 
+#undef TARGET_ZERO_CALL_USED_REGS
+#define TARGET_ZERO_CALL_USED_REGS ia64_zero_call_used_regs
+
 #undef TARGET_STRUCT_VALUE_RTX
 #define TARGET_STRUCT_VALUE_RTX ia64_struct_value_rtx
 #undef TARGET_RETURN_IN_MEMORY
@@ -688,8 +691,6 @@ static const scoped_attribute_specs *const ia64_attribute_table[] =
 
 #undef TARGET_DOCUMENTATION_NAME
 #define TARGET_DOCUMENTATION_NAME "IA-64"
-
-struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Returns TRUE iff the target attribute indicated by ATTR_ID takes a plain
    identifier as an argument, so the front end shouldn't look it up.  */
@@ -5328,6 +5329,54 @@ ia64_function_value_regno_p (const unsigned int regno)
 {
   return ((regno >= GR_RET_FIRST && regno <= GR_RET_LAST)
           || (regno >= FR_RET_FIRST && regno <= FR_RET_LAST));
+}
+
+/* TARGET_ZERO_CALL_USED_REGS.  */
+/* Generate a sequence of instructions that zero registers specified by
+   NEED_ZEROED_HARDREGS.  Return the ZEROED_HARDREGS that are actually
+   zeroed.  */
+static HARD_REG_SET
+ia64_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
+{
+  HARD_REG_SET nonpredicate, failed;
+
+  CLEAR_HARD_REG_SET (nonpredicate);
+  CLEAR_HARD_REG_SET (failed);
+
+  /* Mark all non-predicate registers.  */
+  for (int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+    if (TEST_HARD_REG_BIT (need_zeroed_hardregs, regno)
+	&& !PR_REGNO_P (regno))
+      SET_HARD_REG_BIT (nonpredicate, regno);
+
+  /* Let the generic helper emit zeroing for the remaining hard regs.
+     It returns the subset it actually managed to zero.  */
+  if (!hard_reg_set_empty_p (nonpredicate))
+    failed = default_zero_call_used_regs (nonpredicate);
+
+  /* Finally, emit zeroing of predicate registers.  */
+  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (TEST_HARD_REG_BIT (need_zeroed_hardregs, regno)
+	&& PR_REGNO_P (regno))
+      {
+	rtx_insn *last_insn = get_last_insn ();
+	/* Prepare PR0 register, which is hardwired to 1 */
+	rtx zero = gen_rtx_REG (CCImode, PR_REG (0));
+	rtx regno_rtx = gen_rtx_REG (CCImode, regno);
+	enum insn_code code = optab_handler (mov_optab, CCImode);
+
+	gcc_assert (code != CODE_FOR_nothing);
+
+	rtx_insn *insn = emit_insn (GEN_FCN (code) (regno_rtx, zero));
+
+	if (!valid_insn_p (insn))
+	  {
+	    SET_HARD_REG_BIT (failed, regno);
+	    delete_insns_since (last_insn);
+	  }
+      }
+
+  return failed;
 }
 
 /* This is called from dwarf2out.cc via TARGET_ASM_OUTPUT_DWARF_DTPREL.
@@ -11959,5 +12008,7 @@ ia64_can_change_mode_class (machine_mode from, machine_mode to,
     return !reg_classes_intersect_p (rclass, FR_REGS);
   return true;
 }
+
+struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-ia64.h"
