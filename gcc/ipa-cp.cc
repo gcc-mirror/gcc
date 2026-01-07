@@ -3455,17 +3455,15 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
 }
 
 /* Grow vectors in AVALS and fill them with information about values of
-   parameters that are known to be independent of the context.  Only calculate
-   m_known_aggs if CALCULATE_AGGS is true.  INFO describes the function.  If
-   REMOVABLE_PARAMS_COST is non-NULL, the movement cost of all removable
-   parameters will be stored in it.
+   parameters that are known to be independent of the context.  INFO describes
+   the function.  If REMOVABLE_PARAMS_COST is non-NULL, the movement cost of
+   all removable parameters will be stored in it.
 
    TODO: Also grow context independent value range vectors.  */
 
 static bool
 gather_context_independent_values (class ipa_node_params *info,
 				   ipa_auto_call_arg_values *avals,
-				   bool calculate_aggs,
 				   int *removable_params_cost)
 {
   int i, count = ipa_get_param_count (info);
@@ -3506,8 +3504,7 @@ gather_context_independent_values (class ipa_node_params *info,
       if (ctxlat->is_single_const ())
 	avals->m_known_contexts[i] = ctxlat->values->value;
 
-      if (calculate_aggs)
-	ret |= push_agg_values_from_plats (plats, i, 0, &avals->m_known_aggs);
+      ret |= push_agg_values_from_plats (plats, i, 0, &avals->m_known_aggs);
     }
 
   return ret;
@@ -3602,7 +3599,6 @@ estimate_local_effects (struct cgraph_node *node)
 {
   ipa_node_params *info = ipa_node_params_sum->get (node);
   int count = ipa_get_param_count (info);
-  bool always_const;
   int removable_params_cost;
 
   if (!count || !ipcp_versionable_function_p (node))
@@ -3612,61 +3608,7 @@ estimate_local_effects (struct cgraph_node *node)
     fprintf (dump_file, "\nEstimating effects for %s.\n", node->dump_name ());
 
   ipa_auto_call_arg_values avals;
-  always_const = gather_context_independent_values (info, &avals, true,
-						    &removable_params_cost);
-  sreal devirt_bonus = devirtualization_time_bonus (node, &avals);
-  if (always_const || devirt_bonus > 0
-      || (removable_params_cost && clone_for_param_removal_p (node)))
-    {
-      struct caller_statistics stats;
-      ipa_call_estimates estimates;
-
-      init_caller_stats (&stats);
-      node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats,
-					      false);
-      estimate_ipcp_clone_size_and_time (node, &avals, &estimates);
-      sreal time = estimates.nonspecialized_time - estimates.time;
-      time += devirt_bonus;
-      time += hint_time_bonus (node, estimates);
-      time += removable_params_cost;
-      int size = estimates.size - stats.n_calls * removable_params_cost;
-
-      if (dump_file)
-	fprintf (dump_file, " - context independent values, size: %i, "
-		 "time_benefit: %f\n", size, (time).to_double ());
-
-      if (size <= 0 || node->local)
-	{
-	  info->do_clone_for_all_contexts = true;
-
-	  if (dump_file)
-	    fprintf (dump_file, "     Decided to specialize for all "
-		     "known contexts, code not going to grow.\n");
-	}
-      else if (good_cloning_opportunity_p (node, time, stats.freq_sum,
-					   stats.count_sum, size,
-					   stats.called_without_ipa_profile))
-	{
-	  if (size + overall_size <= get_max_overall_size (node))
-	    {
-	      info->do_clone_for_all_contexts = true;
-	      overall_size += size;
-
-	      if (dump_file)
-		fprintf (dump_file, "     Decided to specialize for all "
-			 "known contexts, growth (to %li) deemed "
-			 "beneficial.\n", overall_size);
-	    }
-	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Not cloning for all contexts because "
-		     "maximum unit size would be reached with %li.\n",
-		     size + overall_size);
-	}
-      else if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "   Not cloning for all contexts because "
-		 "!good_cloning_opportunity_p.\n");
-
-    }
+  gather_context_independent_values (info, &avals, &removable_params_cost);
 
   for (int i = 0; i < count; i++)
     {
@@ -5915,7 +5857,7 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
     return false;
 
   if (dump_file)
-    fprintf (dump_file, "  Creating a specialized node of %s.\n",
+    fprintf (dump_file, "   Creating a specialized node of %s.\n",
 	     node->dump_name ());
 
   vec<tree> known_csts;
@@ -5990,7 +5932,9 @@ decide_whether_version_node (struct cgraph_node *node)
 
   auto_vec <cgraph_node *, 9> self_gen_clones;
   ipa_auto_call_arg_values avals;
-  gather_context_independent_values (info, &avals, false, NULL);
+  int removable_params_cost;
+  bool ctx_independent_const
+    = gather_context_independent_values (info, &avals, &removable_params_cost);
 
   for (i = 0; i < count;i++)
     {
@@ -6065,15 +6009,72 @@ decide_whether_version_node (struct cgraph_node *node)
       update_counts_for_self_gen_clones (node, self_gen_clones);
     }
 
-  if (info->do_clone_for_all_contexts)
+  bool do_clone_for_all_contexts = false;
+  sreal devirt_bonus = devirtualization_time_bonus (node, &avals);
+  if (ctx_independent_const || devirt_bonus > 0
+      || (removable_params_cost && clone_for_param_removal_p (node)))
     {
-      if (!dbg_cnt (ipa_cp_values))
-	{
-	  info->do_clone_for_all_contexts = false;
-	  return ret;
-	}
+      struct caller_statistics stats;
+      ipa_call_estimates estimates;
 
-      struct cgraph_node *clone;
+      init_caller_stats (&stats);
+      node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats,
+						false);
+      estimate_ipcp_clone_size_and_time (node, &avals, &estimates);
+      sreal time = estimates.nonspecialized_time - estimates.time;
+      time += devirt_bonus;
+      time += hint_time_bonus (node, estimates);
+      time += removable_params_cost;
+      int size = estimates.size - stats.n_calls * removable_params_cost;
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, " - context independent values, size: %i, "
+		 "time_benefit: %f\n", size, (time).to_double ());
+
+      if (!stats.n_calls)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "   Not cloning for all contexts because "
+		     "there are no callers of the original node left.\n");
+	}
+      else if (size <= 0 || node->local)
+	{
+	  if (!dbg_cnt (ipa_cp_values))
+	    return ret;
+
+	  do_clone_for_all_contexts = true;
+	  if (dump_file)
+	    fprintf (dump_file, "   Decided to specialize for all "
+		     "known contexts, code not going to grow.\n");
+	}
+      else if (good_cloning_opportunity_p (node, time, stats.freq_sum,
+					   stats.count_sum, size,
+					   stats.called_without_ipa_profile))
+	{
+	  if (size + overall_size <= get_max_overall_size (node))
+	    {
+	      if (!dbg_cnt (ipa_cp_values))
+		return ret;
+
+	      do_clone_for_all_contexts = true;
+	      overall_size += size;
+	      if (dump_file)
+		fprintf (dump_file, "   Decided to specialize for all "
+			 "known contexts, growth (to %li) deemed "
+			 "beneficial.\n", overall_size);
+	    }
+	  else if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "   Not cloning for all contexts because "
+		     "maximum unit size would be reached with %li.\n",
+		     size + overall_size);
+	}
+      else if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "   Not cloning for all contexts because "
+		 "!good_cloning_opportunity_p.\n");
+    }
+
+  if (do_clone_for_all_contexts)
+    {
       auto_vec<cgraph_edge *> callers = node->collect_callers ();
 
       for (int i = callers.length () - 1; i >= 0; i--)
@@ -6086,16 +6087,13 @@ decide_whether_version_node (struct cgraph_node *node)
 	}
 
       if (!adjust_callers_for_value_intersection (callers, node))
-	{
-	  /* If node is not called by anyone, or all its caller edges are
-	     self-recursive, the node is not really in use, no need to do
-	     cloning.  */
-	  info->do_clone_for_all_contexts = false;
-	  return ret;
-	}
+	/* If node is not called by anyone, or all its caller edges are
+	   self-recursive, the node is not really in use, no need to do
+	   cloning.  */
+	return ret;
 
       if (dump_file)
-	fprintf (dump_file, " - Creating a specialized node of %s "
+	fprintf (dump_file, "   Creating a specialized node of %s "
 		 "for all known contexts.\n", node->dump_name ());
 
       vec<tree> known_csts = avals.m_known_vals.copy ();
@@ -6111,9 +6109,9 @@ decide_whether_version_node (struct cgraph_node *node)
 	  known_contexts.release ();
 	  known_contexts = vNULL;
 	}
-      clone = create_specialized_node (node, known_csts, known_contexts,
-				       aggvals, callers);
-      info->do_clone_for_all_contexts = false;
+      struct cgraph_node *clone = create_specialized_node (node, known_csts,
+							   known_contexts,
+							   aggvals, callers);
       ipa_node_params_sum->get (clone)->is_all_contexts_clone = true;
       ret = true;
     }

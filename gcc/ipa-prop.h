@@ -658,9 +658,6 @@ public:
   unsigned analysis_done : 1;
   /* Whether the function is enqueued in ipa-cp propagation stack.  */
   unsigned node_enqueued : 1;
-  /* Whether we should create a specialized version based on values that are
-     known to be constant in all contexts.  */
-  unsigned do_clone_for_all_contexts : 1;
   /* Set if this is an IPA-CP clone for all contexts.  */
   unsigned is_all_contexts_clone : 1;
   /* Node has been completely replaced by clones and will be removed after
@@ -680,7 +677,7 @@ inline
 ipa_node_params::ipa_node_params ()
 : descriptors (NULL), lattices (vNULL), ipcp_orig_node (NULL),
   known_csts (vNULL), known_contexts (vNULL), analysis_done (0),
-  node_enqueued (0), do_clone_for_all_contexts (0), is_all_contexts_clone (0),
+  node_enqueued (0), is_all_contexts_clone (0),
   node_dead (0), node_within_scc (0), node_is_self_scc (0),
   node_calling_single_call (0), versionable (0)
 {
