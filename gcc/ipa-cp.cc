@@ -339,18 +339,25 @@ ipcp_print_widest_int (FILE *f, const widest_int &value)
 void
 ipcp_bits_lattice::print (FILE *f)
 {
+  if (bottom_p ())
+    {
+      fprintf (f, "         Bits unusable (BOTTOM)\n");
+      return;
+    }
+
   if (top_p ())
-    fprintf (f, "         Bits unknown (TOP)\n");
-  else if (bottom_p ())
-    fprintf (f, "         Bits unusable (BOTTOM)\n");
+    fprintf (f, "         Bits unknown (TOP)");
   else
     {
       fprintf (f, "         Bits: value = ");
       ipcp_print_widest_int (f, get_value ());
       fprintf (f, ", mask = ");
       ipcp_print_widest_int (f, get_mask ());
-      fprintf (f, "\n");
     }
+
+  if (m_recipient_only)
+    fprintf (f, " (recipient only)");
+  fprintf (f, "\n");
 }
 
 /* Print value range lattice to F.  */
@@ -358,6 +365,8 @@ ipcp_bits_lattice::print (FILE *f)
 void
 ipcp_vr_lattice::print (FILE * f)
 {
+  if (m_recipient_only)
+    fprintf (f, "(recipient only) ");
   m_vr.dump (f);
 }
 
@@ -888,6 +897,18 @@ ipcp_vr_lattice::set_to_bottom ()
   return true;
 }
 
+/* Set the flag that this lattice is a recipient only, return true if it was
+   not set before.  */
+
+bool
+ipcp_vr_lattice::set_recipient_only ()
+{
+  if (m_recipient_only)
+    return false;
+  m_recipient_only = true;
+  return true;
+}
+
 /* Set lattice value to bottom, if it already isn't the case.  */
 
 bool
@@ -922,6 +943,18 @@ ipcp_bits_lattice::known_nonzero_p () const
   if (!constant_p ())
     return false;
   return wi::ne_p (wi::bit_and (wi::bit_not (m_mask), m_value), 0);
+}
+
+/* Set the flag that this lattice is a recipient only, return true if it was not
+   set before.  */
+
+bool
+ipcp_bits_lattice::set_recipient_only ()
+{
+  if (m_recipient_only)
+    return false;
+  m_recipient_only = true;
+  return true;
 }
 
 /* Convert operand to value, mask form.  */
@@ -1326,17 +1359,28 @@ intersect_argaggs_with (vec<ipa_argagg_value> &elts,
 }
 
 /* Mark bot aggregate and scalar lattices as containing an unknown variable,
-   return true is any of them has not been marked as such so far.  */
+   return true is any of them has not been marked as such so far.  If if
+   MAKE_SIMPLE_RECIPIENTS is true, set the lattices that can only hold one
+   value to being recipients only, otherwise also set them to bottom.  */
 
 static inline bool
-set_all_contains_variable (class ipcp_param_lattices *plats)
+set_all_contains_variable (class ipcp_param_lattices *plats,
+			   bool make_simple_recipients = false)
 {
   bool ret;
   ret = plats->itself.set_contains_variable ();
   ret |= plats->ctxlat.set_contains_variable ();
   ret |= set_agg_lats_contain_variable (plats);
-  ret |= plats->bits_lattice.set_to_bottom ();
-  ret |= plats->m_value_range.set_to_bottom ();
+  if (make_simple_recipients)
+    {
+      ret |= plats->bits_lattice.set_recipient_only ();
+      ret |= plats->m_value_range.set_recipient_only ();
+    }
+  else
+    {
+      ret |= plats->bits_lattice.set_to_bottom ();
+      ret |= plats->m_value_range.set_to_bottom ();
+    }
   return ret;
 }
 
@@ -1481,7 +1525,7 @@ initialize_node_lattices (struct cgraph_node *node)
 	{
 	  plats->m_value_range.init (type);
 	  if (variable)
-	    set_all_contains_variable (plats);
+	    set_all_contains_variable (plats, true);
 	}
     }
 
@@ -2573,7 +2617,8 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	 result of x & 0xff == 0xff, which gets computed during ccp1 pass
 	 and we store it in jump function during analysis stage.  */
 
-      if (!src_lats->bits_lattice.bottom_p ())
+      if (!src_lats->bits_lattice.bottom_p ()
+	  || src_lats->bits_lattice.recipient_only_p ())
 	{
 	  if (!op_type)
 	    op_type = ipa_get_type (caller_info, src_idx);
@@ -2639,7 +2684,8 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	= ipa_get_parm_lattices (caller_info, src_idx);
       tree operand_type = ipa_get_type (caller_info, src_idx);
 
-      if (src_lats->m_value_range.bottom_p ())
+      if (src_lats->m_value_range.bottom_p ()
+	  || src_lats->m_value_range.recipient_only_p ())
 	return dest_lat->set_to_bottom ();
 
       if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR
@@ -6529,6 +6575,11 @@ ipcp_store_vr_results (void)
       bool found_useful_result = false;
       bool do_vr = true;
       bool do_bits = true;
+
+      /* If the function is not local, the gathered information is only useful
+	 for clones.  */
+      if (!node->local)
+	continue;
 
       if (!info || !opt_for_fn (node->decl, flag_ipa_vrp))
 	{

@@ -201,6 +201,8 @@ public:
   bool set_to_bottom ();
   bool set_to_constant (widest_int, widest_int);
   bool known_nonzero_p () const;
+  bool set_recipient_only ();
+  bool recipient_only_p () const {return m_recipient_only; }
 
   widest_int get_value () const { return m_value; }
   widest_int get_mask () const { return m_mask; }
@@ -215,6 +217,11 @@ public:
 private:
   enum { IPA_BITS_UNDEFINED, IPA_BITS_CONSTANT, IPA_BITS_VARYING }
     m_lattice_val = IPA_BITS_UNDEFINED;
+
+  /* Set to true if the lattice is valid only as a recipient of propagatad
+     values but cannot be used as source of propagation because there may be
+     unknown callers.  */
+  bool m_recipient_only;
 
   /* Similar to ccp_lattice_t, mask represents which bits of value are constant.
      If a bit in mask is set to 0, then the corresponding bit in
@@ -231,10 +238,16 @@ class ipcp_vr_lattice
 {
 public:
   value_range m_vr;
+  /* Set to true if the lattice is valid only as a recipient of propagatad
+     values but cannot be used as source of propagation because there may be
+     unknown callers.  */
+  bool m_recipient_only;
 
   inline bool bottom_p () const;
   inline bool top_p () const;
   inline bool set_to_bottom ();
+  bool set_recipient_only ();
+  bool recipient_only_p () const {return m_recipient_only; }
   bool meet_with (const vrange &p_vr);
   bool meet_with (const ipcp_vr_lattice &other);
   void init (tree type);
@@ -251,6 +264,7 @@ ipcp_vr_lattice::init (tree type)
     m_vr.set_type (type);
 
   // Otherwise m_vr will default to unsupported_range.
+  m_recipient_only = false;
 }
 
 /* Structure containing lattices for a parameter itself and for pieces of
