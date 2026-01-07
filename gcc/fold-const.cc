@@ -86,6 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec-perm-indices.h"
 #include "asan.h"
 #include "gimple-range.h"
+#include "optabs-tree.h"
 
 /* Nonzero if we are folding constants inside an initializer or a C++
    manifestly-constant-evaluated context; zero otherwise.
@@ -12409,8 +12410,20 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 		  itype = signed_type_for (itype);
 		  arg00 = fold_convert_loc (loc, itype, arg00);
 		}
-	      return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,
-				  type, arg00, build_zero_cst (itype));
+	      enum tree_code code2 = code == EQ_EXPR ? GE_EXPR : LT_EXPR;
+	      /* Make sure to transform vector compares only to supported
+		 ones or from unsupported ones and check that only after
+		 IPA so offloaded code is handled correctly in this regard.  */
+	      if (!VECTOR_TYPE_P (itype)
+		  || (cfun
+		      && cfun->after_inlining
+		      /* We can jump on EQ/NE but not GE/LT.  */
+		      && VECTOR_BOOLEAN_TYPE_P (type)
+		      && (expand_vec_cmp_expr_p (itype, type, code2)
+			  || !expand_vec_cmp_expr_p (TREE_TYPE (op0),
+						     type, code))))
+		return fold_build2_loc (loc, code2,
+					type, arg00, build_zero_cst (itype));
 	    }
 	}
 
