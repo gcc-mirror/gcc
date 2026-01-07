@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-require-effective-target vect_extract_even_odd } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
