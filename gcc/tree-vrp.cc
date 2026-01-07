@@ -87,15 +87,17 @@ along with GCC; see the file COPYING3.  If not see
 class remove_unreachable {
 public:
   remove_unreachable (range_query &r, bool all) : m_ranger (r), final_p (all)
-    { m_list.create (30); }
-  ~remove_unreachable () { m_list.release (); }
+    { m_list.create (30); m_tmp = BITMAP_ALLOC (NULL); }
+  ~remove_unreachable () { BITMAP_FREE (m_tmp); m_list.release (); }
   void handle_early (gimple *s, edge e);
   void maybe_register (gimple *s);
   bool remove ();
   bool remove_and_update_globals ();
+  bool fully_replaceable (tree name, basic_block bb);
   vec<std::pair<int, int> > m_list;
   range_query &m_ranger;
   bool final_p;
+  bitmap m_tmp;
 };
 
 // Check if block BB has a __builtin_unreachable () call on one arm, and
@@ -141,8 +143,8 @@ remove_unreachable::maybe_register (gimple *s)
 //    goto <bb 3>; [0.00%]
 //  Any additional use of _1 or _2 in this block invalidates early replacement.
 
-static bool
-fully_replaceable (tree name, basic_block bb)
+bool
+remove_unreachable::fully_replaceable (tree name, basic_block bb)
 {
   use_operand_p use_p;
   imm_use_iterator iter;
@@ -213,9 +215,11 @@ remove_unreachable::handle_early (gimple *s, edge e)
   gcc_checking_assert (gimple_outgoing_range_stmt_p (e->src) == s);
   gcc_checking_assert (!final_p);
 
-  // Check if every export use is dominated by this branch.
+  // Check if every export and its dependencies are dominated by this branch.
+  // Dependencies are required as it needs to dominate potential
+  // recalculations.  See PR 123300.
   tree name;
-  FOR_EACH_GORI_EXPORT_NAME (m_ranger.gori_ssa (), e->src, name)
+  FOR_EACH_GORI_EXPORT_AND_DEP_NAME (m_ranger.gori_ssa (), e->src, name, m_tmp)
     {
       if (!fully_replaceable (name, e->src))
 	return;
