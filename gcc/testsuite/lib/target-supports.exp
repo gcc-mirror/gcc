@@ -14416,3 +14416,11 @@ proc check_effective_target_speculation_barrier_defined { } {
 	    }
 	}]
 }
+
+# Check if valgrind executable exists in PATH on host
+proc check_effective_target_valgrind { } {
+    if { [which valgrind] != 0 } {
+        return 1
+    }
+    return 0
+}

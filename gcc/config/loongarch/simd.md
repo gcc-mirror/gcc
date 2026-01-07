@@ -983,6 +983,77 @@
   DONE;
 })
 
+(define_insn "xor<mode>3"
+  [(set (match_operand:ALLVEC 0 "register_operand" "=f,f,f")
+	(xor:ALLVEC
+	  (match_operand:ALLVEC 1 "register_operand" "f,f,f")
+	  (match_operand:ALLVEC 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
+  ""
+  "@
+   <x>vxor.v\t%<wu>0,%<wu>1,%<wu>2
+   <x>vbitrevi.%v0\t%<wu>0,%<wu>1,%V2
+   <x>vxori.b\t%<wu>0,%<wu>1,%B2"
+  [(set_attr "type" "simd_logic,simd_bit,simd_logic")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "ior<mode>3"
+  [(set (match_operand:ALLVEC 0 "register_operand" "=f,f,f")
+	(ior:ALLVEC
+	  (match_operand:ALLVEC 1 "register_operand" "f,f,f")
+	  (match_operand:ALLVEC 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
+  ""
+  "@
+   <x>vor.v\t%<wu>0,%<wu>1,%<wu>2
+   <x>vbitseti.%v0\t%<wu>0,%<wu>1,%V2
+   <x>vori.b\t%<wu>0,%<wu>1,%B2"
+  [(set_attr "type" "simd_logic,simd_bit,simd_logic")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "and<mode>3"
+  [(set (match_operand:ALLVEC 0 "register_operand" "=f,f,f")
+	(and:ALLVEC
+	  (match_operand:ALLVEC 1 "register_operand" "f,f,f")
+	  (match_operand:ALLVEC 2 "reg_or_vector_same_val_operand" "f,YZ,Urv8")))]
+  ""
+{
+  switch (which_alternative)
+    {
+    case 0:
+      return "<x>vand.v\t%<wu>0,%<wu>1,%<wu>2";
+    case 1:
+      {
+	rtx elt0 = CONST_VECTOR_ELT (operands[2], 0);
+	unsigned HOST_WIDE_INT val;
+	if (GET_MODE_CLASS (<MODE>mode) == MODE_VECTOR_FLOAT)
+	  {
+	  const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (elt0);
+	  if (GET_MODE (elt0) == DFmode)
+	    {
+	      long tmp[2];
+	      REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
+	      val = ~((unsigned HOST_WIDE_INT) tmp[1] << 32 | tmp[0]);
+	    }
+	  else
+	    {
+	      long tmp;
+	      REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
+	      val = ~((unsigned HOST_WIDE_INT) tmp);
+	    }
+	  }
+	else
+	  val = ~UINTVAL (elt0);
+	operands[2] = loongarch_gen_const_int_vector (<VIMODE>mode, val & (-val));
+	return "<x>vbitclri.%v0\t%<wu>0,%<wu>1,%V2";
+      }
+    case 2:
+      return "<x>vandi.b\t%<wu>0,%<wu>1,%B2";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "simd_logic,simd_bit,simd_logic")
+   (set_attr "mode" "<MODE>")])
+
 ; The LoongArch SX Instructions.
 (include "lsx.md")
 

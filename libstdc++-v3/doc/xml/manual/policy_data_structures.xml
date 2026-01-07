@@ -2735,14 +2735,14 @@
 	a generic container object, what is the behavior of the object?
 	Suppose one writes
       </para>
-      <programlisting>
+<programlisting>
 	template&lt;typename Cntnr&gt;
 	void
 	some_op_sequence(Cntnr &amp;r_container)
 	{
 	...
 	}
-      </programlisting>
+</programlisting>
 
       <para>
 	then one needs to address the following questions in the body

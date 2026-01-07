@@ -1682,6 +1682,36 @@ struct mvn_def : public overloaded_base<0>
 };
 SHAPE (mvn)
 
+/* int64_t foo(int64_t, int32_t)
+
+   Example: asrl
+   int64_t [__arm_]arsl(int64_t value, int32_t shift)  */
+struct scalar_s64_shift_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "ss64,ss64,ss32", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (scalar_s64_shift)
+
+/* uint64_t foo(uint64_t, int32_t)
+
+   Example: lsll.
+   uint64_t [__arm_]lsll(uint64_t value, int32_t shift)  */
+struct scalar_u64_shift_def : public nonoverloaded_base
+{
+  void
+  build (function_builder &b, const function_group_info &group,
+	 bool preserve_user_namespace) const override
+  {
+    build_all (b, "su64,su64,ss32", group, MODE_none, preserve_user_namespace);
+  }
+};
+SHAPE (scalar_u64_shift)
+
 /* void vfoo[_t0](<X>_t *, <T0>[xN]_t)
 
    where <X> might be tied to <t0> (for non-truncating stores) or might

@@ -1254,7 +1254,7 @@ extern const char *diagnostic_get_color_for_kind (diagnostic_t kind);
 extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 
 /* Compute the number of digits in the decimal representation of an integer.  */
-extern int num_digits (int);
+extern int num_digits (uint64_t);
 
 inline bool
 warning_enabled_at (location_t loc, diagnostic_option_id option_id)

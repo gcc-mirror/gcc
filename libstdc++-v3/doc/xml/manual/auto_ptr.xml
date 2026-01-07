@@ -36,7 +36,7 @@
      presence of exceptions.  That's <emphasis>all</emphasis>.  This
      code is AP-friendly:
    </para>
-   <programlisting>
+<programlisting>
     // Not a recommend naming scheme, but good for web-based FAQs.
     typedef std::auto_ptr&lt;MyClass&gt;  APMC;
 
@@ -51,24 +51,24 @@
 
 	function_taking_MyClass_pointer (ap.get());
     }
-   </programlisting>
+</programlisting>
    <para>When an exception gets thrown, the instance of MyClass that's
       been created on the heap will be <function>delete</function>'d as the stack is
       unwound past <function>func()</function>.
    </para>
    <para>Changing that code as follows is not <acronym>AP</acronym>-friendly:
    </para>
-   <programlisting>
+<programlisting>
 	APMC  ap (new MyClass[22]);
-   </programlisting>
+</programlisting>
    <para>You will get the same problems as you would without the use
       of <acronym>AP</acronym>:
    </para>
-   <programlisting>
+<programlisting>
 	char*  array = new char[10];       // array new...
 	...
 	delete array;                      // ...but single-object delete
-   </programlisting>
+</programlisting>
    <para>
      AP cannot tell whether the pointer you've passed at creation points
       to one or many things.  If it points to many things, you are about
@@ -87,12 +87,12 @@
       described in the standard library require their contained types
       to have, among other things, a copy constructor like this:
   </para>
-   <programlisting>
+<programlisting>
     struct My_Type
     {
 	My_Type (My_Type const&amp;);
     };
-   </programlisting>
+</programlisting>
    <para>
      Note the const keyword; the object being copied shouldn't change.
      The template class <code>auto_ptr</code> (called AP here) does not
@@ -113,7 +113,7 @@
       in to this implementation will issue an error if you try to
       compile code like this:
    </para>
-   <programlisting>
+<programlisting>
     #include &lt;vector&gt;
     #include &lt;memory&gt;
 
@@ -121,7 +121,7 @@
     {
 	std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
     }
-   </programlisting>
+</programlisting>
    <para>
 Should you try this with the checks enabled, you will see an error.
    </para>

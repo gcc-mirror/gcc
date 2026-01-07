@@ -2554,6 +2554,7 @@ finish_list_read (st_parameter_dt *dtp)
       return;
     }
 
+  /* Only perform the following cleanup on external files or the stdin file.  */
   if (!is_internal_unit (dtp))
     {
       int c;
@@ -2561,23 +2562,31 @@ finish_list_read (st_parameter_dt *dtp)
       /* Set the next_char and push_char worker functions.  */
       set_workers (dtp);
 
-      if (likely (dtp->u.p.child_saved_iostat == LIBERROR_OK)
-	      && ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) == 0))
+      /* Make sure there were no errors from a DTIO child read.  */
+      if (likely (dtp->u.p.child_saved_iostat == LIBERROR_OK))
 	{
+	  /* Peek ahead to see where we are in the parent read.  */
 	  c = next_char (dtp);
-	  if (c == EOF)
+	  unget_char (dtp, c);
+
+	  /* If the last read used DTIO, handle end conditions differently.  */
+	  if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) != 0)
 	    {
-	      free_line (dtp);
-	      hit_eof (dtp);
-	      return;
+	      if ((c == EOF) || (c == ' '))
+		return;
+	    }
+	  else
+	    {
+	      if (c == EOF)
+		{
+		  hit_eof (dtp);
+		  return;
+		}
 	    }
 	  if (c != '\n')
 	    eat_line (dtp);
 	}
     }
-
-  free_line (dtp);
-
 }
 
 /*			NAMELIST INPUT

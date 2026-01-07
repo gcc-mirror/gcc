@@ -37,7 +37,7 @@
       Look in the <filename class="headerfile">&lt;iosfwd&gt;</filename> header
       if you'd like to know why.)  For example,
    </para>
-   <programlisting>
+<programlisting>
     #include &lt;iosfwd&gt;
 
     class MyClass
@@ -47,7 +47,7 @@
     };
 
     extern std::ostream&amp; operator&lt;&lt; (std::ostream&amp;, MyClass&amp;);
-   </programlisting>
+</programlisting>
    <para><emphasis><filename class="headerfile">&lt;ios&gt;</filename></emphasis>
       declares the base classes for the entire I/O stream hierarchy,
       <classname>std::ios_base</classname> and <classname>std::basic_ios&lt;charT&gt;</classname>,
@@ -87,14 +87,14 @@
       or any of the other abstract stream formatting functions.
       For example,
    </para>
-   <programlisting>
+<programlisting>
     #include &lt;istream&gt;
 
     std::ostream&amp; operator&lt;&lt; (std::ostream&amp; os, MyClass&amp; c)
     {
        return os &lt;&lt; c.data1() &lt;&lt; c.data2();
     }
-   </programlisting>
+</programlisting>
    <para>The <type>std::istream</type> and <type>std::ostream</type> classes
       are the abstract parents of
       the various concrete implementations.  If you are only using the
@@ -123,7 +123,7 @@
       <filename class="headerfile">&lt;ostream&gt;</filename>
       headers, but nothing else.  The contents of this header look like:
    </para>
-   <programlisting>
+<programlisting>
     #include &lt;ostream&gt;
     #include &lt;istream&gt;
 
@@ -136,7 +136,7 @@
 	// this is explained below
 	<emphasis>static ios_base::Init __foo;</emphasis>    // not its real name
     }
-   </programlisting>
+</programlisting>
    <para>Now, the runtime penalty mentioned previously:  the global objects
       must be initialized before any of your own code uses them; this is
       guaranteed by the standard.  Like any other global object, they must
@@ -201,7 +201,7 @@
       assumes many things about the nature of the character type being
       used (for more information, read the books or the newsgroups):
    </para>
-   <programlisting>
+<programlisting>
     #include &lt;iostream&gt;
     #include &lt;streambuf&gt;
     #include &lt;locale&gt;
@@ -238,7 +238,7 @@
 	    &lt;&lt; std::hex &lt;&lt; 31 &lt;&lt; std::endl;
 	return 0;
     }
-   </programlisting>
+</programlisting>
    <para>Try it yourself!  More examples can be found in 3.1.x code, in
       <filename>include/ext/*_filebuf.h</filename>, and in the article
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gabisoft.free.fr/articles/fltrsbf1.html">Filtering
@@ -270,7 +270,7 @@
       out as soon as possible, etc -- but the buffering is largely
       wasted when doing this to a file:
    </para>
-   <programlisting>
+<programlisting>
    output &lt;&lt; "a line of text" &lt;&lt; endl;
    output &lt;&lt; some_data_variable &lt;&lt; endl;
    output &lt;&lt; "another line of text" &lt;&lt; endl; </programlisting>
@@ -278,7 +278,7 @@
       and let the libraries and the system worry about the buffering.
       If you need a newline, just write a newline:
    </para>
-   <programlisting>
+<programlisting>
    output &lt;&lt; "a line of text\n"
 	  &lt;&lt; some_data_variable &lt;&lt; '\n'
 	  &lt;&lt; "another line of text\n"; </programlisting>
@@ -290,7 +290,7 @@
       <code>endl</code> if you also need a newline, or just flush the buffer
       yourself:
    </para>
-   <programlisting>
+<programlisting>
    output &lt;&lt; ...... &lt;&lt; flush;    // can use std::flush manipulator
    output.flush();               // or call a member fn </programlisting>
    <para>On the other hand, there are times when writing to a file should
@@ -300,7 +300,7 @@
       just to turn off the buffering <emphasis>before any I/O operations at
       all</emphasis> have been done (note that opening counts as an I/O operation):
    </para>
-   <programlisting>
+<programlisting>
    std::ofstream    os;
    std::ifstream    is;
    int   i;
@@ -403,21 +403,21 @@
       completely portably.  And since this is C++, you have an open
       ifstream (call it IN) and an open ofstream (call it OUT):
    </para>
-   <programlisting>
+<programlisting>
    #include &lt;fstream&gt;
 
    std::ifstream  IN ("input_file");
    std::ofstream  OUT ("output_file"); </programlisting>
    <para>Here's the easiest way to get it completely wrong:
    </para>
-   <programlisting>
+<programlisting>
    OUT &lt;&lt; IN;</programlisting>
    <para>For those of you who don't already know why this doesn't work
       (probably from having done it before), I invite you to quickly
       create a simple text file called "input_file" containing
       the sentence
    </para>
-      <programlisting>
+<programlisting>
       The quick brown fox jumped over the lazy dog.</programlisting>
    <para>surrounded by blank lines.  Code it up and try it.  The contents
       of "output_file" may surprise you.
@@ -440,7 +440,7 @@
       using the <code>rdbuf()</code> member function.  Therefore, the easiest
       way to copy the file is:
    </para>
-   <programlisting>
+<programlisting>
    OUT &lt;&lt; IN.rdbuf();</programlisting>
    <para>So what <emphasis>was</emphasis> happening with OUT&lt;&lt;IN?  Undefined
       behavior, since that particular &lt;&lt; isn't defined by the Standard.
@@ -619,14 +619,14 @@
    <para>Because the C++ library includes the C library, both C-style and
       C++-style I/O have to work at the same time.  For example:
    </para>
-   <programlisting>
+<programlisting>
      #include &lt;iostream&gt;
      #include &lt;cstdio&gt;
 
      std::cout &lt;&lt; "Hel";
      std::printf ("lo, worl");
      std::cout &lt;&lt; "d!\n";
-   </programlisting>
+</programlisting>
    <para>This must do what you think it does.
    </para>
    <para>Alert members of the audience will immediately notice that buffering
@@ -647,11 +647,11 @@
       C++ I/O, then there's no need to sync with the C streams.  The right
       thing to do in this case is to call
    </para>
-   <programlisting>
+<programlisting>
      #include <emphasis>any of the I/O headers such as ios, iostream, etc</emphasis>
 
      std::ios::sync_with_stdio(false);
-   </programlisting>
+</programlisting>
    <para>You must do this before performing any I/O via the C++ stream objects.
       Once you call this, the C++ streams will operate independently of the
       (unused) C streams.  For GCC 3.x, this means that <code>cout</code> and

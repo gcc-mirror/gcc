@@ -4237,7 +4237,8 @@ function_expander::use_exact_insn (insn_code icode)
 
   /* The RVV floating-point only support dynamic rounding mode in the
      FRM register.  */
-  if (opno != insn_data[icode].n_generator_args)
+  if (base->may_require_frm_p ()
+      && opno < insn_data[icode].n_generator_args)
     add_input_operand (Pmode, gen_int_mode (riscv_vector::FRM_DYN, Pmode));
 
   return generate_insn (icode);
@@ -4422,7 +4423,8 @@ function_expander::use_ternop_insn (bool vd_accum_p, insn_code icode)
 
   /* The RVV floating-point only support dynamic rounding mode in the
      FRM register.  */
-  if (opno != insn_data[icode].n_generator_args)
+  if (base->may_require_frm_p ()
+      && opno < insn_data[icode].n_generator_args)
     add_input_operand (Pmode, gen_int_mode (riscv_vector::FRM_DYN, Pmode));
 
   return generate_insn (icode);
@@ -4463,7 +4465,8 @@ function_expander::use_widen_ternop_insn (insn_code icode)
 
   /* The RVV floating-point only support dynamic rounding mode in the
      FRM register.  */
-  if (opno != insn_data[icode].n_generator_args)
+  if (base->may_require_frm_p ()
+      && opno < insn_data[icode].n_generator_args)
     add_input_operand (Pmode, gen_int_mode (riscv_vector::FRM_DYN, Pmode));
 
   return generate_insn (icode);

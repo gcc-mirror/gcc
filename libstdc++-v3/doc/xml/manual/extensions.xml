@@ -161,13 +161,13 @@ extensions, be aware of two things:
    do no range-checking.  If we call them member functions of an instantiation
    of <code>bitset&lt;N&gt;</code>, then their names and signatures are:
 </para>
-   <programlisting>
+<programlisting>
    bitset&lt;N&gt;&amp;   _Unchecked_set   (size_t pos);
    bitset&lt;N&gt;&amp;   _Unchecked_set   (size_t pos, int val);
    bitset&lt;N&gt;&amp;   _Unchecked_reset (size_t pos);
    bitset&lt;N&gt;&amp;   _Unchecked_flip  (size_t pos);
    bool         _Unchecked_test  (size_t pos);
-   </programlisting>
+</programlisting>
    <para>Note that these may in fact be removed in the future, although we have
    no present plans to do so (and there doesn't seem to be any immediate
    reason to).
@@ -181,7 +181,7 @@ extensions, be aware of two things:
    the index of the first "on" bit, and the index of the first
    "on" bit that is after <code>prev</code>, respectively:
 </para>
-   <programlisting>
+<programlisting>
    size_t _Find_first() const;
    size_t _Find_next (size_t prev) const;</programlisting>
 <para>The same caveat given for the _Unchecked_* functions applies here also.
@@ -202,13 +202,13 @@ extensions, be aware of two things:
    </para>
 
    <para>The SGI headers</para>
-   <programlisting>
+<programlisting>
      &lt;hash_map&gt;
      &lt;hash_set&gt;
      &lt;rope&gt;
      &lt;slist&gt;
      &lt;rb_tree&gt;
-   </programlisting>
+</programlisting>
    <para>are all here;
       <filename class="headerfile">&lt;backwards/hash_map&gt;</filename> and
       <filename class="headerfile">&lt;backwards/hash_set&gt;</filename>
@@ -346,14 +346,14 @@ get_temporary_buffer(5, (int*)0);
    additional signatures return void, but take a final parameter by
    reference to which they assign their results, e.g.,
 </para>
-   <programlisting>
+<programlisting>
    void count (first, last, value, n);</programlisting>
 <para>25.2 (mutating algorithms) is extended with two families of signatures,
    random_sample and random_sample_n.
 </para>
 <para>25.2.1 (copy) is extended with
 </para>
-   <programlisting>
+<programlisting>
    copy_n (_InputIter first, _Size count, _OutputIter result);</programlisting>
 <para>which copies the first 'count' elements at 'first' into 'result'.
 </para>
@@ -367,7 +367,7 @@ get_temporary_buffer(5, (int*)0);
    </itemizedlist>
 <para>25.3.8 (lexicographical_compare) is extended with
 </para>
-   <programlisting>
+<programlisting>
    lexicographical_compare_3way(_InputIter1 first1, _InputIter1 last1,
 				 _InputIter2 first2, _InputIter2 last2)</programlisting>
 <para>which does... what?
@@ -382,7 +382,7 @@ get_temporary_buffer(5, (int*)0);
 <para>26.4, the generalized numeric operations such as <code>accumulate</code>,
    are extended with the following functions:
 </para>
-   <programlisting>
+<programlisting>
    power (x, n);
    power (x, n, monoid_operation);</programlisting>
 <para>Returns, in FORTRAN syntax, "<code>x ** n</code>" where
@@ -399,7 +399,7 @@ get_temporary_buffer(5, (int*)0);
    That is, it assigns <code>value</code> to <code>*first</code>,
    <code>value + 1</code> to<code> *(first + 1)</code> and so on."
 </para>
-   <programlisting>
+<programlisting>
    void iota(_ForwardIter first, _ForwardIter last, _Tp value);</programlisting>
 <para>The <code>iota</code> function is included in the ISO C++ 2011 standard.
 </para>
@@ -523,7 +523,7 @@ get_temporary_buffer(5, (int*)0);
     Probably the only time you'll be interested in demangling at runtime
     is when you're seeing <code>typeid</code> strings in RTTI.  For example:
   </para>
-   <programlisting>
+<programlisting>
 #include &lt;iostream&gt;
 #include &lt;cstdlib&gt;
 #include &lt;cxxabi.h&gt;
@@ -546,7 +546,7 @@ int main()
   std::cout &lt;&lt; ti.name() &lt;&lt; "\t=&gt; " &lt;&lt; realname &lt;&lt; "\t: " &lt;&lt; status &lt;&lt; '\n';
   std::free(realname);
 }
-   </programlisting>
+</programlisting>
    <para>
      This prints
    </para>

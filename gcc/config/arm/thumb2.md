@@ -1465,19 +1465,24 @@
 	      (pc)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2"
-  "*
-  if (get_attr_length (insn) == 2)
-    return \"cbz\\t%0, %l1\";
-  else
-    return \"cmp\\t%0, #0\;beq\\t%l1\";
-  "
+  {
+    int offset = (INSN_ADDRESSES (INSN_UID (operands[1]))
+		  - INSN_ADDRESSES (INSN_UID (insn)));
+    if (get_attr_length (insn) == 2)
+      return "cbz\t%0, %l1";
+    else if (offset >= -1048564 && offset <= 1048576)
+      return "cmp\t%0, #0\;beq\t%l1";
+    else if (which_alternative == 0)
+      return "cbnz\t%0, %-LCB%=\;b\t%l1\n%-LCB%=:";
+    return "cmp\t%0, #0\;bne\t%-LCB%=\;b\t%l1\n%-LCB%=:";
+  }
   [(set (attr "length")
         (if_then_else
 	    (and (ge (minus (match_dup 1) (pc)) (const_int 2))
 	         (le (minus (match_dup 1) (pc)) (const_int 128))
 	         (not (match_test "which_alternative")))
 	    (const_int 2)
-	    (const_int 8)))
+	    (const_int 10)))
    (set_attr "type" "branch,multiple")]
 )
 
@@ -1489,19 +1494,24 @@
 	      (pc)))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_THUMB2"
-  "*
-  if (get_attr_length (insn) == 2)
-    return \"cbnz\\t%0, %l1\";
-  else
-    return \"cmp\\t%0, #0\;bne\\t%l1\";
-  "
+  {
+    int offset = (INSN_ADDRESSES (INSN_UID (operands[1]))
+		  - INSN_ADDRESSES (INSN_UID (insn)));
+    if (get_attr_length (insn) == 2)
+      return "cbnz\t%0, %l1";
+    else if (offset >= -1048564 && offset <= 1048576)
+      return "cmp\t%0, #0\;bne\t%l1";
+    else if (which_alternative == 0)
+      return "cbz\t%0, %-LCB%=\;b\t%l1\n%-LCB%=:";
+    return "cmp\t%0, #0\;beq\t%-LCB%=\;b\t%l1\n%-LCB%=:";
+  }
   [(set (attr "length")
         (if_then_else
 	    (and (ge (minus (match_dup 1) (pc)) (const_int 2))
 	         (le (minus (match_dup 1) (pc)) (const_int 128))
 	         (not (match_test "which_alternative")))
 	    (const_int 2)
-	    (const_int 8)))
+	    (const_int 10)))
    (set_attr "type" "branch,multiple")]
 )
 
@@ -1733,30 +1743,6 @@
   }
   [(set_attr "predicable" "yes")]
 )
-
-(define_insn "thumb2_asrl"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(ashiftrt:DI (match_dup 0)
-		     (match_operand:SI 1 "arm_reg_or_long_shift_imm" "rPg")))]
-  "TARGET_HAVE_MVE"
-  "asrl%?\\t%Q0, %R0, %1"
-  [(set_attr "predicable" "yes")])
-
-(define_insn "thumb2_lsll"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(ashift:DI (match_dup 0)
-		   (match_operand:SI 1 "arm_reg_or_long_shift_imm" "rPg")))]
-  "TARGET_HAVE_MVE"
-  "lsll%?\\t%Q0, %R0, %1"
-  [(set_attr "predicable" "yes")])
-
-(define_insn "thumb2_lsrl"
-  [(set (match_operand:DI 0 "arm_general_register_operand" "+r")
-	(lshiftrt:DI (match_dup 0)
-		     (match_operand:SI 1 "long_shift_imm" "Pg")))]
-  "TARGET_HAVE_MVE"
-  "lsrl%?\\t%Q0, %R0, %1"
-  [(set_attr "predicable" "yes")])
 
 ;; Originally expanded by 'doloop_end'.
 (define_insn "*doloop_end_internal"

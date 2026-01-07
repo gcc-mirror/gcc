@@ -1,3 +1,124 @@
+2026-01-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/123371
+	* sem_aggr.adb (Resolve_Iterated_Association): Call Preanalyze
+	instead of Analyze consistently, as well as Copy_Separate_Tree
+	instead of New_Copy_Tree.
+
+2025-12-27  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/123306
+	* sem_ch12.adb (Analyze_One_Association): Immediately freeze the
+	root type of mutably tagged types used as actual type parameters.
+
+2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/123088
+	* sem_aggr.adb (Resolve_Record_Aggregate): Add more robust guard.
+
+2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/123302
+	* sem_ch12.adb (Save_Global_Reference.Save_References_In_Aggregate):
+	Recurse on the scope of the type to find one that is visible, in the
+	case of an actual in a subprogram call with a local type.
+
+2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/123289
+	* sem_ch13.adb (Resolve_Aspect_Aggregate.Resolve_Operation): Give
+	an error if the operation's name denotes more than one subprogram.
+
+2025-12-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123185
+	* sem_ch4.adb (Analyze_Overloaded_Selected_Component): Go to the
+	root when the prefix has a class-wide type.
+	* sem_res.adb (Resolve_Selected_Component): Likewise.
+
+2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123060
+	* gcc-interface/utils.cc (update_pointer_to): Streamline.
+
+2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123060
+	* gcc-interface/utils.cc (update_pointer_to): Preserve the alias
+	sets present on the old pointer and old reference, if any.
+
+2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123138
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Reduce>:
+	Override a universal numeric type only if the prefix is not an
+	aggregate.
+
+2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123060
+	* gcc-interface/utils.cc (update_pointer_to): Synthesize a new
+	TYPE_CANONICAL for the old pointer type in the case where there
+	is no new pointer type.  Likewise for references.
+
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123096
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): Call
+	Incomplete_Or_Partial_View with Partial_Only set to True.
+
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123088
+	* sem_aggr.adb (Resolve_Record_Aggregate): Add missing guard.
+
+2025-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123037
+	* rtinit.c [__MINGW32__]: Include <stdlib.h> and not <windows.h>.
+	* rtfinal.c [__MINGW32__]: Do not include <windows.h>.
+
+2025-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR ada/115305
+	* Makefile.rtl: Use s-oslock__darwin instead of the Posix version.
+	* libgnat/s-oslock__darwin.ads: New file.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Location): Do not output the final comma.
+	(List_Common_Type_Info): Adjust to above change.  Do not output
+	"??" for an unknown alignment.
+	(List_Entities): Do not output generic types.
+	(List_Object_Info): Adjust to above change.
+	(List_Subprogram_Info): Likewise.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Last_Overloaded): Fix typo.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/111433
+	* sem_util.ads (Incomplete_Or_Partial_View): Add Partial_Only formal
+	parameter.
+	* sem_util.adb (Incomplete_Or_Partial_View): Likewise.  Do not look
+	for an incomplete view if it is set to True.
+	* sem_ch6.adb (Check_Conformance.Null_Exclusions_Match): Pass True
+	for Partial_Only in the call to Incomplete_Or_Partial_View.
+
+2025-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/122640
+	* sem_ch3.adb (Analyze_Object_Declaration): Set Is_True_Constant
+	on entry for constants and Never_Set_In_Source in all cases.
+	If an initialization expression is present, set Has_Initial_Value
+	and Is_True_Constant on variables.
+
+2025-11-12  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Call Mutate_Ekind earlier.
+
 2025-11-04  Bob Duff  <duff@adacore.com>
 
 	PR ada/118208

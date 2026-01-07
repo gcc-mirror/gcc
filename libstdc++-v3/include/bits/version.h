@@ -1890,6 +1890,16 @@
 #endif /* !defined(__cpp_lib_flat_set) && defined(__glibcxx_want_flat_set) */
 #undef __glibcxx_want_flat_set
 
+#if !defined(__cpp_lib_common_reference)
+# if (__cplusplus >= 202002L)
+#  define __glibcxx_common_reference 202302L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_common_reference)
+#   define __cpp_lib_common_reference 202302L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_common_reference) && defined(__glibcxx_want_common_reference) */
+#undef __glibcxx_want_common_reference
+
 #if !defined(__cpp_lib_formatters)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_formatters 202302L

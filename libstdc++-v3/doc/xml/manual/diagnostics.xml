@@ -64,7 +64,7 @@
     place).  It's good to remember that you can add your own data to
     these exceptions when extending the hierarchy:
    </para>
-   <programlisting>
+<programlisting>
    struct My_Exception : public std::runtime_error
    {
      public:
@@ -76,7 +76,7 @@
        int    e;
        DBID   id;     // some user-defined type
    };
-   </programlisting>
+</programlisting>
 
   </section>
 </section>

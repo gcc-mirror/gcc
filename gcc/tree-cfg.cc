@@ -4878,6 +4878,7 @@ verify_gimple_return (greturn *stmt)
 {
   tree op = gimple_return_retval (stmt);
   tree restype = TREE_TYPE (TREE_TYPE (cfun->decl));
+  tree resdecl = DECL_RESULT (cfun->decl);
 
   /* We cannot test for present return values as we do not fix up missing
      return values from the original source.  */
@@ -4892,12 +4893,7 @@ verify_gimple_return (greturn *stmt)
       return true;
     }
 
-  if ((TREE_CODE (op) == RESULT_DECL
-       && DECL_BY_REFERENCE (op))
-      || (TREE_CODE (op) == SSA_NAME
-	  && SSA_NAME_VAR (op)
-	  && TREE_CODE (SSA_NAME_VAR (op)) == RESULT_DECL
-	  && DECL_BY_REFERENCE (SSA_NAME_VAR (op))))
+  if (resdecl && DECL_BY_REFERENCE (resdecl))
     op = TREE_TYPE (op);
 
   if (!useless_type_conversion_p (restype, TREE_TYPE (op)))

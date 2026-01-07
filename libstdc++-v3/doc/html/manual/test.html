@@ -17,7 +17,7 @@ regressions, ABI, and performance.
   of the C++ standard (ISO 14882) are files within the following
   directories:
 
-   </p><pre class="programlisting">
+</p><pre class="programlisting">
     17_intro
     18_support
     19_diagnostics
@@ -32,7 +32,7 @@ regressions, ABI, and performance.
     28_regex
     29_atomics
     30_threads
-   </pre><p>
+</pre><p>
 </p><p>
       In addition, the following directories include test files:
 
@@ -83,7 +83,7 @@ regressions, ABI, and performance.
       This test case expects some kind of interactive input in order
       to finish or pass. At the moment, the interactive tests are not
       run by default. Instead, they are run by hand, like:
-      <pre class="programlisting">
+<pre class="programlisting">
 g++ 27_io/objects/char/3_xin.cc
 cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code class="filename">.in</code></span></dt><dd>
       This file contains the expected input for the corresponding <span class="emphasis"><em>
@@ -198,7 +198,7 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
       Also, here is an example of how to run the libstdc++ testsuite
       for a multilibed build directory with different ABI settings:
 
- </p><pre class="programlisting">
+</p><pre class="programlisting">
     make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board \"unix{-mabi=32,,-mabi=64}\"'
 </pre><p>
     </p><p>
@@ -210,9 +210,9 @@ cat 27_io/objects/char/3_xin.in | a.out</pre></dd><dt><span class="term"><code c
       run programs on, e.g. <code class="code">x86_64-pc-linux-gnu</code>, as a few tests
       still execute the code they build.  Here's an example of how to run the
       testsuite with libstdc++ in freestanding mode:
-      </p><pre class="programlisting">
+</p><pre class="programlisting">
     make check-target-libstdc++-v3 RUNTESTFLAGS='--target_board=unix/-ffreestanding'
-      </pre><p>
+</pre><p>
     </p><p>
       You can run the tests with a compiler and library that have
       already been installed.  Make sure that the compiler (e.g.,

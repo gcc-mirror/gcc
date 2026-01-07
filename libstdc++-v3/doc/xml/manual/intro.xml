@@ -1336,7 +1336,7 @@ requirements of the license of GCC.
    <para>The general outline of commands to build GCC is something like:
    </para>
 
-   <programlisting>
+<programlisting>
    <replaceable>get gcc sources</replaceable>
    <replaceable>extract into gccsrcdir</replaceable>
    mkdir <replaceable>gccbuilddir</replaceable>
@@ -1345,7 +1345,7 @@ requirements of the license of GCC.
    make
    make check
    make install
-   </programlisting>
+</programlisting>
 
    <para>
      Each step is described in more detail in the following sections.

@@ -953,7 +953,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       using iterator_category = input_iterator_tag;
       using iterator_concept  = random_access_iterator_tag;
-      using value_type        = pair<const key_type, mapped_type>;
+      using value_type        = pair<key_type, mapped_type>;
       using reference         = pair<const key_type&,
 				     ranges::__maybe_const_t<_Const, mapped_type>&>;
       using difference_type   = ptrdiff_t;

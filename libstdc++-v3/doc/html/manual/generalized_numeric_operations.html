@@ -18,7 +18,7 @@
    int  sum       = std::accumulate(ar,ar+50,0);
    int  sum_stuff = std::accumulate(ar,ar+50,someval);
    int  product   = std::accumulate(ar,ar+50,1,std::multiplies&lt;int&gt;());
-   </pre><p>The first call adds all the members of the array, using zero as an
+</pre><p>The first call adds all the members of the array, using zero as an
       initial value for <code class="code">sum</code>.  The second does the same, but uses
       <code class="code">someval</code> as the starting value (thus, <code class="code">sum_stuff == sum +
       someval</code>).  The final call uses the second of the two signatures,

@@ -35,13 +35,17 @@
 #endif /* __AMX_COMPLEX__ */
 
 #if defined(__x86_64__)
-#define _tile_cmmimfp16ps_internal(src1_dst,src2,src3)				\
-  __asm__ volatile\
-  ("{tcmmimfp16ps\t%%tmm"#src3", %%tmm"#src2", %%tmm"#src1_dst"|tcmmimfp16ps\t%%tmm"#src1_dst", %%tmm"#src2", %%tmm"#src3"}" ::)
+#define _tile_cmmimfp16ps_internal(src1_dst,src2,src3)			  \
+  __asm__ volatile							  \
+  ("{tcmmimfp16ps\t%%tmm%c[_src3], %%tmm%c[_src2], %%tmm%c[_src1_dst]	  \
+    |tcmmimfp16ps\ttmm%c[_src1_dst], tmm%c[_src2], tmm%c[_src3]}"	  \
+    :: [_src1_dst]"i"(src1_dst), [_src2]"i"(src2), [_src3]"i"(src3))
 
-#define _tile_cmmrlfp16ps_internal(src1_dst,src2,src3)				\
-  __asm__ volatile\
-  ("{tcmmrlfp16ps\t%%tmm"#src3", %%tmm"#src2", %%tmm"#src1_dst"|tcmmrlfp16ps\t%%tmm"#src1_dst", %%tmm"#src2", %%tmm"#src3"}" ::)
+#define _tile_cmmrlfp16ps_internal(src1_dst,src2,src3)			  \
+  __asm__ volatile							  \
+  ("{tcmmrlfp16ps\t%%tmm%c[_src3], %%tmm%c[_src2], %%tmm%c[_src1_dst]	  \
+    |tcmmrlfp16ps\ttmm%c[_src1_dst], tmm%c[_src2], tmm%c[_src3]}"	  \
+    :: [_src1_dst]"i"(src1_dst), [_src2]"i"(src2), [_src3]"i"(src3))
 
 #define _tile_cmmimfp16ps(src1_dst,src2,src3)					\
   _tile_cmmimfp16ps_internal (src1_dst, src2, src3)

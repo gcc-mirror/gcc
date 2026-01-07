@@ -309,6 +309,43 @@ proc lto-obj { source dest optall optfile optstr xfaildata } {
     ${tool}_check_compile "$testcase $dest assemble" $optstr $dest $comp_output
 }
 
+proc lto-build-archive { testname objlist dest } {
+    global testcase
+    global tool
+    global GCC_UNDER_TEST
+
+    upvar dg-messages-by-file dg-messages-by-file
+
+    verbose "lto-build-archive" 2
+    file_on_host delete $dest
+
+    # Check that all of the objects were built successfully.
+    foreach obj [split $objlist] {
+	if ![file_on_host exists $obj] then {
+	    unresolved "$testcase $testname build-archive"
+	    return
+	}
+    }
+
+    # Hack up the gcc-ar command from $GCC_UNDER_TEST.
+    set ar_cmd [file dirname [lindex $GCC_UNDER_TEST 0]]
+    set ar_cmd "$ar_cmd/gcc-ar [lrange $GCC_UNDER_TEST 1 end]"
+    set ar_output [remote_exec host "$ar_cmd rcs $dest $objlist"]
+    set retval [lindex $ar_output 0]
+    set retmsg [lindex $ar_output 1]
+
+    # If any message remains, we fail.  Don't bother overriding tool since
+    # we're not really looking to match any specific error or warning patterns
+    # here.
+    if ![string match "0" $retval] then {
+	${tool}_fail $testcase "ar returned $retval: $retmsg"
+	return 0
+    } else {
+	${tool}_pass $testcase "archive"
+	return 0
+    }
+}
+
 # lto-link-and-maybe-run -- link the object files and run the executable
 # if compile_type is set to "run"
 #
@@ -379,7 +416,8 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     }
 
     # Return if we only needed to link.
-    if { ![string compare "link" $compile_type] } {
+    if { ![string compare "link" $compile_type] \
+        || ![string compare "ar-link" $compile_type] } {
 	return
     }
 
@@ -510,6 +548,8 @@ proc lto-get-options-main { src } {
 		set compile_type "run"
 	    } elseif { ![string compare "link" $dgdo] } {
 		set compile_type "link"
+	    } elseif { ![string compare "ar-link" $dgdo] } {
+		set compile_type "ar-link"
 	    } else {
 		warning "lto.exp does not support dg-lto-do $dgdo"
 	    }
@@ -691,6 +731,12 @@ proc lto-execute-1 { src1 sid } {
     # Get the base name of this test, for use in messages.
     set testcase [lindex ${src_list} 0]
 
+    # The test needs to build all but the main file into an archive and then
+    # link them all together.
+    if { ![string compare "ar-link" $compile_type] } {
+        set arname "${sid}_${base}.a"
+    }
+
     # Remove the $srcdir and $tmpdir prefixes from $src1.  (It would
     # be possible to use "regsub" here, if we were careful to escape
     # all regular expression characters in $srcdir and $tmpdir, but
@@ -755,8 +801,24 @@ proc lto-execute-1 { src1 sid } {
 	    incr i
 	}
 
+	# Bundle all but the main file into an archive. Update objlist to only
+	# have the archive and the last file.
+	if { ![string compare "ar-link" $compile_type] } {
+	    set mainsrc [lindex $obj_list 0]
+	    set obj_list [lrange $obj_list 1 end]
+	    lto-build-archive \
+		"[lindex $obj_list 1]-[lindex $obj_list end]" \
+		$obj_list $arname
+
+	    set obj_list ""
+	    lappend obj_list $mainsrc
+	    lappend obj_list $arname
+	    set num_srcs 2
+	}
+
 	# Link (using the compiler under test), run, and clean up tests.
 	if { ![string compare "run" $compile_type] \
+	     || ![string compare "ar-link" $compile_type] \
 	     || ![string compare "link" $compile_type] } {
 
 	    # Filter out any link options we were asked to suppress.
@@ -772,6 +834,10 @@ proc lto-execute-1 { src1 sid } {
 		    "[lindex $obj_list 0]-[lindex $obj_list end]" \
 		    $obj_list $execname $filtered ${dg-extra-ld-options} \
 		    $filtered
+
+	    if (![string compare "ar-link" $compile_type]) {
+		file_on_host delete $arname
+	      }
 	}
 
 
@@ -818,6 +884,7 @@ proc lto-execute-1 { src1 sid } {
 	unset testname_with_flags
 	
 	if { ![string compare "run" $compile_type] \
+	     || ![string compare "ar-link" $compile_type] \
 	     || ![string compare "link" $compile_type] } {
 	    file_on_host delete $execname
 	}

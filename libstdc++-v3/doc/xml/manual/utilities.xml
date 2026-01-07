@@ -40,17 +40,17 @@
    <para>Construction is simple.  The default ctor initializes each member
       with its respective default ctor.  The other simple ctor,
    </para>
-   <programlisting>
+<programlisting>
     pair (const T1&amp; x, const T2&amp; y);
-   </programlisting>
+</programlisting>
    <para>does what you think it does, <code>first</code> getting <code>x</code>
       and <code>second</code> getting <code>y</code>.
    </para>
    <para>There is a constructor template for copying pairs of other types:
    </para>
-   <programlisting>
+<programlisting>
     template &lt;class U, class V&gt; pair (const pair&lt;U,V&gt;&amp; p);
-   </programlisting>
+</programlisting>
    <para>The compiler will convert as necessary from U to T1 and from
       V to T2 in order to perform the respective initializations.
    </para>
@@ -65,10 +65,10 @@
       The less-than operator is a bit odd the first time you see it.  It
       is defined as evaluating to:
    </para>
-   <programlisting>
+<programlisting>
     x.first  &lt;  y.first  ||
 	( !(y.first  &lt;  x.first)  &amp;&amp;  x.second  &lt;  y.second )
-   </programlisting>
+</programlisting>
    <para>The other operators are not defined using the <code>rel_ops</code>
       functions above, but their semantics are the same.
    </para>
@@ -76,9 +76,9 @@
       that takes two references-to-const objects and returns an
       instance of a pair instantiated on their respective types:
    </para>
-   <programlisting>
+<programlisting>
     pair&lt;int,MyClass&gt; p = make_pair(4,myobject);
-   </programlisting>
+</programlisting>
 
 </section>
 

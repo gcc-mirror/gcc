@@ -1,3 +1,20 @@
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/123018
+	* c-decl.cc (finish_struct): Diagnose bit-fields with vector type.
+
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/121506
+	* c-typeck.cc (c_type_tag): If TYPE_NAME is TYPE_DECL
+	with non-NULL DECL_NAME, return that.
+
 2025-08-08  Release Manager
 
 	* GCC 15.2.0 released.

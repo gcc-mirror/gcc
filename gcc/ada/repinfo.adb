@@ -375,9 +375,9 @@ package body Repinfo is
 
             if Esize (Ent) = RM_Size (Ent) then
                if List_Representation_Info_To_JSON then
+                  Write_Line (",");
                   Write_Str ("  ""Size"": ");
                   Write_Val (Esize (Ent));
-                  Write_Line (",");
                else
                   Write_Str ("for ");
                   List_Name (Ent);
@@ -390,13 +390,13 @@ package body Repinfo is
 
             else
                if List_Representation_Info_To_JSON then
+                  Write_Line (",");
                   Write_Str ("  ""Object_Size"": ");
                   Write_Val (Esize (Ent));
-                  Write_Line (",");
 
+                  Write_Line (",");
                   Write_Str ("  ""Value_Size"": ");
                   Write_Val (RM_Size (Ent));
-                  Write_Line (",");
 
                else
                   Write_Str ("for ");
@@ -417,6 +417,7 @@ package body Repinfo is
 
       if Known_Alignment (Ent) then
          if List_Representation_Info_To_JSON then
+            Write_Line (",");
             Write_Str ("  ""Alignment"": ");
             Write_Val (Alignment (Ent));
          else
@@ -432,19 +433,10 @@ package body Repinfo is
       --  are not computed for types in a generic unit.
 
       else
-         --  Add unknown alignment entry in JSON format to ensure the format is
-         --  valid, as a comma is added by the caller before another field.
-
-         if List_Representation_Info_To_JSON then
-            Write_Str ("  ""Alignment"": ");
-            Write_Unknown_Val;
-         end if;
-
-         pragma Assert
-           (not Expander_Active or else
-              Is_Concurrent_Type (Ent) or else
-              Is_Class_Wide_Type (Ent) or else
-              Sem_Util.In_Generic_Scope (Ent));
+         pragma Assert (not Expander_Active
+           or else Is_Concurrent_Type (Ent)
+           or else Is_Class_Wide_Type (Ent)
+           or else Sem_Util.In_Generic_Scope (Ent));
       end if;
    end List_Common_Type_Info;
 
@@ -482,12 +474,13 @@ package body Repinfo is
 
          E := First_Entity (Ent);
          while Present (E) loop
-            --  We list entities that come from source (excluding private or
-            --  incomplete types or deferred constants, for which we will list
-            --  the information for the full view). If requested, we also list
-            --  relevant entities that have been generated when processing the
-            --  original entities coming from source. But if debug flag A is
-            --  set, then all entities are listed.
+            --  We list entities that come from source (except for incomplete,
+            --  private and generic types, as well as deferred constants, for
+            --  which we list the information for the full view). If requested
+            --  by the -gnatR4 switch, we also list relevant entities that have
+            --  been created when processing the original entities coming from
+            --  source. If debug switch -gnatdA is specified, then all entities
+            --  are listed.
 
             if ((Comes_From_Source (E)
                    or else (Ekind (E) = E_Block
@@ -495,9 +488,10 @@ package body Repinfo is
                             Nkind (Parent (E)) = N_Implicit_Label_Declaration
                               and then
                             Comes_From_Source (Label_Construct (Parent (E)))))
-              and then not Is_Incomplete_Or_Private_Type (E)
-              and then not (Ekind (E) = E_Constant
-                              and then Present (Full_View (E))))
+                 and then not Is_Incomplete_Or_Private_Type (E)
+                 and then not Is_Generic_Type (E)
+                 and then not (Ekind (E) = E_Constant
+                                and then Present (Full_View (E))))
               or else (List_Representation_Info = 4
                          and then Relevant_Entities.Get (E))
               or else Debug_Flag_AA
@@ -822,7 +816,7 @@ package body Repinfo is
       pragma Assert (List_Representation_Info_To_JSON);
       Write_Str ("  ""location"": """);
       Write_Location (Sloc (Ent));
-      Write_Line (""",");
+      Write_Str ("""");
    end List_Location;
 
    ---------------
@@ -884,6 +878,7 @@ package body Repinfo is
          List_Name (Ent);
          Write_Line (""",");
          List_Location (Ent);
+         Write_Line (",");
 
          Write_Str ("  ""Size"": ");
          Write_Val (Esize (Ent));
@@ -1874,6 +1869,7 @@ package body Repinfo is
          List_Name (Ent);
          Write_Line (""",");
          List_Location (Ent);
+         Write_Line (",");
 
          Write_Str ("  ""Convention"": """);
       else

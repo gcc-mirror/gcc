@@ -69,10 +69,9 @@ lto_file *
 lto_obj_file_open (const char *filename, bool writable)
 {
   const char *offset_p;
-  long loffset;
   int consumed;
   char *fname;
-  off_t offset;
+  int64_t offset;
   struct lto_simple_object *lo;
   const char *errmsg;
   int err;
@@ -80,13 +79,12 @@ lto_obj_file_open (const char *filename, bool writable)
   offset_p = strrchr (filename, '@');
   if (offset_p != NULL
       && offset_p != filename
-      && sscanf (offset_p, "@%li%n", &loffset, &consumed) >= 1
+      && sscanf (offset_p, "@%" PRIi64 "%n", &offset, &consumed) >= 1
       && strlen (offset_p) == (unsigned int) consumed)
     {
       fname = XNEWVEC (char, offset_p - filename + 1);
       memcpy (fname, filename, offset_p - filename);
       fname[offset_p - filename] = '\0';
-      offset = (off_t) loffset;
     }
   else
     {

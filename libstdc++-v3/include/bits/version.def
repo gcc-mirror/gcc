@@ -1694,6 +1694,14 @@ ftms = {
 };
 
 ftms = {
+  name = common_reference;
+  values = {
+    v = 202302;
+    cxxmin = 20; // We treat P2655R3 as a DR against C++20.
+  };
+};
+
+ftms = {
   name = formatters;
   values = {
     v = 202302;

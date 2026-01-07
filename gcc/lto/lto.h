@@ -58,7 +58,7 @@ extern int lto_link_dump_id, decl_merge_dump_id, partition_dump_id;
 struct lto_section_slot
 {
   const char *name;
-  intptr_t start;
+  off_t start;
   size_t len;
   struct lto_section_slot *next;
 };

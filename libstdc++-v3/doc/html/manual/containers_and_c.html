@@ -35,7 +35,7 @@
      The result is that if all your algorithm calls look like
    </p><pre class="programlisting">
    std::transform(beginof(foo), endof(foo), beginof(foo), SomeFunction);
-   </pre><p>
+</pre><p>
      then the type of foo can change from an array of ints to a vector
      of ints to a deque of ints and back again, without ever changing
      any client code.
@@ -81,7 +81,7 @@ template&lt;typename T, unsigned int sz&gt;
      Second, the line
    </p><pre class="programlisting">
     inline unsigned int lengthof (T (&amp;)[sz]) { return sz; }
-   </pre><p>
+</pre><p>
      looks just weird!  Hint:  unused parameters can be left nameless.
    </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="unordered_associative.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="containers.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="iterators.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Unordered Associative </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 10. 
   Iterators

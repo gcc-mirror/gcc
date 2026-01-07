@@ -188,7 +188,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool __atomic_compare(const _Tp& __a, const _Tp& __b)
       {
 	// TODO make this do the correct padding bit ignoring comparison
-	return __builtin_memcmp(&__a, &__b, sizeof(_Tp)) == 0;
+	return __builtin_memcmp(std::addressof(__a), std::addressof(__b),
+				sizeof(_Tp)) == 0;
       }
 
     struct __waiter_pool_base

@@ -47,7 +47,7 @@ main(void)
   __gnu_test::test_container<int, forward_iterator_wrapper> fcon(ary, ary + length);
   start_counters(time, resource);
   for(int i = 0; i < 100; i++)
-    search_n(fcon.begin(), fcon.end(), 10, 1);
+    (void) search_n(fcon.begin(), fcon.end(), 10, 1);
   stop_counters(time, resource);
   report_performance(__FILE__, "forward iterator", time, resource);
   clear_counters(time, resource);
@@ -55,7 +55,7 @@ main(void)
   __gnu_test::test_container<int, random_access_iterator_wrapper> rcon(ary, ary + length);
   start_counters(time, resource);
   for(int i = 0; i < 100; i++)
-    search_n(rcon.begin(), rcon.end(), 10, 1);
+    (void) search_n(rcon.begin(), rcon.end(), 10, 1);
   stop_counters(time, resource);
   report_performance(__FILE__, "random access iterator", time, resource);
   clear_counters(time, resource);

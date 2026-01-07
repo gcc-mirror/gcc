@@ -1,6 +1,6 @@
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
-/* { dg-additional-options "-O2" } */
+/* { dg-additional-options "-O2 -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include "arm_mve.h"

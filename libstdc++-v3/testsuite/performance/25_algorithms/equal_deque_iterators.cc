@@ -34,7 +34,7 @@ int main()
   start_counters(time, resource);
   for (int i = 0; i < 1000; ++i)
     for (int j = 0; j < 3000; ++j)
-      std::equal(data.begin(), data.begin() + j, d.begin());
+      (void) std::equal(data.begin(), data.begin() + j, d.begin());
   stop_counters(time, resource);
   report_performance(__FILE__, "deque vs deque", time, resource);
   clear_counters(time, resource);
@@ -44,7 +44,7 @@ int main()
   start_counters(time, resource);
   for (int i = 0; i < 1000; ++i)
     for (int j = 0; j < 3000; ++j)
-      std::equal(data.begin(), data.begin() + j, v.begin());
+      (void) std::equal(data.begin(), data.begin() + j, v.begin());
   stop_counters(time, resource);
   report_performance(__FILE__, "deque vs vector", time, resource);
   clear_counters(time, resource);
@@ -54,7 +54,7 @@ int main()
   start_counters(time, resource);
   for (int i = 0; i < 1000; ++i)
     for (int j = 0; j < 3000; ++j)
-      std::equal(v.begin(), v.begin() + j, d.begin());
+      (void) std::equal(v.begin(), v.begin() + j, d.begin());
   stop_counters(time, resource);
   report_performance(__FILE__, "vector vs deque", time, resource);
   clear_counters(time, resource);
@@ -64,7 +64,7 @@ int main()
   start_counters(time, resource);
   for (int i = 0; i < 1000; ++i)
     for (int j = 0; j < 3000; ++j)
-      std::equal(data.begin(), data.begin() + j, cv.begin());
+      (void) std::equal(data.begin(), data.begin() + j, cv.begin());
   stop_counters(time, resource);
   report_performance(__FILE__, "int deque vs char vector", time, resource);
   clear_counters(time, resource);
@@ -74,7 +74,7 @@ int main()
   start_counters(time, resource);
   for (int i = 0; i < 1000; ++i)
     for (int j = 0; j < 3000; ++j)
-      std::equal(cv.begin(), cv.begin() + j, d.begin());
+      (void) std::equal(cv.begin(), cv.begin() + j, d.begin());
   stop_counters(time, resource);
   report_performance(__FILE__, "char vector vs int deque", time, resource);
 

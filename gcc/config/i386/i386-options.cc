@@ -3047,7 +3047,7 @@ ix86_option_override_internal (bool main_args_p,
       else
 	{
 	  opts->x_ix86_move_max = opts->x_prefer_vector_width_type;
-	  if (opts_set->x_ix86_move_max == PVW_NONE)
+	  if (opts->x_ix86_move_max == PVW_NONE)
 	    {
 	      if (TARGET_AVX512F_P (opts->x_ix86_isa_flags)
 		  && TARGET_EVEX512_P (opts->x_ix86_isa_flags2))

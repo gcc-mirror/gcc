@@ -2129,7 +2129,8 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (code_for_pred_fault_load (e.vector_mode ()));
+    return e.use_contiguous_load_insn
+      (code_for_pred_fault_load (e.vector_mode ()));
   }
 };
 

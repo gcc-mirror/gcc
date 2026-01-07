@@ -29,21 +29,29 @@
 #define _AMXFP8INTRIN_H_INCLUDED
 
 #if defined(__x86_64__)
-#define _tile_dpbf8ps_internal(dst,src1,src2)			\
-  __asm__ volatile \
-  ("{tdpbf8ps\t%%tmm"#src2", %%tmm"#src1", %%tmm"#dst"|tdpbf8ps\t%%tmm"#dst", %%tmm"#src1", %%tmm"#src2"}" ::)
+#define _tile_dpbf8ps_internal(dst,src1,src2)				\
+  __asm__ volatile							\
+  ("{tdpbf8ps\t%%tmm%c[_src2], %%tmm%c[_src1], %%tmm%c[_dst]		\
+    |tdpbf8ps\ttmm%c[_dst], tmm%c[_src1], tmm%c[_src2]}"		\
+    :: [_dst]"i"(dst), [_src1]"i"(src1), [_src2]"i"(src2))
 
-#define _tile_dpbhf8ps_internal(dst,src1,src2)			\
-  __asm__ volatile \
-  ("{tdpbhf8ps\t%%tmm"#src2", %%tmm"#src1", %%tmm"#dst"|tdpbhf8ps\t%%tmm"#dst", %%tmm"#src1", %%tmm"#src2"}" ::)
+#define _tile_dpbhf8ps_internal(dst,src1,src2)				\
+  __asm__ volatile							\
+  ("{tdpbhf8ps\t%%tmm%c[_src2], %%tmm%c[_src1], %%tmm%c[_dst]		\
+    |tdpbhf8ps\ttmm%c[_dst], tmm%c[_src1], tmm%c[_src2]}"		\
+    :: [_dst]"i"(dst), [_src1]"i"(src1), [_src2]"i"(src2))
 
-#define _tile_dphbf8ps_internal(dst,src1,src2)			\
-  __asm__ volatile \
-  ("{tdphbf8ps\t%%tmm"#src2", %%tmm"#src1", %%tmm"#dst"|tdphbf8ps\t%%tmm"#dst", %%tmm"#src1", %%tmm"#src2"}" ::)
+#define _tile_dphbf8ps_internal(dst,src1,src2)				\
+  __asm__ volatile							\
+  ("{tdphbf8ps\t%%tmm%c[_src2], %%tmm%c[_src1], %%tmm%c[_dst]		\
+    |tdphbf8ps\ttmm%c[_dst], tmm%c[_src1], tmm%c[_src2]}"		\
+    :: [_dst]"i"(dst), [_src1]"i"(src1), [_src2]"i"(src2))
 
-#define _tile_dphf8ps_internal(dst,src1,src2)			\
-  __asm__ volatile \
-  ("{tdphf8ps\t%%tmm"#src2", %%tmm"#src1", %%tmm"#dst"|tdphf8ps\t%%tmm"#dst", %%tmm"#src1", %%tmm"#src2"}" ::)
+#define _tile_dphf8ps_internal(dst,src1,src2)				\
+  __asm__ volatile							\
+  ("{tdphf8ps\t%%tmm%c[_src2], %%tmm%c[_src1], %%tmm%c[_dst]		\
+    |tdphf8ps\ttmm%c[_dst], tmm%c[_src1], tmm%c[_src2]}"		\
+    :: [_dst]"i"(dst), [_src1]"i"(src1), [_src2]"i"(src2))
 
 #define _tile_dpbf8ps(dst,src1,src2)				\
   _tile_dpbf8ps_internal (dst,src1,src2)

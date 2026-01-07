@@ -1718,14 +1718,36 @@ loongarch_symbol_binds_local_p (const_rtx x)
 bool
 loongarch_const_vector_bitimm_set_p (rtx op, machine_mode mode)
 {
-  if (GET_CODE (op) == CONST_VECTOR && op != CONST0_RTX (mode))
+  if (GET_CODE (op) == CONST_VECTOR
+      && (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	  || GET_MODE_CLASS (mode) == MODE_VECTOR_INT))
     {
-      unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (op, 0));
+      unsigned HOST_WIDE_INT val;
+
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	{
+	  rtx val_s = CONST_VECTOR_ELT (op, 0);
+	  const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (val_s);
+	  if (GET_MODE (val_s) == DFmode)
+	    {
+	      long tmp[2];
+	      REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
+	      val = (unsigned HOST_WIDE_INT) tmp[1] << 32 | tmp[0];
+	    }
+	  else
+	    {
+	      long tmp;
+	      REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
+	      val = (unsigned HOST_WIDE_INT) tmp;
+	    }
+	}
+      else
+	val = UINTVAL (CONST_VECTOR_ELT (op, 0));
+
       int vlog2 = exact_log2 (val & GET_MODE_MASK (GET_MODE_INNER (mode)));
 
       if (vlog2 != -1)
 	{
-	  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
 	  gcc_assert (vlog2 >= 0 && vlog2 <= GET_MODE_UNIT_BITSIZE (mode) - 1);
 	  return loongarch_const_vector_same_val_p (op, mode);
 	}
@@ -1740,14 +1762,35 @@ loongarch_const_vector_bitimm_set_p (rtx op, machine_mode mode)
 bool
 loongarch_const_vector_bitimm_clr_p (rtx op, machine_mode mode)
 {
-  if (GET_CODE (op) == CONST_VECTOR && op != CONSTM1_RTX (mode))
+  if (GET_CODE (op) == CONST_VECTOR
+      && (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
+	  || GET_MODE_CLASS (mode) == MODE_VECTOR_INT))
     {
-      unsigned HOST_WIDE_INT val = ~UINTVAL (CONST_VECTOR_ELT (op, 0));
+      unsigned HOST_WIDE_INT val;
+      if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	{
+	  rtx val_s = CONST_VECTOR_ELT (op, 0);
+	  const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (val_s);
+	  if (GET_MODE (val_s) == DFmode)
+	    {
+	      long tmp[2];
+	      REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
+	      val = ~((unsigned HOST_WIDE_INT) tmp[1] << 32 | tmp[0]);
+	    }
+	  else
+	    {
+	      long tmp;
+	      REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
+	      val = ~((unsigned HOST_WIDE_INT) tmp);
+	    }
+	}
+      else
+	val = ~UINTVAL (CONST_VECTOR_ELT (op, 0));
+
       int vlog2 = exact_log2 (val & GET_MODE_MASK (GET_MODE_INNER (mode)));
 
       if (vlog2 != -1)
 	{
-	  gcc_assert (GET_MODE_CLASS (mode) == MODE_VECTOR_INT);
 	  gcc_assert (vlog2 >= 0 && vlog2 <= GET_MODE_UNIT_BITSIZE (mode) - 1);
 	  return loongarch_const_vector_same_val_p (op, mode);
 	}
@@ -1792,7 +1835,27 @@ loongarch_const_vector_same_bytes_p (rtx op, machine_mode mode)
 
   first = CONST_VECTOR_ELT (op, 0);
   bytes = GET_MODE_UNIT_SIZE (mode);
-  val = INTVAL (first);
+
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+    {
+      rtx val_s = CONST_VECTOR_ELT (op, 0);
+      const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (val_s);
+      if (GET_MODE (val_s) == DFmode)
+	{
+	  long tmp[2];
+	  REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
+	  val = (unsigned HOST_WIDE_INT) tmp[1] << 32 | tmp[0];
+	}
+      else
+	{
+	  long tmp;
+	  REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
+	  val = (unsigned HOST_WIDE_INT) tmp;
+	}
+    }
+  else
+    val = UINTVAL (first);
+
   first_byte = val & 0xff;
   for (i = 1; i < bytes; i++)
     {
@@ -6419,7 +6482,28 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       if (CONST_VECTOR_P (op))
 	{
 	  machine_mode mode = GET_MODE_INNER (GET_MODE (op));
-	  unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (op, 0));
+	  rtx val_s = CONST_VECTOR_ELT (op, 0);
+	  unsigned HOST_WIDE_INT val;
+
+	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	    {
+	      const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (val_s);
+	      if (GET_MODE (val_s) == DFmode)
+		{
+		  long tmp[2];
+		  REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
+		  val = (unsigned HOST_WIDE_INT) (tmp[1] << 32 | tmp[0]);
+		}
+	      else
+		{
+		  long tmp;
+		  REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
+		  val = (unsigned HOST_WIDE_INT) tmp;
+		}
+	    }
+	  else
+	    val = UINTVAL (val_s);
+
 	  int vlog2 = exact_log2 (val & GET_MODE_MASK (mode));
 	  if (vlog2 != -1)
 	    fprintf (file, "%d", vlog2);
@@ -8904,57 +8988,13 @@ loongarch_expand_vec_perm_1 (rtx operands[])
   /* Number of elements in the vector.  */
   w = GET_MODE_NUNITS (mode);
 
-  rtx round_data[MAX_VECT_LEN];
-  rtx round_reg, round_data_rtx;
-
-  if (mode != E_V32QImode)
+  /* If we are using xvshuf.*, clamp the selector to avoid unpredictable
+     output.  */
+  if (maskmode != V8SImode && maskmode != V4DImode)
     {
-      for (int i = 0; i < w; i += 1)
-	{
-	  round_data[i] = GEN_INT (0x1f);
-	}
-
-      if (mode == E_V4DFmode)
-	{
-	  round_data_rtx = gen_rtx_CONST_VECTOR (E_V4DImode,
-						 gen_rtvec_v (w, round_data));
-	  round_reg = gen_reg_rtx (E_V4DImode);
-	}
-      else if (mode == E_V8SFmode)
-	{
-
-	  round_data_rtx = gen_rtx_CONST_VECTOR (E_V8SImode,
-						 gen_rtvec_v (w, round_data));
-	  round_reg = gen_reg_rtx (E_V8SImode);
-	}
-      else
-	{
-	  round_data_rtx = gen_rtx_CONST_VECTOR (mode,
-						 gen_rtvec_v (w, round_data));
-	  round_reg = gen_reg_rtx (mode);
-	}
-
-      emit_move_insn (round_reg, round_data_rtx);
-      switch (mode)
-	{
-	case E_V32QImode:
-	  emit_insn (gen_andv32qi3 (mask, mask, round_reg));
-	  break;
-	case E_V16HImode:
-	  emit_insn (gen_andv16hi3 (mask, mask, round_reg));
-	  break;
-	case E_V8SImode:
-	case E_V8SFmode:
-	  emit_insn (gen_andv8si3 (mask, mask, round_reg));
-	  break;
-	case E_V4DImode:
-	case E_V4DFmode:
-	  emit_insn (gen_andv4di3 (mask, mask, round_reg));
-	  break;
-	default:
-	  gcc_unreachable ();
-	  break;
-	}
+      rtx t = gen_const_vec_duplicate (maskmode, GEN_INT (0x1f));
+      mask = expand_binop (maskmode, and_optab, mask, t, NULL_RTX, false,
+			   OPTAB_DIRECT);
     }
 
   if (mode == V4DImode || mode == V4DFmode)

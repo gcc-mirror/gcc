@@ -109,7 +109,7 @@ package body Sem_Type is
       Equal      => "=");
 
    Last_Overloaded : Node_Id := Empty;
-   --  Overloaded node after initializing a new collection of intepretation
+   --  Overloaded node after initializing a new collection of interpretations
 
    -------------------------------------
    -- Handling of Overload Resolution --

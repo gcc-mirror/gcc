@@ -14216,6 +14216,25 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
   return result;
 }
 
+/* Substitute ARGS into T, which is a TREE_VEC.  This function creates a new
+   TREE_VEC rather than substituting the elements in-place.  */
+
+static tree
+tsubst_tree_vec (tree t, tree args, tsubst_flags_t complain, tree in_decl)
+{
+  const int len = TREE_VEC_LENGTH (t);
+  tree r = make_tree_vec (len);
+  for (int i = 0; i < len; ++i)
+    {
+      tree arg = TREE_VEC_ELT (t, i);
+      if (TYPE_P (arg))
+	TREE_VEC_ELT (r, i) = tsubst (arg, args, complain, in_decl);
+      else
+	TREE_VEC_ELT (r, i) = tsubst_expr (arg, args, complain, in_decl);
+    }
+  return r;
+}
+
 /* Substitute ARGS into T, which is a pack index (i.e., PACK_INDEX_TYPE or
    PACK_INDEX_EXPR).  Returns a single type or expression, a PACK_INDEX_*
    node if only a partial substitution could be performed, or ERROR_MARK_NODE
@@ -14233,7 +14252,7 @@ tsubst_pack_index (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 a partially instantiated closure.  Let tsubst find the
 	 fully-instantiated one.  */
       gcc_assert (TREE_CODE (pack) == TREE_VEC);
-      pack = tsubst (pack, args, complain, in_decl);
+      pack = tsubst_tree_vec (pack, args, complain, in_decl);
     }
   if (TREE_CODE (pack) == TREE_VEC && TREE_VEC_LENGTH (pack) == 0)
     {
@@ -17310,7 +17329,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    f = TREE_TYPE (f);
 	  }
 
-	if (TREE_CODE (f) != TYPENAME_TYPE)
+	if (!WILDCARD_TYPE_P (f))
 	  {
 	    if (TYPENAME_IS_ENUM_P (t) && TREE_CODE (f) != ENUMERAL_TYPE)
 	      {
@@ -17586,6 +17605,8 @@ tsubst_baselink (tree baselink, tree object_type,
       if (template_args)
 	template_args = tsubst_template_args (template_args, args,
 					      complain, in_decl);
+      if (template_args == error_mark_node)
+	return error_mark_node;
     }
 
   tree binfo_type = BINFO_TYPE (BASELINK_BINFO (baselink));
@@ -17616,6 +17637,15 @@ tsubst_baselink (tree baselink, tree object_type,
       bool maybe_incomplete = BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink);
       baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1,
 				  complain);
+      if (!baselink)
+	{
+	  if ((complain & tf_error)
+	      && constructor_name_p (name, qualifying_scope))
+	    error ("cannot call constructor %<%T::%D%> directly",
+		   qualifying_scope, name);
+	  return error_mark_node;
+	}
+
       if (maybe_incomplete)
 	{
 	  /* Filter out from the new lookup set those functions which didn't
@@ -17627,15 +17657,6 @@ tsubst_baselink (tree baselink, tree object_type,
 	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink),
 				   binfo_type);
 	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
-	}
-
-      if (!baselink)
-	{
-	  if ((complain & tf_error)
-	      && constructor_name_p (name, qualifying_scope))
-	    error ("cannot call constructor %<%T::%D%> directly",
-		   qualifying_scope, name);
-	  return error_mark_node;
 	}
 
       fns = BASELINK_FUNCTIONS (baselink);
@@ -28967,7 +28988,16 @@ dependent_scope_p (tree scope)
 bool
 dependentish_scope_p (tree scope)
 {
-  return dependent_scope_p (scope) || any_dependent_bases_p (scope);
+  return dependent_scope_p (scope) || any_dependent_bases_p (scope)
+    /* A noexcept-spec is a complete-class context, so this should never hold.
+       But since we don't implement deferred noexcept-spec parsing of a friend
+       declaration (PR114764) we compensate by treating the current
+       instantiation as dependent to avoid bogus name lookup failures in this
+       case (PR122668).  */
+    || (cp_noexcept_operand
+	&& CLASS_TYPE_P (scope)
+	&& TYPE_BEING_DEFINED (scope)
+	&& dependent_type_p (scope));
 }
 
 /* T is a SCOPE_REF.  Return whether it represents a non-static member of

@@ -1046,7 +1046,7 @@ namespace __fwdlist
 	void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
-	  if constexpr (is_assignable<_Tp, decltype(*__first)>::value)
+	  if constexpr (is_assignable<_Tp&, decltype(*__first)>::value)
 	    {
 	      auto __prev = before_begin();
 	      auto __curr = begin();

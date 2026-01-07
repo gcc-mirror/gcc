@@ -111,7 +111,7 @@ classes.
       of them as indexing 0 through n-1.  Think of them as <emphasis>boundary
       markers</emphasis>:
    </para>
-   <programlisting>
+<programlisting>
 
    beginning            end
      |                   |
@@ -131,7 +131,7 @@ classes.
      |                       |           dereference 'end'.
    beginning                end
 
-   </programlisting>
+</programlisting>
    <para>See?  Everything between the boundary markers is chapter of the array.
       Simple.
    </para>

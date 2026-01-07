@@ -2954,6 +2954,7 @@ private:
   vec<tree> back_refs;		/* Back references.  */
   duplicate_hash_map *duplicates;	/* Map from existings to duplicate.  */
   vec<post_process_data> post_decls;	/* Decls to post process.  */
+  vec<tree> post_types;		/* Types to post process.  */
   unsigned unused;		/* Inhibit any interior TREE_USED
 				   marking.  */
 
@@ -3058,11 +3059,22 @@ public:
   {
     return post_decls;
   }
+  /* Return the types to postprocess.  */
+  const vec<tree>& post_process_type ()
+  {
+    return post_types;
+  }
 private:
   /* Register DATA for postprocessing.  */
   void post_process (post_process_data data)
   {
     post_decls.safe_push (data);
+  }
+  /* Register TYPE for postprocessing.  */
+  void post_process_type (tree type)
+  {
+    gcc_checking_assert (TYPE_P (type));
+    post_types.safe_push (type);
   }
 
 private:
@@ -3076,6 +3088,7 @@ trees_in::trees_in (module_state *state)
   duplicates = NULL;
   back_refs.create (500);
   post_decls.create (0);
+  post_types.create (0);
 }
 
 trees_in::~trees_in ()
@@ -3083,6 +3096,7 @@ trees_in::~trees_in ()
   delete (duplicates);
   back_refs.release ();
   post_decls.release ();
+  post_types.release ();
 }
 
 /* Tree stream writer.  */
@@ -4884,8 +4898,13 @@ maybe_add_cmi_prefix (const char *to, size_t *len_p = NULL)
 static void
 create_dirs (char *path)
 {
+  char *base = path;
+  /* Skip past initial slashes of absolute path.  */
+  while (IS_DIR_SEPARATOR (*base))
+    base++;
+
   /* Try and create the missing directories.  */
-  for (char *base = path; *base; base++)
+  for (; *base; base++)
     if (IS_DIR_SEPARATOR (*base))
       {
 	char sep = *base;
@@ -6402,13 +6421,19 @@ trees_out::core_vals (tree t)
 	if (has_warning_spec (t))
 	  u (get_warning_spec (t));
 
-      /* Walk in forward order, as (for instance) REQUIRES_EXPR has a
-         bunch of unscoped parms on its first operand.  It's safer to
-         create those in order.  */
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
-      for (unsigned limit = (vl ? VL_EXP_OPERAND_LENGTH (t)
-			     : TREE_OPERAND_LENGTH (t)),
-	     ix = unsigned (vl); ix != limit; ix++)
+      unsigned limit = (vl ? VL_EXP_OPERAND_LENGTH (t)
+			: TREE_OPERAND_LENGTH (t));
+      unsigned ix = unsigned (vl);
+      if (code == REQUIRES_EXPR)
+	{
+	  /* The first operand of a REQUIRES_EXPR is a tree chain
+	     of PARM_DECLs.  We need to stream this separately as
+	     otherwise we would only stream the first one.  */
+	  chained_decls (REQUIRES_EXPR_PARMS (t));
+	  ++ix;
+	}
+      for (; ix != limit; ix++)
 	WT (TREE_OPERAND (t, ix));
     }
   else
@@ -6984,9 +7009,15 @@ trees_in::core_vals (tree t)
 	put_warning_spec (t, u ());
 
       bool vl = TREE_CODE_CLASS (code) == tcc_vl_exp;
-      for (unsigned limit = (vl ? VL_EXP_OPERAND_LENGTH (t)
-			     : TREE_OPERAND_LENGTH (t)),
-	     ix = unsigned (vl); ix != limit; ix++)
+      unsigned limit = (vl ? VL_EXP_OPERAND_LENGTH (t)
+			: TREE_OPERAND_LENGTH (t));
+      unsigned ix = unsigned (vl);
+      if (code == REQUIRES_EXPR)
+	{
+	  REQUIRES_EXPR_PARMS (t) = chained_decls ();
+	  ++ix;
+	}
+      for (; ix != limit; ix++)
 	RTU (TREE_OPERAND (t, ix));
     }
 
@@ -10017,9 +10048,10 @@ trees_out::tree_node (tree t)
 	      break;
 
 	    case PARM_DECL:
-	      /* REQUIRES_EXPRs have a tree list of uncontexted
-		 PARM_DECLS.  It'd be nice if they had a
-		 distinguishing flag to double check.  */
+	      /* REQUIRES_EXPRs have a chain of uncontexted PARM_DECLS,
+		 and an implicit this parm in an NSDMI has no context.  */
+	      gcc_checking_assert (CONSTRAINT_VAR_P (t)
+				   || DECL_NAME (t) == this_identifier);
 	      break;
 	    }
 	  goto by_value;
@@ -10185,10 +10217,23 @@ trees_in::tree_node (bool is_use)
 
 	  case ARRAY_TYPE:
 	    {
+	      tree elt_type = res;
 	      tree domain = tree_node ();
 	      int dep = u ();
 	      if (!get_overrun ())
-		res = build_cplus_array_type (res, domain, dep);
+		{
+		  res = build_cplus_array_type (elt_type, domain, dep);
+		  /* If we're an array of an incomplete imported type,
+		     save it for post-processing so that we can attempt
+		     to complete the type later if it will get a
+		     definition later in the cluster.  */
+		  if (!dep
+		      && !COMPLETE_TYPE_P (elt_type)
+		      && CLASS_TYPE_P (elt_type)
+		      && DECL_LANG_SPECIFIC (TYPE_NAME (elt_type))
+		      && DECL_MODULE_IMPORT_P (TYPE_NAME (elt_type)))
+		    post_process_type (res);
+		}
 	    }
 	    break;
 
@@ -12848,8 +12893,10 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 	  if (DECL_EXPLICIT_INSTANTIATION (decl)
 	      && !DECL_EXTERNAL (decl))
 	    setup_explicit_instantiation_definition_linkage (decl);
-	  /* Class static data members are handled in read_class_def.  */
-	  if (!DECL_CLASS_SCOPE_P (decl)
+	  /* Class non-template static members are handled in read_class_def.
+	     But still handle specialisations of member templates.  */
+	  if ((!DECL_CLASS_SCOPE_P (decl)
+	       || primary_template_specialization_p (decl))
 	      && (DECL_IMPLICIT_INSTANTIATION (decl)
 		  || (DECL_EXPLICIT_INSTANTIATION (decl)
 		      && !DECL_EXTERNAL (decl))))
@@ -16819,7 +16866,13 @@ module_state::read_cluster (unsigned snum)
 	      && DECL_NOT_REALLY_EXTERN (decl))
 	    DECL_EXTERNAL (decl) = false;
 	}
-
+    }
+  for (const tree& type : sec.post_process_type ())
+    {
+      /* Attempt to complete an array type now in case its element type
+	 had a definition streamed later in the cluster.  */
+      gcc_checking_assert (TREE_CODE (type) == ARRAY_TYPE);
+      complete_type (type);
     }
   /* Look, function.cc's interface to cfun does too much for us, we
      just need to restore the old value.  I do not want to go

@@ -148,12 +148,12 @@ along with GCC; see the file COPYING3.  If not see
 	mode, with smaller numbers indicating a higher priority.
 
      VECTOR_BOOL_MODE (NAME, COUNT, COMPONENT, BYTESIZE)
-        Create a vector mode called NAME that contains COUNT boolean
-        elements and occupies BYTESIZE bytes in total.  Each boolean
-        element is of COMPONENT type and occupies (COUNT * BITS_PER_UNIT) /
-        BYTESIZE bits, with the element at index 0 occupying the lsb of the
-        first byte in memory.  Only the lowest bit of each element is
-        significant.
+	Create a vector mode called NAME that contains COUNT boolean
+	elements and occupies BYTESIZE bytes in total.  Each boolean
+	element is of COMPONENT type and occupies ((BYTESIZE * BITS_PER_UNIT)
+	/ COUNT) bits, with the element at index 0 occupying the lsb of the
+	first byte in memory.  Only the lowest bit of each element is
+	significant.
 
      OPAQUE_MODE (NAME, BYTESIZE)
         Create an opaque mode called NAME that is BYTESIZE bytes wide.

@@ -32,7 +32,7 @@ subroutine test2()
   use iso_fortran_env
   implicit none
   type t
-    type(lock_type), allocatable :: lock ! { dg-error "Allocatable component lock at .1. of type LOCK_TYPE must have a codimension" }
+    type(lock_type), allocatable :: lock
   end type t
   type t2
     type(lock_type) :: lock

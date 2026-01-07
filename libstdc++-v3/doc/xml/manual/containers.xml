@@ -86,9 +86,9 @@
      Section [23.1.2], Table 69, of the C++ standard lists this
      function for all of the associative containers (map, set, etc):
    </para>
-   <programlisting>
+<programlisting>
       a.insert(p,t);
-   </programlisting>
+</programlisting>
    <para>
      where 'p' is an iterator into the container 'a', and 't' is the
      item to insert.  The standard says that <quote><code>t</code> is
@@ -196,7 +196,7 @@
 	No, you cannot write code of the form
       </para>
       <!-- Careful, the leading spaces in PRE show up directly. -->
-   <programlisting>
+<programlisting>
       #include &lt;bitset&gt;
 
       void foo (size_t n)
@@ -204,7 +204,7 @@
 	  std::bitset&lt;n&gt;   bits;
 	  ....
       }
-   </programlisting>
+</programlisting>
    <para>
      because <code>n</code> must be known at compile time.  Your
      compiler is correct; it is not a bug.  That's the way templates
@@ -314,17 +314,17 @@
      For now you can simply make a temporary string object using the
      constructor expression:
    </para>
-   <programlisting>
+<programlisting>
       std::bitset&lt;5&gt; b ( std::string("10110") );
-   </programlisting>
+</programlisting>
 
    <para>
      instead of
    </para>
 
-    <programlisting>
+<programlisting>
       std::bitset&lt;5&gt; b ( "10110" );    // invalid
-    </programlisting>
+</programlisting>
     </section>
   </section>
 
@@ -425,7 +425,7 @@
       cached.
       The trait can be specialized for user-defined hash functions like so:
     </para>
-    <programlisting>
+<programlisting>
       #include &lt;unordered_set&gt;
 
       struct hasher
@@ -443,7 +443,7 @@
           struct __is_fast_hash&lt;hasher&gt; : std::false_type
           { };
       }
-    </programlisting>
+</programlisting>
   </section>
 </section>
 
@@ -492,9 +492,9 @@
    <para>
      The result is that if all your algorithm calls look like
    </para>
-   <programlisting>
+<programlisting>
    std::transform(beginof(foo), endof(foo), beginof(foo), SomeFunction);
-   </programlisting>
+</programlisting>
    <para>
      then the type of foo can change from an array of ints to a vector
      of ints to a deque of ints and back again, without ever changing
@@ -545,9 +545,9 @@ template&lt;typename T, unsigned int sz&gt;
    <para>
      Second, the line
    </para>
-   <programlisting>
+<programlisting>
     inline unsigned int lengthof (T (&amp;)[sz]) { return sz; }
-   </programlisting>
+</programlisting>
    <para>
      looks just weird!  Hint:  unused parameters can be left nameless.
    </para>

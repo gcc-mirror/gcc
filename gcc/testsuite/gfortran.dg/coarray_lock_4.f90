@@ -49,7 +49,7 @@ subroutine more_tests
   type(t1) :: x1 ! OK
 
   type t2
-    type(lock_type), allocatable :: c1(:) ! { dg-error "Allocatable component c1 at .1. of type LOCK_TYPE must have a codimension" }
+    type(lock_type), allocatable :: c1(:)
   end type t2
 
   type t3

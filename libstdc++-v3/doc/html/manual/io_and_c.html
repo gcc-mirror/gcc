@@ -20,7 +20,7 @@
      std::cout &lt;&lt; "Hel";
      std::printf ("lo, worl");
      std::cout &lt;&lt; "d!\n";
-   </pre><p>This must do what you think it does.
+</pre><p>This must do what you think it does.
    </p><p>Alert members of the audience will immediately notice that buffering
       is going to make a hash of the output unless special steps are taken.
    </p><p>The special steps taken by libstdc++, at least for version 3.0,
@@ -40,7 +40,7 @@
      #include <span class="emphasis"><em>any of the I/O headers such as ios, iostream, etc</em></span>
 
      std::ios::sync_with_stdio(false);
-   </pre><p>You must do this before performing any I/O via the C++ stream objects.
+</pre><p>You must do this before performing any I/O via the C++ stream objects.
       Once you call this, the C++ streams will operate independently of the
       (unused) C streams.  For GCC 3.x, this means that <code class="code">cout</code> and
       company will become fully buffered on their own.

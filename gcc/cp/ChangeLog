@@ -1,3 +1,121 @@
+2025-12-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-12-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122922
+	* module.cc (trees_in::post_types): New member.
+	(trees_in::trees_in): Initialize it.
+	(trees_in::~trees_in): Clean it up.
+	(trees_in::post_process_type): New functions.
+	(trees_in::tree_node): Save incomplete ARRAY_TYPEs for later
+	post-processing.
+	(module_state::read_cluster): Attempt to complete any
+	ARRAY_TYPEs we saved earlier.
+
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122752
+	* pt.cc (tsubst) <case TYPENAME_TYPE>: Allow TYPENAME_TYPE
+	resolving to another wildcard type.
+
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122668
+	PR c++/114764
+	* pt.cc (dependentish_scope_p): Return true for the current
+	instantiation from within an immediately parsed noexcept-spec.
+
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121445
+	* constexpr.cc (build_data_member_initialization): Just return
+	false if member is COMPONENT_REF of COMPONENT_REF with
+	VAR_P get_base_address.
+
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120876
+	* pt.cc (tsubst_baselink): Move maybe_incomplete handling after
+	!baselink handling.
+
+2025-11-28  Daniele Sahebi  <daniele@mkryss.me>
+
+	Backported from master:
+	2025-11-22  Daniele Sahebi  <daniele@mkryss.me>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122658
+	* call.cc (build_over_call): Don't call build_cplus_new in
+	template declarations.
+
+2025-11-26  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-11-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/121325
+	* pt.cc (tsubst_tree_vec): New.
+	(tsubst_pack_index): Call it.
+
+2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122789
+	* module.cc (trees_out::core_vals): Treat REQUIRES_EXPR
+	specially and stream the chained decls of its first operand.
+	(trees_in::core_vals): Likewise.
+	(trees_out::tree_node): Check the PARM_DECLs we see are what we
+	expect.
+
+2025-11-21  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/120529
+	* call.cc (ref_conv_binds_to_temporary): Don't ignore access control.
+
+2025-11-19  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119580
+	* pt.cc (tsubst_baselink): Return error_mark_node if
+	tsubst_template_args returned error_mark_node.
+
+2025-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/122677
+	* module.cc (create_dirs): Skip past any leading slashes.
+
+2025-11-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122625
+	* module.cc (trees_in::read_var_def): Also track class-scope
+	primary template specialisations.
+
 2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

@@ -41,6 +41,7 @@
 
 #define __glibcxx_want_bool_constant
 #define __glibcxx_want_bounded_array_traits
+#define __glibcxx_want_common_reference
 #define __glibcxx_want_has_unique_object_representations
 #define __glibcxx_want_integral_constant_callable
 #define __glibcxx_want_is_aggregate
@@ -4113,7 +4114,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
     { using type = _Tp0; };
 
   /// @cond undocumented
-  template<typename _Tp1, typename _Tp2, int _Bullet = 1, typename = void>
+  template<typename _Tp1, typename _Tp2, int _Bullet = 1>
     struct __common_reference_impl
     : __common_reference_impl<_Tp1, _Tp2, _Bullet + 1>
     { };
@@ -4126,46 +4127,38 @@ template<typename _Ret, typename _Fn, typename... _Args>
 
   // If T1 and T2 are reference types and COMMON-REF(T1, T2) is well-formed, ...
   template<typename _Tp1, typename _Tp2>
-    struct __common_reference_impl<_Tp1&, _Tp2&, 1,
-				   void_t<__common_ref<_Tp1&, _Tp2&>>>
-    { using type = __common_ref<_Tp1&, _Tp2&>; };
-
-  template<typename _Tp1, typename _Tp2>
-    struct __common_reference_impl<_Tp1&&, _Tp2&&, 1,
-				   void_t<__common_ref<_Tp1&&, _Tp2&&>>>
-    { using type = __common_ref<_Tp1&&, _Tp2&&>; };
-
-  template<typename _Tp1, typename _Tp2>
-    struct __common_reference_impl<_Tp1&, _Tp2&&, 1,
-				   void_t<__common_ref<_Tp1&, _Tp2&&>>>
-    { using type = __common_ref<_Tp1&, _Tp2&&>; };
-
-  template<typename _Tp1, typename _Tp2>
-    struct __common_reference_impl<_Tp1&&, _Tp2&, 1,
-				   void_t<__common_ref<_Tp1&&, _Tp2&>>>
-    { using type = __common_ref<_Tp1&&, _Tp2&>; };
+    requires is_reference_v<_Tp1> && is_reference_v<_Tp2>
+      && requires { typename __common_ref<_Tp1, _Tp2>; }
+#if __cpp_lib_common_reference // C++ >= 20
+      && is_convertible_v<add_pointer_t<_Tp1>,
+			  add_pointer_t<__common_ref<_Tp1, _Tp2>>>
+      && is_convertible_v<add_pointer_t<_Tp2>,
+			  add_pointer_t<__common_ref<_Tp1, _Tp2>>>
+#endif
+    struct __common_reference_impl<_Tp1, _Tp2, 1>
+    { using type = __common_ref<_Tp1, _Tp2>; };
 
   // Otherwise, if basic_common_reference<...>::type is well-formed, ...
   template<typename _Tp1, typename _Tp2>
-    struct __common_reference_impl<_Tp1, _Tp2, 2,
-				   void_t<__basic_common_ref<_Tp1, _Tp2>>>
+    requires requires { typename __basic_common_ref<_Tp1, _Tp2>; }
+    struct __common_reference_impl<_Tp1, _Tp2, 2>
     { using type = __basic_common_ref<_Tp1, _Tp2>; };
 
   // Otherwise, if COND-RES(T1, T2) is well-formed, ...
   template<typename _Tp1, typename _Tp2>
-    struct __common_reference_impl<_Tp1, _Tp2, 3,
-				   void_t<__cond_res<_Tp1, _Tp2>>>
+    requires requires { typename __cond_res<_Tp1, _Tp2>; }
+    struct __common_reference_impl<_Tp1, _Tp2, 3>
     { using type = __cond_res<_Tp1, _Tp2>; };
 
   // Otherwise, if common_type_t<T1, T2> is well-formed, ...
   template<typename _Tp1, typename _Tp2>
-    struct __common_reference_impl<_Tp1, _Tp2, 4,
-				   void_t<common_type_t<_Tp1, _Tp2>>>
+    requires requires { typename common_type_t<_Tp1, _Tp2>; }
+    struct __common_reference_impl<_Tp1, _Tp2, 4>
     { using type = common_type_t<_Tp1, _Tp2>; };
 
   // Otherwise, there shall be no member type.
   template<typename _Tp1, typename _Tp2>
-    struct __common_reference_impl<_Tp1, _Tp2, 5, void>
+    struct __common_reference_impl<_Tp1, _Tp2, 5>
     { };
 
   // Otherwise, if sizeof...(T) is greater than two, ...
@@ -4184,7 +4177,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
     { };
   /// @endcond
 
-#endif // C++2a
+#endif // C++20
 
   /// @} group metaprogramming
 

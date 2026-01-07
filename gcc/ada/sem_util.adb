@@ -14355,7 +14355,9 @@ package body Sem_Util is
    -- Incomplete_Or_Partial_View --
    --------------------------------
 
-   function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id is
+   function Incomplete_Or_Partial_View
+     (Id : Entity_Id; Partial_Only : Boolean := False) return Entity_Id
+   is
       S : constant Entity_Id := Scope (Id);
 
       function Inspect_Decls
@@ -14438,6 +14440,7 @@ package body Sem_Util is
         and then (Is_Incomplete_Type (Prev) or else Ekind (Prev) = E_Constant)
         and then Present (Full_View (Prev))
         and then Full_View (Prev) = Id
+        and then not Partial_Only
       then
          return Prev;
       end if;
@@ -14449,7 +14452,7 @@ package body Sem_Util is
             Pkg_Decl : constant Node_Id := Package_Specification (S);
 
          begin
-            --  It is knows that Typ has a private view, look for it in the
+            --  It is known that Typ has a private view, look for it in the
             --  visible declarations of the enclosing scope. A special case
             --  of this is when the two views have been exchanged - the full
             --  appears earlier than the private.
@@ -14469,7 +14472,7 @@ package body Sem_Util is
             --  Taft amendment type. The incomplete view should be located in
             --  the private declarations of the enclosing scope.
 
-            elsif In_Package_Body (S) then
+            elsif In_Package_Body (S) and then not Partial_Only then
                return Inspect_Decls (Private_Declarations (Pkg_Decl), True);
             end if;
          end;

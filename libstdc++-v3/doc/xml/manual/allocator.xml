@@ -52,10 +52,10 @@
 	 typedefs, member functions, etc), but the two which concern us most
 	 are:
        </para>
-       <programlisting>
+<programlisting>
 	 T*    allocate   (size_type n, const void* hint = 0);
 	 void  deallocate (T* p, size_type n);
-       </programlisting>
+</programlisting>
 
        <para>
 	 The <varname>n</varname> arguments in both those
@@ -291,14 +291,14 @@
       (but non-portable) method of specifying that only <function>malloc</function> or <function>free</function>
       should be used instead of the default node allocator is:
    </para>
-   <programlisting>
+<programlisting>
     std::list &lt;int, __gnu_cxx::malloc_allocator&lt;int&gt; &gt;  malloc_list;</programlisting>
     <para>
       Likewise, a debugging form of whichever allocator is currently in use:
     </para>
-      <programlisting>
+<programlisting>
     std::deque &lt;int, __gnu_cxx::debug_allocator&lt;std::allocator&lt;int&gt; &gt; &gt;  debug_deque;
-      </programlisting>
+</programlisting>
 </section>
 
 <section xml:id="allocator.custom"><info><title>Custom Allocators</title></info>

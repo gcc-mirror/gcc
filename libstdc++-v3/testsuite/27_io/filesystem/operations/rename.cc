@@ -170,10 +170,20 @@ test_directories()
   fs::remove_all(dir, ec);
 }
 
+void
+test_pr122726()
+{
+  std::error_code ec;
+  const auto nonesuch = __gnu_test::nonexistent_path();
+  fs::rename(nonesuch, "new-name", ec);
+  VERIFY( ec == std::make_error_code(std::errc::no_such_file_or_directory) );
+}
+
 int
 main()
 {
   test01();
   test_symlinks();
   test_directories();
+  test_pr122726();
 }

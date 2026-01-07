@@ -173,19 +173,19 @@ in the build directory starts the build process. The <literal>all</literal> targ
     we can arrange the contents however we like.  As of this writing,
     <filename>acinclude.m4</filename> is arranged as follows:
   </para>
-  <programlisting>
+<programlisting>
     GLIBCXX_CHECK_HOST
     GLIBCXX_TOPREL_CONFIGURE
     GLIBCXX_CONFIGURE
-  </programlisting>
+</programlisting>
   <para>
     All the major variable "discovery" is done here.
     <varname>CXX</varname>, multilibs,
     etc.
   </para>
-  <programlisting>
+<programlisting>
     fragments included from elsewhere
-  </programlisting>
+</programlisting>
   <para>
     Right now, "fragments" == "the math/linkage bits".
   </para>

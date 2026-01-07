@@ -2018,7 +2018,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 	 into great detail, here is an example which requires user-level
 	 locks:
       </para>
-      <programlisting>
+<programlisting>
      library_class_a shared_object_a;
 
      void thread_main () {
@@ -2032,7 +2032,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 	 another thread, here is an example that does not require any
 	 user-level locks:
       </para>
-      <programlisting>
+<programlisting>
      void thread_main () {
        library_class_a object_a;
        library_class_b *object_b = new library_class_b;
@@ -2089,7 +2089,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
          globally-visible object, the library ensures that the reference
          count updates are atomic and do not introduce data races:
       </para>
-      <programlisting>
+<programlisting>
     std::shared_ptr&lt;int&gt; global_sp;
 
     void thread_main() {
@@ -2112,7 +2112,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       t1.join();
       t2.join();
     }
-      </programlisting>
+</programlisting>
 
       <para>For further details of the C++11 memory model see Hans-J. Boehm's
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.hboehm.info/c++mm/">Threads
