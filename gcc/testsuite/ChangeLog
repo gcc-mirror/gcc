@@ -1,3 +1,77 @@
+2026-01-06  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123269
+	* gcc.dg/tree-ssa/predcom-dse-4.c: Disable vectorization.
+	* gcc.dg/tree-ssa/predcom-dse-7.c: Likewise.
+
+2026-01-06  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/ssp-1.c, gcc.dg/ssp-2.c, gcc.dg/stackprotectexplicit1.c:
+	Do not restrict to { target native }.
+
+2026-01-06  Richard Ball  <Richard.Ball@arm.com>
+
+	* gcc.target/aarch64/pldir.c: New test.
+
+2026-01-06  Richard Ball  <Richard.Ball@arm.com>
+
+	* gcc.target/aarch64/atomic_store_with_stshh.c: New test.
+
+2026-01-06  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-int.c: Adjust testcase.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-long.c: Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-short.c: Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-int.c:
+	Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-long.c:
+	Likewise.
+	* gcc.dg/vect/complex/bb-slp-complex-add-pattern-unsigned-short.c:
+	Likewise.
+	* gcc.dg/vect/complex/complex-add-pattern-template.c: Likewise.
+	* gcc.dg/vect/complex/complex-add-template.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-double.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-double.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c:
+	* gcc.dg/vect/complex/vect-complex-add-pattern-byte.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-int.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-long.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-short.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-byte.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-int.c: Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-long.c:
+	Likewise.
+	* gcc.dg/vect/complex/vect-complex-add-pattern-unsigned-short.c:
+	Likewise.
+	* lib/target-supports.exp:
+	(check_effective_target_arm_v8_3a_complex_neon_ok_nocache): Add
+	explicit "+simd" and tighten check-compile code fragment.
+	(check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache):
+	Likewise.
+
+2026-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* lib/file-format.exp (gcc_target_object_format): Always return ELF
+	for Solaris targets.
+
+2026-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/pr119136.f90: New test.
+
 2026-01-05  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/122103

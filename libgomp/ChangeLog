@@ -1,3 +1,8 @@
+2026-01-06  supers1ngular  <supers1ngular@baylibre.com>
+
+	* testsuite/libgomp.fortran/pr84418-1.f90: Fix verbiage of
+	dg-warning to reflect updated warning.
+
 2026-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.texi: Bump @copying's copyright year.

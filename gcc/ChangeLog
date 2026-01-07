@@ -1,3 +1,72 @@
+2026-01-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* tree-profile.cc (tree_profiling): Do not use atomic operations
+	if they are not available.  Try to use at least partial atomic
+	updates as a fallback.
+
+2026-01-06  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h (EPILOGUE_USES): New macro definition.
+	* config/xtensa/xtensa.md (return):
+	Remove '(use (reg:SI A0_REG))' from the template description, and
+	reload_completed from the condition.
+	(sibcall_epilogue): Remove emitting '(use (reg:SI A0_REG))'.
+
+2026-01-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	* tree-if-conv.cc (ifcvt_can_predicate): Add check for
+	normal builtins.
+
+2026-01-06  Richard Ball  <Richard.Ball@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(enum aarch64_builtins): New builtin flag.
+	(aarch64_init_pcdphint_builtins): New builtin function.
+	(aarch64_expand_pldir_builtin): Expander for new intrinsic.
+	(aarch64_general_expand_builtin): Call new expander.
+	* config/aarch64/aarch64.md
+	(aarch64_pldir): New pattern for instrinsic.
+	* config/aarch64/arm_acle.h
+	(__attribute__): New call to builtin.
+	(__pldir): Likewise.
+
+2026-01-06  Richard Ball  <Richard.Ball@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(enum aarch64_builtins): Add new flags.
+	(aarch64_init_pcdphint_builtins): Create new Builtin functions.
+	(aarch64_general_init_builtins): Call init for PCDPHINT.
+	(aarch64_expand_stshh_builtin): Expander for new intrinsic.
+	(aarch64_general_expand_builtin): Call new expander.
+	* config/aarch64/aarch64-c.cc
+	(aarch64_update_cpp_builtins): New feature.
+	* config/aarch64/aarch64.h (TARGET_PCDPHINT): Likewise.
+	* config/aarch64/arm_acle.h
+	(__atomic_store_with_stshh): Generic to call builtins.
+	* config/aarch64/atomics.md
+	(@aarch64_atomic_store_stshh<mode>): New pattern for intrinsic.
+	* config/aarch64/iterators.md: New UNSPEC.
+
+2026-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/121192
+	* expr.cc (store_constructor) <VECTOR_TYPE>: Disable the special
+	trick for uniform boolean vectors with integer modes and single-bit
+	mask entries on big-endian platforms.
+
+2026-01-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/install.texi (Prerequisites): Remove reference to Ada in
+	conjunction with GCC 9.5 and adjust its GCC version requirement.
+
+2026-01-06  Jakub Jelinek  <jakub@redhat.com>
+	    Marco Falke  <falke.marco@gmail.com>
+
+	PR tree-optimization/123351
+	* tree-object-size.cc (object_sizes_set_temp): Separate calls to
+	make_ssa_name to ensure deterministic execution order.
+
 2026-01-05  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/122103

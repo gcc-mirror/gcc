@@ -1,3 +1,22 @@
+2026-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* io/async.h (UNLOCK_UNIT): New macro.
+	(TRYLOCK_UNIT): New macro.
+	(LOCK_UNIT): New macro.
+	* io/io.h: Delete prototype for unused stash_internal_unit.
+	(check_for_recursive): Add prototype for this new function.
+	* io/transfer.c (data_transfer_init): Add call to new
+	check_for_recursive.
+	* io/unit.c (delete_unit): Fix comment.
+	(check_for_recursive): Add new function.
+	(init_units): Use new macros.
+	(close_unit_1): Likewise.
+	(unlock_unit): Likewise.
+	* io/unix.c (flush_all_units_1): Likewise.
+	(flush_all_units): Likewise.
+	* runtime/error.c (translate_error): : Add translation for
+	"Recursive I/O not allowed runtime error message.
+
 2026-01-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Revert:

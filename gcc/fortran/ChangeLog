@@ -1,3 +1,16 @@
+2026-01-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/123029
+	* io.cc (check_open_constraints): Delete erroneous check.
+
+2026-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* libgfortran.h: Add enum for new LIBERROR_RECURSIVE_IO.
+
+2026-01-06  supers1ngular  <supers1ngular@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_clauses): New diagnostic logic.
+
 2026-01-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/123071
