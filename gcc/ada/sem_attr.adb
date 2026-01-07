@@ -1519,6 +1519,8 @@ package body Sem_Attr is
          if Nkind (Subp_Decl) not in N_Abstract_Subprogram_Declaration
                                    | N_Entry_Declaration
                                    | N_Expression_Function
+                                   | N_Formal_Abstract_Subprogram_Declaration
+                                   | N_Formal_Concrete_Subprogram_Declaration
                                    | N_Full_Type_Declaration
                                    | N_Generic_Subprogram_Declaration
                                    | N_Subprogram_Body

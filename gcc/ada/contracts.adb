@@ -452,6 +452,8 @@ package body Contracts is
 
          if Nkind (Decl) in N_Abstract_Subprogram_Declaration
                           | N_Entry_Declaration
+                          | N_Formal_Abstract_Subprogram_Declaration
+                          | N_Formal_Concrete_Subprogram_Declaration
                           | N_Generic_Subprogram_Declaration
                           | N_Subprogram_Declaration
          then

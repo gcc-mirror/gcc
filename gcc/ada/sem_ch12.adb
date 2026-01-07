@@ -524,7 +524,10 @@ package body Sem_Ch12 is
    --  pre/postconditon checks added.
 
    procedure Build_Subprogram_Wrappers
-     (Match, Analyzed_Formal : Node_Id; Renamings : List_Id);
+     (Match             : Node_Id;
+      Analyzed_Formal   : Node_Id;
+      Unanalyzed_Formal : Node_Id;
+      Renamings         : List_Id);
    --  Ada 2022: AI12-0272 introduces pre/postconditions for formal
    --  subprograms. The implementation of making the formal into a renaming
    --  of the actual does not work, given that subprogram renaming cannot
@@ -534,6 +537,10 @@ package body Sem_Ch12 is
    --  The wrapper declaration and body are appended to Renamings.
    --  ???But renaming declarations CAN have aspects specs,
    --  and that was true from the start (see AI05-0183-1).
+   --
+   --  The procedure also copies the aspect specifications from the unanalyzed
+   --  formal subprogram to the wrapper subprogram for later analysis in the
+   --  context of the instantiation.
 
    procedure Check_Abbreviated_Instance
      (N                : Node_Id;
@@ -2758,7 +2765,10 @@ package body Sem_Ch12 is
                  and then (Expander_Active or GNATprove_Mode)
                then
                   Build_Subprogram_Wrappers
-                    (Match, Assoc.An_Formal, Result_Renamings);
+                    (Match             => Match,
+                     Analyzed_Formal   => Assoc.An_Formal,
+                     Unanalyzed_Formal => Assoc.Un_Formal,
+                     Renamings         => Result_Renamings);
                end if;
 
                --  An instantiation is a freeze point for the actuals,
@@ -7560,7 +7570,10 @@ package body Sem_Ch12 is
    -------------------------------
 
    procedure Build_Subprogram_Wrappers
-     (Match, Analyzed_Formal : Node_Id; Renamings : List_Id)
+     (Match             : Node_Id;
+      Analyzed_Formal   : Node_Id;
+      Unanalyzed_Formal : Node_Id;
+      Renamings         : List_Id)
    is
       function Adjust_Aspect_Sloc (N : Node_Id) return Traverse_Result;
       --  Adjust Sloc so that errors will be reported on the instance rather
@@ -7618,10 +7631,11 @@ package body Sem_Ch12 is
 
       Decl_Node := Build_Subprogram_Decl_Wrapper (Formal);
 
-      --  Transfer aspect specifications from formal subprogram to wrapper
+      --  Transfer aspect specifications from the unanalyzed formal subprogram
+      --  to the wrapper for later analysis.
 
       Set_Aspect_Specifications (Decl_Node,
-        New_Copy_List_Tree (Aspect_Specifications (Analyzed_Formal)));
+        New_Copy_List_Tree (Aspect_Specifications (Unanalyzed_Formal)));
 
       Aspect_Spec := First (Aspect_Specifications (Decl_Node));
       while Present (Aspect_Spec) loop
