@@ -957,9 +957,11 @@ ia64*-*-freebsd*)
 ia64*-*-linux*)
 	# Don't use crtbeginT.o from *-*-linux* default.
 	extra_parts="crtbegin.o crtend.o crtbeginS.o crtendS.o crtfastmath.o"
-	tmake_file="$tmake_file ia64/t-ia64 ia64/t-ia64-elf t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-eh-ia64 t-libunwind ia64/t-linux"
+	tmake_file="${tmake_file} ia64/t-ia64 ia64/t-ia64-elf t-crtfm t-softfp-tf ia64/t-softfp t-softfp ia64/t-softfp-compat ia64/t-eh-ia64"
 	if test x$with_system_libunwind != xyes ; then
 		tmake_file="${tmake_file} t-libunwind-elf ia64/t-linux-libunwind"
+	else
+		tmake_file="${tmake_file} ia64/t-linux t-libunwind"
 	fi
 	md_unwind_header=ia64/linux-unwind.h
 	;;

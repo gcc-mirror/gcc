@@ -1730,6 +1730,7 @@ _Unwind_GetRegionStart (struct _Unwind_Context *context)
 void *
 _Unwind_FindEnclosingFunction (void *pc)
 {
+#ifndef inhibit_libc
   struct unw_table_entry *entp, ent;
   unw_word segment_base, gp;
 
@@ -1738,6 +1739,9 @@ _Unwind_FindEnclosingFunction (void *pc)
     return NULL;
   else
     return (void *)(segment_base + entp->start_offset);
+#else
+  return NULL;
+#endif
 }
 
 /* Get the value of the CFA as saved in CONTEXT.  In GCC/Dwarf2 parlance,
@@ -1780,9 +1784,12 @@ uw_frame_state_for (struct _Unwind_Context *context, _Unwind_FrameState *fs)
   for (r = fs->curr.reg; r < fs->curr.reg + UNW_NUM_REGS; ++r)
     r->when = UNW_WHEN_NEVER;
   context->lsda = 0;
-
+#ifndef inhibit_libc
   entp = _Unwind_FindTableEntry ((void *) context->rp,
 				&segment_base, &context->gp, &ent);
+#else
+  entp = NULL;
+#endif
   if (entp == NULL)
     {
       /* Couldn't find unwind info for this function.  Try an

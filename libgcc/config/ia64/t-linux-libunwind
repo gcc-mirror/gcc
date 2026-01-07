@@ -1,3 +1,7 @@
 # Build libunwind for IA-64 GLIBC based system.
 LIBUNWIND = $(srcdir)/config/ia64/fde-glibc.c \
   $(srcdir)/config/ia64/unwind-ia64.c
+
+LIB2ADDEH += $(srcdir)/config/ia64/fde-glibc.c
+
+SHLIB_MAPFILES += $(srcdir)/config/ia64/libgcc-glibc.ver
