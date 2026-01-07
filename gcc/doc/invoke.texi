@@ -10153,6 +10153,10 @@ The latter front end diagnoses
 @samp{f951: Warning: command-line option '-fno-rtti' is valid for C++/D/ObjC++ but not for Fortran},
 which may be disabled with @option{-Wno-complain-wrong-lang}.
 
+This option can also be used to disable warnings like
+@samp{cc1plus: note: CTF debug info requested, but not supported for 'GNU C++20' frontend}
+produced by @option{-gctf} or @option{-gsctf} for unsupported languages.
+
 @opindex Wcompare-distinct-pointer-types
 @item -Wcompare-distinct-pointer-types @r{(C and Objective-C only)}
 Warn if pointers of distinct types are compared without a cast.  This
