@@ -1460,7 +1460,7 @@ __return_r26_r31:
 __save_r27_r31:
 #ifdef __EP__
 	mov	ep,r1
-	addi	-16,sp,sp
+	add	-16,sp
 	mov	sp,ep
 	sst.w	r29,0[ep]
 	sst.w	r28,4[ep]
@@ -1468,7 +1468,7 @@ __save_r27_r31:
 	sst.w	r31,12[ep]
 	mov	r1,ep
 #else
-	addi	-16,sp,sp
+	add	-16,sp
 	st.w	r29,0[sp]
 	st.w	r28,4[sp]
 	st.w	r27,8[sp]
@@ -1512,7 +1512,7 @@ __return_r27_r31:
 	/* Also allocate space for the argument save area.  */
 	/* Called via:	jalr __save_r28_r31,r10.  */
 __save_r28_r31:
-	addi	-12,sp,sp
+	add	-12,sp
 	st.w	r29,0[sp]
 	st.w	r28,4[sp]
 	st.w	r31,8[sp]
@@ -1528,7 +1528,7 @@ __return_r28_r31:
 	ld.w	0[sp],r29
 	ld.w	4[sp],r28
 	ld.w	8[sp],r31
-	addi	12,sp,sp
+	add	12,sp
 	jmp	[r31]
 	.size	__return_r28_r31,.-__return_r28_r31
 #endif /* L_save_28c */
@@ -1542,7 +1542,7 @@ __return_r28_r31:
 	/* Also allocate space for the argument save area.  */
 	/* Called via:	jalr __save_r29_r31,r10.  */
 __save_r29_r31:
-	addi	-8,sp,sp
+	add	-8,sp
 	st.w	r29,0[sp]
 	st.w	r31,4[sp]
 	jmp	[r10]
@@ -1556,7 +1556,7 @@ __save_r29_r31:
 __return_r29_r31:
 	ld.w	0[sp],r29
 	ld.w	4[sp],r31
-	addi	8,sp,sp
+	add	8,sp
 	jmp	[r31]
 	.size	__return_r29_r31,.-__return_r29_r31
 #endif /* L_save_29c */
@@ -1570,7 +1570,7 @@ __return_r29_r31:
 	/* Also allocate space for the argument save area.  */
 	/* Called via:	jalr __save_r31,r10.  */
 __save_r31:
-	addi	-4,sp,sp
+	add	-4,sp
 	st.w	r31,0[sp]
 	jmp	[r10]
 	.size	__save_r31,.-__save_r31
@@ -1582,7 +1582,7 @@ __save_r31:
 	.type	__return_r31,@function
 __return_r31:
 	ld.w	0[sp],r31
-	addi	4,sp,sp
+	add	4,sp
 	jmp	[r31]
         .size   __return_r31,.-__return_r31
 #endif /* L_save_31c */
@@ -1820,7 +1820,7 @@ __callt_return_r2_r29:	.short ctoff(.L_return_r2_r29)
 .L_return_r2_r31:
 	dispose 0, {r20 - r29, r31}
 	ld.w    0[sp], r2
-	addi	4, sp, sp
+	add	4, sp
 	jmp     [r31]
 
 	/* Place the offsets of the start of these routines into the call table.  */
