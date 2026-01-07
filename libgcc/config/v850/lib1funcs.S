@@ -727,11 +727,11 @@ __return_r25_r29:
 	addi	20,sp,sp
 	mov	r1,ep
 #else
-	ld.w	0[ep],r29
-	ld.w	4[ep],r28
-	ld.w	8[ep],r27
-	ld.w	12[ep],r26
-	ld.w	16[ep],r25
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	ld.w	16[sp],r25
 	addi	20,sp,sp
 #endif
 	jmp	[r31]
@@ -940,18 +940,18 @@ __return_r2_r31:
 	addi	48,sp,sp
 	mov	r1,ep
 #else
-	ld.w	44[sp],r29
-	ld.w	40[sp],r28
-	ld.w	36[sp],r27
-	ld.w	32[sp],r26
-	ld.w	28[sp],r25
-	ld.w	24[sp],r24
-	ld.w	20[sp],r23
-	ld.w	16[sp],r22
-	ld.w	12[sp],r21
-	ld.w	8[sp],r20
-	ld.w	4[sp],r2
-	ld.w	0[sp],r31
+	ld.w	0[sp],r29
+	ld.w	4[sp],r28
+	ld.w	8[sp],r27
+	ld.w	12[sp],r26
+	ld.w	16[sp],r25
+	ld.w	20[sp],r24
+	ld.w	24[sp],r23
+	ld.w	28[sp],r22
+	ld.w	32[sp],r21
+	ld.w	36[sp],r20
+	ld.w	40[sp],r2
+	ld.w	44[sp],r31
 	addi	48,sp,sp
 #endif
 	jmp	[r31]
