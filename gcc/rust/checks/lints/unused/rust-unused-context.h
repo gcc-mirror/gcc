@@ -37,12 +37,18 @@ public:
   void add_mut (HirId id);
   void remove_mut (HirId id);
   bool is_mut_used (HirId id) const;
+
+  // Unused label
+  void add_label (HirId id);
+  bool is_label_used (HirId id) const;
+
   std::string as_string () const;
 
 private:
   std::unordered_set<HirId> used_vars;
   std::unordered_set<HirId> mutable_vars;
   std::map<HirId, std::vector<HirId>> assigned_vars;
+  std::unordered_set<HirId> used_labels;
 };
 
 } // namespace Analysis

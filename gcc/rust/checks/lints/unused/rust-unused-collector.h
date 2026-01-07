@@ -51,6 +51,10 @@ private:
   virtual void visit (HIR::IdentifierPattern &pattern) override;
   virtual void visit (HIR::StructPatternFieldIdent &pattern) override;
 
+  // Unused label
+  virtual void visit (HIR::BreakExpr &expr) override;
+  virtual void visit (HIR::ContinueExpr &expr) override;
+
   template <typename T> HirId get_def_id (T &path_expr)
   {
     NodeId ast_node_id = path_expr.get_mappings ().get_nodeid ();
@@ -64,6 +68,12 @@ private:
     auto def_id = get_def_id (path_expr);
     unused_context.add_variable (def_id);
     unused_context.remove_assign (def_id);
+  }
+
+  template <typename T> void mark_label_used (T &path_expr)
+  {
+    auto def_id = get_def_id (path_expr);
+    unused_context.add_label (def_id);
   }
 };
 } // namespace Analysis

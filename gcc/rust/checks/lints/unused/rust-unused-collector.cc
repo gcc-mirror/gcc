@@ -88,5 +88,23 @@ UnusedCollector::visit (HIR::StructPatternFieldIdent &pattern)
   walk (pattern);
 }
 
+void
+UnusedCollector::visit (HIR::BreakExpr &expr)
+{
+  if (!expr.has_label ())
+    return;
+  mark_label_used (expr.get_label ());
+  walk (expr);
+}
+
+void
+UnusedCollector::visit (HIR::ContinueExpr &expr)
+{
+  if (!expr.has_label ())
+    return;
+  mark_label_used (expr.get_label ());
+  walk (expr);
+}
+
 } // namespace Analysis
 } // namespace Rust

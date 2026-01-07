@@ -73,6 +73,19 @@ UnusedContext::is_mut_used (HirId id) const
   return mutable_vars.find (id) == mutable_vars.end ();
 }
 
+void
+UnusedContext::add_label (HirId id)
+
+{
+  used_labels.emplace (id);
+}
+
+bool
+UnusedContext::is_label_used (HirId id) const
+{
+  return used_labels.find (id) != used_labels.end ();
+}
+
 std::string
 UnusedContext::as_string () const
 {
