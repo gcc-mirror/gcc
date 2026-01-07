@@ -1889,6 +1889,7 @@ static void c_parser_oacc_declare (c_parser *);
 static void c_parser_oacc_enter_exit_data (c_parser *, bool);
 static void c_parser_oacc_update (c_parser *);
 static void c_parser_omp_construct (c_parser *, bool *);
+static void c_parser_omp_groupprivate (c_parser *);
 static void c_parser_omp_threadprivate (c_parser *);
 static void c_parser_omp_barrier (c_parser *);
 static void c_parser_omp_depobj (c_parser *);
@@ -16094,6 +16095,10 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p,
     case PRAGMA_OMP_CANCELLATION_POINT:
       return c_parser_omp_cancellation_point (parser, context);
 
+    case PRAGMA_OMP_GROUPPRIVATE:
+      c_parser_omp_groupprivate (parser);
+      return false;
+
     case PRAGMA_OMP_THREADPRIVATE:
       c_parser_omp_threadprivate (parser);
       return false;
@@ -28599,7 +28604,7 @@ c_maybe_parse_omp_decl (tree decl, tree d)
       return false;
     }
   if (dir->id != PRAGMA_OMP_THREADPRIVATE
-      /* && dir->id != PRAGMA_OMP_GROUPPRIVATE */
+      && dir->id != PRAGMA_OMP_GROUPPRIVATE
       && dir->id != PRAGMA_OMP_ALLOCATE
       && (dir->id != PRAGMA_OMP_DECLARE
 	  || strcmp (directive[1], "target") != 0))
@@ -30960,6 +30965,26 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
     gcc_assert (EXPR_LOCATION (stmt) != UNKNOWN_LOCATION);
 }
 
+/* OpenMP 6.0:
+   # pragma omp groupprivate (variable-list) [device_type(...)]  */
+
+#define OMP_GROUPPRIVATE_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE) )
+
+static void
+c_parser_omp_groupprivate (c_parser *parser)
+{
+  location_t loc = c_parser_peek_token (parser)->location;
+  c_parser_consume_pragma (parser);
+  tree vars = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ERROR, NULL);
+  tree clauses = c_parser_omp_all_clauses (parser, OMP_GROUPPRIVATE_CLAUSE_MASK,
+					   "#pragma omp groupprivate");
+  /* TODO: Implies 'declare target local' with specified device_type, check for
+     conflicts.  Check for other restrictions.  */
+  (void) vars;
+  (void) clauses;
+  sorry_at (loc, "%<omp groupprivate%>");
+}
 
 /* OpenMP 2.5:
    # pragma omp threadprivate (variable-list) */

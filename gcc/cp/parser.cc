@@ -50025,6 +50025,25 @@ cp_parser_omp_taskgroup (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 				 clauses);
 }
 
+/* OpenMP 6.0:
+   # pragma omp groupprivate (variable-list) [device_type(...)]  */
+
+#define OMP_GROUPPRIVATE_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE) )
+
+static void
+cp_parser_omp_groupprivate (cp_parser *parser, cp_token *pragma_tok)
+{
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  tree vars = cp_parser_omp_var_list (parser, OMP_CLAUSE_ERROR, NULL);
+  tree clauses = cp_parser_omp_all_clauses (parser, OMP_GROUPPRIVATE_CLAUSE_MASK,
+					    "#pragma omp groupprivate", pragma_tok);
+  /* TODO: Implies 'declare target local' with specified device_type, check for
+     conflicts.  Check for other restrictions.  */
+  (void) vars;
+  (void) clauses;
+  sorry_at (loc, "%<omp groupprivate%>");
+}
 
 /* OpenMP 2.5:
    # pragma omp threadprivate (variable-list) */
@@ -52952,7 +52971,7 @@ cp_maybe_parse_omp_decl (tree decl, tree d)
       return false;
     }
   if (dir->id != PRAGMA_OMP_THREADPRIVATE
-      /* && dir->id != PRAGMA_OMP_GROUPPRIVATE */
+      && dir->id != PRAGMA_OMP_GROUPPRIVATE
       && dir->id != PRAGMA_OMP_ALLOCATE
       && (dir->id != PRAGMA_OMP_DECLARE
 	  || strcmp (directive[1], "target") != 0))
@@ -55951,6 +55970,10 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 
     case PRAGMA_OMP_CANCELLATION_POINT:
       return cp_parser_omp_cancellation_point (parser, pragma_tok, context);
+
+    case PRAGMA_OMP_GROUPPRIVATE:
+      cp_parser_omp_groupprivate (parser, pragma_tok);
+      return false;
 
     case PRAGMA_OMP_THREADPRIVATE:
       cp_parser_omp_threadprivate (parser, pragma_tok);

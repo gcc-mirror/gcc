@@ -4655,8 +4655,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_CONSTRUCT, true },
   /* { "fuse", nullptr, nullptr, PRAGMA_OMP_FUSE,
     C_OMP_DIR_CONSTRUCT, true },  */
-  /* { "groupprivate", nullptr, nullptr, PRAGMA_OMP_GROUPPRIVATE,
-    C_OMP_DIR_DECLARATIVE, false },  */
+  { "groupprivate", nullptr, nullptr, PRAGMA_OMP_GROUPPRIVATE,
+    C_OMP_DIR_DECLARATIVE, false },
   /* { "interchange", nullptr, nullptr, PRAGMA_OMP_INTERCHANGE,
     C_OMP_DIR_CONSTRUCT, true },  */
   { "interop", nullptr, nullptr, PRAGMA_OMP_INTEROP,
