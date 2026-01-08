@@ -9288,7 +9288,8 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
   /* An unnamed namespace implicitly has a using-directive inserted so
      that its contents are usable in the surrounding context.  */
   if (!DECL_NAMESPACE_INLINE_P (ns) && !DECL_NAME (ns))
-    add_using_namespace (NAMESPACE_LEVEL (ctx)->using_directives, ns);
+    add_using_namespace (NAMESPACE_LEVEL (ctx)->using_directives, ns,
+			 from_import);
 }
 
 /* NS is a possibly-imported namespace that is now needed for
