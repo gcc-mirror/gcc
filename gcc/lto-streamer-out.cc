@@ -384,6 +384,7 @@ lto_is_streamable (tree expr)
 	 && code != STATEMENT_LIST
 	 && (code == CASE_LABEL_EXPR
 	     || code == DECL_EXPR
+	     || code == ASM_EXPR
 	     || TREE_CODE_CLASS (code) != tcc_statement);
 }
 
@@ -2560,19 +2561,18 @@ lto_output_toplevel_asms (lto_symtab_encoder_t encoder)
   char *section_name;
   struct lto_simple_header_with_strings header;
 
-  bool any_asm = false;
+  unsigned asm_count = 0;
   for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     if (is_a <asm_node*> (lto_symtab_encoder_deref (encoder, i)))
-      any_asm = true;
+      asm_count++;
 
-  if (!any_asm)
+  if (!asm_count)
     return;
 
   ob = create_output_block (LTO_section_asm);
 
-  /* Make string 0 be a NULL string.  */
-  streamer_write_char_stream (ob->string_stream, 0);
-
+  /* Stream the length.  */
+  streamer_write_uhwi (ob, asm_count);
   for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
       toplevel_node *tnode = lto_symtab_encoder_deref (encoder, i);
@@ -2580,18 +2580,10 @@ lto_output_toplevel_asms (lto_symtab_encoder_t encoder)
       if (!anode)
 	continue;
 
-      if (TREE_CODE (anode->asm_str) != STRING_CST)
-	{
-	  sorry_at (EXPR_LOCATION (anode->asm_str),
-		    "LTO streaming of toplevel extended %<asm%> "
-		    "unimplemented");
-	  continue;
-	}
-      streamer_write_string_cst (ob, ob->main_stream, anode->asm_str);
-      streamer_write_hwi (ob, anode->order);
+      int output_order = *encoder->order_remap->get (anode->order);
+      stream_write_tree (ob, anode->asm_str, true);
+      streamer_write_hwi (ob, output_order);
     }
-
-  streamer_write_string_cst (ob, ob->main_stream, NULL_TREE);
 
   section_name = lto_get_section_name (LTO_section_asm, NULL, 0, NULL);
   lto_begin_section (section_name, !flag_wpa);

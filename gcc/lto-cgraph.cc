@@ -1641,8 +1641,6 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
       tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
     }
 
-  lto_input_toplevel_asms (file_data, file_data->order_base);
-
   /* AUX pointers should be all non-zero for function nodes read from the stream.  */
   if (flag_checking)
     {
@@ -1858,6 +1856,19 @@ input_symtab (void)
       if (node->lto_file_data)
 	node->aux = NULL;
     }
+}
+
+/* Input toplevel asms from each of the .o files passed to lto1.
+   Must be called after merging of decls.  */
+void
+input_toplevel_asms (void)
+{
+  struct lto_file_decl_data **file_data_vec = lto_get_file_decl_data ();
+  struct lto_file_decl_data *file_data;
+  unsigned int j = 0;
+
+  while ((file_data = file_data_vec[j++]))
+    lto_input_toplevel_asms (file_data, file_data->order_base);
 }
 
 static void

@@ -933,6 +933,7 @@ bool lto_symtab_encoder_encode_initializer_p (lto_symtab_encoder_t,
 					      varpool_node *);
 void output_symtab (void);
 void input_symtab (void);
+void input_toplevel_asms (void);
 void output_offload_tables (void);
 void input_offload_tables (bool);
 bool referenced_from_other_partition_p (struct ipa_ref_list *,

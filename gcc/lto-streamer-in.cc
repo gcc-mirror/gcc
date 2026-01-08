@@ -1987,7 +1987,6 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
     = (const struct lto_simple_header_with_strings *) data;
   int string_offset;
   class data_in *data_in;
-  tree str;
 
   if (! data)
     return;
@@ -2000,8 +1999,10 @@ lto_input_toplevel_asms (struct lto_file_decl_data *file_data, int order_base)
   data_in = lto_data_in_create (file_data, data + string_offset,
 			      header->string_size, vNULL);
 
-  while ((str = streamer_read_string_cst (data_in, &ib)))
+  unsigned asm_count = streamer_read_uhwi (&ib);
+  for (unsigned i = 0; i < asm_count; i++)
     {
+      tree str = stream_read_tree (&ib, data_in);
       asm_node *node = symtab->finalize_toplevel_asm (str);
       node->order = streamer_read_hwi (&ib) + order_base;
       node->lto_file_data = file_data;

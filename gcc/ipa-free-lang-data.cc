@@ -1036,6 +1036,19 @@ find_decls_types_in_var (varpool_node *v, class free_lang_data_d *fld)
   find_decls_types (v->decl, fld);
 }
 
+/* Find decls and types referenced in asm node N and store them in
+   FLD->DECLS and FLD->TYPES.
+   Asm strings are represented as a C/C++/etc. strings. If there is
+   no other string, we would delete/prune/unify the type and cause
+   issues in verify_type(tree).
+   Likely we could just add the string type, but we scan the whole
+   tree to be sure.  */
+static void
+find_decls_types_in_asm (asm_node *v, class free_lang_data_d *fld)
+{
+  find_decls_types (v->asm_str, fld);
+}
+
 /* Free language specific information for every operand and expression
    in every node of the call graph.  This process operates in three stages:
 
@@ -1072,6 +1085,12 @@ free_lang_data_in_cgraph (class free_lang_data_d *fld)
   /* Find decls and types in every varpool symbol.  */
   FOR_EACH_VARIABLE (v)
     find_decls_types_in_var (v, fld);
+
+  /* Find the decls and types in every asm node.
+     Should only be a string type.  */
+  for (asm_node* anode = symtab->first_asm_symbol (); anode;
+       anode = safe_as_a<asm_node*> (anode->next))
+    find_decls_types_in_asm (anode, fld);
 
   /* Set the assembler name on every decl found.  We need to do this
      now because free_lang_data_in_decl will invalidate data needed
