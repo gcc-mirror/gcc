@@ -1314,6 +1314,12 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
 
 	CASE_SEPARATORS:
 	case EOF:
+	  if (dtp->u.p.namelist_mode)
+	    {
+	      snprintf (message, IOMSG_LEN, "Missing quote while reading item %d",
+			dtp->u.p.item_count);
+	      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+	    }
 	  unget_char (dtp, c);
 	  goto done;		/* String was only digits!  */
 
