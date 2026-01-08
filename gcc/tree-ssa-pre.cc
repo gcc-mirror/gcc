@@ -1199,7 +1199,7 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 			      tree type, tree vuse, edge e, bool *same_valid)
 {
   basic_block phiblock = e->dest;
-  gimple *phi = SSA_NAME_DEF_STMT (vuse);
+  gimple *def = SSA_NAME_DEF_STMT (vuse);
   ao_ref ref;
 
   if (same_valid)
@@ -1207,9 +1207,9 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 
   /* If value-numbering provided a memory state for this
      that dominates PHIBLOCK we can just use that.  */
-  if (gimple_nop_p (phi)
-      || (gimple_bb (phi) != phiblock
-	  && dominated_by_p (CDI_DOMINATORS, phiblock, gimple_bb (phi))))
+  if (gimple_nop_p (def)
+      || (gimple_bb (def) != phiblock
+	  && dominated_by_p (CDI_DOMINATORS, phiblock, gimple_bb (def))))
     return vuse;
 
   /* We have pruned expressions that are killed in PHIBLOCK via
@@ -1217,7 +1217,7 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
      live at the start of the block.  If there is no virtual PHI to translate
      through return the VUSE live at entry.  Otherwise the VUSE to translate
      is the def of the virtual PHI node.  */
-  phi = get_virtual_phi (phiblock);
+  gphi *phi = get_virtual_phi (phiblock);
   if (!phi)
     return BB_LIVE_VOP_ON_EXIT
 	     (get_immediate_dominator (CDI_DOMINATORS, phiblock));

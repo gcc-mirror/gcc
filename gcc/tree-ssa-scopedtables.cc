@@ -340,7 +340,7 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p,
 	    && (ao_ref_init (&ref, gimple_assign_rhs1 (stmt)),
 		ref.base_alias_set = ref.ref_alias_set = tbaa_p ? -1 : 0, true)
 	    && walk_non_aliased_vuses (&ref, vuse2, true, vuse_eq, NULL, NULL,
-				       limit, vuse1) != NULL))
+				       NULL, limit, vuse1) != NULL))
 	{
 	  if (insert)
 	    {

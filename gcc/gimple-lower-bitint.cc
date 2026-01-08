@@ -6438,7 +6438,7 @@ bitint_dom_walker::before_dom_children (basic_block bb)
 	    vuse = vop;
 	  if (vuse != lvop
 	      && walk_non_aliased_vuses (&ref, vuse, false, vuse_eq,
-					 NULL, NULL, limit, lvop) == NULL)
+					 NULL, NULL, NULL, limit, lvop) == NULL)
 	    bitmap_clear_bit (m_loads, SSA_NAME_VERSION (s));
 	}
     }

@@ -3736,6 +3736,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 		  ao_ref *ref, tree vuse, bool tbaa_p, unsigned int &limit,
 		  bitmap *visited, bool abort_on_visited,
 		  void *(*translate)(ao_ref *, tree, void *, translate_flags *),
+		  bool (*is_backedge)(edge, void *),
 		  translate_flags disambiguate_only,
 		  void *data)
 {
@@ -3767,14 +3768,15 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 	}
 
       /* Recurse for PHI nodes.  */
-      if (gimple_code (def_stmt) == GIMPLE_PHI)
+      if (gphi *phi = dyn_cast <gphi *> (def_stmt))
 	{
 	  /* An already visited PHI node ends the walk successfully.  */
-	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (def_stmt))))
+	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (phi))))
 	    return !abort_on_visited;
-	  vuse = get_continuation_for_phi (def_stmt, ref, tbaa_p, limit,
+	  vuse = get_continuation_for_phi (phi, ref, tbaa_p, limit,
 					   visited, abort_on_visited,
-					   translate, data, disambiguate_only);
+					   translate, data, is_backedge,
+					   disambiguate_only);
 	  if (!vuse)
 	    return false;
 	  continue;
@@ -3819,12 +3821,13 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
    Returns NULL_TREE if no suitable virtual operand can be found.  */
 
 tree
-get_continuation_for_phi (gimple *phi, ao_ref *ref, bool tbaa_p,
+get_continuation_for_phi (gphi *phi, ao_ref *ref, bool tbaa_p,
 			  unsigned int &limit, bitmap *visited,
 			  bool abort_on_visited,
 			  void *(*translate)(ao_ref *, tree, void *,
 					     translate_flags *),
 			  void *data,
+			  bool (*is_backedge)(edge, void *),
 			  translate_flags disambiguate_only)
 {
   unsigned nargs = gimple_phi_num_args (phi);
@@ -3867,15 +3870,14 @@ get_continuation_for_phi (gimple *phi, ao_ref *ref, bool tbaa_p,
       else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, tbaa_p,
 				   limit, visited,
 				   abort_on_visited,
-				   translate,
+				   translate, is_backedge,
 				   /* Do not valueize when walking over
 				      backedges.  */
-				   dominated_by_p
-				     (CDI_DOMINATORS,
-				      gimple_bb (SSA_NAME_DEF_STMT (arg1)),
-				      phi_bb)
-				   ? TR_DISAMBIGUATE
-				   : disambiguate_only, data))
+				   (is_backedge
+				    && !is_backedge
+					  (gimple_phi_arg_edge (phi, i), data))
+				   ? disambiguate_only : TR_DISAMBIGUATE,
+				   data))
 	return NULL_TREE;
     }
 
@@ -3915,6 +3917,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
 			void *(*walker)(ao_ref *, tree, void *),
 			void *(*translate)(ao_ref *, tree, void *,
 					   translate_flags *),
+			bool (*is_backedge)(edge, void *),
 			tree (*valueize)(tree),
 			unsigned &limit, void *data)
 {
@@ -3952,9 +3955,10 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
       def_stmt = SSA_NAME_DEF_STMT (vuse);
       if (gimple_nop_p (def_stmt))
 	break;
-      else if (gimple_code (def_stmt) == GIMPLE_PHI)
-	vuse = get_continuation_for_phi (def_stmt, ref, tbaa_p, limit,
-					 &visited, translated, translate, data);
+      else if (gphi *phi = dyn_cast <gphi *> (def_stmt))
+	vuse = get_continuation_for_phi (phi, ref, tbaa_p, limit,
+					 &visited, translated, translate, data,
+					 is_backedge);
       else
 	{
 	  if ((int)limit <= 0)

@@ -148,16 +148,19 @@ extern bool ref_can_have_store_data_races (tree);
 
 enum translate_flags
   { TR_TRANSLATE, TR_VALUEIZE_AND_DISAMBIGUATE, TR_DISAMBIGUATE };
-extern tree get_continuation_for_phi (gimple *, ao_ref *, bool,
+extern tree get_continuation_for_phi (gphi *, ao_ref *, bool,
 				      unsigned int &, bitmap *, bool,
 				      void *(*)(ao_ref *, tree, void *,
 						translate_flags *),
-				      void *, translate_flags
+				      void *,
+				      bool (*)(edge, void *) = nullptr,
+				      translate_flags
 				        = TR_VALUEIZE_AND_DISAMBIGUATE);
 extern void *walk_non_aliased_vuses (ao_ref *, tree, bool,
 				     void *(*)(ao_ref *, tree, void *),
 				     void *(*)(ao_ref *, tree, void *,
 					       translate_flags *),
+				     bool (*)(edge, void *),
 				     tree (*)(tree), unsigned &, void *);
 extern int walk_aliased_vdefs (ao_ref *, tree,
 			       bool (*)(ao_ref *, tree, void *),
