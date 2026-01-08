@@ -81,6 +81,10 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
     AC_HELP_STRING([--with-newlib],
 		   [assume newlib as a system C library]))
 
+  AC_ARG_WITH([picolibc],
+    AC_HELP_STRING([--with-picolibc],
+		   [assume picolibc as a system C library]))
+
   # Will set LN_S to either 'ln -s', 'ln', or 'cp -p' (if linking isn't
   # available).  Uncomment the next line to force a particular method.
   AC_PROG_LN_S

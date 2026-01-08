@@ -100,6 +100,7 @@ GLIBCXX_CONFIGURE
 
 # Libtool setup.
 if test "x${with_newlib}" != "xyes" &&
+    test "x${with_picolibc}" != "xyes" &&
     test "x${with_avrlibc}" != "xyes" &&
     test "x$with_headers" != "xno"; then
   AC_LIBTOOL_DLOPEN
@@ -428,6 +429,67 @@ dnl # rather than hardcoding that information.
         glibcxx_cv_mkdir=yes
         ;;
     esac
+  elif test "x${with_picolibc}" = "xyes"; then
+    os_include_dir="os/picolibc"
+    AC_DEFINE(HAVE_HYPOT)
+
+    # GLIBCXX_CHECK_STDLIB_SUPPORT
+    AC_DEFINE(HAVE_STRTOF)
+
+    AC_DEFINE(HAVE_ACOSF)
+    AC_DEFINE(HAVE_ASINF)
+    AC_DEFINE(HAVE_ATAN2F)
+    AC_DEFINE(HAVE_ATANF)
+    AC_DEFINE(HAVE_CEILF)
+    AC_DEFINE(HAVE_COSF)
+    AC_DEFINE(HAVE_COSHF)
+    AC_DEFINE(HAVE_EXPF)
+    AC_DEFINE(HAVE_FABSF)
+    AC_DEFINE(HAVE_FLOORF)
+    AC_DEFINE(HAVE_FMODF)
+    AC_DEFINE(HAVE_FREXPF)
+    AC_DEFINE(HAVE_HYPOTF)
+    AC_DEFINE(HAVE_LDEXPF)
+    AC_DEFINE(HAVE_LOG10F)
+    AC_DEFINE(HAVE_LOGF)
+    AC_DEFINE(HAVE_MODFF)
+    AC_DEFINE(HAVE_POWF)
+    AC_DEFINE(HAVE_SINF)
+    AC_DEFINE(HAVE_SINHF)
+    AC_DEFINE(HAVE_SQRTF)
+    AC_DEFINE(HAVE_TANF)
+    AC_DEFINE(HAVE_TANHF)
+
+    # Support for iconv in picolibc is configurable.
+    AC_TRY_COMPILE([#include <picolibc.h>], [
+      #ifndef _ICONV_ENABLED
+      #error
+      #endif], [ac_picolibc_iconv_enabled=yes], [ac_picolibc_iconv_enabled=no])
+    if test "$ac_picolibc_iconv_enabled" = yes; then
+      AC_DEFINE(HAVE_ICONV)
+    fi
+
+    AC_DEFINE(HAVE_MEMALIGN)
+
+    # Check for TLS
+    AC_TRY_COMPILE([#include <picolibc.h>], [
+      #ifndef __THREAD_LOCAL_STORAGE
+      #error
+      #endif], [ac_picolibc_tls_enabled=yes], [ac_picolibc_tls_enabled=no])
+    if test "$ac_picolibc_tls_enabled" = yes; then
+      AC_DEFINE(HAVE_TLS)
+    fi
+
+    AC_DEFINE(HAVE_ALIGNED_ALLOC)
+    AC_DEFINE(HAVE_AT_QUICK_EXIT)
+    AC_DEFINE(HAVE_LINK)
+    AC_DEFINE(HAVE_SYS_STAT_H)
+    AC_DEFINE(HAVE_SYS_TYPES_H)
+    AC_DEFINE(HAVE_SETENV)
+    AC_DEFINE(HAVE_STRERROR_L)
+    AC_DEFINE(HAVE_S_ISREG)
+    AC_DEFINE(HAVE_UNISTD_H)
+
   elif test "x$with_headers" != "xno"; then
     GLIBCXX_CROSSCONFIG
   fi

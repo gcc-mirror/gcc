@@ -922,6 +922,7 @@ enable_largefile
 with_target_subdir
 with_cross_host
 with_newlib
+with_picolibc
 enable_maintainer_mode
 enable_shared
 enable_static
@@ -1698,6 +1699,7 @@ Optional Packages:
                           configuring in a subdirectory
   --with-cross-host=HOST  configuring with a cross compiler
   --with-newlib           assume newlib as a system C library
+  --with-picolibc         assume picolibc as a system C library
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
@@ -5572,6 +5574,13 @@ if test "${with_newlib+set}" = set; then :
 fi
 
 
+
+# Check whether --with-picolibc was given.
+if test "${with_picolibc+set}" = set; then :
+  withval=$with_picolibc;
+fi
+
+
   # Will set LN_S to either 'ln -s', 'ln', or 'cp -p' (if linking isn't
   # available).  Uncomment the next line to force a particular method.
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ln -s works" >&5
@@ -5944,6 +5953,7 @@ $as_echo "$as_me: OS config directory is $os_include_dir" >&6;}
 
 # Libtool setup.
 if test "x${with_newlib}" != "xyes" &&
+    test "x${with_picolibc}" != "xyes" &&
     test "x${with_avrlibc}" != "xyes" &&
     test "x$with_headers" != "xno"; then
   enable_dlopen=yes
@@ -12669,7 +12679,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12672 "configure"
+#line 12682 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12775,7 +12785,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12778 "configure"
+#line 12788 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16458,7 +16468,7 @@ $as_echo "$glibcxx_cv_atomic_word" >&6; }
     # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16461 "configure"
+#line 16471 "configure"
 #include "${glibcxx_srcdir}/config/$atomic_word_dir/atomic_word.h"
 int main()
 {
@@ -16604,7 +16614,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16607 "configure"
+#line 16617 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16646,7 +16656,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16649 "configure"
+#line 16659 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -28831,6 +28841,136 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         glibcxx_cv_mkdir=yes
         ;;
     esac
+  elif test "x${with_picolibc}" = "xyes"; then
+    os_include_dir="os/picolibc"
+    $as_echo "#define HAVE_HYPOT 1" >>confdefs.h
+
+
+    # GLIBCXX_CHECK_STDLIB_SUPPORT
+    $as_echo "#define HAVE_STRTOF 1" >>confdefs.h
+
+
+    $as_echo "#define HAVE_ACOSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ASINF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ATAN2F 1" >>confdefs.h
+
+    $as_echo "#define HAVE_ATANF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_CEILF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_COSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_COSHF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_EXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FABSF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FLOORF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FMODF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_FREXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_HYPOTF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LDEXPF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LOG10F 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LOGF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_MODFF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_POWF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SINF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SINHF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SQRTF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_TANF 1" >>confdefs.h
+
+    $as_echo "#define HAVE_TANHF 1" >>confdefs.h
+
+
+    # Support for iconv in picolibc is configurable.
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <picolibc.h>
+int
+main ()
+{
+
+      #ifndef _ICONV_ENABLED
+      #error
+      #endif
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_picolibc_iconv_enabled=yes
+else
+  ac_picolibc_iconv_enabled=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    if test "$ac_picolibc_iconv_enabled" = yes; then
+      $as_echo "#define HAVE_ICONV 1" >>confdefs.h
+
+    fi
+
+    $as_echo "#define HAVE_MEMALIGN 1" >>confdefs.h
+
+
+    # Check for TLS
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <picolibc.h>
+int
+main ()
+{
+
+      #ifndef __THREAD_LOCAL_STORAGE
+      #error
+      #endif
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  ac_picolibc_tls_enabled=yes
+else
+  ac_picolibc_tls_enabled=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    if test "$ac_picolibc_tls_enabled" = yes; then
+      $as_echo "#define HAVE_TLS 1" >>confdefs.h
+
+    fi
+
+    $as_echo "#define HAVE_ALIGNED_ALLOC 1" >>confdefs.h
+
+    $as_echo "#define HAVE_AT_QUICK_EXIT 1" >>confdefs.h
+
+    $as_echo "#define HAVE_LINK 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SYS_STAT_H 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SYS_TYPES_H 1" >>confdefs.h
+
+    $as_echo "#define HAVE_SETENV 1" >>confdefs.h
+
+    $as_echo "#define HAVE_STRERROR_L 1" >>confdefs.h
+
+    $as_echo "#define HAVE_S_ISREG 1" >>confdefs.h
+
+    $as_echo "#define HAVE_UNISTD_H 1" >>confdefs.h
+
+
   elif test "x$with_headers" != "xno"; then
 
 # Base decisions on target environment.
@@ -54005,7 +54145,7 @@ $as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
     CXXFLAGS='-O0 -S'
 
     cat > conftest.$ac_ext << EOF
-#line 54008 "configure"
+#line 54148 "configure"
 #include <stddef.h>
 int main()
 {
