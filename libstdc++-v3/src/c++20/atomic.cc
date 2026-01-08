@@ -311,26 +311,32 @@ namespace
 
 // Return false (and don't change any data members) if we can do a non-proxy
 // wait for the object of size `_M_obj_size` at address `addr`.
-// Otherwise, the object at addr needs to use a proxy wait. Set _M_wait_state,
-// set _M_obj and _M_obj_size to refer to the _M_wait_state->_M_ver proxy,
-// load the current value from _M_obj and store it in _M_old, then return true.
+// Otherwise, we will use a proxy wait. If addr == _M_obj this is the initial
+// setup of the proxy wait, so set _M_wait_state to the proxy state for addr,
+// and set _M_obj and _M_obj_size to refer to the _M_wait_state->_M_ver proxy.
+// For both the initial setup of a proxy wait and for subsequent calls to this
+// function for proxy waits, we load the current value from _M_obj (the proxy)
+// and store it in _M_old, then return true.
 bool
 __wait_args::_M_setup_proxy_wait(const void* addr)
 {
-  if (!use_proxy_wait(*this, addr)) // We can wait on this address directly.
+  __waitable_state* state = nullptr;
+
+  if (addr == _M_obj)
     {
-      // Ensure the caller set _M_obj correctly, as that's what we'll wait on:
-      __glibcxx_assert(_M_obj == addr);
-      return false;
+      if (!use_proxy_wait(*this, addr)) // We can wait on this address directly.
+	return false;
+
+      // This will be a proxy wait, so get a waitable state.
+      state = set_wait_state(addr, *this);
+
+      // The address we will wait on is the version count of the waitable state:
+      _M_obj = &state->_M_ver;
+      // __wait_impl and __wait_until_impl need to know this size:
+      _M_obj_size = sizeof(state->_M_ver);
     }
-
-  // This will be a proxy wait, so get a waitable state.
-  auto state = set_wait_state(addr, *this);
-
-  // The address we will wait on is the version count of the waitable state:
-  _M_obj = &state->_M_ver;
-  // __wait_impl and __wait_until_impl need to know this size:
-  _M_obj_size = sizeof(state->_M_ver);
+  else // This is not the first call to this function, already a proxy wait.
+    state = static_cast<__waitable_state*>(_M_wait_state);
 
   // Read the value of the _M_ver counter.
   _M_old = __atomic_load_n(&state->_M_ver, __ATOMIC_ACQUIRE);

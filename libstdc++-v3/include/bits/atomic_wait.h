@@ -205,43 +205,72 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp, typename _ValFn>
 	_Tp
-	_M_setup_wait(const _Tp* __addr, _ValFn __vfn,
-		      __wait_result_type __res = {})
+	_M_setup_wait(const _Tp* __addr, _ValFn __vfn)
 	{
 	  static_assert(is_same_v<_Tp, decay_t<decltype(__vfn())>>);
-
-	  if (__res._M_has_val) // A previous wait loaded a recent value.
-	    {
-	      _M_old = __res._M_val;
-	      if constexpr (!__platform_wait_uses_type<_Tp>)
-		{
-		  // __res._M_val might be the value of a proxy wait object,
-		  // not the value of *__addr. Call __vfn() to get new value.
-		  return __vfn();
-		}
-	      // Not a proxy wait, so the value in __res._M_val was loaded
-	      // from *__addr and we don't need to call __vfn().
-	      else if constexpr (sizeof(_Tp) == sizeof(__UINT32_TYPE__))
-		return __builtin_bit_cast(_Tp, (__UINT32_TYPE__)_M_old);
-	      else if constexpr (sizeof(_Tp) == sizeof(__UINT64_TYPE__))
-		return __builtin_bit_cast(_Tp, (__UINT64_TYPE__)_M_old);
-	      else
-		static_assert(false); // Unsupported size
-	    }
 
 	  if constexpr (!__platform_wait_uses_type<_Tp>)
 	    if (_M_setup_proxy_wait(__addr))
 	      {
 		// We will use a proxy wait for this object.
-		// The library has set _M_obj and _M_obj_size and _M_old.
+		// The library has set _M_wait_state, _M_obj, _M_obj_size,
+		// and _M_old.
 		// Call __vfn to load the current value from *__addr
 		// (which must happen after the call to _M_setup_proxy_wait).
 		return __vfn();
 	      }
 
 	  // We will use a futex-like operation to wait on this object,
-	  // and so can just load the value and store it into _M_old.
-	  auto __val = __vfn();
+	  // so just load the value, store it into _M_old, and return it.
+	  return _M_store(__vfn());
+	}
+
+      // Called after a wait returns, to prepare to wait again.
+      template<typename _Tp, typename _ValFn>
+	_Tp
+	_M_on_wake(const _Tp* __addr, _ValFn __vfn, __wait_result_type __res)
+	{
+	  if constexpr (!__platform_wait_uses_type<_Tp>) // maybe a proxy wait
+	    if (_M_obj != __addr) // definitely a proxy wait
+	      {
+		if (__res._M_has_val)
+		  // Previous wait loaded a recent value from the proxy.
+		  _M_old = __res._M_val;
+		else // Load a new value from the proxy and store in _M_old.
+		  (void) _M_setup_proxy_wait(nullptr);
+		// Read the current value of *__addr
+		return __vfn();
+	      }
+
+	  if (__res._M_has_val) // The previous wait loaded a recent value.
+	    {
+	      _M_old = __res._M_val;
+
+	      // Not a proxy wait, so the value in __res._M_val was loaded
+	      // from *__addr and we don't need to call __vfn().
+	      if constexpr (sizeof(_Tp) == sizeof(__UINT64_TYPE__))
+		return __builtin_bit_cast(_Tp, (__UINT64_TYPE__)_M_old);
+	      else if constexpr (sizeof(_Tp) == sizeof(__UINT32_TYPE__))
+		return __builtin_bit_cast(_Tp, (__UINT32_TYPE__)_M_old);
+	      else if constexpr (sizeof(_Tp) == sizeof(__UINT16_TYPE__))
+		return __builtin_bit_cast(_Tp, (__UINT16_TYPE__)_M_old);
+	      else if constexpr (sizeof(_Tp) == sizeof(__UINT8_TYPE__))
+		return __builtin_bit_cast(_Tp, (__UINT8_TYPE__)_M_old);
+	      else // Should be a proxy wait for this size!
+		__glibcxx_assert(false);
+	    }
+	  else
+	    return _M_store(__vfn());
+	}
+
+    private:
+      // Store __val in _M_old.
+      // pre: This must be a non-proxy wait.
+      template<typename _Tp>
+	[[__gnu__::__always_inline__]]
+	_Tp
+	_M_store(_Tp __val)
+	{
 	  // We have to consider various sizes, because a future libstdc++.so
 	  // might enable non-proxy waits for additional sizes.
 	  if constexpr (sizeof(_Tp) == sizeof(__UINT64_TYPE__))
@@ -252,12 +281,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_old = __builtin_bit_cast(__UINT16_TYPE__, __val);
 	  else if constexpr (sizeof(_Tp) == sizeof(__UINT8_TYPE__))
 	    _M_old = __builtin_bit_cast(__UINT8_TYPE__, __val);
-	  else // _M_setup_proxy_wait should have returned true for this type!
+	  else // Should be a proxy wait for this size!
 	    __glibcxx_assert(false);
 	  return __val;
 	}
 
-    private:
       // Returns true if a proxy wait will be used for __addr, false otherwise.
       // If true, _M_wait_state, _M_obj, _M_obj_size, and _M_old are set.
       // If false, data members are unchanged.
@@ -297,7 +325,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (!__pred(__val))
 	{
 	  auto __res = __detail::__wait_impl(__addr, __args);
-	  __val = __args._M_setup_wait(__addr, __vfn, __res);
+	  __val = __args._M_on_wake(__addr, __vfn, __res);
 	}
       // C++26 will return __val
     }
