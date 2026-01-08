@@ -94,7 +94,7 @@ public:
 };
 
 /* Hash traits for registered_function.  */
-struct registered_function_hasher : nofree_ptr_hash <registered_function>
+struct registered_function_hasher : ggc_ptr_hash <registered_function>
 {
   typedef function_instance compare_type;
 
@@ -1045,12 +1045,12 @@ tree acle_svprfop;
 static GTY(()) vec<registered_function *, va_gc> *registered_functions;
 
 /* Stores the starting function index for each pragma handler.  */
-static unsigned int initial_indexes[NUM_PRAGMA_HANDLERS];
+static  GTY(()) unsigned int initial_indexes[NUM_PRAGMA_HANDLERS];
 
 /* All registered function decls, hashed on the function_instance
    that they implement.  This is used for looking up implementations of
    overloaded functions.  */
-static hash_table<registered_function_hasher> *function_table;
+static GTY(()) hash_table<registered_function_hasher> *function_table;
 
 /* Index 0 maps all overloaded function names that we've registered so far to
    their associated function_instances.  Index 1 does the same for functions
@@ -4903,7 +4903,7 @@ handle_arm_sve_h (bool function_nulls_p)
   register_svprfop ();
 
   /* Define the functions.  */
-  function_table = new hash_table<registered_function_hasher> (1023);
+  function_table = hash_table<registered_function_hasher>::create_ggc (1023);
   function_builder builder (arm_sve_handle, function_nulls_p);
   for (unsigned int i = 0; i < ARRAY_SIZE (function_groups); ++i)
     builder.register_function_group (function_groups[i]);
