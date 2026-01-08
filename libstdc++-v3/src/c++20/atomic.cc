@@ -280,8 +280,7 @@ namespace
 
   [[gnu::always_inline]]
   inline bool
-  use_proxy_wait([[maybe_unused]] const __wait_args_base& args,
-		 [[maybe_unused]] const void* /* addr */)
+  use_proxy_wait([[maybe_unused]] const __wait_args_base& args)
   {
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
     if constexpr (__platform_wait_uses_type<uint32_t>)
@@ -324,7 +323,7 @@ __wait_args::_M_setup_proxy_wait(const void* addr)
 
   if (addr == _M_obj)
     {
-      if (!use_proxy_wait(*this, addr)) // We can wait on this address directly.
+      if (!use_proxy_wait(*this)) // We can wait on this address directly.
 	return false;
 
       // This will be a proxy wait, so get a waitable state.
@@ -384,7 +383,7 @@ __notify_impl([[maybe_unused]] const void* __addr, [[maybe_unused]] bool __all,
 	      const __wait_args_base& __args)
 {
   const bool __track_contention = __args & __wait_flags::__track_contention;
-  const bool proxy_wait = use_proxy_wait(__args, __addr);
+  const bool proxy_wait = use_proxy_wait(__args);
 
   [[maybe_unused]] auto* __wait_addr
     = static_cast<const __platform_wait_t*>(__addr);
