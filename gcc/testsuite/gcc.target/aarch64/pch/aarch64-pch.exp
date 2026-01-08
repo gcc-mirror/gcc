@@ -1,0 +1,52 @@
+#  Regression driver checking precompiled header compatibility of acle headers.
+#  Copyright (C) 2025 Free Software Foundation, Inc.
+#  Contributed by ARM Ltd.
+#
+#  This file is part of GCC.
+#
+#  GCC is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 3, or (at your option)
+#  any later version.
+#
+#  GCC is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+#  General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with GCC; see the file COPYING3.  If not see
+#  <http://www.gnu.org/licenses/>.  */
+
+# GCC testsuite checking acle headers can be included in precompiled headers
+# that uses the `dg.exp' driver.
+
+# Exit immediately if this isn't an AArch64 target.
+if {![istarget aarch64*-*-*] } then {
+  return
+}
+
+# Load support procs.
+load_lib gcc-dg.exp
+load_lib dg-pch.exp
+load_lib torture-options.exp
+
+# Initialize `dg'.
+dg-init
+torture-init
+set-torture-options $DG_TORTURE_OPTIONS
+pch-init
+
+set arch_flags "-march=armv8.5-a+sve2+sme"
+set old_dg_do_what_default "${dg-do-what-default}"
+# Main loop.
+foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.c]] {
+  global torture_without_loops
+  dg-flags-pch $subdir $test $arch_flags \
+  	[concat [list {-O0 -g}] $torture_without_loops] ".h"
+}
+
+# All done.
+pch-finish
+torture-finish
+dg-finish
