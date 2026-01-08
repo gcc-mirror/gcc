@@ -3876,7 +3876,7 @@ specific user or system header using the include path.
 @item -flang-info-module-cmi
 @itemx -flang-info-module-cmi=@var{module}
 Inform of Compiled Module Interface pathnames.  The first will note
-all read CMI pathnames.  The @var{module} form will not reading a
+all read CMI pathnames.  The @var{module} form will note reading a
 specific module's CMI.  @var{module} may be a named module or a
 header-unit (the latter indicated by either being a pathname containing
 directory separators or enclosed in @code{<>} or @code{""}).
