@@ -24,9 +24,9 @@
 ; Please try to keep this file in ASCII collating order.
 
 elf2flt
-Driver
+Driver Undocumented
 
 elf2flt=
-Driver JoinedOrMissing
+Driver Undocumented JoinedOrMissing
 
 ; This comment is to ensure we retain the blank line above.

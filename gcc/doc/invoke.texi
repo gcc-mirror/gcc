@@ -1569,17 +1569,10 @@ See Cygwin and MinGW Options.
 @gccoptlist{-msim}
 
 @emph{Xtensa Options} (@ref{Xtensa Options})
-@gccoptlist{-mconst16  -mno-const16
--mfused-madd  -mno-fused-madd
--mforce-no-pic
--mserialize-volatile  -mno-serialize-volatile
--mtext-section-literals  -mno-text-section-literals
--mauto-litpools  -mno-auto-litpools
--mtarget-align  -mno-target-align
--mlongcalls  -mno-longcalls
--mabi=@var{abi-type}
--mextra-l32r-costs=@var{cycles}
--mstrict-align  -mno-strict-align}
+@gccoptlist{-mconst16  -mforce-no-pic  -mno-serialize-volatile
+-mtext-section-literals  -mauto-litpools  -mno-target-align
+-mlongcalls  -mabi=@var{abi-type}
+-mextra-l32r-costs=@var{cycles}  -mstrict-align}
 
 @emph{zSeries Options}
 See S/390 and zSeries Options.
@@ -38263,23 +38256,6 @@ instructions are always used in place of the standard @code{L32R}
 instructions.  The use of @code{CONST16} is enabled by default only if
 the @code{L32R} instruction is not available.
 
-@opindex mfused-madd
-@opindex mno-fused-madd
-@item -mfused-madd
-@itemx -mno-fused-madd
-Enable or disable use of fused multiply/add and multiply/subtract
-instructions in the floating-point option.  This has no effect if the
-floating-point option is not also enabled.  Disabling fused multiply/add
-and multiply/subtract instructions forces the compiler to use separate
-instructions for the multiply and add/subtract operations.  This may be
-desirable in some cases where strict IEEE 754-compliant results are
-required: the fused multiply add/subtract instructions do not round the
-intermediate result, thereby producing results with @emph{more} bits of
-precision than specified by the IEEE standard.  Disabling fused multiply
-add/subtract instructions also ensures that the program output is not
-sensitive to the compiler's ability to combine multiply and add/subtract
-operations.
-
 @opindex mserialize-volatile
 @opindex mno-serialize-volatile
 @item -mserialize-volatile
@@ -38290,8 +38266,10 @@ The default is @option{-mserialize-volatile}.  Use
 @option{-mno-serialize-volatile} to omit the @code{MEMW} instructions.
 
 @opindex mforce-no-pic
+@opindex mno-force-no-pic
 @item -mforce-no-pic
-For targets, like GNU/Linux, where all user-mode Xtensa code must be
+@itemx -mno-force-no-pic
+For targets like GNU/Linux, where all user-mode Xtensa code must be
 position-independent code (PIC), this option disables PIC for compiling
 kernel code.
 
