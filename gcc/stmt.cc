@@ -337,6 +337,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
 
   /* Make sure constraint has neither `=', `+', nor '&'.  */
 
+repeat:
   for (j = 0; j < c_len; j += CONSTRAINT_LEN (constraint[j], constraint+j))
     switch (constraint[j])
       {
@@ -409,12 +410,7 @@ parse_input_constraint (const char **constraint_p, int input_num,
 	      constraint = constraints[match];
 	      *constraint_p = constraint;
 	      c_len = strlen (constraint);
-	      j = 0;
-	      /* ??? At the end of the loop, we will skip the first part of
-		 the matched constraint.  This assumes not only that the
-		 other constraint is an output constraint, but also that
-		 the '=' or '+' come first.  */
-	      break;
+	      goto repeat;
 	    }
 	  else
 	    j = end - constraint;
