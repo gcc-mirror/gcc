@@ -184,6 +184,13 @@ convert_conditional_op (gimple_match_op *orig_op,
   for (unsigned int i = 0; i < num_ops; ++i)
     new_op->ops[i + 1] = orig_op->ops[i];
   tree else_value = orig_op->cond.else_value;
+  /* Some patterns convert operand types, e.g. from float to int.
+     If we had a real else value before (e.g. float) it won't match
+     the type.  Verify that here.  */
+  if (else_value
+      && !types_compatible_p (orig_op->type, TREE_TYPE (else_value)))
+    return false;
+
   if (!else_value)
     else_value = targetm.preferred_else_value (ifn, orig_op->type,
 					       num_ops, orig_op->ops);
