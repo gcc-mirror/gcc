@@ -6348,7 +6348,8 @@ vectorizable_shift (vec_info *vinfo,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "no optab.\n");
+			 "no shift optab for %s and %T.\n",
+			 get_tree_code_name (code), vectype);
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
@@ -6357,7 +6358,7 @@ vectorizable_shift (vec_info *vinfo,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "op not supported by target.\n");
+			 "shift op not supported by target.\n");
       return false;
     }
   /* vector lowering cannot optimize vector shifts using word arithmetic.  */
@@ -6723,7 +6724,8 @@ vectorizable_operation (vec_info *vinfo,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "no optab.\n");
+			 "no optab for %s and %T.\n",
+			 get_tree_code_name (code), vectype);
       return false;
     }
   target_support_p = can_implement_p (optab, vec_mode);
