@@ -1,3 +1,97 @@
+2026-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/90218
+	* gfortran.dg/pdt_79.f03: Used uninitialized warning and change
+	tree scan for 'mapped_tensor.j' to 'Pdttensor_t_4.2.j'.
+	* gfortran.dg/pdt_80.f03: New test.
+
+2026-01-07  Tomas Glozar  <tglozar@gmail.com>
+
+	PR target/121535
+	* gcc.target/ia64/pr121535.c: New test.
+
+2026-01-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/121773
+	* gcc.target/arm/pr121773.c: New test.
+
+2026-01-07  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/123320
+	* gcc.target/loongarch/la64/pr123320.c: New test.
+
+2026-01-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/groupprivate-1.c: New test.
+
+2026-01-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123300
+	* gcc.dg/pr123300.c: New.
+
+2026-01-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123319
+	* gcc.dg/pr123319.c: New.
+
+2026-01-07  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/102486
+	* gcc.dg/tree-ssa/pr102486.c: New test.
+
+2026-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/vect/slp-19c.c: Require vect_extract_even_odd.
+
+2026-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/tree-ssa/ssa-dom-cse-2.c (scan-tree-dump): Don't xfail on
+	64-bit SPARC.
+
+2026-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/123353
+	PR c/123156
+	* gcc.dg/torture/builtin-shufflevector-pr123156.c: Require le.
+
+2026-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/123197
+	* gcc.dg/vect/vect-71.c: Require vect_hw_misalign.
+
+2026-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/123200
+	* gcc.dg/vect/vect-bool-2.c (scan-tree-dump): Require
+	vect_bool_cmp.
+	* gcc.dg/vect/vect-bool-cmp-4.c: Likewise.
+
+2026-01-07  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/fmv_priority3.c: New test.
+	* gcc.target/aarch64/fmv_priority_error1.c: New test.
+	* gcc.target/aarch64/fmv_priority_error2.c: New test.
+
+2026-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123315
+	* g++.dg/vect/pr123315.cc: New testcase.
+
+2026-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123221
+	* gcc.dg/vect/vect-pr123221.c: New testcase.
+
+2026-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123316
+	* gcc.dg/vect/vect-pr123316.c: New testcase.
+
+2026-01-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/123374
+	* g++.dg/warn/pr123374.C: New test.
+
 2026-01-06  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR target/123269

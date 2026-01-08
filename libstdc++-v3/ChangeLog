@@ -1,3 +1,75 @@
+2026-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/123100
+	* include/std/sstream (basic_stringbuf::str()&&): Handle the
+	case where _M_string is not being used for the buffer.
+	* testsuite/27_io/basic_stringbuf/str/char/123100.cc: New test.
+
+2026-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__wait_args::_M_setup_wait):
+	Remove unreachable return statement.
+
+2026-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/123406
+	* acinclude.m4 (GLIBCXX_CHECK_STDIO_LOCKING): Override detection
+	of flockfile for non-cygwin newlib targets.
+	* configure: Regenerate.
+
+2026-01-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/123378
+	* include/std/barrier (~__tree_barrier_base): Define.
+
+2026-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/123183
+	PR libstdc++/123326
+	* libsupc++/exception (std::bad_exception::~bad_exception(),
+	std::bad_exception::what()): Add inline keyword and
+	[[__gnu__::__gnu_inline__]] attribute to the C++26 constexpr
+	exceptions definitions.
+	* libsupc++/exception.h (std::exception::~exception(),
+	std::exception::what()): Likewise.
+	* libsupc++/exception_ptr.h (std::exception_ptr::exception_ptr(void*)):
+	Likewise.
+	* libsupc++/nested_exception.h
+	(std::nested_exception::~nested_exception()): Likewise.
+	* libsupc++/typeinfo (std::bad_cast::~bad_cast(),
+	std::bad_cast::what(), std::bad_typeid::~bad_typeid(),
+	std::bad_typeid::what()): Likewise.
+	* include/bits/new_except.h (std::bad_alloc::~bad_alloc(),
+	std::bad_alloc::what(),
+	std::bad_array_new_length::~bad_array_new_length(),
+	std::bad_array_new_length::what()): Likewise.
+	* include/bits/stdexcept_except.h
+	(std::logic_error::logic_error(const string&),
+	std::logic_error::logic_error(const char*),
+	std::logic_error::~logic_error(), std::logic_error::what(),
+	std::domain_error::domain_error(const string&),
+	std::domain_error::domain_error(const char*),
+	std::invalid_argument::invalid_argument(const string&),
+	std::invalid_argument::invalid_argument(const char*),
+	std::length_error::length_error(const string&),
+	std::length_error::length_error(const char*),
+	std::out_of_range::out_of_range(const string&),
+	std::out_of_range::out_of_range(const char*),
+	std::runtime_error::runtime_error(const string&),
+	std::runtime_error::runtime_error(const char*),
+	std::runtime_error::~runtime_error(), std::runtime_error::what(),
+	std::overflow_error::overflow_error(const string&),
+	std::overflow_error::overflow_error(const char*),
+	std::overflow_error::~overflow_error(),
+	std::underflow_error::underflow_error(const string&),
+	std::underflow_error::underflow_error(const char*),
+	std::underflow_error::~underflow_error()): Likewise.
+	(std::domain_error::~domain_error(),
+	std::invalid_argument::~invalid_argument(),
+	std::length_error::~length_error(),
+	std::out_of_range::~out_of_range()): Likewise.  Also change
+	_GLIBCXX_NOTHROW to noexcept on those definitions.
+
 
 Copyright (C) 2026 Free Software Foundation, Inc.
 

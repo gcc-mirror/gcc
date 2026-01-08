@@ -1,3 +1,11 @@
+2026-01-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (OMP_GROUPPRIVATE_CLAUSE_MASK,
+	cp_parser_omp_groupprivate): New.
+	(cp_parser_pragma): Call it.
+	(cp_maybe_parse_omp_decl): Uncomment PRAGMA_OMP_GROUPPRIVATE
+	check.
+
 2026-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/123326

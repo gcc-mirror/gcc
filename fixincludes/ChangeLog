@@ -1,3 +1,50 @@
+2026-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (AAB_solaris_sys_varargs_h): Remove.
+	(solaris___restrict): Likewise.
+	(solaris_complex): Likewise.
+	(solaris_complex_cxx): Likewise.
+	(solaris_cxx_linkage): Likewise.
+	(solaris_getc_strict_stdc): Likewise.
+	(solaris_gets_c11): Likewise.
+	(solaris_gets_cxx14): Likewise.
+	(solaris_int_limits_2): Likewise.
+	(solaris_math_1): Likewise.
+	(solaris_math_10): Likewise.
+	(solaris_math_2): Likewise.
+	(solaris_math_3): Likewise.
+	(solaris_math_4): Likewise.
+	(solaris_math_8): Likewise.
+	(solaris_math_9): Likewise.
+	(solaris_math_11): Likewise.
+	(solaris_once_init_1): Likewise.
+	(solaris_posix_spawn_restrict): Likewise.
+	(solaris_rwlock_init_1): Likewise.
+	(solaris_std___filbuf): Likewise.
+	(solaris_std_gets_cxx14): Likewise.
+	(solaris_stdio_tag): Likewise.
+	(solaris_stdlib_noreturn): Likewise.
+	(gnu_types): Simplify Solaris guard.
+	(stdio_stdarg_h): Likewise.
+	(stdio_va_list): Likewise.
+	(stdio_va_list_clients): Bypass on Solaris.
+	(strict_ansi_only): Likewise.
+	* fixincl.x: Regenerate.
+	* tests/base/iso/math_c99.h: Remove.
+	* tests/base/iso/stdio_iso.h: Likewise.
+	* tests/base/iso/stdlib_c99.h: Likewise.
+	* tests/base/iso/stdlib_iso.h: Likewise.
+	* tests/base/spawn.h: Likewise.
+	* tests/base/stdio_tag.h: Likewise.
+	* tests/base/sys/feature_tests.h: Likewise.
+	* tests/base/complex.h 	[SOLARIS_COMPLEX_CHECK]: Remove.
+	[SOLARIS_COMPLEX_CXX_CHECK]: Likewise.
+	* tests/base/pthread.h [SOLARIS_ONCE_INIT_1_CHECK]: Likewise.
+	[SOLARIS_RWLOCK_INIT_1_CHECK]: Likewise
+	* tests/base/stdio.h [SOLARIS_STD___FILBUF_CHECK]: Likewise.
+	[SOLARIS_GETS_CXX14_CHECK]: Likewise.
+	* tests/base/sys/int_limits.h [SOLARIS_INT_LIMITS_2_CHECK]: Likewise.
+
 2025-08-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR bootstrap/118009

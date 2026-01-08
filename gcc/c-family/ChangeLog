@@ -1,3 +1,9 @@
+2026-01-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-omp.cc (c_omp_directives): Uncomment 'groupprivate'.
+	* c-pragma.cc (omp_pragmas): Add PRAGMA_OMP_GROUPPRIVATE.
+	* c-pragma.h (enum pragma_kind): Likewise.
+
 2025-12-26  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
 
 	PR c++/121864

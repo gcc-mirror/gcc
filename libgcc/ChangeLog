@@ -1,3 +1,35 @@
+2026-01-07  Xinhui Yang  <cyan@cyano.uk>
+
+	* config.host (ia64): include unwind-compat only if the system
+	libunwind is being used.
+	* config/ia64/t-linux-libunwind: include libgcc symver definition
+	for libgcc symbols, since it bears the same role as t-linux
+	(except libunwind); Include fde-glibc.c since the unwind
+	implementation requires _Unwind_FindTableEntry in this file.
+	* config/ia64/unwind-ia64.c: protect _Unwind_FindTableEntry inside
+	inihbit_libc ifndefs to allow it to build with newlib or
+	without proper headers.
+
+2026-01-07  Vladimir Vishniakov  <volodia@hex-rays.com>
+
+	* config/v850/lib1funcs.S (__return_r26_r31): Use compact
+	add form to adjust stack pointer.
+	(__save_r27_r31): Likewise.
+	(__save_r29_r31): Likewise.
+	(__save_r31): Likewise.
+	(__return_r27_r31): Likewise.
+	(__return_r28_r31): Likewise.
+	(__return_r29_r31): Likewise.
+	(__return_r31): Likewise.
+	(__return_r2_r31): Likewise.
+
+2026-01-07  Vladimir Vishniakov  <volodia@hex-rays.com>
+
+	PR target/123403
+	* config/v850/lib1funcs.S (__return_r25_r29): Fix ! __EP__ clause to
+	use SP, not EP.
+	(__return_r2_r31): Fix offsets to match store offsets.
+
 2025-12-15  Peter Damianov  <peter0x44@disroot.org>
 
 	* config/score/crti.S: Delete.

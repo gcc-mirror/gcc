@@ -1,3 +1,11 @@
+2026-01-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (OMP_GROUPPRIVATE_CLAUSE_MASK,
+	c_parser_omp_groupprivate): New.
+	(c_parser_pragma): Call it.
+	(c_maybe_parse_omp_decl): Uncomment PRAGMA_OMP_GROUPPRIVATE
+	check.
+
 2026-01-03  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/121507

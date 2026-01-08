@@ -1,3 +1,37 @@
+2026-01-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/123071
+	PR fortran/90218
+	* resolve.cc (resolve_typebound_function): If a generic
+	typebound procedure is marked as overridable and all the
+	specific procedures are non-overridable, it is safe to resolve
+	the compcall.
+	* trans-array.cc (gfc_trans_array_constructor_value): PDT
+	structure constructor elements must be finalized.
+	(trans_array_constructor): Set 'finalize_required' for PDT
+	constructors.
+	* trans-decl.cc (gfc_get_symbol_decl): PDT initialization is
+	required in contained namespaces as long as the parent is not
+	a module.
+	(gfc_init_default_pdt): Delete the stmtblock_t argument. Assign
+	a variable 'value' expression using gfc_trans_assignment.
+	Simplifiy the logic around the call to gfc_init_default_dt. In
+	both cases return a tree expression or null tree.
+	(gfc_trans_deferred_vars): Only call gfc_allocate_pdt_comp if
+	gfc_init_default_pdt returns null tree.
+	* trans-expr.cc (gfc_trans_alloc_subarray_assign): Add a static
+	stmtblock_t pointer 'final_block'. Free 'dest' data pointer and
+	add to final_block.
+	(gfc_conv_structure): Set 'final_block' to the se's finalblock.
+	(gfc_trans_assignment_1): Do not deallocate PDT array ctrs.
+	trans-stmt.cc (gfc_trans_allocate): Also deallocate PDT expr3
+	allocatable components.
+	(gfc_trans_deallocate): Add PDT deallocation to se.pre instead
+	of block.
+	* trans-stmt.cc (gfc_trans_allocate): Free the allocatable
+	components of a PDT expr3.
+	(gfc_trans_deallocate): Add 'tmp' to se.pre rather than block.
+
 2026-01-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/123029

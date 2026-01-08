@@ -1,3 +1,171 @@
+2026-01-07  Tomas Glozar  <tglozar@gmail.com>
+
+	PR target/121535
+	* config/ia64/ia64.cc (TARGET_ZERO_CALL_USED_REGS): Override
+	function with target-specific one.
+	(struct gcc_target): Move to end of file.
+	(ia64_zero_call_used_regs): Add target-specific function.
+
+2026-01-07  Xinhui Yang  <cyan@cyano.uk>
+
+	* config.gcc: limit -lunwind usage by testing if the system
+	libunwind is being used.
+
+2026-01-07  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/123320
+	* config/loongarch/loongarch.md (<optab><mode>3): Only expand
+	using psuedos when can_create_pseudo_p ().
+	(addsi3): Likewise.
+
+2026-01-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123300
+	* gimple-range-gori.cc (gori_map::exports_and_deps): New.
+	* gimple-range-gori.h (exports_and_deps): New prototype.
+	(FOR_EACH_GORI_EXPORT_AND_DEP_NAME): New macro.
+	* tree-vrp.cc (remove_unreachable:remove_unreachable): Initialize
+	m_tmp bitmap.
+	(remove_unreachable:~remove_unreachable): Dispose of m_tmp bitmap.
+	(remove_unreachable:fully_replaceable): Move from static function
+	and check reachability of exports and dependencies.
+
+2026-01-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123319
+	* value-range.cc (irange::intersect): If there is a bitmask, snap
+	subranges after creating them.
+
+2026-01-07  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/102486
+	* match.pd (`popcount (X & -X) -> -X != 0`): New pattern.
+
+2026-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119291
+	PR rtl-optimization/121773
+	* combine.cc (try_combine): Check that SET_DEST (setN) is neither
+	modified_between_p nor reg_used_between_p instead of just not
+	reg_used_between_p or pc_rtx.
+
+2026-01-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/123390
+	* config/arm/arm.cc (arm_gen_constant): Fix types of HWI literals.
+	(arm_const_double_prefer_rsbs_rsc): Likewise.
+
+2026-01-07  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_parse_fmv_features): Add parsing
+	for priority arguments.
+	(aarch64_process_target_version_attr): Update call to
+	aarch64_parse_fmv_features.
+	(get_feature_mask_for_version): Update call to
+	aarch64_parse_fmv_features.
+	(aarch64_compare_version_priority): Add logic to order by priority if present.
+	(aarch64_functions_b_resolvable_from_a): Update call to
+	aarch64_parse_fmv_features.
+	(aarch64_mangle_decl_assembler_name): Update call to
+	aarch64_parse_fmv_features.
+	(dispatch_function_versions): Add logic to sort by priority.
+	(aarch64_same_function_versions): Add diagnostic if invalid use of
+	priority syntax.
+	(aarch64_merge_decl_attributes): Add logic to make suer priority
+	arguments are preserved.
+	(aarch64_check_target_clone_version): Update call to
+	aarch64_parse_fmv_features.
+
+2026-01-07  Alfie Richards  <alfie.richards@arm.com>
+
+	* target.def (TARGET_OPTION_SAME_FUNCTION_VERSIONS): Update
+	documentation.
+	* tree.cc (disjoint_version_decls): Change for new NULL parameter
+	to same_function_versions.
+	(diagnose_versioned_decls): Update to pass diagnostic location to
+	same_function_versions.
+	* doc/tm.texi: Regenerate.
+	* config/aarch64/aarch64.cc (aarch64_same_function_versions):
+	Update hook impl for new arguments.
+	* config/riscv/riscv.cc (riscv_same_function_versions): Update
+	hook impl for new arguments.
+	* config/loongarch/loongarch.cc
+	(loongarch_same_function_versions): Likewise
+	* hooks.cc (hook_stringslice_stringslice_unreachable): Changed
+	to...
+	(hook_stringslice_consttree_stringslice_consttree_unreachable):
+	...this and add extra arguments.
+	* hooks.h (hook_stringslice_stringslice_unreachable): Changed
+	to...
+	(hook_stringslice_consttree_stringslice_consttree_unreachable):
+	and add extra arguments.
+
+2026-01-07  Martin Jambor  <mjambor@suse.cz>
+
+	* params.opt (param_ipa_cp_sweeps): New.
+	* doc/invoke.texi (ipa-cp-sweeps): New.
+	* ipa-cp.cc (max_number_sweeps): New.
+	(get_max_overall_size): New parameter cur_sweep, use it and the total
+	number of sweeps from the NODE to calculate the result too.
+	(ipcp_propagate_stage): Get the maximum number of sweeps specified in
+	the corresponding parameter of any possibly affected node.
+	(good_cloning_opportunity_p): Add parameter cur_sweep, adjust the
+	threshold according to it.
+	(decide_about_value): New parameter cur_sweep, pass it to
+	get_max_overall_size and to good_cloning_opportunity_p.
+	(decide_whether_version_node): New parameter cur_sweep, pass it to
+	decide_about_value and get_max_overall_size.  Make sure the node is
+	not dead.
+	(ipcp_decision_stage): Make multiple sweeps over the call-graph.
+
+2026-01-07  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_node_params): Remove member do_clone_for_all_contexts.
+	(ipa_node_params::ipa_node_params): Do not initialize
+	do_clone_for_all_contexts.
+	* ipa-cp.cc (gather_context_independent_values): Remove parameter
+	calculate_aggs, calculate them always.
+	(estimate_local_effects): Move the decision whether to clone for
+	all context...
+	(decide_whether_version_node): ...here.  Fix dumps.
+	(decide_about_value): Adjust alignment in dumps.
+
+2026-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123315
+	* tree-vect-loop.cc (vect_analyze_loop_2): Reset
+	LOOP_VINFO_USING_DECREMENTING_IV_P before retrying.
+
+2026-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123221
+	* tree-vect-loop.cc (vectorizable_reduction): When we did not
+	find the non-conversion reduction operation, bail.
+
+2026-01-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123316
+	* tree-vect-loop.cc (vectorizable_reduction): Detect missing
+	PHI patterns for bools.
+
+2026-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR debug/123259
+	* toplev.cc (process_options): Guard CTF non-C warning by
+	-Wcomplain-wrong-lang.
+	* doc/invoke.texi (Warning Options, -Wno-complain-wrong-lang):
+	Document effect on -gctf/-gsctf.
+
+2026-01-07  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/123374
+	* gimple-ssa-warn-access.cc (pass_waccess::set_pass_param): Add
+	a second parameter.
+	(pass_waccess::check_call): Skip access checks for waccess2.
+	(pass_waccess::execute): Drop initialization of
+	M_CHECK_DANGLING_P.
+	* passes.def: Adjust.
+
 2026-01-06  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* tree-profile.cc (tree_profiling): Do not use atomic operations
