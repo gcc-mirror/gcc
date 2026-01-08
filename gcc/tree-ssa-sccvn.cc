@@ -3694,7 +3694,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	 via extra_off.  Note this is an attempt to fixup secondary
 	 copies after we hit the !found && j == 0 case above.  */
       while (j != -1
-	     && known_ne (lhs_ops[j].off, -1U))
+	     && known_ne (lhs_ops[j].off, -1))
 	{
 	  extra_off += -lhs_ops[j].off;
 	  j--;
