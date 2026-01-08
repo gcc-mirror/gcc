@@ -29,6 +29,9 @@
    __gthread_cond_t and __gthread_equal / __gthread_self.  Check
    this.  */
 
+/* #undef __GTHREADS_CXX0X - uncomment for checking non-threading
+   systems.  */
+
 #if defined(__GTHREAD_HAS_COND) && defined(__GTHREADS_CXX0X)
 #define ASYNC_IO 1
 #else
@@ -42,6 +45,9 @@
 #undef DEBUG_ASYNC
 
 #ifdef DEBUG_ASYNC
+#ifndef __GTHREADS_CXX0X
+#error "gthreads support required for DEBUG_ASYNC"
+#endif
 
 /* Define this if you want to use ANSI color escape sequences in your
    debugging output.  */
@@ -369,25 +375,56 @@
 
 #define DEBUG_LINE(...) __VA_ARGS__
 
-#else
+#else  /* DEBUG_ASYNC */
+
 #define DEBUG_PRINTF(...) {}
 #define CHECK_LOCK(au, mutex, status) {}
 #define NOTE(str, ...) {}
 #define DEBUG_LINE(...)
 #define T_ERROR(func, ...) func(__VA_ARGS__)
 #define LOCK(mutex) INTERN_LOCK (mutex)
-#define LOCK_UNIT(unit) do {				    \
-    if (__gthread_active_p ()) {			    \
-      LOCK (&(unit)->lock); (unit)->self = __gthread_self ();	\
-    }								\
+
+#ifdef __GTHREADS_CXX0X
+
+/* When pthreads are not active, we do not touch the lock for locking /
+   unlocking; the only use for this is checking for recursion.  */
+
+#define LOCK_UNIT(unit) do {					\
+  if (__gthread_active_p ()) {					\
+    LOCK (&(unit)->lock); (unit)->self = __gthread_self ();	\
+  } else {							\
+    (unit)->self = 1;						\
+  }								\
   } while(0)
+#else
+
+#define LOCK_UNIT(unit) do { \
+    (unit)->self = 1;	     \
+  } while(0)
+
+#endif
+
 #define UNLOCK(mutex) INTERN_UNLOCK (mutex)
+
+#ifdef __GTHREADS_CXX0X
+
 #define UNLOCK_UNIT(unit) do {						\
     if (__gthread_active_p ()) {					\
       (unit)->self = 0 ; UNLOCK(&(unit)->lock);				\
+    } else {								\
+      (unit)->self = 0;							\
     }									\
+} while(0)
+#else
+#define UNLOCK_UNIT(unit) do {			\
+    (unit)->self = 0;				\
   } while(0)
+
+#endif
+
 #define TRYLOCK(mutex) (__gthread_mutex_trylock (mutex))
+
+#ifdef __GTHREADS_CXX0X
 #define TRYLOCK_UNIT(unit) ({					\
       int res;							\
       if (__gthread_active_p ()) {				\
@@ -395,10 +432,20 @@
 	if (!res)						\
 	  (unit)->self = __gthread_self ();			\
       }								\
-      else							\
-	res = 0;						\
+      else {							\
+	res = (unit)->self;					\
+	(unit)->self = 1;					\
+      }								\
       res;							\
     })
+#else
+#define TRYLOCK_UNIT(unit) ({ \
+      int res = (unit)->self; \
+      (unit)->self = 1;	      \
+      res;		      \
+    })
+#endif
+
 #ifdef __GTHREAD_RWLOCK_INIT
 #define RDLOCK(rwlock) INTERN_RDLOCK (rwlock)
 #define WRLOCK(rwlock) INTERN_WRLOCK (rwlock)
@@ -504,6 +551,15 @@ DEBUG_LINE (extern __gthread_rwlock_t debug_queue_rwlock;)
 extern __thread gfc_unit *thread_unit;
 #endif
 
+/* When threading is not active, or there is no thread system, we fake the ID
+   to be 1.  */
+
+#ifdef __GTHREADS_CXX0X
+#define OWN_THREAD_ID (__gthread_active_p () ? __gthread_self () : 1)
+#else
+#define OWN_THREAD_ID 1
+#endif
+
 enum aio_do {
   AIO_INVALID = 0,
   AIO_DATA_TRANSFER_INIT,
@@ -583,7 +639,7 @@ bool async_wait_id (st_parameter_common *, async_unit *, int);
 internal_proto (async_wait_id);
 
 bool collect_async_errors (st_parameter_common *, async_unit *);
-internal_proto (collect_async_errors); 
+internal_proto (collect_async_errors);
 
 void async_close (async_unit *);
 internal_proto (async_close);

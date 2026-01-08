@@ -348,6 +348,7 @@ get_gfc_unit_from_unit_root (int n)
 /* Recursive I/O is not allowed. Check to see if the UNIT exists and if
    so, check if the UNIT is locked already.  This check does not apply
    to DTIO.  */
+
 void
 check_for_recursive (st_parameter_dt *dtp)
 {
@@ -367,9 +368,9 @@ check_for_recursive (st_parameter_dt *dtp)
 		  /* The lock failed.  This unit is locked either our own
 		     thread, which is illegal recursive I/O, or somebody by
 		     else, in which case we are doing OpenMP or similar; this
-		     is harmless and permitted.  */
-		  __gthread_t locker = __atomic_load_n (&p->self, __ATOMIC_RELAXED);
-		  if (locker == __gthread_self ())
+		     is harmless and permitted.  When threading is not active, or
+		     there is no thread system, we fake the ID to be 1.  */
+		  if (__atomic_load_n (&p->self, __ATOMIC_RELAXED) == OWN_THREAD_ID)
 		    generate_error (&dtp->common, LIBERROR_RECURSIVE_IO, NULL);
 		  return;
 		}
