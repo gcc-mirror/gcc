@@ -3829,8 +3829,8 @@ static bool
 simplify_vector_constructor (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-  tree op, orig[2], type, elem_type;
-  unsigned elem_size, i;
+  tree op, orig[2], type;
+  unsigned i;
   unsigned HOST_WIDE_INT nelts;
   unsigned HOST_WIDE_INT refnelts;
   enum tree_code conv_code;
@@ -3843,8 +3843,6 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 
   if (!TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
     return false;
-  elem_type = TREE_TYPE (type);
-  elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
 
   orig[0] = NULL;
   orig[1] = NULL;
@@ -4177,13 +4175,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       machine_mode vmode = TYPE_MODE (perm_type);
       if (!can_vec_perm_const_p (vmode, vmode, indices))
 	return false;
-      mask_type
-	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
-			     refnelts);
-      if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_VECTOR_INT
-	  || maybe_ne (GET_MODE_SIZE (TYPE_MODE (mask_type)),
-		       GET_MODE_SIZE (TYPE_MODE (perm_type))))
-	return false;
+      mask_type = build_vector_type (ssizetype, refnelts);
       tree op2 = vec_perm_indices_to_tree (mask_type, indices);
       bool converted_orig1 = false;
       gimple_seq stmts = NULL;
@@ -4248,13 +4240,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  machine_mode vmode = TYPE_MODE (type);
 	  if (!can_vec_perm_const_p (vmode, vmode, indices))
 	    return false;
-	  mask_type
-	    = build_vector_type (build_nonstandard_integer_type (elem_size, 1),
-				 nelts);
-	  if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_VECTOR_INT
-	      || maybe_ne (GET_MODE_SIZE (TYPE_MODE (mask_type)),
-			   GET_MODE_SIZE (TYPE_MODE (type))))
-	    return false;
+	  mask_type = build_vector_type (ssizetype, nelts);
 	  blend_op2 = vec_perm_indices_to_tree (mask_type, indices);
 	}
 
