@@ -343,7 +343,7 @@ static bool ia64_modes_tieable_p (machine_mode, machine_mode);
 static bool ia64_can_change_mode_class (machine_mode, machine_mode,
 					reg_class_t);
 
-#define MAX_VECT_LEN	8
+#define MAX_VECT_LEN	16
 
 struct expand_vec_perm_d
 {
