@@ -54,8 +54,8 @@ int main(int argc, char *argv[])
   /* The bad usages, issue errors.  */
   __builtin_counted_by_ref (); /* { dg-error "wrong number of arguments to" } */
   __builtin_counted_by_ref (array_annotated->c, 10); /* { dg-error "wrong number of arguments to" } */
-  __builtin_counted_by_ref (array_annotated->other); /* { dg-error "must be an array" } */
-  __builtin_counted_by_ref (foo());  /* { dg-error "must be an array" } */
+  __builtin_counted_by_ref (array_annotated->other); /* { dg-error "must be an array or pointer" } */
+  __builtin_counted_by_ref (foo());  /* { dg-error "must be a field of a structure" } */
 
   return 0;
 }

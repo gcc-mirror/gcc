@@ -18197,7 +18197,8 @@ If such counted-by object does not exist, returns a null pointer.
 
 This built-in function is only available in C for now.
 
-The argument @var{ptr} must be a pointer to an array.
+The argument @var{ptr} must be a pointer to an flexible array or a pointer
+inside a structure.
 The @var{type} of the returned value is a pointer type pointing to the
 corresponding type of the counted-by object or a void pointer type in case
 of a null pointer being returned.
@@ -18211,9 +18212,15 @@ struct foo1 @{
 @} *p;
 
 struct foo2 @{
+  struct bar2 *pointer __attribute__((counted_by (counter2)));
+  int counter2;
+@} *p2;
+
+struct foo3 @{
   int other;
-  struct bar2 array[];
-@} *q;
+  struct bar3 array[];
+@} *p3;
+
 @end smallexample
 
 @noindent
@@ -18230,11 +18237,23 @@ returns:
 &p->counter with type @code{int *}.
 @end smallexample
 
+@smallexample
+__builtin_counted_by_ref (p2->pointer)
+@end smallexample
+
+@noindent
+returns:
+
+@smallexample
+&p2->counter2 with type @code{int *}.
+@end smallexample
+
+
 @noindent
 However, the following call to the built-in
 
 @smallexample
-__builtin_counted_by_ref (q->array)
+__builtin_counted_by_ref (p3->array)
 @end smallexample
 
 @noindent
