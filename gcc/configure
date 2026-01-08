@@ -859,6 +859,7 @@ enable_fixed_point
 enable_decimal_float
 DEFAULT_INSNEMIT_PARTITIONS
 DEFAULT_MATCHPD_PARTITIONS
+with_multi_buildlist
 with_float
 with_cpu
 enable_multiarch
@@ -7896,6 +7897,9 @@ $as_echo "$enable_multiarch$ma_msg_suffix" >&6; }
 
 # needed for setting the multiarch name for soft-float/hard-float ABIs
 
+
+
+# needed for restricting the fixedincludes multilibs that we install
 
 
 # default stack clash protection guard size as power of twos in bytes.
@@ -21935,7 +21939,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21938 "configure"
+#line 21942 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22041,7 +22045,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22044 "configure"
+#line 22048 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

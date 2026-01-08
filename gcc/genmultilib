@@ -88,6 +88,9 @@
 # The optional tenth argument specifies how to reuse multilib for different
 # option sets.
 
+# The eleventh argument specifies whether the --with-multi-buildlist
+# configure option is set (true or false).
+
 # The last option should be "yes" if multilibs are enabled.  If it is not
 # "yes", all GCC multilib dir names will be ".".
 
@@ -108,7 +111,7 @@
 #   genmultilib 'm64/m32 mno-app-regs|mcmodel=medany' '64 32 alt'
 #		'mcmodel?medany=mcmodel?medmid' 'm32/mno-app-regs* m32/mcmodel=*'
 #		'' 'm32/!m64/mno-app-regs m32/!m64/mcmodel=medany'
-#		'../lib64 ../lib32 alt' '' '' '' yes
+#		'../lib64 ../lib32 alt' '' '' '' 'false' yes
 # This produces:
 #   ". !m64 !m32 !mno-app-regs !mcmodel=medany;",
 #   "64:../lib64 m64 !m32 !mno-app-regs !mcmodel=medany;",
@@ -139,7 +142,8 @@ osdirnames=$7
 multilib_required=$8
 multiarch=$9
 multilib_reuse=${10}
-enable_multilib=${11}
+with_multi_buildlist=${11}
+enable_multilib=${12}
 
 echo "static const char *const multilib_raw[] = {"
 
@@ -500,7 +504,7 @@ for rrule in ${multilib_reuse}; do
       echo "The rule ${rrule} contains an option absent from MULTILIB_OPTIONS." >&2
       exit 1
     fi
-  else
+  elif ! ${with_multi_buildlist}; then
     echo "The rule ${rrule} is trying to reuse nonexistent multilib." >&2
     exit 1
   fi

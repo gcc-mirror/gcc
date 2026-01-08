@@ -11760,6 +11760,21 @@ if test x${enable_multilib} = x ; then
   target_configargs="--enable-multilib ${target_configargs}"
 fi
 
+# Source target-specific configuration fragment for GCC
+if test -d ${srcdir}/gcc; then
+  . ${srcdir}/gcc/configure.tgt
+fi
+
+# Pass through with_multi_buildlist to host and target.  'gcc' needs it for the
+# fixed includes which are multilib'd and target libraries need it as they use
+# config-ml.in.
+if test x${with_multi_buildlist} != x ; then
+  target_configargs="--with-multi-buildlist=${with_multi_buildlist} \
+  ${target_configargs}"
+  host_configargs="--with-multi-buildlist=${with_multi_buildlist} \
+  ${host_configargs}"
+fi
+
 # Pass --with-newlib if appropriate.  Note that target_configdirs has
 # changed from the earlier setting of with_newlib.
 if test x${with_newlib} != xno && echo " ${target_configdirs} " | grep " newlib " > /dev/null 2>&1 && test -d ${srcdir}/newlib ; then

@@ -1601,6 +1601,30 @@ medlow code model; rv64ima with lp64 and medany code model
 rv64ima-lp64--;--cmodel=medlow,medany
 @end smallexample
 
+@item --with-multi-buildlist=@var{file}
+Specify a file containing a list of multilib directories to build.
+
+Each line in the file should contain a single multilib directory name,
+as printed by @code{gcc --print-multi-lib}.  Only the listed directories
+will be built and installed.
+
+This option is useful for reducing build time and binary size by
+excluding unnecessary multilib variants.  It is especially beneficial
+for embedded targets or vendor-specific toolchains.
+
+Example file contents:
+
+@smallexample
+mips-r6-hard/lib
+mips-r6-soft/lib32
+mipsel-r6-hard/lib64
+@end smallexample
+
+This option is target-independent and can be used with any architecture
+that supports multilibs.  It is passed to both host and target
+configuration stages and used during fixed includes installation and
+multilib directory generation.
+
 @item --with-endian=@var{endians}
 Specify what endians to use.
 Currently only implemented for sh*-*-*.

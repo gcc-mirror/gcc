@@ -488,6 +488,23 @@ powerpc*-*-* | rs6000*-*-*)
 	;;
 esac
 
+# Use a filtered multilib list if requested.
+
+if [ x$with_multi_buildlist != x ]; then
+  old_multidirs="${multidirs}"
+  if [ ! -f $with_multi_buildlist ]; then
+    echo "config-ml.in: Failed to find $with_multi_buildlist"
+    exit 1
+  fi
+  multidirs=""
+  for x in ${old_multidirs}; do
+    found=`grep "^${x}$" $with_multi_buildlist`
+    if [ -n "$found" ]; then
+      multidirs="${multidirs} ${x}"
+    fi
+  done
+fi
+
 # Remove extraneous blanks from multidirs.
 # Tests like `if [ -n "$multidirs" ]' require it.
 multidirs=`echo "$multidirs" | sed -e 's/^[ ][ ]*//' -e 's/[ ][ ]*$//' -e 's/[ ][ ]*/ /g'`
@@ -597,7 +614,8 @@ else
 fi
 
 if [ -z "${with_multisubdir}" ]; then
-  ml_subdir=
+  ml_top_subdir=`${CC-gcc} --print-multi-directory 2>/dev/null`
+  ml_subdir=/$ml_top_subdir
   ml_builddotdot=
   : # ml_srcdotdot= # already set
 else
@@ -675,6 +693,11 @@ if [ -n "${multidirs}" ] && [ -z "${ml_norecursion}" ]; then
   cd ..
 
   for ml_dir in ${multidirs}; do
+
+    if [ "${ml_dir}" == "${ml_top_subdir}" ]; then
+      echo "Skipping configure in multilib subdir ${ml_dir}"
+      continue
+    fi
 
     if [ "${ml_verbose}" = --verbose ]; then
       echo "Running configure in multilib subdir ${ml_dir}"

@@ -653,6 +653,9 @@ else
   endif
 endif
 
+# Multilib control
+with_multi_buildlist = @with_multi_buildlist@
+
 # ------------------------
 # Installation directories
 # ------------------------
@@ -2528,11 +2531,12 @@ s-mlib: $(srcdir)/genmultilib Makefile
 	    "$(MULTILIB_REQUIRED)" \
 	    "$(if $(MULTILIB_OSDIRNAMES),,$(MULTIARCH_DIRNAME))" \
 	    "$(MULTILIB_REUSE)" \
+	    "$(if $(with_multi_buildlist),true,false)" \
 	    "@enable_multilib@" \
 	    > tmp-mlib.h; \
 	else \
 	  $(SHELL) $(srcdir)/genmultilib '' '' '' '' '' '' '' '' \
-	    "$(MULTIARCH_DIRNAME)" '' no \
+	    "$(MULTIARCH_DIRNAME)" '' 'false' no \
 	    > tmp-mlib.h; \
 	fi
 	$(SHELL) $(srcdir)/../move-if-change tmp-mlib.h multilib.h
@@ -3631,10 +3635,23 @@ fixinc_list: s-fixinc_list; @true
 s-fixinc_list : $(GCC_PASSES)
 # Build up a list of multilib directories and corresponding sysroot
 # suffixes, in form sysroot;multilib.
+# Use a filtered multilib list if requested.
 	if $(GCC_FOR_TARGET) -print-sysroot-headers-suffix > /dev/null 2>&1; then \
 	  set -e; for ml in `$(GCC_FOR_TARGET) -print-multi-lib`; do \
 	    multi_dir=`echo $${ml} | sed -e 's/;.*$$//'`; \
 	    flags=`echo $${ml} | sed -e 's/^[^;]*;//' -e 's/@/ -/g'`; \
+	    if [ x$(with_multi_buildlist) != x ]; then \
+	      if [ ! -f $(with_multi_buildlist) ]; then \
+		echo "fixinc_list: Failed to find $(with_multi_buildlist)"; \
+		exit 1; \
+	      fi; \
+	      set +e; \
+	      found=`grep "^$${multi_dir}$$" $(with_multi_buildlist)`; \
+	      set -e; \
+	      if [ -z "$$found" ]; then \
+		continue; \
+	      fi; \
+	    fi; \
 	    sfx=`$(GCC_FOR_TARGET) $${flags} -print-sysroot-headers-suffix`; \
 	    if [ "$${multi_dir}" = "." ]; \
 	      then multi_dir=""; \

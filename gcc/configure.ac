@@ -887,6 +887,9 @@ AC_MSG_RESULT($enable_multiarch$ma_msg_suffix)
 AC_SUBST(with_cpu)
 AC_SUBST(with_float)
 
+# needed for restricting the fixedincludes multilibs that we install
+AC_SUBST(with_multi_buildlist)
+
 # default stack clash protection guard size as power of twos in bytes.
 # Please keep these in sync with params.def.
 stk_clash_min=12
