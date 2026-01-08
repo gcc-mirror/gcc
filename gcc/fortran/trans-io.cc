@@ -1699,8 +1699,7 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
   /* Build the namelist object name.  */
   if (sym && sym->attr.use_rename && sym->ns->use_stmts->rename
-      && sym->ns->use_stmts->rename->local_name
-      && sym->ns->use_stmts->rename->local_name[0]
+      && strlen(sym->ns->use_stmts->rename->local_name) > 0
       && strcmp(sym->ns->use_stmts->rename->use_name, var_name) == 0)
     string = gfc_build_cstring_const (sym->ns->use_stmts->rename->local_name);
   else
