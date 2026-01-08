@@ -358,6 +358,13 @@ ifeq ($(strip $(filter-out x86_64 linux-gnux32%, $(target_cpu) $(target_os))),)
   endif
 endif
 
+# The x86_64-*abi32 compilers are x86_64 compilers defaulting to -m32
+ifeq ($(strip $(filter-out x86_64 %abi32, $(target_cpu) $(target_os))),)
+  ifneq ($(strip $(MULTISUBDIR)),/64)
+    target_cpu:=i686
+  endif
+endif
+
 # Configuration of host tools
 
 # Under linux, host tools need to be linked with -ldl

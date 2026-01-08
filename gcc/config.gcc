@@ -678,6 +678,28 @@ i[34567]86-*-*)
 x86_64-*-darwin*)
 	;;
 x86_64-*-*)
+        # Pick a default with_abi and with_multilib_list for m32
+        # restricted toolchains
+        case ${target} in
+        *abi32)
+		case ${with_abi} in
+		"" | 32 | m32)
+			with_abi=m32
+			;;
+		*)
+			echo "Invalid --with-abi=$with_abi for m32 target"
+			exit 1
+	       esac
+	       case ${with_multilib_list} in
+	       default | *m32*)
+			;;
+	       *)
+			echo "Invalid multilib list for abi32 target"
+			exit 1
+	       esac
+	       ;;
+	esac
+
 	case ${with_abi} in
 	"")
 		if test "x$with_multilib_list" = xmx32; then
@@ -691,6 +713,9 @@ x86_64-*-*)
 		;;
 	x32 | mx32)
 		tm_file="i386/biarchx32.h ${tm_file}"
+		;;
+	32 | m32)
+		tm_defines="${tm_defines} TARGET_BI_ARCH=1"
 		;;
 	*)
 		echo "Unknown ABI used in --with-abi=$with_abi"

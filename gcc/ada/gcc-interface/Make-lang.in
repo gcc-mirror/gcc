@@ -190,10 +190,20 @@ GNATLS_FOR_HOST   = $(subst gnatmake,gnatls,$(GNATMAKE))
 
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.
+
+# A native x86_64 compiler defaulting to -m32 is not suitable to build
+# 64bit host tools.  Arrange to build the tools with the base compiler
+# in this case, as we do for cross configurations.
+
+m32_target=$(filter x86_64%abi32, $(target))
+not_m32_target=$(if $(m32_target),,$(target))
+
 ifeq ($(build), $(host))
-  ifeq ($(host), $(target))
-    # This is a regular native. So use the compiler from our current build
-    # tree.
+  native_target=$(filter $(host), $(target))
+
+  ifneq ($(and $(native_target), $(not_m32_target)),)
+    # This is a regular native. Use the compiler from our
+    # current build tree.
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="../../xgcc -B../../" \
         CXX="$(CXX)" \
@@ -203,8 +213,8 @@ ifeq ($(build), $(host))
         GNATLINK="../../gnatlink" \
         GNATBIND="../../gnatbind"
   else
-    # This is a regular cross compiler. Use the native compiler to compile
-    # the tools.
+    # This is a regular cross compiler or a 64bit native defaulting to -m32.
+    # Use the base native compiler to compile the tools.
 
     # put the host RTS dir first in the PATH to hide the default runtime
     # files that are among the sources
@@ -790,8 +800,11 @@ gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS)
 	+$(GCC_LINK) -o $@ $(CFLAGS) ada/b_gnatb.o $(GNATBIND_OBJS) $(EXTRA_HOST_OBJS) ggc-none.o libcommon-target.a $(LIBS) $(SYSLIBS) $(GNATLIB)
 
 # use target-gcc target-gnatmake target-gnatbind target-gnatlink
+
+native_gnattools1=$(if $(not_m32_target),gnattools1,gnattools1-re)
+
 gnattools: $(CONFIG_H) prefix.o force
-	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools1
+	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) $(native_gnattools1)
 	$(MAKE) -C ada $(ADA_TOOLS_FLAGS_TO_PASS) gnattools2
 
 regnattools:
