@@ -1,0 +1,55 @@
+on:
+#  push:
+#    branches:
+#      - trunk
+#    # run on changes to any file for ci containers or to this file
+#    paths:
+#      - .forgejo/workflows/build-containers.yaml
+#      - 'contrib/ci-containers/**/*'
+  # similar for pull requests
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .forgejo/workflows/build-containers.yaml
+      - 'contrib/ci-containers/**/*'
+
+jobs:
+  containers:
+    runs-on: sourceware-runner
+    container:
+      image: fedora:latest
+      env:
+        # the default overlayfs doesn't work when running on docker, which uses overlayfs
+        STORAGE_DRIVER: vfs
+        # we can't run containers in docker, so use a chroot to build the image
+        BUILDAH_ISOLATION: chroot
+    steps:
+      - name: install dependencies
+        run: |
+          dnf -y --setopt=install_weak_deps=False install buildah git nodejs
+
+      # Checkout sources
+      - uses: actions/checkout@v4
+
+      - name: build containers
+        run: |
+          echo "Building containers from contrib/ci-containers"
+          for DIR in ./contrib/ci-containers/*
+          do
+            ! [ -d "$DIR" ] &&  continue
+            CONTAINER="$(basename "$DIR")"
+            if [ "$FORGEJO_EVENT_NAME" = pull_request ]; then
+              # branch name in lowercase, replace non-alphanumerics with '-', and remove leading and trailling '-'
+              TAG="$(echo "$FORGEJO_HEAD_REF" | sed -e 's/\(.*\)/\L\1/' -e 's/[^[:alnum:]-]/-/g' -e 's/^-\+//;s/-\+$//')"
+            else
+              # branch name
+              TAG="$FORGEJO_REF_NAME"
+            fi
+            echo "Building $CONTAINER with tag $TAG"
+            ./contrib/ci-containers/build-image.sh -d "$DIR" -t "$TAG" -- --network=host
+            echo "Built $CONTAINER:$TAG should push it somewhere"
+            buildah images --json "$CONTAINER:$TAG"
+            echo "Removing container image from localhost"
+            buildah rmi "$CONTAINER:$TAG"
+            buildah rmi --prune
+          done

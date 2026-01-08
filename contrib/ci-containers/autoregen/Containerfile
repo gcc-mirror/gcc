@@ -1,0 +1,83 @@
+FROM debian:stable-slim
+
+ARG AUTOCONF_VERSION=2.69
+ARG AUTOMAKE_VERSION=1.15.1
+
+# Run time deps
+RUN set -eux; \
+    apt-get update; \
+    apt-get upgrade -y; \
+    apt-get install -y --no-install-recommends \
+      autogen \
+      ca-certificates \
+      git \
+      m4 \
+      nodejs \
+      perl \
+      python3 \
+      python3-git \
+      python3-termcolor \
+      python3-unidiff \
+      wget; \
+    rm -rf /var/lib/apt/lists/*
+
+# Get and install the autoregen.py script
+COPY --chmod=755 autoregen.py /usr/local/bin/autoregen.py
+
+# Build and install autoconf and automake
+# Automake depends on autoconf, which is built and installed first
+RUN set -eux; \
+    \
+    savedAptMark="$(apt-mark showmanual)"; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+      build-essential \
+      ca-certificates \
+      gzip \
+      m4 \
+      tar \
+      wget \
+    ; \
+    rm -r /var/lib/apt/lists/*; \
+    \
+    builddir="$(mktemp -d)"; \
+    \
+    cd "${builddir}"; \
+    AUTOCONF_VERSION_SHORT="$(echo $AUTOCONF_VERSION | awk -F. '{ print $1 "." $2 }')"; \
+    wget -q "https://ftp.gnu.org/gnu/autoconf/autoconf-${AUTOCONF_VERSION}.tar.gz"; \
+    tar xf "autoconf-${AUTOCONF_VERSION}.tar.gz"; \
+    cd "autoconf-${AUTOCONF_VERSION}"; \
+    ./configure --program-suffix="-${AUTOCONF_VERSION}"; \
+    make; \
+    make install; \
+    cd .. ;\
+    rm -rf autoconf*; \
+    cd /usr/local/bin; \
+    for f in autoconf autoheader autom4te autoreconf autoscan autoupdate ifnames; do \
+      ln -sv "$f-$AUTOCONF_VERSION" "$f"; \
+      [ ! "$AUTOCONF_VERSION" = "$AUTOCONF_VERSION_SHORT" ] && \
+        ln -sv "$f-$AUTOCONF_VERSION" "$f-$AUTOCONF_VERSION_SHORT"; \
+    done; \
+    \
+    cd "${builddir}"; \
+    AUTOMAKE_VERSION_SHORT="$(echo $AUTOMAKE_VERSION | awk -F. '{ print $1 "." $2 }')"; \
+    wget -q "https://ftp.gnu.org/gnu/automake/automake-${AUTOMAKE_VERSION}.tar.gz"; \
+    tar xf "automake-${AUTOMAKE_VERSION}.tar.gz"; \
+    cd "automake-${AUTOMAKE_VERSION}"; \
+    ./configure --program-suffix="-${AUTOMAKE_VERSION}"; \
+    make; \
+    make install; \
+    cd ..; \
+    rm -rf automake*; \
+    cd /usr/local/bin; \
+    for f in aclocal automake; do \
+      ln -sv "$f-$AUTOMAKE_VERSION" "$f"; \
+      [ ! "$AUTOMAKE_VERSION" = "$AUTOMAKE_VERSION_SHORT" ] && \
+    ln -sv "$f-$AUTOMAKE_VERSION" "$f-$AUTOMAKE_VERSION_SHORT"; \
+    done; \
+    \
+    rm -rf "${builddir}"; \
+    \
+    apt-mark auto '.*' > /dev/null; \
+    [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false

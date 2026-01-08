@@ -1,0 +1,47 @@
+# CI Containers
+
+Each subdirectory under `contrib/ci-containers/` holds a hermetic description of
+a container image that powers jobs on the [Sourceware
+Forge](https://forge.sourceware.org).  The directory itself is used as the build
+context, so any assets referenced by the `Containerfile` must be present
+in the subdirectory.
+
+Keeping the description self-contained guarantees reproducible builds.
+
+## Building Images
+
+Images are built with [buildah](https://buildah.io) via the helper script
+`build-image.sh`.  A typical invocation looks like:
+
+```bash
+./contrib/ci-containers/build-image.sh \
+    -d ./contrib/ci-containers/foo \
+    -t v1.0 \
+    -- --layers --no-cache
+```
+
+* `-d` - Path to the directory containing the `Containerfile`.
+* `-t` - Tag to apply to the resulting image.
+* The trailing `--` passes additional flags directly to `buildah` (here we
+request layered output and disable the cache).
+
+The full image tag will be the basename of the directory, in this case `foo`,
+and the value passed to the `-t/--tag` argument.  Our hypothetical image will be
+tagged locally as `foo:v1.0`.
+
+### Verify the build
+
+```bash
+buildah images --json foo:v1.0
+```
+
+The command returns a JSON object with the image's ID, size, and other metadata.
+
+### Test the image locally
+
+```bash
+podman run --rm -it foo:v1.0 /bin/bash
+```
+
+By running the image interactively you can confirm that the environment behaves
+as expected.
