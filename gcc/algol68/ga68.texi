@@ -187,9 +187,9 @@ programs.  @xref{Stropping regimes}.
 @opindex fbrackets
 @opindex fno-brackets
 @item -fbrackets
-This option controls whether @code{[ .. ]} and @code{@{ .. @}} are
-considered equivalent to @code{( .. )}.  This syntactic variation is
-blessed by the Revised Report and is still strict Algol 68.
+This option controls whether @code{[ .. ]} is considered equivalent to
+@code{( .. )}.  This syntactic variation is blessed by the Revised
+Report and is still strict Algol 68.
 
 This option is disabled by default.
 @end table
