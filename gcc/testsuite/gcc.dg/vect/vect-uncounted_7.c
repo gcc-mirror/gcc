@@ -20,5 +20,5 @@ void foo(int i, char *p, char *q)
   }
 }
 
-/* { dg-final { scan-tree-dump "Loop being analyzed as uncounted." "vect" } } */
-/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" } } */
+/* { dg-final { scan-tree-dump "Loop being analyzed as uncounted." "vect"  } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { xfail *-*-* } } } */

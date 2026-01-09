@@ -629,10 +629,8 @@ maybe_remove_forwarder_block (basic_block bb, bool can_split = false)
 		return false;
 	      /* If bb doesn't have a single predecessor we'd make this
 		 loop have multiple latches.  Don't do that if that
-		 would in turn require disambiguating them.  */
-	      if (!single_pred_p (bb)
-		      && !loops_state_satisfies_p
-			   (LOOPS_MAY_HAVE_MULTIPLE_LATCHES))
+		 would in turn require disambiguating them over again.  */
+	      if (!single_pred_p (bb))
 		return false;
 	    }
 	  /* cleanup_tree_cfg_noloop just created the loop preheader, don't
