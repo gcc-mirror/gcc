@@ -1705,14 +1705,18 @@ the next @option{-x} option.  Possible values for @var{language} are:
 @smallexample
 c  c-header  cpp-output
 c++  c++-header  c++-system-header c++-user-header c++-cpp-output
-objective-c  objective-c-header  objective-c-cpp-output
-objective-c++ objective-c++-header objective-c++-cpp-output
+objective-c  objective-c-header  objective-c-cpp-output  objc-cpp-output
+objective-c++  objective-c++-header  objective-c++-cpp-output
+objc++-cpp-output
 assembler  assembler-with-cpp
-ada
+ada  adascil  adawhy
 cobol
 d
-f77  f77-cpp-input f95  f95-cpp-input
+f77  f77-cpp-input  f95  f95-cpp-input
 go
+modula-2  modula-2-cpp-output
+rust
+lto
 @end smallexample
 
 Note that @option{-x} does not imply a particular language standard.
