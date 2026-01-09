@@ -9362,6 +9362,7 @@ struct cfg_hooks gimple_cfg_hooks = {
   gimple_verify_flow_info,
   gimple_dump_bb,		/* dump_bb  */
   gimple_dump_bb_for_graph,	/* dump_bb_for_graph  */
+  gimple_dump_bb_as_sarif_properties,
   create_bb,			/* create_basic_block  */
   gimple_redirect_edge_and_branch, /* redirect_edge_and_branch  */
   gimple_redirect_edge_and_branch_force, /* redirect_edge_and_branch_force  */

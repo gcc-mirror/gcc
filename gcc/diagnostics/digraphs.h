@@ -226,6 +226,12 @@ class digraph : public object
   const char *get_graph_kind () const;
   void set_graph_kind (const char *);
 
+  const std::map<std::string, node *> &
+  get_all_nodes () const
+  {
+    return m_id_to_node_map;
+  }
+
  private:
   void
   add_node_id (std::string node_id, node &new_node)

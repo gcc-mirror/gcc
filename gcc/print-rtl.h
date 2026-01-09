@@ -24,6 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "bitmap.h"
 #endif /* #ifndef GENERATOR_FILE */
 
+namespace diagnostics { class sarif_builder; }
+namespace json { class object; }
+
 class rtx_reuse_manager;
 
 /* A class for writing rtx to a FILE *.  */
@@ -90,6 +93,10 @@ extern void print_insn (pretty_printer *pp, const rtx_insn *x, int verbose);
 extern void print_insn_with_notes (pretty_printer *, const rtx_insn *);
 
 extern void rtl_dump_bb_for_graph (pretty_printer *, basic_block);
+extern void
+rtl_dump_bb_as_sarif_properties (diagnostics::sarif_builder *,
+				 json::object &,
+				 basic_block);
 extern const char *str_pattern_slim (const_rtx);
 
 extern void print_rtx_function (FILE *file, function *fn, bool compact);

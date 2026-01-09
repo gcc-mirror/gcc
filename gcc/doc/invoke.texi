@@ -6303,7 +6303,8 @@ by @code{:} and one or more @var{KEY}=@var{VALUE} pairs, in this form:
 etc.
 
 Schemes, keys, or values with a name prefixed ``experimental'' may change
-or be removed without notice.
+or be removed without notice.  Keys can be per-scheme, or related to GCC
+as a whole.
 
 @var{SCHEME} can be
 
@@ -6313,7 +6314,7 @@ or be removed without notice.
 @item text
 Emit diagnostics to stderr using GCC's classic text output format.
 
-Supported keys are:
+Supported keys for the @code{text} scheme are:
 
 @table @gcctabopt
 
@@ -6343,7 +6344,7 @@ This exists for use by GCC developers.
 @item sarif
 Emit diagnostics to a file in SARIF format.
 
-Supported keys are:
+Supported keys for the @code{sarif} scheme are:
 
 @table @gcctabopt
 
@@ -6383,7 +6384,7 @@ Emit diagnostics to a file in HTML format.  This scheme is experimental,
 and may go away in future GCC releases.  The keys and details of the output
 are also subject to change.
 
-Supported keys are:
+Supported keys for the @code{experimental-html} scheme are:
 
 @table @gcctabopt
 
@@ -6429,6 +6430,20 @@ then if @code{show-state-diagrams=yes}, the generated state diagrams will
 also show a SARIF representation of the state.
 
 @end table
+
+@end table
+
+As well as scheme-specific keys, the following GCC-related key is usable
+on sinks of any scheme:
+
+@table @gcctabopt
+
+@item cfgs=@r{[}yes@r{|}no@r{]}
+If @code{cfgs=yes} for a sink, then GCC will attempt to send information
+to that sink about the control flow graphs for the functions it is compiling.
+Text sinks ignore the information.  SARIF sinks will add the graphs within
+@code{theRun.graphs}.  HTML sinks will generate SVG displaying the graphs.
+The precise form of the information is subject to change without notice.
 
 @end table
 

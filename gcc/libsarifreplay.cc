@@ -2303,8 +2303,9 @@ sarif_replayer::handle_graph_object (const json::object &graph_json_obj,
   id_map edge_id_map;
 
   if (auto properties = maybe_get_property_bag (graph_json_obj))
-    private_diagnostic_graph_set_property_bag (*out_graph.m_inner,
-					       properties->clone_as_object ());
+    private_diagnostic_graph_set_property_bag
+      (*out_graph.m_inner,
+       properties->clone_as_object ());
 
   // §3.39.2: MAY contain a "description" property
   const property_spec_ref description_prop

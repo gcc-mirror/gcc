@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_LIST
 #define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
@@ -32,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "intl.h"
 #include "diagnostics/text-sink.h"
+#include "tree-diagnostic-sink-extensions.h"
 
 /* Prints out, if necessary, the name of the current function
    that caused an error.  */
@@ -174,6 +176,8 @@ set_inlining_locations (const diagnostics::context &,
     *ao = (tree)diagnostic->m_iinfo.m_ao;
 }
 
+static const compiler_extension_factory compiler_ext_factory;
+
 /* Sets CONTEXT to use language independent diagnostics.  */
 void
 tree_diagnostics_defaults (diagnostics::context *context)
@@ -183,4 +187,5 @@ tree_diagnostics_defaults (diagnostics::context *context)
   context->set_format_decoder (default_tree_printer);
   context->set_set_locations_callback (set_inlining_locations);
   context->set_client_data_hooks (make_compiler_data_hooks ());
+  gcc_extension_factory::singleton = &compiler_ext_factory;
 }

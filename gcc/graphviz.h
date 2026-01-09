@@ -250,6 +250,9 @@ enum class compass_pt
  /* "_" clashes with intl macro */
 };
 
+bool
+get_compass_pt_from_string (const char *str, enum compass_pt &out);
+
 /* port : ':' ID [ ':' compass_pt ]
         | ':' compass_pt
 */

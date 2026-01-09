@@ -44,6 +44,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "cfgloop.h"
 #include "gimple-range.h"
+#include "cfghooks.h"
+#include "json.h"
+#include "custom-sarif-properties/cfg.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -3202,6 +3205,87 @@ gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
     }
   dump_implicit_edges (pp, bb, 0, dump_flags);
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
+}
+
+void
+gimple_dump_bb_as_sarif_properties (diagnostics::sarif_builder *,
+				    json::object &output_bag,
+				    basic_block bb)
+{
+  namespace bb_properties = custom_sarif_properties::cfg::basic_block;
+  output_bag.set_integer (bb_properties::index, bb->index);
+
+  auto phi_arr = std::make_unique<json::array> ();
+  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gphi *phi = gsi.phi ();
+      if (!virtual_operand_p (gimple_phi_result (phi))
+	  || (dump_flags & TDF_VOPS))
+	{
+	  pretty_printer pp;
+	  pp_gimple_stmt_1 (&pp, phi, 0, dump_flags);
+	  phi_arr->append_string (pp_formatted_text (&pp));
+	}
+    }
+  output_bag.set_array_of_string (bb_properties::gimple::phis,
+				  std::move (phi_arr));
+
+  auto stmt_arr = std::make_unique<json::array> ();
+  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+       gsi_next (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      pretty_printer the_pp;
+      pretty_printer *pp = &the_pp;
+      pp_gimple_stmt_1 (pp, stmt, 0, dump_flags);
+      pp_newline (pp);
+      if (gsi_one_before_end_p (gsi))
+	{
+	  /* Compare with gcond part of dump_implicit_edges.  */
+	  if (safe_is_a <gcond *> (stmt)
+	      && (EDGE_COUNT (bb->succs) == 2))
+	    {
+	      const int indent = 0;
+	      edge true_edge, false_edge;
+
+	      extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
+	      INDENT (indent + 2);
+	      pp_cfg_jump (pp, true_edge, dump_flags);
+	      newline_and_indent (pp, indent);
+	      pp_string (pp, "else");
+	      newline_and_indent (pp, indent + 2);
+	      pp_cfg_jump (pp, false_edge, dump_flags);
+	      pp_newline (pp);
+	    }
+	}
+      stmt_arr->append_string (pp_formatted_text (pp));
+    }
+
+  /* Compare with dump_implicit_edges.  */
+  {
+    /* If there is a fallthru edge, we may need to add an artificial
+       goto to the dump.  */
+    edge e = find_fallthru_edge (bb->succs);
+
+    if (e && (e->dest != bb->next_bb || (dump_flags & TDF_GIMPLE)))
+      {
+	pretty_printer the_pp;
+	pretty_printer *pp = &the_pp;
+	INDENT (0);
+
+	if ((dump_flags & TDF_LINENO)
+	    && e->goto_locus != UNKNOWN_LOCATION)
+	  dump_location (pp, e->goto_locus);
+
+	pp_cfg_jump (pp, e, dump_flags);
+	pp_newline (pp);
+	stmt_arr->append_string (pp_formatted_text (pp));
+      }
+  }
+
+  output_bag.set_array_of_string (bb_properties::gimple::stmts,
+				  std::move (stmt_arr));
 }
 
 #if __GNUC__ >= 10

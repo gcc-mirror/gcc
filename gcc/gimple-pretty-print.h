@@ -23,6 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "tree-pretty-print.h"
 
+namespace diagnostics { class sarif_builder; }
+namespace json { class object; }
+
 /* In gimple-pretty-print.cc  */
 extern void debug_gimple_stmt (gimple *);
 extern void debug_gimple_seq (gimple_seq);
@@ -35,6 +38,10 @@ extern void pp_gimple_stmt_1 (pretty_printer *, const gimple *, int,
 			      dump_flags_t);
 extern void gimple_dump_bb (FILE *, basic_block, int, dump_flags_t);
 extern void gimple_dump_bb_for_graph (pretty_printer *, basic_block);
+extern void
+gimple_dump_bb_as_sarif_properties (diagnostics::sarif_builder *,
+				    json::object &,
+				    basic_block);
 extern void dump_ssaname_info_to_file (FILE *, tree, int);
 extern void percent_G_format (text_info *);
 

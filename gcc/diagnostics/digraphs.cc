@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "graphviz.h"
 #include "diagnostics/digraphs.h"
+#include "diagnostics/digraphs-to-dot.h"
 #include "diagnostics/sarif-sink.h"
 #include "custom-sarif-properties/digraphs.h"
 
@@ -38,138 +39,6 @@ using digraph_node = diagnostics::digraphs::node;
 using digraph_edge = diagnostics::digraphs::edge;
 
 namespace properties = custom_sarif_properties::digraphs;
-
-namespace {
-
-class conversion_to_dot
-{
-public:
-  std::unique_ptr<dot::graph>
-  make_dot_graph_from_diagnostic_graph (const digraph &);
-
-  std::unique_ptr<dot::stmt>
-  make_dot_node_from_digraph_node (const digraph_node &);
-
-  std::unique_ptr<dot::edge_stmt>
-  make_dot_edge_from_digraph_edge (const digraph_edge &);
-
-  dot::id
-  get_dot_id_for_node (const digraph_node &);
-
-  bool
-  has_edges_p (const digraph_node &);
-
-private:
-  std::set<const digraph_node *> m_nodes_with_edges;
-  std::map<const digraph_node *, dot::stmt *> m_node_map;
-};
-
-} // anonymous namespace
-
-// class conversion_to_dot
-
-std::unique_ptr<dot::graph>
-conversion_to_dot::
-make_dot_graph_from_diagnostic_graph (const diagnostics::digraphs::digraph &input_graph)
-{
-  auto output_graph = std::make_unique<dot::graph> ();
-
-  if (const char *description = input_graph.get_description ())
-    output_graph->m_stmt_list.add_attr (dot::id ("label"),
-					dot::id (description));
-
-  const int num_nodes = input_graph.get_num_nodes ();
-  const int num_edges = input_graph.get_num_edges ();
-
-  /* Determine which nodes have in-edges and out-edges.  */
-  for (int i = 0; i < num_edges; ++i)
-    {
-      const digraph_edge &input_edge = input_graph.get_edge (i);
-      m_nodes_with_edges.insert (&input_edge.get_src_node ());
-      m_nodes_with_edges.insert (&input_edge.get_dst_node ());
-    }
-
-  for (int i = 0; i < num_nodes; ++i)
-    {
-      const digraph_node &input_node = input_graph.get_node (i);
-      auto dot_node_stmt = make_dot_node_from_digraph_node (input_node);
-      output_graph->m_stmt_list.add_stmt (std::move (dot_node_stmt));
-    }
-
-  for (int i = 0; i < num_edges; ++i)
-    {
-      const digraph_edge &input_edge = input_graph.get_edge (i);
-      auto dot_edge_stmt = make_dot_edge_from_digraph_edge (input_edge);
-      output_graph->m_stmt_list.add_stmt (std::move (dot_edge_stmt));
-    }
-
-  return output_graph;
-}
-
-std::unique_ptr<dot::stmt>
-conversion_to_dot::
-make_dot_node_from_digraph_node (const diagnostics::digraphs::node &input_node)
-{
-  dot::id dot_id (get_dot_id_for_node (input_node));
-
-  /* For now, we can only do either edges or children, not both
-     ...but see https://graphviz.org/docs/attrs/compound/  */
-
-  if (has_edges_p (input_node))
-    {
-      auto output_node
-	= std::make_unique<dot::node_stmt> (std::move (dot_id));
-      m_node_map[&input_node] = output_node.get ();
-      if (const char *label = input_node.get_label ())
-	output_node->set_label (dot::id (label));
-      return output_node;
-    }
-  else
-    {
-      auto output_node = std::make_unique<dot::subgraph> (std::move (dot_id));
-      m_node_map[&input_node] = output_node.get ();
-      if (const char *label = input_node.get_label ())
-	output_node->add_attr (dot::id ("label"), dot::id (label));
-      const int num_children = input_node.get_num_children ();
-      for (int i = 0; i < num_children; ++i)
-	{
-	  const digraph_node &input_child = input_node.get_child (i);
-	  auto dot_child_stmt = make_dot_node_from_digraph_node (input_child);
-	  output_node->m_stmt_list.add_stmt (std::move (dot_child_stmt));
-	}
-      return output_node;
-    }
-}
-
-std::unique_ptr<dot::edge_stmt>
-conversion_to_dot::
-make_dot_edge_from_digraph_edge (const digraph_edge &input_edge)
-{
-  const digraph_node &src_dnode = input_edge.get_src_node ();
-  const digraph_node &dst_dnode = input_edge.get_dst_node ();
-  auto output_edge
-    = std::make_unique<dot::edge_stmt>
-    (get_dot_id_for_node (src_dnode),
-     get_dot_id_for_node (dst_dnode));
-  if (const char *label = input_edge.get_label ())
-    output_edge->set_label (dot::id (label));
-  return output_edge;
-}
-
-dot::id
-conversion_to_dot::get_dot_id_for_node (const digraph_node &input_node)
-{
-  if (has_edges_p (input_node))
-    return input_node.get_id ();
-  else
-    return std::string ("cluster_") + input_node.get_id ();
-}
-
-bool
-conversion_to_dot::has_edges_p (const digraph_node &input_node)
-{
-  return m_nodes_with_edges.find (&input_node) != m_nodes_with_edges.end ();
-}
 
 // class object
 
@@ -299,8 +168,8 @@ digraph::make_json_sarif_graph () const
 std::unique_ptr<dot::graph>
 digraph::make_dot_graph () const
 {
-  conversion_to_dot converter;
-  return converter.make_dot_graph_from_diagnostic_graph (*this);
+  auto converter = to_dot::converter::make (*this);
+  return converter->make_dot_graph_from_diagnostic_graph (*this);
 }
 
 std::unique_ptr<digraph>

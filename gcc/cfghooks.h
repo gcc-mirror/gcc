@@ -23,6 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "predict.h"
 
+namespace diagnostics { class sarif_builder; }
+namespace json { class object; }
+
 /* Structure to gather statistic about profile consistency, per pass.
    An array of this structure, indexed by pass static number, is allocated
    in passes.cc.  The structure is defined here so that different CFG modes
@@ -81,6 +84,10 @@ struct cfg_hooks
   bool (*verify_flow_info) (void);
   void (*dump_bb) (FILE *, basic_block, int, dump_flags_t);
   void (*dump_bb_for_graph) (pretty_printer *, basic_block);
+  void
+  (*dump_bb_as_sarif_properties) (diagnostics::sarif_builder *,
+				  json::object &,
+				  basic_block);
 
   /* Basic CFG manipulation.  */
 
@@ -216,6 +223,9 @@ checking_verify_flow_info (void)
 
 extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 extern void dump_bb_for_graph (pretty_printer *, basic_block);
+extern void dump_bb_as_sarif_properties (diagnostics::sarif_builder *,
+					 json::object &,
+					 basic_block);
 extern void dump_flow_info (FILE *, dump_flags_t);
 
 extern edge redirect_edge_and_branch (edge, basic_block);

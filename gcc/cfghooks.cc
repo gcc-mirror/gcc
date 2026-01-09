@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -34,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "sreal.h"
 #include "profile.h"
+#include "diagnostics/sarif-sink.h"
+#include "custom-sarif-properties/cfg.h"
 
 /* Disable warnings about missing quoting in GCC diagnostics.  */
 #if __GNUC__ >= 10
@@ -350,6 +353,33 @@ dump_bb_for_graph (pretty_printer *pp, basic_block bb)
   pp_write_text_to_stream (pp);
   if (!(dump_flags & TDF_SLIM))
     cfg_hooks->dump_bb_for_graph (pp, bb);
+}
+
+void
+dump_bb_as_sarif_properties (diagnostics::sarif_builder *builder,
+			     json::object &output_bag,
+			     basic_block bb)
+{
+  if (!cfg_hooks->dump_bb_for_graph)
+    internal_error ("%s does not support dump_bb_as_sarif_properties",
+		    cfg_hooks->name);
+  namespace bb_property_names = custom_sarif_properties::cfg::basic_block;
+  if (bb->index == ENTRY_BLOCK)
+    output_bag.set_string (bb_property_names::kind, "entry");
+  else if (bb->index == EXIT_BLOCK)
+    output_bag.set_string (bb_property_names::kind, "exit");
+  else if (BB_PARTITION (bb) == BB_HOT_PARTITION)
+    output_bag.set_string (bb_property_names::kind, "hot");
+  else if (BB_PARTITION (bb) == BB_COLD_PARTITION)
+    output_bag.set_string (bb_property_names::kind, "cold");
+  if (bb->count.initialized_p ())
+    {
+      pretty_printer pp;
+      pp_printf (&pp, "%" PRId64, bb->count.to_gcov_type ());
+      output_bag.set_string (bb_property_names::count,
+			     pp_formatted_text (&pp));
+    }
+  cfg_hooks->dump_bb_as_sarif_properties (builder, output_bag, bb);
 }
 
 /* Dump the complete CFG to FILE.  FLAGS are the TDF_* flags in dumpfile.h.  */

@@ -85,6 +85,13 @@ public:
     // no-op for text
   }
 
+  void
+  report_digraph_for_logical_location (const lazily_created<digraphs::digraph> &,
+				       logical_locations::key) final override
+  {
+    // no-op for text
+  }
+
   /* Helpers for writing lang-specific starters/finalizers for text output.  */
   char *build_prefix (const diagnostic_info &) const;
   void report_current_module (location_t where);

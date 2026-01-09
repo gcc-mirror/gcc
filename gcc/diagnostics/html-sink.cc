@@ -137,6 +137,8 @@ public:
 			     html_sink_buffer *buffer);
   void emit_diagram (const diagram &d);
   void emit_global_graph (const lazily_created<digraphs::digraph> &);
+  void add_graph_for_logical_loc (const lazily_created<digraphs::digraph> &,
+				  logical_locations::key);
 
   void end_group ();
 
@@ -213,6 +215,7 @@ private:
   logical_locations::key m_last_logical_location;
   location_t m_last_location;
   expanded_location m_last_expanded_location;
+  std::map<logical_locations::key, xml::element *> m_per_logical_loc_graphs;
 };
 
 static std::unique_ptr<xml::element>
@@ -1323,6 +1326,26 @@ html_builder::emit_global_graph (const lazily_created<digraphs::digraph> &ldg)
   add_graph (dg, *m_body_element);
 }
 
+void
+html_builder::
+add_graph_for_logical_loc (const lazily_created<digraphs::digraph> &ldg,
+			   logical_locations::key logical_loc)
+{
+  gcc_assert (m_body_element);
+
+  auto iter = m_per_logical_loc_graphs.find (logical_loc);
+  if (iter == m_per_logical_loc_graphs.end ())
+    {
+      auto logical_loc_element = make_div ("gcc-logical-location");
+      iter = m_per_logical_loc_graphs.insert ({logical_loc,
+	  logical_loc_element.get ()}).first;
+      m_body_element->add_child (std::move (logical_loc_element));
+    }
+
+  auto &dg = ldg.get_or_create ();
+  add_graph (dg, *iter->second);
+}
+
 /* Implementation of "end_group_cb" for HTML output.  */
 
 void
@@ -1447,6 +1470,13 @@ public:
     final override
   {
     m_builder.emit_global_graph (ldg);
+  }
+
+  void
+  report_digraph_for_logical_location (const lazily_created<digraphs::digraph> &ldg,
+				       logical_locations::key logical_loc) final override
+  {
+    m_builder.add_graph_for_logical_loc (ldg, logical_loc);
   }
 
   const xml::document &get_document () const

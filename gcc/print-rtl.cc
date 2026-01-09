@@ -51,8 +51,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #endif
 
+#include "dumpfile.h"
+#include "cfghooks.h"
 #include "print-rtl.h"
 #include "rtl-iter.h"
+#include "json.h"
+
+#include "custom-sarif-properties/cfg.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -2144,6 +2149,26 @@ rtl_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
       print_insn_with_notes (pp, insn);
       pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
     }
+}
+
+
+void
+rtl_dump_bb_as_sarif_properties (diagnostics::sarif_builder *,
+				 json::object &output_bag,
+				 basic_block bb)
+{
+  /* TODO: inter-bb stuff.  */
+  auto json_insn_arr = std::make_unique<json::array> ();
+  rtx_insn *insn;
+  FOR_BB_INSNS (bb, insn)
+    {
+      pretty_printer pp;
+      print_insn_with_notes (&pp, insn);
+      json_insn_arr->append_string (pp_formatted_text (&pp));
+    }
+  output_bag.set_array_of_string
+    (custom_sarif_properties::cfg::basic_block::rtl::insns,
+     std::move (json_insn_arr));
 }
 
 /* Pretty-print pattern X of some insn in non-verbose mode.
