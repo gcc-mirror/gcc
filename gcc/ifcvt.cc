@@ -3213,9 +3213,13 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
 	 afterwards.  */
       if (GET_CODE (tmp) != SUBREG  || !subreg_lowpart_p (tmp))
 	return false;
-      start_sequence ();
-
       tmp = SUBREG_REG (tmp);
+      /* Only handle integer scalar modes for the inner mode of
+	 the subreg.  */
+      if (!SCALAR_INT_MODE_P (GET_MODE (tmp)))
+	return false;
+
+      start_sequence ();
       target = gen_reg_rtx (GET_MODE (tmp));
       target = noce_emit_cmove (if_info, target, code,
 				XEXP (cond, 0), XEXP (cond, 1),
