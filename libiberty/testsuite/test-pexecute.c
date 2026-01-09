@@ -211,7 +211,7 @@ main (int argc, char **argv)
       const char *pex_run_err;						\
       if (trace)							\
 	fprintf (stderr, "Line %d: running %s %s\n",			\
-		 __LINE__, EXECUTABLE, ARGV[0]);			\
+		 __LINE__, EXECUTABLE, ARGV[1]);			\
       pex_run_err = pex_run (PEXOBJ, FLAGS, EXECUTABLE, ARGV, OUTNAME,	\
 			     ERRNAME, &err);				\
       if (pex_run_err != NULL)						\
