@@ -60,19 +60,19 @@
 (define_insn_reservation "generic_imul" 10
   (and (eq_attr "tune" "generic")
        (eq_attr "type" "imul,clmul,cpop"))
-  "imuldiv*10")
+  "imuldiv*7")
 
 (define_insn_reservation "generic_idivsi" 34
   (and (eq_attr "tune" "generic")
        (and (eq_attr "type" "idiv")
 	    (eq_attr "mode" "SI")))
-  "imuldiv*34")
+  "imuldiv*7")
 
 (define_insn_reservation "generic_idivdi" 66
   (and (eq_attr "tune" "generic")
        (and (eq_attr "type" "idiv")
 	    (eq_attr "mode" "DI")))
-  "imuldiv*66")
+  "imuldiv*7")
 
 (define_insn_reservation "generic_fmul_half" 5
   (and (eq_attr "tune" "generic")
@@ -95,10 +95,10 @@
 (define_insn_reservation "generic_fdiv" 20
   (and (eq_attr "tune" "generic")
        (eq_attr "type" "fdiv"))
-  "fdivsqrt*20")
+  "fdivsqrt*7")
 
 (define_insn_reservation "generic_fsqrt" 25
   (and (eq_attr "tune" "generic")
        (eq_attr "type" "fsqrt"))
-  "fdivsqrt*25")
+  "fdivsqrt*7")
 

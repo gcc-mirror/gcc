@@ -145,15 +145,15 @@
 	    (eq_attr "mode" "DF")))
   "(andes_45_pipe0 | andes_45_pipe1) + andes_45_fpu_fmac + andes_45_fpu_fmv + andes_45_fpu_fmis")
 
-(define_insn_reservation "andes_45_fpu_div" 33
+(define_insn_reservation "andes_45_fpu_div" 7
   (and (eq_attr "tune" "andes_45_series")
        (eq_attr "type" "fdiv"))
-  "andes_45_pipe0 + andes_45_fpu_fdiv | andes_45_pipe1 + andes_45_fpu_fdiv, andes_45_fpu_fdiv * 27")
+  "andes_45_pipe0 + andes_45_fpu_fdiv | andes_45_pipe1 + andes_45_fpu_fdiv, andes_45_fpu_fdiv * 6")
 
-(define_insn_reservation "andes_45_fpu_sqrt" 33
+(define_insn_reservation "andes_45_fpu_sqrt" 7
   (and (eq_attr "tune" "andes_45_series")
        (eq_attr "type" "fsqrt"))
-  "andes_45_pipe0 + andes_45_fpu_fdiv | andes_45_pipe1 + andes_45_fpu_fdiv, andes_45_fpu_fdiv * 27")
+  "andes_45_pipe0 + andes_45_fpu_fdiv | andes_45_pipe1 + andes_45_fpu_fdiv, andes_45_fpu_fdiv * 6")
 
 (define_insn_reservation "andes_45_fpu_move" 1
   (and (eq_attr "tune" "andes_45_series")
@@ -231,10 +231,10 @@
        (eq_attr "type" "vimul,viwmul,vsmul"))
   "andes_45_vpu_pipe + andes_45_vpu_mac")
 
-(define_insn_reservation "andes_45_vpu_div" 36
+(define_insn_reservation "andes_45_vpu_div" 7
   (and (eq_attr "tune" "andes_45_series")
        (eq_attr "type" "vidiv"))
-  "andes_45_vpu_pipe + andes_45_vpu_div * 35")
+  "andes_45_vpu_pipe + andes_45_vpu_div * 7")
 
 (define_insn_reservation "andes_45_vpu_madd" 4
   (and (eq_attr "tune" "andes_45_series")

@@ -63,7 +63,7 @@
 (define_insn_reservation "sifive_7_div" 16
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "idiv"))
-  "sifive_7_B,sifive_7_idiv*15")
+  "sifive_7_B,sifive_7_idiv*6")
 
 (define_insn_reservation "sifive_7_alu" 2
   (and (eq_attr "tune" "sifive_7")
@@ -108,19 +108,19 @@
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "fdiv,fsqrt")
        (eq_attr "mode" "HF"))
-  "sifive_7_B,sifive_7_fpu*13")
+  "sifive_7_B,sifive_7_fpu*6")
 
 (define_insn_reservation "sifive_7_fdiv_s" 27
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "fdiv,fsqrt")
        (eq_attr "mode" "SF"))
-  "sifive_7_B,sifive_7_fpu*26")
+  "sifive_7_B,sifive_7_fpu*6")
 
 (define_insn_reservation "sifive_7_fdiv_d" 56
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "fdiv,fsqrt")
        (eq_attr "mode" "DF"))
-  "sifive_7_B,sifive_7_fpu*55")
+  "sifive_7_B,sifive_7_fpu*6")
 
 (define_insn_reservation "sifive_7_i2f" 3
   (and (eq_attr "tune" "sifive_7")
@@ -216,22 +216,22 @@
 (define_insn_reservation "sifive_7_vec_iwalu" 8
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "viwalu,viwmul,viwmuladd,vnshift,vwsll"))
-  "sifive_7_vcq,sifive_7_va*7")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_div" 16
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "vidiv,vfdiv"))
-  "sifive_7_vcq,sifive_7_va*15")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_fixed_point" 8
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "vsalu,vaalu,vsmul,vsshift"))
-  "sifive_7_vcq,sifive_7_va*7")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_narrow_fixed_point" 8
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "vnclip"))
-  "sifive_7_vcq,sifive_7_va*7")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_fsimple" 4
   (and (eq_attr "tune" "sifive_7")
@@ -242,7 +242,7 @@
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "vfalu,vfmul,vfmuladd,vfrecp,
                         vfcvtitof,vfcvtftoi,vfmerge,vfmov,vfsgnj"))
-  "sifive_7_vcq,sifive_7_va*7")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_fcmp" 4
   (and (eq_attr "tune" "sifive_7")
@@ -252,7 +252,7 @@
 (define_insn_reservation "sifive_7_vec_fsqrt_fdiv" 16
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "vfsqrt,vfdiv"))
-  "sifive_7_vcq,sifive_7_va*15")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_fwalu" 8
   (and (eq_attr "tune" "sifive_7")
@@ -260,12 +260,12 @@
                         vfwcvtftoi,vfwcvtftof,vfwcvtbf16,
                         vfncvtitof,vfncvtftoi,vfncvtftof,vfncvtbf16,
                         sf_vfnrclip,sf_vqmacc"))
-  "sifive_7_vcq,sifive_7_va*7")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_red" 12
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "vired,vfredu,vfredo,viwred,vfwredu,vfwredo"))
-  "sifive_7_vcq,sifive_7_va*11")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_mask" 4
   (and (eq_attr "tune" "sifive_7")
@@ -280,12 +280,12 @@
 (define_insn_reservation "sifive_7_vec_gather" 8
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "vgather"))
-  "sifive_7_vcq,sifive_7_va*7")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_compress" 16
   (and (eq_attr "tune" "sifive_7")
        (eq_attr "type" "vcompress"))
-  "sifive_7_vcq,sifive_7_va*15")
+  "sifive_7_vcq,sifive_7_va*6")
 
 (define_insn_reservation "sifive_7_vec_slide" 4
   (and (eq_attr "tune" "sifive_7")
@@ -299,4 +299,4 @@
                         vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,
                         vaesz,vsha2ms,vsha2ch,vsha2cl,
                         vsm4k,vsm4r,vsm3me,vsm3c,sf_vc,sf_vc_se"))
-  "sifive_7_vcq,sifive_7_va*15")
+  "sifive_7_vcq,sifive_7_va*6")

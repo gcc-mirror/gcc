@@ -88,13 +88,13 @@
   (and (eq_attr "tune" "andes_25_series")
        (and (eq_attr "type" "idiv")
 	    (eq_attr "mode" "SI")))
-  "andes_25_pipe, andes_25_mdu * 34")
+  "andes_25_pipe, andes_25_mdu * 6")
 
 (define_insn_reservation "andes_25_idivdi" 70
   (and (eq_attr "tune" "andes_25_series")
        (and (eq_attr "type" "idiv")
 	    (eq_attr "mode" "DI")))
-  "andes_25_pipe, andes_25_mdu * 66")
+  "andes_25_pipe, andes_25_mdu * 6")
 
 (define_insn_reservation "andes_25_xfer" 1
   (and (eq_attr "tune" "andes_25_series")
@@ -119,12 +119,12 @@
 (define_insn_reservation "andes_25_fpu_div" 33
   (and (eq_attr "tune" "andes_25_series")
        (eq_attr "type" "fdiv"))
-  "andes_25_fpu_arith, andes_25_fpu_eu * 27")
+  "andes_25_fpu_arith, andes_25_fpu_eu * 6")
 
 (define_insn_reservation "andes_25_fpu_sqrt" 33
   (and (eq_attr "tune" "andes_25_series")
        (eq_attr "type" "fsqrt"))
-  "andes_25_fpu_arith, andes_25_fpu_eu * 27")
+  "andes_25_fpu_arith, andes_25_fpu_eu * 6")
 
 (define_insn_reservation "andes_25_fpu_move" 3
   (and (eq_attr "tune" "andes_25_series")
@@ -234,7 +234,7 @@
 (define_insn_reservation "andes_25_vidiv" 35
   (and (eq_attr "tune" "andes_25_series")
        (eq_attr "type" "vidiv"))
-  "andes_25_vpu_pipe + andes_25_vpu_div*34")
+  "andes_25_vpu_pipe + andes_25_vpu_div*7")
 
 (define_insn_reservation "andes_25_vmask_2" 2
   (eq_attr "type" "vmalu,vmsfs")
@@ -264,7 +264,7 @@
 (define_insn_reservation "andes_25_vfdiv" 39
   (and (eq_attr "tune" "andes_25_series")
        (eq_attr "type" "vfdiv,vfsqrt"))
-  "andes_25_vpu_pipe + andes_25_vpu_div*19")
+  "andes_25_vpu_pipe + andes_25_vpu_div*7")
 
 (define_insn_reservation "andes_25_vfmis" 2
   (and (eq_attr "tune" "andes_25_series")

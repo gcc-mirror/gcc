@@ -72,13 +72,13 @@
   (and (eq_attr "tune" "andes_23_series")
        (and (eq_attr "type" "idiv")
             (eq_attr "mode" "SI")))
-  "andes_23_pipe_unify, andes_23_mdu* 34")
+  "andes_23_pipe_unify, andes_23_mdu* 6")
 
 (define_insn_reservation "andes_23_idivdi" 35
   (and (eq_attr "tune" "andes_23_series")
        (and (eq_attr "type" "idiv")
             (eq_attr "mode" "DI")))
-  "andes_23_pipe_unify, andes_23_mdu* 34")
+  "andes_23_pipe_unify, andes_23_mdu* 6")
 
 (define_insn_reservation "andes_23_xfer" 1
   (and (eq_attr "tune" "andes_23_series")
@@ -103,12 +103,12 @@
 (define_insn_reservation "andes_23_fpu_div" 33
   (and (eq_attr "tune" "andes_23_series")
        (eq_attr "type" "fdiv"))
-  "andes_23_pipe_unify, andes_23_fpu*33")
+  "andes_23_pipe_unify, andes_23_fpu*6")
 
 (define_insn_reservation "andes_23_fpu_sqrt" 33
   (and (eq_attr "tune" "andes_23_series")
        (eq_attr "type" "fsqrt"))
-  "andes_23_pipe_unify, andes_23_fpu*33")
+  "andes_23_pipe_unify, andes_23_fpu*6")
 
 (define_insn_reservation "andes_23_fpu_move" 2
   (and (eq_attr "tune" "andes_23_series")

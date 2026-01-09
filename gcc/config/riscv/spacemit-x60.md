@@ -69,17 +69,17 @@
        (eq_attr "type" "branch,jump,call,jalr,ret,trap,sfb_alu"))
   "spacemit_x60_alu0")
 
-(define_insn_reservation "spacemit_x60_idivsi" 12
+(define_insn_reservation "spacemit_x60_idivsi" 7
   (and (eq_attr "tune" "spacemit_x60")
        (and (eq_attr "type" "idiv")
 	    (eq_attr "mode" "SI")))
-  "spacemit_x60_alu0*12")
+  "spacemit_x60_alu0*7")
 
-(define_insn_reservation "spacemit_x60_idivdi" 20
+(define_insn_reservation "spacemit_x60_idivdi" 7
   (and (eq_attr "tune" "spacemit_x60")
        (and (eq_attr "type" "idiv")
 	    (eq_attr "mode" "DI")))
-  "spacemit_x60_alu0*20")
+  "spacemit_x60_alu0*7")
 
 (define_insn_reservation "spacemit_x60_imulsi" 3
   (and (eq_attr "tune" "spacemit_x60")
@@ -165,23 +165,23 @@
 	    (eq_attr "mode" "DF")))
   "spacemit_x60_fpalu")
 
-(define_insn_reservation "spacemit_x60_fdiv_half" 12
+(define_insn_reservation "spacemit_x60_fdiv_half" 7
   (and (eq_attr "tune" "spacemit_x60")
        (and (eq_attr "type" "fdiv,fsqrt")
 	    (eq_attr "mode" "HF")))
-  "spacemit_x60_fdivsqrt*12")
+  "spacemit_x60_fdivsqrt*7")
 
-(define_insn_reservation "spacemit_x60_fdiv_single" 15
+(define_insn_reservation "spacemit_x60_fdiv_single" 7
   (and (eq_attr "tune" "spacemit_x60")
        (and (eq_attr "type" "fdiv,fsqrt")
 	    (eq_attr "mode" "SF")))
-  "spacemit_x60_fdivsqrt*15")
+  "spacemit_x60_fdivsqrt*7")
 
-(define_insn_reservation "spacemit_x60_fdiv_double" 22
+(define_insn_reservation "spacemit_x60_fdiv_double" 7
   (and (eq_attr "tune" "spacemit_x60")
        (and (eq_attr "type" "fdiv,fsqrt")
 	    (eq_attr "mode" "DF")))
-  "spacemit_x60_fdivsqrt*22")
+  "spacemit_x60_fdivsqrt*7")
 
 (define_insn_reservation "spacemi6_x60_dummy" 1
   (and (eq_attr "tune" "spacemit_x60")
