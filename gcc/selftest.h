@@ -246,6 +246,7 @@ extern void ordered_hash_map_tests_cc_tests ();
 extern void path_coverage_cc_tests ();
 extern void predict_cc_tests ();
 extern void pretty_print_cc_tests ();
+extern void pub_sub_cc_tests ();
 extern void range_op_tests ();
 extern void range_tests ();
 extern void read_rtl_function_cc_tests ();

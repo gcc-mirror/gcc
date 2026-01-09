@@ -1899,6 +1899,7 @@ OBJS-libcommon = \
 	graphviz.o pex.o \
 	pretty-print.o intl.o \
 	json.o json-parsing.o \
+	pub-sub.o \
 	xml.o \
 	sbitmap.o \
 	vec.o input.o hash-table.o ggc-none.o memory-block.o \
