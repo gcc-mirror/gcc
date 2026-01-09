@@ -12172,3 +12172,27 @@ and,
 (simplify
  (IFN_VEC_SHL_INSERT (vec_duplicate@1 @0) @0)
   @1)
+
+/* In this case the XOR flips bits that originate from the result of the
+   right shift and do not impact the result of the left shift.   We can
+   reassociate the XOR to work on the final result and simplify the rest
+   to a rotate.  */
+(simplify
+  (bit_ior:c (lshift @0 INTEGER_CST@1)
+	     (bit_xor (rshift @2 INTEGER_CST@3) INTEGER_CST@4))
+   (if (((~((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@4)) == 0
+        && (tree_to_uhwi (@1) + tree_to_uhwi (@3)) == TYPE_PRECISION (type)
+        && TYPE_UNSIGNED (type)
+        && @0 == @2)
+    (bit_xor (rrotate @0 @3) @4)))
+
+/* Similarly, but in this case the XOR flips bits that originate from the
+   result of the left shift.  */
+(simplify
+  (bit_ior:c (bit_xor (lshift @0 INTEGER_CST@1) INTEGER_CST@2)
+	     (rshift @3 INTEGER_CST@4))
+   (if ((((((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@2)) == 0)
+        && (tree_to_uhwi (@1) + tree_to_uhwi (@4)) == TYPE_PRECISION (type)
+        && TYPE_UNSIGNED (type)
+        && @0 == @3)
+    (bit_xor (rrotate @0 @4) @2)))
