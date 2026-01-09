@@ -1666,6 +1666,11 @@ comptypes_internal (const_tree type1, const_tree type2,
       || TREE_CODE (t1) == ERROR_MARK || TREE_CODE (t2) == ERROR_MARK)
     return true;
 
+  /* Qualifiers must match. C99 6.7.3p9 */
+
+  if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
+    return false;
+
   /* Enumerated types are compatible with integer types, but this is
      not transitive: two enumerated types in the same translation unit
      are compatible with each other only if they are the same type.  */
@@ -1699,11 +1704,6 @@ comptypes_internal (const_tree type1, const_tree type2,
   /* Different classes of types can't be compatible.  */
 
   if (TREE_CODE (t1) != TREE_CODE (t2))
-    return false;
-
-  /* Qualifiers must match. C99 6.7.3p9 */
-
-  if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
     return false;
 
   /* Allow for two different type nodes which have essentially the same
