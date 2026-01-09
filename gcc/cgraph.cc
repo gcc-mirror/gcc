@@ -1280,7 +1280,9 @@ cgraph_edge::get_next_speculative_id ()
     {
       /* Match the specific GIMPLE statement and check the
 	 speculative flag */
-      if (e->call_stmt == call_stmt && e->speculative)
+      if (e->call_stmt == call_stmt
+	  && e->lto_stmt_uid == lto_stmt_uid
+	  && e->speculative)
 	{
 	  if (e->speculative_id > max_id)
 	    max_id = e->speculative_id;
