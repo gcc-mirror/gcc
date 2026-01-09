@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc64*-*-linux* } } } */
-/* { dg-options "-O2 -mregnames" } */
+/* { dg-options "-O2 -mregnames -mpowerpc64" } */
 
 int __RTL (startwith ("cprop_hardreg")) test_frame_related ()
 {
