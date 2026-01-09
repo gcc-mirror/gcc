@@ -1620,7 +1620,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   tree mask_type = TREE_TYPE (mask);
   tree vect_elt_type = TREE_TYPE (vect_type);
   tree mask_elt_type = TREE_TYPE (mask_type);
-  unsigned HOST_WIDE_INT elements;
+  unsigned HOST_WIDE_INT elements, in_elements;
   vec<constructor_elt, va_gc> *v;
   tree constr, t, si, i_val;
   tree vec0tmp = NULL_TREE, vec1tmp = NULL_TREE, masktmp = NULL_TREE;
@@ -1628,7 +1628,8 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   location_t loc = gimple_location (gsi_stmt (*gsi));
   unsigned i;
 
-  if (!TYPE_VECTOR_SUBPARTS (res_vect_type).is_constant (&elements))
+  if (!TYPE_VECTOR_SUBPARTS (res_vect_type).is_constant (&elements)
+      || !TYPE_VECTOR_SUBPARTS (vect_type).is_constant (&in_elements))
     return;
 
   if (TREE_CODE (mask) == SSA_NAME)
@@ -1644,7 +1645,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   if (TREE_CODE (mask) == VECTOR_CST
       && tree_to_vec_perm_builder (&sel_int, mask))
     {
-      vec_perm_indices indices (sel_int, 2, elements);
+      vec_perm_indices indices (sel_int, 2, in_elements);
       machine_mode vmode = TYPE_MODE (vect_type);
       tree lhs_type = TREE_TYPE (gimple_assign_lhs (stmt));
       machine_mode lhs_mode = TYPE_MODE (lhs_type);
@@ -1729,10 +1730,10 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	  unsigned HOST_WIDE_INT index;
 
 	  index = TREE_INT_CST_LOW (i_val);
-	  if (!tree_fits_uhwi_p (i_val) || index >= elements)
-	    i_val = build_int_cst (mask_elt_type, index & (elements - 1));
+	  if (!tree_fits_uhwi_p (i_val) || index >= in_elements)
+	    i_val = build_int_cst (mask_elt_type, index & (in_elements - 1));
 
-          if (two_operand_p && (index & elements) != 0)
+	  if (two_operand_p && (index & in_elements) != 0)
 	    t = vector_element (gsi, vec1, i_val, &vec1tmp);
 	  else
 	    t = vector_element (gsi, vec0, i_val, &vec0tmp);
