@@ -148,11 +148,9 @@ RISCV_CORE("xt-c920v2",       "rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicond_"
 			      "xtheadsync",
 			       "xt-c920v2")
 
-RISCV_CORE("tt-ascalon-d8",   "rv64imafdcv_zic64b_zicbom_zicbop_zicboz_"
-			      "ziccamoa_ziccif_zicclsm_ziccrse_zicond_zicsr_"
-			      "zifencei_zihintntl_zihintpause_zimop_za64rs_"
-			      "zawrs_zfa_zfbfmin_zfh_zcb_zcmop_zba_zbb_zbs_"
-			      "zvbb_zvbc_zvfbfwma_zvfh_zvkng_zvl256b",
+RISCV_CORE("tt-ascalon-d8",   "rva23s64_zfbfmin_zfh_zkr_zvbc_zvfbfwma_zvfh_"
+			      "zvkng_zvl256b_smaia_smmpm_smnpm_smrnmi_"
+			      "smstateen_ssaia_ssstrict_svadu",
 			      "tt-ascalon-d8")
 
 RISCV_CORE("xiangshan-nanhu",      "rv64imafdc_zba_zbb_zbc_zbs_"
