@@ -728,11 +728,7 @@ typedef struct gfc_unit
   int last_char;
   bool has_size;
   GFC_IO_INT size_used;
-#ifdef __GTHREADS_CXX0X
-  __gthread_t self;
-#else
-  int self;
-#endif
+  intptr_t self;
 }
 gfc_unit;
 
