@@ -1993,6 +1993,7 @@ convert_scalar_cond_reduction (gimple *reduc, gimple_stmt_iterator *gsi,
   ifn = get_conditional_internal_fn (reduction_op);
   if (loop_versioned && ifn != IFN_LAST
       && vectorized_internal_fn_supported_p (ifn, TREE_TYPE (lhs))
+      && !VECTOR_TYPE_P (TREE_TYPE (lhs))
       && !swap)
     {
       gcall *cond_call = gimple_build_call_internal (ifn, 4,
