@@ -4567,6 +4567,11 @@ auto_profile (void)
 
     push_cfun (DECL_STRUCT_FUNCTION (node->decl));
 
+    /* Local pure-const may imply need to fixup the cfg.
+       This is similar to what is done in tree-profile.cc.  */
+    if ((execute_fixup_cfg () & TODO_cleanup_cfg))
+      cleanup_tree_cfg ();
+
     autofdo::afdo_annotate_cfg ();
     compute_function_frequency ();
 
