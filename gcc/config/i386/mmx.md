@@ -1998,7 +1998,8 @@
 	(div:V4HF
 	  (match_operand:V4HF 1 "nonimmediate_operand")
 	  (match_operand:V4HF 2 "register_operand")))]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL && ix86_partial_vec_fp_math
+  && TARGET_MMX_WITH_SSE"
 {
   rtx op2 = gen_reg_rtx (V8HFmode);
   rtx op1 = gen_reg_rtx (V8HFmode);
@@ -2678,7 +2679,8 @@
    (match_operand:V4HF 1 "vector_operand")
    (match_operand:V4HF 2 "vector_operand")
    (match_operand:V4HF 3 "vector_operand")]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+  && TARGET_MMX_WITH_SSE"
 {
   rtx op3 = gen_reg_rtx (V8HFmode);
   rtx op2 = gen_reg_rtx (V8HFmode);
@@ -2700,7 +2702,8 @@
    (match_operand:V4HF 1 "vector_operand")
    (match_operand:V4HF 2 "vector_operand")
    (match_operand:V4HF 3 "vector_operand")]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+  && TARGET_MMX_WITH_SSE"
 {
   rtx op3 = gen_reg_rtx (V8HFmode);
   rtx op2 = gen_reg_rtx (V8HFmode);
@@ -2721,7 +2724,8 @@
   [(match_operand:V4HF 0 "register_operand")
    (match_operand:V4HF 1 "vector_operand")
    (match_operand:V4HF 2 "vector_operand")]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+  && TARGET_MMX_WITH_SSE"
 {
   rtx op2 = gen_reg_rtx (V8HFmode);
   rtx op1 = gen_reg_rtx (V8HFmode);
@@ -2739,7 +2743,8 @@
   [(match_operand:V4HF 0 "register_operand")
    (match_operand:V4HF 1 "vector_operand")
    (match_operand:V4HF 2 "vector_operand")]
-  "TARGET_AVX512FP16 && TARGET_AVX512VL"
+  "TARGET_AVX512FP16 && TARGET_AVX512VL
+  && TARGET_MMX_WITH_SSE"
 {
   rtx op2 = gen_reg_rtx (V8HFmode);
   rtx op1 = gen_reg_rtx (V8HFmode);
