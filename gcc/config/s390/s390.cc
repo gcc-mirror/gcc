@@ -8895,7 +8895,6 @@ print_operand_address (FILE *file, rtx addr)
 	 operand).
 
     'b': print integer X as if it's an unsigned byte.
-    'c': print integer X as if it's an signed byte.
     'e': "end" contiguous bitmask X in either DImode or vector inner mode.
     'f': "end" contiguous bitmask X in SImode.
     'h': print integer X as if it's a signed halfword.
@@ -9190,12 +9189,10 @@ print_operand (FILE *file, rtx x, int code)
       switch (code)
 	{
 	case 0:
+	case 'c':
 	  break;
 	case 'b':
 	  ival &= 0xff;
-	  break;
-	case 'c':
-	  ival = ((ival & 0xff) ^ 0x80) - 0x80;
 	  break;
 	case 'x':
 	  ival &= 0xffff;
