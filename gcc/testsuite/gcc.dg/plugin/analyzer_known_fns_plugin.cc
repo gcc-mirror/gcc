@@ -34,6 +34,8 @@
 #include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
+#include "context.h"
+#include "channels.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
@@ -174,23 +176,23 @@ public:
   }
 };
 
-/* Callback handler for the PLUGIN_ANALYZER_INIT event.  */
+namespace analyzer_events = ::gcc::topics::analyzer_events;
 
-static void
-known_fn_analyzer_init_cb (void *gcc_data, void */*user_data*/)
+class known_fn_analyzer_events_subscriber : public analyzer_events::subscriber
 {
-  ana::plugin_analyzer_init_iface *iface
-    = (ana::plugin_analyzer_init_iface *)gcc_data;
-  LOG_SCOPE (iface->get_logger ());
-  if (0)
-    inform (input_location, "got here: known_fn_analyzer_init_cb");
-  iface->register_known_function
-    ("returns_42",
-     std::make_unique<known_function_returns_42> ());
-  iface->register_known_function
-    ("attempt_to_copy",
-     std::make_unique<known_function_attempt_to_copy> ());
-}
+public:
+  void
+  on_message (const analyzer_events::on_ana_init &m) final override
+  {
+    LOG_SCOPE (m.get_logger ());
+    m.register_known_function
+      ("returns_42",
+       std::make_unique<known_function_returns_42> ());
+    m.register_known_function
+      ("attempt_to_copy",
+       std::make_unique<known_function_attempt_to_copy> ());
+  }
+} known_fn_sub;
 
 } // namespace ana
 
@@ -204,10 +206,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   const char *plugin_name = plugin_info->base_name;
   if (0)
     inform (input_location, "got here; %qs", plugin_name);
-  register_callback (plugin_info->base_name,
-		     PLUGIN_ANALYZER_INIT,
-		     ana::known_fn_analyzer_init_cb,
-		     NULL); /* void *user_data */
+  g->get_channels ().analyzer_events_channel.add_subscriber (ana::known_fn_sub);
 #else
   sorry_no_analyzer ();
 #endif

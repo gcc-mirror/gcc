@@ -34,6 +34,8 @@
 #include "digraph.h"
 #include "analyzer/supergraph.h"
 #include "sbitmap.h"
+#include "context.h"
+#include "channels.h"
 #include "analyzer/call-string.h"
 #include "analyzer/program-point.h"
 #include "analyzer/store.h"
@@ -221,26 +223,26 @@ class known_function___check_object_size : public known_function
   }
 };
 
-/* Callback handler for the PLUGIN_ANALYZER_INIT event.  */
+namespace analyzer_events = ::gcc::topics::analyzer_events;
 
-static void
-kernel_analyzer_init_cb (void *gcc_data, void */*user_data*/)
+class kernel_analyzer_events_subscriber : public analyzer_events::subscriber
 {
-  ana::plugin_analyzer_init_iface *iface
-    = (ana::plugin_analyzer_init_iface *)gcc_data;
-  LOG_SCOPE (iface->get_logger ());
-  if (0)
-    inform (input_location, "got here: kernel_analyzer_init_cb");
-  iface->register_known_function
-    ("copy_from_user",
-     std::make_unique<known_function_copy_from_user> ());
-  iface->register_known_function
-    ("copy_to_user",
-     std::make_unique<known_function_copy_to_user> ());
-  iface->register_known_function
-    ("__check_object_size",
-     std::make_unique<known_function___check_object_size> ());
-}
+public:
+  void
+  on_message (const analyzer_events::on_ana_init &m) final override
+  {
+    LOG_SCOPE (m.get_logger ());
+    m.register_known_function
+      ("copy_from_user",
+       std::make_unique<known_function_copy_from_user> ());
+    m.register_known_function
+      ("copy_to_user",
+       std::make_unique<known_function_copy_to_user> ());
+    m.register_known_function
+      ("__check_object_size",
+       std::make_unique<known_function___check_object_size> ());
+  }
+} kernel_sub;
 
 } // namespace ana
 
@@ -254,10 +256,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   const char *plugin_name = plugin_info->base_name;
   if (0)
     inform (input_location, "got here; %qs", plugin_name);
-  register_callback (plugin_info->base_name,
-		     PLUGIN_ANALYZER_INIT,
-		     ana::kernel_analyzer_init_cb,
-		     NULL); /* void *user_data */
+  g->get_channels ().analyzer_events_channel.add_subscriber (ana::kernel_sub);
 #else
   sorry_no_analyzer ();
 #endif

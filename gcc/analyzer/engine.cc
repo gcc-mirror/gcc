@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "tree-dfa.h"
 #include "gimple-predict.h"
+#include "context.h"
+#include "channels.h"
 
 #include "text-art/dump.h"
 
@@ -5096,34 +5098,39 @@ dump_analyzer_json (const supergraph &sg,
   free (filename);
 }
 
-/* Concrete subclass of plugin_analyzer_init_iface, allowing plugins
-   to register new state machines.  */
+/* Concrete subclass of on_ana_init, allowing plugins to register
+   new state machines.  */
 
-class plugin_analyzer_init_impl : public plugin_analyzer_init_iface
+class impl_on_ana_init : public gcc::topics::analyzer_events::on_ana_init
 {
 public:
-  plugin_analyzer_init_impl (std::vector<std::unique_ptr<state_machine>> &checkers,
-			     known_function_manager &known_fn_mgr,
-			     logger *logger)
+  impl_on_ana_init (std::vector<std::unique_ptr<state_machine>> &checkers,
+		    known_function_manager &known_fn_mgr,
+		    logger *logger)
   : m_checkers (checkers),
     m_known_fn_mgr (known_fn_mgr),
     m_logger (logger)
   {}
 
-  void register_state_machine (std::unique_ptr<state_machine> sm) final override
+  void
+  register_state_machine (std::unique_ptr<state_machine> sm)
+    const final override
   {
     LOG_SCOPE (m_logger);
     m_checkers.push_back (std::move (sm));
   }
 
-  void register_known_function (const char *name,
-				std::unique_ptr<known_function> kf) final override
+  void
+  register_known_function (const char *name,
+			   std::unique_ptr<known_function> kf)
+    const final override
   {
     LOG_SCOPE (m_logger);
     m_known_fn_mgr.add (name, std::move (kf));
   }
 
-  logger *get_logger () const final override
+  logger *
+  get_logger () const final override
   {
     return m_logger;
   }
@@ -5218,10 +5225,11 @@ impl_run_checkers (logger *logger)
   register_known_functions (*eng.get_known_function_manager (),
 			    *eng.get_model_manager ());
 
-  plugin_analyzer_init_impl data (checkers,
-				  *eng.get_known_function_manager (),
-				  logger);
-  invoke_plugin_callbacks (PLUGIN_ANALYZER_INIT, &data);
+  if (auto channel
+	= g->get_channels ().analyzer_events_channel.get_if_active ())
+    channel->publish (impl_on_ana_init (checkers,
+					*eng.get_known_function_manager (),
+					logger));
 
   if (logger)
     {

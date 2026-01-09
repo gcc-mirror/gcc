@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_COMMON_H
 
 #include "config.h"
+#define INCLUDE_LIST
 #define INCLUDE_MAP
 #define INCLUDE_SET
 #define INCLUDE_STRING
@@ -362,17 +363,6 @@ extern void register_known_file_functions (known_function_manager &kfm);
 extern void register_known_functions_lang_cp (known_function_manager &kfm);
 extern void register_varargs_builtins (known_function_manager &kfm);
 
-/* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
-
-class plugin_analyzer_init_iface
-{
-public:
-  virtual void register_state_machine (std::unique_ptr<state_machine>) = 0;
-  virtual void register_known_function (const char *name,
-					std::unique_ptr<known_function>) = 0;
-  virtual logger *get_logger () const = 0;
-};
-
 /* An enum for describing the direction of an access to memory.  */
 
 enum class access_direction
@@ -611,6 +601,41 @@ private:
 #if __GNUC__ >= 10
 #pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
+
+namespace gcc {
+namespace topics {
+
+/* A topic for messages relating to the analyzer.  */
+
+namespace analyzer_events {
+
+/* A message published by the analyzer as it starts up, intended for
+   subsystems/plugins that want to register additional functionality
+   within the analyzer.  */
+
+struct on_ana_init
+{
+  virtual void
+  register_state_machine (std::unique_ptr<ana::state_machine>) const = 0;
+
+  virtual void
+  register_known_function (const char *name,
+			   std::unique_ptr<ana::known_function>) const = 0;
+
+  virtual ana::logger *
+  get_logger () const = 0;
+};
+
+struct subscriber {
+
+  virtual ~subscriber () = default;
+
+  virtual void on_message (const on_ana_init &) = 0;
+};
+
+} // namespace gcc::topics::analyzer_events
+} // namespace gcc::topics
+} // namespace gcc
 
 #if !ENABLE_ANALYZER
 extern void sorry_no_analyzer ();

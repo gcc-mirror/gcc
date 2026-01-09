@@ -4,6 +4,7 @@
 */
 /* { dg-options "-g" } */
 
+#define INCLUDE_LIST
 #define INCLUDE_MEMORY
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
@@ -17,6 +18,8 @@
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "diagnostics/event-id.h"
+#include "context.h"
+#include "channels.h"
 #include "analyzer/common.h"
 #include "analyzer/analyzer-logging.h"
 #include "json.h"
@@ -410,19 +413,19 @@ gil_state_machine::check_for_pyobject_usage_without_gil (sm_context &sm_ctxt,
     }
 }
 
-/* Callback handler for the PLUGIN_ANALYZER_INIT event.  */
+namespace analyzer_events = ::gcc::topics::analyzer_events;
 
-static void
-gil_analyzer_init_cb (void *gcc_data, void */*user_data*/)
+class gil_analyzer_events_subscriber : public analyzer_events::subscriber
 {
-  ana::plugin_analyzer_init_iface *iface
-    = (ana::plugin_analyzer_init_iface *)gcc_data;
-  LOG_SCOPE (iface->get_logger ());
-  if (0)
-    inform (input_location, "got here: gil_analyzer_init_cb");
-  iface->register_state_machine
-    (std::make_unique<gil_state_machine> (iface->get_logger ()));
-}
+public:
+  void
+  on_message (const analyzer_events::on_ana_init &m) final override
+  {
+    LOG_SCOPE (m.get_logger ());
+    m.register_state_machine
+      (std::make_unique<gil_state_machine> (m.get_logger ()));
+  }
+} gil_sub;
 
 } // namespace ana
 
@@ -436,10 +439,7 @@ plugin_init (struct plugin_name_args *plugin_info,
   const char *plugin_name = plugin_info->base_name;
   if (0)
     inform (input_location, "got here; %qs", plugin_name);
-  register_callback (plugin_info->base_name,
-		     PLUGIN_ANALYZER_INIT,
-		     ana::gil_analyzer_init_cb,
-		     NULL); /* void *user_data */
+  g->get_channels ().analyzer_events_channel.add_subscriber (ana::gil_sub);
 #else
   sorry_no_analyzer ();
 #endif
