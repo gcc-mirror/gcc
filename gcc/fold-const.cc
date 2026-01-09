@@ -12392,40 +12392,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 				      build_int_cst (TREE_TYPE (iref), 0));
 	    }
 	}
-
-      /* Fold (X >> C) != 0 into X < 0 if C is one less than the width
-	 of X.  Similarly fold (X >> C) == 0 into X >= 0.  */
-      if (TREE_CODE (arg0) == RSHIFT_EXPR
-	  && integer_zerop (arg1)
-	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
-	{
-	  tree arg00 = TREE_OPERAND (arg0, 0);
-	  tree arg01 = TREE_OPERAND (arg0, 1);
-	  tree itype = TREE_TYPE (arg00);
-	  if (wi::to_wide (arg01) == element_precision (itype) - 1)
-	    {
-	      if (TYPE_UNSIGNED (itype))
-		{
-		  itype = signed_type_for (itype);
-		  arg00 = fold_convert_loc (loc, itype, arg00);
-		}
-	      enum tree_code code2 = code == EQ_EXPR ? GE_EXPR : LT_EXPR;
-	      /* Make sure to transform vector compares only to supported
-		 ones or from unsupported ones and check that only after
-		 IPA so offloaded code is handled correctly in this regard.  */
-	      if (!VECTOR_TYPE_P (itype)
-		  || (cfun
-		      && cfun->after_inlining
-		      /* We can jump on EQ/NE but not GE/LT.  */
-		      && VECTOR_BOOLEAN_TYPE_P (type)
-		      && (expand_vec_cmp_expr_p (itype, type, code2)
-			  || !expand_vec_cmp_expr_p (TREE_TYPE (op0),
-						     type, code))))
-		return fold_build2_loc (loc, code2,
-					type, arg00, build_zero_cst (itype));
-	    }
-	}
-
       /* Fold (~X & C) == 0 into (X & C) != 0 and (~X & C) != 0 into
 	 (X & C) == 0 when C is a single bit.  */
       if (TREE_CODE (arg0) == BIT_AND_EXPR
