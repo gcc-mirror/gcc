@@ -1186,6 +1186,14 @@ class cpython_analyzer_events_subscriber : public analyzer_events::subscriber
 {
 public:
   void
+  on_message (const analyzer_events::on_tu_finished &msg) final override
+  {
+    LOG_SCOPE (msg.m_logger);
+    stash_named_types (msg.m_logger, msg.m_tu);
+    stash_global_vars (msg.m_logger, msg.m_tu);
+  }
+
+  void
   on_message (const analyzer_events::on_ana_init &m) final override
   {
     LOG_SCOPE (m.get_logger ());
@@ -1222,8 +1230,6 @@ plugin_init (struct plugin_name_args *plugin_info,
   const char *plugin_name = plugin_info->base_name;
   if (0)
     inform (input_location, "got here; %qs", plugin_name);
-  register_finish_translation_unit_callback (&stash_named_types);
-  register_finish_translation_unit_callback (&stash_global_vars);
   region_model::register_pop_frame_callback(pyobj_refcnt_checker);
   g->get_channels ().analyzer_events_channel.add_subscriber (ana::cpython_sub);
 #else

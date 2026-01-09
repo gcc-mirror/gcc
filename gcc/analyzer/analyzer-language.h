@@ -41,11 +41,6 @@ class translation_unit
   virtual tree lookup_global_var_by_id (tree id) const = 0;
 };
 
-typedef void (*finish_translation_unit_callback)
-   (logger *, const translation_unit &);
-void register_finish_translation_unit_callback (
-    finish_translation_unit_callback callback);
-
 /* Analyzer hook for frontends to call at the end of the TU.  */
 
 void on_finish_translation_unit (const translation_unit &tu);

@@ -146,6 +146,8 @@ class known_function;
   class builtin_known_function;
   class internal_known_function;
 
+class translation_unit;
+
 /* Forward decls of functions.  */
 
 extern void dump_tree (pretty_printer *pp, tree t);
@@ -609,6 +611,16 @@ namespace topics {
 
 namespace analyzer_events {
 
+/* A message published by the analyzer when the frontend finishes
+   parsing the TU, to allow it to look up pertinent items using the FE's
+   name-resolution logic.  */
+
+struct on_tu_finished
+{
+  ana::logger *m_logger;
+  const ana::translation_unit &m_tu;
+};
+
 /* A message published by the analyzer as it starts up, intended for
    subsystems/plugins that want to register additional functionality
    within the analyzer.  */
@@ -630,7 +642,8 @@ struct subscriber {
 
   virtual ~subscriber () = default;
 
-  virtual void on_message (const on_ana_init &) = 0;
+  virtual void on_message (const on_tu_finished &) {}
+  virtual void on_message (const on_ana_init &) {}
 };
 
 } // namespace gcc::topics::analyzer_events
