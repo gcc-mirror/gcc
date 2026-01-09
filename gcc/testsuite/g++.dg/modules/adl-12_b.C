@@ -20,10 +20,7 @@ void test(Q::X x) {
 
 #if __cpp_impl_three_way_comparison >= 201907L
   rewrite_ops(0);  // OK
-
-  // This should error, but lookup_qualified_name in add_candidates
-  // doesn't look in the instantiation context of this call, so
-  // we don't see the operator!= and think we can validly rewrite.
-  rewrite_ops_error(0);  // { dg-error "required from here" "PR122609" { xfail *-*-* } }
+  rewrite_ops_error(0);  // { dg-message "required from here" "" { target c++20 } }
+  // { dg-prune-output "no match for" }
 #endif
 }

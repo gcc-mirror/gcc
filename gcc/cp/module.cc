@@ -21564,6 +21564,23 @@ get_import_bitmap ()
   return this_module ()->imports;
 }
 
+/* Get the original decl for an instantiation at TINST, or NULL_TREE
+   if we're not an instantiation.  */
+
+static tree
+orig_decl_for_instantiation (tinst_level *tinst)
+{
+  if (!tinst || TREE_CODE (tinst->tldcl) == TEMPLATE_FOR_STMT)
+    return NULL_TREE;
+
+  tree decl = tinst->tldcl;
+  if (TREE_CODE (decl) == TREE_LIST)
+    decl = TREE_PURPOSE (decl);
+  if (TYPE_P (decl))
+    decl = TYPE_NAME (decl);
+  return decl;
+}
+
 /* Return the visible imports and path of instantiation for an
    instantiation at TINST.  If TINST is nullptr, we're not in an
    instantiation, and thus will return the visible imports of the
@@ -21571,11 +21588,12 @@ get_import_bitmap ()
    the tinst level itself.  */
 
 static bitmap
-path_of_instantiation (tinst_level *tinst,  bitmap *path_map_p)
+path_of_instantiation (tinst_level *tinst, bitmap *path_map_p)
 {
   gcc_checking_assert (modules_p ());
 
-  if (!tinst || TREE_CODE (tinst->tldcl) == TEMPLATE_FOR_STMT)
+  tree decl = orig_decl_for_instantiation (tinst);
+  if (!decl)
     {
       gcc_assert (!tinst || !tinst->next);
       /* Not inside an instantiation, just the regular case.  */
@@ -21594,12 +21612,6 @@ path_of_instantiation (tinst_level *tinst,  bitmap *path_map_p)
 	  path_map = BITMAP_GGC_ALLOC ();
 	  bitmap_set_bit (path_map, 0);
 	}
-
-      tree decl = tinst->tldcl;
-      if (TREE_CODE (decl) == TREE_LIST)
-	decl = TREE_PURPOSE (decl);
-      if (TYPE_P (decl))
-	decl = TYPE_NAME (decl);
 
       if (unsigned mod = get_originating_module (decl))
 	if (!bitmap_bit_p (path_map, mod))
@@ -21642,6 +21654,25 @@ visible_instantiation_path (bitmap *path_map_p)
     return NULL;
 
   return path_of_instantiation (current_instantiation (), path_map_p);
+}
+
+/* Returns the bitmap describing what modules were visible from the
+   module that the current instantiation originated from.  If we're
+   not an instantiation, returns NULL.  *MODULE_P is filled in with
+   the originating module of the definition for this instantiation.  */
+
+bitmap
+visible_from_instantiation_origination (unsigned *module_p)
+{
+  if (!modules_p ())
+    return NULL;
+
+  tree decl = orig_decl_for_instantiation (current_instantiation ());
+  if (!decl)
+    return NULL;
+
+  *module_p = get_originating_module (decl);
+  return (*modules)[*module_p]->imports;
 }
 
 /* We've just directly imported IMPORT.  Update our import/export

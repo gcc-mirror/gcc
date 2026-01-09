@@ -862,6 +862,14 @@ name_lookup::search_namespace_only (tree scope)
 	     the import bitmap.  Hence iterate over the former
 	     checking for bits set in the bitmap.  */
 	  bitmap imports = get_import_bitmap ();
+	  /* FIXME: For instantiations, we also want to include any
+	     declarations visible at the point it was defined, even
+	     if not visible from the current TU; we approximate
+	     this here, but a proper solution would involve caching
+	     phase 1 lookup results (PR c++/122609).  */
+	  unsigned orig_mod = 0;
+	  bitmap orig_imp = visible_from_instantiation_origination (&orig_mod);
+
 	  binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (val);
 	  int marker = 0;
 	  int dup_detect = 0;
@@ -922,18 +930,19 @@ name_lookup::search_namespace_only (tree scope)
 		  if (unsigned span = cluster->indices[jx].span)
 		    do
 		      if (bool (want & LOOK_want::ANY_REACHABLE)
-			  || bitmap_bit_p (imports, base))
+			  || bitmap_bit_p (imports, base)
+			  || (orig_imp && bitmap_bit_p (orig_imp, base)))
 			goto found;
 		    while (++base, --span);
 		continue;
 
 	      found:;
 		/* Is it loaded?  */
+		unsigned mod = cluster->indices[jx].base;
 		if (cluster->slots[jx].is_lazy ())
 		  {
 		    gcc_assert (cluster->indices[jx].span == 1);
-		    lazy_load_binding (cluster->indices[jx].base,
-				       scope, name, &cluster->slots[jx]);
+		    lazy_load_binding (mod, scope, name, &cluster->slots[jx]);
 		  }
 		tree bind = cluster->slots[jx];
 		if (!bind)
@@ -966,7 +975,8 @@ name_lookup::search_namespace_only (tree scope)
 			dup_detect |= dup;
 		      }
 
-		    if (bool (want & LOOK_want::ANY_REACHABLE))
+		    if (bool (want & LOOK_want::ANY_REACHABLE)
+			|| mod == orig_mod)
 		      {
 			type = STAT_TYPE (bind);
 			bind = STAT_DECL (bind);
