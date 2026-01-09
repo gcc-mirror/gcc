@@ -246,11 +246,6 @@ public:
 
 struct append_regions_cb_data;
 
-typedef void (*pop_frame_callback) (const region_model *model,
-				    const region_model *prev_model,
-				    const svalue *retval,
-				    region_model_context *ctxt);
-
 /* Roughly equivalent to a struct __cxa_exception, except we store a std::vector
    rather than a linked list.    */
 
@@ -591,22 +586,6 @@ class region_model
   get_builtin_kf (const gcall &call,
 		  region_model_context *ctxt = nullptr) const;
 
-  static void
-  register_pop_frame_callback (const pop_frame_callback &callback)
-  {
-    pop_frame_callbacks.safe_push (callback);
-  }
-
-  static void
-  notify_on_pop_frame (const region_model *model,
-		       const region_model *prev_model,
-		       const svalue *retval,
-		       region_model_context *ctxt)
-  {
-    for (auto &callback : pop_frame_callbacks)
-	callback (model, prev_model, retval, ctxt);
-  }
-
   bool called_from_main_p () const;
 
   void push_thrown_exception (const exception_node &node)
@@ -736,7 +715,6 @@ private:
 				    tree fndecl,
 				    region_model_context *ctxt);
 
-  static auto_vec<pop_frame_callback> pop_frame_callbacks;
   /* Storing this here to avoid passing it around everywhere.  */
   region_model_manager *const m_mgr;
 

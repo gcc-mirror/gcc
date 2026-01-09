@@ -638,12 +638,24 @@ struct on_ana_init
   get_logger () const = 0;
 };
 
+/* A message published by the analyzer when it simulates popping a stack
+   frame.  */
+
+struct on_frame_popped
+{
+  const ana::region_model *m_new_model;
+  const ana::region_model *m_old_model;
+  const ana::svalue *m_retval;
+  ana::region_model_context *m_ctxt;
+};
+
 struct subscriber {
 
   virtual ~subscriber () = default;
 
   virtual void on_message (const on_tu_finished &) {}
   virtual void on_message (const on_ana_init &) {}
+  virtual void on_message (const on_frame_popped &) {}
 };
 
 } // namespace gcc::topics::analyzer_events

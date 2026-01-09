@@ -1216,6 +1216,15 @@ public:
       ("__analyzer_cpython_dump_refcounts",
        std::make_unique<kf_analyzer_cpython_dump_refcounts> ());
   }
+
+  void
+  on_message (const analyzer_events::on_frame_popped &msg) final override
+  {
+    pyobj_refcnt_checker (msg.m_new_model,
+			  msg.m_old_model,
+			  msg.m_retval,
+			  msg.m_ctxt);
+  }
 } cpython_sub;
 
 } // namespace ana
@@ -1230,7 +1239,6 @@ plugin_init (struct plugin_name_args *plugin_info,
   const char *plugin_name = plugin_info->base_name;
   if (0)
     inform (input_location, "got here; %qs", plugin_name);
-  region_model::register_pop_frame_callback(pyobj_refcnt_checker);
   g->get_channels ().analyzer_events_channel.add_subscriber (ana::cpython_sub);
 #else
   sorry_no_analyzer ();
