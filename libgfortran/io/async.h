@@ -248,7 +248,7 @@
 
 #define LOCK_UNIT(unit) do {		\
     LOCK (&(unit)->lock);		\
-    (unit)->self = __gthread_self ();	\
+    (unit)->self = (intptr_t) __gthread_self ();	\
   } while (0)
 
 #ifdef __GTHREAD_RWLOCK_INIT
@@ -390,11 +390,11 @@
    unlocking; the only use for this is checking for recursion.  */
 
 #define LOCK_UNIT(unit) do {					\
-  if (__gthread_active_p ()) {					\
-    LOCK (&(unit)->lock); (unit)->self = __gthread_self ();	\
-  } else {							\
-    (unit)->self = 1;						\
-  }								\
+    if (__gthread_active_p ()) {					\
+      LOCK (&(unit)->lock); (unit)->self = (intptr_t) __gthread_self (); \
+    } else {								\
+      (unit)->self = 1;							\
+    }									\
   } while(0)
 #else
 
@@ -430,7 +430,7 @@
       if (__gthread_active_p ()) {				\
 	res = __gthread_mutex_trylock (&(unit)->lock);		\
 	if (!res)						\
-	  (unit)->self = __gthread_self ();			\
+	  (unit)->self = (intptr_t) __gthread_self ();		\
       }								\
       else {							\
 	res = (unit)->self;					\
@@ -555,7 +555,7 @@ extern __thread gfc_unit *thread_unit;
    to be 1.  */
 
 #ifdef __GTHREADS_CXX0X
-#define OWN_THREAD_ID (__gthread_active_p () ? __gthread_self () : 1)
+#define OWN_THREAD_ID (__gthread_active_p () ? (intptr_t) __gthread_self () : 1)
 #else
 #define OWN_THREAD_ID 1
 #endif
