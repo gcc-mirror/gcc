@@ -560,8 +560,6 @@ class GCCFilter (GenericFilter):
 
                 # Weird ways to compose copyright year
                 'GmcOptions.cc',
-                'gen-evolution.awk',
-                'gen-cxxapi-file.py',
                 ])
 
         self.skip_dirs |= set ([
