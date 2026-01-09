@@ -9150,6 +9150,10 @@ extern tree coro_get_ramp_function		(tree);
 
 extern tree co_await_get_resume_call		(tree await_expr);
 
+/* Only for use by modules.  */
+extern void coro_set_transform_functions	(tree, tree, tree);
+extern void coro_set_ramp_function		(tree, tree);
+
 /* Inline bodies.  */
 
 inline tree

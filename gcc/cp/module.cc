@@ -2969,6 +2969,7 @@ static char const *const merge_kind_name[MK_hwm] =
 /* Mergeable entity location data.  */
 struct merge_key {
   cp_ref_qualifier ref_q : 2;
+  unsigned coro_disc : 2;  /* Discriminator for coroutine transforms.  */
   unsigned index;
 
   tree ret;  /* Return type, if appropriate.  */
@@ -2977,7 +2978,7 @@ struct merge_key {
   tree constraints;  /* Constraints.  */
 
   merge_key ()
-    :ref_q (REF_QUAL_NONE), index (0),
+    :ref_q (REF_QUAL_NONE), coro_disc (0), index (0),
      ret (NULL_TREE), args (NULL_TREE),
      constraints (NULL_TREE)
   {
@@ -4589,6 +4590,17 @@ dumper::impl::nested_name (tree t)
       }
   else
     fputs ("#null#", stream);
+
+  if (t && TREE_CODE (t) == FUNCTION_DECL && DECL_COROUTINE_P (t))
+    if (tree ramp = DECL_RAMP_FN (t))
+      {
+	if (DECL_ACTOR_FN (ramp) == t)
+	  fputs (".actor", stream);
+	else if (DECL_DESTROY_FN (ramp) == t)
+	  fputs (".destroy", stream);
+	else
+	  gcc_unreachable ();
+      }
 
   if (origin >= 0)
     {
@@ -11712,6 +11724,25 @@ trees_in::decl_container ()
   return container;
 }
 
+/* Gets a 2-bit discriminator to distinguish coroutine actor or destroy
+   functions from a normal function.  */
+
+static int
+get_coroutine_discriminator (tree inner)
+{
+  if (DECL_COROUTINE_P (inner))
+    if (tree ramp = DECL_RAMP_FN (inner))
+      {
+	if (DECL_ACTOR_FN (ramp) == inner)
+	  return 1;
+	else if (DECL_DESTROY_FN (ramp) == inner)
+	  return 2;
+	else
+	  gcc_unreachable ();
+      }
+  return 0;
+}
+
 /* Write out key information about a mergeable DEP.  Does not write
    the contents of DEP itself.  The context has already been
    written.  The container has already been streamed.  */
@@ -11803,6 +11834,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	      tree fn_type = TREE_TYPE (inner);
 
 	      key.ref_q = type_memfn_rqual (fn_type);
+	      key.coro_disc = get_coroutine_discriminator (inner);
 	      key.args = TYPE_ARG_TYPES (fn_type);
 
 	      if (tree reqs = get_constraints (inner))
@@ -11939,7 +11971,12 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       tree_node (name);
       if (streaming_p ())
 	{
-	  unsigned code = (key.ref_q << 0) | (key.index << 2);
+	  /* Check we have enough bits for the index.  */
+	  gcc_checking_assert (key.index < (1u << (sizeof (unsigned) * 8 - 4)));
+
+	  unsigned code = ((key.ref_q << 0)
+			   | (key.coro_disc << 2)
+			   | (key.index << 4));
 	  u (code);
 	}
 
@@ -11963,8 +12000,8 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
     }
 }
 
-/* DECL is a new declaration that may be duplicated in OVL.  Use RET &
-   ARGS to find its clone, or NULL.  If DECL's DECL_NAME is NULL, this
+/* DECL is a new declaration that may be duplicated in OVL.  Use KEY
+   to find its clone, or NULL.  If DECL's DECL_NAME is NULL, this
    has been found by a proxy.  It will be an enum type located by its
    first member.
 
@@ -12019,6 +12056,7 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 		 || same_type_p (key.ret, fndecl_declared_return_type (m_inner)))
 		&& type_memfn_rqual (m_type) == key.ref_q
 		&& compparms (key.args, TYPE_ARG_TYPES (m_type))
+		&& get_coroutine_discriminator (m_inner) == key.coro_disc
 		/* Reject if old is a "C" builtin and new is not "C".
 		   Matches decls_match behaviour.  */
 		&& (!DECL_IS_UNDECLARED_BUILTIN (m_inner)
@@ -12141,7 +12179,8 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       merge_key key;
       unsigned code = u ();
       key.ref_q = cp_ref_qualifier ((code >> 0) & 3);
-      key.index = code >> 2;
+      key.coro_disc = (code >> 2) & 3;
+      key.index = code >> 4;
 
       if (mk == MK_enum)
 	key.ret = tree_node ();
@@ -12874,6 +12913,12 @@ has_definition (tree decl)
 	  if (use_tpl < 2)
 	    return true;
 	}
+
+      /* Coroutine transform functions always need to be emitted
+	 into the importing TU if the ramp function will be.  */
+      if (DECL_COROUTINE_P (decl))
+	if (tree ramp = DECL_RAMP_FN (decl))
+	  return has_definition (ramp);
       break;
 
     case TYPE_DECL:
@@ -13057,6 +13102,17 @@ trees_out::write_function_def (tree decl)
       state->write_location (*this, f->function_start_locus);
       state->write_location (*this, f->function_end_locus);
     }
+
+  if (DECL_COROUTINE_P (decl))
+    {
+      tree ramp = DECL_RAMP_FN (decl);
+      tree_node (ramp);
+      if (!ramp)
+	{
+	  tree_node (DECL_ACTOR_FN (decl));
+	  tree_node (DECL_DESTROY_FN (decl));
+	}
+    }
 }
 
 void
@@ -13072,13 +13128,13 @@ trees_in::read_function_def (tree decl, tree maybe_template)
   tree initial = tree_node ();
   tree saved = tree_node ();
   tree context = tree_node ();
-  constexpr_fundef cexpr;
   post_process_data pdata {};
   pdata.decl = maybe_template;
 
   tree maybe_dup = odr_duplicate (maybe_template, DECL_SAVED_TREE (decl));
   bool installing = maybe_dup && !DECL_SAVED_TREE (decl);
 
+  constexpr_fundef cexpr;
   if (u ())
     {
       cexpr.parms = chained_decls ();
@@ -13090,7 +13146,6 @@ trees_in::read_function_def (tree decl, tree maybe_template)
     cexpr.decl = NULL_TREE;
 
   unsigned flags = u ();
-
   if (flags & 2)
     {
       pdata.start_locus = state->read_location (*this);
@@ -13099,6 +13154,21 @@ trees_in::read_function_def (tree decl, tree maybe_template)
       pdata.returns_null = flags & 8;
       pdata.returns_abnormally = flags & 16;
       pdata.infinite_loop = flags & 32;
+    }
+
+  tree coro_actor = NULL_TREE;
+  tree coro_destroy = NULL_TREE;
+  tree coro_ramp = NULL_TREE;
+  if (DECL_COROUTINE_P (decl))
+    {
+      coro_ramp = tree_node ();
+      if (!coro_ramp)
+	{
+	  coro_actor = tree_node ();
+	  coro_destroy = tree_node ();
+	  if ((coro_actor == NULL_TREE) != (coro_destroy == NULL_TREE))
+	    set_overrun ();
+	}
     }
 
   if (get_overrun ())
@@ -13115,6 +13185,11 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 	SET_DECL_FRIEND_CONTEXT (decl, context);
       if (cexpr.decl)
 	register_constexpr_fundef (cexpr);
+
+      if (coro_ramp)
+	coro_set_ramp_function (decl, coro_ramp);
+      else if (coro_actor && coro_destroy)
+	coro_set_transform_functions (decl, coro_actor, coro_destroy);
 
       if (DECL_LOCAL_DECL_P (decl))
 	/* Block-scope OMP UDRs aren't real functions, and don't need a
@@ -17572,6 +17647,7 @@ module_state::read_cluster (unsigned snum)
       cfun->language->returns_null = pdata.returns_null;
       cfun->language->returns_abnormally = pdata.returns_abnormally;
       cfun->language->infinite_loop = pdata.infinite_loop;
+      cfun->coroutine_component = DECL_COROUTINE_P (decl);
 
       /* Make sure we emit explicit instantiations.
 	 FIXME do we want to do this in expand_or_defer_fn instead?  */

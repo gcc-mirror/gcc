@@ -353,10 +353,20 @@ coroutine_info_hasher::equal (coroutine_info *lhs, const compare_type& rhs)
   return lhs->function_decl == rhs;
 }
 
+/* Initialize the coroutine info table, to hold state per coroutine decl,
+   if not already created.  */
+
+static void
+create_coroutine_info_table ()
+{
+  if (!coroutine_info_table)
+    coroutine_info_table = hash_table<coroutine_info_hasher>::create_ggc (11);
+}
+
 /* Get the existing coroutine_info for FN_DECL, or insert a new one if the
    entry does not yet exist.  */
 
-coroutine_info *
+static coroutine_info *
 get_or_insert_coroutine_info (tree fn_decl)
 {
   gcc_checking_assert (coroutine_info_table != NULL);
@@ -375,7 +385,7 @@ get_or_insert_coroutine_info (tree fn_decl)
 
 /* Get the existing coroutine_info for FN_DECL, fail if it doesn't exist.  */
 
-coroutine_info *
+static coroutine_info *
 get_coroutine_info (tree fn_decl)
 {
   if (coroutine_info_table == NULL)
@@ -757,11 +767,7 @@ ensure_coro_initialized (location_t loc)
       if (!void_coro_handle_address)
 	return false;
 
-      /* A table to hold the state, per coroutine decl.  */
-      gcc_checking_assert (coroutine_info_table == NULL);
-      coroutine_info_table =
-	hash_table<coroutine_info_hasher>::create_ggc (11);
-
+      create_coroutine_info_table ();
       if (coroutine_info_table == NULL)
 	return false;
 
@@ -873,11 +879,13 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       coro_info->self_h_proxy
 	= build_lang_decl (VAR_DECL, coro_self_handle_id,
 			   coro_info->handle_type);
+      DECL_CONTEXT (coro_info->self_h_proxy) = fndecl;
 
       /* Build a proxy for the promise so that we can perform lookups.  */
       coro_info->promise_proxy
 	= build_lang_decl (VAR_DECL, coro_promise_id,
 			   coro_info->promise_type);
+      DECL_CONTEXT (coro_info->promise_proxy) = fndecl;
 
       /* Note where we first saw a coroutine keyword.  */
       coro_info->first_coro_keyword = loc;
@@ -902,6 +910,17 @@ coro_get_ramp_function (tree decl)
   return NULL_TREE;
 }
 
+/* Given a DECL, an actor or destroyer, build a link from that to the ramp
+   function.  Used by modules streaming.  */
+
+void
+coro_set_ramp_function (tree decl, tree ramp)
+{
+  if (!to_ramp)
+    to_ramp = hash_map<tree, tree>::create_ggc (10);
+  to_ramp->put (decl, ramp);
+}
+
 /* Given the DECL for a ramp function (the user's original declaration) return
    the actor function if it has been defined.  */
 
@@ -924,6 +943,27 @@ coro_get_destroy_function (tree decl)
     return info->destroy_decl;
 
   return NULL_TREE;
+}
+
+/* For a given ramp function DECL, set the actor and destroy functions.
+   This is only used by modules streaming.  */
+
+void
+coro_set_transform_functions (tree decl, tree actor, tree destroy)
+{
+  /* Only relevant with modules.  */
+  gcc_checking_assert (modules_p ());
+
+  /* This should only be called for newly streamed declarations.  */
+  gcc_checking_assert (!get_coroutine_info (decl));
+
+  /* This might be the first use of coroutine info in the TU, so
+     create the coroutine info table if needed.  */
+  create_coroutine_info_table ();
+
+  coroutine_info *coroutine = get_or_insert_coroutine_info (decl);
+  coroutine->actor_decl = actor;
+  coroutine->destroy_decl = destroy;
 }
 
 /* Given a CO_AWAIT_EXPR AWAIT_EXPR, return its resume call.  */
@@ -4393,14 +4433,13 @@ coro_build_actor_or_destroy_function (tree orig, tree fn_type,
     = build_lang_decl (FUNCTION_DECL, copy_node (DECL_NAME (orig)), fn_type);
 
   /* Allow for locating the ramp (original) function from this one.  */
-  if (!to_ramp)
-    to_ramp = hash_map<tree, tree>::create_ggc (10);
-  to_ramp->put (fn, orig);
+  coro_set_ramp_function (fn, orig);
 
   DECL_CONTEXT (fn) = DECL_CONTEXT (orig);
   DECL_SOURCE_LOCATION (fn) = loc;
   DECL_ARTIFICIAL (fn) = true;
   DECL_INITIAL (fn) = error_mark_node;
+  DECL_COROUTINE_P (fn) = true;
 
   tree id = get_identifier ("frame_ptr");
   tree fp = build_lang_decl (PARM_DECL, id, coro_frame_ptr);
