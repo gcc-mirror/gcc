@@ -992,7 +992,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
   tree right_base_type = get_base_type (right_type);
   tree operation_type = result_type;
   tree best_type = NULL_TREE;
-  tree modulus, result;
+  tree modulus, result, t1, t2;
   bool has_side_effects = false;
 
   if (operation_type
@@ -1073,6 +1073,26 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	    }
 	  else
 	    operation_type = left_type;
+	}
+
+      /* If we are copying between small padded objects of the same type with
+	 self-referential size, and the padded size is the same constant size,
+	 use the padded view of the objects, this will be more efficient.  */
+      else if (left_type == right_type
+	       && CONTAINS_PLACEHOLDER_P (TYPE_SIZE (left_type))
+	       && TREE_CODE (left_operand) == COMPONENT_REF
+	       && TREE_CODE (right_operand) == COMPONENT_REF
+	       && (t1 = operand_type (left_operand))
+	       && (t2 = operand_type (right_operand))
+	       && TYPE_IS_PADDING_P (t1)
+	       && TYPE_IS_PADDING_P (t2)
+	       && TYPE_SIZE_UNIT (t1) == TYPE_SIZE_UNIT (t2)
+	       && TREE_CODE (TYPE_SIZE_UNIT (t1)) == INTEGER_CST
+	       && compare_tree_int (TYPE_SIZE_UNIT (t1), MOVE_MAX_PIECES) <= 0)
+	{
+	  left_operand = convert (t1, left_operand);
+	  right_operand = convert (t2, right_operand);
+	  operation_type = t1;
 	}
 
       /* If we have a call to a function that returns with variable size, use
