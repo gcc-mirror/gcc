@@ -81,8 +81,10 @@ typedef const struct cand *const_cand_t;
 
 /* Insn candidates for rematerialization.  The candidate insn should
    have the following properies:
-   o no any memory (as access to memory is non-profitable)
+   o no any memory (as access to memory is non-profitable) or
+     div/mod operations (as they are usually more expensive than loads)
    o no INOUT regs (it means no non-paradoxical subreg of output reg)
+   o no multiple output pseudos
    o one output spilled pseudo (or reload pseudo of a spilled pseudo)
    o all other pseudos are with assigned hard regs.  */
 struct cand
@@ -249,12 +251,12 @@ finish_cand_table (void)
 
 
 
-/* Return true if X contains memory or some UNSPEC.  We cannot just
-   check insn operands as memory or unspec might be not an operand
-   itself but contain an operand.  Insn with memory access is not
-   profitable for rematerialization.  Rematerialization of UNSPEC
-   might result in wrong code generation as the UNPEC effect is
-   unknown (e.g. generating a label).  */
+/* Return true if X contains memory, some UNSPEC, or expensive operations.  We
+   cannot just check insn operands as memory or unspec might be not an operand
+   itself but contain an operand.  Insns with memory access or expensive ones
+   are not profitable for rematerialization.  Rematerialization of UNSPEC might
+   result in wrong code generation as the UNPEC effect is unknown
+   (e.g. generating a label).  */
 static bool
 bad_for_rematerialization_p (rtx x)
 {
@@ -262,7 +264,11 @@ bad_for_rematerialization_p (rtx x)
   const char *fmt;
   enum rtx_code code;
 
-  if (MEM_P (x) || GET_CODE (x) == UNSPEC || GET_CODE (x) == UNSPEC_VOLATILE)
+  if (MEM_P (x) || GET_CODE (x) == UNSPEC || GET_CODE (x) == UNSPEC_VOLATILE
+      /* Usually the following operations are expensive and does not worth to
+	 rematerialize: */
+      || GET_CODE(x) == DIV || GET_CODE(x) == UDIV
+      || GET_CODE(x) == MOD || GET_CODE(x) == UMOD)
     return true;
   code = GET_CODE (x);
   fmt = GET_RTX_FORMAT (code);
@@ -308,8 +314,7 @@ operand_to_remat (rtx_insn *insn)
 	 cannot know sp offset at a rematerialization place.  */
       if (reg->regno == STACK_POINTER_REGNUM && frame_pointer_needed)
 	return -1;
-      else if (reg->type == OP_OUT && ! reg->subreg_p
-	       && find_regno_note (insn, REG_UNUSED, reg->regno) == NULL)
+      else if (reg->type == OP_OUT)
 	{
 	  /* We permits only one spilled reg.  */
 	  if (found_reg != NULL)
