@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    in the proper order, and counts the time used by each.
    Error messages and low-level interface to malloc also handled here.  */
 
+#define INCLUDE_LIST
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -63,6 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h" /* for fnotice */
 #include "stringpool.h"
 #include "attribs.h"
+#include "topics/pass-events.h"
+#include "channels.h"
 
 /* Reserved TODOs */
 #define TODO_verify_il			(1u << 31)
@@ -2575,9 +2578,14 @@ skip_pass (opt_pass *pass)
 bool
 execute_one_pass (opt_pass *pass)
 {
+  namespace pass_events = gcc::topics::pass_events;
+
   unsigned int todo_after = 0;
 
   bool gate_status;
+
+  if (auto channel = g->get_channels ().pass_events_channel.get_if_active ())
+    channel->publish (pass_events::before_pass {pass, cfun});
 
   /* IPA passes are executed on whole program, so cfun should be NULL.
      Other passes need function context set.  */
@@ -2741,6 +2749,10 @@ execute_one_pass (opt_pass *pass)
 
   if (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS)
     report_heap_memory_use ();
+
+  if (auto channel = g->get_channels ().pass_events_channel.get_if_active ())
+    channel->publish (pass_events::after_pass {pass, cfun});
+
   return true;
 }
 

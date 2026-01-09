@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_LIST
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -24,12 +25,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "dumpfile.h"
 #include "realmpfr.h"
+#include "channels.h"
 
 /* The singleton holder of global state: */
 gcc::context *g;
 
 gcc::context::context ()
-  : m_passes (NULL), m_dumps (new gcc::dump_manager ())
+: m_passes (NULL),
+  m_dumps (new gcc::dump_manager ()),
+  m_channels (new gcc::compiler_channels ())
 {
   have_offload = false;
 }
@@ -38,6 +42,7 @@ gcc::context::~context ()
 {
   delete m_passes;
   delete m_dumps;
+  delete m_channels;
 
   /* Release MPFR caches to avoid Valgrind leak reports.  */
   mpfr_free_cache ();

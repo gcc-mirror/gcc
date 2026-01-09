@@ -200,6 +200,7 @@ set plugin_test_list [list \
 	  cpython-plugin-test-PyList_Append.c \
 	  cpython-plugin-test-PyList_New.c \
 	  cpython-plugin-test-PyLong_FromLong.c } \
+    { progress_notifications_plugin.cc } \
 ]
 
 foreach plugin_test $plugin_test_list {

@@ -24,6 +24,7 @@ namespace gcc {
 
 class pass_manager;
 class dump_manager;
+struct compiler_channels;
 
 /* GCC's internal state can be divided into zero or more
    "parallel universe" of state; an instance of this class is one such
@@ -51,12 +52,23 @@ public:
 
   dump_manager *get_dumps () {gcc_assert (m_dumps); return m_dumps; }
 
+  /* Publish/subscribe channels for events
+     on various compiler-specific topics.  */
+  compiler_channels &
+  get_channels () const
+  {
+    gcc_assert (m_channels);
+    return *m_channels;
+  }
+
 private:
   /* Pass-management.  */
   pass_manager *m_passes;
 
   /* Dump files.  */
   dump_manager *m_dumps;
+
+  compiler_channels *m_channels;
 
 }; // class context
 
