@@ -4795,6 +4795,24 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 
   unsigned int mode_width = GET_MODE_PRECISION (mode);
 
+  /* For unary ops like ffs or popcount we want to determine the number of
+     nonzero bits from the operand.  This only matters with very large
+     vector modes.  A
+       (popcount:DI (V128BImode)
+     should not get a nonzero-bit mask of (1 << 7) - 1 as that could
+     lead to incorrect optimizations based on it, see PR123501.  */
+  unsigned int op_mode_width = mode_width;
+  machine_mode op_mode = mode;
+  if (UNARY_P (x))
+    {
+      const_rtx op = XEXP (x, 0);
+      if (GET_MODE_PRECISION (GET_MODE (op)).is_constant ())
+	{
+	  op_mode = GET_MODE (op);
+	  op_mode_width = GET_MODE_PRECISION (op_mode).to_constant ();
+	}
+    }
+
   if (CONST_INT_P (x))
     {
       if (SHORT_IMMEDIATES_SIGN_EXTEND
@@ -5198,13 +5216,16 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
     case FFS:
     case POPCOUNT:
       /* This is at most the number of bits in the mode.  */
-      nonzero = (HOST_WIDE_INT_UC (2) << (floor_log2 (mode_width))) - 1;
+      nonzero = (HOST_WIDE_INT_UC (2) << (floor_log2 (op_mode_width))) - 1;
       break;
 
     case CLZ:
       /* If CLZ has a known value at zero, then the nonzero bits are
-	 that value, plus the number of bits in the mode minus one.  */
-      if (CLZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
+	 that value, plus the number of bits in the mode minus one.
+	 If we have a different operand mode, don't try to get nonzero
+	 bits as currently nonzero is not a poly_int.  */
+      if (op_mode == mode
+	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
 	nonzero
 	  |= (HOST_WIDE_INT_1U << (floor_log2 (mode_width))) - 1;
       else
@@ -5213,8 +5234,10 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 
     case CTZ:
       /* If CTZ has a known value at zero, then the nonzero bits are
-	 that value, plus the number of bits in the mode minus one.  */
-      if (CTZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
+	 that value, plus the number of bits in the mode minus one.
+	 See above for op_mode != mode.  */
+      if (op_mode == mode
+	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
 	nonzero
 	  |= (HOST_WIDE_INT_1U << (floor_log2 (mode_width))) - 1;
       else
@@ -5223,7 +5246,7 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 
     case CLRSB:
       /* This is at most the number of bits in the mode minus 1.  */
-      nonzero = (HOST_WIDE_INT_1U << (floor_log2 (mode_width))) - 1;
+      nonzero = (HOST_WIDE_INT_1U << (floor_log2 (op_mode_width))) - 1;
       break;
 
     case PARITY:
