@@ -28332,17 +28332,18 @@
 (define_insn "avx2_vbroadcasti128_<mode>"
   [(set (match_operand:VI_256 0 "register_operand" "=x,v,v")
 	(vec_concat:VI_256
-	  (match_operand:<ssehalfvecmode> 1 "memory_operand" "m,m,m")
+	  (match_operand:<ssehalfvecmode> 1 "memory_operand" "jm,m,m")
 	  (match_dup 1)))]
   "TARGET_AVX2"
   "@
    vbroadcasti128\t{%1, %0|%0, %1}
    vbroadcast<i128vldq>\t{%1, %0|%0, %1}
    vbroadcast<shuffletype>32x4\t{%1, %0|%0, %1}"
-  [(set_attr "isa" "*,avx512dq,avx512vl")
+  [(set_attr "isa" "noavx512vl,avx512dq,avx512vl")
    (set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
    (set_attr "prefix" "vex,evex,evex")
+   (set_attr "addr" "gpr16,*,*")
    (set_attr "mode" "OI")])
 
 ;; optimize vlddqu + vinserti128 to vbroadcasti128, the former will use
