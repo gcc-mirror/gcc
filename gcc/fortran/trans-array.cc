@@ -11455,12 +11455,12 @@ gfc_nullify_alloc_comp (gfc_symbol * der_type, tree decl, int rank,
 
 tree
 gfc_deallocate_alloc_comp (gfc_symbol * der_type, tree decl, int rank,
-			   int caf_mode)
+			   int caf_mode, bool no_finalization)
 {
   return structure_alloc_comps (der_type, decl, NULL_TREE, rank,
 				DEALLOCATE_ALLOC_COMP,
 				GFC_STRUCTURE_CAF_MODE_ENABLE_COARRAY | caf_mode,
-				NULL);
+				NULL, no_finalization);
 }
 
 tree
