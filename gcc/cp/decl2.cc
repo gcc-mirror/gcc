@@ -2511,7 +2511,7 @@ vague_linkage_p (tree decl)
      DECL_COMDAT.  */
   if (DECL_COMDAT (decl)
       || (TREE_CODE (decl) == FUNCTION_DECL
-	  && DECL_DECLARED_INLINE_P (decl))
+	  && DECL_NONGNU_INLINE_P (decl))
       || (DECL_LANG_SPECIFIC (decl)
 	  && DECL_TEMPLOID_INSTANTIATION (decl))
       || (VAR_P (decl) && DECL_INLINE_VAR_P (decl)))
@@ -2581,7 +2581,7 @@ import_export_class (tree ctype)
 	     translation units.  If we were to emit the vtable in each
 	     translation unit containing a definition, we would get
 	     multiple definition errors at link-time.  */
-	  if (method && (flag_weak || ! DECL_DECLARED_INLINE_P (method)))
+	  if (method && (flag_weak || ! DECL_NONGNU_INLINE_P (method)))
 	    import_export = (DECL_REALLY_EXTERN (method) ? -1 : 1);
 	}
     }
@@ -3532,7 +3532,7 @@ vtables_uniquely_emitted (tree ctype)
      object for the TU containing the definition of the key function.  This is
      unique if the key function is not inline.  */
   tree key_method = CLASSTYPE_KEY_METHOD (ctype);
-  if (key_method && !DECL_DECLARED_INLINE_P (key_method))
+  if (key_method && !DECL_NONGNU_INLINE_P (key_method))
     return true;
 
   /* Otherwise, the tables are emitted in every object that references
@@ -3730,7 +3730,7 @@ import_export_decl (tree decl)
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL && DECL_FUNCTION_MEMBER_P (decl))
     {
-      if (!DECL_DECLARED_INLINE_P (decl))
+      if (!DECL_NONGNU_INLINE_P (decl))
 	{
 	  tree ctype = DECL_CONTEXT (decl);
 	  import_export_class (ctype);

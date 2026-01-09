@@ -3087,7 +3087,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
 	  SET_DECL_TEMPLATE_SPECIALIZATION (olddecl);
 	  DECL_COMDAT (newdecl) = (TREE_PUBLIC (newdecl)
-				   && DECL_DECLARED_INLINE_P (newdecl));
+				   && DECL_NONGNU_INLINE_P (newdecl));
 
 	  /* Don't propagate visibility from the template to the
 	     specialization here.  We'll do that in determine_visibility if
@@ -6636,7 +6636,7 @@ start_decl (const cp_declarator *declarator,
 	  SET_DECL_TEMPLATE_SPECIALIZATION (decl);
 	  if (TREE_CODE (decl) == FUNCTION_DECL)
 	    DECL_COMDAT (decl) = (TREE_PUBLIC (decl)
-				  && DECL_DECLARED_INLINE_P (decl));
+				  && DECL_NONGNU_INLINE_P (decl));
 	  else
 	    DECL_COMDAT (decl) = false;
 

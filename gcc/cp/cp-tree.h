@@ -3848,6 +3848,12 @@ struct GTY(()) lang_decl {
 #define DECL_PENDING_INLINE_INFO(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->u.pending_inline_info)
 
+/* True if NODE is a non-gnu_inline inline function; gnu_inline overrides the
+   usual vague linkage effects of inline.  */
+#define DECL_NONGNU_INLINE_P(NODE) \
+  (DECL_DECLARED_INLINE_P (NODE) \
+   && !lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (NODE)))
+
 /* Nonzero for TYPE_DECL means that it was written 'using name = type'.  */
 #define TYPE_DECL_ALIAS_P(NODE) \
   DECL_LANG_FLAG_6 (TYPE_DECL_CHECK (NODE))
