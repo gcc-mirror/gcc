@@ -162,9 +162,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __wait_args_base
     {
       __wait_flags _M_flags;
-      int _M_order = __ATOMIC_ACQUIRE;
-      __wait_value_type _M_old = 0;
-      void* _M_wait_state = nullptr;
+      int _M_order = __ATOMIC_ACQUIRE; // Memory order for loads from _M_obj.
+      __wait_value_type _M_old = 0;  // Previous value of *_M_obj.
+      void* _M_wait_state = nullptr; // For proxy wait and tracking contention.
       const void* _M_obj = nullptr;  // The address of the object to wait on.
       unsigned char _M_obj_size = 0; // The size of that object.
 
@@ -286,9 +286,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __val;
 	}
 
-      // Returns true if a proxy wait will be used for __addr, false otherwise.
-      // If true, _M_wait_state, _M_obj, _M_obj_size, and _M_old are set.
-      // If false, data members are unchanged.
+      // Prepare `*this` for a call to `__wait_impl` or `__wait_until_impl`.
+      // See comments in src/c++20/atomic.cc for more details.
       bool
       _M_setup_proxy_wait(const void* __addr);
 

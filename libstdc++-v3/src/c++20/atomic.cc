@@ -308,14 +308,22 @@ namespace
 
 } // namespace
 
-// Return false (and don't change any data members) if we can do a non-proxy
-// wait for the object of size `_M_obj_size` at address `addr`.
-// Otherwise, we will use a proxy wait. If addr == _M_obj this is the initial
-// setup of the proxy wait, so set _M_wait_state to the proxy state for addr,
-// and set _M_obj and _M_obj_size to refer to the _M_wait_state->_M_ver proxy.
-// For both the initial setup of a proxy wait and for subsequent calls to this
-// function for proxy waits, we load the current value from _M_obj (the proxy)
-// and store it in _M_old, then return true.
+// Returns true if a proxy wait will be used for addr, false otherwise.
+//
+// For the first call (from `_M_setup_wait`) `_M_obj` will equal `addr`,
+// and this function will decide whether to use a proxy wait.
+//
+// If it returns false, there are no effects (all data members are unchanged),
+// and this function should not be called again on `*this` (because calling it
+// again will just return false again, so is a waste of cycles).
+//
+// The first call that returns true does the initial setup of the proxy wait,
+// setting `_M_wait_state` to the waitable state for `addr` and setting
+// `_M_obj` and `_M_obj_size` to refer to the `_M_wait_state->_M_ver` proxy.
+// For subsequent calls (from `_M_on_wake`) the argument can be null,
+// because any value not equal to `_M_obj` has the same effect.
+// All calls that return true will load a value from `_M_obj` (i.e. the proxy)
+// and store it in `_M_old`.
 bool
 __wait_args::_M_setup_proxy_wait(const void* addr)
 {
