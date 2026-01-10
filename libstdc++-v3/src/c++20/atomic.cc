@@ -248,21 +248,21 @@ namespace
     bool _M_track_contention;
   };
 
-  constexpr auto __atomic_spin_count_relax = 12;
-  constexpr auto __atomic_spin_count = 16;
+  constexpr auto atomic_spin_count_relax = 12;
+  constexpr auto atomic_spin_count = 16;
 
-  // This function always returns _M_has_val == true and _M_val == *__addr.
-  // _M_timeout == (*__addr == __args._M_old).
+  // This function always returns _M_has_val == true and _M_val == *addr.
+  // _M_timeout == (*addr == args._M_old).
   __wait_result_type
-  __spin_impl(const __platform_wait_t* __addr, const __wait_args_base& __args)
+  __spin_impl(const __platform_wait_t* addr, const __wait_args_base& args)
   {
     __wait_value_type wval;
-    for (auto __i = 0; __i < __atomic_spin_count; ++__i)
+    for (auto i = 0; i < atomic_spin_count; ++i)
       {
-	wval = __atomic_load_n(__addr, __args._M_order);
-	if (wval != __args._M_old)
+	wval = __atomic_load_n(addr, args._M_order);
+	if (wval != args._M_old)
 	  return { ._M_val = wval, ._M_has_val = true, ._M_timeout = false };
-	if (__i < __atomic_spin_count_relax)
+	if (i < atomic_spin_count_relax)
 	  __thread_relax();
 	else
 	  __thread_yield();
