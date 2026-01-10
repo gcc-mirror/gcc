@@ -994,8 +994,13 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
       if (invalid_nonstatic_memfn_p (loc, expr, complain))
 	/* We displayed the error message.  */;
       else
-	error_at (loc, "conversion from %qH to non-scalar type %qI requested",
-		  TREE_TYPE (expr), type);
+	{
+	  auto_diagnostic_group d;
+	  error_at (loc, "conversion from %qH to non-scalar type %qI requested",
+		    TREE_TYPE (expr), type);
+	  maybe_show_nonconverting_candidate (type, TREE_TYPE (expr), expr,
+					      flags);
+	}
     }
   return error_mark_node;
 }

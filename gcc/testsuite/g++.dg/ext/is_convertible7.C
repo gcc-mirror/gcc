@@ -27,3 +27,15 @@ struct B {
 };
 static_assert(is_nothrow_convertible<int, B>::value, "");  // { dg-error "assert" }
 // { dg-message "'int' is not nothrow convertible from 'B', because" "" { target *-*-* } .-1 }
+
+struct C {
+  explicit C(int);  // { dg-message "not considered" }
+};
+static_assert(is_convertible<int, C>::value, "");  // { dg-error "assert" }
+// { dg-message "could not convert 'int' to 'C'" "" { target *-*-* } .-1 }
+
+struct D {
+  explicit operator int() const;  // { dg-message "not considered" }
+};
+static_assert(is_convertible<D, int>::value, "");  // { dg-error "assert" }
+// { dg-message "could not convert 'D' to 'int'" "" { target *-*-* } .-1 }
