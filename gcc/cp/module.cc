@@ -6085,9 +6085,9 @@ trees_out::lang_decl_bools (tree t, bits_out& bits)
   /* Do not write lang->u.base.not_really_extern, importer will set
      when reading the definition (if any).  */
   WB (lang->u.base.initialized_in_class);
+
   WB (lang->u.base.threadprivate_or_deleted_p);
-  /* Do not write lang->u.base.anticipated_p, it is a property of the
-     current TU.  */
+  WB (lang->u.base.anticipated_p);
   WB (lang->u.base.friend_or_tls);
   WB (lang->u.base.unknown_bound_p);
   /* Do not write lang->u.base.odr_used, importer will recalculate if
@@ -6095,12 +6095,18 @@ trees_out::lang_decl_bools (tree t, bits_out& bits)
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
+
   /* When building a header unit, everthing is marked as purview, (so
      we know which decls to write).  But when we import them we do not
      want to mark them as in module purview.  */
   WB (lang->u.base.module_purview_p && !header_module_p ());
   WB (lang->u.base.module_attach_p);
+  /* Importer will set module_import_p and module_entity_p themselves
+     as appropriate.  */
   WB (lang->u.base.module_keyed_decls_p);
+
+  WB (lang->u.base.omp_declare_mapper_p);
+
   switch (lang->u.base.selector)
     {
     default:
@@ -6109,6 +6115,7 @@ trees_out::lang_decl_bools (tree t, bits_out& bits)
     case lds_fn:  /* lang_decl_fn.  */
       WB (lang->u.fn.global_ctor_p);
       WB (lang->u.fn.global_dtor_p);
+
       WB (lang->u.fn.static_function);
       WB (lang->u.fn.pure_virtual);
       WB (lang->u.fn.defaulted_p);
@@ -6118,13 +6125,13 @@ trees_out::lang_decl_bools (tree t, bits_out& bits)
       gcc_assert (!lang->u.fn.pending_inline_p);
       WB (lang->u.fn.nonconverting);
       WB (lang->u.fn.thunk_p);
+
       WB (lang->u.fn.this_thunk_p);
-      /* Do not stream lang->u.hidden_friend_p, it is a property of
-	 the TU.  */
       WB (lang->u.fn.omp_declare_reduction_p);
       WB (lang->u.fn.has_dependent_explicit_spec_p);
       WB (lang->u.fn.immediate_fn_p);
       WB (lang->u.fn.maybe_deleted);
+      WB (lang->u.fn.coroutine_p);
       WB (lang->u.fn.implicit_constexpr);
       WB (lang->u.fn.escalated_p);
       WB (lang->u.fn.xobj_func);
@@ -6164,17 +6171,23 @@ trees_in::lang_decl_bools (tree t, bits_in& bits)
   lang->u.base.use_template = v;
   /* lang->u.base.not_really_extern is not streamed.  */
   RB (lang->u.base.initialized_in_class);
+
   RB (lang->u.base.threadprivate_or_deleted_p);
-  /* lang->u.base.anticipated_p is not streamed.  */
+  RB (lang->u.base.anticipated_p);
   RB (lang->u.base.friend_or_tls);
   RB (lang->u.base.unknown_bound_p);
   /* lang->u.base.odr_used is not streamed.  */
   RB (lang->u.base.concept_p);
   RB (lang->u.base.var_declared_inline_p);
   RB (lang->u.base.dependent_init_p);
+
   RB (lang->u.base.module_purview_p);
   RB (lang->u.base.module_attach_p);
+  /* module_import_p and module_entity_p are not streamed.  */
   RB (lang->u.base.module_keyed_decls_p);
+
+  RB (lang->u.base.omp_declare_mapper_p);
+
   switch (lang->u.base.selector)
     {
     default:
@@ -6183,19 +6196,22 @@ trees_in::lang_decl_bools (tree t, bits_in& bits)
     case lds_fn:  /* lang_decl_fn.  */
       RB (lang->u.fn.global_ctor_p);
       RB (lang->u.fn.global_dtor_p);
+
       RB (lang->u.fn.static_function);
       RB (lang->u.fn.pure_virtual);
       RB (lang->u.fn.defaulted_p);
       RB (lang->u.fn.has_in_charge_parm_p);
       RB (lang->u.fn.has_vtt_parm_p);
+      /* lang->u.f.n.pending_inline_p is not streamed.  */
       RB (lang->u.fn.nonconverting);
       RB (lang->u.fn.thunk_p);
+
       RB (lang->u.fn.this_thunk_p);
-      /* lang->u.fn.hidden_friend_p is not streamed.  */
       RB (lang->u.fn.omp_declare_reduction_p);
       RB (lang->u.fn.has_dependent_explicit_spec_p);
       RB (lang->u.fn.immediate_fn_p);
       RB (lang->u.fn.maybe_deleted);
+      RB (lang->u.fn.coroutine_p);
       RB (lang->u.fn.implicit_constexpr);
       RB (lang->u.fn.escalated_p);
       RB (lang->u.fn.xobj_func);
