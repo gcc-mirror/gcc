@@ -261,11 +261,15 @@ still needed for compilation.  */
    "%{!E:%{!M:%{!MM:windres -J rc -O coff -F pe-aarch64 \
       %{I*:-I%*} %{D*:-D%*} %{U*:-U%*} \
       %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O} %i}}}", \
-   0, 0, 0}, \
+   0, 0, 0}, /*
   {".res", "@windres-res", 0, 0, 0}, \
   {"@windres-res", \
    "%{!E:%{!M:%{!MM:windres -J res -O coff -F pe-aarch64 \
       %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O} %i}}}", \
-   0, 0, 0},
+   0, 0, 0}, */
+
+/* For now, do not handle .res because some packages pass
+COFF files named .res to gcc directly, expecting them to
+be passed to the linker, not windres. See PR123504.  */
 
 #endif

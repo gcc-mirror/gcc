@@ -491,10 +491,14 @@ do {						\
       WINDRES_FORMAT_SPEC \
       "%{I*:-I%*} %{D*:-D%*} %{U*:-U%*} \
       %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O} %i}}}", \
-   0, 0, 0}, \
+   0, 0, 0}, /* \
   {".res", "@windres-res", 0, 0, 0}, \
   {"@windres-res", \
    "%{!E:%{!M:%{!MM:windres -J res -O coff " \
       WINDRES_FORMAT_SPEC \
       "%{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O} %i}}}", \
-   0, 0, 0},
+   0, 0, 0}, */
+
+/* For now, do not handle .res because some packages pass
+COFF files named .res to gcc directly, expecting them to
+be passed to the linker, not windres. See PR123504.  */
