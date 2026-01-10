@@ -42,15 +42,6 @@
 
 #include "a68.h"
 
-/* Set the exit status of the running process, to be returned to the OS upon
-   exit.  */
-
-tree
-a68_posix_setexitstatus (void)
-{
-  return a68_get_libcall (A68_LIBCALL_SET_EXIT_STATUS);
-}
-
 /* Number of command line arguments passed to the program.  */
 
 tree
@@ -339,6 +330,12 @@ tree
 a68_posix_errno (void)
 {
   return a68_get_libcall (A68_LIBCALL_POSIX_ERRNO);
+}
+
+tree
+a68_posix_exit (void)
+{
+  return a68_get_libcall (A68_LIBCALL_POSIX_EXIT);
 }
 
 tree

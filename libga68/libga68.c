@@ -20,21 +20,12 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "ga68.h"
+#include <stdlib.h> /* for EXIT_SUCCESS */
 
 /* argc and argv are preserved in the following objects.  */
 
 int _libga68_argc;
 char **_libga68_argv;
-
-/* Exit status of the program reported to the OS upon exit.  */
-
-static int exit_status;
-
-void
-_libga68_set_exit_status (int status)
-{
-  exit_status = status;
-}
 
 /* Entry point for Algol 68 programs.  */
 
@@ -48,5 +39,5 @@ main (int argc, char **argv)
 
   _libga68_init_heap ();
   __algol68_main ();
-  return exit_status;
+  return EXIT_SUCCESS;
 }

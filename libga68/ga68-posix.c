@@ -461,3 +461,11 @@ _libga68_posixlseek (int fd, long long int offset, int whence)
   _libga68_errno = errno;
   return ret;
 }
+
+/* Implementation of the posix prelude `exit'.  */
+
+void
+_libga68_posixexit (int status)
+{
+  exit (status);
+}

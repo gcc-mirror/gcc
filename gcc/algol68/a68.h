@@ -578,7 +578,6 @@ tree a68_complex_widen_from_real (MOID_T *mode, tree r);
 
 /* a68-low-posix.cc  */
 
-tree a68_posix_setexitstatus (void);
 tree a68_posix_argc (void);
 tree a68_posix_argv (void);
 tree a68_posix_getenv (void);
@@ -591,6 +590,7 @@ tree a68_posix_fclose (void);
 tree a68_posix_fsize (void);
 tree a68_posix_lseek (void);
 tree a68_posix_errno (void);
+tree a68_posix_exit (void);
 tree a68_posix_perror (void);
 tree a68_posix_strerror (void);
 tree a68_posix_getchar (void);
@@ -1067,7 +1067,6 @@ tree a68_lower_shortenreal2 (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_random (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_longrandom (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_longlongrandom (NODE_T *p, LOW_CTX_T ctx);
-tree a68_lower_setexitstatus (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixargc (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixargv (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixputchar (NODE_T *p, LOW_CTX_T ctx);
@@ -1093,6 +1092,7 @@ tree a68_lower_posixfileordonly (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixfileowronly (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixfileotrunc (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixerrno (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_posixexit (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixperror (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixstrerror (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixgetchar (NODE_T *p, LOW_CTX_T ctx);

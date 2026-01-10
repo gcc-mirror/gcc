@@ -1032,19 +1032,19 @@ Some operating systems have the notion of @dfn{exit status} of a
 process.  In such systems, by default the execution of the particular
 program results in an exit status of success.  It is possible for the
 program to specify an explicit exit status by using the standard
-procedure @code{set exit status}, like:
+procedure @code{posix exit}, like:
 
 @example
 @b{begin} # ... program code ... #
      @B{if} error found;
-     @B{then} set exit status (1) @B{fi}
+     @B{then} posix exit (1) @B{fi}
 @b{end}
 @end example
 
 In POSIX systems the status is an integer, and the system interprets a
 value other than zero as a run-time error.  In other systems the
-status may be of some other type.  To support this, the @code{set
-error status} procedure accepts as an argument an united value that
+status may be of some other type.  To support this, the @code{posix
+exit} procedure accepts as an argument an united value that
 accommodates all the supported systems.
 
 The following example shows a very simple program that prints ``Hello
@@ -2894,17 +2894,15 @@ which is the default.
 @node POSIX process
 @section POSIX process
 
-The Algol 68 program can report an exit status to the operating system
-once they stop running.  The exit status reported by default is zero,
-which corresponds to success.
+The Algol 68 program reports an exit status to the operating system once
+it stops running.  The exit status reported by default is zero, which
+corresponds to success.
 
-@deftypefn Procedure {} {set exit status} {= (@B{int} status)}
+@deftypefn Procedure {} {posix exit} {= (@B{int} status)}
 Procedure that sets the exit status to report to the operating system
-once the program stop executing.  The default exit status is 0 which,
-by convention, is interpreted by POSIX systems as success.  A value
-different to zero is interpreted as an error status.  This procedure
-can be invoked more than one, the previous exit status being
-overwritten.
+and immediately stops executing the program.  The default exit status is
+0 which, by convention, is interpreted by POSIX systems as success.  A
+value different to zero is interpreted as an error status.
 @end deftypefn
 
 @node POSIX command line

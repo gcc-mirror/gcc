@@ -16,6 +16,7 @@ LIBGA68_2.0 {
     _libga68_posixclose;
     _libga68_posixcreat;
     _libga68_posixerrno;
+    _libga68_posixexit;
     _libga68_posixfconnect;
     _libga68_posixfgetc;
     _libga68_posixfgets;
@@ -32,7 +33,6 @@ LIBGA68_2.0 {
     _libga68_posixputs;
     _libga68_posixstrerror;
     _libga68_random;
-    _libga68_set_exit_status;
     _libga68_u32_cmp2;
     _libga68_unreachable;
     _libga68_upper_bound;

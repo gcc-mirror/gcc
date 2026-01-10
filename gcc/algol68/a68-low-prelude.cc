@@ -1903,15 +1903,6 @@ a68_lower_longlongrandom (NODE_T *p ATTRIBUTE_UNUSED, LOW_CTX_T ctx ATTRIBUTE_UN
 /********* POSIX prelude.  ***************/
 
 tree
-a68_lower_setexitstatus (NODE_T *p, LOW_CTX_T ctx ATTRIBUTE_UNUSED)
-{
-  tree t = a68_posix_setexitstatus ();
-  if (CAN_HAVE_LOCATION_P (t))
-    SET_EXPR_LOCATION (t, a68_get_node_location (p));
-  return t;
-}
-
-tree
 a68_lower_posixargc (NODE_T *p ATTRIBUTE_UNUSED, LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
   tree t = a68_posix_argc ();
@@ -2107,6 +2098,16 @@ a68_lower_posixerrno (NODE_T *p ATTRIBUTE_UNUSED,
 		      LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
   tree t = a68_posix_errno ();
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
+a68_lower_posixexit (NODE_T *p ATTRIBUTE_UNUSED,
+		     LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_posix_exit ();
   if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, a68_get_node_location (p));
   return t;

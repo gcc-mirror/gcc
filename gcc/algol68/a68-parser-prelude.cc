@@ -1378,7 +1378,7 @@ posix_prelude (void)
   a68_idf (A68_EXT, "getenv", m, a68_lower_posixgetenv);
   /* Exit status handling.  */
   m = a68_proc (M_VOID, M_INT, NO_MOID);
-  a68_idf (A68_EXT, "setexitstatus", m, a68_lower_setexitstatus);
+  a68_idf (A68_EXT, "posixexit", m, a68_lower_posixexit);
   /* Argument handling.  */
   m = A68_MCACHE (proc_int);
   a68_idf (A68_EXT, "argc", m, a68_lower_posixargc);
