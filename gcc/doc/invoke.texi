@@ -1275,15 +1275,23 @@ Objective-C and Objective-C++ Dialects}.
 -mhwmult=@var{type}  -minrt  -mtiny-printf  -mmax-inline-shift=@var{n}}
 
 @emph{NDS32 Options} (@ref{NDS32 Options})
-@gccoptlist{-mbig-endian  -mlittle-endian
+@gccoptlist{-mbig-endian  -mlittle-endian  -EB  -EL
+-mabi=@var{name}  -mfloat-abi=@var{name}
 -mreduced-regs  -mfull-regs
--mcmov  -mext-perf  -mext-perf2
--mext-string  -mv3push  -m16bit
--misr-vector-size=@var{num}
+-malways-align  -malign-functions
+-mfp-as-gp  -mcmov  -mhw-abs
+-mext-perf  -mext-perf2  -mext-string  -mext-dsp
+-mext-fpu-fma  -mext-fpu-sp  -mext-fpu-dp
+-mv3push  -m16-bit  -mvh
+-misr-vector-size=@var{num}  -misr-secure=@var{num}
 -mcache-block-size=@var{num}
--march=@var{arch}
+-march=@var{arch}  -mcpu=@var{cpu}
+-mconfig-fpu=@var{num}  -mconfig-mul=@var{type}
+-mconfig-register-ports=@var{kind}
 -mcmodel=@var{code-model}
--mctor-dtor  -mrelax}
+-mctor-dtor  -mrelax  -mrelax-hint
+-msched-prolog-epilog  -mno-ret-in-naked-func
+-malways-save-lp   -munaligned-access  -minline-asm-r15}
 
 @emph{Nvidia PTX Options} (@ref{Nvidia PTX Options})
 @gccoptlist{-m64  -march=@var{arch}  -misa=@var{arch}  -march-map=@var{arch}
@@ -31518,12 +31526,26 @@ These options are defined for NDS32 implementations:
 @table @gcctabopt
 
 @opindex mbig-endian
+@opindex EB
 @item -mbig-endian
+@itemx -EB
 Generate code in big-endian mode.
 
 @opindex mlittle-endian
+@opindex EL
 @item -mlittle-endian
+@itemx -EL
 Generate code in little-endian mode.
+
+@opindex mabi
+@opindex mfloat-abi
+@item -mabi=2
+@itemx -mfloat-abi=soft
+Use the soft floating-point ABI.
+
+@item -mabi=2fp+
+@itemx -mfloat-abi=hard
+Use the hard floating-point ABI.
 
 @opindex mreduced-regs
 @item -mreduced-regs
@@ -31533,11 +31555,33 @@ Use reduced-set registers for register allocation.
 @item -mfull-regs
 Use full-set registers for register allocation.
 
+@opindex malways-align
+@opindex mno-always-align
+@item -malways-align
+Always align function entry, jump targets, and return address.
+
+@opindex malign-functions
+@opindex mno-align-functions
+@item -malign-functions
+Align function entry to 4 bytes.
+
+@opindex mfp-as-gp
+@opindex mno-fp-as-gp
+@item -mfp-as-gp
+@itemx -mno-fp-as-gp
+Enable/disable fp-as-gp optimization.
+
 @opindex mcmov
 @opindex mno-cmov
 @item -mcmov
 @itemx -mno-cmov
 Enable/disable generation of conditional move instructions.
+
+@opindex mhw-abs
+@opindex mno-hw-abs
+@item -mhw-abs
+@itemx -mno-hw-abs
+Enable/disable generation of hardware abs instructions.
 
 @opindex mext-perf
 @opindex mno-ext-perf
@@ -31557,6 +31601,30 @@ Enable/disable generation of performance extension 2 instructions.
 @itemx -mno-ext-string
 Enable/disable generation of string extension instructions.
 
+@opindex mext-dsp
+@opindex mno-ext-dsp
+@item -mext-dsp
+@itemx -mno-ext-dsp
+Enable/disable generation of DSP extension instructions.
+
+@opindex mext-fpu-fma
+@opindex mno-ext-fpu-fma
+@item -mext-fpu-fma
+@itemx -mno-ext-fpu-fma
+Enable/disable generation of floating-point multiply-accumulation instructions.
+
+@opindex mext-fpu-sp
+@opindex mno-ext-fpu-sp
+@item -mext-fpu-sp
+@itemx -mno-ext-fpu-sp
+Enable/disable generation of single-precision floating-point instructions.
+
+@opindex mext-fpu-dp
+@opindex mno-ext-fpu-dp
+@item -mext-fpu-dp
+@itemx -mno-ext-fpu-dp
+Enable/disable generation of double-precision floating-point instructions.
+
 @opindex mv3push
 @opindex mno-v3push
 @item -mv3push
@@ -31569,22 +31637,63 @@ Enable/disable generation of v3 push25/pop25 instructions.
 @itemx -mno-16-bit
 Enable/disable generation of 16-bit instructions.
 
+@opindex mvh
+@opindex mno-vh
+@item -mvh
+@itemx -mno-vh
+Enable/disable Virtual Hosting support.
+
 @opindex misr-vector-size
 @item -misr-vector-size=@var{num}
 Specify the size of each interrupt vector, which must be 4 or 16.
+
+@opindex misr-secure
+@item -misr-secure=@var{num}
+Specify the security level of c-isr for the whole file.
 
 @opindex mcache-block-size
 @item -mcache-block-size=@var{num}
 Specify the size of each cache block,
 which must be a power of 2 between 4 and 512.
 
-@opindex march
+@opindex march=
 @item -march=@var{arch}
-Specify the name of the target architecture.
+Specify the target architecture.  @var{arch} may be one of
+@samp{v2}, @samp{v3}, @samp{v3j}, @samp{v3m}, @samp{v3f}, or @samp{v3s}.
+
+@opindex mcpu=
+@item -mcpu=@var{cpu}
+Specify the CPU to compile for.  @var{cpu} may be one of
+@samp{n6}, @samp{n650}, @samp{n7}, @samp{n705}, @samp{n8}, @samp{n801},
+@samp{sn8}, @samp{sn801}, @samp{s8}, @samp{s801}, @samp{e8}, @samp{e801},
+@samp{n820}, @samp{s830}, @samp{e830}, @samp{n9}, @samp{n903}, @samp{n903a},
+@samp{n968}, @samp{n968a}, @samp{n10}, @samp{n1033}, @samp{n1033a},
+@samp{n1033-fpu}, @samp{n1033-spu}, @samp{n1068}, @samp{n1068a},
+@samp{n1068-fpu}, @samp{n1068a-fpu}, @samp{d10}, @samp{d1088},
+@samp{d1088-fpu}, @samp{d1088-spu}, @samp{n15}, @samp{d15}, @samp{n15s},
+@samp{d15s}, @samp{n15f}, @samp{d15f}, @samp{n12}, @samp{n1213},
+@samp{n1233}, @samp{n1233-fpu}, @samp{n1233-spu}, @samp{n13}, @samp{n1337},
+@samp{n1337-fpu}, @samp{n1337-spu}, or @samp{simple}.
+
+@opindex mconfig-fpu=
+@item -mconfig-fpu=@var{num}
+Specify a FPU configuration value from 0 to 7; 0--3 is as FPU spec says,
+and 4--7 correspond to 0--3.
+
+@opindex mconfig-mul=
+@item -mconfig-mul=@var{type}
+Specify configuration for multiply instruction.  @var{type} can be one of
+@samp{fast}, @samp{fast1} (equivalent to @samp{fast}), @samp{fast2}, or
+@samp{slow}.  The default is @samp{fast1}.
+
+@opindex mconfig-register-ports=
+@item -mconfig-register-ports=@var{kind}
+Specify the numbers of read/write ports for n9/n10 cores.  The value should
+be @samp{3r2w} or @samp{2r1w}.
 
 @opindex mcmodel=
 @item -mcmodel=@var{code-model}
-Set the code model to one of
+Set the code model to one of:
 @table @asis
 @item @samp{small}
 All the data and read-only data segments must be within 512KB addressing space.
@@ -31596,6 +31705,8 @@ addressing space.
 @item @samp{large}
 All the text and data segments can be within 4GB addressing space.
 @end table
+The default is @samp{large} on GNU/Linux targets and @samp{medium} on other
+ELF targets.
 
 @opindex mctor-dtor
 @opindex mno-ctor-dtor
@@ -31609,6 +31720,42 @@ Enable/disable constructor/destructor feature.
 @itemx -mno-relax
 Enable/disable linker option to relax instructions.
 
+@opindex mrelax-hint
+@opindex mno-relax-hint
+@item -mrelax-hint
+@itemx -mno-relax-hint
+Enable/disable insertion of hints for linker to do relaxation.
+
+@opindex msched-prolog-epilog
+@opindex mno-sched-prolog-epilog
+@item -msched-prolog-epilog
+@itemx -mno-sched-prolog-epilog
+Enable/disable scheduling of a function's prologue and epilogue sequence.
+
+@opindex mret-in-naked-func
+@opindex mno-ret-in-naked-func
+@item -mret-in-naked-func
+@itemx -mno-ret-in-naked-func
+Enable/disable generation of return instructions in naked functions.  This
+option is enabled by default.
+
+@opindex malways-save-lp
+@opindex mno-always-save-lp
+@item -malways-save-lp
+@itemx -mno-always-save-lp
+Enable/disable always saving @code{$lp} on the stack.
+
+@opindex munaligned-access
+@opindex mno-unaligned-access
+@item -munaligned-access
+@itemx -mno-unaligned-access
+Enable/disable unaligned word and halfword accesses to packed data.
+
+@opindex minline-asm-r15
+@opindex mno-inline-asm-r15
+@item -minline-asm-r15
+@itemx -mno-inline-asm-r15
+Allow/disallow use of r15 for inline asm.
 @end table
 
 @node Nvidia PTX Options

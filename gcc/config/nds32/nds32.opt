@@ -58,11 +58,11 @@ Enum(abi_type) String(2fp+) Value(NDS32_ABI_V2_FP_PLUS)
 
 mfloat-abi=soft
 Target RejectNegative Alias(mabi=, 2)
-Specify use soft floating point ABI which mean alias to -mabi=2.
+Specify the soft floating-point ABI, aliased to -mabi=2.
 
 mfloat-abi=hard
 Target RejectNegative Alias(mabi=, 2fp+)
-Specify use soft floating point ABI which mean alias to -mabi=2fp+.
+Specify the hard floating-point ABI, aliased to -mabi=2fp+.
 
 ; ---------------------------------------------------------------
 
@@ -82,14 +82,14 @@ Always align function entry, jump target and return address.
 
 malign-functions
 Target Mask(ALIGN_FUNCTION)
-Align function entry to 4 byte.
+Align function entry to 4 bytes.
 
 mbig-endian
-Target Undocumented RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
+Target RejectNegative Negative(mlittle-endian) Mask(BIG_ENDIAN)
 Generate code in big-endian mode.
 
 mlittle-endian
-Target Undocumented RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
+Target RejectNegative Negative(mbig-endian) InverseMask(BIG_ENDIAN)
 Generate code in little-endian mode.
 
 mforce-fp-as-gp
@@ -358,7 +358,7 @@ Enum(nds32_cpu_type) String(simple) Value(CPU_SIMPLE)
 
 mconfig-fpu=
 Target RejectNegative Joined Enum(float_reg_number) Var(nds32_fp_regnum) Init(TARGET_CONFIG_FPU_DEFAULT)
-Specify a fpu configuration value from 0 to 7; 0-3 is as FPU spec says, and 4-7 is corresponding to 0-3.
+Specify a FPU configuration value from 0 to 7; 0-3 is as FPU spec says, and 4-7 correspond to 0-3.
 
 Enum
 Name(float_reg_number) Type(enum float_reg_number)
