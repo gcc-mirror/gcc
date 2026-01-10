@@ -1,3 +1,11 @@
+2026-01-08  Olivier Hainque  <hainque@adacore.com>
+	    Alexandre Oliva  <oliva@adacore.com>
+
+	* configure.ac (default_gnattools_target): Use gnattools-cross
+	when not bootstrapping x86_64 configurations defaulting to
+	-m32.
+	* configure: Rebuild.
+
 2025-06-22  Nicolas Boulenguez  <nicolas@debian.org>
 
 	PR ada/120106

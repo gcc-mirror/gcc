@@ -1,3 +1,25 @@
+2026-01-09  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* config-ml.in: Replace gcc-bugs@ with bug reporting link.
+	* symlink-tree: Replace gcc-bugs@ with bug reporting link.
+
+2026-01-08  Aleksandar Rakic  <aleksandar.rakic@htecgroup.com>
+
+	* config-ml.in: Use with_multi_buildlist to build multidirs.
+	Skip configuration for subdir returned by
+	--print-multi-directory.
+	* configure: Regenerate.
+	* configure.ac: Source target-specific configuration fragment
+	for GCC. Pass through with_multi_buildlist to host and target.
+
+2026-01-08  Karl Meakin  <karl.meakin@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
+2026-01-08  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* .forgejo/workflows/build-containers.yaml: New file.
+
 2026-01-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* MAINTAINERS: Add myself as global reviewer.

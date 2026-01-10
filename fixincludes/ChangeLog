@@ -1,3 +1,7 @@
+2026-01-09  Ben Boeckel  <ben.boeckel@kitware.com>
+
+	* README: Replace gcc-bugs@ with bug reporting link.
+
 2026-01-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (AAB_solaris_sys_varargs_h): Remove.

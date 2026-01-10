@@ -1,3 +1,15 @@
+2026-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py (GCCFilter): Don't filter out
+	gen-evolution.awk and gen-cxxapi-file.py.
+
+2026-01-08  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* ci-containers/README: New file.
+	* ci-containers/autoregen/Containerfile: New file.
+	* ci-containers/autoregen/autoregen.py: New file.
+	* ci-containers/build-image.sh: New file.
+
 2026-01-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py (LibPhobosFilter): Ignore also

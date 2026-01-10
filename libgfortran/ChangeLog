@@ -1,3 +1,24 @@
+2026-01-09  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* io/io.h: Change type of self to intptr_t.
+	* io/async.h (LOCK_UNIT): Cast __gthread_self () to intptr_t.
+	(TRYLOCK_UNIT): Likewise.
+	(OWN_THREAD_ID): Likewise.
+
+2026-01-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* io/async.h: DEBUG_ASYNC needs gtreads support.
+	(LOCK_UNIT): Only lock when there is pthreads support and it is active.
+	Otherwise, just set unit->self to 1.
+	(UNLOCK_UNIT): Only unlock when there is pthreads support and it is active.
+	Otherwise, just set unit->self to 0.
+	(TRYLOCK_UNIT): Only try locking when thee is pthreads support and it is
+	active.  Otherwise, return unit->self.
+	(OWN_THREAD_ID): New macro.
+	* io/io.h: gfc_unit's self is an int when there is no gthreads support.
+	* io/unit.c (check_for_recursive): Check for equality of unit which
+	locked to OWN_THREAD_ID.
+
 2026-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* io/async.h (UNLOCK_UNIT): New macro.

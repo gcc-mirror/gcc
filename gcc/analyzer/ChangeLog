@@ -1,3 +1,42 @@
+2026-01-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.h (struct on_frame_popped): New.
+	(subscriber::on_message): New vfunc for on_frame_popped.
+	* region-model.cc: Include "context.h" and "channels.h".
+	(region_model::pop_frame_callbacks): Delete.
+	(region_model::pop_frame): Port from notify_on_pop_frame to
+	using pub/sub channel.
+	* region-model.h (pop_frame_callback): Delete typedef.
+	(region_model::register_pop_frame_callback): Delete.
+	(region_model::pop_frame_callbacks): Delete.
+
+2026-01-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-language.cc: Include "context.h" and "channels.h".
+	(finish_translation_unit_callbacks): Delete.
+	(register_finish_translation_unit_callback): Delete.
+	(run_callbacks): Delete.
+	(on_finish_translation_unit): Port from run_callbacks to pub/sub.
+	* analyzer-language.h (finish_translation_unit_callback): Delete
+	typedef.
+	(register_finish_translation_unit_callback): Delete decl.
+	* common.h (class translation_unit): New forward decl.
+	(struct analyzer_events::on_tu_finished): New.
+	(analyzer_events::subscriber::on_message): Add vfunc for
+	on_tu_finished messages.
+
+2026-01-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.h: Define INCLUDE_LIST.
+	(class plugin_analyzer_init_iface): Replace with...
+	(gcc::topics::analyzer_events::on_ana_init): ...this.
+	(gcc::topics::analyzer_events::subscriber): New.
+	* engine.cc: Include "context.h" and "channels.h".
+	(class plugin_analyzer_init_impl): Replace with...
+	(class impl_on_ana_init): ...this.  Fix some overlong lines.
+	(impl_run_checkers): Port from PLUGIN_ANALYZER_INIT to using
+	publish/subscribe framework.
+
 2025-12-16  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/123136

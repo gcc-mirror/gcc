@@ -1,3 +1,7 @@
+2026-01-09  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.texi (Worthy characters): Escape @.
+
 2026-01-04  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* a68-lang.cc (a68_post_options): Disable psABI warnings.

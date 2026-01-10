@@ -1,3 +1,7 @@
+2026-01-09  Jan Beulich  <jbeulich@suse.com>
+
+	* testsuite/test-pexecute.c (main): Adjust a tracing fprintf().
+
 2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* simple-object-mach-o.c

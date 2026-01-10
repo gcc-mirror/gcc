@@ -1,3 +1,52 @@
+2026-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/atomic.cc (use_proxy_wait): Remove unused second
+	parameter.
+	(__wait_args::_M_setup_proxy_wait): Remove second argument.
+	(__notify_impl): Likewise.
+
+2026-01-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__atomic_wait_address_until):
+	Use _M_on_wake instead of _M_setup_wait after waking.
+	(__atomic_wait_address_for): Likewise.
+	* include/bits/atomic_wait.h (__atomic_wait_address): Likewise.
+	(__wait_args::_M_setup_wait): Remove third parameter and move
+	code to update _M_old to ...
+	(__wait_args::_M_on_wake): New member function to update _M_old
+	after waking, only calling _M_setup_proxy_wait if needed.
+	(__wait_args::_M_store): New member function to update _M_old
+	from a value, for non-proxy waits.
+	* src/c++20/atomic.cc (__wait_args::_M_setup_proxy_wait): If
+	_M_obj is not addr, only load a new value and return true.
+
+2026-01-09  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/122878
+	* include/bits/semaphore_base.h (_M_try_acquire): Replace
+	_M_try_acquire_for call with explicit loop and call to
+	__atomic_wait_address_for.
+	(_M_try_acquire_for): Replace loop with call to
+	_M_try_acquire_until.
+
+2026-01-09  Keith Packard  <keithp@keithp.com>
+
+	* acinclude.m4 (GLIBCXX_CONFIGURE): Add --with-picolibc.
+	* configure: Regenerate.
+	* configure.ac: Add handling for with_picolibc=yes.
+	* config/os/picolibc/ctype_base.h: New file.
+	* config/os/picolibc/ctype_configure_char.cc: New file.
+	* config/os/picolibc/ctype_inline.h: New file.
+	* config/os/picolibc/os_defines.h: New file.
+
+2026-01-08  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/20_util/variant/constinit.cc: Use scan-tree-dump
+	for matching of constructor.
+	* testsuite/20_util/variant/constinit_compat.cc: Likewise.
+	* testsuite/lib/libstdc++.exp: Load scantree.exp and scandump.exp.
+
 2026-01-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/123100

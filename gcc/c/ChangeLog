@@ -1,3 +1,19 @@
+2026-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/123475
+	* c-typeck.cc (c_find_var_r): New function.
+	(convert_lvalue_to_rvalue): If c_build_function_call_vec
+	folded __atomic_load (&expr, &tmp, SEQ_CST); into
+	(void) (tmp = __atomic_load_<N> (&expr, SEQ_CST)), drop
+	TREE_ADDRESSABLE flag from tmp and set TARGET_EXPR
+	initializer just to the rhs of the MODIFY_EXPR.
+
+2026-01-08  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-parser.cc (has_counted_by_object): Support pointers.
+	(get_counted_by_ref): Support pointers.
+	(c_parser_postfix_expression): Support pointers.
+
 2026-01-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-parser.cc (OMP_GROUPPRIVATE_CLAUSE_MASK,
