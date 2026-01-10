@@ -1,3 +1,12 @@
+2026-01-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123040
+	* tree-ssa-sccvn.cc (vn_nary_build_or_lookup_1): Only insert
+	nary results.
+
 2026-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/121192
