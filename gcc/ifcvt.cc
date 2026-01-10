@@ -790,7 +790,6 @@ static rtx noce_get_alt_condition (struct noce_if_info *, rtx, rtx_insn **);
 static bool noce_try_minmax (struct noce_if_info *);
 static bool noce_try_abs (struct noce_if_info *);
 static bool noce_try_sign_mask (struct noce_if_info *);
-static int noce_try_cond_zero_arith (struct noce_if_info *);
 
 /* Return the comparison code for reversed condition for IF_INFO,
    or UNKNOWN if reversing the condition is not possible.  */
@@ -3135,10 +3134,15 @@ get_base_reg (rtx exp)
 
       tmp = !cond ? y : 0
 	x = (y & z) | tmp
+    Also for AND try:
+      tmp = cond ? z : -1
+	x = y op tmp
+    To see if it is cheaper to produce `!cond ? y : 0`
+    or `cond ? z : -1`.
   */
 
 static int
-noce_try_cond_zero_arith (struct noce_if_info *if_info)
+noce_try_cond_arith (struct noce_if_info *if_info)
 {
   rtx target, a, b, a_op0, a_op1;
   rtx cond = if_info->cond;
@@ -3230,27 +3234,69 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
       target = rtl_hooks.gen_lowpart_no_emit (GET_MODE (XEXP (a, op != AND)), target);
       gcc_assert (target);
     }
-  if (!target)
-    goto end_seq_n_fail;
 
+  /* For AND, try `cond ? z : -1` to see if that is cheaper or the same cost.
+     In some cases it will be cheaper to produce the -1 rather than the 0 case.  */
   if (op == AND)
     {
+      rtx_insn *seq0 = end_sequence ();
+      unsigned cost0 = seq_cost (seq0, if_info->speed_p);
+      if (!target)
+	cost0 = -1u;
+
+      /* Produce `cond ? z : -1`. */
+      rtx targetm1;
+      start_sequence ();
+      targetm1 = gen_reg_rtx (GET_MODE (XEXP (a, 1)));
+      targetm1 = noce_emit_cmove (if_info, targetm1, code,
+				  XEXP (cond, 0), XEXP (cond, 1),
+				  XEXP (a, 1), constm1_rtx);
+      rtx_insn *seqm1 = end_sequence ();
+      unsigned costm1 = seq_cost (seqm1, if_info->speed_p);
+      if (!targetm1)
+	costm1 = -1u;
+      /* If both fails, then there is no costing to be done. */
+      if (!targetm1 && !target)
+	return false;
+
+      /* If -1 is cheaper or the same cost to producing 0, then use that.  */
+      if (costm1 <= cost0)
+	{
+	  push_to_sequence (seqm1);
+	  targetm1 = expand_simple_binop (mode, op, a_op0, targetm1,
+					  if_info->x, 0, OPTAB_WIDEN);
+	  if (targetm1)
+	    {
+	      target = targetm1;
+	      goto success;
+	    }
+	  end_sequence ();
+	}
+      if (!target)
+	return false;
+      /* For 0 the produce sequence is:
+	 tmp = !cond ? y : 0
+	 x = (y & z) | tmp  */
+      push_to_sequence (seq0);
       rtx a_bin = gen_reg_rtx (mode);
       noce_emit_move_insn (a_bin, a);
 
       target = expand_simple_binop (mode, IOR, a_bin, target, if_info->x, 0,
 				    OPTAB_WIDEN);
+      if (!target)
+	goto end_seq_n_fail;
+      goto success;
+    }
+  if (!target)
+    goto end_seq_n_fail;
 
-    }
-  else
-    {
-      target = expand_simple_binop (mode, op, a_op0, target, if_info->x, 0,
-				    OPTAB_WIDEN);
-    }
+  target = expand_simple_binop (mode, op, a_op0, target, if_info->x, 0,
+				OPTAB_WIDEN);
 
   if (!target)
     goto end_seq_n_fail;
 
+success:
   if (target != if_info->x)
     noce_emit_move_insn (if_info->x, target);
 
@@ -3259,7 +3305,7 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
     goto fail;
 
   emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
-  if_info->transform_name = "noce_try_cond_zero_arith";
+  if_info->transform_name = "noce_try_cond_arith";
   return true;
 
 end_seq_n_fail:
@@ -4431,7 +4477,7 @@ noce_process_if_block (struct noce_if_info *if_info)
       if (noce_try_store_flag_mask (if_info))
 	goto success;
       if (HAVE_conditional_move
-          && noce_try_cond_zero_arith (if_info))
+          && noce_try_cond_arith (if_info))
 	goto success;
       if (HAVE_conditional_move
 	  && noce_try_cmove_arith (if_info))
