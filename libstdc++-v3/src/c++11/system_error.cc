@@ -161,22 +161,23 @@ namespace
 #if defined(_WIN32) && !defined(__CYGWIN__)
       char* buf = nullptr;
       auto len
-	= FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM
-			| FORMAT_MESSAGE_ALLOCATE_BUFFER,
-			nullptr,
-			i,
-			LANG_USER_DEFAULT,
-			reinterpret_cast<LPTSTR>(&buf),
-			0,
-			nullptr);
+	= FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM
+			 | FORMAT_MESSAGE_ALLOCATE_BUFFER
+			 | FORMAT_MESSAGE_IGNORE_INSERTS,
+			 nullptr,
+			 i,
+			 LANG_USER_DEFAULT,
+			 reinterpret_cast<LPTSTR>(&buf),
+			 0,
+			 nullptr);
       if (len > 0)
       {
 	struct deleter {
 	  void operator()(void* p) const { ::LocalFree(p); }
 	};
 	std::unique_ptr<char[], deleter> guard(buf);
-	if (len > 3 && !__builtin_memcmp(buf + len - 3, ".\r\n", 3)) [[likely]]
-	  len -= 3;
+	if (len > 2 && !__builtin_memcmp (buf + len - 2, "\r\n", 2)) [[likely]]
+	  len -= 2 + (buf[len - 3] == '.');
 	return string(buf, len);
       }
       return string("Unknown error code");
