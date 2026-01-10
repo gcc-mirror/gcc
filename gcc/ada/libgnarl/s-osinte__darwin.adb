@@ -58,8 +58,6 @@ package body System.OS_Interface is
 
       --  Darwin Threads don't have clock_gettime, so use gettimeofday
 
-      use Interfaces;
-
       TV     : aliased C_Time.timeval;
       Result : int;
 
