@@ -3911,6 +3911,7 @@ In addition, these warning options have meanings only for C++ programs:
 
 @table @gcctabopt
 @opindex Wabi-tag
+@opindex Wno-abi-tag
 @item -Wabi-tag @r{(C++ and Objective-C++ only)}
 Warn when a type with an ABI tag is used in a context that does not
 have that ABI tag.  See @ref{C++ Attributes} for more information
@@ -5393,6 +5394,7 @@ methods inherited from the superclass are considered to be implemented,
 and no warning is issued for them.
 
 @opindex Wobjc-root-class
+@opindex Wno-objc-root-class
 @item -Wobjc-root-class @r{(Objective-C and Objective-C++ only)}
 Warn if a class interface lacks a superclass. Most classes will inherit
 from @code{NSObject} (or @code{Object}) for example.  When declaring
@@ -9461,7 +9463,7 @@ This warning is upgraded to an error by @option{-pedantic-errors}.
 Warn when a literal @samp{0} is used as null pointer constant.
 
 @opindex Wzero-length-bounds
-@opindex Wzero-length-bounds
+@opindex Wno-zero-length-bounds
 @item -Wzero-length-bounds
 Warn about accesses to elements of zero-length array members that might
 overlap other members of the same object.  Declaring interior zero-length
@@ -9720,15 +9722,18 @@ Do not warn whenever a local variable shadows an instance variable in an
 Objective-C method.
 
 @opindex Wshadow=global
+@opindex Wno-shadow=global
 @item -Wshadow=global
 Warn for any shadowing.
 Same as @option{-Wshadow}.
 
 @opindex Wshadow=local
+@opindex Wno-shadow=local
 @item -Wshadow=local
 Warn when a local variable shadows another local variable or parameter.
 
 @opindex Wshadow=compatible-local
+@opindex Wno-shadow=compatible-local
 @item -Wshadow=compatible-local
 Warn when a local variable shadows another local variable or parameter
 whose type is compatible with that of the shadowing variable.  In C++,
@@ -10107,7 +10112,7 @@ an @code{int *} on machines where integers can only be accessed at
 two- or four-byte boundaries.
 
 @opindex Wcast-align=strict
-@item -Wcast-align=strict
+@opindex Wno-cast-align=strict
 Warn whenever a pointer is cast such that the required alignment of the
 target is increased.  For example, warn if a @code{char *} is cast to
 an @code{int *} regardless of the target machine.
@@ -10189,6 +10194,7 @@ This option can also be used to disable warnings like
 produced by @option{-gctf} or @option{-gsctf} for unsupported languages.
 
 @opindex Wcompare-distinct-pointer-types
+@opindex Wno-compare-distinct-pointer-types
 @item -Wcompare-distinct-pointer-types @r{(C and Objective-C only)}
 Warn if pointers of distinct types are compared without a cast.  This
 warning is enabled by default.
@@ -10699,6 +10705,7 @@ into an error if building for a C version before C23 by
 @option{-pedantic-errors}.
 
 @opindex Wheader-guard
+@opindex Wno-header-guard
 @item -Wheader-guard
 Warn if a valid preprocessor header multiple inclusion guard has
 a @code{#define} directive right after @code{#ifndef} or @code{#if !defined}
@@ -11180,6 +11187,7 @@ seemingly insignificant changes in the source program can cause the
 warnings produced by @option{-Winline} to appear or disappear.
 
 @opindex Winterference-size
+@opindex Wno-interference-size
 @item -Winterference-size
 Warn about use of C++17 @code{std::hardware_destructive_interference_size}
 without specifying its value with @option{--param destructive-interference-size}.

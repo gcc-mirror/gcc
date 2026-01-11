@@ -10,7 +10,9 @@
 @c formatted for inclusion in the CPP manual; otherwise the main GCC manual.
 
 @opindex Wcomment
+@opindex Wno-comment
 @opindex Wcomments
+@opindex Wno-comments
 @item -Wcomment
 @itemx -Wcomments
 Warn whenever a comment-start sequence @samp{/*} appears in a @samp{/*}
@@ -18,6 +20,7 @@ comment, or whenever a backslash-newline appears in a @samp{//} comment.
 This warning is enabled by @option{-Wall}.
 
 @opindex Wtrigraphs
+@opindex Wno-trigraphs
 @item -Wtrigraphs
 @anchor{Wtrigraphs}
 Warn if any trigraphs are encountered that might change the meaning of
@@ -36,6 +39,7 @@ Warn if an undefined identifier is evaluated in an @code{#if} directive.
 Such identifiers are replaced with zero.
 
 @opindex Wexpansion-to-defined
+@opindex Wno-expansion-to-defined
 @item -Wexpansion-to-defined
 Warn whenever @samp{defined} is encountered in the expansion of a macro
 (including the case where the macro is expanded by an @samp{#if} directive).
@@ -43,6 +47,7 @@ Such usage is not portable.
 This warning is also enabled by @option{-Wpedantic} and @option{-Wextra}.
 
 @opindex Wunused-macros
+@opindex Wno-unused-macros
 @item -Wunused-macros
 Warn about macros defined in the main file that are unused.  A macro
 is @dfn{used} if it is expanded or tested for existence at least once.
