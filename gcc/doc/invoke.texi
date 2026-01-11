@@ -2368,6 +2368,7 @@ directives are not affected by these options.  See also
 @option{-fprofile-prefix-map} and @option{-fcanon-prefix-map}.
 
 @opindex fcanon-prefix-map
+@opindex fno-canon-prefix-map
 @item -fcanon-prefix-map
 For the @option{-f*-prefix-map} options normally comparison
 of @file{@var{old}} prefix against the filename that would be normally
@@ -2733,12 +2734,14 @@ built-in functions selectively when using @option{-fno-builtin} or
 @end smallexample
 
 @opindex fcond-mismatch
+@opindex fno-cond-mismatch
 @item -fcond-mismatch
 Allow conditional expressions with mismatched types in the second and
 third arguments.  The value of such an expression is void.  This option
 is not supported for C++.
 
 @opindex ffreestanding
+@opindex fno-freestanding
 @cindex hosted environment
 @item -ffreestanding
 
@@ -2752,6 +2755,7 @@ This is equivalent to @option{-fno-hosted}.
 freestanding and hosted environments.
 
 @opindex fgimple
+@opindex fno-gimple
 @item -fgimple
 
 Enable parsing of function definitions marked with @code{__GIMPLE}.
@@ -2759,6 +2763,7 @@ This is an experimental feature that allows unit testing of GIMPLE
 passes.
 
 @opindex fgnu-tm
+@opindex fno-gnu-tm
 @item -fgnu-tm
 When the option @option{-fgnu-tm} is specified, the compiler
 generates code for the Linux variant of Intel's current Transactional
@@ -2775,6 +2780,7 @@ Note that the transactional memory feature is not supported with
 non-call exceptions (@option{-fnon-call-exceptions}).
 
 @opindex fgnu89-inline
+@opindex fno-gnu89-inline
 @item -fgnu89-inline
 The option @option{-fgnu89-inline} tells GCC to use the traditional
 GNU semantics for @code{inline} functions when in C99 mode.
@@ -2795,6 +2801,7 @@ in effect for @code{inline} functions.  @xref{Common Predefined
 Macros,,,cpp,The C Preprocessor}.
 
 @opindex fhosted
+@opindex fno-hosted
 @cindex hosted environment
 @item -fhosted
 
@@ -2805,12 +2812,14 @@ type of @code{int}.  Examples are nearly everything except a kernel.
 This is equivalent to @option{-fno-freestanding}.
 
 @opindex flax-vector-conversions
+@opindex fno-lax-vector-conversions
 @item -flax-vector-conversions
 Allow implicit conversions between vectors with differing numbers of
 elements and/or incompatible element types.  This option should not be
 used for new code.
 
 @opindex fms-extensions
+@opindex fno-ms-extensions
 @item -fms-extensions
 Accept some non-standard constructs used in Microsoft header files.
 
@@ -2883,6 +2892,7 @@ provide any resources extracted from the source that may be required by other
 sources.
 
 @opindex fplan9-extensions
+@opindex fno-plan9-extensions
 @item -fplan9-extensions
 Accept some non-standard constructs used in Plan 9 code.
 
@@ -2907,6 +2917,7 @@ default, such a bit-field is signed, because this is consistent: the
 basic integer types such as @code{int} are signed types.
 
 @opindex fsigned-char
+@opindex fno-signed-char
 @item -fsigned-char
 Let the type @code{char} be signed, like @code{signed char}.
 
@@ -2915,6 +2926,7 @@ the negative form of @option{-funsigned-char}.  Likewise, the option
 @option{-fno-signed-char} is equivalent to @option{-funsigned-char}.
 
 @opindex funsigned-char
+@opindex fno-unsigned-char
 @item -funsigned-char
 Let the type @code{char} be unsigned, like @code{unsigned char}.
 
@@ -3131,6 +3143,7 @@ Turn off all access checking.  This switch is mainly useful for working
 around bugs in the access control code.
 
 @opindex faligned-new
+@opindex fno-aligned-new
 @item -faligned-new
 @itemx -faligned-new=@var{alignment}
 Enable support for C++17 @code{new} of types that require more
@@ -3224,6 +3237,7 @@ s = u8"xx"s;            // error: conversion from
 @end smallexample
 
 @opindex fcheck-new
+@opindex fno-check-new
 @item -fcheck-new
 Check that the pointer returned by @code{operator new} is non-null
 before attempting to modify the storage allocated.  This check is
@@ -3236,6 +3250,7 @@ exhaustion is signalled by throwing @code{std::bad_alloc}.  See also
 @samp{new (nothrow)}.
 
 @opindex fconcepts
+@opindex fno-concepts
 @item -fconcepts
 Enable support for the C++ Concepts feature for constraining template
 arguments.  With @option{-std=c++20} and above, Concepts are part of
@@ -3272,6 +3287,7 @@ constexpr calculations you might want to experiment to find which
 value works best for you.
 
 @opindex fconstexpr-fp-except
+@opindex fno-constexpr-fp-except
 @item -fconstexpr-fp-except
 Annex F of the C standard specifies that IEC559 floating point
 exceptions encountered at compile time should not stop compilation.
@@ -3302,6 +3318,7 @@ evaluation might take too long.
 The default is 33554432 (1<<25).
 
 @opindex fcontracts
+@opindex fno-contracts
 @item -fcontracts
 Enable experimental support for the C++ Contracts feature, as briefly
 added to and then removed from the C++20 working paper (N4820).  The
@@ -3383,12 +3400,14 @@ called.  If the handler returns, execution continues normally.
 @end table
 
 @opindex fcoroutines
+@opindex fno-coroutines
 @item -fcoroutines
 Enable support for the C++ coroutines extension.  With @option{-std=c++20}
 and above, coroutines are part of the language standard, so
 @option{-fcoroutines} defaults to on.
 
 @opindex fdiagnostics-all-candidates
+@opindex fno-diagnostics-all-candidates
 @item -fdiagnostics-all-candidates
 Permit the C++ front end to note all candidates during overload resolution
 failure, including when a deleted function is selected.
@@ -3536,6 +3555,7 @@ This option is turned on by default; it is only effective in C++20 mode
 or later.
 
 @opindex fimplicit-constexpr
+@opindex fno-implicit-constexpr
 @item -fimplicit-constexpr
 Make inline functions implicitly constexpr, if they satisfy the
 requirements for a constexpr function.  This option can be used in
@@ -3582,6 +3602,7 @@ implicitly enabled by selecting that standard version.
 Compile a header file to create an importable header unit.
 
 @opindex fmodule-implicit-inline
+@opindex fno-module-implicit-inline
 @item -fmodule-implicit-inline
 Member functions defined in their class definitions are not implicitly
 inline for modular code.  This is different to traditional C++
@@ -3613,11 +3634,13 @@ and if that is unset, an in-process default is provided.
 Only emit the Compiled Module Interface, inhibiting any object file.
 
 @opindex fms-extensions
+@opindex fno-ms-extensions
 @item -fms-extensions
 Disable Wpedantic warnings about constructs used in MFC, such as implicit
 int and getting a pointer to member function via non-standard syntax.
 
 @opindex fnew-inheriting-ctors
+@opindex fno-new-inheriting-ctors
 @item -fnew-inheriting-ctors
 Enable the P0136 adjustment to the semantics of C++11 constructor
 inheritance.  This is part of C++17 but also considered to be a Defect
@@ -3625,6 +3648,7 @@ Report against C++11 and C++14.  This flag is enabled by default
 unless @option{-fabi-version=10} or lower is specified.
 
 @opindex fnew-ttp-matching
+@opindex fno-new-ttp-matching
 @item -fnew-ttp-matching
 Enable the P0522 resolution to Core issue 150, template template
 parameters and default arguments: this allows a template with default
@@ -3640,6 +3664,7 @@ ANSI/ISO C@.  These include @code{ffs}, @code{alloca}, @code{_exit},
 @code{index}, @code{bzero}, @code{conjf}, and other related functions.
 
 @opindex fnothrow-opt
+@opindex fno-nothrow-opt
 @item -fnothrow-opt
 Treat a @code{throw()} exception specification as if it were a
 @code{noexcept} specification to reduce or eliminate the text size
@@ -3680,6 +3705,7 @@ behaviors make it harder to understand the error message rather than
 easier, you can use @option{-fno-pretty-templates} to disable them.
 
 @opindex frange-for-ext-temps
+@opindex fno-range-for-ext-temps
 @item -frange-for-ext-temps
 Enable lifetime extension of C++ range based for temporaries.
 With @option{-std=c++23} and above this is part of the language standard,
@@ -3709,6 +3735,7 @@ fail to link if a class compiled with @option{-fno-rtti} is used as a base
 for a class compiled with @option{-frtti}.
 
 @opindex fsized-deallocation
+@opindex fno-sized-deallocation
 @item -fsized-deallocation
 Enable the built-in global declarations
 @smallexample
@@ -3722,6 +3749,7 @@ to make deallocation faster.  Enabled by default under
 warns about places that might want to add a definition.
 
 @opindex fstrict-enums
+@opindex fno-strict-enums
 @item -fstrict-enums
 Allow the compiler to optimize using the assumption that a value of
 enumerated type can only be one of the values of the enumeration (as
@@ -3733,6 +3761,7 @@ This option has no effect for an enumeration type with a fixed underlying
 type.
 
 @opindex fstrong-eval-order
+@opindex fno-strong-eval-order
 @item -fstrong-eval-order
 @itemx -fstrong-eval-order=@var{kind}
 Evaluate member access, array subscripting, and shift expressions in
@@ -3771,6 +3800,7 @@ option to reduce code size slightly in code that doesn't need to be
 thread-safe.
 
 @opindex fuse-cxa-atexit
+@opindex fno-use-cxa-atexit
 @item -fuse-cxa-atexit
 Register destructors for objects with static storage duration with the
 @code{__cxa_atexit} function rather than the @code{atexit} function.
@@ -3786,6 +3816,7 @@ causes @code{std::uncaught_exception} to be incorrect, but is necessary
 if the runtime routine is not available.
 
 @opindex fvisibility-inlines-hidden
+@opindex fno-visibility-inlines-hidden
 @item -fvisibility-inlines-hidden
 This switch declares that the user does not attempt to compare
 pointers to inline functions or methods where the addresses of the two functions
@@ -3814,6 +3845,7 @@ as their linkage might otherwise cross a shared library boundary.
 @xref{Template Instantiation}.
 
 @opindex fvisibility-ms-compat
+@opindex fno-visibility-ms-compat
 @item -fvisibility-ms-compat
 This flag attempts to use visibility settings to make GCC's C++
 linkage model compatible with that of Microsoft Visual Studio.
@@ -3876,7 +3908,9 @@ C++, but do still search the other standard directories.  (This option
 is used when building the C++ library.)
 
 @opindex flang-info-include-translate
+@opindex fno-lang-info-include-translate
 @opindex flang-info-include-translate-not
+@opindex fno-lang-info-include-translate-not
 @item -flang-info-include-translate
 @itemx -flang-info-include-translate-not
 @itemx -flang-info-include-translate=@var{header}
@@ -3888,6 +3922,7 @@ the form @code{"user"} or @code{<system>} it will be resolved to a
 specific user or system header using the include path.
 
 @opindex flang-info-module-cmi
+@opindex fno-lang-info-module-cmi
 @item -flang-info-module-cmi
 @itemx -flang-info-module-cmi=@var{module}
 Inform of Compiled Module Interface pathnames.  The first will note
@@ -5259,6 +5294,7 @@ nothing is specified, the default is Version 0 on 32-bit target
 machines, and Version 2 on 64-bit target machines.
 
 @opindex fobjc-call-cxx-cdtors
+@opindex fno-objc-call-cxx-cdtors
 @item -fobjc-call-cxx-cdtors
 For each Objective-C class, check if any of its instance variables is a
 C++ object with a non-trivial default constructor.  If so, synthesize a
@@ -5284,11 +5320,13 @@ support for invoking the @code{- (id) .cxx_construct} and
 @code{- (void) .cxx_destruct} methods.
 
 @opindex fobjc-direct-dispatch
+@opindex fno-objc-direct-dispatch
 @item -fobjc-direct-dispatch
 Allow fast jumps to the message dispatcher.  On Darwin this is
 accomplished via the comm page.
 
 @opindex fobjc-exceptions
+@opindex fno-objc-exceptions
 @item -fobjc-exceptions
 Enable syntactic support for structured exception handling in
 Objective-C, similar to what is offered by C++.  This option
@@ -5299,6 +5337,7 @@ runtime and the NeXT runtime (but not available in conjunction with
 the NeXT runtime on Mac OS X 10.2 and earlier).
 
 @opindex fobjc-gc
+@opindex fno-objc-gc
 @item -fobjc-gc
 Enable garbage collection (GC) in Objective-C and Objective-C++
 programs.  This option is only available with the NeXT runtime; the
@@ -5306,6 +5345,7 @@ GNU runtime has a different garbage collection implementation that
 does not require special compiler flags.
 
 @opindex fobjc-nilcheck
+@opindex fno-objc-nilcheck
 @item -fobjc-nilcheck
 For the NeXT runtime with version 2 of the ABI, check for a nil
 receiver in method invocations before doing the actual method call.
@@ -5327,6 +5367,7 @@ This is useful if you need to make sure that your Objective-C code can
 be compiled with older versions of GCC@.
 
 @opindex freplace-objc-classes
+@opindex fno-replace-objc-classes
 @item -freplace-objc-classes
 Emit a special marker instructing @command{ld(1)} not to statically link in
 the resulting object file, and allow @command{dyld(1)} to load it in at
@@ -5338,6 +5379,7 @@ is only available in conjunction with the NeXT runtime on Mac OS X 10.3
 and later.
 
 @opindex fzero-link
+@opindex fno-zero-link
 @item -fzero-link
 When compiling for the NeXT runtime, the compiler ordinarily replaces calls
 to @code{objc_getClass("@dots{}")} (when the name of the class is known at
@@ -5498,6 +5540,7 @@ Typical command lines are
 @end smallexample
 
 @opindex fopenacc
+@opindex fno-openacc
 @cindex OpenACC accelerator programming
 @item -fopenacc
 Enable handling of OpenACC directives @samp{#pragma acc} in C/C++ and
@@ -5514,6 +5557,7 @@ not explicitly specify them.  The @var{geom} value is a triple of
 A size can be omitted, to use a target-specific default value.
 
 @opindex fopenmp
+@opindex fno-openmp
 @cindex OpenMP parallel
 @item -fopenmp
 Enable handling of OpenMP directives @samp{#pragma omp},
@@ -5528,6 +5572,7 @@ targets that have support for @option{-pthread}. @option{-fopenmp}
 implies @option{-fopenmp-simd}.
 
 @opindex fopenmp-simd
+@opindex fno-openmp-simd
 @cindex OpenMP SIMD
 @cindex SIMD
 @item -fopenmp-simd
@@ -5544,6 +5589,7 @@ Fortran.  In fixed source form Fortran, the sentinels can also start with
 to the current task region, independent of the specified @code{bind} clause.
 
 @opindex fopenmp-target-simd-clone
+@opindex fno-openmp-target-simd-clone
 @cindex OpenMP target SIMD clone
 @item -fopenmp-target-simd-clone
 @item -fopenmp-target-simd-clone=@var{device-type}
@@ -5627,6 +5673,7 @@ prefix) for physical lines that result from the process of breaking
 a message which is too long to fit on a single line.
 
 @opindex fdiagnostics-color
+@opindex fno-diagnostics-color
 @cindex highlight, color
 @vindex GCC_COLORS @r{environment variable}
 @item -fdiagnostics-color[=@var{WHEN}]
@@ -5945,6 +5992,7 @@ This option controls the minimum width of the left margin printed by
 @option{-fdiagnostics-show-line-numbers}.  It defaults to 6.
 
 @opindex fdiagnostics-show-context
+@opindex fno-diagnostics-show-context
 @item -fdiagnostics-show-context[=@var{depth}]
 @itemx -fno-diagnostics-show-context
 With this option, the compiler might print the interesting control flow
@@ -5961,6 +6009,7 @@ The forms @option{-fdiagnostics-show-context} and
 @option{-fdiagnostics-show-context=0}, respectively.
 
 @opindex fdiagnostics-parseable-fixits
+@opindex fno-diagnostics-parseable-fixits
 @item -fdiagnostics-parseable-fixits
 Emit fix-it hints in a machine-parseable format, suitable for consumption
 by IDEs.  For each fix-it, a line will be printed after the relevant
@@ -5992,6 +6041,7 @@ An empty range (e.g. ``45:3-45:3'') indicates that the string is to
 be inserted at the given position.
 
 @opindex fdiagnostics-generate-patch
+@opindex fno-diagnostics-generate-patch
 @item -fdiagnostics-generate-patch
 Print fix-it hints to stderr in unified diff format, after any diagnostics
 are printed.  For example:
@@ -6013,6 +6063,7 @@ The diff may or may not be colorized, following the same rules
 as for diagnostics (see @option{-fdiagnostics-color}).
 
 @opindex fdiagnostics-show-template-tree
+@opindex fno-diagnostics-show-template-tree
 @item -fdiagnostics-show-template-tree
 
 In the C++ frontend, when printing diagnostics showing mismatching
@@ -6149,6 +6200,7 @@ For example:
 @end smallexample
 
 @opindex fdiagnostics-show-path-depths
+@opindex fno-diagnostics-show-path-depths
 @item -fdiagnostics-show-path-depths
 This option provides additional information when printing control-flow paths
 associated with a diagnostic.
@@ -6530,6 +6582,7 @@ warnings but control the kinds of diagnostics produced by GCC@.
 @table @gcctabopt
 @cindex syntax checking
 @opindex fsyntax-only
+@opindex fno-syntax-only
 @item -fsyntax-only
 Check the code for syntax errors, but don't do anything beyond that.
 
@@ -6711,6 +6764,7 @@ errors by @option{-pedantic-errors}.  For instance:
 }
 
 @opindex fpermissive
+@opindex fno-permissive
 @item -fpermissive
 Downgrade some required diagnostics about nonconformant code from
 errors to warnings.  Thus, using @option{-fpermissive} allows some
@@ -7141,6 +7195,7 @@ Warn if a declaration has duplicate @code{const}, @code{volatile},
 @opindex Wformat
 @opindex Wno-format
 @opindex ffreestanding
+@opindex fno-freestanding
 @opindex fno-builtin
 @opindex Wformat=
 @item -Wformat
@@ -12876,6 +12931,7 @@ By default, no debug information is produced for symbols that are not actually
 used. Use this option if you want debug information for all symbols.
 
 @opindex femit-class-debug-always
+@opindex fno-emit-class-debug-always
 @item -femit-class-debug-always
 Instead of emitting debugging information for a C++ class in only one
 object file, emit it in all object files using the class.  This option
@@ -12906,6 +12962,7 @@ where to find the source files. See also @option{-ffile-prefix-map}
 and @option{-fcanon-prefix-map}.
 
 @opindex fvar-tracking
+@opindex fno-var-tracking
 @item -fvar-tracking
 Run variable tracking pass.  It computes where variables are stored at each
 position in code.  Better debugging information is then generated
@@ -13513,6 +13570,7 @@ this allows the compiler to let arguments accumulate on the stack for several
 function calls and pop them all at once.
 
 @opindex fforward-propagate
+@opindex fno-forward-propagate
 @item -fforward-propagate
 Perform a forward propagation pass on RTL@.  The pass tries to combine two
 instructions and checks if the result can be simplified.  If loop unrolling
@@ -13523,6 +13581,7 @@ This option is enabled by default at optimization levels @option{-O1},
 @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex favoid-store-forwarding
+@opindex fno-avoid-store-forwarding
 @item -favoid-store-forwarding
 @itemx -fno-avoid-store-forwarding
 Many CPUs will stall for many cycles when a load partially depends on previous
@@ -13546,6 +13605,7 @@ The default is @option{-ffp-contract=off} for C in a standards compliant mode
 (@option{-std=c11} or similar), @option{-ffp-contract=fast} otherwise.
 
 @opindex ffp-int-builtin-inexact
+@opindex fno-fp-int-builtin-inexact
 @item -ffp-int-builtin-inexact
 Allow the built-in functions @code{ceil}, @code{floor},
 @code{round} and @code{trunc}, and their @code{float} and @code{long
@@ -13564,6 +13624,7 @@ generate a call to a library function then the ``inexact'' exception
 may be raised if the library implementation does not follow TS 18661.
 
 @opindex fomit-frame-pointer
+@opindex fno-omit-frame-pointer
 @item -fomit-frame-pointer
 Omit the frame pointer in functions that don't need one.  This avoids the
 instructions to save, set up and restore the frame pointer; on many targets
@@ -13579,6 +13640,7 @@ leaf functions.
 Enabled by default at @option{-O1} and higher.
 
 @opindex foptimize-crc
+@opindex fno-optimize-crc
 @item -foptimize-crc
 Detect loops calculating CRC (performing polynomial long division) and
 replace them with a faster implementation.  Detect 8, 16, 32, and 64 bit CRC,
@@ -13592,12 +13654,14 @@ instruction, generate CRC using it; otherwise generate table-based CRC.
 Enabled by default at @option{-O2} and higher.
 
 @opindex foptimize-sibling-calls
+@opindex fno-optimize-sibling-calls
 @item -foptimize-sibling-calls
 Optimize sibling and tail recursive calls.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex foptimize-strlen
+@opindex fno-optimize-strlen
 @item -foptimize-strlen
 Optimize various standard C string functions (e.g.@: @code{strlen},
 @code{strchr} or @code{strcpy}) and
@@ -13613,6 +13677,7 @@ Inline @samp{__atomic} operations when a lock-free instruction sequence
 is available.  This optimization is enabled by default.
 
 @opindex finline-stringops
+@opindex fno-inline-stringops
 @item -finline-stringops@r{[}=@var{fn}@r{]}
 Expand memory and string operations (for now, only @code{memset})
 inline, even when the length is variable or big enough as to require
@@ -13637,6 +13702,7 @@ Single functions can be exempted from inlining by marking them
 with the @code{noinline} attribute.
 
 @opindex finline-small-functions
+@opindex fno-inline-small-functions
 @item -finline-small-functions
 Integrate functions into their callers when their body is smaller than expected
 function call code (so overall size of program gets smaller).  The compiler
@@ -13647,6 +13713,7 @@ inline.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex findirect-inlining
+@opindex fno-indirect-inlining
 @item -findirect-inlining
 Inline also indirect calls that are discovered to be known at compile
 time thanks to previous inlining.  This option has any effect only
@@ -13656,6 +13723,7 @@ or @option{-finline-small-functions} options.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex finline-functions
+@opindex fno-inline-functions
 @item -finline-functions
 Consider all functions for inlining, even if they are not declared inline.
 The compiler heuristically decides which functions are worth integrating
@@ -13669,6 +13737,7 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.  Also enabled
 by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex finline-functions-called-once
+@opindex fno-inline-functions-called-once
 @item -finline-functions-called-once
 Consider all @code{static} functions called once for inlining into their
 caller even if they are not marked @code{inline}.  If a call to a given
@@ -13679,6 +13748,7 @@ Enabled at levels @option{-O1}, @option{-O2}, @option{-O3} and @option{-Os},
 but not @option{-Og}.
 
 @opindex fearly-inlining
+@opindex fno-early-inlining
 @item -fearly-inlining
 Inline functions marked by @code{always_inline} and functions whose body seems
 smaller than the function call overhead early before doing
@@ -13689,6 +13759,7 @@ having large chains of nested wrapper functions.
 Enabled by default.
 
 @opindex fipa-sra
+@opindex fno-ipa-sra
 @item -fipa-sra
 Perform interprocedural scalar replacement of aggregates, removal of
 unused parameters and replacement of parameters passed by reference
@@ -13734,6 +13805,7 @@ attribute or declspec.  @xref{Function Attributes,,Declaring Attributes of
 Functions}.
 
 @opindex fkeep-inline-functions
+@opindex fno-keep-inline-functions
 @item -fkeep-inline-functions
 In C, emit @code{static} functions that are declared @code{inline}
 into the object file, even if the function has been inlined into all
@@ -13742,11 +13814,13 @@ of its callers.  This switch does not affect functions using the
 inline functions into the object file.
 
 @opindex fkeep-static-functions
+@opindex fno-keep-static-functions
 @item -fkeep-static-functions
 Emit @code{static} functions into the object file, even if the function
 is never used.
 
 @opindex fkeep-static-consts
+@opindex fno-keep-static-consts
 @item -fkeep-static-consts
 Emit variables declared @code{static const} when optimization isn't turned
 on, even if the variables aren't referenced.
@@ -13756,6 +13830,7 @@ check if a variable is referenced, regardless of whether or not
 optimization is turned on, use the @option{-fno-keep-static-consts} option.
 
 @opindex fmerge-constants
+@opindex fno-merge-constants
 @item -fmerge-constants
 Attempt to merge identical constants (string constants and floating-point
 constants) across compilation units.
@@ -13767,6 +13842,7 @@ behavior.
 Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fmerge-all-constants
+@opindex fno-merge-all-constants
 @item -fmerge-all-constants
 Attempt to merge identical constants and identical variables.
 
@@ -13779,12 +13855,14 @@ so using this option results in non-conforming
 behavior.
 
 @opindex fmodulo-sched
+@opindex fno-modulo-sched
 @item -fmodulo-sched
 Perform swing modulo scheduling immediately before the first scheduling
 pass.  This pass looks at innermost loops and reorders their
 instructions by overlapping different iterations.
 
 @opindex fmodulo-sched-allow-regmoves
+@opindex fno-modulo-sched-allow-regmoves
 @item -fmodulo-sched-allow-regmoves
 Perform more aggressive SMS-based modulo scheduling with register moves
 allowed.  By setting this flag certain anti-dependences edges are
@@ -13843,6 +13921,7 @@ assumptions based on that.
 The default is @option{-fzero-initialized-in-bss} except in Ada.
 
 @opindex fthread-jumps
+@opindex fno-thread-jumps
 @item -fthread-jumps
 Perform optimizations that check to see if a jump branches to a
 location where another comparison subsumed by the first is found.  If
@@ -13853,6 +13932,7 @@ the condition is known to be true or false.
 Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fsplit-wide-types
+@opindex fno-split-wide-types
 @item -fsplit-wide-types
 When using a type that occupies multiple registers, such as @code{long
 long} on a 32-bit system, split the registers apart and allocate them
@@ -13863,6 +13943,7 @@ Enabled at levels @option{-O1}, @option{-O2}, @option{-O3},
 @option{-Os}.
 
 @opindex fsplit-wide-types-early
+@opindex fno-split-wide-types-early
 @item -fsplit-wide-types-early
 Fully split wide types early, instead of very late.
 This option has no effect unless @option{-fsplit-wide-types} is turned on.
@@ -13870,6 +13951,7 @@ This option has no effect unless @option{-fsplit-wide-types} is turned on.
 This is the default on some targets.
 
 @opindex fcse-follow-jumps
+@opindex fno-cse-follow-jumps
 @item -fcse-follow-jumps
 In common subexpression elimination (CSE), scan through jump instructions
 when the target of the jump is not reached by any other path.  For
@@ -13890,6 +13972,7 @@ body of the @code{if}.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex frerun-cse-after-loop
+@opindex fno-rerun-cse-after-loop
 @item -frerun-cse-after-loop
 Re-run common subexpression elimination after loop optimizations are
 performed.
@@ -13897,6 +13980,7 @@ performed.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fgcse
+@opindex fno-gcse
 @item -fgcse
 Perform a global common subexpression elimination pass.
 This pass also performs global constant and copy propagation.
@@ -13909,6 +13993,7 @@ the global common subexpression elimination pass by adding
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fgcse-lm
+@opindex fno-gcse-lm
 @item -fgcse-lm
 When @option{-fgcse-lm} is enabled, global common subexpression elimination
 attempts to move loads that are only killed by stores into themselves.  This
@@ -13918,6 +14003,7 @@ the loop, and a copy/store within the loop.
 Enabled by default when @option{-fgcse} is enabled.
 
 @opindex fgcse-sm
+@opindex fno-gcse-sm
 @item -fgcse-sm
 When @option{-fgcse-sm} is enabled, a store motion pass is run after
 global common subexpression elimination.  This pass attempts to move
@@ -13928,6 +14014,7 @@ the loop and a store after the loop.
 Not enabled at any optimization level.
 
 @opindex fgcse-las
+@opindex fno-gcse-las
 @item -fgcse-las
 When @option{-fgcse-las} is enabled, the global common subexpression
 elimination pass eliminates redundant loads that come after stores to the
@@ -13936,6 +14023,7 @@ same memory location (both partial and full redundancies).
 Not enabled at any optimization level.
 
 @opindex fgcse-after-reload
+@opindex fno-gcse-after-reload
 @item -fgcse-after-reload
 When @option{-fgcse-after-reload} is enabled, a redundant load elimination
 pass is performed after reload.  The purpose of this pass is to clean up
@@ -13944,6 +14032,7 @@ redundant spilling.
 Enabled by @option{-O3}, @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex faggressive-loop-optimizations
+@opindex fno-aggressive-loop-optimizations
 @item -faggressive-loop-optimizations
 This option tells the loop optimizer to use language constraints to
 derive bounds for the number of iterations of a loop.  This assumes that
@@ -13954,12 +14043,14 @@ and loop exit test optimizations.
 This option is enabled by default.
 
 @opindex funconstrained-commons
+@opindex fno-unconstrained-commons
 @item -funconstrained-commons
 This option tells the compiler that variables declared in common blocks
 (e.g.@: Fortran) may later be overridden with longer trailing arrays. This
 prevents certain optimizations that depend on knowing the array bounds.
 
 @opindex fcrossjumping
+@opindex fno-crossjumping
 @item -fcrossjumping
 Perform cross-jumping transformation.
 This transformation unifies equivalent code and saves code size.  The
@@ -13968,6 +14059,7 @@ resulting code may or may not perform better than without cross-jumping.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fauto-inc-dec
+@opindex fno-auto-inc-dec
 @item -fauto-inc-dec
 Combine increments or decrements of addresses with memory accesses.
 This pass is always skipped on architectures that do not have
@@ -13975,16 +14067,19 @@ instructions to support this.  Enabled by default at @option{-O1} and
 higher on architectures that support this.
 
 @opindex fdce
+@opindex fno-dce
 @item -fdce
 Perform dead code elimination (DCE) on RTL@.
 Enabled by default at @option{-O1} and higher.
 
 @opindex fdse
+@opindex fno-dse
 @item -fdse
 Perform dead store elimination (DSE) on RTL@.
 Enabled by default at @option{-O1} and higher.
 
 @opindex fif-conversion
+@opindex fno-if-conversion
 @item -fif-conversion
 Attempt to transform conditional jumps into branch-less equivalents.  This
 includes use of conditional moves, min, max, set flags and abs instructions, and
@@ -13995,6 +14090,7 @@ Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}, but
 not with @option{-Og}.
 
 @opindex fif-conversion2
+@opindex fno-if-conversion2
 @item -fif-conversion2
 Use conditional execution (where available) to transform conditional jumps into
 branch-less equivalents.
@@ -14003,6 +14099,7 @@ Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}, but
 not with @option{-Og}.
 
 @opindex fdeclone-ctor-dtor
+@opindex fno-declone-ctor-dtor
 @item -fdeclone-ctor-dtor
 The C++ ABI requires multiple entry points for constructors and
 destructors: one for a base subobject, one for a complete object, and
@@ -14015,6 +14112,7 @@ implementation.
 Enabled by @option{-Os}.
 
 @opindex fdelete-null-pointer-checks
+@opindex fno-delete-null-pointer-checks
 @item -fdelete-null-pointer-checks
 Assume that programs cannot safely dereference null pointers, and that
 no code or data element resides at address zero.
@@ -14037,6 +14135,7 @@ Passes that use the dataflow information
 are enabled independently at different optimization levels.
 
 @opindex fdevirtualize
+@opindex fno-devirtualize
 @item -fdevirtualize
 Attempt to convert calls to virtual functions to direct calls.  This
 is done both within a procedure and interprocedurally as part of
@@ -14045,6 +14144,7 @@ propagation (@option{-fipa-cp}).
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fdevirtualize-speculatively
+@opindex fno-devirtualize-speculatively
 @item -fdevirtualize-speculatively
 Attempt to convert calls to virtual functions to speculative direct calls.
 Based on the analysis of the type inheritance graph, determine for a given call
@@ -14054,6 +14154,7 @@ speculative calls enable more optimizations, such as inlining.  When they seem
 useless after further optimization, they are converted back into original form.
 
 @opindex fdevirtualize-at-ltrans
+@opindex fno-devirtualize-at-ltrans
 @item -fdevirtualize-at-ltrans
 Stream extra information needed for aggressive devirtualization when running
 the link-time optimizer in local transformation mode.
@@ -14062,6 +14163,7 @@ significantly increases the size of streamed data. For this reason it is
 disabled by default.
 
 @opindex fexpensive-optimizations
+@opindex fno-expensive-optimizations
 @item -fexpensive-optimizations
 Perform a number of minor optimizations that are relatively expensive.
 
@@ -14075,6 +14177,7 @@ Perform dead code elimination on zero and sign extensions, with special
 dataflow analysis.
 
 @opindex free
+@opindex fno-ree
 @item -free
 Attempt to remove redundant extension instructions.  This is especially
 helpful for the x86-64 architecture, which implicitly zero-extends in 64-bit
@@ -14100,6 +14203,7 @@ explicitly selected with @option{-flifetime-dse=2}.
 @option{-flifetime-dse=0} is equivalent to @option{-fno-lifetime-dse}.
 
 @opindex flive-range-shrinkage
+@opindex fno-live-range-shrinkage
 @item -flive-range-shrinkage
 Attempt to decrease register pressure through register live range
 shrinkage.  This is helpful for fast processors with small or moderate
@@ -14141,6 +14245,7 @@ This typically results in the smallest code size, and is enabled by default for
 @end table
 
 @opindex fira-hoist-pressure
+@opindex fno-ira-hoist-pressure
 @item -fira-hoist-pressure
 Use IRA to evaluate register pressure in the code hoisting pass for
 decisions to hoist expressions.  This option usually results in smaller
@@ -14149,6 +14254,7 @@ code, but it can slow the compiler down.
 This option is enabled at level @option{-Os} for all targets.
 
 @opindex fira-loop-pressure
+@opindex fno-ira-loop-pressure
 @item -fira-loop-pressure
 Use IRA to evaluate register pressure in loops for decisions to move
 loop invariants.  This option usually results in generation
@@ -14173,6 +14279,7 @@ pseudo-register that does not get a hard register gets a separate
 stack slot, and as a result function stack frames are larger.
 
 @opindex flra-remat
+@opindex fno-lra-remat
 @item -flra-remat
 Enable CFG-sensitive rematerialization in LRA.  Instead of loading
 values of spilled pseudos, LRA tries to rematerialize (recalculate)
@@ -14181,6 +14288,7 @@ values if it is profitable.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fdelayed-branch
+@opindex fno-delayed-branch
 @item -fdelayed-branch
 If supported for the target machine, attempt to reorder instructions
 to exploit instruction slots available after delayed branch
@@ -14190,6 +14298,7 @@ Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os},
 but not at @option{-Og}.
 
 @opindex fschedule-insns
+@opindex fno-schedule-insns
 @item -fschedule-insns
 If supported for the target machine, attempt to reorder instructions to
 eliminate execution stalls due to required data being unavailable.  This
@@ -14202,6 +14311,7 @@ However, many targets override this behavior.  For example, on x86, it is
 disabled at all levels, while on AArch64, it is enabled only at @option{-O3}.
 
 @opindex fschedule-insns2
+@opindex fno-schedule-insns2
 @item -fschedule-insns2
 Similar to @option{-fschedule-insns}, but requests an additional pass of
 instruction scheduling after register allocation has been done.  This is
@@ -14225,6 +14335,7 @@ is normally enabled when scheduling before register allocation, i.e.@:
 with @option{-fschedule-insns} or at @option{-O2} or higher.
 
 @opindex fsched-pressure
+@opindex fno-sched-pressure
 @item -fsched-pressure
 Enable register pressure sensitive insn scheduling before register
 allocation.  This only makes sense when scheduling before register
@@ -14235,18 +14346,21 @@ increase above the number of available hard registers and subsequent
 spills in register allocation.
 
 @opindex fsched-spec-load
+@opindex fno-sched-spec-load
 @item -fsched-spec-load
 Allow speculative motion of some load instructions.  This only makes
 sense when scheduling before register allocation, i.e.@: with
 @option{-fschedule-insns} or at @option{-O2} or higher.
 
 @opindex fsched-spec-load-dangerous
+@opindex fno-sched-spec-load-dangerous
 @item -fsched-spec-load-dangerous
 Allow speculative motion of more load instructions.  This only makes
 sense when scheduling before register allocation, i.e.@: with
 @option{-fschedule-insns} or at @option{-O2} or higher.
 
 @opindex fsched-stalled-insns
+@opindex fno-sched-stalled-insns
 @item -fsched-stalled-insns
 @itemx -fsched-stalled-insns=@var{n}
 Define how many insns (if any) can be moved prematurely from the queue
@@ -14258,6 +14372,7 @@ on how many queued insns can be moved prematurely.
 @option{-fsched-stalled-insns=1}.
 
 @opindex fsched-stalled-insns-dep
+@opindex fno-sched-stalled-insns-dep
 @item -fsched-stalled-insns-dep
 @itemx -fsched-stalled-insns-dep=@var{n}
 Define how many insn groups (cycles) are examined for a dependency
@@ -14270,6 +14385,7 @@ and only if @option{-fsched-stalled-insns} is used.
 @option{-fsched-stalled-insns-dep=1}.
 
 @opindex fsched2-use-superblocks
+@opindex fno-sched2-use-superblocks
 @item -fsched2-use-superblocks
 When scheduling after register allocation, use superblock scheduling.
 This allows motion across basic block boundaries,
@@ -14281,6 +14397,7 @@ This only makes sense when scheduling after register allocation, i.e.@: with
 @option{-fschedule-insns2} or at @option{-O2} or higher.
 
 @opindex fsched-group-heuristic
+@opindex fno-sched-group-heuristic
 @item -fsched-group-heuristic
 Enable the group heuristic in the scheduler.  This heuristic favors
 the instruction that belongs to a schedule group.  This is enabled
@@ -14288,6 +14405,7 @@ by default when scheduling is enabled, i.e.@: with @option{-fschedule-insns}
 or @option{-fschedule-insns2} or at @option{-O2} or higher.
 
 @opindex fsched-critical-path-heuristic
+@opindex fno-sched-critical-path-heuristic
 @item -fsched-critical-path-heuristic
 Enable the critical-path heuristic in the scheduler.  This heuristic favors
 instructions on the critical path.  This is enabled by default when
@@ -14295,6 +14413,7 @@ scheduling is enabled, i.e.@: with @option{-fschedule-insns}
 or @option{-fschedule-insns2} or at @option{-O2} or higher.
 
 @opindex fsched-spec-insn-heuristic
+@opindex fno-sched-spec-insn-heuristic
 @item -fsched-spec-insn-heuristic
 Enable the speculative instruction heuristic in the scheduler.  This
 heuristic favors speculative instructions with greater dependency weakness.
@@ -14303,6 +14422,7 @@ with @option{-fschedule-insns} or @option{-fschedule-insns2}
 or at @option{-O2} or higher.
 
 @opindex fsched-rank-heuristic
+@opindex fno-sched-rank-heuristic
 @item -fsched-rank-heuristic
 Enable the rank heuristic in the scheduler.  This heuristic favors
 the instruction belonging to a basic block with greater size or frequency.
@@ -14311,6 +14431,7 @@ with @option{-fschedule-insns} or @option{-fschedule-insns2} or
 at @option{-O2} or higher.
 
 @opindex fsched-last-insn-heuristic
+@opindex fno-sched-last-insn-heuristic
 @item -fsched-last-insn-heuristic
 Enable the last-instruction heuristic in the scheduler.  This heuristic
 favors the instruction that is less dependent on the last instruction
@@ -14319,6 +14440,7 @@ i.e.@: with @option{-fschedule-insns} or @option{-fschedule-insns2} or
 at @option{-O2} or higher.
 
 @opindex fsched-dep-count-heuristic
+@opindex fno-sched-dep-count-heuristic
 @item -fsched-dep-count-heuristic
 Enable the dependent-count heuristic in the scheduler.  This heuristic
 favors the instruction that has more instructions depending on it.
@@ -14327,6 +14449,7 @@ with @option{-fschedule-insns} or @option{-fschedule-insns2} or
 at @option{-O2} or higher.
 
 @opindex fspeculatively-call-stored-functions
+@opindex fno-speculatively-call-stored-functions
 @item -fspeculatively-call-stored-functions
 Attempt to convert indirect calls of function pointers to pointers
 loaded from a structure field if all visible stores to that field store
@@ -14337,33 +14460,39 @@ inlining.  When they seem useless after further optimization, they are
 converted back into original form.
 
 @opindex freschedule-modulo-scheduled-loops
+@opindex fno-reschedule-modulo-scheduled-loops
 @item -freschedule-modulo-scheduled-loops
 Modulo scheduling is performed before traditional scheduling.  If a loop
 is modulo scheduled, later scheduling passes may change its schedule.
 Use this option to control that behavior.
 
 @opindex fselective-scheduling
+@opindex fno-selective-scheduling
 @item -fselective-scheduling
 Schedule instructions using selective scheduling algorithm.  Selective
 scheduling runs instead of the first scheduler pass.
 
 @opindex fselective-scheduling2
+@opindex fno-selective-scheduling2
 @item -fselective-scheduling2
 Schedule instructions using selective scheduling algorithm.  Selective
 scheduling runs instead of the second scheduler pass.
 
 @opindex fsel-sched-pipelining
+@opindex fno-sel-sched-pipelining
 @item -fsel-sched-pipelining
 Enable software pipelining of innermost loops during selective scheduling.
 This option has no effect unless one of @option{-fselective-scheduling} or
 @option{-fselective-scheduling2} is turned on.
 
 @opindex fsel-sched-pipelining-outer-loops
+@opindex fno-sel-sched-pipelining-outer-loops
 @item -fsel-sched-pipelining-outer-loops
 When pipelining loops during selective scheduling, also pipeline outer loops.
 This option has no effect unless @option{-fsel-sched-pipelining} is turned on.
 
 @opindex fsemantic-interposition
+@opindex fno-semantic-interposition
 @item -fsemantic-interposition
 Some object formats, like ELF, allow interposing of symbols by the
 dynamic linker.
@@ -14382,12 +14511,14 @@ has no effect for functions explicitly declared inline
 and for symbols explicitly declared weak.
 
 @opindex fshrink-wrap
+@opindex fno-shrink-wrap
 @item -fshrink-wrap
 Emit function prologues only before parts of the function that need it,
 rather than at the top of the function.  This flag is enabled by default at
 @option{-O} and higher.
 
 @opindex fshrink-wrap-separate
+@opindex fno-shrink-wrap-separate
 @item -fshrink-wrap-separate
 Shrink-wrap separate parts of the prologue and epilogue separately, so that
 those parts are only executed when needed.
@@ -14395,6 +14526,7 @@ This option is on by default, but has no effect unless @option{-fshrink-wrap}
 is also turned on and the target supports this.
 
 @opindex fcaller-saves
+@opindex fno-caller-saves
 @item -fcaller-saves
 Enable allocation of values to registers that are clobbered by
 function calls, by emitting extra instructions to save and restore the
@@ -14407,6 +14539,7 @@ those which have no call-preserved registers to use instead.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fcombine-stack-adjustments
+@opindex fno-combine-stack-adjustments
 @item -fcombine-stack-adjustments
 Tracks stack adjustments (pushes and pops) and stack memory references
 and then tries to find ways to combine them.
@@ -14414,6 +14547,7 @@ and then tries to find ways to combine them.
 Enabled by default at @option{-O1} and higher.
 
 @opindex fipa-ra
+@opindex fno-ipa-ra
 @item -fipa-ra
 Use caller save registers for allocation if those registers are not used by
 any called function.  In that case it is not necessary to save and restore
@@ -14427,6 +14561,7 @@ exactly (this happens on targets that do not expose prologues
 and epilogues in RTL).
 
 @opindex fconserve-stack
+@opindex fno-conserve-stack
 @item -fconserve-stack
 Attempt to minimize stack usage.  The compiler attempts to use less
 stack space, even if that makes the program slower.  This option
@@ -14434,11 +14569,13 @@ implies setting the @option{large-stack-frame} parameter to 100
 and the @option{large-stack-frame-growth} parameter to 400.
 
 @opindex ftree-reassoc
+@opindex fno-tree-reassoc
 @item -ftree-reassoc
 Perform reassociation on trees.  This flag is enabled by default
 at @option{-O1} and higher.
 
 @opindex fcode-hoisting
+@opindex fno-code-hoisting
 @item -fcode-hoisting
 Perform code hoisting.  Code hoisting tries to move the
 evaluation of expressions executed on all paths to the function exit
@@ -14447,21 +14584,25 @@ optimization, but it often helps for code speed as well.
 This flag is enabled by default at @option{-O2} and higher.
 
 @opindex ftree-pre
+@opindex fno-tree-pre
 @item -ftree-pre
 Perform partial redundancy elimination (PRE) on trees.  This flag is
 enabled by default at @option{-O2} and @option{-O3}.
 
 @opindex ftree-partial-pre
+@opindex fno-tree-partial-pre
 @item -ftree-partial-pre
 Make partial redundancy elimination (PRE) more aggressive.  This flag is
 enabled by default at @option{-O3}.
 
 @opindex ftree-forwprop
+@opindex fno-tree-forwprop
 @item -ftree-forwprop
 Perform forward propagation on trees.  This flag is enabled by default
 at @option{-O1} and higher.
 
 @opindex ftree-fre
+@opindex fno-tree-fre
 @item -ftree-fre
 Perform full redundancy elimination (FRE) on trees.  The difference
 between FRE and PRE is that FRE only considers expressions
@@ -14470,11 +14611,13 @@ This analysis is faster than PRE, though it exposes fewer redundancies.
 This flag is enabled by default at @option{-O1} and higher.
 
 @opindex ftree-phiprop
+@opindex fno-tree-phiprop
 @item -ftree-phiprop
 Perform hoisting of loads from conditional pointers on trees.  This
 pass is enabled by default at @option{-O1} and higher.
 
 @opindex fhoist-adjacent-loads
+@opindex fno-hoist-adjacent-loads
 @item -fhoist-adjacent-loads
 Speculatively hoist loads from both branches of an if-then-else if the
 loads are from adjacent locations in the same structure and the target
@@ -14482,28 +14625,33 @@ architecture has a conditional move instruction.  This flag is enabled
 by default at @option{-O2} and higher.
 
 @opindex ftree-copy-prop
+@opindex fno-tree-copy-prop
 @item -ftree-copy-prop
 Perform copy propagation on trees.  This pass eliminates unnecessary
 copy operations.  This flag is enabled by default at @option{-O1} and
 higher.
 
 @opindex fipa-pure-const
+@opindex fno-ipa-pure-const
 @item -fipa-pure-const
 Discover which functions are pure or constant.
 Enabled by default at @option{-O1} and higher.
 
 @opindex fipa-reference
+@opindex fno-ipa-reference
 @item -fipa-reference
 Discover which static variables do not escape the
 compilation unit.
 Enabled by default at @option{-O1} and higher.
 
 @opindex fipa-reference-addressable
+@opindex fno-ipa-reference-addressable
 @item -fipa-reference-addressable
 Discover read-only, write-only and non-addressable static variables.
 Enabled by default at @option{-O1} and higher.
 
 @opindex fipa-reorder-for-locality
+@opindex fno-ipa-reorder-for-locality
 @item -fipa-reorder-for-locality
 Group call chains close together in the binary layout to improve code
 locality and minimize jump distances between frequently called functions.
@@ -14519,11 +14667,13 @@ If using this option it is recommended to also use profile feedback, but this
 option is not enabled by default otherwise.
 
 @opindex fipa-stack-alignment
+@opindex fno-ipa-stack-alignment
 @item -fipa-stack-alignment
 Reduce stack alignment on call sites if possible.
 Enabled by default.
 
 @opindex fipa-pta
+@opindex fno-ipa-pta
 @item -fipa-pta
 Perform interprocedural pointer analysis and interprocedural modification
 and reference analysis.  This option can cause excessive memory and
@@ -14531,6 +14681,7 @@ compile-time usage on large compilation units.  It is not enabled by
 default at any optimization level.
 
 @opindex fipa-profile
+@opindex fno-ipa-profile
 @item -fipa-profile
 Perform interprocedural profile propagation.  The functions called only from
 cold functions are marked as cold. Also functions executed once (such as
@@ -14540,6 +14691,7 @@ then optimized for size.
 Enabled by default at @option{-O1} and higher.
 
 @opindex fipa-modref
+@opindex fno-ipa-modref
 @item -fipa-modref
 Perform interprocedural mod/ref analysis.  This optimization analyzes the side
 effects of functions (memory locations that are modified or referenced) and
@@ -14547,6 +14699,7 @@ enables better optimization across the function call boundary.  This flag is
 enabled by default at @option{-O1} and higher.
 
 @opindex fipa-cp
+@opindex fno-ipa-cp
 @item -fipa-cp
 Perform interprocedural constant propagation.
 This optimization analyzes the program to determine when values passed
@@ -14557,6 +14710,7 @@ This flag is enabled by default at @option{-O2}, @option{-Os} and @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex fipa-cp-clone
+@opindex fno-ipa-cp-clone
 @item -fipa-cp-clone
 Perform function cloning to make interprocedural constant propagation stronger.
 When enabled, interprocedural constant propagation performs function cloning
@@ -14568,6 +14722,7 @@ This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex fipa-bit-cp
+@opindex fno-ipa-bit-cp
 @item -fipa-bit-cp
 When enabled, perform interprocedural bitwise constant
 propagation. This flag is enabled by default at @option{-O2} and
@@ -14575,6 +14730,7 @@ by @option{-fprofile-use} and @option{-fauto-profile}.
 It requires that @option{-fipa-cp} is enabled.
 
 @opindex fipa-vrp
+@opindex fno-ipa-vrp
 @item -fipa-vrp
 When enabled, perform interprocedural propagation of value
 ranges. This flag is enabled by default at @option{-O2}. It requires
@@ -14603,6 +14759,7 @@ equivalences that are found only by GCC and equivalences found only by Gold.
 @option{-fipa-icf} is enabled by default at @option{-O2} and @option{-Os}.
 
 @opindex flate-combine-instructions
+@opindex fno-late-combine-instructions
 @item -flate-combine-instructions
 Enable two instruction combination passes that run relatively late in the
 compilation process.  One of the passes runs before register allocation and
@@ -14673,6 +14830,7 @@ Note that @option{-flive-patching} is not supported with link-time optimization
 (@option{-flto}).
 
 @opindex fisolate-erroneous-paths-dereference
+@opindex fno-isolate-erroneous-paths-dereference
 @item -fisolate-erroneous-paths-dereference
 Detect paths that trigger erroneous or undefined behavior due to
 dereferencing a null pointer (with @option{-fdelete-null-pointer-checks}
@@ -14681,6 +14839,7 @@ flow and turn the statement with erroneous or undefined behavior into a
 trap.  This flag is enabled by default at @option{-O2} and higher.
 
 @opindex fisolate-erroneous-paths-attribute
+@opindex fno-isolate-erroneous-paths-attribute
 @item -fisolate-erroneous-paths-attribute
 Detect paths that trigger erroneous or undefined behavior due to a null value
 being used in a way forbidden by a @code{returns_nonnull} or @code{nonnull}
@@ -14689,11 +14848,13 @@ statement with erroneous or undefined behavior into a trap.  This is not
 currently enabled, but may be enabled by @option{-O2} in the future.
 
 @opindex ftree-sink
+@opindex fno-tree-sink
 @item -ftree-sink
 Perform forward store motion on trees.  This flag is
 enabled by default at @option{-O1} and higher.
 
 @opindex ftree-bit-ccp
+@opindex fno-tree-bit-ccp
 @item -ftree-bit-ccp
 Perform sparse conditional bit constant propagation on trees and propagate
 pointer alignment information.
@@ -14702,12 +14863,14 @@ at @option{-O1} and higher, except for @option{-Og}.
 It requires that @option{-ftree-ccp} is enabled.
 
 @opindex ftree-ccp
+@opindex fno-tree-ccp
 @item -ftree-ccp
 Perform sparse conditional constant propagation (CCP) on trees.  This
 pass only operates on local scalar variables and is enabled by default
 at @option{-O1} and higher.
 
 @opindex fssa-backprop
+@opindex fno-ssa-backprop
 @item -fssa-backprop
 Propagate information about uses of a value up the definition chain
 in order to simplify the definitions.  For example, this pass strips
@@ -14715,18 +14878,21 @@ sign operations if the sign of a value never matters.  The flag is
 enabled by default at @option{-O1} and higher.
 
 @opindex fssa-phiopt
+@opindex fno-ssa-phiopt
 @item -fssa-phiopt
 Perform pattern matching on SSA PHI nodes to optimize conditional
 code.  This pass is enabled by default at @option{-O1} and higher,
 except for @option{-Og}.
 
 @opindex ftree-switch-conversion
+@opindex fno-tree-switch-conversion
 @item -ftree-switch-conversion
 Perform conversion of simple initializations in a switch to
 initializations from a scalar array.  This flag is enabled by default
 at @option{-O2} and higher.
 
 @opindex ftree-tail-merge
+@opindex fno-tree-tail-merge
 @item -ftree-tail-merge
 Look for identical code sequences.  When found, replace one with a jump to the
 other.  This optimization is known as tail merging or cross jumping.  This flag
@@ -14736,17 +14902,20 @@ be limited using @option{max-tail-merge-comparisons} parameter and
 @option{max-tail-merge-iterations} parameter.
 
 @opindex ftree-cselim
+@opindex fno-tree-cselim
 @item -ftree-cselim
 Perform conditional store elimination on trees.  This flag is enabled by
 default at @option{-O1} and higher on targets that have conditional
 move instructions.
 
 @opindex ftree-dce
+@opindex fno-tree-dce
 @item -ftree-dce
 Perform dead code elimination (DCE) on trees.  This flag is enabled by
 default at @option{-O1} and higher.
 
 @opindex ftree-builtin-call-dce
+@opindex fno-tree-builtin-call-dce
 @item -ftree-builtin-call-dce
 Perform conditional dead code elimination (DCE) for calls to built-in functions
 that may set @code{errno} but are otherwise free of side effects.  This flag is
@@ -14764,6 +14933,7 @@ This option is enabled by default at @option{-O2} for C++ with -std=c++11
 or higher.
 
 @opindex ftree-dominator-opts
+@opindex fno-tree-dominator-opts
 @item -ftree-dominator-opts
 Perform a variety of simple scalar cleanups (constant/copy
 propagation, redundancy elimination, range propagation and expression
@@ -14772,6 +14942,7 @@ performs jump threading (to reduce jumps to jumps). This flag is
 enabled by default at @option{-O1} and higher.
 
 @opindex ftree-dse
+@opindex fno-tree-dse
 @item -ftree-dse
 Perform dead store elimination (DSE) on trees.  A dead store is a store into
 a memory location that is later overwritten by another store without
@@ -14779,6 +14950,7 @@ any intervening loads.  In this case the earlier store can be deleted.  This
 flag is enabled by default at @option{-O1} and higher.
 
 @opindex ftree-ch
+@opindex fno-tree-ch
 @item -ftree-ch
 Perform loop header copying on trees.  This is beneficial since it increases
 effectiveness of code motion optimizations.  It also saves one jump.  This flag
@@ -14786,13 +14958,17 @@ is enabled by default at @option{-O1} and higher.  It is not enabled
 for @option{-Os}, since it usually increases code size.
 
 @opindex ftree-loop-optimize
+@opindex fno-tree-loop-optimize
 @item -ftree-loop-optimize
 Perform loop optimizations on trees.  This flag is enabled by default
 at @option{-O1} and higher.
 
 @opindex ftree-loop-linear
+@opindex fno-tree-loop-linear
 @opindex floop-strip-mine
+@opindex fno-loop-strip-mine
 @opindex floop-block
+@opindex fno-loop-block
 @item -ftree-loop-linear
 @itemx -floop-strip-mine
 @itemx -floop-block
@@ -14802,6 +14978,7 @@ to be configured with @option{--with-isl} to enable the Graphite loop
 transformation infrastructure.
 
 @opindex fgraphite-identity
+@opindex fno-graphite-identity
 @item -fgraphite-identity
 Enable the identity transformation for graphite.  For every SCoP we generate
 the polyhedral representation and transform it back to gimple.  Using
@@ -14811,6 +14988,7 @@ are also performed by the code generator isl, like index splitting and
 dead code elimination in loops.
 
 @opindex floop-nest-optimize
+@opindex fno-loop-nest-optimize
 @item -floop-nest-optimize
 Enable the isl based loop nest optimizer.  This is a generic loop nest
 optimizer based on the Pluto optimization algorithms.  It calculates a loop
@@ -14818,6 +14996,7 @@ structure optimized for data-locality and parallelism.  This option
 is experimental.
 
 @opindex floop-parallelize-all
+@opindex fno-loop-parallelize-all
 @item -floop-parallelize-all
 Use the Graphite data dependence analysis to identify loops that can
 be parallelized.  Parallelize all the loops that can be analyzed to
@@ -14825,6 +15004,7 @@ not contain loop carried dependences without checking that it is
 profitable to parallelize the loops.
 
 @opindex ftree-coalesce-vars
+@opindex fno-tree-coalesce-vars
 @item -ftree-coalesce-vars
 While transforming the program out of the SSA representation, attempt to
 reduce copying by coalescing versions of different user-defined
@@ -14835,6 +15015,7 @@ prevents SSA coalescing of user variables.  This option is enabled by
 default if optimization is enabled, and it does very little otherwise.
 
 @opindex ftree-loop-if-convert
+@opindex fno-tree-loop-if-convert
 @item -ftree-loop-if-convert
 Attempt to transform conditional jumps in the innermost loops to
 branch-less equivalents.  The intent is to remove control-flow from
@@ -14843,6 +15024,7 @@ vectorization pass to handle these loops.  This is enabled by default
 if vectorization is enabled.
 
 @opindex ftree-loop-distribution
+@opindex fno-tree-loop-distribution
 @item -ftree-loop-distribution
 Perform loop distribution.  This flag can improve cache performance on
 big loop bodies and allow further loop optimizations, like
@@ -14866,6 +15048,7 @@ This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex ftree-loop-distribute-patterns
+@opindex fno-tree-loop-distribute-patterns
 @item -ftree-loop-distribute-patterns
 Perform loop distribution of patterns that can be code generated with
 calls to a library.  This flag is enabled by default at @option{-O2} and
@@ -14891,6 +15074,7 @@ ENDDO
 and the initialization loop is transformed into a call to memset zero.
 
 @opindex floop-interchange
+@opindex fno-loop-interchange
 @item -floop-interchange
 Perform loop interchange outside of graphite.  This flag can improve cache
 performance on loop nest and allow further loop optimizations, like
@@ -14912,6 +15096,7 @@ This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex floop-unroll-and-jam
+@opindex fno-loop-unroll-and-jam
 @item -floop-unroll-and-jam
 Apply unroll and jam transformations on feasible loops.  In a loop
 nest this unrolls the outer loop by some factor and fuses the resulting
@@ -14919,6 +15104,7 @@ multiple inner loops.  This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex ftree-loop-im
+@opindex fno-tree-loop-im
 @item -ftree-loop-im
 Perform loop invariant motion on trees.  This pass moves only invariants that
 are hard to handle at RTL level (function calls, operations that expand to
@@ -14928,6 +15114,7 @@ just trivial invariantness analysis in loop unswitching.  The pass also includes
 store motion.
 
 @opindex ftree-loop-ivcanon
+@opindex fno-tree-loop-ivcanon
 @item -ftree-loop-ivcanon
 Create a canonical counter for number of iterations in loops for which
 determining number of iterations requires complicated analysis.  Later
@@ -14935,6 +15122,7 @@ optimizations then may determine the number easily.  Useful especially
 in connection with unrolling.
 
 @opindex ftree-scev-cprop
+@opindex fno-tree-scev-cprop
 @item -ftree-scev-cprop
 Perform final value replacement.  If a variable is modified in a loop
 in such a way that its value when exiting the loop can be determined using
@@ -14944,12 +15132,14 @@ This reduces data dependencies and may allow further simplifications.
 Enabled by default at @option{-O1} and higher.
 
 @opindex fivopts
+@opindex fno-ivopts
 @item -fivopts
 Perform induction variable optimizations (strength reduction, induction
 variable merging and induction variable elimination) on trees.
 Enabled by default at @option{-O1} and higher.
 
 @opindex ftree-parallelize-loops
+@opindex fno-tree-parallelize-loops
 @item -ftree-parallelize-loops
 @itemx -ftree-parallelize-loops=@var{n}
 Parallelize loops, i.e., split their iteration space to run in multiple threads.
@@ -14972,11 +15162,13 @@ processors and uses that value. This enables creating binaries that
 adapt to different hardware configurations without recompilation.
 
 @opindex ftree-pta
+@opindex fno-tree-pta
 @item -ftree-pta
 Perform function-local points-to analysis on trees.  This flag is
 enabled by default at @option{-O1} and higher, except for @option{-Og}.
 
 @opindex ftree-sra
+@opindex fno-tree-sra
 @item -ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure
 references with scalars to prevent committing structures to memory too
@@ -14984,6 +15176,7 @@ early.  This flag is enabled by default at @option{-O1} and higher,
 except for @option{-Og}.
 
 @opindex fstore-merging
+@opindex fno-store-merging
 @item -fstore-merging
 Perform merging of narrow stores to consecutive memory addresses.  This pass
 merges contiguous stores of immediate values narrower than a word into fewer
@@ -14991,6 +15184,7 @@ wider stores to reduce the number of instructions.  This is enabled by default
 at @option{-O2} and higher as well as @option{-Os}.
 
 @opindex ftree-ter
+@opindex fno-tree-ter
 @item -ftree-ter
 Perform temporary expression replacement during the SSA->normal phase.  Single
 use/single def temporaries are replaced at their use location with their
@@ -14999,6 +15193,7 @@ much more complex trees to work on resulting in better RTL generation.  This is
 enabled by default at @option{-O1} and higher.
 
 @opindex ftree-slsr
+@opindex fno-tree-slsr
 @item -ftree-slsr
 Perform straight-line strength reduction on trees.  This recognizes related
 expressions involving multiplications and replaces them by less expensive
@@ -15006,17 +15201,20 @@ calculations when possible.  This is enabled by default at @option{-O1} and
 higher.
 
 @opindex ftree-vectorize
+@opindex fno-tree-vectorize
 @item -ftree-vectorize
 Perform vectorization on trees. This flag enables @option{-ftree-loop-vectorize}
 and @option{-ftree-slp-vectorize} if not explicitly specified.
 
 @opindex ftree-loop-vectorize
+@opindex fno-tree-loop-vectorize
 @item -ftree-loop-vectorize
 Perform loop vectorization on trees. This flag is enabled by default at
 @option{-O2} and by @option{-ftree-vectorize}, @option{-fprofile-use},
 and @option{-fauto-profile}.
 
 @opindex ftree-slp-vectorize
+@opindex fno-tree-slp-vectorize
 @item -ftree-slp-vectorize
 Perform basic block vectorization on trees. This flag is enabled by default at
 @option{-O2} and by @option{-ftree-vectorize}, @option{-fprofile-use},
@@ -15087,6 +15285,7 @@ attribute @code{uninitialized} standard attribute (@pxref{Variable Attributes})
 or the C++26 @code{[[indeterminate]]}.
 
 @opindex fvect-cost-model
+@opindex fno-vect-cost-model
 @item -fvect-cost-model=@var{model}
 Alter the cost model used for vectorization.  The @var{model} argument
 should be one of @samp{unlimited}, @samp{dynamic}, @samp{cheap} or
@@ -15115,6 +15314,7 @@ have the same meaning as described in @option{-fvect-cost-model} and by
 default a cost model defined with @option{-fvect-cost-model} is used.
 
 @opindex ftree-vrp
+@opindex fno-tree-vrp
 @item -ftree-vrp
 Perform Value Range Propagation on trees.  This is similar to the
 constant propagation pass, but instead of values, ranges of values are
@@ -15125,12 +15325,14 @@ elimination is only done if @option{-fdelete-null-pointer-checks} is
 enabled.
 
 @opindex fsplit-paths
+@opindex fno-split-paths
 @item -fsplit-paths
 Split paths leading to loop backedges.  This can improve dead code
 elimination and common subexpression elimination.  This is enabled by
 default at @option{-O3} and above.
 
 @opindex fsplit-ivs-in-unroller
+@opindex fno-split-ivs-in-unroller
 @item -fsplit-ivs-in-unroller
 Enables expression of values of induction variables in later iterations
 of the unrolled loop using the value in the first iteration.  This breaks
@@ -15144,6 +15346,7 @@ on some architectures due to restrictions in the CSE pass.
 This optimization is enabled by default.
 
 @opindex fvariable-expansion-in-unroller
+@opindex fno-variable-expansion-in-unroller
 @item -fvariable-expansion-in-unroller
 With this option, the compiler creates multiple copies of some
 local variables when unrolling a loop, which can result in superior code.
@@ -15152,6 +15355,7 @@ This optimization is enabled by default for PowerPC targets, but disabled
 by default otherwise.
 
 @opindex fpartial-inlining
+@opindex fno-partial-inlining
 @item -fpartial-inlining
 Inline parts of functions.  This option has any effect only
 when inlining itself is turned on by the @option{-finline-functions}
@@ -15160,6 +15364,7 @@ or @option{-finline-small-functions} options.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fpredictive-commoning
+@opindex fno-predictive-commoning
 @item -fpredictive-commoning
 Perform predictive commoning optimization, i.e., reusing computations
 (especially memory loads and stores) performed in previous
@@ -15169,6 +15374,7 @@ This option is enabled at level @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex fprefetch-loop-arrays
+@opindex fno-prefetch-loop-arrays
 @item -fprefetch-loop-arrays
 If supported by the target machine, generate instructions to prefetch
 memory to improve the performance of loops that access large arrays.
@@ -15240,6 +15446,7 @@ The default is @option{-fguess-branch-probability} at levels
 @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex freorder-blocks
+@opindex fno-reorder-blocks
 @item -freorder-blocks
 Reorder basic blocks in the compiled function in order to reduce number of
 taken branches and improve code locality.
@@ -15247,6 +15454,7 @@ taken branches and improve code locality.
 Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex freorder-blocks-algorithm
+@opindex fno-reorder-blocks-algorithm
 @item -freorder-blocks-algorithm=@var{algorithm}
 Use the specified algorithm for basic block reordering.  The
 @var{algorithm} argument can be @samp{simple}, which does not increase
@@ -15259,6 +15467,7 @@ The default is @samp{simple} at levels @option{-O1}, @option{-Os}, and
 @samp{stc} at levels @option{-O2}, @option{-O3}.
 
 @opindex freorder-blocks-and-partition
+@opindex fno-reorder-blocks-and-partition
 @item -freorder-blocks-and-partition
 In addition to reordering basic blocks in the compiled function, in order
 to reduce number of taken branches, partitions hot and cold basic blocks
@@ -15275,6 +15484,7 @@ explicitly (if using a working linker).
 Enabled for x86 at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex freorder-functions
+@opindex fno-reorder-functions
 @item -freorder-functions
 Reorder functions in the object file in order to
 improve code locality.  Unlike @option{-fipa-reorder-for-locality} this option
@@ -15292,6 +15502,7 @@ This option isn't effective unless you either provide profile feedback
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fstrict-aliasing
+@opindex fno-strict-aliasing
 @item -fstrict-aliasing
 Allow the compiler to assume the strictest aliasing rules applicable to
 the language being compiled.  For C (and C++), this activates
@@ -15348,6 +15559,7 @@ The @option{-fstrict-aliasing} option is enabled at levels
 @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fipa-strict-aliasing
+@opindex fno-ipa-strict-aliasing
 @item -fipa-strict-aliasing
 Controls whether rules of @option{-fstrict-aliasing} are applied across
 function boundaries.  Note that if multiple functions gets inlined into a
@@ -15358,6 +15570,7 @@ The @option{-fipa-strict-aliasing} option is enabled by default and is
 effective only in combination with @option{-fstrict-aliasing}.
 
 @opindex falign-functions
+@opindex fno-align-functions
 @item -falign-functions
 @itemx -falign-functions=@var{n}
 @itemx -falign-functions=@var{n}:@var{m}
@@ -15406,6 +15619,7 @@ by the amount specified by @option{-falign-functions}, but not to
 skip more bytes than the size of the function.
 
 @opindex falign-labels
+@opindex fno-align-labels
 @item -falign-labels
 @itemx -falign-labels=@var{n}
 @itemx -falign-labels=@var{n}:@var{m}
@@ -15427,6 +15641,7 @@ The maximum allowed @var{n} option value is 65536.
 Enabled at levels @option{-O2}, @option{-O3}.
 
 @opindex falign-loops
+@opindex fno-align-loops
 @item -falign-loops
 @itemx -falign-loops=@var{n}
 @itemx -falign-loops=@var{n}:@var{m}
@@ -15451,6 +15666,7 @@ If @var{n} is not specified or is zero, use a machine-dependent default.
 Enabled at levels @option{-O2}, @option{-O3}.
 
 @opindex falign-jumps
+@opindex fno-align-jumps
 @item -falign-jumps
 @itemx -falign-jumps=@var{n}
 @itemx -falign-jumps=@var{n}:@var{m}
@@ -15491,6 +15707,7 @@ in dead code elimination.
 See also @option{-fmalloc-dce}.
 
 @opindex fallow-store-data-races
+@opindex fno-allow-store-data-races
 @item -fallow-store-data-races
 Allow the compiler to perform optimizations that may introduce new data races
 on stores, without proving that the variable cannot be concurrently accessed
@@ -15508,6 +15725,7 @@ vectorization.
 Enabled at level @option{-Ofast}.
 
 @opindex funit-at-a-time
+@opindex fno-unit-at-a-time
 @item -funit-at-a-time
 This option is left for compatibility reasons. @option{-funit-at-a-time}
 has no effect, while @option{-fno-unit-at-a-time} implies
@@ -15531,6 +15749,7 @@ Additionally @option{-fno-toplevel-reorder} implies
 @option{-fno-section-anchors}.
 
 @opindex funreachable-traps
+@opindex fno-unreachable-traps
 @item -funreachable-traps
 With this option, the compiler turns calls to
 @code{__builtin_unreachable} into traps, instead of using them for
@@ -15545,6 +15764,7 @@ takes priority over this one.
 This option is enabled by default at @option{-O0} and @option{-Og}.
 
 @opindex fweb
+@opindex fno-web
 @item -fweb
 Constructs webs as commonly used for register allocation purposes and assign
 each web individual pseudo register.  This allows the register allocation pass
@@ -15556,6 +15776,7 @@ however, make debugging impossible, since variables no longer stay in a
 Enabled by default with @option{-funroll-loops}.
 
 @opindex fwhole-program
+@opindex fno-whole-program
 @item -fwhole-program
 Assume that the current compilation unit represents the whole program being
 compiled.  All public functions and variables with the exception of @code{main}
@@ -15570,6 +15791,7 @@ final code is produced (with @option{-flto}
 @option{-flinker-output=nolto-rel}).
 
 @opindex flto
+@opindex fno-lto
 @item -flto[=@var{n}]
 This option runs the standard link-time optimizer.  When invoked
 with source code, it generates GIMPLE (one of GCC's internal
@@ -15800,6 +16022,7 @@ or otherwise fall back to autodetection of the number of CPU threads
 present in your system.
 
 @opindex flto-partition
+@opindex fno-lto-partition
 @item -flto-partition=@var{alg}
 Specify the partitioning algorithm used by the link-time optimizer.
 The value is either @samp{1to1} to specify a partitioning mirroring
@@ -15817,6 +16040,7 @@ used while the value @samp{none} bypasses partitioning and executes
 the link-time optimization step directly from the WPA phase.
 
 @opindex flto-incremental
+@opindex fno-lto-incremental
 @item -flto-incremental=@var{path}
 Enable incremental LTO, with its cache in given existing directory.
 Can significantly shorten edit-compile cycles with LTO.
@@ -15829,6 +16053,7 @@ recompile time reduction.
 Multiple GCC instances can use the same cache in parallel.
 
 @opindex flto-incremental-cache-size
+@opindex fno-lto-incremental-cache-size
 @item -flto-incremental-cache-size=@var{n}
 Specifies number of cache entries in incremental LTO after which to prune
 old entries. This is a soft limit, temporarily there may be more entries.
@@ -15870,6 +16095,7 @@ and GCC was configured for use with
 a linker supporting plugins (GNU ld 2.21 or newer or gold).
 
 @opindex ffat-lto-objects
+@opindex fno-fat-lto-objects
 @item -ffat-lto-objects
 Fat LTO objects are object files that contain both the intermediate language
 and the object code. This makes them usable for both LTO linking and normal
@@ -15894,6 +16120,7 @@ The default is @option{-fno-fat-lto-objects} on targets with linker plugin
 support.
 
 @opindex fcompare-elim
+@opindex fno-compare-elim
 @item -fcompare-elim
 After register allocation and post-register allocation instruction splitting,
 identify arithmetic instructions that compute processor flags similar to a
@@ -15906,6 +16133,7 @@ the comparison operation before register allocation is complete.
 Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex ffold-mem-offsets
+@opindex fno-fold-mem-offsets
 @item -ffold-mem-offsets
 @itemx -fno-fold-mem-offsets
 Try to eliminate add instructions by folding them in memory loads/stores.
@@ -15913,6 +16141,7 @@ Try to eliminate add instructions by folding them in memory loads/stores.
 Enabled at levels @option{-O2}, @option{-O3}.
 
 @opindex fcprop-registers
+@opindex fno-cprop-registers
 @item -fcprop-registers
 After register allocation and post-register allocation instruction splitting,
 perform a copy-propagation pass to try to reduce scheduling dependencies
@@ -15921,6 +16150,7 @@ and occasionally eliminate the copy.
 Enabled at levels @option{-O1}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fprofile-correction
+@opindex fno-profile-correction
 @item -fprofile-correction
 Profiles collected using an instrumented binary for multi-threaded programs may
 be inconsistent due to missed counter updates. When this option is specified,
@@ -15930,6 +16160,7 @@ default, GCC emits an error message when an inconsistent profile is detected.
 This option is enabled by @option{-fauto-profile}.
 
 @opindex fprofile-partial-training
+@opindex fno-profile-partial-training
 @item -fprofile-partial-training
 With @code{-fprofile-use} all portions of programs not executed during
 training runs are optimized aggressively for size rather than speed.
@@ -15943,6 +16174,7 @@ without profile feedback. This leads to better performance when the
 training is not representative at the cost of significantly bigger code.
 
 @opindex fprofile-use
+@opindex fno-profile-use
 @item -fprofile-use
 @itemx -fprofile-use=@var{path}
 Enable profile feedback-directed optimizations,
@@ -15971,6 +16203,7 @@ If @var{path} is specified, GCC looks at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.
 
 @opindex fauto-profile
+@opindex fno-auto-profile
 @item -fauto-profile
 @itemx -fauto-profile=@var{path}
 Enable sampling-based feedback-directed optimizations,
@@ -16010,6 +16243,7 @@ create_gcov --binary=your_program.unstripped --profile=perf.data \
 @end smallexample
 
 @opindex fauto-profile-inlining
+@opindex fno-auto-profile-inlining
 @item -fauto-profile-inlining
 When auto-profile is available inline all relevant functions which was
 inlined in the tran run before reading the profile feedback.  This improves
@@ -16057,6 +16291,7 @@ semantics apply without excess precision, and in the latter, rounding
 is unpredictable.
 
 @opindex ffloat-store
+@opindex fno-float-store
 @item -ffloat-store
 Do not store floating-point variables in registers, and inhibit other
 options that might change whether a floating-point value is taken from a
@@ -16069,6 +16304,7 @@ only on assignments and not casts as @option{-fexcess-precision=standard}
 does.
 
 @opindex ffast-math
+@opindex fno-fast-math
 @item -ffast-math
 Sets the options @option{-fno-math-errno}, @option{-funsafe-math-optimizations},
 @option{-ffinite-math-only}, @option{-fno-rounding-math},
@@ -16105,6 +16341,7 @@ therefore no reason for the compiler to consider the possibility that
 it might, and @option{-fno-math-errno} is the default.
 
 @opindex funsafe-math-optimizations
+@opindex fno-unsafe-math-optimizations
 @item -funsafe-math-optimizations
 
 Allow optimizations for floating-point arithmetic that (a) assume
@@ -16125,6 +16362,7 @@ Enables @option{-fno-signed-zeros}, @option{-fno-trapping-math},
 The default is @option{-fno-unsafe-math-optimizations}.
 
 @opindex fassociative-math
+@opindex fno-associative-math
 @item -fassociative-math
 
 Allow re-association of operands in series of floating-point operations.
@@ -16143,6 +16381,7 @@ is automatically enabled when both @option{-fno-signed-zeros} and
 The default is @option{-fno-associative-math}.
 
 @opindex freciprocal-math
+@opindex fno-reciprocal-math
 @item -freciprocal-math
 
 Allow the reciprocal of a value to be used instead of dividing by
@@ -16154,6 +16393,7 @@ precision and increases the number of flops operating on the value.
 The default is @option{-fno-reciprocal-math}.
 
 @opindex ffinite-math-only
+@opindex fno-finite-math-only
 @item -ffinite-math-only
 Allow optimizations for floating-point arithmetic that assume
 that arguments and results are not NaNs or +-Infs.
@@ -16200,6 +16440,7 @@ will be used along with @option{-frounding-math} to specify the
 default state for @code{FENV_ACCESS}.
 
 @opindex frounding-math
+@opindex fno-rounding-math
 @item -frounding-math
 Disable transformations and optimizations that assume default floating-point
 rounding behavior (round-to-nearest).
@@ -16220,6 +16461,7 @@ will be used along with @option{-ftrapping-math} to specify the
 default state for @code{FENV_ACCESS}.
 
 @opindex fsignaling-nans
+@opindex fno-signaling-nans
 @item -fsignaling-nans
 Compile code assuming that IEEE signaling NaNs may generate user-visible
 traps during floating-point operations.  Setting this option disables
@@ -16235,11 +16477,13 @@ This option is experimental and does not currently guarantee to
 disable all GCC optimizations that affect signaling NaN behavior.
 
 @opindex fsingle-precision-constant
+@opindex fno-single-precision-constant
 @item -fsingle-precision-constant
 Treat floating-point constants as single precision instead of
 implicitly converting them to double-precision constants.
 
 @opindex fcx-limited-range
+@opindex fno-cx-limited-range
 @item -fcx-limited-range
 When enabled, this option states that a range reduction step is not
 needed when performing complex division.  Also, there is no checking
@@ -16252,6 +16496,7 @@ This option controls the default setting of the ISO C99
 all languages.
 
 @opindex fcx-fortran-rules
+@opindex fno-cx-fortran-rules
 @item -fcx-fortran-rules
 Complex multiplication and division follow Fortran rules.  Range
 reduction is done as part of complex division, but there is no checking
@@ -16275,6 +16520,7 @@ section includes experimental options that may produce broken code.
 
 @table @gcctabopt
 @opindex fbranch-probabilities
+@opindex fno-branch-probabilities
 @item -fbranch-probabilities
 After running a program compiled with @option{-fprofile-arcs}
 (@pxref{Instrumentation Options}),
@@ -16298,6 +16544,7 @@ exactly determine which path is taken more often.
 Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex fprofile-values
+@opindex fno-profile-values
 @item -fprofile-values
 If combined with @option{-fprofile-arcs}, it adds code so that some
 data about values of expressions in the program is gathered.
@@ -16309,6 +16556,7 @@ Enabled by @option{-fprofile-generate}, @option{-fprofile-use}, and
 @option{-fauto-profile}.
 
 @opindex fprofile-reorder-functions
+@opindex fno-profile-reorder-functions
 @item -fprofile-reorder-functions
 Function reordering based on profile instrumentation collects
 first time of execution of a function and orders these functions
@@ -16318,6 +16566,7 @@ efficient loading of text segments.
 Enabled with @option{-fprofile-use}.
 
 @opindex fvpt
+@opindex fno-vpt
 @item -fvpt
 If combined with @option{-fprofile-arcs}, this option instructs the compiler
 to add code to gather information about values of expressions.
@@ -16330,6 +16579,7 @@ using the knowledge about the value of the denominator.
 Enabled with @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex frename-registers
+@opindex fno-rename-registers
 @item -frename-registers
 Attempt to avoid false dependencies in scheduled code by making use
 of registers left over after register allocation.  This optimization
@@ -16341,6 +16591,7 @@ a ``home register''.
 Enabled by default with @option{-funroll-loops}.
 
 @opindex fschedule-fusion
+@opindex fno-schedule-fusion
 @item -fschedule-fusion
 Performs a target dependent pass over the instruction stream to schedule
 instructions of same type together because target machine can execute them
@@ -16349,6 +16600,7 @@ more efficiently if they are adjacent to each other in the instruction flow.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex fdep-fusion
+@opindex fno-dep-fusion
 @item -fdep-fusion
 Detect macro-op fusible pairs consisting of single-use instructions and their
 uses, and place such pairs together in the instruction stream to increase
@@ -16358,6 +16610,7 @@ allocation, and another time before register renaming.
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @opindex ftracer
+@opindex fno-tracer
 @item -ftracer
 Perform tail duplication to enlarge superblock size.  This transformation
 simplifies the control flow of the function allowing other optimizations to do
@@ -16366,6 +16619,7 @@ a better job.
 Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex funroll-loops
+@opindex fno-unroll-loops
 @item -funroll-loops
 Unroll loops whose number of iterations can be determined at compile time or
 upon entry to the loop.  @option{-funroll-loops} implies
@@ -16377,6 +16631,7 @@ or may not make it run faster.
 Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex funroll-all-loops
+@opindex fno-unroll-all-loops
 @item -funroll-all-loops
 Unroll all loops, even if their number of iterations is uncertain when
 the loop is entered.  This usually makes programs run more slowly.
@@ -16384,6 +16639,7 @@ the loop is entered.  This usually makes programs run more slowly.
 @option{-funroll-loops}.
 
 @opindex fpeel-loops
+@opindex fno-peel-loops
 @item -fpeel-loops
 Peels loops for which there is enough information that they do not
 roll much (from profile feedback or static analysis).  It also turns on
@@ -16405,11 +16661,13 @@ considered safe to remove.
 The default is @option{-fmalloc-dce=2}.  See also @option{-fallocation-dce}.
 
 @opindex fmove-loop-invariants
+@opindex fno-move-loop-invariants
 @item -fmove-loop-invariants
 Enables the loop invariant motion pass in the RTL loop optimizer.  Enabled
 at level @option{-O1} and higher, except for @option{-Og}.
 
 @opindex fmove-loop-stores
+@opindex fno-move-loop-stores
 @item -fmove-loop-stores
 Enables the loop store motion pass in the GIMPLE loop optimizer.  This
 moves invariant stores to after the end of the loop in exchange for
@@ -16419,6 +16677,7 @@ be enabled as well.  Enabled at level @option{-O1} and higher, except
 for @option{-Og}.
 
 @opindex fsplit-loops
+@opindex fno-split-loops
 @item -fsplit-loops
 Split a loop into two if it contains a condition that's always true
 for one side of the iteration space and false for the other.
@@ -16426,6 +16685,7 @@ for one side of the iteration space and false for the other.
 Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex funswitch-loops
+@opindex fno-unswitch-loops
 @item -funswitch-loops
 Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
@@ -16433,6 +16693,7 @@ of the loop on both branches (modified according to result of the condition).
 Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex fversion-loops-for-strides
+@opindex fno-version-loops-for-strides
 @item -fversion-loops-for-strides
 If a loop iterates over an array with a variable stride, create another
 version of the loop that assumes the stride is always one.  For example:
@@ -16459,7 +16720,9 @@ This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @opindex ffunction-sections
+@opindex fno-function-sections
 @opindex fdata-sections
+@opindex fno-data-sections
 @item -ffunction-sections
 @itemx -fdata-sections
 Place each function or data item into its own section in the output
@@ -16489,11 +16752,13 @@ link time.  An example of such an optimization is relaxing calls to short call
 instructions.
 
 @opindex fstdarg-opt
+@opindex fno-stdarg-opt
 @item -fstdarg-opt
 Optimize the prologue of variadic argument functions with respect to usage of
 those arguments.
 
 @opindex fsection-anchors
+@opindex fno-section-anchors
 @item -fsection-anchors
 Try to reduce the number of symbolic address calculations by using
 shared ``anchor'' symbols to address nearby objects.  This transformation
@@ -18275,6 +18540,7 @@ program analysis purposes.
 @opindex p
 @opindex profile
 @opindex fprofile
+@opindex fno-profile
 @opindex pg
 @item -p
 @itemx --profile
@@ -18293,6 +18559,7 @@ suppress profiling of individual functions when compiling with these options.
 @xref{Common Function Attributes}.
 
 @opindex fprofile-arcs
+@opindex fno-profile-arcs
 @item -fprofile-arcs
 Add code so that program flow @dfn{arcs} are instrumented.  During
 execution the program records how many times each branch and call is
@@ -18319,6 +18586,7 @@ E.g. @code{gcc a.c b.c -o binary} would generate @file{binary-a.gcda} and
 
 @item -fcondition-coverage
 @opindex fcondition-coverage
+@opindex fno-condition-coverage
 Add code so that program conditions are instrumented.  During execution the
 program records what terms in a conditional contributes to a decision, which
 can be used to verify that all terms in a Boolean function are tested and have
@@ -18327,6 +18595,7 @@ with @code{gcov --conditions}.
 
 @item -fpath-coverage
 @opindex fpath-coverage
+@opindex fno-path-coverage
 Add code so that the paths taken are tracked.  During execution the
 program records the prime paths taken.  The number of paths grows very
 fast with complexity, and to avoid exploding compile times GCC will give
@@ -18424,6 +18693,7 @@ not a subpath of any other path.
 
 @need 2000
 @opindex ftest-coverage
+@opindex fno-test-coverage
 @item -ftest-coverage
 Produce a notes file that the @command{gcov} code-coverage utility
 (@pxref{Gcov,, @command{gcov}---a Test Coverage Program}) can use to
@@ -18434,6 +18704,7 @@ generate test coverage data.  Coverage data matches the source files
 more closely if you do not optimize.
 
 @opindex fprofile-abs-path
+@opindex fno-profile-abs-path
 @item -fprofile-abs-path
 Automatically convert relative source file names to absolute path names
 in the @file{.gcno} files.  This allows @command{gcov} to find the correct
@@ -18471,6 +18742,7 @@ value of environment variable @var{VAR}
 @end table
 
 @opindex fprofile-generate
+@opindex fno-profile-generate
 @item -fprofile-generate
 @itemx -fprofile-generate=@var{path}
 
@@ -19086,6 +19358,7 @@ undefined,float-cast-overflow,float-divide-by-zero,bounds-strict
 @end smallexample
 
 @opindex fsanitize-address-use-after-scope
+@opindex fno-sanitize-address-use-after-scope
 @item -fsanitize-address-use-after-scope
 Enable sanitization of local variables to detect use-after-scope bugs.
 The option sets @option{-fstack-reuse} to @samp{none}.
@@ -19118,16 +19391,19 @@ instrumentation is silently ignored as the instrumentation always needs
 @code{libubsan} support, @option{-fsanitize-trap=vptr} is not allowed.
 
 @opindex fsanitize-undefined-trap-on-error
+@opindex fno-sanitize-undefined-trap-on-error
 @item -fsanitize-undefined-trap-on-error
 The @option{-fsanitize-undefined-trap-on-error} option is deprecated
 equivalent of @option{-fsanitize-trap=all}.
 
 @opindex fsanitize-coverage=trace-pc
+@opindex fno-sanitize-coverage=trace-pc
 @item -fsanitize-coverage=trace-pc
 Enable coverage-guided fuzzing code instrumentation.
 Inserts a call to @code{__sanitizer_cov_trace_pc} into every basic block.
 
 @opindex fsanitize-coverage=trace-cmp
+@opindex fno-sanitize-coverage=trace-cmp
 @item -fsanitize-coverage=trace-cmp
 Enable dataflow guided fuzzing code instrumentation.
 Inserts a call to @code{__sanitizer_cov_trace_cmp1},
@@ -19190,6 +19466,7 @@ on Intel Control-flow Enforcement Technology (CET) which works for
 i686 processor or newer.
 
 @opindex fharden-compares
+@opindex fno-harden-compares
 @item -fharden-compares
 For every logical test that survives gimple optimizations and is
 @emph{not} the condition in a conditional branch (for example,
@@ -19200,6 +19477,7 @@ match.  Use with @samp{-fharden-conditional-branches} to cover all
 conditionals.
 
 @opindex fharden-conditional-branches
+@opindex fno-harden-conditional-branches
 @item -fharden-conditional-branches
 For every non-vectorized conditional branch that survives gimple
 optimizations, emit extra code to compute and verify the reversed
@@ -19208,6 +19486,7 @@ unexpected.  Use with @samp{-fharden-compares} to cover all
 conditionals.
 
 @opindex fharden-control-flow-redundancy
+@opindex fno-harden-control-flow-redundancy
 @item -fharden-control-flow-redundancy
 Emit extra code to set booleans when entering basic blocks, and to
 verify and trap, at function exits, when the booleans do not form an
@@ -19229,6 +19508,7 @@ possibilities are merely theoretical, as these conditions can only be
 met when using custom compiler plugins.
 
 @opindex fhardcfr-skip-leaf
+@opindex fno-hardcfr-skip-leaf
 @item -fhardcfr-skip-leaf
 Disable @option{-fharden-control-flow-redundancy} in leaf functions.
 
@@ -19288,6 +19568,7 @@ from the @code{noreturn} treatment only internal functions used to
 (re)raise exceptions, that are not affected by these optimizations.
 
 @opindex fhardened
+@opindex fno-hardened
 @item -fhardened
 Enable a set of flags for C and C++ that improve the security of the
 generated code without affecting its ABI.  The precise flags enabled
@@ -19321,6 +19602,7 @@ already specified anywhere on the command line.  For instance,
 @option{-fstack-protector}, but not @option{-fstack-protector-strong}.
 
 @opindex fstack-protector
+@opindex fno-stack-protector
 @item -fstack-protector
 Emit extra code to check for buffer overflows, such as stack smashing
 attacks.  This is done by adding a guard variable to functions with
@@ -19350,6 +19632,7 @@ Like @option{-fstack-protector} but only protects those functions which
 have the @code{stack_protect} attribute.
 
 @opindex fstack-check
+@opindex fno-stack-check
 @item -fstack-check
 Generate code to verify that you do not go beyond the boundary of the
 stack.  You should specify this flag if you are running in an
@@ -19394,6 +19677,7 @@ Ada code.  It is not generally sufficient to protect against stack-clash
 attacks.  To protect against those you want @samp{-fstack-clash-protection}.
 
 @opindex fstack-clash-protection
+@opindex fno-stack-clash-protection
 @item -fstack-clash-protection
 Generate code to prevent stack clash style attacks.  When this option is
 enabled, the compiler will only allocate one page of stack space at a time
@@ -19429,6 +19713,7 @@ You can locally override stack limit checking by using the
 @code{no_stack_limit} function attribute (@pxref{Function Attributes}).
 
 @opindex fsplit-stack
+@opindex fno-split-stack
 @item -fsplit-stack
 Generate code to automatically split the stack before it overflows.
 The resulting program has a discontiguous stack which can only
@@ -19522,6 +19807,7 @@ values specified, @samp{none} takes highest priority over both @samp{std} and
 @samp{preinit}; @samp{preinit} takes priority over @samp{std}.
 
 @opindex fvtv-debug
+@opindex fno-vtv-debug
 @item -fvtv-debug
 When used in conjunction with @option{-fvtable-verify=std} or
 @option{-fvtable-verify=preinit}, causes debug versions of the
@@ -19536,6 +19822,7 @@ Note:  This feature @emph{appends} data to the log file. If you want a fresh log
 file, be sure to delete any existing one.
 
 @opindex fvtv-counts
+@opindex fno-vtv-counts
 @item -fvtv-counts
 This is a debugging flag.  When used in conjunction with
 @option{-fvtable-verify=std} or @option{-fvtable-verify=preinit}, this
@@ -19554,6 +19841,7 @@ Note:  This feature @emph{appends} data to the log files.  To get fresh log
 files, be sure to delete any existing ones.
 
 @opindex finstrument-functions
+@opindex fno-instrument-functions
 @item -finstrument-functions
 Generate instrumentation calls for entry and exit to functions.  Just
 after function entry and just before function exit, the following
@@ -19593,6 +19881,7 @@ routines generate output or allocate memory).
 @xref{Common Function Attributes}.
 
 @opindex finstrument-functions-once
+@opindex fno-instrument-functions-once
 @item -finstrument-functions-once
 This is similar to @option{-finstrument-functions}, but the profiling
 functions are called only once per instrumented function, i.e. the first
@@ -19799,6 +20088,7 @@ object file names should not be used as arguments.  @xref{Overall
 Options}.
 
 @opindex flink-libatomic
+@opindex fno-link-libatomic
 @item -flink-libatomic
 Enable linking of libatomic if it's supported by target, and is enabled by
 default. The negative form @option{-fno-link-libatomic} can be used to
@@ -19852,22 +20142,27 @@ To maintain whole-program optimization, link such objects into a static
 library instead.
 
 @opindex fuse-ld=bfd
+@opindex fno-use-ld=bfd
 @item -fuse-ld=bfd
 Use the @command{bfd} linker instead of the default linker.
 
 @opindex fuse-ld=gold
+@opindex fno-use-ld=gold
 @item -fuse-ld=gold
 Use the @command{gold} linker instead of the default linker.
 
 @opindex fuse-ld=lld
+@opindex fno-use-ld=lld
 @item -fuse-ld=lld
 Use the LLVM @command{lld} linker instead of the default linker.
 
 @opindex fuse-ld=mold
+@opindex fno-use-ld=mold
 @item -fuse-ld=mold
 Use the Modern Linker (@command{mold}) instead of the default linker.
 
 @opindex fuse-ld=wild
+@opindex fno-use-ld=wild
 @item -fuse-ld=wild
 Use the Wild linker (@command{wild}) instead of the default linker.
 
@@ -20490,6 +20785,7 @@ not reused, the aggressive stack reuse can lead to runtime errors. This
 option is used to control the temporary stack reuse optimization.
 
 @opindex ftrapv
+@opindex fno-trapv
 @item -ftrapv
 This option generates traps for signed overflow on addition, subtraction,
 multiplication operations.
@@ -20500,6 +20796,7 @@ using @option{-ftrapv} @option{-fwrapv} @option{-fno-wrapv} on the command-line
 results in @option{-ftrapv} being effective.
 
 @opindex fwrapv
+@opindex fno-wrapv
 @item -fwrapv
 This option instructs the compiler to assume that signed arithmetic
 overflow of addition, subtraction and multiplication wraps around
@@ -20512,6 +20809,7 @@ using @option{-ftrapv} @option{-fwrapv} @option{-fno-wrapv} on the command-line
 results in @option{-ftrapv} being effective.
 
 @opindex fwrapv-pointer
+@opindex fno-wrapv-pointer
 @item -fwrapv-pointer
 This option instructs the compiler to assume that pointer arithmetic
 overflow on addition and subtraction wraps around using twos-complement
@@ -20519,11 +20817,13 @@ representation.  This flag disables some optimizations which assume
 pointer overflow is invalid.
 
 @opindex fstrict-overflow
+@opindex fno-strict-overflow
 @item -fstrict-overflow
 This option implies @option{-fno-wrapv} @option{-fno-wrapv-pointer} and when
 negated implies @option{-fwrapv} @option{-fwrapv-pointer}.
 
 @opindex fexceptions
+@opindex fno-exceptions
 @item -fexceptions
 Enable exception handling.  Generates extra code needed to propagate
 exceptions.  For some targets, this implies GCC generates frame
@@ -20538,6 +20838,7 @@ disable this option if you are compiling older C++ programs that don't
 use exception handling.
 
 @opindex fnon-call-exceptions
+@opindex fno-non-call-exceptions
 @item -fnon-call-exceptions
 Generate code that allows trapping instructions to throw exceptions.
 Note that this requires platform-specific runtime support that does
@@ -20548,6 +20849,7 @@ arbitrary signal handlers such as @code{SIGALRM}.  This enables
 @option{-fexceptions}.
 
 @opindex fdelete-dead-exceptions
+@opindex fno-delete-dead-exceptions
 @item -fdelete-dead-exceptions
 Consider that instructions that may throw exceptions but don't otherwise
 contribute to the execution of the program can be optimized away.
@@ -20558,6 +20860,7 @@ the language specifications.
 Optimization passes that cause dead exceptions to be removed are enabled independently at different optimization levels.
 
 @opindex funwind-tables
+@opindex fno-unwind-tables
 @item -funwind-tables
 Similar to @option{-fexceptions}, except that it just generates any needed
 static data, but does not affect the generated code in any other way.
@@ -20565,6 +20868,7 @@ You normally do not need to enable this option; instead, a language processor
 that needs this handling enables it on your behalf.
 
 @opindex fasynchronous-unwind-tables
+@opindex fno-asynchronous-unwind-tables
 @item -fasynchronous-unwind-tables
 Generate unwind table in DWARF format, if supported by target machine.  The
 table is exact at each instruction boundary, so it can be used for stack
@@ -20586,6 +20890,7 @@ DSOs; if your program relies on reinitialization of a DSO via
 @option{-fno-gnu-unique}.
 
 @opindex fpcc-struct-return
+@opindex fno-pcc-struct-return
 @item -fpcc-struct-return
 Return ``short'' @code{struct} and @code{union} values in memory like
 longer ones, rather than in registers.  This convention is less
@@ -20605,6 +20910,7 @@ switch is not binary compatible with code compiled with the
 Use it to conform to a non-default application binary interface.
 
 @opindex freg-struct-return
+@opindex fno-reg-struct-return
 @item -freg-struct-return
 Return @code{struct} and @code{union} values in registers when possible.
 This is more efficient for small structures than
@@ -20623,6 +20929,7 @@ switch is not binary compatible with code compiled with the
 Use it to conform to a non-default application binary interface.
 
 @opindex fshort-enums
+@opindex fno-short-enums
 @item -fshort-enums
 Allocate to an @code{enum} type only as many bytes as it needs for the
 declared range of possible values.  Specifically, the @code{enum} type
@@ -20635,6 +20942,7 @@ code that is not binary compatible with code generated without that switch.
 Use it to conform to a non-default application binary interface.
 
 @opindex fshort-wchar
+@opindex fno-short-wchar
 @item -fshort-wchar
 Override the underlying type for @code{wchar_t} to be @code{short
 unsigned int} instead of the default for the target.  This option is
@@ -20679,6 +20987,7 @@ directives and causes the @code{#ident} preprocessor directive to be ignored.
 and @option{-fno-ident}, respectively.
 
 @opindex finhibit-size-directive
+@opindex fno-inhibit-size-directive
 @item -finhibit-size-directive
 Don't output a @code{.size} assembler directive, or anything else that
 would cause trouble if the function is split in the middle, and the
@@ -20687,6 +20996,7 @@ used when compiling @file{crtstuff.c}; you should not need to use it
 for anything else.
 
 @opindex fverbose-asm
+@opindex fno-verbose-asm
 @item -fverbose-asm
 Put extra commentary information in the generated assembly code to
 make it more readable.  This option is generally only of use to those
@@ -20781,6 +21091,7 @@ The comments are intended for humans rather than machines and hence the
 precise format of the comments is subject to change.
 
 @opindex frecord-gcc-switches
+@opindex fno-record-gcc-switches
 @item -frecord-gcc-switches
 This switch causes the command line used to invoke the
 compiler to be recorded into the object file that is being created.
@@ -20794,6 +21105,7 @@ See also @option{-grecord-gcc-switches} for another
 way of storing compiler options into the object file.
 
 @opindex fpic
+@opindex fno-pic
 @cindex global offset table
 @cindex PIC
 @item -fpic
@@ -20817,6 +21129,7 @@ When this flag is set, the macros @code{__pic__} and @code{__PIC__}
 are defined to 1.
 
 @opindex fPIC
+@opindex fno-PIC
 @item -fPIC
 If supported for the target machine, emit position-independent code,
 suitable for dynamic linking and avoiding any limit on the size of the
@@ -20830,7 +21143,9 @@ When this flag is set, the macros @code{__pic__} and @code{__PIC__}
 are defined to 2.
 
 @opindex fpie
+@opindex fno-pie
 @opindex fPIE
+@opindex fno-PIE
 @item -fpie
 @itemx -fPIE
 These options are similar to @option{-fpic} and @option{-fPIC}, but the
@@ -20921,6 +21236,7 @@ This flag does not have a negative form, because it specifies a
 three-way choice.
 
 @opindex fpack-struct
+@opindex fno-pack-struct
 @item -fpack-struct[=@var{n}]
 Without a value specified, pack all structure members together without
 holes.  When a value is specified (which must be a small power of two), pack
@@ -20934,6 +21250,7 @@ Additionally, it makes the code suboptimal.
 Use it to conform to a non-default application binary interface.
 
 @opindex fleading-underscore
+@opindex fno-leading-underscore
 @item -fleading-underscore
 This option and its counterpart, @option{-fno-leading-underscore}, forcibly
 change the way C symbols are represented in the object file.  One use
@@ -20957,6 +21274,7 @@ The default without @option{-fpic} is @samp{initial-exec}; with
 @option{-fpic} the default is @samp{global-dynamic}.
 
 @opindex ftrampolines
+@opindex fno-trampolines
 @item -ftrampolines
 For targets that normally need trampolines for nested functions, always
 generate them instead of using descriptors.  Otherwise, for targets that
@@ -21064,6 +21382,7 @@ An overview of these techniques, their benefits and how to use them
 is at @uref{https://gcc.gnu.org/@/wiki/@/Visibility}.
 
 @opindex fstrict-volatile-bitfields
+@opindex fno-strict-volatile-bitfields
 @item -fstrict-volatile-bitfields
 This option should be used if accesses to volatile bit-fields (or other
 structure fields, although the compiler usually honors those types
@@ -21095,6 +21414,7 @@ The default value of this option is determined by the application binary
 interface for the target processor.
 
 @opindex fsync-libcalls
+@opindex fno-sync-libcalls
 @item -fsync-libcalls
 This option controls whether any out-of-line instance of the @code{__sync}
 family of functions may be used to implement the C++11 @code{__atomic}
@@ -21519,6 +21839,7 @@ Dump debugging information generated during the early debug
 generation phase.
 
 @opindex fdump-noaddr
+@opindex fno-dump-noaddr
 @item -fdump-noaddr
 When doing debugging dumps, suppress address output.  This makes it more
 feasible to use diff on debugging dumps for compiler invocations with
@@ -21526,11 +21847,13 @@ different compiler binaries and/or different
 text / bss / data / heap / stack / dso start locations.
 
 @opindex freport-bug
+@opindex fno-report-bug
 @item -freport-bug
 Collect and dump debug information into a temporary file if an
 internal compiler error (ICE) occurs.
 
 @opindex fdump-unnumbered
+@opindex fno-dump-unnumbered
 @item -fdump-unnumbered
 When doing debugging dumps, suppress instruction numbers and address output.
 This makes it more feasible to use diff on debugging dumps for compiler
@@ -21538,12 +21861,14 @@ invocations with different options, in particular with and without
 @option{-g}.
 
 @opindex fdump-unnumbered-links
+@opindex fno-dump-unnumbered-links
 @item -fdump-unnumbered-links
 When doing debugging dumps (see @option{-d} option above), suppress
 instruction numbers for the links to the previous and next instructions
 in a sequence.
 
 @opindex fdump-internal-locations
+@opindex fno-dump-internal-locations
 @item -fdump-internal-locations
 Dump detailed information about GCC's internal representation of source code
 locations.
@@ -21696,6 +22021,7 @@ instance, see @xref{C++ Dialect Options} for the @option{-fdump-lang}
 flags supported by the C++ front-end.
 
 @opindex fdump-passes
+@opindex fno-dump-passes
 @item -fdump-passes
 Print on @file{stderr} the list of optimization passes that are turned
 on and off by the current command-line options.
@@ -21824,6 +22150,7 @@ from one version of GCC to another.
 @end enumerate
 
 @opindex fopt-info
+@opindex fno-opt-info
 @item -fopt-info
 @itemx -fopt-info-@var{options}
 @itemx -fopt-info-@var{options}=@var{filename}
@@ -21961,6 +22288,7 @@ ignored. Thus only @file{vec.miss} is produced which contains
 dumps from the vectorizer about missed opportunities.
 
 @opindex fsave-optimization-record
+@opindex fno-save-optimization-record
 @item -fsave-optimization-record
 Write a SRCFILE.opt-record.json.gz file detailing what optimizations
 were performed, for those optimizations that support @option{-fopt-info}.
@@ -22102,6 +22430,7 @@ the compiler configuration.  @option{-fchecking=2} enables further
 internal consistency checking that might affect code generation.
 
 @opindex frandom-seed
+@opindex fno-random-seed
 @item -frandom-seed=@var{string}
 This option provides a seed that GCC uses in place of
 random numbers in generating certain symbol names
@@ -22246,6 +22575,7 @@ as it is compiled, and print some statistics about each pass when it
 finishes.
 
 @opindex ftime-report
+@opindex fno-time-report
 @item -ftime-report
 Makes the compiler print some statistics to stderr about the time consumed
 by each pass when it finishes.
@@ -22259,6 +22589,7 @@ not exactly match those emitted to stderr due to being written out at a
 slightly different place within the compiler.
 
 @opindex ftime-report-details
+@opindex fno-time-report-details
 @item -ftime-report-details
 Record the time consumed by infrastructure parts separately for each pass.
 
@@ -22269,6 +22600,7 @@ The default value is 5.  If the value @var{n} is greater or equal to 10,
 the dump output is sent to stderr using the same format as @var{n} minus 10.
 
 @opindex flto-report
+@opindex fno-lto-report
 @item -flto-report
 Prints a report with internal details on the workings of the link-time
 optimizer.  The contents of this report vary from version to version.
@@ -22278,22 +22610,27 @@ files in LTO mode (via @option{-flto}).
 Disabled by default.
 
 @opindex flto-report-wpa
+@opindex fno-lto-report-wpa
 @item -flto-report-wpa
 Like @option{-flto-report}, but only print for the WPA phase of link-time
 optimization.
 
 @opindex fmem-report
+@opindex fno-mem-report
 @item -fmem-report
 Makes the compiler print some statistics about permanent memory
 allocation when it finishes.
 
 @opindex fmem-report-wpa
+@opindex fno-mem-report-wpa
 @item -fmem-report-wpa
 Makes the compiler print some statistics about permanent memory
 allocation for the WPA phase only.
 
 @opindex fpre-ipa-mem-report
+@opindex fno-pre-ipa-mem-report
 @opindex fpost-ipa-mem-report
+@opindex fno-post-ipa-mem-report
 @item -fpre-ipa-mem-report
 @item -fpost-ipa-mem-report
 Makes the compiler print some statistics about permanent memory
@@ -22328,6 +22665,7 @@ all target libraries, by configuring a non-bootstrap compiler
 the compiler and target libraries.
 
 @opindex fprofile-report
+@opindex fno-profile-report
 @item -fprofile-report
 Makes the compiler print some statistics about consistency of the
 (estimated) profile and effect of individual passes.
@@ -22366,12 +22704,14 @@ not bounded at compile time and the second field only represents the
 bounded part.
 
 @opindex fstats
+@opindex fno-stats
 @item -fstats
 Emit statistics about front-end processing at the end of the compilation.
 This option is supported only by the C++ front end, and
 the information is generally only useful to the G++ development team.
 
 @opindex fdbg-cnt-list
+@opindex fno-dbg-cnt-list
 @item -fdbg-cnt-list
 Print the name and the counter upper bound for all debug counters.
 
@@ -27049,6 +27389,7 @@ the target architecture (currently x86 only).
 @opindex mconstant-cfstrings
 @opindex mno-constant-cfstrings
 @opindex fconstant-cfstrings
+@opindex fno-constant-cfstrings
 @item -mconstant-cfstrings
 @itemx -fconstant-cfstrings
 When the NeXT runtime is being used (the default on these systems), override

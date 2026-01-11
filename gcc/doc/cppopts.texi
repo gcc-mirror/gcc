@@ -234,6 +234,7 @@ Like @option{-MD} except mention only user header files, not system
 header files.
 
 @opindex fpreprocessed
+@opindex fno-preprocessed
 @item -fpreprocessed
 Indicate to the preprocessor that the input file has already been
 preprocessed.  This suppresses things like macro expansion, trigraph
@@ -249,6 +250,7 @@ extensions that GCC uses for preprocessed files created by
 @option{-save-temps}.
 
 @opindex fdirectives-only
+@opindex fno-directives-only
 @item -fdirectives-only
 When preprocessing, handle directives, but do not expand macros.
 
@@ -271,6 +273,7 @@ With both @option{-E} and @option{-fpreprocessed}, the rules for
 files previously preprocessed with @code{-E -fdirectives-only}.
 
 @opindex fdollars-in-identifiers
+@opindex fno-dollars-in-identifiers
 @item -fdollars-in-identifiers
 @anchor{fdollars-in-identifiers}
 Accept @samp{$} in identifiers.
@@ -279,6 +282,7 @@ Accept @samp{$} in identifiers.
 @end ifset
 
 @opindex fextended-identifiers
+@opindex fno-extended-identifiers
 @item -fextended-identifiers
 Accept universal character names and extended characters in
 identifiers.  This option is enabled by default for C99 (and later C
@@ -294,6 +298,7 @@ When preprocessing, do not shorten system header paths with canonicalization.
 Set the maximum depth of the nested #include. The default is 200. 
 
 @opindex fsearch-include-path
+@opindex fno-search-include-path
 @item -fsearch-include-path@r{[}=@var{kind}@r{]}
 Look for input files on the #include path, not just the current
 directory.  This is particularly useful with C++20 modules, for which
@@ -376,6 +381,7 @@ supported by the system's @code{iconv} library routine.
 
 @ifclear cppmanual
 @opindex fpch-deps
+@opindex fno-pch-deps
 @item -fpch-deps
 When using precompiled headers (@pxref{Precompiled Headers}), this flag
 causes the dependency-output flags to also list the files from the
@@ -385,6 +391,7 @@ create it, because those files are not consulted when a precompiled
 header is used.
 
 @opindex fpch-preprocess
+@opindex fno-pch-preprocess
 @item -fpch-preprocess
 This option allows use of a precompiled header (@pxref{Precompiled
 Headers}) together with @option{-E}.  It inserts a special @code{#pragma},
@@ -615,6 +622,7 @@ undefined at the time.
 @end table
 
 @opindex fdebug-cpp
+@opindex fno-debug-cpp
 @item -fdebug-cpp
 This option is only useful for debugging GCC.  When used from CPP or with
 @option{-E}, it dumps debugging information about location maps.  Every
