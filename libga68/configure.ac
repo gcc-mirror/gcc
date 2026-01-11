@@ -248,6 +248,11 @@ AC_ARG_WITH([target-bdw-gc-lib],
 [AS_HELP_STRING([--with-target-bdw-gc-lib=PATHLIST],
 		[specify directories for installed bdw-gc library])])
 
+AC_ARG_ENABLE(algol68-gc-debug,
+[AS_HELP_STRING([--enable-algol68-gc-debug],
+		[enable use of Boehm's garbage collector debug functions
+		 with the GNU Algol runtime])],,enable_algol68_gc_debug=no)
+
 bdw_lib_dir=
 case "$enable_algol68_gc" in
 no)
@@ -404,6 +409,17 @@ case $host in
   *) ;;
 esac
 AC_SUBST(extra_darwin_ldflags_libga68)
+
+case "$enable_algol68_gc_debug" in
+  no) ;;
+  *)
+    if test "$use_bdw_gc" = no; then
+      AC_MSG_ERROR([GC debugging enabled but GC is not being used])
+    else
+      LIBGA68_GCFLAGS="$LIBGA68_GCFLAGS -DGC_DEBUG"
+    fi
+    ;;
+esac
 
 # Subst some variables used in Makefile.am
 AC_SUBST(LIBGA68_GCFLAGS)

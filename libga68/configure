@@ -811,6 +811,7 @@ enable_algol68_gc
 with_target_bdw_gc
 with_target_bdw_gc_include
 with_target_bdw_gc_lib
+enable_algol68_gc_debug
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1463,6 +1464,9 @@ Optional Features:
   --disable-symvers       disable symbol versioning for libga68
   --enable-algol68-gc     enable use of Boehm's garbage collector with the GNU
                           Algol runtime
+  --enable-algol68-gc-debug
+                          enable use of Boehm's garbage collector debug
+                          functions with the GNU Algol runtime
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -12829,7 +12833,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12832 "configure"
+#line 12836 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12935,7 +12939,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12938 "configure"
+#line 12942 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13532,6 +13536,14 @@ if test "${with_target_bdw_gc_lib+set}" = set; then :
 fi
 
 
+# Check whether --enable-algol68-gc-debug was given.
+if test "${enable_algol68_gc_debug+set}" = set; then :
+  enableval=$enable_algol68_gc_debug;
+else
+  enable_algol68_gc_debug=no
+fi
+
+
 bdw_lib_dir=
 case "$enable_algol68_gc" in
 no)
@@ -13718,6 +13730,17 @@ case $host in
   *) ;;
 esac
 
+
+case "$enable_algol68_gc_debug" in
+  no) ;;
+  *)
+    if test "$use_bdw_gc" = no; then
+      as_fn_error $? "GC debugging enabled but GC is not being used" "$LINENO" 5
+    else
+      LIBGA68_GCFLAGS="$LIBGA68_GCFLAGS -DGC_DEBUG"
+    fi
+    ;;
+esac
 
 # Subst some variables used in Makefile.am
 
