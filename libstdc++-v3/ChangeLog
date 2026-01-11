@@ -1,3 +1,24 @@
+2026-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Add
+	names {,P,K}DF16.
+
+2026-01-10  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	* src/c++11/system_error.cc (system_error_category) [_WIN32]:
+	Use FormatMessageA function instead of FormatMessage macro.
+	* testsuite/19_diagnostics/error_category/system_category.cc:
+	Fix typo in __MINGW32__ macro name.  Adjust behavior on the
+	mingw32 target.
+
+2026-01-10  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/version.def: Add FTM.
+	* include/bits/version.h: Regenerate.
+	* include/std/flat_map: Add constexpr.
+	* testsuite/23_containers/flat_map/1.cc: Add constexpr test.
+	* testsuite/23_containers/flat_multimap/1.cc: Add constexpr test.
+
 2026-01-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++20/atomic.cc (use_proxy_wait): Remove unused second

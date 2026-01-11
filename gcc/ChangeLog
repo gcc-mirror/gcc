@@ -1,3 +1,47 @@
+2026-01-10  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/mcore/mcore.h (ASM_OUT_ADDR_DIFF_ELT): Remove.
+
+2026-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-modes.def (FLOAT_MODE): Add HF mode.
+	(VECTOR_MODE): Add V{1,2,4,8,16}HF modes.
+	* config/s390/s390.cc (s390_scalar_mode_supported_p): For 64-bit
+	targets z10 and newer support HF mode.
+	(s390_vector_mode_supported_p): Add HF mode.
+	(s390_register_move_cost): Keep HF mode operands in registers.
+	(s390_legitimate_constant_p): Support zero constant.
+	(s390_secondary_reload): For GPR to FPR moves a secondary reload
+	register is required.
+	(s390_secondary_memory_needed): GPR<->FPR moves don't require
+	secondary memory.
+	(s390_libgcc_floating_mode_supported_p): For 64-bit targets z10
+	and newer support HF mode.
+	(s390_hard_regno_mode_ok): Allow HF mode for FPRs and VRs.
+	(s390_function_arg_float): Consider HF mode, too.
+	(s390_excess_precision): For EXCESS_PRECISION_TYPE_FLOAT16
+	return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT16.
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Define.
+	* config/s390/s390.md (movhf): Define.
+	(reload_half_gprtofpr_z10): Define.
+	(signbithf2): Define.
+	* config/s390/vector.md: Add new vector modes to various
+	iterators.
+
+2026-01-10  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123417
+	* tree-cfgcleanup.cc (maybe_remove_forwarder_block): Always
+	protect latches.
+
+2026-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123431
+	* gimple-range-op.cc (gimple_range_op_handler::maybe_builtin_call):
+	Punt if type-generic builtins with a single argument don't have
+	exactly one argument.  For returns_arg punt if call doesn't have
+	at least one argument.
+
 2026-01-09  Robin Dapp  <rdapp@oss.qualcomm.com>
 
 	PR tree-optimization/123414

@@ -1,3 +1,22 @@
+2026-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config.host: Include s390/t-float16.
+	* config/s390/libgcc-glibc.ver: Export symbols
+	__trunc{sf,df,tf}hf2, __extendhf{sf,df,tf}2, __fix{,uns}hfti,
+	__float{,un}tihf, __floatbitinthf.
+	* config/s390/t-softfp: Add to softfp_extras instead of setting
+	it.
+	* configure: Regenerate.
+	* configure.ac: Support float16 only for 64-bit targets z10 and
+	newer.
+	* config/s390/_dpd_dd_to_hf.c: New file.
+	* config/s390/_dpd_hf_to_dd.c: New file.
+	* config/s390/_dpd_hf_to_sd.c: New file.
+	* config/s390/_dpd_hf_to_td.c: New file.
+	* config/s390/_dpd_sd_to_hf.c: New file.
+	* config/s390/_dpd_td_to_hf.c: New file.
+	* config/s390/t-float16: New file.
+
 2026-01-07  Xinhui Yang  <cyan@cyano.uk>
 
 	* config.host (ia64): include unwind-compat only if the system

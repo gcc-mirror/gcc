@@ -1,3 +1,9 @@
+2026-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ada/123490
+	* config-ml.in: Restore ml_subdir being empty instead of /.
+	for the primary multilib.
+
 2026-01-09  Ben Boeckel  <ben.boeckel@kitware.com>
 
 	* config-ml.in: Replace gcc-bugs@ with bug reporting link.

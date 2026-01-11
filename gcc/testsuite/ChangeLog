@@ -1,3 +1,44 @@
+2026-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* g++.target/s390/float16-1.C: New test.
+	* g++.target/s390/float16-2.C: New test.
+	* gcc.target/s390/float16-1-2.h: New test.
+	* gcc.target/s390/float16-1.c: New test.
+	* gcc.target/s390/float16-10.c: New test.
+	* gcc.target/s390/float16-2.c: New test.
+	* gcc.target/s390/float16-3.c: New test.
+	* gcc.target/s390/float16-4.c: New test.
+	* gcc.target/s390/float16-5.c: New test.
+	* gcc.target/s390/float16-6.c: New test.
+	* gcc.target/s390/float16-7.c: New test.
+	* gcc.target/s390/float16-8.c: New test.
+	* gcc.target/s390/float16-9.c: New test.
+	* gcc.target/s390/float16-signbit.h: New test.
+	* gcc.target/s390/vector/vec-extract-4.c: New test.
+	* gcc.target/s390/vector/vec-float16-1.c: New test.
+
+2026-01-10  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123417
+	* gcc.dg/vect/vect-uncounted_7.c: xfail vect test.
+
+2026-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123431
+	* gcc.dg/pr123431.c: New test.
+
+2026-01-10  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/123435
+	PR c/123463
+	* gcc.dg/pr123435-1.c: New test.
+	* gcc.dg/pr123435-2.c: New test.
+	* gcc.dg/pr123463.c: New test.
+
+2026-01-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* algol68/execute/posix-exit-1.a68: New test.
+
 2026-01-09  Robin Dapp  <rdapp@oss.qualcomm.com>
 
 	PR tree-optimization/123414

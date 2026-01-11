@@ -1,3 +1,14 @@
+2026-01-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* ga68-posix.c (_libga68_posixexit): New function.
+	* ga68.h (_libga68_posixexit): New prototype.
+	(_libga68_set_exit_status): Delete prototype.
+	* ga68.map: Remove _libga68_set_exit_status from and add
+	_libga68_posixexit to the global map.
+	* libga68.c: include <stdlib.h>.
+	(_libga68_set_exit_status): Delete function.
+	(main): Return EXIT_SUCCESS.
+
 2026-01-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* sppp.awk: Avoid conditional expression.

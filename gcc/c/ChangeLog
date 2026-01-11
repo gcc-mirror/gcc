@@ -1,3 +1,9 @@
+2026-01-10  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/123435
+	PR c/123463
+	* c-typeck.cc (comptypes_internal): Test for qualifiers first.
+
 2026-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/123475

@@ -1,3 +1,19 @@
+2026-01-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* a68-low-posix.cc (a68_posix_setexitstatus): Delete function.
+	(a68_posix_exit): New function.
+	* a68-low-prelude.cc (a68_lower_setexitstatus): Delete function.
+	(a68_lower_posixexit): New function.
+	* a68-low-runtime.def (SET_EXIT_STATUS): Delete definition.
+	(POSIX_EXIT): Add definition for posixexit.
+	* a68-parser-prelude.cc (posix_prelude): Remove setexitstatus
+	identifier from and add posixexit identifier to standenv.
+	* a68.h (a68_posix_setexitstatus): Delete prototype.
+	(a68_lower_setexitstatus): Likewise.
+	(a68_posix_exit): New prototype.
+	(a68_lower_posixexit): Likewise.
+	* ga68.texi:
+
 2026-01-09  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* ga68.texi (Worthy characters): Escape @.
