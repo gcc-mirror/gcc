@@ -10436,32 +10436,7 @@ loongarch_expand_vector_init_same (rtx target, rtx vals, unsigned nvar)
 	}
     }
 
-  if (imode == GET_MODE (same))
-    temp = same;
-  else if (GET_MODE_SIZE (imode) >= UNITS_PER_WORD)
-    {
-      if (GET_CODE (same) == MEM)
-	{
-	  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
-	  loongarch_emit_move (reg_tmp, same);
-	  temp = simplify_gen_subreg (imode, reg_tmp, GET_MODE (reg_tmp), 0);
-	}
-      else
-	temp = simplify_gen_subreg (imode, same, GET_MODE (same), 0);
-    }
-  else
-    {
-      if (GET_CODE (same) == MEM)
-	{
-	  rtx reg_tmp = gen_reg_rtx (GET_MODE (same));
-	  loongarch_emit_move (reg_tmp, same);
-	  temp = lowpart_subreg (imode, reg_tmp, GET_MODE (reg_tmp));
-	}
-      else
-	temp = lowpart_subreg (imode, same, GET_MODE (same));
-    }
-
-  temp = force_reg (imode, temp);
+  temp = force_reg (imode, same);
 
   switch (vmode)
     {
