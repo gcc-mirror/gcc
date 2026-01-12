@@ -974,13 +974,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
       || flag_wrapv))
 
 /* True if overflow is undefined for the given integral or pointer type.
-   We may optimize on the assumption that values in the type never overflow.
-
-   IMPORTANT NOTE: Any optimization based on TYPE_OVERFLOW_UNDEFINED
-   must issue a warning based on warn_strict_overflow.  In some cases
-   it will be appropriate to issue the warning immediately, and in
-   other cases it will be appropriate to simply set a flag and let the
-   caller decide whether a warning is appropriate or not.  */
+   We may optimize on the assumption that values in the type never overflow.  */
 #define TYPE_OVERFLOW_UNDEFINED(TYPE)				\
   (POINTER_TYPE_P (TYPE)					\
    ? !flag_wrapv_pointer					\

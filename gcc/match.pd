@@ -9856,9 +9856,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (with { tree res = int_const_binop (rop, @2, @1); }
      (if (TREE_OVERFLOW (res))
       {
-	fold_overflow_warning (("assuming signed overflow does not occur "
-				"when simplifying conditional to constant"),
-			       WARN_STRICT_OVERFLOW_CONDITIONAL);
         bool less = cmp == LE_EXPR || cmp == LT_EXPR;
 	/* wi::ges_p (@2, 0) should be sufficient for a signed type.  */
 	bool ovf_high = wi::lt_p (wi::to_wide (@1), 0,
@@ -9867,14 +9864,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	constant_boolean_node (less == ovf_high, type);
       }
       (if (single_use (@3))
-       (with
-	{
-	  fold_overflow_warning (("assuming signed overflow does not occur "
-				  "when changing X +- C1 cmp C2 to "
-				  "X cmp C2 -+ C1"),
-				 WARN_STRICT_OVERFLOW_COMPARISON);
-	}
-	(cmp @0 { res; })))))
+	(cmp @0 { res; }))))
 /* For wrapping types, simplify the following cases of X +- C1 CMP C2:
 
    (a) If CMP is <= and C2 -+ C1 == +INF (1), simplify to X >= -INF -+ C1
