@@ -546,9 +546,9 @@ maybe_begin_member_template_processing (tree decl)
   int levels = 0;
   bool nsdmi = TREE_CODE (decl) == FIELD_DECL;
 
-  if (nsdmi)
+  if (nsdmi || decl_specialization_friend_p (decl))
     {
-      tree ctx = DECL_CONTEXT (decl);
+      tree ctx = nsdmi ? DECL_CONTEXT (decl) : DECL_CHAIN (decl);
       decl = (CLASSTYPE_TEMPLATE_INFO (ctx)
 	      /* Disregard full specializations (c++/60999).  */
 	      && uses_template_parms (ctx)

@@ -8004,6 +8004,7 @@ binding_to_template_parms_of_scope_p (cxx_binding *binding,
   /* The template of the current scope, iff said scope is a primary
      template.  */
   tmpl = (tinfo
+	  && TREE_CODE (TI_TEMPLATE (tinfo)) == TEMPLATE_DECL
 	  && PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo))
 	  ? TI_TEMPLATE (tinfo)
 	  : NULL_TREE);
