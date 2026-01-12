@@ -3794,7 +3794,7 @@ Common Driver Var(flag_describe_dies) Init(0)
 Add description attributes to some DWARF DIEs that have no name attribute.
 
 gtoggle
-Common Driver Var(flag_gtoggle)
+Common RejectNegative Driver Var(flag_gtoggle)
 Toggle debug information generation.
 
 gvariable-location-views

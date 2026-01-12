@@ -575,19 +575,14 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Debugging Options,,Options for Debugging Your Program}.
 @gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version}
 -gbtf -gctf  -gctf@var{level}
--gprune-btf -gno-prune-btf
--ggdb  -grecord-gcc-switches  -gno-record-gcc-switches
--gstrict-dwarf  -gno-strict-dwarf
--gas-loc-support  -gno-as-loc-support
--gas-locview-support  -gno-as-locview-support
--gcodeview
--gcolumn-info  -gno-column-info  -gdwarf32  -gdwarf64
--gstatement-frontiers  -gno-statement-frontiers
--gvariable-location-views  -gno-variable-location-views
--ginternal-reset-location-views  -gno-internal-reset-location-views
--ginline-points  -gno-inline-points
+-gno-prune-btf  -ggdb  -gno-record-gcc-switches
+-gstrict-dwarf  -gas-loc-support  -gas-locview-support
+-gcodeview  -gcolumn-info  -gdwarf32  -gdwarf64
+-gno-statement-frontiers
+-gno-variable-location-views  -gvariable-location-views=incompat5
+-ginternal-reset-location-views  -ginline-points
 -gvms -gz@r{[}=@var{type}@r{]}
--gsplit-dwarf  -gdescribe-dies  -gno-describe-dies
+-gsplit-dwarf  -gdescribe-dies
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section
 -fno-eliminate-unused-debug-types
 -femit-struct-debug-baseonly  -femit-struct-debug-reduced
@@ -12823,8 +12818,9 @@ at file-scope or global-scope only.
 Produce debugging information in Alpha/VMS debug format (if that is
 supported).  This is the format used by DEBUG on Alpha/VMS systems.
 
-@item -gcodeview
 @opindex gcodeview
+@opindex gno-codeview
+@item -gcodeview
 Produce debugging information in CodeView debug format (if that is
 supported).  This is the format used by Microsoft Visual C++ on
 Windows.
@@ -12926,6 +12922,7 @@ To do variable tracking without marking uninitialized variables, use
 @option{-fvar-tracking} @option{-fno-var-tracking-uninit}.
 
 @opindex gsplit-dwarf
+@opindex gno-split-dwarf
 @item -gsplit-dwarf
 If DWARF debugging information is enabled, separate as much debugging
 information as possible into a separate output file with the extension
@@ -12946,6 +12943,7 @@ debug information sections.  The 64-bit DWARF format allows larger debug
 information and might not be well supported by all consumers yet.
 
 @opindex gdescribe-dies
+@opindex gno-describe-dies
 @item -gdescribe-dies
 Add description attributes to some DWARF DIEs that have no name attribute,
 such as artificial variables, external references and call site
@@ -12990,6 +12988,7 @@ See also @option{-frecord-gcc-switches} for another
 way of storing compiler options into the object file.
 
 @opindex gstrict-dwarf
+@opindex gno-strict-dwarf
 @item -gstrict-dwarf
 Disallow using extensions of later DWARF standard version than selected
 with @option{-gdwarf-@var{version}}.  On most targets using non-conflicting
@@ -13010,8 +13009,8 @@ This is generally desirable, because assembler-generated line-number
 tables are a lot more compact than those the compiler can generate
 itself.
 
-This option will be enabled by default if, at GCC configure time, the
-assembler was found to support such directives.
+This option is enabled by default if, at GCC configure time, the
+assembler is found to support such directives.
 
 @opindex gno-as-loc-support
 @item -gno-as-loc-support
@@ -13023,9 +13022,10 @@ line number tables are to be generated.
 Inform the compiler that the assembler supports @code{view} assignment
 and reset assertion checking in @code{.loc} directives.
 
-This option will be enabled by default if, at GCC configure time, the
-assembler was found to support them.
+This option is enabled by default if, at GCC configure time, the
+assembler is found to support them.
 
+@opindex gno-as-locview-support
 @item -gno-as-locview-support
 Force GCC to assign view numbers internally, if
 @option{-gvariable-location-views} are explicitly requested.
@@ -13060,7 +13060,7 @@ from the line number table.  This enables debug information consumers to
 inspect state at certain points of the program, even if no instructions
 associated with the corresponding source locations are present at that
 point.  If the assembler lacks support for view numbers in line number
-tables, this will cause the compiler to emit the line number table,
+tables, this causes the compiler to emit the line number table,
 which generally makes them somewhat less compact.  The augmented line
 number tables and location lists are fully backward-compatible, so they
 can be consumed by debug information consumers that are not aware of
@@ -13070,10 +13070,10 @@ This is enabled by default when outputting DWARF 2 debug information at
 the normal level, as long as there is assembler support,
 @option{-fvar-tracking-assignments} is enabled and
 @option{-gstrict-dwarf} is not.  When assembler support is not
-available, this may still be enabled, but it will force GCC to output
+available, this may still be enabled, but it forces GCC to output
 internal line number tables, and if
-@option{-ginternal-reset-location-views} is not enabled, that will most
-certainly lead to silently mismatching location views.
+@option{-ginternal-reset-location-views} is not enabled, that most
+certainly leads to silently mismatching location views.
 
 There is a proposed representation for view numbers that is not backward
 compatible with the location list format introduced in DWARF 5, that can
@@ -13088,10 +13088,10 @@ would be rendered unable to decode location lists using it.
 @item -ginternal-reset-location-views
 @itemx -gno-internal-reset-location-views
 Attempt to determine location views that can be omitted from location
-view lists.  This requires the compiler to have very accurate insn
+view lists.  This requires the compiler to have very accurate instruction
 length estimates, which isn't always the case, and it may cause
 incorrect view lists to be generated silently when using an assembler
-that does not support location view lists.  The GNU assembler will flag
+that does not support location view lists.  The GNU assembler flags
 any such error as a @code{view number mismatch}.  This is only enabled
 on ports that define a reliable estimation function.
 
@@ -13108,6 +13108,7 @@ along with statement frontiers, and it is only enabled by default if
 location views are enabled.
 
 @opindex gz
+@opindex gno-z
 @item -gz@r{[}=@var{type}@r{]}
 Produce compressed debug sections in DWARF format, if that is supported.
 If @var{type} is not given, the default type depends on the capabilities
