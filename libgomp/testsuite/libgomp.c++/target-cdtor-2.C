@@ -1,10 +1,12 @@
 /* Offloaded 'constructor' and 'destructor' functions, and C++ objects construction and destruction.  */
 
 /* { dg-require-effective-target init_priority } */
+/* { dg-skip-if "PR c++/81337: destructor ordering" { *-*-solaris2* } } */
 
-/* { dg-additional-options -fdump-tree-optimized-raw-asmname }
-   { dg-additional-options -foffload-options=-fdump-tree-optimized-raw-asmname } */
-// { dg-additional-options "-Wno-deprecated-openmp" }
+/* { dg-additional-options -fdump-tree-optimized-raw-asmname } */
+/* { dg-additional-options -foffload-options=-fdump-tree-optimized-raw-asmname } */
+/* { dg-additional-options "-Wno-deprecated-openmp" } */
+
 #include <omp.h>
 #include <vector>
 
