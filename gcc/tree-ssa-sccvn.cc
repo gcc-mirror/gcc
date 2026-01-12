@@ -3664,14 +3664,32 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		  temj--;
 		}
 	    }
-	  /* When the LHS is already at the outermost level simply
-	     adjust for any offset difference.  Further lookups
-	     will fail when there's too gross of a type compatibility
-	     issue.  */
-	  if (!found && j == 0)
+	  /* When we cannot find a common base to reconstruct the full
+	     reference instead try to reduce the lookup to the new
+	     base plus a constant offset.  */
+	  if (!found)
 	    {
-	      extra_off = vr->operands[i].off - lhs_ops[j].off;
-	      i--, j--;
+	      while (j >= 0
+		     && known_ne (lhs_ops[j].off, -1))
+		{
+		  extra_off += -lhs_ops[j].off;
+		  j--;
+		}
+	      if (j != -1)
+		return (void *)-1;
+	      while (i >= 0
+		     && known_ne (vr->operands[i].off, -1))
+		{
+		  /* Punt if the additional ops contain a storage order
+		     barrier.  */
+		  if (vr->operands[i].opcode == VIEW_CONVERT_EXPR
+		      && vr->operands[i].reverse)
+		    break;
+		  extra_off += vr->operands[i].off;
+		  i--;
+		}
+	      if (i != -1)
+		return (void *)-1;
 	      found = true;
 	    }
 	  /* If we did find a match we'd eventually append a MEM_REF
@@ -3688,17 +3706,6 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	     && vn_reference_op_eq (&vr->operands[i], &lhs_ops[j]))
 	{
 	  i--;
-	  j--;
-	}
-
-      /* When we still didn't manage to strip off all components from
-	 lhs_op, opportunistically continue for those we can handle
-	 via extra_off.  Note this is an attempt to fixup secondary
-	 copies after we hit the !found && j == 0 case above.  */
-      while (j != -1
-	     && known_ne (lhs_ops[j].off, -1))
-	{
-	  extra_off += -lhs_ops[j].off;
 	  j--;
 	}
 
