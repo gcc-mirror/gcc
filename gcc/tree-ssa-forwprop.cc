@@ -4260,7 +4260,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       if (nelts != refnelts)
 	res = gimple_build (&stmts, BIT_FIELD_REF,
 			    conv_code != ERROR_MARK ? conv_src_type : type,
-			    res, TYPE_SIZE (type), bitsize_zero_node);
+			    res,
+			    TYPE_SIZE (conv_code != ERROR_MARK ? conv_src_type
+							       : type),
+			    bitsize_zero_node);
       if (conv_code != ERROR_MARK)
 	res = gimple_build (&stmts, conv_code, type, res);
       else if (!useless_type_conversion_p (type, TREE_TYPE (res)))
