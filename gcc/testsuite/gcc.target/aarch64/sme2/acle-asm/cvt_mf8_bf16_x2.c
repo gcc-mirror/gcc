@@ -1,4 +1,6 @@
 /* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */
+/* { dg-do assemble { target { aarch64_asm_fp8_ok && aarch64_asm_bf16_ok } } } */
+/* { dg-do compile { target { ! { aarch64_asm_fp8_ok && aarch64_asm_bf16_ok } } } } */
 
 #pragma GCC target "+fp8+bf16"
 #include "test_sme2_acle.h"
