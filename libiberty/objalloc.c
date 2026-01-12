@@ -178,6 +178,10 @@ objalloc_free (struct objalloc *o)
 {
   struct objalloc_chunk *l;
 
+  /* Handle a nullptr as being a no-op. */
+  if (o == NULL)
+    return;
+
   l = (struct objalloc_chunk *) o->chunks;
   while (l != NULL)
     {
