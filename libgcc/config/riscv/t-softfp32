@@ -34,6 +34,8 @@ endif
 
 endif
 
+softfp_extras += floatbitinttf fixtfbitint
+
 else
 # ABI_QUAD
 
@@ -49,4 +51,5 @@ softfp_truncations += tfhf dfhf sfhf \
 		      hfbf bfhf
 softfp_extras += fixhfsi fixhfdi fixunshfsi fixunshfdi \
 		 floatsihf floatdihf floatunsihf floatundihf \
-		 floatsibf floatdibf floatunsibf floatundibf
+		 floatsibf floatdibf floatunsibf floatundibf \
+		 floatbitinthf

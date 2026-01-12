@@ -1,4 +1,5 @@
 /* { dg-do run { target bitint } } */
+/* { dg-require-effective-target sync_char_short } */
 /* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-skip-if "" { ! run_expensive_tests }  { "*" } { "-O0" "-O2" } } */
 /* { dg-skip-if "" { ! run_expensive_tests } { "-flto" } { "" } } */

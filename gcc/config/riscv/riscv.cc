@@ -14786,6 +14786,37 @@ riscv_c_mode_for_floating_type (enum tree_index ti)
   return default_mode_for_floating_type (ti);
 }
 
+/* Implement TARGET_C_BITINT_TYPE_INFO.
+   Return true if _BitInt(N) is supported and fill its details into *INFO.  */
+bool
+riscv_bitint_type_info (int n, struct bitint_info *info)
+{
+  if (n <= 8)
+    info->limb_mode = QImode;
+  else if (n <= 16)
+    info->limb_mode = HImode;
+  else if (n <= 32)
+    info->limb_mode = SImode;
+  else if (n <= 64)
+    info->limb_mode = DImode;
+  else if (n <= 128 && TARGET_64BIT)
+    info->limb_mode = TImode;
+  else
+    info->limb_mode = TARGET_64BIT ? DImode : SImode;
+
+  info->abi_limb_mode = info->limb_mode;
+
+  if (n > 64 && TARGET_64BIT)
+    info->abi_limb_mode = TImode;
+
+  if (n > 32 && !TARGET_64BIT)
+    info->abi_limb_mode = DImode;
+
+  info->big_endian = TARGET_BIG_ENDIAN;
+  info->extended = true;
+  return true;
+}
+
 /* This parses the version string STR and modifies the feature mask and
    priority required to select those targets.
    If LOC is nonnull, report diagnostics against *LOC, otherwise
@@ -16772,6 +16803,9 @@ riscv_prefetch_offset_address_p (rtx x, machine_mode mode)
 
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE riscv_c_mode_for_floating_type
+
+#undef TARGET_C_BITINT_TYPE_INFO
+#define TARGET_C_BITINT_TYPE_INFO riscv_bitint_type_info
 
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P riscv_use_by_pieces_infrastructure_p

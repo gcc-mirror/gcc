@@ -7,3 +7,5 @@ LIB2ADD += $(srcdir)/config/riscv/save-restore.S \
 
 # Avoid the full unwinder being pulled along with the division libcalls.
 LIB2_DIVMOD_EXCEPTION_FLAGS := -fasynchronous-unwind-tables
+
+SHLIB_MAPFILES += $(srcdir)/config/riscv/libgcc-riscv.ver
