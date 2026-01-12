@@ -6000,7 +6000,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	       && (mode1 = targetm.vectorize.split_reduction (mode)) != mode)
 	nunits1 = GET_MODE_NUNITS (mode1).to_constant ();
 
-      tree vectype1 = vectype;
+      tree vectype1 = compute_vectype;
       if (mode1 != mode)
 	{
 	  vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
