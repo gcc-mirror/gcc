@@ -17871,6 +17871,27 @@ resolve_fl_parameter (gfc_symbol *sym)
       return false;
     }
 
+  /* Some programmers can have a typo when using an implied-do loop to
+     initialize an array constant.  For example,
+       INTEGER I,J
+       INTEGER, PARAMETER :: A(3) = [(I, I = 1, 3)]     ! OK
+       INTEGER, PARAMETER :: B(3) = [(A(J), I = 1, 3)]  ! Not OK, J undefined
+     This check catches the typo.  */
+  if (sym->attr.dimension
+      && sym->value && sym->value->expr_type == EXPR_ARRAY
+      && !gfc_is_constant_expr (sym->value))
+    {
+      /* PR fortran/117070 argues a nonconstant proc pointer can appear in
+	 the array constructor of a paramater.  This seems inconsistant with
+	 the concept of a parameter. TODO: Needs an interpretation.  */
+      if (sym->value->ts.type == BT_DERIVED
+	  && sym->value->ts.u.derived
+	  && sym->value->ts.u.derived->attr.proc_pointer_comp)
+	return true;
+      gfc_error ("Expecting constant expression near %L", &sym->value->where);
+      return false;
+    }
+
   return true;
 }
 
