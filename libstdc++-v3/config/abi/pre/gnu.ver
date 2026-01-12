@@ -2899,9 +2899,16 @@ CXXABI_1.3.14 {
 
     # typeinfo for _Float{16,32,64,128,32x,64x,128x} and
     # __bf16/bfloat16_t
+#ifndef __s390x__
     _ZTIDF[0-9]*[_x];
     _ZTIPDF[0-9]*[_x];
     _ZTIPKDF[0-9]*[_x];
+#else
+    # No _Float16 on s390x in GCC 13.
+    _ZTIDF[0-9]*[0-57-9][_x];
+    _ZTIPDF[0-9]*[0-57-9][_x];
+    _ZTIPKDF[0-9]*[0-57-9][_x];
+#endif
 #ifndef __riscv
     _ZTIDF16b;
     _ZTIPDF16b;
@@ -2933,6 +2940,13 @@ CXXABI_1.3.16 {
 CXXABI_1.3.17 {
     # std::exception_ptr::_M_exception_ptr_cast
     _ZNKSt15__exception_ptr13exception_ptr21_M_exception_ptr_castERKSt9type_info;
+
+#ifdef __s390x__
+    _ZTIDF16_;
+    _ZTIPDF16_;
+    _ZTIPKDF16_;
+#endif
+
 #ifdef __riscv
 } CXXABI_1.3.16;
 #else
