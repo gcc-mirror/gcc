@@ -108,10 +108,17 @@ if {[check_guality "
 
     gcc-dg-runtest [lsort [glob $srcdir/$subdir/*.c]] "" ""
     gcc-dg-runtest $general "" "-Wc++-compat"
+
+    if [check_effective_target_lto] {
+        set lto_option_list [list "-Og -flto"]
+    } else {
+        set lto_option_list ""  
+    }
+
     set-torture-options \
 	[list "-O0" "-Og"] \
 	[list {}] \
-	[list "-Og -flto"]
+	$lto_option_list
     gcc-dg-runtest $Og "" "-Wc++-compat"
 }
 
