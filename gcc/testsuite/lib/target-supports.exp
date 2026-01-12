@@ -11688,6 +11688,11 @@ proc check_effective_target_sha { } {
 
 # Return 1 if avx512dq instructions can be compiled.
 proc check_effective_target_avx512dq { } {
+    # PR target/123415: In addition to the %k0 issue also affecting avx512bw,
+    # Solaris/x86 as doesn't accept {sae} syntax.
+    if { [istarget *-*-solaris2*] && ![check_effective_target_gas] } {
+	return 0;
+    }
     return [check_no_compiler_messages avx512dq object {
 	typedef long long __v8di __attribute__ ((__vector_size__ (64)));
 	__v8di
@@ -11703,6 +11708,11 @@ proc check_effective_target_avx512dq { } {
 
 # Return 1 if avx512bw instructions can be compiled.
 proc check_effective_target_avx512bw { } {
+    # PR target/123415: Solaris/x86 doesn't accept %k0 as source/destination
+    # in some cases.
+    if { [istarget *-*-solaris2*] && ![check_effective_target_gas] } {
+	return 0;
+    }
     return [check_no_compiler_messages avx512bw object {
 	typedef short __v32hi __attribute__ ((__vector_size__ (64)));
 	__v32hi
