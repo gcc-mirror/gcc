@@ -1,3 +1,107 @@
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* asm-toplevel.cc (mark_fragile_ref_by_asm):
+	Add marked_local to handle symbol as local.
+	(ipa_asm_heuristics): New.
+	(class pass_ipa_asm): New.
+	(make_pass_ipa_asm_lgen): New.
+	(make_pass_ipa_asm_wpa): New.
+	* common.opt: New flto-toplevel-asm-heuristics.
+	* passes.def: New asm passes.
+	* timevar.def (TV_IPA_LTO_ASM): New.
+	* tree-pass.h (make_pass_ipa_asm_lgen): New.
+	(make_pass_ipa_asm_wpa): New.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* asm-toplevel.cc (mark_fragile_ref_by_asm): New.
+	(struct constraint_data): New.
+	(walk_through_constraints): Handle .local definitions.
+	(analyze_toplevel_extended_asm): Propagate constraint_data.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* cgraph.h: Add must_remain_in_tu_*.
+	* cgraphclones.cc (cgraph_node::create_clone): Propagate
+	must_remain_in_tu_body.
+	* cif-code.def (MUST_REMAIN_IN_TU): New.
+	* ipa-icf.cc (sem_function::equals_wpa): Check
+	must_remain_in_tu_*
+	(sem_variable::equals_wpa): Likewise.
+	* ipa-inline-transform.cc (inline_call): Propagate
+	must_remain_in_tu_body.
+	* ipa-inline.cc (can_inline_edge_p): Check
+	must_remain_in_tu_body.
+	* lto-cgraph.cc (lto_output_node): Output must_remain_in_tu_*
+	(lto_output_varpool_node): Likewise.
+	(input_overwrite_node): Input must_remain_in_tu_*.
+	(input_varpool_node): Likewise.
+	* tree.cc (decl_address_ip_invariant_p): Check
+	must_remain_in_tu_name.
+	* varpool.cc (varpool_node::ctor_useable_for_folding_p): Check
+	must_remain_in_tu_body.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* lto-cgraph.cc (compute_ltrans_boundary): Add symbols
+	referenced from asm_nodes.
+	* lto-streamer-out.cc (lto_output): Move adding asm_nodes
+	to...
+	* passes.cc (ipa_write_summaries): ...here.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* ipa-free-lang-data.cc (find_decls_types_in_asm): New.
+	(free_lang_data_in_cgraph): Use find_decls_types_in_asm.
+	* lto-cgraph.cc (input_cgraph_1): Move asm to..
+	(input_toplevel_asms): ..here.
+	* lto-streamer-in.cc (lto_input_toplevel_asms):
+	Allow extended asm.
+	* lto-streamer-out.cc (lto_output_toplevel_asms):
+	Allow extended asm.
+	(lto_output_toplevel_asms): Allow ASM_EXPR.
+	* lto-streamer.h (input_toplevel_asms): New.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	PR ipa/122458
+	* Makefile.in: Add new file.
+	* cgraph.h (analyze_toplevel_extended_asm): New.
+	* cgraphunit.cc (symbol_table::finalize_compilation_unit):
+	Call analyze_toplevel_extended_asm.
+	* asm-toplevel.cc: New file.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* cgraph.cc (cgraph_node_cannot_be_local_p_1): Check ref_by_asm.
+	(cgraph_node::verify_node): Likewise.
+	* cgraph.h (cgraph_node::only_called_directly_or_aliased_p):
+	Likewise.
+	(cgraph_node::can_remove_if_no_direct_calls_and_refs_p):
+	Likewise.
+	(varpool_node::can_remove_if_no_refs_p): Likewise.
+	(varpool_node::all_refs_explicit_p): Likewise.
+	* cgraphunit.cc (symtab_node::needed_p): Likewise.
+	(analyze_functions): Likewise.
+	* gimple-ssa-pta-constraints.cc (refered_from_nonlocal_fn):
+	Likewise.
+	(refered_from_nonlocal_var): Likewise.
+	(ipa_create_global_variable_infos): Likewise.
+	* ipa-comdats.cc (ipa_comdats): Likewise.
+	* ipa-visibility.cc (cgraph_externally_visible_p): Likewise.
+	(varpool_node::externally_visible_p): Likewise.
+	* ipa.cc (symbol_table::remove_unreachable_nodes): Likewise.
+	* lto-cgraph.cc (lto_output_node): Output ref_by_asm.
+	(lto_output_varpool_node): Likewise.
+	(input_overwrite_node): Input ref_by_asm.
+	(input_varpool_node): Likewise.
+	* symtab.cc (address_matters_1): Check ref_by_asm.
+
+2026-01-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.cc (cris_rtx_costs) <POST_INC>: Handle POST_INC
+	as ZERO_EXTEND and SIGN_EXTEND, i.e. as an operator without cost.
+
 2026-01-10  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	* config/mcore/mcore.h (ASM_OUT_ADDR_DIFF_ELT): Remove.

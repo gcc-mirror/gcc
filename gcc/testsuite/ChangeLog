@@ -1,3 +1,46 @@
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* gcc.dg/lto/attr-weakref-2_0.c: New test.
+	* gcc.dg/lto/attr-weakref-2_1.c: New test.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* gcc.dg/lto/toplevel-simple-asm-1_0.c: New test.
+	* gcc.dg/lto/toplevel-simple-asm-1_1.c: New test.
+	* gcc.dg/lto/toplevel-simple-asm-2_0.c: New test.
+	* gcc.dg/lto/toplevel-simple-asm-2_1.c: New test.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* gcc.dg/lto/toplevel-extended-asm-2_0.c: More partitionings.
+	* gcc.dg/lto/toplevel-extended-asm-2_1.c: Likewise.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* gcc.dg/lto/toplevel-extended-asm-2_0.c: New test.
+	* gcc.dg/lto/toplevel-extended-asm-2_1.c: New test.
+	* gcc.dg/lto/toplevel-extended-asm-3_0.c: New test.
+	* gcc.dg/lto/toplevel-extended-asm-3_1.c: New test.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* gcc.dg/lto/toplevel-extended-asm-1_0.c: New test.
+	* gcc.dg/lto/toplevel-extended-asm-1_1.c: New test.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* g++.dg/lto/toplevel_asm-0_0.C: New test.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	PR ipa/122458
+	* gcc.dg/ipa/pr122458.c: New test.
+
+2026-01-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/123012
+	* gfortran.dg/namelist_100.f90: New test.
+
 2026-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* g++.target/s390/float16-1.C: New test.

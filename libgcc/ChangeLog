@@ -1,3 +1,7 @@
+2026-01-11  Jerome Guitton  <guitton@adacore.com>
+
+	* config/gthr-vxworks.h: Remove #include of tickLib.h.
+
 2026-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* config.host: Include s390/t-float16.

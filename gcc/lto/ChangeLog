@@ -1,3 +1,40 @@
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* lto-symtab.cc (lto_symtab_merge_symbols): Set body_removed
+	for symbols resolved outside of IR.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* lto-partition.cc (join_partitions): Declare.
+	(lto_1_to_1_map): Split out to..
+	(map_1_to_1): ..here.
+	(create_asm_partition): Replaced by..
+	(create_asm_partitions): ..this.
+	(lto_max_map): Use new create_asm_partitions.
+	(lto_balanced_map): Use new create_asm_partitions.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* lto-symtab.cc (lto_cgraph_replace_node): Propagate
+	must_remain_in_tu_*.
+	(lto_varpool_replace_node): Likewise.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* lto-common.cc (read_cgraph_and_symbols): Call
+	input_toplevel_asms after decl merging.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	PR ipa/122458
+	* lto-common.cc (read_cgraph_and_symbols):
+	Call analyze_toplevel_extended_asm.
+
+2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	* lto-symtab.cc (lto_cgraph_replace_node): Propagate ref_by_asm.
+	(lto_varpool_replace_node): Propagate ref_by_asm.
+
 2025-12-23  Dhruv Chawla  <dhruvc@nvidia.com>
 
 	* Make-lang.in: Bump GCOV version to 3.
