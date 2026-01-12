@@ -25,13 +25,25 @@ struct local_rng : std::mt19937
 // sixth iteration for float, and not at all for double.
 // However, each double iteration requires two calls to the RNG.
 
+template<typename T>
+int ifloor(T t)
+{ return static_cast<int>(std::floor(t)); }
+
+#ifdef __SIZEOF_FLOAT128__
+int ifloor(__float128 t)
+{ return static_cast<int>(t); }
+#endif
+
 template <typename T, typename RNG>
 void
-test01(RNG& rng, RNG& rng2,
-  int& deviation, int& max, int& rms, int& zero, int& skips)
+test01(RNG& rng, RNG& rng2, int& skips)
 {
+  constexpr size_t mantissa = std::numeric_limits<T>::digits;
+  constexpr size_t call_per_elem = (mantissa + 31) / 32;
+
   const auto size = 1000000, buckets = 100;
   std::array<int, buckets> histo{};
+  int zero = 0;
   for (auto i = 0; i != size; ++i) {
     T sample = std::generate_canonical<T, -1u>(rng);
     VERIFY(sample >= T(0.0));
@@ -39,16 +51,20 @@ test01(RNG& rng, RNG& rng2,
     if (sample == T(0.0)) {
       ++zero;
     }
-    auto bucket = static_cast<int>(std::floor(sample * buckets));
+    auto bucket = ifloor(sample * buckets);
     ++histo[bucket];
-    rng2.discard(1);
+    rng2.discard(call_per_elem);
     if (rng != rng2) {
       ++skips;
-      rng2.discard(1);
+      rng2.discard(call_per_elem);
       VERIFY(rng == rng2);
     }
   }
-  int devsquare = 0;
+
+  if (!std::numeric_limits<T>::is_iec559)
+    return;
+
+  int deviation = 0, max = 0, rms = 0, devsquare = 0;
   for (int i = 0; i < buckets; ++i) {
     const auto expected = size / buckets;
     auto count = histo[i];
@@ -59,6 +75,32 @@ test01(RNG& rng, RNG& rng2,
     if (diff > max) max = diff;
   }
   rms = std::sqrt(devsquare);
+
+  switch (mantissa)
+  {
+  case 24: // ieee32
+    VERIFY(deviation == 7032);
+    VERIFY(max == 276);
+    VERIFY(rms == 906);
+    VERIFY(zero == 0);
+    break;
+  case 53: // ieee64
+  case 64: // ieee80 
+    VERIFY(deviation == 7650);
+    VERIFY(max == 259);
+    VERIFY(rms == 975);
+    VERIFY(zero == 0);
+    break;
+  case 113: // ieee128
+    VERIFY(deviation == 9086);
+    VERIFY(max == 290);
+    VERIFY(rms == 1142);
+    VERIFY(zero == 0);
+    break;
+  default:
+    VERIFY(false);
+    break;
+  }
 }
 
 // This one is for use with local_rng
@@ -145,47 +187,37 @@ test00()
   rng.discard(12 * 629143);
 
   { // float
-    int deviation{}, max{}, rms{}, zero{}, skips{};
+    int skips{};
     auto rng2{rng};
     auto rng3{rng};
-    test01<float>(rng2, rng3, deviation, max, rms, zero, skips);
-
-    if (std::numeric_limits<float>::is_iec559) {
-      VERIFY(deviation == 7032);
-      VERIFY(max == 276);
-      VERIFY(rms == 906);
-      VERIFY(zero == 0);
-    }
+    test01<float>(rng2, rng3, skips);
     VERIFY(skips == 1);
   }
   { // double
-    int deviation{}, max{}, rms{}, zero{}, skips{};
+    int skips{};
     auto rng2{rng};
     auto rng3{rng};
-    test01<double>(rng2, rng3, deviation, max, rms, zero, skips);
-
-    if (std::numeric_limits<double>::is_iec559) {
-      VERIFY(deviation == 7650);
-      VERIFY(max == 259);
-      VERIFY(rms == 975);
-      VERIFY(zero == 0);
-    }
-    VERIFY(skips == 1000000);
+    test01<double>(rng2, rng3, skips);
+    VERIFY(skips == 0);
   }
-  { // long double, same answers as double
-    int deviation{}, max{}, rms{}, zero{}, skips{};
+  { // long double
+    int skips{};
     auto rng2{rng};
     auto rng3{rng};
-    test01<long double>(rng2, rng3, deviation, max, rms, zero, skips);
-
-    if (std::numeric_limits<double>::is_iec559) {
-      VERIFY(deviation == 7650);
-      VERIFY(max == 259);
-      VERIFY(rms == 975);
-      VERIFY(zero == 0);
-    }
-    VERIFY(skips == 1000000);
+    test01<long double>(rng2, rng3, skips);
+    VERIFY(skips == 0);
   }
+#ifndef _GLIBCXX_GENERATE_CANONICAL_STRICT
+#  ifdef __SIZEOF_FLOAT128__
+  {
+    int skips{};
+    auto rng2{rng};
+    auto rng3{rng};
+    test01<__float128>(rng2, rng3, skips);
+    VERIFY(skips == 0);
+  }
+#  endif
+#endif
 
   { // local RNG, returns [0..999'999)
     int deviation{}, max{}, rms{}, zero{}, skips{};
