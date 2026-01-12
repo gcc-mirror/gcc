@@ -1,5 +1,5 @@
 // PR c++/121576
-// { dg-additional-options "-fmodules -Wno-error=expose-global-module-tu-local -Wtemplate-names-tu-local -Wno-global-module" }
+// { dg-additional-options "-fmodules -Wno-error=expose-global-module-tu-local -Wtemplate-names-tu-local -Wno-global-module -fno-implicit-constexpr" }
 // { dg-module-cmi !X }
 
 module;
