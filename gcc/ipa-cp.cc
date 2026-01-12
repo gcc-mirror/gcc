@@ -2618,7 +2618,7 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
 	 and we store it in jump function during analysis stage.  */
 
       if (!src_lats->bits_lattice.bottom_p ()
-	  || src_lats->bits_lattice.recipient_only_p ())
+	  && !src_lats->bits_lattice.recipient_only_p ())
 	{
 	  if (!op_type)
 	    op_type = ipa_get_type (caller_info, src_idx);
