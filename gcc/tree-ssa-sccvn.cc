@@ -3615,7 +3615,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  if (i > 0)
 	    {
 	      int temi = i - 1;
-	      extra_off = vr->operands[i].off;
+	      poly_int64 tem_extra_off = extra_off + vr->operands[i].off;
 	      while (temi >= 0
 		     && known_ne (vr->operands[temi].off, -1))
 		{
@@ -3627,20 +3627,21 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		      i = temi;
 		      /* Strip the component that was type matched to
 			 the MEM_REF.  */
-		      extra_off += vr->operands[i].off - lhs_ops[j].off;
+		      extra_off = (tem_extra_off
+				   + vr->operands[i].off - lhs_ops[j].off);
 		      i--, j--;
 		      /* Strip further equal components.  */
 		      found = true;
 		      break;
 		    }
-		  extra_off += vr->operands[temi].off;
+		  tem_extra_off += vr->operands[temi].off;
 		  temi--;
 		}
 	    }
 	  if (!found && j > 0)
 	    {
 	      int temj = j - 1;
-	      extra_off = -lhs_ops[j].off;
+	      poly_int64 tem_extra_off = extra_off - lhs_ops[j].off;
 	      while (temj >= 0
 		     && known_ne (lhs_ops[temj].off, -1))
 		{
@@ -3652,13 +3653,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 		      j = temj;
 		      /* Strip the component that was type matched to
 			 the MEM_REF.  */
-		      extra_off += vr->operands[i].off - lhs_ops[j].off;
+		      extra_off = (tem_extra_off
+				   + vr->operands[i].off - lhs_ops[j].off);
 		      i--, j--;
 		      /* Strip further equal components.  */
 		      found = true;
 		      break;
 		    }
-		  extra_off += -lhs_ops[temj].off;
+		  tem_extra_off += -lhs_ops[temj].off;
 		  temj--;
 		}
 	    }
