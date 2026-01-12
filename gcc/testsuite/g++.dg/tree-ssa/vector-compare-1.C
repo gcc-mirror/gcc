@@ -1,4 +1,6 @@
-// { dg-do compile { target { c++11 && non_strict_align } } }
+// Even though arm sometimes has unaligned loads, memcmp is not transformed so disable
+// the test for arm targets.
+// { dg-do compile { target { c++11 && { non_strict_align && { ! { arm*-*-* } } } } } }
 // { dg-options "-O2 -fdump-tree-optimized" }
 
 // PR tree-optimization/116651
