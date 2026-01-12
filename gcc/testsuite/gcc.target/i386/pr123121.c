@@ -1,8 +1,7 @@
 /* { dg-do run } */
-/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O3 -fno-ipa-cp -fschedule-insns" } */
 
-int a[256], d, e, f, g, h, j, v[] = {0, -6, 0};;
+int a[256], d, e, f, g, h, j, v[] = {0, -6, 0};
 unsigned c;
 unsigned k(int l, unsigned m) { return (l & 6777215) ^ a[(l ^ m) & 55]; }
 int n(int l, int m[]) {
