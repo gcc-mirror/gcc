@@ -1314,6 +1314,10 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
 
 	CASE_SEPARATORS:
 	case EOF:
+	  /* At this point we have been reading a string of digits. Now we see
+	     the end of these digits without seeing the closing quote and not
+	     seeing the '*' for a repeat count.  When in namelist mode, if it
+	     was a string of digits it should have had the closing quote.  */
 	  if (dtp->u.p.namelist_mode)
 	    {
 	      snprintf (message, IOMSG_LEN, "Missing quote while reading item %d",
@@ -1366,6 +1370,16 @@ read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
     }
 
  get_string:
+
+  /* We could be at the beginning of a string or partially through a string
+     that began with all digits. Either way, the quote character for a namelist
+     read should have been set.  */
+  if (dtp->u.p.namelist_mode && (quote == ' '))
+    {
+      snprintf (message, IOMSG_LEN, "Missing quote while reading item %d",
+		dtp->u.p.item_count);
+      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+    }
 
   for (;;)
     {
