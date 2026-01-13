@@ -1,7 +1,8 @@
 /* PR tree-optimization/83843 */
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-tree-vectorize -fdump-tree-store-merging" } */
-/* { dg-final { scan-tree-dump-times "Merging successful" 3 "store-merging" { target store_merge } } } */
+/* xfailed after PR 122845, see PR 123541 ( */
+/* { dg-final { scan-tree-dump-times "Merging successful" 3 "store-merging" { target store_merge xfail *-*-* } } } */
 
 __attribute__((noipa)) void
 foo (unsigned char *buf, unsigned char *tab)
