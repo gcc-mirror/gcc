@@ -27,6 +27,8 @@ main ()
   foo (out + 4, in + 4);
   foo (out + 6, in + 6);
 
+  #pragma GCC novector
+  #pragma GCC unroll(0)
   for (i = 0; i < N; i++)
   {
     if (in[i] >= 0.0 && out[i])
