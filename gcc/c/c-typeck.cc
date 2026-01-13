@@ -630,6 +630,34 @@ remove_qualifiers (tree t)
 	 : TYPE_MAIN_VARIANT (t);
 }
 
+
+/* Helper function for composite_type_internal.  Find a compatible type
+   in a (transparent) union U compatible to T.  If found, return the
+   type of the corresponding member.  Otherwise, return the union type U.  */
+static tree
+transparent_union_replacement (tree u, tree t)
+{
+  if (u == error_mark_node || t == error_mark_node
+      || TREE_CODE (u) != UNION_TYPE
+      || !(TYPE_TRANSPARENT_AGGR (u) || TYPE_NAME (u) == NULL_TREE)
+      || comptypes (u, t))
+    return u;
+
+  for (tree memb = TYPE_FIELDS (u); memb; memb = DECL_CHAIN (memb))
+    {
+      tree m = remove_qualifiers (TREE_TYPE (memb));
+      if (comptypes (m, t))
+	{
+	  pedwarn (input_location, OPT_Wpedantic,
+		    "function types not truly compatible in ISO C");
+	  return m;
+	}
+    }
+
+  return u;
+}
+
+
 
 /* Return the composite type of two compatible types.
 
@@ -689,6 +717,7 @@ composite_type_internal (tree t1, tree t2, tree cond,
     case POINTER_TYPE:
       /* For two pointers, do this recursively on the target type.  */
       {
+	gcc_checking_assert (TYPE_QUALS (t1) == TYPE_QUALS (t2));
 	tree target = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
 					       cond, cache);
 	tree n = c_build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
@@ -904,9 +933,6 @@ composite_type_internal (tree t1, tree t2, tree cond,
 						cond, cache);
 	tree p1 = TYPE_ARG_TYPES (t1);
 	tree p2 = TYPE_ARG_TYPES (t2);
-	int len;
-	tree newargs, n;
-	int i;
 
 	/* Save space: see if the result is identical to one of the args.  */
 	if (valtype == TREE_TYPE (t1) && !TYPE_ARG_TYPES (t2))
@@ -932,86 +958,30 @@ composite_type_internal (tree t1, tree t2, tree cond,
 
 	/* If both args specify argument types, we must merge the two
 	   lists, argument by argument.  */
+	tree newargs = NULL_TREE;
+	tree *endp = &newargs;
 
-	for (len = 0, newargs = p1;
-	     newargs && newargs != void_list_node;
-	     len++, newargs = TREE_CHAIN (newargs))
-	  ;
-
-	for (i = 0; i < len; i++)
-	  newargs = tree_cons (NULL_TREE, NULL_TREE, newargs);
-
-	n = newargs;
-
-	for (; p1 && p1 != void_list_node;
-	     p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2), n = TREE_CHAIN (n))
+	for (; p1; p1 = TREE_CHAIN (p1), p2 = TREE_CHAIN (p2))
 	  {
-	     tree mv1 = remove_qualifiers (TREE_VALUE (p1));
-	     tree mv2 = remove_qualifiers (TREE_VALUE (p2));
+	    if (p1 == void_list_node)
+	      {
+		*endp = void_list_node;
+		break;
+	      }
+	    tree mv1 = remove_qualifiers (TREE_VALUE (p1));
+	    tree mv2 = remove_qualifiers (TREE_VALUE (p2));
 
-	    /* A null type means arg type is not specified.
-	       Take whatever the other function type has.  */
-	    if (TREE_VALUE (p1) == NULL_TREE)
-	      {
-		TREE_VALUE (n) = TREE_VALUE (p2);
-		goto parm_done;
-	      }
-	    if (TREE_VALUE (p2) == NULL_TREE)
-	      {
-		TREE_VALUE (n) = TREE_VALUE (p1);
-		goto parm_done;
-	      }
+	    gcc_assert (mv1);
+	    gcc_assert (mv2);
 
-	    /* Given  wait (union {union wait *u; int *i} *)
-	       and  wait (union wait *),
-	       prefer  union wait *  as type of parm.  */
-	    if (TREE_CODE (TREE_VALUE (p1)) == UNION_TYPE
-		&& TREE_VALUE (p1) != TREE_VALUE (p2))
-	      {
-		tree memb;
-		for (memb = TYPE_FIELDS (TREE_VALUE (p1));
-		     memb; memb = DECL_CHAIN (memb))
-		  {
-		    tree mv3 = TREE_TYPE (memb);
-		    if (mv3 && mv3 != error_mark_node
-			&& TREE_CODE (mv3) != ARRAY_TYPE)
-		      mv3 = TYPE_MAIN_VARIANT (mv3);
-		    if (comptypes (mv3, mv2))
-		      {
-			TREE_VALUE (n) = composite_type_internal (TREE_TYPE (memb),
-								  TREE_VALUE (p2),
-								  cond, cache);
-			pedwarn (input_location, OPT_Wpedantic,
-				 "function types not truly compatible in ISO C");
-			goto parm_done;
-		      }
-		  }
-	      }
-	    if (TREE_CODE (TREE_VALUE (p2)) == UNION_TYPE
-		&& TREE_VALUE (p2) != TREE_VALUE (p1))
-	      {
-		tree memb;
-		for (memb = TYPE_FIELDS (TREE_VALUE (p2));
-		     memb; memb = DECL_CHAIN (memb))
-		  {
-		    tree mv3 = TREE_TYPE (memb);
-		    if (mv3 && mv3 != error_mark_node
-			&& TREE_CODE (mv3) != ARRAY_TYPE)
-		      mv3 = TYPE_MAIN_VARIANT (mv3);
-		    if (comptypes (mv3, mv1))
-		      {
-			TREE_VALUE (n)
-				= composite_type_internal (TREE_TYPE (memb),
-							   TREE_VALUE (p1),
-							   cond, cache);
-			pedwarn (input_location, OPT_Wpedantic,
-				 "function types not truly compatible in ISO C");
-			goto parm_done;
-		      }
-		  }
-	      }
-	    TREE_VALUE (n) = composite_type_internal (mv1, mv2, cond, cache);
-	  parm_done: ;
+	    mv1 = transparent_union_replacement (mv1, mv2);
+	    mv2 = transparent_union_replacement (mv2, mv1);
+
+	    *endp = tree_cons (NULL_TREE,
+			       composite_type_internal (mv1, mv2, cond, cache),
+			       NULL_TREE);
+
+	    endp = &TREE_CHAIN (*endp);
 	  }
 
 	t1 = c_build_function_type (valtype, newargs);
@@ -2158,24 +2128,12 @@ type_lists_compatible_p (const_tree args1, const_tree args2,
       tree a2 = TREE_VALUE (args2);
       tree mv1 = remove_qualifiers (a1);
       tree mv2 = remove_qualifiers (a2);
-      /* A null pointer instead of a type
-	 means there is supposed to be an argument
-	 but nothing is specified about what type it has.
-	 So match anything that self-promotes.  */
-      if ((a1 == NULL_TREE) != (a2 == NULL_TREE))
-	data->different_types_p = true;
-      if (a1 == NULL_TREE)
-	{
-	  if (c_type_promotes_to (a2) != a2)
-	    return false;
-	}
-      else if (a2 == NULL_TREE)
-	{
-	  if (c_type_promotes_to (a1) != a1)
-	    return false;
-	}
+
+      gcc_assert (mv2);
+      gcc_assert (mv2);
+
       /* If one of the lists has an error marker, ignore this arg.  */
-      else if (TREE_CODE (a1) == ERROR_MARK
+      if (TREE_CODE (a1) == ERROR_MARK
 	       || TREE_CODE (a2) == ERROR_MARK)
 	;
       else if (!comptypes_internal (mv1, mv2, data))
