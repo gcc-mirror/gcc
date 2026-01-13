@@ -664,6 +664,204 @@ namespace __gnu_test
 #endif
 
 
+  template<typename T>
+  struct subscript_proxy
+  {
+    _GLIBCXX_CONSTEXPR
+    operator T&() const
+    { return *ptr; }
+
+    _GLIBCXX14_CONSTEXPR
+    subscript_proxy& operator=(const T& val)
+    { 
+      *ptr = val;
+      return *this;
+    }
+    
+    T* ptr;
+  };
+
+  template<typename T>
+  struct subscript_proxy<const T>
+  {
+    _GLIBCXX_CONSTEXPR
+    operator const T&() const
+    { return *ptr; }
+    
+    const T* ptr;
+  };
+
+  /**
+   * @brief random_access_iterator wrapper for pointer,
+   * that returns proxy from subscript.
+   *
+   * This class takes a pointer and wraps it to provide exactly
+   * the requirements of a random_access_iterator. It should not be
+   * instantiated directly, but generated from a test_container
+   */
+  template<class T>
+  struct proxy_random_access_iterator_wrapper
+  : public bidirectional_iterator_wrapper<T>
+  {
+    typedef BoundsContainer<T> ContainerType;
+    typedef std::random_access_iterator_tag iterator_category;
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper(T* _ptr, ContainerType* SharedInfo_in)
+    : bidirectional_iterator_wrapper<T>(_ptr, SharedInfo_in)
+    { }
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper()
+    : bidirectional_iterator_wrapper<T>()
+    { }
+
+#if __cplusplus >= 201103L
+    proxy_random_access_iterator_wrapper(
+	const proxy_random_access_iterator_wrapper&) = default;
+
+    proxy_random_access_iterator_wrapper&
+    operator=(const proxy_random_access_iterator_wrapper&) = default;
+#endif
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper&
+    operator++()
+    {
+      ITERATOR_VERIFY(this->SharedInfo && this->ptr < this->SharedInfo->last);
+      this->ptr++;
+      return *this;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper
+    operator++(int)
+    {
+      proxy_random_access_iterator_wrapper<T> tmp = *this;
+      ++*this;
+      return tmp;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper&
+    operator--()
+    {
+      ITERATOR_VERIFY(this->SharedInfo && this->ptr > this->SharedInfo->first);
+      this->ptr--;
+      return *this;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper
+    operator--(int)
+    {
+      proxy_random_access_iterator_wrapper<T> tmp = *this;
+      --*this;
+      return tmp;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper&
+    operator+=(std::ptrdiff_t n)
+    {
+      if(n > 0)
+	{
+	  ITERATOR_VERIFY(n <= this->SharedInfo->last - this->ptr);
+	  this->ptr += n;
+	}
+      else
+	{
+	  ITERATOR_VERIFY(-n <= this->ptr - this->SharedInfo->first);
+	  this->ptr += n;
+	}
+      return *this;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper&
+    operator-=(std::ptrdiff_t n)
+    { return *this += -n; }
+
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper
+    operator-(std::ptrdiff_t n) const
+    {
+      proxy_random_access_iterator_wrapper<T> tmp = *this;
+      return tmp -= n;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    std::ptrdiff_t
+    operator-(const proxy_random_access_iterator_wrapper<T>& in) const
+    {
+      ITERATOR_VERIFY(this->SharedInfo == in.SharedInfo);
+      return this->ptr - in.ptr;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    subscript_proxy<T>
+    operator[](std::ptrdiff_t n) const
+    {
+      subscript_proxy<T> tmp = { *this + n };
+      return tmp;
+    }
+
+#if __cplusplus >= 201103L
+    // Ensure that the iterator's difference_type is always used.
+    template<typename D> void operator+=(D) = delete;
+    template<typename D> void operator-=(D) = delete;
+    template<typename D> void operator[](D) const = delete;
+    template<typename D>
+      typename std::enable_if<std::is_integral<D>::value>::type
+      operator-(D) const = delete;
+#endif
+
+    _GLIBCXX14_CONSTEXPR
+    bool operator<(const proxy_random_access_iterator_wrapper<T>& in) const
+    {
+      ITERATOR_VERIFY(this->SharedInfo == in.SharedInfo);
+      return this->ptr < in.ptr;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    bool operator>(const proxy_random_access_iterator_wrapper<T>& in) const
+    {
+      return in < *this;
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    bool operator>=(const proxy_random_access_iterator_wrapper<T>& in) const
+    {
+      return !(*this < in);
+    }
+
+    _GLIBCXX14_CONSTEXPR
+    bool operator<=(const proxy_random_access_iterator_wrapper<T>& in) const
+    {
+      return !(*this > in);
+    }
+  };
+
+  template<typename T>
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper<T>
+    operator+(proxy_random_access_iterator_wrapper<T> it, std::ptrdiff_t n)
+    { return it += n; }
+
+  template<typename T>
+    _GLIBCXX14_CONSTEXPR
+    proxy_random_access_iterator_wrapper<T>
+    operator+(std::ptrdiff_t n, proxy_random_access_iterator_wrapper<T> it)
+    { return it += n; }
+
+#if __cplusplus >= 201103L
+    // Ensure that the iterator's difference_type is always used.
+    template<typename T, typename D>
+      void operator+(proxy_random_access_iterator_wrapper<T>, D) = delete;
+    template<typename T, typename D>
+      void operator+(D, proxy_random_access_iterator_wrapper<T>) = delete;
+#endif
+
   /**
    * @brief A container-type class for holding iterator wrappers
    * test_container takes two parameters, a class T and an iterator

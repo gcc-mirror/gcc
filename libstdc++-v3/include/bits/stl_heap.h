@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Distance __parent = 0;
       for (_Distance __child = 1; __child < __n; ++__child)
 	{
-	  if (__comp(__first[__parent], __first[__child]))
+	  if (__comp(*(__first + __parent), *(__first + __child)))
 	    return __child;
 	  if ((__child & 1) == 0)
 	    ++__parent;
@@ -143,7 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_Compare& __comp)
     {
       _Distance __parent = (__holeIndex - 1) / 2;
-      while (__holeIndex > __topIndex && __comp(__first[__parent], __value))
+      while (__holeIndex > __topIndex && __comp(*(__first + __parent), __value))
 	{
 	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __parent));
 	  __holeIndex = __parent;
@@ -233,8 +233,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       while (__secondChild < (__len - 1) / 2)
 	{
 	  __secondChild = 2 * (__secondChild + 1);
-	  if (__comp(__first[__secondChild],
-		     __first[__secondChild - 1]))
+	  if (__comp(*(__first + __secondChild),
+		     *(__first + _Distance(__secondChild - 1))))
 	    __secondChild--;
 	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __secondChild));
 	  __holeIndex = __secondChild;
