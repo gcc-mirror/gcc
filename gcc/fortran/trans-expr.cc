@@ -13612,7 +13612,8 @@ copyable_array_p (gfc_expr * expr)
       return false;
 
     case_bt_struct:
-      return !expr->ts.u.derived->attr.alloc_comp;
+      return (!expr->ts.u.derived->attr.alloc_comp
+	      && !expr->ts.u.derived->attr.pdt_type);
 
     default:
       break;

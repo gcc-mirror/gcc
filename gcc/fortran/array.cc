@@ -2214,6 +2214,7 @@ resolve_array_list (gfc_constructor_base base)
   bool t;
   gfc_constructor *c;
   gfc_iterator *iter;
+  gfc_expr *expr1 = NULL;
 
   t = true;
 
@@ -2276,6 +2277,17 @@ resolve_array_list (gfc_constructor_base base)
 	  t = false;
 	}
 
+      /* For valid expressions, check that the type specification parameters
+	 are the same.  */
+      if (t && !c->iterator && c->expr
+	  && c->expr->ts.type == BT_DERIVED
+	  && c->expr->ts.u.derived->attr.pdt_type)
+	{
+	  if (expr1 == NULL)
+	    expr1 = c->expr;
+	  else
+	    t = gfc_check_type_spec_parms (expr1, c->expr, "in array constructor");
+	}
     }
 
   return t;

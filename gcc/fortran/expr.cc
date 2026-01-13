@@ -3930,6 +3930,67 @@ gfc_check_conformance (gfc_expr *op1, gfc_expr *op2, const char *optype_msgid, .
 }
 
 
+/* Functions to check constant valued type specification parameters.  */
+
+static gfc_actual_arglist *
+get_parm_list_from_expr (gfc_expr *expr)
+{
+  gfc_actual_arglist *a = NULL;
+  gfc_constructor *c;
+
+  if (expr->expr_type == EXPR_STRUCTURE)
+    a = expr->param_list;
+  else if (expr->expr_type == EXPR_ARRAY)
+    {
+      /* Take the first constant expression, if there is one.  */
+      c = gfc_constructor_first (expr->value.constructor);
+      for (; c; c = gfc_constructor_next (c))
+	if (!c->iterator && c->expr && c->expr->param_list)
+	  {
+	    a = c->expr->param_list;
+	    break;
+	  }
+    }
+  else if (expr->expr_type == EXPR_VARIABLE)
+    a = expr->symtree->n.sym->param_list;
+
+  return a;
+}
+
+bool
+gfc_check_type_spec_parms (gfc_expr *expr1, gfc_expr *expr2,
+			   const char *context)
+{
+  bool t = true;
+  gfc_actual_arglist *a1, *a2;
+
+  gcc_assert (expr1->ts.type == BT_DERIVED
+	      && expr1->ts.u.derived->attr.pdt_type);
+
+  a1 = get_parm_list_from_expr (expr1);
+  a2 = get_parm_list_from_expr (expr2);
+
+  for (; a1 && a2; a1 = a1->next, a2 = a2->next)
+    {
+      if (a1->expr && a1->expr->expr_type == EXPR_CONSTANT
+	  && a2->expr && a2->expr->expr_type == EXPR_CONSTANT
+	  && !strcmp (a1->name, a2->name)
+	  && mpz_cmp (a1->expr->value.integer, a2->expr->value.integer))
+	{
+	  gfc_error ("Mismatched type parameters %qs(%d/%d) %s at %L/%L",
+		     a2->name,
+		     (int)mpz_get_ui (a1->expr->value.integer),
+		     (int)mpz_get_ui (a2->expr->value.integer),
+		     context,
+		     &expr1->where, &expr2->where);
+	  t = false;
+	}
+    }
+
+  return t;
+}
+
+
 /* Given an assignable expression and an arbitrary expression, make
    sure that the assignment can take place.  Only add a call to the intrinsic
    conversion routines, when allow_convert is set.  When this assign is a
@@ -4122,6 +4183,12 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
 		 &lvalue->where);
       return false;
     }
+
+
+  /* Check that the type spec. parameters are the same on both sides.  */
+  if (lvalue->ts.type == BT_DERIVED && lvalue->ts.u.derived->attr.pdt_type
+      && !gfc_check_type_spec_parms (lvalue, rvalue, "in assignment"))
+    return false;
 
   if (gfc_compare_types (&lvalue->ts, &rvalue->ts))
     return true;

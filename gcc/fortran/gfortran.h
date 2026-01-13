@@ -3998,6 +3998,7 @@ bool gfc_numeric_ts (gfc_typespec *);
 int gfc_kind_max (gfc_expr *, gfc_expr *);
 
 bool gfc_check_conformance (gfc_expr *, gfc_expr *, const char *, ...) ATTRIBUTE_PRINTF_3;
+bool gfc_check_type_spec_parms (gfc_expr *, gfc_expr *, const char *);
 bool gfc_check_assign (gfc_expr *, gfc_expr *, int, bool c = true);
 bool gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 			       bool suppres_type_test = false,
