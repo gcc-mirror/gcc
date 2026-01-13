@@ -11528,9 +11528,9 @@ and,
       vec_perm_indices sel (builder, single_arg ? 1 : 2, nelts_in);
     }
     (if (known_eq (nelts, nelts_in) && sel.series_p (0, 1, 0, 1))
-     { op0; }
-     (if (sel.series_p (0, 1, nelts_in, 1))
-      { op1; }
+     (view_convert @0)
+     (if (known_eq (nelts, nelts_in) && sel.series_p (0, 1, nelts_in, 1))
+      (view_convert @1)
       (with
        {
          if (!single_arg)
