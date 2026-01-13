@@ -5137,6 +5137,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && (GIMPLE || !TREE_SIDE_EFFECTS (@1)))
   (cond (convert:boolean_type_node @2) @1 @0)))
 
+/* Transform A & (B*cmp) into (A&B)*cmp.  */
+(simplify
+ (bit_and:c (mult:cs zero_one_valued_p@0 @1) @2)
+ (mult @0 (bit_and! @1 @2)))
+
 /* (x <= 0 ? -x : 0) -> max(-x, 0).  */
 (simplify
  (cond (le @0 integer_zerop@1) (negate@2 @0) integer_zerop@1)
