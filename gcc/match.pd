@@ -12190,7 +12190,10 @@ and,
 (simplify
   (bit_ior:c (lshift @0 INTEGER_CST@1)
 	     (bit_xor (rshift @2 INTEGER_CST@3) INTEGER_CST@4))
-   (if (((~((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@4)) == 0
+   (if (tree_fits_uhwi_p (@1)
+	&& tree_fits_uhwi_p (@3)
+	&& tree_fits_uhwi_p (@4)
+	&& ((~((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@4)) == 0
         && (tree_to_uhwi (@1) + tree_to_uhwi (@3)) == TYPE_PRECISION (type)
         && TYPE_UNSIGNED (type)
         && @0 == @2)
@@ -12201,7 +12204,10 @@ and,
 (simplify
   (bit_ior:c (bit_xor (lshift @0 INTEGER_CST@1) INTEGER_CST@2)
 	     (rshift @3 INTEGER_CST@4))
-   (if ((((((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@2)) == 0)
+   (if (tree_fits_uhwi_p (@1)
+	&& tree_fits_uhwi_p (@2)
+	&& tree_fits_uhwi_p (@4)
+	&& (((((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@2)) == 0)
         && (tree_to_uhwi (@1) + tree_to_uhwi (@4)) == TYPE_PRECISION (type)
         && TYPE_UNSIGNED (type)
         && @0 == @3)
