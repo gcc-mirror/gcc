@@ -45,4 +45,4 @@ cal3 (double a)
     return 1;
 }
 
-/* { dg-final { scan-assembler-times "adrp" 6 } } */
+/* { dg-final { scan-assembler-times "adrp" 4 } } */

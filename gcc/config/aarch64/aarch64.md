@@ -1960,6 +1960,18 @@
 	emit_move_insn (operands[0], gen_lowpart (<MODE>mode, tmp));
 	DONE;
       }
+
+    /* Expand into a literal load using anchors.  */
+    if (GET_CODE (operands[1]) == CONST_DOUBLE
+	&& !aarch64_can_const_movi_rtx_p (operands[1], <MODE>mode)
+	&& !aarch64_float_const_representable_p (operands[1])
+	&& !aarch64_float_const_zero_rtx_p (operands[1])
+	&& !aarch64_float_const_rtx_p (operands[1]))
+      {
+	operands[1] = force_const_mem (<MODE>mode, operands[1]);
+	emit_move_insn (operands[0], operands[1]);
+	DONE;
+      }
   }
 )
 
