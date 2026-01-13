@@ -5657,11 +5657,9 @@ expand_debug_expr (tree exp)
       else if (TREE_CODE (TREE_TYPE (exp)) == VECTOR_TYPE)
 	{
 	  unsigned i;
-	  unsigned HOST_WIDE_INT nelts;
+	  poly_uint64 elts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp));
+	  unsigned HOST_WIDE_INT nelts = constant_lower_bound (elts);
 	  tree val;
-
-	  if (!TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp)).is_constant (&nelts))
-	    goto flag_unsupported;
 
 	  op0 = gen_rtx_CONCATN (mode, rtvec_alloc (nelts));
 
