@@ -548,6 +548,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 #endif
 
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<set> _Kt>
+	pair<iterator, bool>
+	insert(_Kt&& __k)
+	{
+	  auto [__left, __node] =_M_t._M_get_insert_unique_pos_tr(__k);
+	  if (__node)
+	    {
+	      iterator __i = _M_t._M_emplace_here(
+		(__left == __node), __node, std::forward<_Kt>(__k));
+	      return { __i, true };
+	    }
+	  return { iterator(__left), false };
+	}
+#endif
+
       /**
        *  @brief Attempts to insert an element into the %set.
        *  @param  __position  An iterator that serves as a hint as to where the
@@ -565,6 +581,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  For more on @a hinting, see:
        *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
        *
+       *  If a heterogeneous key __k matches a range of elements, an iterator
+       *  to the first is returned.
+       *
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
       iterator
@@ -576,6 +595,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(const_iterator __position, value_type&& __x)
       { return _M_t._M_insert_unique_(__position, std::move(__x)); }
 #endif
+
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<set> _Kt>
+	iterator
+	insert(const_iterator __position, _Kt&& __k)
+	{
+	  auto [__left, __node] =
+	    _M_t._M_get_insert_hint_unique_pos_tr(__position, __k);
+	  if (__node)
+	    return _M_t._M_emplace_here(
+	      (__left == __node), __node, std::forward<_Kt>(__k));
+	  else
+	    return iterator(__left);
+	}
+#endif
+      ///@}
 
       /**
        *  @brief A template function that attempts to insert a range

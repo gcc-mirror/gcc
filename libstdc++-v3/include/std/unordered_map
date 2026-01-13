@@ -57,6 +57,7 @@
 #define __glibcxx_want_unordered_map_try_emplace
 #define __glibcxx_want_tuple_like
 #define __glibcxx_want_associative_heterogeneous_erasure
+#define __glibcxx_want_associative_heterogeneous_insertion
 #include <bits/version.h>
 
 #if __cplusplus >= 201703L

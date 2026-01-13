@@ -700,6 +700,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bucket(const key_type& __k) const
       { return _M_bucket_index(this->_M_hash_code(__k)); }
 
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <typename _Kt>
+	size_type
+	_M_bucket_tr(const _Kt& __k) const
+	{ return _M_bucket_index(this->_M_hash_code_tr(__k)); }
+#endif
+
       local_iterator
       begin(size_type __bkt)
       {
@@ -1097,6 +1104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::pair<iterator, bool>
 	try_emplace(const_iterator, _KType&& __k, _Args&&... __args)
 	{
+	  // Note we ignore the hint argument.
 	  __hash_code __code;
 	  size_type __bkt;
 	  if (auto __loc = _M_locate(__k))
@@ -1117,6 +1125,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __node._M_node = nullptr;
 	  return { __it, true };
 	}
+
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template<typename _Kt>
+	std::pair<iterator, bool>
+	_M_insert_tr(_Kt&& __k)
+	{
+	  auto __loc = _M_locate_tr(__k);
+	  if (__loc)
+	    return { iterator(__loc), false };
+
+	  _Scoped_node __node(
+	    this->_M_allocate_node(std::forward<_Kt>(__k)), this);
+	  auto __it = _M_insert_unique_node(
+	    __loc._M_bucket_index, __loc._M_hash_code, __node._M_node);
+	  __node._M_node = nullptr;
+	  return { __it, true };
+	}
+#endif
 #endif
 
       void
@@ -2363,6 +2389,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__node._M_node = nullptr;
 	return { __pos, true };
       }
+
 #pragma GCC diagnostic pop
 
   template<typename _Key, typename _Value, typename _Alloc,

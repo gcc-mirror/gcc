@@ -1652,6 +1652,14 @@ ftms = {
 };
 
 ftms = {
+  name = associative_heterogeneous_insertion;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = is_scoped_enum;
   values = {
     v = 202011;
