@@ -1,0 +1,3 @@
+/* GNU ld script
+   Just link in libatomic.a.  */
+INPUT ( libatomic.a )

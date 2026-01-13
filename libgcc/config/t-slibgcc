@@ -30,6 +30,15 @@ SHLIB_LC = -lc
 SHLIB_MAKE_SOLINK = $(LN_S) $(SHLIB_SONAME) $(SHLIB_DIR)/$(SHLIB_SOLINK)
 SHLIB_INSTALL_SOLINK = $(LN_S) $(SHLIB_SONAME) \
 	$(DESTDIR)$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK)
+SHLIB_ASNEEDED_SOLINK = @shlib_base_name@_asneeded.so
+SHLIB_MAKE_ASNEEDED_SOLINK = \
+        (echo "/* GNU ld script"; \
+         echo "   Add DT_NEEDED entry for libgcc_s.so only if needed.  */"; \
+         echo "INPUT ( AS_NEEDED ( -lgcc_s ) )" \
+        ) > $(SHLIB_DIR)/$(SHLIB_ASNEEDED_SOLINK)
+SHLIB_INSTALL_ASNEEDED_SOLINK = \
+        $(INSTALL_DATA) $(SHLIB_DIR)/$(SHLIB_ASNEEDED_SOLINK) \
+          $(DESTDIR)$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_ASNEEDED_SOLINK)
 
 SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 	$(SHLIB_LDFLAGS) $(LDFLAGS) \
@@ -41,7 +50,8 @@ SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) -shared -nodefaultlibs \
 		$(SHLIB_DIR)/$(SHLIB_SONAME).backup; \
 	else true; fi && \
 	mv $(SHLIB_DIR)/$(SHLIB_SONAME).tmp $(SHLIB_DIR)/$(SHLIB_SONAME) && \
-	$(SHLIB_MAKE_SOLINK)
+	$(SHLIB_MAKE_SOLINK) && \
+	$(SHLIB_MAKE_ASNEEDED_SOLINK)
 
 INSTALL_SHLIB = $(INSTALL_DATA)
 
@@ -50,4 +60,5 @@ SHLIB_INSTALL = \
 	$(INSTALL_SHLIB) $(SHLIB_DIR)/$(SHLIB_SONAME) \
 	  $(DESTDIR)$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SONAME); \
 	rm -f $(DESTDIR)$(slibdir)$(SHLIB_SLIBDIR_QUAL)/$(SHLIB_SOLINK); \
-	$(SHLIB_INSTALL_SOLINK)
+	$(SHLIB_INSTALL_SOLINK); \
+	$(SHLIB_INSTALL_ASNEEDED_SOLINK)

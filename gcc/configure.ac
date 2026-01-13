@@ -6652,10 +6652,12 @@ gcc_cv_ld_as_needed,
 [gcc_cv_ld_as_needed=no
 gcc_cv_ld_as_needed_option='--as-needed'
 gcc_cv_ld_no_as_needed_option='--no-as-needed'
+gcc_cv_ld_use_as_needed_ldscript=no
 if test $in_tree_ld = yes ; then
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_as_needed=yes
+    gcc_cv_ld_use_as_needed_ldscript=yes
     if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 28; then
       gcc_cv_ld_as_needed_option='--push-state --as-needed'
       gcc_cv_ld_no_as_needed_option='--pop-state'
@@ -6665,6 +6667,7 @@ elif test x$gcc_cv_ld != x; then
   # Check if linker supports --as-needed and --no-as-needed options
   if $gcc_cv_ld --help 2>&1 | grep as-needed > /dev/null; then
     gcc_cv_ld_as_needed=yes
+    gcc_cv_ld_use_as_needed_ldscript=yes
     if $gcc_cv_ld --help 2>&1 | grep push-state > /dev/null \
        && $gcc_cv_ld --help 2>&1 | grep pop-state > /dev/null \
        && echo "$ld_ver" | grep GNU > /dev/null \
@@ -6683,6 +6686,7 @@ elif test x$gcc_cv_ld != x; then
       gcc_cv_ld_as_needed=yes
       gcc_cv_ld_as_needed_option="-z ignore"
       gcc_cv_ld_no_as_needed_option="-z record"
+      gcc_cv_ld_use_as_needed_ldscript=no
       ;;
   esac
 fi
@@ -6691,6 +6695,7 @@ case "$target" in
     if echo "$ld_ver" | grep GNU > /dev/null; then
       # Doesn't work with gld on Solaris/x86 due to PR ld/12320.
       gcc_cv_ld_as_needed=no
+      gcc_cv_ld_use_as_needed_ldscript=no
     fi
     ;;
 esac
@@ -6702,6 +6707,10 @@ if test x"$gcc_cv_ld_as_needed" = xyes; then
 [Define to the linker option to ignore unused dependencies.])
 	AC_DEFINE_UNQUOTED(LD_NO_AS_NEEDED_OPTION, "$gcc_cv_ld_no_as_needed_option",
 [Define to the linker option to keep unused dependencies.])
+fi
+if test x"$gcc_cv_ld_use_as_needed_ldscript" = xyes; then
+	AC_DEFINE(USE_LD_AS_NEEDED_LDSCRIPT, 1,
+[Define if your linker supports AS_NEEDED in linker scripts.])
 fi
 
 AC_MSG_CHECKING(linker mapfile support for clearing hardware capabilities)

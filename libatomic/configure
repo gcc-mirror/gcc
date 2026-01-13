@@ -656,6 +656,8 @@ LIBAT_BUILD_VERSIONED_SHLIB_GNU_FALSE
 LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE
 LIBAT_BUILD_VERSIONED_SHLIB_FALSE
 LIBAT_BUILD_VERSIONED_SHLIB_TRUE
+LIBAT_BUILD_ASNEEDED_SOLINK_FALSE
+LIBAT_BUILD_ASNEEDED_SOLINK_TRUE
 OPT_LDFLAGS
 SECTION_LDFLAGS
 PARTIAL_VXWORKS_FALSE
@@ -11864,7 +11866,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11867 "configure"
+#line 11869 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11970,7 +11972,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11973 "configure"
+#line 11975 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15731,9 +15733,14 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
 
   ldver=`$LD --version 2>/dev/null |
          sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
+  ldasneeded=`$LD --help 2>/dev/null | grep as-needed`
 
   libat_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) $3=0; print ($1*100+$2)*100+$3 }'`
+  libat_ld_asneeded=no
+  if test -n "$ldasneeded"; then
+    libat_ld_asneeded=yes
+  fi
 
   # Set --gc-sections.
   if test "$with_gnu_ld" = "notbroken"; then
@@ -15796,6 +15803,14 @@ $as_echo "$ac_sectionLDflags" >&6; }
   fi
 
 
+
+   if test $libat_ld_asneeded != no; then
+  LIBAT_BUILD_ASNEEDED_SOLINK_TRUE=
+  LIBAT_BUILD_ASNEEDED_SOLINK_FALSE='#'
+else
+  LIBAT_BUILD_ASNEEDED_SOLINK_TRUE='#'
+  LIBAT_BUILD_ASNEEDED_SOLINK_FALSE=
+fi
 
 
 
@@ -16442,6 +16457,10 @@ if test -z "${PARTIAL_VXWORKS_TRUE}" && test -z "${PARTIAL_VXWORKS_FALSE}"; then
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
+if test -z "${LIBAT_BUILD_ASNEEDED_SOLINK_TRUE}" && test -z "${LIBAT_BUILD_ASNEEDED_SOLINK_FALSE}"; then
+  as_fn_error $? "conditional \"LIBAT_BUILD_ASNEEDED_SOLINK\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${LIBAT_BUILD_VERSIONED_SHLIB_TRUE}" && test -z "${LIBAT_BUILD_VERSIONED_SHLIB_FALSE}"; then
   as_fn_error $? "conditional \"LIBAT_BUILD_VERSIONED_SHLIB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5

@@ -999,8 +999,12 @@ proper position among the other output files.  */
 /* Here is the spec for running the linker, after compiling all files.  */
 
 #if defined(TARGET_PROVIDES_LIBATOMIC) && defined(USE_LD_AS_NEEDED)
+#ifdef USE_LD_AS_NEEDED_LDSCRIPT
+#define LINK_LIBATOMIC_SPEC "%{!fno-link-libatomic:-latomic_asneeded} "
+#else
 #define LINK_LIBATOMIC_SPEC "%{!fno-link-libatomic:" LD_AS_NEEDED_OPTION \
 			    " -latomic " LD_NO_AS_NEEDED_OPTION "} "
+#endif
 #else
 #define LINK_LIBATOMIC_SPEC ""
 #endif
@@ -1845,6 +1849,16 @@ init_gcc_specs (struct obstack *obstack, const char *shared_name,
   char *buf;
 
 #if USE_LD_AS_NEEDED
+#if defined(USE_LD_AS_NEEDED_LDSCRIPT) && !defined(USE_LIBUNWIND_EXCEPTIONS)
+  buf = concat ("%{static|static-libgcc|static-pie:", static_name, " ", eh_name, "}"
+		"%{!static:%{!static-libgcc:%{!static-pie:"
+		"%{!shared-libgcc:",
+		static_name, " ",
+		shared_name, "_asneeded}"
+		"%{shared-libgcc:",
+		shared_name, "%{!shared: ", static_name, "}"
+		"}}"
+#else
   buf = concat ("%{static|static-libgcc|static-pie:", static_name, " ", eh_name, "}"
 		"%{!static:%{!static-libgcc:%{!static-pie:"
 		"%{!shared-libgcc:",
@@ -1854,6 +1868,7 @@ init_gcc_specs (struct obstack *obstack, const char *shared_name,
 		"%{shared-libgcc:",
 		shared_name, "%{!shared: ", static_name, "}"
 		"}}"
+#endif
 #else
   buf = concat ("%{static|static-libgcc:", static_name, " ", eh_name, "}"
 		"%{!static:%{!static-libgcc:"

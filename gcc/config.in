@@ -2658,6 +2658,12 @@
 #endif
 
 
+/* Define if your linker supports AS_NEEDED in linker scripts. */
+#ifndef USED_FOR_TARGET
+#undef USE_LD_AS_NEEDED_LDSCRIPT
+#endif
+
+
 /* Define to 1 if the 'long long' type is wider than 'long' but still
    efficiently supported by the host hardware. */
 #ifndef USED_FOR_TARGET

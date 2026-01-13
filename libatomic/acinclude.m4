@@ -345,9 +345,14 @@ AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
          sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
+  ldasneeded=`$LD --help 2>/dev/null | grep as-needed`
   changequote([,])
   libat_gnu_ld_version=`echo $ldver | \
          $AWK -F. '{ if (NF<3) [$]3=0; print ([$]1*100+[$]2)*100+[$]3 }'`
+  libat_ld_asneeded=no
+  if test -n "$ldasneeded"; then
+    libat_ld_asneeded=yes
+  fi
 
   # Set --gc-sections.
   if test "$with_gnu_ld" = "notbroken"; then
@@ -394,6 +399,7 @@ AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
 
   AC_SUBST(SECTION_LDFLAGS)
   AC_SUBST(OPT_LDFLAGS)
+  AM_CONDITIONAL(LIBAT_BUILD_ASNEEDED_SOLINK, test $libat_ld_asneeded != no)
 ])
 
 

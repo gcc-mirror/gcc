@@ -40,6 +40,9 @@ AM_CCASFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 
 toolexeclib_LTLIBRARIES = libatomic.la
+if LIBAT_BUILD_ASNEEDED_SOLINK
+toolexeclib_DATA = libatomic_asneeded.so libatomic_asneeded.a
+endif
 noinst_LTLIBRARIES = libatomic_convenience.la
 
 if LIBAT_BUILD_VERSIONED_SHLIB
@@ -183,6 +186,10 @@ all-multi: $(libatomic_la_LIBADD)
 gcc_objdir = `pwd`/$(MULTIBUILDTOP)../../gcc/
 all-local: libatomic.la
 	$(LIBTOOL) --mode=install $(INSTALL_DATA) libatomic.la $(gcc_objdir)$(MULTISUBDIR)/
+if LIBAT_BUILD_ASNEEDED_SOLINK
+	$(INSTALL_DATA) $(top_srcdir)/libatomic_asneeded.so $(gcc_objdir)$(MULTISUBDIR)/
+	$(INSTALL_DATA) $(top_srcdir)/libatomic_asneeded.a $(gcc_objdir)$(MULTISUBDIR)/
+endif
 	rm $(gcc_objdir)$(MULTISUBDIR)/libatomic.la
 
 # target overrides
