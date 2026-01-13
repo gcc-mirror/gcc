@@ -4,6 +4,6 @@
 
 static int foo (void) { return 0; };
 
-asm (".quad %c0" :: "i" (foo));
+asm (".dc.a %c0" :: "i" (foo));
 
 int main() {}
