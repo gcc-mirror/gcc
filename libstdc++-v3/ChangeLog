@@ -1,3 +1,27 @@
+2026-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/abi/pre/gnu.ver (CXXABI_1.3.14): Don't export _ZTI*DF16_ on
+	s390x.
+	(CXXABI_1.3.17): Export _ZTI*DF16_ on s390x.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Remove
+	_ZTI{,P,K}DF16_.
+
+2026-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/atomic.cc (__detail::__spin_impl): Do not use
+	reserved names for variables.
+
+2026-01-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__wait_args): Improve comments.
+	* src/c++20/atomic.cc (__wait_args::_M_setup_proxy_wait):
+	Improve comment.
+
+2026-01-12  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon.cc:
+	Updated test.
+
 2026-01-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Add

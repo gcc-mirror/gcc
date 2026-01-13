@@ -1,3 +1,57 @@
+2026-01-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122845
+	PR tree-optimization/122843
+	* match.pd (`(T1)(a bit_op (T2)b)`): Also
+	simplify if T1 is the same type as b and T2 is wider
+	type than T1.
+
+2026-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123528
+	* tree-vect-patterns.cc (vect_recog_bool_pattern): Restore
+	INTEGRAL_TYPE_P check but also allow SCALAR_FLOAT_TYPE_P.
+
+2026-01-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/123543
+	* ipa-cp.cc (propagate_bits_across_jump_function): Fix test for
+	recipient_only_p.
+
+2026-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122830
+	PR tree-optimization/122824
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Generalize
+	aggregate copy handling when no variable offsets are
+	involved.
+
+2026-01-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Only tentatively
+	accumulate extra_off when tentatively consuming components
+	during aggregate copy handling.
+
+2026-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123175
+	* match.pd (vec_perm @0 @1 @2): Fixup for inputs having a
+	different number of elements than the result.
+	* tree-vect-generic.cc (lower_vec_perm): Likewise.
+
+2026-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/123523
+	* simplify-rtx.cc (simplify_const_binary_operation): Use
+	DImode for VOIDmode shift and truncation counts if int_mode
+	is narrower than HOST_BITS_PER_WIDE_INT rather than
+	word_mode if int_mode it is narrower than BITS_PER_WORD.
+
+2026-01-12  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* auto-profile.cc (autofdo_source_profile::offline_unrealized_inlines):
+	Add missing check for in_map.
+
 2026-01-11  Michal Jires  <mjires@suse.cz>
 
 	* asm-toplevel.cc (mark_fragile_ref_by_asm):

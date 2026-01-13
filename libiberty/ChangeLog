@@ -1,3 +1,8 @@
+2026-01-12  Maciej W. Rozycki  <macro@redhat.com>
+
+	* objalloc.c (objalloc_free): Don't use the pointer passed if
+	null.
+
 2026-01-09  Jan Beulich  <jbeulich@suse.com>
 
 	* testsuite/test-pexecute.c (main): Adjust a tracing fprintf().

@@ -1,3 +1,9 @@
+2026-01-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91960
+	* resolve.cc (resolve_fl_parameter): Check the righthand symbol
+	is a constant expression.
+
 2026-01-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/123483

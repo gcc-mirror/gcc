@@ -1,3 +1,9 @@
+2026-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/81337
+	* testsuite/libgomp.c++/target-cdtor-2.C: Skip on Solaris.
+	Fix comments.
+
 2026-01-06  supers1ngular  <supers1ngular@baylibre.com>
 
 	* testsuite/libgomp.fortran/pr84418-1.f90: Fix verbiage of

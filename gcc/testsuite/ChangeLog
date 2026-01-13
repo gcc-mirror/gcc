@@ -1,3 +1,141 @@
+2026-01-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122845
+	PR tree-optimization/122843
+	* gcc.dg/tree-ssa/bitops-12.c: New test.
+	* gcc.dg/tree-ssa/bitops-13.c: New test.
+	* gcc.dg/store_merging_18.c: xfail store merging.
+
+2026-01-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/91960
+	* gfortran.dg/pr69962.f90: Adjust testcase to ignore new error message.
+	* gfortran.dg/pr91960_1.f90: New test.
+	* gfortran.dg/pr91960_2.f90: New test.
+
+2026-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123189
+	* g++.dg/cpp0x/noexcept92.C: New test.
+
+2026-01-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/internal-17_b.C: Add -fno-implicit-constexpr.
+
+2026-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123528
+	* gcc.dg/vect/vect-pr12358.c: New testcase.
+
+2026-01-12  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/pch/aarch64-pch.exp: Fix copyright year.
+
+2026-01-12  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	PR target/123457
+	* gcc.target/aarch64/pch/aarch64-pch.exp: Add new testsuite.
+	* gcc.target/aarch64/pch/pch_arm_acle.c: Add new test file.
+	* gcc.target/aarch64/pch/pch_arm_acle.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_acle_include_post.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_acle_include_post.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_multiple.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_multiple.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_multiple_include_post.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_multiple_include_post.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_neon.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_neon.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_neon_include_post.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_neon_include_post.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_neon_sve_bridge.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_neon_sve_bridge.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_neon_sve_bridge_include_post.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_neon_sve_bridge_include_post.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_sme.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_sme.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_sme_include_post.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_sme_include_post.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_sve.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_sve.hs: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_sve_include_post.c: Likewise.
+	* gcc.target/aarch64/pch/pch_arm_sve_include_post.hs: Likewise.
+
+2026-01-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/123543
+	* gcc.dg/ipa/pr123543.c: New test.
+
+2026-01-12  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/cvt_mf8_bf16_x2.c: Added target checks.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_mf8_f16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_mf8_f32_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_mf8_f32_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f16_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f32_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f32_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f64_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f64_x4.c: Likewise.
+
+2026-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122830
+	PR tree-optimization/122824
+	* gcc.dg/tree-ssa/ssa-fre-112.c: New testcase.
+	* g++.dg/warn/Warray-bounds-pr122824.C: Likewise.
+
+2026-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123175
+	* gcc.dg/torture/pr123175-1.c: New testcase.
+	* gcc.dg/torture/pr123175-2.c: Likewise.
+
+2026-01-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115163
+	* g++.dg/ext/is_convertible7.C: Add new testcases.
+	* g++.dg/diagnostic/explicit2.C: New test.
+
+2026-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/123523
+	* gcc.target/i386/pr123523.c: New test.
+
+2026-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123526
+	* g++.dg/ext/gnu-inline-inh-ctor1.C: New test.
+	* g++.dg/ext/gnu-inline-inh-ctor2.C: New test.
+
+2026-01-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR rtl-optimization/123121
+	* gcc.target/i386/pr123121.c:
+
+2026-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/123415
+	* lib/target-supports.exp (check_effective_target_avx512dq):
+	Disable with Solaris/x86 as.
+	(check_effective_target_avx512bw): Likewise.
+
+2026-01-12  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR testsuite/123129
+	* gcc.dg/rtl/powerpc/test-frame-related.c: Add -mpowerpc64.
+
+2026-01-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/121752
+	* g++.dg/tree-ssa/vector-compare-1.C: Disable for arm targets.
+
+2026-01-12  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/77415
+	* gfortran.dg/pr77415_1.f90: New test.
+	* gfortran.dg/pr77415_2.f90: New test.
+
 2026-01-11  Michal Jires  <mjires@suse.cz>
 
 	* gcc.dg/lto/attr-weakref-2_0.c: New test.

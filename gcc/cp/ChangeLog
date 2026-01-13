@@ -1,3 +1,38 @@
+2026-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123189
+	* name-lookup.cc (binding_to_template_parms_of_scope_p):
+	Gracefully handle TEMPLATE_INFO whose TI_TEMPLATE is a TREE_LIST.
+	* pt.cc (maybe_begin_member_template_processing): For a friend
+	template specialization consider its class context instead.
+
+2026-01-12  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/123326
+	* cp-tree.h (DECL_NONGNU_INLINE_P): New.
+	* decl.cc (duplicate_decls, start_decl): Check it.
+	* decl2.cc (vague_linkage_p, import_export_class): Likewise.
+	(vtables_uniquely_emitted, import_export_decl): Likewise.
+	* class.cc (determine_key_method): Check it instead of
+	lookup_attribute.
+
+2026-01-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/115163
+	* call.cc (implicit_conversion_error): Add flags argument, call
+	maybe_show_nonconverting_candidate.
+	(build_converted_constant_expr_internal): Pass flags to
+	implicit_conversion_error.
+	(perform_implicit_conversion_flags): Likewise.
+	* cvt.cc (ocp_convert): Call maybe_show_nonconverting_candidate
+	on conversion error.
+
+2026-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123526
+	* method.cc: Include attribs.h.
+	(implicitly_declare_fn): Remove gnu::gnu_inline attribute.
+
 2026-01-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gen-cxxapi-file.py: Update copyright year.  Separate

@@ -1,3 +1,13 @@
+2026-01-12  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure: Regenerate.
+	* configure.ac: Add --enable-algol68-gc-debug option and
+	define GC_DEBUG accordingly.
+	* ga68-alloc.c (_libga68_realloc): Use the C macro version of
+	the GC function.
+	(_libga68_realloc_unchecked): Likewise.
+	(_libga68_malloc): Likewise.
+
 2026-01-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* ga68-posix.c (_libga68_posixexit): New function.
