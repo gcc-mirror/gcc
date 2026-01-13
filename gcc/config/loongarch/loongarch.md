@@ -2382,7 +2382,7 @@
   (unspec:DI [(const_int 0)]
     UNSPEC_LOAD_SYMBOL_OFFSET64)
   (clobber (match_operand:DI 2 "register_operand" "=&r,r"))]
- "TARGET_64BIT && TARGET_CMODEL_EXTREME"
+ "TARGET_64BIT"
 {
   if (which_alternative == 1)
     return "#";
