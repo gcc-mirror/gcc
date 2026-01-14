@@ -2087,6 +2087,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   tree *ls_type = &ls->ls_type;
   bool *slp_perm = &ls->slp_perm;
   unsigned *n_perms = &ls->n_perms;
+  unsigned *n_loads = &ls->n_loads;
   tree *supported_offset_vectype = &ls->supported_offset_vectype;
   int *supported_scale = &ls->supported_scale;
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
@@ -2103,6 +2104,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   *ls_type = NULL_TREE;
   *slp_perm = false;
   *n_perms = -1U;
+  *n_loads = -1U;
   ls->subchain_p = false;
 
   bool perm_ok = true;
@@ -2110,7 +2112,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 
   if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
     perm_ok = vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL,
-					    vf, true, n_perms);
+					    vf, true, n_perms, n_loads);
 
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
@@ -11880,18 +11882,20 @@ vectorizable_load (vec_info *vinfo,
 	 in PR101120 and friends.  */
       if (costing_p)
 	{
-	  gcc_assert (ls.n_perms != -1U);
+	  gcc_assert (ls.n_perms != -1U && ls.n_loads != -1U);
 	  if (ls.n_perms != 0)
 	    inside_cost = record_stmt_cost (cost_vec, ls.n_perms, vec_perm,
 					    slp_node, 0, vect_body);
+	  if (n_adjacent_loads > 0)
+	    n_adjacent_loads = ls.n_loads;
 	}
       else
 	{
-	  unsigned n_perms2;
+	  unsigned n_perms2, n_loads2;
 	  bool ok = vect_transform_slp_perm_load (vinfo, slp_node, dr_chain,
 						  gsi, vf, false, &n_perms2,
-						  nullptr, true);
-	  gcc_assert (ok && ls.n_perms == n_perms2);
+						  &n_loads2, true);
+	  gcc_assert (ok && ls.n_perms == n_perms2 && ls.n_loads == n_loads2);
 	}
     }
 

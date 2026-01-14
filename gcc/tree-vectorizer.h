@@ -307,6 +307,7 @@ struct vect_load_store_data : vect_data {
   /* True if the load requires a load permutation.  */
   bool slp_perm;    // SLP_TREE_LOAD_PERMUTATION
   unsigned n_perms; // SLP_TREE_LOAD_PERMUTATION
+  unsigned n_loads; // SLP_TREE_LOAD_PERMUTATION
   /* Whether the load permutation is consecutive and simple.  */
   bool subchain_p; // VMAT_STRIDED_SLP and VMAT_GATHER_SCATTER
 };

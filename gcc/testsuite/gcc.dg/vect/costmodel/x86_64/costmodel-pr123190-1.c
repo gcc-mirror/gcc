@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-O3 -mavx2 -mno-avx512f -mtune=generic" } */
+/* { dg-additional-options "-O3 -mavx2 -mno-avx512f" } */
 
 typedef struct {
    double real;
