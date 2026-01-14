@@ -24,8 +24,6 @@ load_lib timeout.exp
 # Call 'fail' if a given test printed "FAIL:", otherwise call 'pass'.
 
 proc simulate-thread { args } {
-    if { ![isnative] || [is_remote target] } { return }
-
     if { [llength $args] == 1 } {
 	switch [dg-process-target [lindex $args 0]] {
 		"F" { setup_xfail "*-*-*" }
@@ -49,10 +47,16 @@ proc simulate-thread { args } {
 
     set message "thread simulation test"
 
-    send_log "Spawning: $gdb_name -nx -nw -batch -x $cmd_file ./$exec_file\n"
-    set res [remote_spawn target "$gdb_name -nx -nw -batch -x $cmd_file ./$exec_file"]
+    set cmd_file_remote [remote_download target $cmd_file]
+    set exec_file_remote [remote_download target $exec_file]
+    send_log "Spawning: $gdb_name -nx -nw -batch -x $cmd_file_remote $exec_file_remote\n"
+    set res [remote_spawn target "$gdb_name -nx -nw -batch -x $cmd_file_remote $exec_file_remote"]
     if { $res < 0 || $res == "" } {
 	unsupported "$testcase $message"
+	if { [is_remote target] } {
+	    remote_file target delete $cmd_file_remote
+	    remote_file target delete $exec_file_remote
+	}
 	return
     }
 
@@ -62,11 +66,19 @@ proc simulate-thread { args } {
 	# Too old GDB
 	-re "Unhandled dwarf expression|Error in sourced command file" {
 	    unsupported "$testcase $message"
+	    if { [is_remote target] } {
+		remote_file target delete $cmd_file_remote
+		remote_file target delete $exec_file_remote
+	    }
 	    remote_close target
 	    return
 	}
 	-re "FAIL:" {
 	    fail "$testcase $message"
+	    if { [is_remote target] } {
+		remote_file target delete $cmd_file_remote
+		remote_file target delete $exec_file_remote
+	    }
 	    remote_close target
 	    return
 	}
@@ -79,11 +91,19 @@ proc simulate-thread { args } {
 	}
 	timeout {
 	    fail "$testcase $message"
+	    if { [is_remote target] } {
+		remote_file target delete $cmd_file_remote
+		remote_file target delete $exec_file_remote
+	    }
 	    remote_close target
 	    return
 	}
     }
 
+    if { [is_remote target] } {
+	remote_file target delete $cmd_file_remote
+	remote_file target delete $exec_file_remote
+    }
     remote_close target
     if {$gdb_worked} {
 	pass "$testcase $message"

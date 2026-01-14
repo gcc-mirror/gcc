@@ -1374,11 +1374,12 @@ proc gdb-exists { args } {
 	    if [info exists GDB] {
 		setenv GDB_FOR_GCC_TESTING "$GDB"
 	    } else {
-		setenv GDB_FOR_GCC_TESTING "[transform gdb]"
+		setenv GDB_FOR_GCC_TESTING "gdb"
 	    }
 	}
     }
-    if { [which $::env(GDB_FOR_GCC_TESTING)] != 0 } {
+    if { [lindex [remote_exec target "$::env(GDB_FOR_GCC_TESTING)" "-v"] 0]
+	 == 0 } {
 	return 1;
     }
     return 0;
