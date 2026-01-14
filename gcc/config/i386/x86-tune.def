@@ -253,7 +253,8 @@ DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit",
 
 /* X86_TUNE_ALIGN_TIGHT_LOOPS: if false, tight loops are not aligned. */
 DEF_TUNE (X86_TUNE_ALIGN_TIGHT_LOOPS, "align_tight_loops",
-	 ~(m_ZHAOXIN | m_CASCADELAKE | m_SKYLAKE_AVX512))
+	 ~(m_ZHAOXIN | m_CASCADELAKE | m_SKYLAKE_AVX512
+	   | m_CORE_ATOM))
 
 /*****************************************************************************/
 /* Integer instruction selection tuning                                      */
