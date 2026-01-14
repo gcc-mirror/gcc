@@ -39,6 +39,10 @@ along with GCC; see the file COPYING3.  If not see
    permitted for a constexpr object.  */
 #define C_TYPE_FIELDS_NON_CONSTEXPR(TYPE) TREE_LANG_FLAG_4 (TYPE)
 
+/* In a RECORD_TYPE or UNION_TYPE, nonzero if any component has a
+   counted_by attribute.  */
+#define C_TYPE_FIELDS_HAS_COUNTED_BY(TYPE) TYPE_LANG_FLAG_3 (TYPE)
+
 /* In a RECORD_TYPE or UNION_TYPE or ENUMERAL_TYPE
    nonzero if the definition of the type has already started.  */
 #define C_TYPE_BEING_DEFINED(TYPE) TYPE_LANG_FLAG_0 (TYPE)
@@ -985,6 +989,8 @@ extern bool c_check_in_current_scope (tree);
 extern void c_pushtag (location_t, tree, tree);
 extern void c_bind (location_t, tree, bool);
 extern bool tag_exists_p (enum tree_code, tree);
+
+extern void verify_counted_by_for_top_anonymous_type (tree);
 
 /* In c-errors.cc */
 extern bool pedwarn_c90 (location_t, diagnostics::option_id, const char *, ...)

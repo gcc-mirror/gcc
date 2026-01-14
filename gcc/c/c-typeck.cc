@@ -3078,7 +3078,6 @@ static tree
 build_counted_by_ref (tree datum, tree subdatum,
 		      tree *counted_by_type)
 {
-  tree type = TREE_TYPE (datum);
   tree sub_type = TREE_TYPE (subdatum);
   if (!c_flexible_array_member_type_p (sub_type)
       && TREE_CODE (sub_type) != POINTER_TYPE)
@@ -3086,28 +3085,46 @@ build_counted_by_ref (tree datum, tree subdatum,
 
   tree attr_counted_by = lookup_attribute ("counted_by",
 					   DECL_ATTRIBUTES (subdatum));
+  if (!attr_counted_by)
+    return NULL_TREE;
+
   tree counted_by_ref = NULL_TREE;
   *counted_by_type = NULL_TREE;
-  if (attr_counted_by)
+
+  tree type = TREE_TYPE (datum);
+
+  /* If the type of the containing structure is an anonymous struct/union,
+     and this anonymous struct/union is not a root type, get the first
+     outer named structure/union type.  */
+  while (TREE_CODE (datum) == COMPONENT_REF
+	 && c_type_tag (type) == NULL_TREE
+	 && DECL_NAME (TREE_OPERAND (datum, 1)) == NULL_TREE)
     {
-      tree field_id = TREE_VALUE (TREE_VALUE (attr_counted_by));
-      counted_by_ref
-	= build_component_ref (UNKNOWN_LOCATION,
-			       datum, field_id,
-			       UNKNOWN_LOCATION, UNKNOWN_LOCATION);
-      counted_by_ref = build_fold_addr_expr (counted_by_ref);
-
-      /* Get the TYPE of the counted_by field.  */
-      tree counted_by_field = lookup_field (type, field_id);
-      gcc_assert (counted_by_field);
-
-      do
-	{
-	  *counted_by_type = TREE_TYPE (TREE_VALUE (counted_by_field));
-	  counted_by_field = TREE_CHAIN (counted_by_field);
-	}
-      while (counted_by_field);
+      datum = TREE_OPERAND (datum, 0);
+      type = TREE_TYPE (datum);
     }
+
+  tree field_id = TREE_VALUE (TREE_VALUE (attr_counted_by));
+  tree counted_by_field = lookup_field (type, field_id);
+  gcc_assert (counted_by_field);
+
+  tree counted_by_subdatum;
+  do
+    {
+      counted_by_subdatum = TREE_VALUE (counted_by_field);
+      /* Get the TYPE of the counted_by field.  */
+      *counted_by_type = TREE_TYPE (counted_by_subdatum);
+
+      counted_by_ref
+	= build3 (COMPONENT_REF, TREE_TYPE (counted_by_subdatum),
+		  datum, counted_by_subdatum, NULL_TREE);
+
+      datum = counted_by_ref;
+      counted_by_field = TREE_CHAIN (counted_by_field);
+    }
+  while (counted_by_field);
+
+  counted_by_ref = build_fold_addr_expr (counted_by_ref);
   return counted_by_ref;
 }
 

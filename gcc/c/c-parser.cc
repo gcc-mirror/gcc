@@ -2572,6 +2572,11 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
     }
 
   finish_declspecs (specs);
+  /* When the decl is declared, its type is a top level type, we should
+     call verify_counted_by_for_top_anonymous_type.  */
+  if (specs->typespec_kind == ctsk_tagdef)
+    verify_counted_by_for_top_anonymous_type (specs->type);
+
   bool gnu_auto_type_p = specs->typespec_word == cts_auto_type;
   bool std_auto_type_p = specs->c23_auto_p;
   bool any_auto_type_p = gnu_auto_type_p || std_auto_type_p;
@@ -5498,6 +5503,11 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs,
   c_parser_declspecs (parser, specs, true, true, true, true, false,
 		      !have_gnu_attrs, true, cla_nonabstract_decl);
   finish_declspecs (specs);
+  /* When the param is declared, its type is a top level type, we should
+     call verify_counted_by_for_top_anonymous_type.  */
+  if (specs->typespec_kind == ctsk_tagdef)
+    verify_counted_by_for_top_anonymous_type (specs->type);
+
   pending_xref_error ();
   prefix_attrs = specs->attrs;
   specs->attrs = NULL_TREE;
@@ -6500,6 +6510,10 @@ c_parser_type_name (c_parser *parser, bool alignas_ok)
     {
       pending_xref_error ();
       finish_declspecs (specs);
+      /* When the typename is declared, its type is a top level type, we should
+	 call verify_counted_by_for_top_anonymous_type.  */
+      if (specs->typespec_kind == ctsk_tagdef)
+	verify_counted_by_for_top_anonymous_type (specs->type);
     }
   declarator = c_parser_declarator (parser,
 				    specs->typespec_kind != ctsk_none,
