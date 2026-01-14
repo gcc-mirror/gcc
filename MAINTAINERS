@@ -211,7 +211,7 @@ callgraph               Jan Hubicka             <hubicka@ucw.cz>
 debugging code          Jim Wilson              <wilson@tuliptree.org>
 dwarf debugging code    Jason Merrill           <jason@redhat.com>
 dwarf debugging code    Cary Coutant            <ccoutant@gmail.com>
-c++ runtime libs        Paolo Carlini           <paolo.carlini@oracle.com>
+c++ runtime libs        Paolo Carlini           <pcarlini@gmail.com>
 c++ runtime libs        Ulrich Drepper          <drepper@gmail.com>
 c++ runtime libs        Benjamin De Kosnik      <bkoz@gnu.org>
 c++ runtime libs        Jonathan Wakely         <jwakely@redhat.com>
@@ -407,7 +407,7 @@ Andrew Burgess                  aburgess        <aburgess@redhat.com>
 Tobias Burnus                   burnus          <tburnus@baylibre.com>
 Adam Butcher                    abutcher        <adam@jessamine.co.uk>
 Andrew Cagney                   cagney          <cagney@gnu.org>
-Paolo Carlini                   paolo           <paolo.carlini@oracle.com>
+Paolo Carlini                   paolo           <pcarlini@gmail.com>
 Alice Carlotti                  acarlotti       <alice.carlotti@arm.com>
 Daniel Carrera                  dcarrera        <dcarrera@gmail.com>
 Stephane Carrez                 ciceron         <stcarrez@nerim.fr>
