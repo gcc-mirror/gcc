@@ -40,14 +40,17 @@ dg-init
 torture-init
 
 global GDB
+global host_triplet target_triplet
 if ![info exists ::env(GUALITY_GDB_NAME)] {
     if [info exists GDB] {
 	set guality_gdb_name "$GDB"
-    } elseif { [info exists rootme] && [file exists $rootme/../gdb/gdb] } {
+    } elseif { [string equal $host_triplet $target_triplet]
+	       && [info exists rootme]
+	       && [file exists $rootme/../gdb/gdb] } {
 	# If we're doing a combined build, and gdb is available, use it.
 	set guality_gdb_name "$rootme/../gdb/gdb"
     } else {
-	set guality_gdb_name "[transform gdb]"
+	set guality_gdb_name "gdb"
     }
     setenv GUALITY_GDB_NAME "$guality_gdb_name"
 }
