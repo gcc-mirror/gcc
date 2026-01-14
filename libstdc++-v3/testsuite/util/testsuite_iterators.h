@@ -695,9 +695,12 @@ namespace __gnu_test
    * @brief random_access_iterator wrapper for pointer,
    * that returns proxy from subscript.
    *
-   * This class takes a pointer and wraps it to provide exactly
-   * the requirements of a random_access_iterator. It should not be
-   * instantiated directly, but generated from a test_container
+   * This is separate from random_access_iterator_wrapper (that returns
+   * T& from operator subscript), as it meets the requirements of
+   * Cpp17RandomAccessIterator (C++20 [tab:randomaccessiterator])
+   * that allows to return type that is convertible to reference,
+   * but does not satisfy random_access_iterator concept
+   * (C++20 [random_access_iterator]).
    */
   template<class T>
   struct proxy_random_access_iterator_wrapper
