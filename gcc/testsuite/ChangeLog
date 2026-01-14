@@ -1,3 +1,15 @@
+2026-01-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123300
+	* gcc.dg/pr123300.c: New.
+
+2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr123484.c: New test.
+
 2026-01-09  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
