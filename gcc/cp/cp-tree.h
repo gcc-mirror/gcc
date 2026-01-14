@@ -7948,7 +7948,20 @@ extern tree most_specialized_instantiation	(tree);
 extern tree most_specialized_partial_spec       (tree, tsubst_flags_t, bool = false);
 extern tree most_constrained_function		(tree);
 extern void inform_num_candidates		(location_t, int);
-extern void print_candidates			(location_t, tree);
+
+/* Abstract base class for optionally providing extra diagnostic note(s)
+   about a candidate in calls to print_candidates.  */
+
+class candidate_context
+{
+public:
+  virtual ~candidate_context () {}
+  virtual void emit_any_notes_for_candidate (tree cand_fndecl) = 0;
+};
+
+extern void print_candidates			(location_t, tree,
+						 candidate_context * = nullptr);
+
 extern void instantiate_pending_templates	(int);
 extern tree tsubst_default_argument		(tree, int, tree, tree,
 						 tsubst_flags_t);

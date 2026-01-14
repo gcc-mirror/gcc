@@ -13,3 +13,5 @@ void foo::test (int i, int j, const void *ptr, int k) // { dg-line defn }
 // { dg-error "6: no declaration matches" "error" { target *-*-* } defn }
 // { dg-message "8: candidate 1: " "candidate 1" { target *-*-* } other_decl }
 // { dg-message "8: candidate 2: " "candidate 2" { target *-*-* } close_decl }
+// { dg-message "34: parameter 3 of candidate has type 'void\\*'" "param of decl" { target *-*-* } close_decl }
+// { dg-message "43: \\.\\.\\.which does not match type 'const void\\*'" "param of defn" { target *-*-* } defn }

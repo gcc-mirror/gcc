@@ -8599,6 +8599,9 @@ get_fndecl_argument_location (tree fndecl, int argnum)
   if (DECL_ARTIFICIAL (fndecl))
     return DECL_SOURCE_LOCATION (fndecl);
 
+  if (argnum == -1)
+    return DECL_SOURCE_LOCATION (fndecl);
+
   int i;
   tree param;
 

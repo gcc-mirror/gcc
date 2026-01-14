@@ -2065,10 +2065,15 @@ inform_num_candidates (location_t loc, int num_candidates)
 }
 
 /* Print the list of candidate FNS in an error message.  FNS can also
-   be a TREE_LIST of non-functions in the case of an ambiguous lookup.  */
+   be a TREE_LIST of non-functions in the case of an ambiguous lookup.
+
+   If CAND_CTXT is non-null, use it for each candidate to allow for
+   additional per-candidate notes.  */
 
 void
-print_candidates (location_t error_loc, tree fns)
+print_candidates (location_t error_loc,
+		  tree fns,
+		  candidate_context *cand_ctxt)
 {
   auto_vec<tree> candidates;
   flatten_candidates (fns, candidates);
@@ -2083,13 +2088,19 @@ print_candidates (location_t error_loc, tree fns)
     {
       tree cand = candidates[0];
       inform (DECL_SOURCE_LOCATION (cand), "candidate is: %#qD", cand);
+      if (cand_ctxt)
+	cand_ctxt->emit_any_notes_for_candidate (cand);
     }
   else
     {
       int idx = 0;
       for (tree cand : candidates)
-	inform (DECL_SOURCE_LOCATION (cand), "candidate %i: %#qD",
-		++idx, cand);
+	{
+	  inform (DECL_SOURCE_LOCATION (cand), "candidate %i: %#qD",
+		  ++idx, cand);
+	  if (cand_ctxt)
+	    cand_ctxt->emit_any_notes_for_candidate (cand);
+	}
     }
 }
 
