@@ -422,6 +422,7 @@ static const struct aarch64_flag_desc aarch64_tuning_flags[] =
 #include "tuning_models/thunderxt88.h"
 #include "tuning_models/thunderx.h"
 #include "tuning_models/tsv110.h"
+#include "tuning_models/hip12.h"
 #include "tuning_models/xgene1.h"
 #include "tuning_models/emag.h"
 #include "tuning_models/qdf24xx.h"
