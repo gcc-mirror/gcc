@@ -3071,7 +3071,7 @@ error condition, this procedure yields -1 and @code{errno} is set
 appropriately.
 @end deftypefn
 
-@deftypefn Procedure {} {lseek} {= (@B{int} fd, @B{long int} offset, @B{int} whence) @B{long long int}}
+@deftypefn Procedure {} {lseek} {= (@B{int} fd, @B{long long int} offset, @B{int} whence) @B{long long int}}
 Set the file offset of the file characterized by the file descriptor @code{fd}
 depending on the values of @code{offset} and @code{whence}.  On success, the
 resulting offset, as measured in bytes from the beginning of the file, is
