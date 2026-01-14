@@ -320,6 +320,8 @@ public:
 
   /* Return cgraph node corresponding to given name index.  */
   cgraph_node *get_cgraph_node (int);
+
+  const string_vector& filenames () { return filenames_; }
 private:
   typedef std::map<const char *, unsigned, string_compare> string_index_map;
   typedef std::map<const char *, auto_vec<unsigned>, string_compare>
@@ -387,8 +389,7 @@ public:
      HEAD_COUNT. Recursively read callsites to create nested function_instances
      too. STACK is used to track the recursive creation process.  */
   static function_instance *
-  read_function_instance (function_instance_stack *stack,
-                          gcov_type head_count);
+  read_function_instance (function_instance_stack *stack, bool toplevel = true);
 
   /* Recursively deallocate all callsites (nested function_instances).  */
   ~function_instance ();
@@ -411,6 +412,18 @@ public:
   {
     return head_count_;
   }
+
+  gcov_type
+  timestamp () const
+  {
+    return timestamp_;
+  }
+
+  void set_timestamp (gcov_type timestamp) { timestamp_ = timestamp; }
+
+  /* Propagate timestamp from top-level function_instance to
+     inlined instances.  */
+  void prop_timestamp ();
 
   /* Traverse callsites of the current function_instance to find one at the
      location of LINENO and callee name represented in DECL.
@@ -575,9 +588,10 @@ private:
   function_instance (unsigned symbol_name, unsigned file_name,
 		     gcov_type head_count)
     : descriptor_ (file_name, symbol_name), total_count_ (0),
-      head_count_ (head_count), removed_icall_target_ (false),
-      realized_ (false), in_worklist_ (false), inlined_to_ (NULL),
-      location_ (UNKNOWN_LOCATION), call_location_ (UNKNOWN_LOCATION)
+      head_count_ (head_count), timestamp_ (0),
+      removed_icall_target_ (false), realized_ (false), in_worklist_ (false),
+      inlined_to_ (NULL), location_ (UNKNOWN_LOCATION),
+      call_location_ (UNKNOWN_LOCATION)
   {
   }
 
@@ -592,6 +606,10 @@ private:
 
   /* Entry BB's sample count.  */
   gcov_type head_count_;
+
+  /* perf timestamp associated with first execution of function, which is
+     used to compute node->tp_first_run.  */
+  gcov_type timestamp_;
 
   /* Map from callsite location to callee function_instance.  */
   callsite_map callsites;
@@ -620,6 +638,9 @@ private:
   /* Turn inline instance to offline.  */
   static bool offline (function_instance *fn,
 		       vec <function_instance *> &new_functions);
+
+  /* Helper routine for prop_timestamp.  */
+  void prop_timestamp_1 (gcov_type timestamp);
 };
 
 /* Profile for all functions.  */
@@ -640,7 +661,7 @@ public:
   ~autofdo_source_profile ();
 
   /* For a given DECL, returns the top-level function_instance.  */
-  function_instance *get_function_instance_by_decl (tree decl) const;
+  function_instance *get_function_instance_by_decl (tree decl, const char * = NULL) const;
 
   /* For a given DESCRIPTOR, return the matching instance if found.  */
   function_instance *
@@ -722,6 +743,13 @@ static autofdo_source_profile *afdo_source_profile;
 
 /* gcov_summary structure to store the profile_info.  */
 static gcov_summary *afdo_profile_info;
+
+/* Map from timestamp -> <name, tp_first_run>.
+
+   The purpose of this map is to map 64-bit timestamp values to (1..N) sorted
+   by ascending order of timestamps and assign that to node->tp_first_run,
+   since we don't need the full 64-bit range.  */
+static std::map<gcov_type, int> timestamp_info_map;
 
 /* Scaling factor for afdo data.  Compared to normal profile
    AFDO profile counts are much lower, depending on sampling
@@ -1265,6 +1293,24 @@ function_instance::~function_instance ()
     delete iter->second;
 }
 
+/* Propagate timestamp TS of function_instance to inlined instances if it's
+   not already set.  */
+
+void
+function_instance::prop_timestamp_1 (gcov_type ts)
+{
+  if (!timestamp () && total_count () > 0)
+    set_timestamp (ts);
+  for (auto it = callsites.begin (); it != callsites.end (); ++it)
+    it->second->prop_timestamp_1 (ts);
+}
+
+void
+function_instance::prop_timestamp (void)
+{
+  prop_timestamp_1 (timestamp ());
+}
+
 /* Traverse callsites of the current function_instance to find one at the
    location of LINENO and callee name represented in DECL.  */
 
@@ -1325,6 +1371,10 @@ function_instance::merge (function_instance *other,
     head_count_ = -1;
   else if (head_count_ != -1)
     head_count_ += other->head_count_;
+
+  /* While merging timestamps, set the one that occurs earlier.  */
+  if (other->timestamp () < timestamp ())
+    set_timestamp (other->timestamp ());
 
   bool changed = true;
 
@@ -2665,6 +2715,7 @@ autofdo_source_profile::offline_unrealized_inlines ()
 /* function instance profile format:
 
    ENTRY_COUNT: 8 bytes
+   TIMESTAMP: 8 bytes (only for toplevel symbols)
    NAME_INDEX: 4 bytes
    NUM_POS_COUNTS: 4 bytes
    NUM_CALLSITES: 4 byte
@@ -2691,8 +2742,15 @@ autofdo_source_profile::offline_unrealized_inlines ()
 
 function_instance *
 function_instance::read_function_instance (function_instance_stack *stack,
-					   gcov_type head_count)
+					   bool toplevel)
 {
+  gcov_type_unsigned timestamp = 0;
+  gcov_type head_count = -1;
+  if (toplevel)
+    {
+      head_count = gcov_read_counter ();
+      timestamp = (gcov_type_unsigned) gcov_read_counter ();
+    }
   unsigned name = gcov_read_unsigned ();
   unsigned num_pos_counts = gcov_read_unsigned ();
   unsigned num_callsites = gcov_read_unsigned ();
@@ -2700,6 +2758,8 @@ function_instance::read_function_instance (function_instance_stack *stack,
     = new function_instance (name,
 			     afdo_string_table->get_filename_by_symbol (name),
 			     head_count);
+  if (timestamp > 0)
+    s->set_timestamp (timestamp);
   if (!stack->is_empty ())
     s->set_inlined_to (stack->last ());
   stack->safe_push (s);
@@ -2725,7 +2785,7 @@ function_instance::read_function_instance (function_instance_stack *stack,
     {
       unsigned offset = gcov_read_unsigned ();
       function_instance *callee_function_instance
-          = read_function_instance (stack, -1);
+	= read_function_instance (stack, false);
       s->callsites[std::make_pair (offset,
 				   callee_function_instance->symbol_name ())]
 	= callee_function_instance;
@@ -2746,9 +2806,10 @@ autofdo_source_profile::~autofdo_source_profile ()
 /* For a given DECL, returns the top-level function_instance.  */
 
 function_instance *
-autofdo_source_profile::get_function_instance_by_decl (tree decl) const
+autofdo_source_profile::get_function_instance_by_decl (tree decl, const char *filename) const
 {
-  const char *filename = get_normalized_path (DECL_SOURCE_FILE (decl));
+  if (!filename)
+    filename = get_normalized_path (DECL_SOURCE_FILE (decl));
   int index = afdo_string_table->get_index_by_decl (decl);
   if (index == -1)
     return NULL;
@@ -2979,8 +3040,7 @@ autofdo_source_profile::read ()
     {
       function_instance::function_instance_stack stack;
       function_instance *s
-	= function_instance::read_function_instance (&stack,
-						     gcov_read_counter ());
+	= function_instance::read_function_instance (&stack);
 
       if (find_function_instance (s->get_descriptor ()) == nullptr)
 	add_function_instance (s);
@@ -2988,7 +3048,20 @@ autofdo_source_profile::read ()
 	fatal_error (UNKNOWN_LOCATION,
 		     "auto-profile contains duplicated function instance %s",
 		     afdo_string_table->get_symbol_name (s->symbol_name ()));
+      s->prop_timestamp ();
+      timestamp_info_map.insert({s->timestamp (), 0});
     }
+
+  /* timestamp_info_map is std::map with timestamp as key,
+     so it's already sorted in ascending order wrt timestamps.
+     This loop maps function with lowest timestamp to 1, and so on.
+     In afdo_annotate_cfg, node->tp_first_run is then set to corresponding
+     tp_first_run value.  */
+
+  int tp_first_run = 1;
+  for (auto &p : timestamp_info_map)
+    p.second = tp_first_run++;
+
   afdo_profile_info->sum_max = afdo_summary_info->max_count;
   /* Scale up the profile, but leave some bits in case some counts gets
      bigger than sum_max eventually.  */
@@ -4369,6 +4442,17 @@ afdo_annotate_cfg (void)
       = afdo_source_profile->get_function_instance_by_decl (
           current_function_decl);
 
+  /* FIXME: This is a workaround for sourcefile tracking, if afdo_string_table
+     ends up with empty filename or incorrect filename for the function and
+     should be removed once issues with sourcefile tracking get fixed.  */
+  if (s == NULL)
+    for (unsigned i = 0; i < afdo_string_table->filenames ().length (); i++)
+      {
+	s = afdo_source_profile->get_function_instance_by_decl (current_function_decl, afdo_string_table->filenames()[i]);
+	if (s)
+	  break;
+      }
+
   if (s == NULL)
     {
       if (dump_file)
@@ -4377,7 +4461,8 @@ afdo_annotate_cfg (void)
       /* create_gcov only dumps symbols with some samples in them.
 	 This means that we get nonempty zero_bbs only if some
 	 nonzero counts in profile were not matched with statements.  */
-      if (!flag_profile_partial_training)
+      if (!flag_profile_partial_training
+	  && !param_auto_profile_reorder_only)
 	{
 	  FOR_ALL_BB_FN (bb, cfun)
 	    if (bb->count.quality () == GUESSED_LOCAL)
@@ -4386,6 +4471,20 @@ afdo_annotate_cfg (void)
 	}
       return;
     }
+
+  auto ts_it = timestamp_info_map.find (s->timestamp ());
+  if (ts_it != timestamp_info_map.end ())
+    {
+      cgraph_node *node = cgraph_node::get (current_function_decl);
+      node->tp_first_run = ts_it->second;
+
+      if (dump_file)
+	fprintf (dump_file, "Setting %s->tp_first_run to %d\n",
+		 node->asm_name (), node->tp_first_run);
+    }
+
+  if (param_auto_profile_reorder_only)
+    return;
 
   calculate_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
