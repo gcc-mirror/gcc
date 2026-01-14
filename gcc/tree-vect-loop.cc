@@ -1792,9 +1792,13 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
 	    }
 	}
       /* Reject vectorizing for a single scalar iteration, even if
-	 we could in principle implement that using partial vectors.  */
+	 we could in principle implement that using partial vectors.
+	 But allow such vectorization if VF == 1 in case we do not
+	 need to peel for gaps (if we need, avoid vectorization for
+	 reasons of code footprint).  */
       unsigned peeling_gap = LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo);
-      if (scalar_niters <= peeling_gap + 1)
+      if (scalar_niters <= peeling_gap + 1
+	  && (assumed_vf > 1 || peeling_gap != 0))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
