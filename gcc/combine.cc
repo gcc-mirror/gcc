@@ -11759,7 +11759,8 @@ recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes,
       rtx src = SET_SRC (pat);
       if (CONSTANT_P (src)
 	  && !CONST_INT_P (src)
-	  && crtl->uses_const_pool)
+	  && crtl->uses_const_pool
+	  && SET_DEST (pat) != pc_rtx)
 	{
 	  machine_mode mode = GET_MODE (src);
 	  if (mode == VOIDmode)
