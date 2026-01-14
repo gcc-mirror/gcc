@@ -9818,6 +9818,20 @@ aarch64_use_return_insn_p (void)
   return known_eq (cfun->machine->frame.frame_size, 0);
 }
 
+/* Return false for locally streaming functions in order to avoid
+   shrink-wrapping them.  Shrink-wrapping is unsafe when the function prologue
+   and epilogue contain streaming state change, because these implicitly change
+   the meaning of poly_int values.  */
+
+bool
+aarch64_use_simple_return_insn_p (void)
+{
+  if (aarch64_cfun_enables_pstate_sm ())
+    return false;
+
+  return true;
+}
+
 /* Generate the epilogue instructions for returning from a function.
    This is almost exactly the reverse of the prolog sequence, except
    that we need to insert barriers to avoid scheduling loads that read
