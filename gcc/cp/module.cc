@@ -9843,6 +9843,10 @@ trees_out::type_node (tree type)
 	    wu (nunits.coeffs[ix]);
 	}
       break;
+
+    case META_TYPE:
+      /* No additional data.  */
+      break;
     }
 
   tree_node (TYPE_ATTRIBUTES (type));
@@ -10687,6 +10691,11 @@ trees_in::tree_node (bool is_use)
 	      if (!get_overrun ())
 		res = build_vector_type (res, nunits);
 	    }
+	    break;
+
+	  case META_TYPE:
+	    if (!get_overrun ())
+	      res = meta_info_type_node;
 	    break;
 	  }
 

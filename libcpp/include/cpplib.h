@@ -101,6 +101,8 @@ class rich_location;
   OP(CLOSE_SQUARE,	"]")						\
   OP(OPEN_BRACE,	"{")						\
   OP(CLOSE_BRACE,	"}")						\
+  OP(OPEN_SPLICE,	"[:")						\
+  OP(CLOSE_SPLICE,	":]")						\
   /* The remainder of the punctuation.	Order is not significant.  */	\
   OP(SEMICOLON,		";")	/* structure */				\
   OP(ELLIPSIS,		"...")						\
@@ -111,6 +113,7 @@ class rich_location;
   OP(SCOPE,		"::")						\
   OP(DEREF_STAR,	"->*")						\
   OP(DOT_STAR,		".*")						\
+  OP(REFLECT_OP,	"^^")						\
   OP(ATSIGN,		"@")  /* used in Objective-C */			\
 									\
   TK(NAME,		IDENT)	 /* word */				\
@@ -1306,6 +1309,9 @@ extern const char *cpp_interpret_string_ranges (cpp_reader *pfile,
 extern bool cpp_interpret_string_notranslate (cpp_reader *,
 					      const cpp_string *, size_t,
 					      cpp_string *, enum cpp_ttype);
+extern bool cpp_translate_string (cpp_reader *, const cpp_string *,
+				  cpp_string *, enum cpp_ttype, bool);
+extern bool cpp_valid_identifier (cpp_reader *, const unsigned char *);
 
 /* Convert a host character constant to the execution character set.  */
 extern cppchar_t cpp_host_to_exec_charset (cpp_reader *, cppchar_t);

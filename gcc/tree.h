@@ -1234,6 +1234,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define TREE_PURPOSE(NODE) (TREE_LIST_CHECK (NODE)->list.purpose)
 #define TREE_VALUE(NODE) (TREE_LIST_CHECK (NODE)->list.value)
 
+/* In TREE_VALUE of an attribute this means the attribute is never equal to
+   different attribute with the same name and value and that the attribute
+   is order sensitive, the order of attributes with this flag on their
+   TREE_VALUE should be preserved.  */
+#define ATTR_UNIQUE_VALUE_P(NODE) (TREE_LIST_CHECK (NODE)->base.protected_flag)
+
 /* In a TREE_VEC node.  */
 #define TREE_VEC_LENGTH(NODE) (TREE_VEC_CHECK (NODE)->base.u.length)
 #define TREE_VEC_BEGIN(NODE) (&TREE_VEC_CHECK (NODE)->vec.a[0])
@@ -2761,9 +2767,14 @@ extern tree vector_element_bits_tree (const_tree);
    vtable where the offset to the virtual base can be found.  */
 #define BINFO_VPTR_FIELD(NODE) (TREE_BINFO_CHECK (NODE)->binfo.vptr_field)
 
-/* Indicates the accesses this binfo has to its bases. The values are
+/* Indicates the accesses this binfo has to its bases.  The values are
    access_public_node, access_protected_node or access_private_node.
-   If this array is not present, public access is implied.  */
+   If this vector is not present, public access is implied.  If present,
+   the vector should have BINFO_N_BASE_BINFOS or larger length.  Elements
+   beyond BINFO_N_BASE_BINFOS are base attributes instead of the
+   access_p*_node values for base with index IDX at IDX + BINFO_N_BASE_BINFOS
+   index.  If that is beyond the length of the vector, no attributes for
+   that base is implied.  */
 #define BINFO_BASE_ACCESSES(NODE) \
   (TREE_BINFO_CHECK (NODE)->binfo.base_accesses)
 

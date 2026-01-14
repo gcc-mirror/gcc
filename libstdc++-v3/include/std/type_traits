@@ -749,6 +749,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public false_type { };
 #endif
 
+#if __cpp_impl_reflection >= 202500L // C++ >= 26
+  /// is_reflection
+  template<typename _Tp>
+    struct is_reflection
+    : public false_type { };
+
+  template<>
+    struct is_reflection<decltype(^^int)>
+    : public true_type { };
+
+  template<>
+    struct is_reflection<const decltype(^^int)>
+    : public true_type { };
+
+  template<>
+    struct is_reflection<volatile decltype(^^int)>
+    : public true_type { };
+
+  template<>
+    struct is_reflection<const volatile decltype(^^int)>
+    : public true_type { };
+#endif
+
 #ifdef __cpp_lib_is_null_pointer // C++ >= 11
   /// is_null_pointer (LWG 2247).
   template<typename _Tp>
@@ -814,7 +837,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_fundamental
     : public __or_<is_arithmetic<_Tp>, is_void<_Tp>,
-		   is_null_pointer<_Tp>>::type
+		   is_null_pointer<_Tp>
+#if __cpp_impl_reflection >= 202500L
+		   , is_reflection<_Tp>
+#endif
+		   >::type
     { };
 
   /// is_object
@@ -3528,6 +3555,19 @@ template <typename _Tp>
     is_member_function_pointer<_Tp>::value;
 #endif
 
+#if __cpp_impl_reflection >= 202500L // C++ >= 26
+template <typename _Tp>
+  inline constexpr bool is_reflection_v = false;
+template <>
+  inline constexpr bool is_reflection_v<decltype(^^int)> = true;
+template <>
+  inline constexpr bool is_reflection_v<const decltype(^^int)> = true;
+template <>
+  inline constexpr bool is_reflection_v<volatile decltype(^^int)> = true;
+template <>
+  inline constexpr bool is_reflection_v<const volatile decltype(^^int)> = true;
+#endif
+
 template <typename _Tp>
   inline constexpr bool is_enum_v = __is_enum(_Tp);
 template <typename _Tp>
@@ -3858,6 +3898,24 @@ template<typename _Ret, typename _Fn, typename... _Args>
   template<typename _Tp>
     inline constexpr bool is_aggregate_v = __is_aggregate(remove_cv_t<_Tp>);
 # endif
+#endif
+
+#if __cpp_impl_reflection >= 202500L \
+    && _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_is_consteval_only) // C++ >= 26
+  /// is_consteval_only - true if the type is consteval-only.
+  /// @since C++26
+  template<typename _Tp>
+    struct is_consteval_only
+    : bool_constant<__builtin_is_consteval_only(_Tp)>
+    { };
+
+  /** is_consteval_only_v - true if the type is consteval-only.
+   *  @ingroup variable_templates
+   *  @since C++26
+   */
+  template<typename _Tp>
+    inline constexpr bool is_consteval_only_v
+      = __builtin_is_consteval_only(_Tp);
 #endif
 
   /** * Remove references and cv-qualifiers.

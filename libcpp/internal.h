@@ -543,6 +543,14 @@ struct cpp_reader
      wide execution character set.  */
   struct cset_converter wide_cset_desc;
 
+  /* Descriptor for converting from the execution character set to the
+     source character set.  */
+  struct cset_converter reverse_narrow_cset_desc;
+
+  /* Descriptor for converting from the UTF-8 execution character set to the
+     source character set.  */
+  struct cset_converter reverse_utf8_cset_desc;
+
   /* Date and time text.  Calculated together if either is requested.  */
   const unsigned char *date;
   const unsigned char *time;

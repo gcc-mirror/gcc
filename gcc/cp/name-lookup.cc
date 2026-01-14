@@ -1583,6 +1583,13 @@ name_lookup::adl_type (tree type)
       adl_type (TYPE_PTRMEM_POINTED_TO_TYPE (type));
       return;
     }
+  else if (REFLECTION_TYPE_P (type))
+    {
+      /* The namespace std::meta is an associated namespace of
+	 std::meta::info.  */
+      adl_namespace (std_meta_node);
+      return;
+    }
 
   switch (TREE_CODE (type))
     {
@@ -2765,7 +2772,10 @@ strip_using_decl (tree decl)
   if (decl == NULL_TREE)
     return NULL_TREE;
 
-  while (TREE_CODE (decl) == USING_DECL && !DECL_DEPENDENT_P (decl))
+  while (TREE_CODE (decl) == USING_DECL
+	 && !DECL_DEPENDENT_P (decl)
+	 && (LIKELY (!cp_preserve_using_decl)
+	     || TREE_CODE (USING_DECL_DECLS (decl)) == NAMESPACE_DECL))
     decl = USING_DECL_DECLS (decl);
 
   if (TREE_CODE (decl) == USING_DECL && DECL_DEPENDENT_P (decl)
@@ -6683,6 +6693,15 @@ handle_namespace_attrs (tree ns, tree attributes)
 	    DECL_ATTRIBUTES (ns) = tree_cons (name, args,
 					      DECL_ATTRIBUTES (ns));
 	}
+      else if (annotation_p (d))
+	{
+	  const attribute_spec *as = lookup_attribute_spec (TREE_PURPOSE (d));
+	  bool no_add_attrs = false;
+	  as->handler (&ns, name, args, 0, &no_add_attrs);
+	  if (!no_add_attrs)
+	    DECL_ATTRIBUTES (ns) = tree_cons (TREE_PURPOSE (d), args,
+					      DECL_ATTRIBUTES (ns));
+	}
       else if (!attribute_ignored_p (d))
 	{
 	  warning (OPT_Wattributes, "%qD attribute directive ignored",
@@ -6720,9 +6739,10 @@ do_namespace_alias (location_t loc, tree alias, tree name_space)
   if (name_space == error_mark_node)
     return;
 
-  gcc_assert (TREE_CODE (name_space) == NAMESPACE_DECL);
-
-  name_space = ORIGINAL_NAMESPACE (name_space);
+  if (TREE_CODE (name_space) == NAMESPACE_DECL)
+    name_space = ORIGINAL_NAMESPACE (name_space);
+  else
+    gcc_assert (TREE_CODE (name_space) == SPLICE_EXPR);
 
   /* Build the alias.  */
   alias = build_lang_decl_loc (loc, NAMESPACE_DECL, alias, void_type_node);
@@ -7532,7 +7552,9 @@ lookup_qualified_name (tree scope, tree name, LOOK_want want, bool complain)
 
 	  /* If we have a known type overload, pull it out.  This can happen
 	     for using decls.  */
-	  if (TREE_CODE (t) == OVERLOAD && TREE_TYPE (t) != unknown_type_node)
+	  if (TREE_CODE (t) == OVERLOAD
+	      && TREE_TYPE (t) != unknown_type_node
+	      && LIKELY (!cp_preserve_using_decl))
 	    t = OVL_FUNCTION (t);
 	}
     }
@@ -9155,6 +9177,8 @@ finish_using_directive (tree target, tree attribs)
 		diagnosed = true;
 	      }
 	  }
+	else if (annotation_p (a))
+	  error ("annotation on using directive");
 	else if (!attribute_ignored_p (a))
 	  warning (OPT_Wattributes, "%qD attribute directive ignored", name);
       }

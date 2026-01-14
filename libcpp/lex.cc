@@ -4312,6 +4312,10 @@ _cpp_lex_direct (cpp_reader *pfile)
 	  else
 	    result->flags |= COLON_SCOPE;
 	}
+      else if (*buffer->cur == ']'
+	       && CPP_OPTION (pfile, cplusplus)
+	       && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26)
+	buffer->cur++, result->type = CPP_CLOSE_SPLICE;
       else if (*buffer->cur == '>' && CPP_OPTION (pfile, digraphs))
 	{
 	  buffer->cur++;
@@ -4323,7 +4327,15 @@ _cpp_lex_direct (cpp_reader *pfile)
     case '*': IF_NEXT_IS ('=', CPP_MULT_EQ, CPP_MULT); break;
     case '=': IF_NEXT_IS ('=', CPP_EQ_EQ, CPP_EQ); break;
     case '!': IF_NEXT_IS ('=', CPP_NOT_EQ, CPP_NOT); break;
-    case '^': IF_NEXT_IS ('=', CPP_XOR_EQ, CPP_XOR); break;
+    case '^':
+      result->type = CPP_XOR;
+      if (*buffer->cur == '=')
+	buffer->cur++, result->type = CPP_XOR_EQ;
+      else if (*buffer->cur == '^'
+	       && CPP_OPTION (pfile, cplusplus)
+	       && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26)
+	buffer->cur++, result->type = CPP_REFLECT_OP;
+      break;
     case '#': IF_NEXT_IS ('#', CPP_PASTE, CPP_HASH); result->val.token_no = 0; break;
 
     case '?': result->type = CPP_QUERY; break;
@@ -4331,7 +4343,24 @@ _cpp_lex_direct (cpp_reader *pfile)
     case ',': result->type = CPP_COMMA; break;
     case '(': result->type = CPP_OPEN_PAREN; break;
     case ')': result->type = CPP_CLOSE_PAREN; break;
-    case '[': result->type = CPP_OPEN_SQUARE; break;
+    case '[':
+      result->type = CPP_OPEN_SQUARE;
+      /* C++ [lex.pptoken]/4.3: "Otherwise, if the next three characters are
+	 [:: and the subsequent character is not :, or if the next three
+	 characters are [:>, the [ is treated as a preprocessing token by
+	 itself and not as the first character of the preprocessing token [:."
+	 Also, the tokens [: and :] cannot be composed from digraphs.  */
+      if (*buffer->cur == ':'
+	  && CPP_OPTION (pfile, cplusplus)
+	  && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26)
+	{
+	  if ((buffer->cur[1] == ':' && buffer->cur[2] != ':')
+	      || buffer->cur[1] == '>')
+	    break;
+	  else
+	    buffer->cur++, result->type = CPP_OPEN_SPLICE;
+	}
+      break;
     case ']': result->type = CPP_CLOSE_SQUARE; break;
     case '{': result->type = CPP_OPEN_BRACE; break;
     case '}': result->type = CPP_CLOSE_BRACE; break;

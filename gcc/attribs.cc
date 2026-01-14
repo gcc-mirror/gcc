@@ -1458,6 +1458,10 @@ attribute_value_equal (const_tree attr1, const_tree attr2)
       && TREE_VALUE (attr2) != NULL_TREE
       && TREE_CODE (TREE_VALUE (attr2)) == TREE_LIST)
     {
+      if (ATTR_UNIQUE_VALUE_P (TREE_VALUE (attr1))
+	  || ATTR_UNIQUE_VALUE_P (TREE_VALUE (attr2)))
+	return false;
+
       /* Handle attribute format.  */
       if (is_attribute_p ("format", get_attribute_name (attr1)))
 	{
@@ -1739,11 +1743,34 @@ merge_attributes (tree a1, tree a2)
 	attributes = a2;
       else
 	{
-	  /* Pick the longest list, and hang on the other list.  */
+	  /* Pick the longest list, and hang on the other list,
+	     unless both lists contain ATTR_UNIQUE_VALUE_P values.
+	     In that case a1 list needs to go after the a2 list
+	     because attributes from a single declaration are stored
+	     in reverse order of their declarations.  */
+	  bool a1_unique_value_p = false, a2_unique_value_p = false;
+	  tree aa1 = a1, aa2 = a2;
+	  for (; aa1 && aa2; aa1 = TREE_CHAIN (aa1), aa2 = TREE_CHAIN (aa2))
+	    {
+	      if (!a1_unique_value_p
+		  && TREE_VALUE (aa1)
+		  && TREE_CODE (TREE_VALUE (aa1)) == TREE_LIST
+		  && ATTR_UNIQUE_VALUE_P (TREE_VALUE (aa1)))
+		a1_unique_value_p = true;
+	      if (!a2_unique_value_p
+		  && TREE_VALUE (aa2)
+		  && TREE_CODE (TREE_VALUE (aa2)) == TREE_LIST
+		  && ATTR_UNIQUE_VALUE_P (TREE_VALUE (aa2)))
+		a2_unique_value_p = true;
+	    }
 
-	  if (list_length (a1) < list_length (a2))
-	    attributes = a2, a2 = a1;
+	  if (aa2 && (!a1_unique_value_p || !a2_unique_value_p))
+	    {
+	      attributes = a2;
+	      a2 = a1;
+	    }
 
+	  tree a3 = NULL_TREE, *pa = &a3;
 	  for (; a2 != 0; a2 = TREE_CHAIN (a2))
 	    {
 	      tree a;
@@ -1756,9 +1783,14 @@ merge_attributes (tree a1, tree a2)
 	      if (a == NULL_TREE)
 		{
 		  a1 = copy_node (a2);
-		  TREE_CHAIN (a1) = attributes;
-		  attributes = a1;
+		  *pa = a1;
+		  pa = &TREE_CHAIN (a1);
 		}
+	    }
+	  if (a3)
+	    {
+	      *pa = attributes;
+	      attributes = a3;
 	    }
 	}
     }

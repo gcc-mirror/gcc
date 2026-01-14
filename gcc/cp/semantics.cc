@@ -4456,15 +4456,18 @@ finish_template_type (tree name, tree args, int entering_scope)
     return TYPE_NAME (type);
 }
 
-/* Finish processing a BASE_CLASS with the indicated ACCESS_SPECIFIER.
-   Return a TREE_LIST containing the ACCESS_SPECIFIER and the
-   BASE_CLASS, or NULL_TREE if an error occurred.  The
+/* Finish processing a BASE_CLASS with the indicated ACCESS_SPECIFIER
+   and ANNOTATIONS.
+   Return a TREE_LIST containing the ACCESS_SPECIFIER (or if there are
+   ANNOTATIONS, TREE_LIST containing the ACCESS_SPECIFIER and ANNOTATIONS)
+   and the BASE_CLASS, or NULL_TREE if an error occurred.  The
    ACCESS_SPECIFIER is one of
-   access_{default,public,protected_private}_node.  For a virtual base
+   access_{default,public,protected,private}_node.  For a virtual base
    we set TREE_TYPE.  */
 
 tree
-finish_base_specifier (tree base, tree access, bool virtual_p)
+finish_base_specifier (tree base, tree access, bool virtual_p,
+		       tree annotations)
 {
   tree result;
 
@@ -4486,6 +4489,8 @@ finish_base_specifier (tree base, tree access, bool virtual_p)
 	     class type?  */
 	  base = TYPE_MAIN_VARIANT (base);
 	}
+      if (annotations)
+	access = build_tree_list (access, nreverse (annotations));
       result = build_tree_list (access, base);
       if (virtual_p)
 	TREE_TYPE (result) = integer_type_node;
@@ -4524,7 +4529,7 @@ baselink_for_fns (tree fns)
 
 /* Returns true iff we are currently parsing a lambda-declarator.  */
 
-static bool
+bool
 parsing_lambda_declarator ()
 {
   cp_binding_level *b = current_binding_level;
@@ -4774,6 +4779,7 @@ finish_id_expression_1 (tree id_expression,
 	{
 	  /* Name lookup failed.  */
 	  if (scope
+	      && !dependent_namespace_p (scope)
 	      && (!TYPE_P (scope)
 		  || (!dependentish_scope_p (scope)
 		      && !(identifier_p (id_expression)
@@ -13654,6 +13660,57 @@ fold_builtin_is_corresponding_member (location_t loc, int nargs,
 				   fold_convert (TREE_TYPE (arg1), arg2)));
 }
 
+/* Fold __builtin_is_string_literal call.  */
+
+tree
+fold_builtin_is_string_literal (location_t loc, int nargs, tree *args)
+{
+  /* Unless users call the builtin directly, the following 3 checks should be
+     ensured from std::is_string_literal overloads.  */
+  if (nargs != 1)
+    {
+      error_at (loc, "%<__builtin_is_string_literal%> needs a single "
+		"argument");
+      return boolean_false_node;
+    }
+  tree arg = args[0];
+  if (error_operand_p (arg))
+    return boolean_false_node;
+  if (!TYPE_PTR_P (TREE_TYPE (arg))
+      || !TYPE_READONLY (TREE_TYPE (TREE_TYPE (arg)))
+      || TYPE_VOLATILE (TREE_TYPE (TREE_TYPE (arg))))
+    {
+    arg_invalid:
+      error_at (loc, "%<__builtin_is_string_literal%> "
+		     "argument is not %<const char*%>, %<const wchar_t*%>, "
+		     "%<const char8_t*%>, %<const char16_t*%> or "
+		     "%<const char32_t*%>");
+      return boolean_false_node;
+    }
+  tree chart = TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (arg)));
+  if (chart != char_type_node
+      && chart != wchar_type_node
+      && chart != char8_type_node
+      && chart != char16_type_node
+      && chart != char32_type_node)
+    goto arg_invalid;
+
+  STRIP_NOPS (arg);
+  while (TREE_CODE (arg) == POINTER_PLUS_EXPR)
+    {
+      arg = TREE_OPERAND (arg, 0);
+      STRIP_NOPS (arg);
+    }
+  if (TREE_CODE (arg) != ADDR_EXPR)
+    return boolean_false_node;
+  arg = TREE_OPERAND (arg, 0);
+  if (TREE_CODE (arg) == ARRAY_REF)
+    arg = TREE_OPERAND (arg, 0);
+  if (TREE_CODE (arg) != STRING_CST)
+    return boolean_false_node;
+  return boolean_true_node;
+}
+
 /* [basic.types] 8.  True iff TYPE is an object type.  */
 
 static bool
@@ -13913,6 +13970,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_DEDUCIBLE:
       return type_targs_deducible_from (type1, type2);
 
+    case CPTK_IS_CONSTEVAL_ONLY:
+      return consteval_only_p (type1);
+
     /* __array_rank, __builtin_type_order and __builtin_structured_binding_size
        are handled in finish_trait_expr.  */
     case CPTK_RANK:
@@ -14093,6 +14153,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_STD_LAYOUT:
     case CPTK_IS_TRIVIAL:
     case CPTK_IS_TRIVIALLY_COPYABLE:
+    case CPTK_IS_CONSTEVAL_ONLY:
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
       if (!check_trait_type (type1, /* kind = */ 2))
 	return error_mark_node;

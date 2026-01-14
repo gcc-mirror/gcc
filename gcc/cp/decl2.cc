@@ -1678,6 +1678,11 @@ is_late_template_attribute (tree attr, tree decl)
     = lookup_attribute_spec (TREE_PURPOSE (attr));
   tree arg;
 
+  /* Handle all annotations as late, so that they aren't incorrectly
+     reordered if some have dependent expressions and others don't.  */
+  if (annotation_p (attr))
+    return true;
+
   if (!spec)
     /* Unknown attribute.  */
     return false;
@@ -1954,6 +1959,10 @@ cp_check_const_attributes (tree attributes)
   for (attr = attributes; attr; attr = TREE_CHAIN (attr))
     {
       if (cxx_contract_attribute_p (attr))
+	continue;
+
+      /* Annotation arguments are handled in handle_annotation_attribute.  */
+      if (annotation_p (attr))
 	continue;
 
       tree arg;
@@ -2666,6 +2675,10 @@ maybe_make_one_only (tree decl)
   if (! flag_weak)
     return;
 
+  /* These are not to be output.  */
+  if (consteval_only_p (decl))
+    return;
+
   /* We can't set DECL_COMDAT on functions, or cp_finish_file will think
      we can get away with not emitting them if they aren't used.  We need
      to for variables so that cp_finish_decl will update their linkage,
@@ -2822,6 +2835,10 @@ var_finalized_p (tree var)
 void
 mark_needed (tree decl)
 {
+  /* These are not to be output.  */
+  if (consteval_only_p (decl))
+    return;
+
   TREE_USED (decl) = 1;
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
@@ -3040,7 +3057,7 @@ min_vis_r (tree *tp, int *walk_subtrees, void *data)
 /* walk_tree helper function for expr_visibility.  */
 
 static tree
-min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
+min_vis_expr_r (tree *tp, int *walk_subtrees, void *data)
 {
   int *vis_p = (int *)data;
   int tpvis = VISIBILITY_DEFAULT;
@@ -3110,6 +3127,59 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
 
     case FIELD_DECL:
       tpvis = type_visibility (DECL_CONTEXT (t));
+      break;
+
+    case REFLECT_EXPR:
+      tree r;
+      r = REFLECT_EXPR_HANDLE (t);
+      switch (REFLECT_EXPR_KIND (t))
+	{
+	case REFLECT_BASE:
+	  /* For direct base class relationship, determine visibility
+	     from both D and B types.  */
+	  tpvis = type_visibility (BINFO_TYPE (r));
+	  if (tpvis > *vis_p)
+	    *vis_p = tpvis;
+	  tpvis = type_visibility (direct_base_parent (r));
+	  *walk_subtrees = 0;
+	  break;
+	case REFLECT_DATA_MEMBER_SPEC:
+	  /* For data member description determine visibility
+	     from the type.  */
+	  tpvis = type_visibility (TREE_VEC_ELT (r, 0));
+	  *walk_subtrees = 0;
+	  break;
+	case REFLECT_PARM:
+	  /* For function parameter reflection determine visibility
+	     based on parent_of.  */
+	  tpvis = expr_visibility (DECL_CONTEXT (r));
+	  *walk_subtrees = 0;
+	  break;
+	case REFLECT_ANNOTATION:
+	  /* Annotations are always local to the TU.  */
+	  tpvis = VISIBILITY_ANON;
+	  *walk_subtrees = 0;
+	  break;
+	case REFLECT_OBJECT:
+	  r = get_base_address (r);
+	  gcc_fallthrough ();
+	default:
+	  if (TYPE_P (r))
+	    {
+	      tpvis = type_visibility (r);
+	      *walk_subtrees = 0;
+	      break;
+	    }
+	  if ((VAR_P (r) && decl_function_context (r))
+	      || TREE_CODE (r) == PARM_DECL)
+	    {
+	      /* Block scope variables are local to the TU.  */
+	      tpvis = VISIBILITY_ANON;
+	      *walk_subtrees = 0;
+	      break;
+	    }
+	  break;
+	}
       break;
 
     default:
@@ -4994,6 +5064,14 @@ prune_vars_needing_no_initialization (tree *vars)
 	  continue;
 	}
 
+      /* Reflections are consteval-only types and we don't want them
+	 to survive until gimplification.  */
+      if (consteval_only_p (decl))
+	{
+	  var = &TREE_CHAIN (t);
+	  continue;
+	}
+
       /* This variable is going to need initialization and/or
 	 finalization, so we add it to the list.  */
       *var = TREE_CHAIN (t);
@@ -5340,6 +5418,12 @@ no_linkage_error (tree decl)
 
   if (DECL_LANG_SPECIFIC (decl) && DECL_MODULE_IMPORT_P (decl))
     /* An imported decl is ok.  */
+    return;
+
+  /* Metafunctions are magic and should be considered defined even though
+     they have no bodies.  ??? This can't be checked in decl_defined_p;
+     we'd get redefinition errors for some of our metafunctions.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && metafunction_p (decl))
     return;
 
   tree t = no_linkage_check (TREE_TYPE (decl), /*relaxed_p=*/false);
@@ -6016,7 +6100,9 @@ c_parse_final_cleanups (void)
       /* Static data members are just like namespace-scope globals.  */
       FOR_EACH_VEC_SAFE_ELT (pending_statics, i, decl)
 	{
-	  if (var_finalized_p (decl) || DECL_REALLY_EXTERN (decl)
+	  if (consteval_only_p (decl)
+	      || var_finalized_p (decl)
+	      || DECL_REALLY_EXTERN (decl)
 	      /* Don't write it out if we haven't seen a definition.  */
 	      || DECL_IN_AGGR_P (decl))
 	    continue;
@@ -6058,6 +6144,8 @@ c_parse_final_cleanups (void)
 	     should have synthesized it above.)  */
 	  && !(header_module_p ()
 	       && (DECL_DEFAULTED_FN (decl) || decl_tls_wrapper_p (decl)))
+	  /* Metafunctions are never defined.  */
+	  && !metafunction_p (decl)
 	  /* Don't complain if the template was defined.  */
 	  && !(DECL_TEMPLOID_INSTANTIATION (decl)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT

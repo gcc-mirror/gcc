@@ -1200,15 +1200,29 @@ public:
   /* If non-null, only allow modification of existing values of the variables
      in this set.  Set by modifiable_tracker, below.  */
   hash_set<tree> *modifiable;
+  /* If cxx_eval_outermost_constant_expr is called on the consteval block
+     operator (), this is the FUNCTION_DECL of that operator ().  */
+  tree consteval_block;
   /* Number of heap VAR_DECL deallocations.  */
   unsigned heap_dealloc_count;
   /* Number of uncaught exceptions.  */
   unsigned uncaught_exceptions;
+  /* Some metafunctions aren't dependent just on their arguments, but also
+     on various other dependencies, e.g. has_identifier on a function parameter
+     reflection can change depending on further declarations of corresponding
+     function, is_complete_type depends on type definitions and template
+     specializations in between the calls, define_aggregate even defines
+     class types, etc.  Thus, we need to arrange for calls which call
+     at least some metafunctions to be non-cacheable, because their behavior
+     might not be the same.  Until we figure out which exact metafunctions
+     need this and which don't, do it for all of them.  */
+  bool metafns_called;
 
   /* Constructor.  */
   constexpr_global_ctx ()
     : constexpr_ops_count (0), cleanups (NULL), modifiable (nullptr),
-      heap_dealloc_count (0), uncaught_exceptions (0) {}
+      consteval_block (NULL_TREE), heap_dealloc_count (0),
+      uncaught_exceptions (0), metafns_called (false) {}
 
   bool is_outside_lifetime (tree t)
   {
@@ -1321,6 +1335,42 @@ struct constexpr_ctx {
   /* Whether __builtin_is_constant_evaluated () should be true.  */
   mce_value manifestly_const_eval;
 };
+
+/* Return ctx->quiet.  For use in reflect.cc.  */
+
+bool
+cxx_constexpr_quiet_p (const constexpr_ctx *ctx)
+{
+  return ctx->quiet;
+}
+
+/* Return ctx->manifestly_const_eval.  For use in reflect.cc.  */
+
+mce_value
+cxx_constexpr_manifestly_const_eval (const constexpr_ctx *ctx)
+{
+  return ctx->manifestly_const_eval;
+}
+
+/* Return ctx->call->fundef->decl or NULL_TREE.  For use in
+   reflect.cc.  */
+
+tree
+cxx_constexpr_caller (const constexpr_ctx *ctx)
+{
+  if (ctx->call)
+    return ctx->call->fundef->decl;
+  else
+    return NULL_TREE;
+}
+
+/* Return ctx->global->consteval_block.  For use in reflect.cc.  */
+
+tree
+cxx_constexpr_consteval_block (const constexpr_ctx *ctx)
+{
+  return ctx->global->consteval_block;
+}
 
 /* Predicates for the meaning of *jump_target.  */
 
@@ -1589,17 +1639,6 @@ save_fundef_copy (tree fun, tree copy)
   *slot = copy;
 }
 
-/* Whether our evaluation wants a prvalue (e.g. CONSTRUCTOR or _CST),
-   a glvalue (e.g. VAR_DECL or _REF), or nothing.  */
-
-enum value_cat {
-   vc_prvalue = 0,
-   vc_glvalue = 1,
-   vc_discard = 2
-};
-
-static tree cxx_eval_constant_expression (const constexpr_ctx *, tree,
-					  value_cat, bool *, bool *, tree *);
 static tree cxx_eval_bare_aggregate (const constexpr_ctx *, tree,
 				     value_cat, bool *, bool *, tree *);
 static tree cxx_fold_indirect_ref (const constexpr_ctx *, location_t, tree, tree,
@@ -2034,6 +2073,10 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	    {
 	      if (type_build_dtor_call (TREE_TYPE (arg)))
 		{
+		  /* So that we don't complain about out-of-consteval use.  */
+		  temp_override<tree> ovr (current_function_decl);
+		  if (ctx->call && ctx->call->fundef)
+		    current_function_decl = ctx->call->fundef->decl;
 		  tree cleanup
 		    = cxx_maybe_build_cleanup (arg, (ctx->quiet ? tf_none
 						     : tf_warning_or_error));
@@ -2456,6 +2499,22 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	  VERIFY_CONSTANT (args[1]);
 	}
       new_call = fold_builtin_is_corresponding_member (loc, nargs, args);
+    }
+  else if (fndecl_built_in_p (fun, CP_BUILT_IN_IS_STRING_LITERAL,
+			      BUILT_IN_FRONTEND))
+    {
+      location_t loc = EXPR_LOCATION (t);
+      if (nargs >= 1)
+	{
+	  tree arg = CALL_EXPR_ARG (t, 0);
+	  arg = cxx_eval_constant_expression (ctx, arg, vc_prvalue,
+					      non_constant_p, overflow_p,
+					      jump_target);
+	  if (*jump_target)
+	    return NULL_TREE;
+	  args[0] = arg;
+	}
+      new_call = fold_builtin_is_string_literal (loc, nargs, args);
     }
   else
     new_call = fold_builtin_call_array (EXPR_LOCATION (t), TREE_TYPE (t),
@@ -3184,12 +3243,14 @@ is_std_class (tree ctx, const char *name)
 bool
 is_std_allocator (tree ctx)
 {
-  return is_std_class (ctx, "allocator");
+  return (is_std_class (ctx, "allocator")
+	  || (flag_reflection
+	      && is_std_class (ctx, "__new_allocator")));
 }
 
 /* Return true if FNDECL is std::allocator<T>::{,de}allocate.  */
 
-static inline bool
+bool
 is_std_allocator_allocate (tree fndecl)
 {
   tree name = DECL_NAME (fndecl);
@@ -3670,6 +3731,43 @@ cxx_set_object_constness (const constexpr_ctx *ctx, tree object,
     }
 }
 
+/* Allocate an exception for OBJECT and throw it.  */
+
+tree
+cxa_allocate_and_throw_exception (location_t loc, const constexpr_ctx *ctx,
+				  tree object)
+{
+  tree type = TREE_TYPE (object);
+  /* This simulates a call to __cxa_allocate_exception.  We need
+     (struct exception *) &heap -- memory on the heap so that
+     it can survive the stack being unwound.  */
+  tree arr = build_array_of_n_type (type, 1);
+  tree var = cxa_allocate_exception (loc, ctx, arr, size_zero_node);
+  DECL_NAME (var) = heap_identifier;
+  ctx->global->put_value (var, NULL_TREE);
+
+  /* *(struct exception *) &heap  = exc{ ... }  */
+  tree ptr = build_nop (build_pointer_type (type), build_address (var));
+  object = cp_build_init_expr (cp_build_fold_indirect_ref (ptr), object);
+  bool non_constant_p = false, overflow_p = false;
+  tree jump_target = NULL_TREE;
+  cxx_eval_constant_expression (ctx, object, vc_prvalue, &non_constant_p,
+				&overflow_p, &jump_target);
+  if (non_constant_p)
+    {
+      if (!ctx->quiet)
+	error_at (loc, "couldn%'t throw %qT", type);
+      return NULL_TREE;
+    }
+
+  /* Now we can __cxa_throw.  */
+  DECL_EXCEPTION_REFCOUNT (var)
+    = size_binop (PLUS_EXPR, DECL_EXCEPTION_REFCOUNT (var), size_one_node);
+  ++ctx->global->uncaught_exceptions;
+
+  return var;
+}
+
 /* Subroutine of cxx_eval_constant_expression.
    Evaluate the call expression tree T in the context of OLD_CALL expression
    evaluation.  */
@@ -3752,6 +3850,35 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
   if (DECL_THUNK_P (fun))
     return cxx_eval_thunk_call (ctx, t, fun, lval, non_constant_p, overflow_p,
 				jump_target);
+  if (metafunction_p (fun))
+    {
+      /* To be able to evaluate a metafunction, we may have to instantiate
+	 constexpr functions.  If we're not allowed to instantiate, leave
+	 this for later.  Don't evaluate metafunctions at all when mce_unknown,
+	 otherwise we might fold those prematurely.  See
+	 g++.dg/reflect/p2996-17.C.  */
+      if (uid_sensitive_constexpr_evaluation_p ()
+	  || ctx->manifestly_const_eval == mce_unknown)
+	{
+	  *non_constant_p = true;
+	  return t;
+	}
+      ctx->global->metafns_called = true;
+      tree e = process_metafunction (ctx, fun, t, non_constant_p, overflow_p,
+				     jump_target);
+      if (*jump_target)
+	return NULL_TREE;
+      if (*non_constant_p)
+	return t;
+      e = cxx_eval_constant_expression (ctx, e, vc_prvalue,
+					non_constant_p, overflow_p,
+					jump_target);
+      if (*jump_target)
+	return NULL_TREE;
+      if (*non_constant_p)
+	return t;
+      return e;
+    }
   bool non_constexpr_call = false;
   if (!maybe_constexpr_fn (fun))
     {
@@ -4201,6 +4328,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  call_ctx.call = &new_call;
 	  unsigned save_heap_alloc_count = ctx->global->heap_vars.length ();
 	  unsigned save_heap_dealloc_count = ctx->global->heap_dealloc_count;
+	  bool save_metafns_called = ctx->global->metafns_called;
 
 	  /* Make sure we fold std::is_constant_evaluated to true in an
 	     immediate function.  */
@@ -4231,6 +4359,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      if (*jump_target)
 		return NULL_TREE;
 	    }
+
+	  ctx->global->metafns_called = false;
 
 	  tree jmp_target = NULL_TREE;
 	  cxx_eval_constant_expression (&call_ctx, body,
@@ -4264,6 +4394,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		  *non_constant_p = true;
 		}
 	    }
+
+	  if (ctx->global->metafns_called)
+	    cacheable = false;
+	  ctx->global->metafns_called |= save_metafns_called;
 
 	  /* At this point, the object's constructor will have run, so
 	     the object is no longer under construction, and its possible
@@ -4405,6 +4539,7 @@ reduced_constant_expression_p (tree t, tree sz /* = NULL_TREE */)
   switch (TREE_CODE (t))
     {
     case PTRMEM_CST:
+    case REFLECT_EXPR:
       /* Even if we can't lower this yet, it's constant.  */
       return true;
 
@@ -4879,6 +5014,11 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 	lhs = cplus_expand_constant (lhs);
       else if (TREE_CODE (rhs) == PTRMEM_CST)
 	rhs = cplus_expand_constant (rhs);
+      else if (REFLECT_EXPR_P (lhs) && REFLECT_EXPR_P (rhs))
+	{
+	  const bool eq = compare_reflections (lhs, rhs);
+	  r = constant_boolean_node (eq == is_code_eq, type);
+	}
     }
   if (r == NULL_TREE
       && TREE_CODE_CLASS (code) == tcc_comparison
@@ -8818,7 +8958,7 @@ merge_jump_target (location_t loc, const constexpr_ctx *ctx, tree r,
 /* FIXME unify with c_fully_fold */
 /* FIXME overflow_p is too global */
 
-static tree
+tree
 cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 			      value_cat lval,
 			      bool *non_constant_p, bool *overflow_p,
@@ -9011,6 +9151,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case CASE_LABEL_EXPR:
     case PREDICT_EXPR:
     case OMP_DECLARE_MAPPER:
+    case REFLECT_EXPR:
       return t;
 
     case PARM_DECL:
@@ -9981,6 +10122,14 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	      = build_pointer_type (TREE_TYPE (var));
 	  }
 
+	/* This can happen for std::meta::info(^^int) where the cast has no
+	   meaning.  */
+	if (REFLECTION_TYPE_P (type) && REFLECT_EXPR_P (op))
+	  {
+	    r = op;
+	    break;
+	  }
+
 	if (op == oldop && tcode != UNARY_PLUS_EXPR)
 	  /* We didn't fold at the top so we could check for ptr-int
 	     conversion.  */
@@ -10376,7 +10525,7 @@ find_heap_var_refs (tree *tp, int *walk_subtrees, void */*data*/)
 /* Find immediate function decls in *TP if any.  */
 
 static tree
-find_immediate_fndecl (tree *tp, int */*walk_subtrees*/, void */*data*/)
+find_immediate_fndecl (tree *tp, int *walk_subtrees, void */*data*/)
 {
   if (TREE_CODE (*tp) == FUNCTION_DECL && DECL_IMMEDIATE_FUNCTION_P (*tp))
     return *tp;
@@ -10384,6 +10533,8 @@ find_immediate_fndecl (tree *tp, int */*walk_subtrees*/, void */*data*/)
       && TREE_CODE (PTRMEM_CST_MEMBER (*tp)) == FUNCTION_DECL
       && DECL_IMMEDIATE_FUNCTION_P (PTRMEM_CST_MEMBER (*tp)))
     return PTRMEM_CST_MEMBER (*tp);
+  if (REFLECT_EXPR_P (*tp))
+    *walk_subtrees = 0;
   return NULL_TREE;
 }
 
@@ -10468,6 +10619,12 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	    return t;
 	  else
 	    is_consteval = true;
+	  tree lam;
+	  if (manifestly_const_eval == mce_true
+	      && LAMBDA_FUNCTION_P (fndecl)
+	      && (lam = CLASSTYPE_LAMBDA_EXPR (CP_DECL_CONTEXT (fndecl)))
+	      && LAMBDA_EXPR_CONSTEVAL_BLOCK_P (lam))
+	    global_ctx.consteval_block = fndecl;
 	}
     }
   else if (cxx_dialect >= cxx20
@@ -10679,6 +10836,37 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	    error_at (cp_expr_loc_or_input_loc (t),
 		      "constant evaluation returns address of immediate "
 		      "function %qD", immediate_fndecl);
+	}
+      r = t;
+      non_constant_p = true;
+    }
+
+  /* Detect consteval-only smuggling: turning a consteval-only object
+     into one that is not.  For instance, in
+       struct B { };
+       struct D : B { info r; };
+       constexpr D d{^^::};
+       constexpr const B &b = d; // #1
+     #1 is wrong because D is a consteval-only type but B is not.  */
+  if (flag_reflection
+      && !non_constant_p
+      && object
+      && POINTER_TYPE_P (TREE_TYPE (object))
+      && !consteval_only_p (object)
+      && check_out_of_consteval_use (r, /*complain=*/false))
+    {
+      if (!allow_non_constant)
+	{
+	  if (TYPE_REF_P (TREE_TYPE (object)))
+	    error_at (cp_expr_loc_or_input_loc (t),
+		      "reference into an object of consteval-only type is "
+		      "not a constant expression unless it also has "
+		      "consteval-only type");
+	  else
+	    error_at (cp_expr_loc_or_input_loc (t),
+		      "pointer into an object of consteval-only type is "
+		      "not a constant expression unless it also has "
+		      "consteval-only type");
 	}
       r = t;
       non_constant_p = true;
@@ -11476,6 +11664,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case REQUIRES_EXPR:
     case STATIC_ASSERT:
     case DEBUG_BEGIN_STMT:
+    case REFLECT_EXPR:
       return true;
 
     case RETURN_EXPR:
@@ -12566,6 +12755,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
        instantiating.  */
     case TU_LOCAL_ENTITY:
       return false;
+
+    /* A splice expression is dependent, but will be constant after
+       substitution.  */
+    case SPLICE_EXPR:
+      return true;
 
     case NONTYPE_ARGUMENT_PACK:
       {

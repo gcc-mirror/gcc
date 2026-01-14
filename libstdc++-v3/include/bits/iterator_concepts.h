@@ -1005,7 +1005,7 @@ namespace ranges
     // for use by __range_iter_t below.
     template<typename _Tp>
       requires is_array_v<_Tp> || __member_begin<_Tp&> || __adl_begin<_Tp&>
-      auto
+      constexpr auto
       __begin(_Tp& __t)
       {
 	if constexpr (is_array_v<_Tp>)

@@ -448,6 +448,7 @@ std_freestanding = \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/locale \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/map \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/memory_resource \
+@GLIBCXX_HOSTED_TRUE@	${std_srcdir}/meta \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/mutex \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/ostream \
 @GLIBCXX_HOSTED_TRUE@	${std_srcdir}/print \

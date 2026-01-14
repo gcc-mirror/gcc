@@ -813,6 +813,7 @@ pp_cxx_delete_expression (cxx_pretty_printer *pp, tree t)
       sizeof ... ( identifier )
       new-expression
       delete-expression
+      reflect-expression
 
    unary-operator: one of
       *   &   +   -  !
@@ -896,6 +897,19 @@ cxx_pretty_printer::unary_expression (tree t)
     case UNARY_PLUS_EXPR:
       pp_plus (this);
       pp_cxx_cast_expression (this, TREE_OPERAND (t, 0));
+      break;
+
+    case REFLECT_EXPR:
+      {
+	pp_cxx_ws_string (this, "^^");
+	tree h = REFLECT_EXPR_HANDLE (t);
+	if (DECL_P (h))
+	  declaration (h);
+	else if (TYPE_P (h))
+	  type_id (h);
+	else
+	  expression (h);
+      }
       break;
 
     default:
@@ -1184,6 +1198,7 @@ cxx_pretty_printer::expression (tree t)
     case ALIGNOF_EXPR:
     case NOEXCEPT_EXPR:
     case UNARY_PLUS_EXPR:
+    case REFLECT_EXPR:
       unary_expression (t);
       break;
 
@@ -1425,6 +1440,10 @@ cxx_pretty_printer::simple_type_specifier (tree t)
 
     case TRAIT_TYPE:
       pp_cxx_trait (this, t);
+      break;
+
+    case META_TYPE:
+      pp_cxx_ws_string (this, "std::meta::info");
       break;
 
     default:
@@ -1923,6 +1942,7 @@ cxx_pretty_printer::type_id (tree t)
     case NULLPTR_TYPE:
     case TEMPLATE_ID_EXPR:
     case OFFSET_TYPE:
+    case META_TYPE:
       pp_cxx_type_specifier_seq (this, t);
       if (TYPE_PTRMEM_P (t))
 	abstract_declarator (t);

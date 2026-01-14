@@ -749,6 +749,7 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 
     case TEMPLATE_DECL:
     case NAMESPACE_DECL:
+    case CONST_DECL:
       dump_decl (pp, t, flags & ~TFF_DECL_SPECIFIERS);
       break;
 
@@ -875,6 +876,14 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 
     case NULLPTR_TYPE:
       pp_string (pp, "std::nullptr_t");
+      break;
+
+    case META_TYPE:
+      pp_string (pp, "std::meta::info");
+      break;
+
+    case SPLICE_SCOPE:
+      dump_expr (pp, SPLICE_SCOPE_EXPR (t), flags & ~TFF_EXPR_IN_PARENS);
       break;
 
     default:
@@ -1136,6 +1145,8 @@ dump_type_prefix (cxx_pretty_printer *pp, tree t, int flags)
     case FIXED_POINT_TYPE:
     case NULLPTR_TYPE:
     case PACK_INDEX_TYPE:
+    case META_TYPE:
+    case SPLICE_SCOPE:
       dump_type (pp, t, flags);
       pp->set_padding (pp_before);
       break;
@@ -1269,6 +1280,8 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
     case FIXED_POINT_TYPE:
     case NULLPTR_TYPE:
     case PACK_INDEX_TYPE:
+    case META_TYPE:
+    case SPLICE_SCOPE:
       break;
 
     default:
@@ -1615,9 +1628,14 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 	tree name = TREE_OPERAND (t, 0);
 	tree args = TREE_OPERAND (t, 1);
 
-	if (!identifier_p (name))
-	  name = OVL_NAME (name);
-	dump_decl (pp, name, flags);
+	if (TREE_CODE (name) == SPLICE_EXPR)
+	  dump_expr (pp, name, flags);
+	else
+	  {
+	    if (!identifier_p (name))
+	      name = OVL_NAME (name);
+	    dump_decl (pp, name, flags);
+	  }
 	pp_cxx_begin_template_argument_list (pp);
 	if (args == error_mark_node)
 	  pp_string (pp, M_("<template arguments error>"));
@@ -3309,6 +3327,27 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	  pp_cxx_whitespace (pp);
 	  dump_expr (pp, TREE_OPERAND (t, 0), flags);
 	}
+      break;
+
+    case REFLECT_EXPR:
+      {
+	pp_string (pp, "^^");
+	tree h = REFLECT_EXPR_HANDLE (t);
+	if (DECL_P (h))
+	  dump_decl (pp, h, flags);
+	else if (TYPE_P (h))
+	  dump_type (pp, h, flags);
+	else
+	  dump_expr (pp, h, flags);
+	break;
+      }
+
+    case SPLICE_EXPR:
+      pp_cxx_ws_string (pp, "[:");
+      pp_cxx_whitespace (pp);
+      dump_expr (pp, TREE_OPERAND (t, 0), flags);
+      pp_cxx_whitespace (pp);
+      pp_cxx_ws_string (pp, ":]");
       break;
 
       /*  This list is incomplete, but should suffice for now.

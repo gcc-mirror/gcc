@@ -2329,6 +2329,10 @@ frange-for-ext-temps
 C++ ObjC++ Var(flag_range_for_ext_temps)
 Enable lifetime extension of range based for temporaries.
 
+freflection
+C++ ObjC++ Var(flag_reflection) Init(0)
+Enable experimental C++26 Reflection.
+
 freplace-objc-classes
 ObjC ObjC++ LTO Var(flag_replace_objc_classes)
 Used in Fix-and-Continue mode to indicate that object files may be swapped in at runtime.

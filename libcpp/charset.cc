@@ -840,6 +840,10 @@ _cpp_destroy_iconv (cpp_reader *pfile)
 	iconv_close (pfile->char32_cset_desc.cd);
       if (pfile->wide_cset_desc.func == convert_using_iconv)
 	iconv_close (pfile->wide_cset_desc.cd);
+      if (pfile->reverse_narrow_cset_desc.func == convert_using_iconv)
+	iconv_close (pfile->narrow_cset_desc.cd);
+      if (pfile->reverse_utf8_cset_desc.func == convert_using_iconv)
+	iconv_close (pfile->utf8_cset_desc.cd);
     }
 }
 
@@ -2724,6 +2728,110 @@ cpp_interpret_string_notranslate (cpp_reader *pfile, const cpp_string *from,
 
   pfile->narrow_cset_desc = save_narrow_cset_desc;
   return retval;
+}
+
+/* Convert a string FROM to TO, without handling of any UCNs etc., just
+   pure character set conversion.  If !REVERSE, convert from SOURCE_CHARSET
+   to execution charset corresponding to TYPE, if REVERSE, convert from the
+   execution charset corresponding to TYPE to SOURCE_CHARSET.  Return false
+   on error.  */
+
+bool
+cpp_translate_string (cpp_reader *pfile, const cpp_string *from,
+		      cpp_string *to, enum cpp_ttype type, bool reverse)
+{
+  struct cset_converter cvt = converter_for_type (pfile, type);
+  struct _cpp_strbuf tbuf;
+  if (reverse)
+    {
+      struct cset_converter *pcvt;
+      switch (type)
+	{
+	default:
+	  pcvt = &pfile->reverse_narrow_cset_desc;
+	  break;
+	case CPP_UTF8CHAR:
+	case CPP_UTF8STRING:
+	  pcvt = &pfile->reverse_utf8_cset_desc;
+	  break;
+	case CPP_CHAR16:
+	case CPP_STRING16:
+	case CPP_CHAR32:
+	case CPP_STRING32:
+	case CPP_WCHAR:
+	case CPP_WSTRING:
+	  return false;
+	}
+      if (pcvt->func == NULL)
+	{
+	  *pcvt = init_iconv_desc (pfile, cvt.from, cvt.to);
+	  pcvt->width = cvt.width;
+	}
+      cvt = *pcvt;
+    }
+  tbuf.asize = MAX (OUTBUF_BLOCK_SIZE, from->len);
+  tbuf.text = XNEWVEC (uchar, tbuf.asize);
+  tbuf.len = 0;
+  if (!APPLY_CONVERSION (cvt, from->text, from->len, &tbuf))
+    {
+      XDELETEVEC (tbuf.text);
+      return false;
+    }
+  tbuf.text = XRESIZEVEC (uchar, tbuf.text, tbuf.len);
+  to->text = tbuf.text;
+  to->len = tbuf.len;
+  return true;
+}
+
+/* Return true if ID is a valid identifier, false otherwise.  Without any
+   diagnostics.  */
+
+bool
+cpp_valid_identifier (cpp_reader *pfile, const unsigned char *id)
+{
+  normalize_state nst = INITIAL_NORMALIZE_STATE;
+  const unsigned char *p = id;
+  if (*p == '\0')
+    return false;
+  const unsigned char *limit
+    = (const unsigned char *) strchr ((const char *) p, '\0');
+  static const cppchar_t utf8_signifier = 0xC0;
+  if (ISIDST (*p))
+    {
+      NORMALIZE_STATE_UPDATE_IDNUM (&nst, *p);
+      ++p;
+    }
+  while (*p)
+    {
+      if (p != id && ISIDNUM (*p))
+	{
+	  while (ISIDNUM (*p))
+	    ++p;
+	  NORMALIZE_STATE_UPDATE_IDNUM (&nst, *(p - 1));
+	  continue;
+	}
+      if (CPP_OPTION (pfile, extended_identifiers) && *p >= utf8_signifier)
+	{
+	  const unsigned char *base = p;
+	  size_t inbytesleft = limit - p;
+	  cppchar_t c;
+	  if (one_utf8_to_cppchar (&p, &inbytesleft, &c))
+	    return false;
+	  switch (ucn_valid_in_identifier (pfile, c, &nst))
+	    {
+	    default:
+	      return false;
+	    case 1:
+	      continue;
+	    case 2:
+	      if (base == id)
+		return false;
+	      continue;
+	    }
+	}
+      return false;
+    }
+  return true;
 }
 
 

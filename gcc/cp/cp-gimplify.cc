@@ -486,7 +486,7 @@ lvalue_has_side_effects (tree e)
 
 /* Return true if FN is an immediate-escalating function.  */
 
-static bool
+bool
 immediate_escalating_function_p (tree fn)
 {
   if (!fn || !flag_immediate_escalation)
@@ -524,7 +524,7 @@ unchecked_immediate_escalating_function_p (tree fn)
 
 /* Promote FN to an immediate function, including its clones.  */
 
-static void
+void
 promote_function_to_consteval (tree fn)
 {
   SET_DECL_IMMEDIATE_FUNCTION_P (fn);
@@ -856,6 +856,13 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
     case CALL_EXPR:
       ret = GS_OK;
+      /* At this point any function that takes/returns a consteval-only
+	 expression is a problem.  */
+      for (int i = 0; i < call_expr_nargs (*expr_p); ++i)
+	if (check_out_of_consteval_use (CALL_EXPR_ARG (*expr_p, i)))
+	  ret = GS_ERROR;
+      if (consteval_only_p (TREE_TYPE (*expr_p)))
+	ret = GS_ERROR;
       if (flag_strong_eval_order == 2
 	  && CALL_EXPR_FN (*expr_p)
 	  && !CALL_EXPR_OPERATOR_SYNTAX (*expr_p)
@@ -964,6 +971,13 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 			  "%qs used outside of constant expressions",
 			  "__builtin_eh_ptr_adjust_ref");
 		*expr_p = void_node;
+		break;
+	      case CP_BUILT_IN_IS_STRING_LITERAL:
+		*expr_p
+		  = fold_builtin_is_string_literal (EXPR_LOCATION (*expr_p),
+						    call_expr_nargs (*expr_p),
+						    &CALL_EXPR_ARG (*expr_p,
+								    0));
 		break;
 	      default:
 		break;
@@ -1293,6 +1307,23 @@ cp_build_init_expr_for_ctor (tree call, tree init)
   return init;
 }
 
+/* For every DECL_EXPR check if it declares a consteval-only variable and
+   if so, overwrite it with a no-op.  The point here is not to leak
+   consteval-only variables into the middle end.  */
+
+static tree
+wipe_consteval_only_r (tree *stmt_p, int *, void *)
+{
+  if (TREE_CODE (*stmt_p) == DECL_EXPR)
+    {
+      tree d = DECL_EXPR_DECL (*stmt_p);
+      if (VAR_P (d) && consteval_only_p (d))
+	/* Wipe the DECL_EXPR so that it doesn't get into gimple.  */
+	*stmt_p = void_node;
+    }
+  return NULL_TREE;
+}
+
 /* A walk_tree callback for cp_fold_function and cp_fully_fold_init to handle
    immediate functions.  */
 
@@ -1320,12 +1351,32 @@ cp_fold_immediate_r (tree *stmt_p, int *walk_subtrees, void *data_)
       return NULL_TREE;
     }
 
+  /* Most invalid uses of consteval-only types should have been already
+     detected at this point.  And the valid ones won't be needed
+     anymore.  */
+  if (flag_reflection
+      && complain
+      && (data->flags & ff_genericize)
+      && TREE_CODE (stmt) == STATEMENT_LIST)
+    for (tree s : tsi_range (stmt))
+      if (check_out_of_consteval_use (s))
+	*stmt_p = void_node;
+
   tree decl = NULL_TREE;
   bool call_p = false;
 
   /* We are looking for &fn or fn().  */
   switch (code)
     {
+    case DECL_EXPR:
+      /* Clear consteval-only DECL_EXPRs.  */
+      if (flag_reflection)
+	{
+	  tree d = DECL_EXPR_DECL (stmt);
+	  if (VAR_P (d) && consteval_only_p (d))
+	    *stmt_p = void_node;
+	}
+      break;
     case CALL_EXPR:
     case AGGR_INIT_EXPR:
       if (tree fn = cp_get_callee (stmt))
@@ -1344,8 +1395,15 @@ cp_fold_immediate_r (tree *stmt_p, int *walk_subtrees, void *data_)
       if (IF_STMT_CONSTEVAL_P (stmt))
 	{
 	  if (!data->pset.add (stmt))
-	    cp_walk_tree (&ELSE_CLAUSE (stmt), cp_fold_immediate_r, data_,
-			  NULL);
+	    {
+	      cp_walk_tree (&ELSE_CLAUSE (stmt), cp_fold_immediate_r, data_,
+			    nullptr);
+	      if (flag_reflection)
+		/* Check & clear consteval-only DECL_EXPRs even here,
+		   because we wouldn't be walking this subtree otherwise.  */
+		cp_walk_tree (&THEN_CLAUSE (stmt), wipe_consteval_only_r,
+			      data_, nullptr);
+	    }
 	  *walk_subtrees = 0;
 	  return NULL_TREE;
 	}
@@ -1419,6 +1477,22 @@ cp_fold_immediate_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	  *walk_subtrees = 0;
 	  return stmt;
 	}
+      /* If we called a consteval function and it evaluated to a consteval-only
+	 expression, it could be a problem if we are outside a manifestly
+	 constant-evaluated context.  */
+      else if ((data->flags & ff_genericize)
+	       && check_out_of_consteval_use (e, complain))
+	{
+	  *stmt_p = void_node;
+	  if (complain & tf_error)
+	    return NULL_TREE;
+	  else
+	    {
+	      *walk_subtrees = 0;
+	      return stmt;
+	    }
+	}
+
       /* We've evaluated the consteval function call.  */
       if (call_p)
 	{
@@ -2030,6 +2104,20 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	      cp_walk_tree (&DECL_INITIAL (decl), cp_genericize_r, data, NULL);
 	  wtd->no_sanitize_p = no_sanitize_p;
 	}
+      if (flag_reflection)
+	/* Wipe consteval-only vars from BIND_EXPR_VARS and BLOCK_VARS.  */
+	for (tree *p = &BIND_EXPR_VARS (stmt); *p; )
+	  {
+	    if (VAR_P (*p) && consteval_only_p (*p))
+	      {
+		if (BIND_EXPR_BLOCK (stmt)
+		    && *p == BLOCK_VARS (BIND_EXPR_BLOCK (stmt)))
+		  BLOCK_VARS (BIND_EXPR_BLOCK (stmt)) = DECL_CHAIN (*p);
+		*p = DECL_CHAIN (*p);
+		continue;
+	      }
+	    p = &DECL_CHAIN (*p);
+	  }
       wtd->bind_expr_stack.safe_push (stmt);
       cp_walk_tree (&BIND_EXPR_BODY (stmt),
 		    cp_genericize_r, data, NULL);

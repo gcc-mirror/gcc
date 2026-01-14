@@ -252,7 +252,7 @@ in the following sections.
 -fnew-ttp-matching
 -fno-nonansi-builtins  -fnothrow-opt  -fno-operator-names
 -fno-optional-diags
--fno-pretty-templates  -frange-for-ext-temps
+-fno-pretty-templates  -frange-for-ext-temps  -freflection
 -fno-rtti  -fsized-deallocation
 -fstrict-enums  -fstrong-eval-order@r{[}=@var{kind}@r{]}
 -ftemplate-backtrace-limit=@var{n}
@@ -3681,6 +3681,10 @@ With @option{-std=c++23} and above this is part of the language standard,
 so lifetime of the temporaries is extended until the end of the loop
 by default.  This option allows enabling that behavior also
 in earlier versions of the standard.
+
+@opindex freflection
+@item -freflection
+Enable experimental C++26 Reflection.
 
 @opindex fno-rtti
 @opindex frtti

@@ -89,6 +89,7 @@ std_headers = \
 	${std_srcdir}/locale \
 	${std_srcdir}/map \
 	${std_srcdir}/memory_resource \
+	${std_srcdir}/meta \
 	${std_srcdir}/mutex \
 	${std_srcdir}/ostream \
 	${std_srcdir}/print \

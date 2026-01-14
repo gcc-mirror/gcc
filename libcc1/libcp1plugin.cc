@@ -1568,7 +1568,8 @@ start_class_def (tree type,
 
 	  tree base = finish_base_specifier
 	    (convert_in (base_classes->elements[i]), access,
-	     (base_classes->flags[i] & GCC_CP_FLAG_BASECLASS_VIRTUAL) != 0);
+	     (base_classes->flags[i] & GCC_CP_FLAG_BASECLASS_VIRTUAL) != 0,
+	     NULL_TREE);
 	  TREE_CHAIN (base) = bases;
 	  bases = base;
 	}

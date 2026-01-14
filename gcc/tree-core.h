@@ -1183,7 +1183,8 @@ struct GTY(()) tree_base {
 	 present in tree_base instead of tree_type is to save space.  The size
 	 of the field must be large enough to hold addr_space_t values.
 	 For CONSTRUCTOR nodes this holds the clobber_kind enum.
-	 The C++ front-end uses this in IDENTIFIER_NODE and NAMESPACE_DECL.  */
+	 The C++ front-end uses this in IDENTIFIER_NODE, REFLECT_EXPR, and
+	 NAMESPACE_DECL.  */
       unsigned address_space : 8;
     } bits;
 

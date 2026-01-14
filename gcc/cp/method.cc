@@ -1899,7 +1899,7 @@ maybe_synthesize_method (tree fndecl)
 /* Build a reference to type TYPE with cv-quals QUALS, which is an
    rvalue if RVALUE is true.  */
 
-static tree
+tree
 build_stub_type (tree type, int quals, bool rvalue)
 {
   tree argtype = cp_build_qualified_type (type, quals);

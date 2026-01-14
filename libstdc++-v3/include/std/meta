@@ -1,0 +1,653 @@
+// <meta> -*- C++ -*-
+
+// Copyright (C) 2025-2026 Free Software Foundation, Inc.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file include/meta
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef _GLIBCXX_META
+#define _GLIBCXX_META 1
+
+#ifdef _GLIBCXX_SYSHDR
+#pragma GCC system_header
+#endif
+
+#define __glibcxx_want_reflection
+#include <bits/version.h>
+
+#if __glibcxx_reflection >= 202506L // C++ >= 26 && __cpp_impl_reflection
+
+#include <array>
+#include <initializer_list>
+#include <optional>
+#include <source_location>
+#include <span>
+#include <string>
+#include <string_view>
+#include <vector>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#if __has_builtin(__builtin_is_string_literal)
+  // [meta.string.literal], checking string literals
+  consteval bool is_string_literal(const char* __p)
+  {
+    return __builtin_is_string_literal(__p);
+  }
+
+  consteval bool is_string_literal(const wchar_t* __p)
+  {
+    return __builtin_is_string_literal(__p);
+  }
+
+#ifdef _GLIBCXX_USE_CHAR8_T
+  consteval bool is_string_literal(const char8_t* __p)
+  {
+    return __builtin_is_string_literal(__p);
+  }
+#endif
+
+  consteval bool is_string_literal(const char16_t* __p)
+  {
+    return __builtin_is_string_literal(__p);
+  }
+
+  consteval bool is_string_literal(const char32_t* __p)
+  {
+    return __builtin_is_string_literal(__p);
+  }
+#endif
+
+  namespace meta
+  {
+    using info = decltype(^^int);
+
+    // [meta.reflection.exception], class exception
+    class exception : public std::exception {
+    private:
+      string _M_what;
+      u8string _M_u8what;
+      info _M_from;
+      source_location _M_where;
+
+    public:
+      consteval
+      exception(u8string_view __what, info __from,
+		source_location __where = source_location::current()) noexcept
+	: _M_what{_S_exception_cvt_from_utf8(__what)}, _M_u8what{__what},
+	  _M_from{__from}, _M_where{__where} {}
+
+      consteval
+      exception(string_view __what, info __from,
+		source_location __where = source_location::current()) noexcept
+	: _M_what{__what}, _M_u8what{_S_exception_cvt_to_utf8(__what)},
+	  _M_from{__from}, _M_where{__where} {}
+
+      consteval exception(const exception&) = default;
+      consteval exception(exception&&) = default;
+
+      consteval exception& operator=(const exception&) = default;
+      consteval exception& operator=(exception&&) = default;
+
+      consteval const char*
+      what() const noexcept override
+      {
+	// If u8string is not empty and string is empty, conversion
+	// from UTF-8 to ordinary literal encoding failed.
+	// In that case what() should be non-constant.
+	if (_M_what.size() == 0 && _M_u8what.size() != 0)
+	  asm("");
+	return _M_what.c_str();
+      }
+      consteval u8string_view u8what() const noexcept { return _M_u8what; }
+      consteval info from() const noexcept { return _M_from; }
+      consteval source_location where() const noexcept { return _M_where; }
+    private:
+      // Helper special template metafunctions to convert from UTF-8 to
+      // ordinary literal encoding and vice versa.  On conversion failure
+      // they just return an empty {,u8}string_view.
+      template<ranges::input_range _Rg>
+	static consteval u8string_view _S_exception_cvt_to_utf8(_Rg&&);
+      template<ranges::input_range _Rg>
+	static consteval string_view _S_exception_cvt_from_utf8(_Rg&&);
+    };
+
+    // [meta.reflection.operators], operator representations
+    enum class operators {
+      op_new = 1,
+      op_delete,
+      op_array_new,
+      op_array_delete,
+      op_co_await,
+      op_parentheses,
+      op_square_brackets,
+      op_arrow,
+      op_arrow_star,
+      op_tilde,
+      op_exclamation,
+      op_plus,
+      op_minus,
+      op_star,
+      op_slash,
+      op_percent,
+      op_caret,
+      op_ampersand,
+      op_equals,
+      op_pipe,
+      op_plus_equals,
+      op_minus_equals,
+      op_star_equals,
+      op_slash_equals,
+      op_percent_equals,
+      op_caret_equals,
+      op_ampersand_equals,
+      op_pipe_equals,
+      op_equals_equals,
+      op_exclamation_equals,
+      op_less,
+      op_greater,
+      op_less_equals,
+      op_greater_equals,
+      op_spaceship,
+      op_ampersand_ampersand,
+      op_pipe_pipe,
+      op_less_less,
+      op_greater_greater,
+      op_less_less_equals,
+      op_greater_greater_equals,
+      op_plus_plus,
+      op_minus_minus,
+      op_comma
+    };
+    using enum operators;
+    consteval operators operator_of(info);
+    consteval string_view symbol_of(operators);
+    consteval u8string_view u8symbol_of(operators);
+
+    // [meta.reflection.names], reflection names and locations
+    consteval bool has_identifier(info);
+
+    consteval string_view identifier_of(info);
+    consteval u8string_view u8identifier_of(info);
+
+    consteval string_view display_string_of(info);
+    consteval u8string_view u8display_string_of(info);
+
+    consteval source_location source_location_of(info);
+
+    // [meta.reflection.queries], reflection queries
+    consteval info type_of(info);
+    consteval info object_of(info);
+    consteval info constant_of(info);
+
+    consteval bool is_public(info);
+    consteval bool is_protected(info);
+    consteval bool is_private(info);
+
+    consteval bool is_virtual(info);
+    consteval bool is_pure_virtual(info);
+    consteval bool is_override(info);
+    consteval bool is_final(info);
+
+    consteval bool is_deleted(info);
+    consteval bool is_defaulted(info);
+    consteval bool is_user_provided(info);
+    consteval bool is_user_declared(info);
+    consteval bool is_explicit(info);
+    consteval bool is_noexcept(info);
+
+    consteval bool is_bit_field(info);
+    consteval bool is_enumerator(info);
+    consteval bool is_annotation(info);
+
+    consteval bool is_const(info);
+    consteval bool is_volatile(info);
+    consteval bool is_mutable_member(info);
+    consteval bool is_lvalue_reference_qualified(info);
+    consteval bool is_rvalue_reference_qualified(info);
+
+    consteval bool has_static_storage_duration(info);
+    consteval bool has_thread_storage_duration(info);
+    consteval bool has_automatic_storage_duration(info);
+
+    consteval bool has_internal_linkage(info);
+    consteval bool has_module_linkage(info);
+    consteval bool has_external_linkage(info);
+    consteval bool has_c_language_linkage(info);
+    consteval bool has_linkage(info);
+
+    consteval bool is_complete_type(info);
+    consteval bool is_enumerable_type(info);
+
+    consteval bool is_variable(info);
+    consteval bool is_type(info);
+    consteval bool is_namespace(info);
+    consteval bool is_type_alias(info);
+    consteval bool is_namespace_alias(info);
+
+    consteval bool is_function(info);
+    consteval bool is_conversion_function(info);
+    consteval bool is_operator_function(info);
+    consteval bool is_literal_operator(info);
+    consteval bool is_special_member_function(info);
+    consteval bool is_constructor(info);
+    consteval bool is_default_constructor(info);
+    consteval bool is_copy_constructor(info);
+    consteval bool is_move_constructor(info);
+    consteval bool is_assignment(info);
+    consteval bool is_copy_assignment(info);
+    consteval bool is_move_assignment(info);
+    consteval bool is_destructor(info);
+
+    consteval bool is_function_parameter(info);
+    consteval bool is_explicit_object_parameter(info);
+    consteval bool has_default_argument(info);
+    consteval bool has_ellipsis_parameter(info);
+
+    consteval bool is_template(info);
+    consteval bool is_function_template(info);
+    consteval bool is_variable_template(info);
+    consteval bool is_class_template(info);
+    consteval bool is_alias_template(info);
+    consteval bool is_conversion_function_template(info);
+    consteval bool is_operator_function_template(info);
+    consteval bool is_literal_operator_template(info);
+    consteval bool is_constructor_template(info);
+    consteval bool is_concept(info);
+
+    consteval bool is_value(info);
+    consteval bool is_object(info);
+
+    consteval bool is_structured_binding(info);
+
+    consteval bool is_class_member(info);
+    consteval bool is_namespace_member(info);
+    consteval bool is_nonstatic_data_member(info);
+    consteval bool is_static_member(info);
+    consteval bool is_base(info);
+
+    consteval bool has_default_member_initializer(info);
+
+    consteval bool has_parent(info);
+    consteval info parent_of(info);
+
+    consteval info dealias(info);
+
+    consteval bool has_template_arguments(info);
+    consteval info template_of(info);
+    consteval vector<info> template_arguments_of(info);
+    consteval vector<info> parameters_of(info);
+    consteval info variable_of(info);
+    consteval info return_type_of(info);
+
+    // [meta.reflection.access.context], access control context
+    struct access_context {
+    private:
+      consteval access_context(info __scope, info __designating_class) noexcept
+	: _M_scope{__scope}, _M_designating_class{__designating_class} { }
+    public:
+      access_context() = delete;
+      consteval access_context(const access_context &) = default;
+      consteval access_context(access_context &&) = default;
+
+      consteval info scope() const { return _M_scope; }
+      consteval info designating_class() const { return _M_designating_class; }
+
+      static consteval access_context current() noexcept;
+      static consteval access_context unprivileged() noexcept
+      { return access_context { ^^::, info {} }; }
+      static consteval access_context unchecked() noexcept
+      { return access_context { info {}, info {} }; }
+      consteval access_context via(info) const;
+
+      info _M_scope;
+      info _M_designating_class;
+    };
+
+    // [meta.reflection.access.queries], member accessibility queries
+    consteval bool is_accessible(info, access_context);
+    consteval bool has_inaccessible_nonstatic_data_members(info,
+							   access_context);
+    consteval bool has_inaccessible_bases(info, access_context);
+    consteval bool has_inaccessible_subobjects(info, access_context);
+
+    // [meta.reflection.member.queries], reflection member queries
+    consteval vector<info> members_of(info, access_context);
+    consteval vector<info> bases_of(info, access_context);
+    consteval vector<info> static_data_members_of(info, access_context);
+    consteval vector<info> nonstatic_data_members_of(info, access_context);
+    consteval vector<info> subobjects_of(info, access_context);
+    consteval vector<info> enumerators_of(info);
+
+    // [meta.reflection.layout], reflection layout queries
+    struct member_offset {
+      ptrdiff_t bytes;
+      ptrdiff_t bits;
+
+      constexpr ptrdiff_t
+      total_bits() const
+      { return bytes * __CHAR_BIT__ + bits; }
+
+      auto operator<=>(const member_offset&) const = default;
+    };
+
+    consteval member_offset offset_of(info);
+    consteval size_t size_of(info);
+    consteval size_t alignment_of(info);
+    consteval size_t bit_size_of(info);
+
+    // [meta.reflection.extract], value extraction
+    template<class _Tp>
+      consteval _Tp extract(info);
+
+    // [meta.reflection.substitute], reflection substitution
+    template<class _Rg>
+      concept reflection_range = ranges::input_range<_Rg>
+	&& same_as<ranges::range_value_t<_Rg>, info>
+	&& same_as<remove_cvref_t<ranges::range_reference_t<_Rg>>, info>;
+
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval bool can_substitute(info, _Rg&&);
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval info substitute(info, _Rg&&);
+
+    // [meta.reflection.result], expression result reflection
+    template<typename _Tp>
+      requires (is_copy_constructible_v<_Tp>)
+      consteval info reflect_constant(_Tp);
+    template<typename _Tp>
+      requires (!is_function_v<remove_reference_t<_Tp>>)
+      consteval info reflect_object(_Tp&);
+    template<typename _Tp>
+      requires (is_function_v<remove_reference_t<_Tp>>)
+      consteval info reflect_function(_Tp&);
+
+    // [meta.reflection.array], promoting to static storage arrays
+    template<ranges::input_range _Rg>
+      consteval info reflect_constant_string(_Rg&&);
+
+    template<ranges::input_range _Rg>
+      consteval info reflect_constant_array(_Rg&&);
+
+    // [meta.reflection.define.aggregate], class definition generation
+    struct data_member_options {
+      struct _Name {
+	template<class _Tp>
+	  requires constructible_from<u8string, _Tp>
+	  consteval _Name(_Tp&& __n) : _M_is_u8(true), _M_u8s((_Tp&&) __n) {}
+
+	template<class _Tp>
+	  requires constructible_from<string, _Tp>
+	  consteval _Name(_Tp&& __n) : _M_is_u8(false), _M_s((_Tp&&) __n) {}
+
+      private:
+	bool _M_is_u8;
+	u8string _M_u8s;
+	string _M_s;
+	info _M_unused = {};
+      };
+
+      optional<_Name> name;
+      optional<int> alignment;
+      optional<int> bit_width;
+      bool no_unique_address = false;
+    };
+    consteval info data_member_spec(info, data_member_options);
+    consteval bool is_data_member_spec(info);
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval info define_aggregate(info, _Rg&&);
+
+    // associated with [meta.unary.cat], primary type categories
+    consteval bool is_void_type(info);
+    consteval bool is_null_pointer_type(info);
+    consteval bool is_integral_type(info);
+    consteval bool is_floating_point_type(info);
+    consteval bool is_array_type(info);
+    consteval bool is_pointer_type(info);
+    consteval bool is_lvalue_reference_type(info);
+    consteval bool is_rvalue_reference_type(info);
+    consteval bool is_member_object_pointer_type(info);
+    consteval bool is_member_function_pointer_type(info);
+    consteval bool is_enum_type(info);
+    consteval bool is_union_type(info);
+    consteval bool is_class_type(info);
+    consteval bool is_function_type(info);
+    consteval bool is_reflection_type(info);
+
+    // associated with [meta.unary.comp], composite type categories
+    consteval bool is_reference_type(info);
+    consteval bool is_arithmetic_type(info);
+    consteval bool is_fundamental_type(info);
+    consteval bool is_object_type(info);
+    consteval bool is_scalar_type(info);
+    consteval bool is_compound_type(info);
+    consteval bool is_member_pointer_type(info);
+
+    // associated with [meta.unary.prop], type properties
+    consteval bool is_const_type(info);
+    consteval bool is_volatile_type(info);
+    consteval bool is_trivially_copyable_type(info);
+    consteval bool is_standard_layout_type(info);
+    consteval bool is_empty_type(info);
+    consteval bool is_polymorphic_type(info);
+    consteval bool is_abstract_type(info);
+    consteval bool is_final_type(info);
+    consteval bool is_aggregate_type(info);
+    consteval bool is_consteval_only_type(info);
+    consteval bool is_signed_type(info);
+    consteval bool is_unsigned_type(info);
+    consteval bool is_bounded_array_type(info);
+    consteval bool is_unbounded_array_type(info);
+    consteval bool is_scoped_enum_type(info);
+
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval bool is_constructible_type(info, _Rg&&);
+    consteval bool is_default_constructible_type(info);
+    consteval bool is_copy_constructible_type(info);
+    consteval bool is_move_constructible_type(info);
+
+    consteval bool is_assignable_type(info, info);
+    consteval bool is_copy_assignable_type(info);
+    consteval bool is_move_assignable_type(info);
+
+    consteval bool is_swappable_with_type(info, info);
+    consteval bool is_swappable_type(info);
+
+    consteval bool is_destructible_type(info);
+
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval bool is_trivially_constructible_type(info, _Rg&&);
+    consteval bool is_trivially_default_constructible_type(info);
+    consteval bool is_trivially_copy_constructible_type(info);
+    consteval bool is_trivially_move_constructible_type(info);
+
+    consteval bool is_trivially_assignable_type(info, info);
+    consteval bool is_trivially_copy_assignable_type(info);
+    consteval bool is_trivially_move_assignable_type(info);
+    consteval bool is_trivially_destructible_type(info);
+
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval bool is_nothrow_constructible_type(info, _Rg&&);
+    consteval bool is_nothrow_default_constructible_type(info);
+    consteval bool is_nothrow_copy_constructible_type(info);
+    consteval bool is_nothrow_move_constructible_type(info);
+
+    consteval bool is_nothrow_assignable_type(info, info);
+    consteval bool is_nothrow_copy_assignable_type(info);
+    consteval bool is_nothrow_move_assignable_type(info);
+
+    consteval bool is_nothrow_swappable_with_type(info, info);
+    consteval bool is_nothrow_swappable_type(info);
+
+    consteval bool is_nothrow_destructible_type(info);
+
+    consteval bool is_implicit_lifetime_type(info);
+
+    consteval bool has_virtual_destructor(info);
+
+    consteval bool has_unique_object_representations(info);
+
+    consteval bool reference_constructs_from_temporary(info, info);
+    consteval bool reference_converts_from_temporary(info, info);
+
+    // associated with [meta.unary.prop.query], type property queries
+    consteval size_t rank(info);
+    consteval size_t extent(info, unsigned = 0);
+
+    // associated with [meta.rel], type relations
+    consteval bool is_same_type(info, info);
+    consteval bool is_base_of_type(info, info);
+    consteval bool is_virtual_base_of_type(info, info);
+    consteval bool is_convertible_type(info, info);
+    consteval bool is_nothrow_convertible_type(info, info);
+    consteval bool is_layout_compatible_type(info, info);
+    consteval bool is_pointer_interconvertible_base_of_type(info, info);
+
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval bool is_invocable_type(info, _Rg&&);
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval bool is_invocable_r_type(info, info, _Rg&&);
+
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval bool is_nothrow_invocable_type(info, _Rg&&);
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval bool is_nothrow_invocable_r_type(info, info, _Rg&&);
+
+    // associated with [meta.trans.cv], const-volatile modifications
+    consteval info remove_const(info);
+    consteval info remove_volatile(info);
+    consteval info remove_cv(info);
+    consteval info add_const(info);
+    consteval info add_volatile(info);
+    consteval info add_cv(info);
+
+    // associated with [meta.trans.ref], reference modifications
+    consteval info remove_reference(info);
+    consteval info add_lvalue_reference(info);
+    consteval info add_rvalue_reference(info);
+
+    // associated with [meta.trans.sign], sign modifications
+    consteval info make_signed(info);
+    consteval info make_unsigned(info);
+
+    // associated with [meta.trans.arr], array modifications
+    consteval info remove_extent(info);
+    consteval info remove_all_extents(info);
+
+    // associated with [meta.trans.ptr], pointer modifications
+    consteval info remove_pointer(info);
+    consteval info add_pointer(info);
+
+    // associated with [meta.trans.other], other transformations
+    consteval info remove_cvref(info);
+    consteval info decay(info);
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval info common_type(_Rg&&);
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval info common_reference(_Rg&&);
+    consteval info underlying_type(info);
+    template<reflection_range _Rg = initializer_list<info>>
+      consteval info invoke_result(info, _Rg&&);
+    consteval info unwrap_reference(info);
+    consteval info unwrap_ref_decay(info);
+
+    consteval size_t tuple_size(info);
+    consteval info tuple_element(size_t, info);
+
+    consteval size_t variant_size(info);
+    consteval info variant_alternative(size_t, info);
+
+    consteval strong_ordering type_order(info, info);
+
+    // [meta.reflection.annotation], annotation reflection
+    consteval vector<info> annotations_of(info);
+    consteval vector<info> annotations_of_with_type(info, info);
+
+    consteval access_context
+    access_context::via(info __cls) const
+    {
+      if (__cls != info {}
+	  && (!std::meta::is_class_type(__cls)
+	      || !std::meta::is_complete_type(__cls)))
+	{
+#if __cpp_exceptions
+	  throw std::meta::exception(u8"via argument other than null "
+				       "or complete class type reflection",
+				     ^^access_context::via);
+#else
+	  asm("");
+	  return *this;
+#endif
+	}
+      return access_context { _M_scope, __cls };
+    }
+
+  } // namespace meta
+
+  // [meta.define.static], promoting to static storage strings
+  template<ranges::input_range _Rg>
+    consteval const ranges::range_value_t<_Rg>*
+    define_static_string(_Rg&& __r)
+    {
+      auto __str = meta::reflect_constant_string(__r);
+      return meta::extract<const ranges::range_value_t<_Rg>*>(__str);
+    }
+
+  template<ranges::input_range _Rg>
+    consteval span<const ranges::range_value_t<_Rg>>
+    define_static_array(_Rg&& __r)
+    {
+      using _Tp = ranges::range_value_t<_Rg>;
+      auto __array = meta::reflect_constant_array(__r);
+      auto __type = meta::type_of(__array);
+      if (meta::is_array_type(__type))
+	return span<const _Tp>(meta::extract<const _Tp*>(__array),
+			       meta::extent(__type, 0U));
+      else
+	return span<const _Tp>();
+    }
+
+  template<class _Tp>
+    consteval const remove_cvref_t<_Tp>*
+    define_static_object(_Tp&& __t)
+    {
+      using _Up = remove_cvref_t<_Tp>;
+      if constexpr (meta::is_class_type(^^_Up))
+	{
+	  auto __cst = meta::reflect_constant(std::forward<_Tp>(__t));
+	  return std::addressof(meta::extract<const _Up&>(__cst));
+	}
+      else
+	return std::define_static_array(span<const _Up>(std::addressof(__t),
+							1)).data();
+    }
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+
+#endif // C++26
+
+#endif // _GLIBCXX_META

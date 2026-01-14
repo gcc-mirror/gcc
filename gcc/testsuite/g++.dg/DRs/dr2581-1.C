@@ -1,6 +1,6 @@
 // DR 2581 - Undefined behavior for predefined macros
 // { dg-do preprocess }
-// { dg-additional-options "-fcontracts" { target c++26 } }
+// { dg-additional-options "-fcontracts -freflection" { target c++26 } }
 // { dg-additional-options "-fmodules -fcoroutines" { target c++20 } }
 
 #undef defined				// { dg-error "'defined' cannot be used as a macro name" }
@@ -63,7 +63,7 @@
 #undef __cpp_impl_coroutine		// { dg-warning "undefining '__cpp_impl_coroutine'" "" { target c++20 } }
 #undef __cpp_impl_destroying_delete	// { dg-warning "undefining '__cpp_impl_destroying_delete'" "" { target c++20 } }
 #undef __cpp_impl_three_way_comparison	// { dg-warning "undefining '__cpp_impl_three_way_comparison'" "" { target c++20 } }
-#undef __cpp_impl_reflection
+#undef __cpp_impl_reflection		// { dg-warning "undefining '__cpp_impl_reflection'" "" { target c++26 } }
 #undef __cpp_implicit_move		// { dg-warning "undefining '__cpp_implicit_move'" "" { target c++23 } }
 #undef __cpp_inheriting_constructors	// { dg-warning "undefining '__cpp_inheriting_constructors'" "" { target c++20 } }
 #undef __cpp_init_captures		// { dg-warning "undefining '__cpp_init_captures'" "" { target c++20 } }

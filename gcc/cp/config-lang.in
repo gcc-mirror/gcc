@@ -51,7 +51,7 @@ gtfiles="\
 \$(srcdir)/cp/mangle.cc \$(srcdir)/cp/method.cc \$(srcdir)/cp/module.cc \
 \$(srcdir)/cp/name-lookup.cc \
 \$(srcdir)/cp/parser.cc \$(srcdir)/cp/pt.cc \
-\$(srcdir)/cp/rtti.cc \
+\$(srcdir)/cp/reflect.cc \$(srcdir)/cp/rtti.cc \
 \$(srcdir)/cp/semantics.cc \
 \$(srcdir)/cp/tree.cc \$(srcdir)/cp/typeck2.cc \
 \$(srcdir)/cp/vtable-class-hierarchy.cc \

@@ -107,7 +107,7 @@ CXX_AND_OBJCXX_OBJS = \
 	cp/method.o cp/module.o \
 	cp/name-lookup.o cp/optimize.o \
 	cp/parser.o cp/pt.o cp/ptree.o \
-	cp/rtti.o \
+	cp/reflect.o cp/rtti.o \
 	cp/search.o cp/semantics.o \
 	cp/tree.o cp/typeck.o cp/typeck2.o \
 	cp/vtable-class-hierarchy.o $(CXX_C_OBJS)
@@ -187,6 +187,24 @@ endif
 
 # This is the file that depends on the generated header file.
 cp/name-lookup.o: $(srcdir)/cp/std-name-hint.h
+
+ifeq ($(ENABLE_MAINTAINER_RULES), true)
+# Special build rule.  This is a maintainer rule, that is only
+# available when GCC is configured with --enable-maintainer-mode.  In
+# other cases, it is not available to avoid triggering rebuilds if a
+# user has the source checked out with unusual timestamps.
+$(srcdir)/cp/metafns.h: $(srcdir)/cp/metafns.gperf
+else
+# We keep the rule so that you can still force a rebuild, even if you
+# didn't configure GCC with --enable-maintainer-mode, by manually
+# deleting the $(srcdir)/cp/metafns.h file.
+$(srcdir)/cp/metafns.h:
+endif
+	cd $(srcdir)/cp; gperf -o -C -E -k '1,4,5,11,14,$$' -D -N find -L C++ \
+		metafns.gperf --output-file metafns.h
+
+# This is the file that depends on the generated header file.
+cp/reflect.o: $(srcdir)/cp/metafns.h
 
 components_in_prev = "bfd opcodes binutils fixincludes gas gcc gmp mpfr mpc isl gold intl ld libbacktrace libcpp libcody libdecnumber libiberty libiberty-linker-plugin libiconv zlib lto-plugin libctf libsframe"
 components_in_prev_target = "libstdc++-v3 libsanitizer libvtv libgcc libbacktrace libphobos zlib libgomp libatomic"

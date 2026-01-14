@@ -134,6 +134,7 @@ static bool identify_goto (tree, location_t, const location_t *,
    Namespaces,
 
 	tree std_node;
+	tree std_meta_node;
 	tree abi_node;
 
    A FUNCTION_DECL which can call `abort'.  Not necessarily the
@@ -3043,9 +3044,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
       /* Merge parameter attributes. */
       tree oldarg, newarg;
-      for (oldarg = DECL_ARGUMENTS(olddecl), newarg = DECL_ARGUMENTS(newdecl);
-           oldarg && newarg;
-           oldarg = DECL_CHAIN(oldarg), newarg = DECL_CHAIN(newarg))
+      for (oldarg = DECL_ARGUMENTS (olddecl),
+	   newarg = DECL_ARGUMENTS (newdecl);
+	   oldarg && newarg;
+	   oldarg = DECL_CHAIN (oldarg), newarg = DECL_CHAIN (newarg))
 	{
           DECL_ATTRIBUTES (newarg)
 	    = (*targetm.merge_decl_attributes) (oldarg, newarg);
@@ -3063,6 +3065,62 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		      "earlier declaration");
 	    }
           DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
+	  /* Merge names for std::meta::has_identifier and
+	     std::meta::{,u8}identifier_of purposes.  If they are different
+	     and both oldarg and newarg are named, add flag to force that
+	     std::meta::has_identifier returns false.  If one is named and
+	     one is unnamed, if neither is a olddecl nor newdecl is definition,
+	     propagate DECL_NAME to both.  Otherwise stash the old name into
+	     "old parm name" artificial attribute.  */
+	  if (flag_reflection && DECL_NAME (oldarg) != DECL_NAME (newarg))
+	    {
+	      if (DECL_NAME (oldarg) && DECL_NAME (newarg))
+		{
+		  /* Different names.  */
+		  MULTIPLE_NAMES_PARM_P (oldarg) = 1;
+		  MULTIPLE_NAMES_PARM_P (newarg) = 1;
+		}
+	      else if (!new_defines_function
+		       && types_match
+		       && DECL_INITIAL (olddecl) == NULL_TREE)
+		{
+		  /* For 2 non-definitions with matching types,
+		     one is named and one unnamed, propagate name
+		     to both.  */
+		  if (DECL_NAME (oldarg))
+		    DECL_NAME (newarg) = DECL_NAME (oldarg);
+		  else
+		    DECL_NAME (oldarg) = DECL_NAME (newarg);
+		}
+	      /* Depending on which PARM_DECL we'll keep, look at the other
+		 PARM_DECL's name.  */
+	      else if (tree name = ((new_defines_function || !types_match)
+				    ? DECL_NAME (oldarg) : DECL_NAME (newarg)))
+		{
+		  tree opn = lookup_attribute ("old parm name",
+					       DECL_ATTRIBUTES (oldarg));
+		  if (opn)
+		    {
+		      if (TREE_VALUE (TREE_VALUE (opn)) == name)
+			/* Name already in "old parm name" attribute.  */;
+		      else
+			{
+			  /* Different names.  */
+			  MULTIPLE_NAMES_PARM_P (oldarg) = 1;
+			  MULTIPLE_NAMES_PARM_P (newarg) = 1;
+			}
+		    }
+		  else
+		    {
+		      /* Save name into attribute.  */
+		      DECL_ATTRIBUTES (newarg)
+			= tree_cons (get_identifier ("old parm name"),
+				     tree_cons (NULL_TREE, name, NULL_TREE),
+				     DECL_ATTRIBUTES (newarg));
+		      DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
+		    }
+		}
+	    }
 	}
 
       if (DECL_TEMPLATE_INSTANTIATION (olddecl)
@@ -3159,6 +3217,15 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	     contracts, if present.  */
 	  if (tree contracts = DECL_CONTRACTS (newdecl))
 	    remap_contracts (olddecl, newdecl, contracts, true);
+
+	  /* Mark the old PARM_DECLs in case std::meta::parameters_of has
+	     been called on the old declaration and reflections of those
+	     arguments are held across this point and used later.
+	     Such PARM_DECLs are no longer present in
+	     DECL_ARGUMENTS (DECL_CONTEXT (oldarg)) chain.  */
+	  for (tree oldarg = DECL_ARGUMENTS (olddecl);
+	       oldarg; oldarg = DECL_CHAIN (oldarg))
+	    OLD_PARM_DECL_P (oldarg) = 1;
 
 	  /* These need to be copied so that the names are available.
 	     Note that if the types do match, we'll preserve inline
@@ -5330,6 +5397,7 @@ initialize_predefined_identifiers (void)
     {"heap []", &heap_vec_identifier, cik_normal},
     {"omp", &omp_identifier, cik_normal},
     {"internal ", &internal_identifier, cik_normal},
+    {"annotation ", &annotation_identifier, cik_normal},
     {NULL, NULL, cik_normal}
   };
 
@@ -5563,6 +5631,13 @@ cxx_init_decl_processing (void)
       set_call_expr_flags (decl, ECF_NOTHROW | ECF_LEAF);
     }
 
+  decl
+    = add_builtin_function ("__builtin_is_string_literal",
+			    bool_vaftype,
+			    CP_BUILT_IN_IS_STRING_LITERAL,
+			    BUILT_IN_FRONTEND, NULL, NULL_TREE);
+  set_call_expr_flags (decl, ECF_CONST | ECF_NOTHROW | ECF_LEAF);
+
   integer_two_node = build_int_cst (NULL_TREE, 2);
 
   /* Guess at the initial static decls size.  */
@@ -5692,6 +5767,9 @@ cxx_init_decl_processing (void)
 
   if (modules_p ())
     init_modules (parse_in);
+
+  if (flag_reflection)
+    init_reflection ();
 
   make_fname_decl = cp_make_fname_decl;
   start_fname_decls ();
@@ -7220,6 +7298,10 @@ maybe_commonize_var (tree decl)
   if (DECL_ARTIFICIAL (decl) && !DECL_DECOMPOSITION_P (decl))
     return;
 
+  /* These are not output at all.  */
+  if (consteval_only_p (decl))
+    return;
+
   /* Static data in a function with comdat linkage also has comdat
      linkage.  */
   if ((TREE_STATIC (decl)
@@ -8577,6 +8659,16 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 	  init = NULL_TREE;
 	}
     }
+  else if (!init && REFLECTION_TYPE_P (type))
+    {
+      /* [dcl.init.general]: To default-initialize an object of type
+	 std::meta::info means that the object is zero-initialized.  */
+      DECL_INITIAL (decl)
+	= build_zero_init (type, NULL_TREE, /*static_storage_p=*/false);
+      DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
+      TREE_CONSTANT (decl) = true;
+      init = NULL_TREE;
+    }
   else
     {
       if (CLASS_TYPE_P (core_type = strip_array_types (type))
@@ -8695,6 +8787,14 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
   /* We don't create any RTL for local variables.  */
   if (DECL_FUNCTION_SCOPE_P (decl) && !TREE_STATIC (decl))
     return;
+
+  /* Don't output reflection variables.  */
+  if (consteval_only_p (decl))
+    {
+      /* Disable assemble_variable.  */
+      DECL_EXTERNAL (decl) = true;
+      return;
+    }
 
   /* We defer emission of local statics until the corresponding
      DECL_EXPR is expanded.  But with constexpr its function might never
@@ -9743,6 +9843,10 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	    }
 	}
 
+      /* Detect stuff like 'info r = ^^int;' outside a manifestly
+	 constant-evaluated context.  */
+      check_out_of_consteval_use (decl);
+
       /* If this is a local variable that will need a mangled name,
 	 register it now.  We must do this before processing the
 	 initializer for the variable, since the initialization might
@@ -9751,7 +9855,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	 variable.  */
       if (DECL_FUNCTION_SCOPE_P (decl)
 	  && TREE_STATIC (decl)
-	  && !DECL_ARTIFICIAL (decl))
+	  && !DECL_ARTIFICIAL (decl)
+	  && !consteval_only_p (decl))
 	{
 	  /* The variable holding an anonymous union will have had its
 	     discriminator set in finish_anon_union, after which it's
@@ -10280,7 +10385,7 @@ get_tuple_size (tree type)
   inst = complete_type (inst);
   if (inst == error_mark_node
       || !COMPLETE_TYPE_P (inst)
-      || !CLASS_TYPE_P (type))
+      || !CLASS_TYPE_P (inst))
     return NULL_TREE;
   tree val = lookup_qualified_name (inst, value_identifier,
 				    LOOK_want::NORMAL, /*complain*/false);
@@ -12573,6 +12678,8 @@ grokfndecl (tree ctype,
 
   if (DECL_CONSTRUCTOR_P (decl) && !grok_ctor_properties (ctype, decl))
     return NULL_TREE;
+
+  check_consteval_only_fn (decl);
 
   if (ctype == NULL_TREE || check)
     return decl;
@@ -18369,6 +18476,8 @@ xref_basetypes (tree ref, tree base_list)
   unsigned max_vbases = 0; /* Maximum direct & indirect virtual bases.  */
   unsigned max_bases = 0;  /* Maximum direct bases.  */
   unsigned max_dvbases = 0; /* Maximum direct virtual bases.  */
+  /* Highest direct base index with annotations.  */
+  unsigned max_annotated_base = 0;
   int i;
   tree default_access;
   tree igo_prev; /* Track Inheritance Graph Order.  */
@@ -18406,6 +18515,8 @@ xref_basetypes (tree ref, tree base_list)
       else
 	{
 	  max_bases++;
+	  if (TREE_CODE (TREE_PURPOSE (*basep)) == TREE_LIST)
+	    max_annotated_base = max_bases;
 	  if (TREE_TYPE (*basep))
 	    max_dvbases++;
 	  if (CLASS_TYPE_P (basetype))
@@ -18434,7 +18545,8 @@ xref_basetypes (tree ref, tree base_list)
 
   if (max_bases)
     {
-      vec_alloc (BINFO_BASE_ACCESSES (binfo), max_bases);
+      vec_alloc (BINFO_BASE_ACCESSES (binfo), max_bases + max_annotated_base);
+      BINFO_BASE_ACCESSES (binfo)->quick_grow (max_bases + max_annotated_base);
       /* A C++98 POD cannot have base classes.  */
       CLASSTYPE_NON_LAYOUT_POD_P (ref) = true;
 
@@ -18464,6 +18576,30 @@ xref_basetypes (tree ref, tree base_list)
   for (igo_prev = binfo; base_list; base_list = TREE_CHAIN (base_list))
     {
       tree access = TREE_PURPOSE (base_list);
+      tree annotations = NULL_TREE;
+      if (TREE_CODE (access) == TREE_LIST)
+	{
+	  annotations = TREE_VALUE (access);
+	  access = TREE_PURPOSE (access);
+	  for (tree *d = &annotations; *d; )
+	    {
+	      if (annotation_p (*d))
+		{
+		  tree name = get_attribute_name (*d);
+		  tree args = TREE_VALUE (*d);
+		  const attribute_spec *as
+		    = lookup_attribute_spec (TREE_PURPOSE (*d));
+		  bool no_add_attrs = false;
+		  as->handler (&binfo, name, args, 0, &no_add_attrs);
+		  if (no_add_attrs)
+		    {
+		      *d = TREE_CHAIN (*d);
+		      continue;
+		    }
+		}
+	      d = &TREE_CHAIN (*d);
+	    }
+	}
       int via_virtual = TREE_TYPE (base_list) != NULL_TREE;
       tree basetype = TREE_VALUE (base_list);
 
@@ -18530,8 +18666,12 @@ xref_basetypes (tree ref, tree base_list)
       if (!BINFO_INHERITANCE_CHAIN (base_binfo))
 	BINFO_INHERITANCE_CHAIN (base_binfo) = binfo;
 
+      unsigned len;
+      len = BINFO_N_BASE_BINFOS (binfo);
       BINFO_BASE_APPEND (binfo, base_binfo);
-      BINFO_BASE_ACCESS_APPEND (binfo, access);
+      BINFO_BASE_ACCESS (binfo, len) = access;
+      if (len < max_annotated_base)
+	BINFO_BASE_ACCESS (binfo, max_bases + len) = annotations;
       continue;
 
     dropped_base:
@@ -18545,6 +18685,17 @@ xref_basetypes (tree ref, tree base_list)
       if (CLASS_TYPE_P (basetype))
 	max_vbases
 	  -= vec_safe_length (CLASSTYPE_VBASECLASSES (basetype));
+    }
+
+  unsigned len = BINFO_N_BASE_BINFOS (binfo);
+  if (len < max_bases)
+    {
+      if (len && max_annotated_base)
+	memmove (&BINFO_BASE_ACCESS (binfo, len),
+		 &BINFO_BASE_ACCESS (binfo, max_bases),
+		 MIN (max_annotated_base, len) * sizeof (tree));
+      BINFO_BASE_ACCESSES (binfo)->truncate (len + MIN (max_annotated_base,
+							len));
     }
 
   if (CLASSTYPE_VBASECLASSES (ref)
@@ -18815,6 +18966,8 @@ finish_enum_value_list (tree enumtype)
   tree value;
   tree minnode, maxnode;
   tree t;
+
+  ENUM_BEING_DEFINED_P (enumtype) = 0;
 
   bool fixed_underlying_type_p
     = ENUM_UNDERLYING_TYPE (enumtype) != NULL_TREE;

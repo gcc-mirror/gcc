@@ -13494,7 +13494,10 @@ is_base_type (tree type)
       return false;
 
     default:
-      if (is_cxx_auto (type))
+      if (is_cxx ()
+	  && TREE_CODE (type) >= LAST_AND_UNUSED_TREE_CODE
+	  && TYPE_P (type)
+	  && TYPE_IDENTIFIER (type))
 	return false;
       gcc_unreachable ();
     }
@@ -26959,6 +26962,7 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 
     case NULLPTR_TYPE:
     case LANG_TYPE:
+    unspecified_type:
       /* Just use DW_TAG_unspecified_type.  */
       {
         dw_die_ref type_die = lookup_type_die (type);
@@ -26988,6 +26992,11 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
 	  equate_type_number_to_die (type, *die);
 	  break;
 	}
+      if (is_cxx ()
+	  && TREE_CODE (type) >= LAST_AND_UNUSED_TREE_CODE
+	  && TYPE_P (type)
+	  && TYPE_IDENTIFIER (type))
+	goto unspecified_type;
       gcc_unreachable ();
     }
 

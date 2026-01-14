@@ -586,6 +586,24 @@ DEFTREECODE (POSTCONDITION_STMT, "postcondition_stmt", tcc_statement, 4)
    wasn't an exposure (e.g. in a non-inline function template).  */
 DEFTREECODE (TU_LOCAL_ENTITY, "tu_local_entity", tcc_exceptional, 0)
 
+/* C++26 reflection expression.  */
+DEFTREECODE (REFLECT_EXPR, "reflect_expr", tcc_expression, 1)
+
+/* Represents the std::meta::info type.  */
+DEFTREECODE (META_TYPE, "meta_type", tcc_type, 0)
+
+/* Represents a dependent splice expression.  If SPLICE_EXPR_EXPRESSION_P
+   is set, this tree represents a splice-expression (as opposed to
+   a splice-specifier).  */
+DEFTREECODE (SPLICE_EXPR, "splice_expr", tcc_expression, 1)
+
+/* Represents a dependent splice scope, or a dependent splice type
+   (SPLICE_SCOPE_TYPE_P says which one it is).  Its operand can be accessed
+   using SPLICE_SCOPE_EXPR.  The operand can be a SPLICE_EXPR or a
+   TEMPLATE_ID_EXPR; the SPLICE_SCOPE is necessary to denote that this
+   tree should expand to a type/scope.  */
+DEFTREECODE (SPLICE_SCOPE, "splice_scope", tcc_type, 0)
+
 /*
 Local variables:
 mode:c

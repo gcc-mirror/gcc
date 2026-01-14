@@ -234,6 +234,7 @@
 #if __cplusplus > 202302L
 #include <debugging>
 #include <inplace_vector>
+#include <meta>
 #include <text_encoding>
 #include <stdbit.h>
 #include <stdckdint.h>

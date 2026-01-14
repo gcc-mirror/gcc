@@ -1,5 +1,6 @@
 // { dg-additional-options "-Wno-deprecated-declarations" { target c++2a } }
 // { dg-do compile { target c++17 } }
+// { dg-additional-options "-freflection" { target c++26 } }
 
 // Copyright (C) 2014-2026 Free Software Foundation, Inc.
 //
@@ -329,6 +330,15 @@ static_assert(is_convertible_v<int&, const int&>
 	      && is_convertible<int&, const int&>::value, "");
 static_assert(!is_convertible_v<const int&, int&>
 	      && !is_convertible<const int&, int&>::value, "");
+
+#if __cpp_impl_reflection >= 202500L
+static_assert(is_reflection_v<decltype(^^int)>
+	      && is_reflection<decltype(^^int)>::value, "");
+static_assert(!is_reflection_v<int> && !is_reflection<int>::value, "");
+static_assert(is_consteval_only_v<decltype(^^int)>
+	      && is_consteval_only<decltype(^^int)>::value, "");
+static_assert(!is_consteval_only_v<int> && !is_consteval_only<int>::value, "");
+#endif
 
 static_assert(negation_v<false_type>, "");
 static_assert(!negation_v<true_type>, "");
