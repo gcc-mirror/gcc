@@ -1278,7 +1278,8 @@ struct mips_cpu_info {
 #define ISA_HAS_9BIT_DISPLACEMENT	(mips_isa_rev >= 6		\
 					 || ISA_HAS_MIPS16E2)
 
-#define ISA_HAS_FMIN_FMAX	(mips_isa_rev >= 6)
+#define ISA_HAS_FMIN_FMAX	(mips_isa_rev >= 6			\
+				 || TARGET_MIPS5900)
 
 #define ISA_HAS_FRINT		(mips_isa_rev >= 6)
 
