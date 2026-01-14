@@ -1,3 +1,10 @@
+2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr123484.c: New test.
+
 2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	* gnat.dg/specs/aggr9.ads: New test.

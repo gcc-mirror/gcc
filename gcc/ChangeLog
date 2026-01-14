@@ -1,3 +1,16 @@
+2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/123484
+	* config/i386/mmx.md (divv4hf3): Add TARGET_MMX_WITH_SSE to
+	the condition.
+	(cmlav4hf4): Ditto.
+	(cmla_conjv4hf4): Ditto.
+	(cmulv4hf3): Ditto.
+	(cmul_conjv4hf3): Ditto.
+
 2025-12-19  Yury Khrustalev  <yury.khrustalev@arm.com>
 
 	Backported from master:
