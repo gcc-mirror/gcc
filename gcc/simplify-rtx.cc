@@ -4193,7 +4193,9 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		 Keeps shift and AND in the same mode, improving recognition.
 		 Only applied when subreg is a lowpart, shift is valid,
 		 and no precision is lost.  */
-	      if (SUBREG_P (op0) && subreg_lowpart_p (op0)
+	      if (SUBREG_P (op0)
+		  && subreg_lowpart_p (op0)
+		  && !paradoxical_subreg_p (op0)
 		  && GET_CODE (XEXP (op0, 0)) == LSHIFTRT
 		  /* simplify_subreg asserts the object being accessed is not
 		     VOIDmode or BLKmode.  We may have a REG_EQUAL note which
