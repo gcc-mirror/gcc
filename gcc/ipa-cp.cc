@@ -1627,8 +1627,10 @@ tree
 ipa_value_from_jfunc (class ipa_node_params *info, struct ipa_jump_func *jfunc,
 		      tree parm_type)
 {
+  if (!parm_type)
+    return NULL_TREE;
   if (jfunc->type == IPA_JF_CONST)
-    return ipa_get_jf_constant (jfunc);
+    return ipacp_value_safe_for_type (parm_type, ipa_get_jf_constant (jfunc));
   else if (jfunc->type == IPA_JF_PASS_THROUGH
 	   || jfunc->type == IPA_JF_ANCESTOR)
     {
@@ -1660,8 +1662,6 @@ ipa_value_from_jfunc (class ipa_node_params *info, struct ipa_jump_func *jfunc,
 
       if (jfunc->type == IPA_JF_PASS_THROUGH)
 	{
-	  if (!parm_type)
-	    return NULL_TREE;
 	  enum tree_code opcode = ipa_get_jf_pass_through_operation (jfunc);
 	  tree op2 = ipa_get_jf_pass_through_operand (jfunc);
 	  tree op_type
@@ -1671,7 +1671,9 @@ ipa_value_from_jfunc (class ipa_node_params *info, struct ipa_jump_func *jfunc,
 	  return ipacp_value_safe_for_type (parm_type, cstval);
 	}
       else
-	return ipa_get_jf_ancestor_result (jfunc, input);
+	return ipacp_value_safe_for_type (parm_type,
+					  ipa_get_jf_ancestor_result (jfunc,
+								      input));
     }
   else
     return NULL_TREE;
