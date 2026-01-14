@@ -7947,7 +7947,8 @@ extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern tree most_specialized_partial_spec       (tree, tsubst_flags_t, bool = false);
 extern tree most_constrained_function		(tree);
-extern void print_candidates			(tree);
+extern void inform_num_candidates		(location_t, int);
+extern void print_candidates			(location_t, tree);
 extern void instantiate_pending_templates	(int);
 extern tree tsubst_default_argument		(tree, int, tree, tree,
 						 tsubst_flags_t);

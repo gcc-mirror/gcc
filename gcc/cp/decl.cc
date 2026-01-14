@@ -5066,7 +5066,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 	{
 	  auto_diagnostic_group d;
 	  error ("lookup of %qT in %qT is ambiguous", name, context);
-	  print_candidates (t);
+	  print_candidates (input_location, t);
 	}
       return error_mark_node;
     }
@@ -7775,7 +7775,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 		      auto_diagnostic_group g;
 		      error ("request for member %qD is ambiguous",
 			     d->cur->index);
-		      print_candidates (field);
+		      print_candidates (input_location, field);
 		    }
 		  else
 		    error ("%qT has no non-static data member named %qD", type,
@@ -18105,7 +18105,7 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
     {
       auto_diagnostic_group d;
       error ("reference to %qD is ambiguous", name);
-      print_candidates (decl);
+      print_candidates (input_location, decl);
       return error_mark_node;
     }
 

@@ -6336,7 +6336,8 @@ lookup_using_decl (tree scope, name_lookup &lookup)
     {
       auto_diagnostic_group d;
       error ("reference to %qD is ambiguous", lookup.name);
-      print_candidates (TREE_CODE (lookup.value) == TREE_LIST
+      print_candidates (input_location,
+			TREE_CODE (lookup.value) == TREE_LIST
 			? lookup.value : lookup.type);
       return NULL_TREE;
     }
@@ -6469,7 +6470,7 @@ set_decl_namespace (tree decl, tree scope, bool friendp)
       auto_diagnostic_group d;
       DECL_CONTEXT (decl) = FROB_CONTEXT (scope);
       error ("reference to %qD is ambiguous", decl);
-      print_candidates (old);
+      print_candidates (input_location, old);
       return;
     }
 
@@ -9367,7 +9368,7 @@ push_namespace (tree name, bool make_inline)
 	if (TREE_CHAIN (lookup.value))
 	  {
 	    error ("%<namespace %E%> is ambiguous", name);
-	    print_candidates (lookup.value);
+	    print_candidates (input_location, lookup.value);
 	  }
       }
     else if (TREE_CODE (lookup.value) == NAMESPACE_DECL)

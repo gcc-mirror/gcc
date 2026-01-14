@@ -3,11 +3,11 @@
 // { dg-do compile }
 
 namespace M {
-  struct S {}; // { dg-message "candidates are: .struct M::S." "candidate 1" }
+  struct S {}; // { dg-message "candidate 1: 'struct M::S'" }
 }
 
 int S;
-struct S {}; // { dg-message ".struct S." "candidate 2" }
+struct S {}; // { dg-message "candidate 2: 'struct S'" }
 
 using namespace M;
 

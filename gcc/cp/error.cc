@@ -4988,7 +4988,7 @@ qualified_name_lookup_error (tree scope, tree name,
 	  auto_diagnostic_group d;
 	  error_at (location, "reference to %<%T::%D%> is ambiguous",
 		    scope, name);
-	  print_candidates (decl);
+	  print_candidates (location, decl);
 	}
       else
 	{

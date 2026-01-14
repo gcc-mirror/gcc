@@ -5138,7 +5138,7 @@ check_methods (tree t)
 	    error_at (location_of (t), "no viable destructor for %qT", t);
 	  else
 	    error_at (location_of (t), "destructor for %qT is ambiguous", t);
-	  print_candidates (dtor);
+	  print_candidates (location_of (t), dtor);
 
 	  /* Arbitrarily prune the overload set to a single function for
 	     sake of error recovery.  */
@@ -9115,7 +9115,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	  error ("no matches converting function %qD to type %q#T",
 		 OVL_NAME (overload), target_type);
 
-	  print_candidates (overload);
+	  print_candidates (input_location, overload);
 	}
       return error_mark_node;
     }
@@ -9147,7 +9147,7 @@ resolve_address_of_overloaded_function (tree target_type,
 	      for (match = matches; match; match = TREE_CHAIN (match))
 		TREE_VALUE (match) = TREE_PURPOSE (match);
 
-	      print_candidates (matches);
+	      print_candidates (input_location, matches);
 	    }
 
 	  return error_mark_node;

@@ -917,7 +917,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  error_at (DECL_SOURCE_LOCATION (function),
 		    "no declaration matches %q#D", function);
 	  if (fns)
-	    print_candidates (fns);
+	    print_candidates (DECL_SOURCE_LOCATION (function), fns);
 	  else if (DECL_CONV_FN_P (function))
 	    inform (DECL_SOURCE_LOCATION (function),
 		    "no conversion operators declared");

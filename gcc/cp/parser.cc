@@ -7607,7 +7607,8 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 			      error_at (token->location,
 					"reference to %qD is ambiguous",
 					token->u.value);
-			      print_candidates (ambiguous_decls);
+			      print_candidates (token->location,
+						ambiguous_decls);
 			    }
 			  decl = error_mark_node;
 			}
@@ -34347,7 +34348,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	  auto_diagnostic_group d;
 	  error_at (name_location, "reference to %qD is ambiguous",
 		    name);
-	  print_candidates (decl);
+	  print_candidates (name_location, decl);
 	}
       return error_mark_node;
     }

@@ -2038,50 +2038,59 @@ explicit_class_specialization_p (tree type)
   return !uses_template_parms (CLASSTYPE_TI_ARGS (type));
 }
 
-/* Print the list of functions at FNS, going through all the overloads
-   for each element of the list.  Alternatively, FNS cannot be a
-   TREE_LIST, in which case it will be printed together with all the
-   overloads.
-
-   MORE and *STR should respectively be FALSE and NULL when the function
-   is called from the outside.  They are used internally on recursive
-   calls.  print_candidates manages the two parameters and leaves NULL
-   in *STR when it ends.  */
+/* Populate OUT with the overload set FNS, going through all the
+   overloads for each element of the list.  Alternatively, FNS can be a
+   TREE_LIST, in which case it will be added together with all the
+   overloads.  */
 
 static void
-print_candidates_1 (tree fns, char **str, bool more = false)
+flatten_candidates (tree fns, auto_vec<tree> &out)
 {
   if (TREE_CODE (fns) == TREE_LIST)
     for (; fns; fns = TREE_CHAIN (fns))
-      print_candidates_1 (TREE_VALUE (fns), str, more || TREE_CHAIN (fns));
+      flatten_candidates (TREE_VALUE (fns), out);
   else
-    for (lkp_iterator iter (fns); iter;)
-      {
-	tree cand = *iter;
-	++iter;
+    for (tree cand : lkp_range (fns))
+      out.safe_push (cand);
+}
 
-	const char *pfx = *str;
-	if (!pfx)
-	  {
-	    if (more || iter)
-	      pfx = _("candidates are:");
-	    else
-	      pfx = _("candidate is:");
-	    *str = get_spaces (pfx);
-	  }
-	inform (DECL_SOURCE_LOCATION (cand), "%s %#qD", pfx, cand);
-      }
+/* Print a note announcing a list of candidates.  */
+
+void
+inform_num_candidates (location_t loc, int num_candidates)
+{
+  inform_n (loc,
+	    num_candidates, "there is %i candidate", "there are %i candidates",
+	    num_candidates);
 }
 
 /* Print the list of candidate FNS in an error message.  FNS can also
    be a TREE_LIST of non-functions in the case of an ambiguous lookup.  */
 
 void
-print_candidates (tree fns)
+print_candidates (location_t error_loc, tree fns)
 {
-  char *str = NULL;
-  print_candidates_1 (fns, &str);
-  free (str);
+  auto_vec<tree> candidates;
+  flatten_candidates (fns, candidates);
+
+  auto_diagnostic_nesting_level sentinel;
+
+  inform_num_candidates (error_loc, candidates.length ());
+
+  auto_diagnostic_nesting_level sentinel2;
+
+  if (candidates.length () == 1)
+    {
+      tree cand = candidates[0];
+      inform (DECL_SOURCE_LOCATION (cand), "candidate is: %#qD", cand);
+    }
+  else
+    {
+      int idx = 0;
+      for (tree cand : candidates)
+	inform (DECL_SOURCE_LOCATION (cand), "candidate %i: %#qD",
+		++idx, cand);
+    }
 }
 
 /* Get a (possibly) constrained template declaration for the
@@ -2505,7 +2514,7 @@ determine_specialization (tree template_id,
 		"saw %d %<template<>%>, need %d for "
 		"specializing a member function template",
 		header_count, template_count + 1);
-      print_candidates (orig_fns);
+      print_candidates (DECL_SOURCE_LOCATION (decl), orig_fns);
       return error_mark_node;
     }
   else if ((templates && TREE_CHAIN (templates))
@@ -2516,7 +2525,7 @@ determine_specialization (tree template_id,
       error ("ambiguous template specialization %qD for %q+D",
 	     template_id, decl);
       candidates = chainon (candidates, templates);
-      print_candidates (candidates);
+      print_candidates (input_location, candidates);
       return error_mark_node;
     }
 

@@ -15,7 +15,7 @@ struct Foo {
 struct Baz 
 {
   int j;
-  int k; // { dg-message "candidates" }
+  int k; // { dg-message "candidate" }
   
 };
 

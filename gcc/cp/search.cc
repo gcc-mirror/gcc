@@ -1243,7 +1243,7 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
 	    {
 	      auto_diagnostic_group d;
 	      error ("request for member %qD is ambiguous", name);
-	      print_candidates (lfi.ambiguous);
+	      print_candidates (input_location, lfi.ambiguous);
 	    }
 	  return error_mark_node;
 	}

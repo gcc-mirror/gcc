@@ -3430,7 +3430,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	    {
 	      auto_diagnostic_group d;
 	      error ("request for member %qD is ambiguous", fnname);
-	      print_candidates (fns);
+	      print_candidates (input_location, fns);
 	    }
 	  return error_mark_node;
 	}

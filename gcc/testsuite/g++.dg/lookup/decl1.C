@@ -20,10 +20,10 @@ C2<X>::operator C1<Y>()
 }
 
 struct A { // { dg-message "defined here" }
-  operator int ();			// { dg-message "operator" }
-  operator float ();			// { dg-message "operator" }
-  operator float () const;		// { dg-message "operator" }
-  template <typename T> operator T * (); // { dg-message "operator" }
+  operator int ();			// { dg-message "operator int" }
+  operator float ();			// { dg-message "operator float" }
+  operator float () const;		// { dg-message "operator float" }
+  template <typename T> operator T * (); // { dg-message "operator T" }
 };
 
 A::operator short () { // { dg-error "no declaration matches" }

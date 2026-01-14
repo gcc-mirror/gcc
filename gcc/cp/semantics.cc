@@ -4934,7 +4934,7 @@ finish_id_expression_1 (tree id_expression,
 	  auto_diagnostic_group d;
 	  error ("request for member %qD is ambiguous in "
 		 "multiple inheritance lattice", id_expression);
-	  print_candidates (decl);
+	  print_candidates (input_location, decl);
 	  return error_mark_node;
 	}
 

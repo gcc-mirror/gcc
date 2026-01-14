@@ -4261,9 +4261,8 @@ print_z_candidates (location_t loc, struct z_candidate *candidates,
       ++num_candidates;
     }
 
-  inform_n (loc,
-	    num_candidates, "there is %i candidate", "there are %i candidates",
-	    num_candidates);
+  inform_num_candidates (loc, num_candidates);
+
   auto_diagnostic_nesting_level sentinel2;
 
   int candidate_idx = 0;

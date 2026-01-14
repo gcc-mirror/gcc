@@ -40,8 +40,8 @@ void test2()
 
   int (*fp0)(decltype(f)&) = &decltype(f)::operator();
   int (*fp1)(int&) = &decltype(f)::operator(); // { dg-error {no matches converting function} }
+  // { dg-note "there is 1 candidate" "" { target *-*-* } .-1 }
 }
 
 // { dg-error "a lambda with captures may not have an explicit object parameter of an unrelated type" {depends on PR112874} { xfail *-*-* } t2_f }
 // { dg-note "candidate is" "" { target *-*-* } t2_f }
-
