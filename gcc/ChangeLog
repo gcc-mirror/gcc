@@ -1,3 +1,114 @@
+2026-01-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (`(T1)(a bit_op (T2)b)`): Remove redundant
+	type checks.
+
+2026-01-13  Pengxuan Zheng  <pengxuan.zheng@oss.qualcomm.com>
+
+	PR tree-optimization/123109
+	* fold-const.cc (fold_binary_loc): Remove (X >> C) NE/EQ 0 -> X LT/GE 0
+	folding.
+	* match.pd (`(X >> C) NE/EQ 0 -> X LT/GE 0`): New pattern.
+
+2026-01-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/119402
+	* match.pd (`(a*zero_one_valued_p) & b`): New pattern.
+
+2026-01-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123312
+	* ifcvt.cc (noce_try_cond_zero_arith): Rename to ...
+	(noce_try_cond_arith): This. For AND try `cmp ? a : -1`
+	also to see which one cost less.
+	(noce_process_if_block): Handle the rename.
+
+2026-01-13  Jonathan Yong  <10walls@gmail.com>
+
+	* config/i386/winnt-utf8.manifest: enable longPathAware.
+
+2026-01-13  Jonathan Yong  <10walls@gmail.com>
+
+	PR driver/108865
+	* config/i386/winnt-utf8.manifest: correct XML tags
+
+2026-01-13  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR tree-optimization/123530
+	* match.pd (reassociating xor to enable rotations): Verify constants
+	fit into a uhwi before trying to extract them as a uhwi.
+
+2026-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123573
+	* fold-const.cc (fold_vec_perm): Actually check, not assert,
+	that input and output vector element numbers agree.
+	* match.pd (vec_perm @0 @1 @2): Make sure element numbers
+	are the same when folding to an input vector and wrap that
+	inside a VIEW_CONVERT_EXPR.
+
+2026-01-13  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123525
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Use
+	converted source type for conversion bit field ref.
+
+2026-01-13  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123301
+	* tree-if-conv.cc (convert_scalar_cond_reduction):
+	Disallow vector types.
+
+2026-01-13  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR rtl-optimization/123501
+	PR rtl-optimization/123444
+	* rtlanal.cc (nonzero_bits1): Use operand mode instead of
+	operation mode.
+
+2026-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/123396
+	* configure.ac (gcc_cv_ld_use_as_needed_ldscript): New test.
+	(USE_LD_AS_NEEDED_LDSCRIPT): New AC_DEFINE.
+	* gcc.cc (LINK_LIBATOMIC_SPEC): Use "-latomic_asneeded" instead
+	of LD_AS_NEEDED_OPTION " -latomic " LD_NO_AS_NEEDED_OPTION
+	if USE_LD_AS_NEEDED_LDSCRIPT is defined.
+	(init_gcc_specs): Use "-lgcc_s_asneeded" instead of
+	LD_AS_NEEDED_OPTION " -lgcc_s " LD_NO_AS_NEEDED_OPTION
+	if USE_LD_AS_NEEDED_LDSCRIPT is defined.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2026-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123539
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Use the compute vectype to pun down to smaller or element
+	size for by-element reductions.
+
+2026-01-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def): Use
+	build_bitint_type for BITINT_TYPE when maxsizei exceeds
+	MAX_FIXED_MODE_SIZE.
+
+2026-01-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/117581
+	* config/riscv/riscv.cc (riscv_bitint_type_info): New function.
+	(TARGET_C_BITINT_TYPE_INFO): Define.
+
+2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/123484
+	* config/i386/mmx.md (divv4hf3): Add TARGET_MMX_WITH_SSE to
+	the condition.
+	(cmlav4hf4): Ditto.
+	(cmla_conjv4hf4): Ditto.
+	(cmulv4hf3): Ditto.
+	(cmul_conjv4hf3): Ditto.
+
 2026-01-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/122845

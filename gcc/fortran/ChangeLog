@@ -1,3 +1,19 @@
+2026-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112460
+	* array.cc (resolve_array_list): Stash the first PDT element
+	and check its type specification parameters against those of
+	subsequent elements.
+	* expr.cc (get_parm_list_from_expr): New function to extract the
+	type spec lists from expressions to be compared.
+	(gfc_check_type_spec_parms): New function to compare type spec
+	lists between two expressions. Emit an error if any constant
+	values are different.
+	(gfc_check_assign): Check that the PDT type specification parms
+	are the same on lhs and rhs.
+	* gfortran.h : Add prototype for gfc_check_type_spec_parms.
+	* trans-expr.cc (copyable_array_p): PDT arrays are not copyable
+
 2026-01-12  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/91960

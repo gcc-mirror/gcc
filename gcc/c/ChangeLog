@@ -1,3 +1,10 @@
+2026-01-13  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/123309
+	* c-typeck.cc (transparent_union_replacement): New function.
+	(composite_type_internal): Rewrite logic.
+	(type_lists_compatible_p): Remove dead code for NULL arguments.
+
 2026-01-10  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/123435

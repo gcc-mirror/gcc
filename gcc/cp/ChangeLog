@@ -1,3 +1,35 @@
+2026-01-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* coroutines.cc (create_coroutine_info_table): New function.
+	(get_or_insert_coroutine_info): Mark static.
+	(ensure_coro_initialized): Likewise; use
+	create_coroutine_info_table.
+	(coro_promise_type_found_p): Set DECL_CONTEXT for proxies.
+	(coro_set_ramp_function): New function.
+	(coro_set_transform_functions): New function.
+	(coro_build_actor_or_destroy_function): Use
+	coro_set_ramp_function, mark as DECL_COROUTINE_P.
+	* cp-tree.h (coro_set_transform_functions): Declare.
+	(coro_set_ramp_function): Declare.
+	* module.cc (struct merge_key): New field coro_disc.
+	(dumper::impl::nested_name): Distinguish coroutine transform
+	functions.
+	(get_coroutine_discriminator): New function.
+	(trees_out::key_mergeable): Stream coroutine discriminator.
+	(check_mergeable_decl): Adjust comment, check for matching
+	coroutine discriminator.
+	(trees_in::key_mergeable): Read coroutine discriminator.
+	(has_definition): Override for coroutine transform functions.
+	(trees_out::write_function_def): Stream linked ramp, actor, and
+	destroy functions for coroutines.
+	(trees_in::read_function_def): Read them.
+	(module_state::read_cluster): Set cfun->coroutine_component.
+
+2026-01-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_out::lang_decl_bools): Update list of flags.
+	(trees_in::lang_decl_bools): Likewise.
+
 2026-01-12  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/123189

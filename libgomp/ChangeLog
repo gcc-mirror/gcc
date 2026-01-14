@@ -1,3 +1,68 @@
+2026-01-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.fortran/map-alloc-comp-9-usm.f90: Require
+	working Unified Shared Memory to run the test.
+
+2026-01-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/examples-4/declare_target-2.C: Add
+	'-Wno-deprecated-openmp'.
+	* testsuite/libgomp.c/declare-variant-3-sm30.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm35.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm37.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm52.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm53.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm61.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm70.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm75.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm80.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-3-sm89.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx10-3-generic.c:
+	Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1030.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1031.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1032.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1033.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1034.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1035.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1036.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx11-generic.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1100.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1101.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1102.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1103.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1150.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1151.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1152.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1153.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx9-4-generic.c:
+	Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx9-generic.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx900.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx902.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx904.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx906.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx908.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx909.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx90a.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx90c.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx942.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx950.c: Likewise.
+	* testsuite/libgomp.c/examples-4/async_target-2.c: Likewise.
+	* testsuite/libgomp.c/interop-hsa.c: Likewise.
+	* testsuite/libgomp.c/target-20.c: Likewise.
+	* testsuite/libgomp.c/target-simd-clone-1.c: Likewise.
+	* testsuite/libgomp.c/target-simd-clone-2.c: Likewise.
+	* testsuite/libgomp.c/target-simd-clone-3.c: Likewise.
+	* testsuite/libgomp.fortran/alloc-managed-1.f90: Likewise.
+	* testsuite/libgomp.fortran/target9.f90: Likewise.
+
+2026-01-13  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR testsuite/123098
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Remove
+	'-Wno-deprecated-openmp'.
+
 2026-01-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR c++/81337

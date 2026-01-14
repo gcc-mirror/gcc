@@ -1,3 +1,89 @@
+2026-01-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/coro-1_a.C: New test.
+	* g++.dg/modules/coro-1_b.C: New test.
+
+2026-01-13  Pengxuan Zheng  <pengxuan.zheng@oss.qualcomm.com>
+
+	PR tree-optimization/123109
+	* gcc.dg/tree-ssa/vrp99.c: Update test.
+	* gcc.dg/pr123109.c: New test.
+
+2026-01-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/119402
+	* gcc.dg/tree-ssa/bitops-14.c: New test.
+	* gcc.dg/tree-ssa/bitops-15.c: New test.
+
+2026-01-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/122522
+	* gcc.target/aarch64/signbitv2sf.c (main): Disable
+	unrolling and vectorizer for the checking loop.
+
+2026-01-13  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/123309
+	* gcc.dg/pr123309.c: New test.
+	* gcc.dg/union-composite-type.c: New test.
+
+2026-01-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/123012
+	* gfortran.dg/namelist_101.f90: New test.
+
+2026-01-13  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR tree-optimization/123530
+	* gcc.dg/torture/pr123530.c: New test.
+
+2026-01-13  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123525
+	* gcc.dg/vect/pr123525.c: New test.
+	* g++.dg/vect/pr123525-2.cc: New test.
+
+2026-01-13  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123301
+	* gcc.target/riscv/rvv/autovec/pr123301.c: New test.
+
+2026-01-13  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR rtl-optimization/123501
+	PR rtl-optimization/123444
+	* gcc.target/riscv/rvv/autovec/reduc/pr123501.c: New test.
+
+2026-01-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/112460
+	* gfortran.dg/pdt_81.f03: New test.
+
+2026-01-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/store_merging_19.c: xfail.
+
+2026-01-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/117581
+	* gcc.dg/torture/bitint-64.c: Add sync_char_short effective target
+	requirement.
+	* gcc.dg/torture/bitint-82.c: Likewise.
+	* gcc.dg/torture/bitint-84.c: Likewise.
+	* gcc.target/riscv/bitint-32-on-rv64.c: New test.
+	* gcc.target/riscv/bitint-alignments.c: New test.
+	* gcc.target/riscv/bitint-args.c: New test.
+	* gcc.target/riscv/bitint-sizes.c: New test.
+
+2026-01-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR ipa/122458
+	* gcc.dg/ipa/pr122458.c: Replace .quad with .dc.a.
+
+2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr123484.c: New test.
+
 2026-01-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/122845

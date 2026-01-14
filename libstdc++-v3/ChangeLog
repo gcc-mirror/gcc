@@ -1,3 +1,12 @@
+2026-01-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/stl_heap.h (std::__is_heap_until, std::__push_heap)
+	(std::__adjust_heap): Replace subscript with dereference of
+	advanced iterator.
+	* testsuite/util/testsuite_iterators.h (__gnu_test::subscript_proxy)
+	(__gnu_test::proxy_random_access_iterator_wrapper): Define.
+	* testsuite/25_algorithms/sort_heap/check_proxy_brackets.cc: New test.
+
 2026-01-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/pre/gnu.ver (CXXABI_1.3.14): Don't export _ZTI*DF16_ on

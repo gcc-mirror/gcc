@@ -1,3 +1,20 @@
+2026-01-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/123396
+	* config/t-slibgcc (SHLIB_ASNEEDED_SOLINK,
+	SHLIB_MAKE_ASNEEDED_SOLINK, SHLIB_INSTALL_ASNEEDED_SOLINK): New
+	vars.
+	(SHLIB_LINK): Include $(SHLIB_MAKE_ASNEEDED_SOLINK).
+	(SHLIB_INSTALL): Include $(SHLIB_INSTALL_ASNEEDED_SOLINK).
+
+2026-01-13  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/117581
+	* config/riscv/libgcc-riscv.ver: New file.
+	* config/riscv/t-elf (SHLIB_MAPFILES): Add libgcc-riscv.ver.
+	* config/riscv/t-softfp32 (softfp_extras): Add floatbitinttf and
+	fixtfbitint.
+
 2026-01-11  Jerome Guitton  <guitton@adacore.com>
 
 	* config/gthr-vxworks.h: Remove #include of tickLib.h.
