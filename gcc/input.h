@@ -89,6 +89,49 @@ extern location_t location_with_discriminator (location_t, int);
 extern bool has_discriminator (location_t);
 extern int get_discriminator_from_loc (location_t);
 
+/* Hierarchical discriminator support for AutoFDO.
+Discriminator format: [Base:8][Multiplicity:7][CopyID:11][Unused:6]
+- Base discriminator (bits 0-7): Distinguishes instructions at same line
+- Multiplicity (bits 8-14): Duplication factor for unrolling/vectorization
+- CopyID (bits 15-25): Unique identifier for code copies
+- Unused (bits 26-31): Reserved.  */
+
+/* Discriminator bit layout constants.  */
+#define DISCR_BASE_BITS 8
+#define DISCR_MULTIPLICITY_BITS 7
+#define DISCR_COPYID_BITS 11
+#define DISCR_UNUSED_BITS 6
+
+#define DISCR_BASE_MASK ((1u << DISCR_BASE_BITS) - 1)
+#define DISCR_MULTIPLICITY_MASK ((1u << DISCR_MULTIPLICITY_BITS) - 1)
+#define DISCR_COPYID_MASK ((1u << DISCR_COPYID_BITS) - 1)
+
+#define DISCR_BASE_SHIFT 0
+#define DISCR_MULTIPLICITY_SHIFT DISCR_BASE_BITS
+#define DISCR_COPYID_SHIFT (DISCR_BASE_BITS + DISCR_MULTIPLICITY_BITS)
+
+/* Maximum values for each discriminator field.  */
+#define DISCR_BASE_MAX DISCR_BASE_MASK
+#define DISCR_MULTIPLICITY_MAX DISCR_MULTIPLICITY_MASK
+#define DISCR_COPYID_MAX DISCR_COPYID_MASK
+
+/* Structure to hold hierarchical discriminator components.  */
+struct discriminator_components
+{
+  unsigned int base;         /* Front-end discriminator (bits 0-7).  */
+  unsigned int multiplicity; /* Duplication factor (bits 8-14).  */
+  unsigned int copyid;       /* Copy identifier (bits 15-25).  */
+};
+
+/* Create location with hierarchical discriminator.  */
+extern location_t
+location_with_discriminator_components (location_t,
+					const discriminator_components &);
+
+/* Get discriminator components from location.  */
+extern discriminator_components
+get_discriminator_components_from_loc (location_t);
+
 #define LOCATION_FILE(LOC) ((expand_location (LOC)).file)
 #define LOCATION_LINE(LOC) ((expand_location (LOC)).line)
 #define LOCATION_COLUMN(LOC)((expand_location (LOC)).column)

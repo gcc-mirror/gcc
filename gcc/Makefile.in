@@ -1464,6 +1464,7 @@ OBJS = \
 	dce.o \
 	ddg.o \
 	debug.o \
+	hierarchical_discriminator.o \
 	dep-fusion.o \
 	df-core.o \
 	df-problems.o \

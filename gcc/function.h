@@ -274,6 +274,11 @@ struct GTY(()) function {
      the same uid.  This is used for condition coverage.  */
   hash_map <gcond*, unsigned> *GTY((skip)) cond_uids;
 
+  /* Per-function copyid allocator for hierarchical discriminators.
+     Tracks the next available copyid for each location to ensure uniqueness
+     across code duplication passes (unrolling, vectorization, etc.).  */
+  struct copyid_allocator *GTY((skip)) copyid_alloc;
+
   /* For function.cc.  */
 
   /* Points to the FUNCTION_DECL of this function.  */
