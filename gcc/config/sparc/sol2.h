@@ -388,23 +388,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     }									\
   while (0)
 
-/* Solaris as has a bug: a .common directive in .tbss or .tdata section
-   behaves as .tls_common rather than normal non-TLS .common.  */
-#undef  ASM_OUTPUT_ALIGNED_COMMON
-#define ASM_OUTPUT_ALIGNED_COMMON(FILE, NAME, SIZE, ALIGN)		\
-  do									\
-    {									\
-      if (TARGET_SUN_TLS						\
-	  && in_section							\
-	  && ((in_section->common.flags & SECTION_TLS) == SECTION_TLS))	\
-	switch_to_section (bss_section);				\
-      fprintf ((FILE), "%s", COMMON_ASM_OP);				\
-      assemble_name ((FILE), (NAME));					\
-      fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%u\n",		\
-	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
-    }									\
-  while (0)
-
 #if !HAVE_GNU_AS
 /* This is how to output an assembler line that says to advance
    the location counter to a multiple of 2**LOG bytes using the
