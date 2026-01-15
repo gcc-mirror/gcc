@@ -1355,6 +1355,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fno-printf-return-value)
 frange-for-ext-temps
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-frange-for-ext-temps)
 
+freflection
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-freflection)
+
 freplace-objc-classes
 UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-freplace-objc-classes)
 
