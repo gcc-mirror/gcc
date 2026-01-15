@@ -117,12 +117,8 @@ qux ()
   if (ta != 64 || tb != 45 || tc != 56)
     __builtin_abort ();
   U u = { U::F, U::I };
-#if 0
-  // TODO: This doesn't work yet:
   u.[:nonstatic_data_members_of (^^C, uctx)[0]:] = u.[:^^C::E::G:];
-#else
   u.[:nonstatic_data_members_of (^^C, uctx)[0]:] = u.[:^^C::G:];
-#endif
   u.[:nonstatic_data_members_of (^^C, uctx)[1]:] = u.[:^^C::H:];
   if (u.j != U::G || u.k != U::E::H)
     __builtin_abort ();
@@ -151,12 +147,8 @@ fred ()
   if (ta != 64 || tb != 45 || tc != 56)
     __builtin_abort ();
   C u = { U::F, U::I };
-#if 0
-  // TODO: This doesn't work yet:
   u.[:nonstatic_data_members_of (^^C, uctx)[0]:] = u.[:^^C::E::G:];
-#else
   u.[:nonstatic_data_members_of (^^C, uctx)[0]:] = u.[:^^C::G:];
-#endif
   u.[:nonstatic_data_members_of (^^C, uctx)[1]:] = u.[:^^C::H:];
   if (u.j != U::G || u.k != U::E::H)
     __builtin_abort ();
