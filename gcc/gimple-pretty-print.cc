@@ -2470,7 +2470,7 @@ dump_gimple_phi (pretty_printer *pp, const gphi *phi, int spc, bool comment,
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       if ((flags & TDF_LINENO) && gimple_phi_arg_has_location (phi, i))
-	dump_location (pp, gimple_phi_arg_location (phi, i));
+	dump_location (pp, gimple_phi_arg_location (phi, i), flags);
       basic_block src = gimple_phi_arg_edge (phi, i)->src;
       if (flags & TDF_GIMPLE)
 	{
@@ -2724,7 +2724,7 @@ pp_gimple_stmt_1 (pretty_printer *pp, const gimple *gs, int spc,
     pp_printf (pp, "<&%p> ", (const void *) gs);
 
   if ((flags & TDF_LINENO) && gimple_has_location (gs))
-    dump_location (pp, gimple_location (gs));
+    dump_location (pp, gimple_location (gs), flags);
 
   if (flags & TDF_EH)
     {
@@ -3104,7 +3104,7 @@ dump_implicit_edges (pretty_printer *pp, basic_block bb, int indent,
 
       if ((flags & TDF_LINENO)
 	  && e->goto_locus != UNKNOWN_LOCATION)
-	dump_location (pp, e->goto_locus);
+	dump_location (pp, e->goto_locus, flags);
 
       pp_cfg_jump (pp, e, flags);
       pp_newline (pp);
@@ -3276,7 +3276,7 @@ gimple_dump_bb_as_sarif_properties (diagnostics::sarif_builder *,
 
 	if ((dump_flags & TDF_LINENO)
 	    && e->goto_locus != UNKNOWN_LOCATION)
-	  dump_location (pp, e->goto_locus);
+	  dump_location (pp, e->goto_locus, dump_flags);
 
 	pp_cfg_jump (pp, e, dump_flags);
 	pp_newline (pp);

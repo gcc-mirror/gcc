@@ -458,10 +458,9 @@ rtx_writer::print_rtx_operand_code_L (const_rtx in_rtx, int idx)
 	  expanded_location xloc = insn_location (in_insn);
 	  fprintf (m_outfile, " \"%s\":%i:%i", xloc.file, xloc.line,
 		   xloc.column);
-	  int discriminator = insn_discriminator (in_insn);
-	    if (discriminator)
+	  if ((dump_flags & TDF_COMPARE_DEBUG) == 0)
+	    if (int discriminator = insn_discriminator (in_insn))
 	      fprintf (m_outfile, " discrim %d", discriminator);
-
 	}
 #endif
     }
