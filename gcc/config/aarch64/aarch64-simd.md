@@ -9579,9 +9579,13 @@
 	 (match_operand:V2DI 3 "aarch64_simd_lshift_imm" "Dl")))]
   "TARGET_SHA3"
   {
+    /* Translate the RTL left-rotate amount into the assembly right-rotate
+       amount.  Modulo by 64 to ensure that a left-rotate of 0 is emitted
+       as a right-rotate of 0 as accepted by the assembly instruction.  */
     operands[3]
-      = GEN_INT (64 - INTVAL (unwrap_const_vec_duplicate (operands[3])));
-    return "xar\\t%0.2d, %1.2d, %2.2d, %3";
+      = GEN_INT ((64 - INTVAL (unwrap_const_vec_duplicate (operands[3])))
+		  % 64);
+    return "xar\\t%0.2d, %1.2d, %2.2d, #%3";
   }
   [(set_attr "type" "crypto_sha3")]
 )
@@ -9601,9 +9605,12 @@
 	 (match_operand:SI 3 "aarch64_simd_shift_imm_di")))]
   "TARGET_SHA3"
   {
-    operands[3]
-      = aarch64_simd_gen_const_vector_dup (V2DImode,
-					   64 - INTVAL (operands[3]));
+      operands[3]
+        = aarch64_simd_gen_const_vector_dup (V2DImode,
+					     /* In the edge case of a 0 rotate
+						amount leave as is.  */
+					     operands[3] == CONST0_RTX (SImode)
+					       ? 0 : 64 - INTVAL (operands[3]));
   }
 )
 
