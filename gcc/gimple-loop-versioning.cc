@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-into-ssa.h"
 #include "gimple-range.h"
 #include "tree-cfg.h"
+#include "hierarchical_discriminator.h"
 
 namespace {
 
@@ -1699,6 +1700,25 @@ loop_versioning::version_loop (class loop *loop)
       return false;
     }
 
+  /* Assign hierarchical discriminators to distinguish loop versions.
+     This allows AutoFDO to distinguish profile data from different
+     versions.  No multiplicity for non-vectorized loop versioning.  */
+  gimple *optimized_last = last_nondebug_stmt (li.optimized_loop->header);
+  location_t optimized_loc
+    = optimized_last ? gimple_location (optimized_last) : UNKNOWN_LOCATION;
+  if (optimized_loc != UNKNOWN_LOCATION)
+    {
+      unsigned int optimized_copyid = allocate_copyid_base (optimized_loc, 1);
+      assign_discriminators_to_loop (li.optimized_loop, 0, optimized_copyid);
+    }
+  gimple *loop_last = last_nondebug_stmt (loop->header);
+  location_t loop_loc
+    = loop_last ? gimple_location (loop_last) : UNKNOWN_LOCATION;
+  if (loop_loc != UNKNOWN_LOCATION)
+    {
+      unsigned int loop_copyid = allocate_copyid_base (loop_loc, 1);
+      assign_discriminators_to_loop (loop, 0, loop_copyid);
+    }
   if (dump_enabled_p ())
     dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, find_loop_location (loop),
 		     "versioned this loop for when certain strides are 1\n");
