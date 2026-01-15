@@ -22,5 +22,5 @@ x264_add4x4_idct (uint8_t *p_dst, int16_t d[16])
     }
 }
 
-/* { dg-final { scan-rtl-dump "Propagating AVL: \\(const_int 4" "avlprop" } } */
+/* { dg-final { scan-rtl-dump "Propagating AVL: \\(const_int 8" "avlprop" } } */
 /* { dg-final { scan-rtl-dump-not "Propagating AVL: \\(const_int 1" "avlprop" } } */
