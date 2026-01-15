@@ -118,13 +118,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* #define DWARF_OFFSET_SIZE PTR_SIZE */
 
-#ifdef HAVE_AS_TLS
-#undef TARGET_SUN_TLS
-#undef TARGET_GNU_TLS
-#define TARGET_SUN_TLS 0
-#define TARGET_GNU_TLS 1
-#endif
-
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC						\
   "%{Ofast|ffast-math|funsafe-math-optimizations:%{!shared:crtfastmath.o%s}} "	\

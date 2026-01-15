@@ -557,7 +557,7 @@
 
 ;; Attributes for branch scheduling
 (define_attr "tls_delay_slot" "false,true"
-  (symbol_ref "((TARGET_GNU_TLS && HAVE_GNU_LD) != 0
+  (symbol_ref "((!TARGET_SUN_TLS && HAVE_GNU_LD) != 0
 		? TLS_DELAY_SLOT_TRUE : TLS_DELAY_SLOT_FALSE)"))
 
 (define_attr "in_sibcall_delay" "false,true"

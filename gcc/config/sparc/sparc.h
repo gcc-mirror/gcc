@@ -1640,16 +1640,10 @@ extern int sparc_indent_opcode;
       }					\
   } while (0)
 
-/* TLS support defaulting to original Sun flavor.  GNU extensions
-   must be activated in separate configuration files.  */
-#ifdef HAVE_AS_TLS
-#define TARGET_TLS 1
-#else
-#define TARGET_TLS 0
-#endif
-
-#define TARGET_SUN_TLS TARGET_TLS
-#define TARGET_GNU_TLS 0
+/* TLS support defaults to GNU extensions.  The original Sun flavor must be
+   activated in separate configuration files.  */
+#define TARGET_TLS HAVE_AS_TLS
+#define TARGET_SUN_TLS 0
 
 #ifdef HAVE_AS_FMAF_HPC_VIS3
 #define AS_NIAGARA3_FLAG "d"
