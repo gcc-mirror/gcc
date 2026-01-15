@@ -877,7 +877,7 @@ char sparc_hard_reg_printed[8];
 #define TARGET_STACK_PROTECT_GUARD hook_tree_void_null
 #endif
 
-#if !TARGET_SUN_TLS && defined(HAVE_AS_SPARC_UA_PCREL)
+#if !TARGET_SUN_TLS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL sparc_output_dwarf_dtprel
 #endif

@@ -41,17 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 /* Redue ggc-page.cc's chunk size to account for mmap red-zone pages.  */
 #define GGC_QUIRE_SIZE 510
 
-/* Select a format to encode pointers in exception handling data.  CODE
-   is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
-   true if the symbol may be affected by dynamic relocations.
-
-   Some Solaris dynamic linkers don't handle unaligned section relative
-   relocs properly, so force them to be aligned.  */
-#ifndef HAVE_AS_SPARC_UA_PCREL
-#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)		\
-  ((flag_pic || GLOBAL) ? DW_EH_PE_aligned : DW_EH_PE_absptr)
-#endif
-
 
 
 /* Supposedly the same as vanilla sparc svr4, except for the stuff below: */

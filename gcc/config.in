@@ -804,20 +804,6 @@
 #endif
 
 
-/* Define if your assembler and linker support unaligned PC relative relocs.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_SPARC_UA_PCREL
-#endif
-
-
-/* Define if your assembler and linker support unaligned PC relative relocs
-   against hidden symbols. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_SPARC_UA_PCREL_HIDDEN
-#endif
-
-
 /* Define if your assembler supports call36 relocation. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_SUPPORT_CALL36

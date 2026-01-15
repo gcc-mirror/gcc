@@ -1279,32 +1279,13 @@ do {									\
 
 /* Select a format to encode pointers in exception handling data.  CODE
    is 0 for data, 1 for code labels, 2 for function pointers.  GLOBAL is
-   true if the symbol may be affected by dynamic relocations.
-
-   If assembler and linker properly support .uaword %r_disp32(foo),
-   then use PC relative 32-bit relocations instead of absolute relocs
-   for shared libraries.  On sparc64, use pc relative 32-bit relocs even
-   for binaries, to save memory.
-
-   binutils 2.12 would emit a R_SPARC_DISP32 dynamic relocation if the
-   symbol %r_disp32() is against was not local, but .hidden.  In that
-   case, we have to use DW_EH_PE_absptr for pic personality.  */
-#ifdef HAVE_AS_SPARC_UA_PCREL
-#ifdef HAVE_AS_SPARC_UA_PCREL_HIDDEN
+   true if the symbol may be affected by dynamic relocations.  */
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)			\
   (flag_pic								\
    ? (GLOBAL ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4\
    : ((TARGET_ARCH64 && ! GLOBAL)					\
       ? (DW_EH_PE_pcrel | DW_EH_PE_sdata4)				\
       : DW_EH_PE_absptr))
-#else
-#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL)			\
-  (flag_pic								\
-   ? (GLOBAL ? DW_EH_PE_absptr : (DW_EH_PE_pcrel | DW_EH_PE_sdata4))	\
-   : ((TARGET_ARCH64 && ! GLOBAL)					\
-      ? (DW_EH_PE_pcrel | DW_EH_PE_sdata4)				\
-      : DW_EH_PE_absptr))
-#endif
 
 /* Emit a PC-relative relocation.  */
 #define ASM_OUTPUT_DWARF_PCREL(FILE, SIZE, LABEL)	\
@@ -1314,7 +1295,6 @@ do {									\
     assemble_name (FILE, LABEL);			\
     fputc (')', FILE);					\
   } while (0)
-#endif
 
 /* Addressing modes, and classification of registers for them.  */
 
