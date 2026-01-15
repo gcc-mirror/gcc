@@ -65,7 +65,6 @@ test (void)
   __asm__ ("" :: GPR1","GPR2 (42), GPR2","GPR3 (42));
   __asm__ ("" :: GPR1","GPR2 (42), GPR3","GPR2 (42)); /* { dg-error "multiple inputs to hard register" } */
   __asm__ ("" :: GPR1","GPR2 (42), GPR1","GPR3 (42)); /* { dg-error "multiple inputs to hard register" } */
-  __asm__ ("" :: GPR1 GPR2 (42), GPR2 (42)); /* { dg-error "multiple inputs to hard register" } */
   __asm__ ("" : "+"GPR1 (x), "="GPR1 (y)); /* { dg-error "multiple outputs to hard register" } */
   __asm__ ("" : "="GPR1 (y) : GPR1 (42), "0" (42)); /* { dg-error "multiple inputs to hard register" } */
   __asm__ ("" : "+"GPR1 (x) : GPR1 (42)); /* { dg-error "multiple inputs to hard register" } */
@@ -74,7 +73,7 @@ test (void)
   __asm__ ("" : "="GPR2 (gpr1)); /* { dg-error "constraint and register 'asm' for output operand 0 are unsatisfiable" } */
   __asm__ ("" :: GPR2 (gpr1)); /* { dg-error "constraint and register 'asm' for input operand 0 are unsatisfiable" } */
   __asm__ ("" : "="GPR1 (x) : "0" (gpr1));
-  __asm__ ("" : "="GPR1 GPR2 (x) : "0" (gpr1)); /* { dg-error "constraint and register 'asm' for input operand 0 are unsatisfiable" } */
+  __asm__ ("" : "="GPR2 (x) : "0" (gpr1)); /* { dg-error "constraint and register 'asm' for input operand 0 are unsatisfiable" } */
 
   __asm__ ("" : "=&"GPR1 (x) : "0" (gpr1));
   __asm__ ("" : "=&"GPR1 (x) : "0" (42));

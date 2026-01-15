@@ -13544,6 +13544,10 @@ asm ("" : "=r" (x));
 
 are not supported for hard register constraints.  This might be lifted.
 
+Multiple hard register constraints in one alternative are also not supported.
+Furthermore, combinations of hard register constraints and regular register
+constraints in one alternative are not supported, too.
+
 @node Size of an asm
 @subsection Size of an @code{asm}
 
