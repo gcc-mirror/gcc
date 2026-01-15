@@ -53,6 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-vector-builder.h"
 #include "optabs-tree.h"
+#include "hierarchical_discriminator.h"
+
 
 /*************************************************************************
   Simple Loop Peeling Utilities
@@ -3464,6 +3466,15 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       gcc_assert (prolog);
       prolog->force_vectorize = false;
 
+      /* Assign hierarchical discriminators to distinguish prolog loop.  */
+      gimple *prolog_last = last_nondebug_stmt (prolog->header);
+      location_t prolog_loc
+       	= prolog_last ? gimple_location (prolog_last) : UNKNOWN_LOCATION;
+      if (prolog_loc != UNKNOWN_LOCATION)
+	{
+	  unsigned int prolog_copyid = allocate_copyid_base (prolog_loc, 1);
+	  assign_discriminators_to_loop (prolog, 0, prolog_copyid);
+	}
       first_loop = prolog;
       reset_original_copy_tables ();
 
@@ -3572,6 +3583,22 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       gcc_assert (new_epilog_e);
       epilog->force_vectorize = false;
       bb_before_epilog = loop_preheader_edge (epilog)->src;
+
+      /* Assign hierarchical discriminators to distinguish epilog loop.
+	 Only assign if it's a scalar epilog.  If it will be vectorized
+	 (vect_epilogues), discriminators will be assigned.
+	 Use dynamic copy_id allocation instead of hardcoded constants.  */
+      if (!vect_epilogues)
+	{
+	  gimple *epilog_last = last_nondebug_stmt (epilog->header);
+	  location_t epilog_loc
+	    = epilog_last ? gimple_location (epilog_last) : UNKNOWN_LOCATION;
+	  if (epilog_loc != UNKNOWN_LOCATION)
+	    {
+	      unsigned int epilog_copyid = allocate_copyid_base (epilog_loc, 1);
+	      assign_discriminators_to_loop (epilog, 0, epilog_copyid);
+	    }
+	}
 
       /* Scalar version loop may be preferred.  In this case, add guard
 	 and skip to epilog.  Note this only happens when the number of
@@ -4501,6 +4528,18 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       gcc_assert (nloop);
       nloop = get_loop_copy (loop);
 
+      /* Assign hierarchical discriminators to distinguish loop versions.
+	 Only assign to the scalar version here; the vectorized version will
+	 get discriminators later during transformation/peeling.
+	 Use dynamic copy_id allocation instead of hardcoded constants.  */
+      gimple *nloop_last = last_nondebug_stmt (nloop->header);
+      location_t nloop_loc
+       	= nloop_last ? gimple_location (nloop_last) : UNKNOWN_LOCATION;
+      if (nloop_loc != UNKNOWN_LOCATION)
+	{
+	  unsigned int nloop_copyid = allocate_copyid_base (nloop_loc, 1);
+	  assign_discriminators_to_loop (nloop, 0, nloop_copyid);
+	}
       /* For cycle vectorization with SLP we rely on the PHI arguments
 	 appearing in the same order as the SLP node operands which for the
 	 loop PHI nodes means the preheader edge dest index needs to remain

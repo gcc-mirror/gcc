@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "langhooks.h"
 #include "opts.h"
+#include "hierarchical_discriminator.h"
 
 /* Loop Vectorization Pass.
 
@@ -11210,6 +11211,23 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			      &step_vector, &niters_vector_mult_vf, th,
 			      check_profitability, niters_no_overflow,
 			      &advance);
+
+  /* Assign hierarchical discriminators to the vectorized loop.  */
+  poly_uint64 vf_val = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  unsigned int vf_int = constant_lower_bound (vf_val);
+  if (vf_int > DISCR_MULTIPLICITY_MAX)
+    vf_int = DISCR_MULTIPLICITY_MAX;
+
+  /* Assign unique copy_id dynamically instead of using hardcoded constants.
+     Epilogue and main vectorized loops get different copy_ids.  */
+  gimple *loop_last = last_nondebug_stmt (loop->header);
+  location_t loop_loc
+    = loop_last ? gimple_location (loop_last) : UNKNOWN_LOCATION;
+  if (loop_loc != UNKNOWN_LOCATION)
+    {
+      unsigned int copyid = allocate_copyid_base (loop_loc, 1);
+      assign_discriminators_to_loop (loop, vf_int, copyid);
+    }
   if (LOOP_VINFO_SCALAR_LOOP (loop_vinfo)
       && LOOP_VINFO_SCALAR_LOOP_SCALING (loop_vinfo).initialized_p ())
     {
