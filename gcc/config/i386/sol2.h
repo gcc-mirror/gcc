@@ -59,13 +59,13 @@ along with GCC; see the file COPYING3.  If not see
   " %{mx32:%e-mx32 is not supported on Solaris}"
 
 /* GNU as understands --32 and --64, but the native Solaris
-   assembler requires -xarch=generic or -xarch=generic64 instead.  */
+   assembler requires -m32 or -m64 instead.  */
 #if HAVE_GNU_AS
 #define ASM_CPU32_DEFAULT_SPEC "--32"
 #define ASM_CPU64_DEFAULT_SPEC "--64"
 #else
-#define ASM_CPU32_DEFAULT_SPEC "-xarch=generic"
-#define ASM_CPU64_DEFAULT_SPEC "-xarch=generic64"
+#define ASM_CPU32_DEFAULT_SPEC "-m32"
+#define ASM_CPU64_DEFAULT_SPEC "-m64"
 #endif
 
 #if !HAVE_GNU_AS
