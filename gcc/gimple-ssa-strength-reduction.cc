@@ -57,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "builtins.h"
 #include "tree-ssa-dce.h"
+#include "gimple-fold.h"
 
 /* Information about a strength reduction candidate.  Each statement
    in the candidate table represents an expression of one of the
@@ -3474,8 +3475,15 @@ insert_initializers (slsr_cand_t c)
 	      gimple_set_location (cast_stmt, loc);
 	    }
 
-	  gsi_insert_before (&gsi, init_stmt, GSI_SAME_STMT);
 	  gimple_set_location (init_stmt, loc);
+	  if (gimple_needing_rewrite_undefined (init_stmt))
+	    {
+	      gimple_seq seq;
+	      seq = rewrite_to_defined_unconditional (init_stmt);
+	      gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+	    }
+	  else
+	    gsi_insert_before (&gsi, init_stmt, GSI_SAME_STMT);
 	}
       else
 	{
@@ -3483,6 +3491,7 @@ insert_initializers (slsr_cand_t c)
 	  gimple *basis_stmt = lookup_cand (c->basis)->cand_stmt;
 	  location_t loc = gimple_location (basis_stmt);
 
+	  gimple_set_location (init_stmt, gimple_location (basis_stmt));
 	  if (!gsi_end_p (gsi) && stmt_ends_bb_p (gsi_stmt (gsi)))
 	    {
 	      if (cast_stmt)
@@ -3490,7 +3499,14 @@ insert_initializers (slsr_cand_t c)
 		  gsi_insert_before (&gsi, cast_stmt, GSI_SAME_STMT);
 		  gimple_set_location (cast_stmt, loc);
 		}
-	      gsi_insert_before (&gsi, init_stmt, GSI_SAME_STMT);
+	      if (gimple_needing_rewrite_undefined (init_stmt))
+		{
+		  gimple_seq seq;
+		  seq = rewrite_to_defined_unconditional (init_stmt);
+		  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+		}
+	      else
+		gsi_insert_before (&gsi, init_stmt, GSI_SAME_STMT);
 	    }
 	  else
 	    {
@@ -3499,10 +3515,15 @@ insert_initializers (slsr_cand_t c)
 		  gsi_insert_after (&gsi, cast_stmt, GSI_NEW_STMT);
 		  gimple_set_location (cast_stmt, loc);
 		}
-	      gsi_insert_after (&gsi, init_stmt, GSI_NEW_STMT);
+	      if (gimple_needing_rewrite_undefined (init_stmt))
+		{
+		  gimple_seq seq;
+		  seq = rewrite_to_defined_unconditional (init_stmt);
+		  gsi_insert_seq_after (&gsi, seq, GSI_SAME_STMT);
+		}
+	      else
+		gsi_insert_after (&gsi, init_stmt, GSI_SAME_STMT);
 	    }
-
-	  gimple_set_location (init_stmt, gimple_location (basis_stmt));
 	}
 
       if (dump_file && (dump_flags & TDF_DETAILS))
