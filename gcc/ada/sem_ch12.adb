@@ -523,20 +523,27 @@ package body Sem_Ch12 is
    --  The body of the wrapper is a call to the actual, with the generated
    --  pre/postconditon checks added.
 
-   procedure Build_Subprogram_Wrappers
+   procedure Build_Subprogram_Wrapper
      (Match             : Node_Id;
       Analyzed_Formal   : Node_Id;
       Unanalyzed_Formal : Node_Id;
       Renamings         : List_Id);
    --  Ada 2022: AI12-0272 introduces pre/postconditions for formal
    --  subprograms. The implementation of making the formal into a renaming
-   --  of the actual does not work, given that subprogram renaming cannot
-   --  carry aspect specifications. Instead we must create subprogram
-   --  wrappers whose body is a call to the actual, and whose declaration
+   --  of the actual does not work, given that a subprogram renaming cannot
+   --  carry aspect specifications. Instead we must create a subprogram
+   --  wrapper whose body is a call to the actual, and whose declaration
    --  carries the aspects of the formal.
-   --  The wrapper declaration and body are appended to Renamings.
    --  ???But renaming declarations CAN have aspects specs,
    --  and that was true from the start (see AI05-0183-1).
+   --
+   --  Renamings is a list of the declarations created to represent the
+   --  parameter associations of the instantiation, and the last element
+   --  will generally be a subprogram renaming of the actual subprogram
+   --  (though it can also be a generated subprogram body in some cases,
+   --  such as when a formal procedure defaults to "null"). The wrapper
+   --  declaration and body are appended to Renamings, substituting for
+   --  the last element in the subprogram renaming case.
    --
    --  The procedure also copies the aspect specifications from the unanalyzed
    --  formal subprogram to the wrapper subprogram for later analysis in the
@@ -2764,7 +2771,7 @@ package body Sem_Ch12 is
                if Has_Contracts (Assoc.An_Formal)
                  and then (Expander_Active or GNATprove_Mode)
                then
-                  Build_Subprogram_Wrappers
+                  Build_Subprogram_Wrapper
                     (Match             => Match,
                      Analyzed_Formal   => Assoc.An_Formal,
                      Unanalyzed_Formal => Assoc.Un_Formal,
@@ -7565,11 +7572,11 @@ package body Sem_Ch12 is
       return Body_Node;
    end Build_Subprogram_Body_Wrapper;
 
-   -------------------------------
-   -- Build_Subprogram_Wrappers --
-   -------------------------------
+   ------------------------------
+   -- Build_Subprogram_Wrapper --
+   ------------------------------
 
-   procedure Build_Subprogram_Wrappers
+   procedure Build_Subprogram_Wrapper
      (Match             : Node_Id;
       Analyzed_Formal   : Node_Id;
       Unanalyzed_Formal : Node_Id;
@@ -7598,7 +7605,7 @@ package body Sem_Ch12 is
       Decl_Node   : Node_Id;
       Actual_Name : Node_Id;
 
-   --  Start of processing for Build_Subprogram_Wrappers
+   --  Start of processing for Build_Subprogram_Wrapper
 
    begin
       --  Create declaration for wrapper subprogram.
@@ -7644,6 +7651,18 @@ package body Sem_Ch12 is
          Next (Aspect_Spec);
       end loop;
 
+      --  Remove the subprogram renaming declaration, which will be replaced
+      --  by the wrapper subprogram (we don't want two homographs in the same
+      --  scope, and the renaming will be overridden by the wrapper). We test
+      --  that the actual is present and not defaulted, and in the latter case
+      --  we don't remove the declaration, which may be an internal subprogram
+      --  body rather than a renaming (such as created for a "null" default),
+      --  and that body must be kept.
+
+      if Is_Entity_Name (Match) then
+         Remove (Last (Renamings));
+      end if;
+
       Append_To (Renamings, Decl_Node);
 
       --  Create corresponding body, and append it to association list
@@ -7653,7 +7672,7 @@ package body Sem_Ch12 is
 
       Append_To (Renamings,
         Build_Subprogram_Body_Wrapper (Formal, Actual_Name));
-   end Build_Subprogram_Wrappers;
+   end Build_Subprogram_Wrapper;
 
    -------------------------------------------
    -- Build_Instance_Compilation_Unit_Nodes --
