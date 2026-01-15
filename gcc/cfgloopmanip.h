@@ -34,6 +34,10 @@ enum
 					   a complete peeling.  */
 #define DLTHE_FLAG_FLAT_PROFILE 8	/* Profile is flat; do not reduce
 					   count by unroll factor.  */
+#define DLTHE_RECORD_HIERARCHICAL_DISCRIMINATOR 16 /* Assign hierarchical
+						      discriminators to
+						      distinguish loop
+						      iterations.  */
 extern edge mfb_kj_edge;
 
 extern bool remove_path (edge, bool * = NULL, bitmap = NULL);

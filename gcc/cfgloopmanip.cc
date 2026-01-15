@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sreal.h"
 #include "tree-cfg.h"
 #include "tree-pass.h"
+#include "hierarchical_discriminator.h"
 
 static void copy_loops_to (class loop **, int,
 			   class loop *);
@@ -1405,6 +1406,40 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
   spec_edges[SE_LATCH] = latch_edge;
 
   place_after = e->src;
+  location_t loop_loc = UNKNOWN_LOCATION;
+  unsigned int loop_copyid_base = 0;
+
+  /* Find a location from the loop header - works for both GIMPLE and RTL.  */
+  if (current_ir_type () == IR_GIMPLE)
+    {
+      gimple *last = last_nondebug_stmt (loop->header);
+      loop_loc = last ? gimple_location (last) : UNKNOWN_LOCATION;
+    }
+  else
+    {
+      /* For RTL, try to find an instruction with a valid location.  */
+      rtx_insn *insn = BB_END (loop->header);
+      while (insn && insn != BB_HEAD (loop->header))
+	{
+	  /* Only check location if this is a valid insn.  */
+	  if (INSN_P (insn))
+	    {
+	      location_t loc = INSN_LOCATION (insn);
+	      if (loc != UNKNOWN_LOCATION)
+		{
+		  loop_loc = get_pure_location (loc);
+		  break;
+		}
+	    }
+	  insn = PREV_INSN (insn);
+	}
+    }
+
+  /* Allocate copyid base for this loop duplication - works for both
+     GIMPLE and RTL since allocator is per-function.  */
+  if (loop_loc != UNKNOWN_LOCATION)
+    loop_copyid_base = allocate_copyid_base (loop_loc, ndupl);
+
   for (j = 0; j < ndupl; j++)
     {
       /* Copy loops.  */
@@ -1421,6 +1456,49 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
 	    gcc_assert (!new_bbs[i]->aux);
 	    new_bbs[i]->aux = (void *)(size_t)(j + 1);
 	  }
+
+      /* Assign hierarchical discriminators to distinguish loop iterations.  */
+      if (flags & DLTHE_RECORD_HIERARCHICAL_DISCRIMINATOR
+	  && loop_copyid_base > 0)
+	{
+	  /* Calculate copyid for this iteration.  */
+	  unsigned int copyid = loop_copyid_base + j;
+	  if (copyid > DISCR_COPYID_MAX)
+	    copyid = DISCR_COPYID_MAX;
+
+	  if (current_ir_type () == IR_GIMPLE)
+	    {
+	      /* Update all basic blocks created in this iteration.  */
+	      for (i = 0; i < n; i++)
+		assign_discriminators_to_bb (new_bbs[i], 0, copyid);
+	    }
+	  else
+	    {
+	      /* For RTL, manually update instruction locations.  */
+	      for (i = 0; i < n; i++)
+		{
+		  basic_block bb = new_bbs[i];
+		  rtx_insn *insn;
+
+		  /* Iterate through all instructions in the block.  */
+		  FOR_BB_INSNS (bb, insn)
+		    {
+		      if (INSN_HAS_LOCATION (insn))
+			{
+			  location_t loc = INSN_LOCATION (insn);
+			  /* Get existing discriminator components.  */
+			  discriminator_components comp
+			    = get_discriminator_components_from_loc (loc);
+			  comp.copyid = copyid;
+
+			  /* Apply hierarchical discriminator format.  */
+			  INSN_LOCATION (insn)
+			    = location_with_discriminator_components (loc, comp);
+			}
+		    }
+		}
+	    }
+	}
 
       /* Note whether the blocks and edges belong to an irreducible loop.  */
       if (add_irreducible_flag)

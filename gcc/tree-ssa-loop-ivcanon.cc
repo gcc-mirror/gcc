@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-sccvn.h"
 #include "tree-vectorizer.h" /* For find_loop_location */
 #include "dbgcnt.h"
+#include "hierarchical_discriminator.h"
 
 /* Specifies types of loops that may be unrolled.  */
 
@@ -980,7 +981,8 @@ try_unroll_loop_completely (class loop *loop,
       if (!gimple_duplicate_loop_body_to_header_edge (
 	    loop, loop_preheader_edge (loop), n_unroll, wont_exit, exit,
 	    &edges_to_remove,
-	    DLTHE_FLAG_UPDATE_FREQ | DLTHE_FLAG_COMPLETTE_PEEL))
+	    DLTHE_FLAG_UPDATE_FREQ | DLTHE_FLAG_COMPLETTE_PEEL
+	    | DLTHE_RECORD_HIERARCHICAL_DISCRIMINATOR))
 	{
           free_original_copy_tables ();
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1222,7 +1224,8 @@ try_peel_loop (class loop *loop,
 
   if (!gimple_duplicate_loop_body_to_header_edge (
 	loop, loop_preheader_edge (loop), npeel, wont_exit, exit,
-	&edges_to_remove, DLTHE_FLAG_UPDATE_FREQ))
+	&edges_to_remove,
+	DLTHE_FLAG_UPDATE_FREQ | DLTHE_RECORD_HIERARCHICAL_DISCRIMINATOR))
     {
       free_original_copy_tables ();
       return false;
