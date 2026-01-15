@@ -1,3 +1,15 @@
+2026-01-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123300
+	* gimple-range-gori.cc (gori_map::exports_and_deps): New.
+	* gimple-range-gori.h (exports_and_deps): New prototype.
+	(FOR_EACH_GORI_EXPORT_AND_DEP_NAME): New macro.
+	* tree-vrp.cc (remove_unreachable:remove_unreachable): Initialize
+	m_tmp bitmap.
+	(remove_unreachable:~remove_unreachable): Dispose of m_tmp bitmap.
+	(remove_unreachable:fully_replaceable): Move from static function
+	and check reachability of exports and dependencies.
+
 2026-01-13  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
