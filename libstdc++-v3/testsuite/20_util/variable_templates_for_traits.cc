@@ -331,7 +331,7 @@ static_assert(is_convertible_v<int&, const int&>
 static_assert(!is_convertible_v<const int&, int&>
 	      && !is_convertible<const int&, int&>::value, "");
 
-#if __cpp_impl_reflection >= 202500L
+#if __cpp_impl_reflection >= 202506L
 static_assert(is_reflection_v<decltype(^^int)>
 	      && is_reflection<decltype(^^int)>::value, "");
 static_assert(!is_reflection_v<int> && !is_reflection<int>::value, "");

@@ -749,7 +749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public false_type { };
 #endif
 
-#if __cpp_impl_reflection >= 202500L // C++ >= 26
+#if __cpp_impl_reflection >= 202506L // C++ >= 26
   /// is_reflection
   template<typename _Tp>
     struct is_reflection
@@ -838,7 +838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct is_fundamental
     : public __or_<is_arithmetic<_Tp>, is_void<_Tp>,
 		   is_null_pointer<_Tp>
-#if __cpp_impl_reflection >= 202500L
+#if __cpp_impl_reflection >= 202506L
 		   , is_reflection<_Tp>
 #endif
 		   >::type
@@ -3555,7 +3555,7 @@ template <typename _Tp>
     is_member_function_pointer<_Tp>::value;
 #endif
 
-#if __cpp_impl_reflection >= 202500L // C++ >= 26
+#if __cpp_impl_reflection >= 202506L // C++ >= 26
 template <typename _Tp>
   inline constexpr bool is_reflection_v = false;
 template <>
@@ -3900,7 +3900,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
 # endif
 #endif
 
-#if __cpp_impl_reflection >= 202500L \
+#if __cpp_impl_reflection >= 202506L \
     && _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_is_consteval_only) // C++ >= 26
   /// is_consteval_only - true if the type is consteval-only.
   /// @since C++26
