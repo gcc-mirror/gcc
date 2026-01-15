@@ -1843,6 +1843,12 @@ ira_setup_alts (rtx_insn *insn)
 		    goto op_success;
 		    break;
 
+		  case '{':
+		    if (REG_P (op) || SUBREG_P (op))
+		      goto op_success;
+		    win_p = true;
+		    break;
+
 		  default:
 		    {
 		      enum constraint_num cn = lookup_constraint (p);
