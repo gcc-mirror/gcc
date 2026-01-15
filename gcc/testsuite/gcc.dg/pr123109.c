@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { x86_64-*-* aarch64-*-* } } } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
 typedef int v4si __attribute__((vector_size(4 * sizeof(int))));
