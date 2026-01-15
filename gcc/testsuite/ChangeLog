@@ -1,3 +1,35 @@
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2025-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123085
+	* c-c++-common/analyzer/strlen-pr123085.c: New test.
+
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2025-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122975
+	* c-c++-common/analyzer/arith-1.c: New test.
+	* c-c++-common/analyzer/infinite-recursion-pr122975.c: New test.
+
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/120063
+	* gcc.dg/fatal-error.c: New test.
+	* gcc.dg/fatal-error-sarif.py: New test.
+
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/crash-test-write-though-null-sarif.c: Rename to...
+	* gcc.dg/plugin/crash-test-write-through-null-sarif.c: ...this.
+	* gcc.dg/plugin/crash-test-write-though-null-stderr.c: Rename to...
+	* gcc.dg/plugin/crash-test-write-through-null-stderr.c: ...this.
+	* gcc.dg/plugin/plugin.exp: Update for above renamings.  Sort the
+	test files for crash_test_plugin.cc alphabetically.
+
 2026-01-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/123300

@@ -1,3 +1,11 @@
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/120063
+	* diagnostic-format-sarif.cc (maybe_get_sarif_level): Handle
+	DK_FATAL as SARIF level "error".
+	* diagnostic.cc (diagnostic_context::execution_failed_p): Also
+	treat any DK_FATAL errors as leading to failed execution.
+
 2026-01-13  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/123300

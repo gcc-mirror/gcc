@@ -1,3 +1,14 @@
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2025-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/121966
+	* call.cc (print_z_candidates): Copy the filtering logic on viable
+	candidates from the printing loop to the counting loop, so that
+	num_candidates matches the number of iterations of the latter
+	loop.
+
 2026-01-09  Eczbek  <eczbek.void@gmail.com>
 
 	Backported from master:
