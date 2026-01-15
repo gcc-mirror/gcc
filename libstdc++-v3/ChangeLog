@@ -1,3 +1,7 @@
+2026-01-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h: Modify comment.
+
 2026-01-13  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/bits/stl_heap.h (std::__is_heap_until, std::__push_heap)

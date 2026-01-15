@@ -1,3 +1,111 @@
+2026-01-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__unordered_map-concurrent-usm.C:
+	New.
+	* testsuite/libgomp.c++/target-std__unordered_multimap-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_multiset-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_set-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_map-concurrent.C:
+	Adjust.
+	* testsuite/libgomp.c++/target-std__unordered_multimap-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_multiset-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_set-concurrent.C:
+	Likewise.
+
+2026-01-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__flat_map-concurrent-usm.C:
+	New.
+	* testsuite/libgomp.c++/target-std__flat_multimap-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__flat_multiset-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__flat_set-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__flat_map-concurrent.C: Adjust.
+	* testsuite/libgomp.c++/target-std__flat_multimap-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__flat_multiset-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__flat_set-concurrent.C:
+	Likewise.
+
+2026-01-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/target-std__array-concurrent-usm.C:
+	'#define OMP_USM'.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__list-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__span-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__map-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__set-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__vector-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__deque-concurrent-usm.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__array-concurrent.C: Comment.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__deque-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__list-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__span-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__vector-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__map-concurrent.C [OMP_USM]:
+	Fix up dynamic memory allocation.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent.C
+	[OMP_USM]: Likewise.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent.C
+	[OMP_USM]: Likewise.
+	* testsuite/libgomp.c++/target-std__set-concurrent.C [OMP_USM]:
+	Likewise.
+
+2026-01-14  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-2-usm.c: New.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-3-usm.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/struct-elem-5-usm.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-present-1-usm.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-present-2-usm.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-present-3-usm.c: Likewise.
+	* testsuite/libgomp.fortran/map-subarray-5-usm.f90: Likewise.
+	* testsuite/libgomp.fortran/map-subarray-6-usm.f90: Likewise.
+	* testsuite/libgomp.fortran/map-subarray-7-usm.f90: Likewise.
+	* testsuite/libgomp.fortran/target-allocatable-1-1-usm.f90:
+	Likewise.
+	* testsuite/libgomp.fortran/target-allocatable-1-2-usm.f90:
+	Likewise.
+	* testsuite/libgomp.fortran/target-enter-data-2-usm.F90: Likewise.
+	* testsuite/libgomp.fortran/target-present-1-usm.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-2-usm.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-3-usm.f90: Likewise.
+	* testsuite/libgomp.fortran/target-allocatable-1-1.f90: Adjust.
+	* testsuite/libgomp.fortran/target-allocatable-1-2.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-1.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-2.f90: Likewise.
+	* testsuite/libgomp.fortran/target-present-3.f90: Likewise.
+
 2026-01-13  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.fortran/map-alloc-comp-9-usm.f90: Require

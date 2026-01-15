@@ -1,3 +1,128 @@
+2026-01-14  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/counted-by-anonymous-2-char.c: New test.
+	* gcc.dg/counted-by-anonymous-2-float.c: New test.
+	* gcc.dg/counted-by-anonymous-2-struct.c: New test.
+	* gcc.dg/counted-by-anonymous-2-union.c: New test.
+	* gcc.dg/counted-by-anonymous-2.c: New test.
+	* gcc.dg/counted-by-anonymous-3.c: New test.
+	* gcc.dg/counted-by-anonymous.c: New test.
+	* gcc.dg/ubsan/counted-by-anonymous-bounds-1.c: New test.
+	* gcc.dg/ubsan/counted-by-anonymous-bounds-2.c: New test.
+	* gcc.dg/ubsan/counted-by-anonymous-bounds.c: New test.
+
+2026-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/123542
+	* gcc.dg/ipa/pr123542.c: New test.
+
+2026-01-14  Joseph Myers  <josmyers@redhat.com>
+
+	* lib/gcc-dg.exp (gdb-exists): Do not use [transform gdb].  Run
+	selected GDB with -v on target rather than testing for existence
+	on build system.
+	* lib/gcc-simulate-thread.exp (simulate-thread): Do not return
+	early for non-native and remote.  Download executable and GDB
+	command file to target before running GDB there, and delete when
+	closing target.
+
+2026-01-14  Joseph Myers  <josmyers@redhat.com>
+
+	* lib/gcc-gdb-test.exp (gdb-test): Do not return early for
+	non-native and remote.  Download executable and GDB command file
+	to target before running GDB there, and delete when closing
+	target.
+	(report_gdb): Use target when testing GDB availability and
+	version.
+	* g++.dg/guality/guality.exp: Only use in-tree GDB when host =
+	target.  Do not use [transform gdb].
+	* gcc.dg/guality/guality.exp: Likewise.
+	* gfortran.dg/guality/guality.exp: Likewise.
+
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/bad-fndef-1.C: Add directives to expect
+	"void *" vs "const void *" notes about parameter 3 of the close
+	candidate.
+	* g++.dg/diagnostic/bad-fndef-2.C: New test.
+	* g++.dg/diagnostic/bad-fndef-3.C: New test.
+	* g++.dg/diagnostic/bad-fndef-4.C: New test.
+	* g++.dg/diagnostic/bad-fndef-5.C: New test.
+	* g++.dg/diagnostic/bad-fndef-6.C: New test.
+	* g++.dg/diagnostic/bad-fndef-7.C: New test.
+	* g++.dg/diagnostic/bad-fndef-7b.C: New test.
+	* g++.dg/diagnostic/bad-fndef-8.C: New test.
+	* g++.dg/diagnostic/bad-fndef-9.C: New test.
+
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/cpp0x/inline-ns2.C: Make dg-message directives non-empty.
+	* g++.dg/cpp23/explicit-obj-lambda11.C: Prune the extra note.
+	* g++.dg/diagnostic/bad-fndef-1.C: New test.
+	* g++.dg/lookup/decl1.C: Give the dg-message directives different
+	messages.
+	* g++.dg/lookup/using17.C: Update expected output.
+	* g++.dg/parse/non-dependent2.C: Likewise.
+	* g++.old-deja/g++.other/lineno2.C: Give the dg-message directives
+	different messages.
+	* g++.old-deja/g++.pt/t37.C: Likewise.
+
+2026-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123551
+	* g++.dg/ext/goto2.C: New test.
+
+2026-01-14  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/121240
+	* gcc.target/aarch64/dbl_mov_immediate_1.c: Adjust test.
+	* gcc.target/aarch64/pr63304_1.c: Likewise.
+
+2026-01-14  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/114528
+	* gcc.target/aarch64/pr114528.c: New test.
+
+2026-01-14  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR middle-end/123392
+	* gcc.target/aarch64/sve/acle/general/pr123392.c: New.
+
+2026-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120250
+	* gcc.c-torture/compile/pr120250.c: New test.
+
+2026-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123190
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr123190-1.c: Do not
+	require -mtune=generic.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr123190-2.c: Add
+	variant with -O2 instead of -O3, inner loop not unrolled.
+
+2026-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123190
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr123190-1.c: New testcase.
+	* gcc.dg/vect/slp-28.c: Avoid epilogue vectorization for
+	simplicity.
+
+2026-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/123544
+	* gcc.dg/pr123544.c: New test.
+
+2026-01-14  Nathan Sidwell  <nathan@acm.org>
+
+	* lib/scanasm.exp (check_function_body): Clarify mismatch labelling.
+
+2026-01-14  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	* gcc.dg/Wstrict-overflow-1.c: Removed because we no longer
+	issue a 'fold_overflow_warning' with the
+	`(le (minus (@0 INTEGER_CST@1)) INTEGER_CST@2)` pattern.
+
 2026-01-13  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* g++.dg/modules/coro-1_a.C: New test.

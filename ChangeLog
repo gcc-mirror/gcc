@@ -1,3 +1,15 @@
+2026-01-14  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	* MAINTAINERS: Update to my linux.dev email.
+
+2026-01-14  Jason Merrill  <jason@redhat.com>
+
+	* MAINTAINERS: Update Paolo Carlini email address.
+
+2026-01-14  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
 2026-01-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR ada/123490

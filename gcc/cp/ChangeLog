@@ -1,3 +1,65 @@
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.cc (get_fndecl_argument_location): Use DECL_SOURCE_LOCATION
+	for "this".
+	* cp-tree.h (class candidate_context): New.
+	(print_candidates): Add optional candidate_context param.
+	* decl2.cc: Include "gcc-rich-location.h" and
+	"tree-pretty-print-markup.h".
+	(struct fndecl_signature): New.
+	(class parm_rich_location): New.
+	(class fndecl_comparison): New.
+	(class decl_mismatch_context): New.
+	(check_classfn): For the "no declaration matches" case, pass an
+	instance of a custom candidate_context subclass to
+	print_candidates, using fndecl_comparison to report on close
+	matches.
+	* pt.cc (print_candidates): Add optional candidate_context param.
+	Use it if provided to potentially emit per-candidate notes.
+
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.cc (print_z_candidates): Move inform_n call into a new
+	inform_num_candidates function.
+	* class.cc (check_methods): Pass location to call to
+	print_candidates.
+	(resolve_address_of_overloaded_function): Likewise.
+	* cp-tree.h (print_candidates): Add location_t param.
+	(inform_num_candidates): New decl.
+	* decl.cc (make_typename_type): Pass location to call to
+	print_candidates.
+	(reshape_init_class): Likewise.
+	(lookup_and_check_tag): Likewise.
+	* decl2.cc (check_classfn): Likewise.
+	* error.cc (qualified_name_lookup_error): Likewise.
+	* init.cc (build_new_1): Likewise.
+	* name-lookup.cc (lookup_using_decl): Likewise.
+	(set_decl_namespace): Likewise.
+	(push_namespace): Likewise.
+	* parser.cc (cp_parser_nested_name_specifier_opt): Likewise.
+	(cp_parser_lookup_name): Likewise.
+	* pt.cc  (print_candidates_1): Drop, converting the looping part
+	into...
+	(flatten_candidates): ...this new function.
+	(inform_num_candidates): New function.
+	(print_candidates): Use flatten_candidates to build an auto_vec
+	of candidates, and use this to print them here, rather than in
+	print_candidates_1.  Eliminate the dynamic allocation of spaces
+	for a prefix in favor of printing "candidate %i" when there is
+	more than one candidate.  Add "error_loc" param and pass it to
+	inform_num_candidates to show a heading, and add nesting levels
+	for it and for the candidate notes.
+	(determine_specialization): Pass location to calls to
+	print_candidates.
+	* search.cc (lookup_member): Likewise.
+	* semantics.cc (finish_id_expression_1): Likewise.
+
+2026-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123551
+	* constexpr.cc (potential_constant_expression_1) <case GOTO_EXPR>:
+	Only test DECL_ARTIFICIAL on LABEL_DECLs.
+
 2026-01-13  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* coroutines.cc (create_coroutine_info_table): New function.

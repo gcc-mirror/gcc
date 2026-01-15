@@ -1,3 +1,105 @@
+2026-01-14  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/123092
+	* config/riscv/constraints.md (ZD): Disable when xmipscbop is disabled.
+
+2026-01-14  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/123542
+	* ipa-cp.cc (ipa_value_from_jfunc): Always use
+	ipacp_value_safe_for_type.  Bail out if parm_type is NULL.
+
+2026-01-14  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/121240
+	* config/aarch64/aarch64.md (mov<mode>): Expand FP immediates early.
+	* config/aarch64/aarch64.cc (aarch64_select_rtx_section): Force
+	immediates <= 8 bytes to constdata.
+	(aarch64_rtx_costs): Increase cost of CONST_DOUBLE loaded from memory.
+
+2026-01-14  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/114528
+	* config/aarch64/aarch64.cc (aarch64_check_mov_add_imm12):
+	New function to check and emit MOV+ADD/SUB immediates.
+	(aarch64_internal_mov_immediate): Add support for MOV+ADD/SUB
+	immediates.
+
+2026-01-14  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR middle-end/123392
+	* cfgexpand.cc (expand_debug_expr): Handle variable-length initializer
+	for CONSTRUCTOR.
+
+2026-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123115
+	* defaults.h (EH_RETURN_DATA_REGNO): Add void (N) to the macro
+	definition inside of a comma expression before INVALID_REGNUM.
+
+2026-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120250
+	* combine.cc (recog_for_combine): Don't try to put SET_SRC
+	into a constant pool if SET_DEST is pc_rtx.
+
+2026-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123190
+	* tree-vectorizer.h (vect_load_store_data): Add n_loads member.
+	* tree-vect-stmts.cc (get_load_store_type): Record the
+	number of required loads for permuted loads.
+	(vectorizable_load): Make use of this when costing loads
+	for VMAT_CONTIGUOUS[_REVERSE].
+
+2026-01-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123190
+	* tree-vect-loop.cc (vect_analyze_loop_costing): Allow
+	vectorizing loops with a single scalar iteration iff the
+	vectorization factor is 1.
+
+2026-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/123544
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1)
+	<case AND>: Don't canonicalize (subreg (lshiftrt (x cnt)) low) into
+	(lshiftrt (subreg x low) cnt) if the SUBREG is paradoxical.
+
+2026-01-14  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+
+	* auto-profile.cc: (string_table::filenames): New method.
+	(function_instance::timestamp_): New member.
+	(function_instance::timestamp): New accessor for timestamp_ member.
+	(function_instance::set_timestamp): New function.
+	(function_instance::prop_timestamp): Likewise.
+	(function_instance::prop_timestamp_1): Likewise.
+	(function_instance::function_instance): Initialize timestamp_ to 0.
+	(function_instance::read_function_instance): Adjust prototype by
+	replacing head_count with toplevel param with default value true, and
+	stream in head_count and timestamp values from gcov file.
+	(autofdo::timestamp_info_map): New std::map.
+	(autofdo_source_profile::get_function_instance_by_decl): New argument
+	filename with default value NULL.
+	(autofdo_source_profile::read): Populate timestamp_info_map and
+	propagate timestamp to inlined instances from toplevel function.
+	(afdo_annotate_cfg): Assign node->tp_first_run based on
+	timestamp_info_map and bail out of annotation if
+	param_auto_profile_reorder_only is enabled.
+	* params.opt: New param auto-profile-reorder-only.
+
+2026-01-14  Lili Cui  <lili.cui@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_ALIGN_TIGHT_LOOPS):
+	disable tight loop alignment for m_CORE_ATOM.
+
+2026-01-14  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	* match.pd: remove 'fold_overflow_warning' references.
+	* tree.h (TYPE_OVERFLOW_UNDEFINED): remove note telling
+	that we must use warn_strict_overflow for every optimization
+	based on TYPE_OVERFLOW_UNDEFINED.
+
 2026-01-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* match.pd (`(T1)(a bit_op (T2)b)`): Remove redundant

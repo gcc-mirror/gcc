@@ -1,3 +1,23 @@
+2026-01-14  Qing Zhao  <qing.zhao@oracle.com>
+
+	* c-decl.cc (grokfield): Call verify_counted_by_for_top_anonymous_type
+	for named field.
+	(verify_counted_by_attribute): Change the prototype to a recursive
+	routine.
+	(verify_counted_by_for_top_anonymous_type): New routine.
+	(finish_struct): Set C_TYPE_FIELDS_HAS_COUNTED_BY and call the routine
+	verify_counted_by_attribute only for named structure.
+	* c-parser.cc (c_parser_declaration_or_fndef): Call
+	verify_counted_by_for_top_anonymous_type for the decl.
+	(c_parser_parameter_declaration): Call
+	verify_counted_by_for_top_anonymous_type for the parameter.
+	(c_parser_type_name): Call verify_counted_by_for_top_anonymous_type
+	for the type.
+	* c-tree.h (C_TYPE_FIELDS_HAS_COUNTED_BY): New flag.
+	(verify_counted_by_for_top_anonymous_type): New routine.
+	* c-typeck.cc (build_counted_by_ref): Locate the root named structure,
+	build a chain of component_ref starting from the root structure.
+
 2026-01-13  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/123309
