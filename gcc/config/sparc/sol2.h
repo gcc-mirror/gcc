@@ -315,11 +315,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Register the Solaris-specific #pragma directives.  */
 #define REGISTER_TARGET_PRAGMAS() solaris_register_pragmas ()
 
-#if HAVE_AS_TLS && !HAVE_GNU_AS
-#undef	TARGET_SUN_TLS
-#define TARGET_SUN_TLS 1
-#endif
-
 #undef  LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX  "."
 

@@ -557,7 +557,7 @@
 
 ;; Attributes for branch scheduling
 (define_attr "tls_delay_slot" "false,true"
-  (symbol_ref "((!TARGET_SUN_TLS && HAVE_GNU_LD) != 0
+  (symbol_ref "((HAVE_GNU_AS && HAVE_GNU_LD) != 0
 		? TLS_DELAY_SLOT_TRUE : TLS_DELAY_SLOT_FALSE)"))
 
 (define_attr "in_sibcall_delay" "false,true"
@@ -8070,7 +8070,7 @@
 		(unspec:P [(match_operand:P 2 "register_operand" "r")
 			   (match_operand 3 "tie_symbolic_operand" "")]
 			  UNSPEC_TLSIE)))]
-  "TARGET_SUN_TLS"
+  "!HAVE_GNU_AS"
   "add\\t%1, %2, %0, %%tie_add(%a3)")
 
 (define_insn "@tle_hix22<P:mode>"
