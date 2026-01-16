@@ -790,6 +790,14 @@ ftms = {
 };
 
 ftms = {
+  name = atomic_min_max;
+  values = {
+    v = 202403;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = atomic_lock_free_type_aliases;
   values = {
     v = 201907;

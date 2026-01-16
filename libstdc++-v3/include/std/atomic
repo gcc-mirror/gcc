@@ -43,6 +43,7 @@
 #define __glibcxx_want_atomic_is_always_lock_free
 #define __glibcxx_want_atomic_flag_test
 #define __glibcxx_want_atomic_float
+#define __glibcxx_want_atomic_min_max
 #define __glibcxx_want_atomic_ref
 #define __glibcxx_want_atomic_lock_free_type_aliases
 #define __glibcxx_want_atomic_value_initialization
@@ -1568,6 +1569,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      memory_order __m) noexcept
     { return __a->fetch_xor(__i, __m); }
 
+#ifdef __cpp_lib_atomic_min_max
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_min_explicit(__atomic_base<_ITp>* __a,
+			      __atomic_val_t<_ITp> __i,
+			      memory_order __m) noexcept
+    { return __a->fetch_min(__i, __m); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_min_explicit(volatile __atomic_base<_ITp>* __a,
+			      __atomic_val_t<_ITp> __i,
+			      memory_order __m) noexcept
+    { return __a->fetch_min(__i, __m); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_max_explicit(__atomic_base<_ITp>* __a,
+			      __atomic_val_t<_ITp> __i,
+			      memory_order __m) noexcept
+    { return __a->fetch_max(__i, __m); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_max_explicit(volatile __atomic_base<_ITp>* __a,
+			      __atomic_val_t<_ITp> __i,
+			      memory_order __m) noexcept
+    { return __a->fetch_max(__i, __m); }
+#endif
+
   template<typename _ITp>
     inline _ITp
     atomic_fetch_add(atomic<_ITp>* __a,
@@ -1627,6 +1658,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     atomic_fetch_xor(volatile __atomic_base<_ITp>* __a,
 		     __atomic_val_t<_ITp> __i) noexcept
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
+
+#ifdef __cpp_lib_atomic_min_max
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_min(__atomic_base<_ITp>* __a,
+		     __atomic_val_t<_ITp> __i) noexcept
+    { return atomic_fetch_min_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_min(volatile __atomic_base<_ITp>* __a,
+		     __atomic_val_t<_ITp> __i) noexcept
+    { return atomic_fetch_min_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_max(__atomic_base<_ITp>* __a,
+		     __atomic_val_t<_ITp> __i) noexcept
+    { return atomic_fetch_max_explicit(__a, __i, memory_order_seq_cst); }
+
+  template<typename _ITp>
+    inline _ITp
+    atomic_fetch_max(volatile __atomic_base<_ITp>* __a,
+		     __atomic_val_t<_ITp> __i) noexcept
+    { return atomic_fetch_max_explicit(__a, __i, memory_order_seq_cst); }
+#endif
 
 #ifdef __cpp_lib_atomic_float
   template<>

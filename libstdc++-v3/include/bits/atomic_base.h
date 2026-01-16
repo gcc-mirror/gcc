@@ -334,6 +334,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // NB: Assuming _ITp is an integral scalar type that is 1, 2, 4, or
   // 8 bytes, since that is what GCC built-in functions for atomic
   // memory access expect.
+
+  namespace __atomic_impl
+  {
+    template<typename _Tp>
+      using _Val = typename remove_volatile<_Tp>::type;
+
+#if __glibcxx_atomic_min_max
+    template<typename _Tp>
+      _Tp
+      __fetch_min(_Tp* __ptr, _Val<_Tp> __i, memory_order __m) noexcept;
+
+    template<typename _Tp>
+      _Tp
+      __fetch_max(_Tp* __ptr, _Val<_Tp> __i, memory_order __m) noexcept;
+#endif
+  }
+
   template<typename _ITp>
     struct __atomic_base
     {
@@ -674,6 +691,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       fetch_xor(__int_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_xor(&_M_i, __i, int(__m)); }
+
+#if __glibcxx_atomic_min_max
+      _GLIBCXX_ALWAYS_INLINE __int_type
+      fetch_min(__int_type __i,
+		memory_order __m = memory_order_seq_cst) noexcept
+      { return __atomic_impl::__fetch_min(&_M_i, __i, __m); }
+
+      _GLIBCXX_ALWAYS_INLINE __int_type
+      fetch_min(__int_type __i,
+		memory_order __m = memory_order_seq_cst) volatile noexcept
+      { return __atomic_impl::__fetch_min(&_M_i, __i, __m); }
+
+      _GLIBCXX_ALWAYS_INLINE __int_type
+      fetch_max(__int_type __i,
+		memory_order __m = memory_order_seq_cst) noexcept
+      { return __atomic_impl::__fetch_max(&_M_i, __i, __m); }
+
+      _GLIBCXX_ALWAYS_INLINE __int_type
+      fetch_max(__int_type __i,
+		memory_order __m = memory_order_seq_cst) volatile noexcept
+      { return __atomic_impl::__fetch_max(&_M_i, __i, __m); }
+#endif
     };
 
 
@@ -975,10 +1014,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	return __ptr;
       }
-
-    // Remove volatile and create a non-deduced context for value arguments.
-    template<typename _Tp>
-      using _Val = typename remove_volatile<_Tp>::type;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
@@ -1293,6 +1328,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __newval;
 	  }
       }
+
+#if __glibcxx_atomic_min_max
+    template<typename _Tp>
+      concept __atomic_fetch_minmaxable
+	= requires (_Tp __t) {
+	    __atomic_fetch_min(&__t, __t, 0);
+	    __atomic_fetch_max(&__t, __t, 0);
+	  };
+
+    template<typename _Tp>
+      _Tp
+      __fetch_min(_Tp* __ptr, _Val<_Tp> __i, memory_order __m) noexcept
+      {
+	if constexpr (__atomic_fetch_minmaxable<_Tp>)
+	  return __atomic_fetch_min(__ptr, __i, int(__m));
+	else
+	  {
+	    _Val<_Tp> __oldval = load (__ptr, memory_order_relaxed);
+	    _Val<_Tp> __newval = __oldval < __i ? __oldval : __i;
+	    while (!compare_exchange_weak (__ptr, __oldval, __newval, __m,
+					   memory_order_relaxed))
+	      __newval = __oldval < __i ? __oldval : __i;
+	    return __oldval;
+	  }
+      }
+
+    template<typename _Tp>
+      _Tp
+      __fetch_max(_Tp* __ptr, _Val<_Tp> __i, memory_order __m) noexcept
+      {
+	if constexpr (__atomic_fetch_minmaxable<_Tp>)
+	  return __atomic_fetch_max(__ptr, __i, int(__m));
+	else
+	  {
+	    _Val<_Tp> __oldval = load (__ptr, memory_order_relaxed);
+	    _Val<_Tp> __newval = __oldval > __i ? __oldval : __i;
+	    while (!compare_exchange_weak (__ptr, __oldval, __newval, __m,
+					   memory_order_relaxed))
+	      __newval = __oldval > __i ? __oldval : __i;
+	    return __oldval;
+	  }
+      }
+#endif
   } // namespace __atomic_impl
 
   // base class for atomic<floating-point-type>
@@ -1486,6 +1564,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       fetch_sub(value_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_impl::__fetch_sub_flt(&_M_fp, __i, __m); }
+
+#if __glibcxx_atomic_min_max
+      value_type
+      fetch_min(value_type __i,
+		memory_order __m = memory_order_seq_cst) noexcept
+      { return __atomic_impl::__fetch_min(&_M_fp, __i, __m); }
+
+      value_type
+      fetch_min(value_type __i,
+		memory_order __m = memory_order_seq_cst) volatile noexcept
+      { return __atomic_impl::__fetch_min(&_M_fp, __i, __m); }
+
+      value_type
+      fetch_max(value_type __i,
+		memory_order __m = memory_order_seq_cst) noexcept
+      { return __atomic_impl::__fetch_max(&_M_fp, __i, __m); }
+
+      value_type
+      fetch_max(value_type __i,
+		memory_order __m = memory_order_seq_cst) volatile noexcept
+      { return __atomic_impl::__fetch_max(&_M_fp, __i, __m); }
+#endif
 
       value_type
       operator+=(value_type __i) noexcept
@@ -1746,6 +1846,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::fetch_xor(this->_M_ptr, __i, __m); }
 
+#if __glibcxx_atomic_min_max
+      value_type
+      fetch_min(value_type __i,
+		memory_order __m = memory_order_seq_cst) const noexcept
+      { return __atomic_impl::__fetch_min(this->_M_ptr, __i, __m); }
+
+      value_type
+      fetch_max(value_type __i,
+		memory_order __m = memory_order_seq_cst) const noexcept
+      { return __atomic_impl::__fetch_max(this->_M_ptr, __i, __m); }
+#endif
+
       _GLIBCXX_ALWAYS_INLINE value_type
       operator++(int) const noexcept
       { return fetch_add(1); }
@@ -1811,6 +1923,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       fetch_sub(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::__fetch_sub_flt(this->_M_ptr, __i, __m); }
+
+#if __glibcxx_atomic_min_max
+      value_type
+      fetch_min(value_type __i,
+		memory_order __m = memory_order_seq_cst) const noexcept
+      { return __atomic_impl::__fetch_min(this->_M_ptr, __i, __m); }
+
+      value_type
+      fetch_max(value_type __i,
+		memory_order __m = memory_order_seq_cst) const noexcept
+      { return __atomic_impl::__fetch_max(this->_M_ptr, __i, __m); }
+#endif
 
       value_type
       operator+=(value_type __i) const noexcept

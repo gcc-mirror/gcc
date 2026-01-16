@@ -878,6 +878,16 @@
 #endif /* !defined(__cpp_lib_atomic_float) */
 #undef __glibcxx_want_atomic_float
 
+#if !defined(__cpp_lib_atomic_min_max)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_atomic_min_max 202403L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_atomic_min_max)
+#   define __cpp_lib_atomic_min_max 202403L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_atomic_min_max) */
+#undef __glibcxx_want_atomic_min_max
+
 #if !defined(__cpp_lib_atomic_lock_free_type_aliases)
 # if (__cplusplus >= 202002L) && ((__GCC_ATOMIC_INT_LOCK_FREE | __GCC_ATOMIC_LONG_LOCK_FREE | __GCC_ATOMIC_CHAR_LOCK_FREE) & 2)
 #  define __glibcxx_atomic_lock_free_type_aliases 201907L
