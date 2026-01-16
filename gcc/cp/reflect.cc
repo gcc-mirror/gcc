@@ -147,8 +147,7 @@ get_reflection (location_t loc, tree t, reflect_kind kind/*=REFLECT_UNDEF*/)
      R is ill-formed.  */
   else if (is_capture_proxy (t))
     {
-      error_at (loc, "%<^^%> cannot be applied to a local entity declared "
-		"by init-capture");
+      error_at (loc, "%<^^%> cannot be applied to a capture %qD", t);
       return error_mark_node;
     }
   /* If the id-expression denotes a local parameter introduced by

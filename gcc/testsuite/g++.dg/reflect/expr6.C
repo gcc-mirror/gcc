@@ -39,11 +39,11 @@ h ()
   int y = 42;
   [x_=x, y]() {
     constexpr auto r1 = ^^x;  // { dg-error "intervening lambda expression" }
-    constexpr auto r2 = ^^x_; // { dg-error "local entity declared by init-capture" }
+    constexpr auto r2 = ^^x_; // { dg-error "cannot be applied to a capture .x_." }
     constexpr auto r3 = ^^y;  // { dg-error "intervening lambda expression" }
 
     [x_]() {
-      constexpr auto r4 = ^^x_;	// { dg-error "local entity declared by init-capture" }
+      constexpr auto r4 = ^^x_;	// { dg-error "cannot be applied to a capture .x_." }
     };
   };
 }
