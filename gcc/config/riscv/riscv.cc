@@ -3607,7 +3607,7 @@ riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
   return false;
 }
 
-/* Analyze src and emit const_poly_int mov sequence. 
+/* Analyze src and emit const_poly_int mov sequence.
 
    Essentially we want to generate (set (dest) (src)), where SRC is
    a poly_int.  We may need TMP as a scratch register.  We assume TMP
@@ -3691,7 +3691,7 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
       gcc_assert (set);
       gcc_assert (SET_SRC (set) == tmp);
       gcc_assert (SET_DEST (set) == dest);
- 
+
       /* Now back up one real insn and see if it sets TMP, if so adjust
 	 it so that it sets DEST.  */
       rtx_insn *insn2 = prev_nonnote_nondebug_insn (insn);
@@ -3702,7 +3702,7 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
 	  /* Turn the prior insn into a NOP.  But don't delete.  */
 	  SET_SRC (set) = SET_DEST (set);
 	}
- 
+
     }
 
   HOST_WIDE_INT constant = offset - factor;
@@ -7246,6 +7246,20 @@ riscv_vector_required_min_vlen (const_tree type)
   return element_bitsize;
 }
 
+static bool
+riscv_vector_fractional_lmul_p (const_tree type)
+{
+  machine_mode mode = TYPE_MODE (type);
+  if (VECTOR_MODE_P (mode))
+    {
+      enum vlmul_type vlmul = get_vlmul (mode);
+      if (vlmul == LMUL_F2 || vlmul == LMUL_F4 || vlmul == LMUL_F8)
+       return true;
+    }
+
+  return false;
+}
+
 static void
 riscv_validate_vector_type (const_tree type, const char *hint)
 {
@@ -7309,6 +7323,14 @@ riscv_validate_vector_type (const_tree type, const char *hint)
 	input_location,
 	"%s %qT requires the minimal vector length %qd but %qd is given",
 	hint, type, required_min_vlen, TARGET_MIN_VLEN);
+      return;
+    }
+
+  if (riscv_vector_fractional_lmul_p (type)
+      && TARGET_XTHEADVECTOR)
+    {
+      error_at (input_location, "%s %qT requires the V ISA extension",
+		hint, type);
       return;
     }
 }

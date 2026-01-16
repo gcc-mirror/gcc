@@ -115,6 +115,9 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 enum required_ext
 {
   VECTOR_EXT,		/* Vector extension */
+  VECTOR_EXT_NO_XTHEAD, /* Vector extensions parts unsupported by
+			   TheadVector. */
+  XTHEADVECTOR_EXT,	/* XTheadVector extension */
   ZVBB_EXT,		/* Crypto vector Zvbb sub-ext */
   ZVBB_OR_ZVKB_EXT,	/* Crypto vector Zvbb or zvkb sub-ext */
   ZVBC_EXT,		/* Crypto vector Zvbc sub-ext */
@@ -124,25 +127,65 @@ enum required_ext
   ZVKNHB_EXT,		/* Crypto vector Zvknhb sub-ext */
   ZVKSED_EXT,		/* Crypto vector Zvksed sub-ext */
   ZVKSH_EXT,		/* Crypto vector Zvksh sub-ext */
-  XTHEADVECTOR_EXT,	/* XTheadVector extension */
   ZVFBFMIN_EXT,		/* Zvfbfmin extension */
   ZVFBFWMA_EXT,		/* Zvfbfwma extension */
   XSFVQMACCQOQ_EXT,	/* XSFVQMACCQOQ extension */
   XSFVQMACCDOD_EXT,	/* XSFVQMACCDOD extension */
   XSFVFNRCLIPXFQF_EXT,	/* XSFVFNRCLIPXFQF extension */
-  XSFVCP_EXT, /* XSFVCP extension*/
-  XANDESVBFHCVT_EXT,    /* XANDESVBFHCVT extension */
-  XANDESVSINTLOAD_EXT,  /* XANDESVSINTLOAD extension */
-  XANDESVPACKFPH_EXT,   /* XANDESVPACKFPH extension */
-  XANDESVDOT_EXT,       /* XANDESVDOT extension */
-  /* Please update below to isa_name func when add or remove enum type(s).  */
+  XSFVCP_EXT,		/* XSFVCP extension */
+  XANDESVBFHCVT_EXT,	/* XANDESVBFHCVT extension */
+  XANDESVSINTLOAD_EXT,	/* XANDESVSINTLOAD extension */
+  XANDESVPACKFPH_EXT,	/* XANDESVPACKFPH extension */
+  XANDESVDOT_EXT,	/* XANDESVDOT extension */
+  /* Please update required_ext_to_isa_name and required_extensions_specified
+     when adding or removing enum values.  */
 };
+
+enum rvv_builtin_partition
+{
+  RVV_PARTITION_VECTOR,
+  RVV_PARTITION_VECTOR_NO_XTHEAD,
+  RVV_PARTITION_XTHEADVECTOR,
+  RVV_PARTITION_ZVBB,
+  RVV_PARTITION_ZVBB_OR_ZVKB,
+  RVV_PARTITION_ZVBC,
+  RVV_PARTITION_ZVKG,
+  RVV_PARTITION_ZVKNED,
+  RVV_PARTITION_ZVKNHA_OR_ZVKNHB,
+  RVV_PARTITION_ZVKNHB,
+  RVV_PARTITION_ZVKSED,
+  RVV_PARTITION_ZVKSH,
+  RVV_PARTITION_ZVFBFMIN,
+  RVV_PARTITION_ZVFBFWMA,
+  RVV_PARTITION_ZVFHMIN,
+  RVV_PARTITION_ZVFH,
+  RVV_PARTITION_XSFVQMACCQOQ,
+  RVV_PARTITION_XSFVQMACCDOD,
+  RVV_PARTITION_XSFVFNRCLIPXFQF,
+  RVV_PARTITION_XSFVCP,
+  RVV_PARTITION_XANDESVBFHCVT,
+  RVV_PARTITION_XANDESVSINTLOAD,
+  RVV_PARTITION_XANDESVPACKFPH,
+  RVV_PARTITION_XANDESVDOT,
+  NUM_RVV_EXT_PARTITIONS
+};
+
+/* Partition encoding for builtin function codes.
+     Bit 0:       RISCV_BUILTIN_VECTOR (class bit)
+     Bits 1-8:    Partition (rvv_builtin_partition enum)
+     Bits 9+:     Index within partition.
+     */
+const unsigned int RVV_EXT_PARTITION_BITS = 8;
+const unsigned int RVV_EXT_PARTITION_SHIFT = 1; /* Class Bit.  */
+const unsigned int RVV_SUBCODE_SHIFT = RVV_EXT_PARTITION_SHIFT
+				       + RVV_EXT_PARTITION_BITS;
 
 static inline const char * required_ext_to_isa_name (enum required_ext required)
 {
   switch (required)
   {
     case VECTOR_EXT:
+    case VECTOR_EXT_NO_XTHEAD:
       return "v";
     case ZVBB_EXT:
       return "zvbb";
@@ -196,7 +239,9 @@ static inline bool required_extensions_specified (enum required_ext required)
   switch (required)
   {
     case VECTOR_EXT:
-      return TARGET_VECTOR;;
+      return TARGET_VECTOR;
+    case VECTOR_EXT_NO_XTHEAD:
+      return TARGET_VECTOR && !TARGET_XTHEADVECTOR;
     case ZVBB_EXT:
       return TARGET_ZVBB;
     case ZVBB_OR_ZVKB_EXT:

@@ -3563,8 +3563,117 @@ static GTY (()) tree abi_vector_types[NUM_VECTOR_TYPES + 1];
 extern GTY (()) rvv_builtin_types_t builtin_types[NUM_VECTOR_TYPES + 1];
 rvv_builtin_types_t builtin_types[NUM_VECTOR_TYPES + 1];
 
-/* The list of all registered function decls, indexed by code.  */
-static GTY (()) vec<registered_function *, va_gc> *registered_functions;
+/* Per-partition vectors of registered functions.  */
+static GTY (()) vec<registered_function *, va_gc>
+  *partition_functions[NUM_RVV_EXT_PARTITIONS];
+
+/* Return true if TYPE uses fractional LMUL (mf2, mf4, mf8).  */
+static bool
+is_fractional_lmul (vector_type_index type)
+{
+  /* Check if the type suffix contains "mf" indicating fractional LMUL.  */
+  if (type >= NUM_VECTOR_TYPES)
+    return false;
+  const char *suffix = type_suffixes[type].vector;
+  return suffix && strstr (suffix, "mf") != NULL;
+}
+
+/* Return true if BASE is an intrinsic unsupported by XTheadVector.
+   According to
+    https://github.com/XUANTIE-RV/thead-extension-spec/blob/master/xtheadvector/intrinsics.adoc#xtheadvector
+
+   XTheadVector lacks support for:
+   - Fractional LMUL types (checked separately via is_fractional_lmul)
+   - vlm/vsm
+   - vzext/vsext
+   - vaaddu/vasubu
+   - vfrsqrt7/vfrec7
+   - vfslide1up/vfslide1down
+   - vluxseg/vsuxseg
+   - vluxei8/vluxei16/vluxei32/vluxei64
+   - vrgatherei16.  */
+
+static bool
+xthvector_unsupported_p (const function_base *base)
+{
+  return base == bases::vlm
+	 || base == bases::vsm
+	 || base == bases::vzext
+	 || base == bases::vsext
+	 || base == bases::vaaddu
+	 || base == bases::vasubu
+	 || base == bases::vfrsqrt7
+	 || base == bases::vfrec7
+	 || base == bases::vfrec7_frm
+	 || base == bases::vfslide1up
+	 || base == bases::vfslide1down
+	 || base == bases::vluxseg
+	 || base == bases::vsuxseg
+	 || base == bases::vluxei8
+	 || base == bases::vluxei16
+	 || base == bases::vluxei32
+	 || base == bases::vluxei64
+	 || base == bases::vrgatherei16;
+}
+
+/* Map required_ext to partition, splitting VECTOR_EXT based on instance.  */
+static rvv_builtin_partition
+get_builtin_partition (required_ext ext, const function_instance &instance)
+{
+  switch (ext)
+    {
+    case VECTOR_EXT:
+      if (is_fractional_lmul (instance.type.index)
+	  || xthvector_unsupported_p (instance.base))
+	return RVV_PARTITION_VECTOR_NO_XTHEAD;
+      else
+	return RVV_PARTITION_VECTOR;
+    case VECTOR_EXT_NO_XTHEAD:
+      return RVV_PARTITION_VECTOR_NO_XTHEAD;
+    case XTHEADVECTOR_EXT:
+      return RVV_PARTITION_XTHEADVECTOR;
+    case ZVBB_EXT:
+      return RVV_PARTITION_ZVBB;
+    case ZVBB_OR_ZVKB_EXT:
+      return RVV_PARTITION_ZVBB_OR_ZVKB;
+    case ZVBC_EXT:
+      return RVV_PARTITION_ZVBC;
+    case ZVKG_EXT:
+      return RVV_PARTITION_ZVKG;
+    case ZVKNED_EXT:
+      return RVV_PARTITION_ZVKNED;
+    case ZVKNHA_OR_ZVKNHB_EXT:
+      return RVV_PARTITION_ZVKNHA_OR_ZVKNHB;
+    case ZVKNHB_EXT:
+      return RVV_PARTITION_ZVKNHB;
+    case ZVKSED_EXT:
+      return RVV_PARTITION_ZVKSED;
+    case ZVKSH_EXT:
+      return RVV_PARTITION_ZVKSH;
+    case ZVFBFMIN_EXT:
+      return RVV_PARTITION_ZVFBFMIN;
+    case ZVFBFWMA_EXT:
+      return RVV_PARTITION_ZVFBFWMA;
+    case XSFVQMACCQOQ_EXT:
+      return RVV_PARTITION_XSFVQMACCQOQ;
+    case XSFVQMACCDOD_EXT:
+      return RVV_PARTITION_XSFVQMACCDOD;
+    case XSFVFNRCLIPXFQF_EXT:
+      return RVV_PARTITION_XSFVFNRCLIPXFQF;
+    case XSFVCP_EXT:
+      return RVV_PARTITION_XSFVCP;
+    case XANDESVBFHCVT_EXT:
+      return RVV_PARTITION_XANDESVBFHCVT;
+    case XANDESVSINTLOAD_EXT:
+      return RVV_PARTITION_XANDESVSINTLOAD;
+    case XANDESVPACKFPH_EXT:
+      return RVV_PARTITION_XANDESVPACKFPH;
+    case XANDESVDOT_EXT:
+      return RVV_PARTITION_XANDESVDOT;
+    default:
+      gcc_unreachable ();
+    }
+}
 
 /* All registered function decls, hashed on the function_instance
    that they implement.  This is used for looking up implementations of
@@ -4448,8 +4557,15 @@ function_builder::add_function (const function_instance &instance,
 				enum required_ext required,
 				bool overloaded_p = false)
 {
-  unsigned int code = vec_safe_length (registered_functions);
-  code = (code << RISCV_BUILTIN_SHIFT) + RISCV_BUILTIN_VECTOR;
+  /* Compute the partition for this function.  The per-partition index
+     is determined by the current length of that partition's vector.  */
+  rvv_builtin_partition ext_partition
+    = get_builtin_partition (required, instance);
+  unsigned int index = vec_safe_length (partition_functions[ext_partition]);
+
+  unsigned int code = (index << RVV_SUBCODE_SHIFT)
+		      | (ext_partition << RVV_EXT_PARTITION_SHIFT)
+		      | RISCV_BUILTIN_VECTOR;
 
   /* We need to be able to generate placeholders to ensure that we have a
      consistent numbering scheme for function codes between the C and C++
@@ -4475,8 +4591,15 @@ function_builder::add_function (const function_instance &instance,
   rfn.overload_name = overload_name ? xstrdup (overload_name) : NULL;
   rfn.argument_types = argument_types;
   rfn.overloaded_p = overloaded_p;
-  rfn.required = required;
-  vec_safe_push (registered_functions, &rfn);
+  /* Update required extension based on partition.  Functions placed in
+     the NO_XTHEAD partition due to fractional LMUL or unsupported ops
+     need VECTOR_EXT_NO_XTHEAD to get proper error messages.  */
+  if (ext_partition == RVV_PARTITION_VECTOR_NO_XTHEAD
+      && required == VECTOR_EXT)
+    rfn.required = VECTOR_EXT_NO_XTHEAD;
+  else
+    rfn.required = required;
+  vec_safe_push (partition_functions[ext_partition], &rfn);
 
   return rfn;
 }
@@ -5422,15 +5545,34 @@ handle_pragma_vector ()
     builder.register_function_group (function_groups[i]);
 }
 
+/* Find the registered_function with the given subcode (code without
+   the class bit), or return NULL.  */
+static registered_function *
+lookup_registered_function (unsigned int subcode)
+{
+  unsigned int partition = subcode & ((1u << RVV_EXT_PARTITION_BITS) - 1);
+  unsigned int index = subcode >> RVV_EXT_PARTITION_BITS;
+
+  if (partition >= NUM_RVV_EXT_PARTITIONS)
+    return NULL;
+
+  vec<registered_function *, va_gc> *funcs = partition_functions[partition];
+  if (!funcs || index >= funcs->length ())
+    return NULL;
+
+  return (*funcs)[index];
+}
+
 /* Return the function decl with RVV function subcode CODE, or error_mark_node
    if no such function exists.  */
 tree
 builtin_decl (unsigned int code, bool)
 {
-  if (code >= vec_safe_length (registered_functions))
+  registered_function *rfn = lookup_registered_function (code);
+  if (!rfn)
     return error_mark_node;
 
-  return (*registered_functions)[code]->decl;
+  return rfn->decl;
 }
 
 /* Attempt to fold STMT, given that it's a call to the RVV function
@@ -5439,8 +5581,10 @@ builtin_decl (unsigned int code, bool)
 gimple *
 gimple_fold_builtin (unsigned int code, gimple_stmt_iterator *gsi, gcall *stmt)
 {
-  registered_function &rfn = *(*registered_functions)[code];
-  return gimple_folder (rfn.instance, rfn.decl, gsi, stmt).fold ();
+  registered_function *rfn = lookup_registered_function (code);
+  if (!rfn)
+    return NULL;
+  return gimple_folder (rfn->instance, rfn->decl, gsi, stmt).fold ();
 }
 
 static bool
@@ -5507,21 +5651,26 @@ validate_instance_type_required_extensions (const rvv_type_info type,
 rtx
 expand_builtin (unsigned int code, tree exp, rtx target)
 {
-  registered_function &rfn = *(*registered_functions)[code];
+  registered_function *rfn = lookup_registered_function (code);
+  if (!rfn)
+    {
+      error_at (EXPR_LOCATION (exp), "unrecognized RVV builtin");
+      return target;
+    }
 
-  if (!required_extensions_specified (rfn.required))
+  if (!required_extensions_specified (rfn->required))
     {
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qE requires the %qs ISA extension",
 		exp,
-		required_ext_to_isa_name (rfn.required));
+		required_ext_to_isa_name (rfn->required));
       return target;
     }
 
-  if (!validate_instance_type_required_extensions (rfn.instance.type, exp))
+  if (!validate_instance_type_required_extensions (rfn->instance.type, exp))
     return target;
 
-  return function_expander (rfn.instance, rfn.decl, exp, target).expand ();
+  return function_expander (rfn->instance, rfn->decl, exp, target).expand ();
 }
 
 /* Perform any semantic checks needed for a call to the RVV function
@@ -5535,19 +5684,18 @@ bool
 check_builtin_call (location_t location, vec<location_t>, unsigned int code,
 		    tree fndecl, unsigned int nargs, tree *args)
 {
-  const registered_function &rfn = *(*registered_functions)[code];
-  return function_checker (location, rfn.instance, fndecl,
-			   TREE_TYPE (rfn.decl), nargs, args).check ();
+  registered_function *rfn = lookup_registered_function (code);
+  if (!rfn)
+    return false;
+  return function_checker (location, rfn->instance, fndecl,
+			   TREE_TYPE (rfn->decl), nargs, args).check ();
 }
 
 tree
 resolve_overloaded_builtin (location_t loc, unsigned int code, tree fndecl,
 			    vec<tree, va_gc> *arglist)
 {
-  if (code >= vec_safe_length (registered_functions))
-    return NULL_TREE;
-
-  registered_function *rfun = (*registered_functions)[code];
+  registered_function *rfun = lookup_registered_function (code);
 
   if (!rfun || !rfun->overloaded_p)
     return NULL_TREE;
