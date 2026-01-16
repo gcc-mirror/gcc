@@ -271,6 +271,10 @@ case ${host} in
     out_host_hook_obj=host-linux.o
     host_xmake_file="${host_xmake_file} x-linux"
     ;;
+  *-*-freebsd*)
+    out_host_hook_obj=host-freebsd.o
+    host_xmake_file="${host_xmake_file} x-freebsd"
+    ;;
   *-*-openbsd*)
     out_host_hook_obj=host-openbsd.o
     host_xmake_file="${host_xmake_file} x-openbsd"
