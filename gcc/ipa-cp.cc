@@ -3355,7 +3355,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
 	continue;
 
       /* Only bare minimum benefit for clearly un-inlineable targets.  */
-      int savings = 1;
+      res = res + ie->combined_sreal_frequency ();
       callee = cgraph_node::get (target);
       if (!callee || !callee->definition)
 	continue;
@@ -3366,18 +3366,21 @@ devirtualization_time_bonus (struct cgraph_node *node,
       if (!isummary || !isummary->inlinable)
 	continue;
 
+      int savings = 0;
       int size = ipa_size_summaries->get (callee)->size;
       /* FIXME: The values below need re-considering and perhaps also
 	 integrating into the cost metrics, at lest in some very basic way.  */
       int max_inline_insns_auto
 	= opt_for_fn (callee->decl, param_max_inline_insns_auto);
       if (size <= max_inline_insns_auto / 4)
-	savings += 31 / ((int)speculative + 1);
+	savings = 31 / ((int)speculative + 1);
       else if (size <= max_inline_insns_auto / 2)
-	savings += 15 / ((int)speculative + 1);
+	savings = 15 / ((int)speculative + 1);
       else if (size <= max_inline_insns_auto
 	       || DECL_DECLARED_INLINE_P (callee->decl))
-	savings += 7 / ((int)speculative + 1);
+	savings = 7 / ((int)speculative + 1);
+      else
+	continue;
       res = res + ie->combined_sreal_frequency () * (sreal) savings;
     }
 
