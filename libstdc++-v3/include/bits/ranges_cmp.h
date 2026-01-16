@@ -71,10 +71,11 @@ namespace ranges
 	= requires (_Tp&& __t, _Up&& __u) { { __t < __u } -> same_as<bool>; }
 	  && convertible_to<_Tp, const volatile void*>
 	  && convertible_to<_Up, const volatile void*>
-	  && (! requires(_Tp&& __t, _Up&& __u)
+	  && ! requires(_Tp&& __t, _Up&& __u)
 	      { operator<(std::forward<_Tp>(__t), std::forward<_Up>(__u)); }
-	      && ! requires(_Tp&& __t, _Up&& __u)
-	      { std::forward<_Tp>(__t).operator<(std::forward<_Up>(__u)); });
+	  && ! requires(_Tp&& __t, _Up&& __u)
+	      { std::forward<_Tp>(__t).operator<(std::forward<_Up>(__u)); }
+	  && std::__detail::__not_overloaded_spaceship<_Tp, _Up>;
   } // namespace __detail
 
   // [range.cmp] Concept-constrained comparisons

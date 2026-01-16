@@ -405,6 +405,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Rel, typename _Tp, typename _Up>
     concept strict_weak_order = relation<_Rel, _Tp, _Up>;
 
+  namespace __detail
+  {
+    // operator<=> are automatically reversed, so we need to consider
+    // both directions if types are different.
+    template<typename _Tp, typename _Up>
+      concept __not_overloaded_spaceship
+        =  ! requires(_Tp&& __t, _Up&& __u)
+	    { operator<=>(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)); }
+	&& ! requires(_Tp&& __t, _Up&& __u)
+	    { static_cast<_Tp&&>(__t).operator<=>(static_cast<_Up&&>(__u)); }
+	&& (is_same_v<_Tp, _Up>
+	    || (! requires(_Tp&& __t, _Up&& __u)
+	         { operator<=>(static_cast<_Up&&>(__u), static_cast<_Tp&&>(__t)); }
+	       && ! requires(_Tp&& __t, _Up&& __u)
+	         { static_cast<_Up&&>(__u).operator<=>(static_cast<_Tp&&>(__t)); }));
+  }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 #endif // __cpp_lib_concepts

@@ -560,10 +560,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	  { static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u); }
 	  && convertible_to<_Tp, const volatile void*>
 	  && convertible_to<_Up, const volatile void*>
-	  && ! requires(_Tp&& __t, _Up&& __u)
-	  { operator<=>(static_cast<_Tp&&>(__t), static_cast<_Up&&>(__u)); }
-	  && ! requires(_Tp&& __t, _Up&& __u)
-	  { static_cast<_Tp&&>(__t).operator<=>(static_cast<_Up&&>(__u)); };
+	  && __not_overloaded_spaceship<_Tp, _Up>;
   } // namespace __detail
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS

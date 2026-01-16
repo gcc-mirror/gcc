@@ -59,6 +59,9 @@
 #if __cplusplus > 201103L
 #include <bits/move.h>
 #endif
+#if __cplusplus >= 202002L
+#include <concepts>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -525,8 +528,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(noexcept(std::forward<_Tp>(__t) > std::forward<_Up>(__u)))
 	-> decltype(std::forward<_Tp>(__t) > std::forward<_Up>(__u))
 	{
-	  return _S_cmp(std::forward<_Tp>(__t), std::forward<_Up>(__u),
-			__ptr_cmp<_Tp, _Up>{});
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	  if constexpr (__ptr_cmp<_Tp, _Up>)
+	    return greater<const volatile void*>{}(
+	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
+	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
+	  else
+	    return std::forward<_Tp>(__t) > std::forward<_Up>(__u);
+#pragma GCC diagnostic pop
 	}
 
       template<typename _Tp, typename _Up>
@@ -537,20 +547,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __is_transparent is_transparent;
 
     private:
-      template <typename _Tp, typename _Up>
-	static constexpr decltype(auto)
-	_S_cmp(_Tp&& __t, _Up&& __u, false_type)
-	{ return std::forward<_Tp>(__t) > std::forward<_Up>(__u); }
-
-      template <typename _Tp, typename _Up>
-	static constexpr bool
-	_S_cmp(_Tp&& __t, _Up&& __u, true_type) noexcept
+#if __cplusplus >= 202002L
+      template<typename _Tp, typename _Up>
+	static constexpr bool __ptr_cmp = requires
 	{
-	  return greater<const volatile void*>{}(
-	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
-	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
-	}
-
+	  requires
+	       ! requires
+		{ operator>(std::declval<_Tp>(), std::declval<_Up>()); }
+	    && ! requires
+		{ std::declval<_Tp>().operator>(std::declval<_Up>()); }
+	    && __detail::__not_overloaded_spaceship<_Tp, _Up>
+	    && is_convertible_v<_Tp, const volatile void*>
+	    && is_convertible_v<_Up, const volatile void*>;
+	};
+#else
       // True if there is no viable operator> member function.
       template<typename _Tp, typename _Up, typename = void>
 	struct __not_overloaded2 : true_type { };
@@ -572,9 +582,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: false_type { };
 
       template<typename _Tp, typename _Up>
-	using __ptr_cmp = __and_<__not_overloaded<_Tp, _Up>,
-	      is_convertible<_Tp, const volatile void*>,
-	      is_convertible<_Up, const volatile void*>>;
+	static constexpr bool __ptr_cmp = __and_<
+	  __not_overloaded<_Tp, _Up>,
+	  is_convertible<_Tp, const volatile void*>,
+	  is_convertible<_Up, const volatile void*>>::value;
+#endif
     };
 
   /// One of the @link comparison_functors comparison functors@endlink.
@@ -587,8 +599,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(noexcept(std::forward<_Tp>(__t) < std::forward<_Up>(__u)))
 	-> decltype(std::forward<_Tp>(__t) < std::forward<_Up>(__u))
 	{
-	  return _S_cmp(std::forward<_Tp>(__t), std::forward<_Up>(__u),
-			__ptr_cmp<_Tp, _Up>{});
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	  if constexpr (__ptr_cmp<_Tp, _Up>)
+	    return less<const volatile void*>{}(
+	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
+	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
+	  else
+	    return std::forward<_Tp>(__t) < std::forward<_Up>(__u);
+#pragma GCC diagnostic pop
 	}
 
       template<typename _Tp, typename _Up>
@@ -599,20 +618,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __is_transparent is_transparent;
 
     private:
-      template <typename _Tp, typename _Up>
-	static constexpr decltype(auto)
-	_S_cmp(_Tp&& __t, _Up&& __u, false_type)
-	{ return std::forward<_Tp>(__t) < std::forward<_Up>(__u); }
-
-      template <typename _Tp, typename _Up>
-	static constexpr bool
-	_S_cmp(_Tp&& __t, _Up&& __u, true_type) noexcept
+#if __cplusplus >= 202002L
+      template<typename _Tp, typename _Up>
+	static constexpr bool __ptr_cmp = requires
 	{
-	  return less<const volatile void*>{}(
-	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
-	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
-	}
-
+	  requires
+	       ! requires
+		{ operator<(std::declval<_Tp>(), std::declval<_Up>()); }
+	    && ! requires
+		{ std::declval<_Tp>().operator<(std::declval<_Up>()); }
+	    && __detail::__not_overloaded_spaceship<_Tp, _Up>
+	    && is_convertible_v<_Tp, const volatile void*>
+	    && is_convertible_v<_Up, const volatile void*>;
+	};
+#else
       // True if there is no viable operator< member function.
       template<typename _Tp, typename _Up, typename = void>
 	struct __not_overloaded2 : true_type { };
@@ -634,9 +653,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: false_type { };
 
       template<typename _Tp, typename _Up>
-	using __ptr_cmp = __and_<__not_overloaded<_Tp, _Up>,
-	      is_convertible<_Tp, const volatile void*>,
-	      is_convertible<_Up, const volatile void*>>;
+	static constexpr bool __ptr_cmp = __and_<
+	  __not_overloaded<_Tp, _Up>,
+	  is_convertible<_Tp, const volatile void*>,
+	  is_convertible<_Up, const volatile void*>>::value;
+#endif
     };
 
   /// One of the @link comparison_functors comparison functors@endlink.
@@ -649,8 +670,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(noexcept(std::forward<_Tp>(__t) >= std::forward<_Up>(__u)))
 	-> decltype(std::forward<_Tp>(__t) >= std::forward<_Up>(__u))
 	{
-	  return _S_cmp(std::forward<_Tp>(__t), std::forward<_Up>(__u),
-			__ptr_cmp<_Tp, _Up>{});
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	  if constexpr (__ptr_cmp<_Tp, _Up>)
+	    return greater_equal<const volatile void*>{}(
+	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
+	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
+	  else
+	    return std::forward<_Tp>(__t) >= std::forward<_Up>(__u);
+#pragma GCC diagnostic pop
 	}
 
       template<typename _Tp, typename _Up>
@@ -661,20 +689,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __is_transparent is_transparent;
 
     private:
-      template <typename _Tp, typename _Up>
-	static constexpr decltype(auto)
-	_S_cmp(_Tp&& __t, _Up&& __u, false_type)
-	{ return std::forward<_Tp>(__t) >= std::forward<_Up>(__u); }
-
-      template <typename _Tp, typename _Up>
-	static constexpr bool
-	_S_cmp(_Tp&& __t, _Up&& __u, true_type) noexcept
+#if __cplusplus >= 202002L
+      template<typename _Tp, typename _Up>
+	static constexpr bool __ptr_cmp = requires
 	{
-	  return greater_equal<const volatile void*>{}(
-	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
-	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
-	}
-
+	  requires
+	       ! requires
+		{ operator>=(std::declval<_Tp>(), std::declval<_Up>()); }
+	    && ! requires
+		{ std::declval<_Tp>().operator>=(std::declval<_Up>()); }
+	    && __detail::__not_overloaded_spaceship<_Tp, _Up>
+	    && is_convertible_v<_Tp, const volatile void*>
+	    && is_convertible_v<_Up, const volatile void*>;
+	};
+#else
       // True if there is no viable operator>= member function.
       template<typename _Tp, typename _Up, typename = void>
 	struct __not_overloaded2 : true_type { };
@@ -696,9 +724,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: false_type { };
 
       template<typename _Tp, typename _Up>
-	using __ptr_cmp = __and_<__not_overloaded<_Tp, _Up>,
-	      is_convertible<_Tp, const volatile void*>,
-	      is_convertible<_Up, const volatile void*>>;
+	static constexpr bool __ptr_cmp = __and_<
+	  __not_overloaded<_Tp, _Up>,
+	  is_convertible<_Tp, const volatile void*>,
+	  is_convertible<_Up, const volatile void*>>::value;
+#endif
     };
 
   /// One of the @link comparison_functors comparison functors@endlink.
@@ -711,8 +741,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(noexcept(std::forward<_Tp>(__t) <= std::forward<_Up>(__u)))
 	-> decltype(std::forward<_Tp>(__t) <= std::forward<_Up>(__u))
 	{
-	  return _S_cmp(std::forward<_Tp>(__t), std::forward<_Up>(__u),
-			__ptr_cmp<_Tp, _Up>{});
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	  if constexpr (__ptr_cmp<_Tp, _Up>)
+	    return less_equal<const volatile void*>{}(
+	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
+	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
+	  else
+	    return std::forward<_Tp>(__t) <= std::forward<_Up>(__u);
+#pragma GCC diagnostic pop
 	}
 
       template<typename _Tp, typename _Up>
@@ -723,20 +760,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef __is_transparent is_transparent;
 
     private:
-      template <typename _Tp, typename _Up>
-	static constexpr decltype(auto)
-	_S_cmp(_Tp&& __t, _Up&& __u, false_type)
-	{ return std::forward<_Tp>(__t) <= std::forward<_Up>(__u); }
-
-      template <typename _Tp, typename _Up>
-	static constexpr bool
-	_S_cmp(_Tp&& __t, _Up&& __u, true_type) noexcept
+#if __cplusplus >= 202002L
+      template<typename _Tp, typename _Up>
+	static constexpr bool __ptr_cmp = requires
 	{
-	  return less_equal<const volatile void*>{}(
-	      static_cast<const volatile void*>(std::forward<_Tp>(__t)),
-	      static_cast<const volatile void*>(std::forward<_Up>(__u)));
-	}
-
+	  requires
+	       ! requires
+		{ operator<=(std::declval<_Tp>(), std::declval<_Up>()); }
+	    && ! requires
+		{ std::declval<_Tp>().operator<=(std::declval<_Up>()); }
+	    && __detail::__not_overloaded_spaceship<_Tp, _Up>
+	    && is_convertible_v<_Tp, const volatile void*>
+	    && is_convertible_v<_Up, const volatile void*>;
+	};
+#else
       // True if there is no viable operator<= member function.
       template<typename _Tp, typename _Up, typename = void>
 	struct __not_overloaded2 : true_type { };
@@ -758,9 +795,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: false_type { };
 
       template<typename _Tp, typename _Up>
-	using __ptr_cmp = __and_<__not_overloaded<_Tp, _Up>,
-	      is_convertible<_Tp, const volatile void*>,
-	      is_convertible<_Up, const volatile void*>>;
+	static constexpr bool __ptr_cmp = __and_<
+	  __not_overloaded<_Tp, _Up>,
+	  is_convertible<_Tp, const volatile void*>,
+	  is_convertible<_Up, const volatile void*>>::value;
+#endif
     };
 #else // < C++14
 
