@@ -18,23 +18,26 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-;; Code organisation:
+;; Code organization:
 ;
-;; The lines of is an instruction is aarch64, simd, sve, sve2, or sme are
-;; a little blurry.
+;; The taxonomic lines dividing instructions into aarch64, simd, sve, sve2,
+;; and sme are perhaps a little non-obvious.
 ;;
-;; Therefore code is organised by the following rough principles:
+;; The code is organized by the following rough principles:
 ;;
-;; - aarch64.md: For shared parts of the architecture (such as defining
-;;     registers and constants) and for instructions that operate on non-SIMD
+;; - aarch64.md for shared parts of the architecture (such as defining
+;;     registers and constants) and for instructions that operate on
+;;     general-purpose registers.
+;; - aarch64-simd.md for instructions that operate on Advanced SIMD
 ;;     registers.
-;; - aarch64-simd.md: For instructions that operate on non-scaling SIMD
-;;     registers.
-;; - aarch64-sve.md for SVE instructions that are pre SVE2.
-;; - aarch64-sme.md for any scalable SIMD instruction that is incompatible with
-;;     non-streaming mode. This usually means it uses the ZA or ZT register.
-;; - aarch64-sve2.md for any scalable SIMD instruction that either is
-;;     streaming compatible, or theoretically could be later.
+;; - aarch64-sve.md for the baseline SVE instructions which predate SVE2 and
+;;     SME.
+;; - aarch64-sve2.md for any scalable SIMD instruction that is enabled by an
+;;     SVE2+ or SME+ extension and doesn't directly touch SME state (such as ZA,
+;;     or ZT0) and only involves regular SVE vectors and predicates.
+;; - aarch64-sme.md for any scalable SIMD instruction that is clearly
+;;     streaming mode only.  This usually means it uses the ZA or ZT0 register
+;;     or other SME state.
 
 ;; Register numbers
 (define_constants

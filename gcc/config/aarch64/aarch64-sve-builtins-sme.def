@@ -17,22 +17,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* Code organisation:
-
-   The lines defining if an intrinsic is for sve, sve2, sme, and sme2 can get
-   a little blurry.
-
-   Therefore code is organised by the following rough principles:
-
-   - aarch64-sve-builtins-sme.def for any intrinsic that is fundamentally
-     incompatible with non-streaming mode. This usually means it uses the ZA
-     or ZT register.
-   - aarch64-sve-builtins-sve2.def for any intrinsic that that is a streaming mode
-     intrinsic, but either is non-streaming compatible, or theoretically could
-     be later.
-   - aarch64-sve-builtins-base.def for SVE intrinsics that are pre SVE2.
-   - aarch64-sve-builtins.def for common data types and group definitions used
-     across all files.  */
+/* Code organization: See block comment at the top of
+   aarch64-sve-builtins.def.  */
 
 #ifndef DEF_SME_FUNCTION_GS
 #define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
