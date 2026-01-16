@@ -5664,6 +5664,7 @@ lra_constraints (bool first_p)
 		   && loc_equivalence_change_p (&PATTERN (curr_insn)))
 	    {
 	      lra_update_insn_regno_info (curr_insn);
+	      lra_push_insn_by_uid (INSN_UID (curr_insn));
 	      changed_p = true;
 	    }
 	}
