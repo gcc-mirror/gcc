@@ -3648,18 +3648,17 @@ static tree
 introduce_cast_before_cand (slsr_cand_t c, tree to_type, tree from_expr)
 {
   tree cast_lhs;
-  gassign *cast_stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 
-  cast_lhs = make_temp_ssa_name (to_type, NULL, "slsr");
-  cast_stmt = gimple_build_assign (cast_lhs, NOP_EXPR, from_expr);
-  gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
-  gsi_insert_before (&gsi, cast_stmt, GSI_SAME_STMT);
+  cast_lhs = gimple_convert (&gsi, true, GSI_SAME_STMT,
+			     gimple_location (c->cand_stmt),
+			     to_type, from_expr);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fputs ("  Inserting: ", dump_file);
-      print_gimple_stmt (dump_file, cast_stmt, 0);
+      fputs ("  Inserting(cast): ", dump_file);
+      print_generic_expr (dump_file, cast_lhs);
+      fprintf (dump_file, "\n");
     }
 
   return cast_lhs;
