@@ -478,7 +478,7 @@ add_substitution (tree node)
 }
 
 /* Helper function for find_substitution.  Returns nonzero if NODE,
-   which may be a decl or a CLASS_TYPE, is a template-id with template
+   which may be a class or a class template, is a template-id with template
    name of substitution_index[INDEX] in the ::std namespace, with
    global module attachment.  */
 
@@ -486,10 +486,28 @@ static bool
 is_std_substitution (const tree node,
 		     const substitution_identifier_index_t index)
 {
-  tree type = NULL;
-  tree decl = NULL;
+  tree type = NULL_TREE;
+  tree decl = NULL_TREE;
 
-  if (DECL_P (node))
+  auto std_substitution_p = [&] (tree decl, tree type)
+    {
+      if (!DECL_NAMESPACE_STD_P (CP_DECL_CONTEXT (decl)))
+	return false;
+
+      if (!(TYPE_LANG_SPECIFIC (type) && TYPE_TEMPLATE_INFO (type)))
+	return false;
+
+      tree tmpl = TYPE_TI_TEMPLATE (type);
+      if (DECL_NAME (tmpl) != subst_identifiers[index])
+	return false;
+
+      if (modules_p () && get_originating_module (tmpl, true) >= 0)
+	return false;
+
+      return true;
+    };
+
+  if (TREE_CODE (node) == TYPE_DECL || DECL_CLASS_TEMPLATE_P (node))
     {
       type = TREE_TYPE (node);
       decl = node;
@@ -500,23 +518,17 @@ is_std_substitution (const tree node,
       decl = TYPE_NAME (node);
     }
   else
-    /* These are not the droids you're looking for.  */
-    return false;
+    {
+      /* We used to accept all _DECL nodes in this function but now we
+	 only accept classes or class templates.  Verify that we don't
+	 return false for something that used to yield true.  */
+      gcc_checking_assert (!DECL_P (node)
+			   || !std_substitution_p (node, TREE_TYPE (node)));
+      /* These are not the droids you're looking for.  */
+      return false;
+    }
 
-  if (!DECL_NAMESPACE_STD_P (CP_DECL_CONTEXT (decl)))
-    return false;
-
-  if (!(TYPE_LANG_SPECIFIC (type) && TYPE_TEMPLATE_INFO (type)))
-    return false;
-
-  tree tmpl = TYPE_TI_TEMPLATE (type);
-  if (DECL_NAME (tmpl) != subst_identifiers[index])
-    return false;
-
-  if (modules_p () && get_originating_module (tmpl, true) >= 0)
-    return false;
-
-  return true;
+  return std_substitution_p (decl, type);
 }
 
 /* Return the ABI tags (the TREE_VALUE of the "abi_tag" attribute entry) for T,
