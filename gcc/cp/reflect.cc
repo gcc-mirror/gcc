@@ -8387,18 +8387,13 @@ check_splice_expr (location_t loc, location_t start_loc, tree t,
      class C that is not an anonymous union."  */
   if (address_p
       && TREE_CODE (t) == FIELD_DECL
-      && ANON_UNION_TYPE_P (DECL_CONTEXT (t)))
+      && ANON_UNION_TYPE_P (DECL_CONTEXT (t))
+      && !TYPE_P (context_for_name_lookup (t)))
     {
-      tree c = CP_TYPE_CONTEXT (DECL_CONTEXT (t));
-      while (ANON_UNION_TYPE_P (c))
-	c = CP_TYPE_CONTEXT (c);
-      if (!TYPE_P (c))
-	{
-	  if (complain_p)
-	    error_at (loc, "unary %<&%> applied to an anonymous union member "
-		      "%qD that is not a direct member of a named class", t);
-	  return false;
-	}
+      if (complain_p)
+	error_at (loc, "unary %<&%> applied to an anonymous union member "
+		       "%qD that is not a direct member of a named class", t);
+      return false;
     }
 
   /* [expr.prim.splice]/2: "The expression is ill-formed if S [the construct
