@@ -1856,7 +1856,7 @@ eh_dispatch_edge_op::make (supernode *src_snode,
       {
 	eh_catch ehc = get_catch (eh_reg, dst_snode);
 	return std::make_unique<eh_dispatch_try_edge_op>
-	  (src_snode, dst_snode,
+	  (src_snode,
 	   cfg_edge, eh_dispatch_stmt,
 	   eh_reg, ehc);
       }
@@ -1876,14 +1876,12 @@ eh_dispatch_edge_op::make (supernode *src_snode,
 
 eh_dispatch_edge_op::
 eh_dispatch_edge_op (supernode *src_snode,
-		     supernode *dst_snode,
 		     enum kind kind_,
 		     ::edge cfg_edge,
 		     const geh_dispatch &geh_dispatch_stmt,
 		     eh_region eh_reg)
 : control_flow_op (kind_, cfg_edge, geh_dispatch_stmt),
   m_src_snode (src_snode),
-  m_dst_snode (dst_snode),
   m_eh_region (eh_reg)
 {
 }
@@ -1913,12 +1911,11 @@ apply_constraints (const superedge *sedge,
 
 eh_dispatch_try_edge_op::
 eh_dispatch_try_edge_op (supernode *src_snode,
-			 supernode *dst_snode,
 			 ::edge cfg_edge,
 			 const geh_dispatch &geh_dispatch_stmt,
 			 eh_region eh_reg,
 			 eh_catch ehc)
-: eh_dispatch_edge_op (src_snode, dst_snode,
+: eh_dispatch_edge_op (src_snode,
 		       kind::eh_dispatch_try_edge,
 		       cfg_edge, geh_dispatch_stmt, eh_reg),
   m_eh_catch (ehc)
@@ -2037,7 +2034,7 @@ eh_dispatch_allowed_edge_op (supernode *src_snode,
 			     ::edge cfg_edge,
 			     const geh_dispatch &geh_dispatch_stmt,
 			     eh_region eh_reg)
-: eh_dispatch_edge_op (src_snode, dst_snode,
+: eh_dispatch_edge_op (src_snode,
 		       kind::eh_dispatch_try_edge,
 		       cfg_edge, geh_dispatch_stmt, eh_reg)
 {
