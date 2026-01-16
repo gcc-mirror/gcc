@@ -1309,7 +1309,7 @@ eval_is_class_member (tree r)
    to the derived type.  */
 
 static tree
-direct_base_parent_binfo (tree r)
+direct_base_derived_binfo (tree r)
 {
   /* Looping needed for multiple virtual inheritance.  */
   while (BINFO_INHERITANCE_CHAIN (r))
@@ -1321,9 +1321,9 @@ direct_base_parent_binfo (tree r)
    (i.e. when R is (D, B) it returns D).  */
 
 tree
-direct_base_parent (tree r)
+direct_base_derived (tree r)
 {
-  return BINFO_TYPE (direct_base_parent_binfo (r));
+  return BINFO_TYPE (direct_base_derived_binfo (r));
 }
 
 /* Helper function for eval_is_{public, protected, private}.  */
@@ -1361,7 +1361,7 @@ eval_is_expected_access (tree r, reflect_kind kind, tree expected_access)
   if (kind == REFLECT_BASE)
     {
       gcc_assert (TREE_CODE (r) == TREE_BINFO);
-      tree c = direct_base_parent_binfo (r);
+      tree c = direct_base_derived_binfo (r);
 
       tree base_binfo;
       for (unsigned ix = 0; BINFO_BASE_ITERATE (c, ix, base_binfo); ix++)
@@ -2534,7 +2534,7 @@ eval_source_location_of (location_t loc, tree r, reflect_kind kind,
     /* We don't track location_t of the base specifiers, so at least
        for now use location_t of the base parent (i.e. the derived
        class).  */
-    r = direct_base_parent (r);
+    r = direct_base_derived (r);
   if (OVERLOAD_TYPE_P (r) || (TYPE_P (r) && typedef_variant_p (r)))
     rloc = DECL_SOURCE_LOCATION (TYPE_NAME (r));
   else if (DECL_P (r) && r != global_namespace)
@@ -2939,7 +2939,7 @@ eval_parent_of (location_t loc, const constexpr_ctx *ctx, tree r,
 	c = CP_TYPE_CONTEXT (r);
     }
   else if (kind == REFLECT_BASE)
-    c = direct_base_parent (r);
+    c = direct_base_derived (r);
   else
     c = CP_DECL_CONTEXT (r);
   tree lam;
@@ -3087,7 +3087,7 @@ eval_offset_of (location_t loc, const constexpr_ctx *ctx, tree r,
   tree byte_off = NULL_TREE, bit_off = NULL_TREE;
   if (kind == REFLECT_BASE)
     {
-      tree d = direct_base_parent (r);
+      tree d = direct_base_derived (r);
       if (BINFO_VIRTUAL_P (r) && ABSTRACT_CLASS_TYPE_P (d))
 	return throw_exception (loc, ctx,
 				"reflection of virtual direct base "
@@ -3603,7 +3603,7 @@ eval_display_string_of (location_t loc, const constexpr_ctx *ctx, tree r,
     pp_printf (&pp, "%T::<unnamed bit-field>", DECL_CONTEXT (r));
   else if (kind == REFLECT_BASE)
     {
-      tree d = direct_base_parent (r);
+      tree d = direct_base_derived (r);
       pp_printf (&pp, "%T: %T", d, BINFO_TYPE (r));
     }
   else if (kind == REFLECT_DATA_MEMBER_SPEC)
@@ -3781,7 +3781,7 @@ eval_annotations_of (location_t loc, const constexpr_ctx *ctx, tree r,
   if (kind == REFLECT_BASE)
     {
       gcc_assert (TREE_CODE (r) == TREE_BINFO);
-      tree c = direct_base_parent_binfo (r), binfo = r, base_binfo;
+      tree c = direct_base_derived_binfo (r), binfo = r, base_binfo;
 
       r = NULL_TREE;
       for (unsigned ix = 0; BINFO_BASE_ITERATE (c, ix, base_binfo); ix++)
@@ -6350,7 +6350,7 @@ eval_is_accessible (location_t loc, const constexpr_ctx *ctx, tree r,
     }
   else if (kind == REFLECT_BASE)
     {
-      c = direct_base_parent (r);
+      c = direct_base_derived (r);
       r = BINFO_TYPE (r);
     }
   else

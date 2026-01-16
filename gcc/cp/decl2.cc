@@ -3140,7 +3140,7 @@ min_vis_expr_r (tree *tp, int *walk_subtrees, void *data)
 	  tpvis = type_visibility (BINFO_TYPE (r));
 	  if (tpvis > *vis_p)
 	    *vis_p = tpvis;
-	  tpvis = type_visibility (direct_base_parent (r));
+	  tpvis = type_visibility (direct_base_derived (r));
 	  *walk_subtrees = 0;
 	  break;
 	case REFLECT_DATA_MEMBER_SPEC:

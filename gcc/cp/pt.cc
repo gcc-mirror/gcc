@@ -1922,7 +1922,7 @@ iterative_hash_template_arg (tree arg, hashval_t val)
 	{
 	  tree binfo = REFLECT_EXPR_HANDLE (arg);
 	  val = iterative_hash_template_arg (BINFO_TYPE (binfo), val);
-	  val = iterative_hash_template_arg (direct_base_parent (binfo), val);
+	  val = iterative_hash_template_arg (direct_base_derived (binfo), val);
 	  return val;
 	}
       /* Now hash operands as usual.  */
