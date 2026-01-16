@@ -5858,7 +5858,10 @@ cp_build_binary_op (const op_location_t &location,
 	  if (tcode1 == COMPLEX_TYPE || tcode1 == VECTOR_TYPE)
 	    tcode1 = TREE_CODE (TREE_TYPE (TREE_TYPE (op1)));
 
-	  if (!(tcode0 == INTEGER_TYPE && tcode1 == INTEGER_TYPE))
+	  if (!((tcode0 == INTEGER_TYPE
+		 || (tcode0 == ENUMERAL_TYPE && code0 == VECTOR_TYPE))
+		&& (tcode1 == INTEGER_TYPE
+		    || (tcode1 == ENUMERAL_TYPE && code1 == VECTOR_TYPE))))
 	    resultcode = RDIV_EXPR;
 	  else
 	    {

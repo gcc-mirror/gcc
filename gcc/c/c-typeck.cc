@@ -14469,8 +14469,10 @@ build_binary_op (location_t location, enum tree_code code,
 	  if (code1 == COMPLEX_TYPE || code1 == VECTOR_TYPE)
 	    tcode1 = TREE_CODE (TREE_TYPE (TREE_TYPE (op1)));
 
-	  if (!(((tcode0 == INTEGER_TYPE || tcode0 == BITINT_TYPE)
-		 && (tcode1 == INTEGER_TYPE || tcode1 == BITINT_TYPE))
+	  if (!(((tcode0 == INTEGER_TYPE || tcode0 == BITINT_TYPE
+		  || (tcode0 == ENUMERAL_TYPE && code0 == VECTOR_TYPE))
+		 && (tcode1 == INTEGER_TYPE || tcode1 == BITINT_TYPE
+		     || (tcode1 == ENUMERAL_TYPE && code1 == VECTOR_TYPE)))
 		|| (tcode0 == FIXED_POINT_TYPE && tcode1 == FIXED_POINT_TYPE)))
 	    resultcode = RDIV_EXPR;
 	  else
