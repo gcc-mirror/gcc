@@ -11603,7 +11603,12 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	    gcc_checking_assert
 	      (DECL_IMPLICIT_TYPEDEF_P (STRIP_TEMPLATE (decl)));
 
-	    mk = MK_local_type;
+	    if (has_definition (ctx))
+	      mk = MK_local_type;
+	    else
+	      /* We're not providing a definition of the context to key
+		 the local type into; use the keyed map instead.  */
+	      mk = MK_keyed;
 	    break;
 
 	  case RECORD_TYPE:
@@ -12243,7 +12248,8 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	       && DECL_MODULE_KEYED_DECLS_P (name))
 	{
 	  gcc_checking_assert (TREE_CODE (container) == NAMESPACE_DECL
-			       || TREE_CODE (container) == TYPE_DECL);
+			       || TREE_CODE (container) == TYPE_DECL
+			       || TREE_CODE (container) == FUNCTION_DECL);
 	  if (auto *set = keyed_table->get (name))
 	    if (key.index < set->length ())
 	      {
@@ -22046,23 +22052,12 @@ check_module_decl_linkage (tree decl)
     }
 }
 
-/* DECL is keyed to CTX for odr purposes.  */
+/* Given a scope CTX, find the scope we want to attach the key to,
+   or NULL if no key scope is required.  */
 
-void
-maybe_key_decl (tree ctx, tree decl)
+static tree
+adjust_key_scope (tree ctx)
 {
-  if (!modules_p ())
-    return;
-
-  /* We only need to deal with lambdas attached to var, field,
-     parm, type, or concept decls.  */
-  if (TREE_CODE (ctx) != VAR_DECL
-      && TREE_CODE (ctx) != FIELD_DECL
-      && TREE_CODE (ctx) != PARM_DECL
-      && TREE_CODE (ctx) != TYPE_DECL
-      && TREE_CODE (ctx) != CONCEPT_DECL)
-    return;
-
   /* For members, key it to the containing type to handle deduplication
      correctly.  For fields, this is necessary as FIELD_DECLs have no
      dep and so would only be streamed after the lambda type, defeating
@@ -22077,8 +22072,48 @@ maybe_key_decl (tree ctx, tree decl)
      Perhaps sort_cluster can be adjusted to handle this better, but
      this is a simple workaround (and might down on the number of
      entries in keyed_table as a bonus).  */
-  while (DECL_CLASS_SCOPE_P (ctx))
-    ctx = TYPE_NAME (DECL_CONTEXT (ctx));
+  while (!DECL_NAMESPACE_SCOPE_P (ctx))
+    if (DECL_CLASS_SCOPE_P (ctx))
+      ctx = TYPE_NAME (DECL_CONTEXT (ctx));
+    else
+      ctx = DECL_CONTEXT (ctx);
+
+  return ctx;
+}
+
+/* DECL is keyed to CTX for odr purposes.  */
+
+void
+maybe_key_decl (tree ctx, tree decl)
+{
+  if (!modules_p ())
+    return;
+
+  /* We only need to deal here with decls attached to var, field,
+     parm, type, function, or concept decls.  */
+  if (TREE_CODE (ctx) != VAR_DECL
+      && TREE_CODE (ctx) != FIELD_DECL
+      && TREE_CODE (ctx) != PARM_DECL
+      && TREE_CODE (ctx) != TYPE_DECL
+      && TREE_CODE (ctx) != FUNCTION_DECL
+      && TREE_CODE (ctx) != CONCEPT_DECL)
+    return;
+
+  gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (decl))
+		       || TREE_CODE (ctx) == FUNCTION_DECL);
+
+  /* We don't need to use the keyed map for functions with definitions,
+     as we can instead use the MK_local_type handling for streaming.  */
+  if (TREE_CODE (ctx) == FUNCTION_DECL
+      && (has_definition (ctx)
+	  /* If we won't be streaming this definition there's also no
+	     need to record the key, as it will not be useful for merging
+	     (this function is non-inline and so a matching declaration
+	     will always be an ODR violation anyway).  */
+	  || !module_maybe_has_cmi_p ()))
+    return;
+
+  ctx = adjust_key_scope (ctx);
 
   if (!keyed_table)
     keyed_table = new keyed_map_t (EXPERIMENT (1, 400));
@@ -22089,16 +22124,23 @@ maybe_key_decl (tree ctx, tree decl)
       retrofit_lang_decl (ctx);
       DECL_MODULE_KEYED_DECLS_P (ctx) = true;
     }
+  if (CHECKING_P)
+    for (tree t : vec)
+      gcc_checking_assert (t != decl);
+
   vec.safe_push (decl);
 }
 
-/* Find the scope that the lambda DECL is keyed to, if any.  */
+/* Find the scope that the local type or lambda DECL is keyed to, if any.  */
 
 static tree
 get_keyed_decl_scope (tree decl)
 {
-  gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (decl)));
-  tree scope = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl));
+  gcc_checking_assert (DECL_IMPLICIT_TYPEDEF_P (STRIP_TEMPLATE (decl)));
+
+  tree scope = (LAMBDA_TYPE_P (TREE_TYPE (decl))
+		? LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl))
+		: CP_DECL_CONTEXT (decl));
   if (!scope)
     return NULL_TREE;
 
@@ -22106,12 +22148,14 @@ get_keyed_decl_scope (tree decl)
 		       || TREE_CODE (scope) == FIELD_DECL
 		       || TREE_CODE (scope) == PARM_DECL
 		       || TREE_CODE (scope) == TYPE_DECL
+		       || (TREE_CODE (scope) == FUNCTION_DECL
+			   && !has_definition (scope))
 		       || TREE_CODE (scope) == CONCEPT_DECL);
 
-  while (DECL_CLASS_SCOPE_P (scope))
-    scope = TYPE_NAME (DECL_CONTEXT (scope));
+  scope = adjust_key_scope (scope);
 
-  gcc_checking_assert (DECL_LANG_SPECIFIC (scope)
+  gcc_checking_assert (scope
+		       && DECL_LANG_SPECIFIC (scope)
 		       && DECL_MODULE_KEYED_DECLS_P (scope));
   return scope;
 }

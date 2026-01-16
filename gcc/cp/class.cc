@@ -8348,6 +8348,11 @@ finish_struct (tree t, tree attributes)
       && !LAMBDA_TYPE_P (t))
     add_stmt (build_min (TAG_DEFN, t));
 
+  /* Lambdas will be keyed by their LAMBDA_TYPE_EXTRA_SCOPE when that
+     gets set; other local types might need keying anyway though.  */
+  if (at_function_scope_p () && !LAMBDA_TYPE_P (t))
+    maybe_key_decl (current_scope (), TYPE_NAME (t));
+
   return t;
 }
 
