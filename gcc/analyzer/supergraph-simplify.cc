@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/common.h"
 
 #include "cgraph.h"
+#include "timevar.h"
 
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
@@ -293,6 +294,7 @@ supergraph::log_stats (logger *logger) const
 void
 supergraph::simplify (logger *logger)
 {
+  auto_timevar tv (TV_ANALYZER_SUPERGRAPH_SIMPLIFY);
   LOG_SCOPE (logger);
 
   {

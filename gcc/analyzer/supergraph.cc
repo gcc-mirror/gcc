@@ -142,8 +142,7 @@ supergraph::supergraph (region_model_manager &mgr,
 			logger *logger)
 : m_next_snode_id (0)
 {
-  auto_timevar tv (TV_ANALYZER_SUPERGRAPH);
-
+  auto_timevar tv (TV_ANALYZER_SUPERGRAPH_CREATION);
   LOG_FUNC (logger);
 
   /* For each BB, if present, the stmt that terminates it.  */

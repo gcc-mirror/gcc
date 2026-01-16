@@ -347,7 +347,10 @@ DEFTIMEVAR (TV_JIT_CLIENT_CODE   , "JIT client code")
 
 /* Analyzer timevars.  */
 DEFTIMEVAR (TV_ANALYZER              , "analyzer")
-DEFTIMEVAR (TV_ANALYZER_SUPERGRAPH   , "analyzer: supergraph")
+DEFTIMEVAR (TV_ANALYZER_SUPERGRAPH_CREATION, "analyzer: supergraph: creation")
+DEFTIMEVAR (TV_ANALYZER_SUPERGRAPH_FIXUP_LOCATIONS, "analyzer: supergraph: fixup locations")
+DEFTIMEVAR (TV_ANALYZER_SUPERGRAPH_SIMPLIFY, "analyzer: supergraph: simplify")
+DEFTIMEVAR (TV_ANALYZER_SUPERGRAPH_SORTING, "analyzer: supergraph: sorting")
 DEFTIMEVAR (TV_ANALYZER_STATE_PURGE  , "analyzer: state purge")
 DEFTIMEVAR (TV_ANALYZER_PLAN         , "analyzer: planning")
 DEFTIMEVAR (TV_ANALYZER_SCC          , "analyzer: scc")

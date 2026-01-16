@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_DEQUE
 #include "analyzer/common.h"
 
+#include "timevar.h"
+
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/supergraph-manipulation.h"
@@ -108,6 +110,7 @@ private:
 void
 supergraph::fixup_locations (logger *logger)
 {
+  auto_timevar tv (TV_ANALYZER_SUPERGRAPH_FIXUP_LOCATIONS);
   LOG_SCOPE (logger);
 
   location_fixer opt (*this, logger);
