@@ -3114,8 +3114,10 @@ min_vis_expr_r (tree *tp, int *walk_subtrees, void *data)
 	  break;
 	}
     addressable:
+      /* For _DECLs with no linkage refer to the linkage of the containing
+	 entity that does have a name with linkage.  */
       if (decl_linkage (t) == lk_none)
-	tpvis = type_visibility (TREE_TYPE (t));
+	tpvis = expr_visibility (DECL_CONTEXT (t));
       /* Decls that have had their visibility constrained will report
 	 as external linkage, but we still want to transitively constrain
 	 if we refer to them, so just check TREE_PUBLIC instead.  */
@@ -3170,13 +3172,10 @@ min_vis_expr_r (tree *tp, int *walk_subtrees, void *data)
 	      *walk_subtrees = 0;
 	      break;
 	    }
-	  if ((VAR_P (r) && decl_function_context (r))
-	      || TREE_CODE (r) == PARM_DECL)
+	  if (VAR_P (r) || TREE_CODE (r) == PARM_DECL)
 	    {
-	      /* Block scope variables are local to the TU.  */
-	      tpvis = VISIBILITY_ANON;
-	      *walk_subtrees = 0;
-	      break;
+	      t = r;
+	      goto addressable;
 	    }
 	  break;
 	}

@@ -49,8 +49,8 @@ inline void
 qux (int x)
 {
   int v = 42;
-  foo <106, ^^x> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi106EL" } } - var in inline fn - TODO, shall this be exported?
-  foo <107, ^^v> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi107EL" } } - var in inline fn - TODO, shall this be exported?
+  foo <106, ^^x> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi106EL" } } - var in inline fn
+  foo <107, ^^v> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi107EL" } } - var in inline fn
 }
 
 template <int N>
@@ -58,8 +58,8 @@ void
 plugh (int x)
 {
   int v = 42;
-  foo <132, ^^x> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi132EL" } } - var in public fn template instantiation - TODO, shall this be exported?
-  foo <133, ^^v> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi133EL" } } - var in public fn template instantiation - TODO, shall this be exported?
+  foo <132, ^^x> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi132EL" } } - var in public fn template instantiation
+  foo <133, ^^v> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi133EL" } } - var in public fn template instantiation
   foo <134, parameters_of (parent_of (^^v))[0]> (); // { dg-final { scan-assembler "\t.weak\t_Z3fooILi134EL" { target *-*-linux* } } } - fn parm of public fn template instantiation
 }
 
@@ -80,9 +80,9 @@ void
 fred (int x)
 {
   int v = 42;
-  foo <138, ^^x> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi138EL" } } - var in TU-local fn template instantiation
-  foo <139, ^^v> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi139EL" } } - var in Tu-local fn template instantiation
-  foo <140, parameters_of (parent_of (^^v))[0]> (); // { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi140EL" { xfail *-*-* } } } - fn parm of TU-local fn template instantiation - TODO, I think this shouldn't be exported and the mangling of these 3 doesn't include the template parameter
+  foo <138, ^^x> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi138EL" } } - var in fn template instantiation
+  foo <139, ^^v> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi139EL" } } - var in fn template instantiation
+  foo <140, parameters_of (parent_of (^^v))[0]> (); // { dg-final { scan-assembler "\t.weak\t_Z3fooILi140EL" } } - fn parm of fn template instantiation
 }
 
 [[=1]] void
@@ -108,8 +108,8 @@ xyzzy (int x)
   foo <122, ^^G <int>> ();			// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi122EL" } } - specialization of TU-local template
   foo <123, ^^G <A>> ();			// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi123EL" } } - specialization of TU-local template
   foo <124, ^^G <B>> ();			// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi124EL" } } - specialization of TU-local template
-  foo <125, ^^x> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi125EL" } } - var in public fn but non-comdat - TODO, shall this be exported?
-  foo <126, ^^v> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi126EL" } } - var in public fn but non-comdat - TODO, shall this be exported?
+  foo <125, ^^x> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi125EL" } } - var in public fn but non-comdat
+  foo <126, ^^v> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi126EL" } } - var in public fn but non-comdat
   foo <127, std::meta::info {}> ();		// { dg-final { scan-assembler "\t.weak\t_Z3fooILi127EL" { target *-*-linux* } } } - null reflection
   foo <128, ^^b> ();				// { dg-final { scan-assembler "\t.weak\t_Z3fooILi128EL" { target *-*-linux* } } } - public variable
   foo <129, ^^c> ();				// { dg-final { scan-assembler-not "\t.weak\t_Z3fooILi129EL" } } - TU-local variable
