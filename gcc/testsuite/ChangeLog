@@ -1,3 +1,508 @@
+2026-01-15  Pengxuan Zheng  <pengxuan.zheng@oss.qualcomm.com>
+
+	* gcc.dg/pr123109.c: Require target x86_64 and aarch64.
+
+2026-01-15  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/autovec/pr122445.c: Adjust expected output.
+
+2026-01-15  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120775
+	PR c++/123081
+	PR c++/122634
+	* g++.dg/DRs/dr2581-1.C: Add -freflection.
+	* g++.dg/DRs/dr2581-2.C: Likewise.
+	* g++.dg/reflect/access_context1.C: New test.
+	* g++.dg/reflect/access_context2.C: New test.
+	* g++.dg/reflect/access_context3.C: New test.
+	* g++.dg/reflect/adl1.C: New test.
+	* g++.dg/reflect/alignment_of1.C: New test.
+	* g++.dg/reflect/alignment_of2.C: New test.
+	* g++.dg/reflect/annotations1.C: New test.
+	* g++.dg/reflect/annotations2.C: New test.
+	* g++.dg/reflect/annotations3.C: New test.
+	* g++.dg/reflect/annotations4.C: New test.
+	* g++.dg/reflect/annotations5.C: New test.
+	* g++.dg/reflect/annotations6.C: New test.
+	* g++.dg/reflect/annotations7.C: New test.
+	* g++.dg/reflect/annotations8.C: New test.
+	* g++.dg/reflect/anon1.C: New test.
+	* g++.dg/reflect/anon2.C: New test.
+	* g++.dg/reflect/anon3.C: New test.
+	* g++.dg/reflect/bases_of1.C: New test.
+	* g++.dg/reflect/bases_of2.C: New test.
+	* g++.dg/reflect/bases_of3.C: New test.
+	* g++.dg/reflect/bit_size_of1.C: New test.
+	* g++.dg/reflect/bitfield1.C: New test.
+	* g++.dg/reflect/can_substitute1.C: New test.
+	* g++.dg/reflect/class1.C: New test.
+	* g++.dg/reflect/class2.C: New test.
+	* g++.dg/reflect/common_reference1.C: New test.
+	* g++.dg/reflect/common_type1.C: New test.
+	* g++.dg/reflect/compare1.C: New test.
+	* g++.dg/reflect/compare10.C: New test.
+	* g++.dg/reflect/compare2.C: New test.
+	* g++.dg/reflect/compare3.C: New test.
+	* g++.dg/reflect/compare4.C: New test.
+	* g++.dg/reflect/compare5.C: New test.
+	* g++.dg/reflect/compare6.C: New test.
+	* g++.dg/reflect/compare7.C: New test.
+	* g++.dg/reflect/compare8.C: New test.
+	* g++.dg/reflect/compare9.C: New test.
+	* g++.dg/reflect/compat1.C: New test.
+	* g++.dg/reflect/complete1.C: New test.
+	* g++.dg/reflect/constant_of1.C: New test.
+	* g++.dg/reflect/constant_of2.C: New test.
+	* g++.dg/reflect/constant_of3.C: New test.
+	* g++.dg/reflect/constant_of4.C: New test.
+	* g++.dg/reflect/constant_of5.C: New test.
+	* g++.dg/reflect/constant_of6.C: New test.
+	* g++.dg/reflect/constant_of7.C: New test.
+	* g++.dg/reflect/constant_of8.C: New test.
+	* g++.dg/reflect/constant_of9.C: New test.
+	* g++.dg/reflect/crash1.C: New test.
+	* g++.dg/reflect/crash10.C: New test.
+	* g++.dg/reflect/crash11.C: New test.
+	* g++.dg/reflect/crash12.C: New test.
+	* g++.dg/reflect/crash13.C: New test.
+	* g++.dg/reflect/crash14.C: New test.
+	* g++.dg/reflect/crash15.C: New test.
+	* g++.dg/reflect/crash16.C: New test.
+	* g++.dg/reflect/crash17.C: New test.
+	* g++.dg/reflect/crash18.C: New test.
+	* g++.dg/reflect/crash2.C: New test.
+	* g++.dg/reflect/crash3.C: New test.
+	* g++.dg/reflect/crash4.C: New test.
+	* g++.dg/reflect/crash5.C: New test.
+	* g++.dg/reflect/crash6.C: New test.
+	* g++.dg/reflect/crash7.C: New test.
+	* g++.dg/reflect/crash8.C: New test.
+	* g++.dg/reflect/crash9.C: New test.
+	* g++.dg/reflect/data_member_spec1.C: New test.
+	* g++.dg/reflect/data_member_spec2.C: New test.
+	* g++.dg/reflect/data_member_spec3.C: New test.
+	* g++.dg/reflect/data_member_spec4.C: New test.
+	* g++.dg/reflect/dealias1.C: New test.
+	* g++.dg/reflect/dealias2.C: New test.
+	* g++.dg/reflect/dealias3.C: New test.
+	* g++.dg/reflect/define_aggregate1.C: New test.
+	* g++.dg/reflect/define_aggregate2.C: New test.
+	* g++.dg/reflect/define_aggregate3.C: New test.
+	* g++.dg/reflect/define_aggregate4.C: New test.
+	* g++.dg/reflect/define_aggregate5.C: New test.
+	* g++.dg/reflect/define_static_array1.C: New test.
+	* g++.dg/reflect/define_static_array2.C: New test.
+	* g++.dg/reflect/define_static_array3.C: New test.
+	* g++.dg/reflect/define_static_array4.C: New test.
+	* g++.dg/reflect/define_static_object1.C: New test.
+	* g++.dg/reflect/define_static_object2.C: New test.
+	* g++.dg/reflect/define_static_string1.C: New test.
+	* g++.dg/reflect/dep1.C: New test.
+	* g++.dg/reflect/dep10.C: New test.
+	* g++.dg/reflect/dep11.C: New test.
+	* g++.dg/reflect/dep2.C: New test.
+	* g++.dg/reflect/dep3.C: New test.
+	* g++.dg/reflect/dep4.C: New test.
+	* g++.dg/reflect/dep5.C: New test.
+	* g++.dg/reflect/dep6.C: New test.
+	* g++.dg/reflect/dep7.C: New test.
+	* g++.dg/reflect/dep8.C: New test.
+	* g++.dg/reflect/dep9.C: New test.
+	* g++.dg/reflect/diag1.C: New test.
+	* g++.dg/reflect/diag2.C: New test.
+	* g++.dg/reflect/diag3.C: New test.
+	* g++.dg/reflect/diag4.C: New test.
+	* g++.dg/reflect/display_string_of1.C: New test.
+	* g++.dg/reflect/eh1.C: New test.
+	* g++.dg/reflect/eh2.C: New test.
+	* g++.dg/reflect/eh3.C: New test.
+	* g++.dg/reflect/eh4.C: New test.
+	* g++.dg/reflect/eh5.C: New test.
+	* g++.dg/reflect/eh6.C: New test.
+	* g++.dg/reflect/eh7.C: New test.
+	* g++.dg/reflect/eh8.C: New test.
+	* g++.dg/reflect/eh9.C: New test.
+	* g++.dg/reflect/enumerators_of1.C: New test.
+	* g++.dg/reflect/error1.C: New test.
+	* g++.dg/reflect/error10.C: New test.
+	* g++.dg/reflect/error2.C: New test.
+	* g++.dg/reflect/error3.C: New test.
+	* g++.dg/reflect/error4.C: New test.
+	* g++.dg/reflect/error5.C: New test.
+	* g++.dg/reflect/error6.C: New test.
+	* g++.dg/reflect/error8.C: New test.
+	* g++.dg/reflect/error9.C: New test.
+	* g++.dg/reflect/expr1.C: New test.
+	* g++.dg/reflect/expr10.C: New test.
+	* g++.dg/reflect/expr11.C: New test.
+	* g++.dg/reflect/expr12.C: New test.
+	* g++.dg/reflect/expr13.C: New test.
+	* g++.dg/reflect/expr14.C: New test.
+	* g++.dg/reflect/expr2.C: New test.
+	* g++.dg/reflect/expr3.C: New test.
+	* g++.dg/reflect/expr4.C: New test.
+	* g++.dg/reflect/expr5.C: New test.
+	* g++.dg/reflect/expr6.C: New test.
+	* g++.dg/reflect/expr7.C: New test.
+	* g++.dg/reflect/expr8.C: New test.
+	* g++.dg/reflect/expr9.C: New test.
+	* g++.dg/reflect/extract1.C: New test.
+	* g++.dg/reflect/extract2.C: New test.
+	* g++.dg/reflect/extract3.C: New test.
+	* g++.dg/reflect/extract4.C: New test.
+	* g++.dg/reflect/extract5.C: New test.
+	* g++.dg/reflect/extract6.C: New test.
+	* g++.dg/reflect/extract7.C: New test.
+	* g++.dg/reflect/extract8.C: New test.
+	* g++.dg/reflect/extract9.C: New test.
+	* g++.dg/reflect/feat1.C: New test.
+	* g++.dg/reflect/feat2.C: New test.
+	* g++.dg/reflect/has_c_language_linkage1.C: New test.
+	* g++.dg/reflect/has_default_argument1.C: New test.
+	* g++.dg/reflect/has_default_argument2.C: New test.
+	* g++.dg/reflect/has_default_member_initializer1.C: New test.
+	* g++.dg/reflect/has_ellipsis_parameter1.C: New test.
+	* g++.dg/reflect/has_external_linkage1.C: New test.
+	* g++.dg/reflect/has_external_linkage2.C: New test.
+	* g++.dg/reflect/has_identifier1.C: New test.
+	* g++.dg/reflect/has_identifier2.C: New test.
+	* g++.dg/reflect/has_internal_linkage1.C: New test.
+	* g++.dg/reflect/has_internal_linkage2.C: New test.
+	* g++.dg/reflect/has_linkage1.C: New test.
+	* g++.dg/reflect/has_module_linkage1.C: New test.
+	* g++.dg/reflect/has_module_linkage2.C: New test.
+	* g++.dg/reflect/has_parent1.C: New test.
+	* g++.dg/reflect/has_template_arguments1.C: New test.
+	* g++.dg/reflect/has_template_arguments2.C: New test.
+	* g++.dg/reflect/has_template_arguments3.C: New test.
+	* g++.dg/reflect/has_template_arguments4.C: New test.
+	* g++.dg/reflect/identifier_of1.C: New test.
+	* g++.dg/reflect/identifier_of2.C: New test.
+	* g++.dg/reflect/init1.C: New test.
+	* g++.dg/reflect/init10.C: New test.
+	* g++.dg/reflect/init11.C: New test.
+	* g++.dg/reflect/init12.C: New test.
+	* g++.dg/reflect/init13.C: New test.
+	* g++.dg/reflect/init14.C: New test.
+	* g++.dg/reflect/init15.C: New test.
+	* g++.dg/reflect/init16.C: New test.
+	* g++.dg/reflect/init17.C: New test.
+	* g++.dg/reflect/init2.C: New test.
+	* g++.dg/reflect/init3.C: New test.
+	* g++.dg/reflect/init4.C: New test.
+	* g++.dg/reflect/init5.C: New test.
+	* g++.dg/reflect/init6.C: New test.
+	* g++.dg/reflect/init7.C: New test.
+	* g++.dg/reflect/init8.C: New test.
+	* g++.dg/reflect/init9.C: New test.
+	* g++.dg/reflect/is_accessible1.C: New test.
+	* g++.dg/reflect/is_accessible2.C: New test.
+	* g++.dg/reflect/is_alias_template1.C: New test.
+	* g++.dg/reflect/is_assignment1.C: New test.
+	* g++.dg/reflect/is_bit_field1.C: New test.
+	* g++.dg/reflect/is_class_member1.C: New test.
+	* g++.dg/reflect/is_class_template1.C: New test.
+	* g++.dg/reflect/is_complete_type1.C: New test.
+	* g++.dg/reflect/is_complete_type2.C: New test.
+	* g++.dg/reflect/is_concept1.C: New test.
+	* g++.dg/reflect/is_const1.C: New test.
+	* g++.dg/reflect/is_consteval_only1.C: New test.
+	* g++.dg/reflect/is_constructible_type1.C: New test.
+	* g++.dg/reflect/is_constructible_type2.C: New test.
+	* g++.dg/reflect/is_constructor_template1.C: New test.
+	* g++.dg/reflect/is_constuctor1.C: New test.
+	* g++.dg/reflect/is_conversion_function1.C: New test.
+	* g++.dg/reflect/is_conversion_function_template1.C: New test.
+	* g++.dg/reflect/is_copy_assignment1.C: New test.
+	* g++.dg/reflect/is_copy_constructor1.C: New test.
+	* g++.dg/reflect/is_data_member_spec1.C: New test.
+	* g++.dg/reflect/is_default_constructor1.C: New test.
+	* g++.dg/reflect/is_defaulted1.C: New test.
+	* g++.dg/reflect/is_defaulted2.C: New test.
+	* g++.dg/reflect/is_deleted1.C: New test.
+	* g++.dg/reflect/is_deleted2.C: New test.
+	* g++.dg/reflect/is_destructor1.C: New test.
+	* g++.dg/reflect/is_enumerable_type1.C: New test.
+	* g++.dg/reflect/is_enumerator1.C: New test.
+	* g++.dg/reflect/is_explicit1.C: New test.
+	* g++.dg/reflect/is_explicit2.C: New test.
+	* g++.dg/reflect/is_explicit_object_parameter1.C: New test.
+	* g++.dg/reflect/is_final1.C: New test.
+	* g++.dg/reflect/is_function1.C: New test.
+	* g++.dg/reflect/is_function2.C: New test.
+	* g++.dg/reflect/is_function3.C: New test.
+	* g++.dg/reflect/is_function_parameter1.C: New test.
+	* g++.dg/reflect/is_function_parameter2.C: New test.
+	* g++.dg/reflect/is_function_template1.C: New test.
+	* g++.dg/reflect/is_function_template2.C: New test.
+	* g++.dg/reflect/is_function_type1.C: New test.
+	* g++.dg/reflect/is_literal_operator1.C: New test.
+	* g++.dg/reflect/is_literal_operator_template1.C: New test.
+	* g++.dg/reflect/is_lrvalue_reference_qualified1.C: New test.
+	* g++.dg/reflect/is_move_assignment1.C: New test.
+	* g++.dg/reflect/is_move_constructor1.C: New test.
+	* g++.dg/reflect/is_mutable_member1.C: New test.
+	* g++.dg/reflect/is_namespace1.C: New test.
+	* g++.dg/reflect/is_namespace_alias1.C: New test.
+	* g++.dg/reflect/is_namespace_member1.C: New test.
+	* g++.dg/reflect/is_noexcept1.C: New test.
+	* g++.dg/reflect/is_noexcept2.C: New test.
+	* g++.dg/reflect/is_noexcept3.C: New test.
+	* g++.dg/reflect/is_noexcept4.C: New test.
+	* g++.dg/reflect/is_nonstatic_data_member1.C: New test.
+	* g++.dg/reflect/is_object1.C: New test.
+	* g++.dg/reflect/is_object2.C: New test.
+	* g++.dg/reflect/is_operator_function1.C: New test.
+	* g++.dg/reflect/is_operator_function_template1.C: New test.
+	* g++.dg/reflect/is_override1.C: New test.
+	* g++.dg/reflect/is_pure_virtual1.C: New test.
+	* g++.dg/reflect/is_special_member_function1.C: New test.
+	* g++.dg/reflect/is_static_member1.C: New test.
+	* g++.dg/reflect/is_string_literal1.C: New test.
+	* g++.dg/reflect/is_structured_binding1.C: New test.
+	* g++.dg/reflect/is_structured_binding2.C: New test.
+	* g++.dg/reflect/is_template1.C: New test.
+	* g++.dg/reflect/is_template2.C: New test.
+	* g++.dg/reflect/is_type1.C: New test.
+	* g++.dg/reflect/is_type_alias1.C: New test.
+	* g++.dg/reflect/is_type_alias2.C: New test.
+	* g++.dg/reflect/is_type_alias3.C: New test.
+	* g++.dg/reflect/is_user_declared1.C: New test.
+	* g++.dg/reflect/is_user_declared2.C: New test.
+	* g++.dg/reflect/is_user_provided1.C: New test.
+	* g++.dg/reflect/is_user_provided2.C: New test.
+	* g++.dg/reflect/is_variable1.C: New test.
+	* g++.dg/reflect/is_variable_template1.C: New test.
+	* g++.dg/reflect/is_virtual1.C: New test.
+	* g++.dg/reflect/is_volatile1.C: New test.
+	* g++.dg/reflect/lex1.C: New test.
+	* g++.dg/reflect/lex2.C: New test.
+	* g++.dg/reflect/mangle1.C: New test.
+	* g++.dg/reflect/member-visibility1.C: New test.
+	* g++.dg/reflect/member-visibility2.C: New test.
+	* g++.dg/reflect/member1.C: New test.
+	* g++.dg/reflect/member10.C: New test.
+	* g++.dg/reflect/member11.C: New test.
+	* g++.dg/reflect/member12.C: New test.
+	* g++.dg/reflect/member13.C: New test.
+	* g++.dg/reflect/member14.C: New test.
+	* g++.dg/reflect/member15.C: New test.
+	* g++.dg/reflect/member16.C: New test.
+	* g++.dg/reflect/member17.C: New test.
+	* g++.dg/reflect/member18.C: New test.
+	* g++.dg/reflect/member19.C: New test.
+	* g++.dg/reflect/member2.C: New test.
+	* g++.dg/reflect/member20.C: New test.
+	* g++.dg/reflect/member3.C: New test.
+	* g++.dg/reflect/member4.C: New test.
+	* g++.dg/reflect/member5.C: New test.
+	* g++.dg/reflect/member6.C: New test.
+	* g++.dg/reflect/member7.C: New test.
+	* g++.dg/reflect/member8.C: New test.
+	* g++.dg/reflect/member9.C: New test.
+	* g++.dg/reflect/members_of1.C: New test.
+	* g++.dg/reflect/members_of2.C: New test.
+	* g++.dg/reflect/members_of3.C: New test.
+	* g++.dg/reflect/members_of4.C: New test.
+	* g++.dg/reflect/members_of5.C: New test.
+	* g++.dg/reflect/members_of6.C: New test.
+	* g++.dg/reflect/members_of7.C: New test.
+	* g++.dg/reflect/metafn-ptr1.C: New test.
+	* g++.dg/reflect/ns1.C: New test.
+	* g++.dg/reflect/ns2.C: New test.
+	* g++.dg/reflect/ns3.C: New test.
+	* g++.dg/reflect/ns4.C: New test.
+	* g++.dg/reflect/ns5.C: New test.
+	* g++.dg/reflect/ns6.C: New test.
+	* g++.dg/reflect/null1.C: New test.
+	* g++.dg/reflect/null2.C: New test.
+	* g++.dg/reflect/null3.C: New test.
+	* g++.dg/reflect/null4.C: New test.
+	* g++.dg/reflect/null5.C: New test.
+	* g++.dg/reflect/object_of1.C: New test.
+	* g++.dg/reflect/object_of2.C: New test.
+	* g++.dg/reflect/odr1.C: New test.
+	* g++.dg/reflect/offset_of1.C: New test.
+	* g++.dg/reflect/operator_of1.C: New test.
+	* g++.dg/reflect/override1.C: New test.
+	* g++.dg/reflect/p2996-1.C: New test.
+	* g++.dg/reflect/p2996-10.C: New test.
+	* g++.dg/reflect/p2996-11.C: New test.
+	* g++.dg/reflect/p2996-12.C: New test.
+	* g++.dg/reflect/p2996-13.C: New test.
+	* g++.dg/reflect/p2996-14.C: New test.
+	* g++.dg/reflect/p2996-15.C: New test.
+	* g++.dg/reflect/p2996-16.C: New test.
+	* g++.dg/reflect/p2996-17.C: New test.
+	* g++.dg/reflect/p2996-18.C: New test.
+	* g++.dg/reflect/p2996-19.C: New test.
+	* g++.dg/reflect/p2996-2.C: New test.
+	* g++.dg/reflect/p2996-20.C: New test.
+	* g++.dg/reflect/p2996-21.C: New test.
+	* g++.dg/reflect/p2996-3.C: New test.
+	* g++.dg/reflect/p2996-4.C: New test.
+	* g++.dg/reflect/p2996-5.C: New test.
+	* g++.dg/reflect/p2996-6.C: New test.
+	* g++.dg/reflect/p2996-7.C: New test.
+	* g++.dg/reflect/p2996-8.C: New test.
+	* g++.dg/reflect/p2996-9.C: New test.
+	* g++.dg/reflect/p3394-1.C: New test.
+	* g++.dg/reflect/p3491-1.C: New test.
+	* g++.dg/reflect/p3491-2.C: New test.
+	* g++.dg/reflect/p3491-3.C: New test.
+	* g++.dg/reflect/pack-index1.C: New test.
+	* g++.dg/reflect/parameters_of1.C: New test.
+	* g++.dg/reflect/parameters_of2.C: New test.
+	* g++.dg/reflect/parameters_of3.C: New test.
+	* g++.dg/reflect/parameters_of4.C: New test.
+	* g++.dg/reflect/parameters_of5.C: New test.
+	* g++.dg/reflect/parameters_of6.C: New test.
+	* g++.dg/reflect/parent_of1.C: New test.
+	* g++.dg/reflect/parm1.C: New test.
+	* g++.dg/reflect/parm2.C: New test.
+	* g++.dg/reflect/parm3.C: New test.
+	* g++.dg/reflect/parm4.C: New test.
+	* g++.dg/reflect/pr122634-1.C: New test.
+	* g++.dg/reflect/pr122634-2.C: New test.
+	* g++.dg/reflect/qrn1.C: New test.
+	* g++.dg/reflect/qrn2.C: New test.
+	* g++.dg/reflect/range_args.C: New test.
+	* g++.dg/reflect/reflect_constant1.C: New test.
+	* g++.dg/reflect/reflect_constant2.C: New test.
+	* g++.dg/reflect/reflect_constant3.C: New test.
+	* g++.dg/reflect/reflect_constant4.C: New test.
+	* g++.dg/reflect/reflect_constant5.C: New test.
+	* g++.dg/reflect/reflect_constant6.C: New test.
+	* g++.dg/reflect/reflect_constant7.C: New test.
+	* g++.dg/reflect/reflect_constant8.C: New test.
+	* g++.dg/reflect/reflect_constant9.C: New test.
+	* g++.dg/reflect/reflect_constant_array1.C: New test.
+	* g++.dg/reflect/reflect_constant_array2.C: New test.
+	* g++.dg/reflect/reflect_constant_array3.C: New test.
+	* g++.dg/reflect/reflect_constant_array4.C: New test.
+	* g++.dg/reflect/reflect_constant_string1.C: New test.
+	* g++.dg/reflect/reflect_constant_string2.C: New test.
+	* g++.dg/reflect/reflect_function1.C: New test.
+	* g++.dg/reflect/reflect_function2.C: New test.
+	* g++.dg/reflect/reflect_object1.C: New test.
+	* g++.dg/reflect/reflect_object2.C: New test.
+	* g++.dg/reflect/reflect_object3.C: New test.
+	* g++.dg/reflect/reflect_object4.C: New test.
+	* g++.dg/reflect/return_type_of1.C: New test.
+	* g++.dg/reflect/return_type_of2.C: New test.
+	* g++.dg/reflect/serialize1.C: New test.
+	* g++.dg/reflect/serialize2.C: New test.
+	* g++.dg/reflect/size_of1.C: New test.
+	* g++.dg/reflect/source_location_of1.C: New test.
+	* g++.dg/reflect/source_location_of2.C: New test.
+	* g++.dg/reflect/splice1.C: New test.
+	* g++.dg/reflect/splice2.C: New test.
+	* g++.dg/reflect/splice3.C: New test.
+	* g++.dg/reflect/splice4.C: New test.
+	* g++.dg/reflect/splice5.C: New test.
+	* g++.dg/reflect/splice6.C: New test.
+	* g++.dg/reflect/splice7.C: New test.
+	* g++.dg/reflect/splicing-base1.C: New test.
+	* g++.dg/reflect/splicing-base2.C: New test.
+	* g++.dg/reflect/splicing-base3.C: New test.
+	* g++.dg/reflect/splicing-base4.C: New test.
+	* g++.dg/reflect/storage_duration1.C: New test.
+	* g++.dg/reflect/storage_duration2.C: New test.
+	* g++.dg/reflect/storage_duration3.C: New test.
+	* g++.dg/reflect/subobjects_of1.C: New test.
+	* g++.dg/reflect/substitute1.C: New test.
+	* g++.dg/reflect/substitute2.C: New test.
+	* g++.dg/reflect/symbol_of1.C: New test.
+	* g++.dg/reflect/symbol_of2.C: New test.
+	* g++.dg/reflect/template_arguments_of1.C: New test.
+	* g++.dg/reflect/template_arguments_of2.C: New test.
+	* g++.dg/reflect/template_arguments_of3.C: New test.
+	* g++.dg/reflect/template_of1.C: New test.
+	* g++.dg/reflect/template_of2.C: New test.
+	* g++.dg/reflect/template_of3.C: New test.
+	* g++.dg/reflect/tuple1.C: New test.
+	* g++.dg/reflect/tuple2.C: New test.
+	* g++.dg/reflect/type1.C: New test.
+	* g++.dg/reflect/type10.C: New test.
+	* g++.dg/reflect/type2.C: New test.
+	* g++.dg/reflect/type3.C: New test.
+	* g++.dg/reflect/type4.C: New test.
+	* g++.dg/reflect/type5.C: New test.
+	* g++.dg/reflect/type6.C: New test.
+	* g++.dg/reflect/type7.C: New test.
+	* g++.dg/reflect/type8.C: New test.
+	* g++.dg/reflect/type9.C: New test.
+	* g++.dg/reflect/type_of1.C: New test.
+	* g++.dg/reflect/type_of2.C: New test.
+	* g++.dg/reflect/type_rels1.C: New test.
+	* g++.dg/reflect/type_trait1.C: New test.
+	* g++.dg/reflect/type_trait10.C: New test.
+	* g++.dg/reflect/type_trait11.C: New test.
+	* g++.dg/reflect/type_trait12.C: New test.
+	* g++.dg/reflect/type_trait13.C: New test.
+	* g++.dg/reflect/type_trait2.C: New test.
+	* g++.dg/reflect/type_trait3.C: New test.
+	* g++.dg/reflect/type_trait4.C: New test.
+	* g++.dg/reflect/type_trait5.C: New test.
+	* g++.dg/reflect/type_trait6.C: New test.
+	* g++.dg/reflect/type_trait8.C: New test.
+	* g++.dg/reflect/type_trait9.C: New test.
+	* g++.dg/reflect/u8display_string_of1.C: New test.
+	* g++.dg/reflect/u8identifier_of1.C: New test.
+	* g++.dg/reflect/u8symbol_of1.C: New test.
+	* g++.dg/reflect/underlying_type1.C: New test.
+	* g++.dg/reflect/using1.C: New test.
+	* g++.dg/reflect/value_or_object1.C: New test.
+	* g++.dg/reflect/variable_of1.C: New test.
+	* g++.dg/reflect/variable_of2.C: New test.
+	* g++.dg/reflect/variable_of3.C: New test.
+	* g++.dg/reflect/variant1.C: New test.
+	* g++.dg/reflect/variant2.C: New test.
+	* g++.dg/reflect/vector1.C: New test.
+	* g++.dg/reflect/visibility1.C: New test.
+
+2026-01-15  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/powerpc/asm-hard-reg-1.c: New test.
+
+2026-01-15  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/asm-hard-reg-error-1.c: Remove tests containing
+	multiple hard register constraints in one alternative.
+	* gcc.dg/asm-hard-reg-error-6.c: New test.
+
+2026-01-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/fast-math-slp-38.c: Avoid epilogue vectorization.
+
+2026-01-15  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c:
+	Avoid epilogue vectorization.
+
+2026-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/120322
+	* gcc.dg/torture/pr120322.c: New test.
+
+2026-01-15  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/hierarchical-discriminator-unroll.c: New test.
+
+2026-01-15  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/hierarchical-discriminator-loop-version.c: New test.
+
+2026-01-15  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/hierarchical-discriminator-vect-version.c: New test.
+
+2026-01-15  DengJianbo  <dengjianbo@loongson.cn>
+
+	* gcc.target/loongarch/la64/attr-model-6.c: New test.
+
 2026-01-14  Qing Zhao  <qing.zhao@oracle.com>
 
 	* gcc.dg/counted-by-anonymous-2-char.c: New test.

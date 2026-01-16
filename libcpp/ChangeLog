@@ -1,3 +1,22 @@
+2026-01-15  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120775
+	PR c++/123081
+	PR c++/122634
+	* charset.cc (_cpp_destroy_iconv): Destroy narrow_cset_desc and
+	utf8_cset_desc.
+	(cpp_translate_string): New.
+	(cpp_valid_identifier): New.
+	* include/cpplib.h: Add OPEN_SPLICE, CLOSE_SPLICE, and REFLECT_OP to
+	TTYPE_TABLE.
+	(cpp_translate_string): Declare.
+	(cpp_valid_identifier): Declare.
+	* internal.h (struct cpp_reader): Add reverse_narrow_cset_desc and
+	reverse_utf8_cset_desc fields.
+	* lex.cc (_cpp_lex_direct): Emit CPP_CLOSE_SPLICE, CPP_REFLECT_OP,
+	and CPP_OPEN_SPLICE tokens.
+
 2026-01-09  Ben Boeckel  <ben.boeckel@kitware.com>
 
 	* configure: Regenerate.

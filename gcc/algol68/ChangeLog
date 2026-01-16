@@ -1,3 +1,12 @@
+2026-01-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.texi (POSIX files): Fix documentation of lseek.
+
+2026-01-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.texi (Dialect options): {..} is not a valid variant of
+	(...).
+
 2026-01-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* a68-low-posix.cc (a68_posix_setexitstatus): Delete function.

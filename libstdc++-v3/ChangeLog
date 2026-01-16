@@ -1,3 +1,39 @@
+2026-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/type_traits (std::is_reflection, std::is_fundamental,
+	std::is_reflection_v, std::is_consteval_only): Compare
+	__cpp_impl_reflection >= 202506L instead of 202500L.
+	* testsuite/20_util/variable_templates_for_traits.cc: Likewise.
+
+2026-01-15  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120775
+	PR c++/123081
+	PR c++/122634
+	* include/Makefile.am (std_headers): Add ${std_srcdir}/meta.
+	* include/Makefile.in: Regenerate.
+	* include/bits/iterator_concepts.h (std::ranges::__access::__begin): Add
+	constexpr.
+	* include/bits/version.def (reflection): New.
+	* include/bits/version.h: Regenerate.
+	* include/precompiled/stdc++.h: Include <meta> for C++26.
+	* include/std/meta: New file.
+	* include/std/type_traits (std::is_reflection): New trait.
+	(std::is_fundamental): Include is_reflection for C++26 -freflection.
+	(std::is_reflection_v): New variable template.
+	(std::is_consteval_only): New trait.
+	(std::is_consteval_only_v): New variable template.
+	* src/c++23/std.cc.in: Add <meta> exports.
+	* testsuite/20_util/variable_templates_for_traits.cc: Add -freflection as
+	dg-additional-options for C++26.  Add std::is_reflection_v test in that case.
+	* testsuite/20_util/is_consteval_only/requirements/explicit_instantiation.cc: New test.
+	* testsuite/20_util/is_consteval_only/requirements/typedefs.cc: New test.
+	* testsuite/20_util/is_consteval_only/value.cc: New test.
+	* testsuite/20_util/is_reflection/requirements/explicit_instantiation.cc: New test.
+	* testsuite/20_util/is_reflection/requirements/typedefs.cc: New test.
+	* testsuite/20_util/is_reflection/value.cc: New test.
+
 2026-01-14  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* testsuite/util/testsuite_iterators.h: Modify comment.

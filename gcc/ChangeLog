@@ -1,3 +1,182 @@
+2026-01-15  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120775
+	PR c++/123081
+	PR c++/122634
+	* attribs.cc (attribute_value_equal): Return false if either attribute
+	is ATTR_UNIQUE_VALUE_P.
+	(merge_attributes): Handle lists with ATTR_UNIQUE_VALUE_P values.
+	* doc/invoke.texi: Document -freflection.
+	* dwarf2out.cc (is_base_type) <case default>: Check
+	TREE_CODE >= LAST_AND_UNUSED_TREE_CODE instead of is_cxx_auto.
+	(gen_type_die_with_usage): For TREE_CODE >= LAST_AND_UNUSED_TREE_CODE
+	trees use use DW_TAG_unspecified_type.
+	* tree-core.h (struct tree_base): Update a comment.
+	* tree.h (ATTR_UNIQUE_VALUE_P): Define.
+	(BINFO_BASE_ACCESSES): Update the comment.
+
+2026-01-15  Peter Damianov  <peter0x44@disroot.org>
+
+	PR driver/123504
+	* config/i386/cygming.h (EXTRA_DEFAULT_COMPILERS): Comment out
+	.res spec to allow COFF files with .res extension to pass
+	through to the linker.
+	* config/aarch64/cygming.h (EXTRA_DEFAULT_COMPILERS): Likewise.
+
+2026-01-15  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* ira-lives.cc (ira_implicitly_set_insn_hard_regs): Honor hard
+	register constraints.
+	* ira.cc (ira_setup_alts): Ditto.
+
+2026-01-15  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* doc/extend.texi: Document current limitations of hard register
+	constraints.
+	* stmt.cc (parse_output_constraint): Reject multiple hard
+	register constraints or a combination of hard register
+	constraints and regular register constraints in one alternative.
+	(parse_input_constraint): Ditto.
+
+2026-01-15  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64-simd.md: Add comment.
+	* config/aarch64/aarch64-sme.md: Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins.def: Likewise.
+	* config/aarch64/aarch64-sve.md: Likewise.
+	* config/aarch64/aarch64-sve2.md: Likewise.
+	* config/aarch64/aarch64.md: Likewise.
+
+2026-01-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sparc.h (TARGET_SUN_TLS): Remove.
+	* config/sparc/sol2.h (TARGET_SUN_TLS): Likewise.
+	* config/sparc/sparc.cc (TARGET_ASM_OUTPUT_DWARF_DTPREL): Guard
+	with HAVE_GNU_AS.
+	(sparc_tls_got): Guard with !HAVE_GNU_AS.
+	(sparc_legitimize_tls_address): Likewise.
+	* config/sparc/sparc.md ("tls_delay_slot"): Likewise.
+	("@tie_add<P:mode>"): Likewise.
+
+2026-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/121045
+	* tree-pretty-print.h (dump_location): Add new dump_flags_t
+	argument defaulted to TDF_NONE.
+	* tree-pretty-print.cc (dump_location): Add flags argument.  Don't
+	print discriminator if TDF_COMPARE_DEBUG bit is set in flags.
+	(dump_block_node, dump_generic_node): Pass through flags to
+	dump_location.
+	* gimple-pretty-print.cc (dump_gimple_phi, pp_gimple_stmt_1,
+	dump_implicit_edges): Likewise.
+	(gimple_dump_bb_as_sarif_properties): Pass dump_flags to
+	dump_location.
+	* print-rtl.cc (rtx_writer::print_rtx_operand_code_L): If dump_flags
+	has TDF_COMPARE_DEBUG bit set, don't print discriminators.
+
+2026-01-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h [!HAVE_GNU_AS] (ASM_CPU32_DEFAULT_SPEC): Use -m32.
+	(ASM_CPU64_DEFAULT_SPEC): Use -m64.
+
+2026-01-15  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/122852
+	* cgraph.cc (cgraph_node::verify_node): Verify that callback
+	edges are unreachable when the carrying edge is unreachable.
+	* ipa-fnsummary.cc (redirect_to_unreachable): Redirect callback
+	edges to unreachable when redirecting the carrying edge.
+
+2026-01-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_sparc_ua_pcrel): Remove.
+	(gcc_cv_as_sparc_ua_pcrel_hidden): Likewise.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sparc/sparc.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove
+	!HAVE_AS_SPARC_UA_PCREL, !HAVE_AS_SPARC_UA_PCREL_HIDDEN support.
+	* config/sparc/sol2.h (ASM_PREFERRED_EH_DATA_FORMAT): Remove.
+	* config/sparc/sparc.cc (TARGET_ASM_OUTPUT_DWARF_DTPREL): Remove
+	HAVE_AS_SPARC_UA_PCREL guard.
+
+2026-01-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sparc/sparc.h (TARGET_TLS): Define as HAVE_AS_TLS.
+	Update comment.
+	(TARGET_SUN_TLS): Define as 0.
+	(TARGET_GNU_TLS): Remove.
+	* config/sparc/freebsd.h (TARGET_SUN_TLS): Remove.
+	(TARGET_GNU_TLS): Remove.
+	* config/sparc/linux.h: Likewise.
+	* config/sparc/linux64.h: Likewise.
+	* config/sparc/sol2.h (TARGET_SUN_TLS): Redefine as 1.
+	Guard with HAVE_AS_TLS && !HAVE_GNU_AS.
+	(TARGET_GNU_TLS): Remove.
+	* config/sparc/sparc.cc (TARGET_ASM_OUTPUT_DWARF_DTPREL): Use
+	!TARGET_SUN_TLS in guard.
+	with !TARGET_SUN_TLS only.
+	* config/sparc/sparc.md ("tls_delay_slot"): Guard with
+	!TARGET_SUN_TLS.
+
+2026-01-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/38118
+	* config/sparc/sol2.h (ASM_OUTPUT_ALIGNED_COMMON): Remove.
+
+2026-01-15  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* cfgloopmanip.cc (duplicate_loop_body_to_header_edge): Assign
+	hierarchical discriminators for loop unrolling.
+	* cfgloopmanip.h (DLTHE_RECORD_HIERARCHICAL_DISCRIMINATOR): New flag.
+	* tree-ssa-loop-ivcanon.cc (try_unroll_loop_completely): Pass flag
+	to enable hierarchical discriminator assignment.
+	(try_peel_loop): Likewise.
+
+2026-01-15  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gimple-loop-versioning.cc (loop_versioning::version_loop): Assign
+	copyid discriminators to distinguish different loop versions.
+
+2026-01-15  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Assign copyid
+	discriminators for vectorized and scalar loop versions.
+	* tree-vect-loop.cc (vect_transform_loop): Assign copyid
+	discriminators for vectorized and scalar loop versions.
+
+2026-01-15  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* Makefile.in: Add hierarchical_discriminator.o to OBJS.
+	* hierarchical_discriminator.cc: New file.
+	* hierarchical_discriminator.h: New file.
+	* function.h (copyid_alloc): New.
+	* input.cc (location_with_discriminator_components): New function.
+	(get_discriminator_components_from_loc): Likewise.
+	* input.h (DISCR_BASE_BITS): New constant.
+	(DISCR_MULTIPLICITY_BITS): Likewise.
+	(DISCR_COPYID_BITS): Likewise.
+	(DISCR_UNUSED_BITS): Likewise.
+	(DISCR_BASE_MASK): Likewise.
+	(DISCR_MULTIPLICITY_MASK): Likewise.
+	(DISCR_COPYID_MASK): Likewise.
+	(DISCR_BASE_SHIFT): Likewise.
+	(DISCR_MULTIPLICITY_SHIFT): Likewise.
+	(DISCR_COPYID_SHIFT): Likewise.
+	(DISCR_BASE_MAX): Likewise.
+	(DISCR_MULTIPLICITY_MAX): Likewise.
+	(DISCR_COPYID_MAX): Likewise.
+	(location_with_discriminator_components): New function declaration.
+	(get_discriminator_components_from_loc): Likewise.
+
+2026-01-15  DengJianbo  <dengjianbo@loongson.cn>
+
+	* config/loongarch/loongarch.md: Remove condition in template
+	movdi_symbolic_off64.
+
 2026-01-14  Peter Bergner  <bergner@tenstorrent.com>
 
 	PR target/123092

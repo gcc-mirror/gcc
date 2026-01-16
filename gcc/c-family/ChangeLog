@@ -1,3 +1,18 @@
+2026-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2026-01-15  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120775
+	PR c++/123081
+	PR c++/122634
+	* c-attribs.cc (attribute_takes_identifier_p): Return false for C++
+	annotations.  Handle "old parm name".
+	* c-cppbuiltin.cc (c_cpp_builtins): Define __cpp_impl_reflection.
+	* c.opt (freflection): New.
+
 2026-01-07  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-omp.cc (c_omp_directives): Uncomment 'groupprivate'.

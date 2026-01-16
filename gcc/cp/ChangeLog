@@ -1,3 +1,278 @@
+2026-01-15  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120775
+	PR c++/123081
+	PR c++/122634
+	* Make-lang.in: Add cp/reflect.o.  Add a rule for cp/metafns.h.
+	* config-lang.in: Add reflect.cc.
+	* constexpr.cc (constexpr_global_ctx): Add consteval_block and
+	metafns_called members.  Initialize them.
+	(cxx_constexpr_quiet_p): New.
+	(cxx_constexpr_manifestly_const_eval): New.
+	(cxx_constexpr_caller): New.
+	(cxx_constexpr_consteval_block): New.
+	(enum value_cat): Move into cp-tree.h.
+	(cxx_eval_constant_expression): Move the declaration into cp-tree.h.
+	No longer static.  Handle REFLECT_EXPR.  Handle conversion of
+	a reflection to the meta::info type.
+	(cxx_eval_cxa_builtin_fn): Override current_function_decl.
+	(cxx_eval_builtin_function_call): Handle __builtin_is_string_literal.
+	(is_std_allocator): Also check __new_allocator.
+	(is_std_allocator_allocate): No longer static.
+	(cxa_allocate_and_throw_exception): New.
+	(cxx_eval_call_expression): Handle metafunctions.  Maybe set
+	metafns_called.
+	(reduced_constant_expression_p): Handle REFLECT_EXPR.
+	(cxx_eval_binary_expression): Use compare_reflections for comparing
+	reflections.
+	(find_immediate_fndecl): Don't walk REFLECT_EXPR_P.
+	(cxx_eval_outermost_constant_expr): Set global_ctx.consteval_block.
+	Detect consteval-only smuggling.
+	(potential_constant_expression_1): Return true for REFLECT_EXPR
+	and SPLICE_EXPR.
+	* constraint.cc (diagnose_trait_expr): Add CPTK_IS_CONSTEVAL_ONLY case.
+	* cp-gimplify.cc (immediate_escalating_function_p): No longer static.
+	(promote_function_to_consteval): Likewise.
+	(cp_gimplify_expr) <case CALL_EXPR>: Detect any surviving consteval-only
+	expressions.
+	<case CP_BUILT_IN_IS_STRING_LITERAL>: Handle.
+	(wipe_consteval_only_r): New.
+	(cp_fold_immediate_r): Detect invalid uses of consteval-only types.
+	Clear consteval-only DECL_EXPRs.
+	(cp_genericize_r): Wipe consteval-only vars from BIND_EXPR_VARS and
+	BLOCK_VARS.
+	* cp-objcp-common.cc (cp_common_init_ts): Mark META_TYPE, SPLICE_SCOPE,
+	SPLICE_EXPR, and REFLECT_EXPR.
+	* cp-trait.def (IS_CONSTEVAL_ONLY): New trait.
+	* cp-tree.def (REFLECT_EXPR, META_TYPE, SPLICE_EXPR, SPLICE_SCOPE): New
+	trees.
+	* cp-tree.h (enum cp_tree_index): Add CPTI_ANNOTATION_IDENTIFIER,
+	CPTI_STD_META, and CPTI_META_INFO_TYPE.
+	(std_meta_node): Define.
+	(meta_info_type_node): Define.
+	(annotation_identifier): Define.
+	(REFLECTION_TYPE_P): Define.
+	(REFLECT_EXPR_P): Define.
+	(REFLECT_EXPR_HANDLE): Define.
+	(enum reflect_kind): New.
+	(REFLECT_EXPR_KIND): Define.
+	(SET_REFLECT_EXPR_KIND): Define.
+	(SPLICE_EXPR_EXPRESSION_P): Define.
+	(SET_SPLICE_EXPR_EXPRESSION_P): Define.
+	(SPLICE_EXPR_MEMBER_ACCESS_P): Define.
+	(SET_SPLICE_EXPR_MEMBER_ACCESS_P): Define.
+	(SPLICE_EXPR_ADDRESS_P): Define.
+	(SET_SPLICE_EXPR_ADDRESS_P): Define.
+	(SPLICE_SCOPE_EXPR): Define.
+	(SPLICE_SCOPE_TYPE_P): Define.
+	(WILDCARD_TYPE_P): Include SPLICE_SCOPE.
+	(COMPONENT_REF_SPLICE_P): Define.
+	(SCALAR_TYPE_P): Include REFLECTION_TYPE_P.
+	(ENUM_BEING_DEFINED_P): Define.
+	(OLD_PARM_DECL_P): Define.
+	(MULTIPLE_NAMES_PARM_P): Define.
+	(cp_preserve_using_decl): Declare.
+	(DEF_OPERATOR, DEF_ASSN_OPERATOR): Include META.
+	(struct ovl_op_info_t): Add meta_name member.
+	(enum cp_built_in_function): Add CP_BUILT_IN_IS_STRING_LITERAL.
+	(build_stub_type): Declare.
+	(current_function_decl_without_access_scope): Declare.
+	(dependent_namespace_p): Declare.
+	(convert_reflect_constant_arg): Declare.
+	(finish_base_specifier): Adjust declaration.
+	(parsing_lambda_declarator): Declare.
+	(fold_builtin_is_string_literal): Declare.
+	(annotation_p): Declare.
+	(finish_class_member_access_expr): Adjust declaration.
+	(immediate_escalating_function_p): Declare.
+	(promote_function_to_consteval): Declare.
+	(is_std_allocator_allocate): Declare.
+	(cxa_allocate_and_throw_exception): Declare.
+	(enum value_cat): Define.
+	(cxx_eval_constant_expression): Declare.
+	(cxx_constexpr_quiet_p): Declare.
+	(cxx_constexpr_manifestly_const_eval): Declare.
+	(cxx_constexpr_caller): Declare.
+	(cxx_constexpr_consteval_block): Declare.
+	(init_reflection): Declare.
+	(metafunction_p): Declare.
+	(direct_base_parent): Declare.
+	(process_metafunction): Declare.
+	(get_reflection): Declare.
+	(get_null_reflection): Declare.
+	(splice): Declare.
+	(check_out_of_consteval_use): Declare.
+	(consteval_only_p): Declare.
+	(compare_reflections): Declare.
+	(valid_splice_type_p): Declare.
+	(valid_splice_scope_p): Declare.
+	(check_splice_expr): Declare.
+	(make_splice_scope): Declare.
+	(dependent_splice_p): Declare.
+	(reflection_mangle_prefix): Declare.
+	(check_consteval_only_fn): Declare.
+	* cvt.cc (convert_to_void): Call check_out_of_consteval_use.
+	* cxx-pretty-print.cc (cxx_pretty_printer::unary_expression): New
+	REFLECT_EXPR case.
+	(cxx_pretty_printer::expression): Likewise.
+	(cxx_pretty_printer::simple_type_specifier): New META_TYPE case.
+	(cxx_pretty_printer::type_id): Likewise.
+	* decl.cc (duplicate_decls): Merge parameter names for Reflection.
+	Maybe set OLD_PARM_DECL_P.
+	(initialize_predefined_identifiers): Add "annotation ".
+	(cxx_init_decl_processing): Add __builtin_is_string_literal.  Call
+	init_reflection.
+	(maybe_commonize_var): Do nothing for consteval_only_p.
+	(check_initializer): Default-initialize std::meta::info.
+	(make_rtl_for_nonlocal_decl): For consteval_only_p vars, set
+	DECL_EXTERNAL and return early.
+	(cp_finish_decl): Call check_out_of_consteval_use.  Don't go
+	creating a varpool node for consteval_only_p.
+	(get_tuple_size): Check the instantiation instead of the type.
+	(grokfndecl): Call check_consteval_only_fn.
+	(xref_basetypes): Stitch annotations onto BINFO_BASE_ACCESSES.
+	(finish_enum_value_list): Clear ENUM_BEING_DEFINED_P.
+	* decl2.cc (is_late_template_attribute): Handle all annotations as
+	late.
+	(cp_check_const_attributes): Don't handle annotations here.
+	(maybe_make_one_only): Do nothing for consteval_only_p.
+	(mark_needed): Likewise.
+	(min_vis_expr_r): Handle reflections.
+	(prune_vars_needing_no_initialization): Skip consteval_only_p.
+	(no_linkage_error): Return early for metafunctions.
+	(c_parse_final_cleanups): Don't write out consteval_only_p vars.  Avoid
+	complaining about metafunctions.
+	* error.cc (dump_type): New cases for CONST_DECL, META_TYPE, and
+	SPLICE_SCOPE.
+	(dump_type_prefix): New cases for META_TYPE and SPLICE_SCOPE.
+	(dump_type_suffix): Likewise.
+	(dump_decl): Dump SPLICE_EXPR.
+	(dump_expr): Dump REFLECT_EXPR and SPLICE_EXPR.
+	* init.cc (build_zero_init_1): Build a null reflection value.
+	(perform_member_init): Call check_out_of_consteval_use.
+	* lex.cc (DEF_OPERATOR, OPERATOR_TRANSITION): Update defines.
+	* mangle.cc (write_type): Mangle META_TYPE.
+	(write_expression): Handle REFLECT_EXPR.
+	(write_reflection): New.
+	(write_template_arg_literal): New REFLECT_EXPR case.
+	(write_template_arg): Handle REFLECT_EXPR.
+	* method.cc (build_stub_type): No longer static.
+	* module.cc (trees_out::type_node): Handle META_TYPE.
+	(trees_in::tree_node): Likewise.
+	* name-lookup.cc (name_lookup::adl_type): std::meta is an associated
+	namespace of std::meta::info.
+	(strip_using_decl): Don't strip when cp_preserve_using_decl.
+	(handle_namespace_attrs): Handle annotations.
+	(do_namespace_alias): Handle SPLICE_EXPR.
+	(lookup_qualified_name): When cp_preserve_using_decl, don't do
+	OVL_FUNCTION.
+	(finish_using_directive): Detect annotations on using directive.
+	* operators.def: Update for META_NAME.
+	* parser.cc: New cp_preserve_using_decl global.
+	(enum required_token): Add RT_CLOSE_SPLICE.
+	(get_required_cpp_ttype): Return CPP_CLOSE_SPLICE for RT_CLOSE_SPLICE.
+	(cp_parser_next_tokens_start_splice_type_spec_p): New.
+	(cp_parser_next_tokens_can_start_splice_scope_spec_p): New.
+	(cp_parser_splice_specifier): New.
+	(cp_parser_splice_type_specifier): New.
+	(cp_parser_splice_expression): New.
+	(cp_parser_splice_scope_specifier): New.
+	(cp_parser_splice_spec_is_nns_p): New.
+	(cp_parser_nth_token_starts_splice_without_nns_p): New.
+	(cp_parser_primary_expression): Handle CPP_OPEN_SPLICE.  Give an
+	error for ^^ outside reflection.
+	(cp_parser_unqualified_id): Allow r.~typename [:R:].
+	(cp_parser_nested_name_specifier_opt): Cope with splice-scope-specifier.
+	(cp_parser_qualifying_entity): Parse splice-scope-specifier.
+	(cp_parser_postfix_expression): Deal with [: :] after a typename.
+	(cp_parser_postfix_dot_deref_expression): Parse & handle splices
+	in a class member access.  Pass splice_p to
+	finish_class_member_access_expr.
+	(cp_parser_reflection_name): New.
+	(cp_parser_reflect_expression): New.
+	(cp_parser_unary_expression): Parse reflect-expression.
+	(cp_parser_declaration): Parse splice-scope-specifier.
+	(cp_parser_decomposition_declaration): Detect annotations on structured
+	bindings.
+	(cp_parser_decltype_expr): Parse splice-expression.
+	(cp_parser_template_id): New parsed_templ argument.  If it's nonnull,
+	don't parse the template name.  Turn an assert into a condition.
+	(cp_parser_type_specifier): Handle typename [: :].
+	(cp_parser_simple_type_specifier): Parse splice-type-specifier.
+	(cp_parser_enum_specifier): Set ENUM_BEING_DEFINED_P.
+	(cp_parser_namespace_alias_definition): Parse splice-specifier.
+	(cp_parser_using_directive): Likewise.
+	(cp_parser_type_id_1): New bool * parameter to distinguish between
+	types and type aliases.  Set it.
+	(cp_parser_type_id): Adjust the call to cp_parser_type_id_1.
+	(cp_parser_template_type_arg): Likewise.
+	(cp_parser_trailing_type_id): Likewise.
+	(cp_parser_base_specifier): Handle annotations.  Maybe give an error
+	for splice-scope-specifier.  Parse splice-type-specifier.  Pass
+	annotations to finish_base_specifier.
+	(cp_parser_annotation): New.
+	(cp_parser_std_attribute_list): Detect mixing annotations and attributes
+	in the same list.
+	(cp_parser_annotation_list): New.
+	(cp_parser_std_attribute_spec): Parse annotations.
+	(cp_parser_skip_balanced_tokens): Also handle CPP_OPEN_SPLICE
+	and CPP_CLOSE_SPLICE.
+	(cp_parser_type_requirement): Parse splice-type-specifier.
+	(cp_parser_lookup_name): Also consider dependent namespaces.  Don't
+	call check_accessibility_of_qualified_id for USING_DECLs.
+	(cp_parser_required_error): Handle RT_CLOSE_SPLICE.
+	* pt.cc (current_function_decl_without_access_scope): New.
+	(verify_unstripped_args_1): REFLECT_EXPR_P is OK.
+	(iterative_hash_template_arg): Handle REFLECT_EXPR.
+	(convert_nontype_argument): Maybe give an error for REFLECTION_TYPE_P.
+	(for_each_template_parm_r): Handle SPLICE_SCOPE.
+	(instantiate_class_template): Handle annotations.
+	(tsubst_pack_index): Make static.
+	(tsubst_decl): Handle NAMESPACE_DECL.
+	(tsubst_splice_scope): New.
+	(tsubst_splice_expr): New.
+	(tsubst): Don't return early for NAMESPACE_DECL.   New META_TYPE case.
+	Handle a splice-specifier that expanded into a NAMESPACE_DECL.  Handle
+	SPLICE_SCOPE, SPLICE_EXPR, and TEMPLATE_ID_EXPR.
+	(tsubst_scope): Also accept NAMESPACE_DECL.
+	(tsubst_qualified_id): Check dependent_namespace_p.
+	(tsubst_lambda_expr): Set LAMBDA_EXPR_CONSTEVAL_BLOCK_P.
+	(tsubst_expr): Allow dependent_splice_p in an assert.  Check
+	COMPONENT_REF_SPLICE_P and pass it to finish_class_member_access_expr.
+	<case NAMESPACE_DECL>: Remove.
+	New REFLECT_EXPR and SPLICE_EXPR cases.
+	(unify): Handle META_TYPE.
+	(instantiate_body): Call check_consteval_only_fn.
+	(tsubst_enum): Set ENUM_BEING_DEFINED_P.
+	(dependent_type_p_r): A splice-scope-specifier is dependent.
+	(dependent_namespace_p): New.
+	(value_dependent_expression_p): Handle REFLECT_EXPR.  Also handle
+	[meta.reflection.access.context]/8.
+	(type_dependent_expression_p): REFLECT_EXPR_P is not type-dependent.
+	(convert_reflect_constant_arg): New.
+	* search.cc (check_final_overrider): Adjust for CWG 3117.
+	* semantics.cc (finish_base_specifier): Handle annotations.
+	(parsing_lambda_declarator): No longer static.
+	(finish_id_expression_1): Check dependent_namespace_p.
+	(fold_builtin_is_string_literal): New.
+	(trait_expr_value): Handle CPTK_IS_CONSTEVAL_ONLY.
+	(finish_trait_expr): Likewise.
+	* tree.cc (handle_annotation_attribute): New.
+	(builtin_valid_in_constant_expr_p): Return true for
+	CP_BUILT_IN_IS_STRING_LITERAL.
+	(cp_tree_equal): Handle comparing REFLECT_EXPRs.
+	(internal_attributes): Add "annotation ".
+	(annotation_p): New.
+	* typeck.cc (finish_class_member_access_expr): New splice_p argument.
+	Handle dependent splices.  Implement splicing a base class subobject.
+	Handle class member access using a splice-expression.
+	(cp_build_binary_op): Handle comparing std::meta::infos.
+	(check_return_expr): Call check_out_of_consteval_use.
+	* metafns.gperf: New file.
+	* metafns.h: New file.
+	* reflect.cc: New file.
+
 2026-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	* call.cc (get_fndecl_argument_location): Use DECL_SOURCE_LOCATION
