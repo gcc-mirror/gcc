@@ -18210,6 +18210,9 @@ the discovery is aborted.
 @item ix86-vect-unroll-limit
 Limit how much the autovectorizer may unroll a loop.
 
+@item ix86-vect-compare-costs
+Whether x86 vectorizer cost modeling compares costs of different vector sizes.
+
 @end table
 
 @end table

@@ -25700,7 +25700,7 @@ ix86_autovectorize_vector_modes (vector_modes *modes, bool all)
   if (TARGET_SSE2)
     modes->safe_push (V4QImode);
 
-  return 0;
+  return ix86_vect_compare_costs ? VECT_COMPARE_COSTS : 0;
 }
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */

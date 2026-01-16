@@ -1257,6 +1257,10 @@ Enable conservative small loop unrolling.
 Target Joined UInteger Var(ix86_vect_unroll_limit) Init(4) Param
 Limit how much the autovectorizer may unroll a loop.
 
+-param=ix86-vect-compare-costs=
+Target Joined UInteger Var(ix86_vect_compare_costs) Init(0) IntegerRange(0, 1) Param Optimization
+Whether x86 vectorizer cost modeling compares costs of different vector sizes.
+
 mlam=
 Target RejectNegative Joined Enum(lam_type) Var(ix86_lam_type) Init(lam_none)
 -mlam=[none|u48|u57] Instrument meta data position in user data pointers.
