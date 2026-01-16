@@ -3036,7 +3036,7 @@ eval_variable_of (location_t loc, const constexpr_ctx *ctx, tree r,
 {
   if (eval_is_function_parameter (r, kind) == boolean_false_node
       /* This doesn't consider the points corresponding to injected
-	 declarations.  */
+	 declarations, but that doesn't seem needed.  */
       || DECL_CONTEXT (r) != current_function_decl)
     return throw_exception (loc, ctx, "reflection does not represent "
 				      "parameter of current function",
