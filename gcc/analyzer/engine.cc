@@ -3400,19 +3400,22 @@ exploded_graph::process_worklist ()
       /* Impose a hard limit on the number of exploded nodes, to ensure
 	 that the analysis terminates in the face of pathological state
 	 explosion (or bugs).  */
-      if (const int limit
-	    = m_sg.num_nodes () * param_analyzer_bb_explosion_factor)
-	if (m_global_stats.m_num_nodes > limit)
-	  {
-	    if (logger)
-	      logger->log ("bailing out; too many nodes");
-	    warning_at (node->get_point ().get_location (),
-			OPT_Wanalyzer_too_complex,
-			"analysis bailed out early"
-			" (%i enodes)",
-			m_nodes.length ());
-	    return;
-	  }
+      const int limit
+	= (// Per-supernode limit:
+	   (m_sg.num_nodes () * param_analyzer_bb_explosion_factor)
+	   // Allow one for the "origin" enode:
+	   + 1);
+      if (m_global_stats.m_num_nodes > limit)
+	{
+	  if (logger)
+	    logger->log ("bailing out; too many nodes");
+	  warning_at (node->get_point ().get_location (),
+		      OPT_Wanalyzer_too_complex,
+		      "analysis bailed out early"
+		      " (%i enodes)",
+		      m_nodes.length ());
+	  return;
+	}
     }
 }
 
