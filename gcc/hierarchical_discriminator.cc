@@ -184,7 +184,38 @@ assign_discriminators_to_loop (class loop *loop,
 }
 
 
-/* Initialize the per-function copyid allocator.  */
+/* Helper to update the copyid allocator map with a location's existing copyid.
+   If the location has a non-zero copyid, record that we need to start
+   allocating from copyid+1 for this location.  */
+
+static void
+record_existing_copyid (location_t loc, struct function *fn)
+{
+  if (loc == UNKNOWN_LOCATION)
+    return;
+
+  location_t pure_loc = get_pure_location (loc);
+  unsigned int discr = get_discriminator_from_loc (loc);
+  if (discr == 0)
+    return;
+
+  /* Extract copyid from discriminator.  */
+  unsigned int copyid = (discr >> DISCR_COPYID_SHIFT) & DISCR_COPYID_MASK;
+  if (copyid == 0)
+    return;
+
+  /* Update max copyid for this location.  */
+  unsigned int next_copyid = copyid + 1;
+  if (next_copyid > DISCR_COPYID_MAX)
+    next_copyid = DISCR_COPYID_MAX;
+
+  unsigned int *existing = fn->copyid_alloc->location_map->get (pure_loc);
+  if (!existing || *existing <= copyid)
+    fn->copyid_alloc->location_map->put (pure_loc, next_copyid);
+}
+
+/* Initialize the per-function copyid allocator.  Walks the function
+   body to find existing max copyids per location.  */
 
 static void
 init_copyid_allocator (struct function *fn)
@@ -192,13 +223,59 @@ init_copyid_allocator (struct function *fn)
   if (!fn)
     return;
 
-  if (fn->copyid_alloc)
+  if (fn->copyid_alloc && fn->copyid_alloc->initialized)
     return;  /* Already initialized.  */
 
-  fn->copyid_alloc = XNEW (struct copyid_allocator);
-  fn->copyid_alloc->location_map
-    = new hash_map<int_hash<location_t, UNKNOWN_LOCATION, UNKNOWN_LOCATION>,
-		   unsigned int>;
+  if (!fn->copyid_alloc)
+    {
+      fn->copyid_alloc = XNEW (struct copyid_allocator);
+      fn->copyid_alloc->location_map
+	= new hash_map<int_hash<location_t, UNKNOWN_LOCATION,
+			       UNKNOWN_LOCATION>, unsigned int>;
+      fn->copyid_alloc->initialized = false;
+    }
+
+  /* Only walk the body if not yet initialized.  */
+  if (fn->copyid_alloc->initialized)
+    return;
+
+  /* Walk the function body to find existing max copyids per location.
+     This ensures we don't reuse copyids that were allocated in previous
+     passes, during LTO, or brought in by inlining.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fn)
+    {
+      if (current_ir_type () == IR_GIMPLE)
+	{
+	  /* Process PHI nodes.  */
+	  gphi_iterator phi_gsi;
+	  for (phi_gsi = gsi_start_phis (bb); !gsi_end_p (phi_gsi);
+	       gsi_next (&phi_gsi))
+	    record_existing_copyid (gimple_location (phi_gsi.phi ()), fn);
+
+	  /* Process regular statements.  */
+	  gimple_stmt_iterator gsi;
+	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    record_existing_copyid (gimple_location (gsi_stmt (gsi)), fn);
+
+	  /* Process edge goto_locus locations.  */
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    record_existing_copyid (e->goto_locus, fn);
+	}
+      else
+	{
+	  /* For RTL mode.  */
+	  rtx_insn *insn;
+	  FOR_BB_INSNS (bb, insn)
+	    {
+	      if (INSN_P (insn))
+		record_existing_copyid (INSN_LOCATION (insn), fn);
+	    }
+	}
+    }
+
   fn->copyid_alloc->initialized = true;
 }
 
