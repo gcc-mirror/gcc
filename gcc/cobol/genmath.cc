@@ -173,13 +173,8 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
     temp_field.type = remainder->field->type;
     temp_field.attr = (remainder->field->attr | intermediate_e) & ~initialized_e;
     temp_field.level = 1;
-    temp_field.data.memsize   = remainder->field->data.memsize ;
-    temp_field.data.capacity  = remainder->field->data.capacity;
-    temp_field.data.digits    = remainder->field->data.digits  ;
-    temp_field.data.rdigits   = remainder->field->data.rdigits ;
-    temp_field.data.initial   = remainder->field->data.initial ;
-    temp_field.data.picture   = remainder->field->data.picture ;
-    temp_field.codeset        = remainder->field->codeset ;
+    temp_field.data = remainder->field->data;
+    temp_field.codeset = remainder->field->codeset ;
     parser_symbol_add(&temp_field);
     temp_remainder.field = &temp_field;
 
@@ -373,7 +368,7 @@ largest_binary_term(size_t nA, cbl_refer_t *A)
       {
       // This is an integer type that can be worked with quickly
       is_negative |= ( A[i].field->attr & signable_e );
-      max_capacity = std::max(max_capacity, A[i].field->data.capacity);
+      max_capacity = std::max(max_capacity, A[i].field->data.capacity());
       retval = tree_type_from_size(max_capacity, is_negative);
       }
     else
@@ -425,7 +420,7 @@ fast_add( size_t nC, cbl_num_result_t *C,
       // We now either accumulate into C[n] or assign to C[n]:
       for(size_t i=0; i<nC; i++ )
         {
-        tree dest_type = tree_type_from_size(C[i].refer.field->data.capacity, 0);
+        tree dest_type = tree_type_from_size(C[i].refer.field->data.capacity(), 0);
         tree dest_addr = gg_add(member(C[i].refer.field->var_decl_node, "data"),
                                 refer_offset(C[i].refer));
         tree ptr = gg_cast(build_pointer_type(dest_type), dest_addr);
@@ -511,7 +506,7 @@ fast_subtract(size_t nC, cbl_num_result_t *C,
       // We now either accumulate into C[n] or assign to C[n]:
       for(size_t i=0; i<nC; i++ )
         {
-        tree dest_type = tree_type_from_size(C[i].refer.field->data.capacity, 0);
+        tree dest_type = tree_type_from_size(C[i].refer.field->data.capacity(), 0);
         tree dest_addr = gg_add(member(C[i].refer.field->var_decl_node, "data"),
                                 refer_offset(C[i].refer));
         tree ptr = gg_cast(build_pointer_type(dest_type), dest_addr);
@@ -583,7 +578,7 @@ fast_multiply(size_t nC, cbl_num_result_t *C,
       // We now either multiply into C[n] or assign A * B to C[n]:
       for(size_t i=0; i<nC; i++ )
         {
-        tree dest_type = tree_type_from_size(C[i].refer.field->data.capacity, 0);
+        tree dest_type = tree_type_from_size(C[i].refer.field->data.capacity(), 0);
         tree dest_addr = gg_add(member(C[i].refer.field->var_decl_node, "data"),
                                 refer_offset(C[i].refer));
         tree ptr = gg_cast(build_pointer_type(dest_type), dest_addr);
@@ -663,7 +658,7 @@ fast_divide(size_t nC, cbl_num_result_t *C,
       for(size_t i=0; i<nC; i++ )
         {
         tree dest_type =
-                       tree_type_from_size(C[i].refer.field->data.capacity, 0);
+                       tree_type_from_size(C[i].refer.field->data.capacity(), 0);
         tree dest_addr = gg_add(member( C[i].refer.field->var_decl_node,
                                         "data"),
                                 refer_offset(C[i].refer));
@@ -690,7 +685,7 @@ fast_divide(size_t nC, cbl_num_result_t *C,
           {
           dest_addr = gg_add( member(remainder.field->var_decl_node, "data"),
                               refer_offset(remainder));
-          dest_type = tree_type_from_size(remainder.field->data.capacity, 0);
+          dest_type = tree_type_from_size(remainder.field->data.capacity(), 0);
           ptr = gg_cast(build_pointer_type(dest_type), dest_addr);
 
           gg_assign(gg_indirect(ptr),
@@ -1536,7 +1531,7 @@ parser_subtract(size_t nC, cbl_num_result_t *C, // C = B - A
                                   error,
                                   not_error,
                                   compute_error,
-                                  "__gg__fixed_phase2_assign_to_c");
+                                  "__gg__float_phase2_assign_to_c");
             }
           arithmetic_error_handler( error,
                                     not_error,

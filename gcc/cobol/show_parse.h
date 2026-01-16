@@ -117,7 +117,7 @@ extern bool cursor_at_sol;
                 fprintf(stderr, "%s", (b)->name); \
                 if( (b)->type == FldLiteralA || (b)->type == FldLiteralN ) \
                     { \
-                    fprintf(stderr, " \"%s\"", (b)->data.initial); \
+                    fprintf(stderr, " \"%s\"", (b)->data.original()); \
                     } \
                 else \
                     { \
@@ -143,8 +143,8 @@ extern bool cursor_at_sol;
                     size_t nbytes; \
                     const char *literal = __gg__iconverter((b).field->codeset.encoding, \
                                                            DEFAULT_SOURCE_ENCODING, \
-                                                           (b).field->data.initial, \
-                                                           strlen((b).field->data.initial), \
+                                                           (b).field->data.original(), \
+                                                           strlen((b).field->data.original()), \
                                                            &nbytes); \
                     fprintf(stderr, " \"%s\"", literal); \
                     } \
@@ -334,7 +334,7 @@ extern bool cursor_at_sol;
       else if( b->type == FldLiteralN ) \
         { \
         gg_fprintf(trace_handle, 1, " attr 0x%lx",  build_int_cst_type(SIZE_T, b->attr)); \
-        gg_fprintf(trace_handle, 1, " c:o:d:r %ld", build_int_cst_type(SIZE_T, b->data.capacity)); \
+        gg_fprintf(trace_handle, 1, " c:o:d:r %ld", build_int_cst_type(SIZE_T, b->data.capacity())); \
         gg_fprintf(trace_handle, 1, ":%ld",         build_int_cst_type(SIZE_T, b->offset)); \
         gg_fprintf(trace_handle, 1, ":%d",          build_int_cst_type(INT,    b->data.digits)); \
         gg_fprintf(trace_handle, 1, ":%d",         build_int_cst_type(INT,    b->data.rdigits)); \
@@ -400,7 +400,7 @@ extern bool cursor_at_sol;
       else if( (b).field->type == FldLiteralN ) \
         { \
         gg_fprintf(trace_handle, 1, " attr 0x%lx",  build_int_cst_type(SIZE_T, (b).field->attr)); \
-        gg_fprintf(trace_handle, 1, " c:o:d:r %ld", build_int_cst_type(SIZE_T, (b).field->data.capacity)); \
+        gg_fprintf(trace_handle, 1, " c:o:d:r %ld", build_int_cst_type(SIZE_T, (b).field->data.capacity())); \
         gg_fprintf(trace_handle, 1, ":%ld",         build_int_cst_type(SIZE_T, (b).field->offset)); \
         gg_fprintf(trace_handle, 1, ":%d",          build_int_cst_type(INT,    (b).field->data.digits)); \
         gg_fprintf(trace_handle, 1, ":%d)",         build_int_cst_type(INT,    (b).field->data.rdigits)); \

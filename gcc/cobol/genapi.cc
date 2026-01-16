@@ -366,8 +366,7 @@ static
 char *
 level_88_helper(size_t parent_capacity,
                 const cbl_domain_elem_t &elem,
-                size_t &returned_size,
-                cbl_encoding_t encoding)
+                size_t &returned_size)
   {
   // We return a MALLOCed return value, which the caller must free.
   char *retval  = static_cast<char *>(xmalloc(parent_capacity + 64));
@@ -385,7 +384,7 @@ level_88_helper(size_t parent_capacity,
     switch(figconst)
       {
       case normal_value_e :
-        // This really should never happend
+        // This really should never happen
         abort();
         break;
       case low_value_e    :
@@ -419,21 +418,6 @@ level_88_helper(size_t parent_capacity,
     gcc_assert(first_name);
     memcpy(first_name, elem.name(), first_name_length);
     first_name[first_name_length] = '\0';
-
-    /*  By rights, the parser should have given us this string in the target
-        encoding.  When I discovered that it was not, Jim Lowden was out of
-        town for a week, and I didn't feel like figuring out where in the
-        parser the fix should be.
-
-        So, I am doing the conversion here.  Eventually that will be fixed, and
-        chaos will reign here.  When that happens, remove the following
-        conversion. */
-    charmap_t *charmap = __gg__get_charmap(encoding);
-    for(size_t i=0; i<strlen(first_name); i++)
-      {
-      first_name[i] = charmap->mapped_character(first_name[i]);
-      }
-    ///////////////// end of conversion
 
     if( parent_capacity == 0 )
       {
@@ -517,8 +501,7 @@ get_level_88_domain(size_t parent_capacity, cbl_field_t *var, size_t &returned_s
     // Do the first element of the domain
     stream = level_88_helper( parent_capacity,
                               domain->first,
-                              stream_len,
-                              var->codeset.encoding);
+                              stream_len);
     if( output_index + stream_len > retval_capacity )
       {
       retval_capacity *= 2;
@@ -533,8 +516,7 @@ get_level_88_domain(size_t parent_capacity, cbl_field_t *var, size_t &returned_s
     // Do the second element of the domain
     stream = level_88_helper( parent_capacity,
                               domain->last,
-                              stream_len,
-                              var->codeset.encoding);
+                              stream_len);
     if( output_index + stream_len > retval_capacity )
       {
       retval_capacity *= 2;
@@ -563,6 +545,8 @@ static
 char *
 get_class_condition_string(cbl_field_t *var)
   {
+  // This routine returns a malloced pointer.
+
   // We know at this point that var is FldClass
   // The LEVEL is not 88, so this is a CLASS SPECIAL-NAME
 
@@ -579,21 +563,17 @@ get_class_condition_string(cbl_field_t *var)
       "ABCJ12"        // This is the same as "A" "B" "C" ...
 
       Expressly presented numbers are the ordinal positions in the run-time
-      character set.  So, an ASCII "A" would be given as 66, which is one
-      greater than 65, which is the ASCII codepoint for "A".  An EBCDIC "A"
-      would be presented as 194, which is one greater than 193, which is the
-      decimal representation of an EBCDIC "A", whose hex code is 0xC2.
+      character set. We encode those values with a leading ascii_hyphen to
+      distinguish them from characters.
 
-      We need to account for EBCDIC as well as ASCII.  In EBCDIC,
-      "A" THROUGH "Z" doesn't mean what it looks like it means, because EBCIDC
-      encoding has gaps between I and J, and between R and S.  That isn't true
-      in ASCII.  We don't want to deal with these issues at compile time, so we
-      are encoding numeric ordinals with their negated values, while other
-      characters are given as the numeric forms of their ASCII encoding.
-      Conversion to EBCDIC occurs at runtime.
+      Characters are converted to UTF32 values, and then encoded as big-endian
+      hexadecimal characters.
 
-      In support of this strategy, character strings like "ABCD" are broken up
-      into "A" "B" "C" "D" and converted to their hexadecimal representations.
+      A range of values is encoded as a pair of hexadecimal values with an
+      ascii_slash between them.  The second value ends with a space
+
+      A list of characters is encoded simply as a stream of hexadecimal values
+      separated by spaces.
       */
 
   char ach[8192];
@@ -602,66 +582,66 @@ get_class_condition_string(cbl_field_t *var)
 
   while( domain->first.is_numeric || domain->first.name() )
     {
-    // *What* were they smoking back then?
-
-    uint8_t value1;
-    uint8_t value2;
-
     size_t first_name_length = domain->first.size()
                               ? domain->first.size()
                               : strlen(domain->first.name());
+
+    cbl_encoding_t from = var->codeset.default_encodings.source->type;
+    cbl_encoding_t to = DEFAULT_32_ENCODING;
+    size_t nbytes;
+    const char *converted;
 
     if( domain->first.is_numeric )
       {
       if( strlen(ach) > sizeof(ach) - 1000  )
         {
-        cbl_internal_error("Nice try, but you cannot fire me.");
+        cbl_internal_error("That string should not be that long.");
         }
 
-      // We are working with unquoted strings that contain the values 1 through
-      // 256:
-      value1 = (uint8_t)atoi(domain->first.name());
-      value2 = (uint8_t)atoi(domain->last.name());
+      // We are working with unquoted strings that contain the values
+      uint32_t value1 = atoll(domain->first.name());
+      uint32_t value2 = atoll(domain->last.name());
       if( value2 < value1 )
         {
         std::swap(value1, value2);
         }
       if( value1 != value2  )
         {
-        p += sprintf(p, "-%2.2X/-%2.2X ", value1-1, value2-1);
+        p += sprintf(p, "-%X/-%X ", value1, value2);
         }
       else
         {
-        p += sprintf(p, "-%2.2X ", value1-1);
+        p += sprintf(p, "-%X ", value1);
         }
       }
     else if( first_name_length == 1 )
       {
       // Since the first.name is a single character, we can do this as
       // a single-character pair.
-      uint8_t ch1;
-      uint8_t ch2;
+      converted = __gg__iconverter(from,
+                                   to,
+                                   domain->first.name(),
+                                   1,
+                                   &nbytes);
+      cbl_char_t ch1 = *reinterpret_cast<const cbl_char_t *>(converted);
+      converted = __gg__iconverter(from,
+                                   to,
+                                   domain->last.name(),
+                                   1,
+                                   &nbytes);
+      cbl_char_t ch2 = *reinterpret_cast<const cbl_char_t *>(converted);
 
-      ch2 = domain->last.name()[0];
-      ch1 = domain->first.name()[0];
-
-      if( ch1 < ch2 )
+      if( ch1 > ch2 )
         {
-        value1 = ch1;
-        value2 = ch2;
+        std::swap(ch1, ch2);
+        }
+      if( ch1 != ch2  )
+        {
+        p += sprintf(p, "%X/%X ", ch1, ch2);
         }
       else
         {
-        value2 = ch1;
-        value1 = ch2;
-        }
-      if( value1 != value2  )
-        {
-        p += sprintf(p, "%2.2X/%2.2X ", value1, value2);
-        }
-      else
-        {
-        p += sprintf(p, "%2.2X ", value1);
+        p += sprintf(p, "%X ", ch1);
         }
       }
     else
@@ -675,7 +655,13 @@ get_class_condition_string(cbl_field_t *var)
                                 // : strlen(domain->first.name());
       for(size_t i=0; i<first_name_length; i++)
         {
-        p += sprintf(p, "%2.2X ", (unsigned char)domain->first.name()[i]);
+        converted = __gg__iconverter(from,
+                                     to,
+                                     domain->first.name()+i,
+                                     1,
+                                     &nbytes);
+        cbl_char_t ch1 = *reinterpret_cast<const cbl_char_t *>(converted);
+        p += sprintf(p, "%X ", ch1);
         }
       }
     domain += 1;
@@ -863,9 +849,9 @@ function_pointer_from_name(const cbl_refer_t &name,
                        NULL); // And, hence, no types
 
     // Fetch the FUNCTION_DECL for that FUNCTION_TYPE
-    char *tname = static_cast<char *>(xmalloc(name.field->data.capacity+1));
-    memcpy(tname, name.field->data.original(), name.field->data.capacity);
-    tname[name.field->data.capacity] = '\0';
+    char *tname = static_cast<char *>(xmalloc(name.field->data.capacity()+1));
+    memcpy(tname, name.field->data.original(), name.field->data.capacity());
+    tname[name.field->data.capacity()] = '\0';
     tree function_decl = gg_build_fn_decl(tname,
                                           fndecl_type);
     free(tname);
@@ -1210,10 +1196,6 @@ initialize_variable_internal( cbl_refer_t refer,
                               bool explicitly=false,
                               bool just_once=false)
   {
-  // fprintf(stderr, "initialize_variable_internal for %s\n", refer.field->name);
-  // gg_printf("initialize_variable_internal for %s\n",
-            // gg_string_literal(refer.field->name),
-            // NULL_TREE);
   cbl_field_t *parsed_var = refer.field;
   if( !parsed_var )
     {
@@ -1245,7 +1227,7 @@ initialize_variable_internal( cbl_refer_t refer,
       }
     while(0);
     SHOW_PARSE_REF(" ", refer);
-    if( parsed_var->data.initial )
+    if( parsed_var->data.original() )
       {
       SHOW_PARSE_TEXT(" >>")
       if( parsed_var->level == 88)
@@ -1327,7 +1309,7 @@ initialize_variable_internal( cbl_refer_t refer,
           case FldNumericEdited:
           case FldAlphaEdited:
           case FldLiteralA:
-            SHOW_PARSE_TEXT(parsed_var->data.initial);
+            SHOW_PARSE_TEXT(parsed_var->data.original());
             break;
           default:
             {
@@ -1370,7 +1352,7 @@ initialize_variable_internal( cbl_refer_t refer,
     is_redefined = true;
     }
 
-  if( parsed_var->data.initial )
+  if( parsed_var->data.original() )
     {
     bool a_parent_initialized = false;
     const cbl_field_t *parent = parent_of(parsed_var);
@@ -1407,7 +1389,6 @@ initialize_variable_internal( cbl_refer_t refer,
   flag_bits     |= just_once ? JUST_ONCE_BIT : 0 ;
 
   suppress_dest_depends = false;  // Set this to false so that refer_is_clean is valid
-  //fprintf(stderr, "refer_is_clean %2.2d %s %d 0x%lx\n", refer.field->level, refer.field->name, refer_is_clean(refer), refer.field->attr);
 
   if( !refer_is_clean(refer) )
     {
@@ -1524,7 +1505,7 @@ initialize_variable_internal( cbl_refer_t refer,
          || parsed_var->type == FldLiteralA )
         {
         gg_assign(spaces, integer_one_node);
-        tree counter = gg_define_int(parsed_var->data.capacity);
+        tree counter = gg_define_int(parsed_var->data.capacity());
         WHILE(counter, gt_op, integer_zero_node)
           {
           gg_decrement(counter);
@@ -1556,17 +1537,6 @@ initialize_variable_internal( cbl_refer_t refer,
   suppress_dest_depends = false;
   }
 
-//static void
-//initialize_variable_internal( cbl_field_t *field,
-//                              bool explicitly=false,
-//                              bool just_once=false)
-//  {
-//  cbl_refer_t wrapper(field);
-//  initialize_variable_internal( wrapper,
-//                                explicitly,
-//                                just_once);
-//  }
-
 void
 parser_initialize(const cbl_refer_t& refer, bool like_parser_symbol_add)
   {
@@ -1577,7 +1547,7 @@ parser_initialize(const cbl_refer_t& refer, bool like_parser_symbol_add)
     }
   else
     {
-    gcc_assert(refer.field->data.initial);
+    gcc_assert(refer.field->data.original());
     static const bool explicitly = true;
     initialize_variable_internal(refer, explicitly);
     }
@@ -1592,7 +1562,7 @@ get_binary_value_from_float(tree         value,
   {
   // The destination is something with rdigits; the source is FldFloat
   tree ftype;
-  switch( source->data.capacity )
+  switch( source->data.capacity() )
     {
     case 4:
       ftype = FLOAT;
@@ -1722,7 +1692,7 @@ get_bytes_needed(cbl_field_t *field)
     case FldPointer:
     case FldFloat:
     case FldLiteralN:
-      retval = field->data.capacity;
+      retval = field->data.capacity();
       break;
 
     case FldNumericDisplay:
@@ -1778,7 +1748,7 @@ get_bytes_needed(cbl_field_t *field)
         }
       else
         {
-        retval = field->data.capacity;
+        retval = field->data.capacity();
         }
       break;
       }
@@ -2195,7 +2165,7 @@ cobol_compare(  tree return_int,
           // gg_string_literal(left_side_ref.field->name),
           // gg_string_literal(right_side_ref.field->name),
           // member(left_side_ref.field, "data"),
-          // gg_string_literal(right_side_ref.field->data.initial),
+          // gg_string_literal(right_side_ref.field->data.original()),
           // NULL_TREE);
 
   CHECK_FIELD(left_side_ref.field);
@@ -2246,28 +2216,25 @@ cobol_compare(  tree return_int,
 
             case FldGroup:
             case FldAlphanumeric:
-            case FldLiteralA:
               {
-              // Comparing a FldLiteralN to an alphanumeric
-
-              // This next conversion may be overkill.  But just in case
-              // the encodings of the two variables are different, we are
-              // going to convert left-side text to the right-side encoding
-              cbl_encoding_t enc_left  = lefty->field->codeset.encoding;
-              cbl_encoding_t enc_right = righty->field->codeset.encoding;
+              // Comparing a FldLiteralN to an alphanumeric.  The alphanumeric
+              // is encoded in its codeset.encoding, but the FldLiteralN is,
+              // in accordance with the rules in cbl_field_t::internalize,
+              // encoded in the source-code encoding.  The routine we are about
+              // to call assumes that the literal string is encoded the same
+              // as the alphanumeric, so we have to make it match.
               size_t outlength;
-              size_t inlength = strlen(lefty->field->data.initial);
+              cbl_encoding_t enc_right = righty->field->codeset.encoding;
               char *converted = __gg__iconverter(
-                                         enc_left,
+                                         DEFAULT_SOURCE_ENCODING,
                                          enc_right,
-                                         lefty->field->data.initial,
-                                         inlength,
+                                         lefty->field->data.original(),
+                                         strlen(lefty->field->data.original()),
                                          &outlength );
               gg_assign(  return_int, gg_call_expr(
                           INT,
                           "__gg__literaln_alpha_compare",
-                    build_string_literal(strlen(lefty->field->data.initial)+1,
-                                         converted),
+                          gg_string_literal(converted),
                           gg_get_address_of(righty->field->var_decl_node),
                           refer_offset(*righty),
                           refer_size_source(  *righty),
@@ -2277,6 +2244,20 @@ cobol_compare(  tree return_int,
               compared = true;
               break;
               }
+
+            case FldLiteralA:
+              {
+              // Comparing a FldLiteralN to an FldLiteralA.
+              // lefty->field->data.original() is the numeric string in ASCII.
+              // righty->field->data.original() is original alphanumeric
+              // string in ASCII.
+              int icmp = strcmp(lefty->field->data.original(),
+                                righty->field->data.original());
+              gg_assign(return_int, build_int_cst_type(INT, icmp));
+              compared = true;
+              break;
+              }
+
 
             default:
               break;
@@ -2338,6 +2319,7 @@ cobol_compare(  tree return_int,
     int rightflags =   (right_side_ref.all         ? REFER_T_MOVE_ALL   : 0)
                     +  (right_side_ref.addr_of     ? REFER_T_ADDRESS_OF : 0)
                     +  (right_side_ref.refmod.from ? REFER_T_REFMOD     : 0);
+
     gg_assign(  return_int, gg_call_expr(
                 INT,
                 "__gg__compare",
@@ -2353,218 +2335,6 @@ cobol_compare(  tree return_int,
                 NULL_TREE));
     // compared = true;  // Commented out to quiet cppcheck
     }
-  }
-
-static void
-move_tree(  cbl_field_t  *dest,
-            tree          offset,
-            tree          psz_source, // psz_source is a null-terminated string
-            tree length_bump=integer_zero_node)
-  {
-  // This routine assumes that the psz_source is in the same codeset as the
-  // dest.
-
-  Analyze();
-  SHOW_PARSE
-    {
-    SHOW_PARSE_HEADER
-    SHOW_PARSE_FIELD(" ", dest);
-    SHOW_PARSE_END
-    }
-
-  CHECK_FIELD(dest);
-
-  bool moved = true;
-
-  tree source_length = gg_define_size_t();
-  gg_assign(source_length, gg_strlen(psz_source));
-  gg_assign(source_length, gg_add(source_length, gg_cast(SIZE_T, length_bump)));
-
-  tree min_length = gg_define_size_t();
-
-  tree location = gg_define_uchar_star();
-  tree length   = gg_define_size_t();
-
-  gg_assign(location,
-            gg_add(member(dest->var_decl_node, "data"),
-                   offset));
-  gg_assign(length,
-            member(dest->var_decl_node, "capacity"));
-
-  IF(source_length, lt_op, length)
-    {
-    gg_assign(min_length, source_length);
-    }
-  ELSE
-    {
-    gg_assign(min_length, length);
-    }
-  ENDIF
-
-  tree value;
-  tree rdigits;
-
-  switch( dest->type )
-    {
-    case FldGroup:
-    case FldAlphanumeric:
-      {
-      // Space out the alphanumeric destination:
-      charmap_t *charmap = __gg__get_charmap(dest->codeset.encoding);
-
-      gg_memset(  location,
-                  build_int_cst_type(INT,
-                                     charmap->mapped_character(ascii_space)),
-                  length );
-      // Copy the alphanumeric result over.
-      gg_memcpy(  location,
-                  psz_source,
-                  min_length );
-      break;
-      }
-
-    case FldNumericDisplay:
-    case FldNumericEdited:
-    case FldNumericBinary:
-    case FldNumericBin5:
-    case FldPacked:
-    case FldIndex:
-      {
-      value   = gg_define_int128();
-      rdigits = gg_define_int();
-
-      gg_assign(value,
-                gg_call_expr( INT128,
-                              "__gg__dirty_to_binary",
-                              psz_source,
-                              build_int_cst_type(INT, dest->codeset.encoding),
-                              source_length,
-                              gg_get_address_of(rdigits),
-                              NULL_TREE));
-
-      gg_call(VOID,
-              "__gg__int128_to_qualified_field",
-              gg_get_address_of(dest->var_decl_node),
-              offset,
-              build_int_cst_type(SIZE_T, dest->data.capacity),
-              value,
-              rdigits,
-              build_int_cst_type(INT, truncation_e),
-              null_pointer_node,
-              NULL_TREE);
-      }
-    break;
-
-    case FldAlphaEdited:
-      {
-      gg_call(VOID,
-              "__gg__string_to_alpha_edited",
-              location,
-              build_int_cst_type(INT, DEFAULT_SOURCE_ENCODING),
-              psz_source,
-              min_length,
-              member(dest->var_decl_node, "picture"),
-              NULL_TREE);
-      break;
-      }
-
-    default:
-      moved = false;
-      break;
-    }
-
-  TRACE1
-    {
-    TRACE1_HEADER
-    gg_fprintf(trace_handle, 1, "source: \"%s\"", psz_source);
-    TRACE1_END
-    TRACE1_INDENT
-    TRACE1_FIELD(               "dest  : ", dest, "")
-    TRACE1_END
-    }
-
-  if( !moved )
-    {
-    dbgmsg("%10s in %s:%d", __func__, __FILE__, __LINE__ );
-    cbl_internal_error( "I don%'t know how to MOVE an alphabetical string to %s(%s)",
-                        cbl_field_type_str(dest->type),
-                        dest->name
-         );
-    return;
-    }
-  }
-
-static void
-move_tree_to_field(cbl_field_t *field, tree psz)
-  {
-  // psz has to be in the same encoding as field
-  move_tree(field, integer_zero_node, psz);
-  }
-
-static tree
-get_string_from(cbl_field_t *field)
-  {
-  // This returns a malloced copy of either a literal string or a
-  // an alphanumeric field.  The idea is that eventually free() will be
-  // called in the runtime space:
-
-  tree psz = gg_define_char_star();
-
-  if( field )
-    {
-    switch( field->type )
-      {
-      case FldLiteralA:
-        {
-        gg_assign(psz,
-                  gg_cast(CHAR_P,
-                          gg_malloc(build_int_cst_type(SIZE_T,
-                                                     field->data.capacity+1))));
-        const char *litstring = get_literal_string(field);
-        gg_memcpy(psz,
-                  gg_string_literal(litstring),
-                  build_int_cst_type(SIZE_T, field->data.capacity+1));
-        break;
-        }
-
-      case FldGroup:
-      case FldAlphanumeric:
-        // make a copy of .data:
-        gg_assign(psz,
-                  gg_cast(CHAR_P,
-                          gg_malloc(build_int_cst_type(SIZE_T,
-                                                    field->data.capacity+1))));
-        gg_memcpy(  psz,
-                    member(field, "data"),
-                    member(field, "capacity"));
-        // null-terminate it:
-        gg_assign(  gg_array_value(psz, member(field, "capacity")),
-                    char_nodes[0]);
-        break;
-
-      case FldForward:
-        {
-        // At the present time, we are assuming this happens when somebody
-        // specifies an unquoted file name in an ASSIGN statement:
-        //    SELECT file3 ASSIGN DISK.
-        //
-        // In that case, we just return DISK, which is field->name:
-        psz = gg_strdup(gg_string_literal(field->name));
-        break;
-        }
-
-      default:
-        cbl_internal_error(
-                "%s: %<field->type%> %s must be literal or alphanumeric",
-                __func__, cbl_field_type_str(field->type));
-      break;
-      }
-    }
-  else
-    {
-    gg_assign(psz, gg_cast(CHAR_P, null_pointer_node));
-    }
-  return psz;
   }
 
 static char *
@@ -4165,7 +3935,9 @@ parser_init_list()
   gg_call(VOID,
           "__gg__variables_to_init",
           gg_get_address_of(array),
-          wsclear() ? build_string_literal(1, (const char *)wsclear())
+          wsclear() ? build_string_literal(
+                                    1, 
+                                    reinterpret_cast<const char *>(wsclear()))
                     : null_pointer_node,
           NULL_TREE);
   }
@@ -4345,14 +4117,18 @@ psa_FldLiteralN(struct cbl_field_t *field )
   uint32_t digits;
   int32_t  rdigits;
   uint64_t attr;
-  FIXED_WIDE_INT(128) value = dirty_to_binary(field->data.original(),
+  //// DUBNERHACK.  Necessary to prevent UAT lockup:
+  const char *source_text = field->data.original()
+                          ? field->data.original()
+                          : field->data.initial;
+  FIXED_WIDE_INT(128) value = dirty_to_binary(source_text,
                                               capacity,
                                               digits,
                                               rdigits,
                                               attr);
   // This is a rare occurrence of a parser_xxx call changing the entry
   // in the symbol table.
-  field->data.capacity = capacity;
+  field->data.capacity(  capacity );
   field->data.digits   = digits;
   field->data.rdigits  = rdigits;
   field->attr         |= attr;
@@ -4370,7 +4146,7 @@ psa_FldLiteralN(struct cbl_field_t *field )
 
   // The value is 1, 2, 4, 8 or 16 bytes, so an ordinary constructor can be
   // used.
-  var_type = tree_type_from_size( field->data.capacity,
+  var_type = tree_type_from_size( field->data.capacity(),
                                   field->attr & signable_e);
   tree new_var_decl = gg_define_variable( var_type,
                                           base_name,
@@ -4914,16 +4690,10 @@ parser_accept_date_yymmdd( struct cbl_field_t *target )
 
   CHECK_FIELD(target);
 
-  tree pointer = gg_define_char_star();
-  gg_assign(pointer, gg_call_expr(CHAR_P,
-                                  "__gg__get_date_yymmdd",
-                                  gg_get_address_of(target->var_decl_node),
-                                  NULL_TREE));
-  move_tree_to_field( target,
-                      pointer);
-
-  gg_free(pointer);
-
+  gg_call(VOID,
+          "__gg__get_date_yymmdd",
+          gg_get_address_of(target->var_decl_node),
+          NULL_TREE);
   TRACE1
     {
     TRACE1_HEADER
@@ -4941,19 +4711,10 @@ parser_accept_date_yyyymmdd( struct cbl_field_t *target )
     SHOW_PARSE_HEADER
     SHOW_PARSE_END
     }
-
-  CHECK_FIELD(target);
-
-  tree pointer = gg_define_char_star();
-  gg_assign(pointer, gg_call_expr(CHAR_P,
-                                  "__gg__get_date_yyyymmdd",
-                                  gg_get_address_of(target->var_decl_node),
-                                  NULL_TREE));
-  move_tree_to_field( target,
-                      pointer);
-
-  gg_free(pointer);
-
+  gg_call(VOID,
+          "__gg__get_date_yyyymmdd",
+          gg_get_address_of(target->var_decl_node),
+          NULL_TREE);
   TRACE1
     {
     TRACE1_HEADER
@@ -4974,16 +4735,10 @@ parser_accept_date_yyddd( struct cbl_field_t *target )
 
   CHECK_FIELD(target);
 
-  tree pointer = gg_define_char_star();
-  gg_assign(pointer, gg_call_expr(CHAR_P,
-                                  "__gg__get_date_yyddd",
-                                  gg_get_address_of(target->var_decl_node),
-                                  NULL_TREE));
-  move_tree_to_field( target,
-                      pointer);
-
-  gg_free(pointer);
-
+  gg_call(VOID,
+          "__gg__get_date_yyddd",
+          gg_get_address_of(target->var_decl_node),
+          NULL_TREE);
   TRACE1
     {
     TRACE1_HEADER
@@ -5004,16 +4759,10 @@ parser_accept_date_yyyyddd( struct cbl_field_t *target )
 
   CHECK_FIELD(target);
 
-  tree pointer = gg_define_char_star();
-  gg_assign(pointer, gg_call_expr(CHAR_P,
-                                  "__gg__get_yyyyddd",
-                                  gg_get_address_of(target->var_decl_node),
-                                  NULL_TREE));
-  move_tree_to_field( target,
-                      pointer);
-
-  gg_free(pointer);
-
+  gg_call(VOID,
+          "__gg__get_yyyyddd",
+          gg_get_address_of(target->var_decl_node),
+          NULL_TREE);
   TRACE1
     {
     TRACE1_HEADER
@@ -5034,16 +4783,10 @@ parser_accept_date_dow( struct cbl_field_t *target )
 
   CHECK_FIELD(target);
 
-  tree pointer = gg_define_char_star();
-  gg_assign(pointer, gg_call_expr(CHAR_P,
-                                  "__gg__get_date_dow",
-                                  gg_get_address_of(target->var_decl_node),
-                                  NULL_TREE));
-  move_tree_to_field( target,
-                      pointer);
-
-  gg_free(pointer);
-
+  gg_call(VOID,
+          "__gg__get_date_dow",
+          gg_get_address_of(target->var_decl_node),
+          NULL_TREE);
   TRACE1
     {
     TRACE1_HEADER
@@ -5064,16 +4807,10 @@ parser_accept_date_hhmmssff( struct cbl_field_t *target )
 
   CHECK_FIELD(target);
 
-  tree pointer = gg_define_char_star();
-  gg_assign(pointer, gg_call_expr(CHAR_P,
-                                  "__gg__get_date_hhmmssff",
-                                  gg_get_address_of(target->var_decl_node),
-                                  NULL_TREE));
-  move_tree_to_field( target,
-                      pointer);
-
-  gg_free(pointer);
-
+  gg_call(VOID,
+          "__gg__get_date_hhmmssff",
+          gg_get_address_of(target->var_decl_node),
+          NULL_TREE);
   TRACE1
     {
     TRACE1_HEADER
@@ -5144,8 +4881,7 @@ parser_alphabet( const cbl_alphabet_t& alphabet )
 
     case custom_encoding_e:
       {
-#pragma message "Verify program-id is disambiguated"
-      size_t alphabet_index = symbol_unique_index(symbol_elem_of(&alphabet));
+      uint64_t alphabet_index = symbol_unique_index(symbol_elem_of(&alphabet));
 
       unsigned char ach[256];
 
@@ -5224,7 +4960,7 @@ parser_alphabet_use( cbl_alphabet_t& alphabet )
     SHOW_PARSE_END
     }
 
-  size_t alphabet_index = symbol_index(symbol_elem_of(&alphabet));
+  uint64_t alphabet_index = symbol_unique_index(symbol_elem_of(&alphabet));
 
   switch(alphabet.encoding)
     {
@@ -5316,18 +5052,6 @@ parser_display_internal(tree file_descriptor,
       ENDIF
       }
     }
-  else if( refer.field->type == FldLiteralA )
-    {
-    gg_call(VOID,
-            "__gg__display_string",
-            file_descriptor,
-            build_int_cst_type(INT, refer.field->codeset.encoding),
-            build_string_literal(refer.field->data.capacity,
-                                 refer.field->data.initial),
-            build_int_cst_type(SIZE_T, refer.field->data.capacity),
-            advance ? integer_one_node : integer_zero_node,
-            NULL_TREE );
-    }
   else if( refer.field->type == FldLiteralN )
     {
     // The parser found the string of digits from the source code and converted
@@ -5414,6 +5138,34 @@ parser_display_internal(tree file_descriptor,
     gg_write(  file_descriptor,
                gg_string_literal(ach),
                build_int_cst_type(SIZE_T, strlen(ach)));
+    if( advance )
+      {
+      gg_write(  file_descriptor,
+                 gg_string_literal("\n"),
+                 integer_one_node);
+      }
+    }
+  else if(    refer.field->type == FldFloat
+           && refer.field->attr & constant_e
+           && !(refer.field->attr & intermediate_e) )
+    {
+    // We are going to output what we think the user typed in the first place
+    char * const to_print = xstrdup(refer.field->data.original());
+    char *p = to_print;
+    if( *p == ascii_plus )
+      {
+      p += 1;
+      }
+    size_t len = strlen(p);
+    if(len > 2 && p[len-2] == ascii_E && p[len-1] == ascii_0 )
+      {
+      len -= 2;
+      }
+    gg_write(  file_descriptor,
+               build_string_literal(len, p),
+               build_int_cst_type(SIZE_T, len));
+    free(to_print);
+
     if( advance )
       {
       gg_write(  file_descriptor,
@@ -5751,7 +5503,7 @@ get_literalN_value(cbl_field_t *var)
   {
   // Get the literal N value from the integer var_decl
   tree retval = NULL_TREE;
-  tree var_type = tree_type_from_size(var->data.capacity,
+  tree var_type = tree_type_from_size(var->data.capacity(),
                                       var->attr & signable_e);
   retval = gg_cast(var_type, var->data_decl_node);
   return retval;
@@ -6400,7 +6152,7 @@ tree_type_from_field_type(cbl_field_t *field, size_t &nbytes)
       case FldAlphaEdited:
       case FldNumericEdited:
         retval = CHAR_P;
-        nbytes = field->data.capacity;
+        nbytes = field->data.capacity();
         break;
 
       case FldNumericDisplay:
@@ -6421,7 +6173,7 @@ tree_type_from_field_type(cbl_field_t *field, size_t &nbytes)
       case FldNumericBin5:
       case FldIndex:
       case FldPointer:
-        if( field->data.capacity > 8 )
+        if( field->data.capacity() > 8 )
           {
           retval = UINT128;
           nbytes = 16;
@@ -6434,12 +6186,12 @@ tree_type_from_field_type(cbl_field_t *field, size_t &nbytes)
         break;
 
       case FldFloat:
-        if( field->data.capacity == 8 )
+        if( field->data.capacity() == 8 )
           {
           retval = DOUBLE;
           nbytes = 8;
           }
-        else if( field->data.capacity == 4 )
+        else if( field->data.capacity() == 4 )
           {
           retval = FLOAT;
           nbytes = 4;
@@ -6595,7 +6347,7 @@ program_end_stuff(cbl_refer_t refer, ec_type_t ec)
         gg_memcpy(gg_get_address_of(retval),
                   member(returner, "data"),
                   build_int_cst_type( SIZE_T,
-                                      std::min(nbytes, (size_t)returner->data.capacity)));
+                                      std::min(nbytes, (size_t)returner->data.capacity())));
         }
       else
         {
@@ -6622,7 +6374,7 @@ program_end_stuff(cbl_refer_t refer, ec_type_t ec)
       // error of returning a pointer to data on the stack.
 
       tree array_type = build_array_type_nelts(UCHAR,
-                                    returner->data.capacity);
+                                    returner->data.capacity());
       tree array     =  gg_define_variable(array_type, vs_static);
       gg_memcpy(gg_get_address_of(array),
                 member(returner->var_decl_node, "data"),
@@ -6778,7 +6530,7 @@ walk_initialization(cbl_field_t *field, bool initialized, bool deallocate)
             {
             gg_memset(member(this_one->var_decl_node, "data"),
                    integer_zero_node,
-                   build_int_cst_type(SIZE_T, this_one->data.capacity));
+                   build_int_cst_type(SIZE_T, this_one->data.capacity()));
             }
           }
         }
@@ -6941,11 +6693,9 @@ parser_xml_parse( cbl_label_t *instance,
           current_function->our_name,
           instance_counter++);
 
-  cbl_field_t for_entry = {};
-  for_entry.type = FldAlphanumeric;
-  for_entry.data.capacity = strlen(ach);
-  for_entry.data.initial = ach;
-  for_entry.codeset.encoding = iconv_CP1252_e;
+  cbl_field_data_t data( 0, strlen(ach), 0,0, ach );
+  cbl_field_t for_entry(FldAlphanumeric, 0, data, 0);
+  for_entry.codeset.set(iconv_CP1252_e);
 
   // build an island for the callback:
   tree island_goto;
@@ -7211,6 +6961,20 @@ initialize_the_data()
             "__gg__decimal_point_is_comma",
             NULL_TREE);
     }
+
+  // This is where we tell the library about this program's initialization
+  // values:
+  cbl_field_t *init_working = current_options().initial_working();
+  cbl_field_t *init_local   = current_options().initial_local();
+  gg_call(VOID,
+          "__gg__initialization_values",
+          build_int_cst_type(UINT, wsclear() ? *wsclear()
+                                    : static_cast<uint32_t>(NOT_A_CHARACTER)),
+          init_working ? gg_get_address_of(init_working->var_decl_node)
+                       : null_pointer_node,
+          init_local   ? gg_get_address_of(init_local->var_decl_node)
+                       : null_pointer_node,
+          NULL_TREE);
   }
 
 static
@@ -7423,7 +7187,7 @@ establish_using(size_t nusing,
                   gg_get_address_of(base),
                   build_int_cst_type(SIZE_T, nbytes));
 
-        tree array_type = build_array_type_nelts(UCHAR, new_var->data.capacity);
+        tree array_type = build_array_type_nelts(UCHAR, new_var->data.capacity());
         tree data_decl_node = gg_define_variable( array_type,
                                                   NULL,
                                                   vs_static);
@@ -8309,8 +8073,6 @@ parser_setop( struct cbl_field_t *tgt,
     }
 
   gcc_assert(tgt->type == FldConditional);
-  gcc_assert(domain->data.initial);
-  gcc_assert(strlen(domain->data.initial));
 
   switch(op)
     {
@@ -8322,11 +8084,8 @@ parser_setop( struct cbl_field_t *tgt,
           gg_assign(tgt->var_decl_node, gg_build_relational_expression(
                       gg_call_expr(INT,
                                    "__gg__setop_compare",
-                                   member(candidate, "data"),
-                                   member(candidate, "capacity"),
+                                   gg_get_address_of(candidate->var_decl_node),
                                    member(domain, "initial"),
-                                   build_int_cst_type(INT,
-                                                     domain->codeset.encoding),
                                    NULL_TREE),
                       ne_op,
                       integer_zero_node));
@@ -9689,23 +9448,20 @@ parser_set_conditional88( const cbl_refer_t& refer, bool which_way )
     {
     // We are dealing with an ordinary string.
 
-    // When Jim gets around to converting the domain to the target encoding,
-    // this code will have to be removed
-#if 1
-    char *fname = xstrdup(src->first.name());
-    charmap_t *charmap = __gg__get_charmap(tgt->codeset.encoding);
-    for(size_t i=0; i<strlen(fname); i++)
-      {
-      fname[i] = charmap->mapped_character(fname[i]);
-      }
-    move_tree_to_field( parent,
-                        build_string_literal(strlen(fname)+1, fname));
-    free(fname);
-#else
-    move_tree_to_field( parent,
-                        build_string_literal(src->first.size()+1,
-                                             src->first.name()));
-#endif
+    size_t converted_bytes;
+    const char *converted =
+                  __gg__iconverter(parent->codeset.default_encodings.source->type,
+                                   parent->codeset.encoding,
+                                   src->first.name(),
+                                   strlen(src->first.name())+1,
+                                   &converted_bytes);
+    gg_call(VOID,
+            "__gg__refer_from_string",
+            gg_get_address_of(parent->var_decl_node),
+            size_t_zero_node,
+            build_int_cst_type(SIZE_T, parent->data.capacity()),
+            build_string_literal(converted_bytes, converted),
+            NULL_TREE);
     }
   else
     {
@@ -9899,14 +9655,37 @@ parser_file_add(struct cbl_file_t *file)
           __func__);
     }
 
-#pragma message "Verify program-id is disambiguated"
-  size_t symbol_table_index = symbol_unique_index(symbol_elem_of(file));
+  // This code is a hack needed until the parser sets the varies.min/max
+  // properly when they are not equal:
+  if(    varies.min != varies.max
+      && current_encoding(display_encoding_e) == iconv_UTF16LE_e
+      && varies.max == symbol_file_record(file)->data.capacity() )
+    {
+    fprintf(stderr,
+        "There is a hack in genapi.cc to take into account a parser error,\n"
+        "namely the fact that when there is a RECORD VARYING clause, the\n"
+        "min/max values reflect the values in the source code, while when\n"
+        "there is no VARYING clause the min/max values are the same as the\n"
+        "default_record's data.capacity().  If you are seeing this message,\n"
+        "it would appear the parser has been updated to supply the stride-\n"
+        "corrected min/max, and the hack should be removed.\n");
+    gcc_assert(false);
+    }
+  if( varies.max < symbol_file_record(file)->data.capacity())
+    {
+    const charmap_t *charmap = 
+                     __gg__get_charmap(current_encoding(display_encoding_e));
+    varies.min *= charmap->stride();
+    varies.max *= charmap->stride();
+    }
+
+  uint64_t symbol_table_index = symbol_unique_index(symbol_elem_of(file));
 
   gg_call(VOID,
           "__gg__file_init",
           gg_get_address_of(new_var_decl),
           gg_string_literal(file->name),
-          build_int_cst_type(SIZE_T, symbol_table_index),
+          build_int_cst_type(ULONGLONG, symbol_table_index),
           array_of_keys,
           key_numbers,
           unique_flags,
@@ -9923,8 +9702,12 @@ parser_file_add(struct cbl_file_t *file)
           build_int_cst_type(INT, (int)file->optional),
           build_int_cst_type(SIZE_T, varies.min),
           build_int_cst_type(SIZE_T, varies.max),
-/*  Right now, file->codeset.encoding is not being set properly.  Remove this
-    comment and fix the following code when that's repaired.  */
+/*  Right now, file->codeset.encoding is not being set properly.  For example,
+    when the exec-charset is EBCDIC, file->codeset is coming through as CP1252.
+    However, when exec-charset is UTF32LE, file->codeset is arriving here as
+    UTF32LE.  Go figure.
+
+    Remove this comment and fix the following code when that's repaired.  */
 //          build_int_cst_type(INT, (int)file->codeset.encoding),
           build_int_cst_type(INT, current_encoding(display_encoding_e)),
           build_int_cst_type(INT, (int)file->codeset.alphabet),
@@ -9940,44 +9723,6 @@ parser_file_open( size_t nfiles, struct cbl_file_t *files[], int mode_char )
     auto& file = files[i];
     parser_file_open(file, mode_char);
     }
-  }
-
-static
-tree get_the_filename(bool &quoted_name, const cbl_file_t *file)
-  {
-  // The cbl_file_t has a cbl_field_t *filename.  This can be a FldAlphanumeric.
-  // The runtime has a (char *)filename, so we need to
-  // do a runtime conversion.
-
-  tree psz;   // This is going to be either the name of the file, or the
-  // possible run-time environment variable that will contain
-  // the name of the file.
-
-  cbl_field_t *field_of_name = symbol_field_forward(file->filename);
-  quoted_name = false;
-  if( field_of_name->type == FldForward )
-    {
-    // The target of ASSIGN TO was unquoted, but didn't resolve to a
-    // cbl_field_t.  This means that the name of the field is an
-    // environment variable that will hold the file name
-    psz = gg_define_char_star();
-    gg_assign(psz, gg_strdup(gg_string_literal(field_of_name->name)));
-    }
-  else
-    {
-    // The name is coming from a presumably FldAlphaNumeric variable
-    psz = get_string_from(field_of_name);
-    gg_call( CHAR_P,
-             "__gg__convert_encoding",
-             psz,
-             build_int_cst_type(INT,
-                                field_of_name->codeset.encoding),
-             build_int_cst_type(INT,
-                                DEFAULT_SOURCE_ENCODING),
-             NULL_TREE);
-    quoted_name = true;
-    }
-  return psz;
   }
 
 void
@@ -10032,17 +9777,30 @@ parser_file_open( struct cbl_file_t *file, int mode_char )
     TRACE1_END
     }
 
-  bool quoted_name;
-  tree pszFilename = get_the_filename(quoted_name, file);
+  tree pszFilename = gg_define_char_star();
+  cbl_field_t *field_of_name = symbol_field_forward(file->filename);
+  if( field_of_name->type == FldForward )
+    {
+    // The target of ASSIGN TO was unquoted, but didn't resolve to a
+    // cbl_field_t.  This means that the name of the field is an
+    // environment variable that will hold the file name
+    gg_assign(pszFilename, gg_strdup(gg_string_literal(field_of_name->name)));
+    }
+  else
+    {
+    gg_assign(pszFilename, gg_cast(CHAR_P, null_pointer_node));
+    }
 
   sv_is_i_o = true;
   store_location_stuff("OPEN");
   gg_call(VOID,
           "__gg__file_open",
           gg_get_address_of(file->var_decl_node),
+          field_of_name->var_decl_node
+                  ? gg_get_address_of(field_of_name->var_decl_node)
+                  : null_pointer_node,
           pszFilename,
           build_int_cst_type(INT, mode_char),
-          quoted_name ? integer_one_node : integer_zero_node,
           NULL_TREE);
   set_user_status(file);
   }
@@ -10450,16 +10208,30 @@ parser_file_delete_file( cbl_label_t *name,
   tree there_was_an_error = gg_define_int(0);
   for(size_t i=0; i<filenames.size(); i++)
     {
-    bool quoted_name;
-    tree pszFilename = get_the_filename(quoted_name, filenames[i]);
+    tree pszFilename = gg_define_char_star();
+    cbl_field_t *field_of_name = symbol_field_forward(filenames[i]->filename);
+    if( field_of_name->type == FldForward )
+      {
+      // The target of ASSIGN TO was unquoted, but didn't resolve to a
+      // cbl_field_t.  This means that the name of the field is an
+      // environment variable that will hold the file name
+      gg_assign(pszFilename,
+                gg_strdup(gg_string_literal(field_of_name->name)));
+      }
+    else
+      {
+      gg_assign(pszFilename, gg_cast(CHAR_P, null_pointer_node));
+      }
     gg_assign(there_was_an_error,
               gg_bitwise_or(there_was_an_error,
                             gg_call_expr(
                             INT,
                             "__gg__file_remove",
                             gg_get_address_of(filenames[i]->var_decl_node),
+                            field_of_name->var_decl_node
+                              ? gg_get_address_of(field_of_name->var_decl_node)
+                              : null_pointer_node,
                             pszFilename,
-                            quoted_name ? integer_one_node : integer_zero_node,
                             NULL_TREE)));
     set_user_status(filenames[i]);
     }
@@ -10653,7 +10425,7 @@ parser_file_start(struct cbl_file_t *file,
       {
       size_t nfield = file->keys[key_number].fields[ifield];
       cbl_field_t *field = cbl_field_of(symbol_at(nfield));
-      combined_length += field->data.capacity;
+      combined_length += field->data.capacity();
       }
     gg_assign(length, build_int_cst_type(SIZE_T, combined_length));
     }
@@ -11151,6 +10923,60 @@ parser_inspect_conv(cbl_refer_t input,
   }
 
 void
+parser_intrinsic_find_string(cbl_field_t *tgt,
+                             const cbl_refer_t& haystack,
+                             const cbl_refer_t& needle,
+                             const cbl_refer_t *after,
+                             bool last,
+                             bool anycase)
+  {
+  SHOW_PARSE
+    {
+    SHOW_PARSE_HEADER
+    SHOW_PARSE_END
+    }
+  gg_call(VOID,
+          "__gg__find_string",
+          gg_get_address_of( tgt->var_decl_node),
+          gg_get_address_of( haystack.field->var_decl_node),
+          refer_offset(      haystack),
+          refer_size_source( haystack),
+          gg_get_address_of( needle.field->var_decl_node),
+          refer_offset(      needle),
+          refer_size_source( needle),
+          after ? gg_get_address_of( after->field->var_decl_node)
+                : null_pointer_node,
+          after ? refer_offset(*after) : size_t_zero_node,
+          after ? refer_size_source(*after) : size_t_zero_node,
+          last   ?integer_one_node:integer_zero_node,
+          anycase?integer_one_node:integer_zero_node,
+          NULL_TREE
+          );
+  }
+
+void
+parser_intrinsic_convert(cbl_field_t *tgt,
+                         const cbl_refer_t& input,
+                         convert_type_t src_fmt,
+                         unsigned int   dst_fmt )
+  {
+  SHOW_PARSE
+    {
+    SHOW_PARSE_HEADER
+    SHOW_PARSE_END
+    }
+  gg_call(VOID,
+          "__gg__convert",
+          gg_get_address_of(tgt->var_decl_node),
+          gg_get_address_of(input.field->var_decl_node),
+          refer_offset(input),
+          refer_size_source(input),
+          build_int_cst_type(INT, src_fmt),
+          build_int_cst_type(INT, dst_fmt),
+          NULL_TREE);
+  }
+
+void
 parser_module_name( cbl_field_t *tgt, module_type_t type )
   {
   SHOW_PARSE
@@ -11428,6 +11254,43 @@ parser_intrinsic_call_1( cbl_field_t *tgt,
       TRACE1_INDENT
       TRACE1_REFER("parameter: ", ref1, "")
       }
+
+    const charmap_t *charmap = __gg__get_charmap(ref1.field->codeset.encoding);
+    tree stride = gg_cast(LONG, integer_one_node);
+
+    switch(ref1.field->type)
+      {
+      case FldInvalid:
+      case FldGroup:
+      case FldAlphanumeric:
+      case FldNumericDisplay:
+      case FldNumericEdited:
+      case FldAlphaEdited:
+      case FldLiteralA:
+        stride = build_int_cst_type(LONG, charmap->stride());
+        break;
+
+      case FldNumericBinary:
+      case FldFloat:
+      case FldPacked:
+      case FldNumericBin5:
+      case FldLiteralN:
+      case FldClass:
+      case FldConditional:
+      case FldForward:
+      case FldIndex:
+      case FldSwitch:
+      case FldDisplay:
+      case FldPointer:
+        stride = gg_cast(LONG, integer_one_node);
+        break;
+      }
+
+    if( ref1.field->attr & hex_encoded_e )
+      {
+      stride = gg_cast(LONG, integer_one_node);
+      }
+
     size_t upper = ref1.field->occurs.bounds.upper
                                     ? ref1.field->occurs.bounds.upper : 1;
     if( ref1.nsubscript() )
@@ -11443,8 +11306,9 @@ parser_intrinsic_call_1( cbl_field_t *tgt,
               "__gg__int128_to_field",
               gg_get_address_of(tgt->var_decl_node),
               gg_cast(INT128,
-                      gg_multiply(refer_size_source(ref1),
-                                  depending_on)),
+                      gg_divide(gg_multiply(refer_size_source(ref1),
+                                            depending_on),
+                                stride)),
               integer_zero_node,
               build_int_cst_type(INT, truncation_e),
               null_pointer_node,
@@ -11458,7 +11322,8 @@ parser_intrinsic_call_1( cbl_field_t *tgt,
                 "__gg__int128_to_field",
                 gg_get_address_of(tgt->var_decl_node),
                 gg_cast(INT128,
-                        refer_size_source(ref1)),
+                        gg_divide(refer_size_source(ref1),
+                                  stride)),
                 integer_zero_node,
                 build_int_cst_type(INT, truncation_e),
                 null_pointer_node,
@@ -11470,8 +11335,9 @@ parser_intrinsic_call_1( cbl_field_t *tgt,
                 "__gg__int128_to_field",
                 gg_get_address_of(tgt->var_decl_node),
                 gg_cast(INT128,
-                        gg_multiply(refer_size_source(ref1),
-                                    build_int_cst_type(SIZE_T, upper))),
+                        gg_divide(gg_multiply(refer_size_source(ref1),
+                                            build_int_cst_type(LONG, upper)),
+                                  stride)),
                 integer_zero_node,
                 build_int_cst_type(INT, truncation_e),
                 null_pointer_node,
@@ -11500,6 +11366,11 @@ parser_intrinsic_call_1( cbl_field_t *tgt,
       TRACE1_INDENT
       TRACE1_REFER("parameter: ", ref1, "")
       }
+            gg_get_address_of(tgt->var_decl_node);
+            gg_get_address_of(ref1.field->var_decl_node);
+            refer_offset(ref1);
+            refer_size_source(ref1);
+
     gg_call(VOID,
             function_name,
             gg_get_address_of(tgt->var_decl_node),
@@ -13309,11 +13180,11 @@ create_and_call(size_t narg,
         {
         crv = by_content_e;
         gg_assign(location,
-                  gg_cast(UCHAR_P, build_string_literal(args[i].refer.field->data.capacity,
-                                       args[i].refer.field->data.initial)));
+                  gg_cast(UCHAR_P, build_string_literal(args[i].refer.field->data.capacity(),
+                                       args[i].refer.field->data.original())));
         gg_assign(length,
                   build_int_cst_type( SIZE_T,
-                                      args[i].refer.field->data.capacity));
+                                      args[i].refer.field->data.capacity()));
         }
       else
         {
@@ -13430,13 +13301,13 @@ create_and_call(size_t narg,
               {
               // All temporaries are SIZE_T
               if( args[i].refer.field->type == FldFloat
-                  && args[i].refer.field->data.capacity == 16 )
+                  && args[i].refer.field->data.capacity() == 16 )
                 {
                 as_int128 = true;
                 }
               else if(   args[i].refer.field->type == FldNumericBin5
                       && args[i].refer.field->data.digits   == 0
-                      && args[i].refer.field->data.capacity == 16 )
+                      && args[i].refer.field->data.capacity() == 16 )
                 {
                 as_int128 = true;
                 }
@@ -13543,46 +13414,27 @@ create_and_call(size_t narg,
     // We expect the return value to be a 64-bit or 128-bit integer.  How
     // we treat that returned value depends on the target.
 
-    // Pick up that value:
+    // Create a variable of the type expected from the called function
     returned_value = gg_define_variable(returned_value_type);
+
+    // Actually call the function, assigning the returned value to that
+    // variable:
     push_program_state();
     gg_assign(returned_value, gg_cast(returned_value_type, call_expr));
     pop_program_state();
 
+    // Now we decided what to do with the returned value, based on its type.
     if( returned_value_type == CHAR_P )
       {
-      tree returned_location = gg_define_uchar_star();
-      tree returned_length   = gg_define_size_t();
-      // we were given a returned::field, so find its location and length:
-      gg_assign(returned_location,
-                gg_add( member(returned.field->var_decl_node, "data"),
-                        refer_offset(returned)));
-      gg_assign(returned_length,
-                gg_cast(TREE_TYPE(returned_length), refer_size_dest(returned)));
-
-      // The returned value is a string of nbytes, which by specification
-      // has to be at least as long as the returned_length of the target:
-      IF( returned_value,
-          eq_op,
-          gg_cast(returned_value_type, null_pointer_node ) )
-        {
-        // Somebody was discourteous enough to return a NULL pointer
-        // We'll jam in spaces:
-        charmap_t *charmap = __gg__get_charmap(returned.field->codeset.encoding);
-        int dest_space = charmap->mapped_character(ascii_space);
-        gg_memset(  returned_location,
-                    char_nodes[(unsigned char)dest_space],
-                    returned_length );
-        }
-      ELSE
-        {
-        // There is a valid pointer.  Do the assignment.
-        move_tree(returned.field,
-                  refer_offset(returned),
-                  returned_value,
-                  integer_one_node);
-        }
-      ENDIF
+      // Let the library do the assignment of the 'char *returned_value' to the
+      // target 'refer returned'
+      gg_call(VOID,
+              "__gg__refer_from_psz",
+              gg_get_address_of(returned.field->var_decl_node),
+              refer_offset(returned),
+              refer_size_dest(returned),
+              returned_value,
+              NULL_TREE);
       TRACE1
         {
         TRACE1_HEADER
@@ -13643,6 +13495,8 @@ create_and_call(size_t narg,
       }
     else
       {
+      // Getting here should be impossible; it means we didn't anticipate
+      // the type of the returned value:
       cbl_internal_error(
             "%s: What in the name of Nero are we doing here?",
             __func__);
@@ -14716,7 +14570,7 @@ mh_identical(const cbl_refer_t &destref,
   // for a simple byte-for-byte copy of the data areas:
   bool moved = false;
   if(     destref.field->type          == sourceref.field->type
-      &&  destref.field->data.capacity == sourceref.field->data.capacity
+      &&  destref.field->data.capacity() == sourceref.field->data.capacity()
       &&  destref.field->data.digits   == sourceref.field->data.digits
       &&  destref.field->data.rdigits  == sourceref.field->data.rdigits
       &&       (destref.field->attr   & (signable_e|separate_e|leading_e))
@@ -14746,7 +14600,7 @@ mh_identical(const cbl_refer_t &destref,
                        refer_offset(destref)),
                 gg_add(member(sourceref.field->var_decl_node, "data"),
                        tsource.offset),
-                build_int_cst_type(SIZE_T, sourceref.field->data.capacity));
+                build_int_cst_type(SIZE_T, sourceref.field->data.capacity()));
       moved = true;
       }
     }
@@ -14776,21 +14630,23 @@ mh_source_is_literalN(cbl_refer_t &destref,
           }
 
         // We need the data sent to __gg__psz_to_alpha_move to be in the
-        // encoding of the destination
+        // encoding of the destination.  In accordance with the rules of
+        // cbl_field_t::internalize, the FldLiteralN is in source-code
+        // encoding, so we have to convert.
 
         size_t charsout;
         const char *converted = __gg__iconverter(
-                                         sourceref.field->codeset.encoding,
+                                         DEFAULT_SOURCE_ENCODING,
                                          destref.field->codeset.encoding,
-                                         sourceref.field->data.initial,
-                                         strlen(sourceref.field->data.initial),
+                                         sourceref.field->data.original(),
+                                         strlen(sourceref.field->data.original()),
                                          &charsout);
         gg_call(VOID,
                 "__gg__psz_to_alpha_move",
                 gg_get_address_of(destref.field->var_decl_node),
                 refer_offset(destref),
                 refer_size_dest(destref),
-                gg_string_literal(converted),
+                build_string_literal(charsout, converted),
                 build_int_cst_type(SIZE_T, charsout),
                 NULL_TREE);
         moved = true;
@@ -14807,7 +14663,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
           SHOW_PARSE_TEXT("mh_source_is_literalN: pointer/index")
           }
 
-        if( sourceref.field->data.capacity < 8 )
+        if( sourceref.field->data.capacity() < 8 )
           {
           // There are too few bytes in sourceref
           if( sourceref.field->attr & signable_e )
@@ -14818,7 +14674,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
                       gg_get_indirect_reference(gg_add(member(sourceref.field->var_decl_node,
                                                               "data"),
                                                 build_int_cst_type(SIZE_T,
-                                                                   sourceref.field->data.capacity-1)),
+                                                                   sourceref.field->data.capacity()-1)),
                       integer_zero_node));
             IF( gg_bitwise_and(highbyte, build_int_cst_type(UCHAR, 0x80)),
                 eq_op,
@@ -14852,7 +14708,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
         gg_memcpy(gg_add(member(destref.field->var_decl_node, "data"),
                                refer_offset(destref)),
                   gg_get_address_of(literalN_value),
-                  build_int_cst_type(SIZE_T, sourceref.field->data.capacity));
+                  build_int_cst_type(SIZE_T, sourceref.field->data.capacity()));
         moved = true;
 
         break;
@@ -14872,11 +14728,11 @@ mh_source_is_literalN(cbl_refer_t &destref,
         // For now, we are ignoring intermediates:
         assert( !(destref.field->attr & intermediate_e) );
 
-        int bytes_needed = std::max(destref.field->data.capacity,
-                                    sourceref.field->data.capacity);
+        int bytes_needed = std::max(destref.field->data.capacity(),
+                                    sourceref.field->data.capacity());
         tree calc_type = tree_type_from_size(bytes_needed,
                                             sourceref.field->attr & signable_e);
-        tree dest_type = tree_type_from_size( destref.field->data.capacity,
+        tree dest_type = tree_type_from_size( destref.field->data.capacity(),
                                               destref.field->attr & signable_e);
 
         // Pick up the source data.
@@ -14970,31 +14826,31 @@ mh_source_is_literalN(cbl_refer_t &destref,
           }
 
         // __gg__string_to_alpha_edited expects the source string to be in
-        // the same encoding as the target:
-        size_t len = strlen(sourceref.field->data.initial);
-        char *src =
-         static_cast<char *>(xmalloc(len+1));
-        memcpy( src,
-                sourceref.field->data.initial,
-                strlen(sourceref.field->data.initial));
+        // the same encoding as the target.  The rule in internalize is that
+        // a FldLiteralN::data.initial is left in source-code space, so it
+        // needs to be converted to the destination encoding.
         size_t charsout;
-        const char *converted = __gg__iconverter(
-                                            sourceref.field->codeset.encoding,
+        const char *converted_ = __gg__iconverter(
+                                            DEFAULT_SOURCE_ENCODING,
                                             destref.field->codeset.encoding,
-                                            src,
-                                            len,
+                                            sourceref.field->data.original(),
+                                            strlen(sourceref.field->data.original()),
                                             &charsout);
+        // Copy converted, because __gg__string_to_alpha_edited might have its
+        // own reasons to use charmap_t, which could mess up the static buffer
+        // used by __gg__iconverter:
+        char *converted = xstrdup(converted_);
         gg_call(VOID,
                 "__gg__string_to_alpha_edited",
                 gg_add( member(destref.field->var_decl_node, "data"),
                         refer_offset(destref) ),
                 build_int_cst_type(INT, destref.field->codeset.encoding),
                 gg_string_literal(converted),
-                build_int_cst_type(INT, len),
+                build_int_cst_type(INT, strlen(converted)),
                 gg_string_literal(destref.field->data.picture),
                 NULL_TREE);
-        free(src);
         moved = true;
+        free(converted);
         break;
         }
 
@@ -15002,13 +14858,8 @@ mh_source_is_literalN(cbl_refer_t &destref,
         {
         tree tdest = gg_add(member(destref.field->var_decl_node, "data"),
                             refer_offset(destref) );
-        switch( destref.field->data.capacity )
+        switch( destref.field->data.capacity() )
           {
-          // For some reason, using FLOAT128 in the build_pointer_type causes
-          // a SEGFAULT.  So, we'll use other types with equivalent sizes. I
-          // am speculating that the use of floating-point types causes the -O0
-          // compilation to move things using the mmx registers.  So, I am using
-          // intxx types in the hope that they are simpler.
           case 4:
             {
             // The following generated code is the exact equivalent
@@ -15069,7 +14920,7 @@ static tree
 float_type_of(const cbl_field_t *field)
   {
   gcc_assert(field->type == FldFloat);
-  return float_type_of(field->data.capacity);
+  return float_type_of(field->data.capacity());
   }
 
 static tree
@@ -15099,7 +14950,7 @@ mh_dest_is_float( cbl_refer_t &destref,
       case FldNumericEdited:
       case FldPacked:
         {
-        switch( destref.field->data.capacity )
+        switch( destref.field->data.capacity() )
           {
           case 4:
             gg_call(VOID,
@@ -15163,7 +15014,7 @@ mh_dest_is_float( cbl_refer_t &destref,
           // If the destination is bigger than the source, then we can
           // do an untested move:
 
-          if( destref.field->data.capacity >= sourceref.field->data.capacity )
+          if( destref.field->data.capacity() >= sourceref.field->data.capacity() )
             {
             tree dtype = float_type_of(&destref);
             tree stype = float_type_of(&sourceref);
@@ -15180,7 +15031,7 @@ mh_dest_is_float( cbl_refer_t &destref,
           else
             {
             // There are only three possible moves left:
-            if(destref.field->data.capacity == 8 )
+            if(destref.field->data.capacity() == 8 )
               {
               if( size_error )
                 {
@@ -15207,7 +15058,7 @@ mh_dest_is_float( cbl_refer_t &destref,
             else
               {
               // The destination has to be float32
-              if( sourceref.field->data.capacity == 8 )
+              if( sourceref.field->data.capacity() == 8 )
                 {
                 if( size_error )
                   {
@@ -15267,6 +15118,7 @@ mh_dest_is_float( cbl_refer_t &destref,
 
       case FldLiteralA:
       case FldAlphanumeric:
+      case FldGroup:
         {
         // Alphanumeric to float is inherently slow.  Send it off to the library
         break;
@@ -15337,11 +15189,19 @@ mh_numeric_display( const cbl_refer_t &destref,
   {
   bool moved = false;
 
+  charmap_t *charmap_source =
+                       __gg__get_charmap(sourceref.field->codeset.encoding);
   if(     destref.field->type   == FldNumericDisplay
       &&  sourceref.field->type == FldNumericDisplay
       &&  !(destref.field->attr   & scaled_e)
-      &&  !(sourceref.field->attr & scaled_e) )
+      &&  !(sourceref.field->attr & scaled_e)
+      &&  charmap_source->stride() == 1
+      &&  sourceref.field->codeset.encoding == destref.field->codeset.encoding
+      )
     {
+    // We can do simple moves of single-byte same-encoding numeric display.
+    // More complex ones get sent to __gg__move
+
     Analyze();
     // I believe that there are 450 pathways through the following code.
     // That's because there are five different valid combination of signable_e,
@@ -15367,10 +15227,8 @@ mh_numeric_display( const cbl_refer_t &destref,
     // nybble is 0xC0 for positive values, and 0xD0 for negative; all other
     // digits are 0x70.
 
-    charmap_t *charmap_source =
-                         __gg__get_charmap(sourceref.field->codeset.encoding);
     charmap_t *charmap_dest   =
-                         __gg__get_charmap(  destref.field->codeset.encoding);
+                       __gg__get_charmap(  destref.field->codeset.encoding);
 
     static tree source_sign_loc  = gg_define_variable(UCHAR_P,
                                                       "..mhnd_sign_loc",
@@ -15435,7 +15293,7 @@ mh_numeric_display( const cbl_refer_t &destref,
         gg_assign(source_sign_loc,
                   gg_add(source_p,
                         build_int_cst_type(SIZE_T,
-                                          sourceref.field->data.capacity-1)));
+                                          sourceref.field->data.capacity()-1)));
         break;
       case 5:
         //     signable, not leading,     separate
@@ -15443,7 +15301,7 @@ mh_numeric_display( const cbl_refer_t &destref,
         gg_assign(source_sign_loc,
                   gg_add(source_p,
                         build_int_cst_type(SIZE_T,
-                                          sourceref.field->data.capacity-1)));
+                                          sourceref.field->data.capacity()-1)));
         break;
       case 6:
         //     signable,     leading, not separate
@@ -15529,7 +15387,7 @@ mh_numeric_display( const cbl_refer_t &destref,
         gg_assign(dest_sign_loc,
                   gg_add(dest_p,
                         build_int_cst_type(SIZE_T,
-                                          destref.field->data.capacity-1)));
+                                          destref.field->data.capacity()-1)));
         break;
       case 5:
         //     signable, not leading,     separate
@@ -15537,7 +15395,7 @@ mh_numeric_display( const cbl_refer_t &destref,
         gg_assign(dest_sign_loc,
                   gg_add(dest_p,
                         build_int_cst_type(SIZE_T,
-                                          destref.field->data.capacity-1)));
+                                          destref.field->data.capacity()-1)));
         break;
       case 6:
         //     signable,     leading, not separate
@@ -15725,12 +15583,13 @@ mh_little_endian( const cbl_refer_t &destref,
   {
   bool moved = false;
 
-  cbl_figconst_t figconst = cbl_figconst_of( sourceref.field->data.initial);
+  cbl_figconst_t figconst = cbl_figconst_of( sourceref.field->data.original());
 
   if(     !figconst
       &&  !(destref.field->attr    & scaled_e)
       &&  !(destref.field->attr    & (intermediate_e  ))
       &&  !(sourceref.field->attr  & (intermediate_e  ))
+      &&  sourceref.field->type     != FldGroup
       &&  sourceref.field->type     != FldLiteralA
       &&  sourceref.field->type     != FldAlphanumeric
       &&  sourceref.field->type     != FldNumericEdited
@@ -15794,7 +15653,10 @@ mh_source_is_group( const cbl_refer_t &destref,
                     const TREEPLET    &tsrc)
   {
   bool retval = false;
-  if( sourceref.field->type == FldGroup && !(destref.field->attr & rjust_e) )
+ charmap_t *charmap = __gg__get_charmap(destref.field->codeset.encoding);
+  if(   sourceref.field->type == FldGroup && !(destref.field->attr & rjust_e)
+     && sourceref.field->codeset.encoding == destref.field->codeset.encoding
+     && charmap->stride() == 1)
     {
     Analyze();
     // We are moving a group to a something.  The rule here is just move as
@@ -15814,7 +15676,6 @@ mh_source_is_group( const cbl_refer_t &destref,
     ELSE
       {
       // There are too-few source bytes:
-      charmap_t *charmap = __gg__get_charmap(destref.field->codeset.encoding);
       int dest_space = charmap->mapped_character(ascii_space);
       gg_memset(tdest, build_int_cst_type(INT, dest_space), dbytes);
       gg_memcpy(tdest, tsource, sbytes);
@@ -15840,8 +15701,8 @@ mh_source_is_literalA(const cbl_refer_t &destref,
     // construct a string with the same number of characters as the source, but
     // in the target variable's encoding.
 
-    // We will then call a library routine that will be in charge of trimming
-    // and space filling.
+    // We will then call a library routine that will be in charge of run-time
+    // trimming or space filling, as necessary.
 
     cbl_encoding_t encoding_dest =   destref.field->codeset.encoding;
     charmap_t *charmap_dest = __gg__get_charmap(encoding_dest);
@@ -15855,16 +15716,35 @@ mh_source_is_literalA(const cbl_refer_t &destref,
 
     static char *buffer = NULL;
     static size_t buffer_size = 0;
-    size_t source_length = sourceref.field->data.capacity;
-
-    if( buffer_size < source_length )
+    size_t source_length;
+    size_t dest_length;
+    if( sourceref.field->attr & hex_encoded_e )
       {
-      buffer_size = source_length;
-      buffer = static_cast<char *>(xrealloc(buffer, source_length));
+      // Hex-encoded data is moved as-is
+      source_length = sourceref.field->data.capacity();
+      dest_length   = std::min(source_length,
+                          static_cast<size_t>(destref.field->data.capacity()));
+      }
+    else
+      {
+      // Otherwise, data.initial prevails:
+      size_t source_based_on_strlen = strlen(sourceref.field->data.original());
+      size_t source_based_on_capacity = sourceref.field->data.capacity() /
+                                        sourceref.field->codeset.stride() ;
+      source_length = std::max( source_based_on_strlen ,
+                                source_based_on_capacity );
+      dest_length   = source_length * charmap_dest->stride();
+      }
+
+    if( buffer_size < dest_length )
+      {
+      buffer_size = dest_length;
+      buffer = static_cast<char *>(xrealloc(buffer, buffer_size));
       }
     gcc_assert(buffer);
 
-    cbl_figconst_t figconst = cbl_figconst_of( sourceref.field->data.initial);
+    cbl_figconst_t figconst = cbl_figconst_of( sourceref.field->data.original());
+    size_t outlength;
     if( figconst )
       {
       // We are going to fill 'buffer' with a solid run of the figurative
@@ -15875,7 +15755,7 @@ mh_source_is_literalA(const cbl_refer_t &destref,
         {
         case normal_value_e :
           // This is not possible, it says here in the fine print.
-          abort();
+          gcc_unreachable();
           break;
         case low_value_e    :
           const_char = charmap_dest->low_value_character();
@@ -15900,27 +15780,39 @@ mh_source_is_literalA(const cbl_refer_t &destref,
       }
      else
       {
-      // We are going to convert the source string to the destination codeset,
-      // and then copy it to 'buffer', trimming if necessary, and space-filling
-      // to the right if necessary:
-      cbl_encoding_t encoding_src  = sourceref.field->codeset.encoding;
-
-      size_t outlength;
-      const char *source_string = __gg__iconverter( encoding_src,
-                                                 encoding_dest,
-                                                 sourceref.field->data.initial,
-                                                 source_length,
-                                                 &outlength );
-      // Copy over the converted string
-      memcpy( buffer,
-              source_string,
-              outlength );
+      if( sourceref.field->attr & hex_encoded_e )
+        {
+        // hex_encoded data goes as is:
+        memcpy(buffer, sourceref.field->data.original(), dest_length);
+        outlength = dest_length;
+        }
+      else
+        {
+        // We are going to convert the source string to the destination
+        // codeset, and then copy it to 'buffer', trimming if necessary, and
+        // space-filling to the right if necessary:
+        const char *source_string =
+        __gg__iconverter(
+                       sourceref.field->codeset.default_encodings.source->type,
+                       encoding_dest,
+                       sourceref.field->data.original(),
+                       source_length,
+                       &outlength );
+        if( outlength > dest_length )
+          {
+          outlength = dest_length;
+          }
+        // Copy over the converted string
+        memcpy( buffer,
+                source_string,
+                outlength );
+        }
       }
 
     // If the source is flagged ALL, or if we are setting the destination to
     // a figurative constant, pass along the ALL bit:
     int rounded_parameter = rounded
-                            | ((sourceref.all || figconst ) ? REFER_ALL_BIT : 0);
+                           | ((sourceref.all || figconst ) ? REFER_ALL_BIT : 0);
 
     if( size_error )
       {
@@ -15931,9 +15823,9 @@ mh_source_is_literalA(const cbl_refer_t &destref,
                               refer_offset(destref),
                               refer_size_dest(destref),
                               build_int_cst_type(INT, rounded_parameter),
-                              build_string_literal(source_length,
+                              build_string_literal(outlength,
                                                    buffer),
-                              build_int_cst_type( SIZE_T, source_length),
+                              build_int_cst_type( SIZE_T, outlength),
                               NULL_TREE));
       }
     else
@@ -15944,9 +15836,9 @@ mh_source_is_literalA(const cbl_refer_t &destref,
                               refer_offset(destref),
                               refer_size_dest(destref),
                               build_int_cst_type(INT, rounded_parameter),
-                              build_string_literal(source_length,
+                              build_string_literal(outlength,
                                                    buffer),
-                              build_int_cst_type( SIZE_T, source_length),
+                              build_int_cst_type( SIZE_T, outlength),
                               NULL_TREE);
       }
     if(    destref.refmod.from
@@ -16000,9 +15892,9 @@ move_helper(tree size_error,        // This is an INT
       first_time = false;
       gg_assign(stash, gg_cast(UCHAR_P, gg_malloc(stash_size)));
       }
-    if( stash_size < destref.field->data.capacity )
+    if( stash_size < destref.field->data.capacity() )
       {
-      stash_size = destref.field->data.capacity;
+      stash_size = destref.field->data.capacity();
       gg_assign(stash, gg_cast(UCHAR_P, gg_realloc(stash, stash_size)));
       }
     st_data = qualified_data_location(destref);
@@ -16063,7 +15955,7 @@ move_helper(tree size_error,        // This is an INT
                               size_error);
     }
 
-  if( !moved && sourceref.field->type == FldLiteralA)
+  if( !moved )
     {
     moved = mh_source_is_literalA(destref,
                                   sourceref,
@@ -16218,596 +16110,30 @@ real_powi10 (uint32_t x)
   return pow10;
 }
 
-static
-char *
-binary_initial(cbl_field_t *field)
+static tree
+convert_data_initial(cbl_field_t * field)
   {
-  // This routine returns an xmalloced buffer designed to replace the
-  // data.initial member of the incoming field
-  char *retval = NULL;
+  // This routine returns a tree from field->data.initial, extended with
+  // a NUL on the end.
+  size_t buffer_size = field->data.capacity() + field->codeset.stride();
+  char *buffer = static_cast<char *>(xmalloc(buffer_size));
+  gcc_assert(buffer);
 
-  uint32_t capacity;
-  uint32_t ddigits;
-  int32_t  drdigits;
-  uint64_t attr;
-  FIXED_WIDE_INT(128) value128 = dirty_to_binary(field->data.original(),
-                                                 capacity,
-                                                 ddigits,
-                                                 drdigits,
-                                                 attr);
-  int scaled_rdigits = get_scaled_rdigits(field);
+  size_t nbytes = field->data.capacity();
 
-  int i = field->data.rdigits;
-  while( i<0 )
-    {
-    value128 = value128/10;
-    i += 1;
-    }
+  const char *converted = field->data.initial;
 
-  // We take the digits of value128, and put them into ach.  We line up
-  // the rdigits, and we truncate the string after desired_digits
-  while(drdigits < scaled_rdigits)
-    {
-    value128 *= 10;
-    drdigits += 1;
-    }
-  while(drdigits > scaled_rdigits)
-    {
-    value128 = value128 / 10;
-    drdigits -= 1;
-    }
+  // Copy the converted bytes
+  gcc_assert(nbytes < buffer_size);
+  memcpy(buffer, converted, nbytes);
+  charmap_t *charmap = __gg__get_charmap(field->codeset.encoding);
 
-  retval = static_cast<char *>(xmalloc(field->data.capacity));
-  gcc_assert(retval);
-  switch(field->data.capacity)
-    {
-    tree type;
-    case 1:
-    case 2:
-    case 4:
-    case 8:
-    case 16:
-      type = build_nonstandard_integer_type ( field->data.capacity
-                                              * BITS_PER_UNIT, 0);
-      native_encode_wide_int (type, value128, PTRCAST(unsigned char, retval),
-                              field->data.capacity);
-      break;
-    default:
-      fprintf(stderr,
-              "Trouble in binary_initial at %s() %s:%d\n",
-              __func__,
-              __FILE__,
-              __LINE__);
-      abort();
-      break;
-    }
+  // Tack on a final NUL
+  charmap->putch(0, buffer, nbytes);
 
-  return retval;
-  }
-
-static void
-digits_from_int128( char                *ach,
-                    cbl_field_t         *field,
-                    uint32_t             desired_digits,
-                    FIXED_WIDE_INT(128)  value128, // cppcheck-suppress unknownMacro
-                    int32_t              rdigits)
-  {
-  if( value128 < 0 )
-    {
-    value128 = -value128;
-    }
-
-  // 'rdigits' are the number of rdigits in value128.
-
-  int scaled_rdigits = get_scaled_rdigits(field);
-
-  int i = field->data.rdigits;
-  while( i<0 )
-    {
-    value128 = value128/10;
-    i += 1;
-    }
-
-  // We take the digits of value128, and put them into ach.  We line up
-  // the rdigits, and we truncate the string after desired_digits
-  while(rdigits < scaled_rdigits)
-    {
-    value128 *= 10;
-    rdigits += 1;
-    }
-  while(rdigits > scaled_rdigits)
-    {
-    value128 = value128 / 10;
-    rdigits -= 1;
-    }
-  char conv[128];
-  print_dec (value128, conv, SIGNED);
-  size_t len = strlen(conv);
-
-  if( len<desired_digits )
-    {
-    memset(ach, ascii_0, desired_digits - len);
-    strcpy(ach+desired_digits - len, conv);
-    }
-  else
-    {
-    strcpy(ach, conv + len-desired_digits);
-    }
-  }
-
-#if 0
-// This routine was replaced with digits_from_int1289.  However, I am choosing
-// to keep it around for a while, because it is a master class in manipulating
-// REAL_VALUE_TYPE and FIXED_WIDE_INT
-
-static void
-digits_from_float128(char *retval, cbl_field_t *field, size_t width, int rdigits, REAL_VALUE_TYPE value)
-  {
-  char ach[128];
-
-  // We need to adjust value so that it has no decimal places
-  if( rdigits )
-    {
-      REAL_VALUE_TYPE pow10 = real_powi10 (rdigits);
-      real_arithmetic (&value, MULT_EXPR, &value, &pow10);
-    }
-  // We need to make sure that the resulting string will fit into
-  // a number with 'digits' digits
-  REAL_VALUE_TYPE pow10 = real_powi10 (field->data.digits);
-  mpfr_t m0, m1;
-
-  mpfr_inits2 (FLOAT_MODE_FORMAT (TYPE_MODE (float128_type_node))->p, m0, m1,
-               NULL);
-  mpfr_from_real (m0, &value, MPFR_RNDN);
-  mpfr_from_real (m1, &pow10, MPFR_RNDN);
-  mpfr_clear_flags ();
-  mpfr_fmod (m0, m0, m1, MPFR_RNDN);
-  real_from_mpfr (&value, m0,
-                  REAL_MODE_FORMAT (TYPE_MODE (float128_type_node)),
-                  MPFR_RNDN);
-  real_convert (&value, TYPE_MODE (float128_type_node), &value);
-  mpfr_clears (m0, m1, NULL);
-  real_roundeven (&value, TYPE_MODE (float128_type_node), &value);
-
-  bool fail = false;
-  FIXED_WIDE_INT(128) i
-    = FIXED_WIDE_INT(128)::from (real_to_integer (&value, &fail, 128), SIGNED);
-
-  // We convert it to a integer string of digits:
-  print_dec (i, ach, SIGNED);
-
-  gcc_assert( strlen(ach) <= field->data.digits );
-  if( strlen(ach) < width )
-    {
-    memset(retval, '0', width-strlen(ach) );
-    }
-  strcpy(retval + (width-strlen(ach)), ach);
-  }
-#endif
-
-static char *
-initial_from_initial(cbl_field_t *field)
-  {
-  Analyze();
-  // This routine returns an xmalloced buffer that is intended to replace the
-  // data.initial member of the incoming field.
-
-  //fprintf(stderr, " %s\n", field->name);
-
-  char *retval = NULL;
-
-  // Let's handle the possibility of a figurative constant
-  cbl_figconst_t figconst = cbl_figconst_of(field->data.initial);
-  if( figconst )
-    {
-    charmap_t *charmap = __gg__get_charmap(field->codeset.encoding);
-    int const_char = charmap->figconst_character(figconst);
-    bool set_return = figconst != zero_value_e;
-    if( !set_return )
-      {
-      // The figconst is zero
-      switch(field->type)
-        {
-        case FldGroup:
-        case FldAlphanumeric:
-          set_return = true;
-          break;
-
-        default:
-          break;
-        }
-      }
-    if( set_return )
-      {
-      retval = static_cast<char *>(xmalloc(field->data.capacity+1));
-      gcc_assert(retval);
-      memset(retval, const_char, field->data.capacity);
-      retval[field->data.capacity] = '\0';
-      return retval;
-      }
-    }
-
-  // ???  Refactoring the cases below that do not need 'value' would
-  // make this less ugly
-  REAL_VALUE_TYPE value;
-  if( field->data.etc_type == cbl_field_data_t::value_e )
-    value = TREE_REAL_CST (field->data.value_of ());
-
-#if 0
-  int rdigits;
-  // There is always the infuriating possibility of a P-scaled number
-  if( field->attr & scaled_e )
-    {
-    rdigits = 0;
-    if( field->data.rdigits >= 0 )
-      {
-      // Suppose our PIC is PPPPPP999, meaning that field->digits
-      // is 3, and field->rdigits is 6.
-
-      // Our result has no decimal places, and we have to multiply the value
-      // by 10**9 to get the significant bdigits where they belong.
-
-      REAL_VALUE_TYPE pow10
-        = real_powi10 (field->data.digits + field->data.rdigits);
-      real_arithmetic (&value, MULT_EXPR, &value, &pow10);
-      }
-    else
-      {
-      // Suppose our target is 999PPPPPP, so there is a ->digits
-      // of 3 and field->rdigits of -6.
-
-      // If our caller gave us 123000000, we need to divide
-      // it by 1000000 to line up the 123 with where we want it to go:
-
-      REAL_VALUE_TYPE pow10 = real_powi10 (-field->data.rdigits);
-      real_arithmetic (&value, RDIV_EXPR, &value, &pow10);
-      }
-    // Either way, we now have everything aligned for the remainder of the
-    // processing to work:
-    }
-  else
-    {
-    // Not P-scaled
-    rdigits = field->data.rdigits;
-    }
-#endif
-
-  switch(field->type)
-    {
-    case FldNumericBin5:
-    case FldIndex:
-      retval = binary_initial(field);
-      break;
-
-    case FldNumericBinary:
-      {
-      retval = binary_initial(field);
-      size_t left = 0;
-      size_t right = field->data.capacity - 1;
-      while(left < right)
-        {
-        std::swap(retval[left++], retval[right--]);
-        }
-      break;
-      }
-
-    case FldNumericDisplay:
-      {
-      charmap_t *charmap = __gg__get_charmap(field->codeset.encoding);
-
-      retval = static_cast<char *>(xmalloc(field->data.capacity));
-      gcc_assert(retval);
-      char *pretval = retval;
-      char ach[128];
-
-      bool negative;
-      if( real_isneg (&value) )
-        {
-        negative = true;
-        value = real_value_negate (&value);
-        }
-      else
-        {
-        negative = false;
-        }
-
-      // Convert the data.initial to a __int128
-      uint32_t capacity;
-      uint32_t ddigits;
-      int32_t  drdigits;
-      uint64_t attr;
-      FIXED_WIDE_INT(128) value128 = dirty_to_binary(field->data.initial,
-                                                     capacity,
-                                                     ddigits,
-                                                     drdigits,
-                                                     attr);
-      digits_from_int128(ach, field, field->data.digits, value128, drdigits);
-
-      const char *digits = ach;
-      if(    (field->attr & signable_e)
-          && (field->attr & separate_e)
-          && (field->attr & leading_e ) )
-        {
-        // This zoned decimal value is signable, separate, and leading.
-        if( negative )
-          {
-          *pretval++ = charmap->mapped_character(ascii_minus);
-          }
-        else
-          {
-          *pretval++ = charmap->mapped_character(ascii_plus);
-          }
-        }
-      for(size_t i=0; i<field->data.digits; i++)
-        {
-        // Start by assuming it's an value that can't be signed
-        *pretval++ = charmap->mapped_character(ascii_0) + ((*digits++) & 0x0F);
-        }
-      if(     (field->attr & signable_e)
-          &&  (field->attr & separate_e)
-          && !(field->attr & leading_e ) )
-        {
-        // The value is signable, separate, and trailing
-        if( negative )
-          {
-          *pretval++ = charmap->mapped_character(ascii_minus);
-          }
-        else
-          {
-          *pretval++ = charmap->mapped_character(ascii_plus);
-          }
-        }
-      if(     (field->attr & signable_e)
-          && !(field->attr & separate_e) )
-        {
-        // This value is signable, and not separate.  So, the sign information
-        // goes into the first or last byte:
-        char *sign_location = field->attr & leading_e ?
-                              retval : retval + field->data.digits - 1 ;
-        *sign_location = charmap->set_digit_negative(*sign_location,
-                                                      negative);
-        }
-      break;
-      }
-
-    case FldPacked:
-      {
-      retval = static_cast<char *>(xmalloc(field->data.capacity));
-      gcc_assert(retval);
-      char *pretval = retval;
-      char ach[128];
-
-      bool negative;
-      if( real_isneg (&value) )
-        {
-          negative = true;
-          value = real_value_negate (&value);
-        }
-      else
-        {
-          negative = false;
-        }
-
-      // For COMP-6 (flagged by separate_e), the number of required digits is
-      // twice the capacity.
-
-      // For COMP-3, the number of digits is 2*capacity minus 1, because the
-      // the final "digit" is a sign nybble.
-
-      size_t ndigits =   (field->attr & separate_e)
-                       ? field->data.capacity * 2
-                       : field->data.capacity * 2 - 1;
-      uint32_t capacity;
-      uint32_t ddigits;
-      int32_t  drdigits;
-      uint64_t attr;
-      FIXED_WIDE_INT(128) value128 = dirty_to_binary(field->data.initial,
-                                                     capacity,
-                                                     ddigits,
-                                                     drdigits,
-                                                     attr);
-      digits_from_int128(ach, field, ndigits, value128, drdigits);
-
-      const char *digits = ach;
-      for(size_t i=0; i<ndigits; i++)
-        {
-        if( !(i & 0x01) )
-          {
-          *pretval    = ((*digits++) & 0x0F)<<4;;
-          }
-        else
-          {
-          *pretval++ += (*digits++) & 0x0F;
-          }
-        }
-      if( !(field->attr & separate_e) )
-        {
-        // This is COMP-3, so put in a sign nybble
-        if( (field->attr & signable_e) )
-          {
-          if( negative )
-            {
-            *pretval++ += 0x0D;   // Means signable and negative
-            }
-          else
-            {
-            *pretval++ += 0x0C;   // Means signable and non-negative
-            }
-          }
-        else
-          {
-          *pretval++ += 0x0F;     // Means not signable
-          }
-        }
-      break;
-      }
-
-    case FldGroup:
-    case FldAlphanumeric:
-    case FldLiteralA:
-    case FldAlphaEdited:
-      {
-      if( field->data.initial )
-        {
-        retval = static_cast<char *>(xmalloc(field->data.capacity+1));
-        gcc_assert(retval);
-        if( field->attr & hex_encoded_e)
-          {
-          memcpy(retval, field->data.initial, field->data.capacity);
-          }
-        else
-          {
-          size_t length = field->data.capacity;
-          memcpy(retval, field->data.initial, length);
-          if( strlen(field->data.initial) < length )
-            {
-            // If this is true, then the initial string must've been Z'xyz'
-            retval[strlen(field->data.initial)] = '\0';
-            }
-          }
-        retval[field->data.capacity] = '\0';
-        }
-      break;
-      }
-
-    case FldNumericEdited:
-      {
-      charmap_t *charmap = __gg__get_charmap(field->codeset.encoding);
-      retval = static_cast<char *>(xmalloc(field->data.capacity+1));
-      gcc_assert(retval);
-      if( field->data.initial && field->attr & quoted_e )
-        {
-        // What the programmer says the value is, the value becomes, no
-        // matter how wrong it might be.
-        size_t length = std::min( (size_t)field->data.capacity,
-                                  strlen(field->data.initial));
-        for(size_t i=0; i<length; i++)
-          {
-          retval[i] = field->data.initial[i];
-          }
-        if( length < (size_t)field->data.capacity )
-          {
-          memset( retval+length,
-                  charmap->mapped_character(ascii_space),
-                  (size_t)field->data.capacity - length);
-          }
-        }
-      else
-        {
-        // It's not a quoted string, so we use data.value:
-        bool negative;
-        if( real_isneg (&value) )
-          {
-          negative = true;
-          value = real_value_negate (&value);
-          }
-        else
-          {
-          negative = false;
-          }
-
-        char ach[128];
-        memset(ach, 0, sizeof(ach));
-        memset(retval, 0, field->data.capacity);
-
-        if( (field->attr & blank_zero_e) && real_iszero (&value) )
-          {
-          memset( retval,
-                  charmap->mapped_character(ascii_space),
-                  field->data.capacity);
-          }
-        else
-          {
-          size_t ndigits = field->data.capacity;
-          uint32_t capacity;
-          uint32_t ddigits;
-          int32_t  drdigits;
-          uint64_t attr;
-          FIXED_WIDE_INT(128) value128 = dirty_to_binary(field->data.original(),
-                                                         capacity,
-                                                         ddigits,
-                                                         drdigits,
-                                                         attr);
-          digits_from_int128(ach, field, ndigits, value128, drdigits);
-
-          // __gg__string_to_numeric_edited operates in ASCII space:
-          __gg__string_to_numeric_edited( retval,
-                                          ach,
-                                          field->data.rdigits,
-                                          negative,
-                                          field->data.picture);
-          // So now we convert it to the target encoding:
-          size_t nbytes;
-          const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
-                                                   field->codeset.encoding,
-                                                   retval,
-                                                   strlen(retval),
-                                                   &nbytes);
-          strcpy(retval, converted);
-          }
-        }
-      break;
-      }
-
-    case FldFloat:
-      {
-      retval = static_cast<char *>(xmalloc(field->data.capacity));
-      gcc_assert(retval);
-      switch( field->data.capacity )
-        {
-        case 4:
-          value = real_value_truncate (TYPE_MODE (FLOAT), value);
-          native_encode_real (SCALAR_FLOAT_TYPE_MODE (FLOAT), &value,
-                              PTRCAST(unsigned char, retval), 4, 0);
-          break;
-        case 8:
-          value = real_value_truncate (TYPE_MODE (DOUBLE), value);
-          native_encode_real (SCALAR_FLOAT_TYPE_MODE (DOUBLE), &value,
-                              PTRCAST(unsigned char, retval), 8, 0);
-          break;
-        case 16:
-          value = real_value_truncate (TYPE_MODE (FLOAT128), value);
-          native_encode_real (SCALAR_FLOAT_TYPE_MODE (FLOAT128), &value,
-                              PTRCAST(unsigned char, retval), 16, 0);
-          break;
-        }
-      break;
-      }
-
-    case FldLiteralN:
-      {
-      // This requires annotation.
-
-      // The compiler originally used ASCII for field->data.initial. Later we
-      // expanded the field with the addition of the codeset.encoding
-      // For consistency in the parser processing, the FldLiteralN is arriving
-      // with the Object-Computer's character encoding, and field->data.initial
-      // is showing up encoded.
-
-      // But on the run-time side, if the initial string is needed, it is
-      // invariably more useful in ASCII.  Consider converting that string to
-      // a floating-point value, for example.
-
-      // So, we are going to convert the data.initial string back to ASCII
-      // here.  Later on, when we establish the run-time encoding, we will
-      // check for FldLiteralN and set that to ASCII as well. See
-      // actually_create_the_static_field().
-
-      size_t nbytes;
-      const char *converted = __gg__iconverter(field->codeset.encoding,
-                                               DEFAULT_SOURCE_ENCODING,
-                                               field->data.initial,
-                                               strlen(field->data.initial),
-                                               &nbytes);
-      retval = static_cast<char *>(xmalloc(strlen(field->data.initial)+1));
-      gcc_assert(retval);
-      strcpy(retval, converted);
-      break;
-      }
-
-    default:
-      break;
-    }
+  tree retval = build_string_literal( buffer_size,
+                                      buffer);
+  free(buffer);
   return retval;
   }
 
@@ -16839,7 +16165,7 @@ actually_create_the_static_field( cbl_field_t *new_var,
   CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
                           next_field,
                           build_int_cst_type( SIZE_T,
-                                              new_var->data.capacity) );
+                                              new_var->data.capacity()) );
   next_field = TREE_CHAIN(next_field);
 
   //  SIZE_T,  "allocated",
@@ -16848,7 +16174,7 @@ actually_create_the_static_field( cbl_field_t *new_var,
     CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
                             next_field,
                             build_int_cst_type( SIZE_T,
-                                                new_var->data.capacity) );
+                                                new_var->data.capacity()) );
     }
   else
     {
@@ -16861,24 +16187,9 @@ actually_create_the_static_field( cbl_field_t *new_var,
   next_field = TREE_CHAIN(next_field);
 
   //  SIZE_T,  "offset",
-
-  if( new_var->type == FldAlphanumeric &&
-      new_var->attr & intermediate_e )
-    {
-    // This is in support of FUNCTION TRIM.  That function can make the capacity
-    // of the intermediate target smaller so that TRIM("abc   ") returns
-    // "abc".  By putting the capacity here for such variables, we have a
-    // mechanism for restoring it the capacity to the original.
-    CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
-                            next_field,
-                            build_int_cst_type(SIZE_T, new_var->data.capacity));
-    }
-  else
-    {
-    CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
+  CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
                             next_field,
                             build_int_cst_type(SIZE_T, new_var->offset) );
-    }
 
   next_field = TREE_CHAIN(next_field);
 
@@ -16895,7 +16206,7 @@ actually_create_the_static_field( cbl_field_t *new_var,
   next_field = TREE_CHAIN(next_field);
 
   //  CHAR_P,  "initial",
-  if( length_of_initial_string == 0 )
+  if( length_of_initial_string == 0 || !new_var->data.has_initial_value() )
     {
     CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
                             next_field,
@@ -16960,12 +16271,25 @@ actually_create_the_static_field( cbl_field_t *new_var,
   //  INT,     "encoding",
   //  For FldLiteralN we force the encoding to be ASCII.
   //  See initial_from_initial() for an explanation.
+  //  For FldClass, we force the encoding to be UTF32; see
+
+  cbl_encoding_t encoding;
+  if( new_var->type == FldLiteralN )
+    {
+    encoding = new_var->codeset.default_encodings.source->type;
+    }
+  else if( new_var->type == FldClass )
+    {
+    encoding = DEFAULT_32_ENCODING;
+    }
+  else
+    {
+    encoding = new_var->codeset.encoding;
+    }
+
   CONSTRUCTOR_APPEND_ELT(CONSTRUCTOR_ELTS(constr),
                         next_field,
-                        build_int_cst_type(INT,
-                                           new_var->type == FldLiteralN ?
-                                                DEFAULT_SOURCE_ENCODING
-                                              : new_var->codeset.encoding));
+                        build_int_cst_type(INT, encoding));
   next_field = TREE_CHAIN(next_field);
 
   //  INT,     "alphabet",
@@ -17063,7 +16387,7 @@ psa_new_var_decl(cbl_field_t *new_var, const char *external_record_base)
     // to do a linear search of the symbol table for each symbol
 
     if(   !our_index
-          && new_var->type != FldLiteralN
+          && ! new_var->is_numeric_constant()
           && !(new_var->attr & intermediate_e))
       {
       our_index = field_index(new_var);
@@ -17164,7 +16488,6 @@ psa_new_var_decl(cbl_field_t *new_var, const char *external_record_base)
   return new_var_decl;
   }
 
-#if 1
 static void
 psa_FldLiteralA(struct cbl_field_t *field )
   {
@@ -17183,92 +16506,32 @@ psa_FldLiteralA(struct cbl_field_t *field )
     }
 
   // We are constructing a completely static constant structure.  We know the
-  // capacity.  We'll create it from the data.initial.  The cblc_field_t:data
-  // will be a copy of the .initial data. The var_decl_node will be an ordinary
-  // cblc_field_t, which means that at this point in time, a FldLiteralA can be
-  // used anywhere a FldGroup or FldAlphanumeric can be used.  We are counting
-  // on the parser not allowing a FldLiteralA to be a left-hand-side variable.
+  // capacity.  We'll create it from the data.initial.
 
-  // First make room
-  static size_t buffer_size = 1024;
-  static char *buffer = static_cast<char *>(xmalloc(buffer_size));
-  if( buffer_size < field->data.capacity+1 )
-    {
-    buffer_size = field->data.capacity+1;
-    buffer = static_cast<char *>(xrealloc(buffer, buffer_size));
-    }
-  gcc_assert(buffer);
-
-  cbl_figconst_t figconst = cbl_figconst_of( field->data.initial );
-  gcc_assert(figconst == normal_value_e);
-
-  memcpy(buffer, field->data.initial, field->data.capacity);
-  buffer[field->data.capacity] = '\0';
-
-  // We have the original nul-terminated text at data.initial.  We have a
-  // copy of it in buffer[] in the internal codeset.
+  tree converted = convert_data_initial(field);
 
   static const char name_base[] = "_literal_a_";
 
-  // We will reuse a single static structure for each string
-  static std::unordered_map<std::string, int> seen_before;
+  static int nvar = 0;
+  nvar += 1;
 
-  std::string field_string(buffer);
-
-#if 0
-  /*  This code is suppoed to re-use literals, and seems to work just fine in
-      x86_64-linux and on an Apple aarch64 M1 Macbook Pro.  But on an M1
-      mini, using -Os optimization, attempts were made in the generated
-      assembly language to define _literal_a_1 more than once.
-
-      I didn't know how to try to track this one down, so I decided simply to
-      punt by removing the code.
-
-      I am leaving the code here because of a conviction that it someday should
-      be tracked down. */
-
-  std::unordered_map<std::string, int>::const_iterator it =
-              seen_before.find(field_string);
-
-  if( it != seen_before.end() )
-    {
-    // We've seen that string before.
-    int nvar = it->second;
-    char ach[32];
-    sprintf(ach, "%s%d", name_base, nvar);
-    field->var_decl_node = gg_declare_variable(cblc_field_type_node,
-                                                  ach,
-                                                  NULL,
-                                                  vs_file_static);
-    }
-  else
-#endif
-    {
-    // We have not seen that string before
-    static int nvar = 0;
-    nvar += 1;
-    seen_before[field_string] = nvar;
-
-    char ach[32];
-    sprintf(ach, "%s%d", name_base, nvar);
-    field->var_decl_node  = gg_define_variable( cblc_field_type_node,
-                                                ach,
-                                                vs_file_static);
-    actually_create_the_static_field(
-                field,
-                build_string_literal(field->data.capacity,
-                                     buffer),
-                field->data.capacity,
-                field->data.initial,
-                NULL_TREE,
-                field->var_decl_node);
-    TREE_READONLY(field->var_decl_node) = 1;
-    TREE_USED(field->var_decl_node) = 1;
-    TREE_STATIC(field->var_decl_node) = 1;
-    DECL_PRESERVE_P (field->var_decl_node) = 1;
-    }
+  char ach[32];
+  sprintf(ach, "%s%d", name_base, nvar);
+  field->var_decl_node  = gg_define_variable( cblc_field_type_node,
+                                              ach,
+                                              vs_file_static);
+  actually_create_the_static_field(
+              field,
+              converted,
+              strlen(field->data.original())+1,
+              field->data.original(),
+              NULL_TREE,
+              field->var_decl_node);
+  TREE_READONLY(field->var_decl_node) = 1;
+  TREE_USED(field->var_decl_node) = 1;
+  TREE_STATIC(field->var_decl_node) = 1;
+  DECL_PRESERVE_P (field->var_decl_node) = 1;
   }
-#endif
 
 void
 parser_local_add(struct cbl_field_t *new_var )
@@ -17297,7 +16560,7 @@ parser_local_add(struct cbl_field_t *new_var )
   if( new_var->level == LEVEL01 || new_var->level == LEVEL77)
     {
     // We need to allocate memory on the stack for this variable
-    tree array_type = build_array_type_nelts(UCHAR, new_var->data.capacity);
+    tree array_type = build_array_type_nelts(UCHAR, new_var->data.capacity());
     tree data_decl_node = gg_define_variable( array_type,
                                                     NULL,
                                                     vs_stack);
@@ -17332,37 +16595,37 @@ parser_symbol_add(struct cbl_field_t *new_var )
   Analyze();
   SHOW_PARSE
     {
-    do
-      {
-      fprintf(stderr, "( %d ) %s:", CURRENT_LINE_NUMBER, __func__);
-      }
-    while(0);
+    char ach[1024];
+    SHOW_PARSE_HEADER
 
-    fprintf(stderr, " %2.2u %s<%s> off:" HOST_SIZE_T_PRINT_UNSIGNED " "
+    sprintf(ach, " %2.2u %s<%s> off:" HOST_SIZE_T_PRINT_UNSIGNED " "
                     "msiz:%u cap:%u dig:%u rdig:%d attr:0x" HOST_SIZE_T_PRINT_HEX_PURE " loc:%p",
             new_var->level,
             new_var->name,
             cbl_field_type_str(new_var->type),
             (fmt_size_t)new_var->offset,
             new_var->data.memsize,
-            new_var->data.capacity,
+            new_var->data.capacity(),
             new_var->data.digits,
             new_var->data.rdigits,
             (fmt_size_t)new_var->attr,
             static_cast<void*>(new_var));
+    SHOW_PARSE_TEXT(ach)
 
     if( is_table(new_var) )
       {
-      fprintf(stderr," OCCURS:" HOST_SIZE_T_PRINT_DEC,
+      sprintf(ach, " OCCURS:" HOST_SIZE_T_PRINT_DEC,
               (fmt_size_t)new_var->occurs.ntimes());
+      SHOW_PARSE_TEXT(ach)
       }
     const cbl_field_t *parent = parent_of(new_var);
     if( parent )
       {
-      fprintf(stderr,
+      sprintf(ach,
               " parent:(" HOST_SIZE_T_PRINT_DEC ")%s",
               (fmt_size_t)new_var->parent,
               parent->name);
+      SHOW_PARSE_TEXT(ach)
       }
     else
       {
@@ -17373,13 +16636,15 @@ parser_symbol_add(struct cbl_field_t *new_var )
         const symbol_elem_t *e = symbol_at(parent_index);
         if( e->type == SymFile )
           {
-          fprintf(stderr,
+          sprintf(ach,
                   " parent_file:(" HOST_SIZE_T_PRINT_DEC ")%s",
                   (fmt_size_t)new_var->parent,
                   e->elem.file.name);
+          SHOW_PARSE_TEXT(ach)
           if( e->elem.file.attr & external_e )
             {
-            fprintf(stderr, " (flagged external)");
+            sprintf(ach, " (flagged external)");
+            SHOW_PARSE_TEXT(ach)
             }
           }
         }
@@ -17387,18 +16652,44 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     if( symbol_redefines(new_var) )
       {
-      fprintf(stderr,
+      sprintf(ach,
               " redefines:(%p)%s",
               static_cast<void*>(symbol_redefines(new_var)),
               symbol_redefines(new_var)->name);
+      SHOW_PARSE_TEXT(ach)
       }
 
+    if(    new_var->type == FldGroup
+        || new_var->type == FldAlphanumeric
+        || new_var->type == FldNumericEdited
+        || new_var->type == FldAlphaEdited
+        || new_var->type == FldLiteralA
+        )
+      {
+      if( new_var->data.initial && new_var->data.capacity() )
+        {
+        SHOW_PARSE_INDENT
+        for(size_t i=0; i<new_var->data.capacity(); i++)
+          {
+          fprintf(stderr, "%2.2X ", static_cast<unsigned char>(new_var->data.initial[i]));
+          }
+        }
+      }
+    if( new_var->data.original() && strlen(new_var->data.original()) )
+      {
+      SHOW_PARSE_INDENT
+      sprintf(ach,
+              "\"%s\" (%d)",
+              new_var->data.original(),
+              static_cast<int>(strlen(new_var->data.original())));
+      SHOW_PARSE_TEXT(ach);
+      }
     SHOW_PARSE_END
     }
 
   if( new_var->level == 1  && new_var->occurs.bounds.upper )
     {
-    if( new_var->data.memsize < new_var->data.capacity * new_var->occurs.bounds.upper )
+    if( new_var->data.memsize < new_var->data.capacity() * new_var->occurs.bounds.upper )
       {
       cbl_internal_error("LEVEL 01 (%s) OCCURS "
                          "has insufficient data.memsize", new_var->name);
@@ -17419,9 +16710,9 @@ parser_symbol_add(struct cbl_field_t *new_var )
           {
           gg_free(member(new_var, "data"));
           gg_assign(member(new_var, "data"),
-                    gg_cast(UCHAR_P, gg_malloc(new_var->data.capacity)));
+                    gg_cast(UCHAR_P, gg_malloc(new_var->data.capacity())));
           gg_assign(member(new_var, "allocated"),
-                    build_int_cst_type(SIZE_T, new_var->data.capacity));
+                    build_int_cst_type(SIZE_T, new_var->data.capacity()));
           }
         ELSE
           {
@@ -17455,7 +16746,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
       }
 
     size_t length_of_initial_string = 0;
-    char *new_initial = NULL;
+    const char *new_initial = NULL;
 
     //  Make sure we have a new variable to work with.
     if( !new_var )
@@ -17487,7 +16778,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
       TRACE1_END
       }
 
-    if( is_table(new_var) && new_var->data.capacity == 0)
+    if( is_table(new_var) && new_var->data.capacity() == 0)
       {
       cbl_internal_error(
           "%s: %d %s is a table, but it improperly has a capacity of zero",
@@ -17546,7 +16837,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
                           "%<var_decl_node%>", __func__, new_var->name);
       }
 
-    switch( new_var->type )
+    switch( new_var->type ) // Trap_here for ordinary variables.
       {
       static int counter=1;
       char ach[2*sizeof(cbl_name_t)];
@@ -17566,7 +16857,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
     if(    new_var->type == FldNumericBinary
         || new_var->type == FldNumericBin5 )
       {
-      switch( new_var->data.capacity )
+      switch( new_var->data.capacity() )
         {
         case 1:
         case 2:
@@ -17579,7 +16870,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
                   "%s is type %s and has capacity %u\n",
                   new_var->name,
                   cbl_field_type_str(new_var->type),
-                  new_var->data.capacity);
+                  new_var->data.capacity());
           gcc_unreachable();
           break;
         }
@@ -17587,9 +16878,33 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     size_t level_88_string_size = 0;
     char *level_88_string = NULL;
+    char *class_string = NULL;
     if( ancestor )
       {
-      level_88_string = get_level_88_domain(ancestor->data.capacity, new_var, level_88_string_size);
+      level_88_string = get_level_88_domain(ancestor->data.capacity(),
+                                            new_var,
+                                            level_88_string_size);
+      if( level_88_string )
+        {
+        // At this point, the string is in source_code encoding, no matter what
+        // the variable's encoding might be.  In the run-time, we will be doing
+        // any comparisons of text strings using UTF32 (because that's how we
+        // handle somebody specifying a UTF-8 exec-charset.)  Rather than
+        // convert this string at run-time, we convert it here:
+        size_t converted_length;
+        const char *converted = __gg__iconverter(
+                                 new_var->codeset.default_encodings.source->type,
+                                 DEFAULT_32_ENCODING,
+                                 level_88_string,
+                                 level_88_string_size,  // Convert the NUL
+                                 &converted_length);
+        level_88_string_size = converted_length;
+        level_88_string = static_cast<char *>(xrealloc(level_88_string,
+                                                       level_88_string_size));
+        memcpy(level_88_string, converted, level_88_string_size);
+        // level_88_string is now a UTF32 string with a terminating four-byte
+        // NUL.
+        }
       }
 
     if( !new_var->data.picture )
@@ -17609,30 +16924,27 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     if( new_var->type == FldClass && new_var->level != 88 )
       {
-      new_var->data.initial = get_class_condition_string(new_var);
+      class_string = get_class_condition_string(new_var);
+      length_of_initial_string = strlen(class_string)+1;
+      new_initial = class_string;
       }
-
-    if( new_var->type == FldLiteralA )
+    else if( new_var->type == FldLiteralA )
       {
-      length_of_initial_string = new_var->data.capacity;
+      length_of_initial_string = new_var->data.capacity();
       }
-    else if( new_var->data.initial && new_var->data.initial[0] != '\0' )
+    else if( new_var->data.original() && new_var->data.original()[0] != '\0' )
       {
       if( new_var->type == FldClass )
         {
-        length_of_initial_string = strlen(new_var->data.initial)+1;
+        length_of_initial_string = strlen(new_var->data.original())+1;
         }
       else if( new_var->type == FldNumericDisplay )
         {
-        length_of_initial_string = strlen(new_var->data.initial)+1;
+        length_of_initial_string = strlen(new_var->data.original())+1;
         }
       else
         {
-        // This is an ordinary string
-        // fprintf(stderr, ">>>>>>> parser_symbol_add %s %s \n", cbl_field_type_str(new_var->type), new_var->name);
-        // fprintf(stderr, "        %d %d\n", (int)strlen(new_var->data.initial), (int)new_var->data.capacity);
-        //length_of_initial_string = strlen(new_var->data.initial) + 1;
-        length_of_initial_string = new_var->data.capacity + 1;
+        length_of_initial_string = new_var->data.capacity() + 1;
         }
       }
     else
@@ -17650,11 +16962,14 @@ parser_symbol_add(struct cbl_field_t *new_var )
           && new_var->type != FldLiteralN
           && !(new_var->attr & intermediate_e))
       {
-      // During the early stages of implementing cbl_field_t::our_index, there
-      // were execution paths in parse.y and parser.cc that resulted in
-      // our_index not being set.  Those should be gone.
-      fprintf(stderr, "our_index is NULL under unanticipated circumstances");
-      gcc_assert(false);
+      if( ! (new_var->type == FldFloat && new_var->has_attr(constant_e)) )
+        {
+        // N.B. If level is 0 then we're not participating in a hierarchy.
+        // During the early stages of implementing cbl_field_t::our_index, there
+        // were execution paths in parse.y and parser.cc that resulted in
+        // our_index not being set.  Those should be gone.
+        cbl_errx("%<our_index%> is NULL under unanticipated circumstances");
+        }
       }
 
     // When we create the cblc_field_t structure, we need a data pointer
@@ -17727,11 +17042,11 @@ parser_symbol_add(struct cbl_field_t *new_var )
      * As of Tue Apr  4 10:29:35 2023, we support 01 CONSTANT numeric values as follows:
      * 1.  FldNumericBin5
      * 2.  always constant_e, also potentially global_e
-     * 3.  compile-time value in cbl_field_data_t::value
+     * 3.  compile-time value in cbl_field_data_t::valuer
      * 4.  cbl_field_data_t::capacity is 0 because it requires no working storage
      */
 
-    if( new_var->data.capacity == 0
+    if( new_var->data.capacity() == 0
         && new_var->level != 88
         && new_var->type  != FldClass
         && new_var->type  != FldLiteralN
@@ -17748,7 +17063,8 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     if( level_88_string )
       {
-      new_var->data.initial = level_88_string;
+      new_var->data.original(level_88_string);
+      new_initial = level_88_string;
       length_of_initial_string = level_88_string_size;
       }
 
@@ -17758,7 +17074,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
       {
       char achDataName[256];
       sprintf(achDataName, "__%s_vardata", external_record_base);
-      tree array_type = build_array_type_nelts(UCHAR, new_var->data.capacity);
+      tree array_type = build_array_type_nelts(UCHAR, new_var->data.capacity());
       new_var->data_decl_node = gg_define_variable(
                           array_type,
                           achDataName,
@@ -17789,9 +17105,9 @@ parser_symbol_add(struct cbl_field_t *new_var )
         {
         // Create a static array of UCHAR, and make that the data_decl_node
         // size_t bytes_to_allocate = new_var->data.memsize ?
-                                // new_var->data.memsize : new_var->data.capacity;
+                                // new_var->data.memsize : new_var->data.capacity();
         size_t bytes_to_allocate = std::max(new_var->data.memsize,
-                                            new_var->data.capacity);
+                                            new_var->data.capacity());
 
         // A FldClass actually doesn't need any bytes, because the only important
         // thing about it is the .initial field.  We will allocate a single byte,
@@ -17876,34 +17192,12 @@ parser_symbol_add(struct cbl_field_t *new_var )
         }
       }
 
-    if( new_var->data.initial )
+    // At this point, new_initial might have been set by
+    // get_class_condition_string.  If not, we set it another way:
+    if( !level_88_string && !class_string)
       {
-      new_initial = initial_from_initial(new_var);
-      }
-    if( new_initial )
-      {
-      switch(new_var->type)
-        {
-        case FldGroup:
-        case FldAlphanumeric:
-        case FldLiteralA:
-          length_of_initial_string = new_var->data.capacity+1;
-          break;
-
-        case FldLiteralN:
-          length_of_initial_string = strlen(new_initial)+1;
-          break;
-
-        default:
-          length_of_initial_string = new_var->data.capacity;
-          break;
-        }
-      }
-    else
-      {
-      new_initial = static_cast<char *>(xmalloc(length_of_initial_string));
-      gcc_assert(new_initial);
-      memcpy(new_initial, new_var->data.initial, length_of_initial_string);
+      new_initial = const_cast<char *>(new_var->data.initial);
+      length_of_initial_string = new_var->data.capacity();
       }
 
     actual_allocate:
@@ -17913,12 +17207,8 @@ parser_symbol_add(struct cbl_field_t *new_var )
                                       new_initial,
                                       immediate_parent,
                                       new_var_decl);
-    free(new_initial);
-
-    if( level_88_string )
-      {
-      free(level_88_string);
-      }
+    free(level_88_string);
+    free(class_string);
 
     if(  !(new_var->attr & ( linkage_e | based_e)) )
       {

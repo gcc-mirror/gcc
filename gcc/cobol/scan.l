@@ -94,6 +94,14 @@ PICTURE   [^[:space:]]+
 DOTSEP    [.]+[[:space:]]
 DOTEOL    [[:blank:]]*[.]{BLANK_EOL}
 
+	  /*
+	   * "If the symbol ',' or the symbol '.' is the last symbol of
+	   *  character-string-1, the PICTURE clause shall be the last clause
+	   *  of the data description entry and shall be followed immediately
+	   *  (without an intervening separator space) by the separator period."
+	   */
+NONPIC	  [,]{DOTSEP} 
+
 SKIP	  [[:blank:]]*SKIP[123][[:blank:]]*[.]?{BLANK_EOL}
 TITLE	  [[:blank:]]*TITLE($|[.]|[^\n]*)
 
@@ -316,6 +324,7 @@ BACKGROUND-COLOR		{ return BACKGROUND_COLOR; }
 BELL				{ return BELL; }
 BINARY-ENCODING			{ return BINARY_ENCODING; }
 BLINK				{ return BLINK; }
+BYTE				{ return BYTE; }
 CAPACITY			{ return CAPACITY; }
 
 CENTER		{
@@ -1030,8 +1039,7 @@ USE({SPC}FOR)?		{ return USE; }
 
   INDEX				{ return INDEX; }
   MESSAGE-TAG			{ not_implemented("USAGE type: MESSAGE-TAG"); }
-  NATIONAL			{ not_implemented("USAGE type: NATIONAL");
-				  return NATIONAL; }
+  NATIONAL			{ return NATIONAL; }
   OBJECT{SPC}REFERENCE		{ not_implemented("USAGE type: OBJECT REFERENCE"); }
 
   PACKED-DECIMAL		{ return PACKED_DECIMAL; }
@@ -1099,6 +1107,7 @@ USE({SPC}FOR)?		{ return USE; }
   LEADING		{ return LEADING; }
   LEFT    		{ return LEFT; }
   MODE			{ return MODE; }
+  NO			{ return NO; }
   OCCURS/{SPC}{NAME} 	{ return OCCURS; }
   OCCURS		{ yy_push_state(integer_count);  return OCCURS; }
   OF			{ return OF; }
@@ -1130,6 +1139,7 @@ USE({SPC}FOR)?		{ return USE; }
   VARYING		{ return VARYING; }
   VOLATILE    		{ return VOLATILE; }
   WHEN    		{ return WHEN; }
+  WITH			{ return WITH; }
 
   COPY			{
                 	  yy_push_state(copy_state);
@@ -1242,7 +1252,7 @@ USE({SPC}FOR)?		{ return USE; }
                          yylval.string = xstrdup(yytext); return picset(ALNUM); }
   {ALNUM}/[(]{NAME}[)] { yy_push_state(picture_count);
                          yylval.string = xstrdup(yytext); return picset(ALNUM); }
-  {ALNUM}              { yylval.string = xstrdup(yytext); return picset(ALNUM); }
+  {ALNUM}/{NONPIC}?    { yylval.string = xstrdup(yytext); return picset(ALNUM); }
 
   {ALPHED}             { yylval.string = xstrdup(yytext); return picset(ALPHED); }
   {NUMEDITED}          { yylval.string = xstrdup(yytext); return picset(NUMED); }
@@ -1830,6 +1840,7 @@ B-SHIFT-RC
   BIT-OF/{NONWORD}			{ pop_return BIT_OF; }
   BIT-TO-CHAR/{NONWORD}			{ pop_return BIT_TO_CHAR; }
   BOOLEAN-OF-INTEGER/{NONWORD}		{ pop_return BOOLEAN_OF_INTEGER; }
+  BYTE/{NONWORD}			{ pop_return BYTE; }
   BYTE-LENGTH/{NONWORD}			{ pop_return BYTE_LENGTH; }
   CHAR-NATIONAL/{NONWORD}		{ pop_return CHAR_NATIONAL; }
   CHAR/{NONWORD}			{ pop_return CHAR; }

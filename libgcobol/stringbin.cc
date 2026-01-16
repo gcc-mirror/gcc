@@ -299,12 +299,14 @@ __gg__binary_to_string_ascii(char *result, int digits, __int128 value)
 
 bool
 __gg__binary_to_string_encoded( char *result,
-                                int digits,
+                                size_t digits,
                                 __int128 value,
                                 cbl_encoding_t encoding)
   {
-  charmap_t *charmap = __gg__get_charmap(encoding);
-  zero_char = charmap->mapped_character(ascii_0);
+  // A non-zero retval means the number was too big to fit into the desired
+  // number of digits.
+
+  zero_char = ascii_0;
 
   // Note that this routine does not terminate the generated string with a
   // NUL.  This routine is sometimes used to generate a NumericDisplay string
@@ -317,8 +319,6 @@ __gg__binary_to_string_encoded( char *result,
     value = -value;
     }
 
-  // A non-zero retval means the number was too big to fit into the desired
-  // number of digits:
   bool retval = !!(value / mask);
 
   // mask off the bottom digits to avoid garbage when value is too large
@@ -328,7 +328,13 @@ __gg__binary_to_string_encoded( char *result,
   combined.run = digits;
   combined.val128 = value;
   string_from_combined(combined);
-  memcpy(result, combined_string, digits);
+  size_t converted_bytes;
+  const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                           encoding,
+                                           combined_string,
+                                           digits,
+                                           &converted_bytes);
+  memcpy(result, converted, converted_bytes);
   return retval;
   }
 
@@ -482,8 +488,8 @@ __gg__binary_to_packed( unsigned char *result,
 extern "C"
 __int128
 __gg__numeric_display_to_binary(unsigned char *signp,
-                          const unsigned char *psz,
-                                int            n,
+                          const unsigned char *pdigits,
+                                int            ndigits,
                                 cbl_encoding_t encoding)
   {
   /*  This is specific to numeric display values.
@@ -507,12 +513,13 @@ __gg__numeric_display_to_binary(unsigned char *signp,
   /*  We are assuming that 64-bit arithmetic is faster than 128-bit arithmetic,
       and so we build up a 128-bit result in three 64-bit pieces, and assemble
       them at the end.  */
+  size_t digit_index = 0;
+  cbl_char_t ch;
 
   charmap_t *charmap = __gg__get_charmap(encoding);
-  unsigned char zero  = charmap->mapped_character(ascii_0);
-  unsigned char minus = charmap->mapped_character(ascii_minus);
+  cbl_char_t minus = charmap->mapped_character(ascii_minus);
 
-  bool is_ebcdic = (zero == 0xF0);
+  bool is_ebcdic = charmap->is_like_ebcdic();
 
   static const uint8_t lookup[] =
     {
@@ -557,7 +564,7 @@ __gg__numeric_display_to_binary(unsigned char *signp,
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x40
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x50
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x60
-    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x70
+    0,1,2,3,4,5,6,7,8,9,0,0,0,0,0,0, // 0x70
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x80
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x90
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xa0
@@ -581,7 +588,7 @@ __gg__numeric_display_to_binary(unsigned char *signp,
   bool is_negative = false;
 
   // Pick up the original sign byte:
-  unsigned char sign_byte = *signp;
+  cbl_char_t sign_byte = charmap->getch(signp, (size_t)0);
 
   const unsigned char *mapper;
   if( is_ebcdic )
@@ -599,7 +606,7 @@ __gg__numeric_display_to_binary(unsigned char *signp,
     // forcing the zone to 0xF0.  Note that this is harmless if redundant, and
     // harmless as well if the data SIGN IS SEPARATE.  Whatever we do to this
     // byte will be undone at the end of the routine.
-    *signp |= 0xF0;
+    charmap->putch(sign_byte|0xF0, signp, (size_t)0);
     }
   else
     {
@@ -613,46 +620,49 @@ __gg__numeric_display_to_binary(unsigned char *signp,
       is_negative = true;
 
       // Make it a valid positive digit by turning the zone to 0x30
-      *signp &= 0x3F;
+      charmap->putch(sign_byte&0x3F, signp, (size_t)0);
       }
     }
 
   // Digits 1 through 18 come from the bottom:
-  if( n <= 18 )
+  if( ndigits <= 18 )
     {
-    count_bottom = n;
+    count_bottom = ndigits;
     count_middle = 0;
     count_top = 0;
     }
-  else if( n<= 36 )
+  else if( ndigits<= 36 )
     {
     count_bottom = 18;
-    count_middle = n - 18;
+    count_middle = ndigits - 18;
     count_top = 0;
     }
   else
     {
     count_bottom = 18;
     count_middle = 18;
-    count_top = n - 36;
+    count_top = ndigits - 36;
     }
 
-  if( n & 1 )
+  if( ndigits & 1 )
     {
     // We are dealing with an odd number of digits
     if( count_top )
       {
-      top = mapper[*psz++];
+      ch = charmap->getch(pdigits, &digit_index);
+      top = mapper[ch];
       count_top -= 1;
       }
     else if( count_middle )
       {
-      middle = mapper[*psz++];
+      ch = charmap->getch(pdigits, &digit_index);
+      middle = mapper[ch];
       count_middle -= 1;
       }
     else
       {
-      bottom = mapper[*psz++];
+      ch = charmap->getch(pdigits, &digit_index);
+      bottom = mapper[ch];
       count_bottom -= 1;
       }
     }
@@ -661,8 +671,10 @@ __gg__numeric_display_to_binary(unsigned char *signp,
 
   while( count_top )
     {
-    add_me  = mapper[*psz++] << 4;
-    add_me += mapper[*psz++];
+    ch = charmap->getch(pdigits, &digit_index);
+    add_me  = mapper[ch] << 4;
+    ch = charmap->getch(pdigits, &digit_index);
+    add_me += mapper[ch];
     top *= 100 ;
     top += lookup[add_me];
     count_top -= 2;
@@ -670,8 +682,10 @@ __gg__numeric_display_to_binary(unsigned char *signp,
 
   while( count_middle )
     {
-    add_me  = mapper[*psz++] << 4;
-    add_me += mapper[*psz++];
+    ch = charmap->getch(pdigits, &digit_index);
+    add_me  = mapper[ch] << 4;
+    ch = charmap->getch(pdigits, &digit_index);
+    add_me += mapper[ch];
     middle *= 100 ;
     middle += lookup[add_me];
     count_middle -= 2;
@@ -679,8 +693,10 @@ __gg__numeric_display_to_binary(unsigned char *signp,
 
   while( count_bottom )
     {
-    add_me  = mapper[*psz++] << 4;
-    add_me += mapper[*psz++];
+    ch = charmap->getch(pdigits, &digit_index);
+    add_me  = mapper[ch] << 4;
+    ch = charmap->getch(pdigits, &digit_index);
+    add_me += mapper[ch];
     bottom *= 100 ;
     bottom += lookup[add_me];
     count_bottom -= 2;
@@ -700,7 +716,7 @@ __gg__numeric_display_to_binary(unsigned char *signp,
     }
 
   // Replace the original sign byte:
-  *signp = sign_byte; // cppcheck-suppress redundantAssignment
+  charmap->putch(sign_byte, signp, (size_t)0);
   return retval;
   }
 

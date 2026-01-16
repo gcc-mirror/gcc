@@ -121,6 +121,9 @@ static inline bool gcobol_feature_embiggen() {
     (cbl_gcobol_features & feature_embiggen_e);
 }
 
+bool cobol_alpha_encoding( const char name[] );
+bool cobol_national_encoding( const char name[] );
+
 enum cbl_division_t {
   identification_div_e,
   environment_div_e,
@@ -175,8 +178,6 @@ int cbl_figconst_tok( const char *value );
 enum cbl_figconst_t cbl_figconst_of( const char *value );
 const char * cbl_figconst_str( cbl_figconst_t fig );
 
-const char * consistent_encoding_check( const YYLTYPE& loc, const char input[] );
-
 class cbl_domain_elem_t {
   uint32_t length;
   const char *value;
@@ -186,16 +187,14 @@ class cbl_domain_elem_t {
   cbl_domain_elem_t()
     : length(0), value(NULL), is_numeric(false), all(false)
   {}
-  cbl_domain_elem_t( const YYLTYPE& loc,
-                     bool all,
+  cbl_domain_elem_t( bool all,
                      uint32_t length,
                      const char *value,
                      bool is_numeric = false )
     : length(length), value(value), is_numeric(is_numeric), all(all)
   {
     if( value && ! is_numeric ) {
-      auto s = consistent_encoding_check(loc, value);
-      if( s ) this->value = s;
+      this->value = value;
     }
   }
   const char *name() const { return value; }
@@ -206,12 +205,11 @@ struct cbl_domain_t {
   cbl_domain_elem_t first, last;
   cbl_domain_t() : first(), last(first)
   {}
-  cbl_domain_t( const YYLTYPE& loc,
-                bool all,
+  cbl_domain_t( bool all,
                 uint32_t length,
                 const char * value,
                 bool is_numeric = false )
-    : first(loc, all, length, value, is_numeric), last(first)
+    : first(all, length, value, is_numeric), last(first)
   {}
   cbl_domain_t( const cbl_domain_elem_t& a, const cbl_domain_elem_t& z )
     : first(a)
@@ -256,24 +254,38 @@ enum symbol_type_t {
 // the same.
 #define MAXIMUM_ALPHA_LENGTH 8192
 
-struct cbl_field_data_t {
+class cbl_field_data_t {
+  uint32_t nbyte;            // allocated space
+  struct orig_t {
+    bool all;
+    const char *data;
+    REAL_VALUE_TYPE value;
+    orig_t() : all(false), data(nullptr), value{} {}
+    explicit orig_t( const char *data, bool all = false )
+      : all(all), data(data), value{}
+    {}
+    explicit orig_t( REAL_VALUE_TYPE value )
+      : all(false), data(nullptr), value(value)
+    {}
+  } orig;
+public:
   uint32_t memsize;             // nonzero if larger subsequent redefining field
-  uint32_t capacity,            // allocated space
-           digits;              // magnitude: total digits (or characters)
+  uint32_t digits;              // magnitude: total digits (or characters)
   int32_t  rdigits;             // digits to the right
-  const char *orig, *initial, *picture;
-
-  enum etc_type_t { val88_e, upsi_e, value_e } etc_type;
+  const char *initial, *picture;
+  enum etc_type_t { no_value_e, val88_e, upsi_e, value_e } etc_type;
   const char *
   etc_type_str() const {
     switch(etc_type) {
     case val88_e: return "val88_e";
     case upsi_e: return "upsi_e";
-    case value_e: return "value_e";
+    case no_value_e: return "no value";
+    case  value_e: return  "value_e";
     }
     return "???";
   }
-  
+  bool etc_ok() const { return etc_type != no_value_e; }
+
   union etc_t {
     // "Domain" is an array representing the VALUE of CLASS or 88 type.
     struct val88_t {
@@ -288,43 +300,46 @@ struct cbl_field_data_t {
   } etc;
 
   cbl_field_data_t()
-    : memsize(0)
-    , capacity(0)
+    : nbyte(0)
+    , memsize(0)
     , digits(0)
     , rdigits(0)
-    , orig(0)
     , initial(0)
     , picture(0)
-    , etc_type(value_e)
+    , etc_type(no_value_e)
     , etc()
   {}
 
-  cbl_field_data_t( uint32_t memsize,  uint32_t capacity )
-    : memsize(memsize)
-    , capacity(capacity)
+  cbl_field_data_t( uint32_t memsize,  uint32_t nbyte )
+    : nbyte(nbyte)
+    , memsize(memsize)
     , digits(0)
     , rdigits(0)
-    , orig(0)
     , initial(0)
     , picture(0)
-    , etc_type(value_e)
+    , etc_type(no_value_e)
     , etc()
   {}
 
-  cbl_field_data_t( uint32_t memsize,  uint32_t capacity,
+  cbl_field_data_t( uint32_t memsize,  uint32_t nbyte,
                     uint32_t digits,  uint32_t rdigits,
                     const char *initial,
                     const char *picture = NULL ) 
-    : memsize(memsize)
-    , capacity(capacity)
+    : nbyte(nbyte)
+    , orig(initial)
+    , memsize(memsize)
     , digits(digits)
     , rdigits(rdigits)
-    , orig(0)
-    , initial(initial)
+    , initial(initial) // initial == data.orig.data
     , picture(picture)
-    , etc_type(value_e)
+    , etc_type(no_value_e)
     , etc()
   {}
+
+  inline uint32_t capacity( uint32_t size ) { return nbyte = size; }
+  inline uint32_t capacity() const          { return nbyte; }
+  
+  inline uint32_t add_capacity( uint32_t size ) { return nbyte += size; }
 
   cbl_field_data_t( const cbl_field_data_t& that ) {
     copy_self(that);
@@ -369,8 +384,50 @@ struct cbl_field_data_t {
     return etc.value = build_int_cst_type(integer_type_node, i);
   } 
 
+  tree_code value_type() const {
+    gcc_assert(etc_type == value_e);
+    tree_node *node = TREE_TYPE(etc.value);
+    tree_code  code = TREE_CODE(node);
+    return code;
+  }
+  bool value_is_float() const {
+    gcc_assert(etc_type == value_e);
+    tree_node *node = TREE_TYPE(etc.value);
+    return SCALAR_FLOAT_TYPE_P(node);
+  }
+  bool value_is_fixed() const {
+    gcc_assert(etc_type == value_e);
+    tree_node *node = TREE_TYPE(etc.value);
+    return FIXED_POINT_TYPE_P(node);
+  }
+  bool value_is_integer() const {
+    gcc_assert(etc_type == value_e);
+    tree_node *node = TREE_TYPE(etc.value);
+    return INTEGRAL_TYPE_P(node);
+  }
+
+  // verify is numeric and zero fraction 
+  std::pair<int64_t, bool> int64_of() const {
+    if( etc_type == value_e ) {
+      auto r = TREE_REAL_CST_PTR( value_of() );
+      auto n = real_to_integer(r);
+      REAL_VALUE_TYPE r2;
+      real_from_integer (&r2, VOIDmode, n, SIGNED);
+      // If the orginal value r is equal to r2, derived from its integer
+      // part n, then the fractional component is zero.
+      if( real_identical (r, &r2) ) {
+        return std::make_pair( int64_t(n), true );
+      }
+    }
+    return std::make_pair(int64_t(0), false);
+  }
+
+  bool has_initial_value() const {
+    return orig.data || etc_type != no_value_e;
+  }
+
   void set_real_from_capacity( REAL_VALUE_TYPE *r ) const {
-    real_from_integer (r, VOIDmode, capacity, SIGNED);
+    real_from_integer (r, VOIDmode, nbyte, SIGNED);
   }
 
   time_now_f time_func;
@@ -386,8 +443,8 @@ struct cbl_field_data_t {
   int32_t ldigits() const { return std::max(int(digits), int(digits - rdigits)); }
 
   cbl_field_data_t& valify() {
-    assert(initial);
-    std::string input(initial);
+    assert(orig.data);
+    std::string input(orig.data);
     if( decimal_is_comma() ) {
       std::replace(input.begin(), input.end(), ',', '.');
     }
@@ -409,48 +466,40 @@ struct cbl_field_data_t {
   }
   cbl_field_data_t& valify( const char *input ) {
     assert(input);
-    initial = input;
-    capacity = strlen(initial);
+    original(input);
     return valify();
   }
 
-  // If initial (of Numeric Edited) has any length but capacity, adjust it.  
-  bool manhandle_initial() {
-    assert(capacity > 0);
-    assert(initial != nullptr);
-    if( capacity < strlen(initial) ) {
-      char *p = const_cast<char*>(initial);
-      p[capacity] = '\0';
-      return true;
-    }
-    if( strlen(initial) < capacity ) {
-      auto tgt = reinterpret_cast<char *>( xmalloc(capacity + 1) );
-      auto pend = tgt + capacity;
-      auto p = std::copy(initial, initial + strlen(initial), tgt);
-      std::fill(p, pend, 0x20);
-      p = pend - 1;
-      *p = '\0';
-      initial = tgt;
-    }
-    return false;
-  }
-  bool initial_within_capacity() const {
-    return initial[capacity] == '\0'
-      ||   initial[capacity] == '!';
-  }
-  const char *original() const { return orig? orig : initial; }
+  bool all() const { return orig.data? orig.all : false; }
+  bool is_alpha_edited() const;
+  const char *original() const { return orig.data? orig.data : nullptr; }
+  const REAL_VALUE_TYPE& original_numeric() const { return orig.value; }
 
+  // Set the original string, and set the capacity to its length if nothing
+  // else already did.  This function is used only for VALUE numeric literal,
+  // to preserve the VALUE clause until the field is fully defined.
+  const char *original( const char *orig, bool all = false) {
+    if( nbyte == 0 ) nbyte = strlen(orig);
+    this->orig = orig_t( orig, all );
+    return this->orig.data;
+  }
+  // Set the computed cce value.  Do not impute capacity. 
+  void original( REAL_VALUE_TYPE value ) {
+    orig = orig_t(value);
+  }
  protected:
   cbl_field_data_t& copy_self( const cbl_field_data_t& that ) {
     memsize = that.memsize;
-    capacity = that.capacity;
+    nbyte = that.nbyte;
     digits = that.digits;
     rdigits = that.rdigits;
+    orig = that.orig;
     initial = that.initial;
     picture = that.picture;
     etc_type = that.etc_type;
 
     switch(etc_type) {
+      case no_value_e:
       case value_e:
         etc.value = that.etc.value;
         break;
@@ -552,6 +601,10 @@ struct cbl_subtable_t {
   size_t offset, isym;
 };
 
+const encodings_t *
+             __gg__encoding_iconv_descr( cbl_encoding_t encoding );
+const encodings_t *
+             __gg__encoding_iconv_descr( const char name[] );
 const char * __gg__encoding_iconv_name( cbl_encoding_t encoding );
 bool         __gg__encoding_iconv_valid( cbl_encoding_t encoding );
 
@@ -584,7 +637,37 @@ struct cbl_field_t {
   uint32_t level;
   cbl_occurs_t occurs;
   struct codeset_t {
-    static const encodings_t standard_internal, source_encodings[2], *source_encoding;
+    struct default_encodings_t {
+      friend bool cobol_alpha_encoding( const char name[] );
+      friend bool cobol_national_encoding( const char name[] );
+      encodings_t alpha, national;
+      const encodings_t possible_sources[2] = {}, *source = 0;
+      
+      default_encodings_t( const encodings_t& alpha,
+                           const std::vector<encodings_t>& possible_sources )
+        : alpha(alpha)
+        , national(alpha)
+      {
+        std::copy(possible_sources.begin(),
+                  possible_sources.end(),
+                  const_cast<encodings_t*>(this->possible_sources));
+        source = this->possible_sources;
+      }
+      const encodings_t *next_source_encoding() {
+        if( ++source < possible_sources + COUNT_OF(possible_sources) ) {
+          return source;
+        }
+        return nullptr;
+      }
+      const encodings_t *current_source_encoding() const {
+        return
+          source < possible_sources + COUNT_OF(possible_sources) ?
+          source : nullptr;
+      }
+
+    };
+    static default_encodings_t default_encodings;
+
     cbl_encoding_t encoding;
     size_t alphabet;  // unlikely
     explicit codeset_t(cbl_encoding_t encoding = custom_encoding_e,
@@ -592,10 +675,15 @@ struct cbl_field_t {
       : encoding(encoding), alphabet(alphabet)
     {}
     bool valid() const {
-      return
-        (alphabet == 0 && encoding != custom_encoding_e)
-        ||
-        (alphabet != 0 && encoding == custom_encoding_e);
+      switch(encoding) {
+      case no_encoding_e:
+        return false;
+      case custom_encoding_e:
+        return alphabet != 0;
+      default:
+        break;
+      }
+      return alphabet == 0;
     }
     bool consistent() const {
       return valid() && ( encoding == current_encoding('A')
@@ -604,12 +692,20 @@ struct cbl_field_t {
                           ||
                           encoding == UTF8_e );
     }
+    // set_explicit overrides an encoding inferred via e.g. PIC 999.
+    bool set_explicit( cbl_encoding_t encoding ) {
+      assert(valid_encoding(encoding));
+      this->encoding = encoding;
+      this->alphabet = 0;
+      return valid();
+    }
+    bool set_per_source() {
+      return set_explicit( default_encodings.source->type );
+    }
     bool set( cbl_encoding_t encoding, size_t alphabet = 0 ) {
       assert(valid_encoding(encoding));
       if( ! valid() ) { // setting first time
-        this->encoding = encoding;
-        this->alphabet = alphabet;
-        return valid();
+        return set_explicit(encoding);
       }
       return this->encoding == encoding && this->alphabet == alphabet;
     }
@@ -643,7 +739,8 @@ struct cbl_field_t {
     cbl_encoding_t set() const {
       return valid()? encoding : cbl_encoding_t(-1);
     }
-    const char *name() const {
+    uint8_t stride() const;
+    inline const char *name() const {
       return valid()? __gg__encoding_iconv_name(encoding) : "nocoding";
     }
   } codeset;
@@ -680,6 +777,19 @@ struct cbl_field_t {
     strcpy(this->name, name);
   }
 
+  cbl_field_t( cbl_field_type_t type, uint64_t attr,
+               const cbl_field_data_t& data,
+               uint32_t level, const cbl_name_t name, 
+               const cbl_field_t::codeset_t& codeset )
+    : offset(0), type(type), usage(FldInvalid), attr(attr)
+    , parent(0), our_index(0), level(level), codeset(codeset)
+    , line(0), name(""), file(0), data(data)
+    , var_decl_node(nullptr), data_decl_node(nullptr)
+  {
+    gcc_assert(strlen(name) < sizeof this->name);
+    strcpy(this->name, name);
+  }
+
   cbl_field_t( cbl_field_type_t type, uint32_t level, int line, uint64_t attr = 0 )
     : offset(0), type(type), usage(FldInvalid), attr(attr)
     , parent(0), our_index(0), level(level)
@@ -702,7 +812,7 @@ struct cbl_field_t {
   }
 
   bool is_valid() const {
-    return data.capacity > 0
+    return data.capacity() > 0
       || level == 88
       || level == 66
       || type == FldClass
@@ -728,7 +838,7 @@ struct cbl_field_t {
   }
 
   bool reasonable_capacity() const {
-    return data.capacity <= MAX_FIXED_POINT_DIGITS;
+    return data.capacity() <= MAX_FIXED_POINT_DIGITS * codeset.stride();
   }
 
   cbl_field_t& same_as( const cbl_field_t& that, bool is_typedef ) {
@@ -746,13 +856,18 @@ struct cbl_field_t {
     return *this;
   }
 
-  void report_invalid_initial_value(const YYLTYPE& loc) const;
+  bool report_invalid_initial_value(const YYLTYPE& loc) const;
 
   bool is_ascii() const;
   bool is_integer() const { return is_numeric(type) && data.rdigits == 0; }
 
   bool is_binary_integer() const {
     return type == FldNumericBinary || type == FldNumericBin5;
+  }
+
+  bool is_numeric_constant() const {
+    return type == FldLiteralN
+      || (type == FldFloat && has_attr(constant_e));
   }
 
   HOST_WIDE_INT as_integer() const {
@@ -764,7 +879,7 @@ struct cbl_field_t {
 
     type = FldNumericBin5;
     attr |= embiggened_e;
-    data.capacity = eight;
+    data.capacity(eight);
     data.digits = 0;
   }
 
@@ -783,7 +898,15 @@ struct cbl_field_t {
 
   bool has_subordinate( const cbl_field_t *that ) const;
 
-  const char * internalize();
+  uint32_t char_capacity() const;
+  void set_capacity(size_t cap);
+  void add_capacity(size_t cap);
+  void set_initial( const cbl_loc_t& loc );
+  void set_initial( size_t nchar, const cbl_loc_t& loc = cbl_loc_t() );
+  size_t source_code_check(const void *initial, size_t length);
+  const char * encode( size_t, cbl_loc_t loc = cbl_loc_t());
+  void encode_numeric( const char input[], cbl_loc_t loc,
+                       const REAL_VALUE_TYPE& rvt = {});
   const char *value_str() const;
 
   bool is_key_name() const { return has_attr(record_key_e); }
@@ -792,7 +915,7 @@ struct cbl_field_t {
     return data.digits?
       long(data.digits) - data.rdigits
       :
-      data.capacity;
+      data.capacity();
   }
   uint32_t size() const; // table capacity or capacity
 
@@ -804,6 +927,7 @@ struct cbl_field_t {
   inline const char * level_str() const {
     return level_str(level);
   }
+  void blank_initial( size_t len, cbl_figconst_t figconst = normal_value_e );
 };
 
 const cbl_field_t * cbl_figconst_field_of( const char *value );
@@ -1374,12 +1498,18 @@ struct label_cmp_lessthan {
 
 size_t field_index( const cbl_field_t *f );
 
+cbl_field_t * new_literal_float( const cbl_loc_t& loc, const char initial[] );
+
 cbl_field_t * new_temporary( enum cbl_field_type_t type,
                              const char initial[] = NULL,
-                             bool attr = false );
+                             cbl_field_attr_t = none_e );
 cbl_field_t * new_temporary_like( cbl_field_t skel );
 cbl_field_t * new_temporary_clone( const cbl_field_t *orig);
 cbl_field_t * keep_temporary( cbl_field_type_t type );
+
+cbl_field_t * new_literal_2( uint32_t len, const char initial[],
+                             cbl_field_attr_t attr,
+                             cbl_encoding_t encoding = ASCII_e );
 
 cbl_field_t * new_literal( uint32_t len, const char initial[],
                            cbl_field_attr_t attr,
@@ -1391,19 +1521,34 @@ new_literal( uint32_t len, const char initial[] ) {
 }
 
 void symbol_temporaries_free();
+void symbol_temporary_location( const cbl_field_t *field,
+                                const cbl_loc_t& loc);
+cbl_loc_t symbol_temporary_location( const cbl_field_t *field );
 
 class temporaries_t {
-  friend void symbol_temporaries_free();
-  struct literal_an {
+  friend void symbol_temporaries_free();    
+  friend void symbol_temporary_location( const cbl_field_t *field,
+                                         const cbl_loc_t& loc);
+  friend cbl_loc_t symbol_temporary_location( const cbl_field_t *field );
+
+  class literal_an {
     bool is_quoted, is_verbatim; // verbatim: don't use codeset
+   public:
     std::string value;
     literal_an() : is_quoted(false), is_verbatim(false), value("???") {}
     literal_an( const char value[], bool is_quoted, bool is_verbatim = false )
       : is_quoted(is_quoted), is_verbatim(is_verbatim), value(value) {}
+    literal_an( size_t len, const char value[] )
+      : is_quoted(true), is_verbatim(false), value(value, len)
+    {
+      gcc_assert(0 < len);
+      gcc_assert(value[len-1] == '\0');
+      gcc_assert(this->value.back() == '\0');
+    }
     literal_an( const literal_an& that )
-      : is_quoted(that.is_quoted),
-        is_verbatim(that.is_verbatim),
-        value(that.value)
+      : is_quoted(that.is_quoted)
+      , is_verbatim(that.is_verbatim)
+      , value(that.value)
     {}
     literal_an& operator=( const literal_an& that ) {
       is_quoted = that.is_quoted;
@@ -1413,16 +1558,21 @@ class temporaries_t {
     }
     bool operator<( const literal_an& that ) const {
       if( value == that.value ) { // alpha before numeric
-        if( is_quoted == that.is_quoted ) { // verbatim before not
-          return (is_verbatim? 0 : 1)  < (that.is_verbatim? 0 : 1);
+        if( is_quoted == that.is_quoted ) { // non-verbatim first
+          return that.is_verbatim;
         }
-        return (is_quoted? 0 : 1)  < (that.is_quoted? 0 : 1);
+        return that.is_quoted; // unquoted first
       }
       return value < that.value;
+    }
+    bool terminated() const {
+      // Z strings include the NUL terminator.   
+      return !is_verbatim && is_quoted && !value.empty() && '\0' == value.back();
     }
   };
 
   std::map<literal_an, cbl_field_t *> literals;
+  std::map<const cbl_field_t*, cbl_loc_t> locs;
   typedef std::set<cbl_field_t *> fieldset_t;
   typedef std::map<cbl_field_type_t, fieldset_t> fieldmap_t;
   fieldmap_t used, freed;
@@ -2039,6 +2189,8 @@ struct symbol_elem_t {
   }
 };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-offsetof"
 # define offsetof(TYPE, MEMBER)  __builtin_offsetof (TYPE, MEMBER)
 
 static inline symbol_elem_t *
@@ -2110,6 +2262,7 @@ symbol_elem_of( const cbl_field_t *field ) {
     // cppcheck-suppress cstyleCast
     reinterpret_cast<const symbol_elem_t *>((const char*)field - n);
 }
+#pragma GCC diagnostic pop
 
 symbol_elem_t * symbols_begin( size_t first = 0 );
 symbol_elem_t * symbols_end(void);
@@ -2307,7 +2460,7 @@ struct cbl_until_addresses_t {
 
 size_t symbol_index(); // nth after first program symbol
 size_t symbol_index( const symbol_elem_t *e );
-size_t symbol_unique_index( const struct symbol_elem_t *e );
+uint64_t symbol_unique_index( const struct symbol_elem_t *e );
 
 struct symbol_elem_t * symbol_at( size_t index );
 
@@ -2899,6 +3052,8 @@ const char * symbol_type_str( enum symbol_type_t type );
 const char * cbl_field_type_str( enum cbl_field_type_t type );
 const char * cbl_logop_str( enum logop_t op );
 
+const char * cbl_field_type_name( enum cbl_field_type_t type ); // for messages
+
 static inline const char *
 refer_type_str( const cbl_refer_t *r ) {
   return r && r->field? cbl_field_type_str(r->field->type) : "(none)";
@@ -2922,5 +3077,7 @@ void gcc_location_set( const LOC& loc );
 size_t count_characters(const char *in, size_t length);
 
 void current_enabled_ecs( tree ena );
+
+bool validate_numeric_edited(cbl_field_t *field);
 
 #endif

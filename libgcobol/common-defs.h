@@ -60,7 +60,7 @@
 
 /*  COBOL has the concept of Numeric Display values, which use an entire byte
     per digit.  IBM also calls this "Zoned Decimal".
-    
+
     In ASCII, the digits are '0' through '9' (0x30 through 0x39'.  Signed
     values are indicated by turning on the 0x40 bit in either the first
     byte (for LEADING variables) or the last byte (for TRAILING).
@@ -187,49 +187,49 @@ enum cbl_field_type_t {
  *   (But maybe the fill character should just be an explicit character.)
  */
 enum cbl_field_attr_t : uint64_t {
-  none_e            = 0x0000000000,
-  figconst_1_e      = 0x0000000001, // This needs to be 1 - don't change the position
-  figconst_2_e      = 0x0000000002, // This needs to be 2
-  figconst_4_e      = 0x0000000004, // This needs to be 4
-  rjust_e           = 0x0000000008, // justify right
-  ljust_e           = 0x0000000010, // justify left
-  zeros_e           = 0x0000000020, // zero fill
-  signable_e        = 0x0000000040,
-  constant_e        = 0x0000000080, // pre-assigned constant
-  function_e        = 0x0000000100,
-  quoted_e          = 0x0000000200,
-  filler_e          = 0x0000000400,
-  register_e        = 0x0000000800, // Data definition is found in constants.cc
-  intermediate_e    = 0x0000001000, // Compiler-defined temporary variable
-  embiggened_e      = 0x0000002000, // redefined numeric made 64-bit by USAGE POINTER
-  all_alpha_e       = 0x0000004000, // FldAlphanumeric, but all A's
-  all_x_e           = 0x0000008000, // picture is all X's
-  all_ax_e          = 0x000000a000, // picture is all A's or all X's
-  prog_ptr_e        = 0x0000010000, // FUNCTION-POINTER or PROGRAM-POINTER
-  scaled_e          = 0x0000020000,
-  refmod_e          = 0x0000040000, // Runtime; indicates a refmod is active
-  based_e           = 0x0000080000, // pointer capacity, for ADDRESS OF or ALLOCATE
-  any_length_e      = 0x0000100000, // inferred length of linkage in nested program
-  global_e          = 0x0000200000, // field has global scope
-  external_e        = 0x0000400000, // field has external scope
-  blank_zero_e      = 0x0000800000, // BLANK WHEN ZERO
+  none_e            =  0x0000000000,
+  figconst_1_e      =  0x0000000001, // This needs to be 1 - don't change the position
+  figconst_2_e      =  0x0000000002, // This needs to be 2
+  figconst_4_e      =  0x0000000004, // This needs to be 4
+  rjust_e           =  0x0000000008, // justify right
+  ljust_e           =  0x0000000010, // justify left
+  zeros_e           =  0x0000000020, // zero fill
+  signable_e        =  0x0000000040,
+  constant_e        =  0x0000000080, // pre-assigned constant
+  function_e        =  0x0000000100,
+  quoted_e          =  0x0000000200,
+  filler_e          =  0x0000000400,
+  register_e        =  0x0000000800, // Data definition is found in constants.cc
+  intermediate_e    =  0x0000001000, // Compiler-defined temporary variable
+  embiggened_e      =  0x0000002000, // redefined numeric made 64-bit by USAGE POINTER
+  all_alpha_e       =  0x0000004000, // FldAlphanumeric, but all A's
+  all_x_e           =  0x0000008000, // picture is all X's
+  all_ax_e          =  0x000000a000, // picture is all A's or all X's
+  prog_ptr_e        =  0x0000010000, // FUNCTION-POINTER or PROGRAM-POINTER
+  scaled_e          =  0x0000020000,
+  refmod_e          =  0x0000040000, // Runtime; indicates a refmod is active
+  based_e           =  0x0000080000, // pointer capacity, for ADDRESS OF or ALLOCATE
+  any_length_e      =  0x0000100000, // inferred length of linkage in nested program
+  global_e          =  0x0000200000, // field has global scope
+  external_e        =  0x0000400000, // field has external scope
+  blank_zero_e      =  0x0000800000, // BLANK WHEN ZERO
   // data division uses 2 low bits of high byte
-  linkage_e         = 0x0001000000, // field is in linkage section
-  local_e           = 0x0002000000, // field is in local section
-  leading_e         = 0x0004000000, // leading sign (signable_e alone means trailing)
-  separate_e        = 0x0008000000, // separate sign
-  envar_e           = 0x0010000000, // names an environment variable
-  encoded_e         = 0x0020000000, // data.initial matches codeset.encoding
-  bool_encoded_e    = 0x0040000000, // data.initial is a boolean string
-  hex_encoded_e     = 0x0080000000, // data.initial is a hex-encoded string
-  depends_on_e      = 0x0100000000, // A group hierachy contains a DEPENDING_ON
-  initialized_e     = 0x0200000000, // Don't call parser_initialize from parser_symbol_add
-  has_value_e       = 0x0400000000, // Flag to hierarchical descendents to ignore .initial
-  ieeedec_e         = 0x0800000000, // Indicates a FldFloat is IEEE 754 decimal, rather than binary
-  big_endian_e      = 0x1000000000, // Indicates a value is big-endian
-  same_as_e         = 0x2000000000, // Field produced by SAME AS (cannot take new members)
-  record_key_e      = 0x4000000000,
-  typedef_e         = 0x8000000000, // IS TYPEDEF
+  linkage_e         =  0x0001000000, // field is in linkage section
+  local_e           =  0x0002000000, // field is in local section
+  leading_e         =  0x0004000000, // leading sign (signable_e alone means trailing)
+  separate_e        =  0x0008000000, // separate sign
+  envar_e           =  0x0010000000, // names an environment variable
+  encoded_e         =  0x0020000000, // data.initial matches codeset.encoding
+  bool_encoded_e    =  0x0040000000, // data.initial is a boolean string
+  hex_encoded_e     =  0x0080000000, // data.initial is a hex-encoded string
+  depends_on_e      =  0x0100000000, // A group hierachy contains a DEPENDING_ON
+  initialized_e     =  0x0200000000, // Don't call parser_initialize from parser_symbol_add
+  has_value_e       =  0x0400000000, // Flag to hierarchical descendents to ignore .initial
+  ieeedec_e         =  0x0800000000, // Indicates a FldFloat is IEEE 754 decimal, rather than binary
+  big_endian_e      =  0x1000000000, // Indicates a value is big-endian
+  same_as_e         =  0x2000000000, // Field produced by SAME AS (cannot take new members)
+  record_key_e      =  0x4000000000,
+  typedef_e         =  0x8000000000, // IS TYPEDEF
   strongdef_e       = typedef_e + intermediate_e, // STRONG TYPEDEF (not temporary)
 };
 // The separate_e value does double-duty for FldPacked/COMP-6, which is not
@@ -239,7 +239,13 @@ enum cbl_field_attr_t : uint64_t {
 // that there is no sign nybble.
 #define packed_no_sign_e separate_e
 
-enum cbl_figconst_t
+#define LOW_VALUE_E   figconst_1_e
+#define ZERO_VALUE_E  (figconst_2_e|figconst_1_e)
+#define SPACE_VALUE_E figconst_4_e
+#define QUOTE_VALUE_E  (figconst_4_e|figconst_1_e)
+#define HIGH_VALUE_E  (figconst_4_e|figconst_2_e)
+
+enum cbl_figconst_t : uint64_t
     {
     normal_value_e = 0, // This one must be zero
     low_value_e    = 1, // The order is important, because
@@ -431,6 +437,18 @@ enum module_type_t {
   module_toplevel_e,
 };
 
+enum convert_type_t {
+  convert_alpha_e      = 0x01,
+  convert_nat_e        = 0x02,
+  convert_any_e        = 0x03, // i.e., both
+  convert_byte_e       = 0x04,
+  convert_hex_e        = 0x08, // may be combined with alpha or national
+  convert_just_bit_e   = 0x10,
+  convert_just_e       = 0x18, // combined with HEX
+  convert_rjust_bit_e  = 0x20,
+  convert_rjust_e      = 0x38, // combined with JUSTIFY
+};
+
 /*
  * Compare a "raised" EC to an enabled EC or of a declarative.  "raised" may in
  * fact not be raised; in the compiler this function is used to compare a TURN
@@ -490,7 +508,8 @@ struct cbl_declarative_t {
   size_t section; // implies program
   bool global;
   ec_type_t type;
-  uint32_t nfile, files[files_max];
+  size_t nfile;
+  uint64_t files[files_max];
   cbl_file_mode_t mode;
 
   explicit cbl_declarative_t( cbl_file_mode_t mode = file_mode_none_e )
@@ -545,6 +564,7 @@ struct cbl_declarative_t {
 
   /*
    * Sort file names before file modes, and file modes before non-IO.
+   * Sort file names before file modes, and file modes before non-IO.
    */
   bool operator<( const cbl_declarative_t& that ) const {
     // file name declaratives first, in section order
@@ -566,7 +586,7 @@ struct cbl_declarative_t {
 
     // TRUE if there are no files to match, or the provided file is in the list.
     bool match_file( size_t file ) const {
-    static const uint32_t * pend = files + nfile;
+    static const uint64_t * pend = files + nfile;
 
     return nfile == 0 || pend != std::find(files, files + nfile, file);
   }

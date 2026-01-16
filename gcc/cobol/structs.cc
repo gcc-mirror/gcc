@@ -216,15 +216,15 @@ create_cblc_file_t()
     // When doing FILE I/O, you need the cblc_file_t structure
 
     /*
-typedef struct cblc_file_t
+typedef struct cblc_file_t*
     {
     char                *name;             // This is the name of the structure; might be the name of an environment variable
-    size_t               symbol_index;     // The symbol table index of the related cbl_file_t structure
+    uint64_t             symbol_index;     // The symbol table index of the related cbl_file_t structure
     char                *filename;         // The name of the file to be opened
     FILE                *file_pointer;     // The FILE *pointer
     cblc_field_t        *default_record;   // The record_area
-    size_t               record_area_min;  // The size of the smallest 01 record in the FD
-    size_t               record_area_max;  // The size of the largest  01 record in the FD
+    size_t               record_area_min;  // The size of the smallest 01 record in the FD, in characters
+    size_t               record_area_max;  // The size of the largest  01 record in the FD, in characters
     cblc_field_t       **keys;             // For relative and indexed files.  The first is the primary key. Null-terminated.
     int                 *key_numbers;      // One per key -- each key has a number. This table is key_number + 1
     int                 *uniques;          // One per key
@@ -243,7 +243,8 @@ typedef struct cblc_file_t
     int                  errnum;           // most recent errno; can't reuse "errno" as the name
     file_status_t        io_status;        // See 2014 standard, section 9.1.12
     int                  padding;          // Actually a char
-    int                  delimiter;        // ends a record; defaults to '\n'.
+    cbl_char_t           delimiter;        // ends a record; defaults to '\n'.
+    int                  stride();         // width of a character
     int                  flags;            // cblc_file_flags_t
     int                  recent_char;      // This is the most recent char sent to the file
     int                  recent_key;
@@ -258,7 +259,7 @@ typedef struct cblc_file_t
     retval = gg_get_filelevel_struct_type_decl( "cblc_file_t",
                                             33,
                                             CHAR_P,    "name",
-                                            SIZE_T,    "symbol_table_index",
+                                            ULONGLONG, "symbol_table_index",
                                             CHAR_P,    "filename",
                                             FILE_P,    "file_pointer",
                                             cblc_field_p_type_node, "default_record",
@@ -282,9 +283,10 @@ typedef struct cblc_file_t
                                             INT,       "errnum",
                                             INT,       "io_status",
                                             INT,       "padding",
-                                            INT,       "delimiter",
+                                            UINT,      "delimiter",
+                                            INT,       "stride",
                                             INT,       "flags",
-                                            INT,       "recent_char",
+                                            UINT,      "recent_char",
                                             INT,       "recent_key",
                                             INT,       "prior_op",
                                             INT,       "encoding", // Actually cbl_encoding_t

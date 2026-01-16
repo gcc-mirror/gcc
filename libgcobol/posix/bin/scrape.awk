@@ -12,6 +12,7 @@
   exit
 }
 
+# Print lines that end in dots, a comma, a brace, or a semicolon.
 /SYNOPSIS/,/DESCRIPTION/ {
   if( /([.][.]|[{},;]) *$/ ) {
     print

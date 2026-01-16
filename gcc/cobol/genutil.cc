@@ -295,7 +295,7 @@ get_any_capacity(cbl_field_t *field)
     }
   else
     {
-    return build_int_cst_type(SIZE_T, field->data.capacity);
+    return build_int_cst_type(SIZE_T, field->data.capacity());
     }
   }
 
@@ -316,6 +316,11 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
   const cbl_enabled_exceptions_t&
                                 enabled_exceptions( cdf_enabled_exceptions() );
 
+  // These calculations are based on position within the field, so offset and
+  // length have to be multiplied by the stride of the encoding:
+  const charmap_t *charmap = __gg__get_charmap(refer.field->codeset.encoding);
+  tree stride = build_int_cst_type(LONG, charmap->stride());
+
   if( !enabled_exceptions.match(ec_bound_ref_mod_e) )
     {
     // This is normal operation -- no exception checking.  Thus, we won't
@@ -327,6 +332,7 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
                       refer.refmod.from->field,
                       refer_offset(*refer.refmod.from));
     gg_decrement(refstart);
+    gg_assign(refstart, gg_multiply(refstart, stride));
 
     if( refer.refmod.len )
       {
@@ -334,12 +340,16 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
       get_integer_value(reflen,
                         refer.refmod.len->field,
                         refer_offset(*refer.refmod.len));
+      // Modify refer.length by stride:
+      gg_assign(reflen, gg_multiply(reflen, stride));
       }
     else
       {
       // The length was not specified, so we need to return the distance
       // between refmod.from and the end of the field:
-      gg_assign(reflen, gg_subtract( get_any_capacity(refer.field), refstart) );
+      gg_assign(reflen,
+                gg_subtract( get_any_capacity(refer.field),
+                                     refstart) );
       }
     return;
     }
@@ -366,6 +376,7 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
 
   // Make refstart zero-based:
   gg_decrement(refstart);
+  gg_assign(refstart, gg_multiply(refstart, stride));
 
   IF( refstart, lt_op, build_int_cst_type(LONG, 0 ) )
     {
@@ -374,16 +385,18 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
     gg_assign(refstart, gg_cast(LONG, integer_zero_node));
     // Set reflen to one here, because otherwise it won't be established.
     gg_assign(reflen, gg_cast(TREE_TYPE(reflen), integer_one_node));
+    gg_assign(reflen, gg_multiply(reflen, stride));
     }
   ELSE
     {
     IF( refstart, gt_op, gg_cast(TREE_TYPE(refstart), get_any_capacity(refer.field)) )
       {
-      // refstart greater than zero is an error condition:
+      // refstart greater than capacity is an error condition:
       set_exception_code(ec_bound_ref_mod_e);
       gg_assign(refstart, gg_cast(LONG, integer_zero_node));
       // Set reflen to one here, because otherwise it won't be established.
       gg_assign(reflen, gg_cast(TREE_TYPE(reflen), integer_one_node));
+      gg_assign(reflen, gg_multiply(reflen, stride));
       }
     ELSE
       {
@@ -393,6 +406,7 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
                           refer.refmod.len->field,
                           refer_offset(*refer.refmod.len),
                           CHECK_FOR_FRACTIONAL_DIGITS);
+        gg_assign(reflen, gg_multiply(reflen, stride));
         IF( var_decl_rdigits,
             ne_op,
             integer_zero_node )
@@ -400,6 +414,7 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
           // length is not an integer, which is an error condition
           set_exception_code(ec_bound_ref_mod_e);
           gg_assign(reflen, gg_cast(LONG, integer_one_node));
+          gg_assign(reflen, gg_multiply(reflen, stride));
           gg_assign(var_decl_rdigits, integer_zero_node);
           }
         ELSE
@@ -410,6 +425,7 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
             // length is too small, which is an error condition.
             set_exception_code(ec_bound_ref_mod_e);
             gg_assign(reflen, gg_cast(LONG, integer_one_node));
+            gg_assign(reflen, gg_multiply(reflen, stride));
             }
           ELSE
             {
@@ -431,6 +447,7 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
               // as the TODO item.
               gg_assign(refstart, gg_cast(LONG, integer_zero_node));
               gg_assign(reflen, gg_cast(LONG, integer_one_node));
+              gg_assign(reflen, gg_multiply(reflen, stride));
               }
             ELSE
               {
@@ -442,6 +459,8 @@ get_and_check_refstart_and_reflen(  tree         refstart,// LONG returned value
             ENDIF
           }
           ENDIF
+        // Modify the length calculation for stride:
+        //gg_assign(reflen, gg_multiply(reflen, stride));
         }
       else
         {
@@ -578,7 +597,7 @@ get_data_offset(const cbl_refer_t &refer,
 
     // We need to start with the rightmost subscript, and work our way up through
     // our parents.  As we find each parent with an OCCURS, we increment qual_data
-    // by (subscript-1)*An->data.capacity
+    // by (subscript-1)*An->data.capacity()
 
     // Establish the field_t pointer for walking up through our ancestors:
     cbl_field_t *parent = refer.field;
@@ -788,6 +807,9 @@ get_binary_value( tree value,
     case FldNumericDisplay:
       {
       Analyzer.Message("FldNumericDisplay");
+      const charmap_t *charmap = __gg__get_charmap(field->codeset.encoding);
+      int stride = charmap->stride();
+
       // Establish the source
       tree source_address = get_data_address(field, field_offset);
 
@@ -859,8 +881,8 @@ get_binary_value( tree value,
                 // The final byte is '+' or '-'
                 gg_assign(signp,
                           gg_add(source_address,
-                                build_int_cst_type( SIZE_T,
-                                                    field->data.digits)));
+                                build_int_cst_type(SIZE_T,
+                                                  field->data.digits*stride)));
                 }
               }
             else
@@ -877,7 +899,7 @@ get_binary_value( tree value,
                 gg_assign(signp,
                           gg_add(source_address,
                                 build_int_cst_type( SIZE_T,
-                                                    field->data.digits-1)));
+                                              (field->data.digits-1)*stride)));
                 }
               }
             }
@@ -913,7 +935,7 @@ get_binary_value( tree value,
       tree source = get_data_address(field, field_offset);
 
       size_t dest_nbytes   = gg_sizeof(value);
-      size_t source_nbytes = field->data.capacity;
+      size_t source_nbytes = field->data.capacity();
 
       if( debugging )
         {
@@ -1014,7 +1036,7 @@ get_binary_value( tree value,
         }
       tree source_address = get_data_address(field, field_offset);
       tree dest_type = TREE_TYPE(value);
-      tree source_type = tree_type_from_size( field->data.capacity,
+      tree source_type = tree_type_from_size( field->data.capacity(),
                                               field->attr & signable_e);
       if( debugging && rdigits)
         {
@@ -1045,7 +1067,7 @@ get_binary_value( tree value,
                                     get_data_address( field,
                                                       field_offset),
                                     build_int_cst_type(INT,
-                                                      field->data.capacity),
+                                                      field->data.capacity()),
                                     NULL_TREE)));
       break;
       }
@@ -1096,7 +1118,7 @@ static tree
 tree_type_from_field(const cbl_field_t *field)
   {
   gcc_assert(field);
-  return tree_type_from_size(field->data.capacity, field->attr & signable_e);
+  return tree_type_from_size(field->data.capacity(), field->attr & signable_e);
   }
 
 tree
@@ -1566,7 +1588,7 @@ copy_little_endian_into_place(cbl_field_t *dest,
     }
   scale_by_power_of_ten_N(value, dest->data.rdigits - rhs_rdigits);
 
-  tree dest_type = tree_type_from_size( dest->data.capacity,
+  tree dest_type = tree_type_from_size( dest->data.capacity(),
                                         dest->attr & signable_e);
   tree dest_pointer = gg_add(member(dest->var_decl_node, "data"),
                              dest_offset);
@@ -1740,23 +1762,23 @@ char *
 get_literal_string(cbl_field_t *field)
   {
   assert(field->type == FldLiteralA);
-  size_t buffer_length = field->data.capacity+1;
+  size_t buffer_length = field->data.capacity()+1;
   char *buffer = static_cast<char *>(xcalloc(1, buffer_length));
 
   size_t charsout;
   const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
                                      field->codeset.encoding,
-                                     field->data.initial,
-                                     field->data.capacity,
+                                     field->data.original(),
+                                     field->data.capacity(),
                                      &charsout);
-  memcpy(buffer, converted, field->data.capacity+1);
+  memcpy(buffer, converted, field->data.capacity()+1);
   return buffer;
   }
 
 bool
 refer_is_clean(const cbl_refer_t &refer)
   {
-  if( !refer.field || refer.field->type == FldLiteralN )
+    if( !refer.field || refer.field->is_numeric_constant() )
     {
     // It is routine for a refer to have no field.  It happens when the parser
     // passes us a refer for an optional parameter that has been omitted, for
@@ -1766,7 +1788,7 @@ refer_is_clean(const cbl_refer_t &refer)
     // like.
     return true;
     }
-
+    
   return     !refer.all
           && !refer.addr_of
           && !refer.nsubscript()
@@ -1818,7 +1840,8 @@ refer_fill_depends(const cbl_refer_t &refer)
   // We multiply the ODO value by the size of the data capacity to get the
   // shortened length:
 
-  tree mult_expr = gg_multiply( build_int_cst_type(TREE_TYPE(value64), odo->data.capacity),
+  tree mult_expr = gg_multiply( build_int_cst_type(TREE_TYPE(value64),
+                                                   odo->data.capacity()),
                                 value64 );
 
   // And we add that to the distance from the requested variable to the odo
@@ -1918,8 +1941,6 @@ refer_size_source(const cbl_refer_t &refer)
 
       */
 
-  // This test has to be here, otherwise there are failures in regression
-  // testing.
   if( !refer.field )
     {
     return size_t_zero_node;

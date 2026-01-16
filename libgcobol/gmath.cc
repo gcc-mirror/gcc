@@ -1097,7 +1097,7 @@ __gg__subtractf1_float_phase2(cbl_arith_format_t ,
   const size_t       *C_s = __gg__treeplet_3s;
 
   bool on_size_error = !!(on_error_flag & ON_SIZE_ERROR);
-  // This is the assignment phase of an ADD Format 2
+  // This is the assignment phase of an SUBTRACT Format 2
   // We take phase1_result and subtract it from C
 
   GCOB_FP128 temp = __gg__float128_from_qualified_field(C[0], C_o[0], C_s[0]);
@@ -1135,11 +1135,10 @@ __gg__subtractf2_float_phase1(cbl_arith_format_t ,
                           compute_error
                           );
 
-  // Subtract that from the B value:
+  // Subtract that subtotal from the B value:
   GCOB_FP128 value_b = __gg__float128_from_qualified_field(B[0], B_o[0], B_s[0]);
 
-  // The two numbers have the same number of rdigits.  It's now safe to add
-  // them.
+
   phase1_result_float = subtraction_helper_float(value_b, phase1_result_float, compute_error);
   }
 
@@ -1366,7 +1365,7 @@ __gg__multiplyf1_phase2(cbl_arith_format_t ,
     {
     if( C[0]->type == FldFloat )
       {
-      // gixed * float
+      // fixed * float
       a_value = (GCOB_FP128) multiply_intermediate_int128;
       if( multiply_intermediate_rdigits )
         {

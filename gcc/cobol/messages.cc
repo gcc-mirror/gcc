@@ -138,11 +138,14 @@ std::set<cbl_diag_t> cbl_diagnostics {
 
   { MfBinaryLongLong, "-Wbinary-long-long", diagnostics::kind::error, dialect_mf_gnu },
   { MfCallGiving, "-Wcall-giving", diagnostics::kind::error, dialect_mf_gnu },
+  { MfCallLiteral, "-Wcall-literal", diagnostics::kind::error, dialect_mf_e },
   { MfCdfDollar, "-Wcdf-dollar", diagnostics::kind::error, dialect_mf_gnu },
   { MfComp6, "-Wcomp-6", diagnostics::kind::error, dialect_mf_gnu },
   { MfCompX, "-Wcomp-x", diagnostics::kind::error, dialect_mf_gnu },
-  { MfLevel_1_Occurs, "Wlevel-1-occurs", diagnostics::kind::error, dialect_mf_gnu },
+  { MfLevel_1_Occurs, "-Wlevel-1-occurs", diagnostics::kind::error, dialect_mf_gnu },
   { MfLevel78, "-Wlevel-78", diagnostics::kind::error, dialect_mf_gnu },
+  { MfAnyLength, "-Wany-length", diagnostics::kind::error, dialect_mf_gnu },
+  { MfMoveIndex, "-Wmove-index", diagnostics::kind::error, dialect_gnu_e },
   { MfMovePointer, "-Wmove-pointer", diagnostics::kind::error, dialect_mf_gnu },
   { MfReturningNum, "-Wreturning-number", diagnostics::kind::error, dialect_mf_gnu },
   { MfUsageTypename, "-Wusage-typename", diagnostics::kind::error, dialect_mf_gnu },
@@ -221,17 +224,6 @@ cbl_diagnostic_kind( cbl_diag_id_t id, diagnostics::kind kind ) {
   return false;
 }
 
-bool
-cbl_diagnostic_kind( cbl_dialect_t dialect, diagnostics::kind kind ) {
-  bool ok = true;
-  for( auto diag : cbl_diagnostics ) {
-    if( diag.dialect == dialect ) {
-      if( ! cbl_diagnostic_kind(diag.id, kind) ) ok = false;
-    }
-  }
-  return ok;
-}
-
 void
 cobol_warning( cbl_diag_id_t id, int yn, bool warning_as_error ) {
   gcc_assert( 0 <= yn && yn <= 1 );
@@ -244,6 +236,33 @@ cobol_warning( cbl_diag_id_t id, int yn, bool warning_as_error ) {
   }
   
   cbl_diagnostic_kind(id, kind);
+}
+
+/*
+ * Set diagnostics associated with a dialog to be ignored, because the
+ * constructs are valid for that dialog.  We cannot use cbl_diagnostic_kind()
+ * for this purpose because it modified the std::set that we're iterating over.
+ */
+void
+cobol_warning_suppress( cbl_dialect_t dialect ) {
+  std::set<cbl_diag_t> modified;
+
+  for( auto diag : cbl_diagnostics ) {
+    if( diag.dialect & dialect ) {
+      switch(diag.id) {
+      case IbmSectionNegE:
+      case IbmSectionRangeE:
+      case IbmSectionSegmentW:
+        break; // do not suppress
+      default:
+        diag.kind = diagnostics::kind::ignored;
+        break;
+      }
+    }
+    modified.insert(diag);
+  }
+  cbl_diagnostics.clear();
+  cbl_diagnostics.insert(modified.begin(), modified.end());
 }
 
 static inline const char *

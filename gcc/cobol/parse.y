@@ -132,6 +132,23 @@ class locale_tgt_t {
       }
       return true;
     }
+    cbl_encoding_t encode_as() const {
+      switch(prefix[0]) {
+      case '\0':
+      case 'X': 
+      case 'Z': 
+        return current_encoding('A');
+      case 'N': 
+        return current_encoding('N');
+      default:
+        dbgmsg("no such prefix '%s'", prefix);
+        if( prefix[0] != ftoupper(prefix[0]) ) {
+          gcc_unreachable();
+        }
+        break;
+      }
+      gcc_unreachable();
+    }
   };
 
   struct acrc_t { // Abbreviated combined relation condition
@@ -238,7 +255,7 @@ class locale_tgt_t {
 
   struct cbl_field_t;
   static inline cbl_field_t *
-  new_literal( const char initial[], enum radix_t radix );
+  new_literal( const cbl_loc_t loc, const char initial[], enum radix_t radix );
 #pragma GCC diagnostic pop
 
   enum select_clause_t {
@@ -716,7 +733,7 @@ class locale_tgt_t {
 
 %type   <field_data>    value78
 %type   <field>         literal name nume typename
-%type   <field>         num_literal signed_literal
+%type   <field>         num_constant num_literal signed_literal
 
 %type	<number>	perform_start
 %type   <refer>         perform_times
@@ -750,7 +767,7 @@ class locale_tgt_t {
 %type   <refer>         advancing  advance_by
 %type   <refer>         alphaval alpha_val numeref scalar scalar88
 %type   <refer>         tableref tableish
-%type   <refer>         varg varg1 varg1a
+%type   <refer>         varg varg1 varg1a start_after start_pos
 %type   <refer>         expr expr_term compute_expr free_tgt by_value_arg
 %type   <refer>         move_tgt selected_name read_key read_into vary_by
 %type   <refer>         accept_refer num_operand envar search_expr any_arg
@@ -791,7 +808,7 @@ class locale_tgt_t {
 %type   <field>         intrinsic0
 %type   <number>        intrinsic_v intrinsic_I intrinsic_N intrinsic_X
 %type   <number>        intrinsic_I2 intrinsic_N2 intrinsic_X2
-%type   <number>        lopper_case
+%type   <number>        lopper_case 
 %type   <number>        return_body return_file
 %type   <field>         trim_trailing function_udf
 
@@ -835,16 +852,18 @@ class locale_tgt_t {
 %type   <boolean>       io_invalid  read_eof  write_eop
                         global is_global anycase backward
                         end_display
-                        exh_changed exh_named
+                        exh_changed exh_named last
                         override
 %type   <number>        mistake globally first_last
-%type   <io_mode>   io_mode
+%type   <io_mode>       io_mode
 
 %type   <label_pair>    xmlprocs
 %type   <error>         xmlexcept xmlexcepts
 %type   <field>         xmlencoding xmlvalidating
+%type   <field>         xmlgen_count
 %type   <number>        xmlreturning
 %type   <label>         xmlparse_body
+%type   <xml_decl_attr> xmlgen_decl
 
 %type   <labels>        labels
 %type   <label>         label_1 section_name
@@ -863,7 +882,7 @@ class locale_tgt_t {
 %type   <replacement>   init_by
 %type   <replacements>  init_bys init_replace
 %type   <refer>         init_data exit_with stop_status
-%type   <float128>      cce_expr cce_factor const_value
+%type   <cce_type>      cce_expr cce_factor const_value
 %type   <prog_end>      end_program1
 %type   <substitution>  subst_input
 %type   <substitutions> subst_inputs
@@ -888,12 +907,13 @@ class locale_tgt_t {
 %type   <namelocs>      repo_func_names
 %type   <codeset>       codeset_name
 %type   <locale_phrase> locale_phrase
+%type   <number>        convert_hex convert_nat convert_alpha // convert_fmt
 
 %union {
     bool boolean;
     int number;
     char *string;
-    REAL_VALUE_TYPE float128;
+    struct { REAL_VALUE_TYPE r; char *s; } cce_type;
     literal_t literal;
     cbl_field_attr_t field_attr;
     ec_type_t ec_type;
@@ -902,7 +922,7 @@ class locale_tgt_t {
     cbl_namelocs_t *namelocs;
            declarative_list_t* dcl_list_t;
            isym_list_t* isym_list;
-    struct { radix_t radix; char *string; } numstr;
+    struct { bool is_float; radix_t radix; char *string; } numstr;
     struct { YYLTYPE loc; int token; literal_t name; } prog_end;
     struct { int token; special_name_t id; } special_type;
     struct { char locale_type; const char * name; } locale_phrase;
@@ -979,7 +999,7 @@ class locale_tgt_t {
     struct { enum select_clause_t clause; cbl_file_t *file; } select_clause;
     struct { size_t clauses; cbl_file_t *file; } select_clauses;
     struct { YYLTYPE loc; char *on, *off; } switches;
-    struct cbl_domain_t *false_domain;
+    struct { cbl_encoding_t encoding; cbl_domain_t *domain; } false_domain;
     struct { size_t also; unsigned char *low, *high; } colseq;
     struct { cbl_field_attr_t attr; int nbyte; } pic_part;
 
@@ -993,6 +1013,8 @@ class locale_tgt_t {
     struct { bool is_locale; cbl_refer_t *arg2; } numval_locale_t;
            locale_tgt_t *token_list;
 
+    struct xml_decl_attr_t { bool with_decl, with_attr; } xml_decl_attr;
+
     cbl_options_t::arith_t opt_arith;
     cbl_round_t opt_round;
     cbl_section_type_t opt_init_sect;
@@ -1000,16 +1022,25 @@ class locale_tgt_t {
     module_type_t module_type;
 }
 
-%printer { fprintf(yyo, "clauses: 0x%04x", $$); } data_clauses
-%printer { fprintf(yyo, "%s %s %s",
-                        refer_type_str($$),
-                        $$? $$->name() : "<none>",
-                        $$ && $$->field? $$->field->codeset.name() : "<none>"); } <refer>
 %printer { fprintf(yyo, "%s", $$->field? name_of($$->field) : "[omitted]"); } alloc_ret
-%printer { fprintf(yyo, "%s %s '%s' (%s)",
+%printer { fprintf(yyo, "clauses: 0x%04x", $$); } data_clauses
+                        
+%printer { fprintf(yyo, "%s{%u/%u} %s '%s' (%s)",
+                        refer_type_str($$),
+                        $$ && $$->field? $$->field->char_capacity() : 0,
+                        $$ && $$->field? $$->field->data.capacity() : 0, 
+                        $$? $$->name() : "<none>",
+                        $$ && $$->field? $$->field->data.original()?
+                                         $$->field->data.original() : "<nil>" : "",
+                        $$ && $$->field? $$->field->value_str() : "" ); } <refer>
+
+%printer { fprintf(yyo, "%s{%u/%u} %s '%s' (%s)",
                         $$? cbl_field_type_str($$->type) : "<%empty>",
+                        $$? $$->char_capacity() : 0,
+                        $$? $$->data.capacity() : 0, 
                         $$? name_of($$) : "",
-                        $$? $$->data.initial? $$->data.initial : "<nil>" : "",
+                        $$? $$->data.original()?
+                            $$->data.original() : "<nil>" : "",
                         $$? $$->value_str() : "" ); } <field>
 
 %printer { fprintf(yyo, "%c %s",
@@ -1021,7 +1052,7 @@ class locale_tgt_t {
 %printer { fprintf(yyo, "%s'%.*s'{" HOST_SIZE_T_PRINT_UNSIGNED "} %s",
                         $$.prefix, int($$.len), $$.data, (fmt_size_t)$$.len,
                         $$.symbol_name()); } <literal>
-%printer { fprintf(yyo,"%s (1st of" HOST_SIZE_T_PRINT_UNSIGNED")",
+%printer { fprintf(yyo,"%s (1st of " HOST_SIZE_T_PRINT_UNSIGNED")",
                         $$->targets.empty()? "" : $$->targets.front().refer.field->name,
                         (fmt_size_t)$$->targets.size() ); } <targets>
 %printer { fprintf(yyo, "#" HOST_SIZE_T_PRINT_UNSIGNED ": %s",
@@ -1034,8 +1065,8 @@ class locale_tgt_t {
 		         teed_up_names().front(), (fmt_size_t) teed_up_names().size() ); } qname
 %printer { fprintf(yyo, "{%d}", $$ ); } <number>
 %printer { fprintf(yyo, "'%s'", $$.string ); } <numstr>
-%printer { const char *s = string_of($$);
-           fprintf(yyo, "{%s}", s? s : "??" ); } <float128>
+%printer { const char *s = string_of($$.r);
+           fprintf(yyo, "{%s}", s? s : "??" ); } <cce_type>
 %printer { fprintf(yyo, "{%s %c%u}", cbl_field_type_str($$.type),
                                      $$.signable? '+' : ' ',
                                      $$.capacity ); } <computational>
@@ -1476,12 +1507,16 @@ class locale_tgt_t {
       return xstrdup(output);
   }
 
-  static inline char * string_of( tree cce ) {
-      return string_of (TREE_REAL_CST (cce));
+  static inline const char * string_of( tree cce ) {
+    tree_node *node = TREE_TYPE(cce);
+    if( INTEGRAL_TYPE_P(node) ) {
+                        return "integer";
+    } 
+    return string_of (TREE_REAL_CST (cce));
   }
 
   cbl_field_t *
-  new_literal( const literal_t& lit, enum cbl_field_attr_t attr );
+  new_literal( const cbl_loc_t loc, const literal_t& lit, enum cbl_field_attr_t attr );
 
   static YYLTYPE first_line_of( YYLTYPE loc );
 %}
@@ -1781,10 +1816,10 @@ opt_init_value: BINARY ZERO { $$ = constant_index(NULLS); }
 		  if( $1.len != 1 ) {
 		    error_msg(@1, "1-byte hexadecimal literal required");
 		  }
-      char ach[16];
-      sprintf(ach, "%d", (int)($1.data[0]));
+                  char ach[16];
+                  sprintf(ach, "%d", (int)($1.data[0]));
 		  //auto f = new_literal($1.data);
-		  auto f = new_literal(ach);
+		  auto f = new_literal(@1, ach);
 		  f = field_add(@1, f);
 		  $$ = field_index(f);
 		}
@@ -1801,9 +1836,11 @@ namestr:        ctx_name {
                 }
         |       LITERAL {
                   if( $$.prefix[0] != '\0' ) {
-                    error_msg(@1, "literal cannot use %s prefix in this context",
-                              $$.prefix);
-                    YYERROR;
+                    if( $$.prefix[0] != 'N' ) {
+                      error_msg(@1, "literal cannot use %s prefix in this context",
+                                $$.prefix);
+                      YYERROR;
+                    }
                   }
 		  if( !is_cobol_charset($$.data) ) {
 		    error_msg(@1, "literal '%s' must be a COBOL or C identifier",
@@ -2662,15 +2699,30 @@ special_name:   dev_mnemonic
                   struct cbl_field_t field = { FldClass, 0, {}, 0, $NAME };
                   if( !namcpy(@NAME, field.name, $2) ) YYERROR;
 
+                  assert( ! domains.empty() );
+                  auto encoding = domains.front().encoding;
+
                   struct cbl_domain_t *domain =
                     new cbl_domain_t[ domains.size() + 1 ] ;
-
+                  auto p = std::find_if( domains.begin(), domains.end(),
+                                         [enc = encoding]
+                                         ( const auto& dom ) {
+                                           return ! dom.encoding_ok(enc);
+                                         } );
+                  if( p != domains.end() ) {
+                    error_msg( @domains, "%qs has encoding %qs "
+                               "but value %qs has encoding %qs",
+                               $NAME, 
+                               current_t::cbl_encoding_str(domains.front().encoding),
+                               p->first.name(), 
+                               current_t::cbl_encoding_str(p->encoding) );
+                  }
                   std::copy(domains.begin(), domains.end(), domain);
-
-                  field.data.false_value_as($domains);
-                  field.data.domain_as(domain);
-                  field.codeset.set();
                   domains.clear();
+
+                  field.data.false_value_as($domains.domain);
+                  field.data.domain_as(domain);
+                  field.codeset.set(encoding);
 
                   if( field_add(@2, &field) == NULL ) {
                     dbgmsg("failed class");
@@ -3018,72 +3070,83 @@ picture_sym:    %empty                { $$ = NULL; }
                  * "CLASS NAME is domains".
                  */
 domains:        domain
-        |       domains domain { $$ = $1? $1 : $2; }
+        |       domains domain { $$ = $1.domain? $1 : $2; }
                 ;
 
 domain:         all LITERAL[a]
                 {
-                  $$ = NULL;
-                  cbl_domain_t domain(@a, $all, $a.len, $a.data);
-                  domains.push_back(domain);
+                  $$.domain = nullptr;
+                  cbl_domain_t domain($all, $a.len, $a.data);
+                  domains.push_back( domain_t($a.encode_as(), domain) );
                 }
         |       all[a_all] LITERAL[a] THRU all[z_all] LITERAL[z]
                 {
-                  $$ = NULL;
-                  cbl_domain_elem_t first(@a, $a_all, $a.len, $a.data),
-                                     last(@z, $z_all, $z.len, $z.data);
-                  domains.push_back(cbl_domain_t(first, last));
+                  $$.domain = nullptr;
+                  cbl_domain_elem_t first($a_all, $a.len, $a.data),
+                                     last($z_all, $z.len, $z.data);
+                  if( $a.encode_as() == $z.encode_as() ) {
+                    domains.push_back( domain_t($a.encode_as(),
+                                                cbl_domain_t(first, last)) );
+                  } else {
+                    error_msg(@z, "encooding of %qs differs from that of %qs",
+                              $a.data, $z.data);
+                  }
                 }
         |       all NUMSTR[n]
                 {
-                  $$ = NULL;
-                  cbl_domain_t dom(@n, $all, strlen($n.string), $n.string, true);
-                  domains.push_back(dom);
+                  $$.domain = nullptr;
+                  cbl_domain_t dom($all, strlen($n.string), $n.string, true);
+                  domains.push_back( domain_t(dom) );
                 }
         |       all[n_all] NUMSTR[n] THRU all[m_all] NUMSTR[m]
                 {
-                  $$ = NULL;
-                  cbl_domain_elem_t first(@n, $n_all, strlen($n.string), $n.string, true),
-		                     last(@m, $m_all, strlen($m.string), $m.string, true);
-                  domains.push_back(cbl_domain_t(first, last));
+                  $$.domain = nullptr;
+                  cbl_domain_elem_t first($n_all, strlen($n.string), $n.string, true),
+		                     last($m_all, strlen($m.string), $m.string, true);
+                  domains.push_back( domain_t(cbl_domain_t(first, last)) );
                 }
         |       all reserved_value {
-                  $$ = NULL;
+                  $$.domain = nullptr;
                   if( $2 == NULLS ) YYERROR;
                   auto value = constant_of(constant_index($2))->data.initial;
-                  struct cbl_domain_t domain( @2, $all, strlen(value), value );
-                  domains.push_back(domain);
+                  struct cbl_domain_t domain( $all, strlen(value), value );
+                  domains.push_back(domain_t(domain));
                 }
         |       all[a_all] reserved_value[a] THRU all[z_all] LITERAL[z] {
-                  $$ = NULL;
+                  $$.domain = nullptr;
                   if( $a == NULLS ) YYERROR;
                   auto value = constant_of(constant_index($a))->data.initial;
-                  cbl_domain_elem_t first(@a, $a_all, strlen(value), value),
-                                     last(@z, $z_all, $z.len, $z.data);
-                  domains.push_back(cbl_domain_t(first, last));
+                  cbl_domain_elem_t first($a_all, strlen(value), value),
+                                     last($z_all, $z.len, $z.data);
+                  domains.push_back( domain_t($z.encode_as(),
+                                              cbl_domain_t(first, last)) );
                 }
         |       all[a_all] reserved_value[a] THRU all[z_all] NUMSTR[z] {
-                  $$ = NULL;
+                  $$.domain = nullptr;
                   if( $a == NULLS ) YYERROR;
                   auto value = constant_of(constant_index($a))->data.initial;
-                  cbl_domain_elem_t first(@a, $a_all, strlen(value), value, true),
-                                     last(@z, $z_all, strlen($z.string), $z.string, true);
-                  domains.push_back(cbl_domain_t(first, last));
+                  cbl_domain_elem_t first($a_all, strlen(value), value, true),
+                                     last($z_all, strlen($z.string), $z.string, true);
+                  domains.push_back( domain_t(cbl_domain_t(first, last)) );
                 }
         |       when_set_to FALSE_kw is LITERAL[value]
                 {
                   const char *dom = $value.data;
-                  $$ = new cbl_domain_t(@value, false, $value.len, dom);
+                  $$.domain = new cbl_domain_t(false, $value.len, dom);
+                  $$.encoding = $value.encode_as();
                 }
         |       when_set_to FALSE_kw is reserved_value
                 {
                   if( $4 == NULLS ) YYERROR;
                   auto value = constant_of(constant_index($4))->data.initial;
-                  $$ = new cbl_domain_t(@4, false, strlen(value), value );
+                  $$.domain = new cbl_domain_t(false, strlen(value), value );
+                  $$.encoding = no_encoding_e;
                 }
         |       when_set_to FALSE_kw is NUMSTR[n]
                 {
-		  $$ = new cbl_domain_t(@n, false, strlen($n.string), $n.string, true);
+		  $$.domain = new cbl_domain_t(false,
+                                               strlen($n.string), $n.string, true);
+                  $$.encoding = current_encoding('A');
                 }
                 ;
 when_set_to:    %empty
@@ -3096,7 +3159,7 @@ when_set_to:    %empty
         |       WHEN SET TO
         ;
 
-data_div:       %empty
+data_div:       %empty 
         |       DATA_DIV
         |       DATA_DIV { current_division = data_div_e; } data_sections
                 {
@@ -3146,8 +3209,9 @@ fd_clause:      record_desc
                   auto f = cbl_file_of(symbol_at(file_section_fd));
                   f->varying_size.min = $1.min;
                   f->varying_size.max = $1.max;
-                  auto& cap = cbl_field_of(symbol_at(f->default_record))->data.capacity;
-                  cap = std::max(cap, uint32_t(f->varying_size.max));
+                  auto& data = cbl_field_of(symbol_at(f->default_record))->data;
+                  data.capacity( std::max(data.capacity(),
+                                          uint32_t(f->varying_size.max)) );
                   // If min != max now, we know varying is explicitly defined.
                   f->varying_size.explicitly = f->varies();
                   if( f->varying_size.max != 0 ) {
@@ -3224,6 +3288,10 @@ fd_clause:      record_desc
                   auto f = cbl_file_of(symbol_at(file_section_fd));
                   f->attr |= external_e;
                   cbl_unimplemented("AS LITERAL");
+                }
+        |       is error
+                {
+                  error_msg(@1, "invalid FD phrase");
                 }
         |       fd_linage { cbl_unimplemented("LINAGE"); }
         |       fd_report {
@@ -3456,6 +3524,7 @@ field:          cdf
                   }
                   field_done();
 
+#if 0
                   const auto& field(*$data_descr);
 
                   // Format data.initial per picture
@@ -3492,6 +3561,7 @@ field:          cdf
                       }
                     }
                   }
+#endif
                 }
                 ;
 
@@ -3651,33 +3721,46 @@ data_descr:     data_descr1
                 ;
 
 const_value:    cce_expr
-        |       BYTE_LENGTH of name { set_real_from_capacity(@name, $name, &$$); }
-        |       LENGTH      of name { set_real_from_capacity(@name, $name, &$$); }
-        |       LENGTH_OF   of name { set_real_from_capacity(@name, $name, &$$); }
+        |       BYTE_LENGTH of name {
+                  $$.s = nullptr;
+                  set_real_from_capacity(@name, $name, &$$.r);
+                }
+        |       LENGTH      of name { 
+                  $$.s = nullptr;
+                  set_real_from_capacity(@name, $name, &$$.r);
+                }
+        |       LENGTH_OF   of name { 
+                  $$.s = nullptr;
+                  set_real_from_capacity(@name, $name, &$$.r);
+                }
         |       LENGTH_OF   of binary_type[type] {
-		                real_from_integer(&$$, VOIDmode, $type, SIGNED); }
+                  $$.s = nullptr;
+                  real_from_integer(&$$.r, VOIDmode, $type, SIGNED);
+                }
                 ;
 
 value78:        literalism
                 {
                   cbl_field_data_t data;
-		  data.capacity = capacity_cast(strlen($1.data));
-                  data.initial = $1.data;
+                  data.capacity( capacity_cast(strlen($1.data)) );
+                  data.original($1.data);
                   $$.encoding = $1.encoding;
                   $$.data = new cbl_field_data_t(data);
                 }
         |       const_value
                 {
                   cbl_field_data_t data;
-		  data = build_real (float128_type_node, $1);
-                  $$.encoding = current_encoding('A');
+		  data = build_real (float128_type_node, $1.r);
+                  auto s = $1.s ? $1.s : reinterpret_cast<char*>(data.etc.value);
+                  data.original(s);
+                  $$.encoding = no_encoding_e;
                   $$.data = new cbl_field_data_t(data);
                 }
         |       reserved_value[value]
                 {
-		  const auto field = constant_of(constant_index($value));
+		  const auto figconst = constant_of(constant_index($value));
                   $$.encoding = current_encoding('A');
-                  $$.data = new cbl_field_data_t(field->data);
+                  $$.data = new cbl_field_data_t(figconst->data);
                 }
 
         |       true_false
@@ -3695,7 +3778,7 @@ data_descr1:    level_name
                   }
                 }
 
-        |       level_name CONSTANT is_global as const_value
+        |       level_name CONSTANT is_global as const_value[cce]
                 {
                   cbl_field_t& field = *$1;
                   if( field.level != 1 ) {
@@ -3706,12 +3789,15 @@ data_descr1:    level_name
                   field.attr |= constant_e;
                   if( $is_global ) field.attr |= global_e;
                   field.type = FldLiteralN;
-		  field.data = build_real (float128_type_node, $const_value);
-                  field.data.initial = string_of($const_value);
+		  field.data = build_real (float128_type_node, $cce.r);
+                  const char *s = $cce.s? $cce.s : string_of($cce.r);
+                  field.data.original( s );
                   field.codeset.set();
+                  field.set_initial(@cce);
 
-                  if( !cdf_value(field.name, cdfval_t($const_value)) ) {
-                    error_msg(@1, "%s was defined by CDF", field.name);
+                  if( cdf_value(field.name) ) {
+                    cbl_message(@1, Par78CdfDefinedW,
+                                "%s was defined by CDF", field.name);
                   }
                 }
 
@@ -3727,6 +3813,8 @@ data_descr1:    level_name
                   field.type = FldLiteralA;
 		  auto fig = constant_of(constant_index($value));
                   field.data = fig->data;
+                  field.codeset.set();
+                  field.set_initial(@value);
                 }
 
         |       level_name CONSTANT is_global as literalism[lit]
@@ -3735,66 +3823,74 @@ data_descr1:    level_name
                   field.attr |= constant_e;
                   if( $is_global ) field.attr |= global_e;
                   field.type = FldLiteralA;
-                  field.data.capacity = $lit.len;
-                  field.data.initial  = $lit.data;
                   field.attr |= literal_attr($lit.prefix);
+
+                  if( ! field.codeset.set($lit.encode_as()) ) {
+                    error_msg(@lit, "CONSTANT inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field.codeset.encoding));
+                  }
+                  field.data.original( $lit.data );
+                  field.set_initial(@lit);
+
                   if( field.level != 1 ) {
                     error_msg(@lit, "%s must be an 01-level data item", field.name);
                     YYERROR;
                   }
-                  if( !cdf_value(field.name, $lit.data) ) {
-                    error_msg(@1, "%s was defined by CDF", field.name);
+                  if( cdf_value(field.name) ) {
+                    cbl_message(@1, Par78CdfDefinedW,
+                                "%s was defined by CDF", field.name);
                   }
-                  if( ! field.codeset.set() ) {
-                    error_msg(@lit, "CONSTANT inconsistent with encoding %s",
-                              cbl_alphabet_t::encoding_str(field.codeset.encoding));
-                  }
-                  
-                  value_encoding_check(@lit, $1);
                 }
         |       level_name CONSTANT is_global FROM NAME
                 {
                   assert($1 == current_field());
+                  cbl_field_t& field(*$1);
+                  if( cdf_value(field.name) ) {
+                    cbl_message(@1, Par78CdfDefinedW,
+                                "%s was defined by CDF", field.name);
+                  }
                   const cdfval_t *cdfval = cdf_value($NAME);
                   if( !cdfval ) {
-                    error_msg(@1, "%s was defined by CDF", $NAME);
+                    error_msg(@NAME, "%s was not defined by CDF", $NAME);
                     YYERROR;
                   }
-                  cbl_field_t& field = *$1;
                   field.attr |= ($is_global | constant_e);
-                  field.data.capacity = cdfval->string ? strlen(cdfval->string)
-                                                  : sizeof(field.data.value_of());
-                  field.data.initial  = cdfval->string;
-                  field.data = cdfval->number;
-                  if( !cdf_value(field.name, *cdfval) ) {
-                    error_msg(@1, "%s was defined by CDF", field.name);
+                  field.codeset.set();
+                // Does a const field want an initial string for a numeric value? --jkl
+                  if( cdfval->string ) {
+                    field.data.original( cdfval->string );
+                    field.set_initial(@NAME);
+                  } else {
+                    field.data.capacity(sizeof(field.data.value_of()));
+                    field.data = cdfval->number;
                   }
                 }
-
         |       LEVEL78 NAME[name] VALUE is value78[data]
                 {
                   dialect_ok(@1, MfLevel78, "LEVEL 78");
                   cbl_field_t field = { FldLiteralA, constant_e, *$data.data,
                                         78, $name, @name.first_line };
-                  if( field.data.initial ) {
-                    field.attr |= quoted_e;
-                    field.codeset.set($data.encoding);
-                    if( !cdf_value(field.name, field.data.initial) ) {
-                      cbl_message(Par78CdfDefinedW,
+                  // cce reports no encoded initial value
+                  if( $data.encoding == no_encoding_e ) { 
+                    field.type = FldLiteralN;
+                    field.codeset.set();
+                    field.data.initial = string_of(field.data.value_of());
+                    if( cdf_value(field.name) ) {
+                      cbl_message(@name, Par78CdfDefinedW,
                                   "%s was defined by CDF", field.name);
                     }
-                  } else {
-                    field.type = FldLiteralN;
-                    field.data.initial = string_of(field.data.value_of());
+                  } else{ 
+                    field.attr |= quoted_e;
                     field.codeset.set($data.encoding);
-                    if( !cdf_value(field.name, field.as_integer()) ) {
-                      cbl_message(Par78CdfDefinedW,
+                    field.set_initial(@data);
+                    if( cdf_value(field.name) ) {
+                      cbl_message(@name, Par78CdfDefinedW,
                                   "%s was defined by CDF", field.name);
                     }
                   }
+
                   if( ($$ = field_add(@name, &field)) == NULL ) {
                     error_msg(@name, "failed level 78");
-                    YYERROR;
                   }
                 }
 
@@ -3807,7 +3903,7 @@ data_descr1:    level_name
                   auto fig = constant_of(constant_index(NULLS))->data.initial;
                   struct cbl_domain_t *domain = new cbl_domain_t[2];
 
-                  domain[0] = cbl_domain_t(@NAME, false, strlen(fig), fig);
+                  domain[0] = cbl_domain_t(false, strlen(fig), fig);
 
                   field.data.domain_as(domain);
 
@@ -3829,17 +3925,39 @@ data_descr1:    level_name
                   cbl_domain_t *domain =
                     new cbl_domain_t[ domains.size() + 1];
 
+                  auto enc = domains.front().encoding;
+                  auto p = std::find_if( domains.begin(), domains.end(),
+                                         [enc]( const auto& dom ) {
+                                           return !dom.encoding_ok(enc);
+                                         } );
+                  if( p != domains.end() ) {
+                    error_msg( @domains, "%qs has encoding %qs "
+                               "but value %qs has encoding %qs",
+                               $NAME, 
+                               current_t::cbl_encoding_str(domains.front().encoding),
+                               p->first.name(), 
+                               current_t::cbl_encoding_str(p->encoding) );
+                  }
                   std::copy(domains.begin(), domains.end(), domain);
+                  domains.clear();
 
                   field.data.domain_as(domain);
-                  field.data.false_value_as($domains);
+                  field.data.false_value_as($domains.domain);
                   field.codeset.set();
-                  domains.clear();
 
                   if( ($$ = field_add(@2, &field)) == NULL ) {
                     error_msg(@NAME, "failed level 88");
                     YYERROR;
                   }
+                  cbl_field_t *parent = parent_of($$);
+                  if( parent->codeset.valid() &&
+                      enc != parent->codeset.encoding ) {
+                    error_msg( @NAME, "%qs has encoding %qs "
+                               "but values have encoding %qs",
+                               $NAME, 
+                               current_t::cbl_encoding_str(parent->codeset.encoding),
+                               current_t::cbl_encoding_str(enc) );
+                  } 
                 }
 
         |       name66[alias] RENAMES name[orig]
@@ -3941,14 +4059,20 @@ data_descr1:    level_name
         |       level_name[field] data_clauses
                 {
                   gcc_assert($field == current_field());
+                  //// cbl_field_t& F(*$field);
+
                   if( $data_clauses == value_clause_e ) { // only VALUE, no PIC
                     // Error unless VALUE is a figurative constant or (quoted) string.
-                    if( $field->type != FldPointer &&
-                        ! $field->has_attr(quoted_e) &&
-                        normal_value_e == cbl_figconst_of($field->data.initial) )
-                    {
-                      error_msg(@field, "%s numeric VALUE %s requires PICTURE",
-                               $field->name, $field->data.initial);
+                    if( $field->type != FldPointer && ! $field->has_attr(quoted_e) ) {
+                      switch( cbl_figconst_of($field->data.initial) ) {
+                      case normal_value_e:
+                      case zero_value_e:
+                        break;
+                      default:
+                        error_msg(@field, "%qs numeric VALUE %qs requires PICTURE",
+                                  $field->name, $field->data.original());
+                        YYERROR; // do not attempt to set capacity
+                      }
                     }
                     if( null_value_e == cbl_figconst_of($field->data.initial) ) {
                       // don't change the type
@@ -3958,7 +4082,7 @@ data_descr1:    level_name
                       assert(FldPointer != $field->type);
                       $field->type = FldAlphanumeric;
                       if( $field->data.initial ) {
-                        $field->data.capacity = strlen($field->data.initial);
+                        $field->set_capacity(strlen($field->data.initial));
                       }
                     }
                   }
@@ -4000,64 +4124,103 @@ data_descr1:    level_name
 
                   // Increase numeric display capacity by 1 for SIGN SEPARATE.
                   if( $field->type == FldNumericDisplay &&
-                      is_signable($field) &&
-                      $field->has_attr(separate_e) ){
-                    $field->data.capacity++;
+                      $field->has_attr(separate_e) ) {
+                    gcc_assert(is_signable($field));
+                    $field->add_capacity(1);
+                    $field->blank_initial($field->char_capacity());
                   }
 
                   // Set Packed-Decimal capacity
                   if( $field->type == FldPacked ) {
-                    $field->data.capacity = type_capacity($field->type,
-                                                          $field->data.digits);
-                  if( $field->attr & separate_e )
-                    {
-                    // This is a gentle kludge required by the the belated
-                    // introduction of COMP-6, which is like COMP-3 but with no
-                    // sign nybble.  The code in type_capacity assumes a sign
-                    // nybble.
-                    $field->data.capacity = ($field->data.digits+1)/2;
-                    }
+                    // COMP-6 is like COMP-3 but with no sign nybble.  The
+                    // code in type_capacity assumes a sign nybble.
+                    auto one_less = $field->has_attr(separate_e) ? 1 : 0;
+
+                    $field->set_capacity(type_capacity($field->type,
+                                                       $field->data.digits - one_less));
                   }
 
                   // Check COMP-5 capacity
 		  // No capacity means no PICTURE, valid only for a (potential) group
-                  if( $field->type == FldNumericBin5 && $field->data.capacity == 0 ) {
-                    if(  has_clause ($data_clauses, usage_clause_e) &&
-                        !has_clause ($data_clauses, picture_clause_e) ) {
-			// invalidate until a child is born
-		      $field->type = FldInvalid;
+                  if( $field->type == FldNumericBin5 ) {
+                    if( $field->data.capacity() == 0 ) {
+                      if(  has_clause ($data_clauses, usage_clause_e) &&
+                          !has_clause ($data_clauses, picture_clause_e) ) {
+		          // invalidate until a child is born
+		        $field->type = FldInvalid;
+                      }
+                    } else {
+                      if( ($field->data.initial) ) {
+                        if( strlen($field->data.initial) < $field->data.capacity() ) {
+                          $field->blank_initial( $field->data.capacity() );
+                        }
+                      }
                     }
                   }
 
                   // Ensure signed initial VALUE is for signed numeric type
                   if( is_numeric($field) ) {
-                    if( $field->data.initial && $field->type != FldFloat ) {
-                      switch( $field->data.initial[0] ) {
+                    auto original = $field->data.original();
+                    if( original && $field->type != FldFloat ) {
+                      switch( original[0] ) {
                       case '-':
                         if( !$field->has_attr(signable_e) ) {
                           error_msg(@field, "%s is unsigned but has signed VALUE '%s'",
-                                    $field->name, $field->data.initial);
+                                    $field->name, original);
                         }
                       }
                     }
                   }
 
                   // Verify VALUE
-                  $field->report_invalid_initial_value(@data_clauses);
-
-                  bool numerical =
-                      $field->type == FldNumericDisplay || is_numeric($field);
-
-                  if( $field->data.initial && ! numerical ) {
-                    if( normal_value_e == cbl_figconst_of($field->data.initial) ) {
-                      value_encoding_check(@data_clauses, $field);
-                    }
-                  }
+                  bool bad_value = $field->report_invalid_initial_value(@data_clauses);
 
                   // verify REDEFINES
                   const auto parent = parent_of($field);
                   if( parent && $field->level == parent->level ) {
                     valid_redefine(@field, $field, parent); // calls yyerror
+                  }
+                  
+                  // verify VALUE for Numeric Edited
+                  if( $field->type == FldNumericEdited ) {
+                    if( !validate_numeric_edited ($field) ) {
+                      error_msg(@data_clauses, "%s: PICTURE and VALUE are incompatible",
+                                $field->name);
+                    }
+                  }
+
+                  // verify VALUE for numeric
+                  if ($data_clauses & value_clause_e) {
+                    bool good_value =
+                        ($field->data.etc_ok() || $field->data.original()) && ! bad_value;
+                    if( good_value ) { // ensure VALUE had a value
+                      if( is_numeric($field) || $field->type == FldNumericEdited ) {
+                        if( zero_value_e == cbl_figconst_of($field->data.original()) ) {
+                          $field->blank_initial($field->char_capacity());
+                        }
+                        $field->encode_numeric($field->data.original(), 
+                                               data_clause_locations[value_clause_e],
+                                               $field->data.original_numeric());
+                      }
+                    }
+                  } else { // no VALUE clause
+                    if( false && $field->data.initial ) {
+                      free(const_cast<char*>($field->data.initial));
+                      $field->data.initial = nullptr;
+                    }                      
+                  }
+
+                  // Any field may become a group, so may have VALUE with no PICTURE
+                  const auto stooges3 = (picture_clause_e |
+                                         value_clause_e |
+                                         usage_clause_e);
+                  if( ($data_clauses & stooges3) == value_clause_e ) { // only
+                    $field->type = FldInvalid;
+                    auto fig = cbl_figconst_of($field->data.original());
+                    if( null_value_e != fig ) {
+                      $field->set_initial( $field->data.capacity(),
+                                           data_clause_locations[value_clause_e]);
+                    }
                   }
                 }
                 ;
@@ -4136,6 +4299,12 @@ data_clauses:   data_clause
                     YYERROR;
                   }
 
+		  // We could be more judicious. We could clear the map when
+		  // the first clause is encountered, and e.g. set the location
+		  // to just the VALUE string, not the whole clause.  As of now
+		  // the map isn't used, though.
+                  data_clause_locations[data_clause_t($2)] = @data_clause;
+
                   if( $data_clause == redefines_clause_e ) {
                     error_msg(@2, "REDEFINES must appear "
                              "immediately after LEVEL and NAME");
@@ -4185,7 +4354,7 @@ data_clauses:   data_clause
                   }
 
                   if( gcobol_feature_embiggen() ) {
-                    if( field->is_binary_integer() && field->data.capacity == 4) {
+                    if( field->is_binary_integer() && field->data.capacity() == 4) {
                       auto redefined = symbol_redefines(field);
                       if( redefined && redefined->type == FldPointer ) {
                         dbgmsg("expanding %s size from %u bytes to %lu "
@@ -4248,23 +4417,14 @@ data_clause:    any_length        { $$ = any_length_e; }
         |       value_clause      { $$ = value_clause_e;
                   cbl_field_t *field = current_field();
 
-                  if( field->type != FldAlphanumeric &&
-                      field->data.initial && field->data.initial[0] )
-                  {
-                    // Embedded NULs are valid only in FldAlphanumeric, and are
-                    // already handled.
-                    if( strlen(field->data.initial) < field->data.capacity ) {
-                      auto p = blank_pad_initial( field->data.initial,
-                                                  strlen(field->data.initial),
-                                                  field->data.capacity );
-                      if( !p ) YYERROR;
-                      field->data.initial = p;
-                    }
-                  }
 		  const cbl_field_t *parent;
+		  if( (parent = parent_has_picture(field)) != NULL ) {
+		    error_msg(@1, "VALUE invalid because group %s (%s) has PICTURE clause",
+		              parent->name, 3 + cbl_field_type_str(parent->type));
+		  }
 		  if( (parent = parent_has_value(field)) != NULL ) {
-		    error_msg(@1, "VALUE invalid because group %s has VALUE clause",
-		              parent->name);
+		    error_msg(@1, "VALUE invalid because group %s (%s) has VALUE clause",
+		              parent->name, 3 + cbl_field_type_str(parent->type));
 		  }
                 }
         |       volatile_clause      { $$ = volatile_clause_e; }
@@ -4273,19 +4433,24 @@ data_clause:    any_length        { $$ = any_length_e; }
 picture_clause: PIC signed nps[fore] nines nps[aft]
                 {
                   cbl_field_t *field = current_field();
+                  if( ! field->codeset.set() ) {
+                    error_msg(@nines, "PICTURE inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
+                  }
                   if( !field_type_update(field, FldNumericDisplay, @$) ) {
                     YYERROR;
                   }
                   ERROR_IF_CAPACITY(@PIC, field);
-                  field->attr |= $signed;
-                  field->data.capacity = type_capacity(field->type, $4);
-                  field->data.digits = $4;
-                  if( long(field->data.digits) != $4 ) {
-                    error_msg(@2, "indicated size would be %d bytes, "
-                             "maximum data item size is %u",
-                             $4, UINT32_MAX);
+                  // If signable_e is inherited from the group, it is effective
+                  // regardless of an 'S' in PICTURE.
+                  if( field->has_attr(signable_e) && ! $signed ) {
+                    dbgmsg("%s PICTURE must be signed for SIGN IS", field->name);
                   }
-
+                  field->attr |= $signed;
+                  field->data.digits = $nines;
+                  auto nchar = type_capacity(field->type, $nines);
+                  field->set_capacity(nchar);
+                  field->blank_initial(nchar);
                   if( $fore && $aft ) { // leading and trailing P's
                     error_msg(@2, "PIC cannot have both leading and trailing P");
                     YYERROR;
@@ -4296,59 +4461,76 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   }
                   if( ! field->reasonable_capacity() ) {
                     error_msg(@2, "%s limited to capacity of %d (would need %u)",
-			     field->name, MAX_FIXED_POINT_DIGITS, field->data.capacity);
+			     field->name, MAX_FIXED_POINT_DIGITS, field->char_capacity());
                   }
                 }
 
         |       PIC signed NINEV[left] nine[rdigits]
                 {
                   cbl_field_t *field = current_field();
+                  if( ! field->codeset.set() ) {
+                    error_msg(@$, "PICTURE inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
+                  }
                   field->data.digits = $left + $rdigits;
                   field->attr |= $signed;
 
                   if( field->is_binary_integer() ) {
-                    field->data.capacity = type_capacity(field->type,
-                                                         field->data.digits);
+                    field->set_capacity(type_capacity(field->type,
+                                                      field->data.digits));
                     field->data.rdigits = $rdigits;
                   } else {
                     if( !field_type_update(field, FldNumericDisplay, @$) ) {
                       YYERROR;
                     }
                     ERROR_IF_CAPACITY(@PIC, field);
-                    field->data.capacity = field->data.digits;
+                    field->set_capacity(field->data.digits);
                     field->data.rdigits = $rdigits;
                   }
+                  // data.initial has blanks for character-encoded data
+		  // data.capacity may reflect the binary size, if any. 
+                  field->blank_initial(field->data.digits);
+
                   if( ! field->reasonable_capacity() ) {
                     error_msg(@2, "%s limited to capacity of %d (would need %u)",
-			     field->name, MAX_FIXED_POINT_DIGITS, field->data.capacity);
+			     field->name, MAX_FIXED_POINT_DIGITS, field->char_capacity());
                   }
                 }
         |       PIC signed NINEDOT[left] nine[rdigits]
                 {
+                  cbl_field_t *field = current_field();
+                  if( ! field->codeset.set() ) {
+                    error_msg(@$, "PICTURE inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
+                  }
+
                   uint32_t size = $left + $rdigits;
 
-                  cbl_field_t *field = current_field();
                   if( !field_type_update(field, FldNumericEdited, @$) ) {
                     YYERROR;
                   }
                   ERROR_IF_CAPACITY(@PIC, field);
                   field->attr |= $signed;
                   field->data.digits = size;
-                  field->data.capacity = ++size;
+                  field->set_capacity(++size);
                   field->data.rdigits = $rdigits;
+                  field->blank_initial(size);
 
                   if( ! field->reasonable_capacity() ) {
                     error_msg(@2, "%s limited to capacity of %d (would need %u)",
-			     field->name, MAX_FIXED_POINT_DIGITS, field->data.capacity);
+			     field->name, MAX_FIXED_POINT_DIGITS, field->char_capacity());
                   }
-                }
+                } 
 
-        |       PIC alphanum_pic[size]
+        |       PIC alphanum_pic[nchar]
                 {
                   cbl_field_t *field = current_field();
-
+                  if( ! field->codeset.valid() ) { // set by the picture
+                    dbgmsg("%s:%d: %s has invalid encoding",
+                           __FILE__, __LINE__, field->name);
+                  }
 		  if( field->type == FldNumericBin5 &&
-		      field->data.capacity == 0xFF  &&
+		      field->data.capacity() == 0xFF  &&
 		      dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE") )
 		  { // PIC X COMP-X or COMP-9
 		    if( ! field->has_attr(all_x_e) ) {
@@ -4361,29 +4543,24 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                       YYERROR;
                     }
 		  }
-                  assert(0 < $size);
-                  if( field->data.initial != NULL ) {
-                    if( 0 < field->data.capacity &&
-                            field->data.capacity < uint32_t($size) ) {
-                      auto p = blank_pad_initial(field->data.initial,
-                                                 field->data.capacity, $size );
-                      if( !p ) YYERROR;
-                      field->data.initial = p;
-                    }
+                  assert(0 < $nchar);
+                  field->data.picture = nullptr;
+                  auto nchar = std::min($nchar, MAXIMUM_ALPHA_LENGTH);
+                  if( nchar < $nchar ) {
+                    error_msg(@2, "alphanumeric data-item size (%d) "
+                                   "exceeds maximum of %d bytes",
+                              $nchar, MAXIMUM_ALPHA_LENGTH);
                   }
-
-                  charmap_t *charmap = 
-                                    __gg__get_charmap(field->codeset.encoding);
-                  field->data.capacity = $size * charmap->stride();
-                  field->data.picture = NULL;
-
-                  if( false ) dbgmsg("PIC alphanum_pic[size]:%d: %s",
-                                      field->line, field_str(field));
+                  field->set_initial(nchar, @nchar);
                 }
 
         |       PIC numed[picture]
                 {
                   cbl_field_t *field = current_field();
+                  if( ! field->codeset.set() ) {
+                    error_msg(@picture, "PICTURE inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
+                  }
                   if( !field_type_update(field, FldNumericEdited, @$) ) {
                     YYERROR;
                   }
@@ -4393,27 +4570,26 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                     YYERROR;
                   }
                   field->data.picture = $picture;
-                  field->data.capacity =  length_of_picture($picture);
                   field->data.digits   =  digits_of_picture($picture, false);
                   field->data.rdigits  = rdigits_of_picture($picture);
                   if( is_picture_scaled($picture) ) field->attr |= scaled_e;
+                  auto nchar = length_of_picture($picture);
+                  field->set_capacity(nchar);
+                  field->blank_initial(nchar);
                 }
 
         |       PIC ALPHED[picture]
                 {
-                  bool is_alpha_edited( const char picture[] );
-
                   cbl_field_t *field = current_field();
                   ERROR_IF_CAPACITY(@PIC, field);
-                  field->data.capacity = length_of_picture($picture);
-                  field->data.picture = $picture;
-
                   // In case the lexer guesses wrong.
                   cbl_field_type_t type = is_numeric_edited($picture)?
                                           FldNumericEdited : FldAlphaEdited;
                   if( !field_type_update(field, type, @$) ) {
                     YYERROR;
                   }
+                  field->data.picture = $picture;
+                  field->data.capacity(length_of_picture($picture));
 
                   switch( type ) {
                   case FldNumericEdited:
@@ -4422,7 +4598,7 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                     if( is_picture_scaled($picture) ) field->attr |= scaled_e;
                     break;
                   case FldAlphaEdited:
-                    if( !is_alpha_edited(field->data.picture) ) {
+                    if( ! field->data.is_alpha_edited() ) {
                       error_msg(@picture, "invalid picture for Alphanumeric-edited");
                       YYERROR;
                     }
@@ -4430,6 +4606,11 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   default:
                     gcc_unreachable();
                   }
+                  if( ! field->codeset.set() ) {
+                    error_msg(@picture, "PICTURE inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
+                  }
+                  field->set_initial(@picture);
                 }
 	|	PIC ones
                 ;
@@ -4468,6 +4649,10 @@ alphanum_part:  ALNUM[picture] count
                   $$.attr = uniform_picture($picture);
                   $$.nbyte = strlen($picture);
 		  auto count($count);
+		  if( false && count == 0 ) { // zero count has no effect
+		    error_msg(@2, "PICTURE count %<(%d)%> is zero", count );
+		    YYERROR;
+		  }
                   if( count > 0 ) {
                     --count;
                     $$.nbyte += count; // AX9(3) has count 5
@@ -4511,29 +4696,39 @@ count:          %empty           { $$ = 0; }
                 }
 	|	'(' NAME ')'
                 {
+                  int64_t output = 1;
 		  auto value = cdf_value($NAME);
-		  if( ! (value && value->is_numeric()) ) {
-		    error_msg(@NAME, "PICTURE %qs requires a CONSTANT value", $NAME );
-		    YYERROR;
-		  }
-		  int nmsg = 0;
-		  auto e = symbol_field(PROGRAM, 0, $NAME);
-		  if( e ) { // verify not floating point with nonzero fraction
-		    auto field = cbl_field_of(e);
-		    assert(is_literal(field));
-		    REAL_VALUE_TYPE vi;
-		    real_from_integer (&vi, VOIDmode, field->as_integer(), SIGNED);
-		    if( !real_identical (TREE_REAL_CST_PTR (field->data.value_of()),
-				         &vi) ) {
-		      nmsg++;
-		      error_msg(@NAME, "invalid PICTURE count %<(%s)%>",
-				field->data.initial );
-		    }
-		  }
-		  $$ = value->as_number();
-		  if( $$ <= 0 && !nmsg) {
-		    error_msg(@NAME, "invalid PICTURE count %<(%s)%>", $NAME );
-		  }
+		  if( value && ! value->is_numeric() ) {
+		    error_msg(@NAME,
+                              "PICTURE %qs requires a CONSTANT NUMERIC value",
+                              $NAME );
+                    output = value->as_number();
+		  } else {
+		    auto e = symbol_field(PROGRAM, 0, $NAME);
+		    if( ! e ) {
+		      error_msg(@NAME, "%qs not defined", $NAME );
+                    } else { // verify it's integer-like
+		      auto field = cbl_field_of(e);
+                      if( ! field->has_attr(constant_e) ) {
+                        error_msg(@NAME, "count %qs must be CONSTANT", $NAME);
+                      }
+                      if( ! is_numeric(field) ) {
+                        auto s = field->data.original();
+                        error_msg(@NAME, "%qs invalid as PICTURE count %<(%s)%>",
+                                  $NAME, s? s : "" );
+                      } else {
+                        auto ok = field->data.int64_of();
+                        if( ! ok.second ) {
+                          error_msg(@NAME, "%qs invalid as PICTURE count %<(%ld)%>",
+                                    $NAME, long(ok.first) );
+                        } else {
+                          output = ok.first;
+                        }
+		      }
+                    }
+                  }
+                  $$ = output;
+                  dbgmsg("%s:%d: count: (%s) is %ld", __FILE__, __LINE__, $NAME, long($$));
                 }
                 ;
 
@@ -4557,169 +4752,51 @@ usage_clause1:  usage BIT
 		}
         |       usage BINARY_INTEGER [comp] is_signed
                 {
-		  // action for BINARY_INTEGER is repeated for COMPUTATIONAL, below. 
-		  // If it changes, consolidate in a function. 
-                  bool infer = true;
-                  cbl_field_t *field = current_field();
+                  bool signable = $is_signed? $comp.signable : false;
 
-		  if( ! $is_signed ) {
-		    $comp.signable = false;
-		  }
-
-                  // Some binary types have defined capacity;
-                  switch($comp.type) {
-                  // COMPUTATIONAL and COMP-5 rely on PICTURE.
-                  case FldNumericBinary:
-                    field->attr |= big_endian_e;
-                    __attribute__((fallthrough));
-                  case FldNumericBin5:
-		    // If no capacity yet, then no picture, infer $comp.capacity.
-		    // If field has capacity, ensure USAGE is compatible.
-		    if( field->data.capacity > 0 ) { // PICTURE before USAGE
-		      infer = false;
-		      switch( field->type ) {
-		      case FldAlphanumeric:   // PIC X COMP-5 or COMP-X
-			assert( field->data.digits == 0 );
-			assert( field->data.rdigits == 0 );
-		        dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE");
-
-                        field->type = $comp.type;
-			field->clear_attr(signable_e);
-                        break;
-		      case FldNumericDisplay: // PIC 9 COMP-5 or COMP-X
-		        if( $comp.capacity == 0xFF ) { // comp-x is a bit like comp-5
-			  assert( field->data.digits == field->data.capacity );
-		          dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE");
-			}
-                        field->type = $comp.type;
-                        field->data.capacity = type_capacity(field->type,
-                                                             field->data.digits);
-		        break;
-		      default: break;
-                      }
-		    }
-                    break;
-		  case FldPacked: // comp-6 is unsigned comp-3
-		    assert(! $comp.signable);  // else PACKED_DECIMAL from scanner
-		    field->attr |= separate_e;
-                    dialect_ok(@2, MfComp6, "COMP-6");
-                    if( field->type == FldNumericDisplay ) {// PICTURE before USAGE
-                      infer = false;
-                      assert(field->data.capacity > 0);
-                      field->type = $comp.type;
-                      field->data.capacity = type_capacity(field->type,
-                                                           field->data.digits);
-                    }
-		    break;
-                  default:
-                    break;
-                  }
-
-                  if( infer ) {
-                    if( $comp.capacity > 0 ) {
-                      if( field->data.capacity > 0 ) {
-                        error_msg(@comp, "%s is BINARY type, incompatible with PICTURE",
-                               field->name);
-                        YYERROR;
-                      }
-                      field->data.capacity = $comp.capacity;
-                      field->type = $comp.type;
-                      if( $comp.signable ) {
-                        field->attr = (field->attr | signable_e);
-                      }
-                    }
-                  }
-                  $$ = $comp.type;
+                  $$ = field_binary_usage( @comp, current_field(), 
+                                           $comp.type, $comp.capacity,
+                                           signable );
                 }
+
 	|	usage COMPUTATIONAL[comp] native
                 { 
-		  // logic below duplicates BINARY_INTEGER, above.
-		  // If it changes, consolidate in a function. 
-                  bool infer = true;
-                  cbl_field_t *field = current_field();
-
-                  // Some binary types have defined capacity;
-                  switch($comp.type) {
-                  // COMPUTATIONAL and COMP-5 rely on PICTURE.
-                  case FldNumericBinary:
-                    field->attr |= big_endian_e;
-                    __attribute__((fallthrough));
-                  case FldNumericBin5:
-		    // If no capacity yet, then no picture, infer $comp.capacity.
-		    // If field has capacity, ensure USAGE is compatible.
-		    if( field->data.capacity > 0 ) { // PICTURE before USAGE
-		      infer = false;
-		      switch( field->type ) {
-		      case FldAlphanumeric:   // PIC X COMP-5 or COMP-X
-			assert( field->data.digits == 0 );
-			assert( field->data.rdigits == 0 );
-		        dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE");
-                        field->type = $comp.type;
-			field->clear_attr(signable_e);
-                        break;
-		      case FldNumericDisplay: // PIC 9 COMP-5 or COMP-X
-		        if( $comp.capacity == 0xFF ) { // comp-x is a bit like comp-5
-			  assert( field->data.digits == field->data.capacity );
-                          dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE");
-			}
-                        field->type = $comp.type;
-                        field->data.capacity = type_capacity(field->type,
-                                                             field->data.digits);
-		        break;
-		      default: break;
-                      }
-		    }
-                    break;
-		  case FldPacked: // comp-6 is unsigned comp-3
-		    assert(! $comp.signable);  // else PACKED_DECIMAL from scanner
-		    field->attr |= separate_e;
-                    dialect_ok(@2, MfComp6, "COMP-6");
-                    if( field->type == FldNumericDisplay ) {// PICTURE before USAGE
-                      infer = false;
-                      assert(field->data.capacity > 0);
-                      field->type = $comp.type;
-                      field->data.capacity = type_capacity(field->type,
-                                                           field->data.digits);
-                    }
-		    break;
-                  default:
-                    break;
+                  $$ = field_binary_usage( @comp, current_field(), 
+                                           $comp.type, $comp.capacity,
+                                           $comp.signable );
+                } 
+        |       usage DISPLAY         native {
+                  auto field = current_field();
+                  if( ! field->codeset.set() ) {
+                    error_msg(@2, "USAGE DISPLAY conflicts with PICTURE");
                   }
-
-                  if( infer ) {
-                    if( $comp.capacity > 0 ) {
-                      if( field->data.capacity > 0 ) {
-                        error_msg(@comp, "%s is BINARY type, incompatible with PICTURE",
-                               field->name);
-                        YYERROR;
-                      }
-                      field->data.capacity = $comp.capacity;
-                      field->type = $comp.type;
-                      if( $comp.signable ) {
-                        field->attr = (field->attr | signable_e);
-                      }
-                    }
-                  }
-                  $$ = $comp.type;
+                  $$ = FldDisplay;
                 }
-        |       usage DISPLAY         native { $$ = FldDisplay; }
-        |       usage PACKED_DECIMAL  native { $$ = FldPacked; }
+        |       usage PACKED_DECIMAL  native {
+                  cbl_field_t *field = current_field();
+		  if( field->data.capacity() > 0 &&
+		      field->type != FldNumericDisplay) {
+		    error_msg(@2, "USAGE PACKED DECIMAL conflicts with PICTURE");
+		    YYERROR;
+		  }
+                  $$ = FldPacked;
+                }
         |       usage PACKED_DECIMAL  with NO SIGN
 		{
                   cbl_field_t *field = current_field();
-		  if( field->data.capacity > 0 &&
+		  if( field->data.capacity() > 0 &&
 		      field->type != FldNumericDisplay) {
-		    error_msg(@2, "%s PICTURE is incompatible with USAGE PACKED DECIMAL",
-			     field->name);
+		    error_msg(@2, "USAGE PACKED DECIMAL conflicts with PICTURE");
 		    YYERROR;
 		  }
+		  if( field->has_attr(signable_e) ) {
+                    error_msg(@$, "signed PICTURE conflicts with NO SIGN");
+                  }
+		  if( field->has_attr(separate_e) ) {
+                    error_msg(@$, "SIGN clause conflicts with NO SIGN");
+                  }
 		  field->clear_attr(separate_e);
 		  field->clear_attr(signable_e);
-                  if( field->type == FldNumericDisplay ) {// PICTURE before USAGE
-                    assert(field->data.capacity > 0);
-                    field->data.capacity = type_capacity(FldPacked,
-                                                         field->data.digits);
-                  }
 		  $$ = field->type = FldPacked;
 		}
         |       usage INDEX                  {
@@ -4727,10 +4804,11 @@ usage_clause1:  usage BIT
                 }
         |       usage NATIONAL {
                   auto field = current_field();
-                  if( ! field->codeset.set(EBCDIC_e) ) {
-                    error_msg(@2, "usage NATIONAL conflicts with PICTURE");
+                  auto encoding = current_encoding('N');
+                  if( ! field->codeset.set(encoding) ) {
+                    error_msg(@2, "USAGE NATIONAL conflicts with PICTURE");
                   }
-                  $$ = FldInvalid;
+                  $$ = FldDisplay;
                 } 
                 // We should enforce data/code pointers with a different type.
         |       usage POINTER
@@ -4744,12 +4822,12 @@ usage_clause1:  usage BIT
 		  }
                   if( gcobol_feature_embiggen() && redefined &&
                       is_numeric(redefined->type) && redefined->size() == 4) {
-                    // For now, we allow POINTER to expand a 32-bit item to 64 bits.
-                    field->data.capacity = int_size_in_bytes(ptr_type_node);
+                    // Allow POINTER to expand a 32-bit item to 64 bits.
+                    field->data.capacity(int_size_in_bytes(ptr_type_node));
                     dbgmsg("%s: expanding #" HOST_SIZE_T_PRINT_UNSIGNED
                           " %s capacity %u => %u", __func__,
                           (fmt_size_t)field_index(redefined), redefined->name,
-                          redefined->data.capacity, field->data.capacity);
+                          redefined->data.capacity(), field->data.capacity());
 
                     redefined->embiggen();
 
@@ -4784,71 +4862,72 @@ value_clause:   VALUE all LITERAL[lit] {
                               $lit.prefix, $lit.data);
                   }
 
-                  field->data.initial  = $lit.data;
                   field->attr |= literal_attr($lit.prefix);
                   field->attr |= quoted_e;
 
-                  if( field->data.capacity == 0 ) {
-                    field->data.capacity = $lit.len;
-                  } else {
-                    if( $all ) {
-                      field_value_all(field);
-                    } else {
-                      if( $lit.len < field->data.capacity ) {
-                        auto p = blank_pad_initial( $lit.data, $lit.len,
-                                                    field->data.capacity );
-                        if( !p ) YYERROR;
-                        field->data.initial = p;
-                      }
+                  auto capacity = field->data.capacity();
+                  field->data.original($lit.data, $all); // oops, sets capacity to strlen
+
+                  if( capacity ) { // via PICTURE or USAGE
+                    field->data.capacity(capacity); // restore it (unnecessary)
+                    if (field->data.initial) { // PICTURE created blank initial
+                      field->encode($lit.len, @lit);
                     }
                   }
                 }
-        |       VALUE all cce_expr[value] {
+        |       VALUE all cce_expr[cce] {
+		  /*
+                   * cce has two parts: 
+		   * cce.r) Host binary value
+		   * cce.s) string value, if supplied as numeric literal 
+                   */
                   cbl_field_t *field = current_field();
-                  auto orig_str = original_number();
-		  REAL_VALUE_TYPE orig_val;
-		  real_from_string3 (&orig_val, orig_str,
-				     TYPE_MODE (float128_type_node));
-                  char *initial = NULL;
-
-                  if( real_identical (&orig_val, &$value) ) {
-                    initial = orig_str;
-                    pristine_values.insert(initial);
+                  if( $cce.s ) {
+                    field->data.original($cce.s, $all);
                   } else {
-                    initial = string_of($value);
-                    gcc_assert(initial);
+                    field->data.original($cce.r);
                   }
-
-                  char decimal = symbol_decimal_point();
-                  std::replace(initial, initial + strlen(initial), '.', decimal);
-
-                  field->data.initial = initial;
-                  field->data = build_real (float128_type_node, $value);
-
-                  if( $all ) field_value_all(field);
                 }
         |       VALUE all reserved_value[value]
                 {
                   cbl_field_t *field = current_field();
-                  if( ! field->codeset.set() ) {
-                    error_msg(@value, "VALUE inconsistent with encoding %s",
-                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
+                  field->codeset.set();
+                  assert( $value != NULLS );
+                  auto fig = constant_of(constant_index($value));
+                  auto orig_str = fig->data.initial;
+                  auto capacity = field->data.capacity();
+                  field->data.original(orig_str, $all);
+
+                  if( capacity ) { // via PICTURE or USAGE
+                    field->data.capacity(capacity); // restore it
+                    if (field->data.initial) { // PICTURE created blank initial
+                      field->encode( strlen(orig_str), @value );
+                    }
                   }
-                  if( $value != NULLS ) {
-                    auto fig = constant_of(constant_index($value));
-                    cbl_field_t *field = current_field();
-                    field->data.initial = fig->data.initial;
+                  if(  $value != ZERO ) {
+                    if( ($value != SPACES && field->type == FldNumericEdited)
+                      || is_numeric(field) )
+                    {
+                      error_msg(@value,
+                                "unexpected initial value for %s",
+                                cbl_field_type_name(field->type));
+                    }
                   }
                 }
         |       /* VALUE is */ NULLPTR
                 {
-                    auto fig = constant_of(constant_index(NULLS));
-                    cbl_field_t *field = current_field();
-                    field->data.initial = fig->data.initial;
+                  auto fig = constant_of(constant_index(NULLS));
+                  cbl_field_t *field = current_field();
+                  auto capacity = field->data.capacity();
+                  field->data.original(fig->data.initial);
+                  if( capacity ) { // via PICTURE or USAGE
+                    field->data.capacity(capacity); // restore it
+                    // do not encode
+                  }
                 }
         |       VALUE error
                 {
-                  error_msg(@2, "no valid VALUE supplied");
+                  error_msg(@2, "invalid VALUE");
                 }
                 ;
 
@@ -4936,14 +5015,15 @@ any_length:     ANY LENGTH
                   }
                   const char *prog_name = current.program()->name;
                   bool is_compat = 0 < compat_programs.count(prog_name);
-                  if( ! (field->level == 1 &&
-                         current_data_section == linkage_datasect_e &&
-                         (1 < current.program_level() ||
-			      current.program()->is_function() ||
-                              is_compat)) ) {
-                    error_msg(@1, "ANY LENGTH valid only for 01 "
-                            "in LINKAGE SECTION of a function or contained program");
-                    YYERROR;
+                  if( field->level != 1 || current_data_section != linkage_datasect_e ) {
+                    error_msg(@1, "ANY LENGTH valid only for 01 data-item "
+                                  "in LINKAGE SECTION");
+                  }
+                  if( ! current.program()->is_function() ) {
+                    if( 1 == current.program_level() && ! is_compat) {
+                        cbl_message(@$, MfAnyLength,
+                                    "ANY LENGTH not valid in outermost program");
+                    }
                   }
                   field->attr |= any_length_e;
                 }
@@ -5021,13 +5101,18 @@ same_clause:    SAME AS name
 sign_clause:    sign_is sign_leading sign_separate
                 {
                   cbl_field_t *field = current_field();
-                  if( $sign_leading ) {
-                    field->attr |= leading_e;
-                  } else {
-                    field->attr &= ~uint64_t(leading_e); // turn off in case inherited
-                    field->attr |= signable_e;
+                  if( 0 < field->data.capacity() ) { // PICTURE set size
+                    if( ! field->has_attr(signable_e) ) {
+                      error_msg(@1, "%qs must be signed for SIGN IS", field->name);
+                    }
                   }
-                  if( $sign_separate ) field->attr |= separate_e;
+                  field->set_attr(signable_e);
+                  if( $sign_leading ) {
+                    field->set_attr(leading_e);
+                  } else {
+                    field->clear_attr(leading_e); // turn off in case inherited
+                  }
+                  if( $sign_separate ) field->set_attr(separate_e);
                 }
                 ;
 sign_is:        %empty
@@ -5163,7 +5248,7 @@ procedure_use:  optional scalar {
                 }
                 ;
 by_value_arg:   scalar
-        |       LITERAL  { $$ = new_reference(new_literal($1, quoted_e)); }
+        |       LITERAL  { $$ = new_reference(new_literal(@1, $1, quoted_e)); }
         |       reserved_value
                 {
                   $$ = new_reference(constant_of(constant_index($1)));
@@ -5559,7 +5644,7 @@ accept_except:	EXCEPTION
 
 envar:          scalar { $$ = $1; $$->field->attr |= envar_e; }
         |       LITERAL {
-                  $$ = new_reference(new_literal($1, quoted_e));
+                  $$ = new_reference(new_literal(@1, $1, quoted_e));
                   $$->field->attr |= envar_e;
                 }
                 ;
@@ -5732,7 +5817,7 @@ name88:		NAME88 {
                   name_queue.qualify(@1, $1);
 		  auto namelocs( name_queue.pop() );
 		  auto names( name_queue.namelist_of(namelocs) );
-                  if( ($$ = field_find(names)) == NULL ) {
+                  if( ($$ = field_find(@1, names)) == NULL ) {
                     if( procedure_div_e == current_division  ) {
 		      error_msg(namelocs.back().loc,
 				"DATA-ITEM '%s' not found", names.back() );
@@ -6455,7 +6540,7 @@ rel_term:	rel_term1
 rel_term1:	all LITERAL
                 {
 		  $$.invert = false;
-                  $$.term = new_reference(new_literal($2, quoted_e));
+                  $$.term = new_reference(new_literal(@2, $2, quoted_e));
                   $$.term->all = $all;
                 }
         |       all spaces_etc[value]
@@ -6925,7 +7010,7 @@ name:           qname
                   auto namelocs( name_queue.pop() );
                   auto names( name_queue.namelist_of(namelocs) );
                   auto inner = namelocs.back();
-                  if( ($$ = field_find(names)) == NULL ) {
+                  if( ($$ = field_find(@1, names)) == NULL ) {
                     if( procedure_div_e == current_division  ) {
                       error_msg(inner.loc,
                                 "DATA-ITEM '%s' not found", inner.name );
@@ -6993,6 +7078,8 @@ context_word:   APPLY                   { static char s[] ="APPLY";
                                          $$ = s; } // USAGE clause and FLOAT-DECIMAL clause
         |       BLINK                  { static char s[] ="BLINK";
                                          $$ = s; } // screen description entry and SET attribute statement
+        |       BYTE                   { static char s[] ="BYTE";
+                                         $$ = s; } // CONVERT intrinsic function
         |       BYTE_LENGTH            { static char s[] ="BYTE-LENGTH";
                                          $$ = s; } // constant entry
         |       CAPACITY               { static char s[] ="CAPACITY";
@@ -7147,16 +7234,16 @@ move:           MOVE scalar TO move_tgts[tgts]
                 {
                   statement_begin(@1, MOVE);
                   if( $scalar->field->type == FldIndex ) {
-                    error_msg(@1, "%qs cannot be MOVEd because it is an %<INDEX%>",
-			     name_of($scalar->field) );
-                    YYERROR;
+                    cbl_message(@1, MfMoveIndex,
+                                "cannot MOVE %qs because it is an %<INDEX%>",
+                                name_of($scalar->field) );
                   }
                   if( !parser_move2($tgts, *$scalar) ) { YYERROR; }
                 }
         |       MOVE all literalism[input] TO move_tgts[tgts]
                 {
                   statement_begin(@1, MOVE);
-                  struct cbl_refer_t *src = new_reference(new_literal($input,
+                  struct cbl_refer_t *src = new_reference(new_literal(@input, $input,
                                                                       quoted_e));
                   src->all = $all;
                   if( !parser_move2($tgts, *src) ) { YYERROR; }
@@ -7174,8 +7261,8 @@ move:           MOVE scalar TO move_tgts[tgts]
                                             } );
 
                   if( p != $tgts->targets.end() ) {
-                    error_msg(@src, "cannot MOVE %s "
-			            "to numeric receiving field %s",
+                    error_msg(@src, "cannot MOVE %qs "
+			            "to numeric receiving field %qs",
 			      constant_of(constant_index($src))->name,
 			      field->name );
                     YYERROR;
@@ -7251,7 +7338,7 @@ move_tgt:	scalar[tgt] {
 		  }
 		  auto litcon = field.name[0] == '_'? "literal" : "constant";
 		  error_msg(@literal, "%s is a %s", value_str, litcon);
-		  $$ = NULL;
+		  $$ = nullptr;
 		}
         |       error
                 {
@@ -7260,7 +7347,7 @@ move_tgt:	scalar[tgt] {
 		    error_at = yytext;
 		    error_msg(first_line_of(@1), "invalid receiving operand");
 		  }
-		  $$ = NULL;
+		  $$ = nullptr;
                 }
                 ;
 
@@ -7431,7 +7518,7 @@ num_value:      scalar // might actually be a string
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric(none_e) );
 		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
-		  parser_set_numeric($$->field, $val->data.capacity);
+		  parser_set_numeric($$->field, $val->data.capacity());
                 }
         |       LENGTH_OF name[val] subscripts[subs] {
                   location_set(@1);
@@ -7441,7 +7528,7 @@ num_value:      scalar // might actually be a string
 		    cbl_refer_t r1($val);
 		    subscript_dimension_error( @subs, $subs->refers.size(), &r1 );
                   }
-		  parser_set_numeric($$->field, $val->data.capacity);
+		  parser_set_numeric($$->field, $val->data.capacity());
                 }
                 ;
 
@@ -7472,33 +7559,38 @@ num_value:      scalar // might actually be a string
 
 cce_expr:       cce_factor
         |       cce_expr '+' cce_expr {
-                  real_arithmetic (&$$, PLUS_EXPR, &$1, &$3);
-                  real_convert (&$$, TYPE_MODE (float128_type_node), &$$);
+                  $$.s = nullptr;
+                  real_arithmetic (&$$.r, PLUS_EXPR, &$1.r, &$3.r);
+                  real_convert (&$$.r, TYPE_MODE (float128_type_node), &$$.r);
                 }
         |       cce_expr '-' cce_expr {
-                  real_arithmetic (&$$, MINUS_EXPR, &$1, &$3);
-                  real_convert (&$$, TYPE_MODE (float128_type_node), &$$);
+                  $$.s = nullptr;
+                  real_arithmetic (&$$.r, MINUS_EXPR, &$1.r, &$3.r);
+                  real_convert (&$$.r, TYPE_MODE (float128_type_node), &$$.r);
                 }
         |       cce_expr '*' cce_expr {
-                  real_arithmetic (&$$, MULT_EXPR, &$1, &$3);
-                  real_convert (&$$, TYPE_MODE (float128_type_node), &$$);
+                  $$.s = nullptr;
+                  real_arithmetic (&$$.r, MULT_EXPR, &$1.r, &$3.r);
+                  real_convert (&$$.r, TYPE_MODE (float128_type_node), &$$.r);
                 }
         |       cce_expr '/' cce_expr {
-                  real_arithmetic (&$$, RDIV_EXPR, &$1, &$3);
-                  real_convert (&$$, TYPE_MODE (float128_type_node), &$$);
+                  $$.s = nullptr;
+                  real_arithmetic (&$$.r, RDIV_EXPR, &$1.r, &$3.r);
+                  real_convert (&$$.r, TYPE_MODE (float128_type_node), &$$.r);
                 }
-        |                '+' cce_expr %prec NEG { $$ =  $2; }
-        |                '-' cce_expr %prec NEG { $$ = real_value_negate (&$2); }
-        |                '(' cce_expr ')'  { $$ = $2; }
+        |                '+' cce_expr %prec NEG { $$.r =  $2.r; }
+        |                '-' cce_expr %prec NEG { $$.r = real_value_negate (&$2.r); }
+        |                '(' cce_expr ')'  { $$.r = $2.r; }
         ;
 
 cce_factor:     NUMSTR {
                   /* real_from_string does not allow arbitrary radix.  */
                   // When DECIMAL IS COMMA, commas act as decimal points.
 		  gcc_assert($1.radix == decimal_e);
-		  auto p = $1.string, pend = p + strlen(p);
-		  std::replace(p, pend, ',', '.');
-		  real_from_string3( &$$, $1.string,
+                  $$.s = $1.string;
+                  std::string numstr($1.string);
+		  std::replace(numstr.begin(), numstr.end(), ',', '.');
+		  real_from_string3( &$$.r, numstr.c_str(),
 				     TYPE_MODE (float128_type_node) );
                 }
                 ;
@@ -7560,7 +7652,7 @@ stop:           STOP RUN exit_with
                 {
                   statement_begin(@1, STOP);
                   dialect_ok(@2, IbmStopNumber, "STOP <number>");
-                  cbl_refer_t status( new_literal($status.string, $status.radix) );
+                  cbl_refer_t status( new_literal(@status, $status.string, $status.radix) );
                   parser_see_stop_run( status, NULL );
                 }
         |       STOP LITERAL[name] // CCVS-85 && IBM syntax
@@ -7577,7 +7669,7 @@ stop:           STOP RUN exit_with
 stop_status:    status         { $$ = NULL; }
         |       status scalar  { $$ = $2; }
         |       status NUMSTR {
-                  $$ = new_reference(new_literal($2.string, $2.radix));
+                  $$ = new_reference(new_literal(@2, $2.string, $2.radix));
                 }
                 ;
 
@@ -7625,7 +7717,7 @@ arg_list:                any_arg { $$ = new refer_list_t($1); }
         |       arg_list any_arg { $1->push_back($2); $$ = $1; }
                 ;
 any_arg:        expr
-        |       LITERAL {$$ = new_reference(new_literal($1, quoted_e)); }
+        |       LITERAL {$$ = new_reference(new_literal(@1, $1, quoted_e)); }
                 ;
 
                 /*
@@ -7650,7 +7742,7 @@ signed_literal:     num_literal
                   location_set(@1);
                   $$ = new_tempnumeric(none_e);
 		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
-                  parser_set_numeric($$, $val->data.capacity);
+                  parser_set_numeric($$, $val->data.capacity());
                 }
         |       LENGTH_OF name[val] subscripts[subs] {
                   location_set(@1);
@@ -7660,11 +7752,18 @@ signed_literal:     num_literal
 		    cbl_refer_t r1($val);
 		    subscript_dimension_error( @subs, $subs->refers.size(), &r1 );
                   }
-                  parser_set_numeric($$, $val->data.capacity);
+                  parser_set_numeric($$, $val->data.capacity());
                 }
                 ;
 
-num_literal:    NUMSTR { $$ = new_literal($1.string, $1.radix); }
+num_constant:   NUMSTR {
+                  if( $1.is_float ) {
+                    $$ = new_literal_float(@1, $1.string);
+                  } else {
+                    $$ = new_literal(@1, $1.string, $1.radix); }
+                }
+                ;
+num_literal:    num_constant
         |       ZERO   { $$ = constant_of(constant_index(ZERO)); }
                 ;
 
@@ -8222,7 +8321,7 @@ varg1a:         ADDRESS OF scalar {
 		    cbl_refer_t r1($val);
 		    subscript_dimension_error( @subs, $subs->refers.size(), &r1 );
                   }
-		  parser_set_numeric($$->field, $val->data.capacity);
+		  parser_set_numeric($$->field, $val->data.capacity());
                 }
                 ;
 
@@ -8235,12 +8334,9 @@ literal:        literalism
                   $$ = $1.isymbol()?
                     cbl_field_of(symbol_at($1.isymbol()))
                     :
-                    new_literal($1, quoted_e);
+                    new_literal(@1, $1, quoted_e);
                 }
-        |       NUMSTR
-                {
-                  $$ = new_literal($1.string, $1.radix);
-                }
+        |       num_constant
         |       DATETIME_FMT
                 {
                   $$ = new_literal(strlen($1), $1, quoted_e);
@@ -8546,7 +8642,7 @@ file_record:    NAME
 		  auto namelocs( name_queue.pop() );
 		  auto names( name_queue.namelist_of(namelocs) );
 		  auto inner = namelocs.back();
-                  if( ($$ = field_find(names)) == NULL ) {
+                  if( ($$ = field_find(@1, names)) == NULL ) {
                     error_msg(inner.loc, "no record name '%s'", inner.name);
                     YYERROR;
                   }
@@ -8583,7 +8679,7 @@ advance_by:     scalar lines { $$ = $1; } /* BUG: should accept reference */
                    * number of lines is negative.  So, we use the
                    * negative Number Of The Beast as a PAGE flag.
                    */
-                  $$ = new_reference( new_literal(xstrdup("-666")) );
+                  $$ = new_reference( new_constant(xstrdup("-666")) );
                 }
         |       device_name { $$ = new_reference(literally_one); }
                 ;
@@ -9007,7 +9103,7 @@ set:            SET set_tgts[tgts] TO set_operand[src]
                   auto literal = $src.isymbol()?
                     cbl_field_of(symbol_at($src.isymbol()))
                     :
-                    new_literal($src, quoted_e);
+                    new_literal(@src, $src, quoted_e);
                   ast_set_pointers($tgts->targets, literal);
                 }
                 // Format 12 (save-locale):
@@ -9296,7 +9392,7 @@ search_term:    scalar[key] EQ search_expr[sarg]
                 }
                 ;
 search_expr:    expr
-        |       LITERAL { $$ = new_reference(new_literal($1, quoted_e)); }
+        |       LITERAL { $$ = new_reference(new_literal(@1, $1, quoted_e)); }
                 ;
 
 sort:           sort_table
@@ -9308,6 +9404,7 @@ sort_table:     SORT tableref[table] sort_keys sort_dup sort_seq {
                   std::vector <cbl_key_t> keys($sort_keys->key_list.size());
 		  if( ! is_table($table->field) ) {
 		    error_msg(@1, "%s has no OCCURS clause", $table->field->name);
+                    YYERROR;
 		  }
                   // 23) If data-name-1 is omitted, the data item referenced by
                   // data-name-2 is the key data item.
@@ -9325,6 +9422,7 @@ sort_table:     SORT tableref[table] sort_keys sort_dup sort_seq {
                   statement_begin(@1, SORT);
 		  if( ! is_table($table->field) ) {
 		    error_msg(@1, "%s has no OCCURS clause", $table->field->name);
+                    YYERROR;
 		  }
                   cbl_key_t
                     key = cbl_key_t($table->field->occurs.keys[0]),
@@ -9601,10 +9699,11 @@ inspect:        INSPECT backward inspected TALLYING tallies
                 {
 		  if( $all ) {
 		    $replace_oper->all = true;
-		    if( is_literal($replace_oper->field) ) {
-		      if( $replace_oper->field->data.capacity != 1 ) {
+                    cbl_field_t *field( $replace_oper->field );
+		    if( is_literal(field) ) {
+		      if( field->data.capacity() != field->codeset.stride() ) {
 			error_msg(@all, "ALL %s must be a single character",
-				 $replace_oper->field->data.initial);
+                                  field->data.initial);
 			YYERROR;
 		      }
 		    } else {
@@ -9616,12 +9715,12 @@ inspect:        INSPECT backward inspected TALLYING tallies
 		                *replace = $replace_oper->field;
 		    if( is_literal(match) && is_literal(replace) ) {
 		      if( !$match->all && !$replace_oper->all) {
-			if( match->data.capacity != replace->data.capacity ) {
+			if( match->data.capacity() != replace->data.capacity() ) {
 			  // Make a copy of replace, because nice_name returns a static
 			  char *replace_name = xstrdup(nice_name_of(replace));
 			  error_msg(@match, "%qs, size %u NOT EQUAL %qs, size %u",
-				    nice_name_of(match), match->data.capacity, 
-				    replace_name, replace->data.capacity);
+				    nice_name_of(match), match->char_capacity(), 
+				    replace_name, replace->char_capacity());
 				    free(replace_name);
 			  YYERROR;
 			}
@@ -9856,7 +9955,7 @@ first_leading:  FIRST      { $$ = bound_first_e; }
 		}
                 ;
 
-alphaval:       LITERAL { $$ = new_reference(new_literal($1, quoted_e)); }
+alphaval:       LITERAL { $$ = new_reference(new_literal(@1, $1, quoted_e)); }
         |       reserved_value
                 {
                   $$ = new_reference( constant_of(constant_index($1)) );
@@ -9966,9 +10065,7 @@ init_by:        init_category data BY init_data
                 }
                 ;
 init_data:      alpha_val
-        |       NUMSTR   {
-                  $$ = new_reference(new_literal($1.string, $1.radix));
-                }
+        |       num_constant { $$ = new_reference($1); }
                 ;
 
 call:           call_impl end_call
@@ -10048,12 +10145,12 @@ call_returning:	RETURNING
 
 entry:          ENTRY LITERAL
                 { statement_begin(@1, ENTRY);
-                  auto name = new_literal($2, quoted_e);
+                  auto name = new_literal(@2, $2, quoted_e);
                   parser_entry( name );
                 }
         |       ENTRY LITERAL USING parameters
                 { statement_begin(@1, ENTRY);
-                  auto name = new_literal($2, quoted_e);
+                  auto name = new_literal(@2, $2, quoted_e);
                   ffi_args_t *params = $parameters;
                   size_t narg = params? params->elems.size() : 0;
 		  cbl_ffi_arg_t *pargs = NULL;
@@ -10086,7 +10183,7 @@ ffi_name:       scalar
                 {
                   // Pretend hex-encoded because that means use verbatim.
                   auto attr = cbl_field_attr_t(quoted_e | hex_encoded_e);
-                  $$ = new_reference(new_literal($1, attr));
+                  $$ = new_reference(new_literal(@1, $1, attr));
                 }
                 ;
 
@@ -10106,6 +10203,13 @@ ffi_by_ref:     scalar_arg[refer]
                 {
                   $$ = new cbl_ffi_arg_t(by_reference_e, $refer);
                 }
+        |       LITERAL
+                {
+                  cbl_message(@1, MfCallLiteral,
+                              "cannot pass %qs BY REFERENCE", $1.data);
+                  cbl_refer_t *r = new_reference(new_literal(@1, $1, quoted_e));
+                  $$ = new cbl_ffi_arg_t(by_content_e, r);
+                }
         |       ADDRESS OF scalar_arg[refer]
                 {
                   $$ = new cbl_ffi_arg_t(by_reference_e, $refer, address_of_e);
@@ -10124,7 +10228,7 @@ ffi_by_con:     expr
                 }
         |       LITERAL
                 {
-                  cbl_refer_t *r = new_reference(new_literal($1, quoted_e));
+                  cbl_refer_t *r = new_reference(new_literal(@1, $1, quoted_e));
                   $$ = new cbl_ffi_arg_t(by_content_e, r);
                 }
         |       OMITTED
@@ -10140,7 +10244,8 @@ ffi_by_val:     by_value_arg
                 }
         |       cce_expr %prec NAME
                 {
-                  auto r = new_reference(new_literal(string_of($1)));
+                  const char *s = $1.s? $1.s : string_of($1.r);
+                  auto r = new_reference(new_literal(@1, s));
                   $$ = new cbl_ffi_arg_t(by_value_e, r);
                 }
         |       ADDRESS OF scalar
@@ -10405,7 +10510,7 @@ str_delimited:  str_input DELIMITED by str_size
                 ;
 
 str_input:      scalar
-        |       LITERAL { $$ = new_reference(new_literal($1, quoted_e)); }
+        |       LITERAL { $$ = new_reference(new_literal(@1, $1, quoted_e)); }
         |       reserved_value
                 {
                   $$ = new_reference(constant_of(constant_index($1)));
@@ -10414,7 +10519,7 @@ str_input:      scalar
                 ;
 
 str_size:       SIZE   { $$ = new_reference(NULL); }
-        |       LITERAL { $$ = new_reference(new_literal($1, quoted_e)); }
+        |       LITERAL { $$ = new_reference(new_literal(@1, $1, quoted_e)); }
         |       scalar
         |       reserved_value
                 {
@@ -10520,7 +10625,7 @@ unstring_src:   scalar
         |       intrinsic_call
         |       LITERAL
                 {
-                  $$ = new_reference(new_literal($1, quoted_e));
+                  $$ = new_reference(new_literal(@1, $1, quoted_e));
                 }
                 ;
 
@@ -10656,6 +10761,7 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
                   // Pretend hex-encoded because that means use verbatim.
                   auto attr = cbl_field_attr_t(quoted_e | hex_encoded_e);
                   auto name = new_literal(strlen(L->name), L->name, attr);
+                  symbol_temporary_location(name, @1);
 		  ast_call( @1, name, $$, args.size(), args.data(), NULL, NULL, true );
                 }
         |       FUNCTION_UDF_0 {
@@ -10670,6 +10776,7 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
                   // Pretend hex-encoded because that means use verbatim.
                   auto attr = cbl_field_attr_t(quoted_e | hex_encoded_e);
                   auto name = new_literal(strlen(L->name), L->name, attr);
+                  symbol_temporary_location(name, @1);
                   ast_call( @1, name, $$, narg, args, NULL, NULL, true );
                 }
                 ;
@@ -10749,12 +10856,54 @@ intrinsic:      function_udf
                   $$ = new_alphanumeric(1,"CHAR");
                   if( ! intrinsic_call_1($$, CHAR, $r1, @r1)) YYERROR;
                 }
-
-	|       CONVERT  '(' varg[r1] convert_src[src] convert_dst[dst] ')' {
+                /* convert formulations: 
+                 *  1. ANY to ALNUM HEX, or NAT HEX
+                 *  2. HEX to BYTE
+                 *  3. ALNUM to NAT, ALNUM HEX, or NAT HEX
+                 *  4. NAT to ALNUM, ALNUM HEX, or NAT HEX
+                 */
+	|       CONVERT  '(' varg[r1] ANY convert_alpha[dst] convert_hex[hex]')' {
                   location_set(@1);
-                  $$ = new_alphanumeric(1,"CONVERT");
-		  cbl_unimplemented("CONVERT");
-                  /* if( ! intrinsic_call_3($$, CONVERT, $r1, $src, $dst) ) YYERROR; */
+                  $$ = new_alphanumeric("CONVERT");
+                  unsigned int dst = ($dst | $hex );
+                  parser_intrinsic_convert($$, *$r1, convert_any_e, dst);
+                }
+	|       CONVERT  '(' varg[r1] ANY convert_nat[dst] convert_hex[hex]')' {
+                  location_set(@1);
+                  $$ = new_alphanumeric("CONVERT", current_encoding('N'));
+                  unsigned int dst = ($dst | $hex );
+                  parser_intrinsic_convert($$, *$r1, convert_any_e, dst);
+                }
+	|       CONVERT  '(' varg[r1] HEX BYTE ')' {
+                  location_set(@1);
+                  $$ = new_alphanumeric("CONVERT");
+                  parser_intrinsic_convert($$, *$r1, convert_hex_e, convert_byte_e);
+                }
+	|       CONVERT  '(' varg[r1] convert_alpha[src] convert_nat[dst] ')' {
+                  location_set(@1);
+                  $$ = new_alphanumeric("CONVERT", current_encoding('N'));
+                  auto src = convert_type_t($src);
+                  parser_intrinsic_convert($$, *$r1, src, $dst);
+                }
+	|       CONVERT  '(' varg[r1] convert_alpha[src] convert_alpha[dst] convert_hex[hex] ')' {
+                  location_set(@1);
+                  $$ = new_alphanumeric("CONVERT");
+                  auto src = convert_type_t($src);
+                  unsigned int dst = ($dst | $hex );
+                  parser_intrinsic_convert($$, *$r1, src, dst);
+                }
+	|       CONVERT  '(' varg[r1] convert_nat[src] convert_alpha[dst] ')' {
+                  location_set(@1);
+                  $$ = new_alphanumeric("CONVERT");
+                  auto src = convert_type_t($src);
+                  parser_intrinsic_convert($$, *$r1, src, $dst);
+                }
+	|       CONVERT  '(' varg[r1] convert_nat[src] convert_nat[dst] convert_hex[hex] ')' {
+                  location_set(@1);
+                  $$ = new_alphanumeric("CONVERT", current_encoding('N'));
+                  auto src = convert_type_t($src);
+                  unsigned int dst = ($dst | $hex );
+                  parser_intrinsic_convert($$, *$r1, src, dst);
                 }
 
         |       DISPLAY_OF  '(' varg[r1]  ')' {
@@ -10774,18 +10923,23 @@ intrinsic:      function_udf
                   parser_exception_file( $$, $filename );
                 }
 
-        |       FIND_STRING '(' varg[r1] last start_after anycase ')' {
+                /* FIND-STRING argument-1 argument-2 
+                 * [LAST] [[START AFTER] argument-3] [ANYCASE] */
+        |       FIND_STRING '(' varg[r1] varg[r2] last start_after[after] anycase ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric("FIND-STRING");
-                  /* auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e)); */
-		  cbl_unimplemented("%<FIND_STRING%>");
-                  /* if( ! intrinsic_call_4($$, FIND_STRING, r1, $r2) ) YYERROR; */
+                  $$ = new_tempnumeric("FIND-STRING");
+                  if( $after && ! is_numeric($after->field) ) {
+                    error_msg(@after, "START AFTER %qs must be numeric", $after->name());
+                    YYERROR;
+                  }
+                  parser_intrinsic_find_string($$, *$r1, *$r2, $after, $last, $anycase);
                 }
 
         |       FORMATTED_DATE '(' DATE_FMT[r1] expr[r2] ')' {
                   location_set(@1);
                   $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATE, "FORMATTED-DATE");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_2($$, FORMATTED_DATE, r1, $r2) ) YYERROR;
                 }
 
@@ -10795,6 +10949,7 @@ intrinsic:      function_udf
                   location_set(@1);
                   $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME, "FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   static cbl_refer_t r3(literally_zero);
                   if( ! intrinsic_call_4($$, FORMATTED_DATETIME,
                                          r1, $r2, $r3, &r3) ) YYERROR;
@@ -10804,6 +10959,7 @@ intrinsic:      function_udf
                   location_set(@1);
                   $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME, "FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_4($$, FORMATTED_DATETIME,
                                              r1, $r2, $r3, $r4) ) YYERROR;
                 }
@@ -10815,14 +10971,16 @@ intrinsic:      function_udf
                   location_set(@1);
                   $$ = new_alphanumeric(MAXLENGTH_FORMATTED_TIME, "FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_3($$, FORMATTED_TIME,
                                              r1, $r2, $r3) ) YYERROR;
                 }
         |       FORMATTED_TIME '(' TIME_FMT[r1] expr[r2]  ')' {
                   location_set(@1);
                   $$ = new_alphanumeric(MAXLENGTH_FORMATTED_TIME, "FORMATTED-TIME");
-                  auto r3 = new_reference(new_literal("0"));
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  auto r3 = new_reference(new_constant("0"));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_3($$, FORMATTED_TIME,
                                              r1, $r2, r3) ) YYERROR;
                 }
@@ -10830,13 +10988,15 @@ intrinsic:      function_udf
                   location_set(@1);
                   $$ = new_alphanumeric(MAXLENGTH_FORMATTED_DATETIME, "FORMATTED-CURRENT_DATE");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_1($$, FORMATTED_CURRENT_DATE, r1, @r1) )
                                          YYERROR;
                 }
         |       TEST_FORMATTED_DATETIME '(' DATE_FMT[r1] varg[r2] ')' {
-                location_set(@1);
-		$$ = new_tempnumeric("TEST-FORMATTED-DATETIME");
+                  location_set(@1);
+		  $$ = new_tempnumeric("TEST-FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_2($$, TEST_FORMATTED_DATETIME,
                                               r1, $r2) ) YYERROR;
                 }
@@ -10844,6 +11004,7 @@ intrinsic:      function_udf
                 location_set(@1);
 		$$ = new_tempnumeric("TEST-FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_2($$, TEST_FORMATTED_DATETIME,
                                               r1, $r2) ) YYERROR;
                 }
@@ -10852,6 +11013,7 @@ intrinsic:      function_udf
                 location_set(@1);
 		$$ = new_tempnumeric("TEST-FORMATTED-DATETIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_2($$, TEST_FORMATTED_DATETIME,
                                               r1, $r2) ) YYERROR;
                 }
@@ -10859,6 +11021,7 @@ intrinsic:      function_udf
                 location_set(@1);
 		$$ = new_tempnumeric("INTEGER-OF-FORMATTED-DATE");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_2($$, INTEGER_OF_FORMATTED_DATE,
                                               r1, $r2) ) YYERROR;
                 }
@@ -10867,6 +11030,7 @@ intrinsic:      function_udf
                 location_set(@1);
 		$$ = new_tempnumeric("INTEGER-OF-FORMATTED-DATE");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_2($$, INTEGER_OF_FORMATTED_DATE,
                                               r1, $r2) ) YYERROR;
                 }
@@ -10874,6 +11038,7 @@ intrinsic:      function_udf
                 location_set(@1);
 		$$ = new_tempnumeric("SECONDS-FROM-FORMATTED-TIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_2($$, SECONDS_FROM_FORMATTED_TIME,
                                               r1, $r2) ) YYERROR;
                 }
@@ -10882,6 +11047,7 @@ intrinsic:      function_udf
                 location_set(@1);
 		$$ = new_tempnumeric("SECONDS-FROM-FORMATTED-TIME");
                   auto r1 = new_reference(new_literal(strlen($r1), $r1, quoted_e));
+                  symbol_temporary_location(r1->field, @r1);
                   if( ! intrinsic_call_2($$, SECONDS_FROM_FORMATTED_TIME,
                                               r1, $r2) ) YYERROR;
                 }
@@ -10900,12 +11066,12 @@ intrinsic:      function_udf
 	|	LENGTH '(' varg1a[val] ')' {
                   location_set(@1);
                   $$ = new_tempnumeric("LENGTH", none_e);
-		  parser_set_numeric($$, $val->field->data.capacity);
+		  parser_set_numeric($$, $val->field->data.capacity());
 		  if( ! intrinsic_call_1($$, LENGTH, $val, @val)) YYERROR;
 		}
         |       lopper_case[func] '(' alpha_val[r1] ')' {
                   location_set(@1);
-                  $$ = new_alphanumeric($r1->field->data.capacity, "lopper_case[func]");
+                  $$ = new_alphanumeric($r1->field->data.capacity(), "lopper_case[func]");
                   if( ! intrinsic_call_1($$, $func, $r1, @r1)) YYERROR;
                 }
 
@@ -11069,8 +11235,8 @@ intrinsic:      function_udf
                 {
                   location_set(@1);
                   static auto r2 = new_reference(FldNumericDisplay, "50");
-                  static auto one = new cbl_refer_t( new_literal("1") );
-                  static auto four = new cbl_refer_t( new_literal("4") );
+                  static auto one = new cbl_refer_t( new_constant("1") );
+                  static auto four = new cbl_refer_t( new_constant("4") );
                   cbl_span_t year(one, four);
                   auto r3 = new_reference(new_alphanumeric(MAXLENGTH_CALENDAR_DATE));
                   r3->refmod = year;
@@ -11085,8 +11251,8 @@ intrinsic:      function_udf
         |       DATE_TO_YYYYMMDD '(' expr[r1] expr[r2] ')'
                 {
                   location_set(@1);
-                  static auto one = new cbl_refer_t( new_literal("1") );
-                  static auto four = new cbl_refer_t( new_literal("4") );
+                  static auto one = new cbl_refer_t( new_constant("1") );
+                  static auto four = new cbl_refer_t( new_constant("4") );
                   cbl_span_t year(one, four);
                   auto r3 = new_reference(new_alphanumeric(MAXLENGTH_CALENDAR_DATE));
                   r3->refmod = year;
@@ -11111,8 +11277,8 @@ intrinsic:      function_udf
                 {
                   location_set(@1);
                   static auto r2 = new_reference(FldNumericDisplay, "50");
-                  static auto one = new cbl_refer_t( new_literal("1") );
-                  static auto four = new cbl_refer_t( new_literal("4") );
+                  static auto one = new cbl_refer_t( new_constant("1") );
+                  static auto four = new cbl_refer_t( new_constant("4") );
                   cbl_span_t year(one, four);
                   auto r3 = new_reference(new_alphanumeric(MAXLENGTH_CALENDAR_DATE));
                   r3->refmod = year;
@@ -11127,8 +11293,8 @@ intrinsic:      function_udf
         |       DAY_TO_YYYYDDD '(' expr[r1] expr[r2] ')'
                 {
                   location_set(@1);
-                  static auto one = new cbl_refer_t( new_literal("1") );
-                  static auto four = new cbl_refer_t( new_literal("4") );
+                  static auto one = new cbl_refer_t( new_constant("1") );
+                  static auto four = new cbl_refer_t( new_constant("4") );
                   cbl_span_t year(one, four);
                   auto r3 = new_reference(new_alphanumeric(MAXLENGTH_CALENDAR_DATE));
                   r3->refmod = year;
@@ -11152,9 +11318,9 @@ intrinsic:      function_udf
         |       YEAR_TO_YYYY '(' expr[r1] ')'
                 {
                   location_set(@1);
-                  static auto r2 = new_reference(new_literal("50", decimal_e));
-                  static auto one = new cbl_refer_t( new_literal("1") );
-                  static auto four = new cbl_refer_t( new_literal("4") );
+                  static auto r2 = new_reference(new_constant("50"));
+                  static auto one = new cbl_refer_t( new_constant("1") );
+                  static auto four = new cbl_refer_t( new_constant("4") );
                   cbl_span_t year(one, four);
                   auto r3 = new_reference(new_alphanumeric(MAXLENGTH_CALENDAR_DATE));
                   r3->refmod = year;
@@ -11169,8 +11335,8 @@ intrinsic:      function_udf
         |       YEAR_TO_YYYY '(' expr[r1] expr[r2] ')'
                 {
                   location_set(@1);
-                  static auto one = new cbl_refer_t( new_literal("1") );
-                  static auto four = new cbl_refer_t( new_literal("4") );
+                  static auto one = new cbl_refer_t( new_constant("1") );
+                  static auto four = new cbl_refer_t( new_constant("4") );
                   cbl_span_t year(one, four);
                   auto r3 = new_reference(new_alphanumeric(MAXLENGTH_CALENDAR_DATE));
                   r3->refmod = year;
@@ -11225,18 +11391,19 @@ module_type:	ACTIVATING { $$ = module_activating_e; }
 	|	TOP_LEVEL  { $$ = module_toplevel_e; }
 		;
 
-convert_src:	ANY
-	|	HEX
-	|	convert_fmt
+//convert_fmt:	convert_alpha
+//        |       convert_nat
+//                ;
+convert_alpha:	ALPHANUMERIC { $$ = convert_alpha_e; }
+	|	ANUM         { $$ = convert_alpha_e; }
 		;
-convert_dst:	convert_fmt HEX
-	|	BYTE
+convert_nat:	NAT          { $$ = convert_nat_e; }
+	|	NATIONAL     { $$ = convert_nat_e; }
 		;
-convert_fmt:	ALPHANUMERIC
-	|	ANUM
-	|	NAT
-	|	NATIONAL
-		;
+convert_hex:    HEX                 { $$ = convert_hex_e; }
+        |       HEX JUSTIFIED       { $$ = convert_just_e; }
+        |       HEX JUSTIFIED RIGHT { $$ = convert_rjust_e; }
+        ;
 
 numval_locale:  %empty {
                   $$.is_locale = false;
@@ -11280,7 +11447,7 @@ intrinsic_locale:
                 {
                   location_set(@1);
                   $$ = new_alphanumeric();
-                  cbl_refer_t locale(new_literal($locale_name));
+                  cbl_refer_t locale(new_literal(@locale_name, $locale_name));
                   if( ! intrinsic_call_3($$, LOCALE_COMPARE, $r1, $r2, &locale) ) YYERROR;
                 }
 
@@ -11329,9 +11496,9 @@ lopper_case:    LOWER_CASE      { $$ = LOWER_CASE; }
         |       UPPER_CASE      { $$ = UPPER_CASE; }
                 ;
 
-trim_trailing:  %empty          { $$ = new_literal("0"); }  // Remove both
-        |       LEADING         { $$ = new_literal("1"); }  // Remove leading  spaces
-        |       TRAILING        { $$ = new_literal("2"); }  // Remove trailing spaces
+trim_trailing:  %empty          { $$ = new_constant("0"); }  // Remove both
+        |       LEADING         { $$ = new_constant("1"); }  // Remove leading  spaces
+        |       TRAILING        { $$ = new_constant("2"); }  // Remove trailing spaces
         ;
 
 intrinsic0:     CURRENT_DATE {
@@ -11396,7 +11563,7 @@ intrinsic0:     CURRENT_DATE {
                   location_set(@1);
 		  // Returns YYYYMMDDhhmmssss-0500)
                   $$ = new_alphanumeric(MAXLENGTH_CALENDAR_DATE, "WHEN-COMPILED"); 
-                 parser_intrinsic_call_0( $$, "__gg__when_compiled" );
+                  parser_intrinsic_call_0( $$, "__gg__when_compiled" );
                 }
                 ;
 
@@ -11558,8 +11725,8 @@ key:            %empty
         |       KEY
                 ;
 
-last:		%empty %prec LAST
-	|	LAST
+last:		%empty { $$ = false; } %prec LAST
+	|	LAST   { $$ = true;  }
 		;
 
 lines:          %empty
@@ -11612,9 +11779,13 @@ is_signed:	%empty      { $$ = true; }
 	|	UNSIGNED_kw { $$ = false; }
 		;
 
-start_after:	%empty %prec AFTER
-	|	START AFTER varg
+start_after:	%empty { $$ = nullptr; } %prec AFTER
+	|	START AFTER start_pos { $$ = $start_pos; }
+	|	start_pos             { $$ = $start_pos; }
 		;
+start_pos:      num_constant { $$ = new_reference($1); }
+        |       scalar
+                ;
 
 status:         %empty
         |       STATUS
@@ -11835,19 +12006,22 @@ xmlgen_body:    XMLGENERATE name[id1] FROM name[id2]
                 xmlgen_nameof xmlgen_typeof xmlgen_suppress
                 ;
 
-xmlgen_count:   %empty
-        |       COUNT in name[id3]
+xmlgen_count:   %empty { $$ = nullptr; }
+        |       COUNT in name[id3] { $$ = $id3; }
                 ;
-xmlgen_decl:    %empty
-        |       with XML_DECLARATION with ATTRIBUTES
+xmlgen_decl:    %empty { $$ = {}; }
+        |       with XML_DECLARATION with ATTRIBUTES { $$ = {true, true}; }
+        |       with XML_DECLARATION                 { $$ = {true, false}; }
+        |                            with ATTRIBUTES { $$ = {false, true}; }
                 ;
 xmlgen_namespace:
-                %empty
+                %empty 
         |       NAMESPACE is name[id4] namespace_prefix
                 ;
 namespace_prefix:
-                %empty
-        |       NAMESPACE_PREFIX is namestr[id5]
+                %empty 
+        |       NAMESPACE_PREFIX is name[id5] 
+        |       NAMESPACE_PREFIX is LITERAL[id5] 
                 ;
 xmlgen_nameof:  %empty
         |       NAME of xmlgen_ids
@@ -13089,7 +13263,7 @@ numstr2i( const char input[], radix_t radix ) {
 }
 
 static inline cbl_field_t *
-new_literal( const char initial[], enum radix_t radix ) {
+new_literal( const cbl_loc_t loc, const char initial[], enum radix_t radix ) {
   auto attr = constant_e;
 
   switch( radix ) {
@@ -13102,8 +13276,10 @@ new_literal( const char initial[], enum radix_t radix ) {
     attr = bool_encoded_e;
     break;
   }
-  return new_literal(strlen(initial), initial,
-                     cbl_field_attr_t(constant_e | attr));
+  auto field =  new_literal(strlen(initial), initial,
+                            cbl_field_attr_t(constant_e | attr));
+  symbol_temporary_location(field, loc);
+  return field;
 }
 
 class is_elementary_type { // for INITIALIZE purposes
@@ -13170,8 +13346,11 @@ struct expand_group : public std::list<cbl_refer_t> {
 };
 
 
-static const uint32_t * initial_default_value;
-       const uint32_t * wsclear() { return initial_default_value; }
+static const uint32_t *initial_default_value;
+const uint32_t *
+wsclear() {
+  return initial_default_value;
+}
 
 void
 wsclear( uint32_t i ) {
@@ -13217,7 +13396,7 @@ initialize_one( cbl_num_result_t target, bool with_filler,
       char ach[5];
       int v = *s;
       sprintf(ach, "%d", v);
-      source.field = new_literal(ach);
+      source.field = new_constant(ach);
       source.addr_of = true;
     }
 
@@ -13236,9 +13415,9 @@ initialize_one( cbl_num_result_t target, bool with_filler,
   if( value_category == data_category_all ||
       value_category == data_category_of(tgt) ) {
     // apply any applicable VALUE
-    if( explicitly || tgt.field->data.initial ) {
+    if( explicitly || tgt.field->data.original() ) {
       assert( with_filler || !tgt.field->has_attr(filler_e) );
-      if( tgt.field->data.initial ) {
+      if( tgt.field->data.original() ) {
         parser_initialize(tgt);
       }
     }
@@ -13392,12 +13571,12 @@ initialize_statement( const cbl_num_result_t& target, bool with_filler,
 			    size_t first, second;
 			    first = second = group_offset(span.first);
 			    if( ! span.second ) {
-			      second += std::max(span.first->data.capacity,
+			      second += std::max(span.first->data.capacity(),
 						 span.first->data.memsize);
 			    } else {
 			      second = group_offset(span.second)
 				     - group_offset(span.first);
-			      second += std::max(span.second->data.capacity,
+			      second += std::max(span.second->data.capacity(),
 						 span.second->data.memsize);
 			    }
 			    return std::make_pair(first, second);
@@ -13565,7 +13744,7 @@ void parser_add_declaratives( size_t n, cbl_declarative_t *declaratives) {
 }
 
 cbl_field_t *
-new_literal( const literal_t& lit, enum cbl_field_attr_t attr ) {
+new_literal( const cbl_loc_t loc, const literal_t& lit, enum cbl_field_attr_t attr ) {
   bool zstring = lit.prefix[0] == 'Z';
   if( !zstring && lit.data[lit.len] != '\0' ) {
     dbgmsg("%s:%d: line %d, no NUL terminator '%-*.*s'{"
@@ -13580,8 +13759,11 @@ new_literal( const literal_t& lit, enum cbl_field_attr_t attr ) {
   attrs |= constant_e;
   attrs |= literal_attr(lit.prefix);
 
-  return new_literal(lit.len, lit.data, cbl_field_attr_t(attrs), lit.encoding);
+  auto field = new_literal(lit.len, lit.data, cbl_field_attr_t(attrs), lit.encoding);
+  symbol_temporary_location(field, loc);
+  return field;
 }
+
 
 bool
 cbl_file_t::validate_forward( size_t isym ) const {
@@ -13690,7 +13872,7 @@ literal_t::set( const cbl_field_t * field ) {
   assert(is_literal(field));
 
   set_prefix( "", 0 );
-  set_data( field->data.capacity,
+  set_data( field->data.capacity(),
             const_cast<char*>(field->data.initial),
             field_index(field) );
   return *this;
@@ -13773,7 +13955,7 @@ const char *
 cbl_field_t::value_str() const {
     if( data.etc_type == cbl_field_data_t::value_e )
 	return string_of( data.value_of() );
-    return "???";
+    return data.etc_type_str();
 }
 
 static const cbl_division_t not_syntax_only = cbl_division_t(-1);
@@ -13814,7 +13996,7 @@ cobol_dialect_set( cbl_dialect_t dialect ) {
 static bool internal_ebcdic_locked = false;
 
 void internal_ebcdic_lock() {
-  internal_ebcdic_locked = true;
+////  internal_ebcdic_locked = true;
 }
 void internal_ebcdic_unlock() {
   internal_ebcdic_locked = false;
@@ -13822,11 +14004,6 @@ void internal_ebcdic_unlock() {
 
 bool
 cobol_gcobol_feature_set( cbl_gcobol_feature_t gcobol_feature, bool on ) {
-  if( gcobol_feature == feature_internal_ebcdic_e ) {
-    if( internal_ebcdic_locked ) return false;
-    if( ! on ) gcc_unreachable();
-    current.default_encoding.set(EBCDIC_e);
-  }
   if( on ) {
     cbl_gcobol_features |= gcobol_feature;
   } else {
@@ -13839,6 +14016,8 @@ static bool
 literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
   if( r.field->has_attr(any_length_e) ) return true;
 
+  unsigned int nchar = r.field->char_capacity();
+
   const cbl_span_t& refmod(r.refmod);
 
   if( ! is_literal(refmod.from->field) ) {
@@ -13846,7 +14025,7 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
     if( ! is_literal(refmod.len->field) ) return true;
     auto edge = refmod.len->field->as_integer();
     if( 0 < edge ) {
-      if( edge-1 < r.field->data.capacity ) return true;
+      if( edge-1 < nchar ) return true;
     }
     // len < 0 or not: 0 < from + len <= capacity
     error_msg(loc, "%s(%s:%zu) out of bounds, "
@@ -13854,19 +14033,19 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
 	      r.field->name,
 	      refmod.from->name(),
 	      size_t(edge),
-	      static_cast<unsigned int>(r.field->data.capacity) );
+	      nchar );
     return false;
   }
 
   auto edge = refmod.from->field->as_integer();
   if( edge > 0 ) {
-    if( --edge < r.field->data.capacity ) {
+    if( --edge < nchar ) {
       if( ! refmod.len ) return true;
       if( ! is_literal(refmod.len->field) ) return true;
       auto len = refmod.len->field->as_integer();
       if( len > 0 ) {
 	edge += len;
-	if( --edge < r.field->data.capacity ) return true;
+	if( --edge < nchar ) return true;
       }
       // len < 0 or not: 0 < from + len <= capacity
       loc = symbol_field_location(field_index(r.field));
@@ -13875,7 +14054,7 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
 		r.field->name,
 		size_t(refmod.from->field->as_integer()),
 		size_t(len),
-		static_cast<unsigned int>(r.field->data.capacity) );
+		nchar );
       return false;
     }
   }
@@ -13883,7 +14062,7 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r ) {
   error_msg(loc,"%s(%zu) out of bounds, size is %u",
 	    r.field->name,
 	    size_t(refmod.from->field->as_integer()),
-	    static_cast<unsigned int>(r.field->data.capacity) );
+	    nchar );
   return false;
 }
 
@@ -14104,3 +14283,91 @@ eval_subject_t::compare( const cbl_refer_t& object,
   return result;
 }
 
+/*
+ * Define a binary field according to USAGE: attr, type, and capacity. 
+ * Return type. 
+ * Do not set initial value; that is up to PICTURE and VALUE.
+ */
+static cbl_field_type_t
+field_binary_usage( YYLTYPE loc, cbl_field_t *field,
+                    cbl_field_type_t type, uint32_t capacity,
+                    bool signable )
+{
+  bool infer = true;
+  
+  // Some binary types have defined capacity;
+  switch(type) {
+    // COMPUTATIONAL and COMP-5 rely on PICTURE.
+  case FldNumericBinary:
+    field->attr |= big_endian_e;
+    __attribute__((fallthrough));
+  case FldNumericBin5:
+    // If no capacity yet, then no picture, infer $comp.capacity.
+    // If field has capacity, ensure USAGE is compatible.
+    if( field->data.capacity() > 0 ) { // PICTURE before USAGE
+      infer = false;
+      auto true_capacity = field->data.capacity();
+      
+      switch( field->type ) {
+      case FldAlphanumeric:   // PIC X COMP-5 or COMP-X
+        assert( field->data.digits == 0 );
+        assert( field->data.rdigits == 0 );
+        dialect_ok(loc, MfCompX, "alphanumeric PICTURE with numeric USAGE");
+        symbol_field_type_update(field, type, true);
+        field->clear_attr(signable_e);
+        // In case PIC X for UTF-16 (say), the X's represent digits.
+        true_capacity /= field->codeset.stride();
+        field->data.capacity(true_capacity);
+        break;
+      case FldNumericDisplay: // PIC 9 COMP-5 or COMP-X
+        if( capacity == 0xFF ) { // comp-x is a bit like comp-5
+          assert( field->data.digits == field->data.capacity() );
+          dialect_ok(loc, MfCompX, "alphanumeric PICTURE with numeric USAGE");
+        }
+        symbol_field_type_update(field, type, true);
+        capacity = type_capacity(field->type, field->data.digits);
+        field->data.capacity(capacity);
+        field->blank_initial(capacity / field->codeset.stride());
+        break;
+      case FldInvalid:
+        symbol_field_type_update(field, type, true);
+        field->data.capacity(capacity);
+        if( signable ) field->set_attr(signable_e);
+        gcc_assert(field->type == FldNumericBin5);
+        break;
+      default:
+        break;
+      }
+    }
+    break;
+  case FldPacked: // comp-6 is unsigned comp-3
+    assert(! signable);  // else PACKED_DECIMAL from scanner
+    field->set_attr(separate_e);
+    dialect_ok(loc, MfComp6, "COMP-6");
+    if( symbol_field_type_update(field, type, true) ) {
+      infer = false;
+      field->set_capacity(type_capacity(field->type, field->data.digits));
+    } else {
+      error_msg(loc, "USAGE PACKED DECIMAL conflicts with PICTURE");
+    }
+    break;
+  default:
+    break;
+  }
+
+  if( infer ) {
+    symbol_field_type_update(field, type, true);
+    if( capacity > 0 ) {
+      if( field->data.capacity() > 0 ) {
+        error_msg(loc, "%s is BINARY type, incompatible with PICTURE",
+                  field->name);
+      }
+      if( signable ) {
+        field->set_attr(signable_e);
+      }
+      field->set_capacity(capacity);
+    }
+  }
+
+  return field->type;
+}

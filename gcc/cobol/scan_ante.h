@@ -120,6 +120,7 @@ static bool nonspace( char ch ) { return !ISSPACE(ch); }
 
 static int
 numstr_of( const char string[], radix_t radix = decimal_e ) {
+  yylval.numstr.is_float = false;
   yylval.numstr.radix = radix;
   ydflval.string = yylval.numstr.string = xstrdup(string);
   char *comma = strchr(yylval.numstr.string, ',');
@@ -185,6 +186,7 @@ numstr_of( const char string[], radix_t radix = decimal_e ) {
         return NO_CONDITION;
       }
     }
+    yylval.numstr.is_float = true;
   }
   if( 1 < std::count(input, eoinput, symbol_decimal_point()) ) {
     error_msg(yylloc, "invalid numeric literal %qs", ++p);
@@ -1165,13 +1167,13 @@ typed_name( const char name[] ) {
     {
       auto f = cbl_field_of(e);
       if( is_constant(f) ) {
-	if(  f->data.initial ) {
-	  int token = cbl_figconst_tok(f->data.initial);
+	if(  f->data.original() ) {
+	  int token = cbl_figconst_tok(f->data.original());
 	  if( token ) return token;
 	}
-        int token = datetime_format_of(f->data.initial);
+        int token = datetime_format_of(f->data.original());
         if( token ) {
-          yylval.string = xstrdup(f->data.initial);
+          yylval.string = xstrdup(f->data.original());
           return token;
         }
       }
@@ -1183,7 +1185,7 @@ typed_name( const char name[] ) {
       if( type == FldLiteralN ) {
         yylval.numstr.radix =
           f->has_attr(hex_encoded_e)? hexadecimal_e : decimal_e;
-        yylval.numstr.string = xstrdup(f->data.initial);
+        yylval.numstr.string = xstrdup(f->data.original());
         return NUMSTR;
       }
       if( !f->has_attr(record_key_e) ) { // not a key-name literal

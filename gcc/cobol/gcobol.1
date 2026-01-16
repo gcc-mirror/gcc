@@ -25,7 +25,11 @@
 .Op Fl copyext Ar ext
 .Op Fl ffixed-form | Fl ffree-form
 .Op Fl findicator-column
-.Op Fl finternal-ebcdic
+.Op Fl fexec-charset= Ns Ar encoding
+.Op Fl fexec-national-charset= Ns Ar encoding
+.ig
+.Op Fl collseq Ar encoding Ns \/, Fl ncolseq Ar encoding
+..
 .Op Fl dialect Ar dialect-name
 .Op Fl include Ar filename
 .Op Fl preprocess Ar preprocess-filter
@@ -39,6 +43,7 @@
 .Op Fl Wno-bad-numeric
 .Op Fl Wno-binary-long-long
 .Op Fl Wno-call-giving
+.Op Fl Wno-call-literal
 .Op Fl Wno-cdf-dollar
 .Op Fl Wno-cdf-invalid-parameter
 .Op Fl Wno-cdf-name-not-found
@@ -61,6 +66,7 @@
 .Op Fl Wno-literal-concat
 .Op Fl Wno-locale-error
 .Op Fl Wno-move-corresponding
+.Op Fl Wno-move-index
 .Op Fl Wno-move-pointer
 .Op Fl Wno-nllanginfo-error
 .Op Fl Wno-operator-space
@@ -325,6 +331,35 @@ is a non-constant data item, it is always resolved using dynamic
 linking, with
 .Xr dlsym 3 Ns Li ,
 because its value is determined at run time.
+.
+.It Fl fexec-charset= Ns Ar encoding
+Set the default execution character set for alphanumeric data items
+and literals in the absence of
+.Sy "CHARACTER CLASSIFICATION"
+in
+.Sy "CONFIGURATION SECTION" .
+.Ar encoding
+is an encoding name as defined by
+.Xr iconv 3 .
+Unless otherwise specified, the runtime encoding for both alphanumeric
+and NATIONAL is
+.Sy CP1252
+as defined by
+.Xr iconv 3 .
+.
+.It Fl fexec-national-charset= Ns Ar encoding
+Set the default execution character set for NATIONAL data items
+and literals in the absence of
+.Sy "CHARACTER CLASSIFICATION"
+in
+.Sy "CONFIGURATION SECTION" .
+.Ar encoding
+is an encoding name as defined by
+.Xr iconv 3 .
+To use an EBCDIC encoding for data items, one might use
+.D1 Fl fexec-national-charset= Ns Li CP1140
+for example. 
+.
 .It Fl dialect Ar dialect-name
 By default,
 .Nm
@@ -476,6 +511,8 @@ Warn if malformed %<#line%> directive is encountered.
 Warn if BINARY-LONG-LONG is used.
 .It Fl Wno-call_giving
 Warn if CALL ... GIVING is used.
+.It Fl Wno-call_literal
+Warn if CALL is used is used with a literal parameter by reference.
 .It Fl Wno-cdf-dollar
 Warn if CDF \[Do]IF is used.
 .It Fl Wno-comp-6
@@ -490,6 +527,8 @@ Warn if INSPECT ... TRAILING is used.
 Warn if Level 01 is used with OCCURS.
 .It Fl Wno-level-78-defined
 Warn if CDF defines Level 78 constant.
+.It Fl Wno-move-index
+Warn if MOVE INDEX is used.
 .It Fl Wno-move-pointer
 Warn if MOVE POINTER is used.
 .It Fl Wno-returning-number
@@ -633,7 +672,7 @@ The fourth links the three .o files into an
 .
 .Sh EBCDIC
 The
-.Fl finternal-ebcdic
+.Fl fexec-charset=cp1140
 option is useful when working with mainframe \*[lang] programs intended
 for EBCDIC-encoded files.  With this option, while the \*[lang] text
 remains in ASCII, the character literals and field initial values
@@ -641,10 +680,13 @@ produce EBCDIC strings in the compiled binary, and any character data
 read from a file are interpreted as EBCDIC data.  The file data are
 not
 .Em converted ;
-rather, the file is assumed to use EBCDIC representation. String
+rather, the file is assumed to use EBCDIC representation.  String
 literals in the \*[lang] text
 .Em are
-converted, so that they can be compared meaningfully with data in the file.
+converted, so that they can be compared meaningfully with data in the
+file.  Code Page 1140 is one of a number of EBCDIC code pages; it is
+often useful because it closely parallels the commonly-used Code Page
+1252 that provides many Western European characters.
 .Pp
 Only file data and character literals are affected.  Data read from
 and written to the environment, or taken from the command line, are
@@ -1387,7 +1429,8 @@ in the name, which is otherwise invalid in a \*[lang] identifier:
 .Bl -tag -compact
 .It Sy %EBCDIC-MODE
 is set by
-.Fl finternal-ebcdic .
+.Fl fexec-charset= Ns Ar <encoding>
+for all EBCDIC encodings.
 .It Sy %64-BIT-POINTER
 is implied by
 .Fl "dialect ibm" .

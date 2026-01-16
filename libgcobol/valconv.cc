@@ -226,6 +226,9 @@ __gg__string_to_numeric_edited( char * const dest,
   // We need to expand the picture string.  We assume that the caller left
   // enough room in dest to take the expanded picture string.
 
+  // Note that we do not put on a nul terminator, so if you need one, it's
+  // your job to put it there.
+
   int dlength = expand_picture(dest, picture);
 
   // At the present time, I am taking a liberty. In principle, a 'V'

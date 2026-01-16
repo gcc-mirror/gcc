@@ -991,9 +991,9 @@ parse_copy_directive( filespan_t& mfile ) {
       if( yy_flex_debug ) {
         size_t nnl = 1 + count_newlines(mfile.data, copy_stmt.p);
         size_t nst = 1 + count_newlines(copy_stmt.p, copy_stmt.pend);
-        dbgmsg("%s:%d: line " HOST_SIZE_T_PRINT_UNSIGNED
+        dbgmsg("%s:%d: %s:" HOST_SIZE_T_PRINT_UNSIGNED
                ": COPY directive is " HOST_SIZE_T_PRINT_UNSIGNED " lines '%.*s'",
-               __func__, __LINE__,
+               __func__, __LINE__, cobol_filename(), 
                (fmt_size_t)nnl, (fmt_size_t)nst, copy_stmt.size(), copy_stmt.p);
       }
     }

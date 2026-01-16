@@ -36,7 +36,7 @@ bool __gg__binary_to_string_ascii(char *result,
                                   __int128 value);
 extern "C"
 bool __gg__binary_to_string_encoded(char *result,
-                                    int digits,
+                                    size_t digits, // Desired digits
                                     __int128 value,
                                     cbl_encoding_t encoding);
 

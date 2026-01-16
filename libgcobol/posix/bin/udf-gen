@@ -30,6 +30,7 @@
 
 import sys, os, getopt, re, copy
 from pycparser import c_parser, c_generator, c_ast, parse_file
+from pycparser.plyparser import ParseError
 
 def starify(param):
     stars = ""
@@ -283,7 +284,11 @@ for var in ('CPATH', 'C_INCLUDE_PATH'):
         cpp_args = ''
 
 def process(srcfile):
-    ast = parse_file(srcfile, use_cpp=True, cpp_args=cpp_args)
+    try:
+        ast = parse_file(srcfile, use_cpp=True, cpp_args=cpp_args)
+    except ParseError as oops:
+        print(oops, file=sys.stderr)
+        sys.exit(1)
     # print(c_generator.CGenerator().visit(ast))
     v = VisitPrototypes()
     v.visit(ast)

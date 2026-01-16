@@ -470,6 +470,20 @@ void
 parser_exception_file( cbl_field_t *tgt, cbl_file_t* file = NULL );
 
 void
+parser_intrinsic_convert(cbl_field_t *tgt,
+                         const cbl_refer_t& input,                           
+                         convert_type_t src_fmt, 
+                         unsigned int   dst_fmt );
+
+void
+parser_intrinsic_find_string(cbl_field_t *tgt,
+                             const cbl_refer_t& haystack,
+                             const cbl_refer_t& needle,
+                             const cbl_refer_t *after,
+                             bool last,
+                             bool anycase);
+
+void
 parser_module_name( cbl_field_t *tgt, module_type_t type );
 
 void

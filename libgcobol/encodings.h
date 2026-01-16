@@ -1209,7 +1209,7 @@ valid_encoding( cbl_encoding_t enc ) {
 struct encodings_t {
   bool supported;
   cbl_encoding_t type;
-  const char name[32];
+  char name[32];
 };
 
 #endif

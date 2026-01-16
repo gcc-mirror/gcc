@@ -329,6 +329,7 @@ enable_exceptions( bool enable ) {
 }
 
 void cobol_warning( cbl_diag_id_t id, int yn, bool );
+void cobol_warning_suppress( cbl_dialect_t dialect );
 
 static bool
 cobol_langhook_handle_option (size_t scode,
@@ -360,6 +361,18 @@ cobol_langhook_handle_option (size_t scode,
             copybook_extension_add(cobol_copyext);
             return true;
 
+        case OPT_fexec_charset_:
+            if( ! cobol_alpha_encoding( arg ) ) {
+              cbl_errx( "no such charset %qs", arg);
+            }
+            return true;
+
+        case OPT_fexec_national_charset_:
+          if( ! cobol_national_encoding( arg ) ) {
+              cbl_errx( "no such national charset %qs", arg);
+            }
+            return true;
+
         case OPT_M:
             cobol_set_pp_option('M');
             return true;
@@ -369,7 +382,7 @@ cobol_langhook_handle_option (size_t scode,
             return true;
 
         case OPT_fdefaultbyte:
-            // cobol_default_byte is an unsigned ing
+            // cobol_default_byte is an unsigned int
             wsclear(cobol_default_byte);
             return true;
 
@@ -410,6 +423,7 @@ cobol_langhook_handle_option (size_t scode,
             // gcc disallows 0 as an enumerated value, so we used 0x10 for iso.
             if( cobol_dialect == 0x100 ) cobol_dialect = 0; 
             cobol_dialect_set(cbl_dialect_t(cobol_dialect));
+            cobol_warning_suppress(cbl_dialect_t(cobol_dialect));
             return true;
 
         case OPT_fsyntax_only:
@@ -441,10 +455,6 @@ cobol_langhook_handle_option (size_t scode,
         case OPT_nomain:
             return true;
 
-        case OPT_finternal_ebcdic:
-            cobol_gcobol_feature_set(feature_internal_ebcdic_e);
-            return true;
-
         // Warnings and errors
 
         case OPT_Wbinary_long_long:
@@ -453,6 +463,10 @@ cobol_langhook_handle_option (size_t scode,
 
         case OPT_Wcall_giving:
           cobol_warning(MfCallGiving, call_giving, warning_as_error);
+          return true;
+
+        case OPT_Wcall_literal:
+          cobol_warning(MfCallLiteral, call_literal, warning_as_error);
           return true;
 
         case OPT_Wcdf_dollar:
@@ -479,12 +493,20 @@ cobol_langhook_handle_option (size_t scode,
           cobol_warning(Par78CdfDefinedW, level_78_defined, warning_as_error);
           return true;
 
+        case OPT_Wmove_index:
+          cobol_warning(MfMoveIndex, move_index, warning_as_error);
+          return true;
+
         case OPT_Wmove_pointer:
           cobol_warning(MfMovePointer, move_pointer, warning_as_error);
           return true;
 
         case OPT_Wlevel_78:
           cobol_warning(MfLevel78, level_78, warning_as_error);
+          return true;
+
+        case OPT_Wany_length:
+          cobol_warning(MfAnyLength, cobol_any_length, warning_as_error);
           return true;
 
         case OPT_Wreturning_number:

@@ -38,6 +38,7 @@
 #include <langinfo.h>
 
 #include <cctype>
+#include <cwctype>
 #include <cmath>
 #include <cstring>
 #include <ctime>
@@ -100,11 +101,17 @@ trim_trailing_spaces(PCHAR left, PCHAR &right, int mapped_space)
 static bool
 is_zulu_format(PCHAR left, PCHAR &right, charmap_t *charmap)
   {
-  int char_Z = charmap->mapped_character(ascii_Z);
+  cbl_char_t char_Z = charmap->mapped_character(ascii_Z);
+  cbl_char_t char_z = charmap->mapped_character(ascii_z);
+  int stride = charmap->stride();
   bool retval = false;
-  if( right > left )
+  if( right - left >= stride)
     {
-    retval = std::toupper((unsigned char)*(right-1)) == char_Z;
+    cbl_char_t last_character = charmap->getch(right-stride, size_t(0));
+    if( last_character == char_Z || last_character == char_z )
+      {
+      retval = true;
+      }
     }
   return retval;
   }
@@ -228,11 +235,11 @@ static
 void
 string_to_dest(cblc_field_t *dest, const char *psz)
   {
-  size_t dest_length = dest->capacity;
-  size_t source_length = strlen(psz);
-  size_t length = std::min(dest_length, source_length);
   charmap_t *charmap = __gg__get_charmap(dest->encoding);
-  memset(dest->data, charmap->mapped_character(ascii_space), dest_length);
+  size_t dest_length = dest->capacity;
+  size_t source_length = charmap->strlen(psz);
+  size_t length = std::min(dest_length, source_length);
+  charmap->memset(dest->data, charmap->mapped_character(ascii_space), dest_length);
   memcpy(dest->data, psz, length);
   }
 
@@ -574,6 +581,7 @@ get_all_time( const cblc_field_t *dest, // needed for the target encoding
           ctm.day_of_week+1,
           ctm.day_of_year,
           ctm.ZZZZ);
+
   __gg__convert_encoding(PTRCAST(char, stime),
                          DEFAULT_SOURCE_ENCODING,
                          dest->encoding);
@@ -801,7 +809,7 @@ ftime_replace(char *dest,
               char const * const dest_end,
               char const *       source,
               char const * const source_end,
-              charmap_t  *       charmap_source,
+              charmap_t  *       charmap,
               char const * const ftime)
   {
   // This routine is highly dependent on the source format being correct.
@@ -824,33 +832,38 @@ ftime_replace(char *dest,
   static const int OFFSET_TO_DOY            = 34;
   static const int OFFSET_TO_ZZZZ           = 37;
 
-  unsigned int decimal_point =
-                   charmap_source->mapped_character(__gg__get_decimal_point());
-  unsigned int source_Y    = charmap_source->mapped_character(ascii_Y   );
-  unsigned int source_W    = charmap_source->mapped_character(ascii_W   );
-  unsigned int source_s    = charmap_source->mapped_character(ascii_s   );
-  unsigned int source_m    = charmap_source->mapped_character(ascii_m   );
-  unsigned int source_h    = charmap_source->mapped_character(ascii_h   );
-  unsigned int source_plus = charmap_source->mapped_character(ascii_plus);
-  unsigned int source_D    = charmap_source->mapped_character(ascii_D   );
-  unsigned int source_M    = charmap_source->mapped_character(ascii_M   );
+  int stride = charmap->stride();
+
+  cbl_char_t decimal_point =
+                   charmap->mapped_character(__gg__get_decimal_point());
+  cbl_char_t source_Y    = charmap->mapped_character(ascii_Y   );
+  cbl_char_t source_W    = charmap->mapped_character(ascii_W   );
+  cbl_char_t source_s    = charmap->mapped_character(ascii_s   );
+  cbl_char_t source_m    = charmap->mapped_character(ascii_m   );
+  cbl_char_t source_h    = charmap->mapped_character(ascii_h   );
+  cbl_char_t source_plus = charmap->mapped_character(ascii_plus);
+  cbl_char_t source_D    = charmap->mapped_character(ascii_D   );
+  cbl_char_t source_M    = charmap->mapped_character(ascii_M   );
 
   while( source < source_end && dest < dest_end )
     {
-    unsigned char fchar = *source;
+    cbl_char_t fchar = charmap->getch(source, size_t(0));
     if( fchar == source_Y )
       {
       // This can only be a YYYY
       // But, we have a choice.  If there is a 'W' in the format, then we
       // need to use ZZZZ rather than YYYY:
-      src = ftime + OFFSET_TO_YYYY;
+      src = ftime + OFFSET_TO_YYYY*stride;
       const char *p = source;
+      size_t index = 0;
       while(p < source_end)
         {
-        if( (unsigned char)*p++ == source_W )
+        //if( (unsigned char)*p++ == source_W )
+        if( charmap->getch(source, &index) == source_W )
           {
-          src = ftime + OFFSET_TO_ZZZZ;
+          src = ftime + OFFSET_TO_ZZZZ*stride;
           }
+        p += stride;
         }
 
       ncount = 4;
@@ -859,43 +872,43 @@ ftime_replace(char *dest,
       {
       // This can only be a MM
       ncount = 2;
-      src = ftime + OFFSET_TO_MM;
+      src = ftime + OFFSET_TO_MM*stride;
       }
     else if( fchar == source_D )
       {
       // It can be a D, DD or DDD
-      if( (unsigned char)source[2] == source_D )
+      if( charmap->getch(source, 2*stride) == source_D )
         {
         ncount = 3;
-        src = ftime + OFFSET_TO_DOY;
+        src = ftime + OFFSET_TO_DOY*stride;
         }
-      else if( (unsigned char)source[1] == source_D )
+      else if( charmap->getch(source, 1*stride) == source_D )
         {
         ncount = 2;
-        src = ftime + OFFSET_TO_DD;
+        src = ftime + OFFSET_TO_DD*stride;
         }
       else
         {
         ncount = 1;
-        src = ftime + OFFSET_TO_DOW;
+        src = ftime + OFFSET_TO_DOW*stride;
         }
       }
     else if( fchar == source_plus )
       {
       saw_plus_sign = true;
       ncount = 1;
-      src = ftime + OFFSET_TO_OFFSET;
+      src = ftime + OFFSET_TO_OFFSET*stride;
       }
     else if( fchar == source_h )
       {
       ncount = 2;
       if(saw_plus_sign)
         {
-        src = ftime + OFFSET_TO_OFFSET_HOUR;
+        src = ftime + OFFSET_TO_OFFSET_HOUR*stride;
         }
       else
         {
-        src = ftime + OFFSET_TO_HOUR;
+        src = ftime + OFFSET_TO_HOUR*stride;
         }
       }
     else if( fchar == source_m )
@@ -903,11 +916,11 @@ ftime_replace(char *dest,
       ncount = 2;
       if(saw_plus_sign)
         {
-        src = ftime + OFFSET_TO_OFFSET_MINUTE;
+        src = ftime + OFFSET_TO_OFFSET_MINUTE*stride;
         }
       else
         {
-        src = ftime + OFFSET_TO_MINUTE;
+        src = ftime + OFFSET_TO_MINUTE*stride;
         }
       }
     else if( fchar == decimal_point )
@@ -922,18 +935,18 @@ ftime_replace(char *dest,
         {
         // There can be a variable number of fractional 's'
         ncount = -1;
-        src = ftime + OFFSET_TO_FRACTION;
+        src = ftime + OFFSET_TO_FRACTION*stride;
         }
       else
         {
         ncount = 2;
-        src = ftime + OFFSET_TO_SECOND;
+        src = ftime + OFFSET_TO_SECOND*stride;
         }
       }
     else if( fchar == source_W )
       {
       ncount = 3;
-      src = ftime + OFFSET_TO_WEEK;
+      src = ftime + OFFSET_TO_WEEK*stride;
       }
     else
       {
@@ -946,18 +959,22 @@ ftime_replace(char *dest,
       {
       // This indicates special processing for a variable number of 's'
       // characters
-      while((unsigned char)*source == source_s && dest < dest_end)
+      while(charmap->getch(source, size_t(0)) == source_s && dest < dest_end)
         {
-        source += 1;
-        *dest++ = *src++;
+        source += stride;
+        memcpy(dest, src, stride);
+        dest += stride;
+        src  += stride;
         }
       }
     else
       {
-      source += ncount;
+      source += ncount*stride;
       while(ncount-- && dest < dest_end)
         {
-        *dest++ = *src++;
+        memcpy(dest, src, stride);
+        dest += stride;
+        src += stride;
         }
       }
     }
@@ -1177,26 +1194,31 @@ __gg__char( cblc_field_t *dest,
     }
 
   // We need to convert the ch character to the destination encoding.
-  const char achFrom[2] = {static_cast<char>(ch), '\0'};
+  // THIS IS A KLUDGE UNTIL WE MAKE THE CURRENT_COLLATION TO BE A MAP OF
+  // WIDE CHARACTERS!
+  charmap_t *charmap_dest = __gg__get_charmap(dest->encoding);
+
+  cbl_char_t achFrom = 0;
+  memcpy(&achFrom, &ch, 1);
   size_t charsout;
   const char *converted = __gg__iconverter(__gg__display_encoding,
                                            dest->encoding,
-                                           achFrom,
+                                           &achFrom,
                                            1,
                                            &charsout );
   // Pick up our character, because mapped_character() might clobber
   // the converted contents.
-  int converted_char = *converted; // cppcheck-suppress variableScope
+  int converted_char = 0;
+  memcpy(&converted_char, converted, charmap_dest->stride());
   // Space fill the dest:
-  charmap_t *charmap_dest = __gg__get_charmap(dest->encoding);
-  memset(dest->data,
-         charmap_dest->mapped_character(ascii_space),
-         dest->capacity);
+  charmap_dest-> memset(dest->data,
+                        charmap_dest->mapped_character(ascii_space),
+                        dest->capacity);
   // Make the first character of the destination equal to our converted
   // character:
   if( ch > -1 && charsout == 1 )
     {
-    dest->data[0] = converted_char;
+    charmap_dest->putch(converted_char, dest->data, size_t(0));
     }
   }
 
@@ -1278,10 +1300,16 @@ __gg__current_date(cblc_field_t *dest)
 
   char retval[DATE_STRING_BUFFER_SIZE];
   timespec_to_string(retval, tp);
-  __gg__convert_encoding(PTRCAST(char, retval),
-                         DEFAULT_SOURCE_ENCODING,
-                         dest->encoding);
-  string_to_dest(dest, retval);
+
+  size_t bytes_converted;
+  char *converted = __gg__miconverter(__gg__console_encoding,
+                                      dest->encoding,
+                                      retval,
+                                      strlen(retval),
+                                      &bytes_converted);
+  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
+  __gg__adjust_dest_size(dest, bytes_converted);
+  free(converted);
   }
 
 extern "C"
@@ -1524,29 +1552,30 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
   charmap_t *charmap_from = __gg__get_charmap(from);
   charmap_t *charmap_to   = __gg__get_charmap(to);
 
-  int dest_space = charmap_to->mapped_character(ascii_space);
-  int format_Z   = charmap_from->mapped_character(ascii_Z);
+  cbl_char_t dest_space = charmap_to->mapped_character(ascii_space);
+  cbl_char_t format_Z   = charmap_from->mapped_character(ascii_Z);
+  cbl_char_t format_z   = charmap_from->mapped_character(ascii_z);
 
   // Establish the destination, and set it to spaces
   char *d    = PTRCAST(char, dest->data);
   const char *dend = d + dest->capacity;
-  memset(d, dest_space, dest->capacity);
+  charmap_to->memset(d, dest_space, dest->capacity);
 
   // Establish the formatting string:
   const char *format     = PTRCAST(char, (input->data+input_offset));
   const char *format_end = format + input_size;
 
   bool is_zulu = false;
-
   const char *p = format;
   while( p < format_end )
     {
-    int ch = *p++;
-    if( ch == format_Z )
+    cbl_char_t ch = charmap_from->getch(p, size_t(0));
+    if( ch == format_Z || ch == format_z)
       {
       is_zulu = true;
       break;
       }
+    p += charmap_from->stride();
     }
 
   struct cbl_timespec ts = {};
@@ -1574,9 +1603,10 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
   // Convert seconds west of UTC to minutes east of UTC
   ctm.tz_offset = -timezone/60;
 
-  char achftime[64];
+  char achftime[256];
   get_all_time(dest, achftime, ctm);
   ftime_replace(d, dend, format, format_end, charmap_from, achftime);
+  return;
   }
 
 extern "C"
@@ -1586,22 +1616,23 @@ __gg__formatted_date(cblc_field_t *dest, // Destination string
                      size_t arg1_offset,
                      size_t arg1_size,
                const cblc_field_t *arg2, // integer date
-                     size_t arg2_offset,
+                     size_t arg2_offset,  
                      size_t arg2_size)
   {
   // FUNCTION FORMATTED-DATE
 
-  cbl_encoding_t from = arg1->encoding;
   cbl_encoding_t to   = dest->encoding;
-  charmap_t *charmap_from = __gg__get_charmap(from);
-  charmap_t *charmap_to   = __gg__get_charmap(to);
+  cbl_encoding_t from = arg1->encoding;
 
-  int dest_space = charmap_to->mapped_character(ascii_space);
+  charmap_t *charmap_to   = __gg__get_charmap(to);
+  charmap_t *charmap_from = __gg__get_charmap(from);
+
+  cbl_char_t dest_space = charmap_to->mapped_character(ascii_space);
 
   // Establish the destination, and set it to spaces
   char *d    = PTRCAST(char, dest->data);
   const char *dend = d + dest->capacity;
-  memset(d, dest_space, dest->capacity);
+  charmap_to->memset(d, dest_space, dest->capacity);
 
   // Establish the formatting string:
   char *format     = PTRCAST(char, (arg1->data+arg1_offset));
@@ -1611,11 +1642,11 @@ __gg__formatted_date(cblc_field_t *dest, // Destination string
 
   populate_ctm_from_date(ctm, arg2, arg2_offset, arg2_size);
 
-  char achftime[64];
+  char achftime[256];
   get_all_time(dest, achftime, ctm);
   if( __gg__exception_code )
     {
-    memset(d, dest_space, dend-d);
+     charmap_to->memset(d, dest_space, dend-d);
     }
   else
     {
@@ -1671,7 +1702,7 @@ __gg__formatted_datetime( cblc_field_t *dest, // Destination string
     convert_to_zulu(ctm);
     }
 
-  char achftime[64];
+  char achftime[256];
   get_all_time(dest, achftime, ctm);
   if( __gg__exception_code )
     {
@@ -1710,7 +1741,7 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
   // Establish the destination, and set it to spaces
   char *d          = PTRCAST(char, dest->data);
   const char *dend = d + dest->capacity;
-  memset(d, dest_space, dest->capacity);
+  charmap_to->memset(d, dest_space, dest->capacity);
 
   // Establish the formatting string:
   char *format     = PTRCAST(char, (par1->data+par1_o));
@@ -1734,11 +1765,11 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
     convert_to_zulu(ctm);
     }
 
-  char achftime[64];
+  char achftime[256];
   get_all_time(dest, achftime, ctm);
   if( __gg__exception_code )
     {
-    memset(d, dest_space, dend-d);
+    charmap_to->memset(d, dest_space, dend-d);
     }
   else
     {
@@ -2066,6 +2097,54 @@ __gg__max(cblc_field_t *dest,
     }
   }
 
+static void
+change_case( cblc_field_t *dest,
+       const cblc_field_t *input,
+             size_t        input_offset,
+             size_t        input_size,
+             std::wint_t (changer)( std::wint_t ch )
+             )
+  {
+  cbl_encoding_t enc_to   = dest->encoding;
+  cbl_encoding_t enc_from = input->encoding;
+  cbl_encoding_t enc_work = DEFAULT_32_ENCODING;
+
+  // In order to handle any input encoding, we convert to UTF32:
+  size_t converted_bytes;
+  const char *converted = __gg__iconverter(enc_from,
+                                           enc_work,
+                                           input->data+input_offset,
+                                           input_size,
+                                           &converted_bytes);
+  // Make a copy of it to prevent the static nature of iconverter from causing
+  // trouble:
+  cbl_char_t *duped = 
+          static_cast<cbl_char_t *>(__gg__memdup(converted, converted_bytes));
+  cbl_char_t *pend = duped + converted_bytes / width_of_utf32;
+
+  // Use the designated case changer:
+  std::transform(duped, pend, duped,
+                 [&changer](cbl_char_t c) { return changer(c); });
+
+  // Convert that modified string to the destination encoding:
+  converted = __gg__iconverter(enc_work,
+                               enc_to,
+                               duped,
+                               converted_bytes,
+                               &converted_bytes);
+  free(duped);
+
+  char *duped2 = static_cast<char *>(__gg__memdup(converted, converted_bytes));
+  __gg__field_from_string(dest,
+                          0,
+                          dest->capacity,
+                          duped2,
+                          converted_bytes);
+  free(duped2);
+  __gg__adjust_dest_size(dest, converted_bytes);
+  }
+
+
 extern "C"
 void
 __gg__lower_case( cblc_field_t *dest,
@@ -2073,27 +2152,17 @@ __gg__lower_case( cblc_field_t *dest,
                   size_t        input_offset,
                   size_t        input_size)
   {
-  cbl_encoding_t from = input->encoding;
-  cbl_encoding_t to   = dest->encoding;
-  charmap_t *charmap_dest = __gg__get_charmap(to);
+  return change_case(dest, input, input_offset, input_size, std::towlower);
+  }
 
-  size_t dest_length = dest->capacity;
-  size_t source_length = input_size;
-  size_t length = std::min(dest_length, source_length);
-  memset( dest->data,
-          charmap_dest->mapped_character(ascii_space),
-          dest_length);
-  memcpy(dest->data, input->data+input_offset, length);
-  __gg__convert_encoding_length(PTRCAST(char, dest->data),
-                                length,
-                                from,
-                                DEFAULT_SOURCE_ENCODING);
-  std::transform(dest->data, dest->data + dest_length, dest->data,
-                 [](unsigned char c) { return std::tolower(c); });
-  __gg__convert_encoding_length(PTRCAST(char, dest->data),
-                                length,
-                                DEFAULT_SOURCE_ENCODING,
-                                to);
+extern "C"
+void
+__gg__upper_case( cblc_field_t *dest,
+            const cblc_field_t *input,
+                  size_t        input_offset,
+                  size_t        input_size)
+  {
+  return change_case(dest, input, input_offset, input_size, std::towupper);
   }
 
 extern "C"
@@ -2401,7 +2470,7 @@ numval( cblc_field_t *dest,
                                    PTRCAST(char, input->data + input_offset),
                                    input_size,
                                    &nbytes);
-  const char *pend = p + input_size;
+  const char *pend = p + nbytes;
 
   int errpos = 0;
   __int128 retval = 0;
@@ -2702,7 +2771,7 @@ numval_c( cblc_field_t *dest,
                                   &nbytes);
   char *pstart = strdup(converted);
   massert(pstart);
-  char *pend   = pstart + src_size;
+  char *pend   = pstart + nbytes;
   char *p      = pstart;
 
   GCOB_FP128 retval = 0;
@@ -3447,7 +3516,8 @@ __gg__trim( cblc_field_t *dest,
   cbl_encoding_t from = arg1->encoding;
   cbl_encoding_t to   = dest->encoding;
   charmap_t *charmap = __gg__get_charmap(to);
-  int mapped_space = charmap->mapped_character(ascii_space);
+  int stride = charmap->stride();
+  cbl_char_t mapped_space = charmap->mapped_character(ascii_space);
 
   int rdigits;
   __int128 type = __gg__binary_value_from_qualified_field(&rdigits,
@@ -3466,6 +3536,8 @@ __gg__trim( cblc_field_t *dest,
             "be an intermediate alphanumeric\n");
     abort();
     }
+
+  // What is this all about?
   dest->capacity = dest->offset;
 
   // Make a copy of the input:
@@ -3476,27 +3548,29 @@ __gg__trim( cblc_field_t *dest,
   // Convert it to the destination encoding
   __gg__convert_encoding_length(copy, arg1_size, from, to);
 
-
   // No matter what, we want to find the leftmost non-space and the
   // rightmost non-space:
 
   char *left  = copy;
-  char *right = left + arg1_size-1;
+  char *right = left + arg1_size-stride;
 
   // Find left and right: the first and last non-spaces
   while( left <= right )
     {
-    if( *left != mapped_space && *right != mapped_space )
+    cbl_char_t cleft  = charmap->getch(left,  (size_t)0);
+    cbl_char_t cright = charmap->getch(right, (size_t)0);
+
+    if( cleft != mapped_space && cright != mapped_space )
       {
       break;
       }
-    if( *left == mapped_space )
+    if( cleft == mapped_space )
       {
-      left += 1;
+      left += stride;
       }
-    if( *right == mapped_space )
+    if( cright == mapped_space )
       {
-      right -= 1;
+      right -= stride;
       }
     }
   if( type == LEADING )
@@ -3517,24 +3591,13 @@ __gg__trim( cblc_field_t *dest,
     // When the arg1 input string was empty, we want left to be right+1.
     // The left/right loop can sometimes end up with left equal to right+2.
     // That needs to be fixed:
-    left = right+1;
+    left = right+stride;
     }
 
-  size_t ncount = right+1 - left;
+  size_t ncount = right+stride - left;
   __gg__adjust_dest_size(dest, ncount);
 
-  char *dest_left  = PTRCAST(char, dest->data);
-  char *dest_right = dest_left + dest->capacity - 1;
-  const char *dest_end   = dest_left + dest->capacity;
-
-  while( dest_left <= dest_right && left <= right )
-    {
-    *dest_left++ = *left++;
-    }
-  while(dest_left < dest_end)
-    {
-    *dest_left++ = mapped_space;
-    }
+  memmove(dest->data, left, ncount);
   }
 
 #if HAVE_INITSTATE_R && HAVE_SRANDOM_R && HAVE_RANDOM_R
@@ -3632,34 +3695,29 @@ __gg__reverse(cblc_field_t *dest,
   cbl_encoding_t from = input->encoding;
   cbl_encoding_t to   = dest->encoding;
 
-  size_t dest_length = dest->capacity;
-  size_t source_length = input_size;
-  size_t length = std::min(dest_length, source_length);
+  charmap_t *charmap = __gg__get_charmap(to);
+  size_t stride = charmap->stride();
 
-  // Make a copy of the input
-  char *copy = static_cast<char *>(malloc(length));
-  massert(copy);
-  memcpy(copy, input->data+input_offset, length);
+  size_t dest_length = dest->capacity;
 
   // Convert the input to the destination encoding
-  __gg__convert_encoding_length(copy,
-                                length,
-                                from,
-                                to);
-
-  // Set the destination to all spaces
-  charmap_t *charmap = __gg__get_charmap(to);
-  memset(dest->data, charmap->mapped_character(ascii_space), dest_length);
-  for(size_t i=0; i<length; i++)
+  size_t bytes_converted;
+  const char *converted = __gg__iconverter(from,
+                                           to,
+                                           input->data+input_offset,
+                                           input_size,
+                                           &bytes_converted);
+  // copy over characters from the end of the copy to the beginning of dest:
+  size_t i_from = bytes_converted - stride;
+  size_t i_to = 0;
+  while( i_from < bytes_converted && i_to < dest_length )
     {
-    dest->data[i] = copy[source_length-1-i];
+    cbl_char_t ch = charmap->getch(converted, i_from);
+    charmap->putch(ch, dest->data+dest->offset, i_to);
+    i_from -= stride;
+    i_to   += stride;
     }
-  if( (dest->attr & intermediate_e) )
-    {
-    dest->capacity = std::min(dest_length, source_length);
-    }
-
-  free(copy);
+  __gg__adjust_dest_size(dest, i_to);
   }
 
 extern "C"
@@ -3890,36 +3948,6 @@ __gg__test_day_yyyyddd( cblc_field_t *dest,
                         NO_RDIGITS,
                         truncation_e,
                         NULL);
-  }
-
-extern "C"
-void
-__gg__upper_case( cblc_field_t *dest,
-            const cblc_field_t *input,
-                  size_t        input_offset,
-                  size_t        input_size)
-  {
-  cbl_encoding_t from = input->encoding;
-  cbl_encoding_t to   = dest->encoding;
-  charmap_t *charmap_dest = __gg__get_charmap(to);
-
-  size_t dest_length = dest->capacity;
-  size_t source_length = input_size;
-  size_t length = std::min(dest_length, source_length);
-  memset( dest->data,
-          charmap_dest->mapped_character(ascii_space),
-          dest_length);
-  memcpy(dest->data, input->data+input_offset, length);
-  __gg__convert_encoding_length(PTRCAST(char, dest->data),
-                                length,
-                                from,
-                                DEFAULT_SOURCE_ENCODING);
-  std::transform(dest->data, dest->data + dest_length, dest->data,
-                 [](unsigned char c) { return std::toupper(c); });
-  __gg__convert_encoding_length(PTRCAST(char, dest->data),
-                                length,
-                                DEFAULT_SOURCE_ENCODING,
-                                to);
   }
 
 extern "C"
@@ -4552,43 +4580,32 @@ fill_cobol_tm(cobol_tm &ctm,
               size_t par2_offset,
               size_t par2_size)
   {
-  // Establish the formatting string:
-  char *format     = PTRCAST(char, (par1->data+par1_offset));
-  char *format_end = format + par1_size;
+  // It turns out to be just easier to convert the strings to ASCII space to
+  // do the conversion of par2 against the format in par1:
+  charmap_t *charmap = __gg__get_charmap(DEFAULT_SOURCE_ENCODING);
 
-  // Establish the string to be checked:
-  char *source     = PTRCAST(char, (par2->data+par2_offset));
-  char *source_end = source + par2_size;
+  size_t bytes_converted;
+  char *par1_c = __gg__miconverter(par1->encoding,
+                                           DEFAULT_SOURCE_ENCODING,
+                                           par1->data+par1_offset,
+                                           par1_size,
+                                           &bytes_converted);
+  char *format = par1_c;
+  char *format_end = format + bytes_converted;
 
-  charmap_t *charmap_format = __gg__get_charmap(par1->encoding);
-  charmap_t *charmap_checked = __gg__get_charmap(par2->encoding);
-  int checked_space = charmap_checked->mapped_character(ascii_space);
-  int source_plus  = charmap_checked->mapped_character(ascii_plus);
-  int source_minus = charmap_checked->mapped_character(ascii_minus);
-  int source_zero  = charmap_checked->mapped_character(ascii_zero);
+  char *par2_c = __gg__miconverter(par2->encoding,
+                                           DEFAULT_SOURCE_ENCODING,
+                                           par2->data+par2_offset,
+                                           par2_size,
+                                           &bytes_converted);
+  char *source = par2_c;
+  char *source_end = source + bytes_converted;
 
-  int format_space  = charmap_format->mapped_character(ascii_space);
-  int format_T      = charmap_format->mapped_character(ascii_T      );
-  int format_colon  = charmap_format->mapped_character(ascii_colon  );
-  int format_plus   = charmap_format->mapped_character(ascii_plus   );
-  int format_minus  = charmap_format->mapped_character(ascii_minus  );
-  int format_W      = charmap_format->mapped_character(ascii_W      );
-  int format_Z      = charmap_format->mapped_character(ascii_Z      );
-  int format_z      = charmap_format->mapped_character(ascii_z      );
-  int format_s      = charmap_format->mapped_character(ascii_s      );
-  int format_m      = charmap_format->mapped_character(ascii_m      );
-  int format_h      = charmap_format->mapped_character(ascii_h      );
-  int format_w      = charmap_format->mapped_character(ascii_w      );
-  int format_Y      = charmap_format->mapped_character(ascii_Y      );
-  int format_M      = charmap_format->mapped_character(ascii_M      );
-  int format_D      = charmap_format->mapped_character(ascii_D      );
-  int format_zero   = charmap_format->mapped_character(ascii_zero   );
-  char decimal_point
-                = charmap_format->mapped_character(__gg__get_decimal_point());
+  char decimal_point = __gg__get_decimal_point();
 
   // Let's eliminate trailing spaces...
-  trim_trailing_spaces(format, format_end, format_space);
-  trim_trailing_spaces(source, source_end, checked_space);
+  trim_trailing_spaces(format, format_end, ascii_space);
+  trim_trailing_spaces(source, source_end, ascii_space);
 
   bool in_offset = false;
   bool in_nanoseconds = false;
@@ -4605,10 +4622,10 @@ fill_cobol_tm(cobol_tm &ctm,
     {
     unsigned char ch = *format;
 
-    if(    ch == format_T
-           || ch == format_colon
-           || ch == format_minus
-           || ch == format_W)
+    if(    ch == ascii_T
+           || ch == ascii_colon
+           || ch == ascii_minus
+           || ch == ascii_W)
       {
       // These are just formatting characters.  They need to be duplicated,
       // but are otherwise ignored.
@@ -4620,34 +4637,34 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_plus )
+    if( ch == ascii_plus )
       {
       // This flags a following hhmm offset.  It needs to match a '+' or '-'
-      if(    (unsigned char)*source != source_plus
-          && (unsigned char)*source != source_minus
-          && (unsigned char)*source != source_zero)
+      if(    (unsigned char)*source != ascii_plus
+          && (unsigned char)*source != ascii_minus
+          && (unsigned char)*source != ascii_zero)
         {
         break;
         }
-      if( (unsigned char)*source == format_zero )
+      if( (unsigned char)*source == ascii_zero )
         {
         // The next four characters have to be zeroes
-        if( (unsigned char)source[1] != format_zero )
+        if( (unsigned char)source[1] != ascii_zero )
           {
           retval += 1;
           break;
           }
-        if( (unsigned char)source[2] != format_zero )
+        if( (unsigned char)source[2] != ascii_zero )
           {
           retval += 2;
           break;
           }
-        if( (unsigned char)source[3] != format_zero )
+        if( (unsigned char)source[3] != ascii_zero )
           {
           retval += 3;
           break;
           }
-        if( (unsigned char)source[4] != format_zero )
+        if( (unsigned char)source[4] != ascii_zero )
           {
           retval += 4;
           break;
@@ -4671,9 +4688,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_Y )
+    if( ch == ascii_Y )
       {
-      errpos = gets_year(source, source_end, charmap_checked, ctm);
+      errpos = gets_year(source, source_end, charmap, ctm);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4683,9 +4700,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_M )
+    if( ch == ascii_M )
       {
-      errpos = gets_month(source, source_end, charmap_checked, ctm);
+      errpos = gets_month(source, source_end, charmap, ctm);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4695,13 +4712,13 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_D )
+    if( ch == ascii_D )
       {
       // We have three possibilities: DDD, DD, and D
-      if( (unsigned char)format[1] != format_D )
+      if( (unsigned char)format[1] != ascii_D )
         {
         // A singleton 'D' is a day-of-week
-        errpos = gets_day_of_week(source, source_end, charmap_checked, ctm);
+        errpos = gets_day_of_week(source, source_end, charmap, ctm);
         if( errpos > 0)
           {
           retval += errpos - 1;
@@ -4709,10 +4726,10 @@ fill_cobol_tm(cobol_tm &ctm,
           }
         bump = 1;
         }
-      else if( (unsigned char)format[2] != format_D )
+      else if( (unsigned char)format[2] != ascii_D )
         {
         // This is DD, for day-of-month
-        errpos = gets_day(source, source_end, charmap_checked, ctm);
+        errpos = gets_day(source, source_end, charmap, ctm);
         if( errpos > 0)
           {
           retval += errpos - 1;
@@ -4724,7 +4741,7 @@ fill_cobol_tm(cobol_tm &ctm,
         {
         // Arriving here means that it is DDD, for day-of-year
         // This is DD, for day-of-month
-        errpos = gets_day_of_year(source, source_end, charmap_checked, ctm);
+        errpos = gets_day_of_year(source, source_end, charmap, ctm);
         if( errpos > 0)
           {
           retval += errpos - 1;
@@ -4735,9 +4752,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_w )
+    if( ch == ascii_w )
       {
-      errpos = gets_week(source, source_end, charmap_checked, ctm);
+      errpos = gets_week(source, source_end, charmap, ctm);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4747,9 +4764,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_h )
+    if( ch == ascii_h )
       {
-      errpos = gets_hours(source, source_end, charmap_checked, ctm, in_offset);
+      errpos = gets_hours(source, source_end, charmap, ctm, in_offset);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4759,9 +4776,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_m )
+    if( ch == ascii_m )
       {
-      errpos = gets_minutes(source, source_end, charmap_checked, ctm, in_offset);
+      errpos = gets_minutes(source, source_end, charmap, ctm, in_offset);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4771,9 +4788,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_s && !in_nanoseconds )
+    if( ch == ascii_s && !in_nanoseconds )
       {
-      errpos = gets_seconds(source, source_end, charmap_checked, ctm);
+      errpos = gets_seconds(source, source_end, charmap, ctm);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4783,7 +4800,7 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_s && in_nanoseconds )
+    if( ch == ascii_s && in_nanoseconds )
       {
       // Peel off digits to the right of the decimal point one at a time
       errpos = gets_nanoseconds(format,
@@ -4791,8 +4808,8 @@ fill_cobol_tm(cobol_tm &ctm,
                                 source,
                                 source_end,
                                 ctm,
-                                charmap_format,
-                                charmap_checked);
+                                charmap,
+                                charmap);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4802,11 +4819,11 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == format_Z || ch == format_z )
+    if( ch == ascii_Z || ch == ascii_z )
       {
       // This has to be the end of the road
-      if(    (unsigned char)source[0] != format_Z
-          && (unsigned char)source[0] != format_z )
+      if(    (unsigned char)source[0] != ascii_Z
+          && (unsigned char)source[0] != ascii_z )
         {
         retval += 0;
         break;
@@ -4829,9 +4846,10 @@ proceed:
     {
     // This means we processed the entire format string without seeing an error
     retval = 0;
-
     // Otherwise, either the format or source was too short
     }
+  free(par1_c);
+  free(par2_c);
   return retval;
   }
 
@@ -4914,7 +4932,8 @@ __gg__seconds_from_formatted_time(cblc_field_t *dest,
     }
   else
     {
-    retval = (double)(ctm.hh * 3600 + ctm.mm * 60 + ctm.ss) + ctm.nanoseconds/1000000000.;
+    retval = (double)(ctm.hh * 3600 + ctm.mm * 60 + ctm.ss)
+                      + ctm.nanoseconds/1000000000.;
     }
   __gg__double_to_target( dest,
                           retval,
@@ -4928,16 +4947,34 @@ __gg__hex_of(cblc_field_t *dest,
              size_t field_offset,
              size_t field_size)
   {
-  charmap_t *charmap = __gg__get_charmap(dest->encoding);
+  // We are going to build the hex string up here, in ascii, and convert to the
+  // the destination encoding at the end.
+
   static const char hex[17] = "0123456789ABCDEF";
-  size_t bytes = field_size;
-  __gg__adjust_dest_size(dest, 2*bytes);
-  for(size_t i=0; i<bytes; i++)
+
+  // Dest size is two hex characters per input byte.
+  size_t build_size = 2 * field_size;
+
+  // Build up the hex string in ascii:
+  char *build = static_cast<char *>(malloc(build_size));
+  massert(build);
+  for(size_t i=0; i<field_size; i++)
     {
     unsigned char byte = (field->data+field_offset)[i];
-    dest->data[2*i  ] = charmap->mapped_character(hex[byte>>4]);
-    dest->data[2*i+1] = charmap->mapped_character(hex[byte&0xF]);
+    build[2*i  ] = hex[byte>>4];
+    build[2*i+1] = hex[byte&0xF];
     }
+  // Convert the hex string to the destination encoding:
+  size_t converted_bytes;
+  const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                           dest->encoding,
+                                           build,
+                                           build_size,
+                                           &converted_bytes);
+  // And put it into place:
+  __gg__adjust_dest_size(dest, converted_bytes);
+  memcpy(dest->data, converted, converted_bytes);
+  free(build);
   }
 
 extern "C"
@@ -5249,11 +5286,11 @@ __gg__numval_f( cblc_field_t *dest,
                                   &nbytes);
   GCOB_FP128 value = 0;
   const char *data     = converted;
-  const char *data_end = data + source_size;
+  const char *data_end = data + nbytes;
 
   int error = floating_format_tester( data,
                                       data_end);
-  if( error || source_size >= 256 )
+  if( error || nbytes >= 256 )
     {
     exception_raise(ec_argument_function_e);
     }
@@ -5296,7 +5333,7 @@ __gg__test_numval_f(cblc_field_t *dest,
                                   &nbytes);
 
   const char *data     = converted;
-  const char *data_end = data + source_size;
+  const char *data_end = data + nbytes;
   int error = floating_format_tester( data,
                                       data_end);
   __gg__int128_to_field(dest,
@@ -5711,11 +5748,15 @@ __gg__locale_date(cblc_field_t *dest,
     strcpy(ach, nl_langinfo(D_FMT));
     strftime(ach, sizeof(ach), nl_langinfo(D_FMT), &tm);
     }
-  __gg__convert_encoding(ach,
-                         DEFAULT_SOURCE_ENCODING,
-                         dest->encoding);
-  memcpy(dest->data, ach, strlen(ach));
-  __gg__adjust_dest_size(dest, strlen(ach));
+  size_t bytes_converted;
+  char *converted = __gg__miconverter(__gg__console_encoding,
+                                      dest->encoding,
+                                      ach,
+                                      strlen(ach),
+                                      &bytes_converted);
+  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
+  __gg__adjust_dest_size(dest, bytes_converted);
+  free(converted);
   }
 
 extern "C"
@@ -5749,11 +5790,15 @@ __gg__locale_time(cblc_field_t *dest,
     strftime(ach, sizeof(ach), nl_langinfo(T_FMT), &tm);
     }
 
-  __gg__convert_encoding(ach,
-                         DEFAULT_SOURCE_ENCODING,
-                         dest->encoding);
-  memcpy(dest->data, ach, strlen(ach));
-  __gg__adjust_dest_size(dest, strlen(ach));
+  size_t bytes_converted;
+  char *converted = __gg__miconverter(__gg__console_encoding,
+                                      dest->encoding,
+                                      ach,
+                                      strlen(ach),
+                                      &bytes_converted);
+  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
+  __gg__adjust_dest_size(dest, bytes_converted);
+  free(converted);
   }
 
 extern "C"
@@ -5788,10 +5833,13 @@ __gg__locale_time_from_seconds( cblc_field_t *dest,
     tm.tm_sec    = seconds % 100;
     strftime(ach, sizeof(ach), nl_langinfo(T_FMT), &tm);
     }
-
-  __gg__convert_encoding(ach,
-                         DEFAULT_SOURCE_ENCODING,
-                         dest->encoding);
-  memcpy(dest->data, ach, strlen(ach));
-  __gg__adjust_dest_size(dest, strlen(ach));
+  size_t bytes_converted;
+  char *converted = __gg__miconverter(__gg__console_encoding,
+                                      dest->encoding,
+                                      ach,
+                                      strlen(ach),
+                                      &bytes_converted);
+  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
+  __gg__adjust_dest_size(dest, bytes_converted);
+  free(converted);
   }

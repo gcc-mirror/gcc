@@ -83,6 +83,12 @@ struct cbl_loc_t {
   int last_line;
   int last_column;
 
+  cbl_loc_t() 
+    : first_line(0)
+    , first_column(0)
+    , last_line(0)
+    , last_column(0)
+  {}
   cbl_loc_t( const YYLTYPE& loc ) 
     : first_line(loc.first_line)
     , first_column(loc.first_column)
@@ -90,7 +96,7 @@ struct cbl_loc_t {
     , last_column(loc.last_column)
   {}
 
-  operator YYLTYPE() const {
+  operator YYLTYPE() const {  //  cppcheck-suppress syntaxError
     return { first_line, first_column, last_line, last_column };
   } 
 };
@@ -137,11 +143,14 @@ enum cbl_diag_id_t : uint64_t {
 
   MfBinaryLongLong,
   MfCallGiving,
+  MfCallLiteral,
   MfCdfDollar, 
   MfComp6,
   MfCompX,
   MfLevel_1_Occurs, 
   MfLevel78,
+  MfAnyLength, 
+  MfMoveIndex, 
   MfMovePointer, 
   MfReturningNum,
   MfUsageTypename,

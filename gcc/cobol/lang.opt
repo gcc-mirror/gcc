@@ -73,6 +73,14 @@ copyext
 Cobol Joined Separate Var(cobol_copyext) Init(0)
 Define alternative implicit copybook filename extension.
 
+fexec-charset=
+Cobol Joined Var(cobol_charset) RejectNegative
+; Documented in c.opt
+
+fexec-national-charset=
+Cobol Joined Var(cobol_national_charset) RejectNegative
+Set the default execution character set for NATIONAL data items
+
 ;; warnings
 
 ; Par78CdfDefinedW
@@ -89,6 +97,11 @@ Warn if BINARY-LONG-LONG is used.
 Wcall-giving
 Cobol Warning Var(call_giving, 1) Init(1)
 Warn if CALL ... GIVING is used.
+
+; MfCallLiteral
+Wcall-literal
+Cobol Warning Var(call_literal, 1) Init(1)
+Warn if CALL is used is used with a literal parameter by reference.
 
 ; MfCdfDollar
 Wcdf-dollar
@@ -119,6 +132,16 @@ Warn if Level 01 is used with OCCURS.
 Wlevel-78
 Cobol Warning Var(level_78, 1) Init(1)
 Warn if Level 78 is used.
+
+; MfAnyLengthContained
+Wany-length
+Cobol Warning Var(cobol_any_length, 1) Init(1)
+Warn if ANY LENGTH is used in outermost program.
+
+; MfMoveIndex
+Wmove-index
+Cobol Warning Var(move_index, 1) Init(1)
+Warn if MOVE INDEX is used
 
 ; MfMovePointer
 Wmove-pointer
@@ -335,10 +358,6 @@ Assume that the source file is free form.
 findicator-column
 Cobol RejectNegative Joined Separate UInteger Var(indicator_column) Init(0) IntegerRange(0, 8)
 -findicator-column=<n>	Column after which Region A begins.
-
-finternal-ebcdic
-Cobol Var(cobol_ebcdic, 1) Init(0)
--finternal-ebcdic	Internal processing is in EBCDIC Code Page 1140.
 
 fstatic-call
 Cobol Var(cobol_static_call, 1) Init(1)

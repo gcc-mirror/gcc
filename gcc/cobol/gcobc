@@ -184,7 +184,6 @@ do
          -C) error "$opt $incomparable"
              ;;
         -d | -debug | --debug) opts="$opts -fcobol-exceptions=EC-ALL"
-                       warn "$opt implies -fstack-check:"
                        ;;
         # define for preprocessor, note: -D* is directly passed
         -D)
@@ -200,7 +199,7 @@ do
              opts="$opts $opt"
              ;;
          -ext)
-            pending_arg="$opt "
+            pending_arg="-copyext "
              ;;
          -ext=*) opts="$opts $(echo "$opt" | sed 's/-ext=/-copyext ./')"
                  ;;
@@ -230,7 +229,7 @@ do
         -fwrite-after) warn "$opt" ;;
         -fmfcomment) warn "$opt" ;;
         -facucomment) warn "$opt" ;;
-        -fno-trunc) no_warn "$opt" ;;
+        -ftrunc | -fno-trunc | -fnotrunc) no_warn "$opt" ;;
         -fsingle-quote) warn "$opt" ;;
         -foptional-file) warn "$opt" ;;
         -fstatic-call | -fno-static-call)
@@ -384,8 +383,9 @@ do
         -fformat=auto) ;; # gcobol and gnucobol default
 
         -fixed | --fixed | -fformat=fixed | -fformat=variable | -fformat=xcard)
-                    # note: variable + xcard are only _more similar_ to fixed than free,
-                    # (with changing right-column to 250/255, which isn't supported in gcobol, yet)
+                    # note: variable + xcard are only _more similar_
+                    # to fixed than free, (with changing right-column
+                    # to 250/255, which isn't supported in gcobol
                      opts="$opts -ffixed-form"
                      ;;
 
@@ -400,8 +400,11 @@ do
                ;;
         -i | --info) warn "$opt"
                      ;;
-
-        # -I
+        -I) pending_arg=$opt
+            ;;
+        -I*)
+            opts="$opts $opt"
+            ;;
         -fimplicit-init) warn "$opt"
                          ;;
         -j | -job)  warn "$opt"
@@ -411,7 +414,8 @@ do
         -K*) warn "$opt"
             ;;
         # -l
-        # -L
+        -L) pending_arg=$opt
+            ;;
         --list*) warn "$opt"
                  ;;
         -m) mode="-shared"
@@ -425,9 +429,6 @@ do
              opts="$opts $opt"
             ;;
 
-        # -O0, -Ox
-        -O | -O2 | -Os) warn "$opt"
-                        ;;
         -S) mode="$opt"
             ;;
         -save-temps=*) opt="$(echo "$opt" | sed -E 's/^.+=//')"

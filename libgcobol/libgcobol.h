@@ -59,17 +59,17 @@ extern "C" __int128 __gg__dirty_to_binary(const char *dirty,
 extern "C" __int128 __gg__binary_value_from_field(  int *rdigits,
                                                     cblc_field_t *var);
 
-extern "C" int __gg__compare_2( cblc_field_t *left_side,
-                                unsigned char   *left_location,
-                                size_t  left_length,
-                                int     left_attr,
-                                int     left_flags,
-                                cblc_field_t *right_side,
-                                unsigned char   *right_location,
-                                size_t  right_length,
-                                int     right_attr,
-                                int     right_flags,
-                                int     second_time_through);
+extern "C" int __gg__compare_2( cblc_field_t  *left_side,
+                                unsigned char *left_location,
+                                size_t         left_length,
+                                uint64_t       left_attr,
+                                int            left_flags,
+                                cblc_field_t  *right_side,
+                                unsigned char *right_location,
+                                size_t         right_length,
+                                uint64_t       right_attr,
+                                int            right_flags,
+                                int            second_time_through);
 extern "C" void __gg__int128_to_field(cblc_field_t   *tgt,
                                       __int128        value,
                                       int             source_rdigits,
@@ -143,5 +143,18 @@ void __gg__convert_encoding_length(char *pch,
                                    cbl_encoding_t to );
 
 const unsigned short *__gg__current_collation();
+
+// Warning:  field_from_string uses charmap_t, so you can't safely feed it
+// the results of __gg__iconverter without copying them.
+extern "C"
+void __gg__field_from_string( cblc_field_t *field,
+                              size_t field_o,
+                              size_t field_s,
+                        const char *string,
+                              size_t string_length);
+extern "C"
+void *__gg__memdup(const void *p, size_t size);
+
+enum {width_of_utf32 = 4};
 
 #endif

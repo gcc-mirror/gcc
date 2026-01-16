@@ -40,6 +40,7 @@
 #include <algorithm>
 #include <unordered_map>
 #include <vector>
+#include <langinfo.h>
 
 #include "ec.h"
 #include "common-defs.h"
@@ -55,10 +56,14 @@ int __gg__decimal_separator    = ','  ;
 int __gg__quote_character      = '"'  ;
 int __gg__low_value_character  = 0x00 ;
 int __gg__high_value_character = 0xFF ;
+cbl_char_t __gg__working_init  = NOT_A_CHARACTER;
+cbl_char_t __gg__local_init    = NOT_A_CHARACTER;
+uint32_t   __gg__wsclear       = NOT_A_CHARACTER;
 std::vector<std::string> __gg__currency_signs(256) ;
 int __gg__default_currency_sign;
 char *__gg__ct_currency_signs[256];  // Compile-time currency signs
 
+cbl_encoding_t __gg__console_encoding  = no_encoding_e    ;
 cbl_encoding_t __gg__display_encoding  = no_encoding_e;
 cbl_encoding_t __gg__national_encoding = no_encoding_e;
 
@@ -1412,6 +1417,29 @@ static encodings_t encodings[] = {
   { false, iconv_YU_e, "YU" },
 };
 
+/*
+ * Because this variable is static, the contructor runs before main and is
+ * guaranted to run.
+ */
+static class rt_encoding_t
+  {
+  const char *ctype, *lc_ctype;
+  public:
+  rt_encoding_t() : ctype( setlocale(LC_CTYPE, "") )
+    {
+    lc_ctype =  nl_langinfo(CODESET);
+    // Let's learn what the computer is using for the console:
+    // We need to establish the codeset used by the system console:
+  __gg__console_encoding = use_locale();
+    }
+  cbl_encoding_t use_locale() const
+    {
+    auto encoding = strstr(ctype, "UTF-8") ?
+      iconv_UTF_8_e : __gg__encoding_iconv_type(lc_ctype);
+    return encoding;
+    }
+  } rt_encoding;
+
 static const encodings_t *
 encoding_descr( cbl_encoding_t encoding ) {
   static encodings_t *eoencodings = encodings + COUNT_OF(encodings);
@@ -1423,20 +1451,8 @@ encoding_descr( cbl_encoding_t encoding ) {
   return p < eoencodings? p : nullptr;
 }
 
-const char *
-__gg__encoding_iconv_name( cbl_encoding_t encoding ) {
-  auto p = encoding_descr(encoding);
-  return p? p->name : nullptr;
-}
-
-bool
-__gg__encoding_iconv_valid( cbl_encoding_t encoding ) {
-  auto p = encoding_descr(encoding);
-  return p? p->supported : false;
-}
-
-cbl_encoding_t
-__gg__encoding_iconv_type( const char *name ) {
+static const encodings_t *
+encoding_descr( const char name[] ) {
   static encodings_t *eoencodings = encodings + COUNT_OF(encodings);
 
   char *slashless = strdup(name);
@@ -1453,40 +1469,92 @@ __gg__encoding_iconv_type( const char *name ) {
                          } );
   free(slashless);
 
-  return p < eoencodings? p->type : no_encoding_e;
+  return p < eoencodings? p : nullptr;
+}
+
+const encodings_t *
+__gg__encoding_iconv_descr( const char name[] ) {
+  return encoding_descr(name);
+}
+
+const encodings_t *
+__gg__encoding_iconv_descr( cbl_encoding_t encoding ) {
+  return encoding_descr(encoding);
+}
+
+const char *
+__gg__encoding_iconv_name( cbl_encoding_t encoding ) {
+  auto p = encoding_descr(encoding);
+  return p? p->name : nullptr;
+}
+
+bool
+__gg__encoding_iconv_valid( cbl_encoding_t encoding ) {
+  auto p = encoding_descr(encoding);
+  return p? p->supported : false;
+}
+
+cbl_encoding_t
+__gg__encoding_iconv_type( const char *name ) {
+  auto p = encoding_descr(name);
+  return p? p->type : no_encoding_e;
 }
 
 char *
 __gg__iconverter( cbl_encoding_t from,
                   cbl_encoding_t to,
-            const char *str,
+            const void *str_,
                   size_t length,
-                  size_t *outlength)
+                  size_t *outlength_p,
+                  size_t *iconv_retval_p )
   {
+  const char *str = static_cast<const char *>(str_);
+
+  // Attempts to convert 'length' bytes 'str' in 'from' encoding to
+  // the 'to' encoding.
+
+  // The return value points to a static memory area in this function, the
+  // caller has to respect that and make copies before doing something that
+  // will call this routine again.  Note that __gg__get_charmap, and
+  // charmap_t::mapped_character can call this routine.
+
+  // The routine optionally returns the number of bytes generated, the number
+  // of bytes eaten by iconv, and the actual return value from the iconv call.
+
+  // Let's consider the possibility of each input character needing four output
+  // characters.  We increase it by one to leave room for the terminating NUL,
+  // which itself might be four bytes of 0x00. The static area keeps growing
+  // as necessary.
+
+  // Get charmap first, because we might need it in the event of a conversion
+  // error, and we have to avoid problems with recursion clobbering the return
+  // buffer, because __gg__get_charmap can call us:
+  charmap_t *charmap_to = __gg__get_charmap(to);
+
   static size_t retsize = 1;
   static char *retval = static_cast<char *>(malloc(retsize));
 
-  // Let's consider the possibility of each input character needed four output
-  // characters:
-  size_t needed = 4*length;
+  size_t needed = 4*(length+1);
   if( retsize < needed )
     {
     retsize = needed;
     retval = static_cast<char *>(realloc(retval, retsize));
     }
 
+  size_t outlength;
+  size_t iconv_retval;
+
   if( from == to )
     {
+    // There is no need to actually convert.  Simulate a successful iconv()
+    // call:
+
     memcpy(retval, str, length);
-    *outlength = length;
+    outlength = length;
+    iconv_retval = 0;
     }
   else
     {
-    // Converts the given string from from to to using iconv.
-
-    // The return value points to a static memory area in this function, the
-    // caller has to respect that.
-
     // We attempt to minimize overhead by using a map to call
     // iconv_open but once for each from/to pairing.
 
@@ -1514,37 +1582,147 @@ __gg__iconverter( cbl_encoding_t from,
 
     char *inbuf  = const_cast<char *>(str);
     char *outbuf = retval;
-    size_t incount = length;
-    size_t outcount = retsize;
-    *outlength = iconv( cd,
-                        &inbuf, &incount,
-                        &outbuf, &outcount);
-    *outlength = retsize - outcount;
+    size_t inbytesleft  = length;
+    size_t outbytesleft = retsize;
 
-    if( *outlength == length )
+    /* It's time for some COBOL magic.  The default HIGH-VALUE in COBOL is
+       0xFF.  CP1252, UTF-16, and UTF32 all happily interconvert 0xFF, 0x00FF,
+       and 0x000000FF.  But CP1140 is a pain.
+
+       A CP1252 0xFF becomes a CP1140 DF, which converts back to 0xFF
+       CP1140 DF becomes FF, 00ff and 000000FF.
+
+       So, we need to intervene when the source, or dest, is ebcdic.  */
+
+    char *inbuf_cpy = nullptr;
+    if( __gg__high_value_character == DEGENERATE_HIGH_VALUE )
       {
-      /*  In a kind of shortsighted way, we are going to assume
-          single-byte-coding, and we are going to cope here with the
-          COBOL-world reality of HIGH-VALUE being, by default, the value 0xFF.
-          This is required by IBM in the EBCDIC and ASCII worlds.  The
-          implications for other locales are being left for another time.
-
-          So, for now, we are regarding 0xFF as invariant.  Thus, at this
-          point, we have to scan the input and make sure the output has 0xFF
-          where the input does.  */
-      for(size_t i=0; i<length; i++)
+      const charmap_t *map_from = __gg__get_charmap(from);
+      if( map_from->is_like_ebcdic() )
         {
-        if( static_cast<unsigned char>(str[i]) == 0xFF )
+        inbuf_cpy = static_cast<char *>(malloc(length));
+        assert(inbuf_cpy);
+        memcpy(inbuf_cpy, inbuf, length);
+        inbuf = inbuf_cpy;
+        for(size_t i=0; i<length; i++)
           {
-          retval[i] = static_cast<char>(0xFF);
+          if( (unsigned char)inbuf[i] == (unsigned char)0xFF )
+            {
+            inbuf[i] = (char)0xDF;
+            }
+          }
+        }
+      }
+
+    // When the caller supplies iconv_retval_p, we only try to convert once,
+    // because they are telling us they will handle errors.
+
+    // Otherwise, we just keep trying to convert, replacing unconvertable
+    // characters with a replacement.
+
+    iconv_retval = 1; // This primes the pump:
+    for(;;)
+      {
+      iconv_retval = iconv( cd,
+                            &inbuf, &inbytesleft,
+                            &outbuf, &outbytesleft);
+      if( iconv_retval_p || iconv_retval == 0 )
+        {
+        // Either there was no conversion error, or else our caller wants
+        // to know about the error
+        break;
+        }
+      // Arriving here means that there has been a conversion error.
+      if( charmap_to->stride() >= 2 )
+        {
+        // Put in the value for the U+FFFD Replacement Character
+        charmap_to->putch(REPLACEMENT_CHARACTER, outbuf, size_t(0));
+        outbuf += charmap_to->stride();
+        outbytesleft -= charmap_to->stride();
+        }
+      else if( charmap_to->is_like_utf8() )
+        {
+        // Put in the UTF-8 bytes for the U+FFFD Replacement Character
+        *outbuf++ = static_cast<char>(0xEF);
+        *outbuf++ = static_cast<char>(0xBF);
+        *outbuf++ = static_cast<char>(0xBD);
+        outbytesleft -= 3;
+        }
+      else
+        {
+        // This is some kind of single-byte-coded character set.  We just use
+        // a question mark as the replacement character.
+        *outbuf++ = charmap_to->mapped_character(ascii_query);
+        outbytesleft -= 1;
+        }
+      // skip past the byte that caused the conversion error:
+      inbuf += 1;
+      inbytesleft -= 1;
+      // Raise the run-time error:
+#ifdef IN_TARGET_LIBS
+      exception_raise(ec_data_conversion_e);
+      // And then loop around and try it again.
+#endif
+      }
+
+    free(inbuf_cpy);
+    // Calculate the number of bytes generated:
+    outlength = retsize - outbytesleft;
+
+    if( __gg__high_value_character == DEGENERATE_HIGH_VALUE )
+      {
+      const charmap_t *map_to = __gg__get_charmap(to);
+      if( map_to->is_like_ebcdic() )
+        {
+        for(size_t i=0; i<length; i++)
+          {
+          if( (unsigned char)retval[i] == (unsigned char)0xDF )
+            {
+            retval[i] = (char)0xFF;
+            }
           }
         }
       }
     }
   // For the convenience of those who call this routine, we are sticking a
-  // terminating NUL on the end of the generated string
-  retval[*outlength] = '\0';
+  // terminating NUL on the end of the generated string.  Keeping in mind that
+  // a NUL isn't always a single byte, we are going to lay down four of them.
+  retval[outlength+0] = '\0';
+  retval[outlength+1] = '\0';
+  retval[outlength+2] = '\0';
+  retval[outlength+3] = '\0';
 
+  if( outlength_p )
+    {
+    *outlength_p = outlength;
+    }
+  if( iconv_retval_p )
+    {
+    *iconv_retval_p = iconv_retval;
+    }
+
+  return retval;
+  }
+
+char *
+__gg__miconverter( cbl_encoding_t from,
+                   cbl_encoding_t to,
+             const void *str_,
+                   size_t length,
+                   size_t *outlength_p,
+                   size_t *iconv_retval_p )
+  {
+  const char *converted = __gg__iconverter(from,
+                                           to,
+                                           str_,
+                                           length,
+                                           outlength_p,
+                                           iconv_retval_p);
+  char *retval = static_cast<char *>(malloc(*outlength_p + 4));
+  assert(retval);
+  memcpy(retval, converted, *outlength_p);
+  // Tack on four zeros to be a NUL in any encoding.
+  memset(retval + *outlength_p, 0, 4);
   return retval;
   }
 

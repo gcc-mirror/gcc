@@ -19,11 +19,11 @@
              Returning Return-Value.
 
           Move Lk-pathname To Ws-pathname.
-          Inspect Ws-pathname 
-                  Replacing Trailing Space By Low-Value
+      D   Inspect Ws-pathname 
+      D           Replacing Trailing Space By Low-Value
 
           Inspect Backward Ws-pathname Replacing Leading Space, 
-      -      By Low-Value.
+                                                      By Low-Value.
           Call "unlink" using
              By Reference Ws-pathname,
              Returning Return-Value.

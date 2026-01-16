@@ -34,9 +34,10 @@
  * header files.
  */
 
-#include <cobol-system.h>
+#include "cobol-system.h"
 #include <coretypes.h>
 #include <tree.h>
+#include <fold-const.h>
 #undef yy_flex_debug
 
 #include <langinfo.h>
@@ -48,8 +49,8 @@
 #include <backtrace.h>
 #include <diagnostic.h>
 #include <opts.h>
-#include "util.h"
 
+#include "util.h"
 #include "cbldiag.h"
 #include "cdfval.h"
 #include "lexio.h"
@@ -62,6 +63,7 @@
 #include "genapi.h"
 #include "genutil.h"
 #include "../../libgcobol/charmaps.h"
+#include "../../libgcobol/valconv.h"
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -269,32 +271,31 @@ cdf_literalize( const std::string& name, const cdfval_t& value ) {
     if( value.is_numeric() ) {
       auto initial = xasprintf("%ld", (long)value.as_number());
       auto len = strlen(initial);
-      cbl_field_data_t data(len, len);
-      data.initial = initial;
+      cbl_field_data_t data(len, len, len,0, initial); // digits == len, no rdigits
       data.valify();
       field = cbl_field_t{ FldLiteralN, constant_e, data, 0, name.c_str()};
     } else {
       auto len = strlen(value.string);
       cbl_field_data_t data(len, len);
-      data.initial = xstrdup(value.string);
+      data.original(xstrdup(value.string));
       field = cbl_field_t{ FldLiteralA, constant_e, data, 0, name.c_str() };
       field.set_attr(quoted_e);
     }
-    field.codeset.set();
 
+    field.codeset.set();
     return field;
 }
 
-const std::list<cbl_field_t> 
+const std::list<cbl_field_t>
 cdf_literalize() {
   std::list<cbl_field_t> fields;
   auto dict = cdf_dictionary();
-  
+
   for( auto elem : dict ) {
     std::string name(elem.first);
     const cdfval_t& value(elem.second);
-    
-    fields.push_back(cdf_literalize(name, value));    
+
+    fields.push_back(cdf_literalize(name, value));
   }
   return fields;
 }
@@ -372,6 +373,53 @@ cbl_field_type_str( enum cbl_field_type_t type )
 }
 
 const char *
+cbl_field_type_name( enum cbl_field_type_t type )
+{
+  switch(type) {
+  case FldDisplay:
+    return "DISPLAY";
+  case FldInvalid:
+    return ""; // Invalid";
+  case FldGroup:
+    return "GROUP";
+  case FldAlphanumeric:
+    return "ALPHANUMERIC";
+  case FldNumericBinary:
+    return "NUMERIC-BINARY";
+  case FldFloat:
+    return "FLOAT";
+  case FldNumericBin5:
+    return "COMPUTATIONAL-5";
+  case FldPacked:
+    return "PACKED-DECIMAL";
+  case FldNumericDisplay:
+    return "NUMERIC-DISPLAY";
+  case FldNumericEdited:
+    return "NUMERIC-EDITED";
+  case FldAlphaEdited:
+    return "ALPHANUMERIC-EDITED";
+  case FldLiteralA:
+    return "ALPHANUMERIC LITERAL";
+  case FldLiteralN:
+    return "NUMERIC LITERAL";
+  case FldClass:
+    return "CLASS";
+  case FldConditional:
+    return "CONDITIONAL";
+  case FldForward:
+    return "FORWARD";
+  case FldIndex:
+    return "INDEX";
+  case FldSwitch:
+    return "SWITCH";
+  case FldPointer:
+    return "POINTER";
+ }
+  cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
+  return "???";
+}
+
+const char *
 cbl_logop_str( enum logop_t op )
 {
   switch(op) {
@@ -404,7 +452,7 @@ determine_intermediate_type( const cbl_refer_t& aref,
   if( aref.field->type == FldFloat || bref.field->type == FldFloat )
     {
     output.type = FldFloat;
-    output.data.capacity = 16;
+    output.data.capacity(16);
     output.attr = (intermediate_e );
     }
   else if(   op == '*'
@@ -412,13 +460,13 @@ determine_intermediate_type( const cbl_refer_t& aref,
                                                       > MAX_FIXED_POINT_DIGITS)
     {
     output.type = FldFloat;
-    output.data.capacity = 16;
+    output.data.capacity(16);
     output.attr = (intermediate_e );
     }
   else
     {
     output.type = FldNumericBin5;
-    output.data.capacity = 16;
+    output.data.capacity(16);
     output.data.digits   = MAX_FIXED_POINT_DIGITS;
     output.attr = (intermediate_e | signable_e );
     }
@@ -449,20 +497,23 @@ const char *numed_message;
 extern int yydebug, yy_flex_debug;
 
 bool
-is_alpha_edited( const char picture[] ) {
+cbl_field_data_t::is_alpha_edited() const {
   static const char valid[] = "abxABX90/(),.";
   assert(picture);
+  auto ep = picture + strlen(picture);
 
-  for( const char *p = picture; *p != '\0'; p++ ) {
-    if( strchr(valid, *p) ) continue;
-    if( ISDIGIT(*p) ) continue;
-    if( symbol_decimal_point() == *p ) continue;
-    if( symbol_currency(*p) ) continue;
-
-    if( yydebug ) {
-      dbgmsg( "%s: bad character '%c' at %.*s<-- in '%s'",
-             __func__, *p, int(p - picture) + 1, picture, picture );
-    }
+  // Find first character that is not part of an alpha-edited PICTURE.
+  auto p = std::find_if( picture, ep,
+                         []( char ch ) {
+                           if( strchr(valid, ch) ) return false;
+                           if( ISDIGIT(ch) ) return false;
+                           if( symbol_decimal_point() == ch ) return false;
+                           if( symbol_currency(ch) ) return false;
+                           return true;
+                         } );
+  if( p != ep ) {
+    dbgmsg( "%s: bad character '%c' at %.*s<-- in '%s'",
+            __func__, *p, int(p - picture) + 1, picture, picture );
     return false;
   }
   return true;
@@ -820,7 +871,7 @@ symbol_field_type_update( cbl_field_t *field,
     case FldPointer:
       // set the type
       field->type = candidate;
-      if( field->data.capacity == 0 ) {
+      if( field->data.capacity() == 0 ) {
         static const cbl_field_data_t data = {0, 8, 0, 0, NULL};
         field->data = data;
         field->attr &= ~size_t(signable_e);
@@ -927,10 +978,7 @@ symbol_field_type_update( cbl_field_t *field,
     case FldNumericDisplay:
     case FldAlphaEdited:
     case FldNumericEdited:
-      {
-      bool retval = field->codeset.set();
-      return retval;
-      }
+      return field->codeset.set();
     default:
       break;
     }
@@ -1002,7 +1050,7 @@ redefine_field( cbl_field_t *field ) {
     field->data.initial = NULL;
   }
 
-  if( field->data.capacity == 0 ) field->data = primary->data;
+  if( field->data.capacity() == 0 ) field->data = primary->data;
 
   if( is_numeric(field->type) && field->usage == FldDisplay ) {
     fOK = symbol_field_type_update(field, FldNumericDisplay, false);
@@ -1011,24 +1059,820 @@ redefine_field( cbl_field_t *field ) {
   return fOK;
 }
 
+static
+FIXED_WIDE_INT(128)
+dirty_to_binary(const char  *instring,
+                uint32_t    &capacity,
+                uint32_t    &digits,
+                int32_t     &rdigits,
+                uint64_t    &attr)
+  {
+  digits = 0;
+  rdigits = 0;
+  attr = 0;
+
+  FIXED_WIDE_INT(128) value = 0;
+
+  // We need to convert data.initial to an FIXED_WIDE_INT(128) value
+  const char *p = instring;
+  int sign = 1;
+  bool ignore_zeroes = true;
+  if( *p == '-' )
+    {
+    attr |= signable_e;
+    sign = -1;
+    p += 1;
+    }
+  else if( *p == '+' )
+    {
+    // We set it signable so that the instruction DISPLAY +1
+    // actually outputs "+1"
+    attr |= signable_e;
+    p += 1;
+    }
+
+  //  We need to be able to handle
+  //  123
+  //  123.456
+  //  123E<exp>
+  //  123.456E<exp>
+  //  where <exp> can be N, +N and -N
+  //
+
+  int rdigit_delta = 0;
+  int exponent = 0;
+  const char *exp = strchr(p, 'E');
+  if( !exp )
+    {
+    exp = strchr(p, 'e');
+    }
+  if(exp)
+    {
+    exponent = atoi(exp+1);
+    }
+
+  // We can now calculate the value, and the number of digits and rdigits.
+
+  // We trim off leading zeroes before the decimal point, and trailing zeroes
+  // after a decimal point.
+
+  const char *pend = exp;
+  if( !exp )
+    {
+    pend = instring + strlen(instring);
+    }
+
+  const char *pdecimal = strchr(instring, symbol_decimal_point());
+  if( pdecimal )
+    {
+    while( pend > instring && *(pend-1) == '0' )
+      {
+      pend -= 1;
+      }
+    }
+
+  while(p < pend)
+    {
+    char ch = *p++;
+    if( ch == symbol_decimal_point() )
+      {
+      rdigit_delta = 1;
+      ignore_zeroes = false;
+      continue;
+      }
+    if( ignore_zeroes && ch == '0' )
+      {
+      continue;
+      }
+    ignore_zeroes = false;
+    if( ch < '0' || ch > '9' )
+      {
+      break;
+      }
+    digits += 1;
+    rdigits += rdigit_delta;
+    value *= 10;
+    value += ch - '0';
+    }
+
+  if( exponent < 0 )
+    {
+    rdigits += -exponent;
+    }
+  else
+    {
+    while(exponent--)
+      {
+      if(rdigits)
+        {
+        rdigits -= 1;
+        }
+      else
+        {
+        digits += 1;
+        value *= 10;
+        }
+      }
+    }
+
+  if( (int32_t)digits < rdigits )
+    {
+    digits = rdigits;
+    }
+
+  // We now need to calculate the capacity.
+
+  unsigned int min_prec = wi::min_precision(value, UNSIGNED);
+  if( min_prec > 64 )
+    {
+    // Bytes 15 through 8 are non-zero
+    capacity = 16;
+    }
+  else if( min_prec > 32 )
+    {
+    // Bytes 7 through 4 are non-zero
+    capacity = 8;
+    }
+  else if( min_prec > 16 )
+    {
+    // Bytes 3 and 2
+    capacity = 4;
+    }
+  else if( min_prec > 8 )
+    {
+    // Byte 1 is non-zero
+    capacity = 2;
+    }
+  else
+    {
+    // The value is zero through 0xFF
+    capacity = 1;
+    }
+
+  value *= sign;
+
+  // One last adjustment.  The number is signable, so the binary value
+  // is going to be treated as twos complement.  That means that the highest
+  // bit has to be 1 for negative signable numbers, and 0 for positive.  If
+  // necessary, adjust capacity up by one byte so that the variable fits:
+
+  if( capacity < 16 && (attr & signable_e) )
+    {
+    FIXED_WIDE_INT(128) mask
+      = wi::set_bit_in_zero<FIXED_WIDE_INT(128)>(capacity * 8 - 1);
+    if( wi::neg_p (value) && (value & mask) == 0 )
+      {
+      capacity *= 2;
+      }
+    else if( !wi::neg_p (value) && (value & mask) != 0 )
+      {
+      capacity *= 2;
+      }
+    }
+
+  return value;
+  }
+
+static void
+digits_from_int128( char                *ach,
+                    cbl_field_t         *field,
+                    uint32_t             desired_digits,
+                    FIXED_WIDE_INT(128)  value128, // cppcheck-suppress unknownMacro
+                    int32_t              rdigits)
+  {
+  if( value128 < 0 )
+    {
+    value128 = -value128;
+    }
+
+  // 'rdigits' are the number of rdigits in value128.
+
+  int scaled_rdigits = get_scaled_rdigits(field);
+
+  int i = field->data.rdigits;
+  while( i<0 )
+    {
+    value128 = value128/10;
+    i += 1;
+    }
+
+  // We take the digits of value128, and put them into ach.  We line up
+  // the rdigits, and we truncate the string after desired_digits
+  while(rdigits < scaled_rdigits)
+    {
+    value128 *= 10;
+    rdigits += 1;
+    }
+  while(rdigits > scaled_rdigits)
+    {
+    value128 = value128 / 10;
+    rdigits -= 1;
+    }
+  char conv[128];
+  print_dec (value128, conv, SIGNED);
+  size_t len = strlen(conv);
+
+  if( len<desired_digits )
+    {
+    memset(ach, ascii_0, desired_digits - len);
+    strcpy(ach+desired_digits - len, conv);
+    }
+  else
+    {
+    strcpy(ach, conv + len-desired_digits);
+    }
+  }
+
+static
 void
+binary_initial( char *retval,
+                cbl_field_t *field,
+                FIXED_WIDE_INT(128) value,
+                int drdigits)
+  {
+  // This routine returns an xmalloced buffer designed to replace the
+  // data.initial member of the incoming field
+
+  int scaled_rdigits = get_scaled_rdigits(field);
+
+  int i = field->data.rdigits;
+  while( i<0 )
+    {
+    value = value/10;
+    i += 1;
+    }
+
+  // We take the digits of value, and put them into ach.  We line up
+  // the rdigits, and we truncate the string after desired_digits
+  while(drdigits < scaled_rdigits)
+    {
+    value *= 10;
+    drdigits += 1;
+    }
+  while(drdigits > scaled_rdigits)
+    {
+    value = value / 10;
+    drdigits -= 1;
+    }
+
+  switch(field->data.capacity())
+    {
+    tree type;
+    case 1:
+    case 2:
+    case 4:
+    case 8:
+    case 16:
+      type = build_nonstandard_integer_type ( field->data.capacity()
+                                              * BITS_PER_UNIT, 0);
+      native_encode_wide_int (type, value, PTRCAST(unsigned char, retval),
+                              field->data.capacity());
+      break;
+    default:
+      fprintf(stderr,
+              "Trouble in binary_initial at %s() %s:%d\n",
+              __func__,
+              __FILE__,
+              __LINE__);
+      abort();
+      break;
+    }
+  }
+
+/*
+ * Preconditions:
+ *  1.  input is not NULL
+ *  2.  type is numeric
+ *  3.  input conforms to type (will fit, allows sign, etc.)
+ *  4.  capacity set per PICTURE and USAGE, or
+ *      type == FldLiteralN and data.capacity == 0
+ *  5.  data_initial has been established with data.capacity() bytes, unless
+ *      FldLiteralN, in which case we will malloc data.initial.
+ *
+ * Process:
+ *  Convert input string to binary Host representation:
+ *    FldFloat: as tree
+ *    other (fixed point): as FIXED_WIDE_INT(128)
+ *  Set etc union via assignment, cbl_field_data_t::operator=().
+ *  That sets the correct member in the union and etc_type.
+ *
+ *  As of Mon Jan 5 13:32:32 2026, use gcc_assert for preconditions. A location
+ *  is provided so diagnositics can be issued.  We may remove precondition
+ *  verification from the caller and move error handling here.
+ *
+ *  Post condition:
+ *    etc union holds Host numeric value.
+ *    data.initial is NULL for error, else points to data.etc.
+ */
+
+void
+cbl_field_t::encode_numeric( const char input[], cbl_loc_t loc,
+                             const REAL_VALUE_TYPE& /*rvt*/ ) {
+  gcc_assert(input);
+  gcc_assert(is_numeric(this) || type == FldNumericEdited);
+
+  // The following are intended to test the preconditions....
+  if( type == FldLiteralN ) {
+    if( 0 < data.capacity() ) {
+      error_msg(loc, "unexpected nonzero numeric literal capacity");
+    }
+    if( data.initial != nullptr ) {
+      error_msg(loc, "unexpected initial value for numeric literal");
+    }
+  } else {
+    if( 0 == data.capacity() ) {
+      error_msg(loc, "unexpected zero capacity numeric nonliteral");
+    }
+  }
+
+  gcc_assert(0 < data.capacity() || type == FldLiteralN);
+  gcc_assert( data.initial == nullptr
+              || type == FldLiteralN
+              || data.capacity() <= strlen(data.initial)
+              || 1 < codeset.stride() );
+
+  if( type == FldFloat )
+    {
+    double d;
+    int n;
+    int erc = sscanf(input, "%lf%n", &d, &n);
+    if( erc < 0 || size_t(n) != strlen(input) )
+      {
+      dbgmsg("%s: error: could not interpret '%s' of '%s' as a number",
+             __func__, input + n, input);
+      gcc_assert(false);
+      }
+    REAL_VALUE_TYPE value;
+    real_from_string (&value, input);
+    value = real_value_truncate (TYPE_MODE (float128_type_node), value);
+    data = build_real(float128_type_node, value);
+    // Turn that back into a REAL_VALUE_TYPE with
+    // REAL_VALUE_TYPE readback_value = TREE_REAL_CST(data.etc.value);
+
+#define FOR_JIM 0
+#if FOR_JIM
+    {
+    // When you know data.etc.value was created with build_real()
+    enum tree_code code = TREE_CODE(TREE_TYPE(data.etc.value));
+    // code will be REAL_TYPE
+
+    REAL_VALUE_TYPE readback_value = TREE_REAL_CST(data.etc.value);
+    char ach[48];
+    size_t number_of_digits = 33;
+    bool crop_trailing_zeroes = true;
+    real_to_decimal(ach,
+                    &readback_value,
+                    sizeof(ach),
+                    number_of_digits,
+                    crop_trailing_zeroes);
+    fprintf(stderr, "FOR_JIM: %s real_value: %s\n", get_tree_code_name(code), ach);
+    }
+#endif
+
+    unsigned char *retval =
+                        static_cast<unsigned char *>(xmalloc(data.capacity()));
+    assert(retval);
+    switch( data.capacity() )
+      {
+      case 4:
+        value = real_value_truncate (TYPE_MODE (float32_type_node), value);
+        native_encode_real(SCALAR_FLOAT_TYPE_MODE (float32_type_node), &value,
+                            retval, 4, 0);
+        break;
+      case 8:
+        value = real_value_truncate (TYPE_MODE (float64_type_node), value);
+        native_encode_real(SCALAR_FLOAT_TYPE_MODE (float64_type_node), &value,
+                            retval, 8, 0);
+        break;
+      case 16:
+        // 'value' is already a truncated float128
+        native_encode_real(SCALAR_FLOAT_TYPE_MODE (float128_type_node), &value,
+                            retval, 16, 0);
+        break;
+      default:
+        gcc_assert(false);
+        break;
+      }
+    data.initial = reinterpret_cast<char *>(retval);
+    }
+  else
+    {
+    uint32_t l_capacity;
+    uint32_t l_digits;
+    int32_t  l_rdigits;
+    uint64_t l_attr;
+    // The following returned capacity is 1, 2, 4, 8, or 16, for the binary
+    // value.
+    FIXED_WIDE_INT(128)value = dirty_to_binary(input,
+                                               l_capacity,
+                                               l_digits,
+                                               l_rdigits,
+                                               l_attr);
+    data = wide_int_to_tree(intTI_type_node, value);
+    // turn that back into a FIXED_WIDE_INT with
+    // wi::tree_to_wide_ref iii = wi::to_wide( data.etc.value );
+
+#if FOR_JIM
+    {
+    // When you know data.etc.value was created with wide_int_to_tree.
+    enum tree_code code = TREE_CODE(TREE_TYPE(data.etc.value));
+    // code will be INTEGER_TYPE
+
+    wi::tree_to_wide_ref iii = wi::to_wide( data.etc.value );
+    char ach[60];
+    print_dec(iii, ach, SIGNED);
+    fprintf(stderr, "FOR_JIM: %s fixed_value: %s\n", get_tree_code_name(code), ach);
+    }
+#endif
+
+    if( data.capacity() == 0 )
+      {
+      // It falls to us to establish these parameters:
+      data.capacity(  l_capacity );
+      data.digits   = l_digits;
+      data.rdigits  = l_rdigits;
+      attr         |= l_attr;
+      data.initial = static_cast<char *>(xmalloc(data.capacity()));
+      gcc_assert(data.initial);
+      }
+    else if( !(attr & quoted_e) )
+      {
+      // quoted_e at this point means numeric edited, which gets the initial
+      // value verbatim.
+      if( l_attr & signable_e && !(attr & signable_e) && value < 0)
+        {
+          if( type != FldNumericEdited || (data.picture && data.picture[0] != '-')) {
+          error_msg(loc, "%qs has unsigned PICTURE but signed VALUE %qs",
+                    this->name, data.original());
+          }
+        }
+
+      if( data.digits && value != 0)
+        {
+        // We were supplied with parameters.  We now make sure they are
+        // consistent.
+        if( attr & scaled_e )
+          {
+          if( data.rdigits > 0 )
+            {
+            // This is like PIC PPP9999, with digits=4 and rdigits=3
+            if( l_digits != static_cast<uint32_t>(l_rdigits) )
+              {
+              error_msg(loc, "The magnitude is too large");
+              }
+            else
+              {
+              // This is like PIC PP999, with digits=3 and rdigits=2
+              if( data.digits + data.rdigits < l_digits )
+                {
+                error_msg(loc, "Too many significant digits");
+                }
+              else
+                {
+                // We know the abs(value) is less than 1, and we know that the
+                // fractional part fits into (data.digits + data.rdigits) to
+                // the right of the decimal point.  We need to make sure that
+                // the top rdigits of value are zero.
+
+                FIXED_WIDE_INT(128)tester = value;
+                if( tester < 0 )
+                  {
+                  tester = - tester;
+                  }
+                // The final value will have data.digits + l_rdigits decimal
+                // places.  Let's scale rvalue to that range, taking into
+                // account that we already have l_rdigits of those places.
+                tester *= 
+                     get_power_of_ten(data.digits + data.rdigits - l_rdigits);
+
+                // In the case of PPP9999, tester needs to be between 1 and
+                // 9999.  data.digits is 4, so....
+                if( tester >= get_power_of_ten(data.digits) )
+                  {
+                  error_msg(loc, "The fractional part is too large");
+                  }
+                }
+              }
+            }
+          else
+            {
+            // This is like PIC 999PP, with digits=3 and rdigits=-2
+            if( data.digits-data.rdigits < l_digits )
+              {
+              error_msg(loc, "Too many leading digits");
+              }
+            // We need to make sure the bottom -rdigits places are zero:
+            FIXED_WIDE_INT(128)v = value;
+            for(int32_t i=0; i < -data.rdigits; i++)
+              {
+              if( v % 10 != 0)
+                {
+                error_msg(loc, "P-scaled digits are nonzero");
+                break;
+                }
+              v = v / 10;
+              }
+            }
+          }
+        else if( !(attr & quoted_e) )
+          {
+          if( data.rdigits == 0 && l_rdigits > 0)
+            {
+            // This is a condition that the parser finds before we can:
+            }
+          if( data.rdigits && data.rdigits < l_rdigits )
+            {
+            // This is a condition that the parser finds before we can:
+            }
+          if( l_digits - l_rdigits > data.digits - data.rdigits )
+            {
+            error_msg(loc, "VALUE has too many integer digits");
+            }
+          }
+        }
+      }
+
+    char *retval;
+    if( data.initial )
+      {
+      retval = const_cast<char *>(data.initial);
+      }
+    else
+      {
+      retval = static_cast<char *>(xmalloc(data.capacity()));
+      data.initial = retval;
+      }
+
+    switch(type)
+      {
+      case FldNumericBin5:
+      case FldLiteralN:
+        {
+        binary_initial(retval, this, value, l_rdigits);
+        break;
+        }
+      case FldNumericBinary:
+        {
+        binary_initial(retval, this, value, l_rdigits);
+        if( attr & big_endian_e )
+          {
+          // This is a big-endian value, so swap retval end-for-end:
+          size_t left = 0;
+          size_t right = data.capacity() - 1;
+          while(left < right)
+            {
+            std::swap(retval[left++], retval[right--]);
+            }
+          }
+        break;
+        }
+      case FldPacked:
+        {
+        char *pretval = retval;
+        char ach[128];
+
+        bool negative;
+        if( value < 0 )
+          {
+          negative = true;
+          value = -value;
+          }
+        else
+          {
+          negative = false;
+          }
+
+        // For COMP-6 (flagged by packed_no_sign_e), the number of required
+        // digits is twice the capacity.
+
+        // For COMP-3, the number of digits is 2*capacity minus 1, because the
+        // the final "digit" is a sign nybble.
+
+        size_t ndigits =   (attr & packed_no_sign_e)
+                         ? data.capacity() * 2
+                         : data.capacity() * 2 - 1;
+
+        digits_from_int128(ach, this, ndigits, value, l_rdigits);
+
+        const char *digits = ach;
+        for(size_t i=0; i<ndigits; i++)
+          {
+          if( !(i & 0x01) )
+            {
+            *pretval    = ((*digits++) & 0x0F)<<4;;
+            }
+          else
+            {
+            *pretval++ += (*digits++) & 0x0F;
+            }
+          }
+        if( !(attr & packed_no_sign_e) )
+          {
+          // This is COMP-3, so put in a sign nybble
+          if( attr & signable_e )
+            {
+            if( negative )
+              {
+              *pretval++ += 0x0D;   // Means signable and negative
+              }
+            else
+              {
+              *pretval++ += 0x0C;   // Means signable and non-negative
+              }
+            }
+          else
+            {
+            *pretval++ += 0x0F;     // Means not signable
+            }
+          }
+        break;
+        }
+
+      case FldNumericDisplay:
+        {
+        // We are going to take the numerical value and convert it to the form
+        // specified by the attributes, digits, and rdigits.
+
+        char *pretval = retval;
+        char ach[128];
+
+        bool negative;
+        if( value < 0 )
+          {
+          negative = true;
+          value = - value;
+          }
+        else
+          {
+          negative = false;
+          }
+        digits_from_int128(ach, this, data.digits, value, l_rdigits);
+        const char *digits = ach;
+        if(    (attr & signable_e)
+            && (attr & separate_e)
+            && (attr & leading_e ) )
+          {
+          // This zoned decimal value is signable, separate, and leading.
+          if( negative )
+            {
+            *pretval++ = ascii_minus;
+            }
+          else
+            {
+            *pretval++ = ascii_plus;
+            }
+          }
+        for(size_t i=0; i<data.digits; i++)
+          {
+          // Start by assuming it's an value that can't be signed
+          *pretval++ = ascii_0 + ((*digits++) & 0x0F);
+          }
+        if(     (attr & signable_e)
+            &&  (attr & separate_e)
+            && !(attr & leading_e ) )
+          {
+          // The value is signable, separate, and trailing
+          if( negative )
+            {
+            *pretval++ = ascii_minus;
+            }
+          else
+            {
+            *pretval++ = ascii_plus;
+            }
+          }
+
+        // It's at this point we convert to the target encoding:
+        charmap_t *charmap = __gg__get_charmap(codeset.encoding);
+        size_t retval_length = pretval - retval;
+        if( retval_length != char_capacity() ) {
+          cbl_errx( "%s: %s %lu %s %lu",
+                    name,
+                    "retval_length",
+                    (unsigned long)retval_length,
+                    "!= char_capacity()",
+                    (unsigned long)char_capacity());
+        }
+        gcc_assert(retval_length == char_capacity());
+        size_t nbytes;
+        const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                                 codeset.encoding,
+                                                 retval,
+                                                 retval_length,
+                                                 &nbytes);
+        if( nbytes != data.capacity() ) {
+          cbl_errx( "%s: nbytes %lu %s %lu",
+                    name,
+                    (unsigned long)nbytes,
+                    "!= data.capacity()",
+                    (unsigned long)data.capacity());
+        }
+        gcc_assert(nbytes == data.capacity());
+        memcpy(retval, converted, data.capacity());
+        if(     (attr & signable_e)
+            && !(attr & separate_e) )
+          {
+          // This value is signable, and not separate.  So, the sign
+          // information goes into the first or last byte:
+          char *sign_location = attr & leading_e
+                        ? retval
+                        : retval + (data.digits-1) * charmap->stride() ;
+          cbl_char_t schar = charmap->set_digit_negative(*sign_location,
+                                                          negative);
+          memcpy(sign_location, &schar, charmap->stride());
+          }
+        break;
+        }
+
+      case FldNumericEdited:
+        {
+        if( attr & quoted_e )
+          {
+          // What the programmer says the value is, the value stays, no
+          // matter how weird it might be.
+          }
+        else
+          {
+          // It's not a quoted string, so we use data.value:
+          bool negative;
+          if( value < 0 )
+            {
+            negative = true;
+            value = -value;
+            }
+          else
+            {
+            negative = false;
+            }
+
+          char ach[128];
+          memset(ach, 0, sizeof(ach));
+          memset(retval, 0, data.capacity());
+
+          if( (attr & blank_zero_e) && value == 0 )
+            {
+            memset( retval,
+                    ascii_space,
+                    data.capacity());
+            }
+          else
+            {
+            digits_from_int128(ach, this, char_capacity(), value, l_rdigits);
+
+            // __gg__string_to_numeric_edited operates in ASCII space:
+            __gg__string_to_numeric_edited( reinterpret_cast<char *>(retval),
+                                            ach,
+                                            data.rdigits,
+                                            negative,
+                                            data.picture);
+            // So now we convert it to the target encoding:
+            size_t nbytes;
+            const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                                     codeset.encoding,
+                                                     retval,
+                                                     char_capacity(),
+                                                     &nbytes);
+            memcpy(retval, converted, nbytes);
+            }
+          }
+        break;
+        }
+
+      default:
+        cbl_errx( "%s:%d: type %s, who woulda thunk?",
+                  __func__, __LINE__, cbl_field_type_str(type) );
+        gcc_assert(false);
+        break;
+      }
+    }
+  gcc_assert(data.etc_type != cbl_field_data_t::no_value_e);
+}
+
+size_t parse_error_inc();
+size_t parse_error_count();
+
+bool // true if error reported
 cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
 
-  if( ! data.initial ) return;
+  if( ! data.original() ) return false;
 
-  auto fig = cbl_figconst_of(data.initial);
+  const auto nerr = parse_error_count();
 
-  // numeric initial value
+  auto orig = data.original();
+
+  auto fig = cbl_figconst_of(orig);
+
+  // numeric orig value
   if( is_numeric(type) ) {
     if( has_attr(quoted_e) ) {
       error_msg(loc, "numeric type %s VALUE '%s' requires numeric VALUE",
-               name, data.initial);
-      return;
+               name, orig);
+      return true;
     }
     if( ! (fig == normal_value_e || fig == zero_value_e)  ) {
         error_msg(loc, "numeric type %s VALUE '%s' requires numeric VALUE",
                  name, cbl_figconst_str(fig));
-        return;
+        return true;
       }
 
     switch( type ) {
@@ -1038,18 +1882,18 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
         // We are dealing with a pure binary type.  If the capacity is
         // 8 or more, we need do no further testing because we assume
         // everything fits.
-        if( data.capacity < 8 ) {
-          const char *p = strchr(data.initial, symbol_decimal_point());
+        if( data.capacity() < 8 ) {
+          const char *p = strchr(orig, symbol_decimal_point());
           if( p && atoll(p+1) != 0 ) {
             error_msg(loc, "integer type %s VALUE '%s' "
                      "requires integer VALUE",
-                     name, data.initial);
+                     name, orig);
           } else {
             // Calculate the maximum possible value that a binary with this
             // many bytes can hold
             size_t max_possible_value;
             max_possible_value = 1;
-            max_possible_value <<= data.capacity*8;
+            max_possible_value <<= data.capacity()*8;
             max_possible_value -= 1;
             if( attr & signable_e )
               {
@@ -1059,22 +1903,22 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
               }
             // Pick up the given VALUE
             size_t candidate;
-            if( *data.initial == '-' ) {
+            if( *orig == '-' ) {
               // We care about the magnitude, not the sign
               if( !(attr & signable_e) ){
                 error_msg(loc, "integer type %s VALUE '%s' "
                          "requires a non-negative integer",
-                         name, data.initial);
+                         name, orig);
               }
-              candidate = atoll(data.initial+1);
+              candidate = atoll(orig+1);
             }
             else {
-              candidate = (size_t)atoll(data.initial);
+              candidate = (size_t)atoll(orig);
             }
             if( candidate > max_possible_value ) {
               error_msg(loc, "integer type %s VALUE '%s' "
                        "requires an integer of magnitude no greater than %zu",
-                       name, data.initial, max_possible_value);
+                       name, orig, max_possible_value);
             }
           }
         }
@@ -1087,7 +1931,7 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
         /*
          * Check fraction for excess precision
          */
-        const char *p = strchr(data.initial, symbol_decimal_point());
+        const char *p = strchr(orig, symbol_decimal_point());
         if( p ) {
           auto pend = std::find(p, p + strlen(p), 0x20);
           int n = std::count_if( ++p, pend, isdigit );
@@ -1095,7 +1939,7 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
           if( data.precision() < n) {
             if( 0 == data.rdigits ) {
               error_msg(loc, "integer type %s VALUE '%s' requires integer VALUE",
-                       name, data.initial);
+                       name, orig);
             } else {
               auto has_exponent = std::any_of( p, pend,
                                                []( char ch ) {
@@ -1103,55 +1947,88 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
                                                } );
               if( !has_exponent && data.precision() < pend - p ) {
                 error_msg(loc, "%s cannot represent VALUE %qs exactly (max %c%ld)",
-                          name, data.initial, '.', (long)(pend - p));
+                          name, orig, '.', (long)(pend - p));
               }
             }
           }
         } else {
-          p = data.initial + strlen(data.initial);
+          p = orig + strlen(orig);
         }
 
         /*
          * Check magnitude, whether or not there's a decimal point.
          */
         // skip leading zeros
-        auto first_digit = std::find_if( data.initial, p,
+        auto first_digit = std::find_if( orig, p,
                                          []( char ch ) {
                                            return ch != '0'; } );
         // count remaining digits, up to the decimal point
         auto n = std::count_if( first_digit, p, isdigit );
         if( data.ldigits() < n ) {
           error_msg(loc, "numeric %s VALUE '%s' holds only %u digits",
-                   name, data.initial,
+                   name, orig,
                    data.digits);
         }
       }
       break;
-    } // end type switch for normal string initial value
-    return;
+    } // end type switch for normal string orig value
+    return nerr < parse_error_count();
   } // end numeric
   assert( ! is_numeric(type) );
 
   // consider all-alphabetic
   if( has_attr(all_alpha_e) ) {
-    bool alpha_value = fig != zero_value_e;
-    
-    if( fig == normal_value_e ) {
-      alpha_value = std::none_of( data.initial,
-                                  data.initial +
-                                  data.capacity,
-                                  []( char ch ) {
-                                    return 
-                                      ISPUNCT(ch) ||
-                                      ISDIGIT(ch); } );
+    bool is_alpha_only = fig != zero_value_e;
+
+    if( fig == normal_value_e && ! has_attr(hex_encoded_e)) {
+      // Test the input, not the converted initial value
+      is_alpha_only = std::none_of( orig, orig + strlen(orig),
+                                    []( char ch ) {
+                                      return
+                                        ISPUNCT(ch) ||
+                                        ISDIGIT(ch); } );
     }
-    if( ! alpha_value ) {
+    /*
+     * This is overspecific: It catches numeric literal VALUE for all_alpha_e\
+     *  only.
+     * The general error is: 
+     * - alphanumeric type
+     * - data.initial is all spaces (based on PICTURE)
+     * - data.original() is numeric or data.etc_type == value_e
+     * - quoted_e clear, of course
+     * 
+     * This happens because VALUE was captured as a cce and stored in
+     * data.original for encode_numeric.  But encode_numeric was never called
+     * because it's not a numeric field.
+     *
+     * It is also insufficient.  It does not deal with VALUE LENGTH OF.  
+     */
+    if( is_alpha_only ) {
+      charmap_t *charmap = __gg__get_charmap(codeset.encoding);
+      auto spc = charmap->mapped_character(ascii_space);
+      bool spacey = std::all_of( data.initial,
+                                 data.initial + char_capacity(),
+             [spc]( char ch ) { return static_cast<cbl_char_t>(ch) == spc; } );
+      if( spacey ) {
+        if( ISDIGIT(orig[0]) || orig[0] == '-' || orig[0] == '+' ) {
+          gcc_assert( ! has_attr(quoted_e) );
+          is_alpha_only = false; // alpha field supplied with VALUE numeric
+        }
+      }
+    }
+    
+    if( ! is_alpha_only ) {
       error_msg(loc, "alpha-only %s VALUE '%s' contains non-alphabetic data",
-               name, fig == zero_value_e? cbl_figconst_str(fig) : data.initial);
+               name, fig == zero_value_e? cbl_figconst_str(fig) : orig);
+      
+      auto pend = orig + strlen(orig);
+      auto p = std::find_if( orig, pend, 
+                             []( char ch ) { return ! ISALPHA(ch); } );
+      dbgmsg("%zu nonalpha '%.*s'", pend - p, int(pend - p), p);
     }
   }
 
-  return;
+  return nerr < parse_error_count();
 }
 
 // Return the field representing the subscript whose literal value
@@ -1344,15 +2221,7 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
     case 0:
       if( src->type == FldLiteralA && is_numericish(tgt) && !is_literal(tgt) ) {
         // Allow if input string is an integer.
-        size_t outcount;
-        char *in_ascii = static_cast<char *>(xmalloc(4 * src->data.capacity));
-        const char *in_asciip = __gg__iconverter( src->codeset.encoding,
-                                                  DEFAULT_SOURCE_ENCODING,
-                                                  src->data.initial,
-                                                  src->data.capacity,
-                                                  &outcount );
-        memcpy(in_ascii, in_asciip, outcount);
-        const char *p = in_ascii, *pend = p + src->data.capacity;
+        const char *p = src->data.original(), *pend = p + strlen(src->data.original());
         if( (p[0] == ascii_plus) || (p[0] == ascii_minus) ) p++;
         retval = std::all_of( p, pend, isdigit );
         if( yydebug && ! retval ) {
@@ -1362,7 +2231,6 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
                  HOST_SIZE_T_PRINT_UNSIGNED,
                  __func__, __LINE__, *bad, (fmt_size_t)(bad - p));
         }
-      free(in_ascii);
       }
       break;
     case 1:
@@ -1388,7 +2256,7 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
     }
 
   if( retval && src->has_attr(embiggened_e) ) {
-    if( is_numeric(tgt) && tgt->data.capacity < src->data.capacity ) {
+    if( is_numeric(tgt) && tgt->data.capacity() < src->data.capacity() ) {
       dbgmsg("error: source no longer fits in target");
       return false;
     }
@@ -1484,7 +2352,8 @@ type_capacity( enum cbl_field_type_t type, uint32_t digits )
 
     auto psize = std::find_if( sizes, esizes,
 			  [digits]( sizes_t sizes ) {
-			    return sizes.bounds.first <= digits && digits <= sizes.bounds.second;
+			    return sizes.bounds.first <= digits
+                                                      && digits <= sizes.bounds.second;
 			  } );
     if( psize != esizes ) return psize->size;
 
@@ -2129,16 +2998,16 @@ cobol_filename_restore() {
   linemap_add(line_table, LC_LEAVE, sysp, NULL, 0);
 }
 
-size_t
+uint64_t
 symbol_unique_index( const struct symbol_elem_t *e ) {
   assert(e);
-  size_t usym = symbol_index(e);
-#if READY_FOR_INODE
+  uint64_t usym = symbol_index(e);
   if( ! input_filenames.empty() ) {
-    size_t inode = input_filenames.top().inode;
-    usym = usym ^ inode;
+    uint64_t inode = input_filenames.top().inode;
+    static const int half_bits = sizeof(uint64_t)*4;
+    usym ^= inode>>half_bits;
+    usym ^= inode<<half_bits;
   }
-#endif
   return usym;
 }
 
@@ -2227,7 +3096,6 @@ verify_format( const char gmsgid[] ) {
 #endif
 
 static const diagnostics::option_id option_zero;
-size_t parse_error_inc();
 
 void gcc_location_dump() {
     linemap_dump_location( line_table, token_location, stderr );
@@ -2567,7 +3435,7 @@ cbl_unimplementedw(cbl_diag_id_t id, const char *gmsgid, ...) {
     msg = xasprintf("%s [%s]", gmsgid, option);
     gmsgid = msg;
   }
- 
+
   va_list ap;
 
   va_start(ap, gmsgid);
