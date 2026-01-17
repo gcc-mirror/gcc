@@ -1,0 +1,847 @@
+\input texinfo  @c -*-texinfo-*-
+@c %**start of header
+@setfilename ga68-coding-guidelines.info
+
+@include gcc-common.texi
+
+@synindex tp cp
+
+@settitle GNU Algol 68 Coding Guidelines
+
+@c %**end of header
+
+@c %** start of document
+
+@copying
+Copyright @copyright{} 2026 Jose E. Marchesi.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled ``GNU Free
+Documentation License''.
+@end copying
+
+@ifinfo
+@dircategory Software development
+@direntry
+* ga68-coding-guidelines: (ga68-coding-guidelines).           GNU Algol 68 Coding Guidelines.
+@end direntry
+This document contains a set of conventions and recommendations for
+writing Algol 68 code which is part of ga68, the GNU Algol 68
+compiler. As with any coding conventions, the goal is to achieve a
+coherent style among the code base.
+
+@insertcopying
+@end ifinfo
+
+@c Macro for bold-tags.  In TeX and HTML they expand to proper bold words,
+@c in other formats it resorts to upper stropping.
+@iftex
+@macro B{tag}
+@strong{\tag\}
+@end macro
+@end iftex
+
+@ifhtml
+@macro B{tag}
+@strong{\tag\}
+@end macro
+@end ifhtml
+
+@ifnottex
+@ifnothtml
+@macro B{tag}
+@sc{\tag\}
+@end macro
+@end ifnothtml
+@end ifnottex
+
+@setchapternewpage odd
+@titlepage
+@title GNU Algol 68 Coding Guidelines
+@versionsubtitle
+@author Jose E. Marchesi
+@page
+@vskip 0pt plus 1filll
+@sp 1
+@insertcopying
+@end titlepage
+
+@summarycontents
+@contents
+
+@page
+
+@ifnottex
+@node Top
+@top Introduction
+@cindex Introduction
+
+This document contains a set of conventions and recommendations for
+writing Algol 68 code which is part of @command{ga68}, the GNU Algol
+68 compiler. As with any coding conventions, the goal is to achieve a
+coherent style among the code base.
+
+Algol 68 is probably the programming language with the most carefully
+and lovingly designed syntax ever made.  It can be verbose when it is
+convenient for the programmer, and also extremely compact while
+keeping an astounding high level of readability.  These conventions
+aim to make a good use of that.
+
+Feel free to adopt our guidelines for your own Algol 68 project,
+partially or entirely.
+
+In what follows we make extensive use of Algol 68 terminology, which
+may be confusing at first for the uninitiated reader.  The Algol 68
+Jargon File provides definitions for many of the terms used in the
+context of the Algol 68 programming language and associated
+technologies.  If you find yourself wondering about "frobyts" or
+"enclosed clauses", please look them up in the jargon
+file@footnote{@url{https://jemarch.net/a68-jargon}}.  The file is
+available online in the www and, in Gentoo, as manpages once you
+install the app-doc/a68-jargon package. Just type @command{man 7algol
+frobyt} in the terminal, for example.
+
+Additionally, in this document we use the term "space" and "spaces" to
+refer to "typographical display features", i.e. spaces, tabs and
+newlines.  These characters are of no significance and do not alter
+the meaning of the program when they appear between symbols, outside
+of string and character denotations, but they have a great impact on
+the readability of the code and are the main tool for formatting.
+
+@menu
+* Stropping::              What stropping regime to use.
+* Formatting::             Using spaces wisely.
+* Comments::               No idem.
+* Syntactic Conventions::  How to best write certain constructs.
+* Naming::                 Choosing good tags and bold words.
+* Programming Style::      Recommendations on style.
+
+* GNU Free Documentation License::
+                           How you can copy and share this manual.
+* Index::                  Index of this documentation.
+@end menu
+@end ifnottex
+
+@c ---------------------------------------------------------------------
+@c Stropping
+@c ---------------------------------------------------------------------
+
+@node Stropping
+@chapter Stropping
+
+The GNU Algol 68 compiler supports two stropping regimes:
+
+@itemize @minus
+@item
+The classic @dfn{UPPER stropping}, which is one of the standard
+stropping regimes defined in the Standard Hardware Representation for
+Algol 68.  This regime uses upper-case letters to encode bold letters
+and lower-case letters to encode non-bold letters.
+@item
+The modern @dfn{SUPPER stropping}, which is a GNU extension.  This is
+the standard stropping regime in GCC, and its rules are similar to the
+naming conventions widely used in many modern programming languages.
+The resulting programs have a very modern feeling.
+@end itemize
+
+In GCC we use SUPPER stropping only.  The only instance of UPPER
+stropping are in test cases.  Some of the guidelines and
+considerations in this document may also be useful in programs using
+UPPER stropping.
+
+@node Formatting
+@chapter Formatting
+
+The placement of spaces and empty lines in the program text plays an
+important role when it comes to readability.
+
+@menu
+* Empty lines::
+* Spaces before parentheses::
+* Spaces after parentheses::
+* Spaces within packs::
+* Spaces in row displays::
+* Spaces in formulas::
+* Spaces in declarers::
+* Spaces in indexers and trimmers::
+* Spaces in brief clause forms::
+@end menu
+
+@node Empty lines
+@section Empty lines
+
+Empty lines are often used in programs to separate logical parts in a
+sequence of statements or expressions.  This avoids the code to look
+like walls of text, which are somewhat difficult to read.  This of
+course also applies to Algol 68, but to a much lesser degree due to
+the exceptionally clean syntax of the language.  Therefore we favor a
+compact formatting to a reasonable extent.
+
+Please be frugal with empty lines, especially within enclosed clauses.
+
+It is not necessary nor advisable to have separated "declaration
+parts" in serial clauses, because declarations can appear anywhere.
+However empty lines may still be useful to group related declarations
+together.
+
+It is often better to use an explanatory comment rather than an empty
+line, again especially within enclosed clauses.
+
+@node Spaces before parentheses
+@section Spaces before parentheses
+
+Do not put spaces before open-parentheses in routine calls.
+
+But make sure to always put a space between @code{union} or
+@code{struct} and the open parenthesis that follows in declarers.
+
+Likewise, please put a space before the open parenthesis when the
+enclosed clause in a cast is a closed clause.
+
+Examples:
+
+@example
+@{ No space before open-parentheses in calls @}
+puts(fixed(count,0) + "'n");
+
+@{ Space between `union' or `struct' and `(' @}
+mode Number = union (int,long int,real,long real)
+
+@{ Space before '(' in casts @}
+ref JSON_Fld (fields) := field;
+@end example
+
+@node Spaces after parentheses
+@section Spaces after parentheses
+
+When writing routine texts always place a space between the formal
+parameters pack and the mode of the value yielded by the routine.
+
+When writing operator and procedure declarators do not put a space
+between the parameter modes pack and the mode of the yielded value.
+
+Also in declarers, do not put a space after @code{op} or @code{proc}
+and the parameter modes pack.
+
+@example
+@{ Space after formal parameters pack in routine text @}
+json_foreach_elem(a, (ref JSON_Val v) void: len +:= 1)
+
+@{ No space after parameters pack in procedure and operator
+  declarators @}
+proc(string)void error;
+@end example
+
+@node Spaces within packs
+@section Spaces within packs
+
+With "pack" we refer to the following source constructs which are
+collections of other constructs enclosed between @code{(} and @code{)}
+symbols:
+
+@itemize @minus
+@item The actual parameters in a call.
+@item The formal parameters in a routine text.
+@item The fields in a struct mode declarator.
+@item The modes of the united modes in an union mode declarator.
+@item The modes of the parameters in an operator or procedure declarator.
+@end itemize
+
+Spaces are optional after commas in packs when both the preceding and
+following symbols are tags.
+
+Put a space after commas in packs when the next construct is not a
+tag, but only if the preceding construct is a tag.
+
+Do not put spaces before commas in packs.
+
+Examples:
+
+@example
+@{ Spaces are optional around commas surrounded by tags @}
+process(socket, resp, fragmented);
+process(socket,resp,fragmented);
+op E = (Symbol a,b) bool: a = b;
+op E = (Symbol a, b) bool: a = b;
+
+@{ Space after commas separating a non tag and a tag @}
+op E = (Symbol s, Word w) bool: s E w;
+mode M = struct (int i, real r);
+
+@{ No spaces in commas separating non tags @}
+proc(int,string,[]real)int callback;
+op(int,int)int handler;
+mode Data = union (void,bool,int)
+@end example
+
+@node Spaces in row displays
+@section Spaces in row displays
+
+Within row displays spaces are optional after commas, but please never
+put spaces before commas.
+
+@example
+@{ Spaces are ok after commas in row-displays @}
+[]int a = (1,2,3);
+[]int b = (1, 2, 3);
+[]string names = ("jemarch",
+                  "mnabipoor",
+                  "pietr0");
+@end example
+
+@node Spaces in formulas
+@section Spaces in formulas
+
+Do not put spaces after monadic operators whose representation is not
+a bold word.
+
+However, if the monadic operator is represented by a bold word, always
+put a space between the operator and the operand, even when the
+operand starts with a parenthesis.
+
+Always put spaces before and after dyadic operators if the formula is
+not parenthesized.  Spaces are optional if the formula is
+parenthesized, provided the operator is not represented by a bold
+word.  Note however that if long tags are involved extra spaces may be
+advisable even for parenthesized formulas.
+
+Examples:
+
+@example
+@{ No space after non-bold monadic operators @}
+int i = -10;
+
+@{ Always a space after bold monadic operator @}
+int i = ABS (base + offset)
+
+@{ Spaces in dyadic opeator @}
+total := a + b;
+index := cnt +:= 1;
+total := (a + b);
+index := (cnt +:= 1);
+total := (a+b);
+index := (cnt+:=1)
+@end example
+
+@node Spaces in declarers
+@section Spaces in declarers
+
+
+Do not put spaces after ']' in row mode declarers.
+
+Do not put spaces after the bounds of a declarer.
+
+Also, do not put spaces directly within the bounds of a declarer,
+unless for indentation purposes.  Since bounds can contain any unit,
+the general rules apply within these.
+
+Examples:
+
+@example
+@{ No space after `]' in declarers @}
+[]int a = (1,2,3);
+
+@{ No spaces after bounds in declarers @}
+mode List = [10]int,
+     MatrixList = [10][3,3]int,
+     Numbers = []union (int,real);
+
+@{ No spaces directly within bounds in declarers @}
+mode MyString = [1:10@@]MyChar,
+     DynamicTable = [read_int(10, 20),
+                     read_int(10, 20)]char;
+@end example
+
+@node Spaces in indexers and trimmers
+@section Spaces in indexers and trimmers
+
+
+While indexing and trimming a multiple, never put a space between the
+indexed tertiary and the SUB symbol.
+
+Do not put spaces direcly within indexers and trimmers, unless for
+indentation purposes.  As an exception to this rule, you can put a
+single space before the "at" operator @code{@@} if desired.
+
+Examples:
+
+@example
+@{ No space between tertiary and '[' @}
+int i = a[i];
+int i = a[10:20]
+
+@{ No direct spaces within trimmers and indexers, but before @ @}
+[]int a = b[2:5@@10];
+[]int c = d[10:20 @@1];
+@end example
+
+@node Spaces in brief clause forms
+@section Spaces in brief clause forms
+
+It is generally a good idea to have spaces around @code{|} and
+@code{|:} within the brief forms of conditional clauses, case clauses
+and conformity clauses.
+
+When the brief forms are very short and the units are number
+denotations, it may be more clear to not use spaces, especially when
+the form is an operand in a formula.
+
+Examples:
+
+@example
+@{ Space around | and |: in brief forms @}
+(v | (void): "empty", (bool b): (b | "true" | "false"))
+
+@{ No spaces may be more readable sometimes @}
+int n = 2 + (c>3|10|20);
+@end example
+
+@node Comments
+@chapter Comments
+
+Use @code{"foo"} to refer to formal parameters when documenting
+procedures or operators.
+
+Use @code{`whatever'} to refer to any other source construct that is
+not a formal parameter.
+
+Use @code{@{@{} and @code{@}@}} delimiters for commenting out code.
+Remember comments in modern Algol 68 aren't nestable.
+
+Examples:
+
+@example
+int error_hash = 0;
+
+@{ Return a hash code for the string "s", or `error_hash' if the string
+  is too long.  @}
+
+proc hash_string (string s)
+
+@{@{ int no_longer_needed; @}@}
+@end example
+
+@node Syntactic Conventions
+@chapter Syntactic Conventions
+
+@menu
+* Closed clauses::
+* Indexers and trimmers::
+* Conditional clauses::
+* Loop clauses::
+* Case and conformity clauses::
+* Procedure and operator declarations::
+* Contracted declarations::
+* Brief clause forms::
+@end menu
+
+@node Closed clauses
+@section Closed clauses
+
+Algol 68 allows using @code{(} an @code{)} instead of @code{begin} and
+@code{end} to delimit closed clauses.  In fact, parenthesized
+expression in other programming languages are realized in Algol 68
+with closed clauses, in a very orthogonal way.  Both forms are useful
+and can generally be used according to the programmer's taste.
+However, this section contains a few guidelines and recommendations on
+this regard.
+
+Use parentheses for closed clauses that span a single line, regardless
+of the context.  Having @code{begin} and @code{end} symbols in the
+same line looks weird and confusing.
+
+As a general rule, always use parentheses in closed clauses that are
+operands in a formula.  Exceptionally, using @code{begin} and
+@code{end} in formula operands may be preferable if the operand
+contains many declarations and units, and only if it spans for more
+than one line.  In this case, however, please consider factoring the
+code in the operand into a routine and replace it with a procedure
+call.
+
+The preferred indentation for a closed clause whose contents span more
+than one line, and that uses @code{begin} and @code{end} symbols as
+delimiters, is to indent the contents right at the right of the
+@code{begin} symbol.  The @code{end} symbol shall then be placed in
+its own line, with the same indentation level than the opening symbol.
+
+If the closed clause contains empty lines, or if the line preceding
+the closed clause is so long that it would "hide" the first line in
+the closed clause, then it is ok to put the first unit or declaration
+in the line after @code{begin}.  This usually happens when the closed
+clause is the body of a long routine text.
+
+The preferred indentation for a closed clause whose contents span more
+than one line, and that uses @code{(} and @code{)} symbols as
+delimiters, is to indent the contents right at the right of the
+@code{(} symbol.  The @code{)} symbol finishing the closed clause
+shall not be placed in its own line.
+
+@example
+@{ No `begin' and `end' in the same line @}
+int i = 2 + (3+4);
+int i = 2 + (int i = random(); i % 10 );
+bool test = case v in (string): (puts (s); true) out false esac;
+
+@{ Closed clauses as formula operands @}
+int i = 2 + (int cnt := 0;
+             to UPB data[@@1] do cnt +:= 1 od;
+             cnt)
+int j = 2 + begin int cnt := 0;
+                  to UPB data[@@1] do cnt +:= 1 od;
+                  cnt
+                  end
+
+@{ Closed clause with no empty lines @}
+begin int fd = fopen ("data', file_o_rdonly")
+      puts ("first line: " + fgets (fd, 0));
+      fclose (fd)
+end;
+
+@{ Closed clause with no empty lines but with preceding
+  line of similar length @}
+proc parse_number = int:
+begin
+      int num := 0;
+      while num := num * 10 + ABS ch - ABS "0";
+            isdigi(getachar)
+      do ~ od;
+      ungeachar(ch);
+      num
+end;
+
+@{ Closed clause with empty lines @}
+proc main_proc = int:
+begin
+      @{ Auxiliary procs @}
+      proc aux1 = int: ...;
+      proc aux2 = int: ...;
+
+      @{ Computation @}
+      aux1;
+      aux2;
+
+      @{ Result @}
+      aux1 + aux2
+end
+
+@{ Indentation of closed clauses using `(' and `)' delimiters @}
+proc parse_number = int:
+(int num := 0;
+ while num := num * 10 + ABS ch - ABS "0";
+       isdigi(getachar)
+ do ~ od;
+ ungeachar(ch);
+ num)
+@end example
+
+
+@node Indexers and trimmers
+@section Indexers and trimmers
+
+Algol 68 allows using @code{(} and @code{)} instead of @code{[} and
+@code{]} in bounds and slices to represent the SUB and BUS
+symbols. This is supported by ga68 via the @option{-fbrackets}
+command-line option in order to ease the porting of old code, and it
+is disabled by default. Please always use square brackets for indexing
+in new code.
+
+@node Conditional clauses
+@section Conditional clauses
+
+If a conditional clause is still clear and not of excessive length
+when written on a single line, just do it.
+
+Start the enquiry clause in the if-part of a conditional clause right
+after the @code{if} symbol, not in the next line.
+
+The serial clauses in the then- and if-parts of the conditional clause
+shall be indented five positions right, which is the length of both
+the @code{then} and @code{else} symbols plus one.
+
+The first declaration or unit in the then- and if-parts shall be
+placed in the same line than the @code{then} and @code{else} symbols,
+respectively.
+
+Place the @code{fi} closing symbol in its own line, with the same
+indentation level than the matching @code{if}.  The exception to this
+rule is when the conditional clause has no else-part and the then-part
+spans for a single line that is not too long.  In that case, place the
+@code{fi} in the same line than @code{then}.
+
+Examples:
+
+@example
+@{ Very small conditional clause in a single line @}
+if idx < 0 then fatal("invalid idx") fi
+
+@{ Short conditional-clause with `fi' in the same line
+  than `then' @}
+if argc /= 3
+then puts("expected two arguments'n") fi
+
+@{ A conditional-clause that spans several lines @}
+if a > 10
+then puts("truncating");
+     a := 10
+fi
+@end example
+
+@node Loop clauses
+@section Loop clauses
+
+
+If a loop clause is small enough to fit in a single line without
+occupying most of it, just do it.
+
+If a loop clause spans two lines, and the second line is not too long,
+you can put @code{od} in the same line than @code{do}.
+
+If a loop clause spans several lines, please put the @code{do} symbol
+in its own line, indented to the same level than the clause's frobyts.
+
+Examples:
+
+@example
+@{ Very short loop-clause in a single line.  @}
+for a to argc do puts ("arg: " + argv[a]) od;
+
+@{ Short loop-clause with `od' in the same line than `do' @}
+for i from LWB a to UPB a
+do total +:= a[i] od
+
+@{ A loop-clause that spans several lines @}
+while NOT exit
+do string cmd = get_command;
+   process_command(cmd)
+od
+@end example
+
+
+@node Case and conformity clauses
+@section Case and conformity clauses
+
+Do not write a case or conformity clause in a single line, unless
+you are using the brief form.  Unlike conditional and loop clauses,
+these are difficult to read.
+
+Please put the @code{in}, @code{out} and @code{ease} symbols in their
+own lines, with the same indentation level than the matching
+@code{case}.
+
+Start the choices right after the @code{in} symbol, in the same line.
+All the choices may fit in a single line.  If they don't, please put
+each choice in its own line.
+
+@example
+@{ Short case clause @}
+case i
+in 100, 200, 300 out 0 esac;
+
+@{ Long case clause @}
+case i
+in 100,
+   200,
+   300
+ouse i % 100
+in 100,
+   200,
+   300
+esac;
+
+@{ Long conformity clause @}
+case v
+in (void): "empty",
+   (bool b): (b | "true" | "false"),
+   (string s): s
+esac
+@end example
+
+@node Procedure and operator declarations
+@section Procedure and operator declarations
+
+In procedure and operator declarations, if the body of a routine text
+starts with 'begin', put it at the same indentation than the
+@code{pub}, @code{proc} or @code{op}.  Otherwise, indent it three
+spaces to the right relative to the @code{pub}, @code{proc} or
+@code{op}.
+
+Examples:
+
+@example
+@{ Body of routine is a `begin'..`end' closed clause @}
+proc checked_div = (int a,b) int:
+begin
+      if b = 0 then fatal ("div by zero") fi;
+      a % b
+end;
+
+@{ Body of routine does not start with `begin' @}
+proc checked_div = (int a,b) int:
+   (b = 0 | fatal ("div by zero"); skip | a % b);
+
+@{ Body of routine is not a closed clause @}
+proc checked_div = (int a,b) int:
+   if b = 0
+   then fatal ("div by zero"); skip
+   else a % b
+   fi;
+@end example
+
+@node Contracted declarations
+@section Contracted declarations
+
+Please don't be shy to use contracted forms of declarations.  They can
+make the program much more readable and they make it easier to add new
+declarations, because they prevent writing the same text again and
+again.
+
+However, care should be taken when declaring operators and procedures.
+In these cases, contracted declarations should only be used when
+declaring very short, one or two lines long routines.  The last
+routine in the list of joined declarations can be a bit longer.
+
+Examples:
+
+@example
+@{ Contracted declarations lead to compact and very
+  readable code @}
+int disconnected = 0, connected = 0, unknown = 2;
+pub ref JSON_Val json_no_val = nil,
+    ref JSON_Elm json_no_elm = nil;
+    ref JSON_Fld json_no_fld = nil;
+
+@{ Use contracted declarations for short routines @}
+op + = (States ss, State s) States: MoreStates (heap States := ss, s),
+   + = (Transitions ts, Transition t) Transitions:
+         MoreTransitions (heap Transitions := ts, t)
+@end example
+
+@node Brief clause forms
+@section Brief clause forms
+
+The obvious context where to use the brief forms of conditional, case
+and conformity clauses is when these clauses appear as operands in
+formulas.  They match well with parenthesized closed clauses.
+
+It is also ok to use brief forms of clauses out of formulas,
+especially inside case and conformiy clauses.  But please be careful,
+as brief forms may be confused sometimes.
+
+Examples:
+
+@example
+@{ Brief forms in formulas @}
+int res = (a=0 | fatal("div by zero"); skip | den/a);
+
+@{ Brief forms out of formulas @}
+for i to ELEMS str
+do char newline = REPR 10, tab = REPR 9, c = str[i];
+   (c = "\" | res +:= "\\"
+    |: c = newline | res +:= "\n"
+    |: c = tab | res +:= "\t"
+    |  res +:= c)
+od
+@end example
+
+@node Naming
+@chapter Naming
+
+Unlike most other programming languages, which are not stropped, in
+Algol 68 it is possible to have tags with the same name as reserved
+words, by appending an underscore character to the tag. For example, a
+tag @code{if} can be written as @code{if_}.  It is important to note
+that the trailing underscore is not part of the tag: it is just a
+stropping artifact. This is always better than contriving artificious
+synonyms that are often confusing or too long.  A copying routine has
+arguments "from" and "to"? Call them @code{from_} and @code{to_}. A
+struct mode has fields "in" and "out"? Call them @code{in_} and
+@code{out_}.
+
+Please use fully upper-case bold words for operator indicants.  This
+makes it easier for text editors to highlight them in a different
+style than mode indicants, and look more symmetrical in case of dyadic
+operators.  For example, use @code{ABS} and not @code{Abs}.
+
+@node Programming Style
+@chapter Programming Style
+
+This section contains some recommendation on the usage of the
+facilities of the language.
+
+@menu
+* Writing routines::
+* Nihils::
+@end menu
+
+@node Writing routines
+@section Writing routines
+
+Use routines liberally!  Routines are cheap, very easy to write thanks
+to the excellent Algol 68 syntax for routine texts, and first-class
+citizens in the language.  They also have access to the lexical
+environment.  So if you find yourself wanting to write a macro in
+order to repeat some little calculation, just write a small procedure
+or operator instead.
+
+Choose identifiers that are expressive of meaning in order to clarify
+both the intent of the procedure or operator and the code written that
+uses it.
+
+Consider using overloaded operators in preference to procedures with
+united mode parameters to encourage users of the operator to create
+new versions of the operator for different parameter types, rather
+than leaving the users trying to figure out how to hack the united
+mode definition.
+
+The high level of orthogonaliy of Algol 68 combined with the
+structural type equivalence and the nice compact syntax of declarers
+makes mode names way less relevant than in many other programming
+languages.  In particular if a routine takes a parameter that is an
+united mode, and that particular united mode is either not used
+anywhere else or very short, just write the declarer, you don't have
+to name it first.
+
+Please make good use of the lexical block structure of the programming
+language: is is there to be used.  In little local auxiliary routines,
+do not add arguments just to pass a value that is in the environment;
+rather, place the declaration of the auxiliary routine near the
+declarations of the values it accesses.  If this is not possible, then
+it may be wise to judiciously pass those non-nearby values as
+arguments in order that the programmer be aware that non-nearby values
+are being accessed or possibly altered.
+
+@node Nihils
+@section Nihils
+
+Never use @code{nil} directly in identity relations; it is very error
+prone.  It is better to define @dfn{nihils} for all reference modes
+that are likely to appear in one.
+
+Examples:
+
+@example
+mode Node = ...;
+ref Node no_node = nil;
+while n :/=: no_node do ... od
+@end example
+
+@c ---------------------------------------------------------------------
+@c GNU Free Documentation License
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
+
+
+@c ---------------------------------------------------------------------
+@c Index
+@c ---------------------------------------------------------------------
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

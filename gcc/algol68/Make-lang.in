@@ -141,7 +141,14 @@ A68_INT_MANUAL_FILES = \
 		$(gcc_docdir)/include/gcc-common.texi \
 		gcc-vers.texi
 
-A68_TEXI_FILES = $(A68_MANUAL_FILES) $(A68_INT_MANUAL_FILES)
+A68_CODING_GUIDE_MANUAL_FILES = \
+		algol68/ga68-coding-guidelines.texi \
+		$(gcc_docdir)/include/fdl.texi \
+		$(gcc_docdir)/include/gcc-common.texi \
+		gcc-vers.texi
+
+A68_TEXI_FILES = $(A68_MANUAL_FILES) $(A68_INT_MANUAL_FILES) \
+                 $(A68_CODING_GUIDE_MANUAL_FILES)
 
 doc/ga68.info: $(A68_MANUAL_FILES)
 	if test "x$(BUILD_INFO)" = xinfo; then \
@@ -157,16 +164,29 @@ doc/ga68-internals.info: $(A68_INT_MANUAL_FILES)
 		-I $(gcc_docdir)/include -o $@ $<; \
 	else true; fi
 
+doc/ga68-coding-guidelines.info: $(A68_CODING_GUIDE_MANUAL_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/ga68-coding-guidelines.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
+	else true; fi
+
 doc/ga68.dvi: $(A68_MANUAL_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
 doc/ga68-internals.dvi: $(A68_INT_MANUAL_FILES)
 	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
 
+doc/ga68-coding-guidelines.dvi: $(A68_CODING_GUIDE_MANUAL_FILES)
+	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
+
 doc/ga68.pdf: $(A68_MANUAL_FILES)
 	$(TEXI2PDF) -I $(abs_docdir)/include -o $@ $<
 
 doc/ga68-internals.pdf: $(A68_INT_MANUAL_FILES)
+	$(TEXI2PDF) -I $(abs_docdir)/include -o $@ $<
+
+doc/ga68-coding-guidelines.pdf: $(A68_CODING_GUIDE_MANUAL_FILES)
 	$(TEXI2PDF) -I $(abs_docdir)/include -o $@ $<
 
 $(build_htmldir)/ga68/index.html: $(A68_MANUAL_FILES)
@@ -176,6 +196,12 @@ $(build_htmldir)/ga68/index.html: $(A68_MANUAL_FILES)
 		-I $(gcc_docdir)/include -I $(srcdir)/d -o $(@D) $<
 
 $(build_htmldir)/ga68-internals/index.html: $(A68_INT_MANUAL_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) $(MAKEINFO_TOC_INLINE_FLAG) \
+		-I $(gcc_docdir)/include -I $(srcdir)/d -o $(@D) $<
+
+$(build_htmldir)/ga68-coding-guidelines/index.html: $(A68_CODING_GUIDE_MANUAL_FILES)
 	$(mkinstalldirs) $(@D)
 	rm -f $(@D)/*
 	$(TEXI2HTML) $(MAKEINFO_TOC_INLINE_FLAG) \
@@ -193,13 +219,14 @@ algol68.srcextra:
 algol68.all.cross: ga68$(exeext)
 algol68.start.encap: ga68$(exeect)
 algol68.rest.encap:
-algol68.info: doc/ga68.info doc/ga68-internals.info
-algol68.dvi: doc/ga68.dvi doc/ga68-internals.dvi
-algol68.pdf: doc/ga68.pdf doc/ga68-internals.pdf
+algol68.info: doc/ga68.info doc/ga68-internals.info doc/ga68-coding-guidelines.info
+algol68.dvi: doc/ga68.dvi doc/ga68-internals.dvi doc/ga68-coding-guidelines.dvi
+algol68.pdf: doc/ga68.pdf doc/ga68-internals.pdf doc/ga68-coding-guidelines.pdf
 algol68.install-pdf:
-algol68.html: $(build_htmldir)/ga68/index.html $(build_htmldir)/ga68-internals/index.html
+algol68.html: $(build_htmldir)/ga68/index.html $(build_htmldir)/ga68-internals/index.html \
+              $(build_htmldir)/ga68-coding-guidelines/index.html
 algol68.man: doc/ga68.1
-algol68.srcinfo: doc/ga68.info doc/ga68-internals.info
+algol68.srcinfo: doc/ga68.info doc/ga68-internals.info doc/ga68-coding-guidelines.info
 	-cp -p $^ $(srcdir)/doc
 algol68.srcinfo:
 algol68.srcman:
@@ -245,9 +272,12 @@ $(DESTDIR)$(man7dir)/%.7algol: doc/%.7algol installdirs
 	-$(INSTALL_DATA) $< $@
 	-chmod a-x $@
 
-algol68.install-info: $(DESTDIR)$(infodir)/ga68.info $(DESTDIR)$(infodir)/ga68-internals.info
+algol68.install-info: $(DESTDIR)$(infodir)/ga68.info \
+                      $(DESTDIR)$(infodir)/ga68-internals.info \
+                      $(DESTDIR)$(infodir)/ga68-coding-guidelines.info
 
-algol68.install-html: $(build_htmldir)/ga68 $(build_htmldir)/ga68-internals
+algol68.install-html: $(build_htmldir)/ga68 $(build_htmldir)/ga68-internals \
+                      $(build_htmldir)/ga68-coding-guidelines.info
 	@$(NORMAL_INSTALL)
 	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
 	@for p in $(build_htmldir)/ga68; do \
