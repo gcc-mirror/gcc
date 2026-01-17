@@ -592,6 +592,8 @@ BOZ literal constant conversion, and I/O and calls to intrinsic procedures
 when passing a value to the @code{kind=} dummy argument.  Inspection of the
 intermediate representation of the translated Fortran code, produced by
 @option{-fdump-fortran-original} or @option{-fdump-tree-original}, is suggested.
+NOTE: These options are incompatible with user defined derived
+type I/O (DTIO).
 
 @opindex std=@var{std}
 @item -std=@var{std}
