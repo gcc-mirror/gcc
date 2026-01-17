@@ -49,6 +49,10 @@ are_packs_equivalent (PACK_T *s, PACK_T *t,
 	return false;
       if (compare_names)
 	{
+	  /* Note that a name in a pack of a struct may be NULL if the
+	     corresponding field is supposed to not be accessible by the user.
+	     There is at present one instance of this: the standard prelude
+	   */
 	  if (TEXT (s) != TEXT (t)
 	      && !(TEXT (s) != NO_TEXT
 		   && TEXT (t) != NO_TEXT
