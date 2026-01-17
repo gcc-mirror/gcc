@@ -1,3 +1,41 @@
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123331
+	* constexpr.cc (cxx_eval_vec_init_1): Don't build INIT_EXPR if
+	eltinit is erroneous.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91388
+	* semantics.cc (finish_static_assert): Suppress -Wreturn-type warnings
+	in functions with failed assertions.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122772
+	* tree.cc (cp_stabilize_bitfield_reference): New function.
+	(cp_stabilize_reference): Use it for stabilization of
+	clk_bitfield or clk_packed lvalues.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122834
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): Return
+	3 if fmt2->b is 10 except for _Float16 vs. _Decimal128, in that
+	case return -2.
+
 2026-01-14  David Malcolm  <dmalcolm@redhat.com>
 
 	Backported from master:
