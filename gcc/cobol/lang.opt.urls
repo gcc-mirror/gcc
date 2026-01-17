@@ -13,6 +13,9 @@ UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Opti
 M
 UrlSuffix(gcc/Preprocessor-Options.html#index-M) LangUrlSuffix_D(gdc/Code-Generation.html#index-M)
 
+fexec-charset=
+UrlSuffix(gcc/Preprocessor-Options.html#index-fexec-charset)
+
 ffixed-form
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffixed-form)
 
