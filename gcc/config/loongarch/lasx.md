@@ -3521,7 +3521,7 @@
   [(set (match_operand:FLASX 0 "register_operand" "=f")
     (vec_merge:FLASX
       (vec_duplicate:FLASX
-        (match_operand:<UNITMODE> 1 "register_operand" "f"))
+        (match_operand:<UNITMODE> 1 "reg_or_0_operand" "f"))
       (match_operand:FLASX 2 "register_operand" "0")
       (match_operand 3 "const_<bitmask256>_operand" "")))]
   "ISA_HAS_LASX"
