@@ -1442,28 +1442,8 @@ posix_prelude (void)
 static void
 stand_transput (void)
 {
-  PACK_T *z = NO_PACK;
-  MOID_T *m = NO_MOID;
-
-  /* Modes.  */
-
-  /* NUMBER  */
-  z = NO_PACK;
-  (void) a68_add_mode_to_pack (&z, M_INT, NO_TEXT, NO_NODE);
-  (void) a68_add_mode_to_pack (&z, M_LONG_INT, NO_TEXT, NO_NODE);
-  (void) a68_add_mode_to_pack (&z, M_LONG_LONG_INT, NO_TEXT, NO_NODE);
-  (void) a68_add_mode_to_pack (&z, M_SHORT_INT, NO_TEXT, NO_NODE);
-  (void) a68_add_mode_to_pack (&z, M_SHORT_SHORT_INT, NO_TEXT, NO_NODE);
-  (void) a68_add_mode_to_pack (&z, M_REAL, NO_TEXT, NO_NODE);
-  (void) a68_add_mode_to_pack (&z, M_LONG_REAL, NO_TEXT, NO_NODE);
-  (void) a68_add_mode_to_pack (&z, M_LONG_LONG_REAL, NO_TEXT, NO_NODE);
-  M_NUMBER = a68_add_mode (&TOP_MOID (&A68_JOB), UNION_SYMBOL, a68_count_pack_members (z), NO_NODE, NO_MOID, z);
-
-  /* Layout procedures.  */
-
-  /* Conversion procedures.  */
-  m = a68_proc (M_STRING, M_NUMBER, M_INT, NO_MOID);
-  a68_idf (A68_STD, "whole", m);
+  /* Most of the standard transput is implemented in Algol 68 and doesn't
+     require compiler support.  See libga68/transput.a68.in */
 }
 
 /* Build the standard environ symbol table.  */
