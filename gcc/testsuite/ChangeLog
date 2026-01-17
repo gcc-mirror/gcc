@@ -1,3 +1,69 @@
+2026-01-16  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/hierarchical-discriminator-loop-version.c: Simplify.
+	* gcc.dg/hierarchical-discriminator-unroll.c: Likewise
+	* gcc.dg/hierarchical-discriminator-vect-version.c: Likewise.
+
+2026-01-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/issue-4163-2.rs: New file.
+	* rust/compile/issue-4163.rs: New file.
+
+2026-01-16  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* rust/compile/issue-3874.rs: Fixes test.
+	* rust/compile/issue-3904.rs: New test.
+
+2026-01-16  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/unused-label_0.rs: New test.
+
+2026-01-16  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* rust/compile/no_mangle-malformed.rs: New test.
+
+2026-01-16  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* rust/compile/target_feature-malformed-4233.rs: New test.
+
+2026-01-16  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/redundant-semicolons_0.rs: New test.
+
+2026-01-16  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* rust/compile/link_name-malformed.rs: New test.
+
+2026-01-16  Harishankar  <harishankarpp7@gmail.com>
+
+	* rust/compile/issue-4213.rs: New test.
+
+2026-01-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/123092
+	* gcc.target/riscv/pr123092.c: New.
+
+2026-01-16  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/reflect/member15.C: Enable commented-out test.
+	* g++.dg/reflect/splice5.C: Likewise.  Add XFAIL.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Peter Damianov  <peter0x44@disroot.org>
+
+	PR c/123437
+	* c-c++-common/pr123437.c: New test.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123607
+	* g++.target/i386/avx512fp16-pr123607.C: New test.
+
+2026-01-16  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123521
+	* gcc.target/loongarch/vector/lasx/pr123521.c: New test.
+
 2026-01-15  Pengxuan Zheng  <pengxuan.zheng@oss.qualcomm.com>
 
 	* gcc.dg/pr123109.c: Require target x86_64 and aarch64.

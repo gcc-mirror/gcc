@@ -1,3 +1,40 @@
+2026-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_graph::process_worklist): Remove guard on
+	limit being non-zero when checking for -Wanalyzer-too-complex
+	on overall number of exploded nodes.  Allow for the origin enode.
+
+2026-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123145
+	* supergraph-fixup-locations.cc: Include "timevar.h".
+	(supergraph::fixup_locations): Track time spent as
+	TV_ANALYZER_SUPERGRAPH_FIXUP_LOCATIONS.
+	* supergraph-simplify.cc: Include "timevar.h".
+	(supergraph::simplify): Track time spent as
+	TV_ANALYZER_SUPERGRAPH_SIMPLIFY.
+	* supergraph-sorting.cc: Include "timevar.h".
+	(supergraph::sort_nodes): Track time spent as
+	TV_ANALYZER_SUPERGRAPH_SORTING.
+	* supergraph.cc (supergraph::supergraph): Track time spent as
+	TV_ANALYZER_SUPERGRAPH_CREATION rather than
+	TV_ANALYZER_SUPERGRAPH.
+
+2026-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123540
+	* ops.cc (eh_dispatch_edge_op::make): Drop dst_snode param to
+	ctor.
+	(eh_dispatch_edge_op::eh_dispatch_edge_op): Likewise, dropping
+	field eh_dispatch_edge_op::m_dst_snode.
+	(eh_dispatch_try_edge_op::eh_dispatch_try_edge_op): Likewise.
+	(eh_dispatch_allowed_edge_op::eh_dispatch_allowed_edge_op):
+	Likewise.
+	* ops.h (eh_dispatch_edge_op::eh_dispatch_edge_op): Likewise.
+	(eh_dispatch_edge_op::m_dst_snode): Drop unused field.
+	(eh_dispatch_try_edge_op::eh_dispatch_try_edge_op): Drop unused
+	dst_snode param.
+
 2026-01-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.h (struct on_frame_popped): New.

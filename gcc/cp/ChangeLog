@@ -1,3 +1,15 @@
+2026-01-16  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (eval_variable_of): Update comment.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Peter Damianov  <peter0x44@disroot.org>
+
+	PR c/123437
+	* typeck.cc (cp_build_binary_op): Don't use RDIV_EXPR
+	resultcode if both types are integral, _BitInt or
+	newly VECTOR_TYPE of ENUMERAL_TYPE.
+
 2026-01-15  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

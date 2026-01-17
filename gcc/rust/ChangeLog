@@ -1,3 +1,246 @@
+2026-01-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (visit(StructExprStruct)): Update to properly
+	unwrap enum variants for type checking.
+	* typecheck/rust-tyty.cc (VariantDef::get_fields) : Remove NUM assert.
+	* backend/rust-compile-expr.cc: Update to properly unwrap enum variants for type
+	resolution checking.
+
+2026-01-16  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* parse/rust-parse-impl-expr.hxx(Parser::null_denotation): Add
+	HASH case to handle outer attributes in expressions.
+
+2026-01-16  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused/rust-unused-checker.cc (UnusedChecker::visit_loop_label):
+	Add warning for unused label in LoopLabel expr.
+	* checks/lints/unused/rust-unused-checker.h: Likewise.
+	* checks/lints/unused/rust-unused-collector.cc (UnusedCollector::visit):
+	Check in BreakExpr and ContinueExpr if a label is used.
+	* checks/lints/unused/rust-unused-collector.h: Likewise.
+	* checks/lints/unused/rust-unused-context.cc (UnusedContext::add_label):
+	Method helper.
+	(UnusedContext::is_label_used): Likewise
+	* checks/lints/unused/rust-unused-context.h: Likewise.
+
+2026-01-16  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (AttributeChecker::visit): Emit diagnostic.
+
+2026-01-16  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (AttributeChecker::visit): Emit diagnostic.
+
+2026-01-16  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused/rust-unused-checker.cc (UnusedChecker::visit):
+	Emit warning in empty statement visitor.
+	* checks/lints/unused/rust-unused-checker.h:
+	Likewise.
+
+2026-01-16  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc: Emit diagnostic.
+
+2026-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+	    Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-name-resolution-context.h:
+
+2026-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-forever-stack.h: New function.
+	* resolve/rust-forever-stack.hxx: Implement it.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Call it if the prelude exists
+	and we have an unresolved Identifier Call it if the prelude exists and we have
+	an unresolved Identifier.
+
+2026-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-forever-stack.h: Add new resolve_path function.
+	* resolve/rust-forever-stack.hxx: Implement it.
+
+2026-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::finalize_glob_import): Save prelude
+	if we find one.
+	* resolve/rust-name-resolution-context.h: Add field.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (has_prelude_import): New function.
+	(TopLevel::visit): Create a prelude glob import if necessary.
+	* resolve/rust-toplevel-name-resolver-2.0.h: Allow glob imports to be prelude imports.
+
+2026-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-forever-stack.h: Add depth parameter to function.
+	* resolve/rust-forever-stack.hxx: Likewise and use it.
+
+2026-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl-expr.hxx: Use explicit template.
+	* parse/rust-parse-impl-path.hxx: Likewise.
+	* parse/rust-parse-impl-ttree.hxx: Likewise.
+	* parse/rust-parse-impl.hxx: Likewise.
+
+2026-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Update function
+	name.
+	* ast/rust-ast-pointer-visitor.cc (PointerVisitor::visit): Likewise.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Likewise.
+	* ast/rust-ast.cc (BreakExpr::as_string): Use getter function.
+	(AttributeParser::parse_path_meta_item): Convert to expected type.
+	(ReturnExpr::as_string): Change access to returned expr.
+	* ast/rust-desugar-for-loops.cc (DesugarForLoops::DesugarCtx::make_break_arm):
+	Likewise.
+	* ast/rust-expr.h (class BreakExpr): Make expr in break optional.
+	(class ReturnExpr): Make returned expr explicitely optional. Change the
+	getters and introduce a  const getter.
+	* expand/rust-cfg-strip.cc (CfgStrip::visit): Convert to expected type.
+	* expand/rust-macro-builtins-asm.cc (parse_reg_operand_in): Update
+	constructor call to new expected types.
+	(parse_reg_operand_out): Likewise.
+	(parse_reg_operand_inout): Likewise.
+	(parse_llvm_operands): Likewise.
+	* expand/rust-macro-builtins-format-args.cc (format_args_parse_expr):
+	Likewise.
+	(format_args_parse_arguments): Likewise.
+	* expand/rust-macro-builtins-helpers.cc (try_expand_many_expr): Update
+	value for tl::expected.
+	* expand/rust-macro-builtins-include.cc (MacroBuiltin::include_handler):
+	Likewise.
+	* expand/rust-macro-expand.cc (transcribe_expression): Update
+	constructor call with expected value.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* parse/rust-parse-error.h (enum class): Add new error types for Expr
+	and StructExprField.
+	* parse/rust-parse-impl-expr.hxx: Explicitely handle return expr
+	parsing failure. Update to fit new expected types.
+	* parse/rust-parse-impl.hxx: Likewise.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Adapt to
+	tl::expected.
+	* ast/rust-desugar-while-let.cc (DesugarWhileLet::DesugarCtx::make_break_arm):
+	Use optional for break expressions when missing instead of nullptr.
+	* parse/rust-parse.h: Change function return type with expected. Remove
+	error state from ExprOrStmt.
+
+2026-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.cc (AttributeParser::parse_meta_item_lit): Use
+	tl::expected
+	* expand/rust-macro-builtins-helpers.cc (parse_single_string_literal):
+	Likewise.
+	* expand/rust-macro-expand.cc (MacroExpander::match_fragment):
+	Likewise.
+	* parse/rust-cfg-parser.cc (parse_cfg_option): Likewise.
+	* parse/rust-parse-error.h (struct SimplePath): Remove error type.
+	(struct DelimTokenTree): Likewise.
+	(struct Token): Likewise.
+	(struct TokenTree): Likewise.
+	(class LifetimeParam): Move from here ...
+	(struct LifetimeParam): ... to here. Add ctor.
+	(class Lifetime): Add error type.
+	(enum class): Remove AnonConst.
+	(struct BlockExpr): Change BlockExpr to generic node error.
+	* parse/rust-parse-impl-expr.hxx: Use tl::expected for errors.
+	* parse/rust-parse-impl-path.hxx: Likewise.
+	* parse/rust-parse-impl-ttree.hxx: Likewise.
+	* parse/rust-parse-impl.hxx: Likewise.
+	* parse/rust-parse.h: Update function return types with tl::expected
+	to propagate errors.
+
+2026-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-error.h (struct BlockExpr): Add BlockExpr error type
+	* parse/rust-parse-impl-expr.hxx: Update return types.
+	* parse/rust-parse-impl.hxx: Likewise.
+	* parse/rust-parse.h: Update function prototypes.
+
+2026-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl.hxx: Collect errors instead of emitting them.
+
+2026-01-16  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse.h (class ParseLifetimeParamError): Move error from
+	here ...
+	(class ParseLifetimeError): Likewise.
+	(enum class): Likewise.
+	* parse/rust-parse-error.h (class LifetimeParam): ... to here.
+	here.
+	(class Lifetime): Likewise.
+	(enum class): Likewise.
+	(struct LoopLabel): Likewise and make it a full struct with ctors.
+	(struct Self): Likewise.
+	* parse/rust-parse-impl-expr.hxx: Make error point to new namespace.
+	* parse/rust-parse-impl.hxx: Likewise.
+
+2026-01-16  Harishankar  <harishankarpp7@gmail.com>
+
+	* expand/rust-macro-expand.cc (MacroExpander::expand_invoc): Handle
+	error fragments by replacing them with empty fragments.
+
+2026-01-16  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* ast/rust-ast-builder.cc (Builder::match_arm): Moves the vector of patterns
+	to a single pattern.
+	* ast/rust-ast-collector.cc (TokenCollector::visit):Likewise.
+	* ast/rust-ast-pointer-visitor.cc (PointerVisitor::visit):Likewise.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit):Likewise.
+	* ast/rust-ast.cc (IfLetExpr::as_string):Likewise.
+	(WhileLetLoopExpr::as_string):Likewise.
+	(MatchArm::as_string):Likewise.
+	* ast/rust-desugar-question-mark.cc (make_match_arm):Likewise.
+	* ast/rust-desugar-while-let.cc (DesugarWhileLet::desugar):Likewise.
+	* ast/rust-expr.h (class WhileLetLoopExpr):Likewise.
+	(class IfLetExpr):Likewise.
+	* backend/rust-compile-expr.cc (CompileExpr::visit):Likewise.
+	* checks/errors/rust-hir-pattern-analysis.cc (lower_arm):Likewise.
+	* expand/rust-cfg-strip.cc (CfgStrip::visit):Likewise.
+	* hir/rust-ast-lower.cc (ASTLoweringIfLetBlock::desugar_iflet):Likewise.
+	(ASTLoweringExprWithBlock::visit):Likewise.
+	* hir/rust-hir-dump.cc (Dump::do_matcharm):Likewise.
+	(Dump::visit):Likewise.
+	* hir/tree/rust-hir-expr.cc (OperatorExpr::operator=):Likewise.
+	(ArithmeticOrLogicalExpr::operator=):Likewise.
+	(ComparisonExpr::operator=):Likewise.
+	(LazyBooleanExpr::operator=):Likewise.
+	(TypeCastExpr::operator=):Likewise.
+	(AssignmentExpr::operator=):Likewise.
+	(CompoundAssignmentExpr::operator=):Likewise.
+	(GroupedExpr::operator=):Likewise.
+	(ArrayExpr::operator=):Likewise.
+	(ArrayIndexExpr::operator=):Likewise.
+	(CallExpr::operator=):Likewise.
+	(MethodCallExpr::operator=):Likewise.
+	(FieldAccessExpr::operator=):Likewise.
+	(BlockExpr::operator=):Likewise.
+	(BreakExpr::operator=):Likewise.
+	(ReturnExpr::operator=):Likewise.
+	(UnsafeBlockExpr::operator=):Likewise.
+	(BaseLoopExpr::operator=):Likewise.
+	(WhileLetLoopExpr::WhileLetLoopExpr):Likewise.
+	(WhileLetLoopExpr::operator=):Likewise.
+	(MatchArm::MatchArm):Likewise.
+	(MatchArm::operator=):Likewise.
+	(MatchExpr::operator=):Likewise.
+	* hir/tree/rust-hir-expr.h (class WhileLetLoopExpr):Likewise.
+	* hir/tree/rust-hir-visitor.cc (DefaultHIRVisitor::walk):Likewise.
+	(DefaultHIRVisitor::visit_match_arm):Likewise.
+	* hir/tree/rust-hir.cc (WhileLetLoopExpr::as_string):Likewise.
+	(MatchArm::as_string):Likewise.
+	* parse/rust-parse-impl-expr.hxx: Likewise.
+	* parse/rust-parse-impl.hxx: Likewise.
+	* parse/rust-parse.h:Likewise.
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit_if_let_patterns):Likewise.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit):Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):Likewise.
+
+2026-01-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit_attributes): Mention the name
+	of the attribute macro that hasn't been found.
+
 2025-12-23  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
 
 	* checks/errors/feature/rust-feature-gate.cc (FeatureGate::visit): Added

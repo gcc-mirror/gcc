@@ -1,3 +1,11 @@
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+	    Peter Damianov  <peter0x44@disroot.org>
+
+	PR c/123437
+	* c-typeck.cc (build_binary_op): Don't use RDIV_EXPR
+	resultcode if both types are integral, _BitInt or
+	newly VECTOR_TYPE of ENUMERAL_TYPE.
+
 2026-01-14  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-decl.cc (grokfield): Call verify_counted_by_for_top_anonymous_type

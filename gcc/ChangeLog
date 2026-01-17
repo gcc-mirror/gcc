@@ -1,3 +1,61 @@
+2026-01-16  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* hierarchical_discriminator.cc (init_copyid_allocator): Walks the function
+	body to find existing max copyids per location.
+	(record_existing_copyid): New.
+
+2026-01-16  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/123460
+	* config.gcc: Accept hyphens in aarch64 --with-arch extensions.
+
+2026-01-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123145
+	* timevar.def (TV_ANALYZER_SUPERGRAPH): Rename to...
+	(TV_ANALYZER_SUPERGRAPH_CREATION): ...this.
+	(TV_ANALYZER_SUPERGRAPH_FIXUP_LOCATIONS): New.
+	(TV_ANALYZER_SUPERGRAPH_SIMPLIFY): New.
+	(TV_ANALYZER_SUPERGRAPH_SORTING): New.
+
+2026-01-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/123092
+	* lra-constraints.cc (lra_constraints): Push insn on processing
+	stack after equivalence substitution.
+
+2026-01-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR pch/110746
+	* config/host-freebsd.cc: New file.
+	* config.host <*-*-freebsd*>: Use it.
+	* config/x-freebsd: New file.
+
+2026-01-16  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/123412
+	* ipa-cp.cc (devirtualization_time_bonus): Do add the indirect
+	edge frequency at least once even for targets which cannot be
+	inlined.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123607
+	* config/i386/i386.md (movhf_mask): Change constraint on
+	match_operand 2's second alternative from 0C to 0.
+
+2026-01-16  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123521
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): Fixed a bug in the
+	vector initialization section..
+
+2026-01-16  David Guillen Fandos  <david@davidgf.net>
+
+	* config/mips/mips.h (ISA_HAS_FMIN_FMAX): Add R5900;
+	note that, R5900 is not IEEE754 fully compatiable.
+
 2026-01-15  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
