@@ -24,6 +24,8 @@ UrlSuffix(gcc/x86-Options.html#index-maccumulate-outgoing-args-1)
 malign-double
 UrlSuffix(gcc/x86-Options.html#index-malign-double)
 
+; skipping UrlSuffix for 'malign-functions=' due to finding no URLs
+
 ; skipping UrlSuffix for 'malign-loops=' due to finding no URLs
 
 malign-stringops
@@ -33,7 +35,7 @@ malign-data=
 UrlSuffix(gcc/x86-Options.html#index-malign-data-1)
 
 march=
-UrlSuffix(gcc/x86-Options.html#index-march-14)
+UrlSuffix(gcc/x86-Options.html#index-march-13)
 
 ; skipping UrlSuffix for 'mbranch-cost=' due to finding no URLs
 
@@ -43,8 +45,7 @@ UrlSuffix(gcc/x86-Options.html#index-mlarge-data-threshold)
 mcmodel=
 UrlSuffix(gcc/x86-Options.html#index-mcmodel_003d-7)
 
-mcpu=
-UrlSuffix(gcc/x86-Options.html#index-mcpu-14)
+; skipping UrlSuffix for 'mcpu=' due to finding no URLs
 
 mfancy-math-387
 UrlSuffix(gcc/x86-Options.html#index-mfancy-math-387)
@@ -128,6 +129,9 @@ UrlSuffix(gcc/x86-Options.html#index-msseregparm)
 mstackrealign
 UrlSuffix(gcc/x86-Options.html#index-mstackrealign)
 
+mstack-arg-probe
+UrlSuffix(gcc/x86-Options.html#index-mstack-arg-probe)
+
 ; skipping UrlSuffix for 'mstringop-strategy=' due to finding no URLs
 
 mtls-dialect=
@@ -149,7 +153,7 @@ miamcu
 UrlSuffix(gcc/x86-Options.html#index-miamcu)
 
 mabi=
-UrlSuffix(gcc/x86-Options.html#index-mabi-7)
+UrlSuffix(gcc/x86-Options.html#index-mabi-8)
 
 mcall-ms2sysv-xlogues
 UrlSuffix(gcc/x86-Options.html#index-mcall-ms2sysv-xlogues)
@@ -171,6 +175,12 @@ UrlSuffix(gcc/x86-Options.html#index-mcld)
 
 mvzeroupper
 UrlSuffix(gcc/x86-Options.html#index-mvzeroupper)
+
+mstv
+UrlSuffix(gcc/x86-Options.html#index-mstv)
+
+mdispatch-scheduler
+UrlSuffix(gcc/x86-Options.html#index-mdispatch-scheduler)
 
 mprefer-avx128
 UrlSuffix(gcc/x86-Options.html#index-mprefer-avx128)
@@ -401,13 +411,13 @@ mf16c
 UrlSuffix(gcc/x86-Options.html#index-mf16c)
 
 mfentry
-UrlSuffix(gcc/x86-Options.html#index-mfentry)
+UrlSuffix(gcc/x86-Options.html#index-mfentry-1)
 
 mrecord-mcount
-UrlSuffix(gcc/x86-Options.html#index-mrecord-mcount)
+UrlSuffix(gcc/x86-Options.html#index-mrecord-mcount-1)
 
 mnop-mcount
-UrlSuffix(gcc/x86-Options.html#index-mnop-mcount)
+UrlSuffix(gcc/x86-Options.html#index-mnop-mcount-1)
 
 mfentry-name=
 UrlSuffix(gcc/x86-Options.html#index-mfentry-name)
@@ -467,10 +477,10 @@ mforce-indirect-call
 UrlSuffix(gcc/x86-Options.html#index-mforce-indirect-call)
 
 mindirect-branch=
-UrlSuffix(gcc/x86-Options.html#index-mindirect-branch)
+UrlSuffix(gcc/x86-Options.html#index-mindirect-branch-1)
 
 mfunction-return=
-UrlSuffix(gcc/x86-Options.html#index-mfunction-return)
+UrlSuffix(gcc/x86-Options.html#index-mfunction-return-1)
 
 mindirect-branch-cs-prefix
 UrlSuffix(gcc/x86-Options.html#index-mindirect-branch-cs-prefix)
@@ -585,6 +595,12 @@ UrlSuffix(gcc/x86-Options.html#index-msha512)
 
 msm4
 UrlSuffix(gcc/x86-Options.html#index-msm4)
+
+mgather
+UrlSuffix(gcc/x86-Options.html#index-mgather)
+
+mscatter
+UrlSuffix(gcc/x86-Options.html#index-mscatter)
 
 mapxf
 UrlSuffix(gcc/x86-Options.html#index-mapxf)

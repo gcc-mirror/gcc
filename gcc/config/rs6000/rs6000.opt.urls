@@ -89,8 +89,14 @@ UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mrecip-precision)
 mno-fp-in-toc
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mno-fp-in-toc)
 
+mfp-in-toc
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mfp-in-toc)
+
 mno-sum-in-toc
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mno-sum-in-toc)
+
+msum-in-toc
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-msum-in-toc)
 
 mminimal-toc
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mminimal-toc)
@@ -106,6 +112,9 @@ UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mvrsave)
 
 mblock-move-inline-limit=
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mblock-move-inline-limit)
+
+mblock-ops-unaligned-vsx
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mblock-ops-unaligned-vsx)
 
 mblock-compare-inline-limit=
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mblock-compare-inline-limit)

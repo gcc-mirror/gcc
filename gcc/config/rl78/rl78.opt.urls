@@ -9,7 +9,8 @@ UrlSuffix(gcc/RL78-Options.html#index-mmul-1)
 mallregs
 UrlSuffix(gcc/RL78-Options.html#index-mallregs)
 
-; skipping UrlSuffix for 'mrelax' due to finding no URLs
+mrelax
+UrlSuffix(gcc/RL78-Options.html#index-mrelax-7)
 
 mcpu=
 UrlSuffix(gcc/RL78-Options.html#index-mcpu-9)
@@ -25,6 +26,9 @@ UrlSuffix(gcc/RL78-Options.html#index-mg14)
 
 mrl78
 UrlSuffix(gcc/RL78-Options.html#index-mrl78)
+
+mes0
+UrlSuffix(gcc/RL78-Options.html#index-mes0)
 
 msave-mduc-in-interrupts
 UrlSuffix(gcc/RL78-Options.html#index-msave-mduc-in-interrupts)

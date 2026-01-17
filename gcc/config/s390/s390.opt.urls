@@ -7,7 +7,7 @@ m64
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-m64-2)
 
 march=
-UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-march-13)
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-march-12)
 
 mbackchain
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mbackchain)
@@ -51,6 +51,9 @@ UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-msoft-float-11)
 mstack-guard=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-guard)
 
+mno-stack-guard
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mno-stack-guard)
+
 mstack-protector-guard=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-protector-guard-4)
 
@@ -60,7 +63,8 @@ UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-protector-guard-re
 mstack-size=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-size-1)
 
-; skipping UrlSuffix for 'mno-stack-size' due to finding no URLs
+mno-stack-size
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mno-stack-size-1)
 
 mtune=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mtune-13)
@@ -82,17 +86,44 @@ UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mzarch)
 
 ; skipping UrlSuffix for 'mbranch-cost=' due to finding no URLs
 
-; skipping UrlSuffix for 'mpic-data-is-text-relative' due to finding no URLs
+mpic-data-is-text-relative
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mpic-data-is-text-relative-2)
 
-; skipping UrlSuffix for 'mindirect-branch=' due to finding no URLs
+mindirect-branch=
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mindirect-branch)
 
-; skipping UrlSuffix for 'mfunction-return=' due to finding no URLs
+mindirect-branch-jump=
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mindirect-branch-jump)
 
-; skipping UrlSuffix for 'mfentry' due to finding no URLs
+mindirect-branch-call=
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mindirect-branch-call)
 
-; skipping UrlSuffix for 'mrecord-mcount' due to finding no URLs
+mfunction-return=
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mfunction-return)
 
-; skipping UrlSuffix for 'mnop-mcount' due to finding no URLs
+mfunction-return-mem=
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mfunction-return-mem)
+
+mfunction-return-reg=
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mfunction-return-reg)
+
+mindirect-branch-table
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mindirect-branch-table)
+
+mfentry
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mfentry)
+
+mrecord-mcount
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mrecord-mcount)
+
+mnop-mcount
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mnop-mcount)
 
 ; skipping UrlSuffix for 'munroll-only-small-loops' due to finding no URLs
+
+mpreserve-args
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mpreserve-args)
+
+munaligned-symbols
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-munaligned-symbols)
 

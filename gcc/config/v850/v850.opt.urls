@@ -26,13 +26,20 @@ UrlSuffix(gcc/V850-Options.html#index-mprolog-function)
 msda=
 UrlSuffix(gcc/V850-Options.html#index-msda)
 
+msmall-sld
+UrlSuffix(gcc/V850-Options.html#index-msmall-sld)
+
 mspace
 UrlSuffix(gcc/V850-Options.html#index-mspace)
 
 mtda=
 UrlSuffix(gcc/V850-Options.html#index-mtda)
 
-; skipping UrlSuffix for 'mno-strict-align' due to finding no URLs
+mno-strict-align
+UrlSuffix(gcc/V850-Options.html#index-mno-strict-align-6)
+
+mjump-tables-in-data-section
+UrlSuffix(gcc/V850-Options.html#index-mjump-tables-in-data-section)
 
 mv850
 UrlSuffix(gcc/V850-Options.html#index-mv850)
@@ -65,7 +72,7 @@ mzda=
 UrlSuffix(gcc/V850-Options.html#index-mzda)
 
 mrelax
-UrlSuffix(gcc/V850-Options.html#index-mrelax-9)
+UrlSuffix(gcc/V850-Options.html#index-mrelax-10)
 
 mlong-jumps
 UrlSuffix(gcc/V850-Options.html#index-mlong-jumps)

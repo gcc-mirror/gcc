@@ -118,7 +118,8 @@ UrlSuffix(gcc/SH-Options.html#index-mdalign)
 
 ; skipping UrlSuffix for 'mdiv=' due to finding no URLs
 
-; skipping UrlSuffix for 'mfdpic' due to finding no URLs
+mfdpic
+UrlSuffix(gcc/SH-Options.html#index-mfdpic-2)
 
 mfmovd
 UrlSuffix(gcc/SH-Options.html#index-mfmovd)
@@ -141,14 +142,11 @@ UrlSuffix(gcc/SH-Options.html#index-ml)
 mnomacsave
 UrlSuffix(gcc/SH-Options.html#index-mnomacsave)
 
-mpadstruct
-UrlSuffix(gcc/SH-Options.html#index-mpadstruct)
-
 mprefergot
 UrlSuffix(gcc/SH-Options.html#index-mprefergot)
 
 mrelax
-UrlSuffix(gcc/SH-Options.html#index-mrelax-8)
+UrlSuffix(gcc/SH-Options.html#index-mrelax-9)
 
 mrenesas
 UrlSuffix(gcc/SH-Options.html#index-mrenesas)
@@ -168,5 +166,6 @@ UrlSuffix(gcc/SH-Options.html#index-mfsca)
 mfsrra
 UrlSuffix(gcc/SH-Options.html#index-mfsrra)
 
-; skipping UrlSuffix for 'mlra' due to finding no URLs
+mlra
+UrlSuffix(gcc/SH-Options.html#index-mlra-2)
 

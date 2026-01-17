@@ -60,6 +60,12 @@ UrlSuffix(gcc/SPARC-Options.html#index-mpopc)
 msubxc
 UrlSuffix(gcc/SPARC-Options.html#index-msubxc)
 
+mptr64
+UrlSuffix(gcc/SPARC-Options.html#index-mptr64)
+
+mptr32
+UrlSuffix(gcc/SPARC-Options.html#index-mptr32)
+
 m64
 UrlSuffix(gcc/SPARC-Options.html#index-m64-3)
 
