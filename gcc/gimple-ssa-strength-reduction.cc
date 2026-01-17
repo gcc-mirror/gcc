@@ -2364,7 +2364,14 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
     }
 
   gimple_set_location (new_stmt, loc);
-  gsi_insert_on_edge (e, new_stmt);
+  if (gimple_needing_rewrite_undefined (new_stmt))
+    {
+      gimple_seq stmts;
+      stmts = rewrite_to_defined_unconditional (new_stmt);
+      gsi_insert_seq_on_edge (e, stmts);
+    }
+  else
+    gsi_insert_on_edge (e, new_stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
