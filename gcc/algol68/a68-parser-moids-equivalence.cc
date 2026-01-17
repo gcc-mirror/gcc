@@ -50,9 +50,9 @@ are_packs_equivalent (PACK_T *s, PACK_T *t,
       if (compare_names)
 	{
 	  if (TEXT (s) != TEXT (t)
-	      && TEXT (s) != NO_TEXT
-	      && TEXT (t) != NO_TEXT
-	      && strcmp (TEXT (s), TEXT (t)) != 0)
+	      && !(TEXT (s) != NO_TEXT
+		   && TEXT (t) != NO_TEXT
+		   && strcmp (TEXT (s), TEXT (t)) == 0))
 	    return false;
 	}
     }
