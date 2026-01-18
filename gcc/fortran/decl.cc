@@ -5557,6 +5557,19 @@ gfc_match_import (void)
       switch (m)
 	{
 	case MATCH_YES:
+	  /* Before checking if the symbol is available from host
+	     association into a SUBROUTINE or FUNCTION within an
+	     INTERFACE, check if it is already in local scope.  */
+	  gfc_find_symbol (name, gfc_current_ns, 1, &sym);
+	  if (sym
+	      && gfc_state_stack->previous
+	      && gfc_state_stack->previous->state == COMP_INTERFACE)
+	    {
+	       gfc_error ("import-name %qs at %C is in the "
+			  "local scope", name);
+	       return MATCH_ERROR;
+	    }
+
 	  if (gfc_current_ns->parent != NULL
 	      && gfc_find_symbol (name, gfc_current_ns->parent, 1, &sym))
 	    {

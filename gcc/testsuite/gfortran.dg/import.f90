@@ -57,11 +57,6 @@ program foo
       type(myType) :: x
       integer(dp)     :: y
     end subroutine bar
-    subroutine test(x)
-      import :: myType3
-      import myType3 ! { dg-warning "already IMPORTed from" }
-      type(myType3) :: x
-    end subroutine test
   end interface
 
   type(myType) :: y
