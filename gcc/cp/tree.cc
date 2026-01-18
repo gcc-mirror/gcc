@@ -6440,10 +6440,13 @@ decl_linkage (tree decl)
     {
       /* But this could be a typedef name for linkage purposes, in which
 	 case we're interested in the linkage of the main decl.  */
-      if (decl == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl)))
-	  /* Likewise for the injected-class-name.  */
-	  || DECL_SELF_REFERENCE_P (decl))
-	decl = TYPE_MAIN_DECL (TREE_TYPE (decl));
+      tree type = TREE_TYPE (decl);
+      if (type == error_mark_node)
+	return lk_none;
+      else if (decl == TYPE_NAME (TYPE_MAIN_VARIANT (type))
+	       /* Likewise for the injected-class-name.  */
+	       || DECL_SELF_REFERENCE_P (decl))
+	decl = TYPE_MAIN_DECL (type);
       else
 	return lk_none;
     }
