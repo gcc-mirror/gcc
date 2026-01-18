@@ -1,3 +1,230 @@
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config/darwin.opt.urls: Regenerated.
+	* config/dragonfly.opt.urls: Regenerated.
+	* config/freebsd.opt.urls: Regenerated.
+	* config/gnu-user.opt.urls: Regenerated.
+	* config/hpux11.opt.urls: Regenerated.
+	* config/i386/cygwin.opt.urls: Regenerated.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/mingw/mingw.opt.urls: Regenerated.
+	* config/nds32/nds32.opt.urls: Regenerated.
+	* config/netbsd.opt.urls: Regenerated.
+	* config/nvptx/nvptx.opt.urls: Regenerated.
+	* config/openbsd.opt.urls: Regenerated.
+	* config/pru/pru.opt.urls: Regenerated.
+	* config/riscv/riscv.opt.urls: Regenerated.
+	* config/rl78/rl78.opt.urls: Regenerated.
+	* config/rs6000/aix64.opt.urls: Regenerated.
+	* config/rs6000/rs6000.opt.urls: Regenerated.
+	* config/rs6000/sysv4.opt.urls: Regenerated.
+	* config/rtems.opt.urls: Regenerated.
+	* config/rx/rx.opt.urls: Regenerated.
+	* config/s390/s390.opt.urls: Regenerated.
+	* config/s390/tpf.opt.urls: Regenerated.
+	* config/sh/sh.opt.urls: Regenerated.
+	* config/sol2.opt.urls: Regenerated.
+	* config/sparc/sparc.opt.urls: Regenerated.
+	* config/v850/v850.opt.urls: Regenerated.
+	* config/vax/vax.opt.urls: Regenerated.
+	* config/vxworks.opt.urls: Regenerated.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/nds32/nds32.opt: Tidy documentation strings.
+	(mbig-endian, mlittle-endian): Remove "Undocumented" flag since
+	these are, in fact, documented.
+	* doc/invoke.texi (Option Summary) <NDS32 Options>: Document
+	-EB, -EL, -mabi, -mfloat-abi, -malways-align, -malign-functions,
+	-mfp-as-gp, -mext-dsp, -mext-fpu-fma, -mext-fpu-sp, -mext-fpu-dp,
+	-misr-vector-size, -misr-secure, -mcpu, -mconfig-fpu,
+	-mconfig-mul, -mconfig-register-ports, -mrelax-hint,
+	-msched-prolog-epilog, -mno-ret-in-naked-func, -malways-save-lp,
+	-munaligned-access, and -minline-asm-r15.
+	(NDS32 Options): Likewise.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/xtensa/uclinux.opt (elf2flt, elf2flt=): Mark as Undocumented.
+	* config/xtensa/xtensa.opt (mlra): Likewise.
+	* doc/invoke.texi (Option Summary) <Xtensa Options>: Remove
+	redundant negative forms plus obsolete -mfused-madd option.
+	(Xtensa Options): Likewise undocument -mfused-madd.  List
+	negative form of -mforce-no-pic.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/i386/i386.opt (malign-functions): Mark undocumented/unused
+	option as Undocumented.
+	(malign-jumps): Likewise.
+	(malign-loops): Likewise.
+	(mbranch-cost, mforce-drap): Mark undocumented options likely
+	intended for developer use only as Undocumented.
+	(mstv): Correct sense of option in doc string.
+	(mavx512cd): Remove extra "and" from doc string.
+	(mavx512dq): Likewise.
+	(mavx512bw): Likewise.
+	(mavx512vl): Likewise.
+	(mavx512ifma): Likewise.
+	(mavx512bvmi): Likewise.
+	* doc/invoke.texi (Options Summary) <x86 Options>: Add
+	missing options.  Correct whitespace and re-wrap long lines.
+	Remove -mthreads which is now classed as a MinGW option.
+	(Cygwin and MinGW Options): Replace existing documentation of
+	-mthreads with the more detailed text moved from x86 Options.
+	(x86 Options): Move introductory text about ISA extensions before
+	the individual options instead of after.  Document them all
+	individually instead of as a group, and move immediately after
+	-march/-mtune documentation.  Rewrap long lines.  Document
+	interaction between SSE and AVX with -mfpmath=sse.  Move -masm
+	documentation farther down instead of grouped with options
+	affecting floating-point behavior.  Add missing @opindex
+	entries.  Rewrite the -mdaz-ftz documentation.  Document
+	-mstack-arg-probe.  Copy-editing.  Document -mstv.  Remove
+	obsolete warning about -mskip-rax-setup in very old GCC versions.
+	Rewrite the -mapx-inline-asm-use-gpr32 documentation.
+	Document -mgather and -mscatter.  Split -miamcu documentation
+	from -m32/-m64/etc.  Rewrite -munroll-only-small-loops documentation.
+	Document -mdispatch-scheduler.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <VxWorks Options>: Add -mvthreads.
+	(VxWorks Options): Likewise.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/vms/vms.opt (map): Mark as Undocumented.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/visium/visium.opt (menable-trampolines): Mark Undocumented.
+	* doc/invoke.texi (Options Summary) <Visium Options>: Remove
+	redundant -mno- option.
+	(Visium Options): Copy-editing to put in active voice and add markup.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/vax/elf.opt (mno-asm-pic): Mark as Undocumented.
+	* doc/invoke.texi (Option Summary) <VAX Options>: Add
+	-mvaxc-alignment and -mqmath.
+	(VAX Options): Likewise.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/v850/v850.opt: Copy-edit documentation strings.
+	(mdebug): Make Undocumented.
+	(mno-strict-align): Add RejectNegative.
+	(mUS-bit-set): Make Undocumented.
+	* doc/invoke.texi (Option Summary) <V850 Options>: Remove
+	redundant -mno- forms from list.  Add missing entries.
+	(V850 Options): Add @opindex for negative forms.  Combine
+	entries for -mapp-regs and -mno-app-regs.  Document -msmall-sld,
+	-mno-strict-align, and -mjump-tables-in-data-section.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <SPARC Options>: Remove
+	redundant -mno- forms from the list.  Add -mptr32 and -mptr64.
+	(SPARC Options): Document -mptr32 and -mptr64.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <Solaris 2 Options>:
+	Remove redundant negative option forms from list.  List both
+	-pthread and -pthreads.
+	(Solaris 2 Options): Index and list the negative forms here.
+	Combine the two @table environments.  Document both -pthread
+	and -pthreads.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/sh/sh.opt (mhitachi, mpadstruct): Mark obsolete options
+	as Undocumented.
+	* doc/invoke.texi (Option Summary) <SH Options>: Add missing
+	entries for -m4-* and other options.  Remove redundant -mno- entries
+	and obsolete options.  Add missing options -mfdpic, -mlra.
+	(SH Options): Combine entries for -mrenesas and -mno-renesas.
+	Index and list -mno- forms for other options that have them.
+	Remove documentation for obsolete options -mpadstruct and
+	-mfused-madd.  Add documentation for -mlra.  Copy-edit and wrap long
+	lines throughout the section.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/s390/s390.opt (mbranch-cost): Mark as Undocumented.
+	* config/s390/tpf.opt (mtpf-trace-hook-prologue-check=): Likewise.
+	(mtpf-trace-hook-prologue-target=): Likewise.
+	(mtpf-trace-hook-epilogue-check=): Likewise.
+	(mtpf-trace-hook-epilogue-target=): Likewise.
+	* doc/invoke.texi (Option Summary) <S/390 and zSeries Options>:
+	Remove redundant -mno- entries and add missing options.  Make
+	entries with arguments match the syntax in the main documentation.
+	(S/390 and zSeries Options): Light copy-editing.  Wrap overly-long
+	lines.  Add missing @opindex entries.  Add documention for
+	-mmain, -mno-pic-data-is-text-relative, -mindirect-branch,
+	-mindirect-branch-jump, -mindirect-branch-call,
+	-mfunction-return, -mfunction-return-mem, -mfunction-return-reg,
+	-mindirect-branch-table, -mfentry, -mrecord-mcount, -mnop-mcount,
+	-mpreserve-args, and -munaligned-symbols.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/rx/rx.opt (mgcc-abi, mrx-abi): Mark as Undocumented.
+	* doc/invoke.texi (Option Summary) <RX Options>: Remove redundant
+	entries for -mno-forms, correct name of -msmall-data-limit option,
+	add -mlra, clean up formatting.
+	(RX Options): Minor copy-editing, add -mlra.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/rs6000/darwin.opt (Waltivec-long-deprecated): Mark as
+	Undocumented.
+	(faltivec, ffix-and-continue, findirect-data): Likewise.
+	* config/rs6000/rs6000.opt (mvrsave): Likewise.
+	* config/rs6000/sysv4.opt (mno-toc, mtoc, mno-traceback): Likewise.
+	(mshlib, mnewlib): Likewise.
+	* doc/invoke.texi (Option Summary) <RS/6000 and PowerPC Options>:
+	Document only one form of each option.  Add missing options.
+	Correct whitespace.
+	(RS/6000 and PowerPC Options): Separately document -mpowerpc-gpopt,
+	-mpowerpc-gfxopt, -mpowerpc64, -mmfcrf, -mpopcntb, -mpopcntd,
+	-mfprnd, -mcmpb, and -mhard-dfp and move their documentation after
+	-mcpu=.  Remove documentation for -mtoc which is unimplemented.
+	Add missing @opindex entries.  Minor copy-editing and whitespace
+	fixes.
+
+2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	PR target/71340
+	* doc/invoke.texi (Option Summary) <RL78 Options>: Remove
+	never-implemented -m64bit-doubles and -m32bit-doubles options.
+	Add missing entries for -mrelax, -mes0, -mmul=rl78, -mcpu=rl78,
+	and -mrl78.
+	(RL78 Options): Likewise.  Add missing @opindex entries.
+	Light copy-editing.
+
+2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123513
+	* tree.cc (valid_new_delete_pair_p): If new_name[3] or delete_name[3]
+	is 'I', return false with *pcertain set to false rather than true.
+
 2026-01-16  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* hierarchical_discriminator.cc (init_copyid_allocator): Walks the function

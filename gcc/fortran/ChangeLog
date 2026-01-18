@@ -1,3 +1,16 @@
+2026-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/122957
+	* invoke.texi: Add note that these features are incompatible
+	with user defined derived type I/O. (DTIO)
+
+2026-01-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/109512
+	* resolve.cc (resolve_function): Check if an external
+	attribute is required on a call to an external procedure.
+	(resolve_call): Likewise.
+
 2026-01-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/112460

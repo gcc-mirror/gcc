@@ -1,3 +1,48 @@
+2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-prelude.cc (stand_prelude): Remove definitions for ^
+	operator.
+	* ga68.texi (Real operators): Remove entries for ^.
+	(Integral operators): Likewise.
+
+2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68-coding-guidelines.texi: New file.
+	* Make-lang.in (A68_CODING_GUIDE_MANUAL_FILES): Define.
+	(A68_TEXI_FILES): Add A68_CODING_GUIDE_MANUAL_FILES.
+	(doc/ga68-coding-guidelines.info): New rule.
+	(doc/ga68-coding-guidelines.dvi): Likewise.
+	(doc/ga68-coding-guidelines.pdf): Likewise.
+	($(build_htmldir)/ga68-coding-guidelines/index.html): Likewise.
+	(algol68.info): Add ga68-coding-guidelines.info.
+	(algol68.srcinfo): Likewise.
+	(algol68.install-info): Likewise.
+	(algol68.install-html): Likewise.
+	(algol68.dvi): Add ga68-coding-guielines.dvi.
+	(algol68.pdf): Add ga68-coding-guidelines.pdf.
+
+2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-moids-equivalence.cc (are_packs_equivalent): Add
+	explicative comment.
+
+2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/123653
+	* a68-parser-moids-equivalence.cc (are_packs_equivalent): Fix
+	logic in name comparison.
+
+2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-prelude.cc (stand_transput): Do not define
+	`Number' and `whole' as built-ins.
+
+2026-01-17  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	PR algol68/123007
+	* a68-lang.cc (a68_type_for_mode): Handle TImode.
+	(a68_type_for_size): Handle unsigned_intTI_type_node.
+
 2026-01-15  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* ga68.texi (POSIX files): Fix documentation of lseek.

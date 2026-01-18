@@ -1,3 +1,184 @@
+2026-01-17  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* charmaps.cc (__gg__encoding_iconv_name): Charsets.
+	(__gg__encoding_iconv_valid): Charsets.
+	(__gg__encoding_iconv_type): Charsets.
+	(encoding_descr): Charsets.
+	(__gg__encoding_iconv_descr): Charsets.
+	(__gg__iconverter): Charsets.
+	(__gg__miconverter): Charsets.
+	* charmaps.h (NOT_A_CHARACTER): Charsets.
+	(ascii_nul): Charsets.
+	(ascii_bang): Charsets.
+	(__gg__encoding_iconv_type): Charsets.
+	(__gg__iconverter): Charsets.
+	(__gg__miconverter): Charsets.
+	(DEFAULT_32_ENCODING): Charsets.
+	(class charmap_t): Charsets.
+	(__gg__get_charmap): Charsets.
+	* common-defs.h (enum cbl_field_attr_t):
+	(enum cbl_figconst_t): Formatting.
+	(LOW_VALUE_E): Handle enum arithmetic.
+	(ZERO_VALUE_E): Handle enum arithmetic.
+	(SPACE_VALUE_E): Handle enum arithmetic.
+	(QUOTE_VALUE_E): Handle enum arithmetic.
+	(HIGH_VALUE_E): Handle enum arithmetic.
+	(enum convert_type_t): Enum for new FUNCTION CONVERT.
+	(struct cbl_declarative_t): Formatting.
+	* encodings.h (struct encodings_t): Charsets.
+	* gcobolio.h: Charsets.
+	* gfileio.cc (get_filename): Rename to establish filename.
+	(establish_filename): Renamed from get_filename.
+	(relative_file_delete):  Charsets.
+	(__io__file_remove): Moved.
+	(trim_in_place): Charsets.
+	(relative_file_start): Charsets.
+	(relative_file_rewrite): Charsets.
+	(relative_file_write): Charsets.
+	(sequential_file_write): Charsets.
+	(line_sequential_file_read): Charsets.
+	(sequential_file_read): Charsets.
+	(relative_file_read): Charsets.
+	(__gg__file_reopen): Charsets.
+	(__io__file_open): Charsets.
+	(__io__file_close): Charsets.
+	(gcobol_fileops): Charsets.
+	(__gg__file_open): Charsets.
+	(__gg__file_remove): Charsets.
+	* gfileio.h (__gg__file_open): Charsets.
+	* gmath.cc (__gg__subtractf1_float_phase2): Comment.
+	(__gg__subtractf2_float_phase1): Comment.
+	(__gg__multiplyf1_phase2): Comment.
+	* intrinsic.cc (is_zulu_format): Charsets.
+	(string_to_dest): Charsets.
+	(get_all_time): Charsets.
+	(ftime_replace): Charsets.
+	(__gg__char): Charsets.
+	(__gg__current_date): Charsets.
+	(__gg__formatted_current_date): Charsets.
+	(__gg__formatted_date): Charsets.
+	(__gg__formatted_datetime): Charsets.
+	(__gg__formatted_time): Charsets.
+	(change_case): Charsets.
+	(__gg__upper_case): Charsets.
+	(numval): Charsets.
+	(numval_c): Charsets.
+	(__gg__trim): Charsets.
+	(__gg__reverse): Charsets.
+	(fill_cobol_tm): Charsets.
+	(__gg__seconds_from_formatted_time): Charsets.
+	(__gg__hex_of): Charsets.
+	(__gg__numval_f): Charsets.
+	(__gg__test_numval_f): Charsets.
+	(__gg__locale_date): Charsets.
+	(__gg__locale_time): Charsets.
+	(__gg__locale_time_from_seconds): Charsets.
+	* libgcobol.cc (NO_RDIGITS): Alias for (0).
+	(__gg__move): Forward reference.
+	(struct program_state): Charsets.
+	(cstrncmp): Charsets.
+	(__gg__init_program_state): Charsets.
+	(edited_to_binary): Charsets.
+	(var_is_refmod): Comment.
+	(__gg__power_of_ten): Reworked data initialization.
+	(__gg__scale_by_power_of_ten_1): Likewise.
+	(__gg__scale_by_power_of_ten_2): Likewise.
+	(value_is_too_big): Likewise.
+	(binary_to_big_endian): Likewise.
+	(binary_to_little_endian): Likewise.
+	(int128_to_int128_rounded): Likewise.
+	(get_binary_value_local): Likewise.
+	(get_init_value): Likewise.
+	(f128_to_i128_rounded): Likewise.
+	(__gg__initialization_values): Likewise.
+	(int128_to_field): Likewise.
+	(__gg__get_date_yymmdd): Charsets.
+	(__gg__field_from_string): Charsets.
+	(field_from_ascii): Charsets.
+	(__gg__get_date_yyyymmdd): Charsets.
+	(__gg__get_date_yyddd): Charsets.
+	(__gg__get_yyyyddd): Charsets.
+	(__gg__get_date_dow): Charsets.
+	(__gg__get_date_hhmmssff): Charsets.
+	(collation_position): Charsets.
+	(uber_compare): Charsets.
+	(__gg__dirty_to_binary): Charsets.
+	(__gg__dirty_to_float): Charsets.
+	(format_for_display_internal): Charsets.
+	(compare_88): Charsets.
+	(get_float128): Reworked.
+	(compare_field_class): Charsets.
+	(interconvert): Charsets.
+	(compare_strings): Charsets.
+	(__gg__compare_2): Charsets.
+	(compare_two_records): Charsets.
+	(__gg__sort_table): Charsets.
+	(init_var_both): Charsets.
+	(__gg__initialize_variable_clean): Charsets.
+	(alpha_to_alpha_move_from_location): Charsets.
+	(__gg__memdup): New function.
+	(alpha_to_alpha_move): Charsets.
+	(__gg__sort_workfile): Charsets.
+	(__gg__merge_files): Charsets.
+	(funky_find_wide): Charsets.
+	(funky_find_wide_backward): Charsets.
+	(normalize_id): Charsets.
+	(match_lengths): Charsets.
+	(the_alpha_and_omega): Charsets.
+	(the_alpha_and_omega_backward): Charsets.
+	(inspect_backward_format_1): Charsets.
+	(__gg__inspect_format_1): Charsets.
+	(inspect_backward_format_2): Charsets.
+	(__gg__inspect_format_2): Charsets.
+	(normalize_for_inspect_format_4): Charsets.
+	(__gg__inspect_format_4): Charsets.
+	(move_string): Charsets.
+	(brute_force_trim): Charsets.
+	(__gg__string): Charsets.
+	(display_both): Charsets.
+	(__gg__display_string): Charsets.
+	(__gg__bitwise_op): Charsets.
+	(is_numeric_display_numeric): Charsets.
+	(is_alpha_a_number): Charsets.
+	(classify_numeric_type): Charsets.
+	(classify_alphabetic_type): Charsets.
+	(__gg__classify): Charsets.
+	(__gg__convert_encoding): Charsets.
+	(accept_envar): Charsets.
+	(__gg__accept_envar): Charsets.
+	(__gg__get_argc): Charsets.
+	(__gg__get_argv): Charsets.
+	(__gg__get_command_line): Charsets.
+	(__gg__parser_set_conditional): Charsets.
+	(__gg__literaln_alpha_compare): Charsets.
+	(string_in): Charsets.
+	(__gg__unstring): Charsets.
+	(__gg__integer_from_float128): Charsets.
+	(__gg__adjust_dest_size): Charsets.
+	(__gg__just_mangle_name): Charsets.
+	(__gg__function_handle_from_name): Charsets.
+	(get_the_byte): Charsets.
+	(__gg__refer_from_string): Charsets.
+	(__gg__refer_from_psz): Charsets.
+	(__gg__find_string): Charsets.
+	(convert_for_convert): Charsets.
+	(__gg__convert): Charsets.
+	* libgcobol.h (__gg__compare_2): Charsets.
+	(__gg__field_from_string): Charsets.
+	(__gg__memdup): Charsets.
+	* posix/bin/Makefile: Posix bindings.
+	* posix/bin/scrape.awk: Posix bindings.
+	* posix/bin/udf-gen: Posix bindings.
+	* posix/udf/posix-lseek.cbl: Posix bindings.
+	* posix/udf/posix-unlink.cbl: Posix bindings.
+	* stringbin.cc (__gg__binary_to_string_encoded): Charsets.
+	(__gg__numeric_display_to_binary): Charsets.
+	* stringbin.h (__gg__binary_to_string_encoded): Charsets.
+	* valconv.cc (__gg__string_to_numeric_edited): Charsets.
+	* posix/cpy/psx-lseek.cpy: New file.
+	* posix/shim/lseek.cc: New file.
+
 2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure: Regenerate.

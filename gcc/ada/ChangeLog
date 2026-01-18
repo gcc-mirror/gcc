@@ -1,3 +1,13 @@
+2026-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+	    Lisa Felidae  <lisa@felidae.bam.moe>
+
+	PR ada/68179
+	PR ada/123589
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Build an initialization
+	procedure for a bit-packed array type if Has_Default_Aspect is set
+	on the base type, but make sure not to build it twice.  Also test
+	Has_Default_Aspect for a type derived from String.
+
 2026-01-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* libgnarl/s-osinte__darwin.adb: Delete unneeded use clause.

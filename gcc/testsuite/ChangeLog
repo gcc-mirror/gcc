@@ -1,3 +1,47 @@
+2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/pow-real-1.a68: Adapt test to use ** rather than
+	^ for pow operator.
+
+2026-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+	    Lisa Felidae  <lisa@felidae.bam.moe>
+
+	* gnat.dg/component_value2.adb: New test.
+
+2026-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/94377
+	* gfortran.dg/pr94377.f90: New test, failed on gcc-15
+
+2026-01-17  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/109512
+	* gfortran.dg/pr109512.f90: New test.
+
+2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123513
+	* g++.dg/warn/Wmismatched-new-delete-10.C: New test.
+
+2026-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/123627
+	* g++.dg/modules/block-decl-4_a.C: New test.
+	* g++.dg/modules/block-decl-4_b.C: New test.
+	* g++.dg/modules/block-decl-4_c.C: New test.
+
+2026-01-17  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* cobol.dg/group2/CHAR_and_ORD_with_COLLATING_sequence_-_EBCDIC.cob:
+	Change diagnostics message.
+	* cobol.dg/group2/Multi-target_MOVE_with_subscript_re-evaluation.cob:
+	Change diagnostics message.
+	* cobol.dg/group2/floating-point_SUBTRACT_FORMAT_2.out:
+	Change diagnostics message.
+	* cobol.dg/group2/floating-point_literals.out:
+	Change diagnostics message.
+
 2026-01-16  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* gcc.dg/hierarchical-discriminator-loop-version.c: Simplify.

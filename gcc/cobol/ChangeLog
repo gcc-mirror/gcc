@@ -1,3 +1,229 @@
+2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt.urls: Regenerate.
+
+2026-01-17  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (struct cbl_loc_t): Diagnostics.
+	(enum cbl_diag_id_t): Diagnostics.
+	* cdf.y: Includes.
+	* cobol1.cc (cobol_warning_suppress): Diagnostics.
+	(cobol_langhook_handle_option): Implement -fexec-charset.  Expand
+	the use of diagnostics.
+	* gcobc: Expand options and warnings.
+	* gcobol.1: Documentation.
+	* genapi.cc (level_88_helper): Charsets.
+	(get_level_88_domain): Charsets.
+	(get_class_condition_string): Charsets.
+	(function_pointer_from_name): Charsets.
+	(initialize_variable_internal):  Charsets.
+	(parser_initialize): Charsets.
+	(get_binary_value_from_float): Charsets.
+	(get_bytes_needed): Charsets.
+	(cobol_compare): Charsets.
+	(move_tree): Eliminate function.
+	(move_tree_to_field): Eliminate function.
+	(get_string_from): Eliminate function.
+	(parser_init_list): Charsets.
+	(psa_FldLiteralN): Charsets.
+	(parser_accept_date_yymmdd): Charsets.
+	(parser_accept_date_yyyymmdd): Charsets.
+	(parser_accept_date_yyddd): Charsets.
+	(parser_accept_date_yyyyddd): Charsets.
+	(parser_accept_date_dow): Charsets.
+	(parser_accept_date_hhmmssff): Charsets.
+	(parser_alphabet): Charsets.
+	(parser_alphabet_use): Charsets.
+	(parser_display_internal): Charsets.
+	(get_literalN_value): Charsets.
+	(tree_type_from_field_type): Charsets.
+	(program_end_stuff): Charsets.
+	(walk_initialization): Charsets.
+	(parser_xml_parse): Charsets.
+	(initialize_the_data): Charsets.
+	(establish_using): Charsets.
+	(parser_setop): Charsets.
+	(parser_set_conditional88): Charsets.
+	(parser_file_add): Charsets.
+	(get_the_filename): Eliminate function.
+	(parser_file_open): Charsets.
+	(parser_file_delete_file): Charsets.
+	(parser_file_start): Charsets.
+	(parser_module_name): Charsets.
+	(parser_intrinsic_find_string): New function.
+	(parser_intrinsic_numval_c): Charsets.
+	(parser_intrinsic_convert): New function.
+	(parser_intrinsic_call_1): Charsets.
+	(create_and_call): Charsets.
+	(mh_identical): Charsets.
+	(mh_source_is_literalN): Charsets.
+	(float_type_of): Charsets.
+	(mh_dest_is_float): Charsets.
+	(mh_numeric_display): Charsets.
+	(mh_little_endian): Charsets.
+	(mh_source_is_group): Charsets.
+	(mh_source_is_literalA): Charsets.
+	(move_helper): Charsets.
+	(binary_initial): Eliminate function.
+	(digits_from_int128): Eliminate function.
+	(digits_from_float128): Eliminate function.
+	(initial_from_initial):  Eliminate function.
+	(convert_data_initial): New function.
+	(actually_create_the_static_field): Charsets.
+	(psa_new_var_decl): Charsets.
+	(psa_FldLiteralA): Charsets.
+	(parser_local_add): Charsets.
+	(parser_symbol_add): Charsets.
+	* genapi.h (parser_intrinsic_convert): New function.
+	(parser_intrinsic_find_string): New function.
+	* genmath.cc (arithmetic_operation): Charsets.
+	(largest_binary_term): Charsets.
+	(fast_add): Charsets.
+	(fast_subtract): Charsets.
+	(fast_multiply): Charsets.
+	(fast_divide): Charsets.
+	(parser_subtract): Fix subtract float from float.
+	* genutil.cc (get_any_capacity): Charsets.
+	(get_and_check_refstart_and_reflen): Charsets.
+	(get_data_offset): Charsets.
+	(get_binary_value): Charsets.
+	(tree_type_from_field): Charsets.
+	(copy_little_endian_into_place): Charsets.
+	(get_literal_string): Charsets.
+	(refer_is_clean): Charsets.
+	(refer_fill_depends): Charsets.
+	(refer_size_source): Comment.
+	* lang-specs.h: Charsets.
+	* lang.opt: Charsets.
+	* lexio.cc (parse_copy_directive): Diagnostics.
+	* messages.cc (cbl_diagnostic_kind): Diagnostics.
+	(cobol_warning_suppress): Diagnostics.
+	* parse.y: Many changes for charsets and diagnostics.
+	* parse_ante.h (MAXLENGTH_FORMATTED_DATE): Charsets.
+	(MAXLENGTH_FORMATTED_TIME): Charsets.
+	(MAXLENGTH_CALENDAR_DATE): Charsets.
+	(MAXLENGTH_FORMATTED_DATETIME): Charsets.
+	(consistent_encoding_check): Charsets.
+	(enum data_clause_t): Charsets.
+	(new_alphanumeric): Charsets.
+	(name_of): Charsets.
+	(class eval_subject_t): Charsets.
+	(struct domain_t): Charsets.
+	(struct file_list_t): Charsets.
+	(current_encoding): Charsets.
+	(new_tempnumeric): Charsets.
+	(is_integer_literal): Charsets.
+	(new_literal): Charsets.
+	(new_constant): Charsets.
+	(conditional_set): Charsets.
+	(field_find): Charsets.
+	(valid_redefine): Charsets.
+	(field_value_all): Charsets.
+	(parent_has_picture): Charsets.
+	(parent_has_value): Charsets.
+	(blank_pad_initial): Charsets.
+	(blankit): Charsets.
+	(cbl_field_t::blank_initial): Charsets.
+	(value_encoding_check): Charsets.
+	(cbl_field_t::set_initial): Charsets.
+	(field_alloc): Charsets.
+	(parser_move_carefully): Charsets.
+	(data_division_ready): Charsets.
+	(anybody_redefines): Charsets.
+	(procedure_division_ready): Charsets.
+	(file_section_parent_set): Charsets.
+	(field_binary_usage): Charsets.
+	(goodnight_gracie): Formatting.
+	* scan.l: Charsets.
+	* scan_ante.h (numstr_of): Charsets.
+	(typed_name): Charsets.
+	* show_parse.h: Charsets.
+	* structs.cc (create_cblc_file_t): Charsets.
+	* symbols.cc (symbol_table_extend): Charsets.
+	(WARNING_FIELD): Diagnostics.
+	(constq): Charsets.
+	(elementize): Charsets.
+	(field_size): Charsets.
+	(cbl_field_t::set_attr): Eliminate run-time component.
+	(cbl_field_t::clear_attr): Eliminate run-time component.
+	(field_memsize): Charsets.
+	(cbl_encoding_str): Charsets.
+	(symbols_dump): Charsets.
+	(is_variable_length): Formatting.
+	(field_str): Charsets.
+	(extend_66_capacity): Charsets.
+	(operator<<): Charsets.
+	(symbols_update): Charsets.
+	(symbol_field_parent_set): Charsets.
+	(symbol_table_init): Charsets.
+	(numeric_group_attrs): Charsets.
+	(symbol_field_add): Charsets.
+	(symbol_field_alias): Charsets.
+	(fd_record_size_cmp): Charsets.
+	(symbol_file_record_sizes): Charsets.
+	(cbl_alphabet_t::reencode): Charsets.
+	(symbol_temporary_location): Charsets.
+	(new_literal_2): Charsets.
+	(new_alphanumeric): Charsets.
+	(standard_internal): Charsets.
+	(cbl_field_t::codeset_t::stride): Charsets.
+	(cobol_alpha_encoding): Charsets.
+	(cobol_national_encoding): Charsets.
+	(new_temporary): Charsets.
+	(new_literal_float): Charsets.
+	(cbl_field_t::is_ascii): Charsets.
+	(cbl_field_t::internalize): Eliminate function.
+	(cbl_field_t::source_code_check): Charsets.
+	(iconv_cd): Charsets.
+	(cbl_field_t::encode): New function for charsets.
+	(cbl_field_t::set_capacity): Charsets.
+	(cbl_field_t::add_capacity): Charsets.
+	(cbl_field_t::char_capacity): Charsets.
+	(symbol_label_section_exists): Charsets.
+	(size): Charsets.
+	(validate_numeric_edited): Charsets.
+	* symbols.h (cobol_alpha_encoding): Charsets.
+	(cobol_national_encoding): Charsets.
+	(consistent_encoding_check): Charsets.
+	(class cbl_domain_elem_t): Charsets.
+	(struct cbl_domain_t): Charsets.
+	(struct cbl_field_data_t): Charsets.
+	(class cbl_field_data_t): Charsets.
+	(struct cbl_subtable_t): Charsets.
+	(struct cbl_field_t): Charsets.
+	(new_literal_float): Charsets.
+	(new_temporary): Charsets.
+	(new_literal_2): Charsets.
+	(symbol_temporary_location): Charsets.
+	(class temporaries_t): Charsets.
+	(struct symbol_elem_t): Charsets.
+	(symbol_elem_of): Charsets.
+	(symbol_unique_index): Charsets.
+	(cbl_field_type_name): Charsets.
+	(validate_numeric_edited): Charsets.
+	* token_names.h: Charsets.
+	* util.cc (cdf_literalize): Charsets.
+	(cbl_field_type_name): Charsets.
+	(determine_intermediate_type): Charsets.
+	(is_alpha_edited): Charsets.
+	(cbl_field_data_t::is_alpha_edited): Charsets.
+	(symbol_field_type_update): Charsets.
+	(redefine_field): Charsets.
+	(FIXED_WIDE_INT): Charsets.
+	(dirty_to_binary): Charsets.
+	(digits_from_int128): Charsets.
+	(binary_initial): Charsets.
+	(cbl_field_t::encode_numeric): Charsets.
+	(FOR_JIM): Temporary conditional demonstration code.
+	(parse_error_inc): Diagnostics.
+	(parse_error_count): Diagnostics.
+	(cbl_field_t::report_invalid_initial_value): Diagnostics.
+	(valid_move): Diagnostics.
+	(type_capacity): Charsets.
+	(symbol_unique_index): New function.
+	(cbl_unimplementedw): Formatting.
+
 2025-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* lexio.cc (parse_replace_pairs): Fix comment typo, statment

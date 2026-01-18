@@ -1,3 +1,16 @@
+2026-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/123627
+	* class.cc (finish_struct): Maybe key function-local types.
+	* module.cc (trees_out::get_merge_kind): Choose whether to use
+	MK_local_type or MK_keyed for a local type based on if the
+	immediate context's definition will be streamed.
+	(trees_in::key_mergeable): Allow key decls on FUNCTION_DECL.
+	(adjust_key_scope): New function.
+	(maybe_key_decl): Handle key decls on FUNCTION_DECL; check that
+	we only key a given decl to a context at most once.
+	(get_keyed_decl_scope): Support non-lambda decls.
+
 2026-01-16  Marek Polacek  <polacek@redhat.com>
 
 	* reflect.cc (eval_variable_of): Update comment.
