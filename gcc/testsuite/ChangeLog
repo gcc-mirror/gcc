@@ -1,3 +1,20 @@
+2026-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+	    Lisa Felidae  <lisa@felidae.bam.moe>
+
+	* gnat.dg/component_value2.adb: New test.
+
+2026-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/component_value1.adb: New test.
+
+2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123513
+	* g++.dg/warn/Wmismatched-new-delete-10.C: New test.
+
 2026-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

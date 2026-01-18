@@ -1,3 +1,12 @@
+2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123513
+	* tree.cc (valid_new_delete_pair_p): If new_name[3] or delete_name[3]
+	is 'I', return false with *pcertain set to false rather than true.
+
 2026-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
