@@ -235,7 +235,7 @@ AM_CONDITIONAL(LIBGA68_USE_SYMVER_SUN, [test "x$ga68_use_symver" = xsun])
 AC_ARG_ENABLE(algol68-gc,
 [AS_HELP_STRING([--enable-algol68-gc],
 		[enable use of Boehm's garbage collector with the
-		 GNU Algol runtime])],,enable_algol68_gc=no)
+		 GNU Algol runtime])],,enable_algol68_gc=auto)
 AC_ARG_WITH([target-bdw-gc],
 [AS_HELP_STRING([--with-target-bdw-gc=PATHLIST],
 		[specify prefix directory for installed bdw-gc package.

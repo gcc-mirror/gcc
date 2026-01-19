@@ -13514,7 +13514,7 @@ fi
 if test "${enable_algol68_gc+set}" = set; then :
   enableval=$enable_algol68_gc;
 else
-  enable_algol68_gc=no
+  enable_algol68_gc=auto
 fi
 
 
