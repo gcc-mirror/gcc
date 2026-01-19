@@ -12226,3 +12226,8 @@ and,
         && TYPE_UNSIGNED (type)
         && @0 == @3)
     (bit_xor (rrotate @0 @4) @2)))
+
+/* Optimize extraction from a uniform vector to a representative element as
+   long as the requested element is within range.  */
+(simplify (IFN_VEC_EXTRACT (vec_duplicate @0) INTEGER_CST@1)
+ @0)
