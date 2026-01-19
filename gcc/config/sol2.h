@@ -81,10 +81,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INTPTR_TYPE (LONG_TYPE_SIZE == 64 ? "long int" : "int")
 #define UINTPTR_TYPE (LONG_TYPE_SIZE == 64 ? "long unsigned int" : "unsigned int")
 
-#undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC "\
-%{pthreads|pthread:-D_REENTRANT -D_PTHREADS}"
-
 /* Names to predefine in the preprocessor for this target machine.  */
 #define TARGET_SUB_OS_CPP_BUILTINS()
 #define TARGET_OS_CPP_BUILTINS()			\
