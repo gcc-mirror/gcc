@@ -2768,7 +2768,12 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
   if (leader)
     {
       if (leader->kind == NAME)
-	return PRE_EXPR_NAME (leader);
+	{
+	  tree name = PRE_EXPR_NAME (leader);
+	  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
+	    return NULL_TREE;
+	  return name;
+	}
       else if (leader->kind == CONSTANT)
 	return PRE_EXPR_CONSTANT (leader);
 
