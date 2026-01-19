@@ -2422,7 +2422,7 @@ public:
   {
     /* Initialization of RTL_SSA.  */
     calculate_dominance_info (CDI_DOMINATORS);
-    loop_optimizer_init (LOOPS_NORMAL);
+    loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
     /* Create FAKE edges for infinite loops.  */
     connect_infinite_loops_to_exit ();
     df_analyze ();
