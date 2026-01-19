@@ -4165,9 +4165,9 @@ specifying a @code{--with-multilib-list=} that only lists GFX9 or GFX10-3
 devices, while LLVM 15 is required for GFX 11 device and @code{gfx1036}.
 At least LLVM 16 is required for @code{gfx1150} and @code{gfx1151},
 LLVM 18 for @code{gfx942}, LLVM 19 for the generic @code{gfx9-generic},
-@code{gfx9-4-generic}, @code{gfx10-3-generic}, and @code{gfx11-generic}
-targets and for @code{gfx1152}, while LLVM 20 is required for
-@code{gfx950} and @code{gfx1153}.
+@code{gfx10-3-generic}, and @code{gfx11-generic} targets and for @code{gfx1152},
+while LLVM 20 is required for @code{gfx950}, @code{gfx1153}, and
+@code{gfx9-4-generic}.
 
 The supported ISA architectures are listed in the GCC manual. The generic
 ISA targets @code{gfx9-generic}, @code{gfx10-3-generic}, and
