@@ -40,9 +40,6 @@ AM_CCASFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 
 toolexeclib_LTLIBRARIES = libatomic.la
-if LIBAT_BUILD_ASNEEDED_SOLINK
-toolexeclib_DATA = libatomic_asneeded.so libatomic_asneeded.a
-endif
 noinst_LTLIBRARIES = libatomic_convenience.la
 
 if LIBAT_BUILD_VERSIONED_SHLIB
@@ -187,10 +184,29 @@ gcc_objdir = `pwd`/$(MULTIBUILDTOP)../../gcc/
 all-local: libatomic.la
 	$(LIBTOOL) --mode=install $(INSTALL_DATA) libatomic.la $(gcc_objdir)$(MULTISUBDIR)/
 if LIBAT_BUILD_ASNEEDED_SOLINK
-	$(INSTALL_DATA) $(top_srcdir)/libatomic_asneeded.so $(gcc_objdir)$(MULTISUBDIR)/
-	$(INSTALL_DATA) $(top_srcdir)/libatomic_asneeded.a $(gcc_objdir)$(MULTISUBDIR)/
+	cd $(gcc_objdir)$(MULTISUBDIR) || exit 1; \
+	(echo "/* GNU ld script"; \
+	 echo "   Add DT_NEEDED entry for -latomic only if needed.  */"; \
+	 echo "INPUT ( AS_NEEDED ( -latomic ) )" \
+	) > libatomic_asneeded.so; \
+	rm -f libatomic_asneeded.a; \
+	$(LN_S) libatomic.a libatomic_asneeded.a
 endif
 	rm $(gcc_objdir)$(MULTISUBDIR)/libatomic.la
+
+if LIBAT_BUILD_ASNEEDED_SOLINK
+install-data-am: install-asneeded
+
+install-asneeded: install-toolexeclibLTLIBRARIES
+	$(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
+	cd "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
+	(echo "/* GNU ld script"; \
+	 echo "   Add DT_NEEDED entry for -latomic only if needed.  */"; \
+	 echo "INPUT ( AS_NEEDED ( -latomic ) )" \
+	) > libatomic_asneeded.so; \
+	rm -f libatomic_asneeded.a; \
+	$(LN_S) libatomic.a libatomic_asneeded.a
+endif
 
 # target overrides
 -include $(tmake_file)

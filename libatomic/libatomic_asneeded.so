@@ -1,3 +1,0 @@
-/* GNU ld script
-   Add DT_NEEDED entry for -latomic only if needed.  */
-INPUT ( AS_NEEDED ( -latomic ) )
