@@ -2470,8 +2470,10 @@ foffload-options=
 Common Driver Joined RejectNegative MissingArgError(options or targets=options missing after %qs)
 -foffload-options=<targets>=<options>	Specify options for the offloading targets.
 
+; -foffload-abi is not useful to users because the host/offload
+; pointer sizes must match regardless.
 foffload-abi=
-Common Joined RejectNegative Enum(offload_abi)
+Common Undocumented Joined RejectNegative Enum(offload_abi)
 -foffload-abi=[lp64|ilp32]	Set the ABI to use in an offload compiler.
 
 Enum
@@ -2483,8 +2485,10 @@ Enum(offload_abi) String(ilp32) Value(OFFLOAD_ABI_ILP32)
 EnumValue
 Enum(offload_abi) String(lp64) Value(OFFLOAD_ABI_LP64)
 
+; -foffload-abi-host-opts is not useful to users because the host/offload
+; pointer sizes must match regardless.
 foffload-abi-host-opts=
-Common Joined RejectNegative MissingArgError(option missing after %qs)
+Common Undocumented Joined RejectNegative MissingArgError(option missing after %qs)
 -foffload-abi-host-opts=<options>	Specify host ABI options.
 
 fomit-frame-pointer
