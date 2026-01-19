@@ -488,6 +488,21 @@ DEF_TUNE (X86_TUNE_INTER_UNIT_MOVES_FROM_VEC, "inter_unit_moves_from_vec",
 DEF_TUNE (X86_TUNE_INTER_UNIT_CONVERSIONS, "inter_unit_conversions",
           ~(m_AMDFAM10 | m_BDVER))
 
+/* X86_TUNE_PREFER_BCST_FROM_INTEGER: Enable broadcast from integer for
+   128/256/512-bit vector, if disabled, the move will be done by
+   broadcast/load from constant pool
+
+   broadcast from integer:
+      mov    $0xa,%eax
+      vmovd  %eax,%xmm0
+      vpbroadcastd %xmm0,%xmm0
+
+   broadcast/load from constant pool:
+      vpbroadcastd CST.0(%rip), %xmm0  */
+
+DEF_TUNE (X86_TUNE_PREFER_BCST_FROM_INTEGER, "prefer_bcst_from_integer",
+          m_ALL)
+
 /* X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS: Try to split memory operand for
    fp converts to destination register.  */
 DEF_TUNE (X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS, "split_mem_opnd_for_fp_converts",

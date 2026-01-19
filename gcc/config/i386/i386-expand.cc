@@ -17361,12 +17361,21 @@ ix86_vector_duplicate_value (machine_mode mode, rtx target, rtx val)
       machine_mode innermode = GET_MODE_INNER (mode);
       rtx reg;
 
-      /* If that fails, force VAL into a register.  */
+      /* If that fails, force VAL into a register or mem.  */
 
       start_sequence ();
-      reg = force_reg (innermode, val);
-      if (GET_MODE (reg) != innermode)
-	reg = gen_lowpart (innermode, reg);
+
+      if (!TARGET_PREFER_BCST_FROM_INTEGER && CONST_INT_P (val)
+	  && GET_MODE_BITSIZE (innermode) <= HOST_BITS_PER_WIDE_INT
+	  && GET_MODE_BITSIZE(mode) >= 128)
+	reg = validize_mem (force_const_mem (innermode, val));
+      else
+	{
+	  reg = force_reg (innermode, val);
+	  if (GET_MODE (reg) != innermode)
+	    reg = gen_lowpart (innermode, reg);
+	}
+
       SET_SRC (PATTERN (insn)) = gen_vec_duplicate (mode, reg);
       seq = end_sequence ();
       if (seq)

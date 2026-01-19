@@ -409,6 +409,9 @@ extern unsigned char ix86_tune_features[X86_TUNE_LAST];
 	ix86_tune_features[X86_TUNE_INTER_UNIT_MOVES_FROM_VEC]
 #define TARGET_INTER_UNIT_CONVERSIONS \
 	ix86_tune_features[X86_TUNE_INTER_UNIT_CONVERSIONS]
+#define TARGET_PREFER_BCST_FROM_INTEGER \
+  ix86_tune_features[X86_TUNE_PREFER_BCST_FROM_INTEGER]
+
 #define TARGET_FOUR_JUMP_LIMIT	ix86_tune_features[X86_TUNE_FOUR_JUMP_LIMIT]
 #define TARGET_SCHEDULE		ix86_tune_features[X86_TUNE_SCHEDULE]
 #define TARGET_USE_BT		ix86_tune_features[X86_TUNE_USE_BT]
