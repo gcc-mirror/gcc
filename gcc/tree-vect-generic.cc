@@ -643,9 +643,9 @@ expand_vector_mult (gimple_stmt_iterator *gsi, tree type, tree op0,
 				       LSHIFT_EXPR);
 	      break;
 	    case alg_add_t_m2:
-	       tmp_var = add_shift (gsi, vectype, op0, shifts, LSHIFT_EXPR);
+	      tmp_var = add_shift (gsi, vectype, op0, shifts, LSHIFT_EXPR);
 	      accumulator = gimplify_build2 (gsi, PLUS_EXPR, vectype, tmp_var,
-					    accumulator);
+					     accumulator);
 	      break;
 	    case alg_sub_t_m2:
 	      tmp_var = add_shift (gsi, vectype, op0, shifts, LSHIFT_EXPR);
@@ -674,7 +674,7 @@ expand_vector_mult (gimple_stmt_iterator *gsi, tree type, tree op0,
 	      tmp_var = add_shift (gsi, vectype, accumulator, shifts,
 				   LSHIFT_EXPR);
 	      accumulator = gimplify_build2 (gsi, MINUS_EXPR, vectype,
-					     accumulator, tmp_var);
+					     tmp_var, accumulator);
 	      break;
 	    default:
 	      gcc_unreachable ();
