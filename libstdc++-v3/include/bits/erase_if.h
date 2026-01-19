@@ -58,8 +58,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					  std::move(__pred));
 	if (__removed != __end)
 	  {
-	    __cont.erase(__niter_wrap(__cont.cbegin(), __removed),
-			 __cont.cend());
+	    __cont.erase(__niter_wrap(__cont.begin(), __removed),
+			 __cont.end());
 	    return __osz - __ucont.size();
 	  }
 
