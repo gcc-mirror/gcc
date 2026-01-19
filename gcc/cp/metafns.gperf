@@ -279,7 +279,7 @@ enum metafn_kind_ret {
   METAFN_KIND_RET_ACCESS_CONTEXT,
   METAFN_KIND_RET_TEMPLATE_PARM,
 };
-static_assert (METAFN_KIND_RET_TEMPLATE_PARM <= (int) METAFN_KIND_MASK);
+static_assert (METAFN_KIND_RET_TEMPLATE_PARM <= (int) METAFN_KIND_MASK, "");
 
 /* Possible argument types of metafunctions.  */
 enum metafn_kind_arg {
@@ -298,7 +298,8 @@ enum metafn_kind_arg {
   METAFN_KIND_ARG_TEMPLATE_PARM, /* Some other template parameter.  */
   METAFN_KIND_ARG_TEMPLATE_PARM_REF /* Reference to template parameter.  */
 };
-static_assert (METAFN_KIND_ARG_TEMPLATE_PARM_REF <= (int) METAFN_KIND_MASK);
+static_assert (METAFN_KIND_ARG_TEMPLATE_PARM_REF <= (int) METAFN_KIND_MASK,
+	       "");
 
 /* Possible sets of 0-3 arguments of metafunctions.  */
 enum metafn_kind_args {
