@@ -1,8 +1,8 @@
 /* { dg-do run } */
 /* { dg-additional-options "-fgimple" } */
 
-typedef int v4si __attribute__((vector_size(16)));
-typedef int v2si __attribute__((vector_size(8)));
+typedef __INT32_TYPE__ v4si __attribute__((vector_size(16)));
+typedef __INT32_TYPE__ v2si __attribute__((vector_size(8)));
 typedef char v4qi __attribute__((vector_size(4)));
 
 v4si res;
