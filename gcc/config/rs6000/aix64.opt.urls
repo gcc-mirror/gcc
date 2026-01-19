@@ -15,7 +15,6 @@ UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mpe)
 ; skipping UrlSuffix for 'pthread' due to multiple URLs:
 ;   duplicate: 'gcc/Link-Options.html#index-pthread-1'
 ;   duplicate: 'gcc/Preprocessor-Options.html#index-pthread'
-;   duplicate: 'gcc/Solaris-2-Options.html#index-pthread-2'
 
 m64
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-m64-1)

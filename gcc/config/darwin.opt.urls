@@ -153,7 +153,6 @@ UrlSuffix(gcc/Darwin-Options.html#index-pagezero_005fsize)
 ; skipping UrlSuffix for 'pthread' due to multiple URLs:
 ;   duplicate: 'gcc/Link-Options.html#index-pthread-1'
 ;   duplicate: 'gcc/Preprocessor-Options.html#index-pthread'
-;   duplicate: 'gcc/Solaris-2-Options.html#index-pthread-2'
 
 rdynamic
 UrlSuffix(gcc/Link-Options.html#index-rdynamic)
