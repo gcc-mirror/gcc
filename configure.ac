@@ -3825,6 +3825,21 @@ case "$target:$have_compiler:$host:$target:$enable_multilib" in
     ;;
 esac
 
+# For s390, -m31 is deprecated.  Emit a warning if --enable-multilib and
+# --enable-obsolete are explicitly specified.  If --enable-multilib is
+# specified implicitly or --enable-obsolete is missing, error out.
+case "$target:$enable_multilib:$enable_obsolete" in
+  s390*:yes:yes)
+    AC_MSG_WARN([Support for -m31 is deprecated and will be removed.])
+    ;;
+  s390*::*)
+    AC_MSG_ERROR([Support for -m31 is deprecated and will be removed. Explicitly specify --disable-multilib or --enable-multilib --enable-obsolete to build it anyway.])
+    ;;
+  s390*:yes:*)
+    AC_MSG_ERROR([Support for -m31 is deprecated and will be removed. Specify --enable-obsolete to build it anyway.])
+    ;;
+esac
+
 # Default to --enable-multilib.
 if test x${enable_multilib} = x ; then
   target_configargs="--enable-multilib ${target_configargs}"

@@ -34172,7 +34172,8 @@ GNU/Linux for S/390 ABI@.  When @option{-m64} is specified, generate
 code compliant to the GNU/Linux for zSeries ABI@.  This allows GCC in
 particular to generate 64-bit instructions.  For the @samp{s390}
 targets, the default is @option{-m31}, while the @samp{s390x}
-targets default to @option{-m64}.
+targets default to @option{-m64}.  Note, @option{-m31} is deprecated and
+support will be removed.
 
 @opindex mzarch
 @opindex mesa
