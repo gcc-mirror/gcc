@@ -1,3 +1,41 @@
+2026-01-18  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (get_reflection): Adjust the error message for the
+	is_capture_proxy check.
+
+2026-01-18  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (direct_base_parent): Rename to...
+	(direct_base_derived): ...this.
+	* decl2.cc (min_vis_expr_r): Call direct_base_derived instead of
+	direct_base_parent.
+	* pt.cc (iterative_hash_template_arg): Likewise.
+	* reflect.cc (direct_base_parent_binfo): Rename to...
+	(direct_base_derived_binfo): ...this.
+	(direct_base_parent): Rename to...
+	(direct_base_derived): ...this.
+	(eval_is_expected_access): Call direct_base_derived_binfo instead
+	of direct_base_parent_binfo.
+	(eval_source_location_of): Call direct_base_derived instead of
+	direct_base_parent.
+	(eval_parent_of): Likewise.
+	(eval_offset_of): Likewise.
+	(eval_display_string_of): Likewise.
+	(eval_annotations_of): Call direct_base_derived_binfo instead
+	of direct_base_parent_binfo.
+	(eval_is_accessible): Call direct_base_derived instead of
+	direct_base_parent.
+
+2026-01-18  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (check_splice_expr): Use context_for_name_lookup.
+
+2026-01-18  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/122391
+	* tree.cc (decl_linkage): Return lk_none for TYPE_DECLs with
+	erroneous type.
+
 2026-01-17  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/123627

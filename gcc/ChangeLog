@@ -1,3 +1,10 @@
+2026-01-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123645
+	* tree-ssa-phiopt.cc (cond_removal_in_builtin_zero_pattern): Rewrite
+	the canonicalization of the args code based on e1/e2 being edges into
+	the join block.
+
 2026-01-17  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* config/darwin.opt.urls: Regenerated.

@@ -1,3 +1,18 @@
+2026-01-18  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/reflect/expr6.C: Adjust dg-error.
+
+2026-01-18  Simon Martin  <simon@nasilyan.com>
+
+	PR c++/122391
+	* g++.dg/parse/bitfield10.C: New test.
+
+2026-01-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123645
+	* gcc.dg/torture/pr123645-1.c: New test.
+	* gcc.dg/torture/pr123645-2.c: New test.
+
 2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* algol68/execute/pow-real-1.a68: Adapt test to use ** rather than
