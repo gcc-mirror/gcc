@@ -171,7 +171,7 @@ gimple_ranger::range_on_entry (vrange &r, basic_block bb, tree name)
   range_of_stmt (r, SSA_NAME_DEF_STMT (name), name);
 
   // Now see if there is any on_entry value which may refine it.
-  if (m_cache.block_range (entry_range, bb, name))
+  if (bb && m_cache.block_range (entry_range, bb, name))
     r.intersect (entry_range);
 
   if (idx)
@@ -389,7 +389,9 @@ gimple_ranger::prefill_stmt_dependencies (tree ssa)
 
   unsigned idx;
   gimple *stmt = SSA_NAME_DEF_STMT (ssa);
-  gcc_checking_assert (stmt && gimple_bb (stmt));
+  gcc_checking_assert (stmt);
+  if (!gimple_bb (stmt))
+    return;
 
   // Only pre-process range-ops and phis.
   if (!gimple_range_op_handler::supported_p (stmt) && !is_a<gphi *> (stmt))
