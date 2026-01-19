@@ -1,4 +1,4 @@
-// { dg-do assemble { target native } }
+// { dg-do assemble }
 // { dg-options "-fexceptions -fPIC -S" }
 
 int

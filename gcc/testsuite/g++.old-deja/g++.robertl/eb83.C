@@ -1,4 +1,4 @@
-// { dg-do run { target native } }
+// { dg-do run }
 // { dg-options "-fprofile-arcs -ftest-coverage" }
 void
 test_swap(int& x, int& y) throw()

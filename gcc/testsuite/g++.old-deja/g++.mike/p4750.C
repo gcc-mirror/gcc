@@ -1,4 +1,4 @@
-// { dg-do assemble { target native } }
+// { dg-do assemble }
 // { dg-options "-fpic -pedantic-errors -S" }
 // prms-id: 4750
 

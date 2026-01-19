@@ -5,7 +5,7 @@
    call-clobbered global pointer.  */
 
 /* { dg-options "-fprofile-arcs" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 #include <stdlib.h>
 
