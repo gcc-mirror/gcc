@@ -1556,7 +1556,8 @@ vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
 	return opt_result::failure_at (vect_location,
 				       "not vectorized: Bad inner loop.\n");
 
-      if (!expr_invariant_in_loop_p (loop, inner.number_of_iterations))
+      if (inner.number_of_iterations ==  chrec_dont_know
+	  || !expr_invariant_in_loop_p (loop, inner.number_of_iterations))
 	return opt_result::failure_at (vect_location,
 				       "not vectorized: inner-loop count not"
 				       " invariant.\n");
