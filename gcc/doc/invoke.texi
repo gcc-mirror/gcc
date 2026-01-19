@@ -1173,6 +1173,9 @@ Objective-C and Objective-C++ Dialects}.
 -mscq  -mtls-dialect=@var{opt}
 -mannotate-tablejump}
 
+@emph{LynxOS Options} (@ref{LynxOS Options})
+@gccoptlist{-mshared  -mthreads  -mlegacy-threads}
+
 @emph{M32C Options} (@ref{M32C Options})
 @gccoptlist{-mcpu=@var{cpu}  -msim  -memregs=@var{number}}
 
@@ -22522,6 +22525,7 @@ platform.
 * IA-64 Options::
 * LM32 Options::
 * LoongArch Options::
+* LynxOS Options::
 * M32C Options::
 * M32R/D Options::
 * M680x0 Options::
@@ -29200,6 +29204,27 @@ loop.  The default value is six.
 
 @end table
 
+@node LynxOS Options
+@subsection LynxOS Options
+@cindex LynxOS Options
+
+These options are available for LynxOS targets.
+
+@table @gcctabopt
+
+@opindex mshared
+@item -mshared
+Use shared libraries.  The default is to link with static libraries.
+
+@opindex mthreads
+@item -mthreads
+Support multi-threading.
+
+@opindex mlegacy-threads
+@item -mlegacy-threads
+Support legacy multi-threading.
+This option is incompatible with @option{-mthreads}.
+@end table
 
 @node M32C Options
 @subsection M32C Options
