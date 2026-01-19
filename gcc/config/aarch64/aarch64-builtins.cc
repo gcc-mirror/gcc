@@ -892,10 +892,11 @@ enum aarch64_builtins
   AARCH64_WSRF,
   AARCH64_WSRF64,
   AARCH64_WSR128,
-  AARCH64_PLD,
-  AARCH64_PLDX,
-  AARCH64_PLI,
-  AARCH64_PLIX,
+  AARCH64_PREFETCH_PLD,
+  AARCH64_PREFETCH_PLDX,
+  AARCH64_PREFETCH_PLI,
+  AARCH64_PREFETCH_PLIX,
+  AARCH64_PREFETCH_PLDIR,
   /* Armv8.9-A / Armv9.4-A builtins.  */
   AARCH64_BUILTIN_CHKFEAT,
   AARCH64_BUILTIN_GCSPR,
@@ -908,7 +909,6 @@ enum aarch64_builtins
   AARCH64_BUILTIN_STSHH_DI,
   AARCH64_BUILTIN_STSHH_SF,
   AARCH64_BUILTIN_STSHH_DF,
-  AARCH64_BUILTIN_PLDIR,
   AARCH64_BUILTIN_MAX
 };
 
@@ -2216,14 +2216,16 @@ aarch64_init_rwsr_builtins (void)
   AARCH64_INIT_RWSR_BUILTINS_DECL (WSR128, wsr128, fntype);
 }
 
-/* Add builtins for data and instrution prefetch.  */
+/* Add builtins for data and instruction prefetch.  */
 static void
-aarch64_init_prefetch_builtin (void)
+aarch64_init_prefetch_builtins (void)
 {
-#define AARCH64_INIT_PREFETCH_BUILTIN(INDEX, N)				\
-  aarch64_builtin_decls[INDEX] =					\
-    aarch64_general_add_builtin ("__builtin_aarch64_" N, ftype, INDEX,  \
-				 prefetch_attrs)
+#define AARCH64_INIT_PREFETCH_BUILTINS_DECL(N, F) \
+  aarch64_builtin_decls[AARCH64_PREFETCH_##F] \
+    = aarch64_general_simulate_builtin (N, ftype, \
+					AARCH64_PREFETCH_##F, \
+					prefetch_attrs);
+
 
   tree ftype;
   tree cv_argtype;
@@ -2233,17 +2235,20 @@ aarch64_init_prefetch_builtin (void)
   cv_argtype = build_pointer_type (cv_argtype);
 
   ftype = build_function_type_list (void_type_node, cv_argtype, NULL);
-  AARCH64_INIT_PREFETCH_BUILTIN (AARCH64_PLD, "pld");
-  AARCH64_INIT_PREFETCH_BUILTIN (AARCH64_PLI, "pli");
+  AARCH64_INIT_PREFETCH_BUILTINS_DECL ("__pld", PLD);
+  AARCH64_INIT_PREFETCH_BUILTINS_DECL ("__pli", PLI);
 
   ftype = build_function_type_list (void_type_node, unsigned_type_node,
 				    unsigned_type_node, unsigned_type_node,
 				    cv_argtype, NULL);
-  AARCH64_INIT_PREFETCH_BUILTIN (AARCH64_PLDX, "pldx");
+  AARCH64_INIT_PREFETCH_BUILTINS_DECL ("__pldx", PLDX);
 
   ftype = build_function_type_list (void_type_node, unsigned_type_node,
 				    unsigned_type_node, cv_argtype, NULL);
-  AARCH64_INIT_PREFETCH_BUILTIN (AARCH64_PLIX, "plix");
+  AARCH64_INIT_PREFETCH_BUILTINS_DECL ("__plix", PLIX);
+
+  ftype = build_function_type_list (void_type_node, cv_argtype, NULL_TREE);
+  AARCH64_INIT_PREFETCH_BUILTINS_DECL ("__pldir", PLDIR);
 }
 
 /* Initialize the memory tagging extension (MTE) builtins.  */
@@ -2398,6 +2403,7 @@ handle_arm_acle_h (void)
   aarch64_init_ls64_builtins ();
   aarch64_init_tme_builtins ();
   aarch64_init_memtag_builtins ();
+  aarch64_init_prefetch_builtins ();
 }
 
 /* Initialize fpsr fpcr getters and setters.  */
@@ -2529,14 +2535,6 @@ aarch64_init_pcdphint_builtins (void)
     = aarch64_general_add_builtin ("__builtin_aarch64_stshh_df", ftype,
 				   AARCH64_BUILTIN_STSHH_DF);
 
-  tree cv_argtype = build_qualified_type (void_type_node, TYPE_QUAL_CONST
-					  | TYPE_QUAL_VOLATILE);
-  cv_argtype = build_pointer_type (cv_argtype);
-
-  ftype = build_function_type_list (void_type_node, cv_argtype, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_PLDIR]
-    = aarch64_general_add_builtin ("__builtin_aarch64_pldir", ftype,
-				   AARCH64_BUILTIN_PLDIR);
 }
 
 /* Initialize all builtins in the AARCH64_BUILTIN_GENERAL group.  */
@@ -2563,7 +2561,6 @@ aarch64_general_init_builtins (void)
   aarch64_init_data_intrinsics ();
 
   aarch64_init_rwsr_builtins ();
-  aarch64_init_prefetch_builtin ();
 
   tree ftype_jcvt
     = build_function_type_list (intSI_type_node, double_type_node, NULL);
@@ -3682,14 +3679,14 @@ aarch64_expand_prefetch_builtin (tree exp, int fcode)
      sensible defaults.  */
   switch (fcode)
     {
-    case AARCH64_PLDX:
+    case AARCH64_PREFETCH_PLDX:
       break;
-    case AARCH64_PLIX:
+    case AARCH64_PREFETCH_PLIX:
       kind_id = 2;
       break;
-    case AARCH64_PLI:
-    case AARCH64_PLD:
-      kind_id  = (fcode == AARCH64_PLD) ? 0 : 2;
+    case AARCH64_PREFETCH_PLI:
+    case AARCH64_PREFETCH_PLD:
+      kind_id  = (fcode == AARCH64_PREFETCH_PLD) ? 0 : 2;
       level_id = 0;
       rettn_id = 0;
       break;
@@ -4572,13 +4569,15 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_WSRF64:
     case AARCH64_WSR128:
       return aarch64_expand_rwsr_builtin (exp, target, fcode);
-    case AARCH64_PLD:
-    case AARCH64_PLDX:
-    case AARCH64_PLI:
-    case AARCH64_PLIX:
+    case AARCH64_PREFETCH_PLD:
+    case AARCH64_PREFETCH_PLDX:
+    case AARCH64_PREFETCH_PLI:
+    case AARCH64_PREFETCH_PLIX:
       aarch64_expand_prefetch_builtin (exp, fcode);
       return target;
-
+    case AARCH64_PREFETCH_PLDIR:
+      aarch64_expand_pldir_builtin (exp);
+      return target;
     case AARCH64_BUILTIN_CHKFEAT:
       {
 	rtx x16_reg = gen_rtx_REG (DImode, R16_REGNUM);
@@ -4601,13 +4600,7 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_BUILTIN_STSHH_DF:
       aarch64_expand_stshh_builtin (exp, fcode);
       return target;
-
-    case AARCH64_BUILTIN_PLDIR:
-      {
-	aarch64_expand_pldir_builtin (exp);
-	return target;
-      }
-    }
+  }
 
   if (fcode >= AARCH64_SIMD_BUILTIN_BASE && fcode <= AARCH64_SIMD_BUILTIN_MAX)
     return aarch64_simd_expand_builtin (fcode, exp, target);
