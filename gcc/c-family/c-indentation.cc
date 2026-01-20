@@ -606,6 +606,9 @@ guard_tinfo_to_string (enum rid keyword)
       return "do";
     case RID_SWITCH:
       return "switch";
+    case RID_TEMPLATE:
+      gcc_assert (cxx_dialect >= cxx11);
+      return "template for";
     default:
       gcc_unreachable ();
     }
