@@ -1702,7 +1702,13 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
 	      if (do_wake > new_tasks)
 		do_wake = new_tasks;
 	    }
-	  --team->task_count;
+	  /* Need to use RELEASE to sync with barrier read outside of the
+	     tasking code (See PR122356).  Only care when decrementing to zero
+	     because that's what the barrier cares about.  */
+	  if (team->task_count == 1)
+	    __atomic_store_n (&team->task_count, 0, MEMMODEL_RELEASE);
+	  else
+	    team->task_count--;
 	}
     }
 }
