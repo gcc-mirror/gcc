@@ -349,17 +349,6 @@ get_info (const constexpr_ctx *ctx, tree call, int n, bool *non_constant_p,
   return info;
 }
 
-/* Try to get the underlying FUNCTION_DECL from reflection if any,
-   otherwise return R.  */
-
-static tree
-maybe_get_reflection_fndecl (tree r)
-{
-  r = MAYBE_BASELINK_FUNCTIONS (r);
-  r = OVL_FIRST (r);
-  return r;
-}
-
 /* Helper function for get_range_elts, called through cp_walk_tree.  */
 
 static tree
@@ -1151,7 +1140,7 @@ eval_is_namespace_alias (const_tree r)
 static tree
 eval_is_function (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
 
   if (TREE_CODE (r) == FUNCTION_DECL)
     return boolean_true_node;
@@ -1165,7 +1154,7 @@ eval_is_function (tree r)
 static tree
 eval_is_function_template (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
 
   if (DECL_FUNCTION_TEMPLATE_P (r))
     return boolean_true_node;
@@ -1289,7 +1278,7 @@ eval_is_structured_binding (const_tree r, reflect_kind kind)
 static tree
 eval_is_class_member (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == CONST_DECL)
     {
       /* [class.mem.general]/5 - The enumerators of an unscoped enumeration
@@ -1337,7 +1326,7 @@ eval_is_expected_access (tree r, reflect_kind kind, tree expected_access)
 {
   if (eval_is_class_member (r) == boolean_true_node)
     {
-      r = maybe_get_reflection_fndecl (r);
+      r = maybe_get_first_fn (r);
 
       if (TYPE_P (r))
 	{
@@ -1430,7 +1419,7 @@ eval_is_private (tree r, reflect_kind kind)
 static tree
 eval_is_virtual (tree r, reflect_kind kind)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == FUNCTION_DECL && DECL_VIRTUAL_P (r))
     return boolean_true_node;
 
@@ -1447,7 +1436,7 @@ eval_is_virtual (tree r, reflect_kind kind)
 static tree
 eval_is_pure_virtual (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == FUNCTION_DECL && DECL_PURE_VIRTUAL_P (r))
     return boolean_true_node;
   else
@@ -1483,7 +1472,7 @@ is_override (tree type, tree fndecl)
 static tree
 eval_is_override (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == FUNCTION_DECL
       && DECL_VIRTUAL_P (r)
       && !DECL_STATIC_FUNCTION_P (r)
@@ -1498,7 +1487,7 @@ eval_is_override (tree r)
 static tree
 eval_is_namespace_member (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == CONST_DECL)
     {
       if (UNSCOPED_ENUM_P (DECL_CONTEXT (r)))
@@ -1538,7 +1527,7 @@ eval_is_nonstatic_data_member (const_tree r)
 static tree
 eval_is_static_member (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   r = STRIP_TEMPLATE (r);
   if (TREE_CODE (r) == FUNCTION_DECL && DECL_STATIC_FUNCTION_P (r))
     return boolean_true_node;
@@ -1756,7 +1745,7 @@ eval_has_ellipsis_parameter (tree r)
 static tree
 eval_is_deleted (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == FUNCTION_DECL && DECL_MAYBE_DELETED (r))
     {
       ++function_depth;
@@ -1776,7 +1765,7 @@ eval_is_deleted (tree r)
 static tree
 eval_is_defaulted (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == FUNCTION_DECL && DECL_DEFAULTED_FN (r))
     return boolean_true_node;
   else
@@ -1790,7 +1779,7 @@ eval_is_defaulted (tree r)
 static tree
 eval_is_user_provided (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == FUNCTION_DECL
       && user_provided_p (r)
       // TODO: user_provided_p is false for non-members defaulted on
@@ -1808,7 +1797,7 @@ eval_is_user_provided (tree r)
 static tree
 eval_is_user_declared (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == FUNCTION_DECL && !DECL_ARTIFICIAL (r))
     return boolean_true_node;
   else
@@ -1827,7 +1816,7 @@ eval_is_user_declared (tree r)
 static tree
 eval_is_explicit (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
 
   if (TREE_CODE (r) == FUNCTION_DECL && DECL_NONCONVERTING_P (r))
     return boolean_true_node;
@@ -1892,7 +1881,7 @@ eval_has_internal_linkage (tree r, reflect_kind kind)
       && eval_is_template (r) == boolean_false_node
       && eval_is_namespace (r) == boolean_false_node)
     return boolean_false_node;
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
@@ -1919,7 +1908,7 @@ eval_has_module_linkage (tree r, reflect_kind kind)
       && eval_is_template (r) == boolean_false_node
       && eval_is_namespace (r) == boolean_false_node)
     return boolean_false_node;
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
@@ -1949,7 +1938,7 @@ eval_has_external_linkage (tree r, reflect_kind kind)
       && eval_is_template (r) == boolean_false_node
       && eval_is_namespace (r) == boolean_false_node)
     return boolean_false_node;
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
@@ -1977,7 +1966,7 @@ eval_has_c_language_linkage (tree r, reflect_kind kind)
       && eval_is_function (r) == boolean_false_node
       && eval_is_function_type (r) == boolean_false_node)
     return boolean_false_node;
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
@@ -2004,7 +1993,7 @@ eval_has_linkage (tree r, reflect_kind kind)
       && eval_is_template (r) == boolean_false_node
       && eval_is_namespace (r) == boolean_false_node)
     return boolean_false_node;
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
@@ -2097,7 +2086,7 @@ eval_is_conversion_function (tree r)
 static tree
 eval_is_operator_function (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
 
   if (TREE_CODE (r) == FUNCTION_DECL
       && DECL_OVERLOADED_OPERATOR_P (r)
@@ -2245,7 +2234,7 @@ eval_is_move_assignment (tree r)
 static tree
 eval_is_destructor (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TREE_CODE (r) == FUNCTION_DECL
       && DECL_MAYBE_IN_CHARGE_DESTRUCTOR_P (r))
     return boolean_true_node;
@@ -2260,7 +2249,7 @@ eval_is_destructor (tree r)
 static tree
 eval_is_conversion_function_template (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
 
   if (DECL_FUNCTION_TEMPLATE_P (r) && DECL_CONV_FN_P (r))
     return boolean_true_node;
@@ -2275,7 +2264,7 @@ eval_is_conversion_function_template (tree r)
 static tree
 eval_is_operator_function_template (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
 
   if (DECL_FUNCTION_TEMPLATE_P (r))
     {
@@ -2311,7 +2300,7 @@ eval_is_literal_operator_template (tree r)
 static tree
 eval_is_constructor_template (tree r)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
 
   if (DECL_FUNCTION_TEMPLATE_P (r) && DECL_CONSTRUCTOR_P (r))
     return boolean_true_node;
@@ -2337,7 +2326,7 @@ eval_operator_of (location_t loc, const constexpr_ctx *ctx, tree r,
 			    "reflection does not represent an operator "
 			    "function or operator function template",
 			    fun, non_constant_p, jump_target);
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   r = STRIP_TEMPLATE (r);
   maybe_init_meta_operators (loc);
   int i = IDENTIFIER_ASSIGN_OP_P (DECL_NAME (r)) ? 1 : 0;
@@ -2754,7 +2743,7 @@ eval_is_noexcept (tree r)
 {
   if (eval_is_function (r) == boolean_true_node)
     {
-      r = maybe_get_reflection_fndecl (r);
+      r = maybe_get_first_fn (r);
       maybe_instantiate_noexcept (r);
       if (TYPE_NOTHROW_P (TREE_TYPE (r)))
 	return boolean_true_node;
@@ -2896,7 +2885,7 @@ eval_has_parent (tree r, reflect_kind kind)
       else
 	return boolean_false_node;
     }
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (kind == REFLECT_BASE)
     return boolean_true_node;
   if (!DECL_P (r))
@@ -2934,7 +2923,7 @@ eval_parent_of (location_t loc, const constexpr_ctx *ctx, tree r,
 				      "entity with parent",
 			    fun, non_constant_p, jump_target);
   tree c;
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (TYPE_P (r))
     {
       if (TYPE_NAME (r) && DECL_P (TYPE_NAME (r)))
@@ -3018,7 +3007,7 @@ eval_parameters_of (location_t loc, const constexpr_ctx *ctx, tree r,
       && eval_is_function_type (r) != boolean_true_node)
     return throw_exception_nofn (loc, ctx, fun, non_constant_p, jump_target);
 
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   vec<constructor_elt, va_gc> *elts = nullptr;
   tree args = (TREE_CODE (r) == FUNCTION_DECL
 	       ? FUNCTION_FIRST_USER_PARM (r)
@@ -3386,7 +3375,7 @@ eval_bit_size_of (location_t loc, const constexpr_ctx *ctx, tree r,
 static tree
 eval_has_identifier (tree r, reflect_kind kind)
 {
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   if (kind == REFLECT_BASE)
     {
       r = type_of (r, kind);
@@ -3511,7 +3500,7 @@ eval_identifier_of (location_t loc, const constexpr_ctx *ctx, tree r,
     return throw_exception (loc, ctx,
 			    "reflection with has_identifier false",
 			    fun, non_constant_p, jump_target);
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   const char *name = NULL;
   if (kind == REFLECT_BASE)
     {
@@ -3581,7 +3570,7 @@ eval_display_string_of (location_t loc, const constexpr_ctx *ctx, tree r,
 #pragma GCC diagnostic ignored "-Wformat"
 #pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
-  r = maybe_get_reflection_fndecl (r);
+  r = maybe_get_first_fn (r);
   pretty_printer pp, *refpp = global_dc->get_reference_printer ();
   pp_format_decoder (&pp) = pp_format_decoder (refpp);
   pp.set_format_postprocessor (pp_format_postprocessor (refpp)->clone ());
@@ -4253,7 +4242,7 @@ eval_is_final (tree r)
 {
   if (eval_is_function (r) == boolean_true_node)
     {
-      r = maybe_get_reflection_fndecl (r);
+      r = maybe_get_first_fn (r);
       if (TREE_CODE (r) == FUNCTION_DECL && DECL_FINAL_P (r))
 	return boolean_true_node;
       else
@@ -6343,7 +6332,7 @@ eval_is_accessible (location_t loc, const constexpr_ctx *ctx, tree r,
 
   if (eval_is_class_member (r) == boolean_true_node)
     {
-      r = maybe_get_reflection_fndecl (r);
+      r = maybe_get_first_fn (r);
       c = r;
       if (TREE_CODE (r) == CONST_DECL && UNSCOPED_ENUM_P (DECL_CONTEXT (r)))
 	c = DECL_CONTEXT (r);
@@ -8237,8 +8226,8 @@ compare_reflections (tree lhs, tree rhs)
      the RHS will be OVERLOAD<TEMPLATE_DECL> but the LHS will
      only be TEMPLATE_DECL.  They should compare equal, though.  */
   // ??? Can we do something better?
-  lhs = maybe_get_reflection_fndecl (lhs);
-  rhs = maybe_get_reflection_fndecl (rhs);
+  lhs = maybe_get_first_fn (lhs);
+  rhs = maybe_get_first_fn (rhs);
   if (lkind == REFLECT_PARM)
     {
       lhs = maybe_update_function_parm (lhs);
@@ -8515,7 +8504,7 @@ reflection_mangle_prefix (tree refl, char prefix[3])
   if (eval_is_function (h) == boolean_true_node)
     {
       strcpy (prefix, "fn");
-      return maybe_get_reflection_fndecl (h);
+      return maybe_get_first_fn (h);
     }
   if (eval_is_function_parameter (h, kind) == boolean_true_node)
     {
@@ -8563,7 +8552,7 @@ reflection_mangle_prefix (tree refl, char prefix[3])
   if (eval_is_function_template (h) == boolean_true_node)
     {
       strcpy (prefix, "ft");
-      h = maybe_get_reflection_fndecl (h);
+      h = maybe_get_first_fn (h);
       return h;
     }
   if (eval_is_variable_template (h) == boolean_true_node)

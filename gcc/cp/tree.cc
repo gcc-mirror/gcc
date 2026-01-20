@@ -2782,7 +2782,7 @@ maybe_get_fns (tree from)
   if (OVL_P (from))
     return from;
 
-  return NULL;
+  return NULL_TREE;
 }
 
 /* FROM refers to an overload set.  Return that set (or die).  */
@@ -2802,6 +2802,17 @@ tree
 get_first_fn (tree from)
 {
   return OVL_FIRST (get_fns (from));
+}
+
+/* Return the first function of the overload set FROM refers to if
+   there is an overload set, otherwise return FROM unchanged.  */
+
+tree
+maybe_get_first_fn (tree from)
+{
+  if (tree res = maybe_get_fns (from))
+    return OVL_FIRST (res);
+  return from;
 }
 
 /* Return the scope where the overloaded functions OVL were found.  */
