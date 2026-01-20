@@ -5010,10 +5010,12 @@ simplify_ashift:
 	      rtx tmp_op, tmp;
 
 	      gcc_assert (GET_CODE (op1) == PARALLEL);
-	      gcc_assert (i < n_elts);
+	      gcc_assert (i < XVECLEN (op1, 0));
 
 	      /* Select element, pointed by nested selector.  */
 	      elem = INTVAL (XVECEXP (op1, 0, i));
+
+	      gcc_assert (elem < n_elts);
 
 	      /* Handle the case when nested VEC_SELECT wraps VEC_CONCAT.  */
 	      if (GET_CODE (op0) == VEC_CONCAT)
