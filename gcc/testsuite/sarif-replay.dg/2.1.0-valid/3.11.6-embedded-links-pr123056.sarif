@@ -1,0 +1,139 @@
+/* { dg-additional-options "-fdiagnostics-add-output=experimental-html:file=3.11.6-embedded-links-pr123056.sarif.html,javascript=no" } */
+/* { dg-additional-options "-fdiagnostics-add-output=sarif:file=3.11.6-embedded-links-pr123056.sarif.roundtrip.sarif" } */
+
+{"$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
+ "version": "2.1.0",
+ "runs": [{"tool": {"driver": {"name": "GNU C23",
+                               "fullName": "GNU C23 (GCC) version 16.0.1 20260114 (experimental) (x86_64-pc-linux-gnu)",
+                               "version": "16.0.1 20260114 (experimental)",
+                               "informationUri": "https://gcc.gnu.org/gcc-16/",
+                               "rules": [{"id": "-Wanalyzer-malloc-leak",
+                                          "helpUri": "https://gcc.gnu.org/onlinedocs/gcc/Static-Analyzer-Options.html#index-Wanalyzer-malloc-leak"}]}},
+           "taxonomies": [{"name": "CWE",
+                           "version": "4.7",
+                           "organization": "MITRE",
+                           "shortDescription": {"text": "The MITRE Common Weakness Enumeration"},
+                           "taxa": [{"id": "401",
+                                     "helpUri": "https://cwe.mitre.org/data/definitions/401.html"}]}],
+           "invocations": [{"arguments": ["./cc1",
+                                          "-quiet",
+                                          "-iprefix",
+                                          "/home/david/coding-3/gcc-newgit-queued-for-next-stage-1/build/gcc/../lib/gcc/x86_64-pc-linux-gnu/16.0.1/",
+                                          "-isystem",
+                                          "./include",
+                                          "-isystem",
+                                          "./include-fixed",
+                                          "pr123056.c",
+                                          "-quiet",
+                                          "-dumpbase",
+                                          "pr123056.c",
+                                          "-dumpbase-ext",
+                                          ".c",
+                                          "-mtune=generic",
+                                          "-march=x86-64",
+                                          "-fanalyzer",
+                                          "-fdiagnostics-add-output=sarif",
+                                          "-fdiagnostics-add-output=experimental-html",
+                                          "-o",
+                                          "pr123056.s"],
+                            "workingDirectory": {"uri": "/home/david/coding-3/gcc-newgit-queued-for-next-stage-1/build/gcc"},
+                            "startTimeUtc": "2026-01-16T17:43:19Z",
+                            "executionSuccessful": true,
+                            "toolExecutionNotifications": [],
+                            "endTimeUtc": "2026-01-16T17:43:19Z"}],
+           "originalUriBaseIds": {"PWD": {"uri": "file:///home/david/coding-3/gcc-newgit-queued-for-next-stage-1/build/gcc/"}},
+           "artifacts": [{"location": {"uri": "pr123056.c",
+                                       "uriBaseId": "PWD"},
+                          "sourceLanguage": "c",
+                          "contents": {"text": "void test (void)\n{\n  void *p = __builtin_malloc (1024);\n}\n"},
+                          "roles": ["analysisTarget",
+                                    "tracedFile"]}],
+           "results": [{"ruleId": "-Wanalyzer-malloc-leak",
+                        "taxa": [{"id": "401",
+                                  "toolComponent": {"name": "cwe"}}],
+                        "properties": {"gcc/analyzer/saved_diagnostic/sm": "malloc",
+                                       "gcc/analyzer/saved_diagnostic/ploc": {"enode": 5},
+                                       "gcc/analyzer/saved_diagnostic/var": "p_3",
+                                       "gcc/analyzer/saved_diagnostic/sval": "&HEAP_ALLOCATED_REGION(14)",
+                                       "gcc/analyzer/saved_diagnostic/state": "unchecked ({free})",
+                                       "gcc/analyzer/saved_diagnostic/idx": 0,
+                                       "gcc/analyzer/saved_diagnostic/duplicates": [{"properties": {"gcc/analyzer/saved_diagnostic/sm": "malloc",
+                                                                                                    "gcc/analyzer/saved_diagnostic/ploc": {"enode": 5},
+                                                                                                    "gcc/analyzer/saved_diagnostic/var": "p_3",
+                                                                                                    "gcc/analyzer/saved_diagnostic/sval": "&HEAP_ALLOCATED_REGION(14)",
+                                                                                                    "gcc/analyzer/saved_diagnostic/state": "unchecked ({free})",
+                                                                                                    "gcc/analyzer/saved_diagnostic/idx": 1,
+                                                                                                    "gcc/analyzer/pending_diagnostic/kind": "malloc_leak"}}],
+                                       "gcc/analyzer/pending_diagnostic/kind": "malloc_leak"},
+                        "level": "warning",
+                        "message": {"text": "leak of ‘p’"},
+                        "locations": [{"physicalLocation": {"artifactLocation": {"uri": "pr123056.c",
+                                                                                 "uriBaseId": "PWD"},
+                                                            "region": {"startLine": 4,
+                                                                       "startColumn": 1,
+                                                                       "endColumn": 2},
+                                                            "contextRegion": {"startLine": 4,
+                                                                              "snippet": {"text": "}\n"}}},
+                                       "logicalLocations": [{"index": 0,
+                                                             "fullyQualifiedName": "test"}]}],
+                        "codeFlows": [{"threadFlows": [{"id": "main",
+                                                        "locations": [{"properties": {"gcc/analyzer/checker_event/emission_id": "(1)",
+                                                                                      "gcc/analyzer/checker_event/kind": "state_change"},
+                                                                       "location": {"physicalLocation": {"artifactLocation": {"uri": "pr123056.c",
+                                                                                                                              "uriBaseId": "PWD"},
+                                                                                                         "region": {"startLine": 3,
+                                                                                                                    "startColumn": 13,
+                                                                                                                    "endColumn": 36},
+                                                                                                         "contextRegion": {"startLine": 3,
+                                                                                                                           "snippet": {"text": "  void *p = __builtin_malloc (1024);\n"}}},
+                                                                                    "logicalLocations": [{"index": 0,
+                                                                                                          "fullyQualifiedName": "test"}],
+                                                                                    "message": {"text": "allocated here"}},
+                                                                       "kinds": ["acquire",
+                                                                                 "memory"],
+                                                                       "nestingLevel": 1,
+                                                                       "executionOrder": 1},
+                                                                      {"properties": {"gcc/analyzer/checker_event/emission_id": "(2)",
+                                                                                      "gcc/analyzer/checker_event/kind": "warning"},
+                                                                       "location": {"physicalLocation": {"artifactLocation": {"uri": "pr123056.c",
+                                                                                                                              "uriBaseId": "PWD"},
+                                                                                                         "region": {"startLine": 4,
+                                                                                                                    "startColumn": 1,
+                                                                                                                    "endColumn": 2},
+                                                                                                         "contextRegion": {"startLine": 4,
+                                                                                                                           "snippet": {"text": "}\n"}}},
+                                                                                    "logicalLocations": [{"index": 0,
+                                                                                                          "fullyQualifiedName": "test"}],
+                                                                                    "message": {"text": "‘p’ leaks here; was allocated at [(1)](sarif:/runs/0/results/0/codeFlows/0/threadFlows/0/locations/0)"}},
+                                                                       "kinds": ["danger"],
+                                                                       "nestingLevel": 1,
+                                                                       "executionOrder": 2}]}]}]}],
+           "logicalLocations": [{"name": "test",
+                                 "fullyQualifiedName": "test",
+                                 "decoratedName": "test",
+                                 "kind": "function",
+                                 "index": 0}]}]}
+
+/* { dg-begin-multiline-output "" }
+In function 'test':
+pr123056.c:4:1: warning: leak of ‘p’ [-Wanalyzer-malloc-leak]
+    4 | }
+      | ^
+  'test': events 1-2
+    3 |   void *p = __builtin_malloc (1024);
+      |             ^~~~~~~~~~~~~~~~~~~~~~~
+      |             |
+      |             (1) allocated here
+    4 | }
+      | ~            
+      | |
+      | (2) ‘p’ leaks here; was allocated at (1)
+   { dg-end-multiline-output "" } */
+
+/* Use a Python script to verify various properties about the generated
+   .html file:
+   { dg-final { run-html-pytest 3.11.6-embedded-links-pr123056.sarif "2.1.0-valid/embedded-links-pr123056-check-html.py" } } */
+
+/* Use a Python script to verify various properties about the *generated*
+   .sarif file:
+   { dg-final { run-sarif-pytest 3.11.6-embedded-links-pr123056.sarif.roundtrip "2.1.0-valid/embedded-links-pr123056-check-sarif-roundtrip.py" } } */
