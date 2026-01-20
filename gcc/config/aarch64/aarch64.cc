@@ -18536,6 +18536,8 @@ aarch64_possible_by_lane_insn_p (vec_info *m_vinfo, gimple *stmt)
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     {
       gimple *new_stmt = USE_STMT (use_p);
+      if (is_gimple_debug (new_stmt))
+	continue;
       auto stmt_info = vect_stmt_to_vectorize (m_vinfo->lookup_stmt (new_stmt));
       auto rep_stmt = STMT_VINFO_STMT (stmt_info);
       /* Re-association is a problem here, since lane instructions are only
