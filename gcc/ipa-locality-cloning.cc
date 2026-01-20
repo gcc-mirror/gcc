@@ -43,7 +43,15 @@ along with GCC; see the file COPYING3.  If not see
 	 Create a local clone in current partition, if cloning criteria is
 	 satisfied.
       3. Redirect any new caller to a local clone if one exists.
-   Partition size is param controlled to fine tune per program behavior.  */
+
+   Another heuristics can be used in the absense of profile information.  This
+   approach uses C++ template instantiation types to group functions together.
+   Entry functions are sorted in the beginning by most used template types, and
+   callees are sorted as part of partition_callchain (), again by template
+   types.
+
+   For bothe schemes, partition size is param controlled to fine tune per
+   program behavior.  */
 
 #include "config.h"
 #define INCLUDE_ALGORITHM
@@ -65,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-modref-tree.h"
 #include "ipa-modref.h"
 #include "symtab-clones.h"
+#include "demangle.h"
 #include "ipa-locality-cloning.h"
 
 /* Locality partitions, assigns nodes to partitions.  These are used later in
@@ -86,6 +95,14 @@ struct locality_order
   sreal order;
   locality_order (cgraph_node *node, sreal order) : node (node), order (order)
   {}
+};
+
+/* Data structure to hold information about unique template instantiations.  */
+struct templ_info
+{
+  hashval_t templ_hash;
+  int count;
+  int order;
 };
 
 /* Data structure to hold accumulated edge frequencies for unique callees.
@@ -114,15 +131,23 @@ struct locality_info
   /* Accumulated node->callee edge frequencies for unique callees.  */
   hash_map<loc_map_hash, locality_callee_info> callee_info;
 
+  /* Template instantiation info.  */
+  hashval_t templ_hash;
+
   locality_info ()
     {
       all_callees.create (1);
+      templ_hash = 0;
     }
   ~locality_info ()
     {
       all_callees.release ();
     }
 };
+
+/* Template instantiation hash_map.  */
+typedef hash_map<int_hash<hashval_t, 0>, templ_info> hash_freq_map_t;
+static std::unique_ptr<hash_freq_map_t> templ_hash_map;
 
 /* Pool allocation for locality_info.  */
 static object_allocator<locality_info> loc_infos ("IPA locality callchain");
@@ -155,6 +180,72 @@ callee_default_cmp (const void *pa, const void *pb)
   else if (a->freq > b->freq)
     return -1;
   return compare_node_uids (a->ultimate_callee, b->ultimate_callee);
+}
+
+/* Sort all_callees of NODE by template hashes and edge hotness.
+
+   all_callees is already sorted by call frequency.  If templ_hash of the
+   caller is same as a callee's templ_hash then that callee is ordered first.
+   Callees having same templ_hash are sorted by call frequency, callees with
+   different templ_hash are sorted by the template order.
+
+   if (Both PA and PB have templates && PA's template == PB'template) ||
+   (Both A and B don't have templates): sort by frequency
+
+   if (PA doesn't have template && PB has) || (Both have different templates &&
+    caller's template == PB's template): PB before PA
+
+   if (PA has template && PB doesn't) || (Both have different templates &&
+    caller's template == PA's template): PA before PB
+
+   if (Both have different templates && both are different than caller's
+    template: sort by template order.  */
+static int
+callee_templ_cmp (const void *pa, const void *pb)
+{
+  const locality_callee_info *a = *static_cast<const locality_callee_info
+    *const *> (pa);
+  const locality_callee_info *b = *static_cast<const locality_callee_info
+    *const *> (pb);
+
+  locality_info *caller_info = get_locality_info (a->ultimate_caller);
+  hashval_t caller_hash = 0;
+  if (caller_info)
+    caller_hash = caller_info->templ_hash;
+
+  locality_info *ainfo = get_locality_info (a->edge->callee);
+  locality_info *binfo = get_locality_info (b->edge->callee);
+  templ_info *atinfo = NULL, *btinfo = NULL;
+  hashval_t a_hash = 0, b_hash = 0;
+  if (ainfo)
+    {
+      a_hash = ainfo->templ_hash;
+      atinfo = templ_hash_map->get (a_hash);
+    }
+  if (binfo)
+    {
+      b_hash = binfo->templ_hash;
+      btinfo = templ_hash_map->get (b_hash);
+    }
+
+  if (a_hash == b_hash)
+    {
+      /* We get here if both have same template type or both have 0 as hash.  */
+      return callee_default_cmp (pa, pb);
+    }
+  else if (a_hash && (!b_hash || a_hash == caller_hash))
+    return -1;
+  else if (b_hash && (!a_hash || b_hash == caller_hash))
+    return 1;
+  else
+    {
+      gcc_assert (atinfo && btinfo);
+      if (atinfo->order < btinfo->order)
+	return -1;
+      /* Order being same is already handled above.  */
+      return 1;
+    }
+  return callee_default_cmp (pa, pb);
 }
 
 /* Sort all_callees in INFO by edge hotness.  */
@@ -198,6 +289,69 @@ populate_callee_locality_info (cgraph_node *node, cgraph_node *n,
     }
 }
 
+/* Forward declaration.  */
+static int static_profile_cmp (const void *pa, const void *pb);
+
+/* Helper function for qsort; sort nodes in the descending order derived of
+   template instantiation types by frequency count.  */
+static int
+static_profile_templ_cmp (const void *pa, const void *pb)
+{
+  const locality_order *a = *static_cast<const locality_order *const *> (pa);
+  const locality_order *b = *static_cast<const locality_order *const *> (pb);
+  locality_info *ainfo = get_locality_info (a->node);
+  templ_info *atinfo = templ_hash_map->get (ainfo->templ_hash);
+  locality_info *binfo = get_locality_info (b->node);
+  templ_info *btinfo = templ_hash_map->get (binfo->templ_hash);
+  if ((atinfo && !btinfo)
+      || (atinfo && btinfo && atinfo->order < btinfo->order))
+    return -1;
+  else if ((btinfo && !atinfo)
+	   || (atinfo && btinfo && atinfo->order > btinfo->order))
+    return 1;
+  return static_profile_cmp (pa, pb);
+}
+
+/* Helper function for qsort; sort template instantiation types in descending
+   order of their frequency count.  */
+static int
+sort_templ_hashes_cmp (const void *pa, const void *pb)
+{
+  const std::pair<hashval_t, int> *a = static_cast<const std::pair<hashval_t,
+	int> *> (pa);
+  const std::pair<hashval_t, int> *b = static_cast<const std::pair<hashval_t,
+	int> *> (pb);
+  if (a->second < b->second)
+    return 1;
+  else if (a->second > b->second)
+    return -1;
+  else
+    {
+      long long int res = (long long int)a->first - (long long int)b->first;
+      /* Hashes from templ_hash_map cannot be equal.  */
+      gcc_assert (res != 0);
+      return res > 0 ? 1 : -1;
+    }
+}
+
+/* Sort template instantiation types and record the sorted order.  */
+static void
+order_templ_hashes ()
+{
+  auto_vec<std::pair<hashval_t, int>> templ_hashes;
+  hash_freq_map_t::iterator iter = templ_hash_map->begin ();
+  for (; iter != templ_hash_map->end (); ++iter)
+    templ_hashes.safe_push (std::make_pair ((*iter).first,
+					     (*iter).second.count));
+  templ_hashes.qsort (sort_templ_hashes_cmp);
+  for (unsigned i = 0; i < templ_hashes.length (); i++)
+    {
+      templ_info *tinfo = templ_hash_map->get (templ_hashes[i].first);
+      gcc_assert (tinfo);
+      tinfo->order = i;
+    }
+}
+
 /* Populate locality_info for NODE from its direct callers.  */
 static void
 populate_caller_locality_info (cgraph_node *node, locality_info *info)
@@ -216,13 +370,62 @@ populate_caller_locality_info (cgraph_node *node, locality_info *info)
     }
 }
 
+/* Return true if template component is found in the demangled function name in
+   DC.  */
+static bool
+locality_dc_template_p (struct demangle_component *dc)
+{
+  switch (dc->type)
+    {
+    case DEMANGLE_COMPONENT_QUAL_NAME:
+      return locality_dc_template_p (dc->u.s_binary.left);
+    case DEMANGLE_COMPONENT_TEMPLATE:
+      return true;
+    default:
+      return false;
+    }
+  return false;
+}
+
+/* Generate hash for the template type from NODE's name if NODE represents a
+   templated functions.  If present, record in INFO.  */
+
+static void
+populate_templ_info (cgraph_node *node, locality_info *info)
+{
+  if (!info)
+    return;
+  void *alloc = NULL;
+  const char *asm_name = IDENTIFIER_POINTER  (DECL_ASSEMBLER_NAME
+					      (node->decl));
+  const char *demangled_name = cplus_demangle_v3 (asm_name, 0);
+  struct demangle_component *dc =
+    cplus_demangle_v3_components (asm_name, DMGL_NO_OPTS, &alloc);
+
+  if (demangled_name && dc && locality_dc_template_p (dc))
+    {
+      const char *templ = strchr (demangled_name, '<');
+      hashval_t t_hash = htab_hash_string (templ);
+      info->templ_hash = t_hash;
+
+      bool existed;
+      templ_info &tinfo = templ_hash_map->get_or_insert (t_hash, &existed);
+      if (existed)
+	tinfo.count = tinfo.count + 1;
+      else
+	tinfo.count = 1;
+    }
+  free (alloc);
+}
+
 /* Initialize locality_info for node V.  If CLONE_P is true, V is a locality
    clone; populate callee information for locality clones because caller info
    is needed for cloning decisions and clones are not cloned again.  Populate
    both caller and callee info for non-clone nodes.  */
 
 static inline void
-create_locality_info (cgraph_node *v, bool clone_p = false)
+create_locality_info (cgraph_node *v, bool templ_p = false,
+		      bool clone_p = false)
 {
   locality_info **info = node_to_ch_info->get (v->get_uid ());
   gcc_assert (!info);
@@ -236,6 +439,8 @@ create_locality_info (cgraph_node *v, bool clone_p = false)
     populate_caller_locality_info (v, vinfo);
   populate_callee_locality_info (v, v, vinfo);
   sort_all_callees_default (vinfo);
+  if (templ_p)
+    populate_templ_info (v, vinfo);
 }
 
 /* Return true if NODE is already in some partition.  */
@@ -976,7 +1181,8 @@ static void
 partition_callchain (cgraph_node *node, locality_partition &partition,
 		     lto_locality_cloning_model cloning_model,
 		     double freq_cutoff, int size, int &cl_num,
-		     int &npartitions, int64_t partition_size)
+		     int &npartitions, int64_t partition_size,
+		     lto_locality_heuristics scheme)
 {
   /* Aliases are added in the same partition as their targets.
      Aliases are not cloned and their callees are not processed separately.  */
@@ -989,6 +1195,8 @@ partition_callchain (cgraph_node *node, locality_partition &partition,
      inlined nodes which themselves are already partitioned along with their
      inlined_to nodes.  */
   locality_info *info = get_locality_info (node);
+  if (scheme == LTO_LOCALITY_CPP_TEMPLATE)
+    info->all_callees.qsort (callee_templ_cmp);
   for (unsigned i = 0; i < info->all_callees.length (); i++)
     {
       cgraph_edge *e = info->all_callees[i]->edge;
@@ -1002,7 +1210,8 @@ partition_callchain (cgraph_node *node, locality_partition &partition,
 	      fprintf (dump_file, "Partitioned node: %s\n",
 		       n->dump_asm_name ());
 	      partition_callchain (n, partition, cloning_model, freq_cutoff,
-				   size, cl_num, npartitions, partition_size);
+				   size, cl_num, npartitions, partition_size,
+				   scheme);
 	    }
 	  else if (cloning_model >= LTO_LOCALITY_NON_INTERPOSABLE_CLONING
 		   && (!e->callee->alias)
@@ -1042,11 +1251,13 @@ partition_callchain (cgraph_node *node, locality_partition &partition,
 						  cloning_model);
 		  if (cl_node)
 		    {
-		      create_locality_info (cl_node, true);
+		      create_locality_info (cl_node,
+					    scheme == LTO_LOCALITY_CPP_TEMPLATE,
+					    true);
 		      add_node_to_partition (partition, cl_node);
 		      partition_callchain (cl_node, partition, cloning_model,
 					   freq_cutoff, size, cl_num,
-					   npartitions, partition_size);
+					   npartitions, partition_size, scheme);
 		    }
 		}
 	    }
@@ -1131,13 +1342,14 @@ locality_determine_ipa_order (auto_vec<locality_order *> *order)
    Store the order in ORDER.  */
 
 static bool
-locality_determine_static_order (auto_vec<locality_order *> *order)
+locality_determine_static_order (auto_vec<locality_order *> *order,
+				 lto_locality_heuristics scheme)
 {
   struct cgraph_node *node;
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->get_partitioning_class () == SYMBOL_PARTITION)
       {
-	create_locality_info (node);
+	create_locality_info (node, scheme == LTO_LOCALITY_CPP_TEMPLATE);
 	if (node->no_reorder)
 	  {
 	    if (dump_file)
@@ -1157,6 +1369,14 @@ locality_determine_static_order (auto_vec<locality_order *> *order)
 	    order->safe_push (cl);
 	  }
       }
+
+  if (scheme == LTO_LOCALITY_CPP_TEMPLATE)
+    {
+      order_templ_hashes ();
+      order->qsort (static_profile_templ_cmp);
+      return true;
+    }
+
   order->qsort (static_profile_cmp);
   return true;
 }
@@ -1172,6 +1392,7 @@ locality_determine_static_order (auto_vec<locality_order *> *order)
 static void
 locality_partition_and_clone (int max_locality_partition_size,
 			      lto_locality_cloning_model cloning_model,
+			      lto_locality_heuristics scheme,
 			      int freq_denominator, int size)
 {
   locality_partition partition;
@@ -1192,7 +1413,7 @@ locality_partition_and_clone (int max_locality_partition_size,
   if (n && n->count.ipa_p ())
     order_p = locality_determine_ipa_order (&order);
   else
-    order_p = locality_determine_static_order (&order);
+    order_p = locality_determine_static_order (&order, scheme);
   if (!order_p)
     {
       if (dump_file)
@@ -1225,7 +1446,7 @@ locality_partition_and_clone (int max_locality_partition_size,
 	fprintf (dump_file, "Ordered Node: %s\n", node->dump_asm_name ());
 
       partition_callchain (node, partition, cloning_model, real_freq, size,
-			   cl_num, npartitions, partition_size);
+			   cl_num, npartitions, partition_size, scheme);
     }
 
   for (unsigned i = 0; i < order.length (); i++)
@@ -1247,9 +1468,11 @@ lc_execute (void)
     ();
   node_to_clone = std::make_unique<hash_map<loc_map_hash, cgraph_node *>> ();
   clone_to_node = std::make_unique<hash_map<loc_map_hash, cgraph_node *>> ();
+  templ_hash_map = std::make_unique<hash_freq_map_t> ();
 
   locality_partition_and_clone (param_max_locality_partition_size,
 				flag_lto_locality_cloning,
+				flag_lto_locality_heuristics,
 				param_lto_locality_frequency,
 				param_lto_locality_size);
 

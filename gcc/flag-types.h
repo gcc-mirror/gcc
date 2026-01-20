@@ -422,6 +422,12 @@ enum lto_locality_cloning_model {
   LTO_LOCALITY_MAXIMAL_CLONING = 2,
 };
 
+/* flag_lto_locality_heuristics initialization values.  */
+enum lto_locality_heuristics {
+  LTO_LOCALITY_DEFAULT_HEURISTIC = 0,
+  LTO_LOCALITY_CPP_TEMPLATE = 1,
+};
+
 /* flag_lto_linker_output initialization values.  */
 enum lto_linker_output {
   LTO_LINKER_OUTPUT_UNKNOWN,
