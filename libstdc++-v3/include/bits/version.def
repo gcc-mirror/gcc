@@ -2259,6 +2259,7 @@ ftms = {
     v = 202506;
     cxxmin = 26;
     extra_cond = "__cpp_impl_reflection >= 202506L";
+    cxx11abi = yes;
   };
 };
 
