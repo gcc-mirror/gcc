@@ -600,6 +600,11 @@ get_range_elts (location_t loc, const constexpr_ctx *ctx, tree call, int n,
 	TREE_STATIC (ctor) = true;
 	tree r = finish_compound_literal (type, ctor, tf_warning_or_error,
 					  fcl_functional);
+	/* Here, we're evaluating an AGGR_INIT_EXPR, which is already
+	   embedded in a TARGET_EXPR, so we don't want to add another
+	   TARGET_EXPR inside it.  Note that SIMPLE_TARGET_EXPR_P would
+	   always be false because the TARGET_EXPR_INITIAL is an
+	   AGGR_INIT_EXPR with void type.  */
 	if (TREE_CODE (r) == TARGET_EXPR)
 	  r = TARGET_EXPR_INITIAL (r);
 	return r;
@@ -2983,6 +2988,11 @@ get_vector_of_info_elts (vec<constructor_elt, va_gc> *elts)
     return error_mark_node;
   tree r = finish_compound_literal (type, ctor, tf_warning_or_error,
 				    fcl_functional);
+  /* Here, we're evaluating an AGGR_INIT_EXPR, which is already
+     embedded in a TARGET_EXPR, so we don't want to add another
+     TARGET_EXPR inside it.  Note that SIMPLE_TARGET_EXPR_P would
+     always be false because the TARGET_EXPR_INITIAL is an
+     AGGR_INIT_EXPR with void type.  */
   if (TREE_CODE (r) == TARGET_EXPR)
     r = TARGET_EXPR_INITIAL (r);
   return r;
