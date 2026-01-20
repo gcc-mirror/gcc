@@ -5507,7 +5507,7 @@ A size can be omitted, to use a target-specific default value.
 @cindex OpenMP parallel
 @item -fopenmp
 Enable handling of OpenMP directives @samp{#pragma omp},
-@samp{[[omp::directive(...)]]}, @samp{[[omp::decl(...)]]},
+@samp{[[omp::decl(...)]]}, @samp{[[omp::directive(...)]]},
 and @samp{[[omp::sequence(...)]]} in C/C++.  In Fortran, it enables
 @samp{!$omp} and the conditional compilation sentinel @samp{!$}.
 In fixed source form Fortran, the sentinels can also start with

@@ -11133,7 +11133,7 @@ GNU Offloading and Multi Processing Runtime Library},
 for more details about currently supported OpenMP features.
 
 To enable the processing of OpenMP directives @samp{#pragma omp},
-@samp{[[omp::directive(...)]]}, @samp{[[omp::decl(...)]]},
+@samp{[[omp::decl(...)]]}, @samp{[[omp::directive(...)]]},
 and @samp{[[omp::sequence(...)]]} in C and C++,
 GCC needs to be invoked with the @option{-fopenmp} option.
 This option also arranges for automatic linking of the OpenMP
