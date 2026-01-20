@@ -50,13 +50,13 @@ phi_arg_index_from_use (use_operand_p use)
 {
   struct phi_arg_d *element, *root;
   size_t index;
-  gimple *phi;
+  gphi *phi;
 
   /* Since the use is the first thing in a PHI argument element, we can
      calculate its index based on casting it to an argument, and performing
      pointer arithmetic.  */
 
-  phi = USE_STMT (use);
+  phi = as_a <gphi *> (USE_STMT (use));
 
   element = (struct phi_arg_d *)use;
   root = gimple_phi_arg (phi, 0);
@@ -69,6 +69,15 @@ phi_arg_index_from_use (use_operand_p use)
 		       && index < gimple_phi_capacity (phi));
 
  return index;
+}
+
+/* Return the edge into the PHI node USE.  */
+
+inline edge
+phi_arg_edge_from_use (use_operand_p use)
+{
+  gphi *phi = as_a <gphi *> (USE_STMT (use));
+  return gimple_phi_arg_edge (phi, phi_arg_index_from_use (use));
 }
 
 #endif /* GCC_TREE_PHINODES_H */
