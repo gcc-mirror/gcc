@@ -1003,7 +1003,7 @@
 
 ;; Defines rounding mode of an fixed-point operation.
 
-(define_attr "vxrm_mode" "rnu,rne,rdn,rod,none"
+(define_attr "vxrm_mode" "rnu,rne,rdn,rod,clobber,none"
   (cond [(eq_attr "type" "vaalu,vsmul,vsshift,vnclip")
 	 (cond
 	   [(match_test "INTVAL (operands[9]) == riscv_vector::VXRM_RNU")
@@ -1017,7 +1017,9 @@
 
 	    (match_test "INTVAL (operands[9]) == riscv_vector::VXRM_ROD")
 	    (const_string "rod")]
-	   (const_string "none"))]
+	   (const_string "none"))
+	 (match_test "CALL_P (insn)")
+	 (const_string "clobber")]
         (const_string "none")))
 
 ;; Defines rounding mode of an floating-point operation.

@@ -13793,7 +13793,9 @@ riscv_emit_mode_set (int entity, int mode, int prev_mode,
   switch (entity)
     {
     case RISCV_VXRM:
-      if (mode != VXRM_MODE_NONE && mode != prev_mode)
+      if (mode != VXRM_MODE_NONE
+	  && mode != VXRM_MODE_CLOBBER
+	  && mode != prev_mode)
 	emit_insn (gen_vxrmsi (gen_int_mode (mode, SImode)));
       break;
     case RISCV_FRM:
