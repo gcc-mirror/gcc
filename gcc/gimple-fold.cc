@@ -5899,6 +5899,12 @@ gimple_fold_partial_load_store (gimple_stmt_iterator *gsi, gcall *call)
 	  /* Replace load with else value.  */
 	  int else_index = internal_fn_else_index (ifn);
 	  tree else_value = gimple_call_arg (call, else_index);
+	  if (!is_gimple_reg (lhs))
+	    {
+	      if (!zerop (else_value))
+		return false;
+	      else_value = build_constructor (TREE_TYPE (lhs), NULL);
+	    }
 	  gassign *new_stmt = gimple_build_assign (lhs, else_value);
 	  gimple_set_location (new_stmt, gimple_location (call));
 	  gsi_replace (gsi, new_stmt, false);
