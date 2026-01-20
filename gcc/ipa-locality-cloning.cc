@@ -71,11 +71,13 @@ along with GCC; see the file COPYING3.  If not see
    WPA partitioning.  */
 vec<locality_partition> locality_partitions;
 
+using loc_map_hash = int_hash<int, 0, -1>;
+
 /* Map from original node to its latest clone.  Gets overwritten whenever a new
    clone is created from the same node.  */
-hash_map<cgraph_node *, cgraph_node *> node_to_clone;
+static std::unique_ptr<hash_map<loc_map_hash, cgraph_node *>> node_to_clone;
 /* Map from clone to its original node.  */
-hash_map<cgraph_node *, cgraph_node *> clone_to_node;
+static std::unique_ptr<hash_map<loc_map_hash, cgraph_node *>> clone_to_node;
 
 /* Data structure to hold static heuristics and orders for cgraph_nodes.  */
 struct locality_order
@@ -85,6 +87,156 @@ struct locality_order
   locality_order (cgraph_node *node, sreal order) : node (node), order (order)
   {}
 };
+
+/* Data structure to hold accumulated edge frequencies for unique callees.
+   Frequencies of aliased callees are accumulated with the ultimate target
+   alias represented by ultimate_callee.
+   ultimate_caller is the ultimate non-inlined caller of the unique callee.
+   Edge is the first edge encountered for the callee.  */
+struct locality_callee_info
+{
+  cgraph_node *ultimate_caller;
+  cgraph_node *ultimate_callee;
+  cgraph_edge *edge;
+  sreal freq;
+};
+
+/* Data structure to hold precomputed callchain information.  */
+struct locality_info
+{
+  cgraph_node *node;
+
+  /* Consolidated callees, including callees of inlined nodes.  */
+  vec<locality_callee_info *> all_callees;
+
+  /* Accumulated caller->node edge frequencies for unique callers.  */
+  hash_map<loc_map_hash, sreal> caller_freq;
+  /* Accumulated node->callee edge frequencies for unique callees.  */
+  hash_map<loc_map_hash, locality_callee_info> callee_info;
+
+  locality_info ()
+    {
+      all_callees.create (1);
+    }
+  ~locality_info ()
+    {
+      all_callees.release ();
+    }
+};
+
+/* Pool allocation for locality_info.  */
+static object_allocator<locality_info> loc_infos ("IPA locality callchain");
+static
+std::unique_ptr<hash_map<loc_map_hash, locality_info *>> node_to_ch_info;
+
+/* Return locality_info for NODE if present, otherwise return NULL.  */
+static inline locality_info *
+get_locality_info (cgraph_node *node)
+{
+  locality_info **ninfo = node_to_ch_info->get (node->get_uid ());
+  if (ninfo)
+    return *ninfo;
+  return NULL;
+}
+
+/* Forward declaration.  */
+static int compare_node_uids (cgraph_node *n1, cgraph_node *n2);
+
+/* Helper function to qsort all_callees in locality_info by edge hotness.  */
+static int
+callee_default_cmp (const void *pa, const void *pb)
+{
+  const locality_callee_info *a = *(static_cast<const locality_callee_info
+				    *const *> (pa));
+  const locality_callee_info *b = *(static_cast<const locality_callee_info
+				    *const *> (pb));
+  if (a->freq < b->freq)
+    return 1;
+  else if (a->freq > b->freq)
+    return -1;
+  return compare_node_uids (a->ultimate_callee, b->ultimate_callee);
+}
+
+/* Sort all_callees in INFO by edge hotness.  */
+static void
+sort_all_callees_default (locality_info *info)
+{
+  hash_map<loc_map_hash, locality_callee_info>::iterator iter
+    = info->callee_info.begin ();
+  for (; iter != info->callee_info.end (); ++iter)
+    info->all_callees.safe_push (&((*iter).second));
+  info->all_callees.qsort (callee_default_cmp);
+}
+
+/* Populate locality_info for NODE from its direct callees and callees via
+   inlined nodes.  N is used to iterate callees of NODE and callees of inlined
+   callees of NODE.  */
+static void
+populate_callee_locality_info (cgraph_node *node, cgraph_node *n,
+			       locality_info *info)
+{
+  for (cgraph_edge *e = n->callees; e; e = e->next_callee)
+    {
+      cgraph_node *c = e->callee->ultimate_alias_target ();
+      if (c->inlined_to == node)
+	populate_callee_locality_info (node, c, info);
+      else
+	{
+	  bool existed;
+	  locality_callee_info &cinfo = info->callee_info.get_or_insert
+	    (c->get_uid (), &existed);
+	  if (!existed)
+	    {
+	      cinfo.ultimate_callee = c;
+	      cinfo.ultimate_caller = node;
+	      cinfo.edge = e;
+	      cinfo.freq = e->sreal_frequency ();
+	    }
+	  else
+	    cinfo.freq = cinfo.freq + e->sreal_frequency ();
+	}
+    }
+}
+
+/* Populate locality_info for NODE from its direct callers.  */
+static void
+populate_caller_locality_info (cgraph_node *node, locality_info *info)
+{
+  struct cgraph_edge *e;
+  for (e = node->callers; e; e = e->next_caller)
+    {
+      /* Make a local decision about all edges for EDGE->caller but not the
+	 other nodes already in the partition.  Their edges will be visited
+	 later or may have been visited before and not fit the
+	 cut-off criteria.  */
+      if (auto cfreq = info->caller_freq.get (e->caller->get_uid ()))
+	(*cfreq) = (*cfreq) + e->sreal_frequency ();
+      else
+	info->caller_freq.put (e->caller->get_uid (), e->sreal_frequency ());
+    }
+}
+
+/* Initialize locality_info for node V.  If CLONE_P is true, V is a locality
+   clone; populate callee information for locality clones because caller info
+   is needed for cloning decisions and clones are not cloned again.  Populate
+   both caller and callee info for non-clone nodes.  */
+
+static inline void
+create_locality_info (cgraph_node *v, bool clone_p = false)
+{
+  locality_info **info = node_to_ch_info->get (v->get_uid ());
+  gcc_assert (!info);
+
+  locality_info *vinfo = loc_infos.allocate ();
+  vinfo->node = v;
+  node_to_ch_info->put (v->get_uid (), vinfo);
+
+  /* Locality clones are not cloned again.  */
+  if (!clone_p)
+    populate_caller_locality_info (v, vinfo);
+  populate_callee_locality_info (v, v, vinfo);
+  sort_all_callees_default (vinfo);
+}
 
 /* Return true if NODE is already in some partition.  */
 static inline bool
@@ -511,7 +663,7 @@ adjust_recursive_callees (cgraph_node *clone, cgraph_node *new_callee,
       cgraph_node *callee = e->callee;
       if (callee == orig_callee)
 	{
-	  cgraph_node **cl = node_to_clone.get (orig_callee);
+	  cgraph_node **cl = node_to_clone->get (orig_callee->get_uid ());
 	  gcc_assert (cl && *cl == new_callee);
 	  e->redirect_callee_duplicating_thunks (new_callee);
 	  if (dump_file)
@@ -571,8 +723,8 @@ inline_clones (cgraph_node *caller, cgraph_node *orig_inlined_to)
 				 "locality_clone" /*suffix*/);
       edge->redirect_callee (cl);
 
-      node_to_clone.put (callee, cl);
-      clone_to_node.put (cl, callee);
+      node_to_clone->put (callee->get_uid (), cl);
+      clone_to_node->put (cl->get_uid (), callee);
 
       if (callee->thunk)
 	{
@@ -659,11 +811,11 @@ clone_node_as_needed (cgraph_edge *edge, locality_partition partition,
      a -> b or ac -> b or ac -> bc0  */
 
   cgraph_node *orig_cnode = cnode;
-  cgraph_node **o_cnode = clone_to_node.get (cnode);
+  cgraph_node **o_cnode = clone_to_node->get (cnode->get_uid ());
   if (o_cnode)
     orig_cnode = *o_cnode;
 
-  cgraph_node **cnode_cl = node_to_clone.get (orig_cnode);
+  cgraph_node **cnode_cl = node_to_clone->get (orig_cnode->get_uid ());
 
   if (cnode_cl && node_in_partition_p (partition, *cnode_cl))
     {
@@ -714,8 +866,8 @@ clone_node_as_needed (cgraph_edge *edge, locality_partition partition,
   if (!cloned_node)
     return NULL;
 
-  node_to_clone.put (cnode, cloned_node);
-  clone_to_node.put (cloned_node, cnode);
+  node_to_clone->put (cnode->get_uid (), cloned_node);
+  clone_to_node->put (cloned_node->get_uid (), cnode);
 
   adjust_recursive_callees (cloned_node, cloned_node, cnode);
   symtab->call_cgraph_duplication_hooks (cnode, cloned_node);
@@ -725,25 +877,6 @@ clone_node_as_needed (cgraph_edge *edge, locality_partition partition,
   inline_clones (cloned_node, cnode);
 
   return cloned_node;
-}
-
-/* Accumulate frequency of all edges from EDGE->caller to EDGE->callee.  */
-
-static sreal
-accumulate_incoming_edge_frequency (cgraph_edge *edge)
-{
-  sreal count = 0;
-  struct cgraph_edge *e;
-  for (e = edge->callee->callers; e; e = e->next_caller)
-    {
-      /* Make a local decision about all edges for EDGE->caller but not the
-	 other nodes already in the partition.  Their edges will be visited
-	 later or may have been visited before and not fit the
-	 cut-off criteria.  */
-      if (e->caller == edge->caller)
-	count += e->sreal_frequency ();
-    }
-  return count;
 }
 
 /* Determine if EDGE->CALLEE is suitable for cloning.  It is assummed that the
@@ -801,94 +934,124 @@ suitable_for_locality_cloning_p (cgraph_edge *edge,
   return true;
 }
 
-/* Map from caller to all callees already visited for partitioning.  */
-hash_map<cgraph_node *, auto_vec<cgraph_node *> > caller_to_callees;
+/* Return true if edge->callee->ultimate_alias_target can be cloned.  */
+static bool
+clone_node_p (cgraph_edge *edge, lto_locality_cloning_model cloning_model,
+	      double freq_cutoff, int size)
+{
+  cgraph_node *node = edge->callee->ultimate_alias_target ();
 
-/* Partition EDGE->CALLEE into PARTITION or clone if already partitioned and
+  if (!suitable_for_locality_cloning_p (edge, cloning_model))
+    return false;
+
+  if (!node->alias)
+    if (ipa_size_summaries->get (node)->size >= size)
+      return false;
+
+  if (freq_cutoff != 0.0)
+    {
+      locality_info *info = get_locality_info (node);
+      gcc_assert (info);
+      if (auto cfreq = info->caller_freq.get (edge->caller->get_uid ()))
+	{
+	  if ((*cfreq).to_double () < freq_cutoff)
+	    return false;
+	}
+      else if (edge->sreal_frequency ().to_double () < freq_cutoff)
+	return false;
+    }
+
+  return true;
+}
+
+/* Partition NODE's callees into PARTITION or clone if already partitioned and
    satisfies cloning criteria such as CLONING_MODEL, REAL_FREQ and SIZE
-   cut-offs and CLONE_FURTHER_P set by previous caller.  */
+   cut-offs.  */
 
 /* callgraph can have multiple caller to callee edges for multiple callsites
    For the first such edge, we make decisions about cutoffs and cloning because
    we redirect ALL callsites to cloned callee, not just one of them.  */
 
 static void
-partition_callchain (cgraph_edge *edge, locality_partition partition,
-		     bool clone_further_p,
+partition_callchain (cgraph_node *node, locality_partition &partition,
 		     lto_locality_cloning_model cloning_model,
-		     double freq_cutoff, int size, int &cl_num)
+		     double freq_cutoff, int size, int &cl_num,
+		     int &npartitions, int64_t partition_size)
 {
   /* Aliases are added in the same partition as their targets.
      Aliases are not cloned and their callees are not processed separately.  */
-  cgraph_node *node = edge->callee->ultimate_alias_target ();
-  cgraph_node *caller = edge->caller;
-  cgraph_node *caller_node = node, *cl_node = NULL;
+  cgraph_node *cl_node = NULL;
+  if (partition->insns > partition_size)
+    partition = create_partition (npartitions);
 
-  /* Already visited the caller to callee edges.  */
-  auto_vec<cgraph_node *> &callees = caller_to_callees.get_or_insert (caller);
-  if (std::find (callees.begin (), callees.end (), node) != callees.end ())
-    return;
-
-  callees.safe_push (node);
-
-  if (node->get_partitioning_class () == SYMBOL_PARTITION)
+  /* Iterate over all unique callees of NODE, direct callees and callees via
+     inlined nodes.  This avoids calling partition_callchain () separately for
+     inlined nodes which themselves are already partitioned along with their
+     inlined_to nodes.  */
+  locality_info *info = get_locality_info (node);
+  for (unsigned i = 0; i < info->all_callees.length (); i++)
     {
-      if (!node_partitioned_p (node))
+      cgraph_edge *e = info->all_callees[i]->edge;
+      cgraph_node *n = e->callee->ultimate_alias_target ();
+      if (n->get_partitioning_class () == SYMBOL_PARTITION)
 	{
-	  add_node_to_partition (partition, node);
-	  if (dump_file)
-	    fprintf (dump_file, "Partitioned node: %s\n",
-		     node->dump_asm_name ());
-	}
-      else if (cloning_model >= LTO_LOCALITY_NON_INTERPOSABLE_CLONING
-	       && !node_in_partition_p (partition, node))
-	{
-	  /* Non-inlined node, or alias, already partitioned
-	     If cut-off, don't clone callees but partition unpartitioned
-	     callees.
-	     size is node + inlined nodes.  */
-	  if (clone_further_p)
+	  if (!node_partitioned_p (n))
 	    {
-	      if (!node->alias)
-		if (ipa_size_summaries->get (node)->size >= size)
-		  clone_further_p = false;
-
-	      if (freq_cutoff != 0.0)
-		{
-		  sreal acc_freq = accumulate_incoming_edge_frequency (edge);
-		  if (acc_freq.to_double () < freq_cutoff)
-		    clone_further_p = false;
-		}
-	    }
-
-	  if (!suitable_for_locality_cloning_p (edge, cloning_model))
-	    clone_further_p = false;
-
-	  if (clone_further_p)
-	    {
-	      /* Try to clone NODE and its inline chain.  */
+	      add_node_to_partition (partition, n);
 	      if (dump_file)
-		fprintf (dump_file, "Cloning node: %s\n",
-			 node->dump_asm_name ());
-	      cl_node = clone_node_as_needed (edge, partition, cl_num,
-					      cloning_model);
-	      if (cl_node)
+	      fprintf (dump_file, "Partitioned node: %s\n",
+		       n->dump_asm_name ());
+	      partition_callchain (n, partition, cloning_model, freq_cutoff,
+				   size, cl_num, npartitions, partition_size);
+	    }
+	  else if (cloning_model >= LTO_LOCALITY_NON_INTERPOSABLE_CLONING
+		   && (!e->callee->alias)
+		   && node_in_partition_p (partition, e->caller)
+		   && (!node_in_partition_p (partition, n)))
+
+	    {
+	      /* 3 possible scenarios if N is already partitioned but not in
+		 present in PARTITION:
+		 1.  There's a clone of N present in PARTITION, redirect to that
+		     clone, no need to check for suitability.
+		 2.  N itself is a locality clone, cloned as part of another
+		     callchain.  If a clone of N's original node is present in
+		     PARTITION, redirect to it without checking for suitability.
+		     Cloned node itself is not cloned again.
+		     Example: suppose N = B_clone ().
+		     In partition X, edge A->B was transformed to A->B_clone0.
+		     In current partition, A was cloned to A_clone0 and now
+		     B_clone0 is visited via edge A_clone0->B_clone0.  If a
+		     B_clonei is present, redirect A_clone0 to it, otherise do
+		     nothing.
+		 3.  N is not a locality clone and no clone of N is present in
+		     PARTITION, check for suitability and clone.  */
+	      cgraph_node *orig_cnode = n;
+	      cgraph_node **o_cnode = clone_to_node->get (n->get_uid ());
+	      if (o_cnode)
+		orig_cnode = *o_cnode;
+
+	      cgraph_node **cnode_cl = node_to_clone->get (orig_cnode->get_uid
+							   ());
+
+	      if ((cnode_cl && node_in_partition_p (partition, *cnode_cl))
+		  || (orig_cnode == n
+		      && clone_node_p (e, cloning_model, freq_cutoff, size)))
 		{
-		  add_node_to_partition (partition, cl_node);
-		  caller_node = cl_node;
+		  cl_node = clone_node_as_needed (e, partition, cl_num,
+						  cloning_model);
+		  if (cl_node)
+		    {
+		      create_locality_info (cl_node, true);
+		      add_node_to_partition (partition, cl_node);
+		      partition_callchain (cl_node, partition, cloning_model,
+					   freq_cutoff, size, cl_num,
+					   npartitions, partition_size);
+		    }
 		}
-	      else
-		caller_node = NULL;
 	    }
 	}
     }
-  else if (!node->inlined_to)
-    return;
-
-  if (caller_node)
-    for (cgraph_edge *e = caller_node->callees; e; e = e->next_callee)
-      partition_callchain (e, partition, clone_further_p, cloning_model,
-			   freq_cutoff, size, cl_num);
 }
 
 /* Determine whether NODE is an entrypoint to a callchain.  */
@@ -900,6 +1063,10 @@ is_entry_node_p (cgraph_node *node)
   if (node->get_partitioning_class () != SYMBOL_PARTITION)
     return false;
 
+  /* NODE and all its aliases or thunk are local.  */
+  if (node->local_p ())
+    return false;
+
   if (!node->callers)
     return true;
 
@@ -908,9 +1075,7 @@ is_entry_node_p (cgraph_node *node)
       if (! e->recursive_p ())
 	return false;
     }
-  if (node->alias
-      && !is_entry_node_p (node->ultimate_alias_target ()))
-    return false;
+
   return true;
 }
 
@@ -925,6 +1090,7 @@ locality_determine_ipa_order (auto_vec<locality_order *> *order)
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->get_partitioning_class () == SYMBOL_PARTITION)
       {
+	create_locality_info (node);
 	if (node->no_reorder)
 	  {
 	    if (dump_file)
@@ -971,6 +1137,7 @@ locality_determine_static_order (auto_vec<locality_order *> *order)
   FOR_EACH_DEFINED_FUNCTION (node)
     if (node->get_partitioning_class () == SYMBOL_PARTITION)
       {
+	create_locality_info (node);
 	if (node->no_reorder)
 	  {
 	    if (dump_file)
@@ -1057,17 +1224,15 @@ locality_partition_and_clone (int max_locality_partition_size,
       if (dump_file)
 	fprintf (dump_file, "Ordered Node: %s\n", node->dump_asm_name ());
 
-      for (cgraph_edge *edge = node->callees; edge; edge = edge->next_callee)
-	{
-	  /* Recursively partition the callchain of edge->callee.  */
-	  partition_callchain (edge, partition, true, cloning_model, real_freq,
-			       size, cl_num);
-	}
+      partition_callchain (node, partition, cloning_model, real_freq, size,
+			   cl_num, npartitions, partition_size);
     }
 
   for (unsigned i = 0; i < order.length (); i++)
     delete order[i];
   order = vNULL;
+
+  loc_infos.release ();
 }
 
 /* Entry point to locality-clone pass.  */
@@ -1077,6 +1242,11 @@ lc_execute (void)
   symtab_node *node;
   FOR_EACH_SYMBOL (node)
     node->aux = NULL;
+
+  node_to_ch_info = std::make_unique<hash_map<loc_map_hash, locality_info *>>
+    ();
+  node_to_clone = std::make_unique<hash_map<loc_map_hash, cgraph_node *>> ();
+  clone_to_node = std::make_unique<hash_map<loc_map_hash, cgraph_node *>> ();
 
   locality_partition_and_clone (param_max_locality_partition_size,
 				flag_lto_locality_cloning,
