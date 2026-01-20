@@ -4563,6 +4563,7 @@ another handler, which can point out a wrong ordering of exception handlers.
 
 @opindex Wsfinae-incomplete
 @opindex Wno-sfinae-incomplete
+@item -Wsfinae-incomplete @r{(C++ and Objective-C++ only)}
 Warn about a class that is found to be incomplete, or a function with
 auto return type that has not yet been deduced, in a context where
 that causes substitution failure rather than an error, and then the
