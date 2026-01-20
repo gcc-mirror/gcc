@@ -11856,7 +11856,8 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
       /* If we want to refer to something bigger than the original memref,
 	 generate a paradoxical subreg instead.  That will force a reload
 	 of the original memref X.  */
-      if (paradoxical_subreg_p (omode, imode))
+      if (paradoxical_subreg_p (omode, imode)
+	  && validate_subreg (omode, GET_MODE (x), x, 0))
 	return gen_rtx_SUBREG (omode, x, 0);
 
       poly_int64 offset = byte_lowpart_offset (omode, imode);
