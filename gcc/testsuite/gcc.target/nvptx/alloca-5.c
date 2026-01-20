@@ -18,12 +18,10 @@ static __attribute__((noipa)) int f(int *p)
 ** 	\.reg\.u32 %value;
 ** 	\.reg\.u64 %ar0;
 ** 	ld\.param\.u64 %ar0, \[%in_ar0\];
-** 	\.reg\.u32 (%r[0-9]+);
 ** 	\.reg\.u64 (%r[0-9]+);
-** 		mov\.u64	\2, %ar0;
-** 		atom\.exch\.b32	\1, \[\2\], 1;
+** 		mov\.u64	\1, %ar0;
+** 		atom\.exch\.b32	%value, \[\1\], 1;
 ** 		membar\.sys;
-** 		mov\.u32	%value, \1;
 ** 	st\.param\.u32	\[%value_out\], %value;
 ** 	ret;
 */
