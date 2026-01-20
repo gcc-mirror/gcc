@@ -3849,7 +3849,8 @@ build_min_non_dep_op_overload (enum tree_code op,
 
 	  if (TREE_CODE (non_dep) != CALL_EXPR)
 	    {
-	      gcc_checking_assert (COMPARISON_CLASS_P (non_dep));
+	      gcc_checking_assert (COMPARISON_CLASS_P (non_dep)
+				   || TREE_CODE (non_dep) == SPACESHIP_EXPR);
 	      if (reversed)
 		std::swap (op0, op1);
 	      return build_min_non_dep (TREE_CODE (non_dep), non_dep, op0, op1);
