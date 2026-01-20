@@ -778,7 +778,7 @@ a68_lower_slice (NODE_T *p, LOW_CTX_T ctx)
 	{
 	  tree ptrtype = CTYPE (orig_sliced_multiple_mode);
 	  tree slice_addr = fold_build1 (ADDR_EXPR, ptrtype, slice);
-	  tree alloc = a68_lower_malloc (ptrtype, size_in_bytes (TREE_TYPE (slice)));
+	  tree alloc = a68_lower_malloc (orig_sliced_multiple_mode, size_in_bytes (TREE_TYPE (slice)));
 	  alloc = save_expr (alloc);
 	  tree copy = a68_lower_memcpy (alloc, slice_addr, size_in_bytes (TREE_TYPE (slice)));
 

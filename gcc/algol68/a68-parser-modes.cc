@@ -175,6 +175,7 @@ a68_create_mode (int att, int dim, NODE_T *node, MOID_T *sub, PACK_T *pack)
   DIM (new_mode) = dim;
   NODE (new_mode) = node;
   HAS_ROWS (new_mode) = (att == ROW_SYMBOL);
+  HAS_REFS (new_mode) = (att == REF_SYMBOL);
   SUB (new_mode) = sub;
   PACK (new_mode) = pack;
   NEXT (new_mode) = NO_MOID;
@@ -1033,6 +1034,30 @@ is_mode_has_row (MOID_T *m)
     return (HAS_ROWS (m) || IS_ROW (m) || IS_FLEX (m));
 }
 
+/* Whether mode has ref.  */
+
+static bool
+is_mode_has_refs (MOID_T *m)
+{
+  if (IS_ROW (m) || IS_FLEX (m))
+    {
+      HAS_REFS (m) = is_mode_has_refs (SUB (m));
+      return HAS_REFS (m);
+    }
+  else if (IS_STRUCT (m) || IS_UNION (m))
+    {
+      bool has_refs = false;
+      for (PACK_T *p = PACK (m); p != NO_PACK; FORWARD (p))
+	{
+	  HAS_REFS (MOID (p)) = is_mode_has_refs (MOID (p));
+	  has_refs |= HAS_REFS (MOID (p));
+	}
+      return has_refs;
+    }
+  else
+    return HAS_REFS (m);
+}
+
 /* Compute derived modes.  */
 
 static void
@@ -1181,9 +1206,12 @@ compute_derived_modes (MODULE_T *mod)
 
   gcc_assert (M_STRING == M_FLEX_ROW_CHAR);
 
-  /* Find out what modes contain rows.  */
+  /* Find out what modes contain rows, and refs.  */
   for (z = TOP_MOID (mod); z != NO_MOID; FORWARD (z))
-    HAS_ROWS (z) = is_mode_has_row (z);
+    {
+      HAS_ROWS (z) = is_mode_has_row (z);
+      HAS_REFS (z) = is_mode_has_refs (z);
+    }
 
   /* Check flexible modes.  */
   for (z = TOP_MOID (mod); z != NO_MOID; FORWARD (z))

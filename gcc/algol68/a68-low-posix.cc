@@ -503,7 +503,7 @@ a68_posix_fgets (void)
       tree upper_bound = fold_convert (ssizetype, len);
       tree elems_size = fold_build2 (MULT_EXPR, sizetype,
 				     len, size_in_bytes (a68_char_type));
-      tree body = a68_row_malloc (CTYPE (M_STRING), 1 /* dim */,
+      tree body = a68_row_malloc (M_STRING, 1 /* dim */,
 				  elems, elems_size,
 				  &lower_bound, &upper_bound);
       a68_pop_function_range (body);
@@ -545,7 +545,7 @@ a68_posix_gets (void)
       tree upper_bound = fold_convert (ssizetype, len);
       tree elems_size = fold_build2 (MULT_EXPR, sizetype,
 				     len, size_in_bytes (a68_char_type));
-      tree body = a68_row_malloc (CTYPE (M_STRING), 1 /* dim */,
+      tree body = a68_row_malloc (M_STRING, 1 /* dim */,
 				  elems, elems_size,
 				  &lower_bound, &upper_bound);
       a68_pop_function_range (body);

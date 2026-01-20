@@ -70,6 +70,7 @@ void _libga68_bounds_mismatch (const char *filename, unsigned int lineno,
 
 void _libga68_init_heap (void) GA68_HIDDEN;
 void *_libga68_malloc (size_t size);
+void *_libga68_malloc_leaf (size_t size);
 void *_libga68_malloc_internal (size_t size) GA68_HIDDEN;
 void *_libga68_realloc (void *ptr, size_t size) GA68_HIDDEN;
 void *_libga68_realloc_unchecked (void *ptr, size_t size) GA68_HIDDEN;

@@ -11,6 +11,7 @@ LIBGA68_2.0 {
     _libga68_longrandom;
     _libga68_lower_bound;
     _libga68_malloc;
+    _libga68_malloc_leaf;
     _libga68_posixargc;
     _libga68_posixargv;
     _libga68_posixclose;

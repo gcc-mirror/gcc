@@ -726,6 +726,7 @@ a68_new_moid (void)
   DIM (z) = 0;
   USE (z) = false;
   HAS_ROWS (z) = false;
+  HAS_REFS (z) = false;
   PORTABLE (z) = true;
   DERIVATE (z) = false;
   NODE (z) = NO_NODE;

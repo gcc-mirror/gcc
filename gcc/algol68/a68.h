@@ -699,9 +699,9 @@ tree a68_row_value (tree type, size_t dim,
 		    tree *lower_bound, tree *upper_bound);
 tree a68_row_value_raw (tree type, tree descriptor,
 			tree elements, tree elements_size);
-tree a68_row_malloc (tree type, int dim,
+tree a68_row_malloc (MOID_T *m, int dim,
 		    tree elements, tree elements_size,
-		    tree *lower_bound, tree *upper_bound);		     
+		    tree *lower_bound, tree *upper_bound);
 tree a68_multiple_slice (NODE_T *p, tree multiple, bool slicing_name,
 			 int num_indexes, tree *indexes);
 tree a68_multiple_copy_elems (MOID_T *to_mode, tree to, tree from);
@@ -815,8 +815,8 @@ tree a68_get_skip_tree (MOID_T *m);
 tree a68_get_empty (void);
 void a68_ref_counts (tree exp, MOID_T *m, int *num_refs, int *num_pointers);
 tree a68_consolidate_ref (MOID_T *m, tree expr);
-tree a68_lower_alloca (tree type, tree size);
-tree a68_lower_malloc (tree type, tree size);
+tree a68_lower_alloca (MOID_T *m, tree size);
+tree a68_lower_malloc (MOID_T *m, tree size);
 tree a68_checked_indirect_ref (NODE_T *p, tree exp, MOID_T *exp_mode);
 tree a68_low_deref (tree exp, NODE_T *p);
 tree a68_low_dup (tree exp, bool use_heap = false);

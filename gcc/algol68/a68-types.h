@@ -187,6 +187,9 @@ struct GTY((chain_next ("%h.more"), chain_prev ("%h.less"))) KEYWORD_T
    HAS_ROWS is true if the mode contains rows somewhere in its internal
    structure.
 
+   HAS_REFS is true if the mode contains refs somewhere in its internal
+   structure.
+
    The interpretation of SUB depends on the kind of mode:
    - For REF modes it is the referred mode.
    - For FLEX modes it is the referred mode.
@@ -244,7 +247,7 @@ struct GTY((chain_next ("%h.next"))) MOID_T
   int number;
   int attribute;
   int dim;
-  bool has_rows, use, portable, derivate;
+  bool has_rows, has_refs, use, portable, derivate;
   NODE_T *node;
   PACK_T *pack;
   MOID_T *sub, *equivalent_mode, *slice, *deflexed_mode, *name, *multiple_mode, *next, *rowed, *trim;
@@ -950,6 +953,7 @@ struct GTY(()) A68_T
 #define GREEN(p) ((p)->green)
 #define H(p) ((p)->h)
 #define HANDLE(p) ((p)->handle)
+#define HAS_REFS(p) ((p)->has_refs)
 #define HAS_ROWS(p) ((p)->has_rows)
 #define HEAP(p) ((p)->heap)
 #define ID(p) ((p)->id)

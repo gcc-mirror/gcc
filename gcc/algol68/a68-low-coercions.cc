@@ -350,7 +350,7 @@ a68_lower_widening (NODE_T *p, LOW_CTX_T ctx)
       /* First allocate space for the elements.  */
       tree elements = a68_lower_tmpvar ("elements%",
 					pointer_to_bool_type,
-					a68_lower_alloca (a68_bool_type,
+					a68_lower_alloca (M_BOOL,
 							  fold_build2 (MULT_EXPR,
 								       sizetype,
 								       size_int (bits_size),

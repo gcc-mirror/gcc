@@ -1074,16 +1074,17 @@ a68_multiple_bounds_check_equal (NODE_T *p, tree m1, tree m2)
    *LOWER_BOUND and *UPPER_BOUND are the bounds for the DIM dimensions.  */
 
 tree
-a68_row_malloc (tree type, int dim, tree elems, tree elems_size,
+a68_row_malloc (MOID_T *m, int dim, tree elems, tree elems_size,
 		tree *lower_bound, tree *upper_bound)
 {
+  tree type = CTYPE (m);
   tree ptr_to_type = build_pointer_type (type);
 
   a68_push_range (NULL);
 
   /* Allocate space for the descriptor.  */
   tree ptr_to_multiple = a68_lower_tmpvar ("ptr_to_multiple%", ptr_to_type,
-					   a68_lower_malloc (type, size_in_bytes (type)));
+					   a68_lower_malloc (m, size_in_bytes (type)));
   tree multiple = a68_row_value (type, dim,
 				 elems, elems_size,
 				 lower_bound, upper_bound);

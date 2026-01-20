@@ -363,7 +363,7 @@ _libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
           if (length + 6 > allocated)
             allocated = length + 6;
           if (result == resultbuf || result == NULL)
-	    memory = (uint8_t *) _libga68_malloc (allocated * sizeof (uint8_t));
+	    memory = (uint8_t *) _libga68_malloc_leaf (allocated * sizeof (uint8_t));
           else
 	    memory =
 	      (uint8_t *) _libga68_realloc (result, allocated * sizeof (uint8_t));
@@ -384,7 +384,7 @@ _libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
       if (result == NULL)
         {
           /* Return a non-NULL value.  NULL means error.  */
-          result = (uint8_t *) _libga68_malloc (1);
+	  result = (uint8_t *) _libga68_malloc_leaf (1);
           if (result == NULL)
             {
               errno = ENOMEM;
@@ -580,7 +580,7 @@ _libga68_u8_to_u32 (const uint8_t *s, size_t n, uint32_t *resultbuf, size_t *len
           if (length + 1 > allocated)
             allocated = length + 1;
           if (result == resultbuf || result == NULL)
-	    memory = (uint32_t *) _libga68_malloc (allocated * sizeof (uint32_t));
+	    memory = (uint32_t *) _libga68_malloc_leaf (allocated * sizeof (uint32_t));
           else
 	    memory =
 	      (uint32_t *) _libga68_realloc (result, allocated * sizeof (uint32_t));
@@ -598,7 +598,7 @@ _libga68_u8_to_u32 (const uint8_t *s, size_t n, uint32_t *resultbuf, size_t *len
       if (result == NULL)
         {
           /* Return a non-NULL value.  NULL means error.  */
-          result = (uint32_t *) _libga68_malloc (1);
+	  result = (uint32_t *) _libga68_malloc_leaf (1);
         }
     }
   else if (result != resultbuf && length < allocated)

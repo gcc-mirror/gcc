@@ -741,12 +741,14 @@ a68_low_dup (tree expr, bool use_heap)
       tree element_pointer_type = TREE_TYPE (elements);
       tree element_type = TREE_TYPE (element_pointer_type);
       tree new_elements_size = save_expr (a68_multiple_elements_size (expr));
+      tree new_elements_type = TREE_TYPE (TREE_TYPE (elements));
+      MOID_T *new_elements_moid = a68_type_moid (new_elements_type);
       tree new_elements = a68_lower_tmpvar ("new_elements%",
 					    TREE_TYPE (elements),
 					    (use_heap
-					     ? a68_lower_malloc (TREE_TYPE (TREE_TYPE (elements)),
+					     ? a68_lower_malloc (new_elements_moid,
 								 new_elements_size)
-					     : a68_lower_alloca (TREE_TYPE (TREE_TYPE (elements)),
+					     : a68_lower_alloca (new_elements_moid,
 								 new_elements_size)));
 
       /* Then copy the elements.
@@ -1110,8 +1112,9 @@ a68_lower_memcpy (tree dst, tree src, tree size)
    pointer to it.  */
 
 tree
-a68_lower_alloca (tree type, tree size)
+a68_lower_alloca (MOID_T *m, tree size)
 {
+  tree type = CTYPE (m);
   tree call = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
   call = build_call_expr_loc (UNKNOWN_LOCATION, call, 2,
 			      size,
@@ -1121,14 +1124,17 @@ a68_lower_alloca (tree type, tree size)
 }
 
 
-/* Build a tree that allocates SIZE bytes on the heap and returns a *TYPE
-   pointer to it.  */
+/* Build a tree that allocates SIZE bytes on the heap and returns a pointer to
+   a tree with type equivalent to mode M.  */
 
 tree
-a68_lower_malloc (tree type, tree size)
+a68_lower_malloc (MOID_T *m, tree size)
 {
+  tree type = CTYPE (m);
+  a68_libcall_fn libcall
+    = (HAS_REFS (m) || HAS_ROWS (m)) ? A68_LIBCALL_MALLOC : A68_LIBCALL_MALLOC_LEAF;
   return fold_convert (build_pointer_type (type),
-		       a68_build_libcall (A68_LIBCALL_MALLOC, ptr_type_node,
+		       a68_build_libcall (libcall, ptr_type_node,
 					  1, size));
 }
 

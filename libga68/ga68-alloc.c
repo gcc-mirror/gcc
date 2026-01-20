@@ -80,6 +80,15 @@ _libga68_malloc (size_t size)
   return res;
 }
 
+void *
+_libga68_malloc_leaf (size_t size)
+{
+  void *res = (void *) GC_MALLOC_ATOMIC (size);
+  if (!res)
+    _libga68_abort ("Virtual memory exhausted\n");
+  return res;
+}
+
 #else
 
 void
@@ -110,6 +119,12 @@ _libga68_malloc (size_t size)
   if (!res)
     _libga68_abort ("Virtual memory exhausted\n");
   return res;
+}
+
+void *
+_libga68_malloc_leaf (size_t size)
+{
+  return _libga68_malloc (size);
 }
 
 #endif /* !LIBGA68_WITH_GC */

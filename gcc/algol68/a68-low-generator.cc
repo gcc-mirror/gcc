@@ -43,7 +43,7 @@
 #include "a68.h"
 
 
-typedef tree (*allocator_t) (tree, tree);
+typedef tree (*allocator_t) (MOID_T*, tree);
 
 /* Lower to code that fill in BOUNDS and elements pointers in the given buffer
    pointed by BUFFER at offset OFFSET according to the mode MODE, and evals to
@@ -205,7 +205,7 @@ fill_in_buffer (tree buffer, tree offset, tree_stmt_iterator *bounds, MOID_T *m,
       MOID_T *elem_mode = SUB (m);
       tree elem_size = fold_convert (sizetype, size_in_bytes (CTYPE (elem_mode)));
       tree elems_size = save_expr (fold_build2 (MULT_EXPR, sizetype, elem_size, num_elems));
-      tree elemsptr = (*allocator) (CTYPE (elem_mode), elems_size);
+      tree elemsptr = (*allocator) (elem_mode, elems_size);
       elemsptr = save_expr (elemsptr);
 
       /* And initialize them.  */
@@ -337,7 +337,7 @@ static tree
 gen_mode (MOID_T *m, tree_stmt_iterator *bounds, allocator_t allocator)
 {
   /* Allocate space for the value and fill it.  */
-  tree buffer = (*allocator) (CTYPE (m), size_in_bytes (CTYPE (m)));
+  tree buffer = (*allocator) (m, size_in_bytes (CTYPE (m)));
   buffer = save_expr (buffer);
   return fill_in_buffer (buffer, size_zero_node, bounds, m, allocator);
 }

@@ -1246,6 +1246,7 @@ a68_lower_collateral_clause (NODE_T *p ATTRIBUTE_UNUSED,
 		  tree sub_multiple_elements = a68_multiple_elements (sub_multiple);
 		  tree elements_pointer_type = TREE_TYPE (sub_multiple_elements);
 		  tree elements_type = TREE_TYPE (elements_pointer_type);
+		  MOID_T *elements_moid = a68_type_moid (elements_type);
 		  multiple_elements_size = fold_build2 (MULT_EXPR, sizetype,
 							     size_int (num_units),
 							     size_in_bytes (elements_type));
@@ -1254,7 +1255,7 @@ a68_lower_collateral_clause (NODE_T *p ATTRIBUTE_UNUSED,
 							a68_multiple_num_elems (sub_multiple));
 		  multiple_elements = a68_lower_tmpvar ("multiple_elements%",
 							elements_pointer_type,
-							a68_lower_alloca (elements_type,
+							a68_lower_alloca (elements_moid,
 									  multiple_elements_size));
 
 		  /* We can also now calculate the bounds of the new multiple.

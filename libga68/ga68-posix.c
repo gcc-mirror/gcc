@@ -322,7 +322,7 @@ _libga68_posixfgets (int fd, int nchars, size_t *len)
   if (nchars > 0)
     {
       /* Read exactly nchar or until EOF.  */
-      res = _libga68_malloc (nchars * sizeof (uint32_t));
+      res = _libga68_malloc_leaf (nchars * sizeof (uint32_t));
       do
 	{
 	  uc = _libga68_posixfgetc (fd);
@@ -336,7 +336,7 @@ _libga68_posixfgets (int fd, int nchars, size_t *len)
     {
       /* Read until newline or EOF.  */
       size_t allocated = 80 * sizeof (uint32_t);
-      res = _libga68_malloc (allocated);
+      res = _libga68_malloc_leaf (allocated);
       do
 	{
 	  uc = _libga68_posixfgetc (fd);
