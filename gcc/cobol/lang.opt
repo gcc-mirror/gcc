@@ -141,7 +141,7 @@ Warn if ANY LENGTH is used in outermost program.
 ; MfMoveIndex
 Wmove-index
 Cobol Warning Var(move_index, 1) Init(1)
-Warn if MOVE INDEX is used
+Warn if MOVE INDEX is used.
 
 ; MfMovePointer
 Wmove-pointer
