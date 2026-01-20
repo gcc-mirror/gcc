@@ -1,3 +1,18 @@
+2026-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/123650
+	* Makefile.am (toolexeclib_DATA): Remove.
+	(all-local): For LIBAT_BUILD_ASNEEDED_SOLINK instead of installing
+	libatomic_asneeded.{so,a} from top_srcdir cd into the destination
+	directory, use echo to write libatomic_asneeded.so and $(LN_S) to
+	symlink libatomic_asneeded.a to libatomic.a.
+	(install-data-am): For LIBAT_BUILD_ASNEEDED_SOLINK depend on
+	install-asneeded.
+	(install-asneeded): New goal.
+	* libatomic_asneeded.so: Remove.
+	* libatomic_asneeded.a: Remove.
+	* Makefile.in: Regenerate.
+
 2026-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/123396

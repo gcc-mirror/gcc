@@ -1,3 +1,37 @@
+2026-01-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* a68-low-clauses.cc (a68_lower_collateral_clause): Update
+	call to a68_lower_alloca.
+	* a68-low-coercions.cc (a68_lower_widening): Likewise.
+	* a68-low-generator.cc (allocator_t): Adjust typedef.
+	(fill_in_buffer): Adjust call to allocator.
+	(gen_mode): Likewise.
+	* a68-low-multiples.cc (a68_row_malloc): Change type parameter to MOID_T
+	from tree. Adjust call to a68_lower_malloc.
+	* a68-low-posix.cc (a68_posix_fgets): Adjust call to a68_row_malloc.
+	(a68_posix_gets): Likewise.
+	* a68-low-runtime.def (MALLOC_LEAF): Add definition for
+	_libga68_malloc_leaf.
+	* a68-low-strings.cc (a68_string_concat): Adjust call to
+	a68_lower_malloc.
+	(a68_string_from_char): Likewise.
+	* a68-low-units.cc (a68_lower_slice): Likewise.
+	* a68-low.cc (a68_low_dup): Adjust calls to a68_lower_malloc
+	and a68_lower_alloca.
+	(a68_lower_alloca): Change type parameter to MOID_T from tree.
+	(a68_lower_malloc): Likewise. Use _libga68_malloc_leaf if the MOID_T
+	doesn't have refs, use _libga68_malloc otherwise.
+	* a68-parser-modes.cc (a68_create_mode): Set has_refs on the new mode.
+	(is_mode_has_refs): New function.
+	(compute_derived_modes): Set has_refs on the chain of modes.
+	* a68-parser.cc (a68_new_moid): Set has_refs to false by
+	default.
+	* a68-types.h (struct MOID_T): Add member `has_refs`.
+	(HAS_REFS): New macro.
+	* a68.h (a68_row_malloc): Update prototype.
+	(a68_lower_alloca): Likewise.
+	(a68_lower_malloc): Likewise.
+
 2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-parser-prelude.cc (stand_prelude): Remove definitions for ^

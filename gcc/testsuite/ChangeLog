@@ -1,3 +1,63 @@
+2026-01-19  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/121787
+	* gcc.target/riscv/pr121787-1.c: New test.
+	* gcc.target/riscv/pr121787-2.c: New test.
+
+2026-01-19  Joseph Myers  <josmyers@redhat.com>
+
+	* g++.old-deja/g++.mike/eh30.C, g++.old-deja/g++.mike/p4750.C,
+	g++.old-deja/g++.robertl/eb106.C, g++.old-deja/g++.robertl/eb83.C,
+	gcc.dg/20020201-1.c: Do not use { target native }.
+
+2026-01-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/123175
+	* gcc.dg/torture/pr123175-1.c: Use int32_t instead of int in
+	vec-type construction.
+	* gcc.dg/torture/pr123175-2.c: Same.
+
+2026-01-19  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+	    Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/113666
+	* gcc.target/riscv/rvv/base/pr113666.c: New test.
+
+2026-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123061
+	PR tree-optimization/123636
+	* gcc.dg/torture/pr123061.c: New testcase.
+	* gcc.dg/torture/pr123636.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-lim-26.c: Likewise.
+
+2026-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123602
+	* g++.dg/torture/pr123603.C: New testcase.
+
+2026-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123656
+	* gcc.dg/pr123656.c: New test.
+
+2026-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR target/123603
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr123603.c: New testcase.
+
+2026-01-19  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/117575
+	* g++.target/loongarch/pr117575.C: New test.
+
+2026-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/123375
+	* gfortran.dg/import.f90: Run code testing for a warning that
+	is now an error.
+	* gfortran.dg/pr123375.f90: New test.
+
 2026-01-18  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/reflect/expr6.C: Adjust dg-error.

@@ -1,3 +1,102 @@
+2026-01-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/114153
+	* include/bits/ranges_cmp.h (__detail::__less_builtin_ptr_cmp):
+	Add __not_overloaded_spaceship spaceship check.
+	* include/bits/stl_function.h (greater<void>::operator())
+	(less<void>::operator(), greater_equal<void>::operator())
+	(less_equal<void>::operator()): Implement using if constexpr.
+	(greater<void>::__S_cmp, less<void>::__S_cmp)
+	(greater_equal<void>::__ptr_comp, less_equal<void>::S_cmp):
+	Remove.
+	(greater<void>::__ptr_cmp, less<void>::__ptr_cmp)
+	(greater_equal<void>::__ptr_comp, less_equal<void>::ptr_cmp): Change
+	tostatic constexpr variable. Define in terms of requires expressions
+	and __not_overloaded_spaceship check.
+	* include/std/concepts: (__detail::__not_overloaded_spaceship):
+	Define.
+	* libsupc++/compare: (__detail::__3way_builtin_ptr_cmp): Use
+	__not_overloaded_spaceship concept.
+	* testsuite/20_util/function_objects/comparisons_pointer_spaceship.cc: New test.
+
+2026-01-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/erase_if.h (__detail::__erase_if): Pass mutable
+	iterators to __cont.erase.
+
+2026-01-19  François Dumont  <frs.dumont@gmail.com>
+
+	* include/bits/erase_if.h (__detail::__erase_if): New.
+	* include/debug/deque (std::erase_if<>(__debug::deque<>&, _Pred)): Use latter.
+	* include/debug/inplace_vector (std::erase_if<>(__debug::inplace_vector<>&, _Pred)):
+	Likewise.
+	* include/debug/vector (std::erase_if<>(__debug::vector<>&, _Pred)): Likewise.
+	* include/std/deque: Include erase_if.h.
+	(std::erase_if<>(std::vector<>&, _Pred)): Adapt to use __detail::__erase_if.
+	* include/std/inplace_vector (std::erase_if<>(std::inplace_vector<>&, _Pred)):
+	Likewise.
+	* include/std/string (std::erase_if<>(std::basic_string<>&, _Pred)): Likewise.
+	* include/std/vector (std::erase_if<>(std::vector<>&, _Pred)): Likewise.
+	* include/debug/forward_list
+	(std::erase_if<>(__debug::forward_list<>&, _Pred)): New.
+	(std::erase<>(__debug::forward_list<>&, const _Up&)): New.
+	* include/debug/list
+	(std::erase_if<>(__debug::list<>&, _Pred)): New.
+	(std::erase<>(__debug::list<>&, const _Up&)): New.
+	* include/debug/map (std::erase_if<>(__debug::map<>&, _Pred)): New.
+	(std::erase_if<>(__debug::multimap<>&, _Pred)): New.
+	* include/debug/set (std::erase_if<>(__debug::set<>&, _Pred)): New.
+	(std::erase_if<>(__debug::multiset<>&, _Pred)): New.
+	* include/debug/string
+	(std::erase_if<>(__gnu_debug::basic_string<>&, _Pred)): New.
+	(std::erase<>(__gnu_debug::basic_string<>&, const _Up&)): New.
+	* include/debug/unordered_map
+	(std::erase_if<>(__debug::unordered_map<>&, _Pred)): New.
+	(std::erase_if<>(__debug::unordered_multimap<>&, _Pred)): New.
+	* include/debug/unordered_set
+	(std::erase_if<>(__debug::unordered_set<>&, _Pred)): New.
+	(std::erase_if<>(__debug::unordered_multiset<>&, _Pred)): New.
+	* include/std/forward_list (std::erase_if<>(std::forward_list<>&, _Pred)):
+	Adapt to work exclusively for normal implementation.
+	(std::erase<>(std::forward_list<>&, const _Up&)): Likewise.
+	* include/std/list (std::erase_if<>(std::list<>&, _Pred)): Likewise.
+	(std::erase<>(std::list<>&, const _Up&)): Likewise.
+	* include/std/map (std::erase_if<>(std::map<>&, _Pred)): Likewise.
+	(std::erase_if<>(std::multimap<>&, _Pred)): Likewise.
+	Guard functions using __cpp_lib_erase_if.
+	* include/std/set (std::erase_if<>(std::set<>&, _Pred)): Likewise.
+	(std::erase_if<>(std::multiset<>&, _Pred)): Likewise.
+	Guard functions using __cpp_lib_erase_if.
+	* include/std/unordered_map
+	(std::erase_if<>(std::unordered_map<>&, _Pred)): Likewise.
+	(std::erase_if<>(std::unordered_multimap<>&, _Pred)): Likewise.
+	Guard functions using __cpp_lib_erase_if.
+	* include/std/unordered_set
+	(std::erase_if<>(std::unordered_set<>&, _Pred)): Likewise.
+	(std::erase_if<>(std::unordered_multiset<>&, _Pred)): Likewise.
+	Guard functions using __cpp_lib_erase_if.
+	* testsuite/21_strings/basic_string/debug/erase.cc: New test case.
+	* testsuite/23_containers/forward_list/debug/erase.cc: New test case.
+	* testsuite/23_containers/forward_list/debug/invalidation/erase.cc: New test case.
+	* testsuite/23_containers/list/debug/erase.cc: New test case.
+	* testsuite/23_containers/list/debug/invalidation/erase.cc: New test case.
+	* testsuite/23_containers/map/debug/erase_if.cc: New test case.
+	* testsuite/23_containers/map/debug/invalidation/erase_if.cc: New test case.
+	* testsuite/23_containers/multimap/debug/erase_if.cc: New test case.
+	* testsuite/23_containers/multimap/debug/invalidation/erase_if.cc: New test case.
+	* testsuite/23_containers/multiset/debug/erase_if.cc: New test case.
+	* testsuite/23_containers/multiset/debug/invalidation/erase_if.cc: New test case.
+	* testsuite/23_containers/set/debug/erase_if.cc: New test case.
+	* testsuite/23_containers/set/debug/invalidation/erase_if.cc: New test case.
+	* testsuite/23_containers/unordered_map/debug/erase_if.cc: New test case.
+	* testsuite/23_containers/unordered_map/debug/invalidation/erase_if.cc: New test case.
+	* testsuite/23_containers/unordered_multimap/debug/erase_if.cc: New test case.
+	* testsuite/23_containers/unordered_multimap/debug/invalidation/erase_if.cc: New test case.
+	* testsuite/23_containers/unordered_multiset/debug/erase_if.cc: New test case.
+	* testsuite/23_containers/unordered_multiset/debug/invalidation/erase_if.cc: New test case.
+	* testsuite/23_containers/unordered_set/debug/erase_if.cc: New test case.
+	* testsuite/23_containers/unordered_set/debug/invalidation/erase_if.cc: New test case.
+
 2026-01-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/type_traits (std::is_reflection, std::is_fundamental,

@@ -1,3 +1,84 @@
+2026-01-19  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/121787
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl): Adjust call to
+	loop_optimizer_init to avoid making CFG changes.
+
+2026-01-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.opt.urls: Regenerate.
+	* config/darwin.opt.urls: Likewise.
+	* config/dragonfly.opt.urls: Likewise.
+	* config/freebsd.opt.urls: Likewise.
+	* config/gnu-user.opt.urls: Likewise.
+	* config/hpux11.opt.urls: Likewise.
+	* config/i386/cygwin.opt.urls: Likewise.
+	* config/mingw/mingw.opt.urls: Likewise.
+	* config/netbsd.opt.urls: Likewise.
+	* config/openbsd.opt.urls: Likewise.
+	* config/rs6000/aix64.opt.urls: Likewise.
+	* config/rtems.opt.urls: Likewise.
+
+2026-01-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (CPP_SUBTARGET_SPEC): Remove.
+	* config/sol2.opt (pthread): Ignore.
+	(pthreads): Likewise.
+	* config/i386/sol2.h (CPP_SPEC): Remove.
+	(SUBTARGET_CPU_EXTRA_SPECS): Remove cpp_subtarget.
+	* doc/invoke.texi (Solaris 2 Options, pthread): Remove.
+
+2026-01-19  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+	    Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/113666
+	* fold-const-call.cc (fold_const_vec_extract): New function.
+	(fold_const_call, case CFN_VEC_EXTRACT): Call it.
+	* match.pd (IFN_VEC_EXTRACT): Handle extraction from a uniform
+	vector.
+
+2026-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123061
+	PR tree-optimization/123636
+	* tree-ssa-loop-im.cc (fill_always_executed_in_1): Change
+	outer-to-inner to inner-to-outer iteration.  Update inner
+	loop state only when always executed in an immediately
+	nested loop.
+
+2026-01-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (GCN): gfx9-4-generic requires LLVM 20.
+
+2026-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123602
+	* tree-ssa-pre.cc (find_or_generate_expression): Do not
+	generate references to abnormal SSA names.
+
+2026-01-19  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config.gcc: Deprecate -m31.
+	* doc/invoke.texi: Deprecate -m31.
+
+2026-01-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123656
+	* tree-vect-generic.cc (expand_vector_mult): Fix up alg_sub_factor
+	handling.  Fix up formatting in alg_add_t_m2 handling.
+
+2026-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR target/123603
+	* config/i386/i386.opt (-param=ix86-vect-compare-costs=): Add.
+	* config/i386/i386.cc (ix86_autovectorize_vector_modes): Honor it.
+	* doc/invoke.texi (ix86-vect-compare-costs): Document.
+
+2026-01-19  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/117575
+	* config/loongarch/lasx.md: Modify the range of operand1.
+
 2026-01-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/123645

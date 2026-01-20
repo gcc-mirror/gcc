@@ -1,3 +1,9 @@
+2026-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/123375
+	* decl.cc (gfc_match_import): Check that imported entity within
+	a interface is not from local scope.
+
 2026-01-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/122957
