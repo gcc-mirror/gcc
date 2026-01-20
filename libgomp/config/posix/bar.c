@@ -156,7 +156,7 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	      gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
 	    }
 	}
-      while (gen != state + BAR_INCR);
+      while (!gomp_barrier_state_is_incremented (gen, state));
 
 #ifdef HAVE_SYNC_BUILTINS
       n = __sync_add_and_fetch (&bar->arrived, -1);
@@ -228,7 +228,7 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 		break;
 	    }
 	}
-      while (gen != state + BAR_INCR);
+      while (!gomp_barrier_state_is_incremented (gen, state));
 
 #ifdef HAVE_SYNC_BUILTINS
       n = __sync_add_and_fetch (&bar->arrived, -1);

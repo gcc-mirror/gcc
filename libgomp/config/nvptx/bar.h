@@ -169,4 +169,20 @@ gomp_team_barrier_done (gomp_barrier_t *bar, gomp_barrier_state_t state)
   bar->generation = (state & -BAR_INCR) + BAR_INCR;
 }
 
+static inline bool
+gomp_barrier_state_is_incremented (gomp_barrier_state_t gen,
+				   gomp_barrier_state_t state)
+{
+  unsigned next_state = (state & -BAR_INCR) + BAR_INCR;
+  return next_state > state ? gen >= next_state : gen < state;
+}
+
+static inline bool
+gomp_barrier_has_completed (gomp_barrier_state_t state, gomp_barrier_t *bar)
+{
+  /* Handling overflow in the generation.  The "next" state could be less than
+     or greater than the current one.  */
+  return gomp_barrier_state_is_incremented (bar->generation, state);
+}
+
 #endif /* GOMP_BARRIER_H */
