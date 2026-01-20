@@ -21,6 +21,10 @@ load_lib g++-dg.exp
 load_lib gcc-simulate-thread.exp
 load_lib torture-options.exp
 
+if { [check_effective_target_simulator] } {
+    return
+}
+
 dg-init
 torture-init
 set-torture-options [list \

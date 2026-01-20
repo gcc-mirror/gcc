@@ -8,6 +8,10 @@ if { [istarget *-*-darwin*] } {
   return
 }
 
+if { [check_effective_target_simulator] } {
+    return
+}
+
 if { [istarget hppa*-*-hpux*] } {
     return
 }
