@@ -2708,15 +2708,8 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	  const start_cfg_edge_event *old_start_cfg_ev
 	    = (const start_cfg_edge_event *)old_start_ev;
 	  bool edge_sense;
-	  if (::edge e = old_start_cfg_ev->get_cfg_edge ())
-	    {
-	      if (e->flags & EDGE_TRUE_VALUE)
-		edge_sense = true;
-	      else if (e->flags & EDGE_FALSE_VALUE)
-		edge_sense = false;
-	      else
-		continue;
-	    }
+	  if (!old_start_cfg_ev->maybe_get_edge_sense (&edge_sense))
+	    continue;
 
 	  /* Find a run of CFG start/end event pairs from
 	       [start_idx, next_idx)
@@ -2731,19 +2724,11 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	      gcc_assert (iter_ev->get_kind () == event_kind::start_cfg_edge);
 	      const start_cfg_edge_event *iter_cfg_ev
 		= (const start_cfg_edge_event *)iter_ev;
-	      ::edge e = iter_cfg_ev->get_cfg_edge ();
-	      if (!e)
+	      bool iter_edge_sense;
+	      if (!iter_cfg_ev->maybe_get_edge_sense (&iter_edge_sense))
 		break;
-	      if (edge_sense)
-		{
-		  if (!(e->flags & EDGE_TRUE_VALUE))
-		    break;
-		}
-	      else
-		{
-		  if (!(e->flags & EDGE_FALSE_VALUE))
-		    break;
-		}
+	      if (iter_edge_sense != edge_sense)
+		break;
 	      next_idx += 2;
 	    }
 

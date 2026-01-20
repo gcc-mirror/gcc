@@ -632,6 +632,29 @@ cfg_edge_event::get_cfg_edge () const
   return m_sedge->get_any_cfg_edge ();
 }
 
+/* If this event is for a conditional, write the sense of the
+   conditional to *OUT and return true.
+   Otherwise return false.  */
+
+bool
+cfg_edge_event::maybe_get_edge_sense (bool *out) const
+{
+  if (::edge e = get_cfg_edge ())
+    {
+      if (e->flags & EDGE_TRUE_VALUE)
+	{
+	  *out = true;
+	  return true;
+	}
+      else if (e->flags & EDGE_FALSE_VALUE)
+	{
+	  *out = false;
+	  return true;
+	}
+    }
+  return false;
+}
+
 /* class start_cfg_edge_event : public cfg_edge_event.  */
 
 /* Implementation of diagnostics::paths::event::print_desc vfunc for

@@ -456,6 +456,8 @@ public:
 
   ::edge get_cfg_edge () const;
 
+  bool maybe_get_edge_sense (bool *out) const;
+
  protected:
   cfg_edge_event (enum event_kind kind,
 		  const exploded_edge &eedge,
