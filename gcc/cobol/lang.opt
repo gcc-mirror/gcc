@@ -79,7 +79,7 @@ Cobol Joined Var(cobol_charset) RejectNegative
 
 fexec-national-charset=
 Cobol Joined Var(cobol_national_charset) RejectNegative
-Set the default execution character set for NATIONAL data items
+Set the default execution character set for NATIONAL data items.
 
 ;; warnings
 

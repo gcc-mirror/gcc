@@ -102,11 +102,11 @@ Link the GNU Algol 68 run-time library dynamically in the compilation.
 
 std=algol68
 Algol68
-Compile strict Algol 68 as defined by the Revised Report
+Compile strict Algol 68 as defined by the Revised Report.
 
 std=gnu68
 Algol68
-Accept GNU extensions to Algol 68
+Accept GNU extensions to Algol 68.
 
 ; Stropping regimes.
 

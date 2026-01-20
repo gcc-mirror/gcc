@@ -60,11 +60,11 @@ Warn for infinitely recursive calls.
 
 frust-crate=
 Rust Joined RejectNegative
--frust-crate=<name>             Set the crate name for the compilation
+-frust-crate=<name>             Set the crate name for the compilation.
 
 frust-extern=
 Rust RejectNegative Joined
--frust-extern=              Specify where an external library is located
+-frust-extern=              Specify where an external library is located.
 
 frust-debug
 Rust Var(flag_rust_debug)
@@ -76,15 +76,15 @@ Rust Joined RejectNegative
 
 frust-incomplete-and-experimental-compiler-do-not-use
 Rust Var(flag_rust_experimental)
-Enable experimental compilation of Rust files at your own risk
+Enable experimental compilation of Rust files at your own risk.
 
 frust-max-recursion-depth=
 Rust RejectNegative Type(int) Var(rust_max_recursion_depth) Init(64)
--frust-max-recursion-depth=<integer>
+-frust-max-recursion-depth=<integer>.
 
 frust-crate-type=
 Rust Joined RejectNegative Enum(frust_crate_type) Var(flag_rust_crate_type)
--frust-crate-type=[bin|lib|rlib|dylib|cdylib|staticlib|proc-macro]     Crate type to emit
+-frust-crate-type=[bin|lib|rlib|dylib|cdylib|staticlib|proc-macro]     Crate type to emit.
 
 Enum
 Name(frust_crate_type) Type(int) UnknownError(unknown crate type: '%qs')
@@ -112,7 +112,7 @@ Enum(frust_crate_type) String(proc-macro) Value(6)
 
 frust-mangling=
 Rust Joined RejectNegative Enum(frust_mangling) Var(flag_rust_mangling)
--frust-mangling=[legacy|v0]     Version to use for name mangling
+-frust-mangling=[legacy|v0]     Version to use for name mangling.
 
 Enum
 Name(frust_mangling) Type(int) UnknownError(unknown rust mangling option %qs)
@@ -125,11 +125,11 @@ Enum(frust_mangling) String(v0) Value(1)
 
 frust-cfg=
 Rust Joined RejectNegative
--frust-cfg=<name>             Set a config expansion option
+-frust-cfg=<name>             Set a config expansion option.
 
 frust-edition=
 Rust Joined RejectNegative Enum(frust_edition) Var(flag_rust_edition)
--frust-edition=[2015|2018|2021]             Edition to use when compiling rust code
+-frust-edition=[2015|2018|2021]             Edition to use when compiling rust code.
 
 Enum
 Name(frust_edition) Type(int) UnknownError(unknown rust edition %qs)
@@ -145,11 +145,11 @@ Enum(frust_edition) String(2021) Value(2)
 
 frust-embed-metadata
 Rust Var(flag_rust_embed_metadata)
-Enable embedding metadata directly into object files
+Enable embedding metadata directly into object files.
 
 frust-metadata-output=
 Rust Joined RejectNegative
--frust-metadata-output=<path.rox>  Path to output crate metadata
+-frust-metadata-output=<path.rox>  Path to output crate metadata.
 
 o
 Rust Joined Separate
@@ -157,7 +157,7 @@ Rust Joined Separate
 
 frust-compile-until=
 Rust Joined RejectNegative Enum(frust_compile_until) Var(flag_rust_compile_until)
--frust-compile-until=[ast|attributecheck|expansion|astvalidation|featuregating|nameresolution|lowering|typecheck|privacy|unsafety|const|borrowcheck|compilation|end]             The pipeline will run up until this stage when compiling Rust code
+-frust-compile-until=[ast|attributecheck|expansion|astvalidation|featuregating|nameresolution|lowering|typecheck|privacy|unsafety|const|borrowcheck|compilation|end]             The pipeline will run up until this stage when compiling Rust code.
 
 Enum
 Name(frust_compile_until) Type(int) UnknownError(unknown rust compile-until %qs)
@@ -206,7 +206,7 @@ Enum(frust_compile_until) String(end) Value(13)
 
 frust-name-resolution-2.0
 Rust Var(flag_name_resolution_2_0) Init(1)
-Use the temporary and experimental name resolution pipeline instead of the stable one
+Use the temporary and experimental name resolution pipeline instead of the stable one.
 
 frust-borrowcheck
 Rust Var(flag_borrowcheck)
@@ -214,7 +214,7 @@ Use the WIP borrow checker.
 
 frust-panic=
 Rust Joined RejectNegative Enum(frust_panic) Var(flag_rust_panic)
--frust-edition=[unwind|abort]             Panic strategy to compile crate with
+-frust-edition=[unwind|abort]             Panic strategy to compile crate with.
 
 Enum
 Name(frust_panic) Type(int) UnknownError(unknown panic strategy %qs)
@@ -227,11 +227,11 @@ Enum(frust_panic) String(abort) Value(1)
 
 frust-overflow-checks
 Rust Var(flag_overflow_checks) Init(1)
-Enable the overflow checks in code generation
+Enable the overflow checks in code generation.
 
 frust-assume-builtin-offset-of
 Rust Var(flag_assume_builtin_offset_of)
-Define a built-in offset_of macro in the compiler and assume it is present
+Define a built-in offset_of macro in the compiler and assume it is present.
 
 frust-unused-check-2.0
 Rust Var(flag_unused_check_2_0)

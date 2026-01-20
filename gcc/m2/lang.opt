@@ -36,19 +36,19 @@ turns on case statement label compile time checking when using an expression of 
 
 Wpedantic-param-names
 Modula-2
-compiler checks to force definition module procedure parameter names with their implementation module counterpart
+compiler checks to force definition module procedure parameter names with their implementation module counterpart.
 
 Wpedantic-cast
 Modula-2
-compiler warns if a cast is being used on types of differing sizes
+compiler warns if a cast is being used on types of differing sizes.
 
 Wverbose-unbounded
 Modula-2
-inform user which parameters will be passed by reference
+inform user which parameters will be passed by reference.
 
 Wstyle
 Modula-2
-extra compile time semantic checking, typically tries to catch poor programming style
+extra compile time semantic checking, typically tries to catch poor programming style.
 
 Wuninit-variable-checking
 Modula-2
@@ -60,67 +60,67 @@ turns on compile time analysis to detect access to uninitialized variables, the 
 
 fauto-init
 Modula-2
-automatically initializes all pointers to NIL
+automatically initializes all pointers to NIL.
 
 fbounds
 Modula-2
-turns on runtime subrange, array index and indirection via NIL pointer checking
+turns on runtime subrange, array index and indirection via NIL pointer checking.
 
 fcase
 Modula-2
-turns on runtime checking to check whether a CASE statement requires an ELSE clause when one was not specified
+turns on runtime checking to check whether a CASE statement requires an ELSE clause when one was not specified.
 
 fcpp
 Modula-2
-use cpp to preprocess the module
+use cpp to preprocess the module.
 
 fcpp-end
 Modula-2
-passed to the preprocessor if -fcpp is used (internal switch)
+passed to the preprocessor if -fcpp is used (internal switch).
 
 fcpp-begin
 Modula-2
-passed to the preprocessor if -fcpp is used (internal switch)
+passed to the preprocessor if -fcpp is used (internal switch).
 
 fdebug-builtins
 Modula-2
-call a real function, rather than the builtin equivalent
+call a real function, rather than the builtin equivalent.
 
 fd
 Modula-2
-turn on internal debugging of the compiler (internal switch)
+turn on internal debugging of the compiler (internal switch).
 
 fdebug-function-line-numbers
 Modula-2
-turn on tracing of procedure line numbers (internal switch)
+turn on tracing of procedure line numbers (internal switch).
 
 fdef=
 Modula-2 Joined
-recognize the specified suffix as a definition module filename
+recognize the specified suffix as a definition module filename.
 
 fdump-system-exports
 Modula-2
-display all inbuilt system items
+display all inbuilt system items.
 
 fextended-opaque
 Modula-2
-allows opaque types to be implemented as any type (a GNU Modula-2 extension)
+allows opaque types to be implemented as any type (a GNU Modula-2 extension).
 
 ffloatvalue
 Modula-2
-turns on runtime checking to check whether a floating point number will exceed range
+turns on runtime checking to check whether a floating point number will exceed range.
 
 fgen-module-list=
 Modula-2 Joined
-create a topologically sorted module list from all dependent modules used in the application
+create a topologically sorted module list from all dependent modules used in the application.
 
 findex
 Modula-2
-turns on all range checking for numerical values
+turns on all range checking for numerical values.
 
 fiso
 Modula-2
-use ISO dialect of Modula-2
+use ISO dialect of Modula-2.
 
 flibs=
 Modula-2 Joined
@@ -128,47 +128,47 @@ specify the library order, the libraries may be specified by a comma separated a
 
 flocation=
 Modula-2 Joined
-set all location values to a specific value (internal switch)
+set all location values to a specific value (internal switch).
 
 fm2-debug-trace=
 Modula-2 Joined
-turn on internal debug tracing for quad,token,line,all (internal switch)
+turn on internal debug tracing for quad,token,line,all (internal switch).
 
 fm2-dump=
 Modula-2 Joined
-dump Modula-2 internal intemediate representation specified by: all,quad,decl,gimple
+dump Modula-2 internal intemediate representation specified by: all,quad,decl,gimple.
 
 fm2-dump-decl=
 Modula-2 Joined
-dump Modula-2 decls to the filename stem specified
+dump Modula-2 decls to the filename stem specified.
 
 fm2-dump-gimple=
 Modula-2 Joined
-dump Modula-2 gimple to the filename stem specified
+dump Modula-2 gimple to the filename stem specified.
 
 fm2-dump-quad=
 Modula-2 Joined
-dump Modula-2 quads to the filename stem specified
+dump Modula-2 quads to the filename stem specified.
 
 fm2-dump-filter=
 Modula-2 Joined
-filter the language dump using a comma separated list of procedures and modules
+filter the language dump using a comma separated list of procedures and modules.
 
 fm2-file-offset-bits=
 Modula-2 Joined
-override the default 64 bit definition of SYSTEM.COFF_T with the argument specified
+override the default 64 bit definition of SYSTEM.COFF_T with the argument specified.
 
 fm2-g
 Modula-2
-generate extra nops to improve debugging, producing an instruction for every code related keyword
+generate extra nops to improve debugging, producing an instruction for every code related keyword.
 
 fm2-lower-case
 Modula-2
-generate error messages which render keywords in lower case
+generate error messages which render keywords in lower case.
 
 fm2-pathname=
 Modula-2 Joined
-specify the module mangled prefix name for all modules in the following include paths
+specify the module mangled prefix name for all modules in the following include paths.
 
 fm2-pathnameI
 Modula-2 Joined
@@ -176,7 +176,7 @@ Modula-2 Joined
 
 fm2-pathname-root=
 Modula-2 Joined
-add include paths for all the library names in -flibs= to this directory root
+add include paths for all the library names in -flibs= to this directory root.
 
 fm2-pathname-rootI=
 Modula-2 Joined
@@ -184,27 +184,27 @@ Modula-2 Joined
 
 fm2-plugin
 Modula-2
-insert plugin to identify runtime errors at compiletime
+insert plugin to identify runtime errors at compiletime.
 
 fm2-prefix=
 Modula-2 Joined
-specify the module mangled prefix name
+specify the module mangled prefix name.
 
 fm2-statistics
 Modula-2
-display statistics about the amount of source lines compiled and symbols used
+display statistics about the amount of source lines compiled and symbols used.
 
 fm2-strict-type
 Modula-2
-experimental flag to turn on the new strict type checker
+experimental flag to turn on the new strict type checker.
 
 fm2-strict-type-reason
 Modula-2
-provides more detail why the types are incompatible
+provides more detail why the types are incompatible.
 
 fm2-whole-program
 Modula-2
-compile all implementation modules and program module at once
+compile all implementation modules and program module at once.
 
 fmem-report
 Modula-2
@@ -212,87 +212,87 @@ Modula-2
 
 fmod=
 Modula-2 Joined
-recognize the specified suffix as implementation and module filenames
+recognize the specified suffix as implementation and module filenames.
 
 fnil
 Modula-2
-turns on runtime checking to detect accessing data through a NIL value pointer
+turns on runtime checking to detect accessing data through a NIL value pointer.
 
 fpim
 Modula-2
-use PIM [234] dialect of Modula-2
+use PIM [234] dialect of Modula-2.
 
 fpim2
 Modula-2
-use PIM 2 dialect of Modula-2
+use PIM 2 dialect of Modula-2.
 
 fpim3
 Modula-2
-use PIM 3 dialect of Modula-2
+use PIM 3 dialect of Modula-2.
 
 fpim4
 Modula-2
-use PIM 4 dialect of Modula-2
+use PIM 4 dialect of Modula-2.
 
 fpositive-mod-floor-div
 Modula-2
-force positive result from MOD and DIV result floor
+force positive result from MOD and DIV result floor.
 
 fpthread
 Modula-2
-link against the pthread library (default on)
+link against the pthread library (default on).
 
 fq
 Modula-2
-internal compiler debugging information, dump the list of quadruples
+internal compiler debugging information, dump the list of quadruples.
 
 frange
 Modula-2
-turns on all range checking for numerical values
+turns on all range checking for numerical values.
 
 freturn
 Modula-2
-turns on runtime checking for functions which finish without executing a RETURN statement
+turns on runtime checking for functions which finish without executing a RETURN statement.
 
 fruntime-modules=
 Modula-2 Joined
-specify the list of runtime modules and their initialization order
+specify the list of runtime modules and their initialization order.
 
 fscaffold-dynamic
 Modula-2
-the modules initialization order is dynamically determined by M2RTS and application dependencies
+the modules initialization order is dynamically determined by M2RTS and application dependencies.
 
 fscaffold-c
 Modula-2
-generate a C source scaffold for the current module being compiled
+generate a C source scaffold for the current module being compiled.
 
 fscaffold-c++
 Modula-2
-generate a C++ source scaffold for the current module being compiled
+generate a C++ source scaffold for the current module being compiled.
 
 fscaffold-main
 Modula-2
-generate the main function
+generate the main function.
 
 fscaffold-static
 Modula-2
-generate static scaffold initialization and finalization for every module inside main
+generate static scaffold initialization and finalization for every module inside main.
 
 fshared
 Modula-2
-generate a shared library from the module
+generate a shared library from the module.
 
 fsoft-check-all
 Modula-2
-turns on all software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)
+turns on all software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue).
 
 fsources
 Modula-2
-display the location of module source files as they are compiled
+display the location of module source files as they are compiled.
 
 fswig
 Modula-2
-create a swig interface file for the module
+create a swig interface file for the module.
 
 ftime-report
 Modula-2
@@ -304,7 +304,7 @@ optimize non var unbounded parameters by passing it by reference, providing it i
 
 fuse-list=
 Modula-2 Joined
-orders the initialization/finalizations for scaffold-static or force linking of modules if scaffold-dynamic
+orders the initialization/finalizations for scaffold-static or force linking of modules if scaffold-dynamic.
 
 fversion
 Modula-2
@@ -312,15 +312,15 @@ Modula-2
 
 fwideset
 Modula-2
-link against the module M2WIDESET to perform the wideset operator, the negative version of this option will generate a warning if this module is required
+link against the module M2WIDESET to perform the wideset operator, the negative version of this option will generate a warning if this module is required.
 
 fwholediv
 Modula-2
-turns on all division and modulus by zero checking for ordinal values
+turns on all division and modulus by zero checking for ordinal values.
 
 fwholevalue
 Modula-2
-turns on runtime checking to check whether a whole number will exceed range
+turns on runtime checking to check whether a whole number will exceed range.
 
 static-libgm2
 Driver
@@ -469,11 +469,11 @@ Modula-2 Alias(save-temps)
 
 save-temps
 Modula-2
-save temporary preprocessed files
+save temporary preprocessed files.
 
 save-temps=
 Modula-2 Joined
-save temporary preprocessed files
+save temporary preprocessed files.
 
 traditional-cpp
 Modula-2
