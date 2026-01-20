@@ -16967,6 +16967,11 @@ avr_unwind_word_mode ()
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE avr_c_mode_for_floating_type
 
+#if defined WITH_AVRLIBC
+#undef  TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P
+#define TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P hook_bool_void_true
+#endif // WITH_AVRLIBC
+
 gcc_target targetm = TARGET_INITIALIZER;
 
 
