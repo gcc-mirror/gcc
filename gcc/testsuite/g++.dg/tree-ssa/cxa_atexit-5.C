@@ -1,6 +1,7 @@
 /* { dg-do compile { target c++20 } } */
 /* { dg-options "-O2 -fdump-tree-dce2-details -fdump-tree-optimized" } */
 // { dg-require-effective-target cxa_atexit }
+// { dg-additional-options "-fuse-cxa-atexit" }
 /* PR tree-optimization/19661 */
 
 /* The call to axexit should be removed as constant_init::~constant_init is a pure/const function call

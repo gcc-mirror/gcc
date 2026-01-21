@@ -1,6 +1,7 @@
 /* { dg-do compile { target c++11 } } */
 /* { dg-options "-O2 -fdump-tree-cddce1-details -fdump-tree-optimized -w" } */
 // { dg-require-effective-target cxa_atexit }
+// { dg-additional-options "-fuse-cxa-atexit" }
 /* PR tree-optimization/19661 */
 
 /* The call to axexit should be removed as A::~A() is a pure/const function call

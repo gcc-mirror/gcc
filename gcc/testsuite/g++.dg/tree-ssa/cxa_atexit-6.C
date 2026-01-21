@@ -2,6 +2,7 @@
 /* { dg-require-effective-target fpic } */
 /* { dg-options "-O2 -fdump-tree-cddce1-details -fdump-tree-optimized -fPIC" } */
 // { dg-require-effective-target cxa_atexit }
+// { dg-additional-options "-fuse-cxa-atexit" }
 /* This test is not appropriate for targets where non-weak functions defined
    in the TU always bind locally; see PR114982.  */
 /* { dg-skip-if "PR114982" { *-*-darwin* } } */

@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-cddce1-details -fdump-tree-optimized" } */
 // { dg-require-effective-target cxa_atexit }
+// { dg-additional-options "-fuse-cxa-atexit" }
 /* PR tree-optimization/19661 */
 
 /* We should not remove the call to atexit as A::~A is unknown.  */
