@@ -3,6 +3,8 @@
 
 /* { dg-final { scan-assembler-not "\tfmul\t" } } */
 
+#include "../builtins-config.h"
+
 #define TEST(TYPE, BUILTIN, CONST, NAME)                       \
   TYPE test_##NAME##_1(TYPE a, int i)                          \
   {                                                            \
@@ -28,5 +30,9 @@
   }
 
 TEST(double, ldexp, 8.0, double_ldexp)
+#ifdef HAVE_C99_RUNTIME
+/* If libc is not known to have these functions, introduced in C99, the
+   compiler won't optimize them.  */
 TEST(float, ldexpf, 8.0f, float_ldexp)
 TEST(long double, ldexpl, 8.0L, long_ldexp)
+#endif
