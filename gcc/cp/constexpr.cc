@@ -8197,7 +8197,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     {
       if (AGGREGATE_TYPE_P (type))
 	{
-	  if (*valp)
+	  if (*valp && TREE_CODE (*valp) == CONSTRUCTOR)
 	    CONSTRUCTOR_ELTS (*valp) = nullptr;
 	  else
 	    *valp = build_constructor (type, nullptr);
