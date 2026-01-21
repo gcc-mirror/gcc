@@ -10,7 +10,7 @@ test_prepare_fpmr_sysreg ()
 {
 
 #define _S_EQ(expr, expected)                                                  \
-  _Static_assert (expr == expected, #expr " == " #expected)
+  __extension__ _Static_assert (expr == expected, #expr " == " #expected)
 
   _S_EQ (__arm_fpm_init (), 0);
 
