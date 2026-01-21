@@ -347,7 +347,10 @@ build_base_path (enum tree_code code,
 		 || processing_template_decl
 		 || in_template_context);
 
-  fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
+  if (!uneval)
+    fixed_type_p = resolves_to_fixed_type_p (expr, &nonnull);
+  else
+    fixed_type_p = 0;
 
   /* Do we need to look in the vtable for the real offset?  */
   virtual_access = (v_binfo && fixed_type_p <= 0);
