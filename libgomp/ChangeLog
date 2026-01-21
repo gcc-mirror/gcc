@@ -1,3 +1,54 @@
+2026-01-20  Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR libgomp/122356
+	* config/gcn/bar.c (gomp_team_barrier_wait_end): Atomically read
+	team->task_count.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* config/gcn/bar.h (gomp_team_barrier_done): Atomically write
+	bar->generation.
+	* config/linux/bar.c (gomp_team_barrier_wait_end): Atomically
+	read team->task_count.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* config/linux/bar.h (gomp_team_barrier_done): Atomically write
+	bar->generation.
+	* config/posix/bar.c (gomp_team_barrier_wait_end): Atomically
+	read team->task_count.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* config/posix/bar.h (gomp_team_barrier_done): Atomically write
+	bar->generation.
+	* config/rtems/bar.h (gomp_team_barrier_done): Atomically write
+	bar->generation.
+	* task.c (gomp_barrier_handle_tasks): Atomically write
+	team->task_count when decrementing to zero.
+	* testsuite/libgomp.c/pr122356.c: New test.
+
+2026-01-20  Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR libgomp/122314
+	PR libgomp/88707
+	* config/gcn/bar.c (gomp_team_barrier_wait_end): Use
+	gomp_barrier_state_is_incremented.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* config/gcn/bar.h (gomp_barrier_state_is_incremented,
+	gomp_barrier_has_completed): New.
+	* config/linux/bar.c (gomp_team_barrier_wait_end): Use
+	gomp_barrier_state_is_incremented.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	* config/linux/bar.h (gomp_barrier_state_is_incremented,
+	gomp_barrier_has_completed): New.
+	* config/nvptx/bar.h (gomp_barrier_state_is_incremented,
+	gomp_barrier_has_completed): New.
+	* config/posix/bar.c (gomp_team_barrier_wait_end): Use
+	gomp_barrier_state_is_incremented.
+	(gomp_team_barrier_wait_cancel_end): Likewise
+	* config/posix/bar.h (gomp_barrier_state_is_incremented,
+	gomp_barrier_has_completed): New.
+	* config/rtems/bar.h (gomp_barrier_state_is_incremented,
+	gomp_barrier_has_completed): New.
+	* task.c (gomp_barrier_handle_tasks): Use
+	gomp_barrier_has_completed.
+	* testsuite/libgomp.c/pr122314.c: New test.
+
 2026-01-15  Josef Melcr  <josef.melcr@suse.com>
 
 	PR ipa/122852

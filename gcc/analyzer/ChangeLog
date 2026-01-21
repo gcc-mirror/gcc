@@ -1,3 +1,12 @@
+2026-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.cc (cfg_edge_event::maybe_get_edge_sense): New.
+	* checker-event.h (cfg_edge_event::maybe_get_edge_sense): New decl.
+	* diagnostic-manager.cc
+	(diagnostic_manager::consolidate_conditions): Use the above to
+	ensure that edge_sense is initialized if used, and to simplify
+	the check for a run of conditions.
+
 2026-01-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (exploded_graph::process_worklist): Remove guard on

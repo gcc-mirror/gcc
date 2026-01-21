@@ -1,3 +1,158 @@
+2026-01-20  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/123380
+	* combine.cc (gen_lowpart_for_combine): Don't try to create a
+	paradoxical SUBREG if it's going to be rejected by validate_subreg.
+
+2026-01-20  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123626
+	* config/riscv/vector.md (vxrm_mode): Handle CALL_INSNs, which set
+	the attribute to the new VXRM_MODE_CLOBBER state.
+	* config/riscv/riscv.cc (riscv_emit_mode_set): Don't emit code when
+	VXRM's state changes to VXRM_MODE_CLOBBER.
+
+2026-01-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123314
+	* gimple-range.cc (gimple_ranger::range_on_entry): Do not check
+	ranger cache for an SSA_NAME with no BB.
+	(gimple_ranger::prefill_stmt_dependencies): Stop filling
+	dependencies when an out-of IL name is encountered.
+
+2026-01-20  supers1ngular  <supers1ngular@baylibre.com>
+
+	* doc/extend.texi: Swap samp fields to fix overfull hbox.
+	* doc/invoke.texi: Ditto.
+
+2026-01-20  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR c++/123639
+	* doc/invoke.texi: Add @item for -Wsfinae-incomplete.
+
+2026-01-20  Nathan Sidwell  <nathan@acm.org>
+
+	* diagnostics/context.cc (context::action_after_output): Print
+	invocation on ICE.
+
+2026-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/123056
+	* libsarifreplay.cc (struct embedded_link): Move decl earlier.
+	(sarif_replayer::append_embeddded_link): New.
+	(sarif_replayer::make_plain_text_within_result_message): Move the
+	link-replay logic to the above, and skip the link part of
+	intra-sarif links.
+
+2026-01-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P):
+	Return true when WITH_AVRLIBC.
+
+2026-01-20  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.md: Update comment.
+	* config/aarch64/aarch64-simd.md: Change comment to refer to
+	aarch64.md.
+	* config/aarch64/aarch64-sme.md: Likewise.
+	* config/aarch64/aarch64-sve.md: Likewise.
+	* config/aarch64/aarch64-sve2.md: Likewise.
+	* config/aarch64/aarch64-sve-builtins.def: Update comment.
+	* config/aarch64/aarch64-sve-builtins-base.def: Update to refer
+	to aarch64-sve-builtins.def.
+	* config/aarch64/aarch64-sve-builtins-sme.def: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Likewise.
+
+2026-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123724
+	* config/aarch64/aarch64.cc (aarch64_possible_by_lane_insn_p): Ignore
+	debug stmts.
+
+2026-01-20  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/123585
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1)
+	<case VEC_SELECT>: Correct gcc_assert when optimizing a vec_select
+	of a vec_select with differing vector lengths.
+
+2026-01-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/123584
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_xar<mode>): Use
+	aarch64_simd_rshift_imm predicate for rotate amount.
+
+2026-01-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/123584
+	* config/aarch64/aarch64-simd.md (aarch64_xarqv2di): Leave zero
+	rotate amounts as zero during expansion.
+	(*aarch64_xarqv2di_insn): Account for zero rotate amounts.  Print #
+	in rotate immediate.
+
+2026-01-20  Prachi Godbole  <pgodbole@nvidia.com>
+
+	* flag-types.h (enum lto_locality_heuristics): New enum.
+	* ipa-locality-cloning.cc (struct templ_info): New struct.
+	(struct locality_info): Add templ_info field.
+	(templ_hash_map): New hash_map.
+	(callee_templ_cmp): Ditto.
+	(static_profile_templ_cmp): Ditto.
+	(sort_templ_hashes_cmp): Ditto.
+	(order_templ_hashes): Ditto.
+	(locality_dc_template_p): Ditto.
+	(populate_templ_info): Ditto.
+	(create_locality_info): Call populate_templ_info.
+	(partition_callchain): Call callee_templ_cmp.
+	(locality_determine_static_order): Populate and sort templ_hash_map.
+	(locality_partition_and_clone): Handle lto_locality_heuristics.
+	(lc_execute): Initialize templ_hash_map.
+	* params.opt: New param.
+
+2026-01-20  Prachi Godbole  <pgodbole@nvidia.com>
+
+	* ipa-locality-cloning.cc (struct locality_callee_info): New struct.
+	(struct locality_info): Ditto.
+	(loc_infos): Ditto.
+	(get_locality_info): New function.
+	(sort_all_callees_default): Ditto.
+	(callee_default_cmp): Ditto.
+	(populate_callee_locality_info): Ditto.
+	(populate_caller_locality_info): Ditto.
+	(create_locality_info): Ditto.
+	(adjust_recursive_callees): Access node_to_clone by reference.
+	(inline_clones): Access node_to_clone and clone_to_node by reference.
+	(clone_node_as_needed): Ditto.
+	(accumulate_incoming_edge_frequency): Remove function.
+	(clone_node_p): New function.
+	(partition_callchain): Refactor the function.
+	(is_entry_node_p): Call local_p ().
+	(locality_determine_ipa_order): Call create_locality_info ().
+	(locality_determine_static_order): Ditto.
+	(locality_partition_and_clone): Update call to partition_callchain ()
+	according prototype.
+	(lc_execute): Allocate and free node_to_ch_info, node_to_clone,
+	clone_to_node.
+
+2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123697
+	* gimple-fold.cc (gimple_fold_partial_load_store): Use an
+	empty CTOR for a zero else value in .MASK_LOAD_LANES.
+
+2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123729
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Set
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI if the reduction flows
+	across an abnomal edge.
+
+2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-phinodes.h (phi_arg_index_from_use): Use gphi *.
+	(phi_arg_edge_from_use): New helper composing
+	phi_arg_index_from_use and gimple_phi_arg_edge.
+
 2026-01-19  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR rtl-optimization/121787

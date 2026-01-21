@@ -1,3 +1,8 @@
+2026-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/version.def (reflection): Add cxx11abi = yes;.
+	* include/bits/version.h: Regenerate.
+
 2026-01-19  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/114153

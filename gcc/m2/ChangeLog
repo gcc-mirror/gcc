@@ -1,3 +1,21 @@
+2026-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (Wpedantic-param-names, Wpedantic-cast, Wverbose-unbounded,
+	Wstyle, fauto-init, fbounds, fcase, fcpp, fcpp-end, fcpp-begin,
+	fdebug-builtins, fd, fdebug-function-line-numbers, fdef=,
+	fdump-system-exports, fextended-opaque, ffloatvalue,
+	fgen-module-list=, findex, fiso, flocation=, fm2-debug-trace=,
+	fm2-dump=, fm2-dump-decl=, fm2-dump-gimple=, fm2-dump-quad=,
+	fm2-dump-filter=, fm2-file-offset-bits=, fm2-g, fm2-lower-case,
+	fm2-pathname=, fm2-pathname-root=, fm2-pathname-rootI=, fm2-plugin,
+	fm2-prefix=, fm2-statistics, fm2-strict-type, fm2-strict-type-reason,
+	fm2-whole-program, fmod=, fnil, fpim, fpim2, fpim3, fpim4,
+	fpositive-mod-floor-div, fpthread, fq, frange, freturn,
+	fruntime-modules=, fscaffold-dynamic, fscaffold-c, fscaffold-c++,
+	fscaffold-main, fscaffold-static, fshared, fsoft-check-all, fsources,
+	fswig, fuse-list=, fwideset, fwholediv, fwholevalue, save-temps,
+	save-temps=): Add dot at the end of the description.
+
 2025-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gm2-compiler/FilterError.mod: Fix comment typo, refering

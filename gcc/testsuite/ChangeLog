@@ -1,3 +1,82 @@
+2026-01-20  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/123380
+	* gcc.target/riscv/pr123380.c: New test.
+
+2026-01-20  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123626
+	* gcc.target/riscv/rvv/base/pr123626.c: New test.
+
+2026-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123601
+	* g++.dg/lookup/operator-9.C: New test.
+
+2026-01-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123314
+	* gcc.dg/pr123314.c: New.
+
+2026-01-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/122215
+	* sparseset.supp: New.
+
+2026-01-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR sarif-replay/123056
+	* sarif-replay.dg/2.1.0-valid/3.11.6-embedded-links-pr123056.sarif: New test.
+	* sarif-replay.dg/2.1.0-valid/embedded-links-pr123056-check-html.py:
+	New test script.
+	* sarif-replay.dg/2.1.0-valid/embedded-links-pr123056-check-sarif-roundtrip.py:
+	New test script.
+
+2026-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123694
+	* g++.dg/cpp26/expansion-stmt28.C: New test.
+
+2026-01-20  Alfie Richards  <alfie.richards@arm.com>
+
+	PR middle-end/123697
+	* gcc.target/aarch64/sve/pr123697.c: New test.
+
+2026-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123724
+	* g++.dg/opt/pr123724.C: New test.
+
+2026-01-20  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/reflect/visibility1.C: Adjust dg-final.
+
+2026-01-20  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/123585
+	* gcc.target/i386/pr123585.c: New test case.
+
+2026-01-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/123584
+	* gcc.target/aarch64/torture/xar-zero.c: New test.
+
+2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123697
+	* gcc.dg/vect/vect-pr123697.c: New testcase.
+
+2026-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.misc-tests/help.exp: Check for descriptions without terminating
+	dot or semicolon also for objc, objc++, rust, modula-2, cobol and
+	algol68.
+
+2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123729
+	* g++.dg/torture/pr123729.C: New testcase.
+
 2026-01-19  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR rtl-optimization/121787

@@ -1,3 +1,19 @@
+2026-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123601
+	* tree.cc (build_min_non_dep_op_overload): Relax
+	COMPARISON_CLASS_P assert to accept SPACESHIP_EXPR too.
+
+2026-01-20  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (get_range_elts): Add comment for TARGET_EXPR stripping.
+	(get_vector_of_info_elts): Likewise.
+
+2026-01-20  Marek Polacek  <polacek@redhat.com>
+
+	* decl2.cc (min_vis_expr_r): For _DECLs with no linkage refer to the
+	linkage of the containing entity that does have a name with linkage.
+
 2026-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* metafns.gperf: Add "" as second operand of 2 static_asserts.

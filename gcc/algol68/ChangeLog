@@ -1,3 +1,8 @@
+2026-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (std=algol68, std=gnu68): Add dot at the end of the
+	description.
+
 2026-01-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* a68-low-clauses.cc (a68_lower_collateral_clause): Update

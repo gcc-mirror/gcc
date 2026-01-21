@@ -1,3 +1,13 @@
+2026-01-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (frust-crate=, frust-extern=,
+	frust-incomplete-and-experimental-compiler-do-not-use,
+	frust-max-recursion-depth=, frust-crate-type=, frust-mangling=,
+	frust-cfg=, frust-edition=, frust-embed-metadata,
+	frust-metadata-output=, frust-compile-until=,
+	frust-name-resolution-2.0, frust-panic=, frust-overflow-checks): Add
+	dot at the end of the description.
+
 2026-01-16  Yap Zhi Heng  <yapzhhg@gmail.com>
 
 	* typecheck/rust-hir-type-check-expr.cc (visit(StructExprStruct)): Update to properly
