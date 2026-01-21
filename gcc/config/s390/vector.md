@@ -2365,7 +2365,7 @@
   [(set (match_operand:VI_HW_T              0 "register_operand" "=v")
 	(gtu:VI_HW_T (match_operand:VI_HW_T 1 "register_operand"  "v")
 		     (match_operand:VI_HW_T 2 "register_operand"  "v")))]
-  "TARGET_VX"
+  "TARGET_VX && !TARGET_VXE3"
   "#"
   "&& can_create_pseudo_p ()"
   [(set (match_dup 3)
