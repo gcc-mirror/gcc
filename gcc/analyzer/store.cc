@@ -3076,6 +3076,10 @@ store::eval_alias (const region *base_reg_a,
   if (decl_b && TREE_CODE (decl_b) == SSA_NAME)
     return tristate::TS_FALSE;
 
+  /* Different decls don't alias.  */
+  if (decl_a && decl_b && decl_a != decl_b)
+    return tristate::TS_FALSE;
+
   /* Try both ways, for symmetry.  */
   tristate ts_ab = eval_alias_1 (base_reg_a, base_reg_b);
   if (ts_ab.is_false ())
