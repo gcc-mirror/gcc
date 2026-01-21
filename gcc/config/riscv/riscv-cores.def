@@ -148,8 +148,8 @@ RISCV_CORE("xt-c920v2",       "rv64imafdcv_zicbom_zicbop_zicboz_zicntr_zicond_"
 			      "xtheadsync",
 			       "xt-c920v2")
 
-RISCV_CORE("tt-ascalon-d8",   "rva23s64_zfbfmin_zfh_zkr_zvbc_zvfbfwma_zvfh_"
-			      "zvkng_zvl256b_smaia_smmpm_smnpm_smrnmi_"
+RISCV_CORE("tt-ascalon-d8",   "rva23s64_zfbfmin_zfh_zkr_zvbc_zvfbfmin_zvfbfwma_"
+			      "zvfh_zvkng_zvl256b_smaia_smmpm_smnpm_smrnmi_"
 			      "smstateen_ssaia_ssstrict_svadu",
 			      "tt-ascalon-d8")
 
