@@ -5726,7 +5726,7 @@ in_class_defaulted_default_constructor (tree t)
 }
 
 /* Returns true iff FN is a user-provided function, i.e. user-declared
-   and not defaulted at its first declaration.  */
+   and not explicitly defaulted or deleted on its first declaration.  */
 
 bool
 user_provided_p (tree fn)
@@ -5734,7 +5734,12 @@ user_provided_p (tree fn)
   fn = STRIP_TEMPLATE (fn);
   return (!DECL_ARTIFICIAL (fn)
 	  && !(DECL_INITIALIZED_IN_CLASS_P (fn)
-	       && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn))));
+	       && (DECL_DEFAULTED_FN (fn) || DECL_DELETED_FN (fn)))
+	  /* At namespace scope,
+	      void f () = delete;
+	    is *not* user-provided (and any function deleted after its first
+	    declaration is ill-formed).  */
+	  && !(DECL_NAMESPACE_SCOPE_P (fn) && DECL_DELETED_FN (fn)));
 }
 
 /* Returns true iff class T has a user-provided constructor.  */

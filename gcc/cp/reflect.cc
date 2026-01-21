@@ -1780,11 +1780,7 @@ static tree
 eval_is_user_provided (tree r)
 {
   r = maybe_get_first_fn (r);
-  if (TREE_CODE (r) == FUNCTION_DECL
-      && user_provided_p (r)
-      // TODO: user_provided_p is false for non-members defaulted on
-      // first declaration.
-      && (!DECL_NAMESPACE_SCOPE_P (r) || !DECL_DELETED_FN (r)))
+  if (TREE_CODE (r) == FUNCTION_DECL && user_provided_p (r))
     return boolean_true_node;
   else
     return boolean_false_node;
