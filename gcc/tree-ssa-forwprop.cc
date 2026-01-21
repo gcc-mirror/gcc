@@ -4137,9 +4137,15 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	return false;
       tree mask_type, perm_type, conv_src_type;
       perm_type = TREE_TYPE (orig[0]);
-      conv_src_type = (nelts == refnelts
-		       ? perm_type
-		       : build_vector_type (TREE_TYPE (perm_type), nelts));
+      /* Determine the element type for the conversion source.
+	 As orig_elem_type keeps track of the original type, check
+	 if we need to perform a sign swap after permuting.  */
+      tree conv_elem_type = TREE_TYPE (perm_type);
+      if (conv_code != ERROR_MARK
+	  && orig_elem_type[0]
+	  && tree_nop_conversion_p (orig_elem_type[0], conv_elem_type))
+	conv_elem_type = orig_elem_type[0];
+      conv_src_type = build_vector_type (conv_elem_type, nelts);
       if (conv_code != ERROR_MARK
 	  && !supportable_convert_operation (conv_code, type, conv_src_type,
 					     &conv_code))
@@ -4257,6 +4263,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	= converted_orig1 ? build_zero_cst (perm_type) : orig[1];
       tree res = gimple_build (&stmts, VEC_PERM_EXPR, perm_type,
 			       orig[0], orig1_for_perm, op2);
+      /* If we're building a smaller vector, extract the element
+	 with the proper type.  */
       if (nelts != refnelts)
 	res = gimple_build (&stmts, BIT_FIELD_REF,
 			    conv_code != ERROR_MARK ? conv_src_type : type,
@@ -4264,6 +4272,11 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 			    TYPE_SIZE (conv_code != ERROR_MARK ? conv_src_type
 							       : type),
 			    bitsize_zero_node);
+      /* Otherwise, we can still have an intermediate sign change.  */
+      else if (conv_code != ERROR_MARK
+	       && tree_nop_conversion_p (conv_src_type, perm_type))
+	res = gimple_build (&stmts, VIEW_CONVERT_EXPR, conv_src_type, res);
+      /* Finally, apply the conversion.  */
       if (conv_code != ERROR_MARK)
 	res = gimple_build (&stmts, conv_code, type, res);
       else if (!useless_type_conversion_p (type, TREE_TYPE (res)))
