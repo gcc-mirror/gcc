@@ -641,6 +641,8 @@ public:
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
+  void validate () const;
+
   std::unique_ptr<json::object> to_json () const;
 
   void add_to_tree_widget (text_art::tree_widget &parent_widget,
@@ -656,6 +658,9 @@ public:
 				    uncertainty_t *uncertainty,
 				    svalue_set *maybe_live_values,
 				    bool always_overlap);
+
+  const concrete_bindings_t &
+  get_concrete_bindings () const { return m_concrete; }
 
 private:
   void get_overlapping_bindings (const binding_key *key,

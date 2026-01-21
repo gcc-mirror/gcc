@@ -941,6 +941,40 @@ binding_map::dump (bool simple) const
   pp_newline (&pp);
 }
 
+/* Assert that this object is valid.  */
+
+void
+binding_map::validate () const
+{
+  const size_t num_concrete = m_concrete.size ();
+  const size_t num_symbolic = m_symbolic.size ();
+
+  /* We shouldn't have more than one symbolic key per cluster
+     (or one would have clobbered the other).  */
+  gcc_assert (num_symbolic < 2);
+  /* We can't have both concrete and symbolic keys.  */
+  gcc_assert (num_concrete == 0 || num_symbolic == 0);
+
+  /* Check for overlapping concrete bindings.  */
+  for (auto iter = m_concrete.begin (); iter != m_concrete.end (); ++iter)
+    {
+      auto next (iter);
+      ++next;
+      if (next != m_concrete.end ())
+	{
+	  /* Verify they are in order, and do not overlap.  */
+	  const bit_range &iter_bits = iter->first;
+	  const bit_range &next_bits = next->first;
+	  gcc_assert (iter_bits.get_start_bit_offset ()
+		      < next_bits.get_start_bit_offset ());
+	  gcc_assert (iter_bits.get_last_bit_offset ()
+		      < next_bits.get_start_bit_offset ());
+	  gcc_assert (iter_bits.get_next_bit_offset ()
+		      <= next_bits.get_start_bit_offset ());
+	}
+    }
+}
+
 /* Return a new json::object of the form
    {KEY_DESC : SVALUE_DESC,
     ...for the various key/value pairs in this binding_map}.  */
@@ -1584,20 +1618,7 @@ binding_cluster::dump (bool simple) const
 void
 binding_cluster::validate () const
 {
-  int num_symbolic = 0;
-  int num_concrete = 0;
-  for (auto iter : m_map)
-    {
-      if (iter.m_key->symbolic_p ())
-	num_symbolic++;
-      else
-	num_concrete++;
-    }
-  /* We shouldn't have more than one symbolic key per cluster
-     (or one would have clobbered the other).  */
-  gcc_assert (num_symbolic < 2);
-  /* We can't have both concrete and symbolic keys.  */
-  gcc_assert (num_concrete == 0 || num_symbolic == 0);
+  m_map.validate ();
 }
 
 /* Return a new json::object of the form
@@ -2285,6 +2306,28 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
 	return false;
 
       out_cluster->m_map.put (key, unknown_sval);
+    }
+
+  /* We might now have overlapping concrete clusters in OUT_CLUSTER.
+     Reject such cases.  */
+  if (num_concrete_keys > 0)
+    {
+      /* Check for overlapping concrete bindings.  */
+      const auto &concrete_bindings
+	= out_cluster->get_map ().get_concrete_bindings ();
+      for (auto iter = concrete_bindings.begin ();
+	   iter != concrete_bindings.end (); ++iter)
+	{
+	  auto next (iter);
+	  ++next;
+	  if (next != concrete_bindings.end ())
+	    {
+	      const bit_range &iter_bits = iter->first;
+	      const bit_range &next_bits = next->first;
+	      if (iter_bits.intersects_p (next_bits))
+		return false;
+	    }
+	}
     }
 
   /* We can only have at most one symbolic key per cluster,
