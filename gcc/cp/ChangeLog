@@ -1,3 +1,22 @@
+2026-01-20  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	Backported from master:
+	2025-12-23  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/122550
+	* decl.cc (member_like_constrained_friend_p): Check that the
+	friend's enclosing class is an implicit instantiation.
+
+2026-01-20  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	Backported from master:
+	2025-12-18  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+		    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122070
+	* pt.cc (type_targs_deducible_from): Fall back to
+	TYPE_TEMPLATE_INFO when TYPE_TEMPLATE_INFO_MAYBE_ALIAS is NULL.
+
 2026-01-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
