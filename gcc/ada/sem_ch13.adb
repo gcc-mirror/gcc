@@ -1527,9 +1527,7 @@ package body Sem_Ch13 is
       --  at the ends of certain declaration lists (like visible-part lists),
       --  not when this procedure is called at arbitrary freeze points.
 
-      if not Nonoverridable_Only
-        and then not Scope_Within_Or_Same (Current_Scope, Scope (E))
-      then
+      if not Nonoverridable_Only and then not In_Open_Scopes (Scope (E)) then
          if Is_Type (E) and then From_Nested_Package (E) then
             declare
                Pack : constant Entity_Id := Scope (E);

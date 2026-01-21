@@ -9868,7 +9868,7 @@ package body Sem_Util is
       return
         Ekind (Pack) = E_Package
           and then not Is_Frozen (Pack)
-          and then not Scope_Within_Or_Same (Current_Scope, Pack)
+          and then not In_Open_Scopes (Pack)
           and then In_Open_Scopes (Scope (Pack));
    end From_Nested_Package;
 
