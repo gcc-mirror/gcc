@@ -46,7 +46,7 @@ test_vst3_bf16 (bfloat16_t *ptr, bfloat16x4x3_t val)
 /*
 **test_vst3q_bf16:
 **      ...
-**	vst3.16	{d17, d19, d21}, \[r0\]
+**	vst3.16	{d1, d3, d5}, \[r0\]
 **	bx	lr
 */
 void
