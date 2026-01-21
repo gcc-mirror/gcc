@@ -1849,19 +1849,15 @@ eval_is_enumerator (const_tree r)
     return boolean_false_node;
 }
 
-/* Get the linkage name for T, or NULL_TREE, if N/A.  */
+/* Get the linkage name for T, or NULL_TREE for types with no name
+   or for typedefs.  */
 
 static tree
-type_linkage_name (tree t)
+reflection_type_linkage_name (tree t)
 {
-  if (TYPE_NAME (t) == NULL_TREE
-      || !DECL_P (TYPE_NAME (t))
-      || (!DECL_IMPLICIT_TYPEDEF_P (TYPE_NAME (t))
-	  && TYPE_NAME (t) == TYPE_NAME (TYPE_MAIN_VARIANT (t))
-	  && !TYPE_MAIN_DECL (t)))
-    return NULL_TREE;
-
-  return TYPE_NAME (t);
+  if (OVERLOAD_TYPE_P (t) && !typedef_variant_p (t))
+    return TYPE_NAME (t);
+  return NULL_TREE;
 }
 
 /* Process std::meta::has_internal_linkage.
@@ -1881,7 +1877,7 @@ eval_has_internal_linkage (tree r, reflect_kind kind)
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
-      r = type_linkage_name (r);
+      r = reflection_type_linkage_name (r);
       if (!r)
 	return boolean_false_node;
     }
@@ -1908,7 +1904,7 @@ eval_has_module_linkage (tree r, reflect_kind kind)
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
-      r = type_linkage_name (r);
+      r = reflection_type_linkage_name (r);
       if (!r)
 	return boolean_false_node;
     }
@@ -1938,7 +1934,7 @@ eval_has_external_linkage (tree r, reflect_kind kind)
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
-      r = type_linkage_name (r);
+      r = reflection_type_linkage_name (r);
       if (!r)
 	return boolean_false_node;
     }
@@ -1966,7 +1962,7 @@ eval_has_c_language_linkage (tree r, reflect_kind kind)
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
-      r = type_linkage_name (r);
+      r = reflection_type_linkage_name (r);
       if (!r)
 	return boolean_false_node;
     }
@@ -1993,7 +1989,7 @@ eval_has_linkage (tree r, reflect_kind kind)
   r = STRIP_TEMPLATE (r);
   if (TYPE_P (r))
     {
-      r = type_linkage_name (r);
+      r = reflection_type_linkage_name (r);
       if (!r)
 	return boolean_false_node;
     }
