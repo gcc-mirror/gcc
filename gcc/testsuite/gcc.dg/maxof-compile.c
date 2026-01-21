@@ -156,3 +156,12 @@ type (void)
   _Generic (_Maxof (bool), bool: 0);
   _Generic (_Minof (bool), bool: 0);
 }
+
+void
+quals (void)
+{
+  _Generic (typeof (_Maxof (const int)), int: 0);
+  _Generic (typeof (_Minof (const int)), int: 0);
+  _Generic (typeof (_Maxof (volatile int)), int: 0);
+  _Generic (typeof (_Minof (volatile int)), int: 0);
+}
