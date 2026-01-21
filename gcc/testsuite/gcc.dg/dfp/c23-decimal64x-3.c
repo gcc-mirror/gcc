@@ -1,5 +1,4 @@
 /* Test _Decimal64x in C23 mode - builtins.  */
-/* { dg-do run } */
 /* { dg-options "-std=c23 -pedantic-errors" } */
 
 _Decimal64x a = __builtin_infd64x ();

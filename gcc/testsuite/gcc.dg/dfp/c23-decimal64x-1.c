@@ -1,5 +1,4 @@
 /* Test _Decimal64x in C23 mode.  */
-/* { dg-do run } */
 /* { dg-options "-std=c23 -pedantic-errors" } */
 
 int a = (int) 1.1D64x;
