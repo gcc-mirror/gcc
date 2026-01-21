@@ -1,5 +1,7 @@
 // { dg-lto-do link }
 // { dg-lto-options {{-flto -O3 -r -Wno-return-type}} }
+// { dg-extra-ld-options "-flinker-output=nolto-rel" }
+
 class C;
 class F {
   virtual C m_fn1();
