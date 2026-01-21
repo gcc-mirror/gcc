@@ -1,6 +1,7 @@
 // ICE in explicit instantiation of a function with contracts
 // { dg-do run }
 // { dg-options "-std=c++20 -fcontracts -fcontract-continuation-mode=on" }
+// { dg-skip-if "required hosted libstdc++ for stdc++exp" { ! hostedlib } }
 
 template<class T>
 void foo(T t)

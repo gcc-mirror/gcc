@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-skip-if "required hosted libstdc++ for functional function" { ! hostedlib } }
 
 // PR tree-optimization/105769
 

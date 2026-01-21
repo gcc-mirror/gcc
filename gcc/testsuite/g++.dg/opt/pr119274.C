@@ -1,5 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-O2 -Wall" }
+// { dg-skip-if "required hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <cstdlib>
 #include <vector>

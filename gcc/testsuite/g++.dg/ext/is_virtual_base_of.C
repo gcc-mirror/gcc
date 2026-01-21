@@ -1,4 +1,6 @@
 // { dg-do run }
+// { dg-skip-if "required hosted libstdc++ for cassert" { ! hostedlib } }
+
 #include <cassert>
 
 class A1

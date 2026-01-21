@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-require-effective-target c++11 }
 // { dg-options "-O3 -fdump-tree-evrp" }
+// { dg-skip-if "required hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
 int main()

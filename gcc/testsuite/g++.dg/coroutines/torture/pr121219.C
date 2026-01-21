@@ -1,5 +1,6 @@
 // PR c++/121219
 // { dg-do run }
+// { dg-skip-if "required hosted libstdc++ for stdexcept" { ! hostedlib } }
 
 #include <coroutine>
 #ifdef OUTPUT

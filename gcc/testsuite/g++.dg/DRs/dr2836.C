@@ -1,6 +1,7 @@
 // DR 2836 - Conversion rank of long double and extended floating-point types
 // { dg-do compile { target c++23 } }
 // { dg-additional-options "-mlong-double-64" { target powerpc*-*-* s390*-*-* } }
+// { dg-skip-if "required hosted libstdc++ for stdfloat" { ! hostedlib } }
 
 #include <stdfloat>
 

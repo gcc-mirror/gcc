@@ -1,6 +1,7 @@
 // PR c++/114630
 // { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 // { dg-module-cmi empty }
+// { dg-skip-if "required hosted libstdc++ for any in xtreme-header.h" { ! hostedlib } }
 
 module;
 #include "xtreme-header.h"

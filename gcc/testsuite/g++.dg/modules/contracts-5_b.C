@@ -1,6 +1,7 @@
 // PR c++/108205
 // { dg-module-do run }
 // { dg-additional-options "-fmodules -fcontracts -fcontract-continuation-mode=on" }
+// { dg-skip-if "required hosted libstdc++ for experimental/contract" { ! hostedlib } }
 
 #include <experimental/contract>
 import test;

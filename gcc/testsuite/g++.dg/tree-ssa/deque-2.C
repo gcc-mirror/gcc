@@ -1,5 +1,7 @@
 // { dg-do compile }
 // { dg-options "-O3 -fdump-tree-optimized" }
+// { dg-skip-if "required hosted libstdc++ for deque" { ! hostedlib } }
+
 #include <deque>
 std::deque<int *>
 test2(std::deque<int *> &q)

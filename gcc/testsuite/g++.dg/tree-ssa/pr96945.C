@@ -1,5 +1,7 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-O1 -fdump-tree-optimized" }
+// { dg-skip-if "required hosted libstdc++ for vector" { ! hostedlib } }
+
 #include <vector>
 struct c {
     c() = default;
