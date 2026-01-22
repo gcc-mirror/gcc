@@ -1,3 +1,12 @@
+2026-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_inst16.adb: New test.
+	* gnat.dg/generic_inst16_pkg.ads: New helper.
+	* gnat.dg/generic_inst16_pkg-child.ads: Likewise.
+	* gnat.dg/generic_inst16_pkg-child-grandchild.ads: Likewise.
+	* gnat.dg/generic_inst16_proc.ads: Likewise.
+	* gnat.dg/generic_inst16_proc.adb: Likewise.
+
 2026-01-20  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
 
 	Backported from master:
