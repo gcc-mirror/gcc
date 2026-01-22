@@ -25,4 +25,4 @@ int f(int a, int b, int c)
 /* Make sure we only have a PHI with 2 arguments here, 2 and 4.  */
 /* { dg-final { scan-tree-dump "PHI <2..., 4...>|PHI <4..., 2...>" "optimized" } } */
 /* Make sure we can shrink wrap the function now too. */
-/* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue" { target { { { i?86-*-* x86_64-*-* } && { ! ia32 } } || { powerpc*-*-* aarch64*-*-* riscv*-*-* arm*-*-* }  } } } } */
+/* { dg-final { scan-rtl-dump "Performing shrink-wrapping" "pro_and_epilogue" { target { { { i?86-*-* x86_64-*-* } && { ! ia32 } } || { { powerpc*-*-* aarch64*-*-* riscv*-*-* } || { arm*-*-* && { ! arm_thumb1 } } } } } } } */
