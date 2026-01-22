@@ -1459,7 +1459,8 @@ hoist_guard (class loop *loop, edge guard)
 
   if (skip_count > e->count ())
     {
-      fprintf (dump_file, "  Capping count; expect profile inconsistency\n");
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "  Capping count; expect profile inconsistency\n");
       skip_count = e->count ();
     }
   if (dump_enabled_p ())
