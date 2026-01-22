@@ -191,7 +191,7 @@ remove_unreachable::fully_replaceable (tree name, basic_block bb)
 // side effects (like being passed to a call, or stored to a global, etc.
 // This means we will miss cases where there are 2 or more uses that have
 // no interveneing statements that may had side effects, but it catches most
-// of the caes we care about, and prevents expensive in depth analysis.
+// of the cases we care about, and prevents expensive in depth analysis.
 //
 // Ranger will still reflect the proper ranges at other places in these missed
 // cases, we simply will not remove/set globals early.
