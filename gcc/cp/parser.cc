@@ -22277,7 +22277,7 @@ cp_parser_type_specifier (cp_parser* parser,
       /* Fall through.  */
     case RID_TYPENAME:
       /* If we see 'typename [:', this could be a typename-specifier.
-	 But if there's no '::' after the '[:x:]' then it is probably
+	 But if there's no '::' after the '[:x:]' then it is
 	 a simple-type-specifier.  */
       if (keyword == RID_TYPENAME
 	  && cp_parser_nth_token_starts_splice_without_nns_p (parser, 2))
@@ -27661,7 +27661,6 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 {
   cp_decl_specifier_seq type_specifier_seq;
   cp_declarator *abstract_declarator;
-  cp_token *next = nullptr;
 
   /* Parse the type-specifier-seq.  */
   cp_parser_type_specifier_seq (parser, flags,
@@ -27670,17 +27669,6 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 				&type_specifier_seq);
   if (type_location)
     *type_location = type_specifier_seq.locations[ds_type_spec];
-
-  /* If there is just ds_type_spec specified, this could be a type alias.  */
-  if (type_alias_p && is_typedef_decl (type_specifier_seq.type))
-    {
-      int i;
-      for (i = ds_first; i < ds_last; ++i)
-	if (i != ds_type_spec && type_specifier_seq.locations[i])
-	  break;
-      if (i == ds_last)
-	next = cp_lexer_peek_token (parser->lexer);
-    }
 
   if (is_template_arg && type_specifier_seq.type
       && TREE_CODE (type_specifier_seq.type) == TEMPLATE_TYPE_PARM
@@ -27707,12 +27695,19 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 			    /*static_p=*/false);
   /* Check to see if there really was a declarator.  */
   if (!cp_parser_parse_definitely (parser))
-    abstract_declarator = NULL;
+    abstract_declarator = nullptr;
 
   /* If we found * or & and similar after the type-specifier, it's not
      a type alias.  */
   if (type_alias_p)
-    *type_alias_p = cp_lexer_peek_token (parser->lexer) == next;
+    *type_alias_p = [&] {
+      if (abstract_declarator || !is_typedef_decl (type_specifier_seq.type))
+	return false;
+      for (int i = ds_first; i < ds_last; ++i)
+	if (i != ds_type_spec && type_specifier_seq.locations[i])
+	  return false;
+      return true;
+    } ();
 
   bool auto_typeid_ok = false;
   /* DR 625 prohibits use of auto as a template-argument.  We allow 'auto'
