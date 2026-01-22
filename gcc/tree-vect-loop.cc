@@ -8233,11 +8233,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 						 vop[2], vop[reduc_index]);
 	    }
 	  else
-	    {
-	      gcc_assert (code.is_tree_code ());
-	      call = gimple_build_call_internal (cond_fn, 4, mask, vop[0],
-						 vop[1], vop[reduc_index]);
-	    }
+	    call = gimple_build_call_internal (cond_fn, 4, mask, vop[0],
+					       vop[1], vop[reduc_index]);
 	  new_temp = make_ssa_name (vec_dest, call);
 	  gimple_call_set_lhs (call, new_temp);
 	  gimple_call_set_nothrow (call, true);
