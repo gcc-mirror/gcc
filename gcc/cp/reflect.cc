@@ -7206,7 +7206,7 @@ can_extract_member_or_function_p (tree T, tree r, reflect_kind kind)
       tree F = TREE_TYPE (r);
       F = build_pointer_type (F);
       F = build_ptrmemfunc_type (F);
-      if (same_type_p (T, F))
+      if (same_type_p (T, F) || fnptr_conv_p (T, F))
 	return true;
       return false;
     }
@@ -7214,7 +7214,7 @@ can_extract_member_or_function_p (tree T, tree r, reflect_kind kind)
     {
       tree F = TREE_TYPE (r);
       F = build_pointer_type (F);
-      if (same_type_p (T, F))
+      if (same_type_p (T, F) || fnptr_conv_p (T, F))
 	return true;
       return false;
     }
@@ -7250,7 +7250,10 @@ extract_member_or_function (location_t loc, const constexpr_ctx *ctx,
 
   const tsubst_flags_t complain = complain_flags (ctx);
   if (POINTER_TYPE_P (T))
-    return cp_build_addr_expr (r, complain);
+    {
+      r = cp_build_addr_expr (r, complain);
+      return perform_implicit_conversion (T, r, complain);
+    }
   else
     {
       if (!mark_used (r, complain))

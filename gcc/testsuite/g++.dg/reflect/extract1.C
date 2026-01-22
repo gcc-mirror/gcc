@@ -171,13 +171,10 @@ constexpr auto a4 = extract<int (*)() noexcept>(^^B::fn4);
 constexpr auto a5 = extract<int (*)(B)>(^^B::fn5);
 constexpr auto a6 = extract<int (B::*)(int) &>(^^B::fn6);
 constexpr auto a7 = extract<int (B::*)(int) &&>(^^B::fn7);
-
 constexpr auto a8 = extract<int B::*>(^^B::m);
 constexpr auto a9 = extract<int const B::*>(^^B::m);
 constexpr auto a10 = extract<int* B::*>(^^B::p);
 constexpr auto a11 = extract<int* const B::*>(^^B::p);
 constexpr auto a12 = extract<int const* const B::*>(^^B::p);
-
-// FIXME removing noexcept should be allowed
-// constexpr auto a13 = extract<int (*)()>(^^B::fn4);
-// constexpr auto a14 = extract<int (B::*)()>(^^B::fn2);
+constexpr auto a13 = extract<int (*)()>(^^B::fn4);
+constexpr auto a14 = extract<int (B::*)()>(^^B::fn2);

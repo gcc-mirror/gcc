@@ -130,11 +130,11 @@ struct C {
 };
 static_assert (!can_extract<void (C::*)()>(^^C::fn));
 static_assert (!can_extract<int (C::*)() noexcept>(^^C::fn));
-static_assert (!can_extract<int (C::*)()>(^^C::fn2));
+static_assert (can_extract<int (C::*)()>(^^C::fn2));
 static_assert (!can_extract<int (C::*)()>(^^C::fn3));
 static_assert (!can_extract<int (C::*)()>(^^C::fn4));
 static_assert (!can_extract<int (*)() noexcept>(^^C::fn3));
-static_assert (!can_extract<int (*)()>(^^C::fn4));
+static_assert (can_extract<int (*)()>(^^C::fn4));
 static_assert (!can_extract<int (*)()>(^^C::fn5));
 static_assert (!can_extract<int (C::*)(int) &&>(^^C::fn6));
 static_assert (!can_extract<int (C::*)(int) &>(^^C::fn7));
