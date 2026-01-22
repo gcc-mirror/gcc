@@ -107,11 +107,11 @@
 bad-eval-with-code-flow.py:10: warning: Use of tainted variable 'raw_input' in the insecure function 'eval'. [PY2335]
   events 1-2
     |
+    |bad-eval-with-code-flow.py:5: (1): 
+    |bad-eval-with-code-flow.py:6: (2): 
     |
     +--> event 3
            |
+           |bad-eval-with-code-flow.py:10: (3): 
            |
    { dg-end-multiline-output "" } */
-
-// TODO: show path even when we can't find the source
-// TODO: show path when we can find the source

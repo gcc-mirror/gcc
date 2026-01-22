@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/paths.h"
 #include "gcc-rich-location.h"
 #include "diagnostics/color.h"
+#include "diagnostics/file-cache.h"
 #include "diagnostics/event-id.h"
 #include "diagnostics/source-printing-effects.h"
 #include "pretty-print-markup.h"
@@ -616,18 +617,24 @@ struct event_range
 	  }
       }
 
-    /* If we have an UNKNOWN_LOCATION (or BUILTINS_LOCATION) as the
-       primary location for an event, diagnostic_show_locus won't print
-       anything.
-
-       In particular the label for the event won't get printed.
-       Fail more gracefully in this case by showing the event
-       index and text, at no particular location.  */
-    if (get_pure_location (initial_loc) <= BUILTINS_LOCATION)
+    /* Ideally we will print events as labelled ranges within the
+       quoted source.  But if there is no source, or we can't find it,
+       we need a fallback, or the events won't show up. Fail more
+       gracefully in this case by showing the event index and text.  */
+    if (!can_print_source_p (dc))
       {
 	for (unsigned i = m_start_idx; i <= m_end_idx; i++)
 	  {
 	    const event &iter_event = m_path.get_event (i);
+	    location_t event_loc = iter_event.get_location ();
+	    if (get_pure_location (event_loc) > BUILTINS_LOCATION)
+	      {
+		// TODO: this implicitly uses "line_table"
+		gcc_assert (line_table);
+		expanded_location exploc (expand_location (event_loc));
+
+		pp_string (&pp, text_output.get_location_text (exploc).get ());
+	      }
 	    diagnostic_event_id_t event_id (i);
 	    pp_printf (&pp, " %@: ", &event_id);
 	    iter_event.print_desc (pp);
@@ -674,25 +681,46 @@ struct event_range
 	  }
       }
 
-    /* If we have an UNKNOWN_LOCATION (or BUILTINS_LOCATION) as the
-       primary location for an event, diagnostic_show_locus_as_html won't print
-       anything.
-
-       In particular the label for the event won't get printed.
-       Fail more gracefully in this case by showing the event
-       index and text, at no particular location.  */
-    if (get_pure_location (initial_loc) <= BUILTINS_LOCATION)
+    /* Ideally we will print events as labelled ranges within the
+       quoted source.  But if there is no source, or we can't find it,
+       we need a fallback, or the events won't show up. Fail more
+       gracefully in this case by showing the event index and text.  */
+    if (!can_print_source_p (dc))
       {
 	for (unsigned i = m_start_idx; i <= m_end_idx; i++)
 	  {
 	    const event &iter_event = m_path.get_event (i);
-	    diagnostic_event_id_t event_id (i);
-	    pretty_printer pp;
-	    pp_printf (&pp, " %@: ", &event_id);
-	    iter_event.print_desc (pp);
+
+	    xml::auto_print_element p (xp, "p");
+
 	    if (event_label_writer)
 	      event_label_writer->begin_label ();
-	    xp.add_text_from_pp (pp);
+
+	    location_t event_loc = iter_event.get_location ();
+	    if (get_pure_location (event_loc) > BUILTINS_LOCATION)
+	      {
+		// TODO: this implicitly uses "line_table"
+		gcc_assert (line_table);
+		expanded_location exploc (expand_location (event_loc));
+
+		location_print_policy policy (dc);
+		policy.print_html_span_start (dc, xp, exploc);
+	      }
+	    {
+	      diagnostic_event_id_t event_id (i);
+	      pretty_printer pp;
+	      pp_printf (&pp, " %@: ", &event_id);
+	      xp.push_tag_with_class ("span", "event-id");
+	      xp.add_text_from_pp (pp);
+	      xp.pop_tag ("span");
+	    }
+	    {
+	      pretty_printer pp;
+	      iter_event.print_desc (pp);
+	      xp.push_tag_with_class ("span", "event-text");
+	      xp.add_text_from_pp (pp);
+	      xp.pop_tag ("span");
+	    }
 	    if (event_label_writer)
 	      event_label_writer->end_label ();
 	  }
@@ -721,6 +749,30 @@ struct event_range
   hash_map<int_hash<int, -1, -2>,
 	   per_source_line_info> m_source_line_info_map;
   bool m_show_event_links;
+
+private:
+  /* Return true if we can print source code for the primary location
+     for the initial event.
+
+     If we can't then the labels won't be printed, and thus we'll have
+     to fall back to printing the events directly for them to be
+     printed.  */
+  bool can_print_source_p (diagnostics::context &dc) const
+  {
+    location_t initial_loc = m_initial_event.get_location ();
+    if (get_pure_location (initial_loc) <= BUILTINS_LOCATION)
+      return false;
+
+    // TODO: this implicitly uses "line_table"
+    expanded_location exploc (expand_location (initial_loc));
+
+    auto line_content
+      = dc.get_file_cache ().get_source_line (exploc.file, exploc.line);
+    if (!line_content)
+      return false;
+
+    return true;
+  }
 };
 
 /* A struct for grouping together the events in a path into
