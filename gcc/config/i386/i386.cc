@@ -26572,6 +26572,12 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
 	      > ceil_log2 (LOOP_VINFO_INT_NITERS (loop_vinfo))))
 	m_costs[vect_body] = INT_MAX;
 
+      /* We'd like to avoid using masking if there's an in-order reduction
+	 to vectorize because that will also perform in-order adds of
+	 masked elements (as neutral value, of course) here, but there
+	 is currently no way to indicate to try un-masked with the same
+	 mode.  */
+
       bool any_reduc_p = false;
       for (int i = 0; i != X86_REDUC_LAST; i++)
 	if (m_num_reduc[i])
@@ -26687,6 +26693,20 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
 		  }
 	      }
 	  }
+      /* Avoid using masking if there's an in-order reduction
+	 to vectorize because that will also perform in-order adds of
+	 masked elements (as neutral value, of course).  */
+      if (!avoid)
+	{
+	  for (auto inst : LOOP_VINFO_SLP_INSTANCES (loop_vinfo))
+	    if (SLP_INSTANCE_KIND (inst) == slp_inst_kind_reduc_group
+		&& (vect_reduc_type (loop_vinfo, SLP_INSTANCE_TREE (inst))
+		    == FOLD_LEFT_REDUCTION))
+	      {
+		avoid = true;
+		break;
+	      }
+	}
       if (!avoid)
 	{
 	  m_suggested_epilogue_mode = loop_vinfo->vector_mode;
