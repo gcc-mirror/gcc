@@ -1,3 +1,15 @@
+2026-01-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/123739
+	* lang.opt: All option descriptions are now capitalized.
+	(Wcase-enum): Warning tag added.
+	(Wpedantic-param-names): Ditto.
+	(Wpedantic-cast): Ditto.
+	(Wverbose-unbounded): Ditto.
+	(Wstyle): Ditto.
+	(Wuninit-variable-checking): Ditto.
+	(Wuninit-variable-checking=): Ditto.
+
 2026-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (Wpedantic-param-names, Wpedantic-cast, Wverbose-unbounded,

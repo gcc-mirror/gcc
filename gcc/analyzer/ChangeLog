@@ -1,3 +1,18 @@
+2026-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (binding_cluster::validate): Reimplement as...
+	(binding_map::validate): ...this new function, using
+	m_concrete and m_symbolic sizes rather than iterating through
+	map and counting.  Verify that concrete keys do not overlap.
+	(binding_cluster::can_merge_p): Reject cases that would lead to
+	overlapping concrete clusters.
+	* store.h (binding_cluster::validate): New decl.
+	(binding_map::get_concrete_bindings): New accessor.
+
+2026-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (store::eval_alias): Different decls don't alias.
+
 2026-01-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-event.cc (cfg_edge_event::maybe_get_edge_sense): New.

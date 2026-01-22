@@ -1,3 +1,64 @@
+2026-01-21  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (maybe_get_first_fn): Declare.
+	* reflect.cc (maybe_get_reflection_fndecl): Remove.
+	(eval_is_function): Call maybe_get_first_fn instead of
+	maybe_get_reflection_fndecl.
+	(eval_is_function_template): Likewise.
+	(eval_is_class_member): Likewise.
+	(eval_is_expected_access): Likewise.
+	(eval_is_virtual): Likewise.
+	(eval_is_pure_virtual): Likewise.
+	(eval_is_override): Likewise.
+	(eval_is_namespace_member): Likewise.
+	(eval_is_static_member): Likewise.
+	(eval_is_deleted): Likewise.
+	(eval_is_defaulted): Likewise.
+	(eval_is_user_provided): Likewise.
+	(eval_is_user_declared): Likewise.
+	(eval_is_explicit): Likewise.
+	(eval_has_internal_linkage): Likewise.
+	(eval_has_module_linkage): Likewise.
+	(eval_has_external_linkage): Likewise.
+	(eval_has_c_language_linkage): Likewise.
+	(eval_has_linkage): Likewise.
+	(eval_is_operator_function): Likewise.
+	(eval_is_destructor): Likewise.
+	(eval_is_conversion_function_template): Likewise.
+	(eval_is_operator_function_template): Likewise.
+	(eval_is_constructor_template): Likewise.
+	(eval_operator_of): Likewise.
+	(eval_is_noexcept): Likewise.
+	(eval_has_parent): Likewise.
+	(eval_parent_of): Likewise.
+	(eval_parameters_of): Likewise.
+	(eval_has_identifier): Likewise.
+	(eval_identifier_of): Likewise.
+	(eval_is_final): Likewise.
+	(eval_is_accessible): Likewise.
+	(compare_reflections): Likewise.
+	(reflection_mangle_prefix): Likewise.
+	* tree.cc (maybe_get_fns): Use NULL_TREE instead of NULL.
+	(maybe_get_first_fn): New.
+
+2026-01-21  Marek Polacek  <polacek@redhat.com>
+
+	* mangle.cc (is_std_substitution): Return false for any _DECL except
+	TYPE_DECL and DECL_CLASS_TEMPLATE_P.  Verify that we don't return false
+	for something that used to yield true.  Use NULL_TREE instead of NULL.
+
+2026-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123692
+	* class.cc (build_base_path): Don't call resolves_to_fixed_type_p if
+	uneval.
+
+2026-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123677
+	* constexpr.cc (cxx_eval_store_expression): Only clear
+	CONSTRUCTOR_ELTS (*valp) if *valp is CONSTRUCTOR.
+
 2026-01-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/123601

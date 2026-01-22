@@ -1,3 +1,126 @@
+2026-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Skip on
+	C++98 and tweak xfails to reflect slight differences in where
+	we hit exploration limits.
+	* c-c++-common/analyzer/raw-data-cst-pr117262-1.c: Add params to
+	force full exploration of the loop.
+	* gcc.dg/analyzer/pr93355-localealias.c (read_alias_file): Drop
+	xfail.
+
+2026-01-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/aliasing-4.c: New test.
+	* c-c++-common/analyzer/aliasing-5.c: New test.
+
+2026-01-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/122781
+	* gcc.target/s390/vxe3/vcmp-1.c: New test.
+
+2026-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123744
+	* gcc.target/i386/avx512bw-pr123744.c: New test.
+
+2026-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123692
+	* g++.dg/cpp0x/pr123692.C: New test.
+
+2026-01-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123677
+	* g++.dg/cpp2a/pr123677.C: New test.
+
+2026-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_inst16.adb: New test.
+	* gnat.dg/generic_inst16_pkg.ads: New helper.
+	* gnat.dg/generic_inst16_pkg-child.ads: Likewise.
+	* gnat.dg/generic_inst16_pkg-child-grandchild.ads: Likewise.
+	* gnat.dg/generic_inst16_proc.ads: Likewise.
+	* gnat.dg/generic_inst16_proc.adb: Likewise.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/113524
+	* gcc.dg/torture/pr113026-1.c: XFAIL bogus warning on various
+	32-bit targets.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/thumb2-pop-loreg.c: Enable -mthumb.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/simd/bf16_vstn_1.c: Adjust expectations for
+	code improved by late-combine.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/tree-ssa/cxa_atexit-1.C: Enable -fuse-cxa-atexit.
+	* g++.dg/tree-ssa/cxa_atexit-2.C: Likewise.
+	* g++.dg/tree-ssa/cxa_atexit-3.C: Likewise.
+	* g++.dg/tree-ssa/cxa_atexit-4.C: Likewise.
+	* g++.dg/tree-ssa/cxa_atexit-5.C: Likewise.
+	* g++.dg/tree-ssa/cxa_atexit-6.C: Likewise.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/modules/pr98893_b.C: Require and enable cxa_atexit.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/lto/pr62026_0.C: Silence -flinker-output warning.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/abi/abi-tag18a.C: Require and enable cxa_atexit.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/DRs/dr2836.C: Skip if ! hostedlib.
+	* g++.dg/alias-checks.C: Likewise.
+	* g++.dg/contracts/pr116490.C: Likewise.
+	* g++.dg/coroutines/torture/pr121219.C: Likewise.
+	* g++.dg/cpp2a/constexpr-vector1.C: Likewise.
+	* g++.dg/ext/is_virtual_base_of.C: Likewise.
+	* g++.dg/modules/contracts-5_b.C: Likewise.
+	* g++.dg/modules/gmf-xtreme.C: Likewise.
+	* g++.dg/modules/lto-3_a.H: Likewise.
+	* g++.dg/modules/lto-3_b.C: Likewise.
+	* g++.dg/modules/xtreme-header-8.C: Likewise.
+	* g++.dg/opt/pr119274.C: Likewise.
+	* g++.dg/pr117222.C: Likewise.
+	* g++.dg/torture/pr105769-1.C: Likewise.
+	* g++.dg/torture/pr118521.C: Likewise.
+	* g++.dg/tree-ssa/deque-1.C: Likewise.
+	* g++.dg/tree-ssa/deque-2.C: Likewise.
+	* g++.dg/tree-ssa/pr109442.C: Likewise.
+	* g++.dg/tree-ssa/pr110819.C: Likewise.
+	* g++.dg/tree-ssa/pr116868.C: Likewise.
+	* g++.dg/tree-ssa/pr58483.C: Likewise.
+	* g++.dg/tree-ssa/pr80331.C: Likewise.
+	* g++.dg/tree-ssa/pr87502.C: Likewise.
+	* g++.dg/tree-ssa/pr96945.C: Likewise.
+	* g++.dg/tree-ssa/string-1.C: Likewise.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/aarch64/acle/fp8-helpers-neon.c: Silence
+	warnings about _Static_assert.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/ldexp.c: Require HAVE_C99_RUNTIME to test
+	ldexpf and ldexpl.
+
+2026-01-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/dfp/c23-decimal64x-1.c: Drop the explicit dg-do run.
+	* gcc.dg/dfp/c23-decimal64x-3.c: Likewise.
+
 2026-01-20  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR rtl-optimization/123380

@@ -1,3 +1,10 @@
+2026-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Replace call to
+	Scope_Within_Or_Same (Current_Scope, S) with In_Open_Scopes (S) to
+	test whether S is open in the current scope.
+	* sem_util.adb (From_Nested_Package): Likewise.
+
 2026-01-17  Eric Botcazou  <ebotcazou@adacore.com>
 	    Lisa Felidae  <lisa@felidae.bam.moe>
 

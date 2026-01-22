@@ -1,3 +1,9 @@
+2026-01-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/122781
+	* config/s390/vector.md: Don't emulate vec_cmpgtu for 128-bit
+	integers for VXE3.
+
 2026-01-20  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR rtl-optimization/123380
