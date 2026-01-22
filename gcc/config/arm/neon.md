@@ -879,11 +879,11 @@
   [(set_attr "type" "neon_minmax<q>")]
 )
 
-(define_insn "*smin<mode>3_neon"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
-	(smin:VDQW (match_operand:VDQW 1 "s_register_operand" "w")
-		   (match_operand:VDQW 2 "s_register_operand" "w")))]
-  "TARGET_NEON"
+(define_insn "*smin<VDQWH:mode>3_neon"
+  [(set (match_operand:VDQWH 0 "s_register_operand" "=w")
+	(smin:VDQWH (match_operand:VDQWH 1 "s_register_operand" "w")
+		    (match_operand:VDQWH 2 "s_register_operand" "w")))]
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vmin.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
@@ -891,11 +891,11 @@
                     (const_string "neon_minmax<q>")))]
 )
 
-(define_insn "*smax<mode>3_neon"
-  [(set (match_operand:VDQW 0 "s_register_operand" "=w")
-	(smax:VDQW (match_operand:VDQW 1 "s_register_operand" "w")
-		   (match_operand:VDQW 2 "s_register_operand" "w")))]
-  "TARGET_NEON"
+(define_insn "*smax<VDQWH:mode>3_neon"
+  [(set (match_operand:VDQWH 0 "s_register_operand" "=w")
+	(smax:VDQWH (match_operand:VDQWH 1 "s_register_operand" "w")
+		    (match_operand:VDQWH 2 "s_register_operand" "w")))]
+  "ARM_HAVE_NEON_<MODE>_ARITH"
   "vmax.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set (attr "type")
       (if_then_else (match_test "<Is_float_mode>")
