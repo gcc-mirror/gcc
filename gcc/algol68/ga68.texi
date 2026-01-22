@@ -514,9 +514,9 @@ a very simple logging facility:
     @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
            fputs (fd, (originator /= "" | ": ") + msg + "'n");
 
-    log ("beginning of log'n");
+    log ("beginning of log'n")
 @B{postlude}
-    log ("end of log'n");
+    log ("end of log'n")
 @B{fed}
 @end example
 
@@ -527,7 +527,7 @@ indicators are bold tags.
 
 The @dfn{prelude} of the module spans from @code{@B{def}} to either
 @code{@B{postlude}}, or to @code{@B{fed}} in case of modules not
-featuring a postlude.  It consists on a restricted serial clause in a
+featuring a postlude.  It consists of a restricted serial clause in a
 void strong context, which can contain units and declarations, but no
 labels or completers.  The declarations in the prelude may be either
 publicized or no publicized.  As we shall see, publicized indicators
@@ -535,7 +535,7 @@ are accessible within the reach of the defining module publicizing
 them.  Publicized declarations are marked by preceding them with
 @code{@B{pub}}.
 
-In our example the module prelude consists on three declarations and
+In our example the module prelude consists of three declarations and
 one unit.  The tag @code{fd} is not publicized and is to be used
 internally by the module.  The indicators @code{originator} and
 @code{log}, on the other hand, are publicized and conform the
@@ -544,7 +544,7 @@ covers the postlude: the @code{log} procedure is reachable there, as
 it would be @code{fd} as well.
 
 The @dfn{postlude} of the module is optional and spans from
-@code{@B{postlude}} to @code{@B{fed}}.  It consists on a serial clause
+@code{@B{postlude}} to @code{@B{fed}}.  It consists of a serial clause
 in a @code{@B{void}} strong context, where definitions, labels and
 module accesses are not allowed, just units.
 
@@ -562,14 +562,14 @@ program that reads an input file and writes some output file:
 
 @example
 @B{access} @B{Logger}
-@B{begin} # Identify ourselves with the program name #
+@B{begin} @{ Identify ourselves with the program name @}
       originator := argv (1);
 
-      # Read input file.  #
+      @{ Read input file.  @}
       @B{if} @B{NOT} parse_input (argv (2))
       @B{then} log ("error parsing input file"); stop @B{fi};
 
-      # Write output file.  #
+      @{ Write output file.  @}
       @B{if} @B{NOT} write_output (argv (3))
       @B{then} log ("error writing output file"); stop @B{fi};
 
@@ -691,9 +691,9 @@ JSON objects rather than raw strings.  We could do it this way:
               fputs (fd, json_array (json_string (originator),
                                      json_string (msg)));
 
-       log (json_string ("beginning of log'n"));
+       log (json_string ("beginning of log'n"))
    @B{postlude}
-       log (json_string ("end of log'n"));
+       log (json_string ("end of log'n"))
    @B{fed}
 @end example
 
@@ -799,9 +799,9 @@ need to add support for it in the definition module.  Something like:
        @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
               fputs (fd, (originator[orig] /= "" | ": ") + msg + "'n");
 
-       log ("beginning of log'n");
+       log ("beginning of log'n")
    @B{postlude}
-       log ("end of log'n");
+       log ("end of log'n")
    @B{fed}
 @end example
 
@@ -861,6 +861,8 @@ sketch of such a file may look like this:
        (a + 1 | dontknow, no, yes);
 
     @B{C} ... other definitions ... @B{C}
+
+    @B{skip}
 @B{fed}
 @end example
 
@@ -999,7 +1001,7 @@ XXX
 @section Particular programs
 @cindex particular program
 
-An Algol 68 @dfn{particular program} consists on an enclosed clause in
+An Algol 68 @dfn{particular program} consists of an enclosed clause in
 a strong context with target mode @code{@B{void}}, possibly preceded
 by a set of zero or more labels.  For example:
 
@@ -1035,7 +1037,7 @@ program to specify an explicit exit status by using the standard
 procedure @code{posix exit}, like:
 
 @example
-@b{begin} # ... program code ... #
+@b{begin} @{ ... program code ... @}
      @B{if} error found;
      @B{then} posix exit (1) @B{fi}
 @b{end}
@@ -1094,7 +1096,7 @@ the form of pseudo code:
 @end example
 
 @noindent
-Where each user task consists on:
+Where each user task consists of:
 
 @example
 (@B{c} particular-prelude @B{c};
