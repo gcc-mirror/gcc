@@ -5956,11 +5956,9 @@ handle_annotation_attribute (tree *node, tree ARG_UNUSED (name),
 	{
 	  tree arg = make_tree_vec (1);
 	  tree type = TREE_TYPE (TREE_VALUE (args));
-	  tree ctype
-	    = cp_build_qualified_type (type, cp_type_quals (type)
-					     | TYPE_QUAL_CONST);
 	  TREE_VEC_ELT (arg, 0)
-	    = cp_build_reference_type (ctype, /*rval=*/false);
+	    = build_stub_type (type, cp_type_quals (type) | TYPE_QUAL_CONST,
+			       /*rvalue=*/false);
 	  if (!is_xible (INIT_EXPR, type, arg))
 	    {
 	      auto_diagnostic_group d;
