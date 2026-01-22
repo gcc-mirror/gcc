@@ -6621,8 +6621,9 @@ class_members_of (location_t loc, const constexpr_ctx *ctx, tree r,
 				  get_reflection_raw (loc, m));
 	}
     }
-  /* TYPE_DECLs in TYPE_FIELDS come after other decls, so for members_of
-     the declaration order is not preserved.  */
+  /* TYPE_DECLs in TYPE_FIELDS come after other decls due to the "struct
+     stat hack" (see finish_member_declaration), so for members_of the
+     declaration order is not preserved.  */
   if (kind == METAFN_MEMBERS_OF && elts)
     elts->qsort (members_cmp);
   if (kind == METAFN_MEMBERS_OF && !implicitly_declared.is_empty ())
