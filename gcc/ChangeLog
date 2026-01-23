@@ -1,3 +1,14 @@
+2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/123742
+	* config/arm/neon.md (*smin<mode>3_neon): Renamed to ...
+	(*smin<VDQWH:mode>3_neon): ... this.  Add HFmode support.
+	(*smax<mode>3_neon): Renamed to ...
+	(*smax<VDQWH:mode>3_neon): ... this.  Add HFmode support.
+
 2026-01-19  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	Backported from master:
