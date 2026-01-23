@@ -49853,6 +49853,9 @@ substitute_in_tree_walker (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   else if (TREE_CODE (*tp) == BIND_EXPR
 	   && BIND_EXPR_BODY (*tp) == sit->orig
 	   && !BIND_EXPR_VARS (*tp)
+	   /* BIND_EXPRs in templates likely have NULL BIND_EXPR_VARS,
+	      are created by begin_compound_stmt and are not redundant.  */
+	   && !processing_template_decl
 	   && (sit->flatten || TREE_CODE (sit->repl) == BIND_EXPR))
     {
       *tp = sit->repl;
@@ -49897,7 +49900,12 @@ substitute_in_tree (tree *context, tree orig, tree repl, bool flatten)
   struct sit_data data;
 
   gcc_assert (*context && orig && repl);
-  if (TREE_CODE (repl) == BIND_EXPR && !BIND_EXPR_VARS (repl))
+  /* Look through redundant BIND_EXPR.  BIND_EXPRs in templates likely have
+     NULL BIND_EXPR_VARS, are created by begin_compound_stmt and are not
+     redundant.  */
+  if (TREE_CODE (repl) == BIND_EXPR
+      && !BIND_EXPR_VARS (repl)
+      && !processing_template_decl)
     repl = BIND_EXPR_BODY (repl);
   data.orig = orig;
   data.repl = repl;
