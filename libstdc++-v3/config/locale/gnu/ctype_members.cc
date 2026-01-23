@@ -217,11 +217,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __hi;
   }
 
+  // True if c can be looked up in _M_narrow.
+  [[gnu::always_inline]]
+  static inline bool
+  use_table(wchar_t c)
+  {
+    using U = std::make_unsigned<wchar_t>::type;
+    return U(c) < 128;
+  }
+
   char
   ctype<wchar_t>::
   do_narrow(wchar_t __wc, char __dfault) const
   {
-    if (__wc >= 0 && __wc < 128 && _M_narrow_ok)
+    if (use_table(__wc) && _M_narrow_ok)
       return _M_narrow[__wc];
 #if __GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ > 2)
     __c_locale __old = __uselocale(_M_c_locale_ctype);
@@ -244,7 +253,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     if (_M_narrow_ok)
       while (__lo < __hi)
 	{
-	  if (*__lo >= 0 && *__lo < 128)
+	  if (use_table(*__lo))
 	    *__dest = _M_narrow[*__lo];
 	  else
 	    {
