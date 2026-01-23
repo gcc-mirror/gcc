@@ -9538,7 +9538,7 @@ fold_builtin_fabs (location_t loc, tree arg, tree type)
 static tree
 fold_builtin_abs (location_t loc, tree arg, tree type)
 {
-  if (!validate_arg (arg, INTEGER_TYPE))
+  if (!validate_arg (arg, INTEGER_TYPE) || !INTEGRAL_TYPE_P (type))
     return NULL_TREE;
 
   if (TYPE_UNSIGNED (type))
