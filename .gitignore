@@ -71,3 +71,11 @@ stamp-*
 /gmp*
 /isl*
 /gettext*
+
+# ignore coding assistants' stuff
+/CLAUDE.md
+.claude/
+/GEMINI.md
+.gemini/
+AGENTS.md
+.codex/
