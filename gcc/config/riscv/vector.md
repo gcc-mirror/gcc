@@ -2746,7 +2746,7 @@
 	   (match_operand:<VINDEX_OCT_TRUNC> 2 "register_operand" "  vr")
 	   (match_operand:VEEWEXT8 3 "register_operand"  "  vr")] ORDER))]
   "TARGET_VECTOR"
-  "vs<order>xei<quad_trunc_sew>.v\t%3,(%z1),%2%p0"
+  "vs<order>xei<oct_trunc_sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
    (set_attr "mode" "<MODE>")])
 
