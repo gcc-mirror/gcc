@@ -51,7 +51,7 @@ initialize_array (unsigned char *a, int len)
 }
 
 #define t_frame_pattern(name, local_size, callee_saved)\
-int \
+int __attribute__ ((noinline, noclone)) \
 name (void)\
 {\
   unsigned char a[local_size];\
