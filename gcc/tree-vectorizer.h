@@ -876,6 +876,9 @@ public:
      when we reduce a mask.  */
   tree reduc_vectype_for_mask;
 
+  /* The neutral operand to use, if any.  */
+  tree neutral_op;
+
   /* For INTEGER_INDUC_COND_REDUCTION, the initial value to be used.  */
   tree induc_cond_initial_val;
 
@@ -912,6 +915,7 @@ typedef class vect_reduc_info_s *vect_reduc_info;
 #define VECT_REDUC_INFO_VECTYPE_FOR_MASK(I) ((I)->reduc_vectype_for_mask)
 #define VECT_REDUC_INFO_FORCE_SINGLE_CYCLE(I) ((I)->force_single_cycle)
 #define VECT_REDUC_INFO_RESULT_POS(I) ((I)->reduc_result_pos)
+#define VECT_REDUC_INFO_NEUTRAL_OP(I) ((I)->neutral_op)
 
 /* Information about a reduction accumulator from the main loop that could
    conceivably be reused as the input to a reduction in an epilogue loop.  */

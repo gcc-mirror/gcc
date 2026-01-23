@@ -4963,7 +4963,16 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
   if (neutral_op
       && !useless_type_conversion_p (vector_elt_type,
 				     TREE_TYPE (neutral_op)))
-    neutral_op = gimple_convert (&ctor_seq, vector_elt_type, neutral_op);
+    {
+      if (VECTOR_BOOLEAN_TYPE_P (vector_type))
+	neutral_op = gimple_build (&ctor_seq, COND_EXPR,
+				   vector_elt_type,
+				   neutral_op,
+				   build_all_ones_cst (vector_elt_type),
+				   build_zero_cst (vector_elt_type));
+      else
+	neutral_op = gimple_convert (&ctor_seq, vector_elt_type, neutral_op);
+    }
   for (j = 0; j < nunits * number_of_vectors; ++j)
     {
       tree op;
@@ -5155,9 +5164,7 @@ vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
 	 initialize the accumulator with a neutral value instead.  */
       if (!operand_equal_p (initial_value, main_adjustment))
 	return false;
-      code_helper code = VECT_REDUC_INFO_CODE (reduc_info);
-      initial_values[0] = neutral_op_for_reduction (TREE_TYPE (initial_value),
-						    code, initial_value);
+      initial_values[0] = VECT_REDUC_INFO_NEUTRAL_OP (reduc_info);
     }
   VECT_REDUC_INFO_EPILOGUE_ADJUSTMENT (reduc_info) = main_adjustment;
   VECT_REDUC_INFO_INITIAL_VALUES (reduc_info).truncate (0);
@@ -7608,8 +7615,10 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   tree initial_value = NULL_TREE;
   if (reduc_chain)
     initial_value = vect_phi_initial_value (reduc_def_phi);
-  neutral_op = neutral_op_for_reduction (TREE_TYPE (vectype_out),
+  neutral_op = neutral_op_for_reduction (TREE_TYPE
+					   (gimple_phi_result (reduc_def_phi)),
 					 orig_code, initial_value);
+  VECT_REDUC_INFO_NEUTRAL_OP (reduc_info) = neutral_op;
 
   if (double_reduc && reduction_type == FOLD_LEFT_REDUCTION)
     {
@@ -7649,15 +7658,19 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   /* For double reductions, and for SLP reductions with a neutral value,
      we construct a variable-length initial vector by loading a vector
      full of the neutral value and then shift-and-inserting the start
-     values into the low-numbered elements.  */
+     values into the low-numbered elements.  This is however not needed
+     when neutral and initial value are equal or we can handle the
+     initial value via adjustment in the epilogue.  */
   if ((double_reduc || neutral_op)
       && !nunits_out.is_constant ()
-      && (SLP_TREE_LANES (slp_node) != 1 && !reduc_chain)
-      && (!neutral_op
-	  || !operand_equal_p (neutral_op,
-			       vect_phi_initial_value (reduc_def_phi)))
+      && reduction_type != INTEGER_INDUC_COND_REDUCTION
+      && !((SLP_TREE_LANES (slp_node) == 1 || reduc_chain)
+	   && neutral_op
+	   && (!double_reduc
+	       || operand_equal_p (neutral_op,
+				   vect_phi_initial_value (reduc_def_phi))))
       && !direct_internal_fn_supported_p (IFN_VEC_SHL_INSERT,
-					  vectype_out, OPTIMIZE_FOR_SPEED))
+					  vectype_out, OPTIMIZE_FOR_BOTH))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -8328,7 +8341,6 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 					       vectype_out);
 
   /* Get the loop-entry arguments.  */
-  tree vec_initial_def = NULL_TREE;
   auto_vec<tree> vec_initial_defs;
   vec_initial_defs.reserve (vec_num);
   /* Optimize: if initial_def is for REDUC_MAX smaller than the base
@@ -8377,40 +8389,29 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
 	  gphi *this_phi = as_a<gphi *> (stmts[i]->stmt);
 	  initial_values.quick_push (vect_phi_initial_value (this_phi));
 	}
-      if (vec_num == 1)
-	vect_find_reusable_accumulator (loop_vinfo, reduc_info, vectype_out);
-      if (!initial_values.is_empty ())
+      tree neutral_op = VECT_REDUC_INFO_NEUTRAL_OP (reduc_info);
+      if (vec_num == 1
+	  && vect_find_reusable_accumulator (loop_vinfo,
+					     reduc_info, vectype_out))
+	;
+      /* Try to simplify the vector initialization by applying an
+	 adjustment after the reduction has been performed.  This
+	 can also break a critical path but on the other hand
+	 requires to keep the initial value live across the loop.  */
+      else if (neutral_op
+	       && initial_values.length () == 1
+	       && STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
+	       && !operand_equal_p (neutral_op, initial_values[0]))
 	{
-	  tree initial_value
-	    = (num_phis == 1 ? initial_values[0] : NULL_TREE);
-	  code_helper code = VECT_REDUC_INFO_CODE (reduc_info);
-	  tree neutral_op
-	    = neutral_op_for_reduction (TREE_TYPE (vectype_out),
-					code, initial_value);
-	  /* Try to simplify the vector initialization by applying an
-	     adjustment after the reduction has been performed.  This
-	     can also break a critical path but on the other hand
-	     requires to keep the initial value live across the loop.  */
-	  if (neutral_op
-	      && initial_values.length () == 1
-	      && !VECT_REDUC_INFO_REUSED_ACCUMULATOR (reduc_info)
-	      && STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
-	      && !operand_equal_p (neutral_op, initial_values[0]))
-	    {
-	      VECT_REDUC_INFO_EPILOGUE_ADJUSTMENT (reduc_info)
-		= initial_values[0];
-	      initial_values[0] = neutral_op;
-	    }
-	  get_initial_defs_for_reduction (loop_vinfo, reduc_info, vectype_out,
-					  &vec_initial_defs, vec_num,
-					  stmts.length (), neutral_op);
+	  VECT_REDUC_INFO_EPILOGUE_ADJUSTMENT (reduc_info)
+	    = initial_values[0];
+	  initial_values[0] = neutral_op;
 	}
-    }
-
-  if (vec_initial_def)
-    {
-      vec_initial_defs.create (1);
-      vec_initial_defs.quick_push (vec_initial_def);
+      if (!VECT_REDUC_INFO_REUSED_ACCUMULATOR (reduc_info)
+	  || loop_vinfo->main_loop_edge)
+	get_initial_defs_for_reduction (loop_vinfo, reduc_info, vectype_out,
+					&vec_initial_defs, vec_num,
+					stmts.length (), neutral_op);
     }
 
   if (reduc_info)
