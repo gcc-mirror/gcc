@@ -5907,6 +5907,10 @@ gimple_fold_partial_load_store (gimple_stmt_iterator *gsi, gcall *call)
 	    }
 	  gassign *new_stmt = gimple_build_assign (lhs, else_value);
 	  gimple_set_location (new_stmt, gimple_location (call));
+	  /* When the lhs is an array for LANES version, then there is still
+	     a store, move the vops from the old stmt to the new one.  */
+	  if (!is_gimple_reg (lhs))
+	    gimple_move_vops (new_stmt, call);
 	  gsi_replace (gsi, new_stmt, false);
 	  return true;
 	}
