@@ -2540,7 +2540,7 @@
 (define_expand "movsf"
   [(set (match_operand:SF 0 "")
 	(match_operand:SF 1 ""))]
-  "TARGET_HARD_FLOAT"
+  ""
 {
   if (loongarch_legitimize_move (SFmode, operands[0], operands[1]))
     DONE;
