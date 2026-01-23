@@ -8972,14 +8972,19 @@ vectorizable_store (vec_info *vinfo,
 		      (&stmts, ls.supported_offset_vectype, vec_offset);
 		  if (ls.supported_scale)
 		    {
-		      tree mult_cst = build_int_cst
-			(TREE_TYPE (TREE_TYPE (vec_offset)),
-			 SLP_TREE_GS_SCALE (slp_node) / ls.supported_scale);
-		      tree mult = build_vector_from_val
-			(TREE_TYPE (vec_offset), mult_cst);
-		      vec_offset = gimple_build
-			(&stmts, MULT_EXPR, TREE_TYPE (vec_offset),
-			 vec_offset, mult);
+		      /* Only scale the vec_offset if we haven't already.  */
+		      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+			  || j == 0)
+			{
+			  tree mult_cst = build_int_cst
+			    (TREE_TYPE (TREE_TYPE (vec_offset)),
+			     SLP_TREE_GS_SCALE (slp_node) / ls.supported_scale);
+			  tree mult = build_vector_from_val
+			    (TREE_TYPE (vec_offset), mult_cst);
+			  vec_offset = gimple_build
+			    (&stmts, MULT_EXPR, TREE_TYPE (vec_offset),
+			     vec_offset, mult);
+			}
 		      scale = size_int (ls.supported_scale);
 		    }
 		  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
@@ -10923,14 +10928,19 @@ vectorizable_load (vec_info *vinfo,
 		      (&stmts, ls.supported_offset_vectype, vec_offset);
 		  if (ls.supported_scale)
 		    {
-		      tree mult_cst = build_int_cst
-			(TREE_TYPE (TREE_TYPE (vec_offset)),
-			 SLP_TREE_GS_SCALE (slp_node) / ls.supported_scale);
-		      tree mult = build_vector_from_val
-			(TREE_TYPE (vec_offset), mult_cst);
-		      vec_offset = gimple_build
-			(&stmts, MULT_EXPR, TREE_TYPE (vec_offset),
-			 vec_offset, mult);
+		      /* Only scale the vec_offset if we haven't already.  */
+		      if (STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+			  || i == 0)
+			{
+			  tree mult_cst = build_int_cst
+			    (TREE_TYPE (TREE_TYPE (vec_offset)),
+			     SLP_TREE_GS_SCALE (slp_node) / ls.supported_scale);
+			  tree mult = build_vector_from_val
+			    (TREE_TYPE (vec_offset), mult_cst);
+			  vec_offset = gimple_build
+			    (&stmts, MULT_EXPR, TREE_TYPE (vec_offset),
+			     vec_offset, mult);
+			}
 		      scale = size_int (ls.supported_scale);
 		    }
 		  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
