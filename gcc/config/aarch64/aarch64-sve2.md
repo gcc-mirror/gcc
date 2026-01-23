@@ -1627,7 +1627,7 @@
 	  (xor:SVE_ASIMD_FULL_I
 	    (match_operand:SVE_ASIMD_FULL_I 1 "register_operand" "%0,w")
 	    (match_operand:SVE_ASIMD_FULL_I 2 "register_operand" "w,w"))
-	  (match_operand:SVE_ASIMD_FULL_I 3 "aarch64_simd_rshift_imm")))]
+	  (match_operand:SVE_ASIMD_FULL_I 3 "aarch64_simd_lshift_imm")))]
   "TARGET_SVE2 && !(<MODE>mode == V2DImode && TARGET_SHA3)"
   {
     operands[3]
