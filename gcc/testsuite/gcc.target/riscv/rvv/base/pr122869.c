@@ -1,5 +1,7 @@
-/* { dg-do run } */
+/* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-O0 -std=gnu99" } */
+/* { dg-require-effective-target riscv_v_ok } */
+
 /* We used to generate a separate riscv_read_vl () after the FoF load.
    In case of -O0 (or otherwise) it could happen that "g" wouldn't
    get a hard reg and we'd need to store it, clobbering VL.
