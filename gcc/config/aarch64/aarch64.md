@@ -6178,7 +6178,8 @@
 	  (match_operand:GPI 1 "register_operand" "r")
 	  (minus:QI (match_operand 2 "const_int_operand" "n")
 		    (match_operand:QI 3 "register_operand" "r"))))]
-  "INTVAL (operands[2]) == GET_MODE_BITSIZE (<MODE>mode)"
+  "INTVAL (operands[2]) == GET_MODE_BITSIZE (<MODE>mode)
+   || INTVAL (operands[2]) == GET_MODE_BITSIZE (<MODE>mode) - 1"
   "#"
   "&& true"
   [(const_int 0)]
@@ -6188,7 +6189,10 @@
     rtx tmp = (can_create_pseudo_p () ? gen_reg_rtx (SImode)
 	       : gen_lowpart (SImode, operands[0]));
 
-    emit_insn (gen_negsi2 (tmp, subreg_tmp));
+    if (INTVAL (operands[2]) == GET_MODE_BITSIZE (<MODE>mode))
+      emit_insn (gen_negsi2 (tmp, subreg_tmp));
+    else
+      emit_insn (gen_one_cmplsi2 (tmp, subreg_tmp));
 
     rtx and_op = gen_rtx_AND (SImode, tmp,
 			      GEN_INT (GET_MODE_BITSIZE (<MODE>mode) - 1));
