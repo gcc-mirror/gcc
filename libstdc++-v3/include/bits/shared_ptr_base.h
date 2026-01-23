@@ -579,7 +579,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Sp_counted_deleter(_Ptr __p, _Deleter __d, const _Alloc& __a) noexcept
       : _M_impl(__p, std::move(__d), __a) { }
 
+#pragma GCC diagnostic push // PR tree-optimization/122197
+#pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+  template<typename> class auto_ptr;
       ~_Sp_counted_deleter() noexcept { }
+#pragma GCC diagnostic pop
 
       virtual void
       _M_dispose() noexcept
@@ -667,7 +671,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      std::forward<_Args>(__args)...); // might throw
 	}
 
+#pragma GCC diagnostic push // PR tree-optimization/122197
+#pragma GCC diagnostic ignored "-Warray-bounds"
       ~_Sp_counted_ptr_inplace() noexcept { }
+#pragma GCC diagnostic pop
 
       virtual void
       _M_dispose() noexcept
