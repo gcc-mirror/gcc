@@ -1,3 +1,8 @@
+2026-01-22  Frank Scheiner  <frank.scheiner@web.de>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+
 2026-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/version.def (reflection): Add cxx11abi = yes;.

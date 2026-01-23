@@ -1,3 +1,7 @@
+2026-01-22  Alejandro Colomar  <alx@kernel.org>
+
+	* MAINTAINERS: Add myself to Write After Approval and DCO
+
 2026-01-19  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* configure: Regenerate.

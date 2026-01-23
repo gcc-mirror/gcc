@@ -1,3 +1,9 @@
+2026-01-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	PR algol68/123734
+	* ga68.texi: Fix code examples to make them compilable.
+	And s/consists on/consists of/g.
+
 2026-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (std=algol68, std=gnu68): Add dot at the end of the

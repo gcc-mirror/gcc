@@ -1,3 +1,73 @@
+2026-01-22  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/guality/guality.exp, gcc.dg/guality/guality.exp,
+	gcc.dg/simulate-thread/simulate-thread.exp,
+	g++.dg/simulate-thread/simulate-thread.exp,
+	gfortran.dg/guality/guality.exp: Exit early for simulators.
+
+2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/123742
+	* gcc.target/arm/neon-smax16.c: New test.
+	* gcc.target/arm/neon-smin16.c: New test.
+
+2026-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123741
+	* gfortran.dg/vect/vect-pr123741.f90: New testcase.
+
+2026-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123753
+	* gcc.c-torture/execute/pr123753.c: New test.
+
+2026-01-22  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123731
+	* gcc.dg/vect/pr123731.c: New test.
+
+2026-01-22  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/122869
+	* gcc.target/riscv/rvv/base/pr122656-1.c: Remove dg-error.
+	* gcc.target/riscv/rvv/vsetvl/ffload-3.c: XFAIL for -O2 and -O3.
+	* gcc.target/riscv/rvv/base/pr122869.c: New test.
+
+2026-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123755
+	* gcc.dg/vect/vect-pr123755.c: New testcase.
+
+2026-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123756
+	* gcc.dg/vect/vect-pr123756.c: New testcase.
+
+2026-01-22  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/123751
+	* gcc.dg/tree-ssa/pr46555.c: Disable for arm thumb1.
+
+2026-01-22  Alejandro Colomar  <alx@kernel.org>
+
+	* gcc.dg/maxof-compile.c (quals): New test.
+
+2026-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/122622
+	* sarif-replay.dg/2.1.0-valid/missing-source-pr122622-check-html.py:
+	New test script.
+	* sarif-replay.dg/2.1.0-valid/missing-source-pr122622.sarif: New
+	test.
+	* sarif-replay.dg/2.1.0-valid/spec-example-4.sarif: Update
+	expected output to reflect showing event locations and text.
+	* sarif-replay.dg/2.1.0-valid/tutorial-example.sarif: Likewise.
+
+2026-01-22  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123745
+	* gcc.dg/torture/pr123745-1.c: New test.
+
 2026-01-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-c++-common/analyzer/flex-without-call-summaries.c: Skip on

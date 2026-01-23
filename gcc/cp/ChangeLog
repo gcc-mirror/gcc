@@ -1,3 +1,27 @@
+2026-01-22  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (class_members_of): Update a comment to mention
+	finish_member_declaration.
+
+2026-01-22  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* reflect.cc (type_linkage_name): Rename to...
+	(reflection_type_linkage_name): ...this.
+	(eval_has_internal_linkage): Call reflection_type_linkage_name instead
+	of type_linkage_name.
+	(eval_has_module_linkage): Likewise.
+	(eval_has_external_linkage): Likewise.
+	(eval_has_c_language_linkage): Likewise.
+	(eval_has_linkage): Likewise.
+
+2026-01-22  Marek Polacek  <polacek@redhat.com>
+
+	* class.cc (user_provided_p): Return false for a deleted
+	namespace-scope function.
+	* reflect.cc (eval_is_user_provided): Don't check
+	DECL_NAMESPACE_SCOPE_P or DECL_DELETED_FN.
+
 2026-01-21  Marek Polacek  <polacek@redhat.com>
 
 	* cp-tree.h (maybe_get_first_fn): Declare.

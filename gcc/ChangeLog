@@ -1,3 +1,139 @@
+2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/123742
+	* config/arm/neon.md (*smin<mode>3_neon): Renamed to ...
+	(*smin<VDQWH:mode>3_neon): ... this.  Add HFmode support.
+	(*smax<mode>3_neon): Renamed to ...
+	(*smax<VDQWH:mode>3_neon): ... this.  Add HFmode support.
+
+2026-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123741
+	* tree-vect-stmts.cc (vectorizable_store): Add missing check
+	on loop vectorization.
+
+2026-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* tree-vrp.cc (remove_unreachable::fully_replaceable): Fix typo
+	in comment.
+
+2026-01-22  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123731
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Handle nop
+	conversion between during extraction.
+
+2026-01-22  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/122869
+	* config/riscv/riscv-vector-builtins-bases.cc (fold_fault_load):
+	Remove
+	* config/riscv/riscv-vector-builtins.cc (function_expander::use_contiguous_load_insn):
+	Use new helper.
+	(function_expander::prepare_contiguous_load_insn): New helper.
+	(function_expander::use_fof_load_insn): New function to emit FoF
+	loads.
+	* config/riscv/riscv-vector-builtins.h: Declare new functions.
+
+2026-01-22  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123279
+	* config/riscv/riscv-vector-builtins-functions.def (REQUIRED_EXTENSIONS):
+	Add VECTOR_EXT_NO_XTHEAD.
+	(vlm): Move to VECTOR_EXT_NO_XTHEAD.
+	(vsm): Ditto.
+	(vzext): Ditto.
+	(vsext): Ditto.
+	(vaaddu): Ditto.
+	(vaadd): Ditto.
+	(vasubu): Ditto.
+	(vasub): Ditto.
+	(vfrsqrt7): Ditto.
+	(vfrec7): Ditto.
+	(vfrec7_frm): Ditto.
+	(vfslide1up): Ditto.
+	(vfslide1down): Ditto.
+	(vluxei8): Ditto.
+	(vluxei16): Ditto.
+	(vluxei32): Ditto.
+	(vluxei64): Ditto.
+	(vsuxei8): Ditto.
+	(vsuxei16): Ditto.
+	(vsuxei32): Ditto.
+	(vsuxei64): Ditto.
+	(vluxseg): Ditto.
+	(vsuxseg): Ditto.
+	(vrgatherei16): Ditto.
+	(vlseg): Keep.
+	(vsseg): Keep.
+	(vlsseg): Keep.
+	(vssseg): Keep.
+	(vloxseg): Keep.
+	(vsoxseg): Keep.
+	(vlsegff): Keep.
+	* config/riscv/riscv-vector-builtins.cc (GTY): Split
+	registered_functions into multiple partitions.
+	(is_fractional_lmul): New function.
+	(xthvector_unsupported_p): Ditto.
+	(get_builtin_partition): Ditto.
+	(function_builder::add_function): Use new functions.
+	(lookup_registered_function): Ditto.
+	(builtin_decl): Use lookup_registered_function.
+	(gimple_fold_builtin): Ditto.
+	(expand_builtin): Ditto.
+	(check_builtin_call): Ditto.
+	(resolve_overloaded_builtin): Ditto.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext):
+	(enum rvv_builtin_partition): New enum.
+	(required_ext_to_isa_name): Add NO_XTHEAD.
+	(required_extensions_specified): Ditto.
+	* config/riscv/riscv-vector-switch.def (ENTRY): Remove
+	XTheadVector.
+	(TUPLE_ENTRY): Ditto.
+	* config/riscv/riscv.cc (riscv_expand_mult_with_const_int): Fix
+	whitespace.
+	(riscv_legitimize_poly_move): Ditto.
+	(riscv_vector_fractional_lmul_p): New function.
+	(riscv_validate_vector_type): Use new function.
+
+2026-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123755
+	* tree-vect-stmts.cc (vectorizable_call): Register mask when
+	the call could trap.
+
+2026-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123756
+	* tree-vect-loop.cc (vect_transform_reduction): Remove
+	bogus assert.
+
+2026-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123736
+	* tree-ssa-loop-unswitch.cc (hoist_guard): Guard dump message
+	on dump_file && (dump_flags & TDF_DETAILS) condition.
+
+2026-01-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/122622
+	* diagnostics/paths-output.cc: Include "diagnostics/file-cache.h".
+	(event_range::print_as_text): Generalize the fallback logic for
+	special locations to also cover the case where source-printing
+	will fail, and show the location for that case.
+	(event_range::print_as_html): Likewise.
+	(event_range::can_print_source_p): New.
+
+2026-01-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/123631
+	* config/i386/i386-expand.cc (ix86_vector_duplicate_value):
+	Don't force CONST_INT to reg !TARGET_PREFER_BCST_FROM_INTEGER,
+	force it to mem instead.
+	* config/i386/i386.h (TARGET_PREFER_BCST_FROM_INTEGER): New macro.
+	* config/i386/x86-tune.def
+	(X86_TUNE_PREFER_BCST_FROM_INTEGER): New tune.
+
 2026-01-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	PR target/122781
