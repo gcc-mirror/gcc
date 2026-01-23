@@ -1,6 +1,6 @@
 // PR gcov-profile/84548
 // { dg-options "-fprofile-arcs -ftest-coverage" }
-// { dg-do run { target native } }
+// { dg-do run }
 // TODO: add support for groups to gcov.exp script
 
 struct A { static int foo () { return 1; }; static int bar () {

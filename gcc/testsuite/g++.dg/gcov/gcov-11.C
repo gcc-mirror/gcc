@@ -2,7 +2,7 @@
    distinct from  unexecuted normal regions.  */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 void Baz (int i)
 {

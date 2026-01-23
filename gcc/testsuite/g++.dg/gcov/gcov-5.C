@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 /* { dg-options "-fprofile-arcs -ftest-coverage -fno-inline" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 class A {
   int count;

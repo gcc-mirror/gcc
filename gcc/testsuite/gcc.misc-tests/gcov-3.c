@@ -1,4 +1,4 @@
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 /* { dg-require-effective-target label_values } */
 
 /* Test Gcov with computed gotos.

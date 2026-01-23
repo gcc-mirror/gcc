@@ -1,7 +1,7 @@
 /* Verify line coverage counts for simple member functions. */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage -fno-implicit-constexpr" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 class C {
 public:

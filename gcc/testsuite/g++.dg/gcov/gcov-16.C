@@ -1,6 +1,6 @@
 // PR gcov-profile/64634
 // { dg-options "-fprofile-arcs -ftest-coverage" }
-// { dg-do run { target native } }
+// { dg-do run }
 
 int main()
 {

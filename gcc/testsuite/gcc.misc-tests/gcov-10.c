@@ -1,7 +1,7 @@
 /* Test gcov block mode.  */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 int main ()
 {

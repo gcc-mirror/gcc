@@ -1,5 +1,5 @@
 /* { dg-options "--coverage -fpath-coverage -fprofile-update=atomic" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 void
 pathcov001a ()

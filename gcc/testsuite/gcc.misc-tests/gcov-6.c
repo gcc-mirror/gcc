@@ -4,7 +4,7 @@
    for call return percentages was added.  */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 extern void exit (int);
 

@@ -1,5 +1,5 @@
 /* { dg-options "-fprofile-generate -ftest-coverage " } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 int value;
 

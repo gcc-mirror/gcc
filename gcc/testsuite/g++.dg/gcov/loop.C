@@ -1,5 +1,5 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 unsigned
 loop (unsigned n, int value)		  /* count(14.0k) */

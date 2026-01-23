@@ -1,7 +1,7 @@
 /* Test gcov multiple paths to file.  */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 #if !RECURSIVE
 #define RECURSIVE 1

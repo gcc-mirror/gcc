@@ -22,7 +22,7 @@ by both branches of the condition in <bb 3>.
 */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 unsigned int
 UuT (void)

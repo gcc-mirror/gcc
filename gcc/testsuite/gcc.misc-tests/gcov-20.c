@@ -1,5 +1,5 @@
 /* { dg-options "-fcondition-coverage -ftest-coverage -fprofile-update=atomic" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 /* { dg-require-effective-target profile_update_atomic } */
 
 /* Some side effect to stop branches from being pruned */

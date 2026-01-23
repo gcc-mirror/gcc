@@ -1,5 +1,5 @@
 /* { dg-options "--coverage -fpath-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 /* BEGIN paths
    summary: 1/2

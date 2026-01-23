@@ -1,5 +1,5 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 /* Filters are considered in order with latest-wins, so if a function is
    included and later excluded it should not show up.  */

@@ -1,5 +1,5 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 /* Filters can be applied to demangled names. This support matching on
    types and class hierarchies as well as function names.  */

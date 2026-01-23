@@ -1,5 +1,5 @@
 /* { dg-options "-fcondition-coverage -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 /* Some side effect to stop branches from being pruned.  */
 int x = 0;

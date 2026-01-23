@@ -1,5 +1,5 @@
 /* { dg-options "-fpath-coverage --coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 #include "gcov-23-1.h"
 #include "gcov-23-2.h"

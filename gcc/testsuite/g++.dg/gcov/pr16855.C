@@ -1,5 +1,5 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 /* See PR91087 for information on Darwin xfails.  Also PR81337 for Solaris
    ones.*/

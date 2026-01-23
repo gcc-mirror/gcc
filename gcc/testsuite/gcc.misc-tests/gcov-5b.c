@@ -2,7 +2,7 @@
    that are large enough to hold the count. */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 #define LIMIT1 7000
 #define LIMIT2 7000

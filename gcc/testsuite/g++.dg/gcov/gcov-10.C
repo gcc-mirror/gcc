@@ -1,7 +1,7 @@
 /* Ensure PIC sequence used for comdat functions */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage -fpic" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 /* { dg-require-effective-target fpic } */
 
 inline int __attribute__ ((noinline)) Foo ()

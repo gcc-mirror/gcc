@@ -1,6 +1,6 @@
 // PR gcov-profile/86536
 // { dg-options "-fprofile-arcs -ftest-coverage" }
-// { dg-do run { target native } }
+// { dg-do run }
 // { dg-require-fork "" }
 
 #include <stdlib.h>

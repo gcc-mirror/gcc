@@ -1,6 +1,6 @@
 // PR gcov-profile/88045
 // { dg-options "-fprofile-arcs -ftest-coverage -std=c++11" }
-// { dg-do run { target native } }
+// { dg-do run }
 /* { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } } */
 
 #include <numeric>

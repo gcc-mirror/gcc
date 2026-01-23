@@ -1,5 +1,5 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 /* Filtering also works by targeting the mangled symbol directly, but the
    subtlety is not really caught by the test framework.  Matching on fn1I[df]

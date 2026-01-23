@@ -1,5 +1,5 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 /* { dg-require-effective-target indirect_jumps } */
 
 void *buf[5];

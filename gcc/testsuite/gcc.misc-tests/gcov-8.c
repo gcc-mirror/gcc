@@ -6,7 +6,7 @@
 */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 int proxy (int i)
 {

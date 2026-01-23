@@ -2,7 +2,7 @@
  * and call return percentages for functions that call longjmp. */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 #include <setjmp.h>
 

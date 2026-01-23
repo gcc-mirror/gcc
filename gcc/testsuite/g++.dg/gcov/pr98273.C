@@ -1,7 +1,7 @@
 /* PR gcov-profile/98273 */
 
 /* { dg-options "--coverage -std=c++11" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 int
 main ()

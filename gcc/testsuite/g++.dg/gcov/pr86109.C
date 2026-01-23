@@ -1,6 +1,6 @@
 
 /* { dg-options "-fprofile-arcs -ftest-coverage -std=c++11" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 int main()
 {

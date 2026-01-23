@@ -2,7 +2,7 @@
    within a header file.  */
 
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 #include "gcov-3.h"
 

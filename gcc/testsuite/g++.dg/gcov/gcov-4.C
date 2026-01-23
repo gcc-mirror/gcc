@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 /* { dg-options "-fprofile-arcs -ftest-coverage -fno-exceptions" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 class foo {
 public:

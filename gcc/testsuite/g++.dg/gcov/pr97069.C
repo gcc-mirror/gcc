@@ -1,6 +1,6 @@
 // PR gcov-profile/97069
 // { dg-options "--coverage" }
-// { dg-do run { target native } }
+// { dg-do run }
 
 # 0 "pr97069.C"
 # 0 "<built-in>"

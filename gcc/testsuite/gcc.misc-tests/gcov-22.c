@@ -1,5 +1,5 @@
 /* { dg-options "-fcondition-coverage -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 #include <setjmp.h>
 jmp_buf buf;

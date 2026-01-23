@@ -1,5 +1,5 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage" } */
-/* { dg-do run { target native } } */
+/* { dg-do run } */
 
 /* Filtering on the function base name generally works well, because it becomes
    an unadultered part of the symbol.  */

@@ -31,6 +31,23 @@ proc clean-gcov-file { testcase suffix } {
     set basename [file tail $testcase]
     set base [file rootname $basename]
     remote_file host delete $base.$suffix
+    # The absolute path to the output when building on the host is
+    # used by the compiled program on the target to determine where
+    # the .gcda file goes there.
+    remote_file target delete [remote_file host absolute $base.$suffix]
+}
+
+# Transfer the .gcda file for a test from the target to the host.
+
+proc transfer-gcda { testcase } {
+    set basename [file tail $testcase]
+    set base [file rootname $basename]
+    # The absolute path to the output when building on the host is
+    # used by the compiled program on the target to determine where
+    # the .gcda file goes there.
+    set gcda [remote_file host absolute "$base.gcda"]
+    set gcda [remote_upload target $gcda]
+    remote_download host $gcda
 }
 
 #
@@ -763,6 +780,14 @@ proc run-gcov { args } {
     if { $gcov_remove_gcda } {
 	verbose "Removing $testcase.gcda"
 	clean-gcov-file $testcase "gcda"
+    } else {
+	transfer-gcda $testcase
+	global additional_sources_used
+	if [info exists additional_sources_used] {
+	    foreach srcfile $additional_sources_used {
+		transfer-gcda $srcfile
+	    }
+	}
     }
 
     verbose "Running $GCOV $testcase" 2
