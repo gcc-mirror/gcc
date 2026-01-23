@@ -495,6 +495,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Cpy_base(_Cpy_base&&) = default;
 
       _Cpy_base(_Cpy_base const& __x)
+      : _Mo_base()
       { _M_copy(__x); }
 
       _Cpy_base&
