@@ -6242,7 +6242,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for op (negate bit_not abs absu)
  (simplify
   (op (vec_cond:s @0 @1 @2))
-  (vec_cond @0 (op! @1) (op! @2))))
+  (vec_cond @0 (op!:type @1) (op!:type @2))))
 
 /* Sink unary conversions to branches, but only if we do fold both
    and the target's truth type is the same as we already have.  */
@@ -6281,7 +6281,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		  missing the legacy vcond{,u,eq} cases.  Do this only when
 		  lowering will be able to fixup..  */
 	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
-   (vec_cond @0 (op! @1 @3) (op! @2 @4))))
+   (vec_cond @0 (op!:type @1 @3) (op!:type @2 @4))))
 
 /* (@0 ? @2 : @3) lop (@1 ? @2 : @3)  -->  (@0 lop @1) ? @2 : @3.  */
 (for lop (bit_and bit_ior bit_xor)
@@ -6301,7 +6301,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0))
 	   || (optimize_vectors_before_lowering_p ()
 	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
-   (vec_cond @0 (op! @1 @3) (op! @2 @3))))
+   (vec_cond @0 (op!:type @1 @3) (op!:type @2 @3))))
  (simplify
   (op @3 (vec_cond:s @0 @1 @2))
   (if (VECTOR_TYPE_P (type)
@@ -6310,7 +6310,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || expand_vec_cond_expr_p (type, TREE_TYPE (@0))
 	   || (optimize_vectors_before_lowering_p ()
 	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
-   (vec_cond @0 (op! @3 @1) (op! @3 @2)))))
+   (vec_cond @0 (op!:type @3 @1) (op!:type @3 @2)))))
 
 #if GIMPLE
 (match (nop_atomic_bit_test_and_p @0 @1 @4)
@@ -8638,7 +8638,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      pessimizes code and causes gimplification issues when applied late.  */
   (if (!FLOAT_TYPE_P (TREE_TYPE (@3))
        || !operation_could_trap_p (cmp, true, false, @3))
-   (cond @0 (cmp! @1 @3) (cmp! @2 @3)))))
+   (cond @0 (cmp!:type @1 @3) (cmp!:type @2 @3)))))
 
 /* Similar to above:
    (c ? a : b) op d  ->  c ? (a op d) : (b op d)
@@ -8649,13 +8649,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 lrotate rrotate mult_highpart)
  (simplify
   (op (cond @0 @1 @2) @3)
-  (cond @0 (op! @1 @3) (op! @2 @3)))
+  (cond @0 (op!:type @1 @3) (op!:type @2 @3)))
 
  /* Support the variant
     d op (c ? a : b)  ->  c ? (d op a) : (d op b)  */
  (simplify
   (op @3 (cond @0 @1 @2))
-  (cond @0 (op! @3 @1) (op! @3 @2))))
+  (cond @0 (op!:type @3 @1) (op!:type @3 @2))))
 #endif
 
 /* Transform comparisons of the form (X & Y) CMP 0 to X CMP2 Z

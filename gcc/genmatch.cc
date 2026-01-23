@@ -5435,6 +5435,7 @@ parser::parse_expr ()
       && !(token->flags & PREV_WHITE))
     {
       eat_token (CPP_NOT);
+      token = peek ();
       e->force_leaf = true;
     }
 
@@ -5447,6 +5448,7 @@ parser::parse_expr ()
 	fatal_at (token, "modifier %<^%> can only act on operation %<COND_EXPR%>");
 
       eat_token (CPP_XOR);
+      token = peek ();
       e->match_phi = true;
     }
 
