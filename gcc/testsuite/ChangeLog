@@ -1,3 +1,12 @@
+2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/123742
+	* gcc.target/arm/neon-smax16.c: New test.
+	* gcc.target/arm/neon-smin16.c: New test.
+
 2026-01-20  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/122215

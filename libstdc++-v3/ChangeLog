@@ -1,3 +1,23 @@
+2026-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/123147
+	* include/bits/chrono_io.h (_Parser::operator()) <%S>: Use a
+	buffer of narrow characters to be parsed by std::from_chars.
+	* testsuite/std/time/parse/parse.cc: Check wchar_t parsing.
+
+2026-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__detail::__atomic_compare): Use
+	std::addressof instead of &.
+	* include/std/atomic (atomic::wait, atomic::notify_one)
+	(atomic::notify_all): Likewise.
+
 2025-11-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
