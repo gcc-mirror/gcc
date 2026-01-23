@@ -9831,14 +9831,15 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	}
       else
 	{
+	  tree step = gimple_convert (&init_stmts, stept, steps[0]);
 	  if (init_node)
 	    ;
-	  else if (INTEGRAL_TYPE_P (TREE_TYPE (steps[0])))
+	  else if (INTEGRAL_TYPE_P (stept))
 	    {
 	      new_name = gimple_convert (&init_stmts, stept, inits[0]);
 	      /* Build the initial value directly as a VEC_SERIES_EXPR.  */
 	      vec_init = gimple_build (&init_stmts, VEC_SERIES_EXPR,
-				       step_vectype, new_name, steps[0]);
+				       step_vectype, new_name, step);
 	      if (!useless_type_conversion_p (vectype, step_vectype))
 		vec_init = gimple_build (&init_stmts, VIEW_CONVERT_EXPR,
 					 vectype, vec_init);
@@ -9848,19 +9849,18 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	      /* Build:
 		 [base, base, base, ...]
 		 + (vectype) [0, 1, 2, ...] * [step, step, step, ...].  */
-	      gcc_assert (SCALAR_FLOAT_TYPE_P (TREE_TYPE (steps[0])));
+	      gcc_assert (SCALAR_FLOAT_TYPE_P (stept));
 	      gcc_assert (flag_associative_math);
 	      gcc_assert (index_vectype != NULL_TREE);
 
 	      tree index = build_index_vector (index_vectype, 0, 1);
-	      new_name = gimple_convert (&init_stmts, TREE_TYPE (steps[0]),
-					 inits[0]);
+	      new_name = gimple_convert (&init_stmts, stept, inits[0]);
 	      tree base_vec = gimple_build_vector_from_val (&init_stmts,
 							    step_vectype,
 							    new_name);
 	      tree step_vec = gimple_build_vector_from_val (&init_stmts,
 							    step_vectype,
-							    steps[0]);
+							    step);
 	      vec_init = gimple_build (&init_stmts, FLOAT_EXPR,
 				       step_vectype, index);
 	      vec_init = gimple_build (&init_stmts, MULT_EXPR,
@@ -9873,7 +9873,7 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	    }
 	  /* iv_loop is nested in the loop to be vectorized. Generate:
 	     vec_step = [S, S, S, S]  */
-	  t = unshare_expr (steps[0]);
+	  t = unshare_expr (step);
 	  gcc_assert (CONSTANT_CLASS_P (t)
 		      || TREE_CODE (t) == SSA_NAME);
 	  vec_step = gimple_build_vector_from_val (&init_stmts,
