@@ -2147,7 +2147,13 @@ model_recompute (rtx_insn *insn)
   for (use = INSN_REG_USE_LIST (insn); use != NULL; use = use->next_insn_use)
     {
       new_last = model_last_use_except (use);
-      if (new_last < point && bitmap_set_bit (tmp_bitmap, use->regno))
+      if (new_last < point
+	  && bitmap_set_bit (tmp_bitmap, use->regno)
+	  /* df_get_live_in has not necessarily been updated to reflect the
+	     effect of inter-block movement performed by earlier schedules.
+	     Cope with stale live-in sets by ignoring registers that are not
+	     currently assumed to be live.  */
+	  && bitmap_bit_p (curr_reg_live, use->regno))
 	{
 	  gcc_assert (num_uses < ARRAY_SIZE (uses));
 	  uses[num_uses].last_use = new_last;
