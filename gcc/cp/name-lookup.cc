@@ -8960,6 +8960,7 @@ struct local_state_t
   int cp_unevaluated_operand;
   int c_inhibit_evaluation_warnings;
   int cp_noexcept_operand_;
+  bool has_cfun;
 
   static local_state_t
   save_and_clear ()
@@ -8971,6 +8972,9 @@ struct local_state_t
     ::c_inhibit_evaluation_warnings = 0;
     s.cp_noexcept_operand_ = ::cp_noexcept_operand;
     ::cp_noexcept_operand = 0;
+    s.has_cfun = !!cfun;
+    if (s.has_cfun)
+      push_function_context ();
     return s;
   }
 
@@ -8980,6 +8984,8 @@ struct local_state_t
     ::cp_unevaluated_operand = this->cp_unevaluated_operand;
     ::c_inhibit_evaluation_warnings = this->c_inhibit_evaluation_warnings;
     ::cp_noexcept_operand = this->cp_noexcept_operand_;
+    if (this->has_cfun)
+      pop_function_context ();
   }
 };
 
@@ -9008,7 +9014,6 @@ maybe_push_to_top_level (tree d)
   else
     {
       gcc_assert (!processing_template_decl);
-      push_function_context ();
       local_state_stack.safe_push (local_state_t::save_and_clear ());
     }
 
@@ -9023,10 +9028,7 @@ maybe_pop_from_top_level (bool push_to_top)
   if (push_to_top)
     pop_from_top_level ();
   else
-    {
-      local_state_stack.pop ().restore ();
-      pop_function_context ();
-    }
+    local_state_stack.pop ().restore ();
 }
 
 /* Push into the scope of the namespace NS, even if it is deeply
