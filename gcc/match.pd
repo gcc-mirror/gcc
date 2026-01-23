@@ -8368,6 +8368,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        sign extension followed by AND with C will achieve the effect.  */
     (bit_and (convert @0) @1)))))
 
+/* (A | (convert?)(A != 0)) EQ|NE 0 -> A EQ|NE 0 (PR114969)
+
+   The NE variant of this pattern is produced by the C++ code:
+
+   (bool)(std::max (ulong_A, 0) | (ulong_A ? 1 : 0)).  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (bit_ior:c @0 (convert? (ne @0 integer_zerop))) integer_zerop)
+  (cmp @0 { build_zero_cst (TREE_TYPE (@0)); })))
+
 /* When the addresses are not directly of decls compare base and offset.
    This implements some remaining parts of fold_comparison address
    comparisons but still no complete part of it.  Still it is good
