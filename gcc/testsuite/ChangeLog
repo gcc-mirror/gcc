@@ -1,3 +1,16 @@
+2026-01-23  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/119130
+	* gcc.target/powerpc/builtins-1-p9-runnable.c: Use same expected
+	results for both endian format.
+
+2026-01-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-01-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-broadcast.c: New test.
+
 2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
