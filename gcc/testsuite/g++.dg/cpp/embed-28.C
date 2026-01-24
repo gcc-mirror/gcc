@@ -1,0 +1,19 @@
+// PR c++/123737
+// { dg-do run }
+// { dg-options "--embed-dir=${srcdir}/c-c++-common/cpp/embed-dir" }
+
+struct A {
+  A (int x) : a (0), e (x) {}
+  unsigned long a, e;
+  A &operator, (int) { ++a; return *this; }
+  ~A () { if (a != e) __builtin_abort (); }
+};
+
+int
+main ()
+{
+  A a = 231;
+  a,
+#embed <magna-carta.txt> limit (231)
+    ;
+}

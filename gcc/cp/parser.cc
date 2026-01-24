@@ -12132,10 +12132,24 @@ cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
 	     and one CPP_NUMBER plus CPP_COMMA before it and one
 	     CPP_COMMA plus CPP_NUMBER after it is guaranteed by
 	     the preprocessor.  Thus, parse the whole CPP_EMBED just
-	     as a single INTEGER_CST, the last byte in it.  */
+	     as a single INTEGER_CST, the last byte in it.  Though,
+	     don't use that shortcut if the comma operator could be
+	     overloaded.  */
 	  tree raw_data = cp_lexer_peek_token (parser->lexer)->u.value;
 	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 	  cp_lexer_consume_token (parser->lexer);
+	  if (OVERLOAD_TYPE_P (TREE_TYPE (expression))
+	      || type_dependent_expression_p (expression))
+	    for (unsigned i = 0; i < RAW_DATA_LENGTH (raw_data) - 1U; ++i)
+	      {
+		assignment_expression
+		  = *raw_data_iterator (raw_data, i);
+		assignment_expression.set_location (loc);
+		expression
+		  = build_x_compound_expr (loc, expression,
+					   assignment_expression, NULL_TREE,
+					   complain_flags (decltype_p));
+	      }
 	  assignment_expression
 	    = *raw_data_iterator (raw_data, RAW_DATA_LENGTH (raw_data) - 1);
 	  assignment_expression.set_location (loc);
