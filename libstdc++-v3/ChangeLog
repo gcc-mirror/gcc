@@ -1,3 +1,22 @@
+2026-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/117276
+	* include/pstl/parallel_backend_tbb.h (__func_task::finalize):
+	Make deallocation unconditional.
+
+2026-01-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__detail::__atomic_compare): Use
+	std::addressof instead of &.
+	* include/std/atomic (atomic::wait, atomic::notify_one)
+	(atomic::notify_all): Likewise.
+
 2025-11-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
