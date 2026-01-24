@@ -223,8 +223,8 @@ static bool
 a68_init (void)
 {
   build_common_tree_nodes (false);
-  targetm.init_builtins ();
   a68_build_a68_type_nodes ();
+  targetm.init_builtins ();
   build_common_builtin_nodes ();
   a68_install_builtins ();
 
