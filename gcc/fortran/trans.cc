@@ -44,6 +44,8 @@ along with GCC; see the file COPYING3.  If not see
 
 const char gfc_msg_fault[] = N_("Array reference out of bounds");
 
+/* Nonzero if we're translating a defined assignment call. */
+int is_assign_call = 0;
 
 /* Advance along TREE_CHAIN n times.  */
 
@@ -1619,14 +1621,17 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
     return;
 
   /* Derived type function results with components that have defined
-     assignements are handled in resolve.cc(generate_component_assignments)  */
-  if (derived && (derived->attr.is_c_interop
-		  || derived->attr.is_iso_c
-		  || derived->attr.is_bind_c
-		  || (derived->attr.extension && derived->f2k_derived
-		      && derived->f2k_derived->tb_op[INTRINSIC_ASSIGN])
-		  || (!derived->attr.extension
-		      && derived->attr.defined_assign_comp)))
+     assignements are handled in resolve.cc(generate_component_assignments),
+     unless the assignment was replaced by a subroutine call to the
+     subroutine associated with the assignment operator. */
+  if ( ! is_assign_call
+       && derived && (derived->attr.is_c_interop
+       || derived->attr.is_iso_c
+       || derived->attr.is_bind_c
+       || (derived->attr.extension && derived->f2k_derived
+	   && derived->f2k_derived->tb_op[INTRINSIC_ASSIGN])
+       || (!derived->attr.extension
+	   && derived->attr.defined_assign_comp)))
     return;
 
   if (is_class)
@@ -2431,8 +2436,12 @@ trans_code (gfc_code * code, tree cond)
 	  break;
 
 	case EXEC_ASSIGN_CALL:
+	  /* Record that an assignment call is being processed, to
+	     ensure finalization occurs in gfc_finalize_tree_expr */
+	  is_assign_call = 1;
 	  res = gfc_trans_call (code, true, NULL_TREE,
 				NULL_TREE, false);
+	  is_assign_call = 0;
 	  break;
 
 	case EXEC_RETURN:
