@@ -3136,26 +3136,21 @@ cp_fold_maybe_rvalue (tree x, bool rval, fold_flags_t flags)
 {
   while (true)
     {
+      if (rval && (flags & ff_only_non_odr))
+	x = cp_fold_non_odr_use_1 (x);
       x = cp_fold (x, flags);
       if (rval)
-	x = mark_rvalue_use (x);
-      if (rval && (flags & ff_only_non_odr))
 	{
-	  tree v = cp_fold_non_odr_use_1 (x);
-	  if (v != x)
+	  x = mark_rvalue_use (x);
+	  if (!(flags & ff_only_non_odr)
+	      && DECL_P (x) && !TYPE_REF_P (TREE_TYPE (x)))
 	    {
-	      x = v;
-	      continue;
-	    }
-	}
-      else if (rval && DECL_P (x)
-	       && !TYPE_REF_P (TREE_TYPE (x)))
-	{
-	  tree v = decl_constant_value (x);
-	  if (v != x && v != error_mark_node)
-	    {
-	      x = v;
-	      continue;
+	      tree v = decl_constant_value (x);
+	      if (v != x && v != error_mark_node)
+		{
+		  x = v;
+		  continue;
+		}
 	    }
 	}
       break;
@@ -3419,9 +3414,9 @@ cp_fold (tree x, fold_flags_t flags)
 	 used as lvalues.  */
       if ((flags & ff_only_non_odr) && REFERENCE_REF_P (x))
 	{
-	  tree r = cp_fold_non_odr_use_1 (x);
-	  if (r != x)
-	    return convert_from_reference (cp_fold (r, flags));
+	  op0 = cp_fold_non_odr_use_1 (TREE_OPERAND (x, 0));
+	  if (op0 != TREE_OPERAND (x, 0))
+	    return convert_from_reference (cp_fold (op0, flags));
 	}
       goto unary;
 
@@ -3568,7 +3563,11 @@ cp_fold (tree x, fold_flags_t flags)
 	  if (op0 == error_mark_node || op1 == error_mark_node)
 	    x = error_mark_node;
 	  else if (op0 != TREE_OPERAND (x, 0) || op1 != TREE_OPERAND (x, 1))
-	    x = build2_loc (loc, code, TREE_TYPE (x), op0, op1);
+	    {
+	      if (code == INIT_EXPR && op1 != TREE_OPERAND (x, 1))
+		set_target_expr_eliding (op1);
+	      x = build2_loc (loc, code, TREE_TYPE (x), op0, op1);
+	    }
 	  break;
 	}
 
