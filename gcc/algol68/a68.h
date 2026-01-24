@@ -476,6 +476,7 @@ void a68_make_soid (SOID_T *s, int sort, MOID_T *type, int attribute);
 void a68_make_strong (NODE_T *n, MOID_T *p, MOID_T *q);
 void a68_make_uniting_coercion (NODE_T *n, MOID_T *q);
 void a68_make_void (NODE_T *p, MOID_T *q);
+bool a68_is_c_mode (MOID_T *m);
 
 #define A68_DEPREF true
 #define A68_NO_DEPREF false
@@ -810,6 +811,7 @@ tree a68_make_variable_declaration_decl (NODE_T *identifier, const char *module_
 tree a68_make_proc_identity_declaration_decl (NODE_T *identifier, const char *module_name = NULL,
 					      bool indicant = false, bool external = false,
 					      const char *extern_symbol = NULL);
+tree a68_make_formal_hole_decl (NODE_T *p, const char *extern_symbol);
 tree a68_make_anonymous_routine_decl (MOID_T *mode);
 tree a68_get_skip_tree (MOID_T *m);
 tree a68_get_empty (void);
@@ -873,6 +875,7 @@ tree a68_lower_assignation (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_routine_text (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_generator (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_call (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_formal_hole (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_unit (NODE_T *p, LOW_CTX_T ctx);
 
 /* a68-low-generator.c  */

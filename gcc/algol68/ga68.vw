@@ -1217,12 +1217,14 @@ a) strong MOID NEST skip{5A} : skip{94f} token.
 
 5.6.1 Syntax
 
-A) LANGUAGE :: algol sixty eight ; fortran ; c language ; cpp language.
-B) ALGOL68 :: algol sixty eight.
-C) FORTRAM :: fortran.
-D) CLANG :: c language.
-E) CPPLANG :: cpp language.
-F) DLANG :: d language.
+A) LANGUAGE :: algol sixty eight ; c language.
+B) CODE :: CAIN ; CLAN ; reference to CAIN ;
+           procedure with PERFORMERS yieling COID ;
+           procedure yielding COID.
+C) PERFORMERS :: PERFORMER ; PERFORMERS PERFORMER.
+D) PERFORMER :: CODE parameter.
+E) COID :: CODE ; void.
+F) CAIN :: real ; long real ; integral ; BITS ; boolean ; char.
 
 a) strong MOID NEST virtual hole{5A} :
      virtual nest symbol, strong MOID NEST closed clause{31a}.
@@ -1233,15 +1235,12 @@ c) MOID NEST actual hole{A6a} :
      strong MOID NEST ENCLOSED clause{31a,33a,c,34a,35a,36a,-}.
 d) hole indication{b} :
      character denotation{814a} ; row of character denotation{83a}.
-e) MOID ALGOL68 indication{b} : EMPTY.
-f) MOID FORTRAN indication{b} : bold letter f letter o letter r letter t
-                                     letter r letter a letter n token.
-g) MOID CLANG indication{b} : bold letter c letter l letter a letter n
-                                   letter g.
-e) MOID CPPLANG indication{b} : bold letter c letter p letter p letter l
-                                     letter a letter n letter g.
-f) MOID DLANG indication{b} : bold letter d letter l letter a letter n
-                                   letter g.
+e) MOID algol sixty eight indication{b} : EMPTY.
+f) COID c language indication{b} : bold letter c token.
+
+{ COID-c-language-indication restricts the `MOID's to the set for
+  which a C equivalence can be immediately determined by the compiler
+  without any additional information.  }
 
 { Since no representation is provided for the virtual-nest-symbol, the
   user is unable to construct virtual-holes for himself, but a

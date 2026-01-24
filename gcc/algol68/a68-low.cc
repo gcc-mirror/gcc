@@ -631,6 +631,35 @@ a68_make_variable_declaration_decl (NODE_T *identifier,
   return decl;
 }
 
+/* Make an extern declaration for a formal hole.  */
+
+tree
+a68_make_formal_hole_decl (NODE_T *p, const char *extern_symbol)
+{
+  /* The CTYPE of MODE is a pointer to a function.  We need the pointed
+     function type for the FUNCTION_DECL.  */
+  tree type = (IS (MOID (p), PROC_SYMBOL)
+	       ? TREE_TYPE (CTYPE (MOID (p)))
+	       : CTYPE (MOID (p)));
+
+  gcc_assert (strlen (extern_symbol) > 0);
+  const char *sym = (extern_symbol[0] == '&'
+		     ? extern_symbol + 1
+		     : extern_symbol);
+
+  tree decl = build_decl (a68_get_node_location (p),
+			  VAR_DECL,
+			  get_identifier (sym),
+			  type);
+  DECL_EXTERNAL (decl) = 1;
+  TREE_PUBLIC (decl) = 1;
+  DECL_INITIAL (decl) = a68_get_skip_tree (MOID (p));
+
+  if (extern_symbol[0] == '&')
+    decl = fold_build1 (ADDR_EXPR, type, decl);
+  return decl;
+}
+
 /* Do a checked indirection.
 
    P is a tree node used for its location information.
@@ -1620,6 +1649,9 @@ a68_lower_tree (NODE_T *p, LOW_CTX_T ctx)
     case AND_FUNCTION:
     case OR_FUNCTION:
       res = a68_lower_logic_function (p, ctx);
+      break;
+    case FORMAL_HOLE:
+      res = a68_lower_formal_hole (p, ctx);
       break;
     case IDENTITY_RELATION:
       res = a68_lower_identity_relation (p, ctx);

@@ -1840,6 +1840,53 @@ mode_check_unit (NODE_T *p, SOID_T *x, SOID_T *y)
       mode_check_bool_function (SUB (p), x, y);
       a68_warn_for_voiding (p, x, y, OR_FUNCTION);
     }
+  else if (IS (p, FORMAL_HOLE))
+    {
+      NODE_T *tertiary = NO_NODE;
+
+      for (NODE_T *q = SUB (p); q != NO_NODE; FORWARD (q))
+	{
+	  if (IS (q, TERTIARY))
+	    {
+	      tertiary = q;
+	      break;
+	    }
+	}
+
+      NODE_T *str = tertiary;
+      while (str != NO_NODE && !IS (str, ROW_CHAR_DENOTATION))
+	str = SUB (str);
+      gcc_assert (IS (str, ROW_CHAR_DENOTATION));
+
+      if (SORT (x) != STRONG)
+	{
+	  /* A formal hole should appear in a strong context, and its mode is
+	     the goal mode of the context.  */
+	  a68_error (p, "formal hole should be in a strong context");
+	  a68_make_soid (y, STRONG, M_ERROR, 0);
+	}
+      else if (!a68_is_c_mode (MOID (x)))
+	{
+	  /* Additionally, the mode of the formal hole should be amenable to be
+	     somehow "translated" to C semantics. */
+	  a68_error (p, "formal hole cannot be of mode M", MOID (x));
+	  a68_make_soid (y, STRONG, M_ERROR, 0);
+	}
+      else if (NSYMBOL (str)[0] == '&' && !IS_REF (MOID (x)))
+	{
+	  /* A C formal whole whose string starts with & requires
+	     a ref mode.  */
+	  a68_error (p, "formal hole should be a name (ref to a mode)");
+	  a68_make_soid (y, STRONG, M_ERROR, 0);
+	}
+      else
+	{
+	  SOID_T z;
+	  mode_check_unit (tertiary, x, &z);
+	  a68_make_soid (y, SORT (x), MOID (x), 0);
+	  a68_warn_for_voiding (p, x, y, FORMAL_HOLE);
+	}
+    }
 
   MOID (p) = MOID (y);
 }

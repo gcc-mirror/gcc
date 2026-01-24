@@ -135,6 +135,7 @@ static void reduce_basic_declarations (NODE_T *p);
 static void reduce_declaration_lists (NODE_T *p);
 static void reduce_module_texts (NODE_T *p);
 static void reduce_module_text_parts (NODE_T *p);
+static void reduce_formal_holes (NODE_T *p);
 static NODE_T *reduce_dyadic (NODE_T *p, int u);
 
 /* Whether a series is serial or collateral.  */
@@ -687,6 +688,7 @@ reduce_branch (NODE_T *q, enum a68_attribute expect)
 	  reduce_right_to_left_constructs (p);
 	  /* Reduce units and declarations.  */
 	  reduce_basic_declarations (p);
+	  reduce_formal_holes (p);
 	  reduce_units (p);
 	  reduce_erroneous_units (p);
 	  if (expect != UNIT)
@@ -1840,10 +1842,41 @@ reduce_tertiaries (NODE_T *p)
     }
 }
 
+/* Reduce formal holes.  */
+
+static void
+reduce_formal_holes (NODE_T *p)
+{
+  for (NODE_T *q = p; q != NO_NODE; FORWARD (q))
+    {
+      bool ahole = false;
+      reduce (q, NO_NOTE, &ahole, FORMAL_HOLE,
+	      FORMAL_NEST_SYMBOL, TERTIARY, STOP);
+      reduce (q, NO_NOTE, &ahole, FORMAL_HOLE,
+	      FORMAL_NEST_SYMBOL, LANGUAGE_INDICANT, TERTIARY, STOP);
+
+      if (ahole)
+	{
+	  /* Check that the tertiary is a row of chars denotation.  */
+	  for (NODE_T *s = SUB (q); s != NO_NODE; FORWARD (s))
+	    {
+	      if (IS (s, TERTIARY)
+		  && !(IS (SUB (s), SECONDARY)
+		       && IS (SUB (SUB (s)), PRIMARY)
+		       && IS (SUB (SUB (SUB (s))), DENOTATION)
+		       && IS (SUB (SUB (SUB (SUB (s)))), ROW_CHAR_DENOTATION)))
+		{
+		  a68_error (s, "expected row char denotation");
+		}
+	    }
+	}
+    }
+}
+
 /* Reduce units. */
 
 static void
-reduce_units (NODE_T * p)
+reduce_units (NODE_T *p)
 {
   /* Stray ~ is a SKIP.  */
   for (NODE_T *q = p; q != NO_NODE; FORWARD (q))
@@ -1864,6 +1897,7 @@ reduce_units (NODE_T * p)
       reduce (q, NO_NOTE, NO_TICK, UNIT, SKIP, STOP);
       reduce (q, NO_NOTE, NO_TICK, UNIT, TERTIARY, STOP);
       reduce (q, NO_NOTE, NO_TICK, UNIT, ASSERTION, STOP);
+      reduce (q, NO_NOTE, NO_TICK, UNIT, FORMAL_HOLE, STOP);
     }
 }
 

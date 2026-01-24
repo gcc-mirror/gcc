@@ -1,0 +1,5 @@
+begin int foo =
+         nest XYZ { dg-error "valid language" }
+         "foo";
+      skip
+end

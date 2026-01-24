@@ -108,6 +108,7 @@ variable @B{C}} is a pseudo-comment.
 @menu
 * Invoking ga68::               How to run the compiler.
 * Composing programs::          Packets, modules, holes, particular programs.
+* Foreign Function Interface::  Communicating with other languages via holes.
 * Comments and pragmats::       Comments and pragmas.
 * Hardware representation::     Representation of programs.
 * Standard prelude::            Standard modes, operators, etc.
@@ -407,6 +408,7 @@ modules and separated compilation support provided by this compiler.
 @menu
 * Packets::                  Compilation units.
 * Modules::                  Facilities for bottom-up programming.
+* Holes::                    Facilities for top-down programming.
 * Particular programs::      The main program.
 * The standard environment:: Environment conforming a full program.
 @end menu
@@ -997,6 +999,22 @@ identify user-defined modes and operators, such as @code{JSON},
 
 XXX
 
+@node Holes
+@section Holes
+@cindex holes
+
+@dfn{Holes} are part of the modules system and are a mechanism used
+for two main purposes:
+
+@itemize @minus
+@item Top-down programming.
+@item Communication with other programming languages.
+@end itemize
+
+
+At the moment only the second kind of holes are supported by this
+compiler.  @xref{Foreign Function Interface}.
+
 @node Particular programs
 @section Particular programs
 @cindex particular program
@@ -1136,6 +1154,162 @@ involved then the user-prelude is empty.
 
 Subsequent sections in this manual include a detailed description of
 the contents of these preludes.
+
+@node Foreign Function Interface
+@chapter Foreign Function Interface
+@cindex FFI
+
+It is possible to call functions written in other programming
+languages, and also to access variables and constants, using the
+following form of @dfn{formal hole}:
+
+@example
+@B{nest} @B{language_indicant} "row char denotation"
+@end example
+
+@noindent
+Where @B{language_indicant} is a bold word indicating the programming
+language we are communicating with and the row char denotation
+specifies the entity we are accessing.  The interpretation of the
+later depends on the specific language.
+
+The formal hole construction is an @dfn{unit}, and can only appear in
+a strong context.  It's mode is the mode expected by the strong
+context.  For example, in the following declaration:
+
+@example
+int counter = nest C "_counter";
+@end example
+
+@noindent
+The mode of the formal hole is @code{@B{int}}, since it is in a strong
+context (the actual parameter of an identity declaration) in which an
+integral value is expected.  Likewise, in:
+
+@example
+proc long int func = nest C "random";
+@end example
+
+@noindent
+The expected mode is a procedure that gets no arguments and returns a
+@code{@B{long} @B{int}}.
+
+The set of modes that are accepted in the formal holes depend on the
+specific language we are communicating to.  These are usually
+restricted because the compiler may not know how to translate certain
+Algol 68 concepts into the foreign language ones.  A compile time
+error is issued if an invalid mode is required.  Specifics are
+described in the sections below.
+
+It is important to note that the language-indicants like @code{@B{C}}
+or @code{@B{Fortran}} are still available to be used as mode
+indicants, operators or module indicants: they only qualify as
+language indicants when they appear in a formal hole (@code{@B{nest}})
+construct.
+
+The following subsections document the specific supported foreign
+languages.
+
+@menu
+* Communicating with C::     Accessing C variables and functions.
+@end menu
+
+@node Communicating with C
+@section Communicating with C
+
+The language indicant @code{@B{C}} is used to access C variables and
+calling C functions:
+
+@example
+@B{nest} @B{C} "[&]symbol"
+@end example
+
+The row char denotation should contain a symbol corresponding to a C
+variable or function, optionally preceded by an ampersand @code{&}.
+It is the responsibility of the programmer to make sure the specified
+symbol actually corresponds to an entity with the right type.  In case
+a malformed symbol is specified it will very likely result in an
+assembler error.
+
+For example, this is how we can access a C variable as an Algol 68
+constant:
+
+@example
+@B{int} counter = @B{nest} @B{C} "counter";
+
+@B{if} counter = 0
+@B{then} ... @B{fi};
+@end example
+
+If we wanted to be able to change the value of the C variable
+@code{counter} then we need to add a leading ampersand to the row
+denotation, and of course change the mode on the Algol 68 side to a
+@code{@B{ref} @B{int}}:
+
+@example
+@B{ref} @B{int} counter = @B{nest} @B{C} "&counter";
+
+counter +:= 1;
+@end example
+
+If we wanted to access a C pointer variable @code{int *ptr} as an
+Algol 68 name we could do:
+
+@example
+@B{ref} @B{int} ptr = @B{nest} @B{C} "ptr";
+
+ptr := 100; @{ Changes the value pointed by the C pointer ptr,
+              not of ptr itself @}
+@end example
+
+If we wanted to call the standard POSIX functions @code{random} and
+@code{srandom} we could do:
+
+@example
+@B{proc} @B{long} @B{int} random = @B{nest} @B{C} "random";
+@B{proc}(@B{bits})@B{void} srandom = @B{nest} @B{C} "srandom";
+
+@B{if} random < 100 @B{then} ... @B{fi}
+@end example
+
+The modes accepted in a formal hole for C are:
+
+@table @asis
+@item @code{@B{void}}
+As C @code{void}.
+@item @code{@B{bool}}
+As C @code{bool}.
+@item @code{@B{char}}
+As C 32-bit integer.
+@item @code{@B{int}}
+As C @code{int}.
+@item @code{@B{short} @B{int}}
+As C @code{short}.
+@item @code{@B{short} @B{short} @B{int}}
+As C @code{char}.
+@item @code{@B{long} @B{int}}
+As C @code{long} or as C @code{int}.
+@item @code{@B{long} @B{long} @B{int}}
+As C @code{long long} or as C @code{long} or as C @code{int}.
+@item @code{@B{bits}}
+As C @code{unsigned int}.
+@item @code{@B{short} @B{bits}}
+As C @code{unsigned short}.
+@item @code{@B{short} @B{short} @B{bits}}
+As C @code{unsigned char}.
+@item @code{@B{long} @B{bits}}
+As C @code{unsigned long} or as C @code{unsigned int}.
+@item @code{@B{long} @B{long} @B{bits}}
+As C @code{unsigned long long} or as C @code{unsigned long} or as C @code{unsigned int}.
+@item @code{@B{real}}
+As C @code{float}
+@item @code{@B{long} @B{real}}
+As C @code{double}
+@item @B{proc} with accepted formal parameter modes and yielded mode
+As the corresponding C functions.
+@item Structs with fields of accepted modes
+As the corresponding C structs.
+@end table
 
 @node Comments and pragmats
 @chapter Comments and pragmats

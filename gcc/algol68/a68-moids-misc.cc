@@ -1059,7 +1059,7 @@ a68_is_balanced (NODE_T *n, SOID_T *y, int sort)
     {
       bool k = false;
 
-      for (; y != NO_SOID && !k; FORWARD (y)) 
+      for (; y != NO_SOID && !k; FORWARD (y))
 	k = (!IS (MOID (y), STOWED_MODE));
 
       if (k == false)
@@ -1187,6 +1187,44 @@ a68_determine_unique_mode (SOID_T *z, int deflex)
       else
 	return x;
     }
+}
+
+/* Whether the given mode M is a valid mode for a C formal hole.  See
+   metaproduction rule 561B in ga68.vw.  */
+
+bool
+a68_is_c_mode (MOID_T *m)
+{
+  if (m == M_VOID || m == M_BOOL || m == M_CHAR)
+    return true;
+  else if (IS_INTEGRAL (m))
+    return true;
+  else if (IS_BITS (m))
+    return true;
+  else if (IS_REAL (m))
+    return true;
+  else if (IS_REF (m))
+    return a68_is_c_mode (SUB (m));
+  else if (IS (m, PROC_SYMBOL))
+    {
+      bool yielded_mode_valid = a68_is_c_mode (SUB (m));
+      bool params_valid = true;
+
+      for (PACK_T *z = PACK (m); z != NO_PACK; FORWARD (z))
+	params_valid &= a68_is_c_mode (MOID (z));
+
+      return yielded_mode_valid && params_valid;
+    }
+  else if (IS_STRUCT (m))
+    {
+      bool fields_valid = true;
+
+      for (PACK_T *z = PACK (m); z != NO_PACK; FORWARD (z))
+	fields_valid &= a68_is_c_mode (MOID (z));
+      return fields_valid;
+    }
+
+  return false;
 }
 
 /* Insert coercion A in the tree.  */

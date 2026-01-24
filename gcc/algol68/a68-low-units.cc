@@ -1238,6 +1238,28 @@ a68_lower_routine_text (NODE_T *p, LOW_CTX_T ctx)
 			func_decl);
 }
 
+/* Lower a formal hole.
+
+      formal hole : formal nest symbol, tertiary ;
+                    formal nest symbol, language indicant, tertiary.
+*/
+
+tree
+a68_lower_formal_hole (NODE_T *p, LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  NODE_T *str = NEXT_SUB (p);
+  if (IS (str, LANGUAGE_INDICANT))
+    FORWARD (str);
+  gcc_assert (IS (str, TERTIARY));
+  while (str != NO_NODE && !IS (str, ROW_CHAR_DENOTATION))
+    str = SUB (str);
+  gcc_assert (IS (str, ROW_CHAR_DENOTATION));
+
+  char *symbol = a68_string_process_breaks (p, NSYMBOL (str));
+  tree decl = a68_make_formal_hole_decl (p, symbol);
+  return decl;
+}
+
 /* Lower an unit.
 
       unit : assignation; identity relation;

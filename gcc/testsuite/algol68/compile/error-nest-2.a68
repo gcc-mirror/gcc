@@ -1,0 +1,8 @@
+begin int foo =
+         nest C
+              200; { dg-error "denotation" }
+      int bar =
+         nest
+              3.14; { dg-error "denotation" }
+      skip
+end

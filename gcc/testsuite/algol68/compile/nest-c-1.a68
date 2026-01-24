@@ -1,0 +1,4 @@
+begin proc real myrandom = nest C "_libga68_random";
+      real r = myrandom;
+      assert (r >= 0.0 AND r <= 1.0)
+end

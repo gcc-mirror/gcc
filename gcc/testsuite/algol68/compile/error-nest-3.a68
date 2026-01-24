@@ -1,0 +1,4 @@
+begin int foo = 10 + (nest C "foo"); { dg-error "strong context" }
+      int bar = 20 + (nest "bar");   { dg-error "strong context" }
+      assert (foo = 10)
+end
