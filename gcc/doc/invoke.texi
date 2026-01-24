@@ -217,7 +217,7 @@ in the following sections.
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
 @gccoptlist{--compile-std-module
--fabi-compat-version=@var{n} -fabi-version=@var{n}
+-fabi-compat-version=@var{n}  -fabi-version=@var{n}
 -fno-access-control  -faligned-new=@r{[}@var{n}@r{]}
 -fno-assume-sane-operators-new-delete
 -fchar8_t  -fcheck-new
@@ -318,7 +318,7 @@ Objective-C and Objective-C++ Dialects}.
 -fzero-link
 -gen-decls
 -Wassign-intercept  -Wno-property-assign-default
--Wno-protocol -Wobjc-root-class -Wselector
+-Wno-protocol  -Wobjc-root-class  -Wselector
 -Wstrict-selector-match
 -Wundeclared-selector}
 
@@ -363,7 +363,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Warning Options
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic
--pedantic-errors -fpermissive
+-pedantic-errors  -fpermissive
 -w  -Wextra  -Wall  -Wabi=@var{n}
 -Waddress  -Wno-address-of-packed-member  -Waggregate-return
 -Walloc-size  -Walloc-size-larger-than=@var{byte-size}  -Walloc-zero
@@ -372,7 +372,7 @@ Objective-C and Objective-C++ Dialects}.
 -Warith-conversion
 -Warray-bounds  -Warray-bounds=@var{n}  -Warray-compare
 -Warray-parameter  -Warray-parameter=@var{n}
--Wno-attributes  -Wattribute-alias=@var{n} -Wno-attribute-alias
+-Wno-attributes  -Wattribute-alias=@var{n}  -Wno-attribute-alias
 -Wno-attribute-warning
 -Wbidi-chars=@r{[}none@r{|}unpaired@r{|}any@r{|}ucn@r{]}
 -Wbool-compare  -Wbool-operation
@@ -381,7 +381,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wc11-c23-compat  -Wc23-c2y-compat
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat
 -Wc++20-compat  -Wc++26-compat
--Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
+-Wno-c++11-extensions  -Wno-c++14-extensions  -Wno-c++17-extensions
 -Wno-c++20-extensions  -Wno-c++23-extensions
 -Wcalloc-transposed-args  -Wcannot-profile
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual
@@ -429,7 +429,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]}
 -Wnull-dereference  -Wno-odr
 -Wopenacc-parallelism
--Wopenmp -Wopenmp-simd
+-Wopenmp  -Wopenmp-simd
 -Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects
 -Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded
 -Wparentheses  -Wno-pedantic-ms-format
@@ -441,8 +441,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-scalar-storage-order  -Wsequence-point
 -Wshadow  -Wshadow=global  -Wshadow=local  -Wshadow=compatible-local
 -Wno-shadow-ivar
--Wno-shift-count-negative  -Wno-shift-count-overflow  -Wshift-negative-value
--Wno-shift-overflow  -Wshift-overflow=@var{n}
+-Wno-shift-count-negative  -Wno-shift-count-overflow
+-Wshift-negative-value  -Wno-shift-overflow  -Wshift-overflow=@var{n}
 -Wsign-compare  -Wsign-conversion
 -Wno-sizeof-array-argument
 -Wsizeof-array-div
@@ -450,7 +450,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing
 -Wstrict-aliasing=@var{n}  -Wstrict-overflow  -Wstrict-overflow=@var{n}
 -Wstring-compare
--Wno-stringop-overflow -Wno-stringop-overread
+-Wno-stringop-overflow  -Wno-stringop-overread
 -Wno-stringop-truncation  -Wstrict-flex-arrays
 -Wsuggest-attribute=@var{attribute-name}
 -Wswitch  -Wno-switch-bool  -Wswitch-default  -Wswitch-enum
@@ -562,26 +562,26 @@ Objective-C and Objective-C++ Dialects}.
 }
 
 @item C and Objective-C-only Warning Options
-@gccoptlist{-Wbad-function-cast -Wdeprecated-non-prototype -Wfree-labels
--Wmissing-declarations -Wmissing-parameter-name -Wmissing-parameter-type
--Wdeclaration-missing-parameter-type -Wmissing-prototypes
+@gccoptlist{-Wbad-function-cast  -Wdeprecated-non-prototype  -Wfree-labels
+-Wmissing-declarations  -Wmissing-parameter-name  -Wmissing-parameter-type
+-Wdeclaration-missing-parameter-type  -Wmissing-prototypes
 -Wmissing-variable-declarations
 -Wmultiple-parameter-fwd-decl-lists
--Wnested-externs -Wold-style-declaration
--Wold-style-definition -Wstrict-prototypes -Wtraditional
--Wtraditional-conversion -Wdeclaration-after-statement -Wpointer-sign}
+-Wnested-externs  -Wold-style-declaration
+-Wold-style-definition  -Wstrict-prototypes  -Wtraditional
+-Wtraditional-conversion  -Wdeclaration-after-statement  -Wpointer-sign}
 
 @item Debugging Options
 @xref{Debugging Options,,Options for Debugging Your Program}.
 @gccoptlist{-g  -g@var{level}  -gdwarf  -gdwarf-@var{version}
--gbtf -gctf  -gctf@var{level}
+-gbtf  -gctf  -gctf@var{level}
 -gno-prune-btf  -ggdb  -gno-record-gcc-switches
 -gstrict-dwarf  -gas-loc-support  -gas-locview-support
 -gcodeview  -gcolumn-info  -gdwarf32  -gdwarf64
 -gno-statement-frontiers
 -gno-variable-location-views  -gvariable-location-views=incompat5
 -ginternal-reset-location-views  -ginline-points
--gvms -gz@r{[}=@var{type}@r{]}
+-gvms  -gz@r{[}=@var{type}@r{]}
 -gsplit-dwarf  -gdescribe-dies
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section
 -fno-eliminate-unused-debug-types
@@ -600,9 +600,9 @@ Objective-C and Objective-C++ Dialects}.
 -falign-labels[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
 -falign-loops[=@var{n}[:@var{m}:[@var{n2}[:@var{m2}]]]]
 -fmin-function-alignment=[@var{n}]
--fno-allocation-dce -fallow-store-data-races
+-fno-allocation-dce  -fallow-store-data-races
 -fassociative-math  -fauto-profile  -fauto-profile[=@var{path}]
--fauto-profile-inlining -fauto-inc-dec  -fbranch-probabilities
+-fauto-profile-inlining  -fauto-inc-dec  -fbranch-probabilities
 -fcaller-saves
 -fcombine-stack-adjustments  -fconserve-stack
 -ffold-mem-offsets
@@ -610,27 +610,27 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-follow-jumps  -fcse-skip-blocks  -fcx-fortran-rules
 -fcx-limited-range -fcx-method
 -fdata-sections  -fdce  -fdelayed-branch
--fdelete-null-pointer-checks  -fdep-fusion -fdevirtualize
+-fdelete-null-pointer-checks  -fdep-fusion  -fdevirtualize
 -fdevirtualize-speculatively  -fdevirtualize-at-ltrans  -fdse
 -fearly-inlining  -fexcess-precision=@var{style}
 -fexpensive-optimizations  -fext-dce
 -ffast-math  -ffat-lto-objects  -ffinite-loops
 -ffinite-math-only  -ffloat-store
 -fforward-propagate  -ffp-contract=@var{style}  -ffp-int-builtin-inexact
--ffunction-sections -ffuse-ops-with-volatile-access
+-ffunction-sections  -ffuse-ops-with-volatile-access
 -fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion
 -fif-conversion2  -findirect-inlining
 -finline-atomics  -finline-functions  -finline-functions-called-once
 -finline-limit=@var{n}  -finline-small-functions
 -finline-stringops@r{[}=@var{fn}@r{]}
--fipa-modref -fipa-cp  -fipa-cp-clone
+-fipa-modref  -fipa-cp  -fipa-cp-clone
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
--fipa-reference  -fipa-reference-addressable -fipa-reorder-for-locality
+-fipa-reference  -fipa-reference-addressable  -fipa-reorder-for-locality
 -fipa-sra  -fipa-stack-alignment
 -fipa-icf  -fipa-icf-functions  -fipa-icf-variables
 -fira-algorithm=@var{algorithm}
--flate-combine-instructions -flifetime-dse -flive-patching=@var{level}
+-flate-combine-instructions  -flifetime-dse  -flive-patching=@var{level}
 -fira-region=@var{region}  -fira-hoist-pressure
 -fira-loop-pressure  -fno-ira-share-save-slots
 -fno-ira-share-spill-slots
@@ -639,10 +639,10 @@ Objective-C and Objective-C++ Dialects}.
 -fkeep-static-consts  -flimit-function-alignment  -flive-range-shrinkage
 -floop-block  -floop-interchange  -floop-strip-mine
 -floop-unroll-and-jam  -floop-nest-optimize
--floop-parallelize-all  -flra-remat  -flto  -flto-compression-level
+-floop-parallelize-all  -flra-remat  -flto  -flto-compression-level=@var{n}
 -flto-toplevel-asm-heuristics
--flto-partition=@var{alg} -flto-incremental=@var{path}
--flto-incremental-cache-size=@var{n} -fmalloc-dce -fmerge-all-constants
+-flto-partition=@var{alg}  -flto-incremental=@var{path}
+-flto-incremental-cache-size=@var{n}  -fmalloc-dce  -fmerge-all-constants
 -fmerge-constants  -fmodulo-sched  -fmodulo-sched-allow-regmoves
 -fmove-loop-invariants  -fmove-loop-stores  -fno-branch-count-reg
 -fno-defer-pop  -fno-function-cse
@@ -654,8 +654,8 @@ Objective-C and Objective-C++ Dialects}.
 -fpartial-inlining  -fpeel-loops  -fpredictive-commoning
 -fprefetch-loop-arrays
 -fprofile-correction
--fprofile-use  -fprofile-use=@var{path} -fprofile-partial-training
--fprofile-values -fprofile-reorder-functions
+-fprofile-use  -fprofile-use=@var{path}  -fprofile-partial-training
+-fprofile-values  -fprofile-reorder-functions
 -freciprocal-math  -free  -frename-registers  -freorder-blocks
 -freorder-blocks-algorithm=@var{algorithm}
 -freorder-blocks-and-partition  -freorder-functions
@@ -689,10 +689,10 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-reassoc  -ftree-scev-cprop  -ftree-sink  -ftree-slsr  -ftree-sra
 -ftree-switch-conversion  -ftree-tail-merge
 -ftree-ter  -ftree-vectorize  -ftree-vrp  -ftrivial-auto-var-init
--funconstrained-commons -funit-at-a-time  -funroll-all-loops
--funroll-loops -funsafe-math-optimizations  -funswitch-loops
+-funconstrained-commons  -funit-at-a-time  -funroll-all-loops
+-funroll-loops  -funsafe-math-optimizations  -funswitch-loops
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt
--fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs
+-fweb  -fwhole-program  -fwpa  -fuse-linker-plugin  -fzero-call-used-regs
 --param @var{name}=@var{value}
 -O  -O0  -O1  -O2  -O3  -Os  -Ofast  -Og  -Oz  --optimize}
 
@@ -704,8 +704,8 @@ Objective-C and Objective-C++ Dialects}.
 -fprofile  -fprofile-abs-path
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path}
 -fprofile-info-section  -fprofile-info-section=@var{name}
--fprofile-note=@var{path} -fprofile-prefix-path=@var{path}
--fprofile-update=@var{method} -fprofile-filter-files=@var{regex}
+-fprofile-note=@var{path}  -fprofile-prefix-path=@var{path}
+-fprofile-update=@var{method}  -fprofile-filter-files=@var{regex}
 -fprofile-exclude-files=@var{regex}
 -fprofile-reproducible=@r{[}multithreaded@r{|}parallel-runs@r{|}serial@r{]}
 -fsanitize=@var{style}  -fsanitize-recover  -fsanitize-recover=@var{style}
@@ -713,7 +713,7 @@ Objective-C and Objective-C++ Dialects}.
 -fasan-shadow-offset=@var{number}  -fsanitize-sections=@var{s1},@var{s2},...
 -fsanitize-undefined-trap-on-error  -fcf-protection
 -fcf-protection=@r{[}full@r{|}branch@r{|}return@r{|}none@r{|}check@r{]}
--fharden-compares -fharden-conditional-branches  -fhardened
+-fharden-compares  -fharden-conditional-branches  -fhardened
 -fharden-control-flow-redundancy  -fhardcfr-skip-leaf
 -fhardcfr-check-exceptions  -fhardcfr-check-returning-calls
 -fhardcfr-check-noreturn-calls=@r{[}always@r{|}no-xthrow@r{|}nothrow@r{|}never@r{]}
@@ -739,7 +739,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers
 -fexec-charset=@var{charset}  -fextended-identifiers
 -finput-charset=@var{charset}
--fmacro-prefix-map=@var{old}=@var{new} -fmax-include-depth=@var{depth}
+-fmacro-prefix-map=@var{old}=@var{new}  -fmax-include-depth=@var{depth}
 -fno-canonical-system-headers  -fpch-deps  -fpch-preprocess
 -fpreprocessed  -ftabstop=@var{width}  -ftrack-macro-expansion
 -fwide-exec-charset=@var{charset}  -fworking-directory
@@ -767,7 +767,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
-@gccoptlist{@var{object-file-name} -flink-libatomic  -fuse-ld=@var{linker}  -l@var{library}
+@gccoptlist{@var{object-file-name}  -flink-libatomic  -fuse-ld=@var{linker}  -l@var{library}
 -nostartfiles  -nodefaultlibs  -nolibc  -nostdlib  -nostdlib++
 -e @var{entry}
 -pie  -pthread  -r  -rdynamic
@@ -803,7 +803,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Picolibc Options
 @xref{Picolibc Options,,Options for use with Picolibc}.
 @gccoptlist{--oslib=@var{library} --crt0=@r{[}none@r{|}minimal@r{|}hosted@r{|}semihost@r{]}
---printf=@r{[}d@r{|}f@r{|}l@r{|}i@r{|}m@r{]} --scanf=@r{[}d@r{|}f@r{|}l@r{|}i@r{|}m@r{]}}
+--printf=@r{[}d@r{|}f@r{|}l@r{|}i@r{|}m@r{]}  --scanf=@r{[}d@r{|}f@r{|}l@r{|}i@r{|}m@r{]}}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
@@ -814,14 +814,14 @@ Objective-C and Objective-C++ Dialects}.
 -fno-gnu-unique
 -finhibit-size-directive  -fcommon  -fno-ident
 -fpcc-struct-return  -fpic  -fPIC  -fpie  -fPIE  -fno-plt
--fno-jump-tables -fno-bit-tests
+-fno-jump-tables  -fno-bit-tests
 -frecord-gcc-switches
 -freg-struct-return  -fshort-enums  -fshort-wchar
 -fverbose-asm  -fpack-struct[=@var{n}]
 -fleading-underscore  -ftls-model=@var{model}
 -fstack-reuse=@var{reuse_level}
--ftrampolines -ftrampoline-impl=@r{[}stack@r{|}heap@r{]}
--ftrapv  -fwrapv
+-ftrampolines  -ftrampoline-impl=@r{[}stack@r{|}heap@r{]}
+-ftrapv  -fwrapv  -fwrapv-pointer
 -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
 -fstrict-volatile-bitfields  -fsync-libcalls
 -fzero-init-padding-bits=@var{value}
@@ -918,7 +918,7 @@ Objective-C and Objective-C++ Dialects}.
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
 @emph{AMD GCN Options} (@ref{AMD GCN Options})
-@gccoptlist{-march=@var{gpu} -mtune=@var{gpu}
+@gccoptlist{-march=@var{gpu}  -mtune=@var{gpu}
 -mgang-private-size=@var{bytes}
 -msram-ecc=@r{[}on@r{|}off@r{|}any@r{]}
 -mxnack=@r{[}on@r{|}off@r{|}any@r{]}
@@ -1007,11 +1007,11 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{C6X Options} (@ref{C6X Options})
 @gccoptlist{-mbig-endian  -mlittle-endian  -march=@var{cpu}
--msim  -msdata=@var{sdata-type} -mdsbt -mlong-calls}
+-msim  -msdata=@var{sdata-type}  -mdsbt  -mlong-calls}
 
 @emph{CRIS Options} (@ref{CRIS Options})
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}
--mtune=@var{cpu} -mmax-stackframe=@var{n}
+-mtune=@var{cpu}  -mmax-stackframe=@var{n}
 -metrax4  -metrax100  -mpdebug  -mcc-init  -mno-side-effects
 -mstack-align  -mdata-align  -mconst-align
 -m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue
@@ -1030,7 +1030,7 @@ Objective-C and Objective-C++ Dialects}.
 -mdsp  -medsp  -mvdsp
 -mdiv  -msmart  -mhigh-registers  -manchor
 -mpushpop  -mmultiple-stld  -mconstpool  -mstack-size  -mccrt
--mbranch-cost=@var{n}  -msched-prolog -msim}
+-mbranch-cost=@var{n}  -msched-prolog  -msim}
 
 @emph{Cygwin and MinGW Options} (@ref{Cygwin and MinGW Options})
 @gccoptlist{-mconsole  -mcrtdll=@var{library}  -mdll
