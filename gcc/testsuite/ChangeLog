@@ -1,3 +1,109 @@
+2026-01-23  Joseph Myers  <josmyers@redhat.com>
+
+	* g++.dg/gcov/gcov-1.C, g++.dg/gcov/gcov-10.C,
+	g++.dg/gcov/gcov-11.C, g++.dg/gcov/gcov-12.C,
+	g++.dg/gcov/gcov-13.C, g++.dg/gcov/gcov-14.C,
+	g++.dg/gcov/gcov-15.C, g++.dg/gcov/gcov-16.C,
+	g++.dg/gcov/gcov-17.C, g++.dg/gcov/gcov-18.C,
+	g++.dg/gcov/gcov-19.C, g++.dg/gcov/gcov-2.C,
+	g++.dg/gcov/gcov-20.C, g++.dg/gcov/gcov-21.C,
+	g++.dg/gcov/gcov-23.C, g++.dg/gcov/gcov-3.C, g++.dg/gcov/gcov-4.C,
+	g++.dg/gcov/gcov-5.C, g++.dg/gcov/gcov-7.C, g++.dg/gcov/gcov-8.C,
+	g++.dg/gcov/gcov-dump-1.C, g++.dg/gcov/gcov-dump-2.C,
+	g++.dg/gcov/gcov-threads-1.C, g++.dg/gcov/loop.C,
+	g++.dg/gcov/pr16855-priority.C, g++.dg/gcov/pr16855.C,
+	g++.dg/gcov/pr84548.C, g++.dg/gcov/pr86109.C,
+	g++.dg/gcov/pr88045.C, g++.dg/gcov/pr88263-2.C,
+	g++.dg/gcov/pr88263.C, g++.dg/gcov/pr97069.C,
+	g++.dg/gcov/pr98273.C, g++.dg/gcov/ternary.C,
+	gcc.misc-tests/gcov-1.c, gcc.misc-tests/gcov-10.c,
+	gcc.misc-tests/gcov-10b.c, gcc.misc-tests/gcov-11.c,
+	gcc.misc-tests/gcov-12.c, gcc.misc-tests/gcov-13.c,
+	gcc.misc-tests/gcov-14.c, gcc.misc-tests/gcov-15.c,
+	gcc.misc-tests/gcov-16.c, gcc.misc-tests/gcov-17.c,
+	gcc.misc-tests/gcov-18.c, gcc.misc-tests/gcov-19.c,
+	gcc.misc-tests/gcov-1a.c, gcc.misc-tests/gcov-2.c,
+	gcc.misc-tests/gcov-20.c, gcc.misc-tests/gcov-22.c,
+	gcc.misc-tests/gcov-24.c, gcc.misc-tests/gcov-25.c,
+	gcc.misc-tests/gcov-26.c, gcc.misc-tests/gcov-27.c,
+	gcc.misc-tests/gcov-28.c, gcc.misc-tests/gcov-29.c,
+	gcc.misc-tests/gcov-3.c, gcc.misc-tests/gcov-30.c,
+	gcc.misc-tests/gcov-33.c, gcc.misc-tests/gcov-34.c,
+	gcc.misc-tests/gcov-4.c, gcc.misc-tests/gcov-4b.c,
+	gcc.misc-tests/gcov-5b.c, gcc.misc-tests/gcov-6.c,
+	gcc.misc-tests/gcov-7.c, gcc.misc-tests/gcov-8.c,
+	gcc.misc-tests/gcov-9.c, gcc.misc-tests/gcov-pr83813.c,
+	gcc.misc-tests/gcov-pr84758.c, gcc.misc-tests/gcov-pr85217.c,
+	gcc.misc-tests/gcov-pr85332.c, gcc.misc-tests/gcov-pr85338.c,
+	gcc.misc-tests/gcov-pr85350.c, gcc.misc-tests/gcov-pr85372.c,
+	gcc.misc-tests/gcov-pr86536.c, gcc.misc-tests/gcov-pr90574-1.c,
+	gcc.misc-tests/gcov-pr90574-2.c, gdc.dg/gcov1.d,
+	gnat.dg/gcov/check.adb: Do not restrict to { target native }.
+	* lib/gcov.exp (transfer-gcda): New.
+	(clean-gcov-file): Delete .gcda file on target.
+	(run-gcov): Transfer .gcda files from target.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.target/aarch64/test_frame_common.h (t_frame_pattern):
+	Add noclone and noinline to the defining test function.
+
+2026-01-23  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123780
+	* gcc.target/riscv/rvv/base/pr123780.c: New test.
+
+2026-01-23  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123767
+	* gcc.target/aarch64/sve/pr123767.c: New test.
+
+2026-01-23  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/base/pr122869.c: Add
+	vector requirement.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123778
+	* gcc.dg/torture/pr123778-1.c: New test.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/120258
+	PR tree-optimization/106883
+	* gcc.dg/tree-ssa/slsr-8.c: Update the number of `*`.
+	* gcc.dg/torture/pr120258-1.c: New test.
+
+2026-01-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/123144
+	* gcc.dg/torture/pr123144.c: New file.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123775
+	* gcc.target/aarch64/sve2/pr123775.c: New testcase.
+
+2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123703
+	* gcc.c-torture/compile/pr123703.c: New test.
+
+2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123597
+	* g++.dg/gomp/pr123597.C: New test.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-epil-1.c: New
+	testcase.
+
+2026-01-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-broadcast.c: New test.
+
 2026-01-22  Hans-Peter Nilsson  <hp@axis.com>
 
 	* g++.dg/guality/guality.exp, gcc.dg/guality/guality.exp,

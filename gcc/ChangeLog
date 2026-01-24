@@ -1,3 +1,119 @@
+2026-01-23  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123780
+	* config/riscv/vector.md: Correct output template.
+
+2026-01-23  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123767
+	* tree-vect-stmts.cc (vectorizable_store): Only scale offset
+	once.
+	(vectorizable_load): Ditto.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123778
+	* genmatch.cc (parser::parse_expr): Peek on the next
+	token after eating the `!` or `^`.
+	* match.pd (`(op (cnd @0 @1 @2) @3)`, `(op @3 (cnd @0 @1 @2))`):
+	Add the type to resulting op.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/120258
+	PR tree-optimization/106883
+	* gimple-ssa-strength-reduction.cc (replace_mult_candidate): Allow for
+	basis_name and bump_tree not to be the same type as the lhs.
+	Rewrite added multiply for undefined overflow.
+	(create_add_on_incoming_edge): Allow for init
+	to be a different type from the wanted type.
+	Rewrite added add for undefined overflow.
+	(replace_rhs_if_not_dup): Rewrite replaced stmts
+	for undefined overflow.
+	(replace_one_candidate): Allow for basis_name and
+	rhs2 to be a different type from lhs.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/106883
+	* gimple-ssa-strength-reduction.cc (create_add_on_incoming_edge): Rewrite
+	the new addition on the edge too.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gimple-ssa-strength-reduction.cc (introduce_cast_before_cand): Use
+	gimple_convert instead of manually creating the gimple_assign.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121347
+	PR tree-optimization/106883
+	* gimple-ssa-strength-reduction.cc (insert_initializers): Rewrite
+	newly inserted statements for undefinedness (overflow).
+
+2026-01-23  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/123492
+	* config/riscv/riscv-cores.def (RISCV_CORE): Add zvfbfmin to
+	tt-ascalon-d8.
+
+2026-01-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123776
+	* gimple-fold.cc (gimple_fold_partial_load_store): Copy
+	the vdef from the old statement to the new statement of a
+	load that is also a store to non gimple_reg.
+
+2026-01-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/80357
+	PR rtl-optimization/94014
+	PR rtl-optimization/123144
+	* haifa-sched.cc (model_recompute): Ignore dying uses of registers
+	that are not assumed to be live.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	* match.pd ((convert (vec_cond ...))): Make sure the
+	resulting vec_cond can be expanded.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123775
+	* match.pd ((view_convert (vec_cond ...))): Make sure the
+	resulting vec_cond can be expanded.
+
+2026-01-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2026-01-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/123584
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_xar<mode>): Use
+	aarch64_simd_rshift_imm predicate for rotate amount.
+
+2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123703
+	* builtins.cc (fold_builtin_abs): Return NULL_TREE if type is not
+	integral.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123771
+	* tree-vect-loop.cc (vectorizable_induction): Convert step
+	also for VLA vectors.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost):
+	Avoid selecting masked epilogs for in-order reductions.
+
+2026-01-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/sse.md (avx2_vbroadcasti128_<mode>): Constraint
+	alternative 0 with jm and add gpr16 attr to avoid egpr usage.
+
 2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/123742

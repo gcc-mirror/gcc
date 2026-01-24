@@ -1,3 +1,14 @@
+2026-01-23  Marek Polacek  <polacek@redhat.com>
+
+	* tree.cc (handle_annotation_attribute): Use build_stub_type.
+
+2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123597
+	* parser.cc (substitute_in_tree_walker, substitute_in_tree): Don't
+	consider BIND_EXPRs with !BIND_EXPR_VARS redundant if
+	processing_template_decl.
+
 2026-01-22  Marek Polacek  <polacek@redhat.com>
 
 	* reflect.cc (class_members_of): Update a comment to mention
