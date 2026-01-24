@@ -3711,12 +3711,15 @@ replace_rhs_if_not_dup (enum tree_code new_code, tree new_rhs1, tree new_rhs2,
     {
       tree lhs = gimple_assign_lhs (c->cand_stmt);
       gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
+      tree rhs2_type = TREE_TYPE (lhs);
+      if (POINTER_TYPE_P (rhs2_type))
+	rhs2_type = sizetype;
       new_rhs1 = gimple_convert (&gsi, true, GSI_SAME_STMT,
 				 UNKNOWN_LOCATION,
 				 TREE_TYPE (lhs), new_rhs1);
       new_rhs2 = gimple_convert (&gsi, true, GSI_SAME_STMT,
 				 UNKNOWN_LOCATION,
-				 TREE_TYPE (lhs), new_rhs2);
+				 rhs2_type, new_rhs2);
       slsr_cand_t cc = lookup_cand (c->first_interp);
       gimple_assign_set_rhs_with_ops (&gsi, new_code, new_rhs1, new_rhs2);
       update_stmt (gsi_stmt (gsi));
