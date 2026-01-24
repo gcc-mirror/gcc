@@ -13062,12 +13062,16 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 	{
 	  if (ptds.saved)
 	    {
-	      gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (expr));
+	      gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (expr)
+				   || (DECL_CONTEXT (expr)
+				       != current_function_decl));
 	      /* DECL_HAS_VALUE_EXPR_P is always set if
-		 processing_template_decl.  If lookup_decomp_type
+		 processing_template_decl at least for structured bindings
+		 within the template.  If lookup_decomp_type
 		 returns non-NULL, it is the tuple case.  */
 	      if (tree ret = lookup_decomp_type (expr))
 		return ret;
+	      gcc_checking_assert (DECL_HAS_VALUE_EXPR_P (expr));
 	    }
 	  if (DECL_HAS_VALUE_EXPR_P (expr))
 	    /* Expr is an array or struct subobject proxy, handle
