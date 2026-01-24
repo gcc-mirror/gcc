@@ -1,7 +1,7 @@
 # { dg-options "-fstropping=upper" }  #
 BEGIN REAL r0 = 2.0; LONG REAL rr0 = LONG 2.0; LONG LONG REAL rrr0 = LONG LONG 2.0;
-      REAL r1 = r0 ** 2; REAL r2 = r0 ** 3.0;
-      LONG REAL rr1 = rr0 ** LONG 2; LONG REAL rr2 = rr0 ** LONG 3.0;
-      LONG LONG REAL rrr1 = rrr0 ** LONG LONG 2; LONG LONG REAL rrr2 = rrr0 ** LONG LONG 3.0;
+      REAL r1 = r0 ^ 2; REAL r2 = r0 ^ 3.0;
+      LONG REAL rr1 = rr0 ^ LONG 2; LONG REAL rr2 = rr0 ^ LONG 3.0;
+      LONG LONG REAL rrr1 = rrr0 ^ LONG LONG 2; LONG LONG REAL rrr2 = rrr0 ^ LONG LONG 3.0;
       SKIP
 END

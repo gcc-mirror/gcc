@@ -2101,6 +2101,7 @@ target.
 @item @code{@B{shl}}, @code{@B{up}}
 @item @code{@B{shr}}, @code{@B{down}}
 @item @code{@B{up}}, @code{@B{down}}
+@item @code{^}
 @item @code{@B{lwb}}
 @item @code{@B{upb}}
 @end itemize
@@ -2233,6 +2234,7 @@ Dyadic operator that yields the integer division with real result of
 @end deftypefn
 
 @deftypefn Operator {} {**} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+@deftypefnx Operator {} {^} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
 Dyadic operator that yields @code{a} raised to the exponent @code{b}.
 @end deftypefn
 
@@ -2366,10 +2368,12 @@ Dyadic operator that yields the realeger division with real result of
 @end deftypefn
 
 @deftypefn Operator {} {**} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+@deftypefnx Operator {} {^} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
 Dyadic operator that yields @code{a} raised to the real exponent @code{b}.
 @end deftypefn
 
 @deftypefn Operator {} {**} {= (@B{l} @B{real} a, @B{int} b) @B{l} @B{real}}
+@deftypefnx Operator {} {^} {= (@B{l} @B{real} a, @B{int} b) @B{l} @B{real}}
 Dyadic operator that yields @code{a} raised to the integral exponent
 @code{b}.
 @end deftypefn
@@ -3326,4 +3330,3 @@ sometimes be useful to look up both forms.
 @printindex cp
 
 @bye
-b
