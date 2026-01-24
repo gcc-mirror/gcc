@@ -2503,10 +2503,22 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case OMP_TILE:
     case OMP_UNROLL:
     case OACC_LOOP:
-    case STATEMENT_LIST:
       /* These cases are handled by shared code.  */
       c_genericize_control_stmt (stmt_p, walk_subtrees, data,
 				 cp_genericize_r, cp_walk_subtrees);
+      break;
+
+    case STATEMENT_LIST:
+      /* As above, handled by shared code.  */
+      c_genericize_control_stmt (stmt_p, walk_subtrees, data,
+				 cp_genericize_r, cp_walk_subtrees);
+      /* If a statement list is freed as part of genericisation it will be
+	 pushed onto the top of a statement list cache stack.  A subsequent
+	 action can cause a new statement list to be required - and the one
+	 just pushed will be returned.  If that is marked as visited, it can
+	 prevent a tail recursion from processing the 'new' statement list,
+	 so we do not mark statement lists as visited.  */
+      return NULL_TREE;
       break;
 
     case BIT_CAST_EXPR:
