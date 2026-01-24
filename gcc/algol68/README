@@ -26,6 +26,14 @@ The compiler proper is called `a681'.
 Programs built by this compiler make use of the libga68 run-time
 library.
 
+Dependencies
+============
+
+The Algol 68 run-time relies on the Boehm-Demers-Weiser conservative
+garbage collector libgc, version 7.6.2 or later.  If for whatever
+reason a recent enough of libgc is not available for some target then
+you can configure GCC with --disable-algol68-gc.
+
 Building
 ========
 

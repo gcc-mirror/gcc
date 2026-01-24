@@ -13660,7 +13660,7 @@ GC_init()
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
-        if test "$cross_compiling" = yes; then :
+                        if test "$cross_compiling" = yes; then :
             system_bdw_gc_found=no
 
 else
@@ -13669,7 +13669,8 @@ else
 
           #include <gc/gc.h>
           int main() {
-            GC_init();
+            if (!GC_is_init_called ())
+               GC_init();
             return 0;
           }
 
@@ -13692,11 +13693,11 @@ rm -f core conftest.err conftest.$ac_objext \
     CFLAGS=$save_CFLAGS
     LIBS=$save_LIBS
     if test x$enable_algol68_gc = xauto && test x$system_bdw_gc_found = xno; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: system bdw-gc not found, building libga68 with no GC support" >&5
-$as_echo "$as_me: WARNING: system bdw-gc not found, building libga68 with no GC support" >&2;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: usable system bdw-gc not found, building libga68 with no GC support" >&5
+$as_echo "$as_me: WARNING: usable system bdw-gc not found, building libga68 with no GC support" >&2;}
       use_bdw_gc=no
     elif test x$enable_algol68_gc = xyes && test x$system_bdw_gc_found = xno; then
-      as_fn_error $? "system bdw-gc required but not found" "$LINENO" 5
+      as_fn_error $? "usable system bdw-gc required but not found" "$LINENO" 5
     else
       use_bdw_gc=yes
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5

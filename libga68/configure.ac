@@ -356,10 +356,13 @@ no)
     AC_LINK_IFELSE(
       [AC_LANG_PROGRAM([#include <gc/gc.h>],[GC_init()])],
       [
+        dnl Make sure to include GC_is_init_called and any other
+        dnl feature that may require a "recent" libgc.
         AC_RUN_IFELSE([AC_LANG_SOURCE([[
           #include <gc/gc.h>
           int main() {
-            GC_init();
+            if (!GC_is_init_called ())
+               GC_init();
             return 0;
           }
           ]])],
@@ -373,10 +376,10 @@ no)
     CFLAGS=$save_CFLAGS
     LIBS=$save_LIBS
     if test x$enable_algol68_gc = xauto && test x$system_bdw_gc_found = xno; then
-      AC_MSG_WARN([system bdw-gc not found, building libga68 with no GC support])
+      AC_MSG_WARN([usable system bdw-gc not found, building libga68 with no GC support])
       use_bdw_gc=no
     elif test x$enable_algol68_gc = xyes && test x$system_bdw_gc_found = xno; then
-      AC_MSG_ERROR([system bdw-gc required but not found])
+      AC_MSG_ERROR([usable system bdw-gc required but not found])
     else
       use_bdw_gc=yes
       AC_MSG_RESULT([found])
