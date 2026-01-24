@@ -4139,12 +4139,17 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       perm_type = TREE_TYPE (orig[0]);
       /* Determine the element type for the conversion source.
 	 As orig_elem_type keeps track of the original type, check
-	 if we need to perform a sign swap after permuting.  */
+	 if we need to perform a sign swap after permuting.
+	 We need to be able to construct a vector type from the element
+	 type which is not possible for e.g. BitInt or pointers
+	 so pun with an integer type if needed.  */
       tree conv_elem_type = TREE_TYPE (perm_type);
       if (conv_code != ERROR_MARK
 	  && orig_elem_type[0]
-	  && tree_nop_conversion_p (orig_elem_type[0], conv_elem_type))
-	conv_elem_type = orig_elem_type[0];
+	  && TYPE_SIGN (orig_elem_type[0]) != TYPE_SIGN (conv_elem_type))
+	conv_elem_type = signed_or_unsigned_type_for (TYPE_UNSIGNED
+						      (orig_elem_type[0]),
+						      conv_elem_type);
       conv_src_type = build_vector_type (conv_elem_type, nelts);
       if (conv_code != ERROR_MARK
 	  && !supportable_convert_operation (conv_code, type, conv_src_type,
@@ -4272,7 +4277,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 			    TYPE_SIZE (conv_code != ERROR_MARK ? conv_src_type
 							       : type),
 			    bitsize_zero_node);
-      /* Otherwise, we can still have an intermediate sign change.  */
+      /* Otherwise, we can still have an intermediate sign change.
+	 ??? In that case we have two subsequent conversions.
+	 We should be able to merge them.  */
       else if (conv_code != ERROR_MARK
 	       && tree_nop_conversion_p (conv_src_type, perm_type))
 	res = gimple_build (&stmts, VIEW_CONVERT_EXPR, conv_src_type, res);
