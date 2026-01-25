@@ -1,3 +1,8 @@
+2026-01-24  Xin Wang  <wangxinw@hygon.cn>
+
+	* sync.c: Replace UOItype with UTItype and use mode(TI) pass 16, not
+	8, to DEFINE macro.
+
 2026-01-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/123396

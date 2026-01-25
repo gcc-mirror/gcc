@@ -1,3 +1,16 @@
+2026-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/123772
+	* trans.cc: Add global variable is_assign_call.
+	(gfc_finalize_tree_expr): Derived type function results
+	with components that have defined assignements are
+	handled in resolve.cc(generate_component_assignments), unless
+	the assignment was replaced by a subroutine call to the
+	subroutine associated with the assignment operator.
+	(trans_code): In the case of EXEC_ASSIGN_CALL, set the
+	is_asign_call before calling gfc_trans_call, then clear it
+	after.
+
 2026-01-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/123375

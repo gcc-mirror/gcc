@@ -1,3 +1,39 @@
+2026-01-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123803
+	* gcc.dg/pr123803-1.c: New test.
+
+2026-01-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/123772
+	* gfortran.dg/pr123772.f03: New test.
+	Signed off by: Andrew Benson <abensonca@gcc.gnu.org>
+
+2026-01-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Revert:
+	2026-01-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/pow-real-1.a68: Adapt test to use ** rather than
+	^ for pow operator.
+
+2026-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123737
+	* g++.dg/cpp/embed-28.C: New test.
+	* g++.dg/parse/comma3.C: New test.
+
+2026-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123667
+	* g++.dg/cpp1z/decomp66.C: New test.
+	* g++.dg/cpp1z/decomp67.C: New test.
+
+2026-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123684
+	* g++.dg/cpp0x/gen-attrs-90.C: New test.
+
 2026-01-23  Joseph Myers  <josmyers@redhat.com>
 
 	* g++.dg/gcov/gcov-1.C, g++.dg/gcov/gcov-10.C,

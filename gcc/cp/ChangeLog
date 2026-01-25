@@ -1,3 +1,26 @@
+2026-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123737
+	* parser.cc (cp_parser_expression): Don't handle CPP_EMBED just
+	as the last byte in it if expression has or might have overloaded
+	type.  In that case call build_x_compound_expr for each byte
+	in CPP_EMBED separately.
+
+2026-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123667
+	* semantics.cc (finish_decltype_type): Allow a structured binding
+	for ptds.saved to have DECL_HAS_VALUE_EXPR_P cleared, if it is
+	not within current_function_decl, but in that case assert that
+	lookup_decomp_type succeeded.
+
+2026-01-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123684
+	* name-lookup.cc (handle_namespace_attrs): Only handle visibility and
+	abi_tag attributes in the gnu namespace and deprecated attribute in
+	the standard or gnu namespaces.
+
 2026-01-23  Marek Polacek  <polacek@redhat.com>
 
 	* tree.cc (handle_annotation_attribute): Use build_stub_type.

@@ -1,3 +1,24 @@
+2026-01-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/123733
+	* README: Mention minimum version of libgc.
+
+2026-01-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Revert:
+	2026-01-17  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-prelude.cc (stand_prelude): Remove definitions for ^
+	operator.
+	* ga68.texi (Real operators): Remove entries for ^.
+	(Integral operators): Likewise.
+
+2026-01-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/123785
+	* a68-lang.cc (a68_init): Call a68_build_a68_type_nodes abefore
+	targetm.init_builtins.
+
 2026-01-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	PR algol68/123734

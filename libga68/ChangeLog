@@ -1,3 +1,9 @@
+2026-01-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/123733
+	* configure.ac: Check for GC_is_init_called in libgc.
+	* configure: Regenerate.
+
 2026-01-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* ga68-alloc.c (_libga68_malloc_leaf): New function.
