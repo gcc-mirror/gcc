@@ -87,7 +87,7 @@ Generate code for a 68332.
 
 ; Has no effect on gcc
 m68851
-Target
+Target RejectNegative
 Generate code for a 68851.
 
 m68881

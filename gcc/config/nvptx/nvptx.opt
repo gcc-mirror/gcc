@@ -204,7 +204,7 @@ Target RejectNegative Negative(mptx=) ToLower Joined Enum(ptx_version) Var(ptx_v
 Specify the PTX ISA version to use.
 
 minit-regs=
-Target Var(nvptx_init_regs) IntegerRange(0, 3) Joined UInteger Init(3)
+Target Undocumented Var(nvptx_init_regs) IntegerRange(0, 3) Joined UInteger Init(3)
 Initialize ptx registers.
 
 mptx-comment

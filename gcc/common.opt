@@ -1213,10 +1213,11 @@ Common Var(flag_auto_profile_inlining) Init(1) Optimization
 Perform inlining using auto-profile.
 
 ; -fbounds-check causes gcc to generate array bounds checks.
-; It's presently used only for fortran and d languages, and is documented
-; in the manuals for those languages.
+; It's presently used only for fortran, algol68, and d languages.
+; In Fortran and algol68 it is a deprecated alias for -fcheck=bounds,
+; in D it is documented in the D language manual.
 fbounds-check
-Common Var(flag_bounds_check)
+Common Undocumented Var(flag_bounds_check)
 Generate code to check bounds before indexing arrays.
 
 fbranch-count-reg

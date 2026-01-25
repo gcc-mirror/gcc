@@ -149,8 +149,10 @@ C ObjC C++ ObjC++ Separate Alias(o)
 -output=
 C ObjC C++ ObjC++ Joined Alias(o)
 
+; The documented user option for PCH output is -o.  The driver converts that
+; to -output-pch when invoking the front ends to produce a PCH file.
 -output-pch
-C ObjC C++ ObjC++ Separate
+C ObjC C++ ObjC++ Separate Undocumented
 
 -pedantic
 C ObjC C++ ObjC++ Alias(pedantic)
@@ -758,7 +760,7 @@ C ObjC C++ ObjC++
 ; Documented in common.opt
 
 Werror-implicit-function-declaration
-C ObjC RejectNegative Warning Alias(Werror=, implicit-function-declaration)
+C ObjC RejectNegative Undocumented Warning Alias(Werror=, implicit-function-declaration)
 This switch is deprecated; use -Werror=implicit-function-declaration instead.
 
 Wexceptions
@@ -1875,7 +1877,7 @@ C++ ObjC++ Ignore
 Does nothing.  Preserved for backward compatibility.
 
 fconstant-string-class=
-ObjC ObjC++ Joined MissingArgError(no class name specified with %qs)
+ObjC ObjC++ Joined RejectNegative MissingArgError(no class name specified with %qs)
 -fconst-string-class=<name>	Use class <name> for constant strings.
 
 fconstexpr-depth=

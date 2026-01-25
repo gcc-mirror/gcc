@@ -206,8 +206,9 @@ mscc
 Target Mask(SCC)
 Enable setting GPRs to the result of comparisons.
 
+; This option seems not to be used anywhere.
 msched-lookahead=
-Target RejectNegative Joined UInteger Var(frv_sched_lookahead) Init(4)
+Target Undocumented RejectNegative Joined UInteger Var(frv_sched_lookahead) Init(4)
 Change the amount of scheduler lookahead.
 
 msoft-float
