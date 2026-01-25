@@ -16,6 +16,6 @@ cfp = c_funloc (noCsub)
 call c_f_procpointer (cfp, fint)
 end
 
-! { dg-final { scan-tree-dump-times "cfp =\[^;\]+ nocsub;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "D.\[0-9\]* =\[^;\]+ nocsub;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "fint =\[^;\]+ cfp;" 1 "original" } }
 

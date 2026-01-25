@@ -9864,7 +9864,14 @@ conv_isocbinding_function (gfc_se *se, gfc_expr *expr)
       se->expr = gfc_evaluate_now (se->expr, &se->pre);
     }
   else if (expr->value.function.isym->id == GFC_ISYM_C_FUNLOC)
-    gfc_conv_expr_reference (se, arg->expr);
+    {
+      gfc_conv_expr_reference (se, arg->expr);
+      /* The code below is necessary to create a reference from the calling
+	 subprogram to the argument of C_FUNLOC() in the call graph.
+	 Please see PR 117303 for more details. */
+      se->expr = convert (pvoid_type_node, se->expr);
+      se->expr = gfc_evaluate_now (se->expr, &se->pre);
+    }
   else if (expr->value.function.isym->id == GFC_ISYM_C_ASSOCIATED)
     {
       gfc_se arg1se;
