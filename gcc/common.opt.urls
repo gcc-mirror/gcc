@@ -216,13 +216,13 @@ Wshadow
 UrlSuffix(gcc/Warning-Options.html#index-Wno-shadow)
 
 Wshadow=global
-UrlSuffix(gcc/Warning-Options.html#index-Wshadow_003dglobal)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-shadow_003dglobal)
 
 Wshadow=local
-UrlSuffix(gcc/Warning-Options.html#index-Wshadow_003dlocal)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-shadow_003dlocal)
 
 Wshadow=compatible-local
-UrlSuffix(gcc/Warning-Options.html#index-Wshadow_003dcompatible-local)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-shadow_003dcompatible-local)
 
 Wstack-protector
 UrlSuffix(gcc/Warning-Options.html#index-Wno-stack-protector)
@@ -452,10 +452,10 @@ fsanitize-trap
 UrlSuffix(gcc/Instrumentation-Options.html#index-fno-sanitize-trap)
 
 fsanitize-address-use-after-scope
-UrlSuffix(gcc/Instrumentation-Options.html#index-fsanitize-address-use-after-scope)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-sanitize-address-use-after-scope)
 
 fsanitize-undefined-trap-on-error
-UrlSuffix(gcc/Instrumentation-Options.html#index-fsanitize-undefined-trap-on-error)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-sanitize-undefined-trap-on-error)
 
 fasynchronous-unwind-tables
 UrlSuffix(gcc/Code-Gen-Options.html#index-fasynchronous-unwind-tables)
@@ -707,7 +707,7 @@ fdump-noaddr
 UrlSuffix(gcc/Developer-Options.html#index-fdump-noaddr)
 
 freport-bug
-UrlSuffix(gcc/Developer-Options.html#index-freport-bug)
+UrlSuffix(gcc/Developer-Options.html#index-fno-report-bug)
 
 fdump-internal-locations
 UrlSuffix(gcc/Developer-Options.html#index-fdump-internal-locations)
@@ -837,13 +837,13 @@ floop-nest-optimize
 UrlSuffix(gcc/Optimize-Options.html#index-floop-nest-optimize)
 
 fspeculatively-call-stored-functions
-UrlSuffix(gcc/Optimize-Options.html#index-fspeculatively-call-stored-functions)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-speculatively-call-stored-functions)
 
 fstrict-volatile-bitfields
-UrlSuffix(gcc/Code-Gen-Options.html#index-fstrict-volatile-bitfields)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-strict-volatile-bitfields)
 
 fstore-merging
-UrlSuffix(gcc/Optimize-Options.html#index-fstore-merging)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-store-merging)
 
 fguess-branch-probability
 UrlSuffix(gcc/Optimize-Options.html#index-fguess-branch-probability)
@@ -885,7 +885,7 @@ fstack-reuse=
 UrlSuffix(gcc/Code-Gen-Options.html#index-fstack-reuse)
 
 ftree-loop-if-convert
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-if-convert)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-if-convert)
 
 finhibit-size-directive
 UrlSuffix(gcc/Code-Gen-Options.html#index-finhibit-size-directive)
@@ -1044,6 +1044,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-flto-incremental-cache-size)
 flto-partition=
 UrlSuffix(gcc/Optimize-Options.html#index-flto-partition)
 
+flto-toplevel-asm-heuristics
+UrlSuffix(gcc/Optimize-Options.html#index-flto-toplevel-asm-heuristics)
+
 flto-compression-level=
 UrlSuffix(gcc/Optimize-Options.html#index-flto-compression-level)
 
@@ -1105,10 +1108,10 @@ fdse
 UrlSuffix(gcc/Optimize-Options.html#index-fdse)
 
 freschedule-modulo-scheduled-loops
-UrlSuffix(gcc/Optimize-Options.html#index-freschedule-modulo-scheduled-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-reschedule-modulo-scheduled-loops)
 
 fnon-call-exceptions
-UrlSuffix(gcc/Code-Gen-Options.html#index-fnon-call-exceptions)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-non-call-exceptions)
 
 foffload=
 UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-foffload)
@@ -1117,50 +1120,50 @@ foffload-options=
 UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-foffload-options)
 
 fomit-frame-pointer
-UrlSuffix(gcc/Optimize-Options.html#index-fomit-frame-pointer)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-omit-frame-pointer)
 
 fopenmp-target-simd-clone
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-target-simd-clone)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp-target-simd-clone)
 
 fopenmp-target-simd-clone=
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-target-simd-clone)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp-target-simd-clone)
 
 fopt-info
-UrlSuffix(gcc/Developer-Options.html#index-fopt-info)
+UrlSuffix(gcc/Developer-Options.html#index-fno-opt-info)
 
 fsave-optimization-record
-UrlSuffix(gcc/Developer-Options.html#index-fsave-optimization-record)
+UrlSuffix(gcc/Developer-Options.html#index-fno-save-optimization-record)
 
 foptimize-crc
-UrlSuffix(gcc/Optimize-Options.html#index-foptimize-crc)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-optimize-crc)
 
 foptimize-sibling-calls
-UrlSuffix(gcc/Optimize-Options.html#index-foptimize-sibling-calls)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-optimize-sibling-calls)
 
 fpath-coverage
-UrlSuffix(gcc/Instrumentation-Options.html#index-fpath-coverage)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-path-coverage)
 
 fpartial-inlining
-UrlSuffix(gcc/Optimize-Options.html#index-fpartial-inlining)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-partial-inlining)
 
 fpre-ipa-mem-report
-UrlSuffix(gcc/Developer-Options.html#index-fpre-ipa-mem-report)
+UrlSuffix(gcc/Developer-Options.html#index-fno-pre-ipa-mem-report)
 
 fpost-ipa-mem-report
-UrlSuffix(gcc/Developer-Options.html#index-fpost-ipa-mem-report)
+UrlSuffix(gcc/Developer-Options.html#index-fno-post-ipa-mem-report)
 
 fpack-struct
-UrlSuffix(gcc/Code-Gen-Options.html#index-fpack-struct)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-pack-struct)
 
 fpack-struct=
-UrlSuffix(gcc/Code-Gen-Options.html#index-fpack-struct)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-pack-struct)
 
 ; skipping UrlSuffix for 'fpcc-struct-return' due to multiple URLs:
-;   duplicate: 'gcc/Code-Gen-Options.html#index-fpcc-struct-return'
+;   duplicate: 'gcc/Code-Gen-Options.html#index-fno-pcc-struct-return'
 ;   duplicate: 'gcc/Incompatibilities.html#index-fpcc-struct-return-1'
 
 fpeel-loops
-UrlSuffix(gcc/Optimize-Options.html#index-fpeel-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-peel-loops)
 
 fpeephole
 UrlSuffix(gcc/Optimize-Options.html#index-fno-peephole)
@@ -1169,16 +1172,16 @@ fpeephole2
 UrlSuffix(gcc/Optimize-Options.html#index-fno-peephole2)
 
 fPIC
-UrlSuffix(gcc/Code-Gen-Options.html#index-fPIC)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-PIC)
 
 fPIE
-UrlSuffix(gcc/Code-Gen-Options.html#index-fPIE)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-PIE)
 
 fpic
-UrlSuffix(gcc/Code-Gen-Options.html#index-fpic)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-pic)
 
 fpie
-UrlSuffix(gcc/Code-Gen-Options.html#index-fpie)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-pie)
 
 fplt
 UrlSuffix(gcc/Code-Gen-Options.html#index-fno-plt)
@@ -1187,19 +1190,19 @@ fplugin=
 UrlSuffix(gcc/Overall-Options.html#index-fplugin)
 
 fpredictive-commoning
-UrlSuffix(gcc/Optimize-Options.html#index-fpredictive-commoning)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-predictive-commoning)
 
 fprefetch-loop-arrays
-UrlSuffix(gcc/Optimize-Options.html#index-fprefetch-loop-arrays)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-prefetch-loop-arrays)
 
 fprofile
-UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-profile)
 
 fprofile-abs-path
-UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-abs-path)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-profile-abs-path)
 
 ; skipping UrlSuffix for 'fprofile-arcs' due to multiple URLs:
-;   duplicate: 'gcc/Instrumentation-Options.html#index-fprofile-arcs'
+;   duplicate: 'gcc/Instrumentation-Options.html#index-fno-profile-arcs'
 ;   duplicate: 'gcc/Other-Builtins.html#index-fprofile-arcs-1'
 
 fcondition-coverage
@@ -1212,7 +1215,7 @@ fprofile-note=
 UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-note)
 
 fprofile-correction
-UrlSuffix(gcc/Optimize-Options.html#index-fprofile-correction)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-profile-correction)
 
 fprofile-update=
 UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-update)
@@ -1233,10 +1236,10 @@ fprofile-prefix-map=
 UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-prefix-map)
 
 fprofile-generate
-UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-generate)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-profile-generate)
 
 fprofile-generate=
-UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-generate)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-profile-generate)
 
 fprofile-info-section
 UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-info-section)
@@ -1245,37 +1248,37 @@ fprofile-info-section=
 UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-info-section)
 
 fprofile-partial-training
-UrlSuffix(gcc/Optimize-Options.html#index-fprofile-partial-training)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-profile-partial-training)
 
 fprofile-use
-UrlSuffix(gcc/Optimize-Options.html#index-fprofile-use)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-profile-use)
 
 fprofile-use=
-UrlSuffix(gcc/Optimize-Options.html#index-fprofile-use)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-profile-use)
 
 fprofile-values
-UrlSuffix(gcc/Optimize-Options.html#index-fprofile-values)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-profile-values)
 
 fprofile-report
-UrlSuffix(gcc/Developer-Options.html#index-fprofile-report)
+UrlSuffix(gcc/Developer-Options.html#index-fno-profile-report)
 
 fprofile-reorder-functions
-UrlSuffix(gcc/Optimize-Options.html#index-fprofile-reorder-functions)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-profile-reorder-functions)
 
 fpatchable-function-entry=
 UrlSuffix(gcc/Instrumentation-Options.html#index-fpatchable-function-entry)
 
 frandom-seed
-UrlSuffix(gcc/Developer-Options.html#index-frandom-seed)
+UrlSuffix(gcc/Developer-Options.html#index-fno-random-seed)
 
 frandom-seed=
-UrlSuffix(gcc/Developer-Options.html#index-frandom-seed)
+UrlSuffix(gcc/Developer-Options.html#index-fno-random-seed)
 
 frecord-gcc-switches
-UrlSuffix(gcc/Code-Gen-Options.html#index-frecord-gcc-switches)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-record-gcc-switches)
 
 freg-struct-return
-UrlSuffix(gcc/Code-Gen-Options.html#index-freg-struct-return)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-reg-struct-return)
 
 flifetime-dse
 UrlSuffix(gcc/Optimize-Options.html#index-flifetime-dse)
@@ -1299,157 +1302,157 @@ flive-range-shrinkage
 UrlSuffix(gcc/Optimize-Options.html#index-flive-range-shrinkage)
 
 frename-registers
-UrlSuffix(gcc/Optimize-Options.html#index-frename-registers)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-rename-registers)
 
 fschedule-fusion
-UrlSuffix(gcc/Optimize-Options.html#index-fschedule-fusion)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-schedule-fusion)
 
 freorder-blocks
-UrlSuffix(gcc/Optimize-Options.html#index-freorder-blocks)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-reorder-blocks)
 
 freorder-blocks-algorithm=
-UrlSuffix(gcc/Optimize-Options.html#index-freorder-blocks-algorithm)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-reorder-blocks-algorithm)
 
 freorder-blocks-and-partition
-UrlSuffix(gcc/Optimize-Options.html#index-freorder-blocks-and-partition)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-reorder-blocks-and-partition)
 
 freorder-functions
-UrlSuffix(gcc/Optimize-Options.html#index-freorder-functions)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-reorder-functions)
 
 frerun-cse-after-loop
-UrlSuffix(gcc/Optimize-Options.html#index-frerun-cse-after-loop)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-rerun-cse-after-loop)
 
 frounding-math
-UrlSuffix(gcc/Optimize-Options.html#index-frounding-math)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-rounding-math)
 
 fsched-interblock
 UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-interblock)
 
 fsched-pressure
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-pressure)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-pressure)
 
 fsched-spec
 UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-spec)
 
 fsched-spec-load
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-spec-load)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-spec-load)
 
 fsched-spec-load-dangerous
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-spec-load-dangerous)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-spec-load-dangerous)
 
 fsched-verbose=
 UrlSuffix(gcc/Developer-Options.html#index-fsched-verbose)
 
 fsched2-use-superblocks
-UrlSuffix(gcc/Optimize-Options.html#index-fsched2-use-superblocks)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched2-use-superblocks)
 
 fschedule-insns
-UrlSuffix(gcc/Optimize-Options.html#index-fschedule-insns)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-schedule-insns)
 
 fschedule-insns2
-UrlSuffix(gcc/Optimize-Options.html#index-fschedule-insns2)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-schedule-insns2)
 
 fselective-scheduling
-UrlSuffix(gcc/Optimize-Options.html#index-fselective-scheduling)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-selective-scheduling)
 
 fselective-scheduling2
-UrlSuffix(gcc/Optimize-Options.html#index-fselective-scheduling2)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-selective-scheduling2)
 
 fsel-sched-pipelining
-UrlSuffix(gcc/Optimize-Options.html#index-fsel-sched-pipelining)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sel-sched-pipelining)
 
 fsel-sched-pipelining-outer-loops
-UrlSuffix(gcc/Optimize-Options.html#index-fsel-sched-pipelining-outer-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sel-sched-pipelining-outer-loops)
 
 fsemantic-interposition
-UrlSuffix(gcc/Optimize-Options.html#index-fsemantic-interposition)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-semantic-interposition)
 
 fsched-stalled-insns
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-stalled-insns)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-stalled-insns)
 
 fsched-stalled-insns=
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-stalled-insns)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-stalled-insns)
 
 fsched-stalled-insns-dep
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-stalled-insns-dep)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-stalled-insns-dep)
 
 fsched-stalled-insns-dep=
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-stalled-insns-dep)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-stalled-insns-dep)
 
 fsched-group-heuristic
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-group-heuristic)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-group-heuristic)
 
 fsched-critical-path-heuristic
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-critical-path-heuristic)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-critical-path-heuristic)
 
 fsched-spec-insn-heuristic
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-spec-insn-heuristic)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-spec-insn-heuristic)
 
 fsched-rank-heuristic
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-rank-heuristic)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-rank-heuristic)
 
 fsched-last-insn-heuristic
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-last-insn-heuristic)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-last-insn-heuristic)
 
 fsched-dep-count-heuristic
-UrlSuffix(gcc/Optimize-Options.html#index-fsched-dep-count-heuristic)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-sched-dep-count-heuristic)
 
 fsection-anchors
-UrlSuffix(gcc/Optimize-Options.html#index-fsection-anchors)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-section-anchors)
 
 free
-UrlSuffix(gcc/Optimize-Options.html#index-free-1)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-ree)
 
 fshow-column
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fno-show-column)
 
 fshrink-wrap
-UrlSuffix(gcc/Optimize-Options.html#index-fshrink-wrap)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-shrink-wrap)
 
 fshrink-wrap-separate
-UrlSuffix(gcc/Optimize-Options.html#index-fshrink-wrap-separate)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-shrink-wrap-separate)
 
 fsignaling-nans
-UrlSuffix(gcc/Optimize-Options.html#index-fsignaling-nans)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-signaling-nans)
 
 fsigned-zeros
 UrlSuffix(gcc/Optimize-Options.html#index-fno-signed-zeros)
 
 fsingle-precision-constant
-UrlSuffix(gcc/Optimize-Options.html#index-fsingle-precision-constant)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-single-precision-constant)
 
 fsplit-ivs-in-unroller
-UrlSuffix(gcc/Optimize-Options.html#index-fsplit-ivs-in-unroller)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-split-ivs-in-unroller)
 
 fsplit-stack
-UrlSuffix(gcc/Instrumentation-Options.html#index-fsplit-stack)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-split-stack)
 
 fsplit-wide-types
-UrlSuffix(gcc/Optimize-Options.html#index-fsplit-wide-types)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-split-wide-types)
 
 fsplit-wide-types-early
-UrlSuffix(gcc/Optimize-Options.html#index-fsplit-wide-types-early)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-split-wide-types-early)
 
 fssa-backprop
-UrlSuffix(gcc/Optimize-Options.html#index-fssa-backprop)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-ssa-backprop)
 
 fssa-phiopt
-UrlSuffix(gcc/Optimize-Options.html#index-fssa-phiopt)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-ssa-phiopt)
 
 fstdarg-opt
-UrlSuffix(gcc/Optimize-Options.html#index-fstdarg-opt)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-stdarg-opt)
 
 fvariable-expansion-in-unroller
-UrlSuffix(gcc/Optimize-Options.html#index-fvariable-expansion-in-unroller)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-variable-expansion-in-unroller)
 
 fstack-check=
-UrlSuffix(gcc/Instrumentation-Options.html#index-fstack-check)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-stack-check)
 
 fstack-check
-UrlSuffix(gcc/Instrumentation-Options.html#index-fstack-check)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-stack-check)
 
 fstack-clash-protection
-UrlSuffix(gcc/Instrumentation-Options.html#index-fstack-clash-protection)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-stack-clash-protection)
 
 fstack-limit
 UrlSuffix(gcc/Instrumentation-Options.html#index-fno-stack-limit)
@@ -1461,7 +1464,7 @@ fstack-limit-symbol=
 UrlSuffix(gcc/Instrumentation-Options.html#index-fstack-limit-symbol)
 
 fstack-protector
-UrlSuffix(gcc/Instrumentation-Options.html#index-fstack-protector)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-stack-protector)
 
 fstack-protector-all
 UrlSuffix(gcc/Instrumentation-Options.html#index-fstack-protector-all)
@@ -1476,10 +1479,10 @@ fstack-usage
 UrlSuffix(gcc/Developer-Options.html#index-fstack-usage)
 
 fstrict-aliasing
-UrlSuffix(gcc/Optimize-Options.html#index-fstrict-aliasing)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-strict-aliasing)
 
 fstrict-overflow
-UrlSuffix(gcc/Code-Gen-Options.html#index-fstrict-overflow)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-strict-overflow)
 
 fstrub=disable
 UrlSuffix(gcc/Instrumentation-Options.html#index-fstrub_003ddisable)
@@ -1500,22 +1503,22 @@ fstrub=internal
 UrlSuffix(gcc/Instrumentation-Options.html#index-fstrub_003dinternal)
 
 fsync-libcalls
-UrlSuffix(gcc/Code-Gen-Options.html#index-fsync-libcalls)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-sync-libcalls)
 
 fsyntax-only
-UrlSuffix(gcc/Warning-Options.html#index-fsyntax-only) LangUrlSuffix_D(gdc/Warnings.html#index-fno-syntax-only) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-fsyntax-only)
+UrlSuffix(gcc/Warning-Options.html#index-fno-syntax-only) LangUrlSuffix_D(gdc/Warnings.html#index-fno-syntax-only) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-fsyntax-only)
 
 ftest-coverage
-UrlSuffix(gcc/Instrumentation-Options.html#index-ftest-coverage)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-test-coverage)
 
 fthread-jumps
-UrlSuffix(gcc/Optimize-Options.html#index-fthread-jumps)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-thread-jumps)
 
 ftime-report
-UrlSuffix(gcc/Developer-Options.html#index-ftime-report)
+UrlSuffix(gcc/Developer-Options.html#index-fno-time-report)
 
 ftime-report-details
-UrlSuffix(gcc/Developer-Options.html#index-ftime-report-details)
+UrlSuffix(gcc/Developer-Options.html#index-fno-time-report-details)
 
 ftls-model=
 UrlSuffix(gcc/Code-Gen-Options.html#index-ftls-model)
@@ -1524,10 +1527,10 @@ ftoplevel-reorder
 UrlSuffix(gcc/Optimize-Options.html#index-fno-toplevel-reorder)
 
 ftracer
-UrlSuffix(gcc/Optimize-Options.html#index-ftracer)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tracer)
 
 ftrampolines
-UrlSuffix(gcc/Code-Gen-Options.html#index-ftrampolines)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-trampolines)
 
 ftrampoline-impl=
 UrlSuffix(gcc/Code-Gen-Options.html#index-ftrampoline-impl)
@@ -1536,49 +1539,49 @@ ftrapping-math
 UrlSuffix(gcc/Optimize-Options.html#index-fno-trapping-math)
 
 ftrapv
-UrlSuffix(gcc/Code-Gen-Options.html#index-ftrapv)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-trapv)
 
 ftree-ccp
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-ccp)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-ccp)
 
 ftree-bit-ccp
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-bit-ccp)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-bit-ccp)
 
 ftree-ch
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-ch)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-ch)
 
 ftree-coalesce-vars
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-coalesce-vars)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-coalesce-vars)
 
 ftree-copy-prop
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-copy-prop)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-copy-prop)
 
 ftree-cselim
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-cselim)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-cselim)
 
 ftree-switch-conversion
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-switch-conversion)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-switch-conversion)
 
 ftree-dce
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-dce)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-dce)
 
 ftree-dominator-opts
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-dominator-opts)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-dominator-opts)
 
 ftree-tail-merge
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-tail-merge)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-tail-merge)
 
 ftree-dse
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-dse)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-dse)
 
 ftree-forwprop
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-forwprop)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-forwprop)
 
 ftree-fre
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-fre)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-fre)
 
 foptimize-strlen
-UrlSuffix(gcc/Optimize-Options.html#index-foptimize-strlen)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-optimize-strlen)
 
 fisolate-erroneous-paths-dereference
 UrlSuffix(gcc/Optimize-Options.html#index-fisolate-erroneous-paths-dereference)
@@ -1587,112 +1590,112 @@ fisolate-erroneous-paths-attribute
 UrlSuffix(gcc/Optimize-Options.html#index-fisolate-erroneous-paths-attribute)
 
 ftree-loop-distribution
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-distribution)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-distribution)
 
 ftree-loop-distribute-patterns
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-distribute-patterns)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-distribute-patterns)
 
 ftree-loop-im
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-im)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-im)
 
 ftree-loop-linear
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-linear)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-linear)
 
 ftree-loop-ivcanon
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-ivcanon)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-ivcanon)
 
 ftree-loop-optimize
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-optimize)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-optimize)
 
 ftree-parallelize-loops=
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-parallelize-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-parallelize-loops)
 
 ftree-parallelize-loops
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-parallelize-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-parallelize-loops)
 
 ftree-phiprop
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-phiprop)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-phiprop)
 
 ftree-pre
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-pre)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-pre)
 
 ftree-partial-pre
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-partial-pre)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-partial-pre)
 
 ftree-pta
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-pta)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-pta)
 
 ftree-reassoc
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-reassoc)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-reassoc)
 
 ftree-sink
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-sink)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-sink)
 
 ftree-slsr
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-slsr)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-slsr)
 
 ftree-sra
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-sra)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-sra)
 
 ftree-ter
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-ter)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-ter)
 
 ftree-vrp
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-vrp)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-vrp)
 
 fsplit-paths
-UrlSuffix(gcc/Optimize-Options.html#index-fsplit-paths)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-split-paths)
 
 funconstrained-commons
-UrlSuffix(gcc/Optimize-Options.html#index-funconstrained-commons)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-unconstrained-commons)
 
 funit-at-a-time
-UrlSuffix(gcc/Optimize-Options.html#index-funit-at-a-time)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-unit-at-a-time)
 
 funreachable-traps
-UrlSuffix(gcc/Optimize-Options.html#index-funreachable-traps)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-unreachable-traps)
 
 funroll-loops
-UrlSuffix(gcc/Optimize-Options.html#index-funroll-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-unroll-loops)
 
 funroll-all-loops
-UrlSuffix(gcc/Optimize-Options.html#index-funroll-all-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-unroll-all-loops)
 
 fassociative-math
 UrlSuffix(gcc/Optimize-Options.html#index-fassociative-math)
 
 freciprocal-math
-UrlSuffix(gcc/Optimize-Options.html#index-freciprocal-math)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-reciprocal-math)
 
 funsafe-math-optimizations
-UrlSuffix(gcc/Optimize-Options.html#index-funsafe-math-optimizations)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-unsafe-math-optimizations)
 
 funswitch-loops
-UrlSuffix(gcc/Optimize-Options.html#index-funswitch-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-unswitch-loops)
 
 fsplit-loops
-UrlSuffix(gcc/Optimize-Options.html#index-fsplit-loops)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-split-loops)
 
 fversion-loops-for-strides
-UrlSuffix(gcc/Optimize-Options.html#index-fversion-loops-for-strides)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-version-loops-for-strides)
 
 funwind-tables
-UrlSuffix(gcc/Code-Gen-Options.html#index-funwind-tables)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-unwind-tables)
 
 fuse-ld=bfd
-UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dbfd)
+UrlSuffix(gcc/Link-Options.html#index-fno-use-ld_003dbfd)
 
 fuse-ld=gold
-UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dgold)
+UrlSuffix(gcc/Link-Options.html#index-fno-use-ld_003dgold)
 
 fuse-ld=lld
-UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dlld)
+UrlSuffix(gcc/Link-Options.html#index-fno-use-ld_003dlld)
 
 fuse-ld=mold
-UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dmold)
+UrlSuffix(gcc/Link-Options.html#index-fno-use-ld_003dmold)
 
 fuse-ld=wild
-UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dwild)
+UrlSuffix(gcc/Link-Options.html#index-fno-use-ld_003dwild)
 
 fuse-linker-plugin
 UrlSuffix(gcc/Optimize-Options.html#index-fuse-linker-plugin)
@@ -1701,7 +1704,7 @@ flink-libatomic
 UrlSuffix(gcc/Link-Options.html#index-flink-libatomic)
 
 fvar-tracking
-UrlSuffix(gcc/Debugging-Options.html#index-fvar-tracking)
+UrlSuffix(gcc/Debugging-Options.html#index-fno-var-tracking)
 
 fvar-tracking-assignments
 UrlSuffix(gcc/Debugging-Options.html#index-fno-var-tracking-assignments)
@@ -1713,31 +1716,31 @@ fvar-tracking-uninit
 UrlSuffix(gcc/Debugging-Options.html#index-fno-var-tracking-uninit)
 
 ftree-vectorize
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-vectorize)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-vectorize)
 
 ftree-loop-vectorize
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-vectorize)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-vectorize)
 
 ftree-slp-vectorize
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-slp-vectorize)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-slp-vectorize)
 
 fvect-cost-model=
-UrlSuffix(gcc/Optimize-Options.html#index-fvect-cost-model)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-vect-cost-model)
 
 fsimd-cost-model=
 UrlSuffix(gcc/Optimize-Options.html#index-fsimd-cost-model)
 
 fvect-cost-model
-UrlSuffix(gcc/Optimize-Options.html#index-fvect-cost-model)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-vect-cost-model)
 
 ftree-scev-cprop
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-scev-cprop)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-scev-cprop)
 
 ftrivial-auto-var-init=
 UrlSuffix(gcc/Optimize-Options.html#index-ftrivial-auto-var-init)
 
 fverbose-asm
-UrlSuffix(gcc/Code-Gen-Options.html#index-fverbose-asm)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-verbose-asm)
 
 fvisibility=
 UrlSuffix(gcc/Code-Gen-Options.html#index-fvisibility)
@@ -1746,28 +1749,28 @@ fvtable-verify=
 UrlSuffix(gcc/Instrumentation-Options.html#index-fvtable-verify)
 
 fvtv-counts
-UrlSuffix(gcc/Instrumentation-Options.html#index-fvtv-counts)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-vtv-counts)
 
 fvtv-debug
-UrlSuffix(gcc/Instrumentation-Options.html#index-fvtv-debug)
+UrlSuffix(gcc/Instrumentation-Options.html#index-fno-vtv-debug)
 
 fvpt
-UrlSuffix(gcc/Optimize-Options.html#index-fvpt)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-vpt)
 
 fweb
-UrlSuffix(gcc/Optimize-Options.html#index-fweb)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-web)
 
 ftree-builtin-call-dce
-UrlSuffix(gcc/Optimize-Options.html#index-ftree-builtin-call-dce)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-builtin-call-dce)
 
 fwhole-program
-UrlSuffix(gcc/Optimize-Options.html#index-fwhole-program)
+UrlSuffix(gcc/Optimize-Options.html#index-fno-whole-program)
 
 fwrapv-pointer
-UrlSuffix(gcc/Code-Gen-Options.html#index-fwrapv-pointer)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-wrapv-pointer)
 
 fwrapv
-UrlSuffix(gcc/Code-Gen-Options.html#index-fwrapv)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-wrapv)
 
 fzero-initialized-in-bss
 UrlSuffix(gcc/Optimize-Options.html#index-fno-zero-initialized-in-bss)
@@ -1861,6 +1864,9 @@ UrlSuffix(gcc/Debugging-Options.html#index-gz)
 
 iplugindir=
 UrlSuffix(gcc/Directory-Options.html#index-iplugindir_003d)
+
+imultiarch
+UrlSuffix(gcc/Directory-Options.html#index-imultiarch)
 
 l
 UrlSuffix(gcc/Link-Options.html#index-l)

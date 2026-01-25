@@ -21,6 +21,9 @@ UrlSuffix(gcc/MMIX-Options.html#index-mknuthdiv)
 mtoplevel-symbols
 UrlSuffix(gcc/MMIX-Options.html#index-mtoplevel-symbols)
 
+mno-set-program-start
+UrlSuffix(gcc/MMIX-Options.html#index-mno-set-program-start)
+
 melf
 UrlSuffix(gcc/MMIX-Options.html#index-melf)
 
@@ -41,4 +44,10 @@ UrlSuffix(gcc/MMIX-Options.html#index-msingle-exit)
 
 mno-single-exit
 UrlSuffix(gcc/MMIX-Options.html#index-mno-single-exit)
+
+mset-program-start=
+UrlSuffix(gcc/MMIX-Options.html#index-mset-program-start)
+
+mset-data-start=
+UrlSuffix(gcc/MMIX-Options.html#index-mset-data-start)
 

@@ -171,7 +171,11 @@ UrlSuffix(gcc/ARC-Options.html#index-mfpu)
 mtp-regno=
 UrlSuffix(gcc/ARC-Options.html#index-mtp-regno)
 
-; skipping UrlSuffix for 'mbitops' due to finding no URLs
+mbitops
+UrlSuffix(gcc/ARC-Options.html#index-mbitops)
+
+mcmem
+UrlSuffix(gcc/ARC-Options.html#index-mcmem)
 
 ; skipping UrlSuffix for 'munaligned-access' due to finding no URLs
 

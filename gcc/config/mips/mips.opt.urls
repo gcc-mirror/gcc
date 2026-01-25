@@ -209,8 +209,9 @@ UrlSuffix(gcc/MIPS-Options.html#index-mr10k-cache-barrier)
 mrelax-pic-calls
 UrlSuffix(gcc/MIPS-Options.html#index-mrelax-pic-calls)
 
-mshared
-UrlSuffix(gcc/MIPS-Options.html#index-mshared)
+; skipping UrlSuffix for 'mshared' due to multiple URLs:
+;   duplicate: 'gcc/LynxOS-Options.html#index-mshared'
+;   duplicate: 'gcc/MIPS-Options.html#index-mshared-1'
 
 msingle-float
 UrlSuffix(gcc/MIPS-Options.html#index-msingle-float-1)

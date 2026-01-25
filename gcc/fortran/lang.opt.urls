@@ -368,16 +368,16 @@ fmodule-private
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fmodule-private)
 
 fopenacc
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
 
 fopenacc-dim=
 UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenacc-dim)
 
 fopenmp
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp)
 
 fopenmp-simd
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-simd) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-simd)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp-simd) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-simd)
 
 fopenmp-allocators
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-allocators)
@@ -386,7 +386,7 @@ fpack-derived
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fpack-derived)
 
 fpreprocessed
-UrlSuffix(gcc/Preprocessor-Options.html#index-fpreprocessed)
+UrlSuffix(gcc/Preprocessor-Options.html#index-fno-preprocessed)
 
 fprotect-parens
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fno-protect-parens)
@@ -434,7 +434,7 @@ fsecond-underscore
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fsecond-underscore)
 
 ; skipping UrlSuffix for 'fshort-enums' due to multiple URLs:
-;   duplicate: 'gcc/Code-Gen-Options.html#index-fshort-enums'
+;   duplicate: 'gcc/Code-Gen-Options.html#index-fno-short-enums'
 ;   duplicate: 'gcc/Non-bugs.html#index-fshort-enums-3'
 ;   duplicate: 'gcc/Structures-unions-enumerations-and-bit-fields-implementation.html#index-fshort-enums-1'
 fshort-enums

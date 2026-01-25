@@ -72,6 +72,9 @@ UrlSuffix(gcc/CRIS-Options.html#index-march-4)
 mtune=
 UrlSuffix(gcc/CRIS-Options.html#index-mtune-4)
 
+mmax-stackframe=
+UrlSuffix(gcc/CRIS-Options.html#index-mmax-stackframe)
+
 mtrap-using-break8
 UrlSuffix(gcc/CRIS-Options.html#index-mtrap-using-break8)
 

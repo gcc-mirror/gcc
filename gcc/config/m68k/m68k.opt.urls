@@ -39,6 +39,15 @@ UrlSuffix(gcc/M680x0-Options.html#index-m68040)
 m68060
 UrlSuffix(gcc/M680x0-Options.html#index-m68060)
 
+m68302
+UrlSuffix(gcc/M680x0-Options.html#index-m68302)
+
+m68332
+UrlSuffix(gcc/M680x0-Options.html#index-m68332)
+
+m68851
+UrlSuffix(gcc/M680x0-Options.html#index-m68851)
+
 m68881
 UrlSuffix(gcc/M680x0-Options.html#index-m68881)
 
@@ -69,6 +78,9 @@ UrlSuffix(gcc/M680x0-Options.html#index-mcpu32)
 mdiv
 UrlSuffix(gcc/M680x0-Options.html#index-mdiv-1)
 
+mfidoa
+UrlSuffix(gcc/M680x0-Options.html#index-mfidoa)
+
 mhard-float
 UrlSuffix(gcc/M680x0-Options.html#index-mhard-float-1)
 
@@ -82,6 +94,12 @@ UrlSuffix(gcc/M680x0-Options.html#index-mlong-jump-table-offsets)
 
 mnobitfield
 UrlSuffix(gcc/M680x0-Options.html#index-mnobitfield)
+
+mnortd
+UrlSuffix(gcc/M680x0-Options.html#index-mnortd)
+
+mnoshort
+UrlSuffix(gcc/M680x0-Options.html#index-mnoshort)
 
 mpcrel
 UrlSuffix(gcc/M680x0-Options.html#index-mpcrel)
@@ -109,4 +127,7 @@ UrlSuffix(gcc/M680x0-Options.html#index-mtune-8)
 
 mxgot
 UrlSuffix(gcc/M680x0-Options.html#index-mxgot)
+
+mxtls
+UrlSuffix(gcc/M680x0-Options.html#index-mxtls)
 

@@ -48,6 +48,9 @@ UrlSuffix(gcc/AVR-Options.html#index-mtiny-stack)
 mrelax
 UrlSuffix(gcc/AVR-Options.html#index-mrelax)
 
+mpmem-wrap-around
+UrlSuffix(gcc/AVR-Options.html#index-mpmem-wrap-around)
+
 maccumulate-args
 UrlSuffix(gcc/AVR-Options.html#index-maccumulate-args)
 

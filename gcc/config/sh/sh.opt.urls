@@ -18,6 +18,9 @@ UrlSuffix(gcc/SH-Options.html#index-m2a-single)
 m2a-single-only
 UrlSuffix(gcc/SH-Options.html#index-m2a-single-only)
 
+m2e
+UrlSuffix(gcc/SH-Options.html#index-m2e)
+
 m3
 UrlSuffix(gcc/SH-Options.html#index-m3)
 
@@ -50,6 +53,9 @@ UrlSuffix(gcc/SH-Options.html#index-m4-300-nofpu)
 
 m4-340
 UrlSuffix(gcc/SH-Options.html#index-m4-340)
+
+m4-400
+UrlSuffix(gcc/SH-Options.html#index-m4-400)
 
 m4-500
 UrlSuffix(gcc/SH-Options.html#index-m4-500)
@@ -103,7 +109,7 @@ mbigtable
 UrlSuffix(gcc/SH-Options.html#index-mbigtable)
 
 mbitops
-UrlSuffix(gcc/SH-Options.html#index-mbitops)
+UrlSuffix(gcc/SH-Options.html#index-mbitops-1)
 
 ; skipping UrlSuffix for 'mbranch-cost=' due to finding no URLs
 

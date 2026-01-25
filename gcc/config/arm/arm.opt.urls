@@ -91,6 +91,12 @@ UrlSuffix(gcc/ARM-Options.html#index-mtpcs-leaf-frame)
 mtune=
 UrlSuffix(gcc/ARM-Options.html#index-mtune-3)
 
+mvectorize-with-neon-quad
+UrlSuffix(gcc/ARM-Options.html#index-mvectorize-with-neon-quad)
+
+mvectorize-with-neon-double
+UrlSuffix(gcc/ARM-Options.html#index-mvectorize-with-neon-double)
+
 mword-relocations
 UrlSuffix(gcc/ARM-Options.html#index-mword-relocations)
 
@@ -102,6 +108,12 @@ UrlSuffix(gcc/ARM-Options.html#index-mfix-cortex-m3-ldrd)
 
 mfix-cmse-cve-2021-35465
 UrlSuffix(gcc/ARM-Options.html#index-mfix-cmse-cve-2021-35465)
+
+mfix-cortex-a57-aes-1742098
+UrlSuffix(gcc/ARM-Options.html#index-mfix-cortex-a57-aes-1742098)
+
+mfix-cortex-a72-aes-1655431
+UrlSuffix(gcc/ARM-Options.html#index-mfix-cortex-a72-aes-1655431)
 
 munaligned-access
 UrlSuffix(gcc/ARM-Options.html#index-munaligned-access)
@@ -117,6 +129,9 @@ UrlSuffix(gcc/ARM-Options.html#index-mpure-code)
 
 mbe8
 UrlSuffix(gcc/ARM-Options.html#index-mbe8)
+
+mbe32
+UrlSuffix(gcc/ARM-Options.html#index-mbe32)
 
 ; skipping UrlSuffix for 'mbranch-cost=' due to finding no URLs
 

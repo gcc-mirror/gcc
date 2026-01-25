@@ -3,6 +3,9 @@
 msoft-float
 UrlSuffix(gcc/DEC-Alpha-Options.html#index-msoft-float-1)
 
+mfp-regs
+UrlSuffix(gcc/DEC-Alpha-Options.html#index-mfp-regs)
+
 ; skipping UrlSuffix for 'mgas' due to finding no URLs
 
 mieee-conformant

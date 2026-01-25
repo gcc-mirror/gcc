@@ -27,6 +27,9 @@ UrlSuffix(gcc/MCore-Options.html#index-mlittle-endian-6)
 mno-lsim
 UrlSuffix(gcc/MCore-Options.html#index-mno-lsim-1)
 
+mrelax-immediates
+UrlSuffix(gcc/MCore-Options.html#index-mrelax-immediates)
+
 mslow-bytes
 UrlSuffix(gcc/MCore-Options.html#index-mslow-bytes)
 

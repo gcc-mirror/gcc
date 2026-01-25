@@ -9,8 +9,9 @@ UrlSuffix(gcc/Cygwin-and-MinGW-Options.html#index-mdll)
 mnop-fun-dllimport
 UrlSuffix(gcc/Cygwin-and-MinGW-Options.html#index-mnop-fun-dllimport)
 
-mthreads
-UrlSuffix(gcc/Cygwin-and-MinGW-Options.html#index-mthreads)
+; skipping UrlSuffix for 'mthreads' due to multiple URLs:
+;   duplicate: 'gcc/Cygwin-and-MinGW-Options.html#index-mthreads'
+;   duplicate: 'gcc/LynxOS-Options.html#index-mthreads-1'
 
 mwin32
 UrlSuffix(gcc/Cygwin-and-MinGW-Options.html#index-mwin32)
@@ -20,6 +21,9 @@ UrlSuffix(gcc/Cygwin-and-MinGW-Options.html#index-mwindows)
 
 mpe-aligned-commons
 UrlSuffix(gcc/Cygwin-and-MinGW-Options.html#index-mpe-aligned-commons)
+
+muse-libstdc-wrappers
+UrlSuffix(gcc/Cygwin-and-MinGW-Options.html#index-muse-libstdc-wrappers)
 
 fset-stack-executable
 UrlSuffix(gcc/Cygwin-and-MinGW-Options.html#index-fno-set-stack-executable)

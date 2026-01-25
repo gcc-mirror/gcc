@@ -9,6 +9,9 @@ UrlSuffix(gcc/eBPF-Options.html#index-mbig-endian-4)
 mlittle-endian
 UrlSuffix(gcc/eBPF-Options.html#index-mlittle-endian-4)
 
+mframe-limit=
+UrlSuffix(gcc/eBPF-Options.html#index-mframe-limit)
+
 mco-re
 UrlSuffix(gcc/eBPF-Options.html#index-mco-re)
 

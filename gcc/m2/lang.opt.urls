@@ -4,7 +4,7 @@ fmem-report
 UrlSuffix(gcc/Developer-Options.html#index-fmem-report)
 
 ftime-report
-UrlSuffix(gcc/Developer-Options.html#index-ftime-report)
+UrlSuffix(gcc/Developer-Options.html#index-fno-time-report)
 
 fversion
 LangUrlSuffix_D(gdc/Runtime-Options.html#index-fversion)
@@ -90,7 +90,7 @@ fexceptions
 UrlSuffix(gcc/Code-Gen-Options.html#index-fexceptions)
 
 fpreprocessed
-UrlSuffix(gcc/Preprocessor-Options.html#index-fpreprocessed)
+UrlSuffix(gcc/Preprocessor-Options.html#index-fno-preprocessed)
 
 fworking-directory
 UrlSuffix(gcc/Preprocessor-Options.html#index-fno-working-directory) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-fworking-directory)

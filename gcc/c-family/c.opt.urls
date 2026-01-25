@@ -656,7 +656,7 @@ Wnormalized=
 UrlSuffix(gcc/Warning-Options.html#index-Wno-normalized)
 
 Wobjc-root-class
-UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-Wobjc-root-class)
+UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-Wno-objc-root-class)
 
 Wold-style-cast
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wno-old-style-cast)
@@ -928,7 +928,7 @@ Wtrailing-whitespace
 UrlSuffix(gcc/Warning-Options.html#index-Wno-trailing-whitespace)
 
 Wtrigraphs
-UrlSuffix(gcc/Warning-Options.html#index-Wtrigraphs)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-trigraphs)
 
 Wundeclared-selector
 UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-Wno-undeclared-selector)
@@ -964,7 +964,7 @@ Wunused-local-typedefs
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-local-typedefs)
 
 Wunused-macros
-UrlSuffix(gcc/Warning-Options.html#index-Wunused-macros)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-macros)
 
 Wunused-result
 UrlSuffix(gcc/Warning-Options.html#index-Wno-unused-result)
@@ -1018,7 +1018,7 @@ Wzero-as-null-pointer-constant
 UrlSuffix(gcc/Warning-Options.html#index-Wno-zero-as-null-pointer-constant)
 
 Wzero-length-bounds
-UrlSuffix(gcc/Warning-Options.html#index-Wzero-length-bounds)
+UrlSuffix(gcc/Warning-Options.html#index-Wno-zero-length-bounds)
 
 ; skipping UrlSuffix for 'ansi' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-ansi-1'
@@ -1286,37 +1286,37 @@ fnonansi-builtins
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-nonansi-builtins)
 
 fnothrow-opt
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fnothrow-opt)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-nothrow-opt)
 
 fobjc-abi-version=
 UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fobjc-abi-version)
 
 fobjc-call-cxx-cdtors
-UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fobjc-call-cxx-cdtors)
+UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fno-objc-call-cxx-cdtors)
 
 fobjc-direct-dispatch
-UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fobjc-direct-dispatch)
+UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fno-objc-direct-dispatch)
 
 fobjc-exceptions
-UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fobjc-exceptions)
+UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fno-objc-exceptions)
 
 fobjc-gc
-UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fobjc-gc)
+UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fno-objc-gc)
 
 fobjc-nilcheck
-UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fobjc-nilcheck)
+UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fno-objc-nilcheck)
 
 fopenacc
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openacc) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenacc)
 
 fopenacc-dim=
 UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenacc-dim)
 
 fopenmp
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp)
 
 fopenmp-simd
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-simd) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-simd)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp-simd) LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-fopenmp-simd)
 
 foperator-names
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-operator-names)
@@ -1325,20 +1325,20 @@ foptional-diags
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-optional-diags)
 
 fpch-deps
-UrlSuffix(gcc/Preprocessor-Options.html#index-fpch-deps)
+UrlSuffix(gcc/Preprocessor-Options.html#index-fno-pch-deps)
 
 fpch-preprocess
-UrlSuffix(gcc/Preprocessor-Options.html#index-fpch-preprocess)
+UrlSuffix(gcc/Preprocessor-Options.html#index-fno-pch-preprocess)
 
 fpermissive
-UrlSuffix(gcc/Warning-Options.html#index-fpermissive)
+UrlSuffix(gcc/Warning-Options.html#index-fno-permissive)
 
 ; skipping UrlSuffix for 'fplan9-extensions' due to multiple URLs:
-;   duplicate: 'gcc/C-Dialect-Options.html#index-fplan9-extensions'
+;   duplicate: 'gcc/C-Dialect-Options.html#index-fno-plan9-extensions'
 ;   duplicate: 'gcc/Unnamed-Fields.html#index-fplan9-extensions-1'
 
 fpreprocessed
-UrlSuffix(gcc/Preprocessor-Options.html#index-fpreprocessed)
+UrlSuffix(gcc/Preprocessor-Options.html#index-fno-preprocessed)
 
 ftrack-macro-expansion
 UrlSuffix(gcc/Preprocessor-Options.html#index-ftrack-macro-expansion)
@@ -1353,43 +1353,43 @@ fprintf-return-value
 UrlSuffix(gcc/Optimize-Options.html#index-fno-printf-return-value)
 
 frange-for-ext-temps
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-frange-for-ext-temps)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-range-for-ext-temps)
 
 freflection
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-freflection)
 
 freplace-objc-classes
-UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-freplace-objc-classes)
+UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fno-replace-objc-classes)
 
 frtti
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-rtti) LangUrlSuffix_D(gdc/Runtime-Options.html#index-fno-rtti)
 
 fsearch-include-path
-UrlSuffix(gcc/Preprocessor-Options.html#index-fsearch-include-path)
+UrlSuffix(gcc/Preprocessor-Options.html#index-fno-search-include-path)
 
 fsearch-include-path=
-UrlSuffix(gcc/Preprocessor-Options.html#index-fsearch-include-path)
+UrlSuffix(gcc/Preprocessor-Options.html#index-fno-search-include-path)
 
 ; skipping UrlSuffix for 'fshort-enums' due to multiple URLs:
-;   duplicate: 'gcc/Code-Gen-Options.html#index-fshort-enums'
+;   duplicate: 'gcc/Code-Gen-Options.html#index-fno-short-enums'
 ;   duplicate: 'gcc/Non-bugs.html#index-fshort-enums-3'
 ;   duplicate: 'gcc/Structures-unions-enumerations-and-bit-fields-implementation.html#index-fshort-enums-1'
 fshort-enums
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fshort-enums)
 
 fshort-wchar
-UrlSuffix(gcc/Code-Gen-Options.html#index-fshort-wchar)
+UrlSuffix(gcc/Code-Gen-Options.html#index-fno-short-wchar)
 
 ; skipping UrlSuffix for 'fsigned-bitfields' due to multiple URLs:
 ;   duplicate: 'gcc/C-Dialect-Options.html#index-fno-signed-bitfields'
 ;   duplicate: 'gcc/Non-bugs.html#index-fsigned-bitfields-1'
 
 ; skipping UrlSuffix for 'fsigned-char' due to multiple URLs:
-;   duplicate: 'gcc/C-Dialect-Options.html#index-fsigned-char'
+;   duplicate: 'gcc/C-Dialect-Options.html#index-fno-signed-char'
 ;   duplicate: 'gcc/Characters-implementation.html#index-fsigned-char-1'
 
 fsized-deallocation
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fsized-deallocation)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-sized-deallocation)
 
 fstrict-flex-arrays
 UrlSuffix(gcc/C-Dialect-Options.html#index-fno-strict-flex-arrays)
@@ -1401,16 +1401,16 @@ fsso-struct=
 UrlSuffix(gcc/C-Dialect-Options.html#index-fsso-struct)
 
 fstats
-UrlSuffix(gcc/Developer-Options.html#index-fstats)
+UrlSuffix(gcc/Developer-Options.html#index-fno-stats)
 
 fstrict-enums
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fstrict-enums)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-strict-enums)
 
 fstrong-eval-order
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fstrong-eval-order)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-strong-eval-order)
 
 fstrong-eval-order=
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fstrong-eval-order)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-strong-eval-order)
 
 ftemplate-backtrace-limit=
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-ftemplate-backtrace-limit)
@@ -1427,20 +1427,20 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-threadsafe-statics)
 ;   duplicate: 'gcc/Structures-unions-enumerations-and-bit-fields-implementation.html#index-funsigned-bitfields-1'
 
 ; skipping UrlSuffix for 'funsigned-char' due to multiple URLs:
-;   duplicate: 'gcc/C-Dialect-Options.html#index-funsigned-char'
+;   duplicate: 'gcc/C-Dialect-Options.html#index-fno-unsigned-char'
 ;   duplicate: 'gcc/Characters-implementation.html#index-funsigned-char-1'
 
 fuse-cxa-atexit
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fuse-cxa-atexit)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-use-cxa-atexit)
 
 fuse-cxa-get-exception-ptr
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-use-cxa-get-exception-ptr)
 
 fvisibility-inlines-hidden
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fvisibility-inlines-hidden)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-visibility-inlines-hidden)
 
 fvisibility-ms-compat
-UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fvisibility-ms-compat)
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-visibility-ms-compat)
 
 fweak
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fno-weak)
@@ -1452,7 +1452,7 @@ fworking-directory
 UrlSuffix(gcc/Preprocessor-Options.html#index-fno-working-directory) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-fworking-directory)
 
 fzero-link
-UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fzero-link)
+UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-fno-zero-link)
 
 gen-decls
 UrlSuffix(gcc/Objective-C-and-Objective-C_002b_002b-Dialect-Options.html#index-gen-decls)

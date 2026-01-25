@@ -154,6 +154,9 @@ UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mtraceback)
 mlongcall
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mlongcall)
 
+mwarn-altivec-long
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mwarn-altivec-long)
+
 ; skipping UrlSuffix for 'mlra' due to finding no URLs
 
 msched-costly-dep=
@@ -220,4 +223,13 @@ UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mrop-protect)
 
 mprivileged
 UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mprivileged)
+
+msplat-word-constant
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-msplat-word-constant)
+
+msplat-float-constant
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-msplat-float-constant)
+
+mieee128-constant
+UrlSuffix(gcc/RS_002f6000-and-PowerPC-Options.html#index-mieee128-constant)
 
