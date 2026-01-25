@@ -7579,8 +7579,13 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    if (cleared && initializer_zerop (value))
 	      continue;
 
-	    if (tree_fits_uhwi_p (DECL_SIZE (field)))
-	      bitsize = tree_to_uhwi (DECL_SIZE (field));
+	    /* Variable sized arrays are ignored.  */
+	    tree decl_size = DECL_SIZE (field);
+	    if (!decl_size)
+	      continue;
+
+	    if (tree_fits_uhwi_p (decl_size))
+	      bitsize = tree_to_uhwi (decl_size);
 	    else
 	      gcc_unreachable ();
 
