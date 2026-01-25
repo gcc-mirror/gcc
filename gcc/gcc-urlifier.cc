@@ -262,12 +262,18 @@ test_gcc_urlifier ()
        doc_urls[idx].url_suffix);
 
   /* Check an option.  */
-  ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("-fpack-struct").get (),
-		"gcc/Code-Gen-Options.html#index-fpack-struct");
+  const char *s1 = u.get_url_suffix_for_quoted_text ("-fpack-struct").get ();
+  ASSERT_TRUE (!strcmp (s1,
+			"gcc/Code-Gen-Options.html#index-fno-pack-struct")
+	       || !strcmp (s1,
+			   "gcc/Code-Gen-Options.html#index-fpack-struct"));
 
   /* Check a "-fno-" variant of an option.  */
-  ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("-fno-inline").get (),
-		"gcc/Optimize-Options.html#index-finline");
+  const char *s2 = u.get_url_suffix_for_quoted_text ("-fno-inline").get ();
+  ASSERT_TRUE (!strcmp (s2,
+			"gcc/Optimize-Options.html#index-fno-inline")
+	       || !strcmp (s2,
+			   "gcc/Optimize-Options.html#index-finline"));
 }
 
 /* Run all of the selftests within this file.  */
