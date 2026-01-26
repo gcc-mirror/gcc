@@ -12135,10 +12135,8 @@ vect_remove_slp_scalar_calls (vec_info *vinfo,
       if (lhs)
 	new_stmt = gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
       else
-	{
-	  new_stmt = gimple_build_nop ();
-	  unlink_stmt_vdef (stmt_info->stmt);
-	}
+	new_stmt = gimple_build_nop ();
+      unlink_stmt_vdef (stmt_info->stmt);
       gsi = gsi_for_stmt (stmt);
       vinfo->replace_stmt (&gsi, stmt_info, new_stmt);
       if (lhs)
