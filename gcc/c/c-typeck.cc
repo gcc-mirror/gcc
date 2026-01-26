@@ -7455,7 +7455,8 @@ build_c_cast (location_t loc, tree type, tree expr)
 	warning_at (loc, OPT_Wpointer_to_int_cast,
 		    "cast from pointer to integer of different size");
 
-      if (TREE_CODE (value) == CALL_EXPR
+      if ((TREE_CODE (value) == CALL_EXPR
+	   && !is_access_with_size_p (value))
 	  && TREE_CODE (type) != TREE_CODE (otype))
 	warning_at (loc, OPT_Wbad_function_cast,
 		    "cast from function call of type %qT "
