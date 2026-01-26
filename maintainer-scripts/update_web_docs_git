@@ -33,6 +33,7 @@ MANUALS="cpp
   cppinternals
   fastjar
   ga68
+  ga68-coding-guidelines
   ga68-internals
   gcc
   gccgo
