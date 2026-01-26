@@ -6125,11 +6125,13 @@ cp_parser_next_tokens_can_start_splice_scope_spec_p (cp_parser *parser)
       splice-specifier < template-argument-list[opt] >
 
    TEMPLATE_P is true if we've parsed the leading template keyword.
+   TYPENAME_P is true if we've parsed the leading typename keyword or are
+   in a type-only context.
    TARGS_P is set to true if there is a splice-specialization-specifier.  */
 
 static cp_expr
 cp_parser_splice_specifier (cp_parser *parser, bool template_p = false,
-			    bool *targs_p = nullptr)
+			    bool typename_p = false, bool *targs_p = nullptr)
 {
   /* Get the location of the '[:'.  */
   location_t start_loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -6169,8 +6171,18 @@ cp_parser_splice_specifier (cp_parser *parser, bool template_p = false,
   /* Get the reflected operand.  */
   expr = splice (expr);
 
-  /* If the next token is a '<', it's a splice-specialization-specifier.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+  /* If the next token is a <, it could be a splice-specialization-specifier.
+     But we need to handle "[:r:] < 42" where the < doesn't start a template
+     argument list.  [temp.names]/3: A < is interpreted as the delimiter of
+     a template-argument-list if either
+     -- it follows a splice-specifier that either
+       -- appears in a type-only context or
+       -- is preceded by template or typename.  */
+  if (cp_parser_nth_token_starts_template_argument_list_p (parser, 1)
+      /* As a courtesy to the user, if there is a < after a template
+	 name, parse the construct as an s-s-s and warn about the missing
+	 'template'; it can't be anything else.  */
+      && (template_p || typename_p || TREE_CODE (expr) == TEMPLATE_DECL))
     {
       /* For member access splice-specialization-specifier, try to wrap
 	 non-dependent splice for function template into a BASELINK so
@@ -6222,7 +6234,8 @@ cp_parser_splice_type_specifier (cp_parser *parser)
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME))
     cp_lexer_consume_token (parser->lexer);
 
-  cp_expr expr = cp_parser_splice_specifier (parser);
+  cp_expr expr = cp_parser_splice_specifier (parser, /*template_p=*/false,
+					     /*typename_p=*/true);
   const location_t loc = (expr != error_mark_node
 			  ? expr.get_location () : input_location);
   tree type = expr.get_value ();
@@ -6271,7 +6284,8 @@ cp_parser_splice_expression (cp_parser *parser, bool template_p,
   parser->object_scope = NULL_TREE;
   parser->qualifying_scope = NULL_TREE;
 
-  cp_expr expr = cp_parser_splice_specifier (parser, template_p, &targs_p);
+  cp_expr expr = cp_parser_splice_specifier (parser, template_p,
+					     /*typename_p=*/false, &targs_p);
 
   /* And don't leave the scopes set, either.  */
   parser->scope = NULL_TREE;
@@ -6351,14 +6365,6 @@ cp_parser_splice_expression (cp_parser *parser, bool template_p,
       return error_mark_node;
     }
 
-  if (parser->in_template_argument_list_p
-      && !parser->greater_than_is_operator_p)
-    {
-      error_at (loc, "unparenthesized splice expression cannot be used as "
-		"a template argument");
-      return error_mark_node;
-    }
-
   /* Make sure this splice-expression produces an expression.  */
   if (!check_splice_expr (loc, expr.get_start (), t, address_p,
 			  member_access_p, /*complain=*/true))
@@ -6432,7 +6438,8 @@ cp_parser_splice_scope_specifier (cp_parser *parser, bool typename_p,
 				  bool template_p)
 {
   bool targs_p = false;
-  cp_expr scope = cp_parser_splice_specifier (parser, template_p, &targs_p);
+  cp_expr scope = cp_parser_splice_specifier (parser, template_p, typename_p,
+					      &targs_p);
   const location_t loc = scope.get_location ();
   if (TREE_CODE (scope) == TYPE_DECL)
     scope = TREE_TYPE (scope);
@@ -6476,6 +6483,38 @@ cp_parser_splice_scope_specifier (cp_parser *parser, bool typename_p,
   return scope;
 }
 
+/* Skip the whole splice-expression: the optional typename/template,
+   [:...:], and also the <...>, if present.  Return true if we skipped
+   successfully.  */
+
+static bool
+cp_parser_skip_entire_splice_expr (cp_parser *parser)
+{
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME)
+      || cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
+    cp_lexer_consume_token (parser->lexer);
+
+  if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_SPLICE))
+    return false;
+
+  size_t n = cp_parser_skip_balanced_tokens (parser, 1);
+  if (n != 1)
+    {
+      /* Consume tokens up to the ':]' (including).  */
+      for (n = n - 1; n; --n)
+	cp_lexer_consume_token (parser->lexer);
+
+      /* Consume the whole '<....>', if present.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_LESS)
+	  && !cp_parser_skip_entire_template_parameter_list (parser))
+	return false;
+
+      return true;
+    }
+
+  return false;
+}
+
 /* We know the next token is '[:' (optionally preceded by a template or
    typename) and we are wondering if a '::' follows right after the
    closing ':]', or after the possible '<...>' after the ':]'.  Return
@@ -6489,26 +6528,8 @@ cp_parser_splice_spec_is_nns_p (cp_parser *parser)
      file so there are no previous tokens.  Sigh.  */
   cp_lexer_save_tokens (parser->lexer);
 
-  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TYPENAME)
-      || cp_lexer_next_token_is_keyword (parser->lexer, RID_TEMPLATE))
-    cp_lexer_consume_token (parser->lexer);
-
-  bool ok = false;
-  size_t n = cp_parser_skip_balanced_tokens (parser, 1);
-  if (n != 1)
-    {
-      ok = true;
-      /* Consume tokens up to the ':]' (including).  */
-      for (n = n - 1; n; --n)
-	cp_lexer_consume_token (parser->lexer);
-
-      /* Consume the whole '<....>', if present.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_LESS)
-	  && !cp_parser_skip_entire_template_parameter_list (parser))
-	ok = false;
-
-      ok = ok && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE);
-    }
+  const bool ok = (cp_parser_skip_entire_splice_expr (parser)
+		   && cp_lexer_next_token_is (parser->lexer, CPP_SCOPE));
 
   /* Roll back the tokens we skipped.  */
   cp_lexer_rollback_tokens (parser->lexer);
@@ -21270,6 +21291,7 @@ cp_parser_template_id (cp_parser *parser,
 	    error_at (token->location, "%qT is not a template", templ);
 	  else
 	    error_at (token->location, "%qE is not a template", templ);
+	  pop_deferring_access_checks ();
 	  return error_mark_node;
 	}
       else
@@ -21950,9 +21972,27 @@ cp_parser_template_argument (cp_parser* parser)
 	  && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	return cp_parser_braced_list (parser);
 
+      /* [temp.names]/6: The constant-expression of a template-argument
+	 shall not be an unparenthesized splice-expression.  */
+      cp_token *next = nullptr;
+      if (flag_reflection)
+	{
+	  saved_token_sentinel toks (parser->lexer, STS_ROLLBACK);
+	  if (cp_parser_skip_entire_splice_expr (parser))
+	    next = cp_lexer_peek_token (parser->lexer);
+	}
+
       /* With C++17 generalized non-type template arguments we need to handle
 	 lvalue constant expressions, too.  */
       argument = cp_parser_assignment_expression (parser);
+      if (UNLIKELY (cp_lexer_peek_token (parser->lexer) == next)
+	  && argument != error_mark_node)
+	{
+	  loc = cp_lexer_peek_token (parser->lexer)->location;
+	  error_at (loc, "unparenthesized splice expression cannot be used "
+		    "as a template argument");
+	  return error_mark_node;
+	}
     }
 
   if (!maybe_type_id)

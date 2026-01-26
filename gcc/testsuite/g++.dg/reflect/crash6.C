@@ -11,7 +11,7 @@ void
 f ()
 {
   [:R:] r; // { dg-error "expected" }
-  [:R:]<int> r; // { dg-error "reflection .\\\[: R :\\\]<int>. not usable in a splice expression" }
+  [:R:]<int> r; // { dg-error "expected" }
 }
 
 void

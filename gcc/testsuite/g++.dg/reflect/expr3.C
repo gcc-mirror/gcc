@@ -31,15 +31,19 @@ g ()
   int i6 = template [: ^^foo :](42);
   int i7 = [: ^^foo<int> :](42);
   int i8 = template [: ^^foo<int> :](42);   // { dg-error "reflection .foo<int>. not usable in a template splice" }
-  int i9 = [: ^^foo :]<int>(42);	    // { dg-error "reflection .foo<int>. not usable in a splice expression with template arguments" }
+  int i9 = [: ^^foo :]<int>(42);	    // { dg-error "reflection .foo. not usable in a splice expression|expected" }
   int i10 = template [: ^^foo :]<int>(42);
   int i11 = template [: ^^bar :]<int>(42);  // { dg-error "no matching function for call" }
   int i12 = [: ^^two :]<int>;		    // { dg-error "reflection .two<int>. not usable in a splice expression with template arguments" }
   int i13 = template [: ^^two :]<int>;
 
   [: ^^ST :]<int> c1;  // { dg-error "reflection .ST<int>. not usable in a splice expression with template arguments" }
-  [: ^^S :]<int> c2;   // { dg-error "not a template|reflection not usable in a splice expression with template arguments" }
-  [: ^^bar :]<int>();	// { dg-error "reflection .bar<int>. not usable in a splice expression with template arguments" }
+  typename [: ^^ST :]<int> c2;
+  template [: ^^ST :]<int> c3;  // { dg-error "expected a reflection of an expression" }
+  [: ^^S :]<int> c4;   // { dg-error "expected a reflection of an expression|expected primary-expression" }
+  template [: ^^S :]<int> c5;   // { dg-error ".S. is not a template" }
+  typename [: ^^S :]<int> c6;   // { dg-error ".S. is not a template|expected" }
+  [: ^^bar :]<int>();	// { dg-error "expected" }
 
   auto x1 = [: ^^ST :]<int>{};	  // { dg-error "reflection .ST<int>. not usable in a splice expression with template arguments" }
   auto x2 = template [: ^^ST :]<int>{};	// { dg-error "expected a reflection of an expression" }
