@@ -4814,7 +4814,9 @@ finish_id_expression_1 (tree id_expression,
       /* A use in unevaluated operand might not be instantiated appropriately
 	 if tsubst_copy builds a dummy parm, or if we never instantiate a
 	 generic lambda, so mark it now.  */
-      if (processing_template_decl && cp_unevaluated_operand)
+      if (processing_template_decl
+	  && (cp_unevaluated_operand
+	      || generic_lambda_fn_p (current_function_decl)))
 	mark_type_use (decl);
 
       /* Disallow uses of local variables from containing functions, except

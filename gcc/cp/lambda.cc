@@ -1153,7 +1153,7 @@ prepare_op_call (tree fn, int nargs)
 bool
 generic_lambda_fn_p (tree callop)
 {
-  return (LAMBDA_FUNCTION_P (callop)
+  return (callop && LAMBDA_FUNCTION_P (callop)
 	  && DECL_TEMPLATE_INFO (callop)
 	  && PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (callop)));
 }
