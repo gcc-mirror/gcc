@@ -3632,8 +3632,9 @@ vectorizable_call (vec_info *vinfo,
   if (could_trap && cost_vec && loop_vinfo)
     {
       /* If the operation can trap it must be conditional, otherwise fail.  */
-      internal_fn cond_fn = get_conditional_internal_fn (ifn);
-      internal_fn cond_len_fn = get_len_internal_fn (ifn);
+      internal_fn cond_fn = (internal_fn_mask_index (ifn) != -1
+			     ? ifn : get_conditional_internal_fn (ifn));
+      internal_fn cond_len_fn = get_len_internal_fn (cond_fn);
       if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  /* We assume that BB SLP fills all lanes, so no inactive lanes can
@@ -3698,7 +3699,7 @@ vectorizable_call (vec_info *vinfo,
   int reduc_idx = SLP_TREE_REDUC_IDX (slp_node);
   internal_fn cond_fn = (internal_fn_mask_index (ifn) != -1
 			 ? ifn : get_conditional_internal_fn (ifn));
-  internal_fn cond_len_fn = get_len_internal_fn (ifn);
+  internal_fn cond_len_fn = get_len_internal_fn (cond_fn);
   int len_opno = internal_fn_len_index (cond_len_fn);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   vec_loop_lens *lens = (loop_vinfo ? &LOOP_VINFO_LENS (loop_vinfo) : NULL);
@@ -3774,6 +3775,10 @@ vectorizable_call (vec_info *vinfo,
 	  ifn = cond_len_fn;
 	  /* COND_* -> COND_LEN_* takes 2 extra arguments:LEN,BIAS.  */
 	  vect_nargs += 2;
+	  /* But unless there's a mask argument already we need that
+	     as well, and an else value.  */
+	  if (mask_opno == -1)
+	    vect_nargs += 2;
 	}
       else if (reduc_idx >= 0)
 	gcc_unreachable ();
@@ -3822,13 +3827,24 @@ vectorizable_call (vec_info *vinfo,
 	    {
 	      int varg = 0;
 	      /* Add the mask if necessary.  */
-	      if (masked_loop_p && mask_opno == -1
+	      if ((masked_loop_p || len_loop_p) && mask_opno == -1
 		  && (reduc_idx >= 0 || could_trap))
 		{
 		  gcc_assert (internal_fn_mask_index (ifn) == varg);
-		  unsigned int vec_num = vec_oprnds0.length ();
-		  vargs[varg++] = vect_get_loop_mask (loop_vinfo, gsi, masks,
-						      vec_num, vectype_out, i);
+		  if (masked_loop_p)
+		    {
+		      unsigned int vec_num = vec_oprnds0.length ();
+		      vargs[varg++] = vect_get_loop_mask (loop_vinfo, gsi,
+							  masks, vec_num,
+							  vectype_out, i);
+		    }
+		  else
+		    {
+		      tree mask_vectype = truth_type_for (vectype_out);
+		      vargs[varg++] = vect_build_all_ones_mask (loop_vinfo,
+								stmt_info,
+								mask_vectype);
+		    }
 		}
 	      size_t k;
 	      for (k = 0; k < nargs; k++)
@@ -3837,7 +3853,7 @@ vectorizable_call (vec_info *vinfo,
 		  vargs[varg++] = vec_oprndsk[i];
 		}
 	      /* Add the else value if necessary.  */
-	      if (masked_loop_p && mask_opno == -1
+	      if ((masked_loop_p || len_loop_p) && mask_opno == -1
 		 && (reduc_idx >= 0 || could_trap))
 		{
 		  gcc_assert (internal_fn_else_index (ifn) == varg);
@@ -3846,7 +3862,7 @@ vectorizable_call (vec_info *vinfo,
 		  else
 		    {
 		      auto else_value = targetm.preferred_else_value
-			(cond_fn, vectype_out, varg - 1, &vargs[1]);
+			(ifn, vectype_out, varg - 1, &vargs[1]);
 		      vargs[varg++] = else_value;
 		    }
 		}
