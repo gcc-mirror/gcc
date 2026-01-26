@@ -2356,10 +2356,11 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
 	}
       else {
 	tree stride;
+	tree wanted_type = POINTER_TYPE_P (basis_type) ? c->stride_type : basis_type;
 
-	if (!types_compatible_p (TREE_TYPE (c->stride), c->stride_type))
+	if (!types_compatible_p (TREE_TYPE (c->stride), wanted_type))
 	  {
-	    tree cast_stride = make_temp_ssa_name (c->stride_type, NULL,
+	    tree cast_stride = make_temp_ssa_name (wanted_type, NULL,
 						   "slsr");
 	    cast_stmt = gimple_build_assign (cast_stride, NOP_EXPR,
 					     c->stride);
