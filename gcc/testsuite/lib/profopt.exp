@@ -312,6 +312,7 @@ proc profopt-execute { src } {
     global generate_final_code use_final_code
     global verbose
     global testname_with_flags
+    global additional_sources_used
 
     if ![info exists profile_option] {
         error "No profile option specified for first compile."
@@ -474,6 +475,19 @@ proc profopt-execute { src } {
 		    set missing_file 1
 		    fail "$testcase execution: file $bprefix$base.$ext does not exist, $option $profile_option"
 		}
+		if [info exists additional_sources_used] {
+		    foreach srcfile $additional_sources_used {
+			set add_basename [file tail $srcfile]
+			set add_base [file rootname $add_basename]
+			remote_upload target $tmpdir/$bprefix$add_base.$ext
+			set files [glob -nocomplain $bprefix$add_base.$ext]
+			if { $files == "" } {
+			    set status "fail"
+			    set missing_file 1
+			    fail "$testcase execution: file $bprefix$add_base.$ext does not exist, $option $profile_option"
+			}
+		    }
+		}
 	    }
 	}
         if { $missing_file == 0 } {
@@ -606,4 +620,5 @@ proc profopt-execute { src } {
 	}
     }
     unset testname_with_flags
+    cleanup-after-saved-dg-test
 }
