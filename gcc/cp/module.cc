@@ -9847,6 +9847,12 @@ trees_out::type_node (tree type)
     case META_TYPE:
       /* No additional data.  */
       break;
+
+    case SPLICE_SCOPE:
+      if (streaming_p ())
+	u (SPLICE_SCOPE_TYPE_P (type));
+      tree_node (SPLICE_SCOPE_EXPR (type));
+      break;
     }
 
   tree_node (TYPE_ATTRIBUTES (type));
@@ -10696,6 +10702,16 @@ trees_in::tree_node (bool is_use)
 	  case META_TYPE:
 	    if (!get_overrun ())
 	      res = meta_info_type_node;
+	    break;
+
+	  case SPLICE_SCOPE:
+	    {
+	      bool type = u ();
+	      tree expr = tree_node ();
+
+	      if (!get_overrun ())
+		res = make_splice_scope (expr, type);
+	    }
 	    break;
 	  }
 
