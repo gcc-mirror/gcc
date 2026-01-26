@@ -172,7 +172,7 @@ reachable_regions::handle_sval (const svalue *sval)
       for (auto iter = compound_sval->begin ();
 	   iter != compound_sval->end (); ++iter)
 	{
-	  const svalue *iter_sval = (*iter).m_sval;
+	  const svalue *iter_sval = iter.get_svalue ();
 	  handle_sval (iter_sval);
 	}
     }
@@ -238,7 +238,7 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
       for (auto iter = compound_sval->begin ();
 	   iter != compound_sval->end (); ++iter)
 	{
-	  const svalue *iter_sval = (*iter).m_sval;
+	  const svalue *iter_sval = iter.get_svalue ();
 	  handle_sval (iter_sval);
 	}
     }

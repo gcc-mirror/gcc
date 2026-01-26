@@ -309,6 +309,14 @@ struct bit_range
     return (m_size_in_bits < other.m_size_in_bits);
   }
 
+  hashval_t hash () const
+  {
+    inchash::hash hstate;
+    hstate.add_wide_int (m_start_bit_offset);
+    hstate.add_wide_int (m_size_in_bits);
+    return hstate.end ();
+  }
+
   bit_offset_t m_start_bit_offset;
   bit_size_t m_size_in_bits;
 };
@@ -396,13 +404,7 @@ public:
   }
   bool concrete_p () const final override { return true; }
 
-  hashval_t hash () const
-  {
-    inchash::hash hstate;
-    hstate.add_wide_int (m_bit_range.m_start_bit_offset);
-    hstate.add_wide_int (m_bit_range.m_size_in_bits);
-    return hstate.end ();
-  }
+  hashval_t hash () const { return m_bit_range.hash (); }
   bool operator== (const concrete_binding &other) const
   {
     return m_bit_range == other.m_bit_range;
@@ -567,6 +569,7 @@ public:
     const_iterator &operator++ ();
 
     binding_pair operator* ();
+    const svalue *get_svalue () const;
 
   private:
     const binding_map &m_map;
@@ -662,6 +665,9 @@ public:
   const concrete_bindings_t &
   get_concrete_bindings () const { return m_concrete; }
 
+  const symbolic_bindings_t &
+  get_symbolic_bindings () const { return m_symbolic; }
+
 private:
   void get_overlapping_bindings (const binding_key *key,
 				 auto_vec<const binding_key *> *out);
@@ -746,8 +752,8 @@ public:
   void for_each_value (void (*cb) (const svalue *sval, T user_data),
 		       T user_data) const
   {
-    for (auto iter : m_map)
-      cb (iter.m_sval, user_data);
+    for (auto iter = m_map.begin (); iter != m_map.end (); ++iter)
+      cb (iter.get_svalue (), user_data);
   }
 
   static bool can_merge_p (const binding_cluster *cluster_a,

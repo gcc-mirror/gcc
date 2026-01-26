@@ -562,9 +562,10 @@ sm_state_map::impl_set_state (const svalue *sval,
     {
       if (const compound_svalue *compound_sval
 	    = sval->dyn_cast_compound_svalue ())
-	for (auto iter : *compound_sval)
+	for (auto iter = compound_sval->begin ();
+	     iter != compound_sval->end (); ++iter)
 	  {
-	    const svalue *inner_sval = iter.m_sval;
+	    const svalue *inner_sval = iter.get_svalue ();
 	    if (inner_sval->can_have_associated_state_p ())
 	      impl_set_state (inner_sval, state, origin, ext_state);
 	  }

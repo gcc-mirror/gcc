@@ -658,6 +658,18 @@ binding_map::const_iterator::operator* ()
     }
 }
 
+const svalue *
+binding_map::const_iterator::get_svalue () const
+{
+  if (m_concrete != m_map.m_concrete.end ())
+    return m_concrete->second;
+  else
+    {
+      gcc_assert (m_symbolic != m_map.m_symbolic.end ());
+      return m_symbolic->m_sval;
+    }
+}
+
 /* class binding_map::iterator.  */
 
 bool
@@ -754,12 +766,19 @@ hashval_t
 binding_map::hash () const
 {
   hashval_t result = 0;
-  for (auto iter : *this)
+  for (auto iter : m_concrete)
+    {
+      result ^= iter.first.hash ();
+      inchash::hash hstate;
+      hstate.add_ptr (iter.second);
+      result ^= hstate.end ();
+    }
+  for (auto iter : m_symbolic)
     {
       /* Use a new hasher for each key to avoid depending on the ordering
 	 of keys when accumulating the result.  */
       inchash::hash hstate;
-      hstate.add_ptr (iter.m_key);
+      hstate.add_ptr (iter.m_region);
       hstate.add_ptr (iter.m_sval);
       result ^= hstate.end ();
     }
