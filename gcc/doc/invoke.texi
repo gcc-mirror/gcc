@@ -16826,6 +16826,9 @@ If non-zero and used together with @option{-fauto-profile}, the auto-profile
 will be used to determine basic block profile.  If zero, then only function
 level profile will be read.
 
+@item auto-profile-reorder-only
+Enable only function reordering with auto-profile.
+
 @item phiopt-factor-max-stmts-live
 When factoring statements out of if/then/else, this is the max # of statements
 after the defining statement to be allow to extend the lifetime of a name

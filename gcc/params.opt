@@ -72,7 +72,7 @@ Build basic block profile using auto profile.
 
 -param=auto-profile-reorder-only=
 Common Joined UInteger Var(param_auto_profile_reorder_only) Init(0) IntegerRange(0, 1) Param Optimization
-Eanble only function reordering with auto-profile.
+Enable only function reordering with auto-profile.
 
 -param=cycle-accurate-model=
 Common Joined UInteger Var(param_cycle_accurate_model) Init(1) IntegerRange(0, 1) Param Optimization
