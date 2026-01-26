@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-mavx512bw -mtune-ctrl=avx512_masked_epilogues" } */
+/* { dg-additional-options "-mavx512bw -mtune-ctrl=avx512_masked_epilogues -mprefer-vector-width=512" } */
 
 void test (const unsigned char * __restrict__ pi,
 	   const float * __restrict__ blk,
