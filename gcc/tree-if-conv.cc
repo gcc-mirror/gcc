@@ -1120,6 +1120,36 @@ if_convertible_switch_p (gswitch *sw)
   return true;
 }
 
+/* Return true when STMT is an if-convertible SIMD clone stmts.
+
+   A SIMD clone statement is if-convertible if:
+    - it is an GIMPLE_CALL,
+    - it has a FNDECL,
+    - it has SIMD clones,
+    - it has at least one inbranch clone.  */
+static bool
+if_convertible_simdclone_stmt_p (gimple *stmt)
+{
+  if (!is_gimple_call (stmt))
+    return false;
+
+  tree fndecl = gimple_call_fndecl (stmt);
+  if (fndecl)
+    {
+      /* We can vectorize some builtins and functions with SIMD "inbranch"
+	 clones.  */
+      struct cgraph_node *node = cgraph_node::get (fndecl);
+      if (node && node->simd_clones != NULL)
+	/* Ensure that at least one clone can be "inbranch".  */
+	for (struct cgraph_node *n = node->simd_clones; n != NULL;
+	     n = n->simdclone->next_clone)
+	  if (n->simdclone->inbranch)
+	    return true;
+    }
+
+  return false;
+}
+
 /* Return true when STMT is if-convertible.
 
    A statement is if-convertible if:
@@ -1147,22 +1177,12 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 
     case GIMPLE_CALL:
       {
-	tree fndecl = gimple_call_fndecl (stmt);
-	if (fndecl)
+	/* Check if stmt is a simd clone first.  */
+	if (if_convertible_simdclone_stmt_p (stmt))
 	  {
-	    /* We can vectorize some builtins and functions with SIMD
-	       "inbranch" clones.  */
-	    struct cgraph_node *node = cgraph_node::get (fndecl);
-	    if (node && node->simd_clones != NULL)
-	      /* Ensure that at least one clone can be "inbranch".  */
-	      for (struct cgraph_node *n = node->simd_clones; n != NULL;
-		   n = n->simdclone->next_clone)
-		if (n->simdclone->inbranch)
-		  {
-		    gimple_set_plf (stmt, GF_PLF_2, true);
-		    need_to_predicate = true;
-		    return true;
-		  }
+	    gimple_set_plf (stmt, GF_PLF_2, true);
+	    need_to_predicate = true;
+	    return true;
 	  }
 
 	/* Check if the call can trap and if so require predication.  */
@@ -3108,7 +3128,8 @@ predicate_statements (loop_p loop)
 	    }
 	  else if (gimple_plf (stmt, GF_PLF_2)
 		   && (is_gimple_assign (stmt)
-		       || gimple_call_builtin_p (stmt)))
+		       || (gimple_call_builtin_p (stmt)
+			   && !if_convertible_simdclone_stmt_p (stmt))))
 	    {
 	      tree lhs = gimple_get_lhs (stmt);
 	      /* ?? Assume that calls without an LHS are not data processing
