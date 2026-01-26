@@ -291,6 +291,87 @@ fault_first_load_p (rtx_insn *rinsn)
 	     || get_attr_type (rinsn) == TYPE_VLSEGDFF);
 }
 
+/* Return the VL output register from a fault-only-first load with VL
+   output (pred_fault_load_set_vl pattern) if RINSN is such an insn
+   or NULL_RTX otherwise.
+   The pattern has: (set vl_output (unspec:P [(reg:SI VL_REGNUM)]
+					     UNSPEC_READ_VL))  */
+static rtx
+get_fof_set_vl_reg (rtx_insn *rinsn)
+{
+  if (!fault_first_load_p (rinsn))
+    return NULL_RTX;
+
+  rtx pat = PATTERN (rinsn);
+  if (GET_CODE (pat) != PARALLEL)
+    return NULL_RTX;
+
+  if (XVECLEN (pat, 0) != 3)
+    return NULL_RTX;
+
+  rtx sub = XVECEXP (pat, 0, 2);
+  if (GET_CODE (sub) == SET
+      && GET_CODE (SET_SRC (sub)) == UNSPEC
+      && XINT (SET_SRC (sub), 1) == UNSPEC_READ_VL)
+    return SET_DEST (sub);
+
+  return NULL_RTX;
+}
+
+/* Initialize RTL SSA and related infrastructure for vsetvl analysis.  */
+static void
+init_rtl_ssa ()
+{
+  calculate_dominance_info (CDI_DOMINATORS);
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+  connect_infinite_loops_to_exit ();
+  df_analyze ();
+  crtl->ssa = new function_info (cfun);
+}
+
+/* Finalize RTL SSA and cleanup.  */
+static void
+finish_rtl_ssa ()
+{
+  free_dominance_info (CDI_DOMINATORS);
+  loop_optimizer_finalize ();
+  if (crtl->ssa->perform_pending_updates ())
+    cleanup_cfg (0);
+  delete crtl->ssa;
+  crtl->ssa = nullptr;
+}
+
+/* Emit read_vl instructions after fault-only-first loads that have
+   a VL output register.
+   This needs to happen last, i.e. when we made the VL dataflow
+   explicit by inserting vsetvls.  */
+
+static void
+emit_fof_read_vls ()
+{
+  basic_block bb;
+  rtx_insn *rinsn;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    FOR_BB_INSNS (bb, rinsn)
+      {
+	if (!NONDEBUG_INSN_P (rinsn))
+	  continue;
+
+	rtx vl_dest = get_fof_set_vl_reg (rinsn);
+	if (!vl_dest)
+	  continue;
+
+	if (dump_file)
+	  fprintf (dump_file,
+		   "  Inserting read_vl after FoF insn %d into r%d\n",
+		   INSN_UID (rinsn), REGNO (vl_dest));
+
+	rtx read_vl_pat = gen_read_vl (Pmode, vl_dest);
+	emit_insn_after (read_vl_pat, rinsn);
+      }
+}
+
 /* Return true if the instruction is read vl instruction.  */
 static bool
 read_vl_insn_p (rtx_insn *rinsn)
@@ -1186,6 +1267,13 @@ public:
 		break;
 	      }
 	  }
+	/* If no csrr found but this is a _set_vl style fault-only-first
+	   load, use the insn itself as the VL source.
+	   If we have two identical vector configs that just differ in
+	   AVL and the AVL is just "modified" by a read_vl we
+	   can consider them equal and elide the second one.  */
+	if (!m_read_vl_insn && get_fof_set_vl_reg (insn->rtl ()))
+	  m_read_vl_insn = insn;
       }
   }
 
@@ -2420,13 +2508,7 @@ public:
       m_avin (nullptr), m_avout (nullptr), m_kill (nullptr), m_antloc (nullptr),
       m_transp (nullptr), m_insert (nullptr), m_del (nullptr), m_edges (nullptr)
   {
-    /* Initialization of RTL_SSA.  */
-    calculate_dominance_info (CDI_DOMINATORS);
-    loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
-    /* Create FAKE edges for infinite loops.  */
-    connect_infinite_loops_to_exit ();
-    df_analyze ();
-    crtl->ssa = new function_info (cfun);
+    init_rtl_ssa ();
     m_vector_block_infos.safe_grow_cleared (last_basic_block_for_fn (cfun));
     compute_probabilities ();
     m_unknown_info.set_unknown ();
@@ -2434,12 +2516,7 @@ public:
 
   void finish ()
   {
-    free_dominance_info (CDI_DOMINATORS);
-    loop_optimizer_finalize ();
-    if (crtl->ssa->perform_pending_updates ())
-      cleanup_cfg (0);
-    delete crtl->ssa;
-    crtl->ssa = nullptr;
+    finish_rtl_ssa ();
 
     if (m_reg_def_loc)
       sbitmap_vector_free (m_reg_def_loc);
@@ -3608,6 +3685,11 @@ pass_vsetvl::simple_vsetvl ()
 	    }
 	}
     }
+
+  if (dump_file)
+    fprintf (dump_file, "\nEmit missing read_vl()s for fault-only-first "
+	     "loads\n");
+  emit_fof_read_vls ();
 }
 
 /* Lazy vsetvl insertion for optimize > 0. */
@@ -3655,6 +3737,13 @@ pass_vsetvl::lazy_vsetvl ()
     fprintf (dump_file,
 	     "\nPhase 4: Insert, modify and remove vsetvl insns.\n\n");
   pre.emit_vsetvl ();
+
+  /* Phase 4b: Emit read_vl for fault-only-first loads with VL output
+     register.  */
+  if (dump_file)
+    fprintf (dump_file, "\nPhase 4b: Emit missing read_vl()s for "
+	     "fault-only-first loads\n");
+  emit_fof_read_vls ();
 
   /* Phase 5: Cleanup */
   if (dump_file)

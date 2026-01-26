@@ -4912,24 +4912,24 @@ function_expander::use_fof_load_insn ()
   tree arg = CALL_EXPR_ARG (exp, vl_dest_arg);
 
   /* Use a regular FoF load if the user does not want to store VL.  */
-  insn_code icode = code_for_pred_fault_load (mode);
-  rtx result = generate_insn (icode);
-
-  /* If user wants VL stored, emit a read_vl and store to memory.  */
-  if (!integer_zerop (arg))
+  if (integer_zerop (arg))
     {
-      rtx vl_reg = gen_reg_rtx (Pmode);
-      if (Pmode == SImode)
-	emit_insn (gen_read_vlsi (vl_reg));
-      else
-	emit_insn (gen_read_vldi_zero_extend (vl_reg));
-
-      rtx addr = expand_normal (arg);
-      rtx mem = gen_rtx_MEM (Pmode, memory_address (Pmode, addr));
-      emit_move_insn (mem, vl_reg);
+      insn_code icode = code_for_pred_fault_load (mode);
+      return generate_insn (icode);
     }
 
-  return result;
+  /* The VL-setting FoF load writes the new VL to VL_REG.
+     Store it to memory.  */
+  rtx vl_reg = gen_reg_rtx (Pmode);
+  add_output_operand (Pmode, vl_reg);
+  insn_code icode = code_for_pred_fault_load_set_vl (mode, Pmode);
+  rtx res = generate_insn (icode);
+
+  rtx addr = expand_normal (arg);
+  rtx mem = gen_rtx_MEM (Pmode, memory_address (Pmode, addr));
+  emit_move_insn (mem, vl_reg);
+
+  return res;
 }
 
 /* Use contiguous store INSN.  */

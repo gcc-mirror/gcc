@@ -1402,10 +1402,7 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx haystack, rtx needle,
 		   riscv_vector::UNARY_OP, vlops);
 
   /* Read how far we read.  */
-  if (Pmode == SImode)
-    emit_insn (gen_read_vlsi (cnt));
-  else
-    emit_insn (gen_read_vldi_zero_extend (cnt));
+  emit_insn (gen_read_vl (Pmode, cnt));
 
   /* Compare needle with haystack and store in a mask.  */
   rtx eq = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, needle), vec);
@@ -1520,10 +1517,7 @@ expand_strcmp (rtx result, rtx src1, rtx src2, rtx nbytes,
     }
 
   /* Read the vl for the next pointer bump.  */
-  if (Pmode == SImode)
-    emit_insn (gen_read_vlsi (cnt));
-  else
-    emit_insn (gen_read_vldi_zero_extend (cnt));
+  emit_insn (gen_read_vl (Pmode, cnt));
 
   if (with_length)
     {

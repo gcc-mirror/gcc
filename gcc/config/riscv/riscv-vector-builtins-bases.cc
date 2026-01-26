@@ -1926,10 +1926,7 @@ public:
 
   rtx expand (function_expander &e) const override
   {
-    if (Pmode == SImode)
-      emit_insn (gen_read_vlsi (e.target));
-    else
-      emit_insn (gen_read_vldi_zero_extend (e.target));
+    emit_insn (gen_read_vl (Pmode, e.target));
     return e.target;
   }
 };
