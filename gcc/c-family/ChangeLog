@@ -1,3 +1,16 @@
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* c.opt.urls: Regenerated.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* c.opt (-output-pch): Mark as Undocumented, as it seems to be
+	an internal option that has never been documented anyway.
+	(Werror-implicit-function-declaration): Mark deprecated option
+	that is not currently documented as Undocumented.
+	(fconstant-string-class=): Add RejectNegative property.
+
 2026-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/123694

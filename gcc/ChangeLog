@@ -1,3 +1,138 @@
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gcc-urlifier.cc (test_gcc_urlifier): Match either positive
+	or negative option URLS.
+
+2026-01-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/122348
+	* expr.cc (store_constructor): Ignore fields where DECL_SIZE
+	is NULL_TREE, i.e. flexible array members.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* common.opt.urls: Regenerated.
+	* config/alpha/alpha.opt.urls: Regenerated.
+	* config/arc/arc.opt.urls: Regenerated.
+	* config/arm/arm.opt.urls: Regenerated.
+	* config/avr/avr.opt.urls: Regenerated.
+	* config/bpf/bpf.opt.urls: Regenerated.
+	* config/cris/cris.opt.urls: Regenerated.
+	* config/lynx.opt.urls: Regenerated.
+	* config/m68k/m68k.opt.urls: Regenerated.
+	* config/mcore/mcore.opt.urls: Regenerated.
+	* config/mingw/cygming.opt.urls: Regenerated.
+	* config/mips/mips.opt.urls: Regenerated.
+	* config/mips/sde.opt.urls: Regenerated.
+	* config/mmix/mmix.opt.urls: Regenerated.
+	* config/nvptx/nvptx.opt.urls: Regenerated.
+	* config/rs6000/linux64.opt.urls: Regenerated.
+	* config/rs6000/rs6000.opt.urls: Regenerated.
+	* config/rs6000/sysv4.opt.urls: Regenerated.
+	* config/sh/sh.opt.urls: Regenerated.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/invoke.texi (Option Summary): Fix whitespace in @gccoptlist
+	tables.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/cppopts.texi: Add missing @opindex entries for
+	-fno-* options.
+	* doc/invoke.texi: Likewise.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/cppwarnopts.texi: Add missing @opindex entries for
+	-Wno-* options.
+	* doc/invoke.texi: Likewise.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/cppdiropts.texi: Document -imultiarch.
+	* doc/invoke.texi (Option Summary) <Optimization Options>: Add
+	-flto-toplevel-asm-heuristics.
+	<Program Instrumentation Options>: Remove -fbounds-check.
+	<Directory Options>: Add -imultiarch.
+	<ARC Options>: Add -mbitops, -mcmem, -munaligned-access.
+	<ARM Options>: Add -mvectorize-with-neon-quad and
+	-mvectorize-with-neon-double.
+	<AVR Options>: Add -mrmw and -mstrict-X.
+	<CRIS Options>: Fix typo in -mmax-stackframe.
+	<Cygwin and MinGW Options>: Add -muse-libstdc-wrappers.
+	<M680x0 Options>: Add several missing CPU options, plus -mxtls.
+	<MIPS Options>: Add -mno-data-in-code and -mcode-xonly.
+	<MMIX Options>: Add mset-data-start, -mset-program-start, and
+	-mno-set-program-start.
+	<Nvidia PTX Options>: Add -msoft-stack-reserve-local.
+	<RS/6000 and PowerPC Options>: Add -mprofile-kernel, -mbit-word,
+	-mno-splat-word-constant, -mno-splat-float-constant,
+	-mno-ieee128-constant, and -mno-warn-altivec-long.
+	(Optimization Options): Document -flto-toplevel-asm-heuristics.
+	(ARC Options): Document -mbitops and -mcmem.
+	(ARM Options): Add index entries for mbe32,
+	m[no-]fix-cortex-a57-aes-1742098, m[no-]fix-cortex-a72-aes-1655431.
+	Document -mvectorize-with-neon-quad and -mvectorize-with-neon-double.
+	(AVR Options): Document -mpmem-wrap-around.
+	(CRIS Options): Fix typo in -mmax-stackframe.
+	(Cygwin and MinGW Options): Document -muse-libstdc-wrappers.
+	(DEC Alpha Options): Fix typo in -mfp-regs.
+	(eBPF Options): Add @opindex for -mframe-limit.
+	(HPPA Options): Fix typos in -mno-disable-fpregs and -mno-gas
+	index entries.
+	(m680x0 Options): Document -m68302, -m68332, -m68851, and -mfidoa.
+	Document -mnoshort and -mnortd aliases.  Document -mxtls.
+	(MCore Options): Fix typos in -m[no-]relax-immediates.
+	(MIPS Options): Document -mno-data-in-code and -mcode-xonly.
+	(MMIX Options): Document -mset-data-start, -mset-program-start, and
+	-mno-set-program-start.
+	(Nvidia PTX Options): Document -msoft-stack-reserve-local.
+	(RS/6000 and PowerPC Options): Document -mprofile-kernel,
+	-mbit-word, -msplat-word-constant, -msplat-float-constant,
+	-mieee128-constant, and -mwarn-altivec-long.
+	(SH Options): Add index entry for -m2e.  Document -m4-400.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* common.opt (fbounds-check): Mark as Undocumented, expand comments
+	to explain why.
+	* config/frv/frv.opt (msched-lookahead=): Mark unused option as
+	Undocumented.
+	* config/m68k/m68k.opt (m68851): Add RejectNegative.
+	* config/nvptx/nvptx.opt (minit-regs=): Mark as Undocumented.  It's
+	not currently documented and seems to have been introduced as a
+	stopgap to experiment with different implementation strategies.
+	* config/rs6000/476.opt (mpreserve-link-stack): Mark as Undocumented.
+	It seems to be an internal option that is enabled by default on the
+	cpu that can benefit from it.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* common.opt (gtoggle): Mark RejectNegative.
+	* doc/invoke.texi (Option Summary) <Debugging Options>: Remove
+	redundant -gno- forms from the list.
+	(Debugging Options): Add @opindex for -gno- option forms.
+	Copy-edit option descriptions to avoid future tense and use of
+	implementor jargon.
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/67300
+	* common.opt (foffload-abi, foffload-abi-host-opts): Mark
+	"Undocumented".
+
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <LynxOS Options>: New.
+	(LynxOS Options): New section.
+
 2026-01-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/123803

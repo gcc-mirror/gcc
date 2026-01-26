@@ -1,3 +1,8 @@
+2026-01-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* cp-gimplify.cc (cp_genericize_r): Do not mark STATEMENT_LISTs
+	as visited.
+
 2026-01-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/123737

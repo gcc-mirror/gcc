@@ -1,3 +1,7 @@
+2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* gcc-interface/lang.opt.urls: Regenerated.
+
 2026-01-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Replace call to

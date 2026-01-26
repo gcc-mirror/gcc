@@ -1,3 +1,9 @@
+2026-01-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/122348
+	* g++.dg/pr122348.C: New C++ testcase.
+	* gcc.dg/pr122348.c: New C testcase.
+
 2026-01-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/123803
