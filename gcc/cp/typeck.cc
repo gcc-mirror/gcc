@@ -4244,6 +4244,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 	    {
 	      idx = save_expr (idx);
 	      op0 = save_expr (op0);
+	      warning_sentinel w (warn_unused_value);
 	      tree tem = build_compound_expr (loc, op0, idx);
 	      op0 = build_compound_expr (loc, tem, op0);
 	    }
