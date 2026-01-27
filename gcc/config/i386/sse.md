@@ -22984,7 +22984,7 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_insn_and_split "*sse4_1_<code>v8qiv8hi2<mask_name>_2"
+(define_insn_and_split "*sse4_1_<code>v8qiv8hi2_2"
   [(set (match_operand:V8HI 0 "register_operand")
 	(any_extend:V8HI
 	  (vec_select:V8QI
@@ -22996,12 +22996,38 @@
 		       (const_int 2) (const_int 3)
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
-  "TARGET_SSE4_1 && <mask_avx512bw_condition> && <mask_avx512vl_condition>
+  "TARGET_SSE4_1
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
 	(any_extend:V8HI (match_dup 1)))]
+  "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
+
+(define_insn_and_split "*avx512vl_<code>v8qiv8hi2_mask_2"
+  [(set (match_operand:V8HI 0 "register_operand")
+	(vec_merge:V8HI
+	  (any_extend:V8HI
+	    (vec_select:V8QI
+	      (subreg:V16QI
+		(vec_concat:V2DI
+		  (match_operand:DI 1 "memory_operand")
+		  (const_int 0)) 0)
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)
+		         (const_int 4) (const_int 5)
+		         (const_int 6) (const_int 7)])))
+	  (match_operand:V8HI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512VL && TARGET_AVX512BW
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V8HI
+	  (any_extend:V8HI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
   "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
 
 (define_insn_and_split "*sse4_1_zero_extendv8qiv8hi2_3"
@@ -23136,7 +23162,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn_and_split "*avx2_<code>v8qiv8si2<mask_name>_2"
+(define_insn_and_split "*avx2_<code>v8qiv8si2_2"
   [(set (match_operand:V8SI 0 "register_operand")
 	(any_extend:V8SI
 	  (vec_select:V8QI
@@ -23148,13 +23174,40 @@
 		       (const_int 2) (const_int 3)
 		       (const_int 4) (const_int 5)
 		       (const_int 6) (const_int 7)]))))]
-  "TARGET_AVX2 && <mask_avx512vl_condition>
+  "TARGET_AVX2
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
 	(any_extend:V8SI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
+
+(define_insn_and_split "*avx512vl_<code>v8qiv8si2_mask_2"
+  [(set (match_operand:V8SI 0 "register_operand")
+	(vec_merge:V8SI
+	  (any_extend:V8SI
+	    (vec_select:V8QI
+	      (subreg:V16QI
+		(vec_concat:V2DI
+		  (match_operand:DI 1 "memory_operand")
+		  (const_int 0)) 0)
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)
+			 (const_int 4) (const_int 5)
+			 (const_int 6) (const_int 7)])))
+	  (match_operand:V8SI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512VL
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V8SI
+	  (any_extend:V8SI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
+  "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
+
 
 (define_expand "<insn>v8qiv8si2"
   [(set (match_operand:V8SI 0 "register_operand")
@@ -23199,7 +23252,7 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_insn_and_split "*sse4_1_<code>v4qiv4si2<mask_name>_2"
+(define_insn_and_split "*sse4_1_<code>v4qiv4si2_2"
   [(set (match_operand:V4SI 0 "register_operand")
 	(any_extend:V4SI
 	  (vec_select:V4QI
@@ -23220,6 +23273,35 @@
   [(set (match_dup 0)
 	(any_extend:V4SI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V4QImode, 0);")
+
+(define_insn_and_split "*avx512vl_<code>v4qiv4si2_mask_2"
+  [(set (match_operand:V4SI 0 "register_operand")
+	(vec_merge:V4SI
+	  (any_extend:V4SI
+	    (vec_select:V4QI
+	      (subreg:V16QI
+		(vec_merge:V4SI
+		  (vec_duplicate:V4SI
+		    (match_operand:SI 1 "memory_operand"))
+		  (const_vector:V4SI
+		    [(const_int 0) (const_int 0)
+		     (const_int 0) (const_int 0)])
+		  (const_int 1)) 0)
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)])))
+	  (match_operand:V4SI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512VL
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V4SI
+	  (any_extend:V4SI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
+  "operands[1] = adjust_address_nv (operands[1], V4QImode, 0);")
+
 
 (define_expand "<insn>v4qiv4si2"
   [(set (match_operand:V4SI 0 "register_operand")
@@ -23372,7 +23454,7 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_insn_and_split "*sse4_1_<code>v4hiv4si2<mask_name>_2"
+(define_insn_and_split "*sse4_1_<code>v4hiv4si2_2"
   [(set (match_operand:V4SI 0 "register_operand")
 	(any_extend:V4SI
 	  (vec_select:V4HI
@@ -23382,13 +23464,38 @@
 		(const_int 0)) 0)
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
-  "TARGET_SSE4_1 && <mask_avx512vl_condition>
+  "TARGET_SSE4_1
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
 	(any_extend:V4SI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V4HImode, 0);")
+
+(define_insn_and_split "*avx512vl_<code>v4hiv4si2_mask_2"
+  [(set (match_operand:V4SI 0 "register_operand")
+	(vec_merge:V4SI
+	  (any_extend:V4SI
+	    (vec_select:V4HI
+	      (subreg:V8HI
+		(vec_concat:V2DI
+		  (match_operand:DI 1 "memory_operand")
+		  (const_int 0)) 0)
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)])))
+	  (match_operand:V4SI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512VL
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V4SI
+	  (any_extend:V4SI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
+  "operands[1] = adjust_address_nv (operands[1], V4HImode, 0);")
+
 
 (define_expand "<insn>v4hiv4si2"
   [(set (match_operand:V4SI 0 "register_operand")
@@ -23500,7 +23607,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "XI")])
 
-(define_insn_and_split "*avx512f_<code>v8qiv8di2<mask_name>_2"
+(define_insn_and_split "*avx512f_<code>v8qiv8di2_2"
   [(set (match_operand:V8DI 0 "register_operand")
 	(any_extend:V8DI
 	  (vec_select:V8QI
@@ -23518,6 +23625,32 @@
   [(set (match_dup 0)
 	(any_extend:V8DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
+
+(define_insn_and_split "*avx512f_<code>v8qiv8di2_mask_2"
+  [(set (match_operand:V8DI 0 "register_operand")
+	(vec_merge:V8DI
+	  (any_extend:V8DI
+	    (vec_select:V8QI
+	      (subreg:V16QI
+		(vec_concat:V2DI
+		  (match_operand:DI 1 "memory_operand")
+		  (const_int 0)) 0)
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)
+		         (const_int 4) (const_int 5)
+		         (const_int 6) (const_int 7)])))
+	  (match_operand:V8DI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512F && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V8DI
+	  (any_extend:V8DI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
+  "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
+
 
 (define_expand "<insn>v8qiv8di2"
   [(set (match_operand:V8DI 0 "register_operand")
@@ -23559,7 +23692,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn_and_split "*avx2_<code>v4qiv4di2<mask_name>_2"
+(define_insn_and_split "*avx2_<code>v4qiv4di2_2"
   [(set (match_operand:V4DI 0 "register_operand")
 	(any_extend:V4DI
 	  (vec_select:V4QI
@@ -23573,13 +23706,42 @@
 		(const_int 1)) 0)
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
-  "TARGET_AVX2 && <mask_avx512vl_condition>
+  "TARGET_AVX2
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
 	(any_extend:V4DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V4QImode, 0);")
+
+(define_insn_and_split "*avx512vl_<code>v4qiv4di2_mask_2"
+  [(set (match_operand:V4DI 0 "register_operand")
+	(vec_merge:V4DI
+	  (any_extend:V4DI
+	    (vec_select:V4QI
+	      (subreg:V16QI
+		(vec_merge:V4SI
+		  (vec_duplicate:V4SI
+		    (match_operand:SI 1 "memory_operand"))
+		  (const_vector:V4SI
+		    [(const_int 0) (const_int 0)
+		     (const_int 0) (const_int 0)])
+		  (const_int 1)) 0)
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)])))
+	  (match_operand:V4DI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512VL
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V4DI
+	  (any_extend:V4DI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
+  "operands[1] = adjust_address_nv (operands[1], V4QImode, 0);")
+
 
 (define_expand "<insn>v4qiv4di2"
   [(set (match_operand:V4DI 0 "register_operand")
@@ -23702,7 +23864,7 @@
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "OI")])
 
-(define_insn_and_split "*avx2_<code>v4hiv4di2<mask_name>_2"
+(define_insn_and_split "*avx2_<code>v4hiv4di2_2"
   [(set (match_operand:V4DI 0 "register_operand")
 	(any_extend:V4DI
 	  (vec_select:V4HI
@@ -23712,13 +23874,38 @@
 		(const_int 0)) 0)
 	    (parallel [(const_int 0) (const_int 1)
 		       (const_int 2) (const_int 3)]))))]
-  "TARGET_AVX2 && <mask_avx512vl_condition>
+  "TARGET_AVX2
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
 	(any_extend:V4DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V4HImode, 0);")
+
+(define_insn_and_split "*avx512vl_<code>v4hiv4di2_mask_2"
+  [(set (match_operand:V4DI 0 "register_operand")
+	(vec_merge:V4DI
+	  (any_extend:V4DI
+	    (vec_select:V4HI
+	      (subreg:V8HI
+		(vec_concat:V2DI
+		  (match_operand:DI 1 "memory_operand")
+		  (const_int 0)) 0)
+	      (parallel [(const_int 0) (const_int 1)
+		         (const_int 2) (const_int 3)])))
+	  (match_operand:V4DI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512VL
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V4DI
+	  (any_extend:V4DI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
+  "operands[1] = adjust_address_nv (operands[1], V4HImode, 0);")
+
 
 (define_expand "<insn>v4hiv4di2"
   [(set (match_operand:V4DI 0 "register_operand")
@@ -23762,7 +23949,7 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_insn_and_split "*sse4_1_<code>v2hiv2di2<mask_name>_2"
+(define_insn_and_split "*sse4_1_<code>v2hiv2di2_2"
   [(set (match_operand:V2DI 0 "register_operand")
 	(any_extend:V2DI
 	  (vec_select:V2HI
@@ -23775,13 +23962,41 @@
 		    (const_int 0) (const_int 0)])
 		(const_int 1)) 0)
 	    (parallel [(const_int 0) (const_int 1)]))))]
-  "TARGET_SSE4_1 && <mask_avx512vl_condition>
+  "TARGET_SSE4_1
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
 	(any_extend:V2DI (match_dup 1)))]
   "operands[1] = adjust_address_nv (operands[1], V2HImode, 0);")
+
+(define_insn_and_split "*avx512vl_<code>v2hiv2di2_mask_2"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(vec_merge:V2DI
+	  (any_extend:V2DI
+	    (vec_select:V2HI
+	      (subreg:V8HI
+		(vec_merge:V4SI
+		  (vec_duplicate:V4SI
+		    (match_operand:SI 1 "memory_operand"))
+		  (const_vector:V4SI
+		    [(const_int 0) (const_int 0)
+		     (const_int 0) (const_int 0)])
+		  (const_int 1)) 0)
+	      (parallel [(const_int 0) (const_int 1)])))
+	  (match_operand:V2DI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512VL
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V2DI
+	  (any_extend:V2DI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
+  "operands[1] = adjust_address_nv (operands[1], V2HImode, 0);")
+
 
 (define_expand "<insn>v2hiv2di2"
   [(set (match_operand:V2DI 0 "register_operand")
@@ -23928,7 +24143,7 @@
    (set_attr "prefix" "orig,orig,maybe_evex")
    (set_attr "mode" "TI")])
 
-(define_insn_and_split "*sse4_1_<code>v2siv2di2<mask_name>_2"
+(define_insn_and_split "*sse4_1_<code>v2siv2di2_2"
   [(set (match_operand:V2DI 0 "register_operand")
 	(any_extend:V2DI
 	  (vec_select:V2SI
@@ -23937,12 +24152,35 @@
 		(match_operand:DI 1 "memory_operand")
 		(const_int 0)) 0)
 	    (parallel [(const_int 0) (const_int 1)]))))]
-  "TARGET_SSE4_1 && <mask_avx512vl_condition>
+  "TARGET_SSE4_1
    && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
 	(any_extend:V2DI (match_dup 1)))]
+  "operands[1] = adjust_address_nv (operands[1], V2SImode, 0);")
+
+(define_insn_and_split "*avx512vl_<code>v2siv2di2_mask_2"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(vec_merge:V2DI
+	  (any_extend:V2DI
+	    (vec_select:V2SI
+	      (subreg:V4SI
+		(vec_concat:V2DI
+		  (match_operand:DI 1 "memory_operand")
+		  (const_int 0)) 0)
+	      (parallel [(const_int 0) (const_int 1)])))
+	  (match_operand:V2DI 2 "nonimm_or_0_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_AVX512VL
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_merge:V2DI
+	  (any_extend:V2DI (match_dup 1))
+	  (match_dup 2)
+	  (match_dup 3)))]
   "operands[1] = adjust_address_nv (operands[1], V2SImode, 0);")
 
 (define_insn_and_split "*sse4_1_zero_extendv2siv2di2_3"
