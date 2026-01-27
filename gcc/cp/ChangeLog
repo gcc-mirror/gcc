@@ -1,3 +1,35 @@
+2026-01-26  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (check_splice_expr): Check if process_outer_var_ref
+	returned a capture, and give an error if so.
+
+2026-01-26  Marek Polacek  <polacek@redhat.com>
+
+	* parser.cc (cp_parser_type_specifier): Adjust comment.
+	(cp_parser_type_id_1): Simplify setting of type_alias_p.
+	Use nullptr instead of NULL.
+
+2026-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/123620
+	* reflect.cc (can_extract_member_or_function_p): Also check
+	fnptr_conv_p.
+	(extract_member_or_function): Call perform_implicit_conversion.
+
+2026-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/123663
+	PR c++/123354
+	* name-lookup.cc (struct local_state_t): New flag has_cfun.
+	(local_state_t::save_and_clear): Set has_cfun, call
+	push_function_context iff there's a cfun to save.
+	(local_state_t::restore): call pop_function_context if
+	has_cfun is set.
+	(maybe_push_to_top_level): Delegte push_function_context to
+	local_state_t::save_and_clear.
+	(maybe_pop_from_top_level): Delegate pop_function_context to
+	local_state_t::restore.
+
 2026-01-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* cp-gimplify.cc (cp_genericize_r): Do not mark STATEMENT_LISTs

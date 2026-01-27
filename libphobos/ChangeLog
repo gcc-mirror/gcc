@@ -1,3 +1,9 @@
+2026-01-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/122800
+	* configure: Regenerate.
+	* configure.ac (libtool_VERSION): Update to 7:0:0.
+
 2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure: Regenerate.

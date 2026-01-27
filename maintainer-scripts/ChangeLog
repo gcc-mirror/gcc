@@ -1,3 +1,7 @@
+2026-01-26  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* update_web_docs_git (MANUALS): Add ga68-coding-guidelines.
+
 2025-12-21  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_git: Avoid redirects from Sphinx stylesheets.

@@ -1,3 +1,79 @@
+2026-01-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123820
+	* g++.dg/torture/pr123820-1.C: New test.
+
+2026-01-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/123709
+	* c-c++-common/asm-invalid-operand-1.c: New test.
+
+2026-01-26  Joseph Myers  <josmyers@redhat.com>
+
+	* lib/profopt.exp (profopt-execute): Also copy profile data from
+	target for additional sources.  Call cleanup-after-saved-dg-test
+	before normal return.
+
+2026-01-26  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/sve/pcs/asm_1.c
+	* gcc.target/aarch64/sve/pcs/asm_3.c: Fix tests.
+
+2026-01-26  Karl Meakin  <karl.meakin@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/mangle_5.C: Fix test.
+
+2026-01-26  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/rotate_xar_1.c
+	* gcc.target/aarch64/sha3_1.c
+	* gcc.target/aarch64/sha3_2.c
+	* gcc.target/aarch64/sha3_3.c
+	* gcc.target/aarch64/xar_v2di_nonsve.c: Fix tests.
+
+2026-01-26  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/reflect/expr15.C: New test.
+
+2026-01-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/123620
+	* g++.dg/reflect/extract1.C: Test removing noexcept.
+	* g++.dg/reflect/extract2.C: Adjust static_assert.
+
+2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122474
+	* gcc.target/aarch64/sve2/pr123053.c: New testcase.
+	* gcc.target/riscv/rvv/pr122474.c: Likewise.
+
+2026-01-26  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-uncounted-run_4.c (main): New.
+
+2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123794
+	* gcc.dg/vect/vect-simd-clone-pr123794.c: New testcase.
+
+2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-epil-1.c: Use
+	-mprefer-vector-width=512.
+
+2026-01-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	PR tree-optimization/123628
+	* gfortran.target/aarch64/pr123628.f90: New test.
+
+2026-01-26  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/123663
+	PR c++/123354
+	* g++.dg/cpp2a/concepts-pr123663.C: New test.
+	* g++.dg/template/pr123354.C
+
 2026-01-25  Roger Sayle  <roger@nextmovesoftware.com>
 
 	PR middle-end/122348

@@ -1,3 +1,26 @@
+2026-01-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123145
+	* program-state.cc (sm_state_map::impl_set_state): Update
+	iteration to avoid looking up binding_key values.
+	* region-model-reachability.cc (reachable_regions::handle_sval):
+	Use iter.get_svalue.
+	(reachable_regions::handle_parm): Likewise.
+	* region-model.cc (iterable_cluster::iterable_cluster): Update
+	iteration to avoid looking up binding_key values.
+	(iterable_cluster::dump_to_pp): Likewise.
+	(exposure_through_uninit_copy::calc_num_uninit_bits): Likewise.
+	(exposure_through_uninit_copy::complain_about_uninit_ranges):
+	Likewise.
+	(contains_uninit_p): Likewise.
+	* store.cc (binding_map::hash): Likewise.
+	* store.h (bit_range::hash): New, based on...
+	(concrete_binding::hash): ...this.  Reimplement using the above.
+	(binding_map::const_iterator::get_svalue): New decl.
+	(binding_map::get_symbolic_bindings): New accessor.
+	(binding_map::for_each_value): Update iteration to avoid looking
+	up binding_key values.
+
 2026-01-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* store.cc (binding_cluster::validate): Reimplement as...

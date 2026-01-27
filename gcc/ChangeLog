@@ -1,3 +1,56 @@
+2026-01-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123820
+	* gimple-ssa-strength-reduction.cc (create_add_on_incoming_edge): Use
+	the correct type for the stride (lhs if non-pointer).
+
+2026-01-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/123709
+	* final.cc (output_asm_operand_names): Skip over
+	opnum which is MAX_RECOG_OPERANDS (invalid).
+	(output_asm_insn): Increase opoutput and oporder size
+	by 1. For out of range operands, set the opnum to
+	MAX_RECOG_OPERANDS.
+
+2026-01-26  Filip Kastl  <fkastl@suse.cz>
+
+	* doc/invoke.texi: Document --param auto-profile-reorder-only.
+	* params.opt: Fix spelling.
+
+2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122474
+	* tree-vectorizer.h (vect_reduc_info_s::neutral_op): New.
+	(VECT_REDUC_INFO_NEUTRAL_OP): New.
+	* tree-vect-loop.cc (vectorizable_reduction): Adjust condition
+	guarding the check for .VEC_SHL_INSERT.
+
+2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123755
+	* tree-vect-stmts.cc (vectorizable_call): Fixup LEN masking
+	of unconditional but possibly trapping calls.
+
+2026-01-26  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR tree-optimization/123657
+	* tree-vect-loop.cc (vect_analyze_loop_form): Add
+	chrec_dont_know check.
+
+2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123794
+	* tree-vect-slp.cc (vect_remove_slp_scalar_calls): Unlink
+	VOPs for all calls.
+
+2026-01-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122103
+	PR tree-optimization/123628
+	* tree-if-conv.cc (if_convertible_simdclone_stmt_p): New.
+	(if_convertible_stmt_p, predicate_statements): Use it.
+
 2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* gcc-urlifier.cc (test_gcc_urlifier): Match either positive
