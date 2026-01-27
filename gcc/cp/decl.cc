@@ -12679,10 +12679,10 @@ grokfndecl (tree ctype,
   if (DECL_CONSTRUCTOR_P (decl) && !grok_ctor_properties (ctype, decl))
     return NULL_TREE;
 
-  /* Don't call check_consteval_only_fn for defaulted special member
-     functions.  Those are immediate-escalating functions but at this point
-     DECL_DEFAULTED_P has not been set.  */
-  if (initialized != SD_DEFAULTED || special_memfn_p (decl) == sfk_none)
+  /* Don't call check_consteval_only_fn for defaulted functions.  Those are
+     immediate-escalating functions but at this point DECL_DEFAULTED_P has
+     not been set.  */
+  if (initialized != SD_DEFAULTED)
     check_consteval_only_fn (decl);
 
   if (ctype == NULL_TREE || check)

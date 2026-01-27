@@ -502,10 +502,9 @@ immediate_escalating_function_p (tree fn)
 	 specifier  */
   if (LAMBDA_FUNCTION_P (fn))
     return true;
-  /* -- a defaulted special member function that is not declared with the
+  /* -- a defaulted function that is not declared with the
 	consteval specifier  */
-  special_function_kind sfk = special_memfn_p (fn);
-  if (sfk != sfk_none && DECL_DEFAULTED_FN (fn))
+  if (DECL_DEFAULTED_FN (fn))
     return true;
   /* -- a function that results from the instantiation of a templated entity
 	defined with the constexpr specifier.  */
