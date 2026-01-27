@@ -59,7 +59,7 @@ modref_access_node::operator == (const modref_access_node &a) const
 bool
 modref_access_node::contains (const modref_access_node &a) const
 {
-  poly_int64 aoffset_adj = 0;
+  poly_offset_int aoffset_adj = 0;
   if (parm_index != MODREF_UNKNOWN_PARM)
     {
       if (parm_index != a.parm_index)
@@ -80,7 +80,8 @@ modref_access_node::contains (const modref_access_node &a) const
 	      a.offset may result in non-negative offset again.
 	      Ubsan fails on val << LOG_BITS_PER_UNIT where val
 	      is negative.  */
-	   aoffset_adj = (a.parm_offset - parm_offset)
+	   aoffset_adj = (poly_offset_int::from (a.parm_offset, SIGNED)
+			  - poly_offset_int::from (parm_offset, SIGNED))
 			 * BITS_PER_UNIT;
 	}
     }
@@ -96,10 +97,14 @@ modref_access_node::contains (const modref_access_node &a) const
 	      || !known_le (size, a.size)))
 	return false;
       if (known_size_p (max_size))
-	return known_subrange_p (a.offset + aoffset_adj,
-				 a.max_size, offset, max_size);
+	return known_subrange_p (poly_offset_int::from (a.offset, SIGNED)
+				 + aoffset_adj, a.max_size,
+				 poly_offset_int::from (offset, SIGNED),
+				 max_size);
       else
-	return known_le (offset, a.offset + aoffset_adj);
+	return known_le (poly_offset_int::from (offset, SIGNED),
+			 poly_offset_int::from (a.offset, SIGNED)
+			 + aoffset_adj);
     }
   return true;
 }
