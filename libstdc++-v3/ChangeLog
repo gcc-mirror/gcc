@@ -1,3 +1,15 @@
+2026-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105857
+	* config/locale/dragonfly/codecvt_members.cc (do_length): Limit
+	size of alloca buffer to 4k.
+	* config/locale/gnu/codecvt_members.cc (do_length): Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/105857.cc: New
+	test.
+
 2026-01-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
