@@ -3120,6 +3120,26 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
       if (is_gimple_debug (use_stmt))
 	continue;
 
+      /* If the use is a type convert, look further into it if the operations
+	 are the same under two's complement.  */
+      tree lhs_type;
+      if (gimple_assign_cast_p (use_stmt)
+	  && (lhs_type = TREE_TYPE (gimple_get_lhs (use_stmt)))
+	  && tree_nop_conversion_p (lhs_type, TREE_TYPE (op1)))
+	{
+	  tree cast_lhs = gimple_get_lhs (use_stmt);
+	  gimple *tmp_use;
+	  use_operand_p tmp_use_p;
+	  if (single_imm_use (cast_lhs, &tmp_use_p, &tmp_use))
+	    {
+	      release_defs (use_stmt);
+	      use_stmt = tmp_use;
+	      result = cast_lhs;
+	      gsi_remove (&gsi, true);
+	      gsi = gsi_for_stmt (use_stmt);
+	    }
+	}
+
       if (is_gimple_assign (use_stmt)
 	  && gimple_assign_rhs_code (use_stmt) == NEGATE_EXPR)
 	{
@@ -3158,6 +3178,13 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
 
       if (seq)
 	gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+
+      /* Ensure all the operands are of the same type.  Use the type of the
+	 addend as that's the statement being replaced.  */
+      op2 = gimple_convert (&gsi, true, GSI_SAME_STMT,
+			    UNKNOWN_LOCATION, TREE_TYPE (addop), op2);
+      mulop1 = gimple_convert (&gsi, true, GSI_SAME_STMT,
+			       UNKNOWN_LOCATION, TREE_TYPE (addop), mulop1);
 
       if (len)
 	fma_stmt
@@ -3418,6 +3445,20 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 
       if (is_gimple_debug (use_stmt))
 	continue;
+
+      /* If the use is a type convert, look further into it if the operations
+	 are the same under two's complement.  */
+      tree lhs_type;
+      if (gimple_assign_cast_p (use_stmt)
+	  && (lhs_type = TREE_TYPE (gimple_get_lhs (use_stmt)))
+	  && tree_nop_conversion_p (lhs_type, TREE_TYPE (op1)))
+	{
+	  tree cast_lhs = gimple_get_lhs (use_stmt);
+	  gimple *tmp_use;
+	  use_operand_p tmp_use_p;
+	  if (single_imm_use (cast_lhs, &tmp_use_p, &tmp_use))
+	    use_stmt = tmp_use;
+	}
 
       /* For now restrict this operations to single basic blocks.  In theory
 	 we would want to support sinking the multiplication in
