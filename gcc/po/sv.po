@@ -1,8 +1,8 @@
 # Swedish messages for gcc.
-# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025 Free Software Foundation, Inc.
+# Copyright © 2000, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 # Dennis Björklund <db@zigo.dhs.org>, 2000, 2001, 2002.
-# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025.
+# Göran Uddeborg <goeran@uddeborg.se>, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026.
 #
 # Reminder to translator: GCC team does not want RCS keywords in the header!
 #
@@ -32,7 +32,7 @@ msgstr ""
 "Project-Id-Version: gcc 15.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2025-08-01 17:58+0000\n"
-"PO-Revision-Date: 2025-08-09 22:08+0200\n"
+"PO-Revision-Date: 2026-01-27 21:14+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -8916,10 +8916,9 @@ msgid "-mfuse-move=<0,23>\tOptimization. Run a post-reload pass that tweaks move
 msgstr "-mfuse-move=<0,23>\tOptimering. Kör ett efterladdningspass som justerar flyttinstruktioner."
 
 #: config/avr/avr.opt:169
-#, fuzzy, no-c-format
-#| msgid "Optimization. Allow to use nonzero_bits() in some insn conditions."
+#, no-c-format
 msgid "Optimization. Fuse some move insns after insn combine."
-msgstr "Optimering. Tillåt användning av nonzero_bits() i några instruktionsvillkor."
+msgstr "Optimering. Slå samman några flyttinstruktioner efter instruktionskombination."
 
 #: config/avr/avr.opt:173
 #, no-c-format
@@ -17444,7 +17443,7 @@ msgstr "Maximalt antal predikat med ”or” i den normaliserade predikatkedjan.
 #: params.opt:1194
 #, no-c-format
 msgid "Maximum amount of work done to prune paths where the variable is always initialized."
-msgstr ""
+msgstr "Maximal mäng arbete som görs för att ansa vägar där variabeln alltid är initierad."
 
 #: params.opt:1198
 #, no-c-format
@@ -21429,10 +21428,9 @@ msgid "expected label"
 msgstr "etikett förväntades"
 
 #: cobol/gcobolspec.cc:554
-#, fuzzy, c-format
-#| msgid "Driving:"
+#, c-format
 msgid "Driving: ("
-msgstr "Driver:"
+msgstr "Driver: ("
 
 #: cp/call.cc:4225
 #, c-format
@@ -23065,10 +23063,9 @@ msgid "%<-mrelax%> is only supported for RTP PIC"
 msgstr "%<-mrelax%> stödjs endast för RTP PIC"
 
 #: cobol/exceptg.h:80
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "exception '%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "CDF: exception '%s'"
-msgstr "undantaget ”%s”"
+msgstr "CDF: undantaget ”%s”"
 
 #: cobol/parse_ante.h:1592
 #, gcc-internal-format, gfc-internal-format
@@ -23077,16 +23074,14 @@ msgstr "Global deklarativ %s för %s"
 
 #: cobol/parse_ante.h:2385 cobol/symbols.h:134 cobol/genapi.cc:6470
 #: cobol/util.cc:288 cobol/util.cc:337 cobol/util.cc:637
-#, fuzzy, gcc-internal-format
-#| msgid "%s:%d: invalid symbol_type_t %d"
+#, gcc-internal-format
 msgid "%s:%d: invalid %<symbol_type_t%> %d"
-msgstr "%s:%d: felaktig symbol_type_t %d"
+msgstr "%s:%d: felaktig %<symbol_type_t%> %d"
 
 #: cobol/parse_util.h:360
-#, fuzzy, gcc-internal-format
-#| msgid "%s: intrinsic function  %s not found"
+#, gcc-internal-format
 msgid "%s: intrinsic function %qs not found"
-msgstr "%s: den inbyggda funktionen %s finns inte"
+msgstr "%s: den inbyggda funktionen %qs finns inte"
 
 #: cobol/parse_util.h:392
 #, gcc-internal-format, gfc-internal-format
@@ -23906,10 +23901,9 @@ msgid "illegal argument 0 to %qs"
 msgstr "otillåtet argument 0 till %qs"
 
 #: builtins.cc:7806 internal-fn.cc:4030
-#, fuzzy, gcc-internal-format
-#| msgid "third argument to %<__builtin_prefetch%> must be a constant"
+#, gcc-internal-format
 msgid "third argument to %<crc%> builtins must be a constant"
-msgstr "tredje argumentet till %<__builtin_prefetch%> måste vara en konstant"
+msgstr "tredje argumentet till inbyggd %<crc%> måste vara en konstant"
 
 #. All valid uses of __builtin_va_arg_pack () are removed during
 #. inlining.
@@ -36380,10 +36374,9 @@ msgid "%<-fabi-compat-version=1%> is not supported, using =2"
 msgstr "%<-fabi-compat-version=1%> stödjs inte, använder =2"
 
 #: c-family/c-opts.cc:1094
-#, fuzzy, gcc-internal-format
-#| msgid "%<-fabi-compat-version=1%> is not supported, using =2"
+#, gcc-internal-format
 msgid "%<-fabi-version=%d%> is not supported, using =%d"
-msgstr "%<-fabi-compat-version=1%> stödjs inte, använder =2"
+msgstr "%<-fabi-version=%d%> stödjs inte, använder =%d"
 
 #: c-family/c-opts.cc:1200
 #, gcc-internal-format
@@ -52331,10 +52324,9 @@ msgid "We should never see a non-equal dash-main in cobol1.c"
 msgstr "Vi borde aldrig se en olik dash-main i cobol1.c"
 
 #: cobol/except.cc:54
-#, fuzzy, gcc-internal-format
-#| msgid "no such exception: 0x%04x"
+#, gcc-internal-format
 msgid "no such exception: 0x%x"
-msgstr "inget sådant undantag: 0x%04x"
+msgstr "inget sådant undantag: 0x%x"
 
 #: cobol/genapi.cc:354
 #, gcc-internal-format
@@ -52342,99 +52334,84 @@ msgid "Probable cause: it was referenced without being defined."
 msgstr "Trolig orsak: den refererades utan att vara definerad."
 
 #: cobol/genapi.cc:600
-#, fuzzy, gcc-internal-format
-#| msgid "Nice try, but you can't fire me. I quit!"
+#, gcc-internal-format
 msgid "Nice try, but you cannot fire me."
-msgstr "Bra försök, men du kan inte avskeda mig. Jag slutar!"
+msgstr "Bra försök, men du kan inte avskeda mig."
 
 #: cobol/genapi.cc:1214
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qD shall not be const"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s should not be null"
-msgstr "%qD skall inte vara const"
+msgstr "%s skall inte vara null"
 
 #: cobol/genapi.cc:1792
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): Knows not the variable type %s for %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: Knows not the variable type %s for %s"
-msgstr "%s(): Känner inte till variabeltypen %s för %s"
+msgstr "%s: Känner inte till variabeltypen %s för %s"
 
 #: cobol/genapi.cc:2481
-#, fuzzy, gcc-internal-format
-#| msgid "I don't know how to MOVE an alphabetical string to %s(%s) \n"
+#, gcc-internal-format
 msgid "I don%'t know how to MOVE an alphabetical string to %s(%s)"
-msgstr "Jag vet inte hur man kan göra MOVE av en alfabetisk sträng till %s(%s) \n"
+msgstr "Jag vet inte hur man kan göra MOVE av en alfabetisk sträng till %s(%s)"
 
 #: cobol/genapi.cc:2549
-#, fuzzy, gcc-internal-format
-#| msgid "%s(): field->type %s must be literal or alphanumeric"
+#, gcc-internal-format
 msgid "%s: %<field->type%> %s must be literal or alphanumeric"
-msgstr "%s(): fält->typ %s måste vara literal eller alfanumerisk"
+msgstr "%s: %<field->type%> %s måste vara literal eller alfanumerisk"
 
 #: cobol/genapi.cc:4460
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid form of PROGRAM statement at %C"
+#, gcc-internal-format
 msgid "Not valid for ACCEPT statement."
-msgstr "Ogiltig form på PROGRAM-sats vid %C"
+msgstr "Inte giltigt för en ACCEPT-sats."
 
 #: cobol/genapi.cc:5488
 #, gcc-internal-format
 msgid "Attempting to send to an input device."
-msgstr ""
+msgstr "Försöker skicka till en inmatningsenhet."
 
 #: cobol/genapi.cc:5511
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid form of PROGRAM statement at %C"
+#, gcc-internal-format
 msgid "Not valid for DISPLAY statement."
-msgstr "Ogiltig form på PROGRAM-sats vid %C"
+msgstr "Inte giltigt för en DISPLAY-sats."
 
 #: cobol/genapi.cc:6412
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): Invalid field type %s:"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: Invalid field type %s:"
-msgstr "%s(): Ogiltig fälttyp %s:"
+msgstr "%s: Ogiltig fälttyp %s:"
 
 #: cobol/genapi.cc:7622 cobol/genapi.cc:7628 cobol/genapi.cc:7634
-#, fuzzy, gcc-internal-format
-#| msgid "parser_logop() was called with variable %s on line %d, which is not a FldConditional\n"
+#, gcc-internal-format
 msgid "%<parser_logop()%> was called with variable %s on line %d, which is not a FldConditional"
-msgstr "parser_logop() anropades med variabeln %s på rad %d, vilket inte är en FldConditional\n"
+msgstr "%<parser_logop()%> anropades med variabeln %s på rad %d, vilket inte är en FldConditional"
 
 #: cobol/genapi.cc:7741
-#, fuzzy, gcc-internal-format
-#| msgid "parser_relop() was called with variable %s, which is not a FldConditional\n"
+#, gcc-internal-format
 msgid "%<parser_relop%> was called with variable %qs, which is not a FldConditional"
-msgstr "parser_relop() anropades med variabeln %s, vilket inte är en FldConditional\n"
+msgstr "%<parser_relop()%> anropades med variabeln %qs, vilket inte är en FldConditional"
 
 #: cobol/genapi.cc:7805
-#, fuzzy, gcc-internal-format
-#| msgid "parser_relop() was called with variable %s, which is not a FldConditional\n"
+#, gcc-internal-format
 msgid "%<parser_relop()%> was called with variable %s, which is not a FldConditional"
-msgstr "parser_relop() anropades med variabeln %s, vilket inte är en FldConditional\n"
+msgstr "%<parser_relop()%> anropades med variabeln %s, vilket inte är en FldConditional"
 
 #: cobol/genapi.cc:7851
-#, fuzzy, gcc-internal-format
-#| msgid "parser_if() was called with variable %s, which is not a FldConditional\n"
+#, gcc-internal-format
 msgid "%<parser_if()%> was called with variable %s, which is not a FldConditional"
-msgstr "parser_if() anropades med variabeln %s, vilket inte är en FldConditional\n"
+msgstr "%<parser_if()%> anropades med variabeln %s, vilket inte är en FldConditional"
 
 #: cobol/genapi.cc:8116
-#, fuzzy, gcc-internal-format
-#| msgid "###### candidate %s has unimplemented CVT_type %d(%s)\n"
+#, gcc-internal-format
 msgid "candidate %s has unimplemented %<CVT_type%> %d(%s)"
-msgstr "###### kandidaten %s har oimplementerad CVT_type %d(%s)\n"
+msgstr "kandidaten %s har oimplementerad %<CVT_type%> %d(%s)"
 
 #: cobol/genapi.cc:8127
-#, fuzzy, gcc-internal-format
-#| msgid "###### unknown setop_t code %d\n"
+#, gcc-internal-format
 msgid "unknown %<setop_t%> code %d"
-msgstr "###### okänd setop_t-kod %d\n"
+msgstr "okänd %<setop_t%>-kod %d"
 
 #: cobol/genapi.cc:8315
-#, fuzzy, gcc-internal-format
-#| msgid "%s:%d: %zu exceeds MAXIMUM_UNTILS of %d, line %d"
+#, gcc-internal-format
 msgid "%s:%d: %u exceeds %<MAXIMUM_UNTILS%> of %d, line %d"
-msgstr "%s:%d: %zu överskrider MAXIMUM_UNTILS på %d, rad %d"
+msgstr "%s:%d: %u överskrider %<MAXIMUM_UNTILS%> på %d, rad %d"
 
 #: cobol/genapi.cc:9324
 #, gcc-internal-format, gfc-internal-format
@@ -52442,28 +52419,24 @@ msgid "%s:%d: ignoring subscripts"
 msgstr "%s:%d: ignorerar indexvärden"
 
 #: cobol/genapi.cc:9538 cobol/genapi.cc:10006
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): called with NULL *file"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: called with NULL *file"
-msgstr "%s(): anropad med NULL *fil"
+msgstr "%s: anropad med NULL *fil"
 
 #: cobol/genapi.cc:9663
-#, fuzzy, gcc-internal-format
-#| msgid "%s:%d file %s access mode is 'file_inaccessible_e' in %s"
+#, gcc-internal-format
 msgid "%s:%d file %s access mode is %<file_inaccessible_e%> in %s"
-msgstr "%s:%d filen %s åtkomstläge är ”file_inaccessible_e” i %s"
+msgstr "%s:%d filen %s åtkomstläge är %<file_inaccessible_e%> i %s"
 
 #: cobol/genapi.cc:9737
-#, fuzzy, gcc-internal-format
-#| msgid "parser_file_open called with NULL *file"
+#, gcc-internal-format
 msgid "%<parser_file_open%> called with NULL *file"
-msgstr "parser_file_open anropad med NULL *fil"
+msgstr "%<parser_file_open%> anropad med NULL *fil"
 
 #: cobol/genapi.cc:9742
-#, fuzzy, gcc-internal-format
-#| msgid "parser_file_open for %s called with NULL var_decl_node"
+#, gcc-internal-format
 msgid "%<parser_file_open%> for %s called with NULL %<var_decl_node%>"
-msgstr "parser_file_open för %s anropad med NULL var_decl_node"
+msgstr "%<parser_file_open%> för %s anropad med NULL %<var_decl_node%>"
 
 #: cobol/genapi.cc:9748
 #, gcc-internal-format, gfc-internal-format
@@ -52471,16 +52444,14 @@ msgid "EXTEND can only be used where %s is ACCESS MODE SEQUENTIAL"
 msgstr "EXTEND kan endast användas där %s är ACCESS MODE SEQUENTIAL"
 
 #: cobol/genapi.cc:9817
-#, fuzzy, gcc-internal-format
-#| msgid "parser_file_close called with NULL *file"
+#, gcc-internal-format
 msgid "%<parser_file_close%> called with NULL *file"
-msgstr "parser_file_close anropad med NULL *fil"
+msgstr "%<parser_file_close%> anropad med NULL *fil"
 
 #: cobol/genapi.cc:9822
-#, fuzzy, gcc-internal-format
-#| msgid "parser_file_close for %s called with NULL file->var_decl_node"
+#, gcc-internal-format
 msgid "%<parser_file_close%> for %s called with NULL %<file->var_decl_node%>"
-msgstr "parser_file_close för %s anropad med NULL file->var_decl_node"
+msgstr "%<parser_file_close%> för %s anropad med NULL %<file->var_decl_node%>"
 
 #: cobol/genapi.cc:9877
 #, gcc-internal-format, gfc-internal-format
@@ -52488,40 +52459,34 @@ msgid "%s:%d file %s 'where' is zero in %s"
 msgstr "%s:%d fil %s ”where” är noll i %s"
 
 #: cobol/genapi.cc:9887
-#, fuzzy, gcc-internal-format
-#| msgid "parser_file_read called with NULL *file"
+#, gcc-internal-format
 msgid "%<parser_file_read%> called with NULL *file"
-msgstr "parser_file_read anropad med NULL *fil"
+msgstr "%<parser_file_read%> anropad med NULL *fil"
 
 #: cobol/genapi.cc:9892
-#, fuzzy, gcc-internal-format
-#| msgid "parser_file_read for %s called with NULL file->var_decl_node"
+#, gcc-internal-format
 msgid "%<parser_file_read%> for %s called with NULL %<file->var_decl_node%>"
-msgstr "parser_file_read för %s anropad med NULL file->var_decl_node"
+msgstr "%<parser_file_read%> för %s anropad med NULL %<file->var_decl_node%>"
 
 #: cobol/genapi.cc:9898
-#, fuzzy, gcc-internal-format
-#| msgid "parser_file_read called with NULL *field"
+#, gcc-internal-format
 msgid "%<parser_file_read%> called with NULL *field"
-msgstr "parser_file_read anropad med NULL *fält"
+msgstr "%<parser_file_read%> anropad med NULL *fält"
 
 #: cobol/genapi.cc:9903
-#, fuzzy, gcc-internal-format
-#| msgid "parser_file_read for %s called with NULL field->var_decl_node"
+#, gcc-internal-format
 msgid "%<parser_file_read%> for %s called with NULL %<field->var_decl_node%>"
-msgstr "parser_file_read för %s anropad med NULL field->var_decl_node"
+msgstr "%<parser_file_read%> för %s anropad med NULL %<field->var_decl_node%>"
 
 #: cobol/genapi.cc:9909
-#, fuzzy, gcc-internal-format
-#| msgid "%s:%d file %s is RELATIVE/SEQUENTIAL, but 'where' >= 0"
+#, gcc-internal-format
 msgid "%s:%d file %s is RELATIVE/SEQUENTIAL, but %<where >= 0%>"
-msgstr "%s:%d filen %s är RELATIVE/SEQUENTIAL, men ”where” ≥ 0"
+msgstr "%s:%d filen %s är RELATIVE/SEQUENTIAL, men %<where ≥ 0%>"
 
 #: cobol/genapi.cc:9918
-#, fuzzy, gcc-internal-format
-#| msgid "%s:%d file %s is RELATIVE/RANDOM, but 'where' < 0"
+#, gcc-internal-format
 msgid "%s:%d file %s is RELATIVE/RANDOM, but %<where < 0%>"
-msgstr "%s:%d filen %s är RELATIVE/RANDOM, men ”where” < 0"
+msgstr "%s:%d filen %s är RELATIVE/RANDOM, men %<where < 0%>"
 
 #: cobol/genapi.cc:9962
 #, gcc-internal-format, gfc-internal-format
@@ -52529,27 +52494,24 @@ msgid "%s:%d file %s 'sequentially' is %d in %s"
 msgstr "%s:%d filen %s ”sequentially” är %d i %s"
 
 #: cobol/genapi.cc:10011
-#, fuzzy, gcc-internal-format
-#| msgid "%s(): for %s called with NULL file->var_decl_node"
+#, gcc-internal-format
 msgid "%s: for %s called with NULL %<file->var_decl_node%>"
-msgstr "%s(): för %s anropad med NULL file->var_decl_node"
+msgstr "%s: för %s anropad med NULL %<file->var_decl_node%>"
 
 #: cobol/genapi.cc:10017
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): called with NULL *field"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: called with NULL *field"
-msgstr "%s(): anropad med NULL *field"
+msgstr "%s: anropad med NULL *field"
 
 #: cobol/genapi.cc:10022
-#, fuzzy, gcc-internal-format
-#| msgid "%s(): for %s called with NULL field->var_decl_node"
+#, gcc-internal-format
 msgid "%s: for %s called with NULL %<field->var_decl_node%>"
-msgstr "%s(): för %s anropad med NULL field->var_decl_node"
+msgstr "%s: för %s anropad med NULL %<field->var_decl_node%>"
 
 #: cobol/genapi.cc:10107
 #, gcc-internal-format
 msgid "The file pointer should not be null"
-msgstr ""
+msgstr "Filpekaren skall inte vara null"
 
 #: cobol/genapi.cc:10161
 #, gcc-internal-format, gfc-internal-format
@@ -52557,29 +52519,25 @@ msgid "%s:%d file %s is INDEXED/SEQUENTIAL, but 'sequentially' is false"
 msgstr "%s:%d filen %s är INDEXED/SEQUENTIAL, men ”sequentially” är falskt"
 
 #: cobol/genapi.cc:11881
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): asked to sort %s, but it's not a table"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: asked to sort %s, which is not a table"
-msgstr "%s(): anropad för att sortera %s, med det är inte en tabell"
+msgstr "%s: anropad för att sortera %s, som inte är en tabell"
 
 #. Having both or neither violates SORT syntax
 #: cobol/genapi.cc:12013
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): syntax error -- both (or neither) USING and input-proc are specified"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: syntax error: both (or neither) USING and input-proc are specified"
-msgstr "%s(): syntaxfel — både (eller ingendera av) USING och input-proc är specificerade"
+msgstr "%s: syntaxfel: både (eller ingendera av) USING och input-proc är specificerade"
 
 #: cobol/genapi.cc:12147
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): syntax error -- both (or neither) GIVING and output-proc are specified"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: syntax error: both (or neither) GIVING and output-proc are specified"
-msgstr "%s(): syntaxfel — både (eller ingendera av) GIVING och output-proc är specificerade"
+msgstr "%s: syntaxfel: både (eller ingendera av) GIVING och output-proc är specificerade"
 
 #: cobol/genapi.cc:12569
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): syntax error -- both (or neither) files and output-proc are specified"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: syntax error: both (or neither) files and output-proc are specified"
-msgstr "%s(): syntaxfel — både (eller ingendera av) filer och output-proc är specificerade"
+msgstr "%s: syntaxfel: både (eller ingendera av) filer och output-proc är specificerade"
 
 #: cobol/genapi.cc:12973
 #, gcc-internal-format
@@ -52587,22 +52545,19 @@ msgid "CALL USING BY CONTENT <temporary> would require REPOSITORY PROTOTYPES."
 msgstr "CALL USING BY CONTENT <temporär> skulle kräva REPOSITORY PROTOTYPES."
 
 #: cobol/genapi.cc:13264
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): What in the name of Nero's fiddle are we doing here?"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: What in the name of Nero are we doing here?"
-msgstr "%s(): Vad i Neros fiols namn gör vi här?"
+msgstr "%s: Vad i Neros namn gör vi här?"
 
 #: cobol/genapi.cc:14560
-#, fuzzy, gcc-internal-format
-#| msgid "In parser_move(%s to %s), the move of FldLiteralN to %s hasn't been implemented"
+#, gcc-internal-format
 msgid "In %<parser_move(%s to %s)%>, the move of FldLiteralN to %s is unimplemented"
-msgstr "I parser_move(%s till %s), har inte förflyttningen av FldLiteralN till %s implementerats"
+msgstr "I %<parser_move(%s till %s)%>, förflyttningen av FldLiteralN till %s är inte implementerat"
 
 #: cobol/genapi.cc:14796
-#, fuzzy, gcc-internal-format
-#| msgid "In mh_dest_is_float(%s to %s), the move of %s to %s hasn't been implemented"
+#, gcc-internal-format
 msgid "In %<mh_dest_is_float%>(%s to %s), the move of %s to %s is unimplemented"
-msgstr "I mh_dest_is_float(%s till %s), har inte förflyttningen av %s till %s implementerats"
+msgstr "I %<mh_dest_is_float(%s till %s)%>, förflyttningen av %s till %s är inte implementerat"
 
 #: cobol/genapi.cc:16918
 #, gcc-internal-format, gfc-internal-format
@@ -52610,56 +52565,49 @@ msgid "LEVEL 01 (%s) OCCURS has insufficient data.memsize"
 msgstr "LEVEL 01 (%s) OCCURS har otilräcklig data.memsize"
 
 #: cobol/genapi.cc:16990
-#, fuzzy, gcc-internal-format
-#| msgid "parser_symbol_add() was called with a NULL new_var\n"
+#, gcc-internal-format
 msgid "%<parser_symbol_add()%> was called with a NULL %<new_var%>"
-msgstr "parser_symbol_add() anropades med en NULL new_var\n"
+msgstr "%<parser_symbol_add()%> anropades med en NULL %<new_var%>"
 
 #: cobol/genapi.cc:17020
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): %2.2d %s is a table, but it improperly has a capacity of zero"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: %d %s is a table, but it improperly has a capacity of zero"
-msgstr "%s(): %2.2d %s är en tabell, med den har oriktigt en kapacetet på noll"
+msgstr "%s: %d %s är en tabell, med den har oriktigt en kapacetet på noll"
 
 #: cobol/genapi.cc:17060
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "parser_symbol_add(): %s is its own ancestor"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: %s is its own ancestor"
-msgstr "parser_symbol_add(): %s är sin egen anfader"
+msgstr "%s: %s är sin egen anfader"
 
 #: cobol/genapi.cc:17065
 #, gcc-internal-format
 msgid "%s: %d %qs has NULL ancestor"
-msgstr ""
+msgstr "%s: %d %qs har en NULL-anfader"
 
 #: cobol/genapi.cc:17072
-#, fuzzy, gcc-internal-format
-#| msgid "parser_symbol_add( %s ) improperly has a non-null var_decl_node\n"
+#, gcc-internal-format
 msgid "%s(%s) improperly has a non-null %<var_decl_node%>"
-msgstr "parser_symbol_add( %s ) har oriktigt en null-skild var_decl_node\n"
+msgstr "%s(%s) har oriktigt en null-skild %<var_decl_node%>"
 
 #: cobol/genapi.cc:17267
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s(): %2.2d %s<%s> improperly has a data.capacity of zero"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s: %d %s<%s> improperly has a data.capacity of zero"
-msgstr "%s(): %2.2d %s<%s> har oriktigt en data.capacity på noll"
+msgstr "%s: %d %s<%s> har oriktigt en data.capacity på noll"
 
 #: cobol/genapi.cc:17334
 #, gcc-internal-format
 msgid "%<bytes_to_allocate%> is zero for %s (symbol number "
-msgstr ""
+msgstr "%<bytes_to_allocate%> är noll för %s (symbolnummer "
 
 #: cobol/gengen.cc:360
-#, fuzzy, gcc-internal-format
-#| msgid "The given type is not NULL, and that's just not fair"
+#, gcc-internal-format
 msgid "The given type is NULL, and that is just not fair"
-msgstr "Den givna typen är inte NULL, och det är bara inte rättvist"
+msgstr "Den givna typen är NULL, och det är bara inte rättvist"
 
 #: cobol/gengen.cc:369
-#, fuzzy, gcc-internal-format
-#| msgid "The given type is not a DECL or a TYPE"
+#, gcc-internal-format
 msgid "The given type is not a declaration or a TYPE"
-msgstr "Den givna typen är inte en DECL eller en TYPE"
+msgstr "Den givna typen är inte en deklaration eller en TYPE"
 
 #: cobol/gengen.cc:413
 #, gcc-internal-format, gfc-internal-format
@@ -52669,19 +52617,17 @@ msgstr "Okänd typ %d"
 #: cobol/gengen.cc:482
 #, gcc-internal-format
 msgid "Attempting an assignment of differing types."
-msgstr ""
+msgstr "Försök med tilldelning av olika typer."
 
 #: cobol/gengen.cc:2893
-#, fuzzy, gcc-internal-format
-#| msgid "Residual context count!"
+#, gcc-internal-format
 msgid "Residual context count"
-msgstr "Återstående kontextantal!"
+msgstr "Återstående kontextantal"
 
 #: cobol/genmath.cc:1385
-#, fuzzy, gcc-internal-format
-#| msgid "parser_op() doesn't know how to evaluate \"%s = %s %c %s\"\n"
+#, gcc-internal-format
 msgid "%<parser_op()%> doesn%'t know how to evaluate %<%s = %s %c %s%>"
-msgstr "parser_op() vet inte hur den skall evaluera ”%s = %s %c %s”\n"
+msgstr "%<parser_op()%> vet inte hur den skall evaluera %<%s = %s %c %s%>"
 
 #: cobol/genutil.cc:596
 #, gcc-internal-format
@@ -52689,16 +52635,14 @@ msgid "Too many subscripts"
 msgstr "För många index"
 
 #: cobol/genutil.cc:761
-#, fuzzy, gcc-internal-format
-#| msgid "cannot read string table from %s"
+#, gcc-internal-format
 msgid "cannot get %<float%> value from %s"
-msgstr "det går inte att läsa strängtabellen från %s"
+msgstr "det går inte att hämta ett %<float%>-värde från %s"
 
 #: cobol/lexio.cc:1581
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s pid %d terminated by %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s pid %ld terminated by %s"
-msgstr "%s pid %d avslutade med %s"
+msgstr "%s pid %ld avslutade med %s"
 
 #: cobol/lexio.cc:1586
 #, gcc-internal-format, gfc-internal-format
@@ -54034,10 +53978,9 @@ msgid "offset of %qT base class for %<-std=c++14%> and up changes in %<-fabi-ver
 msgstr "avståndet till %qT basklass för %<-std=c++14%> och uppåt ändras i %<-fabi-version=17%> (GCC 12)"
 
 #: cp/class.cc:6858
-#, fuzzy, gcc-internal-format
-#| msgid "offset of %qT base class for %<-std=c++14%> and up changes in %<-fabi-version=17%> (GCC 12)"
+#, gcc-internal-format
 msgid "offset of %qT base class for %<-std=c++20%> and up changes in %<-fabi-version=21%> (GCC 16)"
-msgstr "avståndet till %qT basklass för %<-std=c++14%> och uppåt ändras i %<-fabi-version=17%> (GCC 12)"
+msgstr "avståndet till %qT basklass för %<-std=c++20%> och uppåt ändras i %<-fabi-version=21%> (GCC 16)"
 
 #: cp/class.cc:6866
 #, gcc-internal-format
@@ -54045,10 +53988,9 @@ msgid "offset of %qD for %<-std=c++14%> and up changes in %<-fabi-version=17%> (
 msgstr "avståndet till %qD för %<-std=c++14%> och uppåt ändras i %<-fabi-version=17%> (GCC 12)"
 
 #: cp/class.cc:6871
-#, fuzzy, gcc-internal-format
-#| msgid "offset of %qD for %<-std=c++14%> and up changes in %<-fabi-version=17%> (GCC 12)"
+#, gcc-internal-format
 msgid "offset of %qD for %<-std=c++20%> and up changes in %<-fabi-version=21%> (GCC 16)"
-msgstr "avståndet till %qD för %<-std=c++14%> och uppåt ändras i %<-fabi-version=17%> (GCC 12)"
+msgstr "avståndet till %qD för %<-std=c++20%> och uppåt ändras i %<-fabi-version=21%> (GCC 16)"
 
 #: cp/class.cc:6912
 #, gcc-internal-format
@@ -55694,10 +55636,9 @@ msgid "must be declared with %<noexcept(true)%>"
 msgstr "måste deklareras med %<noexcept(true)%>"
 
 #: cp/coroutines.cc:1361 cp/coroutines.cc:1364
-#, fuzzy, gcc-internal-format
-#| msgid "awaitable type %qT is not a structure"
+#, gcc-internal-format
 msgid "%qs awaitable type %qT is not a structure"
-msgstr "den väntbara typen %qT är inte en post"
+msgstr "%qs den väntbara typen %qT är inte en post"
 
 #: cp/coroutines.cc:1367
 #, gcc-internal-format
@@ -55710,10 +55651,9 @@ msgid "%<await_suspend%> must return %<void%>, %<bool%> or a coroutine handle"
 msgstr "%<await_suspend%> måste returnera %<void%>, %<bool%> eller ett korutinhandtag"
 
 #: cp/coroutines.cc:1552 cp/coroutines.cc:1638
-#, fuzzy, gcc-internal-format
-#| msgid "%qs cannot be used in a varargs function"
+#, gcc-internal-format
 msgid "%qs cannot be used in an unevaluated context"
-msgstr "%qs kan inte användas i en varargs-funktion"
+msgstr "%qs kan inte användas i en oevaluerad kontext"
 
 #: cp/coroutines.cc:1821
 #, gcc-internal-format
@@ -55743,7 +55683,7 @@ msgstr "dubblerad information för %qE"
 #: cp/coroutines.cc:3618
 #, gcc-internal-format
 msgid "assumption ignored because it contains an await-expression"
-msgstr ""
+msgstr "antagandet ignorerat för att det innehåller ett await-uttryck"
 
 #: cp/coroutines.cc:4125
 #, gcc-internal-format
@@ -60990,16 +60930,14 @@ msgid "unable to represent further imported source locations"
 msgstr "kan inte representera ytterligare importerade källplatser"
 
 #: cp/module.cc:6549
-#, fuzzy, gcc-internal-format
-#| msgid "%<target%> attribute is not supported on this machine"
+#, gcc-internal-format
 msgid "%<target%> attribute currently unsupported in modules"
-msgstr "attributet %<target%> stödjs inte på denna maskin"
+msgstr "attributet %<target%> stödjs för närvarande inte i moduler"
 
 #: cp/module.cc:6552
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only supported in C"
+#, gcc-internal-format
 msgid "%<optimize%> attribute currently unsupported in modules"
-msgstr "attributet %qE stödjs endast i C"
+msgstr "attributet %<optimize%> stödjs för närvarande inte i moduler"
 
 #: cp/module.cc:12100
 #, gcc-internal-format
@@ -61182,10 +61120,9 @@ msgid "%qD is declared %<constexpr%> and is initialized to a TU-local value"
 msgstr "%qD är deklarerad %<constexpr%> och är initierad till ett TU-lokal värde"
 
 #: cp/module.cc:15111
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is declared %<constexpr%> and is initialized to a TU-local value"
+#, gcc-internal-format
 msgid "%qD is a reference declared %<inline%> and is constant-initialized to a TU-local value"
-msgstr "%qD är deklarerad %<constexpr%> och är initierad till ett TU-lokal värde"
+msgstr "%qD är en referens deklarerad %<inline%> och är konstantinitierad till ett TU-lokalt värde"
 
 #: cp/module.cc:15150
 #, gcc-internal-format
@@ -70660,10 +70597,9 @@ msgid "Argument C_PTR_1 at %L to C_ASSOCIATED shall have the type TYPE(C_PTR) or
 msgstr "Argumentet C_PTR_1 vid %L till C_ASSOCIATED skall ha typen TYPE(C_PTR) eller TYPE(C_FUNPTR)"
 
 #: fortran/check.cc:6003
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Argument C_PTR_2 at %L to C_ASSOCIATED shall have the same type as C_PTR_1: %s instead of %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "Argument C_PTR_2 at %L to C_ASSOCIATED shall have the same type as C_PTR_1, found %s instead of %s"
-msgstr "Argumentet C_PTR_2 vid %L till C_ASSOCIATED skall ha samma typ som C_PTR_1: %s istället för %s"
+msgstr "Argumentet C_PTR_2 vid %L till C_ASSOCIATED skall ha samma typ som C_PTR_1, hittade %s istället för %s"
 
 #: fortran/check.cc:6036
 #, gcc-internal-format, gfc-internal-format
@@ -75115,10 +75051,9 @@ msgid "The H format specifier at %L is a Fortran 95 deleted feature"
 msgstr "Formatspecificeraren H vid %L är en funktion borttagen i Fortran 95"
 
 #: fortran/io.cc:1232 fortran/io.cc:1295
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Missing item in format string at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Missing comma in FORMAT string at %L"
-msgstr "Saknad post i formatsträngen vid %L"
+msgstr "Saknat komma i FORMAT-strängen vid %L"
 
 #: fortran/io.cc:1351
 #, gcc-internal-format, gfc-internal-format
@@ -81761,10 +81696,9 @@ msgid "Coindexed allocatable object at %L"
 msgstr "Co-indexerat allokerbart objekt vid %L"
 
 #: fortran/resolve.cc:8727
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Allocate-object at %L also appears at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Allocate-object at %L has rank %d but MOLD= expression at %L has rank %d"
-msgstr "Allokeringsobjekt vid %L förekommer också vid %L"
+msgstr "Allokeringsobjekt vid %L har ordningen %d men uttrycket MOLD= vid %L har ordningen %d"
 
 #: fortran/resolve.cc:8738
 #, gcc-internal-format, gfc-internal-format
@@ -84713,10 +84647,9 @@ msgid "The base procedure at %L must have an explicit interface"
 msgstr "Basproceduren vid %L måste ha ett explicit gränssnitt"
 
 #: fortran/trans-openmp.cc:9710
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot find symbol %qs"
+#, gcc-internal-format
 msgid "Cannot find symbol %qs at %L"
-msgstr "Kan inte hitta symbolen %qs"
+msgstr "Kan inte hitta symbolen %qs vid %L"
 
 #: fortran/trans-openmp.cc:9723
 #, gcc-internal-format
@@ -86527,42 +86460,3 @@ msgstr "oanvänt namn %qE"
 #, gcc-internal-format, gfc-internal-format
 msgid "are you trying to break %s? how dare you?"
 msgstr "försöker du göra sönder %s? hur vågar du?"
-
-#, c-format
-#~ msgid "Driving: (%ld)\n"
-#~ msgstr "Driver: (%ld)\n"
-
-#, gcc-internal-format, gfc-internal-format
-#~ msgid "%s:%d: no symbol '%s' found"
-#~ msgstr "%s:%d: finns ingen symbol ”%s”"
-
-#, gcc-internal-format
-#~ msgid "%<-Wabi%> won%'t warn about anything"
-#~ msgstr "%<-Wabi%> kommer inte att varna om något"
-
-#, gcc-internal-format
-#~ msgid "%<-Wabi%> warns about differences from the most up-to-date ABI, which is also used by default"
-#~ msgstr "%<-Wabi%> varnar om skillnader mot den mest aktuella ABI:et, vilket även används som standard"
-
-#, gcc-internal-format
-#~ msgid "use e.g. %<-Wabi=11%> to warn about changes from GCC 7"
-#~ msgstr "använd t.ex. %<-Wabi=11%> för att varna om ändringar sedan GCC 7"
-
-#~ msgid "parser_symbol_add(): %2.2d %s has null ancestor"
-#~ msgstr "parser_symbol_add(): %2.2d %s har tom anfader"
-
-#, gcc-internal-format
-#~ msgid "cannot specify %<override%> for a class"
-#~ msgstr "det går inte att ange %<override%> för en klass"
-
-#, gcc-internal-format, gfc-internal-format
-#~ msgid "Missing comma at %L"
-#~ msgstr "Saknat komma vid %L"
-
-#, gcc-internal-format
-#~ msgid "extend_ref(): Bad tail"
-#~ msgstr "extend_ref(): Felaktig svans"
-
-#, gcc-internal-format, gfc-internal-format
-#~ msgid "Inconsistent coranks for operator at %L and %L"
-#~ msgstr "Inkonsistenta co-ordningar för operator vid %L och %L"
