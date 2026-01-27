@@ -12103,7 +12103,7 @@ grokfndecl (tree ctype,
 	    int friendp,
 	    int publicp,
 	    int inlinep,
-	    bool deletedp,
+	    int initialized,
 	    bool xobj_func_p,
 	    special_function_kind sfk,
 	    bool funcdef_flag,
@@ -12330,7 +12330,7 @@ grokfndecl (tree ctype,
     = !xobj_func_p && ctype && TREE_CODE (type) == FUNCTION_TYPE;
   DECL_FUNCTION_XOBJ_FLAG (decl) = xobj_func_p;
 
-  if (deletedp)
+  if (initialized == SD_DELETED)
     DECL_DELETED_FN (decl) = 1;
 
   if (ctype && funcdef_flag)
@@ -12679,7 +12679,11 @@ grokfndecl (tree ctype,
   if (DECL_CONSTRUCTOR_P (decl) && !grok_ctor_properties (ctype, decl))
     return NULL_TREE;
 
-  check_consteval_only_fn (decl);
+  /* Don't call check_consteval_only_fn for defaulted special member
+     functions.  Those are immediate-escalating functions but at this point
+     DECL_DEFAULTED_P has not been set.  */
+  if (initialized != SD_DEFAULTED || special_memfn_p (decl) == sfk_none)
+    check_consteval_only_fn (decl);
 
   if (ctype == NULL_TREE || check)
     return decl;
@@ -16498,7 +16502,7 @@ grokdeclarator (const cp_declarator *declarator,
 			       friendp ? -1 : 0, friendp, publicp,
 			       inlinep | (2 * constexpr_p) | (4 * concept_p)
 				       | (8 * consteval_p),
-			       initialized == SD_DELETED,
+			       initialized,
 			       is_xobj_member_function, sfk,
 			       funcdef_flag, late_return_type_p,
 			       template_count, in_namespace,
@@ -16836,7 +16840,7 @@ grokdeclarator (const cp_declarator *declarator,
 			   publicp,
 			   inlinep | (2 * constexpr_p) | (4 * concept_p)
 				   | (8 * consteval_p),
-			   initialized == SD_DELETED,
+			   initialized,
 			   is_xobj_member_function, sfk,
 			   funcdef_flag,
 			   late_return_type_p,
