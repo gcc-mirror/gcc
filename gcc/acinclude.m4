@@ -464,29 +464,46 @@ dnl # Used by gcc_GAS_CHECK_FEATURE
 dnl #
 AC_DEFUN([gcc_GAS_FLAGS],
 [AC_CACHE_CHECK([assembler flags], gcc_cv_as_flags,
-[ case "$target" in
-  i[[34567]]86-*-linux*)
+[ case "$target:$gas_flag" in
+  *-*-solaris2*:no)
     dnl Override the default, which may be incompatible.
-    gcc_cv_as_flags=--32
+    case "$target" in
+      i?86-*-* | sparc-*-*)
+	gcc_cv_as_flags=-m32
+	;;
+      x86_64-*-* | sparcv9-*-* | sparc64-*-*)
+	gcc_cv_as_flags=-m64
+	;;
+    esac
+    as_32_opt=-m32
+    as_64_opt=-m64
     ;;
-  x86_64-*-linux-gnux32)
+  i?86-*-*:yes | x86_64-*-*:yes )
     dnl Override the default, which may be incompatible.
-    gcc_cv_as_flags=--x32
+    case "$target" in
+      i?86-*-*)
+	gcc_cv_as_flags=--32
+	;;
+      x86_64-*-linux-gnux32*)
+	gcc_cv_as_flags=--x32
+	;;
+      x86_64-*-linux*)
+	gcc_cv_as_flags=--64
+	;;
+    esac
+    as_32_opt=--32
+    as_64_opt=--64
     ;;
-  x86_64-*-linux*)
-    dnl Override the default, which may be incompatible.
-    gcc_cv_as_flags=--64
-    ;;
-  powerpc*-*-darwin*)
+  powerpc*-*-darwin*:*)
     dnl Always pass -arch ppc to assembler.
     gcc_cv_as_flags="-arch ppc"
     ;;
-  amdgcn*)
+  amdgcn*:*)
     dnl Currently, only the llvm-mc assembler is supported.
     dnl Add flags to ensure an amdgcn ELF file is written.
     gcc_cv_as_flags="--filetype=obj -triple=amdgcn--amdhsa"
     ;;
-  *)
+  *:*)
     gcc_cv_as_flags=" "
     ;;
   esac])
