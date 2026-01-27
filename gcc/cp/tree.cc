@@ -2859,6 +2859,15 @@ cxx_printable_name_internal (tree decl, int v, bool translate)
       /* yes, so return it.  */
       return print_ring[i];
 
+  const char *ret = lang_decl_name (decl, v, translate);
+
+  /* The lang_decl_name call could have called this function recursively,
+     so check again.  */
+  for (i = 0; i < PRINT_RING_SIZE; i++)
+    if (uid_ring[i] == DECL_UID (decl) && translate == trans_ring[i])
+      /* yes, so return it.  */
+      return print_ring[i];
+
   if (++ring_counter == PRINT_RING_SIZE)
     ring_counter = 0;
 
@@ -2878,7 +2887,7 @@ cxx_printable_name_internal (tree decl, int v, bool translate)
 
   free (print_ring[ring_counter]);
 
-  print_ring[ring_counter] = xstrdup (lang_decl_name (decl, v, translate));
+  print_ring[ring_counter] = xstrdup (ret);
   uid_ring[ring_counter] = DECL_UID (decl);
   trans_ring[ring_counter] = translate;
   return print_ring[ring_counter];
