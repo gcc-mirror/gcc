@@ -278,6 +278,10 @@ Wanalyzer-too-complex
 Common Var(warn_analyzer_too_complex) Init(0) Warning
 Warn if the code is too complicated for the analyzer to fully explore.
 
+fanalyzer-assume-nothrow
+Common Var(flag_analyzer_assume_nothrow) Init(0)
+Assume that no function calls can throw exceptions.
+
 fanalyzer-checker=
 Common Joined RejectNegative Var(flag_analyzer_checker)
 Restrict the analyzer to run just the named checker.

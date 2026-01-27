@@ -156,6 +156,9 @@ UrlSuffix(gcc/Static-Analyzer-Options.html#index-Wanalyzer-symbol-too-complex)
 Wanalyzer-too-complex
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-Wanalyzer-too-complex)
 
+fanalyzer-assume-nothrow
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-assume-nothrow)
+
 fanalyzer-checker=
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-checker)
 

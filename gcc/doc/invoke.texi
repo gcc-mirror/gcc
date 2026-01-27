@@ -483,6 +483,7 @@ Objective-C and Objective-C++ Dialects}.
 @item Static Analyzer Options
 @gccoptlist{
 -fanalyzer
+-fanalyzer-assume-nothrow
 -fanalyzer-call-summaries
 -fanalyzer-checker=@var{name}
 -fno-analyzer-feasibility
@@ -12500,6 +12501,21 @@ Pertinent parameters for controlling the exploration are:
 The following options control the analyzer.
 
 @table @gcctabopt
+
+@opindex fanalyzer-assume-nothrow
+@opindex fno-analyzer-assume-nothrow
+@item -fanalyzer-assume-nothrow
+By default, if @option{-fexceptions} is enabled, the analyzer will assume
+that a call to any function without attribute @code{nothrow} could throw
+an exception.  This can help detect execution paths that leak due to
+exceptions bypassing clean-up code, but could lead to false positives when
+using headers where the author has not added the @code{nothrow} attribute.
+
+If @option{-fanalyzer-assume-nothrow} is enabled, then the analyzer will
+assume that external functions do not throw exceptions.  This may be useful
+for reducing ``noise'' from the analyzer when enabling
+@option{-fexceptions} on C code, but could hide true issues if an
+exception could be raised by something the C code calls.
 
 @opindex fanalyzer-call-summaries
 @opindex fno-analyzer-call-summaries

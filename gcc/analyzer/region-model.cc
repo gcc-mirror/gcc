@@ -2198,6 +2198,13 @@ can_throw_p (const gcall &call, tree fndecl)
   if (!flag_exceptions)
     return false;
 
+  /* Compatibility flag to allow the user to assume external functions
+     never throw exceptions.  This may be useful when using the analyzer
+     on C code that is compiled with -fexceptions, but for which the headers
+     haven't yet had "nothrow" attributes systematically added.  */
+  if (flag_analyzer_assume_nothrow)
+    return false;
+
   if (gimple_call_nothrow_p (&call))
     return false;
 
