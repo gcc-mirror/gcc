@@ -478,7 +478,7 @@ AC_DEFUN([gcc_GAS_FLAGS],
     as_32_opt=-m32
     as_64_opt=-m64
     ;;
-  i?86-*-*:yes | x86_64-*-*:yes )
+  i?86-*-*:* | x86_64-*-*:* )
     dnl Override the default, which may be incompatible.
     case "$target" in
       i?86-*-*)

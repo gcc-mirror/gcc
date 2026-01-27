@@ -26124,7 +26124,7 @@ else
     as_32_opt=-m32
     as_64_opt=-m64
     ;;
-  i?86-*-*:yes | x86_64-*-*:yes )
+  i?86-*-*:* | x86_64-*-*:* )
         case "$target" in
       i?86-*-*)
 	gcc_cv_as_flags=--32
