@@ -2363,7 +2363,18 @@ ipa_polymorphic_call_context::possible_dynamic_type_change (bool in_poly_cdtor,
 							    tree otr_type)
 {
   if (dynamic)
-    make_speculative (otr_type);
+    {
+      /* See if existing speculation was inconsistent before type change.
+	 If so drop it first, so we do not lose track about it being
+	 impossible.  */
+      if (speculative_outer_type
+	  && !speculation_consistent_p (speculative_outer_type,
+					speculative_offset,
+					speculative_maybe_derived_type,
+					otr_type))
+	clear_speculation ();
+      make_speculative (otr_type);
+    }
   else if (in_poly_cdtor)
     maybe_in_construction = true;
 }
