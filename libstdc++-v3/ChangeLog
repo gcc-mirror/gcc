@@ -1,3 +1,37 @@
+2026-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add stdckdint.h.
+	* include/Makefile.in: Regenerate.
+	* include/c_compatibility/stdckdint.h: New file.
+	* testsuite/26_numerics/stdckdint/1.cc: New test.
+	* testsuite/26_numerics/stdckdint/2_neg.cc: New test.
+
+2026-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-03-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add stdbit.h.
+	* include/Makefile.in: Regenerate.
+	* include/c_compatibility/stdbit.h: New file.
+	* testsuite/20_util/stdbit/1.cc: New test.
+	* testsuite/20_util/stdbit/2_neg.cc: New test.
+
+2026-01-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2024-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/105857
+	* config/locale/dragonfly/codecvt_members.cc (do_length): Limit
+	size of alloca buffer to 4k.
+	* config/locale/gnu/codecvt_members.cc (do_length): Likewise.
+	* testsuite/22_locale/codecvt/length/wchar_t/105857.cc: New
+	test.
+
 2026-01-23  Wang Jinghao  <zheng.xianyuwang@gmail.com>
 
 	Backported from master:
