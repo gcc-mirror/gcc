@@ -25470,6 +25470,10 @@ case "$ORIGINAL_AS_FOR_TARGET" in
  ;;
 esac
 
+if $gcc_cv_as --help 2>&1 | grep -- --fatal-warnings > /dev/null; then
+  fw_as_opt=--fatal-warnings
+fi
+
 default_ld=
 # Check whether --enable-ld was given.
 if test "${enable_ld+set}" = set; then :
@@ -27392,7 +27396,7 @@ else
   if test x"$gcc_cv_as" != x; then
     $as_echo '.section foo1,"e"
   .byte 0,0,0,0' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -27479,7 +27483,7 @@ else
   if test x"$gcc_cv_as" != x; then
     $as_echo '.section .foo,"awR",%progbits
 .byte 0' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -27527,7 +27531,7 @@ else
 .byte 0
 .section __patchable_function_entries,"awo",%progbits,.foo
 .byte 0' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -27562,7 +27566,7 @@ else
   gcc_cv_as_shf_merge=no
   if test x"$gcc_cv_as" != x; then
     $as_echo '.section .rodata.str, "aMS", @progbits, 1' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -27590,7 +27594,7 @@ else
   gcc_cv_as_shf_merge_percent=no
   if test x"$gcc_cv_as" != x; then
     $as_echo '.section .rodata.str, "aMS", %progbits, 1' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -27625,7 +27629,7 @@ else
   gcc_cv_as_comdat_group=no
   if test x"$gcc_cv_as" != x; then
     $as_echo '.section .text,"axG",@progbits,.foo,comdat' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -27656,7 +27660,7 @@ else
   gcc_cv_as_comdat_group_percent=no
   if test x"$gcc_cv_as" != x; then
     $as_echo '.section .text,"axG",%progbits,.foo,comdat' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -27891,7 +27895,6 @@ foo:	.long	25
 	ldah	$2,foo($29)			!tprelhi
 	lda	$3,foo($2)			!tprello
 	lda	$4,foo($29)			!tprel'
-	tls_as_opt=--fatal-warnings
 	;;
   arc*-*-*)
     conftest_s='
@@ -27904,7 +27907,6 @@ x:      .long   25
         .text
 	move.d x:IE,$r10
 	nop'
-	tls_as_opt=--fatal-warnings
 	;;
   frv*-*-*)
     conftest_s='
@@ -27938,7 +27940,6 @@ foo:	.long	25
 	mfctl %cr27,%t1
 	addil LR%foo-$tls_leoff$,%t1
 	ldo RR%foo-$tls_leoff$(%r1),%t2'
-	tls_as_opt=--fatal-warnings
 	;;
   arm*-*-*)
     conftest_s='
@@ -27971,7 +27972,6 @@ $as_echo "#define TLS_SECTION_ASM_FLAG 't'" >>confdefs.h
       conftest_s='
 	.section ".tdata","awT",@progbits'
       tls_section_flag=T
-      tls_as_opt="--fatal-warnings"
     fi
     case "$target" in
       i[34567]86-*-*)
@@ -28028,7 +28028,6 @@ foo:	data8	25
 	addl	r20 = @tprel(foo#), gp
 	adds	r22 = @tprel(foo#), r13
 	movl	r24 = @tprel(foo#)'
-	tls_as_opt=--fatal-warnings
 	;;
   loongarch*-*-*)
     conftest_s='
@@ -28039,7 +28038,6 @@ x:	.word 2
 	bl __tls_get_addr'
 	tls_first_major=0
 	tls_first_minor=0
-	tls_as_opt='--fatal-warnings'
 	;;
   microblaze*-*-*)
     conftest_s='
@@ -28049,7 +28047,6 @@ x:
 	.text
 	addik r5,r20,x@TLSGD
 	addik r5,r20,x@TLSLDM'
-	tls_as_opt='--fatal-warnings'
 	;;
   mips*-*-*)
     conftest_s='
@@ -28064,7 +28061,7 @@ x:
 	lw $4, %gottprel(x)($28)
 	lui $4, %tprel_hi(x)
 	addiu $4, $4, %tprel_lo(x)'
-	tls_as_opt='-32 --fatal-warnings'
+	tls_as_opt='-32'
 	;;
   m68k-*-*)
     conftest_s='
@@ -28078,7 +28075,6 @@ foo:
 	move.l x@TLSLDO(%a5),%a0
 	move.l x@TLSIE(%a5),%a0
 	move.l x@TLSLE(%a5),%a0'
-	tls_as_opt='--fatal-warnings'
 	;;
   aarch64*-*-*)
     conftest_s='
@@ -28089,7 +28085,6 @@ foo:	.long	25
 	add   x0, x0, #:tlsgd_lo12:x
         bl    __tls_get_addr
 	nop'
-	tls_as_opt='--fatal-warnings'
 	;;
   or1k*-*-*)
     conftest_s='
@@ -28099,7 +28094,6 @@ foo:	.long	25
 	l.movhi	r3, tpoffha(foo)
 	l.add	r3, r3, r10
 	l.lwz	r4, tpofflo(foo)(r3)'
-    tls_as_opt=--fatal-warnings
     ;;
   powerpc-ibm-aix*)
     conftest_s='
@@ -28147,7 +28141,7 @@ x3:	.space 8
 	add 9,9,3
 	bl .__tls_get_addr
 	nop'
-	tls_as_opt="-a64 --fatal-warnings"
+	tls_as_opt="-a64"
 	;;
   powerpc*-*-*)
     conftest_s='
@@ -28171,7 +28165,7 @@ x3:	.space 4
 	addi 9,2,x1@tprel
 	addis 9,2,x2@tprel@ha
 	addi 9,9,x2@tprel@l'
-	tls_as_opt="-a32 --fatal-warnings"
+	tls_as_opt="-a32"
 	;;
   riscv*-*-*)
     conftest_s='
@@ -28180,7 +28174,6 @@ x:	.word 2
 	.text
 	la.tls.gd a0,x
         call __tls_get_addr'
-	tls_as_opt='--fatal-warnings'
 	;;
   s390-*-*)
     conftest_s='
@@ -28197,7 +28190,7 @@ foo:	.long	25
 	l	%r1,0(%r1):tls_load:foo
 	bas	%r14,0(%r1,%r13):tls_gdcall:foo
 	bas	%r14,0(%r1,%r13):tls_ldcall:foo'
-	tls_as_opt="-m31 --fatal-warnings"
+	tls_as_opt="-m31"
 	;;
   s390x-*-*)
     conftest_s='
@@ -28213,7 +28206,7 @@ foo:	.long	25
 	larl	%r1,foo@INDNTPOFF
 	brasl	%r14,__tls_get_offset@PLT:tls_gdcall:foo
 	brasl	%r14,__tls_get_offset@PLT:tls_ldcall:foo'
-	tls_as_opt="-m64 -Aesame --fatal-warnings"
+	tls_as_opt="-m64 -Aesame"
 	;;
   sh-*-* | sh[123456789lbe]*-*-*)
     conftest_s='
@@ -28225,7 +28218,6 @@ foo:	.long	25
 	.long	foo@DTPOFF
 	.long	foo@GOTTPOFF
 	.long	foo@TPOFF'
-	tls_as_opt=--fatal-warnings
 	;;
   sparc*-*-*)
     case "$target" in
@@ -28242,7 +28234,7 @@ foo:	.long	25
     else
       conftest_s='
 	.section ".tdata","awT",@progbits'
-	tls_as_opt="-32 --fatal-warnings"
+	tls_as_opt="-32"
     fi
     conftest_s="$conftest_s
 foo:	.long	25
@@ -28292,7 +28284,7 @@ else
   gcc_cv_as_tls=no
   if test x"$gcc_cv_as" != x; then
     $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $tls_as_opt -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $tls_as_opt $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -29569,7 +29561,7 @@ else
   gcc_cv_as_section_has_align=no
   if test x"$gcc_cv_as" != x; then
     $as_echo '.section lto_test,"dr0"' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -30679,7 +30671,7 @@ else
   gcc_cv_as_powerpc_entry_markers=no
   if test x"$gcc_cv_as" != x; then
     $as_echo ' .reloc .,R_PPC64_ENTRY; nop' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a64 --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a64 $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -30711,7 +30703,7 @@ else
   gcc_cv_as_powerpc_pltseq_markers=no
   if test x"$gcc_cv_as" != x; then
     $as_echo ' .reloc .,R_PPC_PLTSEQ; nop' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -30996,7 +30988,7 @@ else
   gcc_cv_as_micromips_support=no
   if test x"$gcc_cv_as" != x; then
     $as_echo '.set micromips' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
@@ -31625,7 +31617,7 @@ else
        nop
        .endr
        beq $a0,$a1,a' > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags --fatal-warnings -o conftest.o conftest.s >&5'
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags $fw_as_opt -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5
   ac_status=$?
