@@ -21350,7 +21350,9 @@ add_location_or_const_value_attribute (dw_die_ref die, tree decl, bool cache_p)
 static tree
 mangle_referenced_decls (tree *tp, int *walk_subtrees, void *)
 {
-  if (! EXPR_P (*tp) && ! CONSTANT_CLASS_P (*tp))
+  if (! EXPR_P (*tp)
+      && ! CONSTANT_CLASS_P (*tp)
+      && TREE_CODE (*tp) != CONSTRUCTOR)
     *walk_subtrees = 0;
 
   if (VAR_OR_FUNCTION_DECL_P (*tp))
@@ -21398,13 +21400,7 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
       /* For early_dwarf force mangling of all referenced symbols.  */
       tree initializer = init;
       STRIP_NOPS (initializer);
-      /* rtl_for_decl_init punts on other aggregates, and complex values.  */
-      if (AGGREGATE_TYPE_P (type)
-	  || (TREE_CODE (initializer) == VIEW_CONVERT_EXPR
-	      && AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (initializer, 0))))
-	  || TREE_CODE (type) == COMPLEX_TYPE)
-	;
-      else if (initializer_constant_valid_p (initializer, type))
+      if (initializer_constant_valid_p (initializer, type))
 	walk_tree (&initializer, mangle_referenced_decls, NULL, NULL);
     }
   /* If the host and target are sane, try harder.  */
