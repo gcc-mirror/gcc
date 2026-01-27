@@ -2023,6 +2023,21 @@ AC_DEFINE_UNQUOTED(HAVE_GNU_LD, $gnu_ld_bool, [Define to 1 if using GNU ld.])
 gnu_as_bool=`if test x"$gas" = x"yes"; then echo 1; else echo 0; fi`
 AC_DEFINE_UNQUOTED(HAVE_GNU_AS, $gnu_as_bool, [Define to 1 if using GNU as.])
 
+case "$target:$gnu_ld" in
+  *-*-solaris2*:no)
+    # While Solaris ld has -m32/-m64 it usually determines the ELF class
+    # from the input objects.
+    ;;
+  i?86-*-solaris2*:yes | x86_64-*-solaris2*:yes)
+    ld_32_opt=-melf_i386_sol2
+    ld_64_opt=-melf_x86_64_sol2
+    ;;
+  i?86-*-*:yes | x86_64-*-*:yes)
+    ld_32_opt=-melf_i386
+    ld_64_opt=-melf_x86_64
+    ;;
+esac
+
 count=a
 for f in $host_xm_file; do
 	count=${count}x
@@ -4962,20 +4977,12 @@ foo:	nop
       [AC_DEFINE(HAVE_AS_IX86_UD2, 1,
 	[Define if your assembler supports the 'ud2' mnemonic.])])
 
-    # Enforce 32-bit output with gas and gld.
-    if test x$gnu_ld = xyes; then
-      case $target in
-	*-*-solaris2*) ld_ix86_gld_32_opt="-melf_i386_sol2" ;;
-	*)             ld_ix86_gld_32_opt="-melf_i386" ;;
-      esac
-    fi
-
     gcc_GAS_CHECK_FEATURE([R_386_TLS_GD_PLT reloc],
         gcc_cv_as_ix86_tlsgdplt,
 	[$as_32_opt],
 	[call    tls_gd@tlsgdplt],
 	[if test x$gcc_cv_ld != x \
-	 && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o -G > /dev/null 2>&1; then
+	 && $gcc_cv_ld $ld_32_opt -o conftest conftest.o -G > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tlsgdplt=yes
 	 fi
 	 rm -f conftest],
@@ -4993,7 +5000,7 @@ tls_ld:
 	[$as_32_opt],
 	[$conftest_s],
 	[if test x$gcc_cv_ld != x \
-	 && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o -G > /dev/null 2>&1; then
+	 && $gcc_cv_ld $ld_32_opt -o conftest conftest.o -G > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tlsldmplt=yes
 	 fi
 	 rm -f conftest])
@@ -5017,7 +5024,7 @@ value:'
 	[$as_32_opt],
 	[$conftest_s],
 	[if test x$gcc_cv_ld != x && test x$gcc_cv_objdump != x \
-	    && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o $ld_tls_libs -lc > /dev/null 2>&1; then
+	    && $gcc_cv_ld $ld_32_opt -o conftest conftest.o $ld_tls_libs -lc > /dev/null 2>&1; then
 	   if $gcc_cv_objdump -d conftest 2>/dev/null | grep nop > /dev/null \
 	      || dis conftest 2>/dev/null | grep nop > /dev/null; then
 	     gcc_cv_as_ix86_tlsldm=yes
@@ -5045,7 +5052,7 @@ _start:
 	    && test x$gcc_cv_readelf != x \
 	    && $gcc_cv_readelf --relocs --wide conftest.o 2>&1 \
 	       | grep R_386_GOT32X > /dev/null 2>&1 \
-	    && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o > /dev/null 2>&1; then
+	    && $gcc_cv_ld $ld_32_opt -o conftest conftest.o > /dev/null 2>&1; then
 	   if $gcc_cv_objdump -dw conftest 2>&1 \
 	      | grep 0xffffff > /dev/null 2>&1; then
 	     gcc_cv_as_ix86_got32x=no
@@ -5060,12 +5067,6 @@ _start:
 
     # Check if gas and gld support "addq %r23,foo@GOTTPOFF(%rip), %r15"
     # with R_X86_64_CODE_6_GOTTPOFF relocation.
-    if test x$gnu_ld = xyes; then
-      case $target in
-	*-*-solaris2*) ld_ix86_gld_64_opt="-melf_x86_64_sol2" ;;
-	*)             ld_ix86_gld_64_opt="-melf_x86_64" ;;
-      esac
-    fi
     conftest_s='
 	.text
 	.globl	_start
@@ -5084,7 +5085,7 @@ foo:
 	    && test x$gcc_cv_readelf != x \
 	    && $gcc_cv_readelf --relocs --wide conftest.o 2>&1 \
 	       | grep R_X86_64_CODE_6_GOTTPOFF > /dev/null 2>&1 \
-	    && $gcc_cv_ld $ld_ix86_gld_64_opt -o conftest conftest.o > /dev/null 2>&1; then
+	    && $gcc_cv_ld $ld_64_opt -o conftest conftest.o > /dev/null 2>&1; then
 	   if $gcc_cv_objdump -dw conftest 2>&1 \
 	      | grep "add \+\$0xf\+8,%r23,%r15" > /dev/null 2>&1; then
 	     gcc_cv_as_x86_64_code_6_gottpoff=yes
@@ -5132,7 +5133,7 @@ gd:
 	[$as_32_opt],
 	[$conftest_s],
 	[if test x$gcc_cv_ld != x \
-	    && $gcc_cv_ld $ld_ix86_gld_32_opt -o conftest conftest.o > /dev/null 2>&1; then
+	    && $gcc_cv_ld $ld_32_opt -o conftest conftest.o > /dev/null 2>&1; then
 	   gcc_cv_as_ix86_tls_get_addr_via_got=yes
 	 fi
 	 rm -f conftest])
@@ -6175,9 +6176,9 @@ ptr:
 	.quad	a_glob
 EOF
       if $gcc_cv_as $as_64_opt -o conftest1.o conftest1.s > /dev/null 2>&1 \
-         && $gcc_cv_ld -shared -melf_x86_64 -o conftest1.so conftest1.o > /dev/null 2>&1 \
+         && $gcc_cv_ld -shared $ld_64_opt -o conftest1.so conftest1.o > /dev/null 2>&1 \
          && $gcc_cv_as $as_64_opt -o conftest2.o conftest2.s > /dev/null 2>&1 \
-         && $gcc_cv_ld -pie -melf_x86_64 -o conftest conftest2.o conftest1.so > /dev/null 2>&1; then
+         && $gcc_cv_ld -pie $ld_64_opt -o conftest conftest2.o conftest1.so > /dev/null 2>&1; then
         gcc_cv_ld_pie_copyreloc=yes
       fi
       rm -f conftest conftest1.so conftest1.o conftest2.o conftest1.s conftest2.s
