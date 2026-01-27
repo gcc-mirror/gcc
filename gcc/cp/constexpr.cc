@@ -10708,6 +10708,17 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	r = TARGET_EXPR_INITIAL (r);
     }
 
+  /* uid_sensitive_constexpr_evaluation_value restricts warning-dependent
+     constexpr evaluation to avoid unnecessary template instantiation, and is
+     always done with mce_unknown.  But due to gaps in the restriction logic
+     we may still end up taking an evaluation path that in turn requires
+     manifestly constant evaluation, and such evaluation must not be
+     restricted since it likely has semantic consequences.
+     TODO: Remove/replace the mechanism in GCC 17.  */
+  auto uids = make_temp_override (uid_sensitive_constexpr_evaluation_value);
+  if (ctx.manifestly_const_eval == mce_true)
+    uid_sensitive_constexpr_evaluation_value = false;
+
   auto_vec<tree, 16> cleanups;
   global_ctx.cleanups = &cleanups;
 
