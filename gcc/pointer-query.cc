@@ -74,7 +74,12 @@ get_offset_range (tree x, gimple *stmt, offset_int r[2], range_query *rvals)
     x = TREE_OPERAND (x, 0);
 
   tree type = TREE_TYPE (x);
-  if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
+  if ((!INTEGRAL_TYPE_P (type)
+       /* ???  We get along without caring about overflow by using
+	  offset_int, but that falls apart when indexes are bigger
+	  than pointer differences.  */
+       || TYPE_PRECISION (type) > TYPE_PRECISION (ptrdiff_type_node))
+      && !POINTER_TYPE_P (type))
     return false;
 
    if (TREE_CODE (x) != INTEGER_CST
