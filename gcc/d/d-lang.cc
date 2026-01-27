@@ -1128,6 +1128,7 @@ d_parse_file (void)
 				      Identifier::idPool ("__stdin"),
 				      global.params.ddoc.doOutput,
 				      global.params.dihdr.doOutput);
+	  m->loc = Loc::singleFilename (in_fnames[i]);
 	  modules.push (m);
 
 	  /* Zero the padding past the end of the buffer so the D lexer has a
@@ -1148,6 +1149,7 @@ d_parse_file (void)
 	  Module *m = Module::create (in_fnames[i], Identifier::idPool (name),
 				      global.params.ddoc.doOutput,
 				      global.params.dihdr.doOutput);
+	  m->loc = Loc::singleFilename (in_fnames[i]);
 	  modules.push (m);
 	  FileName::free (name);
 	}
