@@ -134,9 +134,10 @@ struct lang_hooks_for_types
      FUNCTION_TYPE or METHOD_TYPE.  */
   bool (*type_hash_eq) (const_tree, const_tree);
 
-  /* If non-NULL, return TYPE1 with any language-specific modifiers copied from
-     TYPE2.  */
-  tree (*copy_lang_qualifiers) (const_tree, const_tree);
+  /* Return a version of the TYPE, qualified as indicated by the
+     TYPE_QUALS in a language-specific way, if one exists, otherwise create it.
+     If OTYPE is non-NULL, copy extra language modifiers from it too.  */
+  tree (*build_lang_qualified_type) (tree, tree, int);
 
   /* Return TRUE if TYPE uses a hidden descriptor and fills in information
      for the debugger about the array bounds, strides, etc.  */

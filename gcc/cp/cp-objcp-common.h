@@ -112,8 +112,8 @@ extern tree cxx_simulate_record_decl (location_t, const char *,
   cxx_simulate_builtin_function_decl
 #undef	LANG_HOOKS_TYPE_HASH_EQ
 #define LANG_HOOKS_TYPE_HASH_EQ	cxx_type_hash_eq
-#undef	LANG_HOOKS_COPY_LANG_QUALIFIERS
-#define LANG_HOOKS_COPY_LANG_QUALIFIERS	cxx_copy_lang_qualifiers
+#undef	LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE
+#define LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE	cxx_build_lang_qualified_type
 #undef LANG_HOOKS_MISSING_NORETURN_OK_P
 #define LANG_HOOKS_MISSING_NORETURN_OK_P cp_missing_noreturn_ok_p
 #undef LANG_HOOKS_BLOCK_MAY_FALLTHRU

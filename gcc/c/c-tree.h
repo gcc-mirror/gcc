@@ -780,6 +780,7 @@ extern tree c_finish_bc_name (location_t, tree, bool);
 
 /* in c-objc-common.cc */
 extern bool c_objc_common_init (void);
+extern tree c_build_lang_qualified_type (tree, tree, int);
 extern bool c_missing_noreturn_ok_p (tree);
 extern bool c_warn_unused_global_decl (const_tree);
 extern void c_initialize_diagnostics (diagnostics::context *);

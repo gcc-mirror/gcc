@@ -634,7 +634,7 @@ c_pretty_printer::direct_abstract_declarator (tree t)
 	  add_space = true;
 	}
 
-      if (tree arr = lookup_attribute ("array", TYPE_ATTRIBUTES (t)))
+      if (tree arr = lookup_attribute ("array ", TYPE_ATTRIBUTES (t)))
 	{
 	  if (TREE_VALUE (arr))
 	    {

@@ -63,6 +63,7 @@ extern tree lhd_type_for_size (unsigned precision, int unsignedp);
 extern void lhd_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree lhd_type_promotes_to (tree);
 extern void lhd_register_builtin_type (tree, const char *);
+extern tree lhd_build_lang_qualified_type (tree, tree, int);
 extern bool lhd_decl_ok_for_sibcall (const_tree);
 extern size_t lhd_tree_size (enum tree_code);
 extern HOST_WIDE_INT lhd_to_target_charset (HOST_WIDE_INT);
@@ -212,7 +213,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
 #define LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES \
   lhd_omp_firstprivatize_type_sizes
 #define LANG_HOOKS_TYPE_HASH_EQ		NULL
-#define LANG_HOOKS_COPY_LANG_QUALIFIERS NULL
+#define LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE	lhd_build_lang_qualified_type
 #define LANG_HOOKS_GET_ARRAY_DESCR_INFO	NULL
 #define LANG_HOOKS_GET_SUBRANGE_BOUNDS	NULL
 #define LANG_HOOKS_GET_TYPE_BIAS	NULL
@@ -240,7 +241,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   LANG_HOOKS_TYPE_MAX_SIZE, \
   LANG_HOOKS_OMP_FIRSTPRIVATIZE_TYPE_SIZES, \
   LANG_HOOKS_TYPE_HASH_EQ, \
-  LANG_HOOKS_COPY_LANG_QUALIFIERS, \
+  LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE, \
   LANG_HOOKS_GET_ARRAY_DESCR_INFO, \
   LANG_HOOKS_GET_SUBRANGE_BOUNDS, \
   LANG_HOOKS_GET_TYPE_BIAS, \

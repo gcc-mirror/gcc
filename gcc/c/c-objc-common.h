@@ -59,6 +59,8 @@ extern void c_register_features ();
 #define LANG_HOOKS_PRINT_IDENTIFIER c_print_identifier
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P c_types_compatible_p
+#undef LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE
+#define LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE c_build_lang_qualified_type
 #undef LANG_HOOKS_MISSING_NORETURN_OK_P
 #define LANG_HOOKS_MISSING_NORETURN_OK_P c_missing_noreturn_ok_p
 #undef LANG_HOOKS_BLOCK_MAY_FALLTHRU

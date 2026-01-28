@@ -70,6 +70,17 @@ c_register_features ()
     }
 }
 
+/* Langhook for building qualified types.  */
+
+tree
+c_build_lang_qualified_type (tree type, tree, int type_quals)
+{
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return c_build_qualified_type (type, type_quals);
+  else
+    return build_qualified_type (type, type_quals);
+}
+
 bool
 c_missing_noreturn_ok_p (tree decl)
 {

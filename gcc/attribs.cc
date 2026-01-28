@@ -1322,14 +1322,15 @@ build_type_attribute_qual_variant (tree otype, tree attribute, int quals)
 	  warning (OPT_Wattributes,
 		   "ignoring attributes applied to %qT after definition",
 		   TYPE_MAIN_VARIANT (ttype));
-	  return build_qualified_type (ttype, quals);
+	  return lang_hooks.types.build_lang_qualified_type (ttype, NULL_TREE,
+							     quals);
 	}
 
-      ttype = build_qualified_type (ttype, TYPE_UNQUALIFIED);
-      if (lang_hooks.types.copy_lang_qualifiers
-	  && otype != TYPE_MAIN_VARIANT (otype))
-	ttype = (lang_hooks.types.copy_lang_qualifiers
-		 (ttype, TYPE_MAIN_VARIANT (otype)));
+      tree mtype = NULL_TREE;
+      if (otype != TYPE_MAIN_VARIANT (otype))
+	mtype = TYPE_MAIN_VARIANT (otype);
+      ttype = lang_hooks.types.build_lang_qualified_type (ttype, mtype,
+							  TYPE_UNQUALIFIED);
 
       tree dtype = ntype = build_distinct_type_copy (ttype);
 
@@ -1354,13 +1355,15 @@ build_type_attribute_qual_variant (tree otype, tree attribute, int quals)
       else if (TYPE_CANONICAL (ntype) == ntype)
 	TYPE_CANONICAL (ntype) = TYPE_CANONICAL (ttype);
 
-      ttype = build_qualified_type (ntype, quals);
-      if (lang_hooks.types.copy_lang_qualifiers
-	  && otype != TYPE_MAIN_VARIANT (otype))
-	ttype = lang_hooks.types.copy_lang_qualifiers (ttype, otype);
+      if (otype != TYPE_MAIN_VARIANT (otype))
+	mtype = otype;
+      else
+	mtype = NULL_TREE;
+      ttype = lang_hooks.types.build_lang_qualified_type (ntype, mtype, quals);
     }
   else if (TYPE_QUALS (ttype) != quals)
-    ttype = build_qualified_type (ttype, quals);
+    ttype = lang_hooks.types.build_lang_qualified_type (ttype, NULL_TREE,
+							quals);
 
   return ttype;
 }
@@ -2652,6 +2655,7 @@ std::string
 attr_access::array_as_string (tree type) const
 {
   std::string typstr;
+  bool free_type = false;
 
   if (type == error_mark_node)
     return std::string ();
@@ -2692,12 +2696,35 @@ attr_access::array_as_string (tree type) const
 	     [*] is represented the same as [0] this hack only works for
 	     the most significant bound like static and the others are
 	     rendered as [0].  */
-	  arat = build_tree_list (get_identifier ("array"), flag);
+	  arat = build_tree_list (get_identifier ("array "), flag);
 	}
 
       const int quals = TYPE_QUALS (type);
       type = build_array_type (eltype, index_type);
-      type = build_type_attribute_qual_variant (type, arat, quals);
+      if (arat || TYPE_QUALS (type) != quals)
+	{
+	  /* We create a new array type which is only used during
+	     printing.  Can't use build_type_attribute_qual_variant
+	     because it might with some lang hooks e.g. try to push
+	     qualifiers to the element type, while for the printing
+	     this wants the element type qualifiers to be unmodified
+	     and ARRAY_TYPE qualifiers to be a copy of the pointer
+	     type qualifiers.  Furthermore, a type with somtimes
+	     weird qualifiers or artificial attribute should be
+	     freed right after the use.  */
+	  type = copy_node (type);
+	  if (arat)
+	    {
+	      TREE_CHAIN (arat) = TYPE_ATTRIBUTES (type);
+	      TYPE_ATTRIBUTES (type) = arat;
+	    }
+	  TYPE_READONLY (type) = (quals & TYPE_QUAL_CONST) != 0;
+	  TYPE_VOLATILE (type) = (quals & TYPE_QUAL_VOLATILE) != 0;
+	  TYPE_ATOMIC (type) = (quals & TYPE_QUAL_ATOMIC) != 0;
+	  TYPE_RESTRICT (type) = (quals & TYPE_QUAL_RESTRICT) != 0;
+	  TYPE_ADDR_SPACE (type) = DECODE_QUAL_ADDR_SPACE (quals);
+	  free_type = true;
+	}
     }
 
   /* Format the type using the current pretty printer.  The generic tree
@@ -2705,6 +2732,8 @@ attr_access::array_as_string (tree type) const
   std::unique_ptr<pretty_printer> pp (global_dc->clone_printer ());
   pp_printf (pp.get (), "%qT", type);
   typstr = pp_formatted_text (pp.get ());
+  if (free_type)
+    ggc_free (type);
 
   return typstr;
 }

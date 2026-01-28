@@ -1470,6 +1470,27 @@ c_build_qualified_type (tree type, int type_quals, tree /* orig_qual_type */,
   return cp_build_qualified_type (type, type_quals);
 }
 
+/* Implementation of the build_lang_qualified_type langhook.  */
+tree
+cxx_build_lang_qualified_type (tree type, tree otype, int type_quals)
+{
+  /* Only handle ARRAY_TYPEs using cp_build_qualified_type, so that
+     quals are pushed to the element type.  That is needed for PR101312.
+     For other types just keep using build_qualified_type with
+     cxx_copy_lang_qualifiers if needed, otherwise we can run into
+     issues with FUNCTION_TYPEs with cv-qualifier-seq vs. type-specifier,
+     or REFERENCE_TYPE which will error on certain TYPE_QUALS.  */
+  if (TREE_CODE (type) == ARRAY_TYPE)
+    return cp_build_qualified_type (type, type_quals);
+  else
+    {
+      tree ret = build_qualified_type (type, type_quals);
+      if (otype)
+	ret = cxx_copy_lang_qualifiers (ret, otype);
+      return ret;
+    }
+}
+
 
 /* Make a variant of TYPE, qualified with the TYPE_QUALS.  Handles
    arrays correctly.  In particular, if TYPE is an array of T's, and

@@ -202,6 +202,16 @@ lhd_register_builtin_type (tree ARG_UNUSED (type),
 {
 }
 
+/* Return a version of the TYPE, qualified as indicated by the
+   TYPE_QUALS, if one exists.  If no qualified version exists yet,
+   creates it and returns it.  */
+tree
+lhd_build_lang_qualified_type (tree type, tree ARG_UNUSED (otype),
+			       int type_quals)
+{
+  return build_qualified_type (type, type_quals);
+}
+
 /* Invalid use of an incomplete type.  */
 void
 lhd_incomplete_type_error (location_t ARG_UNUSED (loc),
