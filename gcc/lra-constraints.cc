@@ -2232,6 +2232,8 @@ process_alt_operands (int only_alternative)
   if (only_alternative >= 0)
     preferred &= ALTERNATIVE_BIT (only_alternative);
 
+  bool prefer_memory_p = false;
+ repeat:
   for (nalt = 0; nalt < n_alternatives; nalt++)
     {
       /* Loop over operands for one constraint alternative.  */
@@ -2564,6 +2566,11 @@ process_alt_operands (int only_alternative)
 		      || general_constant_p (op)
 		      || spilled_pseudo_p (op))
 		    win = true;
+		  if (REG_P (op) && prefer_memory_p)
+		    {
+		      badop = false;
+		      offmemok = true;
+		    }
 		  cl = GENERAL_REGS;
 		  cl_filter = nullptr;
 		  goto reg;
@@ -2694,7 +2701,7 @@ process_alt_operands (int only_alternative)
 				   (this_alternative_exclude_start_hard_regs,
 				    hard_regno[nop]))))
 			win = true;
-		      else if (hard_regno[nop] < 0)
+		      else if (hard_regno[nop] < 0 && !prefer_memory_p)
 			{
 			  if (in_class_p (op, this_alternative, NULL))
 			    win = true;
@@ -2796,6 +2803,12 @@ process_alt_operands (int only_alternative)
 	    this_alternative_match_win = true;
 	  else
 	    {
+	      if (prefer_memory_p && offmemok)
+		{
+		  winreg = false;
+		  this_alternative = NO_REGS;
+		}
+
 	      int const_to_mem = 0;
 	      bool no_regs_p;
 
@@ -3331,6 +3344,17 @@ process_alt_operands (int only_alternative)
 	       ira_class_hard_regs_num[all_this_alternative],
 	       all_used_nregs, all_reload_nregs);
 	  overall += LRA_MAX_REJECT;
+	  if (!prefer_memory_p && INSN_CODE (curr_insn) < 0)
+	    {
+	      /* asm can permit memory and reg and can be not enough regs for
+		 asm -- try now memory: */
+	      prefer_memory_p = true;
+	      if (lra_dump_file != NULL)
+		fprintf
+		  (lra_dump_file,
+		   "            Trying now memory for operands\n");
+	      goto repeat;
+	    }
 	}
       ok_p = true;
       curr_alt_dont_inherit_ops_num = 0;
