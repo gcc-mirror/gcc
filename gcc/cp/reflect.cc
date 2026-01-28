@@ -5339,7 +5339,7 @@ eval_can_substitute (location_t loc, const constexpr_ctx *ctx,
       if (fn == error_mark_node)
 	return boolean_false_node;
       fn = resolve_nondeduced_context_or_error (fn, tf_none);
-      if (fn == error_mark_node)
+      if (fn == error_mark_node || undeduced_auto_decl (fn))
 	return boolean_false_node;
       return boolean_true_node;
     }
