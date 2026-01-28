@@ -5897,6 +5897,14 @@ eval_define_aggregate (location_t loc, const constexpr_ctx *ctx,
       *non_constant_p = true;
       return call;
     }
+  if (TYPE_BEING_DEFINED (type))
+    {
+      if (!cxx_constexpr_quiet_p (ctx))
+	error_at (loc, "first %<define_aggregate%> argument is a reflection "
+		       "of a class type %qT being defined", type);
+      *non_constant_p = true;
+      return call;
+    }
   hash_set<tree> nameset;
   for (int i = 0; i < TREE_VEC_LENGTH (rvec); ++i)
     {
@@ -5953,21 +5961,11 @@ eval_define_aggregate (location_t loc, const constexpr_ctx *ctx,
   tree cscope = NULL_TREE, tscope = NULL_TREE;
   for (tree c = TYPE_CONTEXT (CP_DECL_CONTEXT (consteval_block)); c;
        c = get_containing_scope (c))
-    {
-      if (c == type)
-	{
-	  auto_diagnostic_group d;
-	  error_at (loc, "%<define_aggregate%> evaluated from "
-			 "%<consteval%> block enclosed by %qT being "
-			 "defined", type);
-	  inform (DECL_SOURCE_LOCATION (consteval_block),
-		  "%<consteval%> block defined here");
-	  return get_reflection_raw (loc, orig_type);
-	}
-      if (cscope == NULL_TREE
-	  && (TYPE_P (c) || TREE_CODE (c) == FUNCTION_DECL))
+    if (TYPE_P (c) || TREE_CODE (c) == FUNCTION_DECL)
+      {
 	cscope = c;
-    }
+	break;
+      }
   for (tree c = TYPE_CONTEXT (type); c; c = get_containing_scope (c))
     {
       if (c == consteval_block)

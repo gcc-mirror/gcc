@@ -7,9 +7,9 @@
 using namespace std::meta;
 
 struct S0 {
-  consteval {						// { dg-message "'consteval' block defined here" }
+  consteval {
     std::meta::define_aggregate(^^S0, {});		// error: scope associated with S0 encloses the consteval block
-  }							// { dg-error "'define_aggregate' evaluated from 'consteval' block enclosed by 'S0' being defined" "" { target *-*-* } .-1 }
+  }							// { dg-error "first 'define_aggregate' argument is a reflection of a class type .S0. being defined" "" { target *-*-* } .-1 }
 };
 
 struct S1;

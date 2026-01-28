@@ -15,8 +15,8 @@ consteval bool foo () { return define_aggregate (^^S2, {}) == ^^S2; }
 const bool a = foo ();					// { dg-error "call to consteval function 'foo\\\(\\\)' is not a constant expression" }
 
 struct S3 {
-  consteval {						// { dg-message "'consteval' block defined here" }
-    define_aggregate (^^S3, {});			// { dg-error "'define_aggregate' evaluated from 'consteval' block enclosed by 'S3' being defined" }
+  consteval {
+    define_aggregate (^^S3, {});			// { dg-error "first 'define_aggregate' argument is a reflection of a class type .S3. being defined" }
   }
 };
 
@@ -33,26 +33,26 @@ consteval {
 
 template <typename T>
 struct S5 {
-  consteval {						// { dg-message "'consteval' block defined here" }
-    define_aggregate (^^S5 <T>, {});			// { dg-error "'define_aggregate' evaluated from 'consteval' block enclosed by 'S5<int>' being defined" }
+  consteval {
+    define_aggregate (^^S5 <T>, {});			// { dg-error "first 'define_aggregate' argument is a reflection of a class type .S5<int>. being defined" }
   }
 };
 
 S5 <int> s5;
 
-consteval bool bar (info x) { return define_aggregate (x, {}) == x; }	// { dg-error "'define_aggregate' evaluated from 'consteval' block enclosed by 'S6' being defined" }
+consteval bool bar (info x) { return define_aggregate (x, {}) == x; }	// { dg-error "first 'define_aggregate' argument is a reflection of a class type .S6. being defined" }
 
 struct S6 {
-  consteval {						// { dg-message "'consteval' block defined here" }
+  consteval {
     bar (^^S6);
   }
 };
 
-consteval bool baz (info x) { return define_aggregate (x, {}) == x; }	// { dg-error "'define_aggregate' evaluated from 'consteval' block enclosed by 'S7<char>' being defined" }
+consteval bool baz (info x) { return define_aggregate (x, {}) == x; }	// { dg-error "first 'define_aggregate' argument is a reflection of a class type .S7<char>. being defined" }
 
 template <typename T>
 struct S7 {
-  consteval {						// { dg-message "'consteval' block defined here" }
+  consteval {
     baz (^^S7 <T>);
   }
 };
