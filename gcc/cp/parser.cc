@@ -9868,6 +9868,17 @@ cp_parser_parenthesized_expression_list (cp_parser* parser,
 		expression_list->quick_push (arg);
 	    goto get_comma;
 	  }
+	else if (is_attribute_list == normal_attr
+		 && cp_lexer_next_token_is (parser->lexer, CPP_STRING)
+		 && (cp_lexer_nth_token_is (parser->lexer, 2, CPP_COMMA)
+		     || cp_lexer_nth_token_is (parser->lexer, 2, CPP_CLOSE_PAREN)))
+	  {
+	    auto t = make_temp_override (parser->translate_strings_p, false);
+	    expr
+	      = cp_parser_parenthesized_expression_list_elt (parser, cast_p,
+							     allow_expansion_p,
+							     non_constant_p);
+	  }
 	else
 	  expr
 	    = cp_parser_parenthesized_expression_list_elt (parser, cast_p,

@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "gimplify.h"
 #include "contracts.h"
+#include "c-family/c-pragma.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -12854,6 +12855,24 @@ cexpr_str::extract (location_t location, const char * & msg, int &len)
 			"must be a core constant expression");
 	      return false;
 	    }
+	}
+      /* Convert the string from execution charset to SOURCE_CHARSET.  */
+      cpp_string istr, ostr;
+      istr.len = len;
+      istr.text = (const unsigned char *) msg;
+      if (!cpp_translate_string (parse_in, &istr, &ostr, CPP_STRING, true))
+	{
+	  error_at (location, "could not convert constexpr string from "
+			      "ordinary literal encoding to source character "
+			      "set");
+	  return false;
+	}
+      else
+	{
+	  if (buf)
+	    XDELETEVEC (buf);
+	  msg = buf = const_cast <char *> ((const char *) ostr.text);
+	  len = ostr.len;
 	}
     }
   else
