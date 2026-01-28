@@ -313,6 +313,7 @@ proc lto-build-archive { testname objlist dest } {
     global testcase
     global tool
     global GCC_UNDER_TEST
+    global GCC_AR_UNDER_TEST
 
     upvar dg-messages-by-file dg-messages-by-file
 
@@ -327,9 +328,19 @@ proc lto-build-archive { testname objlist dest } {
 	}
     }
 
-    # Hack up the gcc-ar command from $GCC_UNDER_TEST.
-    set ar_cmd [file dirname [lindex $GCC_UNDER_TEST 0]]
-    set ar_cmd "$ar_cmd/gcc-ar [lrange $GCC_UNDER_TEST 1 end]"
+    # For now find gcc-ar in the same directory as $GCC_UNDER_TEST, unless
+    # GCC_AR_UNDER_TEST is defined.
+
+    if ![info exists GCC_AR_UNDER_TEST] {
+	if { ![is_remote host] && [string match "*/*" [lindex $GCC_UNDER_TEST 0]] } {
+	    set ar_cmd [file dirname [lindex $GCC_UNDER_TEST 0]]/[gcc-transform-out-of-tree gcc-ar]
+	} else {
+	    set ar_cmd [gcc-transform-out-of-tree gcc-ar]
+	}
+    } else {
+        set ar_cmd $GCC_AR_UNDER_TEST
+    }
+
     set ar_output [remote_exec host "$ar_cmd rcs $dest $objlist"]
     set retval [lindex $ar_output 0]
     set retmsg [lindex $ar_output 1]
