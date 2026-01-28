@@ -33162,7 +33162,7 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
     return;
 
   location_t loc = DECL_SOURCE_LOCATION (range_decl);
-  tree begin = NULL_TREE;
+  tree begin = NULL_TREE, begin_minus_begin_type = NULL_TREE;
   auto_vec<tree, 8> destruct_decls;
   if (BRACE_ENCLOSED_INITIALIZER_P (expansion_init))
     {
@@ -33309,10 +33309,28 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 	  init = CONSTRUCTOR_ELT (expansion_init, i)->value;
 	  break;
 	case esk_iterating:
-	  tree iter_init, auto_node, iter_type, iter;
+	  tree iter_init, auto_node, iter_type, iter, it;
+	  it = build_int_cst (ptrdiff_type_node, i);
+	  if (begin_minus_begin_type == NULL_TREE)
+	    {
+	      ++cp_unevaluated_operand;
+	      ++c_inhibit_evaluation_warnings;
+	      tree begin_minus_begin
+		= build_x_binary_op (loc, MINUS_EXPR, begin, TREE_CODE (begin),
+				     begin, TREE_CODE (begin), NULL_TREE, NULL,
+				     tf_warning_or_error);
+	      --cp_unevaluated_operand;
+	      --c_inhibit_evaluation_warnings;
+	      begin_minus_begin_type
+		= finish_decltype_type (begin_minus_begin, false,
+					tf_warning_or_error);
+	    }
+	  it = build_constructor_single (init_list_type_node, NULL_TREE, it);
+	  CONSTRUCTOR_IS_DIRECT_INIT (it) = true;
+	  it = finish_compound_literal (begin_minus_begin_type, it,
+					tf_warning_or_error, fcl_functional);
 	  iter_init
-	    = build_x_binary_op (loc, PLUS_EXPR, begin, ERROR_MARK,
-				 build_int_cst (ptrdiff_type_node, i),
+	    = build_x_binary_op (loc, PLUS_EXPR, begin, ERROR_MARK, it,
 				 ERROR_MARK, NULL_TREE, NULL,
 				 tf_warning_or_error);
 	  auto_node = make_auto ();
