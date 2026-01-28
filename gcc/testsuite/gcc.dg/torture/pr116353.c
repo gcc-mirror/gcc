@@ -1,6 +1,5 @@
 /* PR tree-optimization/116353 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
 
 enum desmode { C };
 struct {
