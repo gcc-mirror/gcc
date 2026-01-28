@@ -25,7 +25,10 @@
 
 #include <contracts>
 
-#ifdef __cpp_lib_contracts
+#ifndef __cpp_lib_contracts
+# error "This file requires C++26 contracts support to be enabled"
+#endif
+
 #if _GLIBCXX_HOSTED && _GLIBCXX_VERBOSE
 # include <iostream>
 # include <cxxabi.h>
@@ -154,4 +157,3 @@ _Z41invoke_default_contract_violation_handlerRKNSt9contracts18contract_violation
 { invoke_default_contract_violation_handler(violation); }
 
 #endif
-#endif // __cpp_lib_contracts
