@@ -12236,3 +12236,8 @@ and,
    long as the requested element is within range.  */
 (simplify (IFN_VEC_EXTRACT (vec_duplicate @0) INTEGER_CST@1)
  @0)
+
+/* Strip nop-conversions __builtin_constant_p arguments.  */
+(simplify
+ (BUILT_IN_CONSTANT_P (nop_convert@1 @0))
+ (BUILT_IN_CONSTANT_P @0))
