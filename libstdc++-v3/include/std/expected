@@ -340,6 +340,29 @@ namespace __expected
     concept __not_constructing_bool_from_expected
       = ! is_same_v<remove_cv_t<_Tp>, bool>
 	  || ! __is_expected<remove_cvref_t<_Up>>;
+
+  template<typename _Tp, typename _Up = remove_cvref_t<_Tp>>
+    concept __trivially_replaceable
+      = is_trivially_constructible_v<_Up, _Tp>
+	  && is_trivially_assignable_v<_Up&, _Tp>
+	  && is_trivially_destructible_v<_Up>;
+
+  template<typename _Tp, typename _Up = remove_cvref_t<_Tp>>
+    concept __usable_for_assign
+      = is_constructible_v<_Up, _Tp> && is_assignable_v<_Up&, _Tp>;
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4026. Assignment operators of std::expected should propagate triviality
+  template<typename _Tp>
+    concept __usable_for_trivial_assign
+      = __trivially_replaceable<_Tp> && __usable_for_assign<_Tp>;
+
+  // For copy/move assignment to replace T with E (or vice versa)
+  // we require at least one of them to be nothrow move constructible.
+  template<typename _Tp, typename _Er>
+    concept __can_reassign_type
+      = is_nothrow_move_constructible_v<_Tp>
+	  || is_nothrow_move_constructible_v<_Er>;
 }
 /// @endcond
 
@@ -560,18 +583,31 @@ namespace __expected
 
       // assignment
 
+      // Deleted copy assignment, when constraints not met for other overloads
       expected& operator=(const expected&) = delete;
 
+      // Trivial copy assignment
+      expected&
+      operator=(const expected&)
+      noexcept(__and_v<is_nothrow_copy_constructible<_Tp>,
+		       is_nothrow_copy_constructible<_Er>,
+		       is_nothrow_copy_assignable<_Tp>,
+		       is_nothrow_copy_assignable<_Er>>)
+      requires __expected::__usable_for_trivial_assign<const _Tp&>
+	    && __expected::__usable_for_trivial_assign<const _Er&>
+	    && __expected::__can_reassign_type<_Tp, _Er>
+	= default;
+
+      // Non-trivial copy assignment
       constexpr expected&
       operator=(const expected& __x)
       noexcept(__and_v<is_nothrow_copy_constructible<_Tp>,
 		       is_nothrow_copy_constructible<_Er>,
 		       is_nothrow_copy_assignable<_Tp>,
 		       is_nothrow_copy_assignable<_Er>>)
-      requires is_copy_assignable_v<_Tp> && is_copy_constructible_v<_Tp>
-	    && is_copy_assignable_v<_Er> && is_copy_constructible_v<_Er>
-	    && (is_nothrow_move_constructible_v<_Tp>
-		|| is_nothrow_move_constructible_v<_Er>)
+      requires __expected::__usable_for_assign<const _Tp&>
+	    && __expected::__usable_for_assign<const _Er&>
+	    && __expected::__can_reassign_type<_Tp, _Er>
       {
 	if (__x._M_has_value)
 	  this->_M_assign_val(__x._M_val);
@@ -580,16 +616,28 @@ namespace __expected
 	return *this;
       }
 
+      // Trivial move assignment
+      expected&
+      operator=(expected&&)
+      noexcept(__and_v<is_nothrow_move_constructible<_Tp>,
+		       is_nothrow_move_constructible<_Er>,
+		       is_nothrow_move_assignable<_Tp>,
+		       is_nothrow_move_assignable<_Er>>)
+      requires __expected::__usable_for_trivial_assign<_Tp&&>
+	    && __expected::__usable_for_trivial_assign<_Er&&>
+	    && __expected::__can_reassign_type<_Tp, _Er>
+	= default;
+
+      // Non-trivial move assignment
       constexpr expected&
       operator=(expected&& __x)
       noexcept(__and_v<is_nothrow_move_constructible<_Tp>,
 		       is_nothrow_move_constructible<_Er>,
 		       is_nothrow_move_assignable<_Tp>,
 		       is_nothrow_move_assignable<_Er>>)
-      requires is_move_assignable_v<_Tp> && is_move_constructible_v<_Tp>
-	    && is_move_assignable_v<_Er> && is_move_constructible_v<_Er>
-	    && (is_nothrow_move_constructible_v<_Tp>
-		|| is_nothrow_move_constructible_v<_Er>)
+      requires __expected::__usable_for_assign<_Tp&&>
+	    && __expected::__usable_for_assign<_Er&&>
+	    && __expected::__can_reassign_type<_Tp, _Er>
       {
 	if (__x._M_has_value)
 	  _M_assign_val(std::move(__x._M_val));
@@ -1447,14 +1495,23 @@ namespace __expected
 
       // assignment
 
+      // Deleted copy assignment, when constraints not met for other overloads
       expected& operator=(const expected&) = delete;
 
+      // Trivial copy assignment
+      expected&
+      operator=(const expected&)
+      noexcept(__and_v<is_nothrow_copy_constructible<_Er>,
+		       is_nothrow_copy_assignable<_Er>>)
+      requires __expected::__usable_for_trivial_assign<const _Er&>
+	= default;
+
+      // Non-trivial copy assignment
       constexpr expected&
       operator=(const expected& __x)
       noexcept(__and_v<is_nothrow_copy_constructible<_Er>,
 		       is_nothrow_copy_assignable<_Er>>)
-      requires is_copy_constructible_v<_Er>
-	    && is_copy_assignable_v<_Er>
+      requires __expected::__usable_for_assign<const _Er&>
       {
 	if (__x._M_has_value)
 	  emplace();
@@ -1463,12 +1520,20 @@ namespace __expected
 	return *this;
       }
 
+      // Trivial move assignment
+      expected&
+      operator=(expected&&)
+      noexcept(__and_v<is_nothrow_move_constructible<_Er>,
+		       is_nothrow_move_assignable<_Er>>)
+      requires __expected::__usable_for_trivial_assign<_Er&&>
+	= default;
+
+      // Non-trivial move assignment
       constexpr expected&
       operator=(expected&& __x)
       noexcept(__and_v<is_nothrow_move_constructible<_Er>,
 		       is_nothrow_move_assignable<_Er>>)
-      requires is_move_constructible_v<_Er>
-	    && is_move_assignable_v<_Er>
+      requires __expected::__usable_for_assign<_Er&&>
       {
 	if (__x._M_has_value)
 	  emplace();
