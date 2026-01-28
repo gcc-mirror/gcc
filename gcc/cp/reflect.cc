@@ -2805,13 +2805,12 @@ static tree
 eval_has_template_arguments (tree r)
 {
   r = MAYBE_BASELINK_FUNCTIONS (r);
-  /* Presumably for
+  /* For
        typedef cls_tmpl<int> TYPE;
-     'has_template_arguments (^^TYPE)' should be false?  */
-  if (TYPE_P (r)
-      && typedef_variant_p (r)
-      && !alias_template_specialization_p (r, nt_opaque))
-    return boolean_false_node;
+     'has_template_arguments (^^TYPE)' should be false.  */
+  if (TYPE_P (r) && typedef_variant_p (r))
+    return (alias_template_specialization_p (r, nt_opaque)
+	    ? boolean_true_node : boolean_false_node);
   if (primary_template_specialization_p (r)
       || variable_template_specialization_p (r))
     return boolean_true_node;
