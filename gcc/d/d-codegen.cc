@@ -745,8 +745,12 @@ d_mark_addressable (tree exp, bool complain)
 {
   switch (TREE_CODE (exp))
     {
-    case ADDR_EXPR:
     case COMPONENT_REF:
+      if (complain && DECL_BIT_FIELD (TREE_OPERAND (exp, 1)))
+	error ("cannot take address of bit-field %qD", TREE_OPERAND (exp, 1));
+
+      /* Fall through.  */
+    case ADDR_EXPR:
     case ARRAY_REF:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
