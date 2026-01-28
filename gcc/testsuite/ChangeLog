@@ -1,3 +1,11 @@
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/120096
+	* gdc.dg/torture/pr120096.d: New test.
+
 2026-01-23  Avinash Jayakar  <avinashd@linux.ibm.com>
 
 	PR target/119130
