@@ -1,3 +1,15 @@
+2026-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (resolve_omp_clauses): Reject groupprivate/device-local
+	variables in MAP clauses.
+
+2026-01-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR fortran/118955
+	* decl.cc (gfc_match_gcc_builtin): Add 'fastmath' option which
+	checks for fast-math before accepting a vector function.
+	* gfortran.texi (!GCC$ builtin): Update documentation.
+
 2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* lang.opt.urls: Regenerated.

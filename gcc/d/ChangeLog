@@ -1,3 +1,15 @@
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/120096
+	* expr.cc (ExprVisitor::visit (ArrayLiteralExp *)): Include saved side
+	effects in expression result.
+
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/122817
+	* d-lang.cc (d_parse_file): Set module filename location after
+	creation.
+
 2026-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* gdc.texi: Bump @copyrights-d year.

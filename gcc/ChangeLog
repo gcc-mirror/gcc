@@ -1,3 +1,99 @@
+2026-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/123841
+	* acinclude.m4 (gcc_GAS_FLAGS) <i?86-*-* | x86_64-*-*>: Set
+	gcc_cv_as_flags irrespective of $gas_flag.
+	* configure: Regenerate.
+
+2026-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122623
+	* doc/invoke.texi (-fanalyzer-assume-nothrow): New option.
+
+2026-01-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/97898
+	* omp-expand.cc (expand_omp_for_static_chunk): Don't
+	conditionalize the call to force_gimple_operand_gsi on DECL_P/TREE_ADDRESSABLE
+	but rather pass that as the 3rd argument.
+
+2026-01-27  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/123619
+	* ipa-polymorphic-call.cc
+	(ipa_polymorphic_call_context::possible_dynamic_type_change): Remove impossible
+	speuculation.
+
+2026-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (ld_32_opt, ld_64_opt): Set.
+	(ld_ix86_gld_32_opt): Replace by ld_32_opt.
+	(ld_ix86_gld_64_opt): Replace by ld_64_opt.
+	Replace -melf_x86_64 by ld_64_opt.
+	* configure: Regenerate.
+
+2026-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* acinclude.m4 (gcc_cv_as_flags) Provide Solaris settings.
+	Apply Linux/x86 gas settings on all x86 gas targets, too.
+	(as_32_opt, as_64_opt): Set on all x86 gas targets.
+	* configure.ac: Consistenly use as_32_opt, as_64_opt instead of
+	as_ix86_gas_{32,64}_opt or hardcoded --64.
+	<sparc*-*-*>: Simplify setting TLS test code.
+	* configure: Regenerate.
+
+2026-01-27  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (fw_as_opt): Set.
+	Replace --fatal-warnings by $fw_as_opt.
+	(tls_as_opt): Remove --fatal-warnings.
+	(gcc_cv_as_tls): Use $fw_as_opt.
+	* configure: Regenerate.
+
+2026-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/116296
+	* ipa-modref-tree.cc (modref_access_node::contains): Use
+	poly_offset_int for the param offset difference and the
+	overlap computation.
+
+2026-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/123376
+	* dwarf2out.cc (tree_add_const_value_attribute): Walk all
+	initializers for early mangling of referenced decls.
+	(mangle_referenced_decls): Also walk subtrees of CONSTRUCTORS.
+
+2026-01-27  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123799
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Pun
+	conversion element type with integer type.
+
+2026-01-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/123791
+	* config/aarch64/aarch64.cc (aarch64_cannot_force_const_mem):
+	Always return true for symbols and labels except for large model.
+	(aarch64_select_rtx_section): Force .rodata for constants only.
+
+2026-01-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/123792
+	* config/aarch64/aarch64.md (aarch64_<optab>_reg_minus<mode>3):
+	Add support for invert in shift count.
+
+2026-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* doc/install.texi (gcn): Require Newlib 4.6.0+, replacing 4.3.0+
+	requirement with long list of recommended fixes up to post-4.5.0.
+
+2026-01-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122749
+	* tree-ssa-math-opts.cc (convert_mult_to_fma_1, convert_mult_to_fma):
+	Unwrap converts around addend.
+
 2026-01-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/123820

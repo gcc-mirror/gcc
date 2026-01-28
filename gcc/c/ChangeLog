@@ -1,3 +1,9 @@
+2026-01-27  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/123500
+	* c-typeck.cc (build_c_cast): Exclude call to .ACCESS_WITH_SIZE from
+	-Wbad-function-cast warnings.
+
 2026-01-16  Jakub Jelinek  <jakub@redhat.com>
 	    Peter Damianov  <peter0x44@disroot.org>
 

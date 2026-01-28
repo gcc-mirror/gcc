@@ -1,3 +1,138 @@
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/120096
+	* gdc.dg/torture/pr120096.d: New test.
+
+2026-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122623
+	* gcc.dg/analyzer/fexceptions-1.c: New test.
+	* gcc.dg/analyzer/fexceptions-2.c: New test.
+
+2026-01-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/97898
+	* c-c++-common/gomp/pr97898-1.c: New test.
+
+2026-01-27  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/123500
+	* gcc.dg/pointer-counted-by-pr123500.c: New test.
+
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/122817
+	* gdc.dg/pr122817.d: New test.
+
+2026-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/116296
+	* gcc.dg/torture/pr116296.c: New testcase.
+
+2026-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/123376
+	* g++.dg/lto/pr123376_0.C: New testcase.
+
+2026-01-27  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/mve/intrinsics/vdupq_n_f32.c: Update expected
+	code.
+
+2026-01-27  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123799
+	* gcc.dg/torture/pr123799.c: New test.
+
+2026-01-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/groupprivate-7.f90: New test.
+
+2026-01-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR fortran/118955
+	* gfortran.dg/simd-builtins-9.f90: Add new test.
+	* gfortran.dg/simd-builtins-9.h: Likewise.
+
+2026-01-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/123791
+	* gcc.target/aarch64/pr123791.c: New test.
+
+2026-01-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/123792
+	* gcc.target/aarch64/pr123792.c: New test.
+
+2026-01-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122609
+	PR c++/101140
+	* g++.dg/modules/adl-12_b.C: Remove XFAIL.
+	* g++.dg/modules/inst-8_a.C: New test.
+	* g++.dg/modules/inst-8_b.C: New test.
+	* g++.dg/modules/inst-8_c.C: New test.
+	* g++.dg/modules/inst-9_a.C: New test.
+	* g++.dg/modules/inst-9_b.C: New test.
+	* g++.dg/modules/inst-10_a.C: New test.
+	* g++.dg/modules/inst-10_b.C: New test.
+	* g++.dg/modules/inst-10_c.C: New test.
+
+2026-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/reflect/cwg3153.C: New test.
+
+2026-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123404
+	* g++.dg/reflect/pr123404.C: New test.
+
+2026-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123578
+	* g++.dg/cpp2a/pr123578.C: New test.
+
+2026-01-27  Frank Scheiner  <frank.scheiner@web.de>
+
+	* gcc.dg/guality/guality.exp: Only test with LTO if supported.
+	* g++.dg/guality/guality.exp: Likewise.
+
+2026-01-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122749
+	* gcc.target/aarch64/pr122749_1.c: New test.
+	* gcc.target/aarch64/pr122749_2.c: New test.
+	* gcc.target/aarch64/pr122749_3.c: New test.
+	* gcc.target/aarch64/pr122749_4.c: New test.
+	* gcc.target/aarch64/pr122749_5.c: New test.
+	* gcc.target/aarch64/pr122749_6.c: New test.
+	* gcc.target/aarch64/pr122749_8.c: New test.
+	* gcc.target/aarch64/pr122749_9.c: New test.
+	* gcc.target/aarch64/sve/pr122749_1.c: New test.
+	* gcc.target/aarch64/sve/pr122749_11.c: New test.
+	* gcc.target/aarch64/sve/pr122749_12.c: New test.
+	* gcc.target/aarch64/sve/pr122749_13.c: New test.
+	* gcc.target/aarch64/sve/pr122749_14.c: New test.
+	* gcc.target/aarch64/sve/pr122749_2.c: New test.
+	* gcc.target/aarch64/sve/pr122749_3.c: New test.
+	* gcc.target/aarch64/sve/pr122749_4.c: New test.
+	* gcc.target/aarch64/sve/pr122749_5.c: New test.
+	* gcc.target/aarch64/sve/pr122749_6.c: New test.
+	* gcc.target/aarch64/sve/pr122749_8.c: New test.
+	* gcc.target/aarch64/sve/pr122749_9.c: New test.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123676
+	* g++.dg/cpp2a/concepts-decltype5.C: New test.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122494
+	PR c++/123814
+	* g++.dg/cpp2a/concepts-pr122494.C: New test.
+	* g++.dg/cpp2a/concepts-pr123814.C: New test.
+
 2026-01-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/123820

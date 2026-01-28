@@ -1,3 +1,52 @@
+2026-01-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122609
+	PR c++/101140
+	* cp-tree.h (visible_from_instantiation_origination): Declare.
+	* module.cc: (orig_decl_for_instantiation): New function.
+	(path_of_instantiation): Use it.
+	(visible_from_instantiation_origination): New function.
+	* name-lookup.cc (name_lookup::search_namespace_only): Also find
+	names visible at the point the instantiation originated.
+
+2026-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.cc (immediate_escalating_function_p): Implement
+	CWG3153 - Immediate-escalating defaulted comparison.  Don't check
+	special_memfn_p for sfk_none for DECL_DEFAULTED_FNs.
+	* decl.cc (grokfndecl): Similarly for initialized == SD_DEFAULTED
+	fns.
+
+2026-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123404
+	* decl.cc (grokfndecl): Replace bool deletedp argument with
+	int initialized.  Test initialized == SD_DELETED instead of deletedp.
+	Don't call check_consteval_only_fn for defaulted special member fns.
+	(grokdeclarator): Pass initialized rather than
+	initialized == SD_DELETED to grokfndecl.
+
+2026-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123578
+	* tree.cc (cxx_printable_name_internal): Call lang_decl_name before
+	finding the slot to cache it in and repeat search in the cache
+	after the call.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123676
+	* pt.cc (tsubst_pack_expansion): Relax unsubsituted_packs
+	assert to allow !processing_template_decl when args is
+	NULL_TREE.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122494
+	PR c++/123814
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Clear
+	uid_sensitive_constexpr_evaluation_value when mce_true.
+
 2026-01-26  Marek Polacek  <polacek@redhat.com>
 
 	* reflect.cc (check_splice_expr): Check if process_outer_var_ref

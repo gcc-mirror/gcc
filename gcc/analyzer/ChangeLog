@@ -1,3 +1,11 @@
+2026-01-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122623
+	* analyzer.opt (fanalyzer-assume-nothrow): New.
+	* analyzer.opt.urls: Regenerate.
+	* region-model.cc (can_throw_p): Bail out if the user specified
+	-fanalyzer-assume-nothrow.
+
 2026-01-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/123145
