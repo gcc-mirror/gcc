@@ -6564,7 +6564,7 @@ class_members_of (location_t loc, const constexpr_ctx *ctx, tree r,
     {
       tree m = field;
       if (TREE_CODE (field) == FIELD_DECL && DECL_ARTIFICIAL (field))
-	continue; /* Ignore bases.  */
+	continue; /* Ignore bases and the vptr.  */
       else if (DECL_SELF_REFERENCE_P (field))
 	continue;
       else if (TREE_CODE (field) == TYPE_DECL)
@@ -7992,9 +7992,17 @@ splice (tree refl)
     refl = fold_non_dependent_expr (refl, tf_warning_or_error, true);
   else
     refl = cxx_constant_value (refl);
+  if (refl == error_mark_node)
+    {
+      gcc_checking_assert (seen_error ());
+      return error_mark_node;
+    }
   if (!REFLECT_EXPR_P (refl))
-    /* I don't wanna do your dirty work no more.  */
-    return error_mark_node;
+    {
+      error_at (cp_expr_loc_or_input_loc (refl), "splice argument must be an "
+		"expression of type %qs", "std::meta::info");
+      return error_mark_node;
+    }
 
   /* We are bringing some entity from the unevaluated expressions world
      to possibly outside of that, mark it used.  */
