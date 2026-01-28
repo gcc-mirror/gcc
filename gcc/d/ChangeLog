@@ -1,3 +1,21 @@
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/120096
+	* expr.cc (ExprVisitor::visit (ArrayLiteralExp *)): Include saved side
+	effects in expression result.
+
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/122817
+	* d-lang.cc (d_parse_file): Set module filename location after
+	creation.
+
 2025-08-08  Release Manager
 
 	* GCC 15.2.0 released.

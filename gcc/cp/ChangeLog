@@ -1,3 +1,23 @@
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123676
+	* pt.cc (tsubst_pack_expansion): Relax unsubsituted_packs
+	assert to allow !processing_template_decl when args is
+	NULL_TREE.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122494
+	PR c++/123814
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Clear
+	uid_sensitive_constexpr_evaluation_value when mce_true.
+
 2026-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

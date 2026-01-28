@@ -1,3 +1,37 @@
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/120096
+	* gdc.dg/torture/pr120096.d: New test.
+
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/122817
+	* gdc.dg/pr122817.d: New test.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123676
+	* g++.dg/cpp2a/concepts-decltype5.C: New test.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122494
+	PR c++/123814
+	* g++.dg/cpp2a/concepts-pr122494.C: New test.
+	* g++.dg/cpp2a/concepts-pr123814.C: New test.
+
 2026-01-23  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
