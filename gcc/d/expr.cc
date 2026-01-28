@@ -2737,7 +2737,7 @@ public:
 	gcc_assert (tb->ty == TY::Tarray);
 	ctor = force_target_expr (ctor);
 	ctor = d_array_value (type, size_int (e->elements->length),
-			      build_address (force_target_expr (ctor)));
+			      build_address (ctor));
 	this->result_ = compound_expr (saved_elems, ctor);
       }
     else
