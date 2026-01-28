@@ -2459,8 +2459,16 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	{
 	mismatch:
 	  if (complain & tf_error)
-	    error ("pointer to member type %qT incompatible with object "
-		   "type %qT", type, objtype);
+	    {
+	      if (COMPLETE_TYPE_P (objtype))
+		error ("pointer to member type %qT incompatible "
+		       "with object type %qT because %qT is not "
+		       "derived from %qT", ptrmem_type, objtype,
+		       objtype, ctype);
+	      else
+		error ("pointer to member type %qT incompatible with "
+		       "incomplete object type %qT", ptrmem_type, objtype);
+	    }
 	  return error_mark_node;
 	}
       else if (binfo == error_mark_node)
