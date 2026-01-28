@@ -3920,6 +3920,7 @@ static tree
 eval_type_trait (location_t loc, tree type1, tree type2, cp_trait_kind kind)
 {
   tree r = finish_trait_expr (loc, kind, type1, type2);
+  gcc_checking_assert (r != error_mark_node);
   STRIP_ANY_LOCATION_WRAPPER (r);
   return r;
 }
