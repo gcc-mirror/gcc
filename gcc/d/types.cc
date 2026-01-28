@@ -324,6 +324,10 @@ insert_aggregate_bitfield (tree type, tree bitfield, size_t width,
   DECL_BIT_FIELD (bitfield) = 1;
   DECL_BIT_FIELD_TYPE (bitfield) = TREE_TYPE (bitfield);
 
+  DECL_NONADDRESSABLE_P (bitfield) = 1;
+  if (DECL_NAME (bitfield) == NULL_TREE)
+    DECL_PADDING_P (bitfield) = 1;
+
   TYPE_FIELDS (type) = chainon (TYPE_FIELDS (type), bitfield);
 }
 
@@ -671,7 +675,11 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
 	  continue;
 	}
 
-      layout_decl (field, 0);
+      /* Layout the field decl using its known alignment.  */
+      unsigned int known_align =
+	least_bit_hwi (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field)));
+
+      layout_decl (field, known_align);
 
       /* Give bit-field its proper type after layout_decl.  */
       if (DECL_BIT_FIELD (field))
