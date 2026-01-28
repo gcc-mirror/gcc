@@ -1289,27 +1289,23 @@ package body Exp_Put_Image is
    ----------------------
 
    function Build_Image_Call (N : Node_Id) return Node_Id is
-      --  For T'[[Wide_]Wide_]Image (X) Generate an Expression_With_Actions
-      --  node:
+      --  For Typ'[[Wide_]Wide_]Image (X) generate:
       --
-      --     do
-      --        S : Buffer;
-      --        U_Type'Put_Image (S, X);
-      --        Result : constant [[Wide_]Wide_]String :=
-      --          [[Wide_[Wide_]]Get (S);
-      --        Destroy (S);
-      --     in Result end
+      --    S : Buffer_Type;
+      --    U_Typ'Put_Image (S, X);
+      --    [[Wide_[Wide_]]Get (S)
       --
-      --  where U_Type is the underlying type, as needed to bypass privacy.
+      --  where U_Typ is the underlying type, as needed to bypass privacy.
 
-      Loc : constant Source_Ptr := Sloc (N);
-      U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));
-      Sink_Entity : constant Entity_Id :=
-        Make_Temporary (Loc, 'S');
+      Loc   : constant Source_Ptr := Sloc (N);
+      U_Typ : constant Entity_Id  := Underlying_Type (Entity (Prefix (N)));
+
+      Sink_Entity : constant Entity_Id := Make_Temporary (Loc, 'S');
+
       Sink_Decl : constant Node_Id :=
         Make_Object_Declaration (Loc,
           Defining_Identifier => Sink_Entity,
-          Object_Definition =>
+          Object_Definition   =>
             New_Occurrence_Of (RTE (RE_Buffer_Type), Loc));
 
       Image_Prefix : constant Node_Id :=
@@ -1317,75 +1313,47 @@ package body Exp_Put_Image is
 
       Put_Im : constant Node_Id :=
         Make_Attribute_Reference (Loc,
-          Prefix         => New_Occurrence_Of (U_Type, Loc),
+          Prefix         => New_Occurrence_Of (U_Typ, Loc),
           Attribute_Name => Name_Put_Image,
           Expressions    => New_List (
             New_Occurrence_Of (Sink_Entity, Loc),
             Image_Prefix));
-      Result_Entity : constant Entity_Id :=
-        Make_Temporary (Loc, 'R');
 
-      subtype Image_Name_Id is Name_Id with Static_Predicate =>
-        Image_Name_Id in Name_Image | Name_Wide_Image | Name_Wide_Wide_Image;
-      --  Attribute names that will be mapped to the corresponding result types
-      --  and functions.
+      Get_Func_Id : constant RE_Id :=
+        (case Get_Attribute_Id (Attribute_Name (N)) is
+          when Attribute_Img             => RE_Get,
+          when Attribute_Image           => RE_Get,
+          when Attribute_Wide_Image      => RE_Wide_Get,
+          when Attribute_Wide_Wide_Image => RE_Wide_Wide_Get,
+          when others                    => raise Program_Error);
 
-      Attribute_Name_Id : constant Name_Id :=
-        (if Attribute_Name (N) = Name_Img then Name_Image
-         else Attribute_Name (N));
-
-      Result_Typ    : constant Entity_Id :=
-        (case Image_Name_Id'(Attribute_Name_Id) is
-            when Name_Image           => Stand.Standard_String,
-            when Name_Wide_Image      => Stand.Standard_Wide_String,
-            when Name_Wide_Wide_Image => Stand.Standard_Wide_Wide_String);
-      Get_Func_Id   : constant RE_Id :=
-        (case Image_Name_Id'(Attribute_Name_Id) is
-            when Name_Image           => RE_Get,
-            when Name_Wide_Image      => RE_Wide_Get,
-            when Name_Wide_Wide_Image => RE_Wide_Wide_Get);
-
-      Result_Decl : constant Node_Id :=
-        Make_Object_Declaration (Loc,
-          Defining_Identifier => Result_Entity,
-          Object_Definition =>
-            New_Occurrence_Of (Result_Typ, Loc),
-          Expression =>
-            Make_Function_Call (Loc,
-              Name => New_Occurrence_Of (RTE (Get_Func_Id), Loc),
-              Parameter_Associations => New_List (
-                New_Occurrence_Of (Sink_Entity, Loc))));
       Actions : List_Id;
 
    --  Start of processing for Build_Image_Call
 
    begin
-      if Is_Class_Wide_Type (U_Type) then
+      if Is_Class_Wide_Type (U_Typ) then
          Actions := New_List (Sink_Decl);
 
          Put_Specific_Type_Name_Qualifier (Loc,
            Stms              => Actions,
            Tagged_Obj        => Image_Prefix,
            Buffer_Name       => New_Occurrence_Of (Sink_Entity, Loc),
-           Is_Interface_Type => Is_Interface (U_Type));
+           Is_Interface_Type => Is_Interface (U_Typ));
 
          Append_To (Actions, Put_Im);
-         Append_To (Actions, Result_Decl);
+
       else
-         Actions := New_List (Sink_Decl, Put_Im, Result_Decl);
+         Actions := New_List (Sink_Decl, Put_Im);
       end if;
 
-      --  To avoid leaks, we need to manage the secondary stack, because Get is
-      --  returning a String allocated thereon. It might be cleaner to let the
-      --  normal mechanisms for functions returning on the secondary stack call
-      --  Set_Uses_Sec_Stack, but this expansion of 'Image is happening too
-      --  late for that.
+      Insert_Actions (N, Actions);
 
-      Set_Uses_Sec_Stack (Current_Scope);
-
-      return Make_Expression_With_Actions (Loc,
-        Actions    => Actions,
-        Expression => New_Occurrence_Of (Result_Entity, Loc));
+      return
+        Make_Function_Call (Loc,
+          Name => New_Occurrence_Of (RTE (Get_Func_Id), Loc),
+            Parameter_Associations => New_List (
+              New_Occurrence_Of (Sink_Entity, Loc)));
    end Build_Image_Call;
 
    ------------------------------
