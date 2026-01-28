@@ -919,13 +919,19 @@ noce_can_force_operand (rtx x)
       switch (GET_CODE (x))
 	{
 	case MULT:
-	case DIV:
 	case MOD:
 	case UDIV:
 	case UMOD:
 	  return true;
+	case DIV:
+	  if (INTEGRAL_MODE_P (GET_MODE (x)))
+	    return true;
+	  /* FALLTHRU */
 	default:
-	  return code_to_optab (GET_CODE (x));
+	  auto optab = code_to_optab (GET_CODE (x));
+	  if (!optab)
+	    return false;
+	  return optab_handler (optab, GET_MODE (x));
 	}
     }
   if (UNARY_P (x))
@@ -945,7 +951,10 @@ noce_can_force_operand (rtx x)
 	case UNSIGNED_FLOAT:
 	  return true;
 	default:
-	  return code_to_optab (GET_CODE (x));
+	  auto optab = code_to_optab (GET_CODE (x));
+	  if (!optab)
+	    return false;
+	  return optab_handler (optab, GET_MODE (x));
 	}
     }
   return false;
