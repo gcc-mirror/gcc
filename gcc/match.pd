@@ -214,7 +214,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify (abs (convert @0))
  (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
       && !TYPE_UNSIGNED (TREE_TYPE (@0))
-      && element_precision (type) > element_precision (TREE_TYPE (@0)))
+      && element_precision (type) > element_precision (TREE_TYPE (@0))
+      && (!VECTOR_TYPE_P (type)
+	  || target_supports_op_p (TREE_TYPE (@0), ABSU_EXPR, optab_vector)))
   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
    (convert (absu:utype @0)))))
 
