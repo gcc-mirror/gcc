@@ -7263,10 +7263,6 @@ maybe_commonize_var (tree decl)
   if (DECL_ARTIFICIAL (decl) && !DECL_DECOMPOSITION_P (decl))
     return;
 
-  /* These are not output at all.  */
-  if (consteval_only_p (decl))
-    return;
-
   /* Static data in a function with comdat linkage also has comdat
      linkage.  */
   if ((TREE_STATIC (decl)
@@ -8758,6 +8754,13 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
     {
       /* Disable assemble_variable.  */
       DECL_EXTERNAL (decl) = true;
+      /* Undo make_decl_one_only.  */
+      if (DECL_COMDAT_GROUP (decl))
+	{
+	  symtab_node *node = symtab_node::get (decl);
+	  node->set_comdat_group (NULL);
+	  node->dissolve_same_comdat_group_list ();
+	}
       return;
     }
 
