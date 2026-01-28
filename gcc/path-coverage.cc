@@ -379,8 +379,8 @@ void
 flush_on_edges (basic_block bb, size_t bucket, tree local, tree mask,
 		tree atomic_ior, tree gcov_type_node)
 {
-  gimple *def = SSA_NAME_DEF_STMT (local);
-  gphi *phi = dyn_cast <gphi *> (def);
+  gimple *def = !constant_p (local) ? SSA_NAME_DEF_STMT (local) : NULL;
+  gphi *phi = safe_dyn_cast <gphi *> (def);
 
   tree relaxed = nullptr;
   if (atomic_ior)
