@@ -2323,7 +2323,7 @@ c_parser_maybe_reclassify_token (c_parser *parser)
     {
       c_token *token = c_parser_peek_token (parser);
 
-      if (token->id_kind != C_ID_CLASSNAME)
+      if (token->id_kind == C_ID_ID || token->id_kind == C_ID_TYPENAME)
 	{
 	  tree decl = lookup_name (token->value);
 
