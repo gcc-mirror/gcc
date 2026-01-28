@@ -1701,6 +1701,7 @@ new_delete_mismatch_p (const demangle_component &newc,
       return new_delete_mismatch_p (*newc.u.s_dtor.name,
 				    *delc.u.s_dtor.name);
 
+    case DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE:
     case DEMANGLE_COMPONENT_BUILTIN_TYPE:
       {
 	/* The demangler API provides no better way to compare built-in
