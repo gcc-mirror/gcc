@@ -730,6 +730,10 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       if (TREE_CODE (t) != TYPE_DECL)
 	fld_worklist_push (DECL_INITIAL (t), fld);
 
+      /* Remove C++ annotations, those aren't needed for LTO and contain
+	 trees we sometimes can't stream.  */
+      DECL_ATTRIBUTES (t)
+	= remove_attribute ("annotation ", DECL_ATTRIBUTES (t));
       fld_worklist_push (DECL_ATTRIBUTES (t), fld);
       fld_worklist_push (DECL_ABSTRACT_ORIGIN (t), fld);
 
@@ -763,6 +767,10 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	fld_worklist_push (TYPE_CACHED_VALUES (t), fld);
       fld_worklist_push (TYPE_SIZE (t), fld);
       fld_worklist_push (TYPE_SIZE_UNIT (t), fld);
+      /* Remove C++ annotations, those aren't needed for LTO and contain
+	 trees we sometimes can't stream.  */
+      TYPE_ATTRIBUTES (t)
+	= remove_attribute ("annotation ", TYPE_ATTRIBUTES (t));
       fld_worklist_push (TYPE_ATTRIBUTES (t), fld);
       fld_worklist_push (TYPE_POINTER_TO (t), fld);
       fld_worklist_push (TYPE_REFERENCE_TO (t), fld);
