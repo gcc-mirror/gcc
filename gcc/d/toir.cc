@@ -1022,41 +1022,64 @@ public:
 	/* Detect a call to a constructor function, or if returning a struct
 	   literal, write result directly into the return value.  */
 	StructLiteralExp *sle = NULL;
+	DeclarationExp *de = NULL;
+	VarExp *ve = NULL;
 	bool using_rvo_p = false;
 
 	if (DotVarExp *dve = (s->exp->isCallExp ()
 			      ? s->exp->isCallExp ()->e1->isDotVarExp ()
 			      : NULL))
 	  {
+	    /* Look for `var.__ctor(copytmp = {}, &copytmp)'  */
 	    if (dve->var->isCtorDeclaration ())
 	      {
 		if (CommaExp *ce = dve->e1->isCommaExp ())
 		  {
-		    /* Temporary initialized inside a return expression, and
-		       used as the return value.  Replace it with the hidden
-			reference to allow RVO return.  */
-		    DeclarationExp *de = ce->e1->isDeclarationExp ();
-		    VarExp *ve = ce->e2->isVarExp ();
-		    if (de != NULL && ve != NULL
-			&& ve->var == de->declaration
-			&& ve->var->storage_class & STCtemp)
-		      {
-			tree var = get_symbol_decl (ve->var);
-			TREE_ADDRESSABLE (var) = 1;
-			SET_DECL_VALUE_EXPR (var, decl);
-			DECL_HAS_VALUE_EXPR_P (var) = 1;
-			SET_DECL_LANG_NRVO (var, this->func_->shidden);
-			using_rvo_p = true;
-		      }
+		    de = ce->e1->isDeclarationExp ();
+		    ve = ce->e2->isVarExp ();
 		  }
 		else
 		  sle = dve->e1->isStructLiteralExp ();
 	      }
 	  }
+	else if (CommaExp *ce1 = s->exp->isCommaExp ())
+	  {
+	    /* Look for `copytmp = {}, copytmp.__ctor(), copytmp'  */
+	    if (CommaExp *ce2 = ce1->e2->isCommaExp ())
+	      {
+		DotVarExp *dve = ce2->e1->isCallExp ()
+		  ? ce2->e1->isCallExp ()->e1->isDotVarExp () : NULL;
+
+		if (dve && dve->var->isCtorDeclaration ())
+		  {
+		    de = ce1->e1->isDeclarationExp ();
+		    ve = ce2->e2->isVarExp ();
+		  }
+	      }
+	    else
+	      {
+		de = ce1->e1->isDeclarationExp ();
+		ve = ce1->e2->isVarExp ();
+	      }
+	  }
 	else
 	  sle = s->exp->isStructLiteralExp ();
 
-	if (sle != NULL)
+	if (de != NULL && ve != NULL
+	    && ve->var == de->declaration
+	    && ve->var->storage_class & STCtemp)
+	  {
+	    /* Temporary initialized inside a return expression, and
+	       used as the return value.  Replace it with the hidden
+	       reference to allow RVO return.  */
+	    tree var = get_symbol_decl (ve->var);
+	    TREE_ADDRESSABLE (var) = 1;
+	    SET_DECL_VALUE_EXPR (var, decl);
+	    DECL_HAS_VALUE_EXPR_P (var) = 1;
+	    SET_DECL_LANG_NRVO (var, this->func_->shidden);
+	    using_rvo_p = true;
+	  }
+	else if (sle != NULL)
 	  {
 	    sle->sym = build_address (this->func_->shidden);
 	    using_rvo_p = true;
