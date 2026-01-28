@@ -4500,6 +4500,15 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  else
 		    {
 		      masktype = bestn_inbranch->simdclone->args[i].vector_type;
+		      /* The aarch64 port will add custom attributes to types
+			 for SVE simdclones which make the types different.  We
+			 should use canonincal types for masks within the
+			 vectorizer, hence we construct the related vectype
+			 here.  */
+		      masktype
+			= build_truth_vector_type_for_mode
+			  (TYPE_VECTOR_SUBPARTS (masktype),
+			   TYPE_MODE (masktype));
 		      callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
 		    }
 		  auto o = vector_unroll_factor (nunits, callee_nelements);
