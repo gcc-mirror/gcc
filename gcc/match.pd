@@ -11415,10 +11415,11 @@ and,
 	    unsigned int elt_bits = tree_to_uhwi (TYPE_SIZE (elt_type));
 	    tree size = bitsize_int (elt_bits);
 	    tree pos = bitsize_int (elt_bits * i); }
-     (view_convert
-      (bit_and:elt_type
-       (BIT_FIELD_REF:elt_type @0 { size; } { pos; })
-       { elt; })))))))
+     (if (compare_tree_int (TYPE_SIZE (type), elt_bits) == 0)
+      (view_convert
+       (bit_and:elt_type
+        (BIT_FIELD_REF:elt_type @0 { size; } { pos; })
+        { elt; }))))))))
 
 /* Fold reduction of a single nonzero element constructor.  */
 (for reduc (IFN_REDUC_PLUS IFN_REDUC_IOR IFN_REDUC_XOR)
