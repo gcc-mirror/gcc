@@ -2584,6 +2584,10 @@ package body Checks is
                     Chars      => Name_Check,
                     Expression => Expr)));
 
+            --  The check is enabled unconditionally
+
+            Set_Is_Checked (Prag);
+
             --  Add a message unless exception messages are suppressed
 
             if not Exception_Locations_Suppressed then
@@ -2641,9 +2645,12 @@ package body Checks is
          if Is_Scalar_Type (Typ) then
             Nam := Name_Valid;
 
-         --  For any non-scalar with scalar parts, generate 'Valid_Scalars test
+         --  For non-scalars with scalar parts, generate 'Valid_Scalars test,
+         --  except for unchecked unions since we cannot know where they are.
 
-         elsif Scalar_Part_Present (Typ) then
+         elsif Scalar_Part_Present (Typ)
+           and then not Is_Unchecked_Union (Typ)
+         then
             Nam := Name_Valid_Scalars;
 
          --  No test needed for other cases (no scalars to test)
@@ -2735,8 +2742,7 @@ package body Checks is
          return;
       end if;
 
-      --  Inspect all the formals applying aliasing and scalar initialization
-      --  checks where applicable.
+      --  Apply scalar initialization checks to formals where applicable
 
       Formal := First_Formal (Subp);
       while Present (Formal) loop
