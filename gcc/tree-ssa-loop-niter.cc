@@ -1218,7 +1218,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
     }
 
   /* IV0 < IV1 does not loop if IV0->base >= IV1->base.  */
-  if (mpz_cmp (mmod, bnds->below) < 0)
+  if (fv_comp_no_overflow && mpz_cmp (mmod, bnds->below) < 0)
     noloop = boolean_false_node;
   else
     noloop = fold_build2 (GE_EXPR, boolean_type_node,
