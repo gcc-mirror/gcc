@@ -3600,8 +3600,8 @@ make_param_constraints (varinfo_t vi)
     }
 }
 
-/* Create varinfo structures for all of the variables in the
-   function for intraprocedural mode.  */
+/* Create varinfo structures for parameters, return value and the static
+   chain of FN.  Intended for intraprocedural mode.  */
 
 static void
 intra_create_variable_infos (struct function *fn)
