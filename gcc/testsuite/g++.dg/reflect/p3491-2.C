@@ -12,22 +12,14 @@ constexpr auto foo() -> std::vector<int> { return {1, 2, 3}; }
 consteval void bar() {
     template for (constexpr int I : foo()) {
         // doesn't work
-    }		// { dg-error "modification of '<temporary>' from outside current evaluation is not a constant expression" }
+    }		// { dg-error "'foo\\\(\\\)' is not a constant expression because it refers to a result of 'operator new'" }
 }
 
 consteval int baz() {
     int r = 0;
-#if 0
-    // TODO: This doesn't work yet.
     template for (constexpr int I : std::define_static_array(foo())) {
 	r += I;
     }
-#else
-    // Ugly workaround for that.
-    template for (constexpr int I : (const std::span<const int>)std::define_static_array(foo())) {
-	r += I;
-    }
-#endif
     return r;
 }
 
@@ -45,6 +37,15 @@ consteval int fred() {
     return (... + m);
 }
 
+consteval int garply() {
+    int r = 0;
+    template for (constexpr int I : (const std::span<const int>)std::define_static_array(foo())) {
+	r += I;
+    }
+    return r;
+}
+
 static_assert (baz() == 6);
 static_assert (qux() == 6);
 static_assert (fred<int>() == 6);
+static_assert (garply() == 6);

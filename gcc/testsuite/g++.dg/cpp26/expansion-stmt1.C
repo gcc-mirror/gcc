@@ -40,15 +40,15 @@ struct C
 namespace N
 {
   struct B { constexpr B () {} };
-  constexpr A begin (B &) { return A (0); }
-  constexpr A end (B &) { return A (6); }
+  constexpr A begin (const B &) { return A (0); }
+  constexpr A end (const B &) { return A (6); }
 }
 
 namespace O
 {
   struct D { constexpr D () {} };
-  constexpr C begin (D &) { return C (0, 42, 5); }
-  constexpr C end (D &) { return C (6, 36, 11); }
+  constexpr C begin (const D &) { return C (0, 42, 5); }
+  constexpr C end (const D &) { return C (6, 36, 11); }
 }
 
 long long

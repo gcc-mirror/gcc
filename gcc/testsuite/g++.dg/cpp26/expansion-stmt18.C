@@ -17,8 +17,8 @@ struct A
 namespace N
 {
   struct B { constexpr B () {} };
-  constexpr A begin (B &) { return A (0); }
-  constexpr A end (B &) { return A (6); }
+  constexpr A begin (const B &) { return A (0); }
+  constexpr A end (const B &) { return A (6); }
 }
 
 void

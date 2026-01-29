@@ -15855,12 +15855,24 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
    builds up the range temporary.  */
 
 tree
-build_range_temp (tree range_expr)
+build_range_temp (tree range_expr, bool expansion_stmt_p /* = false */)
 {
-  /* Find out the type deduced by the declaration
-     `auto &&__range = range_expr'.  */
-  tree auto_node = make_auto ();
-  tree range_type = cp_build_reference_type (auto_node, true);
+  tree range_type, auto_node;
+
+  if (expansion_stmt_p)
+    {
+      /* Build const decltype(auto) __range = range_expr;
+	 - range_expr provided by the caller already is (range_expr).  */
+      auto_node = make_decltype_auto ();
+      range_type = cp_build_qualified_type (auto_node, TYPE_QUAL_CONST);
+    }
+  else
+    {
+      /* Find out the type deduced by the declaration
+	 `auto &&__range = range_expr'.  */
+      auto_node = make_auto ();
+      range_type = cp_build_reference_type (auto_node, true);
+    }
   range_type = do_auto_deduction (range_type, range_expr, auto_node);
 
   /* Create the __range variable.  */
@@ -16019,13 +16031,17 @@ cp_build_range_for_decls (location_t loc, tree range_expr, tree *end_p,
 	range_temp = range_expr;
       else
 	{
-	  range_temp = build_range_temp (range_expr);
 	  if (expansion_stmt_p)
 	    {
-	      /* Depending on CWG3044 resolution, we might want to remove
-		 these 3 sets of TREE_STATIC (on range_temp, begin and end).
-		 Although it can only be done when P2686R4 is fully
-		 implemented.  */
+	      /* Build constexpr decltype(auto) __for_range = (range_expr);  */
+	      location_t range_loc = cp_expr_loc_or_loc (range_expr, loc);
+	      range_expr
+		= finish_parenthesized_expr (cp_expr (range_expr, range_loc));
+	      range_temp = build_range_temp (range_expr, true);
+
+	      /* When P2686R4 is fully implemented, these 3 sets of TREE_STATIC
+		 (on range_temp, begin and end) should be removed as per
+		 CWG3044.  */
 	      TREE_STATIC (range_temp) = 1;
 	      TREE_PUBLIC (range_temp) = 0;
 	      DECL_COMMON (range_temp) = 0;
@@ -16033,6 +16049,10 @@ cp_build_range_for_decls (location_t loc, tree range_expr, tree *end_p,
 	      DECL_DECLARED_CONSTEXPR_P (range_temp) = 1;
 	      TREE_READONLY (range_temp) = 1;
 	    }
+	  else
+	    /* Build auto &&__for_range = range_expr;  */
+	    range_temp = build_range_temp (range_expr);
+
 	  pushdecl (range_temp);
 	  cp_finish_decl (range_temp, range_expr,
 			  /*is_constant_init*/false, NULL_TREE,
