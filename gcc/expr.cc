@@ -3038,6 +3038,7 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type,
       src = orig_src;
       if (!MEM_P (orig_src)
 	  && (!REG_P (orig_src) || HARD_REGISTER_P (orig_src))
+	  && GET_CODE (orig_src) != CONCAT
 	  && !CONSTANT_P (orig_src))
 	{
 	  gcc_assert (GET_MODE (orig_src) != VOIDmode);
