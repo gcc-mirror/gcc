@@ -1031,7 +1031,7 @@ export namespace std::contracts
   using std::contracts::evaluation_semantic;
   using std::contracts::detection_mode;
   using std::contracts::contract_violation;
-  using std::contracts::invoke_default_violation_handler;
+  using std::contracts::invoke_default_contract_violation_handler;
 }
 #endif // __cpp_lib_contracts
 
