@@ -3376,6 +3376,39 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       goto try_libcall;
     }
 
+  /* Neg should be tried via expand_absneg_bit before widening.  */
+  if (optab_to_code (unoptab) == NEG)
+    {
+      /* Try negating floating point values by flipping the sign bit.  */
+      if (is_a <scalar_float_mode> (GET_MODE_INNER (mode), &float_mode))
+	{
+	  temp = expand_absneg_bit (NEG, mode, float_mode, op0, target);
+	  if (temp)
+	    return temp;
+	}
+
+      /* If there is no negation pattern, and we have no negative zero,
+	 try subtracting from zero.  */
+      if (!HONOR_SIGNED_ZEROS (mode))
+	{
+	  temp = expand_binop (mode, (unoptab == negv_optab
+				      ? subv_optab : sub_optab),
+			       CONST0_RTX (mode), op0, target,
+			       unsignedp, OPTAB_DIRECT);
+	  if (temp)
+	    return temp;
+	}
+    }
+
+  /* ABS also needs to be handled similarly.  */
+  if (optab_to_code (unoptab) == ABS
+      && is_a <scalar_float_mode> (GET_MODE_INNER (mode), &float_mode))
+    {
+      temp = expand_absneg_bit (ABS, mode, float_mode, op0, target);
+      if (temp)
+	return temp;
+    }
+
   if (CLASS_HAS_WIDER_MODES_P (mclass))
     FOR_EACH_WIDER_MODE (wider_mode, mode)
       {
@@ -3458,29 +3491,6 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 			   target, unsignedp, OPTAB_DIRECT);
       if (temp)
 	return temp;
-    }
-
-  if (optab_to_code (unoptab) == NEG)
-    {
-      /* Try negating floating point values by flipping the sign bit.  */
-      if (is_a <scalar_float_mode> (GET_MODE_INNER (mode), &float_mode))
-	{
-	  temp = expand_absneg_bit (NEG, mode, float_mode, op0, target);
-	  if (temp)
-	    return temp;
-	}
-
-      /* If there is no negation pattern, and we have no negative zero,
-	 try subtracting from zero.  */
-      if (!HONOR_SIGNED_ZEROS (mode))
-	{
-	  temp = expand_binop (mode, (unoptab == negv_optab
-				      ? subv_optab : sub_optab),
-			       CONST0_RTX (mode), op0, target,
-			       unsignedp, OPTAB_DIRECT);
-	  if (temp)
-	    return temp;
-	}
     }
 
   /* Try calculating parity (x) as popcount (x) % 2.  */
@@ -3679,15 +3689,6 @@ expand_abs_nojump (machine_mode mode, rtx op0, rtx target,
                       op0, target, 0);
   if (temp != 0)
     return temp;
-
-  /* For floating point modes, try clearing the sign bit.  */
-  scalar_float_mode float_mode;
-  if (is_a <scalar_float_mode> (GET_MODE_INNER (mode), &float_mode))
-    {
-      temp = expand_absneg_bit (ABS, mode, float_mode, op0, target);
-      if (temp)
-	return temp;
-    }
 
   /* If we have a MAX insn, we can do this as MAX (x, -x).  */
   if (optab_handler (smax_optab, mode) != CODE_FOR_nothing
