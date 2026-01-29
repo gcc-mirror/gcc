@@ -183,7 +183,7 @@ get_fndecl_arguments (FuncDeclaration *decl)
 
 	  /* Type `noreturn` is a terminator, as no other arguments can possibly
 	     be evaluated after it.  */
-	  if (TREE_TYPE (parm_decl) == noreturn_type_node)
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (parm_decl)) == noreturn_type_node)
 	    break;
 
 	  /* Chain them in the correct order.  */
