@@ -1013,8 +1013,8 @@ package body Sem_Type is
       elsif T2 = Any_Composite and then Is_Aggregate_Type (T1) then
          return True;
 
-      --  In Ada_2022, an aggregate is compatible with the type that
-      --  as the corresponding aspect.
+      --  In Ada 2022, an aggregate is compatible with the type that
+      --  has the corresponding aspect.
 
       elsif Ada_Version >= Ada_2022
         and then T2 = Any_Composite
@@ -3377,6 +3377,9 @@ package body Sem_Type is
         or else (T1 = Any_Character     and then Is_Character_Type (T2))
         or else (T1 = Any_String        and then Is_String_Type (T2))
         or else (T1 = Any_Composite     and then Is_Aggregate_Type (T2))
+        or else (Ada_Version >= Ada_2022
+                  and then T1 = Any_Composite
+                  and then Has_Aspect (T2, Aspect_Aggregate))
       then
          return B2;
 
@@ -3397,6 +3400,9 @@ package body Sem_Type is
         or else (T2 = Any_Character     and then Is_Character_Type (T1))
         or else (T2 = Any_String        and then Is_String_Type (T1))
         or else (T2 = Any_Composite     and then Is_Aggregate_Type (T1))
+        or else (Ada_Version >= Ada_2022
+                  and then T2 = Any_Composite
+                  and then Has_Aspect (T1, Aspect_Aggregate))
       then
          return B1;
 
