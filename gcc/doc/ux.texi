@@ -748,4 +748,105 @@ generated patches.
 @cindex options, guidelines for
 @cindex guidelines for options
 
-@c TODO
+@xref{Options}, for information about how GCC command-line options are
+defined in @code{.opt} files.
+
+@subsection Option Names
+
+Please follow existing conventions for option naming.  Target-specific
+options should begin with @samp{-m}, general code generation and
+optimization options with @samp{-f}, options controlling diagnostic
+messages with @samp{-W}, and options controlling debug output with
+@samp{-g}.  In each of these four categories there is a corresponding
+negative form for each option beginning with @samp{-mno-},
+@samp{-fno-}, @samp{-Wno-}, or @samp{-gno-} (respectively), which
+allow users to override a positive form of the option earlier on the
+command line, or an option that is enabled by default.
+
+For options that take an argument, the negative form often does not
+make sense; in this case, specify the @samp{RejectNegative} attribute
+on the definition in the @code{.opt} file.  If you want to add an
+option that @emph{only} has a negative form (perhaps to disable a
+positive-form multiple-choice option that takes an argument), list it
+in the @code{.opt} file in its @samp{no-} form and also add
+@samp{RejectNegative}.
+
+When adding an option that is specific to a front end, please do not
+include the name of the language in the option name (e.g., as a
+prefix).  It is safe to assume users are aware of the compiler they
+are using.  Similar considerations apply to back end options.
+
+@subsection Developer Options
+
+If you need to add a feature intended for debugging GCC itself, please
+add an option to control it, rather than commenting it out, or guarding
+it with @code{#if 0}.  This not only keeps the code from getting bit-rotten,
+it also makes debugging options available at the user's site without
+needing to rebuild GCC, which historically has proven invaluable.
+Such options are documented in the Developer Options section of the manual
+(@pxref{Option Summary,,Option Summary,gcc,Using the GNU Compiler Collection}).
+
+If an option is not intended to be user visible at all (for example,
+it's used only to support testing or to experiment with new features
+that are not ready or stable enough for general use), you should
+explicitly specify the @samp{Undocumented} property in the @code{.opt}
+file definition so it is clear to other maintainers that the lack of
+user-facing documentation is deliberate.
+
+Parameters (@samp{--param=}) are special options that allow control
+over constants affecting GCC's internal behavior.  For example,
+traditionally parameters been used in GCC instead of hard-wired
+constants to control things like the maximum number of passes for
+iterative optimization algorithms.  Since these are also
+not intended to be user-visible, they need not be documented or explicitly
+marked as @samp{Undocumented}.
+
+@subsection Documentation Requirements
+
+When you add a new option that is intended to be visible to users,
+you should add documentation for it in the same commit.  C language
+family and language-independent options are documented in the main GCC
+manual (in @file{invoke.texi} or files included by it), while
+options specific to the front ends for other languages, like Fortran,
+are documented in the corresponding manual.
+
+For options documented in the GCC manual, the required documentation is:
+
+@itemize @bullet{}
+@item Add the option to the appropriate table in the Option Summary section
+(@pxref{Option Summary,,Option Summary,gcc,Using the GNU Compiler Collection}).
+Only add one of the positive or negative forms here.
+Use two spaces to separate options listed on the same line.
+@item Add detailed documentation to the corresponding subsection.  It is
+only necessary to document one of the positive or negative forms, but sometimes
+it's appropriate to list both.
+@item Add index entries for @emph{both} the positive and negative forms just
+before the detailed documentation.
+@end itemize
+
+Sometimes options become obsolete.  There are several choices of what to do
+here.
+@itemize @bullet{}
+@item You can remove the entry entirely from the @code{.opt} file.  This
+typically causes a generic error if GCC is invoked with that option.
+@item You can add the @samp{WarnRemoved} attribute to the option definition.
+This results in a more specific error message and is usually a better
+choice than completely removing it.
+@item You can add the @samp{Warn} attribute to the option definition.  For
+example, you can use this if you want to warn that an option is deprecated,
+rather than remove it completely.
+@item You can add the @samp{Ignore} attribute to the option definition to
+silently ignore it and do nothing if it is passed.  This has the advantage
+that it won't break old makefiles, but is only appropriate if the default
+behavior without the option is consistent with the previous behavior with
+the option and doesn't conflict with user expectations.
+@end itemize
+
+In all of these cases, you should remove the user documentation for an option
+at the same time you remove, disable, or deprecate it.
+
+If you add, remove, or modify options documentation, you must also run
+@samp{make regenerate-opt-urls} in the @file{gcc} directory of your
+build tree, and check in the resulting changes.  This updates the
+database used to insert links to the online documentation for options
+that are mentioned in diagnostic messages.

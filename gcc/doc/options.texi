@@ -10,6 +10,8 @@
 Most GCC command-line options are described by special option
 definition files, the names of which conventionally end in
 @code{.opt}.  This chapter describes the format of these files.
+For information about managing GCC options and the user experience,
+@ref{Guidelines for Options}.
 
 @menu
 * Option file format::   The general layout of the files
