@@ -707,6 +707,7 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
       if (t == type)
 	continue;
 
+      TYPE_NAME (t) = TYPE_NAME (type);
       TYPE_FIELDS (t) = TYPE_FIELDS (type);
       TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (type);
       TYPE_SIZE (t) = TYPE_SIZE (type);
