@@ -3364,6 +3364,7 @@ invoking the compiler.
 @menu
 * @code{@B{bin}} and @code{@B{abs}} of negative integral values::
 * Bold taggles::              Using underscores in mode and operator indications.
+* Brief selection::           Shorter form of the @code{of-symbol}.
 @end menu
 
 @node @code{@B{bin}} and @code{@B{abs}} of negative integral values
@@ -3483,6 +3484,28 @@ like @code{Foo__bar} and @code{_Baz} are not valid indications.
 
 Bold taggles are available when the gnu68 dialect of the language is
 selected.  @xref{Dialect options}.
+
+@node Brief selection
+@section Brief selection
+
+It was early recognized that a shorter alternative representation the
+of-symbol was very much needed, considering the fact the bold version
+@code{@B{of}} is at least four characters long.  This makes certain
+phrases long and also slightly laborious to read, like in:
+
+@example
+@B{pub} @B{op} + = (@B{Pos} a,b) @B{Pos}: (c @B{of} a + c @B{of} b, r @B{of} a + r @B{of} b),
+       - = (@B{Pos} a,b) @B{Pos}: (c @B{of} a - c @B{of} b, r @B{of} a - r @B{of} b);
+@end example
+
+This compiler allows using a quote character @code{'} instead of
+@code{of} in selections of structs and multiples.  Using this brief
+style the example above now can be written as:
+
+@example
+@B{pub} @B{op} + = (@B{Pos} a,b) @B{Pos}: (c'a + c'b, r'a + r'b),
+       - = (@B{Pos} a,b) @B{Pos}: (c'a - c'b, r'a - r'b);
+@end example
 
 @include gpl_v3.texi
 @include fdl.texi

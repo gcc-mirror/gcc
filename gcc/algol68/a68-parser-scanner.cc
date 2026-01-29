@@ -77,6 +77,7 @@ supper_postlude[] = {
 #define STOP_CHAR 127
 #define FORMFEED_CHAR '\f'
 #define CR_CHAR '\r'
+#define SINGLE_QUOTE_CHAR '\''
 #define QUOTE_CHAR '"'
 #define APOSTROPHE_CHAR '\''
 #define BACKSLASH_CHAR '\\'
@@ -1631,6 +1632,13 @@ get_next_token (bool in_format,
 	  *att = POINT_SYMBOL;
 	}
     }
+  else if (!OPTION_STRICT (&A68_JOB) && c == SINGLE_QUOTE_CHAR)
+    {
+      c = next_char (ref_l, ref_s, true);
+      (sym++)[0] = SINGLE_QUOTE_CHAR;
+      sym[0] = '\0';
+      *att = QUOTE_SYMBOL;
+    }
   else if (ISDIGIT (c))
     {
       /* Something that begins with a digit:
@@ -2213,6 +2221,7 @@ tokenise_source (NODE_T **root, int level, bool in_format,
 		case ESAC_SYMBOL:
 		case OD_SYMBOL:
 		case OF_SYMBOL:
+		case QUOTE_SYMBOL:
 		case FI_SYMBOL:
 		case CLOSE_SYMBOL:
 		case BUS_SYMBOL:

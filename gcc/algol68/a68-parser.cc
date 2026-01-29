@@ -377,6 +377,7 @@ a68_dont_mark_here (NODE_T *p)
     case NIL_SYMBOL:
     case OD_SYMBOL:
     case OF_SYMBOL:
+    case QUOTE_SYMBOL:
     case OPEN_SYMBOL:
     case OP_SYMBOL:
     case ORF_SYMBOL:

@@ -1,0 +1,6 @@
+{ dg-options "-std=algol68" }
+
+begin mode Foo = struct (int a,b);
+      a'b; { dg-error "unworthy" }
+      skip
+end

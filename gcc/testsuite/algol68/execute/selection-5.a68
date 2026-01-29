@@ -1,6 +1,4 @@
-# { dg-options "-fstropping=upper" }  #
-# pr UPPER pr  #
-BEGIN MODE JORL = STRUCT (INT i, REAL r);
-      REF JORL jorl = LOC JORL := (10, 3.14);
-      ASSERT (i OF jorl = 10)
-END
+begin mode Jorl = struct (int i, real r);
+      ref Jorl jorl = loc Jorl := (10, 3.14);
+      assert (i'jorl = 10)
+end

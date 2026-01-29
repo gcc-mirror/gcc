@@ -1196,12 +1196,14 @@ reduce_primary_parts (NODE_T *p, enum a68_attribute expect)
 {
   for (NODE_T *q = p; q != NO_NODE; FORWARD (q))
     {
-      if (a68_whether (q, IDENTIFIER, OF_SYMBOL, STOP))
+      if (a68_whether (q, IDENTIFIER, OF_SYMBOL, STOP)
+	  || a68_whether (q, IDENTIFIER, QUOTE_SYMBOL, STOP))
 	ATTRIBUTE (q) = FIELD_IDENTIFIER;
 
       reduce (q, NO_NOTE, NO_TICK, NIHIL, NIL_SYMBOL, STOP);
       reduce (q, NO_NOTE, NO_TICK, SKIP, SKIP_SYMBOL, STOP);
       reduce (q, NO_NOTE, NO_TICK, SELECTOR, FIELD_IDENTIFIER, OF_SYMBOL, STOP);
+      reduce (q, NO_NOTE, NO_TICK, SELECTOR, FIELD_IDENTIFIER, QUOTE_SYMBOL, STOP);
       /* JUMPs without GOTO are resolved later.  */
       reduce (q, NO_NOTE, NO_TICK, JUMP, GOTO_SYMBOL, IDENTIFIER, STOP);
       reduce (q, NO_NOTE, NO_TICK, DENOTATION, LONGETY, INT_DENOTATION, STOP);

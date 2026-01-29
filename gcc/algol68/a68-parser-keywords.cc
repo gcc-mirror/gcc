@@ -147,6 +147,7 @@ a68_set_up_tables (void)
       add_keyword (&A68 (top_keyword), ORF_SYMBOL, "OREL");
       add_keyword (&A68 (top_keyword), BRIEF_COMMENT_BEGIN_SYMBOL, "{");
       add_keyword (&A68 (top_keyword), BRIEF_COMMENT_END_SYMBOL, "}");
+      add_keyword (&A68 (top_keyword), QUOTE_SYMBOL, "'");
 
       if (OPTION_STROPPING (&A68_JOB) != SUPPER_STROPPING)
 	{

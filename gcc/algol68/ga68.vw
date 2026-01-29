@@ -40,6 +40,9 @@
   [NC] This is the GNU68-2025-005-nestable-comments GNU extension.  It
        adds support for nestable block comments.
 
+  [BF] This is the GNU68-2026-001-brief-selection GNU extension.  It
+       adds support for a brief form of the selection construct.
+
   The metaproduction rules, hyper-rules and hyper-alternatives
   introduced by each extension are clearly marked in the sections
   below.  You can easily search for them using the extensions tags in
@@ -388,7 +391,7 @@ k) *vacuum : EMPTY PACK.
 3.4.1 Syntax
 
 A) CHOICE :: choice using boolean ; CASE.
-B) CASE :: choice using intgral ; choice using UNITED.
+B) CASE :: choice using integral ; choice using UNITED.
 
 a) SOID NEST1 CHOICE clause{5D,551a,A341h,A349a} :
      CHOICE STYLE start{91a,-},
@@ -1060,13 +1063,16 @@ a) strong reference to MODE NEST nihil{5B} :
 
 5.3.1.1 Syntax
 
+{ Extensions:
+  [BF] brief selection }
+
 A) REFETY :: REF to ; EMPTY.
 B) REFLEXETY :: REF to ; REF to flexible ; EMPTY.
 
 a) REFETY MODE1 NEST selection{5C} :
      MODE1 field FIELDS applied field selector with TAG{48d},
-       of{94f} token, weak REFLEXETY ROWS of structured with
-                           FIELDS mode NEST SECONDARY{5C},
+       STYLE selection token, weak REFLEXETY ROWS of structured with
+                                   FIELDS mode NEST SECONDARY{5C},
        where (REFETY) is derived from (REFLEXETY){b,c,-}.
 b) WHETHER (transient reference to) is derived from
            (REF to flexible){a,532,66a} :
@@ -1622,7 +1628,7 @@ d) CHOICE STYLE out{34l} :
        STYLE else{94f,-} token ;
      where (CHOICE) is (CASE), STYLE out{94f,-} token.
 e) CHOICE STYLE finish{34a} :
-     whre (CHOICE) is (choice using boolean),
+     where (CHOICE) is (choice using boolean),
        STYLE fi{94f,-} token ;
      where (CHOICE) is (CASE), STYLE esac{94f,-} token.
 f) NOTION token :
@@ -1674,7 +1680,8 @@ f) STYLE nestable comment item{e} :
   [CS] andth symbol, orel symbol
   [MR] access symbol, module symbol, def symbol, public symbol,
        postlude symbol, formal nest symbol, egg symbol
-  [US] unsafe symbol }
+  [US] unsafe symbol
+  [SS] brief of symbol }
 
 { This section of the Report doesn't describe syntax, but lists all
   the different symbols along with their representation in the
@@ -1694,6 +1701,8 @@ d) module symbol{49a}                   MODULE
    formal nest symbol{56b}              NEST
    egg symbol{A6a,c}                    EGG
 f) unsafe symbol{37a}                   UNSAFE
+   bold of symbol{53a}                  OF
+   brief of symbol{53a}                 '
 h) bold comment begin symbol{92a}       NOTE
    bold comment end symbol{92a}         ETON
    brief comment begin symbol{92a}      {
