@@ -1759,28 +1759,7 @@ loongarch_const_vector_bitimm_set_p (rtx op, machine_mode mode)
       && (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
 	  || GET_MODE_CLASS (mode) == MODE_VECTOR_INT))
     {
-      unsigned HOST_WIDE_INT val;
-
-      if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	{
-	  rtx val_s = CONST_VECTOR_ELT (op, 0);
-	  const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (val_s);
-	  if (GET_MODE (val_s) == DFmode)
-	    {
-	      long tmp[2];
-	      REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
-	      val = (unsigned HOST_WIDE_INT) tmp[1] << 32 | tmp[0];
-	    }
-	  else
-	    {
-	      long tmp;
-	      REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
-	      val = (unsigned HOST_WIDE_INT) tmp;
-	    }
-	}
-      else
-	val = UINTVAL (CONST_VECTOR_ELT (op, 0));
-
+      unsigned HOST_WIDE_INT val = UINTVAL (CONST_VECTOR_ELT (op, 0));
       int vlog2 = exact_log2 (val & GET_MODE_MASK (GET_MODE_INNER (mode)));
 
       if (vlog2 != -1)
@@ -6887,35 +6866,18 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
 	{
 	  machine_mode mode = GET_MODE_INNER (GET_MODE (op));
 	  rtx val_s = CONST_VECTOR_ELT (op, 0);
-	  unsigned HOST_WIDE_INT val;
-
-	  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+	  if (CONST_INT_P (val_s))
 	    {
-	      const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (val_s);
-	      if (GET_MODE (val_s) == DFmode)
+	      unsigned HOST_WIDE_INT val = UINTVAL (val_s);
+	      int vlog2 = exact_log2 (val & GET_MODE_MASK (mode));
+	      if (vlog2 != -1)
 		{
-		  long tmp[2];
-		  REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
-		  val = (unsigned HOST_WIDE_INT) (tmp[1] << 32 | tmp[0]);
-		}
-	      else
-		{
-		  long tmp;
-		  REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
-		  val = (unsigned HOST_WIDE_INT) tmp;
+		  fprintf (file, "%d", vlog2);
+		  break;
 		}
 	    }
-	  else
-	    val = UINTVAL (val_s);
-
-	  int vlog2 = exact_log2 (val & GET_MODE_MASK (mode));
-	  if (vlog2 != -1)
-	    fprintf (file, "%d", vlog2);
-	  else
-	    output_operand_lossage ("invalid use of '%%%c'", letter);
 	}
-      else
-	output_operand_lossage ("invalid use of '%%%c'", letter);
+      output_operand_lossage ("invalid use of '%%%c'", letter);
       break;
 
     case 'W':
@@ -11194,7 +11156,7 @@ loongarch_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     return force_reg (inner_mode, mask);
 
   v = loongarch_build_const_vector (vec_mode, vect, mask);
-  return force_reg (vec_mode, v);
+  return v;
 }
 
 /* Use rsqrte instruction and Newton-Rhapson to compute the approximation of
@@ -11243,10 +11205,11 @@ void loongarch_emit_swrsqrtsf (rtx res, rtx a, machine_mode mode, bool recip)
       if (VECTOR_MODE_P (mode))
 	{
 	  machine_mode imode = related_int_vector_mode (mode).require ();
-	  rtx mask = gen_reg_rtx (imode);
-	  emit_insn (gen_rtx_SET (mask, gen_rtx_NE (imode, a, zero)));
-	  emit_insn (gen_rtx_SET (x0, gen_rtx_AND (mode, x0,
-						   gen_lowpart (mode, mask))));
+	  rtx mask = force_reg (imode, gen_rtx_NE (imode, a, zero));
+	  emit_move_insn (gen_lowpart (imode, x0),
+			  gen_rtx_AND (imode,
+				       gen_lowpart (imode, x0),
+				       mask));
 	}
       else
 	{

@@ -664,6 +664,18 @@
   return loongarch_const_vector_same_int_p (op, mode);
 })
 
+(define_predicate "const_vector_neg_fp_operand"
+  (match_code "const_vector")
+{
+  machine_mode imode = related_int_vector_mode (mode).require ();
+  rtx mask = loongarch_build_signbit_mask (imode, 1, 0);
+
+  op = gen_lowpart (imode, op);
+  return rtx_equal_p (mask,
+		      simplify_const_binary_operation (AND, imode, mask,
+						       op));
+})
+
 (define_predicate "par_const_vector_shf_set_operand"
   (match_code "parallel")
 {
@@ -689,6 +701,10 @@
 (define_predicate "reg_or_vector_same_uimm_operand"
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "const_vector_same_uimm_operand")))
+
+(define_predicate "reg_or_vector_neg_fp_operand"
+  (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const_vector_neg_fp_operand")))
 
 ;; PARALLEL for a vec_select that selects all the even or all the odd
 ;; elements of a vector of MODE.

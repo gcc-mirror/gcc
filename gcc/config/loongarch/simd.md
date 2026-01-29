@@ -1046,10 +1046,10 @@
 })
 
 (define_insn "xor<mode>3"
-  [(set (match_operand:ALLVEC 0 "register_operand" "=f,f,f")
-	(xor:ALLVEC
-	  (match_operand:ALLVEC 1 "register_operand" "f,f,f")
-	  (match_operand:ALLVEC 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
+  [(set (match_operand:IVEC 0 "register_operand" "=f,f,f")
+	(xor:IVEC
+	  (match_operand:IVEC 1 "register_operand" "f,f,f")
+	  (match_operand:IVEC 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
   ""
   "@
    <x>vxor.v\t%<wu>0,%<wu>1,%<wu>2
@@ -1059,10 +1059,10 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "ior<mode>3"
-  [(set (match_operand:ALLVEC 0 "register_operand" "=f,f,f")
-	(ior:ALLVEC
-	  (match_operand:ALLVEC 1 "register_operand" "f,f,f")
-	  (match_operand:ALLVEC 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
+  [(set (match_operand:IVEC 0 "register_operand" "=f,f,f")
+	(ior:IVEC
+	  (match_operand:IVEC 1 "register_operand" "f,f,f")
+	  (match_operand:IVEC 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
   ""
   "@
    <x>vor.v\t%<wu>0,%<wu>1,%<wu>2
@@ -1072,10 +1072,10 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "and<mode>3"
-  [(set (match_operand:ALLVEC 0 "register_operand" "=f,f,f")
-	(and:ALLVEC
-	  (match_operand:ALLVEC 1 "register_operand" "f,f,f")
-	  (match_operand:ALLVEC 2 "reg_or_vector_same_val_operand" "f,YZ,Urv8")))]
+  [(set (match_operand:IVEC 0 "register_operand" "=f,f,f")
+	(and:IVEC
+	  (match_operand:IVEC 1 "register_operand" "f,f,f")
+	  (match_operand:IVEC 2 "reg_or_vector_same_val_operand" "f,YZ,Urv8")))]
   ""
 {
   switch (which_alternative)
@@ -1084,27 +1084,9 @@
       return "<x>vand.v\t%<wu>0,%<wu>1,%<wu>2";
     case 1:
       {
-	rtx elt0 = CONST_VECTOR_ELT (operands[2], 0);
-	unsigned HOST_WIDE_INT val;
-	if (GET_MODE_CLASS (<MODE>mode) == MODE_VECTOR_FLOAT)
-	  {
-	  const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (elt0);
-	  if (GET_MODE (elt0) == DFmode)
-	    {
-	      long tmp[2];
-	      REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
-	      val = ~((unsigned HOST_WIDE_INT) tmp[1] << 32 | tmp[0]);
-	    }
-	  else
-	    {
-	      long tmp;
-	      REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
-	      val = ~((unsigned HOST_WIDE_INT) tmp);
-	    }
-	  }
-	else
-	  val = ~UINTVAL (elt0);
-	operands[2] = loongarch_gen_const_int_vector (<VIMODE>mode, val & (-val));
+	operands[2] = simplify_const_unary_operation (NOT, <MODE>mode,
+						      operands[2],
+						      <MODE>mode);
 	return "<x>vbitclri.%v0\t%<wu>0,%<wu>1,%V2";
       }
     case 2:
@@ -1115,6 +1097,52 @@
 }
   [(set_attr "type" "simd_logic,simd_bit,simd_logic")
    (set_attr "mode" "<MODE>")])
+
+(define_expand "copysign<mode>3"
+  [(match_operand:FVEC 0 "register_operand")
+   (match_operand:FVEC 1 "register_operand")
+   (match_operand:FVEC 2 "reg_or_vector_neg_fp_operand")]
+  ""
+{
+  machine_mode imode = <VIMODE>mode;
+  rtx op[3], mask = loongarch_build_signbit_mask (imode, 1, 0);
+
+  /* Pun the operation into fixed-point bitwise operations.  */
+  for (int i = 0; i < 3; i++)
+    op[i] = lowpart_subreg (imode, operands[i], <MODE>mode);
+
+  /* Copysign from a positive const should have been already simplified
+     to abs, ignore the case here.  Copysign from a negative const is
+     a simple vbitset which is an alternative of ior (see above).  */
+  if (const_vector_neg_fp_operand (operands[2], <MODE>mode))
+    emit_insn (gen_ior<vimode>3 (op[0], op[1], mask));
+  else
+    {
+      mask = force_reg (imode, mask);
+      emit_insn (gen_<simd_isa>_<x>vbitsel_<simdfmt_as_i> (op[0], op[1],
+							   op[2], mask));
+    }
+
+  DONE;
+})
+
+(define_expand "@xorsign<mode>3"
+  [(match_operand:FVEC 0 "register_operand")
+   (match_operand:FVEC 1 "register_operand")
+   (match_operand:FVEC 2 "register_operand")]
+  ""
+{
+  machine_mode imode = <VIMODE>mode;
+  rtx op[3];
+
+  for (int i = 0; i < 3; i++)
+    op[i] = lowpart_subreg (imode, operands[i], <MODE>mode);
+
+  rtx t = loongarch_build_signbit_mask (imode, 1, 0);
+  t = force_reg (imode, simplify_gen_binary (AND, imode, op[2], t));
+  emit_move_insn (op[0], simplify_gen_binary (XOR, imode, op[1], t));
+  DONE;
+})
 
 (define_insn "@simd_vshuf_<mode>"
   [(set (match_operand:QIVEC 0 "register_operand" "=f")
