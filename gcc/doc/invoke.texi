@@ -16088,9 +16088,22 @@ a default balanced compression setting is used.
 
 @opindex flto-toplevel-asm-heuristics
 @item -flto-toplevel-asm-heuristics
-Enable heuristics to recognize symbol identifiers in top-level basic asm
-(@pxref{Basic Asm}), and prevent them from being mangled or deleted during
-link-time optimization.
+Enables heuristics to find symbols used in top-level basic @code{asm}.
+This will restrict link-time optimizations that could cause renaming
+or deletion of such symbols which would result in missing symbol errors by
+linker.
+
+This flag is intended for projects that have not converted to using top-level
+extended @code{asm} (@pxref{Extended Asm}), which specify the usage directly
+without any false positives.
+
+The heuristics are simple and do not parse the assembly.
+The heuristics scan through top-level assembly for all possible identifiers;
+if an identifier is found among declared symbols, the symbol will be marked to
+restrict link-time optimizations.  Static symbols disable more optimizations.
+Identifiers followed by ':' disable more optimizations as well, because they
+might be a locally defined symbol in assembly, even when the declaration
+is marked 'extern'.
 
 @opindex fuse-linker-plugin
 @item -fuse-linker-plugin

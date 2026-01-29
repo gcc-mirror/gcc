@@ -11507,6 +11507,11 @@ with extended @code{asm}.  See
 from basic asm to extended asm} for information about how to perform this
 conversion.
 
+LTO typically requires rewriting top-level basic @code{asm} statements to
+extended @code{asm}.  Otherwise you will likely encounter missing symbol
+errors by linker.  Alternatively you may use
+@option{-flto-toplevel-asm-heuristics}.
+
 The compiler copies the assembler instructions in a basic @code{asm} 
 verbatim to the assembly language output file, without 
 processing dialects or any of the @samp{%} operators that are available with
