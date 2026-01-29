@@ -3349,9 +3349,21 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
       return false;
     }
 
-  /* Find pairs of stores with equal LHS.  */
+  /* Clear visited on else stores, we want to make sure to pick each store
+     at most once to avoid quadratic behavior.  */
+  for (auto else_dr : else_datarefs)
+    {
+      if (DR_IS_READ (else_dr))
+	continue;
+      gimple_set_visited (DR_STMT (else_dr), false);
+    }
+
+  /* Find pairs of stores with equal LHS.  Work from the end to avoid
+     re-ordering stores unnecessarily.  */
   auto_vec<std::pair<gimple *, gimple *>, 1> stores_pairs;
-  for (auto then_dr : then_datarefs)
+  unsigned i;
+  data_reference_p then_dr;
+  FOR_EACH_VEC_ELT_REVERSE (then_datarefs, i, then_dr)
     {
       if (DR_IS_READ (then_dr))
         continue;
@@ -3362,12 +3374,16 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
 	continue;
       found = false;
 
-      for (auto else_dr : else_datarefs)
+      unsigned j;
+      data_reference_p else_dr;
+      FOR_EACH_VEC_ELT_REVERSE (else_datarefs, j, else_dr)
         {
           if (DR_IS_READ (else_dr))
             continue;
 
           else_store = DR_STMT (else_dr);
+	  if (gimple_visited_p (else_store))
+	    continue;
           else_lhs = gimple_get_lhs (else_store);
 	  if (else_lhs == NULL_TREE)
 	    continue;
@@ -3382,6 +3398,7 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
       if (!found)
         continue;
 
+      gimple_set_visited (else_store, true);
       stores_pairs.safe_push (std::make_pair (then_store, else_store));
     }
 
