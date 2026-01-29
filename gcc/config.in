@@ -355,6 +355,12 @@
 #endif
 
 
+/* Define if you have a working <afunix.h> header file. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AFUNIX_H
+#endif
+
+
 /* Define if AF_INET6 supported. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AF_INET6

@@ -1484,6 +1484,21 @@ if test $gcc_cv_header_inttypes_h = yes; then
 	[Define if you have a working <inttypes.h> header file.])
 fi
 
+# Use <afunix.h> only if it exists,
+AC_MSG_CHECKING(for afunix.h)
+AC_CACHE_VAL(gcc_cv_header_afunix_h,
+[AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+[[#include <winsock2.h>
+#include <afunix.h>]],
+  [[SOCKADDR_UN addr;]])],
+  [gcc_cv_header_afunix_h=yes],
+  [gcc_cv_header_afunix_h=no])])
+AC_MSG_RESULT($gcc_cv_header_afunix_h)
+if test $gcc_cv_header_afunix_h = yes; then
+  AC_DEFINE(HAVE_AFUNIX_H, 1,
+	[Define if you have a working <afunix.h> header file.])
+fi
+
 # Look for the ZSTD package.
 ZSTD_INCLUDE=
 ZSTD_LIB=

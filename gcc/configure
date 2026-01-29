@@ -10485,6 +10485,40 @@ $as_echo "#define HAVE_INTTYPES_H 1" >>confdefs.h
 
 fi
 
+# Use <afunix.h> only if it exists,
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for afunix.h" >&5
+$as_echo_n "checking for afunix.h... " >&6; }
+if ${gcc_cv_header_afunix_h+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <winsock2.h>
+#include <afunix.h>
+int
+main ()
+{
+SOCKADDR_UN addr;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  gcc_cv_header_afunix_h=yes
+else
+  gcc_cv_header_afunix_h=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_header_afunix_h" >&5
+$as_echo "$gcc_cv_header_afunix_h" >&6; }
+if test $gcc_cv_header_afunix_h = yes; then
+
+$as_echo "#define HAVE_AFUNIX_H 1" >>confdefs.h
+
+fi
+
 # Look for the ZSTD package.
 ZSTD_INCLUDE=
 ZSTD_LIB=
@@ -21954,7 +21988,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21957 "configure"
+#line 21991 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22060,7 +22094,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22063 "configure"
+#line 22097 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
