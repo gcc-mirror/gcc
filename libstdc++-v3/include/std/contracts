@@ -52,7 +52,7 @@ namespace contracts
     post = 2,
     assert = 3,
 
-    /* Implementation−defined values should have a minimum value of 1000. */
+    /* Implementation-defined values should have a minimum value of 1000. */
   };
 
   enum class evaluation_semantic : __UINT16_TYPE__ {
@@ -61,14 +61,14 @@ namespace contracts
     enforce = 3,
     quick_enforce = 4,
 
-    /* Implementation−defined values should have a minimum value of 1000.  */
+    /* Implementation-defined values should have a minimum value of 1000.  */
   };
 
   enum class detection_mode : __UINT16_TYPE__ {
     predicate_false = 1,
     evaluation_exception = 2,
 
-    /* Implementation−defined values should have a minimum value of 1000. */
+    /* Implementation-defined values should have a minimum value of 1000. */
   };
 
   using __vendor_ext = void;
