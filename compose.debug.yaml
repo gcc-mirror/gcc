@@ -1,0 +1,6 @@
+services:
+  gcc:
+    image: gcc
+    build:
+      context: .
+      dockerfile: ./Dockerfile
