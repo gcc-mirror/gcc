@@ -3768,6 +3768,7 @@ eval_annotations_of (location_t loc, const constexpr_ctx *ctx, tree r,
       type = remove_const (type);
     }
 
+  r = maybe_get_first_fn (r);
   if (kind == REFLECT_BASE)
     {
       gcc_assert (TREE_CODE (r) == TREE_BINFO);
