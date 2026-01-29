@@ -3861,6 +3861,18 @@ sink_clobbers (basic_block bb,
     }
   if (first_sunk)
     {
+      /* If there isn't a single predecessor but no virtual PHI node
+	 create one and arrange for virtual operands to be renamed as
+	 we cannot be sure all incoming edges will updated from sinking
+	 something.  */
+      if (!vphi && !single_pred_p (succbb))
+	{
+	  vphi = create_phi_node (gimple_vop (cfun), succbb);
+	  FOR_EACH_EDGE (e, ei, succbb->preds)
+	    add_phi_arg (vphi, gimple_vop (cfun), e, UNKNOWN_LOCATION);
+	  mark_virtual_operands_for_renaming (cfun);
+	  todo |= TODO_update_ssa_only_virtuals;
+	}
       /* Adjust virtual operands if we sunk across a virtual PHI.  */
       if (vphi)
 	{
@@ -3879,14 +3891,6 @@ sink_clobbers (basic_block bb,
 	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe),
 		   gimple_vuse (last_sunk));
 	  SET_USE (gimple_vuse_op (last_sunk), phi_def);
-	}
-      /* If there isn't a single predecessor but no virtual PHI node
-         arrange for virtual operands to be renamed.  */
-      else if (!single_pred_p (succbb)
-	       && TREE_CODE (gimple_vuse (last_sunk)) == SSA_NAME)
-	{
-	  mark_virtual_operand_for_renaming (gimple_vuse (last_sunk));
-	  todo |= TODO_update_ssa_only_virtuals;
 	}
     }
 
