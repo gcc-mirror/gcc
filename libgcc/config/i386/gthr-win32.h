@@ -86,15 +86,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # define __GTHREAD_INLINE static inline
 #endif
 
-/* Make sure CONST_CAST2 (origin in system.h) is declared.  */
-#ifndef CONST_CAST2
-#ifdef __cplusplus
-#define CONST_CAST2(TOTYPE,FROMTYPE,X) (const_cast<TOTYPE> (X))
-#else
-#define CONST_CAST2(TOTYPE,FROMTYPE,X) ((__extension__(union {FROMTYPE _q; TOTYPE _nq;})(X))._nq)
-#endif
-#endif
-
 #ifndef ATTRIBUTE_UNUSED
 #define ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 #endif
@@ -720,7 +711,13 @@ __gthread_getspecific (__gthread_key_t __key)
 __GTHREAD_WIN32_INLINE int
 __gthread_setspecific (__gthread_key_t __key, const void *__ptr)
 {
-  if (TlsSetValue (__key, CONST_CAST2(void *, const void *, __ptr)))
+  if (TlsSetValue (__key,
+#ifdef __cplusplus
+	const_cast<void *> (__ptr)
+#else
+	(__extension__ (union {const void *_q; void *_nq;})(__ptr))._nq
+#endif
+      ))
     return 0;
   else
     return (int) GetLastError ();
