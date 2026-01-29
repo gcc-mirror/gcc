@@ -33,9 +33,11 @@ echo Current upstream revision: $CUR_REV
 
 # Remove the unused files.
 pushd upstream
-rm -rf ChangeLog.old .appveyor* .ci .github .gitignore .travis* \
-	config.guess config.sub libtool-ldflags m4 make_sunver.pl \
-	msvc_build
+
+rm -rf ChangeLog.old .allow-ai-service .gail-labels .appveyor* .ci .github \
+	.gitignore .travis* config.guess config.sub libtool-ldflags m4 \
+	make_sunver.pl msvc_build
+
 rm -rf .git autogen.sh
 cp -a . ..
 popd
