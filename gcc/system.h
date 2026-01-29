@@ -226,6 +226,11 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 # include <sstream>
 #endif
 # include <memory>
+
+/* Some versions of GCC exposes an internal copy of the CONST_CAST2 macro that
+   might be incompatible with the current version of the GCC sources.  */
+#undef CONST_CAST2
+
 # include <cstring>
 # include <initializer_list>
 # include <new>
