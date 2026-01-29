@@ -963,7 +963,7 @@ public:
 
 	/* Type `noreturn` is a terminator, as no other arguments can possibly
 	   be evaluated after it.  */
-	if (type == noreturn_type_node)
+	if (TYPE_MAIN_VARIANT (type) == noreturn_type_node)
 	  break;
 
 	fnparams = chainon (fnparams, build_tree_list (0, type));
@@ -989,7 +989,7 @@ public:
     d_keep (t->ctype);
 
     /* Qualify function types that have the type `noreturn` as volatile.  */
-    if (fntype == noreturn_type_node)
+    if (TYPE_MAIN_VARIANT (fntype) == noreturn_type_node)
       t->ctype = build_qualified_type (t->ctype, TYPE_QUAL_VOLATILE);
 
     /* Handle any special support for calling conventions.  */
