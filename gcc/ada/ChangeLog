@@ -1,3 +1,24 @@
+2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123857
+	* checks.adb (Apply_Parameter_Validity_Checks.Add_Validity_Check):
+	Set Is_Checked on the generated {Pre,Post}_Condition pragma and
+	bail out if the parameter is of an Unchecked_Union type.
+
+2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123832
+	* exp_imgv.adb: Add with and use clauses for Exp_Ch7.
+	(Expand_Image_Attribute): Establish a transient scope before
+	rewriting the attribute as a call to Put_Image.
+	(Expand_Wide_Image_Attribute): Likewise.
+	(Expand_Wide_Wide_Image_Attribute): Likewise.
+	* exp_put_image.ads (Build_Image_Call): Add note about the
+	need for a transient scope when the function is invoked.
+	* exp_put_image.adb (Build_Image_Call): Call Insert_Actions
+	to immediately insert the actions instead of wrapping them
+	in an Expression_With_Actions node.
+
 2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* gcc-interface/lang.opt.urls: Regenerated.

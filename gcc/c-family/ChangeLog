@@ -1,3 +1,63 @@
+2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c++/102846
+	PR c/102846
+	* known-headers.cc (macro_like_function_used::macro_like_function_used): New.
+	(macro_like_function_used::~macro_like_function_used): New.
+	* known-headers.h (class macro_like_function_used): New class.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c.opt: Append a period to the message for
+	-fcontracts-client-check=.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* c-pretty-print.cc (c_pretty_printer::direct_abstract_declarator):
+	Look up "array " attribute instead of "array".
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* c.opt (fcontracts-definition-check=,
+	fcontracts-client-check=): New.
+	* c.opt.urls: Regenerate.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* c.opt (fcontract-checks-outlined,
+	fcontract-disable-optimized-checks): New.
+	* c.opt.urls: Regenerate.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c.opt (fcontracts-conservative-ipa): New.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* c-common.cc: Add contract_assert keyword.
+	* c-common.h (enum rid): Likewise.
+	* c-cppbuiltin.cc (c_cpp_builtins): Add C++26 contracts feature test
+	macro.
+	* c.opt: Add a flag to control the TU-wide evaluation semantic. Add
+	a flag to control whether P1494 observable_checkpoints are inserted
+	to separate contract checks.
+	* c.opt.urls: Regenerate.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Remove C++2a-specific
+	feature macros.
+	* c.opt: Remove C++2a-specific flags.
+
 2026-01-25  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* c.opt.urls: Regenerated.

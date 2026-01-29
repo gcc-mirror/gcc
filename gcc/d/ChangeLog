@@ -1,3 +1,29 @@
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123419
+	* expr.cc (ExprVisitor::visit (VarExp *)): Adjust assertion.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123798
+	* types.cc (insert_aggregate_bitfield): Set DECL_NONADDRESSABLE_P and
+	DECL_PADDING_P on bit-field decls.
+	(finish_aggregate_type): Pass the aligned bit offset to layout_decl.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/121477
+	* d-codegen.cc (d_mark_addressable): Give an error if taking the
+	address of a DECL_BIT_FIELD.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123422
+	* expr.cc (ExprVisitor::visit (ArrayLiteralExp *)): Don't add
+	TARGET_EXPR around constructor.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Recognize more
+	patterns for return value optimization.
+
 2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/120096

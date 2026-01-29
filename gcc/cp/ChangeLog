@@ -1,3 +1,283 @@
+2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c++/102846
+	PR c/102846
+	* name-lookup.cc (lookup_name_fuzzy): Lookup function-like macro and
+	notify of misuse there.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102613
+	* parser.cc: Implement C++23 P2246R1 - Character encoding of
+	diagnostic text.
+	(cp_parser_parenthesized_expression_list): For std attribute
+	argument where the first argument is CPP_STRING, ensure the
+	string is not translated.
+	* semantics.cc: Include c-family/c-pragma.h.
+	(cexpr_str::extract): Use cpp_translate_string to translate
+	string from ordinary literal encoding to SOURCE_CHARSET.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* pt.cc (finish_expansion_stmt): Implement part of CWG3044.
+	Add to begin decltype(begin - begin){i} with std::ptrdiff_t
+	i instead of just i.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* cp-tree.h (cxx_build_lang_qualified_type): Declare.
+	* cp-objcp-common.h (LANG_HOOKS_COPY_LANG_QUALIFIERS): Remove.
+	(LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE): Define.
+	* tree.cc (cxx_build_lang_qualified_type): New function.
+
+2026-01-28  Alex Yesmanchyk  <aliaksandr.yesmanchyk@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/38612
+	* typeck2.cc (build_m_component_ref): Improve class mismatch
+	diagnostic.
+
+2026-01-28  vspefs  <vspefs@protonmail.com>
+
+	* module.cc (trees_out::type_node): Add case for SPLICE_SCOPE.
+	(trees_in::tree_node): Add case for SPLICE_SCOPE.
+
+2026-01-28  Lucas Chollet  <lucas.chollet@free.fr>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/114450
+	* lambda.cc (generic_lambda_fn_p): Handle null argument.
+	* semantics.cc (finish_id_expression_1): Check for generic lambda.
+
+2026-01-28  Johannes Altmanninger  <aclopte@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* typeck.cc (cp_build_array_ref): Suppress unused-value
+	warning for implicit comma expression.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* call.cc (build_cxx_call): Where enabled, wrap calls to
+	functions with contract specifiers.
+	* contracts.cc (enum contract_match_kind): Move to contracts
+	header.
+	(build_contract_condition_function): Copy caller-side wrapper
+	state.
+	(set_contract_wrapper_function, get_contract_wrapper_function,
+	get_orig_func_for_wrapper, contracts_fixup_cdtorname,
+	build_contract_wrapper_function,
+	get_or_create_contract_wrapper_function): New.
+	(start_function_contracts): Handle caller-side wrappers.
+	(maybe_apply_function_contracts): Likewise.
+	(copy_and_remap_contracts): Likewise.
+	(should_contract_wrap_call, maybe_contract_wrap_call,
+	define_contract_wrapper_func, emit_contract_wrapper_func): New.
+	(finish_function_contracts): Handle caller-side wrappers.
+	(get_src_loc_impl_ptr): Likewise.
+	* contracts.h (DECL_IS_WRAPPER_FN_P): New.
+	(enum contract_match_kind): Moved from contracts.cc.
+	(copy_and_remap_contracts): Allow selection on the specific
+	contract kind.
+	(maybe_contract_wrap_call, emit_contract_wrapper_func): New.
+	(set_decl_contracts): Delete dead code.
+	* cp-tree.h (struct lang_decl_fn): Add wrapper function bit.
+	(DECL_CONTRACT_WRAPPER): New.
+	* decl2.cc (c_parse_final_cleanups): Emit wrappers.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* contracts.cc (handle_contracts_p): Check that we are
+	handling an original function, not an outlined check.
+	(set_precondition_function, set_postcondition_function,
+	get_orig_for_outlined, contracts_fixup_name,
+	build_contract_condition_function,
+	build_precondition_function, build_postcondition_function,
+	build_contract_function_decls): New.
+	(start_function_contracts): Update for the case that we
+	outline the contract checks.
+	(build_arg_list, build_thunk_like_call,
+	add_pre_condition_fn_call,
+	get_postcondition_result_parameter,
+	add_post_condition_fn_call): New.
+	(apply_preconditions): Allow outlined checks.
+	(apply_postconditions): Likewise.
+	(get_precondition_function, get_postcondition_function,
+	set_contract_functions, remap_and_emit_conditions,
+	finish_function_contracts): New.
+	(get_src_loc_impl_ptr): Handle outlined checks.
+	(build_contract_check): Likewise.
+	* contracts.h (DECL_PRE_FN, DECL_POST_FN,
+	DECL_IS_PRE_FN_P, DECL_IS_POST_FN_P,
+	get_precondition_function, get_postcondition_function,
+	get_orig_for_outlined, finish_function_contracts,
+	set_contract_functions): New.
+	* cp-tree.h (enum lang_contract_helper): New.
+	(struct lang_decl_fn): Add contract helper enum.
+	(CONTRACT_HELPER): New.
+	(mangle_decl_string): New.
+	* decl.cc (finish_function): Emit outlined checks when
+	in use.
+	* module.cc (trees_out::fn_parms_init): Stream pre and post
+	outlined checks.
+	(trees_in::fn_parms_init): Reload pre and post outlined checks.
+	(check_mergeable_decl): Handle pre and post outlined functions.
+	(module_state_config::get_dialect): Add contracts dialect.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* contracts.cc (view_as_const, constify_contract_access,
+	set_parm_used_in_post, check_param_in_postcondition,
+	parm_used_in_post_p, check_postconditions_in_redecl): New.
+	(check_redecl_contract): Handle constification.
+	* contracts.h (constify_contract_access, view_as_const,
+	contract_const_wrapper_p, strip_contract_const_wrapper): New.
+	* cp-tree.h: Update tree flag usage comment.
+	* lambda.cc (build_capture_proxy): Handle constification.
+	* parser.cc (cp_parser_late_contract_condition, cp_parser_contract_assert,
+	cp_parser_function_contract_specifier): Likewise.
+	* pt.cc (tsubst_function_decl, tsubst_expr): Likewise.
+	* semantics.cc (finish_id_expression_1, finish_decltype_type): Likewise.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* contracts.cc (__tu_terminate_wrapper): New.
+	(build_terminate_wrapper): New.
+	(declare_terminate_wrapper): New.
+	(maybe_emit_violation_handler_wrappers): Build a no-ipa wrapper
+	for terminating contract violations if required.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* class.cc (check_for_override): Diagnose attemtps to add contracts to
+	virtual functions.
+	* constexpr.cc (cxx_eval_builtin_function_call): Handle
+	observable_checkpoints emitted for contracts.
+	(cxx_eval_constant_expression): Check we do not see contract assertions
+	here...
+	(potential_constant_expression_1): ... but that we do here.
+	* contracts.cc: Implement base C++26 P2600R14 contracts.
+	* contracts.h: Likewise.
+	* cp-gimplify.cc (cp_genericize_r): Lower contract assertions to control
+	flow and calls (where required) to the violation handler.
+	(fold_builtin_source_location): Use revised source_location impl.
+	constructor.
+	(build_source_location_impl): Split out the core of the constructor of
+	source_location so that it can be re-used from the contracts code.
+	* cp-tree.def (ASSERTION_STMT, PRECONDITION_STMT,
+	POSTCONDITION_STMT): Revise to allow space for specifying a semantic,
+	an assertion kind, and (where required) a source location.
+	* cp-tree.h (enum cp_tree_index, builtin_contract_violation_type): Add
+	the contract violation object type.
+	(struct saved_scope): Add a contracts class pointer.
+	(processing_postcondition, contract_class_ptr): New.
+	(struct cp_declarator): Add contract_specifiers.
+	(build_call_a_1): New.
+	(build_source_location_impl): New.
+	* decl.cc (duplicate_decls): Check function contract specifiers on
+	redeclarations.  Handle contract specifiers on instantiations.
+	(cxx_init_decl_processing): Initialise the terminate function since
+	this can be called from contracts even when exception processing is
+	disabled.  Build the contract violation object layout.
+	(start_decl): Handle checking contract postcondition identifiers.
+	(grokfndecl): Handle function contract specifiers.
+	(grokdeclarator): Likewise.
+	(start_preparsed_function): Start function contracts where needed.
+	(finish_function): Emit contract specifier AST corresponding to the
+	checked contracts.
+	* decl2.cc (c_parse_final_cleanups): Emit helpers for contract
+	violation handler calls.
+	* lex.cc (cxx_init): Add keyword warning for contract_assert.
+	* parser.cc (make_call_declarator): Add contract specifiers.
+	(unparsed_contracts): New.
+	(cp_parser_lambda_introducer): Allow contract specifier lambdas to have
+	a capture default.
+	(cp_parser_lambda_declarator_opt): Parse function contract specifiers.
+	(make_dummy_lambda_op): Account for contract specifiers in declarator.
+	(cp_parser_lambda_body): We have to ensure that deferred contracts are
+	parsed before we finish the lambda.
+	(cp_parser_statement): Handle contract_assert and diagnostics for
+	misplaced pre and post conditions.
+	(attr_chainon): Make this defensive against being passed a missing
+	attribute list.
+	(cp_parser_using_directive): Use attr_chainon instead of chainon.
+	(contract_attribute_p): New.
+	(cp_parser_init_declarator): Handle contract specifier names in
+	attributes.
+	(cp_parser_direct_declarator): Rename attrs to std_attrs for these.
+	(cp_parser_type_specifier_seq): Allow for function contract specifiers.
+	(cp_parser_class_specifier): Handle deferred parsing for function
+	contract specifiers
+	(cp_next_tokens_can_be_contract_attribute_p): True if this can be
+	a function contract specifier (which appear in the same position
+	as the attribute variant).
+	(cp_next_tokens_can_be_std_attribute_p): Allow for contracts.
+	(cp_nth_tokens_can_be_std_attribute_p): Likewise.
+	(cp_next_tokens_can_be_attribute_p): Likewise.
+	(cp_parser_late_contract_condition, cp_parser_late_contracts,
+	cp_parser_contract_assert, cp_parser_function_contract_specifier,
+	cp_parser_function_contract_specifier_seq): New.
+	(cp_parser_skip_std_attribute_spec_seq): Handle contracts case.
+	(cp_parser_skip_attributes_opt): Likewise.
+	(cp_parser_save_default_args): Handle unparsed contract specs.
+	* pt.cc (check_explicit_specialization): Handle removing contract
+	specifiers from instances.
+	(tsubst_contract, tsubst_contract_attribute,
+	tsubst_contract_attributes): New.
+	(tsubst_function_decl): Set contract specs. on substituted func.
+	(tsubst_stmt): Handle contract_assert.
+	(tsubst_expr): Allow for uses of postcondition uses of parm names.
+	(regenerate_decl_from_template): Handle function contract specs.
+	* semantics.cc (set_one_cleanup_loc): Add a location to
+	postcondition specifiers.
+	(finish_non_static_data_member): Diagnose bad uses of members
+	in contract specifiers.
+	(finish_this_expr): Diagnose invalid use of this in contract
+	specifiers.
+	(process_outer_var_ref): Allow use of params in contract specs.
+	(finish_id_expression_1): Likewise.
+	(apply_deduced_return_type): Maybe update postconditions when
+	the return type is changed.
+	* tree.cc (cp_tree_equal): Handle special cases when comparing
+	contracts.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* cp-tree.h (processing_contract_condition): New.
+	* name-lookup.cc (cp_binding_level_descriptor): Add contract scope.
+	(begin_scope): Likewise.
+	* name-lookup.h (enum scope_kind): Add sk_contract.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+
+	* contracts.cc: Remove all C++2a contracts code.
+	* contracts.h: Likewise.
+	* coroutines.cc (coro_build_actor_or_destroy_function): Remove
+	unused contracts references.
+	* cp-gimplify.cc (cp_genericize_r): Remove C++2a contracts
+	implementation.
+	* cp-objcp-common.cc (cp_handle_option): Likewise.
+	* cp-tree.h: Remove C++2a contracts code.
+	* decl.cc: Likewise.
+	* decl2.cc: Likewise.
+	* mangle.cc: Likewise.
+	* module.cc: Likewise.
+	* parser.cc: Likewise.
+	* pt.cc: Likewise.
+	* search.cc: Likewise.
+	* semantics.cc: Likewise.
+	* tree.cc: Likewise.
+	* constexpr.cc: Likewise.
+
 2026-01-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122609

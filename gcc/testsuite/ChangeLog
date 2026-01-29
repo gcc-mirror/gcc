@@ -1,3 +1,420 @@
+2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unchecked_union4.adb: New test.
+
+2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/put_image2.adb: New test.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123419
+	* gdc.dg/pr123419.d: New test.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123798
+	* gdc.dg/pr123798.d: New test.
+
+2026-01-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36503
+	* gcc.target/i386/pr36503-5.c: New test.
+	* gcc.target/i386/pr36503-6.c: New test.
+
+2026-01-28  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123824
+	* gcc.target/riscv/abi/vls-gpr-1.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-10.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-11.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-12.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-13.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-14.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-2.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-3.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-4.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-5.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-6.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-7.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-8.c: New test.
+	* gcc.target/riscv/abi/vls-gpr-9.c: New test.
+
+2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c++/102846
+	PR c/102846
+	* c-c++-common/function-like-macro-1.c: New test.
+	* c-c++-common/function-like-macro-2.c: New test.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/121477
+	* gdc.dg/pr121477.d: New test.
+
+2026-01-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/121571
+	* gcc.target/i386/pr121571.c: New.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123422
+	* gdc.dg/torture/pr123422.d: New test.
+
+2026-01-28  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	PR c/123583
+	* gcc.target/avr/pr123583.c: New test.
+	* gcc.target/i386/pr123583.c: New test.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123575
+	* g++.dg/pr123575.C: New testcase.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111036
+	* gcc.dg/torture/pr111036.c: New testcase.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123537
+	* gcc.dg/pr123537.c: New testcase.
+
+2026-01-28  Karl Meakin  <karl.meakin@arm.com>
+
+	* lib/target-supports.exp: Add `sve-bfscale` to `sve_exts`.
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Add test for `__ARM_SVE_FEATURE_BFSCALE`.
+	* gcc.target/aarch64/sme2/acle-asm/mul_bf16_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mul_bf16_x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/scale_bf16_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/scale_bf16_x4.c: New test.
+	* gcc.target/aarch64/sve/acle/asm/scale_bf16.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/bfscale.c: New test.
+
+2026-01-28  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR middle-end/123447
+	* gcc.dg/pr123447.c: New test.
+
+2026-01-28  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gfortran.dg/vect/pr123016.f90: New test.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/102613
+	* g++.dg/cpp1z/constexpr-asm-6.C: New test.
+	* g++.dg/cpp23/charset2.C: New test.
+	* g++.dg/cpp23/charset3.C: New test.
+	* g++.dg/cpp23/charset4.C: New test.
+	* g++.dg/cpp23/charset5.C: New test.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/expansion-stmt1.C (A::operator -, C::operator -): New.
+	* g++.dg/cpp26/expansion-stmt2.C (A::operator -, C::operator -): New.
+	* g++.dg/cpp26/expansion-stmt3.C (A::operator -, C::operator -): New.
+	* g++.dg/cpp26/expansion-stmt18.C  (A::operator -): New.
+	* g++.dg/cpp26/expansion-stmt25.C: New test.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* c-c++-common/pr101312-1.c: New test.
+	* c-c++-common/pr101312-2.c: New test.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123837
+	* g++.dg/reflect/annotations9.C: New test.
+
+2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123849
+	* g++.dg/warn/Wmismatched-new-delete-11.C: New test.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110043
+	* gcc.dg/torture/pr110043.c: New testcase.
+
+2026-01-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/123779
+	* g++.target/i386/pr123779.C: New test.
+
+2026-01-28  Alex Yesmanchyk  <aliaksandr.yesmanchyk@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/38612
+	* g++.dg/diagnostic/ptrtomem4.C: New test.
+
+2026-01-28  vspefs  <vspefs@protonmail.com>
+
+	* g++.dg/modules/splice-scope-tree_a.C: New test.
+	* g++.dg/modules/splice-scope-tree_b.C: New test.
+
+2026-01-28  Lucas Chollet  <lucas.chollet@free.fr>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/114450
+	* g++.dg/warn/Wunused-var-42.C: New test.
+
+2026-01-28  Johannes Altmanninger  <aclopte@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Wunused-value-2.C: New test.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/contracts/cpp26/callerside-checks/callerside-checks-all.C: New test.
+	* g++.dg/contracts/cpp26/callerside-checks/callerside-checks-non-trivial.C: New test.
+	* g++.dg/contracts/cpp26/callerside-checks/callerside-checks-none.C: New test.
+	* g++.dg/contracts/cpp26/callerside-checks/callerside-checks-pre.C: New test.
+	* g++.dg/contracts/cpp26/callerside-checks/ctor.C: New test.
+	* g++.dg/contracts/cpp26/callerside-checks/freefunc-noexcept-post.C: New test.
+	* g++.dg/contracts/cpp26/callerside-checks/freefunc-noexcept-pre.C: New test.
+	* g++.dg/contracts/cpp26/definition-checks/contract-assert-no-def-check.C: New test.
+	* g++.dg/contracts/cpp26/non-trivial-ice.C: New test.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/contracts/cpp26/outline-checks/freefunc-noexcept-post.C: New test.
+	* g++.dg/contracts/cpp26/outline-checks/freefunc-noexcept-pre.C: New test.
+	* g++.dg/contracts/cpp26/outline-checks/func-noexcept-assert.C: New test.
+	* g++.dg/contracts/cpp26/outline-checks/memberfunc-noexcept-post.C: New test.
+	* g++.dg/contracts/cpp26/outline-checks/memberfunc-noexcept-pre.C: New test.
+	* g++.dg/contracts/cpp26/empty-nt-param.C: Test with outlined checks.
+	* g++.dg/contracts/cpp26/expr.prim.id.unqual.p7-3.C: New file.
+	* g++.dg/contracts/cpp26/expr.prim.id.unqual.p7-4.C: New file.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/113968
+	PR c++/110871
+	PR c++/110872
+	* g++.dg/contracts/cpp26/BZ121936-workaround-noipa.C: New test.
+	* g++.dg/contracts/cpp26/assertion-statement-errors.C: New test.
+	* g++.dg/contracts/cpp26/assertion-statement.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p11-observe.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p14.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-2.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-3.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-4.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-5.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-SMF-post.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-SMF-pre.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-SMF2.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-SMF3.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-SMF4.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p4-error.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p4.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p6.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p6.observe.C: New test.
+	* g++.dg/contracts/cpp26/basic.scope.contract.p1.C: New test.
+	* g++.dg/contracts/cpp26/basic.scope.contract.p2.1.C: New test.
+	* g++.dg/contracts/cpp26/contract-assert-run.C: New test.
+	* g++.dg/contracts/cpp26/contract-assert-warn-attributes.C: New test.
+	* g++.dg/contracts/cpp26/contract-violation-noexcept.C: New test.
+	* g++.dg/contracts/cpp26/contract-violation-noexcept2.C: New test.
+	* g++.dg/contracts/cpp26/contract_genericize.C: New test.
+	* g++.dg/contracts/cpp26/contracts-friend1.C: New test.
+	* g++.dg/contracts/cpp26/contracts-nested-class1.C: New test.
+	* g++.dg/contracts/cpp26/contracts-nested-class2.C: New test.
+	* g++.dg/contracts/cpp26/contracts-tmpl-spec2.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.func.p4.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.func.p6.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.res.p1-NT.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.res.p1.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.res.p2.C: New test.
+	* g++.dg/contracts/cpp26/debug-and-opt.C: New test.
+	* g++.dg/contracts/cpp26/deferred1.C: New test.
+	* g++.dg/contracts/cpp26/dependent_contract.C: New test.
+	* g++.dg/contracts/cpp26/empty-nt-param.C: New test.
+	* g++.dg/contracts/cpp26/function-contract-specifier-seq-error.C: New test.
+	* g++.dg/contracts/cpp26/function-contract-specifier-seq.C: New test.
+	* g++.dg/contracts/cpp26/lambda.C: New test.
+	* g++.dg/contracts/cpp26/name_mangling.C: New test.
+	* g++.dg/contracts/cpp26/over.call.func.p3.1.C: New test.
+	* g++.dg/contracts/cpp26/pr113968.C: New test.
+	* g++.dg/contracts/cpp26/src-loc-0.C: New test.
+	* g++.dg/contracts/cpp26/src-loc-1.C: New test.
+	* g++.dg/contracts/cpp26/src-loc-2.C: New test.
+	* g++.dg/contracts/cpp26/throwing-violation-handler.cc: New test.
+	* g++.dg/contracts/cpp26/unused_warning.C: New test.
+	* g++.dg/contracts/cpp26/vaargs.C: New test.
+	* g++.dg/contracts/cpp2a/check-err.C: New test.
+	* g++.dg/coroutines/pr110871.C: New test.
+	* g++.dg/coroutines/pr110872.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p8.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.func.p7.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.res.p1-2.C: New test.
+	* g++.dg/contracts/cpp26/expr.prim.id.unqual.p7-2.C: New test.
+	* g++.dg/contracts/cpp26/expr.prim.id.unqual.p7.C: New test.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p7.3.C: New test.
+	* g++.dg/contracts/cpp26/intro.compliance.general.p2.3.4.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.func.p7-t1.C: New file.
+	* g++.dg/contracts/cpp26/dcl.contract.func.p7-t2.C: New file.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* g++.dg/warn/Wkeyword-macro-1.C: Update for contract_assert.
+	* g++.dg/warn/Wkeyword-macro-2.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-4.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-5.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-7.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-8.C: Likewise.
+	* g++.dg/contracts/cpp26/basic.contract.eval.p8-2.C: New file.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+
+	* g++.dg/contracts/contracts-access1.C: Removed.
+	* g++.dg/contracts/contracts-assume1.C: Removed.
+	* g++.dg/contracts/contracts-assume2.C: Removed.
+	* g++.dg/contracts/contracts-assume3.C: Removed.
+	* g++.dg/contracts/contracts-assume4.C: Removed.
+	* g++.dg/contracts/contracts-assume5.C: Removed.
+	* g++.dg/contracts/contracts-assume6.C: Removed.
+	* g++.dg/contracts/contracts-comdat1.C: Removed.
+	* g++.dg/contracts/contracts-config1.C: Removed.
+	* g++.dg/contracts/contracts-constexpr1.C: Removed.
+	* g++.dg/contracts/contracts-constexpr2.C: Removed.
+	* g++.dg/contracts/contracts-constexpr3.C: Removed.
+	* g++.dg/contracts/contracts-conversion1.C: Removed.
+	* g++.dg/contracts/contracts-ctor-dtor1.C: Removed.
+	* g++.dg/contracts/contracts-ctor-dtor2.C: Removed.
+	* g++.dg/contracts/contracts-cv1.C: Removed.
+	* g++.dg/contracts/contracts-deduced1.C: Removed.
+	* g++.dg/contracts/contracts-deduced2.C: Removed.
+	* g++.dg/contracts/contracts-err1.C: Removed.
+	* g++.dg/contracts/contracts-externC.C: Removed.
+	* g++.dg/contracts/contracts-friend1.C: Removed.
+	* g++.dg/contracts/contracts-ft1.C: Removed.
+	* g++.dg/contracts/contracts-ignore1.C: Removed.
+	* g++.dg/contracts/contracts-ignore2.C: Removed.
+	* g++.dg/contracts/contracts-large-return.C: Removed.
+	* g++.dg/contracts/contracts-multiline1.C: Removed.
+	* g++.dg/contracts/contracts-multiple-inheritance1.C: Removed.
+	* g++.dg/contracts/contracts-multiple-inheritance2.C: Removed.
+	* g++.dg/contracts/contracts-nested-class1.C: Removed.
+	* g++.dg/contracts/contracts-nested-class2.C: Removed.
+	* g++.dg/contracts/contracts-nocopy1.C: Removed.
+	* g++.dg/contracts/contracts-override.C: Removed.
+	* g++.dg/contracts/contracts-post1.C: Removed.
+	* g++.dg/contracts/contracts-post2.C: Removed.
+	* g++.dg/contracts/contracts-post3.C: Removed.
+	* g++.dg/contracts/contracts-post4.C: Removed.
+	* g++.dg/contracts/contracts-post5.C: Removed.
+	* g++.dg/contracts/contracts-post6.C: Removed.
+	* g++.dg/contracts/contracts-post7.C: Removed.
+	* g++.dg/contracts/contracts-pre1.C: Removed.
+	* g++.dg/contracts/contracts-pre10.C: Removed.
+	* g++.dg/contracts/contracts-pre2.C: Removed.
+	* g++.dg/contracts/contracts-pre2a1.C: Removed.
+	* g++.dg/contracts/contracts-pre2a2.C: Removed.
+	* g++.dg/contracts/contracts-pre3.C: Removed.
+	* g++.dg/contracts/contracts-pre4.C: Removed.
+	* g++.dg/contracts/contracts-pre5.C: Removed.
+	* g++.dg/contracts/contracts-pre6.C: Removed.
+	* g++.dg/contracts/contracts-pre7.C: Removed.
+	* g++.dg/contracts/contracts-pre9.C: Removed.
+	* g++.dg/contracts/contracts-redecl1.C: Removed.
+	* g++.dg/contracts/contracts-redecl2.C: Removed.
+	* g++.dg/contracts/contracts-redecl3.C: Removed.
+	* g++.dg/contracts/contracts-redecl4.C: Removed.
+	* g++.dg/contracts/contracts-redecl5.C: Removed.
+	* g++.dg/contracts/contracts-redecl6.C: Removed.
+	* g++.dg/contracts/contracts-redecl7.C: Removed.
+	* g++.dg/contracts/contracts-redecl8.C: Removed.
+	* g++.dg/contracts/contracts-tmpl-attr1.C: Removed.
+	* g++.dg/contracts/contracts-tmpl-spec1.C: Removed.
+	* g++.dg/contracts/contracts-tmpl-spec2.C: Removed.
+	* g++.dg/contracts/contracts-tmpl-spec3.C: Removed.
+	* g++.dg/contracts/contracts1.C: Removed.
+	* g++.dg/contracts/contracts10.C: Removed.
+	* g++.dg/contracts/contracts11.C: Removed.
+	* g++.dg/contracts/contracts12.C: Removed.
+	* g++.dg/contracts/contracts13.C: Removed.
+	* g++.dg/contracts/contracts14.C: Removed.
+	* g++.dg/contracts/contracts15.C: Removed.
+	* g++.dg/contracts/contracts16.C: Removed.
+	* g++.dg/contracts/contracts17.C: Removed.
+	* g++.dg/contracts/contracts18.C: Removed.
+	* g++.dg/contracts/contracts19.C: Removed.
+	* g++.dg/contracts/contracts2.C: Removed.
+	* g++.dg/contracts/contracts20.C: Removed.
+	* g++.dg/contracts/contracts22.C: Removed.
+	* g++.dg/contracts/contracts24.C: Removed.
+	* g++.dg/contracts/contracts25.C: Removed.
+	* g++.dg/contracts/contracts3.C: Removed.
+	* g++.dg/contracts/contracts35.C: Removed.
+	* g++.dg/contracts/contracts4.C: Removed.
+	* g++.dg/contracts/contracts5.C: Removed.
+	* g++.dg/contracts/contracts6.C: Removed.
+	* g++.dg/contracts/contracts7.C: Removed.
+	* g++.dg/contracts/pr110159.C: Removed.
+	* g++.dg/contracts/pr113968.C: Removed.
+	* g++.dg/contracts/pr115434.C: Removed.
+	* g++.dg/contracts/pr116490.C: Removed.
+	* g++.dg/contracts/pr116607.C: Removed.
+	* g++.dg/contracts/pr117579.C: Removed.
+	* g++.dg/contracts/noexcept_preload_handler/Makefile: Removed.
+	* g++.dg/contracts/noexcept_preload_handler/README: Removed.
+	* g++.dg/contracts/noexcept_preload_handler/assert_fail.cpp: Removed.
+	* g++.dg/contracts/noexcept_preload_handler/handle_contract_violation.cpp: Removed.
+	* g++.dg/contracts/preload_handler/Makefile: Removed.
+	* g++.dg/contracts/preload_handler/README: Removed.
+	* g++.dg/contracts/preload_handler/assert_fail.cpp: Removed.
+	* g++.dg/contracts/preload_handler/handle_contract_violation.cpp: Removed.
+	* g++.dg/contracts/preload_nocontinue_handler/Makefile: Removed.
+	* g++.dg/contracts/preload_nocontinue_handler/README: Removed.
+	* g++.dg/contracts/preload_nocontinue_handler/assert_fail.cpp: Removed.
+	* g++.dg/contracts/preload_nocontinue_handler/handle_contract_violation.cpp: Removed.
+	* g++.dg/contracts/preload_nocontinue_handler/nocontinue.cpp: Removed.
+	* g++.dg/contracts/backtrace_handler/Makefile: Removed.
+	* g++.dg/contracts/backtrace_handler/README: Removed.
+	* g++.dg/contracts/backtrace_handler/assert_fail.cpp: Removed.
+	* g++.dg/contracts/backtrace_handler/example_out.txt: Removed.
+	* g++.dg/contracts/backtrace_handler/example_pretty.txt: Removed.
+	* g++.dg/contracts/backtrace_handler/handle_contract_violation.cpp: Removed.
+	* g++.dg/contracts/backtrace_handler/prettytrace.sh: Removed.
+	* g++.dg/coroutines/pr110871.C: Removed.
+	* g++.dg/coroutines/pr110872.C: Removed.
+	* g++.dg/modules/contracts-1_a.C: Removed.
+	* g++.dg/modules/contracts-1_b.C: Removed.
+	* g++.dg/modules/contracts-2_a.C: Removed.
+	* g++.dg/modules/contracts-2_b.C: Removed.
+	* g++.dg/modules/contracts-2_c.C: Removed.
+	* g++.dg/modules/contracts-3_a.C: Removed.
+	* g++.dg/modules/contracts-3_b.C: Removed.
+	* g++.dg/modules/contracts-4_a.C: Removed.
+	* g++.dg/modules/contracts-4_b.C: Removed.
+	* g++.dg/modules/contracts-4_c.C: Removed.
+	* g++.dg/modules/contracts-4_d.C: Removed.
+	* g++.dg/modules/contracts-5_a.C: Removed.
+	* g++.dg/modules/contracts-5_b.C: Removed.
+	* g++.dg/modules/contracts-tpl-friend-1_a.C: Removed.
+	* g++.dg/modules/contracts-tpl-friend-1_b.C: Removed.
+	* g++.dg/contracts/contracts8.C: Removed.
+	* g++.dg/contracts/contracts9.C: Removed.
+	* g++.dg/contracts/except_preload_handler/Makefile: Removed.
+	* g++.dg/contracts/except_preload_handler/README: Removed.
+	* g++.dg/contracts/except_preload_handler/assert_fail.cpp: Removed.
+	* g++.dg/contracts/except_preload_handler/handle_contract_violation.cpp: Removed.
+
 2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/120096

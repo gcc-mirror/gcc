@@ -1,3 +1,65 @@
+2026-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/experimental/Makefile.am: Change AM_CXXFLAGS to use C++20
+	by default.
+
+2026-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/experimental/contract26.cc: Use #error if built without
+	contracts support enabled.
+	* include/std/source_location: Remove stray whitespace.
+
+2026-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR tree-optimization/122197
+	* include/bits/shared_ptr_base.h (~_Sp_counted_deleter): Use
+	diagnostic pragam to disable -Wfree-nonheap-object false
+	positive.
+	(~_Sp_counted_ptr_inplace): Likewise for -Warray-bounds false
+	positive.
+
+2026-01-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/gnu/ctype_members.cc (use_table): New function.
+	(ctype<wchar_t>::do_narrow): Use use_table.
+
+2026-01-28  Soumya AR  <soumyaa@nvidia.com>
+
+	* include/bits/atomic_base.h:
+	Add fetch_min and fetch_max memberfunctions.
+	* include/bits/version.def:
+	Add __cpp_lib_atomic_min_max feature test macro.
+	* include/bits/version.h (defined): Regenerate.
+	* include/std/atomic: Extend for fetch_min/max non-member functions.
+	* src/c++23/std.cc.in: Export atomic_fetch_min, atomic_fetch_max,
+	atomic_fetch_min_explicit, atomic_fetch_max_explicit.
+	* testsuite/29_atomics/atomic_integral/nonmembers_fetch_minmax.cc:
+	New test.
+	* testsuite/29_atomics/atomic_ref/integral_fetch_minmax.cc: New test.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* include/Makefile.am: Add contract include.
+	* include/Makefile.in: Regenerate.
+	* include/bits/version.def: Add ftm for contracts.
+	* include/bits/version.h: Regenerate.
+	* include/precompiled/stdc++.h: Add contracts header.
+	* include/std/source_location: Befriend the contract_violation
+	class so that we can initialise a source_location from an
+	existing __impl *.
+	* src/c++23/std.cc.in: Add contracts support.
+	* src/experimental/Makefile.am: Add new contract violation
+	implementation, remove the old one.
+	* src/experimental/Makefile.in: Regenerate.
+	* include/experimental/contract: Removed.
+	* src/experimental/contract.cc: Removed.
+	* include/std/contracts: New file.
+	* src/experimental/contract26.cc: New file.
+	* testsuite/18_support/contracts/invoke_default_cvh.cc: New test.
+	* testsuite/18_support/contracts/invoke_default_cvh2.cc: New test.
+
 2026-01-23  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/123758

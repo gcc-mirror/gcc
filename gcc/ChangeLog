@@ -1,3 +1,205 @@
+2026-01-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/36503
+	* config/i386/i386.md (*<insn:any_shift><mode:SWI48>3_sub):
+	Also allow operands[3] & (<mode_bitsize>-1) == (<mode_bitsize>-1)
+	in insn condition. Emit NOT RTX instead of NEG RTX in this case.
+	(*<insn:any_shift><mode:SWI48>3_sub_1): Ditto.
+
+2026-01-28  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123824
+	* config/riscv/riscv.cc (riscv_vls_mode_fits_in_gprs_p): New
+	helper.
+	(riscv_pass_vls_aggregate_in_gpr): Use helper and distribute
+	half-fitting vector to GPR and stack.
+	(riscv_pass_aggregate_in_vr): Reformat comment.
+	(riscv_get_arg_info): Use helper.
+	(riscv_pass_by_reference): Ditto.
+
+2026-01-28  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/121571
+	* lra-constraints.cc (process_alt_operands): Reprocess asm insn
+	when there are no enough regs for the asm-insn.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123575
+	* match.pd (abs ((T)x) -> absu (x)): For vector type
+	arguments require the resulting operation is supported.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/111036
+	* match.pd (__builtin_constant_p ((T)x)): Strip nop-conversions
+	from __builtin_constant_p arguments.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/106859
+	* var-tracking.cc (val_store): Dump -1 as UID if setting_insn
+	is NULL.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123537
+	* match.pd (REDUC (@0 & @1) -> @0[I] & @1[I]): Restrict
+	allowed conversions.
+
+2026-01-28  Karl Meakin  <karl.meakin@arm.com>
+
+	* doc/invoke.texi: Document `+sve-bfscale` flag.
+	* config/aarch64/aarch64.h (TARGET_SVE_BFSCALE): New macro.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Define `__AARCH64_FEATURE_SVE_BFSCALE`.
+	* config/aarch64/aarch64-sve-builtins-base.cc: Skip constant
+	folding for floating-point or unpredicated multiplications.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: New `SVE_FUNCTION`s.
+	* config/aarch64/aarch64-sve.md: Modify insns for
+	`SVE_COND_FP_BINARY_INT` to handle BF16 modes.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_<optab><mode>, @aarch64_sve_<optab><mode>_single): New insn for `BFSCALE`.
+	Modify insns for `UNSPEC_FSCALE` to handle BF16 modes.
+	* config/aarch64/iterators.md (SVE_FULL_F_SCALAR): Add `VNx8BF` to iterator.
+	(SVE_FULL_F_BFSCALE): New iterator.
+	(SVE_Fx24_BFSCALE): New iterator.
+	(SVE_BFx24): New iterator.
+	(UNSPEC_FMUL): New unspec.
+	(V_INT_EQUIV): Add entries for BF16 modes.
+	(b): Add entries for scalar float modes.
+	(is_bf16): Add entries for BF16 modes and reformat.
+	(SVSCALE_SINGLE_INTARG): Likewise.
+	(SVSCALE_INTARG): Likewise.
+	(SVE_FP_MULL): New iterator.
+
+2026-01-28  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR middle-end/123447
+	* expr.cc (expand_expr_real_1): Increase stack slot alignment
+	for STRICT_ALIGNMENT targets.
+
+2026-01-28  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/123016
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): use
+	'build_truth_vector_type_for_mode' to reconstruct mask's vectype for
+	non-scalar masks.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* langhooks.h (struct lang_hooks_for_types): Remove
+	copy_lang_qualifiers.  Add build_lang_qualified_type.
+	* langhooks.cc (lhd_build_lang_qualified_type): New function.
+	* langhooks-def.h (lhd_build_lang_qualified_type): Declare.
+	(LANG_HOOKS_COPY_LANG_QUALIFIERS): Remove.
+	(LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE): Add.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Use
+	LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE instead of
+	LANG_HOOKS_COPY_LANG_QUALIFIERS.
+	* attribs.cc (build_type_attribute_qual_variant): Use
+	lang_hooks.types.build_lang_qualified_type instead of
+	build_qualified_type and/or build_qualified_type with
+	optional lang_hooks.types.copy_lang_qualifiers call.
+	(attr_access::array_as_string): Use "array " attribute instead of
+	"array".  If attribute has been created or intended quals differ
+	from quals of build_array_type, use copy_node and adjust quals and
+	attributes on the copy, print and then ggc_free.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123837
+	* ipa-free-lang-data.cc (find_decls_types_r): Remove C++ annotations
+	from {DECL,TYPE}_ATRIBUTES.
+
+2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123849
+	* gimple-ssa-warn-access.cc (new_delete_mismatch_p): Handle
+	DEMANGLE_COMPONENT_EXTENDED_BUILTIN_TYPE like DEMANGLE_COMPONENT_BUILTIN_TYPE.
+
+2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110043
+	* pointer-query.cc (get_offset_range): Fail for integer
+	types with precision larger than ptrdiff_type_node.
+
+2026-01-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/123779
+	* config/i386/sse.md (*sse4_1_<code>v8qiv8hi2<mask_name>_2):
+	Rename to ...
+	(*sse4_1_<code>v8qiv8hi2_2): ... this, and drop mask conditions.
+	(*avx2_<code>v8qiv8si2<mask_name>_2): Rename to ...
+	(*avx2_<code>v8qiv8si2_2): ... this, and likewise.
+	(*sse4_1_<code>v4qiv4si2<mask_name>_2): Rename to ...
+	(*sse4_1_<code>v4qiv4si2_2): ... this, and likewise.
+	(*sse4_1_<code>v4hiv4si2<mask_name>_2): Rename to ...
+	(*sse4_1_<code>v4hiv4si2_2): ... this, and likewise.
+	(*avx2_<code>v4qiv4di2<mask_name>_2): Rename to ...
+	(*avx2_<code>v4qiv4di2_2): ... this, and likewise.
+	(*avx2_<code>v4hiv4di2<mask_name>_2): Rename to ...
+	(*avx2_<code>v4hiv4di2_2): ... this, and likewise.
+	(*sse4_1_<code>v2hiv2di2<mask_name>_2): Rename to ...
+	(*sse4_1_<code>v2hiv2di2_2): ... this, and likewise.
+	(*sse4_1_<code>v2siv2di2<mask_name>_2): Rename to ...
+	(*sse4_1_<code>v2siv2di2_2): ... this, and likewise.
+	(*avx512f_<code>v8qiv8di2<mask_name>_2): Rename to ...
+	(*avx512f_<code>v8qiv8di2_2): ... this.
+	(*avx512vl_<code>v8qiv8hi2_mask_2): New define_insn_and_split.
+	(*avx512vl_<code>v8qiv8si2_mask_2): Likewise.
+	(*avx512vl_<code>v4qiv4si2_mask_2): Likewise.
+	(*avx512vl_<code>v4hiv4si2_mask_2): Likewise.
+	(*avx512f_<code>v8qiv8di2_mask_2): Likewise.
+	(*avx512vl_<code>v4qiv4di2_mask_2): Likewise.
+	(*avx512vl_<code>v4hiv4di2_mask_2): Likewise.
+	(*avx512vl_<code>v2hiv2di2_mask_2): Likewise.
+	(*avx512vl_<code>v2siv2di2_mask_2): Likewise.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* doc/invoke.texi: Document -fcontracts-client-check= and
+	-fcontracts-definition-check=.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* doc/invoke.texi: Document -fcontract-checks-outlined and
+	-fcontract-disable-optimized-checks.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* tree-core.h (struct tree_base): Update tree flag usage comment.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* tree.h (CONST_WRAPPER_P): New.
+
+2026-01-28  Nina Ranns  <dinka.ranns@gmail.com>
+	    Iain Sandoe  <iain@sandoe.co.uk>
+
+	* doc/invoke.texi: Document -fcontracts-conservative-ipa.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+	    Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL): Add cases for contract
+	constant data that need to be in independent link-time 'atoms'.
+	* doc/invoke.texi: Document -fcontracts and
+	-fcontract-evaluation-semantic=.
+
+2026-01-28  Iain Sandoe  <iain@sandoe.co.uk>
+	    Nina Ranns  <dinka.ranns@gmail.com>
+
+	* doc/invoke.texi: Remove documentation of contracts options.
+
 2026-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/123841

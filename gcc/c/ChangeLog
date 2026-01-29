@@ -1,3 +1,23 @@
+2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c++/102846
+	PR c/102846
+	* c-decl.cc (lookup_name_fuzzy): Lookup function-like macro and
+	notify of misuse there.
+
+2026-01-28  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	PR c/123583
+	* c-parser.cc (c_parser_maybe_reclassify_token): Reclassify only
+	C_ID_ID and C_ID_TYPENAME tokens.
+
+2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* c-tree.h (c_build_lang_qualified_type): Declare.
+	* c-objc-common.h (LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE): Define.
+	* c-objc-common.cc (c_build_lang_qualified_type): New function.
+
 2026-01-27  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR c/123500
