@@ -57,13 +57,14 @@ void
 _libga68_posixperror (uint32_t *s, size_t len, size_t stride)
 {
   size_t u8len;
-  uint8_t *u8str = _libga68_u32_to_u8 (s, len, stride, NULL, &u8len);
+  char *u8str = _libga68_u32_to_u8 (s, len, stride, &u8len);
 
   const char *errstr = strerror (_libga68_errno);
   (void) write (2, u8str, u8len);
   (void) write (2, ": ", 2);
   (void) write (2, errstr, strlen (errstr));
   (void) write (2, "\n", 1);
+  _libga68_free_internal (u8str);
 }
 
 uint32_t *
@@ -95,11 +96,7 @@ _libga68_posixfopen (const uint32_t *pathname, size_t len, size_t stride,
   int fd;
   int openflags = 0;
   size_t u8len;
-  const uint8_t *u8pathname = _libga68_u32_to_u8 (pathname, len, stride, NULL,
-						  &u8len);
-  char *filepath = (char *) _libga68_malloc_internal (u8len + 1);
-  memcpy (filepath, u8pathname, u8len);
-  filepath[u8len] = '\0';
+  char *filepath = _libga68_u32_to_u8 (pathname, len, stride, &u8len);
 
   /* Default mode: try read-write initially.
      If that fails, then try read-only.
@@ -141,11 +138,11 @@ _libga68_posixcreat (uint32_t *pathname, size_t len, size_t stride,
 		     uint32_t mode)
 {
   size_t u8len;
-  uint8_t *u8pathname = _libga68_u32_to_u8 (pathname, len, stride, NULL, &u8len);
-  u8pathname[u8len] = '\0';
+  char *filepath = _libga68_u32_to_u8 (pathname, len, stride, &u8len);
 
-  int res = creat (u8pathname, mode);
+  int res = creat (filepath, mode);
   _libga68_errno = errno;
+  _libga68_free_internal (filepath);
   return res;
 }
 
@@ -189,14 +186,11 @@ void
 _libga68_posixgetenv (uint32_t *s, size_t len, size_t stride,
 		      uint32_t **r, size_t *rlen)
 {
-  size_t varlen;
-  char *varname = _libga68_u32_to_u8 (s, len, stride, NULL, &varlen);
+  size_t u8len;
+  char *varname = _libga68_u32_to_u8 (s, len, stride, &u8len);
 
-  char *var = _libga68_malloc_internal (varlen + 1);
-  memcpy (var, varname, varlen);
-  var[varlen] = '\0';
-  char *val = getenv (var);
-  _libga68_free_internal (var);
+  char *val = getenv (varname);
+  _libga68_free_internal (varname);
 
   if (val == NULL)
     {
@@ -222,10 +216,11 @@ int
 _libga68_posixfputs (int fd, uint32_t *s, size_t len, size_t stride)
 {
   size_t u8len;
-  uint8_t *u8str = _libga68_u32_to_u8 (s, len, stride, NULL, &u8len);
+  char *u8str = _libga68_u32_to_u8 (s, len, stride, &u8len);
 
   ssize_t ret = write (fd, u8str, u8len);
   _libga68_errno = errno;
+  _libga68_free_internal (u8str);
   if (ret == -1)
     return 0;
   else
@@ -371,7 +366,7 @@ _libga68_posixfconnect (uint32_t *str, size_t len, size_t stride,
 			int port)
 {
   size_t u8len;
-  uint8_t *u8host = _libga68_u32_to_u8 (str, len, stride, NULL, &u8len);
+  char *host = _libga68_u32_to_u8 (str, len, stride, &u8len);
 
   /* Create a stream socket.  */
   int fd = socket (AF_INET, SOCK_STREAM, 0);
@@ -380,9 +375,6 @@ _libga68_posixfconnect (uint32_t *str, size_t len, size_t stride,
     goto error;
 
   /* Lookup the specified host.  */
-  char *host = _libga68_malloc_internal (u8len + 1);
-  memcpy (host, u8host, u8len);
-  host[u8len] = '\0';
   struct hostent *server = gethostbyname (host);
   if (server == NULL)
     {
@@ -409,8 +401,8 @@ _libga68_posixfconnect (uint32_t *str, size_t len, size_t stride,
 
  close_fd_and_error:
   close (fd);
- error:
   _libga68_free_internal (host);
+ error:
   return -1;
 }
 

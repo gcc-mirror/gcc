@@ -305,34 +305,26 @@ _libga68_u8_uctomb (uint8_t *s, uint32_t uc, ptrdiff_t n)
   return -2;
 }
 
-/* Convert UCS-4 to UTF-8  */
+/* Convert S of size N with stride STRIDE UCS-4 to UTF-8.
+   Returns a pointer to the converted string with a traiiling '\0'.
+   The string length, not counting the trailling '\0', is returned on LENGTHP.
+   Returns NULL on error.
+   Callers *must* call _libga68_free_internal on a non-null result.  */
 
-uint8_t *
-_libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
-		    uint8_t *resultbuf, size_t *lengthp)
+char *
+_libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride, size_t *lengthp)
 {
   const uint32_t *s_end;
   /* Output string accumulator.  */
-  uint8_t *result;
-  size_t allocated;
-  size_t length;
+  uint8_t *result = NULL;
+  size_t allocated = 0;
+  size_t length = 0;
 
   stride = stride / sizeof (uint32_t);
   s_end = s + (n * stride);
   
-  if (resultbuf != NULL)
-    {
-      result = resultbuf;
-      allocated = *lengthp;
-    }
-  else
-    {
-      result = NULL;
-      allocated = 0;
-    }
-  length = 0;
   /* Invariants:
-     result is either == resultbuf or == NULL or malloc-allocated.
+     result is either == NULL or allocated by the internal malloc.
      If length > 0, then result != NULL.  */
 
   while (s < s_end)
@@ -350,8 +342,8 @@ _libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
       count = _libga68_u8_uctomb (result + length, uc, allocated - length);
       if (count == -1)
         {
-          if (!(result == resultbuf || result == NULL))
-            free (result);
+	  if (result != NULL)
+	    _libga68_free_internal (result);
           errno = EILSEQ;
           return NULL;
         }
@@ -362,15 +354,12 @@ _libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
           allocated = (allocated > 0 ? 2 * allocated : 12);
           if (length + 6 > allocated)
             allocated = length + 6;
-          if (result == resultbuf || result == NULL)
-	    memory = (uint8_t *) _libga68_malloc_leaf (allocated * sizeof (uint8_t));
+	  if (result == NULL)
+	    memory = (uint8_t *) _libga68_malloc_internal (allocated * sizeof (uint8_t));
           else
 	    memory =
-	      (uint8_t *) _libga68_realloc (result, allocated * sizeof (uint8_t));
+	      (uint8_t *) _libga68_realloc_internal (result, allocated * sizeof (uint8_t));
 
-          if (result == resultbuf && length > 0)
-            memcpy ((char *) memory, (char *) result,
-                    length * sizeof (uint8_t));
           result = memory;
           count = _libga68_u8_uctomb (result + length, uc, allocated - length);
           if (count < 0)
@@ -384,26 +373,26 @@ _libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
       if (result == NULL)
         {
           /* Return a non-NULL value.  NULL means error.  */
-	  result = (uint8_t *) _libga68_malloc_leaf (1);
-          if (result == NULL)
-            {
-              errno = ENOMEM;
-              return NULL;
-            }
+	  result = (uint8_t *) _libga68_malloc_internal (1);
         }
     }
-  else if (result != resultbuf && length < allocated)
+  else
     {
-      /* Shrink the allocated memory if possible.  */
-      uint8_t *memory;
+      if (length + 1 != allocated)
+	{
+	  /* Resize the allocated memory to fit the string plus the trailling NULL.  */
+	  uint8_t *memory;
 
-      memory = (uint8_t *) _libga68_realloc_unchecked (result, length * sizeof (uint8_t));
-      if (memory != NULL)
-        result = memory;
+	  memory =
+	    (uint8_t *) _libga68_realloc_internal (result,
+						   (length  +1) * sizeof (uint8_t));
+	  result = memory;
+	}
+      result[length] = 0x0;
     }
 
   *lengthp = length;
-  return result;
+  return (char *) result;
 }
 
 /* Used by ga68_u8_to_u32 below.  */

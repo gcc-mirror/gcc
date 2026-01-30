@@ -42,6 +42,15 @@ _libga68_malloc_internal (size_t size)
   return res;
 }
 
+void *
+_libga68_realloc_internal (void *ptr, size_t size)
+{
+  void *res = (void *) realloc (ptr, size);
+  if (!res)
+    _libga68_abort ("Virtual memory exhausted\n");
+  return res;
+}
+
 #if LIBGA68_WITH_GC
 #include <gc/gc.h>
 

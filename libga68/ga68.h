@@ -73,6 +73,7 @@ void *_libga68_malloc (size_t size);
 void *_libga68_malloc_leaf (size_t size);
 void *_libga68_malloc_internal (size_t size) GA68_HIDDEN;
 void *_libga68_realloc (void *ptr, size_t size) GA68_HIDDEN;
+void *_libga68_realloc_internal (void *ptr, size_t size) GA68_HIDDEN;
 void *_libga68_realloc_unchecked (void *ptr, size_t size) GA68_HIDDEN;
 void _libga68_free_internal (void *ptr) GA68_HIDDEN;
 
@@ -117,8 +118,8 @@ int _libga68_u32_cmp2 (const uint32_t *s1, size_t n1, size_t stride1,
 		       const uint32_t *s2, size_t n2, size_t stride2);
 int _libga68_u8_uctomb (uint8_t *s, uint32_t uc, ptrdiff_t n) GA68_HIDDEN;
 int _libga68_u8_mbtouc (uint32_t *puc, const uint8_t *s, size_t n) GA68_HIDDEN;
-uint8_t *_libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
-			     uint8_t *resultbuf, size_t *lengthp) GA68_HIDDEN;
+char *_libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride,
+			  size_t *lengthp) GA68_HIDDEN;
 uint32_t *_libga68_u8_to_u32 (const uint8_t *s, size_t n,
 			      uint32_t *resultbuf, size_t *lengthp);
 
