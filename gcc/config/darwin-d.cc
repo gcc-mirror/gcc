@@ -30,6 +30,7 @@ darwin_d_os_builtins (void)
 {
   d_add_builtin_version ("Posix");
   d_add_builtin_version ("OSX");
+  d_add_builtin_version ("Apple");
   d_add_builtin_version ("darwin");
 }
 
