@@ -78,6 +78,7 @@ d_decl_context (Dsymbol *dsym)
   Dsymbol *parent = dsym;
   Declaration *decl = dsym->isDeclaration ();
   AggregateDeclaration *ad = dsym->isAggregateDeclaration ();
+  FuncDeclaration *fd = dsym->isFuncDeclaration ();
 
   while ((parent = parent->toParent2 ()))
     {
@@ -98,18 +99,21 @@ d_decl_context (Dsymbol *dsym)
       if (decl != NULL && decl->isDataseg ())
 	continue;
 
+      /* Likewise generated functions are part of module context.  */
+      if (fd != NULL && fd->isGenerated ()
+	  && !(fd->isVirtual () && fd->vtblIndex != -1))
+	continue;
+
       /* Nested functions.  */
-      FuncDeclaration *fd = parent->isFuncDeclaration ();
-      if (fd != NULL)
-	return get_symbol_decl (fd);
+      if (FuncDeclaration *fdp = parent->isFuncDeclaration ())
+	return get_symbol_decl (fdp);
 
       /* Methods of classes or structs.  */
-      AggregateDeclaration *ad = parent->isAggregateDeclaration ();
-      if (ad != NULL)
+      if (AggregateDeclaration *adp = parent->isAggregateDeclaration ())
 	{
-	  tree context = build_ctype (ad->type);
+	  tree context = build_ctype (adp->type);
 	  /* Want the underlying RECORD_TYPE.  */
-	  if (ad->isClassDeclaration ())
+	  if (adp->isClassDeclaration ())
 	    context = TREE_TYPE (context);
 
 	  return context;
