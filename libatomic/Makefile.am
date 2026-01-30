@@ -185,12 +185,12 @@ all-local: libatomic.la
 	$(LIBTOOL) --mode=install $(INSTALL_DATA) libatomic.la $(gcc_objdir)$(MULTISUBDIR)/
 if LIBAT_BUILD_ASNEEDED_SOLINK
 	cd $(gcc_objdir)$(MULTISUBDIR) || exit 1; \
-	(echo "/* GNU ld script"; \
+	if test -f libatomic.so; then (echo "/* GNU ld script"; \
 	 echo "   Add DT_NEEDED entry for -latomic only if needed.  */"; \
 	 echo "INPUT ( AS_NEEDED ( -latomic ) )" \
-	) > libatomic_asneeded.so; \
-	rm -f libatomic_asneeded.a; \
-	$(LN_S) libatomic.a libatomic_asneeded.a
+	) > libatomic_asneeded.so; fi; \
+	if test -f libatomic.a; then rm -f libatomic_asneeded.a; \
+	$(LN_S) libatomic.a libatomic_asneeded.a; fi
 endif
 	rm $(gcc_objdir)$(MULTISUBDIR)/libatomic.la
 
@@ -200,12 +200,12 @@ install-data-am: install-asneeded
 install-asneeded: install-toolexeclibLTLIBRARIES
 	$(MKDIR_P) "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
 	cd "$(DESTDIR)$(toolexeclibdir)" || exit 1; \
-	(echo "/* GNU ld script"; \
+	if test -f libatomic.so; then (echo "/* GNU ld script"; \
 	 echo "   Add DT_NEEDED entry for -latomic only if needed.  */"; \
 	 echo "INPUT ( AS_NEEDED ( -latomic ) )" \
-	) > libatomic_asneeded.so; \
-	rm -f libatomic_asneeded.a; \
-	$(LN_S) libatomic.a libatomic_asneeded.a
+	) > libatomic_asneeded.so; fi; \
+	if test -f libatomic.a; then rm -f libatomic_asneeded.a; \
+	$(LN_S) libatomic.a libatomic_asneeded.a; fi
 endif
 
 # target overrides
