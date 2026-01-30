@@ -8545,6 +8545,7 @@ generate_skeleton_bottom_up (skeleton_chain_node *parent)
 	       type unit.  Just move the DIE and its children back to
 	       the skeleton tree (in the main CU).  */
 	    remove_child_with_prev (c, prev);
+	    generate_skeleton_ancestor_tree (parent);
 	    add_child_die (parent->new_die, c);
 	    c = prev;
 	  }
