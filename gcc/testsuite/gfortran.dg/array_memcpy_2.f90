@@ -1,11 +1,12 @@
 ! This checks that the "z = y" assignment is not considered copyable, as the
 ! array is of a derived type containing allocatable components.  Hence, we
-! we should expand the scalarized loop, which contains *two* memcpy calls
+! should expand the scalarized loop, which contains *two* memcpy calls
 ! for the assignment itself, plus one for initialization.
 ! { dg-do compile }
 ! { dg-options "-O2 -fdump-tree-original" }
 !
 ! PR 121628
+! PR 123868 - fixed double allocation that caused 4 memcpy instead of 3
 !
   type :: a
     integer, allocatable :: i(:)
@@ -26,4 +27,4 @@
 
   z = y
 end
-! { dg-final { scan-tree-dump-times "__builtin_memcpy" 4 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_memcpy" 3 "original" } }

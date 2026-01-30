@@ -11063,9 +11063,14 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 					  copy_wrapper);
 	      gfc_add_expr_to_block (&fnblock, call);
 	    }
+	  /* For allocatable arrays with nested allocatable components,
+	     add_when_allocated already includes gfc_duplicate_allocatable
+	     (from the recursive structure_alloc_comps call at line 10290-10293),
+	     so we must not call it again here.  PR121628 added an
+	     add_when_allocated != NULL clause that was redundant for scalars
+	     (already handled by !c->as) and wrong for arrays (double alloc).  */
 	  else if (c->attr.allocatable && !c->attr.proc_pointer
-		   && (add_when_allocated != NULL_TREE
-		       || !cmp_has_alloc_comps
+		   && (!cmp_has_alloc_comps
 		       || !c->as
 		       || c->attr.codimension
 		       || caf_in_coarray (caf_mode)))
