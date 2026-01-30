@@ -554,6 +554,8 @@ public:
     void isReturn(bool v);
     bool isReturnScope() const;
     void isReturnScope(bool v);
+    bool isRvalue() const;
+    void isRvalue(bool v);
     bool isScopeQual() const;
     void isScopeQual(bool v);
     bool isReturnInferred() const;

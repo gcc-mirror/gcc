@@ -1,8 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/ice11153.d(11): Error: function declaration without return type. (Note that constructors are always named `this`)
-fail_compilation/ice11153.d(11): Error: variable name expected after type `foo()`, not `{`
+fail_compilation/ice11153.d(12): Error: function declaration without return type
+fail_compilation/ice11153.d(12):        Note that constructors are always named `this`
+fail_compilation/ice11153.d(12): Error: variable name expected after type `foo()`, not `{`
 ---
 */
 

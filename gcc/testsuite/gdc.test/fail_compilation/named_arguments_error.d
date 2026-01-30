@@ -1,26 +1,27 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/named_arguments_error.d(37): Error: function `f` is not callable using argument types `(int, int, int)`
-fail_compilation/named_arguments_error.d(37):        parameter `x` assigned twice
-fail_compilation/named_arguments_error.d(31):        `named_arguments_error.f(int x, int y, int z)` declared here
 fail_compilation/named_arguments_error.d(38): Error: function `f` is not callable using argument types `(int, int, int)`
-fail_compilation/named_arguments_error.d(38):        argument `4` goes past end of parameter list
-fail_compilation/named_arguments_error.d(31):        `named_arguments_error.f(int x, int y, int z)` declared here
+fail_compilation/named_arguments_error.d(38):        parameter `x` assigned twice
+fail_compilation/named_arguments_error.d(32):        `named_arguments_error.f(int x, int y, int z)` declared here
 fail_compilation/named_arguments_error.d(39): Error: function `f` is not callable using argument types `(int, int, int)`
-fail_compilation/named_arguments_error.d(39):        parameter `y` assigned twice
-fail_compilation/named_arguments_error.d(31):        `named_arguments_error.f(int x, int y, int z)` declared here
+fail_compilation/named_arguments_error.d(39):        argument `4` goes past end of parameter list
+fail_compilation/named_arguments_error.d(32):        `named_arguments_error.f(int x, int y, int z)` declared here
 fail_compilation/named_arguments_error.d(40): Error: function `f` is not callable using argument types `(int, int, int)`
-fail_compilation/named_arguments_error.d(40):        no parameter named `a`
-fail_compilation/named_arguments_error.d(31):        `named_arguments_error.f(int x, int y, int z)` declared here
-fail_compilation/named_arguments_error.d(41): Error: function `g` is not callable using argument types `(int, int)`
-fail_compilation/named_arguments_error.d(41):        missing argument for parameter #1: `int x`
-fail_compilation/named_arguments_error.d(33):        `named_arguments_error.g(int x, int y, int z = 3)` declared here
-fail_compilation/named_arguments_error.d(43): Error: no named argument `element` allowed for array dimension
-fail_compilation/named_arguments_error.d(44): Error: no named argument `number` allowed for scalar
-fail_compilation/named_arguments_error.d(45): Error: cannot implicitly convert expression `g(x: 3, y: 4, z: 5)` of type `int` to `string`
-fail_compilation/named_arguments_error.d(46): Error: template `tempfun` is not callable using argument types `!()(int, int)`
-fail_compilation/named_arguments_error.d(49):        Candidate is: `tempfun(T, U)(T t, U u)`
+fail_compilation/named_arguments_error.d(40):        parameter `y` assigned twice
+fail_compilation/named_arguments_error.d(32):        `named_arguments_error.f(int x, int y, int z)` declared here
+fail_compilation/named_arguments_error.d(41): Error: function `f` is not callable using argument types `(int, int, int)`
+fail_compilation/named_arguments_error.d(41):        no parameter named `a`
+fail_compilation/named_arguments_error.d(32):        `named_arguments_error.f(int x, int y, int z)` declared here
+fail_compilation/named_arguments_error.d(42): Error: function `g` is not callable using argument types `(int, int)`
+fail_compilation/named_arguments_error.d(42):        missing argument for parameter #1: `int x`
+fail_compilation/named_arguments_error.d(34):        `named_arguments_error.g(int x, int y, int z = 3)` declared here
+fail_compilation/named_arguments_error.d(44): Error: no named argument `element` allowed for array dimension
+fail_compilation/named_arguments_error.d(45): Error: no named argument `number` allowed for scalar
+fail_compilation/named_arguments_error.d(46): Error: cannot implicitly convert expression `g(x: 3, y: 4, z: 5)` of type `int` to `string`
+fail_compilation/named_arguments_error.d(47): Error: template `tempfun` is not callable using argument types `!()(int, int)`
+fail_compilation/named_arguments_error.d(47):        argument `1` goes past end of parameter list
+fail_compilation/named_arguments_error.d(50):        Candidate is: `tempfun(T, U)(T t, U u)`
 ---
 */
 

@@ -4728,10 +4728,7 @@ It will return `void` if a symbol without a template is given.
 alias TemplateOf(alias T : Base!Args, alias Base, Args...) = Base;
 
 /// ditto
-alias TemplateOf(T : Base!Args, alias Base, Args...) = Base;
-
-/// ditto
-alias TemplateOf(T) = void;
+alias TemplateOf(alias T) = void;
 
 ///
 @safe unittest
@@ -4768,6 +4765,10 @@ alias TemplateOf(T) = void;
 {
     static assert(is(TemplateOf!(int[]) == void));
     static assert(is(TemplateOf!bool == void));
+
+    // https://github.com/dlang/phobos/issues/10527
+    static void foo() {}
+    static assert(is(TemplateOf!foo == void));
 }
 
 /**

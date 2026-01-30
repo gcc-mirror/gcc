@@ -1058,6 +1058,41 @@ struct JSONValue
         }
     }
 
+    /// Calculate a numerical hash value for this value,
+    /// allowing `JSONValue` to be used in associative arrays.
+    hash_t toHash() const @nogc nothrow pure @trusted
+    {
+        final switch (type_tag)
+        {
+        case JSONType.integer:
+            return hashOf(store.integer);
+        case JSONType.uinteger:
+            return hashOf(store.uinteger);
+        case JSONType.float_:
+            return hashOf(store.floating);
+        case JSONType.string:
+            return hashOf(store.str);
+        case JSONType.object:
+            hash_t result = hashOf(type_tag);
+            if (!store.object.isOrdered)
+                foreach (ref pair; store.object.unordered.byKeyValue)
+                    result ^= hashOf(pair.key, pair.value.toHash());
+            else
+                foreach (ref pair; store.object.ordered)
+                    result ^= hashOf(pair.key, pair.value.toHash());
+            return result;
+        case JSONType.array:
+            hash_t result = hashOf(type_tag);
+            foreach (ref v; store.array)
+                result = hashOf(v, result);
+            return result;
+        case JSONType.true_:
+        case JSONType.false_:
+        case JSONType.null_:
+            return hashOf(type_tag);
+        }
+    }
+
     ///
     @safe unittest
     {
@@ -2735,4 +2770,16 @@ pure nothrow @safe unittest
     j.toString(app);
 
     assert(app.data == s, app.data);
+}
+
+@safe unittest
+{
+    bool[JSONValue] aa;
+    aa[JSONValue("test")] = true;
+    assert(parseJSON(`"test"`) in aa);
+    assert(parseJSON(`"boo"`) !in aa);
+
+    aa[JSONValue(int(5))] = true;
+    assert(JSONValue(int(5)) in aa);
+    assert(JSONValue(uint(5)) in aa);
 }

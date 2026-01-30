@@ -11,7 +11,7 @@ void parse1()
 
 void parse2()
 {
-    asm 
+    asm
     {
         "" : : "g" (1 ? 2 : 3);
         "" : : "g" (1 ? 2 : :) 3;
@@ -22,11 +22,7 @@ void parse2()
 
 void parse3()
 {
-    asm { "" [; }
-    // { dg-error "expression expected, not ';'" "" { target *-*-* } .-1 }
-    // { dg-error "found 'End of File' when expecting ','" "" { target *-*-* } .-2 }
-    // { dg-error "found 'End of File' when expecting ']'" "" { target *-*-* } .-3 }
-    // { dg-error "found 'End of File' when expecting ';'" "" { target *-*-* } .-4 }
+    asm { "" [; } // { dg-error "found '\\\[' when expecting ':'" }
 }
 
 void parse4()
@@ -68,9 +64,9 @@ void semantic2()
 
 void semantic3()
 {
-    asm 
+    asm
     {
-        unknown;        // { dg-error "undefined identifier 'unknown'" }
+        unknown;        // { dg-error "expected string literal or expression in parentheses" }
     }
 }
 

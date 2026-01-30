@@ -820,15 +820,13 @@ extern (C++) class FuncDeclaration : Declaration
     bool addPreInvariant()
     {
         auto ad = isThis();
-        ClassDeclaration cd = ad ? ad.isClassDeclaration() : null;
-        return (ad && !(cd && cd.isCPPclass()) && global.params.useInvariants == CHECKENABLE.on && (visibility.kind == Visibility.Kind.protected_ || visibility.kind == Visibility.Kind.public_ || visibility.kind == Visibility.Kind.export_) && !this.isNaked());
+        return (ad && global.params.useInvariants == CHECKENABLE.on && (visibility.kind == Visibility.Kind.protected_ || visibility.kind == Visibility.Kind.public_ || visibility.kind == Visibility.Kind.export_) && !this.isNaked());
     }
 
     bool addPostInvariant()
     {
         auto ad = isThis();
-        ClassDeclaration cd = ad ? ad.isClassDeclaration() : null;
-        return (ad && !(cd && cd.isCPPclass()) && ad.inv && global.params.useInvariants == CHECKENABLE.on && (visibility.kind == Visibility.Kind.protected_ || visibility.kind == Visibility.Kind.public_ || visibility.kind == Visibility.Kind.export_) && !this.isNaked());
+        return (ad && ad.inv && global.params.useInvariants == CHECKENABLE.on && (visibility.kind == Visibility.Kind.protected_ || visibility.kind == Visibility.Kind.public_ || visibility.kind == Visibility.Kind.export_) && !this.isNaked());
     }
 
     override const(char)* kind() const

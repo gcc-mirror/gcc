@@ -1339,7 +1339,11 @@ extern (D) const(char)[] externallyMangledIdentifier(Declaration d)
     const par = d.toParent(); //toParent() skips over mixin templates
     if (!par || par.isModule() || linkage == LINK.cpp ||
         (linkage == LINK.c && d.isCsymbol() &&
-         (d.isFuncDeclaration() ||
+         // https://github.com/dlang/dmd/issues/21241
+         // Static check is so C static functions get a unique mangle so the linker
+         // won't merge them if compiling all-at-once.
+         // Non-static functions can use their ident as their mangle.
+         ((d.isFuncDeclaration() && !d.isStatic()) ||
           (d.isVarDeclaration() && d.isDataseg() && d.storage_class & STC.extern_))))
     {
         if (linkage != LINK.d && d.localNum)

@@ -156,3 +156,28 @@ void[] __arrayAlloc(T)(size_t arrSize) @trusted
         return ptr[0 .. arrSize];
     return null;
 }
+
+uint __typeAttrs(T)(void *copyAttrsFrom = null)
+{
+    import core.internal.traits : hasIndirections, hasElaborateDestructor;
+    import core.memory : GC;
+
+    alias BlkAttr = GC.BlkAttr;
+
+    if (copyAttrsFrom)
+    {
+        // try to copy attrs from the given block
+        auto info = GC.query(copyAttrsFrom);
+        if (info.base)
+            return info.attr;
+    }
+
+    uint attrs = 0;
+    static if (!hasIndirections!T)
+        attrs |= BlkAttr.NO_SCAN;
+
+    static if (is(T == struct) && hasElaborateDestructor!T)
+        attrs |= BlkAttr.FINALIZE;
+
+    return attrs;
+}

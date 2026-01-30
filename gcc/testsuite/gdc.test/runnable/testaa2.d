@@ -307,6 +307,26 @@ void testinenum()
     assert("one" in aa);
 }
 
+// https://github.com/dlang/dmd/issues/21258
+void test21258()
+{
+	alias AliasSeq(TList...) = TList;
+
+	struct S { int x; } // use a local type to not generate required TypeInfo elsewhere
+    foreach (T; AliasSeq!(S[int]))
+        enum E { a = T.init, } // bug report uses bad syntax here, but this crashed, too
+}
+
+// https://github.com/dlang/dmd/issues/21207
+void test21207()
+{
+	struct S { int x; } // use a local type to not generate required TypeInfo elsewhere
+    enum aa = ["baz": S(7)];
+
+    void foo(S[string] x = aa) { }
+    foo();
+}
+
 /************************************************/
 
 int main()
@@ -318,6 +338,7 @@ int main()
     test3825x();
     testinout();
     testinenum();
+    test21258();
 
     printf("Success\n");
     return 0;

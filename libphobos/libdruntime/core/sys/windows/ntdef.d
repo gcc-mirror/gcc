@@ -34,10 +34,10 @@ void InitializeObjectAttributes(OBJECT_ATTRIBUTES* p, UNICODE_STRING* n,
 }
 
 pragma(inline, true) @safe pure nothrow @nogc {
-    bool NT_SUCCESS(NTSTATUS Status)     { return Status >= 0; }
-    bool NT_INFORMATION(NTSTATUS Status) { return ((cast(ULONG) Status) >> 30) == 1; }
-    bool NT_WARNING(NTSTATUS Status)     { return ((cast(ULONG) Status) >> 30) == 2; }
-    bool NT_ERROR(NTSTATUS Status)       { return ((cast(ULONG) Status) >> 30) == 3; }
+    bool NT_SUCCESS()(NTSTATUS Status)     { return Status >= 0; }
+    bool NT_INFORMATION()(NTSTATUS Status) { return ((cast(ULONG) Status) >> 30) == 1; }
+    bool NT_WARNING()(NTSTATUS Status)     { return ((cast(ULONG) Status) >> 30) == 2; }
+    bool NT_ERROR()(NTSTATUS Status)       { return ((cast(ULONG) Status) >> 30) == 3; }
 }
 
 /*  In MinGW, NTSTATUS, UNICODE_STRING, STRING and their associated pointer

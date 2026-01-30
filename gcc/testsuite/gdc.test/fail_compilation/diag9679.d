@@ -3,13 +3,14 @@ TEST_OUTPUT:
 ---
 fail_compilation/diag9679.d(93): Deprecation: `auto` and `ref` storage classes should be adjacent
 fail_compilation/diag9679.d(93): Deprecation: `auto` and `ref` storage classes should be adjacent
-fail_compilation/diag9679.d(15): Error: rvalue `1` cannot be assigned to `ref n`
-fail_compilation/diag9679.d(16): Error: variable `diag9679.main.n` - storage class `auto` has no effect if type is not inferred, did you mean `scope`?
-fail_compilation/diag9679.d(17): Error: variable `diag9679.main.S.a` - field declarations cannot be `ref`
-fail_compilation/diag9679.d(24): Error: returning `r` escapes a reference to local variable `i`
+fail_compilation/diag9679.d(94): Deprecation: `auto ref` return type must have `auto` and `ref` adjacent
+fail_compilation/diag9679.d(100): Deprecation: `auto ref` return type must have `auto` and `ref` adjacent
+fail_compilation/diag9679.d(16): Error: rvalue `1` cannot be assigned to `ref n`
+fail_compilation/diag9679.d(17): Error: variable `diag9679.main.n` - storage class `auto` has no effect if type is not inferred, did you mean `scope`?
+fail_compilation/diag9679.d(18): Error: variable `diag9679.main.S.a` - field declarations cannot be `ref`
+fail_compilation/diag9679.d(25): Error: returning `r` escapes a reference to local variable `i`
 ---
 */
-
 void main()
 {
     if (ref n = 1) {}
@@ -60,7 +61,6 @@ fail_compilation/diag9679.d(96): Error: variable `x` - `auto ref` variable must 
 ---
 */
 
-
 void test5()
 {
     ref int r5;
@@ -90,8 +90,11 @@ void test9()
     auto ref int y = void;
 }
 
-void testKeywordOrder()(ref auto int x, auto const ref float y) {}
-void testKeywordOrder()
+void testKeywordOrder()(ref auto int x, auto const ref float y) {};
+ref auto int testKeywordOrder()
 {
     ref auto int x = 3;
+    return 3;
 }
+
+auto { ref int autoFromScope() => 3; }

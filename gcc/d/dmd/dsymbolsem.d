@@ -953,6 +953,8 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
         if (dsym.storage_class & STC.constscoperef)
             dsym.storage_class |= STC.scope_;
 
+        import dmd.typesem : hasPointers;
+
         if (dsym.storage_class & STC.scope_)
         {
             STC stc = dsym.storage_class & (STC.static_ | STC.extern_ | STC.manifest | STC.gshared);
@@ -3089,10 +3091,18 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
             StructDeclaration sym = ts.sym;
             if (sd.isCsymbol() && sym.isCsymbol())
             {
-                /* This is two structs imported from different C files.
-                 * Just ignore sd, the second one. The first one will always
-                 * be found when going through the type.
-                 */
+
+                if (!isCCompatible(sd, sym))
+                {
+                    // Already issued an error.
+                    errorSupplemental(sd.loc, "C %ss with the same name from different imports are merged", sd.kind);
+                }
+                else {
+                    /* This is two structs imported from different C files.
+                     * Just ignore sd, the second one. The first one will always
+                     * be found when going through the type.
+                     */
+                }
             }
             else
             {
@@ -3130,6 +3140,234 @@ private extern(C++) final class DsymbolSemanticVisitor : Visitor
                 deprecation(sd.loc, "`scope` as a type constraint is deprecated.  Use `scope` at the usage site.");
         }
         //printf("-StructDeclaration::semantic(this=%p, '%s', sizeok = %d)\n", sd, sd.toPrettyChars(), sd.sizeok);
+    }
+
+    //
+    // Checks if two structs are compatible
+    // Implements the rules according to C23 6.2.7
+    //
+    static bool isCCompatible(StructDeclaration a, StructDeclaration b)
+    {
+        // Get the name of a type, while avoiding exposing "__tagXXX" anonymous structs
+        static const(char)* typeName(Type t)
+        {
+            if (TypeStruct ts = t.isTypeStruct())
+            {
+                if (ts.sym.ident.toString().startsWith("__tag"))
+                    return ts.sym.isUnionDeclaration() ? "(anonymous union)".ptr: "(anonymous struct)".ptr;
+            }
+            return t.toChars();
+        }
+
+        void incompatError()
+        {
+            .error(a.loc, "%s `%s` already exists with an incompatible definition.",
+                    a.kind, typeName(a.type));
+            errorSupplemental(b.loc, "previously declared here");
+        }
+
+
+        // For recursive calls into unnamed structs (so Type.equals() doesn't work).
+        static bool isCCompatibleUnnamedStruct(Type a, Type b)
+        {
+            TypeStruct ats = a.isTypeStruct();
+            if (!ats) return false;
+            TypeStruct bts = b.isTypeStruct();
+            if (!bts) return false;
+            // Hack, anonymous structs within a struct are given
+            // an anonymous id starting with __tag.
+            if (!ats.sym.ident.toString().startsWith("__tag"))
+                return false;
+            if (!bts.sym.ident.toString().startsWith("__tag"))
+                return false;
+            return isCCompatible(ats.sym, bts.sym);
+        }
+
+        if (a.fields.length != b.fields.length)
+        {
+            incompatError();
+            errorSupplemental(a.loc, "`%s` has %zu field(s) while `%s` has %zu field(s)",
+                    a.toPrettyChars(), a.fields.length, b.toPrettyChars(), b.fields.length);
+            return false;
+        }
+        // both are structs or both are unions
+        if ((a.isUnionDeclaration() is null) != (b.isUnionDeclaration() is null))
+        {
+            incompatError();
+            errorSupplemental(a.loc, "`%s` is a %s while `%s` is a %s",
+                    a.toPrettyChars(), a.kind, b.toPrettyChars(), b.kind);
+            return false;
+        }
+        if (a.alignment != b.alignment)
+        {
+            incompatError();
+            errorSupplemental(a.loc, "`%s` has different alignment or packing", a.toPrettyChars());
+            if (a.alignment.isDefault() && ! b.alignment.isDefault())
+            {
+                errorSupplemental(a.loc, "`%s` alignment: default", a.toPrettyChars());
+                errorSupplemental(b.loc, "`%s` alignment: %u",
+                        b.toPrettyChars(), cast(uint)b.alignment.get());
+            }
+            else if (!a.alignment.isDefault() && b.alignment.isDefault())
+            {
+                errorSupplemental(a.loc, "`%s` alignment: %u",
+                        a.toPrettyChars(), cast(uint)a.alignment.get());
+                errorSupplemental(b.loc, "`%s` alignment: default",
+                        b.toPrettyChars());
+            }
+            else if (a.alignment.get() != b.alignment.get())
+            {
+                errorSupplemental(a.loc, "`%s` alignment: %u",
+                        a.toPrettyChars(), cast(uint)a.alignment.get());
+                errorSupplemental(b.loc, "`%s` alignment: %u",
+                        b.toPrettyChars(), cast(uint)b.alignment.get());
+            }
+            if (a.alignment.isPack() != b.alignment.isPack())
+            {
+                errorSupplemental(a.loc, "`%s` packed: %s",
+                        a.toPrettyChars(), a.alignment.isPack()?"true".ptr:"false".ptr);
+                errorSupplemental(b.loc, "`%s` packed: %s",
+                        b.toPrettyChars(), b.alignment.isPack()?"true".ptr:"false".ptr);
+            }
+            return false;
+        }
+        foreach (size_t i, VarDeclaration a_field; a.fields[])
+        {
+            VarDeclaration b_field = b.fields[i];
+            //
+            // — there shall be a one-to-one correspondence between
+            //   their members such that each pair of corresponding
+            //   members are declared with compatible types;
+            //
+            if (!a_field.type.equals(b_field.type) && !isCCompatibleUnnamedStruct(a_field.type, b_field.type))
+            {
+                // Already errored, just bail
+                incompatError();
+                if (a_field.type.isTypeError()) return false;
+                if (b_field.type.isTypeError()) return false;
+
+                errorSupplemental(a_field.loc, "Field %zu differs in type", i);
+                errorSupplemental(a_field.loc, "typeof(%s): %s",
+                        a_field.toChars(), typeName(a_field.type));
+                errorSupplemental(b_field.loc, "typeof(%s): %s",
+                        b_field.toChars(), typeName(b_field.type));
+                return false;
+            }
+            //
+            // — if one member of the pair is declared with an
+            //   alignment specifier, the second is declared with an
+            //   equivalent alignment specifier;
+            //
+            if (a_field.alignment != b_field.alignment)
+            {
+                incompatError();
+                errorSupplemental(a_field.loc, "Field %zu differs in alignment or packing", i);
+                if (a_field.alignment.isDefault() && ! b_field.alignment.isDefault())
+                {
+                    errorSupplemental(a_field.loc, "`%s.%s` alignment: default",
+                            a.toPrettyChars(),a_field.toChars());
+                    errorSupplemental(b_field.loc, "`%s.%s` alignment: %u",
+                            b.toPrettyChars(), b_field.toChars(), cast(uint)b_field.alignment.get());
+                }
+                else if (!a_field.alignment.isDefault() && b_field.alignment.isDefault())
+                {
+                    errorSupplemental(a_field.loc, "`%s.%s` alignment: %u",
+                            a.toPrettyChars(), a_field.toChars(), cast(uint)a_field.alignment.get());
+                    errorSupplemental(b_field.loc, "`%s.%s` alignment: default",
+                            b.toPrettyChars(), b_field.toChars());
+                }
+                else if (a_field.alignment.get() != b_field.alignment.get())
+                {
+                    errorSupplemental(a_field.loc, "`%s.%s` alignment: %u",
+                            a.toPrettyChars(), a_field.toChars(),
+                            cast(uint)a_field.alignment.get());
+                    errorSupplemental(b_field.loc, "`%s.%s` alignment: %u",
+                            b.toPrettyChars(), b_field.toChars(),
+                            cast(uint)b_field.alignment.get());
+                }
+                if (a_field.alignment.isPack() != b_field.alignment.isPack())
+                {
+                    errorSupplemental(a_field.loc, "`%s.%s` packed: %s",
+                            a.toPrettyChars(), a_field.toChars(),
+                            a_field.alignment.isPack()?"true".ptr:"false".ptr);
+                    errorSupplemental(b_field.loc, "`%s.%s` packed: %s",
+                            b.toPrettyChars(), b_field.toChars(),
+                            b_field.alignment.isPack()?"true".ptr:"false".ptr);
+                }
+                return false;
+            }
+            //
+            // - and, if one member of the pair is declared with a
+            //   name, the second is declared with the same name.
+            //
+            if (a_field.ident.isAnonymous())
+            {
+                if (!b_field.ident.isAnonymous())
+                {
+                    incompatError();
+                    errorSupplemental(a_field.loc, "Field %zu differs in name", i);
+                    errorSupplemental(a_field.loc, "(anonymous)", a_field.ident.toChars());
+                    errorSupplemental(b_field.loc, "%s", b_field.ident.toChars());
+                    return false;
+                }
+            }
+            else if (b_field.ident.isAnonymous())
+            {
+                incompatError();
+                errorSupplemental(a_field.loc, "Field %zu differs in name", i);
+                errorSupplemental(a_field.loc, "%s", a_field.ident.toChars());
+                errorSupplemental(b_field.loc, "(anonymous)");
+                return false;
+            }
+            else if (a_field.ident != b_field.ident)
+            {
+                incompatError();
+                errorSupplemental(a_field.loc, "Field %zu differs in name", i);
+                errorSupplemental(a_field.loc, "%s", a_field.ident.toChars());
+                errorSupplemental(b_field.loc, "%s", b_field.ident.toChars());
+                return false;
+            }
+
+            //
+            // For two structures or unions, corresponding bit-fields shall have the same widths.
+            //
+            BitFieldDeclaration bfa = a_field.isBitFieldDeclaration();
+            BitFieldDeclaration bfb = b_field.isBitFieldDeclaration();
+            if ((bfa is null) != (bfb is null))
+            {
+                incompatError();
+                errorSupplemental(a_field.loc, "Field %zu differs in being a bitfield", i);
+                if (bfa is null)
+                {
+                    errorSupplemental(a_field.loc, "`%s.%s` is not a bitfield",
+                            a.toPrettyChars(), a_field.toChars());
+                    errorSupplemental(b_field.loc, "`%s.%s` is a bitfield",
+                            b.toPrettyChars(), b_field.toChars());
+                }
+                else if (bfb is null)
+                {
+                    errorSupplemental(a_field.loc, "`%s.%s` *is a bitfield",
+                            a.toPrettyChars(), a_field.toChars());
+                    errorSupplemental(b_field.loc, "`%s.%s` is not a bitfield",
+                            b.toPrettyChars(), b_field.toChars());
+                }
+                return false;
+            }
+            if (bfa !is null && bfb !is null)
+            {
+                if (bfa.fieldWidth != bfb.fieldWidth)
+                {
+                    incompatError();
+                    errorSupplemental(a_field.loc, "Field %zu differs in bitfield width", i);
+                    errorSupplemental(a_field.loc, "`%s.%s`: %u",
+                            a.toPrettyChars(), a_field.toChars(), bfa.fieldWidth);
+                    errorSupplemental(b_field.loc, "`%s.%s`: %u",
+                            b.toPrettyChars(), b_field.toChars(), bfb.fieldWidth);
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     void interfaceSemantic(ClassDeclaration cd)
@@ -4520,7 +4758,7 @@ private bool isDRuntimeHook(Identifier id)
         id == Id._d_arrayassign_l || id == Id._d_arrayassign_r ||
         id == Id._d_arraysetassign || id == Id._d_arraysetctor ||
         id == Id._d_arrayctor ||
-        id == Id._d_arraysetlengthTImpl || id == Id._d_arraysetlengthT ||
+        id == Id._d_arraysetlengthT ||
         id == Id._d_arraysetlengthTTrace ||
         id == Id._d_arrayappendT || id == Id._d_arrayappendTTrace ||
         id == Id._d_arrayappendcTX;
@@ -4903,7 +5141,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
     if (tempinst.members.length)
     {
         Dsymbol s;
-        if (Dsymbol.oneMembers(tempinst.members, s, tempdecl.ident) && s)
+        if (oneMembers(tempinst.members, s, tempdecl.ident) && s)
         {
             //printf("tempdecl.ident = %s, s = `%s %s`\n", tempdecl.ident.toChars(), s.kind(), s.toPrettyChars());
             //printf("setting aliasdecl\n");
@@ -4948,7 +5186,7 @@ void templateInstanceSemantic(TemplateInstance tempinst, Scope* sc, ArgumentList
     if (tempinst.members.length)
     {
         Dsymbol s;
-        if (Dsymbol.oneMembers(tempinst.members, s, tempdecl.ident) && s)
+        if (oneMembers(tempinst.members, s, tempdecl.ident) && s)
         {
             if (!tempinst.aliasdecl || tempinst.aliasdecl != s)
             {
@@ -7531,14 +7769,14 @@ private extern(C++) class NewScopeVisitor : Visitor
 }
 
 
-extern(C++) Dsymbols* include(Dsymbol d, Scope* sc)
+Dsymbols* include(Dsymbol d, Scope* sc)
 {
-    scope icv = new IncludeVisitor(sc);
+    scope icv = new ConditionIncludeVisitor(sc);
     d.accept(icv);
     return icv.symbols;
 }
 
-extern(C++) class IncludeVisitor : Visitor
+extern(C++) class ConditionIncludeVisitor : Visitor
 {
     alias visit = typeof(super).visit;
     Scope* sc;
@@ -7570,7 +7808,7 @@ extern(C++) class IncludeVisitor : Visitor
             return;
         }
         assert(cdc.condition);
-        symbols = cdc.condition.include(cdc._scope ? cdc._scope : sc) ? cdc.decl : cdc.elsedecl;
+        symbols = dmd.expressionsem.include(cdc.condition, cdc._scope ? cdc._scope : sc) ? cdc.decl : cdc.elsedecl;
     }
 
     override void visit(StaticIfDeclaration sif)
@@ -7891,7 +8129,7 @@ Lfail:
     return false;
 }
 
-extern (C++) void addComment(Dsymbol d, const(char)* comment)
+void addComment(Dsymbol d, const(char)* comment)
 {
     scope v = new AddCommentVisitor(comment);
     d.accept(v);
@@ -8004,7 +8242,7 @@ private extern(C++) class OneMemberVisitor : Visitor
     override void visit(AttribDeclaration atb)
     {
         Dsymbols* d = atb.include(null);
-        result = Dsymbol.oneMembers(d, *ps, ident);
+        result = oneMembers(d, *ps, ident);
     }
 
     override void visit(StaticForeachDeclaration sfd)
@@ -8027,7 +8265,7 @@ private extern(C++) class OneMemberVisitor : Visitor
 
     override void visit(StorageClassDeclaration scd)
     {
-        bool t = Dsymbol.oneMembers(scd.decl, *ps, ident);
+        bool t = oneMembers(scd.decl, *ps, ident);
         if (t && *ps)
         {
             /* This is to deal with the following case:
@@ -8056,12 +8294,12 @@ private extern(C++) class OneMemberVisitor : Visitor
         //printf("ConditionalDeclaration::oneMember(), inc = %d\n", condition.inc);
         if (cd.condition.inc != Include.notComputed)
         {
-            Dsymbols* d = cd.condition.include(null) ? cd.decl : cd.elsedecl;
-            result = Dsymbol.oneMembers(d, *ps, ident);
+            Dsymbols* d = dmd.expressionsem.include(cd.condition, null) ? cd.decl : cd.elsedecl;
+            result = oneMembers(d, *ps, ident);
         }
         else
         {
-            bool res = (Dsymbol.oneMembers(cd.decl, *ps, ident) && *ps is null && Dsymbol.oneMembers(cd.elsedecl, *ps, ident) && *ps is null);
+            bool res = (oneMembers(cd.decl, *ps, ident) && *ps is null && oneMembers(cd.elsedecl, *ps, ident) && *ps is null);
             *ps = null;
             result = res;
         }
@@ -8070,7 +8308,7 @@ private extern(C++) class OneMemberVisitor : Visitor
     override void visit(ScopeDsymbol sd)
     {
         if (sd.isAnonymous())
-            result = Dsymbol.oneMembers(sd.members, *ps, ident);
+            result = oneMembers(sd.members, *ps, ident);
         else {
             // visit(Dsymbol dsym)
             *ps = sd;
@@ -8108,7 +8346,7 @@ private extern(C++) class OneMemberVisitor : Visitor
 * Return true if any of the members are static ctors or static dtors, or if
 * any members have members that are.
 */
-extern(C++) bool hasStaticCtorOrDtor(Dsymbol d)
+bool hasStaticCtorOrDtor(Dsymbol d)
 {
     scope v = new HasStaticCtorOrDtor();
     d.accept(v);
@@ -8162,7 +8400,7 @@ private extern(C++) class HasStaticCtorOrDtor : Visitor
     }
 }
 
-extern(C++) bool isFuncHidden(ClassDeclaration cd, FuncDeclaration fd)
+bool isFuncHidden(ClassDeclaration cd, FuncDeclaration fd)
 {
     import dmd.funcsem : overloadApply;
     //printf("ClassDeclaration.isFuncHidden(class = %s, fd = %s)\n", toChars(), fd.toPrettyChars());
@@ -8209,4 +8447,619 @@ Dsymbol vtblSymbol(ClassDeclaration cd)
         cd.vtblsym = var;
     }
     return cd.vtblsym;
+}
+
+bool isAbstract(ClassDeclaration cd)
+{
+    enum log = false;
+    if (cd.isabstract != ThreeState.none)
+        return cd.isabstract == ThreeState.yes;
+
+    if (log) printf("isAbstract(%s)\n", cd.toChars());
+
+    bool no()  { if (log) printf("no\n");  cd.isabstract = ThreeState.no;  return false; }
+    bool yes() { if (log) printf("yes\n"); cd.isabstract = ThreeState.yes; return true;  }
+
+    if (cd.storage_class & STC.abstract_ || cd._scope && cd._scope.stc & STC.abstract_)
+        return yes();
+
+    if (cd.errors)
+        return no();
+
+    /* https://issues.dlang.org/show_bug.cgi?id=11169
+        * Resolve forward references to all class member functions,
+        * and determine whether this class is abstract.
+        */
+    static int func(Dsymbol s, void*)
+    {
+        auto fd = s.isFuncDeclaration();
+        if (!fd)
+            return 0;
+        if (fd.storage_class & STC.static_)
+            return 0;
+
+        if (fd.isAbstract())
+            return 1;
+        return 0;
+    }
+
+    // opaque class is not abstract if it is not declared abstract
+    if (!(cd.members))
+        return no();
+
+    for (size_t i = 0; i < cd.members.length; i++)
+    {
+        auto s = (*(cd.members))[i];
+        if (s.apply(&func, null))
+        {
+            return yes();
+        }
+    }
+
+    /* If the base class is not abstract, then this class cannot
+        * be abstract.
+        */
+    if (!cd.isInterfaceDeclaration() && (!cd.baseClass || !cd.baseClass.isAbstract()))
+        return no();
+
+    /* If any abstract functions are inherited, but not overridden,
+        * then the class is abstract. Do this by checking the vtbl[].
+        * Need to do semantic() on class to fill the vtbl[].
+        */
+    cd.dsymbolSemantic(null);
+
+    /* The next line should work, but does not because when ClassDeclaration.dsymbolSemantic()
+        * is called recursively it can set PASS.semanticdone without finishing it.
+        */
+    //if (semanticRun < PASS.semanticdone)
+    {
+        /* Could not complete semantic(). Try running semantic() on
+            * each of the virtual functions,
+            * which will fill in the vtbl[] overrides.
+            */
+        static int virtualSemantic(Dsymbol s, void*)
+        {
+            auto fd = s.isFuncDeclaration();
+            if (fd && !(fd.storage_class & STC.static_) && !fd.isUnitTestDeclaration())
+                fd.dsymbolSemantic(null);
+            return 0;
+        }
+
+        for (size_t i = 0; i < cd.members.length; i++)
+        {
+            auto s = (*(cd.members))[i];
+            s.apply(&virtualSemantic,null);
+        }
+    }
+
+    /* Finally, check the vtbl[]
+        */
+    foreach (i; 1 .. cd.vtbl.length)
+    {
+        auto fd = cd.vtbl[i].isFuncDeclaration();
+        //if (fd) printf("\tvtbl[%d] = [%s] %s\n", i, fd.loc.toChars(), fd.toPrettyChars());
+        if (!fd || fd.isAbstract())
+        {
+            return yes();
+        }
+    }
+
+    return no();
+}
+
+void finalizeSize(AggregateDeclaration ad)
+{
+    scope v = new FinalizeSizeVisitor();
+    ad.accept(v);
+}
+
+/**********************************
+ * Determine if exp is all binary zeros.
+ * Params:
+ *      exp = expression to check
+ * Returns:
+ *      true if it's all binary 0
+ */
+bool _isZeroInit(Expression exp)
+{
+    switch (exp.op)
+    {
+        case EXP.int64:
+            return exp.toInteger() == 0;
+
+        case EXP.null_:
+            return true;
+
+        case EXP.structLiteral:
+        {
+            auto sle = exp.isStructLiteralExp();
+            if (sle.sd.isNested())
+                return false;
+            const isCstruct = sle.sd.isCsymbol();  // C structs are default initialized to all zeros
+            foreach (i; 0 .. sle.sd.fields.length)
+            {
+                auto field = sle.sd.fields[i];
+                if (field.type.size(field.loc))
+                {
+                    auto e = sle.elements && i < sle.elements.length ? (*sle.elements)[i] : null;
+                    if (e ? !_isZeroInit(e)
+                          : !isCstruct && !field.type.isZeroInit(field.loc))
+                        return false;
+                }
+            }
+            return true;
+        }
+
+        case EXP.arrayLiteral:
+        {
+            auto ale = cast(ArrayLiteralExp)exp;
+
+            const dim = ale.elements ? ale.elements.length : 0;
+
+            if (ale.type.toBasetype().ty == Tarray) // if initializing a dynamic array
+                return dim == 0;
+
+            foreach (i; 0 .. dim)
+            {
+                if (!_isZeroInit(ale[i]))
+                    return false;
+            }
+
+            /* Note that true is returned for all T[0]
+             */
+            return true;
+        }
+
+        case EXP.string_:
+        {
+            auto se = cast(StringExp)exp;
+
+            if (se.type.toBasetype().ty == Tarray) // if initializing a dynamic array
+                return se.len == 0;
+
+            foreach (i; 0 .. se.len)
+            {
+                if (se.getIndex(i) != 0)
+                    return false;
+            }
+            return true;
+        }
+
+        case EXP.vector:
+        {
+            auto ve = cast(VectorExp) exp;
+            return _isZeroInit(ve.e1);
+        }
+
+        case EXP.float64:
+        case EXP.complex80:
+        {
+            import dmd.root.ctfloat : CTFloat;
+            return (exp.toReal()      is CTFloat.zero) &&
+                   (exp.toImaginary() is CTFloat.zero);
+        }
+
+        default:
+            return false;
+    }
+}
+
+private extern(C++) class FinalizeSizeVisitor : Visitor
+{
+    alias visit = Visitor.visit;
+
+    override void visit(ClassDeclaration outerCd)
+    {
+        assert(outerCd.sizeok != Sizeok.done);
+
+        // Set the offsets of the fields and determine the size of the class
+        if (outerCd.baseClass)
+        {
+            assert(outerCd.baseClass.sizeok == Sizeok.done);
+
+            outerCd.alignsize = outerCd.baseClass.alignsize;
+            if (outerCd.classKind == ClassKind.cpp)
+                outerCd.structsize = target.cpp.derivedClassOffset(outerCd.baseClass);
+            else
+                outerCd.structsize = outerCd.baseClass.structsize;
+        }
+        else if (outerCd.classKind == ClassKind.objc)
+            outerCd.structsize = 0; // no hidden member for an Objective-C class
+        else if (outerCd.isInterfaceDeclaration())
+        {
+            if (outerCd.interfaces.length == 0)
+            {
+                outerCd.alignsize = target.ptrsize;
+                outerCd.structsize = target.ptrsize;      // allow room for __vptr
+            }
+        }
+        else
+        {
+            outerCd.alignsize = target.ptrsize;
+            outerCd.structsize = target.ptrsize;      // allow room for __vptr
+            if (outerCd.hasMonitor())
+                outerCd.structsize += target.ptrsize; // allow room for __monitor
+        }
+
+        //printf("finalizeSize() %s, sizeok = %d\n", toChars(), sizeok);
+        size_t bi = 0;                  // index into vtblInterfaces[]
+
+        /****
+            * Runs through the inheritance graph to set the BaseClass.offset fields.
+            * Recursive in order to account for the size of the interface classes, if they are
+            * more than just interfaces.
+            * Params:
+            *      cd = interface to look at
+            *      baseOffset = offset of where cd will be placed
+            * Returns:
+            *      subset of instantiated size used by cd for interfaces
+            */
+        uint membersPlace(ClassDeclaration cd, uint baseOffset)
+        {
+            //printf("    membersPlace(%s, %d)\n", cd.toChars(), baseOffset);
+            uint offset = baseOffset;
+
+            foreach (BaseClass* b; cd.interfaces)
+            {
+                if (b.sym.sizeok != Sizeok.done)
+                    b.sym.finalizeSize();
+                assert(b.sym.sizeok == Sizeok.done);
+
+                if (!b.sym.alignsize)
+                    b.sym.alignsize = target.ptrsize;
+                offset = alignmember(structalign_t(cast(ushort)b.sym.alignsize), b.sym.alignsize, offset);
+                assert(bi < outerCd.vtblInterfaces.length);
+
+                BaseClass* bv = (*(outerCd.vtblInterfaces))[bi];
+                if (b.sym.interfaces.length == 0)
+                {
+                    //printf("\tvtblInterfaces[%d] b=%p b.sym = %s, offset = %d\n", bi, bv, bv.sym.toChars(), offset);
+                    bv.offset = offset;
+                    ++bi;
+                    // All the base interfaces down the left side share the same offset
+                    for (BaseClass* b2 = bv; b2.baseInterfaces.length; )
+                    {
+                        b2 = &b2.baseInterfaces[0];
+                        b2.offset = offset;
+                        //printf("\tvtblInterfaces[%d] b=%p   sym = %s, offset = %d\n", bi, b2, b2.sym.toChars(), b2.offset);
+                    }
+                }
+                membersPlace(b.sym, offset);
+                //printf(" %s size = %d\n", b.sym.toChars(), b.sym.structsize);
+                offset += b.sym.structsize;
+                if (outerCd.alignsize < b.sym.alignsize)
+                    outerCd.alignsize = b.sym.alignsize;
+            }
+            return offset - baseOffset;
+        }
+
+        outerCd.structsize += membersPlace(outerCd, outerCd.structsize);
+
+        if (outerCd.isInterfaceDeclaration())
+        {
+            outerCd.sizeok = Sizeok.done;
+            return;
+        }
+
+        // FIXME: Currently setFieldOffset functions need to increase fields
+        // to calculate each variable offsets. It can be improved later.
+        outerCd.fields.setDim(0);
+
+        FieldState fieldState;
+        fieldState.offset = outerCd.structsize;
+        foreach (s; *(outerCd.members))
+        {
+            s.setFieldOffset(outerCd, &fieldState, false);
+        }
+
+        outerCd.sizeok = Sizeok.done;
+
+        // Calculate fields[i].overlapped
+        outerCd.checkOverlappedFields();
+    }
+
+    override void visit(StructDeclaration sd)
+    {
+        //printf("StructDeclaration::finalizeSize() %s, sizeok = %d\n", toChars(), sizeok);
+        assert(sd.sizeok != Sizeok.done);
+
+        if (sd.sizeok == Sizeok.inProcess)
+        {
+            return;
+        }
+        sd.sizeok = Sizeok.inProcess;
+
+        //printf("+StructDeclaration::finalizeSize() %s, fields.length = %d, sizeok = %d\n", toChars(), fields.length, sizeok);
+
+        sd.fields.setDim(0);   // workaround
+
+        // Set the offsets of the fields and determine the size of the struct
+        FieldState fieldState;
+        bool isunion = sd.isUnionDeclaration() !is null;
+        for (size_t i = 0; i < sd.members.length; i++)
+        {
+            Dsymbol s = (*sd.members)[i];
+            s.setFieldOffset(sd, &fieldState, isunion);
+            if (sd.type.ty == Terror)
+            {
+                errorSupplemental(s.loc, "error on member `%s`", s.toPrettyChars);
+                sd.errors = true;
+                return;
+            }
+        }
+
+        if (sd.structsize == 0)
+        {
+            sd.hasNoFields = true;
+            sd.alignsize = 1;
+
+            // A fine mess of what size a zero sized struct should be
+            final switch (sd.classKind)
+            {
+                case ClassKind.d:
+                case ClassKind.cpp:
+                    sd.structsize = 1;
+                    break;
+
+                case ClassKind.c:
+                case ClassKind.objc:
+                    if (target.c.bitFieldStyle == TargetC.BitFieldStyle.MS)
+                    {
+                        /* Undocumented MS behavior for:
+                         *   struct S { int :0; };
+                         */
+                        sd.structsize = 4;
+                    }
+                    else
+                        sd.structsize = 0;
+                    break;
+            }
+        }
+
+        // Round struct size up to next alignsize boundary.
+        // This will ensure that arrays of structs will get their internals
+        // aligned properly.
+        if (sd.alignment.isDefault() || sd.alignment.isPack())
+            sd.structsize = (sd.structsize + sd.alignsize - 1) & ~(sd.alignsize - 1);
+        else
+            sd.structsize = (sd.structsize + sd.alignment.get() - 1) & ~(sd.alignment.get() - 1);
+
+        sd.sizeok = Sizeok.done;
+
+        //printf("-StructDeclaration::finalizeSize() %s, fields.length = %d, structsize = %d\n", toChars(), cast(int)fields.length, cast(int)structsize);
+
+        if (sd.errors)
+            return;
+
+        // Calculate fields[i].overlapped
+        if (sd.checkOverlappedFields())
+        {
+            sd.errors = true;
+            return;
+        }
+
+        // Determine if struct is all zeros or not
+        sd.zeroInit = true;
+        auto lastOffset = -1;
+        foreach (vd; sd.fields)
+        {
+            // First skip zero sized fields
+            if (vd.type.size(vd.loc) == 0)
+                continue;
+
+            // only consider first sized member of an (anonymous) union
+            if (vd.overlapped && vd.offset == lastOffset)
+                continue;
+            lastOffset = vd.offset;
+
+            if (vd._init)
+            {
+                if (vd._init.isVoidInitializer())
+                    /* Treat as 0 for the purposes of putting the initializer
+                     * in the BSS segment, or doing a mass set to 0
+                     */
+                    continue;
+
+                // Examine init to see if it is all 0s.
+                auto exp = vd.getConstInitializer();
+                if (!exp || !_isZeroInit(exp))
+                {
+                    sd.zeroInit = false;
+                    break;
+                }
+            }
+            else if (!vd.type.isZeroInit(sd.loc))
+            {
+                sd.zeroInit = false;
+                break;
+            }
+        }
+
+
+        sd.argTypes = target.toArgTypes(sd.type);
+    }
+}
+
+/*****************************************
+* Is Dsymbol a variable that contains pointers?
+*/
+bool hasPointers(Dsymbol d)
+{
+    scope v = new HasPointersVisitor();
+    d.accept(v);
+    return v.result;
+}
+
+private extern(C++) class HasPointersVisitor : Visitor
+{
+    import dmd.mtype : Type;
+
+    alias visit = Visitor.visit;
+    bool result;
+
+    override void visit(AttribDeclaration ad)
+    {
+        result = ad.include(null).foreachDsymbol( (s) { return s.hasPointers(); } ) != 0;
+    }
+
+    override void visit(VarDeclaration vd)
+    {
+        import dmd.typesem : hasPointers;
+        result = (!vd.isDataseg() && vd.type.hasPointers());
+    }
+
+    override void visit(Dsymbol d)
+    {
+        //printf("Dsymbol::hasPointers() %s\n", toChars());
+        result = false;
+    }
+
+    override void visit(TemplateMixin tm)
+    {
+        //printf("TemplateMixin.hasPointers() %s\n", toChars());
+        result = tm.members.foreachDsymbol( (s) { return s.hasPointers(); } ) != 0;
+    }
+
+    override void visit(Nspace ns)
+    {
+        //printf("Nspace::hasPointers() %s\n", toChars());
+        result = ns.members.foreachDsymbol( (s) { return s.hasPointers(); } ) != 0;
+    }
+}
+
+/***************************************
+ * Expands attribute declarations in members in depth first
+ * order. Calls dg(size_t symidx, Dsymbol *sym) for each
+ * member.
+ * If dg returns !=0, stops and returns that value else returns 0.
+ * Use this function to avoid the O(N + N^2/2) complexity of
+ * calculating dim and calling N times getNth.
+ * Returns:
+ *  last value returned by dg()
+ */
+int _foreach(Scope* sc, Dsymbols* members, scope ForeachDg dg, size_t* pn = null)
+{
+    assert(dg);
+    if (!members)
+        return 0;
+    size_t n = pn ? *pn : 0; // take over index
+    int result = 0;
+    foreach (size_t i; 0 .. members.length)
+    {
+        import dmd.attrib : AttribDeclaration;
+        import dmd.dtemplate : TemplateMixin;
+
+        Dsymbol s = (*members)[i];
+        if (AttribDeclaration a = s.isAttribDeclaration())
+            result = _foreach(sc, a.include(sc), dg, &n);
+        else if (TemplateMixin tm = s.isTemplateMixin())
+            result = _foreach(sc, tm.members, dg, &n);
+        else if (s.isTemplateInstance())
+        {
+        }
+        else if (s.isUnitTestDeclaration())
+        {
+        }
+        else
+            result = dg(n++, s);
+        if (result)
+            break;
+    }
+    if (pn)
+        *pn = n; // update index
+    return result;
+}
+
+/****************************************
+ * Create array of the local classes in the Module, suitable
+ * for inclusion in ModuleInfo
+ * Params:
+ *      mod = the Module
+ *      aclasses = array to fill in
+ * Returns: array of local classes
+ */
+void getLocalClasses(Module mod, ref ClassDeclarations aclasses)
+{
+    //printf("members.length = %d\n", mod.members.length);
+    int pushAddClassDg(size_t n, Dsymbol sm)
+    {
+        if (!sm)
+            return 0;
+
+        if (auto cd = sm.isClassDeclaration())
+        {
+            // compatibility with previous algorithm
+            if (cd.parent && cd.parent.isTemplateMixin())
+                return 0;
+
+            if (cd.classKind != ClassKind.objc)
+                aclasses.push(cd);
+        }
+        return 0;
+    }
+
+    _foreach(null, mod.members, &pushAddClassDg);
+}
+
+/*****************************************
+* Same as Dsymbol::oneMember(), but look at an array of Dsymbols.
+*/
+extern (D) bool oneMembers(Dsymbols* members, out Dsymbol ps, Identifier ident)
+{
+    //printf("Dsymbol::oneMembers() %d\n", members ? members.length : 0);
+    Dsymbol s = null;
+    if (!members)
+    {
+        ps = null;
+        return true;
+    }
+
+    for (size_t i = 0; i < members.length; i++)
+    {
+        Dsymbol sx = (*members)[i];
+        bool x = sx.oneMember(ps, ident); //MYTODO: this temporarily creates a new dependency to dsymbolsem, will need to extract oneMembers() later
+        //printf("\t[%d] kind %s = %d, s = %p\n", i, sx.kind(), x, *ps);
+        if (!x)
+        {
+            //printf("\tfalse 1\n");
+            assert(ps is null);
+            return false;
+        }
+        if (ps)
+        {
+            assert(ident);
+            if (!ps.ident || !ps.ident.equals(ident))
+                continue;
+            if (!s)
+                s = ps;
+            else if (s.isOverloadable() && ps.isOverloadable())
+            {
+                // keep head of overload set
+                FuncDeclaration f1 = s.isFuncDeclaration();
+                FuncDeclaration f2 = ps.isFuncDeclaration();
+                if (f1 && f2)
+                {
+                    assert(!f1.isFuncAliasDeclaration());
+                    assert(!f2.isFuncAliasDeclaration());
+                    for (; f1 != f2; f1 = f1.overnext0)
+                    {
+                        if (f1.overnext0 is null)
+                        {
+                            f1.overnext0 = f2;
+                            break;
+                        }
+                    }
+                }
+            }
+            else // more than one symbol
+            {
+                ps = null;
+                //printf("\tfalse 2\n");
+                return false;
+            }
+        }
+    }
+    ps = s; // s is the one symbol, null if none
+    //printf("\ttrue\n");
+    return true;
 }

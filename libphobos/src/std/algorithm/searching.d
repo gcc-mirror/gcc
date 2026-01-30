@@ -776,26 +776,36 @@ if (isInputRange!R && !isInfinite!R)
 
 /++
     Counts elements in the given
-    $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives)
-    until the given predicate is true for one of the given `needles`.
+    $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+    until the given predicate is true for one of the given `needles` or `needle`.
 
     Params:
-        pred = The predicate for determining when to stop counting.
+        pred = Binary predicate for determining when to stop counting,
+            which will be passed each element of `haystack` and a needle.
         haystack = The
             $(REF_ALTTEXT input range, isInputRange, std,range,primitives) to be
-            counted.
-        needles = Either a single element, or a
-            $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives)
-            of elements, to be evaluated in turn against each
-            element in `haystack` under the given predicate.
+            counted. Must be a
+            $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives) to
+            use multiple needles.
+        needles = A sequence of values or
+            $(REF_ALTTEXT forward ranges, isForwardRange, std,range,primitives)
+            of values, to be evaluated in turn by calling `pred(element, needle)`
+            with each element of `haystack`.
+        needle = A value passed as the 2nd argument to `pred`.
 
-    Returns: The number of elements which must be popped from the front of
+    Returns:
+  - The number of elements which must be popped from the front of
     `haystack` before reaching an element for which
-    `startsWith!pred(haystack, needles)` is `true`. If
+    $(LREF startsWith)`!pred(haystack, needles)` is `true`.
+  - If
     `startsWith!pred(haystack, needles)` is not `true` for any element in
-    `haystack`, then `-1` is returned. If more than one needle is provided,
-    `countUntil` will wrap the result     in a tuple similar to
-    `Tuple!(ptrdiff_t, "steps", ptrdiff_t needle)`
+    `haystack`, then `-1` is returned.
+  - If more than one needle is provided,
+    `countUntil` will wrap the result in a pseudo-tuple similar to
+    `Tuple!(ptrdiff_t, "steps", ptrdiff_t, "needle")`.
+    - `steps` is the count value, which can be implicitly tested for equality.
+    - `needle` is the index into `needles` which matched.
+    - Both are `-1` if there was no match.
 
     See_Also: $(REF indexOf, std,string)
   +/
@@ -923,19 +933,29 @@ if (isInputRange!R &&
     assert(countUntil("日本語", '語')   == 2);
     assert(countUntil("日本語", "五") == -1);
     assert(countUntil("日本語", '五') == -1);
-    assert(countUntil([0, 7, 12, 22, 9], [12, 22]) == 2);
-    assert(countUntil([0, 7, 12, 22, 9], 9) == 4);
-    assert(countUntil!"a > b"([0, 7, 12, 22, 9], 20) == 3);
 
-    // supports multiple needles
+    const arr = [0, 7, 12, 22, 9];
+    assert(countUntil(arr, [12, 22]) == 2);
+    assert(countUntil(arr, 9) == 4);
+    assert(countUntil!"a > b"(arr, 20) == 3);
+}
+
+/// Multiple needles
+@safe unittest
+{
     auto res = "...hello".countUntil("ha", "he");
     assert(res.steps == 3);
-    assert(res.needle == 1);
+    assert(res.needle == 1); // the 2nd needle matched
 
     // returns -1 if no needle was found
     res = "hello".countUntil("ha", "hu");
     assert(res.steps == -1);
     assert(res.needle == -1);
+
+    // `steps` can also be implicitly compared
+    const arr = [0, 7, 12, 22, 9];
+    assert(countUntil(arr, 22, 12) == 2); // `12` found after 2 elements
+    assert(countUntil(arr, 5, 6) == -1);
 }
 
 @safe unittest
@@ -1009,7 +1029,24 @@ if (isInputRange!R &&
     assert(10.iota.repeat.joiner.countUntil!(a => a >= 9) == 9);
 }
 
-/// ditto
+/++
+    Counts elements in the given
+    $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+    until the given predicate is true for one of the elements of `haystack`.
+
+    Params:
+        pred = Unary predicate for determining when to stop counting.
+        haystack = The
+            $(REF_ALTTEXT input range, isInputRange, std,range,primitives) to be
+            counted.
+
+    Returns:
+  - The number of elements which must be popped from the front of
+    `haystack` before reaching an element for which
+    $(LREF startsWith)`!pred(haystack)` is `true`.
+  - If `startsWith!pred(haystack)` is not `true` for any element in
+    `haystack`, then `-1` is returned.
+  +/
 ptrdiff_t countUntil(alias pred, R)(R haystack)
 if (isInputRange!R &&
     is(typeof(unaryFun!pred(haystack.front)) : bool))

@@ -8,6 +8,8 @@ $(BOOKTABLE Cheat Sheet,
 $(TR $(TH Function Name) $(TH Description))
 $(T2 cache,
         Eagerly evaluates and caches another range's `front`.)
+$(T2 lazyCache,
+        Lazily evaluates and caches another range's `front`, unlike `cache`.)
 $(T2 cacheBidirectional,
         As above, but also provides `back` and `popBack`.)
 $(T2 chunkBy,
@@ -50,7 +52,7 @@ $(T2 reduce,
 $(T2 splitWhen,
         Lazily splits a range by comparing adjacent elements.)
 $(T2 splitter,
-        Lazily splits a range by a separator.)
+        Lazily splits a range by a separator, element predicate or whitespace.)
 $(T2 substitute,
         `[1, 2].substitute(1, 0.1)` returns `[0.1, 2]`.)
 $(T2 sum,
@@ -410,6 +412,203 @@ private struct _Cache(R, bool bidir)
             in
             {
                 assert(low <= high, "Bounds error when slicing cache.");
+            }
+            do
+            {
+                import std.range : takeExactly;
+                return this[low .. $].takeExactly(high - low);
+            }
+        }
+    }
+}
+
+/**
+ * Similar to `cache`, but lazily evaluates the elements. Unlike `cache`,
+ * this function does not eagerly evaluate the front of the range until
+ * it's explicitly requested.
+ *
+ * This can be useful when evaluation of range elements has side effects that
+ * should be delayed until actually needed.
+ *
+ * See_Also: cache
+ *
+ * Params:
+ *    range = an $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
+ *
+ * Returns:
+ *    An $(REF_ALTTEXT input range, isInputRange, std,range,primitives) with the lazily cached values of range
+ */
+
+auto lazyCache(Range)(Range range)
+if (isInputRange!Range)
+{
+    return LazyCache!(Range, isBidirectionalRange!Range)(range);
+}
+
+///
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range, std.stdio;
+    import std.typecons : tuple;
+
+    ulong counter = 0;
+    double fun(int x)
+    {
+        ++counter;
+        // http://en.wikipedia.org/wiki/Quartic_function
+        return ( (x + 4.0) * (x + 1.0) * (x - 1.0) * (x - 3.0) ) / 14.0 + 0.5;
+    }
+    // With lazyCache, front won't be evaluated until requested
+    counter = 0;
+    auto result = iota(-4, 5).map!(a => tuple(a, fun(a)))()
+                            .lazyCache();
+    // At this point, no elements have been evaluated yet
+    assert(counter == 0);
+    // Now access the first element
+    auto firstElement = result.front;
+    // Only now the first element is evaluated
+    assert(counter == 1);
+    // Process the result lazily
+    auto filtered = result.filter!(a => a[1] < 0)()
+                         .map!(a => a[0])();
+    // Values are calculated as we iterate
+    assert(equal(filtered, [-3, -2, 2]));
+    // Only elements we actually accessed were evaluated
+    assert(counter == iota(-4, 5).length);
+}
+
+private struct LazyCache(R, bool bidir)
+{
+    import core.exception : RangeError;
+
+    private
+    {
+        import std.algorithm.internal : algoFormat;
+        import std.meta : AliasSeq;
+
+        alias E  = ElementType!R;
+        alias UE = Unqual!E;
+
+        R source;
+
+        static if (bidir) alias CacheTypes = AliasSeq!(UE, UE);
+        else              alias CacheTypes = AliasSeq!UE;
+        CacheTypes caches;
+        // Flags to track if front/back have been cached
+        bool frontCached = false;
+        static if (bidir) bool backCached = false;
+
+        static assert(isAssignable!(UE, E) && is(UE : E),
+            algoFormat(
+                "Cannot instantiate range with %s because %s elements are not assignable to %s.",
+                R.stringof,
+                E.stringof,
+                UE.stringof
+            )
+        );
+    }
+
+    this(R range)
+    {
+        source = range;
+        // Don't eagerly evaluate anything in the constructor
+    }
+
+    static if (isInfinite!R)
+        enum empty = false;
+    else
+        bool empty() @property
+        {
+            return source.empty;
+        }
+
+    mixin ImplementLength!source;
+
+    E front() @property
+    {
+        version (assert) if (empty) throw new RangeError();
+        // Only evaluate front if it hasn't been cached yet
+        if (!frontCached && !source.empty)
+        {
+            caches[0] = source.front;
+            frontCached = true;
+        }
+        return caches[0];
+    }
+    static if (bidir) E back() @property
+    {
+        version (assert) if (empty) throw new RangeError();
+        // Only evaluate back if it hasn't been cached yet
+        if (!backCached && !source.empty)
+        {
+            caches[1] = source.back;
+            backCached = true;
+        }
+        return caches[1];
+    }
+
+    void popFront()
+    {
+        version (assert) if (empty) throw new RangeError();
+        source.popFront();
+        // Reset the cache state for front
+        frontCached = false;
+    }
+    static if (bidir) void popBack()
+    {
+        version (assert) if (empty) throw new RangeError();
+        source.popBack();
+        // Reset the cache state for back
+        backCached = false;
+    }
+
+    static if (isForwardRange!R)
+    {
+        private this(R source, ref CacheTypes caches, bool frontCached, bool backCached = false)
+        {
+            this.source = source;
+            this.caches = caches;
+            this.frontCached = frontCached;
+            static if (bidir) this.backCached = backCached;
+        }
+        typeof(this) save() @property
+        {
+            static if (bidir)
+                return typeof(this)(source.save, caches, frontCached, backCached);
+            else
+                return typeof(this)(source.save, caches, frontCached);
+        }
+    }
+
+    static if (hasSlicing!R)
+    {
+        enum hasEndSlicing = is(typeof(source[size_t.max .. $]));
+
+        static if (hasEndSlicing)
+        {
+            private static struct DollarToken{}
+            enum opDollar = DollarToken.init;
+
+            auto opSlice(size_t low, DollarToken)
+            {
+                return typeof(this)(source[low .. $]);
+            }
+        }
+
+        static if (!isInfinite!R)
+        {
+            typeof(this) opSlice(size_t low, size_t high)
+            {
+                return typeof(this)(source[low .. high]);
+            }
+        }
+        else static if (hasEndSlicing)
+        {
+            auto opSlice(size_t low, size_t high)
+            in
+            {
+                assert(low <= high, "Bounds error when slicing lazyCache.");
             }
             do
             {
@@ -865,8 +1064,8 @@ See_Also: $(REF tee, std,range)
 template each(alias fun = "a")
 {
     import std.meta : AliasSeq;
-    import std.traits : Parameters;
-    import std.typecons : Flag, Yes, No;
+    import std.traits : Parameters, isInstanceOf;
+    import std.typecons : Flag, Yes, No, Tuple;
 
 private:
     alias BinaryArgs = AliasSeq!(fun, "i", "a");
@@ -912,7 +1111,8 @@ public:
     Flag!"each" each(Range)(Range r)
     if (!isForeachIterable!Range && (
         isRangeIterable!Range ||
-        __traits(compiles, typeof(r.front).length)))
+        // Tuples get automatically expanded if function takes right number of args
+        (isInputRange!Range && isInstanceOf!(Tuple, typeof(r.front)))))
     {
         static if (isRangeIterable!Range)
         {
@@ -953,7 +1153,11 @@ public:
         }
         else
         {
-            // range interface with >2 parameters.
+            /* Range over Tuples, fun must have correct number of args
+            * If number of args of fun is <= 2, calling fun(tuple) or fun(idx, tuple)
+            * will have precendence over fun(tuple.expand).
+            * Provide types to delegate params to control this.
+            */
             for (auto range = r; !range.empty; range.popFront())
             {
                 static if (!is(typeof(fun(r.front.expand)) == Flag!"each"))
@@ -2806,10 +3010,10 @@ if (isInputRange!Range)
 
 /**
 Splits a forward range into subranges in places determined by a binary
-predicate.
+predicate called with adjacent elements.
 
 When iterating, one element of `r` is compared with `pred` to the next
-element. If `pred` return true, a new subrange is started for the next element.
+element. If `pred` returns true, a new subrange is started for the next element.
 Otherwise, they are part of the same subrange.
 
 If the elements are compared with an inequality (!=) operator, consider
@@ -2819,7 +3023,8 @@ Params:
 pred = Predicate for determining where to split. The earlier element in the
 source range is always given as the first argument.
 r = A $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives) to be split.
-Returns: a range of subranges of `r`, split such that within a given subrange,
+
+Returns: A range of subranges of `r`, split such that within a given subrange,
 calling `pred` with any pair of adjacent elements as arguments returns `false`.
 Copying the range currently has reference semantics, but this may change in the future.
 
@@ -2829,7 +3034,7 @@ relations.
 */
 
 auto splitWhen(alias pred, Range)(Range r)
-if (isForwardRange!Range)
+if (is(typeof(binaryFun!pred(r.front, r.front)) : bool) && isForwardRange!Range)
 {   import std.functional : not;
     return ChunkByImpl!(not!pred, not!pred, GroupingOpType.binaryAny, Range)(r);
 }
@@ -4309,19 +4514,23 @@ Implements the homonym function (also known as `accumulate`, $(D
 compress), `inject`, or `foldl`) present in various programming
 languages of functional flavor. There is also $(LREF fold) which does
 the same thing but with the opposite parameter order.
-The call `reduce!(fun)(seed, range)` first assigns `seed` to
-an internal variable `result`, also called the accumulator.
-Then, for each element `x` in `range`, `result = fun(result, x)`
-gets evaluated. Finally, `result` is returned.
+
+* Use `seed` to initialize an internal `accumulator`.
+* For each element `e` in $(D range), evaluate `accumulator = fun(result, e)`.
+* Return $(D accumulator).
+
 The one-argument version `reduce!(fun)(range)`
 works similarly, but it uses the first element of the range as the
-seed (the range must be non-empty).
+seed (the range must be non-empty, else this throws).
+
+If range has only one element, the functions are never invoked and
+`result` and the seed is returned unchanged.
 
 Returns:
-    the accumulated `result`
+    the accumulated result
 
 Params:
-    fun = one or more functions
+    fun = one or more functions of the form `Acc function(Acc, ElemT)`
 
 See_Also:
     $(HTTP en.wikipedia.org/wiki/Fold_(higher-order_function), Fold (higher-order function))
@@ -4803,26 +5012,28 @@ languages of functional flavor, iteratively calling one or more predicates.
 $(P Each predicate in `fun` must take two arguments:)
 * An accumulator value
 * An element of the range `r`
-$(P Each predicate must return a value which implicitly converts to the
+$(P Each function must return a value which implicitly converts to the
 type of the accumulator.)
 
-$(P For a single predicate,
+$(P For a single function,
 the call `fold!(fun)(range, seed)` will:)
 
-* Use `seed` to initialize an internal variable `result` (also called
-  the accumulator).
-* For each element `e` in $(D range), evaluate `result = fun(result, e)`.
-* Return $(D result).
+* Use `seed` to initialize an internal `accumulator`.
+* For each element `e` in $(D range), evaluate `accumulator = fun(result, e)`.
+* Return $(D accumulator).
 
 $(P The one-argument version `fold!(fun)(range)`
 works similarly, but it uses the first element of the range as the
 seed (the range must be non-empty) and iterates over the remaining
 elements.)
 
-Multiple results are produced when using multiple predicates.
+Multiple results are produced when using multiple functions.
+
+If range has only one element, the functions are never invoked and
+`result` and the seed is returned unchanged.
 
 Params:
-    fun = the predicate function(s) to apply to the elements
+    fun = one or more functions of the form `Acc function(Acc, ElemT)`
 
 See_Also:
     * $(HTTP en.wikipedia.org/wiki/Fold_(higher-order_function), Fold (higher-order function))
@@ -4913,7 +5124,7 @@ This function is also known as
     $(HTTP mathworld.wolfram.com/CumulativeSum.html, Cumulative Sum).
 
 Params:
-    fun = one or more functions to use as fold operation
+    fun = one or more functions of the form `Acc function(Acc, ElemT)`
 
 Returns:
     The function returns a range containing the consecutive reduced values. If
@@ -5296,12 +5507,9 @@ empty elements.
 The predicate is passed to $(REF binaryFun, std,functional) and accepts
 any callable function that can be executed via `pred(element, s)`.
 
-Notes:
+Note:
     If splitting a string on whitespace and token compression is desired,
-    consider using `splitter` without specifying a separator.
-
-    If no separator is passed, the $(REF_ALTTEXT, unary, unaryFun, std,functional)
-    predicate `isTerminator` decides whether to accept an element of `r`.
+    consider using the `splitter(r)` overload.
 
 Params:
     pred = The predicate for comparing each element with the separator,
@@ -5310,7 +5518,6 @@ Params:
         split. Must support slicing and `.length` or be a narrow string type.
     s = The element (or range) to be treated as the separator
         between range segments to be split.
-    isTerminator = The predicate for deciding where to split the range when no separator is passed
     keepSeparators = The flag for deciding if the separators are kept
 
 Constraints:
@@ -5324,16 +5531,16 @@ Returns:
     the returned range will be likewise.
     When a range is used a separator, bidirectionality isn't possible.
 
-    If keepSeparators is equal to Yes.keepSeparators the output will also contain the
+    If `keepSeparators` is equal to `Yes.keepSeparators` the output will also contain the
     separators.
 
     If an empty range is given, the result is an empty range. If a range with
     one separator is given, the result is a range with two empty elements.
 
 See_Also:
- $(REF _splitter, std,regex) for a version that splits using a regular expression defined separator,
- $(REF _split, std,array) for a version that splits eagerly and
- $(LREF splitWhen), which compares adjacent elements instead of element against separator.
+ - $(REF _splitter, std,regex) for a version that splits using a regular expression defined separator.
+ - $(REF _split, std,array) for a version that splits eagerly.
+ - $(LREF splitWhen), which compares adjacent elements instead of element against separator.
 */
 auto splitter(alias pred = "a == b",
               Flag!"keepSeparators" keepSeparators = No.keepSeparators,
@@ -5736,29 +5943,6 @@ if (is(typeof(binaryFun!pred(r.front, s)) : bool)
         .equal([ [[0]], [[1]], [[2]] ]));
 }
 
-/// Use splitter without a separator
-@safe unittest
-{
-    import std.algorithm.comparison : equal;
-    import std.range.primitives : front;
-
-    assert(equal(splitter!(a => a == '|')("a|bc|def"), [ "a", "bc", "def" ]));
-    assert(equal(splitter!(a => a == ' ')("hello  world"), [ "hello", "", "world" ]));
-
-    int[] a = [ 1, 2, 0, 0, 3, 0, 4, 5, 0 ];
-    int[][] w = [ [1, 2], [], [3], [4, 5], [] ];
-    assert(equal(splitter!(a => a == 0)(a), w));
-
-    a = [ 0 ];
-    assert(equal(splitter!(a => a == 0)(a), [ (int[]).init, (int[]).init ]));
-
-    a = [ 0, 1 ];
-    assert(equal(splitter!(a => a == 0)(a), [ [], [1] ]));
-
-    w = [ [0], [1], [2] ];
-    assert(equal(splitter!(a => a.front == 1)(w), [ [[0]], [[2]] ]));
-}
-
 /// Leading separators, trailing separators, or no separators.
 @safe unittest
 {
@@ -5796,17 +5980,6 @@ if (is(typeof(binaryFun!pred(r.front, s)) : bool)
     import std.range : retro;
     assert("a|bc|def".splitter!("a == b", Yes.keepSeparators)('|')
         .retro.equal([ "def", "|", "bc", "|", "a" ]));
-}
-
-/// Splitting by word lazily
-@safe unittest
-{
-    import std.ascii : isWhite;
-    import std.algorithm.comparison : equal;
-    import std.algorithm.iteration : splitter;
-
-    string str = "Hello World!";
-    assert(str.splitter!(isWhite).equal(["Hello", "World!"]));
 }
 
 @safe unittest
@@ -6133,11 +6306,59 @@ if (is(typeof(binaryFun!pred(r.front, s.front)) : bool)
     assert(words.equal([ "i", "am", "pointing" ]));
 }
 
-/// ditto
+/++
+Lazily splits a range `r` whenever a predicate `isTerminator` returns true for an element.
+
+As above, two adjacent separators are considered to surround an empty element in
+the split range.
+
+Params:
+    r = The $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives) to be
+        split.
+    isTerminator = A $(REF_ALTTEXT unary, unaryFun, std,functional) predicate for
+        deciding where to split the range.
+
+Returns:
+    A forward range of slices of the original range split by whitespace.
+ +/
 auto splitter(alias isTerminator, Range)(Range r)
 if (isForwardRange!Range && is(typeof(unaryFun!isTerminator(r.front))))
 {
     return SplitterResult!(unaryFun!isTerminator, Range)(r);
+}
+
+///
+@safe unittest
+{
+    import std.ascii : isWhite;
+    import std.algorithm.comparison : equal;
+    import std.algorithm.iteration : splitter;
+
+    string str = "Hello World\t!";
+    assert(str.splitter!(isWhite).equal(["Hello", "World", "!"]));
+}
+
+///
+@safe unittest
+{
+    import std.algorithm.comparison : equal;
+    import std.range.primitives : front;
+
+    assert(equal(splitter!(a => a == '|')("a|bc|def"), [ "a", "bc", "def" ]));
+    assert(equal(splitter!(a => a == ' ')("hello  world"), [ "hello", "", "world" ]));
+
+    int[] a = [ 1, 2, 0, 0, 3, 0, 4, 5, 0 ];
+    int[][] w = [ [1, 2], [], [3], [4, 5], [] ];
+    assert(equal(splitter!(a => a == 0)(a), w));
+
+    a = [ 0 ];
+    assert(equal(splitter!(a => a == 0)(a), [ (int[]).init, (int[]).init ]));
+
+    a = [ 0, 1 ];
+    assert(equal(splitter!(a => a == 0)(a), [ [], [1] ]));
+
+    w = [ [0], [1], [2] ];
+    assert(equal(splitter!(a => a.front == 1)(w), [ [[0]], [[2]] ]));
 }
 
 private struct SplitterResult(alias isTerminator, Range)

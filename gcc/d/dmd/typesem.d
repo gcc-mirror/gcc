@@ -169,17 +169,28 @@ private void resolveHelper(TypeQualified mt, Loc loc, Scope* sc, Dsymbol s, Dsym
          */
         const p = mt.mutableOf().unSharedOf().toChars();
         auto id = Identifier.idPool(p[0 .. strlen(p)]);
-        if (const n = importHint(id.toString()))
-            error(loc, "`%s` is not defined, perhaps `import %.*s;` ?", p, cast(int)n.length, n.ptr);
-        else if (auto s2 = sc.search_correct(id))
-            error(loc, "undefined identifier `%s`, did you mean %s `%s`?", p, s2.kind(), s2.toChars());
-        else if (const q = Scope.search_correct_C(id))
-            error(loc, "undefined identifier `%s`, did you mean `%s`?", p, q);
-        else if ((id == Id.This   && sc.getStructClassScope()) ||
-                 (id == Id._super && sc.getClassScope()))
-            error(loc, "undefined identifier `%s`, did you mean `typeof(%s)`?", p, p);
-        else
-            error(loc, "undefined identifier `%s`", p);
+        if (!(sc && sc.inCfile))
+        {
+            if (const n = importHint(id.toString()))
+                error(loc, "`%s` is not defined, perhaps `import %.*s;` ?", p, cast(int)n.length, n.ptr);
+            else if (auto s2 = sc.search_correct(id))
+                error(loc, "undefined identifier `%s`, did you mean %s `%s`?", p, s2.kind(), s2.toChars());
+            else if (const q = Scope.search_correct_C(id))
+                error(loc, "undefined identifier `%s`, did you mean `%s`?", p, q);
+            else if ((id == Id.This   && sc.getStructClassScope()) ||
+                     (id == Id._super && sc.getClassScope()))
+                error(loc, "undefined identifier `%s`, did you mean `typeof(%s)`?", p, p);
+            else
+                error(mt.loc, "undefined identifier `%s`", p);
+        }
+        else {
+            if (const n = cIncludeHint(id.toString()))
+                error(loc, "`%s` is not defined, perhaps `#include %.*s` ?", p, cast(int)n.length, n.ptr);
+            else if (auto s2 = sc.search_correct(id))
+                error(loc, "undefined identifier `%s`, did you mean %s `%s`?", p, s2.kind(), s2.toChars());
+            else
+                error(loc, "undefined identifier `%s`", p);
+        }
 
         pt = Type.terror;
         return;
@@ -1934,7 +1945,19 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
             Expression e;
             Type t;
             Dsymbol s;
-            mtype.index.resolve(loc, sc, e, t, s);
+            Loc indexLoc;
+
+            switch (mtype.index.ty)
+            {
+                case Tident:    indexLoc = mtype.index.isTypeIdentifier().loc;  break;
+                case Tinstance: indexLoc = mtype.index.isTypeInstance().loc;    break;
+                case Ttypeof:   indexLoc = mtype.index.isTypeTypeof().loc;      break;
+                case Treturn:   indexLoc = mtype.index.isTypeReturn().loc;      break;
+                case Tmixin:    indexLoc = mtype.index.isTypeMixin().loc;       break;
+                default: indexLoc = mtype.loc;
+            }
+
+            mtype.index.resolve(indexLoc, sc, e, t, s);
 
             // https://issues.dlang.org/show_bug.cgi?id=15478
             if (s)
@@ -2737,7 +2760,11 @@ Type typeSemantic(Type type, Loc loc, Scope* sc)
         Expression e;
         Dsymbol s;
         //printf("TypeIdentifier::semantic(%s)\n", mtype.toChars());
-        mtype.resolve(loc, sc, e, t, s);
+        if (mtype.loc != Loc.initial)
+            mtype.resolve(mtype.loc, sc, e, t, s);
+        else
+            mtype.resolve(loc, sc, e, t, s);
+
         if (t)
         {
             //printf("\tit's a type %d, %s, %s\n", t.ty, t.toChars(), t.deco);
@@ -3428,8 +3455,10 @@ Expression getProperty(Type t, Scope* scope_, Loc loc, Identifier ident, int fla
         }
 
         Dsymbol s = null;
-        if (mt.ty == Tstruct || mt.ty == Tclass || mt.ty == Tenum)
-            s = mt.toDsymbol(null);
+        auto derefType = mt.isTypePointer() ? mt.nextOf() : mt;
+
+        if (derefType.isTypeStruct() || derefType.isTypeClass() || derefType.isTypeEnum())
+            s = derefType.toDsymbol(null);
         if (s)
             s = s.search_correct(ident);
         if (s && !symbolIsVisible(scope_, s))
@@ -3439,18 +3468,21 @@ Expression getProperty(Type t, Scope* scope_, Loc loc, Identifier ident, int fla
             return ErrorExp.get();
 
         if (s)
-            error(loc, "no property `%s` for type `%s`, did you mean `%s`?", ident.toChars(), mt.toChars(), s.toPrettyChars());
+        {
+            error(loc, "no property `%s` for type `%s`", ident.toErrMsg(), mt.toErrMsg());
+            errorSupplemental(s.loc, "did you mean `%s`?", ident == s.ident ? s.toPrettyChars() : s.toErrMsg());
+        }
         else if (ident == Id.opCall && mt.ty == Tclass)
-            error(loc, "no property `%s` for type `%s`, did you mean `new %s`?", ident.toChars(), mt.toChars(), mt.toPrettyChars());
+            error(loc, "no property `%s` for type `%s`, did you mean `new %s`?", ident.toErrMsg(), mt.toErrMsg(), mt.toPrettyChars());
 
         else if (const n = importHint(ident.toString()))
-                error(loc, "no property `%s` for type `%s`, perhaps `import %.*s;` is needed?", ident.toChars(), mt.toChars(), cast(int)n.length, n.ptr);
+                error(loc, "no property `%s` for type `%s`, perhaps `import %.*s;` is needed?", ident.toErrMsg(), mt.toErrMsg(), cast(int)n.length, n.ptr);
         else
         {
             if (src)
             {
                 error(loc, "no property `%s` for `%s` of type `%s`",
-                    ident.toChars(), src.toChars(), mt.toPrettyChars(true));
+                    ident.toErrMsg(), src.toErrMsg(), mt.toPrettyChars(true));
                 auto s2 = scope_.search_correct(ident);
                 // UFCS
                 if (s2 && s2.isFuncDeclaration)
@@ -3458,30 +3490,17 @@ Expression getProperty(Type t, Scope* scope_, Loc loc, Identifier ident, int fla
                     if (s2.ident == ident)
                     {
                         errorSupplemental(s2.loc, "cannot call %s `%s` with UFCS because it is not declared at module scope",
-                            s2.kind(), s2.toChars());
+                            s2.kind(), s2.toErrMsg());
                     }
                     else
                         errorSupplemental(s2.loc, "did you mean %s `%s`?",
-                            s2.kind(), s2.toChars());
-                }
-                else if (src.type.ty == Tpointer)
-                {
-                    // structPtr.field
-                    auto tn = (cast(TypeNext) src.type).nextOf();
-                    if (auto as = tn.isAggregate())
-                    {
-                        if (auto s3 = as.search_correct(ident))
-                        {
-                            errorSupplemental(s3.loc, "did you mean %s `%s`?",
-                                s3.kind(), s3.toChars());
-                        }
-                    }
+                            s2.kind(), s2.toErrMsg());
                 }
             }
             else
-                error(loc, "no property `%s` for type `%s`", ident.toChars(), mt.toPrettyChars(true));
+                error(loc, "no property `%s` for type `%s`", ident.toErrMsg(), mt.toPrettyChars(true));
 
-            if (auto dsym = mt.toDsymbol(scope_))
+            if (auto dsym = derefType.toDsymbol(scope_))
             {
                 if (auto sym = dsym.isAggregateDeclaration())
                 {
@@ -3507,7 +3526,7 @@ Expression getProperty(Type t, Scope* scope_, Loc loc, Identifier ident, int fla
                     }
                 }
                 errorSupplemental(dsym.loc, "%s `%s` defined here",
-                    dsym.kind, dsym.toChars());
+                    dsym.kind, dsym.toErrMsg());
             }
         }
 
@@ -6704,6 +6723,7 @@ STC parameterStorageClass(TypeFunction tf, Type tthis, Parameter p, VarDeclarati
         // Check escaping through `this`
         if (tthis && tthis.isMutable())
         {
+            import dmd.dsymbolsem : hasPointers;
             foreach (VarDeclaration v; isAggregate(tthis).fields)
             {
                 if (v.hasPointers())
@@ -6714,6 +6734,7 @@ STC parameterStorageClass(TypeFunction tf, Type tthis, Parameter p, VarDeclarati
         // Check escaping through nested context
         if (outerVars && tf.isMutable())
         {
+            import dmd.dsymbolsem : hasPointers;
             foreach (VarDeclaration v; *outerVars)
             {
                 if (v.hasPointers())

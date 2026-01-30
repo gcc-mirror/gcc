@@ -963,7 +963,7 @@ struct DCB {
     bool fOutxDsrFlow()      { return cast(bool) (_bf & 8); }
     byte fDtrControl()       { return cast(byte) ((_bf & (32+16))>>4); }
     bool fDsrSensitivity()   { return cast(bool) (_bf & 64); }
-    bool fTXContinueOnXoff() { return cast(bool) (_bf & 128); }
+    bool fTXContinueOnXoff()() { return cast(bool) (_bf & 128); }
     bool fOutX()             { return cast(bool) (_bf & 256); }
     bool fInX()              { return cast(bool) (_bf & 512); }
     bool fErrorChar()        { return cast(bool) (_bf & 1024); }
@@ -1031,9 +1031,9 @@ struct COMSTAT {
 
     bool fCtsHold()  { return cast(bool) (_bf & 1); }
     bool fDsrHold()  { return cast(bool) (_bf & 2); }
-    bool fRlsdHold() { return cast(bool) (_bf & 4); }
-    bool fXoffHold() { return cast(bool) (_bf & 8); }
-    bool fXoffSent() { return cast(bool) (_bf & 16); }
+    bool fRlsdHold()() { return cast(bool) (_bf & 4); }
+    bool fXoffHold()() { return cast(bool) (_bf & 8); }
+    bool fXoffSent()() { return cast(bool) (_bf & 16); }
     bool fEof()      { return cast(bool) (_bf & 32); }
     bool fTxim()     { return cast(bool) (_bf & 64); }
 
@@ -1494,8 +1494,8 @@ struct LDT_ENTRY {
 
         byte LimitHi()     { return cast(byte) (Flags2 & 0x0F); }
         bool Sys()         { return cast(bool) (Flags2 & 0x10); }
-        bool Default_Big() { return cast(bool) (Flags2 & 0x40); }
-        bool Granularity() { return cast(bool) (Flags2 & 0x80); }
+        bool Default_Big()() { return cast(bool) (Flags2 & 0x40); }
+        bool Granularity()() { return cast(bool) (Flags2 & 0x80); }
     }
 /+
     union  HighWord {
@@ -2567,8 +2567,8 @@ WINBASEAPI BOOL WINAPI SetEvent(HANDLE);
 // For compatibility with old core.sys.windows.windows:
 version (LittleEndian) nothrow @nogc
 {
-    BOOL QueryPerformanceCounter(long* lpPerformanceCount) { return QueryPerformanceCounter(cast(PLARGE_INTEGER)lpPerformanceCount); }
-    BOOL QueryPerformanceFrequency(long* lpFrequency) { return QueryPerformanceFrequency(cast(PLARGE_INTEGER)lpFrequency); }
+    BOOL QueryPerformanceCounter()(long* lpPerformanceCount) { return QueryPerformanceCounter(cast(PLARGE_INTEGER)lpPerformanceCount); }
+    BOOL QueryPerformanceFrequency()(long* lpFrequency) { return QueryPerformanceFrequency(cast(PLARGE_INTEGER)lpFrequency); }
 }
 
 mixin DECLARE_AW!("STARTUPINFO");

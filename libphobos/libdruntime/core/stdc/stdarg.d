@@ -316,7 +316,7 @@ else version (LDC)
 }
 else version (DigitalMars)
 {
-    void va_end(va_list ap) {}
+    void va_end()(va_list ap) {}
 }
 
 

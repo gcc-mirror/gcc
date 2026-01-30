@@ -19,7 +19,8 @@ module core.internal.array.concatenation;
  */
 Tret _d_arraycatnTX(Tret, Tarr...)(auto ref Tarr froms) @trusted
 {
-    import core.internal.array.capacity : _d_arraysetlengthTImpl;
+    import core.exception : onOutOfMemoryError;
+    import core.internal.array.utils : __arrayAlloc;
     import core.internal.traits : hasElaborateCopyConstructor, Unqual;
     import core.lifetime : copyEmplace;
     import core.stdc.string : memcpy;
@@ -27,37 +28,27 @@ Tret _d_arraycatnTX(Tret, Tarr...)(auto ref Tarr froms) @trusted
     Tret res;
     size_t totalLen;
 
-    alias T = typeof(res[0]);
-    enum elemSize = T.sizeof;
-    enum hasPostblit = __traits(hasPostblit, T);
+    alias T = typeof(res[0]); // Element type of the result array
+    alias UnqT = Unqual!T;    // Unqualified version of T (strips const/immutable)
+    enum elemSize = T.sizeof; // Size of each element
+    enum hasPostblit = __traits(hasPostblit, T); // Whether T has a postblit constructor
 
+    // Compute total length of the resulting array
     static foreach (from; froms)
-        static if (is (typeof(from) : T))
-            totalLen++;
+        static if (is(typeof(from) : T))
+            totalLen++; // Single element contributes one to length
         else
-            totalLen += from.length;
+            totalLen += from.length; // Arrays contribute their full length
 
     if (totalLen == 0)
-        return res;
+        return res; // Return an empty array if no elements are present
 
-    // We cannot use this, because it refuses to work if the array type has disabled default construction.
-    // res.length = totalLen;
-    // Call the runtime function directly instead.
-    // TODO: once `__arrayAlloc` is templated, call that instead.
-    version (D_ProfileGC)
-    {
-        // TODO: forward file, line, name from _d_arraycatnTXTrace
-        _d_arraysetlengthTImpl!(typeof(res))._d_arraysetlengthTTrace(
-            res, totalLen, __FILE__, __LINE__, __FUNCTION__);
-    }
-    else
-    {
-        _d_arraysetlengthTImpl!(typeof(res))._d_arraysetlengthT(res, totalLen);
-    }
+    // Allocate memory for mutable arrays using __arrayAlloc
+    res = cast(Tret) __arrayAlloc!(UnqT)(elemSize * totalLen);
 
-    /* Currently, if both a postblit and a cpctor are defined, the postblit is
-     * used. If this changes, the condition below will have to be adapted.
-     */
+    if (res.ptr is null)
+        onOutOfMemoryError(); // Abort if allocation fails
+
     static if (hasElaborateCopyConstructor!T && !hasPostblit)
     {
         size_t i = 0;
@@ -73,16 +64,16 @@ Tret _d_arraycatnTX(Tret, Tarr...)(auto ref Tarr froms) @trusted
     }
     else
     {
-        auto resptr = cast(Unqual!T *) res;
+        auto resptr = cast(UnqT *) res;
         foreach (ref from; froms)
             static if (is (typeof(from) : T))
-                memcpy(resptr++, cast(Unqual!T *) &from, elemSize);
+                memcpy(resptr++, cast(UnqT *) &from, elemSize);
             else
             {
                 const len = from.length;
                 if (len)
                 {
-                    memcpy(resptr, cast(Unqual!T *) from, len * elemSize);
+                    memcpy(resptr, cast(UnqT *) from, len * elemSize);
                     resptr += len;
                 }
             }

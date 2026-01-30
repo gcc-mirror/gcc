@@ -78,12 +78,6 @@ extern (C++) final class Nspace : ScopeDsymbol
         return ns;
     }
 
-    override bool hasPointers()
-    {
-        //printf("Nspace::hasPointers() %s\n", toChars());
-        return members.foreachDsymbol( (s) { return s.hasPointers(); } ) != 0;
-    }
-
     override const(char)* kind() const
     {
         return "namespace";

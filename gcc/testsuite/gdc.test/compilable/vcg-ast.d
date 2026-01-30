@@ -75,3 +75,14 @@ template imported()
 }
 
 alias myImport = imported!();
+
+// https://github.com/dlang/dmd/issues/21105
+
+enum compiles = __traits(compiles,{
+    int[] arr;
+    arr ~= 1;
+});
+enum isexp = is(typeof({
+    int[] arr;
+    arr ~= 1;
+}));

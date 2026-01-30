@@ -235,6 +235,17 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
     if ((funcdecl.storage_class & STC.TYPECTOR) && !(ad || funcdecl.isNested()))
         funcdecl.storage_class &= ~STC.TYPECTOR;
 
+    auto tf = funcdecl.type.isTypeFunction();
+    if ((funcdecl.storage_class & STC.auto_) && tf.isRef && !funcdecl.inferRetType)
+    {
+        if (!(funcdecl.storage_class & STC.autoref))
+        {
+            // @@@DEPRECATED_2.122@@@
+            // Deprecated in 2.112, turn into an error in 2.122
+            deprecation(funcdecl.loc, "`auto ref` return type must have `auto` and `ref` adjacent");
+            funcdecl.storage_class |= STC.autoref;
+        }
+    }
     //printf("function storage_class = x%llx, sc.stc = x%llx, %x\n", storage_class, sc.stc, Declaration.isFinal());
 
     if (sc.traitsCompiles)
@@ -272,20 +283,6 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
     if (!funcdecl.originalType)
         funcdecl.originalType = funcdecl.type.syntaxCopy();
 
-    static TypeFunction getFunctionType(FuncDeclaration fd)
-    {
-        if (auto tf = fd.type.isTypeFunction())
-            return tf;
-
-        if (!fd.type.isTypeError())
-        {
-            .error(fd.loc, "%s `%s` `%s` must be a function instead of `%s`", fd.kind, fd.toPrettyChars, fd.toChars(), fd.type.toChars());
-            fd.type = Type.terror;
-        }
-        fd.errors = true;
-        return null;
-    }
-
     if (sc.inCfile)
     {
         /* C11 allows a function to be declared with a typedef, D does not.
@@ -313,7 +310,6 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         sc = sc.push();
         sc.stc |= funcdecl.storage_class & (STC.disable | STC.deprecated_); // forward to function type
 
-        TypeFunction tf = funcdecl.type.toTypeFunction();
         if (sc.func)
         {
             /* If the nesting parent is pure without inference,
@@ -563,477 +559,13 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
 
     if (ClassDeclaration cd = parent.isClassDeclaration())
     {
-        parent = cd = objc.getParent(funcdecl, cd);
-
-        if (funcdecl.isCtorDeclaration())
+        switch (classFuncSemantic(cd, funcdecl, parent, sc, f))
         {
-            goto Ldone;
+            case 0: break;
+            case 1: goto Ldone;
+            case 2: return;
+            default: assert(0);
         }
-
-        if (funcdecl.storage_class & STC.abstract_)
-            cd.isabstract = ThreeState.yes;
-
-        // if static function, do not put in vtbl[]
-        if (!funcdecl.isVirtual())
-        {
-            //printf("\tnot virtual\n");
-            goto Ldone;
-        }
-        // Suppress further errors if the return type is an error
-        if (funcdecl.type.nextOf() == Type.terror)
-            goto Ldone;
-
-        bool may_override = false;
-        for (size_t i = 0; i < cd.baseclasses.length; i++)
-        {
-            BaseClass* b = (*cd.baseclasses)[i];
-            ClassDeclaration cbd = b.type.toBasetype().isClassHandle();
-            if (!cbd)
-                continue;
-            for (size_t j = 0; j < cbd.vtbl.length; j++)
-            {
-                FuncDeclaration f2 = cbd.vtbl[j].isFuncDeclaration();
-                if (!f2 || f2.ident != funcdecl.ident)
-                    continue;
-                if (cbd.parent && cbd.parent.isTemplateInstance())
-                {
-                    if (!functionSemantic(f2))
-                        goto Ldone;
-                }
-                may_override = true;
-            }
-        }
-        if (may_override && funcdecl.type.nextOf() is null)
-        {
-            /* If same name function exists in base class but 'this' is auto return,
-             * cannot find index of base class's vtbl[] to override.
-             */
-            .error(funcdecl.loc, "%s `%s` return type inference is not supported if may override base class function", funcdecl.kind, funcdecl.toPrettyChars);
-        }
-
-        /* Find index of existing function in base class's vtbl[] to override
-         * (the index will be the same as in cd's current vtbl[])
-         */
-        int vi = cd.baseClass ? findVtblIndex(funcdecl, cd.baseClass.vtbl[]) : -1;
-
-        bool doesoverride = false;
-        switch (vi)
-        {
-        case -1:
-        Lintro:
-            /* Didn't find one, so
-             * This is an 'introducing' function which gets a new
-             * slot in the vtbl[].
-             */
-
-            // Verify this doesn't override previous final function
-            if (cd.baseClass)
-            {
-                Dsymbol s = cd.baseClass.search(funcdecl.loc, funcdecl.ident);
-                if (s)
-                {
-                    if (auto f2 = s.isFuncDeclaration())
-                    {
-                        f2 = f2.overloadExactMatch(funcdecl.type);
-                        if (f2 && f2.isFinalFunc() && f2.visible().kind != Visibility.Kind.private_)
-                            .error(funcdecl.loc, "%s `%s` cannot override `final` function `%s`", funcdecl.kind, funcdecl.toPrettyChars, f2.toPrettyChars());
-                    }
-                }
-            }
-
-            /* These quirky conditions mimic what happens when virtual
-               inheritance is implemented by producing a virtual base table
-               with offsets to each of the virtual bases.
-             */
-            if (target.cpp.splitVBasetable && cd.classKind == ClassKind.cpp &&
-                cd.baseClass && cd.baseClass.vtbl.length)
-            {
-                /* if overriding an interface function, then this is not
-                 * introducing and don't put it in the class vtbl[]
-                 */
-                funcdecl.interfaceVirtual = overrideInterface(funcdecl);
-                if (funcdecl.interfaceVirtual)
-                {
-                    //printf("\tinterface function %s\n", toChars());
-                    cd.vtblFinal.push(funcdecl);
-                    goto Linterfaces;
-                }
-            }
-
-            if (funcdecl.isFinalFunc())
-            {
-                // Don't check here, as it may override an interface function
-                //if (isOverride())
-                //    error("is marked as override, but does not override any function");
-                cd.vtblFinal.push(funcdecl);
-            }
-            else
-            {
-                //printf("\tintroducing function %s\n", funcdecl.toChars());
-                funcdecl.isIntroducing = true;
-                if (cd.classKind == ClassKind.cpp && target.cpp.reverseOverloads)
-                {
-                    /* Overloaded functions with same name are grouped and in reverse order.
-                     * Search for first function of overload group, and insert
-                     * funcdecl into vtbl[] immediately before it.
-                     */
-                    funcdecl.vtblIndex = cast(int)cd.vtbl.length;
-                    bool found;
-                    foreach (const i, s; cd.vtbl)
-                    {
-                        if (found)
-                            // the rest get shifted forward
-                            ++s.isFuncDeclaration().vtblIndex;
-                        else if (s.ident == funcdecl.ident && s.parent == parent)
-                        {
-                            // found first function of overload group
-                            funcdecl.vtblIndex = cast(int)i;
-                            found = true;
-                            ++s.isFuncDeclaration().vtblIndex;
-                        }
-                    }
-                    cd.vtbl.insert(funcdecl.vtblIndex, funcdecl);
-
-                    debug foreach (const i, s; cd.vtbl)
-                    {
-                        // a C++ dtor gets its vtblIndex later (and might even be added twice to the vtbl),
-                        // e.g. when compiling druntime with a debug compiler, namely with core.stdcpp.exception.
-                        if (auto fd = s.isFuncDeclaration())
-                            assert(fd.vtblIndex == i ||
-                                   (cd.classKind == ClassKind.cpp && fd.isDtorDeclaration) ||
-                                   funcdecl.parent.isInterfaceDeclaration); // interface functions can be in multiple vtbls
-                    }
-                }
-                else
-                {
-                    // Append to end of vtbl[]
-                    vi = cast(int)cd.vtbl.length;
-                    cd.vtbl.push(funcdecl);
-                    funcdecl.vtblIndex = vi;
-                }
-            }
-            break;
-
-        case -2:
-            // can't determine because of forward references
-            funcdecl.errors = true;
-            return;
-
-        default:
-            {
-                if (vi >= cd.vtbl.length)
-                {
-                    /* the derived class cd doesn't have its vtbl[] allocated yet.
-                     * https://issues.dlang.org/show_bug.cgi?id=21008
-                     */
-                    .error(funcdecl.loc, "%s `%s` circular reference to class `%s`", funcdecl.kind, funcdecl.toPrettyChars, cd.toChars());
-                    funcdecl.errors = true;
-                    return;
-                }
-                FuncDeclaration fdv = cd.baseClass.vtbl[vi].isFuncDeclaration();
-                FuncDeclaration fdc = cd.vtbl[vi].isFuncDeclaration();
-                // This function is covariant with fdv
-
-                if (fdc == funcdecl)
-                {
-                    doesoverride = true;
-                    break;
-                }
-
-                auto vtf = getFunctionType(fdv);
-                if (vtf.trust > TRUST.system && f.trust == TRUST.system)
-                    .error(funcdecl.loc, "%s `%s` cannot override `@safe` method `%s` with a `@system` attribute", funcdecl.kind, funcdecl.toPrettyChars,
-                                   fdv.toPrettyChars);
-
-                if (fdc.toParent() == parent)
-                {
-                    //printf("vi = %d,\tthis = %p %s %s @ [%s]\n\tfdc  = %p %s %s @ [%s]\n\tfdv  = %p %s %s @ [%s]\n",
-                    //        vi, this, this.toChars(), this.type.toChars(), this.loc.toChars(),
-                    //            fdc,  fdc .toChars(), fdc .type.toChars(), fdc .loc.toChars(),
-                    //            fdv,  fdv .toChars(), fdv .type.toChars(), fdv .loc.toChars());
-
-                    // fdc overrides fdv exactly, then this introduces new function.
-                    if (fdc.type.mod == fdv.type.mod && funcdecl.type.mod != fdv.type.mod)
-                        goto Lintro;
-                }
-
-                if (fdv.isDeprecated && !funcdecl.isDeprecated)
-                    deprecation(funcdecl.loc, "`%s` is overriding the deprecated method `%s`",
-                                funcdecl.toPrettyChars, fdv.toPrettyChars);
-
-                // This function overrides fdv
-                if (fdv.isFinalFunc())
-                    .error(funcdecl.loc, "%s `%s` cannot override `final` function `%s`", funcdecl.kind, funcdecl.toPrettyChars, fdv.toPrettyChars());
-
-                if (!funcdecl.isOverride())
-                {
-                    if (fdv.isFuture())
-                    {
-                        deprecation(funcdecl.loc, "method `%s` implicitly overrides `@__future` base class method; rename the former",
-                            funcdecl.toPrettyChars());
-                        deprecationSupplemental(fdv.loc, "base method `%s` defined here",
-                            fdv.toPrettyChars());
-                        // Treat 'this' as an introducing function, giving it a separate hierarchy in the vtbl[]
-                        goto Lintro;
-                    }
-                    else
-                    {
-                        // https://issues.dlang.org/show_bug.cgi?id=17349
-                        error(funcdecl.loc, "cannot implicitly override base class method `%s` with `%s`; add `override` attribute",
-                              fdv.toPrettyChars(), funcdecl.toPrettyChars());
-                    }
-                }
-                doesoverride = true;
-                if (fdc.toParent() == parent)
-                {
-                    // If both are mixins, or both are not, then error.
-                    // If either is not, the one that is not overrides the other.
-                    bool thismixin = funcdecl.parent.isClassDeclaration() !is null;
-                    bool fdcmixin = fdc.parent.isClassDeclaration() !is null;
-                    if (thismixin == fdcmixin)
-                    {
-                        .error(funcdecl.loc, "%s `%s` multiple overrides of same function", funcdecl.kind, funcdecl.toPrettyChars);
-                    }
-                    /*
-                     * https://issues.dlang.org/show_bug.cgi?id=711
-                     *
-                     * If an overriding method is introduced through a mixin,
-                     * we need to update the vtbl so that both methods are
-                     * present.
-                     */
-                    else if (thismixin)
-                    {
-                        /* if the mixin introduced the overriding method, then reintroduce it
-                         * in the vtbl. The initial entry for the mixined method
-                         * will be updated at the end of the enclosing `if` block
-                         * to point to the current (non-mixined) function.
-                         */
-                        auto vitmp = cast(int)cd.vtbl.length;
-                        cd.vtbl.push(fdc);
-                        fdc.vtblIndex = vitmp;
-                    }
-                    else if (fdcmixin)
-                    {
-                        /* if the current overriding function is coming from a
-                         * mixined block, then push the current function in the
-                         * vtbl, but keep the previous (non-mixined) function as
-                         * the overriding one.
-                         */
-                        auto vitmp = cast(int)cd.vtbl.length;
-                        cd.vtbl.push(funcdecl);
-                        funcdecl.vtblIndex = vitmp;
-                        break;
-                    }
-                    else // fdc overrides fdv
-                    {
-                        // this doesn't override any function
-                        break;
-                    }
-                }
-                cd.vtbl[vi] = funcdecl;
-                funcdecl.vtblIndex = vi;
-
-                /* Remember which functions this overrides
-                 */
-                funcdecl.foverrides.push(fdv);
-
-                /* This works by whenever this function is called,
-                 * it actually returns tintro, which gets dynamically
-                 * cast to type. But we know that tintro is a base
-                 * of type, so we could optimize it by not doing a
-                 * dynamic cast, but just subtracting the isBaseOf()
-                 * offset if the value is != null.
-                 */
-
-                if (fdv.tintro)
-                    funcdecl.tintro = fdv.tintro;
-                else if (!funcdecl.type.equals(fdv.type))
-                {
-                    auto tnext = funcdecl.type.nextOf();
-                    if (auto handle = tnext.isClassHandle())
-                    {
-                        if (handle.semanticRun < PASS.semanticdone && !handle.isBaseInfoComplete())
-                            handle.dsymbolSemantic(null);
-                    }
-                    /* Only need to have a tintro if the vptr
-                     * offsets differ
-                     */
-                    int offset;
-                    if (fdv.type.nextOf().isBaseOf(tnext, &offset))
-                    {
-                        funcdecl.tintro = fdv.type;
-                    }
-                }
-                break;
-            }
-        }
-
-        /* Go through all the interface bases.
-         * If this function is covariant with any members of those interface
-         * functions, set the tintro.
-         */
-    Linterfaces:
-        bool foundVtblMatch = false;
-
-        for (ClassDeclaration bcd = cd; !foundVtblMatch && bcd; bcd = bcd.baseClass)
-        {
-            foreach (b; bcd.interfaces)
-            {
-                vi = findVtblIndex(funcdecl, b.sym.vtbl[]);
-                switch (vi)
-                {
-                case -1:
-                    break;
-
-                case -2:
-                    // can't determine because of forward references
-                    funcdecl.errors = true;
-                    return;
-
-                default:
-                    {
-                        auto fdv = cast(FuncDeclaration)b.sym.vtbl[vi];
-                        Type ti = null;
-
-                        foundVtblMatch = true;
-
-                        /* Remember which functions this overrides
-                         */
-                        funcdecl.foverrides.push(fdv);
-
-                        if (fdv.tintro)
-                            ti = fdv.tintro;
-                        else if (!funcdecl.type.equals(fdv.type))
-                        {
-                            /* Only need to have a tintro if the vptr
-                             * offsets differ
-                             */
-                            int offset;
-                            if (fdv.type.nextOf().isBaseOf(funcdecl.type.nextOf(), &offset))
-                            {
-                                ti = fdv.type;
-                            }
-                        }
-                        if (ti)
-                        {
-                            if (funcdecl.tintro)
-                            {
-                                if (!funcdecl.tintro.nextOf().equals(ti.nextOf()) && !funcdecl.tintro.nextOf().isBaseOf(ti.nextOf(), null) && !ti.nextOf().isBaseOf(funcdecl.tintro.nextOf(), null))
-                                {
-                                    .error(funcdecl.loc, "%s `%s` incompatible covariant types `%s` and `%s`", funcdecl.kind, funcdecl.toPrettyChars, funcdecl.tintro.toChars(), ti.toChars());
-                                }
-                            }
-                            else
-                            {
-                                funcdecl.tintro = ti;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (foundVtblMatch)
-        {
-            goto L2;
-        }
-
-        if (!doesoverride && funcdecl.isOverride() && (funcdecl.type.nextOf() || !may_override))
-        {
-            BaseClass* bc = null;
-            Dsymbol s = null;
-            for (size_t i = 0; i < cd.baseclasses.length; i++)
-            {
-                bc = (*cd.baseclasses)[i];
-                s = bc.sym.search_correct(funcdecl.ident);
-                if (s)
-                    break;
-            }
-
-            if (s)
-            {
-                HdrGenState hgs;
-                OutBuffer buf;
-
-                auto fd = s.isFuncDeclaration();
-                functionToBufferFull(cast(TypeFunction)(funcdecl.type), buf,
-                    new Identifier(funcdecl.toPrettyChars()), hgs, null);
-                const(char)* funcdeclToChars = buf.peekChars();
-
-                if (fd)
-                {
-                    OutBuffer buf1;
-
-                    if (fd.ident == funcdecl.ident)
-                        hgs.fullQual = true;
-
-                    // https://issues.dlang.org/show_bug.cgi?id=23745
-                    // If the potentially overridden function contains errors,
-                    // inform the user to fix that one first
-                    if (fd.errors)
-                    {
-                        error(funcdecl.loc, "function `%s` does not override any function, did you mean to override `%s`?",
-                            funcdecl.toChars(), fd.toPrettyChars());
-                        errorSupplemental(fd.loc, "Function `%s` contains errors in its declaration, therefore it cannot be correctly overridden",
-                            fd.toPrettyChars());
-                    }
-                    else
-                    {
-                        functionToBufferFull(cast(TypeFunction)(fd.type), buf1,
-                            new Identifier(fd.toPrettyChars()), hgs, null);
-
-                        error(funcdecl.loc, "function `%s` does not override any function, did you mean to override `%s`?",
-                            funcdeclToChars, buf1.peekChars());
-                   }
-                }
-                else
-                {
-                    error(funcdecl.loc, "function `%s` does not override any function, did you mean to override %s `%s`?",
-                        funcdeclToChars, s.kind, s.toPrettyChars());
-                    errorSupplemental(funcdecl.loc, "Functions are the only declarations that may be overridden");
-                }
-            }
-            else
-                .error(funcdecl.loc, "%s `%s` does not override any function", funcdecl.kind, funcdecl.toPrettyChars);
-        }
-
-    L2:
-        objc.setSelector(funcdecl, sc);
-        objc.checkLinkage(funcdecl);
-        objc.addToClassMethodList(funcdecl, cd);
-        objc.setAsOptional(funcdecl, sc);
-
-        /* Go through all the interface bases.
-         * Disallow overriding any final functions in the interface(s).
-         */
-        foreach (b; cd.interfaces)
-        {
-            if (b.sym)
-            {
-                if (auto s = search_function(b.sym, funcdecl.ident))
-                {
-                    if (auto f2 = s.isFuncDeclaration())
-                    {
-                        f2 = f2.overloadExactMatch(funcdecl.type);
-                        if (f2 && f2.isFinalFunc() && f2.visible().kind != Visibility.Kind.private_)
-                            .error(funcdecl.loc, "%s `%s` cannot override `final` function `%s.%s`", funcdecl.kind, funcdecl.toPrettyChars, b.sym.toChars(), f2.toPrettyChars());
-                    }
-                }
-            }
-        }
-
-        if (funcdecl.isOverride)
-        {
-            if (funcdecl.storage_class & STC.disable)
-                deprecation(funcdecl.loc,
-                            "`%s` cannot be annotated with `@disable` because it is overriding a function in the base class",
-                            funcdecl.toPrettyChars);
-
-            if (funcdecl.isDeprecated && !(funcdecl.foverrides.length && funcdecl.foverrides[0].isDeprecated))
-                deprecation(funcdecl.loc,
-                            "`%s` cannot be marked as `deprecated` because it is overriding a function in the base class",
-                            funcdecl.toPrettyChars);
-        }
-
     }
     else if (funcdecl.isOverride() && !parent.isTemplateInstance())
         .error(funcdecl.loc, "%s `%s` `override` only applies to class member functions", funcdecl.kind, funcdecl.toPrettyChars);
@@ -1144,6 +676,580 @@ Ldone:
         if (param && param.userAttribDecl)
             param.userAttribDecl.dsymbolSemantic(sc);
     }
+}
+
+/**
+ Returns:
+    0 if semantic analysis in `funcDeclarationSemantic` should continue as normal
+    1 if it should skip over some analysis and `goto Ldone;`
+    2 if `funcDeclarationSemantic` should return early because of forward refernce error or
+        the derived class cd doesn't have its vtbl[] allocated yet
+ */
+private int classFuncSemantic(ClassDeclaration cd, FuncDeclaration funcdecl,
+                              ref Dsymbol parent, Scope* sc, TypeFunction f)
+{
+    parent = cd = objc.getParent(funcdecl, cd);
+
+    if (funcdecl.isCtorDeclaration())
+    {
+        return 1;
+    }
+
+    if (funcdecl.storage_class & STC.abstract_)
+        cd.isabstract = ThreeState.yes;
+
+    // if static function, do not put in vtbl[]
+    if (!funcdecl.isVirtual())
+    {
+        //printf("\tnot virtual\n");
+        return 1;
+    }
+    // Suppress further errors if the return type is an error
+    if (funcdecl.type.nextOf() == Type.terror)
+        return 1;
+
+    bool may_override = false;
+    for (size_t i = 0; i < cd.baseclasses.length; i++)
+    {
+        BaseClass* b = (*cd.baseclasses)[i];
+        ClassDeclaration cbd = b.type.toBasetype().isClassHandle();
+        if (!cbd)
+            continue;
+        for (size_t j = 0; j < cbd.vtbl.length; j++)
+        {
+            FuncDeclaration f2 = cbd.vtbl[j].isFuncDeclaration();
+            if (!f2 || f2.ident != funcdecl.ident)
+                continue;
+            if (cbd.parent && cbd.parent.isTemplateInstance())
+            {
+                if (!functionSemantic(f2))
+                    return 1;
+            }
+            may_override = true;
+        }
+    }
+    if (may_override && funcdecl.type.nextOf() is null)
+    {
+        /* If same name function exists in base class but 'this' is auto return,
+         * cannot find index of base class's vtbl[] to override.
+         */
+        .error(funcdecl.loc, "%s `%s` return type inference is not supported if may override base class function", funcdecl.kind, funcdecl.toPrettyChars);
+    }
+
+    /* Find index of existing function in base class's vtbl[] to override
+     * (the index will be the same as in cd's current vtbl[])
+     */
+    int vi = cd.baseClass ? findVtblIndex(funcdecl, cd.baseClass.vtbl[]) : -1;
+
+    bool doesoverride = false;
+    switch (vi)
+    {
+    case -1:
+    Lintro:
+        /* Didn't find one, so
+         * This is an 'introducing' function which gets a new
+         * slot in the vtbl[].
+         */
+
+        // Verify this doesn't override previous final function
+        if (cd.baseClass)
+        {
+            Dsymbol s = cd.baseClass.search(funcdecl.loc, funcdecl.ident);
+            if (s)
+            {
+                if (auto f2 = s.isFuncDeclaration())
+                {
+                    f2 = f2.overloadExactMatch(funcdecl.type);
+                    if (f2 && f2.isFinalFunc() && f2.visible().kind != Visibility.Kind.private_)
+                        .error(funcdecl.loc, "%s `%s` cannot override `final` function `%s`", funcdecl.kind, funcdecl.toPrettyChars, f2.toPrettyChars());
+                }
+            }
+        }
+
+        /* These quirky conditions mimic what happens when virtual
+           inheritance is implemented by producing a virtual base table
+           with offsets to each of the virtual bases.
+         */
+        if (target.cpp.splitVBasetable && cd.classKind == ClassKind.cpp &&
+            cd.baseClass && cd.baseClass.vtbl.length)
+        {
+            /* if overriding an interface function, then this is not
+             * introducing and don't put it in the class vtbl[]
+             */
+            funcdecl.interfaceVirtual = overrideInterface(funcdecl);
+            if (funcdecl.interfaceVirtual)
+            {
+                //printf("\tinterface function %s\n", toChars());
+                cd.vtblFinal.push(funcdecl);
+                goto Linterfaces;
+            }
+        }
+
+        if (funcdecl.isFinalFunc())
+        {
+            // Don't check here, as it may override an interface function
+            //if (isOverride())
+            //    error("is marked as override, but does not override any function");
+            cd.vtblFinal.push(funcdecl);
+        }
+        else
+        {
+            //printf("\tintroducing function %s\n", funcdecl.toChars());
+            funcdecl.isIntroducing = true;
+            if (cd.classKind == ClassKind.cpp && target.cpp.reverseOverloads)
+            {
+                /* Overloaded functions with same name are grouped and in reverse order.
+                 * Search for first function of overload group, and insert
+                 * funcdecl into vtbl[] immediately before it.
+                 */
+                funcdecl.vtblIndex = cast(int)cd.vtbl.length;
+                bool found;
+                foreach (const i, s; cd.vtbl)
+                {
+                    if (found)
+                        // the rest get shifted forward
+                        ++s.isFuncDeclaration().vtblIndex;
+                    else if (s.ident == funcdecl.ident && s.parent == parent)
+                    {
+                        // found first function of overload group
+                        funcdecl.vtblIndex = cast(int)i;
+                        found = true;
+                        ++s.isFuncDeclaration().vtblIndex;
+                    }
+                }
+                cd.vtbl.insert(funcdecl.vtblIndex, funcdecl);
+
+                debug foreach (const i, s; cd.vtbl)
+                {
+                    // a C++ dtor gets its vtblIndex later (and might even be added twice to the vtbl),
+                    // e.g. when compiling druntime with a debug compiler, namely with core.stdcpp.exception.
+                    if (auto fd = s.isFuncDeclaration())
+                        assert(fd.vtblIndex == i ||
+                               (cd.classKind == ClassKind.cpp && fd.isDtorDeclaration) ||
+                               funcdecl.parent.isInterfaceDeclaration); // interface functions can be in multiple vtbls
+                }
+            }
+            else
+            {
+                // Append to end of vtbl[]
+                vi = cast(int)cd.vtbl.length;
+                cd.vtbl.push(funcdecl);
+                funcdecl.vtblIndex = vi;
+            }
+        }
+        break;
+
+    case -2:
+        // can't determine because of forward references
+        funcdecl.errors = true;
+        return 2;
+
+    default:
+        {
+            if (vi >= cd.vtbl.length)
+            {
+                /* the derived class cd doesn't have its vtbl[] allocated yet.
+                 * https://issues.dlang.org/show_bug.cgi?id=21008
+                 */
+                .error(funcdecl.loc, "%s `%s` circular reference to class `%s`", funcdecl.kind, funcdecl.toPrettyChars, cd.toChars());
+                funcdecl.errors = true;
+                return 2;
+            }
+            FuncDeclaration fdv = cd.baseClass.vtbl[vi].isFuncDeclaration();
+            FuncDeclaration fdc = cd.vtbl[vi].isFuncDeclaration();
+            // This function is covariant with fdv
+
+            if (fdc == funcdecl)
+            {
+                doesoverride = true;
+                break;
+            }
+
+            auto vtf = getFunctionType(fdv);
+            if (vtf.trust > TRUST.system && f.trust == TRUST.system)
+                .error(funcdecl.loc, "%s `%s` cannot override `@safe` method `%s` with a `@system` attribute", funcdecl.kind, funcdecl.toPrettyChars,
+                               fdv.toPrettyChars);
+
+            if (fdc.toParent() == parent)
+            {
+                //printf("vi = %d,\tthis = %p %s %s @ [%s]\n\tfdc  = %p %s %s @ [%s]\n\tfdv  = %p %s %s @ [%s]\n",
+                //        vi, this, this.toChars(), this.type.toChars(), this.loc.toChars(),
+                //            fdc,  fdc .toChars(), fdc .type.toChars(), fdc .loc.toChars(),
+                //            fdv,  fdv .toChars(), fdv .type.toChars(), fdv .loc.toChars());
+
+                // fdc overrides fdv exactly, then this introduces new function.
+                if (fdc.type.mod == fdv.type.mod && funcdecl.type.mod != fdv.type.mod)
+                    goto Lintro;
+            }
+
+            if (fdv.isDeprecated && !funcdecl.isDeprecated)
+                deprecation(funcdecl.loc, "`%s` is overriding the deprecated method `%s`",
+                            funcdecl.toPrettyChars, fdv.toPrettyChars);
+
+            // This function overrides fdv
+            if (fdv.isFinalFunc())
+                .error(funcdecl.loc, "%s `%s` cannot override `final` function `%s`", funcdecl.kind, funcdecl.toPrettyChars, fdv.toPrettyChars());
+
+            if (!funcdecl.isOverride())
+            {
+                if (fdv.isFuture())
+                {
+                    deprecation(funcdecl.loc, "method `%s` implicitly overrides `@__future` base class method; rename the former",
+                        funcdecl.toPrettyChars());
+                    deprecationSupplemental(fdv.loc, "base method `%s` defined here",
+                        fdv.toPrettyChars());
+                    // Treat 'this' as an introducing function, giving it a separate hierarchy in the vtbl[]
+                    goto Lintro;
+                }
+                else
+                {
+                    // https://issues.dlang.org/show_bug.cgi?id=17349
+                    error(funcdecl.loc, "cannot implicitly override base class method `%s` with `%s`; add `override` attribute",
+                          fdv.toPrettyChars(), funcdecl.toPrettyChars());
+                }
+            }
+            doesoverride = true;
+            if (fdc.toParent() == parent)
+            {
+                // If both are mixins, or both are not, then error.
+                // If either is not, the one that is not overrides the other.
+                bool thismixin = funcdecl.parent.isClassDeclaration() !is null;
+                bool fdcmixin = fdc.parent.isClassDeclaration() !is null;
+                if (thismixin == fdcmixin)
+                {
+                    .error(funcdecl.loc, "%s `%s` multiple overrides of same function", funcdecl.kind, funcdecl.toPrettyChars);
+                }
+                /*
+                 * https://issues.dlang.org/show_bug.cgi?id=711
+                 *
+                 * If an overriding method is introduced through a mixin,
+                 * we need to update the vtbl so that both methods are
+                 * present.
+                 */
+                else if (thismixin)
+                {
+                    /* if the mixin introduced the overriding method, then reintroduce it
+                     * in the vtbl. The initial entry for the mixined method
+                     * will be updated at the end of the enclosing `if` block
+                     * to point to the current (non-mixined) function.
+                     */
+                    auto vitmp = cast(int)cd.vtbl.length;
+                    cd.vtbl.push(fdc);
+                    fdc.vtblIndex = vitmp;
+                }
+                else if (fdcmixin)
+                {
+                    /* if the current overriding function is coming from a
+                     * mixined block, then push the current function in the
+                     * vtbl, but keep the previous (non-mixined) function as
+                     * the overriding one.
+                     */
+                    auto vitmp = cast(int)cd.vtbl.length;
+                    cd.vtbl.push(funcdecl);
+                    funcdecl.vtblIndex = vitmp;
+                    break;
+                }
+                else // fdc overrides fdv
+                {
+                    // this doesn't override any function
+                    break;
+                }
+            }
+            cd.vtbl[vi] = funcdecl;
+            funcdecl.vtblIndex = vi;
+
+            /* Remember which functions this overrides
+             */
+            funcdecl.foverrides.push(fdv);
+
+            /* This works by whenever this function is called,
+             * it actually returns tintro, which gets dynamically
+             * cast to type. But we know that tintro is a base
+             * of type, so we could optimize it by not doing a
+             * dynamic cast, but just subtracting the isBaseOf()
+             * offset if the value is != null.
+             */
+
+            if (fdv.tintro)
+                funcdecl.tintro = fdv.tintro;
+            else if (!funcdecl.type.equals(fdv.type))
+            {
+                auto tnext = funcdecl.type.nextOf();
+                if (auto handle = tnext.isClassHandle())
+                {
+                    if (handle.semanticRun < PASS.semanticdone && !handle.isBaseInfoComplete())
+                        handle.dsymbolSemantic(null);
+                }
+                /* Only need to have a tintro if the vptr
+                 * offsets differ
+                 */
+                int offset;
+                if (fdv.type.nextOf().isBaseOf(tnext, &offset))
+                {
+                    funcdecl.tintro = fdv.type;
+                }
+            }
+            break;
+        }
+    }
+
+    /* Go through all the interface bases.
+     * If this function is covariant with any members of those interface
+     * functions, set the tintro.
+     */
+Linterfaces:
+    bool foundVtblMatch = false;
+
+    for (ClassDeclaration bcd = cd; !foundVtblMatch && bcd; bcd = bcd.baseClass)
+    {
+        foreach (b; bcd.interfaces)
+        {
+            vi = findVtblIndex(funcdecl, b.sym.vtbl[]);
+            switch (vi)
+            {
+            case -1:
+                break;
+
+            case -2:
+                // can't determine because of forward references
+                funcdecl.errors = true;
+                return 2;
+
+            default:
+                {
+                    auto fdv = cast(FuncDeclaration)b.sym.vtbl[vi];
+                    Type ti = null;
+
+                    foundVtblMatch = true;
+
+                    /* Remember which functions this overrides
+                     */
+                    funcdecl.foverrides.push(fdv);
+
+                    if (fdv.tintro)
+                        ti = fdv.tintro;
+                    else if (!funcdecl.type.equals(fdv.type))
+                    {
+                        /* Only need to have a tintro if the vptr
+                         * offsets differ
+                         */
+                        int offset;
+                        if (fdv.type.nextOf().isBaseOf(funcdecl.type.nextOf(), &offset))
+                        {
+                            ti = fdv.type;
+                        }
+                    }
+                    if (ti)
+                    {
+                        if (funcdecl.tintro)
+                        {
+                            if (!funcdecl.tintro.nextOf().equals(ti.nextOf()) && !funcdecl.tintro.nextOf().isBaseOf(ti.nextOf(), null) && !ti.nextOf().isBaseOf(funcdecl.tintro.nextOf(), null))
+                            {
+                                .error(funcdecl.loc, "%s `%s` incompatible covariant types `%s` and `%s`", funcdecl.kind, funcdecl.toPrettyChars, funcdecl.tintro.toChars(), ti.toChars());
+                            }
+                        }
+                        else
+                        {
+                            funcdecl.tintro = ti;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (foundVtblMatch)
+    {
+        goto L2;
+    }
+
+    if (!doesoverride && funcdecl.isOverride() && (funcdecl.type.nextOf() || !may_override))
+    {
+        BaseClass* bc = null;
+        Dsymbol s = null;
+        for (size_t i = 0; i < cd.baseclasses.length; i++)
+        {
+            bc = (*cd.baseclasses)[i];
+            s = bc.sym.search_correct(funcdecl.ident);
+            if (s)
+                break;
+        }
+
+        if (s)
+        {
+            HdrGenState hgs;
+            OutBuffer buf;
+
+            auto fd = s.isFuncDeclaration();
+            functionToBufferFull(cast(TypeFunction)(funcdecl.type), buf,
+                new Identifier(funcdecl.toPrettyChars()), hgs, null);
+            const(char)* funcdeclToChars = buf.peekChars();
+
+            if (fd)
+            {
+                OutBuffer buf1;
+
+                if (fd.ident == funcdecl.ident)
+                    hgs.fullQual = true;
+
+                // https://issues.dlang.org/show_bug.cgi?id=23745
+                // If the potentially overridden function contains errors,
+                // inform the user to fix that one first
+                if (fd.errors)
+                {
+                    error(funcdecl.loc, "function `%s` does not override any function, did you mean to override `%s`?",
+                        funcdecl.toChars(), fd.toPrettyChars());
+                    errorSupplemental(fd.loc, "Function `%s` contains errors in its declaration, therefore it cannot be correctly overridden",
+                        fd.toPrettyChars());
+                }
+                else if (fd.isFinalFunc())
+                {
+                    // When trying to override a final method, don't suggest it as a candidate(Issue #19613)
+                    .error(funcdecl.loc, "%s `%s` does not override any function", funcdecl.kind, funcdecl.toPrettyChars);
+
+                    // Look for a non-final method with the same name to suggest as an alternative
+                    auto cdparent = fd.parent ? fd.parent.isClassDeclaration() : null;
+                    if (cdparent)
+                    {
+                        Dsymbol nonFinalAlt = null;
+
+                        auto overloadableSyms = cdparent.symtab.lookup(fd.ident);
+                        if (overloadableSyms)
+                        {
+                            // Check each overload to find one that's not final
+                            overloadApply(overloadableSyms, (Dsymbol s)
+                            {
+                                if (auto funcAlt = s.isFuncDeclaration())
+                                {
+                                    if (funcAlt != fd && !funcAlt.isFinalFunc())
+                                    {
+                                        nonFinalAlt = funcAlt;
+                                        return 1;
+                                    }
+                                }
+                                return 0;
+                            });
+
+                            // Provide a helpful suggestion if we found a viable alternative
+                            if (nonFinalAlt)
+                            {
+                                auto funcAlt = nonFinalAlt.isFuncDeclaration();
+                                OutBuffer buf2;
+                                functionToBufferFull(cast(TypeFunction)(funcAlt.type), buf2,
+                                    new Identifier(funcAlt.toPrettyChars()), hgs, null);
+                                errorSupplemental(funcdecl.loc, "Did you mean to override `%s`?", buf2.peekChars());
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    functionToBufferFull(cast(TypeFunction)(fd.type), buf1,
+                        new Identifier(fd.toPrettyChars()), hgs, null);
+
+                    error(funcdecl.loc, "function `%s` does not override any function, did you mean to override `%s`?",
+                        funcdeclToChars, buf1.peekChars());
+
+                    // Supplemental error for parameter scope differences
+                    auto tf1 = cast(TypeFunction)funcdecl.type;
+                    auto tf2 = cast(TypeFunction)fd.type;
+
+                    if (tf1 && tf2)
+                    {
+                        auto params1 = tf1.parameterList;
+                        auto params2 = tf2.parameterList;
+
+                        if (params1.length == params2.length)
+                        {
+                            bool hasScopeDifference = false;
+
+                            for (size_t i = 0; i < params1.length; i++)
+                            {
+                                auto p1 = params1[i];
+                                auto p2 = params2[i];
+
+                                if ((p1.storageClass & STC.scope_) == (p2.storageClass & STC.scope_))
+                                    continue;
+
+                                if (!(p2.storageClass & STC.scope_))
+                                    continue;
+
+                                if (!hasScopeDifference)
+                                {
+                                    // Intended signature
+                                    errorSupplemental(funcdecl.loc, "Did you intend to override:");
+                                    errorSupplemental(funcdecl.loc, "`%s`", buf1.peekChars());
+                                    hasScopeDifference = true;
+                                }
+                                errorSupplemental(funcdecl.loc, "Parameter %d is missing `scope`",
+                                cast(int)(i + 1));
+                            }
+                        }
+                    }
+               }
+            }
+            else
+            {
+                error(funcdecl.loc, "function `%s` does not override any function, did you mean to override %s `%s`?",
+                    funcdeclToChars, s.kind, s.toPrettyChars());
+                errorSupplemental(funcdecl.loc, "Functions are the only declarations that may be overridden");
+            }
+        }
+        else
+            .error(funcdecl.loc, "%s `%s` does not override any function", funcdecl.kind, funcdecl.toPrettyChars);
+    }
+
+L2:
+    objc.setSelector(funcdecl, sc);
+    objc.checkLinkage(funcdecl);
+    objc.addToClassMethodList(funcdecl, cd);
+    objc.setAsOptional(funcdecl, sc);
+
+    /* Go through all the interface bases.
+     * Disallow overriding any final functions in the interface(s).
+     */
+    foreach (b; cd.interfaces)
+    {
+        if (b.sym)
+        {
+            if (auto s = search_function(b.sym, funcdecl.ident))
+            {
+                if (auto f2 = s.isFuncDeclaration())
+                {
+                    f2 = f2.overloadExactMatch(funcdecl.type);
+                    if (f2 && f2.isFinalFunc() && f2.visible().kind != Visibility.Kind.private_)
+                        .error(funcdecl.loc, "%s `%s` cannot override `final` function `%s.%s`", funcdecl.kind, funcdecl.toPrettyChars, b.sym.toChars(), f2.toPrettyChars());
+                }
+            }
+        }
+    }
+
+    if (funcdecl.isOverride)
+    {
+        if (funcdecl.storage_class & STC.disable)
+            deprecation(funcdecl.loc,
+                        "`%s` cannot be annotated with `@disable` because it is overriding a function in the base class",
+                        funcdecl.toPrettyChars);
+
+        if (funcdecl.isDeprecated && !(funcdecl.foverrides.length && funcdecl.foverrides[0].isDeprecated))
+            deprecation(funcdecl.loc,
+                        "`%s` cannot be marked as `deprecated` because it is overriding a function in the base class",
+                        funcdecl.toPrettyChars);
+    }
+    return 0;
+}
+
+private TypeFunction getFunctionType(FuncDeclaration fd)
+{
+    if (auto tf = fd.type.isTypeFunction())
+        return tf;
+
+    if (!fd.type.isTypeError())
+    {
+        .error(fd.loc, "%s `%s` `%s` must be a function instead of `%s`", fd.kind, fd.toPrettyChars, fd.toChars(), fd.type.toChars());
+        fd.type = Type.terror;
+    }
+    fd.errors = true;
+    return null;
 }
 
 /*****************************************
@@ -1657,13 +1763,17 @@ FuncDeclaration resolveFuncCall(Loc loc, Scope* sc, Dsymbol s,
             if (!od && !td.overnext)
             {
                 .error(loc, "%s `%s` is not callable using argument types `!(%s)%s`",
-                   td.kind(), td.ident.toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
+                    td.kind(), td.ident.toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
+
+                checkNamedArgErrorAndReport(td, argumentList, loc);
             }
             else
             {
                 .error(loc, "none of the overloads of %s `%s.%s` are callable using argument types `!(%s)%s`",
-                   td.kind(), td.parent.toPrettyChars(), td.ident.toChars(),
-                   tiargsBuf.peekChars(), fargsBuf.peekChars());
+                    td.kind(), td.parent.toPrettyChars(), td.ident.toChars(),
+                    tiargsBuf.peekChars(), fargsBuf.peekChars());
+
+                checkNamedArgErrorAndReport(td, argumentList, loc);
             }
 
 
@@ -1683,7 +1793,9 @@ FuncDeclaration resolveFuncCall(Loc loc, Scope* sc, Dsymbol s,
     if (od)
     {
         .error(loc, "none of the overloads of `%s` are callable using argument types `!(%s)%s`",
-               od.ident.toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
+            od.ident.toChars(), tiargsBuf.peekChars(), fargsBuf.peekChars());
+
+        checkNamedArgErrorAndReportOverload(od, argumentList, loc);
         if (!global.gag || global.params.v.showGaggedErrors)
             printCandidates(loc, od, sc.isDeprecated());
         return null;
@@ -1713,8 +1825,14 @@ FuncDeclaration resolveFuncCall(Loc loc, Scope* sc, Dsymbol s,
             OutBuffer buf;
             buf.argExpTypesToCBuffer(fargs);
             if (fd.isCtorDeclaration())
-                .error(loc, "none of the overloads of `%s` can construct a %sobject with argument types `(%s)`",
-                    fd.toChars(), thisBuf.peekChars(), buf.peekChars());
+            {
+                if (tthis.mod & MODFlags.immutable_)
+                    .error(loc, "none of the overloads of `%s` can construct an immutable object with argument types `(%s)`. Expected `immutable(%s)`",
+                        fd.toChars(), buf.peekChars(), buf.peekChars());
+                else
+                    .error(loc, "none of the overloads of `%s` can construct a %sobject with argument types `(%s)`",
+                        fd.toChars(), thisBuf.peekChars(), buf.peekChars());
+            }
             else
                 .error(loc, "none of the overloads of `%s` are callable using a %sobject with argument types `(%s)`",
                     fd.toChars(), thisBuf.peekChars(), buf.peekChars());
@@ -1782,10 +1900,15 @@ FuncDeclaration resolveFuncCall(Loc loc, Scope* sc, Dsymbol s,
                     functionResolve(mErr, baseFunction, loc, sc, tiargs, baseClass.type, argumentList);
                     if (mErr.last > MATCH.nomatch && mErr.lastf)
                     {
-                        errorSupplemental(loc, "%s `%s` hides base class function `%s`",
-                                fd.kind, fd.toPrettyChars(), mErr.lastf.toPrettyChars());
-                        errorSupplemental(loc, "add `alias %s = %s` to `%s`'s body to merge the overload sets",
-                                fd.toChars(), mErr.lastf.toPrettyChars(), tthis.toChars());
+                        errorSupplemental(loc, "Note: %s `%s` hides base class %s `%s`",
+                            fd.kind, fd.toPrettyChars(),
+                            mErr.lastf.kind, mErr.lastf.toPrettyChars());
+
+                        if (!fd.isCtorDeclaration)
+                        {
+                            errorSupplemental(loc, "Add `alias %s = %s;` to `%s`'s body to merge the overload sets",
+                                    fd.toChars(), mErr.lastf.toPrettyChars(), tthis.toChars());
+                        }
                         return null;
                     }
                 }
@@ -1801,6 +1924,62 @@ FuncDeclaration resolveFuncCall(Loc loc, Scope* sc, Dsymbol s,
     functionResolve(m, orig_s, loc, sc, tiargs, tthis, argumentList, &errorHelper2);
 
     return null;
+}
+
+/********************************************************
+ * Check for named argument errors in template declarations and report them.
+ * Params:
+ *      td = template declaration to check
+ *      argumentList = arguments to check
+ *      loc = location for error reporting
+ */
+private void checkNamedArgErrorAndReport(TemplateDeclaration td, ArgumentList argumentList, Loc loc)
+{
+    if (!argumentList.hasArgNames())
+        return;
+
+    auto tf = td.onemember ? td.onemember.isFuncDeclaration() : null;
+    if (tf && tf.type && tf.type.ty == Tfunction)
+    {
+        OutBuffer buf;
+        auto resolvedArgs = tf.type.isTypeFunction().resolveNamedArgs(argumentList, &buf);
+        if (!resolvedArgs && buf.length)
+            .errorSupplemental(loc, "%s", buf.peekChars());
+    }
+}
+
+/******************************************
+ * Check for named argument errors in overload sets and report them.
+ * Params:
+ *      od = overload declaration to check
+ *      argumentList = arguments to check
+ *      loc = location for error report
+ */
+private void checkNamedArgErrorAndReportOverload(Dsymbol od, ArgumentList argumentList, Loc loc)
+{
+    if (!argumentList.hasArgNames())
+        return;
+
+    FuncDeclaration tf = null;
+    overloadApply(od, (Dsymbol s) {
+        if (!tf)
+        {
+            if (auto fd = s.isFuncDeclaration())
+                tf = fd;
+            else if (auto td = s.isTemplateDeclaration())
+                if (td.onemember)
+                    tf = td.onemember.isFuncDeclaration();
+        }
+        return 0;
+    });
+
+    if (tf && tf.type && tf.type.ty == Tfunction)
+    {
+        OutBuffer buf;
+        auto resolvedArgs = tf.type.isTypeFunction().resolveNamedArgs(argumentList, &buf);
+        if (!resolvedArgs && buf.length)
+            .errorSupplemental(loc, "%s", buf.peekChars());
+    }
 }
 
 /*******************************************
@@ -2050,16 +2229,17 @@ int overrides(FuncDeclaration fd1, FuncDeclaration fd2)
  * Params:
  *  f = first function
  *  g = second function
- *  names = names of parameters
+ *  names = argument Labels of parameters(name and location of the name)
  * Returns:
  *      match   'this' is at least as specialized as g
  *      0       g is more specialized than 'this'
  */
-MATCH leastAsSpecialized(FuncDeclaration f, FuncDeclaration g, Identifiers* names)
+MATCH leastAsSpecialized(FuncDeclaration f, FuncDeclaration g, ArgumentLabels* names)
 {
     enum LOG_LEASTAS = 0;
     static if (LOG_LEASTAS)
     {
+        Identifiers *names = extractNames(names);
         import core.stdc.stdio : printf;
         printf("leastAsSpecialized(%s, %s, %s)\n", f.toChars(), g.toChars(), names ? names.toChars() : "null");
         printf("%s, %s\n", f.type.toChars(), g.type.toChars());
@@ -3565,4 +3745,100 @@ extern (D) int overloadApply(Dsymbol fstart, scope int delegate(Dsymbol) dg, Sco
         return 0;
     }
     return overloadApplyRecurse(fstart, dg, sc);
+}
+
+Dsymbol isUnique(OverDeclaration od)
+{
+    Dsymbol result = null;
+    overloadApply(od.aliassym, (Dsymbol s)
+    {
+        if (result)
+        {
+            result = null;
+            return 1; // ambiguous, done
+        }
+        else
+        {
+            result = s;
+            return 0;
+        }
+    });
+    return result;
+}
+
+/************************************
+* Check to see if this variable is actually in an enclosing function
+* rather than the current one.
+* Update nestedrefs[], closureVars[] and outerVars[].
+* Returns: true if error occurs.
+*/
+extern (D) bool checkNestedReference(VarDeclaration vd, Scope* sc, Loc loc)
+{
+    //printf("VarDeclaration::checkNestedReference() %s\n", toChars());
+    if (sc.intypeof == 1 || sc.ctfe)
+        return false;
+    if (!vd.parent || vd.parent == sc.parent)
+        return false;
+    if (vd.isDataseg() || (vd.storage_class & STC.manifest))
+        return false;
+
+    // The current function
+    FuncDeclaration fdthis = sc.parent.isFuncDeclaration();
+    if (!fdthis)
+        return false; // out of function scope
+
+    Dsymbol p = vd.toParent2();
+
+    // Function literals from fdthis to p must be delegates
+    ensureStaticLinkTo(fdthis, p);
+
+    // The function that this variable is in
+    FuncDeclaration fdv = p.isFuncDeclaration();
+    if (!fdv || fdv == fdthis)
+        return false;
+
+    // Add fdthis to nestedrefs[] if not already there
+    if (!vd.nestedrefs.contains(fdthis))
+        vd.nestedrefs.push(fdthis);
+
+    //printf("\tfdv = %s\n", fdv.toChars());
+    //printf("\tfdthis = %s\n", fdthis.toChars());
+    if (loc.isValid())
+    {
+        if (fdthis.getLevelAndCheck(loc, sc, fdv, vd) == fdthis.LevelError)
+            return true;
+    }
+
+    // Add this VarDeclaration to fdv.closureVars[] if not already there
+    if (!sc.intypeof && !sc.traitsCompiles &&
+        // https://issues.dlang.org/show_bug.cgi?id=17605
+        (fdv.skipCodegen || !fdthis.skipCodegen))
+    {
+        if (!fdv.closureVars.contains(vd))
+            fdv.closureVars.push(vd);
+    }
+
+    if (!fdthis.outerVars.contains(vd))
+        fdthis.outerVars.push(vd);
+
+    //printf("fdthis is %s\n", fdthis.toChars());
+    //printf("var %s in function %s is nested ref\n", toChars(), fdv.toChars());
+    // __dollar creates problems because it isn't a real variable
+    // https://issues.dlang.org/show_bug.cgi?id=3326
+    if (vd.ident == Id.dollar)
+    {
+        .error(loc, "cannnot use `$` inside a function literal");
+        return true;
+    }
+    if (vd.ident == Id.withSym) // https://issues.dlang.org/show_bug.cgi?id=1759
+    {
+        ExpInitializer ez = vd._init.isExpInitializer();
+        assert(ez);
+        Expression e = ez.exp;
+        if (e.op == EXP.construct || e.op == EXP.blit)
+            e = (cast(AssignExp)e).e2;
+        return lambdaCheckForNestedRef(e, sc);
+    }
+
+    return false;
 }

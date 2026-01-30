@@ -3,7 +3,7 @@
   *
   * Copyright: Copyright © 2019, The D Language Foundation
   * License: <a href="http://www.boost.org/LICENSE_1_0.txt">Boost License 1.0</a>.
-  * Authors: Ernesto Castellotti
+  * Authors: Emily Castellotti
   */
 module core.sys.dragonflybsd.err;
 import core.stdc.stdarg : va_list;

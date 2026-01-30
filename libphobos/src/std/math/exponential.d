@@ -830,28 +830,39 @@ if (isUnsigned!F && isUnsigned!G && isUnsigned!H)
     {
         static if (T.sizeof == 8)
         {
-            static T addmod(T a, T b, T c)
+            if (c <= 0x100000000)
             {
-                b = c - b;
-                if (a >= b)
-                    return a - b;
-                else
-                    return c - b + a;
+                T result = a * b;
+                return result % c;
             }
-
-            T result = 0, tmp;
-
-            b %= c;
-            while (a > 0)
+            else
             {
-                if (a & 1)
-                    result = addmod(result, b, c);
+                import core.int128 : Cent, mul, udivmod;
 
-                a >>= 1;
-                b = addmod(b, b, c);
+                auto product = mul(a, b);
+
+                if (product.hi >= c)
+                {
+                    product.hi %= c;
+                }
+
+                T remainder = void;
+                udivmod(product, c, remainder);
+                return remainder;
             }
-
-            return result;
+        }
+        else static if (T.sizeof == 4)
+        {
+            if (c <= 0x10000)
+            {
+                T result = a * b;
+                return result % c;
+            }
+            else
+            {
+                DoubleT result = cast(DoubleT) (cast(DoubleT) a * cast(DoubleT) b);
+                return result % c;
+            }
         }
         else
         {

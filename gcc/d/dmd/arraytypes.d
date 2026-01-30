@@ -29,6 +29,7 @@ alias Strings = Array!(const(char)*);
 alias Identifiers = Array!(Identifier);
 alias TemplateParameters = Array!(TemplateParameter);
 alias Expressions = Array!(Expression);
+alias ArgumentLabels = Array!(ArgumentLabel);
 alias Statements = Array!(Statement);
 alias BaseClasses = Array!(BaseClass*);
 alias ClassDeclarations = Array!(ClassDeclaration);

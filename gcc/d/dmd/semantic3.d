@@ -855,7 +855,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                         if (tret.ty == Terror)
                         {
                             // https://issues.dlang.org/show_bug.cgi?id=13702
-                            exp = checkGC(sc2, exp);
+                            exp = exp.checkGC(sc2);
                             continue;
                         }
 
@@ -977,7 +977,7 @@ private extern(C++) final class Semantic3Visitor : Visitor
                                 checkReturnEscape(*sc2, exp, false);
                         }
 
-                        exp = checkGC(sc2, exp);
+                        exp = exp.checkGC(sc2);
 
                         if (funcdecl.vresult)
                         {

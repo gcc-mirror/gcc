@@ -2,7 +2,8 @@
 // PERMUTE_ARGS: -lowmem
 /* TEST_OUTPUT:
 ---
-fail_compilation/fail23439.d(13): Error: variable `fail23439.ice23439` is a thread-local class and cannot have a static initializer. Use `static this()` to initialize instead.
+fail_compilation/fail23439.d(14): Error: variable `fail23439.ice23439` is a thread-local class and cannot have a static initializer
+fail_compilation/fail23439.d(14):        use `static this()` to initialize instead
 ---
 */
 class C23439

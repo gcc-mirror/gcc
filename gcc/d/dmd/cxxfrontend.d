@@ -112,11 +112,6 @@ void mangleToBuffer(TemplateInstance ti, ref OutBuffer buf)
 /***********************************************************
  * dmodule.d
  */
-void getLocalClasses(Module mod, ref ClassDeclarations aclasses)
-{
-    return dmd.dmodule.getLocalClasses(mod, aclasses);
-}
-
 FuncDeclaration findGetMembers(ScopeDsymbol dsym)
 {
     return dmd.dmodule.findGetMembers(dsym);
@@ -192,6 +187,24 @@ Dsymbol vtblSymbol(ClassDeclaration cd)
     return dmd.dsymbolsem.vtblSymbol(cd);
 }
 
+bool isAbstract(ClassDeclaration cd)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.isAbstract(cd);
+}
+
+bool hasPointers(Dsymbol d)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.hasPointers(d);
+}
+
+void getLocalClasses(Module mod, ref ClassDeclarations aclasses)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.getLocalClasses(mod, aclasses);
+}
+
 /***********************************************************
  * dtemplate.d
  */
@@ -256,7 +269,7 @@ Expression getDefaultValue(EnumDeclaration ed, Loc loc)
 /***********************************************************
  * expression.d
  */
-void expandTuples(Expressions* exps, Identifiers* names = null)
+void expandTuples(Expressions* exps, ArgumentLabels* names = null)
 {
     return dmd.expression.expandTuples(exps, names);
 }
@@ -305,7 +318,7 @@ bool functionSemantic3(FuncDeclaration fd)
     return dmd.funcsem.functionSemantic3(fd);
 }
 
-MATCH leastAsSpecialized(FuncDeclaration fd, FuncDeclaration g, Identifiers* names)
+MATCH leastAsSpecialized(FuncDeclaration fd, FuncDeclaration g, ArgumentLabels* names)
 {
     import dmd.funcsem;
     return dmd.funcsem.leastAsSpecialized(fd, g, names);

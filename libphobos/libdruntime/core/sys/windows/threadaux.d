@@ -311,8 +311,8 @@ struct thread_aux
             enum TEB_offset_TlsSlots = 0xE10;
             enum TEB_offset_TlsExpansionSlots = 0xF94;
         }
-        void* tlsSlotsAdr(void** teb) { return cast(void*) teb + TEB_offset_TlsSlots; }
-        ref void* tlsExpansionSlots(void** teb) { return *cast(void**)(cast(void*) teb + TEB_offset_TlsExpansionSlots); }
+        void* tlsSlotsAdr()(void** teb) { return cast(void*) teb + TEB_offset_TlsSlots; }
+        ref void* tlsExpansionSlots()(void** teb) { return *cast(void**)(cast(void*) teb + TEB_offset_TlsExpansionSlots); }
 
         import core.stdc.string;
         void*[64] slots = void;

@@ -94,3 +94,33 @@ int[] bar13702(bool b) @nogc
     auto aux = 1 ~ [2]; // error
     return aux;
 }
+
+/**********  Enum and pointer types ***************/
+// https://github.com/dlang/dmd/issues/21052
+/*
+TEST_OUTPUT:
+---
+fail_compilation/nogc3.d(111): Error: this array literal causes a GC allocation in `@nogc` function `f`
+fail_compilation/nogc3.d(112): Error: this array literal causes a GC allocation in `@nogc` function `f`
+---
+*/
+
+void f() @nogc
+{
+    enum DA : int[] { a = [1,2,3] }
+    DA da = DA.a;
+    int i = *cast(int*)cast(char[4])['0', '0', '0', '0'];
+}
+
+/*
+TEST_OUTPUT:
+---
+fail_compilation/nogc3.d(125): Error: this array literal causes a GC allocation in `@nogc` function `g`
+---
+*/
+
+// https://github.com/dlang/dmd/issues/21054
+void g() @nogc
+{
+    int[] x = (int[2]).init[];
+}

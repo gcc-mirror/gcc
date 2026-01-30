@@ -1737,6 +1737,26 @@ assert(equal(rbt[], [5]));
         }
     }
 
+    /**
+     * Returns a static array of 3 ranges `r` such that `r[0]` is the
+     * same as the result of `lowerBound(value)`, `r[1]` is the same
+     * as the result of $(D equalRange(value)), and `r[2]` is the same
+     * as the result of $(D upperBound(value)).
+     *
+     * Complexity: $(BIGOH log(n))
+     */
+    auto trisect(this This)(Elem e)
+    {
+        auto equalRange = this.equalRange(e);
+        alias RangeType = typeof(equalRange);
+        RangeType[3] result = [
+            RangeType(_begin, equalRange._begin),
+            equalRange,
+            RangeType(equalRange._end, _end)
+        ];
+        return result;
+    }
+
     static if (doUnittest) @safe pure unittest
     {
         import std.algorithm.comparison : equal;
@@ -2186,6 +2206,11 @@ if ( is(typeof(binaryFun!less((ElementType!Stuff).init, (ElementType!Stuff).init
     assert(rt1.lowerBound(3).equal([1, 2]));
     assert(rt1.equalRange(3).equal([3]));
     assert(rt1[].equal([1, 2, 3, 4, 5]));
+
+    auto t = rt1.trisect(3);
+    assert(t[0].equal(rt1.lowerBound(3)));
+    assert(t[1].equal(rt1.equalRange(3)));
+    assert(t[2].equal(rt1.upperBound(3)));
 }
 
 //immutable checks

@@ -21,6 +21,7 @@ import dmd.dsymbol;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem : checkNestedReference;
 import dmd.init;
 import dmd.initsem;
 import dmd.location;

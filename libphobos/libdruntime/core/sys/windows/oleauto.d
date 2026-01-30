@@ -41,7 +41,7 @@ enum DISPATCH_PROPERTYGET = 2;
 enum DISPATCH_PROPERTYPUT = 4;
 enum DISPATCH_PROPERTYPUTREF = 8;
 
-//ULONG LHashValOfName(LCID l, OLECHAR* n) { return LHashValOfNameSys(SYSKIND.SYS_WIN32, l, n); }
+//ULONG LHashValOfName()(LCID l, OLECHAR* n) { return LHashValOfNameSys(SYSKIND.SYS_WIN32, l, n); }
 
 // DAC: These aren't in the 2003 SDK.
 //MACRO #define WHashValOfLHashVal(h) ((unsigned short)(0x0000ffff&(h)))

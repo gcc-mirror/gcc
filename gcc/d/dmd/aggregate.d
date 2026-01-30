@@ -187,8 +187,6 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         return fields.length - isNested() - (vthis2 !is null);
     }
 
-    abstract void finalizeSize();
-
     override final uinteger_t size(Loc loc)
     {
         //printf("+AggregateDeclaration::size() %s, scope = %p, sizeok = %d\n", toChars(), _scope, sizeok);

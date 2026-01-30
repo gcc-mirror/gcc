@@ -3,8 +3,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail21547.d(32): Error: struct `Bar` has constructors, cannot use `{ initializers }`, use `Bar( initializers )` instead
-fail_compilation/fail21547.d(33): Error: struct `Bar1` has constructors, cannot use `{ initializers }`, use `Bar1( initializers )` instead
+fail_compilation/fail21547.d(34): Error: Cannot use struct initializer syntax for struct `Bar` because it has a constructor
+fail_compilation/fail21547.d(34):        Use `Bar( arguments )` instead of `{ initializers }`
+fail_compilation/fail21547.d(35): Error: Cannot use struct initializer syntax for struct `Bar1` because it has a constructor
+fail_compilation/fail21547.d(35):        Use `Bar1( arguments )` instead of `{ initializers }`
 ---
 */
 

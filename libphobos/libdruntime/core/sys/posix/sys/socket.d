@@ -233,12 +233,12 @@ version (linux)
 
     extern (D)
     {
-        size_t CMSG_ALIGN( size_t len ) pure nothrow @nogc
+        size_t CMSG_ALIGN()( size_t len ) pure nothrow @nogc
         {
             return (len + size_t.sizeof - 1) & cast(size_t) (~(size_t.sizeof - 1));
         }
 
-        size_t CMSG_LEN( size_t len ) pure nothrow @nogc
+        size_t CMSG_LEN()( size_t len ) pure nothrow @nogc
         {
             return CMSG_ALIGN(cmsghdr.sizeof) + len;
         }
@@ -668,13 +668,13 @@ else version (Darwin)
 
     extern (D)
     {
-        socklen_t CMSG_ALIGN(socklen_t len) pure nothrow @nogc { return (len + socklen_t.sizeof - 1) & cast(socklen_t) (~(socklen_t.sizeof - 1)); }
-        socklen_t CMSG_SPACE(socklen_t len) pure nothrow @nogc { return CMSG_ALIGN(len) + CMSG_ALIGN(cmsghdr.sizeof); }
-        socklen_t CMSG_LEN(socklen_t len) pure nothrow @nogc { return CMSG_ALIGN(cmsghdr.sizeof) + len; }
+        socklen_t CMSG_ALIGN()(socklen_t len) pure nothrow @nogc { return (len + socklen_t.sizeof - 1) & cast(socklen_t) (~(socklen_t.sizeof - 1)); }
+        socklen_t CMSG_SPACE()(socklen_t len) pure nothrow @nogc { return CMSG_ALIGN(len) + CMSG_ALIGN(cmsghdr.sizeof); }
+        socklen_t CMSG_LEN()(socklen_t len) pure nothrow @nogc { return CMSG_ALIGN(cmsghdr.sizeof) + len; }
 
-        inout(ubyte)*   CMSG_DATA( return scope inout(cmsghdr)* cmsg ) pure nothrow @nogc { return cast(ubyte*)( cmsg + 1 ); }
+        inout(ubyte)*   CMSG_DATA()( return scope inout(cmsghdr)* cmsg ) pure nothrow @nogc { return cast(ubyte*)( cmsg + 1 ); }
 
-        inout(cmsghdr)* CMSG_FIRSTHDR( inout(msghdr)* mhdr ) pure nothrow @nogc
+        inout(cmsghdr)* CMSG_FIRSTHDR()( inout(msghdr)* mhdr ) pure nothrow @nogc
         {
             return ( cast(socklen_t)mhdr.msg_controllen >= cmsghdr.sizeof ? cast(inout(cmsghdr)*) mhdr.msg_control : cast(inout(cmsghdr)*) null );
         }

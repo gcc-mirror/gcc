@@ -44,20 +44,20 @@ enum ulong ADDRESS_TAG_BIT = 0x40000000000;
     alias uint UHALF_PTR;
     alias uint* PUHALF_PTR;
 
-    uint HandleToULong(void* h) { return(cast(uint) cast(ULONG_PTR) h); }
-    int HandleToLong(void* h)   { return(cast(int) cast(LONG_PTR) h); }
-    void* ULongToHandle(uint h) { return(cast(void*) cast(UINT_PTR) h); }
-    void* LongToHandle(int h)   { return(cast(void*) cast(INT_PTR) h); }
-    uint PtrToUlong(void* p)    { return(cast(uint) cast(ULONG_PTR) p); }
-    uint PtrToUint(void* p)     { return(cast(uint) cast(UINT_PTR) p); }
-    ushort PtrToUshort(void* p) { return(cast(ushort) cast(uint) cast(ULONG_PTR) p); }
-    int PtrToLong(void* p)      { return(cast(int) cast(LONG_PTR) p); }
-    int PtrToInt(void* p)       { return(cast(int) cast(INT_PTR) p); }
-    short PtrToShort(void* p)   { return(cast(short) cast(int) cast(LONG_PTR) p); }
-    void* IntToPtr(int i)       { return(cast(void*) cast(INT_PTR) i); }
-    void* UIntToPtr(uint ui)    { return(cast(void*) cast(UINT_PTR) ui); }
-    void* LongToPtr(int l)      { return(cast(void*) cast(LONG_PTR) l); }
-    void* ULongToPtr(uint ul)   { return(cast(void*) cast(ULONG_PTR) ul); }
+    uint HandleToULong()(void* h) { return(cast(uint) cast(ULONG_PTR) h); }
+    int HandleToLong()(void* h)   { return(cast(int) cast(LONG_PTR) h); }
+    void* ULongToHandle()(uint h) { return(cast(void*) cast(UINT_PTR) h); }
+    void* LongToHandle()(int h)   { return(cast(void*) cast(INT_PTR) h); }
+    uint PtrToUlong()(void* p)    { return(cast(uint) cast(ULONG_PTR) p); }
+    uint PtrToUint()(void* p)     { return(cast(uint) cast(UINT_PTR) p); }
+    ushort PtrToUshort()(void* p) { return(cast(ushort) cast(uint) cast(ULONG_PTR) p); }
+    int PtrToLong()(void* p)      { return(cast(int) cast(LONG_PTR) p); }
+    int PtrToInt()(void* p)       { return(cast(int) cast(INT_PTR) p); }
+    short PtrToShort()(void* p)   { return(cast(short) cast(int) cast(LONG_PTR) p); }
+    void* IntToPtr()(int i)       { return(cast(void*) cast(INT_PTR) i); }
+    void* UIntToPtr()(uint ui)    { return(cast(void*) cast(UINT_PTR) ui); }
+    void* LongToPtr()(int l)      { return(cast(void*) cast(LONG_PTR) l); }
+    void* ULongToPtr()(uint ul)   { return(cast(void*) cast(ULONG_PTR) ul); }
 
 } else {
     alias int __int3264;
@@ -72,16 +72,16 @@ enum uint ADDRESS_TAG_BIT = 0x80000000;
     alias ushort UHALF_PTR;
     alias ushort* PUHALF_PTR;
 
-    uint HandleToUlong(HANDLE h)      { return cast(uint) h; }
-    int HandleToLong(HANDLE h)        { return cast(int) h; }
-    HANDLE LongToHandle(LONG_PTR h)   { return cast(HANDLE)h; }
+    uint HandleToUlong()(HANDLE h)      { return cast(uint) h; }
+    int HandleToLong()(HANDLE h)        { return cast(int) h; }
+    HANDLE LongToHandle()(LONG_PTR h)   { return cast(HANDLE)h; }
     uint PtrToUlong(const(void)* p)    { return cast(uint) p; }
     uint PtrToUint(const(void)* p)     { return cast(uint) p; }
     int PtrToInt(const(void)* p)       { return cast(int) p; }
     ushort PtrToUshort(const(void)* p) { return cast(ushort) p; }
     short PtrToShort(const(void)* p)   { return cast(short) p; }
-    void* IntToPtr(int i)             { return cast(void*) i; }
-    void* UIntToPtr(uint ui)          { return cast(void*) ui; }
+    void* IntToPtr()(int i)             { return cast(void*) i; }
+    void* UIntToPtr()(uint ui)          { return cast(void*) ui; }
     alias IntToPtr LongToPtr;
     alias UIntToPtr ULongToPtr;
 }

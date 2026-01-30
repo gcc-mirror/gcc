@@ -492,7 +492,10 @@ struct ModuleGroup
                 if (!bt(ctordone, idx))
                 {
                     if (!processMod(idx))
+                    {
+                        .free(ctors);
                         return false;
+                    }
                 }
             }
 

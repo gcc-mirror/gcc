@@ -24,11 +24,11 @@ enum S_IFNAM  = 0x5000;
 
 @safe pure
 {
-int S_ISREG(int m)  { return (m & S_IFMT) == S_IFREG; }
-int S_ISBLK(int m)  { return (m & S_IFMT) == S_IFBLK; }
-int S_ISNAM(int m)  { return (m & S_IFMT) == S_IFNAM; }
-int S_ISDIR(int m)  { return (m & S_IFMT) == S_IFDIR; }
-int S_ISCHR(int m)  { return (m & S_IFMT) == S_IFCHR; }
+int S_ISREG()(int m)  { return (m & S_IFMT) == S_IFREG; }
+int S_ISBLK()(int m)  { return (m & S_IFMT) == S_IFBLK; }
+int S_ISNAM()(int m)  { return (m & S_IFMT) == S_IFNAM; }
+int S_ISDIR()(int m)  { return (m & S_IFMT) == S_IFDIR; }
+int S_ISCHR()(int m)  { return (m & S_IFMT) == S_IFCHR; }
 }
 
 version (CRuntime_Microsoft)

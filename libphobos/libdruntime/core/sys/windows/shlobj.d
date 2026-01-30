@@ -1034,35 +1034,35 @@ struct SHELLFLAGSTATE {
     BOOL fHideIcons : 1;
     UINT fRestFlags : 3;
 */
-    @property bool fShowAllObjects()       { return cast(bool) (_bf & 0x0001); }
-    @property bool fShowExtensions()       { return cast(bool) (_bf & 0x0002); }
-    @property bool fNoConfirmRecycle()     { return cast(bool) (_bf & 0x0004); }
-    @property bool fShowSysFiles()         { return cast(bool) (_bf & 0x0008); }
-    @property bool fShowCompColor()        { return cast(bool) (_bf & 0x0010); }
-    @property bool fDoubleClickInWebView() { return cast(bool) (_bf & 0x0020); }
-    @property bool fDesktopHTML()          { return cast(bool) (_bf & 0x0040); }
-    @property bool fWin95Classic()         { return cast(bool) (_bf & 0x0080); }
-    @property bool fDontPrettyPath()       { return cast(bool) (_bf & 0x0100); }
-    @property bool fShowAttribCol()        { return cast(bool) (_bf & 0x0200); }
-    @property bool fMapNetDrvBtn()         { return cast(bool) (_bf & 0x0400); }
-    @property bool fShowInfoTip()          { return cast(bool) (_bf & 0x0800); }
-    @property bool fHideIcons()            { return cast(bool) (_bf & 0x1000); }
-    @property ubyte fRestFlags()           { return cast(ubyte) (_bf >> 13); }
+    @property bool fShowAllObjects()()       { return cast(bool) (_bf & 0x0001); }
+    @property bool fShowExtensions()()       { return cast(bool) (_bf & 0x0002); }
+    @property bool fNoConfirmRecycle()()     { return cast(bool) (_bf & 0x0004); }
+    @property bool fShowSysFiles()()         { return cast(bool) (_bf & 0x0008); }
+    @property bool fShowCompColor()()        { return cast(bool) (_bf & 0x0010); }
+    @property bool fDoubleClickInWebView()() { return cast(bool) (_bf & 0x0020); }
+    @property bool fDesktopHTML()()          { return cast(bool) (_bf & 0x0040); }
+    @property bool fWin95Classic()()         { return cast(bool) (_bf & 0x0080); }
+    @property bool fDontPrettyPath()()       { return cast(bool) (_bf & 0x0100); }
+    @property bool fShowAttribCol()()        { return cast(bool) (_bf & 0x0200); }
+    @property bool fMapNetDrvBtn()()         { return cast(bool) (_bf & 0x0400); }
+    @property bool fShowInfoTip()()          { return cast(bool) (_bf & 0x0800); }
+    @property bool fHideIcons()()            { return cast(bool) (_bf & 0x1000); }
+    @property ubyte fRestFlags()()           { return cast(ubyte) (_bf >> 13); }
 
-    @property bool fShowAllObjects(bool f)       { _bf = cast(ushort) ((_bf & ~0xFFFE) | f);        return f; }
-    @property bool fShowExtensions(bool f)       { _bf = cast(ushort) ((_bf & ~0xFFFD) | (f <<  1)); return f; }
-    @property bool fNoConfirmRecycle(bool f)     { _bf = cast(ushort) ((_bf & ~0xFFFB) | (f <<  2)); return f; }
-    @property bool fShowSysFiles(bool f)         { _bf = cast(ushort) ((_bf & ~0xFFF8) | (f <<  3)); return f; }
-    @property bool fShowCompColor(bool f)        { _bf = cast(ushort) ((_bf & ~0xFFEF) | (f <<  4)); return f; }
-    @property bool fDoubleClickInWebView(bool f) { _bf = cast(ushort) ((_bf & ~0xFFDF) | (f <<  5)); return f; }
-    @property bool fDesktopHTML(bool f)          { _bf = cast(ushort) ((_bf & ~0xFFBF) | (f <<  6)); return f; }
-    @property bool fWin95Classic(bool f)         { _bf = cast(ushort) ((_bf & ~0xFF8F) | (f <<  7)); return f; }
-    @property bool fDontPrettyPath(bool f)       { _bf = cast(ushort) ((_bf & ~0xFEFF) | (f <<  8)); return f; }
-    @property bool fShowAttribCol(bool f)        { _bf = cast(ushort) ((_bf & ~0xFDFF) | (f <<  9)); return f; }
-    @property bool fMapNetDrvBtn(bool f)         { _bf = cast(ushort) ((_bf & ~0xFBFF) | (f << 10)); return f; }
-    @property bool fShowInfoTip(bool f)          { _bf = cast(ushort) ((_bf & ~0xF8FF) | (f << 11)); return f; }
-    @property bool fHideIcons(bool f)            { _bf = cast(ushort) ((_bf & ~0xEFFF) | (f << 12)); return f; }
-    @property ubyte fRestFlags(ubyte f)          { _bf = cast(ushort) ((_bf & ~0x1FFF) | (f << 13)); return cast(ubyte) (f & 7); }
+    @property bool fShowAllObjects()(bool f)       { _bf = cast(ushort) ((_bf & ~0xFFFE) | f);        return f; }
+    @property bool fShowExtensions()(bool f)       { _bf = cast(ushort) ((_bf & ~0xFFFD) | (f <<  1)); return f; }
+    @property bool fNoConfirmRecycle()(bool f)     { _bf = cast(ushort) ((_bf & ~0xFFFB) | (f <<  2)); return f; }
+    @property bool fShowSysFiles()(bool f)         { _bf = cast(ushort) ((_bf & ~0xFFF8) | (f <<  3)); return f; }
+    @property bool fShowCompColor()(bool f)        { _bf = cast(ushort) ((_bf & ~0xFFEF) | (f <<  4)); return f; }
+    @property bool fDoubleClickInWebView()(bool f) { _bf = cast(ushort) ((_bf & ~0xFFDF) | (f <<  5)); return f; }
+    @property bool fDesktopHTML()(bool f)          { _bf = cast(ushort) ((_bf & ~0xFFBF) | (f <<  6)); return f; }
+    @property bool fWin95Classic()(bool f)         { _bf = cast(ushort) ((_bf & ~0xFF8F) | (f <<  7)); return f; }
+    @property bool fDontPrettyPath()(bool f)       { _bf = cast(ushort) ((_bf & ~0xFEFF) | (f <<  8)); return f; }
+    @property bool fShowAttribCol()(bool f)        { _bf = cast(ushort) ((_bf & ~0xFDFF) | (f <<  9)); return f; }
+    @property bool fMapNetDrvBtn()(bool f)         { _bf = cast(ushort) ((_bf & ~0xFBFF) | (f << 10)); return f; }
+    @property bool fShowInfoTip()(bool f)          { _bf = cast(ushort) ((_bf & ~0xF8FF) | (f << 11)); return f; }
+    @property bool fHideIcons()(bool f)            { _bf = cast(ushort) ((_bf & ~0xEFFF) | (f << 12)); return f; }
+    @property ubyte fRestFlags()(ubyte f)          { _bf = cast(ushort) ((_bf & ~0x1FFF) | (f << 13)); return cast(ubyte) (f & 7); }
 }
 alias SHELLFLAGSTATE* LPSHELLFLAGSTATE;
 
@@ -1118,56 +1118,56 @@ static if (_WIN32_WINNT >= 0x500) {
         BOOL fShowSuperHidden : 1;
         BOOL fNoNetCrawling : 1;
     */
-        @property bool fShowAllObjects()       { return cast(bool) (_bf1 & 0x00000001); }
-        @property bool fShowExtensions()       { return cast(bool) (_bf1 & 0x00000002); }
-        @property bool fNoConfirmRecycle()     { return cast(bool) (_bf1 & 0x00000004); }
-        @property bool fShowSysFiles()         { return cast(bool) (_bf1 & 0x00000008); }
-        @property bool fShowCompColor()        { return cast(bool) (_bf1 & 0x00000010); }
-        @property bool fDoubleClickInWebView() { return cast(bool) (_bf1 & 0x00000020); }
-        @property bool fDesktopHTML()          { return cast(bool) (_bf1 & 0x00000040); }
-        @property bool fWin95Classic()         { return cast(bool) (_bf1 & 0x00000080); }
-        @property bool fDontPrettyPath()       { return cast(bool) (_bf1 & 0x00000100); }
-        @property bool fShowAttribCol()        { return cast(bool) (_bf1 & 0x00000200); }
-        @property bool fMapNetDrvBtn()         { return cast(bool) (_bf1 & 0x00000400); }
-        @property bool fShowInfoTip()          { return cast(bool) (_bf1 & 0x00000800); }
-        @property bool fHideIcons()            { return cast(bool) (_bf1 & 0x00001000); }
-        @property bool fWebView()              { return cast(bool) (_bf1 & 0x00002000); }
-        @property bool fFilter()               { return cast(bool) (_bf1 & 0x00004000); }
-        @property bool fShowSuperHidden()      { return cast(bool) (_bf1 & 0x00008000); }
-        @property bool fNoNetCrawling()        { return cast(bool) (_bf1 & 0x00010000); }
+        @property bool fShowAllObjects()()       { return cast(bool) (_bf1 & 0x00000001); }
+        @property bool fShowExtensions()()       { return cast(bool) (_bf1 & 0x00000002); }
+        @property bool fNoConfirmRecycle()()     { return cast(bool) (_bf1 & 0x00000004); }
+        @property bool fShowSysFiles()()         { return cast(bool) (_bf1 & 0x00000008); }
+        @property bool fShowCompColor()()        { return cast(bool) (_bf1 & 0x00000010); }
+        @property bool fDoubleClickInWebView()() { return cast(bool) (_bf1 & 0x00000020); }
+        @property bool fDesktopHTML()()          { return cast(bool) (_bf1 & 0x00000040); }
+        @property bool fWin95Classic()()         { return cast(bool) (_bf1 & 0x00000080); }
+        @property bool fDontPrettyPath()()       { return cast(bool) (_bf1 & 0x00000100); }
+        @property bool fShowAttribCol()()        { return cast(bool) (_bf1 & 0x00000200); }
+        @property bool fMapNetDrvBtn()()         { return cast(bool) (_bf1 & 0x00000400); }
+        @property bool fShowInfoTip()()          { return cast(bool) (_bf1 & 0x00000800); }
+        @property bool fHideIcons()()            { return cast(bool) (_bf1 & 0x00001000); }
+        @property bool fWebView()()              { return cast(bool) (_bf1 & 0x00002000); }
+        @property bool fFilter()()               { return cast(bool) (_bf1 & 0x00004000); }
+        @property bool fShowSuperHidden()()      { return cast(bool) (_bf1 & 0x00008000); }
+        @property bool fNoNetCrawling()()        { return cast(bool) (_bf1 & 0x00010000); }
 
-        @property bool fShowAllObjects(bool f)       { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFFE) | f);         return f; }
-        @property bool fShowExtensions(bool f)       { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFFD) | (f <<  1)); return f; }
-        @property bool fNoConfirmRecycle(bool f)     { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFFB) | (f <<  2)); return f; }
-        @property bool fShowSysFiles(bool f)         { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFF8) | (f <<  3)); return f; }
-        @property bool fShowCompColor(bool f)        { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFEF) | (f <<  4)); return f; }
-        @property bool fDoubleClickInWebView(bool f) { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFDF) | (f <<  5)); return f; }
-        @property bool fDesktopHTML(bool f)          { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFBF) | (f <<  6)); return f; }
-        @property bool fWin95Classic(bool f)         { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFF8F) | (f <<  7)); return f; }
-        @property bool fDontPrettyPath(bool f)       { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFEFF) | (f <<  8)); return f; }
-        @property bool fShowAttribCol(bool f)        { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFDFF) | (f <<  9)); return f; }
-        @property bool fMapNetDrvBtn(bool f)         { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFBFF) | (f << 10)); return f; }
-        @property bool fShowInfoTip(bool f)          { _bf1 = cast(uint) ((_bf1 & ~0xFFFFF8FF) | (f << 11)); return f; }
-        @property bool fHideIcons(bool f)            { _bf1 = cast(uint) ((_bf1 & ~0xFFFFEFFF) | (f << 12)); return f; }
-        @property bool fWebView(bool f)              { _bf1 = cast(uint) ((_bf1 & ~0xFFFFDFFF) | (f << 13)); return f; }
-        @property bool fFilter(bool f)               { _bf1 = cast(uint) ((_bf1 & ~0xFFFFBFFF) | (f << 14)); return f; }
-        @property bool fShowSuperHidden(bool f)      { _bf1 = cast(uint) ((_bf1 & ~0xFFFF8FFF) | (f << 15)); return f; }
-        @property bool fNoNetCrawling(bool f)        { _bf1 = cast(uint) ((_bf1 & ~0xFFFEFFFF) | (f << 16)); return f; }
+        @property bool fShowAllObjects()(bool f)       { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFFE) | f);         return f; }
+        @property bool fShowExtensions()(bool f)       { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFFD) | (f <<  1)); return f; }
+        @property bool fNoConfirmRecycle()(bool f)     { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFFB) | (f <<  2)); return f; }
+        @property bool fShowSysFiles()(bool f)         { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFF8) | (f <<  3)); return f; }
+        @property bool fShowCompColor()(bool f)        { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFEF) | (f <<  4)); return f; }
+        @property bool fDoubleClickInWebView()(bool f) { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFDF) | (f <<  5)); return f; }
+        @property bool fDesktopHTML()(bool f)          { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFFBF) | (f <<  6)); return f; }
+        @property bool fWin95Classic()(bool f)         { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFF8F) | (f <<  7)); return f; }
+        @property bool fDontPrettyPath()(bool f)       { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFEFF) | (f <<  8)); return f; }
+        @property bool fShowAttribCol()(bool f)        { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFDFF) | (f <<  9)); return f; }
+        @property bool fMapNetDrvBtn()(bool f)         { _bf1 = cast(uint) ((_bf1 & ~0xFFFFFBFF) | (f << 10)); return f; }
+        @property bool fShowInfoTip()(bool f)          { _bf1 = cast(uint) ((_bf1 & ~0xFFFFF8FF) | (f << 11)); return f; }
+        @property bool fHideIcons()(bool f)            { _bf1 = cast(uint) ((_bf1 & ~0xFFFFEFFF) | (f << 12)); return f; }
+        @property bool fWebView()(bool f)              { _bf1 = cast(uint) ((_bf1 & ~0xFFFFDFFF) | (f << 13)); return f; }
+        @property bool fFilter()(bool f)               { _bf1 = cast(uint) ((_bf1 & ~0xFFFFBFFF) | (f << 14)); return f; }
+        @property bool fShowSuperHidden()(bool f)      { _bf1 = cast(uint) ((_bf1 & ~0xFFFF8FFF) | (f << 15)); return f; }
+        @property bool fNoNetCrawling()(bool f)        { _bf1 = cast(uint) ((_bf1 & ~0xFFFEFFFF) | (f << 16)); return f; }
     /*
         BOOL fSepProcess : 1;
         BOOL fStartPanelOn : 1;
         BOOL fShowStartPage : 1;
         UINT fSpareFlags : 13;
     */
-        @property bool fSepProcess()           { return cast(bool) (_bf2 & 0x00000001); }
-        @property bool fStartPanelOn()         { return cast(bool) (_bf2 & 0x00000002); }
-        @property bool fShowStartPage()        { return cast(bool) (_bf2 & 0x00000004); }
-        @property ushort fSpareFlags()         { return cast(ushort) ((_bf2 & 0x0000FFF8) >> 3); }
+        @property bool fSepProcess()()           { return cast(bool) (_bf2 & 0x00000001); }
+        @property bool fStartPanelOn()()         { return cast(bool) (_bf2 & 0x00000002); }
+        @property bool fShowStartPage()()        { return cast(bool) (_bf2 & 0x00000004); }
+        @property ushort fSpareFlags()()         { return cast(ushort) ((_bf2 & 0x0000FFF8) >> 3); }
 
-        @property bool fSepProcess(bool f)     { _bf2 = cast(uint) ((_bf2 & ~0xFFFFFFFE) | f);        return f; }
-        @property bool fStartPanelOn(bool f)   { _bf2 = cast(uint) ((_bf2 & ~0xFFFFFFFD) | (f << 1)); return f; }
-        @property bool fShowStartPage(bool f)  { _bf2 = cast(uint) ((_bf2 & ~0xFFFFFFFB) | (f << 2)); return f; }
-        @property ushort fSpareFlags(ushort f) {
+        @property bool fSepProcess()(bool f)     { _bf2 = cast(uint) ((_bf2 & ~0xFFFFFFFE) | f);        return f; }
+        @property bool fStartPanelOn()(bool f)   { _bf2 = cast(uint) ((_bf2 & ~0xFFFFFFFD) | (f << 1)); return f; }
+        @property bool fShowStartPage()(bool f)  { _bf2 = cast(uint) ((_bf2 & ~0xFFFFFFFB) | (f << 2)); return f; }
+        @property ushort fSpareFlags()(ushort f) {
             _bf2 = cast(ushort) ((_bf2 & ~0xFFFF0007) | ((f & 0x1FFF) << 3));
             return cast(ushort) (f & 0x1FFF);
         }

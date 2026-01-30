@@ -1072,7 +1072,8 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         // All negative integral powers are illegal.
         if (e.e1.type.isIntegral() && (e.e2.op == EXP.int64) && cast(sinteger_t)e.e2.toInteger() < 0)
         {
-            error(e.loc, "cannot raise `%s` to a negative integer power. Did you mean `(cast(real)%s)^^%s` ?", e.e1.type.toBasetype().toChars(), e.e1.toChars(), e.e2.toChars());
+            error(e.loc, "cannot raise `%s` to a negative integer power.", e.e1.type.toBasetype().toChars());
+            errorSupplemental(e.loc, "did you mean `(cast(real)%s)^^%s` ?", e.e1.toChars(), e.e2.toChars());
             return errorReturn();
         }
         // If e2 *could* have been an integer, make it one.

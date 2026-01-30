@@ -27,7 +27,6 @@ import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.errors;
-import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
@@ -149,8 +148,40 @@ Expression implicitCastTo(Expression e, Scope* sc, Type t)
                 //type = type.typeSemantic(loc, sc);
                 //printf("type %s t %s\n", type.deco, t.deco);
                 auto ts = toAutoQualChars(e.type, t);
-                error(e.loc, "cannot implicitly convert expression `%s` of type `%s` to `%s`",
-                    e.toErrMsg(), ts[0], ts[1]);
+
+                // Special case for improved diagnostic when const to mutable conversion
+                // fails due to struct/union having pointers
+                if (e.type.ty == Tstruct && t.ty == Tstruct &&
+                    e.type.isTypeStruct().sym == t.isTypeStruct().sym &&
+                    e.type.mod == MODFlags.const_ && t.mod == 0 && e.type.hasPointers)
+                {
+                    auto sym = e.type.isTypeStruct().sym;
+                    error(e.loc, "cannot implicitly convert expression `%s` of type `%s` to `%s` because %s `%s` contains pointers or references",
+                        e.toErrMsg(), ts[0], ts[1], sym.kind(), sym.toErrMsg());
+                    return ErrorExp.get();
+                }
+
+                // Special case for pointer conversions
+                if (e.type.toBasetype().ty == Tpointer && t.toBasetype().ty == Tpointer)
+                {
+                    Type fromPointee = e.type.nextOf();
+                    Type toPointee = t.nextOf();
+                    // Const -> mutable conversion (disallowed)
+                    if (fromPointee.isConst() && !toPointee.isConst())
+                    {
+                        error(e.loc, "cannot implicitly convert `%s` to `%s`", e.type.toChars(), t.toChars());
+                        errorSupplemental(e.loc, "Note: Converting const to mutable requires an explicit cast (`cast(int*)`).");
+                        return ErrorExp.get();
+                    }
+                    // Incompatible pointee types (e.g., int* -> float* )
+                    else if (fromPointee.toBasetype().ty != toPointee.toBasetype().ty)
+                    {
+                        error(e.loc, "cannot implicitly convert `%s` to `%s`", e.type.toChars(), t.toChars());
+                        errorSupplemental(e.loc, "Note: Pointer types point to different base types (`%s` vs `%s`)", fromPointee.toChars(), toPointee.toChars());
+                        return ErrorExp.get();
+                    }
+                }
+                error(e.loc, "cannot implicitly convert expression `%s` of type `%s` to `%s`", e.toErrMsg(), ts[0], ts[1]);
             }
         }
         return ErrorExp.get();
@@ -2715,13 +2746,6 @@ Expression castTo(Expression e, Scope* sc, Type t, Type att = null)
         ArrayLiteralExp ae = e;
 
         Type tb = t.toBasetype();
-        if (tb.ty == Tarray)
-        {
-            if (checkArrayLiteralEscape(*sc, ae, false))
-            {
-                return ErrorExp.get();
-            }
-        }
 
         if (e.type == t)
         {

@@ -16,7 +16,7 @@ fail_compilation/fail_pretty_errors.d(44): Error: mixin `fail_pretty_errors.test
     ^
 fail_compilation/fail_pretty_errors.d(50): Error: invalid array operation `"" + ""` (possible missing [])
     auto x = ""+"";
-             ^
+               ^
 fail_compilation/fail_pretty_errors.d(50):        did you mean to concatenate (`"" ~ ""`) instead ?
 fail_compilation/fail_pretty_errors.d(53): Error: cannot implicitly convert expression `1111` of type `int` to `byte`
         byte ɑ =    1111;

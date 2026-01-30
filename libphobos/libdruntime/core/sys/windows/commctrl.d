@@ -4937,8 +4937,8 @@ static if (_WIN32_WINNT >= 0x501) {
     alias NMLINK* PNMLINK;
 }
 
-uint INDEXTOOVERLAYMASK(uint i) { return i << 8; }
-uint INDEXTOSTATEIMAGEMASK(uint i) { return i << 12; }
+uint INDEXTOOVERLAYMASK()(uint i) { return i << 8; }
+uint INDEXTOSTATEIMAGEMASK()(uint i) { return i << 12; }
 
 template HANDLE_WM_NOTIFY(R) {
     private alias _prm_HANDLE_WM_NOTIFY = extern (Windows)

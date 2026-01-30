@@ -908,7 +908,7 @@ public:
 	      }
 	  }
 
-	if (cd->isAbstract ())
+	if (dmd::isAbstract (cd))
 	  flags |= ClassFlags::isAbstract;
 
 	for (ClassDeclaration *bcd = cd; bcd; bcd = bcd->baseClass)
@@ -919,7 +919,7 @@ public:
 	    for (size_t i = 0; i < bcd->members->length; i++)
 	      {
 		Dsymbol *sm = (*bcd->members)[i];
-		if (sm->hasPointers ())
+		if (dmd::hasPointers (sm))
 		  goto Lhaspointers;
 	      }
 	  }

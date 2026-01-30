@@ -1226,9 +1226,10 @@ private auto _decodeContent(T)(ubyte[] content, string encoding)
     {
         import std.exception : enforce;
         import std.format : format;
+        import std.uni : icmp;
 
         // Optimally just return the utf8 encoded content
-        if (encoding == "UTF-8")
+        if (icmp(encoding, "UTF-8") == 0)
             return cast(char[])(content);
 
         // The content has to be re-encoded to utf8

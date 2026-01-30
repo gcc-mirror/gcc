@@ -534,7 +534,7 @@ public:
       {
 	FuncDeclaration *fd = d->vtbl[i]->isFuncDeclaration ();
 
-	if (!fd || (!fd->fbody && d->isAbstract ()))
+	if (!fd || (!fd->fbody && dmd::isAbstract (d)))
 	  continue;
 
 	/* Ensure function has a return value.  */
@@ -643,7 +643,7 @@ public:
       {
 	FuncDeclaration *fd = d->vtbl[i]->isFuncDeclaration ();
 
-	if (fd && (fd->fbody || !d->isAbstract ()))
+	if (fd && (fd->fbody || !dmd::isAbstract (d)))
 	  {
 	    CONSTRUCTOR_APPEND_ELT (elms, size_int (i),
 				    build_address (get_symbol_decl (fd)));

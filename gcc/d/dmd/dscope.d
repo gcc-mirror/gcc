@@ -64,7 +64,7 @@ private extern (D) struct BitFields
     bool inTemplateConstraint; /// inside template constraint
     Contract contract;
     bool ctfe;              /// inside a ctfe-only expression
-    bool traitsCompiles;    /// inside __traits(compile)
+    bool traitsCompiles;    /// inside __traits(compile) or is-expression
     /// ignore symbol visibility
     /// https://issues.dlang.org/show_bug.cgi?id=15907
     bool ignoresymbolvisibility;

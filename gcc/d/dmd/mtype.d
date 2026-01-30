@@ -2234,7 +2234,7 @@ extern (C++) final class TypeSArray : TypeArray
         auto elements = new Expressions(d);
         foreach (ref e; *elements)
             e = null;
-        auto ae = new ArrayLiteralExp(Loc.initial, this, elementinit, elements);
+        auto ae = new ArrayLiteralExp(loc, this, elementinit, elements);
         return ae;
     }
 
@@ -2631,7 +2631,7 @@ extern (C++) final class TypeFunction : TypeNext
     extern(D) Expressions* resolveNamedArgs(ArgumentList argumentList, OutBuffer* buf)
     {
         Expression[] args = argumentList.arguments ? (*argumentList.arguments)[] : null;
-        Identifier[] names = argumentList.names ? (*argumentList.names)[] : null;
+        ArgumentLabel[] names = argumentList.names ? (*argumentList.names)[] : null;
         const nParams = parameterList.length(); // cached because O(n)
         auto newArgs = new Expressions(nParams);
         newArgs.zero();
@@ -2645,7 +2645,7 @@ extern (C++) final class TypeFunction : TypeNext
                 ci++;
                 continue;
             }
-            auto name = i < names.length ? names[i] : null;
+            auto name = i < names.length ? names[i].name : null;
             if (name)
             {
                 hasNamedArgs = true;
@@ -3761,6 +3761,7 @@ extern (C++) final class TypeTag : Type
     Loc loc;                /// location of declaration
     TOK tok;                /// TOK.struct_, TOK.union_, TOK.enum_
     structalign_t packalign; /// alignment of struct/union fields
+    Expressions* alignExps; /// alignment of struct itself
     Identifier id;          /// tag name identifier
     Type base;              /// base type for enums otherwise null
     Dsymbols* members;      /// members of struct, null if none
@@ -3770,7 +3771,7 @@ extern (C++) final class TypeTag : Type
                             ///   struct S { int a; } s1, *s2;
     MOD mod;                /// modifiers to apply after type is resolved (only MODFlags.const_ at the moment)
 
-    extern (D) this(Loc loc, TOK tok, Identifier id, structalign_t packalign, Type base, Dsymbols* members) @safe
+    extern (D) this(Loc loc, TOK tok, Identifier id, structalign_t packalign, Expressions* alignExps, Type base, Dsymbols* members) @safe
     {
         //printf("TypeTag ctor %s %p\n", id ? id.toChars() : "null".ptr, this);
         super(Ttag);
@@ -3778,6 +3779,7 @@ extern (C++) final class TypeTag : Type
         this.tok = tok;
         this.id = id;
         this.packalign = packalign;
+        this.alignExps = alignExps;
         this.base = base;
         this.members = members;
         this.mod = 0;

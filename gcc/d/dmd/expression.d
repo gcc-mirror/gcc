@@ -86,7 +86,7 @@ inout(Expression) lastComma(inout Expression e)
  *     exps  = array of Expressions
  *     names = optional array of names corresponding to Expressions
  */
-void expandTuples(Expressions* exps, Identifiers* names = null)
+void expandTuples(Expressions* exps, ArgumentLabels* names = null)
 {
     //printf("expandTuples()\n");
     if (exps is null)
@@ -116,7 +116,7 @@ void expandTuples(Expressions* exps, Identifiers* names = null)
             }
             foreach (i; 1 .. length)
             {
-                names.insert(index + i, cast(Identifier) null);
+                names.insert(index + i, ArgumentLabel(cast(Identifier) null, Loc.init));
             }
         }
     }
@@ -306,6 +306,7 @@ extern (C++) abstract class Expression : ASTNode
     {
     bool parens;    // if this is a parenthesized expression
     bool rvalue;    // true if this is considered to be an rvalue, even if it is an lvalue
+    bool gcPassDone; // `checkGC` has been run on this expression
     }
     import dmd.common.bitfields;
     mixin(generateBitFields!(BitFields, ubyte));
@@ -1405,6 +1406,8 @@ extern (C++) final class StringExp : Expression
 
     /// If the string is parsed from a hex string literal
     bool hexString = false;
+    /// If the string is from a collected C macro
+    bool cMacro = false;
 
     enum char NoPostfix = 0;
 
@@ -1416,13 +1419,14 @@ extern (C++) final class StringExp : Expression
         this.sz = 1;                    // work around LDC bug #1286
     }
 
-    extern (D) this(Loc loc, const(void)[] string, size_t len, ubyte sz, char postfix = NoPostfix) scope
+    extern (D) this(Loc loc, const(void)[] string, size_t len, ubyte sz, char postfix = NoPostfix, bool cMacro = false) scope
     {
         super(loc, EXP.string_);
         this.string = cast(char*)string.ptr; // note that this.string should be const
         this.len = len;
         this.sz = sz;
         this.postfix = postfix;
+        this.cMacro = cMacro;
     }
 
     static StringExp create(Loc loc, const(char)* s)
@@ -2445,7 +2449,7 @@ extern (C++) final class NewExp : Expression
     Expression thisexp;         // if !=null, 'this' for class being allocated
     Type newtype;
     Expressions* arguments;     // Array of Expression's
-    Identifiers* names;         // Array of names corresponding to expressions
+    ArgumentLabels* names;         // Array of names(name and location of name) corresponding to expressions
     Expression placement;       // if !=null, then PlacementExpression
 
     Expression argprefix;       // expression to be evaluated just before arguments[]
@@ -2457,9 +2461,10 @@ extern (C++) final class NewExp : Expression
 
     /// Puts the `arguments` and `names` into an `ArgumentList` for easily passing them around.
     /// The fields are still separate for backwards compatibility
+
     extern (D) ArgumentList argumentList() { return ArgumentList(arguments, names); }
 
-    extern (D) this(Loc loc, Expression placement, Expression thisexp, Type newtype, Expressions* arguments, Identifiers* names = null) @safe
+    extern (D) this(Loc loc, Expression placement, Expression thisexp, Type newtype, Expressions* arguments, ArgumentLabels* names = null) @safe
     {
         super(loc, EXP.new_);
         this.placement = placement;
@@ -3271,29 +3276,36 @@ extern (C++) final class DotTypeExp : UnaExp
 struct ArgumentList
 {
     Expressions* arguments; // function arguments
-    Identifiers* names;     // named argument identifiers
+    ArgumentLabels* names;  // named argument labels
 
     size_t length() const @nogc nothrow pure @safe { return arguments ? arguments.length : 0; }
 
     /// Returns: whether this argument list contains any named arguments
-    bool hasNames() const @nogc nothrow pure @safe
+    bool hasArgNames() const @nogc nothrow pure @safe
     {
         if (names is null)
             return false;
-        foreach (name; *names)
-            if (name !is null)
+        foreach (argLabel; *names)
+            if (argLabel.name !is null)
                 return true;
 
         return false;
     }
 }
 
+// Contains both `name` and `location of the name` for an expression.
+struct ArgumentLabel
+{
+    Identifier name;    // name of the argument
+    Loc loc;            // location of the name
+ }
+
 /***********************************************************
  */
 extern (C++) final class CallExp : UnaExp
 {
     Expressions* arguments; // function arguments
-    Identifiers* names;     // named argument identifiers
+    ArgumentLabels *names;  // named argument labels
     FuncDeclaration f;      // symbol to call
     bool directcall;        // true if a virtual call is devirtualized
     bool inDebugStatement;  /// true if this was in a debug statement
@@ -3305,7 +3317,7 @@ extern (C++) final class CallExp : UnaExp
     /// The fields are still separate for backwards compatibility
     extern (D) ArgumentList argumentList() { return ArgumentList(arguments, names); }
 
-    extern (D) this(Loc loc, Expression e, Expressions* exps, Identifiers* names = null) @safe
+    extern (D) this(Loc loc, Expression e, Expressions* exps, ArgumentLabels *names = null) @safe
     {
         super(loc, EXP.call, e);
         this.arguments = exps;
@@ -3851,11 +3863,20 @@ extern (C++) final class CommaExp : BinExp
     /// false will be passed will be from the parser.
     bool allowCommaExp;
 
+    /// The original expression before any rewriting occurs.
+    /// This is used in error messages.
+    Expression originalExp;
 
     extern (D) this(Loc loc, Expression e1, Expression e2, bool generated = true) @safe
     {
         super(loc, EXP.comma, e1, e2);
         allowCommaExp = isGenerated = generated;
+    }
+
+    extern (D) this(Loc loc, Expression e1, Expression e2, Expression oe) @safe
+    {
+        this(loc, e1, e2);
+        originalExp = oe;
     }
 
     override bool isLvalue()

@@ -14,7 +14,8 @@ void test1()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail163.d(24): Error: cannot implicitly convert expression `p` of type `const(int***)` to `const(int)***`
+fail_compilation/fail163.d(25): Error: cannot implicitly convert `const(int***)` to `const(int)***`
+fail_compilation/fail163.d(25):        Note: Converting const to mutable requires an explicit cast (`cast(int*)`).
 ---
 */
 void test2()
@@ -27,7 +28,7 @@ void test2()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail163.d(37): Error: cannot modify `const` expression `p`
+fail_compilation/fail163.d(38): Error: cannot modify `const` expression `p`
 ---
 */
 void test3()
@@ -40,7 +41,7 @@ void test3()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail163.d(50): Error: cannot implicitly convert expression `cp` of type `const(int)***[]` to `const(uint***)[]`
+fail_compilation/fail163.d(51): Error: cannot implicitly convert expression `cp` of type `const(int)***[]` to `const(uint***)[]`
 ---
 */
 void test4()
@@ -53,7 +54,7 @@ void test4()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail163.d(63): Error: cannot modify `const` expression `*p`
+fail_compilation/fail163.d(64): Error: cannot modify `const` expression `*p`
 ---
 */
 void test5()
@@ -66,8 +67,8 @@ void test5()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail163.d(76): Error: cannot implicitly convert expression `& x` of type `int*` to `immutable(int)*`
-fail_compilation/fail163.d(77): Error: cannot modify `immutable` expression `*p`
+fail_compilation/fail163.d(77): Error: cannot implicitly convert expression `& x` of type `int*` to `immutable(int)*`
+fail_compilation/fail163.d(78): Error: cannot modify `immutable` expression `*p`
 ---
 */
 void test6()
@@ -80,7 +81,8 @@ void test6()
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail163.d(89): Error: cannot implicitly convert expression `& x` of type `const(int)*` to `int*`
+fail_compilation/fail163.d(91): Error: cannot implicitly convert `const(int)*` to `int*`
+fail_compilation/fail163.d(91):        Note: Converting const to mutable requires an explicit cast (`cast(int*)`).
 ---
 */
 void test7()

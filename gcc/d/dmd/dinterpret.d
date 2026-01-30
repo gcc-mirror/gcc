@@ -1027,12 +1027,6 @@ Expression interpretStatement(UnionExp* pue, Statement s, InterState* istate)
          * assigning a larger array into a smaller one, such as:
          *    `a = [1, 2], a ~= [3]` => `[1, 2] ~= [3]` => `[1, 2] = [1, 2, 3]`
          */
-        if (isRuntimeHook(s.exp, Id._d_arrayappendT) || isRuntimeHook(s.exp, Id._d_arrayappendTTrace))
-        {
-            auto rs = new ReturnStatement(s.loc, e);
-            visitReturn(rs);
-            return;
-        }
 
         // Disallow returning pointers to stack-allocated variables (bug 7876)
         if (!stopPointersEscaping(s.loc, e))
@@ -3189,7 +3183,8 @@ public:
             if (cmp == -1)
             {
                 char dir = (e.op == EXP.greaterThan || e.op == EXP.greaterOrEqual) ? '<' : '>';
-                error(e.loc, "the ordering of pointers to unrelated memory blocks is indeterminate in CTFE. To check if they point to the same memory block, use both `>` and `<` inside `&&` or `||`, eg `%s && %s %c= %s + 1`", e.toChars(), e.e1.toChars(), dir, e.e2.toChars());
+                error(e.loc, "the ordering of pointers to unrelated memory blocks is indeterminate in CTFE.");
+                errorSupplemental(e.loc, "to check if they point to the same memory block, use both `>` and `<` inside `&&` or `||`, eg `%s && %s %c= %s + 1`", e.toChars(), e.e1.toChars(), dir, e.e2.toChars());
                 result = CTFEExp.cantexp;
                 return;
             }
@@ -4999,61 +4994,6 @@ public:
         debug (LOG)
         {
             printf("%s CommaExp::interpret() %s\n", e.loc.toChars(), e.toChars());
-        }
-
-        bool isNewThrowableHook()
-        {
-            auto de = e.e1.isDeclarationExp();
-            if (de is null)
-                return false;
-
-            auto vd = de.declaration.isVarDeclaration();
-            if (vd is null)
-                return false;
-
-            auto ei = vd._init.isExpInitializer();
-            if (ei is null)
-                return false;
-
-            auto ce = ei.exp.isConstructExp();
-            if (ce is null)
-                return false;
-
-            return isRuntimeHook(ce.e2, Id._d_newThrowable) !is null;
-        }
-
-        if (auto ce = isRuntimeHook(e.e1, Id._d_arrayappendcTX))
-        {
-            // In expressionsem.d `arr ~= elem` was lowered to
-            // `_d_arrayappendcTX(arr, elem), arr[arr.length - 1] = elem, elem;`.
-            // The following code will rewrite it back to `arr ~= elem`
-            // and then interpret that expression.
-            assert(ce.arguments.length == 2);
-
-            auto arr = (*ce.arguments)[0];
-            auto elem = e.e2.isConstructExp().e2;
-            assert(elem);
-
-            auto cae = new CatAssignExp(e.loc, arr, elem);
-            cae.type = arr.type;
-
-            result = interpret(cae, istate);
-            return;
-        }
-        else if (isNewThrowableHook())
-        {
-            // In expressionsem.d `throw new Exception(args)` was lowered to
-            // `throw (tmp = _d_newThrowable!Exception(), tmp.ctor(args), tmp)`.
-            // The following code will rewrite it back to `throw new Exception(args)`
-            // and then interpret this expression instead.
-            auto ce = e.e2.isCallExp();
-            assert(ce);
-
-            auto ne = new NewExp(e.loc, null, null, e.type, ce.arguments);
-            ne.type = e.e1.type;
-
-            result = interpret(ne, istate);
-            return;
         }
 
         // If it creates a variable, and there's no context for

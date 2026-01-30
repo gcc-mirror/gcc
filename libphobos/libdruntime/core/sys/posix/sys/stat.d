@@ -1464,19 +1464,19 @@ version (CRuntime_Glibc)
 
     private
     {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        extern (D) bool S_ISTYPE()( mode_t mode, uint mask )
         {
             return ( mode & S_IFMT ) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+    extern (D) bool S_ISBLK()( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR()( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR()( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO()( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG()( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK()( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK()( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 
     int utimensat(int dirfd, const char *pathname,
         ref const(timespec)[2] times, int flags);
@@ -1501,19 +1501,19 @@ else version (Darwin)
 
     private
     {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        extern (D) bool S_ISTYPE()( mode_t mode, uint mask )
         {
             return ( mode & S_IFMT ) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+    extern (D) bool S_ISBLK()( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR()( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR()( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO()( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG()( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK()( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK()( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 }
 else version (FreeBSD)
 {
@@ -1534,19 +1534,19 @@ else version (FreeBSD)
 
     private
     {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        extern (D) bool S_ISTYPE()( mode_t mode, uint mask )
         {
             return ( mode & S_IFMT ) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+    extern (D) bool S_ISBLK()( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR()( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR()( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO()( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG()( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK()( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK()( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 
     // Since FreeBSD 11:
     version (none)
@@ -1575,19 +1575,19 @@ else version (NetBSD)
 
     private
     {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        extern (D) bool S_ISTYPE()( mode_t mode, uint mask )
         {
             return ( mode & S_IFMT ) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+    extern (D) bool S_ISBLK()( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR()( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR()( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO()( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG()( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK()( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK()( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 }
 else version (OpenBSD)
 {
@@ -1606,13 +1606,13 @@ else version (OpenBSD)
     enum S_IXOTH    = 0x1; // 0000001
     enum S_IRWXO    = 0x7; // 0000007
 
-    extern (D) bool S_ISBLK(mode_t mode)  { return (mode & S_IFMT) == S_IFBLK;  }
-    extern (D) bool S_ISCHR(mode_t mode)  { return (mode & S_IFMT) == S_IFCHR;  }
-    extern (D) bool S_ISDIR(mode_t mode)  { return (mode & S_IFMT) == S_IFDIR;  }
-    extern (D) bool S_ISFIFO(mode_t mode) { return (mode & S_IFMT) == S_IFIFO;  }
-    extern (D) bool S_ISREG(mode_t mode)  { return (mode & S_IFMT) == S_IFREG;  }
-    extern (D) bool S_ISLNK(mode_t mode)  { return (mode & S_IFMT) == S_IFLNK;  }
-    extern (D) bool S_ISSOCK(mode_t mode) { return (mode & S_IFMT) == S_IFSOCK; }
+    extern (D) bool S_ISBLK()(mode_t mode)  { return (mode & S_IFMT) == S_IFBLK;  }
+    extern (D) bool S_ISCHR()(mode_t mode)  { return (mode & S_IFMT) == S_IFCHR;  }
+    extern (D) bool S_ISDIR()(mode_t mode)  { return (mode & S_IFMT) == S_IFDIR;  }
+    extern (D) bool S_ISFIFO()(mode_t mode) { return (mode & S_IFMT) == S_IFIFO;  }
+    extern (D) bool S_ISREG()(mode_t mode)  { return (mode & S_IFMT) == S_IFREG;  }
+    extern (D) bool S_ISLNK()(mode_t mode)  { return (mode & S_IFMT) == S_IFLNK;  }
+    extern (D) bool S_ISSOCK()(mode_t mode) { return (mode & S_IFMT) == S_IFSOCK; }
 }
 else version (DragonFlyBSD)
 {
@@ -1633,19 +1633,19 @@ else version (DragonFlyBSD)
 
     private
     {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        extern (D) bool S_ISTYPE()( mode_t mode, uint mask )
         {
             return ( mode & S_IFMT ) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+    extern (D) bool S_ISBLK()( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR()( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR()( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO()( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG()( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK()( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK()( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 }
 else version (Solaris)
 {
@@ -1666,21 +1666,21 @@ else version (Solaris)
 
     private
     {
-        extern (D) bool S_ISTYPE(mode_t mode, uint mask)
+        extern (D) bool S_ISTYPE()(mode_t mode, uint mask)
         {
             return (mode & S_IFMT) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK(mode_t mode) { return S_ISTYPE(mode, S_IFBLK); }
-    extern (D) bool S_ISCHR(mode_t mode) { return S_ISTYPE(mode, S_IFCHR); }
-    extern (D) bool S_ISDIR(mode_t mode) { return S_ISTYPE(mode, S_IFDIR); }
-    extern (D) bool S_ISFIFO(mode_t mode) { return S_ISTYPE(mode, S_IFIFO); }
-    extern (D) bool S_ISREG(mode_t mode) { return S_ISTYPE(mode, S_IFREG); }
-    extern (D) bool S_ISLNK(mode_t mode) { return S_ISTYPE(mode, S_IFLNK); }
-    extern (D) bool S_ISSOCK(mode_t mode) { return S_ISTYPE(mode, S_IFSOCK); }
-    extern (D) bool S_ISDOOR(mode_t mode) { return S_ISTYPE(mode, S_IFDOOR); }
-    extern (D) bool S_ISPORT(mode_t mode) { return S_ISTYPE(mode, S_IFPORT); }
+    extern (D) bool S_ISBLK()(mode_t mode) { return S_ISTYPE(mode, S_IFBLK); }
+    extern (D) bool S_ISCHR()(mode_t mode) { return S_ISTYPE(mode, S_IFCHR); }
+    extern (D) bool S_ISDIR()(mode_t mode) { return S_ISTYPE(mode, S_IFDIR); }
+    extern (D) bool S_ISFIFO()(mode_t mode) { return S_ISTYPE(mode, S_IFIFO); }
+    extern (D) bool S_ISREG()(mode_t mode) { return S_ISTYPE(mode, S_IFREG); }
+    extern (D) bool S_ISLNK()(mode_t mode) { return S_ISTYPE(mode, S_IFLNK); }
+    extern (D) bool S_ISSOCK()(mode_t mode) { return S_ISTYPE(mode, S_IFSOCK); }
+    extern (D) bool S_ISDOOR()(mode_t mode) { return S_ISTYPE(mode, S_IFDOOR); }
+    extern (D) bool S_ISPORT()(mode_t mode) { return S_ISTYPE(mode, S_IFPORT); }
 }
 else version (CRuntime_Bionic)
 {
@@ -1701,19 +1701,19 @@ else version (CRuntime_Bionic)
 
     private
     {
-        extern (D) bool S_ISTYPE( uint mode, uint mask )
+        extern (D) bool S_ISTYPE()( uint mode, uint mask )
         {
             return ( mode & S_IFMT ) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK( uint mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( uint mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( uint mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( uint mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( uint mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( uint mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( uint mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+    extern (D) bool S_ISBLK()( uint mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR()( uint mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR()( uint mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO()( uint mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG()( uint mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK()( uint mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK()( uint mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 
     // Added since Lollipop
     int utimensat(int dirfd, const char *pathname,
@@ -1740,19 +1740,19 @@ else version (CRuntime_Musl)
 
     private
     {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        extern (D) bool S_ISTYPE()( mode_t mode, uint mask )
         {
             return ( mode & S_IFMT ) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+    extern (D) bool S_ISBLK()( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR()( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR()( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO()( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG()( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK()( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK()( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 
     int utimensat(int dirfd, const char *pathname,
         ref const(timespec)[2] times, int flags);
@@ -1776,19 +1776,19 @@ else version (CRuntime_UClibc)
 
     private
     {
-        extern (D) bool S_ISTYPE( mode_t mode, uint mask )
+        extern (D) bool S_ISTYPE()( mode_t mode, uint mask )
         {
             return ( mode & S_IFMT ) == mask;
         }
     }
 
-    extern (D) bool S_ISBLK( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
-    extern (D) bool S_ISCHR( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
-    extern (D) bool S_ISDIR( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
-    extern (D) bool S_ISFIFO( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
-    extern (D) bool S_ISREG( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
-    extern (D) bool S_ISLNK( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
-    extern (D) bool S_ISSOCK( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
+    extern (D) bool S_ISBLK()( mode_t mode )  { return S_ISTYPE( mode, S_IFBLK );  }
+    extern (D) bool S_ISCHR()( mode_t mode )  { return S_ISTYPE( mode, S_IFCHR );  }
+    extern (D) bool S_ISDIR()( mode_t mode )  { return S_ISTYPE( mode, S_IFDIR );  }
+    extern (D) bool S_ISFIFO()( mode_t mode ) { return S_ISTYPE( mode, S_IFIFO );  }
+    extern (D) bool S_ISREG()( mode_t mode )  { return S_ISTYPE( mode, S_IFREG );  }
+    extern (D) bool S_ISLNK()( mode_t mode )  { return S_ISTYPE( mode, S_IFLNK );  }
+    extern (D) bool S_ISSOCK()( mode_t mode ) { return S_ISTYPE( mode, S_IFSOCK ); }
 
     int utimensat(int dirfd, const char *pathname,
     ref const(timespec)[2] times, int flags);

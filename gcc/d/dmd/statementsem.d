@@ -219,7 +219,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             s.exp = ErrorExp.get();
 
         s.exp = s.exp.optimize(WANTvalue);
-        s.exp = checkGC(sc, s.exp);
+        s.exp = s.exp.checkGC(sc);
         if (s.exp.op == EXP.error)
             return setError();
         result = s;
@@ -585,7 +585,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (checkNonAssignmentArrayOp(ds.condition))
             ds.condition = ErrorExp.get();
         ds.condition = ds.condition.optimize(WANTvalue);
-        ds.condition = checkGC(sc, ds.condition);
+        ds.condition = ds.condition.checkGC(sc);
 
         ds.condition = ds.condition.toBoolean(sc);
 
@@ -658,7 +658,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             if (checkNonAssignmentArrayOp(fs.condition))
                 fs.condition = ErrorExp.get();
             fs.condition = fs.condition.optimize(WANTvalue);
-            fs.condition = checkGC(sc, fs.condition);
+            fs.condition = fs.condition.checkGC(sc);
 
             fs.condition = fs.condition.toBoolean(sc);
         }
@@ -677,7 +677,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             if (checkNonAssignmentArrayOp(fs.increment))
                 fs.increment = ErrorExp.get();
             fs.increment = fs.increment.optimize(WANTvalue);
-            fs.increment = checkGC(sc, fs.increment);
+            fs.increment = fs.increment.checkGC(sc);
         }
 
         sc.sbreak = fs;
@@ -1709,7 +1709,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
         // checkGC after optimizing the condition so that
         // compile time constants are reduced.
-        ifs.condition = checkGC(scd, ifs.condition);
+        ifs.condition = ifs.condition.checkGC(scd);
 
         // Save 'root' of two branches (then and else) at the point where it forks
         CtorFlow ctorflow_root = scd.ctorflow.clone();
@@ -1897,7 +1897,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         if (checkNonAssignmentArrayOp(ss.condition))
             ss.condition = ErrorExp.get();
         ss.condition = ss.condition.optimize(WANTvalue);
-        ss.condition = checkGC(sc, ss.condition);
+        ss.condition = ss.condition.checkGC(sc);
         if (ss.condition.op == EXP.error)
             conditionError = true;
 
@@ -1959,6 +1959,16 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 ed = ds.isEnumDeclaration(); // typedef'ed enum
             if (!ed && te && ((ds = te.toDsymbol(sc)) !is null))
                 ed = ds.isEnumDeclaration();
+
+            // Circular references
+            // Check if enum semantic analysis is not yet complete
+            if (ed && ed.semanticRun < PASS.semantic2done)
+            {
+                error(ss.loc, "cannot use `final switch` on enum `%s` while it is being defined", ed.toChars());
+                sc.pop();
+                return setError();
+            }
+
             if (ed && ss.cases.length < ed.members.length)
             {
                 int missingMembers = 0;
@@ -2593,7 +2603,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
 
             if (tbret && tbret.ty == Tvoid || convToVoid)
             {
-                if (!convToVoid)
+                if (!convToVoid && !texp.isTypeError())
                 {
                     error(rs.loc, "cannot return non-void from `void` function");
                     errors = true;
@@ -2626,7 +2636,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             if (e0)
             {
                 e0 = e0.optimize(WANTvalue);
-                e0 = checkGC(sc, e0);
+                e0 = e0.checkGC(sc);
             }
         }
 
@@ -3044,7 +3054,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             ss.exp = ss.exp.expressionSemantic(sc);
             ss.exp = resolveProperties(sc, ss.exp);
             ss.exp = ss.exp.optimize(WANTvalue);
-            ss.exp = checkGC(sc, ss.exp);
+            ss.exp = ss.exp.checkGC(sc);
             if (ss.exp.op == EXP.error)
             {
                 if (ss._body)
@@ -3168,7 +3178,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         ws.exp = ws.exp.expressionSemantic(sc);
         ws.exp = resolveProperties(sc, ws.exp);
         ws.exp = ws.exp.optimize(WANTvalue);
-        ws.exp = checkGC(sc, ws.exp);
+        ws.exp = ws.exp.checkGC(sc);
         if (ws.exp.op == EXP.error)
             return setError();
         if (ws.exp.op == EXP.scope_)
@@ -3730,7 +3740,7 @@ public bool throwSemantic(Loc loc, ref Expression exp, Scope* sc)
 
     exp = exp.expressionSemantic(sc);
     exp = resolveProperties(sc, exp);
-    exp = checkGC(sc, exp);
+    exp = exp.checkGC(sc);
     if (exp.isErrorExp())
         return false;
     if (!exp.type.isNaked())

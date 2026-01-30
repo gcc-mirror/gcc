@@ -127,7 +127,7 @@ version (CRuntime_Glibc)
 
     private
     {
-        extern (D) int __WTERMSIG( int status ) { return status & 0x7F; }
+        extern (D) int __WTERMSIG()(int status) { return status & 0x7F; }
     }
 
     //
@@ -135,128 +135,128 @@ version (CRuntime_Glibc)
     //       C headers as the parameter definition there is different and
     //       much more complicated.
     //
-    extern (D) int  WEXITSTATUS( int status )  { return ( status & 0xFF00 ) >> 8;   }
-    extern (D) int  WIFCONTINUED( int status ) { return status == __W_CONTINUED;    }
-    extern (D) bool WIFEXITED( int status )    { return __WTERMSIG( status ) == 0;  }
-    extern (D) bool WIFSIGNALED( int status )
+    extern (D) int  WEXITSTATUS()( int status )  { return ( status & 0xFF00 ) >> 8;   }
+    extern (D) int  WIFCONTINUED()( int status ) { return status == __W_CONTINUED;    }
+    extern (D) bool WIFEXITED()( int status )    { return __WTERMSIG( status ) == 0;  }
+    extern (D) bool WIFSIGNALED()( int status )
     {
         return ( cast(byte) ( ( status & 0x7F ) + 1 ) >> 1 ) > 0;
     }
-    extern (D) bool WIFSTOPPED( int status )   { return ( status & 0xFF ) == 0x7F;  }
-    extern (D) int  WSTOPSIG( int status )     { return WEXITSTATUS( status );      }
-    extern (D) int  WTERMSIG( int status )     { return status & 0x7F;              }
+    extern (D) bool WIFSTOPPED()( int status )   { return ( status & 0xFF ) == 0x7F;  }
+    extern (D) int  WSTOPSIG()( int status )     { return WEXITSTATUS( status );      }
+    extern (D) int  WTERMSIG()( int status )     { return status & 0x7F;              }
 }
 else version (Darwin)
 {
     @safe pure:
 
-    extern (D) int _WSTATUS(int status)         { return (status & 0x7F);           }
-    extern (D) int  WEXITSTATUS( int status )   { return (status >> 8);             }
-    extern (D) int  WIFCONTINUED( int status )  { return status == 0x13;            }
-    extern (D) bool WIFEXITED( int status )     { return _WSTATUS(status) == 0;     }
-    extern (D) bool WIFSIGNALED( int status )
+    extern (D) int _WSTATUS()(int status)         { return (status & 0x7F);           }
+    extern (D) int  WEXITSTATUS()( int status )   { return (status >> 8);             }
+    extern (D) int  WIFCONTINUED()( int status )  { return status == 0x13;            }
+    extern (D) bool WIFEXITED()( int status )     { return _WSTATUS(status) == 0;     }
+    extern (D) bool WIFSIGNALED()( int status )
     {
         return _WSTATUS( status ) != _WSTOPPED && _WSTATUS( status ) != 0;
     }
-    extern (D) bool WIFSTOPPED( int status )   { return _WSTATUS( status ) == _WSTOPPED; }
-    extern (D) int  WSTOPSIG( int status )     { return status >> 8;                     }
-    extern (D) int  WTERMSIG( int status )     { return _WSTATUS( status );              }
+    extern (D) bool WIFSTOPPED()( int status )   { return _WSTATUS( status ) == _WSTOPPED; }
+    extern (D) int  WSTOPSIG()( int status )     { return status >> 8;                     }
+    extern (D) int  WTERMSIG()( int status )     { return _WSTATUS( status );              }
 }
 else version (FreeBSD)
 {
     @safe pure:
 
-    extern (D) int _WSTATUS(int status)         { return (status & 0x7F);           }
-    extern (D) int  WEXITSTATUS( int status )   { return (status >> 8);             }
-    extern (D) int  WIFCONTINUED( int status )  { return status == 0x13;            }
-    extern (D) bool WIFEXITED( int status )     { return _WSTATUS(status) == 0;     }
-    extern (D) bool WIFSIGNALED( int status )
+    extern (D) int _WSTATUS()(int status)         { return (status & 0x7F);           }
+    extern (D) int  WEXITSTATUS()( int status )   { return (status >> 8);             }
+    extern (D) int  WIFCONTINUED()( int status )  { return status == 0x13;            }
+    extern (D) bool WIFEXITED()( int status )     { return _WSTATUS(status) == 0;     }
+    extern (D) bool WIFSIGNALED()( int status )
     {
         return _WSTATUS( status ) != _WSTOPPED && _WSTATUS( status ) != 0;
     }
-    extern (D) bool WIFSTOPPED( int status )   { return _WSTATUS( status ) == _WSTOPPED; }
-    extern (D) int  WSTOPSIG( int status )     { return status >> 8;                     }
-    extern (D) int  WTERMSIG( int status )     { return _WSTATUS( status );              }
+    extern (D) bool WIFSTOPPED()( int status )   { return _WSTATUS( status ) == _WSTOPPED; }
+    extern (D) int  WSTOPSIG()( int status )     { return status >> 8;                     }
+    extern (D) int  WTERMSIG()( int status )     { return _WSTATUS( status );              }
 }
 else version (NetBSD)
 {
     @safe pure:
 
-    extern (D) int _WSTATUS(int status)         { return (status & 0x7F);           }
-    extern (D) int  WEXITSTATUS( int status )   { return (status >> 8);             }
-    extern (D) int  WIFCONTINUED( int status )  { return status == 0x13;            }
-    extern (D) bool WIFEXITED( int status )     { return _WSTATUS(status) == 0;     }
-    extern (D) bool WIFSIGNALED( int status )
+    extern (D) int _WSTATUS()(int status)         { return (status & 0x7F);           }
+    extern (D) int  WEXITSTATUS()( int status )   { return (status >> 8);             }
+    extern (D) int  WIFCONTINUED()( int status )  { return status == 0x13;            }
+    extern (D) bool WIFEXITED()( int status )     { return _WSTATUS(status) == 0;     }
+    extern (D) bool WIFSIGNALED()( int status )
     {
         return _WSTATUS( status ) != _WSTOPPED && _WSTATUS( status ) != 0;
     }
-    extern (D) bool WIFSTOPPED( int status )   { return _WSTATUS( status ) == _WSTOPPED; }
-    extern (D) int  WSTOPSIG( int status )     { return status >> 8;                     }
-    extern (D) int  WTERMSIG( int status )     { return _WSTATUS( status );              }
+    extern (D) bool WIFSTOPPED()( int status )   { return _WSTATUS( status ) == _WSTOPPED; }
+    extern (D) int  WSTOPSIG()( int status )     { return status >> 8;                     }
+    extern (D) int  WTERMSIG()( int status )     { return _WSTATUS( status );              }
 }
 else version (OpenBSD)
 {
     @safe pure:
 
-    extern (D) int _WSTATUS(int status)         { return (status & 0x7F);                     }
-    extern (D) int  WEXITSTATUS(int status)   { return (status >> 8) & 0xFF;                  }
-    extern (D) int  WIFCONTINUED(int status)  { return (status & _WCONTINUED) == _WCONTINUED; }
-    extern (D) bool WIFEXITED(int status)     { return _WSTATUS(status) == 0;                 }
-    extern (D) bool WIFSIGNALED(int status)
+    extern (D) int _WSTATUS()(int status)         { return (status & 0x7F);                     }
+    extern (D) int  WEXITSTATUS()(int status)   { return (status >> 8) & 0xFF;                  }
+    extern (D) int  WIFCONTINUED()(int status)  { return (status & _WCONTINUED) == _WCONTINUED; }
+    extern (D) bool WIFEXITED()(int status)     { return _WSTATUS(status) == 0;                 }
+    extern (D) bool WIFSIGNALED()(int status)
     {
         return _WSTATUS(status) != _WSTOPPED && _WSTATUS(status) != 0;
     }
-    extern (D) bool WIFSTOPPED(int status)   { return (status & 0xFF) == _WSTOPPED; }
-    extern (D) int  WSTOPSIG(int status)     { return (status >> 8) & 0xFF;         }
-    extern (D) int  WTERMSIG(int status)     { return _WSTATUS(status);             }
+    extern (D) bool WIFSTOPPED()(int status)   { return (status & 0xFF) == _WSTOPPED; }
+    extern (D) int  WSTOPSIG()(int status)     { return (status >> 8) & 0xFF;         }
+    extern (D) int  WTERMSIG()(int status)     { return _WSTATUS(status);             }
 }
 else version (DragonFlyBSD)
 {
     @safe pure:
 
-    extern (D) int _WSTATUS(int status)         { return (status & 0x7F);           }
-    extern (D) int  WEXITSTATUS( int status )   { return (status >> 8);             }
-    extern (D) int  WIFCONTINUED( int status )  { return status == 0x13;            }
-    extern (D) bool WIFEXITED( int status )     { return _WSTATUS(status) == 0;     }
-    extern (D) bool WIFSIGNALED( int status )
+    extern (D) int _WSTATUS()(int status)         { return (status & 0x7F);           }
+    extern (D) int  WEXITSTATUS()( int status )   { return (status >> 8);             }
+    extern (D) int  WIFCONTINUED()( int status )  { return status == 0x13;            }
+    extern (D) bool WIFEXITED()( int status )     { return _WSTATUS(status) == 0;     }
+    extern (D) bool WIFSIGNALED()( int status )
     {
         return _WSTATUS( status ) != _WSTOPPED && _WSTATUS( status ) != 0;
     }
-    extern (D) bool WIFSTOPPED( int status )   { return _WSTATUS( status ) == _WSTOPPED; }
-    extern (D) int  WSTOPSIG( int status )     { return status >> 8;                     }
-    extern (D) int  WTERMSIG( int status )     { return _WSTATUS( status );              }
+    extern (D) bool WIFSTOPPED()( int status )   { return _WSTATUS( status ) == _WSTOPPED; }
+    extern (D) int  WSTOPSIG()( int status )     { return status >> 8;                     }
+    extern (D) int  WTERMSIG()( int status )     { return _WSTATUS( status );              }
 }
 else version (Solaris)
 {
     @safe pure:
 
-    extern (D) int WEXITSTATUS(int status) { return (status >> 8) & 0xff; }
-    extern (D) int WIFCONTINUED(int status) { return (status & 0xffff) == 0xffff; }
-    extern (D) bool WIFEXITED(int status) { return (status & 0xff) == 0;     }
-    extern (D) bool WIFSIGNALED(int status) { return (status & 0xff) > 0 && (status & 0xff00) == 0; }
-    extern (D) bool WIFSTOPPED(int status) { return (status & 0xff) == 0x7f && (status & 0xff00) != 0; }
-    extern (D) int WSTOPSIG(int status) { return (status >> 8) & 0x7f; }
-    extern (D) int WTERMSIG(int status) { return (status & 0x7f); }
+    extern (D) int WEXITSTATUS()(int status) { return (status >> 8) & 0xff; }
+    extern (D) int WIFCONTINUED()(int status) { return (status & 0xffff) == 0xffff; }
+    extern (D) bool WIFEXITED()(int status) { return (status & 0xff) == 0;     }
+    extern (D) bool WIFSIGNALED()(int status) { return (status & 0xff) > 0 && (status & 0xff00) == 0; }
+    extern (D) bool WIFSTOPPED()(int status) { return (status & 0xff) == 0x7f && (status & 0xff00) != 0; }
+    extern (D) int WSTOPSIG()(int status) { return (status >> 8) & 0x7f; }
+    extern (D) int WTERMSIG()(int status) { return (status & 0x7f); }
 }
 else version (CRuntime_Bionic)
 {
     @safe pure:
-    extern (D) int  WEXITSTATUS( int status ) { return ( status & 0xFF00 ) >> 8; }
-    extern (D) bool WIFEXITED( int status ) { return WTERMSIG(status) == 0; }
-    extern (D) bool WIFSIGNALED( int status ) { return WTERMSIG(status + 1) >= 2; }
-    extern (D) bool WIFSTOPPED( int status ) { return WTERMSIG(status) == 0x7F; }
-    extern (D) int  WSTOPSIG( int status ) { return WEXITSTATUS(status); }
-    extern (D) int  WTERMSIG( int status ) { return status & 0x7F; }
+    extern (D) int  WEXITSTATUS()( int status ) { return ( status & 0xFF00 ) >> 8; }
+    extern (D) bool WIFEXITED()( int status ) { return WTERMSIG(status) == 0; }
+    extern (D) bool WIFSIGNALED()( int status ) { return WTERMSIG(status + 1) >= 2; }
+    extern (D) bool WIFSTOPPED()( int status ) { return WTERMSIG(status) == 0x7F; }
+    extern (D) int  WSTOPSIG()( int status ) { return WEXITSTATUS(status); }
+    extern (D) int  WTERMSIG()( int status ) { return status & 0x7F; }
 }
 else version (CRuntime_Musl)
 {
     @safe pure:
-    extern (D) int  WEXITSTATUS( int status ) { return ( status & 0xFF00 ) >> 8; }
-    extern (D) int  WIFCONTINUED( int status ) { return status == 0xffff; }
-    extern (D) bool WIFEXITED( int status ) { return WTERMSIG( status ) == 0; }
-    extern (D) bool WIFSIGNALED( int status ) { return (status&0xffff)-1U < 0xffU; }
-    extern (D) bool WIFSTOPPED( int status ) { return cast(short)(((status&0xffff)*0x10001)>>8) > 0x7f00; }
-    extern (D) int  WTERMSIG( int status ) { return status & 0x7F; }
+    extern (D) int  WEXITSTATUS()( int status ) { return ( status & 0xFF00 ) >> 8; }
+    extern (D) int  WIFCONTINUED()( int status ) { return status == 0xffff; }
+    extern (D) bool WIFEXITED()( int status ) { return WTERMSIG( status ) == 0; }
+    extern (D) bool WIFSIGNALED()( int status ) { return (status&0xffff)-1U < 0xffU; }
+    extern (D) bool WIFSTOPPED()( int status ) { return cast(short)(((status&0xffff)*0x10001)>>8) > 0x7f00; }
+    extern (D) int  WTERMSIG()( int status ) { return status & 0x7F; }
     alias WEXITSTATUS WSTOPSIG;
 }
 else version (CRuntime_UClibc)
@@ -265,7 +265,7 @@ else version (CRuntime_UClibc)
 
     private
     {
-        extern (D) int __WTERMSIG( int status ) { return status & 0x7F; }
+        extern (D) int __WTERMSIG()( int status ) { return status & 0x7F; }
     }
 
     //
@@ -273,23 +273,23 @@ else version (CRuntime_UClibc)
     //       C headers as the parameter definition there is different and
     //       much more complicated.
     //
-    extern (D) int  WEXITSTATUS( int status )  { return ( status & 0xFF00 ) >> 8;   }
-    extern (D) int  WIFCONTINUED( int status ) { return status == __W_CONTINUED;    }
-    extern (D) bool WIFEXITED( int status )    { return __WTERMSIG( status ) == 0;  }
-    extern (D) bool WIFSIGNALED( int status )
+    extern (D) int  WEXITSTATUS()( int status )  { return ( status & 0xFF00 ) >> 8;   }
+    extern (D) int  WIFCONTINUED()( int status ) { return status == __W_CONTINUED;    }
+    extern (D) bool WIFEXITED()( int status )    { return __WTERMSIG( status ) == 0;  }
+    extern (D) bool WIFSIGNALED()( int status )
     {
         return ( cast(ulong) ( ( status & 0xffff ) - 1U ) >> 1 ) < 0xffU;
     }
     version (MIPS32)
     {
-        extern (D) bool WIFSTOPPED( int status )   { return ( status & 0xFF ) == 0x7F;  }
+        extern (D) bool WIFSTOPPED()( int status )   { return ( status & 0xFF ) == 0x7F;  }
     }
     else
     {
-        extern (D) bool WIFSTOPPED( int status )   { return ( status & 0xFF ) == 0x7F && ( status & 0xFF00 );  }
+        extern (D) bool WIFSTOPPED()( int status )   { return ( status & 0xFF ) == 0x7F && ( status & 0xFF00 );  }
     }
-    extern (D) int  WSTOPSIG( int status )     { return WEXITSTATUS( status );      }
-    extern (D) int  WTERMSIG( int status )     { return status & 0x7F;              }
+    extern (D) int  WSTOPSIG()( int status )     { return WEXITSTATUS( status );      }
+    extern (D) int  WTERMSIG()( int status )     { return status & 0x7F;              }
 }
 else
 {

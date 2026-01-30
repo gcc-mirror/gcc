@@ -297,8 +297,9 @@ DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/sys/mman.d core/sys/linux/sys/mount.d \
 	core/sys/linux/sys/prctl.d core/sys/linux/sys/procfs.d \
 	core/sys/linux/sys/signalfd.d core/sys/linux/sys/socket.d \
-	core/sys/linux/sys/sysinfo.d core/sys/linux/sys/time.d \
-	core/sys/linux/sys/xattr.d core/sys/linux/termios.d \
+	core/sys/linux/sys/syscall.d core/sys/linux/sys/sysinfo.d \
+	core/sys/linux/sys/time.d core/sys/linux/sys/xattr.d \
+	core/sys/linux/syscall.d core/sys/linux/termios.d \
 	core/sys/linux/time.d core/sys/linux/timerfd.d core/sys/linux/tipc.d \
 	core/sys/linux/uinput.d core/sys/linux/unistd.d
 

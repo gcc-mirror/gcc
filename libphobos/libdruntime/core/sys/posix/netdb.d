@@ -153,7 +153,7 @@ version (CRuntime_Glibc)
         int     h_addrtype;
         int     h_length;
         char**  h_addr_list;
-        char*   h_addr() @property { return h_addr_list[0]; } // non-standard
+        char*   h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -237,7 +237,7 @@ else version (Darwin)
         int     h_addrtype;
         int     h_length;
         char**  h_addr_list;
-        char*   h_addr() @property { return h_addr_list[0]; } // non-standard
+        char*   h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -321,7 +321,7 @@ else version (FreeBSD)
         int     h_addrtype;
         int     h_length;
         char**  h_addr_list;
-        extern (D) char* h_addr() @property { return h_addr_list[0]; } // non-standard
+        extern (D) char* h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -405,7 +405,7 @@ else version (NetBSD)
         int     h_addrtype;
         int     h_length;
         char**  h_addr_list;
-        extern (D) char* h_addr() @property { return h_addr_list[0]; } // non-standard
+        extern (D) char* h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -512,7 +512,7 @@ else version (OpenBSD)
         int       h_addrtype;
         int       h_length;
         char**    h_addr_list;
-        extern (D) char* h_addr() @property { return h_addr_list[0]; } // non-standard
+        extern (D) char* h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -608,7 +608,7 @@ else version (DragonFlyBSD)
         int     h_addrtype;
         int     h_length;
         char**  h_addr_list;
-        extern (D) char* h_addr() @property { return h_addr_list[0]; } // non-standard
+        extern (D) char* h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -706,7 +706,7 @@ else version (Solaris)
         int h_length;
         char** h_addr_list;
 
-        extern (D) char* h_addr() @property { return h_addr_list[0]; } // non-standard
+        extern (D) char* h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -793,7 +793,7 @@ else version (CRuntime_Bionic)
         int     h_addrtype;
         int     h_length;
         char**  h_addr_list;
-        extern (D) char* h_addr() @property { return h_addr_list[0]; } // non-standard
+        extern (D) char* h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -874,7 +874,7 @@ else version (CRuntime_Musl)
         int     h_addrtype;
         int     h_length;
         char**  h_addr_list;
-        char*   h_addr() @property { return h_addr_list[0]; } // non-standard
+        char*   h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent
@@ -952,7 +952,7 @@ else version (CRuntime_UClibc)
         int     h_addrtype;
         int     h_length;
         char**  h_addr_list;
-        extern (D) char* h_addr() @property { return h_addr_list[0]; } // non-standard
+        extern (D) char* h_addr()() @property { return h_addr_list[0]; } // non-standard
     }
 
     struct netent

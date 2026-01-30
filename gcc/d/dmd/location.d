@@ -48,6 +48,15 @@ struct Loc
 
 nothrow:
 
+    /// Reset global (Base)Loc tables, invalidating every existing `Loc` out there
+    /// and giving room to create new `Loc`s
+    static void _init()
+    {
+        locIndex = 1;
+        locFileTable = null;
+        lastFileTableIndex = 0;
+    }
+
     /*******************************
      * Configure how display is done
      * Params:
@@ -282,9 +291,7 @@ private size_t fileTableIndex(uint index) nothrow @nogc
     // To speed up linear find, we cache the last hit and compare that first,
     // since usually we stay in the same file for some time when resolving source locations.
     // If it's a different file now, either scan forwards / backwards
-    __gshared size_t lastI = 0; // index of last found hit
-
-    size_t i = lastI;
+    size_t i = lastFileTableIndex;
     if (index >= locFileTable[i].startIndex)
     {
         while (i + 1 < locFileTable.length && index >= locFileTable[i+1].startIndex)
@@ -296,7 +303,7 @@ private size_t fileTableIndex(uint index) nothrow @nogc
             i--;
     }
 
-    lastI = i;
+    lastFileTableIndex = i;
     return i;
 }
 
@@ -364,6 +371,11 @@ struct BaseLoc
     uint[] lines; /// For each line, the file offset at which it starts. At index 0 there's always a 0 entry.
     BaseLoc[] substitutions; /// Substitutions from #line / #file directives
 
+    /// Cache for the last line lookup
+    private size_t lastLineIndex = 0;
+    /// Cache for the last substitution lookup
+    private size_t lastSubstIndex = 0;
+
     /// Register that a new line starts at `offset` bytes from the start of the source file
     void newLine(uint offset)
     {
@@ -419,8 +431,61 @@ struct BaseLoc
 
     private size_t getSubstitutionIndex(uint offset) @nogc
     {
+        if (substitutions.length <= 1)
+            return 0;
+
+        // Check if the offset falls within the current cached substitution or the next one
+        if (lastSubstIndex < substitutions.length - 1)
+        {
+            // For the current substitution's range
+            if (substitutions[lastSubstIndex].startIndex <= offset &&
+                (lastSubstIndex == substitutions.length - 1 ||
+                 substitutions[lastSubstIndex + 1].startIndex > offset))
+                return lastSubstIndex;
+
+            // For the next substitution's range
+            if (lastSubstIndex + 1 < substitutions.length - 1 &&
+                substitutions[lastSubstIndex + 1].startIndex <= offset &&
+                substitutions[lastSubstIndex + 2].startIndex > offset)
+            {
+                lastSubstIndex++;
+                return lastSubstIndex;
+            }
+
+            // For the previous substitution's range
+            if (lastSubstIndex > 0 &&
+                substitutions[lastSubstIndex - 1].startIndex <= offset &&
+                substitutions[lastSubstIndex].startIndex > offset)
+            {
+                lastSubstIndex--;
+                return lastSubstIndex;
+            }
+        }
+        else if (lastSubstIndex == substitutions.length - 1 &&
+                 substitutions[lastSubstIndex].startIndex <= offset)
+        {
+            // Last substitution case
+            return lastSubstIndex;
+        }
+
+        // Fall back to binary search, but start near
         size_t lo = 0;
-        size_t hi = substitutions.length + -1;
+        size_t hi = substitutions.length - 1;
+
+        // Adjust the range based on the offset relative to lastSubstIndex
+        if (offset < substitutions[lastSubstIndex].startIndex)
+        {
+            // Search backward
+            lo = 0;
+            hi = lastSubstIndex;
+        }
+        else
+        {
+            // Search forward
+            lo = lastSubstIndex;
+            hi = substitutions.length - 1;
+        }
+
         size_t mid = 0;
         while (lo <= hi)
         {
@@ -428,7 +493,10 @@ struct BaseLoc
             if (substitutions[mid].startIndex <= offset)
             {
                 if (mid == substitutions.length - 1 || substitutions[mid + 1].startIndex > offset)
+                {
+                    lastSubstIndex = mid; // Update cache
                     return mid;
+                }
 
                 lo = mid + 1;
             }
@@ -441,10 +509,51 @@ struct BaseLoc
     }
 
     /// Binary search the index in `this.lines` corresponding to `offset`
+    /// lastLineIndex cache to avoid full binary search when possible
     private size_t getLineIndex(uint offset) @nogc
     {
+        if (lines.length <= 1)
+            return 0;
+
+        if (lastLineIndex < lines.length - 1)
+        {
+            if (lines[lastLineIndex] <= offset && offset < lines[lastLineIndex + 1])
+                return lastLineIndex;
+
+            if (lastLineIndex + 1 < lines.length - 1 &&
+                lines[lastLineIndex + 1] <= offset && offset < lines[lastLineIndex + 2])
+            {
+                lastLineIndex++;
+                return lastLineIndex;
+            }
+
+            if (lastLineIndex > 0 &&
+                lines[lastLineIndex - 1] <= offset && offset < lines[lastLineIndex])
+            {
+                lastLineIndex--;
+                return lastLineIndex;
+            }
+        }
+        else if (lastLineIndex == lines.length - 1 && lines[lastLineIndex] <= offset)
+        {
+            return lastLineIndex;
+        }
+
+        // Fall back to binary search
         size_t lo = 0;
-        size_t hi = lines.length + -1;
+        size_t hi = lines.length - 1;
+
+        if (offset < lines[lastLineIndex])
+        {
+            lo = 0;
+            hi = lastLineIndex;
+        }
+        else
+        {
+            lo = lastLineIndex;
+            hi = lines.length - 1;
+        }
+
         size_t mid = 0;
         while (lo <= hi)
         {
@@ -452,7 +561,10 @@ struct BaseLoc
             if (lines[mid] <= offset)
             {
                 if (mid == lines.length - 1 || lines[mid + 1] > offset)
+                {
+                    lastLineIndex = mid; // Update cache
                     return mid;
+                }
 
                 lo = mid + 1;
             }
@@ -470,3 +582,6 @@ private __gshared uint locIndex = 1;
 
 // Global mapping of Loc indices to source file offset/line/column, see `BaseLoc`
 private __gshared BaseLoc*[] locFileTable;
+
+// Index of last found hit in locFileTable, for optimization
+private __gshared size_t lastFileTableIndex = 0;

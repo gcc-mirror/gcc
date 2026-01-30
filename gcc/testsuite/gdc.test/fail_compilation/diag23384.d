@@ -4,8 +4,8 @@
 TEST_OUTPUT:
 ---
 fail_compilation/diag23384.d(28): Error: function `diag23384.Derived.fun(B b)` is not callable using argument types `(A)`
-fail_compilation/diag23384.d(28):        function `diag23384.Derived.fun` hides base class function `diag23384.Base.fun`
-fail_compilation/diag23384.d(28):        add `alias fun = diag23384.Base.fun` to `diag23384.Derived`'s body to merge the overload sets
+fail_compilation/diag23384.d(28):        Note: function `diag23384.Derived.fun` hides base class function `diag23384.Base.fun`
+fail_compilation/diag23384.d(28):        Add `alias fun = diag23384.Base.fun;` to `diag23384.Derived`'s body to merge the overload sets
 ---
 */
 

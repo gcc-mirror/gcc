@@ -120,7 +120,6 @@ public:
     Sizeok sizeok;              // set when structsize contains valid data
 
     virtual Scope *newScope(Scope *sc);
-    virtual void finalizeSize() = 0;
     uinteger_t size(Loc loc) override final;
     Type *getType() override final;
     bool isDeprecated() const override final; // is aggregate deprecated?
@@ -172,7 +171,6 @@ public:
     static StructDeclaration *create(Loc loc, Identifier *id, bool inObject);
     StructDeclaration *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
-    void finalizeSize() override final;
     bool isPOD();
     bool zeroInit() const;          // !=0 if initialize with 0 fill
     bool zeroInit(bool v);
@@ -196,7 +194,7 @@ public:
 
     unsigned numArgTypes() const;
     Type *argType(unsigned index);
-    bool hasRegularCtor(bool checkDisabled = false);
+    bool hasRegularCtor(bool ignoreDisabled = false);
 };
 
 class UnionDeclaration final : public StructDeclaration
@@ -287,13 +285,11 @@ public:
     virtual bool isBaseOf(ClassDeclaration *cd, int *poffset);
 
     bool isBaseInfoComplete();
-    void finalizeSize() override;
     bool hasMonitor();
     bool isCOMclass() const;
     virtual bool isCOMinterface() const;
     bool isCPPclass() const;
     virtual bool isCPPinterface() const;
-    bool isAbstract();
     virtual int vtblOffset() const;
     const char *kind() const override;
 

@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail336.d(16): Error: struct `S` has constructors, cannot use `{ initializers }`, use `S( initializers )` instead
+fail_compilation/fail336.d(17): Error: Cannot use struct initializer syntax for struct `S` because it has a constructor
+fail_compilation/fail336.d(17):        Use `S( arguments )` instead of `{ initializers }`
 ---
 */
 

@@ -992,7 +992,7 @@ private auto _stripDrive(R)(R path)
     Returns:
         index of extension separator (the dot), or -1 if not found
 */
-private ptrdiff_t extSeparatorPos(R)(const R path)
+private ptrdiff_t extSeparatorPos(R)(R path)
 if (isRandomAccessRange!R && hasLength!R && isSomeChar!(ElementType!R) ||
     isNarrowString!R)
 {
@@ -1278,6 +1278,11 @@ if (isSomeChar!C1 && isSomeChar!C2)
     assert(withExtension("file".byChar, "ext").array == "file.ext");
     assert(withExtension("file"w.byWchar, ".ext"w).array == "file.ext"w);
     assert(withExtension("file.ext"w.byWchar, ".").array == "file."w);
+}
+
+@safe unittest
+{
+    assert(chainPath("directory", "file").withExtension(".ext").array == buildPath("directory", "file.ext"));
 }
 
 @safe unittest

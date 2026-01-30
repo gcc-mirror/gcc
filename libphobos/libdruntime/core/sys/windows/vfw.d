@@ -2115,75 +2115,75 @@ enum {
  * message wrapper
  */
 
-BOOL capSetCallbackOnError(HWND hWnd, LPVOID fpProc)                { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_ERROR, 0, cast(LPARAM)fpProc); }
-BOOL capSetCallbackOnStatus(HWND hWnd, LPVOID fpProc)               { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_STATUS, 0, cast(LPARAM)fpProc); }
-BOOL capSetCallbackOnYield(HWND hWnd, LPVOID fpProc)                { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_YIELD, 0, cast(LPARAM)fpProc); }
-BOOL capSetCallbackOnFrame(HWND hWnd, LPVOID fpProc)                { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_FRAME, 0, cast(LPARAM)fpProc); }
-BOOL capSetCallbackOnVideoStream(HWND hWnd, LPVOID fpProc)          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_VIDEOSTREAM, 0, cast(LPARAM)fpProc); }
-BOOL capSetCallbackOnWaveStream(HWND hWnd, LPVOID fpProc)           { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_WAVESTREAM, 0, cast(LPARAM)fpProc); }
-BOOL capSetCallbackOnCapControl(HWND hWnd, LPVOID fpProc)           { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_CAPCONTROL, 0, cast(LPARAM)fpProc); }
+BOOL capSetCallbackOnError()(HWND hWnd, LPVOID fpProc)                { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_ERROR, 0, cast(LPARAM)fpProc); }
+BOOL capSetCallbackOnStatus()(HWND hWnd, LPVOID fpProc)               { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_STATUS, 0, cast(LPARAM)fpProc); }
+BOOL capSetCallbackOnYield()(HWND hWnd, LPVOID fpProc)                { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_YIELD, 0, cast(LPARAM)fpProc); }
+BOOL capSetCallbackOnFrame()(HWND hWnd, LPVOID fpProc)                { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_FRAME, 0, cast(LPARAM)fpProc); }
+BOOL capSetCallbackOnVideoStream()(HWND hWnd, LPVOID fpProc)          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_VIDEOSTREAM, 0, cast(LPARAM)fpProc); }
+BOOL capSetCallbackOnWaveStream()(HWND hWnd, LPVOID fpProc)           { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_WAVESTREAM, 0, cast(LPARAM)fpProc); }
+BOOL capSetCallbackOnCapControl()(HWND hWnd, LPVOID fpProc)           { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_CALLBACK_CAPCONTROL, 0, cast(LPARAM)fpProc); }
 
-BOOL capSetUserData(HWND hWnd, LPARAM lUser)                        { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_USER_DATA, 0, lUser); }
-BOOL capGetUserData(HWND hWnd)                                      { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GET_USER_DATA, 0, 0); }
+BOOL capSetUserData()(HWND hWnd, LPARAM lUser)                        { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_USER_DATA, 0, lUser); }
+BOOL capGetUserData()(HWND hWnd)                                      { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GET_USER_DATA, 0, 0); }
 
-BOOL capDriverConnect(HWND hWnd, WPARAM i)                          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_CONNECT, i, 0); }
-BOOL capDriverDisconnect(HWND hWnd)                                 { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_DISCONNECT, 0, 0); }
-BOOL capDriverGetName(HWND hWnd, LPTSTR szName, WPARAM wSize)       { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_GET_NAME, wSize, cast(LPARAM)szName); }
-BOOL capDriverGetVersion(HWND hWnd, LPTSTR szVer, WPARAM wSize)     { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_GET_VERSION, wSize, cast(LPARAM)szVer); }
-BOOL capDriverGetCaps(HWND hWnd, LPCAPDRIVERCAPS s, WPARAM wSize)   { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_GET_CAPS, wSize, cast(LPARAM)s); }
+BOOL capDriverConnect()(HWND hWnd, WPARAM i)                          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_CONNECT, i, 0); }
+BOOL capDriverDisconnect()(HWND hWnd)                                 { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_DISCONNECT, 0, 0); }
+BOOL capDriverGetName()(HWND hWnd, LPTSTR szName, WPARAM wSize)       { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_GET_NAME, wSize, cast(LPARAM)szName); }
+BOOL capDriverGetVersion()(HWND hWnd, LPTSTR szVer, WPARAM wSize)     { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_GET_VERSION, wSize, cast(LPARAM)szVer); }
+BOOL capDriverGetCaps()(HWND hWnd, LPCAPDRIVERCAPS s, WPARAM wSize)   { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DRIVER_GET_CAPS, wSize, cast(LPARAM)s); }
 
-BOOL capFileSetCaptureFile(HWND hWnd, LPTSTR szName)                { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_SET_CAPTURE_FILE, 0, cast(LPARAM)szName); }
-BOOL capFileGetCaptureFile(HWND hWnd, LPTSTR szName, WPARAM wSize)  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_GET_CAPTURE_FILE, wSize, cast(LPARAM)szName); }
-BOOL capFileAlloc(HWND hWnd, WPARAM wSize)                          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_ALLOCATE, wSize, 0); }
-BOOL capFileSaveAs(HWND hWnd, LPTSTR szName)                        { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_SAVEAS, 0, cast(LPARAM)szName); }
-BOOL capFileSetInfoChunk(HWND hWnd, LPCAPINFOCHUNK lpInfoChunk)     { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_SET_INFOCHUNK, 0, cast(LPARAM)lpInfoChunk); }
-BOOL capFileSaveDIB(HWND hWnd, LPTSTR szName)                       { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_SAVEDIB, 0, cast(LPARAM)szName); }
+BOOL capFileSetCaptureFile()(HWND hWnd, LPTSTR szName)                { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_SET_CAPTURE_FILE, 0, cast(LPARAM)szName); }
+BOOL capFileGetCaptureFile()(HWND hWnd, LPTSTR szName, WPARAM wSize)  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_GET_CAPTURE_FILE, wSize, cast(LPARAM)szName); }
+BOOL capFileAlloc()(HWND hWnd, WPARAM wSize)                          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_ALLOCATE, wSize, 0); }
+BOOL capFileSaveAs()(HWND hWnd, LPTSTR szName)                        { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_SAVEAS, 0, cast(LPARAM)szName); }
+BOOL capFileSetInfoChunk()(HWND hWnd, LPCAPINFOCHUNK lpInfoChunk)     { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_SET_INFOCHUNK, 0, cast(LPARAM)lpInfoChunk); }
+BOOL capFileSaveDIB()(HWND hWnd, LPTSTR szName)                       { return cast(BOOL)AVICapSM(hWnd, WM_CAP_FILE_SAVEDIB, 0, cast(LPARAM)szName); }
 
-BOOL capEditCopy(HWND hWnd)                                         { return cast(BOOL)AVICapSM(hWnd, WM_CAP_EDIT_COPY, 0, 0); }
+BOOL capEditCopy()(HWND hWnd)                                         { return cast(BOOL)AVICapSM(hWnd, WM_CAP_EDIT_COPY, 0, 0); }
 
-BOOL capSetAudioFormat(HWND hWnd, LPWAVEFORMATEX s, WPARAM wSize)   { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_AUDIOFORMAT, wSize, cast(LPARAM)s); }
-DWORD capGetAudioFormat(HWND hWnd, LPWAVEFORMATEX s, WPARAM wSize)  { return cast(DWORD)AVICapSM(hWnd, WM_CAP_GET_AUDIOFORMAT, wSize, cast(LPARAM)s); }
-DWORD capGetAudioFormatSize(HWND hWnd)                              { return cast(DWORD)AVICapSM(hWnd, WM_CAP_GET_AUDIOFORMAT, 0, 0); }
+BOOL capSetAudioFormat()(HWND hWnd, LPWAVEFORMATEX s, WPARAM wSize)   { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_AUDIOFORMAT, wSize, cast(LPARAM)s); }
+DWORD capGetAudioFormat()(HWND hWnd, LPWAVEFORMATEX s, WPARAM wSize)  { return cast(DWORD)AVICapSM(hWnd, WM_CAP_GET_AUDIOFORMAT, wSize, cast(LPARAM)s); }
+DWORD capGetAudioFormatSize()(HWND hWnd)                              { return cast(DWORD)AVICapSM(hWnd, WM_CAP_GET_AUDIOFORMAT, 0, 0); }
 
-BOOL capDlgVideoFormat(HWND hWnd)                                   { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DLG_VIDEOFORMAT, 0, 0); }
-BOOL capDlgVideoSource(HWND hWnd)                                   { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DLG_VIDEOSOURCE, 0, 0); }
-BOOL capDlgVideoDisplay(HWND hWnd)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DLG_VIDEODISPLAY, 0, 0); }
-BOOL capDlgVideoCompression(HWND hWnd)                              { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DLG_VIDEOCOMPRESSION, 0, 0); }
+BOOL capDlgVideoFormat()(HWND hWnd)                                   { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DLG_VIDEOFORMAT, 0, 0); }
+BOOL capDlgVideoSource()(HWND hWnd)                                   { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DLG_VIDEOSOURCE, 0, 0); }
+BOOL capDlgVideoDisplay()(HWND hWnd)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DLG_VIDEODISPLAY, 0, 0); }
+BOOL capDlgVideoCompression()(HWND hWnd)                              { return cast(BOOL)AVICapSM(hWnd, WM_CAP_DLG_VIDEOCOMPRESSION, 0, 0); }
 
-DWORD capGetVideoFormat(HWND hWnd, void* s, WPARAM wSize)           { return cast(DWORD)AVICapSM(hWnd, WM_CAP_GET_VIDEOFORMAT, wSize, cast(LPARAM)s); }
-DWORD capGetVideoFormatSize(HWND hWnd)                              { return cast(DWORD)AVICapSM(hWnd, WM_CAP_GET_VIDEOFORMAT, 0, 0); }
-BOOL capSetVideoFormat(HWND hWnd, void* s, WPARAM wSize)            { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_VIDEOFORMAT, wSize, cast(LPARAM)s); }
+DWORD capGetVideoFormat()(HWND hWnd, void* s, WPARAM wSize)           { return cast(DWORD)AVICapSM(hWnd, WM_CAP_GET_VIDEOFORMAT, wSize, cast(LPARAM)s); }
+DWORD capGetVideoFormatSize()(HWND hWnd)                              { return cast(DWORD)AVICapSM(hWnd, WM_CAP_GET_VIDEOFORMAT, 0, 0); }
+BOOL capSetVideoFormat()(HWND hWnd, void* s, WPARAM wSize)            { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_VIDEOFORMAT, wSize, cast(LPARAM)s); }
 
-BOOL capPreview(HWND hWnd, BOOL f)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_PREVIEW, cast(WPARAM)f, 0); }
-BOOL capPreviewRate(HWND hWnd, WPARAM wMS)                          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_PREVIEWRATE, wMS, 0); }
-BOOL capOverlay(HWND hWnd, BOOL f)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_OVERLAY, cast(WPARAM)f, 0); }
-BOOL capPreviewScale(HWND hWnd, BOOL f)                             { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_SCALE, cast(WPARAM)f, 0); }
-BOOL capGetStatus(HWND hWnd, LPCAPSTATUS s, WPARAM wSize)           { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GET_STATUS, wSize, cast(LPARAM)s); }
-BOOL capSetScrollPos(HWND hWnd, LPPOINT lpP)                        { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_SCROLL, 0, cast(LPARAM)lpP); }
+BOOL capPreview()(HWND hWnd, BOOL f)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_PREVIEW, cast(WPARAM)f, 0); }
+BOOL capPreviewRate()(HWND hWnd, WPARAM wMS)                          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_PREVIEWRATE, wMS, 0); }
+BOOL capOverlay()(HWND hWnd, BOOL f)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_OVERLAY, cast(WPARAM)f, 0); }
+BOOL capPreviewScale()(HWND hWnd, BOOL f)                             { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_SCALE, cast(WPARAM)f, 0); }
+BOOL capGetStatus()(HWND hWnd, LPCAPSTATUS s, WPARAM wSize)           { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GET_STATUS, wSize, cast(LPARAM)s); }
+BOOL capSetScrollPos()(HWND hWnd, LPPOINT lpP)                        { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_SCROLL, 0, cast(LPARAM)lpP); }
 
-BOOL capGrabFrame(HWND hWnd)                                        { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GRAB_FRAME, 0, 0); }
-BOOL capGrabFrameNoStop(HWND hWnd)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GRAB_FRAME_NOSTOP, 0, 0); }
+BOOL capGrabFrame()(HWND hWnd)                                        { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GRAB_FRAME, 0, 0); }
+BOOL capGrabFrameNoStop()(HWND hWnd)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GRAB_FRAME_NOSTOP, 0, 0); }
 
-BOOL capCaptureSequence(HWND hWnd)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SEQUENCE, 0, 0); }
-BOOL capCaptureSequenceNoFile(HWND hWnd)                            { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SEQUENCE_NOFILE, 0, 0); }
-BOOL capCaptureStop(HWND hWnd)                                      { return cast(BOOL)AVICapSM(hWnd, WM_CAP_STOP, 0, 0); }
-BOOL capCaptureAbort(HWND hWnd)                                     { return cast(BOOL)AVICapSM(hWnd, WM_CAP_ABORT, 0, 0); }
+BOOL capCaptureSequence()(HWND hWnd)                                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SEQUENCE, 0, 0); }
+BOOL capCaptureSequenceNoFile()(HWND hWnd)                            { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SEQUENCE_NOFILE, 0, 0); }
+BOOL capCaptureStop()(HWND hWnd)                                      { return cast(BOOL)AVICapSM(hWnd, WM_CAP_STOP, 0, 0); }
+BOOL capCaptureAbort()(HWND hWnd)                                     { return cast(BOOL)AVICapSM(hWnd, WM_CAP_ABORT, 0, 0); }
 
-BOOL capCaptureSingleFrameOpen(HWND hWnd)                           { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SINGLE_FRAME_OPEN, 0, 0); }
-BOOL capCaptureSingleFrameClose(HWND hWnd)                          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SINGLE_FRAME_CLOSE, 0, 0); }
-BOOL capCaptureSingleFrame(HWND hWnd)                               { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SINGLE_FRAME, 0, 0); }
+BOOL capCaptureSingleFrameOpen()(HWND hWnd)                           { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SINGLE_FRAME_OPEN, 0, 0); }
+BOOL capCaptureSingleFrameClose()(HWND hWnd)                          { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SINGLE_FRAME_CLOSE, 0, 0); }
+BOOL capCaptureSingleFrame()(HWND hWnd)                               { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SINGLE_FRAME, 0, 0); }
 
-BOOL capCaptureGetSetup(HWND hWnd, LPCAPTUREPARMS s, WPARAM wSize)  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GET_SEQUENCE_SETUP, wSize, cast(LPARAM)s); }
-BOOL capCaptureSetSetup(HWND hWnd, LPCAPTUREPARMS s, WPARAM wSize)  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_SEQUENCE_SETUP, wSize, cast(LPARAM)s); }
+BOOL capCaptureGetSetup()(HWND hWnd, LPCAPTUREPARMS s, WPARAM wSize)  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GET_SEQUENCE_SETUP, wSize, cast(LPARAM)s); }
+BOOL capCaptureSetSetup()(HWND hWnd, LPCAPTUREPARMS s, WPARAM wSize)  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_SEQUENCE_SETUP, wSize, cast(LPARAM)s); }
 
-BOOL capSetMCIDeviceName(HWND hWnd, LPTSTR szName)                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_MCI_DEVICE, 0, cast(LPARAM)szName); }
-BOOL capGetMCIDeviceName(HWND hWnd, LPTSTR szName, WPARAM wSize)    { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GET_MCI_DEVICE, wSize, cast(LPARAM)szName); }
+BOOL capSetMCIDeviceName()(HWND hWnd, LPTSTR szName)                  { return cast(BOOL)AVICapSM(hWnd, WM_CAP_SET_MCI_DEVICE, 0, cast(LPARAM)szName); }
+BOOL capGetMCIDeviceName()(HWND hWnd, LPTSTR szName, WPARAM wSize)    { return cast(BOOL)AVICapSM(hWnd, WM_CAP_GET_MCI_DEVICE, wSize, cast(LPARAM)szName); }
 
-BOOL capPaletteOpen(HWND hWnd, LPTSTR szName)                       { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_OPEN, 0, cast(LPARAM)szName); }
-BOOL capPaletteSave(HWND hWnd, LPTSTR szName)                       { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_SAVE, 0, cast(LPARAM)szName); }
-BOOL capPalettePaste(HWND hWnd)                                     { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_PASTE, 0, 0); }
-BOOL capPaletteAuto(HWND hWnd, WPARAM iFrames, LPARAM iColors)      { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_AUTOCREATE, iFrames, iColors); }
-BOOL capPaletteManual(HWND hWnd, WPARAM fGrab, LPARAM iColors)      { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_MANUALCREATE, fGrab, iColors); }
+BOOL capPaletteOpen()(HWND hWnd, LPTSTR szName)                       { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_OPEN, 0, cast(LPARAM)szName); }
+BOOL capPaletteSave()(HWND hWnd, LPTSTR szName)                       { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_SAVE, 0, cast(LPARAM)szName); }
+BOOL capPalettePaste()(HWND hWnd)                                     { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_PASTE, 0, 0); }
+BOOL capPaletteAuto()(HWND hWnd, WPARAM iFrames, LPARAM iColors)      { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_AUTOCREATE, iFrames, iColors); }
+BOOL capPaletteManual()(HWND hWnd, WPARAM fGrab, LPARAM iColors)      { return cast(BOOL)AVICapSM(hWnd, WM_CAP_PAL_MANUALCREATE, fGrab, iColors); }
 
 /**
  * structs

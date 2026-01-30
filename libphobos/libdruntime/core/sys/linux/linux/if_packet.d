@@ -169,7 +169,7 @@ struct tpacket_hdr
 }
 
 enum TPACKET_ALIGNMENT = 16;
-size_t TPACKET_ALIGN(size_t x) { return (x + TPACKET_ALIGNMENT - 1) &~ (TPACKET_ALIGNMENT - 1); }
+size_t TPACKET_ALIGN()(size_t x) { return (x + TPACKET_ALIGNMENT - 1) &~ (TPACKET_ALIGNMENT - 1); }
 enum TPACKET_HDRLEN = TPACKET_ALIGN(tpacket_hdr.sizeof) + sockaddr_ll.sizeof;
 
 struct tpacket2_hdr

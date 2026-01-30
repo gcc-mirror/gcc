@@ -44,9 +44,9 @@ const TCHAR[] MS_ENH_RSA_AES_PROV
       = "Microsoft Enhanced RSA and AES Cryptographic Provider (Prototype)";
 }
 
-ALG_ID GET_ALG_CLASS(ALG_ID x) { return x & 0xE000; }
-ALG_ID GET_ALG_TYPE (ALG_ID x) { return x & 0x1E00; }
-ALG_ID GET_ALG_SID  (ALG_ID x) { return x & 0x01FF; }
+ALG_ID GET_ALG_CLASS()(ALG_ID x) { return x & 0xE000; }
+ALG_ID GET_ALG_TYPE ()(ALG_ID x) { return x & 0x1E00; }
+ALG_ID GET_ALG_SID  ()(ALG_ID x) { return x & 0x01FF; }
 
 enum : ALG_ID {
     ALG_CLASS_ANY           = 0,
@@ -214,8 +214,8 @@ enum {
     CRYPT_SUCCEED = TRUE,
 }
 
-bool RCRYPT_SUCCEEDED(BOOL r) { return r==CRYPT_SUCCEED; }
-bool RCRYPT_FAILED(BOOL r) { return r==CRYPT_FAILED; }
+bool RCRYPT_SUCCEEDED()(BOOL r) { return r==CRYPT_SUCCEED; }
+bool RCRYPT_FAILED()(BOOL r) { return r==CRYPT_FAILED; }
 
 enum {
     PP_ENUMALGS = 1,

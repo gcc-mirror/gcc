@@ -440,6 +440,11 @@ else version (CRuntime_Musl)
         }
         alias uint fexcept_t;
     }
+    else version (RICV64)
+    {
+        alias uint fenv_t;
+        alias uint fexcept_t;
+    }
     else
     {
         static assert(false, "Architecture not supported.");

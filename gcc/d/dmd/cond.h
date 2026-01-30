@@ -38,7 +38,6 @@ public:
     DYNCAST dyncast() const override final { return DYNCAST_CONDITION; }
 
     virtual Condition *syntaxCopy() = 0;
-    virtual int include(Scope *sc) = 0;
     virtual DebugCondition *isDebugCondition() { return nullptr; }
     virtual VersionCondition *isVersionCondition() { return nullptr; }
     void accept(Visitor *v) override { v->visit(this); }
@@ -70,7 +69,6 @@ class DebugCondition final : public DVCondition
 public:
     static void addGlobalIdent(const char *ident);
 
-    int include(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -80,7 +78,6 @@ public:
     static void addGlobalIdent(const char *ident);
     static void addPredefinedGlobalIdent(const char *ident);
 
-    int include(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -90,6 +87,5 @@ public:
     Expression *exp;
 
     StaticIfCondition *syntaxCopy() override;
-    int include(Scope *sc) override;
     void accept(Visitor *v) override { v->visit(this); }
 };

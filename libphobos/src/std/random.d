@@ -1774,71 +1774,41 @@ else
 
 version (linux)
 {
-    version (linux_legacy_emulate_getrandom)
-    {
-        /+
-            Emulates `getrandom()` for backwards compatibility
-            with outdated kernels and legacy libc versions.
+    // `getrandom()` was introduced in Linux 3.17.
 
-            `getrandom()` was added to the GNU C Library in v2.25.
-         +/
-        pragma(msg, "`getrandom()` emulation for legacy Linux targets is enabled.");
-
-        /+
-            On modern kernels (5.6+), `/dev/random` would behave more similar
-            to `getrandom()`.
-            However, this emulator was specifically written for systems older
-            than that. Hence, `/dev/urandom` is the CSPRNG of choice.
-
-            <https://web.archive.org/web/20200914181930/https://www.2uo.de/myths-about-urandom/>
-         +/
-        private static immutable _pathLinuxSystemCSPRNG = "/dev/urandom";
-
-        import core.sys.posix.sys.types : ssize_t;
-
-        /+
-            Linux `getrandom()` emulation built upon `/dev/urandom`.
-            The fourth parameter (`uint flags`) is happily ignored.
-         +/
-        private ssize_t getrandom(
-                void* buf,
-                size_t buflen,
-                uint,
-        ) @system nothrow @nogc
-        {
-            import core.stdc.stdio : fclose, fopen, fread;
-
-            auto blockDev = fopen(_pathLinuxSystemCSPRNG.ptr, "r");
-            if (blockDev is null)
-                assert(false, "System CSPRNG unavailable: `fopen(\"" ~ _pathLinuxSystemCSPRNG ~ "\")` failed.");
-            scope (exit) fclose(blockDev);
-
-            const bytesRead = fread(buf, 1, buflen, blockDev);
-            return bytesRead;
-        }
-    }
+    // Shim for missing bindings in druntime
+    version (none)
+        import core.sys.linux.sys.random : getrandom;
     else
     {
-        // `getrandom()` was introduced in Linux 3.17.
-
-        // Shim for missing bindings in druntime
-        version (none)
-            import core.sys.linux.sys.random : getrandom;
-        else
-        {
-            import core.sys.posix.sys.types : ssize_t;
-            private extern extern(C) ssize_t getrandom(
-                void* buf,
-                size_t buflen,
-                uint flags,
-            ) @system nothrow @nogc;
-        }
+        import core.sys.posix.sys.types : ssize_t;
+        extern extern(C) ssize_t getrandom(
+            void* buf,
+            size_t buflen,
+            uint flags,
+        ) @system nothrow @nogc;
     }
 }
 
 version (Windows)
 {
-    import std.internal.windows.bcrypt : bcryptGenRandom;
+    pragma(lib, "Bcrypt.lib");
+
+    private bool bcryptGenRandom(T)(out T result) @trusted
+    {
+        import core.sys.windows.windef : PUCHAR, ULONG;
+        import core.sys.windows.ntdef : NT_SUCCESS;
+        import core.sys.windows.bcrypt : BCryptGenRandom, BCRYPT_USE_SYSTEM_PREFERRED_RNG;
+
+        const gotRandom = BCryptGenRandom(
+            null,
+            cast(PUCHAR) &result,
+            ULONG(T.sizeof),
+            BCRYPT_USE_SYSTEM_PREFERRED_RNG,
+        );
+
+        return NT_SUCCESS(gotRandom);
+    }
 }
 
 /**

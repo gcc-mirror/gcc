@@ -19,6 +19,9 @@ $(TR $(TD Strings) $(TD
         $(LREF text)
         $(LREF wtext)
         $(LREF dtext)
+        $(LREF writeText)
+        $(LREF writeWText)
+        $(LREF writeDText)
         $(LREF hexString)
 ))
 $(TR $(TD Numeric) $(TD
@@ -538,6 +541,23 @@ template to(T)
             }
         }
     }
+}
+
+private T toImpl(T, S)(S)
+if (isInputRange!S && isInfinite!S && isExactSomeString!T)
+{
+    static assert(0, "Cannot convert infinite range to string. " ~
+                "Use `std.range.take` or `std.range.takeExactly` to make it finite.");
+}
+
+// Test for issue : https://github.com/dlang/phobos/issues/10559
+@safe pure nothrow unittest
+{
+    import std.range : repeat;
+    import std.conv : to;
+
+    // Test that converting an infinite range doesn't compile
+    static assert(!__traits(compiles, repeat(1).to!string));
 }
 
 /**
@@ -2470,7 +2490,8 @@ if (isIntegral!Target && !is(Target == enum) &&
             alias source = s;
         }
 
-        size_t count = 0;
+        static if (doCount)
+            size_t count = 0;
 
         if (source.empty)
             goto Lerr;
@@ -2485,7 +2506,8 @@ if (isIntegral!Target && !is(Target == enum) &&
                     sign = true;
                     goto case '+';
                 case '+':
-                    ++count;
+                    static if (doCount)
+                        ++count;
                     source.popFront();
 
                     if (source.empty)
@@ -2504,7 +2526,8 @@ if (isIntegral!Target && !is(Target == enum) &&
         {
             Target v = cast(Target) c;
 
-            ++count;
+            static if (doCount)
+                ++count;
             source.popFront();
 
             while (!source.empty)
@@ -2520,7 +2543,8 @@ if (isIntegral!Target && !is(Target == enum) &&
                     // Note: `v` can become negative here in case of parsing
                     // the most negative value:
                     v = cast(Target) (v * 10 + c);
-                    ++count;
+                    static if (doCount)
+                        ++count;
                     source.popFront();
                 }
                 else
@@ -2877,7 +2901,8 @@ do
         alias s = source;
     }
 
-    size_t count = 0;
+    static if (doCount)
+        size_t count = 0;
     auto found = false;
     do
     {
@@ -2904,7 +2929,8 @@ do
         auto nextv = v.mulu(radix, overflow).addu(c - '0', overflow);
         enforce!ConvOverflowException(!overflow && nextv <= Target.max, "Overflow in integral conversion");
         v = cast(Target) nextv;
-        ++count;
+        static if (doCount)
+            ++count;
         s.popFront();
         found = true;
     } while (!s.empty);
@@ -3163,36 +3189,35 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
 
     enforce(!p.empty, bailOut());
 
-
     size_t count = 0;
     bool sign = false;
     switch (p.front)
     {
     case '-':
         sign = true;
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         enforce(!p.empty, bailOut());
         if (toLower(p.front) == 'i')
             goto case 'i';
         break;
     case '+':
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         enforce(!p.empty, bailOut());
         break;
     case 'i': case 'I':
         // inf
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         enforce(!p.empty && toUpper(p.front) == 'N',
                bailOut("error converting input to floating point"));
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         enforce(!p.empty && toUpper(p.front) == 'F',
                bailOut("error converting input to floating point"));
         // skip past the last 'f'
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         advanceSource();
         static if (doCount)
@@ -3210,7 +3235,7 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
     bool startsWithZero = p.front == '0';
     if (startsWithZero)
     {
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         if (p.empty)
         {
@@ -3228,23 +3253,23 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
         isHex = p.front == 'x' || p.front == 'X';
         if (isHex)
         {
-            ++count;
+            static if (doCount) ++count;
             p.popFront();
         }
     }
     else if (toLower(p.front) == 'n')
     {
         // nan
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         enforce(!p.empty && toUpper(p.front) == 'A',
                bailOut("error converting input to floating point"));
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         enforce(!p.empty && toUpper(p.front) == 'N',
                bailOut("error converting input to floating point"));
         // skip past the last 'n'
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         advanceSource();
         static if (doCount)
@@ -3332,14 +3357,14 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
                     exp += expIter;
                 }
                 exp -= dot;
-                ++count;
+                static if (doCount) ++count;
                 p.popFront();
                 if (p.empty)
                     break;
                 i = p.front;
                 if (i == '_')
                 {
-                    ++count;
+                    static if (doCount) ++count;
                     p.popFront();
                     if (p.empty)
                         break;
@@ -3348,7 +3373,7 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
             }
             if (i == '.' && !dot)
             {
-                ++count;
+                static if (doCount) ++count;
                 p.popFront();
                 dot += expIter;
             }
@@ -3373,14 +3398,14 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
         char sexp = 0;
         int e = 0;
 
-        ++count;
+        static if (doCount) ++count;
         p.popFront();
         enforce(!p.empty, new ConvException("Unexpected end of input"));
         switch (p.front)
         {
             case '-':    sexp++;
                          goto case;
-            case '+':    ++count;
+            case '+':    static if (doCount) ++count;
                          p.popFront();
                          break;
             default: {}
@@ -3392,7 +3417,7 @@ if (isFloatingPoint!Target && !is(Target == enum) &&
             {
                 e = e * 10 + p.front - '0';
             }
-            ++count;
+            static if (doCount) ++count;
             p.popFront();
             sawDigits = true;
         }
@@ -4098,7 +4123,12 @@ if (isDynamicArray!Target && !is(Target == enum) &&
     auto result = appender!Target();
 
     parseCheck!s(lbracket);
-    size_t count = 1 + skipWS!(Source, Yes.doCount)(s);
+    static if (doCount)
+        size_t count = 1;
+    static if (doCount)
+        count += skipWS!(Source, Yes.doCount)(s);
+    else
+        skipWS!(Source, No.doCount)(s);
     if (s.empty)
         throw convError!(Source, Target)(s);
     if (s.front == rbracket)
@@ -4106,36 +4136,54 @@ if (isDynamicArray!Target && !is(Target == enum) &&
         s.popFront();
         static if (doCount)
         {
-            return tuple!("data", "count")(result.data, ++count);
+            ++count;
+            return tuple!("data", "count")(result.data, count);
         }
         else
         {
             return result.data;
         }
     }
-    for (;; s.popFront(), count += 1 + skipWS!(Source, Yes.doCount)(s))
+    for (;;)
     {
         if (!s.empty && s.front == rbracket)
             break;
-        auto r = parseElement!(WideElementType!Target, Source, Yes.doCount)(s);
-        result ~= r.data;
-        count += r.count + skipWS!(Source, Yes.doCount)(s);
+        static if (doCount)
+        {
+            auto r = parseElement!(WideElementType!Target, Source, Yes.doCount)(s);
+            result ~= r.data;
+            count += r.count;
+            count += skipWS!(Source, Yes.doCount)(s);
+        }
+        else
+        {
+            auto r = parseElement!(WideElementType!Target, Source, No.doCount)(s);
+            result ~= r;
+            skipWS!(Source, No.doCount)(s);
+        }
         if (s.empty)
             throw convError!(Source, Target)(s);
         if (s.front != comma)
             break;
+        s.popFront();
+        static if (doCount)
+            ++count;
+        static if (doCount)
+            count += skipWS!(Source, Yes.doCount)(s);
+        else
+            skipWS!(Source, No.doCount)(s);
     }
     parseCheck!s(rbracket);
     static if (doCount)
     {
-        return tuple!("data", "count")(result.data, ++count);
+        ++count;
+        return tuple!("data", "count")(result.data, count);
     }
     else
     {
         return result.data;
     }
 }
-
 ///
 @safe pure unittest
 {
@@ -4286,7 +4334,12 @@ if (isStaticArray!Target && !is(Target == enum) &&
         Target result = void;
 
     parseCheck!s(lbracket);
-    size_t count = 1 + skipWS!(Source, Yes.doCount)(s);
+    static if (doCount)
+        size_t count = 1;
+    static if (doCount)
+        count += skipWS!(Source, Yes.doCount)(s);
+    else
+        skipWS!(Source, No.doCount)(s);
     if (s.empty)
         throw convError!(Source, Target)(s);
     if (s.front == rbracket)
@@ -4298,7 +4351,8 @@ if (isStaticArray!Target && !is(Target == enum) &&
             s.popFront();
             static if (doCount)
             {
-                return tuple!("data", "count")(result, ++count);
+                ++count;
+                return tuple!("data", "count")(result, count);
             }
             else
             {
@@ -4306,13 +4360,23 @@ if (isStaticArray!Target && !is(Target == enum) &&
             }
         }
     }
-    for (size_t i = 0; ; s.popFront(), count += 1 + skipWS!(Source, Yes.doCount)(s))
+    for (size_t i = 0; ; )
     {
         if (i == result.length)
             goto Lmanyerr;
-        auto r = parseElement!(ElementType!Target, Source, Yes.doCount)(s);
-        result[i++] = r.data;
-        count += r.count + skipWS!(Source, Yes.doCount)(s);
+        static if (doCount)
+        {
+            auto r = parseElement!(ElementType!Target, Source, Yes.doCount)(s);
+            result[i++] = r.data;
+            count += r.count;
+            count += skipWS!(Source, Yes.doCount)(s);
+        }
+        else
+        {
+            auto r = parseElement!(ElementType!Target, Source, No.doCount)(s);
+            result[i++] = r;
+            skipWS!(Source, No.doCount)(s);
+        }
         if (s.empty)
             throw convError!(Source, Target)(s);
         if (s.front != comma)
@@ -4321,21 +4385,27 @@ if (isStaticArray!Target && !is(Target == enum) &&
                 goto Lfewerr;
             break;
         }
+        s.popFront();
+        static if (doCount)
+            ++count;
+        static if (doCount)
+            count += skipWS!(Source, Yes.doCount)(s);
+        else
+            skipWS!(Source, No.doCount)(s);
     }
     parseCheck!s(rbracket);
     static if (doCount)
     {
-        return tuple!("data", "count")(result, ++count);
+        ++count;
+        return tuple!("data", "count")(result, count);
     }
     else
     {
         return result;
     }
 
-
 Lmanyerr:
     throw parseError(text("Too many elements in input, ", result.length, " elements expected."));
-
 Lfewerr:
     throw parseError(text("Too few elements in input, ", result.length, " elements expected."));
 }
@@ -4393,46 +4463,60 @@ if (isAssociativeArray!Target && !is(Target == enum) &&
     alias ValType = typeof(Target.init.values[0]);
 
     Target result;
+    static if (doCount) size_t count;
 
     parseCheck!s(lbracket);
-    size_t count = 1 + skipWS!(Source, Yes.doCount)(s);
+    static if (doCount)
+        count = 1 + skipWS!(Source, Yes.doCount)(s);
+    else
+        skipWS!(Source, No.doCount)(s);
     if (s.empty)
         throw convError!(Source, Target)(s);
     if (s.front == rbracket)
     {
         s.popFront();
         static if (doCount)
+            return tuple!("data", "count")(result, count + 1);
+        else
+            return result;
+    }
+    for (;;)
+    {
+        static if (doCount)
         {
-            return tuple!("data", "count")(result, ++count);
+            auto key = parseElement!(KeyType, Source, Yes.doCount)(s);
+            count += key.count + skipWS!(Source, Yes.doCount)(s);
+            parseCheck!s(keyval);
+            count += 1 + skipWS!(Source, Yes.doCount)(s);
+            auto val = parseElement!(ValType, Source, Yes.doCount)(s);
+            count += val.count + skipWS!(Source, Yes.doCount)(s);
+            result[key.data] = val.data;
         }
         else
         {
-            return result;
+            auto key = parseElement!(KeyType, Source, No.doCount)(s);
+            skipWS!(Source, No.doCount)(s);
+            parseCheck!s(keyval);
+            skipWS!(Source, No.doCount)(s);
+            auto val = parseElement!(ValType, Source, No.doCount)(s);
+            skipWS!(Source, No.doCount)(s);
+            result[key] = val;
         }
-    }
-    for (;; s.popFront(), count += 1 + skipWS!(Source, Yes.doCount)(s))
-    {
-        auto key = parseElement!(KeyType, Source, Yes.doCount)(s);
-        count += key.count + skipWS!(Source, Yes.doCount)(s);
-        parseCheck!s(keyval);
-        count += 1 + skipWS!(Source, Yes.doCount)(s);
-        auto val = parseElement!(ValType, Source, Yes.doCount)(s);
-        count += val.count + skipWS!(Source, Yes.doCount)(s);
-        result[key.data] = val.data;
         if (s.empty)
             throw convError!(Source, Target)(s);
         if (s.front != comma)
             break;
+        s.popFront();
+        static if (doCount)
+            count += 1 + skipWS!(Source, Yes.doCount)(s);
+        else
+            skipWS!(Source, No.doCount)(s);
     }
     parseCheck!s(rbracket);
     static if (doCount)
-    {
-        return tuple!("data", "count")(result, ++count);
-    }
+        return tuple!("data", "count")(result, count + 1);
     else
-    {
         return result;
-    }
 }
 
 ///
@@ -4489,7 +4573,9 @@ private auto parseEscape(Source, Flag!"doCount" doCount = No.doCount)(ref Source
 if (isInputRange!Source && isSomeChar!(ElementType!Source))
 {
     parseCheck!s('\\');
-    size_t count = 1;
+    size_t count;
+    static if (doCount)
+        count = 1;
     if (s.empty)
         throw parseError("Unterminated escape sequence");
 
@@ -4507,15 +4593,15 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source))
             throw parseError("Hex digit is missing");
         return isAlpha(c) ? ((c & ~0x20) - ('A' - 10)) : c - '0';
     }
-
     // We need to do octals separate, because they need a lookahead to find out,
     // where the escape sequence ends.
     auto first = s.front;
     if (first >= '0' && first <= '7')
     {
         dchar c1 = s.front;
-        ++count;
         s.popFront();
+        static if (doCount)
+            ++count;
         if (s.empty)
         {
             static if (doCount)
@@ -4539,8 +4625,9 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source))
                 return cast (dchar)(c1 - '0');
             }
         }
-        ++count;
         s.popFront();
+        static if (doCount)
+            ++count;
         dchar c3 = s.front;
         if (c3 < '0' || c3 > '7')
         {
@@ -4553,8 +4640,9 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source))
                 return cast (dchar) (8 * (c1 - '0') + (c2 - '0'));
             }
         }
-        ++count;
         s.popFront();
+        static if (doCount)
+            ++count;
         if (c1 > '3')
             throw parseError("Octal sequence is larger than \\377");
         static if (doCount)
@@ -4585,14 +4673,16 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source))
         case 'x':
             result  = getHexDigit() << 4;
             result |= getHexDigit();
-            count += 2;
+            static if (doCount)
+                count += 2;
             break;
         case 'u':
             result  = getHexDigit() << 12;
             result |= getHexDigit() << 8;
             result |= getHexDigit() << 4;
             result |= getHexDigit();
-            count += 4;
+            static if (doCount)
+                count += 4;
             break;
         case 'U':
             result  = getHexDigit() << 28;
@@ -4603,7 +4693,8 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source))
             result |= getHexDigit() << 8;
             result |= getHexDigit() << 4;
             result |= getHexDigit();
-            count += 8;
+            static if (doCount)
+                count += 8;
             break;
         default:
             throw parseError("Unknown escape character " ~ to!string(s.front));
@@ -4643,7 +4734,6 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source))
         // https://issues.dlang.org/show_bug.cgi?id=9621 (Named Character Entities)
         //'\&amp;', '\&quot;',
     ];
-
     foreach (i ; 0 .. s1.length)
     {
         assert(s2[i] == parseEscape(s1[i]));
@@ -4696,7 +4786,9 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     }
 
     parseCheck!s('\"');
-    size_t count = 1;
+    size_t count;
+    static if (doCount)
+        count = 1;
     if (s.empty)
         throw convError!(Source, Target)(s);
     if (s.front == '\"')
@@ -4704,13 +4796,13 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
         s.popFront();
         static if (doCount)
         {
-            return tuple!("data", "count")(result.data, ++count);
+            count++;
+            return tuple!("data", "count")(result.data, count);
         }
         else
         {
             return result.data;
         }
-
     }
     while (true)
     {
@@ -4722,20 +4814,30 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
                 s.popFront();
                 static if (doCount)
                 {
-                    return tuple!("data", "count")(result.data, ++count);
+                    count++;
+                    return tuple!("data", "count")(result.data, count);
                 }
                 else
                 {
                     return result.data;
                 }
             case '\\':
-                auto r = parseEscape!(typeof(s), Yes.doCount)(s);
-                result.put(r[0]);
-                count += r[1];
+                static if (doCount)
+                {
+                    auto r = parseEscape!(typeof(s), Yes.doCount)(s);
+                    result.put(r[0]);
+                    count += r[1];
+                }
+                else
+                {
+                    auto r = parseEscape!(typeof(s), No.doCount)(s);
+                    result.put(r);
+                }
                 break;
             default:
                 result.put(s.front);
-                ++count;
+                static if (doCount)
+                    count++;
                 s.popFront();
                 break;
         }
@@ -4751,21 +4853,30 @@ if (isInputRange!Source && isSomeChar!(ElementType!Source) && !is(Source == enum
     Unqual!Target c;
 
     parseCheck!s('\'');
-    size_t count = 1;
+    size_t count;
+    static if (doCount)
+        count = 1;
     if (s.empty)
         throw convError!(Source, Target)(s);
-    ++count; // for the following if-else sequence
+    static if (doCount)
+        count++;
     if (s.front != '\\')
     {
         c = s.front;
         s.popFront();
     }
     else
-        c = parseEscape(s);
+    {
+        static if (doCount)
+            c = parseEscape!(typeof(s), Yes.doCount)(s).data;
+        else
+            c = parseEscape!(typeof(s), No.doCount)(s);
+    }
     parseCheck!s('\'');
     static if (doCount)
     {
-        return tuple!("data", "count")(c, ++count);
+        count++;
+        return tuple!("data", "count")(c, count);
     }
     else
     {
@@ -4835,6 +4946,225 @@ if (T.length > 0) { return textImpl!dstring(args); }
     assert(dtext(cs, ' ', ws, " ", ds) == "今日は 여보세요 Здравствуйте"d);
 }
 
+// Ensure that ranges are being printed as expected.
+@safe unittest
+{
+    static struct Range
+    {
+        int counter = 0;
+
+    @safe pure nothrow @nogc:
+        bool empty() const => (counter <= 0);
+        int front() const => counter;
+        void popFront() { --counter; }
+    }
+
+    auto m = Range(2);
+    assert(text(m) == "[2, 1]");
+
+    const c = Range(3);
+    assert(text(c) == "const(Range)(3)");
+}
+
+// Ensure that a usage pattern seen in libraries like "unit-threaded" works.
+@safe unittest
+{
+    static final class Foo
+    {
+        override string toString() const @safe
+        {
+            return ":-)";
+        }
+    }
+
+    const c = new Foo();
+    assert(text(c) == ":-)");
+    assert(text(c, " ") == ":-) ");
+}
+
+// Ensure that classes are printed as expected.
+@system unittest
+{
+    import std.string : endsWith, startsWith;
+
+    static final class Bar {}
+
+    // CTFE:                                                         `Bar`
+    // Runtime:                         `std.conv.__unittest_L4875_C9.Bar`
+    static assert(text(     new       Bar ()     )  ==               "Bar"   );
+           assert(text(     new       Bar ()     ).endsWith  (      ".Bar"  ));
+    static assert(text("=", new       Bar (), ".")  ==              "=Bar."  );
+           assert(text("=", new       Bar (), ".").endsWith  (      ".Bar." ));
+    static assert(text(     new const(Bar)()     )  ==         "const(Bar)"  );
+           assert(text(     new const(Bar)()     ).startsWith( "const("     ));
+           assert(text(     new const(Bar)()     ).endsWith  (      ".Bar)" ));
+    static assert(text("=", new const(Bar)(), ".")  ==        "=const(Bar)." );
+           assert(text("=", new const(Bar)(), ".").startsWith("=const("     ));
+           assert(text("=", new const(Bar)(), ".").endsWith  (      ".Bar)."));
+}
+
+// Ensure that various types are printed as expected.
+@safe unittest
+{
+    import std.string : endsWith;
+
+    int dummy;
+
+    static struct Foo {}
+    struct Bar { int i() @safe => dummy; }
+
+    static struct Point
+    {
+        int x;
+        int y;
+    }
+
+    struct Range
+    {
+        bool empty()    =>              dummy > 9;
+        int  front()    =>              dummy;
+        void popFront() => cast(void) ++dummy;
+    }
+
+    assert(text(null         ) == "null"     );
+    assert(text(null, null   ) == "nullnull" );
+    assert(text(0, null, '\0') == "0null\x00");
+
+    assert(text('\r','\n','\t','\x00') == "\r\n\t\0");
+    assert(text("\r\n\t\0"           ) == "\r\n\t\0");
+
+    assert(text(       3141,     ) ==    "3141"  );
+    assert(text(": ",  3141, '\0') ==  ": 3141\0");
+    assert(text(      -3141,     ) ==   "-3141"  );
+    assert(text(": ", -3141, '\0') == ": -3141\0");
+
+    () @trusted
+    {
+        int* pointer = cast(int*) 3141;
+        assert(text(       pointer,     ) ==    "C45"  );
+        assert(text(": ",  pointer, '\0') ==  ": C45\0");
+    }();
+
+    assert(text(      3.1415923,      ) ==   "3.14159"  );
+    assert(text(": ", 3.1415923,  '\0') == ": 3.14159\0");
+    assert(text(      3.1415923f,     ) ==   "3.14159"  );
+    assert(text(": ", 3.1415923f, '\0') == ": 3.14159\0");
+
+    assert(text(       !3141,     ) ==   "false"  );
+    assert(text(": ",  !3141, '\0') == ": false\0");
+    assert(text(      !!3141,     ) ==   "true"   );
+    assert(text(": ", !!3141, '\0') == ": true\0" );
+
+    assert(text(             Foo(),      ) ==         "Foo()"  );
+    assert(text(": ",        Foo(),  '\0') ==       ": Foo()\0");
+    assert(text(      const(Foo)(),     ) ==   "const(Foo)()"  );
+    assert(text(": ", const(Foo)(), '\0') == ": const(Foo)()\0");
+
+    assert(text(             Bar(),      ) ==         "Bar()"  );
+    assert(text(": ",        Bar(),  '\0') ==       ": Bar()\0");
+    assert(text(      const(Bar)(),     ) ==   "const(Bar)()"  );
+    assert(text(": ", const(Bar)(), '\0') == ": const(Bar)()\0");
+
+    assert(text(                 Point(3, 141),     ) ==              "Point(3, 141)"  );
+    assert(text(": ",            Point(3, 141), '\0') ==            ": Point(3, 141)\0");
+    assert(text(          const(Point)(3, 141),     ) ==       "const(Point)(3, 141)"  );
+    assert(text(": ",     const(Point)(3, 141), '\0') ==     ": const(Point)(3, 141)\0");
+    assert(text(         shared(Point)(3, 141),     ) ==      "shared(Point)(3, 141)"  );
+    assert(text(": ",    shared(Point)(3, 141), '\0') ==    ": shared(Point)(3, 141)\0");
+    assert(text(      immutable(Point)(3, 141),     ) ==   "immutable(Point)(3, 141)"  );
+    assert(text(": ", immutable(Point)(3, 141), '\0') == ": immutable(Point)(3, 141)\0");
+
+    dummy = 0;
+    assert(text(            Range(),      ) ==   "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]"  );
+    dummy = 0;
+    assert(text(": ",       Range(),  '\0') == ": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\0");
+    assert(text(      const(Range)(),     ) ==   "const(Range)()"                  );
+    assert(text(": ", const(Range)(), '\0') == ": const(Range)()\0"                );
+
+    void function() @safe fn1;
+    void delegate() @safe dg1;
+    assert(text(fn1) == "null");
+    assert(text(dg1) == "void delegate() @safe");
+
+    bool function(bool, int) @safe    fn2;
+    bool delegate(bool, int) @safe    dg2;
+    bool delegate(bool, int) @system  dg3;
+    bool delegate(bool, int) @trusted dg4;
+    assert(text(fn2) == "null");
+    assert(text(dg2) == "bool delegate(bool, int) @safe");
+    assert(text(dg3) == "bool delegate(bool, int) @system");
+    assert(text(dg4) == "bool delegate(bool, int) @trusted");
+}
+
+/// Convenience functions for writing arguments to an output range as text.
+void writeText(Sink, T...)(ref Sink sink, T args)
+if (isOutputRange!(Sink, char) && T.length > 0)
+{
+    sink.writeTextImpl!string(args);
+}
+
+/// ditto
+void writeWText(Sink, T...)(ref Sink sink, T args)
+if (isOutputRange!(Sink, wchar) && T.length > 0)
+{
+    sink.writeTextImpl!wstring(args);
+}
+
+/// ditto
+void writeDText(Sink, T...)(ref Sink sink, T args)
+if (isOutputRange!(Sink, dchar) && T.length > 0)
+{
+    sink.writeTextImpl!dstring(args);
+}
+
+///
+@safe unittest
+{
+    import std.array : appender;
+
+    auto output = appender!string();
+    output.writeText("The answer is ", 42);
+
+    assert(output.data == "The answer is 42");
+}
+
+///
+@safe unittest
+{
+    import std.array : appender;
+
+    const color = "red";
+    auto output = appender!string();
+    output.writeText(i"My favorite color is $(color)");
+
+    assert(output.data == "My favorite color is red");
+}
+
+@safe unittest
+{
+    auto capp = appender!string();
+    auto wapp = appender!wstring();
+    auto dapp = appender!dstring();
+
+    capp.writeText(42, ' ', 1.5, ": xyz");
+    wapp.writeWText(42, ' ', 1.5, ": xyz");
+    dapp.writeDText(42, ' ', 1.5, ": xyz");
+
+    assert(capp.data == "42 1.5: xyz"c);
+    assert(wapp.data == "42 1.5: xyz"w);
+    assert(dapp.data == "42 1.5: xyz"d);
+}
+
+// Check range API compliance using OutputRange interface
+@system unittest
+{
+    import std.range.interfaces : OutputRange, outputRangeObject;
+    import std.range : nullSink;
+
+    OutputRange!char testOutput = outputRangeObject!char(nullSink);
+    testOutput.writeText(42, ' ', 1.5, ": xyz");
+}
+
 private S textImpl(S, U...)(U args)
 {
     static if (U.length == 0)
@@ -4855,27 +5185,32 @@ private S textImpl(S, U...)(U args)
         // assume that on average, parameters will have less
         // than 20 elements
         app.reserve(U.length * 20);
-        // Must be static foreach because of https://issues.dlang.org/show_bug.cgi?id=21209
-        static foreach (arg; args)
-        {
-            static if (
-                isSomeChar!(typeof(arg))
-                || isSomeString!(typeof(arg))
-                || ( isInputRange!(typeof(arg)) && isSomeChar!(ElementType!(typeof(arg))) )
-            )
-                app.put(arg);
-            else static if (
-
-                is(immutable typeof(arg) == immutable uint) || is(immutable typeof(arg) == immutable ulong) ||
-                is(immutable typeof(arg) == immutable int) || is(immutable typeof(arg) == immutable long)
-            )
-                // https://issues.dlang.org/show_bug.cgi?id=17712#c15
-                app.put(textImpl!(S)(arg));
-            else
-                app.put(to!S(arg));
-        }
-
+        app.writeTextImpl!S(args);
         return app.data;
+    }
+}
+
+private void writeTextImpl(S, Sink, U...)(ref Sink sink, U args)
+if (isSomeString!S && isOutputRange!(Sink, ElementEncodingType!S))
+{
+    // Must be static foreach because of https://issues.dlang.org/show_bug.cgi?id=21209
+    static foreach (arg; args)
+    {
+        static if (
+            isSomeChar!(typeof(arg))
+            || isSomeString!(typeof(arg))
+            || ( isInputRange!(typeof(arg)) && isSomeChar!(ElementType!(typeof(arg))) )
+        )
+            put(sink, arg);
+        else static if (
+
+            is(immutable typeof(arg) == immutable uint) || is(immutable typeof(arg) == immutable ulong) ||
+            is(immutable typeof(arg) == immutable int) || is(immutable typeof(arg) == immutable long)
+        )
+            // https://issues.dlang.org/show_bug.cgi?id=17712#c15
+            put(sink, textImpl!(S)(arg));
+        else
+            put(sink, to!S(arg));
     }
 }
 

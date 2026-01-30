@@ -324,7 +324,6 @@ immutable Msgtable[] msgtable =
     { "__switch_error"},
     { "__ArrayCast"},
     { "_d_HookTraceImpl" },
-    { "_d_arraysetlengthTImpl"},
     { "_d_arraysetlengthT"},
     { "_d_arraysetlengthTTrace"},
     { "_d_arrayappendT" },

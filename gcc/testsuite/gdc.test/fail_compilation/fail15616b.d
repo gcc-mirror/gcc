@@ -1,6 +1,6 @@
 /*
 REQUIRED_ARGS: -v
-TRANSFORM_OUTPUT: remove_lines("^(predefs|binary|version|config|DFLAG|parse|import|semantic|entry|\s*$)")
+TRANSFORM_OUTPUT: remove_lines("^(predefs|binary|version|config|DFLAG|parse|import|\(imported|semantic|entry|\s*$)")
 TEST_OUTPUT:
 ---
 fail_compilation/fail15616b.d(44): Error: none of the overloads of `foo` are callable using argument types `(double)`

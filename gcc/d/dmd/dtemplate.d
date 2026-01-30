@@ -53,7 +53,7 @@ import dmd.dinterpret;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic, checkDeprecated, aliasSemantic, search, search_correct, setScope, importAll, include, hasStaticCtorOrDtor;
+import dmd.dsymbolsem : dsymbolSemantic, checkDeprecated, aliasSemantic, search, search_correct, setScope, importAll, include, hasStaticCtorOrDtor, oneMembers;
 import dmd.errors;
 import dmd.errorsink;
 import dmd.expression;
@@ -593,6 +593,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
     bool isTrivialAliasSeq; /// matches pattern `template AliasSeq(T...) { alias AliasSeq = T; }`
     bool isTrivialAlias;    /// matches pattern `template Alias(T) { alias Alias = qualifiers(T); }`
     bool deprecated_;       /// this template declaration is deprecated
+    bool isCmacro;          /// Whether this template is a translation of a C macro
     Visibility visibility;
 
     // threaded list of previous instantiation attempts on stack
@@ -639,7 +640,7 @@ extern (C++) final class TemplateDeclaration : ScopeDsymbol
             return;
 
         Dsymbol s;
-        if (!Dsymbol.oneMembers(members, s, ident) || !s)
+        if (!oneMembers(members, s, ident) || !s)
             return;
 
         onemember = s;
@@ -3661,11 +3662,11 @@ extern (C++) class TemplateInstance : ScopeDsymbol
     ScopeDsymbol argsym;        // argument symbol table
     size_t hash;                // cached result of toHash()
 
-    /// For function template, these are the function names and arguments
+    /// For function template, these are the function fnames(name and loc of it) and arguments
     /// Relevant because different resolutions of `auto ref` parameters
     /// create different template instances even with the same template arguments
     Expressions* fargs;
-    Identifiers* fnames;
+    ArgumentLabels* fnames;
 
     TemplateInstances* deferred;
 
@@ -5273,7 +5274,7 @@ extern (C++) class TemplateInstance : ScopeDsymbol
                 if (members.length)
                 {
                     Dsymbol sa;
-                    if (Dsymbol.oneMembers(members, sa, tempdecl.ident) && sa)
+                    if (oneMembers(members, sa, tempdecl.ident) && sa)
                         aliasdecl = sa;
                 }
                 done = true;
@@ -5488,12 +5489,6 @@ extern (C++) final class TemplateMixin : TemplateInstance
     override const(char)* kind() const
     {
         return "mixin";
-    }
-
-    override bool hasPointers()
-    {
-        //printf("TemplateMixin.hasPointers() %s\n", toChars());
-        return members.foreachDsymbol( (s) { return s.hasPointers(); } ) != 0;
     }
 
     extern (D) bool findTempDecl(Scope* sc)

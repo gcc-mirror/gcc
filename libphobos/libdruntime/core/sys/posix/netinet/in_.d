@@ -547,7 +547,7 @@ version (CRuntime_Glibc)
     }
 
     // macros
-    extern (D) int IN6_IS_ADDR_UNSPECIFIED( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_UNSPECIFIED()(const scope in6_addr* add) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
@@ -555,7 +555,7 @@ version (CRuntime_Glibc)
                (cast(uint32_t*) addr)[3] == 0;
     }
 
-    extern (D) int IN6_IS_ADDR_LOOPBACK( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_LOOPBACK()(const scope in6_addr* add) pure
     {
         return (cast(uint32_t*) addr)[0] == 0  &&
                (cast(uint32_t*) addr)[1] == 0  &&
@@ -563,29 +563,29 @@ version (CRuntime_Glibc)
                (cast(uint32_t*) addr)[3] == htonl( 1 );
     }
 
-    extern (D) int IN6_IS_ADDR_MULTICAST( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MULTICAST()(const scope in6_addr* add) pure
     {
         return (cast(uint8_t*) addr)[0] == 0xff;
     }
 
-    extern (D) int IN6_IS_ADDR_LINKLOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_LINKLOCAL()(const scope in6_addr* add) pure
     {
         return ((cast(uint32_t*) addr)[0] & htonl( 0xffc00000 )) == htonl( 0xfe800000 );
     }
 
-    extern (D) int IN6_IS_ADDR_SITELOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_SITELOCAL()(const scope in6_addr* add) pure
     {
         return ((cast(uint32_t*) addr)[0] & htonl( 0xffc00000 )) == htonl( 0xfec00000 );
     }
 
-    extern (D) int IN6_IS_ADDR_V4MAPPED( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_V4MAPPED()(const scope in6_addr* add) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
                (cast(uint32_t*) addr)[2] == htonl( 0xffff );
     }
 
-    extern (D) int IN6_IS_ADDR_V4COMPAT( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_V4COMPAT()(const scope in6_addr* add) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
@@ -593,31 +593,31 @@ version (CRuntime_Glibc)
                ntohl( (cast(uint32_t*) addr)[3] ) > 1;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_NODELOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_NODELOCAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x1;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x2;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_SITELOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_SITELOCAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST(addr) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x5;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x8;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_GLOBAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_GLOBAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0xe;
@@ -670,7 +670,7 @@ else version (Darwin)
     }
 
     // macros
-    extern (D) int IN6_IS_ADDR_UNSPECIFIED( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_UNSPECIFIED()(const scope in6_addr* add) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
@@ -678,7 +678,7 @@ else version (Darwin)
                (cast(uint32_t*) addr)[3] == 0;
     }
 
-    extern (D) int IN6_IS_ADDR_LOOPBACK( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_LOOPBACK()(const scope in6_addr* add) pure
     {
         return (cast(uint32_t*) addr)[0] == 0  &&
                (cast(uint32_t*) addr)[1] == 0  &&
@@ -686,29 +686,29 @@ else version (Darwin)
                (cast(uint32_t*) addr)[3] == ntohl( 1 );
     }
 
-    extern (D) int IN6_IS_ADDR_MULTICAST( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MULTICAST()(const scope in6_addr* add) pure
     {
         return addr.s6_addr[0] == 0xff;
     }
 
-    extern (D) int IN6_IS_ADDR_LINKLOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_LINKLOCAL()(const scope in6_addr* add) pure
     {
         return addr.s6_addr[0] == 0xfe && (addr.s6_addr[1] & 0xc0) == 0x80;
     }
 
-    extern (D) int IN6_IS_ADDR_SITELOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_SITELOCAL()(const scope in6_addr* add) pure
     {
         return addr.s6_addr[0] == 0xfe && (addr.s6_addr[1] & 0xc0) == 0xc0;
     }
 
-    extern (D) int IN6_IS_ADDR_V4MAPPED( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_V4MAPPED()(const scope in6_addr* add) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
                (cast(uint32_t*) addr)[2] == ntohl( 0x0000ffff );
     }
 
-    extern (D) int IN6_IS_ADDR_V4COMPAT( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_V4COMPAT()(const scope in6_addr* add) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
@@ -717,31 +717,31 @@ else version (Darwin)
                (cast(uint32_t*) addr)[3] != ntohl( 1 );
     }
 
-    extern (D) int IN6_IS_ADDR_MC_NODELOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_NODELOCAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x1;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x2;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_SITELOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_SITELOCAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST(addr) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x5;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x8;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_GLOBAL( const scope in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_GLOBAL()(const scope in6_addr* add) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0xe;
@@ -804,7 +804,7 @@ else version (FreeBSD)
     }
 
     // macros
-    extern (D) int IN6_IS_ADDR_UNSPECIFIED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_UNSPECIFIED()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -812,7 +812,7 @@ else version (FreeBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) == 0);
     }
 
-    extern (D) int IN6_IS_ADDR_LOOPBACK( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LOOPBACK()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -820,7 +820,7 @@ else version (FreeBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) == ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4COMPAT( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4COMPAT()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -829,58 +829,58 @@ else version (FreeBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) != ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4MAPPED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4MAPPED()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[8]) == ntohl(0x0000ffff));
     }
 
-    extern (D) int IN6_IS_ADDR_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xfe && (a.s6_addr[1] & 0xc0) == 0x80;
     }
 
-    extern (D) int IN6_IS_ADDR_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_SITELOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xfe && (a.s6_addr[1] & 0xc0) == 0xc0;
     }
 
-    extern (D) int IN6_IS_ADDR_MULTICAST( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MULTICAST()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xff;
     }
 
-    extern (D) uint8_t __IPV6_ADDR_MC_SCOPE( const scope in6_addr* a ) pure
+    extern (D) uint8_t __IPV6_ADDR_MC_SCOPE()( const scope in6_addr* a) pure
     {
         return a.s6_addr[1] & 0x0f;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_NODELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_NODELOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_NODELOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_LINKLOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_SITELOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_SITELOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_ORGLOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_GLOBAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_GLOBAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_GLOBAL;
@@ -943,7 +943,7 @@ else version (NetBSD)
     }
 
     // macros
-    extern (D) int IN6_IS_ADDR_UNSPECIFIED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_UNSPECIFIED()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -951,7 +951,7 @@ else version (NetBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) == 0);
     }
 
-    extern (D) int IN6_IS_ADDR_LOOPBACK( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LOOPBACK()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -959,7 +959,7 @@ else version (NetBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) == ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4COMPAT( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4COMPAT()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -968,58 +968,58 @@ else version (NetBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) != ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4MAPPED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4MAPPED()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[8]) == ntohl(0x0000ffff));
     }
 
-    extern (D) int IN6_IS_ADDR_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xfe && (a.s6_addr[1] & 0xc0) == 0x80;
     }
 
-    extern (D) int IN6_IS_ADDR_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_SITELOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xfe && (a.s6_addr[1] & 0xc0) == 0xc0;
     }
 
-    extern (D) int IN6_IS_ADDR_MULTICAST( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MULTICAST()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xff;
     }
 
-    extern (D) uint8_t __IPV6_ADDR_MC_SCOPE( const scope in6_addr* a ) pure
+    extern (D) uint8_t __IPV6_ADDR_MC_SCOPE()( const scope in6_addr* a) pure
     {
         return a.s6_addr[1] & 0x0f;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_NODELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_NODELOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_NODELOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_LINKLOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_SITELOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_SITELOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_ORGLOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_GLOBAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_GLOBAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_GLOBAL;
@@ -1082,7 +1082,7 @@ else version (OpenBSD)
     }
 
     // macros
-    extern (D) int IN6_IS_ADDR_UNSPECIFIED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_UNSPECIFIED()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -1090,7 +1090,7 @@ else version (OpenBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) == 0);
     }
 
-    extern (D) int IN6_IS_ADDR_LOOPBACK( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LOOPBACK()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -1098,7 +1098,7 @@ else version (OpenBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) == ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4COMPAT( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4COMPAT()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -1107,58 +1107,58 @@ else version (OpenBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) != ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4MAPPED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4MAPPED()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[8]) == ntohl(0x0000ffff));
     }
 
-    extern (D) int IN6_IS_ADDR_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xfe && (a.s6_addr[1] & 0xc0) == 0x80;
     }
 
-    extern (D) int IN6_IS_ADDR_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_SITELOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xfe && (a.s6_addr[1] & 0xc0) == 0xc0;
     }
 
-    extern (D) int IN6_IS_ADDR_MULTICAST( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MULTICAST()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xff;
     }
 
-    extern (D) uint8_t __IPV6_ADDR_MC_SCOPE( const scope in6_addr* a ) pure
+    extern (D) uint8_t __IPV6_ADDR_MC_SCOPE()( const scope in6_addr* a) pure
     {
         return a.s6_addr[1] & 0x0f;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_NODELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_NODELOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_NODELOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_LINKLOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_SITELOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_SITELOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_ORGLOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_GLOBAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_GLOBAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_GLOBAL;
@@ -1221,7 +1221,7 @@ else version (DragonFlyBSD)
     }
 
     // macros
-    extern (D) int IN6_IS_ADDR_UNSPECIFIED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_UNSPECIFIED()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -1229,7 +1229,7 @@ else version (DragonFlyBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) == 0);
     }
 
-    extern (D) int IN6_IS_ADDR_LOOPBACK( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LOOPBACK()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -1237,7 +1237,7 @@ else version (DragonFlyBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) == ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4COMPAT( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4COMPAT()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
@@ -1246,58 +1246,58 @@ else version (DragonFlyBSD)
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[12]) != ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4MAPPED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4MAPPED()( const scope in6_addr* a) pure
     {
         return (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[0]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[4]) == 0) &&
                (*cast(const uint32_t*) cast(const void*) (&a.s6_addr[8]) == ntohl(0x0000ffff));
     }
 
-    extern (D) int IN6_IS_ADDR_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xfe && (a.s6_addr[1] & 0xc0) == 0x80;
     }
 
-    extern (D) int IN6_IS_ADDR_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_SITELOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xfe && (a.s6_addr[1] & 0xc0) == 0xc0;
     }
 
-    extern (D) int IN6_IS_ADDR_MULTICAST( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MULTICAST()( const scope in6_addr* a) pure
     {
         return a.s6_addr[0] == 0xff;
     }
 
-    extern (D) uint8_t __IPV6_ADDR_MC_SCOPE( const scope in6_addr* a ) pure
+    extern (D) uint8_t __IPV6_ADDR_MC_SCOPE()( const scope in6_addr* a) pure
     {
         return a.s6_addr[1] & 0x0f;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_NODELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_NODELOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_NODELOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_LINKLOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_SITELOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_SITELOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_ORGLOCAL;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_GLOBAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_GLOBAL()( const scope in6_addr* a) pure
     {
         return IN6_IS_ADDR_MULTICAST(a) &&
                __IPV6_ADDR_MC_SCOPE(a) == __IPV6_ADDR_SCOPE_GLOBAL;
@@ -1350,67 +1350,67 @@ else version (Solaris)
     }
 
     // macros
-    extern (D) int IN6_IS_ADDR_UNSPECIFIED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_UNSPECIFIED()( const scope in6_addr* a) pure
     {
         return (a.s6_addr32[0] == 0) && (a.s6_addr32[1] == 0) &&
                (a.s6_addr32[2] == 0) && (a.s6_addr32[3] == 0);
     }
 
-    extern (D) int IN6_IS_ADDR_LOOPBACK( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LOOPBACK()( const scope in6_addr* a) pure
     {
         return (a.s6_addr32[0] == 0) && (a.s6_addr32[1] == 0) &&
                (a.s6_addr32[2] == 0) && (a.s6_addr32[3] == ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4COMPAT( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4COMPAT()( const scope in6_addr* a) pure
     {
         return (a.s6_addr32[0] == 0) && (a.s6_addr32[1] == 0) &&
                (a.s6_addr32[2] == 0) && (a.s6_addr32[3] != 0) &&
                (a.s6_addr32[3] != ntohl(1));
     }
 
-    extern (D) int IN6_IS_ADDR_V4MAPPED( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_V4MAPPED()( const scope in6_addr* a) pure
     {
         return (a.s6_addr32[0] == 0) && (a.s6_addr32[1] == 0) &&
                (a.s6_addr32[2] == ntohl(0x0000ffff));
     }
 
-    extern (D) int IN6_IS_ADDR_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr8[0] == 0xfe && (a.s6_addr8[1] & 0xc0) == 0x80;
     }
 
-    extern (D) int IN6_IS_ADDR_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_SITELOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr8[0] == 0xfe && (a.s6_addr8[1] & 0xc0) == 0xc0;
     }
 
-    extern (D) int IN6_IS_ADDR_MULTICAST( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MULTICAST()( const scope in6_addr* a) pure
     {
         return a.s6_addr8[0] == 0xff;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_NODELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_NODELOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr8[0] == 0xff && (a.s6_addr8[1] & 0x0f) == 0x01;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr8[0] == 0xff && (a.s6_addr8[1] & 0x0f) == 0x02;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_SITELOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_SITELOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr8[0] == 0xff && (a.s6_addr8[1] & 0x0f) == 0x05;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr8[0] == 0xff && (a.s6_addr8[1] & 0x0f) == 0x08;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_GLOBAL( const scope in6_addr* a ) pure
+    extern (D) int IN6_IS_ADDR_MC_GLOBAL()( const scope in6_addr* a) pure
     {
         return a.s6_addr8[0] == 0xff && (a.s6_addr8[1] & 0x0f) == 0x0e;
     }
@@ -1640,7 +1640,7 @@ else version (CRuntime_UClibc)
     }
 
     // macros
-    extern (D) int IN6_IS_ADDR_UNSPECIFIED( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_UNSPECIFIED()( in6_addr* addr) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
@@ -1648,7 +1648,7 @@ else version (CRuntime_UClibc)
                (cast(uint32_t*) addr)[3] == 0;
     }
 
-    extern (D) int IN6_IS_ADDR_LOOPBACK( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_LOOPBACK()( in6_addr* addr) pure
     {
         return (cast(uint32_t*) addr)[0] == 0  &&
                (cast(uint32_t*) addr)[1] == 0  &&
@@ -1656,29 +1656,29 @@ else version (CRuntime_UClibc)
                (cast(uint32_t*) addr)[3] == htonl( 1 );
     }
 
-    extern (D) int IN6_IS_ADDR_MULTICAST( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MULTICAST()( in6_addr* addr) pure
     {
         return (cast(uint8_t*) addr)[0] == 0xff;
     }
 
-    extern (D) int IN6_IS_ADDR_LINKLOCAL( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_LINKLOCAL()( in6_addr* addr) pure
     {
         return ((cast(uint32_t*) addr)[0] & htonl( 0xffc00000 )) == htonl( 0xfe800000 );
     }
 
-    extern (D) int IN6_IS_ADDR_SITELOCAL( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_SITELOCAL()( in6_addr* addr) pure
     {
         return ((cast(uint32_t*) addr)[0] & htonl( 0xffc00000 )) == htonl( 0xfec00000 );
     }
 
-    extern (D) int IN6_IS_ADDR_V4MAPPED( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_V4MAPPED()( in6_addr* addr) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
                (cast(uint32_t*) addr)[2] == htonl( 0xffff );
     }
 
-    extern (D) int IN6_IS_ADDR_V4COMPAT( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_V4COMPAT()( in6_addr* addr) pure
     {
         return (cast(uint32_t*) addr)[0] == 0 &&
                (cast(uint32_t*) addr)[1] == 0 &&
@@ -1686,7 +1686,7 @@ else version (CRuntime_UClibc)
                ntohl( (cast(uint32_t*) addr)[3] ) > 1;
     }
 
-    extern (D) int IN6_ARE_ADDR_EQUAL( in6_addr* a, in6_addr* b ) pure
+    extern (D) int IN6_ARE_ADDR_EQUAL()( in6_addr* a, in6_addr* b) pure
     {
         return (cast(uint32_t*) a)[0] == (cast(uint32_t*) b)[0] &&
                (cast(uint32_t*) a)[1] == (cast(uint32_t*) b)[1] &&
@@ -1694,31 +1694,31 @@ else version (CRuntime_UClibc)
                (cast(uint32_t*) a)[3] == (cast(uint32_t*) b)[3];
     }
 
-    extern (D) int IN6_IS_ADDR_MC_NODELOCAL( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_NODELOCAL()( in6_addr* addr) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x1;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_LINKLOCAL()( in6_addr* addr) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x2;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_SITELOCAL( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_SITELOCAL()( in6_addr* addr) pure
     {
         return IN6_IS_ADDR_MULTICAST(addr) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x5;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_ORGLOCAL()( in6_addr* addr) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0x8;
     }
 
-    extern (D) int IN6_IS_ADDR_MC_GLOBAL( in6_addr* addr ) pure
+    extern (D) int IN6_IS_ADDR_MC_GLOBAL()( in6_addr* addr) pure
     {
         return IN6_IS_ADDR_MULTICAST( addr ) &&
                ((cast(uint8_t*) addr)[1] & 0xf) == 0xe;

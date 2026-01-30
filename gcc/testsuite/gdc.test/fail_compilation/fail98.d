@@ -1,7 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail98.d(17): Error: cannot implicitly convert expression `256` of type `int` to `E`
+fail_compilation/fail98.d(20): Error: cannot implicitly convert expression `256` of type `int` to `E`
+fail_compilation/fail98.d(21): Error: cannot automatically assign value to enum member `fail98.D3DTS_WORLD1` because base type `E` is an enum; provide an explicit value
+fail_compilation/fail98.d(22): Error: cannot automatically assign value to enum member `fail98.D3DTS_WORLD2` because base type `E` is an enum; provide an explicit value
+fail_compilation/fail98.d(23): Error: cannot automatically assign value to enum member `fail98.D3DTS_WORLD3` because base type `E` is an enum; provide an explicit value
 ---
 */
 

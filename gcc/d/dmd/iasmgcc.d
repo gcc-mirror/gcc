@@ -69,7 +69,7 @@ public Statement gccAsmSemantic(GccAsmStatement s, Scope* sc)
     s.insn = semanticString(sc, s.insn, "asm instruction template");
 
     if (s.labels && s.outputargs)
-        error(s.loc, "extended asm statements with labels cannot have output constraints");
+        p.eSink.error(s.loc, "extended asm statements with labels cannot have output constraints");
 
     // Analyse all input and output operands.
     if (s.args)
@@ -144,6 +144,35 @@ public void gccAsmSemantic(CAsmDeclaration ad, Scope* sc)
 private:
 
 /***********************************
+ * Parse an expression that evaluates to a string.
+ * Grammar:
+ *      | AsmStringExpr:
+ *      |     StringLiteral
+ *      |     ( AssignExpression )
+ * Params:
+ *      p = parser state
+ * Returns:
+ *      the parsed string expression
+ */
+Expression parseAsmString(Parser)(Parser p)
+{
+    if (p.token.value == TOK.leftParenthesis)
+    {
+        p.nextToken();
+        Expression insn = p.parseAssignExp();
+        p.check(TOK.rightParenthesis);
+        return insn;
+    }
+    else if (p.token.value != TOK.string_)
+    {
+        p.eSink.error(p.token.loc, "expected string literal or expression in parentheses");
+        return ErrorExp.get();
+    }
+
+    return p.parsePrimaryExp();
+}
+
+/***********************************
  * Parse list of extended asm input or output operands.
  * Grammar:
  *      | Operands:
@@ -202,7 +231,7 @@ int parseExtAsmOperands(Parser)(Parser p, GccAsmStatement s)
                 if (p.token.value != TOK.leftParenthesis)
                 {
                     arg = p.parseAssignExp();
-                    error(arg.loc, "`%s` must be surrounded by parentheses", arg.toChars());
+                    p.eSink.error(arg.loc, "`%s` must be surrounded by parentheses", arg.toChars());
                 }
                 else
                 {
@@ -352,13 +381,13 @@ Lerror:
  *      |     GotoAsmInstruction
  *      |
  *      | BasicAsmInstruction:
- *      |     AssignExpression
+ *      |     AsmStringExpr
  *      |
  *      | ExtAsmInstruction:
- *      |     AssignExpression : Operands(opt) : Operands(opt) : Clobbers(opt)
+ *      |     AsmStringExpr : Operands(opt) : Operands(opt) : Clobbers(opt)
  *      |
  *      | GotoAsmInstruction:
- *      |     AssignExpression : : Operands(opt) : Clobbers(opt) : GotoLabels(opt)
+ *      |     AsmStringExpr : : Operands(opt) : Clobbers(opt) : GotoLabels(opt)
  * Params:
  *      p = parser state
  *      s = asm statement to parse
@@ -367,7 +396,10 @@ Lerror:
  */
 GccAsmStatement parseGccAsm(Parser)(Parser p, GccAsmStatement s)
 {
-    s.insn = p.parseAssignExp();
+    s.insn = p.parseAsmString();
+    if (s.insn.isErrorExp())
+        return s;
+
     if (p.token.value == TOK.semicolon || p.token.value == TOK.endOfFile)
         goto Ldone;
 
@@ -519,11 +551,11 @@ unittest
         } },
 
         // Any CTFE-able string allowed as instruction template.
-        q{ asm { generateAsm();
+        q{ asm { (generateAsm);
         } },
 
         // Likewise mixins, permissible so long as the result is a string.
-        q{ asm { mixin(`"repne"`, `~ "scasb"`);
+        q{ asm { (mixin(`"repne"`, `~ "scasb"`));
         } },
 
         // :: token tests
@@ -557,6 +589,11 @@ unittest
 
         // https://issues.dlang.org/show_bug.cgi?id=20593
         q{ asm { "instruction" : : "operand" 123; } },
+
+        // https://github.com/dlang/dmd/issues/21298
+        q{ asm { 1; }   },
+        q{ asm { int; } },
+        q{ asm { : "=r" (i); } },
     ];
 
     foreach (test; passAsmTests)

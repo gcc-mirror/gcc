@@ -35,10 +35,11 @@ namespace dmd
     bool functionSemantic(FuncDeclaration* fd);
     bool functionSemantic3(FuncDeclaration* fd);
     bool checkClosure(FuncDeclaration* fd);
-    MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, Identifiers *names);
+    MATCH leastAsSpecialized(FuncDeclaration *f, FuncDeclaration *g, ArgumentLabels *names);
     PURE isPure(FuncDeclaration *f);
     FuncDeclaration *genCfunc(Parameters *args, Type *treturn, const char *name, StorageClass stc=0);
     FuncDeclaration *genCfunc(Parameters *args, Type *treturn, Identifier *id, StorageClass stc=0);
+    bool isAbstract(ClassDeclaration *cd);
 }
 
 //enum STC : ulong from astenums.d:
@@ -297,7 +298,6 @@ public:
     bool isThreadlocal() override final;
     bool isCTFE();
     bool isOverlappedWith(VarDeclaration *v);
-    bool hasPointers() override final;
     bool canTakeAddressOf();
     bool needsScopeDtor();
     Dsymbol *toAlias() override final;

@@ -41,31 +41,31 @@ private // helpers
     /* Macros */
 
     /* Basic access functions.  */
-    size_t __CPUELT(size_t cpu) pure
+    size_t __CPUELT()(size_t cpu) pure
     {
         return cpu / __NCPUBITS;
     }
-    cpu_mask __CPUMASK(size_t cpu) pure
+    cpu_mask __CPUMASK()(size_t cpu) pure
     {
         return 1UL << (cpu % __NCPUBITS);
     }
 
-    cpu_set_t* __CPU_ALLOC(size_t count)
+    cpu_set_t* __CPU_ALLOC()(size_t count)
     {
         return cast(cpu_set_t*) malloc(__CPU_ALLOC_SIZE(count));
     }
 
-    size_t __CPU_ALLOC_SIZE(size_t count) pure
+    size_t __CPU_ALLOC_SIZE()(size_t count) pure
     {
         return ((count + __NCPUBITS - 1) / __NCPUBITS) * cpu_mask.sizeof;
     }
 
-    void __CPU_FREE(cpu_set_t* set)
+    void __CPU_FREE()(cpu_set_t* set)
     {
         free(cast(void*) set);
     }
 
-    cpu_mask __CPU_SET_S(size_t cpu, size_t setsize, cpu_set_t* cpusetp) pure
+    cpu_mask __CPU_SET_S()(size_t cpu, size_t setsize, cpu_set_t* cpusetp) pure
     {
         if (cpu < 8 * setsize)
         {
@@ -76,14 +76,14 @@ private // helpers
         return 0;
     }
 
-    bool __CPU_ISSET_S(size_t cpu, size_t setsize, cpu_set_t* cpusetp) pure
+    bool __CPU_ISSET_S()(size_t cpu, size_t setsize, cpu_set_t* cpusetp) pure
     {
         if (cpu < 8 * setsize)
             return (cpusetp.__bits[__CPUELT(cpu)] & __CPUMASK(cpu)) != 0;
         return false;
     }
 
-    int __CPU_COUNT_S(size_t setsize, cpu_set_t* cpusetp) pure
+    int __CPU_COUNT_S()(size_t setsize, cpu_set_t* cpusetp) pure
     {
         int s = 0;
         foreach (i; cpusetp.__bits[0 .. (setsize / cpu_mask.sizeof)])
@@ -103,37 +103,37 @@ struct cpu_set_t
 
 /// Access macros for 'cpu_set' (missing a lot of them)
 
-cpu_set_t* CPU_ALLOC(size_t count)
+cpu_set_t* CPU_ALLOC()(size_t count)
 {
     return __CPU_ALLOC(count);
 }
 
-size_t CPU_ALLOC_SIZE(size_t count) pure
+size_t CPU_ALLOC_SIZE()(size_t count) pure
 {
     return __CPU_ALLOC_SIZE(count);
 }
 
-void CPU_FREE(cpu_set_t* set)
+void CPU_FREE()(cpu_set_t* set)
 {
     __CPU_FREE(set);
 }
 
-cpu_mask CPU_SET(size_t cpu, cpu_set_t* cpusetp) pure
+cpu_mask CPU_SET()(size_t cpu, cpu_set_t* cpusetp) pure
 {
      return __CPU_SET_S(cpu, cpu_set_t.sizeof, cpusetp);
 }
 
-bool CPU_ISSET(size_t cpu, cpu_set_t* cpusetp) pure
+bool CPU_ISSET()(size_t cpu, cpu_set_t* cpusetp) pure
 {
     return __CPU_ISSET_S(cpu, cpu_set_t.sizeof, cpusetp);
 }
 
-int CPU_COUNT(cpu_set_t* cpusetp) pure
+int CPU_COUNT()(cpu_set_t* cpusetp) pure
 {
     return __CPU_COUNT_S(cpu_set_t.sizeof, cpusetp);
 }
 
-int CPU_COUNT_S(size_t setsize, cpu_set_t* cpusetp) pure
+int CPU_COUNT_S()(size_t setsize, cpu_set_t* cpusetp) pure
 {
     return __CPU_COUNT_S(setsize, cpusetp);
 }

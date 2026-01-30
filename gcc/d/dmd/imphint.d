@@ -26,8 +26,15 @@ const(char)[] importHint(const(char)[] s) @safe
         return *entry;
     return null;
 }
+const(char)[] cIncludeHint(const(char)[] s) @safe
+{
+    if (auto entry = s in cHints)
+        return *entry;
+    return null;
+}
 
 private immutable string[string] hints;
+private immutable string[string] cHints;
 
 shared static this()
 {
@@ -82,6 +89,23 @@ shared static this()
         "__va_list_tag": "core.stdc.stdarg",
         "InterpolationHeader": "core.interpolation",
         "InterpolationFooter": "core.interpolation",
+    ];
+    cHints = [
+        "NULL": "<stddef.h>",
+        "calloc": "<stdlib.h>",
+        "fopen": "<stdio.h>",
+        "fprintf": "<stdio.h>",
+        "free": "<stdlib.h>",
+        "malloc": "<stdlib.h>",
+        "memcpy": "<string.h>",
+        "memmove": "<string.h>",
+        "memset": "<string.h>",
+        "printf": "<stdio.h>",
+        "ptrdiff_t": "<stddef.h>",
+        "size_t": "<stddef.h>",
+        "stderr": "<stdio.h>",
+        "stdin": "<stdio.h>",
+        "stdout": "<stdio.h>",
     ];
 }
 

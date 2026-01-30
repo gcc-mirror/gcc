@@ -151,127 +151,6 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         return "struct";
     }
 
-    override final void finalizeSize()
-    {
-        //printf("StructDeclaration::finalizeSize() %s, sizeok = %d\n", toChars(), sizeok);
-        assert(sizeok != Sizeok.done);
-
-        if (sizeok == Sizeok.inProcess)
-        {
-            return;
-        }
-        sizeok = Sizeok.inProcess;
-
-        //printf("+StructDeclaration::finalizeSize() %s, fields.length = %d, sizeok = %d\n", toChars(), fields.length, sizeok);
-
-        fields.setDim(0);   // workaround
-
-        // Set the offsets of the fields and determine the size of the struct
-        FieldState fieldState;
-        bool isunion = isUnionDeclaration() !is null;
-        for (size_t i = 0; i < members.length; i++)
-        {
-            Dsymbol s = (*members)[i];
-            s.setFieldOffset(this, &fieldState, isunion);
-            if (type.ty == Terror)
-            {
-                errorSupplemental(s.loc, "error on member `%s`", s.toPrettyChars);
-                errors = true;
-                return;
-            }
-        }
-
-        if (structsize == 0)
-        {
-            hasNoFields = true;
-            alignsize = 1;
-
-            // A fine mess of what size a zero sized struct should be
-            final switch (classKind)
-            {
-                case ClassKind.d:
-                case ClassKind.cpp:
-                    structsize = 1;
-                    break;
-
-                case ClassKind.c:
-                case ClassKind.objc:
-                    if (target.c.bitFieldStyle == TargetC.BitFieldStyle.MS)
-                    {
-                        /* Undocumented MS behavior for:
-                         *   struct S { int :0; };
-                         */
-                        structsize = 4;
-                    }
-                    else
-                        structsize = 0;
-                    break;
-            }
-        }
-
-        // Round struct size up to next alignsize boundary.
-        // This will ensure that arrays of structs will get their internals
-        // aligned properly.
-        if (alignment.isDefault() || alignment.isPack())
-            structsize = (structsize + alignsize - 1) & ~(alignsize - 1);
-        else
-            structsize = (structsize + alignment.get() - 1) & ~(alignment.get() - 1);
-
-        sizeok = Sizeok.done;
-
-        //printf("-StructDeclaration::finalizeSize() %s, fields.length = %d, structsize = %d\n", toChars(), cast(int)fields.length, cast(int)structsize);
-
-        if (errors)
-            return;
-
-        // Calculate fields[i].overlapped
-        if (checkOverlappedFields())
-        {
-            errors = true;
-            return;
-        }
-
-        // Determine if struct is all zeros or not
-        zeroInit = true;
-        auto lastOffset = -1;
-        foreach (vd; fields)
-        {
-            // First skip zero sized fields
-            if (vd.type.size(vd.loc) == 0)
-                continue;
-
-            // only consider first sized member of an (anonymous) union
-            if (vd.overlapped && vd.offset == lastOffset)
-                continue;
-            lastOffset = vd.offset;
-
-            if (vd._init)
-            {
-                if (vd._init.isVoidInitializer())
-                    /* Treat as 0 for the purposes of putting the initializer
-                     * in the BSS segment, or doing a mass set to 0
-                     */
-                    continue;
-
-                // Examine init to see if it is all 0s.
-                auto exp = vd.getConstInitializer();
-                if (!exp || !_isZeroInit(exp))
-                {
-                    zeroInit = false;
-                    break;
-                }
-            }
-            else if (!vd.type.isZeroInit(loc))
-            {
-                zeroInit = false;
-                break;
-            }
-        }
-
-
-        argTypes = target.toArgTypes(type);
-    }
-
     /// Compute cached type properties for `TypeStruct`
     extern(D) final void determineTypeProperties()
     {
@@ -279,13 +158,14 @@ extern (C++) class StructDeclaration : AggregateDeclaration
             return;
         foreach (vd; fields)
         {
+            import dmd.dsymbolsem : hasPointers;
             if (vd.storage_class & STC.ref_ || vd.hasPointers())
             {
                 hasPointerField = true;
                 hasUnsafeBitpatterns = true;
             }
 
-            if (vd._init && vd._init.isVoidInitializer() && vd.type.hasPointers())
+            if (vd._init && vd._init.isVoidInitializer() && vd.hasPointers())
                 hasVoidInitPointers = true;
 
             if (vd.storage_class & STC.system || vd.type.hasUnsafeBitpatterns())
@@ -399,13 +279,12 @@ extern (C++) class StructDeclaration : AggregateDeclaration
      * is not disabled.
      *
      * Params:
-     *      checkDisabled = if the struct has a regular
-                            non-disabled constructor
+     *      ignoreDisabled = true to ignore disabled constructors
      * Returns:
      *      true, if the struct has a regular (optionally,
      *      not disabled) constructor, false otherwise.
      */
-    final bool hasRegularCtor(bool checkDisabled = false)
+    final bool hasRegularCtor(bool ignoreDisabled = false)
     {
         if (!ctor)
             return false;
@@ -415,7 +294,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         {
             if (auto td = s.isTemplateDeclaration())
             {
-                if (checkDisabled && td.onemember)
+                if (ignoreDisabled && td.onemember)
                 {
                     if (auto ctorDecl = td.onemember.isCtorDeclaration())
                     {
@@ -428,7 +307,7 @@ extern (C++) class StructDeclaration : AggregateDeclaration
             }
             if (auto ctorDecl = s.isCtorDeclaration())
             {
-                if (!ctorDecl.isCpCtor && (!checkDisabled || !(ctorDecl.storage_class & STC.disable)))
+                if (!ctorDecl.isCpCtor && (!ignoreDisabled || !(ctorDecl.storage_class & STC.disable)))
                 {
                     result = true;
                     return 1;
@@ -440,96 +319,6 @@ extern (C++) class StructDeclaration : AggregateDeclaration
     }
 }
 
-/**********************************
- * Determine if exp is all binary zeros.
- * Params:
- *      exp = expression to check
- * Returns:
- *      true if it's all binary 0
- */
-bool _isZeroInit(Expression exp)
-{
-    switch (exp.op)
-    {
-        case EXP.int64:
-            return exp.toInteger() == 0;
-
-        case EXP.null_:
-            return true;
-
-        case EXP.structLiteral:
-        {
-            auto sle = exp.isStructLiteralExp();
-            if (sle.sd.isNested())
-                return false;
-            const isCstruct = sle.sd.isCsymbol();  // C structs are default initialized to all zeros
-            foreach (i; 0 .. sle.sd.fields.length)
-            {
-                auto field = sle.sd.fields[i];
-                if (field.type.size(field.loc))
-                {
-                    auto e = sle.elements && i < sle.elements.length ? (*sle.elements)[i] : null;
-                    if (e ? !_isZeroInit(e)
-                          : !isCstruct && !field.type.isZeroInit(field.loc))
-                        return false;
-                }
-            }
-            return true;
-        }
-
-        case EXP.arrayLiteral:
-        {
-            auto ale = cast(ArrayLiteralExp)exp;
-
-            const dim = ale.elements ? ale.elements.length : 0;
-
-            if (ale.type.toBasetype().ty == Tarray) // if initializing a dynamic array
-                return dim == 0;
-
-            foreach (i; 0 .. dim)
-            {
-                if (!_isZeroInit(ale[i]))
-                    return false;
-            }
-
-            /* Note that true is returned for all T[0]
-             */
-            return true;
-        }
-
-        case EXP.string_:
-        {
-            auto se = cast(StringExp)exp;
-
-            if (se.type.toBasetype().ty == Tarray) // if initializing a dynamic array
-                return se.len == 0;
-
-            foreach (i; 0 .. se.len)
-            {
-                if (se.getIndex(i) != 0)
-                    return false;
-            }
-            return true;
-        }
-
-        case EXP.vector:
-        {
-            auto ve = cast(VectorExp) exp;
-            return _isZeroInit(ve.e1);
-        }
-
-        case EXP.float64:
-        case EXP.complex80:
-        {
-            import dmd.root.ctfloat : CTFloat;
-            return (exp.toReal()      is CTFloat.zero) &&
-                   (exp.toImaginary() is CTFloat.zero);
-        }
-
-        default:
-            return false;
-    }
-}
 
 /***********************************************************
  * Unions are a variation on structs.

@@ -188,7 +188,7 @@ void templateDeclarationSemantic(Scope* sc, TemplateDeclaration tempdecl)
     if (tempdecl.members)
     {
         Dsymbol s;
-        if (Dsymbol.oneMembers(tempdecl.members, s, tempdecl.ident) && s)
+        if (oneMembers(tempdecl.members, s, tempdecl.ident) && s)
         {
             tempdecl.onemember = s;
             s.parent = tempdecl;
@@ -948,7 +948,7 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
         size_t nfargs2 = argumentList.length; // total number of arguments including applied defaultArgs
         uint inoutMatch = 0; // for debugging only
         Expression[] fargs = argumentList.arguments ? (*argumentList.arguments)[] : null;
-        Identifier[] fnames = argumentList.names ? (*argumentList.names)[] : null;
+        ArgumentLabel[] fnames = argumentList.names ? (*argumentList.names)[] : null;
 
         for (size_t parami = 0; parami < nfparams; parami++)
         {
@@ -958,16 +958,17 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
             Type prmtype = fparam.type.addStorageClass(fparam.storageClass);
 
             Expression farg;
-            Identifier fname = argi < fnames.length ? fnames[argi] : null;
+            Identifier fname = argi < fnames.length ? fnames[argi].name : null;
             bool foundName = false;
             if (fparam.ident)
             {
                 foreach (i; 0 .. fnames.length)
                 {
-                    if (fparam.ident == fnames[i])
+                    if (fparam.ident == fnames[i].name)
                     {
                         argi = i;
                         foundName = true;
+                        break;  //Exits the loop after a match
                     }
                 }
             }
@@ -1002,9 +1003,9 @@ extern (D) MATCHpair deduceFunctionTemplateMatch(TemplateDeclaration td, Templat
                         {
                             break;
                         }
-                        foreach(name; fnames)
+                        foreach(argLabel; fnames)
                         {
-                            if (p.ident == name)
+                            if (p.ident == argLabel.name)
                                 break;
                         }
                         if (!reliesOnTemplateParameters(p.type, (*td.parameters)[inferStart .. td.parameters.length]))

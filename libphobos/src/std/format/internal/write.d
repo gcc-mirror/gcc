@@ -1412,6 +1412,12 @@ if (isInputRange!T)
     // if the format spec is valid
     enum formatTestMode = is(Writer == NoOpSink);
 
+    static if (!formatTestMode && isInfinite!T)
+    {
+        static assert(!isInfinite!T, "Cannot format an infinite range. " ~
+            "Convert it to a finite range first using `std.range.take` or `std.range.takeExactly`.");
+    }
+
     // Formatting character ranges like string
     if (f.spec == 's')
     {
@@ -1582,18 +1588,16 @@ if (isInputRange!T)
         throw new FormatException(text("Incorrect format specifier for range: %", f.spec));
 }
 
-// https://issues.dlang.org/show_bug.cgi?id=20218
 @safe pure unittest
 {
-    void notCalled()
-    {
-        import std.range : repeat;
+    import std.range : repeat;
+    import std.format : format;
 
-        auto value = 1.repeat;
+    auto value = 1.repeat;
 
-        // test that range is not evaluated to completion at compiletime
-        format!"%s"(value);
-    }
+    // This should fail to compile — so we assert that it *doesn't* compile
+    static assert(!__traits(compiles, format!"%s"(value)),
+        "Test failed: formatting an infinite range should not compile.");
 }
 
 // character formatting with ecaping

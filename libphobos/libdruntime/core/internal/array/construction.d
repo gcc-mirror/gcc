@@ -505,7 +505,7 @@ version (D_ProfileGC)
  * Returns:
  *    newly allocated array
  */
-Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trusted
+Tarr _d_newarraymTX(Tarr : U[], T, U)(scope size_t[] dims, bool isShared=false) @trusted
 {
     debug(PRINTF) printf("_d_newarraymTX(dims.length = %zd)\n", dims.length);
 
@@ -520,7 +520,7 @@ Tarr _d_newarraymTX(Tarr : U[], T, U)(size_t[] dims, bool isShared=false) @trust
 
         auto dim = dims[0];
 
-        debug(PRINTF) printf("__allocateInnerArray(UnqT = %s, dim = %lu, ndims = %lu\n", UnqT.stringof.ptr, dim, dims.length);
+        debug(PRINTF) printf("__allocateInnerArray(UnqT = %s, dim = %u, ndims = %u)\n", UnqT.stringof.ptr, cast(uint)dim, cast(uint)dims.length);
         if (dims.length == 1)
         {
             auto r = _d_newarrayT!UnqT(dim, isShared);
@@ -602,7 +602,7 @@ version (D_ProfileGC)
     /**
     * TraceGC wrapper around $(REF _d_newarraymT, core,internal,array,construction).
     */
-    Tarr _d_newarraymTXTrace(Tarr : U[], T, U)(size_t[] dims, bool isShared=false, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
+    Tarr _d_newarraymTXTrace(Tarr : U[], T, U)(scope size_t[] dims, bool isShared=false, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted
     {
         version (D_TypeInfo)
         {

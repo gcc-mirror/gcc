@@ -3901,9 +3901,11 @@ private size_t getArrayHash(const scope TypeInfo element, const scope void* ptr,
     assert(s == "abc");
 }
 
+
 // HACK:  This is a lie.  `_d_arraysetcapacity` is neither `nothrow` nor `pure`, but this lie is
 // necessary for now to prevent breaking code.
-private extern (C) size_t _d_arraysetcapacity(const TypeInfo ti, size_t newcapacity, void[]* arrptr) pure nothrow;
+import core.internal.array.capacity : _d_arraysetcapacityPureNothrow;
+import core.internal.traits: Unqual;
 
 /**
 (Property) Gets the current _capacity of a slice. The _capacity is the size
@@ -3918,7 +3920,10 @@ Note: The _capacity of a slice may be impacted by operations on other slices.
 */
 @property size_t capacity(T)(T[] arr) pure nothrow @trusted
 {
-    return _d_arraysetcapacity(typeid(T[]), 0, cast(void[]*)&arr);
+    const isshared = is(T == shared);
+    alias Unqual_T = Unqual!T;
+    // The postblit of T may be impure, so we need to use the `pure nothrow` wrapper
+    return _d_arraysetcapacityPureNothrow!Unqual_T(0, cast(void[]*)&arr, isshared);
 }
 
 ///
@@ -3957,7 +3962,12 @@ size_t reserve(T)(ref T[] arr, size_t newcapacity) pure nothrow @trusted
     if (__ctfe)
         return newcapacity;
     else
-        return _d_arraysetcapacity(typeid(T[]), newcapacity, cast(void[]*)&arr);
+    {
+        const isshared = is(T == shared);
+        alias Unqual_T = Unqual!T;
+        // The postblit of T may be impure, so we need to use the `pure nothrow` wrapper
+        return _d_arraysetcapacityPureNothrow!Unqual_T(newcapacity, cast(void[]*)&arr, isshared);
+    }
 }
 
 ///
@@ -4692,6 +4702,7 @@ version (D_ProfileGC)
     public import core.lifetime : _d_newitemTTrace;
     public import core.internal.array.construction : _d_newarrayTTrace;
     public import core.internal.array.construction : _d_newarraymTXTrace;
+    public import core.internal.array.capacity: _d_arraysetlengthTTrace;
 }
 public import core.internal.array.appending : _d_arrayappendcTX;
 public import core.internal.array.comparison : __cmp;
@@ -4705,7 +4716,7 @@ public import core.internal.array.construction : _d_newarraymTX;
 public import core.internal.array.arrayassign : _d_arrayassign_l;
 public import core.internal.array.arrayassign : _d_arrayassign_r;
 public import core.internal.array.arrayassign : _d_arraysetassign;
-public import core.internal.array.capacity: _d_arraysetlengthTImpl;
+public import core.internal.array.capacity : _d_arraysetlengthT;
 
 public import core.internal.dassert: _d_assert_fail;
 

@@ -32,9 +32,9 @@ version (D_BetterC) {} else
 {
     import std.math.operations : isClose;
 
-    struct Fahrenheit { double degrees; }
-    struct Celsius { double degrees; }
-    struct Kelvin { double degrees; }
+    struct Fahrenheit { double value; }
+    struct Celsius { double value; }
+    struct Kelvin { double value; }
 
     alias Temperature = SumType!(Fahrenheit, Celsius, Kelvin);
 
@@ -48,29 +48,29 @@ version (D_BetterC) {} else
     {
         return Fahrenheit(
             t.match!(
-                (Fahrenheit f) => f.degrees,
-                (Celsius c) => c.degrees * 9.0/5 + 32,
-                (Kelvin k) => k.degrees * 9.0/5 - 459.4
+                (Fahrenheit f) => f.value,
+                (Celsius c) => c.value * 9.0/5 + 32,
+                (Kelvin k) => k.value * 9.0/5 - 459.4
             )
         );
     }
 
-    assert(toFahrenheit(t1).degrees.isClose(98.6));
-    assert(toFahrenheit(t2).degrees.isClose(212));
-    assert(toFahrenheit(t3).degrees.isClose(32));
+    assert(toFahrenheit(t1).value.isClose(98.6));
+    assert(toFahrenheit(t2).value.isClose(212));
+    assert(toFahrenheit(t3).value.isClose(32));
 
     // Use ref to modify the value in place.
     void freeze(ref Temperature t)
     {
         t.match!(
-            (ref Fahrenheit f) => f.degrees = 32,
-            (ref Celsius c) => c.degrees = 0,
-            (ref Kelvin k) => k.degrees = 273
+            (ref Fahrenheit f) => f.value = 32,
+            (ref Celsius c) => c.value = 0,
+            (ref Kelvin k) => k.value = 273
         );
     }
 
     freeze(t1);
-    assert(toFahrenheit(t1).degrees.isClose(32));
+    assert(toFahrenheit(t1).value.isClose(32));
 
     // Use a catch-all handler to give a default result.
     bool isFahrenheit(Temperature t)

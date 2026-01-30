@@ -1879,7 +1879,7 @@ immutable(E)[] sanitize(E)(immutable(E)[] s)
         offset += n;
         t = t[n..$];
     }
-    return cast(immutable(E)[])array[0 .. offset];
+    return array[0 .. offset];
 }
 
 ///

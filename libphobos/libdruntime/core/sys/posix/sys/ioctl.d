@@ -61,7 +61,7 @@ version (linux)
                (is(T == typeof(null)) ? 0 : T.sizeof << _IOC_SIZESHIFT);
     }
 
-    extern (D) int _IO(int type, int nr)
+    extern (D) int _IO()(int type, int nr)
     {
         return _IOC(_IOC_NONE, type, nr);
     }
@@ -81,22 +81,22 @@ version (linux)
         return _IOC!T(_IOC_READ | _IOC_WRITE, type, nr);
     }
 
-    extern (D) int _IOC_DIR(int nr)
+    extern (D) int _IOC_DIR()(int nr)
     {
         return (nr >> _IOC_DIRSHIFT) & _IOC_DIRMASK;
     }
 
-    extern (D) int _IOC_TYPE(int nr)
+    extern (D) int _IOC_TYPE()(int nr)
     {
         return (nr >> _IOC_TYPESHIFT) & _IOC_TYPEMASK;
     }
 
-    extern (D) int _IOC_NR(int nr)
+    extern (D) int _IOC_NR()(int nr)
     {
         return (nr >> _IOC_NRSHIFT) & _IOC_NRMASK;
     }
 
-    extern (D) int _IOC_SIZE(int nr)
+    extern (D) int _IOC_SIZE()(int nr)
     {
         return (nr >> _IOC_SIZESHIFT) & _IOC_SIZEMASK;
     }

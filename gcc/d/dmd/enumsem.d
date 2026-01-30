@@ -81,7 +81,7 @@ import dmd.visitor;
 
 
 /*********************************
- * Perform semantic analysis on enum declaration `em`
+ * Perform semantic analysis on enum declaration `ed`
  */
 void enumSemantic(Scope* sc, EnumDeclaration ed)
 {
@@ -158,9 +158,10 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
                 ed.semanticRun = PASS.initial;
                 return;
             }
-            else
-                // Ensure that semantic is run to detect. e.g. invalid forward references
-                sym.dsymbolSemantic(sc);
+            // Ensure that semantic is run to detect. e.g. invalid forward references
+            sym.dsymbolSemantic(sc);
+            if (ed.errors)
+                ed.memtype = Type.terror; // avoid infinite recursion in toBaseType
         }
         if (ed.memtype.ty == Tvoid)
         {
@@ -175,6 +176,8 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
             ed.semanticRun = PASS.semanticdone;
             return;
         }
+        if (global.params.useTypeInfo && Type.dtypeinfo && !ed.inNonRoot())
+            semanticTypeInfo(sc, ed.memtype);
     }
 
     if (!ed.members) // enum ident : memtype;
@@ -229,122 +232,24 @@ void enumSemantic(Scope* sc, EnumDeclaration ed)
     addEnumMembersToSymtab(ed, sc, sc.getScopesym());
 
     if (sc.inCfile)
-    {
-        /* C11 6.7.2.2
-         */
-        Type commonType = ed.memtype;
-        if (!commonType)
-            commonType = Type.tint32;
-        ulong nextValue = 0;        // C11 6.7.2.2-3 first member value defaults to 0
-
-        // C11 6.7.2.2-2 value must be representable as an int.
-        // The sizemask represents all values that int will fit into,
-        // from 0..uint.max.  We want to cover int.min..uint.max.
-        IntRange ir = IntRange.fromType(commonType);
-
-        void emSemantic(EnumMember em, ref ulong nextValue)
-        {
-            static void errorReturn(EnumMember em)
-            {
-                em.value = ErrorExp.get();
-                em.errors = true;
-                em.semanticRun = PASS.semanticdone;
-            }
-
-            em.semanticRun = PASS.semantic;
-            em.type = commonType;
-            em._linkage = LINK.c;
-            em.storage_class |= STC.manifest;
-            if (em.value)
-            {
-                Expression e = em.value;
-                assert(e.dyncast() == DYNCAST.expression);
-
-                /* To merge the type of e with commonType, add 0 of type commonType
-                 */
-                if (!ed.memtype)
-                    e = new AddExp(em.loc, e, new IntegerExp(em.loc, 0, commonType));
-
-                e = e.expressionSemantic(sc);
-                e = resolveProperties(sc, e);
-                e = e.integralPromotions(sc);
-                e = e.ctfeInterpret();
-                if (e.op == EXP.error)
-                    return errorReturn(em);
-                auto ie = e.isIntegerExp();
-                if (!ie)
-                {
-                    // C11 6.7.2.2-2
-                    .error(em.loc, "%s `%s` enum member must be an integral constant expression, not `%s` of type `%s`", em.kind, em.toPrettyChars, e.toChars(), e.type.toChars());
-                    return errorReturn(em);
-                }
-                if (ed.memtype && !ir.contains(getIntRange(ie)))
-                {
-                    // C11 6.7.2.2-2
-                    .error(em.loc, "%s `%s` enum member value `%s` does not fit in `%s`", em.kind, em.toPrettyChars, e.toChars(), commonType.toChars());
-                    return errorReturn(em);
-                }
-                nextValue = ie.toInteger();
-                if (!ed.memtype)
-                    commonType = e.type;
-                em.value = new IntegerExp(em.loc, nextValue, commonType);
-            }
-            else
-            {
-                // C11 6.7.2.2-3 add 1 to value of previous enumeration constant
-                bool first = (em == (*em.ed.members)[0]);
-                if (!first)
-                {
-                    Expression max = getProperty(commonType, null, em.loc, Id.max, 0);
-                    if (nextValue == max.toInteger())
-                    {
-                        .error(em.loc, "%s `%s` initialization with `%s+1` causes overflow for type `%s`", em.kind, em.toPrettyChars, max.toChars(), commonType.toChars());
-                        return errorReturn(em);
-                    }
-                    nextValue += 1;
-                }
-                em.value = new IntegerExp(em.loc, nextValue, commonType);
-            }
-            em.type = commonType;
-            em.semanticRun = PASS.semanticdone;
-        }
-
-        ed.members.foreachDsymbol( (s)
-        {
-            if (EnumMember em = s.isEnumMember())
-                emSemantic(em, nextValue);
-        });
-
-        if (!ed.memtype)
-        {
-            // cast all members to commonType
-            ed.members.foreachDsymbol( (s)
-            {
-                if (EnumMember em = s.isEnumMember())
-                {
-                    em.type = commonType;
-                    // optimize out the cast so that other parts of the compiler can
-                    // assume that an integral enum's members are `IntegerExp`s.
-                    // https://issues.dlang.org/show_bug.cgi?id=24504
-                    em.value = em.value.castTo(sc, commonType).optimize(WANTvalue);
-                }
-            });
-        }
-
-        ed.memtype = commonType;
-        ed.semanticRun = PASS.semanticdone;
-        return;
-    }
+        return cEnumSemantic(sc, ed);
 
     ed.members.foreachDsymbol( (s)
     {
         if (EnumMember em = s.isEnumMember())
             em.dsymbolSemantic(em._scope);
     });
+
+    if (global.params.useTypeInfo && Type.dtypeinfo && !ed.inNonRoot())
+        semanticTypeInfo(sc, ed.memtype);
     //printf("ed.defaultval = %lld\n", ed.defaultval);
 
     //if (ed.defaultval) printf("ed.defaultval: %s %s\n", ed.defaultval.toChars(), ed.defaultval.type.toChars());
     //printf("members = %s\n", members.toChars());
+
+    // Set semantic2done here to indicate all members have been processed
+    // This prevents using the enum in a final switch while being defined
+    ed.semanticRun = PASS.semantic2done;
 }
 
 Expression getDefaultValue(EnumDeclaration ed, Loc loc)
@@ -625,6 +530,21 @@ void enumMemberSemantic(Scope* sc, EnumMember em)
         });
 
         assert(emprev);
+
+        // New check: if the base type is an enum, auto-increment is not supported,
+        // unless it is a special enum (for example, the C types like cpp_long/longlong).
+        if (auto te = em.ed.memtype ? em.ed.memtype.isTypeEnum() : null)
+        {
+            if (!te.sym.isSpecial())
+            {
+                error(em.loc,
+                      "cannot automatically assign value to enum member `%s` because base type `%s` is an enum; provide an explicit value",
+                      em.toPrettyChars(), em.ed.memtype.toChars());
+                return errorReturn();
+            }
+        }
+
+
         if (emprev.semanticRun < PASS.semanticdone) // if forward reference
             emprev.dsymbolSemantic(emprev._scope); // resolve it
         if (emprev.errors)

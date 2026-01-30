@@ -283,8 +283,8 @@ enum MEVT_F_SHORT=0;
 enum MEVT_F_LONG=0x80000000;
 enum MEVT_F_CALLBACK=0x40000000;
 
-BYTE MEVT_EVENTTYPE(DWORD x) { return cast(BYTE)((x>>24) &0xFF); }
-DWORD MEVT_EVENTPARM(DWORD x) { return x & 0xFFFFFF; }
+BYTE MEVT_EVENTTYPE()(DWORD x) { return cast(BYTE)((x>>24) &0xFF); }
+DWORD MEVT_EVENTPARM()(DWORD x) { return x & 0xFFFFFF; }
 
 enum MEVT_SHORTMSG=0;
 enum MEVT_TEMPO=1;
@@ -766,22 +766,22 @@ enum MCI_FORMAT_TMSF=10;
 
 
 // Macros
-BYTE MCI_HMS_HOUR(DWORD t) { return cast(BYTE)(t); }
-BYTE MCI_HMS_MINUTE(DWORD t) { return cast(BYTE)(t>>>8); }
-BYTE MCI_HMS_SECOND(DWORD t) { return cast(BYTE)( t>>>16); }
-DWORD MCI_MAKE_HMS(BYTE h, BYTE m, BYTE s) { return h |(m<<8)|(cast(DWORD)(s)<<16); }
-DWORD MCI_MAKE_MSF(BYTE m, BYTE s, BYTE f) { return m |(s<<8)|(cast(DWORD)(f)<<16); }
+BYTE MCI_HMS_HOUR()(DWORD t) { return cast(BYTE)(t); }
+BYTE MCI_HMS_MINUTE()(DWORD t) { return cast(BYTE)(t>>>8); }
+BYTE MCI_HMS_SECOND()(DWORD t) { return cast(BYTE)( t>>>16); }
+DWORD MCI_MAKE_HMS()(BYTE h, BYTE m, BYTE s) { return h |(m<<8)|(cast(DWORD)(s)<<16); }
+DWORD MCI_MAKE_MSF()(BYTE m, BYTE s, BYTE f) { return m |(s<<8)|(cast(DWORD)(f)<<16); }
 DWORD MCI_MAKE_TMSF(BYTE t, BYTE m, BYTE s, BYTE f) {
  return t |(m<<8)|(s<<16)|(cast(DWORD)(f)<< 24); }
 
-BYTE MCI_MSF_MINUTE(DWORD t) { return cast(BYTE)(t); }
-BYTE MCI_MSF_SECOND(DWORD t) { return cast(BYTE)(t >>> 8); }
+BYTE MCI_MSF_MINUTE()(DWORD t) { return cast(BYTE)(t); }
+BYTE MCI_MSF_SECOND()(DWORD t) { return cast(BYTE)(t >>> 8); }
 BYTE MCI_MSF_FRAME(DWORD t)  {  return cast(BYTE)(t >>> 16); }
 
-BYTE MCI_TMSF_TRACK(DWORD t)  { return cast(BYTE)(t); }
-BYTE MCI_TMSF_MINUTE(DWORD t) { return cast(BYTE)(t>>8); }
-BYTE MCI_TMSF_SECOND(DWORD t) { return cast(BYTE)(t>>16); }
-BYTE MCI_TMSF_FRAME(DWORD t)  { return cast(BYTE)(t>>24); }
+BYTE MCI_TMSF_TRACK()(DWORD t)  { return cast(BYTE)(t); }
+BYTE MCI_TMSF_MINUTE()(DWORD t) { return cast(BYTE)(t>>8); }
+BYTE MCI_TMSF_SECOND()(DWORD t) { return cast(BYTE)(t>>16); }
+BYTE MCI_TMSF_FRAME()(DWORD t)  { return cast(BYTE)(t>>24); }
 
 
 enum MCI_NOTIFY_SUCCESSFUL=1;

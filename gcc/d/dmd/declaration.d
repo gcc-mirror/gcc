@@ -27,7 +27,6 @@ import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
 import dmd.func;
-import dmd.funcsem : overloadApply, getLevelAndCheck;
 import dmd.globals;
 import dmd.gluelayer;
 import dmd.hdrgen;
@@ -783,25 +782,6 @@ extern (C++) final class OverDeclaration : Declaration
         return true;
     }
 
-    Dsymbol isUnique()
-    {
-        Dsymbol result = null;
-        overloadApply(aliassym, (Dsymbol s)
-        {
-            if (result)
-            {
-                result = null;
-                return 1; // ambiguous, done
-            }
-            else
-            {
-                result = s;
-                return 0;
-            }
-        });
-        return result;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);
@@ -1054,12 +1034,6 @@ extern (C++) class VarDeclaration : Declaration
                 vbitoffset <  bitoffset + tbitsize;
     }
 
-    override final bool hasPointers()
-    {
-        //printf("VarDeclaration::hasPointers() %s, ty = %d\n", toChars(), type.ty);
-        return (!isDataseg() && type.hasPointers());
-    }
-
     /*************************************
      * Return true if we can take the address of this variable.
      */
@@ -1107,83 +1081,6 @@ extern (C++) class VarDeclaration : Declaration
         Expression e = _init.initializerToExpression(needFullType ? type : null);
         global.gag = oldgag;
         return e;
-    }
-
-    /************************************
-     * Check to see if this variable is actually in an enclosing function
-     * rather than the current one.
-     * Update nestedrefs[], closureVars[] and outerVars[].
-     * Returns: true if error occurs.
-     */
-    extern (D) final bool checkNestedReference(Scope* sc, Loc loc)
-    {
-        //printf("VarDeclaration::checkNestedReference() %s\n", toChars());
-        if (sc.intypeof == 1 || sc.ctfe)
-            return false;
-        if (!parent || parent == sc.parent)
-            return false;
-        if (isDataseg() || (storage_class & STC.manifest))
-            return false;
-
-        // The current function
-        FuncDeclaration fdthis = sc.parent.isFuncDeclaration();
-        if (!fdthis)
-            return false; // out of function scope
-
-        Dsymbol p = toParent2();
-
-        // Function literals from fdthis to p must be delegates
-        ensureStaticLinkTo(fdthis, p);
-
-        // The function that this variable is in
-        FuncDeclaration fdv = p.isFuncDeclaration();
-        if (!fdv || fdv == fdthis)
-            return false;
-
-        // Add fdthis to nestedrefs[] if not already there
-        if (!nestedrefs.contains(fdthis))
-            nestedrefs.push(fdthis);
-
-        //printf("\tfdv = %s\n", fdv.toChars());
-        //printf("\tfdthis = %s\n", fdthis.toChars());
-        if (loc.isValid())
-        {
-            if (fdthis.getLevelAndCheck(loc, sc, fdv, this) == fdthis.LevelError)
-                return true;
-        }
-
-        // Add this VarDeclaration to fdv.closureVars[] if not already there
-        if (!sc.intypeof && !sc.traitsCompiles &&
-            // https://issues.dlang.org/show_bug.cgi?id=17605
-            (fdv.skipCodegen || !fdthis.skipCodegen))
-        {
-            if (!fdv.closureVars.contains(this))
-                fdv.closureVars.push(this);
-        }
-
-        if (!fdthis.outerVars.contains(this))
-            fdthis.outerVars.push(this);
-
-        //printf("fdthis is %s\n", fdthis.toChars());
-        //printf("var %s in function %s is nested ref\n", toChars(), fdv.toChars());
-        // __dollar creates problems because it isn't a real variable
-        // https://issues.dlang.org/show_bug.cgi?id=3326
-        if (ident == Id.dollar)
-        {
-            .error(loc, "cannnot use `$` inside a function literal");
-            return true;
-        }
-        if (ident == Id.withSym) // https://issues.dlang.org/show_bug.cgi?id=1759
-        {
-            ExpInitializer ez = _init.isExpInitializer();
-            assert(ez);
-            Expression e = ez.exp;
-            if (e.op == EXP.construct || e.op == EXP.blit)
-                e = (cast(AssignExp)e).e2;
-            return lambdaCheckForNestedRef(e, sc);
-        }
-
-        return false;
     }
 
     override final Dsymbol toAlias()

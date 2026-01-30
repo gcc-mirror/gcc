@@ -57,12 +57,12 @@ version (CRuntime_Glibc)
         alias c_long __fd_mask;
         enum uint __NFDBITS = 8 * __fd_mask.sizeof;
 
-        extern (D) auto __FDELT( int d ) pure
+        extern (D) auto __FDELT()( int d ) pure
         {
             return d / __NFDBITS;
         }
 
-        extern (D) auto __FDMASK( int d ) pure
+        extern (D) auto __FDMASK()( int d ) pure
         {
             return cast(__fd_mask) 1 << ( d % __NFDBITS );
         }
@@ -75,22 +75,22 @@ version (CRuntime_Glibc)
         __fd_mask[FD_SETSIZE / __NFDBITS] fds_bits;
     }
 
-    extern (D) void FD_CLR( int fd, fd_set* fdset ) pure
+    extern (D) void FD_CLR()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[__FDELT( fd )] &= ~__FDMASK( fd );
     }
 
-    extern (D) bool FD_ISSET( int fd, const(fd_set)* fdset ) pure
+    extern (D) bool FD_ISSET()( int fd, const(fd_set)* fdset ) pure
     {
         return (fdset.fds_bits[__FDELT( fd )] & __FDMASK( fd )) != 0;
     }
 
-    extern (D) void FD_SET( int fd, fd_set* fdset ) pure
+    extern (D) void FD_SET()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[__FDELT( fd )] |= __FDMASK( fd );
     }
 
-    extern (D) void FD_ZERO( fd_set* fdset ) pure
+    extern (D) void FD_ZERO()( fd_set* fdset ) pure
     {
         fdset.fds_bits[0 .. $] = 0;
     }
@@ -148,22 +148,22 @@ else version (Darwin)
         int[(FD_SETSIZE + (__DARWIN_NFDBITS - 1)) / __DARWIN_NFDBITS] fds_bits;
     }
 
-    extern (D) void FD_CLR( int fd, fd_set* fdset ) pure
+    extern (D) void FD_CLR()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[fd / __DARWIN_NFDBITS] &= ~(1 << (fd % __DARWIN_NFDBITS));
     }
 
-    extern (D) bool FD_ISSET( int fd, const(fd_set)* fdset ) pure
+    extern (D) bool FD_ISSET()( int fd, const(fd_set)* fdset ) pure
     {
         return (fdset.fds_bits[fd / __DARWIN_NFDBITS] & (1 << (fd % __DARWIN_NFDBITS))) != 0;
     }
 
-    extern (D) void FD_SET( int fd, fd_set* fdset ) pure
+    extern (D) void FD_SET()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[fd / __DARWIN_NFDBITS] |= 1 << (fd % __DARWIN_NFDBITS);
     }
 
-    extern (D) void FD_ZERO( fd_set* fdset ) pure
+    extern (D) void FD_ZERO()( fd_set* fdset ) pure
     {
         fdset.fds_bits[0 .. $] = 0;
     }
@@ -187,27 +187,27 @@ else version (FreeBSD)
         deprecated("druntime incorrectly named fds_bits __fds_bits") alias __fds_bits = fds_bits;
     }
 
-    extern (D) __fd_mask __fdset_mask(uint n) pure
+    extern (D) __fd_mask __fdset_mask()(uint n) pure
     {
         return cast(__fd_mask) 1 << (n % _NFDBITS);
     }
 
-    extern (D) void FD_CLR( int n, fd_set* p ) pure
+    extern (D) void FD_CLR()( int n, fd_set* p ) pure
     {
         p.fds_bits[n / _NFDBITS] &= ~__fdset_mask(n);
     }
 
-    extern (D) bool FD_ISSET( int n, const(fd_set)* p ) pure
+    extern (D) bool FD_ISSET()( int n, const(fd_set)* p ) pure
     {
         return (p.fds_bits[n / _NFDBITS] & __fdset_mask(n)) != 0;
     }
 
-    extern (D) void FD_SET( int n, fd_set* p ) pure
+    extern (D) void FD_SET()( int n, fd_set* p ) pure
     {
         p.fds_bits[n / _NFDBITS] |= __fdset_mask(n);
     }
 
-    extern (D) void FD_ZERO( fd_set* p ) pure
+    extern (D) void FD_ZERO()( fd_set* p ) pure
     {
         fd_set *_p;
         size_t _n;
@@ -237,27 +237,27 @@ else version (NetBSD)
         deprecated("druntime incorrectly named fds_bits __fds_bits") alias __fds_bits = fds_bits;
     }
 
-    extern (D) __fd_mask __fdset_mask(uint n) pure
+    extern (D) __fd_mask __fdset_mask()(uint n) pure
     {
         return cast(__fd_mask) 1 << (n % _NFDBITS);
     }
 
-    extern (D) void FD_CLR( int n, fd_set* p ) pure
+    extern (D) void FD_CLR()( int n, fd_set* p ) pure
     {
         p.fds_bits[n / _NFDBITS] &= ~__fdset_mask(n);
     }
 
-    extern (D) bool FD_ISSET( int n, const(fd_set)* p ) pure
+    extern (D) bool FD_ISSET()( int n, const(fd_set)* p ) pure
     {
         return (p.fds_bits[n / _NFDBITS] & __fdset_mask(n)) != 0;
     }
 
-    extern (D) void FD_SET( int n, fd_set* p ) pure
+    extern (D) void FD_SET()( int n, fd_set* p ) pure
     {
         p.fds_bits[n / _NFDBITS] |= __fdset_mask(n);
     }
 
-    extern (D) void FD_ZERO( fd_set* p ) pure
+    extern (D) void FD_ZERO()( fd_set* p ) pure
     {
         fd_set *_p;
         size_t _n;
@@ -287,27 +287,27 @@ else version (OpenBSD)
         deprecated("druntime incorrectly named fds_bits __fds_bits") alias __fds_bits = fds_bits;
     }
 
-    extern (D) __fd_mask __fdset_mask(uint n) pure
+    extern (D) __fd_mask __fdset_mask()(uint n) pure
     {
         return cast(__fd_mask) 1 << (n % _NFDBITS);
     }
 
-    extern (D) void FD_CLR(int n, fd_set* p) pure
+    extern (D) void FD_CLR()(int n, fd_set* p) pure
     {
         p.fds_bits[n / _NFDBITS] &= ~__fdset_mask(n);
     }
 
-    extern (D) bool FD_ISSET(int n, const(fd_set)* p) pure
+    extern (D) bool FD_ISSET()(int n, const(fd_set)* p) pure
     {
         return (p.fds_bits[n / _NFDBITS] & __fdset_mask(n)) != 0;
     }
 
-    extern (D) void FD_SET(int n, fd_set* p) pure
+    extern (D) void FD_SET()(int n, fd_set* p) pure
     {
         p.fds_bits[n / _NFDBITS] |= __fdset_mask(n);
     }
 
-    extern (D) void FD_ZERO(fd_set* p) pure
+    extern (D) void FD_ZERO()(fd_set* p) pure
     {
         fd_set *_p = p;
         size_t _n = (FD_SETSIZE + (_NFDBITS - 1)) / _NFDBITS;
@@ -335,27 +335,27 @@ else version (DragonFlyBSD)
         deprecated("druntime incorrectly named fds_bits __fds_bits") alias __fds_bits = fds_bits;
     }
 
-    extern (D) __fd_mask __fdset_mask(uint n) pure
+    extern (D) __fd_mask __fdset_mask()(uint n) pure
     {
         return cast(__fd_mask) 1 << (n % _NFDBITS);
     }
 
-    extern (D) void FD_CLR( int n, fd_set* p ) pure
+    extern (D) void FD_CLR()( int n, fd_set* p ) pure
     {
         p.fds_bits[n / _NFDBITS] &= ~__fdset_mask(n);
     }
 
-    extern (D) bool FD_ISSET( int n, const(fd_set)* p ) pure
+    extern (D) bool FD_ISSET()( int n, const(fd_set)* p ) pure
     {
         return (p.fds_bits[n / _NFDBITS] & __fdset_mask(n)) != 0;
     }
 
-    extern (D) void FD_SET( int n, fd_set* p ) pure
+    extern (D) void FD_SET()( int n, fd_set* p ) pure
     {
         p.fds_bits[n / _NFDBITS] |= __fdset_mask(n);
     }
 
-    extern (D) void FD_ZERO( fd_set* p ) pure
+    extern (D) void FD_ZERO()( fd_set* p ) pure
     {
         fd_set *_p;
         size_t _n;
@@ -389,22 +389,22 @@ else version (Solaris)
         c_long[(FD_SETSIZE + (FD_NFDBITS - 1)) / FD_NFDBITS] fds_bits;
     }
 
-    extern (D) void FD_SET(int __n, fd_set* __p) pure
+    extern (D) void FD_SET()(int __n, fd_set* __p) pure
     {
         __p.fds_bits[__n / FD_NFDBITS] |= 1UL << (__n % FD_NFDBITS);
     }
 
-    extern (D) void FD_CLR(int __n, fd_set* __p) pure
+    extern (D) void FD_CLR()(int __n, fd_set* __p) pure
     {
         __p.fds_bits[__n / FD_NFDBITS] &= ~(1UL << (__n % FD_NFDBITS));
     }
 
-    extern (D) bool FD_ISSET(int __n, const(fd_set)* __p) pure
+    extern (D) bool FD_ISSET()(int __n, const(fd_set)* __p) pure
     {
         return (__p.fds_bits[__n / FD_NFDBITS] & (1UL << (__n % FD_NFDBITS))) != 0;
     }
 
-    extern (D) void FD_ZERO(fd_set* __p) pure
+    extern (D) void FD_ZERO()(fd_set* __p) pure
     {
         __p.fds_bits[0 .. $] = 0;
     }
@@ -419,12 +419,12 @@ else version (CRuntime_Bionic)
         alias c_ulong __fd_mask;
         enum uint __NFDBITS = 8 * __fd_mask.sizeof;
 
-        extern (D) auto __FDELT( int d ) pure
+        extern (D) auto __FDELT()( int d ) pure
         {
             return d / __NFDBITS;
         }
 
-        extern (D) auto __FDMASK( int d ) pure
+        extern (D) auto __FDMASK()( int d ) pure
         {
             return cast(__fd_mask) 1 << ( d % __NFDBITS );
         }
@@ -438,22 +438,22 @@ else version (CRuntime_Bionic)
     }
 
     // These functions are generated in assembly in bionic.
-    extern (D) void FD_CLR( int fd, fd_set* fdset ) pure
+    extern (D) void FD_CLR()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[__FDELT( fd )] &= ~__FDMASK( fd );
     }
 
-    extern (D) bool FD_ISSET( int fd, const(fd_set)* fdset ) pure
+    extern (D) bool FD_ISSET()( int fd, const(fd_set)* fdset ) pure
     {
         return (fdset.fds_bits[__FDELT( fd )] & __FDMASK( fd )) != 0;
     }
 
-    extern (D) void FD_SET( int fd, fd_set* fdset ) pure
+    extern (D) void FD_SET()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[__FDELT( fd )] |= __FDMASK( fd );
     }
 
-    extern (D) void FD_ZERO( fd_set* fdset ) pure
+    extern (D) void FD_ZERO()( fd_set* fdset ) pure
     {
         fdset.fds_bits[0 .. $] = 0;
     }
@@ -471,12 +471,12 @@ else version (CRuntime_Musl)
     {
         enum uint __NFDBITS = 8 * fd_mask.sizeof;
 
-        extern (D) auto __FDELT( int d ) pure
+        extern (D) auto __FDELT()( int d ) pure
         {
             return d / __NFDBITS;
         }
 
-        extern (D) auto __FDMASK( int d ) pure
+        extern (D) auto __FDMASK()( int d ) pure
         {
             return cast(fd_mask) 1 << ( d % __NFDBITS );
         }
@@ -486,22 +486,22 @@ else version (CRuntime_Musl)
         ulong[FD_SETSIZE / 8 / long.sizeof] fds_bits;
     }
 
-    extern (D) void FD_CLR( int fd, fd_set* fdset ) pure
+    extern (D) void FD_CLR()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[__FDELT( fd )] &= ~__FDMASK( fd );
     }
 
-    extern (D) bool FD_ISSET( int fd, const(fd_set)* fdset ) pure
+    extern (D) bool FD_ISSET()( int fd, const(fd_set)* fdset ) pure
     {
         return (fdset.fds_bits[__FDELT( fd )] & __FDMASK( fd )) != 0;
     }
 
-    extern (D) void FD_SET( int fd, fd_set* fdset ) pure
+    extern (D) void FD_SET()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[__FDELT( fd )] |= __FDMASK( fd );
     }
 
-    extern (D) void FD_ZERO( fd_set* fdset ) pure
+    extern (D) void FD_ZERO()( fd_set* fdset ) pure
     {
         fdset.fds_bits[0 .. $] = 0;
     }
@@ -517,12 +517,12 @@ else version (CRuntime_UClibc)
         alias c_long __fd_mask;
         enum uint __NFDBITS = 8 * __fd_mask.sizeof;
 
-        extern (D) auto __FDELT( int d ) pure
+        extern (D) auto __FDELT()( int d ) pure
         {
             return d / __NFDBITS;
         }
 
-        extern (D) auto __FDMASK( int d ) pure
+        extern (D) auto __FDMASK()( int d ) pure
         {
             return cast(__fd_mask) 1 << ( d % __NFDBITS );
         }
@@ -535,22 +535,22 @@ else version (CRuntime_UClibc)
         __fd_mask[FD_SETSIZE / __NFDBITS] fds_bits;
     }
 
-    extern (D) void FD_CLR( int fd, fd_set* fdset ) pure
+    extern (D) void FD_CLR()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[__FDELT( fd )] &= ~__FDMASK( fd );
     }
 
-    extern (D) bool FD_ISSET( int fd, const(fd_set)* fdset ) pure
+    extern (D) bool FD_ISSET()( int fd, const(fd_set)* fdset ) pure
     {
         return (fdset.fds_bits[__FDELT( fd )] & __FDMASK( fd )) != 0;
     }
 
-    extern (D) void FD_SET( int fd, fd_set* fdset ) pure
+    extern (D) void FD_SET()( int fd, fd_set* fdset ) pure
     {
         fdset.fds_bits[__FDELT( fd )] |= __FDMASK( fd );
     }
 
-    extern (D) void FD_ZERO( fd_set* fdset ) pure
+    extern (D) void FD_ZERO()( fd_set* fdset ) pure
     {
         fdset.fds_bits[0 .. $] = 0;
     }

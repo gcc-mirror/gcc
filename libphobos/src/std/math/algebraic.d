@@ -256,7 +256,7 @@ real sqrt(real x) @nogc @safe pure nothrow { return core.math.sqrt(x); }
  *      $(TR $(TD $(PLUSMN)$(INFIN)) $(TD $(PLUSMN)$(INFIN)) $(TD no) )
  *      )
  */
-real cbrt(real x) @trusted nothrow @nogc
+real cbrt(real x) @trusted pure nothrow @nogc
 {
     version (CRuntime_Microsoft)
     {
@@ -273,7 +273,7 @@ real cbrt(real x) @trusted nothrow @nogc
 }
 
 ///
-@safe unittest
+@safe pure unittest
 {
     import std.math.operations : feqrel;
 
@@ -294,10 +294,11 @@ real cbrt(real x) @trusted nothrow @nogc
  * hypot(x, -y) are equivalent.
  *
  *  $(TABLE_SV
- *  $(TR $(TH x)            $(TH y)            $(TH hypot(x, y)) $(TH invalid?))
- *  $(TR $(TD x)            $(TD $(PLUSMN)0.0) $(TD |x|)         $(TD no))
- *  $(TR $(TD $(PLUSMNINF)) $(TD y)            $(TD +$(INFIN))   $(TD no))
- *  $(TR $(TD $(PLUSMNINF)) $(TD $(NAN))       $(TD +$(INFIN))   $(TD no))
+ *  $(TR $(TH x)            $(TH y)                 $(TH hypot(x, y)) $(TH invalid?))
+ *  $(TR $(TD x)            $(TD $(PLUSMN)0.0)      $(TD |x|)         $(TD no))
+ *  $(TR $(TD $(PLUSMNINF)) $(TD y)                 $(TD +$(INFIN))   $(TD no))
+ *  $(TR $(TD $(PLUSMNINF)) $(TD $(NAN))            $(TD +$(INFIN))   $(TD no))
+ *  $(TR $(TD $(NAN))       $(TD y != $(PLUSMNINF)) $(TD $(NAN))      $(TD no))
  *  )
  */
 T hypot(T)(const T x, const T y) @safe pure nothrow @nogc
@@ -308,19 +309,22 @@ if (isFloatingPoint!T)
     // If both are huge, avoid overflow by scaling by 2^^-N.
     // If both are tiny, avoid underflow by scaling by 2^^N.
     import core.math : fabs, sqrt;
-    import std.math.traits : floatTraits, RealFormat;
+    import std.math.traits : floatTraits, RealFormat, isNaN;
 
     alias F = floatTraits!T;
 
     T u = fabs(x);
     T v = fabs(y);
-    if (!(u >= v))  // check for NaN as well.
+    if (!(u >= v))
     {
         v = u;
         u = fabs(y);
         if (u == T.infinity) return u; // hypot(inf, nan) == inf
         if (v == T.infinity) return v; // hypot(nan, inf) == inf
+        if (u.isNaN || v.isNaN)
+            return T.nan;
     }
+    assert(!(u.isNaN || v.isNaN), "Comparison to NaN always fails, thus is is always handled in the branch above");
 
     static if (F.realFormat == RealFormat.ieeeSingle)
     {
@@ -349,6 +353,13 @@ if (isFloatingPoint!T)
     else
         assert(0, "hypot not implemented");
 
+    if (u * T.epsilon > v)
+    {
+        // hypot (huge, tiny) = huge
+        // also: hypot(x, 0) = x
+        return u;
+    }
+
     // Now u >= v, or else one is NaN.
     T ratio = 1.0;
     if (v >= SQRTMAX)
@@ -368,12 +379,6 @@ if (isFloatingPoint!T)
         v *= SCALE_UNDERFLOW;
     }
 
-    if (u * T.epsilon > v)
-    {
-        // hypot (huge, tiny) = huge
-        return u;
-    }
-
     // both are in the normal range
     return ratio * sqrt(u*u + v*v);
 }
@@ -382,11 +387,16 @@ if (isFloatingPoint!T)
 @safe unittest
 {
     import std.math.operations : feqrel;
+    import std.math.traits : isNaN;
 
     assert(hypot(1.0, 1.0).feqrel(1.4142) > 16);
     assert(hypot(3.0, 4.0).feqrel(5.0) > 16);
     assert(hypot(real.infinity, 1.0L) == real.infinity);
+    assert(hypot(1.0L, real.infinity) == real.infinity);
     assert(hypot(real.infinity, real.nan) == real.infinity);
+    assert(hypot(real.nan, real.infinity) == real.infinity);
+    assert(hypot(real.nan, 1.0L).isNaN);
+    assert(hypot(1.0L, real.nan).isNaN);
 }
 
 @safe unittest
@@ -402,6 +412,16 @@ if (isFloatingPoint!T)
     assert(hypot(3.0L, 4.0L).feqrel(5.0L) > 16);
     assert(hypot(double.infinity, 1.0) == double.infinity);
     assert(hypot(double.infinity, double.nan) == double.infinity);
+}
+
+// https://github.com/dlang/phobos/issues/10491
+@safe pure nothrow unittest
+{
+    import std.math : isClose;
+
+    enum small = 5.016556e-20f;
+    assert(hypot(small, 0).isClose(small));
+    assert(hypot(small, float.min_normal).isClose(small));
 }
 
 @safe unittest

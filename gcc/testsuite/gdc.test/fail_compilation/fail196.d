@@ -21,7 +21,7 @@ fail_compilation/fail196.d(44):        expression: `";\n    assert(s == "`
 fail_compilation/fail196.d(45): Error: found `}` when expecting `;` following expression
 fail_compilation/fail196.d(45):        expression: `xxx`
 fail_compilation/fail196.d(47): Error: found `<` when expecting `;` following expression
-fail_compilation/fail196.d(45):        expression: `");\n\n    s = q" < foo`
+fail_compilation/fail196.d(47):        expression: `");\n\n    s = q" < foo`
 fail_compilation/fail196.d(48): Error: found `foo` when expecting `;` following expression
 fail_compilation/fail196.d(47):        expression: `xxx >> ";\n    assert(s == "`
 fail_compilation/fail196.d(48): Error: found `<` instead of statement

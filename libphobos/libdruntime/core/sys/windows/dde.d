@@ -31,7 +31,7 @@ struct DDEACK {
     ubyte bAppReturnCode;
     ubyte _bf;
 
-    @property ubyte reserved() { return cast(ubyte) (_bf & 0x3F); }
+    @property ubyte reserved()() { return cast(ubyte) (_bf & 0x3F); }
     @property bool  fBusy()    { return cast(bool)  (_bf & 0x40); }
     @property bool  fAck()     { return cast(bool)  (_bf & 0x80); }
 
@@ -49,7 +49,7 @@ struct DDEADVISE {
     short  cfFormat;
 
     @property ushort reserved()  { return cast(ushort) (_bf & 0x3FFF); }
-    @property bool   fDeferUpd() { return cast(bool)   (_bf & 0x4000); }
+    @property bool   fDeferUpd()() { return cast(bool)   (_bf & 0x4000); }
     @property bool   fAckReq()   { return cast(bool)   (_bf & 0x8000); }
 
     @property ushort reserved(ushort r) {
@@ -67,12 +67,12 @@ struct DDEDATA {
     byte   _Value;
 
     @property ushort unused()    { return cast(ushort) (_bf & 0x0FFF); }
-    @property bool   fResponse() { return cast(bool)   (_bf & 0x1000); }
+    @property bool   fResponse()() { return cast(bool)   (_bf & 0x1000); }
     @property bool   fRelease()  { return cast(bool)   (_bf & 0x2000); }
     @property bool   reserved()  { return cast(bool)   (_bf & 0x4000); }
     @property bool   fAckReq()   { return cast(bool)   (_bf & 0x8000); }
 
-    @property byte*  Value() return { return &_Value; }
+    @property byte*  Value() { return &_Value; }
 
     @property ushort unused(ushort r) {
         _bf = cast(ushort) ((_bf & ~0x0FFF) | (r & 0x0FFF));
@@ -90,38 +90,38 @@ struct DDEPOKE {
     short  cfFormat;
     byte   _Value;
 
-    @property ushort unused()    { return cast(ushort) (_bf & 0x1FFF); }
-    @property bool   fRelease()  { return cast(bool)   (_bf & 0x2000); }
-    @property ubyte  fReserved() { return cast(ubyte)  ((_bf & 0xC000) >>> 14); }
+    @property ushort unused()()    { return cast(ushort) (_bf & 0x1FFF); }
+    @property bool   fRelease()()  { return cast(bool)   (_bf & 0x2000); }
+    @property ubyte  fReserved()() { return cast(ubyte)  ((_bf & 0xC000) >>> 14); }
 
-    @property byte*  Value() return { return &_Value; }
+    @property byte*  Value() { return &_Value; }
 
-    @property ushort unused(ushort u) {
+    @property ushort unused()(ushort u) {
         _bf = cast(ushort) ((_bf & ~0x1FFF) | (u & 0x1FFF));
         return cast(ushort)(u & 0x1FFF);
     }
 
-    @property bool   fRelease(bool f)   { _bf = cast(ushort) ((_bf & ~0x2000) | (f << 13)); return f; }
-    @property ubyte  fReserved(ubyte r) { _bf = cast(ushort) ((_bf & ~0xC000) | (r << 14)); return r; }
+    @property bool   fRelease()(bool f)   { _bf = cast(ushort) ((_bf & ~0x2000) | (f << 13)); return f; }
+    @property ubyte  fReserved()(ubyte r) { _bf = cast(ushort) ((_bf & ~0xC000) | (r << 14)); return r; }
 }
 
 deprecated struct DDELN {
     ushort _bf;
     short  cfFormat;
 
-    @property ushort unused()    { return cast(ushort) (_bf & 0x1FFF); }
-    @property bool   fRelease()  { return cast(bool)   (_bf & 0x2000); }
-    @property bool   fDeferUpd() { return cast(bool)   (_bf & 0x4000); }
-    @property bool   fAckReq()   { return cast(bool)   (_bf & 0x8000); }
+    @property ushort unused()()    { return cast(ushort) (_bf & 0x1FFF); }
+    @property bool   fRelease()()  { return cast(bool)   (_bf & 0x2000); }
+    @property bool   fDeferUpd()() { return cast(bool)   (_bf & 0x4000); }
+    @property bool   fAckReq()()   { return cast(bool)   (_bf & 0x8000); }
 
-    @property ushort unused(ushort u) {
+    @property ushort unused()(ushort u) {
         _bf = cast(ushort)((_bf & ~0x1FFF) | (u & 0x1FFF));
         return cast(ushort)(u & 0x1FFF);
     }
 
-    @property bool   fRelease(bool f)  { _bf = cast(ushort) ((_bf & ~0x2000) | (f << 13)); return f; }
-    @property bool   fDeferUpd(bool f) { _bf = cast(ushort) ((_bf & ~0x4000) | (f << 14)); return f; }
-    @property bool   fAckReq(bool f)   { _bf = cast(ushort) ((_bf & ~0x8000) | (f << 15)); return f; }
+    @property bool   fRelease()(bool f)  { _bf = cast(ushort) ((_bf & ~0x2000) | (f << 13)); return f; }
+    @property bool   fDeferUpd()(bool f) { _bf = cast(ushort) ((_bf & ~0x4000) | (f << 14)); return f; }
+    @property bool   fAckReq()(bool f)   { _bf = cast(ushort) ((_bf & ~0x8000) | (f << 15)); return f; }
 }
 
 deprecated struct DDEUP {
@@ -129,23 +129,23 @@ deprecated struct DDEUP {
     short  cfFormat;
     byte   _rgb;
 
-    @property ushort unused()    { return cast(ushort) (_bf & 0x0FFF); }
-    @property bool   fAck()      { return cast(bool)   (_bf & 0x1000); }
-    @property bool   fRelease()  { return cast(bool)   (_bf & 0x2000); }
-    @property bool   fReserved() { return cast(bool)   (_bf & 0x4000); }
-    @property bool   fAckReq()   { return cast(bool)   (_bf & 0x8000); }
+    @property ushort unused()()    { return cast(ushort) (_bf & 0x0FFF); }
+    @property bool   fAck()()      { return cast(bool)   (_bf & 0x1000); }
+    @property bool   fRelease()()  { return cast(bool)   (_bf & 0x2000); }
+    @property bool   fReserved()() { return cast(bool)   (_bf & 0x4000); }
+    @property bool   fAckReq()()   { return cast(bool)   (_bf & 0x8000); }
 
-    @property byte*  rgb() return { return &_rgb; }
+    @property byte*  rgb()()       { return &_rgb; }
 
-    @property ushort unused(ushort r) {
+    @property ushort unused()(ushort r) {
         _bf = cast(ushort) ((_bf & ~0x0FFF) | (r & 0x0FFF));
         return cast(ushort)(r & 0x0FFF);
     }
 
-    @property bool   fAck(bool f)      { _bf = cast(ushort) ((_bf & ~0x1000) | (f << 12)); return f; }
-    @property bool   fRelease(bool f)  { _bf = cast(ushort) ((_bf & ~0x2000) | (f << 13)); return f; }
-    @property bool   fReserved(bool f) { _bf = cast(ushort) ((_bf & ~0x4000) | (f << 14)); return f; }
-    @property bool   fAckReq(bool f)   { _bf = cast(ushort) ((_bf & ~0x8000) | (f << 15)); return f; }
+    @property bool   fAck()(bool f)      { _bf = cast(ushort) ((_bf & ~0x1000) | (f << 12)); return f; }
+    @property bool   fRelease()(bool f)  { _bf = cast(ushort) ((_bf & ~0x2000) | (f << 13)); return f; }
+    @property bool   fReserved()(bool f) { _bf = cast(ushort) ((_bf & ~0x4000) | (f << 14)); return f; }
+    @property bool   fAckReq()(bool f)   { _bf = cast(ushort) ((_bf & ~0x8000) | (f << 15)); return f; }
 }
 
 extern (Windows) nothrow @nogc {

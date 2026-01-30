@@ -40,7 +40,7 @@ enum {
     LSA_MODE_LOG_FULL
 }
 
-bool LSA_SUCCESS(int x) { return x >= 0; }
+bool LSA_SUCCESS()(int x) { return x >= 0; }
 
 /*  TOTHINKABOUT: These constants don't have ANSI/Unicode versioned
  *  aliases.  Should we merge them anyway?

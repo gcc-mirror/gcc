@@ -23,7 +23,7 @@ version (linux):
  */
 extern (D) pure @safe @nogc nothrow {
 
-    void timeradd(const timeval* a, const timeval* b,
+    void timeradd()(const timeval* a, const timeval* b,
             timeval* result)
     {
         result.tv_sec = a.tv_sec + b.tv_sec;
@@ -35,7 +35,7 @@ extern (D) pure @safe @nogc nothrow {
         }
     }
 
-    void timersub(const timeval* a, const timeval* b,
+    void timersub()(const timeval* a, const timeval* b,
             timeval *result)
     {
         result.tv_sec = a.tv_sec - b.tv_sec;
@@ -46,12 +46,12 @@ extern (D) pure @safe @nogc nothrow {
         }
     }
 
-    void timerclear(timeval* tvp)
+    void timerclear()(timeval* tvp)
     {
         (tvp.tv_sec = tvp.tv_usec = 0);
     }
 
-    int timerisset(timeval* tvp)
+    int timerisset()(timeval* tvp)
     {
         return cast(int) (tvp.tv_sec || tvp.tv_usec);
     }
