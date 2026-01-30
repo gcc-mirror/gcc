@@ -61,8 +61,10 @@ namespace __detail
 		      _RegexExecutorPolicy		   __policy,
 		      bool				   __match_mode);
 
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
   template<typename, typename, typename, bool>
     class _Executor;
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
   template<typename _Tp>
     struct __is_contiguous_iter : false_type { };

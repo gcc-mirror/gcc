@@ -36,10 +36,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace __detail
 {
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
   /**
    * @addtogroup regex-detail
    * @{
    */
+
+  template<typename _BiIter, bool _Trivial = is_trivially_copyable<_BiIter>::value>
+    struct _ExecutorFrame;
 
   /**
    * @brief Takes a regex and an input string and does the matching.
@@ -141,6 +145,9 @@ namespace __detail
 
       void
       _M_handle_alternative(_Match_mode, _StateIdT);
+
+      void
+      _M_node(_Match_mode, _StateIdT);
 
       void
       _M_dfs(_Match_mode __match_mode, _StateIdT __start);
@@ -290,6 +297,7 @@ namespace __detail
 	};
 
     public:
+      _GLIBCXX_STD_C::vector<_ExecutorFrame<_BiIter>>       _M_frames;
       _ResultsVec                                           _M_cur_results;
       _BiIter                                               _M_current;
       _BiIter                                               _M_begin;
@@ -305,6 +313,7 @@ namespace __detail
     };
 
  ///@} regex-detail
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 } // namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
