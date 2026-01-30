@@ -32,7 +32,8 @@ struct S {
     try {		// { dg-warning "'try' in 'constexpr' function only available with" "" { target c++17_down } }
     } catch (int) {	// { dg-warning "compound-statement in 'constexpr' function" "" { target c++11_only } }
     }			// { dg-warning "compound-statement in 'constexpr' function" "" { target c++11_only } .-2 }
-  } catch (...) {	// { dg-error "'constexpr' constructor does not have empty body" "" { target c++11_only } }
+  } catch (...) {	// { dg-warning "'constexpr' constructor does not have empty body" "" { target c++11_only } }
+			// { dg-warning "compound-statement in 'constexpr' function" "" { target c++11_only } .-1 }
   }
   int m;
 };

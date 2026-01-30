@@ -32,6 +32,7 @@ struct S {
     } catch (int) {	// { dg-error "compound-statement in 'constexpr' function" "" { target c++11_only } }
     }			// { dg-error "compound-statement in 'constexpr' function" "" { target c++11_only } .-2 }
   } catch (...) {	// { dg-error "'constexpr' constructor does not have empty body" "" { target c++11_only } }
+		        // { dg-error "compound-statement in 'constexpr' function" "" { target c++11_only } .-1 }
   }
   int m;
 };

@@ -31,7 +31,7 @@ struct S {
     try {		// { dg-warning "'try' in 'constexpr' function only available with" "" { target c++17_down } }
     } catch (int) {
     }
-  } catch (...) {	// { dg-error "'constexpr' constructor does not have empty body" "" { target c++11_only } }
+  } catch (...) {	// { dg-warning "'constexpr' constructor does not have empty body" "" { target c++11_only } }
   }
   int m;
 };

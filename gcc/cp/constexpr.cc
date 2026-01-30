@@ -412,11 +412,7 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
     }
   if (TREE_CODE (t) == CONVERT_EXPR)
     t = TREE_OPERAND (t, 0);
-  if (TREE_CODE (t) == INIT_EXPR
-      /* vptr initialization shows up as a MODIFY_EXPR.  In C++14 we only
-	 use what this function builds for cx_check_missing_mem_inits, and
-	 assignment in the ctor body doesn't count.  */
-      || (cxx_dialect < cxx14 && TREE_CODE (t) == MODIFY_EXPR))
+  if (TREE_CODE (t) == INIT_EXPR)
     {
       member = TREE_OPERAND (t, 0);
       init = break_out_target_exprs (TREE_OPERAND (t, 1));
@@ -578,11 +574,11 @@ check_constexpr_ctor_body (tree last, tree list, bool complain)
   else if (list != last
 	   && !check_constexpr_ctor_body_1 (last, list))
     ok = false;
-  if (!ok)
+  if (!ok && complain)
     {
-      if (complain)
-	error ("%<constexpr%> constructor does not have empty body");
-      DECL_DECLARED_CONSTEXPR_P (current_function_decl) = false;
+      pedwarn (input_location, OPT_Wc__14_extensions,
+	       "%<constexpr%> constructor does not have empty body");
+      ok = true;
     }
   return ok;
 }
