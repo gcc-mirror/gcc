@@ -8798,7 +8798,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (TYPE_UNSIGNED (TREE_TYPE (@0)))
     (convert (gt @0 (trunc_div! { TYPE_MAX_VALUE (TREE_TYPE (@0)); } @1)))
     (if (TYPE_MIN_VALUE (TREE_TYPE (@0)))
-     (if (integer_minus_onep (@1))
+     (if (!TYPE_UNSIGNED (TREE_TYPE (@1)) && integer_minus_onep (@1))
       (convert (eq @0 { TYPE_MIN_VALUE (TREE_TYPE (@0)); }))
       (with
        {
