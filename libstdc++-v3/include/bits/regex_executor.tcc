@@ -64,7 +64,6 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
     _S_fopcode_fallback_rep_once_more,
     _S_fopcode_posix_alternative,
     _S_fopcode_merge_sol,
-    _S_fopcode_restore_current,
     _S_fopcode_restore_cur_results,
     _S_fopcode_restore_rep_count,
     _S_fopcode_decrement_rep_count,
@@ -294,7 +293,8 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	{
 	  if constexpr (__dfs_mode)
 	    // If it's DFS executor and already accepted, we're done.
-	    _M_frames.emplace_back(_S_fopcode_fallback_next, __state._M_next);
+	    _M_frames.emplace_back(_S_fopcode_fallback_next, __state._M_next,
+				   _M_current);
 	  else
 	    _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
 	  _M_frames.emplace_back(_S_fopcode_rep_once_more, __i);
@@ -304,7 +304,8 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	  if constexpr (__dfs_mode)
 	    {
 	      // vice-versa.
-	      _M_frames.emplace_back(_S_fopcode_fallback_rep_once_more, __i);
+	      _M_frames.emplace_back(_S_fopcode_fallback_rep_once_more, __i,
+				     _M_current);
 	      _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
 	    }
 	  else
@@ -410,7 +411,6 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	{
 	  if (__state._M_matches(*_M_current))
 	    {
-	      _M_frames.emplace_back(_S_fopcode_restore_current, 0, _M_current);
 	      ++_M_current;
 	      _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
 	    }
@@ -493,14 +493,8 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	      _M_re._M_automaton->_M_traits)._M_apply(
 		  __submatch.first, __submatch.second, _M_current, __last))
 	{
-	  if (__last != _M_current)
-	    {
-	      _M_frames.emplace_back(_S_fopcode_restore_current, 0, _M_current);
-	      _M_current = __last;
-	      _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
-	    }
-	  else
-	    _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+	  _M_current = __last;
+	  _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
 	}
     }
 
@@ -568,14 +562,16 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	{
 	  // TODO: Fix BFS support. It is wrong.
 	  // Pick lhs if it matches. Only try rhs if it doesn't.
-	  _M_frames.emplace_back(_S_fopcode_fallback_next, __state._M_next);
+	  _M_frames.emplace_back(_S_fopcode_fallback_next, __state._M_next,
+				 _M_current);
 	  _M_frames.emplace_back(_S_fopcode_next, __state._M_alt);
 	}
       else
 	{
 	  // Try both and compare the result.
 	  // See "case _S_opcode_accept:" handling above.
-	  _M_frames.emplace_back(_S_fopcode_posix_alternative, __state._M_next);
+	  _M_frames.emplace_back(_S_fopcode_posix_alternative, __state._M_next,
+				 _M_current);
 	  _M_frames.emplace_back(_S_fopcode_next, __state._M_alt);
 	}
     }
@@ -638,6 +634,8 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	    case _S_fopcode_fallback_next:
 	      if (_M_has_sol)
 		break;
+	      if constexpr (__dfs_mode)
+		_M_current = __frame._M_pos;
 	      [[__fallthrough__]];
 	    case _S_fopcode_next:
 	      _M_node(__match_mode, __frame._M_state_id);
@@ -646,6 +644,8 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	    case _S_fopcode_fallback_rep_once_more:
 	      if (_M_has_sol)
 		break;
+	      if constexpr (__dfs_mode)
+		_M_current = __frame._M_pos;
 	      [[__fallthrough__]];
 	    case _S_fopcode_rep_once_more:
 	      _M_rep_once_more(__match_mode, __frame._M_state_id);
@@ -654,15 +654,13 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	    case _S_fopcode_posix_alternative:
 	      _M_frames.emplace_back(_S_fopcode_merge_sol, 0, _M_has_sol);
 	      _M_frames.emplace_back(_S_fopcode_next, __frame._M_state_id);
+	      if constexpr (__dfs_mode)
+		_M_current = __frame._M_pos;
 	      _M_has_sol = false;
 	      break;
 
 	    case _S_fopcode_merge_sol:
 	      _M_has_sol |= __frame._M_val;
-	      break;
-
-	    case _S_fopcode_restore_current:
-	      _M_current = __frame._M_pos;
 	      break;
 
 	    case _S_fopcode_restore_cur_results:
