@@ -1,0 +1,30 @@
+begin (short short bits a = short short 16rf;
+       assert (a CLEAR (short_short_bits_width + 1) = a);
+       assert (a CLEAR -1 = a);
+       assert (a CLEAR short_short_bits_width = short short 16rf);
+       assert (a CLEAR 1 CLEAR 2 = BIN short short 12));
+
+      (short bits a = short 16rf;
+       assert (a CLEAR (short_bits_width + 1) = a);
+       assert (a CLEAR -1 = a);
+       assert (a CLEAR short_bits_width = short 16rf);
+       assert (a CLEAR 1 CLEAR 2 = BIN short 12));
+
+      (bits a = 16rf;
+       assert (a CLEAR (bits_width + 1) = a);
+       assert (a CLEAR -1 = a);
+       assert (a CLEAR bits_width = 16rf);
+       assert (a CLEAR 1 CLEAR 2 = BIN 12));
+
+      (long bits a = long 16rf;
+       assert (a CLEAR (long_bits_width + 1) = a);
+       assert (a CLEAR -1 = a);
+       assert (a CLEAR long_bits_width = long 16rf);
+       assert (a CLEAR 1 CLEAR 2 = BIN long 12));
+
+      (long long bits a = long long 16rf;
+       assert (a CLEAR (long_long_bits_width + 1) = a);
+       assert (a CLEAR -1 = a);
+       assert (a CLEAR long_long_bits_width = long long 16rf);
+       assert (a CLEAR 1 CLEAR 2 = BIN long long 12))
+end

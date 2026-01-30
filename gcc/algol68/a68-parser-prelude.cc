@@ -1315,6 +1315,8 @@ gnu_prelude (void)
   MOID_T *m = NO_MOID;
   /* Priorities.  */
   a68_prio ("ELEMS", 8);
+  a68_prio ("SET", 7);
+  a68_prio ("CLEAR", 7);
   /* Identifiers.  */
   a68_idf (A68_EXT, "infinity", M_REAL, a68_lower_infinity);
   a68_idf (A68_EXT, "minusinfinity", M_REAL, a68_lower_minusinfinity);
@@ -1364,6 +1366,26 @@ gnu_prelude (void)
   a68_op (A68_EXT, "ELEMS", m, a68_lower_elems2);
   m = a68_proc (M_INT, M_INT, M_ROWS, NO_MOID);
   a68_op (A68_EXT, "ELEMS", m, a68_lower_elems3);
+  /* SHORT SHORT BITS operators.  */
+  m = a68_proc (M_SHORT_SHORT_BITS, M_SHORT_SHORT_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "SET", m, a68_lower_set3);
+  a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  /* SHORT BITS operators.  */
+  m = a68_proc (M_SHORT_BITS, M_SHORT_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "SET", m, a68_lower_set3);
+  a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  /* BITS operators.  */
+  m = a68_proc (M_BITS, M_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "SET", m, a68_lower_set3);
+  a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  /* LONG BITS operators.  */
+  m = a68_proc (M_LONG_BITS, M_LONG_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "SET", m, a68_lower_set3);
+  a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  /* LONG LONG BITS operators.  */
+  m = a68_proc (M_LONG_LONG_BITS, M_LONG_LONG_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "SET", m, a68_lower_set3);
+  a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
 }
 
 /* POSIX prelude.  */

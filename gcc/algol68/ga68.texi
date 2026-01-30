@@ -3037,6 +3037,18 @@ Dyadic operator that yields the bit exclusive-or operation of the
 given bits arguments.
 @end deftypefn
 
+@deftypefn Operator {} {@B{set}} {= (@B{l} @B{bits} b, @B{int} n) @B{l} @B{bits}}
+Dyadic operator that sets the @code{n}th least significant bit in
+@code{@B{b}}.  If @code{n} is not in the range @code{[1,L_bits_width]}
+then the operator yields @B{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{clear}} {= (@B{l} @B{bits} b, @B{int} n) @B{l} @B{bits}}
+Dyadic operator that clears the @code{n}th least significant bit in
+@code{@B{b}}.  If @code{n} is not in the range @code{[1,L_bits_width]}
+then the operator yields @B{b}.
+@end deftypefn
+
 @node Extended math procedures
 @section Extended math procedures
 
