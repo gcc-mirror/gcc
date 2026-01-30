@@ -47,6 +47,7 @@ extern enum gcn_isa {
 #define TARGET_RDNA2 (gcn_isa == ISA_RDNA2)
 #define TARGET_RDNA2_PLUS (gcn_isa >= ISA_RDNA2 && gcn_isa < ISA_CDNA1)
 #define TARGET_RDNA3 (gcn_isa == ISA_RDNA3)
+#define TARGET_RDNA3_PLUS (gcn_isa >= ISA_RDNA3 && gcn_isa < ISA_CDNA1)
 
 
 #define TARGET_PACKED_WORK_ITEMS (TARGET_CDNA2_PLUS || TARGET_RDNA3)

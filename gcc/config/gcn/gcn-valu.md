@@ -2720,6 +2720,19 @@
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
+(define_insn "<expander><mode>2<exec>"
+  [(set (match_operand:V_SI 0 "gcn_valu_dst_operand")
+	(countzeros:V_SI
+	  (match_operand:V_SI 1 "gcn_valu_src0_operand")))]
+  ""
+  {@ [cons: =0,1 ;attrs: length,rdna]
+  [v,vSv;4,n3] v_<mnemonic>0\t%0, %1
+  [v,B  ;8,n3] ^
+  [v,vSv;4,3p] v_<rdna_mnemonic>0\t%0, %1
+  [v,B  ;8,3p] ^
+  }
+  [(set_attr "type" "vop1")])
+
 (define_insn "<expander><mode>3<exec>"
   [(set (match_operand:V_INT_1REG 0 "gcn_valu_dst_operand"	 "=  v,RD")
 	(bitop:V_INT_1REG
@@ -2981,6 +2994,67 @@
     emit_insn (gen_mov<mode>_exec (out, tmp, operands[3], exec));
   }
   [(set_attr "type" "mult")])
+
+;; }}}
+;; {{{ ALU VnDImode
+
+(define_expand "<expander><mode>2"
+  [(match_operand:V_DI 0 "register_operand")
+   (countzeros:V_DI)
+   (match_operand:V_DI 1 "gcn_alu_operand")]
+  ""
+  {
+    rtx tmp = gen_reg_rtx (<VnSI>mode);
+    emit_insn (gen_<expander><mode>2_natural (tmp, operands[1]));
+    emit_insn (gen_zero_extend<vnsi><mode>2 (operands[0], tmp));
+    DONE;
+  })
+
+;; The ctz/clz named patterns require operand[0] to match operand[1], for
+;; vectors only.  This pattern provides a counterpart for the scalar insn,
+;; but cannot be the named pattern without an output conversion.
+(define_insn_and_split "<expander><mode>2_natural"
+  [(set (match_operand:<VnSI> 0 "register_operand"  "=&v")
+	(truncate:<VnSI>
+	  (countzeros:V_DI
+	    (match_operand:V_DI 1 "gcn_alu_operand" "v"))))
+   (clobber (match_scratch:<VnSI> 2 "=&v"))
+   (clobber (match_scratch:DI 3 "=&cV"))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    enum {clz = 0, ctz = 1} op = <expander>;
+
+    /* "far/near" is "lo/hi" for clz, and "hi/lo" for ctz.  */
+    rtx src_far = gcn_operand_part (<MODE>mode, operands[1], op);
+    rtx src_near = gcn_operand_part (<MODE>mode, operands[1], !op);
+    rtx res_far = operands[op ? 0 : 2];
+    rtx res_near = operands[op ? 2 : 0];
+    rtx vcc = operands[3];
+
+    /* Count the parts.  */
+    emit_insn (gen_<expander><vnsi>2 (res_far, src_far));
+    emit_insn (gen_<expander><vnsi>2 (res_near, src_near));
+
+    /* Clamp the far-part to 32, to allow for the -1 result on all zeros.  */
+    emit_insn (gen_umin<vnsi>3 (res_far, res_far,
+				gcn_vec_constant (<VnSI>mode, 32)));
+
+    /* Add 32 to the clamped far-part; we won't use this unless near-part is
+       all zeroes.  */
+    emit_insn (gen_add<vnsi>3 (res_far, res_far,
+			       gcn_vec_constant (<VnSI>mode, 32)));
+
+    /* Select which result is correct.  */
+    emit_insn (gen_vec_cmp<vnsi>di (vcc, gen_rtx_NE (VOIDmode, 0, 0),
+				    gcn_vec_constant (<VnSI>mode, 0),
+				    src_near));
+    emit_insn (gen_vcond_mask_<vnsi>di (operands[0], res_near, res_far, vcc));
+    DONE;
+  }
+  [(set_attr "type" "vmult")])
 
 ;; }}}
 ;; {{{ Int unops

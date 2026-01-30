@@ -287,16 +287,23 @@
 ; Disable alternatives that only apply to specific ISA variants.
 
 (define_attr "cdna" "any,cdna2" (const_string "any"))
-(define_attr "rdna" "any,no,yes" (const_string "any"))
+(define_attr "rdna" "any,no,yes,n3,3p" (const_string "any"))
 
 (define_attr "xnack" "na,off,on" (const_string "na"))
 
 (define_attr "enabled" ""
-  (cond [(and (eq_attr "rdna" "no")
+  (cond [
+	 (and (eq_attr "rdna" "no")
 	      (ne (symbol_ref "TARGET_RDNA2_PLUS") (const_int 0)))
 	   (const_int 0)
 	 (and (eq_attr "rdna" "yes")
 	      (eq (symbol_ref "TARGET_RDNA2_PLUS") (const_int 0)))
+	   (const_int 0)
+	 (and (eq_attr "rdna" "n3")
+	      (ne (symbol_ref "TARGET_RDNA3_PLUS") (const_int 0)))
+	   (const_int 0)
+	 (and (eq_attr "rdna" "3p")
+	      (eq (symbol_ref "TARGET_RDNA3_PLUS") (const_int 0)))
 	   (const_int 0)
 	 (and (eq_attr "cdna" "cdna2")
 	      (eq (symbol_ref "TARGET_CDNA2_PLUS") (const_int 0)))
@@ -371,7 +378,13 @@
    (umin "min%u")
    (umax "max%u")
    (not "not%B")
-   (popcount "bcnt_u32%b")])
+   (popcount "bcnt_u32%b")
+   (clz "ffbh%u")
+   (ctz "ffbl%b")])
+
+(define_code_attr rdna_mnemonic
+  [(clz "clz_i32%u")
+   (ctz "ctz_i32%b")])
 
 (define_code_attr bare_mnemonic
   [(plus "add")
