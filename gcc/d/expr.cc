@@ -2582,7 +2582,10 @@ public:
 
     /* Implicitly convert void[n] to ubyte[n].  */
     if (tb->ty == TY::Tsarray && tb->nextOf ()->toBasetype ()->ty == TY::Tvoid)
-      tb = dmd::sarrayOf (Type::tuns8, tb->isTypeSArray ()->dim->toUInteger ());
+      {
+	dinteger_t ndim = tb->isTypeSArray ()->dim->toUInteger ();
+	tb = dmd::sarrayOf (Type::tuns8, ndim);
+      }
 
     gcc_assert (tb->ty == TY::Tarray || tb->ty == TY::Tsarray
 		|| tb->ty == TY::Tpointer);

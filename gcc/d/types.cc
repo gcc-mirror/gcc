@@ -1154,7 +1154,9 @@ public:
 		  continue;
 
 		tree ident = get_identifier (member->ident->toChars ());
-		tree value = build_integer_cst (member->value ()->toInteger (),
+
+		Expression *evalue = member->value ();
+		tree value = build_integer_cst (evalue->toInteger (),
 						basetype);
 
 		/* Build an identifier for the enumeration constant.  */

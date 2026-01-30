@@ -78,15 +78,21 @@ static tree stop_minfo_node;
 
 struct module_info
 {
+  tree ctor_decl;
   vec <tree, va_gc> *ctors;
+  tree dtor_decl;
   vec <tree, va_gc> *dtors;
   vec <tree, va_gc> *ctorgates;
 
+  tree sharedctor_decl;
   vec <tree, va_gc> *sharedctors;
+  tree shareddtor_decl;
   vec <tree, va_gc> *shareddtors;
   vec <tree, va_gc> *sharedctorgates;
+  tree standalonector_decl;
   vec <tree, va_gc> *standalonectors;
 
+  tree unittest_decl;
   vec <tree, va_gc> *unitTests;
 };
 
@@ -487,31 +493,31 @@ layout_moduleinfo_field (tree type, tree rec_type, HOST_WIDE_INT &offset)
    basis, this is done to keep its size to a minimum.  */
 
 static tree
-layout_moduleinfo_fields (Module *decl, tree type)
+layout_moduleinfo_fields (Module *decl, module_info &mi, tree type)
 {
   HOST_WIDE_INT offset = int_size_in_bytes (type);
   type = copy_aggregate_type (type);
 
   /* First fields added are all the function pointers.  */
-  if (decl->sctor)
+  if (mi.ctor_decl)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
-  if (decl->sdtor)
+  if (mi.dtor_decl)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
-  if (decl->ssharedctor)
+  if (mi.sharedctor_decl)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
-  if (decl->sshareddtor)
+  if (mi.shareddtor_decl)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
   if (dmd::findGetMembers (decl))
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
-  if (decl->sictor)
+  if (mi.standalonector_decl)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
-  if (decl->stest)
+  if (mi.unittest_decl)
     layout_moduleinfo_field (ptr_type_node, type, offset);
 
   /* Array of module imports is laid out as a length field, followed by
@@ -558,7 +564,7 @@ layout_moduleinfo_fields (Module *decl, tree type)
 /* Output the ModuleInfo for module DECL and register it with druntime.  */
 
 static void
-layout_moduleinfo (Module *decl)
+layout_moduleinfo (Module *decl, module_info &mi)
 {
   ClassDeclarations aclasses;
   FuncDeclaration *sgetmembers;
@@ -576,19 +582,19 @@ layout_moduleinfo (Module *decl)
   sgetmembers = dmd::findGetMembers (decl);
 
   size_t flags = 0;
-  if (decl->sctor)
+  if (mi.ctor_decl)
     flags |= MItlsctor;
-  if (decl->sdtor)
+  if (mi.dtor_decl)
     flags |= MItlsdtor;
-  if (decl->ssharedctor)
+  if (mi.sharedctor_decl)
     flags |= MIctor;
-  if (decl->sshareddtor)
+  if (mi.shareddtor_decl)
     flags |= MIdtor;
   if (sgetmembers)
     flags |= MIxgetMembers;
-  if (decl->sictor)
+  if (mi.standalonector_decl)
     flags |= MIictor;
-  if (decl->stest)
+  if (mi.unittest_decl)
     flags |= MIunitTest;
   if (aimports_dim)
     flags |= MIimportedModules;
@@ -600,7 +606,7 @@ layout_moduleinfo (Module *decl)
   flags |= MIname;
 
   tree minfo = get_moduleinfo_decl (decl);
-  tree type = layout_moduleinfo_fields (decl, TREE_TYPE (minfo));
+  tree type = layout_moduleinfo_fields (decl, mi, TREE_TYPE (minfo));
 
   /* Put out the two named fields in a ModuleInfo decl:
 	uint flags;
@@ -626,28 +632,29 @@ layout_moduleinfo (Module *decl)
 	char[N] name;
    */
   if (flags & MItlsctor)
-    CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, build_address (decl->sctor));
+    CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, build_address (mi.ctor_decl));
 
   if (flags & MItlsdtor)
-    CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, build_address (decl->sdtor));
+    CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, build_address (mi.dtor_decl));
 
   if (flags & MIctor)
     CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
-			    build_address (decl->ssharedctor));
+			    build_address (mi.sharedctor_decl));
 
   if (flags & MIdtor)
     CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
-			    build_address (decl->sshareddtor));
+			    build_address (mi.shareddtor_decl));
 
   if (flags & MIxgetMembers)
     CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
 			    build_address (get_symbol_decl (sgetmembers)));
 
   if (flags & MIictor)
-    CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, build_address (decl->sictor));
+    CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE,
+			    build_address (mi.standalonector_decl));
 
   if (flags & MIunitTest)
-    CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, build_address (decl->stest));
+    CONSTRUCTOR_APPEND_ELT (minit, NULL_TREE, build_address (mi.unittest_decl));
 
   if (flags & MIimportedModules)
     {
@@ -758,34 +765,37 @@ build_module_tree (Module *decl)
       tm->aimports.push (decl);
 
       if (mitest.ctors || mitest.ctorgates)
-	tm->sctor = build_funcs_gates_fn (get_identifier ("*__modtestctor"),
-					  mitest.ctors, mitest.ctorgates);
+	mitest.ctor_decl
+	  = build_funcs_gates_fn (get_identifier ("*__modtestctor"),
+				  mitest.ctors, mitest.ctorgates);
 
       if (mitest.dtors)
-	tm->sdtor = build_funcs_gates_fn (get_identifier ("*__modtestdtor"),
-					  mitest.dtors, NULL);
+	mitest.dtor_decl
+	  = build_funcs_gates_fn (get_identifier ("*__modtestdtor"),
+				  mitest.dtors, NULL);
 
       if (mi.standalonectors)
-	tm->sictor
+	mitest.standalonector_decl
 	  = build_funcs_gates_fn (get_identifier ("*__modtestsharedictor"),
 				  mi.standalonectors, NULL);
 
       if (mitest.sharedctors || mitest.sharedctorgates)
-	tm->ssharedctor
+	mitest.sharedctor_decl
 	  = build_funcs_gates_fn (get_identifier ("*__modtestsharedctor"),
 				  mitest.sharedctors, mitest.sharedctorgates);
 
       if (mitest.shareddtors)
-	tm->sshareddtor
+	mitest.shareddtor_decl
 	  = build_funcs_gates_fn (get_identifier ("*__modtestshareddtor"),
 				  mitest.shareddtors, NULL);
 
       if (mi.unitTests)
-	tm->stest = build_funcs_gates_fn (get_identifier ("*__modtest"),
-					  mi.unitTests, NULL);
+	mitest.unittest_decl
+	  = build_funcs_gates_fn (get_identifier ("*__modtest"),
+				  mi.unitTests, NULL);
 
       mi.unitTests = NULL;
-      layout_moduleinfo (tm);
+      layout_moduleinfo (tm, mitest);
     }
 
   /* Default behavior is to always generate module info because of templates.
@@ -793,33 +803,33 @@ build_module_tree (Module *decl)
   if (global.params.useModuleInfo && Module::moduleinfo != NULL)
     {
       if (mi.ctors || mi.ctorgates)
-	decl->sctor = build_funcs_gates_fn (get_identifier ("*__modctor"),
-					    mi.ctors, mi.ctorgates);
+	mi.ctor_decl = build_funcs_gates_fn (get_identifier ("*__modctor"),
+					     mi.ctors, mi.ctorgates);
 
       if (mi.dtors)
-	decl->sdtor = build_funcs_gates_fn (get_identifier ("*__moddtor"),
-					    mi.dtors, NULL);
+	mi.dtor_decl = build_funcs_gates_fn (get_identifier ("*__moddtor"),
+					     mi.dtors, NULL);
 
       if (mi.standalonectors)
-	decl->sictor
+	mi.standalonector_decl
 	  = build_funcs_gates_fn (get_identifier ("*__modsharedictor"),
 				  mi.standalonectors, NULL);
 
       if (mi.sharedctors || mi.sharedctorgates)
-	decl->ssharedctor
+	mi.sharedctor_decl
 	  = build_funcs_gates_fn (get_identifier ("*__modsharedctor"),
 				  mi.sharedctors, mi.sharedctorgates);
 
       if (mi.shareddtors)
-	decl->sshareddtor
+	mi.shareddtor_decl
 	  = build_funcs_gates_fn (get_identifier ("*__modshareddtor"),
 				  mi.shareddtors, NULL);
 
       if (mi.unitTests)
-	decl->stest = build_funcs_gates_fn (get_identifier ("*__modtest"),
-					    mi.unitTests, NULL);
+	mi.unittest_decl = build_funcs_gates_fn (get_identifier ("*__modtest"),
+						 mi.unitTests, NULL);
 
-      layout_moduleinfo (decl);
+      layout_moduleinfo (decl, mi);
     }
 
   /* Process all deferred functions after finishing module.  */
