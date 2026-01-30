@@ -679,7 +679,7 @@ private struct RBRange(N)
     /**
      * Returns the first element in the range
      */
-    @property Elem front()
+    ref @property Elem front()
     {
         return _begin.value;
     }
@@ -687,7 +687,7 @@ private struct RBRange(N)
     /**
      * Returns the last element in the range
      */
-    @property Elem back()
+    ref @property Elem back()
     {
         return _end.prev.value;
     }
@@ -737,13 +737,17 @@ private struct RBRange(N)
  * elements `a` and `b`, $(D less(a, b) == !less(b, a)). $(D less(a, a)) should
  * always equal `false`.
  *
+ * Care should also be taken to not modify elements in the tree (e.g. via `front` /
+ * `back`, which return by `ref`) in a way which would affect the order defined by
+ * the `less` predicate.
+ *
  * If `allowDuplicates` is set to `true`, then inserting the same element more than
  * once continues to add more elements.  If it is `false`, duplicate elements are
  * ignored on insertion.  If duplicates are allowed, then new elements are
  * inserted after all existing duplicate elements.
  */
 final class RedBlackTree(T, alias less = "a < b", bool allowDuplicates = false)
-if (is(typeof(binaryFun!less(T.init, T.init))))
+if (is(typeof((ref const T a) => binaryFun!less(a, a))))
 {
     import std.meta : allSatisfy;
     import std.range : Take;
@@ -1036,7 +1040,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
      *
      * Complexity: $(BIGOH 1)
      */
-    inout(Elem) front() inout
+    ref inout(Elem) front() inout
     {
         return _begin.value;
     }
@@ -1046,7 +1050,7 @@ if (is(typeof(binaryFun!less(T.init, T.init))))
      *
      * Complexity: $(BIGOH log(n))
      */
-    inout(Elem) back() inout
+    ref inout(Elem) back() inout
     {
         return _end.prev.value;
     }
@@ -2255,4 +2259,15 @@ if ( is(typeof(binaryFun!less((ElementType!Stuff).init, (ElementType!Stuff).init
     auto t = new RedBlackTree!(int, delegate(a, b) => a > b);
     t.insert([1, 3, 5, 4, 2]);
     assert(t[].equal([5, 4, 3, 2, 1]));
+}
+
+// should support `less` predicate taking `ref const`
+@safe pure unittest
+{
+    struct S
+    {
+        int* value;
+    }
+
+    cast(void) new RedBlackTree!(S, (ref const S a, ref const S b) => a.value > b.value);
 }

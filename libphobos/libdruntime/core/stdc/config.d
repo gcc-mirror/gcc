@@ -260,6 +260,23 @@ else version (DigitalMars)
         else version (Darwin)
             alias real c_long_double;
     }
+    else version (AArch64)
+    {
+        version (linux)
+            alias real c_long_double;
+        else version (FreeBSD)
+            alias real c_long_double;
+        else version (OpenBSD)
+            alias real c_long_double;
+        else version (NetBSD)
+            alias real c_long_double;
+        else version (DragonFlyBSD)
+            alias real c_long_double;
+        else version (Solaris)
+            alias real c_long_double;
+        else version (Darwin)
+            alias real c_long_double;
+    }
 }
 
 static assert(is(c_long_double), "c_long_double needs to be declared for this platform/architecture.");

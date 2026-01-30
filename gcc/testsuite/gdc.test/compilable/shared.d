@@ -5,7 +5,7 @@ pure nothrow @nogc ref @safe shared(C1)(return ref shared(C1) c)
 pure nothrow @nogc ref @safe shared(int)(return ref shared(C3) c)
 ---
 */
-ref shared(int) f(return shared ref int y)
+ref shared(int) f(return ref shared int y)
 {
     return y;
 }
@@ -97,7 +97,7 @@ shared(C2)* test_dotvarexp_4(return ref shared C3 c)
     return &c.c2;
 }
 
-ref shared(int) test_dotvarexp_5(return shared ref C3 c)
+ref shared(int) test_dotvarexp_5(return ref shared C3 c)
 {
     return c.c1.c1.value;
 }

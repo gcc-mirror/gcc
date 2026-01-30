@@ -655,8 +655,10 @@ final class CParser(AST) : Parser!AST
         case TOK.asm_:
             switch (peekNext())
             {
+                case TOK.const_:
                 case TOK.goto_:
                 case TOK.inline:
+                case TOK.restrict:
                 case TOK.volatile:
                 case TOK.leftParenthesis:
                     s = cparseGnuAsm();
@@ -1474,7 +1476,7 @@ final class CParser(AST) : Parser!AST
      *    logical-OR-expression
      *    logical-OR-expression ? expression : conditional-expression
      */
-    private AST.Expression cparseCondExp()
+    AST.Expression cparseCondExp()
     {
         const loc = token.loc;
 
@@ -1637,7 +1639,7 @@ final class CParser(AST) : Parser!AST
      */
     private AST.Expression cparseConstantExp()
     {
-        return cparseAssignExp();
+        return cparseCondExp();
     }
 
     /*****************************
@@ -3437,6 +3439,11 @@ final class CParser(AST) : Parser!AST
                         cparseParens();
                 }
             }
+            else if (token.value == TOK._Noreturn)
+            {
+                specifier.noreturn = true;
+                nextToken();
+            }
             else if (token.value == TOK.restrict) // ImportC assigns no semantics to `restrict`, so just ignore the keyword.
                 nextToken();
             else
@@ -3485,19 +3492,51 @@ final class CParser(AST) : Parser!AST
 
         nextToken();
 
-        // Consume all asm-qualifiers. As a future optimization, we could record
-        // the `inline` and `volatile` storage classes against the statement.
-        while (token.value == TOK.goto_ ||
-               token.value == TOK.inline ||
-               token.value == TOK.volatile)
-            nextToken();
+        // Consume all asm-qualifiers.
+        enum AsmQualifiers { none = 0, goto_ = 1, inline = 2, volatile = 4, }
+        AsmQualifiers asmQualifiers;
+        while (1)
+        {
+            AsmQualifiers qual;
+            switch (token.value)
+            {
+                case TOK.goto_:
+                    qual = AsmQualifiers.goto_;
+                    goto Lcontinue;
+
+                case TOK.inline:
+                    qual = AsmQualifiers.inline;
+                    goto Lcontinue;
+
+                case TOK.volatile:
+                    qual = AsmQualifiers.volatile;
+                    goto Lcontinue;
+
+                Lcontinue:
+                    if (asmQualifiers & qual)
+                        error(token.loc, "duplicate `asm` qualifier `%s`", token.toChars());
+                    else
+                        asmQualifiers |= qual;
+                    nextToken();
+                    continue;
+
+                case TOK.const_:
+                case TOK.restrict:
+                    error(token.loc, "`%s` is not a valid `asm` qualifier", token.toChars());
+                    nextToken();
+                    continue;
+
+                default:
+                    break;
+            }
+            break;
+        }
 
         check(TOK.leftParenthesis);
         if (token.value != TOK.string_)
             error("string literal expected for Assembler Template, not `%s`", token.toChars());
         Token* toklist = null;
         Token** ptoklist = &toklist;
-        //Identifier label = null;
         auto statements = new AST.Statements();
 
         int parens;
@@ -3524,21 +3563,6 @@ final class CParser(AST) : Parser!AST
                     error("matching `)` expected, not end of file");
                     break;
 
-                case TOK.colonColon:  // treat as two separate : tokens for iasmgcc
-                    *ptoklist = allocateToken();
-                    **ptoklist = this.token;
-                    (*ptoklist).value = TOK.colon;
-                    ptoklist = &(*ptoklist).next;
-
-                    *ptoklist = allocateToken();
-                    **ptoklist = this.token;
-                    (*ptoklist).value = TOK.colon;
-                    ptoklist = &(*ptoklist).next;
-
-                    *ptoklist = null;
-                    nextToken();
-                    continue;
-
                 default:
                     *ptoklist = allocateToken();
                     **ptoklist = this.token;
@@ -3550,7 +3574,11 @@ final class CParser(AST) : Parser!AST
             if (toklist)
             {
                 // Create AsmStatement from list of tokens we've saved
-                AST.Statement s = new AST.AsmStatement(token.loc, toklist);
+                auto s = new AST.AsmStatement(token.loc, toklist);
+                if (asmQualifiers & AsmQualifiers.volatile)
+                    s.isVolatile = true;
+                if (asmQualifiers & AsmQualifiers.inline)
+                    s.isInline = true;
                 statements.push(s);
             }
             break;
@@ -6069,7 +6097,7 @@ final class CParser(AST) : Parser!AST
         {
             //printf("addSym() %s\n", s.toChars());
             if (auto v = s.isVarDeclaration())
-                v.isCmacro(true);       // mark it as coming from a C #define
+                v.isCmacro = true;       // mark it as coming from a C #define
             if (auto td = s.isTemplateDeclaration())
                 td.isCmacro = true; // mark as coming from a C #define
             /* If it's already defined, replace the earlier

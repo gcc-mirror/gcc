@@ -23,6 +23,7 @@ $(TR $(TD Validation) $(TD
         $(LREF isDigit)
         $(LREF isGraphical)
         $(LREF isHexDigit)
+        $(LREF isLower)
         $(LREF isOctalDigit)
         $(LREF isPrintable)
         $(LREF isPunctuation)

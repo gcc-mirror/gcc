@@ -19,7 +19,6 @@ import core.stdc.string;
 import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
-import dmd.gluelayer;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
@@ -193,8 +192,6 @@ extern (C++) class ClassDeclaration : AggregateDeclaration
      * integration.
      */
     ObjcClassDeclaration objc;
-
-    Symbol* cpp_type_info_ptr_sym;      // cached instance of class Id.cpp_type_info_ptr
 
     final extern (D) this(Loc loc, Identifier id, BaseClasses* baseclasses, Dsymbols* members, bool inObject)
     {

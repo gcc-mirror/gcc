@@ -5,7 +5,7 @@ fail_compilation/discard_value.d(24): Error: the result of the equality expressi
 fail_compilation/discard_value.d(25): Error: the result of the equality expression `null !is null` is discarded
 fail_compilation/discard_value.d(26): Error: the result of the equality expression `v == 0` is discarded
 fail_compilation/discard_value.d(27): Error: the result of the equality expression `v == 0` is discarded
-fail_compilation/discard_value.d(28): Error: `!__equals("", "")` has no effect
+fail_compilation/discard_value.d(28): Error: the result of the equality expression `"" != ""` is discarded
 fail_compilation/discard_value.d(29): Error: the result of the equality expression `"" == ""` is discarded
 fail_compilation/discard_value.d(30): Error: the result of the equality expression `fun().i == 4` is discarded
 fail_compilation/discard_value.d(30):        note that `fun().i` may have a side effect

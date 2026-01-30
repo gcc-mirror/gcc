@@ -17,6 +17,6 @@ auto otherTest(inout ref Base block) @nogc { assert(0); }
 auto otherTest(inout ref A block) @nogc {}
 
 void main() {
-    B* thingie;
+    B* thingie = new B;
     otherTest(*thingie);
 }

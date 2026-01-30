@@ -175,121 +175,105 @@ nothrow:
 
         whichPathFoundThis = -1;
 
-        // see if we should check for the module locally.
-        bool checkLocal = pathCache.pathExists(filename);
-        const sdi = FileName.forceExt(filename, hdr_ext);
-        if (checkLocal && FileName.exists(sdi) == 1)
-            return sdi;
-        scope(exit) FileName.free(sdi.ptr);
-
-        const sd = FileName.forceExt(filename, mars_ext);
-        if (checkLocal && FileName.exists(sd) == 1)
-            return sd;
-        scope(exit) FileName.free(sd.ptr);
-
-        if (checkLocal)
+        // List of extensions to match, in order of precedence.
+        const(char)[][2] extensions = [
+            FileName.forceExt(filename, hdr_ext),
+            FileName.forceExt(filename, mars_ext),
+        ];
+        const(char)[][3] importCextensions = [
+            FileName.forceExt(filename, i_ext),
+            FileName.forceExt(filename, h_ext),
+            FileName.forceExt(filename, c_ext),
+        ];
+        scope(exit)
         {
-            if (pathCache.isExistingPath(filename))
+            foreach (ext; extensions)
+                FileName.free(ext.ptr);
+            foreach (ext; importCextensions)
+                FileName.free(ext.ptr);
+        }
+
+        /* Search for all combinations of files (mod.di, mod.d, mod/package.d, ...)
+         * within in directory `path`.
+         */
+        const(char)[] lookForSourceFileInPath(const char[] path)
+        {
+            // When checking for modules locally, combine won't allocate a new string.
+            bool checkLocal = path is null;
+            void freePath(const(char)[] p)
+            {
+                if (checkLocal)
+                    return;
+                FileName.free(p.ptr);
+            }
+
+            const p = FileName.combine(path, filename);
+            scope(exit) freePath(p);
+            if (!pathCache.pathExists(p))
+                return null; // no need to check for anything else.
+
+            // Search for any file matching {path}/{file}.{ext}
+            foreach (ext; extensions)
+            {
+                const file = FileName.combine(path, ext);
+                if (FileName.exists(file) == 1)
+                {
+                    import dmd.root.rmem : xarraydup;
+                    return checkLocal ? file.xarraydup : file;
+                }
+                freePath(file);
+            }
+
+            const n = FileName.combine(path, FileName.sansExt(filename));
+            scope(exit) freePath(n);
+            if (pathCache.isExistingPath(n))
             {
                 /* The filename exists but it's a directory.
                  * Therefore, the result should be: filename/package.d
                  * iff filename/package.d is a file
                  */
-                const ni = FileName.combine(filename, package_di);
+                const ni = FileName.combine(n, package_di);
                 if (FileName.exists(ni) == 1)
                     return ni;
                 FileName.free(ni.ptr);
 
-                const n = FileName.combine(filename, package_d);
-                if (FileName.exists(n) == 1)
-                    return n;
-                FileName.free(n.ptr);
+                const nd = FileName.combine(n, package_d);
+                if (FileName.exists(nd) == 1)
+                    return nd;
+                FileName.free(nd.ptr);
             }
+
+            /* Search for any file with importC extensions after all attempts
+               to find a D module/package in the path are exhausted.  */
+            foreach (ext; importCextensions)
+            {
+                const file = FileName.combine(path, ext);
+                if (FileName.exists(file) == 1)
+                {
+                    import dmd.root.rmem : xarraydup;
+                    return checkLocal ? file.xarraydup : file;
+                }
+                freePath(file);
+            }
+            return null;
         }
 
-        if (FileName.absolute(filename))
-            return null;
-        if (!pathsInfo.length)
-            return null;
-        foreach (pathIndex, entry; pathsInfo)
+        // First see if module is found in any search paths.
+        if (!FileName.absolute(filename))
         {
-            const p = entry.path.toDString();
-
-            const(char)[] n = FileName.combine(p, sdi);
-
-            if (!pathCache.pathExists(n))
+            foreach (pathIndex, entry; pathsInfo)
             {
-                FileName.free(n.ptr);
-                continue; // no need to check for anything else.
-            }
-            if (FileName.exists(n) == 1)
-                return n;
-
-            FileName.free(n.ptr);
-
-            n = FileName.combine(p, sd);
-            if (FileName.exists(n) == 1)
-            {
-                whichPathFoundThis = pathIndex;
-                return n;
-            }
-            FileName.free(n.ptr);
-
-            n = FileName.combine(p, FileName.sansExt(filename));
-            scope(exit) FileName.free(n.ptr);
-
-            // also cache this if we are looking for package.d[i]
-            if (pathCache.isExistingPath(n))
-            {
-                const n2i = FileName.combine(n, package_di);
-                if (FileName.exists(n2i) == 1)
+                if (auto s = lookForSourceFileInPath(entry.path.toDString()))
                 {
                     whichPathFoundThis = pathIndex;
-                    return n2i;
+                    return s;
                 }
-
-                FileName.free(n2i.ptr);
-                const n2 = FileName.combine(n, package_d);
-                if (FileName.exists(n2) == 1)
-                {
-                    whichPathFoundThis = pathIndex;
-                    return n2;
-                }
-                FileName.free(n2.ptr);
             }
         }
+        // No modules found, check for the module locally.
+        if (auto s = lookForSourceFileInPath(null))
+            return s;
 
-        /* ImportC: No D modules found, now search along paths[] for .i file, then .c file.
-         */
-        const si = FileName.forceExt(filename, i_ext);
-        if (FileName.exists(si) == 1)
-            return si;
-        scope(exit) FileName.free(si.ptr);
-
-        const sc = FileName.forceExt(filename, c_ext);
-        if (FileName.exists(sc) == 1)
-            return sc;
-        scope(exit) FileName.free(sc.ptr);
-        foreach (pathIndex, entry; pathsInfo)
-        {
-            const p = entry.path.toDString();
-
-            const(char)[] n = FileName.combine(p, si);
-            if (FileName.exists(n) == 1)
-            {
-                whichPathFoundThis = pathIndex;
-                return n;
-            }
-            FileName.free(n.ptr);
-
-            n = FileName.combine(p, sc);
-            if (FileName.exists(n) == 1)
-            {
-                whichPathFoundThis = pathIndex;
-                return n;
-            }
-            FileName.free(n.ptr);
-        }
         return null;
     }
 

@@ -106,6 +106,42 @@ public:
         doCond(e.e1) || doCond(e.e2) || applyTo(e);
     }
 
+    override void visit(CatExp e)
+    {
+        if (auto lowering = e.lowering)
+        {
+            doCond(lowering) || applyTo(e);
+        }
+        else
+        {
+            visit(cast(BinExp)e);
+        }
+    }
+
+    override void visit(CatAssignExp e)
+    {
+        if (auto lowering = e.lowering)
+        {
+            doCond(lowering) || applyTo(e);
+        }
+        else
+        {
+            visit(cast(BinExp)e);
+        }
+    }
+
+    override void visit(EqualExp e)
+    {
+        if (auto lowering = e.lowering)
+        {
+            doCond(lowering) || applyTo(e);
+        }
+        else
+        {
+            visit(cast(BinExp)e);
+        }
+    }
+
     override void visit(AssertExp e)
     {
         //printf("CallExp::apply(apply_fp_t fp, void *param): %s\n", toChars());

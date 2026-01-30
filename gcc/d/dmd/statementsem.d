@@ -365,10 +365,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                         handler = new CompoundStatement(Loc.initial, handler, ts);
                     }
 
-                    auto catches = new Catches();
                     auto ctch = new Catch(Loc.initial, getThrowable(), id, handler);
                     ctch.internalCatch = true;
-                    catches.push(ctch);
+                    auto catches = new Catches(ctch);
 
                     Statement st = new TryCatchStatement(Loc.initial, _body, catches);
                     if (sfinally)
@@ -621,8 +620,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
              *    } finally { v2.~this(); }
              *  } finally { v1.~this(); }
              */
-            auto ainit = new Statements();
-            ainit.push(fs._init);
+            auto ainit = new Statements(fs._init);
             fs._init = null;
             ainit.push(fs);
             Statement s = new CompoundStatement(fs.loc, ainit);
@@ -1013,7 +1011,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     Type tindex = (*fs.parameters)[0].type;
                     if (!tindex.isIntegral())
                     {
-                        error(fs.loc, "foreach: key cannot be of non-integral type `%s`", tindex.toChars());
+                        error(fs.loc, "foreach: index cannot be of non-integral type `%s`", tindex.toChars());
                         return retError();
                     }
                     /* What cases to deprecate implicit conversions for:
@@ -1382,8 +1380,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                     Expression ve = new VarExp(loc, vd);
                     ve.type = tfront;
 
-                    auto exps = new Expressions();
-                    exps.push(ve);
+                    auto exps = new Expressions(ve);
                     int pos = 0;
                     while (exps.length < dim)
                     {
@@ -1461,6 +1458,16 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
          */
 
         //printf("ForeachRangeStatement::semantic() %p\n", fs);
+
+        if (fs.param.storageClass & STC.manifest)
+        {
+            error(fs.loc, "cannot declare `enum` loop variables for non-unrolled foreach");
+        }
+        if (fs.param.storageClass & STC.alias_)
+        {
+            error(fs.loc, "cannot declare `alias` loop variables for non-unrolled foreach");
+        }
+
         auto loc = fs.loc;
         fs.lwr = fs.lwr.expressionSemantic(sc);
         fs.lwr = resolveProperties(sc, fs.lwr);
@@ -2126,10 +2133,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
         auto arguments = new Expressions();
         arguments.push(ss.condition);
 
-        auto compileTimeArgs = new Objects();
 
         // The type & label no.
-        compileTimeArgs.push(new TypeExp(ss.loc, ss.condition.type.nextOf()));
+        auto compileTimeArgs = new Objects(new TypeExp(ss.loc, ss.condition.type.nextOf()));
 
         // The switch labels
         foreach (caseString; *csCopy)
@@ -2709,10 +2715,13 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                      */
                     Scope* sc2 = sc.push();
                     sc2.eSink = global.errorSinkNull;
-                    bool err = checkReturnEscapeRef(*sc2, rs.exp, true);
+                    bool addressable = checkAddressable(rs.exp, sc2, "`ref` return");
+                    bool escapes = checkReturnEscapeRef(*sc2, rs.exp, true);
                     sc2.pop();
 
-                    if (err)
+                    if (!addressable)
+                        turnOffRef(() { checkAddressable(rs.exp, sc, "`ref` return"); });
+                    else if (escapes)
                         turnOffRef(() { checkReturnEscapeRef(*sc, rs.exp, false); });
                     else if (!rs.exp.type.constConv(tf.next))
                         turnOffRef(
@@ -3096,11 +3105,9 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
                 auto tmp = copyToTemp(STC.none, "__sync", ss.exp);
                 tmp.dsymbolSemantic(sc);
 
-                auto cs = new Statements();
-                cs.push(new ExpStatement(ss.loc, tmp));
-
-                auto args = new Parameters();
-                args.push(new Parameter(Loc.initial, STC.none, ClassDeclaration.object.type, null, null, null));
+                auto cs = new Statements(new ExpStatement(ss.loc, tmp));
+                auto args = new Parameters(new Parameter(Loc.initial, STC.none, ClassDeclaration.object.type,
+                                                         null, null, null));
 
                 FuncDeclaration fdenter = FuncDeclaration.genCfunc(args, Type.tvoid, Id.monitorenter);
                 Expression e = new CallExp(ss.loc, fdenter, new VarExp(ss.loc, tmp));
@@ -3131,8 +3138,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             tmp.storage_class |= STC.temp | STC.shared_ | STC.static_;
             Expression tmpExp = new VarExp(ss.loc, tmp);
 
-            auto cs = new Statements();
-            cs.push(new ExpStatement(ss.loc, tmp));
+            auto cs = new Statements(new ExpStatement(ss.loc, tmp));
 
             /* This is just a dummy variable for "goto skips declaration" error.
              * Backend optimizer could remove this unused variable.
@@ -3141,8 +3147,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             v.dsymbolSemantic(sc);
             cs.push(new ExpStatement(ss.loc, v));
 
-            auto enterArgs = new Parameters();
-            enterArgs.push(new Parameter(Loc.initial, STC.none, t.pointerTo(), null, null, null));
+            auto enterArgs = new Parameters(new Parameter(Loc.initial, STC.none, t.pointerTo(), null, null, null));
 
             FuncDeclaration fdenter = FuncDeclaration.genCfunc(enterArgs, Type.tvoid, Id.criticalenter, STC.nothrow_);
             Expression e = new AddrExp(ss.loc, tmpExp);
@@ -3151,8 +3156,7 @@ Statement statementSemanticVisit(Statement s, Scope* sc)
             e.type = Type.tvoid; // do not run semantic on e
             cs.push(new ExpStatement(ss.loc, e));
 
-            auto exitArgs = new Parameters();
-            exitArgs.push(new Parameter(Loc.initial, STC.none, t, null, null, null));
+            auto exitArgs = new Parameters(new Parameter(Loc.initial, STC.none, t, null, null, null));
 
             FuncDeclaration fdexit = FuncDeclaration.genCfunc(exitArgs, Type.tvoid, Id.criticalexit, STC.nothrow_);
             e = new CallExp(ss.loc, fdexit, tmpExp);
@@ -3743,7 +3747,7 @@ public bool throwSemantic(Loc loc, ref Expression exp, Scope* sc)
     exp = exp.checkGC(sc);
     if (exp.isErrorExp())
         return false;
-    if (!exp.type.isNaked())
+    if (!exp.type.isNaked)
     {
         // @@@DEPRECATED_2.112@@@
         // Deprecated in 2.102, change into an error & return false in 2.112
@@ -3864,10 +3868,8 @@ private extern(D) Expression applyArray(ForeachStatement fs, Expression flde,
 
     FuncDeclaration fdapply;
     TypeDelegate dgty;
-    auto params = new Parameters();
-    params.push(new Parameter(Loc.initial, STC.in_, tn.arrayOf(), null, null, null));
-    auto dgparams = new Parameters();
-    dgparams.push(new Parameter(Loc.initial, STC.none, Type.tvoidptr, null, null, null));
+    auto params = new Parameters(new Parameter(Loc.initial, STC.in_, tn.arrayOf(), null, null, null));
+    auto dgparams = new Parameters(new Parameter(Loc.initial, STC.none, Type.tvoidptr, null, null, null));
     if (dim == 2)
         dgparams.push(new Parameter(Loc.initial, STC.none, Type.tvoidptr, null, null, null));
     dgty = new TypeDelegate(new TypeFunction(ParameterList(dgparams), Type.tint32, LINK.d));
@@ -3892,7 +3894,6 @@ private extern(D) Expression applyArray(ForeachStatement fs, Expression flde,
 private extern(D) Expression applyAssocArray(ForeachStatement fs, Expression flde, Type tab)
 {
     auto taa = tab.isTypeAArray();
-    Expression ec;
     const dim = fs.parameters.length;
     // Check types
     Parameter p = (*fs.parameters)[0];
@@ -3903,8 +3904,8 @@ private extern(D) Expression applyAssocArray(ForeachStatement fs, Expression fld
         Type ti = (isRef ? taa.index.addMod(MODFlags.const_) : taa.index);
         if (isRef ? !ti.constConv(ta) : !ti.implicitConvTo(ta))
         {
-            error(fs.loc, "`foreach`: index must be type `%s`, not `%s`",
-                     ti.toChars(), ta.toChars());
+            error(fs.loc, "`foreach`: index parameter `%s%s` must be type `%s`, not `%s`",
+                 isRef ? "ref ".ptr : "".ptr, p.toChars(), ti.toChars(), ta.toChars());
             return null;
         }
         p = (*fs.parameters)[1];
@@ -3914,55 +3915,28 @@ private extern(D) Expression applyAssocArray(ForeachStatement fs, Expression fld
     Type taav = taa.nextOf();
     if (isRef ? !taav.constConv(ta) : !taav.implicitConvTo(ta))
     {
-        error(fs.loc, "`foreach`: value must be type `%s`, not `%s`",
-                 taav.toChars(), ta.toChars());
+        error(fs.loc, "`foreach`: value parameter `%s%s` must be type `%s`, not `%s`",
+            isRef ? "ref ".ptr : "".ptr, p.toChars(), taav.toChars(), ta.toChars());
         return null;
     }
 
     /* Call:
-     *  extern(C) int _aaApply(void*, in size_t, int delegate(void*))
-     *      _aaApply(aggr, keysize, flde)
-     *
-     *  extern(C) int _aaApply2(void*, in size_t, int delegate(void*, void*))
-     *      _aaApply2(aggr, keysize, flde)
+     *   int _d_aaApply(V[K] aa, int delegate(V*))
+     * or
+     *   int _d_aaApply2(V[K] aa, int delegate(K*, V*))
      */
-    __gshared FuncDeclaration* fdapply = [null, null];
-    __gshared TypeDelegate* fldeTy = [null, null];
-    ubyte i = (dim == 2 ? 1 : 0);
-    if (!fdapply[i])
-    {
-        auto params = new Parameters();
-        params.push(new Parameter(Loc.initial, STC.none, Type.tvoid.pointerTo(), null, null, null));
-        params.push(new Parameter(Loc.initial, STC.const_, Type.tsize_t, null, null, null));
-        auto dgparams = new Parameters();
-        dgparams.push(new Parameter(Loc.initial, STC.none, Type.tvoidptr, null, null, null));
-        if (dim == 2)
-            dgparams.push(new Parameter(Loc.initial, STC.none, Type.tvoidptr, null, null, null));
-        fldeTy[i] = new TypeDelegate(new TypeFunction(ParameterList(dgparams), Type.tint32, LINK.d));
-        params.push(new Parameter(Loc.initial, STC.none, fldeTy[i], null, null, null));
-        fdapply[i] = FuncDeclaration.genCfunc(params, Type.tint32, i ? Id._aaApply2 : Id._aaApply);
-    }
+    auto loc = fs.loc;
+    Identifier hook = dim == 2 ? Id._d_aaApply2 : Id._d_aaApply;
+    Expression func = new IdentifierExp(loc, Id.empty);
+    func = new DotIdExp(loc, func, Id.object);
+    auto tiargs = new Objects(taa.index.substWildTo(MODFlags.const_),
+                              taav.substWildTo(MODFlags.const_),
+                              flde.type.substWildTo(MODFlags.const_));
+    func = new DotTemplateInstanceExp(loc, func, hook, tiargs);
 
-    auto exps = new Expressions();
-    exps.push(fs.aggr);
-    auto keysize = taa.index.size();
-    if (keysize == SIZE_INVALID)
-        return null;
-    assert(keysize < keysize.max - target.ptrsize);
-    keysize = (keysize + (target.ptrsize - 1)) & ~(target.ptrsize - 1);
-    // paint delegate argument to the type runtime expects
-    Expression fexp = flde;
-    if (!fldeTy[i].equals(flde.type))
-    {
-        fexp = new CastExp(fs.loc, flde, flde.type);
-        fexp.type = fldeTy[i];
-    }
-    exps.push(new IntegerExp(Loc.initial, keysize, Type.tsize_t));
-    exps.push(fexp);
-    ec = new VarExp(Loc.initial, fdapply[i], false);
-    ec = new CallExp(fs.loc, ec, exps);
-    ec.type = Type.tint32; // don't run semantic() on ec
-    return ec;
+    auto arguments = new Expressions(fs.aggr, flde);
+    auto call = new CallExp(loc, func, arguments);
+    return call;
 }
 
 private extern(D) Statement loopReturn(Expression e, Statements* cases, Loc loc)
@@ -3976,12 +3950,11 @@ private extern(D) Statement loopReturn(Expression e, Statements* cases, Loc loc)
     // Construct a switch statement around the return value
     // of the apply function.
     Statement s;
-    auto a = new Statements();
 
     // default: break; takes care of cases 0 and 1
     s = new BreakStatement(Loc.initial, null);
     s = new DefaultStatement(Loc.initial, s);
-    a.push(s);
+    auto a = new Statements(s);
 
     // cases 2...
     foreach (i, c; *cases)
@@ -4007,6 +3980,10 @@ private extern(D) Statement loopReturn(Expression e, Statements* cases, Loc loc)
  */
 private FuncExp foreachBodyToFunction(Scope* sc, ForeachStatement fs, TypeFunction tfld)
 {
+    auto tab = fs.aggr.type.toBasetype();
+    auto taa = tab.isTypeAArray();
+    const isStaticOrDynamicArray = tab.isTypeSArray() || tab.isTypeDArray();
+
     auto params = new Parameters();
     foreach (i, p; *fs.parameters)
     {
@@ -4015,6 +3992,7 @@ private FuncExp foreachBodyToFunction(Scope* sc, ForeachStatement fs, TypeFuncti
 
         p.type = p.type.typeSemantic(fs.loc, sc);
         p.type = p.type.addStorageClass(p.storageClass);
+        p.type = p.type.substWildTo(MODFlags.const_);
         if (tfld)
         {
             Parameter param = tfld.parameterList[i];
@@ -4044,8 +4022,26 @@ private FuncExp foreachBodyToFunction(Scope* sc, ForeachStatement fs, TypeFuncti
         LcopyArg:
             id = Identifier.generateId("__applyArg", cast(int)i);
 
-            Initializer ie = new ExpInitializer(fs.loc, new IdentifierExp(fs.loc, id));
-            auto v = new VarDeclaration(fs.loc, p.type, p.ident, ie);
+            // Make sure `p.type` matches the signature expected by the druntime helpers.
+            const isIndexParam = i == 0 && fs.parameters.length == 2;
+            Type userType = p.type;
+            Expression initExp = new IdentifierExp(fs.loc, id);
+            if (taa)
+            {
+                p.type = isIndexParam ? taa.index : taa.nextOf();
+                p.type = p.type.substWildTo(MODFlags.const_);
+            }
+            else if (isStaticOrDynamicArray && isIndexParam)
+            {
+                p.type = Type.tsize_t;
+                // If the user used an incompatible index type (e.g., `int` instead
+                // of `size_t` - which is deprecated nowadays), then add a cast.
+                if (!p.type.implicitConvTo(userType))
+                    initExp = new CastExp(fs.loc, initExp, userType);
+            }
+
+            Initializer initializer = new ExpInitializer(fs.loc, initExp);
+            auto v = new VarDeclaration(fs.loc, userType, p.ident, initializer);
             v.storage_class |= STC.temp | (stc & STC.scope_);
             Statement s = new ExpStatement(fs.loc, v);
             fs._body = new CompoundStatement(fs.loc, s, fs._body);
@@ -4104,7 +4100,7 @@ void catchSemantic(Catch c, Scope* sc)
         // reference .object.Throwable
         c.type = getThrowable();
     }
-    else if (!c.type.isNaked() && !c.type.isConst())
+    else if (!c.type.isNaked && !c.type.isConst())
     {
         // @@@DEPRECATED_2.115@@@
         // Deprecated in 2.105, change into an error & uncomment assign in 2.115
@@ -4352,7 +4348,8 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
     const bool skipCheck = isStatic && needExpansion;
     if (!skipCheck && (dim < 1 || dim > 2))
     {
-        error(fs.loc, "only one (value) or two (key,value) arguments allowed for sequence `foreach`");
+        error(fs.loc, "only one (element) or two (index, element) arguments allowed for sequence `foreach`, not %llu",
+            ulong(dim));
         return returnEarly();
     }
 
@@ -4411,10 +4408,11 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
         const bool skip = isStatic && needExpansion;
         if (!skip && dim == 2)
         {
-            // Declare key
+            // Declare index
             if (p.isReference() || p.isLazy())
             {
-                error(fs.loc, "no storage class for key `%s`", p.ident.toChars());
+                error(fs.loc, "invalid storage class `%s` for index `%s`",
+                    stcToString(p.storageClass).ptr, p.ident.toChars());
                 return returnEarly();
             }
 
@@ -4429,7 +4427,7 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
 
             if (!p.type.isIntegral())
             {
-                error(fs.loc, "foreach: key cannot be of non-integral type `%s`",
+                error(fs.loc, "foreach: index cannot be of non-integral type `%s`",
                          p.type.toChars());
                 return returnEarly();
             }
@@ -4474,7 +4472,8 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
             if (storageClass & (STC.out_ | STC.lazy_) ||
                 storageClass & STC.ref_ && !te)
             {
-                error(fs.loc, "no storage class for value `%s`", ident.toChars());
+                error(fs.loc, "invalid storage class `%s` for element `%s`",
+                    stcToString(p.storageClass).ptr, ident.toChars());
                 return false;
             }
             Declaration var;
@@ -4572,7 +4571,13 @@ public auto makeTupleForeach(Scope* sc, bool isStatic, bool isDecl, ForeachState
                 var = new AliasDeclaration(loc, ident, t);
                 if (paramtype)
                 {
-                    error(fs.loc, "cannot specify element type for symbol `%s`", fs.toChars());
+                    error(fs.loc, "cannot specify element type for symbol `%s`", ident.toChars());
+                    return false;
+                }
+                if (storageClass & STC.manifest)
+                {
+                    error(fs.loc, "invalid storage class `enum` for element `%s`",
+                        ident.toChars());
                     return false;
                 }
             }
@@ -4689,8 +4694,7 @@ private Statements* flatten(Statement statement, Scope* sc)
 {
     static auto errorStatements()
     {
-        auto a = new Statements();
-        a.push(new ErrorStatement());
+        auto a = new Statements(new ErrorStatement());
         return a;
     }
 
@@ -4734,8 +4738,7 @@ private Statements* flatten(Statement statement, Scope* sc)
                 toCBuffer(s, &buf, &hgs);
                 printf("tm ==> s = %s\n", buf.peekChars());
             }
-            auto a = new Statements();
-            a.push(s);
+            auto a = new Statements(s);
             return a;
 
         case STMT.Forwarding:
@@ -4787,8 +4790,7 @@ private Statements* flatten(Statement statement, Scope* sc)
             else
                 s = cs.elsebody;
 
-            auto a = new Statements();
-            a.push(s);
+            auto a = new Statements(s);
             return a;
 
         case STMT.StaticForeach:
@@ -4802,8 +4804,7 @@ private Statements* flatten(Statement statement, Scope* sc)
                 {
                     return result;
                 }
-                result = new Statements();
-                result.push(s);
+                result = new Statements(s);
                 return result;
             }
             else

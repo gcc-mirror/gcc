@@ -5,7 +5,7 @@ struct Ptr
 {
 	int* impl;
 	void* fun0() return scope {return impl;}
-	void* fun1() scope return {return impl;}
+	void* fun1() scope return ref {return impl;}
 	void* fun2() return {return &this;}
 }
 

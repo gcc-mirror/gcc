@@ -6,7 +6,7 @@ struct S { int[] a; int b; }
 
 void foo()
 {
-    S[] s;
+    S[] s = [S([],0)];
     if (s[$-1] == S.init) {}
 }
 

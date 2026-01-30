@@ -7,6 +7,6 @@ void test(int a)
 {
     asm
     {
-        "cpuid" : : "a" a;  // { dg-error "'a' must be surrounded by parentheses" }
+        "cpuid" : : "a" a;  // { dg-error "found 'a' when expecting '\\\('" }
     }
 }

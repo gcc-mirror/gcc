@@ -229,56 +229,6 @@ private uint __typeAttrs(const scope TypeInfo ti, void *copyAttrsFrom = null) pu
     return attrs;
 }
 
-/**
-Shrink the "allocated" length of an array to be the exact size of the array.
-
-It doesn't matter what the current allocated length of the array is, the
-user is telling the runtime that he knows what he is doing.
-
-Params:
-    ti = `TypeInfo` of array type
-    arr = array to shrink. Its `.length` is element length, not byte length, despite `void` type
-*/
-extern(C) void _d_arrayshrinkfit(const TypeInfo ti, void[] arr) nothrow
-{
-    debug(PRINTF) printf("_d_arrayshrinkfit, elemsize = %zd, arr.ptr = %p arr.length = %zd\n", ti.next.tsize, arr.ptr, arr.length);
-    auto tinext = unqualify(ti.next);
-    auto size = tinext.tsize;                  // array element size
-    auto reqsize = arr.length * size;
-    auto isshared = typeid(ti) is typeid(TypeInfo_Shared);
-
-    auto curArr = gc_getArrayUsed(arr.ptr, isshared);
-    if (curArr.ptr is null)
-        // not a valid GC pointer
-        return;
-
-    // align the array.
-    auto offset = arr.ptr - curArr.ptr;
-    auto cursize = curArr.length - offset;
-    if (cursize <= reqsize)
-        // invalid situation, or no change.
-        return;
-
-    // if the type has a destructor, destroy elements we are about to remove.
-    if (typeid(tinext) is typeid(TypeInfo_Struct)) // avoid a complete dynamic type cast
-    {
-        auto sti = cast(TypeInfo_Struct)cast(void*)tinext;
-        if (sti.xdtor)
-        {
-            try
-            {
-                finalize_array(arr.ptr + reqsize, cursize - reqsize, sti);
-            }
-            catch (Exception e)
-            {
-                onFinalizeError(sti, e);
-            }
-        }
-    }
-
-    gc_shrinkArrayUsed(arr.ptr[0 .. reqsize], cursize, isshared);
-}
-
 package bool hasPostblit(in TypeInfo ti) nothrow pure
 {
     return (&ti.postblit).funcptr !is &TypeInfo.postblit;
@@ -335,43 +285,19 @@ extern (C) void[] _d_newarrayU(const scope TypeInfo ti, size_t length) pure noth
     if (length == 0 || size == 0)
         return null;
 
-    version (D_InlineAsm_X86)
+    bool overflow = false;
+    size = mulu(size, length, overflow);
+    if (!overflow)
     {
-        asm pure nothrow @nogc
+        if (auto ptr = GC.malloc(size, __typeAttrs(tinext) | BlkAttr.APPENDABLE, tinext))
         {
-            mov     EAX,size        ;
-            mul     EAX,length      ;
-            mov     size,EAX        ;
-            jnc     Lcontinue       ;
+            debug(PRINTF) printf(" p = %p\n", ptr);
+            return ptr[0 .. length];
         }
     }
-    else version (D_InlineAsm_X86_64)
-    {
-        asm pure nothrow @nogc
-        {
-            mov     RAX,size        ;
-            mul     RAX,length      ;
-            mov     size,RAX        ;
-            jnc     Lcontinue       ;
-        }
-    }
-    else
-    {
-        bool overflow = false;
-        size = mulu(size, length, overflow);
-        if (!overflow)
-            goto Lcontinue;
-    }
-Loverflow:
+
     onOutOfMemoryError();
     assert(0);
-Lcontinue:
-
-    auto ptr = GC.malloc(size, __typeAttrs(tinext) | BlkAttr.APPENDABLE, tinext);
-    if (!ptr)
-        goto Loverflow;
-    debug(PRINTF) printf(" p = %p\n", ptr);
-    return ptr[0 .. length];
 }
 
 /// ditto
@@ -629,143 +555,6 @@ extern (C) void rt_finalizeFromGC(void* p, size_t size, uint attr, TypeInfo type
 
 
 /**
-Given an array of length `size` that needs to be expanded to `newlength`,
-compute a new capacity.
-
-Better version by Dave Fladebo, enhanced by Steven Schveighoffer:
-This uses an inverse logorithmic algorithm to pre-allocate a bit more
-space for larger arrays.
-- The maximum "extra" space is about 80% of the requested space. This is for
-PAGE size and smaller.
-- As the arrays grow, the relative pre-allocated space shrinks.
-- Perhaps most importantly, overall memory usage and stress on the GC
-is decreased significantly for demanding environments.
-- The algorithm is tuned to avoid any division at runtime.
-
-Params:
-    newlength = new `.length`
-    elemsize = size of the element in the new array
-Returns: new capacity for array
-*/
-size_t newCapacity(size_t newlength, size_t elemsize)
-{
-    size_t newcap = newlength * elemsize;
-
-    /*
-     * Max growth factor numerator is 234, so allow for multiplying by 256.
-     * But also, the resulting size cannot be more than 2x, so prevent
-     * growing if 2x would fill up the address space (for 32-bit)
-     */
-    enum largestAllowed = (ulong.max >> 8) & (size_t.max >> 1);
-    if (!newcap || (newcap & ~largestAllowed))
-        return newcap;
-
-    /*
-     * The calculation for "extra" space depends on the requested capacity.
-     * We use an inverse logarithm of the new capacity to add an extra 15%
-     * to 83% capacity. Note that normally we humans think in terms of
-     * percent, but using 128 instead of 100 for the denominator means we
-     * can avoid all division by simply bit-shifthing. Since there are only
-     * 64 bits in a long, the bsr of a size_t is going to be 0 - 63. Using
-     * a lookup table allows us to precalculate the multiplier based on the
-     * inverse logarithm. The formula rougly is:
-     *
-     * newcap = request * (1.0 + min(0.83, 10.0 / (log(request) + 1)))
-     */
-    import core.bitop;
-    static immutable multTable = (){
-        assert(__ctfe);
-        ulong[size_t.sizeof * 8] result;
-        foreach (i; 0 .. result.length)
-        {
-            auto factor = 128 + 1280 / (i + 1);
-            result[i] = factor > 234 ? 234 : factor;
-        }
-        return result;
-    }();
-
-    auto mult = multTable[bsr(newcap)];
-
-    // if this were per cent, then the code would look like:
-    // ((newlength * mult + 99) / 100) * elemsize
-    newcap = cast(size_t)((newlength * mult + 127) >> 7) * elemsize;
-    debug(PRINTF) printf("mult: %2.2f, alloc: %2.2f\n",mult/128.0,newcap / cast(double)elemsize);
-    debug(PRINTF) printf("newcap = %zd, newlength = %zd, elemsize = %zd\n", newcap, newlength, elemsize);
-    return newcap;
-}
-
-
-/**
-Extend an array by n elements.
-
-Caller must initialize those elements.
-
-Params:
-    ti = type info of array type (not element type)
-    px = array to append to, cast to `byte[]` while keeping the same `.length`. Will be updated.
-    n = number of elements to append
-Returns: `px` after being appended to
-*/
-extern (C)
-byte[] _d_arrayappendcTX(const TypeInfo ti, return scope ref byte[] px, size_t n) @weak
-{
-    // This is a cut&paste job from _d_arrayappendT(). Should be refactored.
-
-    // Short circuit if no data is being appended.
-    if (n == 0)
-        return px;
-
-
-    // only optimize array append where ti is not a shared type
-    auto tinext = unqualify(ti.next);
-    auto sizeelem = tinext.tsize;              // array element size
-    auto isshared = typeid(ti) is typeid(TypeInfo_Shared);
-    auto length = px.length;
-    auto newlength = length + n;
-    auto newsize = newlength * sizeelem;
-    auto size = length * sizeelem;
-
-    if (!gc_expandArrayUsed(px.ptr[0 .. size], newsize, isshared))
-    {
-        // could not set the size, we must reallocate.
-        auto newcap = newCapacity(newlength, sizeelem);
-        auto attrs = __typeAttrs(tinext, px.ptr) | BlkAttr.APPENDABLE;
-        auto ptr = cast(byte*) GC.malloc(newcap, attrs, tinext);
-        if (ptr is null)
-        {
-            onOutOfMemoryError();
-            assert(0);
-        }
-
-        if (newsize != newcap)
-        {
-            // For small blocks that are always fully scanned, if we allocated more
-            // capacity than was requested, we are responsible for zeroing that
-            // memory.
-            // TODO: should let the GC figure this out, as this property may
-            // not always hold.
-            if (!(attrs & BlkAttr.NO_SCAN) && newcap < PAGESIZE)
-                memset(ptr + newsize, 0, newcap - newsize);
-
-            gc_shrinkArrayUsed(ptr[0 .. newsize], newcap, isshared);
-        }
-
-        memcpy(ptr, px.ptr, size);
-
-        // do potsblit processing.
-        __doPostblit(ptr, size, tinext);
-
-        px = ptr[0 .. newlength];
-        return px;
-    }
-
-    // we were able to expand in place, just update the length
-    px = px.ptr[0 .. newlength];
-    return px;
-}
-
-
-/**
 Append `dchar` to `char[]`, converting UTF-32 to UTF-8
 
 ---
@@ -904,45 +693,6 @@ extern (C) void[] _d_arrayappendwd(ref byte[] x, dchar c) @weak
     object._d_arrayappendT(xx, cast(shared(wchar)[])appendthis);
     x = (cast(byte*)xx.ptr)[0 .. xx.length];
     return x;
-}
-
-/**
-Allocate an array literal
-
-Rely on the caller to do the initialization of the array.
-
----
-int[] getArr()
-{
-    return [10, 20];
-    // auto res = cast(int*) _d_arrayliteralTX(typeid(int[]), 2);
-    // res[0] = 10;
-    // res[1] = 20;
-    // return res[0..2];
-}
----
-
-Params:
-    ti = `TypeInfo` of resulting array type
-    length = `.length` of array literal
-
-Returns: pointer to allocated array
-*/
-extern (C)
-void* _d_arrayliteralTX(const TypeInfo ti, size_t length) @weak
-{
-    auto tinext = unqualify(ti.next);
-    auto sizeelem = tinext.tsize;              // array element size
-    void* result;
-
-    debug(PRINTF) printf("_d_arrayliteralTX(sizeelem = %zd, length = %zd)\n", sizeelem, length);
-    if (length == 0 || sizeelem == 0)
-        return null;
-    else
-    {
-        auto allocsize = length * sizeelem;
-        return GC.malloc(allocsize, __typeAttrs(tinext) | BlkAttr.APPENDABLE, tinext);
-    }
 }
 
 

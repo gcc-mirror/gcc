@@ -171,7 +171,6 @@ public:
     static StructDeclaration *create(Loc loc, Identifier *id, bool inObject);
     StructDeclaration *syntaxCopy(Dsymbol *s) override;
     const char *kind() const override;
-    bool isPOD();
     bool zeroInit() const;          // !=0 if initialize with 0 fill
     bool zeroInit(bool v);
     bool hasIdentityAssign() const; // true if has identity opAssign
@@ -194,7 +193,6 @@ public:
 
     unsigned numArgTypes() const;
     Type *argType(unsigned index);
-    bool hasRegularCtor(bool ignoreDisabled = false);
 };
 
 class UnionDeclaration final : public StructDeclaration
@@ -273,7 +271,6 @@ public:
     ThreeState isabstract;              // if abstract class
     Baseok baseok;                      // set the progress of base classes resolving
     ObjcClassDeclaration objc;          // Data for a class declaration that is needed for the Objective-C integration
-    Symbol *cpp_type_info_ptr_sym;      // cached instance of class Id.cpp_type_info_ptr
 
     static ClassDeclaration *create(Loc loc, Identifier *id, BaseClasses *baseclasses, Dsymbols *members, bool inObject);
     const char *toPrettyChars(bool QualifyTypes = false) override;

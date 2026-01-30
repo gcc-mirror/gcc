@@ -136,6 +136,10 @@ class ThreadBase
     package void tlsRTdataInit() nothrow @nogc
     {
         m_tlsrtdata = rt_tlsgc_init();
+
+        // Let the selected GC initialize anything it needs.
+        import core.internal.gc.proxy : gc_getProxy;
+        gc_getProxy().initThread(this);
     }
 
     package void initDataStorage() nothrow
@@ -149,6 +153,10 @@ class ThreadBase
 
     package void destroyDataStorage() nothrow @nogc
     {
+        // allow the GC to clean up any resources it allocated for this thread.
+        import core.internal.gc.proxy : gc_getProxy;
+        gc_getProxy().cleanupThread(this);
+
         rt_tlsgc_destroy(m_tlsrtdata);
         m_tlsrtdata = null;
     }

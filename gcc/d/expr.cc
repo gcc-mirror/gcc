@@ -381,101 +381,87 @@ public:
 	/* For static and dynamic arrays, equality is defined as the lengths of
 	   the arrays matching, and all the elements are equal.  */
 	Type *t1elem = tb1->nextOf ()->toBasetype ();
-	Type *t2elem = tb1->nextOf ()->toBasetype ();
 
-	/* Check if comparisons of arrays can be optimized using memcmp.
+	/* Use lowering if it has already been handled by the front-end.  */
+	if (e->lowering != NULL)
+	  {
+	    this->result_ = build_expr (e->lowering);
+	    return;
+	  }
+
+	/* For all other arrays, comparisons can be optimized using memcmp.
 	   This will inline EQ expressions as:
 		e1.length == e2.length && memcmp(e1.ptr, e2.ptr, size) == 0;
 	    Or when generating a NE expression:
 		e1.length != e2.length || memcmp(e1.ptr, e2.ptr, size) != 0;  */
-	if ((t1elem->isIntegral () || t1elem->ty == TY::Tvoid
-	     || (t1elem->ty == TY::Tstruct
-		 && !t1elem->isTypeStruct ()->sym->xeq))
-	    && t1elem->ty == t2elem->ty)
+	tree t1 = d_array_convert (e->e1);
+	tree t2 = d_array_convert (e->e2);
+	tree result;
+
+	/* Make temporaries to prevent multiple evaluations.  */
+	tree t1saved = d_save_expr (t1);
+	tree t2saved = d_save_expr (t2);
+
+	/* Length of arrays, for comparisons done before calling memcmp.  */
+	tree t1len = d_array_length (t1saved);
+	tree t2len = d_array_length (t2saved);
+
+	/* Reference to array data.  */
+	tree t1ptr = d_array_ptr (t1saved);
+	tree t2ptr = d_array_ptr (t2saved);
+
+	/* Compare arrays using memcmp if possible, otherwise for structs,
+	   each field is compared inline.  */
+	if (t1elem->ty != TY::Tstruct
+	    || identity_compare_p (t1elem->isTypeStruct ()->sym))
 	  {
-	    tree t1 = d_array_convert (e->e1);
-	    tree t2 = d_array_convert (e->e2);
-	    tree result;
+	    tree size =
+	      size_mult_expr (t1len, size_int (dmd::size (t1elem)));
 
-	    /* Make temporaries to prevent multiple evaluations.  */
-	    tree t1saved = d_save_expr (t1);
-	    tree t2saved = d_save_expr (t2);
-
-	    /* Length of arrays, for comparisons done before calling memcmp.  */
-	    tree t1len = d_array_length (t1saved);
-	    tree t2len = d_array_length (t2saved);
-
-	    /* Reference to array data.  */
-	    tree t1ptr = d_array_ptr (t1saved);
-	    tree t2ptr = d_array_ptr (t2saved);
-
-	    /* Compare arrays using memcmp if possible, otherwise for structs,
-	       each field is compared inline.  */
-	    if (t1elem->ty != TY::Tstruct
-		|| identity_compare_p (t1elem->isTypeStruct ()->sym))
-	      {
-		tree size =
-		  size_mult_expr (t1len, size_int (dmd::size (t1elem)));
-
-		result = build_memcmp_call (t1ptr, t2ptr, size);
-		result = build_boolop (code, result, integer_zero_node);
-	      }
-	    else
-	      {
-		StructDeclaration *sd = t1elem->isTypeStruct ()->sym;
-
-		result = build_array_struct_comparison (code, sd, t1len,
-							t1ptr, t2ptr);
-	      }
-
-	    /* Check array length first before passing to memcmp.
-	       For equality expressions, this becomes:
-		    (e1.length == 0 || memcmp);
-	       Otherwise for inequality:
-		    (e1.length != 0 && memcmp);  */
-	    tree tsizecmp = build_boolop (code, t1len, size_zero_node);
-	    if (e->op == EXP::equal)
-	      result = build_boolop (TRUTH_ORIF_EXPR, tsizecmp, result);
-	    else
-	      result = build_boolop (TRUTH_ANDIF_EXPR, tsizecmp, result);
-
-	    /* Finally, check if lengths of both arrays match if dynamic.
-	       The frontend should have already guaranteed that static arrays
-	       have same size.  */
-	    if (tb1->ty == TY::Tsarray && tb2->ty == TY::Tsarray)
-	      gcc_assert (dmd::size (tb1) == dmd::size (tb2));
-	    else
-	      {
-		tree tlencmp = build_boolop (code, t1len, t2len);
-		if (e->op == EXP::equal)
-		  result = build_boolop (TRUTH_ANDIF_EXPR, tlencmp, result);
-		else
-		  result = build_boolop (TRUTH_ORIF_EXPR, tlencmp, result);
-	      }
-
-	    /* Ensure left-to-right order of evaluation.  */
-	    if (TREE_SIDE_EFFECTS (t2))
-	      result = compound_expr (t2saved, result);
-
-	    if (TREE_SIDE_EFFECTS (t1))
-	      result = compound_expr (t1saved, result);
-
-	    this->result_ = result;
+	    result = build_memcmp_call (t1ptr, t2ptr, size);
+	    result = build_boolop (code, result, integer_zero_node);
 	  }
 	else
 	  {
-	    /* Use _adEq2() to compare each element.  */
-	    Type *t1array = dmd::arrayOf (t1elem);
-	    tree result = build_libcall (LIBCALL_ADEQ2, e->type, 3,
-					 d_array_convert (e->e1),
-					 d_array_convert (e->e2),
-					 build_typeinfo (e, t1array));
+	    StructDeclaration *sd = t1elem->isTypeStruct ()->sym;
 
-	    if (e->op == EXP::notEqual)
-	      result = build1 (TRUTH_NOT_EXPR, build_ctype (e->type), result);
-
-	    this->result_ = result;
+	    result = build_array_struct_comparison (code, sd, t1len,
+						    t1ptr, t2ptr);
 	  }
+
+	/* Check array length first before passing to memcmp.
+	   For equality expressions, this becomes:
+	   (e1.length == 0 || memcmp);
+	   Otherwise for inequality:
+	   (e1.length != 0 && memcmp);  */
+	tree tsizecmp = build_boolop (code, t1len, size_zero_node);
+	if (e->op == EXP::equal)
+	  result = build_boolop (TRUTH_ORIF_EXPR, tsizecmp, result);
+	else
+	  result = build_boolop (TRUTH_ANDIF_EXPR, tsizecmp, result);
+
+	/* Finally, check if lengths of both arrays match if dynamic.
+	   The frontend should have already guaranteed that static arrays
+	   have same size.  */
+	if (tb1->ty == TY::Tsarray && tb2->ty == TY::Tsarray)
+	  gcc_assert (dmd::size (tb1) == dmd::size (tb2));
+	else
+	  {
+	    tree tlencmp = build_boolop (code, t1len, t2len);
+	    if (e->op == EXP::equal)
+	      result = build_boolop (TRUTH_ANDIF_EXPR, tlencmp, result);
+	    else
+	      result = build_boolop (TRUTH_ORIF_EXPR, tlencmp, result);
+	  }
+
+	/* Ensure left-to-right order of evaluation.  */
+	if (TREE_SIDE_EFFECTS (t2))
+	  result = compound_expr (t2saved, result);
+
+	if (TREE_SIDE_EFFECTS (t1))
+	  result = compound_expr (t1saved, result);
+
+	this->result_ = result;
       }
     else if (TypeStruct *ts = tb1->isTypeStruct ())
       {
@@ -490,16 +476,9 @@ public:
       }
     else if (tb1->ty == TY::Taarray && tb2->ty == TY::Taarray)
       {
-	/* Use _aaEqual() for associative arrays.  */
-	tree result = build_libcall (LIBCALL_AAEQUAL, e->type, 3,
-				     build_typeinfo (e, tb1),
-				     build_expr (e->e1),
-				     build_expr (e->e2));
-
-	if (e->op == EXP::notEqual)
-	  result = build1 (TRUTH_NOT_EXPR, build_ctype (e->type), result);
-
-	this->result_ = result;
+	/* Call to `_d_aaEqual' for associative arrays has already been handled
+	   by the front-end.  */
+	gcc_unreachable ();
       }
     else
       {
@@ -517,17 +496,10 @@ public:
      exists in an associative array.  The result is a pointer to the
      element, or null if false.  */
 
-  void visit (InExp *e) final override
+  void visit (InExp *) final override
   {
-    Type *tb2 = e->e2->type->toBasetype ();
-    Type *tkey = tb2->isTypeAArray ()->index->toBasetype ();
-    tree key = convert_expr (build_expr (e->e1), e->e1->type, tkey);
-
-    /* Build a call to _aaInX().  */
-    this->result_ = build_libcall (LIBCALL_AAINX, e->type, 3,
-				   build_expr (e->e2),
-				   build_typeinfo (e, tkey),
-				   build_address (key));
+    /* Call to `_d_aaIn' has already been handled by the front-end.  */
+    gcc_unreachable ();
   }
 
   /* Build a relational expression.  The result type is bool.  */
@@ -1152,42 +1124,8 @@ public:
 
     if (tb1->ty == TY::Taarray)
       {
-	/* Get the key for the associative array.  */
-	Type *tkey = tb1->isTypeAArray ()->index->toBasetype ();
-	tree key = convert_expr (build_expr (e->e2), e->e2->type, tkey);
-	libcall_fn libcall;
-	tree tinfo, ptr;
-
-	if (e->modifiable)
-	  {
-	    libcall = LIBCALL_AAGETY;
-	    ptr = build_address (build_expr (e->e1));
-	    tinfo = build_typeinfo (e, dmd::mutableOf (dmd::unSharedOf (tb1)));
-	  }
-	else
-	  {
-	    libcall = LIBCALL_AAGETRVALUEX;
-	    ptr = build_expr (e->e1);
-	    tinfo = build_typeinfo (e, tkey);
-	  }
-
-	/* Index the associative array.  */
-	tree result = build_libcall (libcall, dmd::pointerTo (e->type), 4,
-				     ptr, tinfo,
-				     size_int (dmd::size (tb1->nextOf ())),
-				     build_address (key));
-
-	if (!e->indexIsInBounds && array_bounds_check ())
-	  {
-	    tree tassert = build_array_bounds_call (e->loc);
-
-	    result = d_save_expr (result);
-	    result = build_condition (TREE_TYPE (result),
-				      d_truthvalue_conversion (result),
-				      result, tassert);
-	  }
-
-	this->result_ = indirect_ref (build_ctype (e->type), result);
+	/* Associative arrays have already been handled by the front-end.  */
+	gcc_unreachable ();
       }
     else
       {
@@ -1369,10 +1307,14 @@ public:
   {
     Type *ebtype = e->e1->type->toBasetype ();
     Type *tbtype = e->to->toBasetype ();
-    tree result = build_expr (e->e1, this->constp_, this->literalp_);
 
-    /* Just evaluate e1 if it has any side effects.  */
-    if (tbtype->ty == TY::Tvoid)
+    /* Use lowering if it has already been handled by the front-end.  */
+    Expression *cast = (e->lowering != NULL) ? e->lowering : e->e1;
+    tree result = build_expr (cast, this->constp_, this->literalp_);
+
+    /* When expression has been rewritten or is a cast to `void', just evaluate
+       the result if it has any side effects.  */
+    if (e->lowering != NULL || tbtype->ty == TY::Tvoid)
       this->result_ = build_nop (build_ctype (tbtype), result);
     else
       this->result_ = convert_for_rvalue (result, ebtype, tbtype);
@@ -1415,14 +1357,8 @@ public:
     /* Check that the array is actually an associative array.  */
     if (e->e1->type->toBasetype ()->ty == TY::Taarray)
       {
-	Type *tb = e->e1->type->toBasetype ();
-	Type *tkey = tb->isTypeAArray ()->index->toBasetype ();
-	tree index = convert_expr (build_expr (e->e2), e->e2->type, tkey);
-
-	this->result_ = build_libcall (LIBCALL_AADELX, Type::tbool, 3,
-				       build_expr (e->e1),
-				       build_typeinfo (e, tkey),
-				       build_address (index));
+	/* Call to `_d_aaDel' has already been handled by the front-end.  */
+	gcc_unreachable ();
       }
     else
       {
@@ -1550,8 +1486,12 @@ public:
        Taking the address of a struct literal is otherwise illegal.  */
     if (e->e1->op == EXP::structLiteral)
       {
-	StructLiteralExp *sle = e->e1->isStructLiteralExp ()->origin;
-	gcc_assert (sle != NULL);
+	StructLiteralExp *sle = e->e1->isStructLiteralExp ();
+	if (!this->constp_)
+	  {
+	    gcc_assert (sle->origin != NULL);
+	    sle = sle->origin;
+	  }
 
 	/* Build the reference symbol, the decl is built first as the
 	   initializer may have recursive references.  */
@@ -2429,17 +2369,10 @@ public:
       }
     else if (tb->ty == TY::Taarray)
       {
-	/* Allocating memory for a new associative array.  */
-	tree arg = build_typeinfo (e, e->newtype);
-	tree mem = build_libcall (LIBCALL_AANEW, Type::tvoidptr, 1, arg);
-
-	/* Return an associative array pointed to by MEM.  */
-	tree aatype = build_ctype (tb);
-	vec <constructor_elt, va_gc> *ce = NULL;
-	CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
-
-	result = build_nop (build_ctype (e->type),
-			    build_padded_constructor (aatype, ce));
+	/* Allocating memory for a new associative array has already been
+	   handled by the front-end.  */
+	gcc_assert (e->lowering);
+	result = build_expr (e->lowering);
       }
     else
       gcc_unreachable ();
@@ -2684,10 +2617,9 @@ public:
     else
       {
 	/* Allocate space on the memory managed heap.  */
-	tree mem = build_libcall (LIBCALL_ARRAYLITERALTX,
-				  dmd::pointerTo (etype), 2,
-				  build_typeinfo (e, dmd::arrayOf (etype)),
-				  size_int (e->elements->length));
+	gcc_assert (e->lowering);
+	tree mem = build_nop (build_pointer_type (satype),
+			      build_expr (e->lowering));
 	mem = d_save_expr (mem);
 
 	/* Now copy the constructor into memory.  */
@@ -2715,55 +2647,24 @@ public:
 
   void visit (AssocArrayLiteralExp *e) final override
   {
-    if (this->constp_ && e->lowering != NULL)
+    if (this->constp_ && e->loweringCtfe != NULL)
       {
 	/* When an associative array literal gets lowered, it's converted into a
 	   struct literal suitable for static initialization.  */
-	this->result_ = build_expr (e->lowering, this->constp_, true);
-	return ;
-      }
-
-    /* Want the mutable type for typeinfo reference.  */
-    Type *tb = dmd::mutableOf (e->type->toBasetype ());
-
-    /* Handle empty assoc array literals.  */
-    TypeAArray *ta = tb->isTypeAArray ();
-    if (e->keys->length == 0)
-      {
-	this->result_ = build_padded_constructor (build_ctype (ta), NULL);
+	this->result_ = build_expr (e->loweringCtfe, this->constp_, true);
 	return;
       }
 
-    /* Build an expression that assigns all expressions in KEYS
-       to a constructor.  */
-    Type *tkarray = dmd::sarrayOf (ta->index, e->keys->length);
-    tree akeys = build_array_from_exprs (tkarray, e->keys, this->constp_);
-    tree init = stabilize_expr (&akeys);
-
-    /* Do the same with all expressions in VALUES.  */
-    Type *tvarray = dmd::sarrayOf (ta->next, e->values->length);
-    tree avals = build_array_from_exprs (tvarray, e->values, this->constp_);
-    init = compound_expr (init, stabilize_expr (&avals));
+    /* Handle empty assoc array literals.  */
+    if (e->keys->length == 0)
+      {
+	this->result_ = build_padded_constructor (build_ctype (e->type), NULL);
+	return;
+      }
 
     /* Generate: _d_assocarrayliteralTX (ti, keys, vals);  */
-    tree keys = d_array_value (build_ctype (dmd::arrayOf (ta->index)),
-			       size_int (e->keys->length),
-			       build_address (akeys));
-    tree vals = d_array_value (build_ctype (dmd::arrayOf (ta->next)),
-			       size_int (e->values->length),
-			       build_address (avals));
-
-    tree mem = build_libcall (LIBCALL_ASSOCARRAYLITERALTX, Type::tvoidptr, 3,
-			      build_typeinfo (e, ta), keys, vals);
-
-    /* Return an associative array pointed to by MEM.  */
-    tree aatype = build_ctype (ta);
-    vec <constructor_elt, va_gc> *ce = NULL;
-    CONSTRUCTOR_APPEND_ELT (ce, TYPE_FIELDS (aatype), mem);
-
-    tree result = build_nop (build_ctype (e->type),
-			     build_padded_constructor (aatype, ce));
-    this->result_ = compound_expr (init, result);
+    gcc_assert (e->lowering);
+    this->result_ = build_expr (e->lowering);
   }
 
   /* Build a struct literal.  */

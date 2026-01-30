@@ -30,8 +30,6 @@ import dmd.dtemplate;
 import dmd.enumsem;
 import dmd.errors;
 import dmd.expression;
-import dmd.dsymbolsem : determineSize;
-import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
@@ -47,9 +45,8 @@ import dmd.typesem;
 import dmd.visitor;
 
 enum LOGDOTEXP = 0;         // log ::dotExp()
-enum LOGDEFAULTINIT = 0;    // log ::defaultInit()
 
-enum SIZE_INVALID = (~cast(uinteger_t)0);   // error return from size() functions
+enum SIZE_INVALID = (~cast(ulong)0);   // error return from size() functions
 
 static if (__VERSION__ < 2095)
 {
@@ -689,19 +686,6 @@ extern (C++) abstract class Type : ASTNode
     }
 
     /**************************
-     * When T is mutable,
-     * Given:
-     *      T a, b;
-     * Can we bitwise assign:
-     *      a = b;
-     * ?
-     */
-    bool isAssignable()
-    {
-        return true;
-    }
-
-    /**************************
      * Returns true if T can be converted to boolean value.
      */
     bool isBoolean()
@@ -1324,19 +1308,6 @@ extern (C++) abstract class Type : ASTNode
     }
 
     /***************************************
-     * Use when we prefer the default initializer to be a literal,
-     * rather than a global immutable variable.
-     */
-    Expression defaultInitLiteral(Loc loc)
-    {
-        static if (LOGDEFAULTINIT)
-        {
-            printf("Type::defaultInitLiteral() '%s'\n", toChars());
-        }
-        return defaultInit(this, loc);
-    }
-
-    /***************************************
      * Return !=0 if the type or any of its subtypes is wild.
      */
     int hasWild() const
@@ -1399,9 +1370,9 @@ extern (C++) abstract class Type : ASTNode
      * Return the mask that an integral type will
      * fit into.
      */
-    extern (D) final uinteger_t sizemask()
+    extern (D) final ulong sizemask()
     {
-        uinteger_t m;
+        ulong m;
         switch (toBasetype().ty)
         {
         case Tbool:
@@ -1570,11 +1541,6 @@ extern (C++) final class TypeError : Type
     {
         // No semantic analysis done, no need to copy
         return this;
-    }
-
-    override Expression defaultInitLiteral(Loc loc)
-    {
-        return ErrorExp.get();
     }
 
     override void accept(Visitor v)
@@ -2118,17 +2084,6 @@ extern (C++) final class TypeVector : Type
         return false;
     }
 
-    override Expression defaultInitLiteral(Loc loc)
-    {
-        //printf("TypeVector::defaultInitLiteral()\n");
-        assert(basetype.ty == Tsarray);
-        Expression e = basetype.defaultInitLiteral(loc);
-        auto ve = new VectorExp(loc, e, this);
-        ve.type = this;
-        ve.dim = cast(int)(basetype.size(loc) / elementType().size(loc));
-        return ve;
-    }
-
     TypeBasic elementType()
     {
         assert(basetype.ty == Tsarray);
@@ -2217,25 +2172,6 @@ extern (C++) final class TypeSArray : TypeArray
     override structalign_t alignment()
     {
         return next.alignment();
-    }
-
-    override Expression defaultInitLiteral(Loc loc)
-    {
-        static if (LOGDEFAULTINIT)
-        {
-            printf("TypeSArray::defaultInitLiteral() '%s'\n", toChars());
-        }
-        size_t d = cast(size_t)dim.toInteger();
-        Expression elementinit;
-        if (next.ty == Tvoid)
-            elementinit = tuns8.defaultInitLiteral(loc);
-        else
-            elementinit = next.defaultInitLiteral(loc);
-        auto elements = new Expressions(d);
-        foreach (ref e; *elements)
-            e = null;
-        auto ae = new ArrayLiteralExp(loc, this, elementinit, elements);
-        return ae;
     }
 
     override bool hasUnsafeBitpatterns()
@@ -2603,110 +2539,6 @@ extern (C++) final class TypeFunction : TypeNext
         return linkage == LINK.d && parameterList.varargs == VarArg.variadic;
     }
 
-    /*********************************
-     * Append error message to buf.
-     * Input:
-     *  buf = message sink
-     *  format = printf format
-     */
-    extern(C) static void getMatchError(ref OutBuffer buf, const(char)* format, ...)
-    {
-        if (global.gag && !global.params.v.showGaggedErrors)
-            return;
-        va_list ap;
-        va_start(ap, format);
-        buf.vprintf(format, ap);
-        va_end(ap);
-    }
-
-    /********************************
-     * Convert an `argumentList`, which may contain named arguments, into
-     * a list of arguments in the order of the parameter list.
-     *
-     * Params:
-     *      argumentList = array of function arguments
-     *      buf = if not null, append error message to it
-     * Returns: re-ordered argument list, or `null` on error
-     */
-    extern(D) Expressions* resolveNamedArgs(ArgumentList argumentList, OutBuffer* buf)
-    {
-        Expression[] args = argumentList.arguments ? (*argumentList.arguments)[] : null;
-        ArgumentLabel[] names = argumentList.names ? (*argumentList.names)[] : null;
-        const nParams = parameterList.length(); // cached because O(n)
-        auto newArgs = new Expressions(nParams);
-        newArgs.zero();
-        size_t ci = 0;
-        bool hasNamedArgs = false;
-        const bool isVariadic = parameterList.varargs != VarArg.none;
-        foreach (i, arg; args)
-        {
-            if (!arg)
-            {
-                ci++;
-                continue;
-            }
-            auto name = i < names.length ? names[i].name : null;
-            if (name)
-            {
-                hasNamedArgs = true;
-                const pi = findParameterIndex(name);
-                if (pi == -1)
-                {
-                    if (buf)
-                        getMatchError(*buf, "no parameter named `%s`", name.toChars());
-                    return null;
-                }
-                ci = pi;
-            }
-            if (ci >= newArgs.length)
-            {
-                if (!isVariadic)
-                {
-                    // Without named args, let the caller diagnose argument overflow
-                    if (hasNamedArgs && buf)
-                        getMatchError(*buf, "argument `%s` goes past end of parameter list", arg.toChars());
-                    return null;
-                }
-                while (ci >= newArgs.length)
-                    newArgs.push(null);
-            }
-
-            if ((*newArgs)[ci])
-            {
-                if (buf)
-                    getMatchError(*buf, "parameter `%s` assigned twice", parameterList[ci].toChars());
-                return null;
-            }
-            (*newArgs)[ci++] = arg;
-        }
-        foreach (i, arg; (*newArgs)[])
-        {
-            if (arg || parameterList[i].defaultArg)
-                continue;
-
-            if (isVariadic && i + 1 == newArgs.length)
-                continue;
-
-            // dtemplate sets `defaultArg=null` to avoid semantic on default arguments,
-            // don't complain about missing arguments in that case
-            if (this.incomplete)
-                continue;
-
-            if (buf)
-                getMatchError(*buf, "missing argument for parameter #%d: `%s`",
-                    i + 1, parameterToChars(parameterList[i], this, false));
-            return null;
-        }
-        // strip trailing nulls from default arguments
-        size_t e = newArgs.length;
-        while (e > 0 && (*newArgs)[e - 1] is null)
-        {
-            --e;
-        }
-        newArgs.setDim(e);
-        return newArgs;
-    }
-
     /// Returns: `true` the function is `isInOutQual` or `isInOutParam` ,`false` otherwise.
     bool iswild() const pure nothrow @safe @nogc
     {
@@ -2735,23 +2567,6 @@ extern (C++) final class TypeFunction : TypeNext
     override void accept(Visitor v)
     {
         v.visit(this);
-    }
-
-    /**
-     * Look for the index of parameter `ident` in the parameter list
-     *
-     * Params:
-     *   ident = identifier of parameter to search for
-     * Returns: index of parameter with name `ident` or -1 if not found
-     */
-    private extern(D) ptrdiff_t findParameterIndex(Identifier ident)
-    {
-        foreach (i, p; this.parameterList)
-        {
-            if (p.ident == ident)
-                return i;
-        }
-        return -1;
     }
 }
 
@@ -3129,99 +2944,6 @@ extern (C++) final class TypeStruct : Type
         return sym.alignment;
     }
 
-    /***************************************
-     * Use when we prefer the default initializer to be a literal,
-     * rather than a global immutable variable.
-     */
-    override Expression defaultInitLiteral(Loc loc)
-    {
-        static if (LOGDEFAULTINIT)
-        {
-            printf("TypeStruct::defaultInitLiteral() '%s'\n", toChars());
-        }
-        sym.size(loc);
-        if (sym.sizeok != Sizeok.done)
-            return ErrorExp.get();
-
-        auto structelems = new Expressions(sym.nonHiddenFields());
-        uint offset = 0;
-        foreach (j; 0 .. structelems.length)
-        {
-            VarDeclaration vd = sym.fields[j];
-            Expression e;
-            if (vd.inuse)
-            {
-                error(loc, "circular reference to `%s`", vd.toPrettyChars());
-                return ErrorExp.get();
-            }
-            if (vd.offset < offset || vd.type.size() == 0)
-                e = null;
-            else if (vd._init)
-            {
-                if (vd._init.isVoidInitializer())
-                    e = null;
-                else
-                    e = vd.getConstInitializer(false);
-            }
-            else
-                e = vd.type.defaultInitLiteral(loc);
-            if (e && e.op == EXP.error)
-                return e;
-            if (e)
-                offset = vd.offset + cast(uint)vd.type.size();
-            (*structelems)[j] = e;
-        }
-        auto structinit = new StructLiteralExp(loc, sym, structelems);
-
-        /* Copy from the initializer symbol for larger symbols,
-         * otherwise the literals expressed as code get excessively large.
-         */
-        if (size(this, loc) > target.ptrsize * 4 && !needsNested())
-            structinit.useStaticInit = true;
-
-        structinit.type = this;
-        return structinit;
-    }
-
-    override bool isAssignable()
-    {
-        bool assignable = true;
-        uint offset = ~0; // dead-store initialize to prevent spurious warning
-
-        sym.determineSize(sym.loc);
-
-        /* If any of the fields are const or immutable,
-         * then one cannot assign this struct.
-         */
-        for (size_t i = 0; i < sym.fields.length; i++)
-        {
-            VarDeclaration v = sym.fields[i];
-            //printf("%s [%d] v = (%s) %s, v.offset = %d, v.parent = %s\n", sym.toChars(), i, v.kind(), v.toChars(), v.offset, v.parent.kind());
-            if (i == 0)
-            {
-            }
-            else if (v.offset == offset)
-            {
-                /* If any fields of anonymous union are assignable,
-                 * then regard union as assignable.
-                 * This is to support unsafe things like Rebindable templates.
-                 */
-                if (assignable)
-                    continue;
-            }
-            else
-            {
-                if (!assignable)
-                    return false;
-            }
-            assignable = v.type.isMutable() && v.type.isAssignable();
-            offset = v.offset;
-            //printf(" -> assignable = %d\n", assignable);
-        }
-
-        return assignable;
-    }
-
     override bool isBoolean()
     {
         return false;
@@ -3381,11 +3103,6 @@ extern (C++) final class TypeEnum : Type
     override bool isString()
     {
         return memType().isString();
-    }
-
-    override bool isAssignable()
-    {
-        return memType().isAssignable();
     }
 
     override bool needsDestruction()
@@ -3576,16 +3293,14 @@ extern (C++) final class TypeTuple : Type
     extern (D) this(Type t1)
     {
         super(Ttuple);
-        arguments = new Parameters();
-        arguments.push(new Parameter(Loc.initial, STC.none, t1, null, null, null));
+        arguments = new Parameters(new Parameter(Loc.initial, STC.none, t1, null, null, null));
     }
 
     extern (D) this(Type t1, Type t2)
     {
         super(Ttuple);
-        arguments = new Parameters();
-        arguments.push(new Parameter(Loc.initial, STC.none, t1, null, null, null));
-        arguments.push(new Parameter(Loc.initial, STC.none, t2, null, null, null));
+        arguments = new Parameters(new Parameter(Loc.initial, STC.none, t1, null, null, null),
+                                   new Parameter(Loc.initial, STC.none, t2, null, null, null));
     }
 
     static TypeTuple create() @safe
@@ -4294,12 +4009,32 @@ void attributesApply(const TypeFunction tf, void delegate(string) dg, TRUSTforma
         dg("@nogc");
     if (tf.isProperty)
         dg("@property");
+
+    /* The following is more or less like dmd.hdrgen.stcToBuffer(), in the future
+     * it should be merged. The idea is consistent ordering
+     */
+    STC stc;
     if (tf.isRef)
-        dg("ref");
+        stc |= STC.ref_;
     if (tf.isReturn && !tf.isReturnInferred)
-        dg("return");
+        stc |= STC.return_;
     if (tf.isScopeQual && !tf.isScopeInferred)
-        dg("scope");
+        stc |= STC.scope_;
+    if (tf.isReturnScope)
+        stc |= STC.returnScope;
+    final switch (buildScopeRef(stc))
+    {
+        case ScopeRef.None:                                                      break;
+        case ScopeRef.Scope:            dg("scope");                             break;
+        case ScopeRef.Return:           dg("return");                            break;
+        case ScopeRef.ReturnScope:      dg("return"); dg("scope");               break;
+        case ScopeRef.ReturnRef:        dg("return"); dg("ref");                 break;
+        case ScopeRef.Ref:              dg("ref");                               break;
+        case ScopeRef.RefScope:         dg("ref");    dg("scope");               break;
+        case ScopeRef.ReturnRef_Scope:  dg("return"); dg("ref");    dg("scope"); break;
+        case ScopeRef.Ref_ReturnScope:  dg("ref");    dg("return"); dg("scope"); break;
+    }
+
     if (tf.isLive)
         dg("@live");
 

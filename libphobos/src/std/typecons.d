@@ -3836,22 +3836,22 @@ struct Nullable(T)
      * Returns:
      *     A `string` if `writer` and `fmt` are not set; `void` otherwise.
      */
-    string toString()
+    string toString()()
     {
         import std.array : appender;
         auto app = appender!string();
         auto spec = singleSpec("%s");
-        toString(app, spec);
+        this.toString(app, spec);
         return app.data;
     }
 
     /// ditto
-    string toString() const
+    string toString()() const
     {
         import std.array : appender;
         auto app = appender!string();
         auto spec = singleSpec("%s");
-        toString(app, spec);
+        this.toString(app, spec);
         return app.data;
     }
 
@@ -6677,8 +6677,8 @@ private static:
                 if (atts & FA.property) poatts ~= " @property";
                 if (atts & FA.safe    ) poatts ~= " @safe";
                 if (atts & FA.trusted ) poatts ~= " @trusted";
-                if (atts & FA.scope_ )  poatts ~= " scope";
                 if (atts & FA.return_ ) poatts ~= " return";
+                if (atts & FA.scope_ )  poatts ~= " scope";
                 return poatts;
             }
             enum postAtts = make_postAtts();
@@ -10786,18 +10786,18 @@ private template replaceTypeInFunctionTypeUnless(alias pred, From, To, fun)
         {
             if (i)
                 result ~= ", ";
+            if (storageClasses[i] & ParameterStorageClass.return_)
+                result ~= "return ";
             if (storageClasses[i] & ParameterStorageClass.scope_)
                 result ~= "scope ";
-            if (storageClasses[i] & ParameterStorageClass.in_)
-                result ~= "in ";
             if (storageClasses[i] & ParameterStorageClass.out_)
                 result ~= "out ";
             if (storageClasses[i] & ParameterStorageClass.ref_)
                 result ~= "ref ";
+            if (storageClasses[i] & ParameterStorageClass.in_)
+                result ~= "in ";
             if (storageClasses[i] & ParameterStorageClass.lazy_)
                 result ~= "lazy ";
-            if (storageClasses[i] & ParameterStorageClass.return_)
-                result ~= "return ";
 
             result ~= "PX[" ~ i.stringof ~ "]";
         }

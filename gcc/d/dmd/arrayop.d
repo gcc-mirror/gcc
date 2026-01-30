@@ -31,6 +31,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.tokens;
+import dmd.typesem : isAssignable;
 import dmd.visitor;
 
 /**********************************************

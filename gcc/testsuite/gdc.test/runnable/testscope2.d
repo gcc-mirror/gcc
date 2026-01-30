@@ -2,7 +2,7 @@
 /*
 TEST_OUTPUT:
 ---
-foo1 ulong function(return ref int* delegate() return p) ref return
+foo1 ulong function(return ref int* delegate() return p) return ref
 foo2 int function(return ref int delegate() p) ref
 foo3 int function(ref inout(int*) p) ref
 foo4 int function(return ref inout(int*) p) ref
@@ -18,7 +18,7 @@ struct SS
     ref ulong foo1(return ref int* delegate() return p) return;
     ref int foo2(return ref int delegate() p);
     ref int foo3(inout ref int* p);
-    ref int foo4(return inout ref int* p);
+    ref int foo4(return ref inout int* p);
 }
 
 pragma(msg, "foo1 ", typeof(&SS.foo1));

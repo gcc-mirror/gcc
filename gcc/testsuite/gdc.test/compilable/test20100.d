@@ -36,9 +36,11 @@ void main() {
  void test20989() @safe
 {
     uint[] arr = [1, 2, 3];
+    uint[] arr2 = null;
     assert(arr.ptr);
-    assert(!arr.ptr);
+    assert(!arr2.ptr);
     assert(arr.ptr is arr.ptr);
+    assert(arr2.ptr is arr2.ptr);
 }
 
 // https://issues.dlang.org/show_bug.cgi?id=21765

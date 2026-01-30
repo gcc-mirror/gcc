@@ -418,7 +418,7 @@ class C8939regression
         string[2] str;
         refValue(str[n1]);
 
-        int[] da;
+        int[] da = [1];
         refValue(da[n2]);
 
         int n; int* p = &n;

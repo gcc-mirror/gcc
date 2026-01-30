@@ -647,6 +647,7 @@ package template floatSize(T) if (is(T:real) || is(T:ireal))
 @trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(return scope const T[] arr) if (T.sizeof == 1)
 {
+    pragma(inline, true);
     return cast(const(ubyte)[])arr;
 }
 
@@ -687,6 +688,7 @@ const(ubyte)[] toUbyte(T)(const ref scope T val) if (__traits(isIntegral, T) && 
 {
     static if (T.sizeof == 1)
     {
+        pragma(inline, true);
         if (__ctfe)
         {
             ubyte[] result = ctfe_alloc(1);
@@ -722,6 +724,7 @@ const(ubyte)[] toUbyte(T)(const ref scope T val) if (__traits(isIntegral, T) && 
 @trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(const ref scope T val) if (is(T == __vector))
 {
+    pragma(inline, true);
     if (!__ctfe)
         return (cast(const ubyte*) &val)[0 .. T.sizeof];
     else static if (is(typeof(val[0]) : void))
@@ -744,6 +747,7 @@ const(ubyte)[] toUbyte(T)(const ref scope T val) if (is(T == __vector))
 @trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(const ref return scope T val) if (is(T == enum))
 {
+    pragma(inline, true);
     if (__ctfe)
     {
         static if (is(T V == enum)){}
@@ -767,6 +771,7 @@ nothrow pure @safe unittest
 @trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == delegate) || is(T : V*, V) && __traits(getAliasThis, T).length == 0)
 {
+    pragma(inline, true);
     if (__ctfe)
     {
         if (val !is null) assert(0, "Unable to compute byte representation of non-null pointer at compile time");
@@ -781,6 +786,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == delegate) || is(T : V*, V
 @trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(const return ref scope T val) if (is(T == struct) || is(T == union))
 {
+    pragma(inline, true);
     if (__ctfe)
     {
         ubyte[] bytes = ctfe_alloc(T.sizeof);

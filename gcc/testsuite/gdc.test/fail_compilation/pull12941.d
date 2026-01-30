@@ -18,11 +18,11 @@ fail_compilation/pull12941.d(105):        `pull12941.abc(return ref int* p)` dec
 
 #line 100
 
-int* foo(ref scope return int* p);
-int* foo(out scope return int* p);
+int* foo(return ref scope int* p);
+int* foo(return out scope int* p);
 
-int* bar(scope return int* p);
-int* abc(ref return int* p);
+int* bar(return scope int* p);
+int* abc(return ref int* p);
 
 void test()
 {

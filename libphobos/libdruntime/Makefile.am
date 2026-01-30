@@ -184,13 +184,13 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/array/construction.d core/internal/array/duplication.d \
 	core/internal/array/equality.d core/internal/array/operations.d \
 	core/internal/array/utils.d core/internal/atomic.d \
-	core/internal/attributes.d core/internal/container/array.d \
-	core/internal/container/common.d core/internal/container/hashtab.d \
-	core/internal/container/treap.d core/internal/convert.d \
-	core/internal/dassert.d core/internal/destruction.d \
-	core/internal/entrypoint.d core/internal/gc/bits.d \
-	core/internal/gc/blkcache.d core/internal/gc/blockmeta.d \
-	core/internal/gc/impl/conservative/gc.d \
+	core/internal/attributes.d core/internal/cast_.d \
+	core/internal/container/array.d core/internal/container/common.d \
+	core/internal/container/hashtab.d core/internal/container/treap.d \
+	core/internal/convert.d core/internal/dassert.d \
+	core/internal/destruction.d core/internal/entrypoint.d \
+	core/internal/gc/bits.d core/internal/gc/blkcache.d \
+	core/internal/gc/blockmeta.d core/internal/gc/impl/conservative/gc.d \
 	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
 	core/internal/gc/os.d core/internal/gc/pooltable.d \
 	core/internal/gc/proxy.d core/internal/hash.d core/internal/lifetime.d \
@@ -221,11 +221,10 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	gcc/sections/macho.d gcc/sections/package.d gcc/sections/pecoff.d \
 	gcc/simd.d gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
 	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
-	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arraycat.d rt/cast_.d \
-	rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d rt/ehalloc.d \
-	rt/invariant_.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
-	rt/profilegc.d rt/sections.d rt/tlsgc.d rt/util/typeinfo.d \
-	rt/util/utility.d
+	rt/aApply.d rt/aApplyR.d rt/arraycat.d rt/config.d rt/critical_.d \
+	rt/deh.d rt/dmain2.d rt/ehalloc.d rt/invariant_.d rt/lifetime.d \
+	rt/memory.d rt/minfo.d rt/monitor_.d rt/profilegc.d rt/sections.d \
+	rt/tlsgc.d rt/util/typeinfo.d rt/util/utility.d
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/allocator.d core/stdcpp/array.d \
 	core/stdcpp/exception.d core/stdcpp/memory.d core/stdcpp/new_.d \
@@ -324,15 +323,15 @@ DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
-	core/sys/posix/dirent.d core/sys/posix/dlfcn.d core/sys/posix/fcntl.d \
-	core/sys/posix/grp.d core/sys/posix/iconv.d core/sys/posix/inttypes.d \
-	core/sys/posix/libgen.d core/sys/posix/locale.d \
-	core/sys/posix/mqueue.d core/sys/posix/net/if_.d \
-	core/sys/posix/netdb.d core/sys/posix/netinet/in_.d \
-	core/sys/posix/netinet/tcp.d core/sys/posix/poll.d \
-	core/sys/posix/pthread.d core/sys/posix/pwd.d core/sys/posix/sched.d \
-	core/sys/posix/semaphore.d core/sys/posix/setjmp.d \
-	core/sys/posix/signal.d core/sys/posix/spawn.d \
+	core/sys/posix/dirent.d core/sys/posix/dlfcn.d core/sys/posix/endian.d \
+	core/sys/posix/fcntl.d core/sys/posix/grp.d core/sys/posix/iconv.d \
+	core/sys/posix/inttypes.d core/sys/posix/libgen.d \
+	core/sys/posix/locale.d core/sys/posix/mqueue.d \
+	core/sys/posix/net/if_.d core/sys/posix/netdb.d \
+	core/sys/posix/netinet/in_.d core/sys/posix/netinet/tcp.d \
+	core/sys/posix/poll.d core/sys/posix/pthread.d core/sys/posix/pwd.d \
+	core/sys/posix/sched.d core/sys/posix/semaphore.d \
+	core/sys/posix/setjmp.d core/sys/posix/signal.d core/sys/posix/spawn.d \
 	core/sys/posix/stdc/time.d core/sys/posix/stdio.d \
 	core/sys/posix/stdlib.d core/sys/posix/string.d \
 	core/sys/posix/strings.d core/sys/posix/sys/filio.d \

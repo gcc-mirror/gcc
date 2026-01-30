@@ -153,13 +153,13 @@ shared(int)* test_dotvarexp_3(return shared C1* c)
 }
 
 // First level DotVarExp dereferencing
-ref shared(int) test_dotvarexp_4(return shared ref C2 c)
+ref shared(int) test_dotvarexp_4(return ref shared C2 c)
 {
     return c.c1.value;
 }
 
 // Second level DotVarExp dereferencing
-ref shared(int) test_dotvarexp_5(return shared ref C3 c)
+ref shared(int) test_dotvarexp_5(return ref shared C3 c)
 {
     return c.c1.c1.value;
 }
@@ -201,7 +201,7 @@ ref shared(K1) test_newexp_1()
 // Inference tests
 
 // Fails because no `ref`
-auto test_inference_1(return shared ref C3 c)
+auto test_inference_1(return ref shared C3 c)
 {
     return c;
 }
@@ -221,7 +221,7 @@ auto ref test_inference_3()
 }
 
 // Fails because `const` conversion
-auto ref Object test_inference_4(const return shared ref Object a)
+auto ref Object test_inference_4(const return ref shared Object a)
 {
     return a;
 }

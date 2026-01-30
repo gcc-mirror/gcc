@@ -35,6 +35,7 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [mars.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/mars.d)           | Argument parsing, path manipulation.                                  |
 | [cli.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/cli.d)             | Define the command line interface                                     |
 | [dmdparams.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dmdparams.d) | DMD-specific parameters                                               |
+| [dmsc.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dmsc.d)           | Configures and initializes the back-end                               |
 | [globals.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/globals.d)     | Define a structure storing command line options                       |
 | [dinifile.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dinifile.d)   | Parse settings from .ini file (`sc.ini` / `dmd.conf`)                 |
 | [vsoptions.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/vsoptions.d) | Detect the Microsoft Visual Studio toolchain for linking              |
@@ -170,9 +171,10 @@ Note that these groups have no strict meaning, the category assignments are a bi
 
 | File                                                                    | Purpose                                   |
 |-------------------------------------------------------------------------|-------------------------------------------|
-| [iasm.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasm.d)       | Inline assembly depending on the compiler |
-| [iasmdmd.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasmdmd.d) | Inline assembly for DMD                   |
-| [iasmgcc.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasmgcc.d) | Inline assembly for GDC                   |
+| [iasm/package.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasm/package.d)       | Inline assembly depending on the compiler |
+| [iasm/dmdx86.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasm/dmd.d) | Inline assembly for DMD X86_64            |
+| [iasm/dmdaarch64.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasm/aarch64.d) | Inline assembly for DMD AArch64   |
+| [iasm/gcc.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/iasm/gcc.d) | Inline assembly for GDC                   |
 
 **Other**
 
@@ -208,27 +210,28 @@ Note that these groups have no strict meaning, the category assignments are a bi
 | [lib/scanmach.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/scanmach.d)     | Extract symbol names from a library in Mach-O format |
 | [lib/scanmscoff.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/lib/scanmscoff.d) | Extract symbol names from a library in COFF format   |
 
+
+### ABI
+| File                                                                          | Purpose                                              |
+| [argtypes_x86.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/argtypes_x86.d)     | Convert a D type into simple (register) types for the 32-bit x86 ABI |
+| [argtypes_sysv_x64.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/argtypes_sysv_x64.d) | 'argtypes' for the x86_64 System V ABI |
+| [argtypes_aarch64.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/argtypes_aarch64.d)   | 'argtypes' for the AArch64 ABI |
 ### Code generation / back-end interfacing
 
 | File                                                                                        | Purpose                                                                             |
 |---------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------|
-| [dmsc.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/dmsc.d)                           | Configures and initializes the back-end                                             |
-| [toobj.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/toobj.d)                         | Convert an AST that went through all semantic phases into an object file            |
-| [toir.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/toir.d)                           | Convert Dsymbols intermediate representation                                        |
-| [e2ir.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/e2ir.d)                           | Convert Expressions to intermediate representation                                  |
-| [s2ir.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/s2ir.d)                           | Convert Statements to intermediate representation                                   |
-| [stmtstate.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/stmtstate.d)                 | Used to help transform statement AST into flow graph                                |
-| [toctype.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/toctype.d)                     | Convert a D type to a type the back-end understands                                 |
-| [tocsym.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/tocsym.d)                       | Convert a D symbol to a symbol the linker understands (with mangled name)           |
-| [argtypes_x86.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/argtypes_x86.d)           | Convert a D type into simple (register) types for the 32-bit x86 ABI                |
-| [argtypes_sysv_x64.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/argtypes_sysv_x64.d) | 'argtypes' for the x86_64 System V ABI                                              |
-| [argtypes_aarch64.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/argtypes_aarch64.d)   | 'argtypes' for the AArch64 ABI                                                      |
-| [glue.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/glue.d)                           | Generate the object file for function declarations                                  |
-| [gluelayer.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/gluelayer.d)                 | Declarations for back-end functions that the front-end invokes                      |
-| [todt.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/todt.d)                           | Convert initializers into structures that the back-end will add to the data segment |
-| [tocvdebug.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/tovcdebug.d)                 | Generate debug info in the CV4 debug format.                                        |
-| [objc.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/objc.d)                           | Objective-C interfacing                                                             |
-| [objc_glue.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/objc_glue.d)                 | Glue code for Objective-C interop.                                                  |
+| [stmtstate.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/stmtstate.d)        | Used to help transform statement AST into flow graph    |
+| [objc.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/objc.d)                  | Objective-C interfacing                                 |
+| [irgen/toobj.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/toobj.d)      | Convert an AST that went through all semantic phases into an object file|
+| [irgen/toir.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/toir.d)        | Convert Dsymbols intermediate representation                            |
+| [irgen/e2ir.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/e2ir.d)        | Convert Expressions to intermediate representation                      |
+| [irgen/s2ir.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/s2ir.d)        | Convert Statements to intermediate representation                       |
+| [irgen/toctype.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/toctype.d)  | Convert a D type to a type the back-end understands                     |
+| [irgen/tocsym.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/tocsym.d)    | Convert a D symbol to a symbol the linker understands (with mangled name) |
+| [irgen/package.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/package.d)  | Generate the object file for function declarations                      |
+| [irgen/todt.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/todt.d)        | Convert initializers into structures that the back-end will add to the data segment |
+| [irgen/tocvdebug.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/tovcdebug.d)| Generate debug info in the CV4 debug format.                            |
+| [irgen/objc.d](https://github.com/dlang/dmd/blob/master/compiler/src/dmd/irgen/objc.d)| irgen code for Objective-C interop.                                      |
 
 **Name mangling**
 

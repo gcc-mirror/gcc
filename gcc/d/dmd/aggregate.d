@@ -25,19 +25,17 @@ import dmd.declaration;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic, determineFields, search, determineSize, include;
+import dmd.dsymbolsem : determineSize;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
 import dmd.func;
-import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
 import dmd.tokens;
-import dmd.typesem : defaultInit, addMod, size;
 import dmd.visitor;
 
 /**
@@ -171,7 +169,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         sc2.parent = this;
         sc2.inunion = isUnionDeclaration();
         sc2.visibility = Visibility(Visibility.Kind.public_);
-        sc2.explicitVisibility = 0;
+        sc2.explicitVisibility = false;
         sc2.aligndecl = null;
         sc2.userAttribDecl = null;
         sc2.namespace = null;
@@ -187,7 +185,7 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         return fields.length - isNested() - (vthis2 !is null);
     }
 
-    override final uinteger_t size(Loc loc)
+    override final ulong size(Loc loc)
     {
         //printf("+AggregateDeclaration::size() %s, scope = %p, sizeok = %d\n", toChars(), _scope, sizeok);
         bool ok = determineSize(this, loc);
@@ -195,86 +193,6 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         return ok ? structsize : SIZE_INVALID;
     }
 
-    /***************************************
-     * Calculate field[i].overlapped and overlapUnsafe, and check that all of explicit
-     * field initializers have unique memory space on instance.
-     * Returns:
-     *      true if any errors happen.
-     */
-    extern (D) final bool checkOverlappedFields()
-    {
-        //printf("AggregateDeclaration::checkOverlappedFields() %s\n", toChars());
-        assert(sizeok == Sizeok.done);
-        size_t nfields = fields.length;
-        if (isNested())
-        {
-            auto cd = isClassDeclaration();
-            if (!cd || !cd.baseClass || !cd.baseClass.isNested())
-                nfields--;
-            if (vthis2 && !(cd && cd.baseClass && cd.baseClass.vthis2))
-                nfields--;
-        }
-        bool errors = false;
-
-        // Fill in missing any elements with default initializers
-        foreach (i; 0 .. nfields)
-        {
-            auto vd = fields[i];
-            if (vd.errors)
-            {
-                errors = true;
-                continue;
-            }
-
-            const vdIsVoidInit = vd._init && vd._init.isVoidInitializer();
-
-            // Find overlapped fields with the hole [vd.offset .. vd.offset.size()].
-            foreach (j; 0 .. nfields)
-            {
-                if (i == j)
-                    continue;
-                auto v2 = fields[j];
-                if (v2.errors)
-                {
-                    errors = true;
-                    continue;
-                }
-                if (!vd.isOverlappedWith(v2))
-                    continue;
-
-                // vd and v2 are overlapping.
-                vd.overlapped = true;
-                v2.overlapped = true;
-
-                if (!MODimplicitConv(vd.type.mod, v2.type.mod))
-                    v2.overlapUnsafe = true;
-                if (!MODimplicitConv(v2.type.mod, vd.type.mod))
-                    vd.overlapUnsafe = true;
-
-                if (i > j)
-                    continue;
-
-                if (!v2._init)
-                    continue;
-
-                if (v2._init.isVoidInitializer())
-                    continue;
-
-                if (vd._init && !vdIsVoidInit && v2._init)
-                {
-                    .error(loc, "overlapping default initialization for field `%s` and `%s`", v2.toChars(), vd.toChars());
-                    errors = true;
-                }
-                else if (v2._init && i < j)
-                {
-                    .error(v2.loc, "union field `%s` with default initialization `%s` must be before field `%s`",
-                        v2.toChars(), dmd.hdrgen.toChars(v2._init), vd.toChars());
-                    errors = true;
-                }
-            }
-        }
-        return errors;
-    }
 
     override final Type getType()
     {
@@ -433,46 +351,6 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
         return visibility.kind == Visibility.Kind.export_;
     }
 
-    /*******************************************
-     * Look for constructor declaration.
-     */
-    extern (D) final Dsymbol searchCtor()
-    {
-        auto s = this.search(Loc.initial, Id.ctor);
-        if (s)
-        {
-            if (!(s.isCtorDeclaration() ||
-                  s.isTemplateDeclaration() ||
-                  s.isOverloadSet()))
-            {
-                error(s.loc, "%s name `__ctor` is not allowed", s.kind);
-                errorSupplemental(s.loc, "identifiers starting with `__` are reserved for internal use");
-                errors = true;
-                s = null;
-            }
-        }
-        if (s && s.toParent() != this)
-            s = null; // search() looks through ancestor classes
-        if (s)
-        {
-            // Finish all constructors semantics to determine this.noDefaultCtor.
-            static int searchCtor(Dsymbol s, void*)
-            {
-                auto f = s.isCtorDeclaration();
-                if (f && f.semanticRun == PASS.initial)
-                    f.dsymbolSemantic(null);
-                return 0;
-            }
-
-            for (size_t i = 0; i < members.length; i++)
-            {
-                auto sm = (*members)[i];
-                sm.apply(&searchCtor, null);
-            }
-        }
-        return s;
-    }
-
     override final Visibility visible() pure nothrow @nogc @safe
     {
         return visibility;
@@ -497,39 +375,6 @@ extern (C++) abstract class AggregateDeclaration : ScopeDsymbol
     {
         v.visit(this);
     }
-}
-
-/*********************************
- * Iterate this dsymbol or members of this scoped dsymbol, then
- * call `fp` with the found symbol and `params`.
- * Params:
- *  symbol = the dsymbol or parent of members to call fp on
- *  fp = function pointer to process the iterated symbol.
- *       If it returns nonzero, the iteration will be aborted.
- *  ctx = context parameter passed to fp.
- * Returns:
- *  nonzero if the iteration is aborted by the return value of fp,
- *  or 0 if it's completed.
- */
-int apply(Dsymbol symbol, int function(Dsymbol, void*) fp, void* ctx)
-{
-    if (auto nd = symbol.isNspace())
-    {
-        return nd.members.foreachDsymbol( (s) { return s && s.apply(fp, ctx); } );
-    }
-    if (auto ad = symbol.isAttribDeclaration())
-    {
-        return ad.include(ad._scope).foreachDsymbol( (s) { return s && s.apply(fp, ctx); } );
-    }
-    if (auto tm = symbol.isTemplateMixin())
-    {
-        if (tm._scope) // if fwd reference
-            dsymbolSemantic(tm, null); // try to resolve it
-
-        return tm.members.foreachDsymbol( (s) { return s && s.apply(fp, ctx); } );
-    }
-
-    return fp(symbol, ctx);
 }
 
 /****************************

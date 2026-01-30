@@ -304,6 +304,7 @@ d_init_options (unsigned int, cl_decoded_option *decoded_options)
   global.params.useDeprecated = DIAGNOSTICinform;
   global.params.useWarnings = DIAGNOSTICoff;
   global.params.v.errorLimit = flag_max_errors;
+  global.params.v.errorSupplementLimit = flag_max_errors;
   global.params.v.messageStyle = MessageStyle::gnu;
 
   /* Extra GDC-specific options.  */

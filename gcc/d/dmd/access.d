@@ -20,6 +20,7 @@ import dmd.dmodule;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
+import dmd.dsymbolsem : toAlias;
 import dmd.errors;
 import dmd.expression;
 import dmd.funcsem : overloadApply;

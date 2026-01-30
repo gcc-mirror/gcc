@@ -180,6 +180,11 @@ private void lambdaSetParent(Expression e, FuncDeclaration fd)
                     iz.accept(this);
             }
         }
+        override void visit(AssocArrayLiteralExp e)
+        {
+            if (e.lowering)
+                walkPostorder(e.lowering, this);
+        }
     }
 
     scope LambdaSetParent lsp = new LambdaSetParent(fd);

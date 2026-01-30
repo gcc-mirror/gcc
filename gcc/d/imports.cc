@@ -144,7 +144,7 @@ public:
   /* Alias symbols aren't imported, but their targets are.  */
   void visit (AliasDeclaration *d) final override
   {
-    Dsymbol *dsym = d->toAlias ();
+    Dsymbol *dsym = dmd::toAlias (d);
 
     if (dsym == d)
       {

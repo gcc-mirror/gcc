@@ -1,7 +1,7 @@
 /* REQUIRED_ARGS: -preview=bitfields
  * TEST_OUTPUT:
 ---
-fail_compilation/biterrors4.d(109): Error: cannot take address of bit-field `a`
+fail_compilation/biterrors4.d(109): Error: cannot take address of bitfield `s.a`
 ---
 */
 

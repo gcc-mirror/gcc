@@ -71,9 +71,10 @@ namespace dmd
     #define STCref                0x40000ULL    /// `ref`
     #define STCscope              0x80000ULL    /// `scope`
 
-    #define STCscopeinferred      0x200000ULL    /// `scope` has been inferred and should not be part of mangling, `scope` must also be set
-    #define STCreturn             0x400000ULL    /// 'return ref' or 'return scope' for function parameters
-    #define STCreturnScope        0x800000ULL    /// if `ref return scope` then resolve to `ref` and `return scope`
+    #define STCscopeinferred      0x100000ULL    /// `scope` has been inferred and should not be part of mangling, `scope` must also be set
+    #define STCreturn             0x200000ULL    /// 'return ref' or 'return scope' for function parameters
+    #define STCreturnScope        0x400000ULL    /// if `ref return scope` then resolve to `ref` and `return scope`
+    #define STCreturnRef          0x800000ULL,   /// if `return ref`
 
     #define STCreturninferred     0x1000000ULL    /// `return` has been inferred and should not be part of mangling, `return` must also be set
     #define STCimmutable          0x2000000ULL    /// `immutable`
@@ -183,7 +184,6 @@ public:
     TupleDeclaration *syntaxCopy(Dsymbol *) override;
     const char *kind() const override;
     Type *getType() override;
-    Dsymbol *toAlias2() override;
     bool needThis() override;
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -203,8 +203,6 @@ public:
     bool overloadInsert(Dsymbol *s) override;
     const char *kind() const override;
     Type *getType() override;
-    Dsymbol *toAlias() override;
-    Dsymbol *toAlias2() override;
     bool isOverloadable() const override;
 
     void accept(Visitor *v) override { v->visit(this); }
@@ -222,7 +220,6 @@ public:
     bool equals(const RootObject * const o) const override;
     bool overloadInsert(Dsymbol *s) override;
 
-    Dsymbol *toAlias() override;
     Dsymbol *isUnique();
     bool isOverloadable() const override;
 
@@ -300,7 +297,6 @@ public:
     bool isOverlappedWith(VarDeclaration *v);
     bool canTakeAddressOf();
     bool needsScopeDtor();
-    Dsymbol *toAlias() override final;
     // Eliminate need for dynamic_cast
     void accept(Visitor *v) override { v->visit(this); }
 };
@@ -395,6 +391,8 @@ class TypeInfoAssociativeArrayDeclaration final : public TypeInfoDeclaration
 {
 public:
     Type* entry;
+    Declaration* xopEqual;
+    Declaration* xtoHash;
 
     static TypeInfoAssociativeArrayDeclaration *create(Type *tinfo);
 
@@ -727,7 +725,6 @@ public:
     virtual bool addPreInvariant();
     virtual bool addPostInvariant();
     const char *kind() const override;
-    bool isUnique();
     bool needsClosure();
     bool hasNestedFrameRefs();
     ParameterList getParameterList();

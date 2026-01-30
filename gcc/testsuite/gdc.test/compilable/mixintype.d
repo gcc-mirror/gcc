@@ -4,9 +4,9 @@ alias Lint = mixin("Int");
 
 int test1(mixin("int")* p)
 {
-    mixin("int")[] a;
-    mixin("int[]") b;
-    mixin("int[] c;");
+    mixin("int")[] a = [1];
+    mixin("int[]") b = [1];
+    mixin("int[] c = [1];");
     mixin("*p = c[0];");
     *p = mixin("c[0]");
     return *p + a[0] + b[0] + c[0];

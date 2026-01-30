@@ -20,6 +20,7 @@ import dmd.dsymbol;
 import dmd.expression;
 import dmd.func;
 import dmd.mtype;
+import dmd.target;
 import dmd.tokens;
 import dmd.statement;
 import dmd.statementsem;
@@ -29,12 +30,22 @@ version (NoBackend)
 }
 else version (IN_GCC)
 {
-    import dmd.iasmgcc;
+    version = Asm_GCC;
+}
+else version (IN_LLVM)
+{
+    version = Asm_GCC;
 }
 else
 {
-    import dmd.iasmdmd;
+    import dmd.iasm.dmdx86;
+    import dmd.iasm.dmdaarch64;
     version = MARS;
+}
+
+version (Asm_GCC)
+{
+    import dmd.iasm.gcc;
 }
 
 /************************ AsmStatement ***************************************/
@@ -73,9 +84,11 @@ Statement asmSemantic(AsmStatement s, Scope* sc)
         }
         auto ias = new InlineAsmStatement(s.loc, s.tokens);
         ias.caseSensitive = s.caseSensitive;
-        return inlineAsmSemantic(ias, sc);
+        return (target.isAArch64)
+            ? inlineAsmAArch64Semantic(ias, sc)
+            : inlineAsmSemantic(ias, sc);       // X86_64
     }
-    else version (IN_GCC)
+    else version (Asm_GCC)
     {
         auto eas = new GccAsmStatement(s.loc, s.tokens);
         return gccAsmSemantic(eas, sc);
@@ -94,7 +107,7 @@ void asmSemantic(CAsmDeclaration ad, Scope* sc)
     version (NoBackend)
     {
     }
-    else version (IN_GCC)
+    else version (Asm_GCC)
     {
         return gccAsmSemantic(ad, sc);
     }

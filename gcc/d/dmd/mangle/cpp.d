@@ -26,7 +26,7 @@ import dmd.astenums;
 import dmd.attrib;
 import dmd.declaration;
 import dmd.dsymbol;
-import dmd.dsymbolsem : isGNUABITag;
+import dmd.dsymbolsem : isGNUABITag, toAlias;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;

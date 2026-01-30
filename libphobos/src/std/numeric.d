@@ -3733,7 +3733,16 @@ public:
         }
         else if (range.length == 1)
         {
-            buf[0] = range[0];
+            static if (isNumeric!(ElementType!R))
+            {
+                buf[0].re = range[0];
+                buf[0].im = 0;
+            }
+            else
+            {
+                buf[0].re = range[0].re;
+                buf[0].im = range[0].im;
+            }
             return;
         }
         else if (range.length == 2)
@@ -3931,6 +3940,26 @@ void inverseFft(Ret, R)(R range, Ret buf)
     assert(isClose(twoInv[1].im, 0, 0.0, 1e-10));
 }
 
+// https://github.com/dlang/phobos/issues/10796
+@system unittest
+{
+    import std.algorithm;
+    import std.range;
+    static struct C { float re, im; } // User-defined complex
+
+    float[8] arr = [1,2,3,4,5,6,7,8];
+    C[8] fft1;
+    fft(arr[], fft1[]);
+    assert(isClose(fft1[].map!"a.re",
+        [36.0, -4, -4, -4, -4, -4, -4, -4], 1e-4));
+    assert(isClose(fft1[].map!"a.im",
+        [0, 9.6568, 4, 1.6568, 0, -1.6568, -4, -9.6568], 1e-4));
+
+    auto inv = inverseFft(fft1[]);
+    assert(isClose(inv[].map!"a.re", arr[], 1e-6));
+    assert(inv[].map!"a.im".maxElement < 1e-10);
+}
+
 // Swaps the real and imaginary parts of a complex number.  This is useful
 // for inverse FFTs.
 C swapRealImag(C)(C input)
@@ -4112,11 +4141,24 @@ struct Stride(R)
 // using a generic slow DFT.  This seems to be the best base case.  (Size 1
 // can be coded inline as buf[0] = range[0]).
 void slowFourier2(Ret, R)(R range, Ret buf)
+if (isComplexLike!(ElementType!Ret))
+in (range.length == 2)
+in (buf.length == 2)
 {
-    assert(range.length == 2);
-    assert(buf.length == 2);
-    buf[0] = range[0] + range[1];
-    buf[1] = range[0] - range[1];
+    static if (isNumeric!(ElementType!R))
+    {
+        buf[0].re = range[0] + range[1];
+        buf[0].im = 0;
+        buf[1].re = range[0] - range[1];
+        buf[1].im = 0;
+    }
+    else
+    {
+        buf[0].re = range[0].re + range[1].re;
+        buf[0].im = range[0].im + range[1].im;
+        buf[1].re = range[0].re - range[1].re;
+        buf[1].im = range[0].im - range[1].im;
+    }
 }
 
 // Hard-coded base case for FFT of size 4.  Doesn't work as well as the size

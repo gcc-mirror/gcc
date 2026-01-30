@@ -134,7 +134,7 @@ struct Bar14986
 
 Bar14986 test14986()
 {
-    Foo14986[] types;
+    Foo14986[] types = [Foo14986(1)];
     auto a1 = new void[types[0].tsize];                 // TypeIdentifier::toExpression
     auto a2 = new void[Id14986!types[0].tsize];         // TypeInstance::toExpression
 

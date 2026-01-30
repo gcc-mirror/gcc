@@ -2549,6 +2549,21 @@ void test9()
 
 ////////////////////////////////////////////////////////////////////////
 
+void test10()
+{
+    double a,b,c;
+    double* pa,pb;
+
+    a = 5;
+    b = a++;
+    assert(a == 6);
+    pa = &a;
+    pb = &b;
+    *pb = (*pa)++;
+}
+
+////////////////////////////////////////////////////////////////////////
+
 int main()
 {
     // All the various integer divide tests
@@ -2651,6 +2666,7 @@ int main()
     test20574();
     test8();
     test9();
+    test10();
 
     printf("Success\n");
     return 0;

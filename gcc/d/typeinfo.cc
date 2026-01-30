@@ -730,7 +730,9 @@ public:
 	void *__monitor;
 	TypeInfo value;
 	TypeInfo key;
-	TypeInfo entry;  */
+	TypeInfo entry;
+	bool function(in void*, in void*) xopEquals;
+	hash_t function(in void*) xtoHash;  */
 
   void visit (TypeInfoAssociativeArrayDeclaration *d) final override
   {
@@ -750,6 +752,16 @@ public:
       this->layout_field (build_typeinfo (d->loc, d->entry));
     else
       this->layout_field (null_pointer_node);
+
+    /* bool function(in void*, in void*) xopEquals;  */
+    tree xeq = (d->xopEqual) ? build_address (get_symbol_decl (d->xopEqual))
+      : null_pointer_node;
+    this->layout_field (xeq);
+
+    /* hash_t function (in void*) xtoHash;  */
+    tree xhash = (d->xtoHash) ? build_address (get_symbol_decl (d->xtoHash))
+      : null_pointer_node;
+    this->layout_field (xhash);
   }
 
   /* Layout of TypeInfo_Vector is:
@@ -1442,6 +1454,15 @@ check_typeinfo_type (const Loc &loc, Scope *sc, Expression *expr)
 	    error_at (make_location_t (loc),
 		      "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
 
+	  if (expr != NULL || !warned)
+	    {
+	      /* Print the location of where the error came from.  */
+	      if (sc && sc->tinst)
+		dmd::printInstantiationTrace (sc->tinst);
+
+	      global.errors++;
+	    }
+
 	  warned = 1;
 	}
     }
@@ -1653,6 +1674,7 @@ create_typeinfo (Type *type, Scope *sc)
 	    {
 	      ident = Identifier::idPool ("TypeInfo_AssociativeArray");
 	      make_internal_typeinfo (tk, ident, ptr_type_node, ptr_type_node,
+				      ptr_type_node, ptr_type_node,
 				      ptr_type_node, NULL);
 	    }
 	  t->vtinfo = sc && have_typeinfo_p (Type::typeinfoassociativearray)

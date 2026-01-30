@@ -4849,6 +4849,22 @@ void test24010()
 }
 
 /**********************************/
+extern (C) struct S21303
+{
+    static bool dtorCalled = false;
+
+    ~this() { dtorCalled = true; }
+}
+
+void test21303()
+{
+    {
+        S21303 s;
+    }
+    assert(S21303.dtorCalled);
+}
+
+/**********************************/
 
 int main()
 {
@@ -4990,6 +5006,7 @@ int main()
     test68();
     testPR12012();
     test24010();
+    test21303();
 
     printf("Success\n");
     return 0;

@@ -407,6 +407,8 @@ public:
     d_bool onstack;
     Expression *basis;
     Expressions *elements;
+    Expression *lowering;
+    AssocArrayLiteralExp* aaLiteral; // set if this is an array of keys/values of an AA literal
 
     static ArrayLiteralExp *create(Loc loc, Expressions *elements);
     ArrayLiteralExp *syntaxCopy() override;
@@ -425,6 +427,7 @@ public:
     Expressions *keys;
     Expressions *values;
     Expression* lowering;
+    Expression* loweringCtfe;
 
     bool equals(const RootObject * const o) const override;
     AssocArrayLiteralExp *syntaxCopy() override;
@@ -833,6 +836,7 @@ public:
     d_bool ignoreAttributes;      // don't enforce attributes (e.g. call @gc function in @nogc code)
     d_bool isUfcsRewrite;       // the first argument was pushed in here by a UFCS rewrite
     VarDeclaration *vthis2;     // container for multi-context
+    Expression* loweredFrom;    // set if this is the result of a lowering
 
     static CallExp *create(Loc loc, Expression *e, Expressions *exps);
     static CallExp *create(Loc loc, Expression *e);
@@ -848,6 +852,7 @@ public:
 class AddrExp final : public UnaExp
 {
 public:
+    Optional<bool> toBool() override;
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -880,6 +885,7 @@ public:
 class NotExp final : public UnaExp
 {
 public:
+    Expression* loweredFrom;    // for lowering of `aa1 != aa2` to `!_d_aaEqual(aa1, aa2)`
     void accept(Visitor *v) override { v->visit(this); }
 };
 
@@ -897,6 +903,7 @@ public:
     Type *to;                   // type to cast to
     unsigned char mod;          // MODxxxxx
     d_bool trusted; // assume cast is safe
+    Expression* lowering;
 
     CastExp *syntaxCopy() override;
     bool isLvalue() override;
@@ -986,6 +993,7 @@ public:
     Expressions *arguments;             // Array of Expression's
     size_t currentDimension;            // for opDollar
     VarDeclaration *lengthVar;
+    d_bool modifiable;
 
     ArrayExp *syntaxCopy() override;
     bool isLvalue() override;
@@ -1016,6 +1024,7 @@ class IndexExp final : public BinExp
 {
 public:
     VarDeclaration *lengthVar;
+    Expression* loweredFrom;      // for associative array lowering to _d_aaGetY or _d_aaGetRvalueX
     d_bool modifiable;
     d_bool indexIsInBounds;       // true if 0 <= e2 && e2 <= e1.length - 1
 
@@ -1279,6 +1288,8 @@ public:
 class EqualExp final : public BinExp
 {
 public:
+    Expression* lowering;
+
     void accept(Visitor *v) override { v->visit(this); }
 };
 

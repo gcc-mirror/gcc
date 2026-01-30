@@ -3120,7 +3120,7 @@ if (isBlitAssignable!T && !is(typeof(lhs.proxySwap(rhs))))
     static struct A
     {
         int x;
-        this(scope ref return const A other)
+        this(scope return ref const A other)
         {
             import std.stdio;
             x = other.x;

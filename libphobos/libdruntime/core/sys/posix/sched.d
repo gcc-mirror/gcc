@@ -66,9 +66,16 @@ version (linux)
             int sched_priority;
             int __reserved1;
             static if (muslRedirTime64)
-                c_long[2] __reserved2;
+                c_long[4] __reserved2;
             else
-                timespec[2] __reserved2;
+            {
+                struct __timespec32
+                {
+                    time_t __reserved_1;
+                    c_long __reserved_2;
+                }
+                __timespec32[2] __reserved2;
+            }
             int __reserved3;
         }
     }

@@ -1,5 +1,6 @@
 /*
 EXTRA_FILES: imports/test15777a.d imports/test15777b.d
+REQUIRED_ARGS: -verrors=simple
 TEST_OUTPUT:
 ---
 int
@@ -10,6 +11,7 @@ int
 foobar7406(T)
 int
 test7406()
+runnable/foreach5.d(1200): Deprecation: foreach: loop index implicitly converted from `size_t` to `short`
 ---
 */
 
@@ -1046,6 +1048,21 @@ void test13756()
     {
         static assert(is(typeof(k) == const int));
     }
+
+    // https://github.com/dlang/dmd/issues/21456
+    foreach (long k, long v; aa)
+    {
+        assert(k == 1 && v == 20);
+    }
+    static struct S
+    {
+        int x, y, z;
+        this(int a) { z = a; }
+    }
+    foreach (long k, S s; aa)
+    {
+        assert(k == 1 && s.z == 20);
+    }
 }
 
 /***************************************/
@@ -1176,6 +1193,22 @@ void test17041()
 }
 
 /***************************************/
+// https://github.com/ldc-developers/ldc/issues/326
+
+void testLDC326()
+{
+    foreach (short i, dchar c; "ab")
+    {
+        if (c == 'a')
+            assert(i == 0);
+        else if (c == 'b')
+            assert(i == 1);
+        else
+            assert(0);
+    }
+}
+
+/***************************************/
 
 int main()
 {
@@ -1207,6 +1240,7 @@ int main()
     test13756();
     test14653();
     test17041();
+    testLDC326();
 
     printf("Success\n");
     return 0;

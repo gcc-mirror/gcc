@@ -8161,6 +8161,13 @@ Returns:
     A $(REF_ALTTEXT forward range, isForwardRange, std,range,primitives)
     of elements of which are an $(REF indexed, std,range) view into `r`.
 
+Note:
+    The elements of the resulting range reuse the same internal buffer of
+    permutations, so each element is invalidated by `popFront`.  If copies of
+    intermediate permutations are desired, they need to be individually copied,
+    such as using `.map!(e => e.array)` to save them in individual, independent
+    arrays.
+
 See_Also:
 $(REF nextPermutation, std,algorithm,sorting).
 */

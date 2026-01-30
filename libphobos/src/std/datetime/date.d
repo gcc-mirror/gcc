@@ -2131,6 +2131,7 @@ public:
         $(BOOKTABLE,
         $(TR $(TD DateTime) $(TD +) $(TD Duration) $(TD -->) $(TD DateTime))
         $(TR $(TD DateTime) $(TD -) $(TD Duration) $(TD -->) $(TD DateTime))
+        $(TR $(TD Duration) $(TD +) $(TD DateTime) $(TD -->) $(TD DateTime))
         )
 
         Params:
@@ -2144,6 +2145,14 @@ public:
         immutable seconds = duration.total!"seconds";
         mixin("return retval._addSeconds(" ~ op ~ "seconds);");
     }
+
+    /// ditto
+    DateTime opBinaryRight(string op)(Duration duration) const @safe pure nothrow @nogc
+    if (op == "+")
+    {
+        return this + duration;
+    }
+
 
     ///
     @safe unittest
@@ -2161,6 +2170,9 @@ public:
 
         assert(DateTime(2016, 1, 1, 0, 59, 59) - hours(1) ==
                DateTime(2015, 12, 31, 23, 59, 59));
+
+        assert(DateTime(2015, 12, 31, 23, 59, 59) + hours(1) ==
+               hours(1) + DateTime(2015, 12, 31, 23, 59, 59));
     }
 
     @safe unittest
@@ -6134,13 +6146,14 @@ public:
     import core.time : Duration;
     /++
         Gives the result of adding or subtracting a $(REF Duration, core,time)
-        from
+        from this $(LREF Date).
 
         The legal types of arithmetic for $(LREF Date) using this operator are
 
         $(BOOKTABLE,
         $(TR $(TD Date) $(TD +) $(TD Duration) $(TD -->) $(TD Date))
         $(TR $(TD Date) $(TD -) $(TD Duration) $(TD -->) $(TD Date))
+        $(TR $(TD Duration) $(TD +) $(TD Date) $(TD -->) $(TD Date))
         )
 
         Params:
@@ -6155,6 +6168,14 @@ public:
         mixin("return retval._addDays(" ~ op ~ "days);");
     }
 
+
+    /// ditto
+    Date opBinaryRight(string op)(Duration duration) const @safe pure nothrow @nogc
+    if (op == "+")
+    {
+        return this + duration;
+    }
+
     ///
     @safe unittest
     {
@@ -6165,6 +6186,8 @@ public:
 
         assert(Date(2016, 1, 1) - days(1) == Date(2015, 12, 31));
         assert(Date(2004, 3, 1) - days(4) == Date(2004, 2, 26));
+
+        assert(Date(2004, 2, 26) + days(4) == days(4) + Date(2004, 2, 26));
     }
 
     @safe unittest
@@ -8844,6 +8867,7 @@ public:
         $(BOOKTABLE,
         $(TR $(TD TimeOfDay) $(TD +) $(TD Duration) $(TD -->) $(TD TimeOfDay))
         $(TR $(TD TimeOfDay) $(TD -) $(TD Duration) $(TD -->) $(TD TimeOfDay))
+        $(TR $(TD Duration) $(TD +) $(TD TimeOfDay) $(TD -->) $(TD TimeOfDay))
         )
 
         Params:
@@ -8856,6 +8880,13 @@ public:
         TimeOfDay retval = this;
         immutable seconds = duration.total!"seconds";
         mixin("return retval._addSeconds(" ~ op ~ "seconds);");
+    }
+
+    /// ditto
+    TimeOfDay opBinaryRight(string op)(Duration duration) const @safe pure nothrow @nogc
+    if (op == "+")
+    {
+        return this + duration;
     }
 
     ///
@@ -8872,6 +8903,8 @@ public:
         assert(TimeOfDay(12, 12, 12) - minutes(1) == TimeOfDay(12, 11, 12));
         assert(TimeOfDay(12, 12, 12) - hours(1) == TimeOfDay(11, 12, 12));
         assert(TimeOfDay(0, 0, 0) - seconds(1) == TimeOfDay(23, 59, 59));
+
+        assert(TimeOfDay(12, 12, 12) + seconds(1) == seconds(1) + TimeOfDay(12, 12, 12));
     }
 
     @safe unittest

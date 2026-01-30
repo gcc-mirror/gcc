@@ -3,10 +3,10 @@
 fail_compilation/test21546.d(113): Error: cannot implicitly convert expression `pc` of type `const(int)* delegate() return` to `int* delegate() return`
 fail_compilation/test21546.d(114): Error: cannot implicitly convert expression `pc` of type `const(int)* delegate() return` to `immutable(int)* delegate() return`
 fail_compilation/test21546.d(115): Error: cannot implicitly convert expression `pi` of type `immutable(int)* delegate() return` to `int* delegate() return`
-fail_compilation/test21546.d(213): Error: cannot implicitly convert expression `dc` of type `const(int) delegate() ref return` to `int delegate() ref return`
-fail_compilation/test21546.d(214): Error: cannot implicitly convert expression `dc` of type `const(int) delegate() ref return` to `immutable(int) delegate() ref return`
-fail_compilation/test21546.d(215): Error: cannot implicitly convert expression `di` of type `immutable(int) delegate() ref return` to `int delegate() ref return`
-fail_compilation/test21546.d(305): Error: cannot implicitly convert expression `[dgi]` of type `immutable(int) delegate() ref return[]` to `int delegate() ref return[]`
+fail_compilation/test21546.d(213): Error: cannot implicitly convert expression `dc` of type `const(int) delegate() return ref` to `int delegate() return ref`
+fail_compilation/test21546.d(214): Error: cannot implicitly convert expression `dc` of type `const(int) delegate() return ref` to `immutable(int) delegate() return ref`
+fail_compilation/test21546.d(215): Error: cannot implicitly convert expression `di` of type `immutable(int) delegate() return ref` to `int delegate() return ref`
+fail_compilation/test21546.d(305): Error: cannot implicitly convert expression `[dgi]` of type `immutable(int) delegate() return ref[]` to `int delegate() return ref[]`
 ---
  */
 // https://issues.dlang.org/show_bug.cgi?id=21546

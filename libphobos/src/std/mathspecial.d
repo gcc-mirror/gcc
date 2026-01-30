@@ -29,6 +29,7 @@
  *      NAN = $(RED NAN)
  *      SUP = <span style="vertical-align:super;font-size:smaller">$0</span>
  *      GAMMA = &#915;
+ *      PSI = &Psi;
  *      THETA = &theta;
  *      INTEGRAL = &#8747;
  *      INTEGRATE = $(BIG &#8747;<sub>$(SMALL $1)</sub><sup>$2</sup>)
@@ -37,8 +38,10 @@
  *      BIGSUM = $(BIG &Sigma; <sup>$2</sup><sub>$(SMALL $1)</sub>)
  *      CHOOSE = $(BIG &#40;) <sup>$(SMALL $1)</sup><sub>$(SMALL $2)</sub> $(BIG &#41;)
  *      PLUSMN = &plusmn;
+ *      MNPLUS = &mnplus;
  *      INFIN = &infin;
  *      PLUSMNINF = &plusmn;&infin;
+ *      MNPLUSINF = &mnplus;&infin;
  *      PI = &pi;
  *      LT = &lt;
  *      GT = &gt;
@@ -166,17 +169,45 @@ real beta(real x, real y)
     assert(isIdentical(beta(2, NaN(0xABC)), NaN(0xABC)));
 }
 
-/** Digamma function
+/** Digamma function, $(PSI)(x)
  *
- *  The digamma function is the logarithmic derivative of the gamma function.
+ * $(PSI)(x), is the logarithmic derivative of the gamma function, $(GAMMA)(x).
  *
- *  digamma(x) = d/dx logGamma(x)
+ * $(PSI)(x) = $(SUP d)$(SUB /, dx) ln|$(GAMMA)(x)|  (the derivative of `logGamma(x)`)
  *
- *  See_Also: $(LREF logmdigamma), $(LREF logmdigammaInverse).
+ * Params:
+ *   x = the domain value
+ *
+ * Returns:
+ *   It returns $(PSI)(x).
+ *
+ * $(TABLE_SV
+ *   $(SVH x,             digamma(x)   )
+ *   $(SV  integer < 0,   $(NAN)       )
+ *   $(SV  $(PLUSMN)0.0,  $(MNPLUSINF) )
+ *   $(SV  +$(INFIN),     +$(INFIN)    )
+ *   $(SV  -$(INFIN),     $(NAN)       )
+ *   $(SV  $(NAN),        $(NAN)       )
+ * )
+ *
+ * See_Also: $(LREF logmdigamma), $(LREF logmdigammaInverse).
  */
 real digamma(real x)
 {
     return std.internal.math.gammafunction.digamma(x);
+}
+
+///
+@safe unittest
+{
+    const euler = 0.57721_56649_01532_86060_65121L;
+
+    assert(isClose(digamma(1), -euler));
+    assert(digamma(+0.) == -real.infinity);
+    assert(digamma(-0.) == +real.infinity);
+    assert(digamma(+real.infinity) == +real.infinity);
+    assert(isNaN(digamma(-1)));
+    assert(isNaN(digamma(-real.infinity)));
 }
 
 /** Log Minus Digamma function

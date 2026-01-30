@@ -7,6 +7,6 @@ fail_compilation/varargsstc.d(103): Error: variadic parameter cannot have attrib
 
 #line 100
 
-int printf(const(char)*, const scope shared return ...);
-int printf(const(char)*, ref out scope immutable shared return ...);
-int printf(const(char)*, ref scope immutable shared return ...);
+int printf(const(char)*, const return scope shared ...);
+int printf(const(char)*, return ref out scope immutable shared ...);
+int printf(const(char)*, return ref scope immutable shared ...);

@@ -291,7 +291,7 @@ public:
                 // be there, but since PosixTimeZone _does_ use leap seconds if
                 // the time zone file does, we'll test that functionality if the
                 // appropriate files exist.
-                if (chainPath(PosixTimeZone.defaultTZDatabaseDir, "right", tzName).exists)
+                if (chainPath(PosixTimeZone.getDefaultTZDatabaseDir(), "right", tzName).exists)
                 {
                     auto leapTZ = PosixTimeZone.getTimeZone("right/" ~ tzName);
 
@@ -2014,7 +2014,8 @@ public:
             the TZDatabaseDir version to pass an arbitrary path at compile-time,
             rather than hard-coding it here. Android concatenates all time zone
             data into a single file called tzdata and stores it in the directory
-            below.
+            below. If the TZDIR environment variable is set, it is consulted
+            before this constant.
           +/
         enum defaultTZDatabaseDir = "";
     }
@@ -2038,6 +2039,18 @@ public:
     else version (Windows)
     {
         enum defaultTZDatabaseDir = "";
+    }
+
+    private static string getDefaultTZDatabaseDir()
+    {
+        import core.stdc.stdlib : getenv;
+        import std.string : fromStringz;
+
+        auto dir = getenv("TZDIR");
+        if (dir)
+            return fromStringz(dir).idup;
+
+        return defaultTZDatabaseDir;
     }
 
 
@@ -2067,7 +2080,7 @@ public:
       +/
     // TODO make it possible for tzDatabaseDir to be gzipped tar file rather than an uncompressed
     //      directory.
-    static immutable(PosixTimeZone) getTimeZone(string name, string tzDatabaseDir = defaultTZDatabaseDir) @trusted
+    static immutable(PosixTimeZone) getTimeZone(string name, string tzDatabaseDir = getDefaultTZDatabaseDir()) @trusted
     {
         import std.algorithm.sorting : sort;
         import std.conv : to;
@@ -2418,7 +2431,7 @@ public:
         Throws:
             `FileException` if it fails to read from disk.
       +/
-    static string[] getInstalledTZNames(string subName = "", string tzDatabaseDir = defaultTZDatabaseDir) @safe
+    static string[] getInstalledTZNames(string subName = "", string tzDatabaseDir = getDefaultTZDatabaseDir()) @safe
     {
         import std.algorithm.sorting : sort;
         import std.array : appender;
@@ -2510,11 +2523,12 @@ public:
         {}
         else
         {
-            foreach (DirEntry de; dirEntries(defaultTZDatabaseDir, SpanMode.depth))
+            string tzDatabaseDir = getDefaultTZDatabaseDir();
+            foreach (DirEntry de; dirEntries(tzDatabaseDir, SpanMode.depth))
             {
                 if (de.isFile)
                 {
-                    auto tzName = de.name[defaultTZDatabaseDir.length .. $];
+                    auto tzName = de.name[tzDatabaseDir.length .. $];
 
                     if (!canFind(tzNames, tzName))
                         assertThrown!DateTimeException(testPTZFailure(tzName));

@@ -51,6 +51,7 @@ import dmd.root.array;
 import dmd.root.speller;
 import dmd.root.stringtable;
 import dmd.target;
+import dmd.templatesem : TemplateInstance_semanticTiargs;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
@@ -340,7 +341,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
             sc.stc |= STC.deprecated_;
         Scope* sc2 = sc.startCTFE();
         scope(exit) { sc2.endCTFE(); }
-        if (!TemplateInstance.semanticTiargs(e.loc, sc2, e.args, 1))
+        if (!TemplateInstance_semanticTiargs(e.loc, sc2, e.args, 1))
         {
             sc.stc = save;
             return ErrorExp.get();
@@ -735,7 +736,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
          * a symbol should not be folded to a constant.
          * Bit 1 means don't convert Parameter to Type if Parameter has an identifier
          */
-        if (!TemplateInstance.semanticTiargs(e.loc, sc, e.args, 2))
+        if (!TemplateInstance_semanticTiargs(e.loc, sc, e.args, 2))
             return ErrorExp.get();
         if (dim != 1)
             return dimError(1);
@@ -774,7 +775,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         sc2.copyFlagsFrom(sc);
         sc2.noAccessCheck = true;
         sc2.ignoresymbolvisibility = true;
-        bool ok = TemplateInstance.semanticTiargs(e.loc, sc2, e.args, 1);
+        bool ok = TemplateInstance_semanticTiargs(e.loc, sc2, e.args, 1);
         sc2.pop();
         if (!ok)
             return ErrorExp.get();
@@ -849,7 +850,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         sc2.copyFlagsFrom(sc);
         sc2.noAccessCheck = true;
         sc2.ignoresymbolvisibility = true;
-        bool ok = TemplateInstance.semanticTiargs(e.loc, sc2, e.args, 1);
+        bool ok = TemplateInstance_semanticTiargs(e.loc, sc2, e.args, 1);
         sc2.pop();
         if (!ok)
             return ErrorExp.get();
@@ -1304,7 +1305,7 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
          * a symbol should not be folded to a constant.
          * Bit 1 means don't convert Parameter to Type if Parameter has an identifier
          */
-        if (!TemplateInstance.semanticTiargs(e.loc, sc, e.args, 3))
+        if (!TemplateInstance_semanticTiargs(e.loc, sc, e.args, 3))
             return ErrorExp.get();
 
         if (dim != 1)
@@ -1882,9 +1883,9 @@ Expression semanticTraits(TraitsExp e, Scope* sc)
         ob1.push((*e.args)[0]);
         Objects ob2;
         ob2.push((*e.args)[1]);
-        if (!TemplateInstance.semanticTiargs(e.loc, sc, &ob1, 0))
+        if (!TemplateInstance_semanticTiargs(e.loc, sc, &ob1, 0))
             return ErrorExp.get();
-        if (!TemplateInstance.semanticTiargs(e.loc, sc, &ob2, 0))
+        if (!TemplateInstance_semanticTiargs(e.loc, sc, &ob2, 0))
             return ErrorExp.get();
         if (ob1.length != ob2.length)
             return False();

@@ -238,6 +238,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/int128.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/attributes.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/cstring.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/entropy.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintcore.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintnoasm.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/errorfunction.lo \
@@ -609,10 +610,11 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/internal/write.d std/format/package.d std/format/read.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/format/spec.d std/format/write.d std/functional.d std/getopt.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/int128.d std/internal/attributes.d std/internal/cstring.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/memory.d std/internal/scopebuffer.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/dummyrange.d std/internal/test/range.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/entropy.d std/internal/math/biguintcore.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/biguintnoasm.d std/internal/math/errorfunction.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/math/gammafunction.d std/internal/memory.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/scopebuffer.d std/internal/test/dummyrange.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/range.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/test/sumtype_example_overloads.d std/internal/test/uda.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_comp.d std/internal/unicode_decomp.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/internal/unicode_grapheme.d std/internal/unicode_norm.d \
@@ -879,6 +881,7 @@ std/internal/$(am__dirstamp):
 	@: > std/internal/$(am__dirstamp)
 std/internal/attributes.lo: std/internal/$(am__dirstamp)
 std/internal/cstring.lo: std/internal/$(am__dirstamp)
+std/internal/entropy.lo: std/internal/$(am__dirstamp)
 std/internal/math/$(am__dirstamp):
 	@$(MKDIR_P) std/internal/math
 	@: > std/internal/math/$(am__dirstamp)

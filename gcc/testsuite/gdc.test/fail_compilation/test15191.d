@@ -25,8 +25,8 @@ int* bar(return ref int s)
     return &foo(s);
 }
 
-ref int identity(ref return int x) {return x;}
-ref int* identityPtr(ref return int* x) {return x;}
+ref int identity(return ref int x) {return x;}
+ref int* identityPtr(return ref int* x) {return x;}
 
 int* addrOfRefEscape()
 {

@@ -41,7 +41,6 @@ public:
     const char *kind() const override;
     Visibility visible() override;
     Import *syntaxCopy(Dsymbol *s) override; // copy only syntax trees
-    Dsymbol *toAlias() override;
     bool overloadInsert(Dsymbol *s) override;
 
     void accept(Visitor *v) override { v->visit(this); }

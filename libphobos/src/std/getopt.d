@@ -542,6 +542,13 @@ private pure Option splitAndGet(string opt) @trusted nothrow
     assert(olongshort.optLong == "--foo");
 }
 
+private string optionValidatorErrorFormat(string msg, size_t idx)
+{
+    import std.conv : to;
+    return "getopt validator: " ~ msg ~ " (at position " ~ to!(string)(idx) ~
+        ")";
+}
+
 /*
 This function verifies that the variadic parameters passed in getOpt
 follow this pattern:
@@ -555,9 +562,6 @@ follow this pattern:
 */
 private template optionValidator(A...)
 {
-    import std.format : format;
-
-    enum fmt = "getopt validator: %s (at position %d)";
     enum isReceiver(T) = is(T == U*, U) || (is(T == function)) || (is(T == delegate));
     enum isOptionStr(T) = isSomeString!T || isSomeChar!T;
 
@@ -568,11 +572,11 @@ private template optionValidator(A...)
         {
             static if (isReceiver!(A[0]))
             {
-                msg = format(fmt, "first argument must be a string or a config", 0);
+                msg = optionValidatorErrorFormat("first argument must be a string or a config", 0);
             }
             else static if (!isOptionStr!(A[0]) && !is(A[0] == config))
             {
-                msg = format(fmt, "invalid argument type: " ~ A[0].stringof, 0);
+                msg = optionValidatorErrorFormat("invalid argument type: " ~ A[0].stringof, 0);
             }
             else
             {
@@ -581,25 +585,25 @@ private template optionValidator(A...)
                     static if (!isReceiver!(A[i]) && !isOptionStr!(A[i]) &&
                         !(is(A[i] == config)))
                     {
-                        msg = format(fmt, "invalid argument type: " ~ A[i].stringof, i);
+                        msg = optionValidatorErrorFormat("invalid argument type: " ~ A[i].stringof, i);
                         goto end;
                     }
                     else static if (isReceiver!(A[i]) && !isOptionStr!(A[i-1]))
                     {
-                        msg = format(fmt, "a receiver can not be preceeded by a receiver", i);
+                        msg = optionValidatorErrorFormat("a receiver can not be preceeded by a receiver", i);
                         goto end;
                     }
                     else static if (i > 1 && isOptionStr!(A[i]) && isOptionStr!(A[i-1])
                         && isSomeString!(A[i-2]))
                     {
-                        msg = format(fmt, "a string can not be preceeded by two strings", i);
+                        msg = optionValidatorErrorFormat("a string can not be preceeded by two strings", i);
                         goto end;
                     }
                 }
             }
             static if (!isReceiver!(A[$-1]) && !is(A[$-1] == config))
             {
-                msg = format(fmt, "last argument must be a receiver or a config",
+                msg = optionValidatorErrorFormat("last argument must be a receiver or a config",
                     A.length -1);
             }
         }
@@ -614,16 +618,16 @@ private auto getoptTo(R)(string option, string value,
         size_t idx, string file = __FILE__, size_t line = __LINE__)
 {
     import std.conv : to, ConvException;
-    import std.format : format;
     try
     {
         return to!R(value);
     }
     catch (ConvException e)
     {
-        throw new ConvException(format("Argument '%s' at position '%u' could "
-            ~ "not be converted to type '%s' as required by option '%s'.",
-            value, idx, R.stringof, option), e, file, line);
+        throw new ConvException("Argument '" ~ value ~ "' at position '" ~
+            to!(string)(idx) ~ "' could not be converted to type '" ~
+            R.stringof ~ "' as required by option '" ~ option ~ "'.", e, file,
+            line);
     }
 }
 

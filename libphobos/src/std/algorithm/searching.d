@@ -807,6 +807,11 @@ if (isInputRange!R && !isInfinite!R)
     - `needle` is the index into `needles` which matched.
     - Both are `-1` if there was no match.
 
+    Warning: Due to $(LINK2 https://tour.dlang.org/tour/en/gems/unicode,
+    auto-decoding), the return value of this function may $(I not) correspond
+    to the array index for strings.  To find the index of an element matching
+    the predicate in a string, use $(REF indexOf, std,string) instead.
+
     See_Also: $(REF indexOf, std,string)
   +/
 auto countUntil(alias pred = "a == b", R, Rs...)(R haystack, Rs needles)
@@ -1046,6 +1051,11 @@ if (isInputRange!R &&
     $(LREF startsWith)`!pred(haystack)` is `true`.
   - If `startsWith!pred(haystack)` is not `true` for any element in
     `haystack`, then `-1` is returned.
+
+    Warning: Due to $(LINK2 https://tour.dlang.org/tour/en/gems/unicode,
+    auto-decoding), the return value of this function may $(I not) correspond
+    to the array index for strings.  To find the index of an element matching
+    the predicate in a string, use $(REF indexOf, std,string) instead.
   +/
 ptrdiff_t countUntil(alias pred, R)(R haystack)
 if (isInputRange!R &&

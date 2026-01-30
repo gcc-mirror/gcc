@@ -300,8 +300,7 @@ FuncDeclaration buildOpAssign(StructDeclaration sd, Scope* sc)
             stc = (stc & ~STC.safe) | STC.trusted;
     }
 
-    auto fparams = new Parameters();
-    fparams.push(new Parameter(loc, STC.nodtor, sd.type, Id.p, null, null));
+    auto fparams = new Parameters(new Parameter(loc, STC.nodtor, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(fparams), sd.handleType(), LINK.d, stc | STC.ref_);
     auto fop = new FuncDeclaration(declLoc, Loc.initial, Id.opAssign, stc, tf);
     fop.storage_class |= STC.inference;
@@ -574,8 +573,8 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
                 scx.eSink = sc.eSink;
                 /* const bool opEquals(ref const S s);
                  */
-                auto parameters = new Parameters();
-                parameters.push(new Parameter(Loc.initial, STC.ref_ | STC.const_, sd.type, null, null, null));
+                auto parameters = new Parameters(new Parameter(Loc.initial, STC.ref_ | STC.const_, sd.type,
+                                                               null, null, null));
                 tfeqptr = new TypeFunction(ParameterList(parameters), Type.tbool, LINK.d);
                 tfeqptr.mod = MODFlags.const_;
                 tfeqptr = tfeqptr.typeSemantic(Loc.initial, &scx).isTypeFunction();
@@ -602,8 +601,7 @@ FuncDeclaration buildXopEquals(StructDeclaration sd, Scope* sc)
     }
     Loc declLoc; // loc is unnecessary so __xopEquals is never called directly
     Loc loc; // loc is unnecessary so errors are gagged
-    auto parameters = new Parameters();
-    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    auto parameters = new Parameters(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.tbool, LINK.d, STC.const_);
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopEquals;
@@ -649,8 +647,8 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
                 scx.eSink = sc.eSink;
                 /* const int opCmp(ref const S s);
                  */
-                auto parameters = new Parameters();
-                parameters.push(new Parameter(Loc.initial, STC.ref_ | STC.const_, sd.type, null, null, null));
+                auto parameters = new Parameters(new Parameter(Loc.initial, STC.ref_ | STC.const_, sd.type,
+                                                               null, null, null));
                 tfcmpptr = new TypeFunction(ParameterList(parameters), Type.tint32, LINK.d);
                 tfcmpptr.mod = MODFlags.const_;
                 tfcmpptr = tfcmpptr.typeSemantic(Loc.initial, &scx).isTypeFunction();
@@ -726,8 +724,7 @@ FuncDeclaration buildXopCmp(StructDeclaration sd, Scope* sc)
     }
     Loc declLoc; // loc is unnecessary so __xopCmp is never called directly
     Loc loc; // loc is unnecessary so errors are gagged
-    auto parameters = new Parameters();
-    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    auto parameters = new Parameters(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.tint32, LINK.d, STC.const_);
     tf = tf.addSTC(STC.const_).toTypeFunction();
     Identifier id = Id.xopCmp;
@@ -854,8 +851,7 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
     //printf("StructDeclaration::buildXtoHash() %s\n", sd.toPrettyChars());
     Loc declLoc; // loc is unnecessary so __xtoHash is never called directly
     Loc loc; // internal code should have no loc to prevent coverage
-    auto parameters = new Parameters();
-    parameters.push(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
+    auto parameters = new Parameters(new Parameter(loc, STC.ref_ | STC.const_, sd.type, Id.p, null, null));
     auto tf = new TypeFunction(ParameterList(parameters), Type.thash_t, LINK.d, STC.nothrow_ | STC.trusted);
     Identifier id = Id.xtoHash;
     auto fop = new FuncDeclaration(declLoc, Loc.initial, id, STC.static_, tf);
@@ -872,6 +868,11 @@ FuncDeclaration buildXtoHash(StructDeclaration sd, Scope* sc)
         // workaround https://issues.dlang.org/show_bug.cgi?id=17968
         "    static if(is(T* : const(.object.Object)*)) " ~
         "        h = h * 33 + typeid(const(.object.Object)).getHash(cast(const void*)&p.tupleof[i]);" ~
+        // and another workaround for bitfields https://github.com/dlang/dmd/issues/20473
+        "    else static if (!__traits(compiles, &p.tupleof[i])) {" ~
+        "        auto t = p.tupleof[i];" ~
+        "        h = h * 33 + typeid(T).getHash(cast(const void*)&t);" ~
+        "    } " ~
         "    else " ~
         "        h = h * 33 + typeid(T).getHash(cast(const void*)&p.tupleof[i]);" ~
         "return h;";
@@ -1561,10 +1562,9 @@ FuncDeclaration buildPostBlit(StructDeclaration sd, Scope* sc)
  */
 private CtorDeclaration generateCtorDeclaration(StructDeclaration sd, const STC paramStc, const STC funcStc, bool move)
 {
-    auto fparams = new Parameters();
     auto structType = sd.type;
     STC stc = move ? STC.none : STC.ref_;     // the only difference between copy or move
-    fparams.push(new Parameter(Loc.initial, paramStc | stc, structType, Id.p, null, null));
+    auto fparams = new Parameters(new Parameter(Loc.initial, paramStc | stc, structType, Id.p, null, null));
     ParameterList pList = ParameterList(fparams);
     auto tf = new TypeFunction(pList, structType, LINK.d, STC.ref_);
     auto ccd = new CtorDeclaration(sd.loc, Loc.initial, STC.ref_, tf);

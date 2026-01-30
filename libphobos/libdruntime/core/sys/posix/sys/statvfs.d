@@ -97,7 +97,7 @@ else version (CRuntime_Musl)
         fsfilcnt_t f_files;
         fsfilcnt_t f_ffree;
         fsfilcnt_t f_favail;
-        static if (true /+__BYTE_ORDER == __LITTLE_ENDIAN+/)
+        version (LittleEndian)
         {
             c_ulong f_fsid;
             byte[2*int.sizeof-c_long.sizeof] __padding;
@@ -133,8 +133,8 @@ else version (CRuntime_Musl)
     int statvfs (const char * file, statvfs_t* buf);
     int fstatvfs (int fildes, statvfs_t *buf);
 
-    alias statvfs statvfs64;
-    alias fstatvfs fstatvfs64;
+    alias statvfs64 = statvfs;
+    alias fstatvfs64 = fstatvfs;
 }
 else version (NetBSD)
 {

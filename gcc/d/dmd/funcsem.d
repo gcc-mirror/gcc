@@ -20,7 +20,6 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
 import dmd.blockexit;
-import dmd.gluelayer;
 import dmd.dcast;
 import dmd.dclass;
 import dmd.declaration;
@@ -103,7 +102,7 @@ public:
     override void visit(TryFinallyStatement s)
     {
         DtorExpStatement des;
-        if (fd.isNRVO() && s.finalbody && (des = s.finalbody.isDtorExpStatement()) !is null &&
+        if (fd.isNRVO && s.finalbody && (des = s.finalbody.isDtorExpStatement()) !is null &&
             fd.nrvo_var == des.var)
         {
             if (!(global.params.useExceptions && ClassDeclaration.throwable))
@@ -138,11 +137,10 @@ public:
                 handler = new CompoundStatement(Loc.initial, handler, ts);
             }
 
-            auto catches = new Catches();
             auto ctch = new Catch(Loc.initial, getThrowable(), id, handler);
             ctch.internalCatch = true;
             ctch.catchSemantic(sc); // Run semantic to resolve identifier '__o'
-            catches.push(ctch);
+            auto catches = new Catches(ctch);
 
             Statement s2 = new TryCatchStatement(Loc.initial, s._body, catches);
             fd.hasNoEH = false;
@@ -174,6 +172,33 @@ extern (C++) bool onlyOneMain(FuncDeclaration fd)
     }
     FuncDeclaration.lastMain = fd;
     return true;
+}
+
+/********************************************
+ * Returns:
+ *  true if there are no overloads of this function
+ */
+bool isUnique(const FuncDeclaration fd)
+{
+    bool result = false;
+    overloadApply(cast() fd, (Dsymbol s)
+    {
+        auto f = s.isFuncDeclaration();
+        auto td = s.isTemplateDeclaration();
+        if (!f && !td)
+            return 0;
+        if (result)
+        {
+            result = false;
+            return 1; // ambiguous, done
+        }
+        else
+        {
+            result = true;
+            return 0;
+        }
+    });
+    return result;
 }
 
 /**********************************
@@ -224,7 +249,7 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
     AggregateDeclaration ad = funcdecl.isThis();
     // Don't nest structs b/c of generated methods which should not access the outer scopes.
     // https://issues.dlang.org/show_bug.cgi?id=16627
-    if (ad && !funcdecl.isGenerated())
+    if (ad && !funcdecl.isGenerated)
     {
         funcdecl.storage_class |= ad.storage_class & (STC.TYPECTOR | STC.synchronized_);
         ad.makeNested();
@@ -409,7 +434,7 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
 
         sc.linkage = funcdecl._linkage;
 
-        if (!tf.isNaked() && !(funcdecl.isThis() || funcdecl.isNested()))
+        if (!tf.isNaked && !(funcdecl.isThis() || funcdecl.isNested()))
         {
             import core.bitop : popcnt;
             auto mods = MODtoChars(tf.mod);
@@ -1366,7 +1391,7 @@ bool functionSemantic3(FuncDeclaration fd)
             return false;
     }
 
-    return !fd.errors && !fd.hasSemantic3Errors();
+    return !fd.errors && !fd.hasSemantic3Errors;
 }
 
 // called from semantic3
@@ -1557,7 +1582,7 @@ int findVtblIndex(FuncDeclaration fd, Dsymbol[] vtbl)
                              fdv.toPrettyChars(), fdv.type.toTypeFunction().parameterList.parametersTypeToChars(),
                               fd.toPrettyChars(),  fd.type.toTypeFunction().parameterList.parametersTypeToChars(), fd.type.modToChars());
 
-                const char* where = fd.type.isNaked() ? "parameters" : "type";
+                const char* where = fd.type.isNaked ? "parameters" : "type";
                 deprecationSupplemental(fd.loc, "Either remove `override`, or adjust the `const` qualifiers of the "
                                         ~ "overriding function %s", where);
             }
@@ -2456,7 +2481,7 @@ int getLevelAndCheck(FuncDeclaration fd, Loc loc, Scope* sc, FuncDeclaration tar
  * Returns:
  *  true if can
  */
-bool canInferAttributes(FuncDeclaration fd, Scope* sc)
+private bool canInferAttributes(FuncDeclaration fd, Scope* sc)
 {
     if (!fd.fbody)
         return false;
@@ -2484,90 +2509,6 @@ bool canInferAttributes(FuncDeclaration fd, Scope* sc)
         if (ti is null || ti.isTemplateMixin() || ti.tempdecl.ident == fd.ident)
             return true;
     }
-    return false;
-}
-
-/*********************************************
- * In the current function 'sc.func', we are calling 'fd'.
- * 1. Check to see if the current function can call 'fd' , issue error if not.
- * 2. If the current function is not the parent of 'fd' , then add
- *    the current function to the list of siblings of 'fd' .
- * 3. If the current function is a literal, and it's accessing an uplevel scope,
- *    then mark it as a delegate.
- * Returns true if error occurs.
- */
-bool checkNestedFuncReference(FuncDeclaration fd, Scope* sc, Loc loc)
-{
-    //printf("FuncDeclaration::checkNestedFuncReference() %s\n", toPrettyChars());
-    if (auto fld = fd.isFuncLiteralDeclaration())
-    {
-        if (fld.tok == TOK.reserved)
-        {
-            fld.tok = TOK.function_;
-            fld.vthis = null;
-        }
-    }
-    if (!fd.parent || fd.parent == sc.parent)
-        return false;
-    if (fd.ident == Id.require || fd.ident == Id.ensure)
-        return false;
-    if (!fd.isThis() && !fd.isNested())
-        return false;
-    // The current function
-    FuncDeclaration fdthis = sc.parent.isFuncDeclaration();
-    if (!fdthis)
-        return false; // out of function scope
-    Dsymbol p = fd.toParentLocal();
-    Dsymbol p2 = fd.toParent2();
-    // Function literals from fdthis to p must be delegates
-    ensureStaticLinkTo(fdthis, p);
-    if (p != p2)
-        ensureStaticLinkTo(fdthis, p2);
-    if (!fd.isNested())
-        return false;
-
-    // The function that this function is in
-    bool checkEnclosing(FuncDeclaration fdv)
-    {
-        if (!fdv)
-            return false;
-        if (fdv == fdthis)
-            return false;
-        //printf("this = %s in [%s]\n", this.toChars(), this.loc.toChars());
-        //printf("fdv  = %s in [%s]\n", fdv .toChars(), fdv .loc.toChars());
-        //printf("fdthis = %s in [%s]\n", fdthis.toChars(), fdthis.loc.toChars());
-        // Add this function to the list of those which called us
-        if (fdthis != fd)
-        {
-            bool found = false;
-            for (size_t i = 0; i < fd.siblingCallers.length; ++i)
-            {
-                if (fd.siblingCallers[i] == fdthis)
-                    found = true;
-            }
-            if (!found)
-            {
-                //printf("\tadding sibling %s to %s\n", fdthis.toPrettyChars(), toPrettyChars());
-                if (!sc.intypeof && !sc.traitsCompiles)
-                {
-                    fd.siblingCallers.push(fdthis);
-                    fd.computedEscapingSiblings = false;
-                }
-            }
-        }
-        const lv = fdthis.getLevelAndCheck(loc, sc, fdv, fd);
-        if (lv == fd.LevelError)
-            return true; // error
-        if (lv == -1)
-            return false; // downlevel call
-        if (lv == 0)
-            return false; // same level call
-        return false; // Uplevel call
-    }
-    if (checkEnclosing(p.isFuncDeclaration()))
-        return true;
-    if (checkEnclosing(p == p2 ? null : p2.isFuncDeclaration()))
-        return true;
     return false;
 }
 
@@ -2664,8 +2605,7 @@ Statement mergeFrequire(FuncDeclaration fd, Statement sf, Expressions* params)
         Statement s2 = new ExpStatement(fd.loc, e);
         auto c = new Catch(fd.loc, getThrowable(), null, sf);
         c.internalCatch = true;
-        auto catches = new Catches();
-        catches.push(c);
+        auto catches = new Catches(c);
         sf = new TryCatchStatement(fd.loc, s2, catches);
     }
     return sf;
@@ -2728,8 +2668,7 @@ Statement mergeFrequireInclusivePreview(FuncDeclaration fd, Statement sf, Expres
         Statement s3 = new CompoundStatement(loc, s2, fail);
         auto c = new Catch(loc, getThrowable(), id, s3);
         c.internalCatch = true;
-        auto catches = new Catches();
-        catches.push(c);
+        auto catches = new Catches(c);
         sf = new TryCatchStatement(loc, sf, catches);
     }
     return sf;
@@ -3164,7 +3103,7 @@ extern (D) void checkMain(FuncDeclaration fd)
 extern (D) bool checkNRVO(FuncDeclaration fd)
 {
     //printf("checkNRVO*() %s\n", fd.ident.toChars());
-    if (!fd.isNRVO() || fd.returns is null)
+    if (!fd.isNRVO || fd.returns is null)
         return false;
 
     auto tf = fd.type.toTypeFunction();
@@ -3310,7 +3249,7 @@ extern (D) PURE isPureBypassingInference(FuncDeclaration fd)
  * Returns:
  *      true if reference to `tb` is isolated from reference to `ta`
  */
-bool traverseIndirections(Type ta, Type tb)
+private bool traverseIndirections(Type ta, Type tb)
 {
     //printf("traverseIndirections(%s, %s)\n", ta.toChars(), tb.toChars());
 
@@ -3401,7 +3340,7 @@ bool traverseIndirections(Type ta, Type tb)
  *    which could have come from the function's parameters, mutable
  *    globals, or uplevel functions.
  */
-bool isTypeIsolatedIndirect(FuncDeclaration fd, Type t)
+private bool isTypeIsolatedIndirect(FuncDeclaration fd, Type t)
 {
     //printf("isTypeIsolatedIndirect(t: %s)\n", t.toChars());
     assert(t);
@@ -3841,4 +3780,35 @@ extern (D) bool checkNestedReference(VarDeclaration vd, Scope* sc, Loc loc)
     }
 
     return false;
+}
+
+/**********************
+ * Check to see if array bounds checking code has to be generated
+ *
+ * Params:
+ *  fd = function for which code is to be generated
+ * Returns:
+ *  true if do array bounds checking for the given function
+ */
+bool arrayBoundsCheck(FuncDeclaration fd)
+{
+    final switch (global.params.useArrayBounds)
+    {
+    case CHECKENABLE.off:
+        return false;
+    case CHECKENABLE.on:
+        return true;
+    case CHECKENABLE.safeonly:
+        {
+            if (fd)
+            {
+                Type t = fd.type;
+                if (t.ty == Tfunction && (cast(TypeFunction)t).trust == TRUST.safe)
+                    return true;
+            }
+            return false;
+        }
+    case CHECKENABLE._default:
+        assert(0);
+    }
 }

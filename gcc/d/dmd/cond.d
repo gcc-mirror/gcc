@@ -29,7 +29,6 @@ import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
 import dmd.optimize;
-import dmd.typesem;
 import dmd.common.outbuffer;
 import dmd.rootobject;
 import dmd.root.string;
@@ -211,10 +210,9 @@ extern (C++) final class StaticForeach : RootObject
         auto sid = Identifier.generateId("Tuple");
         auto sdecl = new StructDeclaration(loc, sid, false);
         sdecl.storage_class |= STC.static_;
-        sdecl.members = new Dsymbols();
         auto fid = Identifier.idPool(tupleFieldName);
         auto ty = new TypeTypeof(loc, new TupleExp(loc, e));
-        sdecl.members.push(new VarDeclaration(loc, ty, fid, null, STC.none));
+        sdecl.members = new Dsymbols(new VarDeclaration(loc, ty, fid, null, STC.none));
         auto r = cast(TypeStruct)sdecl.type;
         if (global.params.useTypeInfo && Type.dtypeinfo)
             r.vtinfo = TypeInfoStructDeclaration.create(r); // prevent typeinfo from going to object file

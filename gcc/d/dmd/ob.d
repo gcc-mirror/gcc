@@ -26,13 +26,12 @@ import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
+import dmd.dsymbolsem : toAlias;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.escape;
 import dmd.expression;
-
 import dmd.func;
-import dmd.globals;
 import dmd.hdrgen;
 import dmd.identifier;
 import dmd.init;
@@ -78,6 +77,8 @@ void oblive(FuncDeclaration funcdecl)
 
     checkObErrors(obstate);
 }
+
+private:
 
 alias ObNodes = Array!(ObNode*);
 

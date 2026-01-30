@@ -3881,9 +3881,11 @@ pure @safe nothrow @nogc unittest
 }
 
 /++
-    Convenience function which calls
+    `drop` is a convenience function which calls
     $(REF popFrontN, std, range, primitives)`(range, n)` and returns `range`.
-    `drop` makes it easier to pop elements from a range
+    Unlike `popFrontN`, the range argument is passed by copy, not by `ref`.
+
+    `drop` makes it easier to pop elements from a range rvalue
     and then pass it to another function within a single expression,
     whereas `popFrontN` would require multiple statements.
 
@@ -3916,7 +3918,10 @@ if (isInputRange!R)
 {
     import std.algorithm.comparison : equal;
 
-    assert([0, 2, 1, 5, 0, 3].drop(3) == [5, 0, 3]);
+    auto a = [0, 2, 1, 5, 0, 3];
+    assert(a.drop(3) == [5, 0, 3]);
+    assert(a.length == 6); // original unchanged
+
     assert("hello world".drop(6) == "world");
     assert("hello world".drop(50).empty);
     assert("hello world".take(6).drop(3).equal("lo "));
@@ -3993,8 +3998,8 @@ if (isBidirectionalRange!R)
         `range` with `n` elements dropped
 
     See_Also:
-        $(REF popFrontExcatly, std, range, primitives),
-        $(REF popBackExcatly, std, range, primitives)
+        $(REF popFrontExactly, std, range, primitives),
+        $(REF popBackExactly, std, range, primitives)
 +/
 R dropExactly(R)(R range, size_t n)
 if (isInputRange!R)
@@ -4030,9 +4035,11 @@ if (isBidirectionalRange!R)
 }
 
 /++
-    Convenience function which calls
-    `range.popFront()` and returns `range`. `dropOne`
-    makes it easier to pop an element from a range
+    `dropOne` is a convenience function which calls
+    `range.popFront()` and returns `range`.
+    Unlike `popFront`, the range argument is passed by copy, not by `ref`.
+
+    `dropOne` makes it easier to pop an element from a range rvalue
     and then pass it to another function within a single expression,
     whereas `popFront` would require multiple statements.
 

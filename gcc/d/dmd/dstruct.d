@@ -23,13 +23,9 @@ import dmd.declaration;
 import dmd.dmodule;
 import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : search, setFieldOffset;
 import dmd.dtemplate;
-import dmd.errors;
 import dmd.expression;
 import dmd.func;
-import dmd.funcsem;
-import dmd.globals;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
@@ -37,34 +33,8 @@ import dmd.mtype;
 import dmd.opover;
 import dmd.target;
 import dmd.tokens;
-import dmd.typesem : isZeroInit, merge, size, hasPointers;
 import dmd.typinf;
 import dmd.visitor;
-
-/***************************************
- * Search sd for a member function of the form:
- *   `extern (D) string toString();`
- * Params:
- *   sd = struct declaration to search
- * Returns:
- *   FuncDeclaration of `toString()` if found, `null` if not
- */
-FuncDeclaration search_toString(StructDeclaration sd)
-{
-    Dsymbol s = search_function(sd, Id.tostring);
-    FuncDeclaration fd = s ? s.isFuncDeclaration() : null;
-    if (fd)
-    {
-        __gshared TypeFunction tftostring;
-        if (!tftostring)
-        {
-            tftostring = new TypeFunction(ParameterList(), Type.tstring, LINK.d);
-            tftostring = tftostring.merge().toTypeFunction();
-        }
-        fd = fd.overloadExactMatch(tftostring);
-    }
-    return fd;
-}
 
 enum StructFlags : int
 {
@@ -151,100 +121,6 @@ extern (C++) class StructDeclaration : AggregateDeclaration
         return "struct";
     }
 
-    /// Compute cached type properties for `TypeStruct`
-    extern(D) final void determineTypeProperties()
-    {
-        if (computedTypeProperties)
-            return;
-        foreach (vd; fields)
-        {
-            import dmd.dsymbolsem : hasPointers;
-            if (vd.storage_class & STC.ref_ || vd.hasPointers())
-            {
-                hasPointerField = true;
-                hasUnsafeBitpatterns = true;
-            }
-
-            if (vd._init && vd._init.isVoidInitializer() && vd.hasPointers())
-                hasVoidInitPointers = true;
-
-            if (vd.storage_class & STC.system || vd.type.hasUnsafeBitpatterns())
-                hasUnsafeBitpatterns = true;
-
-            if (!vd._init && vd.type.hasVoidInitPointers())
-                hasVoidInitPointers = true;
-
-            if (vd.type.hasInvariant())
-                hasFieldWithInvariant = true;
-        }
-        computedTypeProperties = true;
-    }
-
-    /***************************************
-     * Determine if struct is POD (Plain Old Data).
-     *
-     * POD is defined as:
-     *      $(OL
-     *      $(LI not nested)
-     *      $(LI no postblits, destructors, or assignment operators)
-     *      $(LI no `ref` fields or fields that are themselves non-POD)
-     *      )
-     * The idea being these are compatible with C structs.
-     *
-     * Returns:
-     *     true if struct is POD
-     */
-    final bool isPOD()
-    {
-        // If we've already determined whether this struct is POD.
-        if (ispod != ThreeState.none)
-            return (ispod == ThreeState.yes);
-
-        import dmd.clone;
-
-        bool hasCpCtorLocal;
-        bool hasMoveCtorLocal;
-        bool needCopyCtor;
-        bool needMoveCtor;
-        needCopyOrMoveCtor(this, hasCpCtorLocal, hasMoveCtorLocal, needCopyCtor, needMoveCtor);
-
-        if (enclosing                      || // is nested
-            search(this, loc, Id.postblit) || // has postblit
-            search(this, loc, Id.dtor)     || // has destructor
-            /* This is commented out because otherwise buildkite vibe.d:
-               `canCAS!Task` fails to compile
-             */
-            //hasMoveCtorLocal               || // has move constructor
-            hasCpCtorLocal)                   // has copy constructor
-        {
-            ispod = ThreeState.no;
-            return false;
-        }
-
-        // Recursively check all fields are POD.
-        for (size_t i = 0; i < fields.length; i++)
-        {
-            VarDeclaration v = fields[i];
-            if (v.storage_class & STC.ref_)
-            {
-                ispod = ThreeState.no;
-                return false;
-            }
-
-            if (auto ts = v.type.baseElemOf().isTypeStruct())
-            {
-                if (!ts.sym.isPOD())
-                {
-                    ispod = ThreeState.no;
-                    return false;
-                }
-            }
-        }
-
-        ispod = ThreeState.yes;
-        return true;
-    }
-
     /***************************************
      * Determine if struct has copy construction (copy constructor or postblit)
      * Returns:
@@ -268,54 +144,6 @@ extern (C++) class StructDeclaration : AggregateDeclaration
     final Type argType(uint index)
     {
         return index < numArgTypes() ? (*argTypes.arguments)[index].type : null;
-    }
-
-
-    /***************************************
-     * Verifies whether the struct declaration has a
-     * constructor that is not a copy constructor.
-     * Optionally, it can check whether the struct
-     * declaration has a regular constructor, that
-     * is not disabled.
-     *
-     * Params:
-     *      ignoreDisabled = true to ignore disabled constructors
-     * Returns:
-     *      true, if the struct has a regular (optionally,
-     *      not disabled) constructor, false otherwise.
-     */
-    final bool hasRegularCtor(bool ignoreDisabled = false)
-    {
-        if (!ctor)
-            return false;
-
-        bool result;
-        overloadApply(ctor, (Dsymbol s)
-        {
-            if (auto td = s.isTemplateDeclaration())
-            {
-                if (ignoreDisabled && td.onemember)
-                {
-                    if (auto ctorDecl = td.onemember.isCtorDeclaration())
-                    {
-                        if (ctorDecl.storage_class & STC.disable)
-                            return 0;
-                    }
-                }
-                result = true;
-                return 1;
-            }
-            if (auto ctorDecl = s.isCtorDeclaration())
-            {
-                if (!ctorDecl.isCpCtor && (!ignoreDisabled || !(ctorDecl.storage_class & STC.disable)))
-                {
-                    result = true;
-                    return 1;
-                }
-            }
-            return 0;
-        });
-        return result;
     }
 }
 

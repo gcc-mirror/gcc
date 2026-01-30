@@ -76,3 +76,41 @@ void test13899()
     {
     }
 }
+
+import core.checkedint;
+
+// check inlining of checkedint with -wi
+T testCheckedSigned(T)(T x, T y)
+{
+    bool overflow;
+    T z = adds(x, y, overflow);
+    z = subs(z, x, overflow);
+    z = muls(z, x, overflow);
+    z = negs(z, overflow);
+    return z;
+}
+
+T testCheckedUnsigned(T)(T x, T y)
+{
+    bool overflow;
+    T z = addu(x, y, overflow);
+    z = subu(z, x, overflow);
+    z = mulu(z, x, overflow);
+    return z;
+}
+
+void testCkeckedInt()
+{
+    assert(testCheckedSigned!int(3,4) == -12);
+    assert(testCheckedSigned!long(3,4) == -12);
+    static if (is(cent))
+        assert(testCheckedSigned!cent(3,4) == -12);
+
+    bool overflow;
+    assert(mulu(cast(long)3, cast(uint)4, overflow) == 12);
+
+    assert(testCheckedUnsigned!uint(3,4) == 12);
+    assert(testCheckedUnsigned!ulong(3,4) == 12);
+    static if (is(ucent))
+        assert(testCheckedUnsigned!ucent(3,4) == 12);
+}

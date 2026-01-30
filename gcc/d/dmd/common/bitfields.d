@@ -10,18 +10,25 @@
  */
 module dmd.common.bitfields;
 
+//version = Has_Bitfields; // does not work (yet) because hashOf doesn't work on bitfields
+version(Has_Bitfields)
+    version = Debugger_friendly; // without Has_Bitfields, this uses more space by using S
+
 /**
  * Generate code for bit fields inside a struct/class body
  * Params:
  *   S = type of a struct with only boolean fields, which should become bit fields
  *   T = type of bit fields variable, must have enough bits to store all booleans
+ *   field = if provided, assume it is declared and initialized elsewhere
+ *   bitOff = start using bits at the given offset
  * Returns: D code with a bit fields variable and getter / setter functions
  */
-extern (D) string generateBitFields(S, T)()
+extern (D) string generateBitFields(S, T, string field = "", int bitOff = 0, int ID = __LINE__)()
 if (__traits(isUnsigned, T))
 {
     import core.bitop: bsr;
-
+    // if _fieldName provided, assume it declared and initialized elsewhere
+    enum fieldName = field.length == 0 ? "bitFields" : field;
     string result = "extern (C++) pure nothrow @nogc @safe final {";
 
     struct BitInfo
@@ -35,7 +42,7 @@ if (__traits(isUnsigned, T))
     // Iterate over members to compute bit offset and bit size for each of them
     enum BitInfo bitInfo = () {
         BitInfo result;
-        int bitOffset = 0;
+        int bitOffset = bitOff;
         foreach (size_t i, mem; __traits(allMembers, S))
         {
             alias memType = typeof(__traits(getMember, S, mem));
@@ -55,22 +62,60 @@ if (__traits(isUnsigned, T))
     static assert(bitInfo.totalSize <= T.sizeof * 8,
         "sum of bit field size "~toString!(bitInfo.totalSize)~" exceeds storage type `"~T.stringof~"`");
 
+    version(Debugger_friendly)
+    {
+        // unique name needed to allow same name as in base class using `alias`, but without overloading
+        string bitfieldsName = fieldName ~ toString!(ID);
+        string bitfieldsRead = T.stringof~" "~bitfieldsName~"() const pure { return 0";
+        string bitfieldsWrite = "void "~bitfieldsName~"("~T.stringof~" v) {\n";
+    }
+
     foreach (size_t i, mem; __traits(allMembers, S))
     {
         enum typeName = typeof(__traits(getMember, S, mem)).stringof;
         enum shift = toString!(bitInfo.offset[i]);
         enum sizeMask = toString!((1 << bitInfo.size[i]) - 1); // 0x01 for bool, 0xFF for ubyte etc.
-        result ~= "
-        "~typeName~" "~mem~"() const scope { return cast("~typeName~") ((bitFields >>> "~shift~") & "~sizeMask~"); }
-        "~typeName~" "~mem~"("~typeName~" v) scope
+        version(Debugger_friendly)
         {
-            bitFields &= ~("~sizeMask~" << "~shift~");
-            bitFields |= v << "~shift~";
-            return v;
-        }";
+            string memacc = mem;
+            bitfieldsRead ~= "\n| (cast("~T.stringof~")("~memacc~" & "~sizeMask~") << "~shift~")";
+            bitfieldsWrite ~= memacc~" = cast("~typeName~")((v >> "~shift~") & "~sizeMask~");\n";
+            result ~= typeName~" "~mem;
+            version(Has_Bitfields)
+                result ~= " : "~toString!(bitInfo.size[i]);
+            enum meminit = __traits(getMember, S.init, mem);
+            result ~= " = "~meminit.stringof~";\n";
+        }
+        else
+        {
+            result ~= "
+                "~typeName~" "~mem~"() const scope { return cast("~typeName~") (("~fieldName~" >>> "~shift~") & "~sizeMask~"); }
+            "~typeName~" "~mem~"("~typeName~" v) scope
+            {
+                "~fieldName~" &= ~("~sizeMask~" << "~shift~");
+                "~fieldName~" |= v << "~shift~";
+                return v;
+            }";
+        }
     }
-    enum TP initVal = bitInfo.initialValue;
-    return result ~ "\n}\n private "~T.stringof~" bitFields = " ~ toString!(initVal) ~ ";\n";
+    version(Debugger_friendly)
+    {
+        bitfieldsRead ~= ";\n}\n";
+        bitfieldsWrite ~= "}\n";
+        if (field.length == 0)
+            result ~= "alias "~fieldName~" = "~bitfieldsName~";\n";
+        result ~= bitfieldsRead ~ bitfieldsWrite;
+        result ~= "\n}\n";
+        return result;
+    }
+    else
+    {
+        result ~= "\n}\n";
+        enum TP initVal = bitInfo.initialValue;
+        if (field.length == 0)
+            result ~= " private "~T.stringof~" "~fieldName~" = " ~ toString!(initVal) ~ ";\n";
+        return result;
+    }
 }
 
 ///

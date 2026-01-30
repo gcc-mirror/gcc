@@ -25,6 +25,7 @@ import dmd.dsymbol;
 import dmd.dsymbolsem;
 import dmd.dtemplate;
 import dmd.expression;
+import dmd.expressionsem : getConstInitializer;
 import dmd.func;
 import dmd.hdrgen;
 import dmd.mangle;

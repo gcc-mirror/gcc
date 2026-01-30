@@ -14,41 +14,7 @@ module core.internal.array.equality;
 // * dynamic arrays,
 // * (most) arrays of different (unqualified) element types, and
 // * arrays of structs with custom opEquals.
-
- // The scalar-only overload takes advantage of known properties of scalars to
- // reduce template instantiation. This is expected to be the most common case.
-bool __equals(T1, T2)(scope const T1[] lhs, scope const T2[] rhs)
-@nogc nothrow pure @trusted
-if (__traits(isScalar, T1) && __traits(isScalar, T2))
-{
-    const length = lhs.length;
-
-    static if (T1.sizeof == T2.sizeof
-        // Signedness needs to match for types that promote to int.
-        // (Actually it would be okay to memcmp bool[] and byte[] but that is
-        // probably too uncommon to be worth checking for.)
-        && (T1.sizeof >= 4 || __traits(isUnsigned, T1) == __traits(isUnsigned, T2))
-        && !__traits(isFloating, T1) && !__traits(isFloating, T2))
-    {
-        if (__ctfe)
-            return length == rhs.length && isEqual(lhs.ptr, rhs.ptr, length);
-        else
-        {
-            // This would improperly allow equality of integers and pointers
-            // but the CTFE branch will stop this function from compiling then.
-            import core.stdc.string : memcmp;
-            return length == rhs.length &&
-                (!length || 0 == memcmp(cast(const void*) lhs.ptr, cast(const void*) rhs.ptr, length * T1.sizeof));
-        }
-    }
-    else
-    {
-        return length == rhs.length && isEqual(lhs.ptr, rhs.ptr, length);
-    }
-}
-
-bool __equals(T1, T2)(scope T1[] lhs, scope T2[] rhs)
-if (!__traits(isScalar, T1) || !__traits(isScalar, T2))
+bool __equals(T1, T2)(scope T1[] lhs, scope T2[] rhs) @trusted
 {
     if (lhs.length != rhs.length)
         return false;
@@ -56,37 +22,9 @@ if (!__traits(isScalar, T1) || !__traits(isScalar, T2))
     if (lhs.length == 0)
         return true;
 
-    static if (useMemcmp!(T1, T2))
-    {
-        if (!__ctfe)
-        {
-            static bool trustedMemcmp(scope T1[] lhs, scope T2[] rhs) @trusted @nogc nothrow pure
-            {
-                pragma(inline, true);
-                import core.stdc.string : memcmp;
-                return memcmp(cast(void*) lhs.ptr, cast(void*) rhs.ptr, lhs.length * T1.sizeof) == 0;
-            }
-            return trustedMemcmp(lhs, rhs);
-        }
-        else
-        {
-            foreach (const i; 0 .. lhs.length)
-            {
-                if (at(lhs, i) != at(rhs, i))
-                    return false;
-            }
-            return true;
-        }
-    }
-    else
-    {
-        foreach (const i; 0 .. lhs.length)
-        {
-            if (at(lhs, i) != at(rhs, i))
-                return false;
-        }
-        return true;
-    }
+    alias PureType = bool function(scope T1[], scope T2[], size_t) @safe pure nothrow @nogc;
+
+    return (cast(PureType)&isEqual!(T1,T2))(lhs, rhs, lhs.length);
 }
 
 /******************************
@@ -94,11 +32,26 @@ if (!__traits(isScalar, T1) || !__traits(isScalar, T2))
  * Outlined to enable __equals() to be inlined, as dmd cannot inline loops.
  */
 private
-bool isEqual(T1, T2)(scope const T1* t1, scope const T2* t2, size_t length)
+bool isEqual(T1, T2)(scope T1[] lhs, scope T2[] rhs, size_t length)
 {
+    // Returns a reference to an array element, eliding bounds check and
+    // casting void to ubyte.
+    pragma(inline, true)
+    static ref at(T)(scope T[] r, size_t i) @trusted
+        // exclude opaque structs due to https://issues.dlang.org/show_bug.cgi?id=20959
+        if (!(is(T == struct) && !is(typeof(T.sizeof))))
+    {
+        static if (is(T == void))
+            return (cast(ubyte[]) r)[i];
+        else
+            return r[i];
+    }
+
     foreach (const i; 0 .. length)
-        if (t1[i] != t2[i])
+    {
+        if (at(lhs, i) != at(rhs, i))
             return false;
+    }
     return true;
 }
 
@@ -173,69 +126,6 @@ bool isEqual(T1, T2)(scope const T1* t1, scope const T2* t2, size_t length)
     assert(a1 != a2);
 }
 
-
-private:
-
-// - Recursively folds static array types to their element type,
-// - maps void to ubyte, and
-// - pointers to size_t.
-template BaseType(T)
-{
-    static if (__traits(isStaticArray, T))
-        alias BaseType = BaseType!(typeof(T.init[0]));
-    else static if (is(immutable T == immutable void))
-        alias BaseType = ubyte;
-    else static if (is(T == E*, E))
-        alias BaseType = size_t;
-    else
-        alias BaseType = T;
-}
-
-// Use memcmp if the element sizes match and both base element types are integral.
-// Due to int promotion, disallow small integers of diverging signed-ness though.
-template useMemcmp(T1, T2)
-{
-    static if (T1.sizeof != T2.sizeof)
-        enum useMemcmp = false;
-    else
-    {
-        alias B1 = BaseType!T1;
-        alias B2 = BaseType!T2;
-        enum useMemcmp = __traits(isIntegral, B1) && __traits(isIntegral, B2)
-           && !( (B1.sizeof < 4 || B2.sizeof < 4) && __traits(isUnsigned, B1) != __traits(isUnsigned, B2) );
-    }
-}
-
-unittest
-{
-    enum E { foo, bar }
-
-    static assert(useMemcmp!(byte, byte));
-    static assert(useMemcmp!(ubyte, ubyte));
-    static assert(useMemcmp!(void, const void));
-    static assert(useMemcmp!(void, immutable bool));
-    static assert(useMemcmp!(void, inout char));
-    static assert(useMemcmp!(void, shared ubyte));
-    static assert(!useMemcmp!(void, byte));       // differing signed-ness
-    static assert(!useMemcmp!(char[8], byte[8])); // ditto
-
-    static assert(useMemcmp!(short, short));
-    static assert(useMemcmp!(wchar, ushort));
-    static assert(!useMemcmp!(wchar, short)); // differing signed-ness
-
-    static assert(useMemcmp!(int, uint)); // no promotion, ignoring signed-ness
-    static assert(useMemcmp!(dchar, E));
-
-    static assert(useMemcmp!(immutable void*, size_t));
-    static assert(useMemcmp!(double*, ptrdiff_t));
-    static assert(useMemcmp!(long[2][3], const(ulong)[2][3]));
-
-    static assert(!useMemcmp!(float, float));
-    static assert(!useMemcmp!(double[2], double[2]));
-    static assert(!useMemcmp!(Object, Object));
-    static assert(!useMemcmp!(int[], int[]));
-}
-
 // https://issues.dlang.org/show_bug.cgi?id=21094
 unittest
 {
@@ -261,17 +151,4 @@ unittest
     {
         return lhs == rhs;
     }
-}
-
-// Returns a reference to an array element, eliding bounds check and
-// casting void to ubyte.
-pragma(inline, true)
-ref at(T)(T[] r, size_t i) @trusted
-    // exclude opaque structs due to https://issues.dlang.org/show_bug.cgi?id=20959
-    if (!(is(T == struct) && !is(typeof(T.sizeof))))
-{
-    static if (is(immutable T == immutable void))
-        return (cast(ubyte*) r.ptr)[i];
-    else
-        return r.ptr[i];
 }

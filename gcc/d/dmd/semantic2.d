@@ -813,10 +813,11 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
  */
 void lowerStaticAAs(VarDeclaration vd, Scope* sc)
 {
-    if (vd.storage_class & STC.manifest)
-        return;
     if (auto ei = vd._init.isExpInitializer())
-        lowerStaticAAs(ei.exp, sc);
+    {
+        scope v = new StaticAAVisitor(sc, vd.storage_class);
+        ei.exp.accept(v);
+    }
 }
 
 /**
@@ -828,7 +829,7 @@ void lowerStaticAAs(VarDeclaration vd, Scope* sc)
  */
 void lowerStaticAAs(Expression e, Scope* sc)
 {
-    scope v = new StaticAAVisitor(sc);
+    scope v = new StaticAAVisitor(sc, STC.none);
     e.accept(v);
 }
 
@@ -837,33 +838,26 @@ private extern(C++) final class StaticAAVisitor : SemanticTimeTransitiveVisitor
 {
     alias visit = SemanticTimeTransitiveVisitor.visit;
     Scope* sc;
+    STC storage_class;
 
-    this(Scope* sc) scope @safe
+    this(Scope* sc, STC storage_class) scope @safe
     {
         this.sc = sc;
+        this.storage_class = storage_class;
     }
 
     override void visit(AssocArrayLiteralExp aaExp)
     {
-        if (!verifyHookExist(aaExp.loc, *sc, Id._aaAsStruct, "initializing static associative arrays", Id.object))
-            return;
-
-        Expression hookFunc = new IdentifierExp(aaExp.loc, Id.empty);
-        hookFunc = new DotIdExp(aaExp.loc, hookFunc, Id.object);
-        hookFunc = new DotIdExp(aaExp.loc, hookFunc, Id._aaAsStruct);
-        auto arguments = new Expressions();
-        arguments.push(aaExp);
-        Expression loweredExp = new CallExp(aaExp.loc, hookFunc, arguments);
-
-        sc = sc.startCTFE();
-        loweredExp = loweredExp.expressionSemantic(sc);
-        loweredExp = resolveProperties(sc, loweredExp);
-        sc = sc.endCTFE();
-        loweredExp = loweredExp.ctfeInterpret();
-
-        aaExp.lowering = loweredExp;
-
-        semanticTypeInfo(sc, loweredExp.type);
+        if (!aaExp.lowering)
+            expressionSemantic(aaExp, sc);
+        assert(aaExp.lowering);
+        if (!(storage_class & STC.manifest)) // manifest constants create runtime copies
+            if (!aaExp.loweringCtfe)
+            {
+                aaExp.loweringCtfe = aaExp.lowering.ctfeInterpret();
+                aaExp.loweringCtfe.accept(this); // lower AAs in keys and values
+            }
+        semanticTypeInfo(sc, aaExp.lowering.type);
     }
 
     // https://issues.dlang.org/show_bug.cgi?id=24602

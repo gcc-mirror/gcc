@@ -137,10 +137,11 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/odbc/odbc32.d etc/c/odbc/odbc64.d \
 	std/format/internal/write.d std/format/package.d std/format/read.d \
 	std/format/spec.d std/format/write.d std/functional.d std/getopt.d \
 	std/int128.d std/internal/attributes.d std/internal/cstring.d \
-	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
-	std/internal/math/errorfunction.d std/internal/math/gammafunction.d \
-	std/internal/memory.d std/internal/scopebuffer.d \
-	std/internal/test/dummyrange.d std/internal/test/range.d \
+	std/internal/entropy.d std/internal/math/biguintcore.d \
+	std/internal/math/biguintnoasm.d std/internal/math/errorfunction.d \
+	std/internal/math/gammafunction.d std/internal/memory.d \
+	std/internal/scopebuffer.d std/internal/test/dummyrange.d \
+	std/internal/test/range.d \
 	std/internal/test/sumtype_example_overloads.d std/internal/test/uda.d \
 	std/internal/unicode_comp.d std/internal/unicode_decomp.d \
 	std/internal/unicode_grapheme.d std/internal/unicode_norm.d \

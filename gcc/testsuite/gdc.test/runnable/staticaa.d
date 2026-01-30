@@ -206,6 +206,18 @@ void testClassLiteral()
 
 /////////////////////////////////////////////
 
+// https://github.com/dlang/dmd/issues/21690
+void testMultiDim()
+{
+    // int[int][int] aa1 = [ 1: [2: 3] ]; // Error: invalid value `[2:3]` in initializer (see #17804)
+    int[int][int] aa2 = ([ 1: [2: 3] ]); // workaround
+    auto aa3 = [ 1: [2: 3] ]; // works, too
+    static auto aa4 = [ 1: [2: 3] ]; // Error: internal compiler error: failed to detect static initialization of associative array
+    assert(aa2 == aa3);
+    assert(aa3 == aa4);
+}
+
+/////////////////////////////////////////////
 
 void main()
 {
@@ -219,4 +231,5 @@ void main()
     testEnumInit();
     testStaticArray();
     testClassLiteral();
+    testMultiDim();
 }

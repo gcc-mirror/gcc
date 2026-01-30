@@ -132,6 +132,7 @@ private template canBitwiseHash(T)
 size_t hashOf(T)(auto ref T val, size_t seed = 0)
 if (is(T == enum) && !__traits(isScalar, T))
 {
+    pragma(inline, true);
     static if (is(T EType == enum)) {} //for EType
     return hashOf(cast(EType) val, seed);
 }
@@ -140,6 +141,7 @@ if (is(T == enum) && !__traits(isScalar, T))
 size_t hashOf(T)(scope const auto ref T val, size_t seed = 0)
 if (!is(T == enum) && __traits(isStaticArray, T) && canBitwiseHash!T)
 {
+    pragma(inline, true);
     import core.internal.convert : toUbyte;
     // FIXME:
     // We would like to to do this:
@@ -173,6 +175,7 @@ if (!is(T == enum) && __traits(isStaticArray, T) && canBitwiseHash!T)
 size_t hashOf(T)(auto ref T val, size_t seed = 0)
 if (!is(T == enum) && __traits(isStaticArray, T) && !canBitwiseHash!T)
 {
+    pragma(inline, true);
     // FIXME:
     // We would like to to do this:
     //
@@ -207,10 +210,12 @@ if (is(T == S[], S) && (__traits(isScalar, S) || canBitwiseHash!S)) // excludes 
     else static if (is(typeof(toUbyte(val)) == const(ubyte)[]))
     //ubyteble array (arithmetic types and structs without toHash) CTFE ready for arithmetic types and structs without reference fields
     {
+        pragma(inline, true);
         return bytesHashAlignedBy!ElementType(toUbyte(val), seed);
     }
     else //Other types. CTFE unsupported
     {
+        pragma(inline, true);
         assert(!__ctfe, "unable to compute hash of "~T.stringof~" at compile time");
         return bytesHashAlignedBy!ElementType((cast(const(ubyte)*) val.ptr)[0 .. ElementType.sizeof*val.length], seed);
     }
@@ -258,6 +263,7 @@ size_t hashOf(T)(scope const T val) if (__traits(isScalar, T) && !is(T == __vect
     else static if (is(T EType == enum) && is(typeof(val[0])))
     {
         // Enum type whose base type is vector.
+        pragma(inline, true);
         return hashOf(cast(EType) val);
     }
     else static if (__traits(isIntegral, T))
@@ -293,6 +299,7 @@ size_t hashOf(T)(scope const T val, size_t seed) if (__traits(isScalar, T) && !i
 {
     static if (is(T V : V*))
     {
+        pragma(inline, true);
         if (__ctfe)
         {
             if (val is null) return hashOf(size_t(0), seed);
@@ -303,6 +310,7 @@ size_t hashOf(T)(scope const T val, size_t seed) if (__traits(isScalar, T) && !i
     else static if (is(T EType == enum) && is(typeof(val[0])))
     {
         // Enum type whose base type is vector.
+        pragma(inline, true);
         return hashOf(cast(EType) val, seed);
     }
     else static if (__traits(isIntegral, val) && T.sizeof <= size_t.sizeof)
@@ -379,6 +387,7 @@ if (is(T == __vector)) // excludes enum types
     }
     else
     {
+        pragma(inline, true);
         import core.internal.convert : toUbyte;
         return bytesHashAlignedBy!T(toUbyte(val), seed);
     }
@@ -388,6 +397,7 @@ if (is(T == __vector)) // excludes enum types
 @trusted @nogc nothrow pure
 size_t hashOf(T)(scope const T val) if (!is(T == enum) && is(T : typeof(null)))
 {
+    pragma(inline, true);
     return 0;
 }
 
@@ -395,6 +405,7 @@ size_t hashOf(T)(scope const T val) if (!is(T == enum) && is(T : typeof(null)))
 @trusted @nogc nothrow pure
 size_t hashOf(T)(scope const T val, size_t seed) if (!is(T == enum) && is(T : typeof(null)))
 {
+    pragma(inline, true);
     return hashOf(size_t(0), seed);
 }
 
@@ -572,6 +583,7 @@ if (!is(T == enum) && (is(T == struct) || is(T == union))
 @trusted @nogc nothrow pure
 size_t hashOf(T)(scope const T val, size_t seed = 0) if (!is(T == enum) && is(T == delegate))
 {
+    pragma(inline, true);
     if (__ctfe)
     {
         if (val is null) return hashOf(size_t(0), hashOf(size_t(0), seed));
@@ -586,6 +598,7 @@ size_t hashOf(T)(scope const T val)
 if (!is(T == enum) && (is(T == interface) || is(T == class))
     && canBitwiseHash!T)
 {
+    pragma(inline, true);
     if (__ctfe) if (val is null) return 0;
     return hashOf(cast(const void*) val);
 }
@@ -596,6 +609,7 @@ size_t hashOf(T)(scope const T val, size_t seed)
 if (!is(T == enum) && (is(T == interface) || is(T == class))
     && canBitwiseHash!T)
 {
+    pragma(inline, true);
     if (__ctfe) if (val is null) return hashOf(size_t(0), seed);
     return hashOf(cast(const void*) val, seed);
 }
@@ -664,6 +678,7 @@ size_t hashOf(T)(T aa, size_t seed) if (!is(T == enum) && __traits(isAssociative
 @system pure nothrow @nogc
 size_t bytesHash()(scope const(void)* buf, size_t len, size_t seed)
 {
+    pragma(inline, true);
     return bytesHashAlignedBy!ubyte((cast(const(ubyte)*) buf)[0 .. len], seed);
 }
 
@@ -702,6 +717,7 @@ private alias smallBytesHash = fnv;
 // handle aligned reads, do the conversion here
 private uint get32bits()(scope const(ubyte)* x) @nogc nothrow pure @system
 {
+    pragma(inline, true);
     version (BigEndian)
     {
         return ((cast(uint) x[0]) << 24) | ((cast(uint) x[1]) << 16) | ((cast(uint) x[2]) << 8) | (cast(uint) x[3]);
@@ -717,7 +733,7 @@ Params:
     dataKnownToBeAligned = whether the data is known at compile time to be uint-aligned.
 +/
 @nogc nothrow pure @trusted
-private size_t bytesHash(bool dataKnownToBeAligned)(scope const(ubyte)[] bytes, size_t seed)
+private size_t _bytesHash(bool dataKnownToBeAligned)(scope const(ubyte)[] bytes, size_t seed)
 {
     auto len = bytes.length;
     auto data = bytes.ptr;
@@ -769,6 +785,34 @@ private size_t bytesHash(bool dataKnownToBeAligned)(scope const(ubyte)[] bytes, 
     h1 = (h1 ^ (h1 >> 13)) * 0xc2b2ae35;
     h1 ^= h1 >> 16;
     return h1;
+}
+
+// precompile bytesHash into the runtime to also get optimized versions in debug builds
+@nogc nothrow pure @trusted
+private size_t _bytesHashAligned(scope const(ubyte)[] bytes, size_t seed)
+{
+    pragma(inline, true);
+    return _bytesHash!true(bytes, seed);
+}
+@nogc nothrow pure @trusted
+private size_t _bytesHashUnaligned(scope const(ubyte)[] bytes, size_t seed)
+{
+    pragma(inline, true);
+    return _bytesHash!false(bytes, seed);
+}
+
+/+
+Params:
+dataKnownToBeAligned = whether the data is known at compile time to be uint-aligned.
++/
+@nogc nothrow pure @trusted
+private size_t bytesHash(bool dataKnownToBeAligned)(scope const(ubyte)[] bytes, size_t seed)
+{
+    pragma(inline, true);
+    static if (dataKnownToBeAligned)
+        return _bytesHashAligned(bytes, seed);
+    else
+        return _bytesHashUnaligned(bytes, seed);
 }
 
 //  Check that bytesHash works with CTFE

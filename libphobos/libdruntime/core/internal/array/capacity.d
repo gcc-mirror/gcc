@@ -17,7 +17,65 @@ extern(C) {
     bool gc_expandArrayUsed(void[] slice, size_t newUsed, bool atomic) nothrow pure;
     size_t gc_reserveArrayCapacity(void[] slice, size_t request, bool atomic) nothrow pure;
     bool gc_shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic) nothrow pure;
+    void[] gc_getArrayUsed(void *ptr, bool atomic) nothrow pure;
 }
+
+/**
+Shrink the "allocated" length of an array to be the exact size of the array.
+
+It doesn't matter what the current allocated length of the array is, the
+user is telling the runtime that he knows what he is doing.
+
+Params:
+    T = the type of the elements in the array (this should be unqualified)
+    arr = array to shrink. Its `.length` is element length, not byte length, despite `void` type
+    isshared = true if the underlying data is shared
+*/
+void _d_arrayshrinkfit(Tarr: T[], T)(Tarr arr, bool isshared) @trusted
+{
+    import core.exception : onFinalizeError;
+    import core.internal.traits: hasElaborateDestructor;
+
+    debug(PRINTF) printf("_d_arrayshrinkfit, elemsize = %zd, arr.ptr = %p arr.length = %zd\n", T.sizeof, arr.ptr, arr.length);
+    auto reqlen = arr.length;
+
+    auto curArr = cast(Tarr)gc_getArrayUsed(arr.ptr, isshared);
+    if (curArr.ptr is null)
+        // not a valid GC pointer
+        return;
+
+    // align the array.
+    auto offset = arr.ptr - curArr.ptr;
+    auto curlen = curArr.length - offset;
+    if (curlen <= reqlen)
+        // invalid situation, or no change.
+        return;
+
+    // if the type has a destructor, destroy elements we are about to remove.
+    static if(is(T == struct) && hasElaborateDestructor!T)
+    {
+        try
+        {
+            // Finalize the elements that are being removed
+
+            // Due to the fact that the delete operator calls destructors
+            // for arrays from the last element to the first, we maintain
+            // compatibility here by doing the same.
+            for (auto curP = arr.ptr + curlen - 1; curP >= arr.ptr + reqlen; curP--)
+            {
+                // call destructor
+                curP.__xdtor();
+            }
+        }
+        catch (Exception e)
+        {
+            onFinalizeError(typeid(T), e);
+        }
+    }
+
+    gc_shrinkArrayUsed(arr[0 .. reqlen], curlen * T.sizeof, isshared);
+}
+
 /**
 Set the array capacity.
 
@@ -60,6 +118,7 @@ do
     alias BlkAttr = GC.BlkAttr;
 
     auto size = T.sizeof;
+
     bool overflow = false;
     const reqsize = mulu(size, newcapacity, overflow);
     if (overflow)

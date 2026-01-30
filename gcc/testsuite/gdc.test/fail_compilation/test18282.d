@@ -15,7 +15,7 @@ fail_compilation/test18282.d(53): Error: escaping a reference to local variable 
 
 string* f() @safe
 {
-    scope string*[] ls;
+    scope string*[] ls = [null];
     return ls[0];
 }
 

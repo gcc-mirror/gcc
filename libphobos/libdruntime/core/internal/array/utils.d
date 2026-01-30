@@ -157,6 +157,72 @@ void[] __arrayAlloc(T)(size_t arrSize) @trusted
     return null;
 }
 
+/**
+Given an array of length `size` that needs to be expanded to `newlength`,
+compute a new capacity.
+
+Better version by Dave Fladebo, enhanced by Steven Schveighoffer:
+This uses an inverse logorithmic algorithm to pre-allocate a bit more
+space for larger arrays.
+- The maximum "extra" space is about 80% of the requested space. This is for
+PAGE size and smaller.
+- As the arrays grow, the relative pre-allocated space shrinks.
+- Perhaps most importantly, overall memory usage and stress on the GC
+is decreased significantly for demanding environments.
+- The algorithm is tuned to avoid any division at runtime.
+
+Params:
+    newlength = new `.length`
+    elemsize = size of the element in the new array
+Returns: new capacity for array
+*/
+size_t newCapacity(size_t newlength, size_t elemsize) pure nothrow
+{
+    size_t newcap = newlength * elemsize;
+
+    /*
+     * Max growth factor numerator is 234, so allow for multiplying by 256.
+     * But also, the resulting size cannot be more than 2x, so prevent
+     * growing if 2x would fill up the address space (for 32-bit)
+     */
+    enum largestAllowed = (ulong.max >> 8) & (size_t.max >> 1);
+    if (!newcap || (newcap & ~largestAllowed))
+        return newcap;
+
+    /*
+     * The calculation for "extra" space depends on the requested capacity.
+     * We use an inverse logarithm of the new capacity to add an extra 15%
+     * to 83% capacity. Note that normally we humans think in terms of
+     * percent, but using 128 instead of 100 for the denominator means we
+     * can avoid all division by simply bit-shifthing. Since there are only
+     * 64 bits in a long, the bsr of a size_t is going to be 0 - 63. Using
+     * a lookup table allows us to precalculate the multiplier based on the
+     * inverse logarithm. The formula rougly is:
+     *
+     * newcap = request * (1.0 + min(0.83, 10.0 / (log(request) + 1)))
+     */
+    import core.bitop;
+    static immutable multTable = (){
+        assert(__ctfe);
+        ulong[size_t.sizeof * 8] result;
+        foreach (i; 0 .. result.length)
+        {
+            auto factor = 128 + 1280 / (i + 1);
+            result[i] = factor > 234 ? 234 : factor;
+        }
+        return result;
+    }();
+
+    auto mult = multTable[bsr(newcap)];
+
+    // if this were per cent, then the code would look like:
+    // ((newlength * mult + 99) / 100) * elemsize
+    newcap = cast(size_t)((newlength * mult + 127) >> 7) * elemsize;
+    debug(PRINTF) printf("mult: %2.2f, alloc: %2.2f\n",mult/128.0,newcap / cast(double)elemsize);
+    debug(PRINTF) printf("newcap = %zd, newlength = %zd, elemsize = %zd\n", newcap, newlength, elemsize);
+    return newcap;
+}
+
 uint __typeAttrs(T)(void *copyAttrsFrom = null)
 {
     import core.internal.traits : hasIndirections, hasElaborateDestructor;

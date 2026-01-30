@@ -29,3 +29,20 @@ static if (__traits(compiles, int4))
     enum int4 F = D * E;
     static assert(F.array == [1, 4, 9, 16]);
 }
+
+// https://github.com/dlang/dmd/issues/20114
+
+int* find(int[] arr, int needle)
+{
+	foreach(ref a; arr)
+		if(a == needle)
+			return &a;
+	return null;
+}
+
+enum int[int] aa = [0: 0];
+enum int[] da = [0, 1, 2];
+static assert(0 in aa);
+static assert(&da[1]);
+static assert(find(da, 1));
+static assert(!find(da, 3));

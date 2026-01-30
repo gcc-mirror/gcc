@@ -15,3 +15,13 @@ class A {
                 return;
         }
 }
+
+// https://github.com/dlang/dmd/issues/18018
+int main ()
+{
+   string[string] aa;
+   goto A;               // line 4
+   aa["X"] = "Y";        // line 5
+A:
+   return 0;
+}

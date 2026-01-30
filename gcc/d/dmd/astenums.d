@@ -19,12 +19,12 @@ enum Sizeok : ubyte
 }
 
 /// D Language version
-enum Edition : ubyte
+enum Edition : ushort
 {
-    none,
-    legacy,          /// Before the introduction of editions
-    v2024,           /// Experimental first new edition
-    latest = v2024   /// Newest edition that this compiler knows of
+    v2023 = 2023,    /// Edition.min for default edition
+    v2024,           /// first Edition
+    v2025,           /// next Edition
+                     /// use Edition.max for latest edition
 }
 
 enum Baseok : ubyte
@@ -77,9 +77,10 @@ enum STC : ulong  // transfer changes to declaration.h
     ref_                = 0x4_0000,   /// `ref`
     scope_              = 0x8_0000,   /// `scope`
 
-    scopeinferred       = 0x20_0000,   /// `scope` has been inferred and should not be part of mangling, `scope_` must also be set
-    return_             = 0x40_0000,   /// 'return ref' or 'return scope' for function parameters
-    returnScope         = 0x80_0000,   /// if `ref return scope` then resolve to `ref` and `return scope`
+    scopeinferred       = 0x10_0000,   /// `scope` has been inferred and should not be part of mangling, `scope_` must also be set
+    return_             = 0x20_0000,   /// 'return ref' or 'return scope' for function parameters
+    returnScope         = 0x40_0000,   /// if `ref return scope` then resolve to `ref` and `return scope`
+    returnRef           = 0x80_0000,   /// if `return ref`
 
     returninferred      = 0x100_0000,   /// `return` has been inferred and should not be part of mangling, `return_` must also be set
     immutable_          = 0x200_0000,   /// `immutable`

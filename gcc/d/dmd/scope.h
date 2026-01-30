@@ -67,10 +67,6 @@ struct Scope final
     ForeachStatement *fes;      // if nested function for ForeachStatement, this is it
     Scope *callsc;              // used for __FUNCTION__, __PRETTY_FUNCTION__ and __MODULE__
     Dsymbol *inunion;           // !=null if processing members of a union
-    d_bool nofree;                // true if shouldn't free it
-    d_bool inLoop;                // true if inside a loop (where constructor calls aren't allowed)
-    d_bool inDefaultArg;          // true if inside a default argument (where __FILE__, etc are evaluated at the call site)
-    int intypeof;               // in typeof(exp)
     VarDeclaration *lastVar;    // Previous symbol used to prevent goto-skips-init
     ErrorSink *eSink;           // sink for error messages
 
@@ -96,13 +92,12 @@ struct Scope final
     PragmaDeclaration *inlining; // inlining strategy for functions
 
     Visibility visibility;            // visibility for class members
-    int explicitVisibility;     // set if in an explicit visibility attribute
 
     StorageClass stc;           // storage class
 
     DeprecatedDeclaration *depdecl; // customized deprecation message
 
-    uint16_t flags;
+    uint16_t flags, flags2;
     uint16_t previews; // state of preview switches
 
     bool ctor() const;

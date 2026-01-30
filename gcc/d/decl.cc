@@ -449,7 +449,7 @@ public:
     if (dmd::isError (d)|| !d->members)
       return;
 
-    if (!d->needsCodegen ())
+    if (!dmd::needsCodegen (d))
       return;
 
     for (size_t i = 0; i < d->members->length; i++)
@@ -766,7 +766,7 @@ public:
 	    Expression *ie = dmd::initializerToExpression (d->_init);
 	    add_stmt (build_expr (ie));
 
-	    Expression *e = d->type->defaultInitLiteral (d->loc);
+	    Expression *e = dmd::defaultInitLiteral (d->type, d->loc);
 	    add_stmt (build_expr (e));
 	  }
 
@@ -775,7 +775,7 @@ public:
 
     if (d->aliasTuple)
       {
-	this->build_dsymbol (d->toAlias ());
+	this->build_dsymbol (dmd::toAlias (d));
 	return;
       }
 
@@ -834,7 +834,7 @@ public:
 	      DECL_INITIAL (decl) = layout_struct_initializer (ts->sym);
 	    else
 	      {
-		Expression *e = d->type->defaultInitLiteral (d->loc);
+		Expression *e = dmd::defaultInitLiteral (d->type, d->loc);
 		DECL_INITIAL (decl) = build_expr (e, true);
 	      }
 	  }

@@ -107,11 +107,38 @@ private template substInoutForm(T)
     {
         alias substInoutForm = T;   // prevent matching to the form of alias-this-ed type
     }
-    else static if (is(T : V[K], K, V))        alias substInoutForm = substInout!V[substInout!K];
-    else static if (is(T : U[n], U, size_t n)) alias substInoutForm = substInout!U[n];
-    else static if (is(T : U[], U))            alias substInoutForm = substInout!U[];
-    else static if (is(T : U*, U))             alias substInoutForm = substInout!U*;
-    else                                       alias substInoutForm = T;
+    else static if (is(T == V[K], K, V))        alias substInoutForm = substInout!V[substInout!K];
+    else static if (is(T == U[n], U, size_t n)) alias substInoutForm = substInout!U[n];
+    else static if (is(T == U[], U))            alias substInoutForm = substInout!U[];
+    else static if (is(T == U*, U))             alias substInoutForm = substInout!U*;
+    else                                        alias substInoutForm = T;
+}
+
+unittest
+{
+    // https://github.com/dlang/dmd/issues/21452
+    struct S { int x; }
+    struct T { int x; alias x this; }
+
+    enum EnumInt { a = 123 }
+    enum EnumUInt : uint { a = 123 }
+    enum EnumFloat : float { a = 123 }
+    enum EnumString : string { a = "123" }
+    enum EnumStringW : wstring { a = "123" }
+    enum EnumStruct : S { a = S(7) }
+    enum EnumAliasThis : T { a = T(7) }
+    enum EnumDArray : int[] { a = [1] }
+    enum EnumAArray : int[int] { a = [0 : 1] }
+
+    static assert(substInout!(EnumInt).stringof                  == "EnumInt");
+    static assert(substInout!(inout(EnumUInt)).stringof          == "const(EnumUInt)");
+    static assert(substInout!(EnumFloat).stringof                == "EnumFloat");
+    static assert(substInout!(EnumString).stringof               == "EnumString");
+    static assert(substInout!(inout(EnumStringW)).stringof       == "const(EnumStringW)");
+    static assert(substInout!(EnumStruct).stringof               == "EnumStruct");
+    static assert(substInout!(EnumAliasThis).stringof            == "EnumAliasThis");
+    static assert(substInout!(EnumDArray).stringof               == "EnumDArray");
+    static assert(substInout!(inout(EnumAArray)[int]).stringof   == "const(EnumAArray)[int]");
 }
 
 /// used to declare an extern(D) function that is defined in a different module

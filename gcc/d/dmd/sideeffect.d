@@ -19,7 +19,6 @@ import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
 import dmd.funcsem;
-import dmd.globals;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
@@ -392,6 +391,7 @@ VarDeclaration copyToTemp(STC stc, const char[] name, Expression e)
  *  e0 = a new side effect part will be appended to it.
  *  e = original expression
  *  alwaysCopy = if true, build new temporary variable even if e is trivial.
+ *  stc = storage class flags to add to new temporary variable
  * Returns:
  *  When e is trivial and alwaysCopy == false, e itself is returned.
  *  Otherwise, a new VarExp is returned.
@@ -399,7 +399,7 @@ VarDeclaration copyToTemp(STC stc, const char[] name, Expression e)
  *  e's lvalue-ness will be handled well by STC.ref_ or STC.rvalue.
  */
 Expression extractSideEffect(Scope* sc, const char[] name,
-    ref Expression e0, Expression e, bool alwaysCopy = false)
+    ref Expression e0, Expression e, bool alwaysCopy = false, STC stc = STC.exptemp)
 {
     //printf("extractSideEffect(e: %s)\n", e.toChars());
 
@@ -413,8 +413,8 @@ Expression extractSideEffect(Scope* sc, const char[] name,
         (sc.ctfe ? !hasSideEffect(e) : isTrivialExp(e)))
         return e;
 
-    auto vd = copyToTemp(STC.none, name, e);
-    vd.storage_class |= e.isLvalue() ? STC.ref_ : STC.rvalue;
+    stc |= (e.isLvalue() ? STC.ref_ : STC.rvalue);
+    auto vd = copyToTemp(stc, name, e);
 
     e0 = Expression.combine(e0, new DeclarationExp(vd.loc, vd)
                                 .expressionSemantic(sc));

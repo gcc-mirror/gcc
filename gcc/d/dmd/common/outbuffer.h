@@ -53,7 +53,7 @@ public:
     void writestring(const char *string);
     void prependstring(const char *string);
     void writenl();                     // write newline
-    void writeByte(unsigned b);
+    void writeByte(uint8_t b);
     void writeUTF8(unsigned b);
     void prependbyte(unsigned b);
     void writewchar(unsigned w);

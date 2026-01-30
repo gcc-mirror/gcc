@@ -27,7 +27,7 @@ struct S
     int i;
     int* ptr;
 
-    int* wannabeReturnRef() scope return
+    int* wannabeReturnRef() return ref scope
     {
         return &i;
     }

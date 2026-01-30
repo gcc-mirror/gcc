@@ -2,12 +2,27 @@
 // { dg-options "-fno-rtti" }
 // { dg-shouldfail "expressions depend on TypeInfo" }
 
-int* testInExp(int key, int[int] aa)
+module object;
+
+class Object {}
+class TypeInfo {}
+
+struct AA(K, V)
 {
-    return key in aa; // { dg-error "requires .object.TypeInfo. and cannot be used with .-fno-rtti." }
+    this(int sz) nothrow
+    {
+        keyTI = typeid(K); // { dg-error "'object.TypeInfo' cannot be used with '-fno-rtti'" }
+    }
+    TypeInfo keyTI;
 }
 
-bool testAAEqual(int[string] aa1, int[string] aa2)
+auto _d_aaIn(T : V[K], K, V, K2)(inout T a, auto ref scope K2 key)
 {
-    return aa1 == aa2; // { dg-error "requires .object.TypeInfo. and cannot be used with .-fno-rtti." }
+    auto aa = *(cast(inout(AA!(K, V))*)&a); // { dg-note "instantiated from here" }
+    return null;
+}
+
+int* testInExp(int key, int[int] aa)
+{
+    return key in aa; // { dg-note "instantiated from here" }
 }

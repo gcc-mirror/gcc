@@ -1557,7 +1557,7 @@ void escapeExp(Expression e, ref scope EscapeByResults er, int deref)
     void visitThis(ThisExp e)
     {
         // Special case because `__this2` isn't `ref` internally
-        if (deref == -1 && e.var && e.var.toParent2().isFuncDeclaration().hasDualContext())
+        if (deref == -1 && e.var && e.var.toParent2().isFuncDeclaration().hasDualContext)
         {
             escapeByValue(e, er);
             return;

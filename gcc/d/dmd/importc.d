@@ -89,13 +89,13 @@ Expression arrayFuncConv(Expression e, Scope* sc)
     auto t = e.type.toBasetype();
     if (auto ta = t.isTypeDArray())
     {
-        if (!checkAddressable(e, sc))
+        if (!checkAddressable(e, sc, "take address of"))
             return ErrorExp.get();
         e = e.castTo(sc, ta.next.pointerTo());
     }
     else if (auto ts = t.isTypeSArray())
     {
-        if (!checkAddressable(e, sc))
+        if (!checkAddressable(e, sc, "take address of"))
             return ErrorExp.get();
         e = e.castTo(sc, ts.next.pointerTo());
     }
@@ -553,10 +553,10 @@ Dsymbol handleSymbolRedeclarations(ref Scope sc, Dsymbol s, Dsymbol s2, ScopeDsy
     auto vd = s.isVarDeclaration(); // new declaration
     auto vd2 = s2.isVarDeclaration(); // existing declaration
 
-    if (vd && vd.isCmacro())
+    if (vd && vd.isCmacro)
         return s2;
 
-    assert(!(vd2 && vd2.isCmacro()));
+    assert(!(vd2 && vd2.isCmacro));
 
     if (vd && vd2)
     {

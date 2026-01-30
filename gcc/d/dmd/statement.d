@@ -439,8 +439,7 @@ extern (C++) final class MixinStatement : Statement
 
     extern (D) this(Loc loc, Expression exp)
     {
-        Expressions* exps = new Expressions();
-        exps.push(exp);
+        Expressions* exps = new Expressions(exp);
         this(loc, exps);
     }
 
@@ -1740,8 +1739,15 @@ extern (C++) final class LabelDsymbol : Dsymbol
  */
 extern (C++) class AsmStatement : Statement
 {
-    Token* tokens;
-    bool caseSensitive;  // for register names
+    Token* tokens;       // linked list of tokens for one instruction or pseudo op
+    static struct BitFields
+    {
+    bool caseSensitive;  // for register names, and only turned on when doing MASM style inline asm
+    bool isVolatile;     // ImportC asm "volatile"
+    bool isInline;       // ImportC asm "inline"
+    }
+    import dmd.common.bitfields;
+    mixin(generateBitFields!(BitFields, ubyte));
 
     extern (D) this(Loc loc, Token* tokens) @safe
     {
@@ -1772,10 +1778,10 @@ extern (C++) class AsmStatement : Statement
 extern (C++) final class InlineAsmStatement : AsmStatement
 {
     void* asmcode;
+    ulong regs;     // mask of registers modified (must match regm_t in back end)
     uint asmalign;  // alignment of this statement
-    uint regs;      // mask of registers modified (must match regm_t in back end)
     bool refparam;  // true if function parameter is referenced
-    bool naked;     // true if function is to be naked
+    bool naked;     // true if function is to be naked (no prolog/epilog)
 
     extern (D) this(Loc loc, Token* tokens) @safe
     {

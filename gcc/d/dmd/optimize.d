@@ -1138,9 +1138,16 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
 
     void visitEqual(EqualExp e)
     {
-        //printf("EqualExp::optimize(result = %x) %s\n", result, e.toChars());
+        //printf("EqualExp::optimize(result = %d) %s\n", result, e.toChars());
+        if (auto lowering = e.lowering)
+        {
+            optimize(lowering, result, keepLvalue);
+            return;
+        }
+
         if (binOptimize(e, WANTvalue))
             return;
+
         Expression e1 = fromConstInitializer(result, e.e1);
         Expression e2 = fromConstInitializer(result, e.e2);
         if (e1.op == EXP.error)

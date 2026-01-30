@@ -895,7 +895,7 @@ public:
     {
         // Omit redundant declarations - the slot was already
         // reserved in the base class
-        if (fd.isVirtual() && fd.isIntroducing())
+        if (fd.isVirtual() && fd.isIntroducing)
         {
             // Hide placeholders because they are not ABI compatible
             writeProtection(AST.Visibility.Kind.private_);
@@ -1164,7 +1164,7 @@ public:
 
         auto fd = ad.aliassym.isFuncDeclaration();
 
-        if (fd && (fd.isGenerated() || fd.isDtorDeclaration()))
+        if (fd && (fd.isGenerated || fd.isDtorDeclaration()))
         {
             // Ignore. It's taken care of while visiting FuncDeclaration
             return;
@@ -1197,7 +1197,7 @@ public:
                 // Print prefix of the base class if this function originates from a superclass
                 // because alias might be resolved through multiple classes, e.g.
                 // e.g. for alias visit = typeof(super).visit in the visitors
-                if (!fd.isIntroducing())
+                if (!fd.isIntroducing)
                     printPrefix(ad.toParent().isClassDeclaration().baseClass);
                 else
                     printPrefix(pd);

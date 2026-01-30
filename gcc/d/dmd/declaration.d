@@ -22,18 +22,16 @@ import dmd.delegatize;
 import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic, aliasSemantic;
+import dmd.dsymbolsem : toAlias;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
 import dmd.func;
 import dmd.globals;
-import dmd.gluelayer;
 import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
-import dmd.initsem : initializerToExpression, initializerSemantic;
 import dmd.intrange;
 import dmd.location;
 import dmd.mtype;
@@ -42,7 +40,7 @@ import dmd.rootobject;
 import dmd.root.filename;
 import dmd.target;
 import dmd.tokens;
-import dmd.typesem : toDsymbol, typeSemantic, size, hasPointers;
+import dmd.typesem : typeSemantic, size;
 import dmd.visitor;
 
 version (IN_GCC) {}
@@ -122,7 +120,7 @@ extern (C++) abstract class Declaration : Dsymbol
         return "declaration";
     }
 
-    override final uinteger_t size(Loc loc)
+    override final ulong size(Loc loc)
     {
         assert(type);
         const sz = type.size();
@@ -358,21 +356,6 @@ extern (C++) final class TupleDeclaration : Declaration
         return tupletype;
     }
 
-    override Dsymbol toAlias2()
-    {
-        //printf("TupleDeclaration::toAlias2() '%s' objects = %s\n", toChars(), objects.toChars());
-        for (size_t i = 0; i < objects.length; i++)
-        {
-            RootObject o = (*objects)[i];
-            if (Dsymbol s = isDsymbol(o))
-            {
-                s = s.toAlias2();
-                (*objects)[i] = s;
-            }
-        }
-        return this;
-    }
-
     override bool needThis()
     {
         //printf("TupleDeclaration::needThis(%s)\n", toChars());
@@ -601,117 +584,7 @@ extern (C++) final class AliasDeclaration : Declaration
     {
         if (type)
             return type;
-        return toAlias().getType();
-    }
-
-    override Dsymbol toAlias()
-    {
-        static if (0)
-        printf("[%s] AliasDeclaration::toAlias('%s', this = %p, aliassym: %s, kind: '%s', inuse = %d)\n",
-            loc.toChars(), toChars(), this, aliassym ? aliassym.toChars() : "", aliassym ? aliassym.kind() : "", inuse);
-        assert(this != aliassym);
-        //static int count; if (++count == 10) *(char*)0=0;
-
-        Dsymbol err()
-        {
-            // Avoid breaking "recursive alias" state during errors gagged
-            if (global.gag)
-                return this;
-            aliassym = new AliasDeclaration(loc, ident, Type.terror);
-            type = Type.terror;
-            return aliassym;
-        }
-        // Reading the AliasDeclaration
-        if (!this.ignoreRead)
-            this.wasRead = true;                 // can never assign to this AliasDeclaration again
-
-        if (inuse == 1 && type && _scope)
-        {
-            inuse = 2;
-            const olderrors = global.errors;
-            Dsymbol s = type.toDsymbol(_scope);
-            //printf("[%s] type = %s, s = %p, this = %p\n", loc.toChars(), type.toChars(), s, this);
-            if (global.errors != olderrors)
-                return err();
-            if (s)
-            {
-                s = s.toAlias();
-                if (global.errors != olderrors)
-                    return err();
-                aliassym = s;
-                inuse = 0;
-            }
-            else
-            {
-                Type t = type.typeSemantic(loc, _scope);
-                if (t.ty == Terror)
-                    return err();
-                if (global.errors != olderrors)
-                    return err();
-                //printf("t = %s\n", t.toChars());
-                inuse = 0;
-            }
-        }
-        if (inuse)
-        {
-            .error(loc, "%s `%s` recursive alias declaration", kind, toPrettyChars);
-            return err();
-        }
-
-        if (semanticRun >= PASS.semanticdone)
-        {
-            // semantic is already done.
-
-            // Do not see aliassym !is null, because of lambda aliases.
-
-            // Do not see type.deco !is null, even so "alias T = const int;` needs
-            // semantic analysis to take the storage class `const` as type qualifier.
-        }
-        else
-        {
-            // stop AliasAssign tuple building
-            if (aliassym)
-            {
-                if (auto td = aliassym.isTupleDeclaration())
-                {
-                    if (td.building)
-                    {
-                        td.building = false;
-                        semanticRun = PASS.semanticdone;
-                        return td;
-                    }
-                }
-            }
-            if (_import && _import._scope)
-            {
-                /* If this is an internal alias for selective/renamed import,
-                 * load the module first.
-                 */
-                _import.dsymbolSemantic(null);
-            }
-            if (_scope)
-            {
-                aliasSemantic(this, _scope);
-            }
-        }
-
-        inuse = 1;
-        Dsymbol s = aliassym ? aliassym.toAlias() : this;
-        inuse = 0;
-        return s;
-    }
-
-    override Dsymbol toAlias2()
-    {
-        if (inuse)
-        {
-            .error(loc, "%s `%s` recursive alias declaration", kind, toPrettyChars);
-            return this;
-        }
-        inuse = 1;
-        Dsymbol s = aliassym ? aliassym.toAlias2() : this;
-        inuse = 0;
-        return s;
+        return toAlias(this).getType();
     }
 
     override bool isOverloadable() const
@@ -958,7 +831,7 @@ extern (C++) class VarDeclaration : Declaration
         {
             isdataseg = 2; // The Variables does not go into the datasegment
 
-            if (!canTakeAddressOf())
+            if (!canTakeAddressOf() || (storage_class & STC.exptemp))
             {
                 return false;
             }
@@ -1011,7 +884,7 @@ extern (C++) class VarDeclaration : Declaration
         auto bitoffset  =   offset * 8;
         auto vbitoffset = v.offset * 8;
 
-        // Bitsize of types are overridden by any bit-field widths.
+        // Bitsize of types are overridden by any bitfield widths.
         ulong tbitsize;
         if (auto bf = isBitFieldDeclaration())
         {
@@ -1049,49 +922,6 @@ extern (C++) class VarDeclaration : Declaration
     {
         //printf("VarDeclaration::needsScopeDtor() %s %d\n", toChars(), edtor && !(storage_class & STC.nodtor));
         return edtor && !(storage_class & STC.nodtor);
-    }
-
-    /*******************************************
-     * If variable has a constant expression initializer, get it.
-     * Otherwise, return null.
-     */
-    extern (D) final Expression getConstInitializer(bool needFullType = true)
-    {
-        assert(type && _init);
-
-        // Ungag errors when not speculative
-        const oldgag = global.gag;
-        if (global.gag)
-        {
-            Dsymbol sym = isMember();
-            if (sym && !sym.isSpeculative())
-                global.gag = 0;
-        }
-
-        if (_scope)
-        {
-            inuse++;
-            _init = _init.initializerSemantic(_scope, type, INITinterpret);
-            import dmd.semantic2 : lowerStaticAAs;
-            lowerStaticAAs(this, _scope);
-            _scope = null;
-            inuse--;
-        }
-
-        Expression e = _init.initializerToExpression(needFullType ? type : null);
-        global.gag = oldgag;
-        return e;
-    }
-
-    override final Dsymbol toAlias()
-    {
-        //printf("VarDeclaration::toAlias('%s', this = %p, aliassym = %p)\n", toChars(), this, aliassym);
-        if ((!type || !type.deco) && _scope)
-            dsymbolSemantic(this, _scope);
-
-        assert(this != aliasTuple);
-        Dsymbol s = aliasTuple ? aliasTuple.toAlias() : this;
-        return s;
     }
 
     override void accept(Visitor v)
@@ -1396,6 +1226,8 @@ extern (C++) final class TypeInfoStaticArrayDeclaration : TypeInfoDeclaration
 extern (C++) final class TypeInfoAssociativeArrayDeclaration : TypeInfoDeclaration
 {
     Type entry; // type of TypeInfo_AssociativeArray.Entry!(t.index, t.next)
+    Declaration xopEqual; // implementation of TypeInfo_AssociativeArray.equals
+    Declaration xtoHash;  // implementation of TypeInfo_AssociativeArray.getHash
 
     extern (D) this(Type tinfo)
     {

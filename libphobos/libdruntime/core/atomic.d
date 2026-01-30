@@ -154,7 +154,7 @@ void atomicStore(MemoryOrder ms = MemoryOrder.seq, T, V)(ref shared T val, auto 
 {
     static assert (is (V : T), "Can't assign `newval` of type `shared " ~ V.stringof ~ "` to `shared " ~ T.stringof ~ "`.");
 
-    core.internal.atomic.atomicStore!ms(cast(T*)&val, cast(V)newval);
+    core.internal.atomic.atomicStore!ms(cast(T*)&val, *cast(V*)&newval);
 }
 
 /**

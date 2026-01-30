@@ -1706,7 +1706,7 @@ class Lexer
                 }
                 break;
             }
-            stringbuffer.writeByte(c);
+            stringbuffer.writeByte(cast(char)c);
         }
     }
 
@@ -1750,7 +1750,7 @@ class Lexer
                 if (n & 1)
                 {
                     error("odd number (%d) of hex characters in hex string", n);
-                    stringbuffer.writeByte(v);
+                    stringbuffer.writeByte(cast(char)v);
                 }
                 t.setString(stringbuffer);
                 stringPostfix(t);
@@ -1777,7 +1777,7 @@ class Lexer
                 if (n & 1)
                 {
                     v = (v << 4) | c;
-                    stringbuffer.writeByte(v);
+                    stringbuffer.writeByte(cast(char)v);
                 }
                 else
                     v = c;
@@ -2195,7 +2195,7 @@ class Lexer
                 }
                 break;
             }
-            stringbuffer.writeByte(c);
+            stringbuffer.writeByte(cast(char)c);
         }
     }
 

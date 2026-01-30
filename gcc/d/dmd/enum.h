@@ -59,7 +59,7 @@ public:
     bool isSpecial() const;
 
 
-    Symbol *sinit;
+    void *sinit;
     void accept(Visitor *v) override { v->visit(this); }
 };
 

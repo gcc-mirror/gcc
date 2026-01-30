@@ -96,11 +96,27 @@ void test3()
 }
 
 /********************************************/
+// https://github.com/dlang/dmd/issues/18247
+
+struct S4
+{
+    ulong a:64;
+}
+
+void test4()
+{
+    S4 s;
+    s.a = 1;
+    assert(s.a == 1);
+}
+
+/********************************************/
 
 int main()
 {
     test1();
     test2();
     test3();
+    test4();
     return 0;
 }

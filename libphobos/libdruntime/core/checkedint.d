@@ -757,9 +757,31 @@ unittest
  * Returns:
  *      the product
  */
-pragma(inline, true)
+// pragma(inline, true)
 uint mulu()(uint x, uint y, ref bool overflow)
 {
+    version (D_InlineAsm_X86)         enum useAsm = true;
+    else version (D_InlineAsm_X86_64) enum useAsm = true;
+    else                              enum useAsm = false;
+
+    static if (useAsm)
+    {
+        if (!__ctfe)
+        {
+            uint r;
+            bool o;
+            asm pure nothrow @nogc @trusted
+            {
+                mov EAX, x;
+                mul y;        // EDX:EAX = EAX * y
+                mov r, EAX;
+                setc o;
+            }
+            overflow |= o;
+            return r;
+        }
+    }
+
     immutable ulong r = ulong(x) * ulong(y);
     if (r >> 32)
         overflow = true;
@@ -791,6 +813,12 @@ unittest
 pragma(inline, true)
 ulong mulu()(ulong x, uint y, ref bool overflow)
 {
+    version (D_InlineAsm_X86_64)
+    {
+        if (!__ctfe)
+            return mulu(x, ulong(y), overflow);
+    }
+
     ulong r = x * y;
     if (x >> 32 &&
             r / x != y)
@@ -799,9 +827,27 @@ ulong mulu()(ulong x, uint y, ref bool overflow)
 }
 
 /// ditto
-pragma(inline, true)
+// pragma(inline, true)
 ulong mulu()(ulong x, ulong y, ref bool overflow)
 {
+    version (D_InlineAsm_X86_64)
+    {
+        if (!__ctfe)
+        {
+            ulong r;
+            bool o;
+            asm pure nothrow @nogc @trusted
+            {
+                mov RAX, x;
+                mul y;        // RDX:RAX = RAX * y
+                mov r, RAX;
+                setc o;
+            }
+            overflow |= o;
+            return r;
+        }
+    }
+
     immutable ulong r = x * y;
     if ((x | y) >> 32 &&
             x &&

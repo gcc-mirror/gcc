@@ -16,18 +16,22 @@ module dmd.nogc;
 import core.stdc.stdio;
 
 import dmd.aggregate;
+import dmd.arraytypes;
 import dmd.astenums;
-import dmd.declaration;
 import dmd.common.outbuffer;
+import dmd.declaration;
 import dmd.dmodule;
 import dmd.dscope;
-import dmd.dtemplate : isDsymbol;
 import dmd.dsymbol : PASS;
+import dmd.dtemplate : isDsymbol;
 import dmd.errors;
 import dmd.escape;
 import dmd.expression;
+import dmd.expressionsem;
 import dmd.func;
 import dmd.globals;
+import dmd.id;
+import dmd.identifier;
 import dmd.init;
 import dmd.location;
 import dmd.mtype;
@@ -35,6 +39,7 @@ import dmd.rootobject : RootObject, DYNCAST;
 import dmd.semantic2;
 import dmd.semantic3;
 import dmd.tokens;
+import dmd.typesem : unqualify;
 import dmd.visitor;
 import dmd.visitor.postorder;
 
@@ -124,12 +129,32 @@ public:
 
     override void visit(ArrayLiteralExp e)
     {
-        if (e.type.toBasetype().isTypeSArray() || !e.elements || !e.elements.length || e.onstack)
+        const dim = e.elements ? e.elements.length : 0;
+        if (e.type.toBasetype().isTypeSArray() || dim == 0 || e.onstack)
             return;
         if (setGC(e, "this array literal"))
             return;
 
         if (checkArrayLiteralEscape(*sc, e, false))
+        {
+            err = true;
+            return;
+        }
+
+        if (!global.params.useGC)
+        {
+            if (!checkOnly)
+            {
+                version (IN_GCC)
+                    error(e.loc, "this array literal requires the GC and cannot be used with `???`");
+                else
+                    error(e.loc, "this array literal requires the GC and cannot be used with `-betterC`");
+            }
+            err = true;
+            return;
+        }
+
+        if (!lowerArrayLiteral(e, sc))
         {
             err = true;
             return;

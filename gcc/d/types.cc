@@ -1259,7 +1259,7 @@ public:
     /* For structs with a user defined postblit, copy constructor, or a
        destructor, also set TREE_ADDRESSABLE on the type and all variants.
        This will make the struct be passed around by reference.  */
-    if (!t->sym->isPOD ())
+    if (!dmd::isPOD (t->sym))
       {
 	for (tree tv = t->ctype; tv != NULL_TREE; tv = TYPE_NEXT_VARIANT (tv))
 	  {

@@ -63,17 +63,16 @@ else
 }
 
 // free the allocation on thread exit.
-@standalone static ~this()
+void cleanupBlkCache(void* storage) nothrow @nogc
 {
-    if (__blkcache_storage)
+    if (storage)
     {
+        // check if this is the same thread as the current running thread, and
+        // if so, make sure we don't leave a dangling pointer.
+        if (__blkcache_storage is storage)
+            __blkcache_storage = null;
         import core.stdc.stdlib : free;
-        import core.thread.threadbase;
-        auto tBase = ThreadBase.getThis();
-        if (tBase !is null)
-            tBase.tlsGCData = null;
-        free(__blkcache_storage);
-        __blkcache_storage = null;
+        free(storage);
     }
 }
 

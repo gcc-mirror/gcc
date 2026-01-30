@@ -55,7 +55,8 @@ enum Contract : ubyte
     ensure = 3, // out contract
 }
 
-private extern (D) struct BitFields
+/// Bitfield for settable/copyable flags, see `copyFlagsFrom`, `resetAllFlags`
+private extern (D) struct FlagBitFields
 {
     bool ctor;              /// constructor type
     bool noAccessCheck;     /// don't do access checks
@@ -74,6 +75,14 @@ private extern (D) struct BitFields
     bool ctfeBlock;         /// inside a `if (__ctfe)` block
 }
 
+private extern (D) struct NonFlagBitFields
+{
+    ubyte intypeof;                 /// in typeof(exp)
+    bool nofree;                    /// true if shouldn't free it
+    bool inLoop;                    /// true if inside a loop (where constructor calls aren't allowed)
+    bool inDefaultArg;              /// true if inside a default argument (where __FILE__, etc are evaluated at the call site)
+    bool explicitVisibility;        /// set if in an explicit visibility attribute
+}
 /// State of -preview switches
 ///
 /// By making them part of a Scope, we reduce reliance on dmd.globals,
@@ -140,10 +149,6 @@ extern (C++) struct Scope
     ForeachStatement fes;           /// if nested function for ForeachStatement, this is it
     Scope* callsc;                  /// used for __FUNCTION__, __PRETTY_FUNCTION__ and __MODULE__
     Dsymbol inunion;                /// != null if processing members of a union
-    bool nofree;                    /// true if shouldn't free it
-    bool inLoop;                    /// true if inside a loop (where constructor calls aren't allowed)
-    bool inDefaultArg;              /// true if inside a default argument (where __FILE__, etc are evaluated at the call site)
-    int intypeof;                   /// in typeof(exp)
     VarDeclaration lastVar;         /// Previous symbol used to prevent goto-skips-init
     ErrorSink eSink;                /// sink for error messages
 
@@ -174,15 +179,15 @@ extern (C++) struct Scope
 
     /// visibility for class members
     Visibility visibility = Visibility(Visibility.Kind.public_);
-    int explicitVisibility;         /// set if in an explicit visibility attribute
 
     STC stc;                        /// storage class
 
     DeprecatedDeclaration depdecl;  /// customized deprecation message
 
     import dmd.common.bitfields : generateBitFields;
-    mixin(generateBitFields!(BitFields, ushort));
-
+    mixin(generateBitFields!(FlagBitFields, ushort));
+    private ushort bitFields2;
+    mixin(generateBitFields!(NonFlagBitFields, ushort, "bitFields2"));
     Previews previews;
 
     // user defined attributes

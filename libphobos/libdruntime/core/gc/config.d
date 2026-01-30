@@ -12,6 +12,8 @@ import core.stdc.stdio : printf;
 
 __gshared Config config;
 
+private __gshared bool _initialized;
+
 struct Config
 {
     bool disable;            // start disabled
@@ -31,7 +33,9 @@ struct Config
 
     bool initialize()
     {
-        return initConfigOptions(this, "gcopt");
+        if (!_initialized)
+            _initialized = initConfigOptions(this, "gcopt");
+        return _initialized;
     }
 
     void help() @nogc nothrow

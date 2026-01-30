@@ -1180,7 +1180,7 @@ void writeCharLiteral(ref OutBuffer buf, dchar c)
             if (c <= 0xFF)
             {
                 if (isprint(c))
-                    buf.writeByte(c);
+                    buf.writeByte(cast(char)c);
                 else
                     buf.printf("\\x%02x", c);
             }

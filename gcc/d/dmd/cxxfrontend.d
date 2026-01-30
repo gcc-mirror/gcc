@@ -26,12 +26,13 @@ import dmd.dtemplate /*: TemplateInstance, TemplateParameter, Tuple*/;
 import dmd.errorsink : ErrorSink;
 import dmd.expression /*: Expression*/;
 import dmd.func : FuncDeclaration;
-import dmd.globals;
+import dmd.globals : dinteger_t, uinteger_t, JsonFieldFlags;
 import dmd.identifier : Identifier;
 import dmd.init : Initializer, NeedInterpret;
 import dmd.location : Loc;
 import dmd.mtype /*: Covariant, Type, Parameter, ParameterList*/;
 import dmd.rootobject : RootObject;
+import dmd.semantic3;
 import dmd.statement : Statement, AsmStatement, GccAsmStatement;
 
 // NB: At some point in the future, we can switch to shortened function syntax.
@@ -132,7 +133,7 @@ void gendocfile(Module m, const char* ddoctext_ptr, size_t ddoctext_length,
  */
 FuncDeclaration search_toString(StructDeclaration sd)
 {
-    return dmd.dstruct.search_toString(sd);
+    return dmd.semantic3.search_toString(sd);
 }
 
 /***********************************************************
@@ -205,6 +206,24 @@ void getLocalClasses(Module mod, ref ClassDeclarations aclasses)
     return dmd.dsymbolsem.getLocalClasses(mod, aclasses);
 }
 
+Dsymbol toAlias(Dsymbol s)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.toAlias(s);
+}
+
+Dsymbol toAlias2(Dsymbol s)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.toAlias2(s);
+}
+
+bool isPOD(StructDeclaration sd)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.isPOD(sd);
+}
+
 /***********************************************************
  * dtemplate.d
  */
@@ -246,6 +265,11 @@ bool isError(const RootObject o)
 void printTemplateStats(bool listInstances, ErrorSink eSink)
 {
     return dmd.dtemplate.printTemplateStats(listInstances, eSink);
+}
+
+void printInstantiationTrace(TemplateInstance ti)
+{
+    return ti.printInstantiationTrace();
 }
 
 /***********************************************************
@@ -395,14 +419,14 @@ void asmSemantic(CAsmDeclaration d, Scope* sc)
  */
 Statement gccAsmSemantic(GccAsmStatement s, Scope* sc)
 {
-    import dmd.iasmgcc;
-    return dmd.iasmgcc.gccAsmSemantic(s, sc);
+    import dmd.iasm.gcc;
+    return dmd.iasm.gcc.gccAsmSemantic(s, sc);
 }
 
 void gccAsmSemantic(CAsmDeclaration d, Scope* sc)
 {
-    import dmd.iasmgcc;
-    return dmd.iasmgcc.gccAsmSemantic(d, sc);
+    import dmd.iasm.gcc;
+    return dmd.iasm.gcc.gccAsmSemantic(d, sc);
 }
 
 /***********************************************************
@@ -721,6 +745,12 @@ MATCH constConv(Type from, Type to)
     return dmd.typesem.constConv(from, to);
 }
 
+Expression defaultInitLiteral(Type t, Loc loc)
+{
+    import dmd.typesem;
+    return dmd.typesem.defaultInitLiteral(t, loc);
+}
+
 /***********************************************************
  * typinf.d
  */
@@ -754,6 +784,20 @@ TypeInfoDeclaration getTypeInfoAssocArrayDeclaration(TypeAArray t, Scope* sc)
     return dmd.typinf.getTypeInfoAssocArrayDeclaration(t, sc);
 }
 
+/**
+ * templatesem.d
+ */
+bool needsCodegen(TemplateInstance ti)
+{
+    import dmd.templatesem;
+    return dmd.templatesem.needsCodegen(ti);
+}
+
+bool isDiscardable(TemplateInstance ti)
+{
+    import dmd.templatesem;
+    return dmd.templatesem.isDiscardable(ti);
+}
 version (IN_LLVM)
 {
     /***********************************************************

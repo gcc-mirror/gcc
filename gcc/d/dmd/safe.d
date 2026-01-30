@@ -28,7 +28,7 @@ import dmd.errors;
 import dmd.expression;
 import dmd.func;
 import dmd.funcsem : isRootTraitsCompilesScope;
-import dmd.globals : FeatureState, global;
+import dmd.globals : FeatureState;
 import dmd.id;
 import dmd.identifier;
 import dmd.location;
@@ -85,7 +85,6 @@ bool checkUnsafeAccess(Scope* sc, Expression e, bool readonly, bool printmsg)
     if (ad.sizeok != Sizeok.done)
         ad.determineSize(ad.loc);
 
-    import dmd.globals : FeatureState;
     const hasPointers = v.type.hasPointers();
     if (hasPointers)
     {

@@ -17,7 +17,7 @@ struct S
 
     auto borrowA() return /*scope inferred*/ { return ptr; }
     int* borrowB() return { return ptr; }
-    int* borrowC() scope return { return ptr; }
+    int* borrowC() scope return ref { return ptr; }
 }
 
 void main()

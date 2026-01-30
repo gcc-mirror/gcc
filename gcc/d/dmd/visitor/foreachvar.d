@@ -45,7 +45,7 @@ import dmd.visitor.postorder;
  *      e = expression tree to visit
  *      dgVar = call when a variable is declared
  */
-void foreachVar(Expression e, void delegate(VarDeclaration) dgVar)
+void foreachVar(Expression e, scope void delegate(VarDeclaration) dgVar)
 {
     if (!e)
         return;
@@ -110,8 +110,8 @@ void foreachVar(Expression e, void delegate(VarDeclaration) dgVar)
  *      dgVar = delegate to pass found VarDeclarations to
  */
 void foreachExpAndVar(Statement s,
-        void delegate(Expression) dgExp,
-        void delegate(VarDeclaration) dgVar)
+        scope void delegate(Expression) dgExp,
+        scope void delegate(VarDeclaration) dgVar)
 {
     void visit(Statement s)
     {

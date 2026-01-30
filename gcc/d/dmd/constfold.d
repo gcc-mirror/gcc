@@ -25,6 +25,7 @@ import dmd.declaration;
 import dmd.dstruct;
 import dmd.errors;
 import dmd.expression;
+import dmd.expressionsem : getField;
 import dmd.globals;
 import dmd.location;
 import dmd.mtype;
@@ -1432,8 +1433,7 @@ UnionExp Cat(Loc loc, Type type, Expression e1, Expression e2)
         else
         {
             // Create an ArrayLiteralExp
-            auto elements = new Expressions();
-            elements.push(e);
+            auto elements = new Expressions(e);
             emplaceExp!(ArrayLiteralExp)(&ue, e.loc, type, elements);
         }
         assert(ue.exp().type);
@@ -1674,8 +1674,7 @@ UnionExp Cat(Loc loc, Type type, Expression e1, Expression e2)
         Type tb = t.toBasetype();
         if (tb.ty == Tarray && tb.nextOf().equivalent(e.type))
         {
-            auto expressions = new Expressions();
-            expressions.push(e);
+            auto expressions = new Expressions(e);
             emplaceExp!(ArrayLiteralExp)(&ue, loc, t, expressions);
             e = ue.exp();
         }

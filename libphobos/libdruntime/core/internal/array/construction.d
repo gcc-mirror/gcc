@@ -65,7 +65,7 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from, char* ma
 
     enforceRawArraysConformable("initialization", T.sizeof, vFrom, vTo);
 
-    static if (hasElaborateCopyConstructor!T)
+    static if (__traits(hasCopyConstructor, T))
     {
         size_t i;
         try
@@ -88,8 +88,30 @@ Tarr _d_arrayctor(Tarr : T[], T)(return scope Tarr to, scope Tarr from, char* ma
     }
     else
     {
-        // blit all elements at once
-        memcpy(cast(void*) to.ptr, from.ptr, to.length * T.sizeof);
+        if (to.length)
+        {
+            // blit all elements at once
+            memcpy(cast(void*) to.ptr, from.ptr, to.length * T.sizeof);
+
+            // call postblits if they exist
+            static if (__traits(hasPostblit, T))
+            {
+                import core.internal.lifetime : __doPostblit;
+                size_t i = 0;
+                try __doPostblit(to, i);
+                catch (Exception o)
+                {
+                    // Destroy, in reverse order, what we've constructed so far
+                    while (i--)
+                    {
+                        auto elem = cast(Unqual!T*) &to[i];
+                        destroy(*elem);
+                    }
+
+                    throw o;
+                }
+            }
+        }
     }
 
     return to;
@@ -346,6 +368,7 @@ T[] _d_newarrayUPureNothrow(T)(size_t length, bool isShared=false) pure nothrow 
 
 T[] _d_newarrayU(T)(size_t length, bool isShared=false) @trusted
 {
+    import core.checkedint : mulu;
     import core.exception : onOutOfMemoryError;
     import core.internal.traits : Unqual;
     import core.internal.array.utils : __arrayAlloc;
@@ -353,52 +376,24 @@ T[] _d_newarrayU(T)(size_t length, bool isShared=false) @trusted
     alias UnqT = Unqual!T;
 
     size_t elemSize = T.sizeof;
-    size_t arraySize;
 
     debug(PRINTF) printf("_d_newarrayU(length = x%zu, size = %zu)\n", length, elemSize);
     if (length == 0 || elemSize == 0)
         return null;
 
-    version (D_InlineAsm_X86)
+    bool overflow = false;
+    const arraySize = mulu(elemSize, length, overflow);
+    if (!overflow)
     {
-        asm pure nothrow @nogc
+        if (auto arr = __arrayAlloc!UnqT(arraySize))
         {
-            mov     EAX, elemSize       ;
-            mul     EAX, length         ;
-            mov     arraySize, EAX      ;
-            jnc     Lcontinue           ;
+            debug(PRINTF) printf("p = %p\n", arr.ptr);
+            return (cast(T*) arr.ptr)[0 .. length];
         }
     }
-    else version (D_InlineAsm_X86_64)
-    {
-        asm pure nothrow @nogc
-        {
-            mov     RAX, elemSize       ;
-            mul     RAX, length         ;
-            mov     arraySize, RAX      ;
-            jnc     Lcontinue           ;
-        }
-    }
-    else
-    {
-        import core.checkedint : mulu;
 
-        bool overflow = false;
-        arraySize = mulu(elemSize, length, overflow);
-        if (!overflow)
-            goto Lcontinue;
-    }
-
-Loverflow:
     onOutOfMemoryError();
     assert(0);
-
-Lcontinue:
-    auto arr = __arrayAlloc!UnqT(arraySize);
-    if (!arr.ptr)
-        goto Loverflow;
-    debug(PRINTF) printf("p = %p\n", arr.ptr);
-    return (cast(T*) arr.ptr)[0 .. length];
 }
 
 /// ditto
@@ -614,4 +609,67 @@ version (D_ProfileGC)
         else
             assert(0, "Cannot create new multi-dimensional array if compiling without support for runtime type information!");
     }
+}
+
+
+/**
+Allocate an array literal
+
+Rely on the caller to do the initialization of the array.
+
+---
+int[] getArr()
+{
+    return [10, 20];
+    // auto res = cast(int*) _d_arrayliteralTX(typeid(int[]), 2);
+    // res[0] = 10;
+    // res[1] = 20;
+    // return res[0..2];
+}
+---
+
+Params:
+    T = unqualified type of array elements
+    length = `.length` of array literal
+
+Returns: pointer to allocated array
+*/
+void* _d_arrayliteralTX(T)(size_t length) @trusted pure nothrow
+{
+    const allocsize = length * T.sizeof;
+
+    if (allocsize == 0)
+        return null;
+    else
+    {
+        import core.memory : GC;
+        import core.internal.traits : hasIndirections, hasElaborateDestructor;
+        alias BlkAttr = GC.BlkAttr;
+
+        /* Same as in core.internal.array.utils.__typeAttrs!T,
+        *  but don't use a nested template function call here to avoid
+        *  possible linking errors.
+        */
+        uint attrs = BlkAttr.APPENDABLE;
+        static if (!hasIndirections!T)
+            attrs |= BlkAttr.NO_SCAN;
+        static if (is(T == struct) && hasElaborateDestructor!T)
+            attrs |= BlkAttr.FINALIZE;
+
+        return GC.malloc(allocsize, attrs, typeid(T));
+    }
+}
+
+version (D_ProfileGC)
+void* _d_arrayliteralTXTrace(T)(size_t length, string file = __FILE__, int line = __LINE__, string funcname = __FUNCTION__) @trusted pure nothrow
+{
+    version (D_TypeInfo)
+    {
+        import core.internal.array.utils : TraceHook, gcStatsPure, accumulatePure;
+        mixin(TraceHook!((T[]).stringof, "_d_arrayliteralTX"));
+
+        return _d_arrayliteralTX!T(length);
+    }
+    else
+        assert(0);
 }

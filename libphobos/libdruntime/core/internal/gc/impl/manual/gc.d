@@ -23,6 +23,8 @@ import core.gc.gcinterface;
 
 import core.internal.container.array;
 
+import core.thread.threadbase : ThreadBase;
+
 import cstdlib = core.stdc.stdlib : calloc, free, malloc, realloc;
 static import core.memory;
 
@@ -286,5 +288,13 @@ class ManualGC : GC
     bool shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic = false) nothrow
     {
         return false;
+    }
+
+    void initThread(ThreadBase t) nothrow @nogc
+    {
+    }
+
+    void cleanupThread(ThreadBase t) nothrow @nogc
+    {
     }
 }

@@ -151,6 +151,10 @@ version (CRuntime_Glibc)
     /* Determine CPU on which the calling thread is running */
     int sched_getcpu();
 }
+else version (CRuntime_Musl)
+{
+    int sched_getcpu();
+}
 
 /* Reassociate the calling thread with namespace referred to by fd */
 int setns(int fd, int nstype);

@@ -362,7 +362,7 @@ U[] _dup(T, U)(T[] a) if (!__traits(isPOD, T))
 // https://issues.dlang.org/show_bug.cgi?id=24453
 @safe unittest
 {
-    static inout(char)[] foo(ref scope return inout(char)[] s)
+    static inout(char)[] foo(return ref scope inout(char)[] s)
     {
         auto bla = s.idup;
         return s;

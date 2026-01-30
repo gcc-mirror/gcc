@@ -293,12 +293,13 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
-    static if (__USE_LARGEFILE64) void* mmap64(void*, size_t, int, int, int, off_t);
-    static if (__USE_FILE_OFFSET64)
-        alias mmap = mmap64;
-    else
-        void* mmap(void*, size_t, int, int, int, off_t);
+    void* mmap(void*, size_t, int, int, int, off_t);
     int munmap(void*, size_t);
+
+    static if (__USE_LARGEFILE64)
+    {
+        alias mmap64 = mmap;
+    }
 }
 else version (CRuntime_UClibc)
 {

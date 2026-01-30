@@ -22,6 +22,7 @@ import dmd.expression;
 import dmd.globals;
 import dmd.location;
 import dmd.mtype;
+import dmd.templatesem;
 import dmd.typesem;
 import core.stdc.stdio;
 
@@ -165,27 +166,9 @@ TypeInfoDeclaration getTypeInfoAssocArrayDeclaration(TypeAArray t, Scope* sc)
 
     auto ti = TypeInfoAssociativeArrayDeclaration.create(t);
     t.vtinfo = ti; // assign it early to avoid recursion in expressionSemantic
-    Loc loc = t.loc;
-    auto tiargs = new Objects();
-    tiargs.push(t.index); // always called with naked types
-    tiargs.push(t.next);
-
-    Expression id = new IdentifierExp(loc, Id.empty);
-    id = new DotIdExp(loc, id, Id.object);
-    id = new DotIdExp(loc, id, Id.TypeInfo_AssociativeArray);
-    auto tempinst = new DotTemplateInstanceExp(loc, id, Id.Entry, tiargs);
-    auto e = expressionSemantic(tempinst, sc);
-    assert(e.type);
-    ti.entry = e.type;
-    if (auto ts = ti.entry.isTypeStruct())
-    {
-        ts.sym.requestTypeInfo = true;
-        if (auto tmpl = ts.sym.isInstantiated())
-            tmpl.minst = sc._module.importedFrom; // ensure it get's emitted
-    }
-    getTypeInfoType(loc, ti.entry, sc);
-    assert(ti.entry.vtinfo);
-
+    ti._scope = sc;
+    sc.setNoFree();
+    Module.addDeferredSemantic3(ti);
     return ti;
 }
 

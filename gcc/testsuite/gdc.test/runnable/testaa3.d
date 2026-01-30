@@ -314,6 +314,29 @@ int[int] testRetx()
 
 void aafunc(int[int] aa) {}
 
+void testTypeinfo()
+{
+    int[int] a = [ 1:1, 2:4, 3:9, 4:16 ];
+    int[int] b = [ 1:1, 2:4, 3:9, 4:16 ];
+    assert(a == b);
+
+    hash_t ahash1 = hashOf(a);
+    hash_t ahash2 = typeid(a).getHash(&a);
+    assert(ahash1 == ahash2);
+    hash_t bhash1 = hashOf(a);
+    hash_t bhash2 = typeid(a).getHash(&a);
+    assert(bhash1 == bhash2);
+    assert(ahash1 == bhash1);
+    assert(typeid(a).equals(&a, &b));
+
+    string[string] c = [ "1":"one", "2":"two", "3":"three" ];
+    hash_t chash1 = hashOf(c);
+    hash_t chash2 = typeid(c).getHash(&c);
+    assert(chash1 == chash2);
+    assert(chash1 != ahash2);
+    assert(typeid(c).equals(&c, &c));
+}
+
 /***************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=12214
 
@@ -370,6 +393,7 @@ void main()
     assert(testRet());
     static assert(testRet());
 
+    testTypeinfo();
     test12220();
     test12403();
 }

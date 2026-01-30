@@ -133,6 +133,31 @@ void test8()
 }
 
 /*************************************************/
+// https://github.com/dlang/dmd/issues/21549
+
+struct Test9
+{
+    size_t a, b = 3;
+    this(int x)
+	{
+		a = x;
+	}
+}
+
+void new9(ref Test9 p)
+{
+    new(p) Test9(1);
+}
+
+void test9()
+{
+	Test9 t9 = void;
+	new9(t9);
+	assert(t9.a == 1);
+	// assert(t9.b == 3);  // Test9.init not copied yet
+}
+
+/*************************************************/
 
 int main()
 {
@@ -144,6 +169,7 @@ int main()
     test6();
     test7();
     test8();
+    test9();
 
     return 0;
 }

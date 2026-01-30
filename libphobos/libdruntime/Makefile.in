@@ -205,7 +205,7 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/internal/array/equality.lo \
 	core/internal/array/operations.lo core/internal/array/utils.lo \
 	core/internal/atomic.lo core/internal/attributes.lo \
-	core/internal/container/array.lo \
+	core/internal/cast_.lo core/internal/container/array.lo \
 	core/internal/container/common.lo \
 	core/internal/container/hashtab.lo \
 	core/internal/container/treap.lo core/internal/convert.lo \
@@ -248,12 +248,11 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	gcc/sections/pecoff.lo gcc/simd.lo gcc/unwind/arm.lo \
 	gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
-	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
-	rt/arraycat.lo rt/cast_.lo rt/config.lo rt/critical_.lo \
-	rt/deh.lo rt/dmain2.lo rt/ehalloc.lo rt/invariant_.lo \
-	rt/lifetime.lo rt/memory.lo rt/minfo.lo rt/monitor_.lo \
-	rt/profilegc.lo rt/sections.lo rt/tlsgc.lo rt/util/typeinfo.lo \
-	rt/util/utility.lo
+	object.lo rt/aApply.lo rt/aApplyR.lo rt/arraycat.lo \
+	rt/config.lo rt/critical_.lo rt/deh.lo rt/dmain2.lo \
+	rt/ehalloc.lo rt/invariant_.lo rt/lifetime.lo rt/memory.lo \
+	rt/minfo.lo rt/monitor_.lo rt/profilegc.lo rt/sections.lo \
+	rt/tlsgc.lo rt/util/typeinfo.lo rt/util/utility.lo
 am__objects_2 = core/stdc/libgdruntime_la-errno_.lo \
 	etc/valgrind/libgdruntime_la-valgrind_.lo
 am__objects_3 = core/sys/elf/package.lo
@@ -265,31 +264,32 @@ am__objects_4 = core/stdcpp/allocator.lo core/stdcpp/array.lo \
 	core/stdcpp/vector.lo core/stdcpp/xutility.lo
 am__objects_5 = core/sys/posix/aio.lo core/sys/posix/arpa/inet.lo \
 	core/sys/posix/config.lo core/sys/posix/dirent.lo \
-	core/sys/posix/dlfcn.lo core/sys/posix/fcntl.lo \
-	core/sys/posix/grp.lo core/sys/posix/iconv.lo \
-	core/sys/posix/inttypes.lo core/sys/posix/libgen.lo \
-	core/sys/posix/locale.lo core/sys/posix/mqueue.lo \
-	core/sys/posix/net/if_.lo core/sys/posix/netdb.lo \
-	core/sys/posix/netinet/in_.lo core/sys/posix/netinet/tcp.lo \
-	core/sys/posix/poll.lo core/sys/posix/pthread.lo \
-	core/sys/posix/pwd.lo core/sys/posix/sched.lo \
-	core/sys/posix/semaphore.lo core/sys/posix/setjmp.lo \
-	core/sys/posix/signal.lo core/sys/posix/spawn.lo \
-	core/sys/posix/stdc/time.lo core/sys/posix/stdio.lo \
-	core/sys/posix/stdlib.lo core/sys/posix/string.lo \
-	core/sys/posix/strings.lo core/sys/posix/sys/filio.lo \
-	core/sys/posix/sys/ioccom.lo core/sys/posix/sys/ioctl.lo \
-	core/sys/posix/sys/ipc.lo core/sys/posix/sys/mman.lo \
-	core/sys/posix/sys/msg.lo core/sys/posix/sys/resource.lo \
-	core/sys/posix/sys/select.lo core/sys/posix/sys/shm.lo \
-	core/sys/posix/sys/socket.lo core/sys/posix/sys/stat.lo \
-	core/sys/posix/sys/statvfs.lo core/sys/posix/sys/time.lo \
-	core/sys/posix/sys/ttycom.lo core/sys/posix/sys/types.lo \
-	core/sys/posix/sys/uio.lo core/sys/posix/sys/un.lo \
-	core/sys/posix/sys/utsname.lo core/sys/posix/sys/wait.lo \
-	core/sys/posix/syslog.lo core/sys/posix/termios.lo \
-	core/sys/posix/time.lo core/sys/posix/ucontext.lo \
-	core/sys/posix/unistd.lo core/sys/posix/utime.lo
+	core/sys/posix/dlfcn.lo core/sys/posix/endian.lo \
+	core/sys/posix/fcntl.lo core/sys/posix/grp.lo \
+	core/sys/posix/iconv.lo core/sys/posix/inttypes.lo \
+	core/sys/posix/libgen.lo core/sys/posix/locale.lo \
+	core/sys/posix/mqueue.lo core/sys/posix/net/if_.lo \
+	core/sys/posix/netdb.lo core/sys/posix/netinet/in_.lo \
+	core/sys/posix/netinet/tcp.lo core/sys/posix/poll.lo \
+	core/sys/posix/pthread.lo core/sys/posix/pwd.lo \
+	core/sys/posix/sched.lo core/sys/posix/semaphore.lo \
+	core/sys/posix/setjmp.lo core/sys/posix/signal.lo \
+	core/sys/posix/spawn.lo core/sys/posix/stdc/time.lo \
+	core/sys/posix/stdio.lo core/sys/posix/stdlib.lo \
+	core/sys/posix/string.lo core/sys/posix/strings.lo \
+	core/sys/posix/sys/filio.lo core/sys/posix/sys/ioccom.lo \
+	core/sys/posix/sys/ioctl.lo core/sys/posix/sys/ipc.lo \
+	core/sys/posix/sys/mman.lo core/sys/posix/sys/msg.lo \
+	core/sys/posix/sys/resource.lo core/sys/posix/sys/select.lo \
+	core/sys/posix/sys/shm.lo core/sys/posix/sys/socket.lo \
+	core/sys/posix/sys/stat.lo core/sys/posix/sys/statvfs.lo \
+	core/sys/posix/sys/time.lo core/sys/posix/sys/ttycom.lo \
+	core/sys/posix/sys/types.lo core/sys/posix/sys/uio.lo \
+	core/sys/posix/sys/un.lo core/sys/posix/sys/utsname.lo \
+	core/sys/posix/sys/wait.lo core/sys/posix/syslog.lo \
+	core/sys/posix/termios.lo core/sys/posix/time.lo \
+	core/sys/posix/ucontext.lo core/sys/posix/unistd.lo \
+	core/sys/posix/utime.lo
 @DRUNTIME_OS_POSIX_TRUE@am__objects_6 = $(am__objects_5)
 am__objects_7 = core/sys/darwin/config.lo \
 	core/sys/darwin/crt_externs.lo core/sys/darwin/dlfcn.lo \
@@ -870,13 +870,13 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/array/construction.d core/internal/array/duplication.d \
 	core/internal/array/equality.d core/internal/array/operations.d \
 	core/internal/array/utils.d core/internal/atomic.d \
-	core/internal/attributes.d core/internal/container/array.d \
-	core/internal/container/common.d core/internal/container/hashtab.d \
-	core/internal/container/treap.d core/internal/convert.d \
-	core/internal/dassert.d core/internal/destruction.d \
-	core/internal/entrypoint.d core/internal/gc/bits.d \
-	core/internal/gc/blkcache.d core/internal/gc/blockmeta.d \
-	core/internal/gc/impl/conservative/gc.d \
+	core/internal/attributes.d core/internal/cast_.d \
+	core/internal/container/array.d core/internal/container/common.d \
+	core/internal/container/hashtab.d core/internal/container/treap.d \
+	core/internal/convert.d core/internal/dassert.d \
+	core/internal/destruction.d core/internal/entrypoint.d \
+	core/internal/gc/bits.d core/internal/gc/blkcache.d \
+	core/internal/gc/blockmeta.d core/internal/gc/impl/conservative/gc.d \
 	core/internal/gc/impl/manual/gc.d core/internal/gc/impl/proto/gc.d \
 	core/internal/gc/os.d core/internal/gc/pooltable.d \
 	core/internal/gc/proxy.d core/internal/hash.d core/internal/lifetime.d \
@@ -907,11 +907,10 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	gcc/sections/macho.d gcc/sections/package.d gcc/sections/pecoff.d \
 	gcc/simd.d gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
 	gcc/unwind/generic.d gcc/unwind/package.d gcc/unwind/pe.d object.d \
-	rt/aApply.d rt/aApplyR.d rt/aaA.d rt/adi.d rt/arraycat.d rt/cast_.d \
-	rt/config.d rt/critical_.d rt/deh.d rt/dmain2.d rt/ehalloc.d \
-	rt/invariant_.d rt/lifetime.d rt/memory.d rt/minfo.d rt/monitor_.d \
-	rt/profilegc.d rt/sections.d rt/tlsgc.d rt/util/typeinfo.d \
-	rt/util/utility.d
+	rt/aApply.d rt/aApplyR.d rt/arraycat.d rt/config.d rt/critical_.d \
+	rt/deh.d rt/dmain2.d rt/ehalloc.d rt/invariant_.d rt/lifetime.d \
+	rt/memory.d rt/minfo.d rt/monitor_.d rt/profilegc.d rt/sections.d \
+	rt/tlsgc.d rt/util/typeinfo.d rt/util/utility.d
 
 DRUNTIME_DSOURCES_STDCXX = core/stdcpp/allocator.d core/stdcpp/array.d \
 	core/stdcpp/exception.d core/stdcpp/memory.d core/stdcpp/new_.d \
@@ -1009,15 +1008,15 @@ DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
-	core/sys/posix/dirent.d core/sys/posix/dlfcn.d core/sys/posix/fcntl.d \
-	core/sys/posix/grp.d core/sys/posix/iconv.d core/sys/posix/inttypes.d \
-	core/sys/posix/libgen.d core/sys/posix/locale.d \
-	core/sys/posix/mqueue.d core/sys/posix/net/if_.d \
-	core/sys/posix/netdb.d core/sys/posix/netinet/in_.d \
-	core/sys/posix/netinet/tcp.d core/sys/posix/poll.d \
-	core/sys/posix/pthread.d core/sys/posix/pwd.d core/sys/posix/sched.d \
-	core/sys/posix/semaphore.d core/sys/posix/setjmp.d \
-	core/sys/posix/signal.d core/sys/posix/spawn.d \
+	core/sys/posix/dirent.d core/sys/posix/dlfcn.d core/sys/posix/endian.d \
+	core/sys/posix/fcntl.d core/sys/posix/grp.d core/sys/posix/iconv.d \
+	core/sys/posix/inttypes.d core/sys/posix/libgen.d \
+	core/sys/posix/locale.d core/sys/posix/mqueue.d \
+	core/sys/posix/net/if_.d core/sys/posix/netdb.d \
+	core/sys/posix/netinet/in_.d core/sys/posix/netinet/tcp.d \
+	core/sys/posix/poll.d core/sys/posix/pthread.d core/sys/posix/pwd.d \
+	core/sys/posix/sched.d core/sys/posix/semaphore.d \
+	core/sys/posix/setjmp.d core/sys/posix/signal.d core/sys/posix/spawn.d \
 	core/sys/posix/stdc/time.d core/sys/posix/stdio.d \
 	core/sys/posix/stdlib.d core/sys/posix/string.d \
 	core/sys/posix/strings.d core/sys/posix/sys/filio.d \
@@ -1257,6 +1256,7 @@ core/internal/array/operations.lo:  \
 core/internal/array/utils.lo: core/internal/array/$(am__dirstamp)
 core/internal/atomic.lo: core/internal/$(am__dirstamp)
 core/internal/attributes.lo: core/internal/$(am__dirstamp)
+core/internal/cast_.lo: core/internal/$(am__dirstamp)
 core/internal/container/$(am__dirstamp):
 	@$(MKDIR_P) core/internal/container
 	@: > core/internal/container/$(am__dirstamp)
@@ -1411,10 +1411,7 @@ rt/$(am__dirstamp):
 	@: > rt/$(am__dirstamp)
 rt/aApply.lo: rt/$(am__dirstamp)
 rt/aApplyR.lo: rt/$(am__dirstamp)
-rt/aaA.lo: rt/$(am__dirstamp)
-rt/adi.lo: rt/$(am__dirstamp)
 rt/arraycat.lo: rt/$(am__dirstamp)
-rt/cast_.lo: rt/$(am__dirstamp)
 rt/config.lo: rt/$(am__dirstamp)
 rt/critical_.lo: rt/$(am__dirstamp)
 rt/deh.lo: rt/$(am__dirstamp)
@@ -1466,6 +1463,7 @@ core/sys/posix/arpa/inet.lo: core/sys/posix/arpa/$(am__dirstamp)
 core/sys/posix/config.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/dirent.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/dlfcn.lo: core/sys/posix/$(am__dirstamp)
+core/sys/posix/endian.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/fcntl.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/grp.lo: core/sys/posix/$(am__dirstamp)
 core/sys/posix/iconv.lo: core/sys/posix/$(am__dirstamp)

@@ -64,21 +64,6 @@ DEF_D_RUNTIME (CALLFINALIZER, "_d_callfinalizer", RT(VOID), P1(VOIDPTR), 0)
 DEF_D_RUNTIME (CALLINTERFACEFINALIZER, "_d_callinterfacefinalizer", RT(VOID),
 	       P1(VOIDPTR), 0)
 
-/* Used for casting to a class or interface.  */
-DEF_D_RUNTIME (DYNAMIC_CAST, "_d_dynamic_cast", RT(OBJECT),
-	       P2(OBJECT, CLASSINFO), 0)
-DEF_D_RUNTIME (INTERFACE_CAST, "_d_interface_cast", RT(OBJECT),
-	       P2(OBJECT, CLASSINFO), 0)
-
-/* Used for allocating an array literal on the GC heap.  */
-DEF_D_RUNTIME (ARRAYLITERALTX, "_d_arrayliteralTX", RT(VOIDPTR),
-	       P2(CONST_TYPEINFO, SIZE_T), 0)
-
-/* Used for value equality (x == y) and comparisons (x < y) of non-trivial
-   arrays.  Such as an array of structs or classes.  */
-DEF_D_RUNTIME (ADEQ2, "_adEq2", RT(INT),
-	       P3(ARRAY_VOID, ARRAY_VOID, CONST_TYPEINFO), 0)
-
 /* Used for (array.length = n) expressions.  The `i' variant is for when the
    initializer is nonzero.  */
 DEF_D_RUNTIME (ARRAYSETLENGTHT, "_d_arraysetlengthT", RT(ARRAY_VOID),
@@ -105,31 +90,6 @@ DEF_D_RUNTIME (ARRAYAPPENDCD, "_d_arrayappendcd", RT(ARRAY_VOID),
 	       P2(ARRAYPTR_BYTE, DCHAR), 0)
 DEF_D_RUNTIME (ARRAYAPPENDWD, "_d_arrayappendwd", RT(ARRAY_VOID),
 	       P2(ARRAYPTR_BYTE, DCHAR), 0)
-
-/* Used for allocating a new associative array.  */
-DEF_D_RUNTIME (ASSOCARRAYLITERALTX, "_d_assocarrayliteralTX", RT(VOIDPTR),
-	       P3(CONST_TYPEINFO, ARRAY_VOID, ARRAY_VOID), 0)
-DEF_D_RUNTIME (AANEW, "_aaNew", RT(VOIDPTR), P1(CONST_TYPEINFO), 0)
-
-/* Used for value equality of two associative arrays.  */
-DEF_D_RUNTIME (AAEQUAL, "_aaEqual", RT(INT),
-	       P3(CONST_TYPEINFO, ASSOCARRAY, ASSOCARRAY), 0)
-
-/* Used to determine is a key exists in an associative array.  */
-DEF_D_RUNTIME (AAINX, "_aaInX", RT(VOIDPTR),
-	       P3(ASSOCARRAY, CONST_TYPEINFO, VOIDPTR), 0)
-
-/* Used to retrieve a value from an associative array index by a key.  The
-   `Rvalue' variant returns null if the key is not found, where as aaGetY
-   will create new key entry for assignment.  */
-DEF_D_RUNTIME (AAGETY, "_aaGetY", RT(VOIDPTR),
-	       P4(POINTER_ASSOCARRAY, CONST_TYPEINFO, SIZE_T, VOIDPTR), 0)
-DEF_D_RUNTIME (AAGETRVALUEX, "_aaGetRvalueX", RT(VOIDPTR),
-	       P4(ASSOCARRAY, CONST_TYPEINFO, SIZE_T, VOIDPTR), 0)
-
-/* Used when calling delete on a key entry in an associative array.  */
-DEF_D_RUNTIME (AADELX, "_aaDelX", RT(BOOL),
-	       P3(ASSOCARRAY, CONST_TYPEINFO, VOIDPTR), 0)
 
 /* Used for throw() expressions.  */
 DEF_D_RUNTIME (THROW, "_d_throw", RT(VOID), P1(OBJECT), ECF_NORETURN)

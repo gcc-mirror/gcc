@@ -5,7 +5,7 @@ class C { A!int[1] array; }
 
 void test14838() pure nothrow @nogc @safe
 {
-    C c;
+    scope C c = new C;
     c.__xdtor();    // C.~this() will also be inferred to
                     // pure nothrow @nogc @safe
 

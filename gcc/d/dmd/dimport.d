@@ -141,13 +141,6 @@ extern (C++) final class Import : Dsymbol
         scopesym.addAccessiblePackage(mod, visibility); // d
      }
 
-    override Dsymbol toAlias()
-    {
-        if (aliasId)
-            return mod;
-        return this;
-    }
-
     override bool overloadInsert(Dsymbol s)
     {
         /* Allow multiple imports with the same package base, but disallow

@@ -6301,6 +6301,7 @@ public:
         $(BOOKTABLE,
         $(TR $(TD SysTime) $(TD +) $(TD Duration) $(TD -->) $(TD SysTime))
         $(TR $(TD SysTime) $(TD -) $(TD Duration) $(TD -->) $(TD SysTime))
+        $(TR $(TD Duration) $(TD +) $(TD SysTime) $(TD -->) $(TD SysTime))
         )
 
         Params:
@@ -6314,6 +6315,13 @@ public:
         immutable hnsecs = duration.total!"hnsecs";
         mixin("retval._stdTime " ~ op ~ "= hnsecs;");
         return retval;
+    }
+
+    /// ditto
+    SysTime opBinaryRight(string op)(Duration duration) const @safe pure nothrow
+    if (op == "+")
+    {
+        return this + duration;
     }
 
     ///
@@ -6333,6 +6341,9 @@ public:
 
         assert(SysTime(DateTime(2016, 1, 1, 0, 59, 59)) - hours(1) ==
                SysTime(DateTime(2015, 12, 31, 23, 59, 59)));
+
+        assert(SysTime(DateTime(2015, 12, 31, 23, 59, 59)) + seconds(1) ==
+               seconds(1) + SysTime(DateTime(2015, 12, 31, 23, 59, 59)));
     }
 
     @safe unittest

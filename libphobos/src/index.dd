@@ -307,6 +307,11 @@ $(BOOKTABLE ,
         $(TD An arbitrary-precision integer type.)
     )
     $(TR
+        $(TDNW $(MREF std,int128))
+        $(TDNW $(MREF core,int128))
+        $(TD 128 bit-precision integer type.)
+    )
+    $(TR
         $(TDNW $(MREF std,complex))
         $(TD A complex number type.)
     )

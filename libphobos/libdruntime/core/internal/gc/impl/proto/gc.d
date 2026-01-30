@@ -3,6 +3,10 @@ module core.internal.gc.impl.proto.gc;
 
 import core.gc.gcinterface;
 
+import core.gc.registry : GCThreadInitFunction, threadInit;
+
+import core.thread.threadbase : ThreadBase;
+
 import core.internal.container.array;
 
 import cstdlib = core.stdc.stdlib : calloc, free, malloc, realloc;
@@ -28,10 +32,14 @@ private
     extern (C) void gc_addRoot(const void* p ) nothrow @nogc;
 }
 
+
 class ProtoGC : GC
 {
     Array!Root roots;
     Array!Range ranges;
+
+    // stored on first use, which should be called whenever rt_init is called.
+    private GCThreadInitFunction _initThreadFn;
 
     // Call this function when initializing the real GC
     // upon ProtoGC term. This function should be called
@@ -260,5 +268,24 @@ class ProtoGC : GC
     bool shrinkArrayUsed(void[] slice, size_t existingUsed, bool atomic = false) nothrow
     {
         return false;
+    }
+
+    void initThread(ThreadBase thread) nothrow
+    {
+        if (_initThreadFn is null)
+        {
+            static void defaultThreadInit(ThreadBase base) nothrow @nogc { }
+            import core.gc.config;
+            config.initialize();
+            _initThreadFn = .threadInit(config.gc);
+            if (_initThreadFn is null)
+                _initThreadFn = &defaultThreadInit;
+        }
+
+        _initThreadFn(thread);
+    }
+
+    void cleanupThread(ThreadBase thread)
+    {
     }
 }

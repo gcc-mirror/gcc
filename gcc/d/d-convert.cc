@@ -448,13 +448,6 @@ convert_expr (tree exp, Type *etype, Type *totype)
 
 	      break;
 	    }
-
-	  /* The offset can only be determined at run-time, do dynamic cast.  */
-	  libcall_fn libcall = cdfrom->isInterfaceDeclaration ()
-	    ? LIBCALL_INTERFACE_CAST : LIBCALL_DYNAMIC_CAST;
-
-	  return build_libcall (libcall, totype, 2, exp,
-				build_address (get_classinfo_decl (cdto)));
 	}
       /* else default conversion.  */
       break;

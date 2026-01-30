@@ -41,6 +41,8 @@ void main()
     testTombstonePurging();
     testClear();
     testTypeInfoCollect();
+    testNew();
+    testAliasThis();
 }
 
 void testKeysValues1()
@@ -946,4 +948,43 @@ void testTypeInfoCollect()
         auto p = new void*[1];
     s = null; // clear any reference to the entry
     GC.collect(); // used to segfault.
+}
+
+void testNew()
+{
+    auto aa = new long[int]; // call _d_newAA
+    assert(aa.length == 0);
+    foreach (i; 0 .. 100)
+        aa[i] = i * 2;
+    assert(aa.length == 100);
+
+    // not supported in CTFE (it doesn't do much anyway):
+    // static auto aa = new long[int];
+}
+
+void testAliasThis()
+{
+    static struct S
+    {
+        __gshared int numCopies;
+
+        ubyte[long] aa;
+        S* next;
+
+        this(this) { numCopies++; }
+
+        alias aa this;
+    }
+    S s;
+    long key = 1;
+    s.aa[1] = 1; // create and insert
+    assert(S.numCopies == 0);
+    if (auto p = 1 in s)
+        *p = 2;
+    if (auto p = key in s)
+        *p = 3;
+    if (auto p = () { return 1; }() in s)
+        *p = 4;
+    s.remove(1);
+    assert(S.numCopies == 0);
 }

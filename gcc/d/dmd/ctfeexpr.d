@@ -26,7 +26,7 @@ import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
 import dmd.func;
-import dmd.globals;
+import dmd.globals : dinteger_t, sinteger_t, uinteger_t;
 import dmd.location;
 import dmd.mtype;
 import dmd.root.bitarray;
@@ -241,6 +241,7 @@ UnionExp copyLiteral(Expression e)
         AssocArrayLiteralExp r = ue.exp().isAssocArrayLiteralExp();
         r.type = aae.type;
         r.lowering = aae.lowering;
+        r.loweringCtfe = aae.loweringCtfe;
         r.ownedByCtfe = OwnedBy.ctfe;
         return ue;
     }
@@ -1459,7 +1460,7 @@ UnionExp ctfeCat(Loc loc, Type type, Expression e1, Expression e2)
 /*  Given an AA literal 'ae', and a key 'e2':
  *  Return ae[e2] if present, or NULL if not found.
  */
-Expression findKeyInAA(Loc loc, AssocArrayLiteralExp ae, Expression e2)
+Expression findKeyInAA(Loc loc, AssocArrayLiteralExp ae, Expression e2, size_t* pidx = null)
 {
     /* Search the keys backwards, in case there are duplicate keys
      */
@@ -1470,6 +1471,8 @@ Expression findKeyInAA(Loc loc, AssocArrayLiteralExp ae, Expression e2)
         const int eq = ctfeEqual(loc, EXP.equal, ekey, e2);
         if (eq)
         {
+            if (pidx)
+                *pidx = i;
             return (*ae.values)[i];
         }
     }
@@ -1583,11 +1586,6 @@ Expression ctfeCast(UnionExp* pue, Loc loc, Type type, Type to, Expression e, bo
  */
 void assignInPlace(Expression dest, Expression src)
 {
-    if (!(dest.op == EXP.structLiteral || dest.op == EXP.arrayLiteral || dest.op == EXP.string_))
-    {
-        printf("invalid op %d %d\n", src.op, dest.op);
-        assert(0);
-    }
     Expressions* oldelems;
     Expressions* newelems;
     if (dest.op == EXP.structLiteral)
@@ -1620,6 +1618,16 @@ void assignInPlace(Expression dest, Expression src)
     else if (src.op == EXP.arrayLiteral && dest.op == EXP.string_)
     {
         sliceAssignStringFromArrayLiteral(dest.isStringExp(), src.isArrayLiteralExp(), 0);
+        return;
+    }
+    else if (dest.op == EXP.int64 && src.op == EXP.int64)
+    {
+        dest.isIntegerExp().setInteger(src.isIntegerExp().getInteger());
+        return;
+    }
+    else if (dest.op == EXP.float64 && src.op == EXP.float64)
+    {
+        dest.isRealExp().value = src.isRealExp().value;
         return;
     }
     else
@@ -1829,6 +1837,9 @@ bool isCtfeValueValid(Expression newval)
             (
                 (e1.op == EXP.structLiteral || e1.op == EXP.arrayLiteral) && isCtfeValueValid(e1) ||
                  e1.op == EXP.variable ||
+                 e1.op == EXP.int64 ||
+                 e1.op == EXP.float64 ||
+                 e1.op == EXP.string_ ||
                  e1.op == EXP.dotVariable && isCtfeReferenceValid(e1) ||
                  e1.op == EXP.index && isCtfeReferenceValid(e1) ||
                  e1.op == EXP.slice && e1.type.toBasetype().ty == Tsarray

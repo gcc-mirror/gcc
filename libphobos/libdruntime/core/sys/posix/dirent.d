@@ -394,16 +394,14 @@ else version (CRuntime_Musl)
 
     struct DIR
     {
+        // Managed by OS
     }
 
-    static if ( __USE_FILE_OFFSET64 )
+    dirent* readdir(DIR*);
+
+    static if (__USE_LARGEFILE64)
     {
-        dirent* readdir64(DIR*);
-        alias   readdir64 readdir;
-    }
-    else
-    {
-        dirent* readdir(DIR*);
+        alias readdir64 = readdir;
     }
 }
 else version (CRuntime_UClibc)

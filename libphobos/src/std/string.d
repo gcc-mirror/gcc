@@ -6864,6 +6864,11 @@ if (isConvertibleToString!Range)
  *  tabsize = column spacing of tabs in firstindent[] and indent[]
  * Returns:
  *  resulting paragraph as an allocated string
+ * Bugs:
+ *  Columns are counted as the number of code points in the string. This may
+ *  not correspond with the actual number of columns displayed if the string
+ *  contains combining characters, modifiers, zero-width characters, or
+ *  double-width characters.
  */
 
 S wrap(S)(S s, in size_t columns = 80, S firstindent = null,

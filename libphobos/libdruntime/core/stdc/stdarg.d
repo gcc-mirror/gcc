@@ -130,6 +130,8 @@ else version (AAPCS32)
 else version (AAPCS64)
 {
     alias va_list = core.internal.vararg.aarch64.va_list;
+    version (DigitalMars)
+        public import core.internal.vararg.aarch64 : __va_list, __va_list_tag;
 }
 else version (RISCV_Any)
 {

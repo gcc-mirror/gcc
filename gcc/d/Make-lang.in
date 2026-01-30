@@ -135,10 +135,9 @@ D_FRONTEND_OBJS = \
 	d/func.o \
 	d/funcsem.o \
 	d/globals.o \
-	d/gluelayer.o \
 	d/hdrgen.o \
-	d/iasm.o \
-	d/iasmgcc.o \
+	d/iasm-package.o \
+	d/iasm-gcc.o \
 	d/id.o \
 	d/identifier.o \
 	d/impcnvtab.o \
@@ -417,6 +416,10 @@ d/%.o: d/dmd/%.d
 	$(DPOSTCOMPILE)
 
 d/common-%.o: d/dmd/common/%.d
+	$(DCOMPILE) $(D_INCLUDES) $<
+	$(DPOSTCOMPILE)
+
+d/iasm-%.o: d/dmd/iasm/%.d
 	$(DCOMPILE) $(D_INCLUDES) $<
 	$(DPOSTCOMPILE)
 

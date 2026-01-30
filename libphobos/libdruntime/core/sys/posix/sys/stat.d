@@ -263,8 +263,16 @@ version (linux)
     {
         struct stat_t
         {
-            c_ulong     st_dev;
-            c_long[3]   st_pad1;
+            version (CRuntime_Musl)
+            {
+                dev_t       st_dev;
+                c_long[2]   st_pad1;
+            }
+            else
+            {
+                c_ulong     st_dev;
+                c_long[3]   st_pad1;
+            }
             ino_t       st_ino;
             mode_t      st_mode;
             nlink_t     st_nlink;
