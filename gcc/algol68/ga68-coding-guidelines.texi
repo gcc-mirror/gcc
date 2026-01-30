@@ -441,7 +441,7 @@ proc hash_string (string s)
 @node Closed clauses
 @section Closed clauses
 
-Algol 68 allows using @code{(} an @code{)} instead of @code{begin} and
+Algol 68 allows using @code{(} and @code{)} instead of @code{begin} and
 @code{end} to delimit closed clauses.  In fact, parenthesized
 expression in other programming languages are realized in Algol 68
 with closed clauses, in a very orthogonal way.  Both forms are useful
