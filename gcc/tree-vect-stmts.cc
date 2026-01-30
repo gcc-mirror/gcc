@@ -3700,7 +3700,6 @@ vectorizable_call (vec_info *vinfo,
   internal_fn cond_fn = (internal_fn_mask_index (ifn) != -1
 			 ? ifn : get_conditional_internal_fn (ifn));
   internal_fn cond_len_fn = get_len_internal_fn (cond_fn);
-  int len_opno = internal_fn_len_index (cond_len_fn);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
   vec_loop_lens *lens = (loop_vinfo ? &LOOP_VINFO_LENS (loop_vinfo) : NULL);
   unsigned int nvectors = vect_get_num_copies (vinfo, slp_node);
@@ -3768,26 +3767,22 @@ vectorizable_call (vec_info *vinfo,
   bool masked_loop_p = loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
   bool len_loop_p = loop_vinfo && LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo);
   unsigned int vect_nargs = nargs;
-  if (len_loop_p)
+  if (len_loop_p && (reduc_idx >= 0 || could_trap || mask_opno >= 0))
     {
-      if (len_opno >= 0)
-	{
-	  ifn = cond_len_fn;
-	  /* COND_* -> COND_LEN_* takes 2 extra arguments:LEN,BIAS.  */
-	  vect_nargs += 2;
-	  /* But unless there's a mask argument already we need that
-	     as well, and an else value.  */
-	  if (mask_opno == -1)
-	    vect_nargs += 2;
-	}
-      else if (reduc_idx >= 0)
-	gcc_unreachable ();
+      ifn = cond_len_fn;
+      /* COND_* -> COND_LEN_* takes 2 extra arguments:LEN,BIAS.  */
+      vect_nargs += 2;
+      /* But unless there's a mask argument already we need that
+	 as well, and an else value.  */
+      if (mask_opno == -1)
+	vect_nargs += 2;
     }
   else if (masked_loop_p && mask_opno == -1 && (reduc_idx >= 0 || could_trap))
     {
       ifn = cond_fn;
       vect_nargs += 2;
     }
+  int len_opno = internal_fn_len_index (ifn);
   if (clz_ctz_arg1)
     ++vect_nargs;
 
@@ -3828,7 +3823,7 @@ vectorizable_call (vec_info *vinfo,
 	      int varg = 0;
 	      /* Add the mask if necessary.  */
 	      if ((masked_loop_p || len_loop_p) && mask_opno == -1
-		  && (reduc_idx >= 0 || could_trap))
+		  && internal_fn_mask_index (ifn) != -1)
 		{
 		  gcc_assert (internal_fn_mask_index (ifn) == varg);
 		  if (masked_loop_p)
@@ -3854,7 +3849,7 @@ vectorizable_call (vec_info *vinfo,
 		}
 	      /* Add the else value if necessary.  */
 	      if ((masked_loop_p || len_loop_p) && mask_opno == -1
-		 && (reduc_idx >= 0 || could_trap))
+		  && internal_fn_else_index (ifn) != -1)
 		{
 		  gcc_assert (internal_fn_else_index (ifn) == varg);
 		  if (reduc_idx >= 0)
