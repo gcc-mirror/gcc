@@ -578,7 +578,10 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT,
 	   bool __dfs_mode>
-    void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline void _Executor<_BiIter, _Alloc, _TraitsT, __dfs_mode>::
     _M_node(_Match_mode __match_mode, _StateIdT __i)
     {
       if (_M_states._M_visited(__i))
