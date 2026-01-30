@@ -1,3 +1,34 @@
+2026-01-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.vw: Update formal grammar to express the GNU extension.
+	* a68-parser.cc (a68_dont_mark_here): Likewise.
+	* a68-parser-scanner.cc (SINGLE_QUOTE_CHAR): Define.
+	(get_next_token): Recognize ' as QUOTE_SYMBOL.
+	(tokenise_source): Acknowledge QUOTE_SYMBOL.
+	* a68-parser-keywords.cc (a68_set_up_tables): Likewise.
+	* a68-parser-bottom-up.cc (reduce_primary_parts): Adjust parser to
+	brief form of selection.
+	* a68-parser-attrs.def (QUOTE_SYMBOL): New attribute.
+	* ga68.texi (Brief selection): New section.
+
+2026-01-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.vw: Fix grammar for formal holes.
+	* ga68.texi (Particular programs): New section.
+	(Comments): Likewise.
+	* a68.h: Prototypes for a68_is_c_mode, a68_make_fomal_hole_decl,
+	a68_lower_formal_hole.
+	* a68-parser-attrs.def (FORMAL_HOLE): New attribute.
+	(LANGUAGE_INDICANT): Likewise.
+	* a68-parser-extract.cc (a68_elaborate_bold_tags): Elaborate
+	language indicants.
+	* a68-parser-moids-check.cc (mode_check_unit): Check mode in
+	formal holes.
+	* a68-low-units.cc (a68_lower_formal_hole): New function.
+	* a68-low.cc (a68_make_formal_hole_decl): Likewise.
+	* a68-moids-misc.cc (a68_is_c_mode): Likewise.
+	* a68-parser-bottom-up.cc (reduce_formal_holes): Likewise.
+
 2026-01-24  Jose E. Marchesi  <jemarch@gnu.org>
 
 	PR algol68/123733

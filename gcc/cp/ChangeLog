@@ -1,3 +1,36 @@
+2026-01-29  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (eval_has_template_arguments): Return immediately after
+	checking alias_template_specialization_p.
+
+2026-01-29  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (eval_type_trait): Assert that finish_trait_expr didn't
+	return error_mark_node.
+
+2026-01-29  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (class_members_of): Adjust comment.
+	(splice): Give an error if the expression doesn't evaluate to
+	a REFLECT_EXPR_P.
+
+2026-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123866
+	* reflect.cc (eval_annotations_of): Use maybe_get_first_fn.
+
+2026-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (build_range_temp): Implement CWG3131 - Value
+	categories and types for the range in iterable expansion statements.
+	Add bool argument defaulted to false.
+	* parser.cc (build_range_temp): Add expansion_stmt_p argument,
+	if true build const decltype(auto) __for_range = range_expr instead of
+	auto &&__for_range = range_expr.
+	(cp_build_range_for_decls): For expansion stmts build __for_range as
+	static constexpr decltype(auto) __for_range = (range_expr);
+	rather than static constexpr auto &&__for_range = range_expr;.
+
 2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR c++/102846

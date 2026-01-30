@@ -1,3 +1,30 @@
+2026-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (__expected::__trivially_replaceable)
+	(__expected::__usable_for_assign)
+	(__expected::__usable_for_trivial_assign)
+	(__expected::__can_reassign_type): New concepts.
+	(expected::operator=): Adjust constraints
+	on existing overloads and add defaulted overload.
+	(expected<cv void, E>::operator=): Likewise.
+	* testsuite/20_util/expected/requirements.cc: Check for trivial
+	and nothrow properties of assignments.
+
+2026-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/source_location: Check __glibcxx_contracts instead
+	of __cpp_lib_contracts.
+	* testsuite/18_support/contracts/includes.cc: New test.
+
+2026-01-29  vspefs  <vspefs@protonmail.com>
+
+	* src/c++23/std.cc.in (invoke_default_violation_handler): Change
+	to invoke_default_contract_violation_handler.
+
+2026-01-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/contracts: Replace non-ASCII characters.
+
 2026-01-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/experimental/Makefile.am: Change AM_CXXFLAGS to use C++20

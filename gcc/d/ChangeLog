@@ -1,3 +1,25 @@
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123407
+	* decl.cc (get_symbol_decl): Handle declarations with matching
+	assembler names, but different TREE_CODE.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123046
+	* d-codegen.cc (build_address): Return `null' when generating the
+	address of a `noreturn' declaration.
+	(d_build_call): Compare TYPE_MAIN_VARIANT of type with `noreturn'.
+	* decl.cc (get_fndecl_arguments): Likewise.
+	* types.cc (finish_aggregate_mode): Likewise.
+	(TypeVisitor::visit (TypeFunction *)): Likewise.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123349
+	* d-spec.cc (lang_specific_driver): Use xstrdup to copy -defaultlib
+	and -debuglib argument, and unconditionally free the old value.
+
 2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/123419

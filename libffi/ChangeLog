@@ -1,3 +1,14 @@
+2026-01-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR libffi/117635
+	* merge.sh: Delete .allow-ai-service and .gail-labels when
+	merging new upstream versions.
+
+2026-01-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR libffi/117635
+	* LOCAL_PATCHES: Add missing patches.
+
 2025-12-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure: Regenerate.

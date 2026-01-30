@@ -1,3 +1,142 @@
+2026-01-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.target/i386/pr116353.c: Move to...
+	* gcc.dg/torture/pr116353.c: ...here.
+
+2026-01-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr11.ads: New test.
+
+2026-01-29  Richard Earnshaw  <rearnsha@arm.com>
+	    Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* lib/target-supports.exp:
+	(check_effective_target_arm_v8_3a_complex_neon_ok_nocache):
+	Split and fill in arm and aarch64 compile options.  Remove the
+	cpu_unset variable.
+	(check_effective_target_arm_v8_2a_fp16_neon_ok_nocache): Likewise.
+	(check_effective_target_arm_v8_3a_fp16_complex_neon_ok_nocache):
+	Likewise.
+	(check_effective_target_arm_neon_ok_nocache): Rework to use
+	-mfpu=auto.
+	(check_effective_target_arm_neon_fp16_ok_nocache): Likewise.
+
+2026-01-29  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-half-float.c:
+	Adjust testcase.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mla-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mls-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-bb-slp-complex-mul-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-half-float.c: Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mla-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c:
+	Likewise.
+	* gcc.dg/vect/complex/fast-math-complex-mul-half-float.c:
+	Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vector-complex_f16.c:
+	Likewise.
+
+2026-01-29  Christopher Bazley  <chris.bazley@arm.com>
+
+	* gcc.target/arm/stack-protector-7.c: Fix dgdirectives.
+
+2026-01-29  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123806
+	* g++.target/riscv/rvv/base/pr123806.C: New test.
+	* g++.target/riscv/rvv/base/pr123808.C: New test.
+	* g++.target/riscv/rvv/base/pr123808-2.C: New test.
+
+2026-01-29  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	* lib/target-supports.exp: Add rvv_zvl_ge_256b_ok.
+	* gcc.target/riscv/rvv/base/pr123626.c: Use new target check.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123407
+	* gdc.dg/pr123407a.d: New test.
+	* gdc.dg/pr123407b.d: New test.
+
+2026-01-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/123871
+	* g++.dg/reflect/error11.C: New test.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123046
+	* gdc.dg/pr123046.d: New test.
+
+2026-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122537
+	* gcc.dg/torture/pr122537.c: New testcase.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123349
+	* gdc.dg/driver_debuglib.d: New test.
+	* gdc.dg/driver_defaultlib.d: New test.
+
+2026-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123596
+	* g++.dg/torture/pr123596.C: New testcase.
+
+2026-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116747
+	* gcc.dg/tree-ssa/cselim-4.c: New testcase.
+
+2026-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123866
+	* g++.dg/reflect/annotations10.C: New test.
+
+2026-01-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/error-selector-1.a68: New test.
+	* algol68/execute/selection-2.a68: Update test.
+	* algol68/execute/selection-5.a68: Likewise.
+
+2026-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/expansion-stmt1.C (N::begin, N::end, O::begin,
+	O::end): Change argument type from B & to const B & or from
+	D & to const D &.
+	* g++.dg/cpp26/expansion-stmt2.C (N::begin, N::end, O::begin,
+	O::end): Likewise.
+	* g++.dg/cpp26/expansion-stmt3.C (N::begin, N::end, O::begin,
+	O::end): Likewise.
+	* g++.dg/cpp26/expansion-stmt16.C: Expect different diagnostics
+	for C++11.
+	* g++.dg/cpp26/expansion-stmt18.C (N::begin, N::end): Change
+	argument type from B & to const B &.
+	* g++.dg/cpp26/expansion-stmt25.C (N::begin, N::end): Likewise.
+	* g++.dg/cpp26/expansion-stmt26.C: New test.
+	* g++.dg/reflect/p3491-2.C (baz): Move workaround to a new
+	function garply, use the previously #if 0 guarded implementation.
+	(garply): New function.
+
+2026-01-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/error-nest-1.a68: New test.
+	* algol68/compile/nest-c-1.a68: Likewise.
+	* algol68/compile/error-nest-5.a68: Likewise.
+	* algol68/compile/error-nest-4.a68: Likewise.
+	* algol68/compile/error-nest-3.a68: Likewise.
+	* algol68/compile/error-nest-2.a68: Likewise.
+
 2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/unchecked_union4.adb: New test.

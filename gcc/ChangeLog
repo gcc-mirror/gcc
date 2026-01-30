@@ -1,3 +1,78 @@
+2026-01-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/123869
+	* optabs.cc (expand_unop): Move the NEG optab
+	handling before the widening code.
+	Move the ABS bitwise expansion from expand_abs_nojump
+	to before the widening code.
+	(expand_abs_nojump): Remove the bitwise expansion trial
+	since expand_unop is called right above.
+
+2026-01-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* expr.cc (emit_group_load_1): Don't call force_reg if orig_src
+	is already a CONCAT.
+
+2026-01-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/options.texi (Options): Point to the "user experience"
+	documentation.
+	* doc/ux.texi (Guidelines for Options): Add some.
+
+2026-01-29  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123806
+	* config/riscv/riscv-string.cc (expand_rawmemchr): Use unified
+	vl_read.
+	(expand_strcmp): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc:
+	* config/riscv/riscv-vector-builtins.cc (function_expander::use_fof_load_insn):
+	Only emit the store and not the VL read.
+	* config/riscv/riscv-vsetvl.cc (get_fof_set_vl_reg): New
+	function.
+	(init_rtl_ssa): New wrapper.
+	(finish_rtl_ssa): Ditto.
+	(emit_fof_read_vls): Emit read_vl after each fault-only-first
+	load.
+	(pass_vsetvl::simple_vsetvl): Call emit_fof_read_vls ().
+	(pass_vsetvl::lazy_vsetvl): Ditto.
+	* config/riscv/vector-iterators.md: Add read_vl unspec.
+	* config/riscv/vector.md (read_vlsi): Unify.
+	(@read_vl<mode>): Ditto.
+	(read_vldi_zero_extend): Ditto.
+	(@pred_fault_load_set_vl<V_VLS:mode><P:mode>): New FoF variant
+	that saves VL in a register.
+	(@pred_fault_load_set_vl<VT:mode><P:mode>): Ditto.
+
+2026-01-29  Filip Kastl  <fkastl@suse.cz>
+
+	* gimple-ssa-pta-constraints.cc (make_param_constraints): Adjust
+	comment: The function only creates varinfos for the parameters,
+	the return value and the static chain.
+
+2026-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122537
+	* tree-ssa-loop-niter.cc (number_of_iterations_lt_to_ne): Register
+	may_be_zero condition when the IV may overflow.
+
+2026-01-29  Sangamesh Mallayya  <swamy.sangamesh@gmail.com>
+
+	* diagnostics/sarif-sink.cc: Move config.h at the begining.
+
+2026-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123596
+	* tree-eh.cc (sink_clobbers): Create a virtual PHI when
+	one is required but not present, queuing arguments
+	for renaming.
+
+2026-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116747
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement): Avoid
+	duplicate stmts in the set of store pairs to process.
+
 2026-01-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/36503
