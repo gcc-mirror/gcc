@@ -2566,6 +2566,8 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
 	  return v.build ();
 	}
     }
+  else if (TREE_CODE (type) == NULLPTR_TYPE && integer_zerop (arg1))
+    return build_zero_cst (type);
   return NULL_TREE;
 }
 
@@ -2788,6 +2790,10 @@ fold_convert_loc (location_t loc, tree type, tree arg)
       tem = fold_ignored_result (arg);
       return fold_build1_loc (loc, NOP_EXPR, type, tem);
 
+    case NULLPTR_TYPE:
+      if (integer_zerop (arg))
+	return build_zero_cst (type);
+      /* FALLTHRU */
     default:
       if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (orig))
 	return fold_build1_loc (loc, NOP_EXPR, type, arg);
