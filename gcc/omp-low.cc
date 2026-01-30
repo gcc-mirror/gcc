@@ -15480,6 +15480,19 @@ diagnose_sb_2 (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
       }
       break;
 
+    case GIMPLE_ASM:
+      {
+	gasm *asm_stmt = as_a <gasm *> (stmt);
+	for (unsigned i = 0; i < gimple_asm_nlabels (asm_stmt); ++i)
+	  {
+	    tree lab = TREE_VALUE (gimple_asm_label_op (asm_stmt, i));
+	    n = splay_tree_lookup (all_labels, (splay_tree_key) lab);
+	    if (n && diagnose_sb_0 (gsi_p, context, (gimple *) n->value))
+	      break;
+	  }
+      }
+      break;
+
     case GIMPLE_RETURN:
       diagnose_sb_0 (gsi_p, context, NULL);
       break;
