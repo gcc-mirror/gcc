@@ -2328,8 +2328,7 @@ toplev::main (int argc, char **argv)
 
   /* Convert the options to an array.  */
   decode_cmdline_options_to_array_default_mask (argc,
-						CONST_CAST2 (const char **,
-							     char **, argv),
+						const_cast<const char **> (argv),
 						&save_decoded_options,
 						&save_decoded_options_count);
 

@@ -579,7 +579,7 @@ static void
 maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 			  const char **object, bool force)
 {
-  const char **object_file = CONST_CAST2 (const char **, char **, object_lst);
+  const char **object_file = const_cast<const char **> (object_lst);
 
   int num_lto_c_args = 1;    /* Allow space for the terminating NULL.  */
 
@@ -623,7 +623,7 @@ maybe_run_lto_and_relink (char **lto_ld_argv, char **object_lst,
 	 objects removed.  */
 
       lto_c_argv = (char **) xcalloc (num_lto_c_args, sizeof (char *));
-      lto_c_ptr = CONST_CAST2 (const char **, char **, lto_c_argv);
+      lto_c_ptr = const_cast<const char **> (lto_c_argv);
 
       *lto_c_ptr++ = lto_wrapper;
 
@@ -921,11 +921,11 @@ main (int argc, char **argv)
      set first, in case a diagnostic is issued.  */
 
   ld1_argv = XCNEWVEC (char *, argc + 4);
-  ld1 = CONST_CAST2 (const char **, char **, ld1_argv);
+  ld1 = const_cast<const char **> (ld1_argv);
   ld2_argv = XCNEWVEC (char *, argc + 11);
-  ld2 = CONST_CAST2 (const char **, char **, ld2_argv);
+  ld2 = const_cast<const char **> (ld2_argv);
   object_lst = XCNEWVEC (char *, argc);
-  object = CONST_CAST2 (const char **, char **, object_lst);
+  object = const_cast<const char **> (object_lst);
 
 #ifdef DEBUG
   debug = true;
@@ -1045,7 +1045,7 @@ main (int argc, char **argv)
   num_c_args += 8;
 
   c_argv = XCNEWVEC (char *, num_c_args);
-  c_ptr = CONST_CAST2 (const char **, char **, c_argv);
+  c_ptr = const_cast<const char **> (c_argv);
 
   if (argc < 2)
     fatal_error (input_location, "no arguments");
@@ -1348,13 +1348,12 @@ main (int argc, char **argv)
 		      if (add_nbr >= add_max)
 			{
 			  int pos =
-			    object - CONST_CAST2 (const char **, char **,
-						  object_lst);
+			    object - const_cast<const char **> (object_lst);
 			  add_max = (add_max == 0) ? 16 : add_max * 2;
 			  object_lst = XRESIZEVEC (char *, object_lst,
                                                    object_nbr + add_max);
-			  object = CONST_CAST2 (const char **, char **,
-						object_lst) + pos;
+			  object =
+			    const_cast<const char **> (object_lst) + pos;
 			  object_nbr += add_max;
 			}
 		      *object++ = xstrdup (buf);
@@ -1518,8 +1517,7 @@ main (int argc, char **argv)
      would otherwise reference them all, hence drag all the corresponding
      objects even if nothing else is referenced.  */
   {
-    const char **export_object_lst
-      = CONST_CAST2 (const char **, char **, object_lst);
+    const char **export_object_lst = const_cast<const char **> (object_lst);
 
     struct id *list = libs.first;
 
@@ -1709,8 +1707,8 @@ main (int argc, char **argv)
       if (strip_flag)
 	{
 	  char **real_strip_argv = XCNEWVEC (char *, 3);
-	  const char ** strip_argv = CONST_CAST2 (const char **, char **,
-						  real_strip_argv);
+	  const char ** strip_argv =
+	    const_cast<const char **> (real_strip_argv);
 
 	  strip_argv[0] = strip_file_name;
 	  strip_argv[1] = output_file;
@@ -2343,7 +2341,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
   void (*quit_handler) (int);
 #endif
   char *real_nm_argv[4];
-  const char **nm_argv = CONST_CAST2 (const char **, char**, real_nm_argv);
+  const char **nm_argv = const_cast<const char **> (real_nm_argv);
   int argc = 0;
   struct pex_obj *pex;
   const char *errmsg;
@@ -2527,7 +2525,7 @@ scan_libraries (const char *prog_name)
   void (*quit_handler) (int);
 #endif
   char *real_ldd_argv[4];
-  const char **ldd_argv = CONST_CAST2 (const char **, char **, real_ldd_argv);
+  const char **ldd_argv = const_cast<const char **> (real_ldd_argv);
   int argc = 0;
   struct pex_obj *pex;
   const char *errmsg;
@@ -3029,8 +3027,7 @@ do_dsymutil (const char *output_file) {
   const char *dsymutil = 0;
   struct pex_obj *pex;
   char **real_argv = XCNEWVEC (char *, verbose ? 4 : 3);
-  const char ** argv = CONST_CAST2 (const char **, char **,
-				    real_argv);
+  const char ** argv = const_cast<const char **> (real_argv);
 /* For cross-builds search the PATH using target-qualified name if we
    have not already found a suitable dsymutil.  In practice, all modern
    versions of dsymutil handle all supported archs, however the approach

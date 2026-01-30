@@ -3397,7 +3397,7 @@ fixup_vla_decls (tree block)
 bool
 fold_mem_refs (tree *const &e, void *data ATTRIBUTE_UNUSED)
 {
-  tree *ref_p = CONST_CAST2 (tree *, const tree *, (const tree *)e);
+  tree *ref_p = const_cast<tree *> (e);
   *ref_p = fold (*ref_p);
   return true;
 }

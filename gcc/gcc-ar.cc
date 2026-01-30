@@ -249,8 +249,7 @@ main (int ac, char **av)
 	  fprintf (stderr, "Cannot open temporary file %s\n", rsp_file);
 	  exit (1);
 	}
-      status = writeargv (
-	  CONST_CAST2 (char * const *, const char **, nargv) + 1, f);
+      status = writeargv (const_cast<char * const *> (nargv) + 1, f);
       if (status)
 	{
 	  fprintf (stderr, "Cannot write to temporary file %s\n", rsp_file);
@@ -273,7 +272,7 @@ main (int ac, char **av)
   /* ??? the const is misplaced in pex_one's argv? */
   err_msg = pex_one (PEX_LAST|PEX_SEARCH,
 		     exe_name,
-		     CONST_CAST2 (char * const *, const char **, nargv),
+		     const_cast<char * const *> (nargv),
 		     concat ("gcc-", exe_name, NULL),
 		     NULL,NULL,  &status, &err);
   if (err_msg)

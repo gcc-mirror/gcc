@@ -7890,7 +7890,7 @@ run_attempt (const char **new_argv, const char *out_temp,
     fatal_error (input_location, "%<pex_init%> failed: %m");
 
   errmsg = pex_run (pex, pex_flags, new_argv[0],
-		    CONST_CAST2 (char *const *, const char **, &new_argv[1]),
+		    const_cast<char *const *> (&new_argv[1]),
 		    out_temp, err_temp, &err);
   if (errmsg != NULL)
     {
