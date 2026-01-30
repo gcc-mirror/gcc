@@ -229,14 +229,13 @@ LTYPE##_remove (LWRAPPERTYPE *wrapper, LTYPE *node)			\
   return previous;							\
 }
 
-/* Generic swap.  */
+/* Swap two nodes in a list.  */
 #define LINKED_LIST_SWAP(LTYPE)			LTYPE##_swap
 
 #define LINKED_LIST_DECL_SWAP(LWRAPPERTYPE, LTYPE, EXPORT)		\
   EXPORT void								\
   LTYPE##_swap (LWRAPPERTYPE *wrapper, LTYPE *node1, LTYPE *node2)
 
-/* Swap two nodes in a list.  */
 #define LINKED_LIST_DEFN_SWAP(LWRAPPERTYPE, LTYPE, EXPORT)		\
 EXPORT void								\
 LTYPE##_swap (LWRAPPERTYPE *wrapper, LTYPE *node1, LTYPE *node2)	\
@@ -276,6 +275,34 @@ LTYPE##_swap (LWRAPPERTYPE *wrapper, LTYPE *node1, LTYPE *node2)	\
   }									\
 }
 
+/* Swap two lists, i.e. swap two wrappers.  */
+#define LINKED_LIST_SWAP_LISTS(LWRAPPERTYPE)	LWRAPPERTYPE##_swap_lists
+
+#define LINKED_LIST_DECL_SWAP_LISTS(LWRAPPERTYPE, LTYPE, EXPORT)	\
+  EXPORT void								\
+  LWRAPPERTYPE##_swap_lists (LWRAPPERTYPE *left_w, LWRAPPERTYPE *right_w)
+
+#define LINKED_LIST_DEFN_SWAP_LISTS(LWRAPPERTYPE, LTYPE, EXPORT)	\
+EXPORT void								\
+LWRAPPERTYPE##_swap_lists (LWRAPPERTYPE *left_w, LWRAPPERTYPE *right_w)	\
+{									\
+  {									\
+    LTYPE *temp = left_w->first;					\
+    left_w->first = right_w->first;					\
+    right_w->first = temp;						\
+  }									\
+  {									\
+    LTYPE *temp = left_w->last;						\
+    left_w->last = right_w->last;					\
+    right_w->last = temp;						\
+  }									\
+  {									\
+    unsigned int temp = left_w->size;					\
+    left_w->size = right_w->size;					\
+    right_w->size = temp;						\
+  }									\
+}
+
 /* Note: all the mutative operations below also update the data in the wrapper,
    i.e. first, last and size.  */
 #define LINKED_LIST_MUTATIVE_OPS_PROTOTYPE(LWRAPPERTYPE, LTYPE, EXPORT)	\
@@ -285,7 +312,8 @@ LTYPE##_swap (LWRAPPERTYPE *wrapper, LTYPE *node1, LTYPE *node2)	\
   LINKED_LIST_DECL_POP_FRONT(LWRAPPERTYPE, LTYPE, EXPORT);		\
   LINKED_LIST_DECL_POP_BACK(LWRAPPERTYPE, LTYPE, EXPORT);		\
   LINKED_LIST_DECL_REMOVE(LWRAPPERTYPE, LTYPE, EXPORT);			\
-  LINKED_LIST_DECL_SWAP(LWRAPPERTYPE, LTYPE, EXPORT)
+  LINKED_LIST_DECL_SWAP(LWRAPPERTYPE, LTYPE, EXPORT);			\
+  LINKED_LIST_DECL_SWAP_LISTS(LWRAPPERTYPE, LTYPE, EXPORT)
 
 #define LINKED_LIST_MUTATIVE_OPS_DECL(LWRAPPERTYPE, LTYPE, EXPORT)	\
   LINKED_LIST_DEFN_APPEND(LWRAPPERTYPE, LTYPE, EXPORT)			\
@@ -294,7 +322,8 @@ LTYPE##_swap (LWRAPPERTYPE *wrapper, LTYPE *node1, LTYPE *node2)	\
   LINKED_LIST_DEFN_POP_FRONT(LWRAPPERTYPE, LTYPE, EXPORT)		\
   LINKED_LIST_DEFN_POP_BACK(LWRAPPERTYPE, LTYPE, EXPORT)		\
   LINKED_LIST_DEFN_REMOVE(LWRAPPERTYPE, LTYPE, EXPORT)			\
-  LINKED_LIST_DEFN_SWAP(LWRAPPERTYPE, LTYPE, EXPORT)
+  LINKED_LIST_DEFN_SWAP(LWRAPPERTYPE, LTYPE, EXPORT);			\
+  LINKED_LIST_DEFN_SWAP_LISTS(LWRAPPERTYPE, LTYPE, EXPORT)
 
 
 /* Sorting.  */

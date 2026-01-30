@@ -190,6 +190,8 @@ const int EXPECT_7 [] = { 10, 9, 2, 4, 3, 8, 11 };
 const int EXPECT_8 [] = { 2, 3, 4, 8, 9, 10, 11 };
 const int EXPECT_9 [] = { 3, 4, 8, 9, 10, 11 };
 const int EXPECT_10 [] = { 3, 4, 8, 9, 10 };
+const int EXPECT_11 [] = { 20, 21, 22 };
+const int EXPECT_12 [] = { 3, 4, 8, 9, 10 };
 const struct test_data_t test_data[] = {
   { .content = EXPECT_0, .size = sizeof(EXPECT_0) / sizeof(EXPECT_0[0]) },
   { .content = EXPECT_1, .size = sizeof(EXPECT_1) / sizeof(EXPECT_1[0]) },
@@ -202,6 +204,8 @@ const struct test_data_t test_data[] = {
   { .content = EXPECT_8, .size = sizeof(EXPECT_8) / sizeof(EXPECT_8[0]) },
   { .content = EXPECT_9, .size = sizeof(EXPECT_9) / sizeof(EXPECT_9[0]) },
   { .content = EXPECT_10, .size = sizeof(EXPECT_10) / sizeof(EXPECT_10[0]) },
+  { .content = EXPECT_11, .size = sizeof(EXPECT_11) / sizeof(EXPECT_11[0]) },
+  { .content = EXPECT_12, .size = sizeof(EXPECT_12) / sizeof(EXPECT_12[0]) },
 };
 
 int main (void)
@@ -271,6 +275,24 @@ int main (void)
   /* Pop back.  */
   LINKED_LIST_POP_BACK(ListNodeType) (&wrapper);
   failures += ! check ("pop_back", &test_data[10], &wrapper);
+
+  LinkedListWrapperType other_wrapper = {
+    .first = NULL,
+    .last = NULL,
+    .size = 0,
+  };
+
+  LINKED_LIST_APPEND(ListNodeType) (&other_wrapper, l_new_node (20));
+  LINKED_LIST_APPEND(ListNodeType) (&other_wrapper, l_new_node (21));
+  LINKED_LIST_APPEND(ListNodeType) (&other_wrapper, l_new_node (22));
+
+  /* Swap wrappers once.  */
+  LINKED_LIST_SWAP_LISTS (LinkedListWrapperType) (&wrapper, &other_wrapper);
+  failures += ! check ("swap wrappers once", &test_data[11], &wrapper);
+
+  /* Swap wrappers twice.  */
+  LINKED_LIST_SWAP_LISTS (LinkedListWrapperType) (&wrapper, &other_wrapper);
+  failures += ! check ("swap wrappers twice", &test_data[12], &wrapper);
 
   exit (failures ? EXIT_FAILURE : EXIT_SUCCESS);
 }
