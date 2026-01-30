@@ -2495,6 +2495,8 @@ finish_asm_stmt (location_t loc, int volatile_p, tree string,
 				"of a function or non-automatic variable");
 		      operand = error_mark_node;
 		    }
+		  else if (TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL)
+		    suppress_warning (TREE_OPERAND (t, 0), OPT_Wunused);
 		}
 	    }
 	  else

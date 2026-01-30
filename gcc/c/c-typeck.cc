@@ -13170,6 +13170,8 @@ build_asm_expr (location_t loc, tree string, tree outputs, tree inputs,
 				 "of a function or non-automatic variable");
 		  input = error_mark_node;
 		}
+	      else if (TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL)
+		suppress_warning (TREE_OPERAND (t, 0), OPT_Wunused);
 	    }
 	}
       else

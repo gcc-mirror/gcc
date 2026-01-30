@@ -1015,10 +1015,11 @@ wrapup_namespace_globals ()
 	      && !TREE_PUBLIC (decl)
 	      && !DECL_ARTIFICIAL (decl)
 	      && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl)
-	      && !warning_suppressed_p (decl, OPT_Wunused_function))
-	    warning_at (DECL_SOURCE_LOCATION (decl),
-			OPT_Wunused_function,
-			"%qF declared %<static%> but never defined", decl);
+	      && !warning_suppressed_p (decl, OPT_Wunused)
+	      && warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wunused_function,
+			     "%qF declared %<static%> but never defined",
+			     decl))
+		suppress_warning (decl, OPT_Wunused);
 
 	  if (VAR_P (decl)
 	      && DECL_EXTERNAL (decl)

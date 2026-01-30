@@ -1111,10 +1111,13 @@ check_global_declaration (symtab_node *snode)
       if (warning_suppressed_p (decl, OPT_Wunused))
 	;
       else if (snode->referred_to_p (/*include_self=*/false))
-	pedwarn (input_location, 0, "%q+F used but never defined", decl);
-      else
-	warning (OPT_Wunused_function, "%q+F declared %<static%> but never "
-				       "defined", decl);
+	{
+	  if (pedwarn (input_location, 0, "%q+F used but never defined", decl))
+	    suppress_warning (decl, OPT_Wunused);
+	}
+      else if (warning (OPT_Wunused_function,
+			"%q+F declared %<static%> but never defined", decl))
+	suppress_warning (decl, OPT_Wunused);
     }
 
   /* Warn about static fns or vars defined but not used.  */

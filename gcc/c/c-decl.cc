@@ -13679,25 +13679,22 @@ c_write_global_declarations_1 (tree globals)
       if (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_INITIAL (decl) == NULL_TREE
 	  && DECL_EXTERNAL (decl)
-	  && !TREE_PUBLIC (decl))
+	  && !TREE_PUBLIC (decl)
+	  && !warning_suppressed_p (decl, OPT_Wunused))
 	{
 	  if (C_DECL_USED (decl))
 	    {
-	      /* TODO: Add OPT_Wundefined-inline.  */
 	      if (pedwarn (input_location, 0, "%q+F used but never defined",
 			   decl))
-		suppress_warning (decl /* OPT_Wundefined-inline.  */);
+		suppress_warning (decl, OPT_Wunused);
 	    }
 	  /* For -Wunused-function warn about unused static prototypes.  */
 	  else if (warn_unused_function
 		   && ! DECL_ARTIFICIAL (decl)
-		   && ! warning_suppressed_p (decl, OPT_Wunused_function))
-	    {
-	      if (warning (OPT_Wunused_function,
-			   "%q+F declared %<static%> but never defined",
-			   decl))
-		suppress_warning (decl, OPT_Wunused_function);
-	    }
+		   && warning (OPT_Wunused_function,
+			       "%q+F declared %<static%> but never defined",
+			       decl))
+	    suppress_warning (decl, OPT_Wunused);
 	}
 
       wrapup_global_declaration_1 (decl);
