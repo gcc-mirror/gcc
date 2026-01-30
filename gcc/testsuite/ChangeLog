@@ -1,3 +1,33 @@
+2026-01-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr11.ads: New test.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123407
+	* gdc.dg/pr123407a.d: New test.
+	* gdc.dg/pr123407b.d: New test.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123046
+	* gdc.dg/pr123046.d: New test.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123349
+	* gdc.dg/driver_debuglib.d: New test.
+	* gdc.dg/driver_defaultlib.d: New test.
+
 2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/unchecked_union4.adb: New test.

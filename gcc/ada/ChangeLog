@@ -1,3 +1,10 @@
+2026-01-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123861
+	* sem_type.adb (Covers): Fix couple of typos in comment.
+	(Specific_Type): Adjust to Covers' handling of types declared
+	with the Aggregate aspect in Ada 2022.
+
 2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/123857
