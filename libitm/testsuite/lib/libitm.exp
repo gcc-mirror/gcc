@@ -9,8 +9,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+# along with this program; if not, see <http://www.gnu.org/licenses/>.
 
 # Damn dejagnu for not having proper library search paths for load_lib.
 # We have to explicitly load everything that gcc-dg.exp wants to load.
@@ -193,14 +192,24 @@ proc libitm_target_compile { source dest type options } {
     global gluefile wrap_flags
     global ALWAYS_CFLAGS
     global GCC_UNDER_TEST
-    global lang_test_file
-    global lang_library_path
+    global lang_library_paths
     global lang_link_flags
+    global lang_include_flags
 
-    if { [info exists lang_test_file] } {
-	if { $blddir != "" } {
+    if { [info exists lang_include_flags] } {
+	lappend options "additional_flags=${lang_include_flags}"
+    }
+
+    if { [info exists lang_library_paths] } {
+	foreach lang_library_path $lang_library_paths {
+	    # targets that use lib[...].a%s in their specs need a -B option
+	    # for uninstalled testing.
+	    lappend options "additional_flags=-B${blddir}/${lang_library_path}"
 	    lappend options "ldflags=-L${blddir}/${lang_library_path}"
 	}
+    }
+
+    if { [info exists lang_link_flags] } {
 	lappend options "ldflags=${lang_link_flags}"
     }
 
@@ -219,7 +228,9 @@ proc libitm_target_compile { source dest type options } {
 	set options [concat "$ALWAYS_CFLAGS" $options]
     }
 
-    set options [dg-additional-files-options $options $source $dest $type]
+    if { $source != "" } {
+        set options [dg-additional-files-options $options $source $dest $type]
+    }
 
     set result [target_compile $source $dest $type $options]
 
