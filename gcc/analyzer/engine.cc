@@ -1575,9 +1575,14 @@ public:
   {
     if (m_is_rethrow)
       {
-	auto eh_node = model->get_current_caught_exception ();
-	gcc_assert (eh_node);
-	model->push_thrown_exception (*eh_node);
+	if (auto eh_node = model->get_current_caught_exception ())
+	  model->push_thrown_exception (*eh_node);
+	else
+	  {
+	    /* We have a rethrow of some unknown exception.
+	       We don't have a good way of representing this;
+	       leave the exception stack empty.  */
+	  }
       }
     else
       {
@@ -1811,8 +1816,15 @@ exploded_node::on_throw (exploded_graph &eg,
   if (is_rethrow)
     {
       const exception_node *eh_node = model->get_current_caught_exception ();
-      gcc_assert (eh_node);
-      type = eh_node->maybe_get_type ();
+      if (eh_node)
+	type = eh_node->maybe_get_type ();
+      else
+	{
+	  /* We have a "throw;" but no exception to rethrow.
+	     Presumably the top-level of the analysis is an
+	     entrypoint for handling exceptions, so we will
+	     simulate fully unwinding.  */
+	}
     }
   else
     {
