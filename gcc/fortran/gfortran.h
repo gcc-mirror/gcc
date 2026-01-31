@@ -4304,6 +4304,15 @@ bool gfc_may_be_finalized (gfc_typespec);
 	(expr && expr->expr_type == EXPR_VARIABLE \
 	 && expr->symtree->n.sym->assoc \
 	 && expr->symtree->n.sym->assoc->inferred_type)
+#define IS_PDT(sym) \
+	(sym != NULL && sym->ts.type == BT_DERIVED \
+	 && sym->ts.u.derived \
+	 && sym->ts.u.derived->attr.pdt_type)
+#define IS_CLASS_PDT(sym) \
+	(sym != NULL && sym->ts.type == BT_CLASS \
+	 && CLASS_DATA (sym) \
+	 && CLASS_DATA (sym)->ts.u.derived \
+	 && CLASS_DATA (sym)->ts.u.derived->attr.pdt_type)
 
 /* frontend-passes.cc */
 

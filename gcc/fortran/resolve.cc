@@ -6080,9 +6080,7 @@ gfc_resolve_ref (gfc_expr *expr)
   n_components = 0;
   array_ref = NULL;
 
-  if (expr->expr_type == EXPR_VARIABLE
-      && expr->symtree->n.sym->ts.type == BT_DERIVED
-      && expr->symtree->n.sym->ts.u.derived->attr.pdt_type)
+  if (expr->expr_type == EXPR_VARIABLE && IS_PDT (expr))
     last_pdt = expr->symtree->n.sym->ts.u.derived;
 
   for (ref = expr->ref; ref; ref = ref->next)
@@ -14918,8 +14916,7 @@ build_init_assign (gfc_symbol *sym, gfc_expr *init)
   gfc_code *init_st;
   gfc_namespace *ns = sym->ns;
 
-  if (sym->attr.function && sym->result == sym
-      && sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
+  if (sym->attr.function && sym->result == sym && IS_PDT (sym))
     {
       gfc_free_expr (init);
       return;
@@ -17061,8 +17058,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       if (!sym->attr.pdt_type)
 	sym->attr.pdt_comp = 1;
     }
-  else if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.pdt_type
-	   && !sym->attr.pdt_type)
+  else if (IS_PDT (c) && !sym->attr.pdt_type)
     sym->attr.pdt_comp = 1;
 
   if (c->attr.proc_pointer && c->ts.interface)

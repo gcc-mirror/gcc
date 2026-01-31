@@ -2248,9 +2248,7 @@ gfc_trans_array_constructor_value (stmtblock_t * pblock,
 	    {
 	      /* Scalar values.  */
 	      gfc_init_se (&se, NULL);
-	      if (c->expr->ts.type == BT_DERIVED
-		  && c->expr->ts.u.derived->attr.pdt_type
-		  && c->expr->expr_type == EXPR_STRUCTURE)
+	      if (IS_PDT (c->expr) && c->expr->expr_type == EXPR_STRUCTURE)
 		c->expr->must_finalize = 1;
 
 	      gfc_trans_array_ctor_element (&body, desc, *poffset,
@@ -3094,7 +3092,7 @@ trans_array_constructor (gfc_ss * ss, locus * where)
   if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.alloc_comp)
     finalize_required = true;
 
-  if (expr->ts.type == BT_DERIVED && expr->ts.u.derived->attr.pdt_type)
+  if (IS_PDT (expr))
    finalize_required = true;
 
   gfc_trans_array_constructor_value (&outer_loop->pre,
@@ -10334,8 +10332,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      && seen_derived_types.contains (CLASS_DATA (c)->ts.u.derived));
       bool inside_wrapper = generating_copy_helper;
 
-      bool is_pdt_type = c->ts.type == BT_DERIVED
-			 && c->ts.u.derived->attr.pdt_type;
+      bool is_pdt_type = IS_PDT (c);
 
       cdecl = c->backend_decl;
       ctype = TREE_TYPE (cdecl);
@@ -10873,8 +10870,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 				  cdecl, NULL_TREE);
 	  dcmp = fold_convert (TREE_TYPE (comp), dcmp);
 
-	  if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.pdt_type
-	      && !c->attr.allocatable)
+	  if (IS_PDT (c) && !c->attr.allocatable)
 	    {
 	      tmp = gfc_copy_alloc_comp (c->ts.u.derived, comp, dcmp,
 					 0, 0);
@@ -11134,8 +11130,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		}
 	    }
 	  else if (c->initializer && !c->attr.pdt_string && !c->attr.pdt_array
-		   && !c->as && !(c->ts.type == BT_DERIVED
-				  && c->ts.u.derived->attr.pdt_type))   /* Take care of arrays.  */
+		   && !c->as && !IS_PDT (c))   /* Take care of arrays.  */
 	    {
 	      gfc_se tse;
 	      gfc_expr *c_expr;
@@ -11183,8 +11178,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 
 	  /* Allocate parameterized arrays of parameterized derived types.  */
 	  if (!(c->attr.pdt_array && c->as && c->as->type == AS_EXPLICIT)
-	      && !((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-		   && (c->ts.u.derived && c->ts.u.derived->attr.pdt_type)))
+	      && !(IS_PDT (c) || IS_CLASS_PDT (c)))
 	    continue;
 
 	  if (c->ts.type == BT_CLASS)
@@ -11283,8 +11277,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	    }
 
 	  /* Recurse in to PDT components.  */
-	  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type
+	  if ((IS_PDT (c) || IS_CLASS_PDT (c))
 	      && !(c->attr.pointer || c->attr.allocatable))
 	    {
 	      gfc_actual_arglist *tail = c->param_list;
@@ -11306,8 +11299,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	     of parameterized derived types.  */
 	  if (!(c->attr.pdt_array && c->as && c->as->type == AS_EXPLICIT)
 	      && !c->attr.pdt_string
-	      && !((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-		   && (c->ts.u.derived && c->ts.u.derived->attr.pdt_type)))
+	      && !(IS_PDT (c) || IS_CLASS_PDT (c)))
 	    continue;
 
 	  comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
@@ -11316,8 +11308,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	    comp = gfc_class_data_get (comp);
 
 	  /* Recurse in to PDT components.  */
-	  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
-	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type
+	  if ((IS_PDT (c) || IS_CLASS_PDT (c))
 	      && (!c->attr.pointer && !c->attr.allocatable))
 	    {
 	      tmp = gfc_deallocate_pdt_comp (c->ts.u.derived, comp,
@@ -11596,9 +11587,7 @@ has_parameterized_comps (gfc_symbol * der_type)
   for (gfc_component *c = der_type->components; c; c = c->next)
     if (c->attr.pdt_array || c->attr.pdt_string)
       parameterized_comps = true;
-    else if (c->ts.type == BT_DERIVED
-	     && c->ts.u.derived->attr.pdt_type
-	     && strcmp (der_type->name, c->ts.u.derived->name))
+    else if (IS_PDT (c) && strcmp (der_type->name, c->ts.u.derived->name))
       parameterized_comps = has_parameterized_comps (c->ts.u.derived);
   return parameterized_comps;
 }

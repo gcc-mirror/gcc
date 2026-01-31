@@ -7947,10 +7947,8 @@ gfc_match_type_is (void)
       return MATCH_ERROR;
     }
 
-  if (c->ts.type == BT_DERIVED
-      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type
-      && gfc_spec_list_type (type_param_spec_list, c->ts.u.derived)
-							!= SPEC_ASSUMED)
+  if (IS_PDT (c) && gfc_spec_list_type (type_param_spec_list,
+					c->ts.u.derived) != SPEC_ASSUMED)
     {
       gfc_error ("All the LEN type parameters in the TYPE IS statement "
 		 "at %C must be ASSUMED");

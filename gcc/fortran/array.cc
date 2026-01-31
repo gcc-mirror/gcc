@@ -2279,9 +2279,7 @@ resolve_array_list (gfc_constructor_base base)
 
       /* For valid expressions, check that the type specification parameters
 	 are the same.  */
-      if (t && !c->iterator && c->expr
-	  && c->expr->ts.type == BT_DERIVED
-	  && c->expr->ts.u.derived->attr.pdt_type)
+      if (t && !c->iterator && c->expr && IS_PDT (c->expr))
 	{
 	  if (expr1 == NULL)
 	    expr1 = c->expr;

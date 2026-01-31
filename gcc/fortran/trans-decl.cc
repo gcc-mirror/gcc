@@ -2100,9 +2100,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE)
       && (flag_coarray != GFC_FCOARRAY_LIB
 	  || !sym->attr.codimension || sym->attr.allocatable)
-      && !(sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
-      && !(sym->ts.type == BT_CLASS
-	   && CLASS_DATA (sym)->ts.u.derived->attr.pdt_type))
+      && !(IS_PDT (sym) || IS_CLASS_PDT (sym)))
     {
       /* Add static initializer. For procedures, it is only needed if
 	 SAVE is specified otherwise they need to be reinitialized
@@ -4580,8 +4578,7 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc,
   gcc_assert (block);
 
   /* Initialization of PDTs is done elsewhere.  */
-  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type
-      && !pdt_ok)
+  if (IS_PDT (sym) && !pdt_ok)
     return;
 
   gcc_assert (!sym->attr.allocatable);
@@ -4924,10 +4921,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	 && proc_sym != proc_sym->result) ? proc_sym->result : NULL;
 
   if (sym && !sym->attr.allocatable && !sym->attr.pointer
-      && sym->ts.type == BT_DERIVED
-      && sym->ts.u.derived
-      && !gfc_has_default_initializer (sym->ts.u.derived)
-      && sym->ts.u.derived->attr.pdt_type)
+      && IS_PDT (sym) && !gfc_has_default_initializer (sym->ts.u.derived))
     {
       gfc_init_block (&tmpblock);
       tmp = gfc_allocate_pdt_comp (sym->ts.u.derived,
@@ -5048,9 +5042,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), NULL);
 	    }
 	}
-      else if (sym->ts.type == BT_CLASS
-	       && CLASS_DATA (sym)->ts.u.derived
-	       && CLASS_DATA (sym)->ts.u.derived->attr.pdt_type)
+      else if (IS_CLASS_PDT (sym))
 	{
 	  gfc_component *data = CLASS_DATA (sym);
 	  is_pdt_type = true;
@@ -8236,8 +8228,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   /* This permits the return value to be correctly initialized, even when the
      function result was not referenced.  */
   if (sym->abr_modproc_decl
-      && sym->ts.type == BT_DERIVED
-      && sym->ts.u.derived->attr.pdt_type
+      && IS_PDT (sym)
       && !sym->attr.allocatable
       && sym->result == sym
       && get_proc_result (sym) == NULL_TREE)
