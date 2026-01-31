@@ -1,3 +1,12 @@
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123264
+	* types.cc (finish_aggregate_type): Propagate struct TYPE_NAME to all
+	TYPE_NEXT_VARIANT types.
+
 2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123264
+	* gdc.dg/pr123264.d: New test.
+
 2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
