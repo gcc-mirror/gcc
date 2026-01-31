@@ -1,3 +1,11 @@
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/123273
+	* lex.cc (cpp_directive_only_process): Only go to done_comment
+	for '/' if star is true and esc is false.  When seeing '\\' with
+	esc set to true, clear esc as well as star instead of keeping esc
+	set.
+
 2026-01-15  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

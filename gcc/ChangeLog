@@ -1,3 +1,128 @@
+2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* match.pd ((zero_one ==/!= 0) ? .. z <op> y .. -> zero_one * z ..):
+	Check evaluating z unconditionally has no side-effects, like
+	trapping.
+
+2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR debug/123886
+	* dwarf2out.cc (sym_off_pair::sym): Remove GTY((skip)).
+
+2026-01-30  Michal Jires  <mjires@suse.cz>
+
+	* doc/extend.texi: Mention flto-toplevel-asm-heuristics.
+	* doc/invoke.texi: Add flto-toplevel-asm-heuristics.
+
+2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR debug/110885
+	* dwarf2out.cc (generate_skeleton_bottom_up): Generate the
+	skeleton ancestor tree when moving a new child to the parent
+	even for template instantiations.
+
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123864
+	* match.pd (__builtin_mul_overflow_p (x, cst, (stype) 0) ->
+	x > stype_max / cst || x < stype_min / cst): Only check
+	integer_minus_onep for signed types.
+
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123790
+	* fold-const.cc (fold_convert_const): Handle conversion of
+	integer_zerop to NULLPTR_TYPE.
+	(fold_convert_loc): Likewise.
+
+2026-01-30  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/123855
+	* path-coverage.cc (flush_on_edges): Only look up SSA name def
+	stmt when counter is non-const.
+
+2026-01-30  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov-dump.cc (tag_paths): New function.
+
+2026-01-30  Jørgen Kvalsvik  <j@lambda.is>
+
+	* common.opt: ftest-coverage enabled by fpath-coverage or
+	fcondition-coverage
+
+2026-01-30  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov-dump.cc (tag_conditions):  Read position before blocks,
+	terms.
+
+2026-01-30  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/121084
+	PR gcov-profile/121123
+	PR gcov-profile/121409
+	* profile.cc (branch_prob): Record seen_locations without
+	discriminators.
+
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123876
+	* omp-low.cc (diagnose_sb_2): Handle GIMPLE_ASM.
+
+2026-01-30  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/123206
+	* config/aarch64/aarch64-builtins.cc (struct aarch64_pragma_builtins_data):
+	Declare array as CONSTEXPR.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Update
+	incorrect uses of TARGET_SIMD to use AARCH64_FL_SIMD instead.
+
+2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109410
+	* tree-ssa-reassoc.cc (build_and_add_sum): Use
+	gsi_start_nondebug_after_labels_bb to look for a possible
+	returns-twice call.
+
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/darwin-d.cc (darwin_d_os_builtins): Add Apple.
+
+2026-01-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/122170
+	* ifcvt.cc (noce_can_force_operand): Don't only check if
+	there is an optab for the code check the entry for the
+	mode is non-null. Handle non integral div by checking
+	optab like force_operand does.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-ftypes.def: Remove unused type.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123766
+	* config/loongarch/loongarch-builtins.cc
+	(loongarch_build_vpointer_type): New function.  Return a type
+	for 'volatile void *'.
+	(LARCH_ATYPE_VPOINTER): New macro.
+	* config/loongarch/loongarch-ftypes.def: Change the pointer
+	type of the store class function from CVPOINTER to VPOINTER.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123807
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): When same is MEM and
+	GET_MODE(same) != imode, first load the data from memory
+	and then process it further.
+
+2026-01-30  mengqinggang  <mengqinggang@loongson.cn>
+
+	* config/loongarch/loongarch.md: Delete movsf TARGET_HARD_FLOAT
+	condition.
+
 2026-01-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR middle-end/123869

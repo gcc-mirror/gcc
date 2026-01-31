@@ -1,3 +1,7 @@
+2026-01-30  Marc Poulhiès  <dkm@kataplop.net>
+
+	* ga68-coding-guidelines.texi: Typo fix.
+
 2026-01-29  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* ga68.vw: Update formal grammar to express the GNU extension.

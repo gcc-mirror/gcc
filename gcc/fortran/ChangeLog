@@ -1,3 +1,11 @@
+2026-01-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/123868
+	* trans-array.cc (structure_alloc_comps): For COPY_ALLOC_COMP,
+	remove the add_when_allocated != NULL_TREE clause that PR121628
+	added.  This clause was redundant for scalars and caused double
+	allocation for arrays with nested allocatable components.
+
 2026-01-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	* openmp.cc (resolve_omp_clauses): Reject groupprivate/device-local

@@ -1,3 +1,132 @@
+2026-01-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/123868
+	* gfortran.dg/array_memcpy_2.f90: Update expected memcpy count
+	from 4 to 3, as the double allocation bug is now fixed.
+	* gfortran.dg/pr123868.f90: New test.
+	Signed-off-by: Christopher Albert <albert@alumni.tugraz.at>
+
+2026-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123845
+	PR libstdc++/114865
+	* g++.dg/cpp0x/constexpr-ex3.C: Adjust C++11 non-empty
+	constexpr constructor dg-error to a dg-warning.  Expect
+	a follow-up missing member initializer diagnostic in C++11 mode.
+	* g++.dg/cpp2a/constexpr-try1.C: Expect a follow-up
+	compound-statement in constexpr function diagnostic in C++11
+	mode.
+	* g++.dg/cpp2a/constexpr-try2.C: Likewise.  Adjust C++11
+	non-empty constexpr constructor dg-error to a dg-warning.
+	* g++.dg/cpp2a/constexpr-try3.C:  Adjust C++11 non-empty
+	constexpr constructor dg-error to a dg-warning.
+	* g++.dg/cpp0x/constexpr-ctor23.C: New test.
+
+2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* gcc.dg/torture/pr123887.c: New testcase.
+
+2026-01-30  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/reflect/define_aggregate3.C: Adjust expected diagnostic.
+	* g++.dg/reflect/p2996-21.C: Likewise.
+
+2026-01-30  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/reflect/substitute3.C: New test.
+
+2026-01-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/limited_with3.ads: New test.
+	* gnat.dg/specs/limited_with3-child.ads: New helper.
+	* gnat.dg/specs/limited_with3-child-grandchild.ads: Likewise.
+	* gnat.dg/specs/limited_with3-child-grandchild-grandgrandchild.ads:
+	Likewise.
+
+2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR debug/110885
+	* g++.dg/debug/dwarf2/pr110885.C: New testcase.
+
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123864
+	* gcc.c-torture/execute/pr123864.c: New test.
+	* gcc.dg/torture/pr123864.c: New test.
+
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123790
+	* g++.dg/cpp0x/nullptr47.C: New test.
+
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm1.d: Adjust test.
+
+2026-01-30  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/123855
+	* gcc.misc-tests/gcov-pr123855.c: New test.
+
+2026-01-30  Jørgen Kvalsvik  <j@lambda.is>
+
+	* g++.dg/gcov/gcov-18.C: Remove --coverage.
+	* g++.dg/gcov/gcov-22.C: Likewise.
+	* gcc.misc-tests/gcov-19.c: Remove -ftest-coverage.
+	* gcc.misc-tests/gcov-29.c: Likewise.
+
+2026-01-30  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcc.misc-tests/gcov-29.c: Expect 6 prime paths in test.
+	* gcc.misc-tests/gcov-30.c: Likewise.
+
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123876
+	* gcc.dg/gomp/pr123876.c: New test.
+
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/123273
+	* c-c++-common/cpp/dir-only-10.c: New test.
+	* c-c++-common/cpp/dir-only-11.c: New test.
+
+2026-01-30  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/123206
+	* gcc.target/aarch64/pr123206.c: New test.
+
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123263
+	* gdc.dg/debug/pr123263.d: New test.
+
+2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109410
+	* gcc.dg/pr109410-2.c: New testcase.
+
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123264
+	* gdc.dg/pr123264.d: New test.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123766
+	* gcc.target/loongarch/vector/lasx/pr123766.c: New test.
+	* gcc.target/loongarch/vector/lsx/pr123766.c: New test.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123807
+	* gcc.target/loongarch/vector/lsx/pr123807.c: New test.
+
+2026-01-30  mengqinggang  <mengqinggang@loongson.cn>
+
+	* gcc.target/loongarch/la64/movsf.c: New test.
+
 2026-01-29  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* gcc.target/i386/pr116353.c: Move to...

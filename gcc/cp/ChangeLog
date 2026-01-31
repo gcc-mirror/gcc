@@ -1,3 +1,24 @@
+2026-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123845
+	PR libstdc++/114865
+	* constexpr.cc (build_data_member_initialization): Remove
+	C++11-specific recognition of MODIFY_EXPR.
+	(check_constexpr_ctor_body): Relax error diagnostic to a
+	pedwarn and don't clear DECL_DECLARED_CONSTEXPR_P upon
+	error.  Return true if complaining.
+
+2026-01-30  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (eval_define_aggregate): Also give an error when
+	TYPE_BEING_DEFINED is true for the first argument.  Remove code
+	that did the same.
+
+2026-01-30  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (eval_can_substitute): Check undeduced_auto_decl after
+	resolve_nondeduced_context_or_error.
+
 2026-01-29  Marek Polacek  <polacek@redhat.com>
 
 	* reflect.cc (eval_has_template_arguments): Return immediately after

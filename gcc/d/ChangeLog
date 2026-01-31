@@ -1,3 +1,44 @@
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 1017635a96.
+	* dmd/VERSION: Bump version to v2.112.0-beta.1.
+	* decl.cc (DeclVisitor::finish_vtable): Update for new front-end
+	interface.
+	(DeclVisitor::visit): Likewise.
+	* typeinfo.cc (TypeInfoVisitor::visit): Likewise.
+
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* decl.cc (DeclVisitor::visit (EnumDeclaration *)): Treat sinit member
+	field as a generic pointer.
+	(enum_initializer_decl): Likewise.
+	* expr.cc (ExprVisitor::visit (ArrayLiteralExp *)): Compute static
+	array length separately from creating type.
+	* modules.cc (struct module_info): Add ctor_decl, dtor_decl,
+	sharedctor_decl, shareddtor_decl, standalonector_decl, and
+	unittest_decl.
+	(layout_moduleinfo_fields): Add mi argument. Use it to check whether
+	module helpers have been generated.
+	(layout_moduleinfo): Likewise.
+	(build_module_tree): Cache generated module helpers in module_info.
+	* typeinfo.cc (cpp_type_info_ptrs): New variable.
+	(get_cpp_typeinfo_decl): Cache generated C++ type_info references in
+	cpp_type_info_ptrs.
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Separate getting
+	front-end member value from building its CST tree.
+
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123263
+	* d-codegen.cc (d_decl_context): Set DECL_CONTEXT of compiler
+	generated functions to that of parent module.
+
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123264
+	* types.cc (finish_aggregate_type): Propagate struct TYPE_NAME to all
+	TYPE_NEXT_VARIANT types.
+
 2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/123407

@@ -1,3 +1,10 @@
+2026-01-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (all-local, install-asneeded): Only create
+	libatomic_asneeded.so script if libatomic.so exist, only
+	create libatomic_asneeded.a symlink if libatomic.a exist.
+	* Makefile.in: Regenerate.
+
 2026-01-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/123650

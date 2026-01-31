@@ -1,3 +1,64 @@
+2026-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/regex_executor.tcc (__detail::_Executor::_M_node)
+	[__OPTIMIZE__]: Add [[gnu::always_inline]] attribute.  Declare
+	inline.
+
+2026-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/86164
+	* include/bits/regex_executor.tcc (__detail::_ExecutorFrameOpcode):
+	Remove _S_fopcode_restore_current.
+	(__detail::_Executor::_M_handle_repeat): Pass _M_current when
+	pushing a fallback_next or fallback_rep_once_more frame.
+	(__detail::_Executor::_M_handle_match): Don't push a
+	restore_current frame.
+	(__detail::_Executor::_M_handle_backref): Likewise and simplify
+	accordingly.
+	(__detail::_Executor::_M_handle_alternative): Pass _M_current when
+	pushing a fallback_next or posix_alternative frame.
+	(__detail::_Executor::_M_dfs) <case _S_fopcode_fallback_next>:
+	Restore _M_current.
+	<case _S_fopcode_fallback_rep_once_more>: Likewise.
+	<case _S_fopcode_posix_alternative>: Likewise.
+	<case _S_fopcode_restore_current>: Remove.
+
+2026-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/86164
+	* include/bits/regex.h (__detail::_Executor): Use inline
+	namespace _V2.
+	* include/bits/regex_executor.h (__detail::_ExecutorFrame):
+	Declare.
+	(__detail::_Executor): Use inline namespace _V2.
+	(__detail::_Executor::_M_node): Declare.
+	(__detail::_Executor::_M_frames): New data member.
+	* include/bits/regex_executor.tcc (__detail::_ExecutorFrameOpcode):
+	New.
+	(__detail::_ExecutorFrameBase): New.
+	(__detail::_ExecutorFrame): New.
+	(__detail::_Executor): Use inline namespace _V2.
+	(__detail::_Executor::_M_rep_once_more): Replace recursive
+	_M_dfs calls with an _S_opcode_next frame push, and any work
+	after such calls with an appropriate frame push.
+	(__detail::_M_handle_repeat): Likewise.
+	(__detail::_M_handle_subexpr_begin): Likewise.
+	(__detail::_M_handle_subexpr_end): Likewise.
+	(__detail::_M_handle_line_begin_assertion): Likewise.
+	(__detail::_M_handle_line_end_assertion): Likewise.
+	(__detail::_M_handle_word_boundary): Likewise.
+	(__detail::_M_handle_subexpr_lookahead): Likewise.
+	(__detail::_M_handle_match): Likewise.
+	(__detail::_M_handle_backref): Likewise.
+	(__detail::_M_handle_accept): Likewise.
+	(__detail::_M_handle_alternative): Likewise.
+	(__detail::_M_node): Factored out from _M_dfs.
+	(__detail::_M_dfs): Push an initial frame to _M_frames that
+	visits the starting node and pass this stack each subroutine.
+	Pop the latest _ExecutorFrame from _M_frames and handle
+	appropriately according to its _ExecutorFrameOpcode.  Loop until
+	_M_frames is empty.
+
 2026-01-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/expected (__expected::__trivially_replaceable)
