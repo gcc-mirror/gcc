@@ -2,7 +2,7 @@
 /* { dg-require-effective-target arm_softfp_ok } */
 /* { dg-require-effective-target arm_v8_neon_ok } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
-/* { dg-additional-options "-march=armv8.2-a+bf16 -mfloat-abi=softfp -mfpu=auto" } */
+/* { dg-additional-options "-mcpu=unset -march=armv8.2-a+bf16 -mfloat-abi=softfp -mfpu=auto" } */
 /* { dg-additional-options "-O3 --save-temps -std=gnu90" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
