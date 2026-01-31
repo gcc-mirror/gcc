@@ -3736,6 +3736,8 @@ push_local_extern_decl_alias (tree decl)
 	      alias = *iter;
 	      if (!validate_constexpr_redeclaration (alias, decl))
 		return;
+	      if (TREE_CODE (decl) == FUNCTION_DECL)
+		merge_decl_arguments (decl, alias, false, true, true);
 	      break;
 	    }
 
@@ -3749,7 +3751,9 @@ push_local_extern_decl_alias (tree decl)
 	      for (tree *chain = &DECL_ARGUMENTS (alias);
 		   *chain; chain = &DECL_CHAIN (*chain))
 		{
+		  tree next = DECL_CHAIN (*chain);
 		  *chain = copy_decl (*chain);
+		  DECL_CHAIN (*chain) = next;
 		  DECL_CONTEXT (*chain) = alias;
 		}
 

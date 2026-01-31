@@ -1781,6 +1781,97 @@ merge_default_template_args (tree new_parms, tree old_parms, bool class_p)
   return true;
 }
 
+/* Helper function for duplicate_decls and push_local_extern_decl_alias.
+   Merge parameter attributes and names between NEWDECL and OLDDECL.
+   NEW_DEFINES_FUNCTION and TYPES_MATCH argument like variables in
+   duplicate_decls, EXTERN_ALIAS false for duplicate_decls and true for
+   push_local_extern_decl_alias.  */
+
+void
+merge_decl_arguments (tree newdecl, tree olddecl, bool new_defines_function,
+		      bool types_match, bool extern_alias)
+{
+  tree oldarg, newarg;
+  for (oldarg = DECL_ARGUMENTS (olddecl), newarg = DECL_ARGUMENTS (newdecl);
+       oldarg && newarg;
+       oldarg = DECL_CHAIN (oldarg), newarg = DECL_CHAIN (newarg))
+    {
+      DECL_ATTRIBUTES (newarg)
+	= (*targetm.merge_decl_attributes) (oldarg, newarg);
+      if (lookup_attribute (NULL, "indeterminate", DECL_ATTRIBUTES (newarg))
+	  && !lookup_attribute (NULL, "indeterminate",
+				DECL_ATTRIBUTES (oldarg)))
+	{
+	  auto_diagnostic_group d;
+	  error_at (DECL_SOURCE_LOCATION (newarg),
+		    "%<indeterminate%> attribute not specified for parameter "
+		    "%qD on the first declaration of its function", newarg);
+	  inform (DECL_SOURCE_LOCATION (oldarg), "earlier declaration");
+	}
+      /* ??? Should attributes propagate out from a block extern?  If so,
+	 we should do that for the function itself, not just parameters.  */
+      if (!extern_alias || flag_reflection)
+	DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
+      /* Merge names for std::meta::has_identifier and
+	 std::meta::{,u8}identifier_of purposes.  If they are different and
+	 both oldarg and newarg are named, add flag to force that
+	 std::meta::has_identifier returns false.  If one is named and one is
+	 unnamed, if neither is a olddecl nor newdecl is definition, propagate
+	 DECL_NAME to both.  Otherwise stash the old name into "old parm name"
+	 artificial attribute.  */
+      if (flag_reflection && DECL_NAME (oldarg) != DECL_NAME (newarg))
+	{
+	  if (DECL_NAME (oldarg) && DECL_NAME (newarg))
+	    {
+	      /* Different names.  */
+	      MULTIPLE_NAMES_PARM_P (oldarg) = 1;
+	      MULTIPLE_NAMES_PARM_P (newarg) = 1;
+	    }
+	  else if (!new_defines_function
+		   && types_match
+		   && DECL_INITIAL (olddecl) == NULL_TREE)
+	    {
+	      /* For 2 non-definitions with matching types, one is named and
+		 one unnamed, propagate name to both.  */
+	      if (DECL_NAME (oldarg))
+		DECL_NAME (newarg) = DECL_NAME (oldarg);
+	      else
+		DECL_NAME (oldarg) = DECL_NAME (newarg);
+	    }
+	  /* Depending on which PARM_DECL we'll keep, look at the other
+	     PARM_DECL's name.  */
+	  else if (tree name = ((new_defines_function || !types_match)
+				? DECL_NAME (oldarg) : DECL_NAME (newarg)))
+	    {
+	      tree opn = lookup_attribute ("old parm name",
+					   DECL_ATTRIBUTES (oldarg));
+	      if (opn)
+		{
+		  if (TREE_VALUE (TREE_VALUE (opn)) == name)
+		    /* Name already in "old parm name" attribute.  */;
+		  else
+		    {
+		      /* Different names.  */
+		      MULTIPLE_NAMES_PARM_P (oldarg) = 1;
+		      MULTIPLE_NAMES_PARM_P (newarg) = 1;
+		    }
+		}
+	      else
+		{
+		  /* Save name into attribute.  */
+		  DECL_ATTRIBUTES (newarg)
+		    = tree_cons (get_identifier ("old parm name"),
+				 tree_cons (NULL_TREE, name, NULL_TREE),
+				 DECL_ATTRIBUTES (newarg));
+		  DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
+		}
+	    }
+	  else if (extern_alias)
+	    DECL_NAME (newarg) = DECL_NAME (oldarg);
+	}
+    }
+}
+
 /* If NEWDECL is a redeclaration of OLDDECL, merge the declarations.
    If the redeclaration is invalid, a diagnostic is issued, and the
    error_mark_node is returned.  Otherwise, OLDDECL is returned.
@@ -3038,88 +3129,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
-      tree parm;
-
-      /* Merge parameter attributes. */
-      tree oldarg, newarg;
-      for (oldarg = DECL_ARGUMENTS (olddecl),
-	   newarg = DECL_ARGUMENTS (newdecl);
-	   oldarg && newarg;
-	   oldarg = DECL_CHAIN (oldarg), newarg = DECL_CHAIN (newarg))
-	{
-          DECL_ATTRIBUTES (newarg)
-	    = (*targetm.merge_decl_attributes) (oldarg, newarg);
-	  if (lookup_attribute (NULL, "indeterminate",
-				DECL_ATTRIBUTES (newarg))
-	      && !lookup_attribute (NULL, "indeterminate",
-				    DECL_ATTRIBUTES (oldarg)))
-	    {
-	      auto_diagnostic_group d;
-	      error_at (DECL_SOURCE_LOCATION (newarg),
-			"%<indeterminate%> attribute not specified "
-			"for parameter %qD on the first declaration of "
-			"its function", newarg);
-	      inform (DECL_SOURCE_LOCATION (oldarg),
-		      "earlier declaration");
-	    }
-          DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
-	  /* Merge names for std::meta::has_identifier and
-	     std::meta::{,u8}identifier_of purposes.  If they are different
-	     and both oldarg and newarg are named, add flag to force that
-	     std::meta::has_identifier returns false.  If one is named and
-	     one is unnamed, if neither is a olddecl nor newdecl is definition,
-	     propagate DECL_NAME to both.  Otherwise stash the old name into
-	     "old parm name" artificial attribute.  */
-	  if (flag_reflection && DECL_NAME (oldarg) != DECL_NAME (newarg))
-	    {
-	      if (DECL_NAME (oldarg) && DECL_NAME (newarg))
-		{
-		  /* Different names.  */
-		  MULTIPLE_NAMES_PARM_P (oldarg) = 1;
-		  MULTIPLE_NAMES_PARM_P (newarg) = 1;
-		}
-	      else if (!new_defines_function
-		       && types_match
-		       && DECL_INITIAL (olddecl) == NULL_TREE)
-		{
-		  /* For 2 non-definitions with matching types,
-		     one is named and one unnamed, propagate name
-		     to both.  */
-		  if (DECL_NAME (oldarg))
-		    DECL_NAME (newarg) = DECL_NAME (oldarg);
-		  else
-		    DECL_NAME (oldarg) = DECL_NAME (newarg);
-		}
-	      /* Depending on which PARM_DECL we'll keep, look at the other
-		 PARM_DECL's name.  */
-	      else if (tree name = ((new_defines_function || !types_match)
-				    ? DECL_NAME (oldarg) : DECL_NAME (newarg)))
-		{
-		  tree opn = lookup_attribute ("old parm name",
-					       DECL_ATTRIBUTES (oldarg));
-		  if (opn)
-		    {
-		      if (TREE_VALUE (TREE_VALUE (opn)) == name)
-			/* Name already in "old parm name" attribute.  */;
-		      else
-			{
-			  /* Different names.  */
-			  MULTIPLE_NAMES_PARM_P (oldarg) = 1;
-			  MULTIPLE_NAMES_PARM_P (newarg) = 1;
-			}
-		    }
-		  else
-		    {
-		      /* Save name into attribute.  */
-		      DECL_ATTRIBUTES (newarg)
-			= tree_cons (get_identifier ("old parm name"),
-				     tree_cons (NULL_TREE, name, NULL_TREE),
-				     DECL_ATTRIBUTES (newarg));
-		      DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
-		    }
-		}
-	    }
-	}
+      merge_decl_arguments (newdecl, olddecl, new_defines_function,
+			    types_match, false);
 
       if (DECL_TEMPLATE_INSTANTIATION (olddecl)
 	  && !DECL_TEMPLATE_INSTANTIATION (newdecl))
@@ -3198,7 +3209,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       DECL_ABSTRACT_P (newdecl) = DECL_ABSTRACT_P (olddecl);
 
       /* Update newdecl's parms to point at olddecl.  */
-      for (parm = DECL_ARGUMENTS (newdecl); parm;
+      for (tree parm = DECL_ARGUMENTS (newdecl); parm;
 	   parm = DECL_CHAIN (parm))
 	DECL_CONTEXT (parm) = olddecl;
 
