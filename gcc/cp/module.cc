@@ -23235,9 +23235,18 @@ preprocess_module (module_state *module, location_t from_loc,
 {
   if (!is_import)
     {
-      if (module->loc)
-	/* It's already been mentioned, so ignore its module-ness.  */
-	is_import = true;
+      if (in_purview || module->loc)
+	{
+	  /* We've already seen a module declaration.  If only preprocessing
+	     then we won't complain in declare_module, so complain here.  */
+	  if (flag_preprocess_only)
+	    error_at (from_loc,
+		      in_purview
+		      ? G_("module already declared")
+		      : G_("module already imported"));
+	  /* Always pretend this was an import to aid error recovery.  */
+	  is_import = true;
+	}
       else
 	{
 	  /* Record it is the module.  */
