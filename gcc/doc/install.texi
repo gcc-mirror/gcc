@@ -3863,7 +3863,7 @@ AIX 7.1)}.
 @end itemize
 
 @item
-DOS---@uref{http://www.delorie.com/djgpp/,,DJGPP}.
+DOS---@uref{https://www.delorie.com/djgpp/,,DJGPP}.
 
 @item
 macOS:
