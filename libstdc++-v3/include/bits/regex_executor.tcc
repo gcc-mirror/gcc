@@ -69,6 +69,8 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
     _S_fopcode_decrement_rep_count,
   };
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // anon struct
   struct _ExecutorFrameBase
   {
     _ExecutorFrameBase(_ExecutorFrameOpcode __op, _StateIdT __i)
@@ -89,6 +91,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
     unsigned char _M_bytes[6];
     _StateIdT _M_state_id;
   };
+#pragma GCC diagnostic pop
 
   template<typename _BiIter, bool _Trivial /* = is_trivially_copyable<_BiIter>::value */>
     struct _ExecutorFrame : _ExecutorFrameBase
