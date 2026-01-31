@@ -367,3 +367,43 @@ a68_bits_clear (MOID_T *m, tree bits, tree numbit, location_t loc)
 			  bits_type,
 			  in_range, res, bits);
 }
+
+/* Test the bit NUMBIT in BITS.
+
+   NUMBIT is one based and counts bits from least significative to most
+   significative, i.e. from "right" to "left".  If NUMBIT is not in range then
+   the operator yields false.  */
+
+tree
+a68_bits_test (MOID_T *m ATTRIBUTE_UNUSED,
+	       tree bits, tree numbit, location_t loc)
+{
+  tree bits_type = TREE_TYPE (bits);
+  tree int_type = TREE_TYPE (numbit);
+
+  bits = save_expr (bits);
+  numbit = save_expr (numbit);
+
+  tree numbit_minus_one = fold_build2 (MINUS_EXPR, int_type,
+				       numbit, build_one_cst (int_type));
+  tree mask = fold_build2 (BIT_AND_EXPR, bits_type,
+			   bits,
+			   fold_build2 (LSHIFT_EXPR,
+					bits_type,
+					build_one_cst (bits_type),
+					fold_convert (bits_type, numbit_minus_one)));
+  tree res = fold_build2 (NE_EXPR,
+			  a68_bool_type,
+			  fold_build2 (BIT_AND_EXPR, bits_type, bits, mask),
+			  build_int_cst (bits_type, 0));
+  tree in_range = fold_build2 (TRUTH_AND_EXPR,
+			       int_type,
+			       fold_build2 (GE_EXPR, int_type,
+					    numbit, build_int_cst (int_type, 1)),
+			       fold_build2 (LE_EXPR, int_type,
+					    numbit, a68_bits_width (bits_type)));
+
+  return fold_build3_loc (loc, COND_EXPR,
+			  a68_bool_type,
+			  in_range, res, build_zero_cst (a68_bool_type));
+}

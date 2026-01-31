@@ -1317,6 +1317,7 @@ gnu_prelude (void)
   a68_prio ("ELEMS", 8);
   a68_prio ("SET", 7);
   a68_prio ("CLEAR", 7);
+  a68_prio ("TEST", 7);
   /* Identifiers.  */
   a68_idf (A68_EXT, "infinity", M_REAL, a68_lower_infinity);
   a68_idf (A68_EXT, "minusinfinity", M_REAL, a68_lower_minusinfinity);
@@ -1370,22 +1371,32 @@ gnu_prelude (void)
   m = a68_proc (M_SHORT_SHORT_BITS, M_SHORT_SHORT_BITS, M_INT, NO_MOID);
   a68_op (A68_EXT, "SET", m, a68_lower_set3);
   a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  m = a68_proc (M_BOOL, M_SHORT_SHORT_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "TEST", m, a68_lower_test3);
   /* SHORT BITS operators.  */
   m = a68_proc (M_SHORT_BITS, M_SHORT_BITS, M_INT, NO_MOID);
   a68_op (A68_EXT, "SET", m, a68_lower_set3);
   a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  m = a68_proc (M_BOOL, M_SHORT_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "TEST", m, a68_lower_test3);
   /* BITS operators.  */
   m = a68_proc (M_BITS, M_BITS, M_INT, NO_MOID);
   a68_op (A68_EXT, "SET", m, a68_lower_set3);
   a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  m = a68_proc (M_BOOL, M_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "TEST", m, a68_lower_test3);
   /* LONG BITS operators.  */
   m = a68_proc (M_LONG_BITS, M_LONG_BITS, M_INT, NO_MOID);
   a68_op (A68_EXT, "SET", m, a68_lower_set3);
   a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  m = a68_proc (M_BOOL, M_LONG_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "TEST", m, a68_lower_test3);
   /* LONG LONG BITS operators.  */
   m = a68_proc (M_LONG_LONG_BITS, M_LONG_LONG_BITS, M_INT, NO_MOID);
   a68_op (A68_EXT, "SET", m, a68_lower_set3);
   a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
+  m = a68_proc (M_BOOL, M_LONG_LONG_BITS, M_INT, NO_MOID);
+  a68_op (A68_EXT, "TEST", m, a68_lower_test3);
 }
 
 /* POSIX prelude.  */

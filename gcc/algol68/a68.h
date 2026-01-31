@@ -539,6 +539,7 @@ tree a68_bits_eq (tree a, tree b, location_t loc = UNKNOWN_LOCATION);
 tree a68_bits_ne (tree a, tree b, location_t loc = UNKNOWN_LOCATION);
 tree a68_bits_set (MOID_T *m, tree bits, tree numbit, location_t loc = UNKNOWN_LOCATION);
 tree a68_bits_clear (MOID_T *m, tree bits, tree numbit, location_t loc = UNKNOWN_LOCATION);
+tree a68_bits_test (MOID_T *m, tree bits, tree numbit, location_t loc = UNKNOWN_LOCATION);
 
 /* a68-low_bools.cc  */
 
@@ -1074,6 +1075,7 @@ tree a68_lower_longrandom (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_longlongrandom (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_set3 (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_clear3 (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_test3 (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixargc (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixargv (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_posixputchar (NODE_T *p, LOW_CTX_T ctx);

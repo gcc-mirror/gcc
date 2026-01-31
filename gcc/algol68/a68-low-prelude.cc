@@ -767,6 +767,14 @@ a68_lower_clear3 (NODE_T *p, LOW_CTX_T ctx)
 }
 
 tree
+a68_lower_test3 (NODE_T *p, LOW_CTX_T ctx)
+{
+  tree op1 = a68_lower_tree (SUB (p), ctx);
+  tree op2 = a68_lower_tree (NEXT (NEXT (SUB (p))), ctx);
+  return a68_bits_test (MOID (p), op1, op2, a68_get_node_location (p));
+}
+
+tree
 a68_lower_pow_int (NODE_T *p, LOW_CTX_T ctx)
 {
   tree op1 = a68_lower_tree (SUB (p), ctx);

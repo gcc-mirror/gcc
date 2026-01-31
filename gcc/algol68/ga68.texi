@@ -3049,6 +3049,12 @@ Dyadic operator that clears the @code{n}th least significant bit in
 then the operator yields @B{b}.
 @end deftypefn
 
+@deftypefn Operator {} {@B{test}} {= (@B{l} @B{bits} b, @B{int} n) @B{bool}}
+Dyadic operator that tests whether the @code{n}th least significant
+bit in @code{@B{b}} is set. If @code{n} is not in the range
+@code{1,L_bits_width]} then the operator yields @B{false}.
+@end deftypefn
+
 @node Extended math procedures
 @section Extended math procedures
 
