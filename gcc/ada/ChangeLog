@@ -1,3 +1,14 @@
+2026-01-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123867
+	* sem_ch10.adb (Analyze_Compilation_Unit): Output info message
+	when -gnatdi is specified.
+	(Install_Parents): Likewise.  Set the Is_Visible_Lib_Unit flag
+	on the unit.
+	(Install_Private_With_Clauses): Do not output info message here.
+	(Remove_Parents): Output info message when -gnatdi is specified
+	and clear the Is_Visible_Lib_Unit flag on the unit.
+
 2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	PR ada/123289

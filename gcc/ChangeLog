@@ -1,3 +1,34 @@
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-ftypes.def: Remove unused type.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123766
+	* config/loongarch/loongarch-builtins.cc
+	(loongarch_build_vpointer_type): New function.  Return a type
+	for 'volatile void *'.
+	(LARCH_ATYPE_VPOINTER): New macro.
+	* config/loongarch/loongarch-ftypes.def: Change the pointer
+	type of the store class function from CVPOINTER to VPOINTER.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123807
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): When same is MEM and
+	GET_MODE(same) != imode, first load the data from memory
+	and then process it further.
+
 2026-01-23  Avinash Jayakar  <avinashd@linux.ibm.com>
 
 	PR target/119130
