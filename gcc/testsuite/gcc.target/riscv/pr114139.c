@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
-/* { dg-options "-O2 -fpic -mexplicit-relocs -mcpu=sifive-p450" } */
+/* { dg-options "-O2 -fpic -mexplicit-relocs -mcpu=sifive-p450 -mabi=lp64d" } */
 
 static void *p;
 extern void *a[];
