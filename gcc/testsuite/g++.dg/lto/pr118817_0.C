@@ -2,6 +2,7 @@
 // { dg-lto-options { { -O3 -fPIC -flto -shared -std=c++20 -Wall } } }
 // { dg-require-effective-target fpic }
 // { dg-require-effective-target shared }
+// { dg-skip-if "requires hosted libstdc++ for vector and string" { ! hostedlib } }
 
 #include <memory>
 #include <vector>
