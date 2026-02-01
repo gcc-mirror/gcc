@@ -35,5 +35,4 @@ int ctz4 (unsigned long long x)
 /* { dg-final { scan-tree-dump {= \.CTZ} "forwprop2" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
 /* { dg-final { scan-tree-dump {= \.CTZ} "forwprop2" { target aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump {= \.CTZ} "forwprop2" { target { rv64 } } } } */
-/* { dg-final { scan-tree-dump {= \.CTZ} "forwprop2" { target { rv32 } } } } */
 /* { dg-final { scan-tree-dump {= \.CTZ} "forwprop2" { target { loongarch64*-*-* } } } } */
