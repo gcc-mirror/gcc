@@ -2,6 +2,7 @@
 /* { dg-require-effective-target valgrind } */
 /* { dg-additional-files "sparseset.supp" } */
 /* { dg-options "-wrapper valgrind,-q,--exit-on-first-error=yes,--error-exitcode=1,--suppressions=${srcdir}/sparseset.supp" } */
+/* { dg-prune-output ".*(WARNING: unhandled.*syscall|own handler|README_MISSING_SYSCALL|Please report|valgrind.org).*" } */
 
 typedef signed int int32_t;
 typedef signed long int int64_t;
