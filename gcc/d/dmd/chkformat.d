@@ -25,6 +25,39 @@ import dmd.typesem;
 import dmd.target;
 
 
+/**********************************************
+ * While in general printf is not @safe (and should be marked @system), many uses of printf are safe.
+ * This function determines if a particular call of printf is safe.
+ * Params:
+ *      format = printf format string
+ * Returns:
+ *      true if @safe
+ */
+public
+bool isFormatSafe(scope const char[] format)
+{
+    //printf("isFormatSafe('%.*s')\n", cast(int)format.length, format.ptr);
+    /* Only need to check the format string, any other errors are checked
+     * for later with checkPrintfFormat()
+     */
+    for (size_t i = 0; i < format.length;)
+    {
+        if (format[i] != '%')
+        {
+            ++i;
+            continue;
+        }
+        bool widthStar;
+        bool precisionStar;
+        size_t j = i;
+        const fmt = parsePrintfFormatSpecifier(format, j, widthStar, precisionStar);
+        i = j;
+        if (fmt == Format.s || fmt == Format.ls || fmt == Format.error)
+            return false;
+    }
+    return true;
+}
+
 /******************************************
  * Check that arguments to a printf format string are compatible
  * with that string. Issue errors for incompatibilities.
@@ -65,7 +98,7 @@ import dmd.target;
 public
 bool checkPrintfFormat(Loc loc, scope const char[] format, scope Expression[] args, bool isVa_list, ErrorSink eSink)
 {
-    //printf("checkPrintFormat('%.*s')\n", cast(int)format.length, format.ptr);
+    //printf("checkPrintfFormat('%.*s')\n", cast(int)format.length, format.ptr);
     size_t n;    // index in args
     for (size_t i = 0; i < format.length;)
     {

@@ -30,13 +30,6 @@ enum PKG
     PKGpackage  // already determined that's an actual package
 };
 
-enum class Edition : uint16_t
-{
-    v2023 = 2023,
-    v2024,
-    v2025,
-};
-
 class Package : public ScopeDsymbol
 {
 public:
@@ -45,8 +38,6 @@ public:
     Module *mod;        // != NULL if isPkgMod == PKGmodule
 
     const char *kind() const override;
-
-    bool equals(const RootObject * const o) const override;
 
     bool isAncestorPackageOf(const Package * const pkg) const;
 
@@ -131,9 +122,6 @@ public:
     int needModuleInfo();
     bool isPackageAccessible(Package *p, Visibility visibility, SearchOptFlags flags = (SearchOptFlags)SearchOpt::all) override;
     Dsymbol *symtabInsert(Dsymbol *s) override;
-    static void runDeferredSemantic();
-    static void runDeferredSemantic2();
-    static void runDeferredSemantic3();
     int imports(Module *m);
 
     bool isRoot() { return this->importedFrom == this; }

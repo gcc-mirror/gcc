@@ -33,6 +33,7 @@ import dmd.dscope;
 import dmd.dstruct;
 import dmd.dsymbol;
 import dmd.dsymbolsem;
+import dmd.templatesem : computeOneMember;
 import dmd.dtemplate;
 import dmd.errorsink;
 import dmd.func;
@@ -44,8 +45,6 @@ import dmd.lexer;
 import dmd.location;
 import dmd.mtype;
 import dmd.root.array;
-import dmd.root.file;
-import dmd.root.filename;
 import dmd.common.outbuffer;
 import dmd.root.port;
 import dmd.root.rmem;
@@ -54,7 +53,164 @@ import dmd.root.utf;
 import dmd.tokens;
 import dmd.visitor;
 
-private:
+/****************************************************
+ * Generate Ddoc text for Module `m` and append it to `outbuf`.
+ * Params:
+ *      m = Module
+ *      ddoctext = combined text of .ddoc files for macro definitions
+ *      datetime = charz returned by ctime()
+ *      eSink = send error messages to eSink
+ *      outbuf = append the Ddoc text to this
+ */
+public
+void gendocfile(Module m, const char[] ddoctext, const char* datetime, ErrorSink eSink, ref OutBuffer outbuf)
+{
+    // Load internal default macros first
+    DocComment.parseMacros(m.escapetable, m.macrotable, ddoc_default[]);
+
+    // Ddoc files override default macros
+    DocComment.parseMacros(m.escapetable, m.macrotable, ddoctext);
+
+    Scope* sc = scopeCreateGlobal(m, eSink); // create root scope
+    DocComment* dc = DocComment.parse(m, m.comment);
+    dc.pmacrotable = &m.macrotable;
+    dc.escapetable = m.escapetable;
+    sc.lastdc = dc;
+    // Generate predefined macros
+    // Set the title to be the name of the module
+    {
+        const p = m.toPrettyChars().toDString;
+        m.macrotable.define("TITLE", p);
+    }
+    // Set time macros
+    m.macrotable.define("DATETIME", datetime[0 .. 26]);
+    m.macrotable.define("YEAR", datetime[20 .. 20 + 4]);
+
+    const srcfilename = m.srcfile.toString();
+    m.macrotable.define("SRCFILENAME", srcfilename);
+    const docfilename = m.docfile.toString();
+    m.macrotable.define("DOCFILENAME", docfilename);
+    if (dc.copyright)
+    {
+        dc.copyright.nooutput = 1;
+        m.macrotable.define("COPYRIGHT", dc.copyright.body_);
+    }
+
+    OutBuffer buf;
+    if (m.filetype == FileType.ddoc)
+    {
+        Loc loc = m.md ? m.md.loc : m.loc;
+
+        size_t commentlen = m.comment ? strlen(cast(char*)m.comment) : 0;
+        Dsymbols a;
+        // https://issues.dlang.org/show_bug.cgi?id=9764
+        // Don't push m in a, to prevent emphasize ddoc file name.
+        if (dc.macros)
+        {
+            commentlen = dc.macros.name.ptr - m.comment;
+            dc.macros.write(loc, dc, sc, &a, buf);
+        }
+        buf.write(m.comment[0 .. commentlen]);
+        highlightText(sc, &a, loc, buf, 0);
+    }
+    else
+    {
+        Dsymbols a;
+        a.push(m);
+        dc.writeSections(sc, &a, buf);
+        emitMemberComments(m, buf, sc);
+    }
+    //printf("BODY= '%.*s'\n", cast(int)buf.length, buf.data);
+    m.macrotable.define("BODY", buf[]);
+
+    OutBuffer buf2;
+    buf2.writestring("$(DDOC)");
+    size_t end = buf2.length;
+
+    // Expand buf in place with macro expansions
+    const success = m.macrotable.expand(buf2, 0, end, null, global.recursionLimit, &isIdStart, &isIdTail);
+    if (!success)
+        eSink.error(Loc.initial, "DDoc macro expansion limit exceeded; more than %d expansions.", global.recursionLimit);
+
+    /* Remove all the escape sequences from buf,
+     * and make CR-LF the newline.
+     */
+    const slice = buf2[];
+    outbuf.reserve(slice.length);
+    auto p = slice.ptr;
+    for (size_t j = 0; j < slice.length; j++)
+    {
+        const c = p[j];
+        if (c == 0xFF && j + 1 < slice.length)
+        {
+            j++;
+            continue;
+        }
+        if (c == '\n')
+            outbuf.writeByte('\r');
+        else if (c == '\r')
+        {
+            outbuf.writestring("\r\n");
+            if (j + 1 < slice.length && p[j + 1] == '\n')
+            {
+                j++;
+            }
+            continue;
+        }
+        outbuf.writeByte(c);
+    }
+}
+
+/****************************************************
+ * Having unmatched parentheses can hose the output of Ddoc,
+ * as the macros depend on properly nested parentheses.
+ * This function replaces all ( with $(LPAREN) and ) with $(RPAREN)
+ * to preserve text literally. This also means macros in the
+ * text won't be expanded.
+ */
+public
+void escapeDdocString(ref OutBuffer buf, size_t start)
+{
+    for (size_t u = start; u < buf.length; u++)
+    {
+        const c = buf[u];
+        switch (c)
+        {
+        case '$':
+            buf.remove(u, 1);
+            buf.insert(u, "$(DOLLAR)");
+            u += 8;
+            break;
+        case '(':
+            buf.remove(u, 1); //remove the (
+            buf.insert(u, "$(LPAREN)"); //insert this instead
+            u += 8; //skip over newly inserted macro
+            break;
+        case ')':
+            buf.remove(u, 1); //remove the )
+            buf.insert(u, "$(RPAREN)"); //insert this instead
+            u += 8; //skip over newly inserted macro
+            break;
+        default:
+            break;
+        }
+    }
+}
+/****************************************************
+ * Generate Ddoc file for Module m.
+ * Params:
+ *      m = Module
+ *      ddoctext_ptr = combined text of .ddoc files for macro definitions
+ *      ddoctext_length = extant of ddoctext_ptr
+ *      datetime = charz returned by ctime()
+ *      eSink = send error messages to eSink
+ *      outbuf = append the Ddoc text to this
+ */
+public
+void gendocfile(Module m, const char* ddoctext_ptr, size_t ddoctext_length, const char* datetime, ErrorSink eSink, ref OutBuffer outbuf)
+{
+    gendocfile(m, ddoctext_ptr[0 .. ddoctext_length], datetime, eSink, outbuf);
+}
 
 public
 struct Escape
@@ -93,6 +249,416 @@ struct Escape
         }
     }
 }
+
+/***********************************************************
+ */
+public
+struct DocComment
+{
+    Sections sections;      // Section*[]
+    Section summary;
+    Section copyright;
+    Section macros;
+    MacroTable* pmacrotable;
+    Escape* escapetable;
+    Dsymbols a;
+
+    static DocComment* parse(Dsymbol s, const(char)* comment)
+    {
+        //printf("parse(%s): '%s'\n", s.toChars(), comment);
+        auto dc = new DocComment();
+        dc.a.push(s);
+        if (!comment)
+            return dc;
+        dc.parseSections(comment);
+        for (size_t i = 0; i < dc.sections.length; i++)
+        {
+            Section sec = dc.sections[i];
+            if (iequals("copyright", sec.name))
+            {
+                dc.copyright = sec;
+            }
+            if (iequals("macros", sec.name))
+            {
+                dc.macros = sec;
+            }
+        }
+        return dc;
+    }
+
+    /************************************************
+     * Parse macros out of Macros: section.
+     * Macros are of the form:
+     *      name1 = value1
+     *
+     *      name2 = value2
+     */
+    extern(D) static void parseMacros(
+        Escape* escapetable, ref MacroTable pmacrotable, const(char)[] m)
+    {
+        const(char)* p = m.ptr;
+        size_t len = m.length;
+        const(char)* pend = p + len;
+        const(char)* tempstart = null;
+        size_t templen = 0;
+        const(char)* namestart = null;
+        size_t namelen = 0; // !=0 if line continuation
+        const(char)* textstart = null;
+        size_t textlen = 0;
+        while (p < pend)
+        {
+            // Skip to start of macro
+            while (1)
+            {
+                if (p >= pend)
+                    goto Ldone;
+                switch (*p)
+                {
+                case ' ':
+                case '\t':
+                    p++;
+                    continue;
+                case '\r':
+                case '\n':
+                    p++;
+                    goto Lcont;
+                default:
+                    if (isIdStart(p))
+                        break;
+                    if (namelen)
+                        goto Ltext; // continuation of prev macro
+                    goto Lskipline;
+                }
+                break;
+            }
+            tempstart = p;
+            while (1)
+            {
+                if (p >= pend)
+                    goto Ldone;
+                if (!isIdTail(p))
+                    break;
+                p += utfStride(p);
+            }
+            templen = p - tempstart;
+            while (1)
+            {
+                if (p >= pend)
+                    goto Ldone;
+                if (!(*p == ' ' || *p == '\t'))
+                    break;
+                p++;
+            }
+            if (*p != '=')
+            {
+                if (namelen)
+                    goto Ltext; // continuation of prev macro
+                goto Lskipline;
+            }
+            p++;
+            if (p >= pend)
+                goto Ldone;
+            if (namelen)
+            {
+                // Output existing macro
+            L1:
+                //printf("macro '%.*s' = '%.*s'\n", cast(int)namelen, namestart, cast(int)textlen, textstart);
+                if (iequals("ESCAPES", namestart[0 .. namelen]))
+                    parseEscapes(escapetable, textstart[0 .. textlen]);
+                else
+                    pmacrotable.define(namestart[0 .. namelen], textstart[0 .. textlen]);
+                namelen = 0;
+                if (p >= pend)
+                    break;
+            }
+            namestart = tempstart;
+            namelen = templen;
+            while (p < pend && (*p == ' ' || *p == '\t'))
+                p++;
+            textstart = p;
+        Ltext:
+            while (p < pend && *p != '\r' && *p != '\n')
+                p++;
+            textlen = p - textstart;
+            p++;
+            //printf("p = %p, pend = %p\n", p, pend);
+        Lcont:
+            continue;
+        Lskipline:
+            // Ignore this line
+            while (p < pend && *p != '\r' && *p != '\n')
+                p++;
+        }
+    Ldone:
+        if (namelen)
+            goto L1; // write out last one
+    }
+
+    /**************************************
+     * Parse escapes of the form:
+     *      /c/string/
+     * where c is a single character.
+     * Multiple escapes can be separated
+     * by whitespace and/or commas.
+     */
+    static void parseEscapes(Escape* escapetable, const(char)[] text)
+    {
+        if (!escapetable)
+        {
+            escapetable = new Escape();
+            memset(escapetable, 0, Escape.sizeof);
+        }
+        //printf("parseEscapes('%.*s') pescapetable = %p\n", cast(int)text.length, text.ptr, escapetable);
+        const(char)* p = text.ptr;
+        const(char)* pend = p + text.length;
+        while (1)
+        {
+            while (1)
+            {
+                if (p + 4 >= pend)
+                    return;
+                if (!(*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n' || *p == ','))
+                    break;
+                p++;
+            }
+            if (p[0] != '/' || p[2] != '/')
+                return;
+            char c = p[1];
+            p += 3;
+            const(char)* start = p;
+            while (1)
+            {
+                if (p >= pend)
+                    return;
+                if (*p == '/')
+                    break;
+                p++;
+            }
+            size_t len = p - start;
+            char* s = cast(char*)memcpy(mem.xmalloc(len + 1), start, len);
+            s[len] = 0;
+            escapetable.strings[c] = s[0 .. len];
+            //printf("\t%c = '%s'\n", c, s);
+            p++;
+        }
+    }
+
+    /*****************************************
+     * Parse next paragraph out of *pcomment.
+     * Update *pcomment to point past paragraph.
+     * Returns NULL if no more paragraphs.
+     * If paragraph ends in 'identifier:',
+     * then (*pcomment)[0 .. idlen] is the identifier.
+     */
+    void parseSections(const(char)* comment)
+    {
+        const(char)* p;
+        const(char)* pstart;
+        const(char)* pend;
+        const(char)* idstart = null; // dead-store to prevent spurious warning
+        size_t idlen;
+        const(char)* name = null;
+        size_t namelen = 0;
+        //printf("parseSections('%s')\n", comment);
+        p = comment;
+        while (*p)
+        {
+            const(char)* pstart0 = p;
+            p = skipwhitespace(p);
+            pstart = p;
+            pend = p;
+
+            // Undo indent if starting with a list item
+            if ((*p == '-' || *p == '+' || *p == '*') && (*(p+1) == ' ' || *(p+1) == '\t'))
+                pstart = pstart0;
+            else
+            {
+                const(char)* pitem = p;
+                while (*pitem >= '0' && *pitem <= '9')
+                    ++pitem;
+                if (pitem > p && *pitem == '.' && (*(pitem+1) == ' ' || *(pitem+1) == '\t'))
+                    pstart = pstart0;
+            }
+
+            /* Find end of section, which is ended by one of:
+             *      'identifier:' (but not inside a code section)
+             *      '\0'
+             */
+            idlen = 0;
+            int inCode = 0;
+            while (1)
+            {
+                // Check for start/end of a code section
+                if (*p == '-' || *p == '`' || *p == '~')
+                {
+                    char c = *p;
+                    int numdash = 0;
+                    while (*p == c)
+                    {
+                        ++numdash;
+                        p++;
+                    }
+                    // BUG: handle UTF PS and LS too
+                    if ((!*p || *p == '\r' || *p == '\n' || (!inCode && c != '-')) && numdash >= 3)
+                    {
+                        inCode = inCode == c ? false : c;
+                        if (inCode)
+                        {
+                            // restore leading indentation
+                            while (pstart0 < pstart && isIndentWS(pstart - 1))
+                                --pstart;
+                        }
+                    }
+                    pend = p;
+                }
+                if (!inCode && isIdStart(p))
+                {
+                    const(char)* q = p + utfStride(p);
+                    while (isIdTail(q))
+                        q += utfStride(q);
+
+                    // Detected tag ends it
+                    if (*q == ':' && isupper(*p)
+                            && (isspace(q[1]) || q[1] == 0))
+                    {
+                        idlen = q - p;
+                        idstart = p;
+                        for (pend = p; pend > pstart; pend--)
+                        {
+                            if (pend[-1] == '\n')
+                                break;
+                        }
+                        p = q + 1;
+                        break;
+                    }
+                }
+                while (1)
+                {
+                    if (!*p)
+                        goto L1;
+                    if (*p == '\n')
+                    {
+                        p++;
+                        if (*p == '\n' && !summary && !namelen && !inCode)
+                        {
+                            pend = p;
+                            p++;
+                            goto L1;
+                        }
+                        break;
+                    }
+                    p++;
+                    pend = p;
+                }
+                p = skipwhitespace(p);
+            }
+        L1:
+            if (namelen || pstart < pend)
+            {
+                Section s;
+                if (iequals("Params", name[0 .. namelen]))
+                    s = new ParamSection();
+                else if (iequals("Macros", name[0 .. namelen]))
+                    s = new MacroSection();
+                else
+                    s = new Section();
+                s.name = name[0 .. namelen];
+                s.body_ = pstart[0 .. pend - pstart];
+                s.nooutput = 0;
+                //printf("Section: '%.*s' = '%.*s'\n", cast(int)s.namelen, s.name, cast(int)s.bodylen, s.body);
+                sections.push(s);
+                if (!summary && !namelen)
+                    summary = s;
+            }
+            if (idlen)
+            {
+                name = idstart;
+                namelen = idlen;
+            }
+            else
+            {
+                name = null;
+                namelen = 0;
+                if (!*p)
+                    break;
+            }
+        }
+    }
+
+    void writeSections(Scope* sc, Dsymbols* a, ref OutBuffer buf)
+    {
+        assert(a.length);
+        //printf("DocComment::writeSections()\n");
+        Loc loc = (*a)[0].loc;
+        if (Module m = (*a)[0].isModule())
+        {
+            if (m.md)
+                loc = m.md.loc;
+        }
+        size_t offset1 = buf.length;
+        buf.writestring("$(DDOC_SECTIONS ");
+        size_t offset2 = buf.length;
+        for (size_t i = 0; i < sections.length; i++)
+        {
+            Section sec = sections[i];
+            if (sec.nooutput)
+                continue;
+            //printf("Section: '%.*s' = '%.*s'\n", cast(int)sec.namelen, sec.name, cast(int)sec.bodylen, sec.body);
+            if (!sec.name.length && i == 0)
+            {
+                buf.writestring("$(DDOC_SUMMARY ");
+                size_t o = buf.length;
+                buf.write(sec.body_);
+                escapeStrayParenthesis(loc, buf, o, true, sc.eSink);
+                highlightText(sc, a, loc, buf, o);
+                buf.writestring(")");
+            }
+            else
+                sec.write(loc, &this, sc, a, buf);
+        }
+        for (size_t i = 0; i < a.length; i++)
+        {
+            Dsymbol s = (*a)[i];
+            if (Dsymbol td = getEponymousParent(s))
+                s = td;
+            for (UnitTestDeclaration utd = s.ddocUnittest; utd; utd = utd.ddocUnittest)
+            {
+                if (utd.visibility.kind == Visibility.Kind.private_ || !utd.comment || !utd.fbody)
+                    continue;
+                // Strip whitespaces to avoid showing empty summary
+                const(char)* c = utd.comment;
+                while (*c == ' ' || *c == '\t' || *c == '\n' || *c == '\r')
+                    ++c;
+                buf.writestring("$(DDOC_EXAMPLES ");
+                size_t o = buf.length;
+                buf.writestring(cast(char*)c);
+                if (utd.codedoc)
+                {
+                    auto codedoc = utd.codedoc.stripLeadingNewlines;
+                    size_t n = getCodeIndent(codedoc);
+                    while (n--)
+                        buf.writeByte(' ');
+                    buf.writestring("----\n");
+                    buf.writestring(codedoc);
+                    buf.writestring("----\n");
+                    highlightText(sc, a, loc, buf, o);
+                }
+                buf.writestring(")");
+            }
+        }
+        if (buf.length == offset2)
+        {
+            /* Didn't write out any sections, so back out last write
+             */
+            buf.setsize(offset1);
+            buf.writestring("\n");
+        }
+        else
+            buf.writestring(")");
+    }
+}
+
+private:
 
 /***********************************************************
  */
@@ -342,8 +908,9 @@ bool isCVariadicParameter(Dsymbols* a, const(char)[] p) @safe
     return false;
 }
 
-Dsymbol getEponymousMember(TemplateDeclaration td) @safe
+Dsymbol getEponymousMember(TemplateDeclaration td)
 {
+    td.computeOneMember();
     if (!td.onemember)
         return null;
     if (AggregateDeclaration ad = td.onemember.isAggregateDeclaration())
@@ -357,7 +924,7 @@ Dsymbol getEponymousMember(TemplateDeclaration td) @safe
     return null;
 }
 
-TemplateDeclaration getEponymousParent(Dsymbol s) @safe
+TemplateDeclaration getEponymousParent(Dsymbol s)
 {
     if (!s.parent)
         return null;
@@ -370,166 +937,6 @@ immutable ddoc_decl_s = "$(DDOC_DECL ";
 immutable ddoc_decl_e = ")\n";
 immutable ddoc_decl_dd_s = "$(DDOC_DECL_DD ";
 immutable ddoc_decl_dd_e = ")\n";
-
-/****************************************************
- * Generate Ddoc file for Module m.
- * Params:
- *      m = Module
- *      ddoctext_ptr = combined text of .ddoc files for macro definitions
- *      ddoctext_length = extant of ddoctext_ptr
- *      datetime = charz returned by ctime()
- *      eSink = send error messages to eSink
- *      outbuf = append the Ddoc text to this
- */
-public
-void gendocfile(Module m, const char* ddoctext_ptr, size_t ddoctext_length, const char* datetime, ErrorSink eSink, ref OutBuffer outbuf)
-{
-    gendocfile(m, ddoctext_ptr[0 .. ddoctext_length], datetime, eSink, outbuf);
-}
-
-/****************************************************
- * Generate Ddoc text for Module `m` and append it to `outbuf`.
- * Params:
- *      m = Module
- *      ddoctext = combined text of .ddoc files for macro definitions
- *      datetime = charz returned by ctime()
- *      eSink = send error messages to eSink
- *      outbuf = append the Ddoc text to this
- */
-public
-void gendocfile(Module m, const char[] ddoctext, const char* datetime, ErrorSink eSink, ref OutBuffer outbuf)
-{
-    // Load internal default macros first
-    DocComment.parseMacros(m.escapetable, m.macrotable, ddoc_default[]);
-
-    // Ddoc files override default macros
-    DocComment.parseMacros(m.escapetable, m.macrotable, ddoctext);
-
-    Scope* sc = Scope.createGlobal(m, eSink); // create root scope
-    DocComment* dc = DocComment.parse(m, m.comment);
-    dc.pmacrotable = &m.macrotable;
-    dc.escapetable = m.escapetable;
-    sc.lastdc = dc;
-    // Generate predefined macros
-    // Set the title to be the name of the module
-    {
-        const p = m.toPrettyChars().toDString;
-        m.macrotable.define("TITLE", p);
-    }
-    // Set time macros
-    m.macrotable.define("DATETIME", datetime[0 .. 26]);
-    m.macrotable.define("YEAR", datetime[20 .. 20 + 4]);
-
-    const srcfilename = m.srcfile.toString();
-    m.macrotable.define("SRCFILENAME", srcfilename);
-    const docfilename = m.docfile.toString();
-    m.macrotable.define("DOCFILENAME", docfilename);
-    if (dc.copyright)
-    {
-        dc.copyright.nooutput = 1;
-        m.macrotable.define("COPYRIGHT", dc.copyright.body_);
-    }
-
-    OutBuffer buf;
-    if (m.filetype == FileType.ddoc)
-    {
-        Loc loc = m.md ? m.md.loc : m.loc;
-
-        size_t commentlen = m.comment ? strlen(cast(char*)m.comment) : 0;
-        Dsymbols a;
-        // https://issues.dlang.org/show_bug.cgi?id=9764
-        // Don't push m in a, to prevent emphasize ddoc file name.
-        if (dc.macros)
-        {
-            commentlen = dc.macros.name.ptr - m.comment;
-            dc.macros.write(loc, dc, sc, &a, buf);
-        }
-        buf.write(m.comment[0 .. commentlen]);
-        highlightText(sc, &a, loc, buf, 0);
-    }
-    else
-    {
-        Dsymbols a;
-        a.push(m);
-        dc.writeSections(sc, &a, buf);
-        emitMemberComments(m, buf, sc);
-    }
-    //printf("BODY= '%.*s'\n", cast(int)buf.length, buf.data);
-    m.macrotable.define("BODY", buf[]);
-
-    OutBuffer buf2;
-    buf2.writestring("$(DDOC)");
-    size_t end = buf2.length;
-
-    // Expand buf in place with macro expansions
-    const success = m.macrotable.expand(buf2, 0, end, null, global.recursionLimit, &isIdStart, &isIdTail);
-    if (!success)
-        eSink.error(Loc.initial, "DDoc macro expansion limit exceeded; more than %d expansions.", global.recursionLimit);
-
-    /* Remove all the escape sequences from buf,
-     * and make CR-LF the newline.
-     */
-    const slice = buf2[];
-    outbuf.reserve(slice.length);
-    auto p = slice.ptr;
-    for (size_t j = 0; j < slice.length; j++)
-    {
-        const c = p[j];
-        if (c == 0xFF && j + 1 < slice.length)
-        {
-            j++;
-            continue;
-        }
-        if (c == '\n')
-            outbuf.writeByte('\r');
-        else if (c == '\r')
-        {
-            outbuf.writestring("\r\n");
-            if (j + 1 < slice.length && p[j + 1] == '\n')
-            {
-                j++;
-            }
-            continue;
-        }
-        outbuf.writeByte(c);
-    }
-}
-
-/****************************************************
- * Having unmatched parentheses can hose the output of Ddoc,
- * as the macros depend on properly nested parentheses.
- * This function replaces all ( with $(LPAREN) and ) with $(RPAREN)
- * to preserve text literally. This also means macros in the
- * text won't be expanded.
- */
-public
-void escapeDdocString(ref OutBuffer buf, size_t start)
-{
-    for (size_t u = start; u < buf.length; u++)
-    {
-        const c = buf[u];
-        switch (c)
-        {
-        case '$':
-            buf.remove(u, 1);
-            buf.insert(u, "$(DOLLAR)");
-            u += 8;
-            break;
-        case '(':
-            buf.remove(u, 1); //remove the (
-            buf.insert(u, "$(LPAREN)"); //insert this instead
-            u += 8; //skip over newly inserted macro
-            break;
-        case ')':
-            buf.remove(u, 1); //remove the )
-            buf.insert(u, "$(RPAREN)"); //insert this instead
-            u += 8; //skip over newly inserted macro
-            break;
-        default:
-            break;
-        }
-    }
-}
 
 /****************************************************
  * Having unmatched parentheses can hose the output of Ddoc,
@@ -684,8 +1091,9 @@ bool emitAnchorName(ref OutBuffer buf, Dsymbol s, Scope* sc, bool includeParent)
     if (dot)
         buf.writeByte('.');
     // Use "this" not "__ctor"
-    TemplateDeclaration td;
-    if (s.isCtorDeclaration() || ((td = s.isTemplateDeclaration()) !is null && td.onemember && td.onemember.isCtorDeclaration()))
+    TemplateDeclaration td = s.isTemplateDeclaration();
+    td.computeOneMember();
+    if (s.isCtorDeclaration() || (td !is null && td.onemember && td.onemember.isCtorDeclaration()))
     {
         buf.writestring("this");
     }
@@ -1350,7 +1758,7 @@ void toDocBuffer(Dsymbol s, ref OutBuffer buf, Scope* sc)
             {
                 prettyPrintDsymbol(s, ad.parent);
             }
-            else if (Type type = ad.getType()) // type alias
+            else if (Type type = dmd.dsymbolsem.getType(ad)) // type alias
             {
                 if (type.ty == Tclass || type.ty == Tstruct || type.ty == Tenum)
                 {
@@ -1517,414 +1925,6 @@ void toDocBuffer(Dsymbol s, ref OutBuffer buf, Scope* sc)
 
     scope ToDocBuffer v = new ToDocBuffer(buf, sc);
     s.accept(v);
-}
-
-/***********************************************************
- */
-public
-struct DocComment
-{
-    Sections sections;      // Section*[]
-    Section summary;
-    Section copyright;
-    Section macros;
-    MacroTable* pmacrotable;
-    Escape* escapetable;
-    Dsymbols a;
-
-    static DocComment* parse(Dsymbol s, const(char)* comment)
-    {
-        //printf("parse(%s): '%s'\n", s.toChars(), comment);
-        auto dc = new DocComment();
-        dc.a.push(s);
-        if (!comment)
-            return dc;
-        dc.parseSections(comment);
-        for (size_t i = 0; i < dc.sections.length; i++)
-        {
-            Section sec = dc.sections[i];
-            if (iequals("copyright", sec.name))
-            {
-                dc.copyright = sec;
-            }
-            if (iequals("macros", sec.name))
-            {
-                dc.macros = sec;
-            }
-        }
-        return dc;
-    }
-
-    /************************************************
-     * Parse macros out of Macros: section.
-     * Macros are of the form:
-     *      name1 = value1
-     *
-     *      name2 = value2
-     */
-    extern(D) static void parseMacros(
-        Escape* escapetable, ref MacroTable pmacrotable, const(char)[] m)
-    {
-        const(char)* p = m.ptr;
-        size_t len = m.length;
-        const(char)* pend = p + len;
-        const(char)* tempstart = null;
-        size_t templen = 0;
-        const(char)* namestart = null;
-        size_t namelen = 0; // !=0 if line continuation
-        const(char)* textstart = null;
-        size_t textlen = 0;
-        while (p < pend)
-        {
-            // Skip to start of macro
-            while (1)
-            {
-                if (p >= pend)
-                    goto Ldone;
-                switch (*p)
-                {
-                case ' ':
-                case '\t':
-                    p++;
-                    continue;
-                case '\r':
-                case '\n':
-                    p++;
-                    goto Lcont;
-                default:
-                    if (isIdStart(p))
-                        break;
-                    if (namelen)
-                        goto Ltext; // continuation of prev macro
-                    goto Lskipline;
-                }
-                break;
-            }
-            tempstart = p;
-            while (1)
-            {
-                if (p >= pend)
-                    goto Ldone;
-                if (!isIdTail(p))
-                    break;
-                p += utfStride(p);
-            }
-            templen = p - tempstart;
-            while (1)
-            {
-                if (p >= pend)
-                    goto Ldone;
-                if (!(*p == ' ' || *p == '\t'))
-                    break;
-                p++;
-            }
-            if (*p != '=')
-            {
-                if (namelen)
-                    goto Ltext; // continuation of prev macro
-                goto Lskipline;
-            }
-            p++;
-            if (p >= pend)
-                goto Ldone;
-            if (namelen)
-            {
-                // Output existing macro
-            L1:
-                //printf("macro '%.*s' = '%.*s'\n", cast(int)namelen, namestart, cast(int)textlen, textstart);
-                if (iequals("ESCAPES", namestart[0 .. namelen]))
-                    parseEscapes(escapetable, textstart[0 .. textlen]);
-                else
-                    pmacrotable.define(namestart[0 .. namelen], textstart[0 .. textlen]);
-                namelen = 0;
-                if (p >= pend)
-                    break;
-            }
-            namestart = tempstart;
-            namelen = templen;
-            while (p < pend && (*p == ' ' || *p == '\t'))
-                p++;
-            textstart = p;
-        Ltext:
-            while (p < pend && *p != '\r' && *p != '\n')
-                p++;
-            textlen = p - textstart;
-            p++;
-            //printf("p = %p, pend = %p\n", p, pend);
-        Lcont:
-            continue;
-        Lskipline:
-            // Ignore this line
-            while (p < pend && *p != '\r' && *p != '\n')
-                p++;
-        }
-    Ldone:
-        if (namelen)
-            goto L1; // write out last one
-    }
-
-    /**************************************
-     * Parse escapes of the form:
-     *      /c/string/
-     * where c is a single character.
-     * Multiple escapes can be separated
-     * by whitespace and/or commas.
-     */
-    static void parseEscapes(Escape* escapetable, const(char)[] text)
-    {
-        if (!escapetable)
-        {
-            escapetable = new Escape();
-            memset(escapetable, 0, Escape.sizeof);
-        }
-        //printf("parseEscapes('%.*s') pescapetable = %p\n", cast(int)text.length, text.ptr, escapetable);
-        const(char)* p = text.ptr;
-        const(char)* pend = p + text.length;
-        while (1)
-        {
-            while (1)
-            {
-                if (p + 4 >= pend)
-                    return;
-                if (!(*p == ' ' || *p == '\t' || *p == '\r' || *p == '\n' || *p == ','))
-                    break;
-                p++;
-            }
-            if (p[0] != '/' || p[2] != '/')
-                return;
-            char c = p[1];
-            p += 3;
-            const(char)* start = p;
-            while (1)
-            {
-                if (p >= pend)
-                    return;
-                if (*p == '/')
-                    break;
-                p++;
-            }
-            size_t len = p - start;
-            char* s = cast(char*)memcpy(mem.xmalloc(len + 1), start, len);
-            s[len] = 0;
-            escapetable.strings[c] = s[0 .. len];
-            //printf("\t%c = '%s'\n", c, s);
-            p++;
-        }
-    }
-
-    /*****************************************
-     * Parse next paragraph out of *pcomment.
-     * Update *pcomment to point past paragraph.
-     * Returns NULL if no more paragraphs.
-     * If paragraph ends in 'identifier:',
-     * then (*pcomment)[0 .. idlen] is the identifier.
-     */
-    void parseSections(const(char)* comment)
-    {
-        const(char)* p;
-        const(char)* pstart;
-        const(char)* pend;
-        const(char)* idstart = null; // dead-store to prevent spurious warning
-        size_t idlen;
-        const(char)* name = null;
-        size_t namelen = 0;
-        //printf("parseSections('%s')\n", comment);
-        p = comment;
-        while (*p)
-        {
-            const(char)* pstart0 = p;
-            p = skipwhitespace(p);
-            pstart = p;
-            pend = p;
-
-            // Undo indent if starting with a list item
-            if ((*p == '-' || *p == '+' || *p == '*') && (*(p+1) == ' ' || *(p+1) == '\t'))
-                pstart = pstart0;
-            else
-            {
-                const(char)* pitem = p;
-                while (*pitem >= '0' && *pitem <= '9')
-                    ++pitem;
-                if (pitem > p && *pitem == '.' && (*(pitem+1) == ' ' || *(pitem+1) == '\t'))
-                    pstart = pstart0;
-            }
-
-            /* Find end of section, which is ended by one of:
-             *      'identifier:' (but not inside a code section)
-             *      '\0'
-             */
-            idlen = 0;
-            int inCode = 0;
-            while (1)
-            {
-                // Check for start/end of a code section
-                if (*p == '-' || *p == '`' || *p == '~')
-                {
-                    char c = *p;
-                    int numdash = 0;
-                    while (*p == c)
-                    {
-                        ++numdash;
-                        p++;
-                    }
-                    // BUG: handle UTF PS and LS too
-                    if ((!*p || *p == '\r' || *p == '\n' || (!inCode && c != '-')) && numdash >= 3)
-                    {
-                        inCode = inCode == c ? false : c;
-                        if (inCode)
-                        {
-                            // restore leading indentation
-                            while (pstart0 < pstart && isIndentWS(pstart - 1))
-                                --pstart;
-                        }
-                    }
-                    pend = p;
-                }
-                if (!inCode && isIdStart(p))
-                {
-                    const(char)* q = p + utfStride(p);
-                    while (isIdTail(q))
-                        q += utfStride(q);
-
-                    // Detected tag ends it
-                    if (*q == ':' && isupper(*p)
-                            && (isspace(q[1]) || q[1] == 0))
-                    {
-                        idlen = q - p;
-                        idstart = p;
-                        for (pend = p; pend > pstart; pend--)
-                        {
-                            if (pend[-1] == '\n')
-                                break;
-                        }
-                        p = q + 1;
-                        break;
-                    }
-                }
-                while (1)
-                {
-                    if (!*p)
-                        goto L1;
-                    if (*p == '\n')
-                    {
-                        p++;
-                        if (*p == '\n' && !summary && !namelen && !inCode)
-                        {
-                            pend = p;
-                            p++;
-                            goto L1;
-                        }
-                        break;
-                    }
-                    p++;
-                    pend = p;
-                }
-                p = skipwhitespace(p);
-            }
-        L1:
-            if (namelen || pstart < pend)
-            {
-                Section s;
-                if (iequals("Params", name[0 .. namelen]))
-                    s = new ParamSection();
-                else if (iequals("Macros", name[0 .. namelen]))
-                    s = new MacroSection();
-                else
-                    s = new Section();
-                s.name = name[0 .. namelen];
-                s.body_ = pstart[0 .. pend - pstart];
-                s.nooutput = 0;
-                //printf("Section: '%.*s' = '%.*s'\n", cast(int)s.namelen, s.name, cast(int)s.bodylen, s.body);
-                sections.push(s);
-                if (!summary && !namelen)
-                    summary = s;
-            }
-            if (idlen)
-            {
-                name = idstart;
-                namelen = idlen;
-            }
-            else
-            {
-                name = null;
-                namelen = 0;
-                if (!*p)
-                    break;
-            }
-        }
-    }
-
-    void writeSections(Scope* sc, Dsymbols* a, ref OutBuffer buf)
-    {
-        assert(a.length);
-        //printf("DocComment::writeSections()\n");
-        Loc loc = (*a)[0].loc;
-        if (Module m = (*a)[0].isModule())
-        {
-            if (m.md)
-                loc = m.md.loc;
-        }
-        size_t offset1 = buf.length;
-        buf.writestring("$(DDOC_SECTIONS ");
-        size_t offset2 = buf.length;
-        for (size_t i = 0; i < sections.length; i++)
-        {
-            Section sec = sections[i];
-            if (sec.nooutput)
-                continue;
-            //printf("Section: '%.*s' = '%.*s'\n", cast(int)sec.namelen, sec.name, cast(int)sec.bodylen, sec.body);
-            if (!sec.name.length && i == 0)
-            {
-                buf.writestring("$(DDOC_SUMMARY ");
-                size_t o = buf.length;
-                buf.write(sec.body_);
-                escapeStrayParenthesis(loc, buf, o, true, sc.eSink);
-                highlightText(sc, a, loc, buf, o);
-                buf.writestring(")");
-            }
-            else
-                sec.write(loc, &this, sc, a, buf);
-        }
-        for (size_t i = 0; i < a.length; i++)
-        {
-            Dsymbol s = (*a)[i];
-            if (Dsymbol td = getEponymousParent(s))
-                s = td;
-            for (UnitTestDeclaration utd = s.ddocUnittest; utd; utd = utd.ddocUnittest)
-            {
-                if (utd.visibility.kind == Visibility.Kind.private_ || !utd.comment || !utd.fbody)
-                    continue;
-                // Strip whitespaces to avoid showing empty summary
-                const(char)* c = utd.comment;
-                while (*c == ' ' || *c == '\t' || *c == '\n' || *c == '\r')
-                    ++c;
-                buf.writestring("$(DDOC_EXAMPLES ");
-                size_t o = buf.length;
-                buf.writestring(cast(char*)c);
-                if (utd.codedoc)
-                {
-                    auto codedoc = utd.codedoc.stripLeadingNewlines;
-                    size_t n = getCodeIndent(codedoc);
-                    while (n--)
-                        buf.writeByte(' ');
-                    buf.writestring("----\n");
-                    buf.writestring(codedoc);
-                    buf.writestring("----\n");
-                    highlightText(sc, a, loc, buf, o);
-                }
-                buf.writestring(")");
-            }
-        }
-        if (buf.length == offset2)
-        {
-            /* Didn't write out any sections, so back out last write
-             */
-            buf.setsize(offset1);
-            buf.writestring("\n");
-        }
-        else
-            buf.writestring(")");
-    }
 }
 
 /*****************************************
@@ -2623,11 +2623,12 @@ Parameter isFunctionParameter(Dsymbols* a, const(char)[] p) @safe
 
 /****************************************************
  */
-Parameter isEponymousFunctionParameter(Dsymbols* a, const(char)[] p) @safe
+Parameter isEponymousFunctionParameter(Dsymbols* a, const(char)[] p)
 {
     foreach (Dsymbol dsym; *a)
     {
         TemplateDeclaration td = dsym.isTemplateDeclaration();
+        td.computeOneMember();
         if (td && td.onemember)
         {
             /* Case 1: we refer to a template declaration inside the template
@@ -3110,7 +3111,9 @@ struct MarkdownLink
     {
         size_t iStart = i + 1;
         size_t iEnd = iStart;
-        if (iEnd >= buf.length || buf[iEnd] != '[' || (iEnd+1 < buf.length && buf[iEnd+1] == ']'))
+        if (iEnd >= buf.length)
+            return i;
+        if (buf[iEnd] != '[' || (iEnd+1 < buf.length && buf[iEnd+1] == ']'))
         {
             // collapsed reference [foo][] or shortcut reference [foo]
             iStart = delimiter.iStart + delimiter.count - 1;

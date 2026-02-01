@@ -253,12 +253,12 @@ DEF_CTFE_BUILTIN (INTRINSIC_FMA, BUILT_IN_FMAL, "fma", "std.math.operations",
 
 /* core.stdc.stdarg intrinsics.  */
 
-DEF_D_BUILTIN (INTRINSIC_VA_ARG, BUILT_IN_NONE, "va_arg", "core.stdc.stdarg",
-	       "FK@7va_listK@1TZv")
-DEF_D_BUILTIN (INTRINSIC_C_VA_ARG, BUILT_IN_NONE, "va_arg", "core.stdc.stdarg",
-	       "FK@7va_listZ@1T")
-DEF_D_BUILTIN (INTRINSIC_VASTART, BUILT_IN_NONE, "va_start", "core.stdc.stdarg",
-	       "FJ@7va_listK@1TZv")
+DEF_D_BUILTIN (INTRINSIC_VA_ARG, BUILT_IN_NONE, "va_arg",
+	       "core.internal.vararg.gnu", "FK@7va_listK@1TZv")
+DEF_D_BUILTIN (INTRINSIC_C_VA_ARG, BUILT_IN_NONE, "va_arg",
+	       "core.internal.vararg.gnu", "FK@7va_listZ@1T")
+DEF_D_BUILTIN (INTRINSIC_VASTART, BUILT_IN_NONE, "va_start",
+	       "core.internal.vararg.gnu", "FJ@7va_listK@1TZv")
 
 /* gcc.simd intrinsics.  */
 

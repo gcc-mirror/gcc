@@ -1,3 +1,5 @@
+// PERMUTE_ARGS: -fPIC -inline -release -g -O
+
 module test;
 
 import core.stdc.stdio;
@@ -1272,6 +1274,126 @@ void test18576()
 
 /*******************************************/
 
+struct S67
+{
+    S67* ptr;
+
+    this(int)
+    {
+        pragma(inline, false);
+        ptr = &this;
+    }
+
+    @disable this(this);
+}
+
+pragma(inline, false)
+S67 make67()
+{
+    return S67(1);
+}
+
+__gshared int i67;
+
+S67 f67()
+out (s; s.ptr == &s)
+{
+    i67++;
+    return make67();
+}
+
+void test67()
+{
+    S67 s = f67();
+    assert(s.ptr == &s);
+}
+
+/*******************************************/
+// https://github.com/dlang/dmd/issues/22160
+
+struct Vector22160(T)
+{
+    T[] _payload;
+
+    ~this() const nothrow {}
+
+    @property size_t length() const
+    {
+        return _payload.length;
+    }
+
+    @property T* ptr() inout {
+        return cast(T*) _payload.ptr;
+    }
+}
+
+struct DEREncoder
+{
+    Vector22160!ubyte getContentsUnlocked()
+    {
+        return Vector22160!ubyte();
+    }
+
+    Vector22160!ubyte m_contents;
+}
+
+Vector22160!ubyte putInSequence()(const auto ref Vector22160!ubyte contents)
+{
+    return DEREncoder().getContentsUnlocked();
+}
+
+void foo22160(T)(Vector22160!T*, T* ptr, size_t)
+{
+    assert(ptr is null);
+}
+
+void bar22160(Vector22160!ubyte val)
+{
+    ulong[16] padding = 0x1234567890123456UL;
+    foo22160(&val, val.ptr, val.length);
+}
+
+void test22160()
+{
+    bar22160(putInSequence(Vector22160!ubyte()));
+}
+
+/*******************************************/
+// https://github.com/dlang/dmd/issues/22292
+
+struct Vector22292(T)
+{
+    T[] payload = [1];
+
+    ~this() nothrow
+    {
+        payload = null;
+    }
+
+    void check(ref Vector22292 val)
+    {
+        assert(val.payload.length == 1);
+    }
+}
+
+struct DEREncoder2
+{
+    ref Vector22292!int getContentsUnlocked()
+    {
+        return m_contents;
+    }
+
+    Vector22292!int m_contents;
+}
+
+void test22292()
+{
+    Vector22292!int o;
+    o.check(DEREncoder2().getContentsUnlocked());
+}
+
+/*******************************************/
+
 void main()
 {
     printf("Start\n");
@@ -1336,6 +1458,9 @@ void main()
     test64();
     test65();
     test18576();
+    test67();
+    test22160();
+    test22292();
 
     printf("Success\n");
 }

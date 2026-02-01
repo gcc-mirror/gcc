@@ -130,7 +130,7 @@ public:
   void visit (VarDeclaration *d) final override
   {
     /* Not all kinds of manifest constants create a CONST_DECL.  */
-    if (!d->canTakeAddressOf () && !d->type->isScalar ())
+    if (!d->canTakeAddressOf () && !dmd::isScalar (d->type))
       return;
 
     visit ((Declaration *) d);
@@ -148,7 +148,7 @@ public:
 
     if (dsym == d)
       {
-	Type *type = d->getType ();
+	Type *type = dmd::getType (d);
 
 	/* Type imports should really be part of their own visit method.  */
 	if (type != NULL)

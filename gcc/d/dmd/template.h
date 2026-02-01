@@ -78,12 +78,12 @@ public:
     d_bool isTrivialAlias;        // matches pattern `template Alias(T) { alias Alias = qualifiers(T); }`
     d_bool deprecated_;           // this template declaration is deprecated
     d_bool isCmacro;              // Whether this template is a translation of a C macro
+    d_bool haveComputedOneMember;   // Whether computeOneMeber has been called
     Visibility visibility;
 
     TemplatePrevious *previous;         // threaded list of previous instantiation attempts on stack
 
     TemplateDeclaration *syntaxCopy(Dsymbol *) override;
-    bool overloadInsert(Dsymbol *s) override;
     const char *kind() const override;
 
     Visibility visible() override;
@@ -129,7 +129,6 @@ public:
     virtual TemplateTupleParameter *isTemplateTupleParameter();
 
     virtual TemplateParameter *syntaxCopy() = 0;
-    virtual bool declareParameter(Scope *sc) = 0;
     virtual void print(RootObject *oarg, RootObject *oded) = 0;
     virtual RootObject *specialization() = 0;
     virtual bool hasDefaultArg() = 0;
@@ -150,7 +149,6 @@ public:
 
     TemplateTypeParameter *isTemplateTypeParameter() override final;
     TemplateTypeParameter *syntaxCopy() override;
-    bool declareParameter(Scope *sc) override final;
     void print(RootObject *oarg, RootObject *oded) override final;
     RootObject *specialization() override final;
     bool hasDefaultArg() override final;
@@ -180,7 +178,6 @@ public:
 
     TemplateValueParameter *isTemplateValueParameter() override;
     TemplateValueParameter *syntaxCopy() override;
-    bool declareParameter(Scope *sc) override;
     void print(RootObject *oarg, RootObject *oded) override;
     RootObject *specialization() override;
     bool hasDefaultArg() override;
@@ -199,7 +196,6 @@ public:
 
     TemplateAliasParameter *isTemplateAliasParameter() override;
     TemplateAliasParameter *syntaxCopy() override;
-    bool declareParameter(Scope *sc) override;
     void print(RootObject *oarg, RootObject *oded) override;
     RootObject *specialization() override;
     bool hasDefaultArg() override;
@@ -214,7 +210,6 @@ class TemplateTupleParameter final : public TemplateParameter
 public:
     TemplateTupleParameter *isTemplateTupleParameter() override;
     TemplateTupleParameter *syntaxCopy() override;
-    bool declareParameter(Scope *sc) override;
     void print(RootObject *oarg, RootObject *oded) override;
     RootObject *specialization() override;
     bool hasDefaultArg() override;
@@ -248,7 +243,6 @@ public:
     Dsymbol *aliasdecl;                 // !=NULL if instance is an alias for its sole member
     TemplateInstance *inst;             // refer to existing instance
     ScopeDsymbol *argsym;               // argument symbol table
-    hash_t hash;                        // cached result of toHash()
     Expressions *fargs;                 // for function template, these are the function arguments
     Identifiers *fnames;                // for function template, argument names
 
@@ -300,4 +294,5 @@ namespace dmd
     bool isError(const RootObject *const o);
     void printTemplateStats(bool listInstances, ErrorSink* eSink);
     void printInstantiationTrace(TemplateInstance *ti);
+    bool declareParameter(TemplateParameter *tp, Scope *sc);
 }

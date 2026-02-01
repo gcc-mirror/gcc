@@ -14,6 +14,7 @@
 module dmd.funcsem;
 
 import core.stdc.stdio;
+import core.stdc.string;
 
 import dmd.aggregate;
 import dmd.arraytypes;
@@ -59,15 +60,53 @@ import dmd.semantic3;
 import dmd.statement;
 import dmd.statementsem;
 import dmd.target;
+import dmd.targetcompiler;
 import dmd.templatesem;
 import dmd.tokens;
 import dmd.typesem;
 import dmd.visitor;
 import dmd.visitor.statement_rewrite_walker;
 
-version (IN_GCC) {}
-else version (IN_LLVM) {}
-else version = MARS;
+
+/**********************************
+ * Generate a FuncDeclaration for a runtime library function.
+ */
+FuncDeclaration genCfunc(Parameters* fparams, Type treturn, const(char)* name, STC stc = STC.none)
+{
+    return genCfunc(fparams, treturn, Identifier.idPool(name[0 .. strlen(name)]), stc);
+}
+
+FuncDeclaration genCfunc(Parameters* fparams, Type treturn, Identifier id, STC stc = STC.none)
+{
+    FuncDeclaration fd;
+    TypeFunction tf;
+    Dsymbol s;
+    __gshared DsymbolTable st = null;
+
+    //printf("genCfunc(name = '%s')\n", id.toChars());
+    //printf("treturn\n\t"); treturn.print();
+
+    // See if already in table
+    if (!st)
+        st = new DsymbolTable();
+    s = st.lookup(id);
+    if (s)
+    {
+        fd = s.isFuncDeclaration();
+        assert(fd);
+        assert(fd.type.nextOf().equals(treturn));
+    }
+    else
+    {
+        tf = new TypeFunction(ParameterList(fparams), treturn, LINK.c, stc);
+        fd = new FuncDeclaration(Loc.initial, Loc.initial, id, STC.static_, tf);
+        fd.visibility = Visibility(Visibility.Kind.public_);
+        fd._linkage = LINK.c;
+
+        st.insert(fd);
+    }
+    return fd;
+}
 
 /* Tweak all return statements and dtor call for nrvo_var, for correct NRVO.
  */
@@ -215,6 +254,10 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         printf("type: %p, %s\n", funcdecl.type, funcdecl.type.toChars());
     }
 
+    import dmd.timetrace;
+    timeTraceBeginEvent(TimeTraceEventType.sema1Function);
+    scope (exit) timeTraceEndEvent(TimeTraceEventType.sema1Function, funcdecl);
+
     if (funcdecl.semanticRun != PASS.initial && funcdecl.isFuncLiteralDeclaration())
     {
         /* Member functions that have return types that are
@@ -334,6 +377,9 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
     {
         sc = sc.push();
         sc.stc |= funcdecl.storage_class & (STC.disable | STC.deprecated_); // forward to function type
+
+        // Parameters don't inherit UDAs from outside, https://github.com/dlang/dmd/issues/19788
+        sc.userAttribDecl = null;
 
         if (sc.func)
         {
@@ -461,6 +507,16 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         funcdecl.type = funcdecl.type.addSTC(stc);
 
         funcdecl.type = funcdecl.type.typeSemantic(funcdecl.loc, sc);
+
+        // semantic for parameters' UDAs
+        if (auto f = getFunctionType(funcdecl))
+            foreach (i, param; f.parameterList)
+            {
+                sc.userAttribDecl = null;
+                if (param && param.userAttribDecl)
+                    param.userAttribDecl.dsymbolSemantic(sc);
+            }
+
         sc = sc.pop();
     }
 
@@ -507,7 +563,7 @@ void funcDeclarationSemantic(Scope* sc, FuncDeclaration funcdecl)
         auto fnext = funcdecl.overnext.isFuncDeclaration();
         funcDeclarationSemantic(sc, fnext);
         auto fn = fnext.type.isTypeFunction();
-        if (!fn || !cFuncEquivalence(f, fn))
+        if (!fn || !cFuncEquivalence(f, fn) || !cTypeEquivalence(f.next, fn.next))
         {
             .error(funcdecl.loc, "%s `%s` redeclaration with different type", funcdecl.kind, funcdecl.toPrettyChars);
             //printf("t1: %s\n", f.toChars());
@@ -694,13 +750,6 @@ Ldone:
     }
 
     assert(funcdecl.type.ty != Terror || funcdecl.errors);
-
-    // semantic for parameters' UDAs
-    foreach (i, param; f.parameterList)
-    {
-        if (param && param.userAttribDecl)
-            param.userAttribDecl.dsymbolSemantic(sc);
-    }
 }
 
 /**
@@ -1171,8 +1220,8 @@ Linterfaces:
                     functionToBufferFull(cast(TypeFunction)(fd.type), buf1,
                         new Identifier(fd.toPrettyChars()), hgs, null);
 
-                    error(funcdecl.loc, "function `%s` does not override any function, did you mean to override `%s`?",
-                        funcdeclToChars, buf1.peekChars());
+                    error(funcdecl.loc, "function `%s` does not override any function", funcdeclToChars);
+                    errorSupplemental(fd.loc, "did you mean to override `%s`?", buf1.peekChars());
 
                     // Supplemental error for parameter scope differences
                     auto tf1 = cast(TypeFunction)funcdecl.type;
@@ -1185,8 +1234,6 @@ Linterfaces:
 
                         if (params1.length == params2.length)
                         {
-                            bool hasScopeDifference = false;
-
                             for (size_t i = 0; i < params1.length; i++)
                             {
                                 auto p1 = params1[i];
@@ -1198,14 +1245,7 @@ Linterfaces:
                                 if (!(p2.storageClass & STC.scope_))
                                     continue;
 
-                                if (!hasScopeDifference)
-                                {
-                                    // Intended signature
-                                    errorSupplemental(funcdecl.loc, "Did you intend to override:");
-                                    errorSupplemental(funcdecl.loc, "`%s`", buf1.peekChars());
-                                    hasScopeDifference = true;
-                                }
-                                errorSupplemental(funcdecl.loc, "Parameter %d is missing `scope`",
+                                errorSupplemental(funcdecl.loc, "parameter %d is missing `scope`",
                                 cast(int)(i + 1));
                             }
                         }
@@ -1962,7 +2002,7 @@ private void checkNamedArgErrorAndReport(TemplateDeclaration td, ArgumentList ar
 {
     if (!argumentList.hasArgNames())
         return;
-
+    td.computeOneMember();
     auto tf = td.onemember ? td.onemember.isFuncDeclaration() : null;
     if (tf && tf.type && tf.type.ty == Tfunction)
     {
@@ -1992,8 +2032,11 @@ private void checkNamedArgErrorAndReportOverload(Dsymbol od, ArgumentList argume
             if (auto fd = s.isFuncDeclaration())
                 tf = fd;
             else if (auto td = s.isTemplateDeclaration())
+            {
+                td.computeOneMember();
                 if (td.onemember)
                     tf = td.onemember.isFuncDeclaration();
+            }
         }
         return 0;
     });
@@ -2073,6 +2116,7 @@ private void printCandidates(Decl)(Loc loc, Decl declaration, bool showDeprecate
             // td.onemember may not have overloads set
             // (see fail_compilation/onemember_overloads.d)
             // assume if more than one member it is overloaded internally
+            td.computeOneMember();
             bool recurse = td.onemember && (!td.onemember.isFuncDeclaration ||
                 td.members.length > 1);
             OutBuffer buf;
@@ -2456,7 +2500,7 @@ int getLevelAndCheck(FuncDeclaration fd, Loc loc, Scope* sc, FuncDeclaration tar
                      Declaration decl)
 {
     int level = fd.getLevel(target, sc.intypeof);
-    if (level != fd.LevelError)
+    if (level != LevelError)
         return level;
     // Don't give error if in template constraint
     if (!sc.inTemplateConstraint)
@@ -2467,7 +2511,7 @@ int getLevelAndCheck(FuncDeclaration fd, Loc loc, Scope* sc, FuncDeclaration tar
                xstatic, fd.kind(), fd.toPrettyChars(), decl.kind(), decl.toChars(),
                target.toPrettyChars());
             .errorSupplemental(decl.loc, "`%s` declared here", decl.toChars());
-        return fd.LevelError;
+        return LevelError;
     }
     return 1;
 }
@@ -2549,6 +2593,8 @@ void buildResultVar(FuncDeclaration fd, Scope* sc, Type tret)
         TypeFunction tf = fd.type.toTypeFunction();
         if (tf.isRef)
             fd.vresult.storage_class |= STC.ref_;
+        else if (target.isReturnOnStack(tf, fd.needThis()))
+            fd.vresult.nrvo = true;
         fd.vresult.type = tret;
         fd.vresult.dsymbolSemantic(sc);
         if (!sc.insert(fd.vresult))
@@ -3093,6 +3139,248 @@ extern (D) void checkMain(FuncDeclaration fd)
         .error(fd.loc, "%s `%s` must return `int`, `void` or `noreturn`, not `%s`", fd.kind, fd.toPrettyChars, tf.nextOf().toChars());
 }
 
+enum LevelError = -2;
+
+/*****************************************
+ * Determine lexical level difference from `fd1` to nested function `fd2`.
+ * Params:
+ *      fd1 = function
+ *      fd2 = target of call
+ *      intypeof = !=0 if inside typeof
+ * Returns:
+ *      0       same level
+ *      >0      decrease nesting by number
+ *      -1      increase nesting by 1 (`fd2` is nested within `fd1`)
+ *      LevelError  error, `this` cannot call `fd2`
+ */
+extern (D) int getLevel(FuncDeclaration fd1, FuncDeclaration fd2, int intypeof)
+{
+    //printf("FuncDeclaration::getLevel(fd2 = '%s')\n", fd2.toChars());
+    Dsymbol fd2parent = fd2.toParent2();
+    if (fd2parent == fd1)
+        return -1;
+
+    Dsymbol s = fd1;
+    int level = 0;
+    while (fd2 != s && fd2parent != s.toParent2())
+    {
+        //printf("\ts = %s, '%s'\n", s.kind(), s.toChars());
+        if (auto thisfd = s.isFuncDeclaration())
+        {
+            if (!thisfd.isNested() && !thisfd.vthis && !intypeof)
+                return LevelError;
+        }
+        else
+        {
+            if (auto thiscd = s.isAggregateDeclaration())
+            {
+                /* AggregateDeclaration::isNested returns true only when
+                 * it has a hidden pointer.
+                 * But, calling the function belongs unrelated lexical scope
+                 * is still allowed inside typeof.
+                 *
+                 * struct Map(alias fun) {
+                 *   typeof({ return fun(); }) RetType;
+                 *   // No member function makes Map struct 'not nested'.
+                 * }
+                 */
+                if (!thiscd.isNested() && !intypeof)
+                    return LevelError;
+            }
+            else
+                return LevelError;
+        }
+
+        s = s.toParentP(fd2);
+        assert(s);
+        level++;
+    }
+    return level;
+}
+
+/* For all functions between outerFunc and f, mark them as needing
+ * a closure.
+ */
+private void markAsNeedingClosure(Dsymbol f, FuncDeclaration outerFunc)
+{
+    for (Dsymbol sx = f; sx && sx != outerFunc; sx = sx.toParentP(outerFunc))
+    {
+        FuncDeclaration fy = sx.isFuncDeclaration();
+        if (fy && fy.closureVars.length)
+        {
+            /* fy needs a closure if it has closureVars[],
+             * because the frame pointer in the closure will be accessed.
+             */
+            fy.requiresClosure = true;
+        }
+    }
+}
+
+/********
+ * Given a nested function f inside a function outerFunc, check
+ * if any sibling callers of f have escaped. If so, mark
+ * all the enclosing functions as needing closures.
+ * This is recursive: we need to check the callers of our siblings.
+ * Note that nested functions can only call lexically earlier nested
+ * functions, so loops are impossible.
+ * Params:
+ *      f = inner function (nested within outerFunc)
+ *      outerFunc = outer function
+ *      p = for internal recursion use
+ * Returns:
+ *      true if any closures were needed
+ */
+bool checkEscapingSiblings(FuncDeclaration f, FuncDeclaration outerFunc, void* p = null)
+{
+    static struct PrevSibling
+    {
+        PrevSibling* p;
+        FuncDeclaration f;
+    }
+
+    if (f.computedEscapingSiblings)
+        return f.hasEscapingSiblings;
+
+    PrevSibling ps;
+    ps.p = cast(PrevSibling*)p;
+    ps.f = f;
+
+    //printf("checkEscapingSiblings(f = %s, outerfunc = %s)\n", f.toChars(), outerFunc.toChars());
+    bool bAnyClosures = false;
+    for (size_t i = 0; i < f.siblingCallers.length; ++i)
+    {
+        FuncDeclaration g = f.siblingCallers[i];
+        if (g.isThis() || g.tookAddressOf)
+        {
+            markAsNeedingClosure(g, outerFunc);
+            bAnyClosures = true;
+        }
+
+        for (auto parent = g.toParentP(outerFunc); parent && parent !is outerFunc; parent = parent.toParentP(outerFunc))
+        {
+            // A parent of the sibling had its address taken.
+            // Assume escaping of parent affects its children, so needs propagating.
+            // see https://issues.dlang.org/show_bug.cgi?id=19679
+            FuncDeclaration parentFunc = parent.isFuncDeclaration;
+            if (parentFunc && parentFunc.tookAddressOf)
+            {
+                markAsNeedingClosure(parentFunc, outerFunc);
+                bAnyClosures = true;
+            }
+        }
+
+        PrevSibling* prev = cast(PrevSibling*)p;
+        while (1)
+        {
+            if (!prev)
+            {
+                bAnyClosures |= checkEscapingSiblings(g, outerFunc, &ps);
+                break;
+            }
+            if (prev.f == g)
+                break;
+            prev = prev.p;
+        }
+    }
+    f.hasEscapingSiblings = bAnyClosures;
+    f.computedEscapingSiblings = true;
+    //printf("\t%d\n", bAnyClosures);
+    return bAnyClosures;
+}
+
+/*******************************
+ * Look at all the variables in this function that are referenced
+ * by nested functions, and determine if a closure needs to be
+ * created for them.
+ */
+bool needsClosure(FuncDeclaration fd)
+{
+    /* Need a closure for all the closureVars[] if any of the
+     * closureVars[] are accessed by a
+     * function that escapes the scope of this function.
+     * We take the conservative approach and decide that a function needs
+     * a closure if it:
+     * 1) is a virtual function
+     * 2) has its address taken
+     * 3) has a parent that escapes
+     * 4) calls another nested function that needs a closure
+     *
+     * Note that since a non-virtual function can be called by
+     * a virtual one, if that non-virtual function accesses a closure
+     * var, the closure still has to be taken. Hence, we check for isThis()
+     * instead of isVirtual(). (thanks to David Friedman)
+     *
+     * When the function returns a local struct or class, `requiresClosure`
+     * is already set to `true` upon entering this function when the
+     * struct/class refers to a local variable and a closure is needed.
+     */
+    //printf("FuncDeclaration::needsClosure() %s\n", toPrettyChars());
+
+    if (fd.requiresClosure)
+        goto Lyes;
+
+    for (size_t i = 0; i < fd.closureVars.length; i++)
+    {
+        VarDeclaration v = fd.closureVars[i];
+        //printf("\tv = %s\n", v.toChars());
+
+        for (size_t j = 0; j < v.nestedrefs.length; j++)
+        {
+            FuncDeclaration f = v.nestedrefs[j];
+            assert(f != fd);
+
+            /* __require and __ensure will always get called directly,
+             * so they never make outer functions closure.
+             */
+            if (f.ident == Id.require || f.ident == Id.ensure)
+                continue;
+
+            //printf("\t\tf = %p, %s, isVirtual=%d, isThis=%p, tookAddressOf=%d\n", f, f.toChars(), f.isVirtual(), f.isThis(), f.tookAddressOf);
+
+            /* Look to see if f escapes. We consider all parents of f within
+             * this, and also all siblings which call f; if any of them escape,
+             * so does f.
+             * Mark all affected functions as requiring closures.
+             */
+            for (Dsymbol s = f; s && s != fd; s = s.toParentP(fd))
+            {
+                FuncDeclaration fx = s.isFuncDeclaration();
+                if (!fx)
+                    continue;
+                if (fx.isThis() || fx.tookAddressOf)
+                {
+                    //printf("\t\tfx = %s, isVirtual=%d, isThis=%p, tookAddressOf=%d\n", fx.toChars(), fx.isVirtual(), fx.isThis(), fx.tookAddressOf);
+
+                    /* Mark as needing closure any functions between this and f
+                     */
+                    markAsNeedingClosure((fx == f) ? fx.toParentP(fd) : fx, fd);
+
+                    fd.requiresClosure = true;
+                }
+
+                /* We also need to check if any sibling functions that
+                 * called us, have escaped. This is recursive: we need
+                 * to check the callers of our siblings.
+                 */
+                if (checkEscapingSiblings(fx, fd))
+                    fd.requiresClosure = true;
+
+                /* https://issues.dlang.org/show_bug.cgi?id=12406
+                 * Iterate all closureVars to mark all descendant
+                 * nested functions that access to the closing context of this function.
+                 */
+            }
+        }
+    }
+    if (fd.requiresClosure)
+        goto Lyes;
+
+    return false;
+
+Lyes:
+    return true;
+}
+
 /***********************************************
  * Check all return statements for a function to verify that returning
  * using NRVO is possible.
@@ -3125,12 +3413,12 @@ extern (D) bool checkNRVO(FuncDeclaration fd)
                     return false;
                 if (v.nestedrefs.length && fd.needsClosure())
                     return false;
+
                 // don't know if the return storage is aligned
-                version (MARS)
-                {
-                    if (fd.alignSectionVars && (*fd.alignSectionVars).contains(v))
-                        return false;
-                }
+                mixin alignSectionVarsContains;
+                if (isAlignSectionVar(v))
+                    return false;
+
                 // The variable type needs to be equivalent to the return type.
                 if (!v.type.equivalent(tf.next))
                     return false;
@@ -3411,7 +3699,7 @@ private bool isTypeIsolatedIndirect(FuncDeclaration fd, Type t)
     // The 'this' reference is a parameter, too
     if (AggregateDeclaration ad = fd.isCtorDeclaration() ? null : fd.isThis())
     {
-        Type tthis = ad.getType().addMod(tf.mod);
+        Type tthis = dmd.dsymbolsem.getType(ad).addMod(tf.mod);
         //printf("\ttthis = %s\n", tthis.toChars());
         if (!traverseIndirections(tthis, t))
             return false;
@@ -3594,14 +3882,14 @@ extern (D) int overloadApply(Dsymbol fstart, scope int delegate(Dsymbol) dg, Sco
 
     int overloadApplyRecurse(Dsymbol fstart, scope int delegate(Dsymbol) dg, Scope* sc)
     {
-        // Detect cyclic calls.
-        if (visited.contains(fstart))
-            return 0;
-        visited.push(fstart);
-
         Dsymbol next;
         for (auto d = fstart; d; d = next)
         {
+            // Detect cyclic calls.
+            if (visited.contains(d))
+                return 0;
+            visited.push(d);
+
             import dmd.access : checkSymbolAccess;
             if (auto od = d.isOverDeclaration())
             {
@@ -3658,6 +3946,13 @@ extern (D) int overloadApply(Dsymbol fstart, scope int delegate(Dsymbol) dg, Sco
             }
             else if (auto td = d.isTemplateDeclaration())
             {
+                // Sometimes funcroot is not in the .overnext chain
+                // in such case we have to recurse into it
+                if(td.funcroot)
+                {
+                    if (int r = overloadApplyRecurse(td.funcroot, dg, sc))
+                        return r;
+                }
                 if (int r = dg(td))
                     return r;
                 next = td.overnext;
@@ -3736,23 +4031,23 @@ extern (D) bool checkNestedReference(VarDeclaration vd, Scope* sc, Loc loc)
     if (!fdv || fdv == fdthis)
         return false;
 
-    // Add fdthis to nestedrefs[] if not already there
-    if (!vd.nestedrefs.contains(fdthis))
-        vd.nestedrefs.push(fdthis);
-
     //printf("\tfdv = %s\n", fdv.toChars());
     //printf("\tfdthis = %s\n", fdthis.toChars());
     if (loc.isValid())
     {
-        if (fdthis.getLevelAndCheck(loc, sc, fdv, vd) == fdthis.LevelError)
+        if (fdthis.getLevelAndCheck(loc, sc, fdv, vd) == LevelError)
             return true;
     }
 
-    // Add this VarDeclaration to fdv.closureVars[] if not already there
     if (!sc.intypeof && !sc.traitsCompiles &&
         // https://issues.dlang.org/show_bug.cgi?id=17605
         (fdv.skipCodegen || !fdthis.skipCodegen))
     {
+        // Add fdthis to nestedrefs[] if not already there
+        if (!vd.nestedrefs.contains(fdthis))
+            vd.nestedrefs.push(fdthis);
+
+        // Add this VarDeclaration to fdv.closureVars[] if not already there
         if (!fdv.closureVars.contains(vd))
             fdv.closureVars.push(vd);
     }

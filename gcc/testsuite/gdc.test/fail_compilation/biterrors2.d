@@ -1,4 +1,4 @@
-/* REQUIRED_ARGS: -preview=bitfields
+/*
  * TEST_OUTPUT:
 ---
 fail_compilation/biterrors2.d(100): Error: variable `biterrors2.a` - bitfield must be member of struct, union, or class

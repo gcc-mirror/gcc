@@ -528,7 +528,11 @@ unittest
 //       behavior should occur within the handler itself.  This delegate
 //       is __gshared for now based on the assumption that it will only
 //       set by the main thread during program initialization.
-private __gshared AssertHandler _assertHandler = null;
+private __gshared
+{
+    AssertHandler _assertHandler = null;
+    FilterThreadThrowableHandler _filterThreadThrowableHandler = null;
+}
 
 
 /**
@@ -548,6 +552,22 @@ alias AssertHandler = void function(string file, size_t line, string msg) nothro
     _assertHandler = handler;
 }
 
+/**
+Gets/sets the Throwable filter function for threads. null means no handler is called.
+*/
+alias FilterThreadThrowableHandler = void function(ref Throwable) @system nothrow;
+
+/// ditto
+@property FilterThreadThrowableHandler filterThreadThrowableHandler() @trusted nothrow @nogc
+{
+    return _filterThreadThrowableHandler;
+}
+
+/// ditto
+@property void filterThreadThrowableHandler(FilterThreadThrowableHandler handler) @trusted nothrow @nogc
+{
+    _filterThreadThrowableHandler = handler;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // Overridable Callbacks

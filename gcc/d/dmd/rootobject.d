@@ -38,11 +38,6 @@ extern (C++) class RootObject
     {
     }
 
-    bool equals(const RootObject o) const
-    {
-        return o is this;
-    }
-
     const(char)* toChars() const
     {
         assert(0);

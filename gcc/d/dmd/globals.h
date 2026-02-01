@@ -66,6 +66,13 @@ enum JsonFieldFlags
     semantics    = (1 << 3)
 };
 
+enum class Edition : uint16_t
+{
+    v2023 = 2023,
+    v2024,
+    v2025,
+};
+
 enum CppStdRevision
 {
     CppStdRevisionCpp98 = 199711,
@@ -198,12 +205,13 @@ struct Param
     d_bool addMain;       // add a default main() function
     d_bool allInst;       // generate code for all template instantiations
     d_bool bitfields;         // support C style bit fields
+    d_bool rewriteNoExceptionToSeq;
     CppStdRevision cplusplus;  // version of C++ name mangling to support
 
     Help help;
     Verbose v;
 
-    unsigned short edition;      // edition year
+    Edition edition;             // edition year
     void* editionFiles;          // Edition corresponding to a filespec
 
     // Options for `-preview=/-revert=`
@@ -288,9 +296,10 @@ struct Param
 
 struct structalign_t
 {
-    unsigned short value;
-    d_bool pack;
-
+private:
+    uint16_t value;
+    uint8_t flags;
+public:
     bool isDefault() const;
     void setDefault();
     bool isUnknown() const;
@@ -298,7 +307,9 @@ struct structalign_t
     void set(unsigned value);
     unsigned get() const;
     bool isPack() const;
-    void setPack(bool pack);
+    void setPack();
+    bool fromAlignas() const;
+    void setAlignas();
 };
 
 // magic value means "match whatever the underlying C compiler does"
@@ -324,6 +335,7 @@ struct CompileEnv
     d_bool transitionIn;
     d_bool ddocOutput;
     d_bool masm;
+    DString switchPrefix;
     IdentifierCharLookup cCharLookupTable;
     IdentifierCharLookup dCharLookupTable;
 };
@@ -347,7 +359,7 @@ struct Global
     unsigned warnings;       // number of warnings reported so far
     unsigned gag;            // !=0 means gag reporting of errors & warnings
     unsigned gaggedErrors;   // number of errors reported while gagged
-    unsigned gaggedWarnings; // number of warnings reported while gagged
+    unsigned gaggedDeprecations; // number of deprecations reported while gagged
 
     void* console;         // opaque pointer to console for controlling text attributes
 

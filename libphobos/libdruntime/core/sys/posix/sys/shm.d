@@ -66,11 +66,11 @@ version (linux)
         ipc_perm    shm_perm;
         size_t      shm_segsz;
         time_t      shm_atime;
-        version (X86_64) {} else c_ulong     __unused1;
+        static if (time_t.sizeof == 4) c_ulong     __unused1;
         time_t      shm_dtime;
-        version (X86_64) {} else c_ulong     __unused2;
+        static if (time_t.sizeof == 4) c_ulong     __unused2;
         time_t      shm_ctime;
-        version (X86_64) {} else c_ulong     __unused3;
+        static if (time_t.sizeof == 4) c_ulong     __unused3;
         pid_t       shm_cpid;
         pid_t       shm_lpid;
         shmatt_t    shm_nattch;

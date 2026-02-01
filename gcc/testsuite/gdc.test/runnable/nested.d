@@ -2526,6 +2526,27 @@ void test14846()
     foo14846({ S* p = new S(1); });
     foo14846({ S[] a = [S()]; });
     foo14846({ S[] a = [S(1)]; });
+
+    void named1()
+    {
+        S s;
+    }
+
+    foo14846(&named1);
+
+    void named2()
+    {
+        S s = S(1);
+    }
+
+    foo14846(&named2);
+
+    void named3()
+    {
+        S[3] s;
+    }
+
+    foo14846(&named3);
 }
 
 /*******************************************/

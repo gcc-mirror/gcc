@@ -221,8 +221,8 @@ d_diagnostic_report_diagnostic (const SourceLoc &loc, int opt,
    error count depending on how KIND is treated.  */
 
 void D_ATTRIBUTE_FORMAT(2,0) ATTRIBUTE_GCC_DIAG(2,0)
-verrorReport (const SourceLoc loc, const char *format, va_list ap,
-	      ErrorKind kind, const char *prefix1, const char *prefix2)
+vreportDiagnostic (const SourceLoc loc, const char *format, va_list ap,
+		   ErrorKind kind, const char *prefix1, const char *prefix2)
 {
   enum diagnostics::kind diag_kind = diagnostics::kind::unspecified;
   int opt = 0;
@@ -245,12 +245,7 @@ verrorReport (const SourceLoc loc, const char *format, va_list ap,
   else if (kind == ErrorKind::warning)
     {
       if (global.gag || global.params.useWarnings == DIAGNOSTICoff)
-	{
-	  if (global.gag)
-	    global.gaggedWarnings++;
-
-	  return;
-	}
+	return;
 
       /* Warnings don't count if not treated as errors.  */
       if (global.params.useWarnings == DIAGNOSTICerror)
@@ -261,12 +256,12 @@ verrorReport (const SourceLoc loc, const char *format, va_list ap,
   else if (kind == ErrorKind::deprecation)
     {
       if (global.params.useDeprecated == DIAGNOSTICerror)
-	return verrorReport (loc, format, ap, ErrorKind::error, prefix1,
-			     prefix2);
+	return vreportDiagnostic (loc, format, ap, ErrorKind::error, prefix1,
+				  prefix2);
       else if (global.gag || global.params.useDeprecated != DIAGNOSTICinform)
 	{
 	  if (global.gag)
-	    global.gaggedWarnings++;
+	    global.gaggedDeprecations++;
 
 	  return;
 	}
@@ -307,8 +302,8 @@ verrorReport (const SourceLoc loc, const char *format, va_list ap,
    explicit location LOC.  This doesn't increase the global error count.  */
 
 void D_ATTRIBUTE_FORMAT(2,0) ATTRIBUTE_GCC_DIAG(2,0)
-verrorReportSupplemental (const SourceLoc loc, const char* format, va_list ap,
-			  ErrorKind kind)
+vsupplementalDiagnostic (const SourceLoc loc, const char* format, va_list ap,
+			 ErrorKind kind)
 {
   if (kind == ErrorKind::error)
     {
@@ -323,7 +318,7 @@ verrorReportSupplemental (const SourceLoc loc, const char* format, va_list ap,
   else if (kind == ErrorKind::deprecation)
     {
       if (global.params.useDeprecated == DIAGNOSTICerror)
-	return verrorReportSupplemental (loc, format, ap, ErrorKind::error);
+	return vsupplementalDiagnostic (loc, format, ap, ErrorKind::error);
       else if (global.params.useDeprecated != DIAGNOSTICinform || global.gag)
 	return;
     }

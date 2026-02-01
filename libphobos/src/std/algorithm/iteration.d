@@ -659,7 +659,8 @@ if (fun.length >= 1)
         foreach (f; _funs)
         {
             static assert(!is(typeof(f(RE.init)) == void),
-                    "Mapping function(s) must not return void: " ~ _funs.stringof);
+                    "Mapping function(s) must not return void. " ~
+                    " Consider using `each` instead of `map!(" ~ _funs.stringof ~ ")`");
         }
 
         return MapResult!(_fun, Range)(r);
@@ -5547,7 +5548,10 @@ auto splitter(alias pred = "a == b",
               Range,
               Separator)(Range r, Separator s)
 if (is(typeof(binaryFun!pred(r.front, s)) : bool)
-        && ((hasSlicing!Range && hasLength!Range) || isNarrowString!Range))
+        && ((hasSlicing!Range && hasLength!Range) || isNarrowString!Range)
+        && (is(ElementType!Range : Separator)
+        || !(isForwardRange!Separator && (hasLength!Separator
+        || isNarrowString!Separator))))
 {
     import std.algorithm.searching : find;
     import std.conv : unsigned;
@@ -5619,6 +5623,7 @@ if (is(typeof(binaryFun!pred(r.front, s)) : bool)
             assert(!empty, "Attempting to fetch the front of an empty splitter.");
             static if (keepSeparators)
             {
+                if (_frontLength != _unComputed && !_wasSeparator) return _input[0 .. _frontLength];
                 if (!_wasSeparator)
                 {
                     _frontLength = _separatorLength;
@@ -6078,6 +6083,20 @@ if (is(typeof(binaryFun!pred(r.front, s)) : bool)
     assert("abXcdxef".splitter!((a, b) => a.toLower == b)('x').equal(["ab", "cd", "ef"]));
 }
 
+// https://github.com/dlang/phobos/issues/10759
+@safe unittest
+{
+    import std.algorithm.iteration : splitter;
+    import std.algorithm.searching : canFind;
+    import std.range.primitives;
+    import std.typecons : Yes;
+
+    auto range = "16x13+0-2".splitter!((a, b) => "x+-".canFind(a), Yes.keepSeparators)(0);
+    assert(range.front == "16");
+    assert(range.front == "16");
+    assert(range.front == "16");
+}
+
 /// ditto
 auto splitter(alias pred = "a == b",
               Flag!"keepSeparators" keepSeparators = No.keepSeparators,
@@ -6091,7 +6110,7 @@ if (is(typeof(binaryFun!pred(r.front, s.front)) : bool)
     import std.algorithm.searching : find;
     import std.conv : unsigned;
 
-    static struct Result
+    struct Result
     {
     private:
         Range _input;
@@ -6304,6 +6323,17 @@ if (is(typeof(binaryFun!pred(r.front, s.front)) : bool)
     auto data = "i->am->pointing";
     auto words = splitter(data, sep);
     assert(words.equal([ "i", "am", "pointing" ]));
+}
+
+// https://github.com/dlang/phobos/issues/10760
+@safe unittest
+{
+    import std.algorithm.searching : canFind;
+    import std.typecons : Yes;
+    import std.algorithm.comparison : equal;
+
+    auto r = "16x16+0-2".splitter!((a, b) => "x+-".canFind(a), Yes.keepSeparators)("x");
+    assert(r.equal(["16", "x", "16", "+", "0", "-", "2"]));
 }
 
 /++

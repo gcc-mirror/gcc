@@ -422,6 +422,13 @@ real gamma(real x)
         4.59084371199880305320475827592915200343410999829340L) >= real.mant_dig-1);
 }
 
+
+/* This is the lower bound on x for when the Stirling approximation can be used
+ * to compute ln(Γ(x)).
+ */
+private enum real LN_GAMMA_STIRLING_LB = 13.0L;
+
+
 /*****************************************************
  * Natural logarithm of gamma function.
  *
@@ -480,7 +487,7 @@ real logGamma(real x)
         return z;
     }
 
-    if ( x < 13.0L )
+    if ( x < LN_GAMMA_STIRLING_LB )
     {
         z = 1.0L;
         nx = floor( x +  0.5L );
@@ -579,6 +586,366 @@ real logGamma(real x)
 }
 
 
+/** sgn($(GAMMA)(x))
+ *
+ * Params:
+ *   x = the argument of $(GAMMA)
+ *
+ * Returns:
+ *   -1 if $(GAMMA)(x) < 0, +1 if $(GAMMA)(x) > 0, and $(NAN) if $(GAMMA)(x)
+ *   does not exist.
+ *
+ * Authors: Don Clugston
+ */
+real sgnGamma(in real x)
+{
+    if (isNaN(x)) return x;
+    if (x > 0) return 1.0;
+
+    // -x is so large that x + 1 is indistinguishable from x.
+    if (x < -1 / real.epsilon) return real.nan;
+
+    const n = trunc(x);
+    if (x == n) return x == 0 ? copysign(1, x) : real.nan;
+    return cast(long) n & 1 ? 1.0 : -1.0;
+}
+
+@safe unittest
+{
+    assert(sgnGamma(5.0) == 1.0);
+    assert(isNaN(sgnGamma(-3.0)));
+    assert(sgnGamma(-0.1) == -1.0);
+    assert(sgnGamma(-0.6) == -1.0);
+    assert(sgnGamma(-55.1) == 1.0);
+    assert(isNaN(sgnGamma(-real.infinity)));
+    assert(isIdentical(sgnGamma(NaN(0xABC)), NaN(0xABC)));
+}
+
+
+/* A method for computing B(x,y) when gamma would return infinity. It uses
+ * logGamma and exp instead.
+ */
+private pragma(inline, true) real betaLarge(in real x, in real y)
+{
+    const sgnB = sgnGamma(x) * sgnGamma(y) / sgnGamma(x+y);
+    return sgnB * exp(logGamma(x) + logGamma(y) - logGamma(x+y));
+}
+
+@safe unittest
+{
+    assert(betaLarge(2*MAXGAMMA, -0.5) < 0);
+    assert(betaLarge(-0.1, 2*MAXGAMMA) < 0);
+    assert(betaLarge(-1.6, 2*MAXGAMMA) > 0);
+    assert(betaLarge(+0., 2*MAXGAMMA) == real.infinity);
+    assert(betaLarge(-0., 2*MAXGAMMA) == -real.infinity);
+    assert(betaLarge(-MAXGAMMA-1.5, MAXGAMMA+1) < 0);
+    assert(isNaN(betaLarge(-1, 2*MAXGAMMA)));
+}
+
+/** B(x,y)
+ *
+ * This computes B(x,y). It will use the formula when i$(GAMMA)(x)$(GAMMA)(y)/$(GAMMA)(x+y) when
+ * `gamma` can compute the $(GAMMA) terms, otherwise it will use `logGamma`.
+ *
+ * There are many edge cases that generate NaN instead of the actual value. The main algorithm works
+ * for most (x,y) pairs and only generates a NaN when it doesn't. In order to not penalize every
+ * computation with a bunch of branching logic, the main algorithm is used, and only if it results
+ * in a NaN will the edge cases be checked.
+ *
+ * Params:
+ *   x = the first argument of B
+ *   y = the second argument of B
+ *
+ * Returns:
+ *   B(x,y) if it can be computed, otherwise $(NAN)
+ */
+real beta(in real x, in real y)
+{
+    real res;
+
+    // the main algorithm
+    if (x > MAXGAMMA || y > MAXGAMMA || x + y > MAXGAMMA)
+    {
+        res = betaLarge(x, y);
+    }
+    else
+    {
+        res = gamma(x) * gamma(y) / gamma(x+y);
+
+        // There are several regions near the asymptotes and inflection lines
+        // gamma cannot be computed but logGamma can.
+        if (!isFinite(res)) res = betaLarge(x,y);
+    }
+
+    if (!isNaN(res)) return res;
+
+    // For valid NaN results, always return the response from the main algorithm
+    // in order to preserve signaling NaNs.
+
+    if (isNaN(x) || isNaN(y)) return res;
+
+    // Take advantage of the symmetry B(x,y) = B(y,x)
+    // smaller ≤ larger
+    const larger = cmp(x, y) >= 0 ? x : y;
+    const smaller = cmp(x, y) >= 0 ? y : x;
+    const sum = larger + smaller;
+
+    // in a quadrant of the (smaller,larger) cartesian plane
+    const inQ1 = cmp(smaller, +0.0L) >= 0;
+    const inQ2 = !inQ1 && cmp(larger, +0.0L) >= 0;
+    const inQ3 = !inQ1 && !inQ2;
+
+    const nextToSmallAxis = smaller == 0;
+    const nextToLargeAxis = larger == 0;
+    const nextToOrigin = nextToSmallAxis && nextToLargeAxis;
+
+    // on an asymptote, excluding the one at the axis
+    const onSmallAsymptote = smaller < 0 && smaller == trunc(smaller);
+    const onLargeAsymptote = larger < 0 && larger == trunc(larger);
+
+    // on an inflection line segment
+    const onInflection =
+        sum <= 0 && sum == trunc(sum) && !onSmallAsymptote && !onLargeAsymptote && !nextToOrigin;
+
+    // 1) Either is -∞, B = nan
+    if (larger == -real.infinity || smaller == -real.infinity) return res;
+
+    // 2) On an asymptote, B = nan
+    if (onSmallAsymptote || onLargeAsymptote) return res;
+
+    // 3) On an inflection line segment
+    if (onInflection) return copysign(0.0L, sgnGamma(smaller)*sgnGamma(larger));
+
+    if (inQ1)
+    {
+        // 4) On the larger axis and larger is finite, B = +∞
+        // 5) On the larger axis, and larger is +∞, B = nan
+        if (nextToSmallAxis) return larger < +real.infinity ? +real.infinity : res;
+
+        // 6) Not on the larger axis, and the larger is +∞, B = +0
+        if (!nextToSmallAxis && larger == +real.infinity) return +0.;
+    }
+
+    if (inQ2)
+    {
+        // 7) Next to the origin, B = nan
+        // 8) Next to the larger axis, but not the origin, B = -∞
+        if (nextToSmallAxis) return nextToOrigin ? res : -real.infinity;
+
+        // 9) Larger is +∞, B = ∞ * sgn(Γ(smaller))
+        if (larger == +real.infinity) return copysign(real.infinity, sgnGamma(smaller));
+
+        // 10) next to smaller axis, but not on an asymptote or at the origin,
+        //     B = +∞.
+        if (nextToLargeAxis && !onSmallAsymptote && !nextToOrigin) return +real.infinity;
+
+        // larger very large, case 9
+        // larger so large that ln|Γ(larger)| and ln|Γ(sum)| are too large to
+        // represent as reals. Thus they each are approximated as ∞, and the
+        // main algorithm resolves to NaN instead of ±∞.
+        if (sum > 1) return copysign(real.infinity, sgnGamma(smaller));
+    }
+
+    if (inQ3)
+    {
+        // 11) next to the smaller axis, but not on an asymptote, B = -∞.
+        if (nextToLargeAxis && !onSmallAsymptote) return -real.infinity;
+
+        // near origin, case 11
+        // -larger and -sum are so small that ln|Γ(larger)| and ln|Γ(sum)| are
+        // too large to be represented as reals. Thus they each are approximated
+        // as ∞, and the main algorithm resolves to NaN instead of -∞.
+        if (smaller > -0.25) return -real.infinity;
+    }
+
+    // Unknown case
+    return res;
+}
+
+@safe unittest
+{
+    assert(isIdentical(beta(2, NaN(0xABC)), NaN(0xABC)));
+
+    // Test symmetry
+
+    // Test first quadrant
+    assert(beta(+0., 1) == +real.infinity);
+    assert(beta(nextUp(+0.0L), nextUp(+0.0L) > 0), "B(εₓ,ε𞁟) > 0");
+    assert(!isNaN(beta(nextUp(+0.0L), 1)), "B(ε,y), y > 0 should exist");
+    assert(beta(1, +real.infinity) is +0.0L, "lim{y→+∞} B(x,y) = 0⁺, x > 0");
+    assert(beta(1, 1) > 0);
+    assert(beta(0.6*MAXGAMMA, 0.5*MAXGAMMA) > 0);
+    assert(beta(1, 2*MAXGAMMA) > 0);
+    assert(beta(+0., 2*MAXGAMMA) == real.infinity);
+    assert(beta(nextUp(+0.0L), 2*MAXGAMMA) > 0);
+
+    // Test second quadrant above inflection lines
+    assert(isNaN(beta(-0., +0.)), "lim{x→0⁻, y→0⁺} B(x,y) should not exist");
+    assert(beta(-0., real.infinity) == -real.infinity, "lim{x→0⁻, y→+∞} B(x,y) = -∞");
+    assert(isNaN(beta(-2, 3)));
+    assert(beta(-0.5, 1) < 0);
+    assert(beta(-1.5, 3) > 0);
+    assert(beta(nextDown(-0.0L), 1) < 0);
+    assert(beta(nextUp(-1.0L), 2) < 0);
+    assert(beta(nextUp(-0.5L), 0.5) < 0);
+    assert(beta(-0.5, nextUp(0.5L)) < 0);
+    assert(beta(-0.5, real.infinity) == -real.infinity);
+    assert(cmp(beta(nextDown(-0.0L), 2*nextUp(+0.0L)), -0.0L) <= 0);
+    assert(beta(nextUp(-1.0L), 1) < 0);
+    assert(beta(nextDown(-0.0L), +real.infinity) == -real.infinity);
+    assert(beta(nextDown(-0.0L), nextDown(+real.infinity)) < 0, "B(-ε,y) < 0, y large");
+    assert(
+        beta(nextUp(-1.0L), real.infinity) == -real.infinity, "lim{y→+∞} B(-n+ε, y) = -∞, n odd");
+    assert(beta(nextUp(-1.0L), nextDown(real.infinity)) < 0, "B(-n+ε, y) < 0, n odd, y large");
+    assert(beta(nextDown(-1.0L), 2) > 0);
+    assert(beta(nextUp(-2.0L), 3) > 0);
+    assert(beta(nextUp(-1.5L), 1.5) > 0);
+    assert(beta(-1.5, nextUp(1.5L)) > 0);
+    assert(beta(nextDown(-1.0L), nextDown(real.infinity)) > 0);
+    assert(
+        beta(nextUp(-2.0L), real.infinity) == real.infinity, "lim{y→+∞} B(-n+ε, y) = +∞, n even");
+    assert(beta(nextUp(-2.0L), nextDown(real.infinity)) > 0, "B(-n+ε, y) > 0, n even, y large");
+    assert(
+        beta(-1.5, real.infinity) == +real.infinity, "lim{y→+∞} B(x,y) = +∞, -n-1 < x < -n, n odd");
+
+    // Test second quadrant within inflection lines
+    assert(beta(nextDown(-1.0L), nextUp(nextUp(1.0L))) > 0);
+    assert(beta(nextUp(-2.0L), 2) > 0);
+    assert(beta(nextDown(-0.0L), +0.) == +real.infinity);
+    assert(isNaN(beta(-1, +0)), "lim{y→0⁺} B(-n,y), should not exist");
+    assert(beta(nextUp(-1.0L), +0.) == +real.infinity);
+    assert(beta(nextDown(-1.0L), +0.) == +real.infinity);
+    assert(isNaN(beta(-real.infinity, real.infinity)));
+    assert(beta(nextDown(-0.0L), nextUp(+0.0L)) is -0.0L);
+    assert(beta(nextUp(-1.0L), nextDown(1.0L)) is -0.0L);
+    assert(beta(nextDown(-1.0L), nextUp(1.0L)) is +0.0L);
+    assert(beta(-0.5, 0.25) > 0);
+    assert(beta(nextUp(-1.0L), 0.25) > 0);
+    assert(beta(-0.5, nextUp(+0.0L)) > 0);
+    assert(beta(nextDown(-0.5L), 0.5) >= 0);
+    assert(beta(-0.5, nextDown(0.5L)) >= 0);
+    assert(beta(nextUp(-1.0L), nextDown(nextDown(1.0L))) >= 0);
+    assert(beta(nextUp(-1.0L), nextUp(+0.0L)));
+    assert(beta(-1.5, 0.25) > 0);
+    assert(beta(nextUp(2.0L), 0.25) > 0);
+    assert(beta(-1.5, nextUp(+0.0L)) > 0);
+    assert(beta(nextDown(-1.5L), 0.5) >= 0);
+    assert(beta(-1.5, nextDown(0.5L)) >= 0);
+    assert(beta(nextUp(-2.0L), nextUp(+0.0L)) > 0);
+    assert(beta(nextUp(-2.0L), nextDown(nextDown(1.0L))) >= 0);
+    assert(beta(nextDown(nextDown(-1.0L)), nextUp(+0.0L)) >= 0);
+    assert(beta(-1.5, 1) < 0);
+    assert(beta(nextDown(-1.0L), 0.5) < 0);
+    assert(beta(nextUp(-2.0L), 1.5) < 0);
+    assert(beta(nextUp(-1.5L), 0.5) <= 0);
+    assert(beta(-1.5L, nextUp(0.5L)) <= 0);
+    assert(beta(nextDown(-1.5L), 1.5) <= 0);
+    assert(beta(-1.5, nextDown(1.5L)) <= 0);
+    assert(beta(nextDown(-1.0L), 2*(nextUp(+1.0L) - 1)) <= 0);
+    assert(beta(nextUp(-2.0L), 1.) <= 0);
+    assert(beta(nextUp(-2.0L), nextDown(nextDown(2.0L))) <= 0);
+    assert(beta(nextDown(-1.0L), 1.) <= 0);
+    assert(beta(-0.0L, 2*MAXGAMMA) == -real.infinity, "lim{x→0⁻} B(x,y) = -∞, y > MAXGAMMA");
+    assert(beta(nextDown(-0.0L), 2*MAXGAMMA) < 0, "B(-ε,y) < 0, y > MAXGAMMA");
+
+    // Test third quadrant
+    assert(beta(-0., -0.) == -real.infinity);
+    assert(isNaN(beta(-2, -0.5)));
+    assert(beta(-0.5, -0.) == -real.infinity);
+    assert(isNaN(beta(-1, -0.)));
+    assert(isNaN(beta(-real.infinity, -0.)));
+    assert(beta(nextDown(-0.0L), -0.) == -real.infinity);
+    assert(isNaN(beta(-1, -0.)));
+    assert(beta(nextUp(-1.0L), -0.) == -real.infinity);
+    assert(beta(nextDown(-1.0L), -0.) == -real.infinity);
+    assert(isNaN(beta(-1.5, -1)));
+    assert(isNaN(beta(-3, -1)));
+    assert(beta(-0.75, -0.25) == +0.);
+    assert(beta(nextUp(-1.0L), nextDown(1.0L) - 1) == +0., "B(-n+ε, -ε) = 0⁺, n odd");
+    assert(beta(nextDown(-1.0L), nextUp(1.0L)) == -0.);
+    assert(beta(-0.5, -0.25) < 0);
+    assert(beta(-0.5, nextDown(-0.0L)) < 0);
+    assert(beta(-0.5, nextUp(-0.5L)) <= 0);
+    assert(beta(nextDown(-0.0L), nextDown(-0.0L)) < 0, "B(-εₓ,-ε𞁟) < 0");
+    assert(beta(nextUp(nextUp(-1.0L)), nextDown(-0.0L)) <= 0);
+    assert(beta(-2.25, -1.25) < 0);
+    assert(beta(nextUp(-2.5L), -1.5) <= 0);
+    assert(beta(-2.5, nextDown(-1.0L)) < 0);
+    assert(beta(nextDown(-2.0L), -1.5) < 0);
+    assert(beta(nextDown(-2.0L), nextDown(-1.0L)) < 0);
+    assert(beta(nextUp(nextUp(-3.0L)), nextDown(-1.0L)) <= 0);
+    assert(beta(nextDown(-2.0L), nextUp(nextUp(-2.0L))) <= 0);
+    assert(beta(-2.75, -1.75) > 0);
+    assert(beta(nextDown(-2.5L), -1.5) >= 0);
+    assert(beta(nextUp(-3.0L), -1.5) > 0);
+    assert(beta(-2.5, nextUp(-2.0L)) > 0);
+    assert(beta(nextUp(-3.0L), nextUp(-2.0L)) > 0);
+    assert(beta(nextUp(-3.0L), nextDown(nextDown(-1.0L))) >= 0);
+    assert(beta(nextDown(nextDown(-2.0L)), nextUp(-2.0L)) >= 0);
+}
+
+
+/* This is the natural logarithm of the absolute value of the beta function. It
+ * tries to eliminate reduce the loss of precision that happens when subtracting
+ * large numbers by combining the Stirling approximations of the individual
+ * logGamma calls.
+ *
+ * ln|B(x,y)| = ln|Γ(x)| + ln|Γ(y)| - ln|Γ(x+y)|. Stirling's approximation for
+ * ln|Γ(z)| is ln|Γ(z)| ~ zln(z) - z + ln(2𝜋/z)/2 + 𝚺ₙ₌₁ᴺB₂ₙ/[2n(2n-1)z²ⁿ⁻¹],
+ * where Bₙ is the nᵗʰ Bernoulli number.
+ * 𝚺ₙ₌₁ᴺB₂ₙ/[2n(2n-1)z²ⁿ⁻¹] = 𝚺ₙ₌₁ᴺB₂ₙ/[2n(2n-1)z²ⁿ⁻²]/z
+ *    = 𝚺ₙ₌₀ᴺ⁻¹B₂₍ₙ₊₁₎/[(2n+2)(2n+1)z²ⁿ]/z
+ *    = [𝚺ₙ₌₀ᴺ⁻¹Cₙ(1/z²)ⁿ]/z,
+ * where Cₙ = B₂₍ₙ₊₁₎/[(2n+2)(2n+1)].
+ * ln|Γ(z)| ~ zln(z) - z + ln(2𝜋/z)/2 +[𝚺ₙ₌₀ᴺ⁻¹Cₙ(1/z²)ⁿ]/z.
+ */
+private real logBeta(real x, in real y)
+{
+    const larger = x > y ? x : y;
+    const smaller = x < y ? x : y;
+    const sum = larger + smaller;
+
+    if (larger >= LN_GAMMA_STIRLING_LB && sum >= LN_GAMMA_STIRLING_LB && larger - smaller > 10.0L)
+    {
+        // Assume x > y
+        // ln|Γ(x)| - ln|Γ(x+y)|
+        //    ~ x⋅ln(x) - (x+y)ln(x+y) + y + ln(2𝜋/x)/2 - ln(2𝜋/[x+y])/2
+        //      + [𝚺ₙ₌₀ᴺ⁻¹Cₙ(1/x²)ⁿ]/x - [𝚺ₙ₌₀ᴺ⁻¹Cₙ(1/{x+y}²)ⁿ]/{x+y}.
+        // x⋅ln(x) - (x+y)ln(x+y) + y + ln(2𝜋/x)/2 - ln(2𝜋/[x+y])/2
+        //    = ln(xˣ) - ln([x+y]ˣ⁺ʸ) + y + ln(√[2𝜋/x]) - ln(√[2𝜋/{x+y}])
+        //    = ln(xˣ⁻¹ᐟ²/[x+y]ˣ⁺ʸ⁻¹ᐟ²) + y = ln([x/{x+y}]ˣ⁺ʸ⁻¹ᐟ²x⁻ʸ) + y
+        //    = y - y⋅ln(x) + (.5 - x - y)ln(1 + y/x)
+        // ln|B(x,y)|
+        //    ~ ln|Γ(y)| + y - y⋅ln(x) + (.5 - x - y)ln(1 + y/x)
+        //      + [𝚺ₙ₌₀ᴺ⁻¹Cₙ(1/x²)ⁿ]/x - [𝚺ₙ₌₀ᴺ⁻¹Cₙ(1/{x+y}²)ⁿ]/{x+y}.
+        const gamDiffApprox = smaller - smaller*log(larger) + (0.5L - sum)*log1p(smaller/larger);
+
+        const gamDiffCorr
+            = poly(1.0L/larger^^2, logGammaStirlingCoeffs) / larger
+            - poly(1.0L/sum^^2, logGammaStirlingCoeffs) / sum;
+
+        return logGamma(smaller) + gamDiffApprox + gamDiffCorr;
+    }
+
+    return logGamma(smaller) + logGamma(larger) - logGamma(sum);
+}
+
+@safe unittest
+{
+    assert(isClose(logBeta(1, 1), log(beta(1, 1))));
+    assert(isClose(logBeta(3, 2), logBeta(2, 3)));
+    assert(isClose(exp(logBeta(20, 4)), beta(20, 4)));
+    assert(isClose(logBeta(30, 40), log(beta(30, 40))));
+
+    // The following were generated by scipy's betaln function.
+    assert(feqrel(logBeta(-1.4, -0.4), 1.133_156_234_422_692_6) > double.mant_dig-3);
+    assert(feqrel(logBeta(-0.5, 1.0), 0.693_147_180_559_945_2) > double.mant_dig-3);
+    assert(feqrel(logBeta(1.0, 2.0), -0.693_147_180_559_945_3) > double.mant_dig-3);
+    assert(feqrel(logBeta(14.0, 3.0), -7.426_549_072_397_305) > double.mant_dig-3);
+    assert(feqrel(logBeta(20.0, 30.0), -33.968_820_791_977_386) > double.mant_dig-3);
+}
+
+
 private {
 /*
  * These value can be calculated like this:
@@ -645,19 +1012,35 @@ enum real BETA_BIGINV = 1.084202172485504434007e-19L;
  */
 real betaIncomplete(real aa, real bb, real xx )
 {
-    if ( !(aa>0 && bb>0) )
+    // If any parameters are NaN, return the NaN with the largest payload.
+    if (isNaN(aa) || isNaN(bb) || isNaN(xx))
     {
-         if ( isNaN(aa) ) return aa;
-         if ( isNaN(bb) ) return bb;
-         return real.nan; // domain error
+        // With cmp,
+        // -NaN(larger) < -NaN(smaller) < -inf < inf < NaN(smaller) < NaN(larger).
+        const largerParam = cmp(abs(aa), abs(bb)) >= 0 ? aa : bb;
+        return cmp(abs(xx), abs(largerParam)) >= 0 ? xx : largerParam;
     }
-    if (!(xx>0 && xx<1.0))
+
+    // domain errors
+    if (signbit(aa) == 1 || signbit(bb) == 1) return real.nan;
+    if (xx < 0.0L || xx > 1.0L) return real.nan;
+
+    // edge cases
+    if ( xx == 0.0L ) return 0.0L;
+    if ( xx == 1.0L )  return 1.0L;
+
+    // degenerate cases
+    if (aa is +0.0L || aa is real.infinity || bb is +0.0L || bb is real.infinity)
     {
-        if (isNaN(xx)) return xx;
-        if ( xx == 0.0L ) return 0.0;
-        if ( xx == 1.0L )  return 1.0;
-        return real.nan; // domain error
+        if (aa is +0.0L && bb is +0.0L) return real.nan;
+        if (aa is real.infinity && bb is real.infinity) return real.nan;
+        if (aa is +0.0L || bb is real.infinity) return 1.0L;
+        if (aa is real.infinity || bb is +0.0L) return 0.0L;
     }
+
+    // symmetry
+    if (aa == bb && xx == 0.5L) return 0.5L;
+
     if ( (bb * xx) <= 1.0L && xx <= 0.95L)
     {
         return betaDistPowerSeries(aa, bb, xx);
@@ -677,6 +1060,7 @@ real betaIncomplete(real aa, real bb, real xx )
         b = aa;
         xc = xx;
         x = 1.0L - xx;
+        if (x == 1.0L) x = nextDown(x);
     }
     else
     {
@@ -718,12 +1102,12 @@ real betaIncomplete(real aa, real bb, real xx )
         t *= pow(x,a);
         t /= a;
         t *= w;
-        t *= gamma(a+b) / (gamma(a) * gamma(b));
+        t /= beta(a, b);
     }
     else
     {
         /* Resort to logarithms.  */
-        y += t + logGamma(a+b) - logGamma(a) - logGamma(b);
+        y += t - logBeta(a, b);
         y += log(w/a);
 
         t = exp(y);
@@ -1030,11 +1414,31 @@ done:
     assert(isIdentical(betaIncompleteInv(2,NaN(0xABC),8), NaN(0xABC)));
     assert(isIdentical(betaIncompleteInv(2,3, NaN(0xABC)), NaN(0xABC)));
 
-    assert(isNaN(betaIncomplete(-1, 2, 3)));
+    assert(isNaN(betaIncomplete(-0., 1, .5)));
+    assert(isNaN(betaIncomplete(1, -0., .5)));
+    assert(isNaN(betaIncomplete(1, 1, -1)));
+    assert(isNaN(betaIncomplete(1, 1, 2)));
+
+    assert(betaIncomplete(+0., +0., 0) == 0);
+    assert(isNaN(betaIncomplete(+0., +0., .5)));
+    assert(betaIncomplete(+0., +0., 1) == 1);
+    assert(betaIncomplete(+0., 1, .5) == 1);
+    assert(betaIncomplete(1, +0., 0) == 0);
+    assert(betaIncomplete(1, +0., .5) == 0);
+    assert(betaIncomplete(1, real.infinity, .5) == 1);
+    assert(betaIncomplete(real.infinity, real.infinity, 0) == 0);
+    assert(isNaN(betaIncomplete(real.infinity, real.infinity, .5)));
 
     assert(betaIncomplete(1, 2, 0)==0);
     assert(betaIncomplete(1, 2, 1)==1);
-    assert(isNaN(betaIncomplete(1, 2, 3)));
+    assert(betaIncomplete(9.99999984824320730e+30, 9.99999984824320730e+30, 0.5) == 0.5L);
+    assert(betaIncomplete(1.17549435082228751e-38, 9.99999977819630836e+22, 9.99999968265522539e-22) == 1.0L);
+    assert(betaIncomplete(1.00000001954148138e-25, 1.00000001490116119e-01, 1.17549435082228751e-38) == 1.0L);
+    assert(isClose(betaIncomplete(9.99999983775159024e-18, 9.99999977819630836e+22, 1.00000001954148138e-25), 1.0L));
+    assert(isClose(
+        betaIncomplete(9.99999974737875164e-06, 9.99999998050644787e+18, 9.99999968265522539e-22),
+        0.9999596214389047L));
+
     assert(betaIncompleteInv(1, 1, 0)==0);
     assert(betaIncompleteInv(1, 1, 1)==1);
 
@@ -1065,23 +1469,38 @@ done:
         assert(betaIncompleteInv(0.01L, 8e-48L, 9e-26L) == 1-real.epsilon);
 
         // Beware: a one-bit change in pow() changes almost all digits in the result!
+        // scipy says that this is 0.99999_99995_89020_6 (0x1.ffff_fffc_783f_2a7ap-1)
+        // in double precision.
         assert(feqrel(
             betaIncompleteInv(0x1.b3d151fbba0eb18p+1L, 1.2265e-19L, 2.44859e-18L),
-            0x1.c0110c8531d0952cp-1L
+            0x1.ffff_fffc_783f_2a7ap-1
         ) > 10);
         // This next case uncovered a one-bit difference in the FYL2X instruction
         // between Intel and AMD processors. This difference gets magnified by 2^^38.
-        // WolframAlpha crashes attempting to calculate this.
-        assert(feqrel(betaIncompleteInv(0x1.ff1275ae5b939bcap-41L, 4.6713e18L, 0.0813601L),
-            0x1.f97749d90c7adba8p-63L) >= real.mant_dig - 39);
+        // WolframAlpha fails to calculate this.
+        // scipy says that this is 2.225073858507201e-308 in double precision,
+        // essentially double.min-normal.
+        assert(isClose(
+            betaIncompleteInv(0x1.ff1275ae5b939bcap-41L, 4.6713e18L, 0.0813601L),
+            2.225_073_858_507_201e-308L,
+            0,
+            1e-40));
+
+        // scipy says that this is 8.068764506083944e-20 to double precision. Since this is a
+        // regression test where the original value isn't a known good value, I' updating the
+        // test value to the current generated value, which is closer to the scipy value.
         real a1 = 3.40483L;
-        assert(betaIncompleteInv(a1, 4.0640301659679627772e19L, 0.545113L) == 0x1.ba8c08108aaf5d14p-109L);
+        assert(betaIncompleteInv(a1, 4.0640301659679627772e19L, 0.545113L) == 0x1.2a867b1e12b9bdf0p-64L);
+
         real b1 = 2.82847e-25L;
         assert(feqrel(betaIncompleteInv(0.01L, b1, 9e-26L), 0x1.549696104490aa9p-830L) >= real.mant_dig-10);
 
         // --- Problematic cases ---
-        // This is a situation where the series expansion fails to converge
-        assert( isNaN(betaIncompleteInv(0.12167L, 4.0640301659679627772e19L, 0.0813601L)));
+        // In the past, this was a situation where the series expansion failed
+        // to converge.
+        assert(!isNaN(betaIncompleteInv(0.12167L, 4.0640301659679627772e19L, 0.0813601L)));
+        // Using scipy, the result should be 1.683301919972747e-29.
+
         // This next result is almost certainly erroneous.
         // Mathematica states: "(cannot be determined by current methods)"
         assert(betaIncomplete(1.16251e20L, 2.18e39L, 5.45e-20L) == -real.infinity);
@@ -1293,12 +1712,39 @@ real betaDistPowerSeries(real a, real b, real x )
     u = a * log(x);
     if ( (a+b) < MAXGAMMA && fabs(u) < MAXLOG )
     {
-        t = gamma(a+b)/(gamma(a)*gamma(b));
-        s = s * t * pow(x,a);
+        s = s * pow(x,a) / beta(a, b);
     }
     else
     {
-        t = logGamma(a+b) - logGamma(a) - logGamma(b) + u + log(s);
+        if (abs(a*s - 1.0L) < 0.01L)
+        {
+            // Compute logGamma(a+b) - logGamma(b)
+            real lnGamma_apb_m_lnGamma_b;
+
+            if (b >= LN_GAMMA_STIRLING_LB)
+            {
+                const gamDiffApprox = a - a*log(b) + (0.5L - a - b)*log1p(a/b);
+
+                const gamDiffCorr
+                    = poly(1.0L/b^^2, logGammaStirlingCoeffs) / b
+                    - poly(1.0L/(a+b)^^2, logGammaStirlingCoeffs) / (a+b);
+
+                lnGamma_apb_m_lnGamma_b = -gamDiffApprox - gamDiffCorr;
+            }
+            else
+            {
+                lnGamma_apb_m_lnGamma_b = logGamma(a+b) - logGamma(b);
+            }
+
+            // Compute log(s) - logGamma(a)
+            const ln_s_m_lnGamma_a = log1p(a*s - 1.0L) - log(a) - logGamma(a);
+
+            t = lnGamma_apb_m_lnGamma_b + u + ln_s_m_lnGamma_a;
+        }
+        else
+        {
+            t = u + log(s) - logBeta(a, b);
+        }
 
         if ( t < MINLOG )
         {
@@ -1306,6 +1752,8 @@ real betaDistPowerSeries(real a, real b, real x )
         } else
             s = exp(t);
     }
+
+    if (s > 1.0L) return (s - 2*real.epsilon <= 1.0L) ? 1.0L : real.nan;
     return s;
 }
 

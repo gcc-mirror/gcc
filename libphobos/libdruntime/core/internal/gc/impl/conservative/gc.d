@@ -97,10 +97,6 @@ private
         // to avoid inlining - see https://issues.dlang.org/show_bug.cgi?id=13725.
         noreturn onInvalidMemoryOperationError(void* pretend_sideffect = null, string file = __FILE__, size_t line = __LINE__) @trusted pure nothrow @nogc;
         noreturn onOutOfMemoryError(void* pretend_sideffect = null, string file = __FILE__, size_t line = __LINE__) @trusted pure nothrow @nogc;
-
-        version (COLLECT_FORK)
-            version (OSX)
-                pid_t __fork() nothrow;
     }
 
     enum
@@ -1517,7 +1513,7 @@ class ConservativeGC : GC
         auto existingUsed = slice.length + offset;
 
         size_t typeInfoSize = (info.attr & BlkAttr.STRUCTFINAL) ? size_t.sizeof : 0;
-        if (__setArrayAllocLengthImpl(info, offset + newUsed, atomic, existingUsed, typeInfoSize))
+        if (__setArrayAllocLengthImpl(info, newUsed, atomic, existingUsed, typeInfoSize))
         {
             // could expand without extending
             if (!bic && !atomic)
@@ -1804,7 +1800,7 @@ struct Gcx
         }
         debug(INVARIANT) initialized = true;
         version (COLLECT_FORK)
-            shouldFork = config.fork;
+            shouldFork = AllocSupportsShared && config.fork;
 
     }
 
@@ -3191,11 +3187,7 @@ struct Gcx
         {
             fflush(null); // avoid duplicated FILE* output
         }
-        version (OSX)
-        {
-            auto pid = __fork(); // avoids calling handlers (from libc source code)
-        }
-        else version (linux)
+        version (linux)
         {
             // clone() fits better as we don't want to do anything but scanning in the child process.
             // no fork-handlers are called, so we can avoid deadlocks due to malloc locks. Probably related:
@@ -3213,11 +3205,13 @@ struct Gcx
             auto stack = stackbuf.ptr + (isStackGrowingDown ? stackbuf.length : 0);
             auto pid = clone(&wrap_delegate, stack, flags, &dg);
         }
+        else static if (__traits(compiles, _Fork))
+        {
+            auto pid = _Fork();
+        }
         else
         {
-            fork_needs_lock = false;
-            auto pid = fork();
-            fork_needs_lock = true;
+            auto pid = -1;  // fork based GC not supported
         }
         switch (pid)
         {
@@ -3493,25 +3487,34 @@ Lmark:
         // before a fork.
         // This must not happen if fork is called from the GC with the lock already held
 
-        __gshared bool fork_needs_lock = true; // racing condition with cocurrent calls of fork?
-
+        __gshared int fork_cancel_state = 0;
 
         extern(C) static void _d_gcx_atfork_prepare()
         {
-            if (instance && fork_needs_lock)
+            static if (__traits(compiles, os_unblock_gc_signals))
+                os_unblock_gc_signals();
+
+            if (instance)
+            {
                 ConservativeGC.lockNR();
+                fork_cancel_state = thread_cancelDisable();
+            }
         }
 
         extern(C) static void _d_gcx_atfork_parent()
         {
-            if (instance && fork_needs_lock)
+            if (instance)
+            {
+                thread_cancelRestore(fork_cancel_state);
                 ConservativeGC.gcLock.unlock();
+            }
         }
 
         extern(C) static void _d_gcx_atfork_child()
         {
-            if (instance && fork_needs_lock)
+            if (instance)
             {
+                thread_cancelRestore(fork_cancel_state);
                 ConservativeGC.gcLock.unlock();
 
                 // make sure the threads and event handles are reinitialized in a fork
@@ -5280,6 +5283,7 @@ unittest
 // https://issues.dlang.org/show_bug.cgi?id=19281
 debug (SENTINEL) {} else // cannot allow >= 4 GB with SENTINEL
 debug (MEMSTOMP) {} else // might take too long to actually touch the memory
+version (OnlyLowMemUnittests) {} else
 version (D_LP64) unittest
 {
     static if (__traits(compiles, os_physical_mem))
@@ -5393,8 +5397,34 @@ unittest
     }
 }
 
+// https://github.com/dlang/dmd/issues/22004
+@safe unittest
+{
+outer:
+    foreach (i; 1 .. 100)
+    {
+        foreach (j; 0 .. i)
+        {
+            int[] orig;
+            orig.length = i;
+            if (orig.capacity == orig.length)
+                // skip legitimate realloc cases
+                continue outer;
+
+            int[] slice = orig[j .. $];
+            assert(slice.capacity != 0);
+
+            auto ptr = &slice[0];
+            slice.length += 1;
+            // should not have realloc'd
+            assert(&slice[0] is ptr);
+        }
+    }
+}
+
 // https://github.com/dlang/dmd/issues/21615
 debug(SENTINEL) {} else // no additional capacity with SENTINEL
+version (OnlyLowMemUnittests) {} else
 @safe unittest
 {
     size_t numReallocations = 0;

@@ -150,7 +150,7 @@ enum STC : ulong  // transfer changes to declaration.h
 alias StorageClass = ulong;
 
 /********
- * Determine if it's the ambigous case of where `return` attaches to.
+ * Determine if it's the ambiguous case of where `return` attaches to.
  * Params:
  *   stc = STC flags
  * Returns:
@@ -477,7 +477,12 @@ extern (C++) struct structalign_t
   private:
     ushort value = 0;  // unknown
     enum STRUCTALIGN_DEFAULT = 1234;   // default = match whatever the corresponding C compiler does
-    bool pack;         // use #pragma pack semantics
+    ubyte flags;       // Align semantic flags
+    enum : ubyte
+    {
+        PACK = 0x1,     // use #pragma pack semantics
+        ALIGNAS = 0x2,  // use _Alignas semantics
+    }
 
   public:
   pure @safe @nogc nothrow:
@@ -487,8 +492,10 @@ extern (C++) struct structalign_t
     void setUnknown()      { value = 0; }
     void set(uint value)   { this.value = cast(ushort)value; }
     uint get() const       { return value; }
-    bool isPack() const    { return pack; }
-    void setPack(bool pack) { this.pack = pack; }
+    bool isPack() const    { return !!(flags & PACK); }
+    void setPack()         { flags |= PACK; }
+    bool fromAlignas() const { return !!(flags & ALIGNAS); }
+    void setAlignas()      { flags |= ALIGNAS; }
 }
 
 /// Use to return D arrays from C++ functions

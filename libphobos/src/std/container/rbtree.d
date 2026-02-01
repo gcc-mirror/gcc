@@ -1531,13 +1531,18 @@ if (is(typeof((ref const T a) => binaryFun!less(a, a))))
        Complexity: $(BIGOH m log(n)) (where m is the number of elements to remove)
 
        Example:
+$(RUNNABLE_EXAMPLE
 --------------------
+import std.algorithm, std.container;
+
 auto rbt = redBlackTree!true(0, 1, 1, 1, 4, 5, 7);
 rbt.removeKey(1, 4, 7);
 assert(equal(rbt[], [0, 1, 1, 5]));
+
 rbt.removeKey(1, 1, 0);
 assert(equal(rbt[], [5]));
 --------------------
+)
       +/
     size_t removeKey(U...)(U elems)
     if (allSatisfy!(isImplicitlyConvertibleToElem, U))

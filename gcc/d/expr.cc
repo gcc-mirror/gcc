@@ -44,54 +44,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "d-tree.h"
 
 
-/* Determine if type T is a struct that has a postblit.  */
-
-static bool
-needs_postblit (Type *t)
-{
-  t = t->baseElemOf ();
-
-  if (TypeStruct *ts = t->isTypeStruct ())
-    {
-      if (ts->sym->postblit)
-	return true;
-    }
-
-  return false;
-}
-
-/* Determine if type T is a struct that has a destructor.  */
-
-static bool
-needs_dtor (Type *t)
-{
-  t = t->baseElemOf ();
-
-  if (TypeStruct *ts = t->isTypeStruct ())
-    {
-      if (ts->sym->dtor)
-	return true;
-    }
-
-  return false;
-}
-
-/* Determine if expression E is a suitable lvalue.  */
-
-static bool
-lvalue_p (Expression *e)
-{
-  SliceExp *se = e->isSliceExp ();
-  if (se != NULL && se->e1->isLvalue ())
-    return true;
-
-  CastExp *ce = e->isCastExp ();
-  if (ce != NULL && ce->e1->isLvalue ())
-    return true;
-
-  return (e->op != EXP::slice && e->isLvalue ());
-}
-
 /* Build an expression of code CODE, data type TYPE, and operands ARG0 and
    ARG1.  Perform relevant conversions needed for correct code operations.  */
 
@@ -295,14 +247,14 @@ public:
 	this->result_ = d_convert (build_ctype (e->type),
 				   build_boolop (code, t1, t2));
       }
-    else if (tb1->isFloating () && tb1->ty != TY::Tvector)
+    else if (dmd::isFloating (tb1) && tb1->ty != TY::Tvector)
       {
 	/* For floating-point values, identity is defined as the bits in the
 	   operands being identical.  */
 	tree t1 = d_save_expr (build_expr (e->e1));
 	tree t2 = d_save_expr (build_expr (e->e2));
 
-	if (!tb1->isComplex ())
+	if (!dmd::isComplex (tb1))
 	  this->result_ = build_float_identity (code, t1, t2);
 	else
 	  {
@@ -593,8 +545,8 @@ public:
       {
       case EXP::add:
       case EXP::min:
-	if ((e->e1->type->isReal () && e->e2->type->isImaginary ())
-	    || (e->e1->type->isImaginary () && e->e2->type->isReal ()))
+	if ((dmd::isReal (e->e1->type) && dmd::isImaginary (e->e2->type))
+	    || (dmd::isImaginary (e->e1->type) && dmd::isReal (e->e2->type)))
 	  {
 	    /* If the result is complex, then we can shortcut binary_op.
 	       Frontend should have already validated types and sizes.  */
@@ -604,7 +556,7 @@ public:
 	    if (e->op == EXP::min)
 	      t2 = build1 (NEGATE_EXPR, TREE_TYPE (t2), t2);
 
-	    if (e->e1->type->isReal ())
+	    if (dmd::isReal (e->e1->type))
 	      this->result_ = complex_expr (build_ctype (e->type), t1, t2);
 	    else
 	      this->result_ = complex_expr (build_ctype (e->type), t2, t1);
@@ -634,12 +586,12 @@ public:
 	      }
 	  }
 
-	code = e->e1->type->isIntegral ()
+	code = dmd::isIntegral (e->e1->type)
 	  ? TRUNC_DIV_EXPR : RDIV_EXPR;
 	break;
 
       case EXP::mod:
-	code = e->e1->type->isFloating ()
+	code = dmd::isFloating (e->e1->type)
 	  ? FLOAT_MOD_EXPR : TRUNC_MOD_EXPR;
 	break;
 
@@ -723,12 +675,12 @@ public:
 	break;
 
       case EXP::divAssign:
-	code = e->e1->type->isIntegral ()
+	code = dmd::isIntegral (e->e1->type)
 	  ? TRUNC_DIV_EXPR : RDIV_EXPR;
 	break;
 
       case EXP::modAssign:
-	code = e->e1->type->isFloating ()
+	code = dmd::isFloating (e->e1->type)
 	  ? FLOAT_MOD_EXPR : TRUNC_MOD_EXPR;
 	break;
 
@@ -832,6 +784,16 @@ public:
       }
   }
 
+  /* Lower a construction expression, or forward to assignment expression.  */
+
+  void visit (ConstructExp *e) final override
+  {
+    if (!e->lowering)
+      return ExprVisitor::visit ((AssignExp *) e);
+
+    this->result_ = build_expr (e->lowering);
+  }
+
   /* Build an assignment expression.  The right operand is implicitly
      converted to the type of the left operand, and assigned to it.  */
 
@@ -865,10 +827,6 @@ public:
 	Type *stype = se->e1->type->toBasetype ();
 	Type *etype = stype->nextOf ()->toBasetype ();
 
-	/* Determine if we need to run postblit or dtor.  */
-	bool postblit = needs_postblit (etype) && lvalue_p (e->e2);
-	bool destructor = needs_dtor (etype);
-
 	if (e->memset == MemorySet::blockAssign)
 	  {
 	    /* Set a range of elements to one value.  */
@@ -879,13 +837,6 @@ public:
 	    /* Extract any array bounds checks from the slice expression.  */
 	    tree init = stabilize_expr (&t1);
 	    t1 = d_save_expr (t1);
-
-	    if ((postblit || destructor) && e->op != EXP::blit)
-	      {
-		/* This case should have been rewritten to `_d_arraysetassign`
-		   in the semantic phase.  */
-		gcc_unreachable ();
-	      }
 
 	    if (integer_zerop (t2))
 	      {
@@ -905,65 +856,46 @@ public:
 	    /* Perform a memcpy operation.  */
 	    gcc_assert (e->e2->type->ty != TY::Tpointer);
 
-	    if (!postblit && !destructor)
+	    tree t1 = d_save_expr (d_array_convert (e->e1));
+	    tree t2 = d_save_expr (d_array_convert (e->e2));
+
+	    /* References to array data.  */
+	    tree t1ptr = d_array_ptr (t1);
+	    tree t1len = d_array_length (t1);
+	    tree t2ptr = d_array_ptr (t2);
+
+	    /* Generate: memcpy(to, from, size)  */
+	    tree size = size_mult_expr (t1len, size_int (dmd::size (etype)));
+	    tree result = build_memcpy_call (t1ptr, t2ptr, size);
+
+	    /* Insert check that array lengths match and do not overlap.  */
+	    if (array_bounds_check ())
 	      {
-		tree t1 = d_save_expr (d_array_convert (e->e1));
-		tree t2 = d_save_expr (d_array_convert (e->e2));
+		/* tlencmp = (t1len == t2len)  */
+		tree t2len = d_array_length (t2);
+		tree tlencmp = build_boolop (EQ_EXPR, t1len, t2len);
 
-		/* References to array data.  */
-		tree t1ptr = d_array_ptr (t1);
-		tree t1len = d_array_length (t1);
-		tree t2ptr = d_array_ptr (t2);
+		/* toverlap = (t1ptr + size <= t2ptr
+		   || t2ptr + size <= t1ptr)  */
+		tree t1ptrcmp = build_boolop (LE_EXPR,
+					      build_offset (t1ptr, size),
+					      t2ptr);
+		tree t2ptrcmp = build_boolop (LE_EXPR,
+					      build_offset (t2ptr, size),
+					      t1ptr);
+		tree toverlap = build_boolop (TRUTH_ORIF_EXPR, t1ptrcmp,
+					      t2ptrcmp);
 
-		/* Generate: memcpy(to, from, size)  */
-		tree size =
-		  size_mult_expr (t1len, size_int (dmd::size (etype)));
-		tree result = build_memcpy_call (t1ptr, t2ptr, size);
+		/* (tlencmp && toverlap) ? memcpy() : _d_arraybounds()  */
+		tree tassert = build_array_bounds_call (e->loc);
+		tree tboundscheck = build_boolop (TRUTH_ANDIF_EXPR,
+						  tlencmp, toverlap);
 
-		/* Insert check that array lengths match and do not overlap.  */
-		if (array_bounds_check ())
-		  {
-		    /* tlencmp = (t1len == t2len)  */
-		    tree t2len = d_array_length (t2);
-		    tree tlencmp = build_boolop (EQ_EXPR, t1len, t2len);
-
-		    /* toverlap = (t1ptr + size <= t2ptr
-				   || t2ptr + size <= t1ptr)  */
-		    tree t1ptrcmp = build_boolop (LE_EXPR,
-						  build_offset (t1ptr, size),
-						  t2ptr);
-		    tree t2ptrcmp = build_boolop (LE_EXPR,
-						  build_offset (t2ptr, size),
-						  t1ptr);
-		    tree toverlap = build_boolop (TRUTH_ORIF_EXPR, t1ptrcmp,
-						  t2ptrcmp);
-
-		    /* (tlencmp && toverlap) ? memcpy() : _d_arraybounds()  */
-		    tree tassert = build_array_bounds_call (e->loc);
-		    tree tboundscheck = build_boolop (TRUTH_ANDIF_EXPR,
-						      tlencmp, toverlap);
-
-		    result = build_condition (void_type_node, tboundscheck,
-					      result, tassert);
-		  }
-
-		this->result_ = compound_expr (result, t1);
+		result = build_condition (void_type_node, tboundscheck,
+					  result, tassert);
 	      }
-	    else if ((postblit || destructor)
-		     && e->op != EXP::blit && e->op != EXP::construct)
-	      {
-		/* Assigning to a non-trivially copyable array has already been
-		   handled by the front-end.  */
-		gcc_unreachable ();
-	      }
-	    else
-	      {
-		/* Generate: _d_arraycopy()  */
-		this->result_ = build_libcall (LIBCALL_ARRAYCOPY, e->type, 3,
-					       size_int (dmd::size (etype)),
-					       d_array_convert (e->e2),
-					       d_array_convert (e->e1));
-	      }
+
+	    this->result_ = compound_expr (result, t1);
 	  }
 
 	return;
@@ -1040,35 +972,18 @@ public:
 	    this->result_ = build_memset_call (build_expr (e->e1));
 	    return;
 	  }
-
-	Type *etype = tb1->nextOf ();
-	gcc_assert (e->e2->type->toBasetype ()->ty == TY::Tsarray);
-
-	/* Determine if we need to run postblit.  */
-	const bool postblit = needs_postblit (etype);
-	const bool destructor = needs_dtor (etype);
-	const bool lvalue = lvalue_p (e->e2);
-
-	/* Optimize static array assignment with array literal.  Even if the
-	   elements in rhs are all rvalues and don't have to call postblits,
-	   this assignment should call dtors on old assigned elements.  */
-	if ((!postblit && !destructor)
-	    || (e->op == EXP::construct && e->e2->op == EXP::arrayLiteral)
-	    || (e->op == EXP::construct && e->e2->op == EXP::call)
-	    || (e->op == EXP::construct && !lvalue && postblit)
-	    || (e->op == EXP::blit || dmd::size (e->e1->type) == 0))
+	else
 	  {
+	    /* Optimize static array assignment with array literal.  Even if the
+	       elements in rhs are all rvalues and don't have to call postblits,
+	       this assignment should call dtors on old assigned elements.  */
+	    gcc_assert (e->e2->type->toBasetype ()->ty == TY::Tsarray);
 	    tree t1 = build_expr (e->e1);
 	    tree t2 = convert_for_assignment (e->e2, e->e1->type);
 
 	    this->result_ = build_assign (modifycode, t1, t2);
 	    return;
 	  }
-
-	/* All other kinds of lvalue or rvalue static array assignment.
-	   Array construction has already been handled by the front-end.  */
-	gcc_assert (e->op != EXP::construct);
-	gcc_unreachable ();
       }
 
     /* Simple assignment.  */
@@ -1424,12 +1339,12 @@ public:
       {
 	AddExp *ae = e->e1->isAddExp ();
 	if (ae->e1->op == EXP::address
-	    && ae->e2->isConst () && ae->e2->type->isIntegral ())
+	    && ae->e2->isConst () && dmd::isIntegral (ae->e2->type))
 	  {
 	    Expression *ex = ae->e1->isAddrExp ()->e1;
 	    tnext = ex->type->toBasetype ();
 	    result = build_expr (ex);
-	    offset = ae->e2->toUInteger ();
+	    offset = dmd::toUInteger (ae->e2);
 	  }
       }
     else if (e->e1->op == EXP::symbolOffset)
@@ -2244,7 +2159,7 @@ public:
 	tree new_call;
 
 	/* Cannot new an opaque struct.  */
-	if (sd->size (e->loc) == 0)
+	if (dmd::size (sd, e->loc) == 0)
 	  {
 	    this->result_ = d_convert (build_ctype (e->type),
 				       integer_zero_node);
@@ -2516,7 +2431,7 @@ public:
     /* Implicitly convert void[n] to ubyte[n].  */
     if (tb->ty == TY::Tsarray && tb->nextOf ()->toBasetype ()->ty == TY::Tvoid)
       {
-	dinteger_t ndim = tb->isTypeSArray ()->dim->toUInteger ();
+	dinteger_t ndim = dmd::toUInteger (tb->isTypeSArray ()->dim);
 	tb = dmd::sarrayOf (Type::tuns8, ndim);
       }
 

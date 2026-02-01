@@ -1,10 +1,9 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test20489.d(19): Error: function `pure nothrow @nogc @safe int test20489.D.f(int delegate(int) pure nothrow @nogc @safe body)` does not override any function, did you mean to override `pure nothrow @nogc @safe int test20489.B.f(scope int delegate(int) pure nothrow @nogc @safe)`?
-fail_compilation/test20489.d(19):        Did you intend to override:
-fail_compilation/test20489.d(19):        `pure nothrow @nogc @safe int test20489.B.f(scope int delegate(int) pure nothrow @nogc @safe)`
-fail_compilation/test20489.d(19):        Parameter 1 is missing `scope`
+fail_compilation/test20489.d(18): Error: function `pure nothrow @nogc @safe int test20489.D.f(int delegate(int) pure nothrow @nogc @safe body)` does not override any function
+fail_compilation/test20489.d(14):        did you mean to override `pure nothrow @nogc @safe int test20489.B.f(scope int delegate(int) pure nothrow @nogc @safe)`?
+fail_compilation/test20489.d(18):        parameter 1 is missing `scope`
 ---
 */
 

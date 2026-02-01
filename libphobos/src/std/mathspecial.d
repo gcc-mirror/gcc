@@ -37,6 +37,7 @@
  *      SUB = $1<sub>$2</sub>
  *      BIGSUM = $(BIG &Sigma; <sup>$2</sup><sub>$(SMALL $1)</sub>)
  *      CHOOSE = $(BIG &#40;) <sup>$(SMALL $1)</sup><sub>$(SMALL $2)</sub> $(BIG &#41;)
+ *      CEIL = &#8968;$1&#8969;
  *      PLUSMN = &plusmn;
  *      MNPLUS = &mnplus;
  *      INFIN = &infin;
@@ -44,10 +45,11 @@
  *      MNPLUSINF = &mnplus;&infin;
  *      PI = &pi;
  *      LT = &lt;
+ *      LE = &le;
  *      GT = &gt;
  *      SQRT = &radic;
  *      HALF = &frac12;
- *
+ *      COMPLEX = &#8450;
  *
  * Copyright: Based on the CEPHES math library, which is
  *            Copyright (C) 1994 Stephen L. Moshier (moshier@world.std.com).
@@ -114,59 +116,89 @@ real logGamma(real x)
 
 /** The sign of $(GAMMA)(x).
  *
- * Returns -1 if $(GAMMA)(x) < 0,  +1 if $(GAMMA)(x) > 0,
- * $(NAN) if sign is indeterminate.
+ * Params:
+ *   x = the argument of $(GAMMA)
  *
- * Note that this function can be used in conjunction with logGamma(x) to
- * evaluate gamma for very large values of x.
+ * Returns:
+ *   -1 if $(GAMMA)(x) < 0, +1 if $(GAMMA)(x) > 0, and $(NAN) if $(GAMMA)(x)
+ *   does not exist.
+ *
+ * Note:
+ *   This function can be used in conjunction with `logGamma` to evaluate
+ *   $(GAMMA)(x) when `gamma(x)` is too large to be represented as a `real`.
  */
-real sgnGamma(real x)
+pragma(inline, true) real sgnGamma(real x)
 {
-    import core.math : rndtol;
-    /* Author: Don Clugston. */
-    if (isNaN(x)) return x;
-    if (x > 0) return 1.0;
-    if (x < -1/real.epsilon)
-    {
-        // Large negatives lose all precision
-        return real.nan;
-    }
-    long n = rndtol(x);
-    if (x == n)
-    {
-        return x == 0 ?  copysign(1, x) : real.nan;
-    }
-    return n & 1 ? 1.0 : -1.0;
+    return std.internal.math.gammafunction.sgnGamma(x);
 }
 
+///
 @safe unittest
 {
-    assert(sgnGamma(5.0) == 1.0);
-    assert(isNaN(sgnGamma(-3.0)));
-    assert(sgnGamma(-0.1) == -1.0);
-    assert(sgnGamma(-55.1) == 1.0);
-    assert(isNaN(sgnGamma(-real.infinity)));
-    assert(isIdentical(sgnGamma(NaN(0xABC)), NaN(0xABC)));
+    assert(sgnGamma(10_000) == 1);
 }
 
-/** Beta function
+/** Beta function, B(x,y)
  *
- * The beta function is defined as
+ * Mathematically, if x $(GT) 0 and y $(GT) 0 then
+ * B(x,y) = $(INTEGRATE 0, 1)$(POWER t, x-1)$(POWER (l-t), y-1)dt. Through analytic continuation, it
+ * is extended to $(COMPLEX)$(SUP 2) where it can be expressed in terms of $(GAMMA)(z).
  *
- * beta(x, y) = ($(GAMMA)(x) * $(GAMMA)(y)) / $(GAMMA)(x + y)
+ * B(x,y) = $(GAMMA)(x)$(GAMMA)(y) / $(GAMMA)(x+y).
+ *
+ * This implementation restricts x and y to the set of real numbers.
+ *
+ * Params:
+ *   x = the first argument of B
+ *   y = the second argument of B
+ *
+ * Returns:
+ *   It returns B(x,y) if it can be computed, otherwise $(NAN).
+ *
+ * $(TABLE_SV
+ *   $(TR $(TH x)                                   $(TH y)                $(TH beta(x, y))   )
+ *   $(TR $(TD $(NAN))                              $(TD y)                $(TD $(NAN))       )
+ *   $(TR $(TD -$(INFIN))                           $(TD y)                $(TD $(NAN))       )
+ *   $(TR $(TD integer $(LT) 0)                     $(TD y)                $(TD $(NAN))       )
+ *   $(TR $(TD noninteger and x+y even $(LE) 0)     $(TD noninteger)       $(TD -0)           )
+ *   $(TR $(TD noninteger and x+y odd $(LE) 0)      $(TD noninteger)       $(TD +0)           )
+ *   $(TR $(TD +0)                                  $(TD positive finite)  $(TD +$(INFIN))    )
+ *   $(TR $(TD +0)                                  $(TD +$(INFIN))        $(TD $(NAN))       )
+ *   $(TR $(TD $(GT) 0)                             $(TD +$(INFIN))        $(TD +0)           )
+ *   $(TR $(TD -0)                                  $(TD +0)               $(TD $(NAN))       )
+ *   $(TR $(TD -0)                                  $(TD $(GT) 0)          $(TD -$(INFIN))    )
+ *   $(TR $(TD noninteger $(LT) 0, $(CEIL x) odd)   $(TD +$(INFIN))        $(TD -$(INFIN))    )
+ *   $(TR $(TD noninteger $(LT) 0, $(CEIL x) even)  $(TD +$(INFIN))        $(TD +$(INFIN))    )
+ *   $(TR $(TD noninteger $(LT) 0)                  $(TD $(PLUSMN)0)       $(TD $(PLUSMNINF)) )
+ * )
+ *
+ * Since B(x,y) = B(y,x), if the table states that beta(x, y) is a special value, then beta(y, x) is
+ * one as well.
  */
-real beta(real x, real y)
+pragma(inline, true) real beta(real x, real y)
 {
-    if ((x+y)> MAXGAMMA)
-    {
-        return exp(logGamma(x) + logGamma(y) - logGamma(x+y));
-    } else return gamma(x) * gamma(y) / gamma(x+y);
+    return std.internal.math.gammafunction.beta(x, y);
 }
 
+///
 @safe unittest
 {
+    assert(beta(1, 2) == 0.5);
     assert(isIdentical(beta(NaN(0xABC), 4), NaN(0xABC)));
-    assert(isIdentical(beta(2, NaN(0xABC)), NaN(0xABC)));
+    assert(beta(3, 4) == beta(4, 3));
+    assert(isNaN(beta(-real.infinity, +0.)));
+    assert(isNaN(beta(-1, 2)));
+    assert(beta(-0.5, 0.5) is -0.0L);
+    assert(beta(-1.5, 0.5) is +0.0L);
+    assert(beta(+0., +0.) == +real.infinity);
+    assert(isNaN(beta(+0., +real.infinity)));
+    assert(beta(1, +real.infinity) is +0.0L);
+    assert(isNaN(beta(-0., +0.)));
+    assert(beta(-0., nextUp(+0.0L)) == -real.infinity);
+    assert(beta(-0.5, +real.infinity) == -real.infinity);
+    assert(beta(nextDown(-1.0L), real.infinity) == real.infinity);
+    assert(beta(nextDown(-0.0L), +0.) == +real.infinity);
+    assert(beta(-0.5, -0.) == -real.infinity);
 }
 
 /** Digamma function, $(PSI)(x)
@@ -232,30 +264,123 @@ real logmdigammaInverse(real x)
     return std.internal.math.gammafunction.logmdigammaInverse(x);
 }
 
-/** Incomplete beta integral
+/** Regularized incomplete beta function $(SUB I, x)(a,b)
  *
- * Returns regularized incomplete beta integral of the arguments, evaluated
- * from zero to x. The regularized incomplete beta function is defined as
+ * Mathematically, if a and b are positive real numbers, and 0 $(LE) x $(LE) 1, then
+ * $(SUB I, x)(a,b) = $(INTEGRATE 0, x)$(POWER t, a-1)$(POWER (1-t), b-1)dt/B(a,b) where B is the
+ * beta function. It is also the cumulative distribution function of the beta distribution.
  *
- * betaIncomplete(a, b, x) = $(GAMMA)(a + b) / ( $(GAMMA)(a) $(GAMMA)(b) ) *
- * $(INTEGRATE 0, x) $(POWER t, a-1)$(POWER (1-t), b-1) dt
+ * `betaIncomplete(a, b, x)` evaluates $(SUB I, `x`)(`a`,`b`).
  *
- * and is the same as the cumulative distribution function of the Beta
- * distribution.
+ * Params:
+ *   a = the first argument of B, must be positive
+ *   b = the second argument of B, must be positive
+ *   x = the fraction of integration completion from below, 0 $(LE) x $(LE) 1
  *
- * The domain of definition is 0 <= x <= 1.  In this
- * implementation a and b are restricted to positive values.
- * The integral from x to 1 may be obtained by the symmetry
- * relation
+ * Returns:
+ *   It returns $(SUB I, x)(a,b), an element of [0,1].
  *
- *    betaIncompleteCompl(a, b, x )  =  betaIncomplete( b, a, 1-x )
+  * $(TABLE_SV
+ *   $(TR $(TH a)         $(TH b)         $(TH x)        $(TH betaIncomplete(a, b, x)) )
+ *   $(TR $(TD negative)  $(TD b)         $(TD x)        $(TD $(NAN))                  )
+ *   $(TR $(TD a)         $(TD negative)  $(TD x)        $(TD $(NAN))                  )
+ *   $(TR $(TD a)         $(TD b)         $(TD $(LT) 0)  $(TD $(NAN))                  )
+ *   $(TR $(TD a)         $(TD b)         $(TD $(GT) 1)  $(TD $(NAN))                  )
+ *   $(TR $(TD +0)        $(TD +0)        $(TD (0,1))    $(TD $(NAN))                  )
+ *   $(TR $(TD $(INFIN))  $(TD $(INFIN))  $(TD (0,1))    $(TD $(NAN))                  )
+ * )
  *
- * The integral is evaluated by a continued fraction expansion
- * or, when b * x is small, by a power series.
+ * If one or more of the input parameters are $(NAN), the one with the largest payload is returned.
+ * For equal payloads but with possibly different signs, the order of preference is x, a, b.
+ *
+ * Note:
+ *   The integral is evaluated by a continued fraction expansion or, when `b * x` is small, by a
+ *   power series.
+ *
+ * See_Also: $(LREF beta) $(LREF betaIncompleteCompl)
  */
 real betaIncomplete(real a, real b, real x )
+in
+{
+    if (!isNaN(a) && !isNaN(b) && !isNaN(x))
+    {
+        assert(signbit(a) == 0, "a must be positive");
+        assert(signbit(b) == 0, "b must be positive");
+        assert(x >= 0 && x <= 1, "x must be in [0,1]");
+    }
+}
+out(i; isNaN(i) || (i >=0 && i <= 1))
+do
 {
     return std.internal.math.gammafunction.betaIncomplete(a, b, x);
+}
+
+///
+@safe unittest
+{
+    assert(betaIncomplete(1, 1, .5) == .5);
+    assert(betaIncomplete(+0., +0., 0) == 0);
+    assert(isNaN(betaIncomplete(+0., +0., .5)));
+    assert(isNaN(betaIncomplete(real.infinity, real.infinity, .5)));
+    assert(betaIncomplete(real.infinity, real.infinity, 1) == 1);
+    assert(betaIncomplete(NaN(0x1), 1, NaN(0x2)) is NaN(0x2));
+    assert(betaIncomplete(1, NaN(0x3), -NaN(0x3)) is -NaN(0x3));
+}
+
+/** Regularized incomplete beta function complement $(SUB I$(SUP C), x)(a,b)
+ *
+ * Mathematically, if a $(GT) 0, b $(GT) 0, and 0 $(LE) x $(LE) 1, then
+ * $(SUB I$(SUP C), x)(a,b) = $(INTEGRATE x, 1)$(POWER t, a-1)$(POWER (1-t), b-1)dt/B(a,b) where B
+ * is the beta function. It is also the complement of the cumulative distribution function of the
+ * beta distribution. It can be shown that $(SUB I$(SUP C), x)(a,b) = $(SUB I, 1-x)(b,a).
+ *
+ * `betaIncompleteCompl(a, b, x)` evaluates $(SUB I$(SUP C), `x`)(`a`,`b`).
+ *
+ * Params:
+ *   a = the first argument of B, must be positive
+ *   b = the second argument of B, must be positive
+ *   x = the fraction of integration completion from above, 0 $(LE) x $(LE) 1
+ *
+ * Returns:
+ *   It returns $(SUB I$(SUP C), x)(a,b), an element of [0,1].
+ *
+   * $(TABLE_SV
+ *   $(TR $(TH a)         $(TH b)         $(TH x)        $(TH betaIncompleteCompl(a, b, x)) )
+ *   $(TR $(TD negative)  $(TD b)         $(TD x)        $(TD $(NAN))                       )
+ *   $(TR $(TD a)         $(TD negative)  $(TD x)        $(TD $(NAN))                       )
+ *   $(TR $(TD a)         $(TD b)         $(TD $(LT) 0)  $(TD $(NAN))                       )
+ *   $(TR $(TD a)         $(TD b)         $(TD $(GT) 1)  $(TD $(NAN))                       )
+ *   $(TR $(TD +0)        $(TD +0)        $(TD (0,1))    $(TD $(NAN))                       )
+ *   $(TR $(TD $(INFIN))  $(TD $(INFIN))  $(TD (0,1))    $(TD $(NAN))                       )
+ * )
+ *
+ * If one or more of the input parameters are $(NAN), the one with the largest payload is returned.
+ * For equal payloads but with possibly different signs, the order of preference is x, a, b.
+ *
+ * See_Also: $(LREF beta) $(LREF betaIncomplete)
+ */
+real betaIncompleteCompl(real a, real b, real x)
+in
+{
+    // allow NaN input to pass through so that it can be addressed by the
+    // internal NaN payload propagation logic
+    if (!isNaN(a) && !isNaN(b) && !isNaN(x))
+    {
+        assert(signbit(a) == 0, "a must be positive");
+        assert(signbit(b) == 0, "b must be positive");
+        assert(x >= 0 && x <= 1, "x must be in [0, 1]");
+    }
+}
+out(i; isNaN(i) || (i >=0 && i <= 1))
+do
+{
+    return std.internal.math.gammafunction.betaIncomplete(b, a, 1-x);
+}
+
+///
+@safe unittest
+{
+    assert(betaIncompleteCompl(.1, .2, 0) == betaIncomplete(.2, .1, 1));
 }
 
 /** Inverse of incomplete beta integral

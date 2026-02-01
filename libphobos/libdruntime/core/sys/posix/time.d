@@ -16,6 +16,7 @@
 module core.sys.posix.time;
 
 import core.sys.posix.config;
+import core.sys.posix.endian;
 public import core.stdc.time;
 public import core.sys.posix.sys.types;
 public import core.sys.posix.signal; // for sigevent
@@ -201,7 +202,11 @@ version (linux)
     struct timespec
     {
         time_t  tv_sec;
+        version (CRuntime_Musl)
+            int : 8 * (time_t.sizeof - c_long.sizeof) * (BYTE_ORDER == BIG_ENDIAN);
         c_long  tv_nsec;
+        version (CRuntime_Musl)
+            int : 8 * (time_t.sizeof - c_long.sizeof) * (BYTE_ORDER != BIG_ENDIAN);
     }
 }
 else version (Darwin)
@@ -461,6 +466,8 @@ else version (CRuntime_Bionic)
 }
 else version (CRuntime_Musl)
 {
+    static assert(timespec.sizeof == 16);
+
     alias int clockid_t;
     alias void* timer_t;
 
@@ -482,6 +489,7 @@ else version (CRuntime_Musl)
     enum CLOCK_SGI_CYCLE = 10;
     enum CLOCK_TAI = 11;
 
+    pragma(mangle, muslRedirTime64Mangle!("nanosleep", "__nanosleep_time64"))
     int nanosleep(const scope timespec*, timespec*);
 
     pragma(mangle, muslRedirTime64Mangle!("clock_getres", "__clock_getres_time64"))

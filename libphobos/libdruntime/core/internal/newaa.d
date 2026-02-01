@@ -113,7 +113,8 @@ static struct Entry(K, V)
 // backward compatibility conversions
 private ref compat_key(K, K2)(ref K2 key)
 {
-    pragma(inline, true);
+    static if(!(is(K2 == struct) && __traits(isNested, K2)))
+        pragma(inline, true);
     static if (is(K2 == const(char)[]) && is(K == string))
         return (ref (ref return K2 k2) @trusted => *cast(string*)&k2)(key);
     else
@@ -132,7 +133,7 @@ private void _aaMove(V)(ref V src, ref V dst) @trusted
 }
 
 // mimick behaviour of rt.aaA for initialization
-Entry!(K, V)* _newEntry(K, V)(ref K key, ref V value)
+Entry!(K, V)* _newEntry(K, V)(ref K key, auto ref V value)
 {
     static if (__traits(compiles, new Entry!(K, V)(key, value)))
     {
@@ -180,7 +181,8 @@ Entry!(K, V)* _newEntry(K, V, K2)(ref K2 key)
 
 template pure_hashOf(K)
 {
-    static if (__traits(compiles, function hash_t(scope const ref K key) pure nothrow @nogc @trusted { return hashOf(cast()key); }))
+    static if (!(is(K == struct) && __traits(isNested, K)) &&
+               __traits(compiles, function hash_t(scope const ref K key) pure nothrow @nogc @trusted { return hashOf(cast()key); }))
     {
         // avoid wrapper call in debug builds if pure nothrow @nogc is inferred
         pragma(inline, true)
@@ -198,7 +200,9 @@ template pure_hashOf(K)
 // this also breaks cyclic inference on recursive data types
 template pure_keyEqual(K1, K2 = K1)
 {
-    static if (__traits(compiles, function bool(ref const K1 k1, ref const K2 k2) pure nothrow @nogc @trusted { return cast()k1 == cast()k2; }))
+    static if (!(is(K1 == struct) && __traits(isNested, K1)) &&
+               !(is(K2 == struct) && __traits(isNested, K2)) &&
+               __traits(compiles, function bool(ref const K1 k1, ref const K2 k2) pure nothrow @nogc @trusted { return cast()k1 == cast()k2; }))
     {
         // avoid wrapper call in debug builds if pure nothrow @nogc is inferred
         pragma(inline, true)
@@ -475,8 +479,10 @@ size_t _d_aaLen(K, V)(inout V[K] a)
 V* _d_aaGetY(K, V, T : V1[K1], K1, V1, K2)(auto ref scope T aa, auto ref K2 key, out bool found)
 {
     ref aax = cast(V[K])cast(V1[K1])aa; // remove outer const from T
-    return _aaGetX!(K, V)(aax, key, found);
+    return _aaGetX!(K, V, K2)(aax, key, found, _noV2());
 }
+
+private struct _noV2 {}
 
 /******************************
  * Lookup key in aa.
@@ -485,12 +491,13 @@ V* _d_aaGetY(K, V, T : V1[K1], K1, V1, K2)(auto ref scope T aa, auto ref K2 key,
  *      a = associative array
  *      key = reference to the key value
  *      found = true if the value was found
+ *      v2 = if key not found, init new value to this (except if type _noV2)
  * Returns:
  *      if key was in the aa, a mutable pointer to the existing value.
  *      If key was not in the aa, a mutable pointer to newly inserted value which
- *      is set to V.init
+ *      is set to v2 or is zero-initialized
  */
-V* _aaGetX(K, V, K2)(auto ref scope V[K] a, auto ref K2 key, out bool found)
+V* _aaGetX(K, V, K2, V2)(auto ref scope V[K] a, auto ref K2 key, out bool found, lazy V2 v2)
 {
     ref aa = _refAA!(K, V)(a);
 
@@ -513,21 +520,26 @@ V* _aaGetX(K, V, K2)(auto ref scope V[K] a, auto ref K2 key, out bool found)
     }
 
     auto pi = aa.findSlotInsert(hash);
-    if (aa.buckets[pi].deleted)
-        --aa.deleted;
     // check load factor and possibly grow
-    else if (++aa.used * GROW_DEN > aa.dim * GROW_NUM)
+    if (!aa.buckets[pi].deleted && (aa.used + 1) * GROW_DEN > aa.dim * GROW_NUM)
     {
         aa.grow();
         pi = aa.findSlotInsert(hash);
         assert(aa.buckets[pi].empty);
     }
 
-    // update search cache and allocate entry
-    aa.firstUsed = min(aa.firstUsed, cast(uint)pi);
+    // allocate entry and update search cache (if not throwing in _newEntry)
     ref p = aa.buckets[pi];
+    static if (is(V2 == _noV2))
+        p.entry = _newEntry!(K, V)(key2);
+    else
+        p.entry = _newEntry!(K, V)(key2, v2);
+    if (p.deleted)
+        --aa.deleted;
+    else
+        aa.used++;
     p.hash = hash;
-    p.entry = _newEntry!(K, V)(key2);
+    aa.firstUsed = min(aa.firstUsed, cast(uint)pi);
     return &p.entry.value;
 }
 

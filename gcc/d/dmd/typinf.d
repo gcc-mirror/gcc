@@ -24,6 +24,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.templatesem;
 import dmd.typesem;
+import dmd.dsymbolsem : addDeferredSemantic3;
 import core.stdc.stdio;
 
 /****************************************************
@@ -52,7 +53,7 @@ bool genTypeInfo(Expression e, Loc loc, Type torig, Scope* sc)
             if (e)
                 .error(loc, "expression `%s` uses the GC and cannot be used with switch `-betterC`", e.toChars());
             else
-                .error(loc, "`TypeInfo` cannot be used with -betterC");
+                .error(loc, "`TypeInfo` cannot be used with `-betterC`");
 
             if (sc && sc.tinst)
                 sc.tinst.printInstantiationTrace(Classification.error, uint.max);
@@ -168,7 +169,7 @@ TypeInfoDeclaration getTypeInfoAssocArrayDeclaration(TypeAArray t, Scope* sc)
     t.vtinfo = ti; // assign it early to avoid recursion in expressionSemantic
     ti._scope = sc;
     sc.setNoFree();
-    Module.addDeferredSemantic3(ti);
+    addDeferredSemantic3(ti);
     return ti;
 }
 

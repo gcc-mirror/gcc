@@ -1,25 +1,38 @@
-// REQUIRED_ARGS: -w -o-
+// REQUIRED_ARGS: -de
 
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/b3841.d-mixin-32(32): Warning: `char += float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `int += float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `long += double` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `char -= float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `int -= float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `long -= double` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `char *= float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `int *= float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `long *= double` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `char /= float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `int /= float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `long /= double` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `char %= float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `int %= float` is performing truncating conversion
-fail_compilation/b3841.d-mixin-32(32): Warning: `long %= double` is performing truncating conversion
-Error: warnings are treated as errors
-       Use -wi if you wish to treat warnings only as informational.
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `char += float` is performing truncating conversion
+fail_compilation/b3841.d(69): Error: template instance `b3841.f!("+=", char, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `int += float` is performing truncating conversion
+fail_compilation/b3841.d(70): Error: template instance `b3841.f!("+=", int, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `long += double` is performing truncating conversion
+fail_compilation/b3841.d(71): Error: template instance `b3841.f!("+=", long, double)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `char -= float` is performing truncating conversion
+fail_compilation/b3841.d(69): Error: template instance `b3841.f!("-=", char, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `int -= float` is performing truncating conversion
+fail_compilation/b3841.d(70): Error: template instance `b3841.f!("-=", int, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `long -= double` is performing truncating conversion
+fail_compilation/b3841.d(71): Error: template instance `b3841.f!("-=", long, double)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `char *= float` is performing truncating conversion
+fail_compilation/b3841.d(69): Error: template instance `b3841.f!("*=", char, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `int *= float` is performing truncating conversion
+fail_compilation/b3841.d(70): Error: template instance `b3841.f!("*=", int, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `long *= double` is performing truncating conversion
+fail_compilation/b3841.d(71): Error: template instance `b3841.f!("*=", long, double)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `char /= float` is performing truncating conversion
+fail_compilation/b3841.d(69): Error: template instance `b3841.f!("/=", char, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `int /= float` is performing truncating conversion
+fail_compilation/b3841.d(70): Error: template instance `b3841.f!("/=", int, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `long /= double` is performing truncating conversion
+fail_compilation/b3841.d(71): Error: template instance `b3841.f!("/=", long, double)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `char %= float` is performing truncating conversion
+fail_compilation/b3841.d(69): Error: template instance `b3841.f!("%=", char, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `int %= float` is performing truncating conversion
+fail_compilation/b3841.d(70): Error: template instance `b3841.f!("%=", int, float)` error instantiating
+fail_compilation/b3841.d-mixin-45(45): Deprecation: `long %= double` is performing truncating conversion
+fail_compilation/b3841.d(71): Error: template instance `b3841.f!("%=", long, double)` error instantiating
 ---
 */
 

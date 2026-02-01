@@ -78,11 +78,11 @@ void foo() @safe
 fail_compilation/retscope6.d(8016): Error: assigning address of variable `i` to `p` with longer lifetime is not allowed in a `@safe` function
 fail_compilation/retscope6.d(8031): Error: assigning reference to local variable `i` to non-scope parameter `p` calling `betty` is not allowed in a `@safe` function
 fail_compilation/retscope6.d(8031): Error: assigning reference to local variable `j` to non-scope parameter `q` calling `betty` is not allowed in a `@safe` function
-fail_compilation/retscope6.d(8023):        which is not `scope` because of `p = q`
+fail_compilation/retscope6.d(8023):        `q` is not `scope` because of `p = q`
 fail_compilation/retscope6.d(8048): Error: assigning reference to local variable `i` to non-scope parameter `p` calling `archie` is not allowed in a `@safe` function
-fail_compilation/retscope6.d(8039):        which is not `scope` because of `r = p`
+fail_compilation/retscope6.d(8039):        `p` is not `scope` because of `r = p`
 fail_compilation/retscope6.d(8048): Error: assigning reference to local variable `j` to non-scope parameter `q` calling `archie` is not allowed in a `@safe` function
-fail_compilation/retscope6.d(8038):        which is not `scope` because of `p = q`
+fail_compilation/retscope6.d(8038):        `q` is not `scope` because of `p = q`
 ---
 */
 
@@ -261,7 +261,7 @@ void escape_throw_20150() @safe
 /* TEST_OUTPUT:
 ---
 fail_compilation/retscope6.d(14019): Error: assigning scope variable `scopePtr` to non-scope parameter `x` calling `noInfer23021` is not allowed in a `@safe` function
-fail_compilation/retscope6.d(14009):        which is not `scope` because of `*escapeHole = cast(const(int)*)x`
+fail_compilation/retscope6.d(14009):        `x` is not `scope` because of `*escapeHole = cast(const(int)*)x`
 fail_compilation/retscope6.d(14022): Error: returning scope variable `scopePtr` is not allowed in a `@safe` function
 ---
 */
@@ -300,7 +300,7 @@ ref int escape23021() @safe
 /* TEST_OUTPUT:
 ---
 fail_compilation/retscope6.d(14050): Error: assigning scope variable `z` to non-scope parameter `y` calling `f23294` is not allowed in a `@safe` function
-fail_compilation/retscope6.d(14044):        which is not `scope` because of `x = y`
+fail_compilation/retscope6.d(14044):        `y` is not `scope` because of `x = y`
 ---
 */
 

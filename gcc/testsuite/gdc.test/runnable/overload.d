@@ -1262,6 +1262,23 @@ void test21522()
 
 /***************************************************/
 
+// https://github.com/dlang/dmd/issues/21920
+
+struct S21920
+{
+    void funB2(char a) {}
+    void funB(int b) {}
+    alias funB = funB2;
+    void funB()(float t) {}
+}
+
+void test21920()
+{
+    static assert(__traits(getOverloads, S21920, "funB", true).length == 3);
+}
+
+/***************************************************/
+
 int main()
 {
     test1528a();
@@ -1298,6 +1315,7 @@ int main()
     test14965();
     test21481();
     test21522();
+    test21920();
 
     printf("Success\n");
     return 0;

@@ -15,6 +15,8 @@ module dmd.builtin;
 
 import dmd.arraytypes;
 import dmd.expression;
+import dmd.expressionsem : toInteger, toReal;
+import dmd.typesem : isFloating, toBasetype;
 import dmd.func;
 import dmd.location;
 

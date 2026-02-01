@@ -16,6 +16,7 @@ import core.stdc.stdio;
 import dmd.astenums : Tdchar;
 import dmd.mtype : Type;
 import dmd.globals : uinteger_t;
+import dmd.typesem;
 
 private uinteger_t copySign(uinteger_t x, bool sign) @safe
 {

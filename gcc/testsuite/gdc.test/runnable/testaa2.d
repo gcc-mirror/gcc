@@ -328,6 +328,14 @@ void test21207()
 }
 
 /************************************************/
+void foo() @safe
+{
+    immutable key = 1;
+    int[int] aa;
+    aa[key] = 123;
+}
+
+/************************************************/
 
 void testEvaluationOrder()
 {

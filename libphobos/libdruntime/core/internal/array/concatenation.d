@@ -17,7 +17,7 @@ module core.internal.array.concatenation;
  * Returns:
  *      A newly allocated array that contains all the elements from `froms`.
  */
-Tret _d_arraycatnTX(Tret, Tarr...)(auto ref Tarr froms) @trusted
+Tret _d_arraycatnTX(Tret: Tret_El[], Tret_El, Tarr...)(auto ref Tarr froms) @trusted
 {
     import core.exception : onOutOfMemoryError;
     import core.internal.array.utils : __arrayAlloc;
@@ -44,7 +44,7 @@ Tret _d_arraycatnTX(Tret, Tarr...)(auto ref Tarr froms) @trusted
         return res; // Return an empty array if no elements are present
 
     // Allocate memory for mutable arrays using __arrayAlloc
-    res = cast(Tret) __arrayAlloc!(UnqT)(elemSize * totalLen);
+    res = (cast(Tret_El*) &__arrayAlloc!(UnqT)(elemSize * totalLen)[0])[0 .. totalLen];
 
     if (res.ptr is null)
         onOutOfMemoryError(); // Abort if allocation fails
@@ -174,7 +174,7 @@ version (D_ProfileGC)
         version (D_TypeInfo)
         {
             import core.internal.array.utils: TraceHook, gcStatsPure, accumulatePure;
-            mixin(TraceHook!(Tarr.stringof, "_d_arraycatnTX"));
+            mixin(TraceHook!("Tarr", "_d_arraycatnTX"));
 
             import core.lifetime: forward;
             return _d_arraycatnTX!Tret(forward!froms);

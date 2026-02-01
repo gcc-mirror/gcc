@@ -1,4 +1,4 @@
-/* REQUIRED_ARGS: -preview=bitfields
+/*
  * TEST_OUTPUT:
 ---
 fail_compilation/biterrors.d(103): Error: initializer not allowed for bitfield declaration

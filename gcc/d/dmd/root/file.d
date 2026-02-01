@@ -14,7 +14,6 @@ module dmd.root.file;
 import core.stdc.errno;
 import core.stdc.stdio;
 import core.stdc.stdlib;
-import core.stdc.string : strerror;
 import core.sys.posix.fcntl;
 import core.sys.posix.unistd;
 import core.sys.windows.winbase;

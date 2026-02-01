@@ -651,56 +651,49 @@ const(ubyte)[] toUbyte(T)(return scope const T[] arr) if (T.sizeof == 1)
     return cast(const(ubyte)[])arr;
 }
 
-@trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(return scope const T[] arr) if (T.sizeof > 1)
+private const(ubyte)[] toUbyte_array_ctfe(T)(return scope const T[] arr)
 {
-    if (__ctfe)
+    pragma(inline, false);
+    ubyte[] ret = ctfe_alloc(T.sizeof * arr.length);
+    static if (is(T EType == enum)) // Odd style is to avoid template instantiation in most cases.
+        alias E = OriginalType!EType;
+    else
+        alias E = T;
+    static if (is(E == struct) || is(E == union) || __traits(isStaticArray, E) || !is(typeof(arr[0] is null)))
     {
-        ubyte[] ret = ctfe_alloc(T.sizeof * arr.length);
-        static if (is(T EType == enum)) // Odd style is to avoid template instantiation in most cases.
-            alias E = OriginalType!EType;
-        else
-            alias E = T;
-        static if (is(E == struct) || is(E == union) || __traits(isStaticArray, E) || !is(typeof(arr[0] is null)))
+        size_t offset = 0;
+        foreach (ref cur; arr)
         {
-            size_t offset = 0;
-            foreach (ref cur; arr)
-            {
-                ret[offset .. offset + T.sizeof] = toUbyte(cur)[0 .. T.sizeof];
-                offset += T.sizeof;
-            }
+            ret[offset .. offset + T.sizeof] = toUbyte(cur)[0 .. T.sizeof];
+            offset += T.sizeof;
         }
-        else
-        {
-            foreach (cur; arr)
-                assert(cur is null, "Unable to compute byte representation of non-null pointer at compile time");
-        }
-        return ret;
     }
     else
     {
-        return (cast(const(ubyte)*)(arr.ptr))[0 .. T.sizeof*arr.length];
+        foreach (cur; arr)
+            assert(cur is null, "Unable to compute byte representation of non-null pointer at compile time");
     }
+    return ret;
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref scope T val) if (__traits(isIntegral, T) && !is(T == enum) && !is(T == __vector))
+const(ubyte)[] toUbyte(T)(return scope const T[] arr) if (T.sizeof > 1)
 {
+    pragma(inline, true);
+    return __ctfe ? toUbyte_array_ctfe(arr)
+                  : (cast(const(ubyte)*)(arr.ptr))[0 .. T.sizeof*arr.length];
+}
+
+private const(ubyte)[] toUbyte_integral_ctfe(T)(const return ref scope T val)
+{
+    pragma(inline, false);
     static if (T.sizeof == 1)
     {
-        pragma(inline, true);
-        if (__ctfe)
-        {
-            ubyte[] result = ctfe_alloc(1);
-            result[0] = cast(ubyte) val;
-            return result;
-        }
-        else
-        {
-            return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
-        }
+        ubyte[] result = ctfe_alloc(1);
+        result[0] = cast(ubyte) val;
+        return result;
     }
-    else if (__ctfe)
+    else
     {
         import core.internal.traits : Unqual;
         ubyte[] tmp = ctfe_alloc(T.sizeof);
@@ -715,19 +708,20 @@ const(ubyte)[] toUbyte(T)(const ref scope T val) if (__traits(isIntegral, T) && 
         }
         return tmp;
     }
-    else
-    {
-        return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
-    }
 }
 
 @trusted pure nothrow @nogc
-const(ubyte)[] toUbyte(T)(const ref scope T val) if (is(T == __vector))
+const(ubyte)[] toUbyte(T)(const ref scope T val) if (__traits(isIntegral, T) && !is(T == enum) && !is(T == __vector))
 {
     pragma(inline, true);
-    if (!__ctfe)
-        return (cast(const ubyte*) &val)[0 .. T.sizeof];
-    else static if (is(typeof(val[0]) : void))
+    return __ctfe ? toUbyte_integral_ctfe(val)
+                  : (cast(const ubyte*) &val)[0 .. T.sizeof];
+}
+
+private const(ubyte)[] toUbyte_vector_ctfe(T)(const return ref scope T val)
+{
+    pragma(inline, false);
+    static if (is(typeof(val[0]) : void))
         assert(0, "Unable to compute byte representation of " ~ T.stringof ~ " at compile time.");
     else
     {
@@ -745,18 +739,26 @@ const(ubyte)[] toUbyte(T)(const ref scope T val) if (is(T == __vector))
 }
 
 @trusted pure nothrow @nogc
+const(ubyte)[] toUbyte(T)(const ref scope T val) if (is(T == __vector))
+{
+    pragma(inline, true);
+    return __ctfe ? toUbyte_vector_ctfe(val)
+                  : (cast(const ubyte*) &val)[0 .. T.sizeof];
+}
+
+private const(ubyte)[] toUbyte_enum_ctfe(T)(const return ref scope T val)
+{
+    pragma(inline, false);
+    static if (is(T V == enum)){}
+    return toUbyte(*cast(const V*) &val);
+}
+
+@trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(const ref return scope T val) if (is(T == enum))
 {
     pragma(inline, true);
-    if (__ctfe)
-    {
-        static if (is(T V == enum)){}
-        return toUbyte(*cast(const V*) &val);
-    }
-    else
-    {
-        return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
-    }
+    return __ctfe ? toUbyte_enum_ctfe(val)
+                  : (cast(const(ubyte)*)&val)[0 .. T.sizeof];
 }
 
 nothrow pure @safe unittest
@@ -768,54 +770,50 @@ nothrow pure @safe unittest
     enum ctfe_works = (() { Month x = Month.jan; return toUbyte(x).length > 0; })();
 }
 
+private const(ubyte)[] toUbyte_delegate_ctfe(T)(const return ref scope T val)
+{
+    pragma(inline, false);
+    if (val !is null) assert(0, "Unable to compute byte representation of non-null pointer at compile time");
+    return ctfe_alloc(T.sizeof);
+}
+
 @trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(const ref T val) if (is(T == delegate) || is(T : V*, V) && __traits(getAliasThis, T).length == 0)
 {
     pragma(inline, true);
-    if (__ctfe)
+    return __ctfe ? toUbyte_delegate_ctfe(val)
+                  : (cast(const(ubyte)*)&val)[0 .. T.sizeof];
+}
+
+private const(ubyte)[] toUbyte_aggregate_ctfe(T)(const return ref scope T val)
+{
+    pragma(inline, false);
+    ubyte[] bytes = ctfe_alloc(T.sizeof);
+    foreach (key, ref cur; val.tupleof)
     {
-        if (val !is null) assert(0, "Unable to compute byte representation of non-null pointer at compile time");
-        return ctfe_alloc(T.sizeof);
+        static if (is(typeof(cur) EType == enum)) // Odd style is to avoid template instantiation in most cases.
+            alias CurType = OriginalType!EType;
+        else
+            alias CurType = typeof(cur);
+        static if (is(CurType == struct) || is(CurType == union) || __traits(isStaticArray, CurType) || !is(typeof(cur is null)))
+        {
+            bytes[val.tupleof[key].offsetof .. val.tupleof[key].offsetof + CurType.sizeof] = toUbyte(cur)[];
+        }
+        else
+        {
+            assert(cur is null, "Unable to compute byte representation of non-null reference field at compile time");
+            //skip, because val bytes are zeros
+        }
     }
-    else
-    {
-        return (cast(const(ubyte)*)&val)[0 .. T.sizeof];
-    }
+    return bytes;
 }
 
 @trusted pure nothrow @nogc
 const(ubyte)[] toUbyte(T)(const return ref scope T val) if (is(T == struct) || is(T == union))
 {
     pragma(inline, true);
-    if (__ctfe)
-    {
-        ubyte[] bytes = ctfe_alloc(T.sizeof);
-        foreach (key, ref cur; val.tupleof)
-        {
-            static if (is(typeof(cur) EType == enum)) // Odd style is to avoid template instantiation in most cases.
-                alias CurType = OriginalType!EType;
-            else
-                alias CurType = typeof(cur);
-            static if (is(CurType == struct) || is(CurType == union) || __traits(isStaticArray, CurType) || !is(typeof(cur is null)))
-            {
-                bytes[val.tupleof[key].offsetof .. val.tupleof[key].offsetof + CurType.sizeof] = toUbyte(cur)[];
-            }
-            else
-            {
-                assert(cur is null, "Unable to compute byte representation of non-null reference field at compile time");
-                //skip, because val bytes are zeros
-            }
-        }
-        return bytes;
-    }
-    else
-    {
-        // We're escaping a reference to `val` here because we cannot express
-        // ref return + scope, it's currently seen as ref + return scope
-        // https://issues.dlang.org/show_bug.cgi?id=22541
-        // Once fixed, the @system lambda should be removed
-        return (() @system => (cast(const(ubyte)*)&val)[0 .. T.sizeof])();
-    }
+    return __ctfe ? toUbyte_aggregate_ctfe(val)
+                  : (cast(const(ubyte)*)&val)[0 .. T.sizeof];
 }
 
 // Strips off all `enum`s from type `T`.

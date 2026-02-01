@@ -24,9 +24,11 @@ import dmd.dscope;
 import dmd.dsymbol;
 import dmd.errors;
 import dmd.expression;
+import dmd.expressionsem;
 import dmd.func;
 import dmd.funcsem;
 import dmd.globals : FeatureState;
+import dmd.hdrgen : toErrMsg;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
@@ -36,7 +38,7 @@ import dmd.printast;
 import dmd.rootobject;
 import dmd.safe;
 import dmd.tokens;
-import dmd.typesem : hasPointers, parameterStorageClass;
+import dmd.typesem;
 import dmd.visitor;
 import dmd.arraytypes;
 
@@ -46,14 +48,14 @@ private:
 package(dmd) struct EscapeState
 {
     // Maps `sequenceNumber` of a `VarDeclaration` to an object that contains the
-    // reason it failed to infer `scope`
+    // reason it inferred or didn't infer `scope` for supplemental error messages
     // https://issues.dlang.org/show_bug.cgi?id=23295
-    private __gshared RootObject[int] scopeInferFailure;
+    private __gshared RootObject[int] scopeInferReason;
 
     /// Called by `initDMD` / `deinitializeDMD` to reset global state
     static void reset()
     {
-        scopeInferFailure = null;
+        scopeInferReason = null;
     }
 }
 
@@ -282,33 +284,38 @@ bool checkAssocArrayLiteralEscape(ref Scope sc, AssocArrayLiteralExp ae, bool ga
 }
 
 /**
- * A `scope` variable was assigned to non-scope parameter `v`.
- * If applicable, print why the parameter was not inferred `scope`.
+ * An error occured due to `v` either being or not being `scope`.
+ * If applicable, print why the `v` was inferred that way.
  *
  * Params:
  *    printFunc = error/deprecation print function to use
  *    v = parameter that was not inferred
  *    recursionLimit = recursion limit for printing the reason
+ *    positive = true for telling why v is scope, false for telling why v is not scope
  */
-private
-void printScopeFailure(E)(E printFunc, VarDeclaration v, int recursionLimit)
+public
+void printScopeReason(E)(E printFunc, VarDeclaration v, int recursionLimit, bool positive)
 {
     recursionLimit--;
     if (recursionLimit < 0 || !v)
         return;
 
-    if (RootObject* o = v.sequenceNumber in EscapeState.scopeInferFailure)
+    if (RootObject* o = v.sequenceNumber in EscapeState.scopeInferReason)
     {
         switch ((*o).dyncast())
         {
             case DYNCAST.expression:
                 Expression e = cast(Expression) *o;
-                printFunc(e.loc, "which is not `scope` because of `%s`", e.toChars());
+                if (positive)
+                    printFunc(e.loc, "`%s` inferred `scope` because of `%s`", v.toErrMsg(), e.toErrMsg());
+                else
+                    printFunc(e.loc, "`%s` is not `scope` because of `%s`", v.toErrMsg(), e.toErrMsg());
                 break;
             case DYNCAST.dsymbol:
                 VarDeclaration v1 = cast(VarDeclaration) *o;
-                printFunc(v1.loc, "which is assigned to non-scope parameter `%s`", v1.toChars());
-                printScopeFailure(printFunc, v1, recursionLimit);
+                assert(!positive);
+                printFunc(v1.loc, "`%s` is assigned to non-scope parameter `%s`", v.toErrMsg(), v1.toErrMsg());
+                printScopeReason(printFunc, v1, recursionLimit, positive);
                 break;
             default:
                 assert(0);
@@ -368,11 +375,12 @@ bool checkParamArgumentEscape(ref Scope sc, FuncDeclaration fdc, Identifier parI
             (desc ~ " `%s` assigned to non-scope anonymous parameter");
 
         if (isThis ?
-            sc.setUnsafeDIP1000(gag, arg.loc, msg, arg, fdc.toParent2(), fdc) :
-            sc.setUnsafeDIP1000(gag, arg.loc, msg, v, parId ? parId : fdc, fdc))
+            sc.setUnsafeDIP1000(gag, arg.loc, vPar, msg, arg, fdc.toParent2(), fdc) :
+            sc.setUnsafeDIP1000(gag, arg.loc, vPar, msg, v, parId ? parId : fdc, fdc))
         {
             result = true;
-            printScopeFailure(previewSupplementalFunc(sc.isDeprecated(), sc.useDIP1000), vPar, 10);
+            printScopeReason(previewSupplementalFunc(sc.isDeprecated(), sc.useDIP1000), vPar, 10, false);
+            printScopeReason(previewSupplementalFunc(sc.isDeprecated(), sc.useDIP1000), v, 10, true);
         }
     }
 
@@ -714,7 +722,7 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
             if (vaIsFirstRef && v.isParameter() && v.isReturn())
             {
                 // va=v, where v is `return scope`
-                if (inferScope(va))
+                if (inferScope(va, e))
                     return;
             }
 
@@ -748,7 +756,7 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
 
             // v = scope, va should be scope as well
             const vaWasScope = va && va.isScope();
-            if (inferScope(va))
+            if (inferScope(va, e))
             {
                 // In case of `scope local = returnScopeParam`, do not infer return scope for `x`
                 if (!vaWasScope && v.isReturn() && !va.isReturn())
@@ -822,7 +830,7 @@ bool checkAssignEscape(ref Scope sc, Expression e, bool gag, bool byRef)
         if (p != sc.func)
             return;
 
-        if (inferScope(va))
+        if (inferScope(va, e))
         {
             if (v.isReturn() && !va.isReturn())
                 va.storage_class |= STC.return_ | STC.returninferred;
@@ -1210,8 +1218,12 @@ private bool checkReturnEscapeImpl(ref Scope sc, Expression e, bool refs, bool g
                 else
                 {
                     // https://issues.dlang.org/show_bug.cgi?id=17029
-                    result |= sc.setUnsafeDIP1000(gag, e.loc, "returning scope variable `%s`", v);
-                    return;
+                    if (sc.setUnsafeDIP1000(gag, e.loc, "returning scope variable `%s`", v))
+                    {
+                        printScopeReason(previewSupplementalFunc(sc.isDeprecated(), sc.useDIP1000), v, 10, true);
+                        result = true;
+                        return;
+                    }
                 }
             }
         }
@@ -1385,16 +1397,19 @@ private bool checkReturnEscapeImpl(ref Scope sc, Expression e, bool refs, bool g
  *
  * Params:
  *      va = variable to infer scope for
+ *      reason = optional Expression that causes `va` to infer scope, used for supplemental error message
  * Returns: `true` if succesful or already `scope`
  */
 private
-bool inferScope(VarDeclaration va)
+bool inferScope(VarDeclaration va, RootObject reason)
 {
     if (!va)
         return false;
     if (!va.isDataseg() && va.maybeScope && !va.isScope())
     {
         //printf("inferring scope for %s\n", va.toChars());
+        if (reason)
+            EscapeState.scopeInferReason[va.sequenceNumber] = reason;
         va.maybeScope = false;
         va.storage_class |= STC.scope_ | STC.scopeinferred;
         return true;
@@ -2010,7 +2025,7 @@ private void doNotInferScope(VarDeclaration v, RootObject o)
     {
         v.maybeScope = false;
         if (o && v.isParameter())
-            EscapeState.scopeInferFailure[v.sequenceNumber] = o;
+            EscapeState.scopeInferReason[v.sequenceNumber] = o;
     }
 }
 
@@ -2048,7 +2063,7 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
         foreach (u, p; f.parameterList)
         {
             auto v = (*funcdecl.parameters)[u];
-            if (!v.isScope() && v.type.hasPointers() && inferScope(v))
+            if (!v.isScope() && v.type.hasPointers() && inferScope(v, null))
             {
                 //printf("Inferring scope for %s\n", v.toChars());
                 p.storageClass |= STC.scope_ | STC.scopeinferred;
@@ -2058,7 +2073,7 @@ void finishScopeParamInference(FuncDeclaration funcdecl, ref TypeFunction f)
 
     if (funcdecl.vthis)
     {
-        inferScope(funcdecl.vthis);
+        inferScope(funcdecl.vthis, null);
         f.isScopeQual = funcdecl.vthis.isScope();
         f.isScopeInferred = !!(funcdecl.vthis.storage_class & STC.scopeinferred);
     }
@@ -2197,6 +2212,14 @@ bool setUnsafeDIP1000(ref Scope sc, bool gag, Loc loc, const(char)* msg,
     RootObject[] args...)
 {
     return setUnsafePreview(&sc, sc.useDIP1000, gag, loc, msg, args);
+}
+
+/// Overload for scope violations that also stores the variable whose scope status caused the issue
+private
+bool setUnsafeDIP1000(ref Scope sc, bool gag, Loc loc, VarDeclaration scopeVar,
+    const(char)* msg, RootObject[] args...)
+{
+    return setUnsafePreview(&sc, sc.useDIP1000, gag, loc, scopeVar, msg, args);
 }
 
 /***************************************

@@ -1,8 +1,10 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/test13867.d(12): Error: function `void test13867.X.blah()` does not override any function, did you mean to override `extern (C++) void test13867.Base.blah()`?
-fail_compilation/test13867.d(19): Error: function `void test13867.Z.blah()` does not override any function, did you mean to override `extern (C++) void test13867.Base.blah()`?
+fail_compilation/test13867.d(14): Error: function `void test13867.X.blah()` does not override any function
+fail_compilation/test13867.d(11):        did you mean to override `extern (C++) void test13867.Base.blah()`?
+fail_compilation/test13867.d(21): Error: function `void test13867.Z.blah()` does not override any function
+fail_compilation/test13867.d(11):        did you mean to override `extern (C++) void test13867.Base.blah()`?
 ---
 */
 extern (C++) class Base {

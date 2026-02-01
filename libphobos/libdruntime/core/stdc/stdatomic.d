@@ -165,27 +165,23 @@ void atomic_flag_clear_explicit_impl()(atomic_flag* obj, memory_order order)
 {
     assert(obj !is null);
 
-    final switch (order)
-    {
-        case memory_order.memory_order_relaxed:
-            atomicStore!(memory_order.memory_order_relaxed)(&obj.b, false);
-            break;
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    order == memory_order.memory_order_relaxed ?
+        atomicStore!(memory_order.memory_order_relaxed)(&obj.b, false) :
 
-        case memory_order.memory_order_acquire:
-        case memory_order.memory_order_acq_rel:
-            // Ideally this would error at compile time but alas it is not an intrinsic.
-            // Note: this is not a valid memory order for this operation.
-            atomicStore!(memory_order.memory_order_seq_cst)(&obj.b, false);
-            break;
+    order == memory_order.memory_order_acquire ||
+    order == memory_order.memory_order_acq_rel ?
+        // Ideally this would error at compile time but alas it is not an intrinsic.
+        // Note: this is not a valid memory order for this operation.
+        atomicStore!(memory_order.memory_order_seq_cst)(&obj.b, false) :
 
-        case memory_order.memory_order_release:
-            atomicStore!(memory_order.memory_order_release)(&obj.b, false);
-            break;
+    order == memory_order.memory_order_release ?
+        atomicStore!(memory_order.memory_order_release)(&obj.b, false) :
 
-        case memory_order.memory_order_seq_cst:
-            atomicStore(&obj.b, false);
-            break;
-    }
+    order == memory_order.memory_order_seq_cst ?
+        atomicStore(&obj.b, false) :
+
+    cast(void) assert(0);
 }
 
 ///
@@ -210,25 +206,26 @@ bool atomic_flag_test_and_set_explicit_impl()(atomic_flag* obj, memory_order ord
 {
     assert(obj !is null);
 
-    final switch (order)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomicExchange!(memory_order.memory_order_relaxed)(&obj.b, true);
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    return
+        order == memory_order.memory_order_relaxed ?
+            atomicExchange!(memory_order.memory_order_relaxed)(&obj.b, true) :
 
-        case memory_order.memory_order_acquire:
+        order == memory_order.memory_order_acquire ?
             // Ideally this would error at compile time but alas it is not an intrinsic.
             // Note: this is not a valid memory order for this operation.
-            return atomicExchange!(memory_order.memory_order_seq_cst)(&obj.b, true);
+            atomicExchange!(memory_order.memory_order_seq_cst)(&obj.b, true) :
 
-        case memory_order.memory_order_release:
-            return atomicExchange!(memory_order.memory_order_release)(&obj.b, true);
+         order == memory_order.memory_order_release ?
+            atomicExchange!(memory_order.memory_order_release)(&obj.b, true) :
 
-        case memory_order.memory_order_acq_rel:
-            return atomicExchange!(memory_order.memory_order_acq_rel)(&obj.b, true);
+         order == memory_order.memory_order_acq_rel ?
+            atomicExchange!(memory_order.memory_order_acq_rel)(&obj.b, true) :
 
-        case memory_order.memory_order_seq_cst:
-            return atomicExchange(&obj.b, true);
-    }
+         order == memory_order.memory_order_seq_cst ?
+            atomicExchange(&obj.b, true) :
+
+         assert(0);
 }
 
 ///
@@ -271,28 +268,24 @@ A kill_dependency(A)(A y) @trusted
 pragma(inline, true)
 void atomic_signal_fence_impl()(memory_order order)
 {
-    final switch (order)
-    {
-        case memory_order.memory_order_relaxed:
-            // This is a no-op operation for relaxed memory orders.
-            break;
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    order == memory_order.memory_order_relaxed ?
+        // This is a no-op operation for relaxed memory orders.
+        cast(void)0 :
 
-        case memory_order.memory_order_acquire:
-            atomicSignalFence!(memory_order.memory_order_acquire);
-            break;
+    order == memory_order.memory_order_acquire ?
+        atomicSignalFence!(memory_order.memory_order_acquire) :
 
-        case memory_order.memory_order_release:
-            atomicSignalFence!(memory_order.memory_order_release);
-            break;
+    order == memory_order.memory_order_release ?
+        atomicSignalFence!(memory_order.memory_order_release) :
 
-        case memory_order.memory_order_acq_rel:
-            atomicSignalFence!(memory_order.memory_order_acq_rel);
-            break;
+    order == memory_order.memory_order_acq_rel ?
+        atomicSignalFence!(memory_order.memory_order_acq_rel) :
 
-        case memory_order.memory_order_seq_cst:
-            atomicSignalFence!(memory_order.memory_order_seq_cst);
-            break;
-    }
+    order == memory_order.memory_order_seq_cst ?
+        atomicSignalFence!(memory_order.memory_order_seq_cst) :
+
+    cast(void) assert(0);
 }
 
 ///
@@ -305,28 +298,24 @@ unittest
 pragma(inline, true)
 void atomic_thread_fence_impl()(memory_order order)
 {
-    final switch (order)
-    {
-        case memory_order.memory_order_relaxed:
-            // This is a no-op operation for relaxed memory orders.
-            break;
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    order == memory_order.memory_order_relaxed ?
+        // This is a no-op operation for relaxed memory orders.
+        cast(void)0 :
 
-        case memory_order.memory_order_acquire:
-            atomicFence!(memory_order.memory_order_acquire);
-            break;
+    order == memory_order.memory_order_acquire ?
+        atomicFence!(memory_order.memory_order_acquire) :
 
-        case memory_order.memory_order_release:
-            atomicFence!(memory_order.memory_order_release);
-            break;
+    order == memory_order.memory_order_release ?
+        atomicFence!(memory_order.memory_order_release) :
 
-        case memory_order.memory_order_acq_rel:
-            atomicFence!(memory_order.memory_order_acq_rel);
-            break;
+    order == memory_order.memory_order_acq_rel ?
+        atomicFence!(memory_order.memory_order_acq_rel) :
 
-        case memory_order.memory_order_seq_cst:
-            atomicFence!(memory_order.memory_order_seq_cst);
-            break;
-    }
+    order == memory_order.memory_order_seq_cst ?
+        atomicFence!(memory_order.memory_order_seq_cst) :
+
+    cast(void) assert(0);
 }
 
 ///
@@ -437,27 +426,23 @@ void atomic_store_explicit_impl(A, C)(shared(A)* obj, C desired, memory_order or
 {
     assert(obj !is null);
 
-    final switch (order)
-    {
-        case memory_order.memory_order_relaxed:
-            atomicStore!(memory_order.memory_order_relaxed)(cast(A*)obj, cast(A)desired);
-            break;
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    order == memory_order.memory_order_relaxed ?
+        atomicStore!(memory_order.memory_order_relaxed)(cast(A*)obj, cast(A)desired) :
 
-        case memory_order.memory_order_acquire:
-        case memory_order.memory_order_acq_rel:
-            // Ideally this would error at compile time but alas it is not an intrinsic.
-            // Note: this is not a valid memory order for this operation.
-            atomicStore!(memory_order.memory_order_release)(cast(A*)obj, cast(A)desired);
-            break;
+    order == memory_order.memory_order_acquire ||
+    order == memory_order.memory_order_acq_rel ?
+        // Ideally this would error at compile time but alas it is not an intrinsic.
+        // Note: this is not a valid memory order for this operation.
+        atomicStore!(memory_order.memory_order_release)(cast(A*)obj, cast(A)desired) :
 
-        case memory_order.memory_order_release:
-            atomicStore!(memory_order.memory_order_release)(cast(A*)obj, cast(A)desired);
-            break;
+    order == memory_order.memory_order_release ?
+        atomicStore!(memory_order.memory_order_release)(cast(A*)obj, cast(A)desired) :
 
-        case memory_order.memory_order_seq_cst:
-            atomicStore!(memory_order.memory_order_seq_cst)(cast(A*)obj, cast(A)desired);
-            break;
-    }
+    order == memory_order.memory_order_seq_cst ?
+        atomicStore!(memory_order.memory_order_seq_cst)(cast(A*)obj, cast(A)desired) :
+
+    cast(void) assert(0);
 }
 
 ///
@@ -501,23 +486,24 @@ A atomic_load_explicit_impl(A)(const shared(A)* obj, memory_order order) @truste
 {
     assert(obj !is null);
 
-    final switch (order)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomicLoad!(memory_order.memory_order_relaxed)(cast(A*)obj);
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    return
+        order == memory_order.memory_order_relaxed ?
+            atomicLoad!(memory_order.memory_order_relaxed)(cast(A*)obj) :
 
-        case memory_order.memory_order_acquire:
-            return atomicLoad!(memory_order.memory_order_acquire)(cast(A*)obj);
+        order == memory_order.memory_order_acquire ?
+            atomicLoad!(memory_order.memory_order_acquire)(cast(A*)obj) :
 
-        case memory_order.memory_order_release:
-        case memory_order.memory_order_acq_rel:
+        order == memory_order.memory_order_release ||
+        order == memory_order.memory_order_acq_rel ?
             // Ideally this would error at compile time but alas it is not an intrinsic.
             // Note: this is not a valid memory order for this operation.
-            return atomicLoad!(memory_order.memory_order_acquire)(cast(A*)obj);
+            atomicLoad!(memory_order.memory_order_acquire)(cast(A*)obj) :
 
-        case memory_order.memory_order_seq_cst:
-            return atomicLoad!(memory_order.memory_order_seq_cst)(cast(A*)obj);
-    }
+        order == memory_order.memory_order_seq_cst ?
+            atomicLoad!(memory_order.memory_order_seq_cst)(cast(A*)obj) :
+
+        assert(0);
 }
 
 ///
@@ -554,25 +540,26 @@ A atomic_exchange_explicit_impl(A, C)(shared(A)* obj, C desired, memory_order or
 {
     assert(obj !is null);
 
-    final switch (order)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomicExchange!(memory_order.memory_order_relaxed)(cast(A*)obj, cast(A)desired);
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    return
+        order == memory_order.memory_order_relaxed ?
+            atomicExchange!(memory_order.memory_order_relaxed)(cast(A*)obj, cast(A)desired) :
 
-        case memory_order.memory_order_acquire:
+        order == memory_order.memory_order_acquire ?
             // Ideally this would error at compile time but alas it is not an intrinsic.
             // Note: this is not a valid memory order for this operation.
-            return atomicExchange!(memory_order.memory_order_seq_cst)(cast(A*)obj, cast(A)desired);
+            atomicExchange!(memory_order.memory_order_seq_cst)(cast(A*)obj, cast(A)desired) :
 
-        case memory_order.memory_order_release:
-            return atomicExchange!(memory_order.memory_order_release)(cast(A*)obj, cast(A)desired);
+        order == memory_order.memory_order_release ?
+            atomicExchange!(memory_order.memory_order_release)(cast(A*)obj, cast(A)desired) :
 
-        case memory_order.memory_order_acq_rel:
-            return atomicExchange!(memory_order.memory_order_acq_rel)(cast(A*)obj, cast(A)desired);
+        order == memory_order.memory_order_acq_rel ?
+            atomicExchange!(memory_order.memory_order_acq_rel)(cast(A*)obj, cast(A)desired) :
 
-        case memory_order.memory_order_seq_cst:
-            return atomicExchange!(memory_order.memory_order_seq_cst)(cast(A*)obj, cast(A)desired);
-    }
+        order == memory_order.memory_order_seq_cst ?
+            atomicExchange!(memory_order.memory_order_seq_cst)(cast(A*)obj, cast(A)desired) :
+
+        assert(0);
 }
 
 ///
@@ -641,19 +628,19 @@ bool atomic_compare_exchange_strong_explicit_impl(A, B, C)(shared(A)* obj, B* ex
     assert(obj !is null);
     // NOTE: To not have to deal with all invalid cases, the failure model is ignored for now.
 
-    final switch(succ)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomicCompareExchangeStrong!(memory_order.memory_order_relaxed, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-        case memory_order.memory_order_acquire:
-            return atomicCompareExchangeStrong!(memory_order.memory_order_acquire, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-        case memory_order.memory_order_release:
-            return atomicCompareExchangeStrong!(memory_order.memory_order_release, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-        case memory_order.memory_order_acq_rel:
-            return atomicCompareExchangeStrong!(memory_order.memory_order_acq_rel, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-        case memory_order.memory_order_seq_cst:
-            return atomicCompareExchangeStrong!(memory_order.memory_order_seq_cst, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-    }
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    return
+        succ == memory_order.memory_order_relaxed ?
+            atomicCompareExchangeStrong!(memory_order.memory_order_relaxed, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        succ == memory_order.memory_order_acquire ?
+            atomicCompareExchangeStrong!(memory_order.memory_order_acquire, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        succ == memory_order.memory_order_release ?
+            atomicCompareExchangeStrong!(memory_order.memory_order_release, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        succ == memory_order.memory_order_acq_rel ?
+            atomicCompareExchangeStrong!(memory_order.memory_order_acq_rel, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        succ == memory_order.memory_order_seq_cst ?
+            atomicCompareExchangeStrong!(memory_order.memory_order_seq_cst, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        assert(0);
 }
 
 ///
@@ -689,19 +676,19 @@ bool atomic_compare_exchange_weak_explicit_impl(A, B, C)(shared(A)* obj, B* expe
     assert(obj !is null);
     // NOTE: To not have to deal with all invalid cases, the failure model is ignored for now.
 
-    final switch(succ)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomicCompareExchangeWeak!(memory_order.memory_order_relaxed, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-        case memory_order.memory_order_acquire:
-            return atomicCompareExchangeWeak!(memory_order.memory_order_acquire, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-        case memory_order.memory_order_release:
-            return atomicCompareExchangeWeak!(memory_order.memory_order_release, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-        case memory_order.memory_order_acq_rel:
-            return atomicCompareExchangeWeak!(memory_order.memory_order_acq_rel, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-        case memory_order.memory_order_seq_cst:
-            return atomicCompareExchangeWeak!(memory_order.memory_order_seq_cst, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired);
-    }
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    return
+        succ == memory_order.memory_order_relaxed ?
+            atomicCompareExchangeWeak!(memory_order.memory_order_relaxed, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        succ == memory_order.memory_order_acquire ?
+            atomicCompareExchangeWeak!(memory_order.memory_order_acquire, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        succ == memory_order.memory_order_release ?
+            atomicCompareExchangeWeak!(memory_order.memory_order_release, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        succ == memory_order.memory_order_acq_rel ?
+            atomicCompareExchangeWeak!(memory_order.memory_order_acq_rel, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        succ == memory_order.memory_order_seq_cst ?
+            atomicCompareExchangeWeak!(memory_order.memory_order_seq_cst, memory_order.memory_order_relaxed)(cast(B*)obj, expected, cast(B)desired) :
+        assert(0);
 }
 
 ///
@@ -774,19 +761,19 @@ A atomic_fetch_add_explicit_impl(A, M)(shared(A)* obj, M arg, memory_order order
 {
     assert(obj !is null);
 
-    final switch(order)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomic_fetch_op!(memory_order.memory_order_relaxed, "+=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acquire:
-            return atomic_fetch_op!(memory_order.memory_order_acquire, "+=")(cast(A*)obj, arg);
-        case memory_order.memory_order_release:
-            return atomic_fetch_op!(memory_order.memory_order_release, "+=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acq_rel:
-            return atomic_fetch_op!(memory_order.memory_order_acq_rel, "+=")(cast(A*)obj, arg);
-        case memory_order.memory_order_seq_cst:
-            return atomic_fetch_op!(memory_order.memory_order_seq_cst, "+=")(cast(A*)obj, arg);
-    }
+    // use series of ternary expressions instead of switch to help the dmd inliner
+    return
+        order == memory_order.memory_order_relaxed ?
+            atomic_fetch_op!(memory_order.memory_order_relaxed, "+=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acquire ?
+            atomic_fetch_op!(memory_order.memory_order_acquire, "+=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_release ?
+            atomic_fetch_op!(memory_order.memory_order_release, "+=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acq_rel ?
+            atomic_fetch_op!(memory_order.memory_order_acq_rel, "+=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_seq_cst ?
+            atomic_fetch_op!(memory_order.memory_order_seq_cst, "+=")(cast(A*)obj, arg) :
+        assert(0);
 }
 
 ///
@@ -807,19 +794,18 @@ A atomic_fetch_sub_explicit_impl(A, M)(shared(A)* obj, M arg, memory_order order
 {
     assert(obj !is null);
 
-    final switch(order)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomic_fetch_op!(memory_order.memory_order_relaxed, "-=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acquire:
-            return atomic_fetch_op!(memory_order.memory_order_acquire, "-=")(cast(A*)obj, arg);
-        case memory_order.memory_order_release:
-            return atomic_fetch_op!(memory_order.memory_order_release, "-=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acq_rel:
-            return atomic_fetch_op!(memory_order.memory_order_acq_rel, "-=")(cast(A*)obj, arg);
-        case memory_order.memory_order_seq_cst:
-            return atomic_fetch_op!(memory_order.memory_order_seq_cst, "-=")(cast(A*)obj, arg);
-    }
+    return
+        order == memory_order.memory_order_relaxed ?
+            atomic_fetch_op!(memory_order.memory_order_relaxed, "-=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acquire ?
+            atomic_fetch_op!(memory_order.memory_order_acquire, "-=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_release ?
+            atomic_fetch_op!(memory_order.memory_order_release, "-=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acq_rel ?
+            atomic_fetch_op!(memory_order.memory_order_acq_rel, "-=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_seq_cst ?
+            atomic_fetch_op!(memory_order.memory_order_seq_cst, "-=")(cast(A*)obj, arg) :
+        assert(0);
 }
 
 ///
@@ -856,19 +842,18 @@ A atomic_fetch_or_explicit_impl(A, M)(shared(A)* obj, M arg, memory_order order)
 {
     assert(obj !is null);
 
-    final switch(order)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomic_fetch_op!(memory_order.memory_order_relaxed, "|=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acquire:
-            return atomic_fetch_op!(memory_order.memory_order_acquire, "|=")(cast(A*)obj, arg);
-        case memory_order.memory_order_release:
-            return atomic_fetch_op!(memory_order.memory_order_release, "|=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acq_rel:
-            return atomic_fetch_op!(memory_order.memory_order_acq_rel, "|=")(cast(A*)obj, arg);
-        case memory_order.memory_order_seq_cst:
-            return atomic_fetch_op!(memory_order.memory_order_seq_cst, "|=")(cast(A*)obj, arg);
-    }
+    return
+        order == memory_order.memory_order_relaxed ?
+            atomic_fetch_op!(memory_order.memory_order_relaxed, "|=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acquire ?
+            atomic_fetch_op!(memory_order.memory_order_acquire, "|=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_release ?
+            atomic_fetch_op!(memory_order.memory_order_release, "|=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acq_rel ?
+            atomic_fetch_op!(memory_order.memory_order_acq_rel, "|=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_seq_cst ?
+            atomic_fetch_op!(memory_order.memory_order_seq_cst, "|=")(cast(A*)obj, arg) :
+        assert(0);
 }
 
 ///
@@ -901,19 +886,18 @@ A atomic_fetch_xor_explicit_impl(A, M)(shared(A)* obj, M arg, memory_order order
 {
     assert(obj !is null);
 
-    final switch(order)
-    {
-        case memory_order.memory_order_relaxed:
-           return atomic_fetch_op!(memory_order.memory_order_relaxed, "^=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acquire:
-            return atomic_fetch_op!(memory_order.memory_order_acquire, "^=")(cast(A*)obj, arg);
-        case memory_order.memory_order_release:
-            return atomic_fetch_op!(memory_order.memory_order_release, "^=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acq_rel:
-            return atomic_fetch_op!(memory_order.memory_order_acq_rel, "^=")(cast(A*)obj, arg);
-        case memory_order.memory_order_seq_cst:
-            return atomic_fetch_op!(memory_order.memory_order_seq_cst, "^=")(cast(A*)obj, arg);
-    }
+    return
+        order == memory_order.memory_order_relaxed ?
+            atomic_fetch_op!(memory_order.memory_order_relaxed, "^=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acquire ?
+            atomic_fetch_op!(memory_order.memory_order_acquire, "^=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_release ?
+            atomic_fetch_op!(memory_order.memory_order_release, "^=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acq_rel ?
+            atomic_fetch_op!(memory_order.memory_order_acq_rel, "^=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_seq_cst ?
+            atomic_fetch_op!(memory_order.memory_order_seq_cst, "^=")(cast(A*)obj, arg) :
+        assert(0);
 }
 
 ///
@@ -946,19 +930,18 @@ A atomic_fetch_and_explicit_impl(A, M)(shared(A)* obj, M arg, memory_order order
 {
     assert(obj !is null);
 
-    final switch(order)
-    {
-        case memory_order.memory_order_relaxed:
-            return atomic_fetch_op!(memory_order.memory_order_relaxed, "&=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acquire:
-            return atomic_fetch_op!(memory_order.memory_order_acquire, "&=")(cast(A*)obj, arg);
-        case memory_order.memory_order_release:
-            return atomic_fetch_op!(memory_order.memory_order_release, "&=")(cast(A*)obj, arg);
-        case memory_order.memory_order_acq_rel:
-            return atomic_fetch_op!(memory_order.memory_order_acq_rel, "&=")(cast(A*)obj, arg);
-        case memory_order.memory_order_seq_cst:
-            return atomic_fetch_op!(memory_order.memory_order_seq_cst, "&=")(cast(A*)obj, arg);
-    }
+    return
+        order == memory_order.memory_order_relaxed ?
+            atomic_fetch_op!(memory_order.memory_order_relaxed, "&=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acquire ?
+            atomic_fetch_op!(memory_order.memory_order_acquire, "&=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_release ?
+            atomic_fetch_op!(memory_order.memory_order_release, "&=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_acq_rel ?
+            atomic_fetch_op!(memory_order.memory_order_acq_rel, "&=")(cast(A*)obj, arg) :
+        order == memory_order.memory_order_seq_cst ?
+            atomic_fetch_op!(memory_order.memory_order_seq_cst, "&=")(cast(A*)obj, arg) :
+        assert(0);
 }
 
 ///
@@ -971,11 +954,11 @@ unittest
 
 private:
 
-pragma(inline, true)
 A atomic_fetch_op(memory_order order, string op, A, M)(A* obj, M arg) @trusted
 {
     static if (is(A : ulong) && (op == "+=" || op == "-="))
     {
+        pragma(inline, true)
         // these cannot handle floats
         static if (op == "+=")
         {

@@ -5,8 +5,8 @@ TEST_OUTPUT:
 fail_compilation/systemvariables_void_init.d(48): Error: `void` initializing a type with unsafe bit patterns is not allowed in a `@safe` function
 fail_compilation/systemvariables_void_init.d(49): Error: `void` initializing a type with unsafe bit patterns is not allowed in a `@safe` function
 fail_compilation/systemvariables_void_init.d(50): Error: `void` initializing a type with unsafe bit patterns is not allowed in a `@safe` function
-fail_compilation/systemvariables_void_init.d(51): Error: void intializing a bool (which must always be 0 or 1) is not allowed in a `@safe` function
-fail_compilation/systemvariables_void_init.d(52): Error: void intializing a bool (which must always be 0 or 1) is not allowed in a `@safe` function
+fail_compilation/systemvariables_void_init.d(51): Error: `void` initializing a `bool` (which must always be 0 or 1) is not allowed in a `@safe` function
+fail_compilation/systemvariables_void_init.d(52): Error: `void` initializing a `bool` (which must always be 0 or 1) is not allowed in a `@safe` function
 fail_compilation/systemvariables_void_init.d(53): Error: `void` initializing a type with unsafe bit patterns is not allowed in a `@safe` function
 fail_compilation/systemvariables_void_init.d(54): Error: `void` initializing a type with unsafe bit patterns is not allowed in a `@safe` function
 ---

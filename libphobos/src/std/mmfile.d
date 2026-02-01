@@ -422,6 +422,7 @@ class MmFile
         version (Windows)
         {
             FlushViewOfFile(data.ptr, data.length);
+            FlushFileBuffers(hFile);
         }
         else version (Posix)
         {

@@ -39,8 +39,6 @@ class RootObject
 public:
     RootObject() { }
 
-    virtual bool equals(const RootObject * const o) const;
-
     /**
      * Pretty-print an Object. Useful for debugging the old-fashioned way.
      */

@@ -82,8 +82,12 @@ Returns:
     found value plus one is returned.
 
 See_Also:
-$(REF_ALTTEXT find, find, std,algorithm,searching) and $(REF_ALTTEXT canFind, canFind, std,algorithm,searching) for finding a value in a
-range.
+    $(UL
+    $(LI $(REF_SHORT find, std,algorithm,searching) and
+    $(REF_SHORT canFind, std,algorithm,searching) for finding a value in a range.)
+    $(LI $(REF_ALTTEXT `value in iota(start, end)`, iota, std,range) to find a value in
+    a particular interval.)
+    )
 */
 uint among(alias pred = (a, b) => a == b, Value, Values...)
     (Value value, Values values)
@@ -211,31 +215,32 @@ private template indexOfFirstOvershadowingChoiceOnLast(choices...)
 }
 
 /**
-Executes and returns one of a collection of handlers based on the type of the
-switch object.
+Executes one of a series of handlers based on the dynamic type of a class instance.
 
-The first choice that `switchObject` can be casted to the type
-of argument it accepts will be called with `switchObject` casted to that
-type, and the value it'll return will be returned by `castSwitch`.
+$(P
+`switchObject`'s dynamic type is checked for compatibility with the argument type of each
+choice in turn until a match is found. When there's a match, the choice will be called with
+`switchObject` cast to that type. If the choice returns a value, `castSwitch` will return it.
+)
+- If one choice's return type is void and one can return a value, `SwitchError`
+  will be thrown if the void handler was matched and completed execution without throwing.
+- A void handler is allowed to return when all the choices' return types convert to void -
+  in that case, `castSwitch` itself will return void.
+- A choice's return type can be `noreturn` (e.g. when a handler always throws an exception).
 
-If a choice's return type is void, the choice must throw an exception, unless
-all the choices are void. In that case, castSwitch itself will return void.
-
-Throws: If none of the choice matches, a `SwitchError` will be thrown.  $(D
-SwitchError) will also be thrown if not all the choices are void and a void
-choice was executed without throwing anything.
+Throws: If none of the choices match, a `SwitchError` will be thrown.  $(D
+SwitchError) will also be thrown if one choice can return a value but a void
+choice was matched and completed execution.
 
 Params:
-    choices = The `choices` needs to be composed of function or delegate
-        handlers that accept one argument. There can also be a choice that
-        accepts zero arguments. That choice will be invoked if the $(D
+    choices = A sequence of function and/or delegate
+        handlers that each accept one argument. There can also be one choice that
+        accepts zero arguments, which will be invoked if the $(D
         switchObject) is null.
     switchObject = the object against which the tests are being made.
 
 Returns:
-    The value of the selected choice.
-
-Note: `castSwitch` can only be used with object types.
+    The return value of the selected choice.
 */
 auto castSwitch(choices...)(Object switchObject)
 {
@@ -269,7 +274,7 @@ auto castSwitch(choices...)(Object switchObject)
             {
                 alias CastClass = choiceParameterTypes[0];
                 static assert(is(CastClass == class) || is(CastClass == interface),
-                        "A choice handler can have only class or interface typed argument.");
+                        "A choice handler can only have a class or interface argument type.");
 
                 // Check for overshadowing:
                 immutable indexOfOvershadowingChoice =
@@ -380,8 +385,7 @@ auto castSwitch(choices...)(Object switchObject)
     class A
     {
         int a;
-        this(int a) {this.a = a;}
-        @property int i() { return a; }
+        this(int a) { this.a = a; }
     }
     interface I { }
     class B : I { }
@@ -402,22 +406,33 @@ auto castSwitch(choices...)(Object switchObject)
     assert(results[2] == "null reference");
 }
 
-/// Using with void handlers:
+/// Using with noreturn/void handlers:
 @system unittest
 {
+    import core.exception : SwitchError;
     import std.exception : assertThrown;
 
     class A { }
     class B { }
-    // Void handlers are allowed if they throw:
+
+    // B's handler never returns, so `i` does not need a value
+    int i;
     assertThrown!Exception(
-        new B().castSwitch!(
+        i = new B().castSwitch!(
             (A a) => 1,
-            (B d)    { throw new Exception("B is not allowed!"); }
+            (B b) { throw new Exception("B is not allowed!"); }
         )()
     );
 
-    // Void handlers are also allowed if all the handlers are void:
+    // Void handler call will throw if another handler returns a value
+    assertThrown!SwitchError(
+        i = new B().castSwitch!(
+            (A a) => 1,
+            (B b) {}
+        )()
+    );
+
+    // Void handlers are allowed if all the handlers convert to void:
     new A().castSwitch!(
         (A a) { },
         (B b) { assert(false); },

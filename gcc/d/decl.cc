@@ -783,7 +783,7 @@ public:
       {
 	/* Do not store variables we cannot take the address of,
 	   but keep the values for purposes of debugging.  */
-	if (d->type->isScalar () && !dmd::hasPointers (d->type))
+	if (dmd::isScalar (d->type) && !dmd::hasPointers (d->type))
 	  {
 	    tree decl = get_symbol_decl (d);
 	    d_pushdecl (decl);
@@ -969,7 +969,7 @@ public:
 
 	doing_semantic_analysis_p = true;
 	dmd::functionSemantic3 (d);
-	Module::runDeferredSemantic3 ();
+	dmd::runDeferredSemantic3 ();
 	doing_semantic_analysis_p = false;
       }
 
@@ -1049,10 +1049,15 @@ public:
 	else
 	  d->shidden = resdecl;
 
-	if (d->isNRVO () && d->nrvo_var)
-	  {
-	    tree var = get_symbol_decl (d->nrvo_var);
+	tree var = NULL_TREE;
 
+	if (d->isNRVO () && d->nrvo_var)
+	  var = get_symbol_decl (d->nrvo_var);
+	else if (d->vresult)
+	  var = get_symbol_decl (d->vresult);
+
+	if (var != NULL_TREE)
+	  {
 	    /* Copy name from VAR to RESULT.  */
 	    DECL_NAME (resdecl) = DECL_NAME (var);
 	    /* Don't forget that we take its address.  */
@@ -1250,7 +1255,7 @@ get_symbol_decl (Declaration *decl)
       /* CONST_DECL was initially intended for enumerals and may be used for
 	 scalars in general, but not for aggregates.  Here a non-constant
 	 value is generated anyway so as its value can be used.  */
-      if (!vd->canTakeAddressOf () && !vd->type->isScalar ())
+      if (!vd->canTakeAddressOf () && !dmd::isScalar (vd->type))
 	{
 	  gcc_assert (vd->_init && !vd->_init->isVoidInitializer ());
 	  Expression *ie = dmd::initializerToExpression (vd->_init);
@@ -1310,7 +1315,7 @@ get_symbol_decl (Declaration *decl)
 	  /* Cannot make an expression out of a void initializer.  */
 	  gcc_assert (vd->_init && !vd->_init->isVoidInitializer ());
 	  /* Non-scalar manifest constants have already been dealt with.  */
-	  gcc_assert (vd->type->isScalar ());
+	  gcc_assert (dmd::isScalar (vd->type));
 
 	  Expression *ie = dmd::initializerToExpression (vd->_init);
 	  DECL_INITIAL (decl->csym) = build_expr (ie, true);

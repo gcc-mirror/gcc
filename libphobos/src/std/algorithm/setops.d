@@ -26,12 +26,11 @@ $(T2 multiwayMerge,
 $(T2 multiwayUnion,
         Computes the union of a range of sorted ranges.)
 $(T2 setDifference,
-        Lazily computes the set difference of two or more sorted ranges.)
+        Lazily computes the set difference of two sorted ranges.)
 $(T2 setIntersection,
         Lazily computes the intersection of two or more sorted ranges.)
 $(T2 setSymmetricDifference,
-        Lazily computes the symmetric set difference of two or more sorted
-        ranges.)
+        Lazily computes the symmetric set difference of two sorted ranges.)
 )
 
 Copyright: Andrei Alexandrescu 2008-.

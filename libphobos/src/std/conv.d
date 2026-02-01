@@ -1866,7 +1866,7 @@ if (!is(S : T) && isAssociativeArray!S &&
             assert(convFails!(Floating, Integral, ConvOverflowException)(a));
         }
         // convert to the smallest integral value
-        a = 0.0 + Integral.min;
+        a = 0.0L + Integral.min;
         static if (Integral.min < 0)
         {
             a = -a; // -Integral.min not representable as an Integral
@@ -1874,13 +1874,13 @@ if (!is(S : T) && isAssociativeArray!S &&
                     || Floating.sizeof <= Integral.sizeof
                     || floatTraits!Floating.realFormat == RealFormat.ieeeExtended53);
         }
-        a = 0.0 + Integral.min;
+        a = 0.0L + Integral.min;
         assert(to!Integral(a) == Integral.min);
         --a; // no more representable as an Integral
         assert(convFails!(Floating, Integral, ConvOverflowException)(a)
                 || Floating.sizeof <= Integral.sizeof
                 || floatTraits!Floating.realFormat == RealFormat.ieeeExtended53);
-        a = 0.0 + Integral.max;
+        a = 0.0L + Integral.max;
         assert(to!Integral(a) == Integral.max
                 || Floating.sizeof <= Integral.sizeof
                 || floatTraits!Floating.realFormat == RealFormat.ieeeExtended53);

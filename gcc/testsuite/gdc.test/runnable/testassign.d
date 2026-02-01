@@ -1127,7 +1127,7 @@ void test13044()
 void test12500()
 {
     size_t foo;
-    ++foo *= 1.5;   // Rewrite to: (foo += 1) *= 1.5;
+    ++foo *= cast(size_t)1.5;   // Rewrite to: (foo += 1) *= 1.5;
 }
 
 /***************************************************/

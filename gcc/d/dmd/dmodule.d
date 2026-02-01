@@ -25,14 +25,10 @@ import dmd.common.outbuffer;
 import dmd.compiler;
 import dmd.cparse;
 import dmd.declaration;
-import dmd.dimport;
 import dmd.dmacro;
 import dmd.doc;
-import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem : dsymbolSemantic;
 import dmd.errors;
-import dmd.errorsink;
 import dmd.expression;
 import dmd.file_manager;
 import dmd.func;
@@ -41,18 +37,12 @@ import dmd.id;
 import dmd.identifier;
 import dmd.location;
 import dmd.parse;
-import dmd.root.aav;
 import dmd.root.array;
 import dmd.root.file;
 import dmd.root.filename;
 import dmd.root.port;
-import dmd.root.rmem;
 import dmd.root.string;
-import dmd.rootobject;
-import dmd.semantic2;
-import dmd.semantic3;
 import dmd.target;
-import dmd.utils;
 import dmd.visitor;
 
 version (Windows)
@@ -65,25 +55,6 @@ else version (Posix)
 }
 else
     static assert(0);
-
-version (IN_GCC) {}
-else version (IN_LLVM) {}
-else version = MARS;
-
-// function used to call semantic3 on a module's dependencies
-void semantic3OnDependencies(Module m)
-{
-    if (!m)
-        return;
-
-    if (m.semanticRun > PASS.semantic3)
-        return;
-
-    m.semantic3(null);
-
-    foreach (i; 1 .. m.aimports.length)
-        semantic3OnDependencies(m.aimports[i]);
-}
 
 /**
  * Remove generated .di files on error and exit
@@ -183,15 +154,6 @@ extern (C++) class Package : ScopeDsymbol
     override const(char)* kind() const nothrow
     {
         return "package";
-    }
-
-    override bool equals(const RootObject o) const
-    {
-        // custom 'equals' for bug 17441. "package a" and "module a" are not equal
-        if (this == o)
-            return true;
-        auto p = cast(Package)o;
-        return p && isModule() == p.isModule() && ident.equals(p.ident);
     }
 
     /****************************************************
@@ -475,7 +437,7 @@ extern (C++) final class Module : Package
         if (doHdrGen)
             hdrfile = setOutfilename(global.params.dihdr.name, global.params.dihdr.dir, arg, hdr_ext);
 
-        this.edition = Edition.min;
+        this.edition = global.params.edition;
     }
 
     extern (D) this(const(char)[] filename, Identifier ident, int doDocComment, int doHdrGen)
@@ -795,7 +757,13 @@ extern (C++) final class Module : Package
             p.nextToken();
             checkCompiledImport();
             members = p.parseModule();
-            assert(!p.md); // C doesn't have module declarations
+            md = p.md;
+            if (md)
+            {
+                this.ident = md.id;
+                dst = Package.resolve(md.packages, &this.parent, &ppack);
+            }
+
             numlines = p.linnum;
         }
         else
@@ -976,125 +944,6 @@ extern (C++) final class Module : Package
             File.remove(objfile.toChars());
         if (docfile)
             File.remove(docfile.toChars());
-    }
-
-    /*******************************************
-     * Can't run semantic on s now, try again later.
-     */
-    extern (D) static void addDeferredSemantic(Dsymbol s)
-    {
-        //printf("Module::addDeferredSemantic('%s')\n", s.toChars());
-        if (!s.deferred)
-        {
-            s.deferred = true;
-            deferred.push(s);
-        }
-    }
-
-    extern (D) static void addDeferredSemantic2(Dsymbol s)
-    {
-        //printf("Module::addDeferredSemantic2('%s')\n", s.toChars());
-        if (!s.deferred2)
-        {
-            s.deferred2 = true;
-            deferred2.push(s);
-        }
-    }
-
-    extern (D) static void addDeferredSemantic3(Dsymbol s)
-    {
-        //printf("Module::addDeferredSemantic3('%s')\n", s.toChars());
-        if (!s.deferred3)
-        {
-            s.deferred3 = true;
-            deferred3.push(s);
-        }
-    }
-
-    /******************************************
-     * Run semantic() on deferred symbols.
-     */
-    static void runDeferredSemantic()
-    {
-        __gshared int nested;
-        if (nested)
-            return;
-        //if (deferred.length) printf("+Module::runDeferredSemantic(), len = %ld\n", deferred.length);
-        nested++;
-
-        size_t len;
-        do
-        {
-            len = deferred.length;
-            if (!len)
-                break;
-
-            Dsymbol* todo;
-            Dsymbol* todoalloc = null;
-            Dsymbol tmp;
-            if (len == 1)
-            {
-                todo = &tmp;
-            }
-            else
-            {
-                todo = cast(Dsymbol*)Mem.check(malloc(len * Dsymbol.sizeof));
-                todoalloc = todo;
-            }
-            memcpy(todo, deferred.tdata(), len * Dsymbol.sizeof);
-            foreach (Dsymbol s; Module.deferred[])
-                s.deferred = false;
-            deferred.setDim(0);
-
-            foreach (i; 0..len)
-            {
-                Dsymbol s = todo[i];
-                s.dsymbolSemantic(null);
-                //printf("deferred: %s, parent = %s\n", s.toChars(), s.parent.toChars());
-            }
-            //printf("\tdeferred.length = %ld, len = %ld\n", deferred.length, len);
-            if (todoalloc)
-                free(todoalloc);
-        }
-        while (deferred.length != len); // while making progress
-        nested--;
-        //printf("-Module::runDeferredSemantic(), len = %ld\n", deferred.length);
-    }
-
-    static void runDeferredSemantic2()
-    {
-        Module.runDeferredSemantic();
-
-        Dsymbols* a = &Module.deferred2;
-        for (size_t i = 0; i < a.length; i++)
-        {
-            Dsymbol s = (*a)[i];
-            s.deferred2 = false;
-            //printf("[%d] %s semantic2a\n", i, s.toPrettyChars());
-            s.semantic2(null);
-
-            if (global.errors)
-                break;
-        }
-        a.setDim(0);
-    }
-
-    static void runDeferredSemantic3()
-    {
-        Module.runDeferredSemantic2();
-
-        Dsymbols* a = &Module.deferred3;
-        for (size_t i = 0; i < a.length; i++)
-        {
-            Dsymbol s = (*a)[i];
-            s.deferred3 = false;
-            //printf("[%d] %s semantic3a\n", i, s.toPrettyChars());
-            s.semantic3(null);
-
-            if (global.errors)
-                break;
-        }
-        a.setDim(0);
     }
 
     extern (D) static void clearCache() nothrow
@@ -1411,36 +1260,4 @@ private const(char)[] processSource (const(ubyte)[] src, Module mod)
     }
 
     return buf;
-}
-
-/*******************************************
- * Look for member of the form:
- *      const(MemberInfo)[] getMembers(string);
- * Returns NULL if not found
- */
-FuncDeclaration findGetMembers(ScopeDsymbol dsym)
-{
-    import dmd.opover : search_function;
-    Dsymbol s = search_function(dsym, Id.getmembers);
-    FuncDeclaration fdx = s ? s.isFuncDeclaration() : null;
-    version (none)
-    {
-        // Finish
-        __gshared TypeFunction tfgetmembers;
-        if (!tfgetmembers)
-        {
-            Scope sc;
-            sc.eSink = global.errorSink;
-            Parameters* p = new Parameter(STC.in_, Type.tchar.constOf().arrayOf(), null, null);
-            auto parameters = new Parameters(p);
-            Type tret = null;
-            TypeFunction tf = new TypeFunction(parameters, tret, VarArg.none, LINK.d);
-            tfgetmembers = tf.dsymbolSemantic(Loc.initial, &sc).isTypeFunction();
-        }
-        if (fdx)
-            fdx = fdx.overloadExactMatch(tfgetmembers);
-    }
-    if (fdx && fdx.isVirtual())
-        fdx = null;
-    return fdx;
 }

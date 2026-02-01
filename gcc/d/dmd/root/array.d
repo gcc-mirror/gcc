@@ -16,7 +16,7 @@ import core.stdc.stdlib : _compare_fp_t;
 import core.stdc.string;
 
 import dmd.root.rmem;
-import dmd.root.string;
+import dmd.root.string : toDString;
 
 // `qsort` is only `nothrow` since 2.081.0
 private extern(C) void qsort(scope void* base, size_t nmemb, size_t size, _compare_fp_t compar) nothrow @nogc;
@@ -908,7 +908,7 @@ bool equal(Range1, Range2)(Range1 range1, Range2 range2)
 
     else
     {
-        static if (hasLength!Range1 && hasLength!Range2 && is(typeof(r1.length == r2.length)))
+        static if (hasLength!Range1 && hasLength!Range2 && is(typeof(range1.length == range2.length)))
         {
             if (range1.length != range2.length)
                 return false;

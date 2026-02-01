@@ -1,5 +1,5 @@
 /**
- * D header file for C99.
+ * D header file for C99/C11.
  *
  * $(C_HEADER_DESCRIPTION pubs.opengroup.org/onlinepubs/009695399/basedefs/_time.h.html, _time.h)
  *
@@ -50,6 +50,13 @@ struct tm
 }
 
 public import core.sys.posix.sys.types : time_t, clock_t;
+public import core.sys.posix.time : timespec;
+
+/// timespec_get introduced in C11
+@system int timespec_get(timespec* ts, int base);
+
+/// Base Value used for timespec_get
+enum TIME_UTC = 1;
 
 ///
 version (CRuntime_Glibc)

@@ -697,6 +697,12 @@ static if(is(typeof(foo20831) Params20831 == __parameters))
 
 /************************************************/
 
+// https://github.com/dlang/dmd/issues/19788
+@10 void f(@20 int x)
+{
+    static assert([__traits(getAttributes, x)] == [20]);
+}
+
 /************************************************/
 // https://issues.dlang.org/show_bug.cgi?id=15804
 

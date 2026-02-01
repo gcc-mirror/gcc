@@ -33,10 +33,21 @@ else version (Posix)
     else version (WatchOS)
         version = Darwin;
 
-    public import core.sys.posix.unistd : fork, pid_t;
-    import core.stdc.errno : ECHILD, EINTR, errno;
-    import core.sys.posix.sys.mman : MAP_ANON, MAP_FAILED, MAP_PRIVATE, MAP_SHARED, mmap, munmap, PROT_READ, PROT_WRITE;
-    import core.sys.posix.sys.wait : waitpid, WNOHANG;
+    public import core.sys.posix.unistd : pid_t;
+
+    static import core.sys.posix.unistd;
+    static if (__traits(compiles, core.sys.posix.unistd._Fork))
+        public import core.sys.posix.unistd : _Fork;
+
+    static import core.sys.posix.sys.mman;
+    static if (__traits(compiles, core.sys.posix.sys.mman.mmap))
+        import core.sys.posix.sys.mman : MAP_ANON, MAP_FAILED, MAP_PRIVATE, MAP_SHARED, mmap, munmap, PROT_READ, PROT_WRITE;
+
+    static import core.sys.posix.stdlib;
+    static if (__traits(compiles, core.sys.posix.stdlib.valloc))
+        import core.sys.posix.stdlib : valloc;
+
+    import core.stdc.stdlib : free, malloc;
 
 
     /// Possible results for the wait_pid() function.
@@ -57,6 +68,8 @@ else version (Posix)
     ChildStatus wait_pid(pid_t pid, bool block = true) nothrow @nogc
     {
         import core.exception : onForkError;
+        import core.stdc.errno : ECHILD, EINTR, errno;
+        import core.sys.posix.sys.wait : waitpid, WNOHANG;
 
         int status = void;
         pid_t waited_pid = void;
@@ -75,6 +88,13 @@ else version (Posix)
             onForkError();
         return ChildStatus.done;
     }
+
+    version (DragonFlyBSD)
+        version = GCSignalsUnblock;
+    version (FreeBSD)
+        version = GCSignalsUnblock;
+    version (Solaris)
+        version = GCSignalsUnblock;
 
     //version = GC_Use_Alloc_MMap;
 }
@@ -97,33 +117,55 @@ else static if (is(typeof(malloc)))
 else static assert(false, "No supported allocation methods available.");
 +/
 
-static if (is(typeof(VirtualAlloc))) // version (GC_Use_Alloc_Win32)
+version (CoreDdoc)
 {
-    /**
-    * Indicates if an implementation supports fork().
-    *
-    * The value shown here is just demostrative, the real value is defined based
-    * on the OS it's being compiled in.
-    * enum HaveFork = true;
-    */
-    enum HaveFork = false;
-
     /**
      * Map memory.
      */
+    void *os_mem_map(size_t nbytes) nothrow @nogc
+    {
+        return null;
+    }
+
+    /**
+     * Unmap memory allocated with os_mem_map()
+     * Returns:
+     *      0       success
+     *      !=0     failure
+     */
+    int os_mem_unmap(void *base, size_t nbytes) nothrow @nogc
+    {
+        return 0;
+    }
+
+    /**
+     * Map memory that will be shared by child processes.
+     * Note: only available if the OS supports this feature. Use `AllocSupportsShared` to test.
+     */
+    void *os_mem_map_shared(size_t nbytes) nothrow @nogc
+    {
+        return null;
+    }
+
+    /**
+     * Unmap memory allocated with os_mem_map_shared()
+     * Returns:
+     *      0       success
+     *      !=0     failure
+     */
+    int os_mem_unmap_shared(void *base, size_t nbytes) nothrow @nogc
+    {
+        return 0;
+    }
+}
+else static if (is(typeof(VirtualAlloc))) // version (GC_Use_Alloc_Win32)
+{
     void *os_mem_map(size_t nbytes) nothrow @nogc
     {
         return VirtualAlloc(null, nbytes, MEM_RESERVE | MEM_COMMIT,
                 PAGE_READWRITE);
     }
 
-
-    /**
-     * Unmap memory allocated with os_mem_map().
-     * Returns:
-     *      0       success
-     *      !=0     failure
-     */
     int os_mem_unmap(void *base, size_t nbytes) nothrow @nogc
     {
         return cast(int)(VirtualFree(base, 0, MEM_RELEASE) == 0);
@@ -131,26 +173,30 @@ static if (is(typeof(VirtualAlloc))) // version (GC_Use_Alloc_Win32)
 }
 else static if (is(typeof(mmap)))  // else version (GC_Use_Alloc_MMap)
 {
-    enum HaveFork = true;
-
-    void *os_mem_map(size_t nbytes, bool share = false) nothrow @nogc
-    {   void *p;
-
-        auto map_f = share ? MAP_SHARED : MAP_PRIVATE;
-        p = mmap(null, nbytes, PROT_READ | PROT_WRITE, map_f | MAP_ANON, -1, 0);
+    void *os_mem_map(size_t nbytes) nothrow @nogc
+    {
+        void* p = mmap(null, nbytes, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
         return (p == MAP_FAILED) ? null : p;
     }
 
-
     int os_mem_unmap(void *base, size_t nbytes) nothrow @nogc
+    {
+        return munmap(base, nbytes);
+    }
+
+    void *os_mem_map_shared(size_t nbytes) nothrow @nogc
+    {
+        void* p = mmap(null, nbytes, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANON, -1, 0);
+        return (p == MAP_FAILED) ? null : p;
+    }
+
+    int os_mem_unmap_shared(void *base, size_t nbytes) nothrow @nogc
     {
         return munmap(base, nbytes);
     }
 }
 else static if (is(typeof(valloc))) // else version (GC_Use_Alloc_Valloc)
 {
-    enum HaveFork = false;
-
     void *os_mem_map(size_t nbytes) nothrow @nogc
     {
         return valloc(nbytes);
@@ -169,8 +215,6 @@ else static if (is(typeof(malloc))) // else version (GC_Use_Alloc_Malloc)
     //       (req_size + PAGESIZE) is allocated, and the pointer is rounded up
     //       to PAGESIZE alignment, there will be space for a void* at the end
     //       after PAGESIZE bytes used by the GC.
-
-    enum HaveFork = false;
 
     import core.internal.gc.impl.conservative.gc;
 
@@ -199,6 +243,11 @@ else
 {
     static assert(false, "No supported allocation methods available.");
 }
+
+/**
+* Indicates if an allocation method supports sharing between processes.
+*/
+enum AllocSupportsShared = __traits(compiles, os_mem_map_shared);
 
 /**
    Check for any kind of memory pressure.
@@ -304,5 +353,32 @@ else version (Posix)
         }
         const pages = sysconf(sc);
         return pageSize * pages;
+    }
+}
+
+/**
+   The GC signals might be blocked by `fork` when the atfork prepare
+   handler is invoked. This guards us from the scenario where we are
+   waiting for a GC action in another thread to complete, and that thread
+   decides to call thread_suspendAll, then we must be able to response to
+   that request, otherwise we end up in a deadlock situation.
+ */
+version (GCSignalsUnblock)
+{
+    void os_unblock_gc_signals() nothrow @nogc
+    {
+        import core.sys.posix.signal : pthread_sigmask, sigaddset, sigemptyset, sigset_t, SIG_UNBLOCK;
+        import core.thread : thread_getGCSignals;
+
+        int suspendSignal = void, resumeSignal = void;
+        thread_getGCSignals(suspendSignal, resumeSignal);
+
+        sigset_t set;
+        sigemptyset(&set);
+        sigaddset(&set, suspendSignal);
+        sigaddset(&set, resumeSignal);
+
+        auto sigmask = pthread_sigmask(SIG_UNBLOCK, &set, null);
+        assert(sigmask == 0, "failed to unblock GC signals");
     }
 }

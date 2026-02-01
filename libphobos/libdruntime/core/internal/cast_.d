@@ -132,54 +132,43 @@ private void* _d_interface_cast(To)(void* p) @trusted
 */
 void* _d_cast(To, From)(From o) @trusted
 {
-    static if (is(From == class) && is(To == interface))
+    static if (is(From == To))
+    {
+        return *cast(void**) &o;
+    }
+    else static if (is(From == class) && is(To == interface))
     {
         return _d_dynamic_cast!To(o);
     }
-
-    static if (is(From == class) && is(To == class))
+    else static if (is(From == class) && is(To == class))
     {
-        static if (is(From FromSupers == super) && is(To ToSupers == super))
+
+        /* Check for:
+        *  class A { }
+        *  final class B : A { }
+        *  ... cast(B) A ...
+        */
+        /* Multiple inheritance is not allowed, so we can safely assume
+         * that the second super can only be an interface.
+         */
+        static if (is(From FromSupers == super) && is(To ToSupers == super) &&
+            __traits(isFinalClass, To) && is(ToSupers[0] == From) &&
+            ToSupers.length == 1 && FromSupers.length <= 1)
         {
-            /* Check for:
-            *  class A { }
-            *  final class B : A { }
-            *  ... cast(B) A ...
-            */
-            // Multiple inheritance is not allowed, so we can safely assume
-            // that the second super can only be an interface.
-            static if (__traits(isFinalClass, To) && is(ToSupers[0] == From) &&
-                       ToSupers.length == 1 && FromSupers.length <= 1)
-            {
-                return _d_paint_cast!To(o);
-            }
+            return _d_paint_cast!To(o);
         }
-
-        static if (is (To : From))
+        else static if (is (To : From))
         {
-            static if (is (To == From))
-            {
-                return cast(void*)o;
-            }
-            else
-            {
-                return _d_class_cast!To(o);
-            }
-        }
-
-        return null;
-    }
-
-    static if (is(From == interface))
-    {
-        static if (is(From == To))
-        {
-            return cast(void*)o;
+            return _d_class_cast!To(o);
         }
         else
         {
-            return _d_interface_cast!To(cast(void*)o);
+            return null;
         }
+    }
+    else static if (is(From == interface))
+    {
+        return _d_interface_cast!To(cast(void*)o);
     }
     else
     {
@@ -308,4 +297,14 @@ private bool _d_isbaseof2(To)(scope ClassInfo oc, scope ref size_t offset)
     I3 ci = new C();
     assert(_d_cast!I1(ci) !is null); // I3(c) to I1
     assert(_d_interface_cast!I1(cast(void*)ci) !is null);
+}
+
+// https://github.com/dlang/dmd/issues/21646
+@system pure unittest {
+    static class C {
+        @disable void opCast(T)();
+    }
+
+    const(C) const_c = new C();
+    C mutable_c = cast() const_c;
 }

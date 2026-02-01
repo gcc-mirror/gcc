@@ -3,7 +3,7 @@ REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
 fail_compilation/test23073.d(28): Error: assigning scope variable `c` to non-scope parameter `c` calling `assignNext` is not allowed in a `@safe` function
-fail_compilation/test23073.d(22):        which is not `scope` because of `c.next = c`
+fail_compilation/test23073.d(22):        `c` is not `scope` because of `c.next = c`
 ---
 */
 

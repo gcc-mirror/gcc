@@ -247,23 +247,17 @@ version (StdUnittest)
  *   $(LI it has a 'bool isUniformRandom' field readable in CTFE)
  * )
  */
-template isUniformRNG(Rng, ElementType)
-{
-    enum bool isUniformRNG = .isUniformRNG!Rng &&
-        is(std.range.primitives.ElementType!Rng == ElementType);
-}
+enum isUniformRNG(Rng, ElementType) = .isUniformRNG!Rng &&
+	is(std.range.primitives.ElementType!Rng == ElementType);
 
 /**
  * ditto
  */
-template isUniformRNG(Rng)
-{
-    enum bool isUniformRNG = isInputRange!Rng &&
-        is(typeof(
-        {
-            static assert(Rng.isUniformRandom); //tag
-        }));
-}
+enum isUniformRNG(Rng) = isInputRange!Rng &&
+	is(typeof(
+	{
+        static assert(Rng.isUniformRandom); //tag
+    }));
 
 ///
 @safe unittest
@@ -311,29 +305,23 @@ template isUniformRNG(Rng)
  *   $(LI it has a 'seed(ElementType)' function)
  * )
  */
-template isSeedable(Rng, SeedType)
-{
-    enum bool isSeedable = isUniformRNG!(Rng) &&
-        is(typeof(
-        {
-            Rng r = void;              // can define a Rng object
-            SeedType s = void;
-            r.seed(s); // can seed a Rng
-        }));
-}
+enum isSeedable(Rng, SeedType) = isUniformRNG!(Rng) &&
+	is(typeof(
+    {
+        Rng r = void;              ///< can define a Rng object
+        SeedType s = void; ///< Dummy doc to silence D-scanner.
+        r.seed(s); // can seed a Rng
+    }));
 
 ///ditto
-template isSeedable(Rng)
-{
-    enum bool isSeedable = isUniformRNG!Rng &&
-        is(typeof(
-        {
-            Rng r = void;                     // can define a Rng object
-            alias SeedType = typeof(r.front);
-            SeedType s = void;
-            r.seed(s); // can seed a Rng
-        }));
-}
+enum isSeedable(Rng) = isUniformRNG!Rng &&
+	is(typeof(
+    {
+        Rng r = void;                     ///< can define a Rng object
+        alias SeedType = typeof(r.front);
+        SeedType s = void; ///< Dummy doc to silence D-scanner.
+        r.seed(s); // can seed a Rng
+    }));
 
 ///
 @safe unittest

@@ -1247,8 +1247,19 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
     else
     {
         closePipeWriteEnds();
+
+        T retryInterrupted(T)(scope T delegate() syscall)
+        {
+            import core.stdc.errno : errno, EINTR;
+            T result;
+            do
+                result = syscall();
+            while (result == -1 && .errno == EINTR);
+            return result;
+        }
+
         auto status = InternalError.noerror;
-        auto readExecResult = core.sys.posix.unistd.read(forkPipe[0], &status, status.sizeof);
+        auto readExecResult = retryInterrupted(() => core.sys.posix.unistd.read(forkPipe[0], &status, status.sizeof));
         // Save error number just in case if subsequent "waitpid" fails and overrides errno
         immutable lastError = .errno;
 
@@ -1257,7 +1268,7 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
             // Forked child exits right after creating second fork. So it should be safe to wait here.
             import core.sys.posix.sys.wait : waitpid;
             int waitResult;
-            waitpid(id, &waitResult, 0);
+            retryInterrupted(() => waitpid(id, &waitResult, 0));
         }
 
         if (readExecResult == -1)
@@ -1267,7 +1278,7 @@ private Pid spawnProcessPosix(scope const(char[])[] args,
         if (status != InternalError.noerror)
         {
             int error;
-            readExecResult = read(forkPipe[0], &error, error.sizeof);
+            readExecResult = retryInterrupted(() => read(forkPipe[0], &error, error.sizeof));
             string errorMsg;
             final switch (status)
             {

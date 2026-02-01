@@ -2,9 +2,10 @@
 REQUIRED_ARGS: -de
 TEST_OUTPUT:
 ---
-fail_compilation/fail22351.d(18): Deprecation: overriding `extern(C++)` function `fail22351.C22351.func(int*)` with `const` qualified function `fail22351.Fail22351.func(const(int*))` is deprecated
-fail_compilation/fail22351.d(18):        Either remove `override`, or adjust the `const` qualifiers of the overriding function parameters
-fail_compilation/fail22351.d(19): Error: function `extern (C++) void fail22351.Fail22351.func(const(int*)**)` does not override any function, did you mean to override `extern (C++) void fail22351.C22351.func(int*)`?
+fail_compilation/fail22351.d(19): Deprecation: overriding `extern(C++)` function `fail22351.C22351.func(int*)` with `const` qualified function `fail22351.Fail22351.func(const(int*))` is deprecated
+fail_compilation/fail22351.d(19):        Either remove `override`, or adjust the `const` qualifiers of the overriding function parameters
+fail_compilation/fail22351.d(20): Error: function `extern (C++) void fail22351.Fail22351.func(const(int*)**)` does not override any function
+fail_compilation/fail22351.d(13):        did you mean to override `extern (C++) void fail22351.C22351.func(int*)`?
 ---
 */
 extern(C++) class C22351

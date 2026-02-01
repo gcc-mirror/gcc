@@ -29,6 +29,7 @@ import dmd.escape;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;
+import dmd.funcsem : isRootTraitsCompilesScope;
 import dmd.globals;
 import dmd.id;
 import dmd.identifier;
@@ -39,7 +40,7 @@ import dmd.rootobject : RootObject, DYNCAST;
 import dmd.semantic2;
 import dmd.semantic3;
 import dmd.tokens;
-import dmd.typesem : unqualify;
+import dmd.typesem : unqualify, toBasetype;
 import dmd.visitor;
 import dmd.visitor.postorder;
 
@@ -101,7 +102,7 @@ public:
             err = true;
             return true;
         }
-        if (f.setGC(e.loc, msg))
+        if (sc.setGC(f, e.loc, msg))
         {
             error(e.loc, "%s causes a GC allocation in `@nogc` %s `%s`", msg, f.kind(), f.toChars());
             err = true;
@@ -176,7 +177,7 @@ public:
     {
         if (e.placement)
             return;     // placement new doesn't use the GC
-        if (e.member && !e.member.isNogc() && f.setGC(e.loc, null))
+        if (e.member && e.member !is f && !e.member.isNogc() && sc.setGC(f, e.loc, null))
         {
             // @nogc-ness is already checked in NewExp::semantic
             return;
@@ -313,6 +314,7 @@ private FuncDeclaration stripHookTraceImpl(FuncDeclaration fd)
  * so mark it as not nogc (not no-how).
  *
  * Params:
+ *     sc = scope that the GC action is in
  *     fd = function
  *     loc = location of GC action
  *     fmt = format string for error message. Must include "%s `%s`" for the function kind and name.
@@ -321,13 +323,26 @@ private FuncDeclaration stripHookTraceImpl(FuncDeclaration fd)
  * Returns:
  *      true if function is marked as @nogc, meaning a user error occurred
  */
-extern (D) bool setGC(FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject[] args...)
+extern (D) bool setGC(Scope* sc, FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject[] args...)
 {
     //printf("setGC() %s\n", toChars());
     if (fd.nogcInprocess && fd.semanticRun < PASS.semantic3 && fd._scope)
     {
         fd.semantic2(fd._scope);
         fd.semantic3(fd._scope);
+    }
+
+    if (sc && isRootTraitsCompilesScope(sc)) // __traits(compiles, x)
+    {
+        if (sc.func.isNogcBypassingInference())
+        {
+            // Message wil be gagged, but still call error() to update global.errors and for
+            // -verrors=spec
+            string action = AttributeViolation(loc, fmt, args).action;
+            .error(loc, "%.*s is not allowed in a `@nogc` function", action.fTuple.expand);
+            return true;
+        }
+        return false;
     }
 
     if (fd.nogcInprocess)
@@ -348,7 +363,7 @@ extern (D) bool setGC(FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject[
 
         fd.type.toTypeFunction().isNogc = false;
         if (fd.fes)
-            fd.fes.func.setGC(Loc.init, null, null);
+            sc.setGC(fd.fes.func, Loc.init, null, null);
     }
     else if (fd.isNogc())
         return true;
@@ -358,21 +373,22 @@ extern (D) bool setGC(FuncDeclaration fd, Loc loc, const(char)* fmt, RootObject[
 /**************************************
  * The function calls non-`@nogc` function f, mark it as not nogc.
  * Params:
- *     fd = function doin the call
+ *     sc = scope that the GC action is in
+ *     fd = function doing the call
  *     f = function being called
  * Returns:
  *      true if function is marked as @nogc, meaning a user error occurred
  */
-extern (D) bool setGCCall(FuncDeclaration fd, FuncDeclaration f)
+extern (D) bool setGCCall(Scope* sc, FuncDeclaration fd, FuncDeclaration f)
 {
-    return fd.setGC(fd.loc, null, f);
+    return sc.setGC(fd, fd.loc, null, f);
 }
 
- bool isNogc(FuncDeclaration fd)
+bool isNogc(FuncDeclaration fd)
 {
     //printf("isNogc() %s, inprocess: %d\n", toChars(), !!(flags & FUNCFLAG.nogcInprocess));
     if (fd.nogcInprocess)
-        fd.setGC(fd.loc, null);
+        setGC(null, fd, fd.loc, null);
     return fd.type.toTypeFunction().isNogc;
 }
 

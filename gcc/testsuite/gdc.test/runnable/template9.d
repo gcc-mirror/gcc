@@ -3405,7 +3405,7 @@ template map_front12186(fun...)
 
 void test12186()
 {
-    immutable int[][] mat;
+    immutable int[][] mat = new int[][](1);
 
     mat.map_front12186!((in r) => 0);              // OK
     mat.map_front12186!((const r) => 0);           // OK

@@ -953,6 +953,49 @@ void test14730x()
 }
 
 /************************************/
+// https://github.com/dlang/dmd/issues/20917
+
+auto test20917a(int a) @nogc
+{
+    int foo() @nogc { return a + 3; }
+    enum yes = __traits(compiles, { return a; });
+    assert(foo() == a + 3);
+    return 1;
+}
+
+void test20917b() @nogc
+{
+    int i;
+    static if (is(typeof(() @safe @nogc
+    {
+        i++;
+    })))
+    {
+        () @safe @nogc {
+            i++;
+        }();
+    }
+    assert(i == 1);
+}
+
+void test20917c() @nogc
+{
+    int i;
+    static if (is(typeof(() @safe @nogc
+    {
+        return (){
+            i++;
+        };
+    })))
+    {
+        () @safe @nogc {
+            i++;
+        }();
+    }
+    assert(i == 1);
+}
+
+/************************************/
 
 int main()
 {
@@ -986,6 +1029,9 @@ int main()
     test12406();
     test14730();
     //test14730x();
+    test20917a(1);
+    test20917b();
+    test20917c();
 
     printf("Success\n");
     return 0;

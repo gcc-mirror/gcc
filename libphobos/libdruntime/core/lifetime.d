@@ -2600,11 +2600,13 @@ pure nothrow @system unittest
 }
 
 // wipes source after moving
-pragma(inline, true)
 private void wipe(T, Init...)(return scope ref T source, ref const scope Init initializer) @trusted
 if (!Init.length ||
     ((Init.length == 1) && (is(immutable T == immutable Init[0]))))
 {
+    static if (!is(T == struct) || !__traits(isNested, T))
+        pragma(inline, true);
+
     static if (__traits(isStaticArray, T) && hasContextPointers!T)
     {
         for (auto i = 0; i < T.length; i++)
@@ -2793,7 +2795,7 @@ T _d_newclassTTrace(T)(string file = __FILE__, int line = __LINE__, string funcn
     version (D_TypeInfo)
     {
         import core.internal.array.utils : TraceHook, gcStatsPure, accumulatePure;
-        mixin(TraceHook!(T.stringof, "_d_newclassT"));
+        mixin(TraceHook!("T", "_d_newclassT"));
 
         return _d_newclassT!T();
     }
@@ -2999,7 +3001,7 @@ version (D_ProfileGC)
             }
 
             import core.internal.array.utils : TraceHook, gcStatsPure, accumulatePure;
-            mixin(TraceHook!(T.stringof, "_d_newitemT"));
+            mixin(TraceHook!("T", "_d_newitemT"));
 
             return _d_newitemT!T();
         }

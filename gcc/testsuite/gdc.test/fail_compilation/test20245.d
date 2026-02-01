@@ -2,16 +2,21 @@
 REQUIRED_ARGS: -preview=dip1000
 TEST_OUTPUT:
 ---
-fail_compilation/test20245.d(21): Error: assigning reference to local variable `x` to non-scope parameter `ptr` calling `escape` is not allowed in a `@safe` function
-fail_compilation/test20245.d(22): Error: escaping a reference to parameter `x` by copying `&x` into allocated memory is not allowed in a `@safe` function
-fail_compilation/test20245.d(23): Error: returning scope variable `a` is not allowed in a `@safe` function
-fail_compilation/test20245.d(27): Error: taking address of `scope` variable `x` with pointers is not allowed in a `@safe` function
-fail_compilation/test20245.d(33): Error: assigning reference to local variable `x` to non-scope parameter `ptr` calling `escape` is not allowed in a `@safe` function
-fail_compilation/test20245.d(34): Error: escaping a reference to parameter `x` by copying `&x` into allocated memory is not allowed in a `@safe` function
-fail_compilation/test20245.d(50): Error: assigning reference to local variable `price` to non-scope `this.minPrice` is not allowed in a `@safe` function
-fail_compilation/test20245.d(69): Error: reference to local variable `this.content[]` calling non-scope member function `Exception.this()` is not allowed in a `@safe` function
-fail_compilation/test20245.d(89): Error: assigning reference to local variable `this` to non-scope parameter `content` calling `listUp` is not allowed in a `@safe` function
-fail_compilation/test20245.d(82):        which is not `scope` because of `charPtr = content`
+fail_compilation/test20245.d(26): Error: assigning reference to local variable `x` to non-scope parameter `ptr` calling `escape` is not allowed in a `@safe` function
+fail_compilation/test20245.d(25):        `x` inferred `scope` because of `a = &x`
+fail_compilation/test20245.d(27): Error: escaping a reference to parameter `x` by copying `&x` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test20245.d(28): Error: returning scope variable `a` is not allowed in a `@safe` function
+fail_compilation/test20245.d(25):        `a` inferred `scope` because of `a = &x`
+fail_compilation/test20245.d(32): Error: taking address of `scope` variable `x` with pointers is not allowed in a `@safe` function
+fail_compilation/test20245.d(38): Error: assigning reference to local variable `x` to non-scope parameter `ptr` calling `escape` is not allowed in a `@safe` function
+fail_compilation/test20245.d(37):        `x` inferred `scope` because of `a = &x`
+fail_compilation/test20245.d(39): Error: escaping a reference to parameter `x` by copying `&x` into allocated memory is not allowed in a `@safe` function
+fail_compilation/test20245.d(55): Error: assigning reference to local variable `price` to non-scope `this.minPrice` is not allowed in a `@safe` function
+fail_compilation/test20245.d(74): Error: reference to local variable `this.content[]` calling non-scope member function `Exception.this()` is not allowed in a `@safe` function
+fail_compilation/test20245.d(74):        `this` inferred `scope` because of `this.content[]`
+fail_compilation/test20245.d(94): Error: assigning reference to local variable `this` to non-scope parameter `content` calling `listUp` is not allowed in a `@safe` function
+fail_compilation/test20245.d(87):        `content` is not `scope` because of `charPtr = content`
+fail_compilation/test20245.d(94):        `this` inferred `scope` because of `&this.content`
 ---
 */
 

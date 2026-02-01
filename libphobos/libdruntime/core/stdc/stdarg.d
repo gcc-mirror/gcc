@@ -15,29 +15,19 @@ module core.stdc.stdarg;
 @nogc:
 nothrow:
 
+version (GNU)
+    public import core.internal.vararg.gnu;
+else:
+
 version (X86_64)
 {
     version (Windows) { /* different ABI */ }
     else version = SysV_x64;
 }
 
-version (GNU)
-{
-    import gcc.builtins;
-}
-else version (SysV_x64)
+version (SysV_x64)
 {
     static import core.internal.vararg.sysv_x64;
-
-    version (DigitalMars)
-    {
-        align(16) struct __va_argsave_t
-        {
-            size_t[6] regs;   // RDI,RSI,RDX,RCX,R8,R9
-            real[8] fpregs;   // XMM0..XMM7
-            __va_list va;
-        }
-    }
 }
 
 version (ARM)     version = ARM_Any;
@@ -49,11 +39,7 @@ version (PPC64)   version = PPC_Any;
 version (RISCV32) version = RISCV_Any;
 version (RISCV64) version = RISCV_Any;
 
-version (GNU)
-{
-    // Uses gcc.builtins
-}
-else version (ARM_Any)
+version (ARM_Any)
 {
     // Darwin uses a simpler varargs implementation
     version (OSX) {}
@@ -69,7 +55,7 @@ else version (ARM_Any)
     else version (AArch64)
     {
         version = AAPCS64;
-        static import core.internal.vararg.aarch64;
+        static import core.internal.vararg.aapcs64;
     }
 }
 
@@ -107,15 +93,9 @@ version (BigEndian)
 /**
  * The argument pointer type.
  */
-version (GNU)
+version (SysV_x64)
 {
-    alias va_list = __gnuc_va_list;
-    alias __gnuc_va_list = __builtin_va_list;
-}
-else version (SysV_x64)
-{
-    alias va_list = core.internal.vararg.sysv_x64.va_list;
-    public import core.internal.vararg.sysv_x64 : __va_list, __va_list_tag;
+    public import core.internal.vararg.sysv_x64 : va_list, __va_list, __va_list_tag;
 }
 else version (AAPCS32)
 {
@@ -129,9 +109,9 @@ else version (AAPCS32)
 }
 else version (AAPCS64)
 {
-    alias va_list = core.internal.vararg.aarch64.va_list;
+    alias va_list = core.internal.vararg.aapcs64.va_list;
     version (DigitalMars)
-        public import core.internal.vararg.aarch64 : __va_list, __va_list_tag;
+        public import core.internal.vararg.aapcs64 : __va_list, __va_list_tag;
 }
 else version (RISCV_Any)
 {
@@ -149,11 +129,7 @@ else
  * Initialize ap.
  * parmn should be the last named parameter.
  */
-version (GNU)
-{
-    void va_start(T)(out va_list ap, ref T parmn);
-}
-else version (LDC)
+version (LDC)
 {
     pragma(LDC_va_start)
     void va_start(T)(out va_list ap, ref T parmn) @nogc;
@@ -177,9 +153,6 @@ else version (DigitalMars)
 /**
  * Retrieve and return the next value that is of type T.
  */
-version (GNU)
-    T va_arg(T)(ref va_list ap); // intrinsic
-else
 T va_arg(T)(ref va_list ap)
 {
     version (X86)
@@ -229,7 +202,7 @@ T va_arg(T)(ref va_list ap)
     }
     else version (AAPCS64)
     {
-        return core.internal.vararg.aarch64.va_arg!T(ap);
+        return core.internal.vararg.aapcs64.va_arg!T(ap);
     }
     else version (ARM_Any)
     {
@@ -295,9 +268,6 @@ T va_arg(T)(ref va_list ap)
 /**
  * Retrieve and store in parmn the next value that is of type T.
  */
-version (GNU)
-    void va_arg(T)(ref va_list ap, ref T parmn); // intrinsic
-else
 void va_arg(T)(ref va_list ap, ref T parmn)
 {
     parmn = va_arg!T(ap);
@@ -307,11 +277,7 @@ void va_arg(T)(ref va_list ap, ref T parmn)
 /**
  * End use of ap.
  */
-version (GNU)
-{
-    alias va_end = __builtin_va_end;
-}
-else version (LDC)
+version (LDC)
 {
     pragma(LDC_va_end)
     void va_end(va_list ap);
@@ -325,11 +291,7 @@ else version (DigitalMars)
 /**
  * Make a copy of ap.
  */
-version (GNU)
-{
-    alias va_copy = __builtin_va_copy;
-}
-else version (LDC)
+version (LDC)
 {
     pragma(LDC_va_copy)
     void va_copy(out va_list dest, va_list src);

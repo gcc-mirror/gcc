@@ -25,18 +25,17 @@ import dmd.dstruct;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
+import dmd.expressionsem;
 import dmd.func;
 import dmd.globals : dinteger_t, sinteger_t, uinteger_t;
 import dmd.location;
 import dmd.mtype;
 import dmd.root.bitarray;
-import dmd.root.complex;
 import dmd.root.ctfloat;
 import dmd.root.port;
 import dmd.root.rmem;
 import dmd.tokens;
 import dmd.typesem;
-import dmd.visitor;
 
 /****************************************************************/
 /* A type meant as a union of all the Expression types,
@@ -777,12 +776,15 @@ Expression pointerDifference(UnionExp* pue, Loc loc, Type type, Expression e1, E
 // and op is EXP.add or EXP.min
 Expression pointerArithmetic(UnionExp* pue, Loc loc, EXP op, Type type, Expression eptr, Expression e2)
 {
+    Expression cant()
+    {
+        emplaceExp!(CTFEExp)(pue, EXP.cantExpression);
+        return pue.exp();
+    }
     if (eptr.type.nextOf().ty == Tvoid)
     {
         error(loc, "cannot perform arithmetic on `void*` pointers at compile time");
-    Lcant:
-        emplaceExp!(CTFEExp)(pue, EXP.cantExpression);
-        return pue.exp();
+        return cant();
     }
     if (eptr.op == EXP.address)
         eptr = eptr.isAddrExp().e1;
@@ -793,13 +795,13 @@ Expression pointerArithmetic(UnionExp* pue, Loc loc, EXP op, Type type, Expressi
         if (agg1.isSymOffExp().var.type.ty != Tsarray)
         {
             error(loc, "cannot perform pointer arithmetic on arrays of unknown length at compile time");
-            goto Lcant;
+            return cant();
         }
     }
     else if (agg1.op != EXP.string_ && agg1.op != EXP.arrayLiteral)
     {
         error(loc, "cannot perform pointer arithmetic on non-arrays at compile time");
-        goto Lcant;
+        return cant();
     }
     dinteger_t ofs2 = e2.toInteger();
     Type pointee = agg1.type.toBasetype().nextOf();
@@ -825,12 +827,12 @@ Expression pointerArithmetic(UnionExp* pue, Loc loc, EXP op, Type type, Expressi
     else
     {
         error(loc, "CTFE internal error: bad pointer operation");
-        goto Lcant;
+        return cant();
     }
     if (indx < 0 || len < indx)
     {
         error(loc, "cannot assign pointer to index %lld inside memory block `[0..%lld]`", indx, len);
-        goto Lcant;
+        return cant();
     }
     if (agg1.op == EXP.symbolOffset)
     {
@@ -842,7 +844,7 @@ Expression pointerArithmetic(UnionExp* pue, Loc loc, EXP op, Type type, Expressi
     if (agg1.op != EXP.arrayLiteral && agg1.op != EXP.string_)
     {
         error(loc, "CTFE internal error: pointer arithmetic `%s`", agg1.toChars());
-        goto Lcant;
+        return cant();
     }
     if (auto tsa = eptr.type.toBasetype().isTypeSArray())
     {

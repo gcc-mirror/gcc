@@ -16,7 +16,7 @@ $(TR $(TH Function Name) $(TH Description)
         $(TD Returns a new $(LREF Appender) or $(LREF RefAppender) initialized with a given array.
     ))
     $(TR $(TD $(LREF assocArray))
-        $(TD Returns a newly allocated associative array from a range of key/value tuples.
+        $(TD Returns a newly allocated associative array from a range/ranges of keys and values.
     ))
     $(TR $(TD $(LREF byPair))
         $(TD Construct a range iterating over an associative array by key/value tuples.
@@ -562,29 +562,19 @@ if (isAutodecodableString!String)
 }
 
 /**
-Returns a newly allocated associative array from a range of key/value tuples
-or from a range of keys and a range of values.
+Creates an associative array from a range of key/value tuples.
 
 Params:
     r = An $(REF_ALTTEXT input range, isInputRange, std,range,primitives)
-    of tuples of keys and values.
-    keys = An $(REF_ALTTEXT input range, isInputRange, std,range,primitives) of keys
-    values = An $(REF_ALTTEXT input range, isInputRange, std,range,primitives) of values
+    of $(REF_SHORT Tuple, std,typecons)`!(Key, Value)`.
+
+Duplicates: Associative arrays have unique keys. For any duplicate key in `r`,
+the result will contain the corresponding value from the last occurrence of that key in `r`.
 
 Returns:
-
-    A newly allocated associative array out of elements of the input
-    range, which must be a range of tuples (Key, Value) or
-    a range of keys and a range of values. If given two ranges of unequal
-    lengths after the elements of the shorter are exhausted the remaining
-    elements of the longer will not be considered.
-    Returns a null associative array reference when given an empty range.
-    Duplicates: Associative arrays have unique keys. If r contains duplicate keys,
-    then the result will contain the value of the last pair for that key in r.
-
-See_Also: $(REF Tuple, std,typecons), $(REF zip, std,range)
+    A newly allocated associative array, or a null associative array reference when
+    given an empty range. The type is `Value[Key]`.
  */
-
 auto assocArray(Range)(Range r)
 if (isInputRange!Range)
 {
@@ -604,7 +594,34 @@ if (isInputRange!Range)
     return aa;
 }
 
-/// ditto
+///
+@safe pure nothrow unittest
+{
+    import std.typecons : tuple;
+
+    auto b = assocArray([ tuple("foo", "bar"), tuple("baz", "quux") ]);
+    static assert(is(typeof(b) == string[string]));
+    assert(b == ["foo":"bar", "baz":"quux"]);
+}
+
+/**
+Creates an associative array from a range of keys and a range of values.
+
+If given two ranges of unequal lengths after the elements of the shorter are exhausted,
+the remaining elements of the longer will not be considered.
+
+Params:
+    keys = An $(REF_ALTTEXT input range, isInputRange, std,range,primitives) of keys
+    values = An $(REF_ALTTEXT input range, isInputRange, std,range,primitives) of values
+
+Duplicates: Associative arrays have unique keys. For any key with duplicates in `keys`,
+the result will have the corresponding value for the last occurrence of
+that key in `keys`.
+
+Returns:
+    A newly allocated associative array, or a null associative array reference when
+    given empty ranges.
+ */
 auto assocArray(Keys, Values)(Keys keys, Values values)
 if (isInputRange!Values && isInputRange!Keys)
 {
@@ -682,23 +699,16 @@ if (isInputRange!Values && isInputRange!Keys)
 }
 
 ///
-@safe pure /*nothrow*/ unittest
+@safe pure nothrow unittest
 {
-    import std.range : repeat, zip;
-    import std.typecons : tuple;
     import std.range.primitives : autodecodeStrings;
-    auto a = assocArray(zip([0, 1, 2], ["a", "b", "c"])); // aka zipMap
-    static assert(is(typeof(a) == string[int]));
-    assert(a == [0:"a", 1:"b", 2:"c"]);
-
-    auto b = assocArray([ tuple("foo", "bar"), tuple("baz", "quux") ]);
-    static assert(is(typeof(b) == string[string]));
-    assert(b == ["foo":"bar", "baz":"quux"]);
+    import std.range : repeat;
 
     static if (autodecodeStrings)
         alias achar = dchar;
     else
         alias achar = immutable(char);
+
     auto c = assocArray("ABCD", true.repeat);
     static assert(is(typeof(c) == bool[achar]));
     bool[achar] expected = ['D':true, 'A':true, 'B':true, 'C':true];

@@ -459,7 +459,20 @@ Expression optimize(Expression e, int result, bool keepLvalue = false)
         {
             if (!ve.var.isReference() && !ve.var.isImportedSymbol())
             {
-                ret = new SymOffExp(e.loc, ve.var, 0, ve.hasOverloads);
+                bool hasOverloads = ve.hasOverloads;
+                if (auto v = ve.var.isVarDeclaration())
+                {
+                    if (v.needThis())
+                    {
+                        auto t = v.isThis();
+                        assert(t);
+                        .error(e.loc, "taking the address of non-static variable `%s` requires an instance of `%s`", v.toChars(), t.toChars());
+                        ret = ErrorExp.get();
+                        return;
+                    }
+                    hasOverloads = false;
+                }
+                ret = new SymOffExp(e.loc, ve.var, 0, hasOverloads);
                 ret.type = e.type;
                 return;
             }

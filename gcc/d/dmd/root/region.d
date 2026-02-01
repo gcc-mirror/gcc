@@ -18,6 +18,8 @@ import core.stdc.stdlib;
 import dmd.root.rmem;
 import dmd.root.array;
 
+nothrow:
+
 /*****
  * Simple region storage allocator.
  */

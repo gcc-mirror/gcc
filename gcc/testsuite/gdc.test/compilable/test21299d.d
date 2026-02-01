@@ -22,6 +22,7 @@ class Task
 {
     void removeTerminationHook(void delegate() hook)
     {
-        moveToEnd([], hook);
+        void delegate()[] array = [() {}];
+        moveToEnd(array, hook);
     }
 }

@@ -110,6 +110,7 @@
 // REQUIRED_ARGS: -version=none
 // REQUIRED_ARGS: -version=D_PreConditions
 // REQUIRED_ARGS: -version=D_PostConditions
+// REQUIRED_ARGS: -version=D_Profile
 // REQUIRED_ARGS: -version=D_ProfileGC
 // REQUIRED_ARGS: -version=D_Invariants
 // REQUIRED_ARGS: -version=D_Optimized
@@ -336,6 +337,7 @@ Error: version identifier `all` is reserved and cannot be set
 Error: version identifier `none` is reserved and cannot be set
 Error: version identifier `D_PreConditions` is reserved and cannot be set
 Error: version identifier `D_PostConditions` is reserved and cannot be set
+Error: version identifier `D_Profile` is reserved and cannot be set
 Error: version identifier `D_ProfileGC` is reserved and cannot be set
 Error: version identifier `D_Invariants` is reserved and cannot be set
 Error: version identifier `D_Optimized` is reserved and cannot be set

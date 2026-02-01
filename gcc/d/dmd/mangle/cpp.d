@@ -26,7 +26,9 @@ import dmd.astenums;
 import dmd.attrib;
 import dmd.declaration;
 import dmd.dsymbol;
-import dmd.dsymbolsem : isGNUABITag, toAlias;
+import dmd.dsymbolsem : isGNUABITag, toAlias, equals;
+import dmd.expressionsem : toStringExp, toInteger, toUInteger;
+import dmd.templatesem : computeOneMember;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
@@ -509,6 +511,10 @@ private final class CppMangleVisitor : Visitor
             // `&function`
             Dsymbol d = isDsymbol(o);
             Expression e = isExpression(o);
+
+            if (d && d.isTemplateDeclaration())
+                d.isTemplateDeclaration().computeOneMember();
+
             if (d && d.isFuncDeclaration())
             {
                 // X .. E => template parameter is an expression

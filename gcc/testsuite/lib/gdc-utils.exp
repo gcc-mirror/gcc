@@ -107,6 +107,9 @@ proc gdc-convert-args { args } {
 	    lappend out "-Wdeprecated"
 	    lappend out "-Wno-error"
 
+	} elseif [regexp -- {^-edition=(\w+)} $arg pattern value] {
+	    lappend out "-std=d[string tolower $value]"
+
 	} elseif [regexp -- {^-extern-std=([\w+]+)} $arg pattern value] {
 	    lappend out "-fextern-std=$value"
 

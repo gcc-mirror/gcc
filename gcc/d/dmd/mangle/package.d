@@ -146,6 +146,7 @@ import dmd.dinterpret;
 import dmd.dmodule;
 import dmd.dsymbol;
 import dmd.dsymbolsem : toAlias;
+import dmd.expressionsem : toInteger, toReal, toImaginary;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;

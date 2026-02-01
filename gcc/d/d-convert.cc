@@ -459,7 +459,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
 	}
       else if (tbtype->ty == TY::Tarray)
 	{
-	  dinteger_t dim = ebtype->isTypeSArray ()->dim->toInteger ();
+	  dinteger_t dim = dmd::toInteger (ebtype->isTypeSArray ()->dim);
 	  dinteger_t esize = dmd::size (ebtype->nextOf ());
 	  dinteger_t tsize = dmd::size (tbtype->nextOf ());
 
@@ -548,7 +548,7 @@ convert_expr (tree exp, Type *etype, Type *totype)
       else if (tbtype->ty == TY::Tsarray)
 	{
 	  /* Strings are treated as dynamic arrays in D2.  */
-	  if (ebtype->isString () && tbtype->isString ())
+	  if (dmd::isString (ebtype) && dmd::isString (tbtype))
 	    return indirect_ref (build_ctype (totype), d_array_ptr (exp));
 	}
       else
@@ -596,8 +596,8 @@ convert_expr (tree exp, Type *etype, Type *totype)
     default:
       /* All casts between imaginary and non-imaginary result in 0.0,
 	 except for casts between complex and imaginary types.  */
-      if (!ebtype->isComplex () && !tbtype->isComplex ()
-	  && (ebtype->isImaginary () != tbtype->isImaginary ()))
+      if (!dmd::isComplex (ebtype) && !dmd::isComplex (tbtype)
+	  && (dmd::isImaginary (ebtype) != dmd::isImaginary (tbtype)))
 	{
 	  warning (OPT_Wcast_result,
 		   "cast from %qs to %qs will produce zero result",
@@ -671,7 +671,7 @@ convert_for_rvalue (tree expr, Type *etype, Type *totype)
 	  tree array = d_save_expr (TREE_OPERAND (ptr, 0));
 	  array = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (expr), array);
 
-	  uinteger_t dim = tbtype->isTypeSArray ()->dim->toUInteger ();
+	  uinteger_t dim = dmd::toUInteger (tbtype->isTypeSArray ()->dim);
 	  vec <constructor_elt, va_gc> *elms = NULL;
 	  for (uinteger_t i = 0; i < dim; i++)
 	    {
@@ -779,7 +779,7 @@ convert_for_assignment (Expression *expr, Type *totype, bool literalp)
       if (same_type_p (telem, ebtype))
 	{
 	  TypeSArray *sa_type = tbtype->isTypeSArray ();
-	  uinteger_t count = sa_type->dim->toUInteger ();
+	  uinteger_t count = dmd::toUInteger (sa_type->dim);
 
 	  tree ctor = build_padded_constructor (build_ctype (totype), NULL);
 	  if (count)
@@ -807,7 +807,7 @@ convert_for_assignment (Expression *expr, Type *totype, bool literalp)
 
   /* D Front end uses IntegerExp(0) to mean zero-init an array or structure.  */
   if ((tbtype->ty == TY::Tsarray || tbtype->ty == TY::Tstruct)
-      && ebtype->isIntegral ())
+      && dmd::isIntegral (ebtype))
     {
       tree ret = build_expr (expr, false, literalp);
       gcc_assert (integer_zerop (ret));
@@ -974,7 +974,7 @@ d_array_convert (Type *etype, Expression *exp)
       /* Convert single element to an array.  */
       tree expr = build_expr (exp);
 
-      if (!exp->isLvalue ())
+      if (!dmd::isLvalue (exp))
 	{
 	  tree var = build_local_temp (TREE_TYPE (expr));
 	  expr = compound_expr (modify_expr (var, expr), var);

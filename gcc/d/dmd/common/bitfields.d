@@ -10,6 +10,9 @@
  */
 module dmd.common.bitfields;
 
+nothrow:
+@safe:
+
 //version = Has_Bitfields; // does not work (yet) because hashOf doesn't work on bitfields
 version(Has_Bitfields)
     version = Debugger_friendly; // without Has_Bitfields, this uses more space by using S

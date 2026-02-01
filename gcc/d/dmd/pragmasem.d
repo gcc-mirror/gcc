@@ -14,6 +14,7 @@
 module dmd.pragmasem;
 
 import core.stdc.stdio;
+import core.stdc.string;
 
 import dmd.astenums;
 import dmd.arraytypes;
@@ -39,73 +40,14 @@ import dmd.statement;
  */
 void pragmaDeclSemantic(PragmaDeclaration pd, Scope* sc)
 {
-    import dmd.aggregate;
     import dmd.common.outbuffer;
     import dmd.dmodule;
     import dmd.dsymbolsem;
     import dmd.identifier;
-    import dmd.mangle : isValidMangling;
     import dmd.root.rmem;
-    import dmd.root.utf;
     import dmd.target;
     import dmd.utils;
 
-    StringExp verifyMangleString(ref Expression e)
-    {
-        auto se = semanticString(sc, e, "mangled name");
-        if (!se)
-            return null;
-        e = se;
-        if (!se.len)
-        {
-            .error(pd.loc, "%s `%s` - zero-length string not allowed for mangled name", pd.kind, pd.toPrettyChars);
-            return null;
-        }
-        if (se.sz != 1)
-        {
-            .error(pd.loc, "%s `%s` - mangled name characters can only be of type `char`", pd.kind, pd.toPrettyChars);
-            return null;
-        }
-        version (all)
-        {
-            import dmd.common.charactertables;
-
-            /* Note: D language specification should not have any assumption about backend
-             * implementation. Ideally pragma(mangle) can accept a string of any content.
-             *
-             * Therefore, this validation is compiler implementation specific.
-             */
-            auto slice = se.peekString();
-            for (size_t i = 0; i < se.len;)
-            {
-                dchar c = slice[i];
-                if (c < 0x80)
-                {
-                    if (c.isValidMangling)
-                    {
-                        ++i;
-                        continue;
-                    }
-                    else
-                    {
-                        .error(pd.loc, "%s `%s` char 0x%02x not allowed in mangled name", pd.kind, pd.toPrettyChars, c);
-                        break;
-                    }
-                }
-                if (const msg = utf_decodeChar(slice, i, c))
-                {
-                    .error(pd.loc, "%s `%s` %.*s", pd.kind, pd.toPrettyChars, cast(int)msg.length, msg.ptr);
-                    break;
-                }
-                if (!isAnyIdentifierCharacter(c))
-                {
-                    .error(pd.loc, "%s `%s` char `0x%04x` not allowed in mangled name", pd.kind, pd.toPrettyChars, c);
-                    break;
-                }
-            }
-        }
-        return se;
-    }
     void declarations()
     {
         if (!pd.decl)
@@ -126,58 +68,6 @@ void pragmaDeclSemantic(PragmaDeclaration pd, Scope* sc)
             }
 
             s.dsymbolSemantic(sc2);
-            if (pd.ident != Id.mangle)
-                continue;
-            assert(pd.args);
-            if (auto ad = s.isAggregateDeclaration())
-            {
-                Expression e = (*pd.args)[0];
-                sc2 = sc2.startCTFE();
-                e = e.expressionSemantic(sc);
-                e = resolveProperties(sc2, e);
-                sc2 = sc2.endCTFE();
-                AggregateDeclaration agg;
-                if (auto tc = e.type.isTypeClass())
-                    agg = tc.sym;
-                else if (auto ts = e.type.isTypeStruct())
-                    agg = ts.sym;
-                ad.pMangleOverride = new MangleOverride;
-                void setString(ref Expression e)
-                {
-                    if (auto se = verifyMangleString(e))
-                    {
-                        const name = (cast(const(char)[])se.peekData()).xarraydup;
-                        ad.pMangleOverride.id = Identifier.idPool(name);
-                        e = se;
-                    }
-                    else
-                        error(e.loc, "must be a string");
-                }
-                if (agg)
-                {
-                    ad.pMangleOverride.agg = agg;
-                    if (pd.args.length == 2)
-                    {
-                        setString((*pd.args)[1]);
-                    }
-                    else
-                        ad.pMangleOverride.id = agg.ident;
-                }
-                else
-                    setString((*pd.args)[0]);
-            }
-            else if (auto td = s.isTemplateDeclaration())
-            {
-                .error(pd.loc, "%s `%s` cannot apply to a template declaration", pd.kind, pd.toPrettyChars);
-                errorSupplemental(pd.loc, "use `template Class(Args...){ pragma(mangle, \"other_name\") class Class {} }`");
-            }
-            else if (auto se = verifyMangleString((*pd.args)[0]))
-            {
-                const name = (cast(const(char)[])se.peekData()).xarraydup;
-                uint cnt = setMangleOverride(s, name);
-                if (cnt > 1)
-                    .error(pd.loc, "%s `%s` can only apply to a single declaration", pd.kind, pd.toPrettyChars);
-            }
         }
     }
 
@@ -264,16 +154,11 @@ void pragmaDeclSemantic(PragmaDeclaration pd, Scope* sc)
     }
     else if (pd.ident == Id.mangle)
     {
-        if (!pd.args)
-            pd.args = new Expressions();
-        if (pd.args.length == 0 || pd.args.length > 2)
-        {
-            .error(pd.loc, pd.args.length == 0 ? "%s `%s` - string expected for mangled name"
-                                      : "%s `%s` expected 1 or 2 arguments", pd.kind, pd.toPrettyChars);
-            pd.args.setDim(1);
-            (*pd.args)[0] = ErrorExp.get(); // error recovery
-        }
-        return declarations();
+        Scope* sc2 = pd.newScope(sc);
+        pragmaMangleSemantic(pd.loc, sc2, pd.args, pd.decl);
+        if (sc2 != sc)
+            sc2.pop();
+        return;
     }
     else if (pd.ident == Id.crt_constructor || pd.ident == Id.crt_destructor)
     {
@@ -440,20 +325,9 @@ bool pragmaStmtSemantic(PragmaStatement ps, Scope* sc)
     {
         auto es = ps._body ? ps._body.isExpStatement() : null;
         auto de = es ? es.exp.isDeclarationExp() : null;
-        if (!de)
-        {
-            error(ps.loc, "`pragma(mangle)` must be attached to a declaration");
+        Dsymbols decls = de ? Dsymbols(de.declaration) : Dsymbols();
+        if (!pragmaMangleSemantic(ps.loc, sc, ps.args, decls.length ? &decls : null))
             return false;
-        }
-        const se = ps.args && (*ps.args).length == 1 ? semanticString(sc, (*ps.args)[0], "pragma mangle argument") : null;
-        if (!se)
-        {
-            error(ps.loc, "`pragma(mangle)` takes a single argument that must be a string literal");
-            return false;
-        }
-        const cnt = setMangleOverride(de.declaration, cast(const(char)[])se.peekData());
-        if (cnt != 1)
-            assert(0);
     }
     else if (!global.params.ignoreUnsupportedPragmas)
     {
@@ -514,34 +388,6 @@ package PINLINE evalPragmaInline(Loc loc, Scope* sc, Expressions* args)
     if (opt.get())
         return PINLINE.always;
     return PINLINE.never;
-}
-
-/**
- * Apply pragma mangle to FuncDeclarations and VarDeclarations
- * under `s`, poking through attribute declarations such as
- * `extern(C)` but not through aggregates or function bodies.
- *
- * Params:
- *    s = symbol to apply
- *    sym = overriding symbol name
- */
-private uint setMangleOverride(Dsymbol s, const(char)[] sym)
-{
-    if (s.isFuncDeclaration() || s.isVarDeclaration())
-    {
-        s.isDeclaration().mangleOverride = sym;
-        return 1;
-    }
-
-    if (auto ad = s.isAttribDeclaration())
-    {
-        uint nestedCount = 0;
-
-        ad.include(null).foreachDsymbol( (s) { nestedCount += setMangleOverride(s, sym); } );
-
-        return nestedCount;
-    }
-    return 0;
 }
 
 /***********************************************************
@@ -632,6 +478,233 @@ private bool pragmaStartAddressSemantic(Loc loc, Scope* sc, Expressions* args)
             .error(loc, "function name expected for start address, not `%s`", e.toChars());
             return false;
         }
+    }
+    return true;
+}
+
+/***********************************************************
+ * Evaluate `pragma(mangle)` and store the mangled string in `decls`
+ * This accepts any of the following variants.
+ *
+ *      pragma(mangle, StringExp) AggregateDeclaration
+ *      pragma(mangle, StringExp) VarDeclaration
+ *      pragma(mangle, StringExp) FuncDeclaration
+ *      pragma(mangle, TypeExp) AggregateDeclaration
+ *      pragma(mangle, TypeExp, StringExp) AggregateDeclaration
+ *      pragma(mangle, StringExp, TypeExp) AggregateDeclaration
+ *
+ * Params:
+ *    loc = location for error messages
+ *    sc = scope for argument interpretation
+ *    args = pragma arguments
+ *    decls = declarations to set mangled string to
+ * Returns:
+ *    `true` on success
+ */
+private bool pragmaMangleSemantic(Loc loc, Scope* sc, Expressions* args, Dsymbols* decls)
+{
+    import dmd.root.rmem;
+
+    StringExp verifyMangleString(ref Expression e)
+    {
+        import dmd.mangle : isValidMangling;
+        import dmd.root.utf : utf_decodeChar;
+        auto se = semanticString(sc, e, "pragma mangle argument");
+        if (!se)
+            return null;
+        e = se;
+        if (!se.len)
+        {
+            error(loc, "`pragma(mangle)` zero-length string not allowed for mangled name");
+            return null;
+        }
+        if (se.sz != 1)
+        {
+            error(loc, "`pragma(mangle)` mangled name characters can only be of type `char`");
+            return null;
+        }
+        auto slice = se.toStringz();
+        if (strlen(slice.ptr) != se.len)
+            .error(loc, "pragma `mangle` null character not allowed in mangled name");
+        mem.xfree(cast(void*)slice.ptr);
+        return se;
+    }
+
+    bool applyPragmaMangle(Dsymbols* decls, ref uint count, ref bool ignored)
+    {
+        if (decls is null)
+            return true;
+
+        foreach (s; (*decls)[])
+        {
+            import dmd.aggregate;
+            import dmd.common.outbuffer;
+            import dmd.dsymbolsem : dsymbolSemantic;
+            import dmd.hdrgen : arrayObjectsToBuffer;
+            import dmd.identifier : Identifier;
+
+            s.dsymbolSemantic(sc);
+
+            if (auto ad = s.isAggregateDeclaration())
+            {
+                /* pragma(mangle) AggregateDeclaration;
+                   For aggregates there may be one or two AssignExpressions:
+                   - one of which must evaluate at compile time to a string literal
+                   - one which must evaluate to a symbol
+                   The spec does not specify which order these should be in, so we
+                   allow any of:
+                   pragma(mangle, "name") struct { ... }
+                   pragma(mangle, T)      struct { ... }
+                   pragma(mangle, "name", T) struct { ... }
+                   pragma(mangle, T, "name") struct { ... }
+                 */
+                AggregateDeclaration symbol;
+                StringExp literal;
+
+                foreach (ref Expression e; (*args)[])
+                {
+                    sc = sc.startCTFE();
+                    e = e.expressionSemantic(sc);
+                    e = resolveProperties(sc, e);
+                    sc = sc.endCTFE();
+
+                    bool expectedString()
+                    {
+                        error(e.loc, "`string` expected for pragma mangle argument, not `%s` of type `%s`",
+                              e.toChars(), e.type.toChars());
+                        return false;
+                    }
+
+                    bool expectedType()
+                    {
+                        error(e.loc, "`class` or `struct` type expected for pragma mangle argument, not `%s` of type `%s`",
+                              e.toChars(), e.type.toChars());
+                        return false;
+                    }
+
+                    // Validate arguments to pragma(mangle)
+                    if (e.isTypeExp())
+                    {
+                        /* Check for and reject:
+                           pragma(mangle, TypeExp, TypeExp)
+                           where the first TypeExp already resolved to a symbol. */
+                        if (symbol)
+                            return expectedString();
+
+                        /* Type must be a class or struct symbol. */
+                        if (auto tc = e.type.isTypeClass())
+                            symbol = tc.sym;
+                        else if (auto ts = e.type.isTypeStruct())
+                            symbol = ts.sym;
+                        else
+                            return expectedType();
+                    }
+                    else
+                    {
+                        /* Check for and reject:
+                           pragma(mangle, StringExp, AssignExpression)
+                           where AssignExpression did not resolve to a symbol. */
+                        if (literal)
+                            return expectedType();
+
+                        /* Must evaluate to a compile time string literal. */
+                        auto se = verifyMangleString(e);
+                        if (se is null)
+                            return false;
+                        literal = se;
+                    }
+                }
+
+                ad.pMangleOverride = new MangleOverride;
+
+                if (symbol)
+                {
+                    ad.pMangleOverride.agg = symbol;
+                    /* The identifier of the symbol is used when no string is supplied. */
+                    if (literal is null)
+                    {
+                        ad.pMangleOverride.id = symbol.ident;
+                        count += 1;
+                        continue;
+                    }
+                }
+
+                assert(literal);
+                const name = literal.peekString().xarraydup;
+                ad.pMangleOverride.id = Identifier.idPool(name);
+                count += 1;
+            }
+            else if (auto td = s.isTemplateDeclaration())
+            {
+                /* pragma(mangle) TemplateDeclaration
+                   Give an informative error message to avoid pragma(mangle)
+                   silently ignoring the template symbol. */
+                error(loc, "`pragma(mangle)` cannot apply to a template declaration");
+                OutBuffer buf;
+                buf.arrayObjectsToBuffer(cast(Objects*)args);
+                errorSupplemental(loc, "use `template %s(Args...) { pragma(mangle, %s) ... }`", td.ident.toChars(), buf.peekChars());
+                return false;
+            }
+            else if (auto ad = s.isAttribDeclaration())
+            {
+                /* pragma(mangle) AttribDeclaration
+                   Poke through the attribute to get to the underlying declaration. */
+                if (!applyPragmaMangle(ad.include(null), count, ignored))
+                    return false;
+            }
+            else if (s.isFuncDeclaration() || s.isVarDeclaration())
+            {
+                /* pragma(mangle) Declaration;
+                   For all other symbols, there must be one AssignExpression and it
+                   must evaluate at compile time to a string literal. */
+                if (args.length != 1)
+                {
+                    error(loc, "`pragma(mangle)` takes a single argument that must be a string literal");
+                    return false;
+                }
+                auto se = verifyMangleString((*args)[0]);
+                if (!se)
+                    return false;
+
+                const name = se.peekString().xarraydup;
+                s.isDeclaration().mangleOverride = name;
+                count += 1;
+            }
+            else
+            {
+                /* pragma(mangle) only applies to function and variable
+                   symbols. Other symbols are ignored. */
+                ignored = true;
+            }
+        }
+        return true;
+    }
+
+    if (args is null)
+    {
+        error(loc, "`pragma(mangle)` expects string literal argument for mangled name");
+        return false;
+    }
+    if (args.length > 2)
+    {
+        error(loc, "`pragma(mangle)` expects 1 or 2 arguments");
+        return false;
+    }
+
+    uint count = 0;
+    bool ignored = false;
+    if (!applyPragmaMangle(decls, count, ignored))
+        return false;
+
+    if (count == 0 && !ignored)
+    {
+        error(loc, "`pragma(mangle)` must be attached to a declaration");
+        return false;
+    }
+    if (count > 1)
+    {
+        error(loc, "`pragma(mangle)` can only apply to a single declaration");
+        return false;
     }
     return true;
 }

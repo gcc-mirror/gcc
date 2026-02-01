@@ -371,6 +371,20 @@ void test12403()
 }
 
 /***************************************************/
+// regressions after converting AA to template
+void test21066()
+{
+    const(int) getValue() { return 0; }
+    int[] arr;
+    arr = [getValue()]; // works
+    int[][string] aa;
+    aa["a"] = [getValue()]; // fails: cannot implicitly convert expression `__aaval` of type `const(int)[]` to `int[]`
+
+    string[int[]] aa2;
+    aa2[[getValue()]] = "a"; // no problem because key type is automatically const(int)[]
+}
+
+/***************************************************/
 
 void main()
 {
@@ -396,4 +410,5 @@ void main()
     testTypeinfo();
     test12220();
     test12403();
+    test21066();
 }

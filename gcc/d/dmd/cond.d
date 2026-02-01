@@ -17,25 +17,20 @@ import core.stdc.string;
 import dmd.arraytypes;
 import dmd.astenums;
 import dmd.ast_node;
-import dmd.dcast;
-import dmd.dinterpret;
 import dmd.dmodule;
 import dmd.dscope;
-import dmd.dsymbol;
 import dmd.errors;
 import dmd.expression;
 import dmd.globals;
 import dmd.identifier;
 import dmd.location;
 import dmd.mtype;
-import dmd.optimize;
 import dmd.common.outbuffer;
 import dmd.rootobject;
 import dmd.root.string;
 import dmd.tokens;
 import dmd.utils;
 import dmd.visitor;
-import dmd.id;
 import dmd.statement;
 import dmd.declaration;
 import dmd.dstruct;
@@ -154,6 +149,7 @@ extern (C++) final class StaticForeach : RootObject
         auto tf = new TypeFunction(ParameterList(), null, LINK.default_, STC.none);
         auto fd = new FuncLiteralDeclaration(loc, loc, tf, TOK.reserved, null);
         fd.fbody = s;
+        fd.skipCodegen = true;
         auto fe = new FuncExp(loc, fd);
         auto ce = new CallExp(loc, fe, new Expressions());
         return ce;
@@ -233,15 +229,6 @@ extern (C++) final class StaticForeach : RootObject
     extern(D) Expression createTuple(Loc loc, TypeStruct type, Expressions* e) @safe
     {   // TODO: move to druntime?
         return new CallExp(loc, new TypeExp(loc, type), e);
-    }
-
-    /*****************************************
-     * Returns:
-     *     `true` iff ready to call `dmd.statementsem.makeTupleForeach`.
-     */
-    extern(D) bool ready()
-    {
-        return aggrfe && aggrfe.aggr && aggrfe.aggr.type && aggrfe.aggr.type.toBasetype().ty == Ttuple;
     }
 }
 
@@ -364,6 +351,7 @@ extern (C++) final class VersionCondition : DVCondition
             case "Alpha_HardFloat":
             case "Alpha_SoftFloat":
             case "Android":
+            case "Apple":
             case "ARM":
             case "ARM_HardFloat":
             case "ARM_SoftFloat":

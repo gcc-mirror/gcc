@@ -87,7 +87,19 @@ uid_t
 
 version (linux)
 {
-  static if ( __USE_FILE_OFFSET64 )
+  // Musl always uses 64-bit off_t, blkcnt_t, ino_t on all arches (LFS by default).
+  // See: https://git.musl-libc.org/cgit/musl/tree/include/alltypes.h.in?h=v1.2.3#n29
+  //   off_t:    _Int64           -> long long (signed 64-bit)
+  //   ino_t:    unsigned _Int64  -> unsigned long long (64-bit)
+  //   blkcnt_t: _Int64           -> long long (signed 64-bit)
+  // For ARM, _Int64 = long long: https://git.musl-libc.org/cgit/musl/tree/arch/arm/bits/alltypes.h.in?h=v1.2.3#n3
+  version (CRuntime_Musl)
+  {
+    alias long      blkcnt_t;
+    alias ulong     ino_t;
+    alias long      off_t;
+  }
+  else static if ( __USE_FILE_OFFSET64 )
   {
     alias long      blkcnt_t;
     alias ulong     ino_t;
@@ -99,11 +111,59 @@ version (linux)
     alias ulong_t   ino_t;
     alias slong_t   off_t;
   }
-    alias slong_t   blksize_t;
+    // musl overrides blksize_t to int on some 64-bit architectures.
+    // Default: long (https://git.musl-libc.org/cgit/musl/tree/include/alltypes.h.in?h=v1.2.3#n32)
+    // AArch64: int (https://git.musl-libc.org/cgit/musl/tree/arch/aarch64/bits/alltypes.h.in?h=v1.2.3#n18)
+    // RISCV64: int (https://git.musl-libc.org/cgit/musl/tree/arch/riscv64/bits/alltypes.h.in?h=v1.2.3#n12)
+    // LoongArch64: int (https://git.musl-libc.org/cgit/musl/tree/arch/loongarch64/bits/alltypes.h.in?id=522bd54e#n18)
+    version (CRuntime_Musl)
+    {
+        version (AArch64)
+            alias int blksize_t;
+        else version (RISCV64)
+            alias int blksize_t;
+        else version (LoongArch64)
+            alias int blksize_t;
+        else
+            alias slong_t blksize_t;
+    }
+    else
+        alias slong_t blksize_t;
+
     alias ulong     dev_t;
     alias uint      gid_t;
     alias uint      mode_t;
-    alias ulong_t   nlink_t;
+
+    // musl defines nlink_t as unsigned _Reg (= unsigned int on 32-bit, unsigned long on 64-bit),
+    // with arch-specific overrides.
+    // Default: unsigned _Reg (https://git.musl-libc.org/cgit/musl/tree/include/alltypes.h.in?h=v1.2.3#n28)
+    // MIPS64: unsigned (uint) (https://git.musl-libc.org/cgit/musl/tree/arch/mips64/bits/alltypes.h.in?h=v1.2.3#n22)
+    // X86_64: _Reg=long, so unsigned long (https://git.musl-libc.org/cgit/musl/tree/arch/x86_64/bits/alltypes.h.in?h=v1.2.3#n3)
+    version (CRuntime_Musl)
+    {
+        version (MIPS64)
+            alias uint nlink_t;
+        else version (X86_64)
+            alias ulong nlink_t;
+        else
+            alias uint nlink_t;
+    }
+    else
+    {
+        version (X86_64)
+            alias ulong nlink_t;
+        else version (S390)
+            alias size_t nlink_t;
+        else version (PPC64)
+            alias size_t nlink_t;
+        else version (MIPS64)
+            alias size_t nlink_t;
+        else version (HPPA64)
+            alias size_t nlink_t;
+        else
+            alias uint nlink_t;
+    }
+
     alias int       pid_t;
     //size_t (defined in core.stdc.stddef)
     alias c_long    ssize_t;
@@ -111,6 +171,7 @@ version (linux)
 
     version (CRuntime_Musl)
     {
+        static assert(off_t.sizeof == 8);
         /**
          * Musl versions before v1.2.0 (up to v1.1.24) had different
          * definitions for `time_t` for 32 bits.
@@ -299,7 +360,17 @@ useconds_t
 
 version (linux)
 {
-  static if ( __USE_FILE_OFFSET64 )
+  // Musl always uses 64-bit fsblkcnt_t, fsfilcnt_t on all arches (LFS by default).
+  // See: https://git.musl-libc.org/cgit/musl/tree/include/alltypes.h.in?h=v1.2.3#n34
+  //   fsblkcnt_t: unsigned _Int64  -> unsigned long long (64-bit)
+  //   fsfilcnt_t: unsigned _Int64  -> unsigned long long (64-bit)
+  // For ARM, _Int64 = long long: https://git.musl-libc.org/cgit/musl/tree/arch/arm/bits/alltypes.h.in?h=v1.2.3#n3
+  version (CRuntime_Musl)
+  {
+    alias ulong     fsblkcnt_t;
+    alias ulong     fsfilcnt_t;
+  }
+  else static if ( __USE_FILE_OFFSET64 )
   {
     alias ulong     fsblkcnt_t;
     alias ulong     fsfilcnt_t;
@@ -992,6 +1063,7 @@ else version (DragonFlyBSD)
 else version (Solaris)
 {
     alias uint pthread_t;
+    alias int lwpid_t; // non-standard
 
     struct pthread_attr_t
     {

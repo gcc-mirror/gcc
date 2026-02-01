@@ -32,16 +32,16 @@ struct ASTCodegen
     public import dmd.nspace;
     public import dmd.statement;
     public import dmd.staticassert;
-    public import dmd.typesem;
-    public import dmd.ctfeexpr;
     public import dmd.init : Designator;
+    public import dmd.typesem;
 
-
+    alias addSTC                    = dmd.typesem.addSTC;
     alias initializerToExpression   = dmd.initsem.initializerToExpression;
-    alias typeToExpression          = dmd.typesem.typeToExpression;
+    alias typeToExpression          = dmd.mtype.typeToExpression;
     alias UserAttributeDeclaration  = dmd.attrib.UserAttributeDeclaration;
     alias Ensure                    = dmd.func.Ensure; // workaround for bug in older DMD frontends
     alias ErrorExp                  = dmd.expression.ErrorExp;
+    alias ArgumentLabel             = dmd.expression.ArgumentLabel;
 
     alias MODFlags                  = dmd.mtype.MODFlags;
     alias Type                      = dmd.mtype.Type;

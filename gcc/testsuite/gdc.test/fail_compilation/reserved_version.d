@@ -124,11 +124,11 @@ fail_compilation/reserved_version.d(225): Error: version identifier `D_ProfileGC
 fail_compilation/reserved_version.d(226): Error: version identifier `D_Invariants` is reserved and cannot be set
 fail_compilation/reserved_version.d(227): Error: version identifier `D_Optimized` is reserved and cannot be set
 fail_compilation/reserved_version.d(228): Error: version identifier `VisionOS` is reserved and cannot be set
+fail_compilation/reserved_version.d(229): Error: version identifier `D_Profile` is reserved and cannot be set
 ---
 */
 
 // Some extra empty lines to help fixup the manual line numbering after adding new version identifiers
-
 #line 105
 version = MSP430;
 version = D_P16;
@@ -254,6 +254,7 @@ version = D_ProfileGC;
 version = D_Invariants;
 version = D_Optimized;
 version = VisionOS;
+version = D_Profile;
 
 // This should work though
 debug = DigitalMars;

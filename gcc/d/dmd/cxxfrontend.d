@@ -15,8 +15,8 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
 import dmd.common.outbuffer : OutBuffer;
-import dmd.dclass : ClassDeclaration;
-import dmd.declaration : TypeInfoDeclaration;
+import dmd.dclass : ClassDeclaration, BaseClass;
+import dmd.declaration : TypeInfoDeclaration, VarDeclaration, TupleDeclaration;
 import dmd.denum : EnumDeclaration;
 import dmd.dmodule /*: Module*/;
 import dmd.dscope : Scope;
@@ -32,6 +32,9 @@ import dmd.init : Initializer, NeedInterpret;
 import dmd.location : Loc;
 import dmd.mtype /*: Covariant, Type, Parameter, ParameterList*/;
 import dmd.rootobject : RootObject;
+import dmd.root.optional;
+import dmd.root.longdouble : real_t = longdouble;
+import dmd.root.complex;
 import dmd.semantic3;
 import dmd.statement : Statement, AsmStatement, GccAsmStatement;
 
@@ -108,14 +111,6 @@ void mangleToBuffer(TemplateInstance ti, ref OutBuffer buf)
 {
     import dmd.mangle;
     return dmd.mangle.mangleToBuffer(ti, buf);
-}
-
-/***********************************************************
- * dmodule.d
- */
-FuncDeclaration findGetMembers(ScopeDsymbol dsym)
-{
-    return dmd.dmodule.findGetMembers(dsym);
 }
 
 /***********************************************************
@@ -224,6 +219,109 @@ bool isPOD(StructDeclaration sd)
     return dmd.dsymbolsem.isPOD(sd);
 }
 
+bool fillVtbl(BaseClass* bc, ClassDeclaration cd, FuncDeclarations* vtbl, int newinstance)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.fillVtbl(bc, cd, vtbl, newinstance);
+}
+
+bool overloadInsert(Dsymbol ds, Dsymbol s)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.overloadInsert(ds, s);
+}
+
+bool equals(const Dsymbol ds, const Dsymbol s)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.equals(ds, s);
+}
+
+Type getType(Dsymbol ds)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.getType(ds);
+}
+
+uinteger_t size(Dsymbol ds, Loc loc)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.size(ds, loc);
+}
+
+void semantic3OnDependencies(Module m)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.semantic3OnDependencies(m);
+}
+
+void addDeferredSemantic(Dsymbol s)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.addDeferredSemantic(s);
+}
+
+void addDeferredSemantic2(Dsymbol s)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.addDeferredSemantic2(s);
+}
+
+void addDeferredSemantic3(Dsymbol s)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.addDeferredSemantic3(s);
+}
+
+void runDeferredSemantic()
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.runDeferredSemantic();
+}
+
+void runDeferredSemantic2()
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.runDeferredSemantic2();
+}
+
+void runDeferredSemantic3()
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.runDeferredSemantic3();
+}
+
+bool isOverlappedWith(VarDeclaration vd, VarDeclaration v)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.isOverlappedWith(vd, v);
+}
+
+Scope* newScope(AggregateDeclaration ad, Scope* sc)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.newScope(ad, sc);
+}
+
+Dsymbol search(Scope* sc, Loc loc, Identifier ident, out Dsymbol pscopesym,
+    SearchOptFlags flags = SearchOpt.all)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.search(sc, loc, ident, pscopesym, flags);
+}
+
+void addObjcSymbols(Dsymbol sym, ClassDeclarations* classes, ClassDeclarations* categories)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.addObjcSymbols(sym, classes, categories);
+}
+
+FuncDeclaration findGetMembers(ScopeDsymbol dsym)
+{
+    import dmd.dsymbolsem;
+    return dmd.dsymbolsem.findGetMembers(dsym);
+}
+
 /***********************************************************
  * dtemplate.d
  */
@@ -275,10 +373,10 @@ void printInstantiationTrace(TemplateInstance ti)
 /***********************************************************
  * dtoh.d
  */
-void genCppHdrFiles(ref Modules ms)
+void genCppHdrFiles(ref Modules ms, ErrorSink eSink)
 {
     import dmd.dtoh;
-    return dmd.dtoh.genCppHdrFiles(ms);
+    return dmd.dtoh.genCppHdrFiles(ms, eSink);
 }
 
 /***********************************************************
@@ -290,17 +388,17 @@ Expression getDefaultValue(EnumDeclaration ed, Loc loc)
     return dmd.enumsem.getDefaultValue(ed, loc);
 }
 
-/***********************************************************
- * expression.d
- */
-void expandTuples(Expressions* exps, ArgumentLabels* names = null)
-{
-    return dmd.expression.expandTuples(exps, names);
-}
 
 /***********************************************************
  * expressionsem.d
  */
+
+void expandTuples(Expressions* exps, ArgumentLabels* names = null)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.expandTuples(exps, names);
+}
+
 Expression expressionSemantic(Expression e, Scope* sc)
 {
     import dmd.expressionsem;
@@ -314,22 +412,93 @@ bool fill(StructDeclaration sd, Loc loc,
     return dmd.expressionsem.fill(sd, loc, elements, ctorinit);
 }
 
-/***********************************************************
- * func.d
- */
-FuncDeclaration genCfunc(Parameters* fparams, Type treturn, const(char)* name, StorageClass stc = STC.none)
+bool isIdentical(const Expression exp, const Expression e)
 {
-    return FuncDeclaration.genCfunc(fparams, treturn, name, cast(STC) stc);
+    import dmd.expressionsem;
+    return dmd.expressionsem.isIdentical(exp, e);
 }
 
-FuncDeclaration genCfunc(Parameters* fparams, Type treturn, Identifier id, StorageClass stc = STC.none)
+bool equals(const Expression exp, const Expression e)
 {
-    return FuncDeclaration.genCfunc(fparams, treturn, id, cast(STC) stc);
+    import dmd.expressionsem;
+    return dmd.expressionsem.equals(exp, e);
+}
+
+bool isLvalue(Expression exp)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.isLvalue(exp);
+}
+
+int getFieldIndex(ClassReferenceExp cre, Type fieldtype, uint fieldoffset)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.getFieldIndex(cre, fieldtype, fieldoffset);
+}
+
+void fillTupleExpExps(TupleExp te, TupleDeclaration tup)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.fillTupleExpExps(te, tup);
+}
+
+Optional!bool toBool(Expression exp)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.toBool(exp);
+}
+
+StringExp toStringExp(Expression exp)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.toStringExp(exp);
+}
+
+dinteger_t toInteger(Expression exp)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.toInteger(exp);
+}
+
+uinteger_t toUInteger(Expression exp)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.toUInteger(exp);
+}
+
+real_t toReal(Expression exp)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.toReal(exp);
+}
+
+complex_t toComplex(Expression exp)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.toComplex(exp);
+}
+
+real_t toImaginary(Expression exp)
+{
+    import dmd.expressionsem;
+    return dmd.expressionsem.toImaginary(exp);
 }
 
 /***********************************************************
  * funcsem.d
  */
+FuncDeclaration genCfunc(Parameters* fparams, Type treturn, const(char)* name, StorageClass stc = STC.none)
+{
+    import dmd.funcsem;
+    return dmd.funcsem.genCfunc(fparams, treturn, name, cast(STC) stc);
+}
+
+FuncDeclaration genCfunc(Parameters* fparams, Type treturn, Identifier id, StorageClass stc = STC.none)
+{
+    import dmd.funcsem;
+    return dmd.funcsem.genCfunc(fparams, treturn, id, cast(STC) stc);
+}
+
 bool functionSemantic(FuncDeclaration fd)
 {
     import dmd.funcsem;
@@ -352,6 +521,12 @@ PURE isPure(FuncDeclaration fd)
 {
     import dmd.funcsem;
     return dmd.funcsem.isPure(fd);
+}
+
+bool needsClosure(FuncDeclaration fd)
+{
+    import dmd.funcsem;
+    return dmd.funcsem.needsClosure(fd);
 }
 
 /***********************************************************
@@ -462,14 +637,6 @@ JsonFieldFlags tryParseJsonField(const(char)* fieldName)
 }
 
 /***********************************************************
- * mtype.d
- */
-AggregateDeclaration isAggregate(Type t)
-{
-    return dmd.mtype.isAggregate(t);
-}
-
-/***********************************************************
  * optimize.d
  */
 Expression optimize(Expression e, int result, bool keepLvalue = false)
@@ -528,6 +695,18 @@ bool tpsemantic(TemplateParameter tp, Scope* sc, TemplateParameters* parameters)
 /***********************************************************
  * typesem.d
  */
+bool hasDeprecatedAliasThis(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.hasDeprecatedAliasThis(type);
+}
+
+AggregateDeclaration isAggregate(Type t)
+{
+    import dmd.typesem;
+    return dmd.typesem.isAggregate(t);
+}
+
 bool hasPointers(Type t)
 {
     import dmd.typesem;
@@ -556,6 +735,12 @@ Type merge2(Type type)
 {
     import dmd.typesem;
     return dmd.typesem.merge2(type);
+}
+
+Type toBasetype(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.toBasetype(type);
 }
 
 Expression defaultInit(Type mt, Loc loc, const bool isCfile = false)
@@ -721,6 +906,12 @@ Type referenceTo(Type type)
     return dmd.typesem.referenceTo(type);
 }
 
+Type memType(TypeEnum type)
+{
+    import dmd.typesem;
+    return dmd.typesem.memType(type);
+}
+
 uinteger_t size(Type type)
 {
     import dmd.typesem;
@@ -731,6 +922,18 @@ uinteger_t size(Type type, Loc loc)
 {
     import dmd.typesem;
     return dmd.typesem.size(type, loc);
+}
+
+structalign_t alignment(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.alignment(type);
+}
+
+uint alignsize(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.alignsize(type);
 }
 
 MATCH implicitConvTo(Type from, Type to)
@@ -749,6 +952,186 @@ Expression defaultInitLiteral(Type t, Loc loc)
 {
     import dmd.typesem;
     return dmd.typesem.defaultInitLiteral(t, loc);
+}
+
+bool hasUnsafeBitpatterns(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.hasUnsafeBitpatterns(type);
+}
+
+bool hasInvariant(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.hasInvariant(type);
+}
+
+bool hasVoidInitPointers(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.hasVoidInitPointers(type);
+}
+
+void Type_init()
+{
+    import dmd.typesem;
+    return dmd.typesem.Type_init();
+}
+
+void transitive(TypeNext type)
+{
+    import dmd.typesem;
+    return dmd.typesem.transitive(type);
+}
+
+Type makeConst(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeConst(type);
+}
+
+Type makeImmutable(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeImmutable(type);
+}
+
+Type makeMutable(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeMutable(type);
+}
+
+Type makeShared(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeShared(type);
+}
+
+Type makeSharedConst(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeSharedConst(type);
+}
+
+Type makeWild(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeWild(type);
+}
+
+Type makeWildConst(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeWildConst(type);
+}
+
+Type makeSharedWild(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeSharedWild(type);
+}
+
+Type makeSharedWildConst(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.makeSharedWildConst(type);
+}
+
+Type nextOf(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.nextOf(type);
+}
+
+Type baseElemOf(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.baseElemOf(type);
+}
+
+Type isLazyArray(Parameter param)
+{
+    import dmd.typesem;
+    return dmd.typesem.isLazyArray(param);
+}
+
+MOD deduceWild(Type type, Type t, bool isRef)
+{
+    import dmd.typesem;
+    return dmd.typesem.deduceWild(type, t, isRef);
+}
+
+bool isIntegral(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isIntegral(type);
+}
+
+bool isFloating(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isFloating(type);
+}
+
+bool isScalar(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isScalar(type);
+}
+
+bool isReal(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isReal(type);
+}
+
+bool isComplex(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isComplex(type);
+}
+
+bool isImaginary(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isImaginary(type);
+}
+
+bool isString(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isString(type);
+}
+
+bool isBoolean(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isBoolean(type);
+}
+
+bool isUnsigned(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.isUnsigned(type);
+}
+
+bool needsNested(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.needsNested(type);
+}
+
+bool needsDestruction(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.needsDestruction(type);
+}
+
+bool needsCopyOrPostblit(Type type)
+{
+    import dmd.typesem;
+    return dmd.typesem.needsCopyOrPostblit(type);
 }
 
 /***********************************************************
@@ -787,6 +1170,12 @@ TypeInfoDeclaration getTypeInfoAssocArrayDeclaration(TypeAArray t, Scope* sc)
 /**
  * templatesem.d
  */
+bool declareParameter(TemplateParameter tp, Scope* sc)
+{
+    import dmd.templatesem;
+    return dmd.templatesem.declareParameter(tp, sc);
+}
+
 bool needsCodegen(TemplateInstance ti)
 {
     import dmd.templatesem;

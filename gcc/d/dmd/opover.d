@@ -721,7 +721,7 @@ Expression opOverloadEqual(EqualExp e, Scope* sc, Type[2] aliasThisStop)
             /* The explicit cast is necessary for interfaces
              * https://issues.dlang.org/show_bug.cgi?id=4088
              */
-            Type to = ClassDeclaration.object.getType();
+            Type to = dmd.dsymbolsem.getType(ClassDeclaration.object);
             if (cd1.isInterfaceDeclaration())
                 e1x = new CastExp(e.loc, e.e1, t1.isMutable() ? to : to.constOf());
             if (cd2.isInterfaceDeclaration())

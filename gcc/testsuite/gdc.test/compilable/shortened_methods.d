@@ -22,6 +22,8 @@ class A {
 class B : A{
     // short syntax also overrides the same as long syntax
     override bool isNull() => this !is null;
+
+    this(float y) => super(y);
 }
 
 static assert((new A).x == 34);
@@ -45,6 +47,11 @@ struct T
 {
     void inc() {}
     this(this) => inc();
+
+    // https://github.com/dlang/dmd/issues/21576
+    this(int) => inc();
+
+    this(byte) { return inc(); }
 
     void free() {}
     ~this() => free();

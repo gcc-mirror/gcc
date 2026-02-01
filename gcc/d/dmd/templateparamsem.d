@@ -20,6 +20,7 @@ import dmd.globals;
 import dmd.location;
 import dmd.expression;
 import dmd.expressionsem;
+import dmd.templatesem;
 import dmd.rootobject;
 import dmd.mtype;
 import dmd.typesem;

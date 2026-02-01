@@ -158,6 +158,13 @@ real NaN(ulong payload) @trusted pure nothrow @nogc
  * For 80-bit or 128-bit reals, it is 0x3FFF_FFFF_FFFF_FFFF.
  */
 ulong getNaNPayload(real x) @trusted pure nothrow @nogc
+in
+{
+    // Precondition: Input must be NaN
+    import std.math.traits : isNaN;
+    assert(isNaN(x), "getNaNPayload called on a non-NaN value");
+}
+do
 {
     import std.math.traits : floatTraits, RealFormat;
 

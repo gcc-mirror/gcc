@@ -895,9 +895,9 @@ public:
 
   void visit (TypeSArray *t) final override
   {
-    if (t->dim->isConst () && t->dim->type->isIntegral ())
+    if (t->dim->isConst () && dmd::isIntegral (t->dim->type))
       {
-	uinteger_t size = t->dim->toUInteger ();
+	uinteger_t size = dmd::toUInteger (t->dim);
 	t->ctype = make_array_type (t->next, size);
       }
     else
@@ -912,7 +912,7 @@ public:
 
   void visit (TypeVector *t) final override
   {
-    int nunits = t->basetype->isTypeSArray ()->dim->toUInteger ();
+    int nunits = dmd::toUInteger (t->basetype->isTypeSArray ()->dim);
     tree inner = build_ctype (t->elementType ());
 
     /* Same rationale as void static arrays.  */
@@ -1156,7 +1156,7 @@ public:
 		tree ident = get_identifier (member->ident->toChars ());
 
 		Expression *evalue = member->value ();
-		tree value = build_integer_cst (evalue->toInteger (),
+		tree value = build_integer_cst (dmd::toInteger (evalue),
 						basetype);
 
 		/* Build an identifier for the enumeration constant.  */

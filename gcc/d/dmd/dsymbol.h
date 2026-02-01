@@ -138,8 +138,8 @@ enum class PASS : uint8_t
     semantic2done,  // semantic2() done
     semantic3,      // semantic3() started
     semantic3done,  // semantic3() done
-    inline_,         // inline started
-    inlinedone,     // inline done
+    inlinePragma,   // inline pragma(inline, true) functions started
+    inlineAll,      // inline all functions started
     obj             // toObjFile() run
 };
 
@@ -205,7 +205,6 @@ public:
     CPPNamespaceDeclaration* cppnamespace(CPPNamespaceDeclaration* ns);
     UserAttributeDeclaration* userAttribDecl(UserAttributeDeclaration* uad);
     virtual const char *toPrettyCharsHelper(); // helper to print fully qualified (template) arguments
-    bool equals(const RootObject * const o) const override;
     bool isAnonymous() const;
     Module *getModule();
     bool isCsymbol();
@@ -227,8 +226,6 @@ public:
     virtual Identifier *getIdent();
     virtual const char *toPrettyChars(bool QualifyTypes = false);
     virtual const char *kind() const;
-    virtual bool overloadInsert(Dsymbol *s);
-    virtual uinteger_t size(Loc loc);
     virtual bool isforwardRef();
     virtual AggregateDeclaration *isThis();     // is a 'this' required to access the member
     virtual bool isExport() const;              // is Dsymbol exported?
@@ -241,11 +238,9 @@ public:
     AggregateDeclaration *isMemberDecl();       // is toParentDecl() an AggregateDeclaration?
     AggregateDeclaration *isMemberLocal();      // is toParentLocal() an AggregateDeclaration?
     ClassDeclaration *isClassMember();          // isMember() is a ClassDeclaration?
-    virtual Type *getType();                    // is this a type?
     virtual bool needThis();                    // need a 'this' pointer?
     virtual Visibility visible();
     virtual Dsymbol *syntaxCopy(Dsymbol *s);    // copy only syntax trees
-    virtual void addObjcSymbols(ClassDeclarations *, ClassDeclarations *) { }
 
     virtual void addComment(const utf8_t *comment);
     const utf8_t *comment();                      // current value of comment
@@ -430,4 +425,17 @@ namespace dmd
     void setScope(Dsymbol *d, Scope *sc);
     void importAll(Dsymbol *d, Scope *sc);
     bool hasPointers(Dsymbol *d);
+    Type *getType(Dsymbol *d);
+    uinteger_t size(Dsymbol *ds, Loc loc);
+    void semantic3OnDependencies(Module *m);
+    void addDeferredSemantic(Dsymbol *s);
+    void addDeferredSemantic2(Dsymbol *s);
+    void addDeferredSemantic3(Dsymbol *s);
+    void runDeferredSemantic();
+    void runDeferredSemantic2();
+    void runDeferredSemantic3();
+    bool isOverlappedWith(VarDeclaration *vd, VarDeclaration *v);
+    Dsymbol* search(Scope *sc, Loc loc, Identifier* ident, Dsymbol*& pscopesym, uint32_t flags = 0u);
+    Scope *newScope(AggregateDeclaration * ad, Scope *sc);
+    void addObjcSymbols(Dsymbol *s, ClassDeclarations *, ClassDeclarations *);
 }

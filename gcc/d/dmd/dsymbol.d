@@ -17,7 +17,6 @@ import core.stdc.string;
 import core.stdc.stdlib;
 
 import dmd.aggregate;
-import dmd.aliasthis;
 import dmd.arraytypes;
 import dmd.attrib;
 import dmd.astenums;
@@ -30,16 +29,11 @@ import dmd.dmodule;
 import dmd.dversion;
 import dmd.dscope;
 import dmd.dstruct;
-import dmd.dsymbolsem : toAlias;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
-import dmd.expressionsem : getDsymbol;
 import dmd.func;
-import dmd.id;
 import dmd.identifier;
-import dmd.init;
-import dmd.lexer;
 import dmd.location;
 import dmd.mtype;
 import dmd.nspace;
@@ -181,8 +175,8 @@ enum PASS : ubyte
     semantic2done,  // semantic2() done
     semantic3,      // semantic3() started
     semantic3done,  // semantic3() done
-    inline,         // inline started
-    inlinedone,     // inline done
+    inlinePragma,   // inline pragma(inline, true) functions started
+    inlineAll,      // inline all functions started
     obj,            // toObjFile() run
 }
 
@@ -413,21 +407,6 @@ extern (C++) class Dsymbol : ASTNode
         return toChars();
     }
 
-    override bool equals(const RootObject o) const
-    {
-        if (this == o)
-            return true;
-        const s = o.isDsymbol();
-        if (!s)
-            return false;
-        // Overload sets don't have an ident
-        // Function-local declarations may have identical names
-        // if they are declared in different scopes
-        if (s && ident && s.ident && ident.equals(s.ident) && localNum == s.localNum)
-            return true;
-        return false;
-    }
-
     final bool isAnonymous() const
     {
         return ident is null || ident.isAnonymous;
@@ -592,16 +571,6 @@ extern (C++) class Dsymbol : ASTNode
         return parent.toParentDeclImpl(localOnly);
     }
 
-    /**
-     * Returns the declaration scope scope of `this` unless any of the symbols
-     * `p1` or `p2` resides in its enclosing instantiation scope then the
-     * latter is returned.
-     */
-    final Dsymbol toParentP(Dsymbol p1, Dsymbol p2 = null)
-    {
-        return followInstantiationContext(p1, p2) ? toParent2() : toParentLocal();
-    }
-
     final inout(TemplateInstance) isInstantiated() inout
     {
         if (!parent)
@@ -610,50 +579,6 @@ extern (C++) class Dsymbol : ASTNode
         if (ti && !ti.isTemplateMixin())
             return ti;
         return parent.isInstantiated();
-    }
-
-    /***
-     * Returns true if any of the symbols `p1` or `p2` resides in the enclosing
-     * instantiation scope of `this`.
-     */
-    final bool followInstantiationContext(Dsymbol p1, Dsymbol p2 = null)
-    {
-        static bool has2This(Dsymbol s)
-        {
-            if (auto f = s.isFuncDeclaration())
-                return f.hasDualContext;
-            if (auto ad = s.isAggregateDeclaration())
-                return ad.vthis2 !is null;
-            return false;
-        }
-
-        if (has2This(this))
-        {
-            assert(p1);
-            auto outer = toParent();
-            while (outer)
-            {
-                auto ti = outer.isTemplateInstance();
-                if (!ti)
-                    break;
-                foreach (oarg; *ti.tiargs)
-                {
-                    auto sa = getDsymbol(oarg);
-                    if (!sa)
-                        continue;
-                    sa = sa.toAlias().toParent2();
-                    if (!sa)
-                        continue;
-                    if (sa == p1)
-                        return true;
-                    if (p2 && sa == p2)
-                        return true;
-                }
-                outer = ti.tempdecl.toParent();
-            }
-            return false;
-        }
-        return false;
     }
 
     // Check if this function is a member of a template which has only been
@@ -731,22 +656,6 @@ extern (C++) class Dsymbol : ASTNode
     const(char)* kind() const pure nothrow @nogc @safe
     {
         return "symbol";
-    }
-
-    bool overloadInsert(Dsymbol s)
-    {
-        //printf("Dsymbol::overloadInsert('%s')\n", s.toChars());
-        return false;
-    }
-
-    /*********************************
-     * Returns:
-     *  SIZE_INVALID when the size cannot be determined
-     */
-    ulong size(Loc loc)
-    {
-        .error(loc, "%s `%s` symbol `%s` has no size", kind, toPrettyChars, toChars());
-        return SIZE_INVALID;
     }
 
     bool isforwardRef()
@@ -832,12 +741,6 @@ extern (C++) class Dsymbol : ASTNode
         return ad ? ad.isClassDeclaration() : null;
     }
 
-    // is this a type?
-    Type getType()
-    {
-        return null;
-    }
-
     // need a 'this' pointer?
     bool needThis()
     {
@@ -860,10 +763,6 @@ extern (C++) class Dsymbol : ASTNode
     {
         printf("%s %s\n", kind(), toChars());
         assert(0);
-    }
-
-    void addObjcSymbols(ClassDeclarations* classes, ClassDeclarations* categories)
-    {
     }
 
     /****************************************
@@ -1177,52 +1076,6 @@ public:
         sds.members = arraySyntaxCopy(members);
         sds.endlinnum = endlinnum;
         return sds;
-    }
-
-    extern (D) final OverloadSet mergeOverloadSet(Identifier ident, OverloadSet os, Dsymbol s)
-    {
-        if (!os)
-        {
-            os = new OverloadSet(ident);
-            os.parent = this;
-        }
-        if (OverloadSet os2 = s.isOverloadSet())
-        {
-            // Merge the cross-module overload set 'os2' into 'os'
-            if (os.a.length == 0)
-            {
-                os.a.setDim(os2.a.length);
-                memcpy(os.a.tdata(), os2.a.tdata(), (os.a[0]).sizeof * os2.a.length);
-            }
-            else
-            {
-                for (size_t i = 0; i < os2.a.length; i++)
-                {
-                    os = mergeOverloadSet(ident, os, os2.a[i]);
-                }
-            }
-        }
-        else
-        {
-            assert(s.isOverloadable());
-            /* Don't add to os[] if s is alias of previous sym
-             */
-            for (size_t j = 0; j < os.a.length; j++)
-            {
-                Dsymbol s2 = os.a[j];
-                if (s.toAlias() == s2.toAlias())
-                {
-                    if (s2.isDeprecated() || (s2.visible() < s.visible() && s.visible().kind != Visibility.Kind.none))
-                    {
-                        os.a[j] = s;
-                    }
-                    goto Lcontinue;
-                }
-            }
-            os.push(s);
-        Lcontinue:
-        }
-        return os;
     }
 
     void importScope(Dsymbol s, Visibility visibility) nothrow

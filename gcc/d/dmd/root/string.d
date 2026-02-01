@@ -13,6 +13,8 @@ module dmd.root.string;
 import core.stdc.string;
 import dmd.root.rmem;
 
+nothrow:
+
 /// Slices a `\0`-terminated C-string, excluding the terminator
 inout(char)[] toDString (inout(char)* s) pure nothrow @nogc
 {

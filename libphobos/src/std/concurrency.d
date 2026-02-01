@@ -4,6 +4,7 @@
  * $(BOOKTABLE,
  * $(TR $(TH Category) $(TH Symbols))
  * $(TR $(TD Tid) $(TD
+ *     $(MYREF join)
  *     $(MYREF locate)
  *     $(MYREF ownerTid)
  *     $(MYREF register)
@@ -622,6 +623,7 @@ if (isSpawnable!(F, T))
     else
     {
         auto t = new Thread(&exec);
+        spawnTid.mbox.m_thread = t;
         t.start();
     }
     thisInfo.links[spawnTid] = linked;
@@ -1195,6 +1197,66 @@ Tid locate(string name)
             return *tid;
         return Tid.init;
     }
+}
+
+/**
+ * Waits for the thread associated with `tid` to complete.
+ *
+ * This function blocks until the thread represented by `tid` finishes executing
+ * and then releases all OS resources associated with it (thread stack, thread-local
+ * storage, etc.). This is essential for preventing resource leaks in long-running
+ * applications that create many short-lived threads.
+ *
+ * For threads created by $(LREF spawn), this function must be called to properly
+ * free OS resources. Without calling `join`, thread stacks (~8 MB each on typical
+ * systems) will accumulate in virtual memory for the lifetime of the process.
+ *
+ * Params:
+ *  tid = The $(LREF Tid) of the thread to join.
+ *
+ * Throws:
+ *  $(REF ThreadError, core,thread,osthread) if the thread has already been joined
+ *  or if the thread was created by a custom $(LREF Scheduler).
+ *
+ * Example:
+ * ---
+ * auto tid = spawn(&someFunction);
+ * // ... do other work ...
+ * join(tid); // Wait for thread to complete and free resources
+ * ---
+ *
+ * Note:
+ *  It is an error to call `join` on the same `Tid` more than once.
+ *  The function will throw if the thread was created by a $(LREF Scheduler)
+ *  rather than directly as a system thread.
+ */
+void join(Tid tid)
+{
+    import core.thread.threadbase : ThreadError;
+
+    if (tid.mbox is null)
+        throw new ThreadError("Cannot join Tid with null MessageBox");
+
+    if (tid.mbox.m_thread is null)
+        throw new ThreadError("Cannot join Tid created by a Scheduler");
+
+    tid.mbox.m_thread.join();
+}
+
+///
+@system unittest
+{
+    import core.time : msecs;
+    import core.thread : Thread;
+
+    auto tid = spawn((int x) {
+        Thread.sleep(10.msecs);
+        ownerTid.send(x * 2);
+    }, 21);
+
+    join(tid); // Wait for thread to finish
+    auto result = receiveOnly!int();
+    assert(result == 42);
 }
 
 /**
@@ -2426,6 +2488,7 @@ private
         size_t m_localMsgs;
         size_t m_maxMsgs;
         bool m_closed;
+        package Thread m_thread; // For join(Tid)
     }
 
     /*

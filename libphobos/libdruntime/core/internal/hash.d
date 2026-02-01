@@ -300,12 +300,9 @@ size_t hashOf(T)(scope const T val, size_t seed) if (__traits(isScalar, T) && !i
     static if (is(T V : V*))
     {
         pragma(inline, true);
-        if (__ctfe)
-        {
-            if (val is null) return hashOf(size_t(0), seed);
-            assert(0, "Unable to calculate hash of non-null pointer at compile time");
-        }
-        return hashOf(cast(size_t) val, seed);
+        return __ctfe ? (val is null ? hashOf(size_t(0), seed) :
+                assert(0, "Unable to calculate hash of non-null pointer at compile time"))
+            : hashOf(cast(size_t) val, seed);
     }
     else static if (is(T EType == enum) && is(typeof(val[0])))
     {
@@ -584,12 +581,9 @@ if (!is(T == enum) && (is(T == struct) || is(T == union))
 size_t hashOf(T)(scope const T val, size_t seed = 0) if (!is(T == enum) && is(T == delegate))
 {
     pragma(inline, true);
-    if (__ctfe)
-    {
-        if (val is null) return hashOf(size_t(0), hashOf(size_t(0), seed));
-        assert(0, "unable to compute hash of "~T.stringof~" at compile time");
-    }
-    return hashOf(val.ptr, hashOf(cast(void*) val.funcptr, seed));
+    return __ctfe ? (val is null ? hashOf(size_t(0), hashOf(size_t(0), seed)) :
+            assert(0, "unable to compute hash of "~T.stringof~" at compile time"))
+        : hashOf(val.ptr, hashOf(cast(void*) val.funcptr, seed));
 }
 
 //address-based class hash. CTFE only if null.
@@ -599,8 +593,8 @@ if (!is(T == enum) && (is(T == interface) || is(T == class))
     && canBitwiseHash!T)
 {
     pragma(inline, true);
-    if (__ctfe) if (val is null) return 0;
-    return hashOf(cast(const void*) val);
+    return __ctfe && (val is null) ? 0
+        : hashOf(cast(const void*) val);
 }
 
 //address-based class hash. CTFE only if null.
@@ -610,8 +604,8 @@ if (!is(T == enum) && (is(T == interface) || is(T == class))
     && canBitwiseHash!T)
 {
     pragma(inline, true);
-    if (__ctfe) if (val is null) return hashOf(size_t(0), seed);
-    return hashOf(cast(const void*) val, seed);
+    return __ctfe && (val is null) ? hashOf(size_t(0), seed)
+        : hashOf(cast(const void*) val, seed);
 }
 
 //class or interface hash. CTFE depends on toHash

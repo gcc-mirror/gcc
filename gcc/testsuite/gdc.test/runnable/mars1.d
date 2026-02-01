@@ -9,6 +9,31 @@ template tuple(A...) { alias tuple = A; }
 
 ///////////////////////
 
+void testIntegralPromotions()
+{
+    uint uconv1(int q, ubyte  p) { return p; } assert(uconv1(0,0xFF)        == 0xFF);
+    uint uconv2(int q, ushort p) { return p; } assert(uconv2(0,0xFFFF)      == 0xFFFF);
+    uint uconv3(int q, uint   p) { return p; } assert(uconv3(0,0xFFFF_FFFF) == 0xFFFF_FFFF);
+    //uint uconv4(int q, ulong  p) { return p; }
+
+    ulong uconv5(int q, ubyte  p) { return p; } assert(uconv5(0,0xFF)                  == 0xFF);
+    ulong uconv6(int q, ushort p) { return p; } assert(uconv6(0,0xFFFF)                == 0xFFFF);
+    ulong uconv7(int q, uint   p) { return p; } assert(uconv7(0,0xFFFF_FFFF)           == 0xFFFF_FFFF);
+    ulong uconv8(int q, ulong  p) { return p; } assert(uconv8(0,0xFFFF_FFFF_FFFF_FFFF) == 0xFFFF_FFFF_FFFF_FFFF);
+
+    uint sconv1(int q, byte  p) { return p; } assert(sconv1(0,cast(byte)0xFF)    == 0xFFFF_FFFF);
+    uint sconv2(int q, short p) { return p; } assert(sconv2(0,cast(short)0xFFFF) == 0xFFFF_FFFF);
+    uint sconv3(int q, int   p) { return p; } assert(sconv3(0,0xFFFF_FFFF)       == 0xFFFF_FFFF);
+    //uint sconv4(int q, long  p) { return p; }
+
+    ulong sconv5(int q, byte  p) { return p; } assert(sconv5(0,cast(byte)0xFF)        == 0xFFFF_FFFF_FFFF_FFFF);
+    ulong sconv6(int q, short p) { return p; } assert(sconv6(0,cast(short)0xFFFF)     == 0xFFFF_FFFF_FFFF_FFFF);
+    ulong sconv7(int q, int   p) { return p; } assert(sconv7(0,0xFFFF_FFFF)           == 0xFFFF_FFFF_FFFF_FFFF);
+    ulong sconv8(int q, long  p) { return p; } assert(sconv8(0,0xFFFF_FFFF_FFFF_FFFF) == 0xFFFF_FFFF_FFFF_FFFF);
+}
+
+///////////////////////
+
 // https://github.com/dlang/dmd/pull/11441
 
 long sdiv1(long l)
@@ -2566,6 +2591,8 @@ void test10()
 
 int main()
 {
+    testIntegralPromotions();
+
     // All the various integer divide tests
     testsdiv2();
     testulldiv();

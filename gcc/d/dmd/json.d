@@ -25,6 +25,7 @@ import dmd.dimport;
 import dmd.dmodule;
 import dmd.dsymbol;
 import dmd.dsymbolsem : include;
+import dmd.templatesem : computeOneMember;
 import dmd.dtemplate;
 import dmd.errors;
 import dmd.expression;
@@ -474,6 +475,7 @@ public:
     void jsonProperties(TemplateDeclaration td)
     {
         jsonProperties(cast(Dsymbol)td);
+        td.computeOneMember();
         if (td.onemember && td.onemember.isCtorDeclaration())
             property("name", "this"); // __ctor -> this
         else

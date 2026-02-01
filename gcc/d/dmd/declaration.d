@@ -16,19 +16,13 @@ import core.stdc.stdio;
 import dmd.aggregate;
 import dmd.arraytypes;
 import dmd.astenums;
-import dmd.ctorflow;
-import dmd.dclass;
-import dmd.delegatize;
-import dmd.dscope;
-import dmd.dstruct;
 import dmd.dsymbol;
-import dmd.dsymbolsem : toAlias;
 import dmd.dtemplate;
 import dmd.errors;
+import dmd.errorsink;
 import dmd.expression;
 import dmd.func;
 import dmd.globals;
-import dmd.hdrgen;
 import dmd.id;
 import dmd.identifier;
 import dmd.init;
@@ -36,35 +30,21 @@ import dmd.intrange;
 import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
-import dmd.rootobject;
 import dmd.root.filename;
 import dmd.target;
-import dmd.tokens;
-import dmd.typesem : typeSemantic, size;
+import dmd.targetcompiler;
 import dmd.visitor;
 
-version (IN_GCC) {}
-else version (IN_LLVM) {}
-else version = MARS;
 
 /******************************************
  */
 void ObjectNotFound(Loc loc, Identifier id)
 {
     global.gag = 0; // never gag the fatal error
-    error(loc, "`%s` not found. object.d may be incorrectly installed or corrupt.", id.toChars());
-    version (IN_LLVM)
-    {
-        errorSupplemental(loc, "ldc2 might not be correctly installed.");
-        errorSupplemental(loc, "Please check your ldc2.conf configuration file.");
-        errorSupplemental(loc, "Installation instructions can be found at http://wiki.dlang.org/LDC.");
-    }
-    else version (MARS)
-    {
-        errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
-        const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
-        errorSupplemental(loc, "config file: %.*s", cast(int)dmdConfFile.length, dmdConfFile.ptr);
-    }
+    const dmdConfFile = global.inifilename.length ? FileName.canonicalName(global.inifilename) : "not found";
+
+    mixin HostObjectNotFound;
+    hostObjectNotFound(loc, id.toChars(), dmdConfFile, global.errorSink); // print host-specific diagnostic
     fatal();
 }
 
@@ -118,15 +98,6 @@ extern (C++) abstract class Declaration : Dsymbol
     override const(char)* kind() const
     {
         return "declaration";
-    }
-
-    override final ulong size(Loc loc)
-    {
-        assert(type);
-        const sz = type.size();
-        if (sz == SIZE_INVALID)
-            errors = true;
-        return sz;
     }
 
     final bool isStatic() const pure nothrow @nogc @safe
@@ -302,60 +273,6 @@ extern (C++) final class TupleDeclaration : Declaration
         return "sequence";
     }
 
-    override Type getType()
-    {
-        /* If this tuple represents a type, return that type
-         */
-
-        //printf("TupleDeclaration::getType() %s\n", toChars());
-        if (isexp || building)
-            return null;
-        if (!tupletype)
-        {
-            /* It's only a type tuple if all the Object's are types
-             */
-            for (size_t i = 0; i < objects.length; i++)
-            {
-                RootObject o = (*objects)[i];
-                if (!o.isType())
-                {
-                    //printf("\tnot[%d], %p, %d\n", i, o, o.dyncast());
-                    return null;
-                }
-            }
-
-            /* We know it's a type tuple, so build the TypeTuple
-             */
-            Types* types = cast(Types*)objects;
-            auto args = new Parameters(objects.length);
-            OutBuffer buf;
-            int hasdeco = 1;
-            for (size_t i = 0; i < types.length; i++)
-            {
-                Type t = (*types)[i];
-                //printf("type = %s\n", t.toChars());
-                version (none)
-                {
-                    buf.printf("_%s_%d", ident.toChars(), i);
-                    auto id = Identifier.idPool(buf.extractSlice());
-                    auto arg = new Parameter(Loc.initial, STC.in_, t, id, null);
-                }
-                else
-                {
-                    auto arg = new Parameter(Loc.initial, STC.none, t, null, null, null);
-                }
-                (*args)[i] = arg;
-                if (!t.deco)
-                    hasdeco = 0;
-            }
-
-            tupletype = new TypeTuple(args);
-            if (hasdeco)
-                return tupletype.typeSemantic(Loc.initial, null);
-        }
-        return tupletype;
-    }
-
     override bool needThis()
     {
         //printf("TupleDeclaration::needThis(%s)\n", toChars());
@@ -449,142 +366,9 @@ extern (C++) final class AliasDeclaration : Declaration
         return sa;
     }
 
-    override bool overloadInsert(Dsymbol s)
-    {
-        //printf("[%s] AliasDeclaration::overloadInsert('%s') s = %s %s @ [%s]\n",
-        //       loc.toChars(), toChars(), s.kind(), s.toChars(), s.loc.toChars());
-
-        /** Aliases aren't overloadable themselves, but if their Aliasee is
-         *  overloadable they are converted to an overloadable Alias (either
-         *  FuncAliasDeclaration or OverDeclaration).
-         *
-         *  This is done by moving the Aliasee into such an overloadable alias
-         *  which is then used to replace the existing Aliasee. The original
-         *  Alias (_this_) remains a useless shell.
-         *
-         *  This is a horrible mess. It was probably done to avoid replacing
-         *  existing AST nodes and references, but it needs a major
-         *  simplification b/c it's too complex to maintain.
-         *
-         *  A simpler approach might be to merge any colliding symbols into a
-         *  simple Overload class (an array) and then later have that resolve
-         *  all collisions.
-         */
-        if (semanticRun >= PASS.semanticdone)
-        {
-            /* Semantic analysis is already finished, and the aliased entity
-             * is not overloadable.
-             */
-            if (type)
-            {
-                /*
-                    If type has been resolved already we could
-                    still be inserting an alias from an import.
-
-                    If we are handling an alias then pretend
-                    it was inserting and return true, if not then
-                    false since we didn't even pretend to insert something.
-                */
-                return this._import && this.equals(s);
-            }
-
-            // https://issues.dlang.org/show_bug.cgi?id=23865
-            // only insert if the symbol can be part of a set
-            const s1 = s.toAlias();
-            const isInsertCandidate = s1.isFuncDeclaration() || s1.isOverDeclaration() || s1.isTemplateDeclaration();
-
-            /* When s is added in member scope by static if, mixin("code") or others,
-             * aliassym is determined already. See the case in: test/compilable/test61.d
-             */
-            auto sa = aliassym.toAlias();
-
-            if (auto td = s.toAlias().isTemplateDeclaration())
-                s = td.funcroot ? td.funcroot : td;
-
-            if (auto fd = sa.isFuncDeclaration())
-            {
-                auto fa = new FuncAliasDeclaration(ident, fd);
-                fa.visibility = visibility;
-                fa.parent = parent;
-                aliassym = fa;
-                if (isInsertCandidate)
-                    return aliassym.overloadInsert(s);
-            }
-            if (auto td = sa.isTemplateDeclaration())
-            {
-                auto od = new OverDeclaration(ident, td.funcroot ? td.funcroot : td);
-                od.visibility = visibility;
-                od.parent = parent;
-                aliassym = od;
-                if (isInsertCandidate)
-                    return aliassym.overloadInsert(s);
-            }
-            if (auto od = sa.isOverDeclaration())
-            {
-                if (sa.ident != ident || sa.parent != parent)
-                {
-                    od = new OverDeclaration(ident, od);
-                    od.visibility = visibility;
-                    od.parent = parent;
-                    aliassym = od;
-                }
-                if (isInsertCandidate)
-                    return od.overloadInsert(s);
-            }
-            if (auto os = sa.isOverloadSet())
-            {
-                if (sa.ident != ident || sa.parent != parent)
-                {
-                    os = new OverloadSet(ident, os);
-                    // TODO: visibility is lost here b/c OverloadSets have no visibility attribute
-                    // Might no be a practical issue, b/c the code below fails to resolve the overload anyhow.
-                    // ----
-                    // module os1;
-                    // import a, b;
-                    // private alias merged = foo; // private alias to overload set of a.foo and b.foo
-                    // ----
-                    // module os2;
-                    // import a, b;
-                    // public alias merged = bar; // public alias to overload set of a.bar and b.bar
-                    // ----
-                    // module bug;
-                    // import os1, os2;
-                    // void test() { merged(123); } // should only look at os2.merged
-                    //
-                    // os.visibility = visibility;
-                    os.parent = parent;
-                    aliassym = os;
-                }
-                if (isInsertCandidate)
-                {
-                    os.push(s);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /* Don't know yet what the aliased symbol is, so assume it can
-         * be overloaded and check later for correctness.
-         */
-        if (overnext)
-            return overnext.overloadInsert(s);
-        if (s is this)
-            return true;
-        overnext = s;
-        return true;
-    }
-
     override const(char)* kind() const
     {
         return "alias";
-    }
-
-    override Type getType()
-    {
-        if (type)
-            return type;
-        return toAlias(this).getType();
     }
 
     override bool isOverloadable() const
@@ -623,31 +407,6 @@ extern (C++) final class OverDeclaration : Declaration
     override const(char)* kind() const
     {
         return "overload alias"; // todo
-    }
-
-    override bool equals(const RootObject o) const
-    {
-        if (this == o)
-            return true;
-
-        auto s = isDsymbol(o);
-        if (!s)
-            return false;
-
-        if (auto od2 = s.isOverDeclaration())
-            return this.aliassym.equals(od2.aliassym);
-        return this.aliassym == s;
-    }
-
-    override bool overloadInsert(Dsymbol s)
-    {
-        //printf("OverDeclaration::overloadInsert('%s') aliassym = %p, overnext = %p\n", s.toChars(), aliassym, overnext);
-        if (overnext)
-            return overnext.overloadInsert(s);
-        if (s == this)
-            return true;
-        overnext = s;
-        return true;
     }
 
     override bool isOverloadable() const
@@ -706,11 +465,7 @@ extern (C++) class VarDeclaration : Declaration
         bool isCmacro;          /// it is a C macro turned into a C declaration
         bool dllImport;         /// __declspec(dllimport)
         bool dllExport;         /// __declspec(dllexport)
-        version (MARS)
-        {
-            bool inClosure;         /// is inserted into a GC allocated closure
-            bool inAlignSection;    /// is inserted into an aligned section on stack
-        }
+        mixin VarDeclarationExtra;
         bool systemInferred;    /// @system was inferred from initializer
     }
 
@@ -766,18 +521,19 @@ extern (C++) class VarDeclaration : Declaration
 
     override final inout(AggregateDeclaration) isThis() inout
     {
-        if (!(storage_class & (STC.static_ | STC.extern_ | STC.manifest | STC.templateparameter | STC.gshared | STC.ctfe)))
+        if (storage_class & (STC.static_ | STC.extern_ | STC.manifest | STC.templateparameter | STC.gshared | STC.ctfe))
+            return null;
+
+        /* The casting is necessary because `s = s.parent` is otherwise rejected
+         */
+        for (auto s = cast(Dsymbol)this; s; s = s.parent)
         {
-            /* The casting is necessary because `s = s.parent` is otherwise rejected
-             */
-            for (auto s = cast(Dsymbol)this; s; s = s.parent)
-            {
-                if (auto ad = (cast(inout)s).isMember())
-                    return ad;
-                if (!s.parent || !s.parent.isTemplateMixin())
-                    break;
-            }
+            if (auto ad = (cast(inout)s).isMember())
+                return ad;
+            if (!s.parent || !s.parent.isTemplateMixin())
+                break;
         }
+
         return null;
     }
 
@@ -874,39 +630,6 @@ extern (C++) class VarDeclaration : Declaration
         return (storage_class & STC.ctfe) != 0; // || !isDataseg();
     }
 
-    final bool isOverlappedWith(VarDeclaration v)
-    {
-        const vsz = v.type.size();
-        const tsz = type.size();
-        assert(vsz != SIZE_INVALID && tsz != SIZE_INVALID);
-
-        // Overlap is checked by comparing bit offsets
-        auto bitoffset  =   offset * 8;
-        auto vbitoffset = v.offset * 8;
-
-        // Bitsize of types are overridden by any bitfield widths.
-        ulong tbitsize;
-        if (auto bf = isBitFieldDeclaration())
-        {
-            bitoffset += bf.bitOffset;
-            tbitsize = bf.fieldWidth;
-        }
-        else
-            tbitsize = tsz * 8;
-
-        ulong vbitsize;
-        if (auto vbf = v.isBitFieldDeclaration())
-        {
-            vbitoffset += vbf.bitOffset;
-            vbitsize = vbf.fieldWidth;
-        }
-        else
-            vbitsize = vsz * 8;
-
-        return   bitoffset < vbitoffset + vbitsize &&
-                vbitoffset <  bitoffset + tbitsize;
-    }
-
     /*************************************
      * Return true if we can take the address of this variable.
      */
@@ -960,32 +683,6 @@ extern (C++) class BitFieldDeclaration : VarDeclaration
     override void accept(Visitor v)
     {
         v.visit(this);
-    }
-
-    /***********************************
-     * Retrieve the .min or .max values.
-     * Only valid after semantic analysis.
-     * Params:
-     *  id = Id.min or Id.max
-     * Returns:
-     *  the min or max value
-     */
-    final ulong getMinMax(Identifier id)
-    {
-        const width = fieldWidth;
-        const uns = type.isUnsigned();
-        const min = id == Id.min;
-        ulong v;
-        assert(width != 0);  // should have been rejected in semantic pass
-        if (width == ulong.sizeof * 8)
-            v = uns ? (min ? ulong.min : ulong.max)
-                    : (min ?  long.min :  long.max);
-        else
-            v = uns ? (min ? 0
-                           : (1L << width) - 1)
-                    : (min ? -(1L << (width - 1))
-                           :  (1L << (width - 1)) - 1);
-        return v;
     }
 }
 

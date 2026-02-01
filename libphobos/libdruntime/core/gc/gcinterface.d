@@ -292,12 +292,10 @@ interface GC
      * (from the registry hook) should assume this function may not be called
      * on termination if the GC is never initialized.
      *
-     * Most times, this is called from the thread that is the given thread
-     * reference, but it's possible the `thread` parameter is not the same as
-     * the current thread.
-     *
-     * There is no guarantee the thread is still registered as
-     * `ThreadBase.getThis()`.
+     * This function is only called from a thread that was started from the D
+     * runtime, and is terminating. The GC can assume the thread is still in
+     * the list of running threads and can be paused for a GC cycle. This is
+     * not called for the main thread which initialized the GC.
      */
     void cleanupThread(ThreadBase thread) nothrow @nogc;
 }

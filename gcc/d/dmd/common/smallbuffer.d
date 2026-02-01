@@ -121,16 +121,20 @@ version(Windows) wchar[] toWStringz(scope const(char)[] narrow, ref SmallBuffer!
     size_t charsToWchars(scope const(char)[] narrow, scope wchar[] buffer)
     {
         // https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-multibytetowidechar
-        import core.sys.windows.winnls : MultiByteToWideChar, CP_ACP;
-        return MultiByteToWideChar(CP_ACP, 0, narrow.ptr, cast(int) narrow.length, buffer.ptr, cast(int) buffer.length);
+        import core.sys.windows.winnls : MultiByteToWideChar, CP_UTF8;
+        return MultiByteToWideChar(CP_UTF8, 0, narrow.ptr, cast(int) narrow.length, buffer.ptr, cast(int) buffer.length);
     }
 
-    size_t length = charsToWchars(narrow, buffer[]);
-    if (length >= buffer.length) // not enough room in buffer[]
+    size_t length = charsToWchars(narrow, buffer[0..$-1]);
+    if (length == 0 && narrow.length > 0) // not enough room in buffer[]
     {
+        import core.sys.windows.winbase : GetLastError;
+        import core.sys.windows.winerror : ERROR_INSUFFICIENT_BUFFER;
+        assert(GetLastError() == ERROR_INSUFFICIENT_BUFFER);
+        length = charsToWchars(narrow, []);
         buffer.create(length + 1); // extend buffer length
-        length = charsToWchars(narrow, buffer[]);  // try again
-        assert(length < buffer.length);
+        length = charsToWchars(narrow, buffer[0..length]);  // try again
+        assert(length > 0 && length < buffer.length);
     }
     buffer[length] = 0;
     return buffer[0 .. length];

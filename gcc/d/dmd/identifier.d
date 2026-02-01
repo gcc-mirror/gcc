@@ -78,6 +78,11 @@ nothrow:
         isAnonymous_ = isAnonymous;
     }
 
+    bool equals(const Identifier i) const
+    {
+        return this is i;
+    }
+
     static Identifier create(const(char)* name)
     {
         return new Identifier(name);

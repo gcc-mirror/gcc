@@ -1284,7 +1284,7 @@ abstract class Address
         // libraries shipped with DMD. Thus, we check for getnameinfo at
         // runtime in the shared module constructor, and use it if it's
         // available in the base class method. Classes for specific network
-        // families (e.g. InternetHost) override this method and use a
+        // families (e.g. InternetAddress) override this method and use a
         // deprecated, albeit commonly-available method when getnameinfo()
         // is not available.
         // http://technet.microsoft.com/en-us/library/aa450403.aspx
@@ -1861,6 +1861,19 @@ public:
     {
         assert(addr.sin6_family == AddressFamily.INET6);
         sin6 = addr;
+    }
+
+    version (Posix)
+    {
+        /// Human readable string representing the IPv6 address in RFC 2373 form.
+        override string toAddrString() @trusted const
+        {
+            char[INET6_ADDRSTRLEN] buf;
+            string addrString = to!string(
+                .inet_ntop(AddressFamily.INET6, &sin6.sin6_addr, buf.ptr, INET6_ADDRSTRLEN)
+            );
+            return addrString;
+        }
     }
 
    /**

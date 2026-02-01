@@ -209,12 +209,45 @@ void testClassLiteral()
 // https://github.com/dlang/dmd/issues/21690
 void testMultiDim()
 {
-    // int[int][int] aa1 = [ 1: [2: 3] ]; // Error: invalid value `[2:3]` in initializer (see #17804)
+    int[int][int] aa1 = [ 1: [2: 3] ]; // Error: invalid value `[2:3]` in initializer (see #17804)
     int[int][int] aa2 = ([ 1: [2: 3] ]); // workaround
     auto aa3 = [ 1: [2: 3] ]; // works, too
     static auto aa4 = [ 1: [2: 3] ]; // Error: internal compiler error: failed to detect static initialization of associative array
+    assert(aa1 == aa2);
     assert(aa2 == aa3);
     assert(aa3 == aa4);
+}
+
+/////////////////////////////////////////////
+
+// https://github.com/dlang/dmd/issues/17804
+void testMultiDimInit()
+{
+    static struct D
+    {
+        string[string][string] aa;
+        this(string[string][string] _aa) { aa = _aa; }
+    }
+    static struct S
+    {
+        //Error: not an associative array initializer
+        D a = ["fdsa": ["fdsafd": "fdsfa"]];
+
+        // OK
+        D b = (["fdsa": ["fdsafd": "fdsfa"]]);
+    }
+    immutable string[7] a = [
+        3 : null,
+        2 : "D",
+        1 : "C",
+    ];
+    static int[char][char] arr = ['A' : ['B': 0]]; // error
+    assert(arr.length == 1);
+    assert(arr['A'] == ['B':0]);
+
+    S s;
+    assert(s.a.aa["fdsa"]["fdsafd"] == "fdsfa");
+    assert(s.b.aa["fdsa"]["fdsafd"] == "fdsfa");
 }
 
 /////////////////////////////////////////////
@@ -232,4 +265,5 @@ void main()
     testStaticArray();
     testClassLiteral();
     testMultiDim();
+    testMultiDimInit();
 }

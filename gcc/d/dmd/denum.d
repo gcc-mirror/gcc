@@ -81,11 +81,6 @@ extern (C++) final class EnumDeclaration : ScopeDsymbol
         return ed;
     }
 
-    override Type getType()
-    {
-        return type;
-    }
-
     override const(char)* kind() const
     {
         return "enum";

@@ -230,6 +230,7 @@ void test17428() @safe
 TEST_OUTPUT:
 ---
 fail_compilation/retscope2.d(1107): Error: returning scope variable `dg` is not allowed in a `@safe` function
+fail_compilation/retscope2.d(1106):        `dg` inferred `scope` because of `dg = &s.foo`
 ---
 */
 

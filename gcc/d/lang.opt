@@ -519,6 +519,14 @@ shared-libphobos
 Driver
 Link the standard D library dynamically in the compilation.
 
+std=d2024
+D
+Conform to the 2024 D language edition.
+
+std=d202y
+D
+Conform to the latest 202Y D language edition (experimental).
+
 v
 D
 ; Documented in C

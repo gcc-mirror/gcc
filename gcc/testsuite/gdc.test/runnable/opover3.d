@@ -170,6 +170,31 @@ struct S12124
 }
 
 /**************************************/
+// https://github.com/dlang/dmd/issues/20927
+
+struct NoStatic0 { auto opCall() => 2; }
+struct NoStatic1 { int x; NoStatic1 opCall() => NoStatic1(3); }
+
+struct Yes0 { static opCall() => 2; }
+struct Yes1 { static opCall()() => 2; }
+struct Yes2
+{
+    auto call()(int x) => this.init;
+    template call() { static call() => 2; }
+    alias opCall = call;
+}
+
+void test20927()
+{
+    assert(NoStatic0() == NoStatic0.init);
+    assert(NoStatic1()() == NoStatic1(3));
+
+    assert(Yes0() == 2);
+    assert(Yes1() == 2);
+    assert(Yes2() == 2);
+}
+
+/**************************************/
 
 void main()
 {
@@ -181,4 +206,5 @@ void main()
     test3c();
     test4();
     test12070();
+    test20927();
 }

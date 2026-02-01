@@ -282,6 +282,7 @@ enum class TOK : unsigned char
     // C only extended keywords
     _assert,
     _import,
+    _module,
     cdecl_,
     declspec,
     stdcall,

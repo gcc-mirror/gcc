@@ -254,8 +254,8 @@ private size_t _d_arraysetlengthT_(Tarr : T[], T)(return ref scope Tarr arr, siz
     }
 
     enum sizeelem = T.sizeof;
-    enum hasPostblit = __traits(hasMember, T, "__postblit");
-    enum hasEnabledPostblit = hasPostblit && !__traits(isDisabled, T.__postblit);
+    enum hasPostblit = __traits(hasMember, T, "__xpostblit");
+    enum hasEnabledPostblit = hasPostblit && !__traits(isDisabled, T.__xpostblit);
 
     bool overflow = false;
     const newsize = mulu(sizeelem, newlength, overflow);

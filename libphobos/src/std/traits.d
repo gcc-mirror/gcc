@@ -1182,14 +1182,7 @@ if (isCallable!func)
     static assert(pstc.length == 4); // number of parameters
     static assert(pstc[0] == STC.ref_);
     static assert(pstc[1] == STC.out_);
-    version (none)
-    {
-        // TODO: When the DMD PR (dlang/dmd#11474) gets merged,
-        // remove the versioning and the second test
-        static assert(pstc[2] == STC.in_);
-        // This is the current behavior, before `in` is fixed to not be an alias
-        static assert(pstc[2] == STC.scope_);
-    }
+    static assert(pstc[2] == STC.in_);
     static assert(pstc[3] == STC.none);
 }
 
@@ -7609,7 +7602,7 @@ enum bool isSomeFunction(alias T) =
 }
 
 /**
-Detect whether `T` is a callable object, which can be called with the
+Detect whether `callable` is a callable object, which can be called with the
 function call operator `$(LPAREN)...$(RPAREN)`.
 
 $(NOTE Implicit Function Template Instantiation is *not* attempted - see below.)
@@ -7617,10 +7610,10 @@ $(NOTE Implicit Function Template Instantiation is *not* attempted - see below.)
 template isCallable(alias callable)
 {
     static if (is(typeof(&callable.opCall) == delegate))
-        // T is a object which has a member function opCall().
+        // callable is a object which has a member function opCall().
         enum bool isCallable = true;
     else static if (is(typeof(&callable.opCall) V : V*) && is(V == function))
-        // T is a type which has a static member function opCall().
+        // callable is a type which has a static member function opCall().
         enum bool isCallable = true;
     else static if (is(typeof(&callable.opCall!()) TemplateInstanceType))
     {
@@ -7636,7 +7629,7 @@ template isCallable(alias callable)
     }
 }
 
-/// Functions, function pointers, delegates, lambdas.
+/// Functions, function pointers, delegates, non-template function literals.
 @safe unittest
 {
     void f() { }
@@ -7651,6 +7644,8 @@ template isCallable(alias callable)
 
     int x;
     static assert(!isCallable!x);
+    auto d = () => x;
+    static assert( isCallable!d);
 }
 
 /// Aggregate types with (static) opCall.
@@ -7665,7 +7660,6 @@ template isCallable(alias callable)
     static assert( isCallable!(c.opCall));
     static assert( isCallable!S);
     static assert( isCallable!(I.value));
-    static assert( isCallable!((int a) { return a; }));
 
     static assert(!isCallable!I);
 }
@@ -7675,11 +7669,13 @@ template isCallable(alias callable)
 {
     void f()() { }
     T g(T = int)(T x) { return x; }
+    int h(T)();
     struct S1 { static void opCall()() { } }
     struct S2 { static T opCall(T = int)(T x) {return x; } }
 
     static assert( isCallable!f);
     static assert( isCallable!g);
+    static assert(!isCallable!h);
     static assert( isCallable!S1);
     static assert( isCallable!S2);
 
@@ -9150,9 +9146,9 @@ enum isType(alias X) = is(X);
 }
 
 /**
- * Detect whether symbol or type `X` is a function. This is different that finding
- * if a symbol is callable or satisfying `is(X == function)`, it finds
- * specifically if the symbol represents a normal function declaration, i.e.
+ * Detect whether symbol or type `X` is a function.
+ * This is different from finding if a symbol is callable or satisfying `is(X == return)`.
+ * It finds specifically if the symbol represents a normal function (or method) declaration, i.e.
  * not a delegate or a function pointer.
  *
  * Returns:
@@ -9170,10 +9166,10 @@ template isFunction(alias X)
         // x is a (nested) function symbol.
         enum isFunction = true;
     }
-    else static if (is(X T))
+    else static if (is(X))
     {
-        // x is a type.  Take the type of it and examine.
-        enum isFunction = is(T == function);
+        // x is a type
+        enum isFunction = is(X == function);
     }
     else
         enum isFunction = false;
@@ -9184,6 +9180,14 @@ template isFunction(alias X)
 {
     static void func(){}
     static assert(isFunction!func);
+    static assert(isFunction!(typeof(func)));
+
+    auto fp = &func; // function pointer
+    static assert(!isFunction!fp);
+
+    int i;
+    int f2() => i; // nested function
+    static assert(isFunction!f2);
 
     struct S
     {

@@ -14,15 +14,9 @@
 
 module dmd.dversion;
 
-import dmd.arraytypes;
-import dmd.cond;
-import dmd.dmodule;
-import dmd.dscope;
 import dmd.dsymbol;
-import dmd.dsymbolsem;
 import dmd.identifier;
 import dmd.location;
-import dmd.common.outbuffer;
 import dmd.visitor;
 
 /***********************************************************

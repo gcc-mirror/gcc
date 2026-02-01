@@ -16,6 +16,8 @@ import core.stdc.string;
 
 import dmd.root.rmem;
 
+nothrow:
+
 struct BitArray
 {
 

@@ -376,7 +376,7 @@ build_attributes (Expressions *eattrs)
 	  continue;
 	}
 
-      StringExp *se = e0->toStringExp ();
+      StringExp *se = dmd::toStringExp (e0);
       gcc_assert (se->sz == 1);
 
       /* Empty string attribute, just ignore it.  */

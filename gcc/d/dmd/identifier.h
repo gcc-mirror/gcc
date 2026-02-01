@@ -28,6 +28,7 @@ public:
     const char *toHChars2() const;
     DYNCAST dyncast() const override;
 
+    bool equals(const Identifier * const i) { return this == i; };
     static Identifier *generateId(const char *prefix, size_t length, size_t suffix);
     static Identifier *idPool(const char *s, unsigned len);
 

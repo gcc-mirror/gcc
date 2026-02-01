@@ -41,16 +41,16 @@ version (D_ProfileGC)
     /**
      * TraceGC wrapper generator around the runtime hook `Hook`.
      * Params:
-     *   Type = The type of hook to report to accumulate
+     *   TypeIdent = The symbol of the type of hook to report to accumulate
      *   Hook = The name hook to wrap
      */
-    template TraceHook(string Type, string Hook)
+    template TraceHook(string TypeIdent, string Hook)
     {
         const char[] TraceHook = q{
             import core.internal.array.utils : gcStatsPure, accumulatePure;
 
             pragma(inline, false);
-            string name = } ~ "`" ~ Type ~ "`;" ~ q{
+            string name = } ~ TypeIdent ~ q{.stringof;
 
             // FIXME: use rt.tracegc.accumulator when it is accessable in the future.
             ulong currentlyAllocated = gcStatsPure().allocatedInCurrentThread;
@@ -91,7 +91,7 @@ version (D_ProfileGC)
     {
         version (D_TypeInfo)
         {
-            mixin(TraceHook!(T.stringof, __traits(identifier, Hook)));
+            mixin(TraceHook!("T", __traits(identifier, Hook)));
             return Hook(parameters);
         }
         else

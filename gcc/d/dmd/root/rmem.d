@@ -18,6 +18,8 @@ import core.stdc.string;
 
 import core.memory : GC;
 
+nothrow:
+
 extern (C++) struct Mem
 {
     static char* xstrdup(const(char)* s) nothrow

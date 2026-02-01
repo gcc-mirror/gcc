@@ -329,7 +329,7 @@ private extern(C++) final class Semantic2Visitor : Visitor
         // Note that modules get their own scope, from scratch.
         // This is so regardless of where in the syntax a module
         // gets imported, it is unaffected by context.
-        Scope* sc = Scope.createGlobal(mod, global.errorSink); // create root scope
+        Scope* sc = scopeCreateGlobal(mod, global.errorSink); // create root scope
         //printf("Module = %p\n", sc.scopesym);
         if (mod.members)
         {
@@ -799,10 +799,134 @@ private void doGNUABITagSemantic(ref Expression e, ref Expression* lastTag)
     // `const` (and nor is `StringExp`, by extension).
     static int predicate(const scope Expression* e1, const scope Expression* e2)
     {
-        return (cast(Expression*)e1).toStringExp().compare((cast(Expression*)e2).toStringExp());
+        Expression e11 = cast(Expression) *e1;
+        Expression e22 = cast(Expression) *e2;
+        return e11.toStringExp().compare(e22.toStringExp());
     }
     ale.elements.sort!predicate;
 }
+
+/****************
+ * Find virtual function matching identifier and type.
+ * Used to build virtual function tables for interface implementations.
+ * Params:
+ *  _this = ClassDeclaration's vtbl to search
+ *  ident = function's identifier
+ *  tf = function's type
+ * Returns:
+ *  function symbol if found, null if not
+ * Errors:
+ *  prints error message if more than one match
+ */
+FuncDeclaration findFunc(ClassDeclaration _this, Identifier ident, TypeFunction tf)
+{
+    //printf("ClassDeclaration.findFunc(%s, %s) %s\n", ident.toChars(), tf.toChars(), toChars());
+    FuncDeclaration fdmatch = null;
+    FuncDeclaration fdambig = null;
+
+    void updateBestMatch(FuncDeclaration fd)
+    {
+        fdmatch = fd;
+        fdambig = null;
+        //printf("Lfd fdmatch = %s %s [%s]\n", fdmatch.toChars(), fdmatch.type.toChars(), fdmatch.loc.toChars());
+    }
+
+    void searchVtbl(ref Dsymbols vtbl)
+    {
+        bool seenInterfaceVirtual;
+        foreach (s; vtbl)
+        {
+            auto fd = s.isFuncDeclaration();
+            if (!fd)
+                continue;
+
+            // the first entry might be a ClassInfo
+            //printf("\t[%d] = %s\n", i, fd.toChars());
+            if (ident != fd.ident || fd.type.covariant(tf) != Covariant.yes)
+            {
+                //printf("\t\t%d\n", fd.type.covariant(tf));
+                continue;
+            }
+
+            //printf("fd.parent.isClassDeclaration() = %p\n", fd.parent.isClassDeclaration());
+            if (!fdmatch)
+            {
+                updateBestMatch(fd);
+                continue;
+            }
+            if (fd == fdmatch)
+                continue;
+
+            /* Functions overriding interface functions for extern(C++) with VC++
+             * are not in the normal vtbl, but in vtblFinal. If the implementation
+             * is again overridden in a child class, both would be found here.
+             * The function in the child class should override the function
+             * in the base class, which is done here, because searchVtbl is first
+             * called for the child class. Checking seenInterfaceVirtual makes
+             * sure, that the compared functions are not in the same vtbl.
+             */
+            if (fd.interfaceVirtual &&
+                fd.interfaceVirtual is fdmatch.interfaceVirtual &&
+                !seenInterfaceVirtual &&
+                fdmatch.type.covariant(fd.type) == Covariant.yes)
+            {
+                seenInterfaceVirtual = true;
+                continue;
+            }
+
+            {
+            // Function type matching: exact > covariant
+            MATCH m1 = tf.equals(fd.type) ? MATCH.exact : MATCH.nomatch;
+            MATCH m2 = tf.equals(fdmatch.type) ? MATCH.exact : MATCH.nomatch;
+            if (m1 > m2)
+            {
+                updateBestMatch(fd);
+                continue;
+            }
+            else if (m1 < m2)
+                continue;
+            }
+            {
+            MATCH m1 = (tf.mod == fd.type.mod) ? MATCH.exact : MATCH.nomatch;
+            MATCH m2 = (tf.mod == fdmatch.type.mod) ? MATCH.exact : MATCH.nomatch;
+            if (m1 > m2)
+            {
+                updateBestMatch(fd);
+                continue;
+            }
+            else if (m1 < m2)
+                continue;
+            }
+            {
+            // The way of definition: non-mixin > mixin
+            MATCH m1 = fd.parent.isClassDeclaration() ? MATCH.exact : MATCH.nomatch;
+            MATCH m2 = fdmatch.parent.isClassDeclaration() ? MATCH.exact : MATCH.nomatch;
+            if (m1 > m2)
+            {
+                updateBestMatch(fd);
+                continue;
+            }
+            else if (m1 < m2)
+                continue;
+            }
+
+            fdambig = fd;
+            //printf("Lambig fdambig = %s %s [%s]\n", fdambig.toChars(), fdambig.type.toChars(), fdambig.loc.toChars());
+        }
+    }
+
+    searchVtbl(_this.vtbl);
+    for (auto cd = _this; cd; cd = cd.baseClass)
+    {
+        searchVtbl(cd.vtblFinal);
+    }
+
+    if (fdambig)
+        _this.classError("%s `%s` ambiguous virtual function `%s`", fdambig.toChars());
+
+    return fdmatch;
+}
+
 
 /**
  * Try lower a variable's Associative Array initializer to a newaa struct

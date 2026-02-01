@@ -18,4 +18,8 @@ nothrow:
 static if (_GNU_SOURCE)
 {
     pure void* memmem(return scope const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
+    /// return string describing error number
+    const(char)* strerrorname_np(int);
+    /// ditto
+    const(char)* strerrordesc_np(int);
 }

@@ -212,12 +212,6 @@ else version (OpenBSD)
         ///
         L_tmpnam     = 1024
     }
-
-    struct __sbuf
-    {
-        ubyte *_base;
-        int _size;
-    }
 }
 else version (DragonFlyBSD)
 {
@@ -611,31 +605,7 @@ else version (OpenBSD)
     ///
     struct __sFILE
     {
-        ubyte*          _p;
-        int             _r;
-        int             _w;
-        short           _flags;
-        short           _file;
-        __sbuf          _bf;
-        int             _lbfsize;
-
-        void*           _cookie;
-        int     function(void*)                         _close;
-        int     function(void*, scope char*, int)       _read;
-        fpos_t  function(void*, fpos_t, int)            _seek;
-        int     function(void*, scope const char*, int) _write;
-
-        __sbuf          _ext;
-        ubyte*          _up;
-        int             _ur;
-
-        ubyte[3]        _ubuf;
-        ubyte[1]        _nbuf;
-
-        __sbuf          _lb;
-
-        int             _blksize;
-        fpos_t          _offset;
+        void* dummy;
     }
 
     ///
@@ -1019,16 +989,22 @@ else version (OpenBSD)
         _IONBF = 2,
     }
 
-    private extern shared FILE[3] __sF;
-    @property auto __stdin()() { return &__sF[0]; }
-    @property auto __stdout()() { return &__sF[1]; }
-    @property auto __stderr()() { return &__sF[2]; }
+    struct __sFstub { long _stub; }
+
+    private extern shared __sFstub[1] __stdin;
+    private extern shared __sFstub[1] __stdout;
+    private extern shared __sFstub[1] __stderr;
+
+    @property auto __stdin1()() { return cast(FILE*)__stdin; }
+    @property auto __stdout1()() { return cast(FILE*)__stdout; }
+    @property auto __stderr1()() { return cast(FILE*)__stderr; }
+
     ///
-    alias __stdin stdin;
+    alias __stdin1 stdin;
     ///
-    alias __stdout stdout;
+    alias __stdout1 stdout;
     ///
-    alias __stderr stderr;
+    alias __stderr1 stderr;
 }
 else version (DragonFlyBSD)
 {
@@ -1350,9 +1326,9 @@ else version (CRuntime_Glibc)
         alias vprintf = __vprintfieee128;
         ///
         pragma(scanf)
-        int __isoc99_vfscanfieee128(scope const char* format, va_list arg);
+        int __isoc99_vscanfieee128(scope const char* format, va_list arg);
         ///
-        alias vscanf = __isoc99_vfscanfieee128;
+        alias vscanf = __isoc99_vscanfieee128;
         ///
         pragma(printf)
         int __printfieee128(scope const char* format, scope const ...);
@@ -1727,83 +1703,14 @@ else version (OpenBSD)
     {
         ///
         void rewind(FILE*);
-    }
-    @trusted private
-    {
         ///
-        pragma(mangle, "clearerr")
-        pure void __clearerr(FILE*);
+        pure void clearerr(FILE*);
         ///
-        pragma(mangle, "feof")
-        pure int __feof(FILE*);
+        pure int  feof(FILE*);
         ///
-        pragma(mangle, "ferror")
-        pure int __ferror(FILE*);
+        pure int  ferror(FILE*);
         ///
-        pragma(mangle, "fileno")
-        int __fileno(FILE*);
-    }
-
-    enum __SLBF = 0x0001;
-    enum __SNBF = 0x0002;
-    enum __SRD  = 0x0004;
-    enum __SWR  = 0x0008;
-    enum __SRW  = 0x0010;
-    enum __SEOF = 0x0020;
-    enum __SERR = 0x0040;
-    enum __SMBF = 0x0080;
-    enum __SAPP = 0x0100;
-    enum __SSTR = 0x0200;
-    enum __SOPT = 0x0400;
-    enum __SNPT = 0x0800;
-    enum __SOFF = 0x1000;
-    enum __SMOD = 0x2000;
-    enum __SALC = 0x4000;
-    enum __SIGN = 0x8000;
-
-    extern immutable __gshared int __isthreaded;
-
-    extern (D) @trusted
-    {
-        void __sclearerr()(FILE* p)
-        {
-            p._flags = p._flags & ~(__SERR|__SEOF);
-        }
-
-        int __sfeof()(FILE* p)
-        {
-            return (p._flags & __SEOF) != 0;
-        }
-
-        int __sferror()(FILE* p)
-        {
-            return (p._flags & __SERR) != 0;
-        }
-
-        int __sfileno()(FILE* p)
-        {
-            return p._file;
-        }
-
-        pure void clearerr()(FILE* file)
-        {
-            !__isthreaded ? __sclearerr(file) : __clearerr(file);
-        }
-
-        pure int feof()(FILE* file)
-        {
-            return !__isthreaded ? __sfeof(file) : __feof(file);
-        }
-
-        pure int ferror()(FILE* file)
-        {
-            return !__isthreaded ? __sferror(file) : __ferror(file);
-        }
-
-        int fileno()(FILE* file)
-        {
-            return !__isthreaded ? __sfileno(file) : __fileno(file);
-        }
+        int  fileno(FILE*);
     }
 
     ///

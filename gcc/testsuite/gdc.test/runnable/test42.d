@@ -6043,7 +6043,7 @@ void test7436()
 {
     ubyte a = 10;
     float f = 6;
-    ubyte b = a += f;
+    ubyte b = a += cast(ubyte)f;
     assert(b == 16);
 }
 

@@ -47,10 +47,10 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
 
   Type *tb = type->toBasetype ();
 
-  if (expr->type->isIntegral ())
-    cst = build_integer_cst (expr->toInteger (), build_ctype (expr->type));
-  else if (expr->type->isFloating ())
-    cst = build_float_cst (expr->toReal (), expr->type);
+  if (dmd::isIntegral (expr->type))
+    cst = build_integer_cst (dmd::toInteger (expr), build_ctype (expr->type));
+  else if (dmd::isFloating (expr->type))
+    cst = build_float_cst (dmd::toReal (expr), expr->type);
   else if (expr->op == EXP::arrayLiteral)
     {
       /* Build array as VECTOR_CST, assumes EXPR is constant.  */
@@ -61,15 +61,15 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
       for (size_t i = 0; i < elements->length; i++)
 	{
 	  Expression *e = (*elements)[i];
-	  if (e->type->isIntegral ())
+	  if (dmd::isIntegral (e->type))
 	    {
-	      tree value = build_integer_cst (e->toInteger (),
+	      tree value = build_integer_cst (dmd::toInteger (e),
 					      build_ctype (e->type));
 	      CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
 	    }
-	  else if (e->type->isFloating ())
+	  else if (dmd::isFloating (e->type))
 	    {
-	      tree value = build_float_cst (e->toReal (), e->type);
+	      tree value = build_float_cst (dmd::toReal (e), e->type);
 	      CONSTRUCTOR_APPEND_ELT (elms, size_int (i), value);
 	    }
 	  else
@@ -77,7 +77,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
 	}
 
       /* Build vector type.  */
-      int nunits = expr->type->isTypeSArray ()->dim->toUInteger ();
+      int nunits = dmd::toUInteger (expr->type->isTypeSArray ()->dim);
       Type *telem = expr->type->nextOf ();
       tree vectype = build_vector_type (build_ctype (telem), nunits);
 
@@ -93,7 +93,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
     {
       /* Interpret value as a vector of the same size,
 	 then return the array literal.  */
-      int nunits = type->isTypeSArray ()->dim->toUInteger ();
+      int nunits = dmd::toUInteger (type->isTypeSArray ()->dim);
       Type *elem = type->nextOf ();
       tree vectype = build_vector_type (build_ctype (elem), nunits);
 

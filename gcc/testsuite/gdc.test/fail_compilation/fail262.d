@@ -1,7 +1,8 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail262.d(23): Error: function `const void fail262.B.f()` does not override any function, did you mean to override `shared const void fail262.A.f()`?
+fail_compilation/fail262.d(24): Error: function `const void fail262.B.f()` does not override any function
+fail_compilation/fail262.d(16):        did you mean to override `shared const void fail262.A.f()`?
 ---
 */
 

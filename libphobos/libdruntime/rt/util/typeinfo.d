@@ -39,9 +39,8 @@ pragma(inline, true)
 private int cmp3(T)(const T f1, const T f2)
 if (isComplex!T)
 {
-    if (int result = cmp3(f1.re, f2.re))
-        return result;
-    return cmp3(f1.im, f2.im);
+    int result;
+    return (result = cmp3(f1.re, f2.re)) != 0 ? result : cmp3(f1.im, f2.im);
 }
 
 unittest

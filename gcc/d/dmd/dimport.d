@@ -141,19 +141,6 @@ extern (C++) final class Import : Dsymbol
         scopesym.addAccessiblePackage(mod, visibility); // d
      }
 
-    override bool overloadInsert(Dsymbol s)
-    {
-        /* Allow multiple imports with the same package base, but disallow
-         * alias collisions
-         * https://issues.dlang.org/show_bug.cgi?id=5412
-         */
-        assert(ident && ident == s.ident);
-        if (aliasId)
-            return false;
-        const imp = s.isImport();
-        return imp && !imp.aliasId;
-    }
-
     override void accept(Visitor v)
     {
         v.visit(this);

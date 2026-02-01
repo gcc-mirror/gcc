@@ -126,6 +126,8 @@ struct Scope final
     bool fullinst(bool v);
     bool ctfeBlock() const;
     bool ctfeBlock(bool v);
+    bool knownACompileTimeOnlyContext() const;
+    bool knownACompileTimeOnlyContext(bool v);
 
     UserAttributeDeclaration *userAttribDecl;   // user defined attributes
 

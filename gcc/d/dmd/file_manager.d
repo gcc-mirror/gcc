@@ -13,7 +13,7 @@ module dmd.file_manager;
 import core.stdc.stdio;
 import dmd.common.outbuffer;
 import dmd.root.stringtable : StringTable;
-import dmd.root.file : File, Buffer;
+import dmd.root.file : File;
 import dmd.root.filename : FileName, isDirSeparator;
 import dmd.root.string : toDString;
 import dmd.globals;

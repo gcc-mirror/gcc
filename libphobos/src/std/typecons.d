@@ -21,10 +21,15 @@ $(TR $(TD Flags) $(TD
     $(LREF No)
     $(LREF Yes)
 ))
-$(TR $(TD Memory allocation) $(TD
+$(TR $(TD Reference Counting) $(TD
+    $(LREF borrow)
+    $(LREF RefCountedAutoInitialize)
+    $(LREF RefCounted)
+    $(LREF refCounted)
     $(LREF SafeRefCounted)
     $(LREF safeRefCounted)
-    $(LREF RefCountedAutoInitialize)
+))
+$(TR $(TD Memory allocation) $(TD
     $(LREF scoped)
     $(LREF Unique)
 ))
@@ -33,9 +38,11 @@ $(TR $(TD Code generation) $(TD
     $(LREF BlackHole)
     $(LREF generateAssertTrap)
     $(LREF generateEmptyFunction)
+    $(LREF NotImplementedError)
     $(LREF WhiteHole)
 ))
 $(TR $(TD Nullable) $(TD
+    $(LREF apply)
     $(LREF Nullable)
     $(LREF nullable)
     $(LREF NullableRef)
@@ -45,12 +52,13 @@ $(TR $(TD Proxies) $(TD
     $(LREF Proxy)
     $(LREF rebindable)
     $(LREF Rebindable)
-    $(LREF ReplaceType)
     $(LREF unwrap)
     $(LREF wrap)
 ))
 $(TR $(TD Types) $(TD
     $(LREF alignForSize)
+    $(LREF ReplaceType)
+    $(LREF ReplaceTypeUnless)
     $(LREF Ternary)
     $(LREF Typedef)
     $(LREF TypedefType)
@@ -3814,13 +3822,16 @@ struct Nullable(T)
         assert(e != 12);
     }
 
-    size_t toHash() const @safe nothrow
+    static if (!isAggregateType!T || hasMember!(T, "toHash"))
     {
-        static if (__traits(compiles, .hashOf(_value.payload)))
-            return _isNull ? 0 : .hashOf(_value.payload);
-        else
-            // Workaround for when .hashOf is not both @safe and nothrow.
-            return _isNull ? 0 : typeid(T).getHash(&_value.payload);
+        size_t toHash() const @safe nothrow
+        {
+            static if (__traits(compiles, .hashOf(_value.payload)))
+                return _isNull ? 0 : .hashOf(_value.payload);
+            else
+                // Workaround for when .hashOf is not both @safe and nothrow.
+                return _isNull ? 0 : typeid(T).getHash(&_value.payload);
+        }
     }
 
     /**
@@ -4826,6 +4837,18 @@ auto nullable(T)(T t)
     auto result = cast(immutable(Nullable!(int*))) a;
 }
 
+// https://github.com/dlang/phobos/issues/10758
+@safe unittest
+{
+    struct F
+    {
+        bool opEquals(ref const F rhs) const { return true; }
+    }
+
+    static assert(!__traits(compiles, bool[F]));
+    static assert(!__traits(compiles, bool[Nullable!F]));
+}
+
 /**
 Just like `Nullable!T`, except that the null state is defined as a
 particular value. For example, $(D Nullable!(uint, uint.max)) is an
@@ -5240,7 +5263,7 @@ if (is (typeof(nullValue) == T))
 
 // apply
 /**
-Unpacks the content of a `Nullable`, performs an operation and packs it again. Does nothing if isNull.
+Unpacks the content of a $(LREF Nullable), performs an operation and packs it again. Does nothing if $(LREF isNull).
 
 When called on a `Nullable`, `apply` will unpack the value contained in the `Nullable`,
 pass it to the function you provide and wrap the result in another `Nullable` (if necessary).
@@ -5260,6 +5283,7 @@ template apply(alias fun)
 {
     import std.functional : unaryFun;
 
+    ///
     auto apply(T)(auto ref T t)
     if (isInstanceOf!(Nullable, T))
     {
@@ -8311,6 +8335,7 @@ template borrow(alias fun)
 {
     import std.functional : unaryFun;
 
+    ///
     auto ref borrow(RC)(RC refCount)
     if
     (

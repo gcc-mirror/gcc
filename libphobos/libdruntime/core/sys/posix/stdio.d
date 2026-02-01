@@ -246,6 +246,7 @@ ssize_t getline(char**, size_t*, FILE*);
 char*   gets(char*);
 int     pclose(FILE*);
 FILE*   popen(const scope char*, const scope char*);
+int     renameat(int, const scope char*, int, const scope char*);
 */
 
 version (CRuntime_Glibc)
@@ -274,6 +275,7 @@ version (CRuntime_Glibc)
 
     ssize_t getdelim(char**, size_t*, int, FILE*);
     ssize_t getline(char**, size_t*, FILE*);
+    int     renameat(int, const scope char*, int, const scope char*);
 }
 else version (CRuntime_UClibc)
 {
@@ -302,6 +304,7 @@ else version (CRuntime_UClibc)
 
     ssize_t getdelim(char**, size_t*, int, FILE*);
     ssize_t getline(char**, size_t*, FILE*);
+    int     renameat(int, const scope char*, int, const scope char*);
 }
 else version (CRuntime_Musl)
 {
@@ -318,6 +321,7 @@ else version (CRuntime_Musl)
 
     ssize_t getdelim(char**, size_t*, int, FILE*);
     ssize_t getline(char**, size_t*, FILE*);
+    int     renameat(int, const scope char*, int, const scope char*);
 }
 else version (CRuntime_Bionic)
 {
@@ -345,6 +349,7 @@ else version (CRuntime_Bionic)
 
     ssize_t getdelim(char**, size_t*, int, FILE*);
     ssize_t getline(char**, size_t*, FILE*);
+    int     renameat(int, const scope char*, int, const scope char*);
 }
 else version (Darwin)
 {
@@ -355,6 +360,7 @@ else version (Darwin)
 
     ssize_t getdelim(char**, size_t*, int, FILE*);
     ssize_t getline(char**, size_t*, FILE*);
+    int     renameat(int, const scope char*, int, const scope char*);
 }
 else version (FreeBSD)
 {
@@ -369,6 +375,7 @@ else version (FreeBSD)
     {
         ssize_t getdelim(char**, size_t*, int, FILE*);
         ssize_t getline(char**, size_t*, FILE*);
+        int     renameat(int, const scope char*, int, const scope char*);
     }
 }
 else version (NetBSD)
@@ -390,6 +397,7 @@ else version (OpenBSD)
 
     ssize_t getdelim(char**, size_t*, int, FILE*);
     ssize_t getline(char**, size_t*, FILE*);
+    int     renameat(int, const scope char*, int, const scope char*);
 }
 else version (DragonFlyBSD)
 {
@@ -400,6 +408,7 @@ else version (DragonFlyBSD)
 
     ssize_t getdelim(char**, size_t*, int, FILE*);
     ssize_t getline(char**, size_t*, FILE*);
+    int     renameat(int, const scope char*, int, const scope char*);
 }
 else version (Solaris)
 {
@@ -428,6 +437,7 @@ else version (Solaris)
 
     ssize_t getdelim(char**, size_t*, int, FILE*);
     ssize_t getline(char**, size_t*, FILE*);
+    int     renameat(int, const scope char*, int, const scope char*);
 }
 else version (Posix)
 {

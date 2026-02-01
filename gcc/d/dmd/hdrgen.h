@@ -21,7 +21,7 @@ class Statement;
 namespace dmd
 {
     void genhdrfile(Module *m, bool doFuncBodies, OutBuffer &buf);
-    void genCppHdrFiles(Modules &ms);
+    void genCppHdrFiles(Modules &ms, ErrorSink *eSink);
     void moduleToBuffer(OutBuffer& buf, bool vcg_ast, Module *m);
     const char *parametersTypeToChars(ParameterList pl);
 

@@ -14,19 +14,16 @@
 module dmd.canthrow;
 
 import dmd.aggregate;
-import dmd.arraytypes;
-import dmd.attrib;
 import dmd.astenums;
 import dmd.blockexit : BE, checkThrow;
-import dmd.declaration;
 import dmd.dsymbol;
 import dmd.dsymbolsem : include, toAlias;
 import dmd.errorsink;
 import dmd.expression;
-import dmd.expressionsem : errorSupplementalInferredAttr;
+import dmd.expressionsem;
+import dmd.typesem;
 import dmd.func;
 import dmd.globals;
-import dmd.init;
 import dmd.mtype;
 import dmd.tokens;
 import dmd.visitor;

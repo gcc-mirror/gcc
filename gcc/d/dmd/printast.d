@@ -14,6 +14,7 @@ module dmd.printast;
 import core.stdc.stdio;
 
 import dmd.expression;
+import dmd.expressionsem : toInteger;
 import dmd.ctfeexpr;
 import dmd.tokens;
 import dmd.visitor;

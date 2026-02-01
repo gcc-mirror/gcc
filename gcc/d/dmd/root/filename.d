@@ -51,8 +51,9 @@ version (CRuntime_Glibc)
     extern (C) char* canonicalize_file_name(const char*) nothrow;
 }
 
-alias Strings = Array!(const(char)*);
+nothrow:
 
+alias Strings = Array!(const(char)*);
 
 // Check whether character is a directory separator
 bool isDirSeparator(char c) pure nothrow @nogc @safe

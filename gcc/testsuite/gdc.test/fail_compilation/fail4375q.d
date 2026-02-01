@@ -1,10 +1,8 @@
-// REQUIRED_ARGS: -w
 // https://issues.dlang.org/show_bug.cgi?id=4375: Dangling else
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail4375q.d(17): Warning: else is dangling, add { } after condition at fail_compilation/fail4375q.d(13)
-fail_compilation/fail4375q.d(14): Error: `with` expression types must be enums or aggregates or pointers to them, not `int`
+fail_compilation/fail4375q.d(15): Error: else is dangling, add { } after condition at fail_compilation/fail4375q.d(11)
 ---
 */
 

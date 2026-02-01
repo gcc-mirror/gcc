@@ -36,8 +36,9 @@ import dmd.mtype;
 import dmd.rootobject;
 import dmd.root.string : fTuple;
 import dmd.target;
+import dmd.targetcompiler;
 import dmd.tokens;
-import dmd.typesem : hasPointers, arrayOf, size;
+import dmd.typesem;
 
 /*************************************************************
  * Check for unsafe access in @safe code:
@@ -174,10 +175,17 @@ bool isSafeCast(Expression e, Type tfrom, Type tto, ref string msg)
     // Implicit conversions are always safe
     if (tfrom.implicitConvTo(tto))
         return true;
-
     if (!tto.hasPointers())
+    {
+        // casting to bool is safe as it's a special op
+        // casting to struct with non-pointer @system field is not @safe
+        if (tto.ty != Tbool && tto.hasUnsafeBitpatterns())
+        {
+            msg = "Target element type has unsafe bit patterns";
+            return false;
+        }
         return true;
-
+    }
     auto tfromb = tfrom.toBasetype();
     auto ttob = tto.toBasetype();
 
@@ -354,7 +362,7 @@ bool isTrusted(FuncDeclaration fd)
  * Call when `fd` was just inferred to be @system OR
  * `fd` was @safe and an tried something unsafe.
  * Params:
- *   fd    = function we're gonna rat on
+ *   fd    = function we are gonna rat on
  *   gag   = suppress error message (used in escape.d)
  *   loc   = location of error
  *   format = printf-style format string
@@ -363,11 +371,21 @@ bool isTrusted(FuncDeclaration fd)
 extern (D) void reportSafeError(FuncDeclaration fd, bool gag, Loc loc,
     const(char)* format, RootObject[] args...)
 {
+    reportSafeError(fd, gag, loc, null, format, args);
+}
+
+/// Overload that also stores the variable whose scope status caused the violation
+extern (D) void reportSafeError(FuncDeclaration fd, bool gag, Loc loc,
+    VarDeclaration scopeVar, const(char)* format, RootObject[] args...)
+{
     if (fd.type.toTypeFunction().trust == TRUST.system) // function was just inferred to be @system
     {
         if (format)
         {
-            fd.safetyViolation = new AttributeViolation(loc, format, args);
+            if (scopeVar)
+                fd.safetyViolation = new AttributeViolation(loc, format, scopeVar, args);
+            else
+                fd.safetyViolation = new AttributeViolation(loc, format, args);
         }
         else if (args.length > 0)
         {
@@ -387,10 +405,7 @@ extern (D) void reportSafeError(FuncDeclaration fd, bool gag, Loc loc,
                 buf.writestring(" is not allowed in a `@safe` function");
             else
             {
-                version (IN_GCC)
-                    buf.writestring(" is not allowed in a function with default safety with `-fpreview=safer`");
-                else
-                    buf.writestring(" is not allowed in a function with default safety with `-preview=safer`");
+                buf.printf(" is not allowed in a function with default safety with `-%spreview=safer`", SwitchPrefix.ptr);
             }
             .error(loc, "%s", buf.extractChars());
         }
@@ -456,6 +471,13 @@ extern (D) bool setUnsafeCall(FuncDeclaration fd, FuncDeclaration f)
  */
 bool setUnsafe(Scope* sc, bool gag, Loc loc, const(char)* format, RootObject[] args...)
 {
+    return sc.setUnsafe(gag, loc, null, format, args);
+}
+
+/// Overload that also stores the variable whose scope status caused the violation
+bool setUnsafe(Scope* sc, bool gag, Loc loc, VarDeclaration scopeVar,
+    const(char)* format, RootObject[] args...)
+{
     if (sc.intypeof)
         return false; // typeof(cast(int*)0) is safe
 
@@ -499,7 +521,7 @@ bool setUnsafe(Scope* sc, bool gag, Loc loc, const(char)* format, RootObject[] a
     {
         if (format || args.length > 0)
         {
-            reportSafeError(sc.func, gag, loc, format, args);
+            reportSafeError(sc.func, gag, loc, scopeVar, format, args);
         }
         return sc.func.isSafe(); // it is only an error if in an @safe function
     }
@@ -527,6 +549,13 @@ bool setUnsafe(Scope* sc, bool gag, Loc loc, const(char)* format, RootObject[] a
  */
 bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)* format, RootObject[] args...)
 {
+    return setUnsafePreview(sc, fs, gag, loc, null, format, args);
+}
+
+/// Overload for scope violations that also stores the variable whose scope status caused the issue
+bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, VarDeclaration scopeVar,
+    const(char)* format, RootObject[] args...)
+{
     //printf("setUnsafePreview() fs:%d %s\n", fs, fmt);
     assert(format);
     with (FeatureState) final switch (fs)
@@ -535,7 +564,7 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         return false;
 
       case enabled:
-        return sc.setUnsafe(gag, loc, format, args);
+        return sc.setUnsafe(gag, loc, scopeVar, format, args);
 
       case default_:
         if (!sc.func)
@@ -551,7 +580,10 @@ bool setUnsafePreview(Scope* sc, FeatureState fs, bool gag, Loc loc, const(char)
         else if (!sc.func.safetyViolation)
         {
             import dmd.func : AttributeViolation;
-            sc.func.safetyViolation = new AttributeViolation(loc, format, args);
+            if (scopeVar)
+                sc.func.safetyViolation = new AttributeViolation(loc, format, scopeVar, args);
+            else
+                sc.func.safetyViolation = new AttributeViolation(loc, format, args);
         }
         return false;
     }

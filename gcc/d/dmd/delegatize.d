@@ -18,6 +18,7 @@ import dmd.astenums;
 import dmd.declaration;
 import dmd.dscope;
 import dmd.dsymbol;
+import dmd.dsymbolsem : toParentP;
 import dmd.expression;
 import dmd.expressionsem;
 import dmd.func;

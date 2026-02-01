@@ -49,7 +49,7 @@ void nesting(double d, int i)
 
 class Tree {
     int opApply(int delegate(size_t, Tree) dg) {
-        if (dg(0, this)) return 1;
+        if (auto r = dg(0, this)) return r;
         return 0;
     }
 }

@@ -25,7 +25,8 @@ char* g;
 
 void test23862()
 {
-    scope char** _errors;
+    char* source;
+    scope char** _errors = &source;
     g = front_p(_errors);   // should pass
     g = front_r(_errors);   // should pass
 }

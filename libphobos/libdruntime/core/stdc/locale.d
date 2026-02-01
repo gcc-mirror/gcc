@@ -29,32 +29,70 @@ nothrow:
 @nogc:
 
 ///
-struct lconv
+version (Windows)
 {
-    char* decimal_point;
-    char* thousands_sep;
-    char* grouping;
-    char* int_curr_symbol;
-    char* currency_symbol;
-    char* mon_decimal_point;
-    char* mon_thousands_sep;
-    char* mon_grouping;
-    char* positive_sign;
-    char* negative_sign;
-    byte  int_frac_digits;
-    byte  frac_digits;
-    byte  p_cs_precedes;
-    byte  p_sep_by_space;
-    byte  n_cs_precedes;
-    byte  n_sep_by_space;
-    byte  p_sign_posn;
-    byte  n_sign_posn;
-    byte  int_p_cs_precedes;
-    byte  int_p_sep_by_space;
-    byte  int_n_cs_precedes;
-    byte  int_n_sep_by_space;
-    byte  int_p_sign_posn;
-    byte  int_n_sign_posn;
+    import core.stdc.wchar_ : wchar_t;
+
+    // ...Windows Kits\10\Include\10.0.14393.0\ucrt\locale.h
+    struct lconv
+    {
+        char*    decimal_point;
+        char*    thousands_sep;
+        char*    grouping;
+        char*    int_curr_symbol;
+        char*    currency_symbol;
+        char*    mon_decimal_point;
+        char*    mon_thousands_sep;
+        char*    mon_grouping;
+        char*    positive_sign;
+        char*    negative_sign;
+        char     int_frac_digits = 0; // " = 0" For zero init
+        char     frac_digits = 0;
+        char     p_cs_precedes = 0;
+        char     p_sep_by_space = 0;
+        char     n_cs_precedes = 0;
+        char     n_sep_by_space = 0;
+        char     p_sign_posn = 0;
+        char     n_sign_posn = 0;
+        wchar_t* _W_decimal_point;
+        wchar_t* _W_thousands_sep;
+        wchar_t* _W_int_curr_symbol;
+        wchar_t* _W_currency_symbol;
+        wchar_t* _W_mon_decimal_point;
+        wchar_t* _W_mon_thousands_sep;
+        wchar_t* _W_positive_sign;
+        wchar_t* _W_negative_sign;
+    }
+}
+else
+{
+    struct lconv
+    {
+        char* decimal_point;
+        char* thousands_sep;
+        char* grouping;
+        char* int_curr_symbol;
+        char* currency_symbol;
+        char* mon_decimal_point;
+        char* mon_thousands_sep;
+        char* mon_grouping;
+        char* positive_sign;
+        char* negative_sign;
+        byte  int_frac_digits;
+        byte  frac_digits;
+        byte  p_cs_precedes;
+        byte  p_sep_by_space;
+        byte  n_cs_precedes;
+        byte  n_sep_by_space;
+        byte  p_sign_posn;
+        byte  n_sign_posn;
+        byte  int_p_cs_precedes;
+        byte  int_p_sep_by_space;
+        byte  int_n_cs_precedes;
+        byte  int_n_sep_by_space;
+        byte  int_p_sign_posn;
+        byte  int_n_sign_posn;
+    }
 }
 
 version (CRuntime_Glibc)

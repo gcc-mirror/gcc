@@ -22,7 +22,6 @@ import dmd.arraytypes;
 import dmd.astenums;
 import dmd.attrib;
 import dmd.cond;
-import dmd.ctfeexpr;
 import dmd.dclass;
 import dmd.declaration;
 import dmd.denum;
@@ -50,7 +49,6 @@ import dmd.root.string;
 import dmd.statement;
 import dmd.staticassert;
 import dmd.tokens;
-import dmd.typesem;
 import dmd.visitor;
 
 struct HdrGenState
@@ -2209,7 +2207,7 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
 
     void visitInteger(IntegerExp e)
     {
-        const ulong v = e.toInteger();
+        const ulong v = e.value;
         if (e.type)
         {
             Type t = e.type;
@@ -2224,7 +2222,7 @@ private void expressionPrettyPrint(Expression e, ref OutBuffer buf, ref HdrGenSt
                     {
                         foreach (em; *sym.members)
                         {
-                            if ((cast(EnumMember)em).value.toInteger == v)
+                            if ((cast(EnumMember)em).value.isIntegerExp().value == v)
                             {
                                 const id = em.ident.toString();
                                 buf.printf("%s.%.*s", sym.toChars(), cast(int)id.length, id.ptr);
@@ -3186,7 +3184,8 @@ void floatToBuffer(Type type, const real_t value, ref OutBuffer buf, const bool 
 
     if (type)
     {
-        Type t = type.toBasetype();
+        Type t = type.toBaseTypeNonSemantic();
+
         switch (t.ty)
         {
         case Tfloat32:
@@ -3202,7 +3201,7 @@ void floatToBuffer(Type type, const real_t value, ref OutBuffer buf, const bool 
         default:
             break;
         }
-        if (t.isImaginary())
+        if (t.isImaginaryNonSemantic())
             buf.put('i');
     }
 }
@@ -3349,7 +3348,7 @@ void toCBufferInstance(const TemplateInstance ti, ref OutBuffer buf, bool qualif
     HdrGenState hgs;
     hgs.fullQual = qualifyTypes;
 
-    buf.put(ti.name.toChars());
+    buf.put(ti.name == Id.ctor ? "this" : ti.name.toChars());
     tiargsToBuffer(cast() ti, buf, hgs);
 }
 
@@ -3815,7 +3814,7 @@ private void sizeToBuffer(Expression e, ref OutBuffer buf, ref HdrGenState hgs)
     {
         Expression ex = (e.op == EXP.cast_ ? (cast(CastExp)e).e1 : e);
         ex = ex.optimize(WANTvalue);
-        const ulong uval = ex.op == EXP.int64 ? ex.toInteger() : cast(ulong)-1;
+        const ulong uval = ex.op == EXP.int64 ? ex.isIntegerExp().value : cast(ulong)-1;
         if (cast(long)uval >= 0)
         {
             if (uval <= 0xFFFFU)
@@ -4342,14 +4341,14 @@ private void typeToBufferx(Type t, ref OutBuffer buf, ref HdrGenState hgs)
 
     void visitDArray(TypeDArray t)
     {
-        Type ut = t.castMod(0);
+        auto basetype = t.next;
         if (hgs.declstring)
             goto L1;
-        if (ut.equals(Type.tstring))
+        if (basetype.ty == Tchar && basetype.isImmutable())
             buf.put("string");
-        else if (ut.equals(Type.twstring))
+        else if (basetype.ty == Twchar && basetype.isImmutable())
             buf.put("wstring");
-        else if (ut.equals(Type.tdstring))
+        else if (basetype.ty == Tdchar && basetype.isImmutable())
             buf.put("dstring");
         else
         {

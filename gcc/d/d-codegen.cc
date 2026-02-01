@@ -335,7 +335,7 @@ get_array_length (tree exp, Type *type)
   switch (tb->ty)
     {
     case TY::Tsarray:
-      return size_int (tb->isTypeSArray ()->dim->toUInteger ());
+      return size_int (dmd::toUInteger (tb->isTypeSArray ()->dim));
 
     case TY::Tarray:
       return d_array_length (exp);
@@ -1037,15 +1037,15 @@ lower_struct_comparison (tree_code code, StructDeclaration *sd,
 	  /* Compare inner data structures.  */
 	  tcmp = lower_struct_comparison (code, ts->sym, t1ref, t2ref);
 	}
-      else if (type->ty != TY::Tvector && type->isIntegral ())
+      else if (type->ty != TY::Tvector && dmd::isIntegral (type))
 	{
 	  /* Integer comparison, no special handling required.  */
 	  tcmp = build_boolop (code, t1ref, t2ref);
 	}
-      else if (type->ty != TY::Tvector && type->isFloating ())
+      else if (type->ty != TY::Tvector && dmd::isFloating (type))
 	{
 	  /* Floating-point comparison, don't compare padding in type.  */
-	  if (!type->isComplex ())
+	  if (!dmd::isComplex (type))
 	    tcmp = build_float_identity (code, t1ref, t2ref);
 	  else
 	    {
@@ -1879,7 +1879,7 @@ build_array_from_val (Type *type, tree val)
   if (TREE_CODE (etype) == ARRAY_TYPE && TREE_TYPE (val) != etype)
     val = build_array_from_val (type->nextOf (), val);
 
-  size_t dims = type->isTypeSArray ()->dim->toInteger ();
+  size_t dims = dmd::toInteger (type->isTypeSArray ()->dim);
   vec <constructor_elt, va_gc> *elms = NULL;
   vec_safe_reserve (elms, dims);
 
@@ -2158,7 +2158,7 @@ checkaction_trap_p (void)
 }
 
 /* Returns the TypeFunction class for Type T.
-   Assumes T is already ->toBasetype().  */
+   Assumes T is already the main variant type (toBasetype).  */
 
 TypeFunction *
 get_function_type (Type *t)
@@ -2986,7 +2986,7 @@ get_frameinfo (FuncDeclaration *fd)
   DECL_LANG_FRAMEINFO (fds) = ffi;
 
   const bool requiresClosure = fd->requiresClosure;
-  if (fd->needsClosure ())
+  if (dmd::needsClosure (fd))
     {
       /* This can shift due to templates being expanded that access alias
          symbols, give it a decent error for now.  */

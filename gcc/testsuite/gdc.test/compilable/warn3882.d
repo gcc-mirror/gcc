@@ -66,7 +66,7 @@ const struct Foo13899
 {
     int opApply(immutable int delegate(const ref int) pure nothrow dg) pure nothrow
     {
-        return 1;
+        return 0;
     }
 }
 
@@ -108,6 +108,7 @@ void testCkeckedInt()
 
     bool overflow;
     assert(mulu(cast(long)3, cast(uint)4, overflow) == 12);
+    assert(mulu(cast(ulong)3, cast(uint)4, overflow) == 12);
 
     assert(testCheckedUnsigned!uint(3,4) == 12);
     assert(testCheckedUnsigned!ulong(3,4) == 12);

@@ -215,6 +215,13 @@ unittest
     {
         // Overflow ary.length.
         auto ary = Array!size_t(cast(size_t*)0xdeadbeef, -1);
+        scope(failure)
+        {
+            // prevent destructor from cleaning up invalid memory.
+            ary._length = 0;
+            ary._ptr = null;
+        }
+
         ary.insertBack(0);
     }
     catch (OutOfMemoryError)
@@ -224,6 +231,12 @@ unittest
     {
         // Overflow requested memory size for common.xrealloc().
         auto ary = Array!size_t(cast(size_t*)0xdeadbeef, -2);
+        scope(failure)
+        {
+            // prevent destructor from cleaning up invalid memory.
+            ary._length = 0;
+            ary._ptr = null;
+        }
         ary.insertBack(0);
     }
     catch (OutOfMemoryError)

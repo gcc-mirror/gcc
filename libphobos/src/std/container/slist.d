@@ -506,13 +506,18 @@ Complexity: $(BIGOH k + m), where `k` is the number of elements in
 `r` and `m` is the length of `stuff`.
 
 Example:
+$(RUNNABLE_EXAMPLE
 --------------------
+import std.algorithm, std.container, std.range;
+
 auto sl = SList!string(["a", "b", "d"]);
 sl.insertAfter(sl[], "e"); // insert at the end (slowest)
-assert(std.algorithm.equal(sl[], ["a", "b", "d", "e"]));
-sl.insertAfter(std.range.take(sl[], 2), "c"); // insert after "b"
-assert(std.algorithm.equal(sl[], ["a", "b", "c", "d", "e"]));
+assert(equal(sl[], ["a", "b", "d", "e"]));
+
+sl.insertAfter(take(sl[], 2), "c"); // insert after "b"
+assert(equal(sl[], ["a", "b", "c", "d", "e"]));
 --------------------
+)
      */
 
     size_t insertAfter(Stuff)(Range r, Stuff stuff)

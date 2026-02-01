@@ -1,14 +1,21 @@
 /* REQUIRED_ARGS: -preview=dip1000
  * TEST_OUTPUT:
 ---
-fail_compilation/test19097.d(44): Error: returning scope variable `s` is not allowed in a `@safe` function
-fail_compilation/test19097.d(48): Error: returning scope variable `s1` is not allowed in a `@safe` function
-fail_compilation/test19097.d(77): Error: assigning scope variable `z` to `ref` variable `refPtr` with longer lifetime is not allowed in a `@safe` function
-fail_compilation/test19097.d(108): Error: returning scope variable `s4` is not allowed in a `@safe` function
-fail_compilation/test19097.d(126): Error: returning scope variable `s5c` is not allowed in a `@safe` function
-fail_compilation/test19097.d(130): Error: returning scope variable `s5m` is not allowed in a `@safe` function
-fail_compilation/test19097.d(147): Error: returning scope variable `s6c` is not allowed in a `@safe` function
-fail_compilation/test19097.d(151): Error: returning scope variable `s6m` is not allowed in a `@safe` function
+fail_compilation/test19097.d(51): Error: returning scope variable `s` is not allowed in a `@safe` function
+fail_compilation/test19097.d(50):        `s` inferred `scope` because of `s = & i`
+fail_compilation/test19097.d(55): Error: returning scope variable `s1` is not allowed in a `@safe` function
+fail_compilation/test19097.d(54):        `s1` inferred `scope` because of `s1 = & i`
+fail_compilation/test19097.d(84): Error: assigning scope variable `z` to `ref` variable `refPtr` with longer lifetime is not allowed in a `@safe` function
+fail_compilation/test19097.d(115): Error: returning scope variable `s4` is not allowed in a `@safe` function
+fail_compilation/test19097.d(114):        `s4` inferred `scope` because of `s4 = & x`
+fail_compilation/test19097.d(133): Error: returning scope variable `s5c` is not allowed in a `@safe` function
+fail_compilation/test19097.d(132):        `s5c` inferred `scope` because of `s5c = i`
+fail_compilation/test19097.d(137): Error: returning scope variable `s5m` is not allowed in a `@safe` function
+fail_compilation/test19097.d(136):        `s5m` inferred `scope` because of `s5m = i`
+fail_compilation/test19097.d(154): Error: returning scope variable `s6c` is not allowed in a `@safe` function
+fail_compilation/test19097.d(153):        `s6c` inferred `scope` because of `s6c = i`
+fail_compilation/test19097.d(158): Error: returning scope variable `s6m` is not allowed in a `@safe` function
+fail_compilation/test19097.d(157):        `s6m` inferred `scope` because of `s6m = i`
 ---
  */
 

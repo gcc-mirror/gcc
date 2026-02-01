@@ -14,6 +14,8 @@ module dmd.root.stringtable;
 import core.stdc.string;
 import dmd.root.rmem, dmd.root.hash;
 
+nothrow:
+
 private enum POOL_BITS = 12;
 private enum POOL_SIZE = (1U << POOL_BITS);
 

@@ -1,5 +1,6 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90601
 // { dg-do compile }
+// { dg-options "-Wno-deprecated" }
 
 int postincr(int a)
 {

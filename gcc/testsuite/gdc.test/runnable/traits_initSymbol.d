@@ -108,6 +108,19 @@ void testExternCppClass()
     assert(init == (cast(void*) ac)[0 .. init.length]);
 }
 
+void testFuncParam()
+{
+    // https://github.com/dlang/dmd/issues/22135
+    struct S {}
+
+    void foo(T)(T _) {}
+
+    void bar()
+    {
+        foo(__traits(initSymbol, S));
+    }
+}
+
 void main()
 {
     testZero();
@@ -116,4 +129,5 @@ void main()
     testAlignedStruct();
     testAlignedClass();
     testExternCppClass();
+    testFuncParam();
 }

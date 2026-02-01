@@ -1,4 +1,4 @@
-/* REQUIRED_ARGS: -preview=bitfields
+/*
  * TEST_OUTPUT:
 ---
 fail_compilation/dbitfields.d(118): Error: reinterpretation through overlapped field `e` is not allowed in CTFE

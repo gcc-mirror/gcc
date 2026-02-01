@@ -86,7 +86,7 @@ $(BOOKTABLE ,
         $(TD Creates the range that results from discarding
         the first element from the given range.
     ))
-    $(TR $(TD $(D $(LREF dropBackOne)))
+    $(TR $(TD $(LREF dropBackOne))
         $(TD Creates the range that results from discarding
         the last element from the given range.
     ))
@@ -162,7 +162,7 @@ $(BOOKTABLE ,
         $(TD Similar to `recurrence`, except that a random-access range is
         created.
     ))
-    $(TR $(TD $(D $(LREF slide)))
+    $(TR $(TD $(LREF slide))
         $(TD Creates a range that returns a fixed-size sliding window
         over the original range. Unlike chunks,
         it advances a configurable number of items at a time,
@@ -4446,7 +4446,7 @@ if (isForwardRange!R && !isInfinite!R)
             return _original[_index];
         }
 
-        static if (is(typeof((cast(const R)_original)[_index])))
+        static if (__traits(compiles, (const R r) => r[0]))
         {
             /// ditto
             @property auto ref front() const
@@ -4484,8 +4484,8 @@ if (isForwardRange!R && !isInfinite!R)
             return _original[(n + _index) % _original.length];
         }
 
-        static if (is(typeof((cast(const R)_original)[_index])) &&
-                   is(typeof((cast(const R)_original).length)))
+        static if (__traits(compiles, (const R r) => r[0]) &&
+            __traits(compiles, (const R r) => r.length))
         {
             /// ditto
             auto ref opIndex(size_t n) const
@@ -4559,7 +4559,7 @@ if (isForwardRange!R && !isInfinite!R)
             return _current.front;
         }
 
-        static if (is(typeof((cast(const R)_current).front)))
+        static if (__traits(compiles, (const R r) => r.front))
         {
             /// ditto
             @property auto ref front() const
@@ -4946,6 +4946,23 @@ pure @safe unittest
         range.front = Handle(42);
         assert(called);
     }
+}
+
+// https://github.com/dlang/phobos/issues/10852
+@safe unittest
+{
+    // forward range
+    struct R
+    {
+        int i;
+        int front() => i;
+        bool empty() => i == 0;
+        void popFront() {--i;}
+        R save() => this;
+    }
+
+    auto r = R(10).cycle.take(20);
+    assert(r.array == [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]);
 }
 
 private alias lengthType(R) = typeof(R.init.length.init);
@@ -6830,12 +6847,15 @@ pure @safe nothrow unittest
    user-defined types that support `++`, the range is an input
    range.
 
-   An integral iota also supports `in` operator from the right. It takes
-   the stepping into account, the integral won't be considered
-   contained if it falls between two consecutive values of the range.
-   `contains` does the same as in, but from lefthand side.
+   $(DDOC_SECTION_H `in` operator and `contains`:)
+   `iota` over an integral/pointer type defines the `in` operator from the right.
+   `val in iota(...)` is true when `val` occurs in the range. When present, it takes
+   `step` into account - `val` won't be considered
+   contained if it falls between two consecutive elements of the range.
+   The `contains` method does the same as `in`, but from the left-hand side.
 
     Example:
+    $(RUNNABLE_EXAMPLE
     ---
     void main()
     {
@@ -6862,6 +6882,7 @@ pure @safe nothrow unittest
         writeln();
     }
     ---
+    )
 */
 auto iota(B, E, S)(B begin, E end, S step)
 if ((isIntegral!(CommonType!(B, E)) || isPointer!(CommonType!(B, E)))

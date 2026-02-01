@@ -4,7 +4,7 @@
  * Copyright: Copyright Sean Kelly 2005 - 2009.
  * License:   $(HTTP www.boost.org/LICENSE_1_0.txt, Boost License 1.0).
  * Authors:   Sean Kelly
- * Standards: The Open Group Base Specifications Issue 6, IEEE Std 1003.1, 2004 Edition
+ * Standards: The Open Group Base Specifications Issue 8, IEEE Std 1003.1, 2024 Edition
  */
 
 /*          Copyright Sean Kelly 2005 - 2009.
@@ -50,18 +50,24 @@ int     close(int) @trusted;
 size_t  confstr(int, char*, size_t);
 int     dup(int) @trusted;
 int     dup2(int, int) @trusted;
+//int     dup3(int, int, int) @trusted;
 int     execl(const scope char*, const scope char*, ...);
 int     execle(const scope char*, const scope char*, ...);
 int     execlp(const scope char*, const scope char*, ...);
 int     execv(const scope char*, const scope char**);
 int     execve(const scope char*, const scope char**, const scope char**);
 int     execvp(const scope char*, const scope char**);
-void    _exit(int) @trusted;
+noreturn _exit(int) @trusted;
+//int     faccessat(int, const scope char*, int, int);
 int     fchown(int, uid_t, gid_t) @trusted;
+//int     fchownat(int, const scope char*, uid_t, gid_t, int);
+//int     fexecve(int, const scope char**, const scope char**);
 pid_t   fork() @trusted;
+//pid_t   _Fork() @trusted;
 c_long  fpathconf(int, int) @trusted;
 //int     ftruncate(int, off_t);
 char*   getcwd(char*, size_t);
+//int     getentropy(void*, size_t);
 gid_t   getegid() @trusted;
 uid_t   geteuid() @trusted;
 gid_t   getgid() @trusted;
@@ -73,31 +79,40 @@ int     getopt(int, const scope char**, const scope char*);
 pid_t   getpgrp() @trusted;
 pid_t   getpid() @trusted;
 pid_t   getppid() @trusted;
+//int     getresgid(gid_t*, gid_t*, gid_t*);
+//int     getresuid(uid_t*, uid_t*, uid_t*);
 uid_t   getuid() @trusted;
 int     isatty(int) @trusted;
 int     link(const scope char*, const scope char*);
+//int     linkat(int, const scope char*, int, const scope char*, int);
 //off_t   lseek(int, off_t, int);
 c_long  pathconf(const scope char*, int);
 int     pause() @trusted;
 int     pipe(ref int[2]) @trusted;
+//int     pipe2(ref int[2], int) @trusted;
 ssize_t read(int, void*, size_t);
 ssize_t readlink(const scope char*, char*, size_t);
+//ssize_t readlinkat(int, const scope char*, char*, size_t);
 int     rmdir(const scope char*);
 int     setegid(gid_t) @trusted;
 int     seteuid(uid_t) @trusted;
 int     setgid(gid_t) @trusted;
 int     setgroups(size_t, const scope gid_t*) @trusted;
 int     setpgid(pid_t, pid_t) @trusted;
+//int     setresgid(gid_t, gid_t, gid_t) @trusted;
+//int     setresuid(uid_t, uid_t, uid_t) @trusted;
 pid_t   setsid() @trusted;
 int     setuid(uid_t) @trusted;
 uint    sleep(uint) @trusted;
 int     symlink(const scope char*, const scope char*);
+//int     symlinkat(const scope char*, int, const scope char*);
 c_long  sysconf(int) @trusted;
 pid_t   tcgetpgrp(int) @trusted;
 int     tcsetpgrp(int, pid_t) @trusted;
 char*   ttyname(int) @trusted;
 int     ttyname_r(int, char*, size_t);
 int     unlink(const scope char*);
+//int     unlinkat(int, const scope char*, int);
 ssize_t write(int, const scope void*, size_t);
 
 version (CRuntime_Glibc)
@@ -120,26 +135,105 @@ version (CRuntime_Glibc)
   {
     int   ftruncate(int, off_t) @trusted;
   }
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   fexecve(int, const scope char**, const scope char**);
+    pid_t _Fork() @trusted;
+    int   getentropy(void*, size_t);
+    int   getresgid(gid_t*, gid_t*, gid_t*);
+    int   getresuid(uid_t*, uid_t*, uid_t*);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    int   pipe2(ref int[2], int) @trusted;
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   setresgid(gid_t, gid_t, gid_t) @trusted;
+    int   setresuid(uid_t, uid_t, uid_t) @trusted;
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 else version (FreeBSD)
 {
     off_t lseek(int, off_t, int) @trusted;
     int   ftruncate(int, off_t) @trusted;
+    int   getresgid(gid_t*, gid_t*, gid_t*);
+    int   getresuid(uid_t*, uid_t*, uid_t*);
+    int   setresgid(gid_t, gid_t, gid_t) @trusted;
+    int   setresuid(uid_t, uid_t, uid_t) @trusted;
+
+    import core.sys.freebsd.config : __FreeBSD_version;
+  static if (__FreeBSD_version >= 800000)
+  {
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   fexecve(int, const scope char**, const scope char**);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
+  }
+  static if (__FreeBSD_version >= 1000000)
+  {
+    int   dup3(int, int, int) @trusted;
+    int   pipe2(ref int[2], int) @trusted;
+  }
+  static if (__FreeBSD_version >= 1200000)
+  {
+    int   getentropy(void*, size_t);
+  }
+  static if (__FreeBSD_version >= 1301000)
+  {
+    pid_t _Fork() @trusted;
+  }
 }
 else version (NetBSD)
 {
     off_t lseek(int, off_t, int) @trusted;
     int   ftruncate(int, off_t) @trusted;
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   fexecve(int, const scope char**, const scope char**);
+    int   getentropy(void*, size_t);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    int   pipe2(ref int[2], int) @trusted;
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 else version (OpenBSD)
 {
     off_t lseek(int, off_t, int) @trusted;
     int   ftruncate(int, off_t) @trusted;
+    int   dup3(int, int, int) @trusted;
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   getentropy(void*, size_t);
+    int   getresgid(gid_t*, gid_t*, gid_t*);
+    int   getresuid(uid_t*, uid_t*, uid_t*);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    int   pipe2(ref int[2], int) @trusted;
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   setresgid(gid_t, gid_t, gid_t) @trusted;
+    int   setresuid(uid_t, uid_t, uid_t) @trusted;
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 else version (DragonFlyBSD)
 {
     off_t lseek(int, off_t, int) @trusted;
     int   ftruncate(int, off_t) @trusted;
+    int   dup3(int, int, int) @trusted;
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   fexecve(int, const scope char**, const scope char**);
+    int   getentropy(void*, size_t);
+    int   getresgid(gid_t*, gid_t*, gid_t*);
+    int   getresuid(uid_t*, uid_t*, uid_t*);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    int   pipe2(ref int[2], int) @trusted;
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   setresgid(gid_t, gid_t, gid_t) @trusted;
+    int   setresuid(uid_t, uid_t, uid_t) @trusted;
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 else version (Solaris)
 {
@@ -167,16 +261,47 @@ else version (Solaris)
             int     ftruncate(int, off_t) @trusted;
         }
     }
+    int   dup3(int, int, int) @trusted;
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   fexecve(int, const scope char**, const scope char**);
+    int   getentropy(void*, size_t);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    int   pipe2(ref int[2], int) @trusted;
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 else version (Darwin)
 {
     off_t lseek(int, off_t, int) @trusted;
     int   ftruncate(int, off_t) @trusted;
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 else version (CRuntime_Bionic)
 {
     off_t lseek(int, off_t, int) @trusted;
     int   ftruncate(int, off_t) @trusted;
+    int   dup3(int, int, int) @trusted;
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   fexecve(int, const scope char**, const scope char**);
+    pid_t _Fork() @trusted;
+    int   getentropy(void*, size_t);
+    int   getresgid(gid_t*, gid_t*, gid_t*);
+    int   getresuid(uid_t*, uid_t*, uid_t*);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    int   pipe2(ref int[2], int) @trusted;
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   setresgid(gid_t, gid_t, gid_t) @trusted;
+    int   setresuid(uid_t, uid_t, uid_t) @trusted;
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 else version (CRuntime_Musl)
 {
@@ -184,6 +309,21 @@ else version (CRuntime_Musl)
     off_t lseek(int, off_t, int) @trusted;
     alias ftruncate ftruncate64;
     alias lseek lseek64;
+    int   dup3(int, int, int) @trusted;
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   fexecve(int, const scope char**, const scope char**);
+    pid_t _Fork() @trusted;
+    int   getentropy(void*, size_t);
+    int   getresgid(gid_t*, gid_t*, gid_t*);
+    int   getresuid(uid_t*, uid_t*, uid_t*);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    int   pipe2(ref int[2], int) @trusted;
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   setresgid(gid_t, gid_t, gid_t) @trusted;
+    int   setresuid(uid_t, uid_t, uid_t) @trusted;
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 else version (CRuntime_UClibc)
 {
@@ -205,6 +345,18 @@ else version (CRuntime_UClibc)
   {
     int   ftruncate(int, off_t) @trusted;
   }
+    int   dup3(int, int, int) @trusted;
+    int   faccessat(int, const scope char*, int, int);
+    int   fchownat(int, const scope char*, uid_t, gid_t, int);
+    int   getresgid(gid_t*, gid_t*, gid_t*);
+    int   getresuid(uid_t*, uid_t*, uid_t*);
+    int   linkat(int, const scope char*, int, const scope char*, int);
+    int   pipe2(ref int[2], int) @trusted;
+    ssize_t readlinkat(int, const scope char*, char*, size_t);
+    int   setresgid(gid_t, gid_t, gid_t) @trusted;
+    int   setresuid(uid_t, uid_t, uid_t) @trusted;
+    int   symlinkat(const scope char*, int, const scope char*);
+    int   unlinkat(int, const scope char*, int);
 }
 
 version (CRuntime_Glibc)

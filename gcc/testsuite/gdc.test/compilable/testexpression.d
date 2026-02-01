@@ -69,7 +69,6 @@ void OpAssignCases(alias X)()
 
     X!(integral, boolean, all)();
     X!(integral, integral, all)();
-    X!(integral, floating, arith)();
 
     X!(floating, boolean, arith)();
     X!(floating, integral, arith)();

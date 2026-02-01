@@ -25,7 +25,7 @@ import dmd.declaration;
 import dmd.dstruct;
 import dmd.errors;
 import dmd.expression;
-import dmd.expressionsem : getField;
+import dmd.expressionsem;
 import dmd.globals;
 import dmd.location;
 import dmd.mtype;
@@ -37,7 +37,7 @@ import dmd.root.utf;
 import dmd.sideeffect;
 import dmd.target;
 import dmd.tokens;
-import dmd.typesem : toDsymbol, equivalent, sarrayOf, size;
+import dmd.typesem;
 
 private enum LOG = false;
 

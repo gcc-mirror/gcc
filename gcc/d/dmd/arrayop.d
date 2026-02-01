@@ -19,7 +19,6 @@ import dmd.astenums;
 import dmd.dcast : implicitConvTo;
 import dmd.declaration;
 import dmd.dscope;
-import dmd.dsymbol;
 import dmd.errors;
 import dmd.expression;
 import dmd.expressionsem;
@@ -31,7 +30,7 @@ import dmd.location;
 import dmd.mtype;
 import dmd.common.outbuffer;
 import dmd.tokens;
-import dmd.typesem : isAssignable;
+import dmd.typesem : isAssignable, nextOf, toBasetype;
 import dmd.visitor;
 
 /**********************************************

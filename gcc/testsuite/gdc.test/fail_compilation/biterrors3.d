@@ -1,4 +1,4 @@
-/* REQUIRED_ARGS: -preview=bitfields
+/*
  * TEST_OUTPUT:
 ---
 fail_compilation/biterrors3.d(103): Error: storage class not allowed for bitfield declaration
