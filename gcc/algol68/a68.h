@@ -539,7 +539,7 @@ tree a68_bits_eq (tree a, tree b, location_t loc = UNKNOWN_LOCATION);
 tree a68_bits_ne (tree a, tree b, location_t loc = UNKNOWN_LOCATION);
 tree a68_bits_set (MOID_T *m, tree bits, tree numbit, location_t loc = UNKNOWN_LOCATION);
 tree a68_bits_clear (MOID_T *m, tree bits, tree numbit, location_t loc = UNKNOWN_LOCATION);
-tree a68_bits_test (MOID_T *m, tree bits, tree numbit, location_t loc = UNKNOWN_LOCATION);
+tree a68_bits_test (tree bits, tree numbit, location_t loc = UNKNOWN_LOCATION);
 
 /* a68-low_bools.cc  */
 

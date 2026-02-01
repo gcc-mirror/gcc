@@ -375,8 +375,7 @@ a68_bits_clear (MOID_T *m, tree bits, tree numbit, location_t loc)
    the operator yields false.  */
 
 tree
-a68_bits_test (MOID_T *m ATTRIBUTE_UNUSED,
-	       tree bits, tree numbit, location_t loc)
+a68_bits_test (tree bits, tree numbit, location_t loc)
 {
   tree bits_type = TREE_TYPE (bits);
   tree int_type = TREE_TYPE (numbit);
