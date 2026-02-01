@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! riscv_abi_e } } } */
-/* { dg-options "-O3 -march=rv64gcv -mrvv-max-lmul=m8 -Wno-overflow" } */
+/* { dg-options "-O3 -march=rv64gcv -mabi=lp64d -mrvv-max-lmul=m8 -Wno-overflow" } */
 
 #include "perm.h"
 
