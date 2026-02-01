@@ -1256,7 +1256,12 @@ a68_lower_formal_hole (NODE_T *p, LOW_CTX_T ctx ATTRIBUTE_UNUSED)
   gcc_assert (IS (str, ROW_CHAR_DENOTATION));
 
   char *symbol = a68_string_process_breaks (p, NSYMBOL (str));
-  tree decl = a68_make_formal_hole_decl (p, symbol);
+
+  tree decl;
+  if (IS (MOID (p), PROC_SYMBOL))
+    decl = a68_make_proc_formal_hole_decl (p, symbol);
+  else
+    decl = a68_make_formal_hole_decl (p, symbol);
   return decl;
 }
 
