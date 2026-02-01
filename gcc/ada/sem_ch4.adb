@@ -5741,12 +5741,12 @@ package body Sem_Ch4 is
          --  Ada 2005 (AI05-0030): In the case of dispatching requeue, the
          --  selected component should resolve to a name.
 
-         --  Extension feature: Also support calls with prefixed views for
-         --  untagged record types.
+         --  GNAT extension: Accept calls with prefixed view for untagged
+         --  record types.
 
          if Ada_Version >= Ada_2005
            and then (Is_Tagged_Type (Prefix_Type)
-                       or else Core_Extensions_Allowed)
+                      or else Core_Extensions_Allowed)
            and then not Is_Concurrent_Type (Prefix_Type)
          then
             if Nkind (Parent (N)) = N_Generic_Association
@@ -5816,8 +5816,12 @@ package body Sem_Ch4 is
                --  Before declaring an error, check whether this is tagged
                --  private type and a call to a primitive operation.
 
+               --  GNAT extension: Accept calls with prefixed view for
+               --  untagged private types
+
                elsif Ada_Version >= Ada_2005
-                 and then Is_Tagged_Type (Prefix_Type)
+                 and then (Is_Tagged_Type (Prefix_Type)
+                            or else Core_Extensions_Allowed)
                  and then Try_Object_Operation (N)
                then
                   return;
@@ -5835,8 +5839,8 @@ package body Sem_Ch4 is
             Next_Entity (Comp);
          end loop;
 
-         --  Extension feature: Also support calls with prefixed views for
-         --  untagged private types.
+         --  GNAT extension: Accept calls with prefixed view for untagged
+         --  private types.
 
          if Core_Extensions_Allowed then
             if Try_Object_Operation (N) then
@@ -6018,9 +6022,13 @@ package body Sem_Ch4 is
          --  visible entities are plausible interpretations, check whether
          --  there is some other primitive operation with that name.
 
+         --  Note that, unlike for other types, we do not accept calls with
+         --  prefixed view for untagged concurrent types with -gnatX, since
+         --  this would require associated legality rules to avoid conflict
+         --  with protected operations or entries of the concurrent types.
+
          if Ada_Version >= Ada_2005 and then Is_Tagged_Type (Prefix_Type) then
-            if (Etype (N) = Any_Type
-                  or else not Has_Candidate)
+            if (Etype (N) = Any_Type or else not Has_Candidate)
               and then Try_Object_Operation (N)
             then
                return;
@@ -6096,8 +6104,7 @@ package body Sem_Ch4 is
 
          Set_Is_Overloaded (N, Is_Overloaded (Sel));
 
-      --  Extension feature: Also support calls with prefixed views for
-      --  untagged types.
+      --  GNAT extension: Accept calls with prefixed view for untagged types
 
       elsif Core_Extensions_Allowed
         and then Try_Object_Operation (N)
@@ -10364,8 +10371,8 @@ package body Sem_Ch4 is
          --  type, this is not a prefixed call. Restore the previous type as
          --  the current one is not a legal candidate.
 
-         --  Extension feature: Calls with prefixed views are also supported
-         --  for untagged types, so skip the early return when extensions are
+         --  GNAT extension: Given that calls with prefixed view are accepted
+         --  for untagged types, skip the early return when extensions are
          --  enabled, unless the type doesn't have a primitive operations list
          --  (such as in the case of predefined types).
 
@@ -10391,7 +10398,7 @@ package body Sem_Ch4 is
                    (Call_Node       => New_Call_Node,
                     Node_To_Replace => Node_To_Replace);
 
-               --  Extension feature: In the case where the prefix is of an
+               --  GNAT extension: In the case where the prefix is of an
                --  access type, and a primitive wasn't found for the designated
                --  type, then if the access type has primitives we attempt a
                --  prefixed call using one of its primitives. (It seems that
