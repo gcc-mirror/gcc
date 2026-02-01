@@ -14,6 +14,10 @@
 
 @c Create a separate index for command line options.
 @defcodeindex op
+
+@c Likewise for parameters.
+@defcodeindex pa
+
 @c Merge the standard indexes into a single one.
 @syncodeindex fn cp
 @syncodeindex vr cp
@@ -125,6 +129,7 @@ Additional tutorial information is linked to from
 * Match and Simplify:: How to write expression simplification patterns for GIMPLE and GENERIC
 * Static Analyzer:: Working with the static analyzer.
 * User Experience Guidelines:: Guidelines for implementing diagnostics and options.
+* Parameters::      Controlling internal behavior from the command line.
 * Funding::         How to help assure funding for free software.
 * GNU Project::     The GNU Project and GNU/Linux.
 
@@ -134,6 +139,7 @@ Additional tutorial information is linked to from
 * Contributors::    People who have contributed to GCC.
 
 * Option Index::    Index to command line options.
+* Parameter Index:: Index to parameters settable from the command line.
 * Concept Index::   Index of concepts and symbol names.
 @end menu
 
@@ -163,6 +169,7 @@ Additional tutorial information is linked to from
 @include match-and-simplify.texi
 @include analyzer.texi
 @include ux.texi
+@include params.texi
 
 @include funding.texi
 @include gnu.texi
@@ -190,6 +197,11 @@ relevant entries in the manual are indexed under the most appropriate
 form; it may sometimes be useful to look up both forms.
 
 @printindex op
+
+@node Parameter Index
+@unnumbered Parameter Index
+
+@printindex pa
 
 @node Concept Index
 @unnumbered Concept Index
