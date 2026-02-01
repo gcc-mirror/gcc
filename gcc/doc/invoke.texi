@@ -11246,11 +11246,12 @@ warnings produced by @option{-Winline} to appear or disappear.
 @opindex Winterference-size
 @opindex Wno-interference-size
 @item -Winterference-size
-Warn about use of C++17 @code{std::hardware_destructive_interference_size}
-without specifying its value with @option{--param destructive-interference-size}.
-Also warn about questionable values for that option.
+@item -Wno-interference-size
+Warn about questionable uses of the C++17 @code{constexpr} variables
+@code{std::hardware_destructive_interference_size} and
+@code{std::hardware_constructive_interference_size}.
 
-This variable is intended to be used for controlling class layout, to
+These variables are intended to be used for controlling class layout, to
 avoid false sharing in concurrent code:
 
 @smallexample
@@ -11266,8 +11267,7 @@ Here @samp{one} and @samp{two} are intended to be far enough apart
 that stores to one won't require accesses to the other to reload the
 cache line.
 
-By default, @option{--param destructive-interference-size} and
-@option{--param constructive-interference-size} are set based on the
+By default, these variables are given values based on the
 current @option{-mtune} option, typically to the L1 cache line size
 for the particular target CPU, sometimes to a range if tuning for a
 generic target.  So all translation units that depend on ABI
@@ -11276,10 +11276,10 @@ the same @option{-mtune} (or @option{-mcpu}).
 
 If ABI stability is important, such as if the use is in a header for a
 library, you should probably not use the hardware interference size
-variables at all.  Alternatively, you can force a particular value
-with @option{--param}.
+variables at all.
 
-If you are confident that your use of the variable does not affect ABI
+These warnings are enabled by default.
+If you are confident that your use of these variables does not affect ABI
 outside a single build of your project, you can turn off the warning
 with @option{-Wno-interference-size}.
 
@@ -11615,8 +11615,7 @@ to attempt to track the state of memory, but these can be defeated by
 sufficiently complicated code.
 
 By default, the analysis silently stops tracking values of expressions
-if they exceed the threshold defined by
-@option{--param analyzer-max-svalue-depth=@var{value}}, and falls back
+if they exceed an internal limit, and falls back
 to an imprecise representation for such expressions.
 The @option{-Wanalyzer-symbol-too-complex} option warns if this occurs.
 
@@ -12490,14 +12489,9 @@ and of the following functions:
 
 In addition, various functions with an @code{__analyzer_} prefix have
 special meaning to the analyzer, described in the GCC Internals manual.
-
-Pertinent parameters for controlling the exploration are:
-@itemize @bullet
-@item @option{--param analyzer-bb-explosion-factor=@var{value}}
-@item @option{--param analyzer-max-enodes-per-program-point=@var{value}}
-@item @option{--param analyzer-max-recursion-depth=@var{value}}
-@item @option{--param analyzer-min-snodes-for-call-summary=@var{value}}
-@end itemize
+Various internal parameters, settable via @option{--param}, are used
+to control the exploration; these are also documented in the GCC Internals
+manual.
 
 The following options control the analyzer.
 
@@ -12526,8 +12520,7 @@ rather than exploring all paths through the function from callsite to each
 possible return.
 
 If enabled, call summaries are only used for functions with more than one
-call site, and that are sufficiently complicated (as per
-@option{--param analyzer-min-snodes-for-call-summary=@var{value}}).
+call site, and that are sufficiently complicated.
 
 @opindex fanalyzer-checker
 @item -fanalyzer-checker=@var{name}
@@ -13790,20 +13783,9 @@ By default, GCC limits the size of functions that can be inlined.  This flag
 allows coarse control of this limit.  @var{n} is the size of functions that
 can be inlined in number of pseudo instructions.
 
-Inlining is actually controlled by a number of parameters, which may be
-specified individually by using @option{--param @var{name}=@var{value}}.
-The @option{-finline-limit=@var{n}} option sets some of these parameters
-as follows:
-
-@table @gcctabopt
-@item max-inline-insns-single
-is set to @var{n}/2.
-@item max-inline-insns-auto
-is set to @var{n}/2.
-@end table
-
-See below for a documentation of the individual
-parameters controlling inlining and for the defaults of these parameters.
+Inlining is actually controlled by a number of internal parameters, which
+are documented in the GCC Internals manual and should not normally be set
+directly.
 
 @emph{Note:} there may be no value to @option{-finline-limit} that results
 in default behavior.
@@ -14733,8 +14715,7 @@ Perform function cloning to make interprocedural constant propagation stronger.
 When enabled, interprocedural constant propagation performs function cloning
 when externally visible function can be called with constant arguments.
 Because this optimization can create multiple copies of functions,
-it may significantly increase code size
-(see @option{--param ipa-cp-unit-growth=@var{value}}).
+it may significantly increase code size.
 This flag is enabled by default at @option{-O3}.
 It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
@@ -17348,12 +17329,10 @@ instrumentation differences necessary for compiling the Linux kernel.
 These differences are to avoid hwasan library initialization calls and to
 account for the stack pointer having a different value in its top byte.
 
-@emph{Note:} This option has different defaults to the @option{-fsanitize=hwaddress}.
-Instrumenting the stack and alloca calls are not on by default but are still
-possible by specifying the command-line options
-@option{--param hwasan-instrument-stack=1} and
-@option{--param hwasan-instrument-allocas=1} respectively. Using a random frame
-tag is not implemented for kernel instrumentation.
+@emph{Note:} This option has different defaults than
+@option{-fsanitize=hwaddress}.
+Instrumenting the stack and alloca calls are not on by default.
+Using a random frame tag is not implemented for kernel instrumentation.
 
 @opindex fsanitize=memtag-stack
 @item -fsanitize=memtag-stack
@@ -17817,9 +17796,7 @@ Verification takes place before returns, before mandatory tail calls
 (see below) and, optionally, before escaping exceptions with
 @option{-fhardcfr-check-exceptions}, before returning calls with
 @option{-fhardcfr-check-returning-calls}, and before noreturn calls with
-@option{-fhardcfr-check-noreturn-calls}).  Tuning options
-@option{--param hardcfr-max-blocks} and @option{--param
-hardcfr-max-inline-blocks} are available.
+@option{-fhardcfr-check-noreturn-calls}).
 
 Tail call optimization takes place too late to affect control flow
 redundancy, but calls annotated as mandatory tail calls by language
@@ -38713,7 +38690,7 @@ functionality.  Generally blocks are read when name lookup or template
 instantiation occurs.  To inhibit this, the @option{-fno-module-lazy}
 option may be used.
 
-The @option{--param lazy-modules=@var{n}} parameter controls the limit
+GCC has an internal parameter that controls the limit
 on the number of concurrently open module files during lazy loading.
 Should more modules be imported, an LRU algorithm is used to determine
 which files to close---until that file is needed again.  This limit
