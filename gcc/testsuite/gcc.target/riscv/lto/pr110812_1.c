@@ -1,4 +1,4 @@
-/* { dg-options { -flto -march=rv64gcv -mabi=lp64d } } */
+/* { dg-options { -flto -march=rv64gcv -mabi=lp64d -mcmodel=medany } } */
 
 #include "riscv_vector.h"
 uint8_t *x, *y;

@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options { { -flto -march=rv64gc -mabi=lp64d } } } */
+/* { dg-lto-options { { -flto -march=rv64gc -mabi=lp64d -mcmodel=medany } } } */
 /* { dg-extra-ld-options "-nostdlib" } */
 
 void foo();
