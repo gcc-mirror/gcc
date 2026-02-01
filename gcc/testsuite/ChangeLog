@@ -1,3 +1,71 @@
+2026-01-31  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/bits-test-1.a68: New test.
+
+2026-01-31  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/bits-clear-1.a68: New test.
+	* algol68/execute/bits-set-1.a68: Likewise.
+
+2026-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* gcc.dg/torture/pr123887-2.c: New testcase.
+
+2026-01-31  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/123557
+	PR c++/123738
+	* g++.dg/cpp0x/constexpr-ice22.C: New test.
+	* g++.dg/cpp2a/constexpr-ref2.C: New test.
+
+2026-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123825
+	* g++.dg/reflect/has_identifier3.C: New test.
+	* g++.dg/reflect/identifier_of3.C: New test.
+	* g++.dg/cpp26/attr-indeterminate5.C: New test.
+
+2026-01-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/asm1.d: Adjust test.
+	* gdc.dg/asm5.d: Likewise.
+	* gdc.dg/pr100967.d: Likewise.
+	* gdc.dg/rtti1.d: Likewise.
+	* gdc.dg/rtti2.d: New test.
+
+2026-01-31  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/crypto-vsha1cq_u32.c: Accept d regs in
+	vdup.32.  Drop extraneous + after ] in vmov.32 pattern.
+	* gcc.target/arm/crypto-vsha1h_u32.c: Likewise.
+	* gcc.target/arm/crypto-vsha1mq_u32.c: Likewise.
+	* gcc.target/arm/crypto-vsha1pq_u32.c: Likewise.
+
+2026-01-31  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/arm/bfloat16_simd_1_2.c: Add -mcpu=unset.
+	* gcc.target/arm/bfloat16_simd_2_2.c: Likewise.
+	* gcc.target/arm/bfloat16_simd_3_2.c: Likewise.
+	* gcc.dg/torture/pr120347.c: Likewise.  Add +fp to -march.
+
+2026-01-31  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/complex/fast-math-complex-mls-half-float.c:
+	Don't expect COMPLEX_ADD_ROT270.
+
+2026-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123880
+	* g++.dg/analyzer/exception-rethrow-3.C: New test.
+
+2026-01-31  Jason Merrill  <jason@redhat.com>
+	    Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122785
+	* g++.dg/modules/reflect-1_a.H: New test.
+	* g++.dg/modules/reflect-1_b.C: New test.
+
 2026-01-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/123868

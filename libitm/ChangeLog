@@ -1,3 +1,11 @@
+2026-01-31  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR libitm/69018
+	* testsuite/lib/libitm.exp (libitm_target_compile): Add
+	lang_include_flags and `-B${blddir}/${lang_library_paths}' to
+	additional_flags.
+	* testsuite/libitm.c++/c++.exp: Set lang_library_paths and lang_include_flags.
+
 2026-01-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* libitm.texi: Bump @copying's copyright year.

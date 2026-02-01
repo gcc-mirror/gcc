@@ -1,3 +1,10 @@
+2026-01-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123880
+	* engine.cc (throw_custom_edge::update_model): Gracefully handle
+	not knowing the current exception in a rethrow.
+	(exploded_node::on_throw): Likewise.
+
 2026-01-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/122623

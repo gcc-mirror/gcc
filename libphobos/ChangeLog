@@ -1,3 +1,16 @@
+2026-01-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime e1f6680f50.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/internal/cast_.d.  Remove rt/aaA.d, rt/adi.d, rt/cast_.d.
+	(DRUNTIME_DSOURCES_POSIX): Add core/sys/posix/endian.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos f87979028.
+	* src/Makefile.am (PHOBOS_DSOURCES): Add std/internal/entropy.d.
+	* src/Makefile.in: Regenerate.
+	* testsuite/libphobos.aa/test_aa.d: Adjust test.
+	* testsuite/libphobos.init_fini/custom_gc.d: Likewise.
+
 2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 1017635a96.

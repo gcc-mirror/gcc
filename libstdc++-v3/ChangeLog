@@ -1,3 +1,9 @@
+2026-01-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/regex_executor.tcc (_ExecutorFrameBase): Add
+	#pragma GCC diagnostic to suppress -Wpedantic warning about
+	anonymous structs.
+
 2026-01-30  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/regex_executor.tcc (__detail::_Executor::_M_node)

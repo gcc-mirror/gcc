@@ -1,3 +1,24 @@
+2026-01-31  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68.h: Prototypes for a68_bits_test and a68_lower_test3.
+	* a68-low-bits.cc (a68_bits_test): New function.
+	* a68-low-prelude.cc (a68_lower_test3): Likewise.
+	* a68-parser-prelude.cc (gnu_prelude): Declare TEST operators and
+	their priority.
+	* ga68.texi (Extended bits operators): New section.
+
+2026-01-31  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.texi (POSIX files): Document SET and CLEAR operators.
+	* a68.h: Prototypes for a68_bits_set, a68_bits_clear,
+	a68_lower_set3 and a68_lower_clear3.
+	* a68-low-bits.cc (a68_bits_set): New function.
+	(a68_bits_clear): Likewise.
+	* a68-low-prelude.cc (a68_lower_set3): Likewise.
+	(a68_lower_clear3): Likewise.
+	* a68-parser-prelude.cc (gnu_prelude): Declare operators SET and
+	CLEAR and their priorities.
+
 2026-01-30  Marc Poulhiès  <dkm@kataplop.net>
 
 	* ga68-coding-guidelines.texi: Typo fix.

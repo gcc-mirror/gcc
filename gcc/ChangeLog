@@ -1,3 +1,19 @@
+2026-01-31  Keith Packard  <keithp@keithp.com>
+
+	* config/picolibc-spec.h (LIBC_LINK_SPEC): Use find-file for test
+	and access to picolibc.ld.
+
+2026-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* match.pd ((a ? x : y) !=/== (b ? x : y)): Make sure
+	x and y have no side-effects before evaluating them
+	unconditionally.
+
+2026-01-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Binaries): Switch delorie.com to https.
+
 2026-01-30  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/123887

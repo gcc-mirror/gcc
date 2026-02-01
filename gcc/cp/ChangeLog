@@ -1,3 +1,32 @@
+2026-01-31  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/123557
+	PR c++/123738
+	* cp-gimplify.cc (cp_fold_maybe_rvalue): Call
+	cp_fold_non_odr_use_1 before recursing cp_fold.
+	(cp_fold): Pass op0 to cp_fold_non_odr_use_1 when folding a
+	reference.  Reapply set_target_expr_eliding on the initializing
+	expression of an INIT_EXPR.
+
+2026-01-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123825
+	* cp-tree.h (merge_decl_arguments): Declare.
+	* decl.cc (duplicate_decls): Outline DECL_ARGUMENTS handling
+	into ...
+	(merge_decl_arguments): ... new function.
+	* name-lookup.cc (push_local_extern_decl_alias): Call
+	merge_decl_arguments.  Don't copy just the first PARM_DECL when
+	creating a new alias FUNCTION_DECL.
+
+2026-01-31  Jason Merrill  <jason@redhat.com>
+	    Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122785
+	* decl.cc (maybe_commonize_var): Don't check consteval_only_p.
+	(make_rtl_for_nonlocal_decl): Undo make_decl_one_only for
+	consteval-only variables.
+
 2026-01-30  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/123845
