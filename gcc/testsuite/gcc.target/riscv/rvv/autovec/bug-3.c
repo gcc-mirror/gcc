@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl512b -mabi=lp64d -mrvv-max-lmul=m8 -mrvv-vector-bits=scalable -fno-vect-cost-model -O2 -ffast-math" } */
+/* { dg-options "-march=rv64gcv_zvl512b -mabi=lp64d -mrvv-max-lmul=m8 -mrvv-vector-bits=scalable -fno-vect-cost-model -O2 -ffast-math -fno-schedule-insns -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #define N 16
@@ -31,8 +31,7 @@ _Complex float res[N] =
 ** ...
 ** csrr\s+[atx][0-9]+,\s*vlenb
 ** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*1
-** ...
-** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*32
+** slli\s+[atx][0-9]+,\s*[atx][0-9],\s*33
 ** ...
 */
 void
