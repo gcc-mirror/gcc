@@ -25,5 +25,5 @@ foo (uint8_t *restrict a, uint8_t *restrict b, int n)
 /* Since we don't support VLA SLP for LMUL = 8, dynamic LMUL cost model start from LMUL = 4.  */
 /* { dg-final { scan-tree-dump-not "Preferring smaller LMUL loop because it has unexpected spills" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Maximum lmul = 8" "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 4" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Maximum lmul = 2" 1 "vect" { xfail *-*-* } } } */

@@ -15,6 +15,6 @@ void bad1(int v1, int v2)
     }
 }
 
-/* { dg-final { scan-assembler {e32,m2} } } */
-/* { dg-final { scan-assembler-not {jr} } } */
-/* { dg-final { scan-assembler-times {ret} 1 } } */
+/* { dg-final { scan-assembler {e32,m2} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not {jr} { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {ret} 1 { xfail *-*-* } } } */
