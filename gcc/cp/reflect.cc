@@ -2602,7 +2602,8 @@ eval_object_of (location_t loc, const constexpr_ctx *ctx, tree r,
 		tree *jump_target, tree fun)
 {
   tree orig = r;
-  if (TYPE_REF_P (TREE_TYPE (r)))
+  tree type = TREE_TYPE (r);
+  if (type && TYPE_REF_P (type))
     r = cxx_eval_constant_expression (ctx, r, vc_prvalue, non_constant_p,
 				      overflow_p, jump_target);
   r = maybe_get_reference_referent (r);
