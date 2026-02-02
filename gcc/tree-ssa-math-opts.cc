@@ -3105,7 +3105,6 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
 static void
 convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
 {
-  tree type = TREE_TYPE (mul_result);
   gimple *use_stmt;
   imm_use_iterator imm_iter;
   gcall *fma_stmt;
@@ -3167,14 +3166,14 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
 	{
 	  if (ops[0] == result)
 	    /* a * b - c -> a * b + (-c)  */
-	    addop = gimple_build (&seq, NEGATE_EXPR, type, addop);
+	    addop = gimple_build (&seq, NEGATE_EXPR, TREE_TYPE (addop), addop);
 	  else
 	    /* a - b * c -> (-b) * c + a */
 	    negate_p = !negate_p;
 	}
 
       if (negate_p)
-	mulop1 = gimple_build (&seq, NEGATE_EXPR, type, mulop1);
+	mulop1 = gimple_build (&seq, NEGATE_EXPR, TREE_TYPE (mulop1), mulop1);
 
       if (seq)
 	gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
