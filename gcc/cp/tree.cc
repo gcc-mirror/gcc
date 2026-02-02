@@ -4354,6 +4354,7 @@ cp_tree_equal (tree t1, tree t2)
     case SSA_NAME:
     case USING_DECL:
     case DEFERRED_PARSE:
+    case NAMESPACE_DECL:
       return false;
 
     case BASELINK:

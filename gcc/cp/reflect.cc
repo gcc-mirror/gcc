@@ -8230,6 +8230,9 @@ compare_reflections (tree lhs, tree rhs)
   // ??? Can we do something better?
   lhs = maybe_get_first_fn (lhs);
   rhs = maybe_get_first_fn (rhs);
+
+  /* First handle reflection-specific comparisons, then fall back to
+     cp_tree_equal.  */
   if (lkind == REFLECT_PARM)
     {
       lhs = maybe_update_function_parm (lhs);
@@ -8243,27 +8246,19 @@ compare_reflections (tree lhs, tree rhs)
 	    && tree_int_cst_equal (TREE_VEC_ELT (lhs, 3),
 				   TREE_VEC_ELT (rhs, 3))
 	    && TREE_VEC_ELT (lhs, 4) == TREE_VEC_ELT (rhs, 4));
-
-  if (lhs == rhs)
-    return true;
-
-  /* Some trees are not shared.  */
-  if (TREE_CODE (lhs) == TREE_CODE (rhs))
-    switch (TREE_CODE (lhs))
-      {
-      case ARRAY_REF:
-      case COMPONENT_REF:
-      case REAL_CST:
-	return cp_tree_equal (lhs, rhs);
-      default:
-	break;
-      }
-
-  if (TYPE_P (lhs) && TYPE_P (rhs))
-    if (!typedef_variant_p (lhs) && !typedef_variant_p (rhs))
+  else if (lkind == REFLECT_ANNOTATION)
+    return lhs == rhs;
+  else if (TYPE_P (lhs) && TYPE_P (rhs))
+    {
+      /* Given "using A = int;", "^^int != ^^A" should hold.  */
+      if (typedef_variant_p (lhs) != typedef_variant_p (rhs))
+	return false;
+      /* This is for comparing function types.  E.g.,
+	  auto fn() -> int; type_of(^^fn) == ^^auto()->int;  */
       return same_type_p (lhs, rhs);
+    }
 
-  return false;
+  return cp_tree_equal (lhs, rhs);
 }
 
 /* Return true if T is a valid splice-type-specifier.
