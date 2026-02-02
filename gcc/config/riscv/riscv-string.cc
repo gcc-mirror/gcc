@@ -980,7 +980,7 @@ riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
 bool
 riscv_expand_block_move (rtx dest, rtx src, rtx length)
 {
-  if ((TARGET_VECTOR && !TARGET_XTHEADVECTOR)
+  if (TARGET_VECTOR
       && stringop_strategy & STRATEGY_VECTOR)
     {
       bool ok = riscv_vector::expand_block_move (dest, src, length, false);
@@ -1086,8 +1086,14 @@ use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
   rtx avl = length_in;
   HOST_WIDE_INT potential_ew = max_ew;
 
-  if (!TARGET_VECTOR || !(stringop_strategy & STRATEGY_VECTOR))
+  if (!TARGET_VECTOR
+      || !(stringop_strategy & STRATEGY_VECTOR))
     return false;
+
+  if (TARGET_XTHEADVECTOR
+      && (!CONST_INT_P (length_in)
+	  || known_lt (INTVAL (length_in), BYTES_PER_RISCV_VECTOR)))
+      return false;
 
   int max_lmul = TARGET_MAX_LMUL;
   if (rvv_max_lmul == RVV_CONV_DYNAMIC)
@@ -1597,6 +1603,10 @@ check_vectorise_memory_operation (rtx length_in, HOST_WIDE_INT &lmul_out)
     return false;
 
   HOST_WIDE_INT length = INTVAL (length_in);
+
+  if (TARGET_XTHEADVECTOR
+      && known_lt (length, BYTES_PER_RISCV_VECTOR))
+    return false;
 
   /* If it's tiny, default operation is likely better; maybe worth
      considering fractional lmul in the future as well.  */
