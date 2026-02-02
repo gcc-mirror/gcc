@@ -1079,7 +1079,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_conditional_explicit=201806L");
 	  cpp_define (pfile, "__cpp_consteval=202211L");
 	  cpp_define (pfile, "__cpp_constinit=201907L");
-	  cpp_define (pfile, "__cpp_deduction_guides=201907L");
+	  if (cxx_dialect <= cxx20)
+	    cpp_define (pfile, "__cpp_deduction_guides=201907L");
 	  cpp_define (pfile, "__cpp_nontype_template_args=201911L");
 	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806L");
 	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806L");
@@ -1096,6 +1097,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_auto_cast=202110L");
 	  if (cxx_dialect <= cxx23)
 	    cpp_define (pfile, "__cpp_constexpr=202211L");
+	  cpp_define (pfile, "__cpp_deduction_guides=202207L");
 	  cpp_define (pfile, "__cpp_multidimensional_subscript=202211L");
 	  cpp_define (pfile, "__cpp_named_character_escapes=202207L");
 	  cpp_define (pfile, "__cpp_static_call_operator=202207L");

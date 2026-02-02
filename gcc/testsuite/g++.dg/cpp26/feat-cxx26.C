@@ -353,8 +353,8 @@
 
 #ifndef __cpp_deduction_guides
 #  error "__cpp_deduction_guides"
-#elif __cpp_deduction_guides != 201907
-#  error "__cpp_deduction_guides != 201907"
+#elif __cpp_deduction_guides != 202207
+#  error "__cpp_deduction_guides != 202207"
 #endif
 
 #ifndef __cpp_if_constexpr
