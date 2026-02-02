@@ -1070,6 +1070,37 @@ validate_ipa_reorder_locality_lto_partition (struct gcc_options *opts,
   validated_p = true;
 }
 
+/* If OPTS.x_dump_base_name doesn't contain any directory separators
+   and has not had OPTS.x_dump_dir_name prepended to it, generate
+   a new string in opts_obstack that has the dump_dir_name prepended to
+   the dump_base_name.  */
+
+const char *
+maybe_prepend_dump_dir_name (const gcc_options &opts)
+{
+  const char *sep = opts.x_dump_base_name;
+
+  for (; *sep; sep++)
+    if (IS_DIR_SEPARATOR (*sep))
+      break;
+
+  if (*sep)
+    {
+      /* If dump_base_name contains subdirectories, don't prepend
+	 anything.  */
+      return nullptr;
+    }
+
+  if (opts.x_dump_dir_name)
+    {
+      /* We have a DUMP_DIR_NAME, prepend that.  */
+      return opts_concat (opts.x_dump_dir_name,
+			  opts.x_dump_base_name, NULL);
+    }
+
+  return nullptr;
+}
+
 /* After all options at LOC have been read into OPTS and OPTS_SET,
    finalize settings of those options and diagnose incompatible
    combinations.  */
@@ -1080,19 +1111,9 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_dump_base_name
       && ! opts->x_dump_base_name_prefixed)
     {
-      const char *sep = opts->x_dump_base_name;
-
-      for (; *sep; sep++)
-	if (IS_DIR_SEPARATOR (*sep))
-	  break;
-
-      if (*sep)
-	/* If dump_base_path contains subdirectories, don't prepend
-	   anything.  */;
-      else if (opts->x_dump_dir_name)
-	/* We have a DUMP_DIR_NAME, prepend that.  */
-	opts->x_dump_base_name = opts_concat (opts->x_dump_dir_name,
-					      opts->x_dump_base_name, NULL);
+      if (const char *prepended_dump_base_name
+	  = maybe_prepend_dump_dir_name (*opts))
+	opts->x_dump_base_name = prepended_dump_base_name;
 
       /* It is definitely prefixed now.  */
       opts->x_dump_base_name_prefixed = true;
@@ -3023,8 +3044,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_format_:
 	{
-	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
-				  : opts->x_main_input_basename);
+	  const char *basename = get_diagnostic_file_output_basename (*opts);
 	  gcc_assert (dc);
 	  diagnostics::output_format_init (*dc,
 					   opts->x_main_input_filename, basename,

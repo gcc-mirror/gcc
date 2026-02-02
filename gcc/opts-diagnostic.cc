@@ -94,9 +94,7 @@ public:
   const char *
   get_base_filename () const final override
   {
-    return (m_opts.x_dump_base_name
-	    ? m_opts.x_dump_base_name
-	    : m_opts.x_main_input_basename);
+    return get_diagnostic_file_output_basename (m_opts);
   }
 
   const gcc_options &m_opts;
@@ -169,4 +167,25 @@ handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
 				 "handling: %s%s", option_name, unparsed_spec);
   if (auto sink = try_to_make_sink (opts, dc, option_name, unparsed_spec, loc))
     dc.set_sink (std::move (sink));
+}
+
+/* Return the base name to use when choosing names for output file for
+   diagnostic sinks (e.g. BASENAME.sarif or BASENAME.html).  */
+
+const char *
+get_diagnostic_file_output_basename (const gcc_options &opts)
+{
+  /* This might have been called before finish_options, which prepends
+     the dump dir to the dump base name.  If so, make a prepended copy
+     now and use it.  */
+  if (opts.x_dump_base_name
+      && ! opts.x_dump_base_name_prefixed)
+    if (const char *prepended_dump_base_name
+	  = maybe_prepend_dump_dir_name (opts))
+      /* Allocated in opts_obstack.  */
+      return prepended_dump_base_name;
+
+  return (opts.x_dump_base_name
+	  ? opts.x_dump_base_name
+	  : opts.x_main_input_basename);
 }

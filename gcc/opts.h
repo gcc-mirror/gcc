@@ -577,4 +577,7 @@ struct switchstr
 extern label_text
 get_option_url_suffix (int option_index, unsigned lang_mask);
 
+extern const char *
+maybe_prepend_dump_dir_name (const gcc_options &opts);
+
 #endif

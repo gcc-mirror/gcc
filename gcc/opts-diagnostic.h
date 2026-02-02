@@ -86,4 +86,8 @@ handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
 				     diagnostics::context &dc,
 				     const char *arg,
 				     location_t loc);
+
+extern const char *
+get_diagnostic_file_output_basename (const gcc_options &opts);
+
 #endif

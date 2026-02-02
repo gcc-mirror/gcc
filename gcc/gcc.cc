@@ -4387,8 +4387,7 @@ driver_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_format_:
 	{
-	  const char *basename = (opts->x_dump_base_name ? opts->x_dump_base_name
-				  : opts->x_main_input_basename);
+	  const char *basename = get_diagnostic_file_output_basename (*opts);
 	  gcc_assert (dc);
 	  diagnostics::output_format_init (*dc,
 					   opts->x_main_input_filename, basename,
