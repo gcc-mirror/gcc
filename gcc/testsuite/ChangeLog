@@ -1,3 +1,14 @@
+2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	* gnat.dg/prefix4.adb: New test.
+	* gnat.dg/prefix4_pkg.ads: New helper.
+
+2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	* gnat.dg/iter7.adb: New test.
+
 2026-01-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/limited_with3.ads: New test.
