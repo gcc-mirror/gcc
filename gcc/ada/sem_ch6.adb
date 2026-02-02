@@ -5796,6 +5796,10 @@ package body Sem_Ch6 is
          end if;
       end Null_Exclusions_Match;
 
+      -----------------------------------------------
+      -- Subprogram_Subtypes_Have_Same_Declaration --
+      -----------------------------------------------
+
       function Subprogram_Subtypes_Have_Same_Declaration
         (Subp         : Entity_Id;
          Decl_Subtype : Entity_Id;
@@ -8342,6 +8346,11 @@ package body Sem_Ch6 is
             --  The non-limited view directly denotes the type
 
             if Typ = View then
+               return True;
+
+            --  The type is an incomplete view of the non-limited view
+
+            elsif Is_Incomplete_Type (Typ) and then Full_View (Typ) = View then
                return True;
 
             --  The type is a subtype of the non-limited view
