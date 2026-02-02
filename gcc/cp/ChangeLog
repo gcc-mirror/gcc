@@ -1,3 +1,9 @@
+2026-02-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121832
+	* parser.cc (cp_parser_explicit_template_declaration): Check for
+	null.
+
 2026-01-31  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/123557

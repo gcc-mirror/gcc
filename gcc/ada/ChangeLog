@@ -1,3 +1,19 @@
+2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/123902
+	* sem_ch4.adb (Analyze_Selected_Component): Also test
+	Core_Extensions_Allowed for discriminated private types.
+	Rework and augment commentary throughout the procedure.
+
+2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/121316
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Minor tweak.
+	(Expand_Iterator_Loop_Over_Container): Likewise.
+	(Expand_N_Loop_Statement): Use Statements (N) throughout.
+
 2026-01-30  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch8.adb (End_Use_Type): Remove test of Prev_Use_Clause as

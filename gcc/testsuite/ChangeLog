@@ -1,3 +1,97 @@
+2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	* gnat.dg/prefix4.adb: New test.
+	* gnat.dg/prefix4_pkg.ads: New helper.
+
+2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	* gnat.dg/iter7.adb: New test.
+
+2026-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123755
+	* gcc.dg/vect/vect-pr123755-2.c: New testcase.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/lto/pr118817_0.C: Require hostedlib.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/lto/pr110812_0.c: Set cmodel explicitly.
+	* gcc.target/riscv/lto/pr110812_1.c: Likewise.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/tree-ssa/pr83403-1.c: Bump param on riscv32.
+	* gcc.dg/tree-ssa/pr83403-2.c: Likewise.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/pr90838-2.c: Drop 64-bit CTZ expectation on riscv32.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/pr114139.c: Set the abi explicitly.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/pr118170.c: Set the abi explicitly.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-slide.c:
+	Set the abi explicitly.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/rvv/autovec/pr113206-2.c: Set the expected
+	code model explicitly.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv32gcv-nofm.c: Set the
+	expected code model explicitly.
+	* gcc.target/riscv/rvv/autovec/binop/vadd-rv64gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv32gcv-nofm.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/binop/vsub-rv64gcv-nofm.c: Likewise.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/rvv/autovec/bug-3.c: Disable scheduling,
+	and restore expectation of slli combine.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/riscv/pr122215.c: Prune valgrind unhandled
+	syscall multi-line warning.
+
+2026-02-01  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-3.c: Revert
+	Maximum lmul = 2 count.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-7.c: XFAIL
+	unmet lmul selection expectations.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-5.c: Likewise,
+	and drop start/end patterns.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-6.c: XFAIL
+	missing Maximum lmul messages.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-8.c: Likewise.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-12.c: Drop
+	Maximum lmul = 8 message.  Likewise.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-10.c: Likewise.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-3.c: XFAIL unexpected
+	selections of lmul, and of return insn.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-4.c: XFAIL unexpected
+	selection of lmul.
+
+2026-02-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121832
+	* g++.dg/concepts/pr121832.C: New test.
+
 2026-01-31  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* algol68/execute/bits-test-1.a68: New test.

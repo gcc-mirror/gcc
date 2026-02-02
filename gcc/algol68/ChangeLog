@@ -1,3 +1,20 @@
+2026-02-01  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-bits.cc (a68_bits_test): Do not get a parameter with the
+	result moid.
+	* a68.h: Adapt prototype of a68_bits_test accordingly.
+	* a68-low-prelude.cc (a68_lower_test3): Adjust call accordingly.
+
+2026-02-01  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68.h: Prototype for a68_make_proc_formal_hole_decl.
+	* a68-parser-extract.cc (extract_identities): Mark identity
+	declarations of proc modes whose actual parameter is a formal hole
+	as "inproc".
+	* a68-low.cc (a68_make_proc_formal_hole_decl): New function.
+	* a68-low-units.cc (a68_lower_formal_hole): Call
+	a68_make_proc_formal_hole_decl whenever necessary.
+
 2026-01-31  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68.h: Prototypes for a68_bits_test and a68_lower_test3.

@@ -1,3 +1,9 @@
+2026-02-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123755
+	* tree-vect-stmts.cc (vectorizable_call): Adjust len-masking
+	condition.  Simplify code generation.
+
 2026-01-31  Keith Packard  <keithp@keithp.com>
 
 	* config/picolibc-spec.h (LIBC_LINK_SPEC): Use find-file for test
