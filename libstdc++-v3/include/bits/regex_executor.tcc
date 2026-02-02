@@ -79,12 +79,12 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
     _ExecutorFrameOpcode _M_op;
     union {
-      unsigned char _M_byte0;
+      unsigned char _M_byte0 = 0;
       struct { // Used by restore_rep_count frame
 	unsigned char _M_count : 2;
       };
       struct { // Used by restore_cur_results frame
-	unsigned char _M_end : 1;
+	unsigned char _M_subexpr_end : 1;
 	unsigned char _M_matched : 1;
       };
     };
@@ -338,7 +338,6 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
       _M_frames.emplace_back(_S_fopcode_restore_cur_results,
 			     static_cast<_StateIdT>(__state._M_subexpr),
 			     __res.first);
-      _M_frames.back()._M_end = false;
       __res.first = _M_current;
       _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
     }
@@ -353,7 +352,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
       _M_frames.emplace_back(_S_fopcode_restore_cur_results,
 			     static_cast<_StateIdT>(__state._M_subexpr),
 			     __res.second);
-      _M_frames.back()._M_end = true;
+      _M_frames.back()._M_subexpr_end = true;
       _M_frames.back()._M_matched = __res.matched;
       __res.second = _M_current;
       __res.matched = true;
@@ -670,7 +669,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	      break;
 
 	    case _S_fopcode_restore_cur_results:
-	      if (!__frame._M_end)
+	      if (!__frame._M_subexpr_end)
 		_M_cur_results[__frame._M_state_id].first = __frame._M_pos;
 	      else
 		{
