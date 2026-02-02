@@ -33,6 +33,8 @@ struct iter
 };
 
 using CS = std::csub_match;
-static_assert( noexcept(std::declval<CS&>().swap(std::declval<CS&>())) );
+static_assert( noexcept(std::declval<CS&>().swap(std::declval<CS&>())),
+	       "std::csub_match::swap is nothrow" );
 using IS = std::sub_match<iter>;
-static_assert( ! noexcept(std::declval<IS&>().swap(std::declval<IS&>())) );
+static_assert( ! noexcept(std::declval<IS&>().swap(std::declval<IS&>())),
+	       "std::sub_match<I>::swap is potentially throwing" );

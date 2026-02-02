@@ -3,8 +3,8 @@
 #include <testsuite_hooks.h>
 
 #if __cplusplus >= 201703L || !defined __STRICT_ANSI__
-static_assert( std::regex_constants::multiline == std::regex::multiline );
-static_assert( std::regex_constants::__multiline == std::regex::multiline );
+static_assert( std::regex_constants::multiline == std::regex::multiline, "" );
+static_assert( std::regex_constants::__multiline == std::regex::multiline, "" );
 #else
 namespace test { constexpr int multiline = 0; }
 namespace check {
