@@ -18614,8 +18614,6 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		|| SLP_TREE_DEF_TYPE (node) == vect_external_def)
 	       && !aarch64_possible_by_lane_insn_p (m_vinfo, stmt))
 	m_num_dup_stmts++;
-      else
-	m_loop_fully_scalar_dup = false;
     }
 
   /* Apply the heuristic described above m_stp_sequence_cost.  */
