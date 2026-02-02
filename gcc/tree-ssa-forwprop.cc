@@ -3975,14 +3975,29 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   if (refnelts < nelts)
     return false;
 
+  /* Determine the element type for the conversion source.
+     As orig_elem_type keeps track of the original type, check
+     if we need to perform a sign swap after permuting.
+     We need to be able to construct a vector type from the element
+     type which is not possible for e.g. BitInt or pointers
+     so pun with an integer type if needed.   */
+  tree perm_eltype = TREE_TYPE (TREE_TYPE (orig[0]));
+  bool sign_change_p = false;
+  if (conv_code != ERROR_MARK
+      && orig_elem_type[0]
+      && TYPE_SIGN (orig_elem_type[0]) != TYPE_SIGN (perm_eltype))
+    {
+      perm_eltype = signed_or_unsigned_type_for
+	(TYPE_UNSIGNED (orig_elem_type[0]), perm_eltype);
+      sign_change_p = true;
+    }
+  tree conv_src_type = build_vector_type (perm_eltype, nelts);
+
   if (maybe_ident)
     {
-      tree conv_src_type
-	= (nelts != refnelts
-	   ? (conv_code != ERROR_MARK
-	      ? build_vector_type (TREE_TYPE (TREE_TYPE (orig[0])), nelts)
-	      : type)
-	   : TREE_TYPE (orig[0]));
+      /* When there is no conversion, use the target type directly.  */
+      if (conv_code == ERROR_MARK && nelts != refnelts)
+	conv_src_type = type;
       if (conv_code != ERROR_MARK
 	  && !supportable_convert_operation (conv_code, type, conv_src_type,
 					     &conv_code))
@@ -4104,6 +4119,15 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  gsi_insert_before (gsi, lowpart, GSI_SAME_STMT);
 	  orig[0] = gimple_assign_lhs (lowpart);
 	}
+      else if (sign_change_p)
+	{
+	  gassign *conv
+	    = gimple_build_assign (make_ssa_name (conv_src_type),
+				   build1 (VIEW_CONVERT_EXPR, conv_src_type,
+					   orig[0]));
+	  gsi_insert_before (gsi, conv, GSI_SAME_STMT);
+	  orig[0] = gimple_assign_lhs (conv);
+	}
       if (conv_code == ERROR_MARK)
 	{
 	  tree src_type = TREE_TYPE (orig[0]);
@@ -4135,22 +4159,8 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  && orig[1] == error_mark_node
 	  && !maybe_blend[0])
 	return false;
-      tree mask_type, perm_type, conv_src_type;
+      tree mask_type, perm_type;
       perm_type = TREE_TYPE (orig[0]);
-      /* Determine the element type for the conversion source.
-	 As orig_elem_type keeps track of the original type, check
-	 if we need to perform a sign swap after permuting.
-	 We need to be able to construct a vector type from the element
-	 type which is not possible for e.g. BitInt or pointers
-	 so pun with an integer type if needed.  */
-      tree conv_elem_type = TREE_TYPE (perm_type);
-      if (conv_code != ERROR_MARK
-	  && orig_elem_type[0]
-	  && TYPE_SIGN (orig_elem_type[0]) != TYPE_SIGN (conv_elem_type))
-	conv_elem_type = signed_or_unsigned_type_for (TYPE_UNSIGNED
-						      (orig_elem_type[0]),
-						      conv_elem_type);
-      conv_src_type = build_vector_type (conv_elem_type, nelts);
       if (conv_code != ERROR_MARK
 	  && !supportable_convert_operation (conv_code, type, conv_src_type,
 					     &conv_code))
@@ -4280,8 +4290,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       /* Otherwise, we can still have an intermediate sign change.
 	 ??? In that case we have two subsequent conversions.
 	 We should be able to merge them.  */
-      else if (conv_code != ERROR_MARK
-	       && tree_nop_conversion_p (conv_src_type, perm_type))
+      else if (sign_change_p)
 	res = gimple_build (&stmts, VIEW_CONVERT_EXPR, conv_src_type, res);
       /* Finally, apply the conversion.  */
       if (conv_code != ERROR_MARK)
