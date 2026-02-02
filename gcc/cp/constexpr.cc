@@ -3247,14 +3247,12 @@ is_std_class (tree ctx, const char *name)
 bool
 is_std_allocator (tree ctx)
 {
-  return (is_std_class (ctx, "allocator")
-	  || (flag_reflection
-	      && is_std_class (ctx, "__new_allocator")));
+  return is_std_class (ctx, "allocator");
 }
 
 /* Return true if FNDECL is std::allocator<T>::{,de}allocate.  */
 
-bool
+static bool
 is_std_allocator_allocate (tree fndecl)
 {
   tree name = DECL_NAME (fndecl);

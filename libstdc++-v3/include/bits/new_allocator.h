@@ -122,7 +122,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // NB: __n is permitted to be 0.  The C++ standard says nothing
       // about what the return value is when __n == 0.
-      _GLIBCXX_NODISCARD _Tp*
+      _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR _Tp*
       allocate(size_type __n, const void* = static_cast<const void*>(0))
       {
 #if __cplusplus >= 201103L
@@ -152,7 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // __p is not permitted to be a null pointer.
-      void
+      _GLIBCXX20_CONSTEXPR void
       deallocate(_Tp* __p, size_type __n __attribute__ ((__unused__)))
       {
 #if __cpp_sized_deallocation

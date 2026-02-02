@@ -8152,11 +8152,9 @@ check_out_of_consteval_use (tree expr, bool complain/*=true*/)
       if (!consteval_only_p (t))
 	return NULL_TREE;
 
+      /* Already escalated?  */
       if (current_function_decl
-	  /* Already escalated.  */
-	  && (DECL_IMMEDIATE_FUNCTION_P (current_function_decl)
-	      /* These functions are magic.  */
-	      || is_std_allocator_allocate (current_function_decl)))
+	  && DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
 	{
 	  *walk_subtrees = false;
 	  return NULL_TREE;
@@ -8298,8 +8296,7 @@ check_consteval_only_fn (tree decl)
   if (!DECL_IMMEDIATE_FUNCTION_P (decl)
       && consteval_only_p (decl)
       /* But if the function can be escalated, merrily we roll along.  */
-      && !immediate_escalating_function_p (decl)
-      && !is_std_allocator_allocate (decl))
+      && !immediate_escalating_function_p (decl))
     error_at (DECL_SOURCE_LOCATION (decl),
 	      "function of consteval-only type must be declared %qs",
 	      "consteval");

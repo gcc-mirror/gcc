@@ -9259,7 +9259,6 @@ extern bool is_nondependent_static_init_expression (tree);
 extern bool is_static_init_expression    (tree);
 extern bool is_std_class (tree, const char *);
 extern bool is_std_allocator (tree);
-extern bool is_std_allocator_allocate (tree);
 extern bool potential_rvalue_constant_expression (tree);
 extern bool require_potential_constant_expression (tree);
 extern bool require_constant_expression (tree);
