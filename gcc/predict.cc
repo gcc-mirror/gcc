@@ -1046,13 +1046,14 @@ combine_predictions_for_insn (rtx_insn *insn, basic_block bb)
 	     + (REG_BR_PROB_BASE - combined_probability)
 	     * (REG_BR_PROB_BASE - probability));
 
-	/* Use FP math to avoid overflows of 32bit integers.  */
+	/* Use int64_t math to avoid overflows of 32bit integers.  */
 	if (d == 0)
 	  /* If one probability is 0% and one 100%, avoid division by zero.  */
 	  combined_probability = REG_BR_PROB_BASE / 2;
 	else
-	  combined_probability = (((double) combined_probability) * probability
-				  * REG_BR_PROB_BASE / d + 0.5);
+	  combined_probability = ((((int64_t) combined_probability)
+				   * probability
+				   * REG_BR_PROB_BASE + (d / 2)) / d);
       }
 
   /* Decide which heuristic to use.  In case we didn't match anything,
@@ -1399,14 +1400,14 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
 	       + (REG_BR_PROB_BASE - combined_probability)
 	       * (REG_BR_PROB_BASE - probability));
 
-	  /* Use FP math to avoid overflows of 32bit integers.  */
+	  /* Use int64_t math to avoid overflows of 32bit integers.  */
 	  if (d == 0)
 	    /* If one probability is 0% and one 100%, avoid division by zero.  */
 	    combined_probability = REG_BR_PROB_BASE / 2;
 	  else
-	    combined_probability = (((double) combined_probability)
-				    * probability
-		    		    * REG_BR_PROB_BASE / d + 0.5);
+	    combined_probability = ((((int64_t) combined_probability)
+				     * probability
+				     * REG_BR_PROB_BASE + (d / 2)) / d);
 	}
     }
 
