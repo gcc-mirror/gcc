@@ -2615,6 +2615,8 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	    }
 	  else if (BINARY_P (src) && CONSTANT_P (XEXP (src, 1)))
 	    ngood++;
+	  else if (GET_CODE (src) == IF_THEN_ELSE)
+	    ngood++;
 	  else if (GET_CODE (src) == ASHIFT || GET_CODE (src) == ASHIFTRT
 		   || GET_CODE (src) == LSHIFTRT)
 	    nshift++;

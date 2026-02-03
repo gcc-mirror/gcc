@@ -211,6 +211,13 @@
   (sign_extend "extend") (zero_extend "zero_extend")
 ])
 
+;; This code iterator captures cases where a zero value for an operand
+;; neutralizes the operation.  ie, a + 0 -> a.  That basic idea forms
+;; conditional operations.
+(define_code_iterator zero_is_neutral_op [plus minus ior xor ashift lshiftrt
+					  ashiftrt rotatert rotate])
+(define_code_iterator zero_is_neutral_op_c [plus ior xor])
+
 ;; These code iterators allow unsigned and signed extraction to be generated
 ;; from the same template.
 (define_code_iterator any_extract [sign_extract zero_extract])
@@ -226,6 +233,8 @@
 ;; This code iterator allows the three shift instructions to be generated
 ;; from the same template.
 (define_code_iterator any_shift [ashift ashiftrt lshiftrt])
+
+(define_code_iterator any_shift_rotate [ashift ashiftrt lshiftrt rotate rotatert])
 
 ;; This code iterator allows the three bitwise instructions to be generated
 ;; from the same template.

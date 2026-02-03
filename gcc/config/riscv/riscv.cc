@@ -4630,6 +4630,16 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  return true;
 	}
 
+      /* Conditional AND */
+      if (TARGET_ZICOND
+	  && GET_CODE (XEXP (x, 0)) == IF_THEN_ELSE
+	  && GET_CODE (XEXP (x, 1)) == IF_THEN_ELSE
+	  && GET_CODE (XEXP (XEXP (x, 1), 1)) == AND)
+	{
+	  *total = COSTS_N_INSNS (3);
+	  return true;
+	}
+
       if (float_mode_p)
 	*total = tune_param->fp_add[mode == DFmode];
       else

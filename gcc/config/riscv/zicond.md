@@ -270,3 +270,146 @@
   [(set (match_dup 0) (ashiftrt:X (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (ior:X (match_dup 0) (const_int 1)))]
   { operands[2] = GEN_INT (GET_MODE_BITSIZE (word_mode) - 1); })
+
+;; The next several splitters are mean to capture cases where if
+;; conversion was successful, but used a generalized conditional
+;; move during the first pass of if-conversion (typically because
+;; the conditional branch jumps over multiple sets).
+;;
+;; If the multiple sets would simplify into a single set, then we
+;; would often have been better off not converting during the first
+;; pass because we could use a more efficient sequence with a single
+;; czero.
+;;
+;; The basic idea here is to recognize when the two arms of the
+;; generalized conditional move have related values and where
+;; zero is a neutral operand.
+;;
+;; We conditionally zero the relevant operand, then emit the
+;; operation unconditionally.
+;;
+;; This is made more complex by the fact that 32-bit ops on rv64
+;; have an embedded sign extend.  Even worse, the mode of a shift
+;; count is QImode.  These quirks mean we have many more patterns
+;; than one might otherwise think we should.
+;;
+;; This does not handle the 32-bit ops on rv64 like addw right now.
+;; It's unclear how to do that safely since we have different modes
+;; in the two arms.
+
+;; Simple rv32 or rv64 ops where we can zero either operand to make
+;; it neutral.  Two as the the common and potentially neutral op in
+;; the 2nd if-then-else can be swapped.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(plus:X (if_then_else:X
+		  (eq:X (match_operand:X 1 "register_operand") (const_int 0))
+		  (match_operand:X 2 "register_operand")
+		  (const_int 0))
+		(if_then_else:X
+		  (ne:X (match_dup 1) (const_int 0))
+		  (zero_is_neutral_op:X
+		    (match_dup 2)
+		    (match_operand:X 3 "register_operand"))
+		  (const_int 0))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (match_dup 3)
+				      (const_int 0)))
+   (set (match_dup 0) (zero_is_neutral_op:X (match_dup 2) (match_dup 4)))])
+
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(plus:X (if_then_else:X
+		  (eq:X (match_operand:X 1 "register_operand") (const_int 0))
+		  (match_operand:X 2 "register_operand")
+		  (const_int 0))
+		(if_then_else:X
+		  (ne:X (match_dup 1) (const_int 0))
+		  (zero_is_neutral_op_c:X
+		    (match_operand:X 3 "register_operand")
+		    (match_dup 2))
+		  (const_int 0))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (match_dup 3)
+				      (const_int 0)))
+   (set (match_dup 0) (zero_is_neutral_op_c:X (match_dup 2) (match_dup 4)))])
+
+;; This is a separate pattern because the mode on the shift count
+;; varies.  I guess we could make it modeless here and check it in
+;; the condition.  But that tends to trigger warnings from gen*.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(plus:X (if_then_else:X
+		  (eq:X (match_operand:X 1 "register_operand") (const_int 0))
+		  (match_operand:X 2 "register_operand")
+		  (const_int 0))
+		(if_then_else:X
+		  (ne:X (match_dup 1) (const_int 0))
+		  (any_shift_rotate:X
+		    (match_dup 2)
+		    (match_operand:QI 3 "register_operand"))
+		  (const_int 0))))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 4) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (match_dup 3)
+				      (const_int 0)))
+   (set (match_dup 0) (any_shift_rotate:X (match_dup 2) (subreg:QI (match_dup 4) 0)))]
+  "operands[3] = gen_lowpart (word_mode, operands[3]);")
+
+;; AND is special as the czero doesn't produce the neutral operand.  It
+;; would be a natural 4->3 split, but combine doesn't support that, so
+;; a define_insn_and_split seems to be the safest path forward to address
+;; the remaining code quality regression (match.pd approaches will likely
+;; have undesirable fallout based on what's been seen in the gcc-16 cycle).
+(define_insn_and_split "conditional_and<mode>"
+  [(set (match_operand:X 0 "register_operand" "=&r")
+	(plus:X (if_then_else:X
+		  (eq:X (match_operand:X 1 "register_operand" "r") (const_int 0))
+		  (match_operand:X 2 "register_operand" "r")
+		  (const_int 0))
+		(if_then_else:X
+		  (ne:X (match_dup 1) (const_int 0))
+		  (and:X
+		    (match_dup 2)
+		    (match_operand:X 3 "register_operand" "r"))
+		  (const_int 0))))]
+  "(TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV) && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 4) (and:X (match_dup 2) (match_dup 3)))
+   (set (match_dup 5) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (match_dup 2)
+				      (const_int 0)))
+   (set (match_dup 0) (ior:X (match_dup 5) (match_dup 4)))]
+  "operands[4] = gen_reg_rtx (word_mode);
+   operands[5] = gen_reg_rtx (word_mode);")
+
+;; Same thing, but with operand order reversed
+(define_insn_and_split "conditional_rand<mode>"
+  [(set (match_operand:X 0 "register_operand" "=&r")
+	(plus:X (if_then_else:X
+		  (eq:X (match_operand:X 1 "register_operand" "r") (const_int 0))
+		  (match_operand:X 2 "register_operand" "r")
+		  (const_int 0))
+		(if_then_else:X
+		  (ne:X (match_dup 1) (const_int 0))
+		  (and:X
+		    (match_operand:X 3 "register_operand" "r")
+		    (match_dup 2))
+		  (const_int 0))))]
+  "(TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV) && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 4) (and:X (match_dup 2) (match_dup 3)))
+   (set (match_dup 5) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (match_dup 2)
+				      (const_int 0)))
+   (set (match_dup 0) (ior:X (match_dup 5) (match_dup 4)))]
+  "operands[4] = gen_reg_rtx (word_mode);
+   operands[5] = gen_reg_rtx (word_mode);")
+
