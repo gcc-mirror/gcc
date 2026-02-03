@@ -89,11 +89,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   private:
     const __impl* _M_impl = nullptr;
 
-    constexpr source_location (const void *__t)
-      : _M_impl (static_cast <const __impl*>(__t)) {}
-
 #ifdef __glibcxx_contracts
-    /* To enable use of the source __impl*.  */
     friend class std::contracts::contract_violation;
 #endif
   };
