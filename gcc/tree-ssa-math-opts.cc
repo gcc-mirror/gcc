@@ -3481,6 +3481,7 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	  use_operand_p tmp_use_p;
 	  if (single_imm_use (cast_lhs, &tmp_use_p, &tmp_use))
 	    use_stmt = tmp_use;
+	  result = cast_lhs;
 	}
 
       /* For now restrict this operations to single basic blocks.  In theory
@@ -3533,6 +3534,10 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
       tree_code code;
       if (!can_interpret_as_conditional_op_p (use_stmt, &cond, &code, ops,
 					      &else_value, &len, &bias))
+	return false;
+
+      /* The multiplication result must be one of the addition operands.  */
+      if (ops[0] != result && ops[1] != result)
 	return false;
 
       switch (code)
