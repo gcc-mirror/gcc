@@ -2272,6 +2272,16 @@ ftms = {
 };
 
 ftms = {
+  name = define_static;
+  values = {
+    v = 202506;
+    cxxmin = 26;
+    extra_cond = "__cpp_impl_reflection >= 202506L";
+    cxx11abi = yes;
+  };
+};
+
+ftms = {
   name = is_implicit_lifetime;
   values = {
     v =  202302;

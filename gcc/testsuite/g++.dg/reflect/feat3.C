@@ -2,7 +2,7 @@
 // { dg-additional-options "-freflection" }
 // Test feature test macros.
 
-#include <version>
+#include <meta>
 
 #ifndef __cpp_lib_reflection
 #  error "__cpp_lib_reflection"

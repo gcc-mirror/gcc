@@ -34,6 +34,7 @@
 #endif
 
 #define __glibcxx_want_reflection
+#define __glibcxx_want_define_static
 #include <bits/version.h>
 
 #if __glibcxx_reflection >= 202506L // C++ >= 26 && __cpp_impl_reflection
