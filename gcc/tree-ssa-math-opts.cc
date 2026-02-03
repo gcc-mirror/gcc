@@ -3464,6 +3464,10 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 					      &else_value, &len, &bias))
 	return false;
 
+      /* The multiplication result must be one of the addition operands.  */
+      if (ops[0] != result && ops[1] != result)
+	return false;
+
       switch (code)
 	{
 	case MINUS_EXPR:
