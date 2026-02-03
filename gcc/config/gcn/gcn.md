@@ -1609,7 +1609,7 @@
   [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])
 
-(define_insn "<u>mulqihi3_scalar"
+(define_insn "<u>mulqihi3"
   [(set (match_operand:HI 0 "register_operand"			"=v")
 	(mult:HI
 	  (any_extend:HI (match_operand:QI 1 "register_operand" "%v"))

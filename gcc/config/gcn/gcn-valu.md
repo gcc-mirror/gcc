@@ -227,6 +227,38 @@
    (V64QI "QI") (V64HI "HI") (V64SI "SI") (V64TI "TI")
    (V64HF "HF") (V64SF "SF") (V64DI "DI") (V64DF "DF")])
 
+(define_mode_attr vnhi
+  [(QI "hi") (HI "hi") (SI "hi") (TI "hi")
+   (HF "hi") (SF "hi") (DI "hi") (DF "hi")
+   (V2QI "v2hi") (V2HI "v2hi") (V2HF "v2hi") (V2SI "v2hi")
+   (V2SF "v2hi") (V2DI "v2hi") (V2DF "v2hi") (V2TI "v2hi")
+   (V4QI "v4hi") (V4HI "v4hi") (V4HF "v4hi") (V4SI "v4hi")
+   (V4SF "v4hi") (V4DI "v4hi") (V4DF "v4hi") (V4TI "v4hi")
+   (V8QI "v8hi") (V8HI "v8hi") (V8HF "v8hi") (V8SI "v8hi")
+   (V8SF "v8hi") (V8DI "v8hi") (V8DF "v8hi") (V8TI "v8hi")
+   (V16QI "v16hi") (V16HI "v16hi") (V16HF "v16hi") (V16SI "v16hi")
+   (V16SF "v16hi") (V16DI "v16hi") (V16DF "v16hi") (V16TI "v16hi")
+   (V32QI "v32hi") (V32HI "v32hi") (V32HF "v32hi") (V32SI "v32hi")
+   (V32SF "v32hi") (V32DI "v32hi") (V32DF "v32hi") (V32TI "v32hi")
+   (V64QI "v64hi") (V64HI "v64hi") (V64HF "v64hi") (V64SI "v64hi")
+   (V64SF "v64hi") (V64DI "v64hi") (V64DF "v64hi") (V64TI "v64hi")])
+
+(define_mode_attr VnHI
+  [(QI "HI") (HI "HI") (SI "HI") (TI "HI")
+   (HF "HI") (SF "HI") (DI "HI") (DF "HI")
+   (V2QI "V2HI") (V2HI "V2HI") (V2HF "V2HI") (V2SI "V2HI")
+   (V2SF "V2HI") (V2DI "V2HI") (V2DF "V2HI") (V2TI "V2HI")
+   (V4QI "V4HI") (V4HI "V4HI") (V4HF "V4HI") (V4SI "V4HI")
+   (V4SF "V4HI") (V4DI "V4HI") (V4DF "V4HI") (V4TI "V4HI")
+   (V8QI "V8HI") (V8HI "V8HI") (V8HF "V8HI") (V8SI "V8HI")
+   (V8SF "V8HI") (V8DI "V8HI") (V8DF "V8HI") (V8TI "V8HI")
+   (V16QI "V16HI") (V16HI "V16HI") (V16HF "V16HI") (V16SI "V16HI")
+   (V16SF "V16HI") (V16DI "V16HI") (V16DF "V16HI") (V16TI "V16HI")
+   (V32QI "V32HI") (V32HI "V32HI") (V32HF "V32HI") (V32SI "V32HI")
+   (V32SF "V32HI") (V32DI "V32HI") (V32DF "V32HI") (V32TI "V32HI")
+   (V64QI "V64HI") (V64HI "V64HI") (V64HF "V64HI") (V64SI "V64HI")
+   (V64SF "V64HI") (V64DI "V64HI") (V64DF "V64HI") (V64TI "V64HI")])
+
 (define_mode_attr vnsi
   [(QI "si") (HI "si") (SI "si") (TI "si")
    (HF "si") (SF "si") (DI "si") (DF "si")
@@ -2220,6 +2252,26 @@
   ""
   "v_mul_lo_u32\t%0, %1, %2"
   [(set_attr "type" "vop3a")
+   (set_attr "length" "8")])
+
+(define_insn "<u>mul<mode><vnsi>3<exec>"
+  [(set (match_operand:<VnSI> 0 "register_operand"		     "= v")
+	(mult:<VnSI>
+	  (any_extend:<VnSI> (match_operand:V_HI 1 "gcn_alu_operand" "%vA"))
+	  (any_extend:<VnSI> (match_operand:V_HI 2 "gcn_alu_operand" " vA"))))]
+  "TARGET_SDWA"
+  "v_mul_<iu>32_<iu>24_sdwa\t%0, %<e>1, %<e>2 src0_sel:WORD_0 src1_sel:WORD_0"
+  [(set_attr "type" "vop_sdwa")
+   (set_attr "length" "8")])
+
+(define_insn "<u>mul<mode><vnhi>3<exec>"
+  [(set (match_operand:<VnHI> 0 "register_operand"		      "= v")
+	(mult:<VnHI>
+	  (any_extend:<VnHI> (match_operand:V_QI 1 "register_operand" "%vA"))
+	  (any_extend:<VnHI> (match_operand:V_QI 2 "register_operand" " vA"))))]
+  "TARGET_SDWA"
+  "v_mul_<iu>32_<iu>24_sdwa\t%0, %<e>1, %<e>2 src0_sel:BYTE_0 src1_sel:BYTE_0"
+  [(set_attr "type" "vop_sdwa")
    (set_attr "length" "8")])
 
 (define_insn_and_split "mul<mode>3"
