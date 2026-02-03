@@ -404,7 +404,7 @@ code_helper::is_builtin_fn () const
 (*tree_int_cst_elt_check ((T), (I), __FILE__, __LINE__, __FUNCTION__))
 
 #define TREE_VEC_ELT_CHECK(T, I) \
-(*(CONST_CAST2 (tree *, typeof (T)*, \
+(*(const_cast<tree *> ( \
      tree_vec_elt_check ((T), (I), __FILE__, __LINE__, __FUNCTION__))))
 
 #define OMP_CLAUSE_ELT_CHECK(T, I) \
@@ -412,7 +412,7 @@ code_helper::is_builtin_fn () const
 
 /* Special checks for TREE_OPERANDs.  */
 #define TREE_OPERAND_CHECK(T, I) \
-(*(CONST_CAST2 (tree*, typeof (T)*, \
+(*(const_cast<tree *> ( \
      tree_operand_check ((T), (I), __FILE__, __LINE__, __FUNCTION__))))
 
 #define TREE_OPERAND_CHECK_CODE(T, CODE, I) \
