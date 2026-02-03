@@ -5352,7 +5352,7 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 
   if (!callee_info && to_info)
     {
-      if (!(flags & (ECF_CONST | ECF_PURE | ECF_NOVOPS)))
+      if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info->loads->collapse ();
       if (!ignore_stores)
 	to_info->stores->collapse ();
