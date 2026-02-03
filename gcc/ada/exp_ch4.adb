@@ -12325,6 +12325,10 @@ package body Exp_Ch4 is
       --  Case of converting to an access type
 
       if Is_Access_Type (Target_Type) then
+         --  Generate a null access check first for the sake of ACATS c3a0025
+
+         Apply_Constraint_Check (Operand, Target_Type);
+
          --  In terms of accessibility rules, an anonymous access discriminant
          --  is not considered separate from its parent object.
 
@@ -12447,7 +12451,7 @@ package body Exp_Ch4 is
 
       --  Case of conversions of tagged types and access to tagged types
 
-      --  When needed, that is to say when the expression is class-wide, Add
+      --  When needed, that is to say when the expression is class-wide, add
       --  runtime a tag check for (strict) downward conversion by using the
       --  membership test, generating:
 
@@ -12579,11 +12583,6 @@ package body Exp_Ch4 is
                end;
             end if;
          end Tagged_Conversion;
-
-      --  Case of other access type conversions
-
-      elsif Is_Access_Type (Target_Type) then
-         Apply_Constraint_Check (Operand, Target_Type);
 
       --  Case of conversions from a fixed-point type
 

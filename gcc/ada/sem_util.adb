@@ -14791,6 +14791,13 @@ package body Sem_Util is
                return Is_Return_Object (Defining_Identifier (P))
                  and then Exp_Defines_Or_Is_Tied_To_Return_Value;
 
+            --  Something assigned to a return object is a return value
+
+            when N_Assignment_Statement =>
+               return Is_Entity_Name (Name (P))
+                 and then Is_Return_Object (Entity (Name (P)))
+                 and then Exp_Defines_Or_Is_Tied_To_Return_Value;
+
             --  An allocator is not a return value unless specially built
 
             when N_Allocator =>

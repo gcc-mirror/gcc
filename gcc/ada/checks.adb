@@ -1533,7 +1533,8 @@ package body Checks is
 
       --  Also, if the expression is of an access type whose designated type is
       --  incomplete, then the access value must be null and we suppress the
-      --  check.
+      --  check. We also need to suppress it for a class-wide type whose root
+      --  type has no discriminants.
 
       if Known_Null (N) then
          return;
@@ -1541,7 +1542,10 @@ package body Checks is
       elsif Is_Access_Type (S_Typ) then
          S_Typ := Designated_Type (S_Typ);
 
-         if Ekind (S_Typ) = E_Incomplete_Type then
+         if Ekind (S_Typ) = E_Incomplete_Type
+           or else (Is_Class_Wide_Type (S_Typ)
+                     and then not Has_Discriminants (Root_Type (S_Typ)))
+         then
             return;
          end if;
       end if;
