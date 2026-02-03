@@ -7187,10 +7187,9 @@ The implementation remark:
       pool is exhausted.
 @item Pinned memory allocated using @code{omp_alloc} with the
       @code{ompx_gnu_pinned_mem_alloc} allocator or the @code{pinned} trait is
-      obtained via the CUDA API when an NVPTX device is present.  This provides
-      a performance boost for NVPTX offload code and also allows unlimited use
-      of pinned memory regardless of the OS @code{ulimit}/@code{rlimit}
-      settings.
+      obtained via the CUDA API when an NVPTX device is present (even when
+      the primary device is AMD).  This allows unlimited use of pinned memory
+      regardless of the OS @code{ulimit}/@code{rlimit} settings.
 @item Managed memory allocated on the host with the
       @code{ompx_gnu_managed_mem_alloc} allocator or in the
       @code{ompx_gnu_managed_mem_space} (both GNU extensions) allocate memory
@@ -7387,6 +7386,12 @@ The implementation remark:
       use the fall-back setting. If the default device is configured
       differently when the memory is freed, via @code{omp_free} or
       @code{omp_realloc}, the result may be undefined.
+@item Pinned memory allocated using @code{omp_alloc} with the
+      @code{ompx_gnu_pinned_mem_alloc} allocator or the @code{pinned} trait is
+      obtained via the CUDA API when an NVPTX device is present.  This provides
+      a performance boost for NVPTX offload code and also allows unlimited use
+      of pinned memory regardless of the OS @code{ulimit}/@code{rlimit}
+      settings.
 @item The OpenMP routines @code{omp_target_memcpy_rect} and
       @code{omp_target_memcpy_rect_async} and the @code{target update}
       directive for non-contiguous list items use the 2D and 3D memory-copy
