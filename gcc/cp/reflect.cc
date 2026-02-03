@@ -5704,10 +5704,10 @@ eval_data_member_spec (location_t loc, const constexpr_ctx *ctx,
 	  memset (namep, 0, l + 1);
 	  l = 0;
 	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (f), k, field, value)
-	    if (field == NULL_TREE)
+	    if (integer_zerop (value))
+	      break;
+	    else if (field == NULL_TREE)
 	      {
-		if (integer_zerop (value))
-		  break;
 		namep[l] = tree_to_shwi (value);
 		++l;
 	      }
@@ -5715,8 +5715,6 @@ eval_data_member_spec (location_t loc, const constexpr_ctx *ctx,
 	      {
 		tree lo = TREE_OPERAND (field, 0);
 		tree hi = TREE_OPERAND (field, 1);
-		if (integer_zerop (value))
-		  break;
 		unsigned HOST_WIDE_INT m = tree_to_uhwi (hi);
 		for (l = tree_to_uhwi (lo); l <= m; ++l)
 		  namep[l] = tree_to_shwi (value);
