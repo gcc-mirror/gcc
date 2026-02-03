@@ -5624,8 +5624,11 @@ proc check_effective_target_arm_neon_ok_nocache { } {
     set et_arm_neon_flags ""
     foreach flags {
 	""
+	"-mcpu=unset -march=armv7-a+simd -mfpu=auto"
+
 	"-mfloat-abi=softfp"
 	"-mfloat-abi=softfp -mcpu=unset -march=armv7-a+simd -mfpu=auto"
+
 	"-mfloat-abi=hard"
 	"-mfloat-abi=hard -mcpu=unset -march=armv7-a+simd -mfpu=auto"
     } {
