@@ -5969,6 +5969,18 @@ mem_ref_refers_to_non_mem_p (tree ref)
   return non_mem_decl_p (base);
 }
 
+/* Helper function of expand_assignment.  Check if storing field of
+   size BITSIZE at position BITPOS overlaps with the most significant
+   bit of TO_RTX, known to be SUBREG_PROMOTED_VAR_P.
+   Updating this field requires an explicit extension.  */
+static bool
+store_field_updates_msb_p (poly_int64 bitpos, poly_int64 bitsize, rtx to_rtx)
+{
+  poly_int64 to_size = GET_MODE_SIZE (GET_MODE (to_rtx));
+  poly_int64 bitnum = BYTES_BIG_ENDIAN ? to_size - bitsize - bitpos : bitpos;
+  return maybe_eq (bitnum + bitsize, to_size);
+}
+
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL
    is true, try generating a nontemporal store.  */
 
@@ -6315,8 +6327,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (to_rtx))))
 		result = store_expr (from, to_rtx, 0, nontemporal, false);
 	      /* Check if the field overlaps the MSB, requiring extension.  */
-	      else if (maybe_eq (bitpos + bitsize,
-				 GET_MODE_BITSIZE (GET_MODE (to_rtx))))
+	      else if (store_field_updates_msb_p (bitpos, bitsize, to_rtx))
 		{
 		  scalar_int_mode imode = subreg_unpromoted_mode (to_rtx);
 		  scalar_int_mode omode = subreg_promoted_mode (to_rtx);

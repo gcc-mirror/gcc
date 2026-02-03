@@ -3952,7 +3952,7 @@
 (define_insn_and_split "*extenddi_truncate<mode>"
   [(set (match_operand:DI 0 "register_operand" "=d")
 	(sign_extend:DI
-	    (truncate:SHORT (match_operand:DI 1 "register_operand" "d"))))]
+	    (truncate:SUBDI (match_operand:DI 1 "register_operand" "d"))))]
   "TARGET_64BIT && !TARGET_MIPS16 && !ISA_HAS_EXTS"
   "#"
   "&& reload_completed"

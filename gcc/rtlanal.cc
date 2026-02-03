@@ -6200,6 +6200,17 @@ truncated_to_mode (machine_mode mode, const_rtx x)
   if (REG_P (x) && rtl_hooks.reg_truncated_to_mode (mode, x))
     return true;
 
+  /* This explicit TRUNCATE may be needed on targets that require
+     MODE to be suitably extended when stored in X.  Targets such as
+     mips64 use (sign_extend:DI (truncate:SI (reg:DI x))) to perform
+     an explicit extension, avoiding use of (subreg:SI (reg:DI x))
+     which is assumed to already be extended.  */
+  scalar_int_mode imode, omode;
+  if (is_a <scalar_int_mode> (mode, &imode)
+      && is_a <scalar_int_mode> (GET_MODE (x), &omode)
+      && targetm.mode_rep_extended (imode, omode) != UNKNOWN)
+    return false;
+
   /* See if we already satisfy the requirements of MODE.  If yes we
      can just switch to MODE.  */
   if (num_sign_bit_copies_in_rep[GET_MODE (x)][mode]
