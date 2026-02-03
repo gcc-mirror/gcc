@@ -1732,7 +1732,7 @@ region_model_manager::get_offset_region (const region *parent,
       const svalue *sval_x = parent_offset_reg->get_byte_offset ();
       const svalue *sval_sum
 	= get_or_create_binop (byte_offset->get_type (),
-			       PLUS_EXPR, sval_x, byte_offset);
+			       POINTER_PLUS_EXPR, sval_x, byte_offset);
       return get_offset_region (parent->get_parent_region (), type, sval_sum);
     }
 
