@@ -308,7 +308,7 @@ int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;
 	    gcc_cv_initfini_array=yes
 	  fi
 	elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_objdump" != x ; then
-	  case $target:$gas in
+	  case $target:$gas_flag in
 	    *:yes)
 	      sh_flags='"a"'
 	      sh_type='%progbits'
@@ -323,7 +323,7 @@ int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;
 	      sh_quote='"'
 	      ;;
 	  esac
-	  case "$target:$gnu_ld" in
+	  case "$target:$gnu_ld_flag" in
 	    *:yes)
 	      cat > conftest.s <<EOF
 .section .dtors,$sh_flags,$sh_type
