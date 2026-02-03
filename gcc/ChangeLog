@@ -1,3 +1,124 @@
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR debug/123886
+	* dwarf2out.cc (sym_off_pair::sym): Remove GTY((skip)).
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123794
+	* tree-vect-slp.cc (vect_remove_slp_scalar_calls): Unlink
+	VOPs for all calls.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123775
+	* match.pd ((view_convert (vec_cond ...))): Make sure the
+	resulting vec_cond can be expanded.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123729
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Set
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI if the reduction flows
+	across an abnomal edge.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-phinodes.h (phi_arg_index_from_use): Use gphi *.
+	(phi_arg_edge_from_use): New helper composing
+	phi_arg_index_from_use and gimple_phi_arg_edge.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123575
+	* match.pd (abs ((T)x) -> absu (x)): For vector type
+	arguments require the resulting operation is supported.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123537
+	* match.pd (REDUC (@0 & @1) -> @0[I] & @1[I]): Restrict
+	allowed conversions.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/116296
+	* ipa-modref-tree.cc (modref_access_node::contains): Use
+	poly_offset_int for the param offset difference and the
+	overlap computation.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110043
+	* pointer-query.cc (get_offset_range): Fail for integer
+	types with precision larger than ptrdiff_type_node.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109410
+	* tree-ssa-reassoc.cc (build_and_add_sum): Use
+	gsi_start_nondebug_after_labels_bb to look for a possible
+	returns-twice call.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/106859
+	* var-tracking.cc (val_store): Dump -1 as UID if setting_insn
+	is NULL.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* match.pd ((a ? x : y) !=/== (b ? x : y)): Make sure
+	x and y have no side-effects before evaluating them
+	unconditionally.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* match.pd ((zero_one ==/!= 0) ? .. z <op> y .. -> zero_one * z ..):
+	Check evaluating z unconditionally has no side-effects, like
+	trapping.
+
 2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

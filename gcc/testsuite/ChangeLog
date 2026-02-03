@@ -1,3 +1,83 @@
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123794
+	* gcc.dg/vect/vect-simd-clone-pr123794.c: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123775
+	* gcc.target/aarch64/sve2/pr123775.c: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123729
+	* g++.dg/torture/pr123729.C: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123575
+	* g++.dg/pr123575.C: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123537
+	* gcc.dg/pr123537.c: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/116296
+	* gcc.dg/torture/pr116296.c: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110043
+	* gcc.dg/torture/pr110043.c: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109410
+	* gcc.dg/pr109410-2.c: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* gcc.dg/torture/pr123887-2.c: New testcase.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* gcc.dg/torture/pr123887.c: New testcase.
+
 2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 	    Liam Powell  <liam@liampwll.com>
 
