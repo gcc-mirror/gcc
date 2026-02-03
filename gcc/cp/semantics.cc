@@ -12860,7 +12860,10 @@ cexpr_str::extract (location_t location, const char * & msg, int &len)
       cpp_string istr, ostr;
       istr.len = len;
       istr.text = (const unsigned char *) msg;
-      if (!cpp_translate_string (parse_in, &istr, &ostr, CPP_STRING, true))
+      if (len == 0)
+	;
+      else if (!cpp_translate_string (parse_in, &istr, &ostr, CPP_STRING,
+				      true))
 	{
 	  error_at (location, "could not convert constexpr string from "
 			      "ordinary literal encoding to source character "
