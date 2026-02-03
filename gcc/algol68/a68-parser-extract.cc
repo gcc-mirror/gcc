@@ -416,7 +416,10 @@ a68_extract_indicants (NODE_T *p)
 		  else
 		    {
 		      q = skip_module_text (NEXT (q));
-		      FORWARD (q);
+		      if (q == NO_NODE)
+			siga = false;
+		      else
+			FORWARD (q);
 		    }
 		}
 	      else

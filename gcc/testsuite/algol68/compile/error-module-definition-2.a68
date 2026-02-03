@@ -1,0 +1,3 @@
+module Module = { dg-error "" }
+begin
+end
