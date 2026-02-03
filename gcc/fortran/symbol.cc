@@ -2284,6 +2284,10 @@ gfc_copy_dummy_sym (gfc_symbol **dsym, gfc_symbol *sym, int result)
   if (!gfc_add_type (*dsym, &(sym->ts), &gfc_current_locus))
     return 1;
 
+  if (sym->attr.external
+      && (sym->attr.codimension || sym->attr.dimension))
+    (*dsym)->attr.if_source = IFSRC_DECL;
+
   if (!gfc_copy_attr (&(*dsym)->attr, &(sym->attr),
       &gfc_current_locus))
     return 1;
