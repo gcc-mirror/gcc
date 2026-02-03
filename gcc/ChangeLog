@@ -1,3 +1,45 @@
+2026-02-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/110522
+	* gcc.cc (driver_handle_option): Use
+	get_diagnostic_file_output_basename for
+	OPT_fdiagnostics_format_.
+	* opts-diagnostic.cc (get_base_filename): Likewise.
+	(get_diagnostic_file_output_basename): New.
+	* opts-diagnostic.h (get_diagnostic_file_output_basename): New
+	decl.
+	* opts.cc (maybe_prepend_dump_dir_name): New, based on code in
+	finish_options.
+	(finish_options): Move code for determining prepended
+	dump_base_name to maybe_prepend_dump_dir_name and call it.
+	(common_handle_option): Use get_diagnostic_file_output_basename
+	for OPT_fdiagnostics_format_.
+	* opts.h (maybe_prepend_dump_dir_name): New decl.
+
+2026-02-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123294
+	* ifcvt.cc (noce_emit_store_flag): Reject modes
+	greater than MAX_FIXED_MODE_SIZE.
+
+2026-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/123897
+	* tree-ssa-math-opts.cc (convert_mult_to_fma_1): Use type of variable
+	being folded.
+
+2026-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121290
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost):
+	Remove else.
+
+2026-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121104
+	* tree-ssa-math-opts.cc (match_uaddc_usubc): Punt if
+	lhs of ovf1 or ovf2 doesn't have element type compatible with type.
+
 2026-02-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/123755

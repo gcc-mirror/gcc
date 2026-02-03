@@ -1,3 +1,48 @@
+2026-02-02  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp23/feat-cxx2b.C: Adjust expected __cpp_deduction_guides
+	value.
+	* g++.dg/cpp26/feat-cxx26.C: Likewise.
+
+2026-02-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/limited_with8.adb: New test.
+	* gnat.dg/limited_with8_pkg1.ads: New helper.
+	* gnat.dg/limited_with8_pkg2.ads: Likewise.
+	* gnat.dg/limited_with8_pkg2.adb: Likewise.
+
+2026-02-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123294
+	* gcc.dg/pr123294-1.c: New test.
+	* gcc.target/aarch64/pr123294-1.c: New test.
+
+2026-02-02  Marek Polacek  <polacek@redhat.com>
+	    Boris Staletic  <boris.staletic@protonmail.com>
+
+	PR c++/123695
+	* g++.dg/reflect/object_of3.C: New test.
+
+2026-02-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/123614
+	* g++.dg/reflect/parm5.C: New test.
+
+2026-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/123897
+	* gcc.target/aarch64/sve/pr123897.c: New test.
+
+2026-02-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121290
+	* gcc.target/aarch64/pr121290_3.c: New test.
+
+2026-02-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121104
+	* gcc.dg/pr121104.c: New test.
+
 2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 	    Liam Powell  <liam@liampwll.com>
 

@@ -1,3 +1,15 @@
+2026-02-02  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/regex_executor.tcc (_ExecutorFrameBase):
+	Zero-initialize _M_byte0.
+	(_ExecutorFrameBase::_M_end): Rename to ...
+	(_ExecutorFrameBase::_M_subexpr_end): ... this.
+	(_Executor::_M_handle_subexpr_begin): Remove now redundant
+	clearing of _M_subexpr_end.
+	(_Executor::_M_handle_subexpr_end): Adjust after renaming.
+	(_Executor::_M_dfs) <case _S_fopcode_restore_cur_results>:
+	Likewise.
+
 2026-01-31  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/regex_executor.tcc (_ExecutorFrameBase): Add

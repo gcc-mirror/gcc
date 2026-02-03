@@ -1,3 +1,8 @@
+2026-02-02  Patrick Palka  <ppalka@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump __cpp_deduction_guides to
+	202207L for C++23 and later.
+
 2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR c++/102846

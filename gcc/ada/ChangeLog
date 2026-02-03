@@ -1,3 +1,9 @@
+2026-02-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/89159
+	* sem_ch6.adb (Conforming_Types.Is_Matching_Limited_View): Return
+	true when the type is an incomplete view of the non-limited view.
+
 2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 	    Liam Powell  <liam@liampwll.com>
 
