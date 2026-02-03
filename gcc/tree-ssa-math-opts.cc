@@ -2029,6 +2029,9 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
 	  || REAL_VALUE_ISSIGNALING_NAN (TREE_REAL_CST (arg1))))
     return NULL_TREE;
 
+  if (flag_errno_math)
+    return NULL_TREE;
+
   /* If the exponent is equivalent to an integer, expand to an optimal
      multiplication sequence when profitable.  */
   c = TREE_REAL_CST (arg1);

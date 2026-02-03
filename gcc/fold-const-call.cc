@@ -495,27 +495,25 @@ static bool
 fold_const_pow (real_value *result, const real_value *arg0,
 		const real_value *arg1, const real_format *format)
 {
-  if (do_mpfr_arg2 (result, mpfr_pow, arg0, arg1, format))
-    return true;
+  if (flag_signaling_nans
+      && (REAL_VALUE_ISSIGNALING_NAN (*arg0)
+	  || REAL_VALUE_ISSIGNALING_NAN (*arg1)))
+    return false;
 
-  /* Check for an integer exponent.  */
-  REAL_VALUE_TYPE cint1;
-  HOST_WIDE_INT n1 = real_to_integer (arg1);
-  real_from_integer (&cint1, VOIDmode, n1, SIGNED);
-  /* Attempt to evaluate pow at compile-time, unless this should
-     raise an exception.  */
-  if (real_identical (arg1, &cint1)
-      && (n1 > 0
-	  || (!flag_trapping_math && !flag_errno_math)
-	  || !real_equal (arg0, &dconst0)))
+  if (do_mpfr_arg2 (result, mpfr_pow, arg0, arg1, format))
     {
-      bool inexact = real_powi (result, format, arg0, n1);
-      /* Avoid the folding if flag_signaling_nans is on.  */
-      if (flag_unsafe_math_optimizations
-	  || (!inexact
-	      && !(flag_signaling_nans
-	           && REAL_VALUE_ISSIGNALING_NAN (*arg0))))
-	return true;
+      if (flag_errno_math)
+	switch (result->cl)
+	  {
+	  case rvc_inf:
+	  case rvc_nan:
+	    return false;
+	  case rvc_zero:
+	    return arg0->cl == rvc_zero;
+	  default:
+	    break;
+	  }
+      return true;
     }
 
   return false;
