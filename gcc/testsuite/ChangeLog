@@ -1,3 +1,19 @@
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* gcc.dg/torture/pr123887.c: New testcase.
+
+2026-02-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-09-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116772
+	* gcc.dg/torture/pr116772-1.c: New test.
+
 2026-01-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/limited_with3.ads: New test.

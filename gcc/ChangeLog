@@ -1,3 +1,22 @@
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* match.pd ((zero_one ==/!= 0) ? .. z <op> y .. -> zero_one * z ..):
+	Check evaluating z unconditionally has no side-effects, like
+	trapping.
+
+2026-02-02  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	Backported from master:
+	2024-09-25  Andrew Pinski  <quic_apinski@quicinc.com>
+
+	PR middle-end/116772
+	* generic-match-head.cc (expr_no_side_effects_p): New function
+	* gimple-match-head.cc (expr_no_side_effects_p): New function
+
 2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:
