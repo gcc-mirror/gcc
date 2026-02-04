@@ -156,7 +156,7 @@ riscv_target_attr_parser::parse_arch (const char *str)
 
 	  const char *result = m_subset_list->parse_single_ext (token + 1);
 	  /* Check parse_single_ext has consume all string.  */
-	  if (*result != '\0')
+	  if (result == nullptr || *result != '\0')
 	    {
 	      if (m_loc)
 		error_at (*m_loc, "unexpected arch for %<target()%> "
