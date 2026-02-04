@@ -176,6 +176,7 @@ enum riscv_tls_type {
 #define GPR2VR_COST_UNPROVIDED COST_UNPROVIDED
 #define VR2GPR_COST_UNPROVIDED COST_UNPROVIDED
 #define FPR2VR_COST_UNPROVIDED COST_UNPROVIDED
+#define VR2FPR_COST_UNPROVIDED COST_UNPROVIDED
 
 /* Extra extension flags, used for carry extra info for a RISC-V extension.  */
 enum

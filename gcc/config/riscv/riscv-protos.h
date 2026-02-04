@@ -880,6 +880,7 @@ const cpu_vector_cost *get_vector_costs ();
 int get_gr2vr_cost ();
 int get_vr2gr_cost ();
 int get_fr2vr_cost ();
+int get_vr2fr_cost ();
 
 enum
 {
