@@ -1085,7 +1085,9 @@ a68_lower_shl3 (NODE_T *p, LOW_CTX_T ctx)
 {
   tree bits = a68_lower_tree (SUB (p), ctx);
   tree shift = a68_lower_tree (NEXT (NEXT (SUB (p))), ctx);
-  return a68_bits_shift (shift, bits);
+  return a68_bits_shift (p,
+			 fold_build1 (NEGATE_EXPR, TREE_TYPE (shift), shift),
+			 bits);
 }
 
 tree
@@ -1093,9 +1095,7 @@ a68_lower_shr3 (NODE_T *p, LOW_CTX_T ctx)
 {
   tree bits = a68_lower_tree (SUB (p), ctx);
   tree shift = a68_lower_tree (NEXT (NEXT (SUB (p))), ctx);
-  return a68_bits_shift (fold_build1 (NEGATE_EXPR,
-				      TREE_TYPE (shift), shift),
-			 bits);
+  return a68_bits_shift (p, shift, bits);
 }
 
 tree

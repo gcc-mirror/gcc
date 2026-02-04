@@ -1,0 +1,9 @@
+begin int first_bit = 2**31;
+      int myshift = 29;
+
+      bits b1 = BIN (first_bit) SHR 29;
+      bits b2 = BIN (first_bit) SHR myshift;
+
+      assert (b1 = 2r100);
+      assert (b2 = 2r100)
+end

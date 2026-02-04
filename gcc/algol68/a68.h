@@ -534,7 +534,7 @@ tree a68_bits_ior (tree bits1, tree bits2);
 tree a68_bits_xor (tree bits1, tree bits2);
 tree a68_bits_elem (NODE_T *p, tree pos, tree bits);
 tree a68_bits_subset (tree bits1, tree bits2);
-tree a68_bits_shift (tree shift, tree bits);
+tree a68_bits_shift (NODE_T *p, tree shift, tree bits);
 tree a68_bits_eq (tree a, tree b, location_t loc = UNKNOWN_LOCATION);
 tree a68_bits_ne (tree a, tree b, location_t loc = UNKNOWN_LOCATION);
 tree a68_bits_set (MOID_T *m, tree bits, tree numbit, location_t loc = UNKNOWN_LOCATION);

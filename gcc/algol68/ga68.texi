@@ -2799,16 +2799,22 @@ in the elements of the given bits operands.
 
 @deftypefn Operator {} {@B{SHL}} {= (@B{l} @B{bits} a, @B{int} n) @B{l} @B{bits}}
 @deftypefnx Operator {} {@B{UP}} {= (@B{l} @B{bits} a, @B{int} n) @B{l} @B{bits}}
-Dyadic operator that yields the given bits operand shifted @code{n}
-positions to the left.  Extra elements introduced on the right are
-initialized to @code{@B{false}}.
+Dyadic operator that yields the given bits operand shifted @code{ABS
+n} positions to the left if @code{n >= 0} or @code{ABS n} positions to
+the right if @code{n < 0}.  Extra elements introduced on the right or
+left are initialized to @code{@B{false}}.  If @code{ABS n >
+L_bits_width} then the resulting bits value has all bits set to
+@code{false}.
 @end deftypefn
 
 @deftypefn Operator {} {@B{SHR}} {= (@B{l} @B{bits} a, @B{int} n) @B{l} @B{bits}}
 @deftypefnx Operator {} {@B{DOWN}} {= (@B{l} @B{bits} a, @B{int} n) @B{l} @B{bits}}
-Dyadic operator that yields the given bits operand shifted @code{n}
-positions to the right.  Extra elements introduced on the left are
-initialized to @code{@B{false}}.
+Dyadic operator that yields the given bits operand shifted @code{ABS
+n} positions to the right if @code{n >= 0} or @code{ABS n} positions
+to the left if @code{n < 0}.  Extra elements introduced on the right
+or left are initialized to @code{@B{false}}.  If @code{ABS n >
+L_bits_width} then the resulting bits value has all bits set to
+@code{false}.
 @end deftypefn
 
 @subsection Relational

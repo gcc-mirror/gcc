@@ -1,0 +1,26 @@
+{ Shifting by L_bits_width results in all bits being zero. }
+
+begin assert (short short 16rffff SHR short_short_bits_width = short short 16r0);
+      assert (short 16rffff SHR short_bits_width = short 16r0);
+      assert (16rffff SHR bits_width = 16r0);
+      assert (long 16rffff SHR long_bits_width = long 16r0);
+      assert (long long 16rffff SHR long_long_bits_width = long long 16r0);
+
+      assert (short short 16rffff SHR -short_short_bits_width = short short 16r0);
+      assert (short 16rffff SHR -short_bits_width = short 16r0);
+      assert (16rffff SHR -bits_width = 16r0);
+      assert (long 16rffff SHR -long_bits_width = long 16r0);
+      assert (long long 16rffff SHR -long_long_bits_width = long long 16r0);
+
+      assert (short short 16rffff SHL short_short_bits_width = short short 16r0);
+      assert (short 16rffff SHL short_bits_width = short 16r0);
+      assert (16rffff SHL bits_width = 16r0);
+      assert (long 16rffff SHL long_bits_width = long 16r0);
+      assert (long long 16rffff SHL long_long_bits_width = long long 16r0);
+
+      assert (short short 16rffff SHL -short_short_bits_width = short short 16r0);
+      assert (short 16rffff SHL -short_bits_width = short 16r0);
+      assert (16rffff SHL -bits_width = 16r0);
+      assert (long 16rffff SHL -long_bits_width = long 16r0);
+      assert (long long 16rffff SHL -long_long_bits_width = long long 16r0)
+end
