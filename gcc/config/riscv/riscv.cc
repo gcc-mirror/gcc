@@ -14401,8 +14401,6 @@ extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset)
 static bool
 riscv_vector_mode_supported_any_target_p (machine_mode)
 {
-  if (TARGET_XTHEADVECTOR)
-    return false;
   return true;
 }
 
