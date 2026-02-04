@@ -6412,7 +6412,7 @@ gimple_split_block_before_cond_jump (basic_block bb)
 static bool
 gimple_can_duplicate_bb_p (const_basic_block bb)
 {
-  gimple *last = last_nondebug_stmt (CONST_CAST_BB (bb));
+  gimple *last = last_nondebug_stmt (const_cast<basic_block> (bb));
 
   /* Do checks that can only fail for the last stmt, to minimize the work in the
      stmt loop.  */
@@ -6437,7 +6437,7 @@ gimple_can_duplicate_bb_p (const_basic_block bb)
       return false;
   }
 
-  for (gimple_stmt_iterator gsi = gsi_start_bb (CONST_CAST_BB (bb));
+  for (gimple_stmt_iterator gsi = gsi_start_bb (const_cast<basic_block> (bb));
        !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple *g = gsi_stmt (gsi);

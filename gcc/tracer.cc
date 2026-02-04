@@ -139,7 +139,8 @@ analyze_bb (basic_block bb, int *count)
     }
   *count = n;
 
-  cache_can_duplicate_bb_p (bb, can_duplicate_block_p (CONST_CAST_BB (bb)));
+  cache_can_duplicate_bb_p (bb, can_duplicate_block_p (const_cast<basic_block>
+						       (bb)));
 }
 
 /* Return true if E1 is more frequent than E2.  */
