@@ -2,8 +2,8 @@
 
 STAGE2_CFLAGS += -flto=jobserver -frandom-seed=1 -fipa-reorder-for-locality
 STAGE3_CFLAGS += -flto=jobserver -frandom-seed=1 -fipa-reorder-for-locality
-STAGEprofile_CFLAGS += -flto=jobserver -frandom-seed=1 -fipa-reorder-for-locality
-STAGEtrain_CFLAGS += -flto=jobserver -frandom-seed=1 -fipa-reorder-for-locality
+STAGEprofile_CFLAGS += -flto=jobserver -frandom-seed=1
+STAGEtrain_CFLAGS += -flto=jobserver -frandom-seed=1
 STAGEfeedback_CFLAGS += -flto=jobserver -frandom-seed=1 -fipa-reorder-for-locality
 
 # assumes the host supports the linker plugin

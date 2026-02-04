@@ -517,7 +517,7 @@ Common Joined UInteger Var(param_lto_locality_size) Init(1000) IntegerRange(1, 6
 Size cut-off for callee including inlined calls to be cloned for a particular caller.
 
 -param=lto-max-locality-partition=
-Common Joined UInteger Var(param_max_locality_partition_size) Init(1000000) Param
+Common Joined UInteger Var(param_max_locality_partition_size) Init(500000) Param
 Maximal size of a locality partition for LTO (in estimated instructions). Value of 0 results in default value being used.
 
 Enum
