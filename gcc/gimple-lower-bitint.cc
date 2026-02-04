@@ -7804,6 +7804,11 @@ gimple_lower_bitint (void)
 							   vtype, c));
 			}
 		      gsi_insert_on_edge (e, g);
+		      if (min_prec == prec)
+			{
+			  edge_insertions = true;
+			  break;
+			}
 		    }
 		  if (ext == 0)
 		    {
