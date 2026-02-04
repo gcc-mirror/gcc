@@ -556,6 +556,12 @@ STAGE1_CONFIGURE_FLAGS = $(STAGE1_CHECKING) \
 	  --disable-coverage --enable-languages="$(STAGE1_LANGUAGES)" \
 	  --disable-build-format-warnings
 
+@if target-libstdc++-v3-bootstrap
+STAGE1_CONFIGURE_FLAGS += --disable-libstdcxx-pch
+STAGE2_CONFIGURE_FLAGS += --disable-libstdcxx-pch
+STAGEprofile_CONFIGURE_FLAGS += --disable-libstdcxx-pch
+@endif target-libstdc++-v3-bootstrap
+
 @if target-libphobos-bootstrap
 STAGE1_CONFIGURE_FLAGS += --with-libphobos-druntime-only
 STAGE2_CONFIGURE_FLAGS += --with-libphobos-druntime-only
