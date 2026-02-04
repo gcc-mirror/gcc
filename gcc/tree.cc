@@ -6826,13 +6826,27 @@ simple_cst_equal (const_tree t1, const_tree t2)
 	vec<constructor_elt, va_gc> *v2 = CONSTRUCTOR_ELTS (t2);
 
 	if (vec_safe_length (v1) != vec_safe_length (v2))
-	  return false;
+	  return 0;
 
         for (idx = 0; idx < vec_safe_length (v1); ++idx)
-	  /* ??? Should we handle also fields here? */
-	  if (!simple_cst_equal ((*v1)[idx].value, (*v2)[idx].value))
-	    return false;
-	return true;
+	  {
+	    if ((*v1)[idx].index
+		&& TREE_CODE ((*v1)[idx].index) == FIELD_DECL)
+	      {
+		if ((*v1)[idx].index != (*v2)[idx].index)
+		  return 0;
+	      }
+	    else
+	      {
+		cmp = simple_cst_equal ((*v1)[idx].index, (*v2)[idx].index);
+		if (cmp <= 0)
+		  return cmp;
+	      }
+	    cmp = simple_cst_equal ((*v1)[idx].value, (*v2)[idx].value);
+	    if (cmp <= 0)
+	      return cmp;
+	  }
+	return 1;
       }
 
     case SAVE_EXPR:
