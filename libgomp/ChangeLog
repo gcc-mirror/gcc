@@ -1,3 +1,31 @@
+2026-02-03  Andrew Stubbs  <ams@baylibre.com>
+
+	PR libgomp/121813
+	PR libgomp/113213
+	* libgomp-plugin.h (GOMP_OFFLOAD_is_accessible_ptr): New prototype.
+	* libgomp.h
+	(struct gomp_device_descr): Add GOMP_OFFLOAD_is_accessible_ptr.
+	* libgomp.texi: Update omp_target_is_accessible docs.
+	* plugin/cuda-lib.def (cuPointerGetAttribute): New entry.
+	* plugin/plugin-gcn.c (struct hsa_runtime_fn_info): Add
+	hsa_amd_svm_attributes_get_fn and hsa_amd_pointer_info_fn.
+	(init_hsa_runtime_functions): Add hsa_amd_svm_attributes_get and
+	hsa_amd_pointer_info.
+	(enum accessible): New enum type.
+	(host_memory_is_accessible): New function.
+	(device_memory_is_accessible): New function.
+	(GOMP_OFFLOAD_is_accessible_ptr): New function.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_is_accessible_ptr): Likewise.
+	* target.c (omp_target_is_accessible): Call is_accessible_ptr_func.
+	(gomp_load_plugin_for_device): Add is_accessible_ptr.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-1.c: Rework
+	to match more details of the GPU implementation.
+	* testsuite/libgomp.fortran/target-is-accessible-1.f90: Likewise.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-2.c: New test.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-3.c: New test.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-4.c: New test.
+	* testsuite/libgomp.c-c++-common/target-is-accessible-5.c: New test.
+
 2026-01-20  Matthew Malcolmson  <mmalcolmson@nvidia.com>
 
 	PR libgomp/122356

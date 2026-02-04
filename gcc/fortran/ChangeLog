@@ -1,3 +1,16 @@
+2026-02-03  Kirill Chilikin  <chilikin.k@gmail.com>
+
+	PR fortran/117303
+	* trans-intrinsic.cc (conv_isocbinding_function):
+	Assign the reference returned by C_FUNLOC to a variable.
+
+2026-02-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/123952
+	* symbol.cc (gfc_copy_dummy_sym): Ensure that external, array
+	valued destination symbols have the correct interface so that
+	conflicts do not arise when adding attributes.
+
 2026-01-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	* array.cc (resolve_array_list): Use macro IS_PDT.

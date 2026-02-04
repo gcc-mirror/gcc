@@ -1,3 +1,32 @@
+2026-02-03  Marek Polacek  <polacek@redhat.com>
+
+	* constexpr.cc (is_std_allocator): Don't check for __new_allocator.
+	(is_std_allocator_allocate): Make static.
+	* cp-tree.h (is_std_allocator_allocate): Remove declaration.
+	* reflect.cc (check_out_of_consteval_use): Don't call
+	is_std_allocator_allocate.
+	(check_consteval_only_fn): Likewise.
+
+2026-02-03  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (compare_reflections): Handle comparing annotations
+	and types specially, use cp_tree_equal for the rest.
+	* tree.cc (cp_tree_equal) <case NAMESPACE_DECL>: New.
+
+2026-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123920
+	* reflect.cc (eval_data_member_spec): Break out of the loop
+	if value is integer_zerop even in the field
+	&& TREE_CODE (field) != RANGE_EXPR case and use a single
+	test for integer_zerop (value) in the whole loop.
+
+2026-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123918
+	* semantics.cc (cexpr_str::extract): Bypass cpp_translate_string
+	for len == 0.
+
 2026-02-02  Marek Polacek  <polacek@redhat.com>
 	    Boris Staletic  <boris.staletic@protonmail.com>
 

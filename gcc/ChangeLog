@@ -1,3 +1,139 @@
+2026-02-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/123841
+	* acinclude.m4 (gcc_GAS_FLAGS): Check $gas_flag, $gnu_ld_flag
+	instead of $gas, $gnu_ld.
+	* configure.ac: Likewise.
+	(gas_flag): Determine if not already set.
+	(gnu_ld_flag): Likewise.
+	(ld_32_opt): Only set after gnu_ld_flag is set.
+	(ld_64_opt): Likewise.
+	* configure: Regenerate.
+
+2026-02-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/123841
+	* acinclude.m4 (gcc_GAS_FLAGS): Handle Darwin as cases separately.
+	* configure: Regenerate.
+
+2026-02-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/118608
+	* expr.cc (store_field_updates_msb_p): New helper function that
+	now also handles BYTES_BIG_ENDIAN targets.
+	(expand_assignment): Use the above function when deciding to emit
+	a required sign/zero extension.
+	* rtlanal.cc (truncated_to_mode): Call targetm.mode_rep_extended
+	to check whether an explicit TRUNCATE is required (i.e. performs
+	an extension) on this target.
+	* config/mips/mips.md (*extenddi_truncate<mode>): Handle all
+	SUBDI modes, not just SHORT modes.
+
+2026-02-03  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/123826
+	* tree-ssa-math-opts.cc (gimple_expand_builtin_pow): Add test
+	for flag_errno_math.
+	* fold-const-call.cc (fold_const_pow): Reorganize, eliminating
+	call to real_powi, and letting do_mpfr_arg2 do all the heavy
+	lifting.
+
+2026-02-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/123548
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_builtins): Rename AARCH64_PL<X> to
+	AARCH64_PREFETCH_PL<X>.
+	(aarch64_init_prefetch_builtin): Rename to...
+	(aarch64_init_prefetch_builtins): ...this and change builtin
+	names.
+	(AARCH64_INIT_PREFETCH_BUILTIN): Change to not add
+	"__builtin_aarch64__" prefix and to register builtins.
+	(handle_arm_acle_h): Add call to aarch64_init_prefetch_builtins.
+	(aarch64_init_pcdphint_builtins): Move __pldir code to init
+	prefetch builtins.
+	(aarch64_general_init_builtins): Remove call to
+	aarch64_init_prefetch_builtin.
+	(aarch64_expand_prefetch_builtin): Update names of PL<X>
+	builtins.`
+	* config/aarch64/arm_acle.h
+	(__pld): Remove
+	(__pli): Likewise.
+	(__plix): Likewise.
+	(__pldx): Likewise.
+	(__pldir): Likewise.
+
+2026-02-03  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/123322
+	* combine.cc (try_combine): Consider an IF_THEN_ELSE "good" when
+	evaluating if 4 insn combinations should be tried.
+	* config/riscv/iterators.md (zero_is_neutral_op): New iterator.
+	(zero_is_neutral_op_c): Likewise.
+	(any_shift_rotate): Likewise.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Recognize the conditional
+	AND RTL and cost is appropriately.
+	* config/riscv/zicond.md: Add patterns to rewrite general conditional
+	move sequences into simpler forms.
+
+2026-02-03  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac (gcc_cv_header_afunix_h): New test.
+	(HAVE_AFUNIX_H): New AC_DEFINE.
+	* diagnostics/sarif-sink.cc: Conditionally include afunix.h
+	if it's available, else fall back to internal definition.
+
+2026-02-03  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* collect2.cc: Migrate from CONST_CAST2() macro to
+	const_cast<>() C++ expression.
+	* config/sparc/driver-sparc.cc: Likewise.
+	* gcc-ar.cc: Likewise.
+	* gcc.cc: Likewise.
+	* toplev.cc: Likewise.
+	* tree-nested.cc: Likewise.
+
+2026-02-03  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/123416
+	* ipa-modref.cc (ipa_merge_modref_summary_after_inlining):
+	Fix typo in condtion for load merging when no callee summary.
+
+2026-02-03  Xi Ruoyao  <xry111@xry111.site>
+
+	Revert:
+	2025-11-08  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/122097
+	* config/loongarch/loongarch.cc
+	(loongarch_const_vector_same_bytes_p): Add processing for
+	floating-point vector data.
+
+2026-02-03  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/predicates.md (const_vector_neg_fp_operand):
+	New define_predicate.
+	(reg_or_vector_neg_fp_operand): New define_predicate.
+	* config/loongarch/lasx.md (copysign<mode>3): Remove.
+	(xorsign<mode>3): Remove.
+	* config/loongarch/lsx.md (copysign<mode>3): Remove.
+	(@xorsign<mode>3): Remove.
+	* config/loongarch/simd.md (copysign<mode>3): New define_expand.
+	(@xorsign<mode>3): New define_expand.
+	(and<mode>3): Only allow IVEC instead of ALLVEC.
+	(ior<mode>3): Likewise.
+	(xor<mode>3): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_print_operand): No
+	longer allow floating-point vector constants for %V.
+	(loongarch_const_vector_bitimm_set_p): Always return false for
+	floating-point vector constants.
+	(loongarch_build_signbit_mask): Factor out force_reg.
+	(loongarch_emit_swrsqrtsf): Use integer vector mode instead of
+	floating-point vector mode when masking zero inputs.
+
 2026-02-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR diagnostics/110522

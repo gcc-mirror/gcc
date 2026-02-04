@@ -1,3 +1,12 @@
+2026-02-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Discriminant_Check): Bail out for a source type
+	that is a class-wide type whose root type has no discriminants.
+	* exp_ch4.adb (Expand_N_Type_Conversion): If the target type is an
+	access type, emit null access checks before accessibility checks.
+	* sem_util.adb (In_Return_Value): Deal again with assignments to
+	return objects.
+
 2026-02-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/89159

@@ -1,3 +1,17 @@
+2026-02-03  Marek Polacek  <polacek@redhat.com>
+
+	* include/bits/new_allocator.h (__new_allocator::allocate,
+	__new_allocator::deallocate): Add missing constexpr.
+
+2026-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/123921
+	* include/bits/version.def (define_static): New with the
+	same values as reflection.
+	* include/bits/version.h: Regenerate.
+	* include/std/meta: Define also __glibcxx_want_define_static before
+	including bits/version.h.
+
 2026-02-02  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/regex_executor.tcc (_ExecutorFrameBase):
