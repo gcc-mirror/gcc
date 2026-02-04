@@ -1317,7 +1317,7 @@ darwin_encode_section_info (tree decl, rtx rtl, int first)
       if (is_str)
 	{
 	  bool for_asan = (flag_sanitize & SANITIZE_ADDRESS)
-			   && asan_protect_global (CONST_CAST_TREE (decl));
+			   && asan_protect_global (const_cast<tree> (decl));
 	  /* When we are generating code for sanitized strings, the string
 	     internal symbols are made visible in the object.  */
 	  buf = xasprintf ("*%c.str.%s", for_asan ? 'l' : 'L', &name[3]);
@@ -1722,7 +1722,7 @@ machopic_select_section (tree decl,
   if (flag_sanitize & SANITIZE_ADDRESS)
     {
       if (TREE_CODE (decl) == STRING_CST
-	  && asan_protect_global (CONST_CAST_TREE (decl)))
+	  && asan_protect_global (const_cast<tree> (decl)))
 	{
 	  return darwin_sections[asan_string_section];
 	}
@@ -1745,7 +1745,7 @@ machopic_select_section (tree decl,
 
     case SECCAT_RODATA_MERGE_STR_INIT:
       if ((flag_sanitize & SANITIZE_ADDRESS)
-	   && asan_protect_global (CONST_CAST_TREE (decl)))
+	   && asan_protect_global (const_cast<tree> (decl)))
 	/* or !flag_merge_constants */
 	return darwin_sections[asan_string_section];
       else

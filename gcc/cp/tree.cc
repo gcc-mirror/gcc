@@ -206,7 +206,7 @@ lvalue_kind (const_tree ref)
       /* FALLTHRU */
     case VAR_DECL:
       if (VAR_P (ref) && DECL_HAS_VALUE_EXPR_P (ref))
-	return lvalue_kind (DECL_VALUE_EXPR (CONST_CAST_TREE (ref)));
+	return lvalue_kind (DECL_VALUE_EXPR (const_cast<tree> (ref)));
 
       if (TREE_READONLY (ref) && ! TREE_STATIC (ref)
 	  && DECL_LANG_SPECIFIC (ref)
@@ -227,7 +227,7 @@ lvalue_kind (const_tree ref)
       /* A scope ref in a template, left as SCOPE_REF to support later
 	 access checking.  */
     case SCOPE_REF:
-      gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE (ref)));
+      gcc_assert (!type_dependent_expression_p (const_cast<tree> (ref)));
       {
 	tree op = TREE_OPERAND (ref, 1);
 	if (TREE_CODE (op) == FIELD_DECL)
@@ -255,7 +255,7 @@ lvalue_kind (const_tree ref)
 	     point, we know we got a plain rvalue.  Unless we have a
 	     type-dependent expr, that is, but we shouldn't be testing
 	     lvalueness if we can't even tell the types yet!  */
-	  gcc_assert (!type_dependent_expression_p (CONST_CAST_TREE (ref)));
+	  gcc_assert (!type_dependent_expression_p (const_cast<tree> (ref)));
 	  goto default_;
 	}
       {
@@ -316,7 +316,7 @@ lvalue_kind (const_tree ref)
 	 with a BASELINK.  */
       /* This CONST_CAST is okay because BASELINK_FUNCTIONS returns
 	 its argument unmodified and we assign it to a const_tree.  */
-      return lvalue_kind (BASELINK_FUNCTIONS (CONST_CAST_TREE (ref)));
+      return lvalue_kind (BASELINK_FUNCTIONS (const_cast<tree> (ref)));
 
     case PAREN_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
@@ -4715,7 +4715,7 @@ scalarish_type_p (const_tree t)
 bool
 type_has_nontrivial_default_init (const_tree t)
 {
-  t = strip_array_types (CONST_CAST_TREE (t));
+  t = strip_array_types (const_cast<tree> (t));
 
   if (CLASS_TYPE_P (t))
     return TYPE_HAS_COMPLEX_DFLT (t);
@@ -4732,7 +4732,7 @@ remember_deleted_copy (const_tree t)
 {
   if (!deleted_copy_types)
     deleted_copy_types = hash_set<tree>::create_ggc(37);
-  deleted_copy_types->add (CONST_CAST_TREE (t));
+  deleted_copy_types->add (const_cast<tree> (t));
 }
 void
 maybe_warn_parm_abi (tree t, location_t loc)
@@ -4775,7 +4775,7 @@ maybe_warn_parm_abi (tree t, location_t loc)
 bool
 type_has_nontrivial_copy_init (const_tree type)
 {
-  tree t = strip_array_types (CONST_CAST_TREE (type));
+  tree t = strip_array_types (const_cast<tree> (type));
 
   if (CLASS_TYPE_P (t))
     {
@@ -4862,7 +4862,7 @@ type_has_nontrivial_copy_init (const_tree type)
 bool
 trivially_copyable_p (const_tree t)
 {
-  t = strip_array_types (CONST_CAST_TREE (t));
+  t = strip_array_types (const_cast<tree> (t));
 
   if (CLASS_TYPE_P (t))
     return ((!TYPE_HAS_COPY_CTOR (t)
@@ -4883,12 +4883,12 @@ trivially_copyable_p (const_tree t)
 bool
 trivial_type_p (const_tree t)
 {
-  t = strip_array_types (CONST_CAST_TREE (t));
+  t = strip_array_types (const_cast<tree> (t));
 
   if (CLASS_TYPE_P (t))
     /* A trivial class is a class that is trivially copyable and has one or
        more eligible default constructors, all of which are trivial.  */
-    return (type_has_non_deleted_trivial_default_ctor (CONST_CAST_TREE (t))
+    return (type_has_non_deleted_trivial_default_ctor (const_cast<tree> (t))
 	    && trivially_copyable_p (t));
   else
     return scalarish_type_p (t);
@@ -4943,7 +4943,7 @@ pod_type_p (const_tree t)
 {
   /* This CONST_CAST is okay because strip_array_types returns its
      argument unmodified and we assign it to a const_tree.  */
-  t = strip_array_types (CONST_CAST_TREE(t));
+  t = strip_array_types (const_cast<tree>(t));
 
   if (!CLASS_TYPE_P (t))
     return scalarish_type_p (t);
@@ -4966,7 +4966,7 @@ pod_type_p (const_tree t)
 bool
 layout_pod_type_p (const_tree t)
 {
-  t = strip_array_types (CONST_CAST_TREE (t));
+  t = strip_array_types (const_cast<tree> (t));
 
   if (CLASS_TYPE_P (t))
     return !CLASSTYPE_NON_LAYOUT_POD_P (t);
@@ -4980,7 +4980,7 @@ layout_pod_type_p (const_tree t)
 bool
 std_layout_type_p (const_tree t)
 {
-  t = strip_array_types (CONST_CAST_TREE (t));
+  t = strip_array_types (const_cast<tree> (t));
 
   if (CLASS_TYPE_P (t))
     return !CLASSTYPE_NON_STD_LAYOUT (t);
@@ -4998,7 +4998,7 @@ type_has_unique_obj_representations (const_tree t, bool explain/*=false*/)
 {
   bool ret;
 
-  t = strip_array_types (CONST_CAST_TREE (t));
+  t = strip_array_types (const_cast<tree> (t));
 
   if (t == error_mark_node)
     return false;
@@ -5238,7 +5238,7 @@ zero_init_p (const_tree t)
 {
   /* This CONST_CAST is okay because strip_array_types returns its
      argument unmodified and we assign it to a const_tree.  */
-  t = strip_array_types (CONST_CAST_TREE(t));
+  t = strip_array_types (const_cast<tree> (t));
 
   if (t == error_mark_node)
     return 1;
@@ -6005,7 +6005,7 @@ cxx_type_hash_eq (const_tree typea, const_tree typeb)
 tree
 cxx_copy_lang_qualifiers (const_tree typea, const_tree typeb)
 {
-  tree type = CONST_CAST_TREE (typea);
+  tree type = const_cast<tree> (typea);
   if (FUNC_OR_METHOD_TYPE_P (type))
     type = build_cp_fntype_variant (type, type_memfn_rqual (typeb),
 				    TYPE_RAISES_EXCEPTIONS (typeb),

@@ -6662,7 +6662,7 @@ alias_template_specialization_p (const_tree t,
     {
       if (tree tinfo = TYPE_ALIAS_TEMPLATE_INFO (t))
 	if (PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo)))
-	  return CONST_CAST_TREE (t);
+	  return const_cast<tree> (t);
       if (transparent_typedefs && !dependent_opaque_alias_p (t))
 	return alias_template_specialization_p (DECL_ORIGINAL_TYPE
 						(TYPE_NAME (t)),
@@ -6760,7 +6760,7 @@ complex_alias_template_p (const_tree tmpl, tree *seen_out)
     return false;
 
   /* A renaming alias isn't complex.  */
-  if (get_underlying_template (CONST_CAST_TREE (tmpl)) != tmpl)
+  if (get_underlying_template (const_cast<tree> (tmpl)) != tmpl)
     return false;
 
   /* Any other constrained alias is complex.  */
@@ -6843,7 +6843,7 @@ dependent_alias_template_spec_p (const_tree t, bool transparent_typedefs)
 	  if (!seen)
 	    {
 	      if (any_dependent_template_arguments_p (args))
-		return CONST_CAST_TREE (t);
+		return const_cast<tree> (t);
 	    }
 	  else
 	    {
@@ -6851,7 +6851,7 @@ dependent_alias_template_spec_p (const_tree t, bool transparent_typedefs)
 	      for (int i = 0, len = TREE_VEC_LENGTH (args); i < len; ++i)
 		if (TREE_VEC_ELT (seen, i) != boolean_true_node
 		    && dependent_template_arg_p (TREE_VEC_ELT (args, i)))
-		  return CONST_CAST_TREE (t);
+		  return const_cast<tree> (t);
 	    }
 
 	  return NULL_TREE;
@@ -27465,7 +27465,7 @@ most_general_template (const_tree decl)
       decl = DECL_TI_TEMPLATE (decl);
     }
 
-  return CONST_CAST_TREE (decl);
+  return const_cast<tree> (decl);
 }
 
 /* Return the most specialized of the template partial specializations
@@ -30434,7 +30434,7 @@ any_dependent_template_arguments_p (const_tree args)
   for (int i = 0, depth = TMPL_ARGS_DEPTH (args); i < depth; ++i)
     {
       const_tree level = TMPL_ARGS_LEVEL (args, i + 1);
-      for (tree arg : tree_vec_range (CONST_CAST_TREE (level)))
+      for (tree arg : tree_vec_range (const_cast<tree> (level)))
 	if (dependent_template_arg_p (arg))
 	  return true;
     }

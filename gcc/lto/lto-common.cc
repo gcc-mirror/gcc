@@ -397,8 +397,8 @@ gimple_canonical_type_eq (const void *p1, const void *p2)
 {
   const_tree t1 = (const_tree) p1;
   const_tree t2 = (const_tree) p2;
-  return gimple_canonical_types_compatible_p (CONST_CAST_TREE (t1),
-					      CONST_CAST_TREE (t2));
+  return gimple_canonical_types_compatible_p (const_cast<tree> (t1),
+					      const_cast<tree> (t2));
 }
 
 /* Main worker for gimple_register_canonical_type.  */

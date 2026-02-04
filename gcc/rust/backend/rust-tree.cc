@@ -796,7 +796,7 @@ out:
 location_t
 rs_expr_location (const_tree t_)
 {
-  tree t = CONST_CAST_TREE (t_);
+  tree t = const_cast<tree> (t_);
   if (t == NULL_TREE)
     return UNKNOWN_LOCATION;
 
@@ -957,7 +957,7 @@ rs_type_quals (const_tree type)
   int quals;
   /* This CONST_CAST is okay because strip_array_types returns its
      argument unmodified and we assign it to a const_tree.  */
-  type = strip_array_types (CONST_CAST_TREE (type));
+  type = strip_array_types (const_cast<tree> (type));
   if (type == error_mark_node
       /* Quals on a FUNCTION_TYPE are memfn quals.  */
       || TREE_CODE (type) == FUNCTION_TYPE)
@@ -2179,8 +2179,8 @@ comp_except_specs (const_tree t1, const_tree t2, int exact)
   if (exact < ce_exact)
     {
       if (exact == ce_type
-	  && (canonical_eh_spec (CONST_CAST_TREE (t1))
-	      == canonical_eh_spec (CONST_CAST_TREE (t2))))
+	  && (canonical_eh_spec (const_cast<tree> (t1))
+	      == canonical_eh_spec (const_cast<tree> (t2))))
 	return true;
 
       /* noexcept(false) is compatible with no exception-specification,
@@ -3563,7 +3563,7 @@ is_bitfield_expr_with_lowered_type (const_tree exp)
     case VAR_DECL:
       if (DECL_HAS_VALUE_EXPR_P (exp))
 	return is_bitfield_expr_with_lowered_type (
-	  DECL_VALUE_EXPR (CONST_CAST_TREE (exp)));
+	  DECL_VALUE_EXPR (const_cast<tree> (exp)));
       return NULL_TREE;
 
     case VIEW_CONVERT_EXPR:
@@ -3857,7 +3857,7 @@ strip_top_quals (tree t)
 //     return;
 
 //   location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
-//   tree ptype = strip_top_quals (CONST_CAST_TREE (type));
+//   tree ptype = strip_top_quals (const_cast<tree> (type));
 
 //   if (current_class_type && TYPE_BEING_DEFINED (current_class_type)
 //       && same_type_p (ptype, current_class_type))
@@ -4530,7 +4530,7 @@ lvalue_kind (const_tree ref)
       /* FALLTHRU */
     case VAR_DECL:
       if (VAR_P (ref) && DECL_HAS_VALUE_EXPR_P (ref))
-	return lvalue_kind (DECL_VALUE_EXPR (CONST_CAST_TREE (ref)));
+	return lvalue_kind (DECL_VALUE_EXPR (const_cast<tree> (ref)));
 
       if (TREE_READONLY (ref) && !TREE_STATIC (ref) && DECL_LANG_SPECIFIC (ref)
 	  && DECL_IN_AGGR_P (ref))
@@ -5193,7 +5193,7 @@ complete_type_or_else (tree type, tree value)
 bool
 std_layout_type_p (const_tree t)
 {
-  t = strip_array_types (CONST_CAST_TREE (t));
+  t = strip_array_types (const_cast<tree> (t));
 
   if (CLASS_TYPE_P (t))
     return !CLASSTYPE_NON_STD_LAYOUT (t);

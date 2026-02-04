@@ -3705,7 +3705,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	    {
 	      tree dom
 		= compute_array_index_type (NULL_TREE,
-					    CONST_CAST_TREE (cst_outer_nelts),
+					    const_cast<tree> (cst_outer_nelts),
 					    complain);
 	      ttype = build_cplus_array_type (type, dom);
 	      tree ptype = build_pointer_type (ttype);

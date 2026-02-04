@@ -1033,7 +1033,7 @@ get_constraints (const_tree t)
   gcc_assert (DECL_P (t));
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
-  tree* found = decl_constraints->get (CONST_CAST_TREE (t));
+  tree* found = decl_constraints->get (const_cast<tree> (t));
   if (found)
     return *found;
   else

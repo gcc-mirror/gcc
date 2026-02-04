@@ -186,7 +186,7 @@ template_arg_needs_folding (const_tree t)
 static tree
 fold_cplus_constants (const_tree c)
 {
-  tree folded_elems, elems = CONST_CAST_TREE (c);
+  tree folded_elems, elems = const_cast<tree> (c);
   int vec_len, i;
 
   if (elems == NULL_TREE || elems == error_mark_node)

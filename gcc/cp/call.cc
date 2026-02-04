@@ -2671,7 +2671,7 @@ add_function_candidate (struct z_candidate **candidates,
       if (i == 0 && first_arg != NULL_TREE)
 	arg = first_arg;
       else
-	arg = CONST_CAST_TREE (
+	arg = const_cast<tree> (
 		(*args)[i + skip - (first_arg != NULL_TREE ? 1 : 0)]);
       argtype = lvalue_type (arg);
 

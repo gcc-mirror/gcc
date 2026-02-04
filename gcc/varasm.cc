@@ -7374,7 +7374,7 @@ categorize_decl_for_section (const_tree decl, int reloc)
   else if (TREE_CODE (decl) == STRING_CST)
     {
       if ((flag_sanitize & SANITIZE_ADDRESS)
-	  && asan_protect_global (CONST_CAST_TREE (decl)))
+	  && asan_protect_global (const_cast<tree> (decl)))
       /* or !flag_merge_constants */
         return SECCAT_RODATA;
       else
@@ -7382,7 +7382,7 @@ categorize_decl_for_section (const_tree decl, int reloc)
     }
   else if (VAR_P (decl))
     {
-      tree d = CONST_CAST_TREE (decl);
+      tree d = const_cast<tree> (decl);
       if (bss_initializer_p (decl))
 	ret = SECCAT_BSS;
       else if (! TREE_READONLY (decl)

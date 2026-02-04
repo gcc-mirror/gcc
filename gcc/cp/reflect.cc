@@ -1576,7 +1576,7 @@ static tree
 eval_has_static_storage_duration (const_tree r, reflect_kind kind)
 {
   if (eval_is_variable (r, kind) == boolean_true_node
-      && decl_storage_duration (CONST_CAST_TREE (r)) == dk_static)
+      && decl_storage_duration (const_cast<tree> (r)) == dk_static)
     return boolean_true_node;
   /* This includes DECL_NTTP_OBJECT_P objects.  */
   else if (eval_is_object (kind) == boolean_true_node)
@@ -1593,7 +1593,7 @@ static tree
 eval_has_thread_storage_duration (const_tree r, reflect_kind kind)
 {
   if (eval_is_variable (r, kind) == boolean_true_node
-      && decl_storage_duration (CONST_CAST_TREE (r)) == dk_thread)
+      && decl_storage_duration (const_cast<tree> (r)) == dk_thread)
     return boolean_true_node;
   else
     return boolean_false_node;
@@ -1607,7 +1607,7 @@ static tree
 eval_has_automatic_storage_duration (const_tree r, reflect_kind kind)
 {
   if (eval_is_variable (r, kind) == boolean_true_node
-      && decl_storage_duration (CONST_CAST_TREE (r)) == dk_auto)
+      && decl_storage_duration (const_cast<tree> (r)) == dk_auto)
     return boolean_true_node;
   else
     return boolean_false_node;

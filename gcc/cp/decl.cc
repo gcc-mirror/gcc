@@ -641,7 +641,7 @@ automatic_var_with_nontrivial_dtor_p (const_tree t)
     return false;
 
   return (VAR_P (t)
-	  && decl_storage_duration (CONST_CAST_TREE (t)) == dk_auto
+	  && decl_storage_duration (const_cast<tree> (t)) == dk_auto
 	  && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (t)));
 }
 

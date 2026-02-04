@@ -5418,20 +5418,22 @@ get_vec_init_expr (tree t)
    DECL_INITIAL (for a PARM_DECL) or as the TREE_TYPE (for a
    TYPE_DECL).
 
-   FIXME: CONST_CAST_TREE is a hack that hopefully will go away after
+   FIXME: const_cast<tree> is a hack that hopefully will go away after
    tree is converted to C++ class hiearchy.  */
 #define DECL_TEMPLATE_PARMS(NODE)       \
-   ((struct tree_template_decl *)CONST_CAST_TREE (TEMPLATE_DECL_CHECK (NODE)))->arguments
+   ((struct tree_template_decl *)const_cast<tree> (TEMPLATE_DECL_CHECK \
+						   (NODE)))->arguments
 #define DECL_INNERMOST_TEMPLATE_PARMS(NODE) \
    INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (NODE))
 #define DECL_NTPARMS(NODE) \
    TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (NODE))
 /* For function, method, class-data templates.
 
-   FIXME: CONST_CAST_TREE is a hack that hopefully will go away after
+   FIXME: const_cast<tree> is a hack that hopefully will go away after
    tree is converted to C++ class hiearchy.  */
 #define DECL_TEMPLATE_RESULT(NODE)      \
-   ((struct tree_template_decl *)CONST_CAST_TREE(TEMPLATE_DECL_CHECK (NODE)))->result
+   ((struct tree_template_decl *)const_cast<tree> (TEMPLATE_DECL_CHECK \
+						   (NODE)))->result
 /* For a forward-declared function template at namespace scope, or for any
    function template in an exporting module, DECL_TEMPLATE_INSTANTIATIONS lists
    all instantiations and specializations of the function so that
@@ -8942,7 +8944,7 @@ loc_or_input_loc (location_t loc)
 inline location_t
 cp_expr_location (const_tree t_)
 {
-  tree t = CONST_CAST_TREE (t_);
+  tree t = const_cast<tree> (t_);
   if (t == NULL_TREE)
     return UNKNOWN_LOCATION;
   switch (TREE_CODE (t))

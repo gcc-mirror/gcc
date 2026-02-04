@@ -289,7 +289,7 @@ cp_get_debug_type (const_tree type)
      the debug info depend on the collection points.  */
   if (dtype)
     {
-      tree ktype = CONST_CAST_TREE (type);
+      tree ktype = const_cast<tree> (type);
       if (tree *slot = hash_map_safe_get (debug_type_map, ktype))
 	return *slot;
       hash_map_safe_put<hm_ggc> (debug_type_map, ktype, dtype);

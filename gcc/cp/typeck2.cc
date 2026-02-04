@@ -280,7 +280,7 @@ cxx_incomplete_type_inform (const_tree type)
     return;
 
   location_t loc = DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type));
-  tree ptype = strip_top_quals (CONST_CAST_TREE (type));
+  tree ptype = strip_top_quals (const_cast<tree> (type));
 
   /* When defining a template, current_class_type will be the pattern on
      the template definition, while non-self-reference usages of this

@@ -23728,7 +23728,7 @@ aarch64_mangle_type (const_tree type)
      The Windows Arm64 ABI uses just an address of the first variadic
      argument.  */
   if (!TARGET_AARCH64_MS_ABI
-      && lang_hooks.types_compatible_p (CONST_CAST_TREE (type), va_list_type))
+      && lang_hooks.types_compatible_p (const_cast<tree> (type), va_list_type))
     return "St9__va_list";
 
   /* Half-precision floating point types.  */

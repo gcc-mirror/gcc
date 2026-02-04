@@ -568,12 +568,12 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    we are not modifying the tree itself.  */
 
 #define STRIP_NOPS(EXP) \
-  (EXP) = tree_strip_nop_conversions (CONST_CAST_TREE (EXP))
+  (EXP) = tree_strip_nop_conversions (const_cast<tree> (EXP))
 
 /* Like STRIP_NOPS, but don't let the signedness change either.  */
 
 #define STRIP_SIGN_NOPS(EXP) \
-  (EXP) = tree_strip_sign_nop_conversions (CONST_CAST_TREE (EXP))
+  (EXP) = tree_strip_sign_nop_conversions (const_cast<tree> (EXP))
 
 /* Like STRIP_NOPS, but don't alter the TREE_TYPE either.  */
 
@@ -595,7 +595,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    in use to provide a location_t.  */
 
 #define STRIP_ANY_LOCATION_WRAPPER(EXP) \
-  (EXP) = tree_strip_any_location_wrapper (CONST_CAST_TREE (EXP))
+  (EXP) = tree_strip_any_location_wrapper (const_cast<tree> (EXP))
 
 /* Nonzero if TYPE represents a vector type.  */
 
@@ -3991,7 +3991,7 @@ tree_int_cst_elt_check (const_tree __t, int __i,
   if (__i < 0 || __i >= __t->base.u.int_length.extended)
     tree_int_cst_elt_check_failed (__i, __t->base.u.int_length.extended,
 				   __f, __l, __g);
-  return &CONST_CAST_TREE (__t)->int_cst.val[__i];
+  return &const_cast<tree> (__t)->int_cst.val[__i];
 }
 
 inline HOST_WIDE_INT *
@@ -4003,7 +4003,7 @@ tree_int_cst_elt_check (tree __t, int __i,
   if (__i < 0 || __i >= __t->base.u.int_length.extended)
     tree_int_cst_elt_check_failed (__i, __t->base.u.int_length.extended,
 				   __f, __l, __g);
-  return &CONST_CAST_TREE (__t)->int_cst.val[__i];
+  return &const_cast<tree> (__t)->int_cst.val[__i];
 }
 
 /* Workaround -Wstrict-overflow false positive during profiledbootstrap.  */
@@ -4021,7 +4021,7 @@ tree_vec_elt_check (tree __t, int __i,
     tree_check_failed (__t, __f, __l, __g, TREE_VEC, 0);
   if (__i < 0 || __i >= __t->base.u.length)
     tree_vec_elt_check_failed (__i, __t->base.u.length, __f, __l, __g);
-  return &CONST_CAST_TREE (__t)->vec.a[__i];
+  return &const_cast<tree> (__t)->vec.a[__i];
 }
 
 # if GCC_VERSION >= 4006
@@ -4332,7 +4332,7 @@ tree_operand_check (tree __t, int __i,
   const_tree __u = EXPR_CHECK (__t);
   if (__i < 0 || __i >= TREE_OPERAND_LENGTH (__u))
     tree_operand_check_failed (__i, __u, __f, __l, __g);
-  return &CONST_CAST_TREE (__u)->exp.operands[__i];
+  return &const_cast<tree> (__u)->exp.operands[__i];
 }
 
 inline tree *

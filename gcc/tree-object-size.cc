@@ -442,8 +442,8 @@ compute_object_offset (tree expr, const_tree var)
 
       t = TREE_OPERAND (expr, 1);
       tree low_bound, unit_size;
-      low_bound = array_ref_low_bound (CONST_CAST_TREE (expr));
-      unit_size = array_ref_element_size (CONST_CAST_TREE (expr));
+      low_bound = array_ref_low_bound (const_cast<tree> (expr));
+      unit_size = array_ref_element_size (const_cast<tree> (expr));
       if (! integer_zerop (low_bound))
 	t = fold_build2 (MINUS_EXPR, TREE_TYPE (t), t, low_bound);
       if (TREE_CODE (t) == INTEGER_CST && tree_int_cst_sgn (t) < 0)

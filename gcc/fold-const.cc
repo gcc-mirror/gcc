@@ -3659,13 +3659,14 @@ operand_compare::operand_equal_p (tree type0, const_tree arg0,
 		  && (TREE_TYPE (TREE_OPERAND (arg0, 0))
 		      == TREE_TYPE (TREE_OPERAND (arg1, 0))
 		      || (operand_equal_p (array_ref_low_bound
-					     (CONST_CAST_TREE (arg0)),
+					     (const_cast<tree> (arg0)),
 					   array_ref_low_bound
-					     (CONST_CAST_TREE (arg1)), flags)
+					     (const_cast<tree> (arg1)),
+					   flags)
 			  && operand_equal_p (array_ref_element_size
-					        (CONST_CAST_TREE (arg0)),
+						(const_cast<tree> (arg0)),
 					      array_ref_element_size
-					        (CONST_CAST_TREE (arg1)),
+						(const_cast<tree> (arg1)),
 					      flags))));
 
 	case COMPONENT_REF:
@@ -3951,8 +3952,8 @@ operand_compare::operand_equal_p (tree type0, const_tree arg0,
 	{
 	  /* Compare the STATEMENT_LISTs.  */
 	  tree_stmt_iterator tsi1, tsi2;
-	  tree body1 = CONST_CAST_TREE (arg0);
-	  tree body2 = CONST_CAST_TREE (arg1);
+	  tree body1 = const_cast<tree> (arg0);
+	  tree body2 = const_cast<tree> (arg1);
 	  for (tsi1 = tsi_start (body1), tsi2 = tsi_start (body2); ;
 	       tsi_next (&tsi1), tsi_next (&tsi2))
 	    {
@@ -4109,7 +4110,7 @@ operand_compare::hash_operand (const_tree t, inchash::hash &hstate,
     case STATEMENT_LIST:
       {
 	tree_stmt_iterator i;
-	for (i = tsi_start (CONST_CAST_TREE (t));
+	for (i = tsi_start (const_cast<tree> (t));
 	     !tsi_end_p (i); tsi_next (&i))
 	  hash_operand (tsi_stmt (i), hstate, flags);
 	return;

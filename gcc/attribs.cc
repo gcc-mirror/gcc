@@ -1509,7 +1509,7 @@ comp_type_attributes (const_tree type1, const_tree type2)
       if (!as || as->affects_type_identity == false)
 	continue;
 
-      attr = find_same_attribute (a, CONST_CAST_TREE (a2));
+      attr = find_same_attribute (a, const_cast<tree> (a2));
       if (!attr || !attribute_value_equal (a, attr))
 	break;
     }
@@ -1523,7 +1523,7 @@ comp_type_attributes (const_tree type1, const_tree type2)
 	  if (!as || as->affects_type_identity == false)
 	    continue;
 
-	  if (!find_same_attribute (a, CONST_CAST_TREE (a1)))
+	  if (!find_same_attribute (a, const_cast<tree> (a1)))
 	    break;
 	  /* We don't need to compare trees again, as we did this
 	     already in first loop.  */
@@ -1533,13 +1533,13 @@ comp_type_attributes (const_tree type1, const_tree type2)
       if (!a)
 	return 1;
     }
-  if (lookup_attribute ("transaction_safe", CONST_CAST_TREE (a)))
+  if (lookup_attribute ("transaction_safe", const_cast<tree> (a)))
     return 0;
   if ((lookup_attribute ("nocf_check", TYPE_ATTRIBUTES (type1)) != NULL)
       ^ (lookup_attribute ("nocf_check", TYPE_ATTRIBUTES (type2)) != NULL))
     return 0;
-  int strub_ret = strub_comptypes (CONST_CAST_TREE (type1),
-				   CONST_CAST_TREE (type2));
+  int strub_ret = strub_comptypes (const_cast<tree> (type1),
+				   const_cast<tree> (type2));
   if (strub_ret == 0)
     return strub_ret;
   /* As some type combinations - like default calling-convention - might
@@ -2113,7 +2113,7 @@ attribute_list_contained (const_tree l1, const_tree l2)
 	 modify its argument and the return value is assigned to a
 	 const_tree.  */
       for (attr = lookup_ident_attribute (get_attribute_name (t2),
-					  CONST_CAST_TREE (l1));
+					  const_cast<tree> (l1));
 	   attr != NULL_TREE && !attribute_value_equal (t2, attr);
 	   attr = lookup_ident_attribute (get_attribute_name (t2),
 					  TREE_CHAIN (attr)))

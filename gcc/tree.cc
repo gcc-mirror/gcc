@@ -3283,7 +3283,7 @@ tree_ctz (const_tree expr)
     case COMPOUND_EXPR:
       return tree_ctz (TREE_OPERAND (expr, 1));
     case ADDR_EXPR:
-      ret1 = get_pointer_alignment (CONST_CAST_TREE (expr));
+      ret1 = get_pointer_alignment (const_cast<tree> (expr));
       if (ret1 > BITS_PER_UNIT)
 	{
 	  ret1 = ctz_hwi (ret1 / BITS_PER_UNIT);
@@ -12962,7 +12962,7 @@ block_may_fallthru (const_tree block)
 {
   /* This CONST_CAST is okay because expr_last returns its argument
      unmodified and we assign it to a const_tree.  */
-  const_tree stmt = expr_last (CONST_CAST_TREE (block));
+  const_tree stmt = expr_last (const_cast<tree> (block));
 
   switch (stmt ? TREE_CODE (stmt) : ERROR_MARK)
     {
