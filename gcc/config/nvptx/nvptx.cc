@@ -513,7 +513,7 @@ section_for_sym (rtx sym)
 static const char *
 section_for_decl (const_tree decl)
 {
-  return section_for_sym (XEXP (DECL_RTL (CONST_CAST (tree, decl)), 0));
+  return section_for_sym (XEXP (DECL_RTL (const_cast<tree> (decl)), 0));
 }
 
 /* Check NAME for special function names and redirect them by returning a

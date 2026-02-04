@@ -3788,12 +3788,12 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
       && CONST_INT_P (len_rtx)
       && (unsigned HOST_WIDE_INT) INTVAL (len_rtx) <= nbytes
       && can_store_by_pieces (INTVAL (len_rtx), builtin_memcpy_read_str,
-			      CONST_CAST (char *, rep),
+			      const_cast<char *> (rep),
 			      dest_align, false))
     {
       dest_mem = store_by_pieces (dest_mem, INTVAL (len_rtx),
 				  builtin_memcpy_read_str,
-				  CONST_CAST (char *, rep),
+				  const_cast<char *> (rep),
 				  dest_align, false, retmode);
       dest_mem = force_operand (XEXP (dest_mem, 0), target);
       dest_mem = convert_memory_address (ptr_mode, dest_mem);
@@ -4142,14 +4142,14 @@ expand_builtin_strncpy (tree exp, rtx target)
       if (!p || dest_align == 0 || !tree_fits_uhwi_p (len)
 	  || !can_store_by_pieces (tree_to_uhwi (len),
 				   builtin_strncpy_read_str,
-				   CONST_CAST (char *, p),
+				   const_cast<char *> (p),
 				   dest_align, false))
 	return NULL_RTX;
 
       dest_mem = get_memory_rtx (dest, len);
       store_by_pieces (dest_mem, tree_to_uhwi (len),
 		       builtin_strncpy_read_str,
-		       CONST_CAST (char *, p), dest_align, false,
+		       const_cast<char *> (p), dest_align, false,
 		       RETURN_BEGIN);
       dest_mem = force_operand (XEXP (dest_mem, 0), target);
       dest_mem = convert_memory_address (ptr_mode, dest_mem);
@@ -4927,7 +4927,7 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
   result = emit_block_cmp_hints (arg1_rtx, arg2_rtx, len_rtx,
 				 TREE_TYPE (len), target,
 				 result_eq, constfn,
-				 CONST_CAST (char *, rep),
+				 const_cast<char *> (rep),
 				 tree_ctz (len));
 
   if (result)

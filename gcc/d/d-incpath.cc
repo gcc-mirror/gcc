@@ -77,7 +77,7 @@ add_globalpaths (Strings &paths)
       if (target == NULL || !FileName::exists (target))
 	{
 	  if (target)
-	    free (CONST_CAST (char *, target));
+	    free (const_cast<char *> (target));
 	  continue;
 	}
 
@@ -97,7 +97,7 @@ add_filepaths (Strings &paths)
 
       if (!FileName::exists (target))
 	{
-	  free (CONST_CAST (char *, target));
+	  free (const_cast<char *> (target));
 	  continue;
 	}
 

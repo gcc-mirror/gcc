@@ -1589,7 +1589,7 @@ gt_ggc_m_S (const void *p)
 	 a STRING_CST.  */
       gcc_assert (offset == offsetof (struct tree_string, str));
       p = ((const char *) p) - offset;
-      gt_ggc_mx_lang_tree_node (CONST_CAST (void *, p));
+      gt_ggc_mx_lang_tree_node (const_cast<void *> (p));
       return;
     }
 

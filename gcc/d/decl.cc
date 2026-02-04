@@ -2055,7 +2055,7 @@ make_thunk (FuncDeclaration *decl, int offset)
       unsigned identlen = IDENTIFIER_LENGTH (target_name) + 14;
       ident = XNEWVEC (const char, identlen);
 
-      snprintf (CONST_CAST (char *, ident), identlen,
+      snprintf (const_cast<char *> (ident), identlen,
 		"_DTi%u%s", offset, IDENTIFIER_POINTER (target_name));
     }
 
@@ -2065,7 +2065,7 @@ make_thunk (FuncDeclaration *decl, int offset)
   d_keep (thunk);
 
   if (decl->resolvedLinkage () != LINK::cpp)
-    free (CONST_CAST (char *, ident));
+    free (const_cast<char *> (ident));
 
   /* Thunks are connected to the definitions of the functions, so thunks are
      not produced for external functions.  */

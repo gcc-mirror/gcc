@@ -985,7 +985,7 @@ vec<T, A, vl_embed>::iterate (unsigned ix, T **ptr) const
 {
   if (ix < m_vecpfx.m_num)
     {
-      *ptr = CONST_CAST (T *, &address ()[ix]);
+      *ptr = const_cast<T *> (&address ()[ix]);
       return true;
     }
   else

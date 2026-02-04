@@ -3936,10 +3936,9 @@ mio_expr (gfc_expr **ep)
       break;
 
     case EXPR_SUBSTRING:
-      e->value.character.string
-	= CONST_CAST (gfc_char_t *,
-		      mio_allocated_wide_string (e->value.character.string,
-						 e->value.character.length));
+      e->value.character.string = const_cast<gfc_char_t *>
+	(mio_allocated_wide_string (e->value.character.string,
+				    e->value.character.length));
       mio_ref_list (&e->ref);
       break;
 
@@ -3976,10 +3975,9 @@ mio_expr (gfc_expr **ep)
 	  hwi = e->value.character.length;
 	  mio_hwi (&hwi);
 	  e->value.character.length = hwi;
-	  e->value.character.string
-	    = CONST_CAST (gfc_char_t *,
-			  mio_allocated_wide_string (e->value.character.string,
-						     e->value.character.length));
+	  e->value.character.string = const_cast<gfc_char_t *>
+	    (mio_allocated_wide_string (e->value.character.string,
+					e->value.character.length));
 	  break;
 
 	default:

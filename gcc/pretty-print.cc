@@ -3055,7 +3055,7 @@ identifier_to_locale (const char *ident)
 	      /* Repeat the whole conversion process as needed with
 		 larger buffers so non-reversible transformations can
 		 always be detected.  */
-	      ICONV_CONST char *inbuf = CONST_CAST (char *, ident);
+	      ICONV_CONST char *inbuf = const_cast<char *> (ident);
 	      char *outbuf;
 	      size_t inbytesleft = idlen;
 	      size_t outbytesleft = ret_alloc - 1;

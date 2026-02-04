@@ -146,7 +146,7 @@ env_manager::xput (const char *string)
       m_keys.safe_push (kv);
     }
 
-  ::putenv (CONST_CAST (char *, string));
+  ::putenv (const_cast<char *> (string));
 }
 
 /* Undo any xputenv changes made since last restore.
@@ -2155,7 +2155,7 @@ set_spec (const char *name, const char *spec, bool user_p)
 
   /* Free the old spec.  */
   if (old_spec && sl->alloc_p)
-    free (CONST_CAST (char *, old_spec));
+    free (const_cast<char *> (old_spec));
 
   sl->user_p = user_p;
   sl->alloc_p = true;
@@ -2316,7 +2316,7 @@ close_at_file (void)
 
   /* Copy the strings over.  */
   for (i = 0; i < n_args; i++)
-    argv[i] = CONST_CAST (char *, at_file_argbuf[i]);
+    argv[i] = const_cast<char *> (at_file_argbuf[i]);
   argv[i] = NULL;
 
   at_file_argbuf.truncate (0);
@@ -2568,7 +2568,7 @@ read_specs (const char *filename, bool main_p, bool user_p)
 
 	      set_spec (p2, *(sl->ptr_spec), user_p);
 	      if (sl->alloc_p)
-		free (CONST_CAST (char *, *(sl->ptr_spec)));
+		free (const_cast<char *> (*(sl->ptr_spec)));
 
 	      *(sl->ptr_spec) = "";
 	      sl->alloc_p = 0;
@@ -2944,18 +2944,18 @@ for_each_path (const struct path_prefix *paths,
 	 Don't repeat any we have already seen.  */
       if (multi_dir)
 	{
-	  free (CONST_CAST (char *, multi_dir));
+	  free (const_cast<char *> (multi_dir));
 	  multi_dir = NULL;
-	  free (CONST_CAST (char *, multi_suffix));
+	  free (const_cast<char *> (multi_suffix));
 	  multi_suffix = machine_suffix;
-	  free (CONST_CAST (char *, just_multi_suffix));
+	  free (const_cast<char *> (just_multi_suffix));
 	  just_multi_suffix = just_machine_suffix;
 	}
       else
 	skip_multi_dir = true;
       if (multi_os_dir)
 	{
-	  free (CONST_CAST (char *, multi_os_dir));
+	  free (const_cast<char *> (multi_os_dir));
 	  multi_os_dir = NULL;
 	}
       else
@@ -2964,12 +2964,12 @@ for_each_path (const struct path_prefix *paths,
 
   if (multi_dir)
     {
-      free (CONST_CAST (char *, multi_dir));
-      free (CONST_CAST (char *, multi_suffix));
-      free (CONST_CAST (char *, just_multi_suffix));
+      free (const_cast<char *> (multi_dir));
+      free (const_cast<char *> (multi_suffix));
+      free (const_cast<char *> (just_multi_suffix));
     }
   if (multi_os_dir)
-    free (CONST_CAST (char *, multi_os_dir));
+    free (const_cast<char *> (multi_os_dir));
   if (ret != path)
     free (path);
   return ret;
@@ -3454,7 +3454,7 @@ execute (void)
       errmsg = pex_run (pex,
 			((i + 1 == n_commands ? PEX_LAST : 0)
 			 | (string == commands[i].prog ? PEX_SEARCH : 0)),
-			string, CONST_CAST (char **, commands[i].argv),
+			string, const_cast<char **> (commands[i].argv),
 			NULL, NULL, &err);
       if (errmsg != NULL)
 	{
@@ -3466,7 +3466,7 @@ execute (void)
 	}
 
       if (i && string != commands[i].prog)
-	free (CONST_CAST (char *, string));
+	free (const_cast<char *> (string));
     }
 
   execution_count++;
@@ -3610,7 +3610,7 @@ execute (void)
       }
 
    if (commands[0].argv[0] != commands[0].prog)
-     free (CONST_CAST (char *, commands[0].argv[0]));
+     free (const_cast<char *> (commands[0].argv[0]));
 
     return ret_code;
   }
@@ -7703,13 +7703,13 @@ give_switch (int switchnum, int omit_first_word)
 	      while (length-- && !IS_DIR_SEPARATOR (arg[length]))
 		if (arg[length] == '.')
 		  {
-		    (CONST_CAST (char *, arg))[length] = 0;
+		    (const_cast<char *> (arg))[length] = 0;
 		    dot = 1;
 		    break;
 		  }
 	      do_spec_1 (arg, 1, NULL);
 	      if (dot)
-		(CONST_CAST (char *, arg))[length] = '.';
+		(const_cast<char *> (arg))[length] = '.';
 	      do_spec_1 (suffix_subst, 1, NULL);
 	    }
 	  else
@@ -10148,7 +10148,7 @@ set_multilib_dir (void)
   if (multilib_dir == NULL && multilib_os_dir != NULL
       && strcmp (multilib_os_dir, ".") == 0)
     {
-      free (CONST_CAST (char *, multilib_os_dir));
+      free (const_cast<char *> (multilib_os_dir));
       multilib_os_dir = NULL;
     }
   else if (multilib_dir != NULL && multilib_os_dir == NULL)

@@ -1302,7 +1302,7 @@ note_constraint (md_rtx_info *info)
   new_cdata = XNEWVAR (class constraint_data,
 		       sizeof (class constraint_data) + namelen);
   new (new_cdata) constraint_data ();
-  strcpy (CONST_CAST (char *, new_cdata->name), name);
+  strcpy (const_cast<char *> (new_cdata->name), name);
   new_cdata->namelen = namelen;
   new_cdata->loc = info->loc;
   new_cdata->next_this_letter = *slot;

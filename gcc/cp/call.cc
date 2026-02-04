@@ -11848,7 +11848,7 @@ name_as_c_string (tree name, tree type, bool *free_p)
   else
     pretty_name = identifier_to_locale (IDENTIFIER_POINTER (name));
 
-  return CONST_CAST (char *, pretty_name);
+  return const_cast<char *> (pretty_name);
 }
 
 /* If CANDIDATES contains exactly one candidate, return it, otherwise

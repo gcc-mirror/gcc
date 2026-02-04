@@ -371,7 +371,7 @@ register_scoped_attribute (const struct attribute_spec *attr,
 	 ->find_slot_with_hash (&str, substring_hash (str.str, str.length),
 				INSERT);
   gcc_assert (!*slot || attr->name[0] == '*');
-  *slot = CONST_CAST (struct attribute_spec *, attr);
+  *slot = const_cast<struct attribute_spec *> (attr);
 }
 
 /* Return the spec for the scoped attribute with namespace NS and

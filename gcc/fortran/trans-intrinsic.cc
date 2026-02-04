@@ -675,7 +675,7 @@ gfc_adjust_builtins (void)
       for (hash_map<nofree_string_hash, int>::iterator it
 	   = gfc_vectorized_builtins->begin ();
 	   it != gfc_vectorized_builtins->end (); ++it)
-	free (CONST_CAST (char *, (*it).first));
+	free (const_cast<char *> ((*it).first));
 
       delete gfc_vectorized_builtins;
       gfc_vectorized_builtins = NULL;

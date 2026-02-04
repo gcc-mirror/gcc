@@ -186,7 +186,7 @@ add_new_plugin (const char* plugin_name)
 
   if (name_is_short)
     {
-      base_name = CONST_CAST (char*, plugin_name);
+      base_name = const_cast<char*> (plugin_name);
 
 #if defined(__MINGW32__)
       static const char plugin_ext[] = ".dll";

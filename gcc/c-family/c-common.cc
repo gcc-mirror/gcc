@@ -853,7 +853,7 @@ fix_string_type (tree value)
     {
       error ("size of string literal is too large");
       length = tree_to_shwi (TYPE_MAX_VALUE (ssizetype)) / charsz * charsz;
-      char *str = CONST_CAST (char *, TREE_STRING_POINTER (value));
+      char *str = const_cast<char *> (TREE_STRING_POINTER (value));
       memset (str + length, '\0',
 	      MIN (TREE_STRING_LENGTH (value) - length, charsz));
       TREE_STRING_LENGTH (value) = length;

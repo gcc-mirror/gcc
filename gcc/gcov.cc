@@ -2091,7 +2091,7 @@ create_file_names (const char *file_name)
     }
 
   /* Remove the extension.  */
-  cptr = strrchr (CONST_CAST (char *, lbasename (name)), '.');
+  cptr = strrchr (const_cast<char *> (lbasename (name)), '.');
   if (cptr)
     *cptr = 0;
 

@@ -182,7 +182,7 @@ xputenv (const char *string)
 {
   if (verbose)
     fprintf (stderr, "%s\n", string);
-  putenv (CONST_CAST (char *, string));
+  putenv (const_cast<char *> (string));
 }
 
 /* Parse STR, saving found tokens into PVALUES and return their number.
@@ -839,7 +839,7 @@ compile_native (const char *infile, const char *outfile, const char *compiler,
   obstack_ptr_grow (&argv_obstack, NULL);
 
   const char **new_argv = XOBFINISH (&argv_obstack, const char **);
-  fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true,
+  fork_execute (new_argv[0], const_cast<char **> (new_argv), true,
 		".gccnative_args");
   obstack_free (&argv_obstack, NULL);
 }
@@ -1366,8 +1366,10 @@ main (int argc, char **argv)
       obstack_ptr_grow (&files_to_cleanup, omp_requires_file);
 
       /* Run the compiler pass.  */
-      xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file, NULL));
-      fork_execute (cc_argv[0], CONST_CAST (char **, cc_argv), true, ".gcc_args");
+      xputenv (concat ("GCC_OFFLOAD_OMP_REQUIRES_FILE=", omp_requires_file,
+		       NULL));
+      fork_execute (cc_argv[0], const_cast<char **> (cc_argv), true,
+		    ".gcc_args");
       obstack_free (&cc_argv_obstack, NULL);
       unsetenv("GCC_OFFLOAD_OMP_REQUIRES_FILE");
 
@@ -1395,7 +1397,8 @@ main (int argc, char **argv)
       fclose (out);
 
       /* Run the assemble/link pass.  */
-      fork_execute (ld_argv[0], CONST_CAST (char **, ld_argv), true, ".ld_args");
+      fork_execute (ld_argv[0], const_cast<char **> (ld_argv), true,
+		    ".ld_args");
       obstack_free (&ld_argv_obstack, NULL);
 
       process_obj (gcn_o_name, cfile, omp_requires);

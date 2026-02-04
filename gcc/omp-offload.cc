@@ -916,7 +916,7 @@ oacc_parse_default_dims (const char *dims)
 	      const char *eptr;
 
 	      errno = 0;
-	      val = strtol (pos, CONST_CAST (char **, &eptr), 10);
+	      val = strtol (pos, const_cast<char **> (&eptr), 10);
 	      if (errno || val <= 0 || (int) val != val)
 		goto malformed;
 	      pos = eptr;

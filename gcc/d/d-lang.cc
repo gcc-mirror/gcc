@@ -455,7 +455,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fdebug_:
-      if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
+      if (Identifier::isValidIdentifier (const_cast<char *> (arg)))
 	{
 	  DebugCondition::addGlobalIdent (arg);
 	  break;
@@ -700,7 +700,7 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       break;
 
     case OPT_fversion_:
-      if (Identifier::isValidIdentifier (CONST_CAST (char *, arg)))
+      if (Identifier::isValidIdentifier (const_cast<char *> (arg)))
 	{
 	  VersionCondition::addGlobalIdent (arg);
 	  break;

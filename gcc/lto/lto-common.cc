@@ -96,7 +96,7 @@ free_with_string (void *arg)
 {
   struct lto_section_slot *s = (struct lto_section_slot *)arg;
 
-  free (CONST_CAST (char *, s->name));
+  free (const_cast<char *> (s->name));
   free (arg);
 }
 
@@ -2504,7 +2504,7 @@ get_section_data (struct lto_file_decl_data *file_data,
       *len = f_slot->len;
     }
 
-  free (CONST_CAST (char *, section_name));
+  free (const_cast<char *> (section_name));
   return data;
 }
 
@@ -2531,7 +2531,7 @@ free_section_data (struct lto_file_decl_data *file_data ATTRIBUTE_UNUSED,
 
   munmap ((caddr_t) computed_offset, computed_len);
 #else
-  free (CONST_CAST(char *, offset));
+  free (const_cast<char *> (offset));
 #endif
 }
 

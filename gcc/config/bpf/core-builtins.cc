@@ -799,7 +799,7 @@ process_field_expr (struct cr_builtins *data)
       for (int i = 0; i < nr_accessors; i++)
 	n += snprintf (str + n, sizeof (str) - n,
 		       i == 0 ? "%u" : ":%u", accessors[i]);
-      ret.str = CONST_CAST (char *, ggc_strdup (str));
+      ret.str = const_cast<char *> (ggc_strdup (str));
     }
   else
     gcc_unreachable ();
@@ -916,7 +916,7 @@ process_enum_value (struct cr_builtins *data)
      in 6 chars.  */
   char tmp[6];
   sprintf (tmp, "%u", index);
-  ret.str = CONST_CAST (char *, ggc_strdup(tmp));
+  ret.str = const_cast<char *> (ggc_strdup (tmp));
 
   return ret;
 }

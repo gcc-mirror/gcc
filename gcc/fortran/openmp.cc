@@ -223,7 +223,7 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr_list (c->wait_list);
   gfc_free_expr_list (c->tile_list);
   gfc_free_expr_list (c->sizes_list);
-  free (CONST_CAST (char *, c->critical_name));
+  free (const_cast<char *> (c->critical_name));
   if (c->assume)
     {
       free (c->assume->absent);

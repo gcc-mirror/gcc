@@ -225,7 +225,7 @@ lto_free_section_data (struct lto_file_decl_data *file_data,
   /* The underlying data address has been extracted from the mapping header.
      Free that, then free the allocated uncompression buffer.  */
   (free_section_f) (file_data, section_type, name, header->data, header->len);
-  free (CONST_CAST (char *, real_data));
+  free (const_cast<char *> (real_data));
 }
 
 /* Free data allocated by lto_get_raw_section_data.  */
@@ -321,8 +321,8 @@ renaming_slot_free (void *slot)
 {
   struct lto_renaming_slot *s = (struct lto_renaming_slot *) slot;
 
-  free (CONST_CAST (void *, (const void *) s->old_name));
-  free (CONST_CAST (void *, (const void *) s->new_name));
+  free (const_cast<void *> ((const void *) s->old_name));
+  free (const_cast<void *> ((const void *) s->new_name));
   free ((void *) s);
 }
 

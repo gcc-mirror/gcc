@@ -173,9 +173,7 @@ wide_strchr (const gfc_char_t *s, gfc_char_t c)
 {
   do {
     if (*s == c)
-      {
-        return CONST_CAST(gfc_char_t *, s);
-      }
+      return const_cast<gfc_char_t *> (s);
   } while (*s++);
   return 0;
 }

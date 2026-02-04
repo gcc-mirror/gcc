@@ -174,7 +174,7 @@ cb_ident (cpp_reader * ARG_UNUSED (pfile),
       if (cpp_interpret_string (pfile, str, 1, &cstr, CPP_STRING))
 	{
 	  targetm.asm_out.output_ident ((const char *) cstr.text);
-	  free (CONST_CAST (unsigned char *, cstr.text));
+	  free (const_cast<unsigned char *> (cstr.text));
 	}
     }
 }
@@ -633,7 +633,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
 					    (const char *) tok->val.str.text);
 	    TREE_TYPE (num_string) = char_array_type_node;
 	    num_string = fix_string_type (num_string);
-	    str = CONST_CAST (char *, TREE_STRING_POINTER (num_string));
+	    str = const_cast<char *> (TREE_STRING_POINTER (num_string));
 	    str[len] = '\0';
 	    literal = build_userdef_literal (suffix_id, *value, overflow,
 					     num_string);
@@ -1700,7 +1700,7 @@ lex_string (const cpp_token *tok, tree *valp, bool objc_string, bool translate)
       (parse_in, strs, concats + 1, &istr, type))
     {
       value = build_string (istr.len, (const char *) istr.text);
-      free (CONST_CAST (unsigned char *, istr.text));
+      free (const_cast<unsigned char *> (istr.text));
       if (concats)
 	{
 	  gcc_assert (locs);

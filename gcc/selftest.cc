@@ -80,7 +80,7 @@ print_diff (const location &loc, const char *val1, const char *val2)
   int exit_status = 0;
   int err = 0;
   pex_one (PEX_SEARCH | PEX_LAST,
-	   args[0], CONST_CAST (char **, args),
+	   args[0], const_cast<char **> (args),
 	   NULL, NULL, NULL, &exit_status, &err);
 }
 

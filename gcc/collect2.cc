@@ -2760,7 +2760,7 @@ scan_prog_file (const char *prog_name, scanpass which_pass,
 	 non-const char * filename parameter, even though it will not
 	 modify that string.  So we must cast away const-ness here,
 	 using CONST_CAST to prevent complaints from -Wcast-qual.  */
-      if ((ldptr = ldopen (CONST_CAST (char *, prog_name), ldptr)) != NULL)
+      if ((ldptr = ldopen (const_cast<char *> (prog_name), ldptr)) != NULL)
 	{
 	  if (! MY_ISCOFF (HEADER (ldptr).f_magic))
 	    {

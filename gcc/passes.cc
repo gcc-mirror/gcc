@@ -887,7 +887,7 @@ pass_manager::register_one_dump_file (opt_pass *pass)
   set_pass_for_id (id, pass);
   full_name = concat (prefix, pass->name, num, NULL);
   register_pass_name (pass, full_name);
-  free (CONST_CAST (char *, full_name));
+  free (const_cast<char *> (full_name));
 }
 
 /* Register the dump files for the pass_manager starting at PASS. */
@@ -2207,7 +2207,7 @@ release_dump_file_name (void)
 {
   if (dump_file_name)
     {
-      free (CONST_CAST (char *, dump_file_name));
+      free (const_cast<char *> (dump_file_name));
       dump_file_name = NULL;
     }
 }

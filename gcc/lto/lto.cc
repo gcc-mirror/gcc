@@ -180,7 +180,7 @@ stream_out (char *temp_filename, lto_symtab_encoder_t encoder, int part)
   streamer_dump_file = dump_begin (TDI_lto_stream_out, NULL, part);
   ipa_write_optimization_summaries (encoder, part == 0);
 
-  free (CONST_CAST (char *, file->filename));
+  free (const_cast<char *> (file->filename));
 
   lto_set_current_out_file (NULL);
   lto_obj_file_close (file);

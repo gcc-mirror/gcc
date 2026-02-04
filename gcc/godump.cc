@@ -465,7 +465,7 @@ go_undef (unsigned int lineno, const char *buffer)
 
   real_debug_hooks->undef (lineno, buffer);
 
-  mhval.name = CONST_CAST (char *, buffer);
+  mhval.name = const_cast<char *> (buffer);
   mhval.value = NULL;
   slot = htab_find_slot (macro_hash, &mhval, NO_INSERT);
   if (slot != NULL)
@@ -1186,14 +1186,14 @@ go_output_typedef (class godump_container *container, tree decl)
       slot = htab_find_slot (container->type_hash, type, INSERT);
       if (*slot != NULL)
 	return;
-      *slot = CONST_CAST (void *, (const void *) type);
+      *slot = const_cast<void *> ((const void *) type);
 
       if (!go_format_type (container, original_type, true, false,
 			   NULL, false))
 	{
 	  fprintf (go_dump_file, "// ");
 	  slot = htab_find_slot (container->invalid_hash, type, INSERT);
-	  *slot = CONST_CAST (void *, (const void *) type);
+	  *slot = const_cast<void *> ((const void *) type);
 	}
       fprintf (go_dump_file, "type _%s ",
 	       IDENTIFIER_POINTER (DECL_NAME (decl)));
@@ -1225,14 +1225,14 @@ go_output_typedef (class godump_container *container, tree decl)
        slot = htab_find_slot (container->type_hash, type, INSERT);
        if (*slot != NULL)
          return;
-       *slot = CONST_CAST (void *, (const void *) type);
+       *slot = const_cast<void *> ((const void *) type);
 
        if (!go_format_type (container, TREE_TYPE (decl), false, false, NULL,
 			    false))
 	 {
 	   fprintf (go_dump_file, "// ");
 	   slot = htab_find_slot (container->invalid_hash, type, INSERT);
-	   *slot = CONST_CAST (void *, (const void *) type);
+	   *slot = const_cast<void *> ((const void *) type);
 	 }
        fprintf (go_dump_file, "type _%s ",
 	       IDENTIFIER_POINTER (TYPE_NAME (TREE_TYPE (decl))));
@@ -1352,7 +1352,7 @@ keyword_hash_init (class godump_container *container)
   for (i = 0; i < count; i++)
     {
       slot = htab_find_slot (container->keyword_hash, keywords[i], INSERT);
-      *slot = CONST_CAST (void *, (const void *) keywords[i]);
+      *slot = const_cast<void *> ((const void *) keywords[i]);
     }
 }
 

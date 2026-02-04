@@ -6435,7 +6435,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 			 new_st.ext.omp_name) != 0))
 	gfc_error ("Name after !$omp critical and !$omp end critical does "
 		   "not match at %C");
-      free (CONST_CAST (char *, new_st.ext.omp_name));
+      free (const_cast<char *> (new_st.ext.omp_name));
       new_st.ext.omp_name = NULL;
       break;
     case EXEC_OMP_END_SINGLE:

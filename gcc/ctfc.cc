@@ -292,7 +292,7 @@ ctfc_strtable_add_str (ctf_strtable_t * str_table, const char * name,
      not add null strings, return the offset to the empty string for them.  */
   if ((!name || (name != NULL && !strcmp (name, ""))) && str_offset)
     {
-      ctf_string = CONST_CAST (char *, str_table->ctstab_estr);
+      ctf_string = const_cast<char *> (str_table->ctstab_estr);
       str_offset = 0;
     }
   else
@@ -300,7 +300,7 @@ ctfc_strtable_add_str (ctf_strtable_t * str_table, const char * name,
       gcc_assert (name);
       /* Add null-terminated strings to the string table.  */
       len = strlen (name) + 1;
-      ctf_string = CONST_CAST (char *, ggc_strdup (name));
+      ctf_string = const_cast<char *> (ggc_strdup (name));
 
       ctfc_strtable_append_str (str_table, ctf_string);
       /* Add string to the string table.  Keep number of strings updated.  */
@@ -357,7 +357,7 @@ ctf_add_cuname (ctf_container_ref ctfc, const char * filename)
     }
   else
     /* Filename is an absolute path.  */
-    cuname = CONST_CAST (char *, ggc_strdup (filename));
+    cuname = const_cast<char *> (ggc_strdup (filename));
 
   ctf_add_string (ctfc, cuname, &(ctfc->ctfc_cuname_offset));
   /* Add 1 as CTF strings in the CTF string table are null-terminated

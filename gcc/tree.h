@@ -4279,7 +4279,7 @@ tree_vec_elt_check (const_tree __t, int __i,
     tree_check_failed (__t, __f, __l, __g, TREE_VEC, 0);
   if (__i < 0 || __i >= __t->base.u.length)
     tree_vec_elt_check_failed (__i, __t->base.u.length, __f, __l, __g);
-  return CONST_CAST (const_tree *, &__t->vec.a[__i]);
+  return const_cast<const_tree *> (&__t->vec.a[__i]);
   //return &__t->vec.a[__i];
 }
 
@@ -4295,7 +4295,7 @@ omp_clause_elt_check (const_tree __t, int __i,
     tree_check_failed (__t, __f, __l, __g, OMP_CLAUSE, 0);
   if (__i < 0 || __i >= omp_clause_num_ops [__t->omp_clause.code])
     omp_clause_operand_check_failed (__i, __t, __f, __l, __g);
-  return CONST_CAST (const_tree *, &__t->omp_clause.ops[__i]);
+  return const_cast<const_tree *> (&__t->omp_clause.ops[__i]);
 }
 
 inline const_tree
@@ -4353,7 +4353,7 @@ tree_operand_check (const_tree __t, int __i,
   const_tree __u = EXPR_CHECK (__t);
   if (__i < 0 || __i >= TREE_OPERAND_LENGTH (__u))
     tree_operand_check_failed (__i, __u, __f, __l, __g);
-  return CONST_CAST (const_tree *, &__u->exp.operands[__i]);
+  return const_cast<const_tree *> (&__u->exp.operands[__i]);
 }
 
 inline const_tree *
@@ -4364,7 +4364,7 @@ tree_operand_check_code (const_tree __t, enum tree_code __code, int __i,
     tree_check_failed (__t, __f, __l, __g, __code, 0);
   if (__i < 0 || __i >= TREE_OPERAND_LENGTH (__t))
     tree_operand_check_failed (__i, __t, __f, __l, __g);
-  return CONST_CAST (const_tree *, &__t->exp.operands[__i]);
+  return const_cast<const_tree *> (&__t->exp.operands[__i]);
 }
 
 #endif

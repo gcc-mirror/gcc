@@ -1733,7 +1733,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
               dump_files[i].pstate = 1;
             }
           if (old_filename && filename != old_filename)
-            free (CONST_CAST (char *, old_filename));
+	    free (const_cast<char *> (old_filename));
         }
     }
 
@@ -1754,7 +1754,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
               m_extra_dump_files[i].pstate = 1;
             }
           if (old_filename && filename != old_filename)
-            free (CONST_CAST (char *, old_filename));
+	    free (const_cast<char *> (old_filename));
         }
     }
 
@@ -1807,7 +1807,7 @@ gcc::dump_manager::update_dfi_for_opt_info (dump_file_info *dfi) const
   if (m_optinfo_filename)
     dfi->alt_filename = xstrdup (m_optinfo_filename);
   if (old_filename && m_optinfo_filename != old_filename)
-    free (CONST_CAST (char *, old_filename));
+    free (const_cast<char *> (old_filename));
 
   return true;
 }
@@ -1904,7 +1904,7 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
   if (filename)
     {
       if (dfi->pfilename)
-  free (CONST_CAST (char *, dfi->pfilename));
+	free (const_cast<char *> (dfi->pfilename));
       dfi->pfilename = xstrdup (filename);
     }
 

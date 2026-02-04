@@ -237,9 +237,9 @@ string_seq (void)
 
       l1 = strlen (s1);
       l2 = strlen (s2);
-      buf = XRESIZEVEC (char, CONST_CAST (char *, s1), l1 + l2 + 1);
+      buf = XRESIZEVEC (char, const_cast<char *> (s1), l1 + l2 + 1);
       memcpy (buf + l1, s2, l2 + 1);
-      XDELETE (CONST_CAST (char *, s2));
+      XDELETE (const_cast<char *> (s2));
       s1 = buf;
     }
   return s1;

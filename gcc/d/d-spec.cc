@@ -162,7 +162,7 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 	  break;
 
 	case OPT_defaultlib_:
-	  free (CONST_CAST (char *, defaultlib));
+	  free (const_cast<char *> (defaultlib));
 	  if (arg != NULL)
 	    {
 	      args[i] |= SKIPOPT;
@@ -171,7 +171,7 @@ lang_specific_driver (cl_decoded_option **in_decoded_options,
 	  break;
 
 	case OPT_debuglib_:
-	  free (CONST_CAST (char *, debuglib));
+	  free (const_cast<char *> (debuglib));
 	  if (arg != NULL)
 	    {
 	      args[i] |= SKIPOPT;

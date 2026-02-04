@@ -5024,7 +5024,7 @@ cp_parser_string_literal_common (cp_parser *parser, bool translate,
       (parse_in, strs, count, &istr, type))
     {
       value = build_string (istr.len, (const char *)istr.text);
-      free (CONST_CAST (unsigned char *, istr.text));
+      free (const_cast<unsigned char *> (istr.text));
       if (count > 1)
 	{
 	  location_t *locs = (location_t *)obstack_finish (&loc_ob);

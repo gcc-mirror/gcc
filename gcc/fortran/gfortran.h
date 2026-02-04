@@ -3571,7 +3571,12 @@ vec_push (char **&optr, size_t &osz, const char *elt)
   /* {auto,}vec.safe_push () replacement.  Don't ask..  */
   // if (strlen (elt) < 4) return; premature optimization: eliminated by cutoff
   optr = XRESIZEVEC (char *, optr, osz + 2);
-  optr[osz] = CONST_CAST (char *, elt);
+  optr[osz] =
+#ifdef __cplusplus
+    const_cast<char *> (elt);
+#else
+    (__extension__ (union {const char *_q; const char *_nq;})(elt))._nq;
+#endif
   optr[++osz] = NULL;
 }
 
