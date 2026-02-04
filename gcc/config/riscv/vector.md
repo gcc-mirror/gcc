@@ -503,8 +503,8 @@
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,\
 			  vsm3me,vsm3c,vfncvtbf16,vfwcvtbf16,vfwmaccbf16")
 	   (const_int INVALID_ATTRIBUTE)
-	(and (eq_attr "type" "vlde,vste,vlsegde,vssegte,vlsegds,vssegts,\
-			       vlsegdff,vssegtux,vlsegdox,vlsegdux")
+	(and (eq_attr "type" "vlde,vste,vlds,vsts,vlsegde,vssegte,vlsegds,\
+			      vssegts,vlsegdff,vssegtux,vlsegdox,vlsegdux")
 	      (match_test "TARGET_XTHEADVECTOR"))
 	   (const_int INVALID_ATTRIBUTE)
 	 (eq_attr "mode" "RVVM8QI,RVVM1BI") (const_int 1)
