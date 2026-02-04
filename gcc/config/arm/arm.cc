@@ -839,6 +839,9 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 
 #undef TARGET_VECTORIZE_GET_MASK_MODE
 #define TARGET_VECTORIZE_GET_MASK_MODE arm_get_mask_mode
+
+#undef TARGET_FLAGS_REGNUM
+#define TARGET_FLAGS_REGNUM CC_REGNUM
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;

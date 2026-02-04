@@ -258,6 +258,8 @@ find_flags_uses_in_insn (struct comparison *cmp, rtx_insn *insn)
 	  x = SET_SRC (x);
 	if (GET_CODE (x) == IF_THEN_ELSE)
 	  x = XEXP (x, 0);
+	if (GET_CODE (x) == COND_EXEC)
+	  x = COND_EXEC_TEST (x);
 	if (COMPARISON_P (x)
 	    && loc == &XEXP (x, 0)
 	    && XEXP (x, 1) == const0_rtx)
