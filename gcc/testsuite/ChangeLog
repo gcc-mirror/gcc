@@ -1,3 +1,24 @@
+2026-02-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-10-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122051
+	* gcc.target/riscv/pr122051.c: New test.
+
+2026-02-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-07-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120642
+	* gcc.target/riscv/rvv/xtheadvector/pr120642.c: New test.
+
+2026-02-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/123548
+	* gcc.target/aarch64/pr123548.c: New test.
+
 2026-02-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

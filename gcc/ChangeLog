@@ -1,3 +1,28 @@
+2026-02-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-10-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122051
+	* config/riscv/predicates.md (pmode_reg_or_uimm5_operand): Implement
+	directly rather than using vector_length_operand.
+
+2026-02-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-07-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120642
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::execute): Do not do
+	constant AVL propagation for xtheadvector.
+
+2026-02-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/123548
+	* config/aarch64/arm_acle.h (__plix): Change arguments to be
+	const.
+	(__pldx): Change arguments to be const.
+
 2026-02-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
