@@ -5827,7 +5827,8 @@ seq_cost (const rtx_insn *seq, bool speed)
         cost += set_rtx_cost (set, speed);
       else if (NONDEBUG_INSN_P (seq))
 	{
-	  int this_cost = insn_cost (CONST_CAST_RTX_INSN (seq), speed);
+	  int this_cost = insn_cost (const_cast<struct rtx_insn *> (seq),
+				     speed);
 	  if (this_cost > 0)
 	    cost += this_cost;
 	  else

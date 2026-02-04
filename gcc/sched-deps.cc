@@ -674,7 +674,7 @@ sched_insn_is_legitimate_for_speculation_p (const rtx_insn *insn, ds_t ds)
   if (SCHED_GROUP_P (insn))
     return false;
 
-  if (IS_SPECULATION_CHECK_P (CONST_CAST_RTX_INSN (insn)))
+  if (IS_SPECULATION_CHECK_P (const_cast<struct rtx_insn *> (insn)))
     return false;
 
   if (side_effects_p (PATTERN (insn)))
