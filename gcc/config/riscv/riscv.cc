@@ -10728,7 +10728,7 @@ riscv_register_move_cost (machine_mode mode,
   if (from == V_REGS)
     {
       if (to_is_gpr)
-	return get_vector_costs ()->regmove->VR2GR;
+	return get_vr2gr_cost ();
       else if (to_is_fpr)
 	return get_vector_costs ()->regmove->VR2FR;
     }
@@ -14209,6 +14209,21 @@ get_gr2vr_cost ()
 
   if (gpr2vr_cost != GPR2VR_COST_UNPROVIDED)
     cost = gpr2vr_cost;
+
+  return cost;
+}
+
+/* Return the cost of operation that move from vr to gpr.
+   It will take the value of --param=vr2gpr_cost if it is provided.
+   Or the default regmove->VR2GR will be returned.  */
+
+int
+get_vr2gr_cost ()
+{
+  int cost = get_vector_costs ()->regmove->VR2GR;
+
+  if (vr2gpr_cost != VR2GPR_COST_UNPROVIDED)
+    cost = vr2gpr_cost;
 
   return cost;
 }

@@ -286,6 +286,10 @@ Max number of bytes to compare as part of inlined strcmp/strncmp routines (defau
 Target RejectNegative Joined UInteger Var(gpr2vr_cost) Init(GPR2VR_COST_UNPROVIDED)
 Set the cost value of the rvv instruction when operate from GPR to VR.
 
+-param=vr2gpr-cost=
+Target RejectNegative Joined UInteger Var(vr2gpr_cost) Init(VR2GPR_COST_UNPROVIDED)
+Set the cost value of the rvv instruction when operate from VR to GPR .
+
 -param=fpr2vr-cost=
 Target RejectNegative Joined UInteger Var(fpr2vr_cost) Init(FPR2VR_COST_UNPROVIDED)
 Set the cost value of the rvv instruction when operate from FPR to VR.

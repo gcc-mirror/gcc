@@ -172,8 +172,10 @@ enum riscv_tls_type {
 #define TARGET_VECTOR_AUTOVEC_SEGMENT					       \
   (TARGET_VECTOR && riscv_mautovec_segment)
 
-#define GPR2VR_COST_UNPROVIDED -1
-#define FPR2VR_COST_UNPROVIDED -1
+#define COST_UNPROVIDED -1
+#define GPR2VR_COST_UNPROVIDED COST_UNPROVIDED
+#define VR2GPR_COST_UNPROVIDED COST_UNPROVIDED
+#define FPR2VR_COST_UNPROVIDED COST_UNPROVIDED
 
 /* Extra extension flags, used for carry extra info for a RISC-V extension.  */
 enum
