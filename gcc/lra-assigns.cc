@@ -1813,6 +1813,8 @@ lra_split_hard_reg_for (bool fail_p)
   bitmap_ior_into (&non_reload_pseudos, &lra_subreg_reload_pseudos);
   bitmap_ior_into (&non_reload_pseudos, &lra_optional_reload_pseudos);
   bitmap_initialize (&over_split_insns, &reg_obstack);
+  update_hard_regno_preference_check = XCNEWVEC (int, max_regno);
+  curr_update_hard_regno_preference_check = 0;
   for (i = lra_constraint_new_regno_start; i < max_regno; i++)
     if (reg_renumber[i] < 0 && lra_reg_info[i].nrefs != 0
 	&& (rclass = lra_get_allocno_class (i)) != NO_REGS
@@ -1850,39 +1852,42 @@ lra_split_hard_reg_for (bool fail_p)
 	  }
       }
   bitmap_clear (&over_split_insns);
+  bitmap_clear (&non_reload_pseudos);
   if (spill_p)
     {
-      bitmap_clear (&failed_reload_pseudos);
       lra_dump_insns_if_possible ("changed func after splitting hard regs");
-      return true;
     }
-  bitmap_clear (&non_reload_pseudos);
-  bitmap_initialize (&failed_reload_insns, &reg_obstack);
-  EXECUTE_IF_SET_IN_BITMAP (&failed_reload_pseudos, 0, u, bi)
+  else
     {
-      regno = u;
-      bitmap_ior_into (&failed_reload_insns,
-		       &lra_reg_info[regno].insn_bitmap);
+      bitmap_initialize (&failed_reload_insns, &reg_obstack);
+      EXECUTE_IF_SET_IN_BITMAP (&failed_reload_pseudos, 0, u, bi)
+	{
+	  regno = u;
+	  bitmap_ior_into (&failed_reload_insns,
+			   &lra_reg_info[regno].insn_bitmap);
+	  if (fail_p)
+	    lra_setup_reg_renumber
+	      (regno, ira_class_hard_regs[lra_get_allocno_class (regno)][0],
+	       false);
+	}
       if (fail_p)
-	lra_setup_reg_renumber
-	  (regno, ira_class_hard_regs[lra_get_allocno_class (regno)][0], false);
+	EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
+	  {
+	    insn = lra_insn_recog_data[u]->insn;
+	    if (asm_noperands (PATTERN (insn)) >= 0)
+	      {
+		asm_p = true;
+		lra_asm_insn_error (insn);
+	      }
+	    else if (!asm_p)
+	      {
+		error ("unable to find a register to spill");
+		fatal_insn ("this is the insn:", insn);
+	      }
+	  }
+      bitmap_clear (&failed_reload_insns);
     }
-  if (fail_p)
-    EXECUTE_IF_SET_IN_BITMAP (&failed_reload_insns, 0, u, bi)
-      {
-	insn = lra_insn_recog_data[u]->insn;
-	if (asm_noperands (PATTERN (insn)) >= 0)
-	  {
-	    asm_p = true;
-	    lra_asm_insn_error (insn);
-	  }
-	else if (!asm_p)
-	  {
-	    error ("unable to find a register to spill");
-	    fatal_insn ("this is the insn:", insn);
-	  }
-      }
+  free (update_hard_regno_preference_check);
   bitmap_clear (&failed_reload_pseudos);
-  bitmap_clear (&failed_reload_insns);
-  return false;
+  return spill_p;
 }
