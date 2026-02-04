@@ -1,3 +1,8 @@
+2026-02-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/123548
+	* gcc.target/aarch64/pr123548.c: New test.
+
 2026-02-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,10 @@
+2026-02-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/123548
+	* config/aarch64/arm_acle.h (__plix): Change arguments to be
+	const.
+	(__pldx): Change arguments to be const.
+
 2026-02-02  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
