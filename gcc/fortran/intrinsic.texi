@@ -14215,7 +14215,7 @@ Fortran 90 and later
 
 @table @asis
 @item @emph{Synopsis}:
-@code{RESULT = SPLIT(STRING, SET, POS [, BACK])}
+@code{CALL SPLIT(STRING, SET, POS [, BACK])}
 
 @item @emph{Description}:
 Updates the integer @var{POS} to the position of the next (or previous)
@@ -14240,10 +14240,10 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{STRING} @tab Shall be of type @code{CHARACTER}.
-@item @var{SET}    @tab Shall be of type @code{CHARACTER}.
-@item @var{POS}    @tab Shall be of type @code{INTEGER}.
-@item @var{BACK}   @tab (Optional) Shall be of type @code{LOGICAL}.
+@item @var{STRING} @tab Shall be a scalar of type @code{CHARACTER}.
+@item @var{SET}    @tab Shall be a scalar of type @code{CHARACTER}.
+@item @var{POS}    @tab Shall be a scalar of type @code{INTEGER}.
+@item @var{BACK}   @tab (Optional) Shall be a scalar of type @code{LOGICAL}.
 @end multitable
 
 @item @emph{Example}:
