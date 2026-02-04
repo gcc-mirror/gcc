@@ -88,6 +88,30 @@ namespace std
 	this->_M_payload._M_engaged = true;
       }
     };
+
+  using uintptr_t = __UINTPTR_TYPE__;
+  template<typename T> struct shared_ptr;
+  template<typename T> struct atomic;
+  template<> struct atomic<uintptr_t> { uintptr_t _M_i; };
+  template<typename T> struct sp_atomic;
+  struct sp_counts { int _M_use_count; int _M_weak_count; };
+
+  // Old representation of std::atomic<std::shared_ptr<T>>, before GCC 16
+  template<typename T>
+    struct sp_atomic<shared_ptr<T>>
+    {
+      T* _M_ptr = nullptr;
+      struct Impl {
+	atomic<uintptr_t> _M_val;
+	using pointer = sp_counts*;
+      } _M_refcount;
+    };
+  template<typename T>
+    struct atomic<shared_ptr<T>>
+    {
+      sp_atomic<shared_ptr<T>> _M_impl;
+    };
+
 } // namespace std
 
 int
@@ -109,6 +133,16 @@ main()
 // { dg-final { note-test oi {std::optional = {[contained value] = 5}} } }
   optional<void*> op{nullptr};
 // { dg-final { note-test op {std::optional = {[contained value] = 0x0}} } }
+
+  std::atomic<std::shared_ptr<int>> aspe{};
+// { dg-final { note-test aspe {std::atomic<std::shared_ptr<int>> (empty) = {get() = 0x0}} } }
+
+  std::sp_counts counts{ 1, 3 };
+  std::sp_atomic<std::shared_ptr<int>>::Impl::pointer p = &counts;
+  std::atomic<std::shared_ptr<int>> asp{};
+  asp._M_impl._M_ptr = reinterpret_cast<int*>(0x1234abcd);
+  asp._M_impl._M_refcount._M_val._M_i = reinterpret_cast<std::uintptr_t>(p);
+// { dg-final { note-test asp {std::atomic<std::shared_ptr<int>> (use count 1, weak count 2) = {get() = 0x1234abcd}} } }
 
   __builtin_puts("");
   return 0;			// Mark SPOT

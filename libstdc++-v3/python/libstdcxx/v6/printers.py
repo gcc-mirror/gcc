@@ -292,9 +292,15 @@ class SharedPointerPrinter(printer_base):
         if self._typename == 'std::atomic':
             # A tagged pointer is stored as uintptr_t.
             val = self._val['_M_refcount']['_M_val']
-            if val.type.is_scalar: # GCC 16 stores uintptr_t
+            # GCC 16 stores it directly as uintptr_t
+            # GCC 12-15 stores std::atomic<uintptr_t>
+            if hasattr(val.type, 'is_scalar'): # Added in GDB 12.1
+                val_is_uintptr = val.type.is_scalar
+            else:
+                val_is_uintptr = val.type.tag is None
+            if val_is_uintptr:
                 ptr_val = val
-            else: # GCC 12-15 stores std::atomic<uintptr_t>
+            else:
                 ptr_val = val['_M_i']
             ptr_val = ptr_val - (ptr_val % 2)  # clear lock bit
             ptr_type = find_type(self._val['_M_refcount'].type, 'pointer')
