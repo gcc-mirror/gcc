@@ -4517,7 +4517,7 @@ mark_constants_in_pattern (rtx insn)
 	      if (!TREE_ASM_WRITTEN (DECL_INITIAL (decl)))
 		{
 		  n_deferred_constants--;
-		  output_constant_def_contents (CONST_CAST_RTX (x));
+		  output_constant_def_contents (const_cast<rtx> (x));
 		}
 	    }
 	}

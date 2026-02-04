@@ -3337,7 +3337,7 @@ memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
     return true;
   memory_modified = false;
   note_stores (as_a<const rtx_insn *> (insn), memory_modified_1,
-	       CONST_CAST_RTX(mem));
+	       const_cast<rtx> (mem));
   return memory_modified;
 }
 

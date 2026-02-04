@@ -1090,7 +1090,7 @@ skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
           || targetm.sched.skip_rtx_p (x)))
     {
       *nx = XVECEXP (x, 0, 0);
-      *ny = CONST_CAST_RTX (y);
+      *ny = const_cast<rtx> (y);
       return true;
     }
 
@@ -1098,7 +1098,7 @@ skip_unspecs_callback (const_rtx *xx, const_rtx *yy, rtx *nx, rtx* ny)
       && (targetm.sched.skip_rtx_p == NULL
           || targetm.sched.skip_rtx_p (y)))
     {
-      *nx = CONST_CAST_RTX (x);
+      *nx = const_cast<rtx> (x);
       *ny = XVECEXP (y, 0, 0);
       return true;
     }

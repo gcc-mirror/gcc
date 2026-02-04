@@ -2030,7 +2030,7 @@ extract_asm_operands (rtx body)
 int
 asm_noperands (const_rtx body)
 {
-  rtx asm_op = extract_asm_operands (CONST_CAST_RTX (body));
+  rtx asm_op = extract_asm_operands (const_cast<rtx> (body));
   int i, n_sets = 0;
 
   if (asm_op == NULL)

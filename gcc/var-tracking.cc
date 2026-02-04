@@ -1195,7 +1195,7 @@ adjust_mem_stores (rtx loc, const_rtx expr, void *data)
 					      adjust_mems, data);
       if (new_dest != SET_DEST (expr))
 	{
-	  rtx xexpr = CONST_CAST_RTX (expr);
+	  rtx xexpr = const_cast<rtx> (expr);
 	  validate_change (NULL_RTX, &SET_DEST (xexpr), new_dest, true);
 	}
     }

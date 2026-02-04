@@ -14669,7 +14669,7 @@ print_operand (FILE *file, rtx x, int code)
 	   (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 4)
 	   without this hack would be output as "x@toc+4".  We
 	   want "x+4@toc".  */
-	output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
+	output_addr_const (file, const_cast<rtx> (tocrel_base_oac));
       else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLSGD)
 	output_addr_const (file, XVECEXP (x, 0, 0));
       else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PLTSEQ)
@@ -14780,7 +14780,7 @@ print_operand_address (FILE *file, rtx x)
 	 .       (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 8))
 	 without this hack would be output as "x@toc+8@l(9)".  We
 	 want "x+8@toc@l(9)".  */
-      output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
+      output_addr_const (file, const_cast<rtx> (tocrel_base_oac));
       if (GET_CODE (x) == LO_SUM)
 	fprintf (file, "@l(%s)", reg_names[REGNO (XEXP (x, 0))]);
       else
@@ -14807,7 +14807,7 @@ rs6000_output_addr_const_extra (FILE *file, rtx x)
 	  {
 	    if (INTVAL (tocrel_offset_oac) >= 0)
 	      fprintf (file, "+");
-	    output_addr_const (file, CONST_CAST_RTX (tocrel_offset_oac));
+	    output_addr_const (file, const_cast<rtx> (tocrel_offset_oac));
 	  }
 	if (!TARGET_AIX || (TARGET_ELF && TARGET_MINIMAL_TOC))
 	  {

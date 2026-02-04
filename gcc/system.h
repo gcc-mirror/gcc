@@ -1195,7 +1195,6 @@ helper_const_non_const_cast (const char *p)
 #endif
 #define CONST_CAST(TYPE,X) CONST_CAST2 (TYPE, const TYPE, (X))
 #define CONST_CAST_TREE(X) CONST_CAST (union tree_node *, (X))
-#define CONST_CAST_RTX(X) CONST_CAST (struct rtx_def *, (X))
 #define CONST_CAST_BB(X) CONST_CAST (struct basic_block_def *, (X))
 #define CONST_CAST_GIMPLE(X) CONST_CAST (gimple *, (X))
 
