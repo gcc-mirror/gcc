@@ -34,8 +34,8 @@ DEF_VX_BINARY_CASE_3_WRAP(T, AVG_CEIL_FUNC_WRAP(T), avg_ceil, VX_BINARY_FUNC_BOD
 /* { dg-final { scan-assembler {vrem.vx} } } */
 /* { dg-final { scan-assembler {vmax.vx} } } */
 /* { dg-final { scan-assembler {vmin.vx} } } */
-/* { dg-final { scan-assembler {vsadd.vx} } } */
-/* { dg-final { scan-assembler {vssub.vx} } } */
+/* { dg-final { scan-assembler-not {vsadd.vx} } } */
+/* { dg-final { scan-assembler-not {vssub.vx} } } */
 /* { dg-final { scan-assembler {vaadd.vx} { target { any-opts {
      "-mrvv-vector-bits=zvl -mrvv-max-lmul=m1"
      "-mrvv-vector-bits=zvl -mrvv-max-lmul=m2"
