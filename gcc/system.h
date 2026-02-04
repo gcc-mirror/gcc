@@ -1194,8 +1194,6 @@ helper_const_non_const_cast (const char *p)
 #endif
 #endif
 #define CONST_CAST(TYPE,X) CONST_CAST2 (TYPE, const TYPE, (X))
-#define CONST_CAST_TREE(X) CONST_CAST (union tree_node *, (X))
-#define CONST_CAST_GIMPLE(X) CONST_CAST (gimple *, (X))
 
 /* Activate certain diagnostics as warnings (not errors via the
    -Werror flag).  */

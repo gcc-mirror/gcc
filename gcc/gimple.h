@@ -2606,7 +2606,7 @@ gimple_op (const gimple *gs, unsigned i)
   if (gimple_has_ops (gs))
     {
       gcc_gimple_checking_assert (i < gimple_num_ops (gs));
-      return gimple_ops (CONST_CAST_GIMPLE (gs))[i];
+      return gimple_ops (const_cast<gimple *> (gs))[i];
     }
   else
     return NULL_TREE;
