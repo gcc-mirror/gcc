@@ -3001,12 +3001,18 @@ eval_parameters_of (location_t loc, const constexpr_ctx *ctx, tree r,
 
   r = maybe_get_first_fn (r);
   vec<constructor_elt, va_gc> *elts = nullptr;
-  tree args = (TREE_CODE (r) == FUNCTION_DECL
-	       ? FUNCTION_FIRST_USER_PARM (r)
-	       : TYPE_ARG_TYPES (r));
-  for (tree arg = args; arg && arg != void_list_node; arg = TREE_CHAIN (arg))
-    CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
-			    get_reflection_raw (loc, arg, REFLECT_PARM));
+  if (TREE_CODE (r) == FUNCTION_DECL)
+    for (tree arg = FUNCTION_FIRST_USER_PARM (r); arg; arg = DECL_CHAIN (arg))
+      CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
+			      get_reflection_raw (loc, arg, REFLECT_PARM));
+  else
+    for (tree arg = TYPE_ARG_TYPES (r); arg && arg != void_list_node;
+	 arg = TREE_CHAIN (arg))
+      {
+        tree type = maybe_strip_typedefs (TREE_VALUE (arg));
+        CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
+				get_reflection_raw (loc, type));
+      }
   return get_vector_of_info_elts (elts);
 }
 
