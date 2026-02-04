@@ -652,28 +652,60 @@ extract_component (gimple_stmt_iterator *gsi, tree t, bool imagpart_p,
 	if (imagpart_p)
 	  TREE_OPERAND (t, 2) = size_binop (PLUS_EXPR, TREE_OPERAND (t, 2),
 					    TYPE_SIZE (inner_type));
+
 	if (gimple_p)
-	  t = force_gimple_operand_gsi (gsi, t, true, NULL, true,
-					GSI_SAME_STMT);
+	  {
+	    tree new_lhs = make_ssa_name (inner_type);
+	    gimple *new_load = gimple_build_assign (new_lhs, t);
+	    gsi_insert_before (gsi, new_load, GSI_SAME_STMT);
+	    t = new_lhs;
+	  }
 	return t;
       }
 
+    case VIEW_CONVERT_EXPR:
+      /* Getting the real/imag parts of a VCE of a ssa-name requires
+	 to place the complex into a ssa name before getting the
+	 2 parts.
+	 As `IMAGPART_EXPR<VIEW_CONVERT_EXPR<a_BN>>` is an invalid
+	 gimple. This will only show up when gimplifying it.
+	 Note this creates an extra copy.  The call to
+	 force_gimple_operand_gsi would create one too.  */
+      if (TREE_CODE (TREE_OPERAND (t, 0)) == SSA_NAME)
+	{
+	  gcc_assert (gimple_p);
+	  tree new_cplx = make_ssa_name (TREE_TYPE (t));
+	  gimple *vce = gimple_build_assign (new_cplx, unshare_expr (t));
+	  gsi_insert_before (gsi, vce, GSI_SAME_STMT);
+
+	  tree new_lhs = make_ssa_name (TREE_TYPE (TREE_TYPE (t)));
+	  t = build1 ((imagpart_p ? IMAGPART_EXPR : REALPART_EXPR),
+		      TREE_TYPE (TREE_TYPE (t)), new_cplx);
+	  gimple *new_ri = gimple_build_assign (new_lhs, t);
+	  gsi_insert_before (gsi, new_ri, GSI_SAME_STMT);
+	  t = new_lhs;
+	  return t;
+	}
+    /* FALLTHRU */
     case VAR_DECL:
     case RESULT_DECL:
     case PARM_DECL:
     case COMPONENT_REF:
     case ARRAY_REF:
-    case VIEW_CONVERT_EXPR:
     case MEM_REF:
       {
 	tree inner_type = TREE_TYPE (TREE_TYPE (t));
 
-	t = build1 ((imagpart_p ? IMAGPART_EXPR : REALPART_EXPR),
-		    inner_type, unshare_expr (t));
+	t = fold_build1 ((imagpart_p ? IMAGPART_EXPR : REALPART_EXPR),
+			 inner_type, unshare_expr (t));
 
 	if (gimple_p)
-	  t = force_gimple_operand_gsi (gsi, t, true, NULL, true,
-                                        GSI_SAME_STMT);
+	  {
+	    tree new_lhs = make_ssa_name (inner_type);
+	    gimple *new_load = gimple_build_assign (new_lhs, t);
+	    gsi_insert_before (gsi, new_load, GSI_SAME_STMT);
+	    t = new_lhs;
+	  }
 
 	return t;
       }
