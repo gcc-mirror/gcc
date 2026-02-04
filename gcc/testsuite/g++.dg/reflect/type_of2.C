@@ -25,7 +25,5 @@ g ()
 {
   constexpr auto fInfo = foo<F>()[0];
   using fType = [:type_of(fInfo):];
-  // TODO Should work: non-const non-volatile member functions have ordinary
-  // function types.
-  //static_assert (std::same_as<fType, auto(int)->void>);
+  static_assert (std::same_as<fType, auto(int)->void>);
 }

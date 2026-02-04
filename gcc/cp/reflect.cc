@@ -2465,6 +2465,8 @@ type_of (tree r, reflect_kind kind)
     }
   else if (TREE_CODE (r) == FIELD_DECL && DECL_BIT_FIELD_TYPE (r))
     r = DECL_BIT_FIELD_TYPE (r);
+  else if (TREE_CODE (r) == FUNCTION_DECL)
+    r = static_fn_type (r);
   else
     r = TREE_TYPE (r);
   return strip_typedefs (r);
