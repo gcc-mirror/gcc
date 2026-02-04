@@ -33191,6 +33191,10 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
       begin = cp_build_range_for_decls (loc, expansion_init, &end, true);
       if (!error_operand_p (begin) && !error_operand_p (end))
 	{
+	  /* In the standard this is all evaluated inside of a consteval
+	     lambda.  So, force in_immediate_context () around this.  */
+	  in_consteval_if_p_temp_override icip;
+	  in_consteval_if_p = true;
 	  tree i
 	    = build_target_expr_with_type (begin,
 					   cv_unqualified (TREE_TYPE (begin)),
