@@ -672,7 +672,7 @@ Technical Report (TR) 14 is the first preview for OpenMP 6.1.
 @item New @code{omp_default_device} identifier as conforming device number
       @tab Y @tab
 @item Clarify when @code{omp_target_is_accessible} routine returns zero
-      @tab N @tab
+      @tab Y @tab
 @end multitable
 
 @unnumberedsubsec Deprecated features, unless listed above
