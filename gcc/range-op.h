@@ -391,11 +391,12 @@ extern void wi_set_zero_nonzero_bits (tree type,
 // Add them to the end of the tree-code vector, and provide a name for
 // each allowing for easy access when required.
 
-#define OP_WIDEN_MULT_SIGNED	((unsigned) MAX_TREE_CODES)
-#define OP_WIDEN_MULT_UNSIGNED	((unsigned) MAX_TREE_CODES + 1)
-#define OP_WIDEN_PLUS_SIGNED	((unsigned) MAX_TREE_CODES + 2)
-#define OP_WIDEN_PLUS_UNSIGNED	((unsigned) MAX_TREE_CODES + 3)
-#define RANGE_OP_TABLE_SIZE	((unsigned) MAX_TREE_CODES + 4)
+#define OP_WIDEN_MULT_SIGNED		((unsigned) MAX_TREE_CODES)
+#define OP_WIDEN_MULT_UNSIGNED		((unsigned) MAX_TREE_CODES + 1)
+#define OP_WIDEN_MULT_SIGNED_UNSIGNED	((unsigned) MAX_TREE_CODES + 2)
+#define OP_WIDEN_PLUS_SIGNED		((unsigned) MAX_TREE_CODES + 3)
+#define OP_WIDEN_PLUS_UNSIGNED		((unsigned) MAX_TREE_CODES + 4)
+#define RANGE_OP_TABLE_SIZE		((unsigned) MAX_TREE_CODES + 5)
 
 // This implements the range operator tables as local objects.
 

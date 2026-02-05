@@ -2405,19 +2405,16 @@ operator_widen_mult_signed::wi_fold (irange &r, tree type,
 				     const wide_int &rh_lb,
 				     const wide_int &rh_ub) const
 {
-  signop s = TYPE_SIGN (type);
-
-  wide_int lh_wlb = wide_int::from (lh_lb, wi::get_precision (lh_lb) * 2, SIGNED);
-  wide_int lh_wub = wide_int::from (lh_ub, wi::get_precision (lh_ub) * 2, SIGNED);
-  wide_int rh_wlb = wide_int::from (rh_lb, wi::get_precision (rh_lb) * 2, s);
-  wide_int rh_wub = wide_int::from (rh_ub, wi::get_precision (rh_ub) * 2, s);
+  wide_int lh_wlb = wide_int::from (lh_lb, TYPE_PRECISION (type), SIGNED);
+  wide_int lh_wub = wide_int::from (lh_ub, TYPE_PRECISION (type), SIGNED);
+  wide_int rh_wlb = wide_int::from (rh_lb, TYPE_PRECISION (type), SIGNED);
+  wide_int rh_wub = wide_int::from (rh_ub, TYPE_PRECISION (type), SIGNED);
 
   /* We don't expect a widening multiplication to be able to overflow but range
      calculations for multiplications are complicated.  After widening the
      operands lets call the base class.  */
   return op_mult.wi_fold (r, type, lh_wlb, lh_wub, rh_wlb, rh_wub);
 }
-
 
 class operator_widen_mult_unsigned : public range_operator
 {
@@ -2437,12 +2434,39 @@ operator_widen_mult_unsigned::wi_fold (irange &r, tree type,
 				       const wide_int &rh_lb,
 				       const wide_int &rh_ub) const
 {
-  signop s = TYPE_SIGN (type);
+  wide_int lh_wlb = wide_int::from (lh_lb, TYPE_PRECISION (type), UNSIGNED);
+  wide_int lh_wub = wide_int::from (lh_ub, TYPE_PRECISION (type), UNSIGNED);
+  wide_int rh_wlb = wide_int::from (rh_lb, TYPE_PRECISION (type), UNSIGNED);
+  wide_int rh_wub = wide_int::from (rh_ub, TYPE_PRECISION (type), UNSIGNED);
 
-  wide_int lh_wlb = wide_int::from (lh_lb, wi::get_precision (lh_lb) * 2, UNSIGNED);
-  wide_int lh_wub = wide_int::from (lh_ub, wi::get_precision (lh_ub) * 2, UNSIGNED);
-  wide_int rh_wlb = wide_int::from (rh_lb, wi::get_precision (rh_lb) * 2, s);
-  wide_int rh_wub = wide_int::from (rh_ub, wi::get_precision (rh_ub) * 2, s);
+  /* We don't expect a widening multiplication to be able to overflow but range
+     calculations for multiplications are complicated.  After widening the
+     operands lets call the base class.  */
+  return op_mult.wi_fold (r, type, lh_wlb, lh_wub, rh_wlb, rh_wub);
+}
+
+class operator_widen_mult_signed_unsigned : public range_operator
+{
+public:
+  virtual void wi_fold (irange &r, tree type,
+			const wide_int &lh_lb,
+			const wide_int &lh_ub,
+			const wide_int &rh_lb,
+			const wide_int &rh_ub)
+    const;
+} op_widen_mult_signed_unsigned;
+
+void
+operator_widen_mult_signed_unsigned::wi_fold (irange &r, tree type,
+					      const wide_int &lh_lb,
+					      const wide_int &lh_ub,
+					      const wide_int &rh_lb,
+					      const wide_int &rh_ub) const
+{
+  wide_int lh_wlb = wide_int::from (lh_lb, TYPE_PRECISION (type), SIGNED);
+  wide_int lh_wub = wide_int::from (lh_ub, TYPE_PRECISION (type), SIGNED);
+  wide_int rh_wlb = wide_int::from (rh_lb, TYPE_PRECISION (type), UNSIGNED);
+  wide_int rh_wub = wide_int::from (rh_ub, TYPE_PRECISION (type), UNSIGNED);
 
   /* We don't expect a widening multiplication to be able to overflow but range
      calculations for multiplications are complicated.  After widening the
@@ -4811,6 +4835,7 @@ range_op_table::initialize_integral_ops ()
   set (ABSU_EXPR, op_absu);
   set (OP_WIDEN_MULT_SIGNED, op_widen_mult_signed);
   set (OP_WIDEN_MULT_UNSIGNED, op_widen_mult_unsigned);
+  set (OP_WIDEN_MULT_SIGNED_UNSIGNED, op_widen_mult_signed_unsigned);
   set (OP_WIDEN_PLUS_SIGNED, op_widen_plus_signed);
   set (OP_WIDEN_PLUS_UNSIGNED, op_widen_plus_unsigned);
 
