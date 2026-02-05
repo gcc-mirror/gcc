@@ -1,5 +1,6 @@
 // { dg-do compile }
 // { dg-additional-options "-std=gnu++20" }
+// { dg-skip-if "requires hosted libstdc++ for csetjmp and iostream" { ! hostedlib } }
 
 #include <csetjmp>
 #include <iostream>
