@@ -72,8 +72,6 @@ static tree label_list_back_label;
 static void hijack_for_development(const char *funcname);
 
 static size_t sv_data_name_counter = 1;
-static int call_counter = 1;
-static int pseudo_label = 1;
 
 static bool suppress_cobol_entry_point = false;
 static char ach_cobol_entry_point[256] = "";
@@ -84,7 +82,8 @@ int  show_parse_indent = 0;
 
 static bool sv_is_i_o = false;
 
-#define DEFAULT_LINE_NUMBER 2
+static int perform_is_armed = 0;
+static std::map<int, int> perform_line_pairs;
 
 #ifdef LINE_TICK
 /*  This code is used from time to time when sorting out why compilation
@@ -1151,6 +1150,18 @@ parser_statement_begin( const cbl_name_t statement_name,
 
   gcc_assert( gg_trans_unit.function_stack.size() );
 
+  // If a PERFORM is armed, that's the line that the PERFORM is on.  The
+  // cobol_location().first_line here is the major statement following the
+  // the PERFORM statement.  (We don't use .loc information in GDB because of
+  // the difficulty in teasing out which is the "primary" .loc from the
+  // 'is_stmt' and 'discriminator'.  If that's possible, I haven't yet figured
+  // how.)
+  if( perform_is_armed )
+    {
+    perform_line_pairs[perform_is_armed] = cobol_location().first_line;
+    perform_is_armed = 0;
+    }
+
   // In the cases where enabled_exceptions.size() is non-zero, or when
   // there is a possibility of an EC-I-O exception because this is a file
   // operation, we need to store the location information and do the exception
@@ -1314,14 +1325,22 @@ initialize_variable_internal( cbl_refer_t refer,
           default:
             {
             char ach[128];
-            real_to_decimal (ach,
-                             TREE_REAL_CST_PTR (parsed_var->data.value_of()),
-                             sizeof(ach), 16, 0);
+            if( TREE_CODE(TREE_TYPE(parsed_var->data.value_of())) == REAL_TYPE)
+              {
+              real_to_decimal (ach,
+                               TREE_REAL_CST_PTR (parsed_var->data.value_of()),
+                               sizeof(ach), 16, 0);
+              }
+            else
+              {
+              wi::tree_to_wide_ref iii =
+                                    wi::to_wide( parsed_var->data.value_of() );
+              print_dec(iii, ach, SIGNED);
+              }
             SHOW_PARSE_TEXT(ach);
             break;
             }
           }
-
         }
       SHOW_PARSE_TEXT("<<")
       }
@@ -2464,7 +2483,8 @@ section_label(struct cbl_proc_t *procedure)
     }
   assembler_label(psz2);
   free(psz2);
-  insert_nop(108);
+  // Needed so that GDB-COBOL can trap at a section name.
+  insert_nop(101);
   }
 
 static void
@@ -2537,7 +2557,7 @@ paragraph_label(struct cbl_proc_t *procedure)
   //
   // Yes, trying to understand this causes headaches for many people who read
   // this.  Take an aspirin.
-  insert_nop(109);
+  insert_nop(102);
   }
 
 static void
@@ -2631,15 +2651,7 @@ leave_procedure(struct cbl_proc_t *procedure, bool /*section*/)
     // procedure->bottom.label);
     // Procedure can be null, for example at the beginning of a
     // new program, or after somebody else has cleared it out.
-
     gg_append_statement(procedure->exit.label);
-
-    char *psz;
-    psz = xasprintf("_procret." HOST_SIZE_T_PRINT_DEC ":",
-                    (fmt_size_t)symbol_label_id(procedure->label));
-    token_location_override(current_location_minus_one());
-    gg_insert_into_assembler(psz);
-    free(psz);
     pseudo_return_pop(procedure);
     gg_append_statement(procedure->bottom.label);
     }
@@ -2817,7 +2829,7 @@ parser_enter_section(cbl_label_t *label)
 
   // This NOP is needed to give GDB a line number for the entry point of
   // paragraphs
-  insert_nop(101);
+  insert_nop(103);
 
   struct cbl_proc_t *procedure = find_procedure(label);
   gg_append_statement(procedure->top.label);
@@ -3151,11 +3163,8 @@ parser_perform(cbl_label_t *label, bool suppress_nexting)
 
   if( !suppress_nexting )
     {
-    sprintf(ach,
-            "_proccall." HOST_SIZE_T_PRINT_DEC ".%d:",
-            (fmt_size_t)symbol_label_id(label),
-            call_counter++);
-    gg_insert_into_assembler( ach );
+    // Flag this source-code line as being a PERFORM statement.
+    perform_is_armed = CURRENT_LINE_NUMBER ;
     }
 
   // We do the indirect jump in order to prevent the compiler from complaining
@@ -3198,12 +3207,7 @@ parser_perform_times( cbl_label_t *proc_1, cbl_refer_t count )
     TRACE1_END
     }
 
-  char ach[256];
-  size_t our_pseudo_label = pseudo_label++;
-  sprintf(ach,
-          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  gg_insert_into_assembler( ach );
+  perform_is_armed = CURRENT_LINE_NUMBER ;
 
   tree counter       = gg_define_variable(LONG);
 
@@ -3221,12 +3225,6 @@ parser_perform_times( cbl_label_t *proc_1, cbl_refer_t count )
     gg_decrement(counter);
     }
     WEND
-
-  sprintf(ach,
-          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  token_location_override(current_location_minus_one());
-  gg_insert_into_assembler(ach);
   }
 
 static void
@@ -3303,12 +3301,7 @@ internal_perform_through( cbl_label_t *proc_1,
 
   if( !suppress_nexting )
     {
-    char ach[256];
-    sprintf(ach,
-            "_proccall." HOST_SIZE_T_PRINT_DEC ".%d:",
-            (fmt_size_t)symbol_label_id(proc_2),
-            call_counter++);
-    gg_insert_into_assembler(ach);
+    perform_is_armed = CURRENT_LINE_NUMBER ;
     }
 
   gg_append_statement(proc1->top.go_to);
@@ -3356,13 +3349,7 @@ internal_perform_through_times(   cbl_label_t *proc_1,
     TRACE1_END
     }
 
-  size_t our_pseudo_label = pseudo_label++;
-
-  char ach[256];
-  sprintf(ach,
-          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  gg_insert_into_assembler( ach );
+  perform_is_armed = CURRENT_LINE_NUMBER ;
 
   tree counter       = gg_define_variable(LONG);
   get_binary_value( counter,
@@ -3375,12 +3362,6 @@ internal_perform_through_times(   cbl_label_t *proc_1,
     gg_decrement(counter);
     }
     WEND
-
-  sprintf(ach,
-          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  token_location_override(current_location_minus_one());
-  gg_insert_into_assembler( ach );
   }
 
 void
@@ -3572,6 +3553,41 @@ parser_leave_file()
     {
     // We are leaving the top-level file, which means this compilation is
     // done, done, done.
+
+    // This is where we create the file-static table of PERFORM/FOLLOWING line
+    // number pairs so that the GDB-COBOL debugger can know where to "return"
+    // to after a NEXT is issued on a PERFORM statement.
+
+    // We need to create a file-static static array of 32-bit integers.  The
+    // array is terminated with a {0,0} pair:
+    tree array_of_int_type = build_array_type_nelts(INT, (perform_line_pairs.size()+1)*2);
+    tree array_of_int = gg_define_variable( array_of_int_type,
+                                            "_perform_line_pairs",
+                                            vs_file_static);
+    // We have the array.  Now we need to build the constructor for it
+    tree constr = make_node(CONSTRUCTOR);
+    TREE_TYPE(constr) = array_of_int_type;
+    TREE_STATIC(constr)    = 1;
+    TREE_CONSTANT(constr)  = 1;
+
+    // The first element of the array contains the number of elements to follow
+    size_t i = 0;
+    for(auto it : perform_line_pairs)
+      {
+      CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
+                              build_int_cst_type(SIZE_T, i++),
+                              build_int_cst_type(INT, it.first) );
+      CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
+                              build_int_cst_type(SIZE_T, i++),
+                              build_int_cst_type(INT, it.second) );
+      }
+    CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
+                            build_int_cst_type(SIZE_T, i++),
+                            integer_zero_node );
+    CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
+                            build_int_cst_type(SIZE_T, i++),
+                            integer_zero_node );
+    DECL_INITIAL(array_of_int) = constr;
 
     // There is, however, one thing left to do.  If the command line says
     // that this module needs a main entry point, then this is where
@@ -6292,7 +6308,7 @@ void parser_sleep(const cbl_refer_t &seconds)
     // This is a naked place-holding CONTINUE.  Generate some do-nothing
     // code that will stick some .LOC information into the assembly language,
     // so that GDB-COBOL can display the CONTINUE statement.
-    insert_nop(103);
+    insert_nop(104);
     }
   }
 
@@ -7312,12 +7328,10 @@ parser_division(cbl_division_t division,
   if( division == environment_div_e )
     {
     Analyze();
-    initialize_the_data();
     }
   else if( division == procedure_div_e )
     {
     Analyze();
-    initialize_the_data();
 
     // Do some symbol table index bookkeeping.  current_program_index() is valid
     // at this point in time:
@@ -8270,7 +8284,8 @@ parser_perform_start( struct cbl_perform_tgt_t *tgt )
   // Give GDB-COBOL something to chew on when NEXTing.  This instruction will
   // get the line number of the PERFORM N TIMES code.
   gg_append_statement(tgt->addresses.top.label);
-  insert_nop(104);
+  // Necessary for GDB-COBOL PERFORM <inline> processing.
+  insert_nop(105);
   }
 
 void
@@ -8314,6 +8329,9 @@ parser_perform_conditional( struct cbl_perform_tgt_t *tgt )
 
   // The next instructions that the parser will give us are the conditional
   // calculation, so the first thing that goes down is the condover:
+  /* The following NOP is needed to make NEXT OVER PERFORM BEFORE/AFTER UNTIL 
+     behaves properly.  */
+  insert_nop(106);
   gg_append_statement(tgt->addresses.condover[i].go_to);
 
   // And then, of course, we need to be able to jump back here to actually
@@ -8373,17 +8391,26 @@ perform_outofline_before_until(struct cbl_perform_tgt_t *tgt,
 
   /*
       TOP:
-                  IF CONDITION 0
-                      GOTO EXIT
-                  ELSE
-                      EXECUTE BODY
-                      GOTO TOP
+         GOTO condinto
+         condback:
+            IF CONDITION 0
+                GOTO EXIT
+            ELSE
+                EXECUTE BODY
+                GOTO TOP
       EXIT:
+
+      GOTO jumpover
+         condinto:
+         <conditional calculation>
+         GOTO condback
+      jumpover:
   */
 
   create_iline_address_pairs(tgt);
 
   // Tag the top of the perform
+  
   gg_append_statement(tgt->addresses.top.label);
 
   // Go do the conditional calculation:
@@ -8394,12 +8421,7 @@ perform_outofline_before_until(struct cbl_perform_tgt_t *tgt,
   // where to return:
   gg_append_statement(tgt->addresses.condback[0].label);
 
-  char ach[256];
-  size_t our_pseudo_label = pseudo_label++;
-  sprintf(ach,
-          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  gg_insert_into_assembler( ach );
+  perform_is_armed = CURRENT_LINE_NUMBER ;
 
   parser_if(varys[0].until);
     {
@@ -8419,11 +8441,6 @@ perform_outofline_before_until(struct cbl_perform_tgt_t *tgt,
 
   // Label the bottom of the PERFORM
   gg_append_statement(  tgt->addresses.exit.label );
-  sprintf(ach,
-          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  token_location_override(current_location_minus_one());
-  gg_insert_into_assembler( ach );
   }
 
 static void
@@ -8441,21 +8458,23 @@ perform_outofline_after_until(struct cbl_perform_tgt_t *tgt,
 
   /*
       TOP:
-                  EXECUTE BODY
-                  IF CONDITION 0
-                      GOTO EXIT
-                  ELSE
-                      ADD BY_0 to VARYING_0
-                      GOTO TOP
+          EXECUTE BODY
+          GOTO condinto
+          condback:
+          IF CONDITION 0
+              GOTO EXIT
+          ELSE
+              GOTO TOP
       EXIT:
+
+      GOTO jumpover
+         condinto:
+         <conditional calculation>
+         GOTO condback
+      jumpover:
   */
 
-  char ach[256];
-  size_t our_pseudo_label = pseudo_label++;
-  sprintf(ach,
-          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  gg_insert_into_assembler( ach );
+  perform_is_armed = CURRENT_LINE_NUMBER ;
 
   create_iline_address_pairs(tgt);
 
@@ -8483,11 +8502,6 @@ perform_outofline_after_until(struct cbl_perform_tgt_t *tgt,
   parser_fi();
   // Label the bottom of the PERFORM
   gg_append_statement(  tgt->addresses.exit.label );
-  sprintf(ach,
-          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  token_location_override(current_location_minus_one());
-  gg_insert_into_assembler( ach );
   }
 
 static void
@@ -8547,12 +8561,7 @@ perform_outofline_testafter_varying(struct cbl_perform_tgt_t *tgt,
   // only need N-1; we don't use the zeroth pair.  But the code
   // is cleaner if we just build all N of them.
 
-  char ach[256];
-  size_t our_pseudo_label = pseudo_label++;
-  sprintf(ach,
-          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  gg_insert_into_assembler( ach );
+  perform_is_armed = CURRENT_LINE_NUMBER ;
 
   create_iline_address_pairs(tgt);
 
@@ -8604,11 +8613,6 @@ perform_outofline_testafter_varying(struct cbl_perform_tgt_t *tgt,
     }
   // Arriving here means that we all of the conditions were
   // true.  So, we're done.
-  sprintf(ach,
-          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  token_location_override(current_location_minus_one());
-  gg_insert_into_assembler( ach );
   }
 
 static void
@@ -8665,12 +8669,7 @@ perform_outofline_before_varying(   struct cbl_perform_tgt_t *tgt,
   tree label[MAX_AFTERS];
   build_N_pairs(go_to, label, N);
 
-  char ach[256];
-  size_t our_pseudo_label = pseudo_label++;
-  sprintf(ach,
-          "_proccallb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  gg_insert_into_assembler( ach );
+  perform_is_armed = CURRENT_LINE_NUMBER ;
 
   // Initialize all varying:
 
@@ -8748,11 +8747,6 @@ perform_outofline_before_varying(   struct cbl_perform_tgt_t *tgt,
   // the EXIT: label.
   // We have, you see, reached the egress:
   gg_append_statement(  tgt->addresses.exit.label );
-  sprintf(ach,
-          "_procretb." HOST_SIZE_T_PRINT_DEC ":",
-          (fmt_size_t)our_pseudo_label);
-  token_location_override(current_location_minus_one());
-  gg_insert_into_assembler( ach );
   }
 
 static void
@@ -8983,6 +8977,9 @@ perform_inline_testbefore_varying(  struct cbl_perform_tgt_t *tgt,
       SHOW_PARSE_END
       }
     gg_append_statement(tgt->addresses.condback[i].label);
+    // Needed to make GDB NEXT over PERFORM in-line VARYING UNTIL work
+    // predictably.
+    insert_nop(107);
 
     // Test that conditional
     parser_if(varys[i].until);
@@ -13407,10 +13404,6 @@ create_and_call(size_t narg,
 
   if( returned.field )
     {
-    // Because the CALL had a RETURNING clause, RETURN-CODE doesn't return a
-    // value.  So, we make sure it is zero
-    //// gg_assign(var_decl_return_code, build_int_cst_type(SHORT, 0));
-
     // We expect the return value to be a 64-bit or 128-bit integer.  How
     // we treat that returned value depends on the target.
 

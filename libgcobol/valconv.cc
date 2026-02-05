@@ -231,10 +231,10 @@ __gg__string_to_numeric_edited( char * const dest,
 
   int dlength = expand_picture(dest, picture);
 
-  // At the present time, I am taking a liberty. In principle, a 'V'
-  // character is supposed to be logical decimal place rather than a physical
-  // one.  In practice, I am not sure what that would mean in a numeric edited
-  // value.  So, I am treating V as a decimal point.
+  // We need to treat 'V' as a decimal point in order to handle
+  //    01 foo pic 999v999 BLANK WHEN ZERO.
+  // The "BLANK WHEN ZERO" turns the field into a numeric-edited type, but the
+  // 'V' is still in the picture string.
 
   for(int i=0; i<dlength; i++)
     {

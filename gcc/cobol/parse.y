@@ -1894,10 +1894,17 @@ comminit:       COMMON     {
                 ;
 
 
-env_div:        %empty              { current_division = environment_div_e; }
-        |       ENVIRONMENT_DIV '.' { current_division = environment_div_e; }
+env_div:        %empty {
+                  current_division = environment_div_e;
+                  parser_division( environment_div_e, NULL, 0, NULL );
+                }
         |       ENVIRONMENT_DIV '.' {
                   current_division = environment_div_e;
+                  parser_division( environment_div_e, NULL, 0, NULL );
+                }
+        |       ENVIRONMENT_DIV '.' {
+                  current_division = environment_div_e;
+                  parser_division( environment_div_e, NULL, 0, NULL );
                 } env_sections
                 ;
 
@@ -3159,12 +3166,14 @@ when_set_to:    %empty
         |       WHEN SET TO
         ;
 
-data_div:       %empty 
-        |       DATA_DIV
-        |       DATA_DIV { current_division = data_div_e; } data_sections
-                {
+data_div:       %empty   { parser_division( data_div_e, NULL, 0, NULL ); }
+        |       DATA_DIV { parser_division( data_div_e, NULL, 0, NULL ); }
+        |       DATA_DIV {
+                  current_division = data_div_e;
+                  parser_division( data_div_e, NULL, 0, NULL ); 
+                }
+                data_sections {
                   current_data_section = not_data_datasect_e;
-                  parser_division( data_div_e, NULL, 0, NULL );
                 }
                 ;
 
@@ -4091,8 +4100,9 @@ data_descr1:    level_name
                   if( $field->has_attr(blank_zero_e) ) {
                     switch($field->type) {
                     case FldNumericEdited:
-                      if( $field->has_attr(signable_e) ) {
-                        error_msg(@2,  "%s has 'S' in PICTURE, cannot be BLANK WHEN ZERO",
+                      // Test appears to be invalid.
+                      if( false && $field->has_attr(signable_e) ) {
+                        error_msg(@2,  "%s has signed PICTURE, cannot be BLANK WHEN ZERO",
                                   $field->name );
                       }
                       break;
@@ -4446,6 +4456,10 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   if( field->has_attr(signable_e) && ! $signed ) {
                     dbgmsg("%s PICTURE must be signed for SIGN IS", field->name);
                   }
+                  if( field->type == FldNumericEdited && $signed ) {
+                    gcc_assert(field->has_attr(blank_zero_e));
+                    error_msg(@signed, "%<S%> in PICTURE invalid with BLANK WHEN ZERO");
+                  }
                   field->attr |= $signed;
                   field->data.digits = $nines;
                   auto nchar = type_capacity(field->type, $nines);
@@ -4474,6 +4488,10 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   }
                   field->data.digits = $left + $rdigits;
                   field->attr |= $signed;
+                  if( field->type == FldNumericEdited && $signed ) {
+                    gcc_assert(field->has_attr(blank_zero_e));
+                    error_msg(@signed, "%<S%> in PICTURE invalid with BLANK WHEN ZERO");
+                  }
 
                   if( field->is_binary_integer() ) {
                     field->set_capacity(type_capacity(field->type,
@@ -4511,6 +4529,10 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   }
                   ERROR_IF_CAPACITY(@PIC, field);
                   field->attr |= $signed;
+                  if( $signed ) {
+                    gcc_assert(field->has_attr(blank_zero_e));
+                    error_msg(@signed, "%<S%> in PICTURE invalid with BLANK WHEN ZERO");
+                  }
                   field->data.digits = size;
                   field->set_capacity(++size);
                   field->data.rdigits = $rdigits;
@@ -4573,6 +4595,7 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   field->data.digits   =  digits_of_picture($picture, false);
                   field->data.rdigits  = rdigits_of_picture($picture);
                   if( is_picture_scaled($picture) ) field->attr |= scaled_e;
+                  field->set_signable();
                   auto nchar = length_of_picture($picture);
                   field->set_capacity(nchar);
                   field->blank_initial(nchar);
@@ -5038,18 +5061,23 @@ based_clause:   BASED
                 }
                 ;
 
-blank_zero_clause: blank_when_zero
-                { cbl_field_t *field = current_field();
-                  // the BLANK WHEN ZERO clause defines the item as numeric-edited.
+blank_zero_clause: BLANK when ZERO
+                { // BLANK WHEN ZERO defines the item as numeric-edited.
+                  cbl_field_t *field = current_field();
+                  auto attr = blank_zero_e;
                   if( !field_type_update(field, FldNumericEdited, @1) ) {
-                    YYERROR;
+                    attr = none_e;
+                    if( field->type == FldNumericDisplay ) {
+                      assert(field->has_attr(signable_e));
+                      error_msg(@$, "signed NUMERIC DISPLAY type "
+                                    "cannot have BLANK WHEN ZERO");
+                    } else {
+                      assert(is_numeric(field));
+                      error_msg(@$, "NUMERIC type cannot have BLANK WHEN ZERO");
+                    }                      
                   }
-                  field->attr |= blank_zero_e;
+                  field->set_attr(attr);
                 }
-                ;
-blank_when_zero:
-                BLANK WHEN ZERO
-        |       BLANK      ZERO
                 ;
 
 synched_clause: SYNCHRONIZED
@@ -5197,14 +5225,14 @@ volatile_clause:
 procedure_div:  %empty {
 		  if( !procedure_division_ready(@$, NULL, NULL) ) YYABORT;
                 }
-        |       PROCEDURE_DIV '.' {
-                  if( !procedure_division_ready(@$, NULL, NULL) ) YYABORT;
-                } declaratives sentences
-        |       PROCEDURE_DIV procedure_args '.' declaratives sentences
         |       PROCEDURE_DIV procedure_args '.'
+        |       PROCEDURE_DIV procedure_args '.' declaratives sentences
                 ;
 
-procedure_args: USING procedure_uses[args]
+procedure_args: %empty {
+                  if( !procedure_division_ready(@$, NULL, NULL) ) YYABORT;
+                }
+        |       USING procedure_uses[args]
                 {
                   if( !procedure_division_ready(@args, NULL, $args) ) YYABORT;
                 }
@@ -11822,6 +11850,10 @@ user_default:   DEFAULT
                     gcc_unreachable();
                   }
                 }
+                ;
+
+when:           %empty
+        |       WHEN
                 ;
 
 with:           %empty

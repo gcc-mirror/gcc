@@ -2949,8 +2949,9 @@ field_type_update( cbl_field_t *field, cbl_field_type_t type,
                    bool is_usage = false)
 {
   // preserve NumericEdited if already established
-  if( !is_usage && field->has_attr(blank_zero_e) ) {
-    if( type == FldNumericDisplay && field->type == FldNumericEdited ) {
+  if( !is_usage ) {
+    if( field->type == FldNumericEdited && type == FldNumericDisplay ) {
+      assert(field->has_attr(blank_zero_e));
       return true;
     }
   }
@@ -2971,8 +2972,10 @@ field_type_update( cbl_field_t *field, cbl_field_type_t type,
   }
 
   if( ! symbol_field_type_update(field, type, is_usage) ) {
-    error_msg(loc, "cannot set USAGE of %s to %s (from %s)", field->name,
-             cbl_field_type_str(type) + 3, cbl_field_type_str(field->type) + 3);
+    if( type != FldNumericEdited ) { // caller prints message
+      error_msg(loc, "cannot set USAGE of %s to %s (from %s)", field->name,
+                cbl_field_type_str(type) + 3, cbl_field_type_str(field->type) + 3);
+    }
     return false;
   }
 

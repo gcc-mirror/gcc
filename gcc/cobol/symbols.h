@@ -889,6 +889,7 @@ struct cbl_field_t {
   uint64_t set_attr( cbl_field_attr_t attr );
   uint64_t clear_attr( cbl_field_attr_t attr );
   const char * attr_str( const std::vector<cbl_field_attr_t>& attrs ) const;
+  uint64_t set_signable();
 
   bool is_justifiable() const {
     if( type == FldAlphanumeric ) return true;

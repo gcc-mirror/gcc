@@ -1843,6 +1843,10 @@ gg_create_goto_pair(tree *goto_expr,
                                   void_type_node);
   DECL_CONTEXT(label_decl) = current_function->function_decl;
   TREE_USED(label_decl) = 1;
+  DECL_EXTERNAL(label_decl) = 1;
+  TREE_PUBLIC(label_decl) = 1;
+  TREE_ADDRESSABLE(label_decl) = 1;
+  TREE_STATIC(label_decl) = 1;
 
   *goto_expr  = build1(GOTO_EXPR, void_type_node, label_decl);
   *label_expr = build1(LABEL_EXPR, void_type_node, label_decl);

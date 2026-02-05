@@ -970,25 +970,38 @@ symbol_field_type_update( cbl_field_t *field,
    *  Concrete type candidate
    */
   switch(field->usage) {
-  case FldInvalid:
-    field->type = candidate;
-    field->attr |= numeric_group_attrs(field);
-    // update encoding
+  case FldInvalid: // no USAGE clause yet, and not now either
+    // maybe update encoding
     switch( field->type ) {
-    case FldNumericDisplay:
     case FldAlphaEdited:
     case FldNumericEdited:
+      field->type = candidate;
+      field->attr |= numeric_group_attrs(field);
       return field->codeset.set();
+    case FldNumericDisplay:
+      // If the field is already defined as Numeric Display, it cannot be
+      // converted to Numeric Edited if it is signed.
+      if( candidate == FldNumericEdited) {
+        if( field->has_attr(signable_e) ) return false;
+      }
+      break;
     default:
+      // If the field is already defined as a binary numeric type (not
+      // Display), it cannot be converted to NumericEdited.
+      if( candidate == FldNumericEdited) {
+        if( is_numeric(field->type) ) return false;
+      }
       break;
     }
+    field->type = candidate;
+    field->attr |= numeric_group_attrs(field);
     return true;
   case FldDisplay:
     if( is_displayable(candidate) ) {
       field->type = candidate;
       field->attr |= numeric_group_attrs(field);
-      if( ! field->codeset.valid() ) return field->codeset.set();
-      return true;
+      if( field->codeset.valid() ) return true;
+      return field->codeset.set();
     }
     break;
   case FldAlphaEdited:
@@ -1586,7 +1599,11 @@ cbl_field_t::encode_numeric( const char input[], cbl_loc_t loc,
             }
           if( l_digits - l_rdigits > data.digits - data.rdigits )
             {
-            error_msg(loc, "VALUE has too many integer digits");
+            // This error is caught earlier by validate_numeric_edited
+            if( type != FldNumericEdited )
+              {
+              error_msg(loc, "VALUE has too many integer digits");
+              }
             }
           }
         }
@@ -1606,6 +1623,7 @@ cbl_field_t::encode_numeric( const char input[], cbl_loc_t loc,
     switch(type)
       {
       case FldNumericBin5:
+      case FldIndex:
       case FldLiteralN:
         {
         binary_initial(retval, this, value, l_rdigits);
