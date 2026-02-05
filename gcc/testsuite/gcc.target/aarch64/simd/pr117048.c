@@ -8,7 +8,7 @@
 
 /*
 ** func_shl_eor:
-**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, 63
+**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, #63
 **	ret 
 */
 uint64x2_t
@@ -19,7 +19,7 @@ func_shl_eor (uint64x2_t a, uint64x2_t b) {
 
 /*
 ** func_add_eor:
-**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, 63
+**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, #63
 **	ret 
 */
 uint64x2_t
@@ -30,7 +30,7 @@ func_add_eor (uint64x2_t a, uint64x2_t b) {
 
 /*
 ** func_shl_orr:
-**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, 63
+**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, #63
 **	ret 
 */
 uint64x2_t
@@ -41,7 +41,7 @@ func_shl_orr (uint64x2_t a, uint64x2_t b) {
 
 /*
 ** func_add_orr:
-**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, 63
+**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, #63
 **	ret 
 */
 uint64x2_t
@@ -52,7 +52,7 @@ func_add_orr (uint64x2_t a, uint64x2_t b) {
 
 /*
 ** func_shl_add:
-**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, 63
+**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, #63
 **	ret 
 */
 uint64x2_t
@@ -63,7 +63,7 @@ func_shl_add (uint64x2_t a, uint64x2_t b) {
 
 /*
 ** func_add_add:
-**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, 63
+**	xar	v0\.2d, v([0-9]+)\.2d, v([0-9]+)\.2d, #63
 **	ret 
 */
 uint64x2_t
