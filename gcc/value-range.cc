@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 
 // Return the bitmask inherent in a range :   TYPE [MIN, MAX].
-// This use to be get_bitmask_from_range ().
+// This used to be get_bitmask_from_range ().
 
 irange_bitmask::irange_bitmask (tree type,
 				const wide_int &min, const wide_int &max)
