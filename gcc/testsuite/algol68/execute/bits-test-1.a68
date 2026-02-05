@@ -1,5 +1,5 @@
-begin assert (NOT (16rff TEST 9));
-      assert (NOT (16rff TEST 0));
+begin assert (NOT (16rff TEST 8));
       assert (NOT (16rff TEST -1));
-      assert (2r100 TEST 3)
+      assert (NOT (16rff TEST -2));
+      assert (2r100 TEST 2)
 end

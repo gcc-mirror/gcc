@@ -3045,20 +3045,21 @@ given bits arguments.
 
 @deftypefn Operator {} {@B{set}} {= (@B{l} @B{bits} b, @B{int} n) @B{l} @B{bits}}
 Dyadic operator that sets the @code{n}th least significant bit in
-@code{@B{b}}.  If @code{n} is not in the range @code{[1,L_bits_width]}
-then the operator yields @B{b}.
+@code{@B{b}}, where @code{n} is zero based.  If @code{n} is not in the
+range @code{[0,L_bits_width)} then the operator yields @B{b}.
 @end deftypefn
 
 @deftypefn Operator {} {@B{clear}} {= (@B{l} @B{bits} b, @B{int} n) @B{l} @B{bits}}
 Dyadic operator that clears the @code{n}th least significant bit in
-@code{@B{b}}.  If @code{n} is not in the range @code{[1,L_bits_width]}
-then the operator yields @B{b}.
+@code{@B{b}}, where @code{n} is zero based.  If @code{n} is not in the
+range @code{[0,L_bits_width)} then the operator yields @B{b}.
 @end deftypefn
 
 @deftypefn Operator {} {@B{test}} {= (@B{l} @B{bits} b, @B{int} n) @B{bool}}
 Dyadic operator that tests whether the @code{n}th least significant
-bit in @code{@B{b}} is set. If @code{n} is not in the range
-@code{1,L_bits_width]} then the operator yields @B{false}.
+bit in @code{@B{b}} is set, where @code{n} is zero based. If @code{n}
+is not in the range @code{0,L_bits_width)} then the operator yields
+@B{false}.
 @end deftypefn
 
 @node Extended math procedures

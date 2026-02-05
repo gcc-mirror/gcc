@@ -1,30 +1,35 @@
 begin (short short bits a = short short 16r0;
        assert (a SET (short_short_bits_width + 1) = a);
        assert (a SET -1 = a);
-       assert (a SET short_short_bits_width = short short 16r1 SHL (short_short_bits_width-1));
-       assert (a SET 1 SET 2 = BIN short short 3));
+       assert (a SET short_short_bits_width = a);
+       assert (a SET (short_short_bits_width-1) = short short 16r1 SHL (short_short_bits_width-1));
+       assert (a SET 0 SET 1 = BIN short short 3));
 
       (short bits a = short 16r0;
        assert (a SET (short_bits_width + 1) = a);
        assert (a SET -1 = a);
-       assert (a SET short_bits_width = short 16r1 SHL (short_bits_width-1));
-       assert (a SET 1 SET 2 = BIN short 3));
+       assert (a SET short_bits_width = a);
+       assert (a SET (short_bits_width-1) = short 16r1 SHL (short_bits_width-1));
+       assert (a SET 0 SET 1 = BIN short 3));
 
       (bits a = 16r0;
        assert (a SET (bits_width + 1) = a);
        assert (a SET -1 = a);
-       assert (a SET bits_width = 16r1 SHL (bits_width-1));
-       assert (a SET 1 SET 2 = BIN 3));
+       assert (a SET bits_width = a);
+       assert (a SET (bits_width-1) = 16r1 SHL (bits_width-1));
+       assert (a SET 0 SET 1 = BIN 3));
 
       (long bits a = long 16r0;
        assert (a SET (long_bits_width + 1) = a);
        assert (a SET -1 = a);
-       assert (a SET long_bits_width = long 16r1 SHL (long_bits_width-1));
-       assert (a SET 1 SET 2 = BIN long 3));
+       assert (a SET long_bits_width = a);
+       assert (a SET (long_bits_width-1) = long 16r1 SHL (long_bits_width-1));
+       assert (a SET 0 SET 1 = BIN long 3));
 
       (long long bits a = long long 16r0;
        assert (a SET (long_long_bits_width + 1) = a);
        assert (a SET -1 = a);
-       assert (a SET long_long_bits_width = long long 16r1 SHL (long_long_bits_width-1));
-       assert (a SET 1 SET 2 = BIN long long 3))
+       assert (a SET long_long_bits_width = a);
+       assert (a SET (long_long_bits_width-1) = long long 16r1 SHL (long_long_bits_width-1));
+       assert (a SET 0 SET 1 = BIN long long 3))
 end
