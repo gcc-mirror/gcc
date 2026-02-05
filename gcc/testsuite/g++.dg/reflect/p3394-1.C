@@ -1,9 +1,7 @@
-// { dg-do compile { target c++26 } }
+// { dg-do run { target c++26 } }
 // { dg-additional-options "-freflection" }
 // Slightly tweaked test from P3394R4 3.2
 // https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3394r4.html#test-parametrization
-// TODO: Doesn't link currently, once it does, it should be dg-do run test
-// with output checking or something like that.
 
 #include <meta>
 #include <array>
@@ -172,3 +170,15 @@ main ()
 {
   invoke_all <^^N> ();
 }
+
+// { dg-output "Called test_sum \\\(x=1, y=1, z=2\\\)(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*Called test_sum \\\(x=1, y=2, z=3\\\)(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*setup fixture(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*test one\\\(1\\\)(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*teardown fixture(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*setup fixture(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*test one\\\(2\\\)(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*teardown fixture(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*setup fixture(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*test two(\n|\r\n|\r)" }
+// { dg-output "\[^\n\r]*teardown fixture" }
