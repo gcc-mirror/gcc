@@ -2505,20 +2505,8 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 	  gsi_insert_seq_before (&last_gsi, new_stmts, GSI_SAME_STMT);
 	}
 
-      /* Fix phi expressions in all out of loop bb.  */
-      imm_use_iterator imm_iter;
-      gimple *use_stmt;
-      use_operand_p use_p;
-      tree ic_var = PHI_ARG_DEF_FROM_EDGE (phi1, update_e);
-      if (TREE_CODE (ic_var) == SSA_NAME)
-	{
-	  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, ic_var)
-	    if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-	      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-		SET_USE (use_p, ni_name);
-	}
-      else
-	adjust_phi_and_debug_stmts (phi1, update_e, ni_name);
+      /* Update the PHI argument on the requested edge.  */
+      adjust_phi_and_debug_stmts (phi1, update_e, ni_name);
     }
 }
 
