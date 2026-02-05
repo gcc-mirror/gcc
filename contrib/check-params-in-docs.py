@@ -26,7 +26,6 @@
 
 import argparse
 import sys
-from itertools import dropwhile, takewhile
 
 
 def get_param_tuple(line):
@@ -39,7 +38,8 @@ def get_param_tuple(line):
     return (name, description)
 
 def target_specific(param):
-    return param.split('-')[0] in ('aarch64', 'gcn', 'x86')
+    return param.split('-')[0] in ('aarch64', 'gcn', 'x86', 'riscv', 'rs6000',
+                                   'loongarch')
 
 
 parser = argparse.ArgumentParser()
@@ -59,11 +59,7 @@ for line in open(args.params_output).readlines():
 # Skip target-specific params
 help_params = {x:y for x,y in help_params.items() if not target_specific(x)}
 
-# Find section in .texi manual with parameters
-texi = ([x.strip() for x in open(args.texi_file).readlines()])
-texi = dropwhile(lambda x: 'itemx --param' not in x, texi)
-texi = takewhile(lambda x: '@node Instrumentation Options' not in x, texi)
-texi = list(texi)[1:]
+texi = list([x.strip() for x in open(args.texi_file).readlines()])
 
 texi_params = []
 skip = False
