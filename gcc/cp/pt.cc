@@ -14141,10 +14141,15 @@ tsubst_pack_index (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   tree index = tsubst_expr (PACK_INDEX_INDEX (t), args, complain, in_decl);
   const bool parenthesized_p = (TREE_CODE (t) == PACK_INDEX_EXPR
 				&& PACK_INDEX_PARENTHESIZED_P (t));
+  tree r;
   if (!value_dependent_expression_p (index) && TREE_CODE (pack) == TREE_VEC)
-    return pack_index_element (index, pack, parenthesized_p, complain);
+    r = pack_index_element (index, pack, parenthesized_p, complain);
   else
-    return make_pack_index (pack, index);
+    r = make_pack_index (pack, index);
+  if (TREE_CODE (t) == PACK_INDEX_TYPE)
+    r = cp_build_qualified_type (r, cp_type_quals (t) | cp_type_quals (r),
+				 complain | tf_ignore_bad_quals);
+  return r;
 }
 
 /* Make an argument pack out of the TREE_VEC VEC.  */
