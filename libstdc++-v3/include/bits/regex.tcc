@@ -309,8 +309,8 @@ namespace __detail
 	if (__s == __it.first)
 	  {
 	    if (__icase
-		&& ((__it.second
-		     & (ctype_base::lower | ctype_base::upper)) != 0))
+		&& (__it.second._M_base == ctype_base::lower
+		      || __it.second._M_base == ctype_base::upper))
 	      return ctype_base::alpha;
 	    return __it.second;
 	  }
