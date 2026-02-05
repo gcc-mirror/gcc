@@ -118,6 +118,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-math-opts.h"
 #include "dbgcnt.h"
 #include "cfghooks.h"
+#include "gimple-match.h"
 
 /* This structure represents one basic block that either computes a
    division, or is a common dominator for basic block that compute a
@@ -3356,6 +3357,26 @@ last_fma_candidate_feeds_initial_phi (fma_deferring_state *state,
   return false;
 }
 
+/* If ARG is a convert that only changes the sign then strip the outer
+   conversion away.  It does not strip conversions recursively.  Otherwise
+   return ARG.  */
+
+static tree
+strip_nop_view_converts (tree arg)
+{
+  if (TREE_CODE (arg) != SSA_NAME)
+    return arg;
+
+  gimple *assign = SSA_NAME_DEF_STMT (arg);
+  gimple_match_op res_op;
+  if (gimple_extract_op (assign, &res_op)
+      && (CONVERT_EXPR_CODE_P (res_op.code) || res_op.code == VIEW_CONVERT_EXPR)
+      && tree_nop_conversion_p (TREE_TYPE (res_op.ops[0]), TREE_TYPE (arg)))
+    return res_op.ops[0];
+
+  return arg;
+}
+
 /* Combine the multiplication at MUL_STMT with operands MULOP1 and MULOP2
    with uses in additions and subtractions to form fused multiply-add
    operations.  Returns true if successful and MUL_STMT should be removed.
@@ -3616,11 +3637,11 @@ convert_mult_to_fma (gimple *mul_stmt, tree op1, tree op2,
 	    {
 	      gcc_checking_assert (!state->m_initial_phi);
 	      gphi *phi;
-	      if (ops[0] == result)
+	      if (strip_nop_view_converts (ops[0]) == result)
 		phi = result_of_phi (ops[1]);
 	      else
 		{
-		  gcc_assert (ops[1] == result);
+		  gcc_assert (strip_nop_view_converts (ops[1]) == result);
 		  phi = result_of_phi (ops[0]);
 		}
 
