@@ -41,7 +41,7 @@ _Alignas (long double) long int lild;
 _Alignas (char) long long int llic; /* { dg-error "cannot reduce alignment" } */
 _Alignas (short int) long long int llis; /* { dg-error "cannot reduce alignment" } */
 _Alignas (int) long long int llii; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
-_Alignas (long int) long long int llil; /* { dg-error "cannot reduce alignment" "" { target { x32 } } } */
+_Alignas (long int) long long int llil; /* { dg-error "cannot reduce alignment" "" { target { x32 || *-*-mingw* } } } */
 _Alignas (long long int) long long int llill;
 _Alignas (float) long long int llif; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
 _Alignas (double) long long int llid;
@@ -59,7 +59,7 @@ _Alignas (long double) float fld;
 _Alignas (char) double dc; /* { dg-error "cannot reduce alignment" } */
 _Alignas (short int) double ds; /* { dg-error "cannot reduce alignment" } */
 _Alignas (int) double di; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
-_Alignas (long int) double dl; /* { dg-error "cannot reduce alignment" "" { target { x32 } } } */
+_Alignas (long int) double dl; /* { dg-error "cannot reduce alignment" "" { target { x32 || *-*-mingw* } } } */
 _Alignas (long long int) double dll;
 _Alignas (float) double df; /* { dg-error "cannot reduce alignment" "" { target { ! { ia32 } } } } */
 _Alignas (double) double dd;
