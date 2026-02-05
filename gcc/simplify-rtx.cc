@@ -3074,6 +3074,39 @@ simplify_with_subreg_not (rtx_code binop, machine_mode mode, rtx op0, rtx op1)
     return simplify_gen_binary (binop, mode, op0, new_not);
 }
 
+/* Return TRUE iff NOP is a negated form of OP, or vice-versa.  */
+static bool
+negated_ops_p (rtx nop, rtx op)
+{
+  /* Explicit negation.  */
+  if (GET_CODE (nop) == NOT
+      && rtx_equal_p (XEXP (nop, 0), op))
+    return true;
+  if (GET_CODE (op) == NOT
+      && rtx_equal_p (XEXP (op, 0), nop))
+    return true;
+
+  /* (~C <r A) is a negated form of (C << A) if C == 1.  */
+  if (GET_CODE (op) == ASHIFT
+      && GET_CODE (nop) == ROTATE
+      && XEXP (op, 0) == CONST1_RTX (GET_MODE (op))
+      && CONST_INT_P (XEXP (nop, 0))
+      && INTVAL (XEXP (nop, 0)) == -2
+      && rtx_equal_p (XEXP (op, 1), XEXP (nop, 1)))
+    return true;
+  if (GET_CODE (nop) == ASHIFT
+      && GET_CODE (op) == ROTATE
+      && XEXP (nop, 0) == CONST1_RTX (GET_MODE (op))
+      && CONST_INT_P (XEXP (nop, 0))
+      && INTVAL (XEXP (nop, 0)) == -2
+      && rtx_equal_p (XEXP (op, 1), XEXP (nop, 1)))
+    return true;
+
+  /* ??? Should we consider rotations of C and ~C by the same amount?  */
+
+  return false;
+}
+
 /* Subroutine of simplify_binary_operation.  Simplify a binary operation
    CODE with result mode MODE, operating on OP0 and OP1.  If OP0 and/or
    OP1 are constant pool references, TRUEOP0 and TRUEOP1 represent the
@@ -3861,8 +3894,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 
       /* Convert (ior (and (not A) B) A) into A | B.  */
       if (GET_CODE (op0) == AND
-	  && GET_CODE (XEXP (op0, 0)) == NOT
-	  && rtx_equal_p (XEXP (XEXP (op0, 0), 0), op1))
+	  && negated_ops_p (XEXP (op0, 0), op1))
 	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
 
       tem = simplify_with_subreg_not (code, mode, op0, op1);
@@ -4133,8 +4165,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 
       /* Convert (xor (and (not A) B) A) into A | B.  */
       if (GET_CODE (op0) == AND
-	  && GET_CODE (XEXP (op0, 0)) == NOT
-	  && rtx_equal_p (XEXP (XEXP (op0, 0), 0), op1))
+	  && negated_ops_p (XEXP (op0, 0), op1))
 	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
 
       /* Convert (xor (and (rotate (~1) A) B) (ashift 1 A))
@@ -4413,21 +4444,19 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && rtx_equal_p (op1, XEXP (XEXP (op0, 1), 0)))
 	return simplify_gen_binary (AND, mode, op1, XEXP (op0, 0));
 
-      /* (and (ior/xor (X Y) (not Y)) -> X & ~Y */
+      /* (and (ior/xor X Y) (not Y)) -> X & ~Y */
       if ((GET_CODE (op0) == IOR || GET_CODE (op0) == XOR)
-	  && GET_CODE (op1) == NOT
-	  && rtx_equal_p (XEXP (op1, 0), XEXP (op0, 1)))
+	  && negated_ops_p (op1, XEXP (op0, 1)))
 	return simplify_gen_binary (AND, mode, XEXP (op0, 0),
 				    simplify_gen_unary (NOT, mode,
-							XEXP (op1, 0),
+							XEXP (op0, 1),
 							mode));
-      /* (and (ior/xor (Y X) (not Y)) -> X & ~Y */
+      /* (and (ior/xor Y X) (not Y)) -> X & ~Y */
       if ((GET_CODE (op0) == IOR || GET_CODE (op0) == XOR)
-	  && GET_CODE (op1) == NOT
-	  && rtx_equal_p (XEXP (op1, 0), XEXP (op0, 0)))
+	  && negated_ops_p (op1, XEXP (op0, 0)))
 	return simplify_gen_binary (AND, mode, XEXP (op0, 1),
 				    simplify_gen_unary (NOT, mode,
-							XEXP (op1, 0),
+							XEXP (op0, 0),
 							mode));
 
       /* Convert (and (ior A C) (ior B C)) into (ior (and A B) C).  */
