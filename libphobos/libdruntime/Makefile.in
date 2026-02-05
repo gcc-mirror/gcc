@@ -223,30 +223,30 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/internal/string.lo core/internal/switch_.lo \
 	core/internal/traits.lo core/internal/utf.lo \
 	core/internal/util/array.lo core/internal/util/math.lo \
-	core/interpolation.lo core/lifetime.lo core/math.lo \
-	core/memory.lo core/runtime.lo core/simd.lo \
-	core/stdc/assert_.lo core/stdc/complex.lo core/stdc/config.lo \
-	core/stdc/ctype.lo core/stdc/errno.lo core/stdc/fenv.lo \
-	core/stdc/float_.lo core/stdc/inttypes.lo core/stdc/limits.lo \
-	core/stdc/locale.lo core/stdc/math.lo core/stdc/signal.lo \
-	core/stdc/stdarg.lo core/stdc/stdatomic.lo core/stdc/stddef.lo \
-	core/stdc/stdint.lo core/stdc/stdio.lo core/stdc/stdlib.lo \
-	core/stdc/string.lo core/stdc/tgmath.lo core/stdc/time.lo \
-	core/stdc/wchar_.lo core/stdc/wctype.lo core/sync/barrier.lo \
-	core/sync/condition.lo core/sync/config.lo core/sync/event.lo \
-	core/sync/exception.lo core/sync/mutex.lo core/sync/package.lo \
-	core/sync/rwmutex.lo core/sync/semaphore.lo \
-	core/thread/context.lo core/thread/fiber/base.lo \
-	core/thread/fiber/package.lo core/thread/osthread.lo \
-	core/thread/package.lo core/thread/threadbase.lo \
-	core/thread/threadgroup.lo core/thread/types.lo core/time.lo \
-	core/vararg.lo core/volatile.lo etc/valgrind/valgrind.lo \
-	gcc/attribute.lo gcc/attributes.lo gcc/backtrace.lo \
-	gcc/builtins.lo gcc/deh.lo gcc/emutls.lo gcc/gthread.lo \
-	gcc/sections/common.lo gcc/sections/elf.lo \
-	gcc/sections/macho.lo gcc/sections/package.lo \
-	gcc/sections/pecoff.lo gcc/simd.lo gcc/unwind/arm.lo \
-	gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
+	core/internal/vararg/gnu.lo core/interpolation.lo \
+	core/lifetime.lo core/math.lo core/memory.lo core/runtime.lo \
+	core/simd.lo core/stdc/assert_.lo core/stdc/complex.lo \
+	core/stdc/config.lo core/stdc/ctype.lo core/stdc/errno.lo \
+	core/stdc/fenv.lo core/stdc/float_.lo core/stdc/inttypes.lo \
+	core/stdc/limits.lo core/stdc/locale.lo core/stdc/math.lo \
+	core/stdc/signal.lo core/stdc/stdarg.lo core/stdc/stdatomic.lo \
+	core/stdc/stddef.lo core/stdc/stdint.lo core/stdc/stdio.lo \
+	core/stdc/stdlib.lo core/stdc/string.lo core/stdc/tgmath.lo \
+	core/stdc/time.lo core/stdc/wchar_.lo core/stdc/wctype.lo \
+	core/sync/barrier.lo core/sync/condition.lo \
+	core/sync/config.lo core/sync/event.lo core/sync/exception.lo \
+	core/sync/mutex.lo core/sync/package.lo core/sync/rwmutex.lo \
+	core/sync/semaphore.lo core/thread/context.lo \
+	core/thread/fiber/base.lo core/thread/fiber/package.lo \
+	core/thread/osthread.lo core/thread/package.lo \
+	core/thread/threadbase.lo core/thread/threadgroup.lo \
+	core/thread/types.lo core/time.lo core/vararg.lo \
+	core/volatile.lo etc/valgrind/valgrind.lo gcc/attribute.lo \
+	gcc/attributes.lo gcc/backtrace.lo gcc/builtins.lo gcc/deh.lo \
+	gcc/emutls.lo gcc/gthread.lo gcc/sections/common.lo \
+	gcc/sections/elf.lo gcc/sections/macho.lo \
+	gcc/sections/package.lo gcc/sections/pecoff.lo gcc/simd.lo \
+	gcc/unwind/arm.lo gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/arraycat.lo \
 	rt/config.lo rt/critical_.lo rt/deh.lo rt/dmain2.lo \
@@ -372,11 +372,11 @@ am__objects_19 = core/sys/linux/config.lo core/sys/linux/dlfcn.lo \
 	core/sys/linux/elf.lo core/sys/linux/epoll.lo \
 	core/sys/linux/err.lo core/sys/linux/errno.lo \
 	core/sys/linux/execinfo.lo core/sys/linux/fcntl.lo \
-	core/sys/linux/fs.lo core/sys/linux/ifaddrs.lo \
-	core/sys/linux/input.lo core/sys/linux/input_event_codes.lo \
-	core/sys/linux/io_uring.lo core/sys/linux/link.lo \
-	core/sys/linux/linux/if_arp.lo \
-	core/sys/linux/linux/if_packet.lo \
+	core/sys/linux/fs.lo core/sys/linux/hdlc/ioctl.lo \
+	core/sys/linux/ifaddrs.lo core/sys/linux/input.lo \
+	core/sys/linux/input_event_codes.lo core/sys/linux/io_uring.lo \
+	core/sys/linux/link.lo core/sys/linux/linux/if_arp.lo \
+	core/sys/linux/linux/if_packet.lo core/sys/linux/net/if_.lo \
 	core/sys/linux/netinet/in_.lo core/sys/linux/netinet/tcp.lo \
 	core/sys/linux/perf_event.lo core/sys/linux/sched.lo \
 	core/sys/linux/stdio.lo core/sys/linux/string.lo \
@@ -489,8 +489,9 @@ am__objects_23 = core/sys/solaris/dlfcn.lo core/sys/solaris/elf.lo \
 	core/sys/solaris/sys/elf_notes.lo \
 	core/sys/solaris/sys/elftypes.lo core/sys/solaris/sys/link.lo \
 	core/sys/solaris/sys/priocntl.lo \
-	core/sys/solaris/sys/procset.lo core/sys/solaris/sys/types.lo \
-	core/sys/solaris/time.lo
+	core/sys/solaris/sys/procfs.lo core/sys/solaris/sys/procset.lo \
+	core/sys/solaris/sys/regset.lo core/sys/solaris/sys/types.lo \
+	core/sys/solaris/thread.lo core/sys/solaris/time.lo
 @DRUNTIME_OS_SOLARIS_TRUE@am__objects_24 = $(am__objects_23)
 @DRUNTIME_CPU_AARCH64_TRUE@am__objects_25 = config/aarch64/libgdruntime_la-switchcontext.lo
 @DRUNTIME_CPU_ARM_TRUE@am__objects_26 = config/arm/libgdruntime_la-switchcontext.lo
@@ -885,21 +886,21 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/qsort.d core/internal/spinlock.d core/internal/string.d \
 	core/internal/switch_.d core/internal/traits.d core/internal/utf.d \
 	core/internal/util/array.d core/internal/util/math.d \
-	core/interpolation.d core/lifetime.d core/math.d core/memory.d \
-	core/runtime.d core/simd.d core/stdc/assert_.d core/stdc/complex.d \
-	core/stdc/config.d core/stdc/ctype.d core/stdc/errno.d \
-	core/stdc/fenv.d core/stdc/float_.d core/stdc/inttypes.d \
-	core/stdc/limits.d core/stdc/locale.d core/stdc/math.d \
-	core/stdc/signal.d core/stdc/stdarg.d core/stdc/stdatomic.d \
-	core/stdc/stddef.d core/stdc/stdint.d core/stdc/stdio.d \
-	core/stdc/stdlib.d core/stdc/string.d core/stdc/tgmath.d \
-	core/stdc/time.d core/stdc/wchar_.d core/stdc/wctype.d \
-	core/sync/barrier.d core/sync/condition.d core/sync/config.d \
-	core/sync/event.d core/sync/exception.d core/sync/mutex.d \
-	core/sync/package.d core/sync/rwmutex.d core/sync/semaphore.d \
-	core/thread/context.d core/thread/fiber/base.d \
-	core/thread/fiber/package.d core/thread/osthread.d \
-	core/thread/package.d core/thread/threadbase.d \
+	core/internal/vararg/gnu.d core/interpolation.d core/lifetime.d \
+	core/math.d core/memory.d core/runtime.d core/simd.d \
+	core/stdc/assert_.d core/stdc/complex.d core/stdc/config.d \
+	core/stdc/ctype.d core/stdc/errno.d core/stdc/fenv.d \
+	core/stdc/float_.d core/stdc/inttypes.d core/stdc/limits.d \
+	core/stdc/locale.d core/stdc/math.d core/stdc/signal.d \
+	core/stdc/stdarg.d core/stdc/stdatomic.d core/stdc/stddef.d \
+	core/stdc/stdint.d core/stdc/stdio.d core/stdc/stdlib.d \
+	core/stdc/string.d core/stdc/tgmath.d core/stdc/time.d \
+	core/stdc/wchar_.d core/stdc/wctype.d core/sync/barrier.d \
+	core/sync/condition.d core/sync/config.d core/sync/event.d \
+	core/sync/exception.d core/sync/mutex.d core/sync/package.d \
+	core/sync/rwmutex.d core/sync/semaphore.d core/thread/context.d \
+	core/thread/fiber/base.d core/thread/fiber/package.d \
+	core/thread/osthread.d core/thread/package.d core/thread/threadbase.d \
 	core/thread/threadgroup.d core/thread/types.d core/time.d \
 	core/vararg.d core/volatile.d etc/valgrind/valgrind.d gcc/attribute.d \
 	gcc/attributes.d gcc/backtrace.d gcc/builtins.d gcc/deh.d gcc/emutls.d \
@@ -969,10 +970,11 @@ DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \
 	core/sys/linux/err.d core/sys/linux/errno.d core/sys/linux/execinfo.d \
-	core/sys/linux/fcntl.d core/sys/linux/fs.d core/sys/linux/ifaddrs.d \
-	core/sys/linux/input.d core/sys/linux/input_event_codes.d \
-	core/sys/linux/io_uring.d core/sys/linux/link.d \
-	core/sys/linux/linux/if_arp.d core/sys/linux/linux/if_packet.d \
+	core/sys/linux/fcntl.d core/sys/linux/fs.d core/sys/linux/hdlc/ioctl.d \
+	core/sys/linux/ifaddrs.d core/sys/linux/input.d \
+	core/sys/linux/input_event_codes.d core/sys/linux/io_uring.d \
+	core/sys/linux/link.d core/sys/linux/linux/if_arp.d \
+	core/sys/linux/linux/if_packet.d core/sys/linux/net/if_.d \
 	core/sys/linux/netinet/in_.d core/sys/linux/netinet/tcp.d \
 	core/sys/linux/perf_event.d core/sys/linux/sched.d \
 	core/sys/linux/stdio.d core/sys/linux/string.d \
@@ -1041,8 +1043,9 @@ DRUNTIME_DSOURCES_SOLARIS = core/sys/solaris/dlfcn.d \
 	core/sys/solaris/sys/elf_SPARC.d core/sys/solaris/sys/elf_amd64.d \
 	core/sys/solaris/sys/elf_notes.d core/sys/solaris/sys/elftypes.d \
 	core/sys/solaris/sys/link.d core/sys/solaris/sys/priocntl.d \
-	core/sys/solaris/sys/procset.d core/sys/solaris/sys/types.d \
-	core/sys/solaris/time.d
+	core/sys/solaris/sys/procfs.d core/sys/solaris/sys/procset.d \
+	core/sys/solaris/sys/regset.d core/sys/solaris/sys/types.d \
+	core/sys/solaris/thread.d core/sys/solaris/time.d
 
 DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/aclapi.d core/sys/windows/aclui.d \
@@ -1313,6 +1316,10 @@ core/internal/util/$(am__dirstamp):
 	@: > core/internal/util/$(am__dirstamp)
 core/internal/util/array.lo: core/internal/util/$(am__dirstamp)
 core/internal/util/math.lo: core/internal/util/$(am__dirstamp)
+core/internal/vararg/$(am__dirstamp):
+	@$(MKDIR_P) core/internal/vararg
+	@: > core/internal/vararg/$(am__dirstamp)
+core/internal/vararg/gnu.lo: core/internal/vararg/$(am__dirstamp)
 core/interpolation.lo: core/$(am__dirstamp)
 core/lifetime.lo: core/$(am__dirstamp)
 core/math.lo: core/$(am__dirstamp)
@@ -1723,6 +1730,10 @@ core/sys/linux/errno.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/execinfo.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/fcntl.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/fs.lo: core/sys/linux/$(am__dirstamp)
+core/sys/linux/hdlc/$(am__dirstamp):
+	@$(MKDIR_P) core/sys/linux/hdlc
+	@: > core/sys/linux/hdlc/$(am__dirstamp)
+core/sys/linux/hdlc/ioctl.lo: core/sys/linux/hdlc/$(am__dirstamp)
 core/sys/linux/ifaddrs.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/input.lo: core/sys/linux/$(am__dirstamp)
 core/sys/linux/input_event_codes.lo: core/sys/linux/$(am__dirstamp)
@@ -1734,6 +1745,10 @@ core/sys/linux/linux/$(am__dirstamp):
 core/sys/linux/linux/if_arp.lo: core/sys/linux/linux/$(am__dirstamp)
 core/sys/linux/linux/if_packet.lo:  \
 	core/sys/linux/linux/$(am__dirstamp)
+core/sys/linux/net/$(am__dirstamp):
+	@$(MKDIR_P) core/sys/linux/net
+	@: > core/sys/linux/net/$(am__dirstamp)
+core/sys/linux/net/if_.lo: core/sys/linux/net/$(am__dirstamp)
 core/sys/linux/netinet/$(am__dirstamp):
 	@$(MKDIR_P) core/sys/linux/netinet
 	@: > core/sys/linux/netinet/$(am__dirstamp)
@@ -1973,8 +1988,11 @@ core/sys/solaris/sys/elftypes.lo:  \
 core/sys/solaris/sys/link.lo: core/sys/solaris/sys/$(am__dirstamp)
 core/sys/solaris/sys/priocntl.lo:  \
 	core/sys/solaris/sys/$(am__dirstamp)
+core/sys/solaris/sys/procfs.lo: core/sys/solaris/sys/$(am__dirstamp)
 core/sys/solaris/sys/procset.lo: core/sys/solaris/sys/$(am__dirstamp)
+core/sys/solaris/sys/regset.lo: core/sys/solaris/sys/$(am__dirstamp)
 core/sys/solaris/sys/types.lo: core/sys/solaris/sys/$(am__dirstamp)
+core/sys/solaris/thread.lo: core/sys/solaris/$(am__dirstamp)
 core/sys/solaris/time.lo: core/sys/solaris/$(am__dirstamp)
 config/aarch64/$(am__dirstamp):
 	@$(MKDIR_P) config/aarch64
@@ -2091,6 +2109,8 @@ mostlyclean-compile:
 	-rm -f core/internal/gc/impl/proto/*.lo
 	-rm -f core/internal/util/*.$(OBJEXT)
 	-rm -f core/internal/util/*.lo
+	-rm -f core/internal/vararg/*.$(OBJEXT)
+	-rm -f core/internal/vararg/*.lo
 	-rm -f core/stdc/*.$(OBJEXT)
 	-rm -f core/stdc/*.lo
 	-rm -f core/stdcpp/*.$(OBJEXT)
@@ -2125,8 +2145,12 @@ mostlyclean-compile:
 	-rm -f core/sys/freebsd/sys/*.lo
 	-rm -f core/sys/linux/*.$(OBJEXT)
 	-rm -f core/sys/linux/*.lo
+	-rm -f core/sys/linux/hdlc/*.$(OBJEXT)
+	-rm -f core/sys/linux/hdlc/*.lo
 	-rm -f core/sys/linux/linux/*.$(OBJEXT)
 	-rm -f core/sys/linux/linux/*.lo
+	-rm -f core/sys/linux/net/*.$(OBJEXT)
+	-rm -f core/sys/linux/net/*.lo
 	-rm -f core/sys/linux/netinet/*.$(OBJEXT)
 	-rm -f core/sys/linux/netinet/*.lo
 	-rm -f core/sys/linux/sys/*.$(OBJEXT)
@@ -2293,6 +2317,7 @@ clean-libtool:
 	-rm -rf core/internal/gc/impl/manual/.libs core/internal/gc/impl/manual/_libs
 	-rm -rf core/internal/gc/impl/proto/.libs core/internal/gc/impl/proto/_libs
 	-rm -rf core/internal/util/.libs core/internal/util/_libs
+	-rm -rf core/internal/vararg/.libs core/internal/vararg/_libs
 	-rm -rf core/stdc/.libs core/stdc/_libs
 	-rm -rf core/stdcpp/.libs core/stdcpp/_libs
 	-rm -rf core/sync/.libs core/sync/_libs
@@ -2310,7 +2335,9 @@ clean-libtool:
 	-rm -rf core/sys/freebsd/netinet/.libs core/sys/freebsd/netinet/_libs
 	-rm -rf core/sys/freebsd/sys/.libs core/sys/freebsd/sys/_libs
 	-rm -rf core/sys/linux/.libs core/sys/linux/_libs
+	-rm -rf core/sys/linux/hdlc/.libs core/sys/linux/hdlc/_libs
 	-rm -rf core/sys/linux/linux/.libs core/sys/linux/linux/_libs
+	-rm -rf core/sys/linux/net/.libs core/sys/linux/net/_libs
 	-rm -rf core/sys/linux/netinet/.libs core/sys/linux/netinet/_libs
 	-rm -rf core/sys/linux/sys/.libs core/sys/linux/sys/_libs
 	-rm -rf core/sys/netbsd/.libs core/sys/netbsd/_libs
@@ -2460,6 +2487,7 @@ distclean-generic:
 	-rm -f core/internal/gc/impl/manual/$(am__dirstamp)
 	-rm -f core/internal/gc/impl/proto/$(am__dirstamp)
 	-rm -f core/internal/util/$(am__dirstamp)
+	-rm -f core/internal/vararg/$(am__dirstamp)
 	-rm -f core/stdc/$(am__dirstamp)
 	-rm -f core/stdcpp/$(am__dirstamp)
 	-rm -f core/sync/$(am__dirstamp)
@@ -2477,7 +2505,9 @@ distclean-generic:
 	-rm -f core/sys/freebsd/netinet/$(am__dirstamp)
 	-rm -f core/sys/freebsd/sys/$(am__dirstamp)
 	-rm -f core/sys/linux/$(am__dirstamp)
+	-rm -f core/sys/linux/hdlc/$(am__dirstamp)
 	-rm -f core/sys/linux/linux/$(am__dirstamp)
+	-rm -f core/sys/linux/net/$(am__dirstamp)
 	-rm -f core/sys/linux/netinet/$(am__dirstamp)
 	-rm -f core/sys/linux/sys/$(am__dirstamp)
 	-rm -f core/sys/netbsd/$(am__dirstamp)

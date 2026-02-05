@@ -199,21 +199,21 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/internal/qsort.d core/internal/spinlock.d core/internal/string.d \
 	core/internal/switch_.d core/internal/traits.d core/internal/utf.d \
 	core/internal/util/array.d core/internal/util/math.d \
-	core/interpolation.d core/lifetime.d core/math.d core/memory.d \
-	core/runtime.d core/simd.d core/stdc/assert_.d core/stdc/complex.d \
-	core/stdc/config.d core/stdc/ctype.d core/stdc/errno.d \
-	core/stdc/fenv.d core/stdc/float_.d core/stdc/inttypes.d \
-	core/stdc/limits.d core/stdc/locale.d core/stdc/math.d \
-	core/stdc/signal.d core/stdc/stdarg.d core/stdc/stdatomic.d \
-	core/stdc/stddef.d core/stdc/stdint.d core/stdc/stdio.d \
-	core/stdc/stdlib.d core/stdc/string.d core/stdc/tgmath.d \
-	core/stdc/time.d core/stdc/wchar_.d core/stdc/wctype.d \
-	core/sync/barrier.d core/sync/condition.d core/sync/config.d \
-	core/sync/event.d core/sync/exception.d core/sync/mutex.d \
-	core/sync/package.d core/sync/rwmutex.d core/sync/semaphore.d \
-	core/thread/context.d core/thread/fiber/base.d \
-	core/thread/fiber/package.d core/thread/osthread.d \
-	core/thread/package.d core/thread/threadbase.d \
+	core/internal/vararg/gnu.d core/interpolation.d core/lifetime.d \
+	core/math.d core/memory.d core/runtime.d core/simd.d \
+	core/stdc/assert_.d core/stdc/complex.d core/stdc/config.d \
+	core/stdc/ctype.d core/stdc/errno.d core/stdc/fenv.d \
+	core/stdc/float_.d core/stdc/inttypes.d core/stdc/limits.d \
+	core/stdc/locale.d core/stdc/math.d core/stdc/signal.d \
+	core/stdc/stdarg.d core/stdc/stdatomic.d core/stdc/stddef.d \
+	core/stdc/stdint.d core/stdc/stdio.d core/stdc/stdlib.d \
+	core/stdc/string.d core/stdc/tgmath.d core/stdc/time.d \
+	core/stdc/wchar_.d core/stdc/wctype.d core/sync/barrier.d \
+	core/sync/condition.d core/sync/config.d core/sync/event.d \
+	core/sync/exception.d core/sync/mutex.d core/sync/package.d \
+	core/sync/rwmutex.d core/sync/semaphore.d core/thread/context.d \
+	core/thread/fiber/base.d core/thread/fiber/package.d \
+	core/thread/osthread.d core/thread/package.d core/thread/threadbase.d \
 	core/thread/threadgroup.d core/thread/types.d core/time.d \
 	core/vararg.d core/volatile.d etc/valgrind/valgrind.d gcc/attribute.d \
 	gcc/attributes.d gcc/backtrace.d gcc/builtins.d gcc/deh.d gcc/emutls.d \
@@ -284,10 +284,11 @@ DRUNTIME_DSOURCES_FREEBSD = core/sys/freebsd/config.d \
 DRUNTIME_DSOURCES_LINUX = core/sys/linux/config.d \
 	core/sys/linux/dlfcn.d core/sys/linux/elf.d core/sys/linux/epoll.d \
 	core/sys/linux/err.d core/sys/linux/errno.d core/sys/linux/execinfo.d \
-	core/sys/linux/fcntl.d core/sys/linux/fs.d core/sys/linux/ifaddrs.d \
-	core/sys/linux/input.d core/sys/linux/input_event_codes.d \
-	core/sys/linux/io_uring.d core/sys/linux/link.d \
-	core/sys/linux/linux/if_arp.d core/sys/linux/linux/if_packet.d \
+	core/sys/linux/fcntl.d core/sys/linux/fs.d core/sys/linux/hdlc/ioctl.d \
+	core/sys/linux/ifaddrs.d core/sys/linux/input.d \
+	core/sys/linux/input_event_codes.d core/sys/linux/io_uring.d \
+	core/sys/linux/link.d core/sys/linux/linux/if_arp.d \
+	core/sys/linux/linux/if_packet.d core/sys/linux/net/if_.d \
 	core/sys/linux/netinet/in_.d core/sys/linux/netinet/tcp.d \
 	core/sys/linux/perf_event.d core/sys/linux/sched.d \
 	core/sys/linux/stdio.d core/sys/linux/string.d \
@@ -356,8 +357,9 @@ DRUNTIME_DSOURCES_SOLARIS = core/sys/solaris/dlfcn.d \
 	core/sys/solaris/sys/elf_SPARC.d core/sys/solaris/sys/elf_amd64.d \
 	core/sys/solaris/sys/elf_notes.d core/sys/solaris/sys/elftypes.d \
 	core/sys/solaris/sys/link.d core/sys/solaris/sys/priocntl.d \
-	core/sys/solaris/sys/procset.d core/sys/solaris/sys/types.d \
-	core/sys/solaris/time.d
+	core/sys/solaris/sys/procfs.d core/sys/solaris/sys/procset.d \
+	core/sys/solaris/sys/regset.d core/sys/solaris/sys/types.d \
+	core/sys/solaris/thread.d core/sys/solaris/time.d
 
 DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/aclapi.d core/sys/windows/aclui.d \
