@@ -22016,7 +22016,7 @@ performance of the code.  Permissible values for this option are:
 @samp{octeontx2f95mm},
 @samp{a64fx}, @samp{fujitsu-monaka},
 @samp{thunderx}, @samp{thunderxt88},
-@samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110},
+@samp{thunderxt88p1}, @samp{thunderxt81}, @samp{tsv110}, @samp{hip12},
 @samp{thunderxt83}, @samp{thunderx2t99}, @samp{thunderx3t110}, @samp{zeus},
 @samp{cortex-a57.cortex-a53}, @samp{cortex-a72.cortex-a53},
 @samp{cortex-a73.cortex-a35}, @samp{cortex-a73.cortex-a53},
