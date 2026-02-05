@@ -9258,10 +9258,19 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "removing SLP instance operations starting from: %G",
 			     stmt_info->stmt);
+	  while (!visited_vec.is_empty ())
+	    {
+	      slp_tree node = visited_vec.pop ();
+	      SLP_TREE_TYPE (node) = undef_vec_info_type;
+	      if (node->data)
+		{
+		  delete node->data;
+		  node->data = nullptr;
+		}
+	      visited.remove (node);
+	    }
 	  vect_free_slp_instance (instance);
           vinfo->slp_instances.ordered_remove (i);
-	  while (!visited_vec.is_empty ())
-	    visited.remove (visited_vec.pop ());
 	}
       else
 	{
