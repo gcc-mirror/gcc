@@ -1,3 +1,17 @@
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123913
+	PR c++/123964
+	* reflect.cc (eval_parameters_of): Fix up handling of function
+	types.
+
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123611
+	* pt.cc (finish_expansion_stmt): Temporarily enable
+	in_immediate_context () for the iterating expansion stmt N
+	computation.
+
 2026-02-03  Marek Polacek  <polacek@redhat.com>
 
 	* constexpr.cc (is_std_allocator): Don't check for __new_allocator.

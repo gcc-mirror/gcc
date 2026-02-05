@@ -1,3 +1,77 @@
+2026-02-04  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/123922
+	* lra-assigns.cc (lra_split_hard_reg_for): Allocate and free
+	update_hard_regno_preference_check.  Clear non_reload_pseudos for
+	successful spilling too.
+
+2026-02-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/121661
+	* tree-complex.cc (extract_component): Create gimple
+	assign statements directly rather than call force_gimple_operand_gsi.
+
+2026-02-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR translation/89915
+	* doc/params.texi: Copy-edit text throughout the file.
+	* params.opt: Likewise in documentation strings.
+
+2026-02-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR target/123245
+	PR translation/89915
+	* doc/invoke.texi (Warning Options): Remove discussion of parameters
+	from -Winterference-size documentation.
+	(Static Analyzer Options): Ditto for -Wanalyzer-symbol-too-complex,
+	the list of things the analyzer has specific knowledge of, and
+	-fanalyzer-call-summaries.
+	(Optimize Options): Ditto for -finline-limit and fipa-cp-clone.
+	(Instrumentation Options): Likewise for -fsanitize=kernel-hwaddress
+	and -fharden-control-flow-redundancy.
+	(C++ Compiled Module Interface): Likewise for discussion of limits
+	on number of open files.
+
+2026-02-04  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR target/123245
+	PR translation/89915
+	* Makefile.in (TEXI_GCCINT_FILES): Add params.texi.
+	* doc/gccint.texi (pa): New index.
+	(Top): Add new Parameters and Parameters Index nodes to menu.
+	Include params.texi.
+	(Parameter Index): New.
+	* doc/invoke.texi (Option Summary): Move --param from Optimization
+	Options to Developer Options.
+	(Optimization Options): Move parameter documentation to params.texi.
+	(Developer Options): Add abbreviated discussion of --param here.
+	(LoongArch Options): Move parameter documentation to params.texi.
+	(RISC-V Options): Likewise.
+	(RS/6000 and PowerPC Options): Likewise.
+	* doc/params.texi: New file.
+
+2026-02-04  Yangyu Chen  <cyy@cyyself.name>
+
+	* config/riscv/riscv-target-attr.cc
+	(riscv_target_attr_parser::parse_arch): Fix nullptr dereference
+	when parsing invalid arch string.
+
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123818
+	* tree.cc (simple_cst_equal) <case CONSTRUCTOR>: Return -1 if some
+	recursive call returns -1.  Also compare indexes.
+
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122689
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For the PHI handling
+	if min_prec == prec, break after emitting assignment from c.
+
+2026-02-04  Prachi Godbole  <pgodbole@nvidia.com>
+
+	* params.opt: Change default param value.
+
 2026-02-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR other/123841

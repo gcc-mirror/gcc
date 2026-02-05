@@ -1,3 +1,43 @@
+2026-02-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/121661
+	* gcc.dg/torture/pr121661-1.c: New test.
+
+2026-02-04  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/autovec/vls/J: Remove.
+
+2026-02-04  Yangyu Chen  <cyy@cyyself.name>
+
+	* gcc.target/riscv/target-attr-bad-11.c: New test.
+
+2026-02-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/49330
+	* gcc.dg/torture/pr49330-1.c: New testcase.
+	* gcc.dg/torture/pr49330-2.c: Likewise.
+
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123913
+	PR c++/123964
+	* g++.dg/reflect/parameters_of7.C: New test.
+
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123611
+	* g++.dg/reflect/expansion-stmt1.C: New test.
+
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123818
+	* g++.dg/cpp0x/pr123818.C: New test.
+
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122689
+	* gcc.dg/bitint-127.c: New test.
+
 2026-02-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/116865

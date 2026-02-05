@@ -1,3 +1,42 @@
+2026-02-04  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/117404
+	* include/bits/version.def (associative_heterogeneous_erasure):
+	Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/map: Request new feature from version.h.
+	* include/std/set: Same.
+	* include/std/unordered_map: Same.
+	* include/std/unordered_set: Same.
+	* include/bits/stl_map.h (extract, erase): Define overloads.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/unordered_map.h: Same, 2x.
+	* include/bits/unordered_set.h: Same, 2x.
+	* include/bits/stl_function.h (concepts __not_container_iterator,
+	__heterogeneous_key): Define.
+	* include/bits/hashtable.h (_M_find_before_node, _M_locate, extract):
+	Delegate to more-general _tr version.
+	(_M_find_before_node_tr, _M_locate_tr, _M_extract_tr, _M_erase_tr):
+	Add new members to support a heterogeneous key argument.
+	(_M_erase_some): Add new helper function.
+	(concept __heterogeneous_hash_key): Define.
+	* include/bits/stl_tree.h (_M_lower_bound_tr, _M_upper_bound_tr,
+	_M_erase_tr, _M_extract_tr): Add new members to support a
+	heterogeneous key argument.
+	(concept __heterogeneous_tree_key): Define.
+	* testsuite/23_containers/map/modifiers/hetero/erase.cc: New test.
+	* testsuite/23_containers/multimap/modifiers/hetero/erase.cc: Same.
+	* testsuite/23_containers/multiset/modifiers/hetero/erase.cc: Same.
+	* testsuite/23_containers/set/modifiers/hetero/erase.cc: Same.
+	* testsuite/23_containers/unordered_map/modifiers/hetero/erase.cc: Same.
+	* testsuite/23_containers/unordered_multimap/modifiers/hetero/erase.cc:
+	Same.
+	* testsuite/23_containers/unordered_multiset/modifiers/hetero/erase.cc:
+	Same.
+	* testsuite/23_containers/unordered_set/modifiers/hetero/erase.cc: Same.
+
 2026-02-03  Marek Polacek  <polacek@redhat.com>
 
 	* include/bits/new_allocator.h (__new_allocator::allocate,

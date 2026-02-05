@@ -1,3 +1,10 @@
+2026-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.tpl (STAGE1_CONFIGURE_FLAGS, STAGE2_CONFIGURE_FLAGS,
+	STAGEprofile_CONFIGURE_FLAGS): Append --disable-libstdcxx-pch if
+	target-libstdc++-v3-bootstrap.
+	* Makefile.in: Regenerate.
+
 2026-01-22  Alejandro Colomar  <alx@kernel.org>
 
 	* MAINTAINERS: Add myself to Write After Approval and DCO
