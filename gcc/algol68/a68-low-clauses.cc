@@ -1407,9 +1407,9 @@ a68_lower_revelation_ludes (NODE_T *p, bool prelude)
 
 	  tree fdecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
 				   get_identifier (fname),
-				   build_function_type_list (void_type_node,
-							     void_type_node,
-							     NULL_TREE));
+				   build_function_type (void_type_node,
+							void_list_node));
+
 	  DECL_EXTERNAL (fdecl) = 1;
 	  TREE_PUBLIC (fdecl) = 1;
 	  a68_add_decl (fdecl);
