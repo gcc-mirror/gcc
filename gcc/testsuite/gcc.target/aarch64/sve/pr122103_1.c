@@ -1,4 +1,4 @@
-/* { dg-do run }  */
+/* { dg-do run { target aarch64_sve_hw } }  */
 /* { dg-require-effective-target glibc }  */
 /* { dg-options "-O3 -fno-math-errno -ftrapping-math -march=armv8-a+sve" }  */
 
