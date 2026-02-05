@@ -561,6 +561,113 @@ const struct cpu_cost_table tsv110_extra_costs =
   }
 };
 
+const struct cpu_cost_table hip12_extra_costs =
+{
+  /* ALU */
+  {
+    0,                 /* arith.  */
+    0,                 /* logical.  */
+    0,                 /* shift.  */
+    0,                 /* shift_reg.  */
+    COSTS_N_INSNS (1), /* arith_shift.  */
+    COSTS_N_INSNS (1), /* arith_shift_reg.  */
+    0,                 /* log_shift.  */
+    0,                 /* log_shift_reg.  */
+    0,                 /* extend.  */
+    COSTS_N_INSNS (1), /* extend_arith.  */
+    0,                 /* bfi.  */
+    0,                 /* bfx.  */
+    0,                 /* clz.  */
+    0,                 /* rev.  */
+    0,                 /* non_exec.  */
+    true               /* non_exec_costs_exec.  */
+  },
+  {
+    /* MULT SImode */
+    {
+      COSTS_N_INSNS (1),       /* simple.  */
+      COSTS_N_INSNS (1),       /* flag_setting.  */
+      COSTS_N_INSNS (1),       /* extend.  */
+      COSTS_N_INSNS (2),       /* add.  */
+      COSTS_N_INSNS (2),       /* extend_add.  */
+      COSTS_N_INSNS (5)        /* idiv.  */
+    },
+    /* MULT DImode */
+    {
+      COSTS_N_INSNS (2),       /* simple.  */
+      0,                       /* flag_setting (N/A).  */
+      COSTS_N_INSNS (2),       /* extend.  */
+      COSTS_N_INSNS (3),       /* add.  */
+      COSTS_N_INSNS (3),       /* extend_add.  */
+      COSTS_N_INSNS (7)        /* idiv.  */
+    }
+  },
+  /* LD/ST */
+  {
+    COSTS_N_INSNS (3),         /* load.  */
+    COSTS_N_INSNS (3),         /* load_sign_extend.  */
+    COSTS_N_INSNS (3),         /* ldrd.  */
+    0,                         /* ldm_1st.  */
+    0,                         /* ldm_regs_per_insn_1st.  */
+    0,                         /* ldm_regs_per_insn_subsequent.  */
+    COSTS_N_INSNS (5),         /* loadf.  */
+    COSTS_N_INSNS (5),         /* loadd.  */
+    COSTS_N_INSNS (4),         /* load_unaligned.  */
+    0,                         /* store.  */
+    0,                         /* strd.  */
+    0,                         /* stm_1st.  */
+    0,                         /* stm_regs_per_insn_1st.  */
+    0,                         /* stm_regs_per_insn_subsequent.  */
+    0,                         /* storef.  */
+    0,                         /* stored.  */
+    COSTS_N_INSNS (1),         /* store_unaligned.  */
+    COSTS_N_INSNS (5),         /* loadv.  */
+    COSTS_N_INSNS (1)          /* storev.  */
+  },
+  {
+    /* FP SFmode */
+    {
+      COSTS_N_INSNS (5),       /* div.  */
+      COSTS_N_INSNS (2),       /* mult.  */
+      COSTS_N_INSNS (4),       /* mult_addsub.  */
+      COSTS_N_INSNS (3),       /* fma.  */
+      COSTS_N_INSNS (1),       /* addsub.  */
+      COSTS_N_INSNS (1),       /* fpconst.  */
+      0,                       /* neg.  */
+      COSTS_N_INSNS (1),       /* compare.  */
+      COSTS_N_INSNS (2),       /* widen.  */
+      COSTS_N_INSNS (2),       /* narrow.  */
+      COSTS_N_INSNS (2),       /* toint.  */
+      COSTS_N_INSNS (3),       /* fromint.  */
+      COSTS_N_INSNS (2)        /* roundint.  */
+    },
+    /* FP DFmode */
+    {
+      COSTS_N_INSNS (7),       /* div.  */
+      COSTS_N_INSNS (2),       /* mult.  */
+      COSTS_N_INSNS (4),       /* mult_addsub.  */
+      COSTS_N_INSNS (3),       /* fma.  */
+      COSTS_N_INSNS (1),       /* addsub.  */
+      COSTS_N_INSNS (1),       /* fpconst.  */
+      0,                       /* neg.  */
+      COSTS_N_INSNS (1),       /* compare.  */
+      COSTS_N_INSNS (2),       /* widen.  */
+      COSTS_N_INSNS (2),       /* narrow.  */
+      COSTS_N_INSNS (2),       /* toint.  */
+      COSTS_N_INSNS (3),       /* fromint.  */
+      COSTS_N_INSNS (2)        /* roundint.  */
+    }
+  },
+  /* Vector */
+  {
+    COSTS_N_INSNS (1),  /* alu.  */
+    COSTS_N_INSNS (2),  /* mult.  */
+    COSTS_N_INSNS (1),  /* movi.  */
+    COSTS_N_INSNS (1),  /* dup.  */
+    COSTS_N_INSNS (1)   /* extract.  */
+  }
+};
+
 const struct cpu_cost_table a64fx_extra_costs =
 {
   /* ALU */
