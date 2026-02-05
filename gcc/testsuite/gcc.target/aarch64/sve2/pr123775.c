@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { aarch64_sve128_hw && aarch64_sve2_hw } } } */
 /* { dg-additional-options "-O3 -march=armv9-a+sve2 -msve-vector-bits=128 --param aarch64-autovec-preference=sve-only" } */
 
 int main(int argc, char *argv[]) {
