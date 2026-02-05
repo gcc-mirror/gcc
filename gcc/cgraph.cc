@@ -2014,10 +2014,11 @@ cgraph_update_edges_for_call_stmt_node (cgraph_node *node,
 		{
 		  tree decl = gimple_call_fndecl (new_stmt);
 		  if (decl)
-		    e = cgraph_edge::resolve_speculation (e, decl);
+		    e = cgraph_edge::make_direct
+			    (e, cgraph_node::get_create (decl));
 		}
 	      else
-		e = cgraph_edge::resolve_speculation (e, NULL);
+		gcc_unreachable ();
 	    }
 	  /* Keep calls marked as dead dead.  */
 	  if (new_stmt && is_gimple_call (new_stmt) && e->callee
