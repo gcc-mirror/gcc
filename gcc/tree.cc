@@ -14478,10 +14478,25 @@ verify_type (const_tree t)
     }
   if (TYPE_MAIN_VARIANT (t) == t && ct && TYPE_MAIN_VARIANT (ct) != ct)
    {
-      error ("%<TYPE_CANONICAL%> of main variant is not main variant");
-      debug_tree (ct);
-      debug_tree (TYPE_MAIN_VARIANT (ct));
-      error_found = true;
+     /* This can happen when build_type_attribute_variant is called on
+	C/C++ arrays of qualified types.  volatile int[2] is unqualified
+	ARRAY_TYPE with volatile int element type.
+	TYPE_CANONICAL (volatile int) is itself and so is
+	TYPE_CANONICAL (volatile int[2]).  build_type_attribute_qual_variant
+	creates a distinct type copy (so TYPE_MAIN_VARIANT is itself) and sets
+	its TYPE_CANONICAL to the unqualified ARRAY_TYPE (so volatile int[2]).
+	But this is not the TYPE_MAIN_VARIANT, which is int[2].  So, just
+	verify that TYPE_MAIN_VARIANT (ct) is already the final type we
+	need.  */
+      tree mvc = TYPE_MAIN_VARIANT (ct);
+      if (TYPE_CANONICAL (mvc) != mvc)
+	{
+	  error ("main variant of %<TYPE_CANONICAL%> of main variant is not"
+		 " its own %<TYPE_CANONICAL%>");
+	  debug_tree (ct);
+	  debug_tree (TYPE_MAIN_VARIANT (ct));
+	  error_found = true;
+	}
    }
 
 

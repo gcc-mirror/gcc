@@ -948,7 +948,12 @@ get_alias_set (tree t)
   else
     {
       t = TYPE_CANONICAL (t);
-      gcc_checking_assert (!TYPE_STRUCTURAL_EQUALITY_P (t));
+      gcc_checking_assert (TYPE_CANONICAL (t) == t);
+      if (t != TYPE_MAIN_VARIANT (t))
+	{
+	  t = TYPE_MAIN_VARIANT (t);
+	  gcc_checking_assert (TYPE_CANONICAL (t) == t);
+	}
     }
 
   /* If this is a type with a known alias set, return it.  */
