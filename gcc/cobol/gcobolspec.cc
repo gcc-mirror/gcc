@@ -301,6 +301,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       case OPT_print_multi_os_directory:
       case OPT_print_multiarch:
       case OPT_print_sysroot_headers_suffix:
+      case OPT_dumpmachine:
+      case OPT_dumpversion:
+      case OPT_dumpspecs:
         no_files_error = false;
         break;
 
