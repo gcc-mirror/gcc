@@ -224,9 +224,10 @@ a68_lower_denotation (NODE_T *p, LOW_CTX_T ctx)
   else if (moid == M_CHAR)
     {
       char *s = a68_string_process_breaks (p, NSYMBOL (p));
+      int num_units = strlen (s);
       uint32_t ucs;
-      int length = a68_u8_mbtouc (&ucs, (const uint8_t *) s, 1);
-      gcc_assert (length == 1);
+      int length = a68_u8_mbtouc (&ucs, (const uint8_t *) s, num_units);
+      gcc_assert (length == num_units);
       free (s);
       return build_int_cst (a68_char_type, ucs);
     }
