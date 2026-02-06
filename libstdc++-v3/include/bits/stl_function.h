@@ -1525,7 +1525,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
-#ifdef __cpp_concepts
+#ifdef __glibcxx_associative_heterogeneous_erasure
 template <typename _Kt, typename _Container>
   concept __not_container_iterator =
     (!is_convertible_v<_Kt&&, typename _Container::iterator> &&
@@ -1533,8 +1533,7 @@ template <typename _Kt, typename _Container>
 
 template <typename _Kt, typename _Container>
   concept __heterogeneous_key =
-    (!is_same_v<typename _Container::key_type,
-		typename remove_cvref<_Kt>::type>) &&
+    (!is_same_v<typename _Container::key_type, remove_cvref_t<_Kt>>) &&
     __not_container_iterator<_Kt, _Container>;
 #endif
 
