@@ -1533,7 +1533,8 @@ template <typename _Kt, typename _Container>
 
 template <typename _Kt, typename _Container>
   concept __heterogeneous_key =
-    (!is_same_v<typename _Container::key_type, remove_cvref_t<_Kt>>) &&
+    (!is_same_v<typename _Container::key_type,
+		typename remove_cvref<_Kt>::type>) &&
     __not_container_iterator<_Kt, _Container>;
 #endif
 
