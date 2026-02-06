@@ -1,0 +1,189 @@
+name: Linux
+on:
+  push:
+    branches: 
+      - master
+      - me/*
+      - releases/gcc-*
+    tags:
+      - releases/gcc-*
+  pull_request:
+    branches: 
+      - master
+      - me/*
+      - releases/gcc-*
+    tags:
+      - releases/gcc-*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.name }}-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 720
+    strategy:
+      matrix:
+        include:
+          - name: ubuntu-x64
+            target: x86_64
+        
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc expect dejagnu libc-dev libc-devtools texlive findutils binutils autogen gettext autopoint libasprintf-dev libgettextpo-dev mailutils mailutils-mh procmail emacs exim4-base msmtp bsd-mailx
+
+      - name: Install dependencies for aarch64
+        if: success() && contains(matrix.target, 'aarch64')
+        run: |
+          sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+
+      - name: Stamp
+        if: success()
+        env:
+          revision: ${{ github.head_ref }}
+        run: |
+          if test -z "${revision}"; then revision=0; fi
+          {
+              date
+              echo "$(TZ=UTC date) (revision ${revision})"
+          } > LAST_UPDATED
+
+      - name: Cache
+        id: cache-deps
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-downloaded-prerequisites
+        with:
+          path: ../build
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('LAST_UPDATED') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Download prerequisites
+        if: success()
+        run: |
+          ./contrib/download_prerequisites
+          ls
+
+      - name: Configure x86_64
+        if: success() && matrix.target == 'x86_64'
+        run: |
+          if test -n "${ADA_INCLUDE_PATH}"; then unset ADA_INCLUDE_PATH; fi
+          if test -n "${ADA_OBJECT_PATH}"; then unset ADA_OBJECT_PATH; fi
+          cd ../
+          if test ! -d build; then mkdir build; fi
+          cd build
+          ../gcc/configure \
+                --enable-languages=c,c++,lto,objc,obj-c++ \
+                --prefix=/usr \
+                --with-gcc-major-version-only \
+                --program-prefix=x86_64-linux-gnu- \
+                --libexecdir=/usr/lib \
+                --without-included-gettext \
+                --enable-threads=posix \
+                --libdir=/usr/lib \
+                --disable-vtable-verify \
+                --with-system-zlib \
+                --with-target-system-zlib=auto \
+                --disable-bootstrap \
+                --disable-werror \
+                --with-tune=generic \
+                --without-cuda-driver \
+                --enable-checking=release \
+                --enable-silent-rules \
+                --build=x86_64-linux-gnu \
+                --host=x86_64-linux-gnu \
+                --target=x86_64-linux-gnu
+
+      - name: Make
+        if: success()
+        run: |
+          cd ../build
+          if test -x "$(which nproc)"; then echo "nproc says that we can use $(nproc) build jobs"; else echo "error: missing nproc!" >&2 && exit 1; fi
+          time (make -j"$(nproc)" | tee build.log)
+          if test -e build.log; then stat build.log && wc -l build.log; fi
+
+      - name: Debug failure
+        if: failure()
+        run: |
+          if test -r build.log; then grep -i "error:" build.log; \
+          elif test -r ../build/build.log; then grep -i "error:" ../build/build.log; \
+          elif test -e ../build/Makefile; then \
+            sudo apt install remake; \
+            cd ../build; \
+            remake -dpPw --trace=full; \
+          elif test -d ../build; then \
+            cd ../build && ls; \
+          else \
+            pwd && ls; \
+          fi
+
+      - name: Make docs (post-build)
+        if: success()
+        run: |
+          cd ../build
+          echo "make info" && (time make info) && find . -name "*.info" -print
+          echo "make dvi" && (time make dvi) && find . -name "*.dvi" -print
+          echo "make pdf" && (time make pdf) && find . -name "*.pdf" -print
+          echo "make html" && (time make html) && find . -name "*.html" -print
+
+      - name: Make install (plus docs)
+        if: success()
+        run: |
+          cd ../build
+          sudo make install
+          sudo make install-info
+          sudo make install-dvi
+          sudo make install-pdf
+          sudo make install-html
+          sudo make dir.info
+
+      - name: Tests
+        if: success()
+        run: |
+          if test -x /usr/bin/x86_64-linux-gnu-gcc; then /usr/bin/x86_64-linux-gnu-gcc --version; elif test -x ../build/gcc/xgcc; then ../build/gcc/xgcc --version; fi
+          if test -x /usr/bin/x86_64-linux-gnu-gcc; then /usr/bin/x86_64-linux-gnu-gcc -v; elif test -x ../build/gcc/xgcc; then ../build/gcc/xgcc --v; fi
+          cd ../build
+          if test -e build.log; then make warning.log; fi
+          time (make -k -j"$(nproc)" check RUNTESTFLAGS="compile.exp dg-torture.exp execute.exp old-deja.exp" | tee testsuite_output.log)
+          if test -e warning.log; then make mail-report-with-warnings.log; else make mail-report.log; fi
+          if test -x "$(which Mail)"; then \
+            if test -x mail-report-with-warnings.log; then \
+              echo "attempting to send mail-report-with-warnings.log"; \
+              ./mail-report-with-warnings.log; \
+              stat mail-report-with-warnings.log; \
+            elif test -x mail-report.log; then \
+              echo "attempting to send mail-report.log"; \
+              ./mail-report.log; \
+              stat mail-report.log; \
+            elif test -e testsuite_output.log; then \
+              echo "TODO: figure out a way to send testsuite_output.log"; \
+            else \
+              echo "Nothing to send."; \
+            fi; \
+          else \
+            echo "Warning: \"Mail\" program is missing, so skipping emailing of testresults!"; \
+          fi
+
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v3.1.3
+        with:
+          # Artifact name
+          name: logfiles
+          # A file, directory or wildcard pattern that describes what to upload
+          path: |
+            *.log
+            build/*.log
+            path/*.log
+            testsuite/*.log
