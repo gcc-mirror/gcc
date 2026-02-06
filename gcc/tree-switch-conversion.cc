@@ -971,7 +971,6 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
   tree name;
   gimple *load;
   gimple_stmt_iterator gsi = gsi_for_stmt (m_switch);
-  location_t loc = gimple_location (m_switch);
 
   gcc_assert (m_default_values[num]);
 
@@ -1030,7 +1029,7 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
       TREE_CONSTANT (ctor) = true;
       TREE_STATIC (ctor) = true;
 
-      decl = build_decl (loc, VAR_DECL, NULL_TREE, array_type);
+      decl = build_decl (UNKNOWN_LOCATION, VAR_DECL, NULL_TREE, array_type);
       TREE_STATIC (decl) = 1;
       DECL_INITIAL (decl) = ctor;
 
