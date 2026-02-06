@@ -337,6 +337,7 @@ proc lto-build-archive { testname objlist dest } {
 	} else {
 	    set ar_cmd [gcc-transform-out-of-tree gcc-ar]
 	}
+	set ar_cmd "$ar_cmd [lrange $GCC_UNDER_TEST 1 end]"
     } else {
         set ar_cmd $GCC_AR_UNDER_TEST
     }
