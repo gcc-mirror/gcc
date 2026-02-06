@@ -3315,7 +3315,7 @@ namespace __rb_tree
     };
 #endif // C++17
 
-#ifdef __cpp_concepts
+#ifdef __glibcxx_associative_heterogeneous_erasure // C++ >= 23
 template <typename _Kt, typename _Container>
   concept __heterogeneous_tree_key =
     __transparent_comparator<typename _Container::key_compare> &&

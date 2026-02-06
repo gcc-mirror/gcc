@@ -1525,7 +1525,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif
 
-#ifdef __glibcxx_associative_heterogeneous_erasure
+#ifdef __glibcxx_associative_heterogeneous_erasure // C++ >= 23
 template <typename _Kt, typename _Container>
   concept __not_container_iterator =
     (!is_convertible_v<_Kt&&, typename _Container::iterator> &&

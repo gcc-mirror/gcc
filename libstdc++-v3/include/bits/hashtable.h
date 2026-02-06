@@ -3012,7 +3012,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       = __enable_if_t<!__or_<is_integral<_Hash>, __is_allocator<_Hash>>::value>;
 #endif
 
-#ifdef __cpp_concepts
+#ifdef __glibcxx_associative_heterogeneous_erasure // C++ >= 23
 template <typename _Kt, typename _Container>
   concept __heterogeneous_hash_key =
     __transparent_comparator<typename _Container::hasher> &&
