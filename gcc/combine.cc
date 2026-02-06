@@ -4026,7 +4026,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  && !(GET_CODE (SET_DEST (set1)) == SUBREG
 	       && find_reg_note (i2, REG_DEAD,
 				 SUBREG_REG (SET_DEST (set1))))
-	  && SET_DEST (set1) != pc_rtx
+	  && !modified_between_p (SET_DEST (set1), i2, i3)
 	  && !reg_used_between_p (SET_DEST (set1), i2, i3)
 	  /* If I3 is a jump, ensure that set0 is a jump so that
 	     we do not create invalid RTL.  */
@@ -4042,7 +4042,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	       && !(GET_CODE (SET_DEST (set0)) == SUBREG
 		    && find_reg_note (i2, REG_DEAD,
 				      SUBREG_REG (SET_DEST (set0))))
-	       && SET_DEST (set0) != pc_rtx
+	       && !modified_between_p (SET_DEST (set0), i2, i3)
 	       && !reg_used_between_p (SET_DEST (set0), i2, i3)
 	       /* If I3 is a jump, ensure that set1 is a jump so that
 		  we do not create invalid RTL.  */
@@ -11752,7 +11752,8 @@ recog_for_combine (rtx *pnewpat, rtx_insn *insn, rtx *pnotes,
       rtx src = SET_SRC (pat);
       if (CONSTANT_P (src)
 	  && !CONST_INT_P (src)
-	  && crtl->uses_const_pool)
+	  && crtl->uses_const_pool
+	  && SET_DEST (pat) != pc_rtx)
 	{
 	  machine_mode mode = GET_MODE (src);
 	  if (mode == VOIDmode)

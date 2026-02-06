@@ -305,7 +305,30 @@ cp_compare_floating_point_conversion_ranks (tree t1, tree t2)
 
   const struct real_format *fmt1 = REAL_MODE_FORMAT (TYPE_MODE (t1));
   const struct real_format *fmt2 = REAL_MODE_FORMAT (TYPE_MODE (t2));
-  gcc_assert (fmt1->b == 2 && fmt2->b == 2);
+  /* Currently, extended floating point types are only binary, and
+     they never have a proper subset or superset of values with
+     decimal floating point types except for the _Float16 vs. _Decimal128
+     pair, so return 3 for unordered conversion ranks.  */
+  gcc_assert (fmt1->b == 2);
+  if (fmt2->b == 10)
+    {
+      /* _Float16 needs at most 21 decimal digits (e.g.
+	 0x1.a3cp-14f16 is exactly 0.000100076198577880859375DL),
+	 so it is not a proper subset of _Decimal64 but is subset
+	 of _Decimal128.  While std::bfloat16_t needs at most 96
+	 decimal digits, so even _Decimal128 doesn't cover it.
+	 _Float32 has at least one value which needs 112 decimal
+	 digits, _Float64 at least 767 decimal digits.  */
+      if (fmt1->emin == -13
+	  && fmt1->emax == 16
+	  && fmt1->p == 11
+	  && fmt2->emin == -6142
+	  && fmt2->emax == 6145
+	  && fmt2->p == 34)
+	return -2;
+      return 3;
+    }
+  gcc_assert (fmt2->b == 2);
   /* For {ibm,mips}_extended_format formats, the type has variable
      precision up to ~2150 bits when the first double is around maximum
      representable double and second double is subnormal minimum.

@@ -11825,21 +11825,7 @@ cp_parser_lambda_expression (cp_parser* parser)
   LAMBDA_EXPR_LOCATION (lambda_expr) = token->location;
 
   if (cxx_dialect >= cxx20)
-    {
-      /* C++20 allows lambdas in unevaluated context, but one in the type of a
-	 non-type parameter is nonsensical.
-
-	 Distinguish a lambda in the parameter type from a lambda in the
-	 default argument by looking at local_variables_forbidden_p, which is
-	 only set in default arguments.  */
-      if (processing_template_parmlist && !parser->local_variables_forbidden_p)
-	{
-	  error_at (token->location,
-		    "lambda-expression in template parameter type");
-	  token->error_reported = true;
-	  ok = false;
-	}
-    }
+    /* C++20 allows lambdas in unevaluated context.  */;
   else if (cp_unevaluated_operand)
     {
       if (!token->error_reported)
@@ -48750,6 +48736,9 @@ substitute_in_tree_walker (tree *tp, int *walk_subtrees ATTRIBUTE_UNUSED,
   else if (TREE_CODE (*tp) == BIND_EXPR
 	   && BIND_EXPR_BODY (*tp) == sit->orig
 	   && !BIND_EXPR_VARS (*tp)
+	   /* BIND_EXPRs in templates likely have NULL BIND_EXPR_VARS,
+	      are created by begin_compound_stmt and are not redundant.  */
+	   && !processing_template_decl
 	   && (sit->flatten || TREE_CODE (sit->repl) == BIND_EXPR))
     {
       *tp = sit->repl;
@@ -48794,7 +48783,12 @@ substitute_in_tree (tree *context, tree orig, tree repl, bool flatten)
   struct sit_data data;
 
   gcc_assert (*context && orig && repl);
-  if (TREE_CODE (repl) == BIND_EXPR && !BIND_EXPR_VARS (repl))
+  /* Look through redundant BIND_EXPR.  BIND_EXPRs in templates likely have
+     NULL BIND_EXPR_VARS, are created by begin_compound_stmt and are not
+     redundant.  */
+  if (TREE_CODE (repl) == BIND_EXPR
+      && !BIND_EXPR_VARS (repl)
+      && !processing_template_decl)
     repl = BIND_EXPR_BODY (repl);
   data.orig = orig;
   data.repl = repl;

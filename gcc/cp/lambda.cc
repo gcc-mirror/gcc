@@ -922,8 +922,9 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
   else
     {
       /* To make sure that current_class_ref is for the lambda.  */
-      gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref))
-		  == LAMBDA_EXPR_CLOSURE (lambda));
+      gcc_assert (!current_class_ref
+		  || (TYPE_MAIN_VARIANT (TREE_TYPE (current_class_ref))
+		      == LAMBDA_EXPR_CLOSURE (lambda)));
 
       result = this_capture;
 

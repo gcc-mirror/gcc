@@ -1,3 +1,56 @@
+2026-02-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-01-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/114153
+	* include/bits/ranges_cmp.h (__detail::__less_builtin_ptr_cmp):
+	Add __not_overloaded_spaceship spaceship check.
+	* include/bits/stl_function.h (greater<void>::operator())
+	(less<void>::operator(), greater_equal<void>::operator())
+	(less_equal<void>::operator()): Implement using if constexpr.
+	(greater<void>::__S_cmp, less<void>::__S_cmp)
+	(greater_equal<void>::__ptr_comp, less_equal<void>::S_cmp):
+	Remove.
+	(greater<void>::__ptr_cmp, less<void>::__ptr_cmp)
+	(greater_equal<void>::__ptr_comp, less_equal<void>::ptr_cmp): Change
+	tostatic constexpr variable. Define in terms of requires expressions
+	and __not_overloaded_spaceship check.
+	* include/std/concepts: (__detail::__not_overloaded_spaceship):
+	Define.
+	* libsupc++/compare: (__detail::__3way_builtin_ptr_cmp): Use
+	__not_overloaded_spaceship concept.
+	* testsuite/20_util/function_objects/comparisons_pointer_spaceship.cc: New test.
+
+2026-01-22  Frank Scheiner  <frank.scheiner@web.de>
+
+	Backported from master:
+	2026-01-22  Frank Scheiner  <frank.scheiner@web.de>
+
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt:
+	Regenerate.
+
+2026-01-22  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	Backported from master:
+	2026-01-10  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	* src/c++11/system_error.cc (system_error_category) [_WIN32]:
+	Use FormatMessageA function instead of FormatMessage macro.
+	* testsuite/19_diagnostics/error_category/system_category.cc:
+	Fix typo in __MINGW32__ macro name.  Adjust behavior on the
+	mingw32 target.
+
+2026-01-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/123147
+	* include/bits/chrono_io.h (_Parser::operator()) <%S>: Use a
+	buffer of narrow characters to be parsed by std::from_chars.
+	* testsuite/std/time/parse/parse.cc: Check wchar_t parsing.
+
 2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

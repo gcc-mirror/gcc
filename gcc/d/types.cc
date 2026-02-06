@@ -324,6 +324,10 @@ insert_aggregate_bitfield (tree type, tree bitfield, size_t width,
   DECL_BIT_FIELD (bitfield) = 1;
   DECL_BIT_FIELD_TYPE (bitfield) = TREE_TYPE (bitfield);
 
+  DECL_NONADDRESSABLE_P (bitfield) = 1;
+  if (DECL_NAME (bitfield) == NULL_TREE)
+    DECL_PADDING_P (bitfield) = 1;
+
   TYPE_FIELDS (type) = chainon (TYPE_FIELDS (type), bitfield);
 }
 
@@ -671,7 +675,11 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
 	  continue;
 	}
 
-      layout_decl (field, 0);
+      /* Layout the field decl using its known alignment.  */
+      unsigned int known_align =
+	least_bit_hwi (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field)));
+
+      layout_decl (field, known_align);
 
       /* Give bit-field its proper type after layout_decl.  */
       if (DECL_BIT_FIELD (field))
@@ -699,6 +707,7 @@ finish_aggregate_type (unsigned structsize, unsigned alignsize, tree type)
       if (t == type)
 	continue;
 
+      TYPE_NAME (t) = TYPE_NAME (type);
       TYPE_FIELDS (t) = TYPE_FIELDS (type);
       TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (type);
       TYPE_SIZE (t) = TYPE_SIZE (type);
@@ -955,7 +964,7 @@ public:
 
 	/* Type `noreturn` is a terminator, as no other arguments can possibly
 	   be evaluated after it.  */
-	if (type == noreturn_type_node)
+	if (TYPE_MAIN_VARIANT (type) == noreturn_type_node)
 	  break;
 
 	fnparams = chainon (fnparams, build_tree_list (0, type));
@@ -981,7 +990,7 @@ public:
     d_keep (t->ctype);
 
     /* Qualify function types that have the type `noreturn` as volatile.  */
-    if (fntype == noreturn_type_node)
+    if (TYPE_MAIN_VARIANT (fntype) == noreturn_type_node)
       t->ctype = build_qualified_type (t->ctype, TYPE_QUAL_VOLATILE);
 
     /* Handle any special support for calling conventions.  */

@@ -3797,14 +3797,14 @@ namespace __detail
 		    }
 		  else // Read fractional seconds
 		    {
-		      basic_stringstream<_CharT> __buf;
+		      stringstream __buf;
 		      auto __digit = _S_try_read_digit(__is, __err);
 		      if (__digit != -1)
 			{
-			  __buf.put(_CharT('0') + __digit);
+			  __buf.put('0' + __digit);
 			  __digit = _S_try_read_digit(__is, __err);
 			  if (__digit != -1)
-			    __buf.put(_CharT('0') + __digit);
+			    __buf.put('0' + __digit);
 			}
 
 		      auto __i = __is.peek();
@@ -3829,7 +3829,7 @@ namespace __detail
 				{
 				  __digit = _S_try_read_digit(__is, __err);
 				  if (__digit != -1)
-				    __buf.put(_CharT('0') + __digit);
+				    __buf.put('0' + __digit);
 				  else
 				    break;
 				}

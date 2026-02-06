@@ -2174,7 +2174,7 @@ public:
 	      {
 		/* Generate a slice for non-zero initialized aggregates,
 		   otherwise create an empty array.  */
-		gcc_assert (e->type->isConst ()
+		gcc_assert (e->type->nextOf ()->isConst ()
 			    && e->type->nextOf ()->ty == TY::Tvoid);
 
 		tree type = build_ctype (e->type);
@@ -2708,8 +2708,9 @@ public:
 	/* Array literal for a `scope' dynamic array.  */
 	gcc_assert (tb->ty == TY::Tarray);
 	ctor = force_target_expr (ctor);
-	this->result_ = d_array_value (type, size_int (e->elements->length),
-				       build_address (ctor));
+	ctor = d_array_value (type, size_int (e->elements->length),
+			      build_address (ctor));
+	this->result_ = compound_expr (saved_elems, ctor);
       }
     else
       {

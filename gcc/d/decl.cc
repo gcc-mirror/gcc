@@ -184,7 +184,7 @@ get_fndecl_arguments (FuncDeclaration *decl)
 
 	  /* Type `noreturn` is a terminator, as no other arguments can possibly
 	     be evaluated after it.  */
-	  if (TREE_TYPE (parm_decl) == noreturn_type_node)
+	  if (TYPE_MAIN_VARIANT (TREE_TYPE (parm_decl)) == noreturn_type_node)
 	    break;
 
 	  /* Chain them in the correct order.  */
@@ -1213,8 +1213,7 @@ get_symbol_decl (Declaration *decl)
 
   /* Deal with placeholder symbols immediately:
      SymbolDeclaration is used as a shell around an initializer symbol.  */
-  SymbolDeclaration *sd = decl->isSymbolDeclaration ();
-  if (sd)
+  if (SymbolDeclaration *sd = decl->isSymbolDeclaration ())
     {
       decl->csym = aggregate_initializer_decl (sd->dsym);
       return decl->csym;
@@ -1225,8 +1224,7 @@ get_symbol_decl (Declaration *decl)
     return get_typeinfo_decl ((TypeInfoDeclaration *) decl);
 
   /* FuncAliasDeclaration is used to import functions from another scope.  */
-  FuncAliasDeclaration *fad = decl->isFuncAliasDeclaration ();
-  if (fad)
+  if (FuncAliasDeclaration *fad = decl->isFuncAliasDeclaration ())
     {
       decl->csym = get_symbol_decl (fad->funcalias);
       return decl->csym;
@@ -1261,8 +1259,7 @@ get_symbol_decl (Declaration *decl)
     }
 
   /* Build the tree for the symbol.  */
-  FuncDeclaration *fd = decl->isFuncDeclaration ();
-  if (fd)
+  if (FuncDeclaration *fd = decl->isFuncDeclaration ())
     {
       /* Run full semantic on functions we need to know about.  */
       if (!dmd::functionSemantic (fd))
@@ -1354,29 +1351,38 @@ get_symbol_decl (Declaration *decl)
       if (IDENTIFIER_DSYMBOL (mangled_name))
 	{
 	  Declaration *other = IDENTIFIER_DSYMBOL (mangled_name);
-	  tree olddecl = decl->csym;
-	  decl->csym = get_symbol_decl (other);
+	  tree newdecl = decl->csym;
+	  tree olddecl = get_symbol_decl (other);
 
-	  /* Update the symbol location to the current definition.  */
-	  if (DECL_EXTERNAL (decl->csym) && !DECL_INITIAL (decl->csym))
-	    DECL_SOURCE_LOCATION (decl->csym) = DECL_SOURCE_LOCATION (olddecl);
+	  if (TREE_CODE (olddecl) == TREE_CODE (newdecl))
+	    {
+	      /* Update the symbol location to the current definition.  */
+	      if (DECL_EXTERNAL (olddecl) && !DECL_INITIAL (olddecl))
+		DECL_SOURCE_LOCATION (olddecl) = DECL_SOURCE_LOCATION (newdecl);
 
-	  /* The current declaration is a prototype or marked extern, merge
-	     applied user attributes and return.  */
-	  if (DECL_EXTERNAL (olddecl) && !DECL_INITIAL (olddecl))
-	    {
-	      apply_user_attributes (decl, decl->csym);
-	      return decl->csym;
+	      /* The current declaration is a prototype or marked extern, merge
+		 applied user attributes and return.  */
+	      if (DECL_EXTERNAL (newdecl) && !DECL_INITIAL (newdecl))
+		{
+		  apply_user_attributes (decl, olddecl);
+		  decl->csym = olddecl;
+		  return decl->csym;
+		}
+	      /* The previous declaration is a prototype or marked extern, set
+		 the current declaration as the main reference of the symbol.
+	       */
+	      else if (DECL_EXTERNAL (olddecl) && !DECL_INITIAL (olddecl))
+		{
+		  IDENTIFIER_DSYMBOL (mangled_name) = decl;
+		  decl->csym = olddecl;
+		  DECL_EXTERNAL (decl->csym) = 0;
+		}
+	      /* Non-extern, non-templated decls shouldn't be defined twice.  */
+	      else if (!decl->isInstantiated ())
+		ScopeDsymbol::multiplyDefined (decl->loc, decl, other);
 	    }
-	  /* The previous declaration is a prototype or marked extern, set the
-	     current declaration as the main reference of the symbol.  */
-	  else if (DECL_EXTERNAL (decl->csym) && !DECL_INITIAL (decl->csym))
-	    {
-	      IDENTIFIER_DSYMBOL (mangled_name) = decl;
-	      DECL_EXTERNAL (decl->csym) = 0;
-	    }
-	  /* Non-extern, non-templated decls shouldn't be defined twice.  */
-	  else if (!decl->isInstantiated ())
+	  /* Declarations are for conflicting kinds of symbol.  */
+	  else
 	    ScopeDsymbol::multiplyDefined (decl->loc, decl, other);
 	}
       else
@@ -1418,6 +1424,9 @@ get_symbol_decl (Declaration *decl)
     }
   else if (TREE_CODE (decl->csym) == FUNCTION_DECL)
     {
+      FuncDeclaration *fd = decl->isFuncDeclaration ();
+      gcc_assert (fd != NULL);
+
       /* Dual-context functions require the code generation to build an array
 	 for the context pointer of the function, making the delicate task of
 	 tracking which context to follow when encountering a non-local symbol,
@@ -1571,6 +1580,7 @@ get_symbol_decl (Declaration *decl)
   if (decl->isDataseg () || decl->isCodeseg () || decl->isThreadlocal ())
     {
       /* Set TREE_PUBLIC by default, but allow private template to override.  */
+      FuncDeclaration *fd = decl->isFuncDeclaration ();
       if (!fd || !fd->isNested ())
 	TREE_PUBLIC (decl->csym) = 1;
 

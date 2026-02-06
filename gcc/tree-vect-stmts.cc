@@ -9180,7 +9180,7 @@ vectorizable_store (vec_info *vinfo,
 					    memory_access_type, loop_lens);
     }
 
-  if (mask && !costing_p)
+  if (loop_vinfo && mask && !costing_p)
     LOOP_VINFO_HAS_MASK_STORE (loop_vinfo) = true;
 
   /* In case the vectorization factor (VF) is bigger than the number

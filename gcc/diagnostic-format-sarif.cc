@@ -1838,6 +1838,7 @@ maybe_get_sarif_level (diagnostic_t diag_kind)
     {
     case DK_WARNING:
       return "warning";
+    case DK_FATAL:
     case DK_ERROR:
       return "error";
     case DK_NOTE:

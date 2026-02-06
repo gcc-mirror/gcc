@@ -15,7 +15,7 @@ typedef unsigned int __attribute__ ((vector_size (8))) v2si;
 /*
 ** G1:
 **	movi?	[vdz][0-9]+\.?(?:[0-9]*[bhsd])?, #?0
-** 	xar	v0\.2d, v[0-9]+\.2d, v[0-9]+\.2d, 39
+** 	xar	v0\.2d, v[0-9]+\.2d, v[0-9]+\.2d, #39
 **      ret
 */
 v2di

@@ -5416,6 +5416,8 @@ package body Exp_Ch3 is
           (Component_Type (Typ));
 
    begin
+      --  First, the nonpacked case
+
       if not Is_Bit_Packed_Array (Typ) then
          if No (Init_Proc (Base)) then
 
@@ -5438,7 +5440,9 @@ package body Exp_Ch3 is
             --  initialize scalars mode, and these types are treated specially
             --  and do not need initialization procedures.
 
-            elsif Is_Standard_String_Type (Base) then
+            elsif Is_Standard_String_Type (Base)
+              and then not Has_Default_Aspect (Base)
+            then
                null;
 
             --  Otherwise we have to build an init proc for the subtype
@@ -5458,18 +5462,20 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-      --  For packed case, default initialization, except if the component type
-      --  is itself a packed structure with an initialization procedure, or
-      --  initialize/normalize scalars active, and we have a base type, or the
-      --  type is public, because in that case a client might specify
-      --  Normalize_Scalars and there better be a public Init_Proc for it.
+      --  For the packed case, no initialization, except if the component type
+      --  has an initialization procedure, or Initialize/Normalize_Scalars is
+      --  active, or there is a Default_Component_Value aspect, or the type is
+      --  public, because a client might specify Initialize_Scalars and there
+      --  better be a public Init_Proc for it.
 
-      elsif (Present (Init_Proc (Component_Type (Base)))
-              and then No (Base_Init_Proc (Base)))
-        or else (Init_Or_Norm_Scalars and then Base = Typ)
+      elsif Present (Init_Proc (Component_Type (Base)))
+        or else Init_Or_Norm_Scalars
+        or else Has_Default_Aspect (Base)
         or else Is_Public (Typ)
       then
-         Build_Array_Init_Proc (Base, N);
+         if No (Init_Proc (Base)) then
+            Build_Array_Init_Proc (Base, N);
+         end if;
       end if;
    end Expand_Freeze_Array_Type;
 

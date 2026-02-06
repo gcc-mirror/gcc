@@ -1568,7 +1568,8 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
   if ((!op1def || gimple_nop_p (op1def))
       && (!op2def || gimple_nop_p (op2def)))
     {
-      gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
+      gsi = gsi_start_nondebug_after_labels_bb
+		(single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun)));
       if (!gsi_end_p (gsi)
 	  && is_gimple_call (gsi_stmt (gsi))
 	  && (gimple_call_flags (gsi_stmt (gsi)) & ECF_RETURNS_TWICE))

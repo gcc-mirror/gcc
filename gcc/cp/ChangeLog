@@ -1,3 +1,135 @@
+2026-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122169
+	* pt.cc (tsubst_pack_index): Propagate cv-qualifiers of
+	PACK_INDEX_TYPE.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123676
+	* pt.cc (tsubst_pack_expansion): Relax unsubsituted_packs
+	assert to allow !processing_template_decl when args is
+	NULL_TREE.
+
+2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-01-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122494
+	PR c++/123814
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Clear
+	uid_sensitive_constexpr_evaluation_value when mce_true.
+
+2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123597
+	* parser.cc (substitute_in_tree_walker, substitute_in_tree): Don't
+	consider BIND_EXPRs with !BIND_EXPR_VARS redundant if
+	processing_template_decl.
+
+2026-01-20  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	Backported from master:
+	2025-12-23  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/122550
+	* decl.cc (member_like_constrained_friend_p): Check that the
+	friend's enclosing class is an implicit instantiation.
+
+2026-01-20  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	Backported from master:
+	2025-12-18  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+		    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122070
+	* pt.cc (type_targs_deducible_from): Fall back to
+	TYPE_TEMPLATE_INFO when TYPE_TEMPLATE_INFO_MAYBE_ALIAS is NULL.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123331
+	* constexpr.cc (cxx_eval_vec_init_1): Don't build INIT_EXPR if
+	eltinit is erroneous.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91388
+	* semantics.cc (finish_static_assert): Suppress -Wreturn-type warnings
+	in functions with failed assertions.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122772
+	* tree.cc (cp_stabilize_bitfield_reference): New function.
+	(cp_stabilize_reference): Use it for stabilization of
+	clk_bitfield or clk_packed lvalues.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122834
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): Return
+	3 if fmt2->b is 10 except for _Float16 vs. _Decimal128, in that
+	case return -2.
+
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2025-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/121966
+	* call.cc (print_z_candidates): Copy the filtering logic on viable
+	candidates from the printing loop to the counting loop, so that
+	num_candidates matches the number of iterations of the latter
+	loop.
+
+2026-01-09  Eczbek  <eczbek.void@gmail.com>
+
+	Backported from master:
+	2025-11-29  Eczbek  <eczbek.void@gmail.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/116952
+	* parser.cc (cp_parser_lambda_expression): Revert
+	r11-8166-ge1666ebd9ad31d change prohibiting lambda in non-type
+	parameter.
+
+2026-01-09  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-09-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/122048
+	* pt.cc (tsubst_expr): Don't use a lambda current_class_ptr.
+
+2026-01-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/121854
+	* lambda.cc (lambda_expr_this_capture): Don't assume
+	current_class_ref.
+
 2025-12-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

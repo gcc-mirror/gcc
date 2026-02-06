@@ -1,3 +1,99 @@
+2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123264
+	* types.cc (finish_aggregate_type): Propagate struct TYPE_NAME to all
+	TYPE_NEXT_VARIANT types.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123407
+	* decl.cc (get_symbol_decl): Handle declarations with matching
+	assembler names, but different TREE_CODE.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123046
+	* d-codegen.cc (build_address): Return `null' when generating the
+	address of a `noreturn' declaration.
+	(d_build_call): Compare TYPE_MAIN_VARIANT of type with `noreturn'.
+	* decl.cc (get_fndecl_arguments): Likewise.
+	* types.cc (finish_aggregate_mode): Likewise.
+	(TypeVisitor::visit (TypeFunction *)): Likewise.
+
+2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123349
+	* d-spec.cc (lang_specific_driver): Use xstrdup to copy -defaultlib
+	and -debuglib argument, and unconditionally free the old value.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123419
+	* expr.cc (ExprVisitor::visit (VarExp *)): Adjust assertion.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123798
+	* types.cc (insert_aggregate_bitfield): Set DECL_NONADDRESSABLE_P and
+	DECL_PADDING_P on bit-field decls.
+	(finish_aggregate_type): Pass the aligned bit offset to layout_decl.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/121477
+	* d-codegen.cc (d_mark_addressable): Give an error if taking the
+	address of a DECL_BIT_FIELD.
+
+2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123422
+	* expr.cc (ExprVisitor::visit (ArrayLiteralExp *)): Don't add
+	TARGET_EXPR around constructor.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Recognize more
+	patterns for return value optimization.
+
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/120096
+	* expr.cc (ExprVisitor::visit (ArrayLiteralExp *)): Include saved side
+	effects in expression result.
+
+2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-01-27  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/122817
+	* d-lang.cc (d_parse_file): Set module filename location after
+	creation.
+
 2025-08-08  Release Manager
 
 	* GCC 15.2.0 released.

@@ -99,6 +99,7 @@ public:
   bool is_export_p (tree name, basic_block bb = NULL);
   bool is_import_p (tree name, basic_block bb);
   bitmap exports (basic_block bb);
+  bitmap exports_and_deps (basic_block bb, bitmap tmpbit);
   bitmap imports (basic_block bb);
   void set_range_invariant (tree name, bool invariant = true);
 
@@ -223,7 +224,7 @@ bool gori_on_edge (class ssa_cache &r, edge e, range_query *query = NULL);
 bool gori_name_on_edge (vrange &r, tree name, edge e, range_query *q = NULL);
 
 // For each name that is an import into BB's exports..
-#define FOR_EACH_GORI_IMPORT_NAME(gorimap, bb, name)			\
+#define FOR_EACH_GORI_IMPORT_NAME(gorimap, bb, name)		\
   for (gori_export_iterator iter ((gorimap)->imports ((bb)));	\
        ((name) = iter.get_name ());				\
        iter.next ())
@@ -232,6 +233,12 @@ bool gori_name_on_edge (vrange &r, tree name, edge e, range_query *q = NULL);
 #define FOR_EACH_GORI_EXPORT_NAME(gorimap, bb, name)		\
   for (gori_export_iterator iter ((gorimap)->exports ((bb)));	\
        ((name) = iter.get_name ());				\
+       iter.next ())
+
+// For each name and all their dependencies possibly exported from block BB.
+#define FOR_EACH_GORI_EXPORT_AND_DEP_NAME(gorimap, bb, name, bm)	   \
+  for (gori_export_iterator iter ((gorimap)->exports_and_deps ((bb),(bm))); \
+       ((name) = iter.get_name ());					   \
        iter.next ())
 
 // Used to assist with iterating over the GORI export list in various ways

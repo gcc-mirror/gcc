@@ -3625,10 +3625,7 @@
 
   emit_insn (gen_vsx_xvcvsphp (rtx_tmp_hi, operands[1]));
   emit_insn (gen_vsx_xvcvsphp (rtx_tmp_lo, operands[2]));
-  if (!BYTES_BIG_ENDIAN)
-    emit_insn (gen_altivec_vpkuwum (operands[0], rtx_tmp_hi, rtx_tmp_lo));
-  else
-    emit_insn (gen_altivec_vpkuwum (operands[0], rtx_tmp_lo, rtx_tmp_hi));
+  emit_insn (gen_altivec_vpkuwum (operands[0], rtx_tmp_hi, rtx_tmp_lo));
   DONE;
 })
 

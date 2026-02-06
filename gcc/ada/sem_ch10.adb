@@ -1146,6 +1146,20 @@ package body Sem_Ch10 is
 
       --  Now analyze the unit (package, subprogram spec, body) itself
 
+      if Debug_Flag_I then
+         if Nkind (Unit_Node) in N_Package_Declaration
+                               | N_Package_Renaming_Declaration
+                               | N_Subprogram_Declaration
+                               | N_Generic_Declaration
+           or else (Nkind (Unit_Node) = N_Subprogram_Body
+                     and then Acts_As_Spec (Unit_Node))
+         then
+            Write_Str ("install unit ");
+            Write_Name (Chars (Defining_Entity (Unit_Node)));
+            Write_Eol;
+         end if;
+      end if;
+
       Analyze (Unit_Node);
 
       if Warn_On_Redundant_Constructs then
@@ -4684,6 +4698,18 @@ package body Sem_Ch10 is
          end if;
       end if;
 
+      if Debug_Flag_I then
+         Write_Str ("install parent unit ");
+         Write_Name (Chars (P_Name));
+         Write_Eol;
+      end if;
+
+      --  Skip this for predefined units because of the rtsfind mechanism
+
+      if not In_Predefined_Unit (P_Name) then
+         Set_Is_Visible_Lib_Unit (P_Name);
+      end if;
+
       --  This is the recursive call that ensures all parents are loaded
 
       if Is_Child_Spec (P) then
@@ -4756,12 +4782,6 @@ package body Sem_Ch10 is
       Item   : Node_Id;
 
    begin
-      if Debug_Flag_I then
-         Write_Str ("install private with clauses of ");
-         Write_Name (Chars (P));
-         Write_Eol;
-      end if;
-
       if Nkind (Parent (Decl)) = N_Compilation_Unit then
          Item := First (Context_Items (Parent (Decl)));
          while Present (Item) loop
@@ -7324,6 +7344,18 @@ package body Sem_Ch10 is
          --  in the reverse order of their installation.
 
          Remove_Parents (P);
+
+         if Debug_Flag_I then
+            Write_Str ("remove parent unit ");
+            Write_Name (Chars (P_Name));
+            Write_Eol;
+         end if;
+
+         --  Skip this for predefined units because of the rtsfind mechanism
+
+         if not In_Predefined_Unit (P_Name) then
+            Set_Is_Visible_Lib_Unit (P_Name, False);
+         end if;
       end if;
    end Remove_Parents;
 

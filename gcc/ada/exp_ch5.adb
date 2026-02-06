@@ -4965,7 +4965,10 @@ package body Exp_Ch5 is
       Array_Dim  : constant Pos        := Number_Dimensions (Array_Typ);
       Id         : constant Entity_Id  := Defining_Identifier (I_Spec);
       Loc        : constant Source_Ptr := Sloc (Isc);
-      Stats      : List_Id    := Statements (N);
+
+      Stats : List_Id := Statements (N);
+      --  Maybe wrapped in a conditional if a filter is present
+
       Core_Loop  : Node_Id;
       Dim1       : Int;
       Ind_Comp   : Node_Id;
@@ -5255,7 +5258,7 @@ package body Exp_Ch5 is
       Id_Kind  : constant Entity_Kind := Ekind (Id);
       Loc      : constant Source_Ptr  := Sloc (N);
 
-      Stats    : List_Id     := Statements (N);
+      Stats : List_Id := Statements (N);
       --  Maybe wrapped in a conditional if a filter is present
 
       Cursor         : Entity_Id;
@@ -5776,7 +5779,7 @@ package body Exp_Ch5 is
             Loop_Id : constant Entity_Id := Defining_Identifier (LPS);
             Ltype   : constant Entity_Id := Etype (Loop_Id);
             Btype   : constant Entity_Id := Base_Type (Ltype);
-            Stats   : constant List_Id   := Statements (N);
+
             Expr    : Node_Id;
             Decls   : List_Id;
             New_Id  : Entity_Id;
@@ -5797,7 +5800,7 @@ package body Exp_Ch5 is
                Set_Statements (N,
                   New_List (Make_If_Statement (Loc,
                     Condition => Iterator_Filter (LPS),
-                    Then_Statements => Stats)));
+                    Then_Statements => Statements (N))));
                Analyze_List (Statements (N));
             end if;
 
@@ -5917,7 +5920,7 @@ package body Exp_Ch5 is
                        Declarations => Decls,
                        Handled_Statement_Sequence =>
                          Make_Handled_Sequence_Of_Statements (Loc,
-                           Statements => Stats))),
+                           Statements => Statements (N)))),
 
                    End_Label => End_Label (N)));
 

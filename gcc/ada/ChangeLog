@@ -1,3 +1,83 @@
+2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/123902
+	* sem_ch4.adb (Analyze_Selected_Component): Also test
+	Core_Extensions_Allowed for discriminated private types.
+	Rework and augment commentary throughout the procedure.
+
+2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/121316
+	* exp_ch5.adb (Expand_Iterator_Loop_Over_Array): Minor tweak.
+	(Expand_Iterator_Loop_Over_Container): Likewise.
+	(Expand_N_Loop_Statement): Use Statements (N) throughout.
+
+2026-01-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123867
+	* sem_ch10.adb (Analyze_Compilation_Unit): Output info message
+	when -gnatdi is specified.
+	(Install_Parents): Likewise.  Set the Is_Visible_Lib_Unit flag
+	on the unit.
+	(Install_Private_With_Clauses): Do not output info message here.
+	(Remove_Parents): Output info message when -gnatdi is specified
+	and clear the Is_Visible_Lib_Unit flag on the unit.
+
+2026-01-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123861
+	* sem_type.adb (Covers): Fix couple of typos in comment.
+	(Specific_Type): Adjust to Covers' handling of types declared
+	with the Aggregate aspect in Ada 2022.
+
+2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123857
+	* checks.adb (Apply_Parameter_Validity_Checks.Add_Validity_Check):
+	Set Is_Checked on the generated {Pre,Post}_Condition pragma and
+	bail out if the parameter is of an Unchecked_Union type.
+
+2026-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123832
+	* exp_imgv.adb: Add with and use clauses for Exp_Ch7.
+	(Expand_Image_Attribute): Establish a transient scope before
+	rewriting the attribute as a call to Put_Image.
+	(Expand_Wide_Image_Attribute): Likewise.
+	(Expand_Wide_Wide_Image_Attribute): Likewise.
+	* exp_put_image.ads (Build_Image_Call): Add note about the
+	need for a transient scope when the function is invoked.
+	* exp_put_image.adb (Build_Image_Call): Call Insert_Actions
+	to immediately insert the actions instead of wrapping them
+	in an Expression_With_Actions node.
+
+2026-01-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123580
+	* sem_ch13.adb (Analyze_Aspects_At_Freeze_Point): Replace call to
+	Scope_Within_Or_Same (Current_Scope, S) with In_Open_Scopes (S) to
+	test whether S is open in the current scope.
+	* sem_util.adb (From_Nested_Package): Likewise.
+
+2026-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+	    Lisa Felidae  <lisa@felidae.bam.moe>
+
+	PR ada/68179
+	PR ada/123589
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Build an initialization
+	procedure for a bit-packed array type if Has_Default_Aspect is set
+	on the base type, but make sure not to build it twice.  Also test
+	Has_Default_Aspect for a type derived from String.
+
+2026-01-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/68179
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Build an initialization
+	procedure for a type derived from String declared with the aspect
+	Default_Aspect_Component_Value.
+
 2026-01-03  Eric Botcazou  <ebotcazou@gcc.gnu.org>
 
 	PR ada/123371

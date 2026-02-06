@@ -1,3 +1,563 @@
+2026-02-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-01-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/123584
+	* config/aarch64/aarch64-simd.md (aarch64_xarqv2di): Leave zero
+	rotate amounts as zero during expansion.
+	(*aarch64_xarqv2di_insn): Account for zero rotate amounts.  Print #
+	in rotate immediate.
+
+2026-02-05  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-01-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/123779
+	* config/i386/sse.md (*sse4_1_<code>v8qiv8hi2<mask_name>_2):
+	Rename to ...
+	(*sse4_1_<code>v8qiv8hi2_2): ... this, and drop mask conditions.
+	(*avx2_<code>v8qiv8si2<mask_name>_2): Rename to ...
+	(*avx2_<code>v8qiv8si2_2): ... this, and likewise.
+	(*sse4_1_<code>v4qiv4si2<mask_name>_2): Rename to ...
+	(*sse4_1_<code>v4qiv4si2_2): ... this, and likewise.
+	(*sse4_1_<code>v4hiv4si2<mask_name>_2): Rename to ...
+	(*sse4_1_<code>v4hiv4si2_2): ... this, and likewise.
+	(*avx2_<code>v4qiv4di2<mask_name>_2): Rename to ...
+	(*avx2_<code>v4qiv4di2_2): ... this, and likewise.
+	(*avx2_<code>v4hiv4di2<mask_name>_2): Rename to ...
+	(*avx2_<code>v4hiv4di2_2): ... this, and likewise.
+	(*sse4_1_<code>v2hiv2di2<mask_name>_2): Rename to ...
+	(*sse4_1_<code>v2hiv2di2_2): ... this, and likewise.
+	(*sse4_1_<code>v2siv2di2<mask_name>_2): Rename to ...
+	(*sse4_1_<code>v2siv2di2_2): ... this, and likewise.
+	(*avx512f_<code>v8qiv8di2<mask_name>_2): Rename to ...
+	(*avx512f_<code>v8qiv8di2_2): ... this.
+	(*avx512vl_<code>v8qiv8hi2_mask_2): New define_insn_and_split.
+	(*avx512vl_<code>v8qiv8si2_mask_2): Likewise.
+	(*avx512vl_<code>v4qiv4si2_mask_2): Likewise.
+	(*avx512vl_<code>v4hiv4si2_mask_2): Likewise.
+	(*avx512f_<code>v8qiv8di2_mask_2): Likewise.
+	(*avx512vl_<code>v4qiv4di2_mask_2): Likewise.
+	(*avx512vl_<code>v4hiv4di2_mask_2): Likewise.
+	(*avx512vl_<code>v2hiv2di2_mask_2): Likewise.
+	(*avx512vl_<code>v2siv2di2_mask_2): Likewise.
+
+2026-02-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-10-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122051
+	* config/riscv/predicates.md (pmode_reg_or_uimm5_operand): Implement
+	directly rather than using vector_length_operand.
+
+2026-02-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-07-09  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120642
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::execute): Do not do
+	constant AVL propagation for xtheadvector.
+
+2026-02-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/123548
+	* config/aarch64/arm_acle.h (__plix): Change arguments to be
+	const.
+	(__pldx): Change arguments to be const.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR debug/123886
+	* dwarf2out.cc (sym_off_pair::sym): Remove GTY((skip)).
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123794
+	* tree-vect-slp.cc (vect_remove_slp_scalar_calls): Unlink
+	VOPs for all calls.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123775
+	* match.pd ((view_convert (vec_cond ...))): Make sure the
+	resulting vec_cond can be expanded.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123729
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Set
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI if the reduction flows
+	across an abnomal edge.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-20  Richard Biener  <rguenther@suse.de>
+
+	* tree-phinodes.h (phi_arg_index_from_use): Use gphi *.
+	(phi_arg_edge_from_use): New helper composing
+	phi_arg_index_from_use and gimple_phi_arg_edge.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123575
+	* match.pd (abs ((T)x) -> absu (x)): For vector type
+	arguments require the resulting operation is supported.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123537
+	* match.pd (REDUC (@0 & @1) -> @0[I] & @1[I]): Restrict
+	allowed conversions.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-27  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/116296
+	* ipa-modref-tree.cc (modref_access_node::contains): Use
+	poly_offset_int for the param offset difference and the
+	overlap computation.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110043
+	* pointer-query.cc (get_offset_range): Fail for integer
+	types with precision larger than ptrdiff_type_node.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/109410
+	* tree-ssa-reassoc.cc (build_and_add_sum): Use
+	gsi_start_nondebug_after_labels_bb to look for a possible
+	returns-twice call.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/106859
+	* var-tracking.cc (val_store): Dump -1 as UID if setting_insn
+	is NULL.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* match.pd ((a ? x : y) !=/== (b ? x : y)): Make sure
+	x and y have no side-effects before evaluating them
+	unconditionally.
+
+2026-02-02  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-30  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123887
+	* match.pd ((zero_one ==/!= 0) ? .. z <op> y .. -> zero_one * z ..):
+	Check evaluating z unconditionally has no side-effects, like
+	trapping.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-ftypes.def: Remove unused type.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123766
+	* config/loongarch/loongarch-builtins.cc
+	(loongarch_build_vpointer_type): New function.  Return a type
+	for 'volatile void *'.
+	(LARCH_ATYPE_VPOINTER): New macro.
+	* config/loongarch/loongarch-ftypes.def: Change the pointer
+	type of the store class function from CVPOINTER to VPOINTER.
+
+2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2026-01-30  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123807
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): When same is MEM and
+	GET_MODE(same) != imode, first load the data from memory
+	and then process it further.
+
+2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123703
+	* builtins.cc (fold_builtin_abs): Return NULL_TREE if type is not
+	integral.
+
+2026-01-23  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123736
+	* tree-ssa-loop-unswitch.cc (hoist_guard): Guard dump message
+	on dump_file && (dump_flags & TDF_DETAILS) condition.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123741
+	* tree-vect-stmts.cc (vectorizable_store): Add missing check
+	on loop vectorization.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123602
+	* tree-ssa-pre.cc (find_or_generate_expression): Do not
+	generate references to abnormal SSA names.
+
+2026-01-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-01-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123107
+	* fold-const.cc (fold_binary_loc): Guard (v >> CST) == { 0, 0.. }
+	to v < { 0, 0.. } folding.
+
+2026-01-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Backported from master:
+	2026-01-08  Richard Sandiford  <rdsandiford@googlemail.com>
+		    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122793
+	* tree-vect-slp.cc (vect_add_slp_permutation): Document the existing
+	identity_offset parameter.  Handle identities that take from the
+	second input rather than the first.
+
+2026-01-23  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/119130
+	* config/rs6000/altivec.md (convert_4f32_8f16): Use same operand
+	order for both endian format.
+
+2026-01-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-01-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/sse.md (avx2_vbroadcasti128_<mode>): Constraint
+	alternative 0 with jm and add gpr16 attr to avoid egpr usage.
+
+2026-01-23  Lili Cui  <lili.cui@intel.com>
+
+	Backported from master:
+	2026-01-14  Lili Cui  <lili.cui@intel.com>
+
+	* config/i386/x86-tune.def (X86_TUNE_ALIGN_TIGHT_LOOPS):
+	disable tight loop alignment for m_CORE_ATOM.
+
+2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-01-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/123742
+	* config/arm/neon.md (*smin<mode>3_neon): Renamed to ...
+	(*smin<VDQWH:mode>3_neon): ... this.  Add HFmode support.
+	(*smax<mode>3_neon): Renamed to ...
+	(*smax<VDQWH:mode>3_neon): ... this.  Add HFmode support.
+
+2026-01-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2026-01-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/123092
+	* lra-constraints.cc (lra_constraints): Push insn on processing
+	stack after equivalence substitution.
+
+2026-01-19  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2026-01-19  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/117575
+	* config/loongarch/lasx.md: Modify the range of operand1.
+
+2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123513
+	* tree.cc (valid_new_delete_pair_p): If new_name[3] or delete_name[3]
+	is 'I', return false with *pcertain set to false rather than true.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123607
+	* config/i386/i386.md (movhf_mask): Change constraint on
+	match_operand 2's second alternative from 0C to 0.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/120250
+	* combine.cc (recog_for_combine): Don't try to put SET_SRC
+	into a constant pool if SET_DEST is pc_rtx.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/123523
+	* simplify-rtx.cc (simplify_const_binary_operation): Use
+	DImode for VOIDmode shift and truncation counts if int_mode
+	is narrower than HOST_BITS_PER_WIDE_INT rather than
+	word_mode if int_mode it is narrower than BITS_PER_WORD.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123431
+	* gimple-range-op.cc (gimple_range_op_handler::maybe_builtin_call):
+	Punt if type-generic builtins with a single argument don't have
+	exactly one argument.  For returns_arg punt if call doesn't have
+	at least one argument.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (-x): Add objc-cpp-output,
+	objc++-cpp-output, adascil, adawhy, modula-2, modula-2-cpp-output,
+	rust and lto as further possible option arguments.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123489
+	* config/i386/i386-builtin.def (__builtin_ia32_cvttsd2sis64_round,
+	__builtin_ia32_cvttsd2usis64_round, __builtin_ia32_cvttss2sis64_round,
+	__builtin_ia32_cvttss2usis64_round): Require OPTION_MASK_ISA_64BIT.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/111817
+	* stmt.cc (parse_input_constraint): For matching construct, goto
+	before the loop without changing j instead of break.  Remove comment
+	about that problem.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/119291
+	PR rtl-optimization/121773
+	* combine.cc (try_combine): Check that SET_DEST (setN) is neither
+	modified_between_p nor reg_used_between_p instead of just not
+	reg_used_between_p or pc_rtx.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-06  Jakub Jelinek  <jakub@redhat.com>
+		    Marco Falke  <falke.marco@gmail.com>
+
+	PR tree-optimization/123351
+	* tree-object-size.cc (object_sizes_set_temp): Separate calls to
+	make_ssa_name to ensure deterministic execution order.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-01-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123372
+	* tree-ssa-math-opts.cc
+	(build_saturation_binary_arith_call_and_replace): Pass type of op_0
+	rather than type of lhs as second argument to
+	direct_internal_fn_supported_p.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123217
+	* config/i386/i386-expand.cc (ix86_expand_builtin)
+	<case IX86_BUILTIN_ENCODEKEY128U32, case IX86_BUILTIN_ENCODEKEY256U32,
+	case IX86_BUILTIN_URDMSR>: Set target to a new pseudo even if it is
+	non-NULL but doesn't satisfy register_operand predicate.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/install.texi (--with-tls=): Fix a typo, were -> where.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123155
+	* config/i386/xmmintrin.h (_mm_maskmove_si64): Rename offset automatic
+	variable to __offset.
+
+2026-01-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123155
+	* config/i386/avx10_2-512bf16intrin.h (_mm512_roundscale_pbh,
+	_mm512_mask_roundscale_pbh, _mm512_maskz_roundscale_pbh,
+	_mm512_reduce_pbh, _mm512_mask_reduce_pbh, _mm512_maskz_reduce_pbh):
+	Rename B argument to __B.
+	* config/i386/avx10_2bf16intrin.h (_mm256_roundscale_pbh,
+	_mm256_mask_roundscale_pbh, _mm256_maskz_roundscale_pbh,
+	_mm_roundscale_pbh, _mm_mask_roundscale_pbh, _mm_maskz_roundscale_pbh,
+	_mm256_reduce_pbh, _mm256_mask_reduce_pbh, _mm256_maskz_reduce_pbh,
+	_mm_reduce_pbh, _mm_mask_reduce_pbh, _mm_maskz_reduce_pbh): Likewise.
+
+2026-01-16  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/123460
+	* config.gcc: Accept hyphens in aarch64 --with-arch extensions.
+
+2026-01-16  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/123121
+	* lra-remat.cc (bad_for_rematerialization_p): Consider div/mod ops.
+	(operand_to_remat): Exclude rematerialization of insns with
+	multiple sets.
+
+2026-01-16  Tejas Belagod  <tejas.belagod@arm.com>
+
+	PR middle-end/123392
+	* cfgexpand.cc (expand_debug_expr): Handle variable-length initializer
+	for CONSTRUCTOR.
+
+2026-01-16  Lulu Cheng  <chenglulu@loongson.cn>
+
+	Backported from master:
+	2026-01-16  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/123521
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): Fixed a bug in the
+	vector initialization section..
+
+2026-01-15  DengJianbo  <dengjianbo@loongson.cn>
+
+	Backported from master:
+	2026-01-15  DengJianbo  <dengjianbo@loongson.cn>
+
+	* config/loongarch/loongarch.md: Remove condition in template
+	movdi_symbolic_off64.
+
+2026-01-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/120063
+	* diagnostic-format-sarif.cc (maybe_get_sarif_level): Handle
+	DK_FATAL as SARIF level "error".
+	* diagnostic.cc (diagnostic_context::execution_failed_p): Also
+	treat any DK_FATAL errors as leading to failed execution.
+
+2026-01-13  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123300
+	* gimple-range-gori.cc (gori_map::exports_and_deps): New.
+	* gimple-range-gori.h (exports_and_deps): New prototype.
+	(FOR_EACH_GORI_EXPORT_AND_DEP_NAME): New macro.
+	* tree-vrp.cc (remove_unreachable:remove_unreachable): Initialize
+	m_tmp bitmap.
+	(remove_unreachable:~remove_unreachable): Dispose of m_tmp bitmap.
+	(remove_unreachable:fully_replaceable): Move from static function
+	and check reachability of exports and dependencies.
+
+2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-01-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/123484
+	* config/i386/mmx.md (divv4hf3): Add TARGET_MMX_WITH_SSE to
+	the condition.
+	(cmlav4hf4): Ditto.
+	(cmla_conjv4hf4): Ditto.
+	(cmulv4hf3): Ditto.
+	(cmul_conjv4hf3): Ditto.
+
+2026-01-09  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123040
+	* tree-ssa-sccvn.cc (vn_nary_build_or_lookup_1): Only insert
+	nary results.
+
 2026-01-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/121192

@@ -94,16 +94,16 @@ __pli (void const volatile *__addr)
 
 __extension__ extern __inline void
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__plix (unsigned int __cache, unsigned int __rettn,
+__plix (const unsigned int __cache, const unsigned int __rettn,
 	void const volatile *__addr)
 {
   return __builtin_aarch64_plix (__cache, __rettn, __addr);
 }
 
 __extension__ extern __inline void
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-__pldx (unsigned int __access, unsigned int __cache, unsigned int __rettn,
-	void const volatile *__addr)
+  __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+  __pldx (const unsigned int __access, const unsigned int __cache,
+	  const unsigned int __rettn, void const volatile *__addr)
 {
   return __builtin_aarch64_pldx (__access, __cache, __rettn, __addr);
 }

@@ -15198,6 +15198,13 @@ valid_new_delete_pair_p (tree new_asm, tree delete_asm,
   if ((new_name[2] != 'w' || delete_name[2] != 'l')
       && (new_name[2] != 'a' || delete_name[2] != 'a'))
     return false;
+  if (new_name[3] == 'I' || delete_name[3] == 'I')
+    {
+      /* When ::operator new or ::operator delete are function templates,
+	 return uncertain mismatch, we need demangler in that case.  */
+      *pcertain = false;
+      return false;
+    }
   /* 'j', 'm' and 'y' correspond to size_t.  */
   if (new_name[3] != 'j' && new_name[3] != 'm' && new_name[3] != 'y')
     return false;

@@ -472,28 +472,28 @@ _mm512_maskz_getexp_pbh (__mmask32 __U, __m512bh __A)
 #ifdef __OPTIMIZE__
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_roundscale_pbh (__m512bh __A, int B)
+_mm512_roundscale_pbh (__m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_rndscalebf16512_mask (__A, B,
+    __builtin_ia32_rndscalebf16512_mask (__A, __B,
 					 (__v32bf) _mm512_setzero_si512 (),
 					 (__mmask32) -1);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_roundscale_pbh (__m512bh __W, __mmask32 __U, __m512bh __A, int B)
+_mm512_mask_roundscale_pbh (__m512bh __W, __mmask32 __U, __m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_rndscalebf16512_mask (__A, B, __W,  __U);
+    __builtin_ia32_rndscalebf16512_mask (__A, __B, __W,  __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_roundscale_pbh (__mmask32 __U, __m512bh __A, int B)
+_mm512_maskz_roundscale_pbh (__mmask32 __U, __m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_rndscalebf16512_mask (__A, B,
+    __builtin_ia32_rndscalebf16512_mask (__A, __B,
 					 (__v32bf) _mm512_setzero_si512 (),
 					 __U);
 }
@@ -518,10 +518,10 @@ _mm512_maskz_roundscale_pbh (__mmask32 __U, __m512bh __A, int B)
 #ifdef __OPTIMIZE__
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_reduce_pbh (__m512bh __A, int B)
+_mm512_reduce_pbh (__m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_reducebf16512_mask (__A, B,
+    __builtin_ia32_reducebf16512_mask (__A, __B,
 				       (__v32bf) _mm512_setzero_si512 (),
 				       (__mmask32) -1);
 }
@@ -529,18 +529,18 @@ _mm512_reduce_pbh (__m512bh __A, int B)
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_reduce_pbh (__m512bh __W, __mmask32 __U,
-			__m512bh __A, int B)
+			__m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_reducebf16512_mask (__A, B, __W,  __U);
+    __builtin_ia32_reducebf16512_mask (__A, __B, __W,  __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_reduce_pbh (__mmask32 __U, __m512bh __A, int B)
+_mm512_maskz_reduce_pbh (__mmask32 __U, __m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_reducebf16512_mask (__A, B,
+    __builtin_ia32_reducebf16512_mask (__A, __B,
 					  (__v32bf) _mm512_setzero_si512 (),
 					  __U);
 }

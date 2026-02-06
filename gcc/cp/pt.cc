@@ -14068,7 +14068,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	  /* We can't substitute for this parameter pack.  We use a flag as
 	     well as the missing_level counter because function parameter
 	     packs don't have a level.  */
-	  gcc_assert (processing_template_decl || is_auto (parm_pack));
+	  gcc_assert (processing_template_decl || is_auto (parm_pack)
+		      || args == NULL_TREE);
 	  unsubstituted_packs = true;
 	}
     }
@@ -14263,10 +14264,15 @@ tsubst_pack_index (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   tree index = tsubst_expr (PACK_INDEX_INDEX (t), args, complain, in_decl);
   const bool parenthesized_p = (TREE_CODE (t) == PACK_INDEX_EXPR
 				&& PACK_INDEX_PARENTHESIZED_P (t));
+  tree r;
   if (!value_dependent_expression_p (index) && TREE_CODE (pack) == TREE_VEC)
-    return pack_index_element (index, pack, parenthesized_p, complain);
+    r = pack_index_element (index, pack, parenthesized_p, complain);
   else
-    return make_pack_index (pack, index);
+    r = make_pack_index (pack, index);
+  if (TREE_CODE (t) == PACK_INDEX_TYPE)
+    r = cp_build_qualified_type (r, cp_type_quals (t) | cp_type_quals (r),
+				 complain | tf_ignore_bad_quals);
+  return r;
 }
 
 /* Make an argument pack out of the TREE_VEC VEC.  */
@@ -22254,7 +22260,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  if (r == NULL_TREE && TREE_CODE (t) == PARM_DECL)
 	    {
 	      /* We get here for a use of 'this' in an NSDMI.  */
-	      if (DECL_NAME (t) == this_identifier && current_class_ptr)
+	      if (DECL_NAME (t) == this_identifier && current_class_ptr
+		  && !LAMBDA_TYPE_P (TREE_TYPE (TREE_TYPE (current_class_ptr))))
 		RETURN (current_class_ptr);
 
 	      /* This can happen for a parameter name used later in a function
@@ -31528,7 +31535,11 @@ type_targs_deducible_from (tree tmpl, tree type)
 	 per alias_ctad_tweaks.  */
       tparms = INNERMOST_TEMPLATE_PARMS (TREE_PURPOSE (tmpl));
       ttype = TREE_VALUE (tmpl);
-      tmpl = TI_TEMPLATE (TYPE_TEMPLATE_INFO_MAYBE_ALIAS (ttype));
+      tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (ttype);
+      if (!ti)
+	/* TTYPE is a typedef to a template-id.  */
+	ti = TYPE_TEMPLATE_INFO (ttype);
+      tmpl = TI_TEMPLATE (ti);
     }
 
   int len = TREE_VEC_LENGTH (tparms);

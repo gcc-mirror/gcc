@@ -476,7 +476,8 @@ diagnostic_context::execution_failed_p () const
 {
   /* Equivalent to (seen_error () || werrorcount), but on
      this context, rather than global_dc.  */
-  return (diagnostic_count (DK_ERROR)
+  return (diagnostic_count (DK_FATAL)
+	  || diagnostic_count (DK_ERROR)
 	  || diagnostic_count (DK_SORRY)
 	  || diagnostic_count (DK_WERROR));
 }
