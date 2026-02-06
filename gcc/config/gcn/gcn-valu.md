@@ -477,89 +477,33 @@
   [m,v ,U0,e ,&v;*    ,16] #
   })
 
-; This variant does not accept an unspec, but does permit MEM
-; read/modify/write which is necessary for maskstore.
-
-;(define_insn "*mov<mode>_exec_match"
-;  [(set (match_operand:V_1REG 0 "nonimmediate_operand" "=v,v, v, m")
-;	(vec_merge:V_1REG
-;	  (match_operand:V_1REG 1 "general_operand"	"vA,B, m, v")
-;	  (match_dup 0)
-;	  (match_operand:DI 2 "gcn_exec_reg_operand"	" e,e, e, e")))
-;   (clobber (match_scratch:<VnDI> 3			"=X,X,&v,&v"))]
-;  "!MEM_P (operands[0]) || REG_P (operands[1])"
-;  "@
-;  v_mov_b32\t%0, %1
-;  v_mov_b32\t%0, %1
-;  #
-;  #"
-;  [(set_attr "type" "vop1,vop1,*,*")
-;   (set_attr "length" "4,8,16,16")])
-
 (define_insn "*mov<mode>"
-  [(set (match_operand:V_2REG 0 "nonimmediate_operand" "=v, v,$a,a")
-	(match_operand:V_2REG 1 "general_operand"      "vDB,a, v,a"))]
+  [(set (match_operand:V_2REG 0 "nonimmediate_operand")
+	(match_operand:V_2REG 1 "general_operand"))]
   ""
-  "@
-   * if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1])) \
-       return \"v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\"; \
-     else \
-       return \"v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1\";
-   * if (REGNO (operands[0]) <= REGNO (operands[1])) \
-       return \"v_accvgpr_read_b32\t%L0, %L1\;v_accvgpr_read_b32\t%H0, %H1\"; \
-     else \
-       return \"v_accvgpr_read_b32\t%H0, %H1\;v_accvgpr_read_b32\t%L0, %L1\";
-   * if (REGNO (operands[0]) <= REGNO (operands[1])) \
-       return \"v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1\"; \
-     else \
-       return \"v_accvgpr_write_b32\t%H0, %H1\;v_accvgpr_write_b32\t%L0, %L1\";
-   * if (REGNO (operands[0]) <= REGNO (operands[1])) \
-       return \"v_accvgpr_mov_b32\t%L0, %L1\;v_accvgpr_mov_b32\t%H0, %H1\"; \
-     else \
-       return \"v_accvgpr_mov_b32\t%H0, %H1\;v_accvgpr_mov_b32\t%L0, %L1\";"
-  [(set_attr "type" "vmult,vmult,vmult,vmult")
-   (set_attr "length" "16,16,16,8")
-   (set_attr "cdna" "*,*,*,cdna2")])
+  {@ [cons: =0, 1; attrs: length, cdna]
+  [v ,vDB;16,*    ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
+  [v ,a  ;16,*    ] v_accvgpr_read_b32\t%L0, %L1\;v_accvgpr_read_b32\t%H0, %H1
+  [$a,v  ;16,*    ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1
+  [a ,a  ;8 ,cdna2] v_accvgpr_mov_b32\t%L0, %L1\;v_accvgpr_mov_b32\t%H0, %H1
+  }
+  [(set_attr "type" "vmult,vmult,vmult,vmult")])
 
 (define_insn "mov<mode>_exec"
-  [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v,   v,   v, v, m")
+  [(set (match_operand:V_2REG 0 "nonimmediate_operand")
 	(vec_merge:V_2REG
-	  (match_operand:V_2REG 1 "general_operand"    "vDB,  v0,  v0, m, v")
-	  (match_operand:V_2REG 2 "gcn_alu_or_unspec_operand"
-						       " U0,vDA0,vDA0,U0,U0")
-	  (match_operand:DI 3 "register_operand"       "  e,  cV,  Sv, e, e")))
-   (clobber (match_scratch:<VnDI> 4		       "= X,   X,   X,&v,&v"))]
+	  (match_operand:V_2REG 1 "general_operand")
+	  (match_operand:V_2REG 2 "gcn_alu_or_unspec_operand")
+	  (match_operand:DI 3 "register_operand")))
+   (clobber (match_scratch:<VnDI> 4))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
-  {
-    if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1]))
-      switch (which_alternative)
-	{
-	case 0:
-	  return "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1";
-	case 1:
-	  return "v_cndmask_b32\t%L0, %L2, %L1, vcc\;"
-		 "v_cndmask_b32\t%H0, %H2, %H1, vcc";
-	case 2:
-	  return "v_cndmask_b32\t%L0, %L2, %L1, %3\;"
-		 "v_cndmask_b32\t%H0, %H2, %H1, %3";
-	}
-    else
-      switch (which_alternative)
-	{
-	case 0:
-	  return "v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1";
-	case 1:
-	  return "v_cndmask_b32\t%H0, %H2, %H1, vcc\;"
-		 "v_cndmask_b32\t%L0, %L2, %L1, vcc";
-	case 2:
-	  return "v_cndmask_b32\t%H0, %H2, %H1, %3\;"
-		 "v_cndmask_b32\t%L0, %L2, %L1, %3";
-	}
-
-    return "#";
-  }
-  [(set_attr "type" "vmult,vmult,vmult,*,*")
-   (set_attr "length" "16,16,16,16,16")])
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length]
+  [v,vDB,U0  ,e ,X ;vmult,16] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
+  [v,v0 ,vDA0,cV,X ;vmult,16] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc
+  [v,v0 ,vDA0,Sv,X ;vmult,16] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3
+  [v,m  ,U0  ,e ,&v;*    ,16] #
+  [m,v  ,U0  ,e ,&v;*    ,16] #
+  })
 
 (define_insn "*mov<mode>_4reg"
   [(set (match_operand:V_4REG 0 "nonimmediate_operand")
@@ -573,75 +517,20 @@
   })
 
 (define_insn "mov<mode>_exec"
-  [(set (match_operand:V_4REG 0 "nonimmediate_operand" "= v,   v,   v, v, m")
+  [(set (match_operand:V_4REG 0 "nonimmediate_operand")
 	(vec_merge:V_4REG
-	  (match_operand:V_4REG 1 "general_operand"    "vDB,  v0,  v0, m, v")
-	  (match_operand:V_4REG 2 "gcn_alu_or_unspec_operand"
-						       " U0,vDA0,vDA0,U0,U0")
-	  (match_operand:DI 3 "register_operand"       "  e,  cV,  Sv, e, e")))
-   (clobber (match_scratch:<VnDI> 4		       "= X,   X,   X,&v,&v"))]
+	  (match_operand:V_4REG 1 "general_operand")
+	  (match_operand:V_4REG 2 "gcn_alu_or_unspec_operand")
+	  (match_operand:DI 3 "register_operand")))
+   (clobber (match_scratch:<VnDI> 4))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
-  {
-    if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1]))
-      switch (which_alternative)
-	{
-	case 0:
-	  return "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;"
-                 "v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1";
-	case 1:
-	  return "v_cndmask_b32\t%L0, %L2, %L1, vcc\;"
-		 "v_cndmask_b32\t%H0, %H2, %H1, vcc\;"
-		 "v_cndmask_b32\t%J0, %J2, %J1, vcc\;"
-		 "v_cndmask_b32\t%K0, %K2, %K1, vcc";
-	case 2:
-	  return "v_cndmask_b32\t%L0, %L2, %L1, %3\;"
-		 "v_cndmask_b32\t%H0, %H2, %H1, %3\;"
-		 "v_cndmask_b32\t%J0, %J2, %J1, %3\;"
-		 "v_cndmask_b32\t%K0, %K2, %K1, %3";
-	}
-    else
-      switch (which_alternative)
-	{
-	case 0:
-	  return "v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1\;"
-                 "v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1";
-	case 1:
-	  return "v_cndmask_b32\t%H0, %H2, %H1, vcc\;"
-		 "v_cndmask_b32\t%L0, %L2, %L1, vcc\;"
-		 "v_cndmask_b32\t%J0, %J2, %J1, vcc\;"
-		 "v_cndmask_b32\t%K0, %K2, %K1, vcc";
-	case 2:
-	  return "v_cndmask_b32\t%H0, %H2, %H1, %3\;"
-		 "v_cndmask_b32\t%L0, %L2, %L1, %3\;"
-		 "v_cndmask_b32\t%J0, %J2, %J1, %3\;"
-		 "v_cndmask_b32\t%K0, %K2, %K1, %3";
-	}
-
-    return "#";
-  }
-  [(set_attr "type" "vmult,vmult,vmult,*,*")
-   (set_attr "length" "32")])
-
-; This variant does not accept an unspec, but does permit MEM
-; read/modify/write which is necessary for maskstore.
-
-;(define_insn "*mov<mode>_exec_match"
-;  [(set (match_operand:V_2REG 0 "nonimmediate_operand" "=v, v, m")
-;	(vec_merge:V_2REG
-;	  (match_operand:V_2REG 1 "general_operand"	"vDB, m, v")
-;	  (match_dup 0)
-;	  (match_operand:DI 2 "gcn_exec_reg_operand"	" e, e, e")))
-;   (clobber (match_scratch:<VnDI> 3			"=X,&v,&v"))]
-;  "!MEM_P (operands[0]) || REG_P (operands[1])"
-;  "@
-;   * if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1])) \
-;       return \"v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\"; \
-;     else \
-;       return \"v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1\";
-;   #
-;   #"
-;  [(set_attr "type" "vmult,*,*")
-;   (set_attr "length" "16,16,16")])
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length]
+  [v,vDB,U0  ,e ,X ;vmult,32] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
+  [v,v0 ,vDA0,cV,X ;vmult,32] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc\;v_cndmask_b32\t%J0, %J2, %J1, vcc\;v_cndmask_b32\t%K0, %K2, %K1, vcc
+  [v,v0 ,vDA0,Sv,X ;vmult,32] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3\;v_cndmask_b32\t%J0, %J2, %J1, %3\;v_cndmask_b32\t%K0, %K2, %K1, %3
+  [v,m  ,U0  ,e ,&v;*    ,32] #
+  [m,v  ,U0  ,e ,&v;*    ,32] #
+  })
 
 ; A SGPR-base load looks like:
 ;   <load> v, Sv
@@ -672,24 +561,19 @@
   })
 
 (define_insn "@mov<mode>_sgprbase"
-  [(set (match_operand:V_2REG 0 "nonimmediate_operand" "= v, v, m, a, m")
+  [(set (match_operand:V_2REG 0 "nonimmediate_operand")
 	(unspec:V_2REG
-	  [(match_operand:V_2REG 1 "general_operand"   "vDB, m, v, m, a")]
+	  [(match_operand:V_2REG 1 "general_operand")]
 	  UNSPEC_SGPRBASE))
-   (clobber (match_operand:<VnDI> 2 "register_operand"  "=&v,&v,&v,&v,&v"))]
+   (clobber (match_operand:<VnDI> 2 "register_operand"))]
   "lra_in_progress || reload_completed"
-  "@
-   * if (!REG_P (operands[1]) || REGNO (operands[0]) <= REGNO (operands[1])) \
-       return \"v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\"; \
-     else \
-       return \"v_mov_b32\t%H0, %H1\;v_mov_b32\t%L0, %L1\";
-   #
-   #
-   #
-   #"
-  [(set_attr "type" "vmult,*,*,*,*")
-   (set_attr "length" "8,12,12,12,12")
-   (set_attr "cdna" "*,*,*,cdna2,cdna2")])
+  {@ [cons: =0, 1, =2; attrs: type, length, cdna]
+  [v,vDB,&v;vmult,8 ,*    ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
+  [v,m  ,&v;*    ,12,*    ] #
+  [m,v  ,&v;*    ,12,*    ] #
+  [a,m  ,&v;*    ,12,cdna2] #
+  [m,a  ,&v;*    ,12,cdna2] #
+  })
 
 (define_insn "@mov<mode>_sgprbase"
   [(set (match_operand:V_4REG 0 "nonimmediate_operand")

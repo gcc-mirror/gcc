@@ -529,62 +529,26 @@
 ; We need BImode move so we can reload flags registers.
 
 (define_insn "*movbi"
-  [(set (match_operand:BI 0 "nonimmediate_operand"
-			  "=Sg,   v,Sg,cs,cV,cV,Sm,&Sm,RS, v,&v,RF, v,&v,RM")
-	(match_operand:BI 1 "gcn_load_operand"
-			  "SSA,vSvA, v,SS, v,SS,RS, RS,Sm,RF,RF, v,RM,RM, v"))]
-  ""
-  {
-    /* SCC as an operand is currently not accepted by the LLVM assembler, so
-       we emit bytes directly as a workaround.  */
-    switch (which_alternative) {
-    case 0:
-      return "s_mov_b32\t%0, %1";
-    case 1:
-      if (REG_P (operands[1]) && REGNO (operands[1]) == SCC_REG)
-	return "; v_mov_b32\t%0, %1\;"
-	       ".byte\t0xfd\;"
-	       ".byte\t0x2\;"
-	       ".byte\t((%V0<<1)&0xff)\;"
-	       ".byte\t0x7e|(%V0>>7)";
-      else
-	return "v_mov_b32\t%0, %1";
-    case 2:
-      return "v_readlane_b32\t%0, %1, 0";
-    case 3:
-      return "s_cmpk_lg_u32\t%1, 0";
-    case 4:
-      return "v_cmp_ne_u32\tvcc, 0, %1";
-    case 5:
-      return "s_mov_b32\tvcc_lo, %1\;"
-	     "s_mov_b32\tvcc_hi, 0";
-    case 6:
-    case 7:
-      return "s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)";
-    case 8:
-      return "s_store_dword\t%1, %A0";
-    case 9:
-    case 10:
-      return "flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0";
-    case 11:
-      return "flat_store_dword\t%A0, %1%O0%g0";
-    case 12:
-    case 13:
-      return "global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)";
-    case 14:
-      return "global_store_dword\t%A0, %1%O0%g0";
-    default:
-      gcc_unreachable ();
-    }
-  }
-  [(set_attr "type" "sop1,vop1,vop3a,sopk,vopc,mult,smem,smem,smem,flat,flat,
-		     flat,flat,flat,flat")
-   (set_attr "flatmemaccess" "*,*,*,*,*,*,*,*,*,load,load,store,load,load,store")
-   (set_attr "vcmp" "*,*,*,*,vcmp,*,*,*,*,*,*,*,*,*,*")
-   (set_attr "exec" "*,*,none,*,*,*,*,*,*,*,*,*,*,*,*")
-   (set_attr "length" "4,4,4,4,4,8,12,12,12,12,12,12,12,12,12")
-   (set_attr "xnack" "*,*,*,*,*,*,off,on,*,off,on,*,off,on,*")
-   (set_attr "laneselect" "*,*,read,*,*,*,*,*,*,*,*,*,*,*,*")])
+  [(set (match_operand:BI 0 "nonimmediate_operand")
+	(match_operand:BI 1 "gcn_load_operand"))]
+  "gcn_valid_move_p (BImode, operands[0], operands[1])"
+  {@ [cons: =0,1   ;attrs: type,exec,length,vcmp,xnack,laneselect,flatmemaccess]
+  [Sg ,SSA ;sop1 ,*   ,4 ,*   ,*  ,*   ,*    ] s_mov_b32\t%0 ,%1
+  [v  ,vSvA;vop1 ,*   ,4 ,*   ,*  ,*   ,*    ] v_mov_b32\t%0 ,%1
+  [Sg ,v   ;vop3a,none,4 ,*   ,*  ,read,*    ] v_readlane_b32\t%0 ,%1 ,0
+  [cs ,SS  ;sopk ,*   ,4 ,*   ,*  ,*   ,*    ] s_cmpk_lg_u32\t%1 ,0
+  [cV ,v   ;vopc ,*   ,4 ,vcmp,*  ,*   ,*    ] v_cmp_ne_u32\tvcc ,0 ,%1
+  [cV ,SS  ;mult ,*   ,8 ,*   ,*  ,*   ,*    ] s_mov_b32\tvcc_lo ,%1\;s_mov_b32\tvcc_hi ,0
+  [Sm ,RS  ;smem ,*   ,12,*   ,off,*   ,*    ] s_load_dword\t%0 ,%A1\;s_waitcnt\tlgkmcnt(0)
+  [&Sm,RS  ;smem ,*   ,12,*   ,on ,*   ,*    ] ^
+  [RS ,Sm  ;smem ,*   ,12,*   ,*  ,*   ,*    ] s_store_dword\t%1 ,%A0
+  [v  ,RF  ;flat ,*   ,12,*   ,off,*   ,load ] flat_load_dword\t%0 ,%A1%O1%g1\;s_waitcnt\t0
+  [&v ,RF  ;flat ,*   ,12,*   ,on ,*   ,load ] ^
+  [RF ,v   ;flat ,*   ,12,*   ,*  ,*   ,store] flat_store_dword\t%A0 ,%1%O0%g0
+  [v  ,RM  ;flat ,*   ,12,*   ,off,*   ,load ] global_load_dword\t%0 ,%A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [&v ,RM  ;flat ,*   ,12,*   ,on ,*   ,load ] ^
+  [RM ,v   ;flat ,*   ,12,*   ,*  ,*   ,store] global_store_dword\t%A0,%1%O0%g0
+  })
 
 ; 32bit move pattern
 
