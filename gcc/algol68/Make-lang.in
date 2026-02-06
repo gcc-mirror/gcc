@@ -109,6 +109,7 @@ ALGOL68_OBJS = algol68/a68-lang.o \
                algol68/a68-low-runtime.o \
                algol68/a68-low-unions.o \
                algol68/a68-low-units.o \
+               algol68/a68-low-holes.o \
                $(END)
 
 ALGOL68_ALL_OBJS = $(ALGOL68_OBJS)

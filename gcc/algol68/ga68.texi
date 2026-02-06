@@ -1305,6 +1305,17 @@ As C @code{unsigned long long} or as C @code{unsigned long} or as C @code{unsign
 As C @code{float}
 @item @code{@B{long} @B{real}}
 As C @code{double}
+@item @code{string} but only as formal parameters of procedures
+Each Algol 68 string formal parameter turns into three parameters in C:
+
+@table @code
+@item uint32_t *s
+A pointer to the UCS-4 characters composing the string.
+@item size_t len
+The length of @code{s} in number of characters.
+@item size_t stride
+The distance in bytes between each character in @code{s}.
+@end table
 @item @B{proc} with accepted formal parameter modes and yielded mode
 As the corresponding C functions.
 @item Structs with fields of accepted modes

@@ -2,7 +2,7 @@ begin string s =
          nest C "lala"; { dg-error "" }
       union(int,real) x =
          nest C "x"; { dg-error "" }
-      proc(string)bool y =
+      proc(union(void,string))bool y =
          nest C "y"; { dg-error "" }
       skip
 end

@@ -775,7 +775,7 @@ extract_identities (NODE_T *p)
 		    {
 		      NODE_T *actual_param = NEXT (NEXT (q));
 		      if (actual_param != NO_NODE && IS (actual_param, FORMAL_NEST_SYMBOL))
-			IN_PROC (tag) = true;
+			NEST_PROC (tag) = true;
 		    }
 		  FORWARD (q);
 		  ATTRIBUTE (q) = ALT_EQUALS_SYMBOL;

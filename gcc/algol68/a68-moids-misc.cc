@@ -1193,7 +1193,7 @@ a68_determine_unique_mode (SOID_T *z, int deflex)
    metaproduction rule 561B in ga68.vw.  */
 
 bool
-a68_is_c_mode (MOID_T *m)
+a68_is_c_mode (MOID_T *m, int level)
 {
   if (m == M_VOID || m == M_BOOL || m == M_CHAR)
     return true;
@@ -1204,14 +1204,19 @@ a68_is_c_mode (MOID_T *m)
   else if (IS_REAL (m))
     return true;
   else if (IS_REF (m))
-    return a68_is_c_mode (SUB (m));
+    return a68_is_c_mode (SUB (m), level + 1);
   else if (IS (m, PROC_SYMBOL))
     {
       bool yielded_mode_valid = a68_is_c_mode (SUB (m));
       bool params_valid = true;
 
       for (PACK_T *z = PACK (m); z != NO_PACK; FORWARD (z))
-	params_valid &= a68_is_c_mode (MOID (z));
+	{
+	  if (level == 0 && MOID (z) == M_STRING)
+	    ;
+	  else
+	    params_valid &= a68_is_c_mode (MOID (z), level + 1);
+	}
 
       return yielded_mode_valid && params_valid;
     }
@@ -1220,7 +1225,7 @@ a68_is_c_mode (MOID_T *m)
       bool fields_valid = true;
 
       for (PACK_T *z = PACK (m); z != NO_PACK; FORWARD (z))
-	fields_valid &= a68_is_c_mode (MOID (z));
+	fields_valid &= a68_is_c_mode (MOID (z), level + 1);
       return fields_valid;
     }
 

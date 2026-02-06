@@ -91,7 +91,7 @@ a68_add_identifier_to_moif (MOIF_T *moif, TAG_T *tag)
   EXTRACT_MODE (e) = MOID (tag);
   EXTRACT_PRIO (e) = 0;
   EXTRACT_VARIABLE (e) = VARIABLE (tag);
-  EXTRACT_IN_PROC (e) = IN_PROC (tag);
+  EXTRACT_IN_PROC (e) = IN_PROC (tag) || NEST_PROC (tag);
 
   if (! IDENTIFIERS (moif)->contains (e))
     {

@@ -351,38 +351,55 @@ a68_lower_identity_declaration (NODE_T *p, LOW_CTX_T ctx)
 
   NODE_T *unit = NEXT (NEXT (defining_identifier));
 
-  /* If not done already by an applied identifier in lower_identifier, create a
-     declaration for the defined entity and chain it in the current block.  The
-     declaration has an initial value of SKIP.  */
-  tree id_decl = TAX_TREE_DECL (TAX (defining_identifier));
-  if (id_decl == NULL_TREE)
+  tree expr = NULL_TREE;
+  if (NEST_PROC (TAX (defining_identifier)))
     {
-      id_decl = a68_make_identity_declaration_decl (defining_identifier,
-						    ctx.module_definition_name);
-      TAX_TREE_DECL (TAX (defining_identifier)) = id_decl;
+      /* NEST_PROC tells us that the identity declaration is of the form:
+
+	 PROCMODE defining_identifier = FORMAL_HOLE
+
+	 Which in effect is very like a procedure declaration.  */
+      gcc_assert (IS (SUB (unit), FORMAL_HOLE));
+      ctx.proc_decl_identifier = defining_identifier;
+      ctx.proc_decl_operator = false;
+      expr = a68_lower_tree (unit, ctx);
     }
-
-  /* If the identity declaration is in a public range then add the declaration
-     to the publicized declarations list.  Otherwise chain the declaration in
-     the proper block and bind it.  */
-  if (PUBLIC_RANGE (TABLE (TAX (defining_identifier))))
-    vec_safe_push (A68_MODULE_DEFINITION_DECLS, id_decl);
   else
-    a68_add_decl (id_decl);
+    {
+      /* For regular identity declarations, create a declaration for the
+	 defined entity and chain it in the current block.  The declaration has
+	 an initial value of SKIP.  */
+      tree id_decl = TAX_TREE_DECL (TAX (defining_identifier));
+      if (id_decl == NULL_TREE)
+	{
+	  id_decl = a68_make_identity_declaration_decl (defining_identifier,
+							ctx.module_definition_name);
+	  TAX_TREE_DECL (TAX (defining_identifier)) = id_decl;
+	}
 
-  /* Prepare the DECL_EXPR.  */
-  a68_add_decl_expr (fold_build1_loc (a68_get_node_location (p),
-				      DECL_EXPR,
-				      TREE_TYPE (id_decl),
-				      id_decl));
+      /* Prepare the DECL_EXPR.  */
+      a68_add_decl_expr (fold_build1_loc (a68_get_node_location (p),
+					  DECL_EXPR,
+					  TREE_TYPE (id_decl),
+					  id_decl));
 
-  unit_tree = a68_lower_tree (unit, ctx);
-  unit_tree = a68_consolidate_ref (MOID (unit), unit_tree);
-  tree expr = a68_low_ascription (MOID (defining_identifier),
-				  id_decl, unit_tree);
+      unit_tree = a68_lower_tree (unit, ctx);
+      unit_tree = a68_consolidate_ref (MOID (unit), unit_tree);
+      expr = a68_low_ascription (MOID (defining_identifier),
+				 id_decl, unit_tree);
 
-  /* If the ascribed value is constant, mark the declaration as constant.  */
-  TREE_CONSTANT (id_decl) = TREE_CONSTANT (unit_tree);
+      /* If the ascribed value is constant, mark the declaration as
+	 constant.  */
+      TREE_CONSTANT (id_decl) = TREE_CONSTANT (unit_tree);
+
+      /* If the identity declaration is in a public range then add the
+	 declaration to the module's declarations list.  Otherwise chain the
+	 declaration in the proper block and bind it.  */
+      if (PUBLIC_RANGE (TABLE (TAX (defining_identifier))))
+	vec_safe_push (A68_MODULE_DEFINITION_DECLS, id_decl);
+      else
+	a68_add_decl (id_decl);
+    }
 
   /* Tail in a compound expression with sub declarations, if any.  */
   if (sub_expr != NULL_TREE)
@@ -390,7 +407,7 @@ a68_lower_identity_declaration (NODE_T *p, LOW_CTX_T ctx)
       if (expr != NULL_TREE)
 	expr = fold_build2_loc (a68_get_node_location (p),
 				COMPOUND_EXPR,
-				TREE_TYPE (id_decl),
+				TREE_TYPE (expr),
 				sub_expr,
 				expr);
       else

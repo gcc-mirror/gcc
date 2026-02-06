@@ -778,6 +778,7 @@ a68_new_tag (void)
   PRIO (z) = 0;
   USE (z) = false;
   IN_PROC (z) = false;
+  NEST_PROC (z) = false;
   HEAP (z) = false;
   YOUNGEST_ENVIRON (z) = PRIMAL_SCOPE;
   LOC_ASSIGNED (z) = false;

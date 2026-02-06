@@ -79,6 +79,7 @@ a68_lower_identifier (NODE_T *p, LOW_CTX_T ctx)
 	  if (IS (MOID (p), PROC_SYMBOL))
 	    {
 	      bool external = (MOIF (TAX (p)) != NO_MOIF);
+
 	      const char *extern_symbol = EXTERN_SYMBOL (TAX (p));
 	      if (VARIABLE (TAX (p)))
 		{
@@ -90,7 +91,7 @@ a68_lower_identifier (NODE_T *p, LOW_CTX_T ctx)
 		    id_decl
 		      = a68_make_variable_declaration_decl (p, ctx.module_definition_name);
 		}
-	      else if (IN_PROC (TAX (p)))
+	      else if (IN_PROC (TAX (p)) || NEST_PROC (TAX (p)))
 		{
 		  if (external)
 		    id_decl
@@ -144,8 +145,9 @@ a68_lower_identifier (NODE_T *p, LOW_CTX_T ctx)
 	  TAX_TREE_DECL (TAX (p)) = id_decl;
 	}
 
-      /* If the identifier refers to a FUNCTION_DECL, this means the declaration
-	 was made by a procecure-identity-dclaration.  The applied identifier in
+      /* If the identifier refers to a FUNCTION_DECL, this means the
+	 declaration was made by a procecure-identity-dclaration or a
+	 proc-identity-declaration of a formal hole.  The applied identifier in
 	 that case refers to the address of the corresponding function.  */
       if (TREE_CODE (id_decl) == FUNCTION_DECL)
 	return fold_build1 (ADDR_EXPR,
@@ -1247,22 +1249,68 @@ a68_lower_routine_text (NODE_T *p, LOW_CTX_T ctx)
 tree
 a68_lower_formal_hole (NODE_T *p, LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
-  NODE_T *str = NEXT_SUB (p);
-  if (IS (str, LANGUAGE_INDICANT))
-    FORWARD (str);
-  gcc_assert (IS (str, TERTIARY));
-  while (str != NO_NODE && !IS (str, ROW_CHAR_DENOTATION))
-    str = SUB (str);
-  gcc_assert (IS (str, ROW_CHAR_DENOTATION));
+  NODE_T *defining_identifier = ctx.proc_decl_identifier;
+  bool defining_operator = ctx.proc_decl_operator;
 
-  char *symbol = a68_string_process_breaks (p, NSYMBOL (str));
+  if (defining_identifier != NO_NODE)
+    {
+      /* The formal-hole is part of an identity declaration and yields a proc
+	 mode.  */
+      gcc_assert (IS (MOID (p), PROC_SYMBOL));
 
-  tree decl;
-  if (IS (MOID (p), PROC_SYMBOL))
-    decl = a68_make_proc_formal_hole_decl (p, symbol);
+      tree func_decl = TAX_TREE_DECL (TAX (defining_identifier));
+      if (func_decl == NULL_TREE)
+	{
+	  /* Note that for PROC modes (which are non-REF) the function below
+	     always returns a func_decl, never an address.  */
+	  func_decl
+	    = a68_make_proc_identity_declaration_decl (defining_identifier,
+						       ctx.module_definition_name,
+						       defining_operator /* indicant */);
+	  TAX_TREE_DECL (TAX (defining_identifier)) = func_decl;
+	}
+
+      /* Create the body for the wrapper from the formal hole. */
+      a68_wrap_formal_proc_hole (p, func_decl);
+
+      /* If the identity-declaration is in a public range then add the
+	 declaration to the module's declarations list.  Otherwise chain the
+	 declaration in the proper block and bind it.  */
+      if (PUBLIC_RANGE (TABLE (TAX (defining_identifier))))
+	vec_safe_push (A68_MODULE_DEFINITION_DECLS, func_decl);
+      else
+	a68_add_decl (func_decl);
+
+      a68_add_decl_expr (fold_build1_loc (a68_get_node_location (p),
+					  DECL_EXPR,
+					  TREE_TYPE (func_decl),
+					  func_decl));
+      return func_decl;
+    }
   else
-    decl = a68_make_formal_hole_decl (p, symbol);
-  return decl;
+    {
+      /* The formal-hole is free standing. */
+      tree decl;
+      if (IS (MOID (p), PROC_SYMBOL))
+	{
+	  decl = a68_make_anonymous_routine_decl (MOID (p));
+	  a68_add_decl (decl);
+	  a68_wrap_formal_proc_hole (p, decl);
+
+	  /* XXX necessary */
+	  a68_add_decl_expr (fold_build1_loc (a68_get_node_location (p),
+					      DECL_EXPR,
+					      TREE_TYPE (decl),
+					      decl));
+	  decl = fold_build1 (ADDR_EXPR,
+			      build_pointer_type (TREE_TYPE (decl)),
+			      decl);
+	}
+      else
+	decl = a68_wrap_formal_var_hole (p);
+
+      return decl;
+    }
 }
 
 /* Lower an unit.
