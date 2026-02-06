@@ -1,3 +1,27 @@
+2026-02-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-01-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/114153
+	* include/bits/ranges_cmp.h (__detail::__less_builtin_ptr_cmp):
+	Add __not_overloaded_spaceship spaceship check.
+	* include/bits/stl_function.h (greater<void>::operator())
+	(less<void>::operator(), greater_equal<void>::operator())
+	(less_equal<void>::operator()): Implement using if constexpr.
+	(greater<void>::__S_cmp, less<void>::__S_cmp)
+	(greater_equal<void>::__ptr_comp, less_equal<void>::S_cmp):
+	Remove.
+	(greater<void>::__ptr_cmp, less<void>::__ptr_cmp)
+	(greater_equal<void>::__ptr_comp, less_equal<void>::ptr_cmp): Change
+	tostatic constexpr variable. Define in terms of requires expressions
+	and __not_overloaded_spaceship check.
+	* include/std/concepts: (__detail::__not_overloaded_spaceship):
+	Define.
+	* libsupc++/compare: (__detail::__3way_builtin_ptr_cmp): Use
+	__not_overloaded_spaceship concept.
+	* testsuite/20_util/function_objects/comparisons_pointer_spaceship.cc: New test.
+
 2026-01-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
