@@ -75,7 +75,7 @@ static sve_vec_cost olympus_sve_vector_cost =
     2, /* store_elt_extra_cost  */
     8, /* vec_to_scalar_cost  */
     4, /* scalar_to_vec_cost  */
-    4, /* align_load_cost  */
+    6, /* align_load_cost  */
     6, /* unalign_load_cost  */
     1, /* unalign_store_cost  */
     1  /* store_cost  */
