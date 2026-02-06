@@ -903,12 +903,14 @@ enum aarch64_builtins
   AARCH64_BUILTIN_GCSPOPM,
   AARCH64_BUILTIN_GCSSS,
   /* Armv9.6-A builtins.  */
+  AARCH64_BUILTIN_STSHH,
   AARCH64_BUILTIN_STSHH_QI,
   AARCH64_BUILTIN_STSHH_HI,
   AARCH64_BUILTIN_STSHH_SI,
   AARCH64_BUILTIN_STSHH_DI,
   AARCH64_BUILTIN_STSHH_SF,
   AARCH64_BUILTIN_STSHH_DF,
+  AARCH64_BUILTIN_STSHH_PTR,
   AARCH64_BUILTIN_MAX
 };
 
@@ -2488,6 +2490,14 @@ aarch64_init_pcdphint_builtins (void)
   tree ftype;
 
   ftype = build_function_type_list (void_type_node, ptr_type_node,
+				    void_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH]
+    = aarch64_general_add_builtin ("__builtin_aarch64_stshh", ftype,
+				   AARCH64_BUILTIN_STSHH);
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node,
 				    unsigned_char_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
@@ -2534,6 +2544,14 @@ aarch64_init_pcdphint_builtins (void)
   aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DF]
     = aarch64_general_add_builtin ("__builtin_aarch64_stshh_df", ftype,
 				   AARCH64_BUILTIN_STSHH_DF);
+
+  ftype = build_function_type_list (void_type_node, ptr_type_node,
+				    ptr_type_node,
+				    unsigned_type_node,
+				    unsigned_type_node, NULL_TREE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_PTR]
+    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_ptr", ftype,
+				   AARCH64_BUILTIN_STSHH_PTR);
 
 }
 
@@ -4598,6 +4616,7 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_BUILTIN_STSHH_DI:
     case AARCH64_BUILTIN_STSHH_SF:
     case AARCH64_BUILTIN_STSHH_DF:
+    case AARCH64_BUILTIN_STSHH_PTR:
       aarch64_expand_stshh_builtin (exp, fcode);
       return target;
   }
@@ -5760,6 +5779,46 @@ aarch64_resolve_overloaded_memtag (location_t loc,
   return NULL_TREE;
 }
 
+static tree
+aarch64_resolve_overloaded_builtin_stshh (void *pass_params)
+{
+  vec<tree, va_gc> *params = static_cast<vec<tree, va_gc> *> (pass_params);
+  if (vec_safe_length (params) != 4)
+    return NULL_TREE;
+
+  tree addr = (*params)[0];
+  tree val = (*params)[1];
+  addr = tree_strip_nop_conversions (addr);
+  val = tree_strip_nop_conversions (val);
+
+  tree addr_type = TREE_TYPE (addr);
+  if (!POINTER_TYPE_P (addr_type))
+    return NULL_TREE;
+
+  tree ptr_type = TYPE_MAIN_VARIANT (TREE_TYPE (addr_type));
+
+  if (POINTER_TYPE_P (ptr_type))
+    return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_PTR];
+
+  switch (TYPE_MODE (ptr_type))
+    {
+    case QImode:
+      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_QI];
+    case HImode:
+      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_HI];
+    case SImode:
+      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_SI];
+    case DImode:
+      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DI];
+    case SFmode:
+      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_SF];
+    case DFmode:
+      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DF];
+    default:
+      return NULL_TREE;
+    }
+}
+
 /* Called at aarch64_resolve_overloaded_builtin in aarch64-c.cc.  */
 tree
 aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
@@ -5770,6 +5829,9 @@ aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
   if (fcode >= AARCH64_MEMTAG_BUILTIN_START
       && fcode <= AARCH64_MEMTAG_BUILTIN_END)
     return aarch64_resolve_overloaded_memtag(loc, function, pass_params);
+
+  if (fcode == AARCH64_BUILTIN_STSHH)
+    return aarch64_resolve_overloaded_builtin_stshh (pass_params);
 
   return NULL_TREE;
 }

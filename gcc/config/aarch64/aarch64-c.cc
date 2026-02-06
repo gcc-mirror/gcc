@@ -431,8 +431,9 @@ aarch64_resolve_overloaded_builtin (location_t location,
   switch (code & AARCH64_BUILTIN_CLASS)
     {
     case AARCH64_BUILTIN_GENERAL:
-      return aarch64_resolve_overloaded_builtin_general (location, fndecl,
+      new_fndecl = aarch64_resolve_overloaded_builtin_general (location, fndecl,
 							 uncast_arglist);
+      break;
     case AARCH64_BUILTIN_SVE:
       new_fndecl = aarch64_sve::resolve_overloaded_builtin (location, subcode,
 							    arglist);

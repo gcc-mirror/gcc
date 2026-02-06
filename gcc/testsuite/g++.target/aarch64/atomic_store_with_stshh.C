@@ -5,7 +5,7 @@
 #include <arm_acle.h>
 
 /*
-** testFun1:
+** _Z8testFun1v:
 ** ...
 **	stshh	keep
 **	strb	w[0-9]+, \[x[0-9]+\]
@@ -22,7 +22,7 @@ testFun1 ()
 }
 
 /*
-** testFun2:
+** _Z8testFun2v:
 ** ...
 **	stshh	keep
 **	stlrh	w[0-9]+, \[x[0-9]+\]
@@ -38,7 +38,7 @@ testFun2 ()
 }
 
 /*
-** testFun3:
+** _Z8testFun3v:
 ** ...
 **	stshh	strm
 **	stlr	w[0-9]+, \[x[0-9]+\]
@@ -54,7 +54,7 @@ testFun3 ()
 }
 
 /*
-** testFun4:
+** _Z8testFun4v:
 ** ...
 **	stshh	strm
 **	str	x[0-9]+, \[x[0-9]+\]
@@ -70,7 +70,7 @@ testFun4 ()
 }
 
 /*
-** testFun5:
+** _Z8testFun5v:
 ** ...
 **	stshh	keep
 **	stlr	x[0-9]+, \[x[0-9]+\]
@@ -88,7 +88,7 @@ testFun5 ()
 }
 
 /*
-** testFun6:
+** _Z8testFun6v:
 ** ...
 **	stshh	keep
 **	stlr	w[0-9]+, \[x[0-9]+\]
@@ -104,7 +104,7 @@ testFun6 ()
 }
 
 /*
-** testFun7:
+** _Z8testFun7v:
 ** ...
 **	stshh	strm
 **	str	x[0-9]+, \[x[0-9]+\]
@@ -120,7 +120,7 @@ testFun7 ()
 }
 
 /*
-** testFun8:
+** _Z8testFun8v:
 ** ...
 **	stshh	keep
 **	strb	w[0-9]+, \[x[0-9]+\]
@@ -137,7 +137,7 @@ testFun8 ()
 }
 
 /*
-** testFun9:
+** _Z8testFun9v:
 ** ...
 **	stshh	strm
 **	str	w[0-9]+, \[x[0-9]+\]
@@ -154,7 +154,7 @@ testFun9 ()
 }
 
 /*
-** testFun10:
+** _Z9testFun10v:
 ** ...
 **	add	(x[0-9]+), \1, 1
 **	mov	(w[0-9]+), 7
@@ -170,7 +170,7 @@ testFun10 (void)
 }
 
 /*
-** testFun11:
+** _Z9testFun11v:
 ** ...
 **	stshh	strm
 **	str	wzr, \[x[0-9]+\]
