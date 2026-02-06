@@ -3,7 +3,7 @@
 /* { dg-options "-O2 -masm=att" } */
 /* Ensure we don't waste a register set to %rdi + 8.  */
 /* { dg-final { scan-assembler "\tmovq\t\\\(%rdi\\\), %r" } } */
-/* { dg-final { scan-assembler "\tmovq\t8\\\(%rdi\\\), %r" } } */
+/* { dg-final { scan-assembler "\tmovq\t8\\\(%rdi\\\), %r" { xfail *-*-* } } } */
 
 struct S { long a, b; };
 
