@@ -1,3 +1,20 @@
+2026-02-05  Michal Jires  <mjires@suse.cz>
+
+	PR testsuite/123559
+	* c-decl.cc (c_write_global_declarations_1): Check and suppress
+	OPT_Wunused.
+	* c-typeck.cc (build_asm_expr): Suppress OPT_Wunused.
+
+2026-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2026-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* c-tree.h (c_build_lang_qualified_type): Declare.
+	* c-objc-common.h (LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE): Define.
+	* c-objc-common.cc (c_build_lang_qualified_type): New function.
+
 2026-01-28  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR c++/102846

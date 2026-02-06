@@ -1,3 +1,40 @@
+2026-02-05  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (DEFAULT_LINE_NUMBER): Remove unused #define.
+	(parser_statement_begin): Implement perform_is_armed logic.
+	(initialize_variable_internal): Handle both real and int types in
+	SHOW_PARSE tracing.
+	(section_label): Comment a renumbered insert_nop() for gdb-cobol
+	logic.
+	(paragraph_label): Likewise.
+	(leave_procedure): Eliminate call to gg_insert_into_assembler().
+	(parser_enter_section): Renumber insert_nop().
+	(parser_perform): Eliminate call to gg_insert_into_assembler().
+	(parser_perform_times): Likewise.
+	(internal_perform_through): Likewise.
+	(internal_perform_through_times): Likewise.
+	(parser_leave_file): Create the static _perform_line_pairs table.
+	(parser_sleep): Renumber insert_nop().
+	(parser_division): Remove calls to initialize_the_data().
+	(parser_perform_start): New call to insert_nop().
+	(parser_perform_conditional): Likewise.
+	(perform_outofline_before_until): Expanded comment.
+	(perform_outofline_after_until): Eliminate call to
+	gg_insert_into_assembler().
+	(perform_outofline_testafter_varying): Likewise.
+	(perform_outofline_before_varying): Likewise.
+	(perform_inline_testbefore_varying):  New call to insert_nop().
+	(create_and_call): Change a comment.
+	* gengen.cc (gg_create_goto_pair): Change characteristics of a
+	label.
+	* parse.y: Change how data are initialized.
+	* parse_ante.h (field_type_update): Likewise.
+	* symbols.cc (cbl_field_t::set_signable): Likewise.
+	(cbl_field_t::encode): Likewise.
+	* symbols.h (struct cbl_field_t): Likewise.
+	* util.cc (symbol_field_type_update): Likewise.
+	(cbl_field_t::encode_numeric): Likewise.
+
 2026-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (fexec-national-charset=): Add dot at the end of the

@@ -1,3 +1,184 @@
+2026-02-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* value-range.cc (irange_bitmask::irange_bitmask): Fix typo in
+	comment.
+	* value-range.h (class vrange): Update leading comment to refer
+	to "subsets" rather than "ranges".  Allude to the available
+	subclasses.  Warn that the classes can be over-approximations and
+	thus can introduce imprecision.
+	(class irange_bitmask): Updating leading comment to refer to
+	knowledge about a "value", rather than a "range".  Reword
+	description of MASK and VALUE to clarify implementation, and
+	add an example.
+	(class irange): Update leading comment to refer to a
+	"subset of possible values" rather than a "range", and
+	that subclasses have responsibility for storage.
+	(class nan_state): Rewrite leading comment.
+	(class frange final): Update leading comment to refer to
+	subsets of possible values, rather than ranges, and to
+	consistently use "Nan" when capitalizing.
+
+2026-02-05  Michal Jires  <mjires@suse.cz>
+
+	PR testsuite/123559
+	* cgraphunit.cc (check_global_declaration): Suppress OPT_Wunused.
+
+2026-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2026-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* langhooks.h (struct lang_hooks_for_types): Remove
+	copy_lang_qualifiers.  Add build_lang_qualified_type.
+	* langhooks.cc (lhd_build_lang_qualified_type): New function.
+	* langhooks-def.h (lhd_build_lang_qualified_type): Declare.
+	(LANG_HOOKS_COPY_LANG_QUALIFIERS): Remove.
+	(LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE): Add.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Use
+	LANG_HOOKS_BUILD_LANG_QUALIFIED_TYPE instead of
+	LANG_HOOKS_COPY_LANG_QUALIFIERS.
+	* attribs.cc (build_type_attribute_qual_variant): Use
+	lang_hooks.types.build_lang_qualified_type instead of
+	build_qualified_type and/or build_qualified_type with
+	optional lang_hooks.types.copy_lang_qualifiers call.
+	(attr_access::array_as_string): Use "array " attribute instead of
+	"array".  If attribute has been created or intended quals differ
+	from quals of build_array_type, use copy_node and adjust quals and
+	attributes on the copy, print and then ggc_free.
+
+2026-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123986
+	* tree-vect-slp.cc (vect_slp_analyze_operations): When
+	rolling back analyzed nodes, release node specific data
+	and reset SLP_TREE_TYPE.
+
+2026-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123983
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Only update the PHI argument on the requested edge.
+
+2026-02-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/123604
+	* compare-elim.cc (find_flags_uses_in_insn): Handle COND_EXEC.
+	* config/arm/arm.cc (TARGET_FLAGS_REGNUM): Define.
+
+2026-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123978
+	* range-op.h (OP_WIDEN_MULT_SIGNED_UNSIGNED): Define.
+	(OP_WIDEN_PLUS_SIGNED, OP_WIDEN_PLUS_UNSIGNED,
+	RANGE_OP_TABLE_SIZE): Renumber.
+	* gimple-range-op.cc (imple_range_op_handler::maybe_non_standard):
+	Use 3 different classes instead of 2 for WIDEN_MULT_EXPR, one
+	for both operands signed, one for both operands unsigned and
+	one for operands with different signedness.  In the last case
+	canonicalize to first operand signed second unsigned.
+	* range-op.cc (operator_widen_mult_signed::wi_fold): Use
+	TYPE_PRECISION (type) rather than wi::get_precision (whatever) * 2,
+	use SIGNED for all wide_int::from calls.
+	(operator_widen_mult_unsigned::wi_fold): Similarly but use UNSIGNED
+	for all wide_int::from calls.
+	(class operator_widen_mult_signed_unsigned): New type.
+	(operator_widen_mult_signed_unsigned::wi_fold): Define.
+
+2026-02-05  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/123226
+	* cgraph.cc (cgraph_update_edges_for_call_stmt_node): Fix handling
+	of multi-target speculations resolved at clone materialization time
+
+2026-02-05  xiezhiheng  <xiezhiheng@huawei.com>
+	    liyunfei  <liyunfei33@huawei.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add hip12 core
+	* config/aarch64/aarch64-cost-tables.h: Add hip12_extra_costs
+	* config/aarch64/aarch64-tune.md: Regenerate
+	* config/aarch64/aarch64.cc: Include hip12 tuning model
+	* doc/invoke.texi: Document -mcpu=hip12
+	* config/aarch64/tuning_models/hip12.h: New file.
+
+2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123870
+	PR target/123969
+	* config/riscv/vector.md: Add vlds to "no ratio" for
+	theadvector.
+
+2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123971
+	* config/riscv/riscv.cc (riscv_vector_mode_supported_any_target_p):
+	Remove TARGET_XTHEADVECTOR.
+
+2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123925
+	* tree-ssa-forwprop.cc (simplify_vector_constructor):
+	Add nop-conversion handling for maybe_ident.
+
+2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123910
+	* config/riscv/riscv-string.cc (riscv_expand_block_move):
+	Remove !xtheadvector guard.
+	(use_vector_stringop_p): Guard small LMULs.
+	(check_vectorise_memory_operation): Ditto.
+
+2026-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121726
+	* tree-sra.cc (build_ref_for_offset): Add force_ref_all
+	parameter and use ptr_type_node as alias pointer type in
+	that case.
+	(build_ref_for_model): Add force_ref_all parameter and
+	pass it through, forcing build_ref_for_offset.
+	(generate_subtree_copies): Likewise.
+	(sra_modify_call_arg): Force ref-all accesses.
+
+2026-02-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/123898
+	* tree-ssa-math-opts.cc (strip_nop_view_converts): New.
+	(convert_mult_to_fma): Use it.
+
+2026-02-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* simplify-rtx.cc (negated_ops_p): New.
+	(simplify_context::simplify_binary_operation_1): Use it.
+
+2026-02-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-opts.h (VR2FPR_COST_UNPROVIDED): Add new
+	sentinel for unprovided cost.
+	* config/riscv/riscv-protos.h (get_vr2fr_cost): Add new func
+	decl.
+	* config/riscv/riscv-vector-costs.cc (costs::adjust_stmt_cost):
+	Leverage new func to get cost of vr2fpr.
+	* config/riscv/riscv.cc (riscv_register_move_cost): Ditto.
+	(get_vr2fr_cost): Add new func to wrap access to the cost
+	of the vr2fpr.
+	* config/riscv/riscv.opt: Add new param vr2fpr-cost.
+
+2026-02-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-opts.h (GPR2VR_COST_UNPROVIDED): Depend on
+	default unprovided value.
+	(FPR2VR_COST_UNPROVIDED): Ditto.
+	(VR2GPR_COST_UNPROVIDED): Ditto.
+	(COST_UNPROVIDED): Add new default unprovided value.
+	* config/riscv/riscv-protos.h (get_vr2gr_cost): Add new func
+	decl.
+	* config/riscv/riscv-vector-costs.cc (costs::adjust_stmt_cost):
+	Leverage new func to get cost of vr2gpr.
+	* config/riscv/riscv.cc (riscv_register_move_cost): Ditto.
+	(get_vr2gr_cost): Add new func to wrap access to the cost
+	of the vr2gpr.
+	* config/riscv/riscv.opt: Add new param vr2gpr-cost.
+
 2026-02-04  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/123922

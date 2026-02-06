@@ -1,3 +1,13 @@
+2026-02-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* download_prerequisites: Switch gcc.gnu.org link to https
+
+2026-02-05  Filip Kastl  <fkastl@suse.cz>
+
+	* check-params-in-docs.py: Extend architecture-specific options
+	filtering.  Remove the mechanism for seeking to the param
+	section.
+
 2026-01-31  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* compare_tests: Use egrep if 'grep -E' is not supported.

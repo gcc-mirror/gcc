@@ -1,3 +1,31 @@
+2026-02-05  Caolán McNamara  <caolanm@gmail.com>
+
+	* include/bits/regex.tcc (regex_traits::lookup_collatename):
+	Make __collatenames array const.
+
+2026-02-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/contracts (contract_violation::location): Use
+	source_location default constructor and then set _M_impl.
+	* include/std/source_location (source_location(const void*)):
+	Remove constructor.
+	* testsuite/18_support/contracts/includes.cc: Move to...
+	* testsuite/18_support/contracts/srcloc.cc: ...here. Test for
+	ambiguity caused by new constructor.
+
+2026-02-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (SharedPointerPrinter): Only
+	use gdb.Type.is_scalar if supported.
+	* testsuite/libstdc++-prettyprinters/compat.cc: Test printer for
+	old implementation of std::atomic<std::shared_ptr<T>>.
+
+2026-02-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/algorithms/regex_match/multiline.cc: Add
+	string to static_assert.
+	* testsuite/28_regex/sub_match/lwg3204.cc: Likewise.
+
 2026-02-04  Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/117404

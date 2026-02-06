@@ -1,3 +1,182 @@
+2026-02-05  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/reflect/p3394-1.C: Make dg-run.  Add dg-output.
+
+2026-02-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	PR target/123584
+	* gcc.target/aarch64/simd/pr117048.c: Scan for # in assembly immediate.
+
+2026-02-05  Josef Melcr  <josef.melcr@suse.com>
+
+	PR tree-optimization/123986
+	* gfortran.dg/vect/pr123986.f90: New test.
+
+2026-02-05  Michal Jires  <mjires@suse.cz>
+
+	PR testsuite/123559
+	* c-c++-common/toplevel-extended-asm-1.c: New test.
+
+2026-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/123882
+	* gcc.dg/pr123882.c: New test.
+
+2026-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/123934
+	* g++.dg/reflect/type_of2.C: Uncomment an assert.
+
+2026-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122169
+	* g++.dg/cpp26/pack-indexing19.C: New test.
+
+2026-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2026-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* c-c++-common/pr101312-1.c: New test.
+	* c-c++-common/pr101312-2.c: New test.
+
+2026-02-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/lto.exp (lto-build-archive): Transform gcc-ar binary name.
+
+2026-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123983
+	* gcc.dg/vect/vect-pr123983.c: New testcase.
+
+2026-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/123978
+	* gcc.c-torture/execute/pr123978.c: New test.
+
+2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123870
+	PR target/123969
+	* gcc.target/riscv/rvv/xtheadvector/pr123969.c: New test.
+
+2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123971
+	* gcc.target/riscv/rvv/xtheadvector/pr123971.c: New test.
+
+2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123925
+	* gcc.target/riscv/rvv/autovec/pr123925.c: New test.
+
+2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123910
+	* gcc.target/riscv/rvv/autovec/pr123910.c: New test.
+	* gcc.target/riscv/rvv/xtheadvector/pr114194-rv32.c: xfail.
+
+2026-02-05  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/bits-clear-1.a68: Adapt test to new CLEAR
+	semantics.
+	* algol68/execute/bits-set-1.a68: Likewise for SET.
+	* algol68/execute/bits-test-1.a68: Likewise for TEST.
+
+2026-02-05  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/123959
+	* algol68/execute/bits-shift-1.a68: New test.
+	* algol68/execute/bits-shift-2.a68: Likewise.
+	* algol68/execute/bits-shift-3.a68: Likewise.
+
+2026-02-05  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR target/122343
+	* gcc.target/nvptx/alloca-5.c: Adjust.
+
+2026-02-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121726
+	* gcc.target/i386/pr121726.c: New testcase.
+
+2026-02-05  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/123898
+	* gcc.target/aarch64/sve/pr123898.c: New test.
+
+2026-02-05  Alexandre Oliva  <oliva@adacore.com>
+
+	PR testsuite/123936
+	PR tree-optimization/122103
+	* gcc.target/aarch64/sve/pr122103_1.c: Add sve hw requirement.
+
+2026-02-05  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/123775
+	* gcc.target/aarch64/sve2/pr123775.c: Add sve128 and sve2 hw
+	requirements.
+
+2026-02-05  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/123729
+	* g++.dg/torture/pr123729.C: Require hostedlib.
+
+2026-02-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Adjust the
+	asm check to not.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+
+2026-02-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/pr123916.c: New test.
+
+2026-02-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f16.c: Add param
+	vr2fpr-cost.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-3-f64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-7-f16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-7-f32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-7-f64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-8-f16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-8-f32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vf-8-f64.c: Ditto.
+
+2026-02-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i16.c: Add param
+	vr2gpr-cost.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-4-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-5-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-6-u8.c: Ditto.
+
 2026-02-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR middle-end/121661

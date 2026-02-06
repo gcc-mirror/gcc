@@ -1,3 +1,12 @@
+2026-02-05  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.texi: Mark TR14 omp_target_is_accessible status as "Y".
+
+2026-02-05  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.texi: Separate the ompx_gnu_pinned_mem_alloc notes for
+	NVPTX and AMD GCN, and move them to right sections.
+
 2026-02-04  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* target.c (gomp_present_fatal): New function.

@@ -1,3 +1,17 @@
+2026-02-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/MERGE: Merge upstream phobos f7249cf45.
+
+2026-02-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add
+	core/internal/vararg/gnu.d.
+	(DRUNTIME_DSOURCES_LINUX): Add core/sys/linux/hdlc/ioctl.d,
+	core/sys/linux/net/if_.d.
+	(DRUNTIME_DSOURCES_SOLARIS): Add core/sys/solaris/sys/procfs.d,
+	core/sys/solaris/sys/regset.d, core/sys/solaris/thread.d.
+	* libdruntime/Makefile.in: Regenerate.
+
 2026-02-03  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/MERGE: Merge upstream druntime 24a41073c2.

@@ -1,3 +1,11 @@
+2026-02-05  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* doubly-linked-list.h
+	(LINKED_LIST_SWAP_LISTS): Add new helper.
+	(LINKED_LIST_DECL_SWAP_LISTS): Likewise.
+	(LINKED_LIST_DEFN_SWAP_LISTS): Likewise.
+	(LWRAPPERTYPE##_swap_lists): Likewise.
+
 2026-02-03  Andrew Stubbs  <ams@baylibre.com>
 
 	* cuda/cuda.h (CUpointer_attribute): New enum.

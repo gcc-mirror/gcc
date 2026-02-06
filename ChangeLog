@@ -1,3 +1,15 @@
+2026-02-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/116975
+	* Makefile.in: Regenerate.
+	* Makefile.tpl (STAGE[+id+]_GDCFLAGS): New.
+	(STAGE2_GDCFLAGS): Add -fno-checking.
+	(STAGE3_GDCFLAGS): Add -fchecking=1.
+	(BASE_FLAGS_TO_PASS): Pass STAGE[+id+]_GDCFLAGS down.
+	(configure-stage[+id+]-[+prefix+][+module+]): Set GDCFLAGS for all gcc
+	module stages.
+	(all-stage[+id+]-[+prefix+][+module+]): Likewise.
+
 2026-02-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.tpl (STAGE1_CONFIGURE_FLAGS, STAGE2_CONFIGURE_FLAGS,
