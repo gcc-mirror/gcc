@@ -1438,10 +1438,14 @@ initialize_node_lattices (struct cgraph_node *node)
       int caller_count = 0;
       node->call_for_symbol_thunks_and_aliases (count_callers, &caller_count,
 						true);
-      gcc_checking_assert (caller_count > 0);
       if (caller_count == 1)
 	node->call_for_symbol_thunks_and_aliases (set_single_call_flag,
 						  NULL, true);
+      else if (caller_count == 0)
+	{
+	  gcc_checking_assert (!opt_for_fn (node->decl, flag_toplevel_reorder));
+	  variable = true;
+	}
     }
   else
     {
