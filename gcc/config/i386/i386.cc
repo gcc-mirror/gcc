@@ -26422,21 +26422,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		{
 		  m_num_gpr_needed[where]++;
 
-		  int cost = COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
-
-		  /* For integer construction, the number of actual GPR -> XMM
-		     moves will be somewhere between 0 and n.
-		     We do not have very good idea about actual number, since
-		     the source may be a constant, memory or a chain of
-		     instructions that will be later converted by
-		     scalar-to-vector pass.  */
-		  if (kind == vec_construct
-		      && GET_MODE_BITSIZE (mode) == 256)
-		    cost *= 2;
-		  else if (kind == vec_construct
-			   && GET_MODE_BITSIZE (mode) == 512)
-		    cost *= 3;
-		  stmt_cost += cost;
+		  stmt_cost += COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
 		}
 	    }
 	}
