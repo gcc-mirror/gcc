@@ -374,7 +374,7 @@ void test_20 (int i, int j)
   __analyzer_eval (i & 1); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (i & j); /* { dg-warning "UNKNOWN" } */
 
-  __analyzer_eval (i | 1); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (i | 1); /* { dg-warning "TRUE" } */
   __analyzer_eval (i | j); /* { dg-warning "UNKNOWN" } */
 
   __analyzer_eval (i ^ 1); /* { dg-warning "UNKNOWN" } */

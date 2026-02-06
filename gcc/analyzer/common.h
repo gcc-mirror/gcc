@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "json.h"
 #include "tristate.h"
+#include "value-range.h"
 
 class graphviz_out;
 

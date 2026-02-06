@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
+#include "value-relation.h"
+#include "range-op.h"
 
 #include "text-art/dump.h"
 
@@ -880,6 +882,34 @@ svalue::maybe_get_type_from_typeinfo () const
   return NULL_TREE;
 }
 
+/* Return true if we can get a value_range for TYPE (which could be
+   NULL_TREE); false otherwise.  */
+
+static bool
+type_can_have_value_range_p (tree type)
+{
+  if (!type)
+    return false;
+  if (!irange::supports_p (type))
+    return false;
+  return true;
+}
+
+/* Base implementation of svalue::maybe_get_value_range vfunc.
+   If there is a suitable underlying type, write a "varying" for it to OUT
+   (for "any value of that type") and return true; otherwise return false.  */
+
+bool
+svalue::maybe_get_value_range (value_range &out) const
+{
+  tree type = get_type ();
+  if (!type_can_have_value_range_p (type))
+    return false;
+
+  out.set_varying (type);
+  return true;
+}
+
 /* class region_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for region_svalue.  */
@@ -1165,6 +1195,22 @@ constant_svalue::all_zeroes_p () const
   return zerop (m_cst_expr);
 }
 
+
+/* Implementation of svalue::maybe_get_value_range for constant_svalue.
+   If there is a suitable underlying type, write the value_range for the
+   single value of m_cst_expr to OUT and return true; otherwise return
+   false.  */
+
+bool
+constant_svalue::maybe_get_value_range (value_range &out) const
+{
+  if (!type_can_have_value_range_p (get_type ()))
+    return false;
+
+  out = value_range (m_cst_expr, m_cst_expr);
+  return true;
+}
+
 /* class unknown_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for unknown_svalue.  */
@@ -1227,6 +1273,14 @@ unknown_svalue::maybe_fold_bits_within (tree type,
   /* Bits within an unknown_svalue are themselves unknown.  */
   return mgr->get_or_create_unknown_svalue (type);
 }
+
+bool
+unknown_svalue::maybe_get_value_range (value_range &) const
+{
+  /* Don't attempt to participate in range ops.  */
+  return false;
+}
+
 
 /* Get a string for KIND for use in debug dumps.  */
 
@@ -1518,6 +1572,33 @@ unaryop_svalue::maybe_fold_bits_within (tree type,
   return nullptr;
 }
 
+/* Implementation of svalue::maybe_get_value_range for unaryop_svalue.  */
+
+bool
+unaryop_svalue::maybe_get_value_range (value_range &out) const
+{
+  tree type = get_type ();
+  if (!type_can_have_value_range_p (type))
+    return false;
+
+  value_range arg_vr;
+  if (m_arg->maybe_get_value_range (arg_vr))
+    {
+      range_op_handler handler (m_op);
+      if (handler)
+	{
+	  /* For unary ops, range_op_hander::fold_range expects
+	     a VARYING of the unknown value as the 2nd operand.  */
+	  value_range varying (type);
+	  varying.set_varying (type);
+	  out.set_type (type);
+	  if (handler.fold_range (out, type, arg_vr, varying))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* class binop_svalue : public svalue.  */
 
 /* Return whether OP be printed as an infix operator.  */
@@ -1632,6 +1713,38 @@ sub_svalue::sub_svalue (symbol::id_t id,
   m_parent_svalue (parent_svalue), m_subregion (subregion)
 {
   gcc_assert (parent_svalue->can_have_associated_state_p ());
+}
+
+/* Implementation of svalue::maybe_get_value_range for binop_svalue.  */
+
+bool
+binop_svalue::maybe_get_value_range (value_range &out) const
+{
+  tree type = get_type ();
+  if (!type_can_have_value_range_p (type))
+    return false;
+
+  /* Avoid cases where we have been sloppy about types.  */
+  if (!m_arg0->get_type ())
+    return false;
+  if (!m_arg1->get_type ())
+    return false;
+  if (!range_compatible_p (m_arg0->get_type (), m_arg1->get_type ()))
+    return false;
+
+  value_range lhs, rhs;
+  if (m_arg0->maybe_get_value_range (lhs))
+    if (m_arg1->maybe_get_value_range (rhs))
+      {
+	range_op_handler handler (m_op);
+	if (handler)
+	  {
+	    out.set_type (type);
+	    if (handler.fold_range (out, get_type (), lhs, rhs))
+	      return true;
+	  }
+      }
+  return false;
 }
 
 /* Implementation of svalue::dump_to_pp vfunc for sub_svalue.  */

@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest-tree.h"
 #include "context.h"
 #include "channels.h"
+#include "value-relation.h"
+#include "range-op.h"
 
 #include "text-art/tree-widget.h"
 
@@ -5346,6 +5348,30 @@ region_model::eval_condition (const svalue *lhs,
 	  }
 	  break;
 	}
+    }
+
+  /* Try range_op, but avoid cases where we have been sloppy about types.  */
+  if (lhs->get_type ()
+      && rhs->get_type ()
+      && range_compatible_p (lhs->get_type (), rhs->get_type ()))
+    {
+      value_range lhs_vr, rhs_vr;
+      if (lhs->maybe_get_value_range (lhs_vr))
+	if (rhs->maybe_get_value_range (rhs_vr))
+	  {
+	    range_op_handler handler (op);
+	    if (handler)
+	      {
+		int_range_max out;
+		if (handler.fold_range (out, boolean_type_node, lhs_vr, rhs_vr))
+		  {
+		    if (out.zero_p ())
+		      return tristate::TS_FALSE;
+		    if (out.nonzero_p ())
+		      return tristate::TS_TRUE;
+		  }
+	      }
+	  }
     }
 
   /* Attempt to unwrap cast if there is one, and the types match.  */
