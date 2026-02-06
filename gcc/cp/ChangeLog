@@ -1,3 +1,12 @@
+2026-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122169
+	* pt.cc (tsubst_pack_index): Propagate cv-qualifiers of
+	PACK_INDEX_TYPE.
+
 2026-01-27  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

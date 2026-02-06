@@ -1,3 +1,72 @@
+2026-02-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-02-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/117048
+	PR target/123584
+	* gcc.target/aarch64/simd/pr117048.c: Scan for # in assembly immediate.
+
+2026-02-05  Karl Meakin  <karl.meakin@arm.com>
+
+	Backported from master:
+	2026-01-26  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/rotate_xar_1.c
+	* gcc.target/aarch64/sha3_1.c
+	* gcc.target/aarch64/sha3_2.c
+	* gcc.target/aarch64/sha3_3.c
+	* gcc.target/aarch64/xar_v2di_nonsve.c: Fix tests.
+
+2026-02-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-01-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/123584
+	* gcc.target/aarch64/torture/xar-zero.c: New test.
+
+2026-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-02-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122169
+	* g++.dg/cpp26/pack-indexing19.C: New test.
+
+2026-02-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-02-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/lto.exp (lto-build-archive): Transform gcc-ar binary name.
+
+2026-02-05  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-01-28  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/123779
+	* g++.target/i386/pr123779.C: New test.
+
+2026-02-05  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/122051
+	PR target/120642
+	* gcc.target/riscv/pr122051.c: Remove.
+	* gcc.target/riscv/rvv/xtheadvector/pr120642.c: Remove.
+
+2026-02-05  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/123729
+	* g++.dg/torture/pr123729.C: Require hostedlib.
+
+2026-02-05  Alexandre Oliva  <oliva@adacore.com>
+
+	PR middle-end/123775
+	* gcc.target/aarch64/sve2/pr123775.c: Add sve128 and sve2 hw
+	requirements.
+
 2026-02-03  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:
