@@ -32004,7 +32004,7 @@ arm_evpc_neon_vext (struct expand_vec_perm_d *d)
   return true;
 }
 
-/* The NEON VTBL instruction is a fully variable permuation that's even
+/* The NEON VTBL instruction is a fully variable permutation that's even
    stronger than what we expose via VEC_PERM_EXPR.  What it doesn't do
    is mask the index operand as VEC_PERM_EXPR requires.  Therefore we
    can do slightly better by expanding this as a constant where we don't

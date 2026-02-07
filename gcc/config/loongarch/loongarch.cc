@@ -8848,7 +8848,7 @@ loongarch_set_handled_components (sbitmap components)
 }
 
 /* Use the vshuf instruction to implement all 128-bit constant vector
-   permuatation.  */
+   permutation.  */
 
 static bool
 loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
@@ -9581,7 +9581,7 @@ loongarch_is_elem_duplicate (struct expand_vec_perm_d *d)
    When GCC wants to performs a vector permutation, it provides two op
    reigster, one target register, and a selector.
    In const vector permutation case, GCC provides selector as a char array
-   that contains original value; in variable vector permuatation
+   that contains original value; in variable vector permutation
    (performs via vec_perm<mode> insn template), it provides a vector register.
    We assume that nelt is the elements numbers inside single vector in current
    256bit vector mode.
@@ -9608,7 +9608,7 @@ loongarch_is_elem_duplicate (struct expand_vec_perm_d *d)
    by single instruction easily.
 
    3.  What LASX permutation instruction does:
-   In short, it just execute two independent 128bit vector permuatation, and
+   In short, it just execute two independent 128bit vector permutation, and
    it's the reason that we need to do the jobs below.  We will explain it.
    op0, op1, target, and selector will be separate into high 128bit and low
    128bit, and do permutation as the description below:
@@ -9638,8 +9638,8 @@ loongarch_is_elem_duplicate (struct expand_vec_perm_d *d)
    c) Use other instructions to process op and put correct result into target.
    */
 
-/* Implementation of constant vector permuatation.  This function identifies
-   recognized pattern of permuation selector argument, and use one or more
+/* Implementation of constant vector permutation.  This function identifies
+   recognized pattern of permutation selector argument, and use one or more
    instruction (s) to finish the permutation job correctly.  For unsupported
    patterns, it will return false.  */
 

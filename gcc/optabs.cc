@@ -6732,7 +6732,7 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
     v1 = v0;
   v1 = force_reg (mode, v1);
 
-  /* Otherwise expand as a fully variable permuation.  */
+  /* Otherwise expand as a fully variable permutation.  */
 
   /* The optabs are only defined for selectors with the same width
      as the values being permuted.  */
