@@ -4617,8 +4617,7 @@ recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
       if (commutative_tree_code (gimple_assign_rhs_code (v_x_stmt)))
 	{
 	  /* Keep v_x_1 the first operand for non-commutative operators.  */
-	  v_x_1 = gimple_assign_rhs2 (v_x_stmt);
-	  v_x_2 = gimple_assign_rhs1 (v_x_stmt);
+	  std::swap (v_x_1, v_x_2);
 	  if (v_x_1 != v_y_1 || v_x_2 != v_y_2)
 	    return false;
 	}
@@ -4661,7 +4660,7 @@ recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
 
   /* Create the new selector.  */
   vec_perm_builder new_sel_perm (nelts, nelts, 1);
-  auto_vec<unsigned int> lanes (nelts);
+  auto_vec<bool> lanes (nelts);
   lanes.quick_grow_cleared (nelts);
   for (unsigned int i = 0; i < nelts; i++)
     {
@@ -4687,7 +4686,7 @@ recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
       new_sel_perm.quick_push (l + offs * nelts);
 
       /* Mark lane as used.  */
-      lanes[l] = 1;
+      lanes[l] = true;
     }
 
   /* Count how many lanes are need.  */
@@ -4699,12 +4698,12 @@ recognise_vec_perm_simplify_seq (gassign *stmt, vec_perm_simplify_seq *seq)
   if (cnt > nelts / 2)
     return false;
 
-  /* Check if the resulting permuation is cheap.  */
+  /* Check if the resulting permutation is cheap.  */
   vec_perm_indices new_indices (new_sel_perm, 2, nelts);
   tree vectype = TREE_TYPE (gimple_assign_lhs (stmt));
   machine_mode vmode = TYPE_MODE (vectype);
   if (!can_vec_perm_const_p (vmode, vmode, new_indices, false))
-      return false;
+    return false;
 
   *seq = XNEW (struct _vec_perm_simplify_seq);
   (*seq)->stmt = stmt;
@@ -4794,8 +4793,7 @@ can_blend_vec_perm_simplify_seqs_p (vec_perm_simplify_seq seq1,
      seq1->v_x_stmt and seq1->v_y_stmt are before it.
 
      Note, that we don't need to check the BBs here, because all
-     statements of both sequences have to be in the same BB.
-     */
+     statements of both sequences have to be in the same BB.  */
 
   tree seq2_v_in = gimple_assign_rhs1 (seq2->v_1_stmt);
   if (TREE_CODE (seq2_v_in) != SSA_NAME)
@@ -4843,7 +4841,7 @@ calc_perm_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
 {
   unsigned int i;
   unsigned int nelts = seq1->nelts;
-  auto_vec<int> lane_assignment;
+  auto_vec<unsigned int> lane_assignment;
   lane_assignment.create (nelts);
 
   /* Mark all lanes as free.  */
@@ -4855,7 +4853,7 @@ calc_perm_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
       unsigned int l = TREE_INT_CST_LOW (VECTOR_CST_ELT (seq1->new_sel, i));
       l %= nelts;
       lane_assignment[l] = 1;
-}
+    }
 
   /* Allocate lanes for seq2 and calculate selector for seq2->stmt.  */
   vec_perm_builder seq2_stmt_sel_perm (nelts, nelts, 1);
@@ -4896,14 +4894,14 @@ calc_perm_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
 	    }
 
 	  /* Allocate lane.  */
-	  lane_assignment[lane] = 2;
+	  lane_assignment[lane] = 2 + l_orig;
 	  new_sel = lane + offs * nelts;
 	}
 
       seq2_stmt_sel_perm.quick_push (new_sel);
     }
 
-  /* Check if the resulting permuation is cheap.  */
+  /* Check if the resulting permutation is cheap.  */
   seq2_stmt_indices->new_vector (seq2_stmt_sel_perm, 2, nelts);
   tree vectype = TREE_TYPE (gimple_assign_lhs (seq2->stmt));
   machine_mode vmode = TYPE_MODE (vectype);
@@ -4915,7 +4913,7 @@ calc_perm_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
   vec_perm_builder seq1_v_2_stmt_sel_perm (nelts, nelts, 1);
   for (i = 0; i < nelts; i++)
     {
-      bool use_seq1 = lane_assignment[i] != 2;
+      bool use_seq1 = lane_assignment[i] < 2;
       unsigned int l1, l2;
 
       if (use_seq1)
@@ -4931,25 +4929,12 @@ calc_perm_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
 	  /* We moved the lanes for seq2, so we need to adjust for that.  */
 	  tree s1 = gimple_assign_rhs3 (seq2->v_1_stmt);
 	  tree s2 = gimple_assign_rhs3 (seq2->v_2_stmt);
-
-	  unsigned int j = 0;
-	  for (; j < i; j++)
-	    {
-	      unsigned int sel_new;
-	      sel_new = seq2_stmt_sel_perm[j].to_constant ();
-	      sel_new %= nelts;
-	      if (sel_new == i)
-		break;
-	    }
-
-	  /* This should not happen.  Test anyway to guarantee correctness.  */
-	  if (j == i)
-	    return false;
-
-	  l1 = TREE_INT_CST_LOW (VECTOR_CST_ELT (s1, j));
-	  l2 = TREE_INT_CST_LOW (VECTOR_CST_ELT (s2, j));
+	  l1 = TREE_INT_CST_LOW (VECTOR_CST_ELT (s1, lane_assignment[i] - 2));
+	  l2 = TREE_INT_CST_LOW (VECTOR_CST_ELT (s2, lane_assignment[i] - 2));
 	}
 
+      l1 %= nelts;
+      l2 %= nelts;
       seq1_v_1_stmt_sel_perm.quick_push (l1 + (use_seq1 ? 0 : nelts));
       seq1_v_2_stmt_sel_perm.quick_push (l2 + (use_seq1 ? 0 : nelts));
     }
