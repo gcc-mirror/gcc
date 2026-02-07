@@ -140,7 +140,9 @@ public:
 
     /* If the call is guaranteed to return nonnull
        then add a nonnull constraint to the allocated region.  */
-    if (!TREE_NOTHROW (callee_fndecl) && flag_exceptions)
+    if (!TREE_NOTHROW (callee_fndecl)
+	&& flag_exceptions
+	&& cd.get_lhs_type ())
       {
 	const svalue *null_sval
 	  = mgr->get_or_create_null_ptr (cd.get_lhs_type ());
