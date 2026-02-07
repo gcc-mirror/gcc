@@ -273,7 +273,7 @@ gfc_add_class_array_ref (gfc_expr *e)
   for (ref = e->ref; ref; ref = ref->next)
     if (!ref->next)
       break;
-  if (ref->type != REF_ARRAY)
+  if (ref && ref->type != REF_ARRAY)
     {
       ref->next = gfc_get_ref ();
       ref = ref->next;
