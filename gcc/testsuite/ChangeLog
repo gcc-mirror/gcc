@@ -1,3 +1,11 @@
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/lto.exp (lto-build-archive): Forward extra command line
+	arguments from $GCC_UNDER_TEST to gcc-ar.
+
 2026-02-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:

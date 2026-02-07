@@ -1,3 +1,20 @@
+2026-02-06  xiezhiheng  <xiezhiheng@huawei.com>
+
+	Backported from master:
+	2026-02-05  xiezhiheng  <xiezhiheng@huawei.com>
+		    liyunfei  <liyunfei33@huawei.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add hip12 core
+	* config/aarch64/aarch64-cost-tables.h: Add hip12_extra_costs
+	* config/aarch64/aarch64-tune.md: Regenerate
+	* config/aarch64/aarch64.cc: Include hip12 tuning model
+	* doc/invoke.texi: Document -mcpu=hip12
+	* config/aarch64/tuning_models/hip12.h: New file.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* system.h: Avoid redefinition of CONST_CAST2 macro.
+
 2026-02-05  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:

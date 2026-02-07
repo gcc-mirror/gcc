@@ -1,3 +1,8 @@
+2026-02-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/123633
+	* libdruntime/core/internal/qsort.d: Remove __qsort_r_compat.
+
 2025-09-07  Sam James  <sam@gentoo.org>
 
 	Backported from master:
