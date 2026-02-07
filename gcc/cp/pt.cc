@@ -16753,6 +16753,8 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   if (op == error_mark_node)
     return error_mark_node;
   op = splice (op);
+  if (op == error_mark_node)
+    return error_mark_node;
   if (dependent_splice_p (op))
     {
       if (SPLICE_EXPR_EXPRESSION_P (t))
