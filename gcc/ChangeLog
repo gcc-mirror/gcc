@@ -1,3 +1,166 @@
+2026-02-06  Richard Ball  <Richard.Ball@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(enum aarch64_builtins): Add ptr and generic variants.
+	(aarch64_init_pcdphint_builtins): Likewise.
+	(aarch64_general_expand_builtin): Add ptr variant.
+	(aarch64_resolve_overloaded_builtin_stshh): Function to handle
+	overloaded atomic_store_with_stshh.
+	(aarch64_resolve_overloaded_builtin_general): Add call to stshh function.
+	* config/aarch64/aarch64-c.cc
+	(aarch64_resolve_overloaded_builtin): Allow fndecl to return.
+	* config/aarch64/arm_acle.h
+	(__atomic_store_with_stshh): Remove __Generic.
+
+2026-02-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/106260
+	* ipa-cp.cc (initialize_node_lattices): Replace assert that there are
+	callers with handling that situation when -fno-toplevel_reorder.
+
+2026-02-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gnu_ld_flag): Move $gcc_cv_ld --version check into
+	AC_ARG_WITH(gnu-ld).
+	(gcc_cv_ld): Set before gnu_ld_flag.
+	(gas_flag): Move $gcc_cv_ld --version check into AC_ARG_WITH(gnu-ld).
+	(gcc_cv_as): Set before gas_flag.
+	* configure: Regenerate.
+
+2026-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* alias.cc (get_alias_set): Allow TYPE_CANONICAL (mv) to be
+	not its own TYPE_MAIN_VARIANT, as long as its TYPE_MAIN_VARIANT
+	has TYPE_CANONICAL equal to itself.
+	* tree.cc (verify_type): Likewise.
+
+2026-02-06  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/114969
+	* match.pd (`(A | (convert?)(A != 0)) EQ|NE 0`): New pattern.
+
+2026-02-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (*mov<mode>_exec_match): Delete.
+	(*mov<mode>_exec_match): Likewise.
+	(*mov<mode>): Delete unaligned register support, and convert to new
+	constraint syntax.
+	(mov<mode>_exec): Likewise.
+	(@mov<mode>_sgprbase): Likewise.
+	* config/gcn/gcn.md (*movbi): Likewise.
+
+2026-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/114274
+	* tree-switch-conversion.cc (switch_conversion::build_one_array):
+	Use UNKNOWN_LOCATION for the CSWTCH decl.
+
+2026-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123977
+	* tree.cc (build_function_type): Pass no_named_args_stdarg_p
+	as last argument to recursive call.
+
+2026-02-06  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123940
+	* tree-ssa-math-opts.cc (convert_mult_to_fma): Check
+	multiplication result is an addend.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* attribs.cc: Replace CONST_CAST with const_cast<>.
+	* builtins.cc: Likewise.
+	* collect2.cc: Likewise.
+	* config/bpf/core-builtins.cc: Likewise.
+	* config/gcn/mkoffload.cc: Likewise.
+	* config/nvptx/mkoffload.cc: Likewise.
+	* config/nvptx/nvptx.cc: Likewise.
+	* ctfc.cc: Likewise.
+	* dumpfile.cc: Likewise.
+	* gcc.cc: Likewise.
+	* gcov.cc: Likewise.
+	* gengtype-parse.cc: Likewise.
+	* gengtype-state.cc: Likewise.
+	* gengtype.cc: Likewise.
+	* genoutput.cc: Likewise.
+	* ggc-page.cc: Likewise.
+	* godump.cc: Likewise.
+	* lto-section-in.cc: Likewise.
+	* lto-wrapper.cc: Likewise.
+	* omp-offload.cc: Likewise.
+	* passes.cc: Likewise.
+	* plugin.cc: Likewise.
+	* prefix.cc: Likewise.
+	* pretty-print.cc: Likewise.
+	* selftest.cc: Likewise.
+	* statistics.cc: Likewise.
+	* stringpool.cc: Likewise.
+	* tree.h: Likewise.
+	* tree-profile.cc: Likewise.
+	* vec.h: Likewise.
+	* system.h (CONST_CAST2): Remove.
+	(CONST_CAST): Likewise.
+	* tsystem.h (CONST_CAST2): Remove.
+	(CONST_CAST): Likewise.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* tree.h: Replace CONST_CAST2 with const_cast<>.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* attribs.cc: Replace CONST_CAST_TREE with const_cast<tree>.
+	* config/aarch64/aarch64.cc: Likewise.
+	* config/arm/arm.cc: Likewise.
+	* config/darwin.cc: Likewise.
+	* fold-const.cc: Likewise.
+	* gimple-expr.cc: Likewise.
+	* print-rtl.cc: Likewise.
+	* tree-object-size.cc: Likewise.
+	* tree.cc: Likewise.
+	* varasm.cc: Likewise.
+	* tree.h: Likewise.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* gimple.h: Replace CONST_CAST_GIMPLE with const_cast<gimple *>.
+	* system.h (CONST_CAST_GIMPLE): Remove.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* system.h: Remove.
+	* tracer.cc: Replace CONST_CAST_BB with
+	const_cast<basic_block>.
+	* tree-cfg.cc: Likewise.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* alias.cc: Replace CONST_CAST_RTX with const_cast<rtx>.
+	* config/i386/x86-tune-sched-bd.cc: Likewise.
+	* config/rs6000/rs6000.cc: Likewise.
+	* recog.cc: Likewise.
+	* sel-sched-ir.cc: Likewise.
+	* var-tracking.cc: Likewise.
+	* varasm.cc: Likewise.
+	* system.h (CONST_CAST_RTX): Remove.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* config/aarch64/aarch64.cc: Replace CONST_CAST_RTX_INSN with
+	const_cast<struct rtx_insn *>.
+	* rtlanal.cc: Likewise.
+	* sched-deps.cc: Likewise.
+	* system.h (CONST_CAST_RTX_INSN): Remove.
+
 2026-02-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* value-range.cc (irange_bitmask::irange_bitmask): Fix typo in

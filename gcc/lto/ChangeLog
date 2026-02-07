@@ -1,3 +1,14 @@
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* lto-common.cc: Replace CONST_CAST with const_cast<>.
+	* lto.cc: Likewise.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* lto-common.cc: Replace CONST_CAST_TREE with const_cast<tree>.
+
 2026-01-11  Michal Jires  <mjires@suse.cz>
 
 	* lto-symtab.cc (lto_symtab_merge_symbols): Set body_removed

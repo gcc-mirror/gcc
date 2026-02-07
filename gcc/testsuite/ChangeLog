@@ -1,3 +1,69 @@
+2026-02-06  Richard Ball  <Richard.Ball@arm.com>
+
+	* gcc.target/aarch64/atomic_store_with_stshh.c: Testcase change.
+	* g++.target/aarch64/atomic_store_with_stshh.C: New test.
+
+2026-02-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/106260
+	* g++.dg/ipa/pr106260.C: New test.
+
+2026-02-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/error-nest-4.a68: Strings can now be passed as
+	arguments in formal holes.
+
+2026-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/101312
+	* gcc.dg/pr101312-1.c: New test.
+	* gcc.dg/pr101312-2.c: New test.
+
+2026-02-06  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/114969
+	* g++.dg/pr114969.C: New test.
+
+2026-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98447
+	* c-c++-common/analyzer/conditionals-pr98447-1.c: New test.
+	* c-c++-common/analyzer/conditionals-pr98447-2.c: New test.
+	* c-c++-common/analyzer/null-deref-pr108400-SoftEtherVPN-WebUi.c:
+	Updated for false positive being fixed for C.
+	* gcc.dg/analyzer/data-model-1.c: Update expected output to
+	reflect improved output.
+
+2026-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/117491
+	* gcc.dg/analyzer/torture/ice-pr117491.c: New test.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/lto.exp (lto-build-archive): Forward extra command line
+	arguments from $GCC_UNDER_TEST to gcc-ar.
+
+2026-02-06  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/119982
+	* gcc.target/i386/pr109362.c: XFAIL.
+
+2026-02-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123977
+	* g++.dg/cpp26/stdarg10.C: New test.
+
+2026-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc.dg/pr61053.c: Add *-*-mingw* to the dg-error directives
+	that currently only match x32.
+
+2026-02-06  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123940
+	* gcc.target/riscv/rvv/autovec/pr123940.c: New test.
+
 2026-02-05  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/reflect/p3394-1.C: Make dg-run.  Add dg-output.

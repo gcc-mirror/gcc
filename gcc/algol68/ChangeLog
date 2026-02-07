@@ -1,3 +1,31 @@
+2026-02-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-units.cc (a68_lower_denotation): Fix call to
+	a68_u8_mbtouc.
+
+2026-02-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* Make-lang.in (ALGOL68_OBJS): Add algol68/a68-low-holes.o.
+	* a68.h: Update prototypes.
+	* a68-types.h (struct TAG_T): New field nest_proc.
+	(NEST_PROC): Define.
+	* a68-parser.cc (a68_new_tag): Initialize NEST_PROC.
+	* a68-parser-extract.cc (extract_identities): Use NEST_PROC
+	instead of IN_PROC for taxes for defining-identifiers in identity
+	declarations of proc modes with formal holes as actual parameters.
+	* a68-moids-misc.cc (a68_is_c_mode): Modified to allow strings as
+	direct parameters.
+	* a68-low.cc (a68_make_proc_formal_hole_decl): Remove.
+	* a68-low-units.cc (a68_lower_identifier): Improve commentary.
+	(a68_lower_formal_hole): Factorize.
+	* a68-low-holes.cc: New file.
+	* a68-low-decls.cc (a68_lower_identity_declaration): Optimize
+	identity declarations of proc mode with formal holes as actual
+	parameters.
+	* a68-exports.cc (a68_add_identifier_to_moif): Honor NEST_PROC.
+	* ga68.texi (Communicating with C): Strings can now be passed as
+	parameters in formal holes.
+
 2026-02-05  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-low-clauses.cc (a68_lower_revelation_ludes): Fix function

@@ -1,3 +1,8 @@
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* backend/rust-tree.cc: Replace CONST_CAST_TREE with const_cast<tree>.
+
 2026-01-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (frust-crate=, frust-extern=,

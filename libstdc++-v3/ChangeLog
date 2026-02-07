@@ -1,3 +1,35 @@
+2026-02-06  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/hashtable.h (std::__heterogeneous_hash_key)
+	[__glibcxx_associative_heterogeneous_erasure]: Changed guard.
+	* include/bits/stl_tree.h (std::__heterogeneous_tree_key)
+	[__glibcxx_associative_heterogeneous_erasure]: Likewise.
+	* include/bits/stl_function.h: Add comment with C++ version
+	for __glibcxx_associative_heterogeneous_erasure guard.
+
+2026-02-06  Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/stl_function.h (concept __heterogeneous_key):
+	Guard with __glibcxx_associative_heterogeneous_erasure
+
+2026-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120567
+	* acinclude.m4 (GLIBCXX_ENABLE_BACKTRACE): Include "__sync_" in
+	grep command to check for extern calls to libatomic.
+	* configure: Regenerate.
+
+2026-02-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/Makefile.am (new-abi-baseline): Overwrite existing
+	file instead of creating baseline_symbols.txt.new.
+	* testsuite/Makefile.in: Regenerate.
+
+2026-02-06  Nathan Myers  <ncm@cantrip.org>
+
+	* include/bits/stl_function.h (__heterogeneous_key): Use
+	C++17-defined remove_cvref<>::type instead.
+
 2026-02-05  Caolán McNamara  <caolanm@gmail.com>
 
 	* include/bits/regex.tcc (regex_traits::lookup_collatename):

@@ -1,3 +1,30 @@
+2026-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98447
+	* common.h: Include "value-range.h".
+	* region-model.cc: Include "value-relation.h" and "range-op.h".
+	(region_model::eval_condition): Try using range_op to see if we
+	can get a known boolean from the value_ranges of the operands.
+	* svalue.cc: Include "value-relation.h" and "range-op.h".
+	(type_can_have_value_range_p): New.
+	(svalue::maybe_get_value_range): New.
+	(constant_svalue::maybe_get_value_range): New.
+	(unknown_svalue::maybe_get_value_range): New.
+	(unaryop_svalue::maybe_get_value_range): New.
+	(binop_svalue::maybe_get_value_range): New.
+	* svalue.h (svalue::maybe_get_value_range): New vfunc decl.
+	(constant_svalue::maybe_get_value_range): New decl.
+	(unknown_svalue::maybe_get_value_range): New decl.
+	(unaryop_svalue::maybe_get_value_range): New decl.
+	(binop_svalue::maybe_get_value_range): New decl.
+
+2026-02-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/117491
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_repeated_svalue): Don't ICE when
+	inner_svalue has null type.
+
 2026-02-03  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/116865

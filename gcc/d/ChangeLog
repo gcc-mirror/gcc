@@ -1,3 +1,12 @@
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* d-builtins.cc: Replace CONST_CAST with const_cast<>.
+	* d-incpath.cc: Likewise.
+	* d-lang.cc: Likewise.
+	* d-spec.cc: Likewise.
+	* decl.cc: Likewise.
+
 2026-02-03  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/VERSION: Bump version to v2.112.0.

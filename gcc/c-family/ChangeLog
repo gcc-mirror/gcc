@@ -1,3 +1,14 @@
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* c-common.cc: Replace CONST_CAST with const_cast<>.
+	* c-lex.cc: Likewise.
+
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* c-gimplify.cc: Replace CONST_CAST_TREE with const_cast<tree>.
+
 2026-02-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Revert:

@@ -1,3 +1,9 @@
+2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/123892
+	* c-decl.cc: Replace CONST_CAST with const_cast<>.
+	* c-parser.cc: Likewise.
+
 2026-02-05  Michal Jires  <mjires@suse.cz>
 
 	PR testsuite/123559
