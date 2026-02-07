@@ -608,7 +608,11 @@ cancel_changes (int num)
       else
 	*changes[i].loc = changes[i].old;
       if (changes[i].object && !MEM_P (changes[i].object))
-	INSN_CODE (changes[i].object) = changes[i].old_code;
+	{
+	  INSN_CODE (changes[i].object) = changes[i].old_code;
+	  if (recog_data.insn == changes[i].object)
+	    recog_data.insn = nullptr;
+	}
     }
   num_changes = num;
 }
