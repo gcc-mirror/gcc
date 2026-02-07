@@ -6273,6 +6273,11 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       WALK_SUBTREE (TYPE_MAX_VALUE (t));
       break;
 
+    case SPLICE_SCOPE:
+      WALK_SUBTREE (SPLICE_SCOPE_EXPR (t));
+      *walk_subtrees_p = 0;
+      break;
+
     default:
       return NULL_TREE;
     }
