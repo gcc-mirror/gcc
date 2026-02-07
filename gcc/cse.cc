@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "stmt.h"
 #include "tree.h"
 #include "cfghooks.h"
 #include "df.h"
@@ -6216,6 +6217,35 @@ invalidate_from_sets_and_clobbers (rtx_insn *insn)
 	  else if (GET_CODE (y) == SET && GET_CODE (SET_SRC (y)) == CALL)
 	    invalidate (SET_DEST (y), VOIDmode);
 	}
+    }
+
+  /* Any single register constraint may introduce a conflict, if the associated
+     hard register is live.  For example:
+
+     r100=%1
+     r101=42
+     r102=exp(r101)
+
+     If the first operand r101 of exp is constrained to hard register %1, then
+     r100 cannot be trivially substituted by %1 in the following since %1 got
+     clobbered.  Such conflicts may stem from single register classes as well
+     as hard register constraints.  Since prior RA we do not know which
+     alternative will be chosen, be conservative and consider any such hard
+     register from any alternative as a potential clobber.  */
+  extract_insn (insn);
+  for (int nop = recog_data.n_operands - 1; nop >= 0; --nop)
+    {
+      int c;
+      const char *p = recog_data.constraints[nop];
+      for (; (c = *p); p += CONSTRAINT_LEN (c, p))
+	if (c == ',')
+	  ;
+	else if (c == '{')
+	  {
+	    int regno = decode_hard_reg_constraint (p);
+	    machine_mode mode = recog_data.operand_mode[nop];
+	    invalidate_reg (gen_rtx_REG (mode, regno));
+	  }
     }
 }
 
