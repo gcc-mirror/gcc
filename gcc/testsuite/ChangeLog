@@ -1,3 +1,56 @@
+2026-02-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/123616
+	* g++.dg/reflect/type_of3.C: New test.
+
+2026-02-07  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.dg/pr90838.c: Commit correct version of patch.
+
+2026-02-07  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.dg/pr90838.c: Adjust expected output for loongarch.
+
+2026-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123672
+	* gcc.dg/pr123672.c: New test.
+
+2026-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/116228
+	* g++.dg/analyzer/ice-pr116228.C: New test.
+
+2026-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123659
+	* g++.dg/reflect/splice9.C: New test.
+
+2026-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123752
+	* g++.dg/reflect/splice8.C: New test.
+
+2026-02-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/powerpc/asm-hard-reg-2.c: New test.
+
+2026-02-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/123826
+	PR tree-optimization/123958
+	PR c++/124002
+	* g++.target/i386/pr124002.C: New test case.
+	* gcc.target/i386/pr123958.c: Likewise.
+	* gcc.dg/errno-4.c: Likewise.
+
+2026-02-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+	    Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/123833
+	* gcc.target/mips/pr123833.c: New test case.
+
 2026-02-06  Richard Ball  <Richard.Ball@arm.com>
 
 	* gcc.target/aarch64/atomic_store_with_stshh.c: Testcase change.

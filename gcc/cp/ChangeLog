@@ -1,3 +1,14 @@
+2026-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123659
+	* tree.cc (cp_walk_subtrees): Handle SPLICE_SCOPE.
+
+2026-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123752
+	* pt.cc (tsubst_splice_expr): Return error_mark_node if
+	splice returned it.
+
 2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	PR middle-end/123892

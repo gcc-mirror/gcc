@@ -1,3 +1,57 @@
+2026-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/123672
+	* tree-ssa-forwprop.cc (recognise_vec_perm_simplify_seq): Use std::swap
+	instead of fetching gimple_assign_rhs{1,2} again.  Change type of lanes
+	vector from auto_vec<unsigned int> to auto_vec<bool> and store true
+	instead of 1 into it.  Fix comment typo and formatting fix.
+	(can_blend_vec_perm_simplify_seqs_p): Put end of comment on the same
+	line as the last sentence in it.
+	(calc_perm_vec_perm_simplify_seqs): Change lane_assignment type from
+	auto_vec<int> to auto_vec<unsigned> and store 2 + l_orig into it
+	instead of true.  Fix comment typo and formatting fix.  Set use_seq1
+	to line_assignment[i] < 2 instead of line_assignment[i] != 2.  Replace
+	bogus computation of index for !use_seq with using
+	line_assignment[i] - 2.  Set l1 to l1 % nelts and similarly for l2.
+
+2026-02-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* optabs.cc (expand_vec_perm_const): Comment spelling fix,
+	permuation -> permutation.
+	* config/arm/arm.cc (arm_evpc_neon_vtbl): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_try_expand_lsx_vshuf_const):
+	Comment spelling fix, permuatation -> permutation.
+	(loongarch_is_elem_duplicate): Likewise.  Comment spelling fix,
+	permuation -> permutation.
+
+2026-02-07  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Remove double and triple accounting of GPR -> XMM moves
+	in construction of AVX and AVX512 vectors.
+
+2026-02-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* cse.cc (invalidate_from_sets_and_clobbers): Consider any hard
+	register referred to by any single register constraint
+	potentially being clobbered.
+
+2026-02-07  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/123826
+	PR tree-optimization/123958
+	PR c++/124002
+	* tree-ssa-math-opts.cc (math_opts_dom_walker::after_dom_children):
+	Delete code that (mis)handled conversion of pow(x,2.0) to x*x.
+
+2026-02-07  Roger Sayle  <roger@nextmovesoftware.com>
+	    Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+	    Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/123833
+	* recog.cc (cancel_changes): Update the recog_data cache if it
+	holds the instruction being changed.
+
 2026-02-06  Richard Ball  <Richard.Ball@arm.com>
 
 	* config/aarch64/aarch64-builtins.cc

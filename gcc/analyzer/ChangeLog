@@ -1,3 +1,9 @@
+2026-02-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/116228
+	* kf-lang-cp.cc (kf_operator_new::impl_call_post): Don't try to
+	add a constraint if the return value is discarded.
+
 2026-02-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98447
