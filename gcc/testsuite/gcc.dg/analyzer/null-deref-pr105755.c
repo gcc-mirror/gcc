@@ -1,9 +1,9 @@
 /* { dg-require-effective-target int32plus } */
 /* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex -O2" } */
 
-typedef long int ptrdiff_t;
-typedef long int EMACS_INT;
-typedef long int intmax_t;
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
+typedef __UINTPTR_TYPE__ EMACS_INT;
+typedef __INTMAX_TYPE__ intmax_t;
 
 enum Lisp_Type
   {
