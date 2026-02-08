@@ -13,7 +13,7 @@ void CopyPlane(char *dst) {
 void CopyFromUswc(long src_pitch) {
   char *dst;
   for (; CopyFromUswc_height;) {
-    unsigned unaligned = (long)CopyFromUswc_src;
+    unsigned unaligned = (__INTPTR_TYPE__)CopyFromUswc_src;
     if (unaligned)
       CopyPlane(&dst[unaligned]);  
     CopyFromUswc_src += src_pitch;
