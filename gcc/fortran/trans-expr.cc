@@ -9681,12 +9681,15 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
   gfc_add_expr_to_block (&block, tmp);
   gfc_add_block_to_block (&block, &se.post);
 
-  if (final_block && expr->expr_type == EXPR_ARRAY)
+  if (final_block && !cm->attr.allocatable
+      && expr->expr_type == EXPR_ARRAY)
     {
       tree data_ptr;
       data_ptr = gfc_conv_descriptor_data_get (dest);
       gfc_add_expr_to_block (final_block, gfc_call_free (data_ptr));
     }
+  else if (final_block && cm->attr.allocatable)
+    gfc_add_block_to_block (final_block, &se.finalblock);
 
   if (expr->expr_type != EXPR_VARIABLE)
     gfc_conv_descriptor_data_set (&block, se.expr,

@@ -8299,7 +8299,8 @@ gfc_generate_function_code (gfc_namespace * ns)
 		  gfc_free_expr (init_exp);
 		  gfc_add_expr_to_block (&init, tmp);
 		}
-	      else if (rsym->ts.u.derived->attr.alloc_comp)
+
+	      if (rsym->ts.u.derived->attr.alloc_comp)
 		{
 		  rank = rsym->as ? rsym->as->rank : 0;
 		  tmp = gfc_nullify_alloc_comp (rsym->ts.u.derived, result,

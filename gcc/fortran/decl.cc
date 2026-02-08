@@ -4302,6 +4302,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  c2->ts.u.derived->refs++;
 	  gfc_set_sym_referenced (c2->ts.u.derived);
 
+	  /* If the component is allocatable or the parent has allocatable
+	     components, make sure that the new instance also is marked as
+	     having allocatable components.  */
+	  if (c2->attr.allocatable || c2->ts.u.derived->attr.alloc_comp)
+	    instance->attr.alloc_comp = 1;
+
 	  /* Set extension level.  */
 	  if (c2->ts.u.derived->attr.extension == 255)
 	    {
