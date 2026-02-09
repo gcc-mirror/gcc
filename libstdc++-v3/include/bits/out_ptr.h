@@ -397,7 +397,7 @@ namespace __detail
    * @tparam _Pointer The type of pointer to convert to.
    * @param __s The pointer that should take ownership of the result.
    * @param __args... Arguments to use when resetting the smart pointer.
-   * @return A std::inout_ptr_t referring to `__s`.
+   * @return A `std::out_ptr_t` referring to `__s`.
    * @since C++23
    * @headerfile <memory>
    */
@@ -418,7 +418,7 @@ namespace __detail
    * @tparam _Pointer The type of pointer to convert to.
    * @param __s The pointer that should take ownership of the result.
    * @param __args... Arguments to use when resetting the smart pointer.
-   * @return A std::inout_ptr_t referring to `__s`.
+   * @return A `std::inout_ptr_t` referring to `__s`.
    * @since C++23
    * @headerfile <memory>
    */
