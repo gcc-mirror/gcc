@@ -1916,7 +1916,25 @@
   [(set (match_operand:SUPERQI    0 "register_operand")
 	(zero_extend:SUPERQI
 	    (match_operand:QI 1 "nonimmediate_operand")))]
-  "")
+  ""
+{
+  /* If the destination is not a full word, then do a zero extended
+     load to a full word and a sub-word extraction to get at the
+     appropriate low bits.  This enables more CSE of memory references
+     by having a canonical form.  That in turn can help other optimizations
+     as well.  */
+  if (<SUPERQI:MODE>mode != word_mode)
+    {
+      rtx tdest = gen_reg_rtx (word_mode);
+      emit_move_insn (tdest, gen_rtx_ZERO_EXTEND (word_mode, operands[1]));
+      tdest = gen_lowpart (<SUPERQI:MODE>mode, tdest);
+      SUBREG_PROMOTED_VAR_P (tdest) = 1;
+      SUBREG_PROMOTED_SET (tdest, SRP_UNSIGNED);
+      emit_move_insn (operands[0], tdest);
+      DONE;
+    }
+})
+
 
 (define_insn "*zero_extendqi<SUPERQI:mode>2_internal"
   [(set (match_operand:SUPERQI 0 "register_operand"    "=r,r")
@@ -1966,7 +1984,24 @@
 (define_expand "extend<SHORT:mode><SUPERQI:mode>2"
   [(set (match_operand:SUPERQI 0 "register_operand")
 	(sign_extend:SUPERQI (match_operand:SHORT 1 "nonimmediate_operand")))]
-  "")
+  ""
+{
+  /* If the destination is not a full word, then do a sign extended
+     load to a full word and a sub-word extraction to get at the
+     appropriate low bits.  This enables more CSE of memory references
+     by having a canonical form.  That in turn can help other optimizations
+     as well.  */
+  if (<SUPERQI:MODE>mode != word_mode)
+    {
+      rtx tdest = gen_reg_rtx (word_mode);
+      emit_move_insn (tdest, gen_rtx_SIGN_EXTEND (word_mode, operands[1]));
+      tdest = gen_lowpart (<SUPERQI:MODE>mode, tdest);
+      SUBREG_PROMOTED_VAR_P (tdest) = 1;
+      SUBREG_PROMOTED_SET (tdest, SRP_SIGNED);
+      emit_move_insn (operands[0], tdest);
+      DONE;
+    }
+})
 
 (define_insn_and_split "*extend<SHORT:mode><SUPERQI:mode>2"
   [(set (match_operand:SUPERQI   0 "register_operand"     "=r,r")

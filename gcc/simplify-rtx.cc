@@ -3897,6 +3897,96 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && negated_ops_p (XEXP (op0, 0), op1))
 	return simplify_gen_binary (IOR, mode, XEXP (op0, 1), op1);
 
+      /* (ior (and (A C1) (and (not (A) C2))) can be converted
+	 into (and (xor (A C2) (and (A (C1 + C2))))) when there are
+	 no bits in common between C1 and C2.  */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (op1) == AND
+	  && GET_CODE (XEXP (op1, 0)) == NOT
+	  && XEXP (op0, 0) == XEXP (XEXP (op1, 0), 0)
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (XEXP (op1, 1))
+	  && (INTVAL (XEXP (op0, 1)) & INTVAL (XEXP (op1, 1))) == 0)
+	{
+	  rtx c = GEN_INT (INTVAL (XEXP (op0, 1)) + INTVAL (XEXP (op1, 1)));
+
+	  tem = simplify_gen_binary (XOR, mode, XEXP (op0, 0), XEXP (op1, 1));
+	  if (tem)
+	    {
+	      tem = simplify_gen_binary (AND, mode, tem, c);
+	      if (tem)
+		return tem;
+	    }
+	}
+
+      /* Same thing, but operand order is reversed for the outer IOR.  */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (op1) == AND
+	  && GET_CODE (XEXP (op0, 0)) == NOT
+	  && XEXP (op1, 0) == XEXP (XEXP (op0, 0), 0)
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (XEXP (op1, 1))
+	  && (INTVAL (XEXP (op0, 1)) & INTVAL (XEXP (op1, 1))) == 0)
+	{
+	  rtx c = GEN_INT (INTVAL (XEXP (op0, 1)) + INTVAL (XEXP (op1, 1)));
+
+	  tem = simplify_gen_binary (XOR, mode, XEXP (op1, 0), XEXP (op0, 1));
+	  if (tem)
+	    {
+	      tem = simplify_gen_binary (AND, mode, tem, c);
+	      if (tem)
+		return tem;
+	    }
+	}
+
+      /* Another variant seen on some backends, particularly those with
+	 sub-word operations.  */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (op1) == PLUS
+	  && GET_CODE (XEXP (op1, 0)) == AND
+	  && XEXP (op0, 0) == XEXP (XEXP (op1, 0), 0)
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (XEXP (op1, 1))
+	  && CONST_INT_P (XEXP (XEXP (op1, 0), 1))
+	  && INTVAL (XEXP (op1, 1)) == INTVAL (XEXP (XEXP (op1, 0), 1))
+	  && (INTVAL (XEXP (op0, 1)) & INTVAL (XEXP (op1, 1))) == 0)
+	{
+	  rtx c = GEN_INT (INTVAL (XEXP (op0, 1)) + INTVAL (XEXP (op1, 1)));
+
+	  tem = simplify_gen_binary (XOR, mode, XEXP (op0, 0), XEXP (op1, 1));
+	  if (tem)
+	    {
+	      tem = simplify_gen_binary (AND, mode, tem, c);
+	      if (tem)
+		return tem;
+	    }
+	}
+
+      /* And its variant with the operands of the outer AND reversed.  */
+      if (GET_CODE (op1) == AND
+	  && GET_CODE (op0) == PLUS
+	  && GET_CODE (XEXP (op0, 0)) == AND
+	  && XEXP (op1, 0) == XEXP (XEXP (op0, 0), 0)
+	  && CONST_INT_P (XEXP (op1, 1))
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (XEXP (XEXP (op0, 0), 1))
+	  && INTVAL (XEXP (op0, 1)) == INTVAL (XEXP (XEXP (op0, 0), 1))
+	  && (INTVAL (XEXP (op1, 1)) & INTVAL (XEXP (op0, 1))) == 0)
+	{
+	  rtx c = GEN_INT (INTVAL (XEXP (op1, 1)) + INTVAL (XEXP (op0, 1)));
+
+	  tem = simplify_gen_binary (XOR, mode, XEXP (op1, 0), XEXP (op0, 1));
+	  if (tem)
+	    {
+	      tem = simplify_gen_binary (AND, mode, tem, c);
+	      if (tem)
+		return tem;
+	    }
+	}
+
+      /* And its variant with the operands of the outer AND reversed.  */
+
+
       tem = simplify_with_subreg_not (code, mode, op0, op1);
       if (tem)
 	return tem;
