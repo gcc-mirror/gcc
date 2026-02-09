@@ -4281,7 +4281,9 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 		been to duplicate the operation than to CSE the constant.
 	     3. TODO: make cost more accurate specially if riscv_const_insns
 		returns > 1.  */
-	  if (outer_code == SET || GET_MODE (x) == VOIDmode)
+	  if (outer_code == COMPARE)
+	    *total = COSTS_N_INSNS (cost);
+	  else if (outer_code == SET || GET_MODE (x) == VOIDmode)
 	    *total = COSTS_N_INSNS (1);
 	}
       else /* The instruction will be fetched from the constant pool.  */
