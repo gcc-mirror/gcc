@@ -28,6 +28,7 @@
 #include <regex>
 #include <forward_list>
 #include <string.h>
+#include <ctype.h>
 #include <testsuite_hooks.h>
 
 void
@@ -67,10 +68,75 @@ test03()
   VERIFY(traits.isctype('C', traits.lookup_classname(s.begin(), s.end(), true)));
 }
 
+void
+test04()
+{
+  // Transform "string" into "StRiNg"
+  auto mix_case = [](std::string s) {
+    int i = 0;
+    for (auto& ch : s)
+      if (++i % 2)
+	ch = toupper(ch);
+    return s;
+  };
+
+  typedef char CharT;
+  typedef std::regex_traits<CharT> traits;
+  traits t;
+
+  auto lookup = [&t](const std::string& s, bool icase) {
+    return t.lookup_classname(s.begin(), s.end(), icase);
+  };
+
+  VERIFY( lookup("", false) == 0 );
+  VERIFY( lookup(":::not a valid classname:::", false) == 0 );
+  VERIFY( lookup(":::not a valid classname:::", true) == 0 );
+  VERIFY( lookup("alnu", false) == 0 );
+  VERIFY( lookup("alnumb", false) == 0 );
+  VERIFY( lookup("x", false) == 0 );
+  VERIFY( lookup("di", false) == 0 );
+  VERIFY( lookup("digi", false) == 0 );
+  VERIFY( lookup("digix", false) == 0 );
+  VERIFY( lookup(std::string{"d\0i", 3}, false) == 0 );
+  VERIFY( lookup(std::string{"digit\0", 6}, false) == 0 );
+  VERIFY( lookup(std::string{"digit\0bad", 9}, false) == 0 );
+
+  for (std::string cls : { "alnum", "alpha", "blank", "cntrl", "digit",
+			   "graph", "lower", "print", "punct", "space",
+			   "upper", "xdigit", "d", "s", "w" })
+    {
+      traits::char_class_type val = lookup(cls, false);
+      // val should be non-zero:
+      VERIFY( val != 0 );
+      // val is independent of the case of the name,
+      // i.e. "alpha" and "ALPHA" and "AlPhA" give same result:
+      VERIFY( lookup(mix_case(cls), false) == val );
+
+      // Repeat same checks for icase=true.
+      traits::char_class_type ival = lookup(cls, true);
+      VERIFY( ival != 0 );
+      VERIFY( lookup(mix_case(cls), true) == ival );
+
+      if (cls == "lower" || cls == "upper") // icase=true should affect value
+	{
+	  VERIFY( ival != val );
+	  VERIFY( ival == lookup("alpha", false) );
+	}
+      else
+	VERIFY( ival == val );
+
+      if (cls == "d")
+	VERIFY( val == lookup("digit", false) );
+      else if (cls == "s")
+	VERIFY( val == lookup("space", false) );
+    }
+}
+
 int main()
 {
 	test01();
 	test02();
 	test03();
+	test04();
 	return 0;
 }

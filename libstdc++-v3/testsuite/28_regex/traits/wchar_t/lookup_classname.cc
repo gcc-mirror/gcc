@@ -45,8 +45,73 @@ test01()
 #undef range
 }
 
+void
+test04()
+{
+  // Transform "string" into "StRiNg"
+  auto mix_case = [](std::wstring s) {
+    int i = 0;
+    for (auto& ch : s)
+      if (++i % 2)
+	ch = toupper(ch);
+    return s;
+  };
+
+  typedef wchar_t CharT;
+  typedef std::regex_traits<CharT> traits;
+  traits t;
+
+  auto lookup = [&t](const std::wstring& s, bool icase) {
+    return t.lookup_classname(s.begin(), s.end(), icase);
+  };
+
+  VERIFY( lookup(L"", false) == 0 );
+  VERIFY( lookup(L":::not a valid classname:::", false) == 0 );
+  VERIFY( lookup(L":::not a valid classname:::", true) == 0 );
+  VERIFY( lookup(L"alnu", false) == 0 );
+  VERIFY( lookup(L"alnumb", false) == 0 );
+  VERIFY( lookup(L"x", false) == 0 );
+  VERIFY( lookup(L"di", false) == 0 );
+  VERIFY( lookup(L"digi", false) == 0 );
+  VERIFY( lookup(L"digix", false) == 0 );
+  VERIFY( lookup(std::wstring{L"d\0i", 3}, false) == 0 );
+  VERIFY( lookup(std::wstring{L"digit\0", 6}, false) == 0 );
+  VERIFY( lookup(std::wstring{L"digit\0bad", 9}, false) == 0 );
+
+  for (std::wstring cls : { L"alnum", L"alpha", L"blank", L"cntrl", L"digit",
+			    L"graph", L"lower", L"print", L"punct", L"space",
+			    L"upper", L"xdigit", L"d", L"s", L"w" })
+    {
+      traits::char_class_type val = lookup(cls, false);
+      // val should be non-zero:
+      VERIFY( val != 0 );
+      // val is independent of the case of the name,
+      // i.e. "alpha" and "ALPHA" and "AlPhA" give same result:
+      VERIFY( lookup(mix_case(cls), false) == val );
+
+      // Repeat same checks for icase=true.
+      traits::char_class_type ival = lookup(cls, true);
+      VERIFY( ival != 0 );
+      VERIFY( lookup(mix_case(cls), true) == ival );
+
+      if (cls == L"lower" || cls == L"upper") // icase=true should affect value
+	{
+	  VERIFY( ival != val );
+	  VERIFY( ival == lookup(L"alpha", false) );
+	}
+      else
+	VERIFY( ival == val );
+
+      if (cls == L"d")
+	VERIFY( val == lookup(L"digit", false) );
+      else if (cls == L"s")
+	VERIFY( val == lookup(L"space", false) );
+    }
+}
+
 int main()
 {
   test01();
+  test04();
   return 0;
 }
