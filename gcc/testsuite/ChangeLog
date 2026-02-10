@@ -1,3 +1,11 @@
+2026-02-09  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-01-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/122781
+	* gcc.target/s390/vxe3/vcmp-1.c: New test.
+
 2026-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 	    Liam Powell  <liam@liampwll.com>
 

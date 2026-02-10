@@ -1,3 +1,22 @@
+2026-02-09  LIU Hao  <lh_mouse@126.com>
+
+	Backported from master:
+	2025-05-06  LIU Hao  <lh_mouse@126.com>
+
+	PR pch/14940
+	* config/i386/host-mingw32.cc (mingw32_gt_pch_use_address):
+	Replace the loop that attempted to map the PCH only to its
+	original address with more adaptive operations
+
+2026-02-09  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-01-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/122781
+	* config/s390/vector.md: Don't emulate vec_cmpgtu for 128-bit
+	integers for VXE3.
+
 2026-02-06  xiezhiheng  <xiezhiheng@huawei.com>
 
 	Backported from master:
