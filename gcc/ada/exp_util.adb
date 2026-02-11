@@ -971,23 +971,22 @@ package body Exp_Util is
          Size_Id : constant Entity_Id := Make_Temporary (Loc, 'S');
 
          Actuals      : List_Id;
-         Alloc_Expr   : Node_Id := Empty;
+         Alloc_Expr   : Node_Id;
          Fin_Coll_Id  : Entity_Id;
          Proc_To_Call : Entity_Id;
          Ptr_Coll_Id  : Entity_Id;
-         Subpool      : Node_Id := Empty;
+         Subpool      : Node_Id;
 
       begin
-         --  When we are building an allocator procedure, extract the allocator
-         --  node for later processing and calculation of alignment.
+         --  When we are building an allocator procedure, extract the qualified
+         --  expression from the allocator if there is one.
 
-         if Is_Allocate then
-            --  Extract the qualified expression if there is one from the
-            --  allocator.
-
-            if Nkind (Expression (Expr)) = N_Qualified_Expression then
-               Alloc_Expr := Expression (Expr);
-            end if;
+         if Is_Allocate
+           and then Nkind (Expression (Expr)) = N_Qualified_Expression
+         then
+            Alloc_Expr := Expression (Expr);
+         else
+            Alloc_Expr := Empty;
          end if;
 
          --  Step 1: Construct all the actuals for the call to library routine
@@ -1001,15 +1000,14 @@ package body Exp_Util is
 
             --  b) Subpool
 
-            if Nkind (Expr) = N_Allocator then
-               Subpool := Subpool_Handle_Name (Expr);
-            end if;
+            Subpool := Subpool_Handle_Name (Expr);
 
             --  If a subpool is present it can be an arbitrary name, so make
             --  the actual by copying the tree.
 
             if Present (Subpool) then
-               Append_To (Actuals, New_Copy_Tree (Subpool, New_Sloc => Loc));
+               Append_To
+                 (Actuals, New_Copy_Tree (Subpool, New_Scope => Proc_Id));
             else
                Append_To (Actuals, Make_Null (Loc));
             end if;
