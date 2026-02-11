@@ -413,6 +413,18 @@ namespace __debug
 	return { { __res.first, this }, __res.second };
       }
 
+# ifdef __glibcxx_associative_heterogeneous_insertion
+      template <__heterogeneous_hash_key<unordered_set> _Kt>
+	std::pair<iterator, bool>
+	insert(_Kt&& __obj)
+	{
+	  size_type __bucket_count = this->bucket_count();
+	  auto __res = _Base::insert(std::forward<_Kt>(__obj));
+	  _M_check_rehashed(__bucket_count);
+	  return { { __res.first, this }, __res.second };
+	}
+#endif
+
       iterator
       insert(const_iterator __hint, value_type&& __obj)
       {
@@ -422,6 +434,20 @@ namespace __debug
 	_M_check_rehashed(__bucket_count);
 	return { __it, this };
       }
+
+# ifdef __glibcxx_associative_heterogeneous_insertion
+      template <__heterogeneous_hash_key<unordered_set> _Kt>
+	iterator
+	insert(const_iterator __hint, _Kt&& __obj)
+	{
+	  __glibcxx_check_insert(__hint);
+	  size_type __bucket_count = this->bucket_count();
+	  auto __it = _Base::insert(
+	    __hint.base(), std::forward<_Kt>(__obj));
+	  _M_check_rehashed(__bucket_count);
+	  return { __it, this };
+	}
+#endif
 
       void
       insert(std::initializer_list<value_type> __l)

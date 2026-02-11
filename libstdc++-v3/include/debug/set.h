@@ -283,6 +283,16 @@ namespace __debug
       }
 #endif
 
+#ifdef __glibcxx_associative_heterogeneous_insertion
+      template <__heterogeneous_tree_key<set> _Kt>
+	std::pair<iterator, bool>
+	insert(_Kt&& __x)
+	{
+	  auto __res = _Base::insert(std::forward<_Kt>(__x));
+	  return { { __res.first, this }, __res.second };
+	}
+#endif
+
       iterator
       insert(const_iterator __position, const value_type& __x)
       {
@@ -297,6 +307,17 @@ namespace __debug
 	__glibcxx_check_insert(__position);
 	return { _Base::insert(__position.base(), std::move(__x)), this };
       }
+#endif
+
+#ifdef __glibcxx_associative_heterogeneous_insertion
+      template <__heterogeneous_tree_key<set> _Kt>
+	iterator
+	insert(const_iterator __position, _Kt&& __x)
+	{
+	  __glibcxx_check_insert(__position);
+	  auto __it = _Base::insert(__position.base(), std::forward<_Kt>(__x));
+	  return { __it, this };
+	}
 #endif
 
       template <typename _InputIterator>
