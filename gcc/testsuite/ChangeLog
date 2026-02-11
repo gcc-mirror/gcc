@@ -1,3 +1,57 @@
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-02-06  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123940
+	* gcc.target/riscv/rvv/autovec/pr123940.c: New test.
+
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123870
+	PR target/123969
+	* gcc.target/riscv/rvv/xtheadvector/pr123969.c: New test.
+
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123971
+	* gcc.target/riscv/rvv/xtheadvector/pr123971.c: New test.
+
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-01-29  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123806
+	* g++.target/riscv/rvv/base/pr123806.C: New test.
+	* g++.target/riscv/rvv/base/pr123808.C: New test.
+	* g++.target/riscv/rvv/base/pr123808-2.C: New test.
+
+2026-02-10  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	Backported from master:
+	2026-01-19  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/121787
+	* gcc.target/riscv/pr121787-1.c: New test.
+	* gcc.target/riscv/pr121787-2.c: New test.
+
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-01-22  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/122869
+	* gcc.target/riscv/rvv/base/pr122656-1.c: Remove dg-error.
+	* gcc.target/riscv/rvv/vsetvl/ffload-3.c: XFAIL for -O2 and -O3.
+	* gcc.target/riscv/rvv/base/pr122869.c: New test.
+
 2026-02-09  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:

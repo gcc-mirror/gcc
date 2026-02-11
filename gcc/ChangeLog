@@ -1,3 +1,91 @@
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-02-06  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR tree-optimization/123940
+	* tree-ssa-math-opts.cc (convert_mult_to_fma): Check
+	multiplication result is an addend.
+
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123870
+	PR target/123969
+	* config/riscv/vector.md: Add vlds to "no ratio" for
+	theadvector.
+
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-02-05  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123971
+	* config/riscv/riscv.cc (riscv_vector_mode_supported_any_target_p):
+	Remove TARGET_XTHEADVECTOR.
+
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-01-29  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/123806
+	* config/riscv/riscv-string.cc (expand_rawmemchr): Use unified
+	vl_read.
+	(expand_strcmp): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc:
+	* config/riscv/riscv-vector-builtins.cc (function_expander::use_fof_load_insn):
+	Only emit the store and not the VL read.
+	* config/riscv/riscv-vsetvl.cc (get_fof_set_vl_reg): New
+	function.
+	(init_rtl_ssa): New wrapper.
+	(finish_rtl_ssa): Ditto.
+	(emit_fof_read_vls): Emit read_vl after each fault-only-first
+	load.
+	(pass_vsetvl::simple_vsetvl): Call emit_fof_read_vls ().
+	(pass_vsetvl::lazy_vsetvl): Ditto.
+	* config/riscv/vector-iterators.md: Add read_vl unspec.
+	* config/riscv/vector.md (read_vlsi): Unify.
+	(@read_vl<mode>): Ditto.
+	(read_vldi_zero_extend): Ditto.
+	(@pred_fault_load_set_vl<V_VLS:mode><P:mode>): New FoF variant
+	that saves VL in a register.
+	(@pred_fault_load_set_vl<VT:mode><P:mode>): Ditto.
+
+2026-02-10  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	Backported from master:
+	2026-01-19  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/121787
+	* config/riscv/riscv-vsetvl.cc (pre_vsetvl): Adjust call to
+	loop_optimizer_init to avoid making CFG changes.
+
+2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-01-22  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR target/122869
+	* config/riscv/riscv-vector-builtins-bases.cc (fold_fault_load):
+	Remove
+	* config/riscv/riscv-vector-builtins.cc (function_expander::use_contiguous_load_insn):
+	Use new helper.
+	(function_expander::prepare_contiguous_load_insn): New helper.
+	(function_expander::use_fof_load_insn): New function to emit FoF
+	loads.
+	* config/riscv/riscv-vector-builtins.h: Declare new functions.
+
+2026-02-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-02-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/tuning_models/olympus.h (olympus_sve_vector_cost):
+	Set align_load_cost to 6.
+
 2026-02-09  LIU Hao  <lh_mouse@126.com>
 
 	Backported from master:
