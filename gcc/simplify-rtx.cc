@@ -3939,6 +3939,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	    }
 	}
 
+#if 0
       /* Another variant seen on some backends, particularly those with
 	 sub-word operations.  */
       if (GET_CODE (op0) == AND
@@ -3983,9 +3984,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		return tem;
 	    }
 	}
-
-      /* And its variant with the operands of the outer AND reversed.  */
-
+#endif
 
       tem = simplify_with_subreg_not (code, mode, op0, op1);
       if (tem)
