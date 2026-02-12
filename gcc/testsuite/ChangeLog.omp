@@ -1,3 +1,17 @@
+2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR middle-end/113436
+	* c-c++-common/gomp/pr113436-1.c: New.
+	* c-c++-common/gomp/pr113436-2.c: New.
+	* g++.dg/gomp/pr113436.C: New.
+	* gfortran.dg/gomp/pr113436-1.f90: New.
+	* gfortran.dg/gomp/pr113436-2.f90: New.
+	* gfortran.dg/gomp/pr113436-3.f90: New.
+	* gfortran.dg/gomp/pr113436-4.f90: New.
+
 2026-01-08  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	Backported from master:

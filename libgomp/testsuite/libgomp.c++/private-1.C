@@ -75,14 +75,13 @@ S::g (int dev)
                      allocate(allocator(omp_low_lat_mem_alloc), align(128): A, B, C) \
                      device(dev)
     {
-#if 0  /* FIXME: The following is disabled because of PR middle-end/113436.  */
       if (((uintptr_t) &A) % 128  != 0)
 	abort ();
       if (((uintptr_t) &B) % 128  != 0)
 	abort ();
       if (((uintptr_t) &C) % 128  != 0)
 	abort ();
-#endif
+
       A = 99;
       for (int i = 0; i < 10; i++)
 	B[i] = -i-23;

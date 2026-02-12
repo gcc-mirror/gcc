@@ -1,3 +1,18 @@
+2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR middle-end/113436
+	* omp-low.cc (is_variable_sized): Add extra is_ref argument.  Check
+	referenced type if true.
+	(lower_omp_target): Call lower_private_allocate to generate code to
+	allocate memory for firstprivate/private clauses with allocators, and
+	insert code after dependent variables have been initialized.
+	Construct calls to free allocate memory and insert after target block.
+	Adjust decl values for clause variables.  Copy value of firstprivate
+	variables to allocated memory.
+
 2026-01-08  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	Backported from master:

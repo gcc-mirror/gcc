@@ -1,3 +1,20 @@
+2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR middle-end/113436
+	* libgomp.texi (OpenMP 5.0): Mark allocate clause as implemented.
+	(Memory allocation): Add documentation for use in target construct.
+	* testsuite/libgomp.c++/firstprivate-1.C: Enable alignment check.
+	* testsuite/libgomp.c++/pr113436-1.C: New.
+	* testsuite/libgomp.c++/pr113436-2.C: New.
+	* testsuite/libgomp.c++/private-1.C: Enable alignment check.
+	* testsuite/libgomp.c-c++-common/pr113436-1.c: New.
+	* testsuite/libgomp.c-c++-common/pr113436-2.c: New.
+	* testsuite/libgomp.fortran/pr113436-1.f90: New.
+	* testsuite/libgomp.fortran/pr113436-2.f90: New.
+
 2025-12-18  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
