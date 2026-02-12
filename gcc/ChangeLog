@@ -1,3 +1,12 @@
+2026-02-11  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/123624
+	* config/aarch64/aarch64-protos.h
+	(aarch64_use_simple_return_insn_p): New.
+	* config/aarch64/aarch64.cc
+	(aarch64_use_simple_return_insn_p): New, used...
+	* config/aarch64/aarch64.md (simple_return): ...here.
+
 2026-02-06  xiezhiheng  <xiezhiheng@huawei.com>
 
 	Backported from master:
