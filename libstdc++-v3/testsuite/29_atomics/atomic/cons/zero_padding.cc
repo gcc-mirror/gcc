@@ -56,15 +56,11 @@ void test_struct(std::atomic<T>& g, const T& zp)
 
   std::atomic<T> l(T{1, 2});
   std::memcpy(&t, &zp, sizeof(T));
-#if __cplusplus >= 201402L // Remove once PR114865 is fixed
   VERIFY( l.compare_exchange_strong(t, d) );
-#endif
 
   std::atomic<T>* h = new std::atomic<T>(T{1, 2});
   std::memcpy(&t, &zp, sizeof(T));
-#if __cplusplus >= 201402L // Remove once PR114865 is fixed
   VERIFY( h->compare_exchange_strong(t, d) );
-#endif
   delete h;
 
   constexpr std::atomic<T> cl(T{1, 2});

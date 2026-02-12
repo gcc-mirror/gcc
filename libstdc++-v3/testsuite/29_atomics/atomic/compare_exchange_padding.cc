@@ -1,4 +1,4 @@
-// { dg-do run { target c++20 } }
+// { dg-do run { target c++11 } }
 // { dg-require-atomic-cmpxchg-word "" }
 // { dg-add-options libatomic }
 // { dg-additional-options "-fno-tree-sra" }

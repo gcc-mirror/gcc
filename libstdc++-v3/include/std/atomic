@@ -241,14 +241,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       atomic& operator=(const atomic&) = delete;
       atomic& operator=(const atomic&) volatile = delete;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++14-extensions" // constexpr ctor body
       constexpr atomic(_Tp __i) noexcept : _M_i(__i)
       {
-#if __cplusplus >= 201402L && __has_builtin(__builtin_clear_padding)
+#if __has_builtin(__builtin_clear_padding)
 	if _GLIBCXX17_CONSTEXPR (__atomic_impl::__maybe_has_padding<_Tp>())
 	  if (!std::__is_constant_evaluated())
 	    __builtin_clear_padding(std::__addressof(_M_i));
 #endif
       }
+#pragma GCC diagnostic pop
 
       operator _Tp() const noexcept
       { return load(); }
