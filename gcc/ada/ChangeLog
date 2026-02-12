@@ -1,3 +1,10 @@
+2026-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/124054
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Tidy up and pass
+	Proc_Id as the new scope in the call to the New_Copy_Tree function.
+
 2026-02-09  Eric Botcazou  <ebotcazou@adacore.com>
 	    Liam Powell  <liam@liampwll.com>
 

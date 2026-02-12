@@ -1,3 +1,20 @@
+2026-02-11  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/123624
+	* gcc.target/aarch64/sme/sme-shrinkwrap.c: New test.
+
+2026-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	* gnat.dg/allocator4.adb: New test.
+
+2026-02-11  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2025-04-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/pr116479.c: New test.
+
 2026-02-10  Robin Dapp  <rdapp@oss.qualcomm.com>
 
 	Backported from master:
