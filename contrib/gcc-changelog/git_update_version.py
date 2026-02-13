@@ -49,7 +49,8 @@ ignored_commits = {
         '72677e1119dc40aa680755d009e079ad49446c46',
         '10d76b7f1e5b63ad6d2b92940c39007913ced037',
         'de3b277247ce98d189f121155b75f490725a42f6',
-        '13cf22eb557eb5e3d796822247d8d4957bdb25da'}
+        '13cf22eb557eb5e3d796822247d8d4957bdb25da',
+        '64a5a58901e0a5829da1452254a7934afcd67faa'}
 
 FORMAT = '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT,
