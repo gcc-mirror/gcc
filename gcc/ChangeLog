@@ -1,3 +1,9 @@
+2026-02-12  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	PR middle-end/123447
+	* expr.cc (expand_expr_real_1): Increase stack slot alignment
+	for STRICT_ALIGNMENT targets.
+
 2026-02-11  Alice Carlotti  <alice.carlotti@arm.com>
 
 	PR target/123624
