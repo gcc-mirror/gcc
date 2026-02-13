@@ -1,3 +1,7 @@
+2026-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add one.
+
 2025-05-22  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gcc-changelog/git_update_version.py (update_current_branch): Fix

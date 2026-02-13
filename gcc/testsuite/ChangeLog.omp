@@ -1,3 +1,19 @@
+2026-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-02-13  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/113436
+	* c-c++-common/gomp/pr113436-1.c: Replace '#include <omp.h>' by
+	local declaration for omp_allocator_handle_t.
+	* c-c++-common/gomp/pr113436-2.c: Likewise.
+	* g++.dg/gomp/pr113436.C: Likewise.
+	* gfortran.dg/gomp/pr113436-1.f90: Replace 'use omp_lib' by local
+	omp_*_mem_alloc parameter declarations.
+	* gfortran.dg/gomp/pr113436-2.f90: Likewise.
+	* gfortran.dg/gomp/pr113436-3.f90: Likewise.
+	* gfortran.dg/gomp/pr113436-4.f90: Likewise.
+
 2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	Backported from master:
