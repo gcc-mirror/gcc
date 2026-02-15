@@ -1,3 +1,11 @@
+2026-02-14  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-02-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/123961
+	* gfortran.dg/class_array_24.f90: New test.
+
 2026-02-12  Pengfei Li  <Pengfei.Li2@arm.com>
 
 	PR middle-end/123447
