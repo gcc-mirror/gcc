@@ -8404,17 +8404,24 @@ package body Exp_Ch6 is
 
          New_Allocator :=
            Make_Allocator (Loc,
-             Expression => New_Occurrence_Of (Result_Subt, Loc));
+             Subpool_Handle_Name =>
+               Relocate_Node (Subpool_Handle_Name (Allocator)),
+             Expression          => New_Occurrence_Of (Result_Subt, Loc));
+
+         --  Prevent default initialization of the allocator
+
          Set_No_Initialization (New_Allocator);
 
-         --  Copy attributes to new allocator. Note that the new allocator
-         --  logically comes from source if the original one did, so copy the
-         --  relevant flag. This ensures proper treatment of the restriction
-         --  No_Implicit_Heap_Allocations in this case.
+         --  Copy the Comes_From_Source flag onto the allocator since logically
+         --  this allocator is a replacement of the original allocator. This is
+         --  for proper handling of restriction No_Implicit_Heap_Allocations.
+
+         Preserve_Comes_From_Source (New_Allocator, Allocator);
+
+         --  Copy the attributes set by Expand_N_Allocator
 
          Set_Storage_Pool      (New_Allocator, Storage_Pool      (Allocator));
          Set_Procedure_To_Call (New_Allocator, Procedure_To_Call (Allocator));
-         Set_Comes_From_Source (New_Allocator, Comes_From_Source (Allocator));
 
          Rewrite (Allocator, New_Allocator);
 
@@ -9393,17 +9400,24 @@ package body Exp_Ch6 is
 
       New_Allocator :=
         Make_Allocator (Loc,
-          Expression => New_Occurrence_Of (Result_Subt, Loc));
+          Subpool_Handle_Name =>
+            Relocate_Node (Subpool_Handle_Name (Allocator)),
+          Expression          => New_Occurrence_Of (Result_Subt, Loc));
+
+      --  Prevent default initialization of the allocator
+
       Set_No_Initialization (New_Allocator);
 
-      --  Copy attributes to new allocator. Note that the new allocator
-      --  logically comes from source if the original one did, so copy the
-      --  relevant flag. This ensures proper treatment of the restriction
-      --  No_Implicit_Heap_Allocations in this case.
+      --  Copy the Comes_From_Source flag onto the allocator since logically
+      --  this allocator is a replacement of the original allocator. This is
+      --  for proper handling of restriction No_Implicit_Heap_Allocations.
+
+      Preserve_Comes_From_Source (New_Allocator, Allocator);
+
+      --  Copy the attributes set by Expand_N_Allocator
 
       Set_Storage_Pool      (New_Allocator, Storage_Pool      (Allocator));
       Set_Procedure_To_Call (New_Allocator, Procedure_To_Call (Allocator));
-      Set_Comes_From_Source (New_Allocator, Comes_From_Source (Allocator));
 
       Rewrite (Allocator, New_Allocator);
 

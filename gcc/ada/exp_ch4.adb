@@ -659,7 +659,9 @@ package body Exp_Ch4 is
              Object_Definition   => New_Occurrence_Of (Typ, Loc),
              Expression          =>
                Make_Allocator (Loc,
-                 Expression => New_Occurrence_Of (Etype (Exp), Loc)));
+                 Subpool_Handle_Name =>
+                   Relocate_Node (Subpool_Handle_Name (N)),
+                 Expression          => New_Occurrence_Of (Etype (Exp), Loc)));
 
       begin
          --  Prevent default initialization of the allocator
@@ -698,7 +700,9 @@ package body Exp_Ch4 is
              Object_Definition   => New_Occurrence_Of (Typ, Loc),
              Expression          =>
                Make_Allocator (Loc,
-                 Expression => New_Occurrence_Of (Etype (Exp), Loc)));
+                 Subpool_Handle_Name =>
+                   Relocate_Node (Subpool_Handle_Name (N)),
+                 Expression          => New_Occurrence_Of (Etype (Exp), Loc)));
 
       begin
          --  Prevent default initialization of the allocator
@@ -4559,8 +4563,7 @@ package body Exp_Ch4 is
 
       --  Set the storage pool and find the appropriate version of Allocate to
       --  call. Do not overwrite the storage pool if it is already set, which
-      --  can happen for build-in-place function returns (see
-      --  Exp_Ch4.Expand_N_Extended_Return_Statement).
+      --  can occur for BIP function returns (see Expand_N_Object_Declaration).
 
       if No (Storage_Pool (N)) then
          Pool := Associated_Storage_Pool (Root_Type (PtrT));
