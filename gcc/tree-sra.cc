@@ -3252,6 +3252,7 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
 	}
 
       if (rchild->grp_unscalarizable_region
+	  || (rchild->size % BITS_PER_UNIT) != 0
 	  || !budget_for_propagation_access (lacc->base))
 	{
 	  if (!lacc->grp_write && access_or_its_child_written (rchild))
@@ -3311,6 +3312,7 @@ propagate_subaccesses_from_lhs (struct access *lacc, struct access *racc)
       HOST_WIDE_INT norm_offset = lchild->offset + norm_delta;
 
       if (lchild->grp_unscalarizable_region
+	  || (lchild->size % BITS_PER_UNIT) != 0
 	  || child_would_conflict_in_acc (racc, norm_offset, lchild->size,
 					  &matching_acc)
 	  || !budget_for_propagation_access (racc->base))
