@@ -32,8 +32,8 @@ vwsub_wx_i64m8_m (vbool8_t vm, vint64m8_t vs2, int64_t rs1, size_t vl)
 /*
 ** vwadd_wx_i32m8_m:
 **    ...
-**    vsetvli\s+zero,[a-x0-9]+,\s*e16,\s*m4,\s*t[au],\s*m[au]
-**    vwadd\.wx\tv8,v8,a5,v0.t
+**    vsetvli\s+zero,[a-x0-9]+,\s*e32,\s*m8,\s*t[au],\s*m[au]
+**    vadd\.vx\tv8,v8,a5,v0.t
 **    ret
 */
 
