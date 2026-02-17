@@ -6087,6 +6087,7 @@ foreach { armfunc armflag armdefs } {
 # flags).  See above for setting -march=.
 foreach { armfunc armflag armdefs } {
 	    xscale_arm "-mcpu=xscale -mtune=xscale -mfloat-abi=soft -marm" "__XSCALE__ && !__thumb__"
+	    cortex_a53 "-mcpu=cortex-a53 -mtune=cortex-a53" __ARM_ARCH_8A__
 	    cortex_a57 "-mcpu=cortex-a57 -mtune=cortex-a57" __ARM_ARCH_8A__
 	    cortex_m0 "-mcpu=cortex-m0 -mtune=cortex-m0 -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
 	    cortex_m0_small "-mcpu=cortex-m0.small-multiply -mtune=cortex-m0.small-multiply -mfloat-abi=soft -mthumb" "__ARM_ARCH_6M__ && __thumb__"
