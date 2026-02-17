@@ -1793,6 +1793,69 @@ struct gimple_load_dup : public gimple_function_base
   }
 };
 
+enum class compare_kind
+{
+  normal,
+  zero,
+  abs,
+  tst,
+};
+
+/* Perform a comparison, M_CODE, between the LHS and RHS.
+  Arguments are prepared according to KIND:
+  * compare_kind::normal:      LHS <=> RHS
+  * compare_kind::zero:	       LHS <=> 0
+  * compare_kind::abs:   abs (LHS) <=> abs (RHS)
+  * compare_kind::tst: (LHS & RHS) <=> 0.  */
+template <compare_kind KIND>
+class gimple_compare_base : public gimple_function_base
+{
+  tree_code m_code;
+
+public:
+  constexpr gimple_compare_base (tree_code code) : m_code (code)
+      {}
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto lhs = gimple_call_arg (f.call, 0);
+    auto rhs = KIND == compare_kind::zero ? build_zero_cst (TREE_TYPE (lhs))
+					  : gimple_call_arg (f.call, 1);
+
+    auto ret_type = TREE_TYPE (f.lhs ());
+    auto arg_type = TREE_TYPE (lhs);
+    auto cmp_type = truth_type_for (arg_type);
+
+    if (KIND == compare_kind::abs)
+      {
+	lhs = f.force_val (fold_build1 (ABS_EXPR, arg_type, lhs));
+	rhs = f.force_val (fold_build1 (ABS_EXPR, arg_type, rhs));
+      }
+
+    tree cmp;
+    if (KIND == compare_kind::tst)
+      {
+	cmp = f.force_val (fold_build2 (BIT_AND_EXPR, arg_type, lhs, rhs));
+	cmp = f.force_val (
+	  fold_build2 (this->m_code, cmp_type, cmp, build_zero_cst (arg_type)));
+      }
+    else
+      cmp = f.force_val (fold_build2 (this->m_code, cmp_type, lhs, rhs));
+
+    if (VECTOR_TYPE_P (ret_type))
+      return gimple_build_assign (f.lhs (), build_cast (ret_type, cmp));
+    else
+      return gimple_build_assign (f.lhs (), COND_EXPR, cmp,
+				  build_minus_one_cst (ret_type),
+				  build_zero_cst (ret_type));
+  }
+};
+
+using gimple_compare = gimple_compare_base<compare_kind::normal>;
+using gimple_compare_abs = gimple_compare_base<compare_kind::abs>;
+using gimple_compare_zero = gimple_compare_base<compare_kind::zero>;
+using gimple_tst = gimple_compare_base<compare_kind::tst>;
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -1965,6 +2028,23 @@ NEON_FUNCTION (vxarq,  gimple_xar,)
 NEON_FUNCTION (vcls, vclsq, gimple_ifn, (IFN_CLRSB))
 NEON_FUNCTION (vclz, vclzq, gimple_ifn, (IFN_CLZ))
 NEON_FUNCTION (vcnt, vcntq, gimple_ifn, (IFN_POPCOUNT))
+
+// Comparisons
+NEON_FUNCTION (vcalt, vcaltq, vcalts, vcaltd, gimple_compare_abs,  (LT_EXPR)) // abs (a) <  abs (b)
+NEON_FUNCTION (vcale, vcaleq, vcales, vcaled, gimple_compare_abs,  (LE_EXPR)) // abs (a) <= abs (b)
+NEON_FUNCTION (vcagt, vcagtq, vcagts, vcagtd, gimple_compare_abs,  (GT_EXPR)) // abs (a) >  abs (b)
+NEON_FUNCTION (vcage, vcageq, vcages, vcaged, gimple_compare_abs,  (GE_EXPR)) // abs (a) >= abs (b)
+NEON_FUNCTION (vceq,  vceqq,  vceqs,  vceqd,  gimple_compare,      (EQ_EXPR)) // a == b
+NEON_FUNCTION (vclt,  vcltq,  vclts,  vcltd,  gimple_compare,      (LT_EXPR)) // a <  b
+NEON_FUNCTION (vcle,  vcleq,  vcles,  vcled,  gimple_compare,      (LE_EXPR)) // a <= b
+NEON_FUNCTION (vcgt,  vcgtq,  vcgts,  vcgtd,  gimple_compare,      (GT_EXPR)) // a >  b
+NEON_FUNCTION (vcge,  vcgeq,  vcges,  vcged,  gimple_compare,      (GE_EXPR)) // a >= b
+NEON_FUNCTION (vceqz, vceqzq, vceqzs, vceqzd, gimple_compare_zero, (EQ_EXPR)) // a == 0
+NEON_FUNCTION (vcltz, vcltzq, vcltzs, vcltzd, gimple_compare_zero, (LT_EXPR)) // a <  0
+NEON_FUNCTION (vclez, vclezq, vclezs, vclezd, gimple_compare_zero, (LE_EXPR)) // a <= 0
+NEON_FUNCTION (vcgtz, vcgtzq, vcgtzs, vcgtzd, gimple_compare_zero, (GT_EXPR)) // a >  0
+NEON_FUNCTION (vcgez, vcgezq, vcgezs, vcgezd, gimple_compare_zero, (GE_EXPR)) // a >= 0
+NEON_FUNCTION (vtst,  vtstq,	      vtstd,  gimple_tst,	   (NE_EXPR)) // (a & b) != 0
 
 // Permutations
 // Extract

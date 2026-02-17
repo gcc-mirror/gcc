@@ -11,6 +11,12 @@ extern void abort (void);
 
 volatile float64_t in[SIZE] = { -10.4, -3.14, 0.0, 1.5, 5.3, 532.3 };
 
+static uint64x1_t __attribute__ ((noipa))
+compare (float64x1_t a, float64x1_t b)
+{
+  return vcagt_f64 (a, b);
+}
+
 int
 main (void)
 {
@@ -25,7 +31,7 @@ main (void)
         expected = __builtin_fabs (in[i]) > __builtin_fabs (in[j]) ? -1 : 0;
         arg1 = (float64x1_t) { in[i] };
         arg2 = (float64x1_t) { in[j] };
-        actual = vget_lane_u64 (vcagt_f64 (arg1, arg2), 0);
+        actual = vget_lane_u64 (compare (arg1, arg2), 0);
 
         if (actual != expected)
           abort ();

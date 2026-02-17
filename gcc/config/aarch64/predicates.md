@@ -796,6 +796,9 @@
 (define_predicate "aarch64_constant_vector_operand"
   (match_code "const,const_vector"))
 
+(define_predicate "aarch64_nonnegative_constant_operand"
+  (match_test "aarch64_nonnegative_constant_p (op, GET_MODE (op))"))
+
 (define_predicate "aarch64_sve_ld1r_operand"
   (and (match_operand 0 "memory_operand")
        (match_test "aarch64_sve_ld1r_operand_p (op)")))

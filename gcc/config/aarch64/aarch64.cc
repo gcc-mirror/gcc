@@ -25303,6 +25303,38 @@ aarch64_simd_valid_mov_imm (rtx op)
   return aarch64_simd_valid_imm (op, NULL, AARCH64_CHECK_MOV);
 }
 
+/* Return true if OP is a floating-point constant >= 0.  */
+static bool
+nonnegative_scalar_constant_p (rtx op)
+{
+  if (!CONST_DOUBLE_P (op))
+    return false;
+
+  const real_value *r = CONST_DOUBLE_REAL_VALUE (op);
+  return real_compare (GE_EXPR, r, &dconst0);
+}
+
+/* Return true if OP is a floating-point constant >= 0 or a vector thereof.  */
+bool
+aarch64_nonnegative_constant_p (rtx op, machine_mode mode)
+{
+  if (CONST_DOUBLE_P (op))
+    return nonnegative_scalar_constant_p (op);
+
+  if (CONST_VECTOR_P (op))
+    {
+      if (!GET_MODE_NUNITS (mode).is_constant ())
+	return false;
+
+      for (int i = 0; i < GET_MODE_NUNITS (mode).to_constant (); i++)
+	if (!nonnegative_scalar_constant_p (CONST_VECTOR_ELT (op, i)))
+	  return false;
+
+      return true;
+    }
+
+  return false;
+}
 
 /* Return true if OP is an FP constant vector in which the low register
    element can be materialized using FMOV and all other elements are zero.  */

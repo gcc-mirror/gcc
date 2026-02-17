@@ -579,19 +579,6 @@
   /* Implemented by aarch64_faddp<mode>.  */
   BUILTIN_VHSDF (BINOP, faddp, 0, FP)
 
-  /* Implemented by aarch64_cm<optab><mode>.  */
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmeq, 0, FP)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmge, 0, FP)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmgt, 0, FP)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmle, 0, FP)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, cmlt, 0, FP)
-
-  /* Implemented by aarch64_fac<optab><mode>.  */
-  BUILTIN_VHSDF_HSDF (BINOP_USS, faclt, 0, FP)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facle, 0, FP)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facgt, 0, FP)
-  BUILTIN_VHSDF_HSDF (BINOP_USS, facge, 0, FP)
-
   /* Implemented by <optab><mode>hf2.  */
   VAR1 (UNOP, floatdi, 2, FP, hf)
   VAR1 (UNOP, floatsi, 2, FP, hf)

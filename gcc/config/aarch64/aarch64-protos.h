@@ -956,6 +956,7 @@ char *aarch64_output_fmov (rtx);
 const char *aarch64_output_simd_mov_imm_low (rtx *);
 char *aarch64_output_sve_mov_immediate (rtx);
 char *aarch64_output_sve_ptrues (rtx);
+bool aarch64_nonnegative_constant_p (rtx, machine_mode);
 bool aarch64_const_vec_fmov_p (rtx);
 bool aarch64_pad_reg_upward (machine_mode, const_tree, bool);
 bool aarch64_regno_ok_for_base_p (int, bool);

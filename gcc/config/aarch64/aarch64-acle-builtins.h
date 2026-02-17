@@ -1233,6 +1233,12 @@ function_expander::result_mode () const
 #define TYPES_all_float_and_signed(S, D, T) \
   TYPES_all_float (S, D, T), TYPES_all_signed (S, D, T)
 
+
+/*	    _f32 _f64
+   _s8 _s16 _s32 _s64.  */
+#define TYPES_all_float_and_signed_no_fp16(S, D, T) \
+  TYPES_sd_float (S, D, T), TYPES_all_signed (S, D, T)
+
 /* _u8 _u16 _u32 _u64.  */
 #define TYPES_all_unsigned(S, D, T) \
   S (u8), S (u16), S (u32), S (u64)
@@ -1377,6 +1383,10 @@ function_expander::result_mode () const
 /* _s16 _s32 _s64.  */
 #define TYPES_hsd_signed(S, D, T) \
   S (s16), S (s32), S (s64)
+
+/* _f64 _s64.  */
+#define TYPES_d_float_and_signed(S, D, T) \
+  S (f64), S (s64)
 
 /* _s16 _s32 _s64
    _u16 _u32 _u64.  */
@@ -2019,6 +2029,16 @@ function_expander::result_mode () const
   TYPES_hs_integer (S, D, T), \
   TYPES_s_float (S, D, T)
 
+/* _p8  _s8  _u8
+	_s16 _u16
+	_s32 _u32 _f32
+   _p64	_s64 _u64 _f64.  */
+#define TYPES_neon_eq(S, D, T) \
+  S (p8),  S (s8),  S (u8), \
+	   S (s16), S (u16), \
+	   S (s32), S (u32), S (f32), \
+  S (p64), S (s64), S (u64), S (f64)
+
 /* _p8 _s8 _u8 _mf8.  */
 #define TYPES_neon_rev16(S, D, T) \
   S (p8), S (s8), S (u8), S (mf8)
@@ -2150,6 +2170,7 @@ DEF_SVE_TYPES_ARRAY (all_float);
 DEF_SVE_TYPES_ARRAY (sd_float);
 DEF_SVE_TYPES_ARRAY (all_signed);
 DEF_SVE_TYPES_ARRAY (all_float_and_signed);
+DEF_SVE_TYPES_ARRAY (all_float_and_signed_no_fp16);
 DEF_SVE_TYPES_ARRAY (all_unsigned);
 DEF_SVE_TYPES_ARRAY (all_integer);
 DEF_SVE_TYPES_ARRAY (b_signed);
@@ -2198,6 +2219,7 @@ DEF_SVE_TYPES_ARRAY (sd_integer);
 DEF_SVE_TYPES_ARRAY (sd_data);
 DEF_SVE_TYPES_ARRAY (all_float_and_sd_integer);
 DEF_SVE_TYPES_ARRAY (d_float);
+DEF_SVE_TYPES_ARRAY (d_float_and_signed);
 DEF_SVE_TYPES_ARRAY (d_signed);
 DEF_SVE_TYPES_ARRAY (d_unsigned);
 DEF_SVE_TYPES_ARRAY (d_integer);
@@ -2290,6 +2312,7 @@ DEF_SVE_TYPES_ARRAY (bhsd_neon);
 DEF_SVE_TYPES_ARRAY (neon_copy_lane);
 DEF_SVE_TYPES_ARRAY (neon_mla_lane);
 DEF_SVE_TYPES_ARRAY (neon_mla);
+DEF_SVE_TYPES_ARRAY (neon_eq);
 DEF_SVE_TYPES_ARRAY (neon_rev16);
 DEF_SVE_TYPES_ARRAY (neon_rev32);
 DEF_SVE_TYPES_ARRAY (neon_rev64);

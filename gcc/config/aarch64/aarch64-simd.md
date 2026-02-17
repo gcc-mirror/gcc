@@ -4625,8 +4625,8 @@
 (define_expand "vec_cmp<mode><v_int_equiv>"
   [(set (match_operand:<V_INT_EQUIV> 0 "register_operand")
 	(match_operator 1 "comparison_operator"
-	    [(match_operand:VDQF 2 "register_operand")
-	     (match_operand:VDQF 3 "nonmemory_operand")]))]
+	    [(match_operand:VHSDF 2 "register_operand")
+	     (match_operand:VHSDF 3 "nonmemory_operand")]))]
   "TARGET_SIMD"
 {
   int use_zero_form = 0;
@@ -8221,6 +8221,18 @@
 	    (abs:VHSDF_HSDF
 	      (match_operand:VHSDF_HSDF 2 "register_operand" "w"))
   )))]
+  "TARGET_SIMD"
+  "fac<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>"
+  [(set_attr "type" "neon_fp_compare_<stype><q>")]
+)
+
+;; fac<op> is also valid if the RHS is a nonnegative constant.
+(define_insn "aarch64_fac<optab><mode><vczle><vczbe>_const"
+  [(set (match_operand:<V_INT_EQUIV> 0 "register_operand" "=w")
+	(neg:<V_INT_EQUIV>
+	  (FAC_COMPARISONS:<V_INT_EQUIV>
+	    (abs:VHSDF_HSDF (match_operand:VHSDF_HSDF 1 "register_operand" "w"))
+	    (match_operand:VHSDF_HSDF 2 "aarch64_nonnegative_constant_operand" "w"))))]
   "TARGET_SIMD"
   "fac<n_optab>\t%<v>0<Vmtype>, %<v><cmp_1><Vmtype>, %<v><cmp_2><Vmtype>"
   [(set_attr "type" "neon_fp_compare_<stype><q>")]
