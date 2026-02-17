@@ -2683,6 +2683,9 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	      make_single_succ_edge (copy_stmt_bb, abnormal_goto_dest,
 				     EDGE_ABNORMAL);
 	      gimple_call_set_ctrl_altering (copy_stmt, true);
+	      if (is_a <gcall *> (copy_stmt)
+		  && (gimple_call_flags (copy_stmt) & ECF_NORETURN))
+		fixup_noreturn_call (copy_stmt);
 	    }
 	}
 
