@@ -57,7 +57,6 @@ namespace __gnu_debug
   template<typename _Container>
     class _Safe_unordered_container : public _Safe_unordered_container_base
     {
-    private:
       _Container&
       _M_cont() noexcept
       { return *static_cast<_Container*>(this); }
@@ -66,17 +65,8 @@ namespace __gnu_debug
       _M_self() const
       { return this; }
 
-    protected:
-      void
-      _M_invalidate_locals()
-      {
-	auto __local_end = _M_cont()._M_base().cend(0);
-	this->_M_invalidate_local_if(
-		[__local_end](__decltype(__local_end) __it)
-		{ return __it != __local_end; });
-      }
-
 #if __cplusplus > 201402L
+    protected:
       template<typename _ExtractKey, typename _Source>
 	struct _UContInvalidatePred
 	{
@@ -130,10 +120,7 @@ namespace __gnu_debug
 		if (__size == 0)
 		  _M_source._M_invalidate_all();
 		else
-		  {
-		    _M_source._M_invalidate_if(_M_pred);
-		    _M_source._M_invalidate_local_if(_M_pred);
-		  }
+		  _M_source._M_invalidate_all_if(_M_pred);
 	      }
 	    __catch(...)
 	      {
@@ -169,19 +156,63 @@ namespace __gnu_debug
       void
       _M_invalidate_all()
       {
+	__gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
 	auto __end = _M_cont()._M_base().cend();
-	this->_M_invalidate_if([__end](__decltype(__end) __it)
-			       { return __it != __end; });
-	_M_invalidate_locals();
+	_M_invalidate_if(
+	  [__end](decltype(__end) __it)
+	  { return __it != __end; },
+	  sentry);
+
+	auto __local_end = _M_cont()._M_base().cend(0);
+	_M_invalidate_local_if(
+	  [__local_end](decltype(__local_end) __it)
+	  { return __it != __local_end; },
+	  sentry);
       }
 
+      template<typename _Predicate>
+	void
+	_M_invalidate_all_if(_Predicate __pred)
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  _M_invalidate_if(__pred, sentry);
+	  _M_invalidate_local_if(__pred, sentry);
+	}
+
+    protected:
+      template<typename _VictimIt>
+	void
+	_M_invalidate(_VictimIt __victim)
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  _M_invalidate(__victim, sentry);
+	}
+
+      template<typename _VictimIt>
+	void
+	_M_invalidate(_VictimIt __victim, const __gnu_cxx::__scoped_lock& __lock)
+	{
+	  auto __end = _M_cont()._M_base().cend();
+	  _M_invalidate_if(
+	    [__victim](decltype(__end) __it)
+	    { return __it == __victim; },
+	    __lock);
+
+	  auto __local_end = _M_cont()._M_base().cend(0);
+	  _M_invalidate_local_if(
+	    [__victim](decltype(__local_end) __it)
+	    { return __it == __victim; },
+	    __lock);
+	}
+
+    private:
       /** Invalidates all iterators @c x that reference this container,
 	  are not singular, and for which @c __pred(x) returns @c
 	  true. @c __pred will be invoked with the normal iterators nested
 	  in the safe ones. */
       template<typename _Predicate>
 	void
-	_M_invalidate_if(_Predicate __pred);
+	_M_invalidate_if(_Predicate __pred, const __gnu_cxx::__scoped_lock&);
 
       /** Invalidates all local iterators @c x that reference this container,
 	  are not singular, and for which @c __pred(x) returns @c
@@ -189,7 +220,8 @@ namespace __gnu_debug
 	  nested in the safe ones. */
       template<typename _Predicate>
 	void
-	_M_invalidate_local_if(_Predicate __pred);
+	_M_invalidate_local_if(_Predicate __pred,
+			       const __gnu_cxx::__scoped_lock&);
     };
 } // namespace __gnu_debug
 

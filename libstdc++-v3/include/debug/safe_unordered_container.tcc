@@ -35,12 +35,11 @@ namespace __gnu_debug
     template<typename _Predicate>
       void
       _Safe_unordered_container<_Container>::
-      _M_invalidate_if(_Predicate __pred)
+      _M_invalidate_if(_Predicate __pred, const __gnu_cxx::__scoped_lock&)
       {
 	typedef typename _Container::iterator iterator;
 	typedef typename _Container::const_iterator const_iterator;
 
-	__gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
 	for (_Safe_iterator_base* __iter = _M_iterators; __iter;)
 	  {
 	    iterator* __victim = static_cast<iterator*>(__iter);
@@ -67,12 +66,11 @@ namespace __gnu_debug
     template<typename _Predicate>
       void
       _Safe_unordered_container<_Container>::
-      _M_invalidate_local_if(_Predicate __pred)
+      _M_invalidate_local_if(_Predicate __pred, const __gnu_cxx::__scoped_lock&)
       {
 	typedef typename _Container::local_iterator local_iterator;
 	typedef typename _Container::const_local_iterator const_local_iterator;
 
-	__gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
 	for (_Safe_iterator_base* __iter = _M_local_iterators; __iter;)
 	  {
 	    local_iterator* __victim = static_cast<local_iterator*>(__iter);

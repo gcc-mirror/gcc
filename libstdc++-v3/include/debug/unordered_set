@@ -647,18 +647,19 @@ namespace __debug
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
-	for (auto __tmp = __first.base(); __tmp != __last.base(); ++__tmp)
-	  {
-	    _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::cend(),
-				  _M_message(__gnu_debug::__msg_valid_range)
-				  ._M_iterator(__first, "first")
-				  ._M_iterator(__last, "last"));
-	    _M_invalidate(__tmp);
-	  }
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  for (auto __tmp = __first.base(); __tmp != __last.base(); ++__tmp)
+	    {
+	      _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::cend(),
+				    _M_message(__gnu_debug::__msg_valid_range)
+				    ._M_iterator(__first, "first")
+				    ._M_iterator(__last, "last"));
+	      this->_M_invalidate(__tmp, sentry);
+	    }
+	}
 
-	size_type __bucket_count = this->bucket_count();
 	auto __next = _Base::erase(__first.base(), __last.base());
-	_M_check_rehashed(__bucket_count);
 	return { __next, this };
       }
 
@@ -669,6 +670,10 @@ namespace __debug
       _M_base() const noexcept { return *this; }
 
     private:
+      const unordered_set*
+      _M_self() const noexcept
+      { return this; }
+
       void
       _M_check_rehashed(size_type __prev_count)
       {
@@ -676,31 +681,18 @@ namespace __debug
 	  this->_M_invalidate_all();
       }
 
-      void
-      _M_invalidate(_Base_const_iterator __victim)
-      {
-	this->_M_invalidate_if(
-	  [__victim](_Base_const_iterator __it) { return __it == __victim; });
-	this->_M_invalidate_local_if(
-	  [__victim](_Base_const_local_iterator __it)
-	  { return __it == __victim; });
-      }
-
       _Base_iterator
       _M_erase(_Base_const_iterator __victim)
       {
-	_M_invalidate(__victim);
-	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __next = _Base::erase(__victim);
-	_M_check_rehashed(__bucket_count);
-	return __next;
+	this->_M_invalidate(__victim);
+	return _Base::erase(__victim);
       }
 
 #ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       node_type
       _M_extract(_Base_const_iterator __victim)
       {
-	_M_invalidate(__victim);
+	this->_M_invalidate(__victim);
 	return _Base::extract(__victim);
       }
 #endif
@@ -1353,15 +1345,8 @@ namespace __debug
       size_type
       erase(const key_type& __key)
       {
-	size_type __count(0);
 	auto __victims = _Base::equal_range(__key);
-	for (auto __victim = __victims.first; __victim != __victims.second;)
-	  {
-	    _M_invalidate(__victim);
-	    __victim = _Base::erase(__victim);
-	    ++__count;
-	  }
-	return __count;
+	return _M_erase(__victims.first, __victims.second);
       }
 
 # ifdef __glibcxx_associative_heterogeneous_erasure
@@ -1369,15 +1354,8 @@ namespace __debug
 	size_type
 	erase(_Kt&& __key)
 	{
-	  size_type __count(0);
 	  auto __victims = _Base::equal_range(__key);
-	  for (auto __victim = __victims.first; __victim != __victims.second;)
-	    {
-	      _M_invalidate(__victim);
-	      __victim = _Base::erase(__victim);
-	      ++__count;
-	    }
-	  return __count;
+	  return _M_erase(__victims.first, __victims.second);
 	}
 #endif
 
@@ -1406,14 +1384,18 @@ namespace __debug
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
-	for (auto __tmp = __first.base(); __tmp != __last.base(); ++__tmp)
-	  {
-	    _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::cend(),
-				  _M_message(__gnu_debug::__msg_valid_range)
-				  ._M_iterator(__first, "first")
-				  ._M_iterator(__last, "last"));
-	    _M_invalidate(__tmp);
-	  }
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  for (auto __tmp = __first.base(); __tmp != __last.base(); ++__tmp)
+	    {
+	      _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::cend(),
+				    _M_message(__gnu_debug::__msg_valid_range)
+				    ._M_iterator(__first, "first")
+				    ._M_iterator(__last, "last"));
+	      this->_M_invalidate(__tmp, sentry);
+	    }
+	}
+
 	return { _Base::erase(__first.base(), __last.base()), this };
       }
 
@@ -1424,6 +1406,10 @@ namespace __debug
       _M_base() const noexcept	{ return *this; }
 
     private:
+      const unordered_multiset*
+      _M_self() const noexcept
+      { return this; }
+
       void
       _M_check_rehashed(size_type __prev_count)
       {
@@ -1431,31 +1417,35 @@ namespace __debug
 	  this->_M_invalidate_all();
       }
 
-      void
-      _M_invalidate(_Base_const_iterator __victim)
-      {
-	this->_M_invalidate_if(
-	  [__victim](_Base_const_iterator __it) { return __it == __victim; });
-	this->_M_invalidate_local_if(
-	  [__victim](_Base_const_local_iterator __it)
-	  { return __it == __victim; });
-      }
-
       _Base_iterator
       _M_erase(_Base_const_iterator __victim)
       {
-	_M_invalidate(__victim);
-	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __next = _Base::erase(__victim);
-	_M_check_rehashed(__bucket_count);
-	return __next;
+	this->_M_invalidate(__victim);
+	return _Base::erase(__victim);
+      }
+
+      size_type
+      _M_erase(_Base_iterator __first, _Base_iterator __last)
+      {
+	size_type __count(0);
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  for (auto __victim = __first; __victim != __last; ++__victim)
+	    {
+	      this->_M_invalidate(__victim, sentry);
+	      ++__count;
+	    }
+	}
+
+	_Base::erase(__first, __last);
+	return __count;
       }
 
 #ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       node_type
       _M_extract(_Base_const_iterator __victim)
       {
-	_M_invalidate(__victim);
+	this->_M_invalidate(__victim);
 	return _Base::extract(__victim);
       }
 #endif
