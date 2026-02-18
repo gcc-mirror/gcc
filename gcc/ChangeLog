@@ -1,3 +1,14 @@
+2026-02-17  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2026-01-30  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/123206
+	* config/aarch64/aarch64-builtins.cc (struct aarch64_pragma_builtins_data):
+	Declare array as CONSTEXPR.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Update
+	incorrect uses of TARGET_SIMD to use AARCH64_FL_SIMD instead.
+
 2026-02-16  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
