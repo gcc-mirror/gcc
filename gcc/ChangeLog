@@ -1,3 +1,13 @@
+2026-02-17  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-02-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117217
+	* tree-sra.cc (propagate_subaccesses_from_rhs): Do not propagate
+	bit-field children.
+	(propagate_subaccesses_from_lhs): Likewise.
+
 2026-02-11  Alice Carlotti  <alice.carlotti@arm.com>
 
 	PR target/123624
