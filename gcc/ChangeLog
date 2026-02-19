@@ -1,3 +1,13 @@
+2026-02-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-02-17  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/124134
+	* config/arm/arm.md (movsfcc): FAIL if using restricted IT
+	blocks and we lack VSEL.
+	(movdfcc): Likewise.
+
 2026-02-17  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
