@@ -2609,42 +2609,61 @@ bucket_allocno_compare_func (const void *v1p, const void *v2p)
 {
   ira_allocno_t a1 = *(const ira_allocno_t *) v1p;
   ira_allocno_t a2 = *(const ira_allocno_t *) v2p;
-  int diff, freq1, freq2, a1_num, a2_num, pref1, pref2;
+  int freq1, freq2, a1_num, a2_num, pref1, pref2;
   ira_allocno_t t1 = ALLOCNO_COLOR_DATA (a1)->first_thread_allocno;
   ira_allocno_t t2 = ALLOCNO_COLOR_DATA (a2)->first_thread_allocno;
   int cl1 = ALLOCNO_CLASS (a1), cl2 = ALLOCNO_CLASS (a2);
 
   freq1 = ALLOCNO_COLOR_DATA (t1)->thread_freq;
   freq2 = ALLOCNO_COLOR_DATA (t2)->thread_freq;
-  if ((diff = freq1 - freq2) != 0)
-    return diff;
+  if (freq1 < freq2)
+    return -1;
+  if (freq1 > freq2)
+    return 1;
 
-  if ((diff = ALLOCNO_NUM (t2) - ALLOCNO_NUM (t1)) != 0)
-    return diff;
+  if (ALLOCNO_NUM (t2) < ALLOCNO_NUM (t1))
+    return -1;
+  if (ALLOCNO_NUM (t2) > ALLOCNO_NUM (t1))
+    return 1;
 
   /* Push pseudos requiring less hard registers first.  It means that
      we will assign pseudos requiring more hard registers first
      avoiding creation small holes in free hard register file into
      which the pseudos requiring more hard registers cannot fit.  */
-  if ((diff = (ira_reg_class_max_nregs[cl1][ALLOCNO_MODE (a1)]
-	       - ira_reg_class_max_nregs[cl2][ALLOCNO_MODE (a2)])) != 0)
-    return diff;
+  int nregs1 = ira_reg_class_max_nregs[cl1][ALLOCNO_MODE (a1)];
+  int nregs2 = ira_reg_class_max_nregs[cl2][ALLOCNO_MODE (a2)];
+  if (nregs1 < nregs2)
+    return -1;
+  if (nregs1 > nregs2)
+    return 1;
 
   freq1 = ALLOCNO_FREQ (a1);
   freq2 = ALLOCNO_FREQ (a2);
-  if ((diff = freq1 - freq2) != 0)
-    return diff;
+  if (freq1 < freq2)
+    return -1;
+  if (freq1 > freq2)
+    return 1;
 
   a1_num = ALLOCNO_COLOR_DATA (a1)->available_regs_num;
   a2_num = ALLOCNO_COLOR_DATA (a2)->available_regs_num;
-  if ((diff = a2_num - a1_num) != 0)
-    return diff;
+  if (a2_num < a1_num)
+    return -1;
+  if (a2_num > a1_num)
+    return 1;
+
   /* Push allocnos with minimal conflict_allocno_hard_prefs first.  */
   pref1 = ALLOCNO_COLOR_DATA (a1)->conflict_allocno_hard_prefs;
   pref2 = ALLOCNO_COLOR_DATA (a2)->conflict_allocno_hard_prefs;
-  if ((diff = pref1 - pref2) != 0)
-    return diff;
-  return ALLOCNO_NUM (a2) - ALLOCNO_NUM (a1);
+  if (pref1 < pref2)
+    return -1;
+  if (pref1 > pref2)
+    return 1;
+
+  if (ALLOCNO_NUM (a2) < ALLOCNO_NUM (a1))
+    return -1;
+  if (ALLOCNO_NUM (a2) > ALLOCNO_NUM (a1))
+    return 1;
+  return 0;
 }
 
 /* Sort bucket *BUCKET_PTR and return the result through
@@ -2912,26 +2931,44 @@ calculate_allocno_spill_cost (ira_allocno_t a)
 static inline int
 allocno_spill_priority_compare (ira_allocno_t a1, ira_allocno_t a2)
 {
-  int pri1, pri2, diff;
+  int pri1, pri2;
 
   /* Avoid spilling static chain pointer pseudo when non-local goto is
      used.  */
   if (non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a1)))
-    return 1;
+    {
+      if (!non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a2)))
+	return 1;
+    }
   else if (non_spilled_static_chain_regno_p (ALLOCNO_REGNO (a2)))
     return -1;
-  if (ALLOCNO_BAD_SPILL_P (a1) && ! ALLOCNO_BAD_SPILL_P (a2))
-    return 1;
-  if (ALLOCNO_BAD_SPILL_P (a2) && ! ALLOCNO_BAD_SPILL_P (a1))
+
+  if (ALLOCNO_BAD_SPILL_P (a1))
+    {
+      if (!ALLOCNO_BAD_SPILL_P (a2))
+	return 1;
+    }
+  else if (ALLOCNO_BAD_SPILL_P (a2))
     return -1;
+
   pri1 = allocno_spill_priority (a1);
   pri2 = allocno_spill_priority (a2);
-  if ((diff = pri1 - pri2) != 0)
-    return diff;
-  if ((diff
-       = ALLOCNO_COLOR_DATA (a1)->temp - ALLOCNO_COLOR_DATA (a2)->temp) != 0)
-    return diff;
-  return ALLOCNO_NUM (a1) - ALLOCNO_NUM (a2);
+  if (pri1 < pri2)
+    return -1;
+  if (pri1 > pri2)
+    return 1;
+
+  if (ALLOCNO_COLOR_DATA (a1)->temp < ALLOCNO_COLOR_DATA (a2)->temp)
+    return -1;
+  if (ALLOCNO_COLOR_DATA (a1)->temp > ALLOCNO_COLOR_DATA (a2)->temp)
+    return 1;
+
+  if (ALLOCNO_NUM (a1) < ALLOCNO_NUM (a2))
+    return -1;
+  if (ALLOCNO_NUM (a1) > ALLOCNO_NUM (a2))
+    return 1;
+
+  return 0;
 }
 
 /* Used for sorting allocnos for spilling.  */
@@ -3158,16 +3195,29 @@ allocno_cost_compare_func (const void *v1p, const void *v2p)
 {
   ira_allocno_t p1 = *(const ira_allocno_t *) v1p;
   ira_allocno_t p2 = *(const ira_allocno_t *) v2p;
-  int c1, c2;
 
-  c1 = ALLOCNO_UPDATED_MEMORY_COST (p1) - ALLOCNO_UPDATED_CLASS_COST (p1);
-  c2 = ALLOCNO_UPDATED_MEMORY_COST (p2) - ALLOCNO_UPDATED_CLASS_COST (p2);
-  if (c1 - c2)
-    return c1 - c2;
+  long long c1 =
+    (long long) ALLOCNO_UPDATED_MEMORY_COST (p1)
+    - (long long) ALLOCNO_UPDATED_CLASS_COST (p1);
 
-  /* If regs are equally good, sort by allocno numbers, so that the
-     results of qsort leave nothing to chance.  */
-  return ALLOCNO_NUM (p1) - ALLOCNO_NUM (p2);
+  long long c2 =
+    (long long) ALLOCNO_UPDATED_MEMORY_COST (p2)
+    - (long long) ALLOCNO_UPDATED_CLASS_COST (p2);
+
+  if (c1 < c2)
+    return -1;
+  if (c1 > c2)
+    return 1;
+
+  /* Stabilize ordering for equal profits.  */
+  int n1 = ALLOCNO_NUM (p1);
+  int n2 = ALLOCNO_NUM (p2);
+
+  if (n1 < n2)
+    return -1;
+  if (n1 > n2)
+    return 1;
+  return 0;
 }
 
 /* Return savings on removed copies when ALLOCNO is assigned to
