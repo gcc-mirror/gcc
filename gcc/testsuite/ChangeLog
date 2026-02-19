@@ -1,3 +1,8 @@
+2026-02-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/106260
+	* g++.dg/ipa/pr106260.C: New test.
+
 2026-02-17  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:

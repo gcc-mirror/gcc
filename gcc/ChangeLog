@@ -1,3 +1,9 @@
+2026-02-18  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/106260
+	* ipa-cp.cc (initialize_node_lattices): Replace assert that there are
+	callers with handling that situation when -fno-toplevel_reorder.
+
 2026-02-17  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
