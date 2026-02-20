@@ -13255,10 +13255,6 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
     {
       tree *osc = struct_map_to_clause->get (base);
       tree *sc = NULL, *scp = NULL;
-      bool unordered = false;
-
-      if (osc && OMP_CLAUSE_MAP_KIND (*osc) == GOMP_MAP_STRUCT_UNORD)
-	unordered = true;
 
       unsigned HOST_WIDE_INT i, elems = tree_to_uhwi (OMP_CLAUSE_SIZE (*osc));
       sc = &OMP_CLAUSE_CHAIN (*osc);
@@ -13314,8 +13310,37 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 	    if (variable_offset2)
 	      {
 		OMP_CLAUSE_SET_MAP_KIND (*osc, GOMP_MAP_STRUCT_UNORD);
-		unordered = true;
-		break;
+
+		if (has_descriptor)
+		  {
+		    /* Sort mapped components by offset. This is needed for
+		       libgomp to handle Fortran derived-type allocatable
+		       components transparently.  */
+
+		    poly_int64 bitsize;
+		    tree offset, coffset;
+		    machine_mode mode;
+		    int unsignedp, reversep, volatilep;
+		    tree inner_ref1
+		      = get_inner_reference (sc_decl, &bitsize, &bitpos,
+					     &offset, &mode, &unsignedp,
+					     &reversep, &volatilep);
+		    tree osc_decl = ocd;
+		    STRIP_NOPS (osc_decl);
+		    tree inner_ref2
+		      = get_inner_reference (osc_decl, &bitsize, &bitpos,
+					     &coffset, &mode, &unsignedp,
+					     &reversep, &volatilep);
+		    gcc_assert (operand_equal_p (inner_ref1, inner_ref2, 0));
+		    tree offset_diff
+		      = fold_binary_to_constant (MINUS_EXPR, size_type_node,
+						 coffset, offset);
+		    if (offset_diff == NULL_TREE
+			|| TREE_INT_CST_ELT (offset_diff, 0) > 0)
+		      continue;
+		    else
+		      break;
+		  }
 	      }
 	    else if ((region_type & ORT_ACC) != 0)
 	      {
@@ -13348,15 +13373,6 @@ omp_accumulate_sibling_list (enum omp_region_type region_type,
 		  break;
 	      }
 	  }
-
-      /* If this is an unordered struct, just insert the new element at the
-	 end of the list.  */
-      if (unordered)
-	{
-	  for (; i < elems; i++)
-	    sc = &OMP_CLAUSE_CHAIN (*sc);
-	  scp = NULL;
-	}
 
       OMP_CLAUSE_SIZE (*osc)
 	= size_binop (PLUS_EXPR, OMP_CLAUSE_SIZE (*osc), size_one_node);
