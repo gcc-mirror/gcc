@@ -1,3 +1,9 @@
+2026-02-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/121571
+	* lra-constraints.cc (process_alt_operands): Reprocess asm insn
+	when there are no enough regs for the asm-insn.
+
 2026-02-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:

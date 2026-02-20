@@ -1,3 +1,12 @@
+2026-02-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123989
+	* cp-gimplify.cc (cp_gimplify_expr) <case CALL_EXPR>: Evaluate
+	the object argument of an xobj memfn call first too.
+
 2026-02-17  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
