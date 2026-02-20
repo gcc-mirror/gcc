@@ -15886,7 +15886,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_PRIVATE:
 	    var = OMP_CLAUSE_DECL (c);
 	    by_ref = omp_privatize_by_reference (var);
-	    if (is_variable_sized (var, by_ref))
+	    if (is_variable_sized (var))
 	      {
 		tree new_var = lookup_decl (var, ctx);
 		tree *allocate_ptr = alloc_map.get (new_var);
