@@ -543,8 +543,6 @@ c_reconstruct_complex_type (tree type, tree bottom)
 
       gcc_checking_assert (C_TYPE_VARIABLE_SIZE (type)
 			   == C_TYPE_VARIABLE_SIZE (outer));
-      gcc_checking_assert (C_TYPE_VARIABLY_MODIFIED (outer)
-			   == C_TYPE_VARIABLY_MODIFIED (type));
     }
   else if (TREE_CODE (type) == FUNCTION_TYPE)
     {
@@ -561,6 +559,76 @@ c_reconstruct_complex_type (tree type, tree bottom)
   return c_build_type_attribute_qual_variant (outer, TYPE_ATTRIBUTES (type),
 					      TYPE_QUALS (type));
 }
+
+
+/* Helper function for c_canonical_type.  Check whether FIELD
+   contains a pointer to a structure or union with tag,
+   possibly nested in other type derivations.  */
+static bool
+ptr_to_tagged_member (tree field)
+{
+  gcc_assert (FIELD_DECL == TREE_CODE (field));
+  tree type = TREE_TYPE (field);
+  bool ptr_seen = false;
+  while (TREE_CODE (type) == ARRAY_TYPE
+	 || TREE_CODE (type) == FUNCTION_TYPE
+	 || TREE_CODE (type) == POINTER_TYPE)
+    {
+      if (TREE_CODE (type) == POINTER_TYPE)
+	ptr_seen = true;
+      type = TREE_TYPE (type);
+    }
+
+  if (ptr_seen
+      && RECORD_OR_UNION_TYPE_P (type)
+      && NULL_TREE != c_type_tag (type))
+    return true;
+
+  return false;
+}
+
+/* For a record or union type, make necessary adaptations so that the
+   type can be used as TYPE_CANONICAL.
+
+   If the TYPE contains a pointer (possibly nested in other type
+   derivations) to a structure or union as a member, create a copy
+   and change such pointers to void pointers.  Otherwise, the middle-end
+   gets confused when recording component aliases in the case where we
+   have formed equivalency classes that include types for which these
+   member pointers end up pointing to other structure or unions types
+   which have the same tag but are not compatible.  */
+tree
+c_type_canonical (tree type)
+{
+  gcc_assert (RECORD_OR_UNION_TYPE_P (type));
+
+  bool needs_mod = false;
+  for (tree x = TYPE_FIELDS (type); x; x = DECL_CHAIN (x))
+    {
+      if (!ptr_to_tagged_member (x))
+	continue;
+      needs_mod = true;
+      break;
+    }
+  if (!needs_mod)
+    return type;
+
+  /* Construct new version with such members replaced.  */
+  tree n = build_distinct_type_copy (type);
+  tree *fields = &TYPE_FIELDS (n);
+  for (tree x = TYPE_FIELDS (type); x; x = DECL_CHAIN (x))
+    {
+      tree f = copy_node (x);
+      if (ptr_to_tagged_member (x))
+	TREE_TYPE (f) = c_reconstruct_complex_type (TREE_TYPE (x),
+						    ptr_type_node);
+      *fields = f;
+      fields = &DECL_CHAIN (f);
+    }
+  TYPE_CANONICAL (n) = n;
+  return n;
+}
+
 
 /* If NTYPE is a type of a non-variadic function with a prototype
    and OTYPE is a type of a function without a prototype and ATTRS

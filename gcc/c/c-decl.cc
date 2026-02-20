@@ -9995,10 +9995,10 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 
       tree *e = c_struct_htab->find_slot_with_hash (t, hash, INSERT);
       if (*e)
-	TYPE_CANONICAL (t) = *e;
+	TYPE_CANONICAL (t) = TYPE_CANONICAL (*e);
       else
 	{
-	  TYPE_CANONICAL (t) = t;
+	  TYPE_CANONICAL (t) = c_type_canonical (t);
 	  *e = t;
 	}
       c_update_type_canonical (t);
