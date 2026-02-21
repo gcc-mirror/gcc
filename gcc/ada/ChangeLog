@@ -1,3 +1,8 @@
+2026-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-stposu.adb (Finalize_Pool): Pass a local copy of the
+	handle in the call to Finalize_And_Deallocate.
+
 2026-02-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/124106
