@@ -11092,7 +11092,8 @@ find_fortran_preinclude_file (int argc, const char **argv)
   return result;
 }
 
-/* The function takes any number of arguments and joins them together.
+/* The function takes any number of arguments and joins them together,
+   escaping any special characters.
 
    This seems to be necessary to build "-fjoined=foo.b" from "-fseparate foo.a"
    with a %{fseparate*:-fjoined=%.b$*} rule without adding undesired spaces:
@@ -11105,12 +11106,15 @@ find_fortran_preinclude_file (int argc, const char **argv)
 static const char *
 join_spec_func (int argc, const char **argv)
 {
-  if (argc == 1)
-    return argv[0];
-  for (int i = 0; i < argc; ++i)
-    obstack_grow (&obstack, argv[i], strlen (argv[i]));
-  obstack_1grow (&obstack, '\0');
-  return XOBFINISH (&obstack, const char *);
+  const char *result = argv[0];
+  if (argc != 1)
+    {
+      for (int i = 0; i < argc; ++i)
+	obstack_grow (&obstack, argv[i], strlen (argv[i]));
+      obstack_1grow (&obstack, '\0');
+      result = XOBFINISH (&obstack, const char *);
+    }
+  return quote_spec (xstrdup (result));
 }
 
 /* If any character in ORIG fits QUOTE_P (_, P), reallocate the string
