@@ -392,13 +392,13 @@ avail_exprs_stack::record_cond (cond_equivalence *p)
   expr_hash_elt **slot;
 
   slot = m_avail_exprs->find_slot_with_hash (element, element->hash (), INSERT);
-  if (*slot == NULL)
-    {
-      *slot = element;
-      record_expr (element, NULL, '1');
-    }
-  else
-    delete element;
+
+  /* We will always get back a valid slot in the hash table.  Go ahead and
+     record the new equivalence.  While it may be overwriting something older,
+     the belief is that the newer equivalence is more likely to be useful as
+     it was derived using more information/context.  */
+  record_expr (element, *slot, '1');
+  *slot = element;
 }
 
 /* Generate a hash value for a pair of expressions.  This can be used
