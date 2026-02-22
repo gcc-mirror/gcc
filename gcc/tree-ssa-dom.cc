@@ -1097,6 +1097,7 @@ dom_valueize (tree t)
    additional equivalences that are valid on edge E.  */
 static void
 back_propagate_equivalences (tree lhs, edge e,
+			     class avail_exprs_stack *avail_exprs_stack,
 			     class const_and_copies *const_and_copies,
 			     bitmap domby)
 {
@@ -1149,6 +1150,15 @@ back_propagate_equivalences (tree lhs, edge e,
 						 no_follow_ssa_edges);
       if (res && (TREE_CODE (res) == SSA_NAME || is_gimple_min_invariant (res)))
 	record_equality (lhs2, res, const_and_copies);
+
+      /* It may also be the case that the value is in the hash table.  So
+	 try to look it up there too.  */
+      res = avail_exprs_stack->lookup_avail_expr (use_stmt, false, false);
+      if (res && (TREE_CODE (res) == SSA_NAME || is_gimple_min_invariant (res)))
+	{
+	  record_equality (lhs2, res, const_and_copies);
+	  class edge_info *edge_info = (class edge_info *) e->aux;
+	}
     }
 }
 
@@ -1211,8 +1221,8 @@ record_temporary_equivalences (edge e,
 	  /* Any equivalence found for LHS may result in additional
 	     equivalences for other uses of LHS that we have already
 	     processed.  */
-	  back_propagate_equivalences (lhs, e, const_and_copies,
-				       blocks_on_stack);
+	  back_propagate_equivalences (lhs, e, avail_exprs_stack,
+				       const_and_copies, blocks_on_stack);
 	}
     }
 }
