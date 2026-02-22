@@ -189,7 +189,26 @@ edge_info::derive_equivalences (tree name, tree value, int recursion_limit)
 	      value = build_zero_cst (TREE_TYPE (rhs2));
 	      derive_equivalences (rhs2, value, recursion_limit - 1);
 	    }
-	  break;
+	  else
+	    {
+	      /* If an operand is zero, then the other operand must have
+		 the same value as the result.  */
+	      tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	      tree rhs2 = gimple_assign_rhs2 (def_stmt);
+
+	      if (integer_zerop (rhs1)
+		  || (TREE_CODE (rhs1) == SSA_NAME
+		      && SSA_NAME_VALUE (rhs1)
+		      && integer_zerop (SSA_NAME_VALUE (rhs1))))
+		derive_equivalences (rhs2, value, recursion_limit - 1);
+
+	      if (integer_zerop (rhs2)
+		  || (TREE_CODE (rhs2) == SSA_NAME
+		      && SSA_NAME_VALUE (rhs2)
+		      && integer_zerop (SSA_NAME_VALUE (rhs2))))
+		derive_equivalences (rhs1, value, recursion_limit - 1);
+	    }
+	break;
 
 	/* If the result of an AND is nonzero, then its operands are, too.  */
 	case BIT_AND_EXPR:
