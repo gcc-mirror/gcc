@@ -5990,7 +5990,7 @@ ix86_output_ssemov (rtx_insn *insn, rtx *operands)
 /* Returns true if OP contains a symbol reference */
 
 bool
-symbolic_reference_mentioned_p (rtx op)
+symbolic_reference_mentioned_p (const_rtx op)
 {
   const char *fmt;
   int i;
@@ -8717,8 +8717,15 @@ ix86_find_all_reg_uses (HARD_REG_SET &regset,
 static bool
 ix86_access_stack_p (unsigned int regno, basic_block bb,
 		     HARD_REG_SET &set_up_by_prologue,
-		     HARD_REG_SET &prologue_used)
+		     HARD_REG_SET &prologue_used,
+		     auto_bitmap reg_dominate_bbs_known[],
+		     auto_bitmap reg_dominate_bbs[])
 {
+  if (bitmap_bit_p (reg_dominate_bbs_known[regno], bb->index))
+    return bitmap_bit_p (reg_dominate_bbs[regno], bb->index);
+
+  bitmap_set_bit (reg_dominate_bbs_known[regno], bb->index);
+
   /* Get all BBs which set REGNO and dominate the current BB from all
      DEFs of REGNO.  */
   for (df_ref def = DF_REG_DEF_CHAIN (regno);
@@ -8735,9 +8742,75 @@ ix86_access_stack_p (unsigned int regno, basic_block bb,
 	    /* Return true if INSN requires stack.  */
 	    if (requires_stack_frame_p (insn, prologue_used,
 					set_up_by_prologue))
-	      return true;
+	      {
+		bitmap_set_bit (reg_dominate_bbs[regno], bb->index);
+		return true;
+	      }
 	  }
       }
+
+  /* When we get here, REGNO used in the current BB doesn't access
+     stack.  */
+  return false;
+}
+
+/* Helper function for ix86_symbolic_const_load_p.  */
+
+static bool
+ix86_symbolic_const_load_p_1 (rtx set)
+{
+  rtx dest = SET_DEST (set);
+
+  if (!REG_P (dest))
+    return false;
+
+  /* Reject non-Pmode modes.  */
+  if (GET_MODE (dest) != Pmode)
+    return false;
+
+  const_rtx src = SET_SRC (set);
+
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, src, ALL)
+    {
+      auto op = *iter;
+
+      if (MEM_P (op))
+	iter.skip_subrtxes ();
+      else if (SYMBOLIC_CONST (op))
+	return true;
+    }
+
+  return false;
+}
+
+/* Return true if INSN loads a symbolic constant into register REGNO.  */
+
+static bool
+ix86_symbolic_const_load_p (rtx_insn *insn, unsigned int regno)
+{
+  rtx set = single_set (insn);
+  if (set)
+    return ix86_symbolic_const_load_p_1 (set);
+
+  rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) != PARALLEL)
+    return false;
+
+  for (int i = 0; i < XVECLEN (pat, 0); i++)
+    {
+      rtx exp = XVECEXP (pat, 0, i);
+
+      if (GET_CODE (exp) == SET)
+	{
+	  rtx dest = SET_DEST (exp);
+	  if (REG_P (dest)
+	      && GET_MODE (dest) == Pmode
+	      && REGNO (dest) == regno
+	      && ix86_symbolic_const_load_p_1 (exp))
+	    return true;
+	}
+    }
 
   return false;
 }
@@ -8818,32 +8891,59 @@ ix86_find_max_used_stack_alignment (unsigned int &stack_alignment,
   hard_reg_set_iterator hrsi;
   stack_access_data data;
 
+  auto_bitmap reg_dominate_bbs_known[FIRST_PSEUDO_REGISTER];
+  auto_bitmap reg_dominate_bbs[FIRST_PSEUDO_REGISTER];
+
   data.stack_alignment = &stack_alignment;
 
   EXECUTE_IF_SET_IN_HARD_REG_SET (stack_slot_access, 0, regno, hrsi)
-    for (df_ref ref = DF_REG_USE_CHAIN (regno);
-	 ref != NULL;
-	 ref = DF_REF_NEXT_REG (ref))
-      {
-	if (DF_REF_IS_ARTIFICIAL (ref))
-	  continue;
+    {
+      /* Set to true if there is a symbolic constant load into REGNO.  */
+      bool symbolic_const_load_p = false;
 
-	rtx_insn *insn = DF_REF_INSN (ref);
+      if (!TEST_HARD_REG_BIT (hard_stack_slot_access, regno))
+	for (df_ref def = DF_REG_DEF_CHAIN (regno);
+	     def;
+	     def = DF_REF_NEXT_REG (def))
+	  if (!DF_REF_IS_ARTIFICIAL (def)
+	      && !DF_REF_FLAGS_IS_SET (def, DF_REF_MAY_CLOBBER)
+	      && !DF_REF_FLAGS_IS_SET (def, DF_REF_MUST_CLOBBER))
+	    {
+	      rtx_insn *insn = DF_REF_INSN (def);
+	      if (ix86_symbolic_const_load_p (insn, regno))
+		{
+		  symbolic_const_load_p = true;
+		  break;
+		}
+	    }
 
-	if (!NONJUMP_INSN_P (insn))
-	  continue;
-
-	if (TEST_HARD_REG_BIT (hard_stack_slot_access, regno)
-	    || ix86_access_stack_p (regno, BLOCK_FOR_INSN (insn),
-				    set_up_by_prologue, prologue_used))
-	  {
-	    /* Update stack alignment if REGNO is used for stack
-	       access.  */
-	    data.reg = DF_REF_REG (ref);
-	    note_stores (insn, ix86_update_stack_alignment, &data);
+      for (df_ref ref = DF_REG_USE_CHAIN (regno);
+	   ref != NULL;
+	   ref = DF_REF_NEXT_REG (ref))
+	{
+	  if (DF_REF_IS_ARTIFICIAL (ref))
 	    continue;
-	  }
-      }
+
+	  rtx_insn *insn = DF_REF_INSN (ref);
+
+	  if (!NONJUMP_INSN_P (insn))
+	    continue;
+
+	  /* If there is no symbolic constant load into the register,
+	     don't call ix86_access_stack_p.  */
+	  if (!symbolic_const_load_p
+	      || ix86_access_stack_p (regno, BLOCK_FOR_INSN (insn),
+				      set_up_by_prologue, prologue_used,
+				      reg_dominate_bbs_known,
+				      reg_dominate_bbs))
+	    {
+	      /* Update stack alignment if REGNO is used for stack
+		 access.  */
+	      data.reg = DF_REF_REG (ref);
+	      note_stores (insn, ix86_update_stack_alignment, &data);
+	    }
+	}
+    }
 
   free_dominance_info (CDI_DOMINATORS);
 }
