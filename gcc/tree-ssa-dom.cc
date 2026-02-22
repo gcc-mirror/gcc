@@ -1202,7 +1202,25 @@ record_temporary_equivalences (edge e,
       /* If we have 0 = COND or 1 = COND equivalences, record them
 	 into our expression hash tables.  */
       for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
-	avail_exprs_stack->record_cond (eq);
+	{
+	  avail_exprs_stack->record_cond (eq);
+
+	  /* This is not a simple equivalence, but may still enable
+	     discovery of other equivalences.  This is fairly narrowly
+	     implemented and can likely be generalized further.
+
+	     Essentially we're looking for [0/1] = A cond [0/1] and try
+	     to derive equivalences at use points of A.  */
+	     if ((integer_zerop (eq->value) || integer_onep (eq->value))
+		 && eq->cond.kind == EXPR_BINARY
+		 && (eq->cond.ops.binary.op == EQ_EXPR
+		     || eq->cond.ops.binary.op == NE_EXPR)
+		 && TREE_CODE (eq->cond.ops.binary.opnd0) == SSA_NAME
+		 && TREE_CODE (eq->cond.ops.binary.opnd1) == INTEGER_CST)
+		back_propagate_equivalences (eq->cond.ops.binary.opnd0, e,
+					     avail_exprs_stack,
+					     const_and_copies, blocks_on_stack);
+	}
 
       edge_info::equiv_pair *seq;
       for (i = 0; edge_info->simple_equivalences.iterate (i, &seq); ++i)
