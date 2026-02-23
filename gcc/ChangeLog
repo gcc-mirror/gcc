@@ -1,3 +1,11 @@
+2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/120974
+	* gcc.cc (join_spec_func): Escape special characters.
+
 2026-02-19  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/121571

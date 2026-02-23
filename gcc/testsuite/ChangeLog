@@ -1,3 +1,11 @@
+2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/124153
+	* g++.dg/modules/cpp-22.C: New test.
+
 2026-02-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
