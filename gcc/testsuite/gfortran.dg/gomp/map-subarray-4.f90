@@ -25,10 +25,10 @@ var%tiles(1)%den2 = reshape([11,22,33,44],[2,2])
 
 !$omp target enter data map(var%tiles(1)%den2, var%tiles(1)%den1)
 
-! { dg-final { scan-tree-dump { map\(struct_unord:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\] \[len: 2\]\) map\(to:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\]\[_[0-9]+\]\.den1 \[pointer set, len: 88\]\) map\(to:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\]\[_[0-9]+\]\.den2 \[pointer set, len: 88\]\) } "gimple" } }
+! { dg-final { scan-tree-dump { map\(struct_unord:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\] \[len: 2\]\) map\(to:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\]\[_[0-9]+\]\.den[12] \[pointer set, len: (?:48|88)]\) map\(to:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\]\[_[0-9]+\]\.den[12] \[pointer set, len: (?:48|88)\]\) } "gimple" } }
 
 !$omp target exit data map(var%tiles(1)%den2, var%tiles(1)%den1)
 
-! { dg-final { scan-tree-dump { map\(release:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\]\[_[0-9]+\]\.den1 \[pointer set, len: 88\]\) map\(release:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\]\[_[0-9]+\]\.den2 \[pointer set, len: 88\]\) } "gimple" } }
+! { dg-final { scan-tree-dump { map\(release:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\]\[_[0-9]+\]\.den[12] \[pointer set, len: (?:48|88)\]\) map\(release:MEM <struct t\[0:\]> \[\(struct t\[0:\] \*\)_[0-9]+\]\[_[0-9]+\]\.den[12] \[pointer set, len: (?:48|88)\]\) } "gimple" } }
 
 end

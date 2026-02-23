@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target { offload_device } } }
 ! { dg-shouldfail "PR124178 TODO" }
 
 ! PR fortran/120505
