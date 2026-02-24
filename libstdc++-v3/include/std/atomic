@@ -664,19 +664,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #if __cpp_lib_atomic_wait
-    void
-    wait(__pointer_type __old, memory_order __m = memory_order_seq_cst) const noexcept
-    { _M_b.wait(__old, __m); }
+      void
+      wait(__pointer_type __old,
+	   memory_order __m = memory_order_seq_cst) const noexcept
+      { _M_b.wait(__old, __m); }
 
-    // TODO add const volatile overload
+      // TODO add const volatile overload
 
-    void
-    notify_one() noexcept
-    { _M_b.notify_one(); }
+      void
+      notify_one() noexcept
+      { _M_b.notify_one(); }
 
-    void
-    notify_all() noexcept
-    { _M_b.notify_all(); }
+      void
+      notify_all() noexcept
+      { _M_b.notify_all(); }
 #endif // __cpp_lib_atomic_wait
 
       __pointer_type
