@@ -1,5 +1,6 @@
 /* { dg-options "--coverage -fpath-coverage -fprofile-update=atomic" } */
 /* { dg-do run } */
+/* { dg-require-effective-target profile_update_atomic } */
 
 void
 pathcov001a ()
@@ -22,7 +23,7 @@ pathcov001b ()
 /* Same as b, but not executed.  */
 /* BEGIN paths
    summary: 0/1
-   expect: 33
+   expect: 34
 */
 void
 pathcov001c ()
@@ -37,8 +38,8 @@ pathcov001c ()
    isolation.  */
 /* BEGIN paths
    summary: 0/2
-   expect: 48(true) 49 52
-   expect: 48(false) 51 52
+   expect: 49(true) 50 53
+   expect: 49(false) 52 53
 */
 void
 pathcov002a (int a)
@@ -53,7 +54,7 @@ pathcov002a (int a)
 
 /* BEGIN paths
     summary: 1/2
-    expect: 63(false) 66 67
+    expect: 64(false) 67 68
 */
 void
 pathcov002c (int a)
@@ -68,7 +69,7 @@ pathcov002c (int a)
 
 /* BEGIN paths
    summary: 1/2
-   expect: 78(true) 79 82
+   expect: 79(true) 80 83
 */
 void
 pathcov002b (int a)
@@ -102,8 +103,8 @@ pathcov002d (int a)
 
 /* BEGIN paths
    summary: 0/2
-   expect: 112(true) 113 114
-   expect: 112(false) 114
+   expect: 113(true) 114 115
+   expect: 113(false) 115
 */
 void
 pathcov003a (int a)
@@ -115,8 +116,8 @@ pathcov003a (int a)
 
 /* BEGIN paths
    summary: 0/2
-   expect: 125(true) 126 129
-   expect: 125(false) 128 129
+   expect: 126(true) 127 130
+   expect: 126(false) 129 130
 */
 void
 pathcov003b (int a)
@@ -130,9 +131,9 @@ pathcov003b (int a)
 
 /* BEGIN paths
    summary: 0/3
-   expect: 141(true) 142 147
-   expect: 141(false) 143(true) 144 147
-   expect: 141(false) 143(false) 146 147
+   expect: 142(true) 143 148
+   expect: 142(false) 144(true) 145 148
+   expect: 142(false) 144(false) 147 148
 */
 void
 pathcov003c (int a)
@@ -148,11 +149,11 @@ pathcov003c (int a)
 
 /* BEGIN paths
    summary: 0/5
-   expect: 162 162(true) 163
-   expect: 162 162(false) 164
-   expect: 163 162(true) 163
-   expect: 163 162(false) 164
-   expect: 162(true) 163 162
+   expect: 163 163(true) 164
+   expect: 163 163(false) 165
+   expect: 164 163(true) 164
+   expect: 164 163(false) 165
+   expect: 163(true) 164 163
 */
 void
 pathcov003d (int a)
@@ -165,11 +166,11 @@ pathcov003d (int a)
 
 /* BEGIN paths
    summary: 0/5
-   expect: 180 180(true) 181
-   expect: 180 180(false) 182
-   expect: 181 180(true) 181
-   expect: 181 180(false) 182
-   expect: 180(true) 181 180
+   expect: 181 181(true) 182
+   expect: 181 181(false) 183
+   expect: 182 181(true) 182
+   expect: 182 181(false) 183
+   expect: 181(true) 182 181
 */
 void
 pathcov003e (int a)
@@ -183,8 +184,8 @@ pathcov003e (int a)
 
 /* BEGIN paths
    summary: 0/2
-   expect: 194 197(false) 198
-   expect: 197(true) 197
+   expect: 195 198(false) 199
+   expect: 198(true) 198
 */
 void
 pathcov003f (int a)
@@ -199,11 +200,11 @@ pathcov003f (int a)
 
 /* BEGIN paths
    summary: 0/5
-   expect: 213 216(true) 220
-   expect: 213 216(false) 222
-   expect: 216(true) 220 216
-   expect: 220 216(true) 220
-   expect: 220 216(false) 222
+   expect: 214 217(true) 221
+   expect: 214 217(false) 223
+   expect: 217(true) 221 217
+   expect: 221 217(true) 221
+   expect: 221 217(false) 223
 */
 void
 pathcov003g (int a)
@@ -226,15 +227,15 @@ top:
 
 /* BEGIN paths
    summary: 0/9
-   expect: 243(false) 247 247(true) 247(true) 249(true) 250 253
-   expect: 243(false) 247 247(true) 247(false) 253
-   expect: 243(false) 247 247(false) 253
-   expect: 243(true) 253
-   expect: 249(false) 247(true) 247(true) 249
-   expect: 249(false) 247(true) 247(false) 253
-   expect: 247(true) 247(true) 249(false) 247
-   expect: 247(true) 249(false) 247(true) 247
-   expect: 247(true) 249(false) 247(false) 253
+   expect: 244(false) 248 248(true) 248(true) 250(true) 251 254
+   expect: 244(false) 248 248(true) 248(false) 254
+   expect: 244(false) 248 248(false) 254
+   expect: 244(true) 254
+   expect: 250(false) 248(true) 248(true) 250
+   expect: 250(false) 248(true) 248(false) 254
+   expect: 248(true) 248(true) 250(false) 248
+   expect: 248(true) 250(false) 248(true) 248
+   expect: 248(true) 250(false) 248(false) 254
 */
 void
 pathcov004a (int a, int b, int c, int d)
