@@ -1930,7 +1930,17 @@ class auto_suppress_location_wrappers
 
 /* Set if 'OMP_CLAUSE_DECL (NODE)' points to read-only memory.  */
 #define OMP_CLAUSE_MAP_POINTS_TO_READONLY(NODE) \
+  TREE_NO_WARNING (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+
+/* Nonzero if the size (or bias) is not known by the front end and needs to be
+   adjusted in the middle end.  */
+#define OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT(NODE) \
   TREE_CONSTANT (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+
+/* Nonzero on a map clause that is only used internally by the gimplifier and
+   can thus be removed at the end of the GIMPLE pass.  */
+#define OMP_CLAUSE_MAP_GIMPLE_ONLY(NODE) \
+  TREE_USED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
 
 /* Same as above, for use in OpenACC cache directives.  */
 #define OMP_CLAUSE__CACHE__READONLY(NODE) \

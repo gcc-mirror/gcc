@@ -4190,6 +4190,184 @@ gfc_omp_contiguous_update_p (gfc_omp_namelist *n)
   return gfc_is_simply_contiguous (contig_expr, false, true);
 }
 
+/* Helper function for gfc_trans_omp_clauses.  Adjust existing and create new
+   map nodes for derived-type component array descriptors. Return true if the
+   mapping has to be dropped.  */
+
+static bool gfc_map_array_descriptor(
+    tree &node, tree &node2, tree &node3, tree &node4, tree descr, bool openacc,
+    location_t map_loc, stmtblock_t *block, toc_directive cd,
+    gfc_omp_namelist *n,
+    hash_map<gfc_symbol *, gfc_omp_namelist *> *&sym_rooted_nl, gfc_se se,
+    gfc_omp_clauses *clauses, bool mid_desc_p) {
+  tree type = TREE_TYPE (descr);
+  tree ptr = gfc_conv_descriptor_data_get (descr);
+  ptr = build_fold_indirect_ref (ptr);
+  OMP_CLAUSE_DECL (node) = ptr;
+  int rank = GFC_TYPE_ARRAY_RANK (type);
+  OMP_CLAUSE_SIZE (node) = gfc_full_array_size (block, descr, rank);
+  tree elemsz = TYPE_SIZE_UNIT (gfc_get_element_type (type));
+
+  gomp_map_kind map_kind = OMP_CLAUSE_MAP_KIND (node);
+  if (GOMP_MAP_COPY_TO_P (map_kind) || map_kind == GOMP_MAP_ALLOC)
+    {
+      if (mid_desc_p)
+	{
+	  /* For an intermediate descriptor, the pointee (i.e. the actual array
+	     content) is mapped in a separate set of nodes. This ALLOC is only
+	     emitted to comply with the group layout expected by the gimplifier.
+	    */
+	  OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALLOC);
+	  OMP_CLAUSE_SIZE (node) = size_zero_node;
+	  OMP_CLAUSE_MAP_GIMPLE_ONLY (node) = 1;
+	}
+      else
+	map_kind
+	  = ((GOMP_MAP_ALWAYS_P (map_kind) || gfc_expr_attr (n->expr).pointer)
+	       ? GOMP_MAP_ALWAYS_TO
+	       : GOMP_MAP_TO);
+    }
+  else if (n->u.map.op == OMP_MAP_RELEASE || n->u.map.op == OMP_MAP_DELETE)
+    ;
+  else if (cd == TOC_OPENMP_EXIT_DATA || cd == TOC_OPENACC_EXIT_DATA)
+    map_kind = GOMP_MAP_RELEASE;
+  else if (mid_desc_p) {
+    /* For an intermediate descriptor, the pointee (i.e. the actual array
+        content) is mapped in a separate set of nodes. This ALLOC is only
+        emitted to comply with the group layout expected by the gimplifier.  */
+    OMP_CLAUSE_SET_MAP_KIND (node, GOMP_MAP_ALLOC);
+    OMP_CLAUSE_SIZE (node) = size_zero_node;
+    OMP_CLAUSE_MAP_GIMPLE_ONLY (node) = 1;
+  } else
+    map_kind = GOMP_MAP_ALLOC;
+
+  if (!openacc && n->expr->ts.type == BT_CHARACTER && n->expr->ts.deferred) {
+      gcc_assert (se.string_length);
+      tree len = fold_convert (size_type_node, se.string_length);
+      elemsz = gfc_get_char_type (n->expr->ts.kind);
+      elemsz = TYPE_SIZE_UNIT (elemsz);
+      elemsz = fold_build2 (MULT_EXPR, size_type_node, len, elemsz);
+      node4 = build_omp_clause (map_loc, OMP_CLAUSE_MAP);
+      OMP_CLAUSE_SET_MAP_KIND (node4, map_kind);
+      OMP_CLAUSE_DECL (node4) = se.string_length;
+      OMP_CLAUSE_SIZE (node4) = TYPE_SIZE_UNIT (gfc_charlen_type_node);
+    }
+  elemsz = fold_convert (gfc_array_index_type, elemsz);
+  OMP_CLAUSE_SIZE (node) = fold_build2 (MULT_EXPR, gfc_array_index_type,
+					OMP_CLAUSE_SIZE (node), elemsz);
+
+  node2 = build_omp_clause (map_loc, OMP_CLAUSE_MAP);
+  if (map_kind == GOMP_MAP_RELEASE || map_kind == GOMP_MAP_DELETE)
+    {
+      OMP_CLAUSE_SET_MAP_KIND (node2, map_kind);
+      OMP_CLAUSE_RELEASE_DESCRIPTOR (node2) = 1;
+    }
+  else
+    OMP_CLAUSE_SET_MAP_KIND (node2, GOMP_MAP_TO_PSET);
+  OMP_CLAUSE_DECL (node2) = descr;
+  OMP_CLAUSE_SIZE (node2) = TYPE_SIZE_UNIT (type);
+
+  if (!openacc)
+    {
+      if (n->expr->ts.type == BT_DERIVED
+	  && n->expr->ts.u.derived->attr.alloc_comp)
+	{
+	  /* Save array descriptor for use
+	     in gfc_omp_deep_mapping{,_p,_cnt}; force
+	     evaluate to ensure that it is
+	     not gimplified + is a decl.  */
+	  tree tmp = OMP_CLAUSE_SIZE (node);
+	  tree var = gfc_create_var (TREE_TYPE (tmp), NULL);
+	  gfc_add_modify_loc (map_loc, block, var, tmp);
+	  OMP_CLAUSE_SIZE (node) = var;
+	  gfc_allocate_lang_decl (var);
+	  GFC_DECL_SAVED_DESCRIPTOR (var) = descr;
+	}
+
+      /* If we don't have a mapping of a smaller part
+	  of the array -- or we can't prove that we do
+	  statically -- set this flag.  If there is a
+	  mapping of a smaller part of the array after
+	  all, this will turn into a no-op at
+	  runtime.  */
+      OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (node) = 1;
+
+      bool drop_mapping = false;
+
+      if (!mid_desc_p)
+	{
+	  gfc_omp_namelist *n2 = clauses->lists[OMP_LIST_MAP];
+
+	  bool sym_based;
+	  n2 = get_symbol_rooted_namelist (sym_rooted_nl, n, n2, &sym_based);
+
+	  for (; n2 != NULL; n2 = n2->next)
+	    {
+	      if ((!sym_based && n == n2)
+		  || (sym_based && n == n2->u2.duplicate_of) || !n2->expr)
+		continue;
+
+	      if (!gfc_omp_expr_prefix_same (n->expr, n2->expr))
+		continue;
+
+	      gfc_ref *ref1 = n->expr->ref;
+	      gfc_ref *ref2 = n2->expr->ref;
+
+	      /* We know ref1 and ref2 overlap.  We're
+		 interested in whether ref2 describes a
+		 smaller part of the array than ref1, which
+		 we already know refers to the full
+		 array.  */
+
+	      while (ref1->next && ref2->next)
+		{
+		  ref1 = ref1->next;
+		  ref2 = ref2->next;
+		}
+
+	      if (ref2->next
+		  || (ref2->type == REF_ARRAY
+		      && (ref2->u.ar.type == AR_ELEMENT
+			  || (ref2->u.ar.type == AR_SECTION))))
+		{
+		  drop_mapping = true;
+		  break;
+		}
+                if (n->u3.udm && n->u3.udm->multiple_elems_p) {
+                  gfc_error("cannot map non-unit size array "
+                            "with mapper at %C");
+                  node2 = NULL_TREE;
+                  return false;
+                }
+          }
+          if (drop_mapping)
+	    return true;
+	}
+    }
+
+  if (mid_desc_p && GOMP_MAP_COPY_FROM_P (OMP_CLAUSE_MAP_KIND (node)))
+    node = NULL_TREE;
+
+  node3 = build_omp_clause (map_loc, OMP_CLAUSE_MAP);
+  OMP_CLAUSE_SET_MAP_KIND (node3, GOMP_MAP_ATTACH_DETACH);
+  OMP_CLAUSE_DECL (node3) = gfc_conv_descriptor_data_get (descr);
+  /* Similar to gfc_trans_omp_array_section (details
+     there), we add/keep the cast for OpenMP to prevent
+     that an 'alloc:' gets added for node3 ('desc.data')
+     as that is part of the whole descriptor (node3).
+     TODO: Remove once the ME handles this properly.  */
+  if (!openacc)
+    OMP_CLAUSE_DECL (node3) = fold_convert (TREE_TYPE (TREE_OPERAND (ptr, 0)),
+					    OMP_CLAUSE_DECL (node3));
+  else
+    STRIP_NOPS (OMP_CLAUSE_DECL (node3));
+  OMP_CLAUSE_SIZE (node3) = size_zero_node;
+  if (mid_desc_p)
+    OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT (node3) = 1;
+
+  return false;
+}
+
 static tree
 gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		       locus where, toc_directive cd = TOC_OPENMP)
@@ -4198,7 +4376,6 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
   bool openacc = (cd >= TOC_OPENACC);
   bool declare_mapper = (cd == TOC_OPENMP_DECLARE_MAPPER);
   bool omp_exit_data = (cd == TOC_OPENMP_EXIT_DATA);
-  bool oacc_exit_data = (cd == TOC_OPENACC_EXIT_DATA);
   tree omp_clauses = NULL_TREE, prev_clauses, chunk_size, c;
   tree iterator = NULL_TREE;
   tree tree_block = NULL_TREE;
@@ -4207,6 +4384,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
   enum omp_clause_code clause_code;
   gfc_omp_namelist *prev = NULL;
   gfc_se se;
+  vec<gfc_symbol *> descriptors = vNULL;
 
   if (clauses == NULL)
     return NULL_TREE;
@@ -5393,6 +5571,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		{
 		  gfc_init_se (&se, NULL);
 		  se.expr = gfc_maybe_dereference_var (n->sym, decl);
+		  vec<tree> mid_descr = vNULL;
+		  vec<gfc_ref *> midref = vNULL;
 
 		  for (gfc_ref *ref = n->expr->ref; ref; ref = ref->next)
 		    {
@@ -5402,6 +5582,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			    conv_parent_component_references (&se, ref);
 
 			  gfc_conv_component_ref (&se, ref);
+			  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)))
+			    {
+			      mid_descr.safe_push (se.expr);
+			      midref.safe_push (ref);
+			    }
 			}
 		      else if (ref->type == REF_ARRAY)
 			{
@@ -5584,164 +5769,13 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
 		      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (inner)))
 			{
-			  gomp_map_kind map_kind;
-			  tree type = TREE_TYPE (inner);
-			  tree ptr = gfc_conv_descriptor_data_get (inner);
-			  ptr = build_fold_indirect_ref (ptr);
-			  OMP_CLAUSE_DECL (node) = ptr;
-			  int rank = GFC_TYPE_ARRAY_RANK (type);
-			  OMP_CLAUSE_SIZE (node)
-			    = gfc_full_array_size (&iter_block, inner, rank);
-			  tree elemsz
-			    = TYPE_SIZE_UNIT (gfc_get_element_type (type));
-			  map_kind = OMP_CLAUSE_MAP_KIND (node);
-			  if (GOMP_MAP_COPY_TO_P (map_kind)
-			      || map_kind == GOMP_MAP_ALLOC)
-			    map_kind = ((GOMP_MAP_ALWAYS_P (map_kind)
-					 || gfc_expr_attr (n->expr).pointer)
-					? GOMP_MAP_ALWAYS_TO : GOMP_MAP_TO);
-			  else if (n->u.map.op == OMP_MAP_RELEASE
-				   || n->u.map.op == OMP_MAP_DELETE)
-			    ;
-			  else if (omp_exit_data || oacc_exit_data)
-			    map_kind = GOMP_MAP_RELEASE;
-			  else
-			    map_kind = GOMP_MAP_ALLOC;
-			  if (!openacc
-			      && n->expr->ts.type == BT_CHARACTER
-			      && n->expr->ts.deferred)
-			    {
-			      gcc_assert (se.string_length);
-			      tree len = fold_convert (size_type_node,
-						       se.string_length);
-			      elemsz = gfc_get_char_type (n->expr->ts.kind);
-			      elemsz = TYPE_SIZE_UNIT (elemsz);
-			      elemsz = fold_build2 (MULT_EXPR, size_type_node,
-						    len, elemsz);
-			      node4 = build_omp_clause (map_loc, OMP_CLAUSE_MAP);
-			      OMP_CLAUSE_SET_MAP_KIND (node4, map_kind);
-			      OMP_CLAUSE_DECL (node4) = se.string_length;
-			      OMP_CLAUSE_SIZE (node4)
-				= TYPE_SIZE_UNIT (gfc_charlen_type_node);
-			    }
-			  elemsz = fold_convert (gfc_array_index_type, elemsz);
-			  OMP_CLAUSE_SIZE (node)
-			    = fold_build2 (MULT_EXPR, gfc_array_index_type,
-					   OMP_CLAUSE_SIZE (node), elemsz);
-			  node2 = build_omp_clause (map_loc, OMP_CLAUSE_MAP);
-			  if (map_kind == GOMP_MAP_RELEASE
-			      || map_kind == GOMP_MAP_DELETE)
-			    {
-			      OMP_CLAUSE_SET_MAP_KIND (node2, map_kind);
-			      OMP_CLAUSE_RELEASE_DESCRIPTOR (node2) = 1;
-			    }
-			  else
-			    OMP_CLAUSE_SET_MAP_KIND (node2,
-						     GOMP_MAP_TO_PSET);
-			  OMP_CLAUSE_DECL (node2) = inner;
-			  OMP_CLAUSE_SIZE (node2) = TYPE_SIZE_UNIT (type);
-			  if (!openacc)
-			    {
-			      if (n->expr->ts.type == BT_DERIVED
-				  && n->expr->ts.u.derived->attr.alloc_comp)
-				{
-				  /* Save array descriptor for use
-				     in gfc_omp_deep_mapping{,_p,_cnt}; force
-				     evaluate to ensure that it is
-				     not gimplified + is a decl.  */
-				  tree tmp = OMP_CLAUSE_SIZE (node);
-				  tree var = gfc_create_var (TREE_TYPE (tmp),
-							     NULL);
-				  gfc_add_modify_loc (map_loc, &iter_block,
-						      var, tmp);
-				  OMP_CLAUSE_SIZE (node) = var;
-				  gfc_allocate_lang_decl (var);
-				  GFC_DECL_SAVED_DESCRIPTOR (var) = inner;
-				}
-
-			      gfc_omp_namelist *n2
-				= clauses->lists[OMP_LIST_MAP];
-
-			      /* If we don't have a mapping of a smaller part
-				 of the array -- or we can't prove that we do
-				 statically -- set this flag.  If there is a
-				 mapping of a smaller part of the array after
-				 all, this will turn into a no-op at
-				 runtime.  */
-			      OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (node) = 1;
-
-			      bool sym_based;
-			      n2 = get_symbol_rooted_namelist (sym_rooted_nl,
-							       n, n2,
-							       &sym_based);
-
-			      bool drop_mapping = false;
-
-			      for (; n2 != NULL; n2 = n2->next)
-				{
-				  if ((!sym_based && n == n2)
-				      || (sym_based && n == n2->u2.duplicate_of)
-				      || !n2->expr)
-				    continue;
-
-				  if (!gfc_omp_expr_prefix_same (n->expr,
-								 n2->expr))
-				    continue;
-
-				  gfc_ref *ref1 = n->expr->ref;
-				  gfc_ref *ref2 = n2->expr->ref;
-
-				  /* We know ref1 and ref2 overlap.  We're
-				     interested in whether ref2 describes a
-				     smaller part of the array than ref1, which
-				     we already know refers to the full
-				     array.  */
-
-				  while (ref1->next && ref2->next)
-				    {
-				      ref1 = ref1->next;
-				      ref2 = ref2->next;
-				    }
-
-				  if (ref2->next
-				      || (ref2->type == REF_ARRAY
-					  && (ref2->u.ar.type == AR_ELEMENT
-					      || (ref2->u.ar.type
-						  == AR_SECTION))))
-				    {
-				      drop_mapping = true;
-				      break;
-				    }
-				}
-			      if (drop_mapping)
-				continue;
-			      if (n->u3.udm && n->u3.udm->multiple_elems_p)
-
-				{
-				  gfc_error ("cannot map non-unit size array "
-					     "with mapper at %C");
-				  node2 = NULL_TREE;
-				  goto finalize_map_clause;
-				}
-			    }
-			  node3 = build_omp_clause (map_loc, OMP_CLAUSE_MAP);
-			  OMP_CLAUSE_SET_MAP_KIND (node3,
-						   GOMP_MAP_ATTACH_DETACH);
-			  OMP_CLAUSE_DECL (node3)
-			    = gfc_conv_descriptor_data_get (inner);
-			  /* Similar to gfc_trans_omp_array_section (details
-			     there), we add/keep the cast for OpenMP to prevent
-			     that an 'alloc:' gets added for node3 ('desc.data')
-			     as that is part of the whole descriptor (node3).
-			     TODO: Remove once the ME handles this properly.  */
-			  if (!openacc)
-			    OMP_CLAUSE_DECL (node3)
-				= fold_convert (TREE_TYPE (TREE_OPERAND(ptr, 0)),
-						OMP_CLAUSE_DECL (node3));
-			  else
-			    STRIP_NOPS (OMP_CLAUSE_DECL (node3));
-			  OMP_CLAUSE_SIZE (node3) = size_int (0);
-			}
+                        bool drop_mapping = gfc_map_array_descriptor(
+                            node, node2, node3, node4, inner, openacc, map_loc,
+                            &iter_block, cd, n, sym_rooted_nl, se, clauses,
+                            false);
+                        if (drop_mapping)
+                          continue;
+                        }
 		      else
 			OMP_CLAUSE_DECL (node) = inner;
 		    }
@@ -5757,6 +5791,36 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		    }
 		  else
 		    gcc_unreachable ();
+
+		  /* Map intermediate array descriptors.  */
+		  if (!openacc && !mid_descr.is_empty ())
+		    for (size_t i = 0; i < mid_descr.length (); i++)
+		      if (mid_descr[i] != inner
+			  && !descriptors.contains (midref[i]->u.c.sym))
+			{
+			  descriptors.safe_push (midref[i]->u.c.sym);
+			  tree node1 = copy_node (node);
+			  tree node2 = NULL_TREE;
+			  tree node3 = NULL_TREE;
+			  tree node4 = NULL_TREE;
+                          gfc_map_array_descriptor(
+                              node1, node2, node3, node4, mid_descr[i], openacc,
+                              map_loc, &iter_block, cd, n, sym_rooted_nl, se,
+                              clauses, true);
+
+                          if (node1 != NULL_TREE)
+                            omp_clauses
+			      = gfc_trans_add_clause (node1, omp_clauses);
+			  if (node2 != NULL_TREE)
+			    omp_clauses
+			      = gfc_trans_add_clause (node2, omp_clauses);
+			  if (node3 != NULL_TREE)
+			    omp_clauses
+			      = gfc_trans_add_clause (node3, omp_clauses);
+			  if (node4 != NULL_TREE)
+			    omp_clauses
+			      = gfc_trans_add_clause (node4, omp_clauses);
+			}
 		}
 	      else
 		sorry_at (gfc_get_location (&n->where), "unhandled expression");

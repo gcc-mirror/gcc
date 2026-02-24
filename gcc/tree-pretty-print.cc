@@ -1260,11 +1260,18 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    }
 	  dump_generic_node (pp, OMP_CLAUSE_SIZE (clause),
 			     spc, flags, false);
+	  if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
+	      && OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT (clause))
+	    pp_string (pp, " (needs adjustment)");
 	  pp_right_bracket (pp);
 	}
-      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP
-	  && OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (clause))
-	pp_string (pp, " [runtime_implicit]");
+      if (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_MAP)
+	{
+	  if (OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (clause))
+	    pp_string (pp, " [runtime_implicit]");
+	  if (OMP_CLAUSE_MAP_GIMPLE_ONLY (clause))
+	    pp_string (pp, " [gimple only]");
+	}
       pp_right_paren (pp);
       break;
 

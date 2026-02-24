@@ -11823,9 +11823,16 @@ omp_mapped_by_containing_struct (hash_map<tree_operand_hash_no_se,
 	}
       if (wholestruct)
 	{
+	  /* An intermediate descriptor should not match here because the
+	     pointee is actually not mapped by this group -- it is just a
+	     zero-length alloc.  */
+	  tree desc = OMP_CLAUSE_CHAIN (*(*wholestruct)->grp_start);
+	  if (desc != NULL_TREE && omp_map_clause_descriptor_p (desc))
+	    goto next;
 	  *mapped_by_group = *wholestruct;
 	  return true;
 	}
+    next:
       decl = wsdecl;
     }
 
@@ -13619,7 +13626,11 @@ omp_build_struct_sibling_lists (enum tree_code code,
       omp_mapping_group *wholestruct;
       if (omp_mapped_by_containing_struct (*grpmap, OMP_CLAUSE_DECL (c),
 					   &wholestruct))
-	continue;
+	{
+	  if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
+	    OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT (c) = 0;
+	  continue;
+	}
 
       if (OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 	  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
@@ -13716,6 +13727,44 @@ omp_build_struct_sibling_lists (enum tree_code code,
       tail = added_tail;
     }
 
+  /* Find each attach node whose bias needs to be adjusted and move it to the
+     group containing its pointee, right after the struct node, so that it can
+     be picked up by the adjustment code further down in this function.  */
+  bool attach_bias_needs_adjustment;
+  attach_bias_needs_adjustment = false;
+  FOR_EACH_VEC_ELT_REVERSE (*groups, i, grp)
+    {
+      tree c = *grp->grp_start;
+      if (c != NULL && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_STRUCT_UNORD)
+	  && OMP_CLAUSE_MAP_KIND (OMP_CLAUSE_CHAIN (c)) == GOMP_MAP_TO_PSET
+	  && OMP_CLAUSE_MAP_KIND (grp->grp_end) == GOMP_MAP_ATTACH_DETACH
+	  && OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT (grp->grp_end))
+	{
+	  OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT (grp->grp_end) = 0;
+	  attach_bias_needs_adjustment = true;
+	  tree *cp;
+	  for (cp = &OMP_CLAUSE_CHAIN (c); cp != NULL;
+	       cp = &OMP_CLAUSE_CHAIN (*cp))
+	    if (*cp == grp->grp_end)
+	      {
+		c = *cp;
+		break;
+	      }
+
+	  tree base = OMP_CLAUSE_DECL (c);
+	  gcc_assert (TREE_CODE (base) == NOP_EXPR);
+	  base = build_fold_indirect_ref (base);
+	  tree *struct_node = struct_map_to_clause->get (base);
+	  if (struct_node != NULL)
+	    {
+	      omp_siblist_move_node_after (c, cp,
+					   &OMP_CLAUSE_CHAIN (*struct_node));
+	    }
+	}
+    }
+
   /* Now we have finished building the struct sibling lists, reprocess
      newly-added "attach" nodes: we need the address of the first
      mapped element of each struct sibling list for the bias of the attach
@@ -13740,9 +13789,11 @@ omp_build_struct_sibling_lists (enum tree_code code,
 	   an "enter data" operation (because for those, variables need to be
 	   mapped separately and attach nodes must be grouped together with the
 	   base they attach to).  We should only have created the
-	   ATTACH_DETACH node after GOMP_MAP_STRUCT for a target region, so
-	   this should never be true.  */
-	gcc_assert ((region_type & ORT_TARGET) != 0);
+	   ATTACH_DETACH node either after GOMP_MAP_STRUCT for a target region
+	   or for an intermediate descriptor that needs adjustment -- so this
+	   should never be true.  */
+	gcc_assert ((region_type & ORT_TARGET) != 0
+		    || attach_bias_needs_adjustment);
 
 	/* This is the first sorted node in the struct sibling list.  Use it
 	   to recalculate the correct bias to use.
@@ -16605,6 +16656,11 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	  break;
 
 	case OMP_CLAUSE_MAP:
+	  if (OMP_CLAUSE_MAP_GIMPLE_ONLY (c))
+	    {
+	      remove = true;
+	      goto end_adjust_omp_map_clause;
+	    }
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (!grp_end)
 	    {
@@ -16832,6 +16888,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		    /* Fallthrough.  */
 		  case OMP_TARGET_EXIT_DATA:
 		    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_DETACH);
+		    OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT (c) = 0;
 		    break;
 		  case OACC_UPDATE:
 		    /* An "attach/detach" operation on an update directive
@@ -16843,6 +16900,7 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 		    break;
 		  default:
 		  change_to_attach:
+		    gcc_assert (!OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT (c));
 		    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ATTACH);
 		    if ((ctx->region_type & ORT_TARGET) != 0)
 		      move_attach = true;
