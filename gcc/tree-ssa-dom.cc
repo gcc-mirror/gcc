@@ -1171,12 +1171,17 @@ back_propagate_equivalences (tree lhs, edge e,
 	record_equality (lhs2, res, const_and_copies);
 
       /* It may also be the case that the value is in the hash table.  So
-	 try to look it up there too.  */
+	 try to look it up there too.  But restrict ourselves to cases where
+	 the hash lookup produced a constant rather than another SSA_NAME.
+	 That avoids infinite recursion issues.  */
       res = avail_exprs_stack->lookup_avail_expr (use_stmt, false, false);
-      if (res && (TREE_CODE (res) == SSA_NAME || is_gimple_min_invariant (res)))
+      if (res && is_gimple_min_invariant (res))
 	{
 	  record_equality (lhs2, res, const_and_copies);
-	  class edge_info *edge_info = (class edge_info *) e->aux;
+
+	  /* And that in turn may trigger further propagation opportunities.  */
+	  back_propagate_equivalences (lhs2, e, avail_exprs_stack,
+				       const_and_copies, domby);
 	}
     }
 }

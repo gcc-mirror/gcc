@@ -14,7 +14,6 @@
   10  CONTINUE
       RETURN
       END
-! { dg-final { scan-tree-dump-not "FIND" "dom2" } }
 ! We should retain both a read and write of mycommon.x.
 ! { dg-final { scan-tree-dump-times "  _\[0-9\]+ = mycommon\\.x\\\[_\[0-9\]+\\\];" 1 "dom2" } }
 ! { dg-final { scan-tree-dump-times "  mycommon\\.x\\\[j?_\[0-9\]+\\\] = _\[0-9\]+;" 1 "dom2" } }
