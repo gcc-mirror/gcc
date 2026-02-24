@@ -3858,6 +3858,7 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
      is the first element of OP0.  */
   bool slideup = false;
   bool slidedown = false;
+  bool need_slideup_p = false;
 
   /* For a slideup the permutation must start at OP0's first element.  */
   if (known_eq (d->perm[0], 0))
@@ -3867,8 +3868,21 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
   if (known_eq (d->perm[vlen - 1], 2 * vlen - 1))
     slidedown = true;
 
+  int slideup_cnt = 0;
   if (!slideup && !slidedown)
-    return false;
+    {
+      /* Check if the permutation starts with the end of OP0 followed by the
+	 beginning of OP1.  In this case we can do a slideup followed by a
+	 slidedown. */
+      slideup_cnt = vlen - (d->perm[vlen - 1].to_constant () % vlen) - 1;
+      if (known_eq (d->perm[slideup_cnt], vlen) && known_eq (d->perm[slideup_cnt - 1], vlen - 1))
+	{
+	  slidedown = true;
+	  need_slideup_p = true;
+	}
+      else
+	return false;
+    }
 
   /* Check for a monotonic sequence with one or two pivots.  */
   int pivot = -1;
@@ -3934,8 +3948,17 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
     }
   else
     {
+      rtx op1 = d->op1;
+      if (need_slideup_p)
+	{
+	  op1 = gen_reg_rtx (vmode);
+	  rtx ops[] = {op1, d->op1, gen_int_mode (slideup_cnt, Pmode)};
+	  insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
+	  emit_vlmax_insn (icode, BINARY_OP, ops);
+	}
+
       len = pivot;
-      rtx ops[] = {d->target, d->op1, d->op0,
+      rtx ops[] = {d->target, op1, d->op0,
 		   gen_int_mode (slide_cnt, Pmode)};
       icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, vmode);
       emit_nonvlmax_insn (icode, BINARY_OP_TUMA, ops,

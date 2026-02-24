@@ -11,12 +11,11 @@ struct s sss[MAX];
 /*
 ** build_linked_list:
 **   ...
-**   vsetivli\s+zero,\s*8,\s*e64,\s*m1,\s*tu,\s*ma
+**   vslideup\.vi\s+v[0-9]+,\s*v[0-9]+,\s*1
 **   ...
-**   vcompress\.vm\s+v[0-9]+,\s*v[0-9]+,\s*v0
+**   vslidedown\.vi\s+v[0-9]+,\s*v[0-9]+,\s*7
 **   ...
-**   vcompress\.vm\s+v[0-9]+,\s*v[0-9]+,\s*v0
-**   vsetivli\s+zero,\s*2,\s*e64,\s*m1,\s*ta,\s*ma
+**   vslidedown\.vi\s+v[0-9]+,\s*v[0-9]+,\s*7
 **   ...
 */
 void
