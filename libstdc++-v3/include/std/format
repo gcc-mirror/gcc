@@ -4113,10 +4113,52 @@ namespace __format
     {
       using _CharT = typename _Context::char_type;
 
-      struct _HandleBase
+      class handle
       {
+	using _CharT = typename _Context::char_type;
+	using _Func = void(*)(basic_format_parse_context<_CharT>&,
+			      _Context&, const void*);
+
+	// Format as const if possible, to reduce instantiations.
+	template<typename _Tp>
+	  using __maybe_const_t
+	    = __conditional_t<__formattable_with<const _Tp, _Context>,
+			      const _Tp, _Tp>;
+
+	template<typename _Tq>
+	  static void
+	  _S_format(basic_format_parse_context<_CharT>& __parse_ctx,
+		    _Context& __format_ctx, const void* __ptr)
+	  {
+	    using _Td = remove_const_t<_Tq>;
+	    typename _Context::template formatter_type<_Td> __f;
+	    __parse_ctx.advance_to(__f.parse(__parse_ctx));
+	    _Tq& __val = *const_cast<_Tq*>(static_cast<const _Td*>(__ptr));
+	    __format_ctx.advance_to(__f.format(__val, __format_ctx));
+	  }
+
+	template<typename _Tp>
+	  requires (!is_same_v<remove_cv_t<_Tp>, handle>)
+	  explicit
+	  handle(_Tp& __val) noexcept
+	  : _M_ptr(__builtin_addressof(__val))
+	  , _M_func(&_S_format<__maybe_const_t<_Tp>>)
+	  { }
+
+	friend class basic_format_arg<_Context>;
+
+      public:
+	handle(const handle&) = default;
+	handle& operator=(const handle&) = default;
+
+	[[__gnu__::__always_inline__]]
+	void
+	format(basic_format_parse_context<_CharT>& __pc, _Context& __fc) const
+	{ _M_func(__pc, __fc, this->_M_ptr); }
+
+      private:
 	const void* _M_ptr;
-	void (*_M_func)();
+	_Func _M_func;
       };
 
       union
@@ -4142,7 +4184,7 @@ namespace __format
 	const _CharT* _M_str;
 	basic_string_view<_CharT> _M_sv;
 	const void* _M_ptr;
-	_HandleBase _M_handle;
+	handle _M_handle;
 #ifdef __SIZEOF_INT128__
 	__int128 _M_i128;
 	unsigned __int128 _M_u128;
@@ -4232,8 +4274,8 @@ namespace __format
 	  else if constexpr (is_same_v<_Tp, _Float64>)
 	    return __u._M_f64;
 #endif
-	  else if constexpr (derived_from<_Tp, _HandleBase>)
-	    return static_cast<_Tp&>(__u._M_handle);
+	  else if constexpr (is_same_v<_Tp, handle>)
+	    return __u._M_handle;
 	  // Otherwise, ill-formed.
 	}
 
@@ -4254,7 +4296,7 @@ namespace __format
 	void
 	_M_set(_Tp __v) noexcept
 	{
-	  if constexpr (derived_from<_Tp, _HandleBase>)
+	  if constexpr (is_same_v<_Tp, handle>)
 	    std::construct_at(&_M_handle, __v);
 	  else
 	    _S_get<_Tp>(*this) = __v;
@@ -4279,57 +4321,8 @@ namespace __format
     {
       using _CharT = typename _Context::char_type;
 
-      template<typename _Tp>
-	static constexpr bool __formattable
-	  = __format::__formattable_with<_Tp, _Context>;
-
     public:
-      class handle : public __format::_Arg_value<_Context>::_HandleBase
-      {
-	using _Base = typename __format::_Arg_value<_Context>::_HandleBase;
-
-	// Format as const if possible, to reduce instantiations.
-	template<typename _Tp>
-	  using __maybe_const_t
-	    = __conditional_t<__formattable<const _Tp>, const _Tp, _Tp>;
-
-	template<typename _Tq>
-	  static void
-	  _S_format(basic_format_parse_context<_CharT>& __parse_ctx,
-		    _Context& __format_ctx, const void* __ptr)
-	  {
-	    using _Td = remove_const_t<_Tq>;
-	    typename _Context::template formatter_type<_Td> __f;
-	    __parse_ctx.advance_to(__f.parse(__parse_ctx));
-	    _Tq& __val = *const_cast<_Tq*>(static_cast<const _Td*>(__ptr));
-	    __format_ctx.advance_to(__f.format(__val, __format_ctx));
-	  }
-
-	template<typename _Tp>
-	  explicit
-	  handle(_Tp& __val) noexcept
-	  {
-	    this->_M_ptr = __builtin_addressof(__val);
-	    auto __func = _S_format<__maybe_const_t<_Tp>>;
-	    this->_M_func = reinterpret_cast<void(*)()>(__func);
-	  }
-
-	friend class basic_format_arg<_Context>;
-
-      public:
-	handle(const handle&) = default;
-	handle& operator=(const handle&) = default;
-
-	[[__gnu__::__always_inline__]]
-	void
-	format(basic_format_parse_context<_CharT>& __pc, _Context& __fc) const
-	{
-	  using _Func = void(*)(basic_format_parse_context<_CharT>&,
-				_Context&, const void*);
-	  auto __f = reinterpret_cast<_Func>(this->_M_func);
-	  __f(__pc, __fc, this->_M_ptr);
-	}
-      };
+      using handle = __format::_Arg_value<_Context>::handle;
 
       [[__gnu__::__always_inline__]]
       basic_format_arg() noexcept : _M_type(__format::_Arg_none) { }
@@ -4623,10 +4616,7 @@ namespace __format
 	    case _Arg_ptr:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_ptr);
 	    case _Arg_handle:
-	    {
-	      auto& __h = static_cast<handle&>(_M_val._M_handle);
-	      return std::forward<_Visitor>(__vis)(__h);
-	    }
+	      return std::forward<_Visitor>(__vis)(_M_val._M_handle);
 #ifdef __SIZEOF_INT128__
 	    case _Arg_i128:
 	      return std::forward<_Visitor>(__vis)(_M_val._M_i128);
