@@ -4212,67 +4212,70 @@ namespace __format
 	{ _S_get<_Tp>() = __val; }
 #endif
 
-      template<typename _Tp, typename _Self>
+      // Returns reference to the _Arg_value member with the type _Tp.
+      // Value of second argument (if provided), is assigned to that member.
+      template<typename _Tp, typename _Self, typename... _Value>
 	[[__gnu__::__always_inline__]]
 	static auto&
-	_S_get(_Self& __u) noexcept
+	_S_access(_Self& __u, _Value... __value) noexcept
 	{
+	  static_assert(sizeof...(_Value) <= 1);
 	  if constexpr (is_same_v<_Tp, bool>)
-	    return __u._M_bool;
+	    return (__u._M_bool = ... = __value);
 	  else if constexpr (is_same_v<_Tp, _CharT>)
-	    return __u._M_c;
+	    return (__u._M_c = ... = __value);
 	  else if constexpr (is_same_v<_Tp, int>)
-	    return __u._M_i;
+	    return (__u._M_i = ... = __value);
 	  else if constexpr (is_same_v<_Tp, unsigned>)
-	    return __u._M_u;
+	    return (__u._M_u = ... = __value);
 	  else if constexpr (is_same_v<_Tp, long long>)
-	    return __u._M_ll;
+	    return (__u._M_ll = ... = __value);
 	  else if constexpr (is_same_v<_Tp, unsigned long long>)
-	    return __u._M_ull;
+	    return (__u._M_ull = ... = __value);
 	  else if constexpr (is_same_v<_Tp, float>)
-	    return __u._M_flt;
+	    return (__u._M_flt = ... = __value);
 	  else if constexpr (is_same_v<_Tp, double>)
-	    return __u._M_dbl;
+	    return (__u._M_dbl = ... = __value);
 #ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
 	  else if constexpr (is_same_v<_Tp, long double>)
-	    return __u._M_ldbl;
+	    return (__u._M_ldbl = ... = __value);
 #else
 	  else if constexpr (is_same_v<_Tp, __ibm128>)
-	    return __u._M_ibm128;
+	    return (__u._M_ibm128 = ... = __value);
 	  else if constexpr (is_same_v<_Tp, __ieee128>)
-	    return __u._M_ieee128;
+	    return (__u._M_ieee128 = ... = __value);
 #endif
 #ifdef __SIZEOF_FLOAT128__
 	  else if constexpr (is_same_v<_Tp, __float128>)
-	    return __u._M_float128;
+	    return (__u._M_float128 = ... = __value);
 #endif
 	  else if constexpr (is_same_v<_Tp, const _CharT*>)
-	    return __u._M_str;
+	    return (__u._M_str = ... = __value);
 	  else if constexpr (is_same_v<_Tp, basic_string_view<_CharT>>)
-	    return __u._M_sv;
+	    return (__u._M_sv = ... = __value);
 	  else if constexpr (is_same_v<_Tp, const void*>)
-	    return __u._M_ptr;
+	    return (__u._M_ptr = ... = __value);
 #ifdef __SIZEOF_INT128__
 	  else if constexpr (is_same_v<_Tp, __int128>)
-	    return __u._M_i128;
+	    return (__u._M_i128 = ... = __value);
 	  else if constexpr (is_same_v<_Tp, unsigned __int128>)
-	    return __u._M_u128;
+	    return (__u._M_u128 = ... = __value);
 #endif
 #ifdef __BFLT16_DIG__
 	  else if constexpr (is_same_v<_Tp, __bflt16_t>)
-	    return __u._M_bf16;
+	    return (__u._M_bf16 = ... = __value);
 #endif
 #ifdef __FLT16_DIG__
 	  else if constexpr (is_same_v<_Tp, _Float16>)
-	    return __u._M_f16;
+	    return (__u._M_f16 = ... = __value);
 #endif
 #ifdef __FLT32_DIG__
 	  else if constexpr (is_same_v<_Tp, _Float32>)
-	    return __u._M_f32;
+	    return (__u._M_f32 = ... = __value);
 #endif
 #ifdef __FLT64_DIG__
 	  else if constexpr (is_same_v<_Tp, _Float64>)
-	    return __u._M_f64;
+	    return (__u._M_f64 = ... = __value);
 #endif
 	  else if constexpr (is_same_v<_Tp, handle>)
 	    return __u._M_handle;
@@ -4283,23 +4286,28 @@ namespace __format
 	[[__gnu__::__always_inline__]]
 	auto&
 	_M_get() noexcept
-	{ return _S_get<_Tp>(*this); }
+	{ return _S_access<_Tp>(*this); }
 
       template<typename _Tp>
 	[[__gnu__::__always_inline__]]
 	const auto&
 	_M_get() const noexcept
-	{ return _S_get<_Tp>(*this); }
+	{ return _S_access<_Tp>(*this); }
 
       template<typename _Tp>
 	[[__gnu__::__always_inline__]]
 	void
 	_M_set(_Tp __v) noexcept
 	{
-	  if constexpr (is_same_v<_Tp, handle>)
+	  // Explicitly construct types without trivial default constructor.
+	  if constexpr (is_same_v<_Tp, basic_string_view<_CharT>>)
+	    std::construct_at(&_M_sv, __v);
+	  else if constexpr (is_same_v<_Tp, handle>)
 	    std::construct_at(&_M_handle, __v);
 	  else
-	    _S_get<_Tp>(*this) = __v;
+	    // Builtin types are trivially default constructible, and assignment
+	    // changes active member per N5032 [class.union.general] p5.
+	    _S_access<_Tp>(*this, __v);
 	}
       };
 
