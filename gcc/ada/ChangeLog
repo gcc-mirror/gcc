@@ -1,3 +1,10 @@
+2026-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/124224
+	* sem_aggr.adb (Resolve_Container_Aggregate): Minor tweaks.
+	(Resolve_Iterated_Association): Compute Typ on all paths.
+
 2026-02-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/s-stposu.adb (Finalize_Pool): Pass a local copy of the
