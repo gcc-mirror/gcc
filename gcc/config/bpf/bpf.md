@@ -545,7 +545,7 @@
   ;; operands[2] is next_arg_register
   ;; operands[3] is struct_value_size_rtx.
   ""
-  { return bpf_output_call (operands[0]); }
+  { return bpf_output_call ("call\t%0", operands, 0); }
   [(set_attr "type" "jmp")])
 
 (define_expand "call_value"
@@ -568,7 +568,7 @@
   ;; operands[3] is next_arg_register
   ;; operands[4] is struct_value_size_rtx.
   ""
-  { return bpf_output_call (operands[1]); }
+  { return bpf_output_call ("call\t%1", operands, 1); }
   [(set_attr "type" "jmp")])
 
 (define_insn "sibcall"
