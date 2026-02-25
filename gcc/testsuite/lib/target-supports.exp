@@ -11930,7 +11930,7 @@ proc add_options_for_arm_v8_3a_fp16_complex_neon { flags } {
 
 proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
     if { ![check_effective_target_arm_v8_3a_complex_neon_ok] } {
-        return 1;
+	return 0;
     }
     return [check_runtime arm_v8_3a_complex_neon_hw_available {
         #include "arm_neon.h"
