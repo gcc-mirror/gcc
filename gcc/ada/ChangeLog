@@ -1,3 +1,11 @@
+2026-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124226
+	* sem_res.adb (Resolve_Implicit_Dereference): Move declaration to...
+	* sem_res.ads (Resolve_Implicit_Dereference): ...here.
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Access>: Also call
+	Resolve_Implicit_Dereference when resolving a protected operation.
+
 2026-02-24  Eric Botcazou  <ebotcazou@adacore.com>
 	    Liam Powell  <liam@liampwll.com>
 

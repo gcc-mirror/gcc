@@ -1,3 +1,10 @@
+2026-02-25  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-06-02  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (tls_link): Add documentation.
+
 2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:
