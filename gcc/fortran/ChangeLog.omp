@@ -1,3 +1,10 @@
+2026-02-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* trans-openmp.cc (gfc_map_array_descriptor): New function.
+	(gfc_trans_omp_clauses): Emit map clauses for intermediate array
+	descriptors.
+
 2025-11-05  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/122570

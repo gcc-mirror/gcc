@@ -1,3 +1,25 @@
+2026-02-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2026-02-23  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* gfortran.dg/gomp/map-subarray-4.f90: New test.
+
+2026-02-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* gfortran.dg/gomp/map-subarray-3.f90: New test.
+	* gfortran.dg/gomp/map-subarray-5.f90: New test.
+
+2026-02-20  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2026-02-20  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR middle-end/113436
+	* g++.dg/gomp/pr113436-2.C: New.
+
 2026-02-13  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

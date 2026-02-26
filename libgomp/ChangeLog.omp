@@ -1,3 +1,32 @@
+2026-02-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2026-02-23  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* testsuite/libgomp.fortran/map-subarray-12.f90: New test.
+
+2026-02-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* testsuite/libgomp.fortran/map-subarray-11.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-13.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-14.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-15.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-16.f90: New test.
+	* testsuite/libgomp.fortran/map-alloc-present-2.f90: New file.
+
+2026-02-23  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2026-02-04  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* target.c (gomp_present_fatal): New function.
+	(gomp_map_vars_internal): For a Fortran allocatable array, present
+	causes runtime termination only if the descriptor is not mapped.
+	(gomp_update): Call gomp_present_fatal.
+	* testsuite/libgomp.fortran/map-alloc-present-1.f90: New test.
+
 2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	Backported from master:

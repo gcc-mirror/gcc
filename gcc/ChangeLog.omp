@@ -1,3 +1,34 @@
+2026-02-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2026-02-23  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* gimplify.cc (omp_accumulate_sibling_list): When the containing struct
+	is a Fortran array descriptor, sort mapped components by offset.
+
+2026-02-26  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* gimplify.cc (omp_mapped_by_containing_struct): Handle Fortran array
+	descriptors.
+	(omp_build_struct_sibling_lists): Allow attach_detach bias to be
+	adjusted on non-target regions.
+	(gimplify_adjust_omp_clauses): Remove GIMPLE-only nodes.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT and OMP_CLAUSE_MAP_GIMPLE_ONLY.
+	* tree.h (OMP_CLAUSE_MAP_SIZE_NEEDS_ADJUSTMENT,
+	OMP_CLAUSE_MAP_GIMPLE_ONLY): Define.
+
+2026-02-20  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	Backported from master:
+	2026-02-20  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR middle-end/113436
+	* omp-low.cc (omp_lower_target):  Do not check for variable-length
+	variables in private clauses by reference when allocating memory.
+
 2026-02-12  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	Backported from master:
