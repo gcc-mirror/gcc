@@ -1,3 +1,7 @@
+2026-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/protected_deref1.adb: New test.
+
 2026-02-18  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/106260
