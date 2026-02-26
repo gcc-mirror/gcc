@@ -1,3 +1,7 @@
+2026-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/protected_deref1.adb: New test.
+
 2026-02-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
