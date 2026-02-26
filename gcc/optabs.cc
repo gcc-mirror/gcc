@@ -421,9 +421,9 @@ force_expand_binop (machine_mode mode, optab binoptab,
   return true;
 }
 
-/* Create a new vector value in VMODE with all elements set to OP.  The
-   mode of OP must be the element mode of VMODE.  If OP is a constant,
-   then the return value will be a constant.  */
+/* Create a new vector value in VMODE with all elements set to OP.  If OP
+   is not a constant, the mode of it must be the element mode of VMODE.
+   If OP is a constant, then the return value will be a constant.  */
 
 rtx
 expand_vector_broadcast (machine_mode vmode, rtx op)
@@ -1622,15 +1622,25 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       if (otheroptab
 	  && (icode = optab_handler (otheroptab, mode)) != CODE_FOR_nothing)
 	{
-	  /* The scalar may have been extended to be too wide.  Truncate
-	     it back to the proper size to fit in the broadcast vector.  */
+	  /* The scalar may be wider or narrower than the vector element.
+	     Truncate or extend it to the proper size to fit in the
+	     broadcast vector.  */
 	  scalar_mode inner_mode = GET_MODE_INNER (mode);
-	  if (!CONST_INT_P (op1)
-	      && (GET_MODE_BITSIZE (as_a <scalar_int_mode> (GET_MODE (op1)))
-		  > GET_MODE_BITSIZE (inner_mode)))
-	    op1 = force_reg (inner_mode,
-			     simplify_gen_unary (TRUNCATE, inner_mode, op1,
-						 GET_MODE (op1)));
+	  if (!CONST_INT_P (op1))
+	    {
+	      auto mode1 = as_a <scalar_int_mode> (GET_MODE (op1));
+	      int size1 = GET_MODE_BITSIZE (mode1);
+	      int inner_size = GET_MODE_BITSIZE (inner_mode);
+
+	      if (size1 != inner_size)
+		{
+		  auto unary = size1 > inner_size ? TRUNCATE : ZERO_EXTEND;
+		  op1 = force_reg (inner_mode,
+				   simplify_gen_unary (unary, inner_mode,
+						       op1, mode1));
+		}
+	    }
+
 	  rtx vop1 = expand_vector_broadcast (mode, op1);
 	  if (vop1)
 	    {
