@@ -1,3 +1,12 @@
+2026-02-26  Michal Jires  <mjires@suse.cz>
+
+	Backported from master:
+	2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	PR lto/121588
+	* gcc.dg/lto/attr-weakref-2_0.c: New test.
+	* gcc.dg/lto/attr-weakref-2_1.c: New test.
+
 2026-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/protected_deref1.adb: New test.
