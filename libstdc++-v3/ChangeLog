@@ -1,3 +1,19 @@
+2026-02-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/123875
+	* include/bits/atomic_base.h (__atomic_impl::__clear_padding):
+	Use if constexpr unconditionally.
+	(__atomic_float<_Fp>::__atomic_float(_Fp)): Skip __clear_padding
+	call for constant evaluation.
+	* include/std/atomic (atomic<_Tp>::atomic(_Tp)): Likewise.
+	* testsuite/29_atomics/atomic/cons/zero_padding.cc: New test.
+	* testsuite/29_atomics/atomic_float/zero_padding.cc: New test.
+	(cherry picked from commits
+	6b550d69fe7cb62ea6e240ce7a4ba29ce33aa1b1
+	682c95b808724e6f876ea709b873ac6771704d7b
+	060d7c2a9c1fe16d23d98a74287fdb7c73ddb784
+	f3ba5ad088cebe117f857329a35b95d18d97a808)
+
 2026-02-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2026-02-26  Michal Jires  <mjires@suse.cz>
+
+	Backported from master:
+	2026-01-11  Michal Jires  <mjires@suse.cz>
+
+	PR lto/121588
+	* lto-symtab.cc (lto_symtab_merge_symbols): Set body_removed
+	for symbols resolved outside of IR.
+
 2025-12-03  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	Backported from master:
