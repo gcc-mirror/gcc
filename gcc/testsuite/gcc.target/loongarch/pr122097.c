@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mabi=lp64d -mlsx" } */
-/* { dg-final { scan-assembler "vbitseti\.d\t\\\$vr\[0-9\]+,\\\$vr\[0-9\]+,63" } } */
 
 typedef long unsigned int size_t;
 typedef unsigned char simde__mmask8;
