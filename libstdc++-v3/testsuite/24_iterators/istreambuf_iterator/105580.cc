@@ -1,5 +1,4 @@
 // { dg-compile }
-// { dg-require-normal-mode "" }
 // { dg-additional-options "-Wnull-dereference" }
 
 #include <string>
@@ -12,5 +11,4 @@ int main()
   std::string ss(it, end);
   return 0;
 }
-// { dg-warning ".*null pointer dereference" "" { target *-*-* } 0 }
 

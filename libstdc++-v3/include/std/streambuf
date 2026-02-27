@@ -490,6 +490,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char_type*
       eback() const { return _M_in_beg; }
 
+// Required to silence false-positive warnings originating from istream_iterator::operator++,
+// see PR105580.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
       char_type*
       gptr()  const { return _M_in_cur;  }
 
@@ -505,6 +509,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       void
       gbump(int __n) { _M_in_cur += __n; }
+#pragma GCC diagnostic pop
 
       /**
        *  @brief  Setting the three read area pointers.
