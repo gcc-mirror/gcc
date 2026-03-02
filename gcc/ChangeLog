@@ -213,6 +213,20 @@
 	* optabs.cc (expand_vector_broadcast): Allow broadcasting QImode
 	to BImode vector.
 
+2026-02-27  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2026-02-26  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/115042
+	* lra-int.h (lra_constraint_insn_stack_clear): New prototype.
+	* lra.cc (lra_constraint_insn_stack2): New vector.
+	(lra_constraint_insn_stack_clear): New function.
+	(lra): Initialize/finalize lra_constraint_insn_stack2.
+	* lra-constraints.cc (lra_constraints): Use
+	lra_constraint_insn_stack_clear to postpone processing new reload
+	insns.
+
 2026-02-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/123229
