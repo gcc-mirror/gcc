@@ -16832,6 +16832,23 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   return op;
 }
 
+/* Return true iff we're in an expansion statement.  */
+
+static bool
+in_expansion_stmt_p ()
+{
+  if (in_expansion_stmt)
+    return true;
+
+  /* In instantiations in_expansion_stmt is false.  */
+  for (cp_binding_level *b = current_binding_level;
+       b && b->kind != sk_function_parms;
+       b = b->level_chain)
+    if (b->kind == sk_template_for)
+      return true;
+  return false;
+}
+
 /* Take the tree structure T and replace template parameters used
    therein with the argument vector ARGS.  IN_DECL is an associated
    decl for diagnostics.  If an error occurs, returns ERROR_MARK_NODE.
@@ -16912,9 +16929,12 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  tree gen_args = tsubst (DECL_TI_ARGS (decl), args, complain, in_decl);
 	  r = retrieve_specialization (tmpl, gen_args, 0);
 	}
-      else if (DECL_FUNCTION_SCOPE_P (decl)
-	       && DECL_TEMPLATE_INFO (DECL_CONTEXT (decl))
-	       && uses_template_parms (DECL_TI_ARGS (DECL_CONTEXT (decl))))
+      else if ((DECL_FUNCTION_SCOPE_P (decl)
+		&& DECL_TEMPLATE_INFO (DECL_CONTEXT (decl))
+		&& uses_template_parms (DECL_TI_ARGS (DECL_CONTEXT (decl))))
+	       /* The { } of an expansion-statement is considered a template
+		  definition.  */
+	       || in_expansion_stmt_p ())
 	r = retrieve_local_specialization (decl);
       else
 	/* The typedef is from a non-template context.  */
