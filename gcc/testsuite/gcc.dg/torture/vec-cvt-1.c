@@ -55,22 +55,22 @@ flttointtest##intt (void)						\
   else									\
     {									\
       vf2 = fltmin = min - 1.0f;					\
-      for (vf = 1.0f; (fltmin = vf2 + vf) == vf2; vf = vf * 2.0f)	\
+      for (vf = 1.0f; fltmin = vf2 + vf, fltmin == vf2; vf = vf * 2.0f)	\
 	;								\
     }									\
   vf2 = fltmax = max + 1.0f;						\
-  for (vf = 1.0f; (fltmax = vf2 - vf) == vf2; vf = vf * 2.0f)		\
+  for (vf = 1.0f; fltmax = vf2 - vf, fltmax == vf2; vf = vf * 2.0f)	\
     ;									\
   if (min == 0)								\
     dblmin = 0.0;							\
   else									\
     {									\
       vd2 = dblmin = min - 1.0;						\
-      for (vd = 1.0; (dblmin = vd2 + vd) == vd2; vd = vd * 2.0)		\
+      for (vd = 1.0; dblmin = vd2 + vd, dblmin == vd2; vd = vd * 2.0)	\
 	;								\
     }									\
   vd2 = dblmax = max + 1.0;						\
-  for (vd = 1.0; (dblmax = vd2 - vd) == vd2; vd = vd * 2.0)		\
+  for (vd = 1.0; dblmax = vd2 - vd, dblmax == vd2; vd = vd * 2.0)	\
     ;									\
   for (i = 0; i < N; i++)						\
     {									\
