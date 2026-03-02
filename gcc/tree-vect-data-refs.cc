@@ -2536,8 +2536,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
 		  unsigned group_size = 1;
-		  if (STMT_SLP_TYPE (stmt_info)
-		      && STMT_VINFO_GROUPED_ACCESS (stmt_info))
+		  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 		    group_size = DR_GROUP_SIZE (stmt_info);
 		  nscalars = vf * group_size;
 		}
@@ -6896,7 +6895,6 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 	  /* If we are doing SLP then the accesses need not have the
 	     same alignment, instead it depends on the SLP group size.  */
 	  if (loop_vinfo
-	      && STMT_SLP_TYPE (stmt_info)
 	      && STMT_VINFO_GROUPED_ACCESS (stmt_info)
 	      && !multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 			      * (DR_GROUP_SIZE

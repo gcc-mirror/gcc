@@ -2678,7 +2678,7 @@ again:
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), j, instance)
     vect_free_slp_instance (instance);
   LOOP_VINFO_SLP_INSTANCES (loop_vinfo).release ();
-  /* Reset SLP type to loop_vect on all stmts.  */
+  /* Reset altered state on stmts.  */
   for (i = 0; i < LOOP_VINFO_LOOP (loop_vinfo)->num_nodes; ++i)
     {
       basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
@@ -2686,7 +2686,6 @@ again:
 	   !gsi_end_p (si); gsi_next (&si))
 	{
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
-	  STMT_SLP_TYPE (stmt_info) = not_vect;
 	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
 	      || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
 	    {
@@ -2705,20 +2704,12 @@ again:
 	  if (is_gimple_debug (gsi_stmt (si)))
 	    continue;
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
-	  STMT_SLP_TYPE (stmt_info) = not_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
 	      stmt_vec_info pattern_stmt_info
 		= STMT_VINFO_RELATED_STMT (stmt_info);
 	      if (STMT_VINFO_SLP_VECT_ONLY_PATTERN (pattern_stmt_info))
 		STMT_VINFO_IN_PATTERN_P (stmt_info) = false;
-
-	      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-	      STMT_SLP_TYPE (pattern_stmt_info) = not_vect;
-	      for (gimple_stmt_iterator pi = gsi_start (pattern_def_seq);
-		   !gsi_end_p (pi); gsi_next (&pi))
-		STMT_SLP_TYPE (loop_vinfo->lookup_stmt (gsi_stmt (pi)))
-		  = not_vect;
 	    }
 	}
     }
