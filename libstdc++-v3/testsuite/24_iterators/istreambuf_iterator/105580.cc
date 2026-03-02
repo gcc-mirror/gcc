@@ -12,3 +12,4 @@ int main()
   return 0;
 }
 
+// { dg-bogus "null pointer dereference" "" { target *-*-* } 0 }
