@@ -1766,6 +1766,10 @@ __attribute__ ((section ("bar"))) __attribute__ ((weak))
 void g4 (void) @{ f2 (); @}
 @end smallexample
 
+In the sections that follow, either or both syntaxes may appear in code
+examples.  All attributes can be used with both syntaxes even if only one
+is used in the examples for a given attribute.
+
 Compatible attribute specifications on distinct declarations
 of the same entity are merged.  An attribute specification that is not
 compatible with attributes already applied to a declaration of the same
@@ -1866,10 +1870,10 @@ the @code{puts} function, or the second argument to
 the @code{memcpy} function.
 
 @smallexample
-__attribute__ ((access (read_only, 1)))
+[[gnu::access (read_only, 1)]]
 int puts (const char*);
 
-__attribute__ ((access (read_only, 2, 3)))
+[[gnu::access (read_only, 2, 3)]]
 void* memcpy (void*, const void*, size_t);
 @end smallexample
 
@@ -1882,7 +1886,7 @@ of the use of the @code{read_write} access mode is the first argument to
 the @code{strcat} function.
 
 @smallexample
-__attribute__ ((access (read_write, 1), access (read_only, 2)))
+[[gnu::access (read_write, 1), gnu::access (read_only, 2)]]
 char* strcat (char*, const char*);
 @end smallexample
 
@@ -1934,7 +1938,7 @@ For instance, the following
 
 @smallexample
 int var_target;
-extern int __attribute__ ((alias ("var_target"))) var_alias;
+extern int var_alias [[gnu::alias ("var_target")]];
 @end smallexample
 
 @noindent
@@ -1977,7 +1981,7 @@ When specified, @var{alignment} must be an integer constant power of 2.
 For example, the declaration:
 
 @smallexample
-int x __attribute__ ((aligned (16))) = 0;
+int x [[gnu::aligned (16)]] = 0;
 @end smallexample
 
 @noindent
@@ -2030,7 +2034,7 @@ which is the largest alignment ever used for any data type on the
 target machine you are compiling for.  For example, you could write:
 
 @smallexample
-short array[3] __attribute__ ((aligned (__BIGGEST_ALIGNMENT__)));
+short array[3] [[gnu::aligned (__BIGGEST_ALIGNMENT__)]];
 @end smallexample
 
 @noindent
@@ -2190,8 +2194,8 @@ both C and C++.
 int
 foo (int x, int y)
 @{
-  __attribute__((assume(x == 42)));
-  __attribute__((assume(++y == 43)));
+  [[gnu::assume(x == 42)]];
+  [[gnu::assume(++y == 43)]];
   return x + y;
 @}
 @end smallexample
@@ -2252,7 +2256,7 @@ guaranteed to maintain the order of attributes in the source code.
 For example:
 
 @smallexample
-int *foo __attribute__ ((btf_decl_tag ("__percpu")));
+int *foo [[gnu::btf_decl_tag ("__percpu")]];
 @end smallexample
 
 @noindent
@@ -2287,7 +2291,7 @@ maintain the order of attributes in the source code.
 For example the following code:
 
 @smallexample
-int * __attribute__ ((btf_type_tag ("__user"))) foo;
+int * [[gnu::btf_type_tag ("__user")]] foo;
 @end smallexample
 
 @noindent
@@ -2400,7 +2404,7 @@ values.
 For example,
 
 @smallexample
-int square (int) __attribute__ ((const));
+[[gnu::const]] int square (int);
 @end smallexample
 
 @noindent
@@ -2549,7 +2553,7 @@ For instance, the following code:
 struct P @{
   size_t count;
   char other;
-  char array[] __attribute__ ((counted_by (count)));
+  [[gnu::counted_by (count)]] char array[];
 @} *p;
 @end smallexample
 
@@ -2561,7 +2565,7 @@ of elements is given by the field @code{count} in the same structure.
 struct PP @{
   size_t count2;
   char other1;
-  char *array2 __attribute__ ((counted_by (count2)));
+  [[gnu::counted_by (count2)]] char *array2;
   int other2;
 @} *pp;
 @end smallexample
@@ -2878,9 +2882,9 @@ should be type-checked against a format string.  For example, the
 declaration:
 
 @smallexample
+[[gnu::format (printf, 2, 3)]]
 extern int
-my_printf (void *my_object, const char *my_format, ...)
-      __attribute__ ((format (printf, 2, 3)));
+my_printf (void *my_object, const char *my_format, ...);
 @end smallexample
 
 @noindent
@@ -3287,8 +3291,8 @@ calls.
 @atindex @code{malloc}
 @cindex functions that behave like malloc
 @item malloc
-@item malloc (@var{deallocator})
-@item malloc (@var{deallocator}, @var{ptr-index})
+@itemx malloc (@var{deallocator})
+@itemx malloc (@var{deallocator}, @var{ptr-index})
 This attribute applies to functions.
 
 Attribute @code{malloc} indicates that a function is @code{malloc}-like,
@@ -3338,15 +3342,15 @@ be declared before they can be referenced in the attribute.
 int fclose (FILE*);
 int pclose (FILE*);
 
-__attribute__ ((malloc, malloc (fclose, 1)))
+[[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* fdopen (int, const char*);
-__attribute__ ((malloc, malloc (fclose, 1)))
+[[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* fopen (const char*, const char*);
-__attribute__ ((malloc, malloc (fclose, 1)))
+[[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* fmemopen(void *, size_t, const char *);
-__attribute__ ((malloc, malloc (pclose, 1)))
+[[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* popen (const char*, const char*);
-__attribute__ ((malloc, malloc (fclose, 1)))
+[[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* tmpfile (void);
 @end smallexample
 
@@ -3842,17 +3846,19 @@ arguments are zero and if both are non-zero, the pointer argument must not
 be null.
 
 @smallexample
+[[gnu::nonnull (1, 2)]]
 extern void *
-my_memcpy (void *dest, const void *src, size_t len)
-        __attribute__((nonnull (1, 2)));
+my_memcpy (void *dest, const void *src, size_t len);
+
+[[gnu::nonnull_if_nonzero (1, 3),
+  gnu::nonnull_if_nonzero (2, 3)]]
 extern void *
-my_memcpy2 (void *dest, const void *src, size_t len)
-        __attribute__((nonnull_if_nonzero (1, 3),
-                       nonnull_if_nonzero (2, 3)));
+my_memcpy2 (void *dest, const void *src, size_t len);
+
+[[gnu::nonnull (4),
+  gnu::nonnull_if_nonzero (1, 2, 3)]]
 extern size_t
-my_fread (void *buf, size_t size, size_t count, FILE *stream)
-        __attribute__((nonnull (4),
-                       nonnull_if_nonzero (1, 2, 3)));
+my_fread (void *buf, size_t size, size_t count, FILE *stream);
 @end smallexample
 
 With these declarations, it is invalid to call
@@ -3918,7 +3924,7 @@ do not use the PLT.
 @smallexample
 @group
 /* Externally defined function foo.  */
-int foo () __attribute__ ((noplt));
+[[gnu::noplt]] int foo ();
 
 int
 main (/* @r{@dots{}} */)
@@ -4042,10 +4048,10 @@ referring to a size argument, this expresses the maximum size of the access.
 For example, given:
 
 @smallexample
-extern char *example_fn (const char *p, size_t n)
-  __attribute__((null_terminated_string_arg (1),
-                 access (read_only, 1, 2),
-                 nonnull (1)));
+[[gnu::null_terminated_string_arg (1),
+  gnu::access (read_only, 1, 2),
+  gnu::nonnull (1)]]
+extern char *example_fn (const char *p, size_t n);
 @end smallexample
 
 @noindent
@@ -4167,16 +4173,16 @@ be packed too.
 
 @smallexample
 struct my_unpacked_struct
- @{
-    char c;
-    int i;
- @};
+@{
+  char c;
+  int i;
+@};
 
-struct __attribute__ ((__packed__)) my_packed_struct
-  @{
-     char c;
-     int  i;
-     struct my_unpacked_struct s;
+struct [[gnu::__packed__]] my_packed_struct
+@{
+  char c;
+  int  i;
+  struct my_unpacked_struct s;
   @};
 @end smallexample
 
@@ -4335,8 +4341,8 @@ The @code{returns_nonnull} attribute specifies that the function
 return value should be a non-null pointer.  For instance, the declaration:
 
 @smallexample
-extern void *
-mymalloc (size_t len) __attribute__((returns_nonnull));
+[[gnu::returns_nonnull]]
+extern void *mymalloc (size_t len);
 @end smallexample
 
 @noindent
@@ -4480,11 +4486,7 @@ argument of the function call.  If the optional @var{position} argument
 is specified to the attribute, the sentinel must be located at
 @var{position} counting backwards from the end of the argument list.
 
-@smallexample
-__attribute__ ((sentinel))
-is equivalent to
-__attribute__ ((sentinel(0)))
-@end smallexample
+@samp{[[gnu::sentinel]]} is equivalent to @samp{[[gnu::sentinel(0)]]}.
 
 The attribute is automatically set with a position of 0 for the built-in
 functions @code{execl} and @code{execlp}.  The built-in function
@@ -4690,12 +4692,13 @@ with @option{-fstrub=strict}, that causes @code{strub} mode to default
 to @code{disabled}.
 
 @smallexample
-extern int __attribute__ ((strub ("callable"))) bac (void);
-extern int __attribute__ ((strub ("disabled"))) bad (void);
+[[gnu::strub("callable")]] extern int bac (void);
+[[gnu::strub("disabled")]] extern int bad (void);
  /* Implicitly disabled with -fstrub=strict, otherwise callable.  */
 extern int bah (void);
 
-int __attribute__ ((strub))
+[[gnu::strub]]
+int
 bal (void)
 @{
   /* Not allowed, bad is not strub-callable.  */
@@ -4853,7 +4856,7 @@ This example produces a @code{.symver foo_v1, foo@@VERS_1}
 directive in the assembler output.:
 
 @smallexample
-__attribute__ ((__symver__ ("foo@@VERS_1"))) int
+[[gnu::__symver__ ("foo@@VERS_1")]] int
 foo_v1 (void)
 @{
 @}
@@ -4863,7 +4866,7 @@ You can also define multiple versions for a given symbol
 (starting from binutils 2.35):
 
 @smallexample
-__attribute__ ((__symver__ ("foo@@VERS_2"), __symver__ ("foo@@VERS_3")))
+[[gnu::__symver__ ("foo@@VERS_2"), gnu::__symver__ ("foo@@VERS_3")]]
 int symver_foo_v1 (void)
 @{
 @}
@@ -5237,7 +5240,7 @@ return type.
 This attribute specifies the vector size for the type, measured in bytes.
 The type to which it applies is known as the @dfn{base type}.  The @var{bytes}
 argument must be a positive power-of-two multiple of the base type size.  For
-example, the following declarations:
+example, the following declarations using the legacy attribute syntax:
 
 @smallexample
 typedef __attribute__ ((vector_size (32))) int int_vec32_t ;
@@ -5246,6 +5249,16 @@ typedef __attribute__ ((vector_size (32))) int int_vec32_arr3_t[3];
 @end smallexample
 
 @noindent
+or, alternatively, these declarations using the standard syntax:
+
+@smallexample
+typedef int int_vec32_t [[gnu::vector_size (32)]];
+typedef int * int_vec32_ptr_t [[gnu::vector_size (32)]];
+typedef int int_vec32_arr3_t[3] [[gnu::vector_size (32)]];
+@end smallexample
+
+@noindent
+both
 define @code{int_vec32_t} to be a 32-byte vector type composed of @code{int}
 sized units.  With @code{int} having a size of 4 bytes, the type defines
 a vector of eight units, four bytes each.  The mode of variables of type
@@ -5264,7 +5277,7 @@ a 16-byte vector with the base type @code{float}.
 
 This example:
 @smallexample
-int foo __attribute__ ((vector_size (16)));
+int foo [[gnu::vector_size (16)]];
 @end smallexample
 
 @noindent
@@ -5302,9 +5315,10 @@ There are four supported @var{visibility_type} values: @code{default},
 @code{hidden}, @code{protected}, or @code{internal} visibility.
 
 @smallexample
-void __attribute__ ((visibility ("protected")))
-f () @{ /* @r{Do something.} */; @}
-int i __attribute__ ((visibility ("hidden")));
+[[gnu::visibility ("protected")]]
+void f () @{ /* @r{Do something.} */; @}
+
+int i [[gnu::visibility ("hidden")]];
 @end smallexample
 
 The possible values of @var{visibility_type} correspond to the
@@ -5452,7 +5466,7 @@ For example, this code:
 
 @smallexample
 typedef unsigned long long __u64
-   __attribute__((aligned (4), warn_if_not_aligned (8)));
+  [[gnu::aligned (4), gnu::warn_if_not_aligned (8)]];
 
 struct foo
 @{
@@ -5480,8 +5494,8 @@ the result is either a security problem or always a bug, such as
 @code{realloc}.
 
 @smallexample
-int fn () __attribute__ ((warn_unused_result));
-int foo ()
+[[gnu::warn_unused_result]] int fn (void);
+int foo (void)
 @{
   if (fn () < 0) return -1;
   fn ();
@@ -5490,7 +5504,7 @@ int foo ()
 @end smallexample
 
 @noindent
-results in warning on line 5.
+results in a warning on line 5.
 
 @atindex @code{weak}
 @cindex weak symbols
