@@ -570,9 +570,98 @@ tree
 get_data_offset(const cbl_refer_t &refer,
                       int *pflags = NULL)
   {
-  Analyze();
   // This routine returns a tree which is the size_t offset to the data in the
   // refer/field
+
+  /* Let's first attempt to handle commonly-occurring situations that can
+     be handled efficiently.  */
+
+  const cbl_enabled_exceptions_t &enabled_exceptions(cdf_enabled_exceptions());
+  if(    !enabled_exceptions.match(ec_bound_subscript_e) 
+      && !enabled_exceptions.match(ec_bound_odo_e)
+      && !enabled_exceptions.match(ec_bound_ref_mod_e) )
+    {
+    // There is no subscript bounds checking
+    bool all_literals = true;
+    for( size_t i=0; i<refer.nsubscript(); i++ )
+      {
+      if( (refer.subscripts[i].field->attr & FIGCONST_MASK) == zero_value_e )
+        {
+        // This refer is a figconst ZERO; we treat it as an ALL ZERO
+        // This is our internal representation for ALL, as in TABLE(ALL)
+        all_literals = false;
+        break;
+        }
+      if( !is_literal(refer.subscripts[i].field) )
+        {
+        // A subscript is not a literal.  Too bad.
+        all_literals = false;
+        break;
+        }
+      }
+    if( refer.refmod.from && !is_literal(refer.refmod.from->field) )
+      {
+      all_literals = false;
+      }
+    if( all_literals )
+      {
+      // We are dealing with foo(x)(y:z) where x and y are integer constants.
+      size_t offset = 0;
+
+      if( refer.nsubscript() )
+        {
+        // We have at least one subscript:
+
+        // Figure we have three subscripts, so nsubscript is 3
+        // Figure that the subscripts are {5, 4, 3}
+
+        // We expect that starting from refer.field, that three of our ancestors --
+        // call them A1, A2, and A3 -- have occurs clauses.
+
+        // We need to start with the rightmost subscript, and work our way up through
+        // our parents.  As we find each parent with an OCCURS, we increment qual_data
+        // by (subscript-1)*An->data.capacity()
+
+        // Establish the field_t pointer for walking up through our ancestors:
+        cbl_field_t *parent = refer.field;
+
+        // Note the backwards test, because refer->nsubscript is an unsigned value
+        for(size_t i=refer.nsubscript()-1; i<refer.nsubscript(); i-- )
+          {
+          // We need to search upward for an ancestor with occurs_max:
+          while(parent)
+            {
+            if( parent->occurs.ntimes() )
+              {
+              break;
+              }
+            parent = parent_of(parent);
+            }
+          // we might have an error condition at this point:
+          if( !parent )
+            {
+            cbl_internal_error("Too many subscripts");
+            }
+          // Pick up the integer value of the subscript.
+          long subscript = atol(refer.subscripts[i].field->data.original());
+
+          // Subscript is one-based integer
+          // Make it zero-based:
+          subscript = subscript - 1;
+          offset += subscript * parent->data.capacity();
+          parent = parent_of(parent);
+          }
+        }
+
+      if( refer.refmod.from )
+        {
+        // We know the refmod is a literal
+        offset +=   (atol(refer.refmod.from->field->data.original()) - 1)
+                  * refer.field->codeset.stride();
+        return build_int_cst_type(SIZE_T, offset);
+        }
+      }
+    }
 
   // Because this is for source / sending variables, checks are made for
   // OCCURS DEPENDING ON violations (when those exceptions are enabled)
@@ -636,8 +725,6 @@ get_data_offset(const cbl_refer_t &refer,
         }
       else
         {
-        const cbl_enabled_exceptions_t&
-                                enabled_exceptions( cdf_enabled_exceptions() );
         if( !enabled_exceptions.match(ec_bound_subscript_e) )
           {
           // With no exception testing, just pick up the value
@@ -697,9 +784,6 @@ get_data_offset(const cbl_refer_t &refer,
 
       // Although we strictly don't need to look at the ODO value at this
       // point, we do want it checked for the purposes of ec-bound-odo
-
-      const cbl_enabled_exceptions_t&
-                                enabled_exceptions( cdf_enabled_exceptions() );
 
       if( enabled_exceptions.match(ec_bound_odo_e) )
         {
@@ -1933,41 +2017,50 @@ tree   // size_t
 refer_size(const cbl_refer_t &refer, refer_type_t refer_type)
   {
   Analyze();
-  static tree retval = gg_define_variable(SIZE_T, "..rs_retval", vs_file_static);
-
-  if( !refer.field )
+  if( refer.refmod.len && refer.refmod.len->field->type == FldLiteralN )
     {
-    return size_t_zero_node;
-    }
-
-  if( refer_is_clean(refer) )
-    {
-    return get_any_capacity(refer.field);
-    }
-
-  // Step the first:  Get the actual full length:
-
-  if( refer_has_depends(refer, refer_type) )
-    {
-    // Because there is a depends, we might have to change the length:
-    gg_assign(retval, refer_fill_depends(refer));
+    return build_int_cst_type(SIZE_T,
+                              atol(  refer.refmod.len->field->data.original())
+                                   * refer.field->codeset.stride());
     }
   else
     {
-    gg_assign(retval, get_any_capacity(refer.field));
-    }
+    static tree retval = gg_define_variable(SIZE_T, "..rs_retval", vs_file_static);
 
-  if( refer.refmod.from || refer.refmod.len )
-    {
-    tree refmod = refer_refmod_length(refer);
-    // retval is the ODO based total length.
-    // refmod is the length resulting from refmod(from:len)
-    // We have to reduce retval by the effect of refmod:
-    tree diff = gg_subtract(get_any_capacity(refer.field),
-                            refmod);
-    gg_assign(retval, gg_subtract(retval, diff));
+    if( !refer.field )
+      {
+      return size_t_zero_node;
+      }
+
+    if( refer_is_clean(refer) )
+      {
+      return get_any_capacity(refer.field);
+      }
+
+    // Step the first:  Get the actual full length:
+
+    if( refer_has_depends(refer, refer_type) )
+      {
+      // Because there is a depends, we might have to change the length:
+      gg_assign(retval, refer_fill_depends(refer));
+      }
+    else
+      {
+      gg_assign(retval, get_any_capacity(refer.field));
+      }
+
+    if( refer.refmod.from || refer.refmod.len )
+      {
+      tree refmod = refer_refmod_length(refer);
+      // retval is the ODO based total length.
+      // refmod is the length resulting from refmod(from:len)
+      // We have to reduce retval by the effect of refmod:
+      tree diff = gg_subtract(get_any_capacity(refer.field),
+                              refmod);
+      gg_assign(retval, gg_subtract(retval, diff));
+      }
+    return retval;
     }
-  return retval;
   }
 
 tree  // size_t
@@ -1989,7 +2082,6 @@ refer_size_source(const cbl_refer_t &refer)
       other.  But there conceivably might be others,.
 
       You have been warned.
-
       */
 
   if( !refer.field )
@@ -2002,6 +2094,20 @@ refer_size_source(const cbl_refer_t &refer)
   if( refer_is_clean(refer) )
     {
     return get_any_capacity(refer.field);
+    }
+
+  // We are dealing with a refer
+  const cbl_enabled_exceptions_t&
+                                enabled_exceptions( cdf_enabled_exceptions() );
+  if( !enabled_exceptions.match(ec_bound_ref_mod_e) )
+    {
+    // ref_mod bounds checking is off
+    if( refer.refmod.len && refer.refmod.len->field->type == FldLiteralN )
+      {
+      // And the refmod.len is a literal.
+      return build_int_cst_type(SIZE_T,
+                              atol(  refer.refmod.len->field->data.original())
+                                   * refer.field->codeset.stride());      }
     }
 
   // This assignment has to be here. Simply returning refer_size() results
