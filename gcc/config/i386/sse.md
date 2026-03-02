@@ -12377,7 +12377,7 @@
   operands[2] = gen_lowpart (<ssescalarmode>mode, operands[2]);
 })
 
-;; vmovw clears also the higer bits
+;; vmovw clears also the higher bits
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI2F_256_512 0 "register_operand" "=v,v,v")
 	(vec_merge:VI2F_256_512
@@ -12442,10 +12442,10 @@
 	  (match_operand:V8_128 1 "reg_or_0_operand" "v,C")
 	  (const_int 1)))]
   "TARGET_AVX512FP16
-  || (TARGET_AVX10_2 && const0_operand (operands[1], <MODE>mode))"
+   || (TARGET_AVX10_2 && const0_operand (operands[1], <MODE>mode))"
   "@
     vmovsh\t{%2, %1, %0|%0, %1, %2}
-    vmovw\t{%2, %0|%2, %0}"
+    vmovw\t{%2, %0|%0, %2}"
   [(set_attr "isa" "*,avx10_2")
    (set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
