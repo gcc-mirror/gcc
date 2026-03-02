@@ -29,10 +29,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 15.2.0\n"
+"Project-Id-Version: gcc 16.1-b20260222\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2026-02-19 21:05+0000\n"
-"PO-Revision-Date: 2026-01-27 21:14+0100\n"
+"PO-Revision-Date: 2026-03-01 12:21+0100\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -151,20 +151,16 @@ msgid "function has external linkage when the user requests only inlining static
 msgstr "funktionen har extern länkning när användaren begär endast inline:ade static för uppdatering i drift"
 
 #: cif-code.def:145
-#, fuzzy
-#| msgid "errors during merging of translation units"
 msgid "callee must remain in translation unit"
-msgstr "fel vid sammanslagning av översättningsenheter"
+msgstr "anroparen måste finnas kvar i översättningsenheten"
 
 #: cif-code.def:149
 msgid "unreachable"
 msgstr "onåbar"
 
 #: cif-code.def:154
-#, fuzzy
-#| msgid "caller edge count invalid"
 msgid "callback edges cannot be inlined"
-msgstr "antal anropande bågar är felaktigt"
+msgstr "återanropsbågar kan inte inline:as"
 
 #: config/i386/djgpp.h:143
 #, c-format
@@ -285,10 +281,8 @@ msgid "does not support multilib"
 msgstr "stödjer inte multilib"
 
 #: config/sol2.h:362 config/sol2.h:371
-#, fuzzy
-#| msgid "-gz is not supported in this configuration"
 msgid "-gsctf is not supported in this configuration"
-msgstr "-gz stödjs inte i denna konfiguration"
+msgstr "-gsctf stödjs inte i denna konfiguration"
 
 #: config/vxworks.h:236
 msgid "-Xbind-now and -Xbind-lazy are incompatible"
@@ -368,13 +362,11 @@ msgstr "  profileringsstöd endast finns i arkivformat"
 
 #: config/riscv/riscv.h:127
 msgid "At least one valid -mcpu option must be given after -march=unset"
-msgstr ""
+msgstr "Åtminstone en giltig flagga -mcpu måste anges efter -march=unset"
 
 #: config/rs6000/aix.h:286
-#, fuzzy
-#| msgid "%<-fstack-protector%> not supported for this target"
 msgid "stack-protector not supported on AIX"
-msgstr "%<-fstack-protector%> stödjs inte av denna målarkitektur"
+msgstr "stack-protector stödjs inte på AIX"
 
 #: config/rs6000/darwin.h:126
 msgid " conflicting code gen style switches are used"
@@ -552,25 +544,22 @@ msgstr "Dumpa symboltabellanropsgrafen."
 #: config/picolibc.opt:26
 #, no-c-format
 msgid "Specify an OS support library to load after libc."
-msgstr ""
+msgstr "Ange ett OS-stödsbibliotek att ladda efter libc."
 
 #: config/picolibc.opt:33
-#, fuzzy, no-c-format
-#| msgid "Specify the name of the target CPU."
+#, no-c-format
 msgid "Specify an alternate startup file."
-msgstr "Ange namnet på målprocessorn."
+msgstr "Ange en alternativ uppstartsfil."
 
 #: config/picolibc.opt:40
-#, fuzzy, no-c-format
-#| msgid "Specify the PTX ISA version to use."
+#, no-c-format
 msgid "Specify the printf version linked from libc."
-msgstr "Ange PTX-ISA-versionen att använda."
+msgstr "Ange printf-versionen som länkas från libc."
 
 #: config/picolibc.opt:47
-#, fuzzy, no-c-format
-#| msgid "Specify the PTX ISA version to use."
+#, no-c-format
 msgid "Specify the scanf version linked from libc."
-msgstr "Ange PTX-ISA-versionen att använda."
+msgstr "Ange scanf-versionen som länkas från libc."
 
 #: config/nds32/nds32-elf.opt:3 config/nds32/nds32-linux.opt:3
 #, no-c-format
@@ -613,16 +602,14 @@ msgid "Known ABIs (for use with the -mabi= option):"
 msgstr "Kända ABI:er (att användas med flaggan -mabi=):"
 
 #: config/nds32/nds32.opt:61
-#, fuzzy, no-c-format
-#| msgid "Specify use soft floating point ABI which mean alias to -mabi=2."
+#, no-c-format
 msgid "Specify the soft floating-point ABI, aliased to -mabi=2."
-msgstr "Ange användning av ABI för mjuka flyttal vilket betyder ett alias för -mabi=2."
+msgstr "Ange ABI:et för mjuka flyttal, alias till -mabi=2."
 
 #: config/nds32/nds32.opt:65
-#, fuzzy, no-c-format
-#| msgid "Specify use soft floating point ABI which mean alias to -mabi=2fp+."
+#, no-c-format
 msgid "Specify the hard floating-point ABI, aliased to -mabi=2fp+."
-msgstr "Ange användning av ABI för mjuka flyttal vilket betyder ett alias för -mabi=2fp+."
+msgstr "Ange ABI:et för hårda flyttal, alias till -mabi=2fp+."
 
 #: config/nds32/nds32.opt:71
 #, no-c-format
@@ -640,8 +627,7 @@ msgid "Always align function entry, jump target and return address."
 msgstr "Justera alltid funktionsingång, hoppmål och returadress."
 
 #: config/nds32/nds32.opt:85
-#, fuzzy, no-c-format
-#| msgid "Align function entry to 4 byte."
+#, no-c-format
 msgid "Align function entry to 4 bytes."
 msgstr "Justera funktionsingångar till 4 byte."
 
@@ -653,7 +639,7 @@ msgstr "Förhindra att $fp allokeras under registerallokeringen så att kompilat
 #: config/nds32/nds32.opt:101
 #, no-c-format
 msgid "Forbid using $fp to access static and global variables.  This option strictly forbids fp-as-gp optimization regardless of '-mforce-fp-as-gp'."
-msgstr "Förbud användning av $fp för att komma åt statiska och globala variabler.  Denna flagga förbjuder strikt fp-as-gp-optimeringar oavsett ”-mforce-fp-as-gp”."
+msgstr "Förbud användning av $fp för att komma åt statiska och globala variabler. Denna flagga förbjuder strikt fp-as-gp-optimeringar oavsett ”-mforce-fp-as-gp”."
 
 #: config/nds32/nds32.opt:105
 #, no-c-format
@@ -752,10 +738,9 @@ msgid "Known cpu types (for use with the -mcpu= option):"
 msgstr "Kända arkitekturtyper (att användas med flaggan -mcpu=):"
 
 #: config/nds32/nds32.opt:361
-#, fuzzy, no-c-format
-#| msgid "Specify a fpu configuration value from 0 to 7; 0-3 is as FPU spec says, and 4-7 is corresponding to 0-3."
+#, no-c-format
 msgid "Specify a FPU configuration value from 0 to 7; 0-3 is as FPU spec says, and 4-7 correspond to 0-3."
-msgstr "Ange ett fpu-konfigurationsvärde från 0 till 7; 0-3 är vad FPU-specifikationen säger, och 4-7 motsvarar 0-3."
+msgstr "Ange ett FPU-konfigurationsvärde från 0 till 7; 0-3 är vad FPU-specifikationen säger, och 4-7 motsvarar 0-3."
 
 #: config/nds32/nds32.opt:365
 #, no-c-format
@@ -765,12 +750,12 @@ msgstr "Känt antal flyttalsregister (att användas med flaggan -mconfig-fpu=):"
 #: config/nds32/nds32.opt:393
 #, no-c-format
 msgid "Specify configuration of instruction mul: fast1, fast2 or slow. The default is fast1."
-msgstr "Ange konfiguration av instruktionen mul: fast1, fast2 eller slow.  Standardvärdet är fast1."
+msgstr "Ange konfiguration av instruktionen mul: fast1, fast2 eller slow. Standardvärdet är fast1."
 
 #: config/nds32/nds32.opt:412
 #, no-c-format
 msgid "Specify how many read/write ports for n9/n10 cores.  The value should be 3r2w or 2r1w."
-msgstr "Ange antalet läs-/skrivportar för n9-/n10-kärnor.  Värdet skall vara 3r2w eller 2r1w."
+msgstr "Ange antalet läs-/skrivportar för n9-/n10-kärnor. Värdet skall vara 3r2w eller 2r1w."
 
 #: config/nds32/nds32.opt:425
 #, no-c-format
@@ -840,7 +825,7 @@ msgstr "Kompilera kod för rak byteordning."
 #: config/arc/arc.opt:32
 #, no-c-format
 msgid "Compile code for little endian mode.  This is the default."
-msgstr "Kompilera kod för omvänd byteordning.  Detta är standard."
+msgstr "Kompilera kod för omvänd byteordning. Detta är standard."
 
 #: config/arc/arc.opt:36
 #, no-c-format
@@ -908,7 +893,7 @@ msgstr "Använd koddensitetsinstruktioner för ARCv2."
 #: c-family/c.opt:2319
 #, no-c-format
 msgid "Does nothing.  Preserved for backward compatibility."
-msgstr "Gör ingenting.  Bevarad för bakåtkompatibilitet."
+msgstr "Gör ingenting. Bevarad för bakåtkompatibilitet."
 
 #: config/arc/arc.opt:148
 #, no-c-format
@@ -953,7 +938,7 @@ msgstr "Generera utökade aritmetiska instruktioner, endast giltigt för ARC700.
 #: config/arc/arc.opt:180
 #, no-c-format
 msgid "Dummy flag. This is the default unless FPX switches are provided explicitly."
-msgstr "Attrappflagga.  Detta är standard om inte FPX-flaggor uttryckligen ges."
+msgstr "Attrappflagga. Detta är standard om inte FPX-flaggor uttryckligen ges."
 
 #: config/arc/arc.opt:184
 #, no-c-format
@@ -961,15 +946,14 @@ msgid "Generate call insns as register indirect calls."
 msgstr "Generera anropsinstruktioner som registerindirekta anrop."
 
 #: config/arc/arc.opt:188
-#, fuzzy, no-c-format
-#| msgid "Do no generate BRcc instructions in arc_reorg."
+#, no-c-format
 msgid "Generate BRcc instructions in arc_reorg."
-msgstr "Generera inte BRcc-instruktioner i arc_reorg."
+msgstr "Generera BRcc-instruktioner i arc_reorg."
 
 #: config/arc/arc.opt:192
 #, no-c-format
 msgid "Generate sdata references.  This is the default, unless you compile for PIC."
-msgstr "Generera sdata-referenser.  Detta är standard, om man inte kompilerar för PIC."
+msgstr "Generera sdata-referenser. Detta är standard, om man inte kompilerar för PIC."
 
 #: config/arc/arc.opt:196
 #, no-c-format
@@ -1002,10 +986,9 @@ msgid "FPX: Generate Double Precision FPX (fast) instructions."
 msgstr "FPX: generera dubbelprecisions FPX- (snabba) instruktioner."
 
 #: config/arc/arc.opt:229
-#, fuzzy, no-c-format
-#| msgid "Disable LR and SR instructions from using FPX extension aux registers."
+#, no-c-format
 msgid "Enable LR and SR instructions to use FPX extension aux registers."
-msgstr "Avaktivera LR- och SR-instruktioner från att använda FPX-utöknings-aux-register."
+msgstr "Aktivera LR- och SR-instruktioner till att använda FPX-utöknings-aux-register."
 
 #: config/arc/arc.opt:233
 #, no-c-format
@@ -1338,10 +1321,9 @@ msgid "Put uninitialized constants in ROM (needs -membedded-data)."
 msgstr "Placera oinitierade konstanter i ROM (kräver -membedded-data)."
 
 #: config/sol2.opt:32
-#, fuzzy, no-c-format
-#| msgid "Generate SH4a code."
+#, no-c-format
 msgid "Generate Solaris CTF."
-msgstr "Generera SH4a-kod."
+msgstr "Generera Solaris CTF."
 
 #: config/sol2.opt:36
 #, no-c-format
@@ -1878,7 +1860,7 @@ msgstr "Placera allting i den vanliga TOC."
 #: config/rs6000/rs6000.opt:305
 #, no-c-format
 msgid "Emit NOPs before global and after local entry point for -fpatchable-function-entry."
-msgstr "Mata ut NOP:ar före globala och efter lokala ingångspunkter för -fpatchable-function-entry"
+msgstr "Mata ut NOP:ar före globala och efter lokala ingångspunkter för -fpatchable-function-entry."
 
 #: config/rs6000/rs6000.opt:309
 #, no-c-format
@@ -2741,27 +2723,27 @@ msgstr "Max antal byte att jämföra som en del av inline:ade strcmp/strncmp-rut
 #: config/riscv/riscv.opt:287
 #, no-c-format
 msgid "Set the cost value of the rvv instruction when operate from GPR to VR."
-msgstr ""
+msgstr "Sätt kostnadsvärdet på instruktionen rvv vid körning från GPR till VR."
 
 #: config/riscv/riscv.opt:291
 #, no-c-format
 msgid "Set the cost value of the rvv instruction when operate from VR to GPR ."
-msgstr ""
+msgstr "Sätt kostnadsvärdet på instruktionen rvv vid körning från VR till GPR."
 
 #: config/riscv/riscv.opt:295
 #, no-c-format
 msgid "Set the cost value of the rvv instruction when operate from FPR to VR."
-msgstr ""
+msgstr "Sätt kostnadsvärdet på instruktionen rvv vid körning från FPR till VR."
 
 #: config/riscv/riscv.opt:299
 #, no-c-format
 msgid "Set the cost value of the rvv instruction when operate from VR to FPR."
-msgstr ""
+msgstr "Sätt kostnadsvärdet på instruktionen rvv vid körning från VR till FPR."
 
 #: config/riscv/riscv.opt:303
 #, no-c-format
 msgid "Set the only autovec mode to try."
-msgstr ""
+msgstr "Ange det enda autovec-läget att prova."
 
 #: config/riscv/riscv.opt:307
 #, no-c-format
@@ -2804,22 +2786,19 @@ msgid "Specify stringop expansion strategy."
 msgstr "Ange strategi för expansion av stringop."
 
 #: config/riscv/riscv.opt:381
-#, fuzzy, no-c-format
-#| msgid "Constant memcpy size in bytes above which to start using MOPS sequence."
+#, no-c-format
 msgid "Constant memcpy size in bytes above which to start using libcalls over inlining."
-msgstr "Konstant memcpy-storlek i byte över vilken MOPS-sekvenser skall användas."
+msgstr "Konstant memcpy-storlek i byte över vilken biblioteksanrop skall skall börja användas framför inline:ing."
 
 #: config/riscv/riscv.opt:385
-#, fuzzy, no-c-format
-#| msgid "Constant memmove size in bytes above which to start using MOPS sequence."
+#, no-c-format
 msgid "Constant memmove size in bytes above which to start using libcalls over inlining."
-msgstr "Konstant memmove-storlek i byte över vilken MOPS-sekvenser skall användas."
+msgstr "Konstant memmove-storlek i byte över vilken biblioteksanrop skall börja användas framför inline:ing."
 
 #: config/riscv/riscv.opt:389
-#, fuzzy, no-c-format
-#| msgid "Constant memmove size in bytes above which to start using MOPS sequence."
+#, no-c-format
 msgid "Constant memset size in bytes above which to start using libcalls over inlining."
-msgstr "Konstant memmove-storlek i byte över vilken MOPS-sekvenser skall användas."
+msgstr "Konstant memset-storlek i byte över vilken biblioteksanrop skall börja användas framför inline:ing."
 
 #: config/riscv/riscv.opt:393
 #, no-c-format
@@ -3458,10 +3437,9 @@ msgid "Align code and data to 32 bits."
 msgstr "Justera kod och data till 32 bitar."
 
 #: config/cris/cris.opt:122 config/cris/cris.opt:127
-#, fuzzy, no-c-format
-#| msgid "Align code and data to 32 bits."
+#, no-c-format
 msgid "Align code and data to 16 bits."
-msgstr "Justera kod och data till 32 bitar."
+msgstr "Justera kod och data till 16 bitar."
 
 #: config/cris/cris.opt:132 config/cris/cris.opt:137
 #, no-c-format
@@ -4016,7 +3994,7 @@ msgstr "Aktivera strikt 32-bits psABI-kontroller av postreturer."
 #: config/sparc/sparc.opt:258
 #, no-c-format
 msgid "Enable workaround for single erratum of AT697F processor (corresponding to erratum #13 of AT697E processor)."
-msgstr "Aktivera en lösning för ensamt errata för processorn AT697F (motsvarar errata nr. 13 för processorn AT697E.)"
+msgstr "Aktivera en lösning för ensamt errata för processorn AT697F (motsvarar errata nr. 13 för processorn AT697E)."
 
 #: config/sparc/sparc.opt:263
 #, no-c-format
@@ -4262,7 +4240,7 @@ msgstr "Använd inbyggd (MS) bitfältslayout."
 #: config/i386/i386.opt:417
 #, no-c-format
 msgid "Relax cmpxchg loop for atomic_fetch_{or,xor,and,nand} by adding load and cmp before cmpxchg, execute pause and loop back to load and compare if load value is not expected."
-msgstr "Lätta på cmpxchg-slingor för atomic_fetch_{or,xor,and,nand} genom att lägga till load och cmp före cmpxchg, kör pause och gå tillbaka till load och compare om load-värdet inte är det förväntade"
+msgstr "Lätta på cmpxchg-slingor för atomic_fetch_{or,xor,and,nand} genom att lägga till load och cmp före cmpxchg, kör pause och gå tillbaka till load och compare om load-värdet inte är det förväntade."
 
 #: config/i386/i386.opt:421
 #, no-c-format
@@ -4410,10 +4388,9 @@ msgid "Generate vzeroupper instruction before a transfer of control flow out of 
 msgstr "Generera vzeroupper-instruktion före en övergång av kontrollflödet ut ur funktionen."
 
 #: config/i386/i386.opt:610
-#, fuzzy, no-c-format
-#| msgid "Disable Scalar to Vector optimization pass transforming 64-bit integer computations into a vector ones."
+#, no-c-format
 msgid "Enable Scalar to Vector optimization pass transforming 64-bit integer computations into vector ones."
-msgstr "Avaktivera optimeringspasset skalär till vektor som transformerar 64-bitars heltalsberäkningar till vektorberäkningar."
+msgstr "Aktivera optimeringspasset skalär till vektor som transformerar 64-bitars heltalsberäkningar till vektorberäkningar."
 
 #: config/i386/i386.opt:615
 #, no-c-format
@@ -4536,40 +4513,34 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512
 msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:737
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512CD built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512CD-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512CD-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:741
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512DQ built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512DQ-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512DQ-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:745
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BF16 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BW built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512BF16-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512BW-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:749
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VL built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512VL-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512VL-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:753
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512IFMA built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512IFMA built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX512F- och AVX512IFMA-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512IFMA-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:757
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512VBMI2-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX512F- och AVX512VBMI-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:761
 #, no-c-format
@@ -5174,22 +5145,19 @@ msgid "Support USER_MSR built-in functions and code generation."
 msgstr "Stöd inbyggda USER_MSR-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:1360
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10.1-256 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10.1 built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX10.1-256-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2- och AVX10.1-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:1365
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512 and AVX10.2 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1 and AVX10.2 built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX10.1-512- och AVX10.2-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX10.1- och AVX10.2-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:1370
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1-512, AVX10.2 and AMX-AVX512 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1, AVX10.2 and AMX-AVX512 built-in functions and code generation."
-msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX10.1-512-, AVX10.2- och AMX-AVX512-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda MMX-, SSE-, SSE2-, SSE3-, SSSE3-, SSE4.1-, SSE4.2-, AVX-, AVX2-, AVX10.1-, AVX10.2- och AMX-AVX512-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:1375
 #, no-c-format
@@ -5212,10 +5180,9 @@ msgid "Support AMX-MOVRS built-in functions and code generation."
 msgstr "Stöd inbyggda AMX-MOVRS-funktioner och -kodgenerering."
 
 #: config/i386/i386.opt:1391
-#, fuzzy, no-c-format
-#| msgid "Support AVX512VNNI built-in functions and code generation."
+#, no-c-format
 msgid "Support AVX512BMM built-in functions and code generation."
-msgstr "Stöd inbyggda AVX512VNNI-funktioner och -kodgenerering."
+msgstr "Stöd inbyggda AVX512BMM-funktioner och -kodgenerering."
 
 #: config/i386/mingw-w64.opt:23
 #, no-c-format
@@ -5263,10 +5230,9 @@ msgid "Generate APCS conformant stack frames."
 msgstr "Generera stackramar enligt APCS."
 
 #: config/arm/arm.opt:76
-#, fuzzy, no-c-format
-#| msgid "Generate re-entrant, PIC code."
+#, no-c-format
 msgid "Unimplemented option to generate re-entrant, PIC code."
-msgstr "Generera återstartbar, PIC-kod."
+msgstr "Oimplementerad flagga för att generera återstartbar, PIC-kod."
 
 #: config/arm/arm.opt:80
 #, no-c-format
@@ -5554,16 +5520,14 @@ msgid "Allow (or do not allow) gcc to use the LOOP instruction."
 msgstr "Tillåt (eller tillåt inte) gcc att använda LOOP-instruktionen."
 
 #: config/pru/pru.opt:44
-#, fuzzy, no-c-format
-#| msgid "Allow (or do not allow) gcc to use the LOOP instruction."
+#, no-c-format
 msgid "Allow (or do not allow) gcc to use the PRU multiplier unit."
-msgstr "Tillåt (eller tillåt inte) gcc att använda LOOP-instruktionen."
+msgstr "Tillåt (eller tillåt inte) gcc att använda PRU-multiplicerarenheten."
 
 #: config/pru/pru.opt:48
-#, fuzzy, no-c-format
-#| msgid "Allow (or do not allow) gcc to use the LOOP instruction."
+#, no-c-format
 msgid "Allow (or do not allow) gcc to use the FILL and ZERO instructions."
-msgstr "Tillåt (eller tillåt inte) gcc att använda LOOP-instruktionen."
+msgstr "Tillåt (eller tillåt inte) gcc att använda FILL och ZERO-instruktioner."
 
 #: config/pru/pru.opt:52
 #, no-c-format
@@ -5881,10 +5845,9 @@ msgid "-msve-vector-bits=<number>\tSet the number of bits in an SVE vector regis
 msgstr "-msve-vector-bits=<antal>\tAnge antalet bitar i ett SVE-vektorregister."
 
 #: config/aarch64/aarch64.opt:308
-#, fuzzy, no-c-format
-#| msgid "--param=aarch64-autovec-preference=[default|asimd-only|sve-only|prefer-asimd|prefer-sve] Force an ISA selection strategy for auto-vectorization."
+#, no-c-format
 msgid "-mautovec-preference=[default|asimd-only|sve-only|prefer-asimd|prefer-sve] Force an ISA selection strategy for auto-vectorization.  For best performance it is highly recommended to use -mcpu or -mtune instead.  This parameter should only be used for code exploration."
-msgstr "--param=aarch64-autovec-preference=[default|asimd-only|sve-only|prefer-asimd|prefer-sve] Framtvinga en ISA-valsstrategi för autovektorisering."
+msgstr "-autovec-preference=[default|asimd-only|sve-only|prefer-asimd|prefer-sve] Framtvinga en ISA-valsstrategi för autovektorisering. För bästa prestanda rekommenderas det starkt att använda -mcpu eller -mtune istället. Denna parameter bör bara användas för kodutforskning."
 
 #: config/aarch64/aarch64.opt:319
 #, no-c-format
@@ -5934,7 +5897,7 @@ msgstr "Antalet Newtoniterationer för att beräkna inversen för typen float.  
 #: config/aarch64/aarch64.opt:379
 #, no-c-format
 msgid "The number of Newton iterations for calculating the reciprocal for double type.  The precision of division is proportional to this param when division approximation is enabled.  The default value is 2."
-msgstr "Antalet Newtoniterationer för att beräkna inversen för typen double.  Precisionen i divisionen är proportionell mot denna parameter när divisionsapproximering är aktiverat.  Standardvärdet är 2."
+msgstr "Antalet Newtoniterationer för att beräkna inversen för typen double. Precisionen i divisionen är proportionell mot denna parameter när divisionsapproximering är aktiverat. Standardvärdet är 2."
 
 #: config/aarch64/aarch64.opt:383
 #, no-c-format
@@ -5982,10 +5945,9 @@ msgid "Param to control the treshold in number of granules beyond which an expli
 msgstr ""
 
 #: config/aarch64/aarch64.opt:466
-#, fuzzy, no-c-format
-#| msgid "This option is deprecated and has no effect."
+#, no-c-format
 msgid "This option is deprecated."
-msgstr "Denna flagga bör undvikas och har ingen effekt."
+msgstr "Denna flagga bör undvikas."
 
 #: config/vms/vms.opt:27
 #, no-c-format
@@ -6138,20 +6100,17 @@ msgid "Do not use the callt instruction (default)."
 msgstr "Använd inte callt-instruktionen (standard)."
 
 #: config/v850/v850.opt:45
-#, fuzzy, no-c-format
-#| msgid "Reuse r30 on a per function basis."
+#, no-c-format
 msgid "Reuse r30 on a per-function basis."
 msgstr "Återanvänd r30 i varje funktion."
 
 #: config/v850/v850.opt:49
-#, fuzzy, no-c-format
-#| msgid "Alias for -mcpu=g10."
+#, no-c-format
 msgid "Alias for -mrh850-abi."
-msgstr "Alias för -mcpu=g10."
+msgstr "Alias för -mrh850-abi."
 
 #: config/v850/v850.opt:53
-#, fuzzy, no-c-format
-#| msgid "Prohibit PC relative function calls."
+#, no-c-format
 msgid "Prohibit PC-relative function calls."
 msgstr "Förhindra PC-relativa funktionsanrop."
 
@@ -6421,8 +6380,7 @@ msgid "Use 32-bit offsets in jump tables rather than 16-bit offsets."
 msgstr "Använd 32-bitars avstånd i hopptabeller istället för 16-bitars avstånd."
 
 #: config/m68k/m68k.opt:151
-#, fuzzy, no-c-format
-#| msgid "Usa LRA for reload instead of the old reload framework.  This option is experimental, and it may be removed in future versions of the compiler."
+#, no-c-format
 msgid "Use LRA for reload instead of the old reload framework.  This option is experimental, and it may be removed in future versions of the compiler."
 msgstr "Använd LRA för omladdning istället för det gamla omladdningsramverket. Denna flagga är experimentell, och kan komma att tas bort i framtida versioner av kompilatorn."
 
@@ -6717,10 +6675,9 @@ msgid "Support amcas[_db].{b/h/w/d} instructions."
 msgstr "Stöd instruktionerna amcas[_db].{b/h/w/d}."
 
 #: config/loongarch/loongarch.opt:367
-#, fuzzy, no-c-format
-#| msgid "Support CLWB instruction."
+#, no-c-format
 msgid "Support sc.q instruction."
-msgstr "Stöd instruktionen CLWB."
+msgstr "Stöd instruktionen sc.q."
 
 #: config/loongarch/loongarch.opt:371
 #, no-c-format
@@ -6813,8 +6770,7 @@ msgid "Split unaligned 8 byte vector moves before post-modify address generation
 msgstr "Dela ojusterade 8-bytes vektorförflyttningar före adressgenerering efter ändring."
 
 #: config/epiphany/epiphany.opt:137
-#, fuzzy, no-c-format
-#| msgid "Use the floating point unit for integer add/subtract."
+#, no-c-format
 msgid "Use the floating-point unit for integer add/subtract."
 msgstr "Använd flyttalsenheten för addition/subtraktion av heltal."
 
@@ -7089,16 +7045,14 @@ msgid "(Obsolete) This is the default."
 msgstr "(Föråldrad) Detta är standard."
 
 #: config/darwin.opt:268
-#, fuzzy, no-c-format
-#| msgid "Equivalent to -fcf-protection=full."
+#, no-c-format
 msgid "Equivalent to -xobjective-c."
-msgstr "Ekvivalent med -fcf-protection=full."
+msgstr "Ekvivalent med -xobjective-c."
 
 #: config/darwin.opt:272
-#, fuzzy, no-c-format
-#| msgid "Equivalent to -fcf-protection=full."
+#, no-c-format
 msgid "Equivalent to -xobjective-c++."
-msgstr "Ekvivalent med -fcf-protection=full."
+msgstr "Ekvivalent med -xobjective-c++."
 
 #: config/darwin.opt:282
 #, no-c-format
@@ -8091,10 +8045,9 @@ msgid "When -mhard-float is selected, enables generation of unordered floating p
 msgstr "När -mhard-float är valt, aktiverar generering av instruktioner för oordnad flyttalsjämförelse och för att sätta flaggor (lf.sfun*).  Som standard används funktioner från libgcc för att utföra oordnad jämförelse av flyttal och operationer för att sätta flaggor."
 
 #: config/or1k/or1k.opt:71
-#, fuzzy, no-c-format
-#| msgid "Specify the code model used for accessing memory addresses.  Specifying large enables generating binaries with large global offset tables.  By default the value is small."
+#, no-c-format
 msgid "Specify the code model used for accessing memory addresses.  Specifying large enables generating binaries with large global offset tables and calling functions anywhere in an executable.  By default the value is small."
-msgstr "Ange kodmodellen som skall användas för att komma åt minnesadresser. Att ange large möjliggör generering av binärer med stora globala avståndstabeller. Som standard är värdet small."
+msgstr "Ange kodmodellen som skall användas för att komma åt minnesadresser. Att ange large möjliggör generering av binärer med stora globala avståndstabeller och att anropa funktioner var som helst i den körbara. Som standard är värdet small."
 
 #: config/or1k/or1k.opt:77
 #, no-c-format
@@ -8102,10 +8055,9 @@ msgid "Known code model types (for use with the -mcmodel= option):"
 msgstr "Kända kodmodelltyper (att användas med flaggan -mcmodel=):"
 
 #: config/or1k/or1k.opt:87
-#, fuzzy, no-c-format
-#| msgid "Enable generation of conditional move (l.cmov) instructions.  By default the equivalent will be generated using set and branch."
+#, no-c-format
 msgid "Enable generation of conditional move (l.cmov) instructions.  By default the equivalents are generated using set and branch."
-msgstr "Aktivera generering av instruktioner för villkorlig förflyttning (l.cmov).  Som standard kommer det motsvarande genereras med set och branch."
+msgstr "Aktivera generering av instruktioner för villkorlig förflyttning (l.cmov).  Som standard genereras motsvarande med set och branch."
 
 #: config/or1k/or1k.opt:92
 #, no-c-format
@@ -8123,16 +8075,14 @@ msgid "Enable generation of sign extension (l.ext*) instructions.  By default me
 msgstr "Aktivera generering av instruktioner för teckenutökning (l.ext*).  Som standard används minnesinläsning för att utföra teckenutökning."
 
 #: config/or1k/or1k.opt:108
-#, fuzzy, no-c-format
-#| msgid "Enable generation of compare and set flag with immediate (l.sf*i) instructions. By default extra instructions will be generated to store the immediate to a register first."
+#, no-c-format
 msgid "Enable generation of compare and set flag with immediate (l.sf*i) instructions. By default extra instructions are generated to store the immediate to a register first."
-msgstr "Aktivera generering av instruktioner för jämförelse och sätt flagga med omedelbar (l.sf*i).  Som standard kommer extra instruktioner genereras för att lagra den omedelbara i ett register först."
+msgstr "Aktivera generering av instruktioner för jämförelse och sätt flagga med omedelbar (l.sf*i).  Som standard genereras extra instruktioner för att lagra den omedelbara i ett register först."
 
 #: config/or1k/or1k.opt:114
-#, fuzzy, no-c-format
-#| msgid "Enable generation of shift with immediate (l.srai, l.srli, l.slli) instructions. By default extra instructions will be generated to store the immediate to a register first."
+#, no-c-format
 msgid "Enable generation of shift with immediate (l.srai, l.srli, l.slli) instructions. By default extra instructions are generated to store the immediate to a register first."
-msgstr "Aktivera generering av instruktioner för skift med omedelbar (l.srai, l.srli, l.slli).  Som standard kommer extra instruktioner genereras för att lagra den omedelbara i ett register först."
+msgstr "Aktivera generering av instruktioner för skift med omedelbar (l.srai, l.srli, l.slli).  Som standard genereras extra instruktioner för att lagra den omedelbara i ett register först."
 
 #: config/or1k/elf.opt:28
 #, no-c-format
@@ -8770,208 +8720,174 @@ msgid "Always use JSR, never BSR, for calls."
 msgstr "Använd alltid JSR, aldrig BSR, för anrop."
 
 #: m2/lang.opt:35
-#, fuzzy, no-c-format
-#| msgid "turns on case statement label compile time checking when using an expression of an enum type."
+#, no-c-format
 msgid "Case statement label compile time checking when using an expression of an enum type."
-msgstr "slår på kontroller av etiketter i case-satser vid kompileringstillfället när ett uttryck av en enum-typ används."
+msgstr "Kontroller av etiketter i case-satser vid kompileringstillfället när ett uttryck av en enum-typ används."
 
 #: m2/lang.opt:39
-#, fuzzy, no-c-format
-#| msgid "compiler checks to force definition module procedure parameter names with their implementation module counterpart"
+#, no-c-format
 msgid "Check definition module procedure parameter names match their implementation module counterpart."
-msgstr "kompilatorkontroller för att framtvinga procedurparameternamn för definitionsmoduler med sina motsvarande implementationsmoduler"
+msgstr "Kontrollera att procedurparameternamn för definitionsmoduler stämmer med sina motsvarande implementationsmoduler."
 
 #: m2/lang.opt:43
-#, fuzzy, no-c-format
-#| msgid "compiler warns if a cast is being used on types of differing sizes"
+#, no-c-format
 msgid "Warn if a cast is being used on types of differing sizes."
-msgstr "kompilatorn varnar om en typkonvertering används på typer av olika storlek"
+msgstr "Varna om en typkonvertering används på typer av olika storlek."
 
 #: m2/lang.opt:47
-#, fuzzy, no-c-format
-#| msgid "inform user which parameters will be passed by reference"
+#, no-c-format
 msgid "Inform user which parameters will be passed by reference."
-msgstr "informera användaren om vilka parametrar som kommer skickas som referenser"
+msgstr "Informera användaren om vilka parametrar som kommer skickas som referenser."
 
 #: m2/lang.opt:51
-#, fuzzy, no-c-format
-#| msgid "extra compile time semantic checking, typically tries to catch poor programming style"
+#, no-c-format
 msgid "Semantic checking to catch poor programming style."
-msgstr "extra semantiska kontroller vid kompileringstillfället, typiskt försöker att fånga dålig programmeringsstil"
+msgstr "Semantisk kontroll för att fånga dålig programmeringsstil."
 
 #: m2/lang.opt:55
-#, fuzzy, no-c-format
-#| msgid "turns on compile time analysis in the first basic block of a procedure detecting access to uninitialized data."
+#, no-c-format
 msgid "Compile time analysis in the first basic block of a procedure detecting access to uninitialized data."
-msgstr "slår på analys vid kompileringstillfället i det första grundblocket i en procedurdetekterad åtkomst av oinitierade data."
+msgstr "Analys vid kompileringstillfället i det första grundblocket i en procedurdetekterad åtkomst av oinitierade data."
 
 #: m2/lang.opt:59
-#, fuzzy, no-c-format
-#| msgid "turns on compile time analysis to detect access to uninitialized variables, the checking can be specified by: known,cond,all."
+#, no-c-format
 msgid "Compile time analysis to detect access to uninitialized variables, the checking can be specified by: known,cond,all."
-msgstr "slår på analys vid kompileringstillfället för att upptäcka åtkomst av oinitierade variabler, kontrollerandet kan anges med :known,cond,all."
+msgstr "Analys vid kompileringstillfället för att upptäcka åtkomst av oinitierade variabler, kontrollerandet kan anges med :known,cond,all."
 
 #: m2/lang.opt:63
-#, fuzzy, no-c-format
-#| msgid "automatically initializes all pointers to NIL"
+#, no-c-format
 msgid "Automatically initializes all pointers to NIL."
-msgstr "initierar automatiskt alla pekare till NIL"
+msgstr "Initierar automatiskt alla pekare till NIL."
 
 #: m2/lang.opt:67
-#, fuzzy, no-c-format
-#| msgid "turns on runtime subrange, array index and indirection via NIL pointer checking"
+#, no-c-format
 msgid "Runtime subrange, array index and indirection via NIL pointer checking."
-msgstr "slår på kontroll under körtid av delintervall, vektorindex och indirektion via NIL-pekare"
+msgstr "Kontroll under körtid av delintervall, vektorindex och indirektion via NIL-pekare."
 
 #: m2/lang.opt:71
-#, fuzzy, no-c-format
-#| msgid "turns on runtime checking to check whether a CASE statement requires an ELSE clause when one was not specified"
+#, no-c-format
 msgid "Runtime checking to check whether a CASE statement requires an ELSE clause when one was not specified."
-msgstr "slår på körtidskontroller för att kontrollera huruvida en CASE-sats kräver en ELSE-klausul när inte någon var angiven"
+msgstr "Körtidskontroller för att kontrollera huruvida en CASE-sats kräver en ELSE-klausul när inte någon var angiven."
 
 #: m2/lang.opt:75
-#, fuzzy, no-c-format
-#| msgid "use cpp to preprocess the module"
+#, no-c-format
 msgid "Preprocess the module using cpp."
-msgstr "använd cpp för att preprocessa modulen"
+msgstr "Preprocessa modulen med cpp."
 
 #: m2/lang.opt:79 m2/lang.opt:83
-#, fuzzy, no-c-format
-#| msgid "passed to the preprocessor if -fcpp is used (internal switch)"
+#, no-c-format
 msgid "Passed to the preprocessor if -fcpp is used (internal switch)."
-msgstr "skickas till proprocessorn om -fcpp används (intern flagga)"
+msgstr "Skickas till proprocessorn om -fcpp används (intern flagga)."
 
 #: m2/lang.opt:87
-#, fuzzy, no-c-format
-#| msgid "call a real function, rather than the builtin equivalent"
+#, no-c-format
 msgid "Call a real function, rather than the builtin equivalent."
-msgstr "anropa en verklig funktion, snarare än den inbyggda likvärdiga"
+msgstr "Anropa en verklig funktion, snarare än den inbyggda likvärdiga."
 
 #: m2/lang.opt:91
-#, fuzzy, no-c-format
-#| msgid "turn on internal debugging of the compiler (internal switch)"
+#, no-c-format
 msgid "Internal debugging of the compiler (internal switch)."
-msgstr "slå på intern felsökning av kompilatorn (intern flagga)"
+msgstr "Intern felsökning av kompilatorn (intern flagga)."
 
 #: m2/lang.opt:95
-#, fuzzy, no-c-format
-#| msgid "turn on tracing of procedure line numbers (internal switch)"
+#, no-c-format
 msgid "Trace procedure line numbers (internal switch)."
-msgstr "slå på spårning av procedurers radnummer (intern flagga)"
+msgstr "Spåra procedurers radnummer (intern flagga)."
 
 #: m2/lang.opt:99
-#, fuzzy, no-c-format
-#| msgid "recognize the specified suffix as a definition module filename"
+#, no-c-format
 msgid "Recognize the specified suffix as a definition module filename."
-msgstr "känn igen det angivna suffixet som ett definitionsmudulsfilnamn"
+msgstr "Känn igen det angivna suffixet som ett definitionsmudulsfilnamn."
 
 #: m2/lang.opt:103
-#, fuzzy, no-c-format
-#| msgid "display all inbuilt system items"
+#, no-c-format
 msgid "Display all inbuilt system items."
-msgstr "visa alla inbyggda systemelement"
+msgstr "Visa alla inbyggda systemelement."
 
 #: m2/lang.opt:107
-#, fuzzy, no-c-format
-#| msgid "allows opaque types to be implemented as any type (a GNU Modula-2 extension)"
+#, no-c-format
 msgid "Allows opaque types to be implemented as any type (a GNU Modula-2 extension)."
-msgstr "tillåt ogenomskinliga typer att implementeras som godtycklig typ (en utökning i GNU Modula-2)"
+msgstr "Tillåt ogenomskinliga typer att implementeras som godtycklig typ (en utökning i GNU Modula-2)."
 
 #: m2/lang.opt:111
-#, fuzzy, no-c-format
-#| msgid "turns on runtime checking to check whether a floating point number will exceed range"
+#, no-c-format
 msgid "Runtime checking to check whether a floating point number will exceed range."
-msgstr "slår på körtidskontroll för att kontrollera huruvida ett flyttal kommer överskrida sitt intervall"
+msgstr "Körtidskontroll för att kontrollera huruvida ett flyttal kommer överskrida sitt intervall."
 
 #: m2/lang.opt:115
-#, fuzzy, no-c-format
-#| msgid "create a topologically sorted module list from all dependent modules used in the application"
+#, no-c-format
 msgid "Create a topologically sorted module list from all dependent modules used in the application."
-msgstr "skapa en topologiskt sorterad modullista av alla beroende moduler som används i programmet"
+msgstr "Skapa en topologiskt sorterad modullista av alla beroende moduler som används i programmet."
 
 #: m2/lang.opt:119
-#, fuzzy, no-c-format
-#| msgid "turns on all range checking for numerical values"
+#, no-c-format
 msgid "Range checking for numerical values."
-msgstr "slår på all intervallkontroll av numeriska värden"
+msgstr "Intervallkontroll av numeriska värden."
 
 #: m2/lang.opt:123
-#, fuzzy, no-c-format
-#| msgid "use ISO dialect of Modula-2"
+#, no-c-format
 msgid "ISO dialect of Modula-2."
-msgstr "använd ISO-dialekten av Modula-2"
+msgstr "ISO-dialekt av Modula-2."
 
 #: m2/lang.opt:127
-#, fuzzy, no-c-format
-#| msgid "specify the library order, the libraries may be specified by a comma separated abbreviation: log,min,pim,iso or by directory names: m2log,m2min,m2pim,m2iso."
+#, no-c-format
 msgid "Specify the library order, the libraries may be specified by a comma separated abbreviation: log,min,pim,iso or by directory names: m2log,m2min,m2pim,m2iso."
-msgstr "ange biblioteksordningen, biblioteken kan anges med en kommaseparerad förkortning: log,min,pim,iso eller med katalognamn: m2log,m2min,m2pim,m2iso.\""
+msgstr "Ange biblioteksordningen, biblioteken kan anges med en kommaseparerad förkortning: log,min,pim,iso eller med katalognamn: m2log,m2min,m2pim,m2iso.\""
 
 #: m2/lang.opt:131
-#, fuzzy, no-c-format
-#| msgid "set all location values to a specific value (internal switch)"
+#, no-c-format
 msgid "Set all location values to a specific value (internal switch)."
-msgstr "sätt alla platsvärden till ett specifikt värde (intern flagga)"
+msgstr "Sätt alla platsvärden till ett specifikt värde (intern flagga)."
 
 #: m2/lang.opt:135
-#, fuzzy, no-c-format
-#| msgid "turn on internal debug tracing for quad,token,line,all (internal switch)"
+#, no-c-format
 msgid "Internal debug tracing for quad,token,line,all (internal switch)."
-msgstr "slå på intern felsökningsspårning för quad,token,line,all (intern flagga)"
+msgstr "Intern felsökningsspårning för quad,token,line,all (intern flagga)."
 
 #: m2/lang.opt:139
-#, fuzzy, no-c-format
-#| msgid "dump Modula-2 internal intemediate representation specified by: all,quad,decl,gimple"
+#, no-c-format
 msgid "Dump Modula-2 internal intemediate representation specified by: all,quad,decl,gimple."
-msgstr "dumpa Modula-2:s interna intermediära representation specificerad med: all,quad,decl,gimple"
+msgstr "Dumpa Modula-2:s interna intermediära representation specificerad med: all,quad,decl,gimple."
 
 #: m2/lang.opt:143
-#, fuzzy, no-c-format
-#| msgid "dump Modula-2 decls to the filename stem specified"
+#, no-c-format
 msgid "Dump Modula-2 decls to the filename stem specified."
-msgstr "dumpa Modula-2:s decl:ar till den angiva filnamnsstammen"
+msgstr "Dumpa Modula-2:s decl:ar till den angiva filnamnsstammen."
 
 #: m2/lang.opt:147
-#, fuzzy, no-c-format
-#| msgid "dump Modula-2 gimple to the filename stem specified"
+#, no-c-format
 msgid "Dump Modula-2 gimple to the filename stem specified."
-msgstr "dumpa Modula-2:s gimple till den angivna filnamnsstammen"
+msgstr "Dumpa Modula-2:s gimple till den angivna filnamnsstammen."
 
 #: m2/lang.opt:151
-#, fuzzy, no-c-format
-#| msgid "dump Modula-2 quads to the filename stem specified"
+#, no-c-format
 msgid "Dump Modula-2 quads to the filename stem specified."
-msgstr "dumpa Modula-2:s quad:ar till den angivna filnamnsstammen"
+msgstr "Dumpa Modula-2:s quad:ar till den angivna filnamnsstammen."
 
 #: m2/lang.opt:155
-#, fuzzy, no-c-format
-#| msgid "filter the language dump using a comma separated list of procedures and modules"
+#, no-c-format
 msgid "Filter the language dump using a comma separated list of procedures and modules."
-msgstr "filtrera språkdumpen med en kommaseparerad lista av procedurer och moduler"
+msgstr "Filtrera språkdumpen med en kommaseparerad lista av procedurer och moduler."
 
 #: m2/lang.opt:159
-#, fuzzy, no-c-format
-#| msgid "override the default 64 bit definition of SYSTEM.COFF_T with the argument specified"
+#, no-c-format
 msgid "Override the default 64 bit definition of SYSTEM.COFF_T with the argument specified."
-msgstr "ersätt den standard 64-bitars definitionen av SYSTEM.COFF_T med det angivna argumentet"
+msgstr "Ersätt standard 64-bitars definitionen av SYSTEM.COFF_T med det angivna argumentet."
 
 #: m2/lang.opt:163
-#, fuzzy, no-c-format
-#| msgid "generate extra nops to improve debugging, producing an instruction for every code related keyword"
+#, no-c-format
 msgid "Generate extra nops to improve debugging, producing an instruction for every code related keyword."
-msgstr "generera extra nop:ar för att förbättra felsökningen, producera en instruktion för varje kodrelaterat nyckelord"
+msgstr "Generera extra nop:ar för att förbättra felsökningen, producera en instruktion för varje kodrelaterat nyckelord."
 
 #: m2/lang.opt:167
-#, fuzzy, no-c-format
-#| msgid "generate error messages which render keywords in lower case"
+#, no-c-format
 msgid "Generate error messages which render keywords in lower case."
-msgstr "generera felmeddelanden som visar nyckelord i gemener"
+msgstr "Generera felmeddelanden som visar nyckelord i gemener."
 
 #: m2/lang.opt:171
-#, fuzzy, no-c-format
-#| msgid "specify the module mangled prefix name for all modules in the following include paths"
+#, no-c-format
 msgid "Specify the module mangled prefix name for all modules in the following include paths."
-msgstr "ange det modulmanglade prefixnamnet för alla moduler i följande inkluderingssökvägar"
+msgstr "Ange det modulmanglade prefixnamnet för alla moduler i följande inkluderingssökvägar."
 
 #: m2/lang.opt:179
 #, no-c-format
@@ -8979,28 +8895,24 @@ msgid "Add include paths for all the library names in -flibs= to this directory 
 msgstr ""
 
 #: m2/lang.opt:187
-#, fuzzy, no-c-format
-#| msgid "insert plugin to identify runtime errors at compiletime"
+#, no-c-format
 msgid "Insert plugin to identify runtime errors at compiletime."
-msgstr "infoga insticksmodulen för att identifiera körtidsfel vid kompileringstillfället"
+msgstr "Infoga insticksmodulen för att identifiera körtidsfel vid kompileringstillfället."
 
 #: m2/lang.opt:191
-#, fuzzy, no-c-format
-#| msgid "specify the module mangled prefix name"
+#, no-c-format
 msgid "Specify the module mangled prefix name."
-msgstr "ange det modulmanglade prefixnamnet"
+msgstr "Ange det modulmanglade prefixnamnet."
 
 #: m2/lang.opt:195
-#, fuzzy, no-c-format
-#| msgid "display statistics about the amount of source lines compiled and symbols used"
+#, no-c-format
 msgid "Display statistics about the amount of source lines compiled and symbols used."
-msgstr "visa statistik om antalet kompilerade källkodsrader och använda symboler"
+msgstr "Visa statistik om antalet kompilerade källkodsrader och använda symboler."
 
 #: m2/lang.opt:199
-#, fuzzy, no-c-format
-#| msgid "experimental flag to turn on the new strict type checker"
+#, no-c-format
 msgid "Experimental flag to turn on the new strict type checker."
-msgstr "experimentell flagga för att slå på den nya strikta typkontrolleraren"
+msgstr "Experimentell flagga för att slå på den nya strikta typkontrolleraren."
 
 #: m2/lang.opt:203
 #, no-c-format
@@ -9008,148 +8920,124 @@ msgid "Provides more detail why the types are incompatible."
 msgstr ""
 
 #: m2/lang.opt:207
-#, fuzzy, no-c-format
-#| msgid "compile all implementation modules and program module at once"
+#, no-c-format
 msgid "Compile all implementation modules and program module at once."
-msgstr "kompilera alla implementationsmoduler och programmoduler på en gång"
+msgstr "Kompilera alla implementationsmoduler och programmoduler på en gång."
 
 #: m2/lang.opt:215
-#, fuzzy, no-c-format
-#| msgid "recognize the specified suffix as implementation and module filenames"
+#, no-c-format
 msgid "Recognize the specified suffix as implementation and module filenames."
-msgstr "känn igen det angivna suffixet som implementation och modulfilnamn"
+msgstr "Känn igen det angivna suffixet som implementation och modulfilnamn."
 
 #: m2/lang.opt:219
-#, fuzzy, no-c-format
-#| msgid "turns on runtime checking to detect accessing data through a NIL value pointer"
+#, no-c-format
 msgid "Runtime checking to detect accessing data through a NIL value pointer."
-msgstr "slår på körtidskontroll för att upptäcka åtkomst av data via en NIL-värdespekare"
+msgstr "Körtidskontroll för att upptäcka åtkomst av data via en NIL-värdespekare."
 
 #: m2/lang.opt:223
-#, fuzzy, no-c-format
-#| msgid "use PIM [234] dialect of Modula-2"
+#, no-c-format
 msgid "PIM [234] dialect of Modula-2."
-msgstr "använd PIM [234]-dialekten av Modula-2"
+msgstr "PIM [234]-dialekten av Modula-2."
 
 #: m2/lang.opt:227
-#, fuzzy, no-c-format
-#| msgid "use PIM 2 dialect of Modula-2"
+#, no-c-format
 msgid "PIM 2 dialect of Modula-2."
-msgstr "använd PIM 2-dialekten av Modula-2"
+msgstr "PIM 2-dialekten av Modula-2."
 
 #: m2/lang.opt:231
-#, fuzzy, no-c-format
-#| msgid "use PIM 3 dialect of Modula-2"
+#, no-c-format
 msgid "PIM 3 dialect of Modula-2."
-msgstr "använd PIM 3-dialekten av Modula-2"
+msgstr "PIM 3-dialekten av Modula-2."
 
 #: m2/lang.opt:235
-#, fuzzy, no-c-format
-#| msgid "use PIM 4 dialect of Modula-2"
+#, no-c-format
 msgid "PIM 4 dialect of Modula-2."
-msgstr "använd PIM 4-dialekten av Modula-2"
+msgstr "PIM 4-dialekten av Modula-2."
 
 #: m2/lang.opt:239
-#, fuzzy, no-c-format
-#| msgid "force positive result from MOD and DIV result floor"
+#, no-c-format
 msgid "Force positive result from MOD and DIV result floor."
-msgstr "framtvinga positiva resultat från MOD och DIV resultatgolv"
+msgstr "Framtvinga positiva resultat från MOD och DIV resultatgolv."
 
 #: m2/lang.opt:243
-#, fuzzy, no-c-format
-#| msgid "link against the pthread library (default on)"
+#, no-c-format
 msgid "Link against the pthread library (default on)."
-msgstr "länka mot biblioteket pthread (standard på)"
+msgstr "Länka mot biblioteket pthread (standard på)."
 
 #: m2/lang.opt:247
-#, fuzzy, no-c-format
-#| msgid "internal compiler debugging information, dump the list of quadruples"
+#, no-c-format
 msgid "Internal compiler debugging information, dump the list of quadruples."
-msgstr "inter information för kompilatorfelsökning, dumpa listan av kvadrupler"
+msgstr "Intern information för kompilatorfelsökning, dumpa listan av kvadrupler."
 
 #: m2/lang.opt:251
-#, fuzzy, no-c-format
-#| msgid "turns on all range checking for numerical values"
+#, no-c-format
 msgid "Runtime range checking for numerical values."
-msgstr "slår på all intervallkontroll av numeriska värden"
+msgstr "Körtidkontrol av intervall för numeriska värden."
 
 #: m2/lang.opt:255
-#, fuzzy, no-c-format
-#| msgid "turns on runtime checking for functions which finish without executing a RETURN statement"
+#, no-c-format
 msgid "Runtime checking for functions which finish without executing a RETURN statement."
-msgstr "slår på körtidskontroll av funktioner vilka avslutar utan att utföra en RETURN-sats"
+msgstr "Körtidskontroll av funktioner vilka avslutar utan att utföra en RETURN-sats."
 
 #: m2/lang.opt:259
-#, fuzzy, no-c-format
-#| msgid "specify the list of runtime modules and their initialization order"
+#, no-c-format
 msgid "Specify the list of runtime modules and their initialization order."
-msgstr "ange listan av körtidsmoduler och deras initieringsordning"
+msgstr "Ange listan av körtidsmoduler och deras initieringsordning."
 
 #: m2/lang.opt:263
-#, fuzzy, no-c-format
-#| msgid "the modules initialization order is dynamically determined by M2RTS and application dependencies"
+#, no-c-format
 msgid "Modules are initialized dynamically, determined by M2RTS and application dependencies."
-msgstr "modulinitieringsordningen är dynamiskt bestämd av M2RTS och programberoenden"
+msgstr "Moduler initieras dynamiskt, bestämt av M2RTS och programberoenden."
 
 #: m2/lang.opt:267
-#, fuzzy, no-c-format
-#| msgid "generate a C source scaffold for the current module being compiled"
+#, no-c-format
 msgid "Generate a C source scaffold for the current module being compiled."
-msgstr "generera en C-kodsställning för den aktuella modulen som kompileras"
+msgstr "Generera en C-kodsställning för den aktuella modulen som kompileras."
 
 #: m2/lang.opt:271
-#, fuzzy, no-c-format
-#| msgid "generate a C++ source scaffold for the current module being compiled"
+#, no-c-format
 msgid "Generate a C++ source scaffold for the current module being compiled."
-msgstr "generera en C++-kodställingsinitiering och -avslutning för varje modul inuti main"
+msgstr "Generera en C++-kodställingsinitiering och -avslutning för varje modul inuti main."
 
 #: m2/lang.opt:275
-#, fuzzy, no-c-format
-#| msgid "generate the main function"
+#, no-c-format
 msgid "Generate the main function."
-msgstr "generera huvudfunktionen"
+msgstr "Generera huvudfunktionen."
 
 #: m2/lang.opt:279
-#, fuzzy, no-c-format
-#| msgid "generate static scaffold initialization and finalization for every module inside main"
+#, no-c-format
 msgid "Generate static scaffold initialization and finalization for every module inside main."
-msgstr "generera statisk ställningsinitiering och avslutning för varje modul inuti main"
+msgstr "Generera statisk ställningsinitiering och avslutning för varje modul inuti main."
 
 #: m2/lang.opt:283
-#, fuzzy, no-c-format
-#| msgid "generate a shared library from the module"
+#, no-c-format
 msgid "Generate a shared library from the module."
-msgstr "generera ett delat bibliotek av modulen"
+msgstr "Generera ett delat bibliotek av modulen."
 
 #: m2/lang.opt:287
-#, fuzzy, no-c-format
-#| msgid "turns on all software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)"
+#, no-c-format
 msgid "All software runtime checking (an abbreviation for -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)."
-msgstr "slår på all kontroll i programvara vid körtillfället (en förkortning av -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)"
+msgstr "All kontroll i programvara vid körtillfället (en förkortning av -fnil -frange -findex -fwholediv -fcase -freturn -fwholevalue -ffloatvalue)."
 
 #: m2/lang.opt:291
-#, fuzzy, no-c-format
-#| msgid "display the location of module source files as they are compiled"
+#, no-c-format
 msgid "Display the location of module source files as they are compiled."
-msgstr "visa platsen för modulkällkodsfiler allteftersom de kompileras"
+msgstr "Visa platsen för modulkällkodsfiler allteftersom de kompileras."
 
 #: m2/lang.opt:295
-#, fuzzy, no-c-format
-#| msgid "create a swig interface file for the module"
+#, no-c-format
 msgid "Create a swig interface file for the module."
-msgstr "skapa en swig-gränssnittsfil för modulen"
+msgstr "Skapa en swig-gränssnittsfil för modulen."
 
 #: m2/lang.opt:303
-#, fuzzy, no-c-format
-#| msgid "optimize non var unbounded parameters by passing it by reference, providing it is not written to within the callee procedure."
+#, no-c-format
 msgid "Optimize non var unbounded parameters by passing it by reference, providing it is not written to within the callee procedure."
-msgstr "optimera icke-var obegränsade parametrar genom att skicka dem via referens, förutsatt att den inte skrivs till i den anropade proceduren."
+msgstr "Optimera icke-var obegränsade parametrar genom att skicka dem via referens, förutsatt att den inte skrivs till i den anropade proceduren.."
 
 #: m2/lang.opt:307
-#, fuzzy, no-c-format
-#| msgid "orders the initialization/finalizations for scaffold-static or force linking of modules if scaffold-dynamic"
+#, no-c-format
 msgid "Order the initialization/finalizations for scaffold-static or force linking of modules if scaffold-dynamic."
-msgstr "ordrar initieringar/avslutningar för ställnings-statiska eller tvingad länkning av moduler om ställning-dynamisk"
+msgstr "Ordrar initieringar/avslutningar för ställnings-statiska eller tvingad länkning av moduler om ställning-dynamisk."
 
 #: m2/lang.opt:315
 #, no-c-format
@@ -9157,10 +9045,9 @@ msgid "Link against the module M2WIDESET to perform the wideset operator, the ne
 msgstr ""
 
 #: m2/lang.opt:319
-#, fuzzy, no-c-format
-#| msgid "turns on all division and modulus by zero checking for ordinal values"
+#, no-c-format
 msgid "Runtime checking of all division and modulus by zero checking for ordinal values."
-msgstr "slår på kontroller av noll för ordinalvärden för alla divisioner och moduloberäkningar"
+msgstr "Körtidskontroll av division och modulus med noll för ordinalvärden."
 
 #: m2/lang.opt:323
 #, no-c-format
@@ -9173,10 +9060,9 @@ msgid "Link the standard Modula-2 libraries statically in the compilation."
 msgstr "Länka standard Modula-2-biblioteken statiskt i kompileringen."
 
 #: m2/lang.opt:472 m2/lang.opt:476
-#, fuzzy, no-c-format
-#| msgid "save temporary preprocessed files"
+#, no-c-format
 msgid "save temporary preprocessed files."
-msgstr "spara temporära preprocessade filer"
+msgstr "spara temporära preprocessade filer."
 
 #: fortran/lang.opt:146
 #, no-c-format
@@ -9529,10 +9415,9 @@ msgid "Specify that an external BLAS library should be used for matmul calls on 
 msgstr "Ange att ett externt BLAS-bibliotek skall användas för matmul-anrop på större vektorer."
 
 #: fortran/lang.opt:575
-#, fuzzy, no-c-format
-#| msgid "Specify that an external BLAS library should be used for matmul calls on large-size arrays."
+#, no-c-format
 msgid "Use an external BLAS library with 64-bit indexing for matmul on large-size arrays."
-msgstr "Ange att ett externt BLAS-bibliotek skall användas för matmul-anrop på större vektorer."
+msgstr "Använd ett externt BLAS-bibliotek med 64-bitars inderxering för matmul-anrop på stora vektorer."
 
 #: fortran/lang.opt:579
 #, no-c-format
@@ -9935,10 +9820,9 @@ msgid "Emit optimization diagnostics."
 msgstr "Skriv ut optimeringsmeddelanden."
 
 #: params.opt:27
-#, fuzzy, no-c-format
-#| msgid "Loops iterating at least selected number of iterations will get loop alignment."
+#, no-c-format
 msgid "Loops iterating at least selected number of iterations get loop alignment."
-msgstr "Slingor som itererar åtminstone det valda antalet gånger kommer att få slingjustering."
+msgstr "Slingor som itererar åtminstone det valda antalet gånger får slingjustering."
 
 #: params.opt:31
 #, no-c-format
@@ -9996,10 +9880,9 @@ msgid "Build basic block profile using auto profile."
 msgstr ""
 
 #: params.opt:75
-#, fuzzy, no-c-format
-#| msgid "Enable function reordering that improves code placement."
+#, no-c-format
 msgid "Enable only function reordering with auto-profile."
-msgstr "Aktivera omflyttning av funktioner för att förbättra kodplacering."
+msgstr "Aktivera endast omflyttning av funktioner med auto-profil."
 
 #: params.opt:79
 #, no-c-format
@@ -10007,8 +9890,7 @@ msgid "Whether the scheduling description is mostly a cycle-accurate model of th
 msgstr "Huruvida schemaläggningsbeskrivningen är huvudsakligen en modell med cykelnoggrannhet av målprocessorn och troligen kommer att spilla över aggressivt för att fylla eventuella pipeline-bubblor."
 
 #: params.opt:83
-#, fuzzy, no-c-format
-#| msgid "Enable hwasan instrumentation of statically sized stack-allocated variables."
+#, no-c-format
 msgid "Enable hwasan instrumentation of statically-sized stack-allocated variables."
 msgstr "Aktivera hwasan-instrumentering av stackallokerade variabler med statisk storlek."
 
@@ -10043,10 +9925,9 @@ msgid "When sanitizing using MTE instructions, add checks for all stack allocas.
 msgstr ""
 
 #: params.opt:111
-#, fuzzy, no-c-format
-#| msgid "Enable hwasan instrumentation of builtin functions."
+#, no-c-format
 msgid "When sanitizing using MTE instructions, include builtin functions."
-msgstr "Aktivera hwasan-instrumentering av inbyggda funktioner."
+msgstr "Vid sanering använd MTE-instruktioner, inklusive inbyggda funktioner."
 
 #: params.opt:115
 #, no-c-format
@@ -10064,16 +9945,14 @@ msgid "Set the estimated probability in percentage for builtin expect. The defau
 msgstr "Ange den uppskattade sannolikheten i procent för den inbyggda expect.  Standardvärdet är 90 % sannolikhet."
 
 #: params.opt:127
-#, fuzzy, no-c-format
-#| msgid "The maximum length of a constant string for a builtin string cmp call eligible for inlining. The default value is 3."
+#, no-c-format
 msgid "The maximum length of a constant string for a builtin string comparison call eligible for inlining. The default value is 3."
 msgstr "Den maximala längden på en konstant sträng för att ett inbyggt strängjämförelseanrop skall vara tänkbart för inline:ing.  Standardvärdet är 3."
 
 #: params.opt:131
-#, fuzzy, no-c-format
-#| msgid "The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches, if 0, use the default for the machine."
+#, no-c-format
 msgid "The smallest number of different values for which it is best to use a jump-table instead of a tree of conditional branches.  If 0, use the default for the machine."
-msgstr "Det minsta antalet olika värden för vilka det är bäst att använda hopptabeller istället för ett träd med villkorliga grenar, om 0, använd standardvärdet för maskinen."
+msgstr "Det minsta antalet olika värden för vilka det är bäst att använda hopptabeller istället för ett träd med villkorliga grenar- Om 0, använd standardvärdet för maskinen."
 
 #: params.opt:135
 #, fuzzy, no-c-format
