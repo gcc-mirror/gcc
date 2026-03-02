@@ -1,3 +1,8 @@
+2026-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add
+	9a7da540b63e7d77e747b5cdd6fdbbd3954e28c8.
+
 2026-02-24  Piyush Raj  <piyushraj92739@gmail.com>
 
 	* bpf-vmtest-tool/README: New file.

@@ -1,3 +1,13 @@
+2026-02-27  James Bohl  <bohlj47@gmail.com>
+
+	* a68-low-prelude.cc (a68_lower_negate2): Annotate denotation
+	as being negated.
+	* a68-low-units.cc (a68_lower_denotation): Allow the full range
+	of negative values if the denotation is negated.
+	* a68-types.h (struct NODE_T): Add negated field.
+	(NEGATED): Define.
+	* a68-parser.cc (a68_new_node): Initialize NEGATED.
+
 2026-02-26  James Bohl  <bohlj47@gmail.com>
 
 	* a68-low-units.cc (a68_lower_denotation): Add error on

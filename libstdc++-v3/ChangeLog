@@ -1,3 +1,8 @@
+2026-02-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/105580
+	* testsuite/24_iterators/istreambuf_iterator/105580.cc: New test.
+
 2026-02-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* testsuite/29_atomics/atomic_ref/requirements_neg.cc: Add

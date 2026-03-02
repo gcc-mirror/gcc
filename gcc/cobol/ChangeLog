@@ -1,3 +1,10 @@
+2026-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR cobol/123238
+	* lexio.cc: Remove <iostream> include.
+	(cdftext::process_file): Remove if (false) gated use of
+	iostream code.
+
 2026-02-26  Robert Dubner  <rdubner@symas.com>
 
 	* parse.y: BASECONVERT and TRIM take their type from their first

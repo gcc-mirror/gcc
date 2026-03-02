@@ -1,3 +1,31 @@
+2026-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124285
+	* gcc-interface/decl.cc (components_to_record): Force a packed
+	layout for the innermost variant of an unchecked union type with
+	fixed part and full representation clause.
+
+2026-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124201
+	PR ada/124282
+	* exp_aggr.adb (Expand_Iterated_Component): Replace the iteration
+	variable in the expression as well.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Preanalyze
+	the expression directly as well.
+
+2026-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123306
+	* freeze.adb (Freeze_Entity): For a class-wide equivalent type of
+	a non-interface root type, freeze the root type before it.
+	* sem_ch3.adb (Derived_Type_Declaration): Minor tweak.
+	* sem_ch12.adb (Analyze_One_Association): Revert latest change.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause) <Size>: When
+	the prefix is a class-wide type, insert the declaration of the CW-
+	equivalent type immediately after that of the root type, and the
+	size check for the root type into its own freezing actions.
+
 2026-02-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/124201

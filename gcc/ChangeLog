@@ -1,3 +1,255 @@
+2026-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124294
+	* config/i386/sse.md (avx512fp16_mov<mode>): Fix ordering of operands
+	for -masm=intel for the avx10_2 alternative.  Fix up indentation in
+	the insn condition.
+	(vec_set<mode>_0): Fix comment typo, higer -> higher.
+
+2026-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/57261
+	* configure.ac (gcc_cv_ld_as_needed) <i?86-*-solaris2* |
+	x86_64-*-solaris2*>: Don't disable.
+	* configure: Regenerate.
+
+2026-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (solaris_ld): New check.
+	Test solaris_ld instead of gnu_ld_flag.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/sol2.h: Switch to HAVE_SOLARIS_LD.
+	* config/sol2.h: Likewise.
+	* config/sparc/sol2.h: Likewise.
+	* config/sparc/sparc.md: Likewise.
+
+2026-03-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (solaris_as): New check.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/i386/i386.cc: Switch to HAVE_SOLARIS_AS.
+	* config/i386/sol2.h: Likewise.
+	* config/sol2.h: Likewise.
+	* config/sparc/sol2.h: Likewise.
+	* config/sparc/sparc.cc: Likewise.
+	* config/sparc/sparc.md: Likewise.
+
+2026-02-28  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR tree-optimization/90036
+	* tree-ssa-dom.cc (back_propagate_equivalences): Accept new
+	argument for available expression stack.  Lookup equivalences
+	in the expression hash table too.  If an expression hash a
+	known constant value, record it and recurse.
+	(record_temporary_equivalences): Back propagate for a subset of
+	edge equivalences.
+
+2026-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	PR target/124094
+	* config/aarch64/aarch64-generate-json-tuning-routines.py
+	(generate_field_code): Add "ctxt, " arg to function call when
+	operation is "parse".
+	(generate_function): Add "gcc_json_context &ctxt, " param to
+	function decl when operation is "parse".
+	* config/aarch64/aarch64-json-tunings-parser-generated.inc:
+	Regenerate, passing around a gcc_json_context &.
+	* config/aarch64/aarch64-json-tunings-parser.cc: Include
+	"json-diagnostic.h".
+	(WARNING_OPT) New macro.
+	(PARSE_INTEGER_FIELD): Add "ctxt" param and pass it around.
+	(PARSE_UNSIGNED_INTEGER_FIELD): Likewise.
+	(PARSE_BOOLEAN_FIELD): Likewise.
+	(PARSE_STRING_FIELD): Likewise.
+	(PARSE_OBJECT): Likewise.
+	(PARSE_ARRAY_FIELD): Likewise.
+	(PARSE_ENUM_FIELD): Likewise.
+	(parse_func_type): Likewise.
+	(parse_object_helper): Likewise.  Use json_error rather than error.
+	(inform_about_wrong_kind_of_json_value): New.
+	(extract_string): Add "ctxt" param.  Replace "warning" with a pair
+	of calls to json_warning and
+	inform_about_wrong_kind_of_json_value, tweaking wording
+	accordingly.
+	(extract_integer): Likewise.
+	(extract_unsigned_integer): Likewise.
+	(parse_enum_field): Likewise.
+	(validate_and_traverse): Replace "warning" and "error" with
+	"json_warning" and "json_error".
+	(check_version_compatibility): Use WARNING_OPT.  Add
+	auto_diagnostic_group to group the error and note.
+	(aarch64_load_tuning_params_from_json_string): Add "js_filename"
+	param.  Use gcc_json_context to capture location info.  Use it
+	when reporting errors to get file/line/column info.  Replace check
+	on root being non-null with assertion, as this is guaranteed if
+	error is non-null.  Replace warning with json_warning.
+	(aarch64_load_tuning_params_from_json): Pass data_filename to
+	aarch64_load_tuning_params_from_json_string for use when reporting
+	diagnostics.
+	(selftest::test_json_integers): Add a placeholder filename.
+	(selftest::test_json_boolean): Likewise.
+	(selftest::test_json_strings): Likewise.
+	(selftest::test_json_enums): Likewise.
+
+2026-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add json-diagnostic.o.
+	* diagnostics/client-data-hooks.h
+	(class client_data_hooks_decorator): New.
+	* diagnostics/context.cc (context::set_client_data_hooks): Return
+	the old hooks.
+	* diagnostics/context.h (context::set_client_data_hooks): Update
+	decl likewise.
+	* json-diagnostic.cc: New file.
+	* json-diagnostic.h: New file.
+
+2026-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/aarch64/aarch64-json-tunings-parser.cc: Define
+	INCLUDE_MAP.
+	* json-parsing.cc: Likewise.
+	* json-parsing.h (class simple_location_map): New class, moved and
+	renamed from...
+	* libsarifreplay.cc (class replayer_location_map): ...here.
+	(sarif_replayer::m_json_location_map): Update for renaming of
+	class.
+
+2026-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon):
+	Add diagnostics/physical-location-maker.o.
+	* diagnostics/physical-location-maker.cc: New file, adapted from
+	material in libgdiagnostics.cc.
+	* diagnostics/physical-location-maker.h: New file, adapted from
+	material in libgdiagnostics.cc.
+	* libgdiagnostics.cc: Include
+	"diagnostics/physical-location-maker.h".
+	(diagnostic_manager::diagnostic_manager): Initialize
+	m_phys_loc_maker.
+	(diagnostic_manager::new_location_from_file_and_line): Split out
+	into physical_location_maker.
+	(diagnostic_manager::new_location_from_file_line_column):
+	Likewise.
+	(diagnostic_manager::ensure_linemap_for_file_and_line): Likewise.
+	(diagnostic_manager::m_phys_loc_maker): New field.
+
+2026-02-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/html-sink.cc
+	(html_builder::make_element_for_diagnostic): Update for logical
+	location strings being returned as  label_text rather than
+	const char *.
+	* diagnostics/logical-locations.h
+	(logical_locations::manager::get_short_name): Return label_text
+	rather than const char *.
+	(logical_locations::manager::get_name_with_scope): Likewise.
+	(logical_locations::manager::get_internal_name): Likewise.
+	* diagnostics/sarif-sink.cc
+	(sarif_builder::ensure_sarif_logical_location_for): Update for
+	logical location strings being returned as label_text rather than
+	const char *.
+	(sarif_builder::make_minimal_sarif_logical_location): Likewise.
+	* diagnostics/selftest-logical-locations.cc
+	(test_manager::get_short_name): Likewise.
+	(test_manager::get_name_with_scope): Likewise.
+	(test_manager::get_internal_name): Likewise.
+	(selftest_logical_locations_cc_tests): Likewise.
+	* diagnostics/selftest-logical-locations.h
+	(test_manager::get_short_name): Likewise.
+	(test_manager::get_name_with_scope): Likewise.
+	(test_manager::get_internal_name): Likewise.
+	* diagnostics/state-graphs-to-dot.cc
+	(state_diagram::on_node_in_table): Likewise.
+	* libgdiagnostics.cc
+	(impl_logical_location_manager::get_short_name): Likewise.
+	(impl_logical_location_manager::get_name_with_scope): Likewise.
+	(impl_logical_location_manager::get_internal_name): Likewise.
+	* tree-logical-location.cc
+	(tree_logical_location_manager::get_short_name): Likewise.
+	(tree_logical_location_manager::get_name_with_scope): Likewise.
+	(tree_logical_location_manager::get_internal_name): Likewise.
+	* tree-logical-location.h
+	(tree_logical_location_manager::get_short_name): Likewise.
+	(tree_logical_location_manager::get_name_with_scope): Likewise.
+	(tree_logical_location_manager::get_internal_name): Likewise.
+
+2026-02-28  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c/87591
+	* doc/extend.texi (Attributes): Document __attribute keyword.
+	(Attribute Syntax): Here too.
+
+2026-02-28  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/extend.texi (Attributes): Rename the node "GNU Attribute
+	Syntax" node back to "Attribute Syntax"; fix references.  Add
+	@anchor for sections recently merged away at the new location of
+	the material they used to contain.
+
+2026-02-28  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR middle-end/113436
+	* omp-low.cc (lower_omp_target): Merge branches for allocating memory
+	for private clauses.  Add handling for references when allocator
+	clause not specified.
+
+2026-02-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/124142
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	For early break require masking when operation can trap.
+
+2026-02-27  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR tree-optimization/90036
+	* tree-ssa-scopedtables.cc (avail_exprs_stack::record_cond): Always
+	record the new hash table entry.
+
+2026-02-27  Xi Ruoyao  <xry111@xry111.site>
+
+	PR middle-end/124280
+	* optabs.cc (expand_vector_broadcast): Allow broadcasting QImode
+	to BImode vector.
+
+2026-02-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/123229
+	* ipa-prop.cc (update_indirect_edges_after_inlining): Reset parameter
+	index associated with an indirect edge if the inlined edge does not
+	have any jump functions.
+
+2026-02-27  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/aarch64-json-tunings-parser.cc (parse_object_helper):
+	Zero-initialize objects that are NULL in the base tunings, if provided
+	in JSON tunings.
+	* config/aarch64/aarch64-protos.h (struct sve_vec_cost): Add default
+	constructor.
+	(struct aarch64_simd_vec_issue_info): Likewise.
+	(struct aarch64_sve_vec_issue_info): Likewise.
+
+2026-02-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/123629
+	* ipa-polymorphic-call.cc
+	(ipa_polymorphic_call_context::meet_with): When an outer context is
+	NULL, call make_speculative on the other one.
+
+2026-02-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/124162
+	* config/aarch64/aarch64-sve.md (cond_vec_cbranch_any,
+	cond_vec_cbranch_all): Drop partial vectors support.
+
+2026-02-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/117935
+	* tree-ssa-phiopt.cc (contains_hot_cold_predict): New function.
+	(match_simplify_replacement): Return early if early_p and one of
+	the middle bb(s) have a hot/cold predict statement.
+
 2026-02-26  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/115042

@@ -1,3 +1,24 @@
+2026-03-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/124286
+	* acinclude.m4: Remove LIBGFOR_CHECK_SANE_BUILTIN_CLZL.
+	* caf/shmem/allocator.c (next_power_of_two): Use known sane
+	builtin.
+	* configure: Regenerate.
+	* configure.ac: Remove use of LIBGFOR_CHECK_SANE_BUILTIN_CLZL.
+
+2026-02-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+
+2026-02-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/88076
+	* caf/shmem/supervisor.c (supervisor_main_loop): Use fprintf
+	instead of dprintf.
+
 2026-02-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/88076

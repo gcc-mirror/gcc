@@ -1,3 +1,10 @@
+2026-02-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/78187
+	* trans-decl.cc (gfc_trans_deferred_vars): An initialization block
+	shall be generated for deferred-length character results even
+	when -fno-automatic is given.
+
 2026-02-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/88076
