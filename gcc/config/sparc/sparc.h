@@ -1620,6 +1620,10 @@ extern int sparc_indent_opcode;
       }					\
   } while (0)
 
+#ifndef HAVE_AS_TLS
+#define HAVE_AS_TLS 0
+#endif
+
 /* TLS support defaults to GNU extensions.  The original Sun flavor must be
    activated in separate configuration files.  */
 #define TARGET_TLS HAVE_AS_TLS
