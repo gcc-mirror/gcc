@@ -1,3 +1,10 @@
+2026-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124285
+	* gcc-interface/decl.cc (components_to_record): Force a packed
+	layout for the innermost variant of an unchecked union type with
+	fixed part and full representation clause.
+
 2026-02-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/124226
