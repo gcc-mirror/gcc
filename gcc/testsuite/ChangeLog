@@ -1,3 +1,25 @@
+2026-03-02  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-02-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/124236
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_3a_complex_neon_hw): Fix default value.
+
+2026-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/unchecked_union3.ads: New test.
+
+2026-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/mutably_tagged2.ads: New test.
+
+2026-02-27  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/122097
+	* gcc.target/loongarch/pr122097.c (dg-final): Remove.
+
 2026-02-26  Michal Jires  <mjires@suse.cz>
 
 	Backported from master:
