@@ -8393,9 +8393,13 @@
     enum rtx_code code = GET_CODE (operands[1]);
     rtx ccreg;
 
+    /* Perverse combinations of architecture options can't be supported
+       as they need conditional instructions.  */
+    if (TARGET_THUMB2 && arm_restrict_it && !TARGET_VFP5)
+      FAIL;
     if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0),
        				  &XEXP (operands[1], 1)))
-       FAIL;
+      FAIL;
 
     code = GET_CODE (operands[1]);
     ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
@@ -8415,9 +8419,13 @@
     enum rtx_code code = GET_CODE (operands[1]);
     rtx ccreg;
 
+    /* Perverse combinations of architecture options can't be supported
+       as they need conditional instructions.  */
+    if (TARGET_THUMB2 && arm_restrict_it && !TARGET_VFP5)
+      FAIL;
     if (!arm_validize_comparison (&operands[1], &XEXP (operands[1], 0), 
        				  &XEXP (operands[1], 1)))
-       FAIL;
+      FAIL;
     code = GET_CODE (operands[1]);
     ccreg = arm_gen_compare_reg (code, XEXP (operands[1], 0),
 				 XEXP (operands[1], 1), NULL_RTX);

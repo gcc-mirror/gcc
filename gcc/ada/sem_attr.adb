@@ -11620,6 +11620,7 @@ package body Sem_Attr is
                end if;
 
                Resolve (Prefix (P));
+               Resolve_Implicit_Dereference (Prefix (P));
 
                if not Is_Overloaded (P) then
                   Generate_Reference (Entity (Selector_Name (P)), P);

@@ -845,7 +845,15 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  tree fntype = TREE_TYPE (CALL_EXPR_FN (*expr_p));
 	  if (INDIRECT_TYPE_P (fntype))
 	    fntype = TREE_TYPE (fntype);
-	  if (TREE_CODE (fntype) == METHOD_TYPE)
+	  tree decl = cp_get_callee_fndecl_nofold (*expr_p);
+	  /* We can't just rely on 'decl' because virtual function callees
+	     are expressed as OBJ_TYPE_REF.  Note that the xobj memfn check
+	     will also hold for calls of the form (&A::f)(a, ...) which does
+	     not require such sequencing, though it's allowed under
+	     "indeterminately sequenced".  */
+	  if (TREE_CODE (fntype) == METHOD_TYPE
+	      || (decl && DECL_LANG_SPECIFIC (decl)
+		  && DECL_XOBJ_MEMBER_FUNCTION_P (decl)))
 	    {
 	      int nargs = call_expr_nargs (*expr_p);
 	      bool side_effects = false;

@@ -1719,7 +1719,7 @@ struct aarch64_pragma_builtins_data
   unsigned int flags;
 };
 
-static aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
+static CONSTEXPR aarch64_pragma_builtins_data aarch64_pragma_builtins[] = {
 #include "aarch64-simd-pragma-builtins.def"
 };
 

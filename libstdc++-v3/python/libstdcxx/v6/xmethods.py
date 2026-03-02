@@ -28,8 +28,6 @@ def get_bool_type():
 def get_std_size_type():
     return gdb.lookup_type('std::size_t')
 
-_versioned_namespace = '__8::'
-
 def is_specialization_of(x, template_name):
     """
     Test whether a type is a specialization of the named class template.
@@ -39,8 +37,7 @@ def is_specialization_of(x, template_name):
     """
     if isinstance(x, gdb.Type):
         x = x.tag
-    template_name = '(%s)?%s' % (_versioned_namespace, template_name)
-    return re.match(r'^std::(__\d::)?%s<.*>$' % template_name, x) is not None
+    return re.match(r'^std::(__\d::|__debug::)?%s<.*>$' % template_name, x) is not None
 
 class LibStdCxxXMethod(gdb.xmethod.XMethod):
     def __init__(self, name, worker_class):
@@ -445,7 +442,7 @@ class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
         if method is None or not method.enabled:
             return None
         val_type = class_type.template_argument(0)
-        node_type = gdb.lookup_type(str(class_type) + '::_Node').pointer()
+        node_type = gdb.lookup_type(str(class_type) + '::_Node_ptr')
         return method.worker_class(val_type, node_type)
 
 # Xmethods for std::vector

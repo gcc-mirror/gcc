@@ -976,7 +976,7 @@ riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
 bool
 riscv_expand_block_move (rtx dest, rtx src, rtx length)
 {
-  if ((TARGET_VECTOR && !TARGET_XTHEADVECTOR)
+  if (TARGET_VECTOR
       && stringop_strategy & STRATEGY_VECTOR)
     {
       bool ok = riscv_vector::expand_block_move (dest, src, length, false);
@@ -1082,8 +1082,14 @@ use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
   rtx avl = length_in;
   HOST_WIDE_INT potential_ew = max_ew;
 
-  if (!TARGET_VECTOR || !(stringop_strategy & STRATEGY_VECTOR))
+  if (!TARGET_VECTOR
+      || !(stringop_strategy & STRATEGY_VECTOR))
     return false;
+
+  if (TARGET_XTHEADVECTOR
+      && (!CONST_INT_P (length_in)
+	  || known_lt (INTVAL (length_in), BYTES_PER_RISCV_VECTOR)))
+      return false;
 
   if (CONST_INT_P (length_in))
     {
@@ -1377,10 +1383,7 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx haystack, rtx needle,
 		   riscv_vector::UNARY_OP, vlops);
 
   /* Read how far we read.  */
-  if (Pmode == SImode)
-    emit_insn (gen_read_vlsi (cnt));
-  else
-    emit_insn (gen_read_vldi_zero_extend (cnt));
+  emit_insn (gen_read_vl (Pmode, cnt));
 
   /* Compare needle with haystack and store in a mask.  */
   rtx eq = gen_rtx_EQ (mask_mode, gen_const_vec_duplicate (vmode, needle), vec);
@@ -1493,10 +1496,7 @@ expand_strcmp (rtx result, rtx src1, rtx src2, rtx nbytes,
     }
 
   /* Read the vl for the next pointer bump.  */
-  if (Pmode == SImode)
-    emit_insn (gen_read_vlsi (cnt));
-  else
-    emit_insn (gen_read_vldi_zero_extend (cnt));
+  emit_insn (gen_read_vl (Pmode, cnt));
 
   if (with_length)
     {
@@ -1576,6 +1576,10 @@ check_vectorise_memory_operation (rtx length_in, HOST_WIDE_INT &lmul_out)
     return false;
 
   HOST_WIDE_INT length = INTVAL (length_in);
+
+  if (TARGET_XTHEADVECTOR
+      && known_lt (length, BYTES_PER_RISCV_VECTOR))
+    return false;
 
   /* If it's tiny, default operation is likely better; maybe worth
      considering fractional lmul in the future as well.  */

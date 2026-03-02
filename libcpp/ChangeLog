@@ -1,3 +1,21 @@
+2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/124153
+	* lex.cc (cpp_maybe_module_directive): Set in_deferred_pragma
+	and eol when we see an unexpected CPP_PRAGMA_EOL.
+
+2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119756
+	* files.cc (search_path_head): Also treat empty string (stdin)
+	as an absolute path.
+
 2025-08-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

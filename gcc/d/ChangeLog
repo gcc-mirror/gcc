@@ -1,3 +1,12 @@
+2026-02-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2026-02-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/124026
+	* expr.cc (ExprVisitor::visit (FuncExp *)): Always convert function
+	literal to a delegate if the expression expects one.
+
 2026-01-30  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

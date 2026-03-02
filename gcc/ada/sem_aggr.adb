@@ -3790,7 +3790,7 @@ package body Sem_Aggr is
       --  a subtype indication or an iterator specification that determines
       --  an element type.
 
-      Asp   : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Aggregate);
+      Asp : constant Node_Id := Find_Value_Of_Aspect (Typ, Aspect_Aggregate);
 
       Empty_Subp          : Node_Id := Empty;
       Add_Named_Subp      : Node_Id := Empty;
@@ -3807,7 +3807,8 @@ package body Sem_Aggr is
          Key_Type  : Entity_Id;
          Elmt_Type : Entity_Id)
       is
-         Loc           : constant Source_Ptr := Sloc (N);
+         Loc : constant Source_Ptr := Sloc (N);
+
          Choice        : Node_Id;
          Copy          : Node_Id;
          Ent           : Entity_Id;
@@ -3938,7 +3939,7 @@ package body Sem_Aggr is
               and then Present (Key_Type)
               and then Base_Type (Entity (Choice)) = Base_Type (Key_Type)
             then
-               null;
+               Typ := Entity (Choice);
 
             elsif Is_Object_Reference (Choice) then
                declare
@@ -3950,13 +3951,13 @@ package body Sem_Aggr is
                       Reverse_Present     => Reverse_Present (Comp),
                       Iterator_Filter     => Empty,
                       Subtype_Indication  => Empty);
+
                begin
+                  --  Recurse to expand association as iterator_spec
+
                   Set_Iterator_Specification (Comp, I_Spec);
                   Set_Defining_Identifier (Comp, Empty);
-
                   Resolve_Iterated_Association (Comp, Key_Type, Elmt_Type);
-                  --  Recursive call to expand association as iterator_spec
-
                   return;
                end;
 
@@ -3968,8 +3969,7 @@ package body Sem_Aggr is
                Typ := Etype (Choice);  --  assume unique for now
             end if;
 
-            Loop_Param_Id :=
-              Defining_Identifier (Comp);
+            Loop_Param_Id := Defining_Identifier (Comp);
 
             Id_Name := Chars (Loop_Param_Id);
          end if;
@@ -3978,9 +3978,8 @@ package body Sem_Aggr is
          --  visible in the expression for the component, and needed for its
          --  analysis.
 
-         Id := Make_Defining_Identifier (Sloc (Comp), Id_Name);
-         Ent := New_Internal_Entity (E_Loop,
-                  Current_Scope, Sloc (Comp), 'L');
+         Id  := Make_Defining_Identifier (Sloc (Comp), Id_Name);
+         Ent := New_Internal_Entity (E_Loop, Current_Scope, Sloc (Comp), 'L');
          Set_Etype  (Ent, Standard_Void_Type);
          Set_Parent (Ent, Parent (Comp));
          Push_Scope (Ent);
@@ -4082,12 +4081,10 @@ package body Sem_Aggr is
                   Comp : Node_Id := First (Component_Associations (N));
                begin
                   while Present (Comp) loop
-                     if Nkind (Comp) in
-                       N_Iterated_Component_Association |
-                       N_Iterated_Element_Association
+                     if Nkind (Comp) in N_Iterated_Component_Association
+                                      | N_Iterated_Element_Association
                      then
-                        Resolve_Iterated_Association
-                          (Comp, Empty, Elmt_Type);
+                        Resolve_Iterated_Association (Comp, Empty, Elmt_Type);
                      else
                         Error_Msg_N ("illegal component association "
                           & "for unnamed container aggregate", Comp);
@@ -4143,12 +4140,10 @@ package body Sem_Aggr is
 
                   Analyze_And_Resolve (Expression (Comp), Elmt_Type);
 
-               elsif Nkind (Comp) in
-                 N_Iterated_Component_Association |
-                 N_Iterated_Element_Association
+               elsif Nkind (Comp) in N_Iterated_Component_Association
+                                   | N_Iterated_Element_Association
                then
-                  Resolve_Iterated_Association
-                    (Comp, Key_Type, Elmt_Type);
+                  Resolve_Iterated_Association (Comp, Key_Type, Elmt_Type);
                end if;
 
                Next (Comp);
@@ -4203,9 +4198,8 @@ package body Sem_Aggr is
                         Analyze_And_Resolve (Expression (Comp), Comp_Type);
                      end if;
 
-                  elsif Nkind (Comp) in
-                    N_Iterated_Component_Association |
-                    N_Iterated_Element_Association
+                  elsif Nkind (Comp) in N_Iterated_Component_Association
+                                      | N_Iterated_Element_Association
                   then
                      Resolve_Iterated_Association
                        (Comp, Index_Type, Comp_Type);

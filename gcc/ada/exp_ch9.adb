@@ -5824,7 +5824,7 @@ package body Exp_Ch9 is
                --  during expansion, it is ok. If expansion is not performed,
                --  then Func is Empty so this test cannot succeed.
 
-               if Scope (E) = Func_Id then
+               if Scope_Within_Or_Same (S, Func_Id) then
                   null;
 
                --  A protected call from a barrier to another object is ok

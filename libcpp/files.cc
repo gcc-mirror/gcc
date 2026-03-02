@@ -1092,7 +1092,7 @@ search_path_head (cpp_reader *pfile, const char *fname, int angle_brackets,
   cpp_dir *dir;
   _cpp_file *file;
 
-  if (IS_ABSOLUTE_PATH (fname))
+  if (IS_ABSOLUTE_PATH (fname) || *fname == '\0')
     return &pfile->no_search_path;
 
   /* pfile->buffer is NULL when processing an -include command-line flag.  */

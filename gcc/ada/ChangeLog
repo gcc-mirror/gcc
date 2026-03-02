@@ -1,3 +1,47 @@
+2026-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124226
+	* sem_res.adb (Resolve_Implicit_Dereference): Move declaration to...
+	* sem_res.ads (Resolve_Implicit_Dereference): ...here.
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Access>: Also call
+	Resolve_Implicit_Dereference when resolving a protected operation.
+
+2026-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/124224
+	* sem_aggr.adb (Resolve_Container_Aggregate): Minor tweaks.
+	(Resolve_Iterated_Association): Compute Typ on all paths.
+
+2026-02-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-stposu.adb (Finalize_Pool): Pass a local copy of the
+	handle in the call to Finalize_And_Deallocate.
+
+2026-02-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124106
+	* exp_ch4.adb (Expand_N_Allocator): Minor fix in commentary.
+	(Expand_Allocator_Expression): Propagate the Subpool_Handle_Name
+	of the original allocator onto the newly built allocators.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Likewise.
+	Use Preserve_Comes_From_Source to propagate Comes_From_Source.
+	(Make_CPP_Constructor_Call_In_Allocator): Likewise.
+
+2026-02-11  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/124054
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Tidy up and pass
+	Proc_Id as the new scope in the call to the New_Copy_Tree function.
+
+2026-02-09  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/124025
+	* exp_ch9.adb (Expand_Entry_Barrier.Is_Global_Entity): Use
+	Scope_Within_Or_Same to test whether the object is local.
+
 2026-02-01  Eric Botcazou  <ebotcazou@adacore.com>
 	    Liam Powell  <liam@liampwll.com>
 

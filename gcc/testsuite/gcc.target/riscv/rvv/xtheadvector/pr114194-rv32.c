@@ -1,5 +1,5 @@
-/* { dg-do compile { target { { ! riscv_abi_e } && rv32 } } } */
-/* { dg-options "-march=rv32gc_xtheadvector -O2" } */
+/* { dg-do compile { target { ! riscv_abi_e } } } */
+/* { dg-options "-march=rv32gc_xtheadvector -O2 -mabi=ilp32d " } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 /*
@@ -13,7 +13,7 @@ void foo0_1 (void *p)
 }
 
 /*
-** foo0_7:
+** foo0_7: { xfail *-*-* }
 **	li\t[a-x0-9]+,7
 **	th.vsetvli\tzero,[a-x0-9]+,e8,m1
 **	th\.vmv\.v\.i\tv[0-9],0
@@ -37,7 +37,7 @@ void foo1_1 (void *p)
 }
 
 /*
-** foo1_5:
+** foo1_5: { xfail *-*-* }
 **	li\t[a-x0-9]+,5
 **	th.vsetvli\tzero,[a-x0-9]+,e8,m1
 **	th\.vmv\.v\.i\tv[0-9],1

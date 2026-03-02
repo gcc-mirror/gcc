@@ -60,20 +60,9 @@ else version (FreeBSD)
 
     static if (__FreeBSD_version >= 1400000)
     {
+        // FreeBSD changed qsort_r function signature to POSIX in FreeBSD 14.0
         alias extern (C) int function(scope const void*, scope const void*, scope void*) Cmp;
         extern (C) void qsort_r(scope void* base, size_t nmemb, size_t size, Cmp cmp, scope void* thunk);
-
-        // https://cgit.freebsd.org/src/tree/include/stdlib.h?h=stable/14#n350
-        pragma(mangle, "qsort_r@FBSD_1.0")
-        private extern (C) void __qsort_r_compat(scope void* base, size_t nmemb, size_t size, scope void* thunk, OldCmp cmp);
-        alias extern (C) int function(scope void*, scope const void*, scope const void*) OldCmp;
-
-        deprecated("In FreeBSD 14, qsort_r's signature was fixed to match POSIX. This extern(D) overload has been " ~
-                   "provided to avoid breaking code, but code should be updated to use the POSIX version.")
-        extern (D) void qsort_r(scope void* base, size_t nmemb, size_t size, scope void* thunk, OldCmp cmp)
-        {
-            __qsort_r_compat(base, nmemb, size, thunk, cmp);
-        }
 
         extern (C) void[] _adSort(return scope void[] a, TypeInfo ti)
         {

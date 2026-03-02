@@ -4244,9 +4244,8 @@ function_expander::use_exact_insn (insn_code icode)
   return generate_insn (icode);
 }
 
-/* Use contiguous load INSN.  */
-rtx
-function_expander::use_contiguous_load_insn (insn_code icode)
+int
+function_expander::prepare_contiguous_load_insn ()
 {
   gcc_assert (call_expr_nargs (exp) > 0);
   machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
@@ -4265,10 +4264,19 @@ function_expander::use_contiguous_load_insn (insn_code icode)
     add_vundef_operand (mode);
 
   add_mem_operand (mode, arg_offset++);
+  return arg_offset;
+}
+
+/* Use contiguous load INSN.  */
+rtx
+function_expander::use_contiguous_load_insn (insn_code icode)
+{
+  int arg_offset = prepare_contiguous_load_insn ();
 
   for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
     add_input_operand (argno);
 
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
   if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
     {
       add_input_operand (Pmode, get_tail_policy_for_pred (pred));
@@ -4277,8 +4285,56 @@ function_expander::use_contiguous_load_insn (insn_code icode)
 
   if (opno != insn_data[icode].n_generator_args)
     add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
-
   return generate_insn (icode);
+}
+
+/* Similar to use_contiguous_load_insn but skips the vector-length destination
+   operand that a fault-only-first load intrinsic has.  Then we add tail and
+   mask policy as well as AVL operand.  Last, add the vector-length destination
+   operand that we skipped initially.  */
+rtx
+function_expander::use_fof_load_insn ()
+{
+  int arg_offset = prepare_contiguous_load_insn ();
+
+  int vl_dest_arg = call_expr_nargs (exp) - 2;
+  for (int argno = arg_offset; argno < call_expr_nargs (exp); argno++)
+    {
+      /* Skip argument for VL destination in memory but add the others.  */
+      if (argno != vl_dest_arg)
+	add_input_operand (argno);
+    }
+
+  machine_mode mode = TYPE_MODE (TREE_TYPE (exp));
+  if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
+    {
+      add_input_operand (Pmode, get_tail_policy_for_pred (pred));
+      add_input_operand (Pmode, get_mask_policy_for_pred (pred));
+    }
+
+  add_input_operand (Pmode, get_avl_type_rtx (avl_type::NONVLMAX));
+
+  tree arg = CALL_EXPR_ARG (exp, vl_dest_arg);
+
+  /* Use a regular FoF load if the user does not want to store VL.  */
+  if (integer_zerop (arg))
+    {
+      insn_code icode = code_for_pred_fault_load (mode);
+      return generate_insn (icode);
+    }
+
+  /* The VL-setting FoF load writes the new VL to VL_REG.
+     Store it to memory.  */
+  rtx vl_reg = gen_reg_rtx (Pmode);
+  add_output_operand (Pmode, vl_reg);
+  insn_code icode = code_for_pred_fault_load_set_vl (mode, Pmode);
+  rtx res = generate_insn (icode);
+
+  rtx addr = expand_normal (arg);
+  rtx mem = gen_rtx_MEM (Pmode, memory_address (Pmode, addr));
+  emit_move_insn (mem, vl_reg);
+
+  return res;
 }
 
 /* Use contiguous store INSN.  */
