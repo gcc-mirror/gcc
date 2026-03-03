@@ -13968,7 +13968,7 @@ build_extra_args (tree pattern, tree args, tsubst_flags_t complain)
   /* Make a copy of the extra arguments so that they won't get changed
      out from under us.  */
   tree extra = preserve_args (copy_template_args (args), /*cow_p=*/false);
-  if (complain & tf_partial)
+  if ((complain & tf_partial) || TREE_STATIC (args))
     /* Remember whether this is a partial substitution.  */
     TREE_STATIC (extra) = true;
   if (local_specializations)
@@ -14007,11 +14007,17 @@ add_extra_args (tree extra, tree args, tsubst_flags_t complain, tree in_decl)
       extra = TREE_VALUE (extra);
     }
   if (TREE_STATIC (extra))
-    /* This is a partial substitution into e.g. a requires-expr or lambda-expr
-       inside a default template argument; we expect 'extra' to be a full set
-       of template arguments for the template context, so it suffices to just
-       substitute into them.  */
-    args = tsubst_template_args (extra, args, complain, in_decl);
+    {
+      /* This is a partial substitution into e.g. a requires-expr or lambda-expr
+	 inside a default template argument; we expect 'extra' to be a full set
+	 of template arguments for the template context, so it suffices to just
+	 substitute into them.  */
+      args = tsubst_template_args (extra, args, complain, in_decl);
+      if (processing_template_decl)
+	/* A templated substitution into a partial substitution is still a
+	   partial substitution.  */
+	TREE_STATIC (args) = true;
+    }
   else
     args = add_to_template_args (extra, args);
   return args;
@@ -20774,7 +20780,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   args = add_extra_args (LAMBDA_EXPR_EXTRA_ARGS (t), args, complain, in_decl);
   if (processing_template_decl
-      && (!in_template_context || (complain & tf_partial)))
+      && (!in_template_context || (complain & tf_partial)
+	  || LAMBDA_EXPR_EXTRA_ARGS (t)))
     {
       /* Defer templated substitution into a lambda-expr if we lost the
 	 necessary template context.  This may happen for a lambda-expr
@@ -20782,7 +20789,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	 Defer dependent substitution as well so that we don't prematurely
 	 lower the level of a deduced return type or any other auto or
-	 template parameter belonging to the lambda.  */
+	 template parameter belonging to the lambda.
+
+	 Finally, if a substitution into this lambda was previously
+	 deferred, keep deferring until the final (non-templated)
+	 substitution.  */
       t = copy_node (t);
       LAMBDA_EXPR_EXTRA_ARGS (t) = NULL_TREE;
       LAMBDA_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, complain);
