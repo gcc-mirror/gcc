@@ -1744,7 +1744,7 @@
 	  (match_operand:<ssevecmode> 4 "const0_operand")
 	  (const_int 1)))]
   "TARGET_AVX512F"
-  "vmov<ssescalarmodesuffix>\t{%1, %0%{%3%}%N2|%0%{3%}%N2, %1}"
+  "vmov<ssescalarmodesuffix>\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "memory" "load")
