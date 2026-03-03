@@ -8438,7 +8438,7 @@ output_adjust_stack_and_probe (rtx reg)
 
   /* Probe at SP.  */
   xops[1] = const0_rtx;
-  output_asm_insn ("or%z0\t{%1, (%0)|DWORD PTR [%0], %1}", xops);
+  output_asm_insn ("or{b}\t{%1, (%0)|BYTE PTR [%0], %1}", xops);
 
   /* Test if SP == LAST_ADDR.  */
   xops[0] = stack_pointer_rtx;
@@ -8574,7 +8574,7 @@ output_probe_stack_range (rtx reg, rtx end)
   xops[0] = stack_pointer_rtx;
   xops[1] = reg;
   xops[2] = const0_rtx;
-  output_asm_insn ("or%z0\t{%2, (%0,%1)|DWORD PTR [%0+%1], %2}", xops);
+  output_asm_insn ("or{b}\t{%2, (%0,%1)|BYTE PTR [%0+%1], %2}", xops);
 
   /* Test if TEST_ADDR == LAST_ADDR.  */
   xops[0] = reg;
