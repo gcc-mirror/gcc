@@ -327,38 +327,6 @@ function_info::add_live_out_use (bb_info *bb, set_info *def)
   add_use (use);
 }
 
-// Return true if all nondebug uses of DEF are live-out uses.
-static bool
-all_uses_are_live_out_uses (set_info *def)
-{
-  for (use_info *use : def->all_uses ())
-    if (!use->is_in_debug_insn () && !use->is_live_out_use ())
-      return false;
-  return true;
-}
-
-// SET, if nonnull, is a definition of something that is live out from BB.
-// Return the live-out value itself.
-set_info *
-function_info::live_out_value (bb_info *bb, set_info *set)
-{
-  // Degenerate phis only exist to provide a definition for uses in the
-  // same EBB.  The live-out value is the same as the live-in value.
-  if (auto *phi = safe_dyn_cast<phi_info *> (set))
-    if (phi->is_degenerate ())
-      {
-	set = phi->input_value (0);
-
-	// Remove the phi if it turned out to be useless.  This is
-	// mainly useful for memory, because we don't know ahead of time
-	// whether a block will use memory or not.
-	if (bb == bb->ebb ()->last_bb () && all_uses_are_live_out_uses (phi))
-	  replace_phi (phi, set);
-      }
-
-  return set;
-}
-
 // Make USE's definition available at USE, if it isn't already.  Assume that
 // the caller has properly used make_use_available to check that this is
 // possible.
@@ -454,7 +422,11 @@ function_info::replace_phi (phi_info *phi, set_info *new_value)
 
   if (new_value)
     for (use_info *use : phi->nondebug_insn_uses ())
-      if (!use->is_live_out_use ())
+      // Live-out uses act as a movement barrier for later definitions
+      // in the same EBB.
+      if (!use->is_live_out_use ()
+	  || (phi->next_def ()
+	      && phi->next_def ()->ebb () == phi->ebb ()))
 	{
 	  // We need to keep the phi around for its local uses.
 	  // Turn it into a degenerate phi, if it isn't already.
@@ -540,6 +512,17 @@ function_info::create_phi (ebb_info *ebb, resource_info resource,
 
   append_phi (ebb, phi);
 
+  return phi;
+}
+
+// Called while building an extended basic block's SSA form using BI.
+// Create and return a degenerate phi whose single input is VALUE.
+phi_info *
+function_info::create_degenerate_phi (build_info &bi, set_info *value)
+{
+  access_info *inputs[] = { look_through_degenerate_phi (value) };
+  auto *phi = create_phi (bi.current_ebb, value->resource (), inputs, 1);
+  bi.record_reg_def (phi);
   return phi;
 }
 
@@ -822,6 +805,7 @@ void
 function_info::add_phi_nodes (build_info &bi)
 {
   ebb_info *ebb = bi.current_ebb;
+  bb_info *bb = ebb->first_bb ();
   basic_block cfg_bb = ebb->first_bb ()->cfg_bb ();
 
   // Create the register phis for this EBB.
@@ -845,6 +829,26 @@ function_info::add_phi_nodes (build_info &bi)
     }
 
   bitmap_copy (bi.ebb_def_regs, &phis.regs);
+
+  if (bb->next_bb ())
+    {
+      // If a live input is redefined by later blocks in the same EBB, we need
+      // to add live-out uses to prevent the later definition from being moved
+      // into earlier blocks.  Create degenerate phis that can be used for
+      // that purpose, if phis are not naturally needed.
+      auto_bitmap extra_regs;
+      for (auto *bb2 : ebb->bbs ())
+	if (bb2 != bb)
+	  bitmap_ior_into (extra_regs, &DF_LR_BB_INFO (bb2->cfg_bb ())->def);
+      bitmap_and_compl_into (extra_regs, &phis.regs);
+      EXECUTE_IF_AND_IN_BITMAP (extra_regs, DF_LR_IN (cfg_bb), 0, regno, in_bi)
+	if (set_info *value = bi.current_reg_value (regno))
+	  {
+	    create_degenerate_phi (bi, value);
+	    // Record that live-out uses are needed for this phi.
+	    bitmap_set_bit (bi.ebb_def_regs, regno);
+	  }
+    }
 
   // Collect the live-in memory definitions and record whether they're
   // all the same.
@@ -1021,8 +1025,12 @@ function_info::record_block_live_out (build_info &bi)
       bitmap_iterator out_bi;
       EXECUTE_IF_SET_IN_BITMAP (&phis.regs, 0, regno, out_bi)
 	{
-	  phis.inputs[input_i]
-	    = live_out_value (bb, bi.current_reg_value (regno));
+	  set_info *value = bi.current_reg_value (regno);
+	  // Degenerate phis only exist to provide a definition for uses in the
+	  // same EBB.  The live-out value is the same as the live-in value.
+	  if (value)
+	    value = look_through_degenerate_phi (value);
+	  phis.inputs[input_i] = value;
 	  input_i += 1;
 	}
     }
@@ -1039,7 +1047,7 @@ function_info::record_block_live_out (build_info &bi)
       bitmap_iterator out_bi;
       EXECUTE_IF_AND_IN_BITMAP (bi.ebb_def_regs, live_out, 0, regno, out_bi)
 	{
-	  set_info *value = live_out_value (bb, bi.current_reg_value (regno));
+	  set_info *value = bi.current_reg_value (regno);
 	  if (value && value->ebb () == ebb)
 	    add_live_out_use (bb, value);
 	}
@@ -1059,8 +1067,15 @@ function_info::record_block_live_out (build_info &bi)
       }
 
   // Record the live-out memory value.
-  bi.bb_mem_live_out[cfg_bb->index]
-    = live_out_value (bb, bi.current_mem_value ());
+  set_info *mem_value = bi.current_mem_value ();
+  if (auto *phi = safe_dyn_cast <phi_info *> (mem_value))
+    if (phi->is_degenerate ())
+      {
+	mem_value = phi->input_value (0);
+	if (bb == ebb->last_bb () && !phi->has_nondebug_uses ())
+	  replace_phi (phi, mem_value);
+      }
+  bi.bb_mem_live_out[cfg_bb->index] = mem_value;
 }
 
 // Add BB and its contents to the SSA information.
@@ -1078,9 +1093,6 @@ function_info::start_block (build_info &bi, bb_info *bb)
 
   // Record the start of this block's definitions in the definitions stack.
   bi.old_def_stack_limit.safe_push (bi.def_stack.length ());
-
-  // Add the block itself.
-  append_bb (bb);
 
   // If the block starts an EBB, create the phi insn.  This insn should exist
   // for all EBBs, even if they don't (yet) need phis.
@@ -1299,7 +1311,10 @@ function_info::create_ebbs (build_info &bi)
 	// Create the EBB itself.
 	auto *ebb = allocate<ebb_info> (bbs[0], bbs.last ());
 	for (bb_info *bb : bbs)
-	  bb->set_ebb (ebb);
+	  {
+	    bb->set_ebb (ebb);
+	    append_bb (bb);
+	  }
 	bbs.truncate (0);
       }
 
