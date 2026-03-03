@@ -834,9 +834,6 @@
 /* Define to 1 if you have the `roundl' function. */
 #undef HAVE_ROUNDL
 
-/* Define if __builtin_clzl behaves as expected. */
-#undef HAVE_SANE_BUILTIN_CLZL
-
 /* Define to 1 if you have the `scalbn' function. */
 #undef HAVE_SCALBN
 
