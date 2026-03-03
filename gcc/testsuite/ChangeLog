@@ -1,5 +1,23 @@
 2026-03-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/124288
+	* gcc.dg/torture/vec-cvt-1.c (FLTTEST): Use comma expression
+	to store into {flt,dbl}m{in,ax} and read from it again for
+	comparison.
+
+2026-03-02  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/124167
+	* gcc.target/aarch64/pr124167.c: New test.
+
+2026-03-02  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	PR target/113453
+	* gcc.target/bpf/btfext-funcinfo.c: Adapt test.
+	* gcc.target/bpf/btfext-lineinfo.c: New test.
+
+2026-03-02  Jakub Jelinek  <jakub@redhat.com>
+
 	PR target/124294
 	* gcc.target/i386/avx10_2-pr124294.c: New test.
 

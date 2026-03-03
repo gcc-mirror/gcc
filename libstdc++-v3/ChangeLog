@@ -1,3 +1,60 @@
+2026-03-02  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/safe_unordered_container.h
+	(_Safe_unordered_container::_M_invalidate_locals): Remove.
+	(_Safe_unordered_container::_M_invalidate_all): Lock mutex while calling
+	_M_invalidate_if and _M_invalidate_locals.
+	(_Safe_unordered_container::_M_invalidate_all_if): New.
+	(_Safe_unordered_container::_M_invalidate): New.
+	(_Safe_unordered_container::_M_invalidate_if): Make private, add __scoped_lock
+	argument.
+	(_Safe_unordered_container::_M_invalidate_local_if): Likewise.
+	* include/debug/safe_unordered_container.tcc
+	(_Safe_unordered_container::_M_invalidate_if): Adapt and remove lock.
+	(_Safe_unordered_container::_M_invalidate_local_if): Likewise.
+	* include/debug/unordered_map
+	(unordered_map::erase(const_iterator, const_iterator)): Lock before loop on
+	iterators. Remove _M_check_rehashed call.
+	(unordered_map::_M_self): New.
+	(unordered_map::_M_invalidate): Remove.
+	(unordered_map::_M_erase): Adapt and remove _M_check_rehashed call.
+	(unordered_multimap::_M_erase(_Base_iterator, _Base_iterator)): New.
+	(unordered_multimap::erase(_Kt&&)): Use latter.
+	(unordered_multimap::erase(const key_type&)): Likewise.
+	(unordered_multimap::erase(const_iterator, const_iterator)):
+	Lock before loop on iterators. Remove _M_check_rehashed.
+	(unordered_multimap::_M_self): New.
+	(unordered_multimap::_M_invalidate): Remove.
+	(unordered_multimap::_M_erase): Adapt. Remove _M_check_rehashed call.
+	* include/debug/unordered_set
+	(unordered_set::erase(const_iterator, const_iterator)): Add lock before loop
+	for iterator invalidation. Remove _M_check_rehashed call.
+	(unordered_set::_M_self): New.
+	(unordered_set::_M_invalidate): Remove.
+	(unordered_set::_M_erase): Adapt and remove _M_check_rehashed call.
+	(unordered_multiset::_M_erase(_Base_iterator, _Base_iterator)): New.
+	(unordered_multiset::erase(_Kt&&)): Use latter.
+	(unordered_multiset::erase(const key_type&)): Likewise.
+	(unordered_multiset::erase(const_iterator, const_iterator)):
+	Lock before loop on iterators. Remove _M_check_rehashed.
+	(unordered_multiset::_M_self): New.
+	(unordered_multiset::_M_invalidate): Remove.
+	(unordered_multiset::_M_erase): Adapt. Remove _M_check_rehashed call.
+
+2026-03-02  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/105580
+	* testsuite/24_iterators/istreambuf_iterator/105580.cc:
+	Add dg-bogus check for warning.
+
+2026-03-02  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/105580
+	* include/std/streambuf (streambuf::gptr, streambuf::egptr)
+	(streambuf::gbump): Surround with pragma disabling -Wnull-dereference.
+	* testsuite/24_iterators/istreambuf_iterator/105580.cc: Remove check for
+	warning being emitted.
+
 2026-02-28  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/105580

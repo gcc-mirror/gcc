@@ -1,3 +1,19 @@
+2026-03-02  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119456
+	* genapi.cc (mh_source_is_literalA): Don't set refmod_e attribute
+	unless it is necessary.
+	(have_common_parent): Helper routine that determines whether two
+	COBOL variables are members of the same data description.
+	(mh_alpha_to_alpha): Modified for greater efficiency when table
+	subscripts and reference modification parameters are numeric
+	literals.
+	* genutil.cc (get_data_offset): Recognizes when table subscripts
+	and refmod offsets are numeric literals.
+	(refer_size): Recognizes when refmod offsets are numeric literals.
+	(refer_size_source): Recognizes when table subscripts are numeric
+	literals.
+
 2026-02-27  Richard Biener  <rguenther@suse.de>
 
 	PR cobol/123238

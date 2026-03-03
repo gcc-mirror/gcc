@@ -1,3 +1,47 @@
+2026-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR c++/102397
+	* doc/extend.texi (Attributes): Explicitly say that all attributes
+	work in both syntaxes and examples may show either form.
+	(Common Attributes): Convert some examples to use the new syntax.
+
+2026-03-02  Filip Kastl  <fkastl@suse.cz>
+
+	PR target/123926
+	* config/sparc/sparc.h (HAVE_AS_TLS): Default to 0.
+
+2026-03-02  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/124167
+	* attribs.cc (make_dispatcher_decl): Change node->definition
+	to inherit from the node its called on.
+	* ipa.cc (remote_unreachable_nodes): Move FMV logic out of
+	(!in_boundary_p) if block.
+
+2026-03-02  Cupertino Miranda  <cupertino.miranda@oracle.com>
+
+	PR target/113453
+	* config/bpf/bpf-protos.h (bpf_output_call): Change prototype.
+	* config/bpf/bpf.cc (bpf_output_call): Change to adapt operands
+	and return
+	the instruction template instead of immediately emit asm and
+	not allow proper final expected execution flow.
+	(bpf_output_line_info): Add function to introduce line info
+	entries in respective structures
+	(bpf_asm_out_unwind_emit): Add function as hook to
+	TARGET_ASM_UNWIND_EMIT. This hook is called before any
+	instruction is emitted.
+	* config/bpf/bpf.md: Change calls to bpf_output_call.
+	* config/bpf/btfext-out.cc (struct btf_ext_lineinfo): Add fields
+	to struct.
+	(bpf_create_lineinfo, btf_add_line_info_for): Add support
+	function to insert line_info data in respective structures.
+	(output_btfext_line_info): Function to emit line_info data in
+	.BTF.ext section.
+	(btf_ext_output): Call output_btfext_line_info.
+	* config/bpf/btfext-out.h: Add prototype for
+	btf_add_line_info_for.
+
 2026-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/124294
