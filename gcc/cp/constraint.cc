@@ -1972,6 +1972,10 @@ struct GTY((for_user)) sat_entry
      the first time.  */
   tree result;
 
+  /* For a !ATOMIC_CONSTR_MAP_INSTANTIATED_P atom, this conveniently points to
+     the entry for the corresponding atom after instantiating its mapping.  */
+  sat_entry *inst_entry;
+
   /* The value of input_location when satisfaction of ATOM+ARGS was first
      performed.  */
   location_t location;
@@ -2131,6 +2135,7 @@ satisfaction_cache
       entry->atom = atom;
       entry->args = args;
       entry->result = NULL_TREE;
+      entry->inst_entry = nullptr;
       entry->location = input_location;
       entry->ftc_begin = entry->ftc_end = -1;
       entry->diagnose_instability = false;
@@ -2170,10 +2175,12 @@ satisfaction_cache::get ()
     {
       /* If we get here, it means satisfaction is self-recursive.  */
       gcc_checking_assert (!entry->result || seen_error ());
+      /* Prefer printing the instantiated mapping.  */
+      tree atom = entry->inst_entry ? entry->inst_entry->atom : entry->atom;
       if (info.noisy ())
-	error_at (EXPR_LOCATION (ATOMIC_CONSTR_EXPR (entry->atom)),
+	error_at (EXPR_LOCATION (ATOMIC_CONSTR_EXPR (atom)),
 		  "satisfaction of atomic constraint %qE depends on itself",
-		  entry->atom);
+		  atom);
       return error_mark_node;
     }
 
@@ -2493,6 +2500,8 @@ satisfy_atom (tree t, tree args, sat_info info)
   gcc_assert (!ATOMIC_CONSTR_MAP_INSTANTIATED_P (t));
   ATOMIC_CONSTR_MAP_INSTANTIATED_P (t) = true;
   satisfaction_cache inst_cache (t, /*args=*/NULL_TREE, info);
+  if (cache.entry && inst_cache.entry)
+    cache.entry->inst_entry = inst_cache.entry;
   if (tree r = inst_cache.get ())
     {
       cache.entry->location = inst_cache.entry->location;

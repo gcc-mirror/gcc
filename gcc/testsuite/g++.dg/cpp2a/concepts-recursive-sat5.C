@@ -3,7 +3,8 @@
 
 struct A { };
 
-template<typename T> concept pipeable = requires(A a, T t) { a | t; }; // { dg-error "depends on itself" }
+template<typename T> concept pipeable = requires(A a, T t) { a | t; };
+// { dg-error "with T = int]' depends on itself" "" { target *-*-* } .-1 }
 
 template<pipeable T> void operator|(A, T);
 
