@@ -4340,7 +4340,7 @@ operand_compare::verify_hash_value (const_tree arg0, const_tree arg1,
 
 static operand_compare default_compare_instance;
 
-/* Conveinece wrapper around operand_compare class because usually we do
+/* Convenience wrapper around operand_compare class because usually we do
    not need to play with the valueizer.  */
 
 bool
