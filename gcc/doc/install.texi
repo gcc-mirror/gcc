@@ -986,13 +986,12 @@ This can be useful if you need to turn on a non-standard feature by
 default without modifying the compiler's source code, for instance
 @option{--with-specs=%@{!fcommon:%@{!fno-common:-fno-common@}@}}.
 @ifnothtml
-@xref{Spec Files,, Specifying subprocesses and the switches to pass to them,
-gcc, Using the GNU Compiler Collection (GCC)},
+@xref{Spec Files,, Specifying Subprocesses and the Switches to Pass to Them,
+gccint, GNU Compiler Collection (GCC) Internals}.
 @end ifnothtml
 @ifhtml
-See ``Spec Files'' in the main manual
+See ``Spec Files'' in the GCC Internals manual.
 @end ifhtml
-
 @end table
 
 @item --program-prefix=@var{prefix}

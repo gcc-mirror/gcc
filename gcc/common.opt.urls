@@ -2003,10 +2003,10 @@ shared-libgcc
 UrlSuffix(gcc/Link-Options.html#index-shared-libgcc)
 
 specs
-UrlSuffix(gcc/Overall-Options.html#index-specs)
+UrlSuffix(gcc/Developer-Options.html#index-specs)
 
 specs=
-UrlSuffix(gcc/Overall-Options.html#index-specs)
+UrlSuffix(gcc/Developer-Options.html#index-specs)
 
 static
 UrlSuffix(gcc/Link-Options.html#index-static)
