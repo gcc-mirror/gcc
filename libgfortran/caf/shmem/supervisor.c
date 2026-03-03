@@ -39,7 +39,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #if !defined(_SC_PAGE_SIZE) && defined(WIN32)
 #include <windows.h>
 #endif
-
+#if defined(__hpux__)
+#include <sys/mpctl.h>
+#endif
 #define GFORTRAN_ENV_NUM_IMAGES "GFORTRAN_NUM_IMAGES"
 #define GFORTRAN_ENV_SHARED_MEMORY_SIZE "GFORTRAN_SHARED_MEMORY_SIZE"
 #define GFORTRAN_ENV_IMAGE_NUM "GFORTRAN_IMAGE_NUM"
@@ -57,11 +59,16 @@ get_image_num_from_envvar (void)
   char *num_images_char;
   int nimages;
   num_images_char = getenv (GFORTRAN_ENV_NUM_IMAGES);
+
+  /* It is expected that the user has set the GFORTRAN_NUM_IMAGES
+     environment variable. If not, we fall back to the number of cores.  */
   if (!num_images_char)
 #ifdef _SC_NPROCESSORS_ONLN
     return sysconf (_SC_NPROCESSORS_ONLN);
 #elif defined(WIN32)
     num_images_char = getenv ("NUMBER_OF_PROCESSORS");
+#elif defined (__hpux__)
+    return mpctl (MPC_GETNUMSPUS, 0, 0);
 #else
 #error "Unsupported system: No known way to get number of cores!"
 #endif

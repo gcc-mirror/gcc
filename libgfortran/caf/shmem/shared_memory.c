@@ -38,8 +38,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
 #elif defined(WIN32)
-#include <Windows.h>
-#include <Memoryapi.h>
+#include <windows.h>
+#include <memoryapi.h>
 #endif
 #include <unistd.h>
 
@@ -62,16 +62,23 @@ static const char *ENV_BASE = "GFORTRAN_SHMEM_BASE";
 void
 shared_memory_set_env (pid_t pid)
 {
-#define bufsize 20
-  char buffer[bufsize];
-
-  snprintf (buffer, bufsize, "%d", pid);
-#ifdef HAVE_SETENV
-  setenv (ENV_PPID, buffer, 1);
+#if defined(HAVE_SETENV)
+  char val[20];
+  snprintf (val, 20, "%d", pid);
+  setenv (ENV_PPID, val, 1);
+#elif defined(WIN32)
+  char val[20];
+  snprintf (val, 20, "%d", pid);
+  SetEnvironmentVariable (ENV_PPID, val);
 #else
-  SetEnvironmentVariable (ENV_PPID, buffer);
+  char buffer[28];
+  int res;
+
+  /* HP-UX / Legacy Fallback using putenv */
+  res = snprintf (buffer, 28, "%s=%d", "ENV_PPID", (int)pid);
+  if (res != -1)
+    putenv (buffer);
 #endif
-#undef bufsize
 }
 
 char *
@@ -115,7 +122,7 @@ shared_memory_prepare (shared_memory_act *)
   asm volatile ("" ::: "memory");
 }
 
-#define NAME_MAX 255
+#define SHM_NAME_MAX 255
 
 /* Initialize the memory with one page, the shared metadata of the
    shared memory is stored at the beginning.  */
@@ -123,7 +130,7 @@ shared_memory_prepare (shared_memory_act *)
 void
 shared_memory_init (shared_memory_act *mem, size_t size)
 {
-  char shm_name[NAME_MAX];
+  char shm_name[SHM_NAME_MAX];
   const char *env_val = getenv (ENV_PPID), *base = getenv (ENV_BASE);
   pid_t ppid = getpid ();
   void *base_ptr;
@@ -133,7 +140,7 @@ shared_memory_init (shared_memory_act *mem, size_t size)
       int n = sscanf (env_val, "%d", &ppid);
       assert (n == 1);
     }
-  snprintf (shm_name, NAME_MAX, "/gfor-shm-%d", ppid);
+  snprintf (shm_name, SHM_NAME_MAX, "/gfor-shm-%d", ppid);
   if (base)
     {
       int n = sscanf (base, "%p", &base_ptr);
@@ -270,9 +277,9 @@ shared_memory_cleanup (shared_memory_act *mem)
     }
   if (this_image.image_num == -1)
     {
-      char shm_name[NAME_MAX];
+      char shm_name[SHM_NAME_MAX];
 
-      snprintf (shm_name, NAME_MAX, "/gfor-shm-%s", shared_memory_get_env ());
+      snprintf (shm_name, SHM_NAME_MAX, "/gfor-shm-%s", shared_memory_get_env ());
       /* Only the supervisor is to delete the shm-file.  */
       res = shm_unlink (shm_name);
       if (res == -1)
@@ -289,4 +296,4 @@ shared_memory_cleanup (shared_memory_act *mem)
   CloseHandle (mem->shm_fd);
 #endif
 }
-#undef NAME_MAX
+#undef SHM_NAME_MAX
