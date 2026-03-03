@@ -260,6 +260,7 @@ lra_invalidate_insn_data (rtx_insn *insn)
 void
 lra_set_insn_deleted (rtx_insn *insn)
 {
+  bitmap_clear_bit (&lra_postponed_insns, INSN_UID (insn));
   lra_invalidate_insn_data (insn);
   SET_INSN_DELETED (insn);
 }
@@ -559,6 +560,7 @@ lra_asm_insn_error (rtx_insn *insn)
     {
       ira_nullify_asm_goto (insn);
       lra_invalidate_insn_data (insn);
+      bitmap_clear_bit (&lra_postponed_insns, INSN_UID (insn));
     }
   else
     {
@@ -2014,7 +2016,7 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 	      {
 		/* We already made the edge no-critical in ira.cc::ira */
 		lra_assert (!EDGE_CRITICAL_P (e));
-		rtx_insn *curr, *tmp = BB_HEAD (e->dest);
+		rtx_insn *tmp = BB_HEAD (e->dest);
 		if (LABEL_P (tmp))
 		  tmp = NEXT_INSN (tmp);
 		if (NOTE_INSN_BASIC_BLOCK_P (tmp))
@@ -2024,8 +2026,14 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 		if (tmp == NULL)
 		  continue;
 		start_sequence ();
-		for (curr = after; curr != NULL_RTX; curr = NEXT_INSN (curr))
-		  emit_insn (copy_insn (PATTERN (curr)));
+		for (rtx_insn *curr = after; curr != NULL_RTX; curr = NEXT_INSN (curr))
+		  {
+		    rtx pat = copy_insn (PATTERN (curr));
+		    rtx_insn *copy = emit_insn (pat);
+		    if (bitmap_bit_p (&lra_postponed_insns, INSN_UID (curr)))
+		      /* Propagate flags of postponed insns.  */
+		      bitmap_set_bit (&lra_postponed_insns, INSN_UID (copy));
+		  }
 		rtx_insn *copy = get_insns (), *last = get_last_insn ();
 		end_sequence ();
 		if (lra_dump_file != NULL)
@@ -2045,6 +2053,10 @@ lra_process_new_insns (rtx_insn *insn, rtx_insn *before, rtx_insn *after,
 		   will be updated before the next assignment
 		   sub-pass. */
 	      }
+	  for (rtx_insn *curr = after; curr != NULL_RTX; curr = NEXT_INSN (curr))
+	    /* Clear flags of postponed insns which will be absent in the
+	       result code.  */
+	    bitmap_clear_bit (&lra_postponed_insns, INSN_UID (curr));
 	}
     }
   if (lra_dump_file != NULL)
@@ -2354,6 +2366,14 @@ bitmap_head lra_optional_reload_pseudos;
    pass.  */
 bitmap_head lra_subreg_reload_pseudos;
 
+/* UIDs of reload insns which should be processed after assigning the reload
+   pseudos.  We need to do this when reload pseudo should be a general reg but
+   we have different mov insns for different subsets of general regs, e.g. hi
+   and lo regs of arm thumb.  Such way we can guarantee finding regs for the
+   reload pseudos of asm insn which can have a lot of operands (general regs in
+   our example).  */
+bitmap_head lra_postponed_insns;
+
 /* File used for output of LRA debug information.  */
 FILE *lra_dump_file;
 
@@ -2469,6 +2489,7 @@ lra (FILE *f, int verbose)
   bitmap_initialize (&lra_split_regs, &reg_obstack);
   bitmap_initialize (&lra_optional_reload_pseudos, &reg_obstack);
   bitmap_initialize (&lra_subreg_reload_pseudos, &reg_obstack);
+  bitmap_initialize (&lra_postponed_insns, &reg_obstack);
   live_p = false;
   if (maybe_ne (get_frame_size (), 0) && crtl->stack_alignment_needed)
     /* If we have a stack frame, we must align it now.  The stack size
@@ -2575,6 +2596,11 @@ lra (FILE *f, int verbose)
 	    lra_create_live_ranges (true, true);
 	    live_p = true;
 	  }
+	  bitmap_iterator bi;
+	  unsigned int uid;
+	  EXECUTE_IF_SET_IN_BITMAP (&lra_postponed_insns, 0, uid, bi)
+	    lra_push_insn_by_uid (uid);
+	  bitmap_clear (&lra_postponed_insns);
 	}
       /* Don't clear optional reloads bitmap until all constraints are
 	 satisfied as we need to differ them from regular reloads.  */

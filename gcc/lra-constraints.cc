@@ -4245,7 +4245,7 @@ simple_move_p (void)
 	  /* The backend guarantees that register moves of cost 2
 	     never need reloads.  */
 	  && targetm.register_move_cost (GET_MODE (src), sclass, dclass) == 2);
- }
+}
 
 /* Swap operands NOP and NOP + 1. */
 static inline void
@@ -4291,6 +4291,22 @@ multiple_insn_refs_p (int regno)
       nrefs++;
     }
   return false;
+}
+
+/* Mark insns starting with FIRST as postponed for processing their
+   constraints.  See comments for lra_postponed_insns.  */
+static void
+postpone_insns (rtx_insn *first)
+{
+  for (auto insn = first; insn != NULL_RTX; insn = NEXT_INSN (insn))
+    {
+      bitmap_set_bit (&lra_postponed_insns, INSN_UID (insn));
+      if (lra_dump_file != NULL)
+	{
+	  fprintf (lra_dump_file, "    Postponing constraint processing: ");
+	  dump_insn_slim (lra_dump_file, insn);
+	}
+    }
 }
 
 /* Main entry point of the constraint code: search the body of the
@@ -4442,9 +4458,17 @@ curr_insn_transform (bool check_only_p)
        we chose previously may no longer be valid.  */
     lra_set_used_insn_alternative (curr_insn, LRA_UNKNOWN_ALT);
 
-  if (! check_only_p && curr_insn_set != NULL_RTX
-      && check_and_process_move (&change_p, &sec_mem_p))
-    return change_p;
+  if (! check_only_p)
+    {
+      if (bitmap_bit_p (&lra_postponed_insns, INSN_UID (curr_insn)))
+	/* Processing insn constraints were postponed.  Do nothing, the insn
+	   will be processed on the next constraint sub-pass after assignment
+	   of reload pseudos in the insn.  */
+	return true;
+      if (curr_insn_set != NULL_RTX
+	  && check_and_process_move (&change_p, &sec_mem_p))
+	return change_p;
+    }
 
  try_swapped:
 
@@ -5091,6 +5115,14 @@ curr_insn_transform (bool check_only_p)
 	  const_regno = REGNO (reg);
 	  const_insn = prev;
 	}
+    }
+  if (asm_noperands (PATTERN (curr_insn)) >= 0)
+    {
+      /* Asm can have a lot of operands.  To guarantee their assignment,
+	 postpone processing the reload insns until the reload pseudos are
+	 assigned.  */
+      postpone_insns (before);
+      postpone_insns (after);
     }
   lra_process_new_insns (curr_insn, before, after,
 			 "Inserting insn reload", true);

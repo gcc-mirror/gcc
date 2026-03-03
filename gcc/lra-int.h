@@ -356,6 +356,7 @@ extern bitmap_head lra_inheritance_pseudos;
 extern bitmap_head lra_split_regs;
 extern bitmap_head lra_subreg_reload_pseudos;
 extern bitmap_head lra_optional_reload_pseudos;
+extern bitmap_head lra_postponed_insns;
 
 /* lra-constraints.cc: */
 
