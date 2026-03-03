@@ -28043,9 +28043,18 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 	  tree *p = &DECL_ARGUMENTS (decl);
 	  for (int skip = num_artificial_parms_for (decl); skip; --skip)
 	    p = &DECL_CHAIN (*p);
+	  tree oldarg = *p;
 	  *p = tsubst_decl (pattern_parm, args, tf_error);
 	  for (tree t = *p; t; t = DECL_CHAIN (t))
 	    DECL_CONTEXT (t) = decl;
+	  /* Mark the old PARM_DECLs in case std::meta::parameters_of has
+	     been called on the old declaration and reflections of those
+	     arguments are held across this point and used later.
+	     Such PARM_DECLs are no longer present in
+	     DECL_ARGUMENTS (DECL_CONTEXT (oldarg)) chain.  */
+	  if (*p != oldarg)
+	    for (tree t = oldarg; t; t = DECL_CHAIN (t))
+	      OLD_PARM_DECL_P (t) = 1;
 	}
 
       if (tree attr = get_fn_contract_specifiers (decl))
