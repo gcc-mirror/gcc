@@ -12435,7 +12435,7 @@
   DONE;
 })
 
-(define_insn "avx512fp16_mov<mode>"
+(define_insn "*avx512fp16_mov<mode>"
   [(set (match_operand:V8_128 0 "register_operand" "=v,v")
 	(vec_merge:V8_128
 	  (match_operand:V8_128 2 "register_operand" "v,v")
