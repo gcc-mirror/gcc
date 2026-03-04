@@ -71,7 +71,7 @@ shared_memory_set_env (pid_t pid)
   snprintf (val, 20, "%d", pid);
   SetEnvironmentVariable (ENV_PPID, val);
 #else
-  char buffer[28];
+  static char buffer[28];
   int res;
 
   /* HP-UX / Legacy Fallback using putenv */
@@ -253,7 +253,7 @@ shared_memory_init (shared_memory_act *mem, size_t size)
       snprintf (val, 20, "%p", mem->glbl.base);
       SetEnvironmentVariable (ENV_BASE, val);
 #else
-      char buffer[28];
+      static char buffer[28];
       int res;
 
       /* HP-UX / Legacy Fallback using putenv */
