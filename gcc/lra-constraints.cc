@@ -4402,11 +4402,23 @@ curr_insn_transform (bool check_only_p)
 	  continue;
 
 	old = op = *curr_id->operand_loc[i];
+	machine_mode outer_mode = GET_MODE (old);
+	bool subreg_p = false;
 	if (GET_CODE (old) == SUBREG)
-	  old = SUBREG_REG (old);
+	  {
+	    old = SUBREG_REG (old);
+	    subreg_p = true;
+	  }
 	subst = get_equiv_with_elimination (old, curr_insn);
 	original_subreg_reg_mode[i] = VOIDmode;
 	equiv_substition_p[i] = false;
+
+	/* If we are about to replace a register inside a subreg, check if
+	   the target can handle that.  */
+	if (subreg_p && REG_P (subst) && HARD_REGISTER_P (subst)
+	    && !targetm.hard_regno_mode_ok (REGNO (subst), outer_mode))
+	  continue;
+
 	if (subst != old)
 	  {
 	    equiv_substition_p[i] = true;
