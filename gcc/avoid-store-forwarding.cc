@@ -177,6 +177,8 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
      by later stores.  */
 
   auto_sbitmap forwarded_bytes (load_size);
+  bitmap_clear (forwarded_bytes);
+
   unsigned int i;
   store_fwd_info* it;
   auto_vec<store_fwd_info> redundant_stores;
