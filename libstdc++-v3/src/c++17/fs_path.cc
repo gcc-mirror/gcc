@@ -260,9 +260,12 @@ struct path::_List::_Impl
 
   // We use the two least significant bits to store a _Type value so
   // require memory aligned to at least 4 bytes:
-  static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= 4);
-  // Require memory suitably aligned for an _Impl and its value types:
-  static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= alignof(value_type));
+  static constexpr size_t required_alignment
+    = std::max(size_t(4), alignof(value_type));
+
+  // Only use aligned new if needed, because it might be less efficient.
+  static constexpr bool use_aligned_new
+    = __STDCPP_DEFAULT_NEW_ALIGNMENT__ < required_alignment;
 
   // Clear the lowest two bits from the pointer (i.e. remove the _Type value)
   static _Impl* notype(_Impl* p)
@@ -297,9 +300,18 @@ struct path::_List::_Impl
   static unique_ptr<_Impl, _Impl_deleter>
   create_unchecked(int n)
   {
-    void* p = ::operator new(sizeof(_Impl) + n * sizeof(value_type));
+    const auto bytes = alloc_size(n);
+    void* p;
+    if constexpr (use_aligned_new)
+      p = ::operator new(bytes, align_val_t{required_alignment});
+    else
+      p = ::operator new(bytes);
     return std::unique_ptr<_Impl, _Impl_deleter>(::new(p) _Impl{n});
   }
+
+  // The number of bytes that must be allocated for _Impl with capacity n.
+  static size_t
+  alloc_size(int n) { return sizeof(_Impl) + n * sizeof(value_type); }
 };
 
 // Destroy and deallocate an _Impl.
@@ -309,9 +321,12 @@ path::_List::_Impl_deleter::operator()(_Impl* p) const noexcept
   p = _Impl::notype(p);
   if (p)
     {
-      const auto n = p->_M_capacity;
+      const auto bytes = _Impl::alloc_size(p->_M_capacity);
       p->~_Impl();
-      ::operator delete(p, sizeof(_Impl) + n * sizeof(_Impl::value_type));
+      if constexpr (_Impl::use_aligned_new)
+	::operator delete(p, bytes, align_val_t{_Impl::required_alignment});
+      else
+	::operator delete(p, bytes);
     }
 }
 
