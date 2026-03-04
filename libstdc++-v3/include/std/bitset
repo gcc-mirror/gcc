@@ -1290,11 +1290,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX23_CONSTEXPR
       reference
       operator[](size_t __position)
-      { return reference(*this, __position); }
+      {
+	__glibcxx_assert(__position < _Nb);
+	return reference(*this, __position);
+      }
 
       _GLIBCXX_CONSTEXPR bool
       operator[](size_t __position) const
-      { return _Unchecked_test(__position); }
+      {
+	__glibcxx_assert(__position < _Nb);
+	return _Unchecked_test(__position);
+      }
       ///@}
 
       /**
