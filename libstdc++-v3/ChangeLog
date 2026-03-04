@@ -1,3 +1,32 @@
+2026-03-03  Adam Wood  <adam.wood@mines.sdsmt.edu>
+
+	PR libstdc++/122217
+	* testsuite/27_io/filesystem/operations/copy_symlink/1.cc: New
+	test.
+	* testsuite/27_io/filesystem/operations/copy_symlink/2.cc: New
+	test.
+	* testsuite/27_io/filesystem/operations/copy_symlink/3.cc: New
+	test.
+	* testsuite/27_io/filesystem/operations/copy_symlink/4.cc: New
+	test.
+
+2026-03-03  Arthur O'Dwyer  <arthur.j.odwyer@gmail.com>
+
+	PR libstdc++/119197
+	* include/std/expected (expected, expected<void, E>): Add
+	[[nodiscard]] to class.
+	* testsuite/20_util/expected/119197.cc: New test.
+
+2026-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic (atomic<T*>::wait, atomic<T*>::notify_one)
+	(atomic<T*>::notify_all): Fix indentation.
+
+2026-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.h: Adjust comments so that
+	standard references are specific to C++11.
+
 2026-03-02  François Dumont  <frs.dumont@gmail.com>
 
 	* include/debug/safe_unordered_container.h

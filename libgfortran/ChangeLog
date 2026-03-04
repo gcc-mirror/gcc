@@ -1,3 +1,23 @@
+2026-03-03  Mark Wielaard  <mark@klomp.org>
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
+2026-03-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    John David Anglin  <danglin@gcc.gnu.org>
+
+	PR fortran/124330
+	* caf/shmem/shared_memory.c: Fix filenames for WIN32
+	includes.
+	(shared_memory_set_env): Use putenv() for HPUX and as
+	a fallback where setenv () is not available.
+	(NAME_MAX): Replace with SHM_NAME_MAX.
+	(SHM_NAME_MAX): Use this to avoid duplicating NAME_MAX
+	used elsewhere.
+	* caf/shmem/supervisor.c (get_image_num_from_envvar): Add
+	a fallback for HPUX. Add additional comment to explain why
+	the number of cores is used in lieu of GFORTRAN_NUM_IMAGES.
+
 2026-03-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/124286

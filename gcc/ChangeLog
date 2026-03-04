@@ -1,3 +1,112 @@
+2026-03-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/124165
+	* config/i386/i386-protos.h (symbolic_reference_mentioned_p):
+	Change the argument type from rtx to const_rtx.
+	* config/i386/i386.cc (symbolic_reference_mentioned_p): Likewise.
+	(ix86_access_stack_p): Add 2 auto_bitmap[] arguments.  Cache
+	the register BB domination result.
+	(ix86_symbolic_const_load_p_1): New.
+	(ix86_symbolic_const_load_p): Likewise.
+	(ix86_find_max_used_stack_alignment): If there is no symbolic
+	constant load into the register, don't call ix86_access_stack_p.
+
+2026-03-03  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/115042
+	* lra-int.h (lra_postponed_insns): New.
+	* lra.cc (lra_set_insn_deleted, lra_asm_insn_error): Clear
+	postponed insn flag.
+	(lra_process_new_insns): Propagate postponed insn flag for asm
+	gotos.
+	(lra_postponed_insns): New.
+	(lra): Initialize lra_postponed_insns.  Push postponed insns on
+	the stack.
+	* lra-constraints.cc (postpone_insns): New function.
+	(curr_insn_transform): Use it to postpone processing reload insn
+	constraints.  Skip processing postponed insns.
+
+2026-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/45273
+	* predict.cc (combine_predictions_for_insn): Use int64_t
+	math instead of double.
+
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124336
+	* config/i386/i386.cc (output_adjust_stack_and_probe): Use
+	or{b} rather than or%z0 and BYTE PTR rather than DWORD PTR.
+	(output_probe_stack_range): Likewise.
+	* config/i386/i386.md (probe_stack): Pass just 2 arguments
+	to gen_probe_stack_1, first adjust_address to QImode, second
+	const0_rtx.
+	(@probe_stack_1_<mode>): Remove.
+	(probe_stack_1): New define_insn.
+
+2026-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* fold-const.cc: Fix "Conveinece" typo in comment.
+
+2026-03-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_make_slp_decision): Do not call
+	vect_mark_slp_stmts.
+	* tree-vect-data-refs.cc (vect_enhance_data_refs_alignment):
+	We are always doing SLP.
+	(vect_supportable_dr_alignment): Likewise.
+	* tree-vect-loop.cc (vect_analyze_loop_2): No need to reset
+	STMT_SLP_TYPE.
+
+2026-03-03  Jonathan Yong  <10walls@gmail.com>
+
+	* Makefile.in: the libgdiagnostics shared object for mingw
+	should be based on host name, not target name.
+
+2026-03-03  Richard Sandiford  <rdsandiford@googlemail.com>
+	    Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	PR rtl-optimization/123786
+	* rtl-ssa/functions.h (function_info::live_out_value): Delete.
+	(function_info::create_degenerate_phi): New overload.
+	* rtl-ssa/blocks.cc (all_uses_are_live_out_uses): Delete.
+	(function_info::live_out_value): Likewise.
+	(function_info::replace_phi): Keep live-out uses if they are followed
+	by a definition in the same EBB.
+	(function_info::create_degenerate_phi): New overload, extracted
+	from create_reg_use.
+	(function_info::add_phi_nodes): Ensure that there is a phi for
+	every live input that is redefined by a second or subsequent
+	block in the EBB.  Record that such phis need live-out uses.
+	(function_info::record_block_live_out): Use look_through_degenerate_phi
+	rather than live_out_value when setting phi inputs.  Remove use of
+	live_out_value for live-out uses.  Inline the old handling of
+	bb_mem_live_out.
+	(function_info::start_block): Move append_bb call to...
+	(function_info::create_ebbs): ...here.
+	* rtl-ssa/insns.cc (function_info::create_reg_use): Use the new
+	create_degenerate_phi overload.
+
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124315
+	* config/i386/sse.md (avx512f_vmfmadd_<mode>_mask3<round_name>,
+	avx512f_vmfmsub_<mode>_mask3<round_name>,
+	avx512f_vmfnmadd_<mode>_mask3<round_name>,
+	avx512f_vmfnmsub_<mode>_mask3<round_name>): Use %<iptr>1 instead of
+	%<iptr>3 in -masm=intel syntax.
+
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124335
+	* config/i386/sse.md (*avx512f_load<mode>_mask): Use %{%3%} instead of
+	%{3%} for -masm=intel syntax.
+
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/sse.md (avx512fp16_mov<mode>): Rename pattern to...
+	(*avx512fp16_mov<mode>): ... this.
+
 2026-03-02  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR c++/102397

@@ -1,3 +1,16 @@
+2026-03-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/122572
+	* c-decl.cc (finish_struct): Add distinct canonical type.
+	* c-tree.h (c_type_canonical): Prototype for new function.
+	* c-typeck.cc (c_type_canonical): New function.
+	(ptr_to_tagged_member): New function.
+
+2026-03-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/122572
+	* c-typeck.cc (tagged_types_tu_compatible_p): Fix check.
+
 2026-02-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/123365

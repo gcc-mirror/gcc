@@ -1,3 +1,78 @@
+2026-03-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/122572
+	* gcc.dg/pr123356-2.c: New test.
+	* gcc.dg/struct-alias-2.c: New test.
+
+2026-03-03  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/122572
+	* gcc.dg/pr122572.c: New test.
+	* gcc.dg/pr123356-1.c: New test.
+
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124336
+	* gcc.target/i386/stack-check-11.c: Allow orb next to orl/orq.
+	* gcc.target/i386/stack-check-18.c: Likewise.
+	* gcc.target/i386/stack-check-19.c: Likewise.
+
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/124306
+	* g++.dg/reflect/parameters_of8.C: New test.
+
+2026-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124324
+	* g++.dg/reflect/substitute6.C: New test.
+
+2026-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124324
+	* g++.dg/reflect/extract11.C: New test.
+
+2026-03-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/complex/fast-math-complex-add-pattern-half-float.c:
+	Add --param vect-epilogues-nomask=0.
+
+2026-03-03  Richard Sandiford  <rdsandiford@googlemail.com>
+	    Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	PR rtl-optimization/123786
+	* gcc.target/aarch64/pr123786.c: New test.
+
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124315
+	* gcc.target/i386/avx512f-pr124315.c: New test.
+
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124335
+	* gcc.target/i386/avx512fp16-pr124335.c: New test.
+
+2026-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/122961
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Remove XFAIL on
+	dot-prod pattern detection.
+
+2026-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp2a/concepts-recursive-sat2.C: Verify that the
+	instantiated parameter mapping is printed.
+	* g++.dg/cpp2a/concepts-recursive-sat5.C: Likewise.
+
+2026-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123665
+	PR c++/123408
+	* g++.dg/cpp2a/lambda-targ22.C: New test.
+	* g++.dg/cpp2a/lambda-targ22a.C: New test.
+	* g++.dg/cpp2a/lambda-targ23.C: New test.
+
 2026-03-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/124288

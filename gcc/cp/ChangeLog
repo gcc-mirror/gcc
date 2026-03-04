@@ -1,3 +1,35 @@
+2026-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/124306
+	* pt.cc (regenerate_decl_from_template): Mark the old PARM_DECLs
+	replaced with tsubst_decl result with OLD_PARM_DECL_P flag.
+
+2026-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124324
+	* reflect.cc (eval_substitute): Call resolve_nondeduced_context.
+
+2026-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (struct sat_entry): New data member inst_entry.
+	(satisfaction_cache::satisfaction_cache): Initialize inst_entry.
+	(satisfaction_cache::get): Use it to prefer printing the
+	instantiated atom in case of constraint recursion.
+	(satisfy_atom): Set inst_entry of the first cache entry to point
+	to the second entry.
+
+2026-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123665
+	PR c++/123408
+	* pt.cc (build_extra_args): If TREE_STATIC was set on the
+	arguments, keep it set.
+	(add_extra_args): Set TREE_STATIC on the resulting arguments
+	when substituting templated arguments into a full set of
+	deferred arguments.
+	(tsubst_lambda_expr): Always defer templated substitution if
+	LAMBDA_EXPR_EXTRA_ARGS was set.
+
 2026-03-01  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* constexpr.cc (diagnose_failing_condition): Also decompose
