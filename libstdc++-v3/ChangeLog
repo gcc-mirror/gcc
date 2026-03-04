@@ -1,3 +1,17 @@
+2026-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-02-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/114865
+	* include/std/atomic (atomic<_Tp>::atomic(_Tp)) [C++11]:
+	Enable __builtin_clear_padding logic.
+	* testsuite/29_atomics/atomic/compare_exchange_padding.cc: Enable
+	this test in earlier modes, including C++11.
+	* testsuite/29_atomics/atomic/cons/zero_padding.cc [C++11]:
+	Enable tests verifying cleared padding bits for a non-static-init
+	std::atomic object.
+
 2026-02-26  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/123875

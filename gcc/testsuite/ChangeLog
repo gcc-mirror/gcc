@@ -1,3 +1,22 @@
+2026-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123845
+	PR libstdc++/114865
+	* g++.dg/cpp0x/constexpr-ex3.C: Adjust C++11 non-empty
+	constexpr constructor dg-error to a dg-warning.  Expect
+	a follow-up missing member initializer diagnostic in C++11 mode.
+	* g++.dg/cpp2a/constexpr-try1.C: Expect a follow-up
+	compound-statement in constexpr function diagnostic in C++11
+	mode.
+	* g++.dg/cpp2a/constexpr-try2.C: Likewise.  Adjust C++11
+	non-empty constexpr constructor dg-error to a dg-warning.
+	* g++.dg/cpp2a/constexpr-try3.C:  Adjust C++11 non-empty
+	constexpr constructor dg-error to a dg-warning.
+	* g++.dg/cpp0x/constexpr-ctor23.C: New test.
+
 2026-03-02  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

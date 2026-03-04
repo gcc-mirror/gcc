@@ -1,3 +1,16 @@
+2026-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-01-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123845
+	PR libstdc++/114865
+	* constexpr.cc (build_data_member_initialization): Remove
+	C++11-specific recognition of MODIFY_EXPR.
+	(check_constexpr_ctor_body): Relax error diagnostic to a
+	pedwarn and don't clear DECL_DECLARED_CONSTEXPR_P upon
+	error.  Return true if complaining.
+
 2026-02-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
