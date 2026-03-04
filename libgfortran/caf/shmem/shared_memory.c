@@ -244,16 +244,23 @@ shared_memory_init (shared_memory_act *mem, size_t size)
 #endif
   if (!base_ptr)
     {
-#define bufsize 20
-      char buffer[bufsize];
-
-      snprintf (buffer, bufsize, "%p", mem->glbl.base);
-#ifdef HAVE_SETENV
-      setenv (ENV_BASE, buffer, 1);
+#if defined(HAVE_SETENV)
+      char val[20];
+      snprintf (val, 20, "%p", mem->glbl.base);
+      setenv (ENV_BASE, val, 1);
+#elif defined(WIN32)
+      char val[20];
+      snprintf (val, 20, "%p", mem->glbl.base);
+      SetEnvironmentVariable (ENV_BASE, val);
 #else
-      SetEnvironmentVariable (ENV_BASE, buffer);
+      char buffer[28];
+      int res;
+
+      /* HP-UX / Legacy Fallback using putenv */
+      res = snprintf (buffer, 28, "%s=%p", "ENV_BASE", mem->glbl.base);
+      if (res != -1)
+	putenv (buffer);
 #endif
-#undef bufsize
     }
   mem->size = size;
   if (!env_val)
