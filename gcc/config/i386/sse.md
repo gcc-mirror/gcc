@@ -5241,7 +5241,7 @@
 	    (match_operand:V8BF 1 "nonimmediate_operand" "vm")
 	    (parallel [(const_int 0)]))))]
   "TARGET_AVX10_2"
-  "vcomisbf16\t{%1, %0|%0, %1}"
+  "vcomisbf16\t{%1, %0|%0, %w1}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "ssecomi")])
 
