@@ -53,8 +53,9 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vect_recog_dot_prod_pattern: detected(?:(?!Analysis failed).)*Analysis succeeded" 1 "vect" } } */
+/* ???  In principle sdot_prodv<N>hiv<2xN>qi could also be used and would
+   take precedence.  */
 /* { dg-final { scan-tree-dump-times "vect_recog_widen_mult_pattern: detected(?:(?!Analysis failed).)*Analysis succeeded" 1 "vect" { target vect_widen_mult_qi_to_hi } } } */
-
+/* ???  And we can also vectorize this without widen-mult.  */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_widen_mult_qi_to_hi } } } */
 
