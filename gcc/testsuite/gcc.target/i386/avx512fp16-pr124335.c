@@ -2,7 +2,7 @@
 /* { dg-do assemble } */
 /* { dg-require-effective-target masm_intel } */
 /* { dg-options "-mavx512fp16 -masm=intel" } */
-/* { dg-require-effective-target avx512bw } */
+/* { dg-require-effective-target avx512fp16 } */
 
 #include <x86intrin.h>
 
