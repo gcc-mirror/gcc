@@ -906,6 +906,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #include <bits/string_view.tcc>
 
-#endif // __cplusplus <= 201402L
+#endif // C++17
 
-#endif // _GLIBCXX_EXPERIMENTAL_STRING_VIEW
+#endif // _GLIBCXX_STRING_VIEW
