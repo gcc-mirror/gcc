@@ -1,7 +1,7 @@
 /* Test the `vextQp64' ARM Neon intrinsic.  */
 
 /* { dg-require-effective-target arm_crypto_ok } */
-/* { dg-options "-save-temps -O3 -fno-inline" } */
+/* { dg-options "-save-temps -O3 -fno-inline -fno-ipa-cp" } */
 /* { dg-add-options arm_crypto } */
 
 #include "arm_neon.h"
