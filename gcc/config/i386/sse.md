@@ -18897,9 +18897,9 @@
       tmp = "pternlog";
       ssesuffix = "<ternlogsuffix>";
       if (which_alternative != 4 || TARGET_AVX512VL)
-	ops = "v%s%s\t{$0x44, %%1, %%2, %%0|%%0, %%2, %%1, $0x44}";
+	ops = "v%s%s\t{$0x44, %%1, %%2, %%0|%%0, %%2, %%1, 0x44}";
       else
-	ops = "v%s%s\t{$0x44, %%g1, %%g2, %%g0|%%g0, %%g2, %%g1, $0x44}";
+	ops = "v%s%s\t{$0x44, %%g1, %%g2, %%g0|%%g0, %%g2, %%g1, 0x44}";
       break;
     default:
       gcc_unreachable ();
