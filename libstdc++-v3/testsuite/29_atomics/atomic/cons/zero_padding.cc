@@ -6,12 +6,12 @@
 #include <cstring>
 #include <testsuite_hooks.h>
 
-struct TailPadding { int i; char c; };
+struct TailPadding { short i; char c; };
 TailPadding ztail{1, 2}; // zeroed-padding
 constexpr std::atomic<TailPadding> ctail(TailPadding{1,2});
 std::atomic<TailPadding> gtail(TailPadding{1,2});
 
-struct MidPadding { char c; int x; };
+struct MidPadding { char c; short i; };
 MidPadding zmid{1, 2}; // zeroed-padding
 constexpr std::atomic<MidPadding> cmid(MidPadding{1,2});
 std::atomic<MidPadding> gmid(MidPadding{1,2});
@@ -25,12 +25,12 @@ struct Ctor
 {
   Ctor() = default;
 
-  constexpr Ctor(char pc, char pi)
+  constexpr Ctor(char pc, short pi)
     : c(pc), i(pi)
   {}
 
   char c;
-  int i;
+  short i;
 };
 
 Ctor zctor{1, 2}; // zeroed-padding
