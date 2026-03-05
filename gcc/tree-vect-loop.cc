@@ -10452,7 +10452,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 		    && !SSA_NAME_IS_DEFAULT_DEF (new_tree)
 		    && (gimple_bb (use_stmt)->loop_father
 			!= gimple_bb (vec_stmt)->loop_father)
-		    /* But a replacemend in a LC PHI is OK.  This happens
+		    /* But a replacement in a LC PHI is OK.  This happens
 		       in gcc.dg/vect/bb-slp-57.c for example.  */
 		    && (gimple_code (use_stmt) != GIMPLE_PHI
 			|| (((e = phi_arg_edge_from_use (use_p)), true)
