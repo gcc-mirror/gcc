@@ -23319,7 +23319,13 @@ preprocess_module (module_state *module, location_t from_loc,
 	      if (!(import->is_module ()
 		    && (import->is_partition () || import->is_exported ()))
 		  && import->loadedness == ML_NONE
-		  && (import->is_header () || !flag_preprocess_only))
+		  && (!flag_preprocess_only
+		      || (import->is_header ()
+			  /* Allow a missing/unimportable GCM with -MG.
+			     FIXME We should also try falling back to #include
+			     before giving up entirely.  */
+			  && (!cpp_get_options (reader)->deps.missing_files
+			      || import->check_importable (reader)))))
 		{
 		  unsigned n = dump.push (import);
 		  import->do_import (reader, true);
