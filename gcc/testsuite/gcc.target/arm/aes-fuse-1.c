@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target arm_crypto_ok } */
-/* { dg-require-effective-target arm_cpu_cortex_a53 } */
+/* { dg-require-effective-target arm_cpu_cortex_a53_ok } */
 /* { dg-add-options arm_crypto } */
 /* { dg-add-options arm_cpu_cortex_a53 } */
 /* { dg-additional-options "-O3 -dp" } */
