@@ -1,3 +1,20 @@
+2026-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-02-20  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/122856
+	* g++.dg/ipa/pr122856.C: New test.
+
+2026-03-04  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2026-02-26  Xi Ruoyao  <xry111@xry111.site>
+
+	PR middle-end/124250
+	PR target/123807
+	* gcc.c-torture/compile/pr124250.c: New test.
+
 2026-03-03  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
