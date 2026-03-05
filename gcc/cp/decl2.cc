@@ -1303,8 +1303,7 @@ grokfield (const cp_declarator *declarator,
 
 	  /* If this is a typedef that names the class for linkage purposes
 	     (7.1.3p8), apply any attributes directly to the type.  */
-	  if (OVERLOAD_TYPE_P (TREE_TYPE (value))
-	      && value == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (value))))
+	  if (TYPE_DECL_FOR_LINKAGE_PURPOSES_P (value))
 	    attrflags = ATTR_FLAG_TYPE_IN_PLACE;
 
 	  cplus_decl_attributes (&value, attrlist, attrflags);

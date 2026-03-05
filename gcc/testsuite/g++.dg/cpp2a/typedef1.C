@@ -33,8 +33,8 @@ typedef struct {					// { dg-message "unnamed class defined here" }
   static int a;						// { dg-error "static data member '<unnamed struct>::a' in unnamed class" }
 } B;
 typedef struct : public A {				// { dg-error "anonymous non-C-compatible type given name for linkage purposes by 'typedef' declaration" }
-  int a;
-} C;							// { dg-message "type is not C-compatible because it has a base class" }
+  int a;						// { dg-message "type is not C-compatible because it has a base class" "" { target *-*-* } .-1 }
+} C;
 #if __cplusplus >= 201103L
 typedef struct {					// { dg-error "anonymous non-C-compatible type given name for linkage purposes by 'typedef' declaration" "" { target c++11 } }
   int b = 42;						// { dg-message "type is not C-compatible because 'D::b' has default member initializer" "" { target c++11 } }

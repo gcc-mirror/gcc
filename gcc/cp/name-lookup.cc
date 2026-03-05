@@ -1869,6 +1869,11 @@ fields_linear_search (tree klass, tree name, bool want_type)
 	    continue;
 	}
 
+      if (TYPE_DECL_WAS_UNNAMED (decl))
+	/* Ignore DECL_NAME given to unnamed TYPE_DECLs named for linkage
+	   purposes.  */
+	continue;
+
       if (DECL_DECLARES_FUNCTION_P (decl))
 	/* Functions are found separately.  */
 	continue;
@@ -2345,7 +2350,13 @@ count_class_fields (tree klass)
 	     && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
       n_fields += count_class_fields (TREE_TYPE (fields));
     else if (DECL_NAME (fields))
-      n_fields += 1;
+      {
+	if (TYPE_DECL_WAS_UNNAMED (fields))
+	  /* Ignore DECL_NAME given to unnamed TYPE_DECLs named for linkage
+	     purposes.  */
+	  continue;
+	n_fields += 1;
+      }
 
   return n_fields;
 }
@@ -2369,6 +2380,10 @@ member_vec_append_class_fields (vec<tree, va_gc> *member_vec, tree klass)
 	if (TREE_CODE (field) == USING_DECL
 	    && IDENTIFIER_CONV_OP_P (DECL_NAME (field)))
 	  field = ovl_make (conv_op_marker, field);
+	else if (TYPE_DECL_WAS_UNNAMED (field))
+	  /* Ignore DECL_NAME given to unnamed TYPE_DECLs named for linkage
+	     purposes.  */
+	  continue;
 	member_vec->quick_push (field);
       }
 }
@@ -2700,7 +2715,9 @@ pop_local_binding (tree id, tree decl)
     binding->value = NULL_TREE;
   else if (binding->type == decl)
     binding->type = NULL_TREE;
-  else
+  /* Ignore DECL_NAME given to unnamed TYPE_DECLs named for linkage
+     purposes.  */
+  else if (!TYPE_DECL_WAS_UNNAMED (decl))
     {
       /* Name-independent variable was found after at least one declaration
 	 with the same name.  */

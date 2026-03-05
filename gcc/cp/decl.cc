@@ -6618,8 +6618,7 @@ start_decl (const cp_declarator *declarator,
   /* If this is a typedef that names the class for linkage purposes
      (7.1.3p8), apply any attributes directly to the type.  */
   if (TREE_CODE (decl) == TYPE_DECL
-      && OVERLOAD_TYPE_P (TREE_TYPE (decl))
-      && decl == TYPE_NAME (TYPE_MAIN_VARIANT (TREE_TYPE (decl))))
+      && TYPE_DECL_FOR_LINKAGE_PURPOSES_P (decl))
     flags = ATTR_FLAG_TYPE_IN_PLACE;
   else
     flags = 0;
@@ -13731,7 +13730,8 @@ maybe_diagnose_non_c_class_typedef_for_linkage (tree type, tree orig, tree t)
     {
       auto_diagnostic_group d;
       if (diagnose_non_c_class_typedef_for_linkage (type, orig))
-	inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)),
+	inform (type == t ? DECL_SOURCE_LOCATION (orig)
+		: DECL_SOURCE_LOCATION (TYPE_NAME (t)),
 		"type is not C-compatible because it has a base class");
       return true;
     }
@@ -13797,12 +13797,22 @@ name_unnamed_type (tree type, tree decl)
   gcc_assert (TYPE_UNNAMED_P (type)
 	      || enum_with_enumerator_for_linkage_p (type));
 
-  /* Replace the anonymous decl with the real decl.  Be careful not to
-     rename other typedefs (such as the self-reference) of type.  */
   tree orig = TYPE_NAME (type);
-  for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    if (TYPE_NAME (t) == orig)
-      TYPE_NAME (t) = decl;
+  if (flag_reflection)
+    {
+      /* For -freflection for typedef struct { ... } S; ^^S needs to be
+	 a reflection of a type alias.  So, TREE_TYPE (DECL) can't be
+	 TYPE.  Instead of what we do below, override DECL_NAME (orig).  */
+      DECL_NAME (orig) = DECL_NAME (decl);
+      TYPE_DECL_FOR_LINKAGE_PURPOSES_P (orig) = 1;
+    }
+  else
+    /* Replace the anonymous decl with the real decl.  Be careful not to
+       rename other typedefs (such as the self-reference) of type.  */
+    for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
+      if (TYPE_NAME (t) == orig)
+	TYPE_NAME (t) = decl;
+  TYPE_DECL_FOR_LINKAGE_PURPOSES_P (decl) = 1;
 
   /* If this is a typedef within a template class, the nested
      type is a (non-primary) template.  The name for the

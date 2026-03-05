@@ -6549,6 +6549,14 @@ namespace_members_of (location_t loc, tree ns)
 	     so don't bother calling it here.  */
 	  CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
 				  get_reflection_raw (loc, m));
+	  /* For typedef struct { ... } S; include both the S type
+	     alias (added above) and dealias of that for the originally
+	     unnamed type (added below).  */
+	  if (TREE_CODE (b) == TYPE_DECL
+	      && TYPE_DECL_FOR_LINKAGE_PURPOSES_P (b))
+	    CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
+				    get_reflection_raw (loc,
+							strip_typedefs (m)));
 	}
     }
   delete seen;
