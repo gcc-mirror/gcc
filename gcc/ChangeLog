@@ -1,3 +1,33 @@
+2026-03-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/119568
+	* tree-ssa-math-opts.cc (convert_plusminus_to_widen): Reject different
+	mode classes.
+
+2026-03-04  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR rtl-optimization/124041
+	* lra-constraints.cc (curr_insn_transform): Check if hardreg is
+	valid in subreg context.
+
+2026-03-04  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR rtl-optimization/124351
+	* avoid-store-forwarding.cc (process_store_forwarding): Add
+	bitmap_clear after allocating forwarded_bytes.
+
+2026-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124341
+	* config/i386/sse.md (vcvt<convertfp8_pack><mode><mask_name>): Use
+	<mask_operand3> rather than <mask_operand2> for -masm=intel.
+
+2026-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124349
+	* config/i386/sse.md (avx10_2_comisbf16_v8bf): Use %w1 instead of %1
+	for -masm=intel.
+
 2026-03-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/124165

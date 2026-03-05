@@ -1,3 +1,52 @@
+2026-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124363
+	* include/std/string_view: Adjust comment on #endif to match #if
+	condition.
+
+2026-03-04  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/117402
+	* include/debug/map.h (try_emplace (2x), insert_or_assign (2x)):
+	Define heterogeneous overloads, simplify existing overloads.
+	* include/debug/unordered_map: Same.
+	* include/debug/set.h (insert (2x)):
+	Define heterogeneous overloads.
+	* include/debug/unordered_set: Same.
+
+2026-03-04  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/117402
+	* include/bits/stl_map.h (operator[], at (2x), try_emplace (2x),
+	insert_or_assign (2x)): Add overloads.
+	* include/bits/unordered_map.h (operator[], at (2x),
+	try_emplace (2x), insert_or_assign (2x), bucket (2x)): Add overloads.
+	* include/bits/stl_set.h (insert (2x)): Add overloads.
+	* include/bits/unordered_set.h (insert (2x), bucket (2x)): Add overloads.
+	* include/bits/hashtable.h (_M_bucket_tr, _M_insert_tr): Define.
+	* include/bits/hashtable_policy.h (_M_at_tr (2x)): Define.
+	* include/bits/stl_tree.h (_M_emplace_here, _M_get_insert_unique_pos_tr,
+	_M_get_insert_hint_unique_pos_tr): Define new heterogeneous insertion
+	code path for set and map.
+	* include/bits/version.def (associative_heterogeneous_insertion):
+	Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/map (__glibcxx_want_associative_heterogeneous_insertion):
+	Define macro.
+	* include/std/set: Same.
+	* include/std/unordered_map: Same.
+	* include/std/unordered_set: Same.
+	* testsuite/23_containers/map/modifiers/hetero/insert.cc: New tests.
+	* testsuite/23_containers/set/modifiers/hetero/insert.cc: Same.
+	* testsuite/23_containers/unordered_map/modifiers/hetero/insert.cc:
+	Same.
+	* testsuite/23_containers/unordered_multimap/modifiers/hetero/insert.cc:
+	Same.
+	* testsuite/23_containers/unordered_multiset/modifiers/hetero/insert.cc:
+	Same.
+	* testsuite/23_containers/unordered_set/modifiers/hetero/insert.cc:
+	Same.
+
 2026-03-03  Adam Wood  <adam.wood@mines.sdsmt.edu>
 
 	PR libstdc++/122217

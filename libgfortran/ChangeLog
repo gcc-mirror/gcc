@@ -1,3 +1,17 @@
+2026-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libfortran/124330
+	* caf/shmem/shared_memory.c (shared_memory_set_env): Make buffer
+	used by putenv static.
+	(shared_memory_init): Likewise.
+
+2026-03-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/124330
+	* caf/shmem/shared_memory.c (shared_memory_init): Use
+	putenv() for HPUX and as a fallback where setenv()
+	is not available.
+
 2026-03-03  Mark Wielaard  <mark@klomp.org>
 
 	* config.h.in: Regenerate.

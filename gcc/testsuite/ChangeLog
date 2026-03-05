@@ -1,3 +1,72 @@
+2026-03-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124368
+	* g++.dg/reflect/extent1.C: New test.
+
+2026-03-04  Thiago Jung Bauermann  <thiago.bauermann@linaro.org>
+
+	PR ipa/60674
+	* g++.dg/ipa/devirt-23.C: Remove xfail.
+
+2026-03-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124229
+	* g++.dg/cpp26/expansion-stmt32.C: New test.
+	* g++.dg/reflect/expansion-stmt2.C: New test.
+
+2026-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123866
+	* g++.dg/reflect/annotations11.C: New test.
+
+2026-03-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/124359
+	PR testsuite/122961
+	* gcc.dg/vect/vect-reduc-pattern-2c.c: Drop xfail.
+
+2026-03-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/simd/vextQp64_1.c: Compile with -fno-ipa-cp.
+
+2026-03-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/124320
+	* gcc.dg/lto/toplevel-extended-asm-1_0.c: Adjust inline
+	assembler for arm-none-eabi.
+
+2026-03-04  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR rtl-optimization/124041
+	* gcc.dg/torture/pr124041.c: New test.
+
+2026-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124341
+	* gcc.target/i386/avx10_2-pr124341.c: New test.
+
+2026-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124349
+	* gcc.target/i386/avx10_2-pr124349.c: New test.
+
+2026-03-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-reduc-dot-s8b.c: Remove scan for
+	dot_prod pattern matching.
+
+2026-03-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/64835
+	* gcc.dg/ipa/iinline-attr.c (scan-ipa-dump): Restrict xfail to
+	32-bit SPARC.
+
+2026-03-04  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/124335
+	* gcc.target/i386/avx512fp16-pr124335.c: Require target
+	avx512fp16 instead of avx512bw.
+
 2026-03-03  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/122572
