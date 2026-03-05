@@ -110,7 +110,7 @@ a68_wrap_formal_proc_hole (NODE_T *p, tree wrapper)
 
   /* Now build the type of the wrapped function.  */
   tree wrapper_ret_type = TREE_TYPE (TREE_TYPE (wrapper));
-  tree wrapped_ret_type = (SUB (m) == M_STRING
+  tree wrapped_ret_type = (SUB (m) == M_STRING || SUB (m) == M_VOID
 			   ? void_type_node : wrapper_ret_type);
   tree *wrapped_args_types = XALLOCAVEC (tree, wrapped_nargs);
   int nwrappedarg = 0;
@@ -225,6 +225,15 @@ a68_wrap_formal_proc_hole (NODE_T *p, tree wrapper)
 					  r, relems_size,
 					  &lower_bound, &upper_bound));
 	  }
+	body = a68_pop_range ();
+      }
+    else if (SUB (m) == M_VOID)
+      {
+	a68_push_range (M_VOID);
+	a68_add_stmt (build_call_vec (TREE_TYPE (wrapped_type),
+				      wrapped,
+				      wrapped_args));
+	a68_add_stmt (a68_get_empty ());
 	body = a68_pop_range ();
       }
     else
