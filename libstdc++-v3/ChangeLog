@@ -1,3 +1,12 @@
+2026-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124363
+	* include/std/string_view: Adjust comment on #endif to match #if
+	condition. Likewise for header guard.
+
 2026-02-26  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/123875
