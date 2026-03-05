@@ -32450,6 +32450,9 @@
 (define_mode_attr ssebvecmode_2
   [(V8HF "V16QI") (V16HF "V16QI") (V32HF "V32QI")])
 
+(define_mode_attr iptrssebvec_2
+  [(V8HF "q") (V16HF "") (V32HF "")])
+
 (define_int_iterator UNSPEC_VCVTBIASPH2FP8_PACK
    [UNSPEC_VCVTBIASPH2BF8 UNSPEC_VCVTBIASPH2BF8S
     UNSPEC_VCVTBIASPH2HF8 UNSPEC_VCVTBIASPH2HF8S])
@@ -32626,7 +32629,7 @@
 	  [(match_operand:<ssebvecmode_2> 1 "nonimmediate_operand" "vm")]
 	  UNSPEC_VCVTHF82PH))]
   "TARGET_AVX10_2"
-  "vcvthf82ph\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  "vcvthf82ph\t{%1, %0<mask_operand2>|%0<mask_operand2>, %<iptrssebvec_2>1}"
   [(set_attr "prefix" "evex")])
 
 (define_int_iterator VPDPWPROD
