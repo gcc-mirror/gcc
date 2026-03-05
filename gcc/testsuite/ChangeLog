@@ -1,3 +1,20 @@
+2026-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-02-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/117217
+	* g++.dg/torture/pr117217-1.C: New test.
+	* g++.dg/torture/pr117217-2.C: Likewise.
+
+2026-03-04  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-02-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/106260
+	* g++.dg/ipa/pr106260.C: New test.
+
 2026-03-02  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:
