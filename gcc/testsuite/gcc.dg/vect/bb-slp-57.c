@@ -36,3 +36,4 @@ void l()
 
 /* { dg-final { scan-tree-dump-times "transform load" 1 "slp1" { target { { x86_64-*-* i?86-*-* } && lp64 } } } } */
 /* { dg-final { scan-tree-dump "optimized: basic block" "slp1" { target { { x86_64-*-* i?86-*-* } && lp64 } } } } */
+/* { dg-final { scan-tree-dump-not "missed: Using original scalar computation" "slp1" } } */

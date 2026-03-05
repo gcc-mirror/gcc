@@ -10441,26 +10441,35 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 				   "def\n");
 		continue;
 	      }
-	    /* ???  It can also happen that we end up pulling a def into
-	       a loop where replacing out-of-loop uses would require
-	       a new LC SSA PHI node.  Retain the original scalar in
-	       those cases as well.  PR98064.  */
-	    if (TREE_CODE (new_tree) == SSA_NAME
-		&& !SSA_NAME_IS_DEFAULT_DEF (new_tree)
-		&& (gimple_bb (use_stmt)->loop_father
-		    != gimple_bb (vec_stmt)->loop_father)
-		&& !flow_loop_nested_p (gimple_bb (vec_stmt)->loop_father,
-					gimple_bb (use_stmt)->loop_father))
-	      {
-		if (dump_enabled_p ())
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "Using original scalar computation for "
-				   "live lane because there is an out-of-loop "
-				   "definition for it\n");
-		continue;
-	      }
 	    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	      SET_USE (use_p, new_tree);
+	      {
+		/* ???  It can also happen that we end up pulling a def into
+		   a loop where replacing out-of-loop uses would require
+		   a new LC SSA PHI node.  Retain the original scalar in
+		   those cases as well.  PR98064.  */
+		edge e;
+		if (TREE_CODE (new_tree) == SSA_NAME
+		    && !SSA_NAME_IS_DEFAULT_DEF (new_tree)
+		    && (gimple_bb (use_stmt)->loop_father
+			!= gimple_bb (vec_stmt)->loop_father)
+		    /* But a replacemend in a LC PHI is OK.  This happens
+		       in gcc.dg/vect/bb-slp-57.c for example.  */
+		    && (gimple_code (use_stmt) != GIMPLE_PHI
+			|| (((e = phi_arg_edge_from_use (use_p)), true)
+			    && !loop_exit_edge_p
+				  (gimple_bb (vec_stmt)->loop_father, e)))
+		    && !flow_loop_nested_p (gimple_bb (vec_stmt)->loop_father,
+					    gimple_bb (use_stmt)->loop_father))
+		  {
+		    if (dump_enabled_p ())
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				       "Using original scalar computation for "
+				       "live lane because there is an "
+				       "out-of-loop definition for it\n");
+		    continue;
+		  }
+		SET_USE (use_p, new_tree);
+	      }
 	    update_stmt (use_stmt);
 	  }
     }
