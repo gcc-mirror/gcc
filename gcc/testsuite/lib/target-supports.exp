@@ -6222,6 +6222,7 @@ foreach { armfunc armflag armdefs } {
 	v7 "-march=armv7+fp" __ARM_ARCH_7__
 	v7a "-march=armv7-a+fp" __ARM_ARCH_7A__
 	v7a_arm "-march=armv7-a+fp -marm" "__ARM_ARCH_7A__ && !__thumb__"
+	v7a_thumb "-march=armv7-a+fp -mthumb" "__ARM_ARCH_7A__ && __thumb__"
 	v7a_fp_hard "-march=armv7-a+fp -mfpu=auto -mfloat-abi=hard" __ARM_ARCH_7A__
 	v7a_neon "-march=armv7-a+simd -mfpu=auto -mfloat-abi=softfp" "__ARM_ARCH_7A__ && __ARM_NEON__"
 	v7a_neon_thumb "-march=armv7-a+simd -mfpu=auto -mfloat-abi=softfp -mthumb" "__ARM_ARCH_7A__ && __ARM_NEON__ && __thumb__"

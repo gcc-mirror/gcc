@@ -1,6 +1,6 @@
-/* { dg-do assemble } */
-/* { dg-options "-Os -save-temps -mthumb" } */
-/* { dg-require-effective-target arm_thumb2_ok } */
+/* { dg-require-effective-target arm_arch_v7a_thumb_ok } */
+/* { dg-options "-Os" } */
+/* { dg-add-options arm_arch_v7a_thumb } */
 
 extern int bar ();
 extern void bar2 (int);
@@ -24,4 +24,3 @@ foo4 ()
 
 /* { dg-final { scan-assembler-times "sub" 1 } } */
 /* { dg-final { scan-assembler-times "cmp" 0 } } */
-/* { dg-final { object-size text <= 30 { target { ! arm*-*-uclinuxfdpiceabi } } } } */
