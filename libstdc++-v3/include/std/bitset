@@ -1298,8 +1298,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _GLIBCXX_CONSTEXPR bool
       operator[](size_t __position) const
       {
+#if __cplusplus != 201103L
 	__glibcxx_assert(__position < _Nb);
 	return _Unchecked_test(__position);
+#elif defined(_GLIBCXX_ASSERTIONS)
+	// C++11 forbids a compound stmt in a constexpr function.
+	return __position < _Nb ? _Unchecked_test(__position)
+	  : (__builtin_trap(), false);
+#else
+	return _Unchecked_test(__position);
+#endif
       }
       ///@}
 

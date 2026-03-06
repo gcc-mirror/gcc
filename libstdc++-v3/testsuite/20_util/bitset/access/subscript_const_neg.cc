@@ -1,3 +1,4 @@
+// { dg-do compile }
 #include <bitset>
 
 void test_const_subscript_assignment()
