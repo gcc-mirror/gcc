@@ -300,7 +300,7 @@ startWorker (image *im __attribute__ ((unused)),
   return true;
 }
 
-#ifndef WIN32
+#ifdef HAVE_FORK
 static void
 kill_all_images (supervisor *m)
 {
