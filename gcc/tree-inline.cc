@@ -5336,7 +5336,20 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
   if (use_retvar && gimple_call_lhs (stmt))
     {
       gimple *old_stmt = stmt;
-      stmt = gimple_build_assign (gimple_call_lhs (stmt), use_retvar);
+      tree lhs = gimple_call_lhs (stmt);
+      if (!is_gimple_reg (lhs)
+	  && !is_gimple_reg (use_retvar)
+	  && is_gimple_reg_type (TREE_TYPE (lhs)))
+	{
+	  /* If both lhs and use_retvar aren't gimple regs, yet have
+	     gimple reg type, copy through a temporary SSA_NAME.  */
+	  gimple *g = gimple_build_assign (make_ssa_name (TREE_TYPE (lhs)),
+					   use_retvar);
+	  gimple_set_location (g, gimple_location (old_stmt));
+	  gsi_insert_before (&stmt_gsi, g, GSI_SAME_STMT);
+	  use_retvar = gimple_assign_lhs (g);
+	}
+      stmt = gimple_build_assign (lhs, use_retvar);
       gimple_set_location (stmt, gimple_location (old_stmt));
       gsi_replace (&stmt_gsi, stmt, false);
       maybe_clean_or_replace_eh_stmt (old_stmt, stmt);
