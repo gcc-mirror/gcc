@@ -1927,6 +1927,11 @@ write_template_param_decl (tree parm)
 		      ? TEMPLATE_PARM_CONSTRAINTS (parm)
 		      : NULL_TREE))
 	  {
+	    if (TREE_CODE (c) == UNARY_LEFT_FOLD_EXPR)
+	      {
+		c = FOLD_EXPR_PACK (c);
+		c = PACK_EXPANSION_PATTERN (c);
+	      }
 	    if (AUTO_IS_DECLTYPE (type))
 	      write_string ("DK");
 	    else
