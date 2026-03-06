@@ -1689,6 +1689,8 @@ region_model_manager::get_unknown_symbolic_region (tree region_type)
 const region *
 region_model_manager::get_field_region (const region *parent, tree field)
 {
+  gcc_assert (parent);
+  gcc_assert (field);
   gcc_assert (TREE_CODE (field) == FIELD_DECL);
 
   /* (*UNKNOWN_PTR).field is (*UNKNOWN_PTR_OF_&FIELD_TYPE).  */
