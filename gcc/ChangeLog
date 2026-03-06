@@ -1,3 +1,13 @@
+2026-03-05  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2026-03-05  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/123807
+	PR middle-end/124250
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): Revert r16-7163 change.
+
 2026-03-04  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
