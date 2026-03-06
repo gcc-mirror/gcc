@@ -1,3 +1,51 @@
+2026-03-05  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR tree-optimization/124037
+	* tree-vect-stmts.cc (get_load_store_type): Fix
+	alignment_support_scheme categorization for early
+	break VMAT_ELEMENTWISE accesses.
+
+2026-03-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_live_operation): Fix typo.
+
+2026-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98064
+	* tree-vect-loop.cc (vectorizable_live_operation): Do
+	not restrict replacing uses in a LC PHI.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (swap<mode>): Swap operand order for
+	-masm=intel.
+
+2026-03-05  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/123807
+	PR middle-end/124250
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vector_init_same): Revert r16-7163 change.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124349
+	* config/i386/sse.md (iptrssebvec_2): New define_mode_attr.
+	(cvthf82ph<mode><mask_name>): Use it for -masm=intel input
+	operand.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124367
+	* config/i386/sse.md (*andnot<mode>3): Use 0x44 rather than $0x44
+	for -masm=intel.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124366
+	* config/i386/i386.md (@wrss<mode>, @wruss<mode>): Swap operand
+	order for -masm=intel.
+
 2026-03-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/119568

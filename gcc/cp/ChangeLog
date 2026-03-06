@@ -1,3 +1,38 @@
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/124145
+	* constexpr.cc (cxx_eval_constant_expression) <case TARGET_EXPR>: Move
+	ctx->save_expr->safe_push (slot) call before if (*jump_target) test.
+	Use TARGET_EXPR_INITIAL instead of TREE_OPERAND.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123810
+	* cp-tree.h (TYPE_DECL_FOR_LINKAGE_PURPOSES_P): Define.
+	(TYPE_DECL_WAS_UNNAMED): Likewise.
+	(TYPE_WAS_UNNAMED): Also check TYPE_DECL_WAS_UNNAMED.
+	* decl.cc (start_decl): Use TYPE_DECL_FOR_LINKAGE_PURPOSES_P.
+	(maybe_diagnose_non_c_class_typedef_for_l): If t == type, use
+	DECL_SOURCE_LOCATION (orig) instead of
+	DECL_SOURCE_LOCATION (TYPE_NAME (t)).
+	(name_unnamed_type): Set TYPE_DECL_FOR_LINKAGE_PURPOSES_P
+	on decl.  For -freflection don't change TYPE_NAME from
+	orig to decl, but instead change DECL_NAME (orig) to
+	DECL_NAME (decl) and set TYPE_DECL_FOR_LINKAGE_PURPOSES_P on
+	orig too.
+	* decl2.cc (grokfield): Use TYPE_DECL_FOR_LINKAGE_PURPOSES_P.
+	* name-lookup.cc (fields_linear_search): Ignore
+	TYPE_DECL_WAS_UNNAMED decls.
+	(count_class_fields): Likewise.
+	(member_vec_append_class_fields): Likewise.
+	(pop_local_binding): Likewise.
+	* reflect.cc (namespace_members_of): For TYPE_DECL with
+	TYPE_DECL_FOR_LINKAGE_PURPOSES_P set also append
+	reflection of strip_typedefs (m).
+	* class.cc (find_flexarrays): Handle TYPE_DECLs with
+	TYPE_DECL_WAS_UNNAMED like the ones with IDENTIFIER_ANON_P
+	name.
+
 2026-03-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/124368

@@ -1,3 +1,9 @@
+2026-03-05  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/124322
+	* a68-low-holes.cc (a68_wrap_formal_proc_hole): Wrap functions
+	returning void properly.
+
 2026-02-27  James Bohl  <bohlj47@gmail.com>
 
 	* a68-low-prelude.cc (a68_lower_negate2): Annotate denotation

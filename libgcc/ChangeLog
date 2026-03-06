@@ -1,3 +1,9 @@
+2026-03-05  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/124333
+	* config/aarch64/cpuinfo.c: Define __aarch64_cpu_features
+	unconditionally.
+
 2026-02-23  Alice Carlotti  <alice.carlotti@arm.com>
 
 	* config/aarch64/libgcc-sme.ver: Add __arm_get_current_vg.

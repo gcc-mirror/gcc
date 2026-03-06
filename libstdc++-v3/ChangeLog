@@ -1,3 +1,51 @@
+2026-03-05  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/118341
+	* include/std/bitset (operator[] (2x)): Add assertion.
+	* testsuite/20_util/bitset/access/118341_neg1.cc: New test.
+	* testsuite/20_util/bitset/access/118341_neg2.cc: Same.
+	* testsuite/20_util/bitset/access/118341_smoke.cc: Same.
+	* testsuite/20_util/bitset/access/subscript.cc: Same.
+	* testsuite/20_util/bitset/access/subscript_const_neg.cc: Same.
+
+2026-03-05  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/safe_unordered_container.h
+	(_Safe_unordered_container::_UContInvalidatePred): Move outside class, at
+	namespace scope. Declare friend.
+	(_Safe_unordered_container::_UMContInvalidatePred): Likewise.
+	(_Safe_unordered_container::_UContMergeGuard): Likewise.
+	(_Safe_unordered_container::_M_invalidate_all): Make protected.
+	(_Safe_unordered_container::_M_invalidate_all_if): Likewise.
+
+2026-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/124124
+	* testsuite/29_atomics/atomic/cons/zero_padding.cc: Limit size of
+	test types to four bytes.
+
+2026-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+	    Ivan Lazaric  <ivan.lazaric1@gmail.com>
+
+	* include/std/format (_Arg_value::_M_get): Rename to...
+	(_Arg_value::_M_access): Modified to accept optional
+	second parameter that is assigned to value.
+	(_Arg_value::_M_get): Handle rename.
+	(_Arg_value::_M_set): Use construct_at for basic_string_view,
+	handle, and two-argument _S_access for other types.
+
+2026-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (__Arg_value::handle): Define, extracted
+	with modification from basic_format_arg::handle.
+	(_Arg_value::_Handle_base): Remove.
+	(_Arg_value::_M_handle): Change type to handle.
+	(_Arg_value::_M_get, _Arg_value::_M_set): Check for handle
+	type directly, and return result unmodified.
+	(basic_format_arg::__formattable): Remove.
+	(basic_format_arg::handle): Replace with alias to
+	_Arg_value::handle.
+
 2026-03-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/124363

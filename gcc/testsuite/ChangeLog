@@ -1,3 +1,40 @@
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/124145
+	* g++.dg/cpp26/constexpr-eh18.C: New test.
+
+2026-03-05  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-pr124037.c: New.
+	* g++.dg/vect/vect-pr124037.cc: New.
+
+2026-03-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98064
+	* gcc.dg/vect/bb-slp-57.c: Verify we do not keep original
+	stmts live.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124349
+	* gcc.target/i386/avx10_2-pr124349-2.c: New test.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124367
+	* gcc.target/i386/avx512vl-pr124367.c: New test.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124366
+	* gcc.target/i386/cet-pr124366.c: New test.
+
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123810
+	* g++.dg/reflect/members_of10.C: New test.
+	* g++.dg/cpp2a/typedef1.C: Expect one message on a different line.
+
 2026-03-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/124368
