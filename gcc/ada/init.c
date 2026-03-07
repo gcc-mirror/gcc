@@ -507,17 +507,18 @@ __gnat_adjust_context_for_raise (int signo ATTRIBUTE_UNUSED, void *ucontext)
 
 #if defined (__i386__)
   unsigned long *pc = (unsigned long *)mcontext->gregs[REG_EIP];
-  /* The pattern is "orl $0x0,(%esp)" for a probe in 32-bit mode.  */
-  if (signo == SIGSEGV && pc && *pc == 0x00240c83)
+  /* The pattern is "or{l,b} $0x0,(%esp)" for a probe in 32-bit mode.  */
+  if (signo == SIGSEGV && pc && (*pc == 0x00240c83 || *pc == 0x00240c80))
     mcontext->gregs[REG_ESP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__x86_64__)
   unsigned long long *pc = (unsigned long long *)mcontext->gregs[REG_RIP];
   if (signo == SIGSEGV && pc
       /* The pattern is "orq $0x0,(%rsp)" for a probe in 64-bit mode.  */
       && ((*pc & 0xffffffffffLL) == 0x00240c8348LL
-	  /* The pattern may also be "orl $0x0,(%esp)" for a probe in
-	     x32 mode.  */
-	  || (*pc & 0xffffffffLL) == 0x00240c83LL))
+	  /* The pattern is "orl $0x0,(%rsp)" for a probe in x32 mode.  */
+	  || (*pc & 0xffffffffLL) == 0x00240c83LL)
+	  /* The pattern may also be "orb $0x0,(%rsp)" in both modes.  */
+	  || (*pc & 0xffffffffLL) == 0x00240c80LL)
     mcontext->gregs[REG_RSP] += 4096 + 4 * sizeof (unsigned long);
 #elif defined (__ia64__)
   /* ??? The IA-64 unwinder doesn't compensate for signals.  */
