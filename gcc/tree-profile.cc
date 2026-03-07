@@ -182,6 +182,7 @@ struct conds_ctx
     auto_sbitmap G1;
     auto_sbitmap G2;
     auto_sbitmap G3;
+    auto_vec<edge, 64> edges;
 
     explicit conds_ctx (unsigned size) noexcept (true) : G1 (size), G2 (size),
     G3 (size)
@@ -215,6 +216,16 @@ topological_cmp (const void *lhs, const void *rhs, void *top_index)
     const_basic_block r = *(const basic_block*) rhs;
     const vec<int>* im = (const vec<int>*) top_index;
     return (*im)[l->index] - (*im)[r->index];
+}
+
+/* topological_cmp of the src block of LHS and RHS.  The TOP_INDEX argument
+   should be the top_index vector from ctx.  */
+int
+topological_src_cmp (const void *lhs, const void *rhs, void *top_index)
+{
+    const_edge l = *(const edge*) lhs;
+    const_edge r = *(const edge*) rhs;
+    return topological_cmp (&l->src, &r->src, top_index);
 }
 
 /* Find the index of NEEDLE in BLOCKS; return -1 if not found.  This has two
@@ -437,7 +448,17 @@ condition_uid (struct function *fn, basic_block b)
 
    We find the terms by marking the outcomes (in this case c, T) and walk the
    predecessors starting at top (in this case b) and masking nodes when both
-   successors are marked.
+   successors are marked.  This is equivalent to removing the two outcome nodes
+   of the subexpression and finding the nodes not in the inverse reachability
+   set.
+
+   We only have to consider the pairs of top, bot where top is the the closest
+   (highest-index'd) candidate that still satisfies top < bot in the
+   topological order, as this will be the immediate left operand.  The nodes of
+   the other left operands will also be found when going through the righmost
+   term, and a lower-index'd top would just find subsets.  This has a
+   significant performance impact, 15-20x faster for the worst cases of (x && y
+   && ..) with no nesting.
 
    The masking table is represented as two bitfields per term in the expression
    with the index corresponding to the term in the Boolean expression.
@@ -514,16 +535,19 @@ masking_vectors (conds_ctx& ctx, array_slice<basic_block> blocks,
     for (size_t i = 1; i != body.length (); i++)
     {
 	const basic_block b = body[i];
-	for (edge e1 : b->preds)
-	for (edge e2 : b->preds)
-	{
-	    if (e1 == e2)
-		continue;
-	    if ((e1->flags | e2->flags) & EDGE_COMPLEX)
-		continue;
+	if (b->preds->length () < 2)
+	  continue;
+	ctx.edges.truncate (0);
+	ctx.edges.reserve (b->preds->length ());
+	for (edge e : b->preds)
+	  if (!(e->flags & EDGE_COMPLEX))
+	    ctx.edges.quick_push (contract_edge_up (e));
+	ctx.edges.sort (topological_src_cmp, &ctx.top_index);
 
-	    edge etop = contract_edge_up (e1);
-	    edge ebot = contract_edge_up (e2);
+	for (size_t i0 = 0, i1 = 1; i1 != ctx.edges.length (); ++i0, ++i1)
+	{
+	    edge etop = ctx.edges[i0];
+	    edge ebot = ctx.edges[i1];
 	    gcc_assert (etop != ebot);
 
 	    const basic_block top = etop->src;
