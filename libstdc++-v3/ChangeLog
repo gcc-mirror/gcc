@@ -1,3 +1,28 @@
+2026-03-06  Nathan Myers  <ncm@cantrip.org>
+
+	* include/std/bitset (operator[]() const): Customize bounds
+	check for C++11 case.
+	* testsuite/20_util/bitset/access/subscript_const_neg.cc:
+	Suppress UNRESOLVED complaint.
+
+2026-03-06  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/fs_path.h (std::formatter<filesystem::path, _CharT>):
+	Format _Utf_view directly via __formatter_str::_M_format_range.
+
+2026-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122300
+	* src/c++17/fs_path.cc (path::_List::_Impl): Remove
+	static_asserts.
+	(path::_List::_Impl::required_alignment)
+	(path::_List::_Impl::use_aligned_new): New static data members.
+	(path::_List::_Impl::create_unchecked): Check use_aligned_new
+	and use aligned new if needed.
+	(path::_List::_Impl::alloc_size): New static member function.
+	(path::_List::_Impl_deleter::operator): Check use_aligned_new
+	and use aligned delete if needed.
+
 2026-03-05  Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/118341

@@ -1,3 +1,23 @@
+2026-03-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/124126
+	* config/aarch64/aarch64-builtins.cc (aarch64_init_ls64_builtins_types): Copy
+	the array type before setting the mode.
+
+2026-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/124135
+	* tree-inline.cc (expand_call_inline): If both gimple_call_lhs (stmt)
+	and use_retvar aren't gimple regs but have gimple reg type, use
+	separate load of use_retva into SSA_NAME and then store of it
+	into gimple_call_lhs (stmt).
+
+2026-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/124358
+	* match.pd ((ptr) (x p+ y) p+ z -> (ptr) (x p+ (y + z))): Simplify
+	into (ptr) x p+ (y + z) instead.
+
 2026-03-05  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	PR tree-optimization/124037

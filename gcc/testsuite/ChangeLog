@@ -1,3 +1,146 @@
+2026-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/107646
+	PR testsuite/112520
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: Move everything from
+	namespace ana:: into ana::cpython_plugin.  Move global tree values
+	into a new "class api".
+	(pyobj_record): Replace with api.m_type_PyObject.
+	(pyobj_ptr_tree): Replace with api.m_type_PyObject_ptr.
+	(pyobj_ptr_ptr): Replace with  api.m_type_PyObject_ptr_ptr.
+	(varobj_record): Replace with api.m_type_PyVarObject.
+	(pylistobj_record): Replace with api.m_type_PyListObject.
+	(pylongobj_record): Replace with api.m_type_PyLongObject.
+	(pylongtype_vardecl): Replace with api.m_vardecl_PyLong_Type.
+	(pylisttype_vardecl): Replace with api.m_vardecl_PyList_Type.
+	(get_field_by_name): Add "complain" param and use it to issue a
+	note on failure.  Assert that type and	name are non-null.  Don't
+	crash on fields that are anonymous unions, and special-case
+	looking within them for "ob_refcnt" to	work around the
+	Python 3.11 change for PEP 683 (immortal objects).
+	(get_sizeof_pyobjptr): Convert to...
+	(api::get_sval_sizeof_PyObject_ptr): ...this
+	(init_ob_refcnt_field): Convert to...
+	(api::init_ob_refcnt_field): ...this.
+	(set_ob_type_field): Convert to...
+	(api::set_ob_type_field): ..this.
+	(api::init_PyObject_HEAD): New.
+	(api::get_region_PyObject_ob_refcnt): New.
+	(api::do_Py_INCREF): New.
+	(api::get_region_PyVarObject_ob_size): New.
+	(api::get_region_PyLongObject_ob_digit): New.
+	(inc_field_val): Convert to...
+	(api::inc_field_val): ...this.
+	(refcnt_mismatch::refcnt_mismatch): Add tree params for refcounts
+	and initialize corresponding fields.  Fix whitespace.
+	(refcnt_mismatch::emit): Use stored tree values, rather than
+	assuming we have constants, and crashing non-constants.  Delete
+	commented-out dead code.
+	(refcnt_mismatch::foo): Delete.
+	(refcnt_mismatch::m_expected_refcnt_tree): New field.
+	(refcnt_mismatch::m_actual_refcnt_tree): New field.
+	(retrieve_ob_refcnt_sval): Simplify using class api.
+	(count_pyobj_references): Likewise.
+	(check_refcnt): Likewise.  Don't warn on UNKNOWN values.  Use
+	get_representative_tree for the expected and actual values and
+	skip the warning if it fails, rather than assuming we have
+	constants and crashing on non-constants.
+	(count_all_references): Update comment.
+	(kf_PyList_Append::impl_call_pre): Simplify using class api.
+	(kf_PyList_Append::impl_call_post): Likewise.
+	(kf_PyList_New::impl_call_post): Likewise.
+	(kf_PyLong_FromLong::impl_call_post): Likewise.
+	(get_stashed_type_by_name): Emit note if the type couldn't be
+	found.
+	(get_stashed_global_var_by_name): Likewise for globals.
+	(init_py_structs): Convert to...
+	(api::init_from_stashed_types): ...this.  Bail out with an error
+	code if anything fails.  Look up more things at startup, rather
+	than during analysis of calls.
+	(ana::cpython_analyzer_events_subscriber): Rename to...
+	(ana::cpython_plugin::analyzer_events_subscriber): ...this.
+	(analyzer_events_subscriber::analyzer_events_subscriber):
+	Initialize m_init_failed.
+	(analyzer_events_subscriber::on_message<on_tu_finished>):
+	Update for conversion of init_py_structs to
+	api::init_from_stashed_types and bail if it fails.
+	(analyzer_events_subscriber::on_message<on_frame_popped): Don't
+	run if plugin initialization failed.
+	(analyzer_events_subscriber::m_init_failed): New field.
+
+2026-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/124297
+	* g++.dg/cpp2a/concepts-variadic4.C: New test.
+
+2026-03-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/124126
+	* g++.target/aarch64/pr124126-1.C: New test.
+
+2026-03-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/124230
+	* gcc.dg/ubsan/pointer-counted-by-bounds-124230-char.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-124230-float.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-124230-struct.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-124230-union.c: New test.
+	* gcc.dg/ubsan/pointer-counted-by-bounds-124230.c: New test.
+
+2026-03-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR c/97991
+	* c-c++-common/cpp/pr97991-1.c: New test.
+
+2026-03-06  Saurabh Jha  <saurabh.jha@arm.com>
+	    Evgeny Karpov  <evgeny.karpov@arm.com>
+
+	* gcc.target/aarch64/mingw/mingw.exp: Add support for C++ files.
+	* gcc.target/aarch64/mingw/minimal_new_del.C: New test.
+
+2026-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/122000
+	* gcc.c-torture/execute/pr122000.c: New test.
+
+2026-03-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* lib/target-supports.exp: Add arm_arch_v7a_thumb.
+	* gcc.target/arm/ifcvt-size-check.c: Add options to force thumb1.
+	* gcc.target/arm/ivopts-2.c: Remove object size check.
+	* gcc.target/arm/ivopts-3.c: Likewise.
+	* gcc.target/arm/ivopts-4.c: Likewise.
+	* gcc.target/arm/ivopts-5.c: Likewise.
+	* gcc.target/arm/ivopts.c: Likewise.
+	* gcc.target/arm/max-insns-skipped.c: Scan for absence of an IT
+	instruction.  Remove object size check.  Use arm_arch_v7a_thumb.
+	* gcc.target/arm/pr43597.c: Remove object size check and use
+	arm_arch_v7a_thumb.
+	* gcc.target/arm/pr63210.c: Use arm_arch_v5t_thumb options.
+	* gcc.target/arm/split-live-ranges-for-shrink-wrap.c: Remove
+	object size check and use arm_arch_v5t_thumb options.
+
+2026-03-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/aes-fuse-1.c: Add _ok to the effective_target.
+	* gcc.target/arm/aes-fuse-2.c: Likewise.
+
+2026-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/124135
+	* g++.dg/torture/pr124135-1.C: New test.
+	* g++.dg/torture/pr124135-2.C: New test.
+
+2026-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/124358
+	* gcc.c-torture/execute/pr124358.c: New test.
+
+2026-03-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/124078
+	* gcc.target/aarch64/pr124078-1.c: New test.
+
 2026-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/124145

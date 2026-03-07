@@ -1,3 +1,9 @@
+2026-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/112520
+	* region-model-manager.cc
+	(region_model_manager::get_field_region): Assert that the args are non-null.
+
 2026-02-26  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/124232

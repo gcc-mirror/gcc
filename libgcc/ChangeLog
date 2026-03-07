@@ -1,3 +1,12 @@
+2026-03-06  Saurabh Jha  <saurabh.jha@arm.com>
+	    Evgeny Karpov  <evgeny.karpov@arm.com>
+
+	* config.host: Set tmake_eh_file for aarch64-*-mingw* and update
+	it for x86_64-*-mingw* and x86_64-*-cygwin*.
+	* config/i386/t-seh-eh: Move to...
+	* config/mingw/t-seh-eh: ...here.
+	* config/aarch64/t-no-eh: Removed.
+
 2026-03-05  Alice Carlotti  <alice.carlotti@arm.com>
 
 	PR target/124333
