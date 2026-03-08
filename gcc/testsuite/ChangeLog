@@ -1,3 +1,24 @@
+2026-03-07  Jason Merrill  <jason@redhat.com>
+	     <mtxn@duck.com>
+
+	PR c++/123622
+	* g++.dg/modules/dep-6.C: New test.
+
+2026-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/39057
+	* g++.dg/template/friend89.C: New test.
+
+2026-03-07  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR rtl-optimization/121649
+	* gcc.dg/torture/pr121649.c: New test.
+
+2026-03-07  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/123856
+	* gcc.dg/pr123856.c: New test.
+
 2026-03-06  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/107646

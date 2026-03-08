@@ -1,3 +1,21 @@
+2026-03-07  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/functions.h [__cplusplus >= 201103L]
+	(__foreign_iterator_aux): Remove.
+	(__foreign_iterator): Adapt to use __foreign_iterator_aux2.
+	* include/debug/helper_functions.h [__cplusplus >= 201103L]:
+	Remove include bits/cpp_type_traits.h.
+	(_Distance_traits<_Integral, std::__true_type>): Remove.
+	(__valid_range_aux(_Integral, _Integral, std::__true_type)):
+	Remove.
+	(__valid_range_aux(_Iterator, _Iterator, std::__false_type)): Remove.
+	(__valid_range_aux(_Integral, _Integral, _Distance_traits<_Integral>::__type&,
+	std::__true_type)): Remove.
+	(__valid_range_aux(_Iterator, _Iterator, _Distance_traits<_Iterator>::__type&,
+	std::__false_type)): Remove.
+	(__valid_range(_Iterator, _Iterator)): Adapt.
+	(__valid_range(_Iterator, _Iterator, _Distance_traits<_Iterator>::__type&)): Adapt.
+
 2026-03-06  Nathan Myers  <ncm@cantrip.org>
 
 	* include/std/bitset (operator[]() const): Customize bounds

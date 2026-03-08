@@ -1,3 +1,30 @@
+2026-03-07  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR driver/69367
+	PR driver/69849
+	* Makefile.in (TEXI_GCCINT_FILES): Add specs.texi.
+	* doc/gccint.texi: Include it.
+	* doc/install.texi: Fix cross-references.
+	* doc/invoke.texi: Likewise.
+	(Option Summary): Reclassify -specs/--specs as a developer option.
+	(Overall Options): Move -specs= documentation to...
+	(Developer Options): ...here.
+	(Spec Files): Move entire section to....
+	* doc/specs.texi: ....new file.
+	* common.opt.urls: Regenerated.
+
+2026-03-07  Jørgen Kvalsvik  <j@lambda.is>
+
+	* tree-profile.cc (struct conds_ctx): Add edges.
+	(topological_src_cmp): New function.
+	(masking_vectors): New search strategy.
+
+2026-03-07  Robin Dapp  <rdapp@oss.qualcomm.com>
+
+	PR rtl-optimization/121649
+	* cse.cc (find_sets_in_insn):  Only use non-reg vec_select
+	simplifications.
+
 2026-03-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR target/124126

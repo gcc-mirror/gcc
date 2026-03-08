@@ -1,3 +1,9 @@
+2026-03-07  Jason Merrill  <jason@redhat.com>
+	     <mtxn@duck.com>
+
+	PR c++/123622
+	* module.cc (preprocess_module): Check deps.missing_files.
+
 2026-03-06  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/124297

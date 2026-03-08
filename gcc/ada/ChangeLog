@@ -1,3 +1,14 @@
+2026-03-07  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR target/124336
+	* init.c (__gnat_adjust_context_for_raise) [x86/Linux]: Fix typo.
+
+2026-03-07  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR target/124336
+	* init.c (__gnat_adjust_context_for_raise) [x86/Linux]: Adjust
+	pattern matching to new stack probes.
+
 2026-02-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/124285
