@@ -483,7 +483,13 @@ nvptx_open_device (int n)
   CUDA_CALL_ERET (NULL, cuCtxGetCurrent, &ptx_dev->ctx);
 
   if (!ptx_dev->ctx)
-    CUDA_CALL_ERET (NULL, cuCtxCreate, &ptx_dev->ctx, CU_CTX_SCHED_AUTO, dev);
+    {
+#if CUDA_VERSION >= 13000
+      CUDA_CALL_ERET (NULL, cuCtxCreate, &ptx_dev->ctx, NULL, CU_CTX_SCHED_AUTO, dev);
+#else
+      CUDA_CALL_ERET (NULL, cuCtxCreate, &ptx_dev->ctx, CU_CTX_SCHED_AUTO, dev);
+#endif
+    }
   else
     ptx_dev->ctx_shared = true;
 
@@ -2707,8 +2713,13 @@ GOMP_OFFLOAD_openacc_get_property (int n, enum goacc_property prop)
 	  {
 	    CUcontext new_ctx;
 
+#if CUDA_VERSION >= 13000
+	    CUDA_CALL_ERET (propval, cuCtxCreate, &new_ctx, NULL, CU_CTX_SCHED_AUTO,
+			    ptx_dev->dev);
+#else
 	    CUDA_CALL_ERET (propval, cuCtxCreate, &new_ctx, CU_CTX_SCHED_AUTO,
 			    ptx_dev->dev);
+#endif
 	    CUDA_CALL_ERET (propval, cuMemGetInfo, &free_mem, &total_mem);
 	    CUDA_CALL_ASSERT (cuCtxDestroy, new_ctx);
 	  }
