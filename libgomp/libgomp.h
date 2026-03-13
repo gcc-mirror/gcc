@@ -131,8 +131,16 @@ team_malloc (size_t size)
   /* Allocate directly from the arena.
      The compiler does not support DS atomics, yet. */
   void *result;
+#ifndef __SIMT__
   asm ("ds_add_rtn_u64 %0, %1, %2\n\ts_waitcnt 0"
        : "=v"(result) : "v"(TEAM_ARENA_FREE), "v"(size), "e"(1L) : "memory");
+#else
+  /* SIMT should not touch EXEC.
+     FIXME: this will allocate SIZE bytes for each active thread... is that
+	    what we want to happen?  Usually, only one will be active here.  */
+  asm ("ds_add_rtn_u64 %0, %1, %2\n\ts_waitcnt 0"
+       : "=v"(result) : "v"(TEAM_ARENA_FREE), "v"(size) : "memory");
+#endif
 
   /* Handle OOM.  */
   if (result + size > *(void * __lds *)TEAM_ARENA_END)
