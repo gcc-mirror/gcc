@@ -892,7 +892,11 @@ namespace std::chrono
 	  }
 
 	if (active_rule)
-	  letters = active_rule->letters;
+	  {
+	    info.offset = ri.offset() + active_rule->save;
+	    info.save = chrono::duration_cast<minutes>(active_rule->save);
+	    letters = active_rule->letters;
+	  }
 	else if (first_std)
 	  letters = first_std->letters;
       }
