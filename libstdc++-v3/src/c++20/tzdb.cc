@@ -2204,11 +2204,18 @@ namespace std::chrono
 	  at_time t{};
 	  // XXX DAY should support ON format, e.g. lastSun or Sun>=8
 	  in >> m >> d >> t;
-	  // XXX UNTIL field should be interpreted
-	  // "using the rules in effect just before the transition"
-	  // so might need to store as year_month_day and hh_mm_ss and only
-	  // convert to a sys_time once we know the offset in effect.
 	  inf.m_until = sys_days(year(y)/m.m/day(d)) + seconds(t.time);
+	  if (t.indicator != at_time::Universal)
+	    { // UNTIL uses "the rules in effect just before the transition"
+	      // adjust by STDOFF
+	      inf.m_until -= seconds(inf.m_offset);
+	      if (t.indicator != at_time::Standard)
+		{
+		  if (inf.m_expanded) // Not a named Rule, SAVE is known now.
+		    inf.m_until -= inf.m_save;
+		  // else Named Rule, SAVE is unknown. FIXME: PR 116110
+		}
+	    }
 	}
       else
 	inf.m_until = sys_days(year::max()/December/31);

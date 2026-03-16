@@ -12,33 +12,37 @@ test_zurich()
   const time_zone* const tz = locate_zone("Europe/Zurich");
 
   {
-    sys_days d = 1853y/July/16;
+    sys_days d = 1853y/July/16; // On this date ...
+    auto offset = 34min + 8s;   // ... local time is this far ahead of UTC,
+    auto t = d - offset;        // so LMT to BMT transition is at this time.
 
-    auto info = tz->get_info(d - 1s);
-    VERIFY( info.offset == (34min + 8s) );
+    auto info = tz->get_info(t - 1s);
+    VERIFY( info.offset == offset );
     VERIFY( info.abbrev == "LMT" );
 
-    info = tz->get_info(d);
+    info = tz->get_info(t);
     VERIFY( info.offset == (29min + 46s) );
     VERIFY( info.abbrev == "BMT" );
 
-    info = tz->get_info(d + 1s);
+    info = tz->get_info(t + 1s);
     VERIFY( info.offset == (29min + 46s) );
     VERIFY( info.abbrev == "BMT" );
 
-    info = tz->get_info(d + 0.001s);
+    info = tz->get_info(t + 0.001s);
     VERIFY( info.offset == (29min + 46s) );
     VERIFY( info.abbrev == "BMT" );
   }
 
   {
     sys_days d = 1894y/June/1;
+    auto offset = 29min + 46s;
+    auto t = d - offset;
 
-    auto info = tz->get_info(d - 1s);
-    VERIFY( info.offset == (29min + 46s) );
+    auto info = tz->get_info(t - 1s);
+    VERIFY( info.offset == offset );
     VERIFY( info.abbrev == "BMT" );
 
-    info = tz->get_info(d);
+    info = tz->get_info(t);
     VERIFY( info.offset == 1h );
     VERIFY( info.abbrev == "CET" );
   }
