@@ -298,8 +298,13 @@ convert_memory_address_addr_space_1 (scalar_int_mode to_mode ATTRIBUTE_UNUSED,
 				     bool in_const ATTRIBUTE_UNUSED,
 				     bool no_emit ATTRIBUTE_UNUSED)
 {
+  machine_mode xmode = GET_MODE (x);
+  bool vecaddr_p = VECTOR_MODE_P (GET_MODE (x));
+  if (vecaddr_p)
+    xmode = GET_MODE_INNER (xmode);
+
 #ifndef POINTERS_EXTEND_UNSIGNED
-  gcc_assert (GET_MODE (x) == to_mode || GET_MODE (x) == VOIDmode);
+  gcc_assert (xmode == to_mode || xmode == VOIDmode);
   return x;
 #else /* defined(POINTERS_EXTEND_UNSIGNED) */
   scalar_int_mode pointer_mode, address_mode, from_mode;
@@ -307,8 +312,11 @@ convert_memory_address_addr_space_1 (scalar_int_mode to_mode ATTRIBUTE_UNUSED,
   enum rtx_code code;
 
   /* If X already has the right mode, just return it.  */
-  if (GET_MODE (x) == to_mode)
+  if (xmode == to_mode)
     return x;
+
+  /* TODO: support vector conversions.  */
+  gcc_assert (!vecaddr_p);
 
   pointer_mode = targetm.addr_space.pointer_mode (as);
   address_mode = targetm.addr_space.address_mode (as);

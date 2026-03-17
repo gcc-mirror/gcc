@@ -482,6 +482,7 @@ extern void set_decl_incoming_rtl (tree, rtx, bool);
    (VOIDmode means don't change the mode.
    NULL for ADDR means don't change the address.)  */
 extern rtx change_address (rtx, machine_mode, rtx);
+extern rtx change_address_nv (rtx, machine_mode, rtx);
 
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  */
