@@ -336,8 +336,6 @@
 		   "" "_exec")
 (define_subst_attr "exec_vcc" "vec_merge_with_vcc"
 		   "" "_exec")
-(define_subst_attr "exec_scatter" "scatter_store"
-		   "" "_exec")
 
 (define_subst "vec_merge"
   [(set (match_operand:V_MOV 0)
@@ -376,24 +374,6 @@
       (set (match_dup 2)
 	   (and:DI (match_dup 3)
 		   (reg:DI EXEC_REG)))])])
-
-(define_subst "scatter_store"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand 0)
-	   (match_operand 1)
-	   (match_operand 2)
-	   (match_operand 3)]
-	  UNSPEC_SCATTER))]
-  ""
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_dup 0)
-	   (match_dup 1)
-	   (match_dup 2)
-	   (match_dup 3)
-	   (match_operand:DI 4 "gcn_exec_reg_operand" "e")]
-	  UNSPEC_SCATTER))])
 
 ;; }}}
 ;; {{{ Vector moves
@@ -438,30 +418,31 @@
 		&& (!SUBREG_P (operands[1])
 		    || !MEM_P (SUBREG_REG (operands[1]))));
 
-    if (MEM_P (operands[0]) && !lra_in_progress && !reload_completed)
+    if (MEM_P (operands[0])
+        && VECTOR_MODE_P (GET_MODE (XEXP (operands[0], 0))))
+      /* Use default expand.  */ ;
+    else if (MEM_P (operands[1])
+	     && VECTOR_MODE_P (GET_MODE (XEXP (operands[1], 0))))
+      /* Use default expand.  */ ;
+    else if (MEM_P (operands[0]) && !lra_in_progress && !reload_completed)
       {
 	operands[1] = force_reg (<MODE>mode, operands[1]);
 	rtx scratch = gen_rtx_SCRATCH (<VnDI>mode);
-	rtx a = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[0]));
-	rtx v = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[0]));
-	rtx expr = gcn_expand_scalar_to_vector_address (<MODE>mode, NULL,
-							operands[0],
-							scratch);
-	emit_insn (gen_scatter<mode>_expr (expr, operands[1], a, v));
-	DONE;
+	operands[0] = gcn_expand_scalar_to_vector_address (<MODE>mode, NULL,
+							   operands[0],
+							   scratch);
       }
     else if (MEM_P (operands[1]) && !lra_in_progress && !reload_completed)
       {
 	rtx scratch = gen_rtx_SCRATCH (<VnDI>mode);
-	rtx a = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[1]));
-	rtx v = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[1]));
-	rtx expr = gcn_expand_scalar_to_vector_address (<MODE>mode, NULL,
-							operands[1],
-							scratch);
-	emit_insn (gen_gather<mode>_expr (operands[0], expr, a, v));
-	DONE;
+	operands[1] = gcn_expand_scalar_to_vector_address (<MODE>mode, NULL,
+							   operands[1],
+							   scratch);
       }
-    else if ((MEM_P (operands[0]) || MEM_P (operands[1])))
+    else if ((MEM_P (operands[0])
+	      && !VECTOR_MODE_P (GET_MODE (XEXP (operands[0], 0))))
+	     || (MEM_P (operands[1])
+		 && !VECTOR_MODE_P (GET_MODE (XEXP (operands[1], 0)))))
       {
         gcc_assert (!reload_completed);
 	rtx scratch = gen_reg_rtx (<VnDI>mode);
@@ -480,91 +461,232 @@
   [(set_attr "type" "unknown")
    (set_attr "length" "0")])
 
-(define_insn "*mov<mode>"
+(define_insn "*mov<mode>_1reg"
   [(set (match_operand:V_1REG 0 "nonimmediate_operand")
 	(match_operand:V_1REG 1 "general_operand"))]
-  ""
-  {@ [cons: =0, 1; attrs: type, length, cdna]
-  [v  ,vA;vop1     ,4,*    ] v_mov_b32\t%0, %1
-  [v  ,B ;vop1     ,8,*    ] ^
-  [v  ,a ;vop3p_mai,8,*    ] v_accvgpr_read_b32\t%0, %1
-  [$a ,v ;vop3p_mai,8,*    ] v_accvgpr_write_b32\t%0, %1
-  [a  ,a ;vop1     ,4,cdna2] v_accvgpr_mov_b32\t%0, %1
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  {@ [cons: =0, 1; attrs: type, length, cdna, xnack]
+  [v  ,vA;vop1     ,4 ,*    ,*  ] v_mov_b32\t%0, %1
+  [v  ,B ;vop1     ,8 ,*    ,*  ] ^
+  [v  ,Rf;flat     ,12,*    ,off] flat_load%o1\t%0, %A1%O1\;s_waitcnt\t0
+  [&v ,Rf;flat     ,12,*    ,on ] ^
+  [^a ,Rf;flat     ,12,cdna2,off] ^
+  [&^a,Rf;flat     ,12,cdna2,on ] ^
+  [Rf ,v ;flat     ,12,*    ,*  ] flat_store%s0\t%A0, %1%O0
+  [Rf ,a ;flat     ,12,cdna2,*  ] ^
+  [v  ,Rm;flat     ,12,*    ,off] global_load%o1\t%0, %A1%O1\;s_waitcnt\tvmcnt(0)
+  [&v ,Rm;flat     ,12,*    ,on ] ^
+  [^a ,Rm;flat     ,12,cdna2,off] ^
+  [&^a,Rm;flat     ,12,cdna2,on ] ^
+  [Rm ,v ;flat     ,12,*    ,*  ] global_store%s0\t%A0, %1%O0
+  [Rm ,a ;flat     ,12,cdna2,*  ] ^
+  [v  ,Rl;ds       ,12,*    ,*  ] ds_read%b1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [Rl ,v ;ds       ,12,*    ,*  ] ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v  ,a ;vop3p_mai,8 ,*    ,*  ] v_accvgpr_read_b32\t%0, %1
+  [$a ,v ;vop3p_mai,8 ,*    ,*  ] v_accvgpr_write_b32\t%0, %1
+  [a  ,a ;vop1     ,4 ,cdna2,*  ] v_accvgpr_mov_b32\t%0, %1
   })
 
-(define_insn "mov<mode>_exec"
-  [(set (match_operand:V_1REG 0 "nonimmediate_operand")
-	(vec_merge:V_1REG
-	  (match_operand:V_1REG 1 "general_operand")
-	  (match_operand:V_1REG 2 "gcn_alu_or_unspec_operand")
-	  (match_operand:DI 3 "register_operand")))
-   (clobber (match_scratch:<VnDI> 4))]
-  "!MEM_P (operands[0]) || REG_P (operands[1])"
-  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, xnack]
-  [v ,vA,U0,e ,X ;vop1 ,4 ,*  ] v_mov_b32\t%0, %1
-  [v ,B ,U0,e ,X ;vop1 ,8 ,*  ] v_mov_b32\t%0, %1
-  [v ,v ,vA,cV,X ;vop2 ,4 ,*  ] v_cndmask_b32\t%0, %2, %1, vcc
-  [v ,vA,vA,Sv,X ;vop3a,8 ,*  ] v_cndmask_b32\t%0, %2, %1, %3
-  [v ,m ,U0,e ,&v;*    ,16,off] #
-  [&v,m ,U0,e ,&v;*    ,16,on ] #
-  [m ,v ,U0,e ,&v;*    ,16,*  ] #
-  })
-
-(define_insn "*mov<mode>"
+(define_insn "*mov<mode>_2reg"
   [(set (match_operand:V_2REG 0 "nonimmediate_operand")
 	(match_operand:V_2REG 1 "general_operand"))]
-  ""
-  {@ [cons: =0, 1; attrs: length, cdna]
-  [v ,vDB;16,*    ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
-  [v ,a  ;16,*    ] v_accvgpr_read_b32\t%L0, %L1\;v_accvgpr_read_b32\t%H0, %H1
-  [$a,v  ;16,*    ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1
-  [a ,a  ;8 ,cdna2] v_accvgpr_mov_b32\t%L0, %L1\;v_accvgpr_mov_b32\t%H0, %H1
-  }
-  [(set_attr "type" "vmult,vmult,vmult,vmult")])
-
-(define_insn "mov<mode>_exec"
-  [(set (match_operand:V_2REG 0 "nonimmediate_operand")
-	(vec_merge:V_2REG
-	  (match_operand:V_2REG 1 "general_operand")
-	  (match_operand:V_2REG 2 "gcn_alu_or_unspec_operand")
-	  (match_operand:DI 3 "register_operand")))
-   (clobber (match_scratch:<VnDI> 4))]
-  "!MEM_P (operands[0]) || REG_P (operands[1])"
-  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, xnack]
-  [v ,vDB,U0  ,e ,X ;vmult,16,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
-  [v ,v0 ,vDA0,cV,X ;vmult,16,*  ] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc
-  [v ,v0 ,vDA0,Sv,X ;vmult,16,*  ] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3
-  [v ,m  ,U0  ,e ,&v;*    ,16,off] #
-  [&v,m  ,U0  ,e ,&v;*    ,16,on ] #
-  [m ,v  ,U0  ,e ,&v;*    ,16,*  ] #
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  {@ [cons: =0, 1; attrs: type, length, cdna, xnack]
+  [v  ,vDB;vmult,16,*    ,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
+  [v  ,a  ;vmult,16,*    ,*  ] v_accvgpr_read_b32\t%L0, %L1\;v_accvgpr_read_b32\t%H0, %H1
+  [$a ,v  ;vmult,16,*    ,*  ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1
+  [a  ,a  ;vmult,8 ,cdna2,*  ] v_accvgpr_mov_b32\t%L0, %L1\;v_accvgpr_mov_b32\t%H0, %H1
+  [v  ,Rf ;flat ,12,*    ,off] flat_load_dwordx2\t%0, %A1%O1\;s_waitcnt\t0
+  [&v ,Rf ;flat ,12,*    ,on ] ^
+  [^a ,Rf ;flat ,12,cdna2,off] ^
+  [&^a,Rf ;flat ,12,cdna2,on ] ^
+  [Rf ,v  ;flat ,12,*    ,*  ] flat_store_dwordx2\t%A0, %1%O0
+  [Rf ,a  ;flat ,12,cdna2,*  ] ^
+  [v  ,Rm ;flat ,12,*    ,off] global_load_dwordx2\t%0, %A1%O1\;s_waitcnt\tvmcnt(0)
+  [&v ,Rm ;flat ,12,*    ,on ] ^
+  [^a ,Rm ;flat ,12,cdna2,off] ^
+  [&^a,Rm ;flat ,12,cdna2,on ] ^
+  [Rm ,v  ;flat ,12,*    ,*  ] global_store_dwordx2\t%A0, %1%O0
+  [Rm ,a  ;flat ,12,cdna2,*  ] ^
+  [v  ,Rl ;ds   ,12,*    ,*  ] ds_read_b64\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [Rl ,v  ;ds   ,12,*    ,*  ] ds_write_b64\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
   })
 
 (define_insn "*mov<mode>_4reg"
   [(set (match_operand:V_4REG 0 "nonimmediate_operand")
 	(match_operand:V_4REG 1 "general_operand"))]
-  ""
-  {@ [cons: =0, 1; attrs: type, length, cdna]
-  [v ,vDB;vmult,16,*    ]           v_mov_b32\t%L0, %L1\;          v_mov_b32\t%H0, %H1\;          v_mov_b32\t%J0, %J1\;          v_mov_b32\t%K0, %K1
-  [v ,a  ;vmult,32,*    ]  v_accvgpr_read_b32\t%L0, %L1\; v_accvgpr_read_b32\t%H0, %H1\; v_accvgpr_read_b32\t%J0, %J1\; v_accvgpr_read_b32\t%K0, %K1
-  [$a,v  ;vmult,32,*    ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1\;v_accvgpr_write_b32\t%J0, %J1\;v_accvgpr_write_b32\t%K0, %K1
-  [a ,a  ;vmult,32,cdna2]   v_accvgpr_mov_b32\t%L0, %L1\;  v_accvgpr_mov_b32\t%H0, %H1\;  v_accvgpr_mov_b32\t%J0, %J1\;  v_accvgpr_mov_b32\t%K0, %K1
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  {@ [cons: =0, 1; attrs: type, length, cdna, xnack]
+  [v  ,vDB;vmult,16,*    ,*  ]           v_mov_b32\t%L0, %L1\;          v_mov_b32\t%H0, %H1\;          v_mov_b32\t%J0, %J1\;          v_mov_b32\t%K0, %K1
+  [v  ,a  ;vmult,32,*    ,*  ]  v_accvgpr_read_b32\t%L0, %L1\; v_accvgpr_read_b32\t%H0, %H1\; v_accvgpr_read_b32\t%J0, %J1\; v_accvgpr_read_b32\t%K0, %K1
+  [$a ,v  ;vmult,32,*    ,*  ] v_accvgpr_write_b32\t%L0, %L1\;v_accvgpr_write_b32\t%H0, %H1\;v_accvgpr_write_b32\t%J0, %J1\;v_accvgpr_write_b32\t%K0, %K1
+  [a  ,a  ;vmult,32,cdna2,*  ]   v_accvgpr_mov_b32\t%L0, %L1\;  v_accvgpr_mov_b32\t%H0, %H1\;  v_accvgpr_mov_b32\t%J0, %J1\;  v_accvgpr_mov_b32\t%K0, %K1
+  [v  ,Rf ;flat ,12,*    ,off] flat_load_dwordx4\t%0, %A1%O1\;s_waitcnt\t0
+  [&v ,Rf ;flat ,12,*    ,on ] ^
+  [^a ,Rf ;flat ,12,cdna2,off] ^
+  [&^a,Rf ;flat ,12,cdna2,on ] ^
+  [Rf ,v  ;flat ,12,*    ,*  ] flat_store_dwordx4\t%A0, %1%O0
+  [Rf ,a  ;flat ,12,cdna2,*  ] ^
+  [v  ,Rm ;flat ,12,*    ,off] global_load_dwordx4\t%0, %A1%O1\;s_waitcnt\tvmcnt(0)
+  [&v ,Rm ;flat ,12,*    ,on ] ^
+  [^a ,Rm ;flat ,12,cdna2,off] ^
+  [&^a,Rm ;flat ,12,cdna2,on ] ^
+  [Rm ,v  ;flat ,12,*    ,*  ] global_store_dwordx4\t%A0, %1%O0
+  [Rm ,a  ;flat ,12,cdna2,*  ] ^
   })
 
-(define_insn "mov<mode>_exec"
+(define_expand "@mov<mode>_exec"
+  [(parallel [
+     (set (match_operand:V_MOV 0 "nonimmediate_operand")
+	  (vec_merge:V_MOV
+	    (match_operand:V_MOV 1 "general_operand")
+	    (match_operand:V_MOV 2 "general_or_unspec_operand")
+	    (match_operand:DI 3 "gcn_exec_operand")))
+     (clobber (match_scratch:<VnDI> 4))])]
+  ""
+  {
+    if (MEM_P (operands[1]))
+      {
+	/* Masked loads need an insn that doesn't use an explicit MEM.  */
+	rtx addr = XEXP (operands[1], 0);
+	rtx offset = const0_rtx;
+	if (GET_CODE (addr) == PLUS)
+	  {
+	    offset = XEXP (addr, 1);
+	    addr = XEXP (addr, 0);
+	  }
+	if (GET_CODE (offset) == VEC_DUPLICATE)
+	  offset = XEXP (offset, 0);
+	if (CONST_VECTOR_P (offset))
+	  offset = CONST_VECTOR_ELT (offset, 0);
+	if (!REG_P (addr) || !CONST_INT_P (offset))
+	  {
+	    addr = force_reg (<VnDI>mode, addr);
+	    offset = const0_rtx;
+	  }
+	emit_insn (gen_load<mode>_exec (operands[0], addr, offset,
+					GEN_INT (MEM_ADDR_SPACE (operands[1])),
+					operands[2], operands[3]));
+	DONE;
+      }
+  })
+
+(define_insn "*mov<mode>_1reg_exec"
+  [(set (match_operand:V_1REG 0 "nonimmediate_operand")
+	(vec_merge:V_1REG
+	  (match_operand:V_1REG 1 "general_operand")
+	  (match_operand:V_1REG 2 "general_or_unspec_operand")
+	  (match_operand:DI 3 "gcn_exec_operand")))
+   (clobber (match_scratch:<VnDI> 4))]
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, cdna, xnack]
+  [v  ,vA,U0,e ,X ;vop1 ,4 ,*    ,*  ] v_mov_b32\t%0, %1
+  [v  ,B ,U0,e ,X ;vop1 ,8 ,*    ,*  ] v_mov_b32\t%0, %1
+  [v  ,Rf,U0,e ,X ;flat ,12,*    ,off] flat_load%o1\t%0, %A1%O1\;s_waitcnt\t0
+  [&v ,Rf,U0,e ,X ;flat ,12,*    ,on ] ^
+  [^a ,Rf,U0,e ,X ;flat ,12,cdna2,off] ^
+  [&^a,Rf,U0,e ,X ;flat ,12,cdna2,on ] ^
+  [Rf ,v ,U0,e ,X ;flat ,12,*    ,*  ] flat_store%s0\t%A0, %1%O0
+  [Rf ,a ,U0,e ,X ;flat ,12,cdna2,*  ] ^
+  [v  ,Rm,U0,e ,X ;flat ,12,*    ,off] global_load%o1\t%0, %A1%O1\;s_waitcnt\tvmcnt(0)
+  [&v ,Rm,U0,e ,X ;flat ,12,*    ,on ] ^
+  [^a ,Rm,U0,e ,X ;flat ,12,cdna2,off] ^
+  [&^a,Rm,U0,e ,X ;flat ,12,cdna2,on ] ^
+  [Rm ,v ,U0,e ,X ;flat ,12,*    ,*  ] global_store%s0\t%A0, %1%O0
+  [Rm ,a ,U0,e ,X ;flat ,12,cdna2,*  ] ^
+  [Rl ,v ,U0,e ,X ;ds   ,12,*    ,*  ] ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v  ,v ,vA,cV,X ;vop2 ,4 ,*    ,*  ] v_cndmask_b32\t%0, %2, %1, vcc
+  [v  ,vA,vA,Sv,X ;vop3a,8 ,*    ,*  ] v_cndmask_b32\t%0, %2, %1, %3
+  [v  ,RA,U0,e ,&v;*    ,16,*    ,off] #
+  [&v ,RA,U0,e ,&v;*    ,16,*    ,on ] #
+  [RA ,v ,U0,e ,&v;*    ,16,*    ,*  ] #
+  })
+
+(define_insn "*mov<mode>_2reg_exec"
+  [(set (match_operand:V_2REG 0 "nonimmediate_operand")
+	(vec_merge:V_2REG
+	  (match_operand:V_2REG 1 "general_operand")
+	  (match_operand:V_2REG 2 "general_or_unspec_operand")
+	  (match_operand:DI 3 "gcn_exec_operand")))
+   (clobber (match_scratch:<VnDI> 4))]
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, cdna, xnack]
+  [v  ,vDB,U0  ,e ,X ;vmult,16,*    ,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
+  [v  ,v0 ,vDA0,cV,X ;vmult,16,*    ,*  ] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc
+  [v  ,v0 ,vDA0,Sv,X ;vmult,16,*    ,*  ] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3
+  [v  ,Rf ,U0  ,e ,X ;flat ,12,*    ,off] flat_load_dwordx2\t%0, %A1%O1\;s_waitcnt\t0
+  [&v ,Rf ,U0  ,e ,X ;flat ,12,*    ,on ] ^
+  [^a ,Rf ,U0  ,e ,X ;flat ,12,cdna2,off] ^
+  [&^a,Rf ,U0  ,e ,X ;flat ,12,cdna2,on ] ^
+  [Rf ,v  ,U0  ,e ,X ;flat ,12,*    ,*  ] flat_store_dwordx2\t%A0, %1%O0
+  [Rf ,a  ,U0  ,e ,X ;flat ,12,cdna2,*  ] ^
+  [v  ,Rm ,U0  ,e ,X ;flat ,12,*    ,off] global_load_dwordx2\t%0, %A1%O1\;s_waitcnt\tvmcnt(0)
+  [&v ,Rm ,U0  ,e ,X ;flat ,12,*    ,on ] ^
+  [^a ,Rm ,U0  ,e ,X ;flat ,12,cdna2,off] ^
+  [&^a,Rm ,U0  ,e ,X ;flat ,12,cdna2,on ] ^
+  [Rm ,v  ,U0  ,e ,X ;flat ,12,*    ,*  ] global_store_dwordx2\t%A0, %1%O0
+  [Rm ,a  ,U0  ,e ,X ;flat ,12,cdna2,*  ] ^
+  [Rl ,v  ,U0  ,e ,X ;ds   ,12,*    ,*  ] ds_write_b64\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v  ,RA ,U0  ,e ,&v;*    ,16,*    ,off] #
+  [&v ,RA ,U0  ,e ,&v;*    ,16,*    ,on ] #
+  [RA ,v  ,U0  ,e ,&v;*    ,16,*    ,*  ] #
+  })
+
+(define_insn "*mov<mode>_4reg_exec"
   [(set (match_operand:V_4REG 0 "nonimmediate_operand")
 	(vec_merge:V_4REG
 	  (match_operand:V_4REG 1 "general_operand")
-	  (match_operand:V_4REG 2 "gcn_alu_or_unspec_operand")
-	  (match_operand:DI 3 "register_operand")))
+	  (match_operand:V_4REG 2 "general_or_unspec_operand")
+	  (match_operand:DI 3 "gcn_exec_operand")))
    (clobber (match_scratch:<VnDI> 4))]
-  "!MEM_P (operands[0]) || REG_P (operands[1])"
-  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, xnack]
-  [v ,vDB,U0  ,e ,X ;vmult,32,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
-  [v ,v0 ,vDA0,cV,X ;vmult,32,*  ] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc\;v_cndmask_b32\t%J0, %J2, %J1, vcc\;v_cndmask_b32\t%K0, %K2, %K1, vcc
-  [v ,v0 ,vDA0,Sv,X ;vmult,32,*  ] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3\;v_cndmask_b32\t%J0, %J2, %J1, %3\;v_cndmask_b32\t%K0, %K2, %K1, %3
-  [v ,m  ,U0  ,e ,&v;*    ,32,off] #
-  [&v,m  ,U0  ,e ,&v;*    ,32,on ] #
-  [m ,v  ,U0  ,e ,&v;*    ,32,*  ] #
+  "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, cdna, xnack]
+  [v  ,vDB,U0  ,e ,X ;vmult,32,*    ,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
+  [v  ,v0 ,vDA0,cV,X ;vmult,32,*    ,*  ] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc\;v_cndmask_b32\t%J0, %J2, %J1, vcc\;v_cndmask_b32\t%K0, %K2, %K1, vcc
+  [v  ,v0 ,vDA0,Sv,X ;vmult,32,*    ,*  ] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3\;v_cndmask_b32\t%J0, %J2, %J1, %3\;v_cndmask_b32\t%K0, %K2, %K1, %3
+  [v  ,Rf ,U0  ,e ,X ;flat ,12,*    ,off] flat_load_dwordx4\t%0, %A1%O1\;s_waitcnt\t0
+  [&v ,Rf ,U0  ,e ,X ;flat ,12,*    ,on ] ^
+  [^a ,Rf ,U0  ,e ,X ;flat ,12,cdna2,off] ^
+  [&^a,Rf ,U0  ,e ,X ;flat ,12,cdna2,on ] ^
+  [Rf ,v  ,U0  ,e ,X ;flat ,12,*    ,*  ] flat_store_dwordx4\t%A0, %1%O0
+  [Rf ,a  ,U0  ,e ,X ;flat ,12,cdna2,*  ] ^
+  [v  ,Rm ,U0  ,e ,X ;flat ,12,*    ,off] global_load_dwordx4\t%0, %A1%O1\;s_waitcnt\tvmcnt(0)
+  [&v ,Rm ,U0  ,e ,X ;flat ,12,*    ,on ] ^
+  [^a ,Rm ,U0  ,e ,X ;flat ,12,cdna2,off] ^
+  [&^a,Rm ,U0  ,e ,X ;flat ,12,cdna2,on ] ^
+  [Rm ,v  ,U0  ,e ,X ;flat ,12,*    ,*  ] global_store_dwordx4\t%A0, %1%O0
+  [Rm ,a  ,U0  ,e ,X ;flat ,12,cdna2,*  ] ^
+  [v  ,RA ,U0  ,e ,&v;*    ,32,*    ,off] #
+  [&v ,RA ,U0  ,e ,&v;*    ,32,*    ,on ] #
+  [RA ,v  ,U0  ,e ,&v;*    ,32,*    ,*  ] #
+  })
+
+;; A mov<mode>_exec insn for partial loads that doesn't use an explicit MEM
+;; and therefore can't get converted to an unmasked load by reload.
+;; Other architectures don't seem to suffer from this problem, but that
+;; may be because they don't have early-clobber constraints to cause reloads.
+(define_insn "load<mode>_exec"
+  [(set (match_operand:V_MOV 0 "register_operand")
+	(vec_merge:V_MOV
+	  (unspec:V_MOV [
+	    (plus:<VnDI> (match_operand:<VnDI> 1 "register_operand")
+			 (match_operand:DI 2 "immediate_operand"))
+	    (match_operand:SI 3 "immediate_operand")
+	    (mem:BLK (const_int 0))]
+	    UNSPEC_MASKLOAD)
+	  (match_operand:V_MOV 4 "general_or_unspec_operand")
+	  (match_operand:DI 5 "gcn_exec_operand")))]
+  ""
+  {@ [cons: =0, 1, 2, 3, 4, 5; attrs: type, length, cdna, xnack]
+  [v  ,v,i,Pf,U0,e ;flat ,12,*    ,off] flat_load%o0\t%0, %1 offset:%2\;s_waitcnt\t0
+  [&v ,v,i,Pf,U0,e ;flat ,12,*    ,on ] ^
+  [^a ,v,i,Pf,U0,e ;flat ,12,cdna2,off] ^
+  [&^a,v,i,Pf,U0,e ;flat ,12,cdna2,on ] ^
+  [v  ,v,i,Pm,U0,e ;flat ,12,*    ,off] global_load%o0\t%0, %1, off offset:%2\;s_waitcnt\tvmcnt(0)
+  [&v ,v,i,Pm,U0,e ;flat ,12,*    ,on ] ^
+  [^a ,v,i,Pm,U0,e ;flat ,12,cdna2,off] ^
+  [&^a,v,i,Pm,U0,e ;flat ,12,cdna2,on ] ^
+  [v  ,v,i,Pl,U0,e ;ds   ,12,*    ,*  ] ds_read%b0\t%0, %1 offset:%2\;s_waitcnt\tlgkmcnt(0)
   })
 
 ; A SGPR-base load looks like:
@@ -628,7 +750,7 @@
   [m ,v  ,&v;*    ,12,*  ] #
   })
 
-; Expand scalar addresses into gather/scatter patterns
+; Expand scalar base addresses into vectors of addresses
 
 (define_split
   [(set (match_operand:V_MOV 0 "memory_operand")
@@ -637,15 +759,12 @@
 	  UNSPEC_SGPRBASE))
    (clobber (match_scratch:<VnDI> 2))]
   ""
-  [(set (mem:BLK (scratch))
-	(unspec:BLK [(match_dup 5) (match_dup 1) (match_dup 6) (match_dup 7)]
-		    UNSPEC_SCATTER))]
+  [(set (match_dup 0) (match_dup 1))]
   {
-    operands[5] = gcn_expand_scalar_to_vector_address (<MODE>mode, NULL,
-						       operands[0],
-						       operands[2]);
-    operands[6] = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[0]));
-    operands[7] = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[0]));
+    if (!VECTOR_MODE_P (GET_MODE (XEXP (operands[0], 0))))
+      operands[0] = gcn_expand_scalar_to_vector_address (<MODE>mode, NULL,
+							 operands[0],
+							 operands[2]);
   })
 
 (define_split
@@ -656,17 +775,18 @@
 	  (match_operand:DI 3 "gcn_exec_reg_operand")))
    (clobber (match_scratch:<VnDI> 4))]
   ""
-  [(set (mem:BLK (scratch))
-	(unspec:BLK [(match_dup 5) (match_dup 1)
-		     (match_dup 6) (match_dup 7) (match_dup 3)]
-		    UNSPEC_SCATTER))]
+  [(parallel [(set (match_dup 0)
+		   (vec_merge:V_MOV (match_dup 1) (match_dup 2) (match_dup 3)))
+	      (clobber (match_dup 4))])]
   {
-    operands[5] = gcn_expand_scalar_to_vector_address (<MODE>mode,
-						       operands[3],
-						       operands[0],
-						       operands[4]);
-    operands[6] = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[0]));
-    operands[7] = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[0]));
+    rtx mem = operands[0];
+    if (!VECTOR_MODE_P (GET_MODE (XEXP (mem, 0))))
+      mem = gcn_expand_scalar_to_vector_address (<MODE>mode, operands[3],
+						 mem, operands[4]);
+    if (rtx_equal_p (operands[0], operands[2]))
+      operands[0] = operands[2] = mem;
+    else
+      operands[0] = mem;
   })
 
 (define_split
@@ -676,16 +796,12 @@
 	  UNSPEC_SGPRBASE))
    (clobber (match_scratch:<VnDI> 2))]
   ""
-  [(set (match_dup 0)
-	(unspec:V_MOV [(match_dup 5) (match_dup 6) (match_dup 7)
-		       (mem:BLK (scratch))]
-		      UNSPEC_GATHER))]
+  [(set (match_dup 0) (match_dup 1))]
   {
-    operands[5] = gcn_expand_scalar_to_vector_address (<MODE>mode, NULL,
-						       operands[1],
-						       operands[2]);
-    operands[6] = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[1]));
-    operands[7] = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[1]));
+    if (!VECTOR_MODE_P (GET_MODE (XEXP (operands[1], 0))))
+      operands[1] = gcn_expand_scalar_to_vector_address (<MODE>mode, NULL,
+							 operands[1],
+							 operands[2]);
   })
 
 (define_split
@@ -696,20 +812,15 @@
 	  (match_operand:DI 3 "gcn_exec_reg_operand")))
    (clobber (match_scratch:<VnDI> 4))]
   ""
-  [(set (match_dup 0)
-	(vec_merge:V_MOV
-	  (unspec:V_MOV [(match_dup 5) (match_dup 6) (match_dup 7)
-			 (mem:BLK (scratch))]
-			 UNSPEC_GATHER)
-	  (match_dup 2)
-	  (match_dup 3)))]
+  [(const_int 0)]
   {
-    operands[5] = gcn_expand_scalar_to_vector_address (<MODE>mode,
-						       operands[3],
-						       operands[1],
-						       operands[4]);
-    operands[6] = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[1]));
-    operands[7] = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[1]));
+    rtx mem = operands[1];
+    if (!VECTOR_MODE_P (GET_MODE (XEXP (mem, 0))))
+      mem = gcn_expand_scalar_to_vector_address (<MODE>mode, operands[3],
+						 mem, operands[4]);
+    emit_insn (gen_mov<mode>_exec (operands[0], mem, operands[2],
+				   operands[3]));
+    DONE;
   })
 
 ; TODO: Add zero/sign extending variants.
@@ -1016,38 +1127,6 @@
 ;; }}}
 ;; {{{ Scatter / Gather
 
-;; GCN does not have an instruction for loading a vector from contiguous
-;; memory so *all* loads and stores are eventually converted to scatter
-;; or gather.
-;;
-;; GCC does not permit MEM to hold vectors of addresses, so we must use an
-;; unspec.  The unspec formats are as follows:
-;;
-;;     (unspec:V??
-;;	 [(<address expression>)
-;;	  (<addr_space_t>)
-;;	  (<use_glc>)
-;;	  (mem:BLK (scratch))]
-;;	 UNSPEC_GATHER)
-;;
-;;     (unspec:BLK
-;;	  [(<address expression>)
-;;	   (<source register>)
-;;	   (<addr_space_t>)
-;;	   (<use_glc>)
-;;	   (<exec>)]
-;;	  UNSPEC_SCATTER)
-;;
-;; - Loads are expected to be wrapped in a vec_merge, so do not need <exec>.
-;; - The mem:BLK does not contain any real information, but indicates that an
-;;   unknown memory read is taking place.  Stores are expected to use a similar
-;;   mem:BLK outside the unspec.
-;; - The address space and glc (volatile) fields are there to replace the
-;;   fields normally found in a MEM.
-;; - Multiple forms of address expression are supported, below.
-;;
-;; TODO: implement combined gather and zero_extend, but only for -msram-ecc=on
-
 (define_expand "gather_load<mode><vnsi>"
   [(match_operand:V_MOV 0 "register_operand")
    (match_operand:DI 1 "register_operand")
@@ -1056,17 +1135,10 @@
    (match_operand:SI 4 "gcn_alu_operand")]
   ""
   {
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
-					  operands[2], operands[4],
-					  INTVAL (operands[3]), NULL);
-
-    if (GET_MODE (addr) == <VnDI>mode)
-      emit_insn (gen_gather<mode>_insn_1offset (operands[0], addr, const0_rtx,
-						const0_rtx, const0_rtx));
-    else
-      emit_insn (gen_gather<mode>_insn_2offsets (operands[0], operands[1],
-						 addr, const0_rtx, const0_rtx,
-						 const0_rtx));
+    emit_move_insn (operands[0],
+		    gcn_gen_vector_mem (<MODE>mode, DEFAULT_ADDR_SPACE,
+					operands[1], operands[2], operands[4],
+					INTVAL (operands[3]), false, NULL));
     DONE;
   })
 
@@ -1078,120 +1150,12 @@
    (match_operand:SI 4 "gcn_alu_operand")]
   ""
   {
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
-					  operands[2], operands[4],
-					  INTVAL (operands[3]), NULL);
-
-    emit_insn (gen_gather<mode>_insn_1offset (operands[0], addr, const0_rtx,
-					      const0_rtx, const0_rtx));
+    emit_move_insn (operands[0],
+		    gcn_gen_vector_mem (<MODE>mode, DEFAULT_ADDR_SPACE,
+					operands[1], operands[2], operands[4],
+					INTVAL (operands[3]), false, NULL));
     DONE;
   })
-
-; Allow any address expression
-(define_expand "gather<mode>_expr<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand")
-	(unspec:V_MOV
-	  [(match_operand 1 "")
-	   (match_operand 2 "immediate_operand")
-	   (match_operand 3 "immediate_operand")
-	   (mem:BLK (scratch))]
-	  UNSPEC_GATHER))]
-    ""
-    {})
-
-(define_insn "gather<mode>_insn_1offset<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand"		   "=v,a,&v,&a")
-	(unspec:V_MOV
-	  [(plus:<VnDI> (match_operand:<VnDI> 1 "register_operand" " v,v, v, v")
-			(vec_duplicate:<VnDI>
-			  (match_operand 2 "immediate_operand"	   " n,n, n, n")))
-	   (match_operand 3 "immediate_operand"			   " n,n, n, n")
-	   (match_operand 4 "immediate_operand"			   " n,n, n, n")
-	   (mem:BLK (scratch))]
-	  UNSPEC_GATHER))]
-  "(AS_FLAT_P (INTVAL (operands[3]))
-    && ((unsigned HOST_WIDE_INT)INTVAL(operands[2]) < 0x1000))
-   || (AS_GLOBAL_P (INTVAL (operands[3]))
-       && (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
-  {
-    addr_space_t as = INTVAL (operands[3]);
-    const char *glc = INTVAL (operands[4]) ? TARGET_GLC_NAME : "";
-
-    static char buf[200];
-    if (AS_FLAT_P (as))
-      sprintf (buf, "flat_load%%o0\t%%0, %%1 offset:%%2%s\;s_waitcnt\t0", glc);
-    else if (AS_GLOBAL_P (as))
-      sprintf (buf, "global_load%%o0\t%%0, %%1, off offset:%%2%s\;"
-	       "s_waitcnt\tvmcnt(0)", glc);
-    else
-      gcc_unreachable ();
-
-    return buf;
-  }
-  [(set_attr "type" "flat")
-   (set_attr "flatmemaccess" "load")
-   (set_attr "length" "12")
-   (set_attr "cdna" "*,cdna2,*,cdna2")
-   (set_attr "xnack" "off,off,on,on")])
-
-(define_insn "gather<mode>_insn_1offset_ds<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand"		   "=v,a")
-	(unspec:V_MOV
-	  [(plus:<VnSI> (match_operand:<VnSI> 1 "register_operand" " v,v")
-			(vec_duplicate:<VnSI>
-			  (match_operand 2 "immediate_operand"	   " n,n")))
-	   (match_operand 3 "immediate_operand"			   " n,n")
-	   (match_operand 4 "immediate_operand"			   " n,n")
-	   (mem:BLK (scratch))]
-	  UNSPEC_GATHER))]
-  "(AS_ANY_DS_P (INTVAL (operands[3]))
-    && ((unsigned HOST_WIDE_INT)INTVAL(operands[2]) < 0x10000))"
-  {
-    addr_space_t as = INTVAL (operands[3]);
-    static char buf[200];
-    sprintf (buf, "ds_read%%b0\t%%0, %%1 offset:%%2%s\;s_waitcnt\tlgkmcnt(0)",
-	     (AS_GDS_P (as) ? " gds" : ""));
-    return buf;
-  }
-  [(set_attr "type" "ds")
-   (set_attr "length" "12")
-   (set_attr "cdna" "*,cdna2")])
-
-(define_insn "gather<mode>_insn_2offsets<exec>"
-  [(set (match_operand:V_MOV 0 "register_operand"		"=v,a,&v,&a")
-	(unspec:V_MOV
-	  [(plus:<VnDI>
-	     (plus:<VnDI>
-	       (vec_duplicate:<VnDI>
-		 (match_operand:DI 1 "register_operand"		"Sv,Sv,Sv,Sv"))
-	       (sign_extend:<VnDI>
-		 (match_operand:<VnSI> 2 "register_operand"	" v, v, v, v")))
-	     (vec_duplicate:<VnDI> (match_operand 3 "immediate_operand"
-								" n, n, n, n")))
-	   (match_operand 4 "immediate_operand"			" n, n, n, n")
-	   (match_operand 5 "immediate_operand"			" n, n, n, n")
-	   (mem:BLK (scratch))]
-	  UNSPEC_GATHER))]
-  "(AS_GLOBAL_P (INTVAL (operands[4]))
-    && (((unsigned HOST_WIDE_INT)INTVAL(operands[3]) + 0x1000) < 0x2000))"
-  {
-    addr_space_t as = INTVAL (operands[4]);
-    const char *glc = INTVAL (operands[5]) ? TARGET_GLC_NAME : "";
-
-    static char buf[200];
-    if (AS_GLOBAL_P (as))
-      sprintf (buf, "global_load%%o0\t%%0, %%2, %%1 offset:%%3%s\;"
-	       "s_waitcnt\tvmcnt(0)", glc);
-    else
-      gcc_unreachable ();
-      
-    return buf;
-  }
-  [(set_attr "type" "flat")
-   (set_attr "flatmemaccess" "load")
-   (set_attr "length" "12")
-   (set_attr "cdna" "*,cdna2,*,cdna2")
-   (set_attr "xnack" "off,off,on,on")])
 
 (define_expand "scatter_store<mode><vnsi>"
   [(match_operand:DI 0 "register_operand")
@@ -1201,17 +1165,10 @@
    (match_operand:V_MOV 4 "register_operand")]
   ""
   {
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
-					  operands[1], operands[3],
-					  INTVAL (operands[2]), NULL);
-
-    if (GET_MODE (addr) == <VnDI>mode)
-      emit_insn (gen_scatter<mode>_insn_1offset (addr, const0_rtx, operands[4],
-						 const0_rtx, const0_rtx));
-    else
-      emit_insn (gen_scatter<mode>_insn_2offsets (operands[0], addr,
-						  const0_rtx, operands[4],
-						  const0_rtx, const0_rtx));
+    emit_move_insn (gcn_gen_vector_mem (<MODE>mode, DEFAULT_ADDR_SPACE,
+					operands[0], operands[1], operands[3],
+					INTVAL (operands[2]), false, NULL),
+		    operands[4]);
     DONE;
   })
 
@@ -1223,116 +1180,12 @@
    (match_operand:V_MOV 4 "register_operand")]
   ""
   {
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
-					  operands[1], operands[3],
-					  INTVAL (operands[2]), NULL);
-
-    emit_insn (gen_scatter<mode>_insn_1offset (addr, const0_rtx, operands[4],
-					       const0_rtx, const0_rtx));
+    emit_move_insn (gcn_gen_vector_mem (<MODE>mode, DEFAULT_ADDR_SPACE,
+					operands[0], operands[1], operands[3],
+					INTVAL (operands[2]), false, NULL),
+		    operands[4]);
     DONE;
   })
-
-; Allow any address expression
-(define_expand "scatter<mode>_expr<exec_scatter>"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(match_operand:<VnDI> 0 "")
-	   (match_operand:V_MOV 1 "register_operand")
-	   (match_operand 2 "immediate_operand")
-	   (match_operand 3 "immediate_operand")]
-	  UNSPEC_SCATTER))]
-  ""
-  {})
-
-(define_insn "scatter<mode>_insn_1offset<exec_scatter>"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(plus:<VnDI> (match_operand:<VnDI> 0 "register_operand" "v,v")
-			(vec_duplicate:<VnDI>
-			  (match_operand 1 "immediate_operand"	   "n,n")))
-	   (match_operand:V_MOV 2 "register_operand"		   "v,a")
-	   (match_operand 3 "immediate_operand"			   "n,n")
-	   (match_operand 4 "immediate_operand"			   "n,n")]
-	  UNSPEC_SCATTER))]
-  "(AS_FLAT_P (INTVAL (operands[3]))
-    && (INTVAL(operands[1]) == 0
-	|| ((unsigned HOST_WIDE_INT)INTVAL(operands[1]) < 0x1000)))
-    || (AS_GLOBAL_P (INTVAL (operands[3]))
-	&& (((unsigned HOST_WIDE_INT)INTVAL(operands[1]) + 0x1000) < 0x2000))"
-  {
-    addr_space_t as = INTVAL (operands[3]);
-    const char *glc = INTVAL (operands[4]) ? TARGET_GLC_NAME : "";
-
-    static char buf[200];
-    if (AS_FLAT_P (as))
-	  sprintf (buf, "flat_store%%s2\t%%0, %%2 offset:%%1%s", glc);
-    else if (AS_GLOBAL_P (as))
-      sprintf (buf, "global_store%%s2\t%%0, %%2, off offset:%%1%s", glc);
-    else
-      gcc_unreachable ();
-
-    return buf;
-  }
-  [(set_attr "type" "flat")
-   (set_attr "flatmemaccess" "store")
-   (set_attr "length" "12")
-   (set_attr "cdna" "*,cdna2")])
-
-(define_insn "scatter<mode>_insn_1offset_ds<exec_scatter>"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(plus:<VnSI> (match_operand:<VnSI> 0 "register_operand" "v,v")
-			(vec_duplicate:<VnSI>
-			  (match_operand 1 "immediate_operand"	   "n,n")))
-	   (match_operand:V_MOV 2 "register_operand"		   "v,a")
-	   (match_operand 3 "immediate_operand"			   "n,n")
-	   (match_operand 4 "immediate_operand"			   "n,n")]
-	  UNSPEC_SCATTER))]
-  "(AS_ANY_DS_P (INTVAL (operands[3]))
-    && ((unsigned HOST_WIDE_INT)INTVAL(operands[1]) < 0x10000))"
-  {
-    addr_space_t as = INTVAL (operands[3]);
-    static char buf[200];
-    sprintf (buf, "ds_write%%b2\t%%0, %%2 offset:%%1%s\;s_waitcnt\tlgkmcnt(0)",
-	     (AS_GDS_P (as) ? " gds" : ""));
-    return buf;
-  }
-  [(set_attr "type" "ds")
-   (set_attr "length" "12")
-   (set_attr "cdna" "*,cdna2")])
-
-(define_insn "scatter<mode>_insn_2offsets<exec_scatter>"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(plus:<VnDI>
-	     (plus:<VnDI>
-	       (vec_duplicate:<VnDI>
-		 (match_operand:DI 0 "register_operand"		       "Sv,Sv"))
-	       (sign_extend:<VnDI>
-		 (match_operand:<VnSI> 1 "register_operand"		"v,v")))
-	     (vec_duplicate:<VnDI> (match_operand 2 "immediate_operand" "n,n")))
-	   (match_operand:V_MOV 3 "register_operand"			"v,a")
-	   (match_operand 4 "immediate_operand"				"n,n")
-	   (match_operand 5 "immediate_operand"				"n,n")]
-	  UNSPEC_SCATTER))]
-  "(AS_GLOBAL_P (INTVAL (operands[4]))
-    && (((unsigned HOST_WIDE_INT)INTVAL(operands[2]) + 0x1000) < 0x2000))"
-  {
-    addr_space_t as = INTVAL (operands[4]);
-    const char *glc = INTVAL (operands[5]) ? TARGET_GLC_NAME : "";
-
-    static char buf[200];
-    if (AS_GLOBAL_P (as))
-      sprintf (buf, "global_store%%s3\t%%1, %%3, %%0 offset:%%2%s", glc);
-    else
-      gcc_unreachable ();
-
-    return buf;
-  }
-  [(set_attr "type" "flat")
-   (set_attr "flatmemaccess" "store")
-   (set_attr "length" "12")
-   (set_attr "cdna" "*,cdna2")])
 
 ;; }}}
 ;; {{{ Permutations
@@ -4246,13 +4099,10 @@
   ""
   {
     rtx exec = force_reg (DImode, operands[2]);
-    rtx addr = gcn_expand_scalar_to_vector_address
+    rtx mem = gcn_expand_scalar_to_vector_address
 		(<MODE>mode, exec, operands[1], gen_rtx_SCRATCH (<VnDI>mode));
-    rtx as = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[1]));
-    rtx v = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[1]));
-
-    emit_insn (gen_gather<mode>_expr_exec (operands[0], addr, as, v,
-					   gcn_gen_undef (<MODE>mode), exec));
+    emit_insn (gen_mov<mode>_exec (operands[0], mem,
+				   gcn_gen_undef (<MODE>mode), exec));
     DONE;
   })
 
@@ -4263,11 +4113,10 @@
   ""
   {
     rtx exec = force_reg (DImode, operands[2]);
-    rtx addr = gcn_expand_scalar_to_vector_address
+    rtx mem = gcn_expand_scalar_to_vector_address
 		(<MODE>mode, exec, operands[0], gen_rtx_SCRATCH (<VnDI>mode));
-    rtx as = gen_rtx_CONST_INT (VOIDmode, MEM_ADDR_SPACE (operands[0]));
-    rtx v = gen_rtx_CONST_INT (VOIDmode, MEM_VOLATILE_P (operands[0]));
-    emit_insn (gen_scatter<mode>_expr_exec (addr, operands[1], as, v, exec));
+    emit_insn (gen_mov<mode>_exec (mem, operands[1],
+				   gcn_gen_undef (<MODE>mode), exec));
     DONE;
   })
 
@@ -4282,51 +4131,30 @@
   ""
   {
     rtx exec = force_reg (DImode, operands[5]);
-
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
-					  operands[2], operands[4],
-					  INTVAL (operands[3]), exec);
-
-    if (GET_MODE (addr) == <VnDI>mode)
-      emit_insn (gen_gather<mode>_insn_1offset_exec (operands[0], addr,
-						     const0_rtx, const0_rtx,
-						     const0_rtx,
-						     gcn_gen_undef
-							(<MODE>mode),
-						     exec));
-    else
-      emit_insn (gen_gather<mode>_insn_2offsets_exec (operands[0], operands[1],
-						      addr, const0_rtx,
-						      const0_rtx, const0_rtx,
-						      gcn_gen_undef
-							(<MODE>mode),
-						      exec));
+    rtx srcmem = gcn_gen_vector_mem (<MODE>mode, DEFAULT_ADDR_SPACE,
+				     operands[1], operands[2], operands[4],
+				     INTVAL (operands[3]), false, exec);
+    emit_insn (gen_mov<mode>_exec (operands[0], srcmem,
+				   gcn_gen_undef (<MODE>mode), exec));
     DONE;
   })
 
 (define_expand "mask_gather_load<mode><vndi>"
-  [(set:V_MOV (match_operand:V_MOV 0 "register_operand")
-	      (unspec:V_MOV
-		[(match_operand:DI 1 "register_operand")
-		 (match_operand:<VnDI> 2 "register_operand")
-		 (match_operand 3 "immediate_operand")
-		 (match_operand:SI 4 "gcn_alu_operand")
-		 (match_operand:DI 5 "")
-		 (match_operand:V_MOV 6 "maskload_else_operand")]
-		UNSPEC_GATHER))]
+  [(match_operand:V_MOV 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:<VnDI> 2 "register_operand")
+   (match_operand 3 "immediate_operand")
+   (match_operand:SI 4 "gcn_alu_operand")
+   (match_operand:DI 5 "")
+   (match_operand:V_MOV 6 "maskload_else_operand")]
   ""
   {
     rtx exec = force_reg (DImode, operands[5]);
-
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[1],
-					  operands[2], operands[4],
-					  INTVAL (operands[3]), exec);
-
-    emit_insn (gen_gather<mode>_insn_1offset_exec (operands[0], addr,
-						   const0_rtx, const0_rtx,
-						   const0_rtx,
-						   gcn_gen_undef (<MODE>mode),
-						   exec));
+    rtx srcmem = gcn_gen_vector_mem (<MODE>mode, DEFAULT_ADDR_SPACE,
+				     operands[1], operands[2], operands[4],
+				     INTVAL (operands[3]), false, exec);
+    emit_insn (gen_mov<mode>_exec (operands[0], srcmem,
+				   gcn_gen_undef (<MODE>mode), exec));
     DONE;
   })
 
@@ -4340,21 +4168,11 @@
   ""
   {
     rtx exec = force_reg (DImode, operands[5]);
-
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
-					  operands[1], operands[3],
-					  INTVAL (operands[2]), exec);
-
-    if (GET_MODE (addr) == <VnDI>mode)
-      emit_insn (gen_scatter<mode>_insn_1offset_exec (addr, const0_rtx,
-						      operands[4], const0_rtx,
-						      const0_rtx,
-						      exec));
-    else
-      emit_insn (gen_scatter<mode>_insn_2offsets_exec (operands[0], addr,
-						       const0_rtx, operands[4],
-						       const0_rtx, const0_rtx,
-						       exec));
+    rtx destmem = gcn_gen_vector_mem (<MODE>mode, DEFAULT_ADDR_SPACE,
+				      operands[0], operands[1], operands[3],
+				      INTVAL (operands[2]), false, exec);
+    emit_insn (gen_mov<mode>_exec (destmem, operands[4],
+				   gcn_gen_undef (<MODE>mode), exec));
     DONE;
   })
 
@@ -4368,14 +4186,11 @@
   ""
   {
     rtx exec = force_reg (DImode, operands[5]);
-
-    rtx addr = gcn_expand_scaled_offsets (DEFAULT_ADDR_SPACE, operands[0],
-					  operands[1], operands[3],
-					  INTVAL (operands[2]), exec);
-
-    emit_insn (gen_scatter<mode>_insn_1offset_exec (addr, const0_rtx,
-						    operands[4], const0_rtx,
-						    const0_rtx, exec));
+    rtx destmem = gcn_gen_vector_mem (<MODE>mode, DEFAULT_ADDR_SPACE,
+				      operands[0], operands[1], operands[3],
+				      INTVAL (operands[2]), false, exec);
+    emit_insn (gen_mov<mode>_exec (destmem, operands[4],
+				   gcn_gen_undef (<MODE>mode), exec));
     DONE;
   })
 

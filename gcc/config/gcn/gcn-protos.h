@@ -37,14 +37,17 @@ extern char * gcn_expand_dpp_distribute_odd_insn (machine_mode, const char *,
 extern void gcn_expand_epilogue ();
 extern rtx gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets,
 				      rtx scale, bool unsigned_p, rtx exec);
+extern rtx gcn_gen_vector_mem (machine_mode mode, addr_space_t as,
+			       rtx scalarbase, rtx vectoroffsets, rtx scale,
+			       bool unsigned_p, bool volatile_p, rtx exec);
 extern void gcn_expand_prologue ();
 extern rtx gcn_expand_reduc_scalar (machine_mode, rtx, int);
 extern rtx gcn_expand_scalar_to_vector_address (machine_mode, rtx, rtx, rtx);
 extern void gcn_expand_vector_init (rtx, rtx);
-extern bool gcn_flat_address_p (rtx, machine_mode);
+extern bool gcn_flat_address_p (rtx, machine_mode, bool strict = false);
 extern bool gcn_fp_constant_p (rtx, bool);
 extern rtx gcn_gen_undef (machine_mode);
-extern bool gcn_global_address_p (rtx);
+extern bool gcn_global_address_p (rtx, machine_mode, bool strict = false);
 extern tree gcn_goacc_adjust_private_decl (location_t, tree var, int level);
 extern tree gcn_goacc_create_worker_broadcast_record (tree record_type,
 						      bool sender,
@@ -65,8 +68,6 @@ extern REAL_VALUE_TYPE gcn_dconst1over2pi (void);
 extern bool gcn_inline_constant64_p (rtx, bool);
 extern bool gcn_inline_constant_p (rtx);
 extern int gcn_inline_fp_constant_p (rtx, bool);
-extern reg_class gcn_mode_code_base_reg_class (machine_mode, addr_space_t,
-					       int, int);
 extern rtx gcn_oacc_dim_pos (int dim);
 extern rtx gcn_oacc_dim_size (int dim);
 extern rtx gcn_operand_doublepart (machine_mode, rtx, int);
@@ -74,7 +75,7 @@ extern rtx gcn_operand_part (machine_mode, rtx, int);
 extern bool gcn_regno_mode_code_ok_for_base_p (int, machine_mode,
 					       addr_space_t, int, int);
 extern reg_class gcn_regno_reg_class (int regno);
-extern bool gcn_scalar_flat_address_p (rtx);
+extern bool gcn_scalar_flat_address_p (rtx, bool strict = false);
 extern bool gcn_scalar_flat_mem_p (rtx);
 extern bool gcn_sgpr_move_p (rtx, rtx);
 extern bool gcn_stepped_zero_int_parallel_p (rtx op, int step);

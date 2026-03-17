@@ -608,8 +608,6 @@ enum reg_class
      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0 }}
 
 #define REGNO_REG_CLASS(REGNO) gcn_regno_reg_class (REGNO)
-#define MODE_CODE_BASE_REG_CLASS(MODE, AS, OUTER, INDEX) \
-	 gcn_mode_code_base_reg_class (MODE, AS, OUTER, INDEX)
 #define REGNO_MODE_CODE_OK_FOR_BASE_P(NUM, MODE, AS, OUTER, INDEX) \
 	 gcn_regno_mode_code_ok_for_base_p (NUM, MODE, AS, OUTER, INDEX)
 #define INDEX_REG_CLASS VGPR_REGS
