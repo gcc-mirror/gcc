@@ -1172,19 +1172,6 @@ gcn_legitimate_constant_p (machine_mode, rtx x)
   return gcn_constant_p (x);
 }
 
-/* Return true if X is a CONST_VECTOR of single constant.  */
-
-static bool
-single_cst_vector_p (rtx x)
-{
-  if (GET_CODE (x) != CONST_VECTOR)
-    return false;
-  for (int i = 1; i < 64; i++)
-    if (CONST_VECTOR_ELT (x, i) != CONST_VECTOR_ELT (x, 0))
-      return false;
-  return true;
-}
-
 /* Create a CONST_VECTOR of duplicated value A.  */
 
 rtx
@@ -1435,8 +1422,6 @@ GEN_VN (addc,si3, A(rtx dest, rtx src1, rtx src2, rtx vccout, rtx vccin),
 GEN_VN (and,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VNM_NOEXEC (ds_bpermute,, A(rtx dest, rtx addr, rtx src, rtx exec),
 		A(dest, addr, src, exec))
-GEN_VNM (gather,_expr, A(rtx dest, rtx addr, rtx as, rtx vol),
-	 A(dest, addr, as, vol))
 GEN_VN (sub,si3, A(rtx dest, rtx src1, rtx src2), A(dest, src1, src2))
 GEN_VN_NOEXEC (vec_series,si, A(rtx dest, rtx x, rtx c), A(dest, x, c))
 
@@ -1475,11 +1460,11 @@ gcn_stepped_zero_int_parallel_p (rtx op, int step)
 /* {{{ Addresses, pointers and moves.  */
 
 /* Return true is REG is a valid place to store a pointer,
-   for instructions that require an SGPR.
-   FIXME rename. */
+   for instructions that require an SGPR.  Also check that the address
+   width is correct for the address space.  */
 
 static bool
-gcn_address_register_p (rtx reg, machine_mode mode, bool strict)
+gcn_scalar_address_register_p (rtx reg, machine_mode as_mode, bool strict)
 {
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
@@ -1487,7 +1472,7 @@ gcn_address_register_p (rtx reg, machine_mode mode, bool strict)
   if (!REG_P (reg))
     return false;
 
-  if (GET_MODE (reg) != mode)
+  if (GET_MODE (reg) != as_mode)
     return false;
 
   int regno = REGNO (reg);
@@ -1508,10 +1493,11 @@ gcn_address_register_p (rtx reg, machine_mode mode, bool strict)
 }
 
 /* Return true is REG is a valid place to store a pointer,
-   for instructions that require a VGPR.  */
+   for instructions that require a VGPR.  Also check that the address
+   width is correct for the address space.  */
 
 static bool
-gcn_vec_address_register_p (rtx reg, machine_mode mode, bool strict)
+gcn_vec_address_register_p (rtx reg, machine_mode as_mode, bool strict)
 {
   if (GET_CODE (reg) == SUBREG)
     reg = SUBREG_REG (reg);
@@ -1519,7 +1505,12 @@ gcn_vec_address_register_p (rtx reg, machine_mode mode, bool strict)
   if (!REG_P (reg))
     return false;
 
-  if (GET_MODE (reg) != mode)
+  /* Vector addresses are allowed, but MODE is always specified scalar
+     (otherwise the number of lanes would have to match too).  */
+  machine_mode scalar_reg_mode = (VECTOR_MODE_P (GET_MODE (reg))
+				  ? GET_MODE_INNER (GET_MODE (reg))
+				  : GET_MODE (reg));
+  if (scalar_reg_mode != as_mode)
     return false;
 
   int regno = REGNO (reg);
@@ -1538,25 +1529,64 @@ gcn_vec_address_register_p (rtx reg, machine_mode mode, bool strict)
   return VGPR_REGNO_P (regno);
 }
 
+/* Return true if REG is a valid place to store a pointer,
+   for instructions that require an SGPR or VGPR, depending on the
+   mode of the address and the data type:
+
+   Scalar load, scalar address:      VGPR.
+   Vector load, scalar base:         SGPR.  (These get expanded later.)
+   Vector load, vector of addresses: VGPR.
+
+   This function is only suitable for FLAT and GLOBAL address spaces.  */
+
+static bool
+gcn_auto_address_register_p (rtx addr, machine_mode data_mode, bool strict)
+{
+  machine_mode addr_mode = GET_MODE (addr);
+
+  if (!VECTOR_MODE_P (data_mode))
+    return (!VECTOR_MODE_P (addr_mode)
+	    && gcn_vec_address_register_p (addr, DImode, strict));
+  else if (!VECTOR_MODE_P (addr_mode))
+    return gcn_scalar_address_register_p (addr, DImode, strict);
+  else
+    return gcn_vec_address_register_p (addr, DImode, strict);
+}
+
 /* Return true if X would be valid inside a MEM using the Flat address
    space.  */
 
 bool
-gcn_flat_address_p (rtx x, machine_mode mode)
+gcn_flat_address_p (rtx x, machine_mode data_mode, bool strict)
 {
-  bool vec_mode = (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-		   || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT);
-
-  if (vec_mode && gcn_address_register_p (x, DImode, false))
-    return true;
-
-  if (!vec_mode && gcn_vec_address_register_p (x, DImode, false))
+  if (gcn_auto_address_register_p (x, data_mode, strict))
     return true;
 
   if (GET_CODE (x) == PLUS
-      && gcn_vec_address_register_p (XEXP (x, 0), DImode, false)
-      && CONST_INT_P (XEXP (x, 1)))
-    return true;
+      && gcn_auto_address_register_p (XEXP (x, 0), data_mode, strict))
+    {
+      rtx x1 = XEXP (x, 1);
+
+      if (GET_CODE (x1) == VEC_DUPLICATE
+	  && VECTOR_MODE_P (GET_MODE (x1))
+	  && GET_MODE_INNER (GET_MODE (x1)) == DImode)
+	x1 = XEXP (x1, 0);
+      else if (GET_CODE (x1) == CONST_VECTOR
+	       && VECTOR_MODE_P (GET_MODE (x1))
+	       && GET_MODE_INNER (GET_MODE (x1)) == DImode
+	       && gcn_constant_p (x1))
+	x1 = XVECEXP (x1, 0, 0);
+
+      if (GET_CODE (x1) == CONST_INT)
+	{
+	  int offsetbits = (TARGET_11BIT_GLOBAL_OFFSET ? 11 : 12);
+	  if (INTVAL (x1) >= 0 && INTVAL (x1) < (1 << offsetbits)
+	      /* The low bits of the offset are ignored, even when
+		 they're meant to realign the pointer.  */
+	      && !(INTVAL (x1) & 0x3))
+	    return true;
+	}
+    }
 
   return false;
 }
@@ -1565,15 +1595,34 @@ gcn_flat_address_p (rtx x, machine_mode mode)
    address space.  */
 
 bool
-gcn_scalar_flat_address_p (rtx x)
+gcn_scalar_flat_address_p (rtx x, bool strict)
 {
-  if (gcn_address_register_p (x, DImode, false))
+  if (gcn_scalar_address_register_p (x, DImode, strict))
     return true;
 
   if (GET_CODE (x) == PLUS
-      && gcn_address_register_p (XEXP (x, 0), DImode, false)
-      && CONST_INT_P (XEXP (x, 1)))
-    return true;
+      && gcn_scalar_address_register_p (XEXP (x, 0), DImode, strict))
+    {
+      rtx x1 = XEXP (x, 1);
+
+      /* FIXME: This is disabled because of the mode mismatch between
+	 SImode (for the address or m0 register) and the DImode PLUS.
+	 We'll need a zero_extend or similar.
+
+	 if (gcn_m0_register_p (x1, SImode, strict)
+	 || gcn_scalar_address_register_p (x1, SImode, strict))
+	 return true;
+	 else*/
+
+      if (GET_CODE (x1) == CONST_INT)
+	{
+	  if (INTVAL (x1) >= 0 && INTVAL (x1) < (1 << 20)
+	      /* The low bits of the offset are ignored, even when
+		 they're meant to realign the pointer.  */
+	      && !(INTVAL (x1) & 0x3))
+	    return true;
+	}
+    }
 
   return false;
 }
@@ -1596,15 +1645,32 @@ gcn_scalar_flat_mem_p (rtx x)
    address spaces.  */
 
 bool
-gcn_ds_address_p (rtx x)
+gcn_ds_address_p (rtx x, bool strict = false)
 {
-  if (gcn_vec_address_register_p (x, SImode, false))
+  if (gcn_vec_address_register_p (x, SImode, strict))
     return true;
 
   if (GET_CODE (x) == PLUS
-      && gcn_vec_address_register_p (XEXP (x, 0), SImode, false)
-      && CONST_INT_P (XEXP (x, 1)))
-    return true;
+      && gcn_vec_address_register_p (XEXP (x, 0), SImode, strict))
+    {
+      /* DS instructions take a VGPR base plus an unsigned 16-bit immediate
+	 offset.  For vectors of addresses, the offset must be the same for
+	 all lanes.  */
+      rtx x1 = XEXP (x, 1);
+
+      if (GET_CODE (x1) == VEC_DUPLICATE)
+	x1 = XEXP (x1, 0);
+      else if (GET_CODE (x1) == CONST_VECTOR)
+	{
+	  rtx elt;
+	  if (!const_vec_duplicate_p (x1, &elt))
+	    return false;
+	  x1 = elt;
+	}
+
+      if (CONST_INT_P (x1) && IN_RANGE (INTVAL (x1), 0, 0xffff))
+	return true;
+    }
 
   return false;
 }
@@ -1613,10 +1679,9 @@ gcn_ds_address_p (rtx x)
    address space.  */
 
 bool
-gcn_global_address_p (rtx addr)
+gcn_global_address_p (rtx addr, machine_mode data_mode, bool strict)
 {
-  if (gcn_address_register_p (addr, DImode, false)
-      || gcn_vec_address_register_p (addr, DImode, false))
+  if (gcn_auto_address_register_p (addr, data_mode, strict))
     return true;
 
   if (GET_CODE (addr) == PLUS)
@@ -1628,21 +1693,44 @@ gcn_global_address_p (rtx addr)
 			  && INTVAL (offset) >= -(1 << offsetbits)
 			  && INTVAL (offset) < (1 << offsetbits));
 
-      if ((gcn_address_register_p (base, DImode, false)
-	   || gcn_vec_address_register_p (base, DImode, false))
+      if (gcn_auto_address_register_p (base, data_mode, strict)
 	  && immediate_p)
 	/* SGPR + CONST or VGPR + CONST  */
 	return true;
 
-      if (gcn_address_register_p (base, DImode, false)
+      if (gcn_scalar_address_register_p (base, DImode, strict)
 	  && gcn_vgpr_register_operand (offset, SImode))
 	/* SPGR + VGPR  */
 	return true;
 
       if (GET_CODE (base) == PLUS
-	  && gcn_address_register_p (XEXP (base, 0), DImode, false)
+	  && gcn_scalar_address_register_p (XEXP (base, 0), DImode, strict)
 	  && gcn_vgpr_register_operand (XEXP (base, 1), SImode)
 	  && immediate_p)
+	/* (SGPR + VGPR) + CONST  */
+	return true;
+
+      bool vec_immediate_p =
+	(GET_CODE (offset) == CONST_VECTOR
+	 && gcn_constant_p (offset)
+	 /* Signed 12/13-bit immediate.  */
+	 && INTVAL (CONST_VECTOR_ELT (offset, 0)) >= -(1 << offsetbits)
+	 && INTVAL (CONST_VECTOR_ELT (offset, 0)) < (1 << offsetbits)
+	 /* The low bits of the offset are ignored, even
+	    when they're meant to realign the pointer.  */
+	 && !(INTVAL (CONST_VECTOR_ELT (offset, 0)) & 0x3));
+
+      if (gcn_vec_address_register_p (base, DImode, strict)
+	  && vec_immediate_p)
+	/* VGPR + CONST  */
+	return true;
+
+      if (GET_CODE (base) == PLUS
+	  && GET_CODE (XEXP (base, 0)) == VEC_DUPLICATE
+	  && gcn_scalar_address_register_p (XEXP (XEXP (base, 0), 0),
+					    DImode, strict)
+	  && gcn_vgpr_register_operand (XEXP (base, 1), V64SImode)
+	  && vec_immediate_p)
 	/* (SGPR + VGPR) + CONST  */
 	return true;
     }
@@ -1664,167 +1752,36 @@ static bool
 gcn_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
 				     addr_space_t as, code_helper = ERROR_MARK)
 {
+  machine_mode addr_mode = GET_MODE (x);
+  if (VECTOR_MODE_P (addr_mode)
+      && (!VECTOR_MODE_P (mode)
+	  || GET_MODE_NUNITS (mode) != GET_MODE_NUNITS (addr_mode)))
+    return false;
+
+  if (!strict && GET_CODE (x) == SUBREG)
+    {
+      x = SUBREG_REG (x);
+
+      if (!VECTOR_MODE_P (mode)
+	  && VECTOR_MODE_P (GET_MODE (x)))
+	mode = VnMODE (64, mode);
+    }
+
   if (AS_SCALAR_FLAT_P (as))
     {
       if (mode == QImode || mode == HImode)
 	return 0;
-
-      switch (GET_CODE (x))
-	{
-	case REG:
-	  return gcn_address_register_p (x, DImode, strict);
-	/* Addresses are in the form BASE+OFFSET
-	   OFFSET is either 20bit unsigned immediate, SGPR or M0.
-	   Writes and atomics do not accept SGPR.  */
-	case PLUS:
-	  {
-	    rtx x0 = XEXP (x, 0);
-	    rtx x1 = XEXP (x, 1);
-	    if (!gcn_address_register_p (x0, DImode, strict))
-	      return false;
-	    /* FIXME: This is disabled because of the mode mismatch between
-	       SImode (for the address or m0 register) and the DImode PLUS.
-	       We'll need a zero_extend or similar.
-
-	    if (gcn_m0_register_p (x1, SImode, strict)
-		|| gcn_address_register_p (x1, SImode, strict))
-	      return true;
-	    else*/
-	    if (GET_CODE (x1) == CONST_INT)
-	      {
-		if (INTVAL (x1) >= 0 && INTVAL (x1) < (1 << 20)
-		    /* The low bits of the offset are ignored, even when
-		       they're meant to realign the pointer.  */
-		    && !(INTVAL (x1) & 0x3))
-		  return true;
-	      }
-	    return false;
-	  }
-
-	default:
-	  break;
-	}
+      else
+	return gcn_scalar_flat_address_p (x, strict);
     }
   else if (AS_SCRATCH_P (as))
-    return gcn_address_register_p (x, SImode, strict);
+    return gcn_scalar_address_register_p (x, SImode, strict);
   else if (AS_FLAT_P (as) || AS_FLAT_SCRATCH_P (as))
-    {
-      if (GET_CODE (x) == REG)
-       return ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-		|| GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	       ? gcn_address_register_p (x, DImode, strict)
-	       : gcn_vec_address_register_p (x, DImode, strict));
-      else
-	{
-	  if (GET_CODE (x) == PLUS)
-	    {
-	      rtx x1 = XEXP (x, 1);
-
-	      if (VECTOR_MODE_P (mode)
-		  ? !gcn_address_register_p (x, DImode, strict)
-		  : !gcn_vec_address_register_p (x, DImode, strict))
-		return false;
-
-	      if (GET_CODE (x1) == CONST_INT)
-		{
-		  if (INTVAL (x1) >= 0 && INTVAL (x1) < (1 << 12)
-		      /* The low bits of the offset are ignored, even when
-		         they're meant to realign the pointer.  */
-		      && !(INTVAL (x1) & 0x3))
-		    return true;
-		}
-	    }
-	  return false;
-	}
-    }
+    return gcn_flat_address_p (x, mode, strict);
   else if (AS_GLOBAL_P (as))
-    {
-      if (GET_CODE (x) == REG)
-       return (gcn_address_register_p (x, DImode, strict)
-	       || (!VECTOR_MODE_P (mode)
-		   && gcn_vec_address_register_p (x, DImode, strict)));
-      else if (GET_CODE (x) == PLUS)
-	{
-	  rtx base = XEXP (x, 0);
-	  rtx offset = XEXP (x, 1);
-
-	  int offsetbits = (TARGET_11BIT_GLOBAL_OFFSET ? 11 : 12);
-	  bool immediate_p = (GET_CODE (offset) == CONST_INT
-			      /* Signed 12/13-bit immediate.  */
-			      && INTVAL (offset) >= -(1 << offsetbits)
-			      && INTVAL (offset) < (1 << offsetbits)
-			      /* The low bits of the offset are ignored, even
-			         when they're meant to realign the pointer.  */
-			      && !(INTVAL (offset) & 0x3));
-
-	  if (!VECTOR_MODE_P (mode))
-	    {
-	      if ((gcn_address_register_p (base, DImode, strict)
-		   || gcn_vec_address_register_p (base, DImode, strict))
-		  && immediate_p)
-		/* SGPR + CONST or VGPR + CONST  */
-		return true;
-
-	      if (gcn_address_register_p (base, DImode, strict)
-		  && gcn_vgpr_register_operand (offset, SImode))
-		/* SGPR + VGPR  */
-		return true;
-
-	      if (GET_CODE (base) == PLUS
-		  && gcn_address_register_p (XEXP (base, 0), DImode, strict)
-		  && gcn_vgpr_register_operand (XEXP (base, 1), SImode)
-		  && immediate_p)
-		/* (SGPR + VGPR) + CONST  */
-		return true;
-	    }
-	  else
-	    {
-	      if (gcn_address_register_p (base, DImode, strict)
-		  && immediate_p)
-		/* SGPR + CONST  */
-		return true;
-	    }
-	}
-      else
-	return false;
-    }
+    return gcn_global_address_p (x, mode, strict);
   else if (AS_ANY_DS_P (as))
-    switch (GET_CODE (x))
-      {
-      case REG:
-	return (VECTOR_MODE_P (mode)
-		? gcn_address_register_p (x, SImode, strict)
-		: gcn_vec_address_register_p (x, SImode, strict));
-      /* Addresses are in the form BASE+OFFSET
-	 OFFSET is either 20bit unsigned immediate, SGPR or M0.
-	 Writes and atomics do not accept SGPR.  */
-      case PLUS:
-	{
-	  rtx x0 = XEXP (x, 0);
-	  rtx x1 = XEXP (x, 1);
-	  if (!gcn_vec_address_register_p (x0, DImode, strict))
-	    return false;
-	  if (GET_CODE (x1) == REG)
-	    {
-	      if (GET_CODE (x1) != REG
-		  || (REGNO (x1) <= FIRST_PSEUDO_REGISTER
-		      && !gcn_ssrc_register_operand (x1, DImode)))
-		return false;
-	    }
-	  else if (GET_CODE (x1) == CONST_VECTOR
-		   && GET_CODE (CONST_VECTOR_ELT (x1, 0)) == CONST_INT
-		   && single_cst_vector_p (x1))
-	    {
-	      x1 = CONST_VECTOR_ELT (x1, 0);
-	      if (INTVAL (x1) >= 0 && INTVAL (x1) < (1 << 20))
-		return true;
-	    }
-	  return false;
-	}
-
-      default:
-	break;
-      }
+    return gcn_ds_address_p (x, strict);
   else
     gcc_unreachable ();
   return false;
@@ -1861,6 +1818,32 @@ static scalar_int_mode
 gcn_addr_space_address_mode (addr_space_t addrspace)
 {
   return gcn_addr_space_pointer_mode (addrspace);
+}
+
+/* Implement TARGET_ADDR_SPACE_VALID_POINTER_MODE.
+
+   Return true if MODE is an appropriate mode for ADDRSPACE.  */
+
+static bool
+gcn_addr_space_valid_pointer_mode (machine_mode mode, addr_space_t addrspace)
+{
+  if (VECTOR_MODE_P (mode))
+    mode = GET_MODE_INNER (mode);
+
+  switch (addrspace)
+    {
+    case ADDR_SPACE_SCRATCH:
+    case ADDR_SPACE_LDS:
+    case ADDR_SPACE_GDS:
+      return mode == SImode;
+    case ADDR_SPACE_DEFAULT:
+    case ADDR_SPACE_FLAT:
+    case ADDR_SPACE_FLAT_SCRATCH:
+    case ADDR_SPACE_SCALAR_FLAT:
+      return mode == DImode;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 /* Implement TARGET_ADDR_SPACE_SUBSET_P.
@@ -1999,33 +1982,46 @@ gcn_regno_mode_code_ok_for_base_p (int regno,
     return false;
 }
 
-/* Implement MODE_CODE_BASE_REG_CLASS via gcn.h.
+/* Implement TARGET_BASE_REG_CLASS.
 
-   Return a suitable register class for memory addressing.  */
+   Return a suitable register class for memory addressing.  When MEM is
+   known, the address side of MEM is inspected directly to see whether it is
+   itself held in a vector register; otherwise (a hypothetical query with no
+   particular MEM) a best guess is made from MODE and AS alone.  */
 
-reg_class
-gcn_mode_code_base_reg_class (machine_mode mode, addr_space_t as, int oc,
-			      int ic)
+static reg_class_t
+gcn_base_reg_class (machine_mode mode, addr_space_t as,
+		    enum rtx_code outer_code ATTRIBUTE_UNUSED,
+		    enum rtx_code index_code ATTRIBUTE_UNUSED,
+		    rtx mem, rtx_insn *insn ATTRIBUTE_UNUSED)
 {
+  bool vector_base_p = mem && VECTOR_MODE_P (GET_MODE (XEXP (mem, 0)));
+
+retry:
   switch (as)
     {
     case ADDR_SPACE_DEFAULT:
-      return gcn_mode_code_base_reg_class (mode, DEFAULT_ADDR_SPACE, oc, ic);
+      as = DEFAULT_ADDR_SPACE;
+      goto retry;
     case ADDR_SPACE_SCALAR_FLAT:
     case ADDR_SPACE_SCRATCH:
+      gcc_assert (!vector_base_p);
       return SGPR_REGS;
       break;
     case ADDR_SPACE_FLAT:
     case ADDR_SPACE_FLAT_SCRATCH:
     case ADDR_SPACE_LDS:
     case ADDR_SPACE_GDS:
-      return ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-	       || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	      ? SGPR_REGS : VGPR_REGS);
     case ADDR_SPACE_GLOBAL:
-      return ((GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      if (vector_base_p)
+        return VGPR_REGS;
+      else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 	       || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
-	      ? SGPR_REGS : ALL_GPR_REGS);
+	return SGPR_REGS;
+      else if (as == ADDR_SPACE_GLOBAL)
+	return ALL_GPR_REGS;
+      else
+	return VGPR_REGS;
     }
   gcc_unreachable ();
 }
@@ -2134,12 +2130,9 @@ gcn_expand_vector_init (rtx op0, rtx vec)
 
   if (mem_mask)
     {
-      emit_insn (gen_gathervNm_expr
-		 (op0, gen_rtx_PLUS (addrmode, addr,
-				     gen_rtx_VEC_DUPLICATE (addrmode,
-							    const0_rtx)),
-		  GEN_INT (DEFAULT_ADDR_SPACE), GEN_INT (0),
-		  NULL, get_exec (mem_mask)));
+      rtx mem = gen_rtx_MEM (mode, addr);
+      emit_insn (gen_mov_exec (mode, op0, mem, gcn_gen_undef (mode),
+			       get_exec (mem_mask)));
       prev = op0;
       initialized_mask = mem_mask;
     }
@@ -2348,10 +2341,18 @@ gcn_expand_scalar_to_vector_address (machine_mode mode, rtx exec, rtx mem,
 			       gen_rtx_SIGN_EXTEND (pmode, tmplo));
     }
 
-  return gen_rtx_PLUS (GET_MODE (new_base), new_base,
-		       gen_rtx_VEC_DUPLICATE (GET_MODE (new_base),
-					      (mem_index ? mem_index
-					       : const0_rtx)));
+  rtx addr = gen_rtx_PLUS (GET_MODE (new_base), new_base,
+			   gen_rtx_VEC_DUPLICATE (GET_MODE (new_base),
+						  (mem_index ? mem_index
+						   : const0_rtx)));
+  rtx newmem = gen_rtx_MEM (mode, addr);
+  set_mem_addr_space (newmem, MEM_ADDR_SPACE (mem));
+  MEM_VOLATILE_P (newmem) = MEM_VOLATILE_P (mem);
+
+  /* The addresses generated here are known to be non-overlapping.  */
+  MEM_INDEPENDENT_P (newmem) = 1;
+
+  return newmem;
 }
 
 /* Convert a BASE address, a vector of OFFSETS, and a SCALE, to addresses
@@ -2405,6 +2406,25 @@ gcn_expand_scaled_offsets (addr_space_t as, rtx base, rtx offsets, rtx scale,
     return scaled_offsets;
 
   gcc_unreachable ();
+}
+
+/* Convert gather/scatter parameters to a vector MEM.  */
+
+rtx
+gcn_gen_vector_mem (machine_mode mode, addr_space_t as, rtx scalarbase,
+		    rtx vectoroffsets, rtx scale, bool unsigned_p,
+		    bool volatile_p, rtx exec)
+{
+  rtx addr = gcn_expand_scaled_offsets (as, scalarbase, vectoroffsets, scale,
+					unsigned_p, exec);
+  rtx mem = gen_rtx_MEM (mode, addr);
+  set_mem_addr_space (mem, as);
+  MEM_VOLATILE_P (mem) = volatile_p;
+
+  /* The addresses generated here are known to be non-overlapping.  */
+  MEM_INDEPENDENT_P (mem) = 1;
+
+  return mem;
 }
 
 /* Return true if move from OP0 to OP1 is known to be executed in vector
@@ -2498,8 +2518,9 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 	case ADDR_SPACE_FLAT:
 	case ADDR_SPACE_FLAT_SCRATCH:
 	case ADDR_SPACE_GLOBAL:
-	  if (GET_MODE_CLASS (reload_mode) == MODE_VECTOR_INT
-	      || GET_MODE_CLASS (reload_mode) == MODE_VECTOR_FLOAT)
+	  if ((GET_MODE_CLASS (reload_mode) == MODE_VECTOR_INT
+	       || GET_MODE_CLASS (reload_mode) == MODE_VECTOR_FLOAT)
+	      && !(MEM_P (x) && VECTOR_MODE_P (GET_MODE (XEXP (x, 0)))))
 	    {
 	      sri->icode = code_for_mov_sgprbase (reload_mode);
 	      break;
@@ -2663,14 +2684,14 @@ gcn_valid_move_p (machine_mode mode, rtx dest, rtx src)
 
   if (MEM_P (dest)
       && AS_GLOBAL_P (MEM_ADDR_SPACE (dest))
-      && (gcn_global_address_p (XEXP (dest, 0))
+      && (gcn_global_address_p (XEXP (dest, 0), GET_MODE (dest))
 	  || GET_CODE (XEXP (dest, 0)) == SYMBOL_REF
 	  || GET_CODE (XEXP (dest, 0)) == LABEL_REF)
       && gcn_vgpr_equivalent_register_operand (src, mode))
     return true;
   else if (MEM_P (src)
 	   && AS_GLOBAL_P (MEM_ADDR_SPACE (src))
-	   && (gcn_global_address_p (XEXP (src, 0))
+	   && (gcn_global_address_p (XEXP (src, 0), GET_MODE (src))
 	       || GET_CODE (XEXP (src, 0)) == SYMBOL_REF
 	       || GET_CODE (XEXP (src, 0)) == LABEL_REF)
 	   && gcn_vgpr_equivalent_register_operand (dest, mode))
@@ -3158,7 +3179,6 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
   rtx exec = gen_rtx_REG (DImode, EXEC_REG);
   rtx vcc = gen_rtx_REG (DImode, VCC_LO_REG);
   rtx offreg = gen_rtx_REG (SImode, SGPR_REGNO (22));
-  rtx as = gen_rtx_CONST_INT (VOIDmode, STACK_ADDR_SPACE);
   HOST_WIDE_INT exec_set = 0;
   int offreg_set = 0;
   auto_vec<int> saved_sgprs;
@@ -3211,6 +3231,9 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 				  gcn_operand_part (V64SImode, vsp, 1),
 				  const0_rtx, vcc, vcc,
 				  gcn_gen_undef (V64SImode), exec));
+  rtx vspmem = gen_rtx_MEM (V64SImode, vsp);
+  set_mem_addr_space (vspmem, STACK_ADDR_SPACE);
+  MEM_INDEPENDENT_P (vspmem) = 1;
 
   /* Move vectors.  */
   for (regno = FIRST_VGPR_REG, offset = 0;
@@ -3235,9 +3258,9 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 
 	if (prologue)
 	  {
-	    rtx insn = emit_insn (gen_scatterv64si_insn_1offset_exec
-				  (vsp, const0_rtx, reg, as, const0_rtx,
-				   exec));
+	    rtx insn = emit_insn (gen_movv64si_exec (vspmem, reg,
+						     gcn_gen_undef (V64SImode),
+						     exec));
 
 	    /* Add CFI metadata.  */
 	    rtx note;
@@ -3296,9 +3319,8 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 	    add_reg_note (insn, REG_FRAME_RELATED_EXPR, note);
 	  }
 	else
-	  emit_insn (gen_gatherv64si_insn_1offset_exec
-		     (reg, vsp, const0_rtx, as, const0_rtx,
-		      gcn_gen_undef (V64SImode), exec));
+	  emit_insn (gen_movv64si_exec (reg, vspmem, gcn_gen_undef (V64SImode),
+					exec));
 
 	/* Move our VSP to the next stack entry.  */
 	if (offreg_set != size)
@@ -7235,6 +7257,7 @@ print_operand_address (FILE *file, rtx mem)
   rtx offset;
   addr_space_t as = MEM_ADDR_SPACE (mem);
   rtx addr = XEXP (mem, 0);
+
   gcc_assert (REG_P (addr) || GET_CODE (addr) == PLUS);
 
   if (AS_SCRATCH_P (as))
@@ -7276,9 +7299,13 @@ print_operand_address (FILE *file, rtx mem)
 
 	  if (GET_CODE (base) == PLUS)
 	    {
-	      /* (SGPR + VGPR) + CONST  */
+	      /* (SGPR + VGPR) + CONST
+		 Note: the offset is printed by %O.  */
 	      vgpr_offset = XEXP (base, 1);
 	      base = XEXP (base, 0);
+
+	      if (GET_CODE (base) == VEC_DUPLICATE)
+		base = XEXP (base, 0);
 	    }
 	  else
 	    {
@@ -7314,8 +7341,6 @@ print_operand_address (FILE *file, rtx mem)
 		output_operand_lossage ("bad ADDR_SPACE_GLOBAL address");
 	    }
 	}
-      else
-	output_operand_lossage ("bad ADDR_SPACE_GLOBAL address");
     }
   else if (AS_ANY_DS_P (as))
     switch (GET_CODE (addr))
@@ -7645,12 +7670,19 @@ print_operand (FILE *file, rtx x, int code)
 		base = XEXP (x0, 0);
 
 		if (GET_CODE (base) == PLUS)
-		  /* (SGPR + VGPR) + CONST  */
-		  /* Ignore the VGPR offset for this operand.  */
-		  base = XEXP (base, 0);
+		  {
+		    /* (SGPR + VGPR) + CONST  */
+		    /* Ignore the VGPR offset for this operand.  */
+		    base = XEXP (base, 0);
 
+		    if (GET_CODE (base) == VEC_DUPLICATE)
+		      base = XEXP (base, 0);
+		  }
+
+		if (CONST_VECTOR_P (offset))
+		  offset = CONST_VECTOR_ELT (offset, 0);
 		if (CONST_INT_P (offset))
-		  const_offset = XEXP (x0, 1);
+		  const_offset = offset;
 		else if (REG_P (offset))
 		  /* SGPR + VGPR  */
 		  /* Ignore the VGPR offset for this operand.  */
@@ -7689,6 +7721,8 @@ print_operand (FILE *file, rtx x, int code)
 	rtx val = XEXP (x0, 1);
 	if (GET_CODE (val) == CONST_VECTOR)
 	  val = CONST_VECTOR_ELT (val, 0);
+	if (GET_CODE (val) == VEC_DUPLICATE)
+	  val = XEXP (val, 0);
 	if (GET_CODE (val) != CONST_INT)
 	  {
 	    output_operand_lossage ("invalid %%xn code");
@@ -8102,6 +8136,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID gcn_addr_space_zero_address_valid
 #undef  TARGET_ADDR_SPACE_CONVERT
 #define TARGET_ADDR_SPACE_CONVERT gcn_addr_space_convert
+#undef  TARGET_ADDR_SPACE_VALID_POINTER_MODE
+#define TARGET_ADDR_SPACE_VALID_POINTER_MODE gcn_addr_space_valid_pointer_mode
 #undef  TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES gcn_arg_partial_bytes
 #undef  TARGET_ASM_ALIGNED_DI_OP
@@ -8121,6 +8157,8 @@ gcn_dwarf_register_span (rtx rtl)
 #undef  TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
   gcn_autovectorize_vector_modes
+#undef  TARGET_BASE_REG_CLASS
+#define TARGET_BASE_REG_CLASS gcn_base_reg_class
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL gcn_builtin_decl
 #undef  TARGET_CAN_CHANGE_MODE_CLASS

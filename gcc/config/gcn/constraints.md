@@ -116,7 +116,21 @@
   "Buffer memory address to flat memory."
   (and (match_code "mem")
        (match_test "AS_FLAT_P (MEM_ADDR_SPACE (op))
-		    && gcn_flat_address_p (XEXP (op, 0), mode)")))
+		    && gcn_flat_address_p (XEXP (op, 0), mode)
+		    && !VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))")))
+
+(define_special_memory_constraint "Rf"
+  "Buffer memory address to flat memory."
+  (and (match_code "mem")
+       (match_test "AS_FLAT_P (MEM_ADDR_SPACE (op))
+		    && gcn_flat_address_p (XEXP (op, 0), mode)
+		    && VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))
+		    && MEM_INDEPENDENT_P (op)")))
+
+(define_constraint "Pf"
+  "Integer matching ADDR_SPACE_FLAT"
+  (and (match_code "const_int")
+       (match_test "AS_FLAT_P (ival)")))
 
 (define_special_memory_constraint "RS"
   "Buffer memory address to scalar flat memory."
@@ -127,7 +141,20 @@
 (define_special_memory_constraint "RL"
   "Buffer memory address to LDS memory."
   (and (match_code "mem")
-       (match_test "AS_LDS_P (MEM_ADDR_SPACE (op))")))
+       (match_test "AS_LDS_P (MEM_ADDR_SPACE (op))
+		    && !VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))")))
+
+(define_special_memory_constraint "Rl"
+  "Buffer memory address to LDS memory."
+  (and (match_code "mem")
+       (match_test "AS_LDS_P (MEM_ADDR_SPACE (op))
+		    && VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))
+		    && MEM_INDEPENDENT_P (op)")))
+
+(define_constraint "Pl"
+  "Integer matching ADDR_SPACE_LDS"
+  (and (match_code "const_int")
+       (match_test "AS_LDS_P (ival)")))
 
 (define_special_memory_constraint "RG"
   "Buffer memory address to GDS memory."
@@ -144,4 +171,23 @@
   "Memory address to global (main) memory."
   (and (match_code "mem")
        (match_test "AS_GLOBAL_P (MEM_ADDR_SPACE (op))
-		    && gcn_global_address_p (XEXP (op, 0))")))
+		    && gcn_global_address_p (XEXP (op, 0), GET_MODE (op))
+		    && !VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))")))
+
+(define_special_memory_constraint "Rm"
+  "Memory address to global (main) memory."
+  (and (match_code "mem")
+       (match_test "AS_GLOBAL_P (MEM_ADDR_SPACE (op))
+		    && gcn_global_address_p (XEXP (op, 0), GET_MODE (op))
+		    && VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))
+		    && MEM_INDEPENDENT_P (op)")))
+
+(define_constraint "Pm"
+  "Integer matching ADDR_SPACE_GLOBAL"
+  (and (match_code "const_int")
+       (match_test "AS_GLOBAL_P (ival)")))
+
+(define_special_memory_constraint "RA"
+  "All memory types that use a scalar address."
+  (and (match_code "mem")
+       (match_test "!VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))")))
