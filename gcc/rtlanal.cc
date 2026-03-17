@@ -6295,7 +6295,7 @@ low_bitmask_len (machine_mode mode, unsigned HOST_WIDE_INT m)
 
 /* Return the mode of MEM's address.  */
 
-scalar_int_mode
+machine_mode
 get_address_mode (rtx mem)
 {
   machine_mode mode;
@@ -6303,7 +6303,7 @@ get_address_mode (rtx mem)
   gcc_assert (MEM_P (mem));
   mode = GET_MODE (XEXP (mem, 0));
   if (mode != VOIDmode)
-    return as_a <scalar_int_mode> (mode);
+    return mode;
   return targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
 }
 

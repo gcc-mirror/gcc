@@ -2658,6 +2658,11 @@ do {								        \
 #define MEM_READONLY_P(RTX) \
   (RTL_FLAG_CHECK1 ("MEM_READONLY_P", (RTX), MEM)->unchanging)
 
+/* 1 if RTX is a mem whose address vector elements all point to
+   independent memory locations, without overlapping each other.  */
+#define MEM_INDEPENDENT_P(RTX) \
+  (RTL_FLAG_CHECK1 ("MEM_INDEPENDENT_P", (RTX), MEM)->return_val)
+
 /* 1 if RTX is a mem and we should keep the alias set for this mem
    unchanged when we access a component.  Set to 1, or example, when we
    are already in a non-addressable component of an aggregate.  */
@@ -2731,6 +2736,7 @@ do {								        \
    MEM_READONLY_P (LHS) = MEM_READONLY_P (RHS),			\
    MEM_KEEP_ALIAS_SET_P (LHS) = MEM_KEEP_ALIAS_SET_P (RHS),	\
    MEM_POINTER (LHS) = MEM_POINTER (RHS),			\
+   MEM_INDEPENDENT_P (LHS) = MEM_INDEPENDENT_P (RHS),		\
    MEM_ATTRS (LHS) = MEM_ATTRS (RHS))
 
 /* 1 if RTX is a label_ref for a nonlocal label.  */
@@ -3704,7 +3710,7 @@ inline rtx single_set (const rtx_insn *insn)
   return single_set_2 (insn, PATTERN (insn));
 }
 
-extern scalar_int_mode get_address_mode (rtx mem);
+extern machine_mode get_address_mode (rtx mem);
 extern bool rtx_addr_can_trap_p (const_rtx);
 extern bool nonzero_address_p (const_rtx);
 extern bool rtx_unstable_p (const_rtx);

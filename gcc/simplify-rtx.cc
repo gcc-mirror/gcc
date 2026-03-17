@@ -8839,8 +8839,33 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       && (! MEM_VOLATILE_P (op)
 	  || ! have_insn_for (SET, innermode))
       && !(STRICT_ALIGNMENT && MEM_ALIGN (op) < GET_MODE_ALIGNMENT (outermode))
-      && known_le (outersize, innersize))
+      && known_le (outersize, innersize)
+      /* You can't get the Nth element of a vector of addresses (i.e.
+	 gather/scatter) by adding an offset to the base.  */
+      && !VECTOR_MODE_P (GET_MODE (XEXP (op, 0))))
     return adjust_address_nv (op, outermode, byte);
+
+  /* Simplify (subreg:<m> (mem:<vec_m> (reg:<vec_p> addr)) x)
+     to (mem:<m> (subreg:<p> (reg:<vec_p>)) y)  */
+  if (MEM_P (op)
+      && VECTOR_MODE_P (innermode)
+      && VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))
+      && GET_MODE_INNER (innermode) == outermode)
+    {
+      poly_uint64 index;
+      if (multiple_p (byte, GET_MODE_SIZE (outermode), &index))
+	{
+	  rtx addr = XEXP (op, 0);
+	  machine_mode addrmode = GET_MODE (addr);
+	  scalar_mode addr_elt_mode = GET_MODE_INNER (addrmode);
+	  poly_uint64 addr_byte = index * GET_MODE_SIZE (addr_elt_mode);
+
+	  rtx new_addr = simplify_gen_subreg (addr_elt_mode, addr, addrmode,
+					      addr_byte);
+	  if (new_addr)
+	    return change_address_nv (op, outermode, new_addr);
+	}
+    }
 
   /* Handle complex or vector values represented as CONCAT or VEC_CONCAT
      of two parts.  */

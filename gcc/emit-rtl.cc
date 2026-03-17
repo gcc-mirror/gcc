@@ -540,14 +540,29 @@ gen_rtx_CONST_INT (machine_mode mode ATTRIBUTE_UNUSED, HOST_WIDE_INT arg)
   return *slot;
 }
 
+/* Return a CONST_INT, CONST_POLY_INT, or CONST_VECTOR containing the given
+   value.  In the case of a vector, the value will be duplicated.  */
+
 rtx
 gen_int_mode (poly_int64 c, machine_mode mode)
 {
-  c = trunc_int_for_mode (c, mode);
+  machine_mode s_mode = (VECTOR_MODE_P (mode) ? GET_MODE_INNER (mode) : mode);
+  rtx val;
+
+  c = trunc_int_for_mode (c, s_mode);
   if (c.is_constant ())
-    return GEN_INT (c.coeffs[0]);
-  unsigned int prec = GET_MODE_PRECISION (as_a <scalar_mode> (mode));
-  return immed_wide_int_const (poly_wide_int::from (c, prec, SIGNED), mode);
+    val = GEN_INT (c.coeffs[0]);
+  else
+    {
+      unsigned int prec = GET_MODE_PRECISION (as_a <scalar_mode> (s_mode));
+      val = immed_wide_int_const (poly_wide_int::from (c, prec, SIGNED),
+				  s_mode);
+    }
+
+  if (VECTOR_MODE_P (mode))
+    val = gen_const_vec_duplicate (mode, val);
+
+  return val;
 }
 
 /* CONST_DOUBLEs might be created from pairs of integers, or from
@@ -2332,13 +2347,12 @@ change_address_1 (rtx memref, machine_mode mode, rtx addr, int validate,
   return new_rtx;
 }
 
-/* Like change_address_1 with VALIDATE nonzero, but we are not saying in what
-   way we are changing MEMREF, so we only preserve the alias set.  */
+/* Version of change_address that takes a validate parameter.  */
 
-rtx
-change_address (rtx memref, machine_mode mode, rtx addr)
+static rtx
+change_address (rtx memref, machine_mode mode, rtx addr, int validate)
 {
-  rtx new_rtx = change_address_1 (memref, mode, addr, 1, false);
+  rtx new_rtx = change_address_1 (memref, mode, addr, validate, false);
   machine_mode mmode = GET_MODE (new_rtx);
   class mem_attrs *defattrs;
 
@@ -2364,6 +2378,24 @@ change_address (rtx memref, machine_mode mode, rtx addr)
   return new_rtx;
 }
 
+/* Like change_address_1 with VALIDATE nonzero, but we are not saying in what
+   way we are changing MEMREF, so we only preserve the alias set.  */
+
+rtx
+change_address (rtx memref, machine_mode mode, rtx addr)
+{
+  return change_address (memref, mode, addr, true);
+}
+
+/* Like change_address_1 with VALIDATE zero, but we are not saying in what
+   way we are changing MEMREF, so we only preserve the alias set.  */
+
+rtx
+change_address_nv (rtx memref, machine_mode mode, rtx addr)
+{
+  return change_address (memref, mode, addr, false);
+}
+
 /* Return a memory reference like MEMREF, but with its mode changed
    to MODE and its address offset by OFFSET bytes.  If VALIDATE is
    nonzero, the memory address is forced to be valid.
@@ -2383,7 +2415,7 @@ adjust_address_1 (rtx memref, machine_mode mode, poly_int64 offset,
 {
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
-  scalar_int_mode address_mode;
+  machine_mode address_mode;
   class mem_attrs attrs (*get_mem_attrs (memref)), *defattrs;
   unsigned HOST_WIDE_INT max_align;
 #ifdef POINTERS_EXTEND_UNSIGNED
@@ -2417,7 +2449,10 @@ adjust_address_1 (rtx memref, machine_mode mode, poly_int64 offset,
   /* Convert a possibly large offset to a signed value within the
      range of the target address space.  */
   address_mode = get_address_mode (memref);
-  offset = trunc_int_for_mode (offset, address_mode);
+  if (!VECTOR_MODE_P (address_mode))
+    offset = trunc_int_for_mode (offset, address_mode);
+  else
+    offset = trunc_int_for_mode (offset, GET_MODE_INNER (address_mode));
 
   if (adjust_address)
     {

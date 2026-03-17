@@ -1727,10 +1727,13 @@ default_addr_space_address_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
    To match the above, the same modes apply to all address spaces.  */
 
 bool
-default_addr_space_valid_pointer_mode (scalar_int_mode mode,
+default_addr_space_valid_pointer_mode (machine_mode mode,
 				       addr_space_t as ATTRIBUTE_UNUSED)
 {
-  return targetm.valid_pointer_mode (mode);
+  if (! SCALAR_INT_MODE_P (mode))
+    return false;
+
+  return targetm.valid_pointer_mode (as_a <scalar_int_mode> (mode));
 }
 
 /* Some places still assume that all pointer or address modes are the

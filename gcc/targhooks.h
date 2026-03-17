@@ -206,8 +206,7 @@ extern bool default_valid_pointer_mode (scalar_int_mode);
 extern bool default_ref_may_alias_errno (class ao_ref *);
 extern scalar_int_mode default_addr_space_pointer_mode (addr_space_t);
 extern scalar_int_mode default_addr_space_address_mode (addr_space_t);
-extern bool default_addr_space_valid_pointer_mode (scalar_int_mode,
-						   addr_space_t);
+extern bool default_addr_space_valid_pointer_mode (machine_mode, addr_space_t);
 extern bool default_addr_space_legitimate_address_p (machine_mode, rtx, bool,
 						     addr_space_t, code_helper);
 extern rtx default_addr_space_legitimize_address (rtx, rtx, machine_mode,

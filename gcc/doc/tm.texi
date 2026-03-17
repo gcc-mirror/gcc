@@ -11542,23 +11542,37 @@ c_register_addr_space ("__ea", ADDR_SPACE_EA);
 @deftypefn {Target Hook} scalar_int_mode TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for pointers to
 @var{address_space} if the target supports named address spaces.
+
+Targets that support vectors of pointers should return only the scalar base
+mode here, but permit the vector modes in
+@code{TARGET_ADDR_SPACE_VALID_POINTER_MODE}.
+
 The default version of this hook returns @code{ptr_mode}.
 @end deftypefn
 
 @deftypefn {Target Hook} scalar_int_mode TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for addresses in
 @var{address_space} if the target supports named address spaces.
+
+Targets that support vectors of addresses should return only the scalar base
+mode here, but permit the vector modes in
+@code{TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P} and
+@code{TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS}.
+
 The default version of this hook returns @code{Pmode}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (scalar_int_mode @var{mode}, addr_space_t @var{as})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (machine_mode @var{mode}, addr_space_t @var{as})
 Define this to return nonzero if the port can handle pointers
-with machine mode @var{mode} to address space @var{as}.  This target
-hook is the same as the @code{TARGET_VALID_POINTER_MODE} target hook,
-except that it includes explicit named address space support.  The default
-version of this hook returns true for the modes returned by either the
-@code{TARGET_ADDR_SPACE_POINTER_MODE} or @code{TARGET_ADDR_SPACE_ADDRESS_MODE}
-target hooks for the given address space.
+with machine mode @var{mode} to address space @var{as}.  This hook can
+also be used to allow pointers to use vector modes (e.g. to permit
+@samp{(mem:V4SI (reg:V4DI))}).  This target hook is the same as the
+@code{TARGET_VALID_POINTER_MODE} target hook, except that it includes
+explicit named address space support, and does not mandate
+@code{scalar_int_mode}.  The default version of this hook returns true for
+the modes returned by either the @code{TARGET_ADDR_SPACE_POINTER_MODE}
+or @code{TARGET_ADDR_SPACE_ADDRESS_MODE} target hooks for the given address
+space.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P (machine_mode @var{mode}, rtx @var{exp}, bool @var{strict}, addr_space_t @var{as}, code_helper @var{ch})
