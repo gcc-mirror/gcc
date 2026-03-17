@@ -1,5 +1,8 @@
 // { dg-output "hello world: gccrs\r*\n" }
 // { dg-additional-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 static TEST_1: &str = "gccrs";
 static TEST_2: i32 = 123;
 

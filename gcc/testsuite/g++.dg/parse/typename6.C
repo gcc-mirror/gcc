@@ -13,5 +13,5 @@ struct X :
 X<B> x;
 
 struct C : 
-  public typename A        // { dg-error "not allowed outside of templates" }
+  public typename A        // { dg-error "not allowed in this context" }
 { };

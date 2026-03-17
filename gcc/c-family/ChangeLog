@@ -1,3 +1,20 @@
+2026-03-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124447
+	* c-opts.cc (c_common_post_options): Error if -freflection is used
+	without -std=c++26 or -std=gnu++26.
+
+2026-03-07  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/123856
+	* c-attribs.cc (handle_hardbool_attribute): Fix TYPE_NAME.
+
+2026-03-06  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/124230
+	* c-ubsan.cc (get_index_from_offset): Handle the special case when
+	the offset is an integer constant.
+
 2026-02-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR c/105555

@@ -1,3 +1,85 @@
+2026-03-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/124451
+	* region-model-manager.cc
+	(region_model_manager::maybe_invert_comparison_in_unaryop): New,
+	adapted from...
+	(region_model_manager::maybe_fold_unaryop): ...here, splitting out
+	the comparison inversion case for TRUTH_NOT_EXPR.  Add a case for
+	BIT_NOT_EXPR, reusing the inversion logic when dealing with
+	boolean types.
+	* region-model-manager.h
+	(region_model_manager::maybe_invert_comparison_in_unaryop): New decl.
+
+2026-03-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/124375
+	* ops.cc (ggoto_edge_op::apply_constraints): Ensure that we write
+	back a rejected_constraint if the edge is infeasible.
+	* region-model.cc (region_model::add_constraint): Convert
+	rejected_op_constraint from tree to const svalue *.
+	(rejected_op_constraint::dump_to_pp): Likewise.
+	* region-model.h (class rejected_op_constraint): Likewise.
+
+2026-03-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/124433
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): When checking for
+	division by zero, use the value range of the divisor, rather
+	than merely checking for constant 0.
+	* region-model.cc (region_model::get_gassign_result): Likewise.
+
+2026-03-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR testsuite/112520
+	* region-model-manager.cc
+	(region_model_manager::get_field_region): Assert that the args are non-null.
+
+2026-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/124232
+	* kf.cc (kf_putenv::impl_call_pre): Use base region when marking
+	pointer as having escaped.
+
+2026-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/124188
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Don't attempt to fold
+	X + (-X) to zero for vector types.
+
+2026-02-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/124195
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Bulletproof against
+	division by zero by returning "unknown".
+	* region-model.cc (region_model::get_gassign_result): Bail out for
+	division by zero.
+	* svalue.cc (svalue::maybe_get_value_range): Rename to...
+	(svalue::maybe_get_value_range_1): ...this.
+	(constant_svalue::maybe_get_value_range): Rename to...
+	(constant_svalue::maybe_get_value_range_1): ...this.
+	(unknown_svalue::maybe_get_value_range): Rename to...
+	(unknown_svalue::maybe_get_value_range_1): ...this.
+	(unaryop_svalue::maybe_get_value_range): Rename to...
+	(unaryop_svalue::maybe_get_value_range_1): ...this.
+	(binop_svalue::maybe_get_value_range): Rename to...
+	(binop_svalue::maybe_get_value_range_1): ...this.
+	* svalue.h (svalue::maybe_get_value_range): Reimplement inline,
+	asserting that if we get a result it is not undefined_p.  Use
+	maybe_get_value_range_1 for the vfunc.
+	(svalue::maybe_get_value_range_1): Rename from above.
+	(constant_svalue::maybe_get_value_range): Rename to...
+	(constant_svalue::maybe_get_value_range_1): ...this.
+	(unknown_svalue::maybe_get_value_range): Rename to...
+	(unknown_svalue::maybe_get_value_range_1): ...this.
+	(unaryop_svalue::maybe_get_value_range): Rename to...
+	(unaryop_svalue::maybe_get_value_range_1): ...this.
+	(binop_svalue::maybe_get_value_range): Rename to...
+	(binop_svalue::maybe_get_value_range_1): ...this.
+
 2026-02-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/124104

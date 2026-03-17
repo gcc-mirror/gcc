@@ -14349,8 +14349,8 @@ aarch64_select_rtx_section (machine_mode mode,
     return function_section (current_function_decl);
 
   /* When using anchors for constants use the readonly section.  */
-  if ((CONST_INT_P (x) || CONST_DOUBLE_P (x))
-      && known_le (GET_MODE_SIZE (mode), 8))
+  if ((CONST_INT_P (x) || CONST_DOUBLE_P (x) || CONST_VECTOR_P (x))
+      && known_le (GET_MODE_SIZE (mode), 16))
     return readonly_data_section;
 
   return default_elf_select_rtx_section (mode, x, align);

@@ -1,3 +1,11 @@
+2026-02-28  Kwok Cheung Yeung  <kcyeung@baylibre.com>
+
+	PR middle-end/113436
+	* testsuite/libgomp.c++/pr113436-1.C (test_vla_by_ref): New.
+	(main): Add call to test_vla_by_ref.
+	* testsuite/libgomp.c++/pr113436-2.C (test_vla_by_ref): New.
+	(main): Add call to test_vla_by_ref.
+
 2026-02-23  Paul-Antoine Arras  <parras@baylibre.com>
 
 	PR fortran/120505

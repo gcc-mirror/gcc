@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test(x: f32) -> f32 {
     return x + 1.0;
 }

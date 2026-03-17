@@ -96,6 +96,11 @@ TopLevel::go (AST::Crate &crate)
   // responsible for this ugly and perfom a lot of error checking.
 
   visit (crate);
+
+  if (Analysis::Mappings::get ().lookup_glob_container (crate.get_node_id ())
+      == tl::nullopt)
+    Analysis::Mappings::get ().insert_glob_container (crate.get_node_id (),
+						      &crate);
 }
 
 void
@@ -105,7 +110,8 @@ TopLevel::visit (AST::Module &module)
 
   if (Analysis::Mappings::get ().lookup_glob_container (module.get_node_id ())
       == tl::nullopt)
-    Analysis::Mappings::get ().insert_glob_container (&module);
+    Analysis::Mappings::get ().insert_glob_container (module.get_node_id (),
+						      &module);
 }
 
 void
@@ -345,7 +351,8 @@ TopLevel::visit (AST::Enum &enum_item)
   if (Analysis::Mappings::get ().lookup_glob_container (
 	enum_item.get_node_id ())
       == tl::nullopt)
-    Analysis::Mappings::get ().insert_glob_container (&enum_item);
+    Analysis::Mappings::get ().insert_glob_container (enum_item.get_node_id (),
+						      &enum_item);
 }
 
 void

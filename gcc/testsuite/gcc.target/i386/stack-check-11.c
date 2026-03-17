@@ -14,5 +14,4 @@ frob ()
 }
 
 /* { dg-final { scan-assembler-times "sub\[ql\]" 4 } } */
-/* { dg-final { scan-assembler-times "or\[ql\]" 3 } } */
-
+/* { dg-final { scan-assembler-times "or\[qlb\]" 3 } } */

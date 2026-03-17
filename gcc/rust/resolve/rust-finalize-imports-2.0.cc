@@ -28,19 +28,29 @@ namespace Rust {
 namespace Resolver2_0 {
 
 void
-GlobbingVisitor::go (AST::Item *container)
+GlobbingVisitor::go (AST::GlobContainer *container)
 {
-  switch (container->get_item_kind ())
+  switch (container->get_glob_container_kind ())
     {
-    case AST::Item::Kind::Module:
+    case AST::GlobContainer::Kind::Module:
       visit_module_container (static_cast<AST::Module &> (*container));
       break;
-    case AST::Item::Kind::Enum:
+    case AST::GlobContainer::Kind::Crate:
+      visit_crate_container (static_cast<AST::Crate &> (*container));
+      break;
+    case AST::GlobContainer::Kind::Enum:
       visit_enum_container (static_cast<AST::Enum &> (*container));
       break;
     default:
       rust_unreachable ();
     }
+}
+
+void
+GlobbingVisitor::visit_crate_container (AST::Crate &crate)
+{
+  for (auto &i : crate.items)
+    visit (i);
 }
 
 void
@@ -61,83 +71,70 @@ GlobbingVisitor::visit_enum_container (AST::Enum &item)
 void
 GlobbingVisitor::visit (AST::Module &module)
 {
-  if (module.get_visibility ().is_public ())
-    ctx.insert_globbed (module.get_name (), module.get_node_id (),
-			Namespace::Types);
+  ctx.insert_globbed (module.get_name (), module.get_node_id (),
+		      Namespace::Types);
 }
 
 void
 GlobbingVisitor::visit (AST::MacroRulesDefinition &macro)
 {
-  if (macro.get_visibility ().is_public ())
-    ctx.insert_globbed (macro.get_rule_name (), macro.get_node_id (),
-			Namespace::Macros);
+  ctx.insert_globbed (macro.get_rule_name (), macro.get_node_id (),
+		      Namespace::Macros);
 }
 
 void
 GlobbingVisitor::visit (AST::Function &function)
 {
-  if (function.get_visibility ().is_public ())
-    ctx.insert_globbed (function.get_function_name (), function.get_node_id (),
-			Namespace::Values);
+  ctx.insert_globbed (function.get_function_name (), function.get_node_id (),
+		      Namespace::Values);
 }
 
 void
 GlobbingVisitor::visit (AST::StaticItem &static_item)
 {
-  if (static_item.get_visibility ().is_public ())
-    ctx.insert_globbed (static_item.get_identifier (),
-			static_item.get_node_id (), Namespace::Values);
+  ctx.insert_globbed (static_item.get_identifier (), static_item.get_node_id (),
+		      Namespace::Values);
 }
 
 void
 GlobbingVisitor::visit (AST::StructStruct &struct_item)
 {
-  if (struct_item.get_visibility ().is_public ())
-    {
-      ctx.insert_globbed (struct_item.get_identifier (),
-			  struct_item.get_node_id (), Namespace::Types);
-      if (struct_item.is_unit_struct ())
-	ctx.insert_globbed (struct_item.get_identifier (),
-			    struct_item.get_node_id (), Namespace::Values);
-    }
+  ctx.insert_globbed (struct_item.get_identifier (), struct_item.get_node_id (),
+		      Namespace::Types);
+  if (struct_item.is_unit_struct ())
+    ctx.insert_globbed (struct_item.get_identifier (),
+			struct_item.get_node_id (), Namespace::Values);
 }
 
 void
 GlobbingVisitor::visit (AST::TupleStruct &tuple_struct)
 {
-  if (tuple_struct.get_visibility ().is_public ())
-    {
-      ctx.insert_globbed (tuple_struct.get_identifier (),
-			  tuple_struct.get_node_id (), Namespace::Types);
+  ctx.insert_globbed (tuple_struct.get_identifier (),
+		      tuple_struct.get_node_id (), Namespace::Types);
 
-      ctx.insert_globbed (tuple_struct.get_identifier (),
-			  tuple_struct.get_node_id (), Namespace::Values);
-    }
+  ctx.insert_globbed (tuple_struct.get_identifier (),
+		      tuple_struct.get_node_id (), Namespace::Values);
 }
 
 void
 GlobbingVisitor::visit (AST::Enum &enum_item)
 {
-  if (enum_item.get_visibility ().is_public ())
-    ctx.insert_globbed (enum_item.get_identifier (), enum_item.get_node_id (),
-			Namespace::Types);
+  ctx.insert_globbed (enum_item.get_identifier (), enum_item.get_node_id (),
+		      Namespace::Types);
 }
 
 void
 GlobbingVisitor::visit (AST::Union &union_item)
 {
-  if (union_item.get_visibility ().is_public ())
-    ctx.insert_globbed (union_item.get_identifier (), union_item.get_node_id (),
-			Namespace::Values);
+  ctx.insert_globbed (union_item.get_identifier (), union_item.get_node_id (),
+		      Namespace::Values);
 }
 
 void
 GlobbingVisitor::visit (AST::ConstantItem &const_item)
 {
-  if (const_item.get_visibility ().is_public ())
-    ctx.insert_globbed (const_item.get_identifier (), const_item.get_node_id (),
-			Namespace::Values);
+  ctx.insert_globbed (const_item.get_identifier (), const_item.get_node_id (),
+		      Namespace::Values);
 }
 
 void

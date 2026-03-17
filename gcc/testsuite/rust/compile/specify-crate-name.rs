@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-crate=fancy_crate_name -fdump-tree-gimple" }
+#![feature(no_core)]
+#![no_core]
+
 pub fn does_nothing() {}
 fn main() {
     does_nothing()

@@ -3331,9 +3331,25 @@ ix86_place_single_vector_set (rtx dest, rtx src, bitmap bbs,
       rtx inner_scalar = load->val;
       /* Set the source in (vec_duplicate:V4SI (reg:SI 99)).  */
       rtx reg = XEXP (src, 0);
-      if ((REG_P (inner_scalar) || MEM_P (inner_scalar))
-	  && GET_MODE (reg) != GET_MODE (inner_scalar))
-	inner_scalar = gen_rtx_SUBREG (GET_MODE (reg), inner_scalar, 0);
+      machine_mode reg_mode = GET_MODE (reg);
+      if (reg_mode != GET_MODE (inner_scalar))
+	{
+	  if (REG_P (inner_scalar) || MEM_P (inner_scalar))
+	    inner_scalar = gen_rtx_SUBREG (reg_mode, inner_scalar, 0);
+	  else if (!SCALAR_INT_MODE_P (reg_mode))
+	    {
+	      /* For non-int load with integer constant, generate
+
+		 (set (subreg:SI (reg/v:SF 105 [ f ]) 0)
+		      (const_int 1313486336 [0x4e4a3600]))
+
+	       */
+	      gcc_assert (CONST_INT_P (inner_scalar));
+	      unsigned int bits = GET_MODE_BITSIZE (reg_mode);
+	      machine_mode mode = int_mode_for_size (bits, 0).require ();
+	      reg = gen_rtx_SUBREG (mode, reg, 0);
+	    }
+	}
       rtx set = gen_rtx_SET (reg, inner_scalar);
       insn = emit_insn_before (set, set_insn);
       if (dump_file)
@@ -3769,6 +3785,13 @@ ix86_broadcast_inner (rtx op, machine_mode mode,
     {
       /* Handle sequences like
 
+	 (set (subreg:SI (reg/v:SF 105 [ f ]) 0)
+	      (const_int 0 [0]))
+	 (set (reg:V4SF 110)
+	      (vec_duplicate:V4SF (reg/v:SF 105 [ f ])))
+
+	 and
+
 	 (set (reg:SI 99)
 	       (const_int 34 [0x22]))
 	 (set (reg:V4SI 98)
@@ -3777,8 +3800,13 @@ ix86_broadcast_inner (rtx op, machine_mode mode,
 	 Set *INSN_P to nullptr and return SET_SRC if SET_SRC is an
 	 integer constant.  */
       op = src;
-      if (mode != GET_MODE (reg))
-	op = gen_int_mode (INTVAL (src), mode);
+      if (SCALAR_INT_MODE_P (mode))
+	{
+	  if (mode != GET_MODE (reg))
+	    op = gen_int_mode (INTVAL (src), mode);
+	}
+      else if (op == const0_rtx)
+	op = CONST0_RTX (mode);
       *insn_p = nullptr;
     }
   else

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn foo() -> i32 {
     let a = 15;
     let p_a = &a as *const i32;

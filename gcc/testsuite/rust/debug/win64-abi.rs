@@ -1,5 +1,8 @@
 // { dg-do compile { target { x86_64-*-* } } }
 // { dg-options "-gdwarf-5 -dA -w -O1 -m64" }
+#![feature(no_core)]
+#![no_core]
+
 pub extern "win64" fn id(num: i32) -> i32 {
     num
 }

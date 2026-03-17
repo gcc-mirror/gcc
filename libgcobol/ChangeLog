@@ -1,3 +1,47 @@
+2026-02-26  Robert Dubner  <rdubner@symas.com>
+
+	* intrinsic.cc (__gg__trim):  Rewritten to work properly, and avoid
+	unnecessary variable codeset encoding translation.
+
+2026-02-24  Robert Dubner  <rdubner@symas.com>
+
+	* intrinsic.cc (string_to_dest): Move call to
+	__gg__adjust_dest_size().
+	(__gg__char): Likewise.
+	(__gg__current_date): Likewise.
+	(__gg__formatted_current_date): Likewise.
+	(__gg__formatted_date): Likewise.
+	(__gg__formatted_datetime): Likewise.
+	(__gg__formatted_time): Likewise.
+	(change_case): Likewise.
+	(__gg__trim): Likewise; fix memory leak.
+	(__gg__reverse): Move call to __gg__adjust_dest_size().
+	(__gg__locale_compare): Likewise
+	(__gg__locale_date): Likewise
+	(__gg__locale_time): Likewise
+	(__gg__locale_time_from_seconds): Likewise
+	* libgcobol.cc (format_for_display_internal): Make the results of
+	intermediate FldNumericBin5 look nice to a human.
+	(init_var_both): Move call to __gg__adjust_dest_size().
+	(__gg__get_argc): Move call to __gg__adjust_dest_size().
+	(__gg__get_argv): Move call to __gg__adjust_dest_size().
+	(__gg__get_command_line): Move call to __gg__adjust_dest_size().
+	(__gg__adjust_dest_size): Properly handle intermediate_e
+	allocations.
+	(__gg__adjust_encoding): Move call to __gg__adjust_dest_size().
+	(__gg__module_name): Move call to __gg__adjust_dest_size().
+	(__gg__refer_from_string): Move call to __gg__adjust_dest_size().
+	(__gg__refer_from_psz): Move call to __gg__adjust_dest_size().
+	(__gg__convert): Move call to __gg__adjust_dest_size().
+	* posix/shim/lseek.cc: Changes to extended functions.
+	* posix/shim/open.cc (posix_opent): Likewise.
+	(posix_open): Likewise.
+	* posix/udf/posix-open.cbl: Likewise.
+	* posix/udf/posix-read.cbl: Likewise.
+	* posix/udf/posix-write.cbl: Likewise.
+	* xmlparse.cc (sayso): Change to debug message.
+	* posix/udf/posix-ftruncate.cbl: New file.
+
 2026-02-19  Robert Dubner  <rdubner@symas.com>
 
 	* gfileio.cc (__gg__file_reopen): Raise exception on failed OPEN

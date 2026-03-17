@@ -81,11 +81,14 @@ DeriveDebug::stub_derive_impl (
 {
   auto trait_items = vec (stub_debug_fn ());
 
-  auto debug = builder.type_path ({"core", "fmt", "Debug"}, true);
-  auto generics
-    = setup_impl_generics (name, type_generics, builder.trait_bound (debug));
+  auto debug = [this] () {
+    return builder.type_path ({"core", "fmt", "Debug"}, true);
+  };
+  auto generics = setup_impl_generics (name, type_generics, [&, this] () {
+    return builder.trait_bound (debug ());
+  });
 
-  return builder.trait_impl (debug, std::move (generics.self_type),
+  return builder.trait_impl (debug (), std::move (generics.self_type),
 			     std::move (trait_items),
 			     std::move (generics.impl));
 }

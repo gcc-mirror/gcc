@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2 --param aarch64-autovec-preference=asimd-only" } */
+/* { dg-options "-O3 -fno-trapping-math -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2 --param aarch64-autovec-preference=asimd-only" } */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
 
 #pragma GCC target "+sve"

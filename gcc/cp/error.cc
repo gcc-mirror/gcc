@@ -875,11 +875,11 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case NULLPTR_TYPE:
-      pp_string (pp, "std::nullptr_t");
+      pp_cxx_ws_string (pp, "std::nullptr_t");
       break;
 
     case META_TYPE:
-      pp_string (pp, "std::meta::info");
+      pp_cxx_ws_string (pp, "std::meta::info");
       break;
 
     case SPLICE_SCOPE:

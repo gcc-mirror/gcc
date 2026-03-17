@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 mod foomod {
     pub struct Foo {}
 }

@@ -22,39 +22,27 @@
 #include "rust-ast.h"
 
 namespace Rust {
-template <class T> class MacroInvocLexerBase
+
+class MacroInvocLexer
 {
 public:
-  MacroInvocLexerBase (std::vector<T> stream)
+  MacroInvocLexer (std::vector<const_TokenPtr> stream)
     : offs (0), token_stream (std::move (stream))
   {}
+
+  MacroInvocLexer (const std::vector<std::unique_ptr<AST::Token>> &stream)
+    : offs (0)
+  {
+    token_stream.reserve (stream.size ());
+    for (auto &tk : stream)
+      token_stream.push_back (tk->get_tok_ptr ());
+  }
 
   // Advances current token to n + 1 tokens ahead of current position.
   void skip_token (int n) { offs += (n + 1); }
 
   // Skips the current token.
   void skip_token () { skip_token (0); }
-
-  std::string get_filename () const
-  {
-    // FIXME
-    rust_unreachable ();
-    return "FIXME";
-  }
-
-  size_t get_offs () const { return offs; }
-
-protected:
-  size_t offs;
-  std::vector<T> token_stream;
-};
-
-class MacroInvocLexer : public MacroInvocLexerBase<std::unique_ptr<AST::Token>>
-{
-public:
-  MacroInvocLexer (std::vector<std::unique_ptr<AST::Token>> stream)
-    : MacroInvocLexerBase (std::move (stream))
-  {}
 
   // Returns token n tokens ahead of current position.
   const_TokenPtr peek_token (int n);
@@ -71,7 +59,21 @@ public:
 
   std::vector<std::unique_ptr<AST::Token>>
   get_token_slice (size_t start_idx, size_t end_idx) const;
+
+  std::string get_filename () const
+  {
+    // FIXME
+    rust_unreachable ();
+    return "FIXME";
+  }
+
+  size_t get_offs () const { return offs; }
+
+protected:
+  size_t offs;
+  std::vector<const_TokenPtr> token_stream;
 };
+
 } // namespace Rust
 
 #endif // RUST_MACRO_INVOC_LEXER_H

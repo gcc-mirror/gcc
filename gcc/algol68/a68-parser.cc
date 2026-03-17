@@ -670,6 +670,7 @@ a68_new_node (void)
   CDECL (z) = NULL_TREE;
   DYNAMIC_STACK_ALLOCS (z) = false;
   PUBLICIZED (z) = false;
+  NEGATED (z) = false;
   return z;
 }
 

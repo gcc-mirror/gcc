@@ -1,4 +1,7 @@
 // { dg-additional-options "-quiet" }
+#![feature(no_core)]
+#![no_core]
+
 
 /* { dg-options "-fdiagnostics-show-caret" } */
 

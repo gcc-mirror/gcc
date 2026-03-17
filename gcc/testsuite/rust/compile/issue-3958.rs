@@ -1,4 +1,7 @@
 // { dg-options "-fsyntax-only" }
+#![feature(no_core)]
+#![no_core]
+
 trait A {
     fn a(&self) -> <Self as A>::X;
 }

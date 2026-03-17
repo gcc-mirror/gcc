@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! stmt {
     ($s:stmt) => {
         $s

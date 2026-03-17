@@ -969,9 +969,11 @@ with_gxx_include_dir
 with_gxx_libcxx_include_dir
 with_cpp_install_dir
 enable_generated_files_in_srcdir
+with_gnu_ld
 with_ld
 with_demangler_in_ld
 with_dsymutil
+with_gnu_as
 with_as
 with_windres
 enable_largefile
@@ -1009,7 +1011,6 @@ with_picolibc
 with_zstd
 with_zstd_include
 with_zstd_lib
-with_gnu_ld
 enable_rpath
 with_libiconv_prefix
 with_libiconv_type
@@ -1032,7 +1033,6 @@ enable_fast_install
 enable_libtool_lock
 enable_darwin_at_rpath
 with_darwin_extra_rpath
-with_gnu_as
 enable_ld
 enable_gold
 with_plugin_ld
@@ -1868,10 +1868,12 @@ Optional Packages:
   --with-cpp-install-dir=DIR
                           install the user visible C preprocessor in DIR
                           (relative to PREFIX) as well as PREFIX/bin
+  --with-gnu-ld           arrange to work with GNU ld
   --with-ld               arrange to use the specified ld (full pathname)
   --with-demangler-in-ld  try to use demangler in GNU ld
   --with-dsymutil         arrange to use the specified dsymutil (full
                           pathname)
+  --with-gnu-as           arrange to work with GNU as
   --with-as               arrange to use the specified as (full pathname)
   --with-windres          arrange to use the specified windres (full pathname)
   --with-stack-clash-protection-guard-size=size
@@ -1919,8 +1921,6 @@ Optional Packages:
   --with-darwin-extra-rpath=[ARG]
                           Specify a runpath directory, additional to those
                           provided by the compiler
-  --with-gnu-as           arrange to work with GNU as
-  --with-gnu-ld           arrange to work with GNU ld
   --with-plugin-ld=[ARG]  specify the plugin linker
   --with-glibc-version=M.N
                           assume GCC used with glibc version M.N or later
@@ -3925,6 +3925,16 @@ fi
 # Find default linker
 # -------------------
 
+# With GNU ld
+
+# Check whether --with-gnu-ld was given.
+if test "${with_gnu_ld+set}" = set; then :
+  withval=$with_gnu_ld; gnu_ld_flag="$with_gnu_ld"
+else
+  gnu_ld_flag=no
+fi
+
+
 case $target in
     *darwin*)
 	ld64_flag=yes # Darwin can only use a ld64-compatible linker.
@@ -4020,6 +4030,16 @@ fi
 # ----------------------
 # Find default assembler
 # ----------------------
+
+# With GNU as
+
+# Check whether --with-gnu-as was given.
+if test "${with_gnu_as+set}" = set; then :
+  withval=$with_gnu_as; gas_flag="$with_gnu_as"
+else
+  gas_flag=no
+fi
+
 
 
 # Check whether --with-as was given.
@@ -21953,7 +21973,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21956 "configure"
+#line 21976 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22059,7 +22079,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22062 "configure"
+#line 22082 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25476,18 +25496,28 @@ fi
 fi
 fi
 
-# With GNU as
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Solaris assembler" >&5
+$as_echo_n "checking Solaris assembler... " >&6; }
+case $target in
+  *-*-solaris2*)
+    if $gcc_cv_as -V 2>&1 | grep 'Compiler Common.*SunOS' > /dev/null; then
+      solaris_as=yes
+      gas_flag=no
+    elif $gcc_cv_as --version 2>/dev/null | grep GNU > /dev/null; then
+      gas_flag=yes
+    fi
+    ;;
+  *)
+    solaris_as=no
+    ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $solaris_as" >&5
+$as_echo "$solaris_as" >&6; }
+solaris_as_bool=`if test $solaris_as = yes; then echo 1; else echo 0; fi`
 
-# Check whether --with-gnu-as was given.
-if test "${with_gnu_as+set}" = set; then :
-  withval=$with_gnu_as; gas_flag="$with_gnu_as"
-else
-  if $gcc_cv_as --version 2>/dev/null | grep GNU > /dev/null; then
-   gas_flag=yes
- else
-   gas_flag=no
-fi
-fi
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SOLARIS_AS $solaris_as_bool
+_ACEOF
 
 
 ORIGINAL_AS_FOR_TARGET=$gcc_cv_as
@@ -25497,6 +25527,15 @@ case "$ORIGINAL_AS_FOR_TARGET" in
   *) ac_config_files="$ac_config_files as:exec-tool.in"
  ;;
 esac
+
+# Check if we are using GNU as if not already set.
+if test -z "$gas_flag"; then
+  if $gcc_cv_as --version 2>/dev/null | grep GNU > /dev/null; then
+    gas_flag=yes
+  else
+    gas_flag=no
+  fi
+fi
 
 if $gcc_cv_as --help 2>&1 | grep -- --fatal-warnings > /dev/null; then
   fw_as_opt=--fatal-warnings
@@ -25611,18 +25650,28 @@ fi
 fi
 fi
 
-# With GNU ld
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking Solaris linker" >&5
+$as_echo_n "checking Solaris linker... " >&6; }
+case $target in
+  *-*-solaris2*)
+    if $gcc_cv_ld -V 2>/dev/null | grep 'Solaris Link Editors' > /dev/null; then
+      gnu_ld_flag=no
+      solaris_ld=yes
+    elif $gcc_cv_ld --version 2>/dev/null | grep GNU > /dev/null; then
+      gnu_ld_flag=yes
+    fi
+    ;;
+  *)
+    solaris_ld=no
+    ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $solaris_ld" >&5
+$as_echo "$solaris_ld" >&6; }
+solaris_ld_bool=`if test $solaris_ld = yes; then echo 1; else echo 0; fi`
 
-# Check whether --with-gnu-ld was given.
-if test "${with_gnu_ld+set}" = set; then :
-  withval=$with_gnu_ld; gnu_ld_flag="$with_gnu_ld"
-else
-  if $gcc_cv_ld --version 2>/dev/null | grep GNU > /dev/null; then
-   gnu_ld_flag=yes
- else
-   gnu_ld_flag=no
- fi
-fi
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SOLARIS_LD $solaris_ld_bool
+_ACEOF
 
 
 ORIGINAL_PLUGIN_LD_FOR_TARGET=$gcc_cv_ld
@@ -25648,6 +25697,15 @@ cat >>confdefs.h <<_ACEOF
 #define PLUGIN_LD_SUFFIX "$PLUGIN_LD_SUFFIX"
 _ACEOF
 
+
+# Check if we are using GNU ld if not already set.
+if test -z "$gnu_ld_flag"; then
+  if $gcc_cv_ld --version 2>/dev/null | grep GNU > /dev/null; then
+    gnu_ld_flag=yes
+  else
+    gnu_ld_flag=no
+  fi
+fi
 
 case "$target:$gnu_ld_flag" in
   *-*-solaris2*:no)
@@ -33220,15 +33278,6 @@ elif test x$gcc_cv_ld != x; then
       ;;
   esac
 fi
-case "$target" in
-  i?86-*-solaris2* | x86_64-*-solaris2*)
-    if echo "$ld_ver" | grep GNU > /dev/null; then
-      # Doesn't work with gld on Solaris/x86 due to PR ld/12320.
-      gcc_cv_ld_as_needed=no
-      gcc_cv_ld_use_as_needed_ldscript=no
-    fi
-    ;;
-esac
 
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_as_needed" >&5

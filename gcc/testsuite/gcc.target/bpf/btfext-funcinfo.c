@@ -39,6 +39,5 @@ int bar_func (struct T *t)
 /* { dg-final { scan-assembler-times "ascii \"bar_sec.0\"\[\t \]+\[^\n\]*btf_aux_string" 1 } } */
 /* { dg-final { scan-assembler-times "FuncInfo entry size" 1 } } */
 
-/* { dg-final { scan-assembler-times ".4byte\t0x1\t# Number of entries" 3 } } */
-/* { dg-final { scan-assembler-times ".4byte\t0x2\t# Number of entries" 1 } } */
+/* { dg-final { scan-assembler-times "FuncInfo section\[^\n\]*\n\[^0\]*0x1\t# Number of entries" 2 } } */
 /* { dg-final { scan-assembler-times "Required padding" 1 } } */

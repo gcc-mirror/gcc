@@ -1543,9 +1543,8 @@ template<>
 		  __sv = __sink.view();
 		  __spec._M_debug = 0;
 		}
-	      basic_string<_CharT> __out_str
-	        (std::from_range, __unicode::_Utf_view<_CharT, _ViewT>(__sv));
-	      return _FmtStrT(__spec).format(__out_str, __fc);
+	      return _FmtStrT(__spec)._M_format_range(
+		       __unicode::_Utf_view<_CharT, _ViewT>(__sv), __fc);
 	    }
 	}
 

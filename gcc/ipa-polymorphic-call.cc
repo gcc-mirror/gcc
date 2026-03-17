@@ -2482,12 +2482,14 @@ ipa_polymorphic_call_context::meet_with (ipa_polymorphic_call_context ctx,
       updated = true;
     }
 
-  /* If call is known to be invalid, we are done.  */
+  /* If a certain context is known to be invalid, we can move to comparing
+     speculation.  Because the second context might be a certain one which can
+     be met with the speculation of the first, make it speculative.  */
   if (!outer_type)
-    ;
+    ctx.make_speculative ();
   else if (!ctx.outer_type)
     {
-      clear_outer_type ();
+      make_speculative ();
       updated = true;
     }
   /* If types are known to be same, merging is quite easy.  */

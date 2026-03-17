@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 const X: &'static u8 = br#"12
 12"#;
 

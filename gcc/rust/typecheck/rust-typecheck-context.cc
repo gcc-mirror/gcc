@@ -248,13 +248,17 @@ TypeCheckContext::lookup_trait_reference (DefId id, TraitReference **ref)
   return true;
 }
 
-void
+bool
 TypeCheckContext::insert_associated_trait_impl (
   HirId id, AssociatedImplTrait &&associated)
 {
-  rust_assert (associated_impl_traits.find (id)
-	       == associated_impl_traits.end ());
+  auto it = associated_impl_traits.find (id);
+  if (it != associated_impl_traits.end ())
+    {
+      return false;
+    }
   associated_impl_traits.emplace (id, std::move (associated));
+  return true;
 }
 
 bool

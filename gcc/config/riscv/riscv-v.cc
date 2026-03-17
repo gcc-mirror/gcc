@@ -2281,14 +2281,19 @@ get_lmul_mode (scalar_mode mode, int lmul)
   return E_VOIDmode;
 }
 
-/* Return the appropriate M1 mode for MODE.  */
+/* Return the appropriate LMUL1 mode for MODE.
+   If VLS_P is specified, get a VLS mode that represents a full
+   vector.  */
 
-static opt_machine_mode
-get_m1_mode (machine_mode mode)
+opt_machine_mode
+get_m1_mode (machine_mode mode, bool vls_p)
 {
   scalar_mode smode = GET_MODE_INNER (mode);
   unsigned int bytes = GET_MODE_SIZE (smode);
-  poly_uint64 m1_nunits = exact_div (BYTES_PER_RISCV_VECTOR, bytes);
+  poly_uint64 bytes_vector = BYTES_PER_RISCV_VECTOR;
+  if (vls_p)
+    bytes_vector = constant_lower_bound (bytes_vector);
+  poly_uint64 m1_nunits = exact_div (bytes_vector, bytes);
   return get_vector_mode (smode, m1_nunits);
 }
 

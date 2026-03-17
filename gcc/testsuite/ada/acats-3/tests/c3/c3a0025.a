@@ -324,8 +324,11 @@ begin
          when Constraint_Error =>
             null;
       end;
-      Obj := Func_1 (Non_Null_Init);
-      if Obj /= Non_Null_Init then
+      --  Temporary deviation from the original test:
+      --    Obj := Func_1 (Non_Null_Init);
+      --    if Obj /= Non_Null_Init then
+
+      if Func_1 (Non_Null_Init) /= Non_Null_Init then
          Report.Failed ("Func_1_OK: Wrong value");
       end if;
    end;
@@ -347,8 +350,11 @@ begin
          when Constraint_Error =>
             null;
       end;
-      Obj := Func_2 (Non_Null_Init);
-      if Obj /= Non_Null_Init then
+      --  Temporary deviation from the original test:
+      --    Obj := Func_2 (Non_Null_Init);
+      --    if Obj /= Non_Null_Init then
+
+      if Func_2 (Non_Null_Init) /= Non_Null_Init then
          Report.Failed ("Func_2_OK: Wrong value");
       end if;
    end;

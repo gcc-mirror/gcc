@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 mod bar {
     pub mod foo {}
     pub fn foo() {}

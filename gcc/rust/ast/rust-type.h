@@ -186,6 +186,8 @@ public:
   {
     return type_param_bounds;
   }
+
+  Type::Kind get_type_kind () const override { return Type::Kind::ImplTrait; }
 };
 
 // An opaque value of another type that implements a set of traits
@@ -258,6 +260,8 @@ public:
   {
     return type_param_bounds;
   }
+
+  Type::Kind get_type_kind () const override { return Type::Kind::TraitObject; }
 };
 
 // A type with parentheses around it, used to avoid ambiguity.
@@ -326,6 +330,11 @@ public:
     rust_assert (type_in_parens != nullptr);
     return type_in_parens;
   }
+
+  Type::Kind get_type_kind () const override
+  {
+    return Type::Kind::Parenthesised;
+  }
 };
 
 // Impl trait with a single bound? Poor reference material here.
@@ -360,6 +369,11 @@ public:
   TypeNoBounds *reconstruct_impl () const override
   {
     return new ImplTraitTypeOneBound (trait_bound->reconstruct (), locus);
+  }
+
+  Type::Kind get_type_kind () const override
+  {
+    return Type::Kind::ImplTraitTypeOneBound;
   }
 };
 
@@ -412,6 +426,11 @@ public:
   }
 
   bool is_dyn () const { return has_dyn; }
+
+  Type::Kind get_type_kind () const override
+  {
+    return Type::Kind::TraitObjectTypeOneBound;
+  }
 };
 
 class TypePath; // definition moved to "rust-path.h"
@@ -478,6 +497,8 @@ protected:
   {
     return new TupleType (reconstruct_vec (elems), locus);
   }
+
+  Type::Kind get_type_kind () const override { return Type::Kind::Tuple; }
 };
 
 /* A type with no values, representing the result of computations that never
@@ -507,6 +528,8 @@ public:
   location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Type::Kind get_type_kind () const override { return Type::Kind::Never; }
 };
 
 // A type consisting of a pointer without safety or liveness guarantees
@@ -588,6 +611,8 @@ protected:
   {
     return new RawPointerType (pointer_type, type->reconstruct (), locus);
   }
+
+  Type::Kind get_type_kind () const override { return Type::Kind::RawPointer; }
 };
 
 // A type pointing to memory owned by another value
@@ -682,6 +707,8 @@ protected:
 				lifetime->get_locus ())
 					      : tl::nullopt);
   }
+
+  Type::Kind get_type_kind () const override { return Type::Kind::Reference; }
 };
 
 // A fixed-size sequence of elements of a specified type
@@ -758,6 +785,8 @@ protected:
 			  size /* FIXME: This should be `reconstruct_expr()` */,
 			  locus);
   }
+
+  Type::Kind get_type_kind () const override { return Type::Kind::Array; }
 };
 
 /* A dynamically-sized type representing a "view" into a sequence of elements of
@@ -818,6 +847,8 @@ protected:
   {
     return new SliceType (elem_type->reconstruct (), locus);
   }
+
+  Type::Kind get_type_kind () const override { return Type::Kind::Slice; }
 };
 
 /* Type used in generic arguments to explicitly request type inference (wildcard
@@ -851,6 +882,8 @@ public:
   location_t get_locus () const override final { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
+
+  Type::Kind get_type_kind () const override { return Type::Kind::Inferred; }
 };
 
 class QualifiedPathInType; // definition moved to "rust-path.h"
@@ -1085,6 +1118,11 @@ protected:
   BareFunctionType *clone_type_no_bounds_impl () const override
   {
     return new BareFunctionType (*this);
+  }
+
+  Type::Kind get_type_kind () const override
+  {
+    return Type::Kind::BareFunction;
   }
 };
 

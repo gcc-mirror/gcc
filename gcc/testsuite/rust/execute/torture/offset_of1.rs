@@ -1,5 +1,8 @@
 // { dg-do run { target x86_64*-*-* } }
 // { dg-additional-options "-frust-assume-builtin-offset-of" }
+#![feature(no_core)]
+#![no_core]
+
 
 pub struct Foo {
     pub a: i32,

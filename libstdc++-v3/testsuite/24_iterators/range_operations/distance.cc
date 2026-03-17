@@ -154,6 +154,23 @@ test06()
   VERIFY( std::ranges::distance(a+3, a) == -3 );
 }
 
+void
+test_lwg4242()
+{
+  // LWG 4242. ranges::distance does not work with volatile iterators
+  int arr[] = {1, 2, 3};
+  int* volatile ptr = arr;
+  auto d1 = std::distance(ptr, arr + 3);
+  auto d2 = std::ranges::distance(ptr, arr + 3);
+  VERIFY( d1 == d2 );
+
+  // This is not part of LWG 4242 but it doesn't hurt to check it anyway:
+  volatile int vol_arr[1]{};
+  auto d3 = std::distance(vol_arr, vol_arr + 1);
+  auto d4 = std::ranges::distance(vol_arr, vol_arr + 1);
+  VERIFY( d3 == d4 );
+}
+
 int
 main()
 {
@@ -163,4 +180,5 @@ main()
   test04();
   test05();
   test06();
+  test_lwg4242();
 }

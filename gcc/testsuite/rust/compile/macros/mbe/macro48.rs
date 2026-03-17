@@ -1,4 +1,7 @@
 // Check that "priv" is not in the follow set of :vis.
+#![feature(no_core)]
+#![no_core]
+
 
 // { dg-error "token .priv. is not allowed after .vis. fragment" "#359" { target *-*-* } .+3 }
 // { dg-error "required first macro rule in macro rules definition could not be parsed" "" { target *-*-* } .+2 }

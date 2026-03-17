@@ -11,7 +11,7 @@
           With Debugging Mode
         >>END-IF
           .
-        
+
         Data Division.
         Working-Storage Section.
           77 Ws-pathname PIC X(8192).
@@ -20,17 +20,17 @@
         Linkage Section.
           77 Return-Value Binary-Long.
           01 Lk-pathname PIC X ANY LENGTH.
-          01 Lk-flags    PIC 9(8).
+          01 Lk-flags    PIC 9(8) Binary-long.
           01 Lk-mode     PIC 9(8).
 
         Procedure Division using
              By Reference Lk-pathname,
              By Reference Lk-flags,
-             By Reference Optional Lk-mode 
+             By Reference Optional Lk-mode
              Returning Return-Value.
 
           Move Lk-pathname To Ws-pathname.
-          Inspect Ws-pathname 
+          Inspect Ws-pathname
                   Replacing Trailing Space By Low-Value
 
       D   Display 'posix-open: Ws-pathname ', Ws-pathname.
@@ -40,8 +40,10 @@
 
           If ws-mode-ptr > 0 Then *> O_CREAT requires mode
             Move Lk-mode to Ws-mode.
-            
-          Call "posix_open" using Ws-pathname, Lk-flags, Ws-mode, 
+
+          Call "posix_open" using Ws-pathname,
+                              By Value Lk-flags,
+                              By Value Ws-mode,
                               Returning Return-Value.
           Goback.
 

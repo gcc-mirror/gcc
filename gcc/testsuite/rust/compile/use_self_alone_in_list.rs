@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct B;
 
 use {B as B2, self};

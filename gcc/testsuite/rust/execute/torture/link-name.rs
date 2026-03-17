@@ -1,6 +1,9 @@
 // { dg-additional-options "-fdump-rtl-final" }
 // { dg-final { scan-rtl-dump "printf" "final" } }
 // { dg-output "gcc\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 
 extern "C" {
     #[link_name = "printf"]

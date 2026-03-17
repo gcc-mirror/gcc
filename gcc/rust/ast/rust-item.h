@@ -750,7 +750,7 @@ public:
 };
 
 // Rust module item - abstract base class
-class Module : public VisItem
+class Module : public VisItem, public GlobContainer
 {
 public:
   // Type of the current module. A module can be either loaded or unloaded,
@@ -911,6 +911,11 @@ protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
   Module *clone_item_impl () const override { return new Module (*this); }
+
+  GlobContainer::Kind get_glob_container_kind () const override
+  {
+    return GlobContainer::Kind::Module;
+  }
 };
 
 // Rust extern crate declaration AST node
@@ -2247,7 +2252,7 @@ protected:
 };
 
 // AST node for Rust "enum" - tagged union
-class Enum : public VisItem
+class Enum : public VisItem, public GlobContainer
 {
   Identifier enum_name;
 
@@ -2356,6 +2361,11 @@ public:
   WhereClause &get_where_clause () { return where_clause; }
 
   Item::Kind get_item_kind () const override { return Item::Kind::Enum; }
+
+  GlobContainer::Kind get_glob_container_kind () const override
+  {
+    return GlobContainer::Kind::Enum;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

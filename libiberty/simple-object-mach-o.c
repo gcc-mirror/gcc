@@ -464,7 +464,8 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
   /* Fetch the section headers from the segment command.  */
 
   secdata = XNEWVEC (unsigned char, nsects * sechdrsize);
-  if (!simple_object_internal_read (sobj->descriptor, offset + seghdrsize,
+  if (!simple_object_internal_read (sobj->descriptor,
+				    sobj->offset + offset + seghdrsize,
 				    secdata, nsects * sechdrsize, errmsg, err))
     {
       XDELETEVEC (secdata);

@@ -3,7 +3,7 @@
 // { dg-additional-options "-freflection" }
 
 namespace N { struct A {}; }
-struct B : typename [: ^^N :] :: A {};	// { dg-error "keyword 'typename' not allowed outside of templates" }
+struct B : typename [: ^^N :] :: A {};	// { dg-error "keyword 'typename' not allowed in this context" }
 template <auto I>
 struct C : typename [: ^^N :] :: A {}; 	// { dg-error "keyword 'typename' not allowed in this context" }
 template <auto I>

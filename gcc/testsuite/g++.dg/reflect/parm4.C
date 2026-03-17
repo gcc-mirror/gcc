@@ -15,10 +15,10 @@ struct S {
 void
 g (S s)
 {
-  int i0 = s.mfn0 (^^int);  // { dg-error "consteval-only expressions" }
+  int i0 = s.mfn0 (^^int);  // { dg-error "consteval-only expressions" "" { target { ! implicit_constexpr } } }
   constexpr int i1 = s.mfn1 (^^int);
   constexpr int i2 = s.mfn2 (^^int);
-  int i3 = s.mfn3 (42, ^^int);  // { dg-error "consteval-only expressions" }
+  int i3 = s.mfn3 (42, ^^int);  // { dg-error "consteval-only expressions" "" { target { ! implicit_constexpr } } }
   info i4 = s.mfn4 ();  // { dg-error "consteval-only variable" }
 }
 

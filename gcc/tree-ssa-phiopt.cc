@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "tree-ssa-dce.h"
 #include "tree-ssa-loop-niter.h"
+#include "gimple-predict.h"
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
@@ -913,6 +914,27 @@ auto_flow_sensitive::~auto_flow_sensitive ()
     p.second.restore (p.first);
 }
 
+/* Returns true if BB contains an user provided predictor
+   (PRED_HOT_LABEL/PRED_COLD_LABEL).  */
+
+static bool
+contains_hot_cold_predict (basic_block bb)
+{
+  gimple_stmt_iterator gsi;
+  gsi = gsi_start_nondebug_after_labels_bb (bb);
+  for (; !gsi_end_p (gsi); gsi_next_nondebug (&gsi))
+    {
+      gimple *s = gsi_stmt (gsi);
+      if (gimple_code (s) != GIMPLE_PREDICT)
+	continue;
+      auto predict = gimple_predict_predictor (s);
+      if (predict == PRED_HOT_LABEL
+	  || predict == PRED_COLD_LABEL)
+	return true;
+    }
+  return false;
+}
+
 /*  The function match_simplify_replacement does the main work of doing the
     replacement using match and simplify.  Return true if the replacement is done.
     Otherwise return false.
@@ -1005,6 +1027,36 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 				     arg_true, arg_false,
 				    &seq);
   }
+
+  /* For early phiopt, we don't want to lose user generated predictors
+     if the phiopt is converting `if (a)` into `a` as that might
+     be jump threaded later on so we want to keep around the
+     predictors.  */
+  if (early_p && result && TREE_CODE (result) == SSA_NAME)
+    {
+      bool check_it = false;
+      tree cmp0 = gimple_cond_lhs (stmt);
+      tree cmp1 = gimple_cond_rhs (stmt);
+      if (result == cmp0 || result == cmp1)
+	check_it = true;
+      else if (gimple_seq_singleton_p (seq))
+        {
+	  gimple *stmt = gimple_seq_first_stmt (seq);
+	  if (is_gimple_assign (stmt)
+	      && result == gimple_assign_lhs (stmt)
+	      && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+		   == tcc_comparison)
+	    check_it = true;
+        }
+      if (!check_it)
+	;
+      else if (contains_hot_cold_predict (middle_bb))
+	return false;
+      else if (threeway_p
+	       && middle_bb != middle_bb_alt
+	       && contains_hot_cold_predict (middle_bb_alt))
+	return false;
+    }
 
   if (!result)
     {

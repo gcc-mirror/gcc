@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub enum E
 {
   pub A { a: i32 }, // { dg-error "visibility qualifier" }

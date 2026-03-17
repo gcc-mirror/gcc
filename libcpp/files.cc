@@ -972,7 +972,6 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
   /* Add the file to the dependencies on its first inclusion.  */
   if (CPP_OPTION (pfile, deps.style) > (sysp != 0)
       && !file->stack_count
-      && file->path[0]
       && !(pfile->main_file == file
 	   && CPP_OPTION (pfile, deps.ignore_main_file)))
     deps_add_dep (pfile->deps, file->path);

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 trait Foo {
     type T;
     fn foo() -> Foo<main>;

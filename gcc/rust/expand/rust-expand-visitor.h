@@ -105,7 +105,10 @@ public:
    */
   void expand_qualified_path_type (AST::QualifiedPathType &path_type);
 
-  // FIXME: Add documentation
+  /**
+   * Expand all macro invocations in lieu of types within a list of closure
+   * parameters
+   */
   void expand_closure_params (std::vector<AST::ClosureParam> &params);
   void expand_where_clause (AST::WhereClause &where_clause);
 
@@ -315,6 +318,16 @@ public:
 private:
   MacroExpander &expander;
   NodeId macro_invoc_expect_id;
+
+  /**
+   * Helper to expand all macro invocations in lieu of types within a vector of
+   * fields (StructField or TupleField).
+   */
+  template <typename T> void expand_fields (std::vector<T> &fields)
+  {
+    for (auto &field : fields)
+      maybe_expand_type (field.get_field_type_ptr ());
+  }
 };
 
 } // namespace Rust

@@ -695,4 +695,13 @@ package body System.Storage_Pools.Subpools is
       Attach (N_Ptr, To.Subpools'Unchecked_Access);
    end Set_Pool_Of_Subpool;
 
+   -------------------
+   -- _Adjust_Clone --
+   -------------------
+
+   procedure _Adjust_Clone (Subpool : in out Root_Subpool) is
+   begin
+      Finalization_Primitives.Initialize (Subpool.Collection);
+   end _Adjust_Clone;
+
 end System.Storage_Pools.Subpools;

@@ -2,6 +2,7 @@
 
 /* { dg-additional-options "-Wno-analyzer-too-complex" } */
 /* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
+/* { dg-additional-options "-Wno-overflow" } */
 
 typedef __SIZE_TYPE__ size_t;
 

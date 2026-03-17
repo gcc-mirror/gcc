@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 # Copyright (C) 2021-2026 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify

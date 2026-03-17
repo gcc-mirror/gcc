@@ -17,6 +17,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_MAP
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #define INCLUDE_TYPE_TRAITS
@@ -26,6 +27,7 @@
 #include "tm.h"
 #include "diagnostic-core.h"
 #include "json-parsing.h"
+#include "json-diagnostic.h"
 #include "aarch64-json-schema.h"
 #include "aarch64-json-tunings-parser.h"
 #include "aarch64-protos.h"
@@ -33,45 +35,47 @@
 #include "selftest.h"
 #include "version.h"
 
-#define PARSE_INTEGER_FIELD(obj, key, member)                                  \
+#define WARNING_OPT (0)
+
+#define PARSE_INTEGER_FIELD(ctxt, obj, key, member)                            \
   {                                                                            \
-    const json::value *val = obj->get (key);                                   \
+    const json::value *val = obj.get (key);                                    \
     if (val)                                                                   \
-      member = extract_integer (val);                                          \
+      member = extract_integer (ctxt, *val, WARNING_OPT);                      \
   }
 
-#define PARSE_UNSIGNED_INTEGER_FIELD(obj, key, member)                         \
+#define PARSE_UNSIGNED_INTEGER_FIELD(ctxt, obj, key, member)                   \
   {                                                                            \
-    const json::value *val = obj->get (key);                                   \
+    const json::value *val = obj.get (key);                                    \
     if (val)                                                                   \
-      member = extract_unsigned_integer (val);                                 \
+      member = extract_unsigned_integer (ctxt, *val, WARNING_OPT);             \
   }
 
-#define PARSE_BOOLEAN_FIELD(obj, key, member)                                  \
+#define PARSE_BOOLEAN_FIELD(ctxt, obj, key, member)                             \
   {                                                                            \
-    const json::value *val = obj->get (key);                                   \
+    const json::value *val = obj.get (key);                                    \
     if (val)                                                                   \
-      member = extract_boolean (val);                                          \
+      member = extract_boolean (ctxt, *val, WARNING_OPT);                      \
   }
 
-#define PARSE_STRING_FIELD(obj, key, member)                                   \
+#define PARSE_STRING_FIELD(ctxt, obj, key, member)                             \
   {                                                                            \
-    const json::value *val = obj->get (key);                                   \
+    const json::value *val = obj.get (key);                                    \
     if (val)                                                                   \
-      member = extract_string (val);                                           \
+      member = extract_string (ctxt, *val, WARNING_OPT);                       \
   }
 
-#define PARSE_OBJECT(obj, key, member, parse_func)                             \
+#define PARSE_OBJECT(ctxt, obj, key, member, parse_func)                       \
   {                                                                            \
-    const json::value *field_value = obj->get (key);                           \
+    const json::value *field_value = obj.get (key);                            \
     if (field_value)                                                           \
       if (auto *field_obj = dyn_cast<const json::object *> (field_value))      \
-	parse_object_helper (field_obj, (member), (parse_func));               \
+	parse_object_helper (ctxt, *field_obj, (member), (parse_func));        \
   }
 
-#define PARSE_ARRAY_FIELD(obj, key, member, parse_func)                        \
+#define PARSE_ARRAY_FIELD(ctxt, obj, key, member, parse_func)                  \
   {                                                                            \
-    const json::value *field_value = obj->get (key);                           \
+    const json::value *field_value = obj.get (key);                            \
     if (field_value)                                                           \
       if (auto *field_array = dyn_cast<const json::array *> (field_value))     \
 	for (size_t i = 0; i < field_array->size (); ++i)                      \
@@ -79,39 +83,39 @@
 	    const json::value *elem = field_array->get (i);                    \
 	    if (elem)                                                          \
 	      if (auto *array_obj = dyn_cast<const json::object *> (elem))     \
-		parse_func (array_obj, member[i]);                             \
+		parse_func (ctxt, *array_obj, member[i]);                      \
 	  }                                                                    \
   }
 
-#define PARSE_ENUM_FIELD(obj, key, member, mappings)                           \
-  parse_enum_field (obj, key, member, mappings,                                \
-		    sizeof (mappings) / sizeof (mappings[0]))
+#define PARSE_ENUM_FIELD(ctxt, obj, key, member, mappings)                     \
+  parse_enum_field (ctxt, obj, key, member, mappings,                          \
+		    sizeof (mappings) / sizeof (mappings[0]), WARNING_OPT)
 
 /* Type alias for parse function pointer.  */
 template <typename T>
 using parse_func_type
-  = void (*) (const json::object *,
+  = void (*) (gcc_json_context &,
+	      const json::object &,
 	      std::remove_const_t<std::remove_pointer_t<T>> &);
 
 /* Parse JSON object into non-pointer member type.  */
 template <typename T>
 static std::enable_if_t<!std::is_pointer<T>::value>
-parse_object_helper (const json::object *field_obj, T &member,
+parse_object_helper (gcc_json_context &ctxt,
+		     const json::object &field_obj, T &member,
 		     parse_func_type<T> parse_func)
 {
-  parse_func (field_obj, member);
+  parse_func (ctxt, field_obj, member);
 }
 
 /* Parse JSON object into a const pointer member by creating a temp copy.  */
 template <typename T>
 static std::enable_if_t<std::is_pointer<T>::value
 			&& std::is_const<std::remove_pointer_t<T>>::value>
-parse_object_helper (const json::object *field_obj, T &member,
+parse_object_helper (gcc_json_context &ctxt,
+		     const json::object &field_obj, T &member,
 		     parse_func_type<T> parse_func)
 {
-  if (!member)
-    return;
-
   /* Use static storage for the non-const copy.
      This works because tune_params does not have nested structures of the
      same type, but has room for errors if we end up having pointers to the
@@ -119,67 +123,124 @@ parse_object_helper (const json::object *field_obj, T &member,
   static bool already_initialized = false;
   if (already_initialized)
     {
-      error ("static storage conflict - multiple pointer members of the "
-	     "same type cannot be parsed");
+      json_error (ctxt, field_obj,
+		  "static storage conflict - multiple pointer members of "
+		  "the same type cannot be parsed");
       return;
     }
   already_initialized = true;
   using NonConstType = std::remove_const_t<std::remove_pointer_t<T>>;
-  static NonConstType new_obj = *member;
-  parse_func (field_obj, new_obj);
+  if (!member)
+    warning (0, "JSON tuning overrides an unspecified structure in the base "
+		"tuning; fields not provided in JSON will default to 0");
+  static NonConstType new_obj = member ? *member : NonConstType{};
+  parse_func (ctxt, field_obj, new_obj);
   member = &new_obj;
+}
+
+/* Issue a note about the kind of json value we encountered.  */
+
+static void
+inform_about_wrong_kind_of_json_value (gcc_json_context &ctxt,
+				       const json::value &val)
+{
+  switch (val.get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case json::JSON_OBJECT:
+      json_note (ctxt, val, "...but got an object instead");
+      break;
+    case json::JSON_ARRAY:
+      json_note (ctxt, val, "...but got an array instead");
+      break;
+    case json::JSON_INTEGER:
+      json_note (ctxt, val, "...but got an integer instead");
+      break;
+    case json::JSON_FLOAT:
+      json_note (ctxt, val, "...but got a floating-point value instead");
+      break;
+    case json::JSON_STRING:
+      json_note (ctxt, val, "...but got a string instead");
+      break;
+    case json::JSON_TRUE:
+      json_note (ctxt, val, "...but got %qs instead", "true");
+      break;
+    case json::JSON_FALSE:
+      json_note (ctxt, val, "...but got %qs instead", "false");
+      break;
+    case json::JSON_NULL:
+      json_note (ctxt, val, "...but got %qs instead", "null");
+      break;
+    }
 }
 
 /* Extract string value from JSON, returning allocated C string.  */
 char *
-extract_string (const json::value *val)
+extract_string (gcc_json_context &ctxt,
+		const json::value &val,
+		diagnostics::option_id warning_opt)
 {
-  if (auto *string_val = dyn_cast<const json::string *> (val))
+  if (auto *string_val = dyn_cast<const json::string *> (&val))
     return xstrdup (string_val->get_string ());
-  warning (0, "expected a string but got something else or NULL");
+  auto_diagnostic_group d;
+  if (json_warning (ctxt, val, warning_opt, "expected a string..."))
+    inform_about_wrong_kind_of_json_value (ctxt, val);
   return nullptr;
 }
 
 /* Extract signed integer value from JSON.  */
 int
-extract_integer (const json::value *val)
+extract_integer (gcc_json_context &ctxt,
+		 const json::value &val,
+		 diagnostics::option_id warning_opt)
 {
-  if (auto *int_val = dyn_cast<const json::integer_number *> (val))
+  if (auto *int_val = dyn_cast<const json::integer_number *> (&val))
     {
       long value = int_val->get ();
       gcc_assert (value >= INT_MIN && value <= INT_MAX);
       return static_cast<int> (value);
     }
-  warning (0, "expected an integer value but got something else or NULL");
+  auto_diagnostic_group d;
+  if (json_warning (ctxt, val, warning_opt, "expected an integer value..."))
+    inform_about_wrong_kind_of_json_value (ctxt, val);
   return 0;
 }
 
 /* Extract unsigned integer value from JSON.  */
 unsigned int
-extract_unsigned_integer (const json::value *val)
+extract_unsigned_integer (gcc_json_context &ctxt,
+			  const json::value &val,
+			  diagnostics::option_id warning_opt)
 {
-  if (auto *int_val = dyn_cast<const json::integer_number *> (val))
+  if (auto *int_val = dyn_cast<const json::integer_number *> (&val))
     {
       long value = int_val->get ();
       gcc_assert (value >= 0 && value <= UINT_MAX);
       return static_cast<unsigned int> (value);
     }
-  warning (0,
-	   "expected an unsigned integer value but got something else or NULL");
+  auto_diagnostic_group d;
+  if (json_warning (ctxt, val, warning_opt,
+		    "expected an unsigned integer value..."))
+    inform_about_wrong_kind_of_json_value (ctxt, val);
   return 0;
 }
 
 /* Extract boolean value from JSON literal.  */
 bool
-extract_boolean (const json::value *val)
+extract_boolean (gcc_json_context &ctxt,
+		 const json::value &val,
+		 diagnostics::option_id warning_opt)
 {
-  if (auto *literal_val = dyn_cast<const json::literal *> (val))
+  if (auto *literal_val = dyn_cast<const json::literal *> (&val))
     {
       json::kind kind = literal_val->get_kind ();
       if (kind == json::JSON_TRUE || kind == json::JSON_FALSE)
 	return (kind == json::JSON_TRUE);
     }
-  warning (0, "expected a boolean value but got something else or NULL");
+  auto_diagnostic_group d;
+  if (json_warning (ctxt, val, warning_opt, "expected a boolean value..."))
+    inform_about_wrong_kind_of_json_value (ctxt, val);
   return false;
 }
 
@@ -192,18 +253,21 @@ template <typename EnumType> struct enum_mapping
 /* Parse JSON string field into enum value using string-to-enum mappings.  */
 template <typename EnumType>
 static void
-parse_enum_field (const json::object *jo, const std::string &key,
+parse_enum_field (gcc_json_context &ctxt,
+		  const json::object &jo, const std::string &key,
 		  EnumType &enum_var, const enum_mapping<EnumType> *mappings,
-		  size_t num_mappings)
+		  size_t num_mappings,
+		  diagnostics::option_id warning_opt)
 {
-  const json::value *field_value = jo->get (key.c_str ());
+  const json::value *field_value = jo.get (key.c_str ());
   if (!field_value)
     return;
 
   auto *string_val = dyn_cast<const json::string *> (field_value);
   if (!string_val)
     {
-      warning (0, "expected string for enum field %s", key.c_str ());
+      json_warning (ctxt, *field_value, warning_opt,
+		    "expected string for enum field %s", key.c_str ());
       enum_var = mappings[0].value;
       return;
     }
@@ -218,8 +282,9 @@ parse_enum_field (const json::object *jo, const std::string &key,
 	}
     }
 
-  warning (0, "%s not recognized, defaulting to %qs", key.c_str (),
-	   mappings[0].name);
+  json_warning (ctxt, *field_value, 0,
+		"%s not recognized, defaulting to %qs", key.c_str (),
+		mappings[0].name);
   enum_var = mappings[0].value;
 }
 
@@ -229,7 +294,8 @@ parse_enum_field (const json::object *jo, const std::string &key,
 /* Validate the user provided JSON data against the present schema.
    Checks for correct types, fields, and expected format.  */
 static bool
-validate_and_traverse (const json::object *json_obj,
+validate_and_traverse (gcc_json_context &ctxt,
+		       const json::object *json_obj,
 		       const json::object *schema_obj,
 		       const std::string &parent_key = "")
 {
@@ -243,8 +309,9 @@ validate_and_traverse (const json::object *json_obj,
       const json::value *schema_value = schema_obj->get (key.c_str ());
       if (!schema_value)
 	{
-	  warning (0, "key %qs is not a tuning parameter, skipping",
-		   full_key.c_str ());
+	  json_warning (ctxt, *json_value, WARNING_OPT,
+			"key %qs is not a tuning parameter, skipping",
+			full_key.c_str ());
 	  continue;
 	}
 
@@ -252,13 +319,15 @@ validate_and_traverse (const json::object *json_obj,
 	{
 	  if (auto *sub_json_obj = dyn_cast<const json::object *> (json_value))
 	    {
-	      if (!validate_and_traverse (sub_json_obj, sub_schema_obj,
+	      if (!validate_and_traverse (ctxt, sub_json_obj, sub_schema_obj,
 					  full_key))
 		return false;
 	    }
 	  else
 	    {
-	      error ("key %qs expected to be an object", full_key.c_str ());
+	      json_error (ctxt, *json_value,
+			  "key %qs expected to be an object",
+			  full_key.c_str ());
 	      return false;
 	    }
 	}
@@ -266,7 +335,8 @@ validate_and_traverse (const json::object *json_obj,
 	{
 	  if (json_value->get_kind () != json::JSON_ARRAY)
 	    {
-	      error ("key %qs expected to be an array", full_key.c_str ());
+	      json_error (ctxt, *json_value,
+			  "key %qs expected to be an array", full_key.c_str ());
 	      return false;
 	    }
 	}
@@ -279,8 +349,9 @@ validate_and_traverse (const json::object *json_obj,
 	    {
 	      if (json_value->get_kind () != json::JSON_INTEGER)
 		{
-		  error ("key %qs expected to be an integer",
-			 full_key.c_str ());
+		  json_error (ctxt, *json_value,
+			      "key %qs expected to be an integer",
+			      full_key.c_str ());
 		  return false;
 		}
 	      // Check if the value is valid for signed integer
@@ -290,9 +361,10 @@ validate_and_traverse (const json::object *json_obj,
 		  long value = int_val->get ();
 		  if (value > INT_MAX || value < INT_MIN)
 		    {
-		      error ("key %qs value %ld is out of range for %<int%> "
-			     "type [%d, %d]",
-			     full_key.c_str (), value, INT_MIN, INT_MAX);
+		      json_error (ctxt, *json_value,
+				  "key %qs value %ld is out of range for "
+				  "%<int%> type [%d, %d]",
+				  full_key.c_str (), value, INT_MIN, INT_MAX);
 		      return false;
 		    }
 		}
@@ -301,8 +373,9 @@ validate_and_traverse (const json::object *json_obj,
 	    {
 	      if (json_value->get_kind () != json::JSON_INTEGER)
 		{
-		  error ("key %qs expected to be an unsigned integer",
-			 full_key.c_str ());
+		  json_error (ctxt, *json_value,
+			      "key %qs expected to be an unsigned integer",
+			      full_key.c_str ());
 		  return false;
 		}
 	      // Check if the value is valid for unsigned integer
@@ -312,9 +385,10 @@ validate_and_traverse (const json::object *json_obj,
 		  long value = int_val->get ();
 		  if (value < 0 || value > UINT_MAX)
 		    {
-		      error ("key %qs value %ld is out of range for %<uint%> "
-			     "type [0, %u]",
-			     full_key.c_str (), value, UINT_MAX);
+		      json_error (ctxt, *json_value,
+				  "key %qs value %ld is out of range for "
+				  "%<uint%> type [0, %u]",
+				  full_key.c_str (), value, UINT_MAX);
 		      return false;
 		    }
 		}
@@ -323,7 +397,9 @@ validate_and_traverse (const json::object *json_obj,
 	    {
 	      if (json_value->get_kind () != json::JSON_STRING)
 		{
-		  error ("key %qs expected to be a string", full_key.c_str ());
+		  json_error (ctxt, *json_value,
+			      "key %qs expected to be a string",
+			      full_key.c_str ());
 		  return false;
 		}
 	    }
@@ -332,8 +408,9 @@ validate_and_traverse (const json::object *json_obj,
 	      if (json_value->get_kind () != json::JSON_TRUE
 		  && json_value->get_kind () != json::JSON_FALSE)
 		{
-		  error ("key %qs expected to be a boolean (true/false)",
-			 full_key.c_str ());
+		  json_error (ctxt, *json_value,
+			      "key %qs expected to be a boolean (true/false)",
+			      full_key.c_str ());
 		  return false;
 		}
 	    }
@@ -341,20 +418,24 @@ validate_and_traverse (const json::object *json_obj,
 	    {
 	      if (json_value->get_kind () != json::JSON_STRING)
 		{
-		  error ("key %qs expected to be an enum (string)",
-			 full_key.c_str ());
+		  json_error (ctxt, *json_value,
+			      "key %qs expected to be an enum (string)",
+			      full_key.c_str ());
 		  return false;
 		}
 	    }
 	  else
 	    {
-	      error ("key %qs has unsupported type", full_key.c_str ());
+	      json_error (ctxt, *json_value,
+			  "key %qs has unsupported type", full_key.c_str ());
 	      return false;
 	    }
 	}
       else
 	{
-	  error ("key %qs has unexpected format in schema", full_key.c_str ());
+	  json_error (ctxt, *json_value,
+		      "key %qs has unexpected format in schema",
+		      full_key.c_str ());
 	  return false;
 	}
     }
@@ -412,13 +493,15 @@ check_version_compatibility (const json::object *root_obj)
 
   if (json_gcc_major_version == -1)
     {
-      warning (0, "JSON tuning file does not contain version information; "
-		  "compatibility cannot be verified");
+      warning (WARNING_OPT,
+	       "JSON tuning file does not contain version information; "
+	       "compatibility cannot be verified");
       return true;
     }
 
   if (json_gcc_major_version != GCC_major_version)
     {
+      auto_diagnostic_group d;
       error ("JSON tuning file was created with GCC version %d "
 	     "but current GCC version is %d",
 	     json_gcc_major_version, GCC_major_version);
@@ -432,31 +515,32 @@ check_version_compatibility (const json::object *root_obj)
 
 /* Main routine for setting up the parsing of JSON data.  */
 static void
-aarch64_load_tuning_params_from_json_string (const char *json_string,
+aarch64_load_tuning_params_from_json_string (const char *js_filename,
+					     const char *json_string,
 					     const char *schema_string,
 					     struct tune_params *tune)
 {
   /* Try parsing the JSON string.  */
+  gcc_json_context ctxt (js_filename);
   json::parser_result_t data_result
     = json::parse_utf8_string (strlen (json_string), json_string, true,
-			       nullptr);
+			       &ctxt);
 
   if (auto json_err = data_result.m_err.get ())
     {
-      error ("error parsing JSON data: %s", json_err->get_msg ());
+      location_t js_loc = ctxt.make_location_for_range (json_err->get_range ());
+      error_at (js_loc, "error parsing JSON data: %s", json_err->get_msg ());
       return;
     }
 
-  const std::unique_ptr<json::value> &root = data_result.m_val;
-  if (!root)
-    {
-      error ("JSON parsing returned null data");
-      return;
-    }
-  auto *root_obj = dyn_cast<const json::object *> (root.get ());
+  const json::value* root = data_result.m_val.get ();
+  gcc_assert (root);
+
+  auto *root_obj = dyn_cast<const json::object *> (root);
   if (!root_obj)
     {
-      warning (0, "no JSON object found in the provided data");
+      json_warning (ctxt, *root, WARNING_OPT,
+		    "no JSON object found in the provided data");
       return;
     }
 
@@ -478,24 +562,26 @@ aarch64_load_tuning_params_from_json_string (const char *json_string,
   const json::value *tune_params_value = root_obj->get ("tune_params");
   if (!tune_params_value)
     {
-      warning (0, "key %<tune_params%> not found in JSON data");
+      json_warning (ctxt, *root_obj, WARNING_OPT,
+		    "key %<tune_params%> not found in JSON data");
       return;
     }
 
   auto *jo = dyn_cast<const json::object *> (tune_params_value);
   if (!jo)
     {
-      error ("key %<tune_params%> is not a JSON object");
+      json_error (ctxt, *tune_params_value,
+		  "key %<tune_params%> is not a JSON object");
       return;
     }
 
-  if (!validate_and_traverse (root_obj, schema_obj))
+  if (!validate_and_traverse (ctxt, root_obj, schema_obj))
     {
       error ("validation failed for the provided JSON data");
       return;
     }
 
-  parse_tunings (jo, *tune);
+  parse_tunings (ctxt, *jo, *tune);
 
   /* dispatch_constraints are not represented in JSON tunings.  If the JSON
      sets DISPATCH_SCHED in extra_tuning_flags but the base model does not
@@ -524,8 +610,9 @@ aarch64_load_tuning_params_from_json (const char *data_filename,
       error ("cannot read JSON data in %s", data_filename);
       return;
     }
-  aarch64_load_tuning_params_from_json_string (
-    (const char *) json_data->data (), schema_json, tune);
+  aarch64_load_tuning_params_from_json_string
+    (data_filename,
+     (const char *) json_data->data (), schema_json, tune);
 }
 
 #if CHECKING_P
@@ -549,7 +636,8 @@ test_json_integers ()
 
   tune_params params;
 
-  aarch64_load_tuning_params_from_json_string (test_json, schema_json, &params);
+  aarch64_load_tuning_params_from_json_string
+    ("test.json", test_json, schema_json, &params);
 
   ASSERT_EQ (params.sve_width, 256);
   ASSERT_EQ (params.issue_rate, 4);
@@ -576,7 +664,8 @@ test_json_boolean ()
   tune_params params;
   params.insn_extra_cost = &default_cost_table;
 
-  aarch64_load_tuning_params_from_json_string (test_json, schema_json, &params);
+  aarch64_load_tuning_params_from_json_string
+    ("test.json", test_json, schema_json, &params);
 
   ASSERT_EQ (params.insn_extra_cost->alu.non_exec_costs_exec, false);
 }
@@ -597,7 +686,8 @@ test_json_strings ()
 
   tune_params params;
 
-  aarch64_load_tuning_params_from_json_string (test_json, schema_json, &params);
+  aarch64_load_tuning_params_from_json_string
+    ("test.json", test_json, schema_json, &params);
 
   ASSERT_STREQ (params.function_align, "16");
   ASSERT_STREQ (params.jump_align, "2");
@@ -620,7 +710,8 @@ test_json_enums ()
 
   tune_params params;
 
-  aarch64_load_tuning_params_from_json_string (test_json, schema_json, &params);
+  aarch64_load_tuning_params_from_json_string
+    ("test.json", test_json, schema_json, &params);
 
   ASSERT_EQ (params.autoprefetcher_model, tune_params::AUTOPREFETCHER_OFF);
   ASSERT_EQ (params.ldp_policy_model, AARCH64_LDP_STP_POLICY_NEVER);

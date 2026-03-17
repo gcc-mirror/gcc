@@ -1,5 +1,8 @@
 // { dg-additional-options "-w" }
 /* { dg-output "Foo A < B\r?\nFoo B < C\r?\nFoo C == C\r?\nBar x < y\r?\nBarFull s1 < s2\r?\n" } */
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(intrinsics, lang_items)]
 

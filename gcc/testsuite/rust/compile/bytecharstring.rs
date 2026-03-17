@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main ()
 {
   let _bc = b'\x80';

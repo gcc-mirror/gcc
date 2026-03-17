@@ -745,14 +745,12 @@ bpf_output_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
    bpf.md.  */
 
 const char *
-bpf_output_call (rtx target)
+bpf_output_call (const char *templ, rtx *operands, int target_index)
 {
-  rtx xops[1];
-
+  rtx target = operands[target_index];
   switch (GET_CODE (target))
     {
     case CONST_INT:
-      output_asm_insn ("call\t%0", &target);
       break;
     case SYMBOL_REF:
       {
@@ -765,26 +763,21 @@ bpf_output_call (rtx target)
 	  {
 	    tree attr_args = TREE_VALUE (attr);
 
-	    xops[0] = GEN_INT (TREE_INT_CST_LOW (TREE_VALUE (attr_args)));
-	    output_asm_insn ("call\t%0", xops);
+	    operands[target_index] =
+	      GEN_INT (TREE_INT_CST_LOW (TREE_VALUE (attr_args)));
 	  }
-	else
-	  output_asm_insn ("call\t%0", &target);
-
 	break;
       }
     default:
-      if (TARGET_XBPF)
-	output_asm_insn ("call\t%0", &target);
-      else
+      if (!TARGET_XBPF)
 	{
 	  error ("indirect call in function, which are not supported by eBPF");
-	  output_asm_insn ("call 0", NULL);
+	  operands[target_index] = GEN_INT (0);
 	}
       break;
     }
 
-  return "";
+  return templ;
 }
 
 const char *
@@ -1144,6 +1137,90 @@ bpf_debug_unwind_info ()
 
 #undef TARGET_DEBUG_UNWIND_INFO
 #define TARGET_DEBUG_UNWIND_INFO bpf_debug_unwind_info
+
+/* Create a BTF.ext line_info entry.  */
+
+static void
+bpf_output_line_info (FILE *asm_out_file, rtx_insn *insn)
+{
+  static unsigned int line_info_label = 1;
+  static tree cfun_decl = NULL_TREE;
+  static bool func_start_added = false;
+  const char *label = NULL;
+  unsigned int loc = 0;
+  expanded_location exploc = {NULL, 0, 0, NULL, false};
+  static expanded_location prev_exploc = {NULL, 0, 0, NULL, false};
+
+  if(!btf_debuginfo_p () || flag_building_libgcc)
+    return;
+
+  gcc_assert (insn != NULL_RTX);
+
+  if (current_function_decl != cfun_decl
+      && GET_CODE (insn) == NOTE)
+    {
+      label = current_function_func_begin_label;
+      loc = DECL_SOURCE_LOCATION (current_function_decl);
+      exploc = expand_location (loc);
+      func_start_added = true;
+      prev_exploc = exploc;
+    }
+  else
+    {
+      if (GET_CODE (insn) == NOTE)
+	return;
+
+      /* Already added a label for this location.  This might not be fully
+	 accurate but it is better then adding 2 entries on the same location,
+	 which is incompatible with the verifier expectations.  */
+      if (func_start_added == true)
+	{
+	  func_start_added = false;
+	  return;
+	}
+
+
+      if (!INSN_HAS_LOCATION (insn))
+	return;
+
+      exploc = insn_location (insn);
+
+      if (exploc.file == NULL || exploc.line == 0
+	  || (exploc.line == prev_exploc.line
+	      && exploc.column == prev_exploc.column))
+	return;
+
+      prev_exploc = exploc;
+
+      char tmp_label[25];
+      sprintf (tmp_label, "LI%u", line_info_label);
+      ASM_OUTPUT_LABEL (asm_out_file, tmp_label);
+      line_info_label += 1;
+      label = const_cast<char *> (ggc_strdup (tmp_label));
+    }
+
+  cfun_decl = current_function_decl;
+
+  if (exploc.file != NULL && exploc.line != 0)
+    btf_add_line_info_for (label, exploc.file, exploc.line, exploc.column);
+}
+
+
+/* This hook is defined as a way for BPF target to create a label before each
+   emitted instruction and emit line_info information.  This data is later
+   output in .BTF.ext section.
+   This approach expects TARGET_EMIT_BEFORE_INSN to be returning TRUE as
+   this function needs to be called before the instruction is emitted.  Current
+   default behaviour returns TRUE and the hook is left undefined.  */
+
+static void
+bpf_asm_out_unwind_emit (FILE *asm_out_file, rtx_insn *insn)
+{
+  bpf_output_line_info (asm_out_file, insn);
+}
+
+#undef TARGET_ASM_UNWIND_EMIT
+#define TARGET_ASM_UNWIND_EMIT bpf_asm_out_unwind_emit
 
 /* Output assembly directives to assemble data of various sized and
    alignments.  */

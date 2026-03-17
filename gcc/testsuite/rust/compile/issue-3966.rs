@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct S {
     #[cfg_attr()]
     field: u8,

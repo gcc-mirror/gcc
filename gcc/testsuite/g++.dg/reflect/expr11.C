@@ -29,4 +29,21 @@ f ()
     while (^^char != ^^char);
     do {} while (^^char != ^^char);
   }
+
+  if constexpr (true)
+    {
+      auto r = ^^int; // { dg-error "consteval-only variable .r." }
+    }
+  else
+    {
+      auto r = ^^int; // { dg-error "consteval-only variable .r." }
+    }
+  if constexpr (false)
+    {
+      auto r = ^^int; // { dg-error "consteval-only variable .r." }
+    }
+  else
+    {
+      auto r = ^^int; // { dg-error "consteval-only variable .r." }
+    }
 }

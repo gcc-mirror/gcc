@@ -5,47 +5,54 @@
 use iso_fortran_env, only: event_type
 implicit none
 
-type(event_type), save :: var[*]
+type(event_type), save, allocatable, dimension(:) :: events[:]
 integer :: count, stat
 
-count = -42
-call event_query (var, count)
-if (count /= 0) STOP 1
+associate (me => this_image(), np => num_images())
+  allocate(events(np)[*])
 
-stat = 99
-event post (var, stat=stat)
-if (stat /= 0) STOP 2
-call event_query(var, count, stat=stat)
-if (count /= 1 .or. stat /= 0) STOP 3
+  associate(var => events(me))
+    count = -42
+    call event_query (var, count)
+    if (count /= 0) STOP 1
 
-stat = 99
-event post (var[this_image()])
-call event_query(var, count)
-if (count /= 2) STOP 4
+    stat = 99
+    event post (var, stat=stat)
+    if (stat /= 0) STOP 2
+    call event_query(var, count, stat=stat)
+    if (count /= 1 .or. stat /= 0) STOP 3
 
-stat = 99
-event wait (var)
-call event_query(var, count)
-if (count /= 1) STOP 5
+    count = 99
+    event post (var[this_image()])
+    call event_query(var, count)
+    if (count /= 2) STOP 4
 
-stat = 99
-event post (var)
-call event_query(var, count)
-if (count /= 2) STOP 6
+    count = 99
+    event wait (var)
+    call event_query(var, count)
+    if (count /= 1) STOP 5
 
-stat = 99
-event post (var)
-call event_query(var, count)
-if (count /= 3) STOP 7
+    count = 99
+    event post (var)
+    call event_query(var, count)
+    if (count /= 2) STOP 6
 
-stat = 99
-event wait (var, until_count=2)
-call event_query(var, count)
-if (count /= 1) STOP 8
+    count = 99
+    event post (var)
+    call event_query(var, count)
+    if (count /= 3) STOP 7
 
-stat = 99
-event wait (var, stat=stat, until_count=1)
-if (stat /= 0) STOP 9
-call event_query(event=var, stat=stat, count=count)
-if (count /= 0 .or. stat /= 0) STOP 10
+    count = 99
+    event wait (var, until_count=2)
+    call event_query(var, count)
+    if (count /= 1) STOP 8
+   
+    stat = 99
+    event wait (var, stat=stat, until_count=1)
+    if (stat /= 0) STOP 9
+    count = 99
+    call event_query(event=var, stat=stat, count=count)
+    if (count /= 0 .or. stat /= 0) STOP 10
+  end associate
+end associate
 end

@@ -1,4 +1,7 @@
 // { dg-options "-w -O0 -fdump-tree-gimple" }
+#![feature(no_core)]
+#![no_core]
+
 const fn test(mut x: i32) -> i32 {
     loop {
         if x == 10 {

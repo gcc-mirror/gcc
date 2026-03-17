@@ -9877,12 +9877,12 @@
 ;; instead and about the ptest.
 (define_expand "<optab><mode>"
   [(set (pc)
-	(unspec:SVE_I
+	(unspec:SVE_FULL_I
 	  [(if_then_else
 	    (match_operator 0 "aarch64_comparison_operator"
 	      [(match_operand:<VPRED> 1 "register_operand")
-	       (match_operand:SVE_I 2 "register_operand")
-	       (match_operand:SVE_I 3 "aarch64_simd_reg_or_zero")])
+	       (match_operand:SVE_FULL_I 2 "register_operand")
+	       (match_operand:SVE_FULL_I 3 "aarch64_simd_reg_or_zero")])
 	    (label_ref (match_operand 4 ""))
 	    (pc))]
 	 COND_CBRANCH_CMP))]

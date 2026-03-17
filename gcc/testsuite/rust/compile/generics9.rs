@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct Foo<A, B = (A, B)>(A, B);
 // { dg-error "type parameters with a default cannot use forward declared identifiers" "" { target *-*-* } .-1 }
 

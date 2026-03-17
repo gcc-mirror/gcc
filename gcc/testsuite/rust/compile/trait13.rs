@@ -1,4 +1,7 @@
 // Testing multiple supertraits and calling supertrait methods
+#![feature(no_core)]
+#![no_core]
+
 
 struct Foo {
     my_int: u32,

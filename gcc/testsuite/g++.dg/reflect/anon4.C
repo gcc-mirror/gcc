@@ -28,6 +28,6 @@ void test ()
 
   constexpr foo bar1 { .i = 42, .c = 3.14 };
 
-  static_assert (bar1.c == 3.14);
-  static_assert (bar1.[: ^^foo::c :] == 3.14);
+  static_assert (bar1.c == (double) 3.14);
+  static_assert (bar1.[: ^^foo::c :] == (double) 3.14);
 }

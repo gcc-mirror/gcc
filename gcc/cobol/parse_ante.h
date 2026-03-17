@@ -39,11 +39,6 @@
 #include <stack>
 #include <string>
 
-#define MAXLENGTH_FORMATTED_DATE     (10*4)
-#define MAXLENGTH_FORMATTED_TIME     (19*4)
-#define MAXLENGTH_CALENDAR_DATE      (21*4)
-#define MAXLENGTH_FORMATTED_DATETIME (30*4)
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -222,16 +217,6 @@ namcpy(const YYLTYPE& loc, cbl_name_t tgt, const char *src ) {
     return false;
   }
   return true;
-}
-
-cbl_field_t *
-new_alphanumeric( size_t capacity = MAXIMUM_ALPHA_LENGTH,
-		  const cbl_name_t name = nullptr,
-                  cbl_encoding_t encoding = no_encoding_e );
-
-static inline cbl_field_t *
-new_alphanumeric( const cbl_name_t name, cbl_encoding_t encoding = no_encoding_e ) {
-  return new_alphanumeric(MAXIMUM_ALPHA_LENGTH, name, encoding);
 }
 
 static inline cbl_refer_t *
@@ -588,6 +573,8 @@ static bool ast_multiply( arith_t *arith );
 static bool ast_divide( arith_t *arith );
 
 static cbl_field_type_t intrinsic_return_type( int token );
+static cbl_field_t *intrinsic_return_field( int token,
+                                            std::vector<cbl_refer_t> );
 
 template <typename T>
 static T* use_any( list<T>& src, T *tgt) {
@@ -1220,10 +1207,14 @@ struct ffi_args_t {
   void dump() const {
     int i=0;
     for( const auto& arg : elems ) {
-      dbgmsg( "%8d) %-10s %-16s %s", i++,
-              cbl_ffi_crv_str(arg.crv),
-              3 + cbl_field_type_str(arg.refer.field->type),
-              arg.refer.field->pretty_name() );
+      if( arg.refer.field ) {
+        dbgmsg( "%8d) %-10s %-16s %s", i++,
+                cbl_ffi_crv_str(arg.crv),
+                3 + cbl_field_type_str(arg.refer.field->type),
+                arg.refer.field->pretty_name() );
+      } else {
+        dbgmsg( "%8d) %-10s [omitted]", i++, cbl_ffi_crv_str(arg.crv) );
+      }
     }
   }
 
@@ -3708,6 +3699,14 @@ static void ast_first_statement( const YYLTYPE& loc ) {
   if( current.is_first_statement( loc ) ) {
     parser_first_statement(loc.first_line);
   }
+}
+
+template <typename V>
+bool is_among( V value, const std::list<V>& container ) {
+  return std::any_of( container.begin(), container.end(),
+                      [value]( const auto& elem ) {
+                        return value == elem;
+                      } );
 }
 
 #pragma GCC diagnostic push

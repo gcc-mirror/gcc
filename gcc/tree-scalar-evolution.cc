@@ -880,9 +880,23 @@ scev_dfs::add_to_evolution (tree chrec_before, enum tree_code code,
     }
 
   if (code == MINUS_EXPR)
-    to_add = chrec_fold_multiply (type, to_add, SCALAR_FLOAT_TYPE_P (type)
-				  ? build_real (type, dconstm1)
-				  : build_int_cst_type (type, -1));
+    {
+      if (INTEGRAL_TYPE_P (type)
+	  && TYPE_OVERFLOW_UNDEFINED (type)
+	  && !expr_not_equal_to (to_add,
+				 wi::to_wide (TYPE_MIN_VALUE (type))))
+	{
+	  tree utype = unsigned_type_for (type);
+	  to_add = chrec_convert_rhs (utype, to_add);
+	  to_add = chrec_fold_multiply (utype, to_add,
+					build_int_cst_type (utype, -1));
+	  to_add = chrec_convert_rhs (type, to_add);
+	}
+      else
+	to_add = chrec_fold_multiply (type, to_add, SCALAR_FLOAT_TYPE_P (type)
+				      ? build_real (type, dconstm1)
+				      : build_int_cst_type (type, -1));
+    }
 
   res = add_to_evolution_1 (chrec_before, to_add, at_stmt);
 

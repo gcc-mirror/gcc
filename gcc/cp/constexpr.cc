@@ -2350,7 +2350,7 @@ cxx_eval_constexpr_diag (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
   tree args[3];
   for (int i = 0; i < 3; ++i)
     {
-      tree arg = CALL_EXPR_ARG (t, i);
+      tree arg = convert_from_reference (CALL_EXPR_ARG (t, i));
       arg = cxx_eval_constant_expression (ctx, arg,
 					  (i == 0
 					   || POINTER_TYPE_P (TREE_TYPE (arg)))
@@ -3107,7 +3107,8 @@ diagnose_failing_condition (tree bad, location_t cloc, bool show_expr_p,
   else if (maybe_diagnose_standard_trait (cloc, bad))
     ;
   else if (COMPARISON_CLASS_P (bad)
-	   && ARITHMETIC_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0))))
+	   && (ARITHMETIC_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0)))
+	       || REFLECTION_TYPE_P (TREE_TYPE (TREE_OPERAND (bad, 0)))))
     {
       tree op0 = fold_operand (TREE_OPERAND (bad, 0), ctx);
       tree op1 = fold_operand (TREE_OPERAND (bad, 1), ctx);
@@ -9485,11 +9486,13 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
 	/* Pass vc_prvalue because this indicates
 	   initialization of a temporary.  */
-	r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1), vc_prvalue,
-					  non_constant_p, overflow_p,
-					  jump_target);
+	r = cxx_eval_constant_expression (ctx, TARGET_EXPR_INITIAL (t),
+					  vc_prvalue, non_constant_p,
+					  overflow_p, jump_target);
 	if (*non_constant_p)
 	  break;
+	if (ctx->save_exprs)
+	  ctx->save_exprs->safe_push (slot);
 	if (*jump_target)
 	  return NULL_TREE;
 	if (!is_complex)
@@ -9508,8 +9511,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    if (CLEANUP_EH_ONLY (t))
 	      ctx->global->cleanups->safe_push (NULL_TREE);
 	  }
-	if (ctx->save_exprs)
-	  ctx->save_exprs->safe_push (slot);
 	if (lval)
 	  return slot;
 	if (is_complex)

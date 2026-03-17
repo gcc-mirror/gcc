@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 
 pub struct NotI8(i8);
 

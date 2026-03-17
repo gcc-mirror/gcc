@@ -1,4 +1,4 @@
-/* Check that we speculatively devirutalize call to FOO to B::foo becuase
+/* Check that we speculatively devirtualize call to FOO to B::foo becuase
    A is noreturn.  */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-ipa-devirt-details -fdump-tree-optimized"  } */

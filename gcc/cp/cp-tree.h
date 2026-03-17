@@ -591,6 +591,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    7: DECL_THUNK_P (in a member FUNCTION_DECL)
       DECL_NORMAL_CAPTURE_P (in FIELD_DECL)
       DECL_DECLARED_CONSTINIT_P (in VAR_DECL)
+      TYPE_DECL_FOR_LINKAGE_PURPOSES_P (in TYPE_DECL)
    8: DECL_DECLARED_CONSTEXPR_P (in VAR_DECL, FUNCTION_DECL)
 
    Usage of language-independent fields in a language-dependent manner:
@@ -4000,6 +4001,20 @@ struct GTY(()) lang_decl {
    && TREE_CODE (TYPE_NAME (NODE)) == TYPE_DECL	\
    && TYPE_DECL_ALIAS_P (TYPE_NAME (NODE)))
 
+/* Nonzero for typedef name for linkage purposes.  For -freflection
+   set also on the originally unnamed TYPE_DECL.  */
+#define TYPE_DECL_FOR_LINKAGE_PURPOSES_P(NODE) \
+  DECL_LANG_FLAG_7 (TYPE_DECL_CHECK (NODE))
+
+/* Nonzero for TYPE_DECL originally with IDENTIFIER_ANON_P DECL_NAME
+   later on named by a typedef name for linkage purposes in the
+   -freflection case (otherwise the TYPE_DECL keeps IDENTIFIER_ANON_P
+   DECL_NAME).  */
+#define TYPE_DECL_WAS_UNNAMED(NODE) \
+  (TREE_CODE (NODE) == TYPE_DECL \
+   && TYPE_DECL_FOR_LINKAGE_PURPOSES_P (NODE) \
+   && DECL_IMPLICIT_TYPEDEF_P (NODE))
+
 /* If non-NULL for a VAR_DECL, FUNCTION_DECL, TYPE_DECL, TEMPLATE_DECL,
    or CONCEPT_DECL, the entity is either a template specialization (if
    DECL_USE_TEMPLATE is nonzero) or the abstract instance of the
@@ -5372,10 +5387,13 @@ get_vec_init_expr (tree t)
 
 /* True if TYPE is an unnamed structured type with a typedef for
    linkage purposes.  In that case TYPE_NAME and TYPE_STUB_DECL of the
-   MAIN-VARIANT are different.  */
+   MAIN-VARIANT are different or TYPE_DECL_WAS_UNNAMED
+   is true for the TYPE_NAME.  */
 #define TYPE_WAS_UNNAMED(NODE)				\
   (TYPE_NAME (TYPE_MAIN_VARIANT (NODE))			\
-   != TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE)))
+   != TYPE_STUB_DECL (TYPE_MAIN_VARIANT (NODE))		\
+   || TYPE_DECL_WAS_UNNAMED		\
+	(TYPE_NAME (TYPE_MAIN_VARIANT (NODE))))
 
 /* C++: all of these are overloaded!  These apply only to TYPE_DECLs.  */
 
@@ -7861,7 +7879,7 @@ extern bool deduce_inheriting_ctor		(tree);
 extern bool decl_remember_implicit_trigger_p	(tree);
 extern void synthesize_method			(tree);
 extern void maybe_synthesize_method		(tree);
-extern tree lazily_declare_fn			(special_function_kind,
+extern void lazily_declare_fn			(special_function_kind,
 						 tree);
 extern tree skip_artificial_parms_for		(const_tree, tree);
 extern int num_artificial_parms_for		(const_tree);
@@ -7979,6 +7997,7 @@ extern void mangle_module (int m, bool include_partition);
 extern void mangle_module_fini ();
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       binding_slot *bslot);
+extern void lazy_load_pendings (tree ns, tree name);
 extern void lazy_load_pendings (tree decl);
 extern module_state *preprocess_module (module_state *, location_t,
 					bool in_purview,
@@ -9515,8 +9534,8 @@ is_constrained_auto (const_tree t)
 }
 
 /* True if CODE, a tree code, denotes a tree whose operand is not evaluated
-   as per [expr.context], i.e., an operand to sizeof, typeof, decltype, or
-   alignof.  */
+   as per [expr.context], i.e., an operand to sizeof, typeof, decltype,
+   alignof, or the id-expression of a reflect-expression.  */
 
 inline bool
 unevaluated_p (tree_code code)
@@ -9525,7 +9544,8 @@ unevaluated_p (tree_code code)
 	  || code == ALIGNOF_EXPR
 	  || code == SIZEOF_EXPR
 	  || code == NOEXCEPT_EXPR
-	  || code == REQUIRES_EXPR);
+	  || code == REQUIRES_EXPR
+	  || code == REFLECT_EXPR);
 }
 
 /* RAII class to push/pop the access scope for T.  */

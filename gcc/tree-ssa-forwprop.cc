@@ -4080,7 +4080,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 		  == TYPE_PRECISION (TREE_TYPE (type)))
 	      && orig_elem_type[0]
 	      && useless_type_conversion_p (orig_elem_type[0],
-					    TREE_TYPE (type))
+					    TREE_TYPE (TREE_TYPE (orig[0])))
 	      && mode_for_vector (as_a <scalar_mode>
 				  (TYPE_MODE (TREE_TYPE (TREE_TYPE (orig[0])))),
 				  nelts * 2).exists ()
@@ -4122,7 +4122,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 		       == 2 * TYPE_PRECISION (TREE_TYPE (type)))
 		   && orig_elem_type[0]
 		   && useless_type_conversion_p (orig_elem_type[0],
-						 TREE_TYPE (type))
+						 TREE_TYPE (TREE_TYPE (orig[0])))
 		   && mode_for_vector (as_a <scalar_mode>
 				         (TYPE_MODE
 					   (TREE_TYPE (TREE_TYPE (orig[0])))),

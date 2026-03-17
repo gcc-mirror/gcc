@@ -21,12 +21,6 @@
 #ifndef GCC_AVOID_STORE_FORWARDING_H
 #define GCC_AVOID_STORE_FORWARDING_H
 
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
-#include "backend.h"
-#include "rtl.h"
-
 struct store_fwd_info
 {
   /* The store instruction that is a store forwarding candidate.  */

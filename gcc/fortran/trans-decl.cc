@@ -2551,6 +2551,8 @@ build_function_decl (gfc_symbol * sym, bool global)
   gcc_assert (current_function_decl == NULL_TREE
 	      || DECL_FILE_SCOPE_P (current_function_decl)
 	      || (TREE_CODE (DECL_CONTEXT (current_function_decl))
+		  == FUNCTION_DECL)
+	      || (TREE_CODE (DECL_CONTEXT (current_function_decl))
 		  == NAMESPACE_DECL));
 
   type = gfc_get_function_type (sym);
@@ -4312,10 +4314,9 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX ("caf_sync_team")), ". r w w w ", void_type_node,
 	4, pvoid_type_node, pint_type, pchar_type_node, size_type_node);
 
-      gfor_fndecl_caf_team_number
-      	= gfc_build_library_function_decl_with_spec (
-	    get_identifier (PREFIX("caf_team_number")), ". r ",
-      	    integer_type_node, 1, integer_type_node);
+      gfor_fndecl_caf_team_number = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX ("caf_team_number")), ". r ", integer_type_node,
+	1, pvoid_type_node);
 
       gfor_fndecl_caf_image_status = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX ("caf_image_status")), ". r r ",
@@ -4911,6 +4912,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	 && proc_sym != proc_sym->result) ? proc_sym->result : NULL;
 
   if (sym && !sym->attr.allocatable && !sym->attr.pointer
+      && sym->attr.referenced
       && IS_PDT (sym) && !gfc_has_default_initializer (sym->ts.u.derived))
     {
       gfc_init_block (&tmpblock);
@@ -5220,7 +5222,13 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		    || (sym->ts.type == BT_CLASS
 			&& CLASS_DATA (sym)->attr.allocatable)))
 	{
-	  if (!sym->attr.save && flag_max_stack_var_size != 0)
+	  /* Ensure that the initialization block may be generated also for
+	     dummy and result variables when -fno-automatic is specified, which
+	     sets flag_max_stack_var_size=0.  */
+	  if (!sym->attr.save
+	      && (flag_max_stack_var_size != 0
+		  || sym->attr.dummy
+		  || sym->attr.result))
 	    {
 	      tree descriptor = NULL_TREE;
 

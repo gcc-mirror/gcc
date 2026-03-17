@@ -61,5 +61,3 @@ lab2:
 }
 /* { dg-final { scan-assembler-times "hint\t34 // bti c" 1 } } */
 /* { dg-final { scan-assembler-times "hint\t36 // bti j" 12 } } */
-/* { dg-final { scan-assembler "\.section\t\.note\.gnu\.property" { target *-*-linux* } } } */
-/* { dg-final { scan-assembler "\.word\t0x7\t\/\/ GNU_PROPERTY_AARCH64_FEATURE_1_AND \\(BTI, PAC, GCS\\)" { target *-*-linux* } } } */

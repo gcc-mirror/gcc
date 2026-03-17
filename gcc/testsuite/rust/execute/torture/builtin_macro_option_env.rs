@@ -1,5 +1,8 @@
 // { dg-output "VALUE\r*\nVALUE\r*\n" }
 // { dg-set-compiler-env-var ENV_MACRO_TEST "VALUE" }
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(rustc_attrs, lang_items)]
 

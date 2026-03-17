@@ -1,4 +1,7 @@
 // i8 and u8 types should not have the DWARF 'char' encoding.
+#![feature(no_core)]
+#![no_core]
+
 fn main () {
     let x : i8 = 5;
     let y : u8 = 7;

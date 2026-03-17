@@ -1,6 +1,7 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage -pthread -fprofile-update=atomic" } */
 /* { dg-do run } */
 /* { dg-require-effective-target profile_update_atomic } */
+/* { dg-require-effective-target pthread } */
 
 #include <stdint.h>
 #include <pthread.h>

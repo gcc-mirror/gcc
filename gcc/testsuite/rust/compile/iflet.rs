@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn simple_iflet() -> i32 {
     let mut res = 0;
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cpplib-15.1-b20250316\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2025-03-14 22:05+0000\n"
+"POT-Creation-Date: 2026-02-19 21:05+0000\n"
 "PO-Revision-Date: 2025-07-18 09:21+0200\n"
 "Last-Translator: Мирослав Николић <miroslavnikolic@rocketmail.com>\n"
 "Language-Team: Serbian <(nothing)>\n"
@@ -33,257 +33,257 @@ msgstr "iconv_open"
 msgid "no iconv implementation, cannot convert from %s to %s"
 msgstr "нема иконв примене, не могу да претворим из %s у %s"
 
-#: charset.cc:870
+#: charset.cc:874
 #, gcc-internal-format
 msgid "character 0x%lx is not in the basic source character set"
 msgstr "знак 0x%lx није у знаковном скупу основног извора"
 
-#: charset.cc:887 charset.cc:2639
+#: charset.cc:891 charset.cc:2643
 msgid "converting to execution character set"
 msgstr "претварам у знаковни скуп извршавања"
 
-#: charset.cc:893
+#: charset.cc:897
 #, gcc-internal-format
 msgid "character 0x%lx is not unibyte in execution character set"
 msgstr "знак 0x%lx није једног бајта у знаковном скупу извршавања"
 
-#: charset.cc:1549
+#: charset.cc:1553
 msgid "universal character names are only valid in C++ and C99"
 msgstr "називи свеопштег знака су једино исправни у C++ и C99"
 
-#: charset.cc:1553
+#: charset.cc:1557
 #, gcc-internal-format
 msgid "C99%'s universal character names are incompatible with C90"
 msgstr "називи свеопштег знака C99%'s нису сагласни са C90"
 
-#: charset.cc:1556
+#: charset.cc:1560
 #, gcc-internal-format
 msgid "the meaning of %<\\%c%> is different in traditional C"
 msgstr "значење „\\%c“ је другачије у стандардном C-у"
 
-#: charset.cc:1595
+#: charset.cc:1599
 #, gcc-internal-format
 msgid "%<\\N%> not followed by %<{%>"
 msgstr "„\\N“ без пратеће „{“"
 
-#: charset.cc:1625
+#: charset.cc:1629
 msgid "empty named universal character escape sequence; treating it as separate tokens"
 msgstr "празан именован свеопшти низ промене знака; сматрам то одвојеним скупинама"
 
-#: charset.cc:1632
+#: charset.cc:1636
 msgid "empty named universal character escape sequence"
 msgstr "празан именован свеопшти низ промене знака"
 
-#: charset.cc:1639
+#: charset.cc:1643
 msgid "named universal character escapes are only valid in C++23"
 msgstr "именоване свеопште промене знака су исправне само у C++23"
 
-#: charset.cc:1659
+#: charset.cc:1663
 #, gcc-internal-format
 msgid "%<\\N{%.*s}%> is not a valid universal character; treating it as separate tokens"
 msgstr "„\\N{%.*s}“ није исправан свеопшти знак; сматрам то одвојеним скупинама"
 
-#: charset.cc:1665
+#: charset.cc:1669
 #, gcc-internal-format
 msgid "%<\\N{%.*s}%> is not a valid universal character"
 msgstr "„\\N{%.*s}“ није исправан свеопшти знак"
 
-#: charset.cc:1675
+#: charset.cc:1679
 #, gcc-internal-format
 msgid "did you mean %<\\N{%s}%>?"
 msgstr "да ли сте мислили „\\N{%s}“?"
 
-#: charset.cc:1693
+#: charset.cc:1697
 #, gcc-internal-format
 msgid "%<\\N{%> not terminated with %<}%> after %.*s; treating it as separate tokens"
 msgstr "„\\N{“ се не завршава са „}“ после „%.*s“; сматрам то одвојеним скупинама"
 
-#: charset.cc:1702
+#: charset.cc:1706
 #, gcc-internal-format
 msgid "%<\\N{%> not terminated with %<}%> after %.*s"
 msgstr "„\\N{“ се не завршава са „}“ након „%.*s“"
 
-#: charset.cc:1710
+#: charset.cc:1714
 #, gcc-internal-format
 msgid "in %<_cpp_valid_ucn%> but not a UCN"
 msgstr "у „_cpp_valid_ucn“ али није UCN"
 
-#: charset.cc:1753
+#: charset.cc:1757
 msgid "empty delimited escape sequence; treating it as separate tokens"
 msgstr "празан ограничен низ промене; сматрам то одвојеним скупинама"
 
-#: charset.cc:1760 charset.cc:2163 charset.cc:2280
+#: charset.cc:1764 charset.cc:2167 charset.cc:2284
 msgid "empty delimited escape sequence"
 msgstr "празан ограничен низ промене"
 
-#: charset.cc:1769 charset.cc:2172 charset.cc:2289
+#: charset.cc:1773 charset.cc:2176 charset.cc:2293
 msgid "delimited escape sequences are only valid in C++23"
 msgstr "ограничени низови промене су једино исправни у C++23"
 
-#: charset.cc:1774 charset.cc:1779 charset.cc:2177 charset.cc:2182
-#: charset.cc:2294 charset.cc:2299
+#: charset.cc:1778 charset.cc:1783 charset.cc:2181 charset.cc:2186
+#: charset.cc:2298 charset.cc:2303
 msgid "delimited escape sequences are only valid in C2Y"
 msgstr "ограничени низови промене су једино исправни у C2Y"
 
-#: charset.cc:1794
+#: charset.cc:1798
 #, gcc-internal-format
 msgid "%<\\u{%> not terminated with %<}%> after %.*s; treating it as separate tokens"
 msgstr "„\\u{“ се не завршава са „}“ после „%.*s“; сматрам то одвојеним токенима"
 
-#: charset.cc:1806
+#: charset.cc:1810
 #, gcc-internal-format
 msgid "incomplete universal character name %.*s"
 msgstr "непотпун назив свеопштег знака %.*s"
 
-#: charset.cc:1810
+#: charset.cc:1814
 #, gcc-internal-format
 msgid "%<\\u{%> not terminated with %<}%> after %.*s"
 msgstr "„\\u{“ се не завршава са „}“ након „%.*s“"
 
-#: charset.cc:1818
+#: charset.cc:1822
 #, gcc-internal-format
 msgid "%.*s is not a valid universal character"
 msgstr "„%.*s“ није исправан свеопшти знак"
 
-#: charset.cc:1834 charset.cc:1838
+#: charset.cc:1838 charset.cc:1842
 #, gcc-internal-format
 msgid "%.*s is not a valid universal character name before C23"
 msgstr "„%.*s“ није исправан назив свеопштег знака пре C23"
 
-#: charset.cc:1854 lex.cc:2096
+#: charset.cc:1858 lex.cc:2099
 #, gcc-internal-format
 msgid "%<$%> in identifier or number"
 msgstr "„$“ у одреднику или броју"
 
-#: charset.cc:1864
+#: charset.cc:1868
 #, gcc-internal-format
 msgid "universal character %.*s is not valid in an identifier"
 msgstr "свеопшти знак %.*s није исправан у одреднику"
 
-#: charset.cc:1868
+#: charset.cc:1872
 #, gcc-internal-format
 msgid "universal character %.*s is not valid at the start of an identifier"
 msgstr "свеопшти знак %.*s није исправан на почетку одредника"
 
-#: charset.cc:1875
+#: charset.cc:1879
 #, gcc-internal-format
 msgid "%.*s is outside the UCS codespace"
 msgstr "„%.*s“ је ван UCS кодног простора"
 
-#: charset.cc:1919 charset.cc:3072
+#: charset.cc:1923 charset.cc:3180
 msgid "converting UCN to source character set"
 msgstr "претварам UCN у изворни знаковни скуп"
 
-#: charset.cc:1926
+#: charset.cc:1930
 msgid "converting UCN to execution character set"
 msgstr "претварам UCN у извршни знаковни скуп"
 
-#: charset.cc:1990
+#: charset.cc:1994
 #, gcc-internal-format
 msgid "extended character %.*s is not valid in an identifier"
 msgstr "проширени знак „%.*s“ није исправан у одреднику"
 
-#: charset.cc:2007
+#: charset.cc:2011
 #, gcc-internal-format
 msgid "extended character %.*s is not valid at the start of an identifier"
 msgstr "проширени знак „%.*s“ није исправан на почетку одредника"
 
-#: charset.cc:2129
+#: charset.cc:2133
 #, gcc-internal-format
 msgid "the meaning of %<\\x%> is different in traditional C"
 msgstr "значење „\\x“ је другачије у стандардном C-у"
 
-#: charset.cc:2190
+#: charset.cc:2194
 #, gcc-internal-format
 msgid "%<\\x%> used with no following hex digits"
 msgstr "„\\x“ је коришћено са не пратећим хекс цифрама"
 
-#: charset.cc:2196
+#: charset.cc:2200
 #, gcc-internal-format
 msgid "%<\\x{%> not terminated with %<}%> after %.*s"
 msgstr "„\\x{“ се не завршава са „}“ након „%.*s“"
 
-#: charset.cc:2204
+#: charset.cc:2208
 msgid "hex escape sequence out of range"
 msgstr "хекс низ промене је изван опсега"
 
-#: charset.cc:2247
+#: charset.cc:2251
 #, gcc-internal-format
 msgid "%<\\o%> not followed by %<{%>"
 msgstr "за „\\o“ не следи „{“"
 
-#: charset.cc:2305
+#: charset.cc:2309
 #, gcc-internal-format
 msgid "%<\\o{%> not terminated with %<}%> after %.*s"
 msgstr "„\\o{“ се не завршава са „}“ после „%.*s“"
 
-#: charset.cc:2314
+#: charset.cc:2318
 msgid "octal escape sequence out of range"
 msgstr "октални низ промене је изван опсега"
 
-#: charset.cc:2366 charset.cc:2376
+#: charset.cc:2370 charset.cc:2380
 #, gcc-internal-format
 msgid "numeric escape sequence in unevaluated string: %<\\%c%>"
 msgstr "бројевни низ промене низа у непроцењеној ниски: „\\%c“"
 
-#: charset.cc:2404
+#: charset.cc:2408
 #, gcc-internal-format
 msgid "the meaning of %<\\a%> is different in traditional C"
 msgstr "значење „\\a“ је другачије у стандардном C-у"
 
-#: charset.cc:2410
+#: charset.cc:2414
 #, gcc-internal-format
 msgid "non-ISO-standard escape sequence, %<\\%c%>"
 msgstr "низ промене не-ИСО-стандарда, „\\%c“"
 
-#: charset.cc:2418
+#: charset.cc:2422
 #, gcc-internal-format
 msgid "unknown escape sequence: %<\\%c%>"
 msgstr "непознат низ промене: „\\%c“"
 
-#: charset.cc:2428
+#: charset.cc:2432
 #, gcc-internal-format
 msgid "unknown escape sequence: %<\\%s%>"
 msgstr "непознат низ промене: „\\%s“"
 
-#: charset.cc:2436
+#: charset.cc:2440
 msgid "converting escape sequence to execution character set"
 msgstr "претварам низ промене у знаковни скуп извршавања"
 
-#: charset.cc:2576
+#: charset.cc:2580
 msgid "missing open quote"
 msgstr "недостаје отворена заграда"
 
-#: charset.cc:2807
+#: charset.cc:2915
 msgid "character not encodable in a single execution character code unit"
 msgstr "знак се не може енкодирати у једној јединици знаковног скупа извршавања"
 
-#: charset.cc:2812
+#: charset.cc:2920
 msgid "at least one character in a multi-character literal not encodable in a single execution character code unit"
 msgstr "барем један знак у вишезнаковном литералу се не може прекодирати у једној јединици знаковног скупа извршавања"
 
-#: charset.cc:2830
+#: charset.cc:2938
 #, gcc-internal-format
 msgid "multi-character literal with %ld characters exceeds %<int%> size of %ld bytes"
 msgstr "више-знаковни литерал са %ld знака премашује „int“ величину од %ld бајта"
 
-#: charset.cc:2834 charset.cc:2929
+#: charset.cc:2942 charset.cc:3037
 msgid "multi-character literal cannot have an encoding prefix"
 msgstr "више-знаковни литерал не може имати префикс прекодирања"
 
-#: charset.cc:2837 charset.cc:2932
+#: charset.cc:2945 charset.cc:3040
 msgid "character not encodable in a single code unit"
 msgstr "знак се не може прекодирати у једној кодној јединици"
 
-#: charset.cc:2841
+#: charset.cc:2949
 msgid "multi-character character constant"
 msgstr "више-знаковна константа знака"
 
-#: charset.cc:2973
+#: charset.cc:3081
 msgid "empty character constant"
 msgstr "празна константа знака"
 
-#: charset.cc:3158
+#: charset.cc:3266
 #, gcc-internal-format, gfc-internal-format
 msgid "failure to convert %s to %s"
 msgstr "неуспех у претварању %s у %s"
@@ -303,13 +303,13 @@ msgstr "посебни симболи на крају „#%s“ директив
 msgid "%<#%s%> is a GCC extension"
 msgstr "„#%s“ је GCC проширење"
 
-#: directives.cc:404 directives.cc:2686 directives.cc:2725
+#: directives.cc:404 directives.cc:2716 directives.cc:2755
 #, gcc-internal-format
 msgid "%<#%s%> before C++23 is a GCC extension"
 msgstr "„#%s“ пре C++23 је GCC проширење"
 
-#: directives.cc:409 directives.cc:415 directives.cc:1374 directives.cc:2690
-#: directives.cc:2730
+#: directives.cc:409 directives.cc:415 directives.cc:1404 directives.cc:2720
+#: directives.cc:2760
 #, gcc-internal-format
 msgid "%<#%s%> before C23 is a GCC extension"
 msgstr "„#%s“ пре C23 је GCC проширење"
@@ -371,290 +371,296 @@ msgstr "није дат назив макроа у „#%s“ директиви"
 msgid "macro names must be identifiers"
 msgstr "називи макроа морају бити одредници"
 
-#: directives.cc:743 directives.cc:747
+#: directives.cc:752 directives.cc:755
+#, fuzzy, gcc-internal-format
+#| msgid "undefining %qs"
+msgid "undefining keyword %qs"
+msgstr "неодређујем „%qs“"
+
+#: directives.cc:767 directives.cc:772 directives.cc:784
 #, gcc-internal-format
 msgid "undefining %qs"
 msgstr "неодређујем „%qs“"
 
-#: directives.cc:805
+#: directives.cc:835
 #, gcc-internal-format
 msgid "missing terminating %<>%> character"
 msgstr "недостаје завршни знак „>“"
 
-#: directives.cc:865
+#: directives.cc:895
 #, gcc-internal-format
 msgid "%<#%s%> expects %<\"FILENAME\"%> or %<<FILENAME>%>"
 msgstr "„#%s“ очекује „НАЗИВДАТОТЕКЕ“ или „НАЗИВДАТОТЕКЕ“"
 
-#: directives.cc:911 directives.cc:1391
+#: directives.cc:941 directives.cc:1421
 #, gcc-internal-format, gfc-internal-format
 msgid "empty filename in #%s"
 msgstr "празан назив датотеке у „#%s“"
 
-#: directives.cc:920
+#: directives.cc:950
 #, gcc-internal-format
 msgid "%<#include%> nested depth %u exceeds maximum of %u (use %<-fmax-include-depth=DEPTH%> to increase the maximum)"
 msgstr "„#include“ дубоко угнеждено %u превазилази максимум од %u (користите „-fmax-include-depth=ДУБИНА“ да повећате максимум)"
 
-#: directives.cc:965
+#: directives.cc:995
 #, gcc-internal-format
 msgid "%<#include_next%> in primary source file"
 msgstr "„#include_next“ у примарној изворној датотеци"
 
-#: directives.cc:1037 directives.cc:1059 directives.cc:1062 directives.cc:1065
+#: directives.cc:1067 directives.cc:1089 directives.cc:1092 directives.cc:1095
 #, gcc-internal-format, gfc-internal-format
 msgid "unbalanced '%c'"
 msgstr "неуравнотежено „%c“"
 
-#: directives.cc:1120 directives.cc:1311
+#: directives.cc:1150 directives.cc:1341
 #, gcc-internal-format
 msgid "expected %<)%>"
 msgstr "очекивах „)“"
 
-#: directives.cc:1126 directives.cc:1177
+#: directives.cc:1156 directives.cc:1207
 msgid "expected parameter name"
 msgstr "очекивах назив параметра"
 
-#: directives.cc:1137
+#: directives.cc:1167
 #, gcc-internal-format
 msgid "%<gnu::base64%> parameter conflicts with %<limit%> or %<gnu::offset%> parameters"
 msgstr "„gnu::base64“ параметар се сукобљава са „limit“ или „gnu::offset“ параметром"
 
-#: directives.cc:1147
+#: directives.cc:1177
 #, gcc-internal-format
 msgid "%<gnu::base64%> parameter required in preprocessed source"
 msgstr "„gnu::base64“ параметар је захтеван у преобрађеном извору"
 
-#: directives.cc:1168
+#: directives.cc:1198
 #, gcc-internal-format
 msgid "expected %<:%>"
 msgstr "очекивах „:“"
 
-#: directives.cc:1235
+#: directives.cc:1265
 #, gcc-internal-format
 msgid "duplicate embed parameter '%.*s%s%.*s'"
 msgstr "двоструки угнеждени параметар „%.*s%s%.*s“"
 
-#: directives.cc:1247
+#: directives.cc:1277
 #, gcc-internal-format
 msgid "unknown embed parameter '%.*s%s%.*s'"
 msgstr "непознат угнеждени параметар „%.*s%s%.*s“"
 
-#: directives.cc:1256
+#: directives.cc:1286
 #, gcc-internal-format
 msgid "expected %<(%>"
 msgstr "очекивах „(“"
 
-#: directives.cc:1269
+#: directives.cc:1299
 #, gcc-internal-format
 msgid "too large %<gnu::offset%> argument"
 msgstr "превелик „gnu::offset“ аргумент"
 
-#: directives.cc:1316
+#: directives.cc:1346
 msgid "expected character string literal"
 msgstr "очекивах словност ниске знака"
 
-#: directives.cc:1361
+#: directives.cc:1391
 #, gcc-internal-format
 msgid "%<#embed%> not supported in traditional C"
 msgstr "„#embed“ није подржано у стандардном C-у"
 
-#: directives.cc:1370
+#: directives.cc:1400
 #, gcc-internal-format
 msgid "%<#%s%> before C++26 is a GCC extension"
 msgstr "„#%s“ пре C++26 је GCC проширење"
 
-#: directives.cc:1379
+#: directives.cc:1409
 #, gcc-internal-format
 msgid "%<#%s%> is a C23 feature"
 msgstr "„#%s“ је C23 функционалност"
 
-#: directives.cc:1436
+#: directives.cc:1466
 #, gcc-internal-format
 msgid "invalid flag %qs in line directive"
 msgstr "неисправна заставица „%qs“ у директиви реда"
 
-#: directives.cc:1504
+#: directives.cc:1534
 #, gcc-internal-format
 msgid "unexpected end of file after %<#line%>"
 msgstr "неочекивани крај датотеке након „#line“"
 
-#: directives.cc:1507
+#: directives.cc:1537
 #, gcc-internal-format
 msgid "%qs after %<#line%> is not a positive integer"
 msgstr "„%qs“ након „#line“ није позитиван цео број"
 
-#: directives.cc:1513 directives.cc:1516
+#: directives.cc:1543 directives.cc:1546
 msgid "line number out of range"
 msgstr "број реда је ван опсега"
 
-#: directives.cc:1529 directives.cc:1610
+#: directives.cc:1559 directives.cc:1640
 #, gcc-internal-format
 msgid "%qs is not a valid filename"
 msgstr "„%qs“ није исправан назив датотеке"
 
-#: directives.cc:1570
+#: directives.cc:1600
 #, gcc-internal-format
 msgid "%qs after %<#%> is not a positive integer"
 msgstr "„%qs“ након „#“ није позитиван цео број"
 
-#: directives.cc:1637
+#: directives.cc:1667
 #, gcc-internal-format
 msgid "file %qs linemarker ignored due to incorrect nesting"
 msgstr "„%qs“ означавач реда датотеке је занемарен због нетачног угнежђавања"
 
-#: directives.cc:1715 directives.cc:1717 directives.cc:1719 directives.cc:2326
+#: directives.cc:1745 directives.cc:1747 directives.cc:1749 directives.cc:2356
 #, gcc-internal-format, gfc-internal-format
 msgid "%s"
 msgstr "%s"
 
-#: directives.cc:1743
+#: directives.cc:1773
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid #%s directive"
 msgstr "неисправна „#%s“ директива"
 
-#: directives.cc:1806
+#: directives.cc:1836
 #, gcc-internal-format
 msgid "registering pragmas in namespace %qs with mismatched name expansion"
 msgstr "бележим прагме у простору назива „%qs“ са неодговарајућим ширењем назива"
 
-#: directives.cc:1815
+#: directives.cc:1845
 #, gcc-internal-format
 msgid "registering pragma %qs with name expansion and no namespace"
 msgstr "бележим прагму „%qs“ са ширењем назива и без простора назива"
 
-#: directives.cc:1833
+#: directives.cc:1863
 #, gcc-internal-format
 msgid "registering %qs as both a pragma and a pragma namespace"
 msgstr "бележим „%qs“ и као прагму и као простор назива прагме"
 
-#: directives.cc:1836
+#: directives.cc:1866
 #, gcc-internal-format
 msgid "%<#pragma %s %s%> is already registered"
 msgstr "„#pragma %s %s“ је већ забележено"
 
-#: directives.cc:1839
+#: directives.cc:1869
 #, gcc-internal-format
 msgid "%<#pragma %s%> is already registered"
 msgstr "„#pragma %s“ је већ забележено"
 
-#: directives.cc:1870
+#: directives.cc:1900
 msgid "registering pragma with NULL handler"
 msgstr "бележим прагму са НИШТАВНИМ руковаоцем"
 
-#: directives.cc:2088
+#: directives.cc:2118
 #, gcc-internal-format
 msgid "%<#pragma once%> in main file"
 msgstr "„#pragma once“ у главној датотеци"
 
-#: directives.cc:2158
+#: directives.cc:2188
 #, gcc-internal-format
 msgid "invalid %<#pragma %s_macro%> directive"
 msgstr "неисправна „#pragma %s_macro“ директива"
 
-#: directives.cc:2237
+#: directives.cc:2267
 #, gcc-internal-format
 msgid "invalid %<#pragma GCC poison%> directive"
 msgstr "неисправна „#pragma GCC poison“ директива"
 
-#: directives.cc:2246
+#: directives.cc:2276
 #, gcc-internal-format
 msgid "poisoning existing macro %qs"
 msgstr "трујем постојећи макро „%qs“"
 
-#: directives.cc:2268
+#: directives.cc:2298
 #, gcc-internal-format
 msgid "%<#pragma system_header%> ignored outside include file"
 msgstr "„#pragma system_header“ је занемарено изван датотеке укључивања"
 
-#: directives.cc:2293
+#: directives.cc:2323
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot find source file %s"
 msgstr "не могу да пронађем изворну датотеку „%s“"
 
-#: directives.cc:2297
+#: directives.cc:2327
 #, gcc-internal-format, gfc-internal-format
 msgid "current file is older than %s"
 msgstr "текућа датотека је старија од %s"
 
-#: directives.cc:2321
+#: directives.cc:2351
 #, gcc-internal-format
 msgid "invalid %<#pragma GCC %s%> directive"
 msgstr "неисправна „#pragma GCC %s“ директива"
 
-#: directives.cc:2541
+#: directives.cc:2571
 #, gcc-internal-format
 msgid "%<_Pragma%> takes a parenthesized string literal"
 msgstr "„_Pragma“ узима словност ниске затворене заградом"
 
-#: directives.cc:2624
+#: directives.cc:2654
 #, gcc-internal-format
 msgid "%<#else%> without %<#if%>"
 msgstr "„#else“ без „#if“"
 
-#: directives.cc:2629
+#: directives.cc:2659
 #, gcc-internal-format
 msgid "%<#else%> after %<#else%>"
 msgstr "„#else“ након „#else“"
 
-#: directives.cc:2631 directives.cc:2666
+#: directives.cc:2661 directives.cc:2696
 msgid "the conditional began here"
 msgstr "условљеност почиње овде"
 
-#: directives.cc:2657
+#: directives.cc:2687
 #, gcc-internal-format
 msgid "%<#%s%> without %<#if%>"
 msgstr "„#%s“ без „#if“"
 
-#: directives.cc:2663
+#: directives.cc:2693
 #, gcc-internal-format
 msgid "%<#%s%> after %<#else%>"
 msgstr "„#%s“ након „#else“"
 
-#: directives.cc:2767
+#: directives.cc:2797
 #, gcc-internal-format
 msgid "%<#endif%> without %<#if%>"
 msgstr "„#endif“ без „#if“"
 
-#: directives.cc:2852
+#: directives.cc:2882
 #, gcc-internal-format
 msgid "missing %<(%> after predicate"
 msgstr "недостаје „(“ након предиката"
 
-#: directives.cc:2870
+#: directives.cc:2900
 #, gcc-internal-format
 msgid "missing %<)%> to complete answer"
 msgstr "недостаје „)“ да доврши одговор"
 
-#: directives.cc:2882
+#: directives.cc:2912
 #, gcc-internal-format
 msgid "predicate%'s answer is empty"
 msgstr "„predicate%'s“ одговор је празан"
 
-#: directives.cc:2912
+#: directives.cc:2942
 msgid "assertion without predicate"
 msgstr "тврдња без предиката"
 
-#: directives.cc:2915
+#: directives.cc:2945
 msgid "predicate must be an identifier"
 msgstr "предикат мора бити одредник"
 
-#: directives.cc:2997
+#: directives.cc:3027
 #, gcc-internal-format
 msgid "%qs re-asserted"
 msgstr "„%qs“ је поново утврђено"
 
-#: directives.cc:3305
+#: directives.cc:3341
 #, gcc-internal-format, gfc-internal-format
 msgid "unterminated #%s"
 msgstr "неокончано #%s"
 
-#: errors.cc:343 errors.cc:358
+#: errors.cc:353 errors.cc:368
 #, gcc-internal-format, gfc-internal-format
 msgid "%s: %s"
 msgstr "%s: %s"
 
-#: errors.cc:356
+#: errors.cc:366
 msgid "stdout"
 msgstr "стдизлаз"
 
@@ -823,160 +829,160 @@ msgstr "тврдње су GCC проширења"
 msgid "assertions are a deprecated extension"
 msgstr "тврдње су застарела проширења"
 
-#: expr.cc:1619
+#: expr.cc:1629
 #, gcc-internal-format, gfc-internal-format
 msgid "unbalanced stack in %s"
 msgstr "неуравнотежен стек у %s"
 
-#: expr.cc:1633
+#: expr.cc:1643
 msgid "negative embed parameter operand"
 msgstr "негативан операнд угнежденог параметра"
 
-#: expr.cc:1639
+#: expr.cc:1649
 msgid "too large embed parameter operand"
 msgstr "превелик операнд угнежденог параметра"
 
-#: expr.cc:1658
+#: expr.cc:1668
 #, gcc-internal-format, gfc-internal-format
 msgid "impossible operator '%u'"
 msgstr "немогућ оператор у „%u“"
 
-#: expr.cc:1759
+#: expr.cc:1769
 #, gcc-internal-format
 msgid "missing %<)%> in expression"
 msgstr "недостаје „)“ у изразу"
 
-#: expr.cc:1788
+#: expr.cc:1798
 #, gcc-internal-format
 msgid "%<?%> without following %<:%>"
 msgstr "„?“ без пратеће „:“"
 
-#: expr.cc:1798
+#: expr.cc:1808
 msgid "integer overflow in preprocessor expression"
 msgstr "прекорачење целог броја у изразу претпроцесора"
 
-#: expr.cc:1803
+#: expr.cc:1813
 #, gcc-internal-format
 msgid "missing %<(%> in expression"
 msgstr "недостаје „(“ у изразу"
 
-#: expr.cc:1835
+#: expr.cc:1845
 #, gcc-internal-format
 msgid "the left operand of %qs changes sign when promoted"
 msgstr "леви операнд за „%qs“ мења знак када је претворен"
 
-#: expr.cc:1840
+#: expr.cc:1850
 #, gcc-internal-format
 msgid "the right operand of %qs changes sign when promoted"
 msgstr "десни операнд за „%qs“ мења знак када је претворен"
 
-#: expr.cc:2099
+#: expr.cc:2127
 msgid "traditional C rejects the unary plus operator"
 msgstr "стандардни C одбацује унарни плус оператор"
 
-#: expr.cc:2197
+#: expr.cc:2227
 #, gcc-internal-format, gfc-internal-format
 msgid "comma operator in operand of #%s"
 msgstr "оператор зареза у операнду „#%s“"
 
-#: expr.cc:2335
+#: expr.cc:2365
 #, gcc-internal-format, gfc-internal-format
 msgid "division by zero in #%s"
 msgstr "дељење нулом у „#%s“"
 
-#: files.cc:530
+#: files.cc:531
 #, gcc-internal-format
 msgid "NULL directory in %<find_file%>"
 msgstr "НИШТА директоријум у „find_file“"
 
-#: files.cc:603
+#: files.cc:604
 msgid "one or more PCH files were found, but they were invalid"
 msgstr "једна или више PCH датотека је пронађено, али су неисправне"
 
-#: files.cc:607
+#: files.cc:608
 #, gcc-internal-format
 msgid "use %<-Winvalid-pch%> for more information"
 msgstr "користите „-Winvalid-pch“ за више података"
 
-#: files.cc:737 files.cc:1661
+#: files.cc:738 files.cc:1695
 #, gcc-internal-format, gfc-internal-format
 msgid "%s is a block device"
 msgstr "%s је блок уређај"
 
-#: files.cc:756 files.cc:1261 files.cc:1287 files.cc:1692 files.cc:1762
+#: files.cc:757 files.cc:1295 files.cc:1321 files.cc:1726 files.cc:1796
 #, gcc-internal-format, gfc-internal-format
 msgid "%s is too large"
 msgstr "%s је превелико"
 
-#: files.cc:796 files.cc:1783
+#: files.cc:797 files.cc:1817
 #, gcc-internal-format, gfc-internal-format
 msgid "%s is shorter than expected"
 msgstr "%s је краће од очекиваног"
 
-#: files.cc:1120
+#: files.cc:1124
 #, gcc-internal-format, gfc-internal-format
 msgid "no include path in which to search for %s"
 msgstr "нема путање укључивања у којој потражити „%s“"
 
-#: files.cc:1455
+#: files.cc:1489
 #, gcc-internal-format
 msgid "%<gnu::base64%> parameter can be only used with %<\".\"%>"
 msgstr "„gnu::base64“ параметар се може користити само са „.“"
 
-#: files.cc:1472
+#: files.cc:1506
 #, gcc-internal-format
 msgid "%<gnu::base64%> argument not valid base64 encoded string"
 msgstr "„gnu::base64“ аргумент није исправна шифрована ниска основе64"
 
-#: files.cc:2228
+#: files.cc:2262
 msgid "Multiple include guards may be useful for:\n"
 msgstr "Више чувара укључивања може бити корисно за:\n"
 
-#: files.cc:2306
+#: files.cc:2340
 #, gcc-internal-format
 msgid "header guard %qs followed by %<#define%> of a different macro"
 msgstr "за чуварем заглавља „%qs“ следи „#define“ другог макроа"
 
-#: files.cc:2310
+#: files.cc:2344
 #, gcc-internal-format
 msgid "%qs is defined here; did you mean %qs?"
 msgstr "„%qs“ је дефинисано овде; да ли сте мислили „%qs“?"
 
-#: init.cc:676
+#: init.cc:687
 #, gcc-internal-format
 msgid "%<cppchar_t%> must be an unsigned type"
 msgstr "„cppchar_t“ мора бити неозначена врста"
 
-#: init.cc:680
+#: init.cc:691
 #, gcc-internal-format, gfc-internal-format
 msgid "preprocessor arithmetic has maximum precision of %lu bits; target requires %lu bits"
 msgstr "аритметика претпроцесора има највећу тачност од %lu бита; мета затева %lu бита"
 
-#: init.cc:687
+#: init.cc:698
 #, gcc-internal-format
 msgid "CPP arithmetic must be at least as precise as a target %<int%>"
 msgstr "CPP аритметика мора бити тачна барем колико и циљни „int“"
 
-#: init.cc:691
+#: init.cc:702
 #, gcc-internal-format
 msgid "target %<char%> is less than 8 bits wide"
 msgstr "циљни „char“ је дужи мање од 8 бита"
 
-#: init.cc:695
+#: init.cc:706
 #, gcc-internal-format
 msgid "target %<wchar_t%> is narrower than target %<char%>"
 msgstr "циљни „wchar_t“ је ужи од циљног „char“"
 
-#: init.cc:699
+#: init.cc:710
 #, gcc-internal-format
 msgid "target %<int%> is narrower than target %<char%>"
 msgstr "циљни „int“ је ужи од циљног „char“"
 
-#: init.cc:704
+#: init.cc:715
 msgid "CPP half-integer narrower than CPP character"
 msgstr "CPP полуцео број је ужи од CPP знака"
 
-#: init.cc:708
+#: init.cc:719
 #, gcc-internal-format, gfc-internal-format
 msgid "CPP on this host cannot handle wide character constants over %lu bits, but the target requires %lu bits"
 msgstr "CPP на овом рачунару не може да рукује дуге константе знака преко %lu бита, али мета захтева %lu бита"
@@ -1023,214 +1029,214 @@ msgstr "празнина осим табулатора у водећој пра�
 msgid "whitespace other than spaces and tabs in leading whitespace"
 msgstr "празнина осим размака и табулатора у водећој празнини"
 
-#: lex.cc:1623
+#: lex.cc:1625
 msgid "end of bidirectional context"
 msgstr "крај двосмерног садржаја"
 
-#: lex.cc:1664
+#: lex.cc:1666
 msgid "unpaired UTF-8 bidirectional control characters detected"
 msgstr "неупарени УТФ-8 двосмерни контролни знаци су откривени"
 
-#: lex.cc:1668
+#: lex.cc:1670
 msgid "unpaired UTF-8 bidirectional control character detected"
 msgstr "неупарени УТФ-8 двосмерни контролни знак је откривен"
 
-#: lex.cc:1706
+#: lex.cc:1708
 #, gcc-internal-format
 msgid "UTF-8 vs UCN mismatch when closing a context by %qs"
 msgstr "„UTF-8 vs UCN“ не одговара када затварам контекст са „%qs“"
 
-#: lex.cc:1715
+#: lex.cc:1717
 #, gcc-internal-format
 msgid "%qs is closing an unopened context"
 msgstr "„%qs“ затвара неотворени контекст"
 
-#: lex.cc:1719
+#: lex.cc:1721
 #, gcc-internal-format
 msgid "found problematic Unicode character %qs"
 msgstr "нађох проблематичан Јуникод знак „%qs“"
 
-#: lex.cc:1749 lex.cc:1755
+#: lex.cc:1751 lex.cc:1757
 #, gcc-internal-format
 msgid "invalid UTF-8 character %<<%x>%>"
 msgstr "неисправан УТФ-8 знак „<%x>“"
 
-#: lex.cc:1765 lex.cc:1771
+#: lex.cc:1767 lex.cc:1773
 #, gcc-internal-format
 msgid "invalid UTF-8 character %<<%x><%x>%>"
 msgstr "неисправан УТФ-8 знак „<%x><%x>“"
 
-#: lex.cc:1781 lex.cc:1787
+#: lex.cc:1783 lex.cc:1789
 #, gcc-internal-format
 msgid "invalid UTF-8 character %<<%x><%x><%x>%>"
 msgstr "неисправан УТФ-8 знак „<%x><%x><%x>“"
 
-#: lex.cc:1797 lex.cc:1803
+#: lex.cc:1799 lex.cc:1805
 #, gcc-internal-format
 msgid "invalid UTF-8 character %<<%x><%x><%x><%x>%>"
 msgstr "неисправан УТФ-8 знак „<%x><%x><%x><%x>“"
 
-#: lex.cc:1885
+#: lex.cc:1887
 #, gcc-internal-format
 msgid "%</*%> within comment"
 msgstr "„/*“ унутар напомене"
 
-#: lex.cc:1990
+#: lex.cc:1992
 #, gcc-internal-format, gfc-internal-format
 msgid "%s in preprocessing directive"
 msgstr "%s у директиви претпроцесора"
 
-#: lex.cc:2002
+#: lex.cc:2004
 msgid "null character(s) ignored"
 msgstr "ништаван знак(ци) је занемарен(и)"
 
-#: lex.cc:2063
+#: lex.cc:2066
 #, gcc-internal-format
 msgid "%<%.*s%> is not in NFKC"
 msgstr "„%.*s“ није у NFKC-у"
 
-#: lex.cc:2066 lex.cc:2069
+#: lex.cc:2069 lex.cc:2072
 #, gcc-internal-format
 msgid "%<%.*s%> is not in NFC"
 msgstr "„%.*s“ није у NFC-у"
 
-#: lex.cc:2158
+#: lex.cc:2161
 #, gcc-internal-format
 msgid "%<__VA_OPT__%> is not available until C++20"
 msgstr "„__VA_OPT__“ није доступно све до C++20"
 
-#: lex.cc:2161
+#: lex.cc:2164
 #, gcc-internal-format
 msgid "%<__VA_OPT__%> is not available until C23"
 msgstr "„__VA_OPT__“ није доступно све до C23"
 
-#: lex.cc:2169
+#: lex.cc:2172
 #, gcc-internal-format
 msgid "%<__VA_OPT__%> can only appear in the expansion of a C++20 variadic macro"
 msgstr "„__VA_OPT__“ може само да се појави у ширењу вариадик макроа C++20"
 
-#: lex.cc:2186
+#: lex.cc:2189
 #, gcc-internal-format
 msgid "attempt to use poisoned %qs"
 msgstr "покушај коришћења отрованог „%qs“"
 
-#: lex.cc:2191
+#: lex.cc:2194
 msgid "poisoned here"
 msgstr "отровано овде"
 
-#: lex.cc:2201
+#: lex.cc:2204
 #, gcc-internal-format
 msgid "%<__VA_ARGS__%> can only appear in the expansion of a C++11 variadic macro"
 msgstr "„__VA_ARGS__“ може само да се појави у ширењу вариадик макроа C++11"
 
-#: lex.cc:2205
+#: lex.cc:2208
 #, gcc-internal-format
 msgid "%<__VA_ARGS__%> can only appear in the expansion of a C99 variadic macro"
 msgstr "„__VA_ARGS__“ може само да се појави у ширењу вариадик макроа C99"
 
-#: lex.cc:2217
+#: lex.cc:2220
 #, gcc-internal-format
 msgid "identifier %qs is a special operator name in C++"
 msgstr "одредник „%qs“ је назив посебног оператора у C++-у"
 
-#: lex.cc:2353
+#: lex.cc:2356
 msgid "adjacent digit separators"
 msgstr "блиски раздвојници цифре"
 
-#: lex.cc:2502
+#: lex.cc:2505
 msgid "invalid suffix on literal; C++11 requires a space between literal and string macro"
 msgstr "неисправан суфикс у словности; C++11 захтева размак између словности и макроа ниске"
 
-#: lex.cc:2723
+#: lex.cc:2727
 msgid "raw string delimiter longer than 16 characters"
 msgstr "граничник сирове ниске је дужи од 16 знака"
 
-#: lex.cc:2727
+#: lex.cc:2731
 msgid "invalid new-line in raw string delimiter"
 msgstr "неисправан нови ред у граничнику сирове ниске"
 
-#: lex.cc:2731 lex.cc:5671
+#: lex.cc:2735 lex.cc:5709
 #, gcc-internal-format, gfc-internal-format
 msgid "invalid character '%c' in raw string delimiter"
 msgstr "неисправан знак „%c“ у граничнику сирове ниске"
 
-#: lex.cc:2770 lex.cc:2793
+#: lex.cc:2774 lex.cc:2797
 msgid "unterminated raw string"
 msgstr "неокончана сирова ниска"
 
-#: lex.cc:2950
+#: lex.cc:2954
 msgid "null character(s) preserved in literal"
 msgstr "ништаван знак је причуван у словности"
 
-#: lex.cc:2953
+#: lex.cc:2957
 #, gcc-internal-format, gfc-internal-format
 msgid "missing terminating %c character"
 msgstr "недостаје завршни знак „%c“"
 
-#: lex.cc:2986
+#: lex.cc:2990
 msgid "C++11 requires a space between string literal and macro"
 msgstr "C++11 захтева размак између словности и макроа ниске"
 
-#: lex.cc:3579
+#: lex.cc:3584
 msgid "module control-line cannot be in included file"
 msgstr "контролни ред модула не може бити у укљученој датотеци"
 
-#: lex.cc:3593
+#: lex.cc:3598
 #, gcc-internal-format
 msgid "module control-line %qs cannot be an object-like macro"
 msgstr "контролни ред модула „%qs“ не може бити макро налик објекту"
 
-#: lex.cc:3631
+#: lex.cc:3636
 #, gcc-internal-format
 msgid "module name %qs cannot be an object-like macro"
 msgstr "контролни ред модула „%qs“ не може бити макро налик објекту"
 
-#: lex.cc:3637
+#: lex.cc:3642
 #, gcc-internal-format
 msgid "module partition %qs cannot be an object-like macro"
 msgstr "партиција модула „%qs“ не може бити макро налик објекту"
 
-#: lex.cc:3658
+#: lex.cc:3663
 #, gcc-internal-format
 msgid "module name followed by %<(%>"
 msgstr "за називом модула следи „(“"
 
-#: lex.cc:3662
+#: lex.cc:3667
 #, gcc-internal-format
 msgid "module partition followed by %<(%>"
 msgstr "за партицијом модула следи „(“"
 
-#: lex.cc:4071 lex.cc:5504 traditional.cc:174
+#: lex.cc:4073 lex.cc:5542 traditional.cc:174
 msgid "unterminated comment"
 msgstr "неокончана напомена"
 
-#: lex.cc:4085 lex.cc:4120
+#: lex.cc:4087 lex.cc:4122
 msgid "C++ style comments are not allowed in ISO C90"
 msgstr "Напомене C++ стила нису допуштене у ISO C90"
 
-#: lex.cc:4088 lex.cc:4099 lex.cc:4123
+#: lex.cc:4090 lex.cc:4101 lex.cc:4125
 msgid "(this will be reported only once per input file)"
 msgstr "(ово ће бити извештено само једном по улазној датотеци)"
 
-#: lex.cc:4097
+#: lex.cc:4099
 msgid "C++ style comments are incompatible with C90"
 msgstr "Напомене C++ стила нису сагласне са C90"
 
-#: lex.cc:4129
+#: lex.cc:4131
 msgid "multi-line comment"
 msgstr "напомена више редова"
 
-#: lex.cc:4557
+#: lex.cc:4589
 #, gcc-internal-format, gfc-internal-format
 msgid "unspellable token %s"
 msgstr "неизговорљив симбол %s"
 
-#: lex.cc:5659
+#: lex.cc:5697
 #, gcc-internal-format, gfc-internal-format
 msgid "raw string delimiter longer than %d characters"
 msgstr "граничник сирове ниске је дужи од %d знака"
 
-#: lex.cc:5729
+#: lex.cc:5767
 msgid "unterminated literal"
 msgstr "незавршени литерал"
 
@@ -1283,7 +1289,7 @@ msgstr "празан назив датотеке у „%qs“"
 msgid "macro %qs is not used"
 msgstr "макро „%qs“ није коришћен"
 
-#: macro.cc:572 macro.cc:888
+#: macro.cc:572 macro.cc:891
 #, gcc-internal-format
 msgid "invalid built-in macro %qs"
 msgstr "неисправан макро уградње „%qs“"
@@ -1306,148 +1312,166 @@ msgstr "не могу да одредим датум и време"
 msgid "%<__COUNTER__%> expanded inside directive with %<-fdirectives-only%>"
 msgstr "„__COUNTER__“ је проширен у директиви са „-fdirectives-only“"
 
-#: macro.cc:760
+#: macro.cc:738
+#, gcc-internal-format
+msgid "%<__COUNTER__%> expanded more than 2147483648 times"
+msgstr ""
+
+#: macro.cc:763
 #, gcc-internal-format
 msgid "%<__has_embed%> not supported in traditional C"
 msgstr "„__has_embed“ није подржано у стандардном C-у"
 
-#: macro.cc:1007
+#: macro.cc:1013
 #, gcc-internal-format
 msgid "invalid string literal, ignoring final %<\\%>"
 msgstr "неисправна словност ниске, занемарујем завршну „\\“"
 
-#: macro.cc:1071
-#, gcc-internal-format
-msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
+#: macro.cc:1077
+#, fuzzy, gcc-internal-format
+#| msgid "pasting \"%.*s\" and \"%.*s\" does not give a valid preprocessing token"
+msgid "pasting %<%.*s%> and %<%.*s%> does not give a valid preprocessing token"
 msgstr "убацивање „%.*s“ и „%.*s“ не даје исправну скупину предобраде"
 
-#: macro.cc:1203
+#: macro.cc:1209
 #, gcc-internal-format
 msgid "ISO C++11 requires at least one argument for the %<...%> in a variadic macro"
 msgstr "ISO C++11 захтева барем један аргумент за „...“ у вариадик макроу"
 
-#: macro.cc:1207
+#: macro.cc:1213
 #, gcc-internal-format
 msgid "ISO C99 requires at least one argument for the %<...%> in a variadic macro"
 msgstr "ISO C99 захтева барем један аргумент за „...“ у вариадик макроу"
 
-#: macro.cc:1214
+#: macro.cc:1220
 #, gcc-internal-format
 msgid "macro %qs requires %u arguments, but only %u given"
 msgstr "макро „%qs“ захтева %u аргумента, али само %u су дата"
 
-#: macro.cc:1219
+#: macro.cc:1225
 #, gcc-internal-format
 msgid "macro %qs passed %u arguments, but takes just %u"
 msgstr "макро „%qs“ је проследио %u аргумента, али узима само %u"
 
-#: macro.cc:1223
+#: macro.cc:1229
 #, gcc-internal-format
 msgid "macro %qs defined here"
 msgstr "макро „%qs“ је дефинисан овде"
 
-#: macro.cc:1417 traditional.cc:822
+#: macro.cc:1423 traditional.cc:822
 #, gcc-internal-format
 msgid "unterminated argument list invoking macro %qs"
 msgstr "неокончан списак аргумената призивајући макро „%qs“"
 
-#: macro.cc:1563
+#: macro.cc:1569
 #, gcc-internal-format
 msgid "function-like macro %qs must be used with arguments in traditional C"
 msgstr "макро налик функцији „%qs“ мора бити коришћен са аргументима у стандардном C-у"
 
-#: macro.cc:2398
+#: macro.cc:2404
 #, gcc-internal-format, gfc-internal-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C++98"
 msgstr "призивајући макро %s аргумент %d: празни аргументи макроа нису одређени у ISO C++98"
 
-#: macro.cc:2406 macro.cc:2415
+#: macro.cc:2412 macro.cc:2421
 #, gcc-internal-format, gfc-internal-format
 msgid "invoking macro %s argument %d: empty macro arguments are undefined in ISO C90"
 msgstr "призивајући макро %s аргумент %d: празни аргументи макроа нису одређени у ISO C90"
 
-#: macro.cc:3238
+#: macro.cc:3244
 #, gcc-internal-format
 msgid "%qc in module name or partition comes from or after macro expansion"
 msgstr "„%qc“ у називу модула или партицији долази из или након ширења макроа"
 
-#: macro.cc:3481
+#: macro.cc:3494
 #, gcc-internal-format
 msgid "duplicate macro parameter %qs"
 msgstr "двоструки параметар макроа „%qs“"
 
-#: macro.cc:3563
+#: macro.cc:3576
 #, gcc-internal-format
 msgid "expected parameter name, found %qs"
 msgstr "очекивах назив параметра, нађох „%qs“"
 
-#: macro.cc:3564
+#: macro.cc:3577
 #, gcc-internal-format
 msgid "expected %<,%> or %<)%>, found %qs"
 msgstr "очекивах „,“ или „)“, нађох %qs"
 
-#: macro.cc:3565
+#: macro.cc:3578
 msgid "expected parameter name before end of line"
 msgstr "очекивах назив параметра пре краја реда"
 
-#: macro.cc:3566
+#: macro.cc:3579
 #, gcc-internal-format
 msgid "expected %<)%> before end of line"
 msgstr "очекивах „)“ пре краја реда"
 
-#: macro.cc:3567
+#: macro.cc:3580
 #, gcc-internal-format
 msgid "expected %<)%> after %<...%>"
 msgstr "очекивах „)“ након „...“"
 
-#: macro.cc:3624
+#: macro.cc:3638
 msgid "anonymous variadic macros were introduced in C++11"
 msgstr "безимени вариадик макрои су уведени у C++11"
 
-#: macro.cc:3625 macro.cc:3629
+#: macro.cc:3639 macro.cc:3643
 msgid "anonymous variadic macros were introduced in C99"
 msgstr "безимени вариадик макрои су уведени у C99"
 
-#: macro.cc:3635
+#: macro.cc:3649
 msgid "ISO C++ does not permit named variadic macros"
 msgstr "ISO C++ не дозвољава именоване вариадик макрое"
 
-#: macro.cc:3636
+#: macro.cc:3650
 msgid "ISO C does not permit named variadic macros"
 msgstr "ISO C не дозвољава именоване вариадик макрое"
 
-#: macro.cc:3682
+#: macro.cc:3696
 #, gcc-internal-format
 msgid "%<##%> cannot appear at either end of a macro expansion"
 msgstr "„##“ не може да се појави у или на крају макро ширења"
 
-#: macro.cc:3720
+#: macro.cc:3734
 msgid "ISO C++11 requires whitespace after the macro name"
 msgstr "ISO C++11 захтева празнине након назива макроа"
 
-#: macro.cc:3721
+#: macro.cc:3735
 msgid "ISO C99 requires whitespace after the macro name"
 msgstr "ISO C99 захтева празнине након назива макроа"
 
-#: macro.cc:3745
+#: macro.cc:3759
 msgid "missing whitespace after the macro name"
 msgstr "недостаје празнина након назива макроа"
 
-#: macro.cc:3798
+#: macro.cc:3812
 #, gcc-internal-format
 msgid "%<#%> is not followed by a macro parameter"
 msgstr "за „#“ не следи параметар макроа"
 
-#: macro.cc:3961
+#: macro.cc:3976 macro.cc:3980
+#, fuzzy, gcc-internal-format
+#| msgid "macro %qs defined here"
+msgid "keyword %qs defined as macro"
+msgstr "макро „%qs“ је дефинисан овде"
+
+#: macro.cc:3996
 #, gcc-internal-format
 msgid "%qs redefined"
 msgstr "„%qs“ је поново одређено"
 
-#: macro.cc:3965
+#: macro.cc:4000
 msgid "this is the location of the previous definition"
 msgstr "ово је место претходне одреднице"
 
-#: macro.cc:4103
+#: macro.cc:4009
+#, fuzzy, gcc-internal-format
+#| msgid "%qs redefined"
+msgid "%qs defined"
+msgstr "„%qs“ је поново одређено"
+
+#: macro.cc:4143
 #, gcc-internal-format
 msgid "macro argument %qs would be stringified in traditional C"
 msgstr "макро аргумент „%qs“ ће бити нискован у стандардном C-у"
@@ -1481,7 +1505,7 @@ msgstr "%s: није употребљено зато што је „%qs“ од�
 msgid "%s: not used because %<__COUNTER__%> is invalid"
 msgstr "%s: није употребљено зато што „__COUNTER__“ није исправно"
 
-#: pch.cc:722 pch.cc:885
+#: pch.cc:722 pch.cc:968
 msgid "while reading precompiled header"
 msgstr "за време читања претходно преведеног заглавља"
 

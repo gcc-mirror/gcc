@@ -77,11 +77,7 @@ Parser<ManagedTokenSource>::parse_block_expr (
 
   if (!skip_token (RIGHT_CURLY))
     {
-      Error error (t->get_locus (),
-		   "error may be from having an expression (as opposed to "
-		   "statement) in the body of the function but not last");
-      add_error (std::move (error));
-
+      // We don't need to throw an error as it already reported by skip_token
       skip_after_end_block ();
       return tl::unexpected<Parse::Error::Node> (Parse::Error::Node::MALFORMED);
     }
@@ -1289,11 +1285,9 @@ Parser<ManagedTokenSource>::parse_match_expr (AST::AttrVec outer_attrs,
 
       if (!expr)
 	{
-	  Error error (lexer.peek_token ()->get_locus (),
-		       "failed to parse expr in match arm in match expr");
-	  add_error (std::move (error));
-
-	  // skip somewhere?
+	  /* We don't need to throw an error as it already reported by
+	   * parse_expr
+	   */
 	  return tl::unexpected<Parse::Error::Node> (
 	    Parse::Error::Node::CHILD_ERROR);
 	}
@@ -1800,7 +1794,9 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
     = null_denotation ({}, null_denotation_restrictions);
   if (!expr)
     return tl::unexpected<Parse::Error::Expr> (Parse::Error::Expr::CHILD_ERROR);
-
+  if (expr.value () == nullptr)
+    return tl::unexpected<Parse::Error::Expr> (Parse::Error::Expr::CHILD_ERROR);
+  
   return left_denotations (std::move (expr), right_binding_power,
 			   std::move (outer_attrs), restrictions);
 }
@@ -1963,9 +1959,15 @@ Parser<ManagedTokenSource>::null_denotation_path (
   switch (t->get_id ())
     {
     case EXCLAM:
-      // macro
-      return parse_macro_invocation_partial (std::move (path),
-					     std::move (outer_attrs));
+      {
+	// macro
+	auto macro = parse_macro_invocation_partial (std::move (path),
+						     std::move (outer_attrs));
+	if (macro == nullptr)
+	  return tl::unexpected<Parse::Error::Expr> (
+	    Parse::Error::Expr::CHILD_ERROR);
+	return std::unique_ptr<AST::Expr> (std::move (macro));
+      }
     case LEFT_CURLY:
       {
 	bool not_a_block = lexer.peek_token (1)->get_id () == IDENTIFIER
@@ -1999,20 +2001,36 @@ Parser<ManagedTokenSource>::null_denotation_path (
 	    return std::unique_ptr<AST::PathInExpression> (
 	      new AST::PathInExpression (std::move (path)));
 	  }
-	return parse_struct_expr_struct_partial (std::move (path),
-						 std::move (outer_attrs));
+	auto struct_expr
+	  = parse_struct_expr_struct_partial (std::move (path),
+					      std::move (outer_attrs));
+	if (struct_expr == nullptr)
+	  {
+	    return tl::unexpected<Parse::Error::Expr> (
+	      Parse::Error::Expr::CHILD_ERROR);
+	  }
+	return struct_expr;
       }
     case LEFT_PAREN:
-      // struct/enum expr tuple
-      if (!restrictions.can_be_struct_expr)
-	{
-	  // assume path is returned
-	  // HACK: add outer attributes to path
-	  path.set_outer_attrs (std::move (outer_attrs));
-	  return std::make_unique<AST::PathInExpression> (std::move (path));
-	}
-      return parse_struct_expr_tuple_partial (std::move (path),
-					      std::move (outer_attrs));
+      {
+	// struct/enum expr tuple
+	if (!restrictions.can_be_struct_expr)
+	  {
+	    // assume path is returned
+	    // HACK: add outer attributes to path
+	    path.set_outer_attrs (std::move (outer_attrs));
+	    return std::make_unique<AST::PathInExpression> (std::move (path));
+	  }
+	auto tuple_expr
+	  = parse_struct_expr_tuple_partial (std::move (path),
+					     std::move (outer_attrs));
+	if (tuple_expr == nullptr)
+	  {
+	    return tl::unexpected<Parse::Error::Expr> (
+	      Parse::Error::Expr::CHILD_ERROR);
+	  }
+	return tuple_expr;
+      }
     default:
       // assume path is returned if not single segment
       if (path.is_single_segment ())

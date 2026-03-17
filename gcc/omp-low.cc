@@ -14329,7 +14329,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
 	switch (OMP_CLAUSE_CODE (c))
 	  {
-	    tree var;
+	    tree var, new_var, *allocate_ptr;
 	  default:
 	    break;
 	  case OMP_CLAUSE_MAP:
@@ -14458,10 +14458,11 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case OMP_CLAUSE_PRIVATE:
 	    var = OMP_CLAUSE_DECL (c);
 	    by_ref = omp_privatize_by_reference (var);
-	    if (is_variable_sized (var))
+	    new_var = lookup_decl (var, ctx);
+	    allocate_ptr = alloc_map.get (new_var);
+	    if (is_variable_sized (var, by_ref)
+		|| (!allocate_ptr && by_ref && !is_gimple_omp_oacc (ctx->stmt)))
 	      {
-		tree new_var = lookup_decl (var, ctx);
-		tree *allocate_ptr = alloc_map.get (new_var);
 		if (allocate_ptr)
 		  {
 		    gimple_seq *allocate_seq = alloc_seq_map.get (new_var);
@@ -14482,8 +14483,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (!allocate_ptr)
 		  {
 		    tree atmp = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
-		    tree al = size_int (DECL_ALIGN (var));
-		    x = TYPE_SIZE_UNIT (TREE_TYPE (new_var));
+		    tree ty = TREE_TYPE (new_var);
+		    if (by_ref)
+		      ty = TREE_TYPE (ty);
+		    x = TYPE_SIZE_UNIT (ty);
+		    if (TREE_CONSTANT (x))
+		      break;
+		    tree al = size_int (TYPE_ALIGN (ty));
 		    x = build_call_expr_loc (clause_loc, atmp, 2, x, al);
 		    x = fold_convert_loc (clause_loc, TREE_TYPE (new_pvar), x);
 		  }
@@ -14492,27 +14498,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
 		gimple_seq_add_stmt (&new_body,
 				     gimple_build_assign (new_pvar, x));
-	      }
-	    else if (by_ref && !is_gimple_omp_oacc (ctx->stmt))
-	      {
-		location_t clause_loc = OMP_CLAUSE_LOCATION (c);
-		tree new_var = lookup_decl (var, ctx);
-		tree x = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (new_var)));
-		if (TREE_CONSTANT (x))
-		  break;
-		else
-		  {
-		    tree atmp
-		      = builtin_decl_explicit (BUILT_IN_ALLOCA_WITH_ALIGN);
-		    tree rtype = TREE_TYPE (TREE_TYPE (new_var));
-		    tree al = size_int (TYPE_ALIGN (rtype));
-		    x = build_call_expr_loc (clause_loc, atmp, 2, x, al);
-		  }
-
-		x = fold_convert_loc (clause_loc, TREE_TYPE (new_var), x);
-		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
-		gimple_seq_add_stmt (&new_body,
-				     gimple_build_assign (new_var, x));
 	      }
 	    break;
 	  case OMP_CLAUSE_FIRSTPRIVATE:

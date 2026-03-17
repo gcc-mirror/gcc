@@ -952,8 +952,7 @@ required so frequently that they become visual noise.  Writing those
 casts becomes so automatic that they no longer convey useful
 information about the intentions of the programmer.  For functions
 where the return value should never be ignored, use the
-@code{warn_unused_result} function attribute (@pxref{Function
-Attributes}).
+@code{warn_unused_result} function attribute (@pxref{Attributes}).
 
 @opindex fshort-enums
 @item

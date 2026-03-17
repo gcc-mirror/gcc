@@ -9995,10 +9995,10 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 
       tree *e = c_struct_htab->find_slot_with_hash (t, hash, INSERT);
       if (*e)
-	TYPE_CANONICAL (t) = *e;
+	TYPE_CANONICAL (t) = TYPE_CANONICAL (*e);
       else
 	{
-	  TYPE_CANONICAL (t) = t;
+	  TYPE_CANONICAL (t) = c_type_canonical (t);
 	  *e = t;
 	}
       c_update_type_canonical (t);
@@ -13065,10 +13065,10 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
     error_at (loc, "two or more data types in declaration specifiers");
   else if (TREE_CODE (type) == TYPE_DECL)
     {
-      mark_decl_used (type, false);
       specs->type = TREE_TYPE (type);
       if (TREE_TYPE (type) != error_mark_node)
 	{
+	  mark_decl_used (type, false);
 	  specs->decl_attr = DECL_ATTRIBUTES (type);
 	  specs->typedef_p = true;
 	  specs->explicit_signed_p = C_TYPEDEF_EXPLICITLY_SIGNED (type);

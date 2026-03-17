@@ -1,4 +1,7 @@
 // { dg-output "a\r*\nseven\r*\nquote\r*\nelse" }
+#![feature(no_core)]
+#![no_core]
+
 
 extern "C" {
     fn printf(s: *const i8, ...);

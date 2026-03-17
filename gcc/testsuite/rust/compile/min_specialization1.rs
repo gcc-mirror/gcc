@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #![feature(min_specialization)]
 
 pub trait Foo {

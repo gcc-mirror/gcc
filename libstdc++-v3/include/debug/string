@@ -231,7 +231,12 @@ namespace __gnu_debug
 		   const _Allocator& __a = _Allocator())
       : _Base(__n, __c, __a) { }
 
+#if __cplusplus >= 201103L
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+#else
       template<typename _InputIterator>
+#endif
 	basic_string(_InputIterator __begin, _InputIterator __end,
 		     const _Allocator& __a = _Allocator())
 	: _Base(__gnu_debug::__base(

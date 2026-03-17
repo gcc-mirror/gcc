@@ -1,7 +1,11 @@
+#![feature(no_core)]
 #![feature(lang_items)]
+#![no_core]
 
 mod core {
     mod cmp {
+        use crate::Sized;
+
         #[lang = "eq"]
         pub trait PartialEq<Rhs: ?Sized = Self> {
             fn eq(&self, other: &Rhs) -> bool;

@@ -1,4 +1,7 @@
 // { dg-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let a: i8 = 50;
     let b = a as f32;

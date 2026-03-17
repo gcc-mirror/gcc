@@ -1,4 +1,7 @@
 // ErrorCode::E0426
+#![feature(no_core)]
+#![no_core]
+
 #![allow(unused)]
 fn resolve_label_continue() -> () {
     loop {

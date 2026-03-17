@@ -1,5 +1,8 @@
 // { dg-additional-options "-w" }
 /* { dg-output "WORKS\r?\n" } */
+#![feature(no_core)]
+#![no_core]
+
 #![feature(intrinsics, lang_items)]
 
 mod core {

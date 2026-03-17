@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let a = 15u8;
     let a = &a;

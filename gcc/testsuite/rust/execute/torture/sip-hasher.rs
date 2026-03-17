@@ -1,6 +1,9 @@
 // { dg-skip-if "" { *-*-* } { "-m32" } { "" } }
 // { dg-options "-w" }
 // { dg-output "Hash: 0x63d53fd2170bbb8c\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(intrinsics, lang_items, rustc_attrs)]
 
 #[lang = "sized"]

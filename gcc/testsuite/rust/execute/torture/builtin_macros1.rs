@@ -1,4 +1,7 @@
 // { dg-output "rust/execute/torture/builtin_macros1.rs\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(rustc_attrs)]
 
 #[rustc_builtin_macro]

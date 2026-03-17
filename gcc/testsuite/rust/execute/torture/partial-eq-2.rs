@@ -1,5 +1,8 @@
 /* { dg-output "a == b\r*\na != c\r*\n" }*/
 /* { dg-options "-w" } */
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(lang_items)]
 #[lang = "sized"]

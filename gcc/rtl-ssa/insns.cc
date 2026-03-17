@@ -482,15 +482,11 @@ function_info::create_reg_use (build_info &bi, insn_info *insn,
       if (insn->is_debug_insn ())
 	value = look_through_degenerate_phi (value);
       else if (bitmap_bit_p (bi.potential_phi_regs, resource.regno))
-	{
-	  // VALUE is defined by a previous EBB and RESOURCE has multiple
-	  // definitions.  Create a degenerate phi in the current EBB
-	  // so that all definitions and uses follow a linear RPO view;
-	  // see rtl.texi for details.
-	  access_info *inputs[] = { look_through_degenerate_phi (value) };
-	  value = create_phi (bi.current_ebb, value->resource (), inputs, 1);
-	  bi.record_reg_def (value);
-	}
+	// VALUE is defined by a previous EBB and RESOURCE has multiple
+	// definitions.  Create a degenerate phi in the current EBB
+	// so that all definitions and uses follow a linear RPO view;
+	// see rtl.texi for details.
+	value = create_degenerate_phi (bi, value);
     }
   auto *use = allocate<use_info> (insn, resource, value);
   add_use (use);

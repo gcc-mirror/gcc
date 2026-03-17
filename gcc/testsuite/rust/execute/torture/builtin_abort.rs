@@ -1,4 +1,7 @@
 // { dg-shouldfail "abort should stop the program" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(rustc_attrs)]
 #![feature(intrinsics)]
 

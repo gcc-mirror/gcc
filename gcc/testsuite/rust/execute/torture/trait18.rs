@@ -1,5 +1,8 @@
 /* { dg-output "parent\r*\nchild\r*\n" } */
 //Testing default implementations with supertraits.
+#![feature(no_core)]
+#![no_core]
+
 
 extern "C" {
     fn printf(s: *const i8, ...);

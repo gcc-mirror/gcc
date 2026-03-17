@@ -1,9 +1,9 @@
 # { dg-options "-fstropping=upper" }  #
 BEGIN STRING foo = "foo";
-      ASSERT (foo * -10 = "foo");
-      ASSERT (-10 * foo = "foo");
-      ASSERT (foo * 0 = "foo");
-      ASSERT (0 * foo = "foo");
+      ASSERT (foo * -10 = "");
+      ASSERT (-10 * foo = "");
+      ASSERT (foo * 0 = "");
+      ASSERT (0 * foo = "");
       ASSERT (foo * 1 = "foo");
       ASSERT (1 * foo = "foo");
       ASSERT (foo * 2 = "foofoo");

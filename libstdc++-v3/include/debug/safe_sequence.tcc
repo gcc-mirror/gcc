@@ -33,13 +33,10 @@ namespace __gnu_debug
 {
   template<typename _Sequence>
     template<typename _Predicate>
-      _GLIBCXX20_CONSTEXPR void
+      void
       _Safe_sequence<_Sequence>::
-      _M_invalidate_if(_Predicate __pred) const
+      _M_invalidate_if_impl(_Predicate __pred) const
       {
-	if (std::__is_constant_evaluated())
-	  return;
-
 	typedef typename _Sequence::iterator iterator;
 	typedef typename _Sequence::const_iterator const_iterator;
 

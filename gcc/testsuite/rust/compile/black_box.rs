@@ -1,4 +1,7 @@
 // { dg-options "-fdump-tree-gimple" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(rustc_attrs, lang_items)]
 
 #[lang = "sized"]

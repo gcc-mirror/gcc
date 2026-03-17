@@ -19,6 +19,7 @@
 #include "rust-early-name-resolver-2.0.h"
 #include "optional.h"
 #include "options.h"
+#include "rust-ast.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-map.h"
 #include "rust-item.h"
@@ -413,10 +414,10 @@ Early::finalize_glob_import (NameResolutionContext &ctx,
 
   if (mapping.import_kind.is_prelude)
     {
-      rust_assert (container.value ()->get_item_kind ()
-		   == AST::Item::Kind::Module);
+      rust_assert (container.value ()->get_glob_container_kind ()
+		   == AST::GlobContainer::Kind::Module);
 
-      ctx.prelude = container.value ()->get_node_id ();
+      ctx.prelude = mapping.data.container ().get_node_id ();
     }
 
   GlobbingVisitor (ctx).go (container.value ());

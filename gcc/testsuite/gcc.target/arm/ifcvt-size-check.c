@@ -1,6 +1,7 @@
 /* { dg-do assemble } */
-/* { dg-options "-mthumb -Os " }  */
-/* { dg-require-effective-target arm_thumb1_ok } */
+/* { dg-require-effective-target arm_arch_v4t_thumb_ok } */
+/* { dg-options "-Os" } */
+/* { dg-add-options arm_arch_v4t_thumb } */
 
 int
 test (unsigned char iov_len, int count, int i)

@@ -73,7 +73,6 @@ GRS_OBJS = \
     rust/rust-lex.o \
     rust/rust-cfg-parser.o \
     rust/rust-parse.o \
-    rust/rust-parse-impl-proc-macro.o \
     rust/rust-parse-impl-macro.o \
     rust/rust-parse-impl-lexer.o \
     rust/rust-ast.o \
@@ -109,7 +108,6 @@ GRS_OBJS = \
     rust/rust-derive-hash.o \
     rust/rust-proc-macro.o \
     rust/rust-macro-invoc-lexer.o \
-    rust/rust-proc-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \
     rust/rust-macro-builtins.o \
     rust/rust-macro-builtins-helpers.o \

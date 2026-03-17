@@ -1,4 +1,4 @@
-/* { dg-do assemble } */
+/* { dg-do compile } */
 /* { dg-options "-O2" } */
 
 #pragma GCC target "+cmpbr"

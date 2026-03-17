@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn one<'continue>() {} // { dg-error "lifetimes cannot use keyword names" }
 pub fn two<'_>() {}
 

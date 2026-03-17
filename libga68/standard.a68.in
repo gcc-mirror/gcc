@@ -114,21 +114,26 @@ def
         case v in
            {iter L  {} {long}  {long long}}
            {iter L_ {} {long_} {long_long_}}
+           {iter S  {} {LENG}  {LENG LENG}}
            ({L} real x):
               if int before = ABS width - ABS exp - (after /= 0 | after+1 | 0) - 2;
                  SIGN before + SIGN after > 0
               then string s, {L} real y := ABS x, int p := 0;
                    {L_}standardize (y, before, after, p);
-                   s := fixed (SIGN (x * y), SIGN width * (ABS width - ABS exp - 1),
-                               after) + "*^" + whole (p, exp);
+                   s := fixed ({S} SIGN x * y, SIGN width * (ABS width - ABS exp - 1),
+                               after) + "e" + whole (p, exp);
                    if exp = 0 OR char_in_string (errorchar, loc int, s)
                    then float (x, width, (after /= 0 | after-1 | 0),
                                (exp > 0 | exp+1 | exp-1))
                    else s
                    fi
               else { XXX undefined } skip; ABS width * errorchar
-              fi,
-           ({L} int x): float ({L} real (x), width, after, exp)
+              fi
+           {reti {,}}
+           ,
+           {iter L {short short} {short} {} {long} {long long}}
+           {iter R {LENG LENG} {LENG} {} {} {}}
+           ({L} int x): float ({L} real ({R} x), width, after, exp)
            {reti {,}}
         esac;
 

@@ -5,6 +5,14 @@
 namespace Rust {
 namespace Compile {
 
+static tree
+chain_asm_operand (tree head, const char *constraint, tree value)
+{
+  auto name = build_string (strlen (constraint) + 1, constraint);
+  return chainon (head,
+		  build_tree_list (build_tree_list (NULL_TREE, name), value));
+}
+
 CompileAsm::CompileAsm (Context *ctx) : HIRCompileBase (ctx) {}
 
 tree
@@ -110,13 +118,7 @@ CompileAsm::asm_construct_outputs (HIR::InlineAsm &expr)
       tree out_tree = CompileExpr::Compile (*out_expr, this->ctx);
       // expects a tree list
       // TODO: This assumes that the output is a register
-      std::string expr_name = "=r";
-      auto name = build_string (expr_name.size () + 1, expr_name.c_str ());
-      head = chainon (head, build_tree_list (build_tree_list (NULL_TREE, name),
-					     out_tree));
-
-      /*Backend::debug (head);*/
-      /*head = chainon (head, out_tree);*/
+      head = chain_asm_operand (head, "=r", out_tree);
     }
   return head;
 }
@@ -156,12 +158,7 @@ CompileAsm::asm_construct_inputs (HIR::InlineAsm &expr)
       tree in_tree = CompileExpr::Compile (*in_expr, this->ctx);
       // expects a tree list
       // TODO: This assumes that the input is a register
-      std::string expr_name = "r";
-      auto name = build_string (expr_name.size () + 1, expr_name.c_str ());
-      head = chainon (head, build_tree_list (build_tree_list (NULL_TREE, name),
-					     in_tree));
-
-      /*head = chainon (head, out_tree);*/
+      head = chain_asm_operand (head, "r", in_tree);
     }
   return head;
 }

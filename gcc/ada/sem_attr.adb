@@ -11888,6 +11888,7 @@ package body Sem_Attr is
                end if;
 
                Resolve (Prefix (P));
+               Resolve_Implicit_Dereference (Prefix (P));
 
                if not Is_Overloaded (P) then
                   Generate_Reference (Entity (Selector_Name (P)), P);
@@ -12042,29 +12043,7 @@ package body Sem_Attr is
                    Static_Accessibility_Level (N, Zero_On_Dynamic_Level) >
                      Deepest_Type_Access_Level (Btyp)
                then
-                  --  In an instance, this is a runtime check, but one we know
-                  --  will fail, so generate an appropriate warning. As usual,
-                  --  this kind of warning is an error in SPARK mode.
-
-                  if In_Instance_Body then
-                     Error_Msg_Warn :=
-                       SPARK_Mode /= On
-                         and then
-                           not No_Dynamic_Accessibility_Checks_Enabled (P);
-
-                     Error_Msg_F
-                       ("non-local pointer cannot point to local object<<", P);
-                     Error_Msg_F ("\Program_Error [<<", P);
-
-                     Rewrite (N,
-                       Make_Raise_Program_Error (Loc,
-                         Reason => PE_Accessibility_Check_Failed));
-                     Set_Etype (N, Typ);
-
-                  else
-                     Error_Msg_F
-                       ("non-local pointer cannot point to local object", P);
-                  end if;
+                  Accessibility_Message (N, Typ);
                end if;
 
                if Attr_Id /= Attribute_Unrestricted_Access
@@ -12232,22 +12211,11 @@ package body Sem_Attr is
                                    and then Ekind (Btyp)
                                               = E_Anonymous_Access_Type)
 
-                    --  Call Accessibility_Level directly to avoid returning
-                    --  zero on cases where the prefix is an explicitly aliased
-                    --  parameter in a return statement, instead of using the
-                    --  normal Static_Accessibility_Level function.
-
-                    --  Shouldn't this be handled somehow in
-                    --  Static_Accessibility_Level ???
-
-                    and then Nkind (Accessibility_Level (P, Dynamic_Level))
-                               = N_Integer_Literal
                     and then
-                      Intval (Accessibility_Level (P, Dynamic_Level))
-                        > Deepest_Type_Access_Level (Btyp)
+                      Static_Accessibility_Level (N, Zero_On_Dynamic_Level) >
+                        Deepest_Type_Access_Level (Btyp)
                   then
                      Accessibility_Message (N, Typ);
-                     return;
                   end if;
                end;
             end if;
@@ -12273,7 +12241,6 @@ package body Sem_Attr is
                  and then Attr_Id /= Attribute_Unrestricted_Access
                then
                   Accessibility_Message (N, Typ);
-                  return;
 
                --  AI05-0225: If the context is not an access to protected
                --  function, the prefix must be a variable, given that it may
@@ -12423,9 +12390,10 @@ package body Sem_Attr is
             --  array type since a value conversion is like an aggregate with
             --  respect to determining accessibility level (RM 3.10.2).
 
-            if not Prefix_With_Safe_Accessibility_Level (N, Typ) then
+            if Nkind (N) /= N_Raise_Program_Error
+              and then not Prefix_With_Safe_Accessibility_Level (N, Typ)
+            then
                Accessibility_Message (N, Typ);
-               return;
             end if;
 
             --  Mark that address of entity is taken in case of

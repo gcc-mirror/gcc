@@ -105,12 +105,8 @@ private:
 
   /* Check the validity of an inner attribute */
   void check_inner_attribute (const AST::Attribute &attribute);
-  /* Check the validy of all inner attributes */
-  void check_inner_attributes (const AST::AttrVec &attributes);
   /* Check the validity of a given attribute */
   void check_attribute (const AST::Attribute &attribute);
-  /* Check the validity of all given attributes */
-  void check_attributes (const AST::AttrVec &attributes);
 
   // rust-ast.h
   void visit (AST::Crate &crate) override;

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 use Option::{None, Some};
 
 enum Option<T> {

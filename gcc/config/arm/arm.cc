@@ -842,6 +842,9 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM CC_REGNUM
+
+#undef TARGET_C_BITINT_TYPE_INFO
+#define TARGET_C_BITINT_TYPE_INFO arm_bitint_type_info
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -6130,6 +6133,8 @@ arm_return_in_memory (const_tree type, const_tree fntype)
 	 We don't care about which register here, so we can short-cut
 	 some of the detail.  */
       if (!AGGREGATE_TYPE_P (type)
+	  /* A _BitInt(N) for N <= 64 is a simple, non-aggregate type.  */
+	  && !(TREE_CODE (type) == BITINT_TYPE && size > 8)
 	  && TREE_CODE (type) != VECTOR_TYPE
 	  && TREE_CODE (type) != COMPLEX_TYPE)
 	return false;
@@ -6159,8 +6164,10 @@ arm_return_in_memory (const_tree type, const_tree fntype)
   if (TREE_CODE (type) == VECTOR_TYPE)
     return (size < 0 || size > (4 * UNITS_PER_WORD));
 
-  if (!AGGREGATE_TYPE_P (type) &&
-      (TREE_CODE (type) != VECTOR_TYPE))
+  if (!AGGREGATE_TYPE_P (type)
+      /* A _BitInt(N) for N <= 64 is a simple, non-aggregate type.  */
+      && !(TREE_CODE (type) == BITINT_TYPE && size > 8)
+      && (TREE_CODE (type) != VECTOR_TYPE))
     /* All simple types are returned in registers.  */
     return false;
 
@@ -7218,6 +7225,14 @@ arm_needs_doubleword_align (machine_mode mode, const_tree type)
 {
   if (!type)
     return GET_MODE_ALIGNMENT (mode) > PARM_BOUNDARY;
+
+  /* For any _BitInt(N) where N > 32 the ABI demands double word alignment.  */
+  if (TREE_CODE (type) == BITINT_TYPE)
+    {
+      if (int_size_in_bytes (type) > 4)
+	return 1;
+      return 0;
+    }
 
   /* Scalar and vector types: Use natural alignment, i.e. of base type.  */
   if (!AGGREGATE_TYPE_P (type))
@@ -35884,6 +35899,42 @@ arm_get_mask_mode (machine_mode mode)
     return arm_mode_to_pred_mode (mode);
 
   return default_get_mask_mode (mode);
+}
+
+
+/* Implement TARGET_C_BITINT_TYPE_INFO
+   Return true if _BitInt(N) is supported and fill its details into *INFO.  */
+
+bool
+arm_bitint_type_info (int n, struct bitint_info *info)
+{
+  if (TARGET_BIG_END)
+    return false;
+
+  if (n <= 8)
+    info->limb_mode = QImode;
+  else if (n <= 16)
+    info->limb_mode = HImode;
+  else if (n <= 32)
+    info->limb_mode = SImode;
+  else if (n <= 64)
+    info->limb_mode = DImode;
+  else
+    /* The AAPCS for Arm defines _BitInt(N > 64) as an array with
+       type {signed,unsigned} __int64[M] where M = (N/64) + 1.  However, to be
+       able to use libgcc's implementation to support large _BitInt's we need
+       to use a LIMB_MODE that is no larger than 'long int'.  This is why we
+       use SImode for our internal LIMB_MODE and we define the ABI_LIMB_MODE to
+       be DImode to ensure we are ABI compliant.  */
+    info->limb_mode = SImode;
+
+  if (n > 64)
+    info->abi_limb_mode = DImode;
+  else
+    info->abi_limb_mode = info->limb_mode;
+  info->big_endian = TARGET_BIG_END;
+  info->extended = true;
+  return true;
 }
 
 /* Helper function to determine whether SEQ represents a sequence of

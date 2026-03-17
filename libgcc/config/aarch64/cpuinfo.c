@@ -24,6 +24,13 @@
 
 #include "common/config/aarch64/cpuinfo.h"
 
+/* Architecture features used in Function Multi Versioning, and also in some
+   SME support routines.  */
+struct {
+  unsigned long long features;
+  /* As features grows new fields could be added.  */
+} __aarch64_cpu_features __attribute__((visibility("hidden"), nocommon));
+
 #if __has_include(<sys/auxv.h>)
 #include <sys/auxv.h>
 
@@ -39,12 +46,6 @@ typedef struct __ifunc_arg_t {
   unsigned long _hwcap3;
   unsigned long _hwcap4;
 } __ifunc_arg_t;
-
-/* Architecture features used in Function Multi Versioning.  */
-struct {
-  unsigned long long features;
-  /* As features grows new fields could be added.  */
-} __aarch64_cpu_features __attribute__((visibility("hidden"), nocommon));
 
 #define _IFUNC_ARG_HWCAP (1ULL << 62)
 #define AT_HWCAP 16

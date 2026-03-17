@@ -1,4 +1,6 @@
-// { dg-output "20\r*\n23\r*\n" }
+// { dg-output "22\r*\n25\r*\n" }
+#![feature(no_core)]
+#![no_core]
 #![feature(rustc_attrs)]
 
 extern "C" {

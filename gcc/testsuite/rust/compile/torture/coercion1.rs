@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn main() {
     let a: &i32 = &123;
     // { dg-warning "unused name" "" { target *-*-* } .-1 }

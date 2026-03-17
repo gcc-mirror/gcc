@@ -1,3 +1,9 @@
+#![feature(no_core)]
+#![no_core]
+
+#![feature(no_core)]
+#![no_core]
+
 struct Marker;
 
 struct Foo {
@@ -5,7 +11,8 @@ struct Foo {
 }
 
 pub mod foo {
-    struct Foo {
+    use crate::Marker;
+    pub struct Foo {
         b: Marker,
     }
 }

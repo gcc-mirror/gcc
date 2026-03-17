@@ -23,15 +23,11 @@ static_assert (type_of (constant_of (annotations_of (^^S)[0])) == ^^int);
 static_assert (type_of (constant_of (annotations_of (^^S)[1])) == ^^int);
 static_assert (type_of (constant_of (annotations_of (^^S)[2])) == ^^int);
 static_assert (type_of (constant_of (annotations_of (^^S)[3])) == ^^float);
-#if 0
 template <typename> struct [[=5, =5, =6, =3.0f]] TCls {};
-// TODO Should work but we don't propagate the annotations correctly to the
-// instantiation.  See also the TODO in annotations3.C.
 static_assert (type_of (constant_of (annotations_of (^^TCls<int>)[0])) == ^^int);
 static_assert (type_of (constant_of (annotations_of (^^TCls<int>)[1])) == ^^int);
 static_assert (type_of (constant_of (annotations_of (^^TCls<int>)[2])) == ^^int);
 static_assert (type_of (constant_of (annotations_of (^^TCls<int>)[3])) == ^^float);
-#endif
 template <typename> [[=5, =5, =6, =3.0f]] void TFn();
 static_assert (type_of (constant_of (annotations_of (^^TFn<int>)[0])) == ^^int);
 static_assert (type_of (constant_of (annotations_of (^^TFn<int>)[1])) == ^^int);
@@ -57,7 +53,7 @@ template<info R>
 struct [[=[:constant_of (annotations_of (R)[0]):]]] Y {};
 
 static_assert (extract<int>(annotations_of (^^bar<^^::fn>)[0]) == 1);
-//static_assert (extract<int>(annotations_of (^^Y<^^::S>)[0]) == 3);
+static_assert (extract<int>(annotations_of (^^Y<^^::S>)[0]) == 3);
 
 struct [[=42, =42.0f]] S1;
 struct [[=42, =40]] S2;

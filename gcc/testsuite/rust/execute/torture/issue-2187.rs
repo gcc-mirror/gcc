@@ -1,4 +1,7 @@
 /* { dg-output "L1\r*\n\L2\r*\nL3\r*\nL4" } */
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

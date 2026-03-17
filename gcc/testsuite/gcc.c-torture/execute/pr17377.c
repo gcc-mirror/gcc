@@ -28,7 +28,7 @@ f (int i)
   return 0;
 }
 
-int x;
+volatile int x;
 
 void *y (int i) __attribute__ ((__noinline__,__noclone__));
 void *

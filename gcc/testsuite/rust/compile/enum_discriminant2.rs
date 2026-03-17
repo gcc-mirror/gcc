@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test() -> isize {
     1
 }

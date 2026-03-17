@@ -33,8 +33,9 @@ class GlobbingVisitor : public AST::DefaultASTVisitor
 public:
   GlobbingVisitor (NameResolutionContext &ctx) : ctx (ctx) {}
 
-  void go (AST::Item *container);
+  void go (AST::GlobContainer *container);
 
+  void visit_crate_container (AST::Crate &crate);
   void visit_module_container (AST::Module &module);
   void visit_enum_container (AST::Enum &item);
 

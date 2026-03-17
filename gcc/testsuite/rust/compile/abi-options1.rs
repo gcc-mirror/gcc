@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 extern "foobar" {
     // { dg-error "invalid ABI: found .foobar." "" { target *-*-* } .-1 }
     fn printf(s: *const i8, ...);

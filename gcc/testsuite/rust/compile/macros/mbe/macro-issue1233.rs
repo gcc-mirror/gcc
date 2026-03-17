@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-cfg=A -w" }
+#![feature(no_core)]
+#![no_core]
+
 
 macro_rules! impl_uint {
     ($($ty:ident = $lang:literal),*) => {

@@ -272,6 +272,12 @@ option_unspecified_p (diagnostics::option_id opt_id)
   return global_dc->option_unspecified_p (opt_id);
 }
 
+inline bool
+emitting_diagnostic_p ()
+{
+  return global_dc->emitting_diagnostic_p ();
+}
+
 namespace diagnostics {
 
 /* Compute the number of digits in the decimal representation of an integer.  */

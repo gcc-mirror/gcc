@@ -48,7 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 /* We switch to the explicit word size selection mechanism available both in
    GNU as and Sun as, for the Niagara4 and above configurations.  */
 
-#if !HAVE_GNU_AS
+#if HAVE_SOLARIS_AS
 #undef ASM_ARCH32_SPEC
 #define ASM_ARCH32_SPEC "-m32"
 #undef ASM_ARCH64_SPEC
@@ -264,7 +264,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
-#if HAVE_GNU_LD
+#if !HAVE_SOLARIS_LD
 #define ARCH32_EMULATION "elf32_sparc_sol2"
 #define ARCH64_EMULATION "elf64_sparc_sol2"
 #endif
@@ -337,7 +337,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     }									\
   while (0)
 
-#if !HAVE_GNU_AS
+#if HAVE_SOLARIS_AS
 /* This is how to output an assembler line that says to advance
    the location counter to a multiple of 2**LOG bytes using the
    NOP instruction as padding.  The filler pattern doesn't work
@@ -353,10 +353,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Sun as requires doublequoted section names on SPARC.  While GNU as
    supports that, too, we prefer the standard variant.  */
 #define SECTION_NAME_FORMAT	"\"%s\""
-#endif /* !HAVE_GNU_AS */
+#endif /* HAVE_SOLARIS_AS */
 
 /* Undefine this so that attribute((init_priority)) works with GNU ld.  */
-#if HAVE_GNU_LD
+#if !HAVE_SOLARIS_LD
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
 #endif

@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-compile-until=lowering" }
+#![feature(no_core)]
+#![no_core]
+
 struct Foo {
     arg_1: u32,
     arg_2: i32,

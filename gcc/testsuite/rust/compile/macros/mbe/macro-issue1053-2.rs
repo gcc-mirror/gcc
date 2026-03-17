@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! m {
     ($e:expr $(forbidden)*) => {{}}; // { dg-error "token .identifier. is not allowed after .expr. fragment" }
                                      // { dg-error "required first macro rule in macro rules definition could not be parsed" "" { target *-*-* } .-1 }

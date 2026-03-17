@@ -405,6 +405,31 @@ region_model_manager::get_ptr_svalue (tree ptr_type, const region *pointee)
   return sval;
 }
 
+/* Subroutine of region_model_manager::maybe_fold_unaryop
+   when the arg is a binop_svalue.
+   Invert comparisons e.g. "!(x == y)" => "x != y".
+   Otherwise, return nullptr.  */
+
+const svalue *
+region_model_manager::
+maybe_invert_comparison_in_unaryop (tree result_type,
+				    const binop_svalue *binop)
+{
+  if (TREE_CODE_CLASS (binop->get_op ()) == tcc_comparison)
+    {
+      enum tree_code inv_op
+	= invert_tree_comparison (binop->get_op (),
+				  HONOR_NANS (binop->get_type ()));
+      if (inv_op != ERROR_MARK)
+	return get_or_create_cast
+	  (result_type,
+	   get_or_create_binop (binop->get_type (), inv_op,
+				binop->get_arg0 (),
+				binop->get_arg1 ()));
+    }
+  return nullptr;
+}
+
 /* Subroutine of region_model_manager::get_or_create_unaryop.
    Attempt to fold the inputs and return a simpler svalue *.
    Otherwise, return nullptr.  */
@@ -470,16 +495,9 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
       {
 	/* Invert comparisons e.g. "!(x == y)" => "x != y".  */
 	if (const binop_svalue *binop = arg->dyn_cast_binop_svalue ())
-	  if (TREE_CODE_CLASS (binop->get_op ()) == tcc_comparison)
-	    {
-	      enum tree_code inv_op
-		= invert_tree_comparison (binop->get_op (),
-					  HONOR_NANS (binop->get_type ()));
-	      if (inv_op != ERROR_MARK)
-		return get_or_create_binop (binop->get_type (), inv_op,
-					    binop->get_arg0 (),
-					    binop->get_arg1 ());
-	    }
+	  if (const svalue *folded
+		= maybe_invert_comparison_in_unaryop (type, binop))
+	    return folded;
       }
       break;
     case NEGATE_EXPR:
@@ -491,6 +509,19 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
 	      && type
 	      && INTEGRAL_TYPE_P (type))
 	    return unaryop->get_arg ();
+      }
+      break;
+    case BIT_NOT_EXPR:
+      {
+	/* Invert comparisons for e.g. "~(x == y)" => "x != y".  */
+	if (type
+	    && TREE_CODE (type) == BOOLEAN_TYPE
+	    && arg->get_type ()
+	    && TREE_CODE (arg->get_type ()) == BOOLEAN_TYPE)
+	  if (const binop_svalue *binop = arg->dyn_cast_binop_svalue ())
+	    if (const svalue *folded
+		= maybe_invert_comparison_in_unaryop (type, binop))
+	      return folded;
       }
       break;
     }
@@ -683,7 +714,8 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       /* X + (-X) -> 0.  */
       if (const unaryop_svalue *unary_op = arg1->dyn_cast_unaryop_svalue ())
 	if (unary_op->get_op () == NEGATE_EXPR
-	    && unary_op->get_arg () == arg0)
+	    && unary_op->get_arg () == arg0
+	    && type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
 	  return get_or_create_int_cst (type, 0);
       /* X + (Y - X) -> Y.  */
       if (const binop_svalue *bin_op = arg1->dyn_cast_binop_svalue ())
@@ -790,6 +822,24 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
 	    /* "(ARG0 && nonzero-cst)" -> "nonzero-cst".  */
 	    return get_or_create_cast (type, arg1);
 	}
+      break;
+
+    case TRUNC_DIV_EXPR:
+    case CEIL_DIV_EXPR:
+    case FLOOR_DIV_EXPR:
+    case ROUND_DIV_EXPR:
+    case TRUNC_MOD_EXPR:
+    case CEIL_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case ROUND_MOD_EXPR:
+    case RDIV_EXPR:
+    case EXACT_DIV_EXPR:
+      {
+	value_range arg1_vr;
+	if (arg1->maybe_get_value_range (arg1_vr))
+	  if (arg1_vr.zero_p ())
+	    return get_or_create_unknown_svalue (type);
+      }
       break;
     }
 
@@ -1674,6 +1724,8 @@ region_model_manager::get_unknown_symbolic_region (tree region_type)
 const region *
 region_model_manager::get_field_region (const region *parent, tree field)
 {
+  gcc_assert (parent);
+  gcc_assert (field);
   gcc_assert (TREE_CODE (field) == FIELD_DECL);
 
   /* (*UNKNOWN_PTR).field is (*UNKNOWN_PTR_OF_&FIELD_TYPE).  */

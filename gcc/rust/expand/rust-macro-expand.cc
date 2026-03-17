@@ -112,9 +112,13 @@ MacroExpander::expand_decl_macro (location_t invoc_locus,
 
   if (matched_rule == nullptr)
     {
-      rich_location r (line_table, invoc_locus);
-      r.add_range (rules_def.get_locus ());
-      rust_error_at (r, "Failed to match any rule within macro");
+      if (!had_duplicate_error)
+	{
+	  rich_location r (line_table, invoc_locus);
+	  r.add_range (rules_def.get_locus ());
+	  rust_error_at (r, "Failed to match any rule within macro");
+	}
+      had_duplicate_error = false;
       return AST::Fragment::create_error ();
     }
 
@@ -173,9 +177,9 @@ MacroExpander::expand_eager_invocations (AST::MacroInvocation &invoc)
 
   // we need to create a clone of the delimited token tree as the lexer
   // expects ownership of the tokens
-  std::vector<std::unique_ptr<Rust::AST::Token>> dtt_clone;
+  std::vector<const_TokenPtr> dtt_clone;
   for (auto &tok : stream)
-    dtt_clone.emplace_back (tok->clone_token ());
+    dtt_clone.emplace_back (tok->get_tok_ptr ());
 
   MacroInvocLexer lex (std::move (dtt_clone));
   Parser<MacroInvocLexer> parser (lex);
@@ -535,6 +539,8 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 
   const MacroInvocLexer &source = parser.get_token_source ();
 
+  std::unordered_map<std::string, location_t> duplicate_check;
+
   for (auto &match : matcher.get_matches ())
     {
       size_t offs_begin = source.get_offs ();
@@ -547,6 +553,21 @@ MacroExpander::match_matcher (Parser<MacroInvocLexer> &parser,
 	      = static_cast<AST::MacroMatchFragment *> (match.get ());
 	    if (!match_fragment (parser, *fragment))
 	      return false;
+
+	    auto duplicate_result = duplicate_check.insert (
+	      std::make_pair (fragment->get_ident ().as_string (),
+			      fragment->get_ident ().get_locus ()));
+
+	    if (!duplicate_result.second)
+	      {
+		// TODO: add range labels?
+		rich_location r (line_table,
+				 fragment->get_ident ().get_locus ());
+		r.add_range (duplicate_result.first->second);
+		rust_error_at (r, "duplicate matcher binding");
+		had_duplicate_error = true;
+		return false;
+	      }
 
 	    // matched fragment get the offset in the token stream
 	    size_t offs_end = source.get_offs ();
@@ -1191,8 +1212,8 @@ MacroExpander::transcribe_rule (
 AST::Fragment
 MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
 {
-  ProcMacroInvocLexer lex (convert (ts));
-  Parser<ProcMacroInvocLexer> parser (lex);
+  MacroInvocLexer lex (convert (ts));
+  Parser<MacroInvocLexer> parser (lex);
 
   std::vector<AST::SingleASTNode> nodes;
   switch (peek_context ())

@@ -438,7 +438,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       j++;
     }
 
-#if defined(TARGET_SOLARIS) && !HAVE_GNU_LD
+#if HAVE_SOLARIS_LD
   /* We use a common symbol for go$zerovalue.  On Solaris, when not
      using the GNU linker, the Solaris linker needs an option to not
      warn about this.  Everything works without this option, but you

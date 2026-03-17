@@ -1,4 +1,7 @@
 // TODO: all `xfail` conditions should be changed to `target` once the ICE in #4148 is resolved
+#![feature(no_core)]
+#![no_core]
+
 
 pub fn ret_parens(x: i32) -> i32 {
     // { dg-warning "unnecessary parentheses around block return value" "#4148" { xfail *-*-* } .+1 }

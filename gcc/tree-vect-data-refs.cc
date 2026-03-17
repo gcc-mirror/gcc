@@ -732,11 +732,45 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	  if (is_gimple_debug (stmt))
 	    continue;
 
+	  stmt_vec_info orig_stmt_vinfo = loop_vinfo->lookup_stmt (stmt);
 	  stmt_vec_info stmt_vinfo
-	    = vect_stmt_to_vectorize (loop_vinfo->lookup_stmt (stmt));
+	    = vect_stmt_to_vectorize (orig_stmt_vinfo);
 	  auto dr_ref = STMT_VINFO_DATA_REF (stmt_vinfo);
 	  if (!dr_ref)
-	    continue;
+	    {
+	      /* Trapping statements after the last early exit are fine.  */
+	      if (check_deps)
+		{
+		  bool could_trap_p = false;
+		  gimple *cur_stmt = STMT_VINFO_STMT (stmt_vinfo);
+		  could_trap_p = gimple_could_trap_p (cur_stmt);
+		  if (STMT_VINFO_IN_PATTERN_P (orig_stmt_vinfo))
+		    {
+		      gimple_stmt_iterator gsi2;
+		      auto stmt_seq
+			= STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt_vinfo);
+		      for (gsi2 = gsi_start (stmt_seq);
+			   !could_trap_p && !gsi_end_p (gsi2); gsi_next (&gsi2))
+			{
+			  cur_stmt = gsi_stmt (gsi2);
+			  could_trap_p = gimple_could_trap_p (cur_stmt);
+			}
+		    }
+
+		  if (could_trap_p)
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "cannot vectorize as operation may trap.\n");
+		      return opt_result::failure_at (cur_stmt,
+			     "can't safely apply code motion to dependencies"
+			     " to vectorize the early exit. %G may trap.\n",
+			     cur_stmt);
+		    }
+		}
+
+	      continue;
+	    }
 
 	  /* We know everything below dest_bb is safe since we know we
 	     had a full vector iteration when reaching it.  Either by
@@ -2502,8 +2536,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
               if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
 		{
 		  unsigned group_size = 1;
-		  if (STMT_SLP_TYPE (stmt_info)
-		      && STMT_VINFO_GROUPED_ACCESS (stmt_info))
+		  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
 		    group_size = DR_GROUP_SIZE (stmt_info);
 		  nscalars = vf * group_size;
 		}
@@ -6862,7 +6895,6 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
 	  /* If we are doing SLP then the accesses need not have the
 	     same alignment, instead it depends on the SLP group size.  */
 	  if (loop_vinfo
-	      && STMT_SLP_TYPE (stmt_info)
 	      && STMT_VINFO_GROUPED_ACCESS (stmt_info)
 	      && !multiple_p (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
 			      * (DR_GROUP_SIZE

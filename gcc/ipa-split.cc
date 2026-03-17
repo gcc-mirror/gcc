@@ -1458,18 +1458,43 @@ split_function (basic_block return_bb, class split_point *split_point,
     dump_function_to_file (node->decl, dump_file, dump_flags);
 
   /* Create the basic block we place call into.  It is the entry basic block
-     split after last label.  */
+     split after last label and after the last eos clobber and debug stmt.  */
   call_bb = split_point->entry_bb;
   for (gimple_stmt_iterator gsi = gsi_start_bb (call_bb); !gsi_end_p (gsi);)
-    if (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
+    if (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
+	|| gimple_clobber_p (gsi_stmt (gsi), CLOBBER_STORAGE_END)
+	|| is_gimple_debug (gsi_stmt (gsi)))
       {
 	last_stmt = gsi_stmt (gsi);
 	gsi_next (&gsi);
       }
     else
       break;
+
+  /* Find the old return bb, it might contain some clobbers
+     which we want to copy back after the call.  */
+  basic_block old_return = nullptr;
+  if (split_part_return_p)
+    {
+      bool one_return_bb = true;
+      FOR_EACH_EDGE (e, ei, return_bb->preds)
+	if (bitmap_bit_p (split_point->split_bbs, e->src->index))
+	  {
+	    if (old_return != nullptr)
+	      {
+		one_return_bb = false;
+		break;
+	      }
+	    old_return = e->src;
+	  }
+      if (!one_return_bb)
+	old_return = nullptr;
+    }
+
   call_bb->count = split_point->count;
   e = split_block (split_point->entry_bb, last_stmt);
+  if (old_return == e->src)
+    old_return = e->dest;
   remove_edge (e);
 
   /* Produce the call statement.  */
@@ -1709,6 +1734,36 @@ split_function (basic_block return_bb, class split_point *split_point,
 	    gsi_insert_after (&gsi, tsan_func_exit_call, GSI_NEW_STMT);
 	  ret = gimple_build_return (retval);
 	  gsi_insert_after (&gsi, ret, GSI_NEW_STMT);
+	}
+    }
+
+  /* Move the clobbers from the old return bb to after the call.  */
+  if (old_return)
+    {
+      gimple_stmt_iterator ngsi = gsi_last_bb (call_bb);
+      gsi_next (&ngsi);
+      for (gimple_stmt_iterator ogsi = gsi_last_bb (old_return);
+	   !gsi_end_p (ogsi); )
+	{
+	  gimple *stmt = *ogsi;
+	  if (is_gimple_debug (stmt))
+	    {
+	      gsi_prev (&ogsi);
+	      continue;
+	    }
+	  if (!gimple_clobber_p (stmt, CLOBBER_STORAGE_END))
+	    break;
+	  /* Change the vdef/vuse of the clobber to be renamed.  */
+	  unlink_stmt_vdef (stmt);
+	  release_ssa_name (gimple_vdef (stmt));
+	  gimple_set_vuse (stmt, gimple_vop (cfun));
+	  gimple_set_vdef (stmt, gimple_vop (cfun));
+	  gimple_stmt_iterator nogsi = ogsi;
+
+	  /* Move to the previous stmt before the move happens.  */
+	  gsi_prev (&ogsi);
+	  gsi_move_before (&nogsi, &ngsi, GSI_NEW_STMT);
+	  update_stmt (stmt);
 	}
     }
   free_dominance_info (CDI_DOMINATORS);

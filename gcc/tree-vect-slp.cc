@@ -8413,11 +8413,6 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
 	 for some rational X, so they must have a common multiple.  */
       vect_update_slp_vf_for_node (root, unrolling_factor, visited);
 
-      /* Mark all the stmts that belong to INSTANCE as PURE_SLP stmts.  Later we
-	 call vect_detect_hybrid_slp () to find stmts that need hybrid SLP and
-	 loop-based vectorization.  Such stmts will be marked as HYBRID.  */
-      vect_mark_slp_stmts (loop_vinfo, root);
-
       /* If all instances ended up with vector(1) T roots make sure to
 	 not vectorize.  RVV for example relies on loop vectorization
 	 when some instances are essentially kept scalar.  See PR121048.  */

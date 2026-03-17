@@ -7,12 +7,12 @@
 /* { dg-options "-fanalyzer -O2 -Wanalyzer-too-complex" } */
 /* { dg-require-effective-target analyzer } */
 
-typedef unsigned long __kernel_ulong_t;
-typedef __kernel_ulong_t __kernel_size_t;
+typedef __UINTPTR_TYPE__ uintptr_t;
+typedef __SIZE_TYPE__ __kernel_size_t;
 typedef __kernel_size_t size_t;
 typedef unsigned int gfp_t;
 
-extern unsigned long copy_from_user(void* to, const void* from, unsigned long n);
+extern unsigned long copy_from_user(void* to, const void* from, size_t n);
 
 extern
 __attribute__((__alloc_size__(1)))
@@ -40,7 +40,7 @@ resize_runtime_buffer(struct snd_rawmidi_params* params)
 }
 
 long
-snd_rawmidi_ioctl(unsigned long arg)
+snd_rawmidi_ioctl(uintptr_t arg)
 {
   void* argp = (void*)arg;
   struct snd_rawmidi_params params;

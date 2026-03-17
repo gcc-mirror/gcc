@@ -316,27 +316,6 @@ public:
 			   const replay_options &replay_opts);
 
 private:
-  class replayer_location_map : public json::location_map
-  {
-  public:
-    void record_range_for_value (json::value *jv,
-				 const range &r) final override
-    {
-      m_map_jv_to_range[jv] = r;
-    }
-
-    const json::location_map::range &
-    get_range_for_value (const json::value &jv) const
-    {
-      auto iter = m_map_jv_to_range.find (&jv);
-      gcc_assert (iter != m_map_jv_to_range.end ());
-      return iter->second;
-    }
-
-  private:
-    std::map<const json::value *, range> m_map_jv_to_range;
-  };
-
   enum status emit_sarif_as_diagnostics (const json::value &jv);
 
   libgdiagnostics::message_buffer
@@ -743,7 +722,7 @@ private:
   /* The file within m_control_mgr representing the .sarif file.  */
   libgdiagnostics::file m_loaded_file;
 
-  replayer_location_map m_json_location_map;
+  json::simple_location_map m_json_location_map;
 
   const json::object *m_driver_obj;
   const json::array *m_artifacts_arr;

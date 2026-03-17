@@ -80,8 +80,6 @@ struct ExplicitRelOps
 };
 ExplicitRelOps a,b;
 static_assert (has_mem (^^ExplicitRelOps, is_operator(op_equals_equals)));
-// FIXME, below check fails without this use
-auto r = a <=> b;
 static_assert (has_mem (^^ExplicitRelOps, is_operator(op_spaceship)));
 
 struct NoEqualDecl

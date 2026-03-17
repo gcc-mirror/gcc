@@ -5079,11 +5079,17 @@ build_vec_init (tree base, tree maxindex, tree init,
 		from = move (from);
 	      if (direct_init)
 		{
-		  /* Wrap the initializer in a CONSTRUCTOR so that
-		     build_vec_init recognizes it as direct-initialization.  */
-		  from = build_constructor_single (init_list_type_node,
-						   NULL_TREE, from);
-		  CONSTRUCTOR_IS_DIRECT_INIT (from) = true;
+		  if (TREE_CODE (type) == ARRAY_TYPE)
+		    {
+		      /* Wrap the initializer in a CONSTRUCTOR so that
+			 build_vec_init recognizes it as
+			 direct-initialization.  */
+		      from = build_constructor_single (init_list_type_node,
+						       NULL_TREE, from);
+		      CONSTRUCTOR_IS_DIRECT_INIT (from) = true;
+		    }
+		  else
+		    from = build_tree_list (NULL_TREE, from);
 		}
 	    }
 	  else

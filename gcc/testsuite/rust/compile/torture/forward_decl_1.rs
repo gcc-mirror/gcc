@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let mut an_integer = 5;
     an_integer = test(1) + 3;

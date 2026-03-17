@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test1() -> i32 {
     return 2;
     // { dg-warning "unreachable expression" "" { target *-*-* } .+1 }

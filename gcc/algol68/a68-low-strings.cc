@@ -191,16 +191,19 @@ a68_string_mult (tree str, tree factor)
 
   str = save_expr (str);
   tree ssize_one_node = ssize_int (1);
-  tree res = a68_lower_tmpvar ("res%", CTYPE (M_STRING), str);
+  tree res = a68_lower_tmpvar ("res%", CTYPE (M_STRING),
+			       fold_build1 (INDIRECT_REF, CTYPE(M_STRING),
+					    a68_low_gen (M_STRING, 0, NULL,
+							 false /* use_heap */)));
   tree index = a68_lower_tmpvar ("index%", ssizetype, ssize_one_node);
 
   /* Begin of loop body.  */
   a68_push_range (NULL);
 
-  /* if (index == FACTOR) break;  */
+  /* if (index > FACTOR) break;  */
   a68_add_stmt (fold_build1 (EXIT_EXPR,
 			     void_type_node,
-			     fold_build2 (GE_EXPR, ssizetype,
+			     fold_build2 (GT_EXPR, ssizetype,
 					  index,
 					  fold_convert (ssizetype, factor))));
 

@@ -1,5 +1,8 @@
 // { dg-do compile }
 // { dg-options "-fsyntax-only" }
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(exclusive_range_pattern)]
 

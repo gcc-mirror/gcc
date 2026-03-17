@@ -1,3 +1,105 @@
+2026-03-02  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119456
+	* genapi.cc (mh_source_is_literalA): Don't set refmod_e attribute
+	unless it is necessary.
+	(have_common_parent): Helper routine that determines whether two
+	COBOL variables are members of the same data description.
+	(mh_alpha_to_alpha): Modified for greater efficiency when table
+	subscripts and reference modification parameters are numeric
+	literals.
+	* genutil.cc (get_data_offset): Recognizes when table subscripts
+	and refmod offsets are numeric literals.
+	(refer_size): Recognizes when refmod offsets are numeric literals.
+	(refer_size_source): Recognizes when table subscripts are numeric
+	literals.
+
+2026-02-27  Richard Biener  <rguenther@suse.de>
+
+	PR cobol/123238
+	* lexio.cc: Remove <iostream> include.
+	(cdftext::process_file): Remove if (false) gated use of
+	iostream code.
+
+2026-02-26  Robert Dubner  <rdubner@symas.com>
+
+	* parse.y: BASECONVERT and TRIM take their type from their first
+	parameter.
+	* parse_util.h (intrinsic_return_field): The function_descrs[] is
+	adjusted so that a number of functions take their return type from
+	their first calling parameter.  intrinsic_return_field() has been
+	refined.
+	* symbols.cc (new_alphanumeric):  Use set_explicit() instead of
+	set() in support of refined intrinsic function return type.
+
+2026-02-24  Robert Dubner  <rdubner@symas.com>
+
+	* gcobc: Adjust how -fPIC is applied, and other refinements.
+	* gcobol.1: Documentation.
+	* genapi.cc (parser_statement_end): New function.  Deallocates
+	temp char strings from the heap.
+	(initialize_variable_internal): Ignore temp char strings.
+	(compare_binary_binary): Formatting.
+	(parser_end_program): Formatting.
+	(parser_init_list): Formatting.
+	(parser_exit_program): Formatting.
+	(program_end_stuff): Formatting.
+	(parser_exit): Formatting.
+	(parser_perform_conditional): Formatting.
+	(perform_outofline_before_until): Formatting.
+	(parser_file_add): Formatting.
+	(mh_source_is_literalA): Formatting.
+	(psa_new_var_decl): Make cblc_field_t for intermediate_e
+	alphanumerics program-static.
+	(parser_symbol_add): Eliminate unnecessary code when
+	type!=FldConditional; change handling of intermediate_e for
+	FldAlphanumerics.
+	* genapi.h (parser_end_program): New declaration.
+	(parser_exit): Formatting.
+	(parser_exit_program): Formatting.
+	(parser_statement_end): New declaration.
+	* lexio.cc (parse_replace_pairs): Change CDF handling.
+	(cdftext::lex_open): Likewise.
+	(cdftext::process_file): Likewise.
+	* parse.y: Changes to MAXIMUM_ALPHA_LENGTH; refine return value
+	types for various intrinsic functions; some CDF handling.
+	* parse_ante.h (MAXLENGTH_FORMATTED_DATE): Eliminate constant.
+	(MAXLENGTH_FORMATTED_TIME): Likewise.
+	(MAXLENGTH_CALENDAR_DATE): Likewise.
+	(MAXLENGTH_FORMATTED_DATETIME): Likewise.
+	(new_alphanumeric): No longer takes a capacity.
+	(intrinsic_return_field): New declaration.
+	(struct ffi_args_t): Changed debug message.
+	(is_among): New declaration.
+	* parse_util.h (intrinsic_return_field): New function. Works with
+	the modified function_descrs[] table.
+	* scan.l: Modified scanning.
+	* scan_ante.h (class input_file_status_t): Likewise.
+	(verify_ws):  Likewise.
+	(is_refmod): Likewise.
+	* symbols.cc (symbols_update): Improved comment about a debug
+	message.
+	(symbol_temporaries): New function for temporaries on the heap that
+	will have to be deallocated.
+	(symbol_temporary_alphanumerics): Likewise.
+	(new_temporary_impl): Eliminate MAXIMUM_ALPHA_LENGTH from template.
+	(new_alphanumeric): Eliminate capacity as a parameter.
+	* symbols.h (cbl_dialect_str): Formatting.
+	(MAXIMUM_ALPHA_LENGTH): Change comment and value.
+	(IBM_MAXIMUM_ALPHA_LENGTH): Put parentheses around "size_t(1)<<31".
+	(symbol_temporaries): New declaration.
+	(symbol_temporary_alphanumerics): New declaration.
+	(struct function_descr_t): New comment on ret_type.
+	(new_alphanumeric): New declaration.
+	* util.cc (class cdf_directives_t): CDF processing.
+	(cobol_set_indicator_column): Likewise.
+	(cdf_push_source_format): Likewise.
+	(cdf_pop_source_format): Likewise.
+	(parent_names): Likewise.
+	(cobol_filename): Likewise.
+	(cobol_lineno): Likewise.
+	(cobol_filename_restore): Likewise.
+
 2026-02-19  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (tree_type_from_field_type): Move static code.

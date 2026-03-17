@@ -1,0 +1,13 @@
+begin [0:9,0:9]int foo;
+      ref[]int bar = foo[2,];
+      assert(UPB foo[2,] = 9);
+      assert(LWB foo[2,] = 0);
+      assert(UPB bar = 9);
+      assert(LWB bar = 0);
+
+      ref[]int baz = foo[2,:];
+      assert(UPB foo[2,:] = 10);
+      assert(LWB foo[2,:] = 1);
+      assert(UPB baz = 10);
+      assert(LWB baz = 1)
+end

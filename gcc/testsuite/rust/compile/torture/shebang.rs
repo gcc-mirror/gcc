@@ -1,3 +1,5 @@
-#!/usr/bin/env cat 
+#!/usr/bin/env cat
 
-fn main () { }
+#![feature(no_core)]
+#![no_core]
+fn main() {}

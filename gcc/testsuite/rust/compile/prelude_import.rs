@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #![feature(prelude_import)]
 
 mod core {

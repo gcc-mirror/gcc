@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct Pattern(i32);
 
 fn pattern_as_arg(Pattern(value): Pattern) -> i32 {

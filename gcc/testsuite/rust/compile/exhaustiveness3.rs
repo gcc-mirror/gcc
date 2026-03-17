@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct S {
     e1: E1,
     e2: E2,

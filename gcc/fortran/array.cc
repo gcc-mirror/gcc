@@ -471,6 +471,13 @@ resolve_array_bound (gfc_expr *e, int check_constant)
   if (e == NULL)
     return true;
 
+  if (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS)
+    {
+      gfc_error ("Derived type or class expression for array bound at %L",
+		 &e->where);
+      return false;
+    }
+
   if (!gfc_resolve_expr (e)
       || !gfc_specification_expr (e))
     return false;

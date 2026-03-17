@@ -2733,6 +2733,32 @@ early_ra::form_chains ()
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nChaining allocnos:\n");
 
+  // Record conflicts of hard register and ABI conflicts before the
+  // forming of chains so chains have the updated candidates
+  for (auto *allocno1 : m_allocnos)
+    {
+      // Record conflicts with direct uses for FPR hard registers.
+      auto *group1 = allocno1->group ();
+      for (unsigned int fpr = allocno1->offset; fpr < 32; ++fpr)
+	if (fpr_conflicts_with_allocno_p (fpr, allocno1))
+	  group1->fpr_candidates &= ~(1U << (fpr - allocno1->offset));
+
+      // Record conflicts due to partially call-clobbered registers.
+      // (Full clobbers are handled by the previous loop.)
+      for (unsigned int abi_id = 0; abi_id < NUM_ABI_IDS; ++abi_id)
+	if (call_in_range_p (abi_id, allocno1->start_point,
+			     allocno1->end_point))
+	  {
+	    auto fprs = partial_fpr_clobbers (abi_id, group1->fpr_size);
+	    group1->fpr_candidates &= ~fprs >> allocno1->offset;
+	  }
+      if (allocno1->is_shared ())
+	{
+	  auto *allocno2 = m_allocnos[allocno1->related_allocno];
+	  merge_fpr_info (allocno2->group (), group1, allocno2->offset);
+	}
+    }
+
   // Perform (modified) interval graph coloring.  First sort by
   // increasing start point.
   m_sorted_allocnos.reserve (m_allocnos.length ());
@@ -2750,30 +2776,12 @@ early_ra::form_chains ()
       if (allocno1->chain_next != INVALID_ALLOCNO)
 	continue;
 
-      // Record conflicts with direct uses for FPR hard registers.
-      auto *group1 = allocno1->group ();
-      for (unsigned int fpr = allocno1->offset; fpr < 32; ++fpr)
-	if (fpr_conflicts_with_allocno_p (fpr, allocno1))
-	  group1->fpr_candidates &= ~(1U << (fpr - allocno1->offset));
-
-      // Record conflicts due to partially call-clobbered registers.
-      // (Full clobbers are handled by the previous loop.)
-      for (unsigned int abi_id = 0; abi_id < NUM_ABI_IDS; ++abi_id)
-	if (call_in_range_p (abi_id, allocno1->start_point,
-			     allocno1->end_point))
-	  {
-	    auto fprs = partial_fpr_clobbers (abi_id, group1->fpr_size);
-	    group1->fpr_candidates &= ~fprs >> allocno1->offset;
-	  }
-
       if (allocno1->is_shared ())
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Allocno %d shares the same hard register"
 		     " as allocno %d\n", allocno1->id,
 		     allocno1->related_allocno);
-	  auto *allocno2 = m_allocnos[allocno1->related_allocno];
-	  merge_fpr_info (allocno2->group (), group1, allocno2->offset);
 	  m_shared_allocnos.safe_push (allocno1);
 	  continue;
 	}

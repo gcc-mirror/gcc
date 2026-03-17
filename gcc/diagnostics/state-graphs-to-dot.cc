@@ -324,12 +324,15 @@ private:
 	break;
       case state_node_properties::kind_t::stack_frame:
 	if (auto logical_loc = state_node.get_logical_loc ())
-	  if (const char *function
-		= m_logical_loc_mgr.get_short_name (logical_loc))
-	    add_title_tr (id_of_dot_node, xp, num_columns, state_node,
-			  std::string ("Frame: ") + function,
-			  style::h2,
-			  state_node_properties::dynalloc_state_t::unknown);
+	  {
+	    label_text function
+	      = m_logical_loc_mgr.get_short_name (logical_loc);
+	    if (function.get ())
+	      add_title_tr (id_of_dot_node, xp, num_columns, state_node,
+			    std::string ("Frame: ") + function.get (),
+			    style::h2,
+			    state_node_properties::dynalloc_state_t::unknown);
+	  }
 	break;
       case state_node_properties::kind_t::dynalloc_buffer:
 	{

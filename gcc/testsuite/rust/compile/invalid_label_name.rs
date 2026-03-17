@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn function() {
     'continue: loop {
         // { dg-error "invalid label name .'continue." "" { target *-*-* } .-1 }

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub struct Test {
     #[cfg(not(any(
         target_os = "solaris",

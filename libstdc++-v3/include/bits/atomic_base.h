@@ -983,6 +983,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_fetch_sub(&_M_p, _S_type_size(__d), int(__m)); }
+
+#if __glibcxx_atomic_min_max
+      _GLIBCXX_ALWAYS_INLINE __pointer_type
+      fetch_min(__pointer_type __p,
+		memory_order __m = memory_order_seq_cst) noexcept
+      { return __atomic_impl::__fetch_min(&_M_p, __p, __m); }
+
+      _GLIBCXX_ALWAYS_INLINE __pointer_type
+      fetch_min(__pointer_type __p,
+		memory_order __m = memory_order_seq_cst) volatile noexcept
+      { return __atomic_impl::__fetch_min(&_M_p, __p, __m); }
+
+      _GLIBCXX_ALWAYS_INLINE __pointer_type
+      fetch_max(__pointer_type __p,
+		memory_order __m = memory_order_seq_cst) noexcept
+      { return __atomic_impl::__fetch_max(&_M_p, __p, __m); }
+
+      _GLIBCXX_ALWAYS_INLINE __pointer_type
+      fetch_max(__pointer_type __p,
+		memory_order __m = memory_order_seq_cst) volatile noexcept
+      { return __atomic_impl::__fetch_max(&_M_p, __p, __m); }
+#endif
     };
 
   namespace __atomic_impl
@@ -1975,6 +1997,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       fetch_sub(difference_type __d,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::fetch_sub(this->_M_ptr, _S_type_size(__d), __m); }
+
+#if __glibcxx_atomic_min_max
+      _GLIBCXX_ALWAYS_INLINE value_type
+      fetch_min(value_type __i,
+		memory_order __m = memory_order_seq_cst) const noexcept
+      { return __atomic_impl::__fetch_min(this->_M_ptr, __i, __m); }
+
+      _GLIBCXX_ALWAYS_INLINE value_type
+      fetch_max(value_type __i,
+		memory_order __m = memory_order_seq_cst) const noexcept
+      { return __atomic_impl::__fetch_max(this->_M_ptr, __i, __m); }
+#endif
 
       value_type
       operator++(int) const noexcept

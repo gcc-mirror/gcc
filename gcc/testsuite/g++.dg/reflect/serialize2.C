@@ -36,8 +36,7 @@ constexpr std::string
 serialize (S s)
 {
   std::string result = " ";
-#if 0
-  // TODO, this ICEs in tsubst_expr.
+#ifdef TEST_SERIALIZE3
   impl::replicator <^^S::age, ^^S::name> >> [&] <auto m> {
 #else
   impl::replicator <^^Person::age, ^^Person::name> >> [&] <auto m> {

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     const A: char = 0x1F888 as char;
     // { dg-error "cannot cast .<integer>. as .char., only .u8. can be cast as .char." "" { target *-*-* } .-1 }

@@ -1,4 +1,7 @@
 // { dg-options "-O2 -w -fdump-tree-optimized" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(intrinsics)]
 
 extern "rust-intrinsic" {

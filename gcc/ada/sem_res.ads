@@ -133,6 +133,12 @@ package Sem_Res is
    --  own type. For now we assume that the prefix cannot be overloaded and
    --  the name of the entry plays no role in the resolution.
 
+   procedure Resolve_Implicit_Dereference (P : Node_Id);
+   --  Called when P is the prefix of an indexed component, or of a selected
+   --  component, or of a slice. If P is of an access type, we unconditionally
+   --  rewrite it as an explicit dereference. This ensures that the expander
+   --  and the code generator have a fully explicit tree to work with.
+
    procedure Resolve_Membership_Equality (N : Node_Id; Typ : Entity_Id);
    --  Resolve the equality operator in an individual membership test
 

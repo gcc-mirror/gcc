@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-compile-until=nameresolution" }
+#![feature(no_core)]
+#![no_core]
+
 struct MyStruct;
 
 trait X {}

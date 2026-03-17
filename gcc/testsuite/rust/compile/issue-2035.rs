@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn func(i: i32) {
     i();
     // { dg-error "expected function, found .i32. .E0618." "" { target *-*-* } .-1 }

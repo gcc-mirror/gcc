@@ -20,4 +20,4 @@ void bob ()
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::A'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Lazily binding '::B'@'foo' section:} module } }
+// { dg-final { scan-lang-dump {Reading 1 pending entities keyed to '::B'} module } }

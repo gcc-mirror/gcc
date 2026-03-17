@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn foo() -> i32 {
     return 1;
 }

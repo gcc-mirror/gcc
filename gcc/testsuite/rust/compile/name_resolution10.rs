@@ -1,4 +1,7 @@
 // { dg-options "-frust-compile-until=lowering" }
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(decl_macro)]
 

@@ -1,4 +1,7 @@
 // { dg-output "1\r*\n1\r*\n1\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(rustc_attrs)]
 

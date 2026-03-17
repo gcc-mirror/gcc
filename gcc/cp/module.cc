@@ -3735,7 +3735,7 @@ enum module_directness {
   MD_NONE,  		/* Not direct.  */
   MD_PARTITION_DIRECT,	/* Direct import of a partition.  */
   MD_DIRECT,		/* Direct import.  */
-  MD_PURVIEW_DIRECT,	/* direct import in purview.  */
+  MD_PURVIEW_DIRECT,	/* Direct import in purview.  */
 };
 
 /* State of a particular module. */
@@ -12321,12 +12321,17 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 	  case TYPE_DECL:
 	    gcc_checking_assert (!is_imported_temploid_friend);
+	    int use_tmpl = 0;
 	    if (is_attached && !(state->is_module () || state->is_partition ())
-		/* Implicit member functions can come from
-		   anywhere.  */
-		&& !(DECL_ARTIFICIAL (decl)
-		     && TREE_CODE (decl) == FUNCTION_DECL
-		     && !DECL_THUNK_P (decl)))
+		/* Implicit or in-class defaulted member functions
+		   can come from anywhere.  */
+		&& !(TREE_CODE (decl) == FUNCTION_DECL
+		     && !DECL_THUNK_P (decl)
+		     && DECL_DEFAULTED_FN (decl)
+		     && !DECL_DEFAULTED_OUTSIDE_CLASS_P (decl))
+		/* As can members of template specialisations.  */
+		&& !(node_template_info (container, use_tmpl)
+		     && use_tmpl != 0))
 	      kind = "unique";
 	    else
 	      {
@@ -14918,6 +14923,16 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	   than trying to clear out bindings after the fact.  */
 	return false;
 
+      if ((flags & WMB_Hidden)
+	  && DECL_LANG_SPECIFIC (inner)
+	  && DECL_UNIQUE_FRIEND_P (inner))
+	/* Hidden friends will be found via ADL on the class type,
+	   and so do not need to have bindings.  Anticipated builtin
+	   functions and the hidden decl underlying a DECL_LOCAL_DECL_P
+	   also don't need exporting, but we should create a binding
+	   anyway so that we can have a common decl to match against.  */
+	return false;
+
       bool internal_decl = false;
       if (!header_module_p () && is_tu_local_entity (decl))
 	{
@@ -16959,8 +16974,11 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 
 	  if (is_partition ())
 	    {
-	      if (!imp->is_direct ())
-		imp->directness = MD_PARTITION_DIRECT;
+	      if (!imp->is_direct () && !imp->is_partition_direct ())
+		{
+		  imp->directness = MD_PARTITION_DIRECT;
+		  linemap_module_reparent (line_table, imp->loc, floc);
+		}
 	      if (exportedness > 0)
 		imp->exported_p = true;
 	    }
@@ -21202,10 +21220,6 @@ module_state::read_initial (cpp_reader *reader)
   else if (!read_ordinary_maps (config.ordinary_locs, config.loc_range_bits))
     ok = false;
 
-  if (ok && have_locs && config.ordinary_locs
-      && !read_diagnostic_classification (global_dc))
-    ok = false;
-
   /* Allocate the REMAP vector.  */
   slurp->alloc_remap (config.num_imports);
 
@@ -21264,6 +21278,12 @@ module_state::read_initial (cpp_reader *reader)
   if (!(ok && have_locs && config.macro_locs))
     macro_locs.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
   else if (!read_macro_maps (config.macro_locs))
+    ok = false;
+
+  /* Diagnostic classification streaming needs to come after reading
+     macro maps to handle _Pragmas in macros.  */
+  if (ok && have_locs && config.ordinary_locs
+      && !read_diagnostic_classification (global_dc))
     ok = false;
 
   /* Note whether there's an active initializer.  */
@@ -22557,19 +22577,19 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 	    module->get_flatname ());
 }
 
-/* Load any pending entities keyed to the top-key of DECL.  */
+/* Load any pending entities keyed to NS and NAME.
+   Used to find pending types if we don't yet have a decl built.  */
 
 void
-lazy_load_pendings (tree decl)
+lazy_load_pendings (tree ns, tree name)
 {
   /* Make sure lazy loading from a template context behaves as if
      from a non-template context.  */
   processing_template_decl_sentinel ptds;
 
-  tree key_decl;
   pending_key key;
-  key.ns = find_pending_key (decl, &key_decl);
-  key.id = DECL_NAME (key_decl);
+  key.ns = ns;
+  key.id = name;
 
   auto *pending_vec = pending_table ? pending_table->get (key) : nullptr;
   if (!pending_vec)
@@ -22620,6 +22640,16 @@ lazy_load_pendings (tree decl)
   if (count != errorcount + warningcount)
     inform (input_location, "during load of pendings for %<%E%s%E%>",
 	    key.ns, &"::"[key.ns == global_namespace ? 2 : 0], key.id);
+}
+
+/* Load any pending entities keyed to the top-key of DECL.  */
+
+void
+lazy_load_pendings (tree decl)
+{
+  tree key_decl;
+  tree ns = find_pending_key (decl, &key_decl);
+  return lazy_load_pendings (ns, DECL_NAME (key_decl));
 }
 
 static void
@@ -23319,7 +23349,13 @@ preprocess_module (module_state *module, location_t from_loc,
 	      if (!(import->is_module ()
 		    && (import->is_partition () || import->is_exported ()))
 		  && import->loadedness == ML_NONE
-		  && (import->is_header () || !flag_preprocess_only))
+		  && (!flag_preprocess_only
+		      || (import->is_header ()
+			  /* Allow a missing/unimportable GCM with -MG.
+			     FIXME We should also try falling back to #include
+			     before giving up entirely.  */
+			  && (!cpp_get_options (reader)->deps.missing_files
+			      || import->check_importable (reader)))))
 		{
 		  unsigned n = dump.push (import);
 		  import->do_import (reader, true);

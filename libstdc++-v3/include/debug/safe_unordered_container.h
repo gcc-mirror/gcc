@@ -36,6 +36,77 @@
 
 namespace __gnu_debug
 {
+  template<typename _Container>
+    class _Safe_unordered_container;
+
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
+  template<typename _ExtractKey, typename _Source>
+    struct _UContInvalidatePred
+    {
+      template<typename _Iterator>
+	bool
+	operator()(_Iterator __it) const
+	{ return _M_source._M_cont().count(_ExtractKey{}(*__it)) == 0; }
+
+      const _Safe_unordered_container<_Source>& _M_source;
+    };
+
+  template<typename _ExtractKey, typename _Source>
+    struct _UMContInvalidatePred
+    {
+      template<typename _Iterator>
+	bool
+	operator()(_Iterator __it) const
+	{
+	  auto __rng =
+	    _M_source._M_cont()._M_base().equal_range(_ExtractKey{}(*__it));
+	  for (auto __rit = __rng.first;
+	       __rit != __rng.second; ++__rit)
+	    {
+	      if (__it == __rit)
+		return false;
+	    }
+
+	  return true;
+	}
+
+      const _Safe_unordered_container<_Source>& _M_source;
+    };
+
+  template<typename _Source, typename _InvalidatePred>
+    struct _UContMergeGuard
+    {
+      _UContMergeGuard(_Safe_unordered_container<_Source>& __src) noexcept
+      : _M_source(__src), _M_size(__src._M_cont().size()), _M_pred { __src }
+      { }
+
+      _UContMergeGuard(const _UContMergeGuard&) = delete;
+
+      ~_UContMergeGuard()
+      {
+	const std::size_t __size = _M_source._M_cont().size();
+	if (__size == _M_size)
+	  return;
+
+	__try
+	  {
+	    if (__size == 0)
+	      _M_source._M_invalidate_all();
+	    else
+	      _M_source._M_invalidate_all_if(_M_pred);
+	  }
+	__catch(...)
+	{
+	  _M_source._M_invalidate_all();
+	}
+      }
+
+      _Safe_unordered_container<_Source>& _M_source;
+      const std::size_t _M_size;
+      _InvalidatePred _M_pred;
+  };
+#endif // >= C++17 && HOSTED
+
   /**
    * @brief Base class for constructing a @a safe unordered container type
    * that tracks iterators that reference it.
@@ -57,99 +128,29 @@ namespace __gnu_debug
   template<typename _Container>
     class _Safe_unordered_container : public _Safe_unordered_container_base
     {
-    private:
-      _Container&
-      _M_cont() noexcept
-      { return *static_cast<_Container*>(this); }
+      const _Container&
+      _M_cont() const noexcept
+      { return *static_cast<const _Container*>(this); }
 
       const _Safe_unordered_container*
       _M_self() const
       { return this; }
 
     protected:
-      void
-      _M_invalidate_locals()
-      {
-	auto __local_end = _M_cont()._M_base().cend(0);
-	this->_M_invalidate_local_if(
-		[__local_end](__decltype(__local_end) __it)
-		{ return __it != __local_end; });
-      }
-
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       template<typename _ExtractKey, typename _Source>
-	struct _UContInvalidatePred
-	{
-	  template<typename _Iterator>
-	    bool
-	    operator()(_Iterator __it) const
-	    { return _M_source.count(_ExtractKey{}(*__it)) == 0; }
-
-	  const _Source& _M_source;
-	};
+	friend struct ::__gnu_debug::_UContInvalidatePred;
 
       template<typename _ExtractKey, typename _Source>
-	struct _UMContInvalidatePred
-	{
-	  template<typename _Iterator>
-	    bool
-	    operator()(_Iterator __it) const
-	    {
-	      auto __rng =
-		_M_source._M_base().equal_range(_ExtractKey{}(*__it));
-	      for (auto __rit = __rng.first;
-		   __rit != __rng.second; ++__rit)
-		{
-		  if (__it == __rit)
-		    return false;
-		}
-
-	      return true;
-	    }
-
-	  const _Source& _M_source;
-	};
+	friend struct ::__gnu_debug::_UMContInvalidatePred;
 
       template<typename _Source, typename _InvalidatePred>
-	struct _UContMergeGuard
-	{
-	  _UContMergeGuard(_Source& __src) noexcept
-	  : _M_source(__src), _M_size(__src.size()), _M_pred { __src }
-	  { }
-
-	  _UContMergeGuard(const _UContMergeGuard&) = delete;
-
-	  ~_UContMergeGuard()
-	  {
-	    const std::size_t __size = _M_source.size();
-	    if (__size == _M_size)
-	      return;
-
-	    __try
-	      {
-		if (__size == 0)
-		  _M_source._M_invalidate_all();
-		else
-		  {
-		    _M_source._M_invalidate_if(_M_pred);
-		    _M_source._M_invalidate_local_if(_M_pred);
-		  }
-	      }
-	    __catch(...)
-	      {
-		_M_source._M_invalidate_all();
-	      }
-	  }
-
-	  _Source& _M_source;
-	  const std::size_t _M_size;
-	  _InvalidatePred _M_pred;
-	};
+	friend struct ::__gnu_debug::_UContMergeGuard;
 
       template<typename _ExtractKey, typename _Source>
 	static _UContMergeGuard<_Source,
 				_UContInvalidatePred<_ExtractKey, _Source>>
-	_S_uc_guard(_ExtractKey, _Source& __src)
+	_S_uc_guard(_ExtractKey, _Safe_unordered_container<_Source>& __src)
 	{
 	  typedef _UContInvalidatePred<_ExtractKey, _Source> _InvalidatePred;
 	  return _UContMergeGuard<_Source, _InvalidatePred>(__src);
@@ -158,30 +159,72 @@ namespace __gnu_debug
       template<typename _ExtractKey, typename _Source>
 	static _UContMergeGuard<_Source,
 				_UMContInvalidatePred<_ExtractKey, _Source>>
-	_S_umc_guard(_ExtractKey, _Source& __src)
+	_S_umc_guard(_ExtractKey, _Safe_unordered_container<_Source>& __src)
 	{
 	  typedef _UMContInvalidatePred<_ExtractKey, _Source> _InvalidatePred;
 	  return _UContMergeGuard<_Source, _InvalidatePred>(__src);
 	}
-#endif // C++17
+#endif // >= C++17 && HOSTED
 
-    public:
       void
       _M_invalidate_all()
       {
+	__gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
 	auto __end = _M_cont()._M_base().cend();
-	this->_M_invalidate_if([__end](__decltype(__end) __it)
-			       { return __it != __end; });
-	_M_invalidate_locals();
+	_M_invalidate_if(
+	  [__end](decltype(__end) __it)
+	  { return __it != __end; },
+	  sentry);
+
+	auto __local_end = _M_cont()._M_base().cend(0);
+	_M_invalidate_local_if(
+	  [__local_end](decltype(__local_end) __it)
+	  { return __it != __local_end; },
+	  sentry);
       }
 
+      template<typename _Predicate>
+	void
+	_M_invalidate_all_if(_Predicate __pred)
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  _M_invalidate_if(__pred, sentry);
+	  _M_invalidate_local_if(__pred, sentry);
+	}
+
+      template<typename _VictimIt>
+	void
+	_M_invalidate(_VictimIt __victim)
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  _M_invalidate(__victim, sentry);
+	}
+
+      template<typename _VictimIt>
+	void
+	_M_invalidate(_VictimIt __victim, const __gnu_cxx::__scoped_lock& __lock)
+	{
+	  auto __end = _M_cont()._M_base().cend();
+	  _M_invalidate_if(
+	    [__victim](decltype(__end) __it)
+	    { return __it == __victim; },
+	    __lock);
+
+	  auto __local_end = _M_cont()._M_base().cend(0);
+	  _M_invalidate_local_if(
+	    [__victim](decltype(__local_end) __it)
+	    { return __it == __victim; },
+	    __lock);
+	}
+
+    private:
       /** Invalidates all iterators @c x that reference this container,
 	  are not singular, and for which @c __pred(x) returns @c
 	  true. @c __pred will be invoked with the normal iterators nested
 	  in the safe ones. */
       template<typename _Predicate>
 	void
-	_M_invalidate_if(_Predicate __pred);
+	_M_invalidate_if(_Predicate __pred, const __gnu_cxx::__scoped_lock&);
 
       /** Invalidates all local iterators @c x that reference this container,
 	  are not singular, and for which @c __pred(x) returns @c
@@ -189,7 +232,8 @@ namespace __gnu_debug
 	  nested in the safe ones. */
       template<typename _Predicate>
 	void
-	_M_invalidate_local_if(_Predicate __pred);
+	_M_invalidate_local_if(_Predicate __pred,
+			       const __gnu_cxx::__scoped_lock&);
     };
 } // namespace __gnu_debug
 

@@ -1,3 +1,6 @@
 // { dg-additional-options "-frust-crate-type=proc-macro" }
+#![feature(no_core)]
+#![no_core]
+
 
 pub fn wild_pub_function() {} // { dg-error ".proc-macro. crate types currently cannot export any items other than functions tagged with .#.proc_macro.., .#.proc_macro_derive.. or .#.proc_macro_attribute.." }

@@ -18,18 +18,17 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-#include "avoid-store-forwarding.h"
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "avoid-store-forwarding.h"
 #include "alias.h"
 #include "rtlanal.h"
 #include "cfgrtl.h"
 #include "tree-pass.h"
-#include "cselib.h"
 #include "predict.h"
 #include "insn-config.h"
 #include "expmed.h"
@@ -177,7 +176,7 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
      We can also eliminate stores on addresses that are overwritten
      by later stores.  */
 
-  sbitmap forwarded_bytes = sbitmap_alloc (load_size);
+  auto_sbitmap forwarded_bytes (load_size);
   bitmap_clear (forwarded_bytes);
 
   unsigned int i;
@@ -715,7 +714,7 @@ store_forwarding_analyzer::update_stats (function *fn)
   statistics_counter_event (fn, "Cases of store forwarding detected: ",
 			    stats_sf_detected);
   statistics_counter_event (fn, "Cases of store forwarding avoided: ",
-			    stats_sf_detected);
+			    stats_sf_avoided);
 }
 
 unsigned int

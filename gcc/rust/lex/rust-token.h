@@ -466,8 +466,16 @@ public:
   // Returns whether the token should have a string.
   bool should_have_str () const
   {
-    return is_literal () || token_id == IDENTIFIER || token_id == LIFETIME
-	   || token_id == INNER_DOC_COMMENT || token_id == OUTER_DOC_COMMENT;
+    switch (token_id)
+      {
+      case IDENTIFIER:
+      case LIFETIME:
+      case INNER_DOC_COMMENT:
+      case OUTER_DOC_COMMENT:
+	return true;
+      default:
+	return is_literal ();
+      }
   }
 
   // Returns whether the token is a pure decimal int literal

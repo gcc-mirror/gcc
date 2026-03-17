@@ -70,11 +70,32 @@
      contains CONST_POLY_INTs), build it up from individual elements instead.
      We should only need to do this before RA; aarch64_legitimate_constant_p
      should ensure that we don't try to rematerialize the constant later.  */
-  if (GET_CODE (operands[1]) == CONST_VECTOR
-      && targetm.cannot_force_const_mem (<MODE>mode, operands[1]))
+  if (GET_CODE (operands[1]) == CONST_VECTOR)
     {
-      aarch64_expand_vector_init (operands[0], operands[1]);
-      DONE;
+      if (targetm.cannot_force_const_mem (<MODE>mode, operands[1]))
+	{
+	  aarch64_expand_vector_init (operands[0], operands[1]);
+	  DONE;
+	}
+      else if (!aarch64_simd_imm_zero (operands[1], <MODE>mode)
+	       && !aarch64_simd_special_constant_p (operands[1], <MODE>mode)
+	       && !aarch64_simd_valid_mov_imm (operands[1]))
+	{
+	  rtx x;
+	  /* Expand into VDUP.  */
+	  if (TARGET_SIMD && const_vec_duplicate_p (operands[1], &x))
+	    {
+	      x = force_reg (GET_MODE_INNER (<MODE>mode), x);
+	      operands[1] = gen_vec_duplicate (<MODE>mode, x);
+	      emit_move_insn (operands[0], operands[1]);
+	      DONE;
+	    }
+
+	  /* Expand into a literal load using anchors.  */
+	  operands[1] = force_const_mem (<MODE>mode, operands[1]);
+	  emit_move_insn (operands[0], operands[1]);
+	  DONE;
+	}
     }
   "
 )

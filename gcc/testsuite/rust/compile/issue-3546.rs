@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 const L: usize = 3;
 
 fn main() {

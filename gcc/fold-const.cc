@@ -4340,7 +4340,7 @@ operand_compare::verify_hash_value (const_tree arg0, const_tree arg1,
 
 static operand_compare default_compare_instance;
 
-/* Conveinece wrapper around operand_compare class because usually we do
+/* Convenience wrapper around operand_compare class because usually we do
    not need to play with the valueizer.  */
 
 bool
@@ -16708,10 +16708,11 @@ c_getstr (tree str)
   return getbyterep (str, NULL);
 }
 
-/* Given a tree T, compute which bits in T may be nonzero.  */
+/* Helper for tree_nonzero_bits.  Given a tree T, compute which bits in T
+   may be nonzero, with precision PREC, the precision of T's type.  */
 
-wide_int
-tree_nonzero_bits (const_tree t)
+static wide_int
+tree_nonzero_bits (const_tree t, unsigned prec)
 {
   switch (TREE_CODE (t))
     {
@@ -16721,59 +16722,76 @@ tree_nonzero_bits (const_tree t)
       return get_nonzero_bits (t);
     case NON_LVALUE_EXPR:
     case SAVE_EXPR:
-      return tree_nonzero_bits (TREE_OPERAND (t, 0));
+      return tree_nonzero_bits (TREE_OPERAND (t, 0), prec);
     case BIT_AND_EXPR:
-      return wi::bit_and (tree_nonzero_bits (TREE_OPERAND (t, 0)),
-			  tree_nonzero_bits (TREE_OPERAND (t, 1)));
+      return wi::bit_and (tree_nonzero_bits (TREE_OPERAND (t, 0), prec),
+			  tree_nonzero_bits (TREE_OPERAND (t, 1), prec));
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
-      return wi::bit_or (tree_nonzero_bits (TREE_OPERAND (t, 0)),
-			 tree_nonzero_bits (TREE_OPERAND (t, 1)));
+      return wi::bit_or (tree_nonzero_bits (TREE_OPERAND (t, 0), prec),
+			 tree_nonzero_bits (TREE_OPERAND (t, 1), prec));
     case COND_EXPR:
-      return wi::bit_or (tree_nonzero_bits (TREE_OPERAND (t, 1)),
-			 tree_nonzero_bits (TREE_OPERAND (t, 2)));
+      return wi::bit_or (tree_nonzero_bits (TREE_OPERAND (t, 1), prec),
+			 tree_nonzero_bits (TREE_OPERAND (t, 2), prec));
     CASE_CONVERT:
-      return wide_int::from (tree_nonzero_bits (TREE_OPERAND (t, 0)),
-			     TYPE_PRECISION (TREE_TYPE (t)),
-			     TYPE_SIGN (TREE_TYPE (TREE_OPERAND (t, 0))));
+      if (TREE_TYPE (t) != error_mark_node
+	  && !error_operand_p (TREE_OPERAND (t, 0)))
+	{
+	  tree op0 = TREE_OPERAND (t, 0);
+	  tree inner_type = TREE_TYPE (op0);
+	  unsigned inner_prec = TYPE_PRECISION (inner_type);
+	  return wide_int::from (tree_nonzero_bits (op0, inner_prec),
+				 prec, TYPE_SIGN (inner_type));
+	}
+      break;
     case PLUS_EXPR:
       if (INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	{
-	  wide_int nzbits1 = tree_nonzero_bits (TREE_OPERAND (t, 0));
-	  wide_int nzbits2 = tree_nonzero_bits (TREE_OPERAND (t, 1));
+	  wide_int nzbits1 = tree_nonzero_bits (TREE_OPERAND (t, 0), prec);
+	  wide_int nzbits2 = tree_nonzero_bits (TREE_OPERAND (t, 1), prec);
 	  if (wi::bit_and (nzbits1, nzbits2) == 0)
 	    return wi::bit_or (nzbits1, nzbits2);
 	}
       break;
     case LSHIFT_EXPR:
-      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
+	  && TREE_TYPE (t) != error_mark_node)
 	{
 	  tree type = TREE_TYPE (t);
-	  wide_int nzbits = tree_nonzero_bits (TREE_OPERAND (t, 0));
-	  wide_int arg1 = wi::to_wide (TREE_OPERAND (t, 1),
-				       TYPE_PRECISION (type));
+	  wide_int nzbits = tree_nonzero_bits (TREE_OPERAND (t, 0), prec);
+	  wide_int arg1 = wi::to_wide (TREE_OPERAND (t, 1), prec);
 	  return wi::neg_p (arg1)
 		 ? wi::rshift (nzbits, -arg1, TYPE_SIGN (type))
 		 : wi::lshift (nzbits, arg1);
 	}
       break;
     case RSHIFT_EXPR:
-      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
-        {
+      if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST
+	  && TREE_TYPE (t) != error_mark_node)
+	{
 	  tree type = TREE_TYPE (t);
-	  wide_int nzbits = tree_nonzero_bits (TREE_OPERAND (t, 0));
-	  wide_int arg1 = wi::to_wide (TREE_OPERAND (t, 1),
-				       TYPE_PRECISION (type));
+	  wide_int nzbits = tree_nonzero_bits (TREE_OPERAND (t, 0), prec);
+	  wide_int arg1 = wi::to_wide (TREE_OPERAND (t, 1), prec);
 	  return wi::neg_p (arg1)
 		 ? wi::lshift (nzbits, -arg1)
 		 : wi::rshift (nzbits, arg1, TYPE_SIGN (type));
-        }
+	}
       break;
     default:
       break;
     }
 
-  return wi::shwi (-1, TYPE_PRECISION (TREE_TYPE (t)));
+  return wi::shwi (-1, prec);
+}
+
+/* Given a tree T, compute which bits in T may be nonzero.  */
+
+wide_int
+tree_nonzero_bits (const_tree t)
+{
+  if (error_operand_p (t))
+    return wi::shwi (-1, 64);
+  return tree_nonzero_bits (t, TYPE_PRECISION (TREE_TYPE (t)));
 }
 
 /* Helper function for address compare simplifications in match.pd.

@@ -1268,16 +1268,16 @@ class rejected_op_constraint : public rejected_constraint
 {
 public:
   rejected_op_constraint (const region_model &model,
-			  tree lhs, enum tree_code op, tree rhs)
+			  const svalue *lhs, enum tree_code op, const svalue *rhs)
   : rejected_constraint (model),
     m_lhs (lhs), m_op (op), m_rhs (rhs)
   {}
 
   void dump_to_pp (pretty_printer *pp) const final override;
 
-  tree m_lhs;
+  const svalue *m_lhs;
   enum tree_code m_op;
-  tree m_rhs;
+  const svalue *m_rhs;
 };
 
 class rejected_default_case : public rejected_constraint

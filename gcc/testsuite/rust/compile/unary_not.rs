@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let a: i32 = -1;
     let b: i32 = 3 - -1;

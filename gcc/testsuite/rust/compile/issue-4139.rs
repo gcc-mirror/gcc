@@ -1,4 +1,7 @@
 // { dg-skip-if "" { *-*-* } { "-m32" } { "" } }
+#![feature(no_core)]
+#![no_core]
+
 const X: i32 = const {
     let a = 0x736f6d6570736575;
     // { dg-error "integer overflows the respective type" "" { target *-*-* } .-1 }

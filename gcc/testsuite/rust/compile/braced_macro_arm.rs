@@ -1,5 +1,8 @@
 // Braced macro invocations are not allowed as match arms without a semicolon,
 // even though they are allowed as statements without a semicolon.
+#![feature(no_core)]
+#![no_core]
+
 
 macro_rules! m {
     () => { 1 }

@@ -969,8 +969,6 @@ namespace ranges
 
   struct __distance_fn final
   {
-    // _GLIBCXX_RESOLVE_LIB_DEFECTS
-    // 3664. LWG 3392 broke std::ranges::distance(a, a+3)
     template<typename _It, sentinel_for<_It> _Sent>
       requires (!sized_sentinel_for<_Sent, _It>)
       constexpr iter_difference_t<_It>
@@ -985,11 +983,20 @@ namespace ranges
 	return __n;
       }
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3392. cannot be used on a move-only iterator with a sized sentinel
+    // 3664. LWG 3392 broke std::ranges::distance(a, a+3)
+    // 4242. ranges::distance does not work with volatile iterators
     template<typename _It, sized_sentinel_for<decay_t<_It>> _Sent>
       [[nodiscard, __gnu__::__always_inline__]]
       constexpr iter_difference_t<decay_t<_It>>
       operator()(_It&& __first, _Sent __last) const
-      { return __last - static_cast<const decay_t<_It>&>(__first); }
+      {
+	if constexpr (!is_array_v<remove_reference_t<_It>>)
+	  return __last - __first;
+	else
+	  return __last - static_cast<decay_t<_It>>(__first);
+      }
 
     template<range _Range>
       [[nodiscard, __gnu__::__always_inline__]]

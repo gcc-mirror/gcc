@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main(){
     let foo = 1337;
     let bar_ptr = &foo as *const i32;

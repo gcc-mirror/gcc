@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #![allow(unused)]
 const SOME_CONST: i32 = 12;
 

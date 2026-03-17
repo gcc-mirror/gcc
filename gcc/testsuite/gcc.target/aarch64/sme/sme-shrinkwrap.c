@@ -1,4 +1,4 @@
-/* { dg-options "-O3 -fshrink-wrap" } */
+/* { dg-options "-O3 -fshrink-wrap -save-temps" } */
 /* { dg-do run { target { aarch64_sme_hw && aarch64_sve_hw } } } */
 /* { dg-do compile { target { ! { aarch64_sme_hw && aarch64_sve_hw } } } } */
 /* { dg-final { check-function-bodies "**" "" } } */
@@ -46,6 +46,7 @@ int foo(int x)
 **	...
 */
 
+[[gnu::noipa]]
 __arm_locally_streaming
 int bar(int x)
 {
@@ -69,7 +70,6 @@ int baz(int x)
     return svcntd();
 }
 
-[[gnu::noipa]]
 int main()
 {
   if (bar(0) != svcntsd())

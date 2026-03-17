@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test3(x: i32) -> i32 {
     if x > 1 {
         5

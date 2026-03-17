@@ -702,18 +702,38 @@ HIRCompileBase::compile_function (
       /* So that 'MAIN_NAME_P' works.  */
       main_identifier_node = get_identifier (ir_symbol_name.c_str ());
     }
+  // Local name because fn_name is not mutable.
   std::string asm_name = fn_name;
+
+  // conditionally mangle the function name
+  bool should_mangle = true;
+
+  auto get_export_name = [] (AST::Attribute &attr) {
+    return attr.get_path ().as_string () == Values::Attributes::EXPORT_NAME;
+  };
+  auto export_name_attr
+    = std::find_if (outer_attrs.begin (), outer_attrs.end (), get_export_name);
+
+  tl::optional<std::string> backend_asm_name = tl::nullopt;
+
+  if (export_name_attr != outer_attrs.end ())
+    {
+      asm_name
+	= Analysis::Attributes::extract_string_literal (*export_name_attr)
+	    .value (); // Checked within attribute checker
+      backend_asm_name = asm_name;
+      should_mangle = false;
+    }
 
   unsigned int flags = 0;
   tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name,
-				   tl::nullopt /* asm_name */, flags, locus);
+				   backend_asm_name, flags, locus);
 
   setup_fndecl (fndecl, is_main_fn, fntype->has_substitutions_defined (),
 		visibility, qualifiers, outer_attrs);
   setup_abi_options (fndecl, get_abi (outer_attrs, qualifiers));
 
-  // conditionally mangle the function name
-  bool should_mangle = should_mangle_item (fndecl);
+  should_mangle &= should_mangle_item (fndecl);
   if (!is_main_fn && should_mangle)
     asm_name = ctx->mangle_item (fntype, canonical_path);
   SET_DECL_ASSEMBLER_NAME (fndecl,

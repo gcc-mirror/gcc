@@ -1,4 +1,7 @@
 // { dg-output "invok\r*\ninvok\r*\ninvok\r*\ninvok\r*\ninvok\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

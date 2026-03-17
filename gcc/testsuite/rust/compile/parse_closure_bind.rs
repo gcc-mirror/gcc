@@ -1,5 +1,8 @@
 // { dg-additional-options "-frust-compile-until=typecheck" }
 // TODO: this should typecheck
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 
 #[lang = "sized"]

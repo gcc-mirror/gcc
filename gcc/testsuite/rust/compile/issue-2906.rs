@@ -1,4 +1,7 @@
 // { dg-warning "field is never read: .a." "" { target *-*-* } .-1 }
+#![feature(no_core)]
+#![no_core]
+
 struct Foo { a: i32 }
 
 fn main() {

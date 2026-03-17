@@ -83,7 +83,8 @@ DeriveVisitor::ImplGenerics
 DeriveVisitor::setup_impl_generics (
   const std::string &type_name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics,
-  tl::optional<std::unique_ptr<TypeParamBound>> &&extra_bound) const
+  tl::optional<std::function<std::unique_ptr<TypeParamBound> ()>> &&extra_bound)
+  const
 {
   std::vector<Lifetime> lifetime_args;
   std::vector<GenericArg> generic_args;
@@ -119,8 +120,7 @@ DeriveVisitor::setup_impl_generics (
 	    std::vector<std::unique_ptr<TypeParamBound>> extra_bounds;
 
 	    if (extra_bound)
-	      extra_bounds.emplace_back (
-		extra_bound.value ()->clone_type_param_bound ());
+	      extra_bounds.emplace_back (extra_bound.value () ());
 
 	    auto impl_type_param
 	      = builder.new_type_param (type_param, std::move (extra_bounds));

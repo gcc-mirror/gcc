@@ -1,4 +1,7 @@
 // { dg-output "other!\r*\nother!\r*\nother!\r*\nfifteen!\r*\nfifteen!\r*\nother!\r*\nother!\r*\nfifteen!\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 
 extern "C" {
     fn printf(s: *const i8, ...);

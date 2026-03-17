@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 trait MemoryUnit {
     extern "C" fn read_dword(&'s self) -> u16 {}
     // { dg-error {failed to resolve lifetime} "" { target *-*-* } .-1 }

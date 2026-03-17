@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let mut x = [1, 2, 3];
     let y: i32 = x[0];

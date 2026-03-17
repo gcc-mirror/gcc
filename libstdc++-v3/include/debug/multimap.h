@@ -360,6 +360,18 @@ namespace __debug
 	return {};
       }
 
+# ifdef __glibcxx_associative_heterogeneous_erasure
+      template <__heterogeneous_tree_key<multimap> _Kt>
+	node_type
+	extract(_Kt&& __key)
+	{
+	  const auto __position = find(__key);
+	  if (__position != end())
+	    return extract(__position);
+	  return {};
+	}
+# endif
+
       iterator
       insert(node_type&& __nh)
       { return { _Base::insert(std::move(__nh)), this }; }
@@ -419,6 +431,23 @@ namespace __debug
 	  }
 	return __count;
       }
+
+# ifdef __glibcxx_associative_heterogeneous_erasure
+      template <__heterogeneous_tree_key<multimap> _Kt>
+	size_type
+	erase(_Kt&& __x)
+	{
+	  auto __victims = _Base::equal_range(__x);
+	  size_type __count = 0;
+	  for (auto __victim = __victims.first; __victim != __victims.second;)
+	    {
+	      this->_M_invalidate_if(_Equal(__victim));
+	      _Base::erase(__victim++);
+	      ++__count;
+	    }
+	  return __count;
+	}
+# endif
 
 #if __cplusplus >= 201103L
       iterator

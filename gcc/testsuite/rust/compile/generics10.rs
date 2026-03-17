@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct Foo<A, B>(A, B);
 
 impl<X = i32> Foo<X, f32> { // { dg-error "defaults for type parameters are only allowed in .struct., .enum., .type., or .trait. definitions" }

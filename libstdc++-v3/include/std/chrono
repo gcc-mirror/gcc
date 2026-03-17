@@ -2361,6 +2361,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_ss._M_r = duration_cast<precision>(__ss).count();
 	}
 
+	// _GLIBCXX_RESOLVE_LIB_DEFECTS
+	// 4274. hh_mm_ss constructor is ill-formed for unsigned durations
 	static constexpr _Duration
 	_S_abs(_Duration __d)
 	{

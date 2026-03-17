@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-compile-until=compilation -frust-borrowcheck" }
+#![feature(no_core)]
+#![no_core]
+
 fn test_move_behind_reference() {
     // { dg-error "Cannot move from behind a reference." "" { target *-*-* } .-1 }
     struct A {

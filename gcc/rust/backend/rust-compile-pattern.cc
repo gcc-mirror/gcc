@@ -297,8 +297,18 @@ CompilePatternCheckExpr::visit (HIR::StructPattern &pattern)
 	{
 	case HIR::StructPatternField::ItemType::TUPLE_PAT:
 	  {
-	    // TODO
-	    rust_unreachable ();
+	    HIR::StructPatternFieldTuplePat &tuple_pat
+	      = static_cast<HIR::StructPatternFieldTuplePat &> (*field.get ());
+	    size_t tuple_pat_index = tuple_pat.get_index ();
+	    tree field_expr
+	      = Backend::struct_field_expression (variant_accesser_expr,
+						  tuple_pat_index,
+						  tuple_pat.get_locus ());
+	    tree check_expr_sub = CompilePatternCheckExpr::Compile (
+	      tuple_pat.get_tuple_pattern (), field_expr, ctx);
+	    check_expr = Backend::arithmetic_or_logical_expression (
+	      ArithmeticOrLogicalOperator::BITWISE_AND, check_expr,
+	      check_expr_sub, tuple_pat.get_locus ());
 	  }
 	  break;
 
@@ -954,9 +964,40 @@ CompilePatternBindings::handle_struct_pattern_ident_pat (
 
 void
 CompilePatternBindings::handle_struct_pattern_tuple_pat (
-  HIR::StructPatternField &pat)
+  HIR::StructPatternField &pat, TyTy::ADTType *adt, TyTy::VariantDef *variant,
+  int variant_index)
 {
-  rust_unreachable ();
+  HIR::StructPatternFieldTuplePat &tuple_pat
+    = static_cast<HIR::StructPatternFieldTuplePat &> (pat);
+
+  size_t tuple_pat_index = tuple_pat.get_index ();
+  tree binding;
+
+  if (adt->is_enum ())
+    {
+      tree payload_accessor_union
+	= Backend::struct_field_expression (match_scrutinee_expr, 1,
+					    pat.get_locus ());
+
+      tree variant_accessor
+	= Backend::struct_field_expression (payload_accessor_union,
+					    variant_index, pat.get_locus ());
+
+      binding
+	= Backend::struct_field_expression (variant_accessor, tuple_pat_index,
+					    pat.get_locus ());
+    }
+  else
+    {
+      tree variant_accessor = match_scrutinee_expr;
+
+      binding
+	= Backend::struct_field_expression (variant_accessor, tuple_pat_index,
+					    pat.get_locus ());
+    }
+
+  CompilePatternBindings::Compile (tuple_pat.get_tuple_pattern (), binding,
+				   ctx);
 }
 
 void
@@ -996,7 +1037,7 @@ CompilePatternBindings::visit (HIR::StructPattern &pattern)
       switch (field->get_item_type ())
 	{
 	case HIR::StructPatternField::ItemType::TUPLE_PAT:
-	  handle_struct_pattern_tuple_pat (*field);
+	  handle_struct_pattern_tuple_pat (*field, adt, variant, variant_index);
 	  break;
 	case HIR::StructPatternField::ItemType::IDENT_PAT:
 	  handle_struct_pattern_ident_pat (*field, adt, variant, variant_index);

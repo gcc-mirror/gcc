@@ -5,6 +5,9 @@
 // since we aren't trying to match error messages too closely
 // and the >=1.66 error message is nicer
 // we may as well mimic that
+#![feature(no_core)]
+#![no_core]
+
 
 impl ((Self, i32)) {}
 // { dg-error ".Self. is not valid in the self" "" { target *-*-* } .-1 }

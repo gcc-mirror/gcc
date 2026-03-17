@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn main() {
     let mut num = 2;
     let r1: *const i32 = &num;

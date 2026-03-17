@@ -1,4 +1,7 @@
 // { dg-xfail-if "pub visibility not supported #432"  *-*-* }
+#![feature(no_core)]
+#![no_core]
+
 
 mod foomod {
     pub struct Foo {

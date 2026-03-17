@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #[no_mangle]
 fn do_not_mangle() -> i32 {
     0 

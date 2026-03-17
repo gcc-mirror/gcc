@@ -120,7 +120,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// from UTF-8 to ordinary literal encoding failed.
 	// In that case what() should be non-constant.
 	if (_M_what.size() == 0 && _M_u8what.size() != 0)
-	  asm("");
+#if __has_builtin(__builtin_constexpr_diag)
+	  __builtin_constexpr_diag (2, "",
+				    "std::meta::exception message could not "
+				    "be successfully transcoded from UTF-8 to "
+				    "ordinary literal encoding");
+#else
+	  __asm__("");
+#endif
 	return _M_what.c_str();
       }
       consteval u8string_view u8what() const noexcept { return _M_u8what; }
@@ -591,7 +598,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     access_context::via(info __cls) const
     {
       if (__cls != info {}
-	  && (!std::meta::is_class_type(__cls)
+	  && (!std::meta::is_type(__cls)
+	      || !std::meta::is_class_type(__cls)
 	      || !std::meta::is_complete_type(__cls)))
 	{
 #if __cpp_exceptions
@@ -599,7 +607,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				       "or complete class type reflection",
 				     ^^access_context::via);
 #else
-	  asm("");
+#if __has_builtin(__builtin_constexpr_diag)
+	  __builtin_constexpr_diag (2, "",
+				    "std::meta::access_context::via argument "
+				    "other than null or complete class type "
+				    "reflection");
+#else
+	  __asm__("");
+#endif
 	  return *this;
 #endif
 	}
@@ -642,8 +657,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::addressof(meta::extract<const _Up&>(__cst));
 	}
       else
-	return std::define_static_array(span<const _Up>(std::addressof(__t),
-							1)).data();
+	return std::define_static_array(span(std::addressof(__t), 1)).data();
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

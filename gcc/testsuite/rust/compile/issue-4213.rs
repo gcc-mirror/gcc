@@ -1,4 +1,7 @@
 // Test for issue #4213 - rogue macro detected during Lowering.
+#![feature(no_core)]
+#![no_core]
+
 
 macro_rules! inner {
     () => {

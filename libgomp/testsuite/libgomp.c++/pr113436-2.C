@@ -19,7 +19,26 @@ test_int_by_ref ()
     }
 }
 
+void
+test_vla_by_ref (int n)
+{
+  int x[n];
+  for (int i = 0; i < n; i++)
+    x[i] = i;
+  int (&y)[n] = x;
+
+  #pragma omp target private(y) \
+		     allocate(allocator(omp_low_lat_mem_alloc), align(128): y)
+    {
+      if (((uintptr_t) &y) % 128  != 0)
+	__builtin_abort ();
+      for (int i = 0; i < n; i++)
+	y[i] = i + 1;
+    }
+}
+
 int main ()
 {
   test_int_by_ref ();
+  test_vla_by_ref (17);
 }

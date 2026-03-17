@@ -106,3 +106,14 @@ GCC_3.5 {
 GCC_4.3.0 {
   _Unwind_Backtrace
 }
+
+%inherit GCC_14.0.0 GCC_4.3.0
+GGC_14.0.0 {
+    __fixsfbitint
+    __fixdfbitint
+    __floatbitinthf
+    __floatbitintsf
+    __floatbitintdf
+    __mulbitint3
+    __divmodbitint4
+}

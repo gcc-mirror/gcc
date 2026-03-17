@@ -777,6 +777,9 @@
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
 
+/* Define to 1 if you have the `mmap' function. */
+#undef HAVE_MMAP
+
 /* Define to 1 if you have the `newlocale' function. */
 #undef HAVE_NEWLOCALE
 
@@ -806,6 +809,9 @@
 
 /* Define to 1 if you have the `powf128' function. */
 #undef HAVE_POWF128
+
+/* Have PTHREAD_PRIO_INHERIT. */
+#undef HAVE_PTHREAD_PRIO_INHERIT
 
 /* Define to 1 if the system has the type `ptrdiff_t'. */
 #undef HAVE_PTRDIFF_T
@@ -842,6 +848,9 @@
 
 /* Define to 1 if you have the `secure_getenv' function. */
 #undef HAVE_SECURE_GETENV
+
+/* Define to 1 if you have the `setenv' function. */
+#undef HAVE_SETENV
 
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
@@ -944,6 +953,9 @@
 
 /* Define to 1 if you have the `symlink' function. */
 #undef HAVE_SYMLINK
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/random.h> header file. */
 #undef HAVE_SYS_RANDOM_H
@@ -1173,6 +1185,10 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define to necessary symbol if this constant uses a non-standard name on
+   your system. */
+#undef PTHREAD_CREATE_JOINABLE
 
 /* The size of `char', as computed by sizeof. */
 #undef SIZEOF_CHAR

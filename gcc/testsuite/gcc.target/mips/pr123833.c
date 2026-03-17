@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -mabi=64 -mhard-float" } */
+/* { dg-options "-mabi=64 -mhard-float" } */
 
 typedef short int16_t;
 typedef signed char int8_t;

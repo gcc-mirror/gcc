@@ -69,6 +69,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr bool __platform_wait_uses_type
       = __detail::__waitable<_Tp>
 	  && sizeof(_Tp) == sizeof(int) && alignof(_Tp) >= 4;
+#elif defined __FreeBSD__ && __SIZEOF_LONG__ == 8
+  namespace __detail
+  {
+    using __platform_wait_t = __UINT64_TYPE__;
+    inline constexpr size_t __platform_wait_alignment = 8;
+  }
+  template<typename _Tp>
+    inline constexpr bool __platform_wait_uses_type
+      = __detail::__waitable<_Tp>
+	  && ((sizeof(_Tp) == 4 && alignof(_Tp) >= 4)
+		|| (sizeof(_Tp) == 8 && alignof(_Tp) >= 8));
 #else
 // define _GLIBCX_HAVE_PLATFORM_WAIT and implement __platform_wait()
 // and __platform_notify() if there is a more efficient primitive supported

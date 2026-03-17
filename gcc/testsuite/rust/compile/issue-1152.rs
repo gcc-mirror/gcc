@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test() {
     let f = [0; -4_isize];
     // { dg-error "mismatched types, expected .usize. but got .isize." "" { target *-*-* } .-1 }

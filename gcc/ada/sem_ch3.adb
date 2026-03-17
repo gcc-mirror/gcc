@@ -18376,12 +18376,10 @@ package body Sem_Ch3 is
 
                   Insert_List_After_And_Analyze (N, Actions);
 
-                  --  Add a Compile_Time_Error sizing check as a hint
-                  --  to the backend since we don't know the true size of
-                  --  anything at this point.
+                  --  Add a Compile_Time_Error size check at the freeze point
 
-                  Append_Freeze_Actions (T,
-                    New_List (Make_CW_Size_Compile_Check (T, Root_Class_Typ)));
+                  Append_Freeze_Action (T,
+                    Make_CW_Size_Compile_Check (T, Root_Class_Typ));
                end if;
             end if;
          end;

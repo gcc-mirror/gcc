@@ -1,4 +1,7 @@
 // Check the follow-set of :vis in macro rules.
+#![feature(no_core)]
+#![no_core]
+
 
 macro_rules! my_mac {
     ($v:vis async) => {

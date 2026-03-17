@@ -27,7 +27,7 @@
 #if __glibcxx_atomic_wait
 #include <atomic>
 #include <bits/atomic_timed_wait.h>
-#include <cstdint> // uint32_t, uint64_t
+#include <cstdint> // uint32_t, uint64_t, uintptr_t
 #include <climits> // INT_MAX
 #include <cerrno>  // errno, ETIMEDOUT, etc.
 #include <bits/std_mutex.h>  // std::mutex, std::__condvar
@@ -38,6 +38,11 @@
 # include <sys/syscall.h> // SYS_futex
 # include <unistd.h>
 # include <sys/time.h> // timespec
+# define _GLIBCXX_HAVE_PLATFORM_WAIT 1
+#elif defined __FreeBSD__ && __FreeBSD__ >= 11 && __SIZEOF_LONG__ == 8
+# include <sys/types.h>
+# include <sys/umtx.h>
+# include <sys/time.h>
 # define _GLIBCXX_HAVE_PLATFORM_WAIT 1
 #endif
 
@@ -87,6 +92,13 @@ namespace
 			__wait_clock_t::time_point timeout,
 			int obj_size) = delete;
 
+  // This is needed even when we don't have __platform_wait
+  [[gnu::always_inline]]
+  inline __wait_value_type
+  __platform_load(const __platform_wait_t* addr, int memory_order,
+		  int /* obj_sz */) noexcept
+  { return __atomic_load_n(addr, memory_order); }
+
 #elif defined _GLIBCXX_HAVE_LINUX_FUTEX
 
   const int futex_private_flag = 128;
@@ -135,6 +147,68 @@ namespace
 	  __throw_system_error(errno);
       }
     return true;
+  }
+
+  [[gnu::always_inline]]
+  inline __wait_value_type
+  __platform_load(const int* addr, int order, int /* obj_sz */) noexcept
+  { return __atomic_load_n(addr, order); }
+
+#elif defined __FreeBSD__ && __SIZEOF_LONG__ == 8
+  [[gnu::always_inline]]
+  inline int
+  wait_op(int obj_sz) noexcept
+  { return obj_sz == sizeof(unsigned) ? UMTX_OP_WAIT_UINT : UMTX_OP_WAIT; }
+
+  void
+  __platform_wait(const void* addr, uint64_t val, int obj_sz) noexcept
+  {
+    if (_umtx_op(const_cast<void*>(addr), wait_op(obj_sz), val,
+		 nullptr, nullptr))
+      if (errno != EINTR)
+	__throw_system_error(errno);
+  }
+
+  void
+  __platform_notify(const void* addr, bool all, int /* obj_sz */) noexcept
+  {
+    const int count = all ? INT_MAX : 1;
+    _umtx_op(const_cast<void*>(addr), UMTX_OP_WAKE, count, nullptr, nullptr);
+  }
+
+  // returns true if wait ended before timeout
+  bool
+  __platform_wait_until(const void* addr, uint64_t val,
+			const __wait_clock_t::time_point& atime,
+			int obj_sz) noexcept
+  {
+    struct _umtx_time timeout = {
+      ._timeout = chrono::__to_timeout_timespec(atime),
+      ._flags = UMTX_ABSTIME,
+      ._clockid = CLOCK_MONOTONIC
+    };
+    // _umtx_op hangs if timeout._timeout is {0, 0}
+    if (atime.time_since_epoch() < chrono::nanoseconds(1))
+      return false;
+    constexpr uintptr_t timeout_sz = sizeof(timeout);
+    if (_umtx_op(const_cast<void*>(addr), wait_op(obj_sz), val,
+		 (void*)timeout_sz, &timeout))
+      {
+	if (errno == ETIMEDOUT)
+	  return false;
+	if (errno != EINTR)
+	  __throw_system_error(errno);
+      }
+    return true;
+  }
+
+  [[gnu::always_inline]]
+  inline __wait_value_type
+  __platform_load(const void* addr, int order, int obj_sz) noexcept
+  {
+    if (obj_sz == sizeof(long))
+      return __atomic_load_n(static_cast<const long*>(addr), order);
+    return __atomic_load_n(static_cast<const unsigned*>(addr), order);
   }
 #endif // HAVE_PLATFORM_WAIT
 
@@ -259,7 +333,7 @@ namespace
     __wait_value_type wval;
     for (auto i = 0; i < atomic_spin_count; ++i)
       {
-	wval = __atomic_load_n(addr, args._M_order);
+	wval = __platform_load(addr, args._M_order, args._M_obj_size);
 	if (wval != args._M_old)
 	  return { ._M_val = wval, ._M_has_val = true, ._M_timeout = false };
 	if (i < atomic_spin_count_relax)

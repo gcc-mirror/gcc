@@ -466,14 +466,36 @@ gfc_omp_replace_alloc_by_to_mapping (tree type, tree decl, bool ptr_ok)
 }
 
 
-/* Return true if TYPE is polymorphic but not with pointer attribute.  */
-
 static bool
 gfc_is_polymorphic_nonptr (tree type)
 {
   if (POINTER_TYPE_P (type))
     type = TREE_TYPE (type);
   return GFC_CLASS_TYPE_P (type);
+}
+
+/* Return true if TYPE is a class container for a POINTER entity.  */
+
+static bool
+gfc_is_class_pointer_type (tree type)
+{
+  tree name;
+  const char *s;
+
+  if (POINTER_TYPE_P (type))
+    type = TREE_TYPE (type);
+
+  if (!GFC_CLASS_TYPE_P (type))
+    return false;
+
+  name = TYPE_NAME (type);
+  if (name && TREE_CODE (name) == TYPE_DECL)
+    name = DECL_NAME (name);
+  if (!name)
+    return false;
+
+  s = IDENTIFIER_POINTER (name);
+  return startswith (s, "__class_") && s[strlen (s) - 1] == 'p';
 }
 
 /* Return true if TYPE is unlimited polymorphic but not with pointer attribute;
@@ -815,7 +837,10 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
       return NULL_TREE;
     }
 
-  gcc_assert (outer != NULL_TREE);
+  gcc_assert (outer != NULL_TREE
+	      || (!GFC_DESCRIPTOR_TYPE_P (type)
+		  && !gfc_has_alloc_comps (type, OMP_CLAUSE_DECL (clause),
+					   false)));
 
   /* Allocatable arrays and scalars in PRIVATE clauses need to be set to
      "not currently allocated" allocation status if outer
@@ -905,22 +930,29 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
 {
   tree type = TREE_TYPE (dest), ptr, size, call;
   tree decl_type = TREE_TYPE (OMP_CLAUSE_DECL (clause));
+  tree orig_decl = OMP_CLAUSE_DECL (clause);
   tree cond, then_b, else_b;
   stmtblock_t block, cond_block;
 
   gcc_assert (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_FIRSTPRIVATE
 	      || OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_LINEAR);
 
-  /* Privatize pointer, only; cf. gfc_omp_predetermined_sharing. */
-  if (DECL_P (OMP_CLAUSE_DECL (clause))
-      && GFC_DECL_ASSOCIATE_VAR_P (OMP_CLAUSE_DECL (clause)))
-    return build2 (MODIFY_EXPR, TREE_TYPE (dest), dest, src);
+  if (DECL_ARTIFICIAL (orig_decl)
+      && DECL_LANG_SPECIFIC (orig_decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (orig_decl))
+    {
+      orig_decl = GFC_DECL_SAVED_DESCRIPTOR (orig_decl);
+      decl_type = TREE_TYPE (orig_decl);
+    }
 
-  if (DECL_ARTIFICIAL (OMP_CLAUSE_DECL (clause))
-      && DECL_LANG_SPECIFIC (OMP_CLAUSE_DECL (clause))
-      && GFC_DECL_SAVED_DESCRIPTOR (OMP_CLAUSE_DECL (clause)))
-    decl_type
-      = TREE_TYPE (GFC_DECL_SAVED_DESCRIPTOR (OMP_CLAUSE_DECL (clause)));
+  /* Privatize pointer association only; cf. gfc_omp_predetermined_sharing.
+     This includes scalar class pointers, whose tree type is still the class
+     record even though the Fortran entity has POINTER semantics.  */
+  if (DECL_P (orig_decl)
+      && (GFC_DECL_ASSOCIATE_VAR_P (orig_decl)
+	  || GFC_DECL_GET_SCALAR_POINTER (orig_decl)
+	  || gfc_is_class_pointer_type (decl_type)))
+    return build2 (MODIFY_EXPR, TREE_TYPE (dest), dest, src);
 
   if (gfc_is_polymorphic_nonptr (decl_type))
     {
@@ -1428,17 +1460,23 @@ gfc_omp_clause_dtor (tree clause, tree decl)
 {
   tree type = TREE_TYPE (decl), tem;
   tree decl_type = TREE_TYPE (OMP_CLAUSE_DECL (clause));
+  tree orig_decl = OMP_CLAUSE_DECL (clause);
 
-  /* Only pointer was privatized; cf. gfc_omp_clause_copy_ctor. */
-  if (DECL_P (OMP_CLAUSE_DECL (clause))
-      && GFC_DECL_ASSOCIATE_VAR_P (OMP_CLAUSE_DECL (clause)))
+  if (DECL_ARTIFICIAL (orig_decl)
+      && DECL_LANG_SPECIFIC (orig_decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (orig_decl))
+    {
+      orig_decl = GFC_DECL_SAVED_DESCRIPTOR (orig_decl);
+      decl_type = TREE_TYPE (orig_decl);
+    }
+
+  /* Only pointer association was privatized; cf. gfc_omp_clause_copy_ctor.
+     Scalar class pointers must not finalize or free their targets here.  */
+  if (DECL_P (orig_decl)
+      && (GFC_DECL_ASSOCIATE_VAR_P (orig_decl)
+	  || GFC_DECL_GET_SCALAR_POINTER (orig_decl)
+	  || gfc_is_class_pointer_type (decl_type)))
     return NULL_TREE;
-
-  if (DECL_ARTIFICIAL (OMP_CLAUSE_DECL (clause))
-      && DECL_LANG_SPECIFIC (OMP_CLAUSE_DECL (clause))
-      && GFC_DECL_SAVED_DESCRIPTOR (OMP_CLAUSE_DECL (clause)))
-    decl_type
-	= TREE_TYPE (GFC_DECL_SAVED_DESCRIPTOR (OMP_CLAUSE_DECL (clause)));
   if (gfc_is_polymorphic_nonptr (decl_type))
     {
       if (POINTER_TYPE_P (decl_type))
@@ -4154,7 +4192,11 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		{
 		  tree ptr;
 		  gfc_init_se (&se, NULL);
-		  if (n->expr->ref->u.ar.type == AR_ELEMENT)
+		  /* The first ref can be an element selection on the base
+		     object while the full expression still denotes an array,
+		     e.g. x(j)%a.  Pick the lowering path from the overall
+		     expression rank, not from the first REF_ARRAY.  */
+		  if (n->expr->rank == 0)
 		    {
 		      gfc_conv_expr_reference (&se, n->expr);
 		      ptr = se.expr;
@@ -7438,7 +7480,7 @@ gfc_trans_omp_depobj (gfc_code *code)
       else if (n->expr && n->expr->ref->u.ar.type != AR_FULL)
 	{
 	  gfc_init_se (&se, NULL);
-	  if (n->expr->ref->u.ar.type == AR_ELEMENT)
+	  if (n->expr->rank == 0)
 	    {
 	      gfc_conv_expr_reference (&se, n->expr);
 	      var = se.expr;

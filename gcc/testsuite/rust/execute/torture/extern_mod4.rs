@@ -1,5 +1,8 @@
 // { dg-additional-options "-w" }
 // { dg-output "12\r*" }
+#![feature(no_core)]
+#![no_core]
+
 mod modules;
 
 extern "C" {

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn myfun0(...,_:i32) {}
 // { dg-error "only foreign or .unsafe extern \"C\". functions may be C-variadic" "" { target *-*-* } .-1 }
 

@@ -1,13 +1,17 @@
+#![feature(no_core)]
 #![feature(lang_items)]
+#![no_core]
 
 #[derive(Default)]
 struct Foo { _a: i32, _b: i64, _c: u8 }
 
 #[lang = "sized"]
-trait Sized {}
+pub trait Sized {}
 
 mod core {
     mod default {
+        use crate::Sized;
+
         trait Default: Sized {
             fn default() -> Self;
         }

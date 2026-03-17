@@ -58,18 +58,19 @@ DeriveOrd::cmp_impl (
   auto fn = cmp_fn (std::move (fn_block), type_name);
 
   auto trait = ordering == Ordering::Partial ? "PartialOrd" : "Ord";
-  auto trait_path = builder.type_path ({"core", "cmp", trait}, true);
+  auto trait_path = [&, this] () {
+    return builder.type_path ({"core", "cmp", trait}, true);
+  };
 
   auto trait_bound
-    = builder.trait_bound (builder.type_path ({"core", "cmp", trait}, true));
+    = [&, this] () { return builder.trait_bound (trait_path ()); };
 
   auto trait_items = vec (std::move (fn));
 
   auto cmp_generics
-    = setup_impl_generics (type_name.as_string (), type_generics,
-			   std::move (trait_bound));
+    = setup_impl_generics (type_name.as_string (), type_generics, trait_bound);
 
-  return builder.trait_impl (trait_path, std::move (cmp_generics.self_type),
+  return builder.trait_impl (trait_path (), std::move (cmp_generics.self_type),
 			     std::move (trait_items),
 			     std::move (cmp_generics.impl));
 }

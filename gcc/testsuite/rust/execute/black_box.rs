@@ -1,4 +1,7 @@
 /* { dg-output "Value is: 42\r*\n" } */
+#![feature(no_core)]
+#![no_core]
+
 #![feature(rustc_attrs, lang_items)]
 
 extern "C" {

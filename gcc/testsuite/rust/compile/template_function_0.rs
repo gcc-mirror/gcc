@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-unused-check-2.0" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}

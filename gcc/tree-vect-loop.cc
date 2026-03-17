@@ -1975,6 +1975,9 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
   return 1;
 }
 
+/* Gather data references in LOOP with body BBS and store them into
+   *DATAREFS.  */
+
 static opt_result
 vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 			   vec<data_reference_p> *datarefs)
@@ -2172,7 +2175,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, int masked_p, bool &fatal,
 
   loop_p loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-  /* Gather the data references and count stmts in the loop.  */
+  /* Gather the data references.  */
   if (!LOOP_VINFO_DATAREFS (loop_vinfo).exists ())
     {
       opt_result res
@@ -2678,7 +2681,7 @@ again:
   FOR_EACH_VEC_ELT (LOOP_VINFO_SLP_INSTANCES (loop_vinfo), j, instance)
     vect_free_slp_instance (instance);
   LOOP_VINFO_SLP_INSTANCES (loop_vinfo).release ();
-  /* Reset SLP type to loop_vect on all stmts.  */
+  /* Reset altered state on stmts.  */
   for (i = 0; i < LOOP_VINFO_LOOP (loop_vinfo)->num_nodes; ++i)
     {
       basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
@@ -2686,7 +2689,6 @@ again:
 	   !gsi_end_p (si); gsi_next (&si))
 	{
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
-	  STMT_SLP_TYPE (stmt_info) = not_vect;
 	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def
 	      || STMT_VINFO_DEF_TYPE (stmt_info) == vect_double_reduction_def)
 	    {
@@ -2705,20 +2707,12 @@ again:
 	  if (is_gimple_debug (gsi_stmt (si)))
 	    continue;
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
-	  STMT_SLP_TYPE (stmt_info) = not_vect;
 	  if (STMT_VINFO_IN_PATTERN_P (stmt_info))
 	    {
 	      stmt_vec_info pattern_stmt_info
 		= STMT_VINFO_RELATED_STMT (stmt_info);
 	      if (STMT_VINFO_SLP_VECT_ONLY_PATTERN (pattern_stmt_info))
 		STMT_VINFO_IN_PATTERN_P (stmt_info) = false;
-
-	      gimple *pattern_def_seq = STMT_VINFO_PATTERN_DEF_SEQ (stmt_info);
-	      STMT_SLP_TYPE (pattern_stmt_info) = not_vect;
-	      for (gimple_stmt_iterator pi = gsi_start (pattern_def_seq);
-		   !gsi_end_p (pi); gsi_next (&pi))
-		STMT_SLP_TYPE (loop_vinfo->lookup_stmt (gsi_stmt (pi)))
-		  = not_vect;
 	    }
 	}
     }
@@ -10450,26 +10444,35 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 				   "def\n");
 		continue;
 	      }
-	    /* ???  It can also happen that we end up pulling a def into
-	       a loop where replacing out-of-loop uses would require
-	       a new LC SSA PHI node.  Retain the original scalar in
-	       those cases as well.  PR98064.  */
-	    if (TREE_CODE (new_tree) == SSA_NAME
-		&& !SSA_NAME_IS_DEFAULT_DEF (new_tree)
-		&& (gimple_bb (use_stmt)->loop_father
-		    != gimple_bb (vec_stmt)->loop_father)
-		&& !flow_loop_nested_p (gimple_bb (vec_stmt)->loop_father,
-					gimple_bb (use_stmt)->loop_father))
-	      {
-		if (dump_enabled_p ())
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "Using original scalar computation for "
-				   "live lane because there is an out-of-loop "
-				   "definition for it\n");
-		continue;
-	      }
 	    FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	      SET_USE (use_p, new_tree);
+	      {
+		/* ???  It can also happen that we end up pulling a def into
+		   a loop where replacing out-of-loop uses would require
+		   a new LC SSA PHI node.  Retain the original scalar in
+		   those cases as well.  PR98064.  */
+		edge e;
+		if (TREE_CODE (new_tree) == SSA_NAME
+		    && !SSA_NAME_IS_DEFAULT_DEF (new_tree)
+		    && (gimple_bb (use_stmt)->loop_father
+			!= gimple_bb (vec_stmt)->loop_father)
+		    /* But a replacement in a LC PHI is OK.  This happens
+		       in gcc.dg/vect/bb-slp-57.c for example.  */
+		    && (gimple_code (use_stmt) != GIMPLE_PHI
+			|| (((e = phi_arg_edge_from_use (use_p)), true)
+			    && !loop_exit_edge_p
+				  (gimple_bb (vec_stmt)->loop_father, e)))
+		    && !flow_loop_nested_p (gimple_bb (vec_stmt)->loop_father,
+					    gimple_bb (use_stmt)->loop_father))
+		  {
+		    if (dump_enabled_p ())
+		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				       "Using original scalar computation for "
+				       "live lane because there is an "
+				       "out-of-loop definition for it\n");
+		    continue;
+		  }
+		SET_USE (use_p, new_tree);
+	      }
 	    update_stmt (use_stmt);
 	  }
     }

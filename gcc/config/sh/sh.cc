@@ -506,8 +506,6 @@ TARGET_GNU_ATTRIBUTES (sh_attribute_table,
 #define TARGET_HAVE_TLS true
 #endif
 
-#undef TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES sh_promote_prototypes
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE sh_promote_function_mode
 

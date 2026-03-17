@@ -1,3 +1,15 @@
+2026-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/105412
+	* files.cc (_cpp_stack_file): Call deps_add_dep even on
+	empty file path.
+	* mkdeps.cc (class mkdeps): Add first_phony_dep member.
+	(mkdeps::mkdeps ()): Initialize it to 1.
+	(deps_add_dep): When called first with "" argument, decrease
+	d->first_phony_dep to 0.
+	(make_write): For -MP iterate from d->first_phony_dep
+	rather than 1.
+
 2026-02-22  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/124153

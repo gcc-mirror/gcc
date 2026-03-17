@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 const A: &'static u8 = b"
 ";
 const B: &'static str = b"

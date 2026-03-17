@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub trait X {
     fn x() {
         fn f(&mut self) {}

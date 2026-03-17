@@ -41,9 +41,9 @@ static_assert (type_of (a0) == ^^int);
 template <class T>
 struct [[=42]] D {};
 
-//constexpr std::meta::info a1 = annotations_of (^^D<int>)[0];
-//constexpr std::meta::info a2 = annotations_of (^^D<char>)[0];
-//static_assert (is_annotation (a1) && is_annotation (a2));
+constexpr std::meta::info a1 = annotations_of (^^D<int>)[0];
+constexpr std::meta::info a2 = annotations_of (^^D<char>)[0];
+static_assert (is_annotation (a1) && is_annotation (a2));
 
 [[=1, =2L, =3.0, =4U, =5U, =6L, =7U]] int y;
 static_assert (annotations_of (^^y).size () == 7);

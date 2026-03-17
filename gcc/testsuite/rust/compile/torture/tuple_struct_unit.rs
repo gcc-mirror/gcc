@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct E();
 struct T(E,E,());
 

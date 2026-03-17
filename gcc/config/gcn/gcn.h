@@ -169,7 +169,18 @@ extern const struct gcn_device_def {
 #define EXECZ_REG	    128
 #define SCC_REG		    129
 
-/* 132-159 are reserved to simplify masks.  */
+/* Memory aperture registers.  */
+#define SHARED_BASE_REG	    130
+#define SHARED_LIMT_REG	    131
+#define PRIVATE_BASE_REG    132
+#define PRIVATE_LIMT_REG    133
+#define MEMORY_APERTURE_REG_P(reg)		\
+  ((reg) == SHARED_BASE_REG			\
+   || (reg) == SHARED_LIMT_REG			\
+   || (reg) == PRIVATE_BASE_REG			\
+   || (reg) == PRIVATE_LIMT_REG)
+
+/* 134-159 are reserved to simplify masks.  */
 
 #define FIRST_VGPR_REG	    160
 #define VGPR_REGNO(N)	    ((N)+FIRST_VGPR_REG)
@@ -214,7 +225,7 @@ STATIC_ASSERT (LAST_AVGPR_REG + 1 - FIRST_AVGPR_REG == 256);
 #define SGPR_REGNO_P(N)		(/*(N) >= FIRST_SGPR_REG &&*/ (N) <= LAST_SGPR_REG)
 #define VGPR_REGNO_P(N)		((N) >= FIRST_VGPR_REG && (N) <= LAST_VGPR_REG)
 #define AVGPR_REGNO_P(N)        ((N) >= FIRST_AVGPR_REG && (N) <= LAST_AVGPR_REG)
-#define SSRC_REGNO_P(N)		((N) <= SCC_REG && (N) != VCCZ_REG)
+#define SSRC_REGNO_P(N)		((N) <= PRIVATE_LIMT_REG && (N) != VCCZ_REG)
 #define SDST_REGNO_P(N)		((N) <= EXEC_HI_REG && (N) != VCCZ_REG)
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X)		((X) == SCC_REG || (X) == VCC_REG)
@@ -368,6 +379,12 @@ enum reg_class
   /* EXEC */
   EXEC_MASK_REG,
 
+  /* Memory aperture registers (SHARED_{BASE,LIM}, PRIVATE_{BASE,LIM}).
+     Though these are usable as sources to vector instructions (and ergo
+     nominally belong to Sv), they cannot be split into lower and upper half
+     accesses, and so, are left out of that constraint.  */
+  MEMORY_APERTURE_REGS,
+
   /* SGPR0-101 */
   SGPR_REGS,
 
@@ -411,6 +428,7 @@ enum reg_class
    "EXECZ_CONDITIONAL_REG", \
    "ALL_CONDITIONAL_REGS",  \
    "EXEC_MASK_REG",	    \
+   "MEMORY_APERTURE_REGS"   \
    "SGPR_REGS",		    \
    "SGPR_EXEC_REGS",	    \
    "SGPR_VOP3A_SRC_REGS",   \
@@ -429,6 +447,13 @@ enum reg_class
 
 #define NAMED_REG_MASK(N)  (1<<((N)-3*32))
 #define NAMED_REG_MASK2(N) (1<<((N)-4*32))
+
+#define MEMORY_APERTURE_REGS_MASK		\
+  (NAMED_REG_MASK2 (SHARED_BASE_REG)		\
+   | NAMED_REG_MASK2 (SHARED_LIMT_REG)		\
+   | NAMED_REG_MASK2 (PRIVATE_BASE_REG)		\
+   | NAMED_REG_MASK2 (PRIVATE_LIMT_REG))
+
 
 #define REG_CLASS_CONTENTS {						   \
     /* NO_REGS.  */							   \
@@ -473,6 +498,12 @@ enum reg_class
      0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
+    /* MEMORY_APERTURE_REGS.  */					   \
+    {0, 0, 0, 0,							   \
+     MEMORY_APERTURE_REGS_MASK,  0, 0, 0,				   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0, 0, 0},							   \
     /* SGPR_REGS.  */							   \
     {0xffffffff, 0xffffffff, 0xffffffff, 0xf1,				   \
      0, 0, 0, 0,							   \
@@ -510,7 +541,8 @@ enum reg_class
      0, 0, 0, 0, 0, 0},							   \
     /* SGPR_SRC_REGS.  */						   \
     {0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
-     NAMED_REG_MASK2 (EXECZ_REG) | NAMED_REG_MASK2 (SCC_REG), 0, 0, 0,	   \
+     MEMORY_APERTURE_REGS_MASK | NAMED_REG_MASK2 (EXECZ_REG)		   \
+     | NAMED_REG_MASK2 (SCC_REG), 0, 0, 0,				   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0,							   \
      0, 0, 0, 0, 0, 0},							   \
@@ -631,7 +663,8 @@ enum gcn_address_spaces
     "ttmp0", "ttmp1", "ttmp2", "ttmp3", "ttmp4", "ttmp5", "ttmp6", "ttmp7", \
     "ttmp8", "ttmp9", "ttmp10", "ttmp11", "m0", "exec_lo", "exec_hi",	    \
     "execz", "scc",							    \
-    "res130", "res131", "res132", "res133", "res134", "res135", "res136",   \
+    "shared_base", "shared_limit", "private_base", "private_limit",	    \
+    "res134", "res135", "res136",					    \
     "res137", "res138", "res139", "res140", "res141", "res142", "res143",   \
     "res144", "res145", "res146", "res147", "res148", "res149", "res150",   \
     "res151", "res152", "res153", "res154", "res155", "res156", "res157",   \

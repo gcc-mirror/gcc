@@ -578,3 +578,4 @@ main ()
                        [Define to 1 if you have the `$1' function.])
   fi
 ])
+

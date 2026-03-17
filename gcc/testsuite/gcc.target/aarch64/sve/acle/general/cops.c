@@ -4,6 +4,8 @@
 #include <arm_sve.h>
 #include <stdio.h>
 
+#define VLEN(v) svcntb() / sizeof(v[0])
+
 #define DECL_FUNC_UNARY(type, name, op, intr, su, sz, id) \
   __attribute__ ((noipa)) \
   type func_ ## name ## type ## _unary (type a) { \
@@ -51,9 +53,9 @@
   } \
   void checkfunc_ ## rtype ## type ## _vindex () { \
     type a = svindex_ ## su ## sz (0, 1); \
-    int n = 2; \
-    if (2 != func_ ## rtype ## type ## _vindex (a, n)) \
-      __builtin_abort (); \
+    for (int i = 0; i < VLEN (a); i++) \
+      if (i != func_ ## rtype ## type ## _vindex (a, i)) \
+	__builtin_abort (); \
   } \
   void checkfunc_ ## rtype ## type ## _cindex () { \
     type a = svindex_ ## su ## sz (1, 0); \
@@ -72,9 +74,9 @@
   } \
   void checkfunc_ ## rtype ## type ## _vindex () { \
     type a = svdup_n_ ## su ## sz (2.0); \
-    int n = 2; \
-    if (2.0 != func_ ## rtype ## type ## _vindex (a, n)) \
-      __builtin_abort (); \
+    for (int i = 0; i < VLEN (a); i++) \
+      if (2.0 != func_ ## rtype ## type ## _vindex (a, i)) \
+	__builtin_abort (); \
   } \
   void checkfunc_ ## rtype ## type ## _cindex () { \
     type a = svdup_n_ ## su ## sz (4.0); \

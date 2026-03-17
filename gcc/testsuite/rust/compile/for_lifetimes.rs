@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-compile-until=typecheck" }
+#![feature(no_core)]
+#![no_core]
+
 
 fn function_pointer_as_argument(f: for<'a> fn(&'a i32) -> &'a i32) -> i32 {
     0

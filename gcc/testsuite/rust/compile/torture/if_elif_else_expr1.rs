@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test(x: i32) -> i32 {
     if x == 10 {
         123

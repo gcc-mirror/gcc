@@ -1,0 +1,38 @@
+{
+  "tune_params": {
+    "vec_costs": {
+      "issue_info": {
+        "scalar": {
+          "loads_stores_per_cycle": 4,
+          "stores_per_cycle": 2,
+          "general_ops_per_cycle": 8,
+          "fp_simd_load_general_ops": 0,
+          "fp_simd_store_general_ops": 1
+        },
+        "advsimd": {
+          "loads_stores_per_cycle": 3,
+          "stores_per_cycle": 2,
+          "general_ops_per_cycle": 6,
+          "fp_simd_load_general_ops": 0,
+          "fp_simd_store_general_ops": 1,
+          "ld2_st2_general_ops": 2,
+          "ld3_st3_general_ops": 2,
+          "ld4_st4_general_ops": 3
+        },
+        "sve": {
+          "loads_stores_per_cycle": 3,
+          "stores_per_cycle": 2,
+          "general_ops_per_cycle": 6,
+          "fp_simd_load_general_ops": 0,
+          "fp_simd_store_general_ops": 1,
+          "pred_ops_per_cycle": 2,
+          "while_pred_ops": 1,
+          "int_cmp_pred_ops": 0,
+          "fp_cmp_pred_ops": 0,
+          "gather_scatter_pair_general_ops": 1,
+          "gather_scatter_pair_pred_ops": 1
+        }
+      }
+    }
+  }
+}

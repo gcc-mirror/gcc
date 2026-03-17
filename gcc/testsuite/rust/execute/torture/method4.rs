@@ -1,5 +1,8 @@
 // { dg-additional-options "-w" }
 // { dg-output "mut_deref\r*\nfoobar: 123\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 
 extern "C" {

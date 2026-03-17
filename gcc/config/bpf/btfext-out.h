@@ -99,6 +99,10 @@ extern int bpf_core_get_sou_member_index (ctf_container_ref, const tree);
 
 struct btf_ext_funcinfo *btf_add_func_info_for (tree decl,
 						const char *label);
+struct btf_ext_lineinfo *
+btf_add_line_info_for (const char *label, const char *filename,
+		       unsigned int line, unsigned int column);
+
 unsigned int btf_ext_add_string (const char *str);
 
 #ifdef	__cplusplus

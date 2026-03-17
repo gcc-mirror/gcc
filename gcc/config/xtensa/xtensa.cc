@@ -158,10 +158,6 @@ static void xtensa_asm_trampoline_template (FILE *);
 static void xtensa_trampoline_init (rtx, tree, rtx);
 static bool xtensa_output_addr_const_extra (FILE *, rtx);
 static bool xtensa_cannot_force_const_mem (machine_mode, rtx);
-static machine_mode xtensa_promote_function_mode (const_tree,
-						  machine_mode,
-						  int *, const_tree,
-						  int);
 
 static reg_class_t xtensa_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t xtensa_preferred_output_reload_class (rtx, reg_class_t);
@@ -242,7 +238,8 @@ static rtx_insn *xtensa_md_asm_adjust (vec<rtx> &, vec<rtx> &,
 #define TARGET_EXPAND_BUILTIN_VA_START xtensa_va_start
 
 #undef TARGET_PROMOTE_FUNCTION_MODE
-#define TARGET_PROMOTE_FUNCTION_MODE xtensa_promote_function_mode
+#define TARGET_PROMOTE_FUNCTION_MODE \
+  default_promote_function_mode_sign_extend
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY xtensa_return_in_memory
@@ -1078,6 +1075,8 @@ xtensa_expand_scc (rtx operands[4], machine_mode cmp_mode)
 void
 xtensa_split_operand_pair (rtx operands[4], machine_mode mode)
 {
+  rtx x;
+
   switch (GET_CODE (operands[1]))
     {
     case REG:
@@ -1088,6 +1087,17 @@ xtensa_split_operand_pair (rtx operands[4], machine_mode mode)
     case MEM:
       operands[3] = adjust_address (operands[1], mode, GET_MODE_SIZE (mode));
       operands[2] = adjust_address (operands[1], mode, 0);
+      /* Split the pool entry as well as the pooled values themselves,
+	 when non-debug optimizing.  This improves the chances that the
+	 entries will be shared and subject to further optimization
+	 opportunities.  */
+      if (optimize && !optimize_debug && constantpool_mem_p (operands[2]))
+	{
+	  x = avoid_constant_pool_reference (operands[2]);
+	  operands[2] = force_const_mem (mode, x);
+	  x = avoid_constant_pool_reference (operands[3]);
+	  operands[3] = force_const_mem (mode, x);
+	}
       break;
 
     case CONST_INT:
@@ -1113,6 +1123,12 @@ xtensa_split_operand_pair (rtx operands[4], machine_mode mode)
 
     default:
       gcc_unreachable ();
+    }
+
+  if (reg_overlap_mentioned_p (operands[0], operands[3]))
+    {
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
     }
 }
 
@@ -4675,19 +4691,6 @@ xtensa_insn_cost (rtx_insn *insn, bool speed)
   return pattern_cost (PATTERN (insn), speed);
 }
 
-/* Worker function for TARGET_PROMOTE_FUNCTION_MODE.  */
-
-static machine_mode
-xtensa_promote_function_mode (const_tree type, machine_mode mode,
-			      int *punsignedp, const_tree, int)
-{
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (SImode))
-    return SImode;
-
-  return promote_mode (type, mode, punsignedp);
-}
-
 /* Worker function for TARGET_RETURN_IN_MEMORY.  */
 
 static bool
@@ -5542,8 +5545,9 @@ FPreg_neg_scaled_simm12b_1 (const REAL_VALUE_TYPE *rval,
   REAL_VALUE_TYPE r;
   int shift;
 
-  /* Non-zero finite values can only be accepted.  */
-  if (! real_isfinite (rval) || rval->cl == rvc_zero)
+  /* Normal (i.e., neither zero, infinity nor NaN) values can only be
+     accepted.  */
+  if (rval->cl != rvc_normal)
     return false;
 
   /* Check whether the value multiplied by 32768 is an exact integer and
@@ -5579,15 +5583,14 @@ FPreg_neg_scaled_simm12b (rtx_insn *insn)
       && GET_MODE (dest) == SFmode
       && CONST_DOUBLE_P (src = avoid_constant_pool_reference (SET_SRC (pat)))
       && GET_MODE (src) == SFmode
-      && FPreg_neg_scaled_simm12b_1 (CONST_DOUBLE_REAL_VALUE (src),
-				     v, scale)
       && (next = next_nonnote_nondebug_insn (insn))
       && NONJUMP_INSN_P (next)
       && GET_CODE (pat_1 = PATTERN (next)) == SET
       && REG_P (dest_1 = SET_DEST (pat_1)) && FP_REG_P (REGNO (dest_1))
       && GET_MODE (dest_1) == SFmode
       && rtx_equal_p (SET_SRC (pat_1), dest)
-      && (note = find_reg_note (next, REG_DEAD, dest)))
+      && (note = find_reg_note (next, REG_DEAD, dest))
+      && FPreg_neg_scaled_simm12b_1 (CONST_DOUBLE_REAL_VALUE (src), v, scale))
     {
       /* Estimate the costs of two matching insns.  */
       xt_full_rtx_costs costs;
@@ -5633,7 +5636,7 @@ FPreg_neg_scaled_simm12b (rtx_insn *insn)
 	  if (dump_file)
 	    {
 	      fprintf (dump_file,
-		       "FPreg_neg_scaled_simm12b: costs (%d,%d) -> (%d,%d)\n",
+		       "\t\t\treplacing, costs (%d,%d) -> (%d,%d)\n",
 		       costs.major (), costs.minor (),
 		       costs_1.major (), costs_1.minor ());
 	      dump_insn_slim (dump_file, insn);
@@ -5646,9 +5649,9 @@ FPreg_neg_scaled_simm12b (rtx_insn *insn)
   return false;
 }
 
-/* Split DI/SF/DFmode constant assignments into pairs of SImode ones.  This
-   is also the pre-processing for constantsynth optimization that follows
-   immediately after.
+/* Convert SFmode constant assignments into SImode ones.  This is also the
+   pre-processing for constantsynth optimization that follows immediately
+   after.
 
    Note that all constant values and assignments are treated as SImode
    because:
@@ -5661,85 +5664,54 @@ FPreg_neg_scaled_simm12b (rtx_insn *insn)
    returned true (the current and default configuration).  */
 
 static bool
-split_DI_SF_DF_const (rtx_insn *insn)
+convert_SF_const (rtx_insn *insn)
 {
-  rtx pat, dest, src, dest0, dest1, src0, src1, src0c, src1c;
-  int regno;
-
-  if (GET_CODE (pat = PATTERN (insn)) != SET
-      || ! REG_P (dest = SET_DEST (pat)) || ! GP_REG_P (regno = REGNO (dest)))
-    return false;
+  rtx pat, dest, src, dest0, src0, src0c;
 
   /* It is more efficient to assign SFmode literal constants using their
      bit-equivalent SImode ones, thus we convert them so.  */
+  if (GET_CODE (pat = PATTERN (insn)) != SET
+      || ! REG_P (dest = SET_DEST (pat)) || ! GP_REG_P (REGNO (dest))
+      || GET_MODE (dest) != SFmode)
+    return false;
+
   src = avoid_constant_pool_reference (SET_SRC (pat));
-  if (GET_MODE (dest) == SFmode
-      && CONST_DOUBLE_P (src) && GET_MODE (src) == SFmode)
+  if (CONST_INT_P (src))
+    src0 = src;
+  else if (CONST_DOUBLE_P (src) && GET_MODE (src) == SFmode)
     {
       long l;
       REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (src), l);
-      src0 = GEN_INT ((int32_t)l), dest0 = gen_rtx_REG (SImode, regno);
-      if (dump_file)
-	{
-	  fputs ("split_DI_SF_DF_const: ", dump_file);
-	  dump_value_slim (dump_file, src, 0);
-	  fprintf (dump_file,
-		   "f -> " HOST_WIDE_INT_PRINT_DEC " ("
-		   HOST_WIDE_INT_PRINT_HEX ")\n",
-		   INTVAL (src0), INTVAL (src0));
-	}
-      src0c = NULL_RTX;
-      if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
-	  && ! xtensa_simm12b (INTVAL (src0)))
-	src0c = src0, src0 = force_const_mem (SImode, src0);
-      remove_reg_equal_equiv_notes (insn);
-      validate_change (insn, &PATTERN (insn), gen_rtx_SET (dest0, src0), 0);
-      if (src0c)
-	add_reg_note (insn, REG_EQUIV, copy_rtx (src0c));
-      return true;
+      src0 = GEN_INT ((int32_t)l);
     }
+  else
+    return false;
 
-  /* Splitting a D[IF]mode literal constant into two with split_double()
-     results in a pair of CONST_INTs, so they are assigned in SImode
-     regardless of the original source mode.  */
-  if ((GET_MODE (dest) == DImode && CONST_INT_P (src))
-      || (GET_MODE (dest) == DFmode
-	  && CONST_DOUBLE_P (src) && GET_MODE (src) == DFmode))
+  dest0 = gen_rtx_REG (SImode, REGNO (dest));
+  if (dump_file)
     {
-      dest0 = gen_rtx_REG (SImode, regno);
-      dest1 = gen_rtx_REG (SImode, regno + 1);
-      split_double (src, &src0, &src1);
-      if (dump_file)
-	{
-	  fputs ("split_DI_SF_DF_const: ", dump_file);
-	  dump_value_slim (dump_file, src, 0);
-	  fprintf (dump_file,
-		   " -> " HOST_WIDE_INT_PRINT_DEC " ("
-		   HOST_WIDE_INT_PRINT_HEX "), "
-		   HOST_WIDE_INT_PRINT_DEC " ("
-		   HOST_WIDE_INT_PRINT_HEX ")\n",
-		   INTVAL (src0), INTVAL (src0),
-		   INTVAL (src1), INTVAL (src1));
-	}
-      src1c = src0c = NULL_RTX;
-      if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS)
-	{
-	  if (! xtensa_simm12b (INTVAL (src0)))
-	    src0c = src0, src0 = force_const_mem (SImode, src0);
-	  if (! xtensa_simm12b (INTVAL (src1)))
-	    src1c = src1, src1 = force_const_mem (SImode, src1);
-	}
-      remove_reg_equal_equiv_notes (insn);
-      validate_change (insn, &PATTERN (insn), gen_rtx_SET (dest0, src0), 0);
-      if (src0c)
-	add_reg_note (insn, REG_EQUIV, copy_rtx (src0c));
-      insn = emit_insn_after (gen_rtx_SET (dest1, src1), insn);
-      if (src1c)
-	add_reg_note (insn, REG_EQUIV, copy_rtx (src1c));
-      return true;
+      fputs ("convert_SF_const: ", dump_file);
+      dump_value_slim (dump_file, src, 0);
+      if (CONST_DOUBLE_P (src))
+	fputc ('f', dump_file);
+      fprintf (dump_file,
+	       " -> " HOST_WIDE_INT_PRINT_DEC
+	       " (" HOST_WIDE_INT_PRINT_HEX ")\n",
+	       INTVAL (src0), INTVAL (src0));
+      dump_insn_slim (dump_file, insn);
     }
+  src0c = NULL_RTX;
+  if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
+      && ! xtensa_simm12b (INTVAL (src0)))
+    src0c = src0, src0 = force_const_mem (SImode, src0);
+  remove_reg_equal_equiv_notes (insn);
+  validate_change (insn, &PATTERN (insn), gen_rtx_SET (dest0, src0), 0);
+  if (src0c)
+    add_reg_note (insn, REG_EQUIV, copy_rtx (src0c));
+  if (dump_file)
+    dump_insn_slim (dump_file, insn);
 
-  return false;
+  return true;
 }
 
 /* The constant-synthesis optimization (constantsynth for short).
@@ -5802,6 +5774,31 @@ constantsynth_method_lshr_m1 (rtx dest, HOST_WIDE_INT v)
   start_sequence ();
   emit_insn (gen_rtx_SET (dest, constm1_rtx));
   emit_insn (gen_lshrsi3 (dest, dest, GEN_INT (32 - i)));
+  return end_sequence ();
+}
+
+/* A method that generates two machine instructions to logically right-
+   shift a negative signed 12-bit value a certain number of bits to
+   synthesize a positive number with a bit sequence of 1s on the MSB
+   side (eg., 0x1FFFFF55).  */
+
+static rtx_insn *
+constantsynth_method_lshr_mi12b (rtx dest, HOST_WIDE_INT v)
+{
+  int i;
+  HOST_WIDE_INT v0;
+
+  /* HOST_WIDE_INT should be always 64 bits (see gcc/hwint.h), while
+     asserts just in case.  */
+  gcc_assert (HOST_BITS_PER_WIDE_INT == 64);
+
+  if (! IN_RANGE (i = clz_hwi (v) - 32, 1, 10)
+      || ! IN_RANGE (v0 = (int32_t)(v << i), -2048, -2))
+    return NULL;
+
+  start_sequence ();
+  emit_insn (gen_rtx_SET (dest, GEN_INT (v0)));
+  emit_insn (gen_lshrsi3 (dest, dest, GEN_INT (i)));
   return end_sequence ();
 }
 
@@ -5979,6 +5976,7 @@ struct constantsynth_method_info
 static const struct constantsynth_method_info constantsynth_methods[] =
 {
   { constantsynth_method_lshr_m1, "lshr_m1" },
+  { constantsynth_method_lshr_mi12b, "lshr_mi12b" },
   { constantsynth_method_16bits, "16bits" },
   { constantsynth_method_32bits, "32bits" },
   { constantsynth_method_square, "square" },
@@ -6034,17 +6032,19 @@ constantsynth_pass1 (rtx_insn *insn, constantsynth_info &info)
 
   if (xtensa_simm12b (INTVAL (src)))
     {
-      if (src != SET_SRC (pat))
+      if (! rtx_equal_p (src, SET_SRC (pat)))
 	{
 	  remove_reg_equal_equiv_notes (insn);
-	  validate_change (insn, &PATTERN (insn),
-			   gen_rtx_SET (dest, src), 0);
+	  validate_change (insn, &SET_SRC (pat), src, 0);
 	}
       if (dump_file)
-	fprintf (dump_file,
-		 "constantsynth_pass1: immediate, " HOST_WIDE_INT_PRINT_DEC
-		 " (" HOST_WIDE_INT_PRINT_HEX ")\n",
-		 INTVAL (src), INTVAL (src));
+	{
+	  fprintf (dump_file,
+		   "constantsynth_pass1: immediate, " HOST_WIDE_INT_PRINT_DEC
+		   " (" HOST_WIDE_INT_PRINT_HEX ")\n",
+		   INTVAL (src), INTVAL (src));
+	  dump_insn_slim (dump_file, insn);
+	}
     }
   else
     {
@@ -6147,7 +6147,7 @@ constantsynth_pass2 (constantsynth_info &info)
 				    "value mismatch, "
 				    "expected %wd (%wx) "
 				    "synthesized %wd (%wx)", name,
-				    v, v,INTVAL (cst), INTVAL (cst));
+				    v, v, INTVAL (cst), INTVAL (cst));
 		}
 
 	      for (last = min_seq; NEXT_INSN (last);
@@ -6161,10 +6161,10 @@ constantsynth_pass2 (constantsynth_info &info)
 			   HOST_WIDE_INT_PRINT_DEC " (",
 			   name, v);
 		  dump_value_slim (dump_file, src, 0);
-		  fprintf (dump_file, ")\n");
+		  fputs (")\n", dump_file);
 		  dump_insn_slim (dump_file, insn);
 		  fprintf (dump_file,
-			   "constantsynth_pass2: costs (%d,%d) -> (%d,%d)\n",
+			   "\t\t\treplacing, costs (%d,%d) -> (%d,%d)\n",
 			   info.costs.major (), info.costs.minor (),
 			   min_costs.major (), min_costs.minor ());
 		  dump_rtl_slim (dump_file, min_seq, NULL, -1, 0);
@@ -6176,13 +6176,16 @@ constantsynth_pass2 (constantsynth_info &info)
 	    }
 	}
 
-      /* Large constants that are not subject to synthesize are left in
-	 the literal pool.  */
+      /* Large constants that are not subject to synthesize are left as
+	 they are.  */
       if (dump_file)
-	fprintf (dump_file,
-		 "constantsynth_pass2: litpool, " HOST_WIDE_INT_PRINT_DEC
-		 " (" HOST_WIDE_INT_PRINT_HEX ")\n",
-		 v, v);
+	{
+	  fprintf (dump_file,
+		   "constantsynth_pass2: as-is, " HOST_WIDE_INT_PRINT_DEC
+		   " (" HOST_WIDE_INT_PRINT_HEX ")\n",
+		   v, v);
+	  dump_insn_slim (dump_file, insn);
+	}
     }
 
   if (dump_file)
@@ -6196,8 +6199,9 @@ constantsynth_pass2 (constantsynth_info &info)
     }
 }
 
-/* Replace the source of [SH]Imode allocation whose value does not fit
-   into signed 12 bits with a reference to litpool entry.  */
+/* Replace both the sources of [SH]Imode assignments with values that do
+   not fit into a signed 12-bit, and DImode ones with arbitrary values,
+   with references to litpool entries.  */
 
 static bool
 litpool_set_src_1 (rtx_insn *insn, rtx set, bool in_group)
@@ -6205,10 +6209,10 @@ litpool_set_src_1 (rtx_insn *insn, rtx set, bool in_group)
   rtx dest, src;
   enum machine_mode mode;
 
-  if (REG_P (dest = SET_DEST (set))
-      && ((mode = GET_MODE (dest)) == SImode || mode == HImode)
-      && CONST_INT_P (src = SET_SRC (set))
-      && ! xtensa_simm12b (INTVAL (src)))
+  if (REG_P (dest = SET_DEST (set)) && CONST_INT_P (src = SET_SRC (set))
+      && ((((mode = GET_MODE (dest)) == SImode || mode == HImode)
+	   && ! xtensa_simm12b (INTVAL (src)))
+	  || mode == DImode))
     {
       remove_reg_equal_equiv_notes (insn);
       validate_change (insn, &SET_SRC (set),
@@ -6250,60 +6254,65 @@ litpool_set_src (rtx_insn *insn)
 }
 
 /* Replace all occurrences of large immediate values in assignment sources
-   that were permitted for convenience with their legitimate forms, or
-   more efficient representations if possible.  */
+   that were permitted for convenience with their legitimate forms.  */
 
 static void
-do_largeconst (void)
+do_largeconst1 (void)
 {
-  bool replacing_required = !TARGET_CONST16 && !TARGET_AUTO_LITPOOLS;
-  bool optimize_enabled = optimize && !optimize_debug;
+  rtx_insn *insn;
+
+  /* Replace both the sources of [SH]Imode assignments with values that do
+     not fit into a signed 12-bit, and DImode ones with arbitrary values,
+     with references to litpool entries.  */
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    if (NONJUMP_INSN_P (insn))
+      litpool_set_src (insn);
+}
+
+/* Replace large immediate values ​​in allocation sources with more efficient
+   representations if possible.  */
+
+static void
+do_largeconst2 (void)
+{
   rtx_insn *insn;
   constantsynth_info cs_info;
 
-  /* Verify the legitimacy of replacing constant assignments in
-     DI/SF/DFmode with those in SImode.  */
+  /* Verify the legitimacy of replacing constant assignments in SFmode
+     with those in SImode.  */
   gcc_assert (targetm.can_change_mode_class
 		== hook_bool_mode_mode_reg_class_t_true);
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (NONJUMP_INSN_P (insn))
       {
-	/* Optimize assignment of negatively scaled (up to the minus
-	   15th power of two) signed 12-bit immediate values to hardware
+	/* Optimize assignment of negatively scaled (up to the minus 15th
+	   power of two) signed 12-bit immediate values to hardware
 	   floating-point registers.  */
-	if (optimize_enabled
-	    && FPreg_neg_scaled_simm12b (insn))
+	if (FPreg_neg_scaled_simm12b (insn))
 	  continue;
 
-	/* Replace the source of [SH]Imode allocation whose value does not
-	   fit into signed 12 bits with a reference to litpool entry.  */
-	if (replacing_required)
-	  litpool_set_src (insn);
-
-	/* Split DI/SF/DFmode constant assignments into pairs of SImode
-	   ones.  This is also the pre-processing for constantsynth opti-
-	   mization that follows immediately after.  */
-	split_DI_SF_DF_const (insn);
+	/* Convert SFmode constant assignments into SImode ones.  This is
+	   also the pre-processing for constantsynth optimization that
+	   follows immediately after.  */
+	convert_SF_const (insn);
 
 	/* constantsynth pass 1.
 	   Detect and record large constant assignments within a function.  */
-	if (optimize_enabled)
-	  constantsynth_pass1 (insn, cs_info);
+	constantsynth_pass1 (insn, cs_info);
       }
 
   /* constantsynth pass 2.
      For each large constant value assignment collected in pass 1, try to
      find a more efficient way to derive the value than referencing a literal
      pool entry, and if found, replace the assignment with it.  */
-  if (optimize_enabled)
-    constantsynth_pass2 (cs_info);
+  constantsynth_pass2 (cs_info);
 }
 
 /* Convert assignments for large constants.  */
 
 static unsigned int
-rest_of_handle_largeconst (void)
+rest_of_handle_largeconst1 (void)
 {
   /* Until this flag becomes true, all RTL expressions that assign integer
      (not symbol nor floating-point) constants to [SH]Imode registers are
@@ -6337,23 +6346,39 @@ rest_of_handle_largeconst (void)
      is no longer needed, so such assignments must now be all converted
      back to references to literal pool entries (the original legitimate
      form) if neither TARGET_CONST16 nor TARGET_AUTO_LITPOOLS is enabled.
-     See the function do_largeconst() called below.  */
+     See the function do_largeconst1() called below.  */
   cfun->machine->postreload_completed = true;
 
-  df_set_flags (DF_DEFER_INSN_RESCAN);
-  df_note_add_problem ();
-  df_analyze ();
+  /* Do the process, only if the conditions are met.  */
+  if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS)
+    {
+      df_set_flags (DF_DEFER_INSN_RESCAN);
 
-  /* Do the process.  */
-  do_largeconst ();
+      do_largeconst1 ();
+    }
 
   return 0;
 }
 
-const pass_data pass_data_xtensa_largeconst =
+static unsigned int
+rest_of_handle_largeconst2 (void)
+{
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
+  /* The latest reg-notes are required later.  */
+  df_note_add_problem ();
+  df_analyze ();
+
+  /* Do the process.  */
+  do_largeconst2 ();
+
+  return 0;
+}
+
+const pass_data pass_data_xtensa_largeconst1 =
 {
   RTL_PASS, /* type */
-  "xt_largeconst", /* name */
+  "xt_largeconst1", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_MACH_DEP, /* tv_id */
   0, /* properties_required */
@@ -6363,27 +6388,67 @@ const pass_data pass_data_xtensa_largeconst =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_xtensa_largeconst : public rtl_opt_pass
+class pass_xtensa_largeconst1 : public rtl_opt_pass
 {
 public:
-  pass_xtensa_largeconst (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_xtensa_largeconst, ctxt)
+  pass_xtensa_largeconst1 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_xtensa_largeconst1, ctxt)
   {}
 
   /* opt_pass methods: */
   unsigned int execute (function *) final override
   {
-    return rest_of_handle_largeconst ();
+    return rest_of_handle_largeconst1 ();
   }
 
-};  // class pass_xtensa_largeconst
+};  // class pass_xtensa_largeconst1
+
+const pass_data pass_data_xtensa_largeconst2 =
+{
+  RTL_PASS, /* type */
+  "xt_largeconst2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
+};
+
+class pass_xtensa_largeconst2 : public rtl_opt_pass
+{
+public:
+  pass_xtensa_largeconst2 (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_xtensa_largeconst2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate (function *) final override
+  {
+    return optimize && !optimize_debug;
+  }
+
+  /* opt_pass methods: */
+  unsigned int execute (function *) final override
+  {
+    return rest_of_handle_largeconst2 ();
+  }
+
+};  // class pass_xtensa_largeconst2
 
 } // anon namespace
 
 rtl_opt_pass *
-make_pass_xtensa_largeconst (gcc::context *ctxt)
+make_pass_xtensa_largeconst1 (gcc::context *ctxt)
 {
-  return new pass_xtensa_largeconst (ctxt);
+  return new pass_xtensa_largeconst1 (ctxt);
+}
+
+rtl_opt_pass *
+make_pass_xtensa_largeconst2 (gcc::context *ctxt)
+{
+  return new pass_xtensa_largeconst2 (ctxt);
 }
 
 #include "gt-xtensa.h"

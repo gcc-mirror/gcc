@@ -1265,6 +1265,10 @@ c_common_post_options (const char **pfilename)
   if (flag_immediate_escalation && cxx_dialect < cxx20)
     flag_immediate_escalation = 0;
 
+  if (flag_reflection && cxx_dialect < cxx26)
+    error ("%<-freflection%> only supported with %<-std=c++26%> or "
+	   "%<-std=gnu++26%>");
+
   if (num_in_fnames > 1)
     error ("too many filenames given; type %<%s %s%> for usage",
 	   progname, "--help");

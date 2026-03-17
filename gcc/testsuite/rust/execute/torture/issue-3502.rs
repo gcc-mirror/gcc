@@ -1,4 +1,7 @@
 /* { dg-output "parent 123\r*\nchild\r*\n" } */
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 
 extern "C" {

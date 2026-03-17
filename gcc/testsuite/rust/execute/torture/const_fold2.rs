@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 const A: i32 = 1;
 const B: i32 = { A + 2 };
 

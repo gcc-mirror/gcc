@@ -23,10 +23,13 @@
 include $(top_srcdir)/fragment.am
 
 # Convenience library for C++23 runtime.
-noinst_LTLIBRARIES = libc++23convenience.la
+# This libc++23convenience.la one isn't linked into libstdc++.la yet,
+# so build an additional libmodulesconvenience.la which is linked in.
+noinst_LTLIBRARIES = libc++23convenience.la libmodulesconvenience.la
 
-# Module std support.  Not compiled for now, only installed.
+# Module std support.
 # Let's install the interface units in the bits subdirectory.
+# We also compile them and include them in libmodulesconvenience.la
 toolexeclib_DATA = libstdc++.modules.json
 includebitsdir = $(gxx_include_dir)/bits
 includebits_DATA = std.cc std.compat.cc
@@ -59,6 +62,9 @@ stamp-modules-bits: $(includebits_DATA)
 
 all-local: stamp-module-manifest stamp-modules-bits
 
+clean-local:
+	rm -rf stamp* libstdc++.modules.json std.cc std.compat.cc gcm.cache
+
 headers =
 
 if ENABLE_EXTERN_TEMPLATE
@@ -80,11 +86,26 @@ else
 libc__23convenience_la_SOURCES =
 endif
 
+libmodulesconvenience_la_SOURCES = std.cc std.compat.cc
+
 # Use C++26 so that std::filebuf::native_handle() is available.
 print.lo: print.cc
 	$(LTCXXCOMPILE) -std=gnu++26 -c $<
 print.o: print.cc
 	$(CXXCOMPILE) -std=gnu++26 -c $<
+
+MODULES_FLAGS = -isystem ${glibcxx_srcdir}/include/backward -fmodules \
+	-Wno-unknown-pragmas
+
+# These go into libmodulesconvenience.la and are linked into libstdc++
+std.lo: std.cc
+	$(LTCXXCOMPILE) $(MODULES_FLAGS) -c $<
+std.o: std.cc
+	$(CXXCOMPILE) $(MODULES_FLAGS) -c $<
+std.compat.lo: std.compat.cc std.lo
+	$(LTCXXCOMPILE) $(MODULES_FLAGS) -c $<
+std.compat.o: std.compat.cc std.o
+	$(CXXCOMPILE) $(MODULES_FLAGS) -c $<
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 const fn add(x: usize, y: usize) -> i32 {
     add + y
     // { dg-error "cannot apply operator .+. to types fn .x usize,y usize,. -> i32 and usize" "" { target *-*-* } .-1 }

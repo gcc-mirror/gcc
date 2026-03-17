@@ -1,5 +1,6 @@
 // { dg-do compile { target c++26 } }
 // { dg-require-iconv "IBM1047" }
+// { dg-skip-if "" { implicit_constexpr } }
 // { dg-additional-options "-fexec-charset=IBM1047" }
 
 struct A {

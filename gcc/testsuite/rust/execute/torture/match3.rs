@@ -1,4 +1,7 @@
 // { dg-output "Foo::A\r*\nwildcard\r*\nwildcard\r*\nFoo::D 20 80\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

@@ -659,6 +659,9 @@ get_factors_from_mul_expr (tree mult_expr, tree parent,
    ELEMENT_SIZE:
     (sizetype) SAVE_EXPR <n> * 4
    get the index as (long unsigned int) m, and return it.
+   One special case is when the OFFSET is an integer constant, and the
+   element_size is also an integer constant, we should get the index
+   as OFFSET/element_size.
    The INDEX_P holds the pointer to the parent tree of the index,
    INDEX_N holds the position of the index in its parent.  */
 
@@ -666,8 +669,18 @@ static tree
 get_index_from_offset (tree offset, tree *index_p,
 		       int *index_n, tree element_size)
 {
-  if (TREE_CODE (offset) != MULT_EXPR)
+  if (TREE_CODE (offset) != MULT_EXPR
+      && TREE_CODE (offset) != INTEGER_CST)
     return NULL_TREE;
+
+  if (TREE_CODE (offset) == INTEGER_CST
+      && TREE_CODE (element_size) != INTEGER_CST)
+    return NULL_TREE;
+
+  if (TREE_CODE (offset) == INTEGER_CST
+      && TREE_CODE (element_size) == INTEGER_CST)
+    return fold_build2 (EXACT_DIV_EXPR, TREE_TYPE (offset),
+			offset, element_size);
 
   auto_vec<factor_t> e_factors, o_factors;
   get_factors_from_mul_expr (element_size, NULL, -1, &e_factors);

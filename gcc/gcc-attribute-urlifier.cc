@@ -173,41 +173,29 @@ test_attribute_urlifier ()
 
   /* Examples of function attributes.  */
   ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("alias").get (),
-		"gcc/Common-Function-Attributes.html"
-		"#index-alias-function-attribute");
+		"gcc/Common-Attributes.html#index-alias");
 
   ASSERT_STREQ (u.get_url_suffix_for_quoted_text
 		  ("access(read_write, 2, 3)").get (),
-		"gcc/Common-Function-Attributes.html"
-		"#index-access-function-attribute");
+		"gcc/Common-Attributes.html#index-access");
 
   /* Example of enumerator attribute.  */
   ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("deprecated").get (),
-		"gcc/Enumerator-Attributes.html"
-		"#index-deprecated-enumerator-attribute");
-
-  /* We don't yet have an example of a label attribute, since all
-     label attributes have a matching function attribute of the same
-     name, which is found first.  */
+		"gcc/Common-Attributes.html#index-deprecated");
 
   /* Example of statement attribute.  */
   ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("assume").get (),
-		"gcc/Statement-Attributes.html"
-		"#index-assume-statement-attribute");
+		"gcc/Common-Attributes.html#index-assume");
 
   /* Examples of type attributes.  */
   ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("hardbool").get (),
-		"gcc/Common-Type-Attributes.html"
-		"#index-hardbool-type-attribute");
-  ASSERT_STREQ (u.get_url_suffix_for_quoted_text
-		  ("packed").get (),
-		"gcc/Common-Type-Attributes.html"
-		"#index-packed-type-attribute");
+		"gcc/Common-Attributes.html#index-hardbool");
+  ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("packed").get (),
+		"gcc/Common-Attributes.html#index-packed");
 
   /* Example of variable attribute.  */
   ASSERT_STREQ (u.get_url_suffix_for_quoted_text ("nonstring").get (),
-		"gcc/Common-Variable-Attributes.html"
-		"#index-nonstring-variable-attribute");
+		"gcc/Common-Attributes.html#index-nonstring");
 
   /* Example of target-specific attributes.
      For example, "interrupt" has many target-specific documentation URLs.  */
@@ -217,15 +205,12 @@ test_attribute_urlifier ()
     attribute_urlifier u_unrecognized ("not-a-target");
 
     ASSERT_STREQ (u_rl78.get_url_suffix_for_quoted_text ("interrupt").get (),
-		  "gcc/RL78-Function-Attributes.html"
-		  "#index-interrupt-function-attribute_002c-RL78");
+		  "gcc/RL78-Attributes.html#index-interrupt_002c-RL78");
     ASSERT_STREQ (u_x86.get_url_suffix_for_quoted_text ("interrupt").get (),
-		  "gcc/x86-Function-Attributes.html"
-		  "#index-interrupt-function-attribute_002c-x86");
+		  "gcc/x86-Attributes.html#index-interrupt_002c-x86");
     ASSERT_STREQ (u_unrecognized.get_url_suffix_for_quoted_text
 		    ("interrupt").get (),
-		  "gcc/Common-Function-Attributes.html"
-		  "#index-interrupt-function-attribute");
+		  "gcc/Common-Attributes.html#index-interrupt");
   }
 }
 

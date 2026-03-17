@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub struct AA {
     pub data: [u8; 10],
 }

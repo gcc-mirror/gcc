@@ -1,0 +1,7 @@
+{ dg-options {-fstropping=supper} }
+{ dg-require-effective-target longlong64 }
+begin long long int i0 := long long 9223372036854775808; { dg-error "denotation is too large for long long int" }
+      long long int i1 := long long 9223372036854775807;
+      long long int i2 := -long long 9223372036854775808;
+      skip
+end

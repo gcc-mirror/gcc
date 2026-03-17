@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! inside_matcher {
     (($e:expr tok) tok) => {{}}; // { dg-error "token .identifier. is not allowed after .expr. fragment" }
                                  // { dg-error "failed to parse macro matcher" "" { target *-*-* } .-1 }

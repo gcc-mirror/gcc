@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let (_,) = 1; // { dg-error "expected <integer>, found tuple" }
     let (_,) = (1, 2); // { dg-error "expected a tuple with 2 elements, found one with 1 element" }

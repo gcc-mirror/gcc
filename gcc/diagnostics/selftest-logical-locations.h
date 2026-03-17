@@ -41,9 +41,9 @@ public:
 
   void dump (FILE *out, int indent) const final override;
 
-  const char *get_short_name (key) const final override;
-  const char *get_name_with_scope (key) const final override;
-  const char *get_internal_name (key) const final override;
+  label_text get_short_name (key) const final override;
+  label_text get_name_with_scope (key) const final override;
+  label_text get_internal_name (key) const final override;
   kind get_kind (key) const final override;
   label_text get_name_for_path_output (key) const final override;
   key get_parent (key) const final override

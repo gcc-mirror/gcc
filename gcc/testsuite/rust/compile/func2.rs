@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test(a: i32, b: i32) -> i32 {
     a + b
 }

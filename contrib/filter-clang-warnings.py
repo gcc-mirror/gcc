@@ -72,7 +72,11 @@ def skip_warning(filename, message):
             'm2/gm2-compiler-boot': ['-Wunused-'],
             # Rust peopel promised to clean these warnings too
             'rust/': ['-Wunused-private-field'],
-                 'libiberty/sha1.c': ['-Wc23-extensions'],
+            # except perhaps for this one, see
+            # https://github.com/Rust-GCC/gccrs/issues/4441
+            'rust/ast/rust-fmt.h': ['-Wreturn-type-c-linkage'],
+            'libiberty/': ["-Wimplicit-int-enum-cast"],
+            'libiberty/sha1.c': ['-Wc23-extensions'],
             'libtool': ['']
     }
 

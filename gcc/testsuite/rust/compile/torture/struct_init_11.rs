@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn main() {
     struct O(i32);
     struct T(i32, i32);

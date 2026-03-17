@@ -1,4 +1,7 @@
 // { dg-output "macro\r*\nmacro\r*\nmacro\r*\nmacro\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

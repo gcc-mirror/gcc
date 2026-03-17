@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! count_tt {
     ($t:tt) => { 1 };
     ($t:tt $($ts:tt)*) => { 1 + count_tt!($($ts)*) };

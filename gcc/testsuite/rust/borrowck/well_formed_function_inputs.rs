@@ -1,5 +1,8 @@
 // { dg-additional-options "-frust-compile-until=compilation -frust-borrowcheck -fdiagnostics-show-caret -fdiagnostics-show-line-numbers" }
 // { dg-enable-nn-line-numbers "" }
+#![feature(no_core)]
+#![no_core]
+
 
 fn foo<'a, 'b>(p: &'b &'a mut usize) -> &'b&'a mut usize {
     p

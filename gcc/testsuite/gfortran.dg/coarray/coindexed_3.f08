@@ -15,8 +15,8 @@ program pr98903
   a = 42
   s = 42
 
-  ! Checking against single image only.  Therefore team statements are
-  ! not viable nor are they (yet) supported by GFortran.
+  sync all
+  
   if (a[1, team_number=-1, stat=s] /= 42) stop 1
   if (s /= 0) stop 2
 

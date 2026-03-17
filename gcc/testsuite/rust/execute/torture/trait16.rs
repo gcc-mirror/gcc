@@ -1,5 +1,8 @@
 /* { dg-output "parent123\r*\nchild\r*\n" } */
 //Testing lifetimes with supertraits
+#![feature(no_core)]
+#![no_core]
+
 
 extern "C" {
     fn printf(s: *const i8, ...);

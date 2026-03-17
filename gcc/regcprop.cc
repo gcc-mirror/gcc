@@ -36,6 +36,7 @@
 #include "cfgrtl.h"
 #include "target.h"
 #include "function-abi.h"
+#include "cfgcleanup.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
@@ -1443,6 +1444,7 @@ pass_cprop_hardreg::execute (function *fun)
   auto_vec<int> *curr = &worklist1;
   auto_vec<int> *next = &worklist2;
   bool any_debug_changes = false;
+  bool any_changes = false;
 
   /* We need accurate notes.  Earlier passes such as if-conversion may
      leave notes in an inconsistent state.  */
@@ -1462,7 +1464,10 @@ pass_cprop_hardreg::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       if (cprop_hardreg_bb (bb, all_vd, visited))
-	curr->safe_push (bb->index);
+	{
+	  curr->safe_push (bb->index);
+	  any_changes = true;
+	}
       if (all_vd[bb->index].n_debug_insn_changes)
 	any_debug_changes = true;
     }
@@ -1489,7 +1494,10 @@ pass_cprop_hardreg::execute (function *fun)
 	{
 	  bb = BASIC_BLOCK_FOR_FN (fun, index);
           if (cprop_hardreg_bb (bb, all_vd, visited))
-	    next->safe_push (bb->index);
+	    {
+	      next->safe_push (bb->index);
+	      any_changes = true;
+	    }
 	  if (all_vd[bb->index].n_debug_insn_changes)
 	    any_debug_changes = true;
 	}
@@ -1501,6 +1509,15 @@ pass_cprop_hardreg::execute (function *fun)
     }
 
   free (all_vd);
+
+  /* Copy propagation of the sp register into an mem's address
+     can cause what was a trapping instruction into
+     a non-trapping one so cleanup after that in the case of non-call
+     exceptions.  */
+  if (any_changes
+      && cfun->can_throw_non_call_exceptions
+      && purge_all_dead_edges ())
+    cleanup_cfg (0);
   return 0;
 }
 

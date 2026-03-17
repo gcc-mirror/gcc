@@ -1,4 +1,7 @@
 // { dg-options "-w -O0 -fdump-tree-gimple" }
+#![feature(no_core)]
+#![no_core]
+
 struct Foo {
     First: i32,
     Second: f32

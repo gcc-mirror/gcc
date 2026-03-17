@@ -45,41 +45,54 @@
  *   X Alphanumeric
  *   n variadic
  * We use just A, I, N, or X, choosing the most general for each parameter.
+ *
+ * When FldInvalid is shown as the return type, it indicates that the Integer
+ * vs. Numeric type of the function is determined by the type of the first
+ * parameter.
+ *
+ * FldGroup is used when the first argument determines the encoding of the
+ * temporary.  This is for functions that can be Alphanumeric or National.
+ *
+ * We use FldNumericBin5 for functions of type "Integer", and FldFloat for
+ * functions of type "Numeric",
  */
+ #define IntOrNum  FldInvalid
+ #define AnumOrNat FldGroup
+
 static const function_descr_t function_descrs[] = {
    {         ABS,                          "ABS",
-      "__gg__abs",                         "N",   {}, FldNumericBin5 },
+      "__gg__abs",                         "N",   {}, IntOrNum },
    {         ACOS,                         "ACOS",
-      "__gg__acos",                        "N",   {}, FldNumericBin5 },
+      "__gg__acos",                        "N",   {}, FldFloat },
    {         ANNUITY,                      "ANNUITY",
-      "__gg__annuity",                     "NI",  {}, FldNumericBin5 },
+      "__gg__annuity",                     "NI",  {}, FldFloat },
    {         ASIN,                         "ASIN",
-      "__gg__asin",                        "N",   {}, FldNumericBin5 },
+      "__gg__asin",                        "N",   {}, FldFloat },
    {         ATAN,                         "ATAN",
-      "__gg__atan",                        "N",   {}, FldNumericBin5 },
-   {         BASECONVERT,                         "BASECONVERT",
-      "__gg__baseconvert",                        "XII",   {}, FldNumericBin5 },
+      "__gg__atan",                        "N",   {}, FldFloat },
+   {         BASECONVERT,                  "BASECONVERT",        // See parse.y
+      "__gg__baseconvert",                 "XII",   {}, FldAlphanumeric },
    {         BIT_OF,                       "BIT-OF",
       "__gg__bit_of",                      "X",   {}, FldAlphanumeric },
    {         BIT_TO_CHAR,                  "BIT-TO-CHAR",
       "__gg__bit_to_char",                 "X",   {}, FldAlphanumeric },
    // BOOLEAN-OF-INTEGER requires FldBoolean
-   {         BOOLEAN_OF_INTEGER,                         "BOOLEAN-OF-INTEGER",
-      "__gg__boolean_of_integer",                        "II",   {}, FldNumericBin5 },
+   {         BOOLEAN_OF_INTEGER,           "BOOLEAN-OF-INTEGER",
+      "__gg__boolean_of_integer",          "II",   {}, FldNumericBin5 },
    {         BYTE_LENGTH,                  "BYTE-LENGTH",
        "__gg__byte_length",                "X",   {}, FldNumericBin5 },
    {         CHAR,                         "CHAR",
       "__gg__char",                        "I",   {}, FldAlphanumeric },
-   {         CHAR_NATIONAL,                         "CHAR-NATIONAL",
-      "__gg__char_national",                        "I",   {}, FldAlphanumeric },
+   {         CHAR_NATIONAL,                "CHAR-NATIONAL",
+      "__gg__char_national",               "I",   {}, FldAlphanumeric },
    {         COMBINED_DATETIME,            "COMBINED-DATETIME",
-      "__gg__combined_datetime",           "IN",  {}, FldNumericBin5 },
+      "__gg__combined_datetime",           "IN",  {}, FldFloat },
    {         CONCAT,                       "CONCAT",
-      "__gg__concat",                      "n",   {}, FldAlphanumeric },
-   {         CONVERT,                          "CONVERT",
-      "__gg__convert",                         "XII",   {}, FldAlphanumeric },
+      "__gg__concat",                      "n",   {}, AnumOrNat },
+   {         CONVERT,                      "CONVERT",
+      "__gg__convert",                     "XII",   {}, AnumOrNat },
    {         COS,                          "COS",
-      "__gg__cos",                         "N",   {}, FldNumericBin5 },
+      "__gg__cos",                         "N",   {}, FldFloat },
    {         CURRENT_DATE,                 "CURRENT-DATE",
       "__gg__current_date",                 "",   {}, FldAlphanumeric },
    {         DATE_OF_INTEGER,              "DATE-OF-INTEGER",
@@ -94,7 +107,6 @@ static const function_descr_t function_descrs[] = {
       "__gg__display_of",                  "UUI", {}, FldAlphanumeric },
    {         E,                            "E",
       "__gg_e",                            "",   {}, FldNumericBin5 },
-
    {         EXCEPTION_FILE,               "EXCEPTION-FILE",
       "__gg__func_exception_file",         "",   {}, FldAlphanumeric },
    {         EXCEPTION_FILE_N,             "EXCEPTION-FILE-N",
@@ -107,36 +119,35 @@ static const function_descr_t function_descrs[] = {
       "__gg__func_exception_statement",    "",   {}, FldAlphanumeric },
    {         EXCEPTION_STATUS,             "EXCEPTION-STATUS",
       "__gg__func_exception_status",       "",   {}, FldAlphanumeric },
-
    {         EXP,                          "EXP",
-      "__gg__exp",                         "N",   {}, FldNumericBin5 },
+      "__gg__exp",                         "N",   {}, FldFloat },
    {         EXP10,                        "EXP10",
-      "__gg__exp10",                       "N",   {}, FldNumericBin5 },
+      "__gg__exp10",                       "N",   {}, FldFloat },
    {         FACTORIAL,                    "FACTORIAL",
       "__gg__factorial",                   "I",   {}, FldNumericBin5 },
    {         FIND_STRING,                    "FIND-STRING",
       "__gg__find_string",                   "AXI",   {}, FldNumericBin5 },
    {         FORMATTED_CURRENT_DATE,       "FORMATTED-CURRENT-DATE",
-      "__gg__formatted_current_date",      "X",   {}, FldAlphanumeric },
+      "__gg__formatted_current_date",      "X",   {}, AnumOrNat },
    {         FORMATTED_DATE,               "FORMATTED-DATE",
-      "__gg__formatted_date",              "XX",  {}, FldAlphanumeric },
+      "__gg__formatted_date",              "XX",  {}, AnumOrNat },
    {         FORMATTED_DATETIME,           "FORMATTED-DATETIME",
-      "__gg__formatted_datetime",          "XINI", {}, FldAlphanumeric },
+      "__gg__formatted_datetime",          "XINI", {}, AnumOrNat },
    {         FORMATTED_TIME,               "FORMATTED-TIME",
-      "__gg__formatted_time",              "INI", {}, FldNumericBin5 },
+      "__gg__formatted_time",              "INI", {}, AnumOrNat },
    {         FRACTION_PART,                "FRACTION-PART",
-      "__gg__fraction_part",               "N",   {}, FldNumericBin5 },
+      "__gg__fraction_part",               "N",   {}, FldFloat },
    {         HEX_OF,                       "HEX-OF",
       "__gg__hex_of",                      "X",   {}, FldAlphanumeric },
    {         HEX_TO_CHAR,                  "HEX-TO-CHAR",
       "__gg__hex_to_char",                 "X",   {}, FldAlphanumeric },
    {         HIGHEST_ALGEBRAIC,            "HIGHEST-ALGEBRAIC",
-      "__gg__highest_algebraic",           "N",   {}, FldNumericBin5 },
+      "__gg__highest_algebraic",           "N",   {}, IntOrNum },
    {         INTEGER,                      "INTEGER",
       "__gg__integer",                     "N",   {}, FldNumericBin5 },
    // requires FldBoolean
-   {         INTEGER_OF_BOOLEAN,                      "INTEGER-OF-BOOLEAN",
-      "__gg__integer_of_boolean",                     "B",   {}, FldNumericBin5 },
+   {         INTEGER_OF_BOOLEAN,            "INTEGER-OF-BOOLEAN",
+      "__gg__integer_of_boolean",           "B",   {}, FldNumericBin5 },
    {         INTEGER_OF_DATE,              "INTEGER-OF-DATE",
       "__gg__integer_of_date",             "I",   {}, FldNumericBin5 },
    {         INTEGER_OF_DAY,               "INTEGER-OF-DAY",
@@ -155,38 +166,36 @@ static const function_descr_t function_descrs[] = {
       "__gg__locale_time",                 "XX",   {}, FldNumericBin5 },
    {         LOCALE_TIME_FROM_SECONDS,     "LOCALE-TIME-FROM-SECONDS",
       "__gg__locale_time_from_seconds",    "NX",   {}, FldNumericBin5 },
-
    {         LOG,                          "LOG",
-      "__gg__log",                         "N",   {}, FldNumericBin5 },
+      "__gg__log",                         "N",   {}, FldFloat },
    {         LOG10,                        "LOG10",
-      "__gg__log10",                       "N",   {}, FldNumericBin5 },
+      "__gg__log10",                       "N",   {}, FldFloat },
    {         LOWER_CASE,                   "LOWER-CASE",
-      "__gg__lower_case",                  "X",   {}, FldAlphanumeric },
+      "__gg__lower_case",                  "X",   {}, AnumOrNat },
    {         LOWEST_ALGEBRAIC,             "LOWEST-ALGEBRAIC",
-      "__gg__lowest_algebraic",            "N",   {}, FldNumericBin5 },
-
+      "__gg__lowest_algebraic",            "N",   {}, IntOrNum },
    {         MAXX,                          "MAX",
-      "__gg__max",                         "n",   {}, FldAlphanumeric },
+      "__gg__max",                         "n",   {}, IntOrNum },
    {         MEAN,                         "MEAN",
-      "__gg__mean",                        "n",   {}, FldNumericBin5 },
+      "__gg__mean",                        "n",   {}, FldFloat },
    {         MEDIAN,                       "MEDIAN",
-      "__gg__median",                      "n",   {}, FldNumericBin5 },
+      "__gg__median",                      "n",   {}, FldFloat },
    {         MIDRANGE,                     "MIDRANGE",
-      "__gg__midrange",                    "n",   {}, FldNumericBin5 },
+      "__gg__midrange",                    "n",   {}, FldFloat },
    {         MINN,                          "MIN",
-      "__gg__min",                         "n",   {}, FldAlphanumeric },
+      "__gg__min",                         "n",   {}, IntOrNum },
    {         MOD,                          "MOD",
       "__gg__mod",                         "IN",  {}, FldNumericBin5 },
-   {         MODULE_NAME,                          "MODULE-NAME",
-      "__gg__module_name",                         "I",  {}, FldAlphanumeric },
+   {         MODULE_NAME,                  "MODULE-NAME",
+      "__gg__module_name",                 "I",  {}, FldAlphanumeric },
    {         NATIONAL_OF,                  "NATIONAL-OF",
       "__gg__national_of",                 "XX",  {}, FldAlphanumeric },
    {         NUMVAL,                       "NUMVAL",
-      "__gg__numval",                      "X",   {}, FldNumericBin5 },
+      "__gg__numval",                      "X",   {}, FldFloat },
    {         NUMVAL_C,                     "NUMVAL-C",
-      "__gg__numval_c",                    "XXU", {}, FldNumericBin5 },
+      "__gg__numval_c",                    "XXU", {}, FldFloat },
    {         NUMVAL_F,                     "NUMVAL-F",
-      "__gg__numval_f",                    "X",   {}, FldNumericBin5 },
+      "__gg__numval_f",                    "X",   {}, FldFloat },
    {         ORD,                          "ORD",
       "__gg__ord",                         "X",   {}, FldNumericBin5 },
    {         ORD_MAX,                      "ORD-MAX",
@@ -196,37 +205,37 @@ static const function_descr_t function_descrs[] = {
    {         PI,                           "PI",
       "__gg__pi",                          "",   {}, FldNumericBin5 },
    {         PRESENT_VALUE,                "PRESENT-VALUE",
-      "__gg__present_value",               "n",   {}, FldNumericBin5    },
+      "__gg__present_value",               "n",   {}, FldFloat    },
    {         RANDOM,                       "RANDOM",
-      "__gg__random",                      "I",   {}, FldNumericBin5 },
+      "__gg__random",                      "I",   {}, FldFloat },
    {         RANGE,                        "RANGE",
-      "__gg__range",                       "n",   {}, FldNumericBin5    },
+      "__gg__range",                       "n",   {}, IntOrNum    },
    {         REM,                          "REM",
-      "__gg__rem",                         "NN",  {}, FldNumericBin5 },
+      "__gg__rem",                         "NN",  {}, FldFloat },
    {         REVERSE,                      "REVERSE",
-      "__gg__reverse",                     "X",   {}, FldAlphanumeric },
+      "__gg__reverse",                     "X",   {}, AnumOrNat },
    {         SECONDS_FROM_FORMATTED_TIME,  "SECONDS-FROM-FORMATTED-TIME",
-      "__gg__seconds_from_formatted_time", "XX",  {}, FldAlphanumeric },
+      "__gg__seconds_from_formatted_time", "XX",  {}, FldFloat },
    {         SECONDS_PAST_MIDNIGHT,        "SECONDS_PAST_MIDNIGHT",
-      "__gg__seconds_past_midnight",       "",    {}, FldAlphanumeric },
+      "__gg__seconds_past_midnight",       "",    {}, FldFloat },
    {         SIGN,                         "SIGN",
       "__gg__sign",                        "N",   {}, FldNumericBin5 },
    {         SIN,                          "SIN",
-      "__gg__sin",                         "N",   {}, FldNumericBin5 },
-   {         SMALLEST_ALGEBRAIC,                          "SMALLEST-ALGEBRAIC",
-      "__gg__smallest_algebraic",                         "N",   {}, FldNumericBin5 },
+      "__gg__sin",                         "N",   {}, FldFloat },
+   {         SMALLEST_ALGEBRAIC,           "SMALLEST-ALGEBRAIC",
+      "__gg__smallest_algebraic",          "N",   {}, IntOrNum },
    {         SQRT,                         "SQRT",
-      "__gg__sqrt",                        "N",   {}, FldNumericBin5 },
-   {         STANDARD_COMPARE,                          "STANDARD-COMPARE",
-      "__gg__standard_compare",                         "XXXI",   {}, FldAlphanumeric },
+      "__gg__sqrt",                        "N",   {}, FldFloat },
+   {         STANDARD_COMPARE,             "STANDARD-COMPARE",
+      "__gg__standard_compare",            "XXXI",   {}, FldAlphanumeric },
    {         STANDARD_DEVIATION,           "STANDARD-DEVIATION",
-      "__gg__standard_deviation",          "n",   {}, FldNumericBin5 },
-   {         SUBSTITUTE,                          "SUBSTITUTE",
-      "__gg__substitute",                         "XXX",   {}, FldAlphanumeric },
+      "__gg__standard_deviation",          "n",   {}, FldFloat },
+   {         SUBSTITUTE,                   "SUBSTITUTE",
+      "__gg__substitute",                  "XXX",   {}, AnumOrNat },
    {         SUM,                          "SUM",
-      "__gg__sum",                         "n",   {}, FldNumericBin5    },
+      "__gg__sum",                         "n",   {}, IntOrNum    },
    {         TAN,                          "TAN",
-      "__gg__tan",                         "N",   {}, FldNumericBin5 },
+      "__gg__tan",                         "N",   {}, FldFloat },
    {         TEST_DATE_YYYYMMDD,           "TEST-DATE-YYYYMMDD",
       "__gg__test_date_yyyymmdd",          "I",   {}, FldNumericBin5 },
    {         TEST_DAY_YYYYDDD,             "TEST-DAY-YYYYDDD",
@@ -239,8 +248,8 @@ static const function_descr_t function_descrs[] = {
       "__gg__test_numval_c",               "XXU", {}, FldNumericBin5 },
    {         TEST_NUMVAL_F,                "TEST-NUMVAL-F",
       "__gg__test_numval_f",               "X",   {}, FldNumericBin5 },
-   {         TRIM,                         "TRIM",
-      "__gg__trim",                        "XI",  {}, FldNumericBin5 },
+   {         TRIM,                         "TRIM",               // See parse.y
+      "__gg__trim",                        "XI",  {}, FldAlphanumeric },
    {         ULENGTH,                      "ULENGTH",
       "__gg__ulength",                     "X",   {}, FldAlphanumeric },
    {         UPOS,                         "UPOS",
@@ -258,7 +267,7 @@ static const function_descr_t function_descrs[] = {
    {         UWIDTH,                       "UWIDTH",
       "__gg__uwidth",                      "XI",  {}, FldAlphanumeric },
    {         VARIANCE,                     "VARIANCE",
-      "__gg__variance",                    "n",   {}, FldNumericBin5 },
+      "__gg__variance",                    "n",   {}, FldFloat },
    {         WHEN_COMPILED,                "WHEN-COMPILED",
       "__gg__when_compiled",               "",    {}, FldAlphanumeric },
    {         YEAR_TO_YYYY,                 "YEAR-TO-YYYY",
@@ -321,6 +330,92 @@ intrinsic_return_type( int token ) {
                          } );
   return p == function_descrs_end? FldAlphanumeric : p->ret_type;
 }
+
+static cbl_field_t *
+intrinsic_return_field(int token, std::vector<cbl_refer_t> args)
+  {
+  cbl_field_t *retval;
+
+  cbl_field_type_t func_type = intrinsic_return_type(token);
+  switch(func_type)
+    {
+    case FldAlphanumeric:
+      retval = new_alphanumeric();
+      break;
+    case FldNumericBin5:
+      retval = new_tempnumeric();
+      break;
+    case FldFloat:
+      retval = new_tempnumeric_float();
+      break;
+    case FldInvalid:
+      // This is a flag that a function takes the Numeric vs Int type of its
+      // first argument
+      assert( args.size() );
+      switch(args[0].field->type)
+        {
+        case FldGroup:
+        case FldAlphanumeric:
+        case FldAlphaEdited:
+        case FldLiteralA:
+          retval = new_alphanumeric(NULL, args[0].field->codeset.encoding);
+          break;
+        case FldNumericBinary:
+        case FldPacked:
+        case FldNumericDisplay:
+        case FldNumericBin5:
+        case FldLiteralN:
+        case FldIndex:
+        case FldPointer:
+          retval = new_tempnumeric();
+          break;
+        case FldFloat:
+          retval = new_tempnumeric_float();
+          break;
+        default:
+          retval = NULL;
+          gcc_unreachable();
+          break;
+        }
+      break;
+
+    case FldGroup:
+      // This is a flag that an alphanumeric function takes the encoding of the 
+      // first argument
+      assert( args.size() );
+      switch(args[0].field->type)
+        {
+        case FldGroup:
+        case FldAlphanumeric:
+        case FldAlphaEdited:
+        case FldLiteralA:
+        case FldNumericBinary:
+        case FldPacked:
+        case FldNumericDisplay:
+        case FldNumericBin5:
+        case FldLiteralN:
+        case FldIndex:
+        case FldPointer:
+          retval = new_alphanumeric(NULL, args[0].field->codeset.encoding);
+          break;
+        case FldFloat:
+          retval = new_tempnumeric_float();
+          break;
+        default:
+          retval = NULL;
+          gcc_unreachable();
+          break;
+        }
+      break;
+
+    default:
+      retval = NULL;
+      gcc_unreachable();
+      break;
+    }
+  
+  return retval;
+  }
 
 static const char *
 intrinsic_cname( int token ) {

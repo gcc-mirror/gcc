@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 const TEST: usize = 6;
 
 fn main() {

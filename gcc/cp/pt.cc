@@ -13968,7 +13968,7 @@ build_extra_args (tree pattern, tree args, tsubst_flags_t complain)
   /* Make a copy of the extra arguments so that they won't get changed
      out from under us.  */
   tree extra = preserve_args (copy_template_args (args), /*cow_p=*/false);
-  if (complain & tf_partial)
+  if ((complain & tf_partial) || TREE_STATIC (args))
     /* Remember whether this is a partial substitution.  */
     TREE_STATIC (extra) = true;
   if (local_specializations)
@@ -14007,11 +14007,17 @@ add_extra_args (tree extra, tree args, tsubst_flags_t complain, tree in_decl)
       extra = TREE_VALUE (extra);
     }
   if (TREE_STATIC (extra))
-    /* This is a partial substitution into e.g. a requires-expr or lambda-expr
-       inside a default template argument; we expect 'extra' to be a full set
-       of template arguments for the template context, so it suffices to just
-       substitute into them.  */
-    args = tsubst_template_args (extra, args, complain, in_decl);
+    {
+      /* This is a partial substitution into e.g. a requires-expr or lambda-expr
+	 inside a default template argument; we expect 'extra' to be a full set
+	 of template arguments for the template context, so it suffices to just
+	 substitute into them.  */
+      args = tsubst_template_args (extra, args, complain, in_decl);
+      if (processing_template_decl)
+	/* A templated substitution into a partial substitution is still a
+	   partial substitution.  */
+	TREE_STATIC (args) = true;
+    }
   else
     args = add_to_template_args (extra, args);
   return args;
@@ -14129,12 +14135,28 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	    return error_mark_node;
 	  gcc_assert (DECL_HAS_VALUE_EXPR_P (orig_arg));
 	  arg_pack = DECL_VALUE_EXPR (orig_arg);
-	  tree vec = make_tree_vec (TREE_VEC_LENGTH (arg_pack) - 2);
-	  if (TREE_VEC_LENGTH (vec))
-	    memcpy (TREE_VEC_BEGIN (vec), &TREE_VEC_ELT (arg_pack, 2),
-		    TREE_VEC_LENGTH (vec) * sizeof (tree));
-	  arg_pack = make_node (NONTYPE_ARGUMENT_PACK);
-	  ARGUMENT_PACK_ARGS (arg_pack) = vec;
+	  if (TREE_CODE (arg_pack) != ARRAY_REF)
+	    {
+	      /* Structured binding packs when initializer is non-dependent
+		 should have their DECL_VALUE_EXPR set to a TREE_VEC.  See
+		 cp_finish_decomp comment above the packv variable for
+		 details.  */
+	      tree vec = make_tree_vec (TREE_VEC_LENGTH (arg_pack) - 2);
+	      if (TREE_VEC_LENGTH (vec))
+		memcpy (TREE_VEC_BEGIN (vec), &TREE_VEC_ELT (arg_pack, 2),
+			TREE_VEC_LENGTH (vec) * sizeof (tree));
+	      arg_pack = make_node (NONTYPE_ARGUMENT_PACK);
+	      ARGUMENT_PACK_ARGS (arg_pack) = vec;
+	    }
+	  else
+	    {
+	      /* If the structured binding pack has type dependent
+		 base, we can't expand it yet.  */
+	      tree base = TREE_OPERAND (arg_pack, 0);
+	      gcc_assert (VAR_P (base)
+			  && type_dependent_expression_p (base));
+	      arg_pack = NULL_TREE;
+	    }
 	}
       else
         {
@@ -16826,6 +16848,23 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   return op;
 }
 
+/* Return true iff we're in an expansion statement.  */
+
+static bool
+in_expansion_stmt_p ()
+{
+  if (in_expansion_stmt)
+    return true;
+
+  /* In instantiations in_expansion_stmt is false.  */
+  for (cp_binding_level *b = current_binding_level;
+       b && b->kind != sk_function_parms;
+       b = b->level_chain)
+    if (b->kind == sk_template_for)
+      return true;
+  return false;
+}
+
 /* Take the tree structure T and replace template parameters used
    therein with the argument vector ARGS.  IN_DECL is an associated
    decl for diagnostics.  If an error occurs, returns ERROR_MARK_NODE.
@@ -16906,9 +16945,12 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  tree gen_args = tsubst (DECL_TI_ARGS (decl), args, complain, in_decl);
 	  r = retrieve_specialization (tmpl, gen_args, 0);
 	}
-      else if (DECL_FUNCTION_SCOPE_P (decl)
-	       && DECL_TEMPLATE_INFO (DECL_CONTEXT (decl))
-	       && uses_template_parms (DECL_TI_ARGS (DECL_CONTEXT (decl))))
+      else if ((DECL_FUNCTION_SCOPE_P (decl)
+		&& DECL_TEMPLATE_INFO (DECL_CONTEXT (decl))
+		&& uses_template_parms (DECL_TI_ARGS (DECL_CONTEXT (decl))))
+	       /* The { } of an expansion-statement is considered a template
+		  definition.  */
+	       || in_expansion_stmt_p ())
 	r = retrieve_local_specialization (decl);
       else
 	/* The typedef is from a non-template context.  */
@@ -18043,12 +18085,12 @@ tsubst_baselink (tree baselink, tree object_type,
    true if the qualified-id will be a postfix-expression in-and-of
    itself; false if more of the postfix-expression follows the
    QUALIFIED_ID.  ADDRESS_P is true if the qualified-id is the operand
-   of "&".  */
+   of "&".  NAME_LOOKUP_P is true if we intend to perform name lookup.  */
 
 static tree
 tsubst_qualified_id (tree qualified_id, tree args,
 		     tsubst_flags_t complain, tree in_decl,
-		     bool done, bool address_p)
+		     bool done, bool address_p, bool name_lookup_p = true)
 {
   tree expr;
   tree scope;
@@ -18171,7 +18213,9 @@ tsubst_qualified_id (tree qualified_id, tree args,
   if (expr == error_mark_node && complain & tf_error)
     qualified_name_lookup_error (scope, TREE_OPERAND (qualified_id, 1),
 				 expr, input_location);
-  else if (TYPE_P (scope))
+  /* For ^^S::mem, we do not want to create the dummy object that
+     finish_non_static_data_member would give us.  */
+  else if (TYPE_P (scope) && name_lookup_p)
     {
       expr = (adjust_result_of_qualified_name_lookup
 	      (expr, scope, current_nonlambda_class_type ()));
@@ -20774,7 +20818,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
   args = add_extra_args (LAMBDA_EXPR_EXTRA_ARGS (t), args, complain, in_decl);
   if (processing_template_decl
-      && (!in_template_context || (complain & tf_partial)))
+      && (!in_template_context || (complain & tf_partial)
+	  || LAMBDA_EXPR_EXTRA_ARGS (t)))
     {
       /* Defer templated substitution into a lambda-expr if we lost the
 	 necessary template context.  This may happen for a lambda-expr
@@ -20782,7 +20827,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	 Defer dependent substitution as well so that we don't prematurely
 	 lower the level of a deduced return type or any other auto or
-	 template parameter belonging to the lambda.  */
+	 template parameter belonging to the lambda.
+
+	 Finally, if a substitution into this lambda was previously
+	 deferred, keep deferring until the final (non-templated)
+	 substitution.  */
       t = copy_node (t);
       LAMBDA_EXPR_EXTRA_ARGS (t) = NULL_TREE;
       LAMBDA_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, complain);
@@ -21018,7 +21067,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       /* [temp.deduct] A lambda-expression appearing in a function type or a
 	 template parameter is not considered part of the immediate context for
 	 the purposes of template argument deduction. */
-      complain = tf_warning_or_error;
+      if (!emitting_diagnostic_p ())
+	complain = tf_warning_or_error;
 
       tree saved = DECL_SAVED_TREE (oldfn);
       if (TREE_CODE (saved) == BIND_EXPR && BIND_EXPR_BODY_BLOCK (saved))
@@ -22399,6 +22449,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	object_type = TREE_TYPE (object);
 
 	member = TREE_OPERAND (t, 1);
+	const bool splice_p = dependent_splice_p (member);
 	if (BASELINK_P (member))
 	  member = tsubst_baselink (member,
 				    non_reference (TREE_TYPE (object)),
@@ -22453,7 +22504,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      }
 	  }
 	else if (TREE_CODE (member) == SCOPE_REF
-		 && TREE_CODE (TREE_OPERAND (member, 1)) == TEMPLATE_ID_EXPR)
+		 && TREE_CODE (TREE_OPERAND (member, 1)) == TEMPLATE_ID_EXPR
+		 && identifier_p (TREE_OPERAND (TREE_OPERAND (member, 1), 0)))
 	  {
 	    /* Lookup the template functions now that we know what the
 	       scope is.  */
@@ -22493,6 +22545,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      }
 	    RETURN (error_mark_node);
 	  }
+	else if (splice_p && BASELINK_P (member))
+	  /* We need to call adjust_result_of_qualified_name_lookup when
+	     we have obj->[:^^T::fn:], but we don't set BASELINK_QUALIFIED_P
+	     so that we still get virtual function binding.  */
+	  member = (adjust_result_of_qualified_name_lookup
+		    (member, NULL_TREE, object_type));
 
 	r = finish_class_member_access_expr (object, member,
 					     /*template_p=*/false,
@@ -22673,7 +22731,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  else if (r == NULL_TREE)
 	    {
 	      /* First try name lookup to find the instantiation.  */
-	      r = lookup_name (DECL_NAME (t));
+	      if (DECL_NAME (t))
+		r = lookup_name (DECL_NAME (t));
 	      if (r)
 		{
 		  if (!VAR_P (r))
@@ -23123,6 +23182,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	     instantiated entities and so no need to tsubst the annotation
 	     attribute and we rely on pointer equality of that.  */
 	  ;
+	else if (TREE_CODE (h) == SCOPE_REF)
+	  h = tsubst_qualified_id (h, args, complain, in_decl,
+				   /*done=*/true, /*address_p=*/false,
+				   /*name_lookup_p=*/false);
 	else
 	  {
 	    /* [expr.reflect] The id-expression of a reflect-expression is
@@ -28031,9 +28094,18 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 	  tree *p = &DECL_ARGUMENTS (decl);
 	  for (int skip = num_artificial_parms_for (decl); skip; --skip)
 	    p = &DECL_CHAIN (*p);
+	  tree oldarg = *p;
 	  *p = tsubst_decl (pattern_parm, args, tf_error);
 	  for (tree t = *p; t; t = DECL_CHAIN (t))
 	    DECL_CONTEXT (t) = decl;
+	  /* Mark the old PARM_DECLs in case std::meta::parameters_of has
+	     been called on the old declaration and reflections of those
+	     arguments are held across this point and used later.
+	     Such PARM_DECLs are no longer present in
+	     DECL_ARGUMENTS (DECL_CONTEXT (oldarg)) chain.  */
+	  if (*p != oldarg)
+	    for (tree t = oldarg; t; t = DECL_CHAIN (t))
+	      OLD_PARM_DECL_P (t) = 1;
 	}
 
       if (tree attr = get_fn_contract_specifiers (decl))

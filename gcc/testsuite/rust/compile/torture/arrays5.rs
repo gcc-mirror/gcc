@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 
 // Checks that we don't try to allocate a 4TB array during compilation
 fn main () {

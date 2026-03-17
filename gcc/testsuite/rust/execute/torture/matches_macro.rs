@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! matches {
     ($expression:expr, $($pattern:pat)|+ $( if $guard:expr ),*) => {
         match $expression {

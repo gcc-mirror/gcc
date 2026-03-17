@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn bar (x: u8, y: u8) -> i32 {
     match (x, y) {
         (1, 1) => { return 1; }

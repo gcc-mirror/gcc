@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! rep {
     ($a:literal) => { $a };
     ($a:literal $(, $e:literal)*) => {

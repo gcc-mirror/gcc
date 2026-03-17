@@ -1,4 +1,7 @@
 // Test for issue #3977 - ICE with continue/break/return in while condition
+#![feature(no_core)]
+#![no_core]
+
 
 fn diverge() -> ! {
     loop {}

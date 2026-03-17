@@ -19,7 +19,7 @@ program p
   ! For this reason, -fcoarray=single and -fcoarray=lib give the
   ! same result
   if (allocated (a[1])) stop 3
-  if (allocated (c%x[1,2,3])) stop 4
+  if (allocated (c%x[1,1,1])) stop 4
 
   ! Allocate collectively
   allocate(a[*])
@@ -28,16 +28,17 @@ program p
   if (.not. allocated (a)) stop 5
   if (.not. allocated (c%x)) stop 6
   if (.not. allocated (a[1])) stop 7
-  if (.not. allocated (c%x[1,2,3])) stop 8
+  if (.not. allocated (c%x[1,1,1])) stop 8
 
-  ! Deallocate collectively
+  sync all
+  ! Dellocate collectively
   deallocate(a)
   deallocate(c%x)
 
   if (allocated (a)) stop 9
   if (allocated (c%x)) stop 10
   if (allocated (a[1])) stop 11
-  if (allocated (c%x[1,2,3])) stop 12
+  if (allocated (c%x[1,1,1])) stop 12
 end
 
 ! Expected: always local access and never a call to _gfortran_caf_get

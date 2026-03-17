@@ -1,3 +1,308 @@
+2026-02-27  Islam-Imad  <islamimad404@gmail.com>
+
+	* typecheck/rust-hir-type-check-struct.cc: enhance missing fields error message
+
+2026-02-27  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast.h (struct Crate): Make final.
+
+2026-02-27  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* Make-lang.in (GRS_OBJS): Remove entries.
+	* ast/rust-ast.cc (DelimTokenTree::parse_to_meta_item): Handle
+	changes to AttributeParser.
+	(AttributeParser::AttributeParser): Change signature.
+	* ast/rust-macro.h (AttributeParser::AttributeParser): Likewise.
+	* expand/rust-macro-expand.cc
+	(MacroExpander::expand_eager_invocations): Handle changes to
+	MacroInvocLexer.
+	(MacroExpander::parse_proc_macro_output): Use MacroInvocLexer
+	instead of ProcMacroInvocLexer.
+	* expand/rust-macro-expand.h: Remove inclusion of
+	"rust-proc-macro-invoc-lexer.h".
+	* expand/rust-macro-invoc-lexer.cc
+	(MacroInvocLexer::peek_token): Handle changes to MacroInvocLexer
+	internal representation.
+	(MacroInvocLexer::get_token_slice): Likewise.
+	(MacroInvocLexer::split_current_token): Likewise and fix
+	iterator handling.
+	* expand/rust-macro-invoc-lexer.h (class MacroInvocLexerBase):
+	Remove and combine with...
+	(class MacroInvocLexer): ...its now only derived class.
+	* expand/rust-proc-macro-invoc-lexer.cc: Removed.
+	* expand/rust-proc-macro-invoc-lexer.h: Removed.
+	* parse/rust-parse-impl-proc-macro.cc: Removed.
+
+2026-02-27  Harishankar  <harishankarpp7@gmail.com>
+
+	* parse/rust-parse-impl-expr.hxx (null_denotation_path):
+	Check for null struct and tuple expressions to prevent segmentation fault.
+
+2026-02-27  Harishankar  <harishankarpp7@gmail.com>
+
+	* parse/rust-parse-impl-expr.hxx (parse_arithmetic_or_logical_expr):
+	Check for null left operand to prevent segmentation fault.
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* ast/rust-ast-builder.h (Builder::qualified_call): New method declaration.
+	* ast/rust-ast-builder.cc (Builder::qualified_call): Implement new method.
+	* expand/rust-derive-clone.cc (DeriveClone::clone_call): Use builder.qualified_call.
+
+2026-02-27  jayant chauhan  <0001jayant@gmail.com>
+
+	* parse/rust-parse-impl-expr.hxx (null_denotation_path): Check
+	if macro invocation returns null and return error.
+
+2026-02-27  Islam-Imad  <islamimad404@gmail.com>
+
+	* lex/rust-lex.cc (is_whitespace): refactor if-else to switch
+	* lex/rust-token.h: refactor if-else to switch
+	* parse/rust-parse-impl.hxx: return nullptr when type is in invalid state
+
+2026-02-27  jayant chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (check_deprecated_attribute): Guard against
+	attributes without input.
+
+2026-02-27  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-builder.cc (Builder::trait_bound): Replace copy
+	with move.
+	(Builder::trait_impl): Likewise.
+	(Builder::new_const_param): Replace cloning with reconstruction.
+	* ast/rust-path.h (TypePath::TypePath): Use TypeNoBounds copy
+	constructor.
+	(TypePath::operator=): Use TypeNoBounds copy assignment.
+	* expand/rust-derive-clone.cc (DeriveClone::clone_impl): Produce
+	trait bounds lazily.
+	* expand/rust-derive-copy.cc (DeriveCopy::copy_impl): Likewise.
+	* expand/rust-derive-debug.cc (DeriveDebug::stub_derive_impl):
+	Likewise.
+	* expand/rust-derive-default.cc (DeriveDefault::default_impl):
+	Likewise.
+	* expand/rust-derive-eq.cc (DeriveEq::eq_impls): Likewise.
+	* expand/rust-derive-hash.cc (DeriveHash::hash_impl): Likewise.
+	* expand/rust-derive-ord.cc (DeriveOrd::cmp_impl): Likewise.
+	* expand/rust-derive-partial-eq.cc
+	(DerivePartialEq::partialeq_impls): Likewise.
+	* expand/rust-derive.cc (DeriveVisitor::setup_impl_generics):
+	Likewise.
+	* expand/rust-derive.h (DeriveVisitor::setup_impl_generics):
+	Likewise.
+
+2026-02-27  Harishankar  <harishankarpp7@gmail.com>
+
+	* ast/rust-ast.cc (Module::process_file_path): Add fallback search
+	for sibling modules when subdirectory search fails.
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (check_lint_attribute): New helper.
+	(AttributeChecker::visit): Call helper for lint attributes on functions.
+
+2026-02-27  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.cc (Crate::inject_extern_crate): Add a function to
+	inject an extern crate item to a crate.
+	* ast/rust-ast.h: Add function prototype for inject_extern_crate.
+	* rust-session-manager.cc (has_attribute): Add helper to determine if
+	a crate has a given inner attribute.
+	(Session::compile_crate): Add a step to inject the core extern crate
+	when the no_core attribute is missing.
+	* util/rust-attribute-values.h: Add the no_core attribute value.
+
+2026-02-27  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Add colon and
+	type param bound tokens when collecting a trait ast node.
+
+2026-02-27  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-forever-stack.hxx: Prevent iteration on parent ribs.
+
+2026-02-27  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* expand/rust-macro-expand.cc
+	(MacroExpander::expand_decl_macro): Prevent excess errors.
+	(MacroExpander::match_matcher): Detect duplicate metavariable
+	names.
+	* expand/rust-macro-expand.h (MacroExpander::MacroExpander):
+	Initialize field had_duplicate_error.
+	(MacroExpander::had_duplicate_error): New field.
+
+2026-02-27  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-pattern.cc (visit(StructPattern)): Implement
+	type check case for HIR::StructPatternFieldTuplePat.
+	* checks/errors/rust-hir-pattern-analysis.cc (lower_struct_pattern): Implement
+	case for HIR::StructPatternField::ItemType::TUPLE_PAT.
+	* backend/rust-compile-pattern.cc:
+		* CompilePatternCheckExpr::visit (HIR::StructPattern): Implement code
+		gen for HIR::StructPatternField::ItemType::TUPLE_PAT case.
+		* CompilePatternBindings::handle_struct_pattern_tuple_pat: Implement
+		bindings for HIR::StructPatternFieldTuplePat.
+	* backend/rust-compile-pattern.h: Update function definition for
+	handle_struct_pattern_tuple_pat.
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* expand/rust-derive-eq.cc (get_eq_trait_path): New helper.
+	(DeriveEq::assert_param_is_eq): Use helper.
+	(DeriveEq::eq_impls): Use helper.
+
+2026-02-27  Mason Pike  <m@sonpike.net>
+
+	* util/rust-attributes.cc: add attributes to the __outer_attributes set.
+	This prevents some inconsistent behavior, like: https://godbolt.org/z/Eq1GE7xxY
+
+2026-02-27  Mason Pike  <m@sonpike.net>
+
+	* util/rust-attributes.cc: remove loop helper functions
+	* util/rust-attributes.h: remove function defs
+
+2026-02-27  Mason Pike  <m@sonpike.net>
+
+	* util/rust-attributes.cc: factor out loops from
+	several functions to prevent us from having to loop
+	several times over the same attributes
+
+2026-02-27  Mason Pike  <m@sonpike.net>
+
+	* util/rust-attributes.cc: add new function to validate that an
+	attribute is assigned to a valid item type
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* expand/rust-expand-visitor.h (expand_closure_params): Add documentation.
+	(expand_fields): New private template helper.
+	* expand/rust-expand-visitor.cc (expand_struct_fields): Use helper.
+	(expand_tuple_fields): Use helper.
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* backend/rust-compile-asm.cc (chain_asm_operand): New helper.
+	(CompileAsm::asm_construct_outputs): Use helper and remove dead code.
+	(CompileAsm::asm_construct_inputs): Use helper and remove dead code.
+
+2026-02-27  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Replace
+	unreachable with sorry_at.
+
+2026-02-27  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Visit
+	else_expr if has_else_expr, not init_expr.
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (AttributeChecker::visit): Add check for
+	export_name on static items.
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (check_export_name_attribute): New helper.
+	(AttributeChecker::visit): Check export_name on functions.
+
+2026-02-27  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast.h: Add Type::Kind.
+	* ast/rust-macro.h: Use it.
+	* ast/rust-path.h: Likewise.
+	* ast/rust-type.h: Likewise.
+	* resolve/rust-default-resolver.cc (is_lang_impl): New method.
+	(DefaultResolver::visit): Collect lang item implementations in the
+	prelude.
+	* resolve/rust-forever-stack.h: Add new method for lang prelude injection.
+	* resolve/rust-forever-stack.hxx: Define it.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Identifier patterns
+	can resolve to empty structs or variants.
+	* resolve/rust-name-resolution-context.h: Improve resolution.
+
+2026-02-27  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-attributes.cc (AttributeChecker::visit): Use const
+	variable.
+
+2026-02-27  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-base.cc: Change the assembly name on functions
+	with the export_name attribute. Do not mangle the name.
+	* util/rust-attribute-values.h: Add export_name attribute value.
+	* util/rust-attributes.cc: Add export_name attribute to builtin
+	attribute list.
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (AttributeChecker::visit):
+	Reject #[target_feature] on non-unsafe functions.
+
+2026-02-27  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused/rust-unused-checker.cc (is_snake_case):
+	Add warning for variables, methods, functions,
+	lifetime parameters and modules.
+	(UnusedChecker::visit):
+	New.
+	* checks/lints/unused/rust-unused-checker.h:
+	New.
+
+2026-02-27  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused/rust-unused-checker.cc (UnusedChecker::visit):
+	Add warning for static variables.
+
+2026-02-27  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-full-decls.h (class GlobContainer): New.
+	* ast/rust-ast.h (class GlobContainer): New.
+	(struct Crate): Inherit from GlobContainer.
+	* ast/rust-item.h (class Module): Likewise.
+	(class Enum): Likewise.
+	* resolve/rust-finalize-imports-2.0.cc (GlobbingVisitor::go): Handle crates.
+	(GlobbingVisitor::visit_crate_container): New.
+	(GlobbingVisitor::visit): Remove privacy check as it is wrong.
+	* resolve/rust-finalize-imports-2.0.h: Declare new methods.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::go): Handle crates.
+	(TopLevel::visit): Use new insert_glob_container API.
+	* util/rust-hir-map.cc (Mappings::get_ast_crate_by_node_id_raw): New private method.
+	(Mappings::get_ast_crate_by_node_id): Use it.
+	(Mappings::insert_glob_container): New API.
+	* util/rust-hir-map.h: Likewise.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::finalize_glob_import): Likewise.
+
+2026-02-27  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* parse/rust-parse-impl-expr.hxx: Removes duplicate errors.
+	* parse/rust-parse-impl.hxx: Detects when an expression without
+	block is not properly terminated
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (AttributeChecker::check_attributes): Emit error for #[repr].
+
+2026-02-27  Harishankar  <harishankarpp7@gmail.com>
+
+	* typecheck/rust-typecheck-context.cc (insert_associated_trait_impl):
+	Prevent ICE by checking for existing ID.
+	* typecheck/rust-hir-type-check.h: Update declarations.
+
+2026-02-27  Jayant Chauhan  <0001jayant@gmail.com>
+
+	* util/rust-attributes.cc (check_link_section_attribute): New helper.
+	(AttributeChecker::visit): Check link_section on functions and statics.
+
+2026-02-27  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty.cc (VariantDef::clone): revert
+	(VariantDef::monomorphized_clone): likewise
+
+2026-02-27  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty.cc (VariantDef::clone): remove template param
+	(VariantDef::monomorphized_clone): likewise
+
 2026-02-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	PR middle-end/123892

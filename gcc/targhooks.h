@@ -33,6 +33,8 @@ extern machine_mode default_promote_function_mode (const_tree, machine_mode,
 							int *, const_tree, int);
 extern machine_mode default_promote_function_mode_always_promote
 			(const_tree, machine_mode, int *, const_tree, int);
+extern machine_mode default_promote_function_mode_sign_extend
+  (const_tree, machine_mode, int *, const_tree, int);
 
 extern machine_mode default_cc_modes_compatible (machine_mode,
 						      machine_mode);

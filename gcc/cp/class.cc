@@ -7608,7 +7608,8 @@ find_flexarrays (tree t, flexmems_t *fmem, bool base_p,
       if (TREE_CODE (fld) == TYPE_DECL
 	  && DECL_IMPLICIT_TYPEDEF_P (fld)
 	  && CLASS_TYPE_P (TREE_TYPE (fld))
-	  && IDENTIFIER_ANON_P (DECL_NAME (fld)))
+	  && (IDENTIFIER_ANON_P (DECL_NAME (fld))
+	      || TYPE_DECL_WAS_UNNAMED (fld)))
 	{
 	  /* Check the nested unnamed type referenced via a typedef
 	     independently of FMEM (since it's not a data member of

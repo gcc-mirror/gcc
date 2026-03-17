@@ -1,3 +1,441 @@
+2026-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124268
+	* config/abi/pre/gnu.ver: Export symbols.
+	* src/Makefile.am: Add libmodulesconvenience.la to libstdc++
+	link.
+	* src/Makefile.in: Regenerate.
+	* src/c++23/Makefile.am: Create libmodulesconvenience.la
+	and populate it with std.o and std.compat.o interface units.
+	Add clean-local target.
+	* src/c++23/Makefile.in: Regenerate.
+
+2026-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (distance(It&&, Sent)): Only decay
+	arrays to pointers when the type is actually an array, as per
+	LWG 4242.
+	* testsuite/24_iterators/range_operations/distance.cc: Add test
+	for LWG 4242.
+
+2026-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/29_atomics/atomic/compare_exchange_padding.cc:
+	Rewrite to be robust against spurious failures of weak compare
+	exchange, and to check padding bits more directly.
+
+2026-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h (allocator::allocate): Use specific
+	feature test macro for constexpr allocate and deallocate. Make
+	consteval path a discarded statement if sizeof(T) is ill-formed.
+	* include/bits/new_allocator.h (__new_allocator::allocate): Use
+	requires-expression for static_cast. Make function body a
+	discarded stament if sizeof(T) is ill-formed. Use if-constexpr
+	for alignment checks.
+
+2026-03-15  François Dumont  <frs.dumont@gmail.com>
+
+	PR libstdc++/124444
+	* include/debug/safe_sequence.h (_Safe_sequence::_M_invalidate_if_impl): New.
+	(_Safe_sequence::_M_invalidate_if): Call later if not __is_constant_evaluated.
+	* include/debug/safe_sequence.tcc: Rename _M_invalidate_if into
+	_M_invalidate_if_impl and remove C++20 constexpr.
+
+2026-03-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/text_encoding: Fix @since in Doxygen comment.
+
+2026-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libstdc++/124290
+	* testsuite/23_containers/mdspan/submdspan/selections/left_padded.cc:
+	Use dg-timeout-factor 4.
+	* testsuite/23_containers/mdspan/submdspan/selections/left.cc:
+	* testsuite/23_containers/mdspan/submdspan/selections/right_padded.cc:
+	* testsuite/23_containers/mdspan/submdspan/selections/right.cc:
+	Likewise.
+	* testsuite/23_containers/mdspan/submdspan/selections/stride.cc:
+	Likewise.
+
+2026-03-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/format (__format::_Ptr_sink::_M_finish): Rename
+	__max variable to __m.
+	* testsuite/17_intro/names.cc (__max): Define function-like
+	macro.
+
+2026-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/124443
+	* include/std/meta (std::define_static_object): Use CTAD for span.
+
+2026-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/meta (std::meta::exception::what()): Use
+	__builtin_constexpr_diag instead of __asm__("") if supported.
+	(std::meta::access_context::via(info)): Don't call is_class_type
+	if __cls is not a type.  Use __builtin_constexpr_diag instead of
+	__asm__("") if supported for -fno-exceptions.
+
+2026-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (hh_mm_ss): Add comment about LWG 4274.
+
+2026-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algo.h (__replace_fn, __replace_if_fn):
+	Change default template argument for type of new value, as per
+	LWG 4444.
+	* testsuite/25_algorithms/replace/lwg4444.cc: New test.
+	* testsuite/25_algorithms/replace_if/lwg4444.cc: New test.
+
+2026-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/span (as_bytes, as_writable_bytes): Add
+	constraints to disallow volatile elements, as per LWG 4243.
+	* testsuite/23_containers/span/lwg4243.cc: New test.
+
+2026-03-10  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/118030
+	* include/bits/alloc_traits.h (allocate_at_least (2x)): Define.
+	* include/bits/allocator.h (allocate_at_least): Define.
+	* include/std/memory (__glibcxx_want_allocate_at_least): Define.
+	* include/bits/memoryfwd.h (allocation_result): Define, #include
+	<bits/version.h> first so that will work.
+	* include/bits/version.def (allocate_at_least): Add.
+	* include/bits/version.h: Regenerate.
+	* testsuite/20_util/allocator/allocate_at_least.cc: New test.
+	* testsuite/20_util/allocator/allocate_at_least_neg.cc: New test.
+
+2026-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h: Check __glibcxx_to_string instead
+	of __cplusplus.
+
+2026-03-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (__format::_Ptr_sink, __format::__format_padded)
+	(std::enable_nonlocking_formatter_optimization<pair<_Fp, _Sp>>):
+	Replaced 8 spaces with tabs.
+
+2026-03-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (__format::_Ptr_sink): Reworked
+	from _Iter_sink specialization below.
+	(__format::_Iter_sink<_CharT, contiguous_iterator _OutIter>):
+	Renamed and reworked to _Ptr_sink.
+	(__format::__contiguous_char_iter, __format::__do_vformat_to_n):
+	Define.
+	(__format::__do_vformat_to): Use _Ptr_sink when appropriate,
+	and delegate to _Sink_iter specialization.
+	(std::format_to_n): Delegate to __do_vformat_to_n.
+	(__format::_Counting_sink): Use _Ptr_sink as base class.
+
+2026-03-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (__formatter_int::format): Handle transcoding
+	to _CharT before calling _M_format_int.
+	(__formatter_int::_M_format_int): Accept basic_string_view<_CharT>
+	and remove transcoding.
+	(__formatter_ptr::__formatter_ptr): Configure _M_spec member.
+	(__formatter_ptr::parse): Negate _M_alt for __spec and not _M_spec.
+	(__formatter_ptr::format): Delegate to __formatter_int.
+
+2026-03-10  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/string
+	[__cplusplus >= 201103L](basic_string(_Ite, _Ite, const _Alloc&)): Add
+	std::_RequireInputIter<_Ite> template parameter.
+
+2026-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/meta (exception::what, access_context::via): Use
+	__asm__ instead of asm keyword.
+
+2026-03-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120527
+	* include/bits/atomic_wait.h [__FreeBSD__] (__platform_wait_t):
+	Define typedef.
+	[__FreeBSD__] (__platform_wait_uses_type): Define variable
+	template.
+	* src/c++20/atomic.cc (__platform_load): New function.
+	[__FreeBSD__] (_GLIBCXX_HAVE_PLATFORM_WAIT, __platform_wait)
+	(__platform_notify, __platform_wait_until): Define.
+	(__detail::__spin_impl): Use __platform_load.
+
+2026-03-07  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/functions.h [__cplusplus >= 201103L]
+	(__foreign_iterator_aux): Remove.
+	(__foreign_iterator): Adapt to use __foreign_iterator_aux2.
+	* include/debug/helper_functions.h [__cplusplus >= 201103L]:
+	Remove include bits/cpp_type_traits.h.
+	(_Distance_traits<_Integral, std::__true_type>): Remove.
+	(__valid_range_aux(_Integral, _Integral, std::__true_type)):
+	Remove.
+	(__valid_range_aux(_Iterator, _Iterator, std::__false_type)): Remove.
+	(__valid_range_aux(_Integral, _Integral, _Distance_traits<_Integral>::__type&,
+	std::__true_type)): Remove.
+	(__valid_range_aux(_Iterator, _Iterator, _Distance_traits<_Iterator>::__type&,
+	std::__false_type)): Remove.
+	(__valid_range(_Iterator, _Iterator)): Adapt.
+	(__valid_range(_Iterator, _Iterator, _Distance_traits<_Iterator>::__type&)): Adapt.
+
+2026-03-06  Nathan Myers  <ncm@cantrip.org>
+
+	* include/std/bitset (operator[]() const): Customize bounds
+	check for C++11 case.
+	* testsuite/20_util/bitset/access/subscript_const_neg.cc:
+	Suppress UNRESOLVED complaint.
+
+2026-03-06  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/fs_path.h (std::formatter<filesystem::path, _CharT>):
+	Format _Utf_view directly via __formatter_str::_M_format_range.
+
+2026-03-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122300
+	* src/c++17/fs_path.cc (path::_List::_Impl): Remove
+	static_asserts.
+	(path::_List::_Impl::required_alignment)
+	(path::_List::_Impl::use_aligned_new): New static data members.
+	(path::_List::_Impl::create_unchecked): Check use_aligned_new
+	and use aligned new if needed.
+	(path::_List::_Impl::alloc_size): New static member function.
+	(path::_List::_Impl_deleter::operator): Check use_aligned_new
+	and use aligned delete if needed.
+
+2026-03-05  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/118341
+	* include/std/bitset (operator[] (2x)): Add assertion.
+	* testsuite/20_util/bitset/access/118341_neg1.cc: New test.
+	* testsuite/20_util/bitset/access/118341_neg2.cc: Same.
+	* testsuite/20_util/bitset/access/118341_smoke.cc: Same.
+	* testsuite/20_util/bitset/access/subscript.cc: Same.
+	* testsuite/20_util/bitset/access/subscript_const_neg.cc: Same.
+
+2026-03-05  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/safe_unordered_container.h
+	(_Safe_unordered_container::_UContInvalidatePred): Move outside class, at
+	namespace scope. Declare friend.
+	(_Safe_unordered_container::_UMContInvalidatePred): Likewise.
+	(_Safe_unordered_container::_UContMergeGuard): Likewise.
+	(_Safe_unordered_container::_M_invalidate_all): Make protected.
+	(_Safe_unordered_container::_M_invalidate_all_if): Likewise.
+
+2026-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/124124
+	* testsuite/29_atomics/atomic/cons/zero_padding.cc: Limit size of
+	test types to four bytes.
+
+2026-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+	    Ivan Lazaric  <ivan.lazaric1@gmail.com>
+
+	* include/std/format (_Arg_value::_M_get): Rename to...
+	(_Arg_value::_M_access): Modified to accept optional
+	second parameter that is assigned to value.
+	(_Arg_value::_M_get): Handle rename.
+	(_Arg_value::_M_set): Use construct_at for basic_string_view,
+	handle, and two-argument _S_access for other types.
+
+2026-03-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (__Arg_value::handle): Define, extracted
+	with modification from basic_format_arg::handle.
+	(_Arg_value::_Handle_base): Remove.
+	(_Arg_value::_M_handle): Change type to handle.
+	(_Arg_value::_M_get, _Arg_value::_M_set): Check for handle
+	type directly, and return result unmodified.
+	(basic_format_arg::__formattable): Remove.
+	(basic_format_arg::handle): Replace with alias to
+	_Arg_value::handle.
+
+2026-03-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124363
+	* include/std/string_view: Adjust comment on #endif to match #if
+	condition.
+
+2026-03-04  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/117402
+	* include/debug/map.h (try_emplace (2x), insert_or_assign (2x)):
+	Define heterogeneous overloads, simplify existing overloads.
+	* include/debug/unordered_map: Same.
+	* include/debug/set.h (insert (2x)):
+	Define heterogeneous overloads.
+	* include/debug/unordered_set: Same.
+
+2026-03-04  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/117402
+	* include/bits/stl_map.h (operator[], at (2x), try_emplace (2x),
+	insert_or_assign (2x)): Add overloads.
+	* include/bits/unordered_map.h (operator[], at (2x),
+	try_emplace (2x), insert_or_assign (2x), bucket (2x)): Add overloads.
+	* include/bits/stl_set.h (insert (2x)): Add overloads.
+	* include/bits/unordered_set.h (insert (2x), bucket (2x)): Add overloads.
+	* include/bits/hashtable.h (_M_bucket_tr, _M_insert_tr): Define.
+	* include/bits/hashtable_policy.h (_M_at_tr (2x)): Define.
+	* include/bits/stl_tree.h (_M_emplace_here, _M_get_insert_unique_pos_tr,
+	_M_get_insert_hint_unique_pos_tr): Define new heterogeneous insertion
+	code path for set and map.
+	* include/bits/version.def (associative_heterogeneous_insertion):
+	Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/map (__glibcxx_want_associative_heterogeneous_insertion):
+	Define macro.
+	* include/std/set: Same.
+	* include/std/unordered_map: Same.
+	* include/std/unordered_set: Same.
+	* testsuite/23_containers/map/modifiers/hetero/insert.cc: New tests.
+	* testsuite/23_containers/set/modifiers/hetero/insert.cc: Same.
+	* testsuite/23_containers/unordered_map/modifiers/hetero/insert.cc:
+	Same.
+	* testsuite/23_containers/unordered_multimap/modifiers/hetero/insert.cc:
+	Same.
+	* testsuite/23_containers/unordered_multiset/modifiers/hetero/insert.cc:
+	Same.
+	* testsuite/23_containers/unordered_set/modifiers/hetero/insert.cc:
+	Same.
+
+2026-03-03  Adam Wood  <adam.wood@mines.sdsmt.edu>
+
+	PR libstdc++/122217
+	* testsuite/27_io/filesystem/operations/copy_symlink/1.cc: New
+	test.
+	* testsuite/27_io/filesystem/operations/copy_symlink/2.cc: New
+	test.
+	* testsuite/27_io/filesystem/operations/copy_symlink/3.cc: New
+	test.
+	* testsuite/27_io/filesystem/operations/copy_symlink/4.cc: New
+	test.
+
+2026-03-03  Arthur O'Dwyer  <arthur.j.odwyer@gmail.com>
+
+	PR libstdc++/119197
+	* include/std/expected (expected, expected<void, E>): Add
+	[[nodiscard]] to class.
+	* testsuite/20_util/expected/119197.cc: New test.
+
+2026-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic (atomic<T*>::wait, atomic<T*>::notify_one)
+	(atomic<T*>::notify_all): Fix indentation.
+
+2026-03-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.h: Adjust comments so that
+	standard references are specific to C++11.
+
+2026-03-02  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/safe_unordered_container.h
+	(_Safe_unordered_container::_M_invalidate_locals): Remove.
+	(_Safe_unordered_container::_M_invalidate_all): Lock mutex while calling
+	_M_invalidate_if and _M_invalidate_locals.
+	(_Safe_unordered_container::_M_invalidate_all_if): New.
+	(_Safe_unordered_container::_M_invalidate): New.
+	(_Safe_unordered_container::_M_invalidate_if): Make private, add __scoped_lock
+	argument.
+	(_Safe_unordered_container::_M_invalidate_local_if): Likewise.
+	* include/debug/safe_unordered_container.tcc
+	(_Safe_unordered_container::_M_invalidate_if): Adapt and remove lock.
+	(_Safe_unordered_container::_M_invalidate_local_if): Likewise.
+	* include/debug/unordered_map
+	(unordered_map::erase(const_iterator, const_iterator)): Lock before loop on
+	iterators. Remove _M_check_rehashed call.
+	(unordered_map::_M_self): New.
+	(unordered_map::_M_invalidate): Remove.
+	(unordered_map::_M_erase): Adapt and remove _M_check_rehashed call.
+	(unordered_multimap::_M_erase(_Base_iterator, _Base_iterator)): New.
+	(unordered_multimap::erase(_Kt&&)): Use latter.
+	(unordered_multimap::erase(const key_type&)): Likewise.
+	(unordered_multimap::erase(const_iterator, const_iterator)):
+	Lock before loop on iterators. Remove _M_check_rehashed.
+	(unordered_multimap::_M_self): New.
+	(unordered_multimap::_M_invalidate): Remove.
+	(unordered_multimap::_M_erase): Adapt. Remove _M_check_rehashed call.
+	* include/debug/unordered_set
+	(unordered_set::erase(const_iterator, const_iterator)): Add lock before loop
+	for iterator invalidation. Remove _M_check_rehashed call.
+	(unordered_set::_M_self): New.
+	(unordered_set::_M_invalidate): Remove.
+	(unordered_set::_M_erase): Adapt and remove _M_check_rehashed call.
+	(unordered_multiset::_M_erase(_Base_iterator, _Base_iterator)): New.
+	(unordered_multiset::erase(_Kt&&)): Use latter.
+	(unordered_multiset::erase(const key_type&)): Likewise.
+	(unordered_multiset::erase(const_iterator, const_iterator)):
+	Lock before loop on iterators. Remove _M_check_rehashed.
+	(unordered_multiset::_M_self): New.
+	(unordered_multiset::_M_invalidate): Remove.
+	(unordered_multiset::_M_erase): Adapt. Remove _M_check_rehashed call.
+
+2026-03-02  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/105580
+	* testsuite/24_iterators/istreambuf_iterator/105580.cc:
+	Add dg-bogus check for warning.
+
+2026-03-02  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/105580
+	* include/std/streambuf (streambuf::gptr, streambuf::egptr)
+	(streambuf::gbump): Surround with pragma disabling -Wnull-dereference.
+	* testsuite/24_iterators/istreambuf_iterator/105580.cc: Remove check for
+	warning being emitted.
+
+2026-02-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/105580
+	* testsuite/24_iterators/istreambuf_iterator/105580.cc: New test.
+
+2026-02-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* testsuite/29_atomics/atomic_ref/requirements_neg.cc: Add
+	using std::size_t.
+
+2026-02-26  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/atomic_base.h (__atomic_base<_PTp*>::fetch_min,
+	__atomic_base<_PTp*>::fetch_max,
+	__atomic_ref<_Pt, false, false, true>::fetch_min,
+	__atomic_ref<_Pt, false, false, true>::fetch_max): Define new
+	functions.
+	* include/std/atomic (atomic<_Tp*>::fetch_min,
+	atomic<_Tp*>::fetch_max): Likewise.
+	(atomic_fetch_min_explicit, atomic_fetch_max_explicit,
+	atomic_fetch_min, atomic_fetch_max): Change parameter from
+	__atomic_base<_ITp>* to atomic<_Tp>*.
+	* testsuite/29_atomics/atomic/pointer_fetch_minmax.cc: New test.
+	* testsuite/29_atomics/atomic_ref/pointer_fetch_minmax.cc: New
+	test.
+
+2026-02-25  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/117404
+	* include/debug/map.h (extract, erase): Define overloads.
+	* include/debug/multimap.h: Same.
+	* include/debug/multiset.h: Same.
+	* include/debug/set.h: Same.
+	* include/debug/unordered_map: Same (2x).
+	* include/debug/unordered_set: Same (2x), rename some locals.
+
+2026-02-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/23_containers/mdspan/at.cc: Updated guard.
+
+2026-02-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/23_containers/mdspan/at.cc: Updated test.
+
 2026-02-23  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/std/mdspan (__mdspan::__is_multi_index): Removed,

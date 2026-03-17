@@ -1868,7 +1868,12 @@ symbols_update( size_t first, bool parsed_ok ) {
           return 0;
         }
       }
-      // Better to report an error than to fail mysteriously with "0 errors".
+      /*
+       * The parser sets an incomplete field with 0 capacity to FldInvalid.  If
+       * the field proves to be a group symbol_field_add() sets it to FldGroup
+       * and its size is calculated above.  If that doesn't happen, it gets
+       * flagged here.
+       */
       if( yydebug || parse_error_count() == 0 ) {
         if( field->type == FldInvalid ) {
           ERROR_FIELD(field, "line %d: %s %s requires PICTURE",
@@ -3456,8 +3461,47 @@ cbl_alphabet_t::also( const YYLTYPE& loc, size_t ch ) {
   error_msg(loc, "ALSO value %zu is unknown", ch);
 }
 
-using std::deque;
-static deque<cbl_field_t*> stack;
+static symbol_temporaries_t program_temporaries;
+
+/*
+ * Supply a reference to the current list of temporaries for use by codegen to free
+ * the memory if it decides to return to the caller.
+ */
+symbol_temporaries_t&
+symbol_temporaries() {
+  return program_temporaries;
+}
+
+symbol_temporaries_t
+symbol_temporary_alphanumerics() {
+  symbol_temporaries_t output;
+  std::copy_if( program_temporaries.begin(),
+                program_temporaries.end(),
+                std::back_inserter(output), 
+                []( auto f ) {
+                  switch(f->type) {
+                  case FldAlphaEdited:
+                  case FldAlphanumeric:
+                    return f->has_attr(intermediate_e);
+                  case FldFloat:
+                  case FldNumericBin5:
+                  case FldNumericBinary:
+                  case FldNumericDisplay:
+                  case FldNumericEdited:
+                  case FldPacked:
+                  default:
+                    break;
+                  }
+                  return false;
+                } );
+  for( cbl_field_t *f : output ) {
+    auto p = std::find( program_temporaries.begin(),
+                        program_temporaries.end(),
+                        f );
+    program_temporaries.erase(p);
+  }
+  return output;
+}
 
 /*
  * Allocate a temporary field. Assign the type and name, if supplied.  Caller
@@ -3469,8 +3513,8 @@ new_temporary_impl( enum cbl_field_type_t type, const cbl_name_t name = nullptr 
   extern int yylineno;
   static const struct cbl_field_t empty_alpha = {
                                 FldAlphanumeric, intermediate_e,
-                                {MAXIMUM_ALPHA_LENGTH,
-                                 MAXIMUM_ALPHA_LENGTH, 0, 0, NULL} };
+                                {0,
+                                 0, 0, 0, NULL} };
   static const struct cbl_field_t empty_float = {
                                 FldFloat, intermediate_e,
                                 {16, 16, 32, 0, NULL} };
@@ -3532,6 +3576,8 @@ new_temporary_impl( enum cbl_field_type_t type, const cbl_name_t name = nullptr 
   f->data.initial = name; // capture e.g. the function name
 
   f->codeset.set();
+
+  program_temporaries.push_back(f);
 
   return f;
 }
@@ -3735,17 +3781,24 @@ symbol_temporaries_free() {
 }
 
 cbl_field_t *
-new_alphanumeric( size_t capacity, const cbl_name_t name, cbl_encoding_t encoding ) {
+new_alphanumeric( const cbl_name_t name, cbl_encoding_t encoding ) {
   cbl_field_t * field = new_temporary_impl(FldAlphanumeric, name);
-  field->set_capacity( capacity );
+////  if( encoding != no_encoding_e ) {
+////    field->codeset.set(encoding);
+////  }
+////  //// Dubner hacking away:  If name is non-null, then assume this is a
+////  //// function definition, and force the codeset, which otherwise will have
+////  //// defaulted to current_encoding('A'), and the valid() test in codeset.set
+////  //// will have prevented it from being changed.
+////  if( name && encoding != no_encoding_e ) {
+////    field->codeset.set_explicit(encoding);
+////  }
+  /* Jim's original code was hedged with protections apparently intended to
+     prevent encodings from changing.  This proved unsatisfactor, especially
+     when I started implementing setting the temporary return type of functions
+     that take on the characteristics of their first parameter.  So, I went
+     from codeset.set_encoding() to codeset.set_explicit().  */
   if( encoding != no_encoding_e ) {
-    field->codeset.set(encoding);
-  }
-  //// Dubner hacking away:  If name is non-null, then assume this is a
-  //// function definition, and force the codeset, which otherwise will have
-  //// defaulted to current_encoding('A'), and the valid() test in codeset.set
-  //// will have prevented it from being changed.
-  if( name && encoding != no_encoding_e ) {
     field->codeset.set_explicit(encoding);
   }
   temporaries.add(field);

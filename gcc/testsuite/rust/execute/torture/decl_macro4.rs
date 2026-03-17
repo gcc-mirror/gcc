@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #![feature(decl_macro)]
 pub macro add {
     ($e:expr) => {

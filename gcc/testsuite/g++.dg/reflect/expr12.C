@@ -20,11 +20,29 @@ f ()
   if not consteval
     {
       ^^void;  // { dg-error "consteval-only expressions" }
+    }
+  if not consteval
+    {
       q;  // { dg-error "consteval-only expressions" }
+    }
+  if not consteval
+    {
       auto r = ^^int;  // { dg-error "consteval-only variable" }
+    }
+  if not consteval
+    {
       if (q != ^^char);  // { dg-error "consteval-only expressions" }
+    }
+  if not consteval
+    {
       if (^^char == ^^char);  // { dg-error "consteval-only expressions" }
+    }
+  if not consteval
+    {
       while (^^char != ^^char);  // { dg-error "consteval-only expressions" }
+    }
+  if not consteval
+    {
       do {} while (^^char != ^^char);  // { dg-error "consteval-only expressions" }
     }
 }

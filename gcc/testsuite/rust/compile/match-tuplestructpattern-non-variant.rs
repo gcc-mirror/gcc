@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 enum Empty {}
 enum NonEmpty {
     Foo(i32),

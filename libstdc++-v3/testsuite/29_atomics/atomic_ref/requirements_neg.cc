@@ -2,6 +2,8 @@
 
 #include <atomic>
 
+using std::size_t;
+
 template<size_t N>
 struct NonTrivial
 {

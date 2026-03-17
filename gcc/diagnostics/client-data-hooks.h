@@ -63,6 +63,59 @@ class client_data_hooks
   add_sarif_invocation_properties (sarif_object &invocation_obj) const = 0;
 };
 
+/* Implementation of client_data_hooks that delegates vfuncs to an
+   optional inner object.  */
+
+class client_data_hooks_decorator : public client_data_hooks
+{
+ public:
+  client_data_hooks_decorator (const client_data_hooks *inner)
+  : m_inner (inner)
+  {
+  }
+
+  const client_version_info *get_any_version_info () const override
+  {
+    if (m_inner)
+      return m_inner->get_any_version_info ();
+    return nullptr;
+  }
+
+  const logical_locations::manager *
+  get_logical_location_manager () const override
+  {
+    if (m_inner)
+      return m_inner->get_logical_location_manager ();
+    return nullptr;
+  }
+
+  logical_locations::key
+  get_current_logical_location () const override
+  {
+    if (m_inner)
+      return m_inner->get_current_logical_location ();
+    return logical_locations::key ();
+  }
+
+  const char *
+  maybe_get_sarif_source_language (const char *filename) const override
+  {
+    if (m_inner)
+      return m_inner->maybe_get_sarif_source_language (filename);
+    return nullptr;
+  }
+
+  void
+  add_sarif_invocation_properties (sarif_object &invocation_obj) const override
+  {
+    if (m_inner)
+      m_inner->add_sarif_invocation_properties (invocation_obj);
+  }
+
+private:
+  const client_data_hooks *m_inner;
+};
+
 class client_plugin_info;
 
 /* Abstract base class for a diagnostics::context to get at

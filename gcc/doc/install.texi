@@ -986,13 +986,12 @@ This can be useful if you need to turn on a non-standard feature by
 default without modifying the compiler's source code, for instance
 @option{--with-specs=%@{!fcommon:%@{!fno-common:-fno-common@}@}}.
 @ifnothtml
-@xref{Spec Files,, Specifying subprocesses and the switches to pass to them,
-gcc, Using the GNU Compiler Collection (GCC)},
+@xref{Spec Files,, Specifying Subprocesses and the Switches to Pass to Them,
+gccint, GNU Compiler Collection (GCC) Internals}.
 @end ifnothtml
 @ifhtml
-See ``Spec Files'' in the main manual
+See ``Spec Files'' in the GCC Internals manual.
 @end ifhtml
-
 @end table
 
 @item --program-prefix=@var{prefix}
@@ -2962,7 +2961,7 @@ is built, using an external build of the Boehm-Demers-Weiser garbage
 collector (@uref{https://www.hboehm.info/gc/}).
 
 This library needs to be available for each multilib variant, unless
-configured with @option{--enable-objc-gc=@samp{auto}} in which case
+configured with @option{--enable-algol68-gc=@samp{auto}} in which case
 the build of the additional runtime library is skipped when not
 available and the build continues.
 
@@ -4951,7 +4950,7 @@ This configuration is intended for embedded systems.
 @heading riscv32-*-elf
 The RISC-V RV32 instruction set.
 This configuration is intended for embedded systems.
-This (and all other RISC-V) targets require the binutils 2.30 release.
+This (and all other RISC-V) targets require the binutils 2.40 release.
 
 @html
 <hr />
@@ -4959,7 +4958,7 @@ This (and all other RISC-V) targets require the binutils 2.30 release.
 @anchor{riscv32-x-linux}
 @heading riscv32-*-linux
 The RISC-V RV32 instruction set running GNU/Linux.
-This (and all other RISC-V) targets require the binutils 2.30 release.
+This (and all other RISC-V) targets require the binutils 2.40 release.
 
 @html
 <hr />
@@ -4968,7 +4967,7 @@ This (and all other RISC-V) targets require the binutils 2.30 release.
 @heading riscv64-*-elf
 The RISC-V RV64 instruction set.
 This configuration is intended for embedded systems.
-This (and all other RISC-V) targets require the binutils 2.30 release.
+This (and all other RISC-V) targets require the binutils 2.40 release.
 
 @html
 <hr />
@@ -4976,7 +4975,7 @@ This (and all other RISC-V) targets require the binutils 2.30 release.
 @anchor{riscv64-x-linux}
 @heading riscv64-*-linux
 The RISC-V RV64 instruction set running GNU/Linux.
-This (and all other RISC-V) targets require the binutils 2.30 release.
+This (and all other RISC-V) targets require the binutils 2.40 release.
 
 @html
 <hr />

@@ -522,6 +522,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  subscript.  If the key does not exist, a pair with that key
        *  is created using default values, which is then returned.
        *
+       *  If a heterogeneous key matches a range of elements, the first is
+       *  chosen.
+       *
        *  Lookup requires logarithmic time.
        */
       mapped_type&
@@ -560,6 +563,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 #endif
 
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<map> _Kt>
+	mapped_type&
+	operator[](_Kt&& __k)
+	{ return try_emplace(std::forward<_Kt>(__k)).first->second; }
+#endif
+
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 464. Suggestion for new member functions in standard containers.
       /**
@@ -568,6 +578,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  @return  A reference to the data whose key is equivalent to @a __k, if
        *           such a data is present in the %map.
        *  @throw  std::out_of_range  If no such data is present.
+       *
+       *  If a heterogeneous key __k matches a range of elements, the
+       *  first is chosen.
        */
       mapped_type&
       at(const key_type& __k)
@@ -578,6 +591,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return (*__i).second;
       }
 
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<map> _Kt>
+	mapped_type&
+	at(const _Kt& __k)
+	{
+	  iterator __i = lower_bound(__k);
+	  if (__i == end() || key_comp()(__k, (*__i).first))
+	    __throw_out_of_range(__N("map::at"));
+	  return (*__i).second;
+	}
+#endif
+
       const mapped_type&
       at(const key_type& __k) const
       {
@@ -586,6 +611,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  __throw_out_of_range(__N("map::at"));
 	return (*__i).second;
       }
+
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<map> _Kt>
+	const mapped_type&
+	at(const _Kt& __k) const
+	{
+	  const_iterator __i = lower_bound(__k);
+	  if (__i == end() || key_comp()(__k, (*__i).first))
+	    __throw_out_of_range(__N("map::at"));
+	  return (*__i).second;
+	}
+#endif
 
       // modifiers
 #if __cplusplus >= 201103L
@@ -746,6 +783,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element (the key) is not already present in the %map.
        *  If a %pair is not inserted, this function has no effect.
        *
+       *  If a heterogeneous key __k matches a range of elements, an iterator
+       *  to the first is returned.
+       *
        *  Insertion requires logarithmic time.
        */
       template <typename... _Args>
@@ -781,6 +821,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  return {__i, false};
 	}
 
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<map> _Kt, typename ..._Args>
+	pair<iterator, bool>
+	try_emplace(_Kt&& __k, _Args&&... __args)
+	{
+	  iterator __i;
+	  auto [__left, __node] = _M_t._M_get_insert_unique_pos_tr(__k);
+	  if (__node)
+	    {
+	      __i = _M_t._M_emplace_here(__left == __node, __node,
+		std::piecewise_construct,
+		std::forward_as_tuple(std::forward<_Kt>(__k)),
+		std::forward_as_tuple(std::forward<_Args>(__args)...));
+	      return { __i, true };
+	    }
+	  __i = iterator(__left);
+	  return { __i, false };
+	}
+#endif
+
       /**
        *  @brief Attempts to build and insert a std::pair into the %map.
        *
@@ -805,6 +865,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  See
        *  https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
        *  for more on @a hinting.
+       *
+       *  If a heterogeneous key __k matches a range of elements, an iterator
+       *  to the first is returned.
        *
        *  Insertion requires logarithmic time (if the hint is not taken).
        */
@@ -841,6 +904,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 				 std::forward<_Args>(__args)...));
 	  else
 	    __i = iterator(__true_hint.first);
+	  return __i;
+	}
+#endif
+
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<map> _Kt, typename ..._Args>
+	iterator
+	try_emplace(const_iterator __hint, _Kt&& __k, _Args&&... __args)
+	{
+	  iterator __i;
+	  auto [__left, __node] =
+	    _M_t._M_get_insert_hint_unique_pos_tr(__hint, __k);
+	  if (__node)
+	    {
+	      __i = _M_t._M_emplace_here(__left == __node, __node,
+		std::piecewise_construct,
+		std::forward_as_tuple(std::forward<_Kt>(__k)),
+		std::forward_as_tuple(std::forward<_Args>(__args)...));
+	    }
+	  else __i = iterator(__left);
 	  return __i;
 	}
 #endif
@@ -896,7 +979,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  return _M_t._M_emplace_unique(std::forward<_Pair>(__x));
 	}
 #endif
-      /// @}
+      ///@}
 
 #if __cplusplus >= 201103L
       /**
@@ -1046,6 +1129,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  return {__i, false};
 	}
 
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<map> _Kt, typename _Obj>
+	pair<iterator, bool>
+	insert_or_assign(_Kt&& __k, _Obj&& __obj)
+	{
+	  iterator __i;
+	  auto [__left, __node] =_M_t._M_get_insert_unique_pos_tr(__k);
+	  if (__node)
+	    {
+	      __i = _M_t._M_emplace_here(__left == __node, __node,
+		std::piecewise_construct,
+		std::forward_as_tuple(std::forward<_Kt>(__k)),
+		std::forward_as_tuple(std::forward<_Obj>(__obj)));
+	      return { __i, true };
+	    }
+	  __i = iterator(__left);
+	  (*__i).second = std::forward<_Obj>(__obj);
+	  return { __i, false };
+	}
+#endif
+      ///@}
+#endif
+
+#if __cplusplus > 201402L
+      ///@{
       /**
        *  @brief Attempts to insert or assign a std::pair into the %map.
        *  @param  __hint  An iterator that serves as a hint as to where the
@@ -1063,6 +1171,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  first element (the key) is not already present in the %map.
        *  If the %pair was already in the %map, the .second of the %pair
        *  is assigned from __obj.
+       *
+       *  If a heterogeneous key __k matches a range of elements, the first
+       *  is chosen.
        *
        *  Insertion requires logarithmic time.
        */
@@ -1105,6 +1216,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  (*__i).second = std::forward<_Obj>(__obj);
 	  return __i;
 	}
+
+#ifdef __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_tree_key<map> _Kt, typename _Obj>
+	iterator
+	insert_or_assign(const_iterator __hint, _Kt&& __k, _Obj&& __obj)
+	{
+	  iterator __i;
+	  auto [__left, __node] =
+	    _M_t._M_get_insert_hint_unique_pos_tr(__hint, __k);
+	  if (__node)
+	    {
+	      return _M_t._M_emplace_here(__left == __node, __node,
+		std::piecewise_construct,
+		std::forward_as_tuple(std::forward<_Kt>(__k)),
+		std::forward_as_tuple(std::forward<_Obj>(__obj)));
+	    }
+	  __i = iterator(__left);
+	  (*__i).second = std::forward<_Obj>(__obj);
+	  return __i;
+	}
+#endif
+      ///@}
 #endif
 
 #if __cplusplus >= 201103L

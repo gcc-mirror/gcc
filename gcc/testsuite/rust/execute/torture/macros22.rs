@@ -1,4 +1,7 @@
 // { dg-output "1\r*\n2\r*\nNaN\r*\n3\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 
 macro_rules! print_num {
     ($l:literal) => {{

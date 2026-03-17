@@ -69,14 +69,17 @@ DeriveDefault::default_impl (
   std::unique_ptr<AssociatedItem> &&default_fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  auto default_path = builder.type_path ({"core", "default", "Default"}, true);
+  auto default_path = [this] () {
+    return builder.type_path ({"core", "default", "Default"}, true);
+  };
 
   auto trait_items = vec (std::move (default_fn));
 
-  auto generics = setup_impl_generics (name, type_generics,
-				       builder.trait_bound (default_path));
+  auto generics = setup_impl_generics (name, type_generics, [&, this] () {
+    return builder.trait_bound (default_path ());
+  });
 
-  return builder.trait_impl (default_path, std::move (generics.self_type),
+  return builder.trait_impl (default_path (), std::move (generics.self_type),
 			     std::move (trait_items),
 			     std::move (generics.impl));
 }

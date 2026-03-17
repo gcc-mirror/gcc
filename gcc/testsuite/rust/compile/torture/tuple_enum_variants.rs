@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 enum E {
     T0(),
     T1(i32),

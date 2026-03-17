@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 enum E {
   A(i32),
   B(i32, i32),

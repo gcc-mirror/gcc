@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 #[inline(A)] // { dg-error "invalid argument, .inline. attribute only accepts .always. or .never." }
 fn test_a() {}
 

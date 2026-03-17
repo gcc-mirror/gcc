@@ -419,9 +419,18 @@
    (match_operand 1 "")]
   "TARGET_VECTOR"
   {
-    /* Expand into a QImode vector.  */
-    machine_mode qimode = riscv_vector::get_vector_mode
+    /* Expand into a QImode vector.
+       For XTheadVector which does not have fractional-LMUL modes, we use
+       a full-size vector instead.  */
+    bool fractional_p = known_lt (GET_MODE_NUNITS (<MODE>mode),
+				  BYTES_PER_RISCV_VECTOR);
+    machine_mode qimode;
+    if (!TARGET_XTHEADVECTOR || !fractional_p)
+      qimode = riscv_vector::get_vector_mode
 	(QImode, GET_MODE_NUNITS (<MODE>mode)).require ();
+    else
+      qimode = riscv_vector::get_m1_mode
+	(QImode, GET_MODE_NUNITS (<MODE>mode).is_constant ()).require ();
     rtx tmp = gen_reg_rtx (qimode);
     riscv_vector::expand_vec_init (tmp, operands[1]);
 
@@ -433,7 +442,12 @@
     riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
 
     /* Compare against zero.  */
-    riscv_vector::expand_vec_cmp (operands[0], NE, tmp2, CONST0_RTX (qimode));
+    rtx op0;
+    if (!TARGET_XTHEADVECTOR || !fractional_p)
+      op0 = operands[0];
+    else
+      op0 = gen_lowpart (riscv_vector::get_mask_mode (qimode), operands[0]);
+    riscv_vector::expand_vec_cmp (op0, NE, tmp2, CONST0_RTX (qimode));
     DONE;
   }
 )
@@ -1449,15 +1463,30 @@
 	 [(match_operand	  2 "nonmemory_operand")])))]
   "TARGET_VECTOR"
 {
-  /* Create an empty byte vector and set it to one under mask.  */
-  machine_mode qimode = riscv_vector::get_vector_mode
-      (QImode, GET_MODE_NUNITS (<MODE>mode)).require ();
+  /* Create an empty byte vector and set it to one under mask.
+     For XTheadVector which does not have fractional-LMUL modes, we use
+     a full-size vector instead.  */
+  bool fractional_p = known_lt (GET_MODE_NUNITS (<MODE>mode),
+				BYTES_PER_RISCV_VECTOR);
+  machine_mode qimode;
+  if (!TARGET_XTHEADVECTOR || !fractional_p)
+    qimode = riscv_vector::get_vector_mode
+	(QImode, GET_MODE_NUNITS (<MODE>mode)).require ();
+  else
+    qimode = riscv_vector::get_m1_mode
+	(QImode, GET_MODE_NUNITS (<MODE>mode).is_constant ()).require ();
 
   rtx tmp1 = gen_reg_rtx (qimode);
   emit_move_insn (tmp1, gen_const_vec_duplicate (qimode, GEN_INT (0)));
   rtx ones = gen_const_vec_duplicate (qimode, GEN_INT (1));
 
-  rtx ops1[] = {tmp1, tmp1, ones, operands[1]};
+  rtx op1;
+  if (!TARGET_XTHEADVECTOR || !fractional_p)
+    op1 = operands[1];
+  else
+    op1 = gen_lowpart (riscv_vector::get_mask_mode (qimode), operands[1]);
+
+  rtx ops1[] = {tmp1, tmp1, ones, op1};
   riscv_vector::emit_vlmax_insn (code_for_pred_merge (qimode),
 				 riscv_vector::MERGE_OP, ops1);
 

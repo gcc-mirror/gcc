@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! Test {
     ($a:ident, $b:ty) => {
         struct $a($b);

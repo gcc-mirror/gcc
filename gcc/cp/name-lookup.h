@@ -521,6 +521,9 @@ extern bool maybe_push_to_top_level (tree);
 extern void maybe_pop_from_top_level (bool);
 extern void push_using_decl_bindings (tree, tree);
 extern void expose_existing_namespace (tree);
+extern void walk_namespace_bindings (tree ns,
+				     void (*callback) (tree, void *data),
+				     void *data);
 
 /* Lower level interface for modules. */
 extern tree *mergeable_namespace_slots (tree ns, tree name, bool is_attached,

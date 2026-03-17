@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn print(a: *const u8) {}
 #[macro_export]
 macro_rules! pr_warn (

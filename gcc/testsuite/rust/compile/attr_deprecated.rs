@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #[deprecated(since="1.0", note="do not use this function")]
 fn test1() {}
 

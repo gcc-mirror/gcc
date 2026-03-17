@@ -895,12 +895,12 @@ type_can_have_value_range_p (tree type)
   return true;
 }
 
-/* Base implementation of svalue::maybe_get_value_range vfunc.
+/* Base implementation of svalue::maybe_get_value_range_1 vfunc.
    If there is a suitable underlying type, write a "varying" for it to OUT
    (for "any value of that type") and return true; otherwise return false.  */
 
 bool
-svalue::maybe_get_value_range (value_range &out) const
+svalue::maybe_get_value_range_1 (value_range &out) const
 {
   tree type = get_type ();
   if (!type_can_have_value_range_p (type))
@@ -1196,13 +1196,13 @@ constant_svalue::all_zeroes_p () const
 }
 
 
-/* Implementation of svalue::maybe_get_value_range for constant_svalue.
+/* Implementation of svalue::maybe_get_value_range_1 for constant_svalue.
    If there is a suitable underlying type, write the value_range for the
    single value of m_cst_expr to OUT and return true; otherwise return
    false.  */
 
 bool
-constant_svalue::maybe_get_value_range (value_range &out) const
+constant_svalue::maybe_get_value_range_1 (value_range &out) const
 {
   if (!type_can_have_value_range_p (get_type ()))
     return false;
@@ -1275,7 +1275,7 @@ unknown_svalue::maybe_fold_bits_within (tree type,
 }
 
 bool
-unknown_svalue::maybe_get_value_range (value_range &) const
+unknown_svalue::maybe_get_value_range_1 (value_range &) const
 {
   /* Don't attempt to participate in range ops.  */
   return false;
@@ -1572,10 +1572,10 @@ unaryop_svalue::maybe_fold_bits_within (tree type,
   return nullptr;
 }
 
-/* Implementation of svalue::maybe_get_value_range for unaryop_svalue.  */
+/* Implementation of svalue::maybe_get_value_range_1 for unaryop_svalue.  */
 
 bool
-unaryop_svalue::maybe_get_value_range (value_range &out) const
+unaryop_svalue::maybe_get_value_range_1 (value_range &out) const
 {
   tree type = get_type ();
   if (!type_can_have_value_range_p (type))
@@ -1716,10 +1716,10 @@ sub_svalue::sub_svalue (symbol::id_t id,
   gcc_assert (parent_svalue->can_have_associated_state_p ());
 }
 
-/* Implementation of svalue::maybe_get_value_range for binop_svalue.  */
+/* Implementation of svalue::maybe_get_value_range_1 for binop_svalue.  */
 
 bool
-binop_svalue::maybe_get_value_range (value_range &out) const
+binop_svalue::maybe_get_value_range_1 (value_range &out) const
 {
   tree type = get_type ();
   if (!type_can_have_value_range_p (type))

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct S1 {
     x: f64,
     y: f64,

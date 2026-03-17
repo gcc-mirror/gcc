@@ -1,4 +1,7 @@
 // { dg-output "zero to END_RANGE\r*\nzero to END_RANGE\r*\nelse\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 
 extern "C" {
     fn printf(s: *const i8, ...);

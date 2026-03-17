@@ -1,3 +1,115 @@
+2026-03-14  Matthias Klose  <doko@gcc.gnu.org>
+
+	PR ada/107475
+	* Makefile.rtl (s390% linux%): Define MISCLIB.
+	(arm% linux-gnueabi%): Likewise.
+	(%x32 linux%): Likewise.
+
+2026-03-12  Steve Baird  <baird@adacore.com>
+
+	PR ada/124016
+	* libgnat/a-cbinho.adb (Create_Subpool): Handle the case where
+	the type Holder_Subpool has nontrivial finalization. Declare the
+	local variable Subpool with its Import aspect specified (to avoid
+	unwanted finalization), and make corresponding changes in order to
+	initialize that variable.
+	* libgnat/s-stposu.ads (_Adjust_Clone): New procedure.
+	* libgnat/s-stposu.adb (_Adjust_Clone): New body.
+
+2026-03-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124369
+	* accessibility.adb (Accessibility_Message): Give an error instead
+	of a warning in an instance when No_Dynamic_Accessibility_Checks is
+	in effect.
+	(Innermost_Master_Scope_Depth): Restore the original computation of
+	the nearest enclosing dynamic scope.
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Access>: Call the
+	Accessibility_Message routine in all cases to give accessibility
+	errors and do not return.  Call the Static_Accessibility_Level
+	function in all cases to compute static accessibility levels.
+	Add guard before calling Prefix_With_Safe_Accessibility_Level.
+
+2026-03-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124376
+	* sem_res.adb (Resolve_Actuals.Check_Aliased_Parameter): Deal with
+	assignment statements.
+
+2026-03-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124376
+	* accessibility.adb (Accessibility_Level): Minor formatting tweaks.
+	(Accessibility_Level.Function_Call_Or_Allocator_Level): Implement
+	AI12-0402.  Reimplement the loop climbing up the parent chain to
+	find an object being initialized.  Restrict the specific handling
+	of N_Assignment_Statement nodes to the anonymous access type case.
+	* doc/gnat_rm/implementation_of_ada_2022_features.rst: Adjust the
+	entries of AI12-0277, AI12-0345 & AI12-0372, add one for AI12-0402.
+	* gnat_rm.texi: Regenerate.
+
+2026-03-07  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR target/124336
+	* init.c (__gnat_adjust_context_for_raise) [x86/Linux]: Fix typo.
+
+2026-03-07  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR target/124336
+	* init.c (__gnat_adjust_context_for_raise) [x86/Linux]: Adjust
+	pattern matching to new stack probes.
+
+2026-02-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124285
+	* gcc-interface/decl.cc (components_to_record): Force a packed
+	layout for the innermost variant of an unchecked union type with
+	fixed part and full representation clause.
+
+2026-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124201
+	PR ada/124282
+	* exp_aggr.adb (Expand_Iterated_Component): Replace the iteration
+	variable in the expression as well.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Preanalyze
+	the expression directly as well.
+
+2026-02-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123306
+	* freeze.adb (Freeze_Entity): For a class-wide equivalent type of
+	a non-interface root type, freeze the root type before it.
+	* sem_ch3.adb (Derived_Type_Declaration): Minor tweak.
+	* sem_ch12.adb (Analyze_One_Association): Revert latest change.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause) <Size>: When
+	the prefix is a class-wide type, insert the declaration of the CW-
+	equivalent type immediately after that of the root type, and the
+	size check for the root type into its own freezing actions.
+
+2026-02-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124201
+	* exp_aggr.adb (Expand_Iterated_Component): Replace the iteration
+	variable in the key expression and iterator filter, if any.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Preanalyze
+	the specification and key expression directly.
+
+2026-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/124226
+	* sem_res.adb (Resolve_Implicit_Dereference): Move declaration to...
+	* sem_res.ads (Resolve_Implicit_Dereference): ...here.
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Access>: Also call
+	Resolve_Implicit_Dereference when resolving a protected operation.
+
+2026-02-24  Eric Botcazou  <ebotcazou@adacore.com>
+	    Liam Powell  <liam@liampwll.com>
+
+	PR ada/124224
+	* sem_aggr.adb (Resolve_Container_Aggregate): Minor tweaks.
+	(Resolve_Iterated_Association): Compute Typ on all paths.
+
 2026-02-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/124192

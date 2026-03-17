@@ -1,5 +1,8 @@
 // { dg-output "Foo::bar\r*\n" }
 // { dg-additional-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 
 extern "C" {

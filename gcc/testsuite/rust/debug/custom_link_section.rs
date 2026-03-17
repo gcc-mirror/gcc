@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #[link_section = ".universe"]
 fn not_in_text() -> i32 {
     42

@@ -235,7 +235,7 @@ public:
   void insert_trait_reference (DefId id, TraitReference &&ref);
   bool lookup_trait_reference (DefId id, TraitReference **ref);
 
-  void insert_associated_trait_impl (HirId id,
+  bool insert_associated_trait_impl (HirId id,
 				     AssociatedImplTrait &&associated);
   bool lookup_associated_trait_impl (HirId id,
 				     AssociatedImplTrait **associated);

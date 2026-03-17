@@ -1,4 +1,7 @@
 // { dg-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(raw_ref_op)]
 
 const pq1: () = {

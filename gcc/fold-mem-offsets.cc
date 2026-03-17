@@ -653,7 +653,10 @@ do_analysis (rtx_insn *insn)
       print_rtl_single (dump_file, insn);
     }
 
-  /* Analyse folding opportunities for this memory instruction.  */
+  /* Mark this memory instruction as foldable before the DFS so that its
+     address definitions can see it in can_fold_insns during analysis.
+     This is required because fold_offsets checks that all uses of a
+     definition are in can_fold_insns before marking the definition.  */
   bitmap_set_bit (&can_fold_insns, INSN_UID (insn));
   fold_offsets (insn, reg, true, NULL);
 }
@@ -688,14 +691,16 @@ do_check_validity (rtx_insn *insn, fold_mem_info *info)
   int icode = INSN_CODE (insn);
   INSN_CODE (insn) = -1;
   rtx mem_addr = XEXP (mem, 0);
-  machine_mode mode = GET_MODE (mem_addr);
+  machine_mode addr_mode = GET_MODE (mem_addr);
+  machine_mode mem_mode = GET_MODE (mem);
   if (new_offset != 0)
-    XEXP (mem, 0) = gen_rtx_PLUS (mode, reg, gen_int_mode (new_offset, mode));
+    XEXP (mem, 0) = gen_rtx_PLUS (addr_mode, reg,
+				   gen_int_mode (new_offset, addr_mode));
   else
     XEXP (mem, 0) = reg;
 
   bool illegal = insn_invalid_p (insn, false)
-		 || !memory_address_addr_space_p (mode, XEXP (mem, 0),
+		 || !memory_address_addr_space_p (mem_mode, XEXP (mem, 0),
 						  MEM_ADDR_SPACE (mem));
 
   /* Restore the instruction.  */

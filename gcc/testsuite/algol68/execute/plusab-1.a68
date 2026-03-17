@@ -12,11 +12,11 @@ BEGIN BEGIN INT i := 10;
             i PLUSAB SHORT 100;
             ASSERT (i = SHORT 1200)
       END;
-      BEGIN SHORT SHORT INT i := SHORT SHORT 10000;
-            i +:= SHORT SHORT 1000;
-            ASSERT (i = SHORT SHORT 11000);
-            i PLUSAB SHORT SHORT 1000;
-            ASSERT (i = SHORT SHORT 12000)
+      BEGIN SHORT SHORT INT i := SHORT SHORT 100;
+            i +:= SHORT SHORT 10;
+            ASSERT (i = SHORT SHORT 110);
+            i PLUSAB SHORT SHORT 10;
+            ASSERT (i = SHORT SHORT 120)
       END;
 
       BEGIN LONG INT i := LONG 1000;

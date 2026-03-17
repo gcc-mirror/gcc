@@ -16,5 +16,4 @@ constexpr auto foo (S s) {
 }
 
 constexpr auto a = foo (Y { 42 });
-// TODO: This doesn't work: 'const struct X<^^Y::name>' is not the same as 'const struct X<^^Y::name>'
-//static_assert (std::is_same_v <decltype (a), const X <^^Y::name>>);
+static_assert (std::is_same_v <decltype (a), const X <^^Y::name>>);

@@ -553,7 +553,7 @@ loongarch_parse_fmv_features (tree decl, string_slice str,
 
   if (attr_str.empty ())
     {
-      error_at (loc, "characher before %<;%> in attribute %qs cannot be empty",
+      error_at (loc, "character before %<;%> in attribute %qs cannot be empty",
 		attr_str.begin ());
       return false;
     }
@@ -573,7 +573,7 @@ loongarch_parse_fmv_features (tree decl, string_slice str,
 
       if (str.is_valid ())
 	{
-	  error_at (loc, "in attribute %qs the number of reatures "
+	  error_at (loc, "in attribute %qs the number of features "
 		    "cannot exceed two", attr_str.begin ());
 	  return false;
 	}

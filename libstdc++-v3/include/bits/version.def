@@ -89,6 +89,14 @@ ftms = {
 };
 
 ftms = {
+  name = allocate_at_least;
+  values = {
+    v = 202302;
+    cxxmin = 23;
+  };
+};
+
+ftms = {
   name = is_null_pointer;
   values = {
     v = 201309;
@@ -1648,6 +1656,14 @@ ftms = {
   values = {
     v = 202110;
     cxxmin = 23;
+  };
+};
+
+ftms = {
+  name = associative_heterogeneous_insertion;
+  values = {
+    v = 202306;
+    cxxmin = 26;
   };
 };
 

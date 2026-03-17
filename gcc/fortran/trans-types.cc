@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dwarf2out.h"	/* For struct array_descr_info.  */
 #include "attribs.h"
 #include "alias.h"
-
+
 
 #if (GFC_MAX_DIMENSIONS < 10)
 #define GFC_RANK_DIGITS 1
@@ -1281,7 +1281,7 @@ gfc_get_pchar_type (int kind)
   return index < 0 ? 0 : gfc_pcharacter_types[index];
 }
 
-
+
 /* Create a character type with the given kind and length.  */
 
 tree
@@ -1317,7 +1317,7 @@ gfc_get_character_type (int kind, gfc_charlen * cl)
 
   return gfc_get_character_type_len (kind, len);
 }
-
+
 /* Convert a basic type.  This will be an array for character types.  */
 
 tree
@@ -1417,7 +1417,7 @@ gfc_typenode_for_spec (gfc_typespec * spec, int codim)
     }
   return basetype;
 }
-
+
 /* Build an INT_CST for constant expressions, otherwise return NULL_TREE.  */
 
 static tree
@@ -1430,7 +1430,7 @@ gfc_conv_array_bound (gfc_expr * expr)
   /* Otherwise return NULL.  */
   return NULL_TREE;
 }
-
+
 /* Return the type of an element of the array.  Note that scalar coarrays
    are special.  In particular, for GFC_ARRAY_TYPE_P, the original argument
    (with POINTER_TYPE stripped) is returned.  */
@@ -1470,7 +1470,7 @@ gfc_get_element_type (tree type)
 
   return element;
 }
-
+
 /* Build an array.  This function is called from gfc_sym_type().
    Actually returns array descriptor type.
 
@@ -1650,7 +1650,7 @@ gfc_build_array_type (tree type, gfc_array_spec * as,
 				    corank, lbound, ubound, 0, akind,
 				    restricted);
 }
-
+
 /* Returns the struct descriptor_dimension type.  */
 
 static tree
@@ -2283,7 +2283,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
 
   return fat_type;
 }
-
+
 /* Build a pointer type. This function is called from gfc_sym_type().  */
 
 static tree
@@ -2458,7 +2458,7 @@ gfc_nonrestricted_type (tree t)
   return ret;
 }
 
-
+
 /* Return the type for a symbol.  Special handling is required for character
    types to get the correct level of indirection.
    For functions return the return type.
@@ -2587,7 +2587,7 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
 
   return (type);
 }
-
+
 /* Layout and output debug info for a record type.  */
 
 void
@@ -2602,7 +2602,7 @@ gfc_finish_type (tree type)
   rest_of_type_compilation (type, 1);
   rest_of_decl_compilation (decl, 1, 0);
 }
-
+
 /* Add a field of given NAME and TYPE to the context of a UNION_TYPE
    or RECORD_TYPE pointed to by CONTEXT.  The new field is chained
    to the end of the field list pointed to by *CHAIN.
@@ -3247,7 +3247,28 @@ gfc_return_by_reference (gfc_symbol * sym)
 
   return 0;
 }
-
+
+static tree
+gfc_get_entry_result_type (gfc_symbol *sym)
+{
+  tree type;
+
+  type = gfc_sym_type (sym->result);
+
+  /* Mixed ENTRY master unions must use the ABI return type of each entry.
+     Under -ff2c, default REAL entries return C double even though their
+     Fortran result symbol remains default REAL.  */
+  if (flag_f2c
+      && sym->ts.type == BT_REAL
+      && sym->ts.kind == gfc_default_real_kind
+      && !sym->attr.pointer
+      && !sym->attr.allocatable
+      && !sym->attr.always_explicit)
+    type = gfc_get_real_type (gfc_default_double_kind);
+
+  return type;
+}
+
 static tree
 gfc_get_mixed_entry_union (gfc_namespace *ns)
 {
@@ -3276,7 +3297,8 @@ gfc_get_mixed_entry_union (gfc_namespace *ns)
       if (el == el2)
 	gfc_add_field_to_struct_1 (type,
 				   get_identifier (el->sym->result->name),
-				   gfc_sym_type (el->sym->result), &chain);
+				   gfc_get_entry_result_type (el->sym),
+				   &chain);
     }
 
   /* Finish off the type.  */
@@ -3284,7 +3306,7 @@ gfc_get_mixed_entry_union (gfc_namespace *ns)
   TYPE_DECL_SUPPRESS_DEBUG (TYPE_STUB_DECL (type)) = 1;
   return type;
 }
-
+
 /* Create a "fn spec" based on the formal arguments;
    cf. create_function_arglist.  */
 
@@ -3605,7 +3627,7 @@ arg_type_list_done:
 
   return type;
 }
-
+
 /* Language hooks for middle-end access to type nodes.  */
 
 /* Return an integer type with BITS bits of precision,

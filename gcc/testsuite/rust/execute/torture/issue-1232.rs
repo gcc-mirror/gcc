@@ -1,5 +1,8 @@
 // { dg-additional-options "-w" }
 // { dg-output "slice_access=3\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(intrinsics)]
 
 #![feature(lang_items)]

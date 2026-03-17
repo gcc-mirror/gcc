@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! ty_app {
     ($_a:pat) => {
         ($ctor)

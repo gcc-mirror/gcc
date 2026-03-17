@@ -37,13 +37,13 @@ func (struct T *t, int i)
   /* 0:3  */
   get_other_u(t->ptr_u)->c = 43;
 
-  /* 0:2:1  */
+  /* 0:2  */
   get_other_v(&t->u.v)->d = 44;
 }
 
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:3\"\\)" 2 } } */
 /* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:0\"\\)" 1 } } */
-/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:2:1\"\\)" 1 } } */
+/* { dg-final { scan-assembler-times "bpfcr_astr_off \\(\"0:2\"\\)" 1 } } */
 /* { dg-final { scan-assembler-times "bpfcr_type \\(struct T\\)" 3 } } */
 /* { dg-final { scan-assembler-times "bpfcr_type \\(struct U\\)" 1 } } */
 

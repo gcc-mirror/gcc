@@ -120,6 +120,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_OPERATOR_DELETE ::operator delete
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
       // NB: __n is permitted to be 0.  The C++ standard says nothing
       // about what the return value is when __n == 0.
       _GLIBCXX_NODISCARD _GLIBCXX20_CONSTEXPR _Tp*
@@ -128,9 +131,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 3308. std::allocator<void>().allocate(n)
+#if ! __cpp_concepts
 	static_assert(sizeof(_Tp) != 0, "cannot allocate incomplete types");
-#endif
+#else
+	static_assert(requires { sizeof(_Tp); },
+	  "cannot allocate incomplete types");
 
+	if constexpr (!requires { sizeof(_Tp); })
+	  return nullptr; // static_assert already failed
+	else
+#endif
+#endif
 	if (__builtin_expect(__n > this->_M_max_size(), false))
 	  {
 	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -139,16 +150,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      std::__throw_bad_array_new_length();
 	    std::__throw_bad_alloc();
 	  }
-
 #if __cpp_aligned_new && __cplusplus >= 201103L
-	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	else if constexpr (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
 	    std::align_val_t __al = std::align_val_t(alignof(_Tp));
 	    return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp),
 							   __al));
 	  }
 #endif
-	return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp)));
+	else
+	  return static_cast<_Tp*>(_GLIBCXX_OPERATOR_NEW(__n * sizeof(_Tp)));
       }
 
       // __p is not permitted to be a null pointer.
@@ -162,7 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if __cpp_aligned_new && __cplusplus >= 201103L
-	if (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
+	if constexpr (alignof(_Tp) > __STDCPP_DEFAULT_NEW_ALIGNMENT__)
 	  {
 	    _GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n),
 				     std::align_val_t(alignof(_Tp)));
@@ -172,6 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX_OPERATOR_DELETE(_GLIBCXX_SIZED_DEALLOC(__p, __n));
       }
 
+#pragma GCC diagnostic pop
 #undef _GLIBCXX_SIZED_DEALLOC
 #undef _GLIBCXX_OPERATOR_DELETE
 #undef _GLIBCXX_OPERATOR_NEW

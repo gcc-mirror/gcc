@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 mod A {
     pub mod B {
         pub mod C {

@@ -1,5 +1,8 @@
 /* { dg-do run { target x86_64*-*-* } } */
 /* { dg-output "Value is: 5\r*\n" } */
+#![feature(no_core)]
+#![no_core]
+
 #![feature(rustc_attrs)]
 
 extern "C" {

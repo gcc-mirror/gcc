@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 mod orange {
     mod green {
         struct Foo;

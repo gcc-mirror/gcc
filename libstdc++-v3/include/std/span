@@ -517,7 +517,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     span(_Range &&)
       -> span<remove_reference_t<ranges::range_reference_t<_Range&>>>;
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4243. as_bytes/as_writable_bytes is broken with span<volatile T>
   template<typename _Type, size_t _Extent>
+    requires (!is_volatile_v<_Type>)
     [[nodiscard]]
     inline
     span<const byte, _Extent == dynamic_extent
@@ -532,7 +535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Type, size_t _Extent>
-    requires (!is_const_v<_Type>)
+    requires (!is_const_v<_Type> && !is_volatile_v<_Type>)
     inline
     span<byte, _Extent == dynamic_extent
        ? dynamic_extent : _Extent * sizeof(_Type)>

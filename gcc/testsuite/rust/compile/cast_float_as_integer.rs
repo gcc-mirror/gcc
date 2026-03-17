@@ -1,4 +1,7 @@
 // { dg-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 fn main(){
     let foo:f64 = 13.37;
     let _ = foo as i64;

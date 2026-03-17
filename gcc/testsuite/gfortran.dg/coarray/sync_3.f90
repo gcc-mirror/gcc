@@ -9,8 +9,9 @@
 ! PR fortran/18918
 
 implicit none
-integer :: n
-character(len=30) :: str
+integer :: n, st
+integer,allocatable :: others(:)
+character(len=40) :: str
 critical
 end critical
 myCr: critical
@@ -58,17 +59,32 @@ if (this_image() == 1) then
     sync images ([1])
 end if
 
+! Need to sync all here, because otherwise sync image 1 may overlap with the
+! sync images(*, stat=n) below and that may hang for num_images() > 1.
+sync all
+
 n = 5
 sync images (*, stat=n)
 if (n /= 0) STOP 5
 
 n = 5
-sync images (*,errmsg=str,stat=n)
+sync images (*, errmsg=str, stat=n)
 if (n /= 0) STOP 6
 
+if (this_image() == num_images()) then
+  others = (/( n, n=1, (num_images() - 1)) /)
+  sync images(others)
+else
+  sync images ( num_images() )
+end if 
+
 n = -1
-sync images ( num_images() )
-sync images (n) ! Invalid: "-1"
+st = 0
+sync images (n, errmsg=str, stat=st)
+if (st /= 1 .OR. str /= "Invalid image number -1 in SYNC IMAGES") STOP 7
+
+! Do this only on image 1, or output of error messages will clutter
+if (this_image() == 1) sync images (n) ! Invalid: "-1"
 
 end
 

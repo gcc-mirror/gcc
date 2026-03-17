@@ -80,6 +80,16 @@
 #endif /* !defined(__cpp_lib_allocator_traits_is_always_equal) */
 #undef __glibcxx_want_allocator_traits_is_always_equal
 
+#if !defined(__cpp_lib_allocate_at_least)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_allocate_at_least 202302L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_allocate_at_least)
+#   define __cpp_lib_allocate_at_least 202302L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_allocate_at_least) */
+#undef __glibcxx_want_allocate_at_least
+
 #if !defined(__cpp_lib_is_null_pointer)
 # if (__cplusplus >= 201103L)
 #  define __glibcxx_is_null_pointer 201309L
@@ -1820,6 +1830,16 @@
 # endif
 #endif /* !defined(__cpp_lib_associative_heterogeneous_erasure) */
 #undef __glibcxx_want_associative_heterogeneous_erasure
+
+#if !defined(__cpp_lib_associative_heterogeneous_insertion)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_associative_heterogeneous_insertion 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_associative_heterogeneous_insertion)
+#   define __cpp_lib_associative_heterogeneous_insertion 202306L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_associative_heterogeneous_insertion) */
+#undef __glibcxx_want_associative_heterogeneous_insertion
 
 #if !defined(__cpp_lib_is_scoped_enum)
 # if (__cplusplus >= 202100L)

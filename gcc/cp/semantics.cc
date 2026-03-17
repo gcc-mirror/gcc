@@ -4207,14 +4207,6 @@ begin_class_definition (tree t)
       pushtag (TYPE_IDENTIFIER (t), t);
     }
 
-  if (modules_p ())
-    {
-      if (!module_may_redeclare (TYPE_NAME (t)))
-	return error_mark_node;
-      set_instantiating_module (TYPE_NAME (t));
-      set_defining_module (TYPE_NAME (t));
-    }
-
   maybe_process_partial_specialization (t);
   pushclass (t);
   TYPE_BEING_DEFINED (t) = 1;

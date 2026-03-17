@@ -1093,10 +1093,13 @@ html_builder::make_element_for_diagnostic (const diagnostic_info &diagnostic,
 	    enum logical_locations::kind kind
 	      = logical_loc_mgr->get_kind (logical_loc);;
 	    if (const char *label = get_label_for_logical_location_kind (kind))
-	      if (const char *name_with_scope
-		  = logical_loc_mgr->get_name_with_scope (logical_loc))
-		add_labelled_value (xp, "logical-location",
-				    label, name_with_scope, true);
+	      {
+		label_text name_with_scope
+		  = logical_loc_mgr->get_name_with_scope (logical_loc);
+		if (name_with_scope.get ())
+		  add_labelled_value (xp, "logical-location",
+				      label, name_with_scope.get (), true);
+	      }
 	    m_last_logical_location = logical_loc;
 	  }
 

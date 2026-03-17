@@ -90,6 +90,15 @@ a68_lower_confirm2 (NODE_T *p, LOW_CTX_T ctx)
 tree
 a68_lower_negate2 (NODE_T *p, LOW_CTX_T ctx)
 {
+  /* Annotate denotations as being negated.  */
+  NODE_T *s = NEXT (SUB (p));
+  if (ATTRIBUTE (s) == SECONDARY
+      && ATTRIBUTE (SUB (s)) == PRIMARY
+      && ATTRIBUTE (SUB (SUB (s))) == DENOTATION)
+    {
+      NEGATED (SUB (SUB (s))) = true;
+    }
+
   return fold_build1_loc (a68_get_node_location (p),
 			  NEGATE_EXPR,
 			  CTYPE (MOID (p)),

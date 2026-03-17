@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     // Signed integers
     let _i8_min: i8 = -128;

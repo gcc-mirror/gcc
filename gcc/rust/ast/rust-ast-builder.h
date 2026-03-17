@@ -169,6 +169,10 @@ public:
 				std::vector<PathExprSegment> &&segments
 				= {}) const;
 
+  std::unique_ptr<Expr>
+  qualified_call (std::vector<std::string> &&segments,
+		  std::vector<std::unique_ptr<Expr>> &&args) const;
+
   /* Self parameter for a function definition (`&self`) */
   std::unique_ptr<Param> self_ref_param (bool mutability = false) const;
   /* A regular named function parameter for a definition (`a: type`) */

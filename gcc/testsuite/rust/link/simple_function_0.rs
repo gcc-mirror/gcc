@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 extern crate simple_function_1;
 use simple_function_1::test_func;
 

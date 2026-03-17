@@ -1,4 +1,7 @@
 // { dg-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 const BLOCK_LEN: usize = 64;
 
 const IV: [u32; 8] = [

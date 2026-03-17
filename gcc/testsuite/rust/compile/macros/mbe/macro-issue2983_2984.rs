@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub struct ReadDir {
     pub inner: i32,
     #[cfg(not(A))]

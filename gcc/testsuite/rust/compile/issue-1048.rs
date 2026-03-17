@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! maybe_return { ($e:expr) => ($e); }
 
 fn frob(x: i32) -> i32{

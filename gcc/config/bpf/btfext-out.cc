@@ -32,6 +32,7 @@
 #include "rtl.h"
 #include "tree-pretty-print.h"
 #include "cgraph.h"
+#include "toplev.h"  /* get_src_pwd */
 
 #include "btfext-out.h"
 
@@ -124,13 +125,18 @@ struct GTY ((chain_next ("%h.next"))) btf_ext_funcinfo
 /* A lineinfo record, in the .BTF.ext lineinfo section.  */
 struct GTY ((chain_next ("%h.next"))) btf_ext_lineinfo
 {
-  uint32_t insn_off;      /* Offset of the instruction.  */
+  const char *insn_label; /* Instruction label.  */
+  const char *file_name;  /* Source-code file name.  */
   uint32_t file_name_off; /* Offset of file name in BTF string table.  */
   uint32_t line_off;      /* Offset of source line in BTF string table.  */
-  uint32_t line_col;      /* Line number (bits 31-11) and column (11-0).  */
+  uint32_t line_col;      /* Line number (bits 31-10) and column (9-0).  */
 
   struct btf_ext_lineinfo *next; /* Linked list to collect line_info elems.  */
 };
+
+#define BTF_LINE_INFO_LINE(line_col)	      ((line_col) >> 10)
+#define BTF_LINE_INFO_COLUMN(line_col)        ((line_col) & 0x3ff)
+#define BTF_LINE_INFO_LINE_COL(line, column)  (line << 10 | (column & 0x3ff))
 
 /* Internal representation of a BPF CO-RE relocation record.  */
 struct GTY ((chain_next ("%h.next"))) btf_ext_core_reloc {
@@ -231,6 +237,26 @@ bpf_create_or_find_funcinfo (const char *fnname, const char *sec_name,
   *head = ggc_cleared_alloc<struct btf_ext_funcinfo> ();
   (*head)->fnname = fnname;
   (*head)->label = NULL;
+
+  return *head;
+}
+
+/* Function to create a lineinfo node in info.  */
+
+static struct btf_ext_lineinfo *
+bpf_create_lineinfo (const char *sec_name, btf_ext_info_sec **in_sec = NULL)
+{
+  struct btf_ext_info_sec *sec_elem =
+    btfext_info_sec_find_or_add (sec_name, true);
+
+  if (in_sec != NULL)
+    *in_sec = sec_elem;
+
+  struct btf_ext_lineinfo **head =
+    SEARCH_NODE_AND_RETURN(struct btf_ext_lineinfo,
+			   sec_elem->line_info.head,
+			   false);
+  *head = ggc_cleared_alloc<struct btf_ext_lineinfo> ();
 
   return *head;
 }
@@ -438,6 +464,43 @@ btf_validate_funcinfo (btf_ext_info_sec *sec)
     }
 }
 
+#define STR_BUFF_SIZE 256
+
+struct btf_ext_lineinfo *
+btf_add_line_info_for (const char *label, const char *filename,
+		       unsigned int line, unsigned int column)
+{
+  const char *sec_name = decl_section_name (current_function_decl);
+
+  if (sec_name == NULL)
+    sec_name = ".text";
+
+  struct btf_ext_info_sec *sec = NULL;
+  struct btf_ext_lineinfo *info =
+    bpf_create_lineinfo (sec_name, &sec);
+
+  info->insn_label = label;
+
+  if (!IS_DIR_SEPARATOR (filename[0]))
+    {
+      char *s = xasprintf ("%s%c%s", get_src_pwd (),
+				 DIR_SEPARATOR, filename);
+      info->file_name = ggc_strdup (s);
+      free (s);
+    }
+  else
+    /* Filename is an absolute path.  */
+    info->file_name = ggc_strdup (filename);
+
+  info->file_name_off = btf_ext_add_string (info->file_name);
+  info->line_off = 0;
+  info->line_col = BTF_LINE_INFO_LINE_COL (line, column);
+
+  sec->line_info.num_info += 1;
+  return info;
+}
+#undef STR_BUFF_SIZE
+
 /* Compute the section size in section for func_info, line_info and core_info
    regions of .BTF.ext.  */
 
@@ -545,6 +608,48 @@ output_btfext_func_info (struct btf_ext_info_sec *sec)
     }
 }
 
+/* Outputs line_info region on .BTF.ext.  */
+
+static void
+output_btfext_line_info (struct btf_ext_info_sec *sec)
+{
+  unsigned int str_aux_off = ctfc_get_strtab_len (ctf_get_tu_ctfc (),
+						  CTF_STRTAB);
+  bool executed = false;
+  while (sec != NULL)
+    {
+      uint32_t count = 0;
+      if (sec->line_info.num_info > 0)
+	{
+	  if (executed == false && (executed = true))
+	    dw2_asm_output_data (4, 16, "LineInfo entry size");
+	  dw2_asm_output_data (4, sec->sec_name_off + str_aux_off,
+			       "LineInfo section string for %s",
+			       sec->sec_name);
+	  dw2_asm_output_data (4, sec->line_info.num_info, "Number of entries");
+
+	  struct btf_ext_lineinfo *elem = sec->line_info.head;
+	  while (elem != NULL)
+	    {
+	      count += 1;
+	      dw2_asm_output_offset (4, elem->insn_label, NULL, "insn_label");
+
+	      unsigned int file_name_off = btf_ext_add_string (elem->file_name);
+	      dw2_asm_output_data (4, file_name_off + str_aux_off,
+				   "file_name_off");
+	      dw2_asm_output_data (4, elem->line_off, "line_off");
+	      dw2_asm_output_data (4, elem->line_col, "(line, col) (%u, %u)",
+				   BTF_LINE_INFO_LINE (elem->line_col),
+				   BTF_LINE_INFO_COLUMN (elem->line_col));
+	      elem = elem->next;
+	    }
+	}
+
+      gcc_assert (count == sec->line_info.num_info);
+      sec = sec->next;
+    }
+}
+
 /* Output all CO-RE relocation sections.  */
 
 static void
@@ -622,6 +727,7 @@ btf_ext_output (void)
 
   output_btfext_header ();
   output_btfext_func_info (btf_ext);
+  output_btfext_line_info (btf_ext);
   if (TARGET_BPF_CORE)
     output_btfext_core_sections ();
 

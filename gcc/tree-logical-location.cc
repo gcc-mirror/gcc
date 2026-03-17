@@ -48,33 +48,35 @@ tree_logical_location_manager::dump (FILE *outfile, int indent) const
 				      "tree_logical_location_manager");
 }
 
-const char *
+label_text
 tree_logical_location_manager::get_short_name (key k) const
 {
   tree node = tree_from_key (k);
   assert_valid_tree (node);
 
   if (DECL_P (node))
-    return identifier_to_locale (lang_hooks.decl_printable_name (node, 0));
+    return label_text::borrow
+      (identifier_to_locale (lang_hooks.decl_printable_name (node, 0)));
   if (TYPE_P (node))
-    return IDENTIFIER_POINTER (TYPE_IDENTIFIER (node));
-  return nullptr;
+    return label_text::borrow (IDENTIFIER_POINTER (TYPE_IDENTIFIER (node)));
+  return label_text ();
 }
 
-const char *
+label_text
 tree_logical_location_manager::get_name_with_scope (key k) const
 {
   tree node = tree_from_key (k);
   assert_valid_tree (node);
 
   if (DECL_P (node))
-    return identifier_to_locale (lang_hooks.decl_printable_name (node, 1));
+    return label_text::borrow
+      (identifier_to_locale (lang_hooks.decl_printable_name (node, 1)));
   if (TYPE_P (node))
-    return nullptr;
-  return nullptr;
+    return label_text ();
+  return label_text ();
 }
 
-const char *
+label_text
 tree_logical_location_manager::get_internal_name (key k) const
 {
   tree node = tree_from_key (k);
@@ -85,11 +87,11 @@ tree_logical_location_manager::get_internal_name (key k) const
       if (HAS_DECL_ASSEMBLER_NAME_P (node)
 	  && TREE_CODE (node) != NAMESPACE_DECL) // FIXME
 	if (tree id = DECL_ASSEMBLER_NAME (node))
-	  return IDENTIFIER_POINTER (id);
+	  return label_text::borrow (IDENTIFIER_POINTER (id));
     }
   else if (TYPE_P (node))
-    return nullptr;
-  return NULL;
+    return label_text ();
+  return label_text ();
 }
 
 enum kind

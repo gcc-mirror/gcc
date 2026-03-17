@@ -1869,6 +1869,11 @@ fields_linear_search (tree klass, tree name, bool want_type)
 	    continue;
 	}
 
+      if (TYPE_DECL_WAS_UNNAMED (decl))
+	/* Ignore DECL_NAME given to unnamed TYPE_DECLs named for linkage
+	   purposes.  */
+	continue;
+
       if (DECL_DECLARES_FUNCTION_P (decl))
 	/* Functions are found separately.  */
 	continue;
@@ -2345,7 +2350,13 @@ count_class_fields (tree klass)
 	     && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
       n_fields += count_class_fields (TREE_TYPE (fields));
     else if (DECL_NAME (fields))
-      n_fields += 1;
+      {
+	if (TYPE_DECL_WAS_UNNAMED (fields))
+	  /* Ignore DECL_NAME given to unnamed TYPE_DECLs named for linkage
+	     purposes.  */
+	  continue;
+	n_fields += 1;
+      }
 
   return n_fields;
 }
@@ -2369,6 +2380,10 @@ member_vec_append_class_fields (vec<tree, va_gc> *member_vec, tree klass)
 	if (TREE_CODE (field) == USING_DECL
 	    && IDENTIFIER_CONV_OP_P (DECL_NAME (field)))
 	  field = ovl_make (conv_op_marker, field);
+	else if (TYPE_DECL_WAS_UNNAMED (field))
+	  /* Ignore DECL_NAME given to unnamed TYPE_DECLs named for linkage
+	     purposes.  */
+	  continue;
 	member_vec->quick_push (field);
       }
 }
@@ -2700,7 +2715,9 @@ pop_local_binding (tree id, tree decl)
     binding->value = NULL_TREE;
   else if (binding->type == decl)
     binding->type = NULL_TREE;
-  else
+  /* Ignore DECL_NAME given to unnamed TYPE_DECLs named for linkage
+     purposes.  */
+  else if (!TYPE_DECL_WAS_UNNAMED (decl))
     {
       /* Name-independent variable was found after at least one declaration
 	 with the same name.  */
@@ -4321,6 +4338,120 @@ ovl_iterator::exporting_p () const
   if (TREE_CODE (ovl) == USING_DECL)
     return DECL_MODULE_EXPORT_P (ovl);
   return OVL_EXPORT_P (ovl);
+}
+
+/* Given a namespace NS, walk all of its bindings, calling CALLBACK
+   for all visible decls.  Any lazy module bindings will be loaded
+   at this point.  */
+
+void
+walk_namespace_bindings (tree ns, void (*callback) (tree decl, void *data),
+			 void *data)
+{
+  for (tree o : *DECL_NAMESPACE_BINDINGS (ns))
+    if (TREE_CODE (o) == BINDING_VECTOR)
+      {
+	/* Modules may have duplicate entities on the binding slot.
+	   Keep track of this as needed, and ensure we only call
+	   the callback once per entity.  */
+	hash_set<tree> seen;
+	const auto callback_maybe_dup = [&](tree decl)
+	  {
+	    if (!seen.add (decl))
+	      callback (decl, data);
+	  };
+
+	/* First the current module.  There should be no dups yet,
+	   but track anything that might be dup'd later.  */
+	binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (o);
+	if (tree bind = cluster->slots[BINDING_SLOT_CURRENT])
+	  {
+	    tree value = bind;
+	    if (STAT_HACK_P (bind))
+	      {
+		if (STAT_TYPE (bind) && !STAT_TYPE_HIDDEN_P (bind))
+		  callback_maybe_dup (STAT_TYPE (bind));
+		if (STAT_DECL_HIDDEN_P (bind))
+		  value = NULL_TREE;
+		else
+		  value = STAT_DECL (bind);
+	      }
+	    value = ovl_skip_hidden (value);
+	    for (tree decl : ovl_range (value))
+	      callback_maybe_dup (decl);
+	  }
+
+	/* Now the imported bindings.  */
+	/* FIXME: We probably want names visible from the outermost point of
+	   constant evaluation, regardless of instantiations.  */
+	bitmap imports = get_import_bitmap ();
+	tree name = BINDING_VECTOR_NAME (o);
+
+	unsigned ix = BINDING_VECTOR_NUM_CLUSTERS (o);
+	if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
+	  {
+	    ix--;
+	    cluster++;
+	  }
+
+	/* Do this in forward order, so we load modules in an order
+	   the user expects.  */
+	for (; ix--; cluster++)
+	  for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
+	    {
+	      /* Are we importing this module?  */
+	      if (unsigned base = cluster->indices[jx].base)
+		if (unsigned span = cluster->indices[jx].span)
+		  do
+		    if (bitmap_bit_p (imports, base))
+		      goto found;
+		  while (++base, --span);
+	      continue;
+
+	    found:;
+	      /* Is it loaded?  */
+	      unsigned mod = cluster->indices[jx].base;
+	      if (cluster->slots[jx].is_lazy ())
+		{
+		  gcc_assert (cluster->indices[jx].span == 1);
+		  lazy_load_binding (mod, ns, name, &cluster->slots[jx]);
+		}
+
+	      tree bind = cluster->slots[jx];
+	      if (!bind)
+		/* Load errors could mean there's nothing here.  */
+		continue;
+
+	      /* Extract what we can see from here.  If there's no
+		 stat_hack, then everything was exported.  */
+	      tree value = bind;
+	      if (STAT_HACK_P (bind))
+		{
+		  if (STAT_TYPE_VISIBLE_P (bind))
+		    callback_maybe_dup (STAT_TYPE (bind));
+		  value = STAT_VISIBLE (bind);
+		}
+	      value = ovl_skip_hidden (value);
+	      for (tree decl : ovl_range (value))
+		callback_maybe_dup (decl);
+	    }
+      }
+    else
+      {
+	tree bind = o;
+	if (STAT_HACK_P (bind))
+	  {
+	    if (STAT_TYPE (bind) && !STAT_TYPE_HIDDEN_P (bind))
+	      callback (STAT_TYPE (bind), data);
+	    if (STAT_DECL_HIDDEN_P (bind))
+	      bind = NULL_TREE;
+	    else
+	      bind = STAT_DECL (bind);
+	  }
+	bind = ovl_skip_hidden (bind);
+	for (tree decl : ovl_range (bind))
+	  callback (decl, data);
+      }
 }
 
 /* Given a namespace-level binding BINDING, walk it, calling CALLBACK
@@ -8359,6 +8490,13 @@ lookup_elaborated_type (tree name, TAG_how how)
 
   /* Look in the innermost namespace.  */
   tree ns = b->this_entity;
+
+  /* If an import is going to provide a definition for this tag,
+     load it now so that we don't get confused later when processing
+     this tag's definition.  */
+  if (modules_p ())
+    lazy_load_pendings (ns, name);
+
   if (tree *slot = find_namespace_slot (ns, name))
     {
       tree bind = *slot;
@@ -8665,12 +8803,6 @@ pushtag (tree name, tree type, TAG_how how)
 	}
       else
 	{
-	  /* If an import is going to provide a definition for this tag,
-	     load it now so that we don't get confused later when processing
-	     this tag's definition.  */
-	  if (modules_p ())
-	    lazy_load_pendings (decl);
-
 	  decl = do_pushdecl_with_scope
 	    (decl, b, /*hiding=*/(how == TAG_how::HIDDEN_FRIEND));
 	  if (decl == error_mark_node)

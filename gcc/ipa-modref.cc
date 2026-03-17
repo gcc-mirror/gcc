@@ -5342,13 +5342,46 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
 				      : NULL;
   class modref_summary_lto *callee_info_lto
 		 = summaries_lto ? summaries_lto->get (edge->callee) : NULL;
+
+  /* Compute effective ECF_CONST, ECF_PURE, ECF_NOVOPS,
+     ECF_LOOPING_CONST_OR_PURE and ignore_stores of the inlined function from
+     the point of view of caller of the function it is transitively inlined to.
+
+     Consider inline chain A->B->C, where (edge is the edge B->C).
+     ECF_CONST, ECF_PURE_ECF, ECF_NOVOPS and ignore_stores is the strongest
+     flag seen on the inline path.
+
+     ECF_LOOPING_CONST_OR_PURE is bit special since, for example if C
+     is ECF_CONST | ECF_LOOPING_CONST_OR_PURE and B is ECF_PURE, then outcome
+     is ECF_CONST and !ECF_LOOPING_CONST_OR_PURE.
+
+     Flags are later used to avoid merging info about side-effects of C which
+     are invisible to to the caller of A.  For example, it is possible for
+     const function to have local array and call non-const functions modifying
+     it.  */
+
   int flags = flags_from_decl_or_type (edge->callee->decl);
-  /* Combine in outer flags.  */
-  cgraph_node *n;
-  for (n = edge->caller; n->inlined_to; n = n->callers->caller)
-    flags |= flags_from_decl_or_type (n->decl);
-  flags |= flags_from_decl_or_type (n->decl);
-  bool ignore_stores = ignore_stores_p (edge->caller->decl, flags);
+  bool ignore_stores = ignore_stores_p (edge->callee->decl, flags);
+
+  for (cgraph_node *n = edge->caller; n;
+       n = n->inlined_to ? n->callers->caller : NULL)
+    {
+      int f = flags_from_decl_or_type (n->decl);
+
+      ignore_stores |= ignore_stores_p (n->decl, f);
+      /* If we see first CONST/PURE flag in the chain, take its
+	 ECF_LOOPING_CONST_OR_PURE  */
+      if (!(flags & (ECF_CONST | ECF_PURE)) && (f & (ECF_CONST | ECF_PURE)))
+	flags |= (f & ECF_LOOPING_CONST_OR_PURE);
+      /* If we already have ECF_CONST or ECF_PURE flag
+	 just improve ECF_LOOPING_CONST_OR_PURE if possible.  */
+      else if ((flags & (ECF_CONST | ECF_PURE))
+	       && (flags & ECF_LOOPING_CONST_OR_PURE)
+	       && (f & (ECF_CONST | ECF_PURE))
+	       && !(f & ECF_LOOPING_CONST_OR_PURE))
+	flags &= ECF_LOOPING_CONST_OR_PURE;
+      flags |= f & (ECF_CONST | ECF_PURE | ECF_NOVOPS);
+    }
 
   if (!callee_info && to_info)
     {

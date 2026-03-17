@@ -1,4 +1,7 @@
 // { dg-output "correct\r*" }
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     fn puts(s: *const i8);
 }

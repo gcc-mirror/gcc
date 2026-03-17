@@ -1,5 +1,4 @@
-/* { dg-do assemble } */
-/* { dg-options "-Os -fdump-tree-ivopts -save-temps" } */
+/* { dg-options "-Os -fdump-tree-ivopts" } */
 
 extern void foo2 (short*);
 
@@ -14,4 +13,3 @@ tr4 (short array[], int n)
 
 /* { dg-final { scan-tree-dump-times "PHI <ivtmp" 1 "ivopts"} } */
 /* { dg-final { scan-tree-dump-times "PHI <" 1 "ivopts"} } */
-/* { dg-final { object-size text <= 26 { target { arm_thumb2 && { ! arm*-*-uclinuxfdpiceabi } } } } } */

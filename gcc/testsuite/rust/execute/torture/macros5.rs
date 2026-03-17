@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! add {
     ($a:expr,$b:expr) => {{
         $a + $b

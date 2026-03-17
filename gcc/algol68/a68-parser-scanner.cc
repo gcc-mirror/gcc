@@ -1675,8 +1675,9 @@ get_next_token (bool in_format,
 	  /* Parse the radix, which is expressed in base 10.  */
 	  (sym++)[0] = c;
 	  char *end;
-	  int64_t radix = strtol (A68_PARSER (scan_buf), &end, 10);
-	  gcc_assert (end != A68_PARSER (scan_buf) && *end == 'r');
+	  errno = 0;
+	  uint64_t radix = strtoul (A68_PARSER (scan_buf), &end, 10);
+	  gcc_assert (errno == 0 && end != A68_PARSER (scan_buf) && *end == 'r');
 
 	  /* Get the rest of the bits literal.  Typographical display features
 	     are allowed in the reference language between the digit symbols

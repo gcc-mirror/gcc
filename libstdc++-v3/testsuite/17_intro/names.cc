@@ -153,6 +153,10 @@
 # define __unused		cannot be used as an identifier
 # define __used			cannot be used as an identifier
 
+// These are function-like macros in mingw stdlib.h
+#define __min(A,B)              cannot use __min with parentheses
+#define __max(A,B)              cannot use __max with parentheses
+
 #ifndef __APPLE__
 #define __weak   predefined qualifier on darwin
 #define __strong predefined qualifier on darwin

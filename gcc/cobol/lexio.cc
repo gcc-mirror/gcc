@@ -814,8 +814,8 @@ static std::pair<std::list<replace_t>, char *>
 parse_replace_pairs( const char *stmt, const char *estmt, bool is_copy_stmt ) {
   std::list<replace_t> pairs ;
 
-  static const char     any_ch[] = ".";
-  static const char    word_ch[] = "[[:alnum:]$_-]";
+  static const char     any_ch[] = "";
+  ////   const char    word_ch[] = "[[:alnum:]$_-]";
   static const char nonword_ch[] = "[^[:alnum:]\"'$_-]";
 
   // Pattern to find one REPLACE pseudo-text pair
@@ -878,10 +878,10 @@ parse_replace_pairs( const char *stmt, const char *estmt, bool is_copy_stmt ) {
     if( parsed.leading_trailing.size() > 0 ) {
       switch( TOUPPER(parsed.leading_trailing.p[0]) ) {
       case 'L': // leading
-        befter[1] = word_ch;
+        befter[1] = any_ch;
         break;
       case 'T': // trailing
-        befter[0] = word_ch;
+        befter[0] = any_ch;
         break;
       default:
         gcc_unreachable();
@@ -1513,21 +1513,26 @@ cdftext::lex_open( const char filename[] ) {
   if( input == -1 ) return NULL;
 
   int output = open_output();
-
+  size_t n =0;
+  
   // Process any files supplied by the -include command-line option.
   for( auto name : included_files ) {
+    int input; // cppcheck-suppress shadowVariable
     if( -1 == (input = open(name, O_RDONLY)) ) {
       cbl_message(LexIncludeE, "cannot open %<-include%> file %qs", name);
       continue;
     }
+    dbgmsg("lex_open: including %zu of %zu: '%s'", ++n, included_files.size(), name);
     cobol_filename(name, inode_of(input));
     filespan_t mfile( free_form_reference_format( input ) );
 
     process_file( mfile, output );
 
+    dbgmsg("lex_open: processed %zu of %zu: '%s'", n, included_files.size(), name);
     cobol_filename_restore(); // process_file restores only for COPY
   }
   included_files.clear();
+  dbgmsg("lex_open: '%s'", filename);
 
   cobol_filename(filename, inode_of(input));
   filespan_t mfile( free_form_reference_format( input ) );

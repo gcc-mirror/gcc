@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let mut x = TEST_CONST;
     x = x + 1;

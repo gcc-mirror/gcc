@@ -192,7 +192,16 @@ public:
 
   /* If we can get a value_range for this svalue, write it to OUT
      and return true.  Otherwise return false.  */
-  virtual bool maybe_get_value_range (value_range &out) const;
+  bool
+  maybe_get_value_range (value_range &out) const
+  {
+    if (maybe_get_value_range_1 (out))
+      {
+	gcc_assert (!out.undefined_p ());
+	return true;
+      }
+    return false;
+  }
 
  protected:
   svalue (complexity c, symbol::id_t id, tree type)
@@ -207,6 +216,8 @@ public:
   virtual void
   add_dump_widget_children (text_art::tree_widget &,
 			    const dump_widget_info &dwi) const = 0;
+  virtual bool
+  maybe_get_value_range_1 (value_range &out) const;
 
   tree m_type;
 };
@@ -370,7 +381,7 @@ public:
 
   bool all_zeroes_p () const final override;
 
-  bool maybe_get_value_range (value_range &out) const final override;
+  bool maybe_get_value_range_1 (value_range &out) const final override;
 
  private:
   tree m_cst_expr;
@@ -423,7 +434,7 @@ public:
 			  const bit_range &subrange,
 			  region_model_manager *mgr) const final override;
 
-  bool maybe_get_value_range (value_range &out) const final override;
+  bool maybe_get_value_range_1 (value_range &out) const final override;
 
   /* Unknown values are singletons per-type, so can't have state.  */
   bool can_have_associated_state_p () const final override { return false; }
@@ -771,7 +782,7 @@ public:
 			  const bit_range &subrange,
 			  region_model_manager *mgr) const final override;
 
-  bool maybe_get_value_range (value_range &out) const final override;
+  bool maybe_get_value_range_1 (value_range &out) const final override;
 
  private:
   enum tree_code m_op;
@@ -869,7 +880,7 @@ public:
   bool implicitly_live_p (const svalue_set *,
 			  const region_model *) const final override;
 
-  bool maybe_get_value_range (value_range &out) const final override;
+  bool maybe_get_value_range_1 (value_range &out) const final override;
 
   enum tree_code get_op () const { return m_op; }
   const svalue *get_arg0 () const { return m_arg0; }

@@ -321,3 +321,9 @@ foo
 --format=rust
 _RNvC9backtrace3foo.llvm.A5310EB9
 backtrace::foo
+#
+# PR demangler/106641: crafted symbol with huge lifetime count
+# should not cause resource exhaustion.
+--format=rust
+_RINvC4te_C4tokpppppppppppFFFFFFGFpppppppppKj2_FFFFFFFFFFFFFE
+_RINvC4te_C4tokpppppppppppFFFFFFGFpppppppppKj2_FFFFFFFFFFFFFE

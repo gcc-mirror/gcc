@@ -272,15 +272,16 @@ parser_see_stop_run( struct cbl_refer_t exit_status, const char name[] );
 void
 parser_program_hierarchy( const struct cbl_prog_hier_t& hier );
 void
-parser_end_program(const char *name=NULL);
+parser_end_program(const char *name);
 
 void parser_sleep(const cbl_refer_t &seconds);
 
-void parser_exit( const cbl_refer_t& refer, ec_type_t = ec_none_e );
+void parser_exit( const cbl_refer_t& refer,
+                  ec_type_t = ec_none_e );
 void parser_exit_section(void);
 void parser_exit_paragraph(void);
 void parser_exit_perform( struct cbl_perform_tgt_t *tgt, bool cycle );
-void parser_exit_program(void); // exits back to COBOL only, else continue
+void parser_exit_program(); // exits back to COBOL only, else continue
 
 void
 parser_exhibit( bool changed, bool named,
@@ -618,6 +619,7 @@ void parser_init_list();
 tree file_static_variable(tree type, const char *name);
 
 void parser_statement_begin( const cbl_name_t name, tree ecs, tree dcls );
+void parser_statement_end( const std::list<cbl_field_t*>& );
 
 tree parser_compile_ecs( const std::vector<uint64_t>& ecs );
 tree parser_compile_dcls( const std::vector<uint64_t>& dcls );

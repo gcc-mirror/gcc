@@ -2,6 +2,9 @@
 // { dg-skip-if "see https://github.com/Rust-GCC/gccrs/pull/1632" { *-*-darwin* } }
 // { dg-options "-w -gdwarf-4 -dA" }
 // 'char' should use DW_ATE_UTF
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let c = 'x';
     // Use -w to avoid warnings about the unused variables

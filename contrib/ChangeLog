@@ -1,3 +1,36 @@
+2026-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/124508
+	* update-copyright.py: Add James Bohl. as another copyright.
+
+2026-03-09  Martin Jambor  <mjambor@suse.cz>
+
+	* filter-clang-warnings.py (skip_warning): Also ingore
+	-Wimplicit-int-enum-cast in libiberty.
+
+2026-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add
+	9a7da540b63e7d77e747b5cdd6fdbbd3954e28c8.
+
+2026-02-24  Piyush Raj  <piyushraj92739@gmail.com>
+
+	* bpf-vmtest-tool/README: New file.
+	* bpf-vmtest-tool/bpf.py: New file.
+	* bpf-vmtest-tool/config.py: New file.
+	* bpf-vmtest-tool/kernel.py: New file.
+	* bpf-vmtest-tool/main.py: New file.
+	* bpf-vmtest-tool/pyproject.toml: New file.
+	* bpf-vmtest-tool/tests/test_cli.py: New file.
+	* bpf-vmtest-tool/utils.py: New file.
+	* bpf-vmtest-tool/vm.py: New file.
+
+2026-02-24  Martin Jambor  <mjambor@suse.cz>
+
+	* filter-clang-warnings.py (skip_warning): Skip warning
+	-Wreturn-type-c-linkage in rust/ast/rust-fmt.h.  Fix indentation of
+	the entry for libiberty/sha1.c.
+
 2026-02-19  Filip Kastl  <fkastl@suse.cz>
 
 	* filter-clang-warnings.py: Filter out all warnings comming from

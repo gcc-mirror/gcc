@@ -877,7 +877,7 @@ char sparc_hard_reg_printed[8];
 #define TARGET_STACK_PROTECT_GUARD hook_tree_void_null
 #endif
 
-#if HAVE_GNU_AS
+#if !HAVE_SOLARIS_AS
 #undef TARGET_ASM_OUTPUT_DWARF_DTPREL
 #define TARGET_ASM_OUTPUT_DWARF_DTPREL sparc_output_dwarf_dtprel
 #endif
@@ -4689,7 +4689,7 @@ sparc_tls_got (void)
 
   /* In non-PIC mode, Sun as (unlike GNU as) emits PC-relative relocations for
      the GOT symbol with the 32-bit ABI, so we reload the GOT register.  */
-  if (!HAVE_GNU_AS && TARGET_ARCH32)
+  if (HAVE_SOLARIS_AS && TARGET_ARCH32)
     {
       load_got_register ();
       return got_register_rtx;
@@ -4793,7 +4793,7 @@ sparc_legitimize_tls_address (rtx addr)
 	  emit_insn (gen_tie_ld32 (temp3, got, temp2, addr));
 	else
 	  emit_insn (gen_tie_ld64 (temp3, got, temp2, addr));
-	if (!HAVE_GNU_AS)
+	if (HAVE_SOLARIS_AS)
 	  {
 	    ret = gen_reg_rtx (Pmode);
 	    emit_insn (gen_tie_add (Pmode, ret, gen_rtx_REG (Pmode, 7),

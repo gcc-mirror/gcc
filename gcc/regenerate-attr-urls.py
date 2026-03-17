@@ -72,25 +72,28 @@ class Index:
         line = line.replace('_002d', '-')
         line = line.replace('_002a', '*')
 
-        # e.g. <a href="Common-Function-Attributes.html#index-access-function-attribute"><code>access</code> function attribute</a>
-        # e.g. <a href="MIPS-Function-Attributes.html#index-nocompression-function-attribute_002c-MIPS"><code class="code">nocompression</code> function attribute, MIPS</a>
-        m = re.search(r'<a href="([\S]+)"><code[^>]*>([\S]+)</code> (\S+) attribute([^<]*)</a>', line)
+        # e.g. <a href="Common-Attributes.html#index-alias"><code class="code">alias</code></a>
+        # e.g. <a href="PowerPC-Attributes.html#index-altivec_002c-PowerPC"><code class="code">altivec</code>, PowerPC</a>
+        # Since the unification of the function/variable/type etc attributes
+        # into a single list, the "kind" no longer appears in the index
+        # entry text and is always ignored.
+        m = re.search(r'<a href="([\S]+)"><code[^>]*>([\S]+)</code>([^<]*)</a>', line)
         if not m:
             return
         if verbose:
             print(m.groups())
 
-        url_suffix, name, kind, extra_text = m.groups()
+        url_suffix, name, extra_text = m.groups()
 
         if extra_text.startswith(', '):
             extra_text = extra_text[2:]
 
-        # Reject anchors where the name contains a paren
+        # Reject anchors where the name contains a paren (why?)
         # e.g. 'target(&quot;3dnowa&quot;)':
         if '(' in name:
             return
 
-        self.add_entry(url_suffix, name, kind, extra_text)
+        self.add_entry(url_suffix, name, 'all', extra_text)
 
     def generate_file(self, dstpath):
         with open(dstpath, 'w') as outf:
@@ -115,78 +118,82 @@ class Index:
             outf.write("  { %s_attrs, ARRAY_SIZE (%s_attrs) },\n" % (kind, kind))
         outf.write("};\n")
 
-INDEX_REL_PATH = 'gcc/Concept-and-Symbol-Index.html'
+INDEX_REL_PATH = 'gcc/Attribute-Index.html'
 
 class TestParsingIndex(unittest.TestCase):
     def test_function_attribute(self):
         index = Index()
-        index.parse_html_line_attribute_index('<a href="Common-Function-Attributes.html#index-access-function-attribute"><code>access</code> function attribute</a>')
-        self.assertEqual(index.entries, [('Common-Function-Attributes.html#index-access-function-attribute',
+        index.parse_html_line_attribute_index('<a href="Common-Attributes.html#index-access"><code class="code">access</code></a>')
+        self.assertEqual(index.entries, [('Common-Attributes.html#index-access',
                                           'access',
-                                          'function',
+                                          'all',
                                           '')])
 
     def test_function_attribute_with_target(self):
         index = Index()
-        index.parse_html_line_attribute_index('<a href="MIPS-Function-Attributes.html#index-nocompression-function-attribute_002c-MIPS"><code class="code">nocompression</code> function attribute, MIPS</a>')
-        self.assertEqual(index.entries, [('MIPS-Function-Attributes.html#index-nocompression-function-attribute_002c-MIPS',
+        index.parse_html_line_attribute_index('<a href="MIPS-Attributes.html#index-nocompression_002c-MIPS"><code class="code">nocompression</code>, MIPS</a>')
+        self.assertEqual(index.entries, [('MIPS-Attributes.html#index-nocompression_002c-MIPS',
                                           'nocompression',
-                                          'function',
+                                          'all',
                                           'MIPS')])
 
     def test_reject_parens(self):
         index = Index()
-        index.parse_html_line_attribute_index('<a href="x86-Function-Attributes.html#index-target_0028_00223dnow_0022_0029-function-attribute_002c-x86"><code>target(&quot;3dnow&quot;)</code> function attribute, x86</a>')
+        index.parse_html_line_attribute_index('<a href="x86-Attributes.html#index-target_0028_00223dnow_0022_0029_002c-x86"><code class="code">target(&quot;3dnow&quot;)</code>, x86</a>')
         self.assertEqual(len(index.entries), 0)
 
     def test_type_attribute(self):
         index = Index()
-        index.parse_html_line_attribute_index('<a href="Common-Type-Attributes.html#index-aligned-type-attribute"><code>aligned</code> type attribute</a>')
-        self.assertEqual(index.entries, [('Common-Type-Attributes.html#index-aligned-type-attribute',
+        index.parse_html_line_attribute_index('<a href="Common-Attributes.html#index-aligned"><code class="code">aligned</code></a>')
+        self.assertEqual(index.entries, [('Common-Attributes.html#index-aligned',
                                           'aligned',
-                                          'type',
+                                          'all',
                                           '')])
 
     def test_enumerator_attribute(self):
         index = Index()
-        index.parse_html_line_attribute_index('<a href="Enumerator-Attributes.html#index-deprecated-enumerator-attribute"><code>deprecated</code> enumerator attribute</a>')
-        self.assertEqual(index.entries, [('Enumerator-Attributes.html#index-deprecated-enumerator-attribute',
+        index.parse_html_line_attribute_index('<a href="Common-Attributes.html#index-deprecated"><code class="code">deprecated</code></a>')
+        self.assertEqual(index.entries, [('Common-Attributes.html#index-deprecated',
                                           'deprecated',
-                                          'enumerator',
+                                          'all',
                                           '')])
     def test_label_attribute(self):
         index = Index()
-        index.parse_html_line_attribute_index('<a href="Label-Attributes.html#index-cold-label-attribute"><code>cold</code> label attribute</a>')
-        self.assertEqual(index.entries, [('Label-Attributes.html#index-cold-label-attribute',
+        index.parse_html_line_attribute_index('<a href="Common-Attributes.html#index-cold"><code class="code">cold</code></a>')
+        self.assertEqual(index.entries, [('Common-Attributes.html#index-cold',
                                           'cold',
-                                          'label',
+                                          'all',
                                           '')])
 
     def test_statement_attribute(self):
         index = Index()
-        index.parse_html_line_attribute_index('<a href="Statement-Attributes.html#index-assume-statement-attribute"><code>assume</code> statement attribute</a>')
-        self.assertEqual(index.entries, [('Statement-Attributes.html#index-assume-statement-attribute',
+        index.parse_html_line_attribute_index('<a href="Common-Attributes.html#index-assume"><code class="code">assume</code></a>')
+        self.assertEqual(index.entries, [('Common-Attributes.html#index-assume',
                                           'assume',
-                                          'statement',
+                                          'all',
                                           '')])
 
     def test_variable_attribute(self):
         index = Index()
-        index.parse_html_line_attribute_index('<a href="AVR-Variable-Attributes.html#index-absdata-variable-attribute_002c-AVR"><code>absdata</code> variable attribute, AVR</a>')
-        self.assertEqual(index.entries, [('AVR-Variable-Attributes.html#index-absdata-variable-attribute_002c-AVR',
+        index.parse_html_line_attribute_index('<a href="AVR-Attributes.html#index-absdata_002c-AVR"><code class="code">absdata</code>, AVR</a>')
+        self.assertEqual(index.entries, [('AVR-Attributes.html#index-absdata_002c-AVR',
                                           'absdata',
-                                          'variable',
+                                          'all',
                                           'AVR')])
 
+    # Warning, this is fragile and depends on these being the first two
+    # entries in the HTML index.  Adding or removing options may break this!
     def test_parse_attribute_index(self):
         index = Index()
         index.parse_attribute_index(INPUT_HTML_PATH / INDEX_REL_PATH)
-        self.assertEqual(index.entries_by_kind['enumerator'][0],
-                         ('deprecated',
-                          'Enumerator-Attributes.html#index-deprecated-enumerator-attribute',
+        self.assertEqual(index.entries_by_kind['all'][0],
+                         ('abi_tag',
+                          'C_002b_002b-Attributes.html#index-abi_005ftag',
                           ''))
-        self.assertEqual(index.entries_by_kind['label'][0],
-                         ('cold', 'Label-Attributes.html#index-cold-label-attribute', ''))
+        self.assertEqual(index.entries_by_kind['all'][1],
+                         ('absdata',
+                          'AVR-Attributes.html#index-absdata_002c-AVR',
+                          'AVR'))
 
 def main(args):
     index = Index()

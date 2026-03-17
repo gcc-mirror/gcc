@@ -236,6 +236,9 @@ void
 string_to_dest(cblc_field_t *dest, const char *psz)
   {
   charmap_t *charmap = __gg__get_charmap(dest->encoding);
+
+  __gg__adjust_dest_size(dest, charmap->strlen(psz));
+
   size_t dest_length = dest->capacity;
   size_t source_length = charmap->strlen(psz);
   size_t length = std::min(dest_length, source_length);
@@ -1211,6 +1214,8 @@ __gg__char( cblc_field_t *dest,
   int converted_char = 0;
   memcpy(&converted_char, converted, charmap_dest->stride());
   // Space fill the dest:
+
+  __gg__adjust_dest_size(dest, charmap_dest->stride());
   charmap_dest-> memset(dest->data,
                         charmap_dest->mapped_character(ascii_space),
                         dest->capacity);
@@ -1307,8 +1312,8 @@ __gg__current_date(cblc_field_t *dest)
                                       retval,
                                       strlen(retval),
                                       &bytes_converted);
-  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
   __gg__adjust_dest_size(dest, bytes_converted);
+  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
   free(converted);
   }
 
@@ -1556,14 +1561,16 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
   cbl_char_t format_Z   = charmap_from->mapped_character(ascii_Z);
   cbl_char_t format_z   = charmap_from->mapped_character(ascii_z);
 
+  // Establish the formatting string:
+  const char *format     = PTRCAST(char, (input->data+input_offset));
+  const char *format_end = format + input_size;
+
+  __gg__adjust_dest_size(dest, format_end-format);
+
   // Establish the destination, and set it to spaces
   char *d    = PTRCAST(char, dest->data);
   const char *dend = d + dest->capacity;
   charmap_to->memset(d, dest_space, dest->capacity);
-
-  // Establish the formatting string:
-  const char *format     = PTRCAST(char, (input->data+input_offset));
-  const char *format_end = format + input_size;
 
   bool is_zulu = false;
   const char *p = format;
@@ -1627,6 +1634,12 @@ __gg__formatted_date(cblc_field_t *dest, // Destination string
   charmap_t *charmap_to   = __gg__get_charmap(to);
   charmap_t *charmap_from = __gg__get_charmap(from);
 
+  // Establish the formatting string:
+  char *format     = PTRCAST(char, (arg1->data+arg1_offset));
+  const char *format_end = format + arg1_size;
+
+  __gg__adjust_dest_size(dest, format_end-format);
+
   cbl_char_t dest_space = charmap_to->mapped_character(ascii_space);
 
   // Establish the destination, and set it to spaces
@@ -1634,9 +1647,6 @@ __gg__formatted_date(cblc_field_t *dest, // Destination string
   const char *dend = d + dest->capacity;
   charmap_to->memset(d, dest_space, dest->capacity);
 
-  // Establish the formatting string:
-  char *format     = PTRCAST(char, (arg1->data+arg1_offset));
-  const char *format_end = format + arg1_size;
 
   struct cobol_tm ctm = {};
 
@@ -1651,7 +1661,6 @@ __gg__formatted_date(cblc_field_t *dest, // Destination string
   else
     {
     ftime_replace(d, dend, format, format_end, charmap_from, achftime);
-    __gg__adjust_dest_size(dest, format_end-format);
     }
   }
 
@@ -1679,16 +1688,19 @@ __gg__formatted_datetime( cblc_field_t *dest, // Destination string
   charmap_t *charmap_from = __gg__get_charmap(from);
   charmap_t *charmap_to   = __gg__get_charmap(to);
 
-  // Establish the destination, and set it to spaces
-        char *d    = PTRCAST(char, (dest->data));
-  const char *dend = d + dest->capacity;
-  memset(d, charmap_from->mapped_character(ascii_space), dest->capacity);
-
   // Establish the formatting string:
   char *format     = PTRCAST(char, (par1->data+par1_o));
   char *format_end = format + par1_s;
   trim_trailing_spaces(format, format_end, charmap_from->mapped_character(ascii_space));
   bool is_zulu = is_zulu_format(format, format_end, charmap_from);
+
+  __gg__adjust_dest_size(dest, format_end-format);
+
+  // Establish the destination, and set it to spaces
+        char *d    = PTRCAST(char, (dest->data));
+  const char *dend = d + dest->capacity;
+  memset(d, charmap_from->mapped_character(ascii_space), dest->capacity);
+
 
   struct cobol_tm ctm = {};
 
@@ -1711,7 +1723,6 @@ __gg__formatted_datetime( cblc_field_t *dest, // Destination string
   else
     {
     ftime_replace(d, dend, format, format_end, charmap_from, achftime);
-    __gg__adjust_dest_size(dest, format_end-format);
     }
   }
 
@@ -1738,11 +1749,6 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
 
   int dest_space = charmap_to->mapped_character(ascii_space);
 
-  // Establish the destination, and set it to spaces
-  char *d          = PTRCAST(char, dest->data);
-  const char *dend = d + dest->capacity;
-  charmap_to->memset(d, dest_space, dest->capacity);
-
   // Establish the formatting string:
   char *format     = PTRCAST(char, (par1->data+par1_o));
   char *format_end = format + par1_s;
@@ -1750,6 +1756,14 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
                         format_end,
                         charmap_from->mapped_character(ascii_space));
   bool is_zulu = is_zulu_format(format, format_end, charmap_from);
+
+  __gg__adjust_dest_size(dest, format_end-format);
+
+  // Establish the destination, and set it to spaces
+  char *d          = PTRCAST(char, dest->data);
+  const char *dend = d + dest->capacity;
+  charmap_to->memset(d, dest_space, dest->capacity);
+
 
   struct cobol_tm ctm = {};
   populate_ctm_from_time( ctm,
@@ -1773,8 +1787,8 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
     }
   else
     {
-    ftime_replace(d, dend, format, format_end, charmap_from, achftime);
     __gg__adjust_dest_size(dest, format_end-format);
+    ftime_replace(d, dend, format, format_end, charmap_from, achftime);
     }
   }
 
@@ -2135,13 +2149,13 @@ change_case( cblc_field_t *dest,
   free(duped);
 
   char *duped2 = static_cast<char *>(__gg__memdup(converted, converted_bytes));
+  __gg__adjust_dest_size(dest, converted_bytes);
   __gg__field_from_string(dest,
                           0,
                           dest->capacity,
                           duped2,
                           converted_bytes);
   free(duped2);
-  __gg__adjust_dest_size(dest, converted_bytes);
   }
 
 
@@ -3513,9 +3527,11 @@ __gg__trim( cblc_field_t *dest,
             size_t        arg2_offset,
             size_t        arg2_size)
   {
-  cbl_encoding_t from = arg1->encoding;
-  cbl_encoding_t to   = dest->encoding;
-  charmap_t *charmap = __gg__get_charmap(to);
+  // We assume that dest is an intermediate_e with the same encoding as arg1.
+  assert(     dest->type == FldAlphanumeric 
+          && (dest->attr & intermediate_e)
+          &&  dest->encoding == arg1->encoding );
+  charmap_t *charmap = __gg__get_charmap(arg1->encoding);
   int stride = charmap->stride();
   cbl_char_t mapped_space = charmap->mapped_character(ascii_space);
 
@@ -3525,78 +3541,60 @@ __gg__trim( cblc_field_t *dest,
                                                           arg2_offset,
                                                           arg2_size);
   //static const int BOTH     = 0;
-  static const int LEADING  = 1;  // Remove leading  spaces
-  static const int TRAILING = 2;  // Remove trailing spaces
+  #define LEADING  1  // Remove leading  spaces
+  #define TRAILING 2  // Remove trailing spaces
 
-  if(   dest->type != FldAlphanumeric ||
-        !(dest->attr & intermediate_e) )
+  char *left  = reinterpret_cast<char *>(arg1->data) + arg1_offset;
+  char *right = left + arg1_size-stride; // Points AT the character, not beyond
+  switch(type)
     {
-    fprintf(stderr,
-            "We expect the target of a FUNCTION TRIM to "
-            "be an intermediate alphanumeric\n");
-    abort();
-    }
-
-  // What is this all about?
-  dest->capacity = dest->offset;
-
-  // Make a copy of the input:
-  char *copy = static_cast<char *>(malloc(arg1_size));
-  massert(copy);
-  memcpy(copy, arg1->data+arg1_offset, arg1_size);
-
-  // Convert it to the destination encoding
-  __gg__convert_encoding_length(copy, arg1_size, from, to);
-
-  // No matter what, we want to find the leftmost non-space and the
-  // rightmost non-space:
-
-  char *left  = copy;
-  char *right = left + arg1_size-stride;
-
-  // Find left and right: the first and last non-spaces
-  while( left <= right )
-    {
-    cbl_char_t cleft  = charmap->getch(left,  (size_t)0);
-    cbl_char_t cright = charmap->getch(right, (size_t)0);
-
-    if( cleft != mapped_space && cright != mapped_space )
+    case 0: // Strip off leading and trailing spaces
+      while(left <= right)
+        {
+        if( charmap->getch(left, (size_t)0) != mapped_space )
+          {
+          break;
+          }
+        left += stride;
+        }
+      while(left <= right)
+        {
+        if( charmap->getch(right, (size_t)0) != mapped_space )
+          {
+          break;
+          }
+        right -= stride;
+        }
+      break;
+    
+    case LEADING: // Just leading
       {
+      while(left <= right)
+        {
+        if( charmap->getch(left,  (size_t)0) != mapped_space )
+          {
+          break;
+          }
+        left += stride;
+        }
       break;
       }
-    if( cleft == mapped_space )
-      {
-      left += stride;
-      }
-    if( cright == mapped_space )
-      {
-      right -= stride;
-      }
-    }
-  if( type == LEADING )
-    {
-    // We want to leave any trailing spaces, so we return 'right' to its
-    // original value:
-    right = copy + arg1_size-1;
-    }
-  else if( type == TRAILING )
-    {
-    // We want to leave any leading spaces, so we return 'left' to its
-    // original value:
-    left = copy;
-    }
 
-  if( left > right )
-    {
-    // When the arg1 input string was empty, we want left to be right+1.
-    // The left/right loop can sometimes end up with left equal to right+2.
-    // That needs to be fixed:
-    left = right+stride;
+    case TRAILING: // Just trailing
+      {
+      while(left <= right)
+        {
+        if( charmap->getch(right,  (size_t)0) != mapped_space )
+          {
+          break;
+          }
+        right -= stride;
+        }
+      break;
+      }
     }
-
   size_t ncount = right+stride - left;
   __gg__adjust_dest_size(dest, ncount);
-
   memmove(dest->data, left, ncount);
   }
 
@@ -3698,7 +3696,6 @@ __gg__reverse(cblc_field_t *dest,
   charmap_t *charmap = __gg__get_charmap(to);
   size_t stride = charmap->stride();
 
-  size_t dest_length = dest->capacity;
 
   // Convert the input to the destination encoding
   size_t bytes_converted;
@@ -3710,6 +3707,8 @@ __gg__reverse(cblc_field_t *dest,
   // copy over characters from the end of the copy to the beginning of dest:
   size_t i_from = bytes_converted - stride;
   size_t i_to = 0;
+  __gg__adjust_dest_size(dest, bytes_converted);
+  size_t dest_length = dest->capacity;
   while( i_from < bytes_converted && i_to < dest_length )
     {
     cbl_char_t ch = charmap->getch(converted, i_from);
@@ -3717,7 +3716,6 @@ __gg__reverse(cblc_field_t *dest,
     i_from -= stride;
     i_to   += stride;
     }
-  __gg__adjust_dest_size(dest, i_to);
   }
 
 extern "C"
@@ -5682,7 +5680,10 @@ __gg__locale_compare( cblc_field_t *dest,
     }
   else
     {
-    // Default locale
+    // This code just isn't right.  ISO says they can be of different classes;
+    // we are assuming they are the same class.  We need to detect if one is
+    // national and the other alphanumeric/display, and convert the
+    // alphanumeric string to national before comparing.
     achretval[0] = '=';
     size_t length = std::min(arg1_s, arg2_s);
     for(size_t i=0; i<length; i++ )
@@ -5711,11 +5712,14 @@ __gg__locale_compare( cblc_field_t *dest,
       }
     }
 
-  __gg__convert_encoding(achretval,
-                         DEFAULT_SOURCE_ENCODING,
-                         dest->encoding);
-  memcpy(dest->data, achretval, strlen(achretval));
-  __gg__adjust_dest_size(dest, strlen(achretval));
+  size_t nbytes;
+  const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                           dest->encoding,
+                                           achretval,
+                                           strlen(achretval),
+                                           &nbytes);
+  __gg__adjust_dest_size(dest, nbytes);
+  memcpy(dest->data, converted, nbytes);
   }
 
 extern "C"
@@ -5754,8 +5758,8 @@ __gg__locale_date(cblc_field_t *dest,
                                       ach,
                                       strlen(ach),
                                       &bytes_converted);
-  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
   __gg__adjust_dest_size(dest, bytes_converted);
+  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
   free(converted);
   }
 
@@ -5796,8 +5800,8 @@ __gg__locale_time(cblc_field_t *dest,
                                       ach,
                                       strlen(ach),
                                       &bytes_converted);
-  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
   __gg__adjust_dest_size(dest, bytes_converted);
+  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
   free(converted);
   }
 
@@ -5839,7 +5843,7 @@ __gg__locale_time_from_seconds( cblc_field_t *dest,
                                       ach,
                                       strlen(ach),
                                       &bytes_converted);
-  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
   __gg__adjust_dest_size(dest, bytes_converted);
+  __gg__field_from_string(dest, 0, dest->capacity, converted, bytes_converted);
   free(converted);
   }

@@ -436,7 +436,9 @@ struct GTY(()) OPTIONS_T
    DEFINING_INDICANT nodes that appear in declarations marked with PUB.
 
    CDECL is a GCC GENERIC tree corresponding to a DECL_FIELD for FIELD
-   nodes.  */
+   nodes.
+
+   NEGATED is used to mark DENOTATION nodes as being negated.  */
 
 struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) NODE_T
 {
@@ -456,6 +458,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) NODE_T
   tree cdecl;
   bool dynamic_stack_allocs;
   bool publicized;
+  bool negated;
 };
 
 #define NO_NODE ((NODE_T *) 0)
@@ -1036,6 +1039,7 @@ struct GTY(()) A68_T
 #define NCOMMENT_CHAR_IN_LINE(p) (COMMENT_CHAR_IN_LINE (INFO (p)))
 #define NCOMMENT_LINE(p) (COMMENT_LINE (INFO (p)))
 #define NCOMMENT_TYPE(p) (COMMENT_TYPE (INFO (p)))
+#define NEGATED(p) ((p)->negated)
 #define NPRAGMAT(p) (PRAGMAT (INFO (p)))
 #define NPRAGMAT_CHAR_IN_LINE(p) (PRAGMAT_CHAR_IN_LINE (INFO (p)))
 #define NPRAGMAT_LINE(p) (PRAGMAT_LINE (INFO (p)))

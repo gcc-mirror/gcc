@@ -78,8 +78,8 @@ uint16x8_t f5() {
 
 /*
 ** f6:
-** 	adrp	x0, \.LC0
-** 	ldr	q0, \[x0, #:lo12:\.LC0\]
+** 	mov	w0, 1333788672
+** 	dup	v0.4s, w0
 ** 	ret
 */
 uint32x4_t f6() {

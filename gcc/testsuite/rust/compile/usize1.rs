@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let a = [1, 2, 3];
     let b: u32 = 1;

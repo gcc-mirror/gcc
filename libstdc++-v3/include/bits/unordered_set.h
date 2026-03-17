@@ -493,6 +493,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       std::pair<iterator, bool>
       insert(value_type&& __x)
       { return _M_h.insert(std::move(__x)); }
+
+#if __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_hash_key<unordered_set> _Kt>
+	std::pair<iterator, bool>
+	insert(_Kt&&  __x)
+	{ return _M_h._M_insert_tr(std::forward<_Kt>(__x)); }
+#endif
       ///@}
 
       ///@{
@@ -522,6 +529,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       insert(const_iterator __hint, value_type&& __x)
       { return _M_h.insert(__hint, std::move(__x)); }
+
+#if __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_hash_key<unordered_set> _Kt>
+	iterator
+	insert(const_iterator, _Kt&& __x)
+	{ return _M_h._M_insert_tr(std::forward<_Kt>(__x)).first; }
+#endif
       ///@}
 
       /**
@@ -761,9 +775,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
-	find(const _Kt& __k)
-	-> decltype(_M_h._M_find_tr(__k))
-	{ return _M_h._M_find_tr(__k); }
+	find(const _Kt& __x)
+	-> decltype(_M_h._M_find_tr(__x))
+	{ return _M_h._M_find_tr(__x); }
 #endif
 
       const_iterator
@@ -773,9 +787,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
-	find(const _Kt& __k) const
-	-> decltype(_M_h._M_find_tr(__k))
-	{ return _M_h._M_find_tr(__k); }
+	find(const _Kt& __x) const
+	-> decltype(_M_h._M_find_tr(__x))
+	{ return _M_h._M_find_tr(__x); }
 #endif
       ///@}
 
@@ -796,9 +810,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
-	count(const _Kt& __k) const
-	-> decltype(_M_h._M_count_tr(__k))
-	{ return _M_h._M_count_tr(__k); }
+	count(const _Kt& __x) const
+	-> decltype(_M_h._M_count_tr(__x))
+	{ return _M_h._M_count_tr(__x); }
 #endif
       ///@}
 
@@ -815,9 +829,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       template<typename _Kt>
 	auto
-	contains(const _Kt& __k) const
-	-> decltype(_M_h._M_find_tr(__k), void(), true)
-	{ return _M_h._M_find_tr(__k) != _M_h.end(); }
+	contains(const _Kt& __x) const
+	-> decltype(_M_h._M_find_tr(__x), void(), true)
+	{ return _M_h._M_find_tr(__x) != _M_h.end(); }
       ///@}
 #endif
 
@@ -837,9 +851,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
-	equal_range(const _Kt& __k)
-	-> decltype(_M_h._M_equal_range_tr(__k))
-	{ return _M_h._M_equal_range_tr(__k); }
+	equal_range(const _Kt& __x)
+	-> decltype(_M_h._M_equal_range_tr(__x))
+	{ return _M_h._M_equal_range_tr(__x); }
 #endif
 
       std::pair<const_iterator, const_iterator>
@@ -849,9 +863,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
-	equal_range(const _Kt& __k) const
-	-> decltype(_M_h._M_equal_range_tr(__k))
-	{ return _M_h._M_equal_range_tr(__k); }
+	equal_range(const _Kt& __x) const
+	-> decltype(_M_h._M_equal_range_tr(__x))
+	{ return _M_h._M_equal_range_tr(__x); }
 #endif
       ///@}
 
@@ -876,6 +890,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       bucket_size(size_type __n) const
       { return _M_h.bucket_size(__n); }
 
+      ///@{
       /*
        * @brief  Returns the bucket index of a given element.
        * @param  __key  A key instance.
@@ -884,6 +899,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       size_type
       bucket(const key_type& __key) const
       { return _M_h.bucket(__key); }
+
+#if __glibcxx_associative_heterogeneous_insertion  // C++26
+      template <__heterogeneous_hash_key<unordered_set> _Kt>
+	size_type
+	bucket(const _Kt& __key) const
+	{ return _M_h._M_bucket_tr(__key); }
+#endif
+      ///@}
 
       ///@{
       /**
@@ -1884,6 +1907,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       bucket_size(size_type __n) const
       { return _M_h.bucket_size(__n); }
 
+      ///@{
       /*
        * @brief  Returns the bucket index of a given element.
        * @param  __key  A key instance.
@@ -1892,6 +1916,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       size_type
       bucket(const key_type& __key) const
       { return _M_h.bucket(__key); }
+
+#if __glibcxx_associative_heterogeneous_insertion  //  C++26
+      template <__heterogeneous_hash_key<unordered_multiset> _Kt>
+	size_type
+	bucket(const _Kt& __key) const
+	{ return _M_h._M_bucket_tr(__key); }
+#endif
+      ///@}
 
       ///@{
       /**

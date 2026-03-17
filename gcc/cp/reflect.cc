@@ -872,15 +872,26 @@ get_range_elts (location_t loc, const constexpr_ctx *ctx, tree call, int n,
       *non_constant_p = true;
       return NULL_TREE;
     }
-  // TODO: For REFLECT_CONSTANT_* handle proxy iterators.
   if (TYPE_MAIN_VARIANT (TREE_TYPE (deref)) != valuet)
     {
-      if (!cxx_constexpr_quiet_p (ctx))
-	error_at (loc, "unexpected type %qT of iterator dereference",
-		  TREE_TYPE (deref));
-      *non_constant_p = true;
-      return NULL_TREE;
+      deref = perform_implicit_conversion (valuet, deref, tf_warning_or_error);
+      if (error_operand_p (deref))
+	{
+	  *non_constant_p = true;
+	  return NULL_TREE;
+	}
+      if (CLASS_TYPE_P (valuet))
+	{
+	  deref = force_target_expr (valuet, deref, tf_warning_or_error);
+	  if (error_operand_p (deref))
+	    {
+	      *non_constant_p = true;
+	      return NULL_TREE;
+	    }
+	}
     }
+  deref = fold_build_cleanup_point_expr (TREE_TYPE (deref), deref);
+  inc = fold_build_cleanup_point_expr (void_type_node, inc);
   retvec.truncate (0);
   /* while (begin != end) { push (*begin); ++begin; }  */
   do
@@ -929,13 +940,26 @@ get_info_vec (location_t loc, const constexpr_ctx *ctx, tree call, int n,
    and FROM is the info for from().  */
 
 static tree
-get_meta_exception_object (location_t loc, const char *what, tree from,
-			   bool *non_constant_p)
+get_meta_exception_object (location_t loc, const constexpr_ctx *ctx,
+			   const char *what, tree from, bool *non_constant_p)
 {
   /* Don't throw in a template.  */
-  // TODO For -fno-exceptions, report an error.
   if (processing_template_decl)
     {
+      *non_constant_p = true;
+      return NULL_TREE;
+    }
+
+  /* Don't try to throw exceptions with -fno-exceptions.  */
+  if (!flag_exceptions)
+    {
+      if (!cxx_constexpr_quiet_p (ctx))
+	{
+	  auto_diagnostic_group d;
+	  error_at (loc, "%qD should throw %qs; %<what()%>: %qs",
+		    from, "std::meta::exception", _(what));
+	  inform (loc, "exceptions are disabled, treating as non-constant");
+	}
       *non_constant_p = true;
       return NULL_TREE;
     }
@@ -984,7 +1008,8 @@ static tree
 throw_exception (location_t loc, const constexpr_ctx *ctx, const char *msgid,
 		 tree from, bool *non_constant_p, tree *jump_target)
 {
-  if (tree obj = get_meta_exception_object (loc, msgid, from, non_constant_p))
+  if (tree obj = get_meta_exception_object (loc, ctx, msgid, from,
+					    non_constant_p))
     *jump_target = cxa_allocate_and_throw_exception (loc, ctx, obj);
   return NULL_TREE;
 }
@@ -3604,7 +3629,14 @@ eval_display_string_of (location_t loc, const constexpr_ctx *ctx, tree r,
   else if (DECL_P (r) && (DECL_NAME (r) || TREE_CODE (r) == NAMESPACE_DECL))
     pp_printf (&pp, "%D", r);
   else if (TREE_CODE (r) == FIELD_DECL)
-    pp_printf (&pp, "%T::<unnamed bit-field>", DECL_CONTEXT (r));
+    {
+      if (DECL_UNNAMED_BIT_FIELD (r))
+	pp_printf (&pp, "%T::<unnamed bit-field>", DECL_CONTEXT (r));
+      else if (ANON_UNION_TYPE_P (TREE_TYPE (r)))
+	pp_printf (&pp, "%T::<anonymous union>", DECL_CONTEXT (r));
+      else
+	pp_printf (&pp, "%T::<unnamed member>", DECL_CONTEXT (r));
+    }
   else if (kind == REFLECT_BASE)
     {
       tree d = direct_base_derived (r);
@@ -3799,7 +3831,13 @@ eval_annotations_of (location_t loc, const constexpr_ctx *ctx, tree r,
 	  }
     }
   else if (TYPE_P (r))
-    r = TYPE_ATTRIBUTES (r);
+    {
+      complete_type (r);
+      if (typedef_variant_p (r))
+	r = DECL_ATTRIBUTES (TYPE_NAME (r));
+      else
+	r = TYPE_ATTRIBUTES (r);
+    }
   else if (DECL_P (r))
     r = DECL_ATTRIBUTES (r);
   else
@@ -4688,12 +4726,16 @@ eval_extent (location_t loc, tree type, tree i)
       --rank;
       type = TREE_TYPE (type);
     }
+  tree r;
   if (rank
       || TREE_CODE (type) != ARRAY_TYPE
       || eval_is_bounded_array_type (loc, type) == boolean_false_node)
-     return size_zero_node;
-  return size_binop (PLUS_EXPR, TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
-		     size_one_node);
+    r = size_zero_node;
+  else
+    r = size_binop (PLUS_EXPR, TYPE_MAX_VALUE (TYPE_DOMAIN (type)),
+		    size_one_node);
+  /* std::meta::extent returns a value of type size_t.  */
+  return cp_fold_convert (size_type_node, r);
 }
 
 /* Process std::meta::is_same_type.  */
@@ -5318,6 +5360,7 @@ eval_can_substitute (location_t loc, const constexpr_ctx *ctx,
 				"invalid argument to can_substitute",
 				fun, non_constant_p, jump_target);
       a = resolve_nondeduced_context (a, tf_warning_or_error);
+      a = convert_from_reference (a);
       TREE_VEC_ELT (rvec, i) = a;
     }
   if (DECL_TYPE_TEMPLATE_P (r) || DECL_TEMPLATE_TEMPLATE_PARM_P (r))
@@ -5398,6 +5441,7 @@ eval_substitute (location_t loc, const constexpr_ctx *ctx,
       if (DECL_FUNCTION_TEMPLATE_P (r))
 	r = ovl_make (r, NULL_TREE);
       ret = lookup_template_function (r, rvec);
+      ret = resolve_nondeduced_context (ret, tf_none);
     }
   return get_reflection_raw (loc, ret);
 }
@@ -6473,77 +6517,86 @@ members_cmp (const void *a, const void *b)
 static vec<constructor_elt, va_gc> *
 namespace_members_of (location_t loc, tree ns)
 {
-  vec<constructor_elt, va_gc> *elts = nullptr;
-  hash_set<tree> *seen = nullptr;
-  for (tree o : *DECL_NAMESPACE_BINDINGS (ns))
-    {
-      if (STAT_HACK_P (o))
-	{
-	  if (STAT_TYPE (o) && !STAT_TYPE_HIDDEN_P (o))
-	    {
-	      tree m = TREE_TYPE (STAT_TYPE (o));
-	      if (members_of_representable_p (ns, m))
-		CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
-					get_reflection_raw (loc, m));
-	    }
-	  if (STAT_DECL_HIDDEN_P (o) || !STAT_DECL (o))
-	    continue;
-	  o = STAT_DECL (o);
-	}
-      for (ovl_iterator iter (o); iter; ++iter)
-	{
-	  if (iter.hidden_p ())
-	    continue;
-	  tree b = *iter;
-	  tree m = b;
+  struct data_t {
+    location_t loc = UNKNOWN_LOCATION;
+    tree ns = NULL_TREE;
+    vec<constructor_elt, va_gc> *elts = nullptr;
+    hash_set<tree> *seen = nullptr;
 
-	  if (VAR_P (b) && DECL_ANON_UNION_VAR_P (b))
-	    {
-	      /* TODO: This doesn't handle namespace N { static union {}; }
-		 but we pedwarn on that, so perhaps it doesn't need to be
-		 handled.  */
-	      tree v = DECL_VALUE_EXPR (b);
-	      gcc_assert (v && TREE_CODE (v) == COMPONENT_REF);
-	      tree var = TREE_OPERAND (v, 0);
-	      tree type = TREE_TYPE (var);
-	      if (!seen)
-		seen = new hash_set<tree>;
-	      if (members_of_representable_p (ns, type) && !seen->add (type))
-		CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
-					get_reflection_raw (loc, type));
-	      if (members_of_representable_p (ns, var) && !seen->add (var))
-		CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
-					get_reflection_raw (loc, var));
-	      continue;
-	    }
-	  if (TREE_CODE (b) == TYPE_DECL)
-	    m = TREE_TYPE (b);
-	  if (!members_of_representable_p (ns, m))
-	    continue;
-	  if (DECL_DECOMPOSITION_P (m) && !DECL_DECOMP_IS_BASE (m))
-	    {
-	      tree base = DECL_DECOMP_BASE (m);
-	      if (!seen)
-		seen = new hash_set<tree>;
-	      if (members_of_representable_p (ns, base) && !seen->add (base))
-		CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
-					get_reflection_raw (loc, base));
-	      if (!DECL_HAS_VALUE_EXPR_P (m))
-		CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
-					get_reflection_raw (loc, m,
-							    REFLECT_VAR));
-	      continue;
-	    }
-	  /* eval_is_accessible should be always true for namespace members,
-	     so don't bother calling it here.  */
-	  CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
-				  get_reflection_raw (loc, m));
+    data_t (location_t loc, tree ns) : loc (loc), ns (ns) {}
+    ~data_t () { delete seen; }
+  };
+
+  const auto walker = [](tree b, void *data_)
+    {
+      auto *data = static_cast<data_t *>(data_);
+      tree m = b;
+
+      if (VAR_P (b) && DECL_ANON_UNION_VAR_P (b))
+	{
+	  /* TODO: This doesn't handle namespace N { static union {}; }
+	     but we pedwarn on that, so perhaps it doesn't need to be
+	     handled.  */
+	  tree v = DECL_VALUE_EXPR (b);
+	  gcc_assert (v && TREE_CODE (v) == COMPONENT_REF);
+	  tree var = TREE_OPERAND (v, 0);
+	  tree type = TREE_TYPE (var);
+	  if (!data->seen)
+	    data->seen = new hash_set<tree>;
+	  if (members_of_representable_p (data->ns, type)
+	      && !data->seen->add (type))
+	    CONSTRUCTOR_APPEND_ELT (data->elts, NULL_TREE,
+				    get_reflection_raw (data->loc, type));
+	  if (members_of_representable_p (data->ns, var)
+	      && !data->seen->add (var))
+	    CONSTRUCTOR_APPEND_ELT (data->elts, NULL_TREE,
+				    get_reflection_raw (data->loc, var));
+	  return;
 	}
-    }
-  delete seen;
-  if (elts)
-    elts->qsort (members_cmp);
-  return elts;
+
+      if (TREE_CODE (b) == TYPE_DECL)
+	m = TREE_TYPE (b);
+
+      if (!members_of_representable_p (data->ns, m))
+	return;
+
+      if (DECL_DECOMPOSITION_P (m) && !DECL_DECOMP_IS_BASE (m))
+	{
+	  tree base = DECL_DECOMP_BASE (m);
+	  if (!data->seen)
+	    data->seen = new hash_set<tree>;
+	  if (members_of_representable_p (data->ns, base)
+	      && !data->seen->add (base))
+	    CONSTRUCTOR_APPEND_ELT (data->elts, NULL_TREE,
+				    get_reflection_raw (data->loc, base));
+	  if (!DECL_HAS_VALUE_EXPR_P (m))
+	    CONSTRUCTOR_APPEND_ELT (data->elts, NULL_TREE,
+				    get_reflection_raw (data->loc, m,
+							REFLECT_VAR));
+	  return;
+	}
+
+      /* eval_is_accessible should be always true for namespace members,
+	 so don't bother calling it here.  */
+      CONSTRUCTOR_APPEND_ELT (data->elts, NULL_TREE,
+			      get_reflection_raw (data->loc, m));
+
+      /* For typedef struct { ... } S; include both the S type
+	 alias (added above) and dealias of that for the originally
+	 unnamed type (added below).  */
+      if (TREE_CODE (b) == TYPE_DECL
+	  && TYPE_DECL_FOR_LINKAGE_PURPOSES_P (b))
+	CONSTRUCTOR_APPEND_ELT (data->elts, NULL_TREE,
+				get_reflection_raw (data->loc,
+						    strip_typedefs (m)));
+    };
+
+  data_t data (loc, ns);
+  walk_namespace_bindings (ns, walker, &data);
+
+  if (data.elts)
+    data.elts->qsort (members_cmp);
+  return data.elts;
 }
 
 /* Enumerate members of class R for eval_*members_of.  KIND is
@@ -6557,6 +6610,7 @@ class_members_of (location_t loc, const constexpr_ctx *ctx, tree r,
 		  tree actx, tree call, bool *non_constant_p,
 		  tree *jump_target, enum metafn_code kind, tree fun)
 {
+  r = TYPE_MAIN_VARIANT (r);
   if (kind == METAFN_MEMBERS_OF)
     {
       if (modules_p ())
@@ -8086,6 +8140,14 @@ consteval_only_p (tree t)
   if (!t)
     return false;
 
+  if (TREE_CODE (t) == TREE_VEC)
+    {
+      for (tree arg : tree_vec_range (t))
+	if (arg && consteval_only_p (arg))
+	  return true;
+      return false;
+    }
+
   /* We need the complete type otherwise we'd have no fields for class
      templates and thus come up with zilch for things like
        template<typename T>
@@ -8108,14 +8170,15 @@ check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset)
 
   /* No need to look into types or unevaluated operands.  */
   if (TYPE_P (t)
-      || unevaluated_p (TREE_CODE (t))
+      || (unevaluated_p (TREE_CODE (t)) && !REFLECT_EXPR_P (t))
       /* Don't walk INIT_EXPRs, because we'd emit bogus errors about
 	 member initializers.  */
       || TREE_CODE (t) == INIT_EXPR
-      /* Don't walk BIND_EXPR_VARS.  */
-      || TREE_CODE (t) == BIND_EXPR
       /* And don't recurse on DECL_EXPRs.  */
-      || TREE_CODE (t) == DECL_EXPR)
+      || TREE_CODE (t) == DECL_EXPR
+      /* Blocks can appear in the TREE_VEC operand of OpenMP
+	 depend/affinity/map/to/from OMP_CLAUSEs when using iterators.  */
+      || TREE_CODE (t) == BLOCK)
     {
       *walk_subtrees = false;
       return NULL_TREE;
@@ -8141,6 +8204,46 @@ check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset)
       if (tree ret = cp_walk_tree (&vexpr, check_out_of_consteval_use_r, pset,
 				   (hash_set<tree> *) pset))
 	return ret;
+    }
+
+  if (TREE_CODE (t) == BIND_EXPR)
+    {
+      if (tree r = cp_walk_tree (&BIND_EXPR_BODY (t),
+				 check_out_of_consteval_use_r, pset,
+				 static_cast<hash_set<tree> *>(pset)))
+	return r;
+      /* Don't walk BIND_EXPR_VARS.  */
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (t) == IF_STMT)
+    {
+      if (IF_STMT_CONSTEVAL_P (t))
+	{
+	  if (tree r = cp_walk_tree (&ELSE_CLAUSE (t),
+				     check_out_of_consteval_use_r, pset,
+				     static_cast<hash_set<tree> *>(pset)))
+	    return r;
+	  /* Don't walk the consteval branch.  */
+	  *walk_subtrees = false;
+	  return NULL_TREE;
+	}
+      else if (IF_STMT_CONSTEXPR_P (t))
+	{
+	  if (tree r = cp_walk_tree (&THEN_CLAUSE (t),
+				     check_out_of_consteval_use_r, pset,
+				     static_cast<hash_set<tree> *>(pset)))
+	    return r;
+	  if (tree r = cp_walk_tree (&ELSE_CLAUSE (t),
+				     check_out_of_consteval_use_r, pset,
+				     static_cast<hash_set<tree> *>(pset)))
+	    return r;
+	  /* Don't walk the condition -- it's a manifestly constant-evaluated
+	     context.  */
+	  *walk_subtrees = false;
+	  return NULL_TREE;
+	}
     }
 
   /* Now check the type to see if we are dealing with a consteval-only
@@ -8267,7 +8370,7 @@ compare_reflections (tree lhs, tree rhs)
 				   TREE_VEC_ELT (rhs, 3))
 	    && TREE_VEC_ELT (lhs, 4) == TREE_VEC_ELT (rhs, 4));
   else if (lkind == REFLECT_ANNOTATION)
-    return lhs == rhs;
+    return TREE_VALUE (lhs) == TREE_VALUE (rhs);
   else if (TYPE_P (lhs) && TYPE_P (rhs))
     {
       /* Given "using A = int;", "^^int != ^^A" should hold.  */

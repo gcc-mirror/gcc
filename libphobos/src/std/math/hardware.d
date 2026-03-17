@@ -177,6 +177,20 @@ private:
                     return result;
                 }
             }
+            else version (SPARC_Any)
+            {
+                version (D_SoftFloat)
+                    return 0;
+                else
+                {
+                    uint result = void;
+                    asm pure nothrow @nogc
+                    {
+                        "st %%fsr, %0" : "=m" (result);
+                    }
+                    return result & EXCEPTIONS_MASK;
+                }
+            }
             else
                 assert(0, "Not yet supported");
         }
@@ -280,6 +294,24 @@ private:
                     asm nothrow @nogc
                     {
                         "fsflags %0" : : "r" (newValues);
+                    }
+                }
+            }
+            else version (SPARC_Any)
+            {
+                version (D_SoftFloat)
+                    return;
+                else
+                {
+                    uint fsr;
+                    asm pure nothrow @nogc
+                    {
+                        "st %%fsr, %0" : "=m" (fsr);
+                    }
+                    fsr &= ~EXCEPTIONS_MASK;
+                    asm pure nothrow @nogc
+                    {
+                        "ld %0, %%fsr" : : "m" (fsr);
                     }
                 }
             }
@@ -844,6 +876,8 @@ nothrow @nogc:
             return true;
         else version (LoongArch_Any)
             return true;
+        else version (SPARC_Any)
+            return true;
         else version (ARM_Any)
         {
             // The hasExceptionTraps_impl function is basically pure,
@@ -1009,6 +1043,20 @@ private:
                     return cont;
                 }
             }
+            else version (SPARC_Any)
+            {
+                version (D_SoftFloat)
+                    return 0;
+                else
+                {
+                    ControlState cont;
+                    asm pure nothrow @nogc
+                    {
+                        "st %%fsr, %0" : "=m" (cont);
+                    }
+                    return cont & allExceptions;
+                }
+            }
             else
                 assert(0, "Not yet supported");
         }
@@ -1121,6 +1169,29 @@ private:
                     asm nothrow @nogc
                     {
                         "fscsr %0" : : "r" (newState);
+                    }
+                }
+            }
+            else version (SPARC_Any)
+            {
+                version (D_SoftFloat)
+                    return;
+                else
+                {
+                    ControlState cont;
+                    asm pure nothrow @nogc
+                    {
+                        "st %%fsr, %0" : "=m" (cont);
+                    }
+                    /* Replace rounding mask. */
+                    cont &= ~roundingMask;
+                    cont |= (newState & roundingMask);
+                    /* Replace exception mask. */
+                    cont &= ~allExceptions;
+                    cont |= (newState & allExceptions);
+                    asm nothrow @nogc
+                    {
+                        "ld %0, %%fsr" : : "m" (cont);
                     }
                 }
             }

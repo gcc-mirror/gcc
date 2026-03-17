@@ -749,6 +749,7 @@ class GCCCopyright (Copyright):
         self.add_external_author ('Hewlett-Packard Company')
         self.add_external_author ('Intel Corporation')
         self.add_external_author ('Information Technology Industry Council.')
+        self.add_external_author ('James Bohl.')
         self.add_external_author ('James Theiler, Brian Gough')
         self.add_external_author ('Jose E. Marchesi')
         self.add_external_author ('Jose E. Marchesi.')

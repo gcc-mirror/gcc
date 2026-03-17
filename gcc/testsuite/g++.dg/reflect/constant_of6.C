@@ -17,4 +17,3 @@ struct [[=[:constant_of (annotations_of (R)[0]):]]] Y {};
 
 constexpr auto y = constant_of (annotations_of (^^bar<^^::fn>)[0]);
 constexpr auto z = constant_of (annotations_of (^^Y<^^::S>)[0]);
-// { dg-error "call to non-.constexpr." "" { target *-*-* } 0 }

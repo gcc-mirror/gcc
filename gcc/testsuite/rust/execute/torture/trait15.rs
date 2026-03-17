@@ -1,5 +1,8 @@
 /* { dg-output "parent123\r*\nchild\r*\n" } */
 // Testing generics passing with supertraits
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(lang_items)]
 

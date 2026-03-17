@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #[repr(packed(2))]
 struct Foo {
     x: i16,

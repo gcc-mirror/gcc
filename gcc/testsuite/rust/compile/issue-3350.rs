@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 static FOO: i32 = 0;
 
 pub fn bar() -> i32 {

@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-diagnostics.h"
 #include "rust-hir-type-check.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-struct-field.h"
@@ -416,21 +417,26 @@ TypeCheckStructExpr::make_missing_field_error (
   if (missing_field_names.size () == 1)
     {
       return Error (locus, ErrorCode::E0063,
-		    "missing field %s in initializer of %qs",
+		    "missing field %qs in initializer of %qs",
 		    missing_field_names[0].c_str (), struct_name.c_str ());
     }
   // Make comma separated string for display
   std::stringstream display_field_names;
-  bool first = true;
-  for (auto &name : missing_field_names)
+  size_t field_count = missing_field_names.size ();
+  for (size_t i = 0; i + 2 < field_count; ++i)
     {
-      if (!first)
-	{
-	  display_field_names << ", ";
-	}
-      first = false;
-      display_field_names << name;
+      const auto &field_name = missing_field_names[i];
+      display_field_names << rust_open_quote () << field_name
+			  << rust_close_quote () << ", ";
     }
+  display_field_names << rust_open_quote ()
+		      << missing_field_names[field_count - 2]
+		      << rust_close_quote ();
+  display_field_names << " and ";
+  display_field_names << rust_open_quote ()
+		      << missing_field_names[field_count - 1]
+		      << rust_close_quote ();
+
   return Error (locus, ErrorCode::E0063,
 		"missing fields %s in initializer of %qs",
 		display_field_names.str ().c_str (), struct_name.c_str ());

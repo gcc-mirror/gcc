@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     pub fn dog(b: i32, a: ..., c: i32);
     // { dg-error "..... must be the last argument of a C-variadic function" "" { target *-*-* } .-1 }

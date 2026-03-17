@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! m {
     ($a:expr $(tok $es:expr)*) => {
         // { dg-error "token .identifier. is not allowed after .expr. fragment" "" { target *-*-* } .-1 }

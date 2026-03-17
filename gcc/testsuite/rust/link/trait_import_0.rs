@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 extern crate trait_import_1;
 use trait_import_1::Add;
 

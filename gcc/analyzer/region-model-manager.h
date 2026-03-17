@@ -181,6 +181,9 @@ private:
   bool too_complex_p (const complexity &c) const;
   bool reject_if_too_complex (svalue *sval);
 
+  const svalue *
+  maybe_invert_comparison_in_unaryop (tree type,
+				      const binop_svalue *binop);
   const svalue *maybe_fold_unaryop (tree type, enum tree_code op,
 				    const svalue *arg);
   const svalue *maybe_fold_sub_svalue (tree type,

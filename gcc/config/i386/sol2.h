@@ -55,17 +55,15 @@ along with GCC; see the file COPYING3.  If not see
 #define CC1_SPEC "%(cc1_cpu) " ASAN_CC1_SPEC SCTF_CC1_SPEC \
   " %{mx32:%e-mx32 is not supported on Solaris}"
 
-/* GNU as understands --32 and --64, but the native Solaris
-   assembler requires -m32 or -m64 instead.  */
-#if HAVE_GNU_AS
-#define ASM_CPU32_DEFAULT_SPEC "--32"
-#define ASM_CPU64_DEFAULT_SPEC "--64"
-#else
+#if HAVE_SOLARIS_AS
 #define ASM_CPU32_DEFAULT_SPEC "-m32"
 #define ASM_CPU64_DEFAULT_SPEC "-m64"
+#else
+#define ASM_CPU32_DEFAULT_SPEC "--32"
+#define ASM_CPU64_DEFAULT_SPEC "--64"
 #endif
 
-#if !HAVE_GNU_AS
+#if HAVE_SOLARIS_AS
 /* Since Studio 12.6, as needs -xbrace_comment=no so its AVX512 syntax is
    fully compatible with gas.  */
 #define ASM_XBRACE_COMMENT_SPEC "-xbrace_comment=no"
@@ -87,7 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define ARCH64_SUBDIR "amd64"
 
-#if HAVE_GNU_LD
+#if !HAVE_SOLARIS_LD
 #define ARCH32_EMULATION "elf_i386_sol2"
 #define ARCH64_EMULATION "elf_x86_64_sol2"
 #endif
@@ -145,7 +143,7 @@ along with GCC; see the file COPYING3.  If not see
       }							\
   } while (0)
 
-#if !HAVE_GNU_AS
+#if HAVE_SOLARIS_AS
 /* The Sun assembler uses .tcomm for TLS common sections.  */
 #define TLS_COMMON_ASM_OP ".tcomm"
 
@@ -175,7 +173,7 @@ along with GCC; see the file COPYING3.  If not see
       ASM_OUTPUT_LABEL (FILE, NAME);				\
     }								\
   while (0)
-#endif /* !HAVE_GNU_AS */
+#endif /* HAVE_SOLARIS_AS */
 
 /* As in sparc/sol2.h, override the default from i386/x86-64.h to work
    around Sun as TLS bug.  */
@@ -206,13 +204,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Sun as requires "h" flag for large sections, GNU as can do without, but
    accepts "l".  */
-#if HAVE_GNU_AS
-#define MACH_DEP_SECTION_ASM_FLAG 'l'
-#else
+#if HAVE_SOLARIS_AS
 #define MACH_DEP_SECTION_ASM_FLAG 'h'
+#else
+#define MACH_DEP_SECTION_ASM_FLAG 'l'
 #endif
 
-#if !HAVE_GNU_AS
+#if HAVE_SOLARIS_AS
 /* Emit COMDAT group signature symbols for Sun as.  */
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END solaris_file_end
@@ -220,12 +218,12 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Unlike GNU ld, Sun ld doesn't coalesce .ctors.N/.dtors.N sections, so
    inhibit their creation.  Also cf. sparc/sysv4.h.  */
-#if !HAVE_GNU_LD
+#if HAVE_SOLARIS_LD
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors, \"aw\""
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors, \"aw\""
 #endif
 
-#if !HAVE_GNU_AS
+#if HAVE_SOLARIS_AS
 #define LARGECOMM_SECTION_ASM_OP "\t.lbcomm\t"
 #endif
 

@@ -138,7 +138,8 @@ class Archive_file
 {
  public:
   Archive_file(const std::string& filename, int fd, location_t location)
-    : filename_(filename), fd_(fd), filesize_(-1), first_member_offset_(0),
+    : filename_(filename), fd_(fd), offset_to_member_contents_(0),
+    filesize_(-1), first_member_offset_(0),
       extended_names_(), is_thin_archive_(false), is_big_archive_(false),
       location_(location), nested_archives_()
   { }
@@ -197,7 +198,8 @@ class Archive_file
   // *NESTED_OFF to the offset in a nested archive.
   bool
   interpret_header(const Archive_header* hdr, off_t off,
-		   std::string* pname, off_t* size, off_t* nested_off) const;
+		   std::string* pname, off_t* size,
+		   off_t* nested_off, off_t* offset_to_contents) const;
 
   // Get the file and offset for an archive member.
   bool
@@ -232,6 +234,9 @@ class Archive_file
   std::string filename_;
   // The file descriptor.
   int fd_;
+  // Offset to the archive contents, to accommodate some Darwin
+  // extensions.
+  off_t offset_to_member_contents_;
   // The file size;
   off_t filesize_;
   // The first member offset;
@@ -518,8 +523,11 @@ Archive_file::read_archive_header(off_t off, std::string* pname, off_t* size,
 		   this->filename_.c_str(), static_cast<long>(off));
     }
   off_t local_nested_off;
-  if (!this->interpret_header(&hdr, off, pname, size, &local_nested_off))
+  off_t offset_to_contents;
+  if (!this->interpret_header(&hdr, off, pname, size, &local_nested_off,
+			      &offset_to_contents))
     return false;
+  this->offset_to_member_contents_ = offset_to_contents;
   if (nested_off != NULL)
     *nested_off = local_nested_off;
 
@@ -541,8 +549,10 @@ Archive_file::read_archive_header(off_t off, std::string* pname, off_t* size,
 
 bool
 Archive_file::interpret_header(const Archive_header* hdr, off_t off,
-			       std::string* pname, off_t* size,
-			       off_t* nested_off) const
+			       std::string* pname,
+			       off_t* size,
+			       off_t* nested_off,
+			       off_t* offset_to_contents) const
 {
   if (memcmp(hdr->ar_fmag, arfmag, sizeof arfmag) != 0)
     {
@@ -560,8 +570,28 @@ Archive_file::interpret_header(const Archive_header* hdr, off_t off,
     }
   *size = local_size;
 
+  *offset_to_contents = 0;
   *nested_off = 0;
-  if (hdr->ar_name[0] != '/')
+  if (hdr->ar_name[0] == '#'
+	   && hdr->ar_name[1] == '1'
+	   && hdr->ar_name[2] == '/')
+    {
+      // This is an entry with a long name in Darwin, which gets actually
+      // stored in the first bytes of the archive member contents. For now,
+      // don't bother to decode the name, but we need to annotate the offset to
+      // the actual contents.
+      *pname = "#1";
+      char *end;
+      long y = strtol (hdr->ar_name + 3, &end, 10);
+      if (*end != ' ' || y < 0 || (y == LONG_MAX && errno == ERANGE))
+	{
+	  a68_error (NO_NODE, "%s: bad Darwin extended name size at %lu",
+		     this->filename_.c_str(), static_cast<unsigned long>(off));
+	  return false;
+	}
+      *offset_to_contents = y;
+    }
+  else if (hdr->ar_name[0] != '/')
     {
       const char* name_end = strchr(hdr->ar_name, '/');
       if (name_end == NULL
@@ -648,7 +678,7 @@ Archive_file::get_file_and_offset(off_t off, const std::string& hdrname,
   else if (!this->is_thin_archive_)
     {
       *memfd = this->fd_;
-      *memoff = off + sizeof(Archive_header);
+      *memoff = off + sizeof(Archive_header) + this->offset_to_member_contents_;
       *memname = this->filename_ + '(' + hdrname + ')';
       return true;
     }

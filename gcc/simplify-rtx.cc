@@ -8491,7 +8491,8 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       res = simplify_subreg (outermode, part, part_mode, final_offset);
       if (res)
 	return res;
-      if (validate_subreg (outermode, part_mode, part, final_offset))
+      if (GET_MODE (part) != VOIDmode
+	  && validate_subreg (outermode, part_mode, part, final_offset))
 	return gen_rtx_SUBREG (outermode, part, final_offset);
       return NULL_RTX;
     }

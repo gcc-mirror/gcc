@@ -10447,6 +10447,23 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   gcc_assert (sym->assoc);
   gcc_assert (sym->attr.flavor == FL_VARIABLE);
 
+  if (sym->assoc->target
+      && sym->assoc->target->expr_type == EXPR_FUNCTION
+      && sym->assoc->target->symtree
+      && sym->assoc->target->symtree->n.sym
+      && sym->assoc->target->symtree->n.sym->attr.generic)
+    {
+      if (gfc_resolve_expr (sym->assoc->target))
+	sym->ts = sym->assoc->target->ts;
+      else
+	{
+	  gfc_error ("%s could not be resolved to a specific function at %L",
+		     sym->assoc->target->symtree->n.sym->name,
+		     &sym->assoc->target->where);
+	  return;
+	}
+    }
+
   /* If this is for SELECT TYPE, the target may not yet be set.  In that
      case, return.  Resolution will be called later manually again when
      this is done.  */
@@ -12449,6 +12466,13 @@ gfc_max_forall_iterators_in_chain (gfc_code *code)
 
       if (c->op == EXEC_FORALL || c->op == EXEC_DO_CONCURRENT)
 	sub_iters = gfc_count_forall_iterators (c);
+      else if (c->op == EXEC_BLOCK)
+	{
+	  /* BLOCK/ASSOCIATE bodies live in the block namespace code chain,
+	     not in the generic c->block arm list used by IF/SELECT.  */
+	  if (c->ext.block.ns && c->ext.block.ns->code)
+	    sub_iters = gfc_max_forall_iterators_in_chain (c->ext.block.ns->code);
+	}
       else if (c->block)
 	for (gfc_code *b = c->block; b; b = b->block)
 	  {
@@ -14264,10 +14288,33 @@ start:
 	      code->ext.actual = gfc_get_actual_arglist ();
 	      code->ext.actual->expr = code->expr1;
 	      code->ext.actual->next = gfc_get_actual_arglist ();
-	      code->ext.actual->next->expr = code->expr2;
+	      if (code->expr2->expr_type != EXPR_VARIABLE
+		  && code->expr2->expr_type != EXPR_CONSTANT)
+		{
+		  /* Convert assignments of expr1[...] = expr2 into
+			tvar = expr2
+			expr1[...] = tvar
+		     when expr2 is not trivial.  */
+		  gfc_expr *tvar = get_temp_from_expr (code->expr2, ns);
+		  gfc_code next_code = *code;
+		  gfc_code *rhs_code
+		    = build_assignment (EXEC_ASSIGN, tvar, code->expr2, NULL,
+					NULL, code->expr2->where);
+		  *code = *rhs_code;
+		  code->next = rhs_code;
+		  *rhs_code = next_code;
 
-	      code->expr1 = NULL;
-	      code->expr2 = NULL;
+		  rhs_code->ext.actual->next->expr = tvar;
+		  rhs_code->expr1 = NULL;
+		  rhs_code->expr2 = NULL;
+		}
+	      else
+		{
+		  code->ext.actual->next->expr = code->expr2;
+
+		  code->expr1 = NULL;
+		  code->expr2 = NULL;
+		}
 	      break;
 	    }
 

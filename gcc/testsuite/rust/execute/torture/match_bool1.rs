@@ -1,4 +1,7 @@
 // { dg-output "182 is more than 100\r*\n55 is less than 100\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 
 extern "C" {
     fn printf(s: *const i8, ...);

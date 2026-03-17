@@ -1,3 +1,9 @@
+2026-02-27  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* .forgejo/workflows/sanity-checks.yaml: Rename testjob to
+	format-checks. Rename file to ...
+	* .forgejo/workflows/format-checks.yaml: ... this.
+
 2026-02-18  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	* configure.ac <amdgcn-*-*> (noconfigdirs): Add `ld' and `gas'.

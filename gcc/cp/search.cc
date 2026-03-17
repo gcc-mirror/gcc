@@ -1465,21 +1465,26 @@ adjust_result_of_qualified_name_lookup (tree decl,
 					tree qualifying_scope,
 					tree context_class)
 {
-  if (context_class && context_class != error_mark_node
+  if (!BASELINK_P (decl))
+    return decl;
+
+  const bool qualified_p = qualifying_scope != NULL_TREE;
+  if (!qualified_p)
+    qualifying_scope = BINFO_TYPE (BASELINK_ACCESS_BINFO (decl));
+
+  if (context_class
+      && context_class != error_mark_node
       && CLASS_TYPE_P (context_class)
       && CLASS_TYPE_P (qualifying_scope)
-      && DERIVED_FROM_P (qualifying_scope, context_class)
-      && BASELINK_P (decl))
+      && DERIVED_FROM_P (qualifying_scope, context_class))
     {
-      tree base;
-
       /* Look for the QUALIFYING_SCOPE as a base of the CONTEXT_CLASS.
 	 Because we do not yet know which function will be chosen by
 	 overload resolution, we cannot yet check either accessibility
 	 or ambiguity -- in either case, the choice of a static member
 	 function might make the usage valid.  */
-      base = lookup_base (context_class, qualifying_scope,
-			  ba_unique, NULL, tf_none);
+      tree base = lookup_base (context_class, qualifying_scope,
+			       ba_unique, NULL, tf_none);
       if (base && base != error_mark_node)
 	{
 	  BASELINK_ACCESS_BINFO (decl) = base;
@@ -1491,8 +1496,7 @@ adjust_result_of_qualified_name_lookup (tree decl,
 	}
     }
 
-  if (BASELINK_P (decl))
-    BASELINK_QUALIFIED_P (decl) = true;
+  BASELINK_QUALIFIED_P (decl) = qualified_p;
 
   return decl;
 }

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 type TypeAlias = (i32, u32);
 
 fn main() {

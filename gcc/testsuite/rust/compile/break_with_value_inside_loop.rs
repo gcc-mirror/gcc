@@ -1,4 +1,7 @@
 // https://doc.rust-lang.org/error_codes/E0571.html
+#![feature(no_core)]
+#![no_core]
+
 #![allow(unused)]
 fn main() {
     let mut i = 1;

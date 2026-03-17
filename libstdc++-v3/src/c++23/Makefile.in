@@ -133,6 +133,10 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+libmodulesconvenience_la_LIBADD =
+am_libmodulesconvenience_la_OBJECTS = std.lo std.compat.lo
+libmodulesconvenience_la_OBJECTS =  \
+	$(am_libmodulesconvenience_la_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -159,7 +163,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(libc__23convenience_la_SOURCES)
+SOURCES = $(libc__23convenience_la_SOURCES) \
+	$(libmodulesconvenience_la_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -457,10 +462,13 @@ WARN_CXXFLAGS = \
 AM_CPPFLAGS = $(GLIBCXX_INCLUDES) $(CPPFLAGS)
 
 # Convenience library for C++23 runtime.
-noinst_LTLIBRARIES = libc++23convenience.la
+# This libc++23convenience.la one isn't linked into libstdc++.la yet,
+# so build an additional libmodulesconvenience.la which is linked in.
+noinst_LTLIBRARIES = libc++23convenience.la libmodulesconvenience.la
 
-# Module std support.  Not compiled for now, only installed.
+# Module std support.
 # Let's install the interface units in the bits subdirectory.
+# We also compile them and include them in libmodulesconvenience.la
 toolexeclib_DATA = libstdc++.modules.json
 includebitsdir = $(gxx_include_dir)/bits
 includebits_DATA = std.cc std.compat.cc
@@ -473,6 +481,10 @@ headers =
 sources = stacktrace.cc print.cc
 @GLIBCXX_HOSTED_FALSE@libc__23convenience_la_SOURCES = 
 @GLIBCXX_HOSTED_TRUE@libc__23convenience_la_SOURCES = $(sources)  $(inst_sources)
+libmodulesconvenience_la_SOURCES = std.cc std.compat.cc
+MODULES_FLAGS = -isystem ${glibcxx_srcdir}/include/backward -fmodules \
+	-Wno-unknown-pragmas
+
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -585,6 +597,9 @@ clean-noinstLTLIBRARIES:
 
 libc++23convenience.la: $(libc__23convenience_la_OBJECTS) $(libc__23convenience_la_DEPENDENCIES) $(EXTRA_libc__23convenience_la_DEPENDENCIES) 
 	$(AM_V_CXXLD)$(CXXLINK)  $(libc__23convenience_la_OBJECTS) $(libc__23convenience_la_LIBADD) $(LIBS)
+
+libmodulesconvenience.la: $(libmodulesconvenience_la_OBJECTS) $(libmodulesconvenience_la_DEPENDENCIES) $(EXTRA_libmodulesconvenience_la_DEPENDENCIES) 
+	$(AM_V_CXXLD)$(CXXLINK)  $(libmodulesconvenience_la_OBJECTS) $(libmodulesconvenience_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -739,8 +754,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local \
+	clean-noinstLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -809,15 +824,15 @@ uninstall-am: uninstall-includebitsDATA uninstall-toolexeclibDATA
 .MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am all-local check check-am clean \
-	clean-generic clean-libtool clean-noinstLTLIBRARIES \
-	cscopelist-am ctags ctags-am distclean distclean-compile \
-	distclean-generic distclean-libtool distclean-tags dvi dvi-am \
-	html html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am \
-	install-includebitsDATA install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip install-toolexeclibDATA \
+	clean-generic clean-libtool clean-local \
+	clean-noinstLTLIBRARIES cscopelist-am ctags ctags-am distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags dvi dvi-am html html-am info info-am install \
+	install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-includebitsDATA install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip install-toolexeclibDATA \
 	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
@@ -855,6 +870,9 @@ stamp-modules-bits: $(includebits_DATA)
 
 all-local: stamp-module-manifest stamp-modules-bits
 
+clean-local:
+	rm -rf stamp* libstdc++.modules.json std.cc std.compat.cc gcm.cache
+
 vpath % $(top_srcdir)/src/c++23
 
 # Use C++26 so that std::filebuf::native_handle() is available.
@@ -862,6 +880,16 @@ print.lo: print.cc
 	$(LTCXXCOMPILE) -std=gnu++26 -c $<
 print.o: print.cc
 	$(CXXCOMPILE) -std=gnu++26 -c $<
+
+# These go into libmodulesconvenience.la and are linked into libstdc++
+std.lo: std.cc
+	$(LTCXXCOMPILE) $(MODULES_FLAGS) -c $<
+std.o: std.cc
+	$(CXXCOMPILE) $(MODULES_FLAGS) -c $<
+std.compat.lo: std.compat.cc std.lo
+	$(LTCXXCOMPILE) $(MODULES_FLAGS) -c $<
+std.compat.o: std.compat.cc std.o
+	$(CXXCOMPILE) $(MODULES_FLAGS) -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

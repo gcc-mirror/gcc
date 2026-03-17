@@ -168,6 +168,7 @@ namespace __gnu_debug
       return __foreign_iterator_aux3(__it, __other, __other_end, __tag());
     }
 
+#if __cplusplus < 201103L
   /* Handle the case where we aren't really inserting a range after all */
   template<typename _Iterator, typename _Sequence, typename _Category,
 	   typename _Integral>
@@ -185,12 +186,21 @@ namespace __gnu_debug
 	const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
 	_InputIterator __other, _InputIterator __other_end,
 	std::__false_type)
+#else
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _InputIterator>
+    inline bool
+    __foreign_iterator(
+	const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+	_InputIterator __other, _InputIterator __other_end)
+#endif
     {
       return _Insert_range_from_self_is_safe<_Sequence>::__value
 	|| __foreign_iterator_aux2(__it, std::__miter_base(__other),
 				   std::__miter_base(__other_end));
     }
 
+#if __cplusplus < 201103L
   template<typename _Iterator, typename _Sequence, typename _Category,
 	   typename _InputIterator>
     inline bool
@@ -201,6 +211,7 @@ namespace __gnu_debug
       typedef typename std::__is_integer<_InputIterator>::__type _Integral;
       return __foreign_iterator_aux(__it, __other, __other_end, _Integral());
     }
+#endif
 
   // Can't check if an input iterator sequence is sorted, because we
   // can't step through the sequence.

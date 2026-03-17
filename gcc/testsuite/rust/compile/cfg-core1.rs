@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-cfg=A -frust-cfg=B" }
+#![feature(no_core)]
+#![no_core]
+
 
 #[cfg_attr(A, cfg(B))]
 struct Foo0;

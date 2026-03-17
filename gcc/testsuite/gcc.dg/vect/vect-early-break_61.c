@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_early_break } */
 /* { dg-require-effective-target vect_float } */
+/* { dg-additional-options "-fno-trapping-math" } */
 
 typedef float real_t;
 __attribute__((aligned(64))) real_t a[32000], b[32000], c[32000];

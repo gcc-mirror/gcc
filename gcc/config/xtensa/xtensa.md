@@ -1220,25 +1220,25 @@
 })
 
 (define_insn_and_split "movdi_internal"
-  [(set (match_operand:DI 0 "nonimmed_operand" "=a,a,W,a,a,U")
-	(match_operand:DI 1 "move_operand" "r,Y,i,T,U,r"))]
+  [(set (match_operand:DI 0 "nonimmed_operand")
+	(match_operand:DI 1 "move_operand"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)"
-  "#"
+  {@ [cons: =0, 1; attrs: type, length]
+     [a, r; move,   6] #
+     [a, Y; load,   6] ^
+     [W, i; move,  12] ^
+     [a, T; load,   6] ^
+     [a, U; load,   6] ^
+     [U, r; store,  6] ^
+  }
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 1) (match_dup 3))]
 {
   xtensa_split_operand_pair (operands, SImode);
-  if (reg_overlap_mentioned_p (operands[0], operands[3]))
-    {
-      std::swap (operands[0], operands[1]);
-      std::swap (operands[2], operands[3]);
-    }
 }
-  [(set_attr "type"	"move,load,move,load,load,store")
-   (set_attr "mode"	"DI")
-   (set_attr "length"	"6,6,12,6,6,6")])
+  [(set_attr "mode" "DI")])
 
 ;; 32-bit Integer moves
 
@@ -1503,25 +1503,25 @@
 })
 
 (define_insn_and_split "movdf_internal"
-  [(set (match_operand:DF 0 "nonimmed_operand" "=a,a,W,a,a,U")
-	(match_operand:DF 1 "move_operand" "r,Y,iF,T,U,r"))]
+  [(set (match_operand:DF 0 "nonimmed_operand")
+	(match_operand:DF 1 "move_operand"))]
   "register_operand (operands[0], DFmode)
    || register_operand (operands[1], DFmode)"
-  "#"
+  {@ [cons: =0, 1; attrs: type, length]
+     [a,  r; move,   6] #
+     [a,  Y; load,   6] ^
+     [W, iF; move,  12] ^
+     [a,  T; load,   6] ^
+     [a,  U; load,   6] ^
+     [U,  r; store,  6] ^
+  }
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 1) (match_dup 3))]
 {
   xtensa_split_operand_pair (operands, SFmode);
-  if (reg_overlap_mentioned_p (operands[0], operands[3]))
-    {
-      std::swap (operands[0], operands[1]);
-      std::swap (operands[2], operands[3]);
-    }
 }
-  [(set_attr "type"	"move,load,move,load,load,store")
-   (set_attr "mode"	"DF")
-   (set_attr "length"	"6,6,12,6,6,6")])
+  [(set_attr "mode" "DF")])
 
 ;; Block moves
 
@@ -1859,16 +1859,16 @@
 (define_insn "*btrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "branch_operator"
-			[(match_operand:SI 0 "register_operand" "r,r")
-			 (match_operand:SI 1 "branch_operand" "K,?r")])
-		      (label_ref (match_operand 2 "" ""))
+			[(match_operand:SI 0 "register_operand")
+			 (match_operand:SI 1 "branch_operand")])
+		      (label_ref (match_operand 2 ""))
 		      (pc)))]
   ""
-{
-  return xtensa_emit_branch (which_alternative == 0, operands);
-}
-  [(set_attr "type"	"jump,jump")
-   (set_attr "mode"	"none")
+  {@ [cons: 0, 1, 2; attrs: type]
+     [r,  K, ; jump] << xtensa_emit_branch (true, operands);
+     [r, ?r, ; jump] << xtensa_emit_branch (false, operands);
+  }
+  [(set_attr "mode" "none")
    (set (attr "length")
         (if_then_else (match_test "TARGET_DENSITY
 				   && CONST_INT_P (operands[1])
@@ -1909,17 +1909,16 @@
 (define_insn "*ubtrue"
   [(set (pc)
 	(if_then_else (match_operator 3 "ubranch_operator"
-			[(match_operand:SI 0 "register_operand" "r,r")
-			 (match_operand:SI 1 "ubranch_operand" "L,r")])
-		      (label_ref (match_operand 2 "" ""))
+			[(match_operand:SI 0 "register_operand")
+			 (match_operand:SI 1 "ubranch_operand")])
+		      (label_ref (match_operand 2 ""))
 		      (pc)))]
   ""
-{
-  return xtensa_emit_branch (which_alternative == 0, operands);
-}
-  [(set_attr "type"	"jump,jump")
-   (set_attr "mode"	"none")
-   (set_attr "length"	"3,3")])
+  {@ [cons: 0, 1, 2; attrs: type, length]
+     [r, L, ; jump, 3] << xtensa_emit_branch (true, operands);
+     [r, r, ; jump, 3] << xtensa_emit_branch (false, operands);
+  }
+  [(set_attr "mode" "none")])
 
 ;; Branch patterns for bit testing
 
@@ -2315,6 +2314,23 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
+(define_expand "spaceshipsi4"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand:SI 1 "register_operand")
+   (match_operand:SI 2 "register_operand")
+   (match_operand:SI 3 "const_int_operand")]
+  "TARGET_SALT"
+{
+  rtx (*gen_op)(rtx, rtx, rtx);
+  rtx temp0, temp1;
+  gcc_assert (operands[3] == const1_rtx || operands[3] == constm1_rtx);
+  gen_op = (operands[3] == const1_rtx) ? gen_saltu : gen_salt;
+  emit_insn (gen_op (temp0 = gen_reg_rtx (SImode), operands[1], operands[2]));
+  emit_insn (gen_op (temp1 = gen_reg_rtx (SImode), operands[2], operands[1]));
+  emit_insn (gen_subsi3 (operands[0], temp1, temp0));
+  DONE;
+})
+
 (define_expand "cstoresf4"
   [(match_operand:SI 0 "register_operand")
    (match_operator:SI 1 "comparison_operator"
@@ -2356,66 +2372,64 @@
 })
 
 (define_insn "movsicc_internal0"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
+  [(set (match_operand:SI 0 "register_operand")
 	(if_then_else:SI (match_operator 4 "branch_operator"
-			   [(match_operand:SI 1 "register_operand" "r,r")
+			   [(match_operand:SI 1 "register_operand")
 			    (const_int 0)])
-			 (match_operand:SI 2 "register_operand" "r,0")
-			 (match_operand:SI 3 "register_operand" "0,r")))]
+			 (match_operand:SI 2 "register_operand")
+			 (match_operand:SI 3 "register_operand")))]
   ""
-{
-  return xtensa_emit_movcc (which_alternative == 1, false, false, operands);
-}
-  [(set_attr "type"	"move,move")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,3")])
+  {@ [cons: =0, 1, 2, 3; attrs: type, length]
+     [a, r, r, 0; move, 3] << xtensa_emit_movcc (false, false, false, operands);
+     [a, r, 0, r; move, 3] << xtensa_emit_movcc (true, false, false, operands);
+  }
+  [(set_attr "mode" "SI")])
 
 (define_insn "movsicc_internal1"
-  [(set (match_operand:SI 0 "register_operand" "=a,a")
+  [(set (match_operand:SI 0 "register_operand")
 	(if_then_else:SI (match_operator 4 "boolean_operator"
-			   [(match_operand:CC 1 "register_operand" "b,b")
+			   [(match_operand:CC 1 "register_operand")
 			    (const_int 0)])
-			 (match_operand:SI 2 "register_operand" "r,0")
-			 (match_operand:SI 3 "register_operand" "0,r")))]
+			 (match_operand:SI 2 "register_operand")
+			 (match_operand:SI 3 "register_operand")))]
   "TARGET_BOOLEANS"
-{
-  return xtensa_emit_movcc (which_alternative == 1, false, true, operands);
-}
-  [(set_attr "type"	"move,move")
-   (set_attr "mode"	"SI")
-   (set_attr "length"	"3,3")])
+  {@ [cons: =0, 1, 2, 3; attrs: type, length]
+     [a, b, r, 0; move, 3] << xtensa_emit_movcc (false, false, true, operands);
+     [a, b, 0, r; move, 3] << xtensa_emit_movcc (true, false, true, operands);
+  }
+  [(set_attr "mode" "SI")])
 
 (define_insn "movsfcc_internal0"
-  [(set (match_operand:SF 0 "register_operand" "=a,a,f,f")
+  [(set (match_operand:SF 0 "register_operand")
 	(if_then_else:SF (match_operator 4 "branch_operator"
-			   [(match_operand:SI 1 "register_operand" "r,r,r,r")
+			   [(match_operand:SI 1 "register_operand")
 			    (const_int 0)])
-			 (match_operand:SF 2 "register_operand" "r,0,f,0")
-			 (match_operand:SF 3 "register_operand" "0,r,0,f")))]
+			 (match_operand:SF 2 "register_operand")
+			 (match_operand:SF 3 "register_operand")))]
   ""
-{
-  return xtensa_emit_movcc ((which_alternative & 1) == 1,
-			    which_alternative >= 2, false, operands);
-}
-  [(set_attr "type"	"move,move,move,move")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3,3,3,3")])
+  {@ [cons: =0, 1, 2, 3; attrs: type, length]
+     [a, r, r, 0; move, 3] << xtensa_emit_movcc (false, false, false, operands);
+     [a, r, 0, r; move, 3] << xtensa_emit_movcc (true, false, false, operands);
+     [f, r, f, 0; move, 3] << xtensa_emit_movcc (false, true, false, operands);
+     [f, r, 0, f; move, 3] << xtensa_emit_movcc (true, true, false, operands);
+  }
+  [(set_attr "mode" "SF")])
 
 (define_insn "movsfcc_internal1"
-  [(set (match_operand:SF 0 "register_operand" "=a,a,f,f")
+  [(set (match_operand:SF 0 "register_operand")
 	(if_then_else:SF (match_operator 4 "boolean_operator"
-			   [(match_operand:CC 1 "register_operand" "b,b,b,b")
+			   [(match_operand:CC 1 "register_operand")
 			    (const_int 0)])
-			 (match_operand:SF 2 "register_operand" "r,0,f,0")
-			 (match_operand:SF 3 "register_operand" "0,r,0,f")))]
+			 (match_operand:SF 2 "register_operand")
+			 (match_operand:SF 3 "register_operand")))]
   "TARGET_BOOLEANS"
-{
-  return xtensa_emit_movcc ((which_alternative & 1) == 1,
-			    which_alternative >= 2, true, operands);
-}
-  [(set_attr "type"	"move,move,move,move")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3,3,3,3")])
+  {@ [cons: =0, 1, 2, 3; attrs: type, length]
+     [a, b, r, 0; move, 3] << xtensa_emit_movcc (false, false, true, operands);
+     [a, b, 0, r; move, 3] << xtensa_emit_movcc (true, false, true, operands);
+     [f, b, f, 0; move, 3] << xtensa_emit_movcc (false, true, true, operands);
+     [f, b, 0, f; move, 3] << xtensa_emit_movcc (true, true, true, operands);
+  }
+  [(set_attr "mode" "SF")])
 
 
 ;; Floating-point comparisons.

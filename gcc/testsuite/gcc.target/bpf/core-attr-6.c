@@ -11,8 +11,8 @@ struct U {
     int e[4];
     int f;
     int *g;
-  } v;
-} u;
+  } __attribute__((preserve_access_index)) v;
+} __attribute__((preserve_access_index)) u;
 
 struct T {
   int a;

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! add_parens {
     ($($rep:ident ( ) )*) => {
         { 0 $(+ $rep ( ))* }

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct B; // { dg-warning "struct is never constructed" }
 
 impl B {

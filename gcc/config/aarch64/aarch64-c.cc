@@ -37,6 +37,10 @@
 #define builtin_define(TXT) cpp_define (pfile, TXT)
 #define builtin_assert(TXT) cpp_assert (pfile, TXT)
 
+/* Not on Windows ABI unless explicitly set.  */
+#ifndef TARGET_AARCH64_MS_ABI
+#define TARGET_AARCH64_MS_ABI 0
+#endif
 
 static void
 aarch64_def_or_undef (bool def_p, const char *macro, cpp_reader *pfile)
@@ -73,7 +77,6 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
   builtin_define ("__ARM_FEATURE_CLZ");
   builtin_define ("__ARM_FEATURE_IDIV");
   builtin_define ("__ARM_FEATURE_UNALIGNED");
-  builtin_define ("__ARM_PCS_AAPCS64");
   builtin_define_with_int_value ("__ARM_SIZEOF_WCHAR_T", WCHAR_TYPE_SIZE / 8);
 
   builtin_define ("__GCC_ASM_FLAG_OUTPUTS__");
@@ -147,6 +150,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_FLOAT, "__ARM_FEATURE_FMA", pfile);
 
+  aarch64_def_or_undef (!TARGET_AARCH64_MS_ABI, "__ARM_PCS_AAPCS64", pfile);
   if (TARGET_FLOAT)
     {
       builtin_define_with_int_value ("__ARM_FP", 0x0E);

@@ -1,5 +1,8 @@
 // { dg-warning "field is never read: .x." "" { target *-*-* } .-1 }
 // { dg-warning "field is never read: .y." "" { target *-*-* } .-2 }
+#![feature(no_core)]
+#![no_core]
+
 struct Point {
     x: u32,
     y: u32,

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test(a: ()) -> () {
     a
 }

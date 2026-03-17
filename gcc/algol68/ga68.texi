@@ -2754,9 +2754,9 @@ Dyadic operator that yields the concatenation of the given string
 
 @deftypefn Operator {} {*} (= (@B{int} a, @B{string} b) @B{string})
 @deftypefnx Operator {} {*} (= (@B{string} b, @B{int} a) @B{string})
-Dyadic operator that yields the string @code{a} concatenated @code{a}
-times to itself.  If @code{a} is less than zero then it is interpreted
-to be zero.
+Dyadic operator that yields the string composed of @code{a}
+concatenated copies of @code{b}.  If @code{a} is less than zero then
+it is interpreted to be zero.
 @end deftypefn
 
 @subsection Composition combined with assignation

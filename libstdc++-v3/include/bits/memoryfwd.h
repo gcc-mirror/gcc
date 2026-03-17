@@ -48,6 +48,7 @@
 #endif
 
 #include <bits/c++config.h>
+#include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -77,6 +78,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename>
     struct allocator_traits;
 #endif
+
+#ifdef __glibcxx_allocate_at_least  // C++23
+  // Result of, specifically, allocate_at_least(). `count` is the number
+  // of objects that may be indexed from `ptr`, not bytes.
+  template <typename _Pointer, typename _Size = size_t>
+    struct allocation_result
+    {
+      _Pointer ptr;
+      _Size count;
+    };
+#endif
+
 
   /// @} group memory
 

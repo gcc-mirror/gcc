@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct SS {
     one: i32,
     two: i32,

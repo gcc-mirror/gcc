@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 
 // There are errors about unused generic parameters, but we can't handle that yet.
 // Still, this code is invalid Rust.

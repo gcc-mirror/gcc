@@ -1,3 +1,12 @@
+2026-03-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR d/123202
+	* src/std/math/hardware.d (getIeeeFlags) [GNU && SPARC_Any]: Implement.
+	(resetIeeeFlags) [GNU && SPARC_Any]: Likewise.
+	(hasExceptionTraps) [SPARC_Any]: Return true.
+	(getControlState) [GNU && SPARC_Any]: Implement.
+	(setControlState) [GNU && SPARC_Any]: Likewise.
+
 2026-02-05  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/MERGE: Merge upstream phobos f7249cf45.

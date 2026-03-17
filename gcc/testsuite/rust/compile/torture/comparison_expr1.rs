@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn is_zero(x: i32) -> bool {
     x == 0
 }

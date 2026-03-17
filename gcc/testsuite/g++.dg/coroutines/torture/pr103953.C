@@ -63,9 +63,11 @@ int main() {
 	    co_return;
 	}();
 
-	task coroutine_B = [&coroutine_A]() ->task {
+	auto t = [&coroutine_A]() ->task {
 	    co_await coroutine_A;
-	}();
+	};
+
+	task coroutine_B = t();
 
 	coroutine_B.handle.resume();
     }

@@ -1,4 +1,7 @@
 // https://doc.rust-lang.org/error_codes/E0061.html
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     fn f(u: i32) {}
     fn T(u: i32, v: i32, w: i32, x: i32, y: i32, z: i32) {}

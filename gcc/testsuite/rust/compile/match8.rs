@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 union MyUnion {
     f1: u32,
     f2: f32,

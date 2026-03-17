@@ -202,10 +202,8 @@ TARGET_GNU_ATTRIBUTES (mcore_attribute_table,
 #define TARGET_MACHINE_DEPENDENT_REORG	mcore_reorg
 
 #undef  TARGET_PROMOTE_FUNCTION_MODE
-#define TARGET_PROMOTE_FUNCTION_MODE	default_promote_function_mode_always_promote
-#undef  TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES	hook_bool_const_tree_true
-
+#define TARGET_PROMOTE_FUNCTION_MODE \
+  default_promote_function_mode_sign_extend
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY		mcore_return_in_memory
 #undef  TARGET_MUST_PASS_IN_STACK

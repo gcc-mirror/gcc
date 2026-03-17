@@ -474,8 +474,21 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 	{
 	case HIR::StructPatternField::ItemType::TUPLE_PAT:
 	  {
-	    // TODO
-	    rust_unreachable ();
+	    HIR::StructPatternFieldTuplePat &tuple_pat
+	      = static_cast<HIR::StructPatternFieldTuplePat &> (*field.get ());
+
+	    if ((size_t) tuple_pat.get_index () >= variant->num_fields ())
+	      {
+		emit_invalid_field_error (tuple_pat.get_locus (), variant,
+					  std::to_string (
+					    tuple_pat.get_index ()));
+		break;
+	      }
+	    named_fields.push_back (std::to_string (tuple_pat.get_index ()));
+	    TyTy::StructFieldType *field
+	      = variant->get_field_at_index (tuple_pat.get_index ());
+	    TyTy::BaseType *fty = field->get_field_type ();
+	    TypeCheckPattern::Resolve (tuple_pat.get_tuple_pattern (), fty);
 	  }
 	  break;
 

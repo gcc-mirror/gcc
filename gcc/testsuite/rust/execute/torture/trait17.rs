@@ -1,4 +1,7 @@
 /* { dg-output "parent123\r*\nchild\r*\n" } */
+#![feature(no_core)]
+#![no_core]
+
 
 //Second test for lifetimes in supertraits
 

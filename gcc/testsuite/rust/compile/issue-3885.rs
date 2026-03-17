@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn test() {
     let _u: [_; _] = [15u32];
     let _v: [u8; _] = [1, 2, 3];

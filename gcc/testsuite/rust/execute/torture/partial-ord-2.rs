@@ -1,4 +1,7 @@
 /* { dg-output "x == y\r*\nx > z\r*\n" }*/
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(intrinsics, lang_items)]
 

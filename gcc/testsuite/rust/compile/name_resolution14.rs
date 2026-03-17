@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub mod foo {
     pub macro bar() {}
 }

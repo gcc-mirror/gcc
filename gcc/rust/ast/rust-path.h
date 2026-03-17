@@ -1216,10 +1216,10 @@ public:
 
   // Copy constructor with vector clone
   TypePath (TypePath const &other)
-    : has_opening_scope_resolution (other.has_opening_scope_resolution),
+    : TypeNoBounds (other),
+      has_opening_scope_resolution (other.has_opening_scope_resolution),
       locus (other.locus)
   {
-    node_id = other.node_id;
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
       segments.push_back (e->clone_type_path_segment ());
@@ -1228,7 +1228,7 @@ public:
   // Overloaded assignment operator with clone
   TypePath &operator= (TypePath const &other)
   {
-    node_id = other.node_id;
+    TypeNoBounds::operator= (other);
     has_opening_scope_resolution = other.has_opening_scope_resolution;
     locus = other.locus;
 
@@ -1273,6 +1273,8 @@ public:
   }
 
   size_t get_num_segments () const { return segments.size (); }
+
+  Type::Kind get_type_kind () const override { return Type::Kind::TypePath; }
 };
 
 struct QualifiedPathType
@@ -1558,6 +1560,11 @@ public:
   }
 
   location_t get_locus () const override final { return locus; }
+
+  Type::Kind get_type_kind () const override
+  {
+    return Type::Kind::QualifiedPathInType;
+  }
 };
 } // namespace AST
 } // namespace Rust

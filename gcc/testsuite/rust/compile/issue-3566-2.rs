@@ -1,4 +1,7 @@
 // run-pass
+#![feature(no_core)]
+#![no_core]
+
 
 #![allow(H8)]
 #![allow(dead_code)]

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main () {
 // { dg-do compile }
 // { dg-options "-gstrict-dwarf -gdwarf-3 -dA" }

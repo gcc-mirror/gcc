@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-crate-type=lib" }
+#![feature(no_core)]
+#![no_core]
+
 
 trait Dungeness {}
 

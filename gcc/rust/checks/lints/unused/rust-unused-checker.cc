@@ -18,6 +18,7 @@
 
 #include "rust-unused-checker.h"
 #include "rust-hir-expr.h"
+#include "rust-hir-generic-param.h"
 #include "rust-hir-item.h"
 
 #include "options.h"
@@ -37,6 +38,15 @@ UnusedChecker::go (HIR::Crate &crate)
   collector.go (crate);
   for (auto &item : crate.get_items ())
     item->accept_vis (*this);
+}
+
+bool
+is_snake_case (Identifier identifier)
+{
+  auto s = identifier.as_string ();
+  return std::all_of (s.begin (), s.end (), [] (unsigned char c) {
+    return ISLOWER (c) || ISDIGIT (c) || c == '_';
+  });
 }
 
 void
@@ -59,6 +69,13 @@ UnusedChecker::visit (HIR::StaticItem &item)
     rust_warning_at (item.get_locus (), OPT_Wunused_variable,
 		     "unused variable %qs",
 		     item.get_identifier ().as_string ().c_str ());
+
+  if (!std::all_of (var_name.begin (), var_name.end (), [] (unsigned char c) {
+	return ISUPPER (c) || ISDIGIT (c) || c == '_';
+      }))
+    rust_warning_at (item.get_locus (), OPT_Wunused_variable,
+		     "static variable %qs should have an upper case name",
+		     var_name.c_str ());
 }
 
 void
@@ -82,6 +99,11 @@ UnusedChecker::visit (HIR::IdentifierPattern &pattern)
     rust_warning_at (pattern.get_locus (), OPT_Wunused_variable,
 		     "unused mut %qs",
 		     pattern.get_identifier ().as_string ().c_str ());
+
+  if (!is_snake_case (pattern.get_identifier ()))
+    rust_warning_at (pattern.get_locus (), OPT_Wunused_variable,
+		     "variable %qs should have a snake case name",
+		     var_name.c_str ());
 }
 void
 
@@ -122,6 +144,36 @@ UnusedChecker::visit (HIR::EmptyStmt &stmt)
 {
   rust_warning_at (stmt.get_locus (), OPT_Wunused_variable,
 		   "unnecessary trailing semicolons");
+}
+
+void
+UnusedChecker::visit (HIR::Function &fct)
+{
+  if (!is_snake_case (fct.get_function_name ()))
+    rust_warning_at (fct.get_locus (), OPT_Wunused_variable,
+		     "function %qs should have a snake case name",
+		     fct.get_function_name ().as_string ().c_str ());
+  walk (fct);
+}
+
+void
+UnusedChecker::visit (HIR::Module &mod)
+{
+  if (!is_snake_case (mod.get_module_name ()))
+    rust_warning_at (mod.get_locus (), OPT_Wunused_variable,
+		     "module %qs should have a snake case name",
+		     mod.get_module_name ().as_string ().c_str ());
+  walk (mod);
+}
+
+void
+UnusedChecker::visit (HIR::LifetimeParam &lft)
+{
+  if (!is_snake_case (lft.get_lifetime ().get_name ()))
+    rust_warning_at (lft.get_locus (), OPT_Wunused_variable,
+		     "lifetime %qs should have a snake case name",
+		     lft.get_lifetime ().get_name ().c_str ());
+  walk (lft);
 }
 
 void

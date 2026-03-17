@@ -110,13 +110,23 @@ bool
 is_whitespace (uint32_t character)
 {
   // https://doc.rust-lang.org/reference/whitespace.html
-  return character == '\t' || character == '\n' || character == '\v'
-	 || character == '\f' || character == '\r' || character == ' '
-	 || character == 0x0085	 // next line
-	 || character == 0x200e	 // left-to-right mark
-	 || character == 0x200f	 // right-to-left mark
-	 || character == 0x2028	 // line separator
-	 || character == 0x2029; // pragraph separator
+  switch (character)
+    {
+    case '\t':
+    case '\n':
+    case '\v':
+    case '\f':
+    case '\r':
+    case ' ':
+    case 0x0085: // next line
+    case 0x200e: // left-to-right mark
+    case 0x200f: // right-to-left mark
+    case 0x2028: // line separator
+    case 0x2029: // paragraph separator
+      return true;
+    default:
+      return false;
+    }
 }
 
 bool

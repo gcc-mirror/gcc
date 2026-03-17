@@ -27,6 +27,12 @@
 namespace Rust {
 namespace AST {
 
+static TypePath
+get_eq_trait_path (Builder &builder)
+{
+  return builder.type_path ({"core", "cmp", "Eq"}, true);
+}
+
 DeriveEq::DeriveEq (location_t loc) : DeriveVisitor (loc) {}
 
 std::vector<std::unique_ptr<AST::Item>>
@@ -61,7 +67,7 @@ std::unique_ptr<Stmt>
 DeriveEq::assert_param_is_eq ()
 {
   auto eq_bound = std::unique_ptr<TypeParamBound> (
-    new TraitBound (builder.type_path ({"core", "cmp", "Eq"}, true), loc));
+    new TraitBound (get_eq_trait_path (builder), loc));
 
   auto sized_bound = std::unique_ptr<TypeParamBound> (
     new TraitBound (builder.type_path (LangItem::Kind::SIZED), loc, false,
@@ -112,20 +118,17 @@ DeriveEq::eq_impls (
   std::unique_ptr<AssociatedItem> &&fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  // We create two copies of the type-path to avoid duplicate NodeIds
-  auto eq = builder.type_path ({"core", "cmp", "Eq"}, true);
-  auto eq_bound
-    = builder.trait_bound (builder.type_path ({"core", "cmp", "Eq"}, true));
+  auto eq = [this] () { return get_eq_trait_path (builder); };
+  auto eq_bound = [&, this] () { return builder.trait_bound (eq ()); };
 
   auto steq = builder.type_path (LangItem::Kind::STRUCTURAL_TEQ);
 
   auto trait_items = vec (std::move (fn));
 
-  auto eq_generics
-    = setup_impl_generics (name, type_generics, std::move (eq_bound));
+  auto eq_generics = setup_impl_generics (name, type_generics, eq_bound);
   auto steq_generics = setup_impl_generics (name, type_generics);
 
-  auto eq_impl = builder.trait_impl (eq, std::move (eq_generics.self_type),
+  auto eq_impl = builder.trait_impl (eq (), std::move (eq_generics.self_type),
 				     std::move (trait_items),
 				     std::move (eq_generics.impl));
 

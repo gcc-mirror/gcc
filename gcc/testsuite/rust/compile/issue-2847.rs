@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn myfun1((x, _): (i32, i32)) -> i32 {
     x
 }

@@ -162,6 +162,23 @@ default_promote_function_mode_always_promote (const_tree type,
   return promote_mode (type, mode, punsignedp);
 }
 
+/* Sign-extend signed 8/16-bit integer arguments to 32 bits and
+   zero-extend unsigned 8/16-bit integer arguments to 32 bits.  */
+
+machine_mode
+default_promote_function_mode_sign_extend (const_tree type,
+					   machine_mode mode,
+					   int *punsignedp,
+					   const_tree, int)
+{
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && (GET_MODE_SIZE (as_a <scalar_int_mode> (mode))
+	  < GET_MODE_SIZE (SImode)))
+    return SImode;
+
+  return promote_mode (type, mode, punsignedp);
+}
+
 machine_mode
 default_cc_modes_compatible (machine_mode m1, machine_mode m2)
 {

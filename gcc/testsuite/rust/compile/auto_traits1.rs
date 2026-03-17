@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-compile-until=typecheck" }
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(optin_builtin_traits, lang_items)]
 

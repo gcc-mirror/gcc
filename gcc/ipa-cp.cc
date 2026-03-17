@@ -5920,10 +5920,19 @@ ipcp_val_replacement_ok_p (vec<tree> &,
 			   int index, HOST_WIDE_INT offset,
 			   ipa_polymorphic_call_context value)
 {
-  if (offset != -1)
+  if (offset != -1
+      || known_contexts.length () <= (unsigned) index
+      || known_contexts[index].useless_p ())
     return false;
-  return (!known_contexts[index].useless_p ()
-	  && known_contexts[index].equal_to (value));
+
+  if (known_contexts[index].equal_to (value))
+    return true;
+
+  /* In some corner cases, the final gathering of contexts can figure out that
+     the available context is actually more precise than what we wanted to
+     clone for.  Allow it.  */
+  value.combine_with (known_contexts[index]);
+  return known_contexts[index].equal_to (value);
 }
 
 /* Decide whether to create a special version of NODE for value VAL of

@@ -321,8 +321,8 @@ public:
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
   tl::optional<Privacy::ModuleVisibility &> lookup_visibility (NodeId id);
 
-  void insert_glob_container (AST::Item *);
-  tl::optional<AST::Item *> lookup_glob_container (NodeId id);
+  void insert_glob_container (NodeId, AST::GlobContainer *);
+  tl::optional<AST::GlobContainer *> lookup_glob_container (NodeId id);
   void insert_module_child (NodeId module, NodeId child);
   tl::optional<std::vector<NodeId> &> lookup_module_children (NodeId module);
 
@@ -362,6 +362,8 @@ private:
   NodeId nodeIdIter;
   std::map<CrateNum, LocalDefId> localIdIter;
   HIR::ImplBlock *builtinMarker;
+
+  AST::Crate *get_ast_crate_by_node_id_raw (NodeId id);
 
   std::map<NodeId, CrateNum> crate_node_to_crate_num;
   std::map<CrateNum, AST::Crate *> ast_crate_mappings;
@@ -439,7 +441,7 @@ private:
   std::map<NodeId, std::vector<NodeId>> module_child_map;
   std::map<NodeId, std::vector<Resolver::CanonicalPath>> module_child_items;
   std::map<NodeId, NodeId> child_to_parent_module_map;
-  std::map<NodeId, AST::Item *> glob_containers;
+  std::map<NodeId, AST::GlobContainer *> glob_containers;
 
   // AST mappings
   std::map<NodeId, AST::Item *> ast_item_mappings;

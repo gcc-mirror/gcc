@@ -192,8 +192,8 @@ ASTLoweringExpr::visit (AST::QualifiedPathInExpression &expr)
 void
 ASTLoweringExpr::visit (AST::BoxExpr &expr)
 {
-  // Not implemented
-  rust_unreachable ();
+  rust_sorry_at (expr.get_locus (),
+		 "box expression syntax is not supported yet");
 }
 
 void

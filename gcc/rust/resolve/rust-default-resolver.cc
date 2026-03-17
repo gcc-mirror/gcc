@@ -17,9 +17,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-default-resolver.h"
+#include "optional.h"
 #include "rust-ast-full.h"
 #include "rust-ast-visitor.h"
+#include "rust-ast.h"
+#include "rust-attribute-values.h"
 #include "rust-item.h"
+#include "rust-path.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -149,6 +153,16 @@ DefaultResolver::visit (AST::Trait &trait)
 	      trait.get_identifier () /* FIXME: Is that valid?*/);
 }
 
+static bool
+is_lang_impl (std::vector<AST::Attribute> &outer_attrs)
+{
+  for (auto &attr : outer_attrs)
+    if (attr.get_path ().as_string () == Values::Attributes::LANG)
+      return true;
+
+  return false;
+}
+
 void
 DefaultResolver::visit (AST::InherentImpl &impl)
 {
@@ -177,6 +191,17 @@ DefaultResolver::visit (AST::InherentImpl &impl)
   };
 
   ctx.scoped (Rib::Kind::Generics, impl.get_node_id (), inner_fn_3);
+
+  if (is_lang_impl (impl.get_outer_attrs ()))
+    {
+      if (impl.get_type ().get_type_kind () == AST::Type::Kind::TypePath)
+	{
+	  auto type = static_cast<AST::TypePath &> (impl.get_type ());
+	  auto type_name = type.as_string ();
+
+	  ctx.types.insert_lang_prelude (type_name, impl.get_node_id ());
+	}
+    }
 }
 
 void

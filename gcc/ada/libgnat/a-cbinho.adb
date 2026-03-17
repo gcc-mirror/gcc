@@ -298,13 +298,37 @@ package body Ada.Containers.Bounded_Indefinite_Holders is
            Subpool_Start + Holder_Subpool'Max_Size_In_Storage_Elements;
             --  Will deal with alignment on allocation
 
-         Subpool : aliased Holder_Subpool :=
-           (Root_Subpool with Start => Element_Start)
-           with Address => Subpool_Start;
-          --  We depend here on the type Holder_Subpool not having nontrivial
-          --  finalization (if it did then this local object would be
-          --  finalized earlier than what we want).
+         Subpool : aliased Holder_Subpool
+           with Address => Subpool_Start, Import;
+         --  Import is specified to avoid unwanted early finalization.
+         --  But that also prevents initialization (via either default
+         --  initialization or an explicit initial value expression) ...
       begin
+         --  ... so instead initialize Subpool via overlays. But that
+         --  assumes a representation where copying bytes works, and that
+         --  assumption doesn't hold for self-referential pointers.
+         --  So we also call Subpools._Adjust_Clone (sic). Ugly.
+
+         declare
+            use System;
+
+            Subpool_Init_Source : aliased Holder_Subpool :=
+              (Root_Subpool with Start => Element_Start);
+
+            pragma Assert (Holder_Subpool'Size mod Storage_Unit = 0);
+
+            subtype Holder_Subpool_Storage is
+              Storage_Array (1 .. Holder_Subpool'Size / Storage_Unit);
+            Source : Holder_Subpool_Storage with Import,
+              Address => Subpool_Init_Source'Address;
+            Target : Holder_Subpool_Storage with Import,
+              Address => Subpool'Address;
+         begin
+            Target := Source;
+            --  leading underscore is deliberate
+            _Adjust_Clone (Root_Subpool (Subpool));
+         end;
+
          Set_Pool_Of_Subpool (Subpool'Unchecked_Access, Pool);
          --  Return the handle
          return Subpool'Unchecked_Access;

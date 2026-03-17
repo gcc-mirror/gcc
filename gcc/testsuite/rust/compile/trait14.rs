@@ -1,4 +1,7 @@
 // Testing diamond problem with supertraits
+#![feature(no_core)]
+#![no_core]
+
 
  
 struct Foo {

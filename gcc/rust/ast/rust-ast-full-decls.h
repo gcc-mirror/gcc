@@ -40,6 +40,7 @@ class AttrInputMetaItemContainer;
 class MetaItem;
 class Stmt;
 class Item;
+class GlobContainer;
 class Expr;
 class ExprWithoutBlock;
 class IdentifierExpr;

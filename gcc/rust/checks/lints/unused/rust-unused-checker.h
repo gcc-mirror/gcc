@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-expr.h"
+#include "rust-hir-generic-param.h"
 #include "rust-hir-item.h"
 #include "rust-hir-pattern.h"
 #include "rust-hir-visitor.h"
@@ -44,6 +45,9 @@ private:
   virtual void visit (HIR::AssignmentExpr &identifier) override;
   virtual void visit (HIR::StructPatternFieldIdent &identifier) override;
   virtual void visit (HIR::EmptyStmt &stmt) override;
+  virtual void visit (HIR::Function &fct) override;
+  virtual void visit (HIR::Module &mod) override;
+  virtual void visit (HIR::LifetimeParam &lft) override;
   virtual void visit_loop_label (HIR::LoopLabel &label) override;
 };
 } // namespace Analysis

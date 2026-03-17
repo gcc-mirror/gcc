@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 union U {
     a: i32,
     b: f32,

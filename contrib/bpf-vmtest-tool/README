@@ -1,0 +1,248 @@
+BPF vmtest Tool
+===============
+https://gcc.gnu.org/wiki/BPFRunTimeTests
+
+This directory contains a Python script for running BPF programs or shell commands
+under a live Linux kernel using QEMU virtual machines.
+
+
+USAGE
+=====
+
+Before using the tool, you must set the directory where vmtest will look for 
+kernels and store kernel artifacts. You can do this in two ways:
+
+1. Set the VMTEST_DIR environment variable
+2. Use the --vmtest-dir flag with each command
+
+Note: This is required to use the tool.
+
+
+Available Options
+-----------------
+
+    usage: main.py [-h] [-v DEBUG|INFO|WARNING|ERROR] [--vmtest-dir DIR] {bpf,vmtest,kernel} ...
+
+    BPF vmtest tool
+
+    positional arguments:
+      {bpf,vmtest,kernel}   Available commands
+        bpf                 BPF program management
+        vmtest              Run VM tests
+        kernel              Kernel management
+
+    options:
+      -h, --help            show this help message and exit
+      -v DEBUG|INFO|WARNING|ERROR, --log-level DEBUG|INFO|WARNING|ERROR
+                            Log level
+      --vmtest-dir DIR      Directory for vmtest artifacts (or set VMTEST_DIR env variable)
+
+COMMANDS
+========
+
+kernel subcommand
+-----------------
+
+Manage kernel builds for use in virtual machines. You must build a 
+kernel before using it.
+
+Build a kernel:
+
+    python main.py --vmtest-dir="/home/user/.bpf-vmtest-tool" kernel build 6.15
+
+    The tool downloads and builds the specified kernel version from 
+    https://www.kernel.org/pub/linux/kernel and stores the build artifacts in 
+    $VMTEST_DIR/kernels/linux-6.15-x86_64. Specifically, it stores bpftool, 
+    libbpf.a, bzImage-6.15-x86_64, and vmlinux.h, which are used when compiling 
+    BPF programs instead of relying on the host system.
+
+List available kernels:
+
+    python main.py --vmtest-dir="/home/user/.bpf-vmtest-tool" kernel list
+
+Remove kernels:
+
+    python main.py --vmtest-dir="/home/user/.bpf-vmtest-tool" kernel remove 6.15-x86_64
+
+Note: If the architecture is omitted, the host architecture is assumed. For
+example, 6.15 is treated as 6.15-x86_64 on an x86_64 system.
+
+
+vmtest subcommand
+-----------------
+
+Run BPF programs and commands inside a QEMU virtual machine with a live kernel.
+
+Options:
+
+  -k VERSION, --kernel VERSION
+      Kernel version to boot in the VM. Must be a kernel previously built using
+      the "kernel build" subcommand. The kernel version should match the format
+      used during build (e.g., 6.15-x86_64 or just 6.15 for host architecture).
+      
+      Required: Yes
+
+  -r PATH, --rootfs PATH
+      Path to a root filesystem directory to mount in the VM.
+      If not specified, the host's root filesystem (/) is mounted by default.
+      
+      Required: No
+      Default: / (host root filesystem)
+      
+      See "Creating a Custom Rootfs" section below for how to build a rootfs from
+      a container image.
+
+  --bpf-src PATH
+      BPF C source file to compile and load. Mutually exclusive with --bpf-obj.
+
+  --bpf-obj PATH
+      Pre-compiled BPF object to load. Mutually exclusive with --bpf-src.
+
+  -c COMMAND, --command COMMAND
+      Shell command to run in VM.
+
+At least one of --bpf-src, --bpf-obj, or --command is required.
+
+
+
+Examples:
+
+  Run a shell command inside a live kernel VM:
+
+    python main.py vmtest -k 6.15 -c "uname -a"
+
+  Load and run a BPF source file with custom rootfs:
+
+    python main.py vmtest -k 6.15 --bpf-src fail.c -r $HOME/rootfs/debian-rootfs
+
+    The tool compiles the source file using BPF_CC with BPF_CFLAGS and the
+    kernel-specific vmlinux.h, then generates a skeleton from the compiled BPF
+    object using bpftool and compiles it with a generated loader to produce
+    the final userspace binary.
+
+  Load a precompiled BPF object file:
+
+    python main.py vmtest -k 6.15 --bpf-obj fail.bpf.o
+
+    The tool follows the same steps to generate the final userspace binary, except
+    it skips the BPF object compilation step.
+
+
+
+Creating a Custom Rootfs:
+
+  You can build a rootfs from a container image using this script:
+
+    #!/usr/bin/env bash
+    set -euo pipefail
+
+    ROOT="$HOME/rootfs"
+    IMAGE_NAME="debian-bookworm-rootfs"
+    CTR_NAME="debian-rootfs-ctr"
+
+    cat <<'EOF' | podman build -t "$IMAGE_NAME" -
+    FROM debian:bookworm
+    RUN apt-get update && \
+        apt-get install -y --no-install-recommends \
+            libelf1 \
+            qemu-guest-agent \
+            && \
+        apt-get clean && \
+        rm -rf /var/lib/apt/lists/*
+    EOF
+
+    CTR_ID=$(podman create --name "$CTR_NAME" "$IMAGE_NAME")
+    podman export -o "$ROOT/deb.tar" "$CTR_ID"
+    tar -xf "$ROOT/deb.tar" -C "$ROOT/debian-rootfs"
+    podman rm "$CTR_NAME"
+    echo "Debian rootfs ready at: $ROOT/debian-rootfs"
+
+  After running this script, use the rootfs with:
+
+    python main.py vmtest -k 6.15 -r $HOME/rootfs/debian-rootfs -c "uname -a"
+
+
+bpf subcommand
+--------------
+
+Compile BPF source code to bytecode using kernel-specific headers.
+
+Options:
+
+  compile
+      Compile a BPF C source file to a BPF object file.
+
+  -k VERSION, --kernel VERSION
+      Kernel version to use for compilation. The tool will use the vmlinux.h
+      header from this kernel for the compilation.
+      
+      Required: Yes
+
+  -o OUTPUT, --output OUTPUT
+      Output path for the compiled BPF object file.
+      
+      Required: Yes
+
+Example:
+
+    python main.py --vmtest-dir="/home/user/.bpf-vmtest-tool" bpf compile \
+        invalid-memory-access.c -k 6.15 -o /tmp/invalid-memory-access.bpf.o
+
+The compilation stage can be modified using the BPF_CFLAGS environment variable
+(default: -c)
+
+ Example :
+    
+    BPF_CFLAGS="-O2 -E" python main.py --vmtest-dir="/home/user/.bpf-vmtest-tool" \
+        bpf compile invalid-memory-access.c -k 6.15 -o /tmp/invalid-memory-access.bpf.o
+
+LIMITATIONS
+===========
+
+- Only x86_64 architecture is currently supported
+
+
+DEPENDENCIES
+============
+
+- Python >= 3.9
+- vmtest >= v0.18.0 (https://github.com/danobi/vmtest)
+  - QEMU
+  - qemu-guest-agent (on guest filesystem)
+
+For compiling kernels:
+- pahole
+- See https://docs.kernel.org/process/changes.html#current-minimal-requirements
+
+For compiling and loading BPF programs:
+- libbpf
+- gcc-bpf-unknown-none (https://gcc.gnu.org/wiki/BPFBackEnd#Where_to_find_GCC_BPF)
+
+
+BUILD FLAGS
+===========
+
+You can customize compiler settings using environment variables:
+
+- BPF_CC:          Compiler for the BPF program (default: bpf-unknown-none-gcc)
+- BPF_CFLAGS:      Extra flags for BPF program compilation (default: "-O2 -Wall -Werror -c")
+- BPF_INCLUDES:    Include paths for BPF (default: "-I/usr/local/include -I/usr/include")
+- VMTEST_CC:       Compiler for the user-space loader (default: gcc)
+- VMTEST_CFLAGS:   Flags for compiling the loader (default: "-g -Wall -Werror")
+- VMTEST_LDFLAGS:  Linker flags for the loader (default: "-lelf -lz")
+
+Example usage:
+
+    BPF_CFLAGS="-O3 -g" BPF_CC="/bpf-gcc-build/gcc/xgcc" \
+        python main.py vmtest -k 6.15 --bpf-src fail.c
+
+
+DEVELOPMENT
+===========
+
+Development dependencies are specified in pyproject.toml and can be installed
+using any suitable Python virtual environment manager.
+
+To run the test suite:
+
+    python3 -m pytest

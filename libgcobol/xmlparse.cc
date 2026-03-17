@@ -63,7 +63,7 @@ void sayso( const char func[], int line,
   if( getenv("XMLPARSE") ) {
     switch(len) {
     case 0:
-      fprintf(stderr, "%s:%d Kilroy was here\n", func, line);
+      fprintf(stderr, "%s:%d was here\n", func, line);
       break;
     case -1:
       fprintf(stderr, "%s:%d: '%s'\n", func, line, data);

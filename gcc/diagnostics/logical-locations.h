@@ -155,15 +155,15 @@ public:
 
   /* Get a string (or NULL) for K suitable for use by the SARIF logicalLocation
      "name" property (SARIF v2.1.0 section 3.33.4).  */
-  virtual const char *get_short_name (key k) const = 0;
+  virtual label_text get_short_name (key k) const = 0;
 
   /* Get a string (or NULL) for K suitable for use by the SARIF logicalLocation
      "fullyQualifiedName" property (SARIF v2.1.0 section 3.33.5).  */
-  virtual const char *get_name_with_scope (key k) const = 0;
+  virtual label_text get_name_with_scope (key k) const = 0;
 
   /* Get a string (or NULL) for K suitable for use by the SARIF logicalLocation
      "decoratedName" property (SARIF v2.1.0 section 3.33.6).  */
-  virtual const char *get_internal_name (key k) const = 0;
+  virtual label_text get_internal_name (key k) const = 0;
 
   /* Get what kind of SARIF logicalLocation K is (if any).  */
   virtual enum kind get_kind (key k) const = 0;

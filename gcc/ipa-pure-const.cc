@@ -1481,7 +1481,6 @@ skip_function_for_local_pure_const (struct cgraph_node *node)
   /* Save some work and do not analyze functions which are interposable and
      do not have any non-interposable aliases.  */
   if (node->get_availability () <= AVAIL_INTERPOSABLE
-      && !flag_lto
       && !node->has_aliases_p ())
     {
       if (dump_file)

@@ -1,2 +1,4 @@
 softfp_wrap_start := '\#if !__ARM_ARCH_ISA_ARM && __ARM_ARCH_ISA_THUMB == 1'
 softfp_wrap_end := '\#endif'
+bitint_extras += floatbitinthf
+softfp_cflags := -mfp16-format=ieee

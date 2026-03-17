@@ -4298,8 +4298,11 @@ find_sets_in_insn (rtx_insn *insn, vec<struct set> *psets)
 		 used to tell CSE how to get to a particular constant.  */
 	      rtx y = simplify_gen_vec_select (SET_DEST (x), i);
 	      gcc_assert (y);
-	      rtx set = gen_rtx_SET (y, CONST_VECTOR_ELT (src, i));
-	      add_to_set (psets, set, true);
+	      if (!REG_P (y))
+		{
+		  rtx set = gen_rtx_SET (y, CONST_VECTOR_ELT (src, i));
+		  add_to_set (psets, set, true);
+		}
 	    }
 	}
       else

@@ -1,4 +1,7 @@
 // { dg-excess-errors "warnings" }
+#![feature(no_core)]
+#![no_core]
+
 
 struct S {
     field: [u8; {

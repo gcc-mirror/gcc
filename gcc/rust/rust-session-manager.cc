@@ -162,6 +162,16 @@ validate_crate_name (const std::string &crate_name, Error &error)
   return true;
 }
 
+static bool
+has_attribute (AST::Crate crate, std::string attribute)
+{
+  auto &crate_attrs = crate.get_inner_attrs ();
+  auto has_attr = [&attribute] (AST::Attribute &attr) {
+    return attr.as_string () == attribute;
+  };
+  return std::any_of (crate_attrs.begin (), crate_attrs.end (), has_attr);
+}
+
 void
 Session::init ()
 {
@@ -657,6 +667,11 @@ Session::compile_crate (const char *filename)
     return;
 
   Analysis::AttributeChecker ().go (parsed_crate);
+
+  if (!has_attribute (parsed_crate, std::string (Values::Attributes::NO_CORE)))
+    {
+      parsed_crate.inject_extern_crate ("core");
+    }
 
   if (last_step == CompileOptions::CompileStep::Expansion)
     return;

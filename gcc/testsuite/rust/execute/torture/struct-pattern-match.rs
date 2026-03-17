@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 enum Foo {
     A { x: i32 },
     B { y: i32 }

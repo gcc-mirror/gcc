@@ -10165,7 +10165,13 @@ generate_element_copy_wrapper (gfc_symbol *der_type, tree comp_type,
 
   pop_cfun ();
 
-  cgraph_node::add_new_function (fndecl, false);
+  /* Use finalize_function with no_collect=true to skip the ggc_collect
+     call that add_new_function would trigger.  This function is called
+     during tree lowering of structure_alloc_comps where caller stack
+     frames hold locally-computed tree nodes (COMPONENT_REFs etc.) that
+     are not yet attached to any GC root.  A collection at this point
+     would free those nodes and cause segfaults.  PR124235.  */
+  cgraph_node::finalize_function (fndecl, true);
 
   return build1 (ADDR_EXPR, get_copy_helper_pointer_type (), fndecl);
 }
@@ -11582,22 +11588,10 @@ gfc_allocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank,
 /* Recursively traverse an object of parameterized derived type, generating
    code to deallocate parameterized components.  */
 
-static bool
-has_parameterized_comps (gfc_symbol * der_type)
-{
-  /* A type without parameterized components causes gimplifier problems.  */
-  bool parameterized_comps = false;
-  for (gfc_component *c = der_type->components; c; c = c->next)
-    if (c->attr.pdt_array || c->attr.pdt_string)
-      parameterized_comps = true;
-    else if (IS_PDT (c) && strcmp (der_type->name, c->ts.u.derived->name))
-      parameterized_comps = has_parameterized_comps (c->ts.u.derived);
-  return parameterized_comps;
-}
-
 tree
 gfc_deallocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank)
 {
+  /* A type without parameterized components causes gimplifier problems.  */
   if (!has_parameterized_comps (der_type))
     return NULL_TREE;
 

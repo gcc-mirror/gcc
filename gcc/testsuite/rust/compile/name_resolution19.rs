@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct Marker;
 
 fn foo(a: Marker, b: Marker) -> Marker {

@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-cfg=B" }
+#![feature(no_core)]
+#![no_core]
+
 
 #[cfg(not(any(A, B)))]
 struct Foo0;

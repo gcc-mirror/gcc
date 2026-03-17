@@ -88,7 +88,10 @@ public:
 					TyTy::ADTType *adt,
 					TyTy::VariantDef *variant,
 					int variant_index);
-  void handle_struct_pattern_tuple_pat (HIR::StructPatternField &pat);
+  void handle_struct_pattern_tuple_pat (HIR::StructPatternField &pat,
+					TyTy::ADTType *adt,
+					TyTy::VariantDef *variant,
+					int variant_index);
 
   void visit (HIR::StructPattern &pattern) override;
   void visit (HIR::TupleStructPattern &pattern) override;

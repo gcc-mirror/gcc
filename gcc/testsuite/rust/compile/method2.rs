@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct Foo<A, B>(A, B);
 
 impl Foo<i32, f32> {

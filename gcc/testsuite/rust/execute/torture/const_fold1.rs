@@ -1,4 +1,7 @@
 // { dg-additional-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
 const fn const_fn() -> usize {
     4
 }

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct S { a: i32, b: i32, c: u8, a: i128 }
 // { dg-error "field .a. is already declared" "" { target *-*-* } .-1 }
 

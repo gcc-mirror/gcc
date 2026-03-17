@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 trait Foo {
     const BAR: u32;
 }

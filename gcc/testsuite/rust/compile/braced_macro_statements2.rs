@@ -1,5 +1,8 @@
 // Output of statement macros is always parsed as a statement, so no semicolon
 // is needed on the inner macro.
+#![feature(no_core)]
+#![no_core]
+
 
 macro_rules! m {
     (macro) => { m!(stmts) };

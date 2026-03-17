@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() -> i32 {
     let foo @ (bar, _, _) = (0, 2, 3);
     let mut ret = 1;

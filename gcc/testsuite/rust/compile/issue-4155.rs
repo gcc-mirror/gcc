@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct Bug {
     inner: [(); match Vec::new {
         f @  |n() => 1

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub fn test() {
     let a;
     a = 1;

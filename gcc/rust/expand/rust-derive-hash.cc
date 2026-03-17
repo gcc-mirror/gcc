@@ -77,14 +77,17 @@ DeriveHash::hash_impl (
   std::unique_ptr<AssociatedItem> &&hash_fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  auto hash_path = builder.type_path ({"core", "hash", "Hash"}, true);
+  auto hash_path = [this] () {
+    return builder.type_path ({"core", "hash", "Hash"}, true);
+  };
 
   auto trait_items = vec (std::move (hash_fn));
 
-  auto generics = setup_impl_generics (name, type_generics,
-				       builder.trait_bound (hash_path));
+  auto generics = setup_impl_generics (name, type_generics, [&, this] () {
+    return builder.trait_bound (hash_path ());
+  });
 
-  return builder.trait_impl (hash_path, std::move (generics.self_type),
+  return builder.trait_impl (hash_path (), std::move (generics.self_type),
 			     std::move (trait_items),
 			     std::move (generics.impl));
 }

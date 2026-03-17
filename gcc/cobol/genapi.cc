@@ -1202,6 +1202,56 @@ parser_statement_begin( const cbl_name_t statement_name,
   sv_is_i_o = false;
   }
 
+void
+parser_statement_end( const std::list<cbl_field_t*>&flist)
+  {
+  SHOW_PARSE
+    {
+    SHOW_PARSE_HEADER
+    char *psz = xasprintf(" List has %ld elements", flist.size());
+    SHOW_PARSE_TEXT(psz);
+    free(psz);
+    SHOW_PARSE_END
+    }
+  TRACE1
+    {
+    TRACE1_HEADER
+    char *psz = xasprintf(" List has %ld elements", flist.size());
+    TRACE1_TEXT(psz);
+    free(psz);
+    TRACE1_END
+    }
+  if( flist.size() )
+    {
+    for( auto field : flist )
+      {
+      SHOW_PARSE
+        {
+        SHOW_PARSE_INDENT
+        char *psz = xasprintf("Deallocating %s", field->name);
+        SHOW_PARSE_TEXT(psz);
+        free(psz);
+        }
+      TRACE1
+        {
+        TRACE1_INDENT
+        char *psz = xasprintf(" Deallocating %s", field->name);
+        TRACE1_TEXT(psz);
+        free(psz);
+        }
+        
+      gg_free(member(field->var_decl_node, "data"));
+      // Flag this guy as free:
+      gg_assign(member(field->var_decl_node, "data"), gg_cast(UCHAR_P, null_pointer_node));
+      gg_assign(member(field->var_decl_node, "allocated"), gg_cast(SIZE_T, integer_zero_node));
+      }
+    TRACE1
+      {
+      TRACE1_END
+      }
+    }
+  }
+
 static void
 initialize_variable_internal( cbl_refer_t refer,
                               bool explicitly=false,
@@ -1221,7 +1271,9 @@ initialize_variable_internal( cbl_refer_t refer,
     return;
     }
 
-  if( parsed_var->attr & register_e )
+  if(     parsed_var->attr & register_e
+      || (   parsed_var->attr & intermediate_e
+          && parsed_var->type == FldAlphanumeric) )
     {
     return;
     }
@@ -2138,7 +2190,7 @@ compare_binary_binary(tree return_int,
 
   // Let's check for the simplified case where both left and right sides are
   // little-endian binary values:
-  
+
   if(   is_pure_integer(left_side_ref->field)
      && is_pure_integer(right_side_ref->field) )
     {
@@ -3951,7 +4003,7 @@ public:
 } label_verify;
 
 void
-parser_end_program(const char *prog_name  )
+parser_end_program(const char *prog_name )
   {
   if( gg_trans_unit.function_stack.size() )
     {
@@ -4096,7 +4148,7 @@ parser_init_list()
           "__gg__variables_to_init",
           gg_get_address_of(array),
           wsclear() ? build_string_literal(
-                                    1, 
+                                    1,
                                     reinterpret_cast<const char *>(wsclear()))
                     : null_pointer_node,
           NULL_TREE);
@@ -6359,8 +6411,8 @@ void parser_sleep(const cbl_refer_t &seconds)
   }
 
 void
-parser_exit_program(void)  // exits back to COBOL only, else continue
-  {
+parser_exit_program()
+  { // exits back to COBOL only, else continue
   static cbl_label_t this_program = {};
   static cbl_refer_t magic_refer(&this_program, false);
   parser_exit( magic_refer );
@@ -6374,7 +6426,8 @@ parser_exit_program(void)  // exits back to COBOL only, else continue
 
 static
 void
-program_end_stuff(cbl_refer_t refer, ec_type_t ec)
+program_end_stuff(cbl_refer_t refer,
+                  ec_type_t ec)
   {
   // This is the moral equivalent of a C "return xyz;".
 
@@ -6462,7 +6515,8 @@ program_end_stuff(cbl_refer_t refer, ec_type_t ec)
   }
 
 void
-parser_exit( const cbl_refer_t& refer, ec_type_t ec )
+parser_exit( const cbl_refer_t& refer,
+             ec_type_t ec )
   {
   Analyze();
   SHOW_PARSE
@@ -8435,7 +8489,7 @@ parser_perform_conditional( struct cbl_perform_tgt_t *tgt )
 
   // The next instructions that the parser will give us are the conditional
   // calculation, so the first thing that goes down is the condover:
-  /* The following NOP is needed to make NEXT OVER PERFORM BEFORE/AFTER UNTIL 
+  /* The following NOP is needed to make NEXT OVER PERFORM BEFORE/AFTER UNTIL
      behaves properly.  */
   insert_nop(106);
   gg_append_statement(tgt->addresses.condover[i].go_to);
@@ -8516,7 +8570,7 @@ perform_outofline_before_until(struct cbl_perform_tgt_t *tgt,
   create_iline_address_pairs(tgt);
 
   // Tag the top of the perform
-  
+
   gg_append_statement(tgt->addresses.top.label);
 
   // Go do the conditional calculation:
@@ -9776,7 +9830,7 @@ parser_file_add(struct cbl_file_t *file)
     }
   if( varies.max < symbol_file_record(file)->data.capacity())
     {
-    const charmap_t *charmap = 
+    const charmap_t *charmap =
                      __gg__get_charmap(current_encoding(display_encoding_e));
     varies.min *= charmap->stride();
     varies.max *= charmap->stride();
@@ -15805,13 +15859,6 @@ mh_source_is_literalA(const cbl_refer_t &destref,
     cbl_encoding_t encoding_dest =   destref.field->codeset.encoding;
     charmap_t *charmap_dest = __gg__get_charmap(encoding_dest);
 
-    if(    destref.refmod.from
-        || destref.refmod.len )
-      {
-      // Let the move routine know to treat the destination as alphanumeric
-      gg_attribute_bit_set(destref.field, refmod_e);
-      }
-
     static char *buffer = NULL;
     static size_t buffer_size = 0;
     size_t source_length;
@@ -15911,7 +15958,7 @@ mh_source_is_literalA(const cbl_refer_t &destref,
     if( (   destref.field->type == FldAlphanumeric
          || destref.field->type == FldGroup )
        && !(destref.field->attr & any_length_e)
-       && !sourceref.all                         
+       && !sourceref.all
        && !size_error)
       {
       // A simple alpha-to-alpha move is possible
@@ -15947,6 +15994,7 @@ mh_source_is_literalA(const cbl_refer_t &destref,
         }
       else
         {
+        // The refer has some information in it.
         gg_memcpy(gg_add(member(destref.field->var_decl_node, "data"),
                          refer_offset(destref)),
                   build_string_literal(dest_bytes, src),
@@ -15957,7 +16005,12 @@ mh_source_is_literalA(const cbl_refer_t &destref,
     else
       {
       // This is more complicated than a simple alpha-to-alpha move
-
+      if(    destref.refmod.from
+          || destref.refmod.len )
+        {
+        // Let the move routine know to treat the destination as alphanumeric
+        gg_attribute_bit_set(destref.field, refmod_e);
+        }
       // If the source is flagged ALL, or if we are setting the destination to
       // a figurative constant, pass along the ALL bit:
       int rounded_parameter = rounded
@@ -15990,17 +16043,80 @@ mh_source_is_literalA(const cbl_refer_t &destref,
                                 build_int_cst_type( SIZE_T, outlength),
                                 NULL_TREE);
         }
+      if(    destref.refmod.from
+          || destref.refmod.len )
+        {
+        // Return that value to its original form
+        gg_attribute_bit_clear(destref.field, refmod_e);
+        }
       }
 
-    if(    destref.refmod.from
-        || destref.refmod.len )
-      {
-      // Return that value to its original form
-      gg_attribute_bit_clear(destref.field, refmod_e);
-      }
     moved = true;
     }
   return moved;
+  }
+
+static bool
+have_common_parent(const cbl_refer_t &destref,
+                   const cbl_refer_t &sourceref)
+  {
+  /* We are trying to lay down fast code when possible.  But sometimes we have
+     to go slower in order to be accurate. The COBOL specification explicitly
+     says that when the storage areas of sending and receiving operands
+     overlap:
+      1) When the data items are not described by the same data description
+         entry, the result of the statement is undefined.
+      2)  When the data items are described by the same data description entry,
+          the result of the statement is the same as if the data items shared
+          no part of their respective storage areas.
+
+     There is an additional paragraph:
+      In the case of reference modification, the unique data item produced by
+      reference modification is not considered to be the same data description
+      entry as any other data description entry. Therefore, if an overlapping
+      situation exists, the results of the operation are undefined.
+
+      This routine will return TRUE when neither reference is a refmod, and
+      both operands ultimately have the same parent (indicating that they are
+      part of the same data description.
+
+      The point is that when we return True, then the two are not refmods, and
+      they have a common parent, so we have to use a memmove.  When we return
+      False, then we can use a faster memcpy.
+      */
+  bool retval = true;
+  if( destref.is_refmod_reference() )
+    {
+    retval = false;
+    }
+  else if( sourceref.is_refmod_reference() )
+    {
+    retval = false;
+    }
+  else
+    {
+    // Neither is a refmod.  Check for common parentage:
+    const cbl_field_t *poppa = destref.field;
+    const cbl_field_t *momma = sourceref.field;
+    while( parent_of(poppa) )
+      {
+      // Follow the first family_tree up as far as we can.
+      poppa = parent_of(poppa);
+      }
+    while( parent_of(momma) )
+      {
+      // Follow the second family_tree up as far as we can.
+      momma = parent_of(momma);
+      }
+    if( poppa != momma )
+      {
+      /* Okay, so the analogy breaks down.  Think of momma and poppa as
+         bacteria, or something.  */
+      retval = false;
+      }
+    }
+
+  return retval;
   }
 
 static bool
@@ -16016,8 +16132,6 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
      && destref.field->type   == FldAlphanumeric
      && !size_error
      && sourceref.field->codeset.encoding == destref.field->codeset.encoding
-     && !destref.refmod.from
-     && !destref.refmod.len
      && !(destref.field->attr   & rjust_e)
      && !(sourceref.field->attr & any_length_e)
      && !(destref.field->attr   & any_length_e)
@@ -16025,6 +16139,9 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
      && !sourceref.all
      )
     {
+    void (*mover)(tree, tree, tree); // dest, source, count
+    mover = have_common_parent(destref, sourceref) ? gg_memmove : gg_memcpy;
+
     // We are in a position to simply move bytes from the source to the dest.
     if( refer_is_clean(sourceref) && refer_is_clean(destref) )
       {
@@ -16032,7 +16149,7 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
       if( destref.field->data.capacity() <= sourceref.field->data.capacity() )
         {
         // This is the simplest case of all
-        gg_memcpy(member(  destref.field->var_decl_node, "data"),
+        mover(member(  destref.field->var_decl_node, "data"),
                   member(sourceref.field->var_decl_node, "data"),
                   build_int_cst_type(SIZE_T, destref.field->data.capacity()));
         moved = true;
@@ -16041,7 +16158,7 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
         {
         // This is a tad more complicated.  The source is too short, so we need
         // to copy over what we can...
-        gg_memcpy(member(  destref.field->var_decl_node, "data"),
+        mover(member(  destref.field->var_decl_node, "data"),
                  member(sourceref.field->var_decl_node, "data"),
                  build_int_cst_type(SIZE_T, sourceref.field->data.capacity()));
         // And then space-fill the rest:
@@ -16055,7 +16172,7 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
                         charmap->mapped_character(ascii_space),
                         fill_bytes);
         // ...and then copy those spaces into place.
-        gg_memcpy(
+        mover(
           gg_add(member(destref.field->var_decl_node, "data"),
                  build_int_cst_type(SIZE_T, sourceref.field->data.capacity())),
           build_string_literal(fill_bytes, spaces),
@@ -16064,10 +16181,96 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
         moved = true;
         }
       }
-    else
+
+    if( !refer_is_clean(sourceref) && refer_is_clean(destref) )
       {
-      // Either the source or the dest is a table or refmod, so we need to do
-      // more work.
+      // The source is dirty, but the destination is clean:
+      tree source_data;
+      tree source_len;
+
+      tree dest_data;
+      tree dest_len;
+
+      source_data = gg_add(member(sourceref.field->var_decl_node, "data"),
+                           refer_offset(sourceref));
+      source_len = refer_size_source(sourceref);
+
+      dest_data = member(destref.field->var_decl_node, "data");
+
+      dest_len = build_int_cst_type(SIZE_T, destref.field->data.capacity());
+      IF( source_len, ge_op, dest_len )
+        {
+        // The source has enough (or more) bytes to fill the destination:
+        mover(dest_data, source_data, dest_len);
+        }
+      ELSE
+        {
+        // The source data is too short.  We need to copy over what we have...
+        mover(dest_data, source_data, source_len);
+
+        // And then right-fill the remainder with spaces. Create a buffer with
+        // more than enough spaces for our purposes:
+        size_t fill_bytes = destref.field->data.capacity();
+        char *spaces = static_cast<char *>(xmalloc(fill_bytes));
+        charmap_t *charmap =__gg__get_charmap(destref.field->codeset.encoding);
+        charmap->memset(spaces,
+                        charmap->mapped_character(ascii_space),
+                        fill_bytes);
+        // And then copy enough of those spaces into place.
+        mover(gg_add(dest_data, source_len),
+                  build_string_literal(fill_bytes, spaces),
+                  gg_subtract(dest_len, source_len));
+        free(spaces);
+        }
+      ENDIF
+      moved = true;
+      }
+    if( refer_is_clean(sourceref) && !refer_is_clean(destref) )
+      {
+      // The source is clean but the destination is dirty:
+      tree source_data;
+      tree source_len;
+
+      tree dest_data;
+      tree dest_len ;
+
+      source_data = member(sourceref.field->var_decl_node, "data");
+      source_len  = build_int_cst_type(SIZE_T,
+                                       sourceref.field->data.capacity());
+      dest_data = gg_add(member(destref.field->var_decl_node, "data"),
+                         refer_offset(destref));
+      dest_len = refer_size_dest(destref);
+      IF( source_len, ge_op, dest_len )
+        {
+        // The source has enough (or more) bytes to fill the destination:
+        mover(dest_data, source_data, dest_len);
+        }
+      ELSE
+        {
+        // The source data is too short.  We need to copy over what we have...
+        mover(dest_data, source_data, source_len);
+
+        // And then right-fill the remainder with spaces. Create a buffer with
+        // more than enough spaces for our purposes:
+        size_t fill_bytes = destref.field->data.capacity();
+        char *spaces = static_cast<char *>(xmalloc(fill_bytes));
+        charmap_t *charmap =__gg__get_charmap(destref.field->codeset.encoding);
+        charmap->memset(spaces,
+                        charmap->mapped_character(ascii_space),
+                        fill_bytes);
+        // And then copy enough of those spaces into place.
+        mover(gg_add(dest_data, source_len),
+                  build_string_literal(fill_bytes, spaces),
+                  gg_subtract(dest_len, source_len));
+        free(spaces);
+        }
+      ENDIF
+
+      moved = true;
+      }
+    if( !refer_is_clean(sourceref) && !refer_is_clean(destref) )
+      {
+      // Both the source and the dest are "dirty"
       tree source_data = gg_define_variable(UCHAR_P);
       tree source_len  = gg_define_variable(SIZE_T);
 
@@ -16086,12 +16289,12 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
       IF( source_len, ge_op, dest_len )
         {
         // The source has enough (or more) bytes to fill the destination:
-        gg_memcpy(dest_data, source_data, dest_len);
+        mover(dest_data, source_data, dest_len);
         }
       ELSE
         {
         // The source data is too short.  We need to copy over what we have...
-        gg_memcpy(dest_data, source_data, source_len);
+        mover(dest_data, source_data, source_len);
 
         // And then right-fill the remainder with spaces. Create a buffer with
         // more than enough spaces for our purposes:
@@ -16102,7 +16305,7 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
                         charmap->mapped_character(ascii_space),
                         fill_bytes);
         // And then copy enough of those spaces into place.
-        gg_memcpy(gg_add(dest_data, source_len),
+        mover(gg_add(dest_data, source_len),
                   build_string_literal(fill_bytes, spaces),
                   gg_subtract(dest_len, source_len));
         free(spaces);
@@ -16733,12 +16936,20 @@ psa_new_var_decl(cbl_field_t *new_var, const char *external_record_base)
               && new_var->type != FldLiteralA
               && new_var->type != FldLiteralN )
       {
-//      new_var_decl = gg_define_variable(  cblc_field_type_node,
-//                                          base_name,
-//                                          vs_static);
+      gg_variable_scope_t scope = vs_stack;
+      if( new_var->type == FldAlphanumeric )
+        {
+        // This has to be static, because we are putting the actual memory
+        // on the heap.  But if we put the cblc_field_t on the stack inside
+        // of a condition, or in a loop, we just keep recreating the field
+        // without getting freeing the memory.  Eventually, with perhaps a
+        // two-pass compiler, we'll be able to create the stack cblc_field_t
+        // once per program-id.
+        scope = vs_static;
+        }
       new_var_decl = gg_define_variable(  cblc_field_type_node,
                                           base_name,
-                                          vs_stack);
+                                          scope);
       SET_DECL_MODE(new_var_decl, BLKmode);
       }
     else
@@ -16930,7 +17141,9 @@ parser_symbol_add(struct cbl_field_t *new_var )
         || new_var->type == FldLiteralA
         )
       {
-      if( new_var->data.initial && new_var->data.capacity() )
+      if(    new_var->data.initial
+          && new_var->data.capacity()
+          && !(new_var->attr & intermediate_e) )
         {
         SHOW_PARSE_INDENT
         for(size_t i=0; i<new_var->data.capacity(); i++)
@@ -16962,29 +17175,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
   if( new_var->var_decl_node )
     {
-    if( new_var->type != FldConditional )
-      {
-      // There is a possibility when re-using variables that a temporary that
-      // was created at compile time might not have a data pointer at run time.
-      if( new_var->attr & (intermediate_e) )
-        {
-        IF( member(new_var->var_decl_node, "allocated"),
-            lt_op,
-            member(new_var->var_decl_node, "capacity") )
-          {
-          gg_free(member(new_var, "data"));
-          gg_assign(member(new_var, "data"),
-                    gg_cast(UCHAR_P, gg_malloc(new_var->data.capacity())));
-          gg_assign(member(new_var, "allocated"),
-                    build_int_cst_type(SIZE_T, new_var->data.capacity()));
-          }
-        ELSE
-          {
-          }
-        ENDIF
-        }
-      }
-    else
+    if( new_var->type == FldConditional )
       {
       gg_assign(new_var->var_decl_node, boolean_false_node);
       }
@@ -17310,7 +17501,9 @@ parser_symbol_add(struct cbl_field_t *new_var )
      * 4.  cbl_field_data_t::capacity is 0 because it requires no working storage
      */
 
-    if( new_var->data.capacity() == 0
+    if(    new_var->data.capacity() == 0
+        && !(   new_var->type == FldAlphanumeric
+             && new_var->attr & intermediate_e)
         && new_var->level != 88
         && new_var->type  != FldClass
         && new_var->type  != FldLiteralN
@@ -17382,7 +17575,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
           bytes_to_allocate = 1;
           }
 
-        if( !bytes_to_allocate )
+        if( !bytes_to_allocate && !(new_var->attr & intermediate_e) )
           {
           cbl_internal_error( "%<bytes_to_allocate%> is zero for %s (symbol number "
                               HOST_SIZE_T_PRINT_DEC ")",
@@ -17408,49 +17601,60 @@ parser_symbol_add(struct cbl_field_t *new_var )
             }
           }
 
-        if( bytes_to_allocate )
+        if(   new_var->attr & intermediate_e
+           && new_var->type == FldAlphanumeric )
           {
-          // We need a unique name for the allocated data for this COBOL variable:
-          char achDataName[256];
-          if( new_var->attr & external_e )
+          // We don't allocate here for intermediates.  We instead use
+          // malloc() in the library when a run-time value is assigned to this
+          // variable
+          data_area = null_pointer_node;
+          }
+        else
+          {
+          if( bytes_to_allocate )
             {
-            sprintf(achDataName, "%s", new_var->name);
-            }
-          else if( new_var->name[0] == '_' )
-            {
-            // Avoid doubling up on leading underscore
-            sprintf(achDataName,
-                    "%s_data_" HOST_SIZE_T_PRINT_UNSIGNED,
-                    new_var->name,
-                    (fmt_size_t)sv_data_name_counter++);
-            }
-          else
-            {
-            sprintf(achDataName,
-                    "_%s_data_" HOST_SIZE_T_PRINT_UNSIGNED,
-                    new_var->name,
-                    (fmt_size_t)sv_data_name_counter++);
-            }
+            // We need a unique name for the allocated data for this COBOL variable:
+            char achDataName[256];
+            if( new_var->attr & external_e )
+              {
+              sprintf(achDataName, "%s", new_var->name);
+              }
+            else if( new_var->name[0] == '_' )
+              {
+              // Avoid doubling up on leading underscore
+              sprintf(achDataName,
+                      "%s_data_" HOST_SIZE_T_PRINT_UNSIGNED,
+                      new_var->name,
+                      (fmt_size_t)sv_data_name_counter++);
+              }
+            else
+              {
+              sprintf(achDataName,
+                      "_%s_data_" HOST_SIZE_T_PRINT_UNSIGNED,
+                      new_var->name,
+                      (fmt_size_t)sv_data_name_counter++);
+              }
 
-          if( new_var->attr & external_e )
-            {
-            tree array_type = build_array_type_nelts(UCHAR, bytes_to_allocate);
-            new_var->data_decl_node = gg_define_variable(
-                                array_type,
-                                achDataName,
-                                vs_external);
-            data_area = gg_get_address_of(new_var->data_decl_node);
-            }
-          else
-            {
-            gg_variable_scope_t vs_scope = (new_var->attr & intermediate_e)
-                                            ? vs_stack : vs_static ;
-            tree array_type = build_array_type_nelts(UCHAR, bytes_to_allocate);
-            new_var->data_decl_node = gg_define_variable(
-                                array_type,
-                                achDataName,
-                                vs_scope);
-            data_area = gg_get_address_of(new_var->data_decl_node);
+            if( new_var->attr & external_e )
+              {
+              tree array_type = build_array_type_nelts(UCHAR, bytes_to_allocate);
+              new_var->data_decl_node = gg_define_variable(
+                                  array_type,
+                                  achDataName,
+                                  vs_external);
+              data_area = gg_get_address_of(new_var->data_decl_node);
+              }
+            else
+              {
+              gg_variable_scope_t vs_scope = (new_var->attr & intermediate_e)
+                                              ? vs_stack : vs_static ;
+              tree array_type = build_array_type_nelts(UCHAR, bytes_to_allocate);
+              new_var->data_decl_node = gg_define_variable(
+                                  array_type,
+                                  achDataName,
+                                  vs_scope);
+              data_area = gg_get_address_of(new_var->data_decl_node);
+              }
             }
           }
         }

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct A { // { dg-warning "struct is never constructed" }
     a: u32
 }

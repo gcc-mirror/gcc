@@ -143,17 +143,16 @@ class cdf_directives_t
 {
   template <typename T>
   class cdf_stack_t : private std::stack<T> { // cppcheck-suppress noConstructor
-    T default_value;
+    T current_value;
     const T& top() const { return std::stack<T>::top(); }
     bool empty() const { return std::stack<T>::empty(); }
    public:
     void value( const T& value ) {
-      T& output( empty()? default_value : std::stack<T>::top() ); // cppcheck-suppress constVariableReference
-      output = value;
-      dbgmsg("cdf_directives_t::%s: %s", __func__, str(output).c_str());
+      current_value = value;
+      dbgmsg("cdf_directives_t::%s: %s", __func__, str(current_value).c_str());
     }
     T& value() {
-      return empty()? default_value : std::stack<T>::top();
+      return current_value;
     }
     void push() {
       std::stack<T>::push(value());
@@ -164,9 +163,9 @@ class cdf_directives_t
         error_msg(YYLTYPE(), "CDF stack empty"); // cppcheck-suppress syntaxError
         return;
       }
-      default_value = top();
+      current_value = top();
       std::stack<T>::pop();
-      dbgmsg("cdf_directives_t::%s: %s", __func__, str(default_value).c_str());
+      dbgmsg("cdf_directives_t::%s: %s", __func__, str(current_value).c_str());
     }
   protected:
     static std::string str(cbl_call_convention_t arg) {
@@ -237,6 +236,8 @@ cdf_dictionary() {
 void
 cobol_set_indicator_column( int column ) {
   cdf_directives.source_format.value().indicator_column_set(column);
+  dbgmsg("%s: format now %s", __func__,
+         cdf_directives.source_format.value().description());
 }
 source_format_t& cdf_source_format() {
   return cdf_directives.source_format.value();
@@ -252,14 +253,22 @@ void cdf_push_call_convention() { cdf_directives.call_convention.push(); }
 void cdf_push_current_tokens() { cdf_directives.cobol_words.push(); }
 void cdf_push_dictionary() { cdf_directives.dictionary.push(); }
 void cdf_push_enabled_exceptions() { cdf_directives.enabled_exceptions.push(); }
-void cdf_push_source_format() { cdf_directives.source_format.push(); }
+void cdf_push_source_format() {
+  cdf_directives.source_format.push();
+  dbgmsg("%s: format still %s", __func__,
+         cdf_directives.source_format.value().description());
+}
 
 void cdf_pop() { cdf_directives.pop(); }
 void cdf_pop_call_convention() { cdf_directives.call_convention.pop(); }
 void cdf_pop_current_tokens() { cdf_directives.cobol_words.pop(); }
 void cdf_pop_dictionary() { cdf_directives.dictionary.pop(); }
 void cdf_pop_enabled_exceptions() { cdf_directives.enabled_exceptions.pop(); }
-void cdf_pop_source_format() { cdf_directives.source_format.pop(); }
+void cdf_pop_source_format() {
+  cdf_directives.source_format.pop();
+  dbgmsg("%s: format now %s", __func__,
+         cdf_directives.source_format.value().description());
+}
 
 /*
  * Construct a cbl_field_t from a CDF literal, to be installed in the symbol table.
@@ -2643,16 +2652,11 @@ parent_names( const symbol_elem_t *elem,
 
   if( is_filler(cbl_field_of(elem)) ) return;
 
-  // dbgmsg("%s: asked about %s of %s (" HOST_SIZE_T_PRINT_UNSIGNED " away)", __func__,
-  //       cbl_field_of(elem)->name,
-  //       cbl_field_of(group)->name, (fmt_size_t)(elem - group));
-
   for( const symbol_elem_t *e=elem; e && group < e; e = symbol_parent(e) ) {
     names.push_front( cbl_field_of(e)->name );
   }
 }
 
-extern int yylineno;
 class find_corresponding {
 public:
   enum type_t { arith_op, move_op };
@@ -2966,6 +2970,7 @@ bool cobol_filename( const char *name, ino_t inode ) {
   linemap_add(line_table, LC_ENTER, sysp, name, 1);
   input_filename_vestige = name;
   bool pushed = input_filenames.push( input_file_t(name, inode, 1) );
+  dbgmsg("%s: %s %s", __func__, pushed? "pushed" : "set to", name);
   return pushed;
 }
 
@@ -2974,6 +2979,8 @@ cobol_lineno( int lineno ) {
   if( input_filenames.empty() ) return NULL;
   auto& input( input_filenames.top() );
   input.lineno = lineno;
+  dbgmsg("%s:%d: saved %s, line %d", __func__, __LINE__,
+         input.name, input.lineno);
   return input.name;
 }
 
@@ -2992,6 +2999,8 @@ cobol_lineno() {
   if( input_filenames.empty() ) return 0;
   size_t n = input_filenames.size() < 2? 0 : 1;
   const auto& input( input_filenames.peek(n) );
+  dbgmsg("%s:%d: fetch %s, line %d", __func__, __LINE__,
+         input.name, input.lineno);
   return input.lineno;
 }
 
@@ -3008,10 +3017,9 @@ cobol_filename_restore() {
   old_filenames[top.name] = top.inode;
   input_filename_vestige = top.name;
 
-  input_filenames.pop();
-  if( input_filenames.empty() ) return;
+  dbgmsg("%s: LEAVE %s", __func__, top.name);
 
-  const auto& input = input_filenames.top();
+  input_filenames.pop();
 
   linemap_add(line_table, LC_LEAVE, sysp, NULL, 0);
 }

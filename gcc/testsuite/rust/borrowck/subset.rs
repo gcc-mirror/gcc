@@ -1,5 +1,8 @@
 // { dg-additional-options "-frust-compile-until=compilation -frust-borrowcheck -fdiagnostics-show-caret -fdiagnostics-show-line-numbers" }
 // { dg-enable-nn-line-numbers "" }
+#![feature(no_core)]
+#![no_core]
+
 
 fn missing_subset<'a, 'b>(x: &'a u32, y: &'b u32) -> &'a u32 {
     // { dg-error "subset error, some lifetime constraints need to be added" "" { target *-*-* } .-1 }

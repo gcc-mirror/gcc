@@ -1,5 +1,8 @@
 /* { dg-output "a == b\r*\na != c\r*\na >= c\r*\na <= b\r*\na > c\r*\nc < b\r*\n" } */
 /* { dg-options "-w" } */
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(intrinsics, lang_items)]
 

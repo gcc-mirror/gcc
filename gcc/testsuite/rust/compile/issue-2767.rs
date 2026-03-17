@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-edition=2018" }
+#![feature(no_core)]
+#![no_core]
+
 trait Foo {
     fn f() -> u32;
 }

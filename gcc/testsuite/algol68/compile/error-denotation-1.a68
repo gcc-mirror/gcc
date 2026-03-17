@@ -1,0 +1,4 @@
+{ dg-options {-fstropping=supper} }
+begin int i0 := 123456789012345678901234567890; { dg-error "denotation is too large for int" }
+      skip
+end

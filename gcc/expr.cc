@@ -5976,9 +5976,9 @@ mem_ref_refers_to_non_mem_p (tree ref)
 static bool
 store_field_updates_msb_p (poly_int64 bitpos, poly_int64 bitsize, rtx to_rtx)
 {
-  poly_int64 to_size = GET_MODE_SIZE (GET_MODE (to_rtx));
-  poly_int64 bitnum = BYTES_BIG_ENDIAN ? to_size - bitsize - bitpos : bitpos;
-  return maybe_eq (bitnum + bitsize, to_size);
+  return (BYTES_BIG_ENDIAN
+	  ? maybe_le (bitpos, 0)
+	  : maybe_ge (bitpos + bitsize, GET_MODE_BITSIZE (GET_MODE (to_rtx))));
 }
 
 /* Expand an assignment that stores the value of FROM into TO.  If NONTEMPORAL

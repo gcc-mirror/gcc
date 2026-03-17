@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 extern crate generic_function_1;
 use generic_function_1::generic_function;
 

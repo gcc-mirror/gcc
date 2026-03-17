@@ -1,5 +1,8 @@
 // { dg-additional-options "-frust-compile-until=compilation -frust-borrowcheck -fdiagnostics-show-caret -fdiagnostics-show-line-numbers" }
 // { dg-enable-nn-line-numbers "" }
+#![feature(no_core)]
+#![no_core]
+
 pub fn use_while_mut_fr(x: &mut i32) -> &mut i32 {
     let y = &mut *x;
     let z = x; //~ ERROR

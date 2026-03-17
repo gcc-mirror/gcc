@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #![feature(negative_impls, lang_items)]
 
 #[lang = "sized"]

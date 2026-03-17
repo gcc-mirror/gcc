@@ -56,10 +56,9 @@
 # include <bits/ranges_util.h>          // ranges::subrange
 #endif
 
-#if __cplusplus > 202302L
+#if __glibcxx_to_string >= 202306L // C++ >= 26
 # include <charconv>
 #endif
-
 
 #if ! _GLIBCXX_USE_CXX11_ABI
 # include "cow_string.h"

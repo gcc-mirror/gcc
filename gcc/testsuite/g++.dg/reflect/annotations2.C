@@ -16,8 +16,8 @@ namespace [[=7]] [[= 7 + 1]] [[= 7 + 2]] N
 struct B { constexpr B () : b (42) {} int b; };
 [[=B ()]] int d;
 struct C { constexpr C () : c (42) {} int c; ~C () {} };
-[[=C ()]] int e;						// { dg-error "temporary of non-literal type 'C' in a constant expression" }
-								// { dg-error "annotation does not have structural type" "" { target *-*-* } .-1 }
+[[=C ()]] int e;						// { dg-error "temporary of non-literal type 'C' in a constant expression" "" { target { ! implicit_constexpr } } }
+								// { dg-error "annotation does not have structural type" "" { target { ! implicit_constexpr } } .-1 }
 struct D { constexpr D () : d (42) {} volatile int d; };
 [[=D ()]] int f;						// { dg-error "temporary of non-literal type 'D' in a constant expression" }
 								// { dg-error "annotation does not have structural type" "" { target *-*-* } .-1 }

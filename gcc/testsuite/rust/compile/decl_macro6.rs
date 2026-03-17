@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #![feature(decl_macro)]
 macro m {}
 // { dg-error "unexpected token .\}. - expecting delimiters .for a macro matcher." "" { target *-*-* } .-1 }

@@ -1,4 +1,7 @@
 /* { dg-output "bar foo baz foobar\r*\n" } */
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     fn printf(s: *const i8, ...);
     fn memchr(s: *const i8, c: u8, n: usize) -> *const i8;

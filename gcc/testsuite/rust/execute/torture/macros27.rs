@@ -1,4 +1,7 @@
 // { dg-additional-options "-frust-cfg=A" }
+#![feature(no_core)]
+#![no_core]
+
 
 macro_rules! attr {
     (#[$attr:meta] $s:stmt) => {

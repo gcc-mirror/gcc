@@ -32,7 +32,9 @@
 #include <bits/move.h>				// for __addressof
 #include <bits/stl_iterator_base_types.h>	// for iterator_traits,
 						// categories and _Iter_base
-#include <bits/cpp_type_traits.h>		// for __is_integer
+#if __cplusplus < 201103L
+# include <bits/cpp_type_traits.h>		// for __is_integer
+#endif
 
 #include <bits/stl_pair.h>			// for pair
 
@@ -58,8 +60,12 @@ namespace __gnu_debug
       __dp_exact		//< Can determine distance precisely
     };
 
+#if __cplusplus >= 201103L
+  template<typename _Iterator>
+#else
   template<typename _Iterator,
 	   typename = typename std::__is_integer<_Iterator>::__type>
+#endif
     struct _Distance_traits
     {
     private:
@@ -80,9 +86,11 @@ namespace __gnu_debug
       typedef std::pair<_DiffType, _Distance_precision> __type;
     };
 
+#if __cplusplus < 201103L
   template<typename _Integral>
     struct _Distance_traits<_Integral, std::__true_type>
     { typedef std::pair<std::ptrdiff_t, _Distance_precision> __type; };
+#endif
 
   /** Determine the distance between two iterators with some known
    *	precision.
@@ -141,18 +149,14 @@ namespace __gnu_debug
     __check_singular(_Tp* const& __ptr)
     { return __ptr == 0; }
 
-  /** We say that integral types for a valid range, and defer to other
-   *  routines to realize what to do with integral types instead of
-   *  iterators.
-  */
+#if __cplusplus < 201103L
+  // In case of integral type no assertions.
   template<typename _Integral>
-    _GLIBCXX_CONSTEXPR
     inline bool
     __valid_range_aux(_Integral, _Integral, std::__true_type)
     { return true; }
 
   template<typename _Integral>
-    _GLIBCXX20_CONSTEXPR
     inline bool
     __valid_range_aux(_Integral, _Integral,
 		      typename _Distance_traits<_Integral>::__type& __dist,
@@ -161,6 +165,7 @@ namespace __gnu_debug
       __dist = std::make_pair(0, __dp_none);
       return true;
     }
+#endif
 
   template<typename _InputIterator>
     _GLIBCXX_CONSTEXPR
@@ -189,25 +194,37 @@ namespace __gnu_debug
 	&& __first <= __last;
     }
 
+#if __cplusplus >= 201103L
+  template<typename _InputIterator>
+    constexpr bool
+    __valid_range(_InputIterator __first, _InputIterator __last)
+#else
   /** We have iterators, so figure out what kind of iterators they are
    *  to see if we can check the range ahead of time.
   */
   template<typename _InputIterator>
-    _GLIBCXX_CONSTEXPR
     inline bool
     __valid_range_aux(_InputIterator __first, _InputIterator __last,
 		      std::__false_type)
+#endif
     {
       return __gnu_debug::__valid_range_aux(__first, __last,
 					    std::__iterator_category(__first));
     }
 
+#if __cplusplus >= 201103L
   template<typename _InputIterator>
     _GLIBCXX20_CONSTEXPR
+    inline bool
+    __valid_range(_InputIterator __first, _InputIterator __last,
+		  typename _Distance_traits<_InputIterator>::__type& __dist)
+#else
+  template<typename _InputIterator>
     inline bool
     __valid_range_aux(_InputIterator __first, _InputIterator __last,
 		      typename _Distance_traits<_InputIterator>::__type& __dist,
 		      std::__false_type)
+#endif
     {
       if (!__gnu_debug::__valid_range_aux(__first, __last,
 					  std::input_iterator_tag()))
@@ -232,13 +249,13 @@ namespace __gnu_debug
       return true;
     }
 
+#if __cplusplus < 201103L
   /** Don't know what these iterators are, or if they are even
    *  iterators (we may get an integral type for InputIterator), so
    *  see if they are integral and pass them on to the next phase
    *  otherwise.
   */
   template<typename _InputIterator>
-    _GLIBCXX20_CONSTEXPR
     inline bool
     __valid_range(_InputIterator __first, _InputIterator __last,
 		  typename _Distance_traits<_InputIterator>::__type& __dist)
@@ -247,6 +264,7 @@ namespace __gnu_debug
       return __gnu_debug::__valid_range_aux(__first, __last, __dist,
 					    _Integral());
     }
+#endif
 
   template<typename _Iterator, typename _Sequence, typename _Category>
     _GLIBCXX20_CONSTEXPR bool
@@ -262,14 +280,15 @@ namespace __gnu_debug
 		  typename _Distance_traits<_Iterator>::__type&);
 #endif
 
+#if __cplusplus < 201103L
   template<typename _InputIterator>
-    _GLIBCXX14_CONSTEXPR
     inline bool
     __valid_range(_InputIterator __first, _InputIterator __last)
     {
       typedef typename std::__is_integer<_InputIterator>::__type _Integral;
       return __gnu_debug::__valid_range_aux(__first, __last, _Integral());
     }
+#endif
 
   template<typename _Iterator, typename _Sequence, typename _Category>
     _GLIBCXX20_CONSTEXPR bool

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #[repr(align(8))]
 struct Foo {
     x: i16,

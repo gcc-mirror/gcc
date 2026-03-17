@@ -1,6 +1,8 @@
 /* { dg-do compile { target tail_call } } */
 /* Allow nested functions.  */
 /* { dg-options "-Wno-pedantic" } */
+/* PR middle-end/121159  */
+/* { dg-additional-options "-fdelayed-branch" { target sparc*-*-* } } */
 
 struct box { char field[64]; int i; };
 

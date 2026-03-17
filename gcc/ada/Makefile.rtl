@@ -2036,6 +2036,7 @@ ifeq ($(strip $(filter-out s390% linux%,$(target_cpu) $(target_os))),)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-gcc
   THREADSLIB = -lpthread
+  MISCLIB = -ldl
   GNATLIB_SHARED = gnatlib-shared-dual
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
@@ -2529,6 +2530,7 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-arm
   THREADSLIB = -lpthread
+  MISCLIB = -ldl
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
@@ -2968,6 +2970,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
   EH_MECHANISM=-gcc
   THREADSLIB=-lpthread -lrt
+  MISCLIB = -ldl
   GNATLIB_SHARED=gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)

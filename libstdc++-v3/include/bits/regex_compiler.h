@@ -53,7 +53,7 @@ namespace __detail
   /**
    * @brief Builds an NFA from an input iterator range.
    *
-   * The %_TraitsT type should fulfill requirements [28.3].
+   * The %_TraitsT type should fulfill the requirements in C++11 28.3 [re.req].
    */
   template<typename _TraitsT>
     class _Compiler
@@ -206,7 +206,7 @@ namespace __detail
       const _CtypeT&      _M_ctype;
     };
 
-  // [28.13.14]
+  // C++11 28.13 [re.grammar] p14
   template<typename _TraitsT, bool __icase, bool __collate>
     class _RegexTranslatorBase
     {

@@ -1,4 +1,7 @@
 // { dg-output "\r*\ntest10btrue2.15\r*\ntest10bfalse2.151\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(rustc_attrs)]
 
 #[rustc_builtin_macro]

@@ -1,4 +1,7 @@
 // { dg-output "1\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 pub fn test() -> u64 {
     let mut n = 113383; // #20 in https://oeis.org/A006884
     while n != 1 {

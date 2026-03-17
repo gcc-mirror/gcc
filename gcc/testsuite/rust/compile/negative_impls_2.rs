@@ -8,6 +8,9 @@
 //   |      ^^^^^^^^^^^^^
 //   |
 //   = note: see issue #68318 <https://github.com/rust-lang/rust/issues/68318> for more information
+#![feature(no_core)]
+#![no_core]
+
 
 // For more information about this error, try `rustc --explain E0658`.
 // error: could not compile `playground` (bin "playground") due to 1 previous error

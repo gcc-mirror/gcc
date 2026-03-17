@@ -653,6 +653,7 @@ enum tail_policy get_prefer_tail_policy ();
 enum mask_policy get_prefer_mask_policy ();
 rtx get_avl_type_rtx (enum avl_type);
 opt_machine_mode get_lmul_mode (scalar_mode, int);
+opt_machine_mode get_m1_mode (machine_mode, bool = false);
 opt_machine_mode get_vector_mode (scalar_mode, poly_uint64);
 opt_machine_mode get_tuple_mode (machine_mode, unsigned int);
 bool simm5_p (rtx);

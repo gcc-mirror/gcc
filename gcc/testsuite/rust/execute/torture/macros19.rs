@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! add {
     ($e:expr, $($es:expr),*) => {
         $e + add!($($es),*)

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 pub struct Foo(i8);
 struct Bar(pub i8); // { dg-warning "struct is never constructed: .Bar." }
 pub struct Baz {

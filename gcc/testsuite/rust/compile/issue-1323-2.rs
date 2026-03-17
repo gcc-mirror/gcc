@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn print_int(value: i32) {
     let s = "%d\n\0";
     let s_p = s as *const str;

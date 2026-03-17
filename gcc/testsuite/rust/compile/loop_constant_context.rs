@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 // { dg-error "'loop' is not allowed in const context" "" { target *-*-* } .+1 }
 const CONST_LOOP : () = loop{};
 

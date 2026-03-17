@@ -500,6 +500,17 @@ namespace __debug
 	  return { { __res.first, this }, __res.second };
 	}
 
+# ifdef __glibcxx_associative_heterogeneous_insertion
+      template <__heterogeneous_hash_key<unordered_map> _Kt, typename... _Args>
+	pair<iterator, bool>
+	try_emplace(_Kt&& __k, _Args&&... __args)
+	{
+	  auto __res = _Base::try_emplace(std::forward<_Kt>(__k),
+	    std::forward<_Args>(__args)...);
+	  return { { __res.first, this }, __res.second };
+	}
+# endif
+
       template <typename... _Args>
 	iterator
 	try_emplace(const_iterator __hint, const key_type& __k,
@@ -516,10 +527,21 @@ namespace __debug
 	try_emplace(const_iterator __hint, key_type&& __k, _Args&&... __args)
 	{
 	  __glibcxx_check_insert(__hint);
-	  return { _Base::try_emplace(__hint.base(), std::move(__k),
-				      std::forward<_Args>(__args)...),
-		   this };
+	  auto __it = _Base::try_emplace(__hint.base(), std::move(__k),
+	    std::forward<_Args>(__args)...);
+	  return { __it, this };
 	}
+# ifdef __glibcxx_associative_heterogeneous_insertion
+      template <__heterogeneous_hash_key<unordered_map> _Kt, typename... _Args>
+	iterator
+	try_emplace(const_iterator __hint, _Kt&& __k, _Args&&... __args)
+	{
+	  __glibcxx_check_insert(__hint);
+	  auto __it = _Base::try_emplace(__hint.base(),
+	    std::forward<_Kt>(__k), std::forward<_Args>(__args)...);
+	  return { __it, this };
+	}
+# endif
 
       template <typename _Obj>
 	pair<iterator, bool>
@@ -539,15 +561,26 @@ namespace __debug
 	  return { { __res.first, this }, __res.second };
 	}
 
+# ifdef __glibcxx_associative_heterogeneous_insertion
+      template <__heterogeneous_hash_key<unordered_map> _Kt, typename _Obj>
+	pair<iterator, bool>
+	insert_or_assign(_Kt&& __k, _Obj&& __obj)
+	{
+	  auto __res = _Base::insert_or_assign(
+	    std::forward<_Kt>(__k), std::forward<_Obj>(__obj));
+	  return { { __res.first, this }, __res.second };
+	}
+# endif
+
       template <typename _Obj>
 	iterator
 	insert_or_assign(const_iterator __hint, const key_type& __k,
 			 _Obj&& __obj)
 	{
 	  __glibcxx_check_insert(__hint);
-	  return { _Base::insert_or_assign(__hint.base(), __k,
-					   std::forward<_Obj>(__obj)),
-		   this };
+	  auto __it = _Base::insert_or_assign(__hint.base(), __k,
+	    std::forward<_Obj>(__obj));
+	  return { __it, this };
 	}
 
       template <typename _Obj>
@@ -555,10 +588,23 @@ namespace __debug
 	insert_or_assign(const_iterator __hint, key_type&& __k, _Obj&& __obj)
 	{
 	  __glibcxx_check_insert(__hint);
-	  return { _Base::insert_or_assign(__hint.base(), std::move(__k),
-					   std::forward<_Obj>(__obj)),
-		   this };
+	  auto __it = _Base::insert_or_assign(__hint.base(), std::move(__k),
+	    std::forward<_Obj>(__obj));
+	  return { __it, this };
 	}
+
+# ifdef __glibcxx_associative_heterogeneous_insertion
+      template <__heterogeneous_hash_key<unordered_map> _Kt, typename _Obj>
+	iterator
+	insert_or_assign(const_iterator __hint, _Kt&& __k, _Obj&& __obj)
+	{
+	  __glibcxx_check_insert(__hint);
+	  auto __it = _Base::insert_or_assign(__hint.base(),
+	    std::forward<_Kt>(__k), std::forward<_Obj>(__obj));
+	  return { __it, this };
+	}
+# endif
+
 #endif // C++17
 
 #ifdef __glibcxx_node_extract // >= C++17 && HOSTED
@@ -580,6 +626,18 @@ namespace __debug
 	  return _M_extract(__position);
 	return {};
       }
+
+# ifdef __glibcxx_associative_heterogeneous_erasure
+      template <__heterogeneous_hash_key<unordered_map> _Kt>
+	node_type
+	extract(_Kt&& __key)
+	{
+	  const auto __position = _Base::find(__key);
+	  if (__position != _Base::end())
+	    return _M_extract(__position);
+	  return {};
+	}
+#endif
 
       insert_return_type
       insert(node_type&& __nh)
@@ -713,6 +771,18 @@ namespace __debug
 	return __ret;
       }
 
+# ifdef __glibcxx_associative_heterogeneous_erasure
+      template <__heterogeneous_hash_key<unordered_map> _Kt>
+	size_type
+	erase(_Kt&& __key)
+	{
+	  auto __victim = _Base::find(__key);
+	  if (__victim != _Base::end())
+	    return _M_erase(__victim), 1;
+	  return 0;
+	}
+#endif
+
       iterator
       erase(const_iterator __it)
       {
@@ -738,18 +808,19 @@ namespace __debug
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
-	for (auto __tmp = __first.base(); __tmp != __last.base(); ++__tmp)
-	  {
-	    _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::cend(),
-				  _M_message(__gnu_debug::__msg_valid_range)
-				  ._M_iterator(__first, "first")
-				  ._M_iterator(__last, "last"));
-	    _M_invalidate(__tmp);
-	  }
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  for (auto __tmp = __first.base(); __tmp != __last.base(); ++__tmp)
+	    {
+	      _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::cend(),
+				    _M_message(__gnu_debug::__msg_valid_range)
+				    ._M_iterator(__first, "first")
+				    ._M_iterator(__last, "last"));
+	      this->_M_invalidate(__tmp, sentry);
+	    }
+	}
 
-	size_type __bucket_count = this->bucket_count();
 	auto __next = _Base::erase(__first.base(), __last.base());
-	_M_check_rehashed(__bucket_count);
 	return { __next, this };
       }
 
@@ -763,6 +834,10 @@ namespace __debug
       _M_base() const noexcept	{ return *this; }
 
     private:
+      const unordered_map*
+      _M_self() const noexcept
+      { return this; }
+
       void
       _M_check_rehashed(size_type __prev_count)
       {
@@ -770,31 +845,18 @@ namespace __debug
 	  this->_M_invalidate_all();
       }
 
-      void
-      _M_invalidate(_Base_const_iterator __victim)
-      {
-	this->_M_invalidate_if(
-	  [__victim](_Base_const_iterator __it) { return __it == __victim; });
-	this->_M_invalidate_local_if(
-	  [__victim](_Base_const_local_iterator __it)
-	  { return __it == __victim; });
-      }
-
       _Base_iterator
       _M_erase(_Base_const_iterator __victim)
       {
-	_M_invalidate(__victim);
-	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __next = _Base::erase(__victim);
-	_M_check_rehashed(__bucket_count);
-	return __next;
+	this->_M_invalidate(__victim);
+	return _Base::erase(__victim);
       }
 
 #ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       node_type
       _M_extract(_Base_const_iterator __victim)
       {
-	_M_invalidate(__victim);
+	this->_M_invalidate(__victim);
 	return _Base::extract(__victim);
       }
 #endif
@@ -1381,6 +1443,18 @@ namespace __debug
 	return {};
       }
 
+# ifdef __glibcxx_associative_heterogeneous_erasure
+      template <__heterogeneous_hash_key<unordered_multimap> _Kt>
+	node_type
+	extract(_Kt&& __key)
+	{
+	  const auto __position = _Base::find(__key);
+	  if (__position != _Base::end())
+	    return _M_extract(__position);
+	  return {};
+	}
+#endif
+
       iterator
       insert(node_type&& __nh)
       { return { _Base::insert(std::move(__nh)), this }; }
@@ -1496,19 +1570,19 @@ namespace __debug
       size_type
       erase(const key_type& __key)
       {
-	size_type __ret(0);
-	size_type __bucket_count = this->bucket_count();
-	auto __pair = _Base::equal_range(__key);
-	for (auto __victim = __pair.first; __victim != __pair.second;)
-	  {
-	    _M_invalidate(__victim);
-	    __victim = _Base::erase(__victim);
-	    ++__ret;
-	  }
-
-	_M_check_rehashed(__bucket_count);
-	return __ret;
+	auto __victims = _Base::equal_range(__key);
+	return _M_erase(__victims.first, __victims.second);
       }
+
+# ifdef __glibcxx_associative_heterogeneous_erasure
+      template <__heterogeneous_hash_key<unordered_multimap> _Kt>
+	size_type
+	erase(_Kt&& __key)
+	{
+	  auto __victims = _Base::equal_range(__key);
+	  return _M_erase(__victims.first, __victims.second);
+	}
+#endif
 
       iterator
       erase(const_iterator __it)
@@ -1535,18 +1609,19 @@ namespace __debug
       erase(const_iterator __first, const_iterator __last)
       {
 	__glibcxx_check_erase_range(__first, __last);
-	for (auto __tmp = __first.base(); __tmp != __last.base(); ++__tmp)
-	  {
-	    _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::cend(),
-				  _M_message(__gnu_debug::__msg_valid_range)
-				  ._M_iterator(__first, "first")
-				  ._M_iterator(__last, "last"));
-	    _M_invalidate(__tmp);
-	  }
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  for (auto __tmp = __first.base(); __tmp != __last.base(); ++__tmp)
+	    {
+	      _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::cend(),
+				    _M_message(__gnu_debug::__msg_valid_range)
+				    ._M_iterator(__first, "first")
+				    ._M_iterator(__last, "last"));
+	      this->_M_invalidate(__tmp, sentry);
+	    }
+	}
 
-	size_type __bucket_count = this->bucket_count();
 	auto __next = _Base::erase(__first.base(), __last.base());
-	_M_check_rehashed(__bucket_count);
 	return { __next, this };
       }
 
@@ -1560,6 +1635,10 @@ namespace __debug
       _M_base() const noexcept { return *this; }
 
     private:
+      const unordered_multimap*
+      _M_self() const noexcept
+      { return this; }
+
       void
       _M_check_rehashed(size_type __prev_count)
       {
@@ -1567,31 +1646,35 @@ namespace __debug
 	  this->_M_invalidate_all();
       }
 
-      void
-      _M_invalidate(_Base_const_iterator __victim)
-      {
-	this->_M_invalidate_if(
-	  [__victim](_Base_const_iterator __it) { return __it == __victim; });
-	this->_M_invalidate_local_if(
-	  [__victim](_Base_const_local_iterator __it)
-	  { return __it == __victim; });
-      }
-
       _Base_iterator
       _M_erase(_Base_const_iterator __victim)
       {
-	_M_invalidate(__victim);
-	size_type __bucket_count = this->bucket_count();
-	_Base_iterator __next = _Base::erase(__victim);
-	_M_check_rehashed(__bucket_count);
-	return __next;
+	this->_M_invalidate(__victim);
+	return _Base::erase(__victim);
+      }
+
+      size_type
+      _M_erase(_Base_iterator __first, _Base_iterator __last)
+      {
+	size_type __ret(0);
+	{
+	  __gnu_cxx::__scoped_lock sentry(_M_self()->_M_get_mutex());
+	  for (auto __victim = __first; __victim != __last; ++__victim)
+	    {
+	      this->_M_invalidate(__victim, sentry);
+	      ++__ret;
+	    }
+	}
+
+	_Base::erase(__first, __last);
+	return __ret;
       }
 
 #ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       node_type
       _M_extract(_Base_const_iterator __victim)
       {
-	_M_invalidate(__victim);
+	this->_M_invalidate(__victim);
 	return _Base::extract(__victim);
       }
 #endif

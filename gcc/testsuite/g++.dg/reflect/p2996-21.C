@@ -40,7 +40,7 @@ template <typename> struct TCls {
 };
 
 consteval { TCls<void>::sfn(); }	// error: TCls<void>::S4 is not enclosed by requires-clause lambda
-// { dg-error "call to non-'constexpr' function 'static void TCls< <template-parameter-1-1> >::sfn\\\(\\\) requires \\\(<lambda>\\\)\\\(\\\) \\\[with <template-parameter-1-1> = void\\\]'" "" { target *-*-* } .-1 }
+// { dg-error "call to non-'constexpr' function 'static void TCls< <template-parameter-1-1> >::sfn\\\(\\\) requires \\\(<lambda>\\\)\\\(\\\) \\\[with <template-parameter-1-1> = void\\\]'" "" { target { ! implicit_constexpr } } .-1 }
 
 struct S5;
 struct Cls {

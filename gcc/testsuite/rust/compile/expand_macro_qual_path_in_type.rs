@@ -1,5 +1,8 @@
 // this SEGVs in lowering for now
 // { dg-additional-options "-frust-compile-until=nameresolution" }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 
 macro_rules! forward_ref_binop {

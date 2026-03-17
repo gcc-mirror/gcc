@@ -275,12 +275,6 @@ package body Sem_Res is
    --  is the context type, which is used when the operation is a protected
    --  function with no arguments, and the return value is indexed.
 
-   procedure Resolve_Implicit_Dereference (P : Node_Id);
-   --  Called when P is the prefix of an indexed component, or of a selected
-   --  component, or of a slice. If P is of an access type, we unconditionally
-   --  rewrite it as an explicit dereference. This ensures that the expander
-   --  and the code generator have a fully explicit tree to work with.
-
    procedure Resolve_Intrinsic_Operator (N : Node_Id; Typ : Entity_Id);
    --  A call to a user-defined intrinsic operator is rewritten as a call to
    --  the corresponding predefined operator, with suitable conversions. Note
@@ -3805,6 +3799,14 @@ package body Sem_Res is
             then
                Accessibility_Error ("conversion");
 
+            elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type
+              and then Nkind (Parent (N)) = N_Assignment_Statement
+              and then Static_Accessibility_Level
+                         (Name (Parent (N)), Object_Decl_Level)
+                           < Static_Accessibility_Level (A, Object_Decl_Level)
+            then
+               Accessibility_Error ("assignment");
+
             elsif Nkind (Parent (N)) = N_Qualified_Expression
               and then Nkind (Parent (Parent (N))) = N_Allocator
               and then Type_Access_Level (Etype (Parent (Parent (N))))
@@ -3816,7 +3818,7 @@ package body Sem_Res is
               and then Comes_From_Source (N)
               and then Subprogram_Access_Level (Current_Subprogram)
                          < Static_Accessibility_Level
-                            (A, Object_Decl_Level, In_Return_Context => True)
+                             (A, Object_Decl_Level, In_Return_Context => True)
             then
                Accessibility_Error ("return");
             end if;

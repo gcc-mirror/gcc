@@ -529,12 +529,13 @@ context::set_main_input_filename (const char *filename)
     sink_->set_main_input_filename (filename);
 }
 
-void
+std::unique_ptr<client_data_hooks>
 context::set_client_data_hooks (std::unique_ptr<client_data_hooks> hooks)
 {
-  delete m_client_data_hooks;
+  std::unique_ptr<client_data_hooks> old_hooks (m_client_data_hooks);
   /* Ideally the field would be a std::unique_ptr here.  */
   m_client_data_hooks = hooks.release ();
+  return old_hooks;
 }
 
 void

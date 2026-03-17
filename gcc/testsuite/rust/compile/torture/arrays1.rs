@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn main() {
     let xs: [i32; 5] = [1, 2, 3, 4, 5];
     let xy = [6, 7, 8];

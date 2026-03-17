@@ -17,7 +17,7 @@ f2 (const int size)
    there are two probes in the final assembly code.  */
 /* { dg-final { scan-rtl-dump-times "allocation and probing in loop" 1 "expand" } } */
 /* { dg-final { scan-rtl-dump-times "allocation and probing residuals" 1 "expand" } } */
-/* { dg-final { scan-assembler-times "or\[ql\]" 2 } } */
+/* { dg-final { scan-assembler-times "or\[qlb\]" 2 } } */
 
 /* We also want to verify (indirectly) that the residual probe is
    guarded.  We do that by checking the number of conditional
@@ -26,5 +26,3 @@ f2 (const int size)
 
    These will all be equality tests.  */
 /* { dg-final { scan-assembler-times "(\?:je|jne)" 3 } } */
-
-

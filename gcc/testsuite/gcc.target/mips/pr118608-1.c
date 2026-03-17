@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-mabi=64 -O2" } */
+/* { dg-options "-mabi=64" } */
 
 #define COUNT 10
 

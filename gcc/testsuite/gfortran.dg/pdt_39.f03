@@ -119,5 +119,9 @@ program p
      print *, " error deallocating mat_r4: stat = ", istat
      stop
   end if
+
+! Make sure valgrind shows no leaks.
+  if (allocated (a_r4)) deallocate (a_r4)
+  if (allocated (a_r8)) deallocate (a_r8)
   stop
 end program p

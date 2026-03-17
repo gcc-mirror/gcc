@@ -404,22 +404,16 @@ ExpandVisitor::maybe_expand_pattern (std::unique_ptr<AST::Pattern> &pattern)
     pattern = final_fragment.take_pattern_fragment ();
 }
 
-// FIXME: Can this be refactored into a `scoped` method? Which takes a
-// ContextType as parameter and a lambda? And maybe just an std::vector<T>&?
 void
 ExpandVisitor::expand_struct_fields (std::vector<AST::StructField> &fields)
 {
-  for (auto &field : fields)
-    {
-      maybe_expand_type (field.get_field_type_ptr ());
-    }
+  expand_fields (fields);
 }
 
 void
 ExpandVisitor::expand_tuple_fields (std::vector<AST::TupleField> &fields)
 {
-  for (auto &field : fields)
-    maybe_expand_type (field.get_field_type_ptr ());
+  expand_fields (fields);
 }
 
 // FIXME: This can definitely be refactored with the method above

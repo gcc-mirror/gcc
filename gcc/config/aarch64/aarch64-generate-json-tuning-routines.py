@@ -85,15 +85,20 @@ def generate_field_code(
 ) -> List[str]:
     lines = []
 
+    if operation == 'parse':
+        ctxt = 'ctxt, '
+    else:
+        ctxt = ''
+
     if isinstance(value, str):
         macro = get_macro(operation.upper(), value)
         if value == "enum":
             enum_mapping = f"{key}_mappings"
             lines.append(
-                f'{indent}{macro} ({obj_name}, "{key}", {struct_name}.{key}, {enum_mapping});'
+                f'{indent}{macro} ({ctxt}{obj_name}, "{key}", {struct_name}.{key}, {enum_mapping});'
             )
         else:
-            lines.append(f'{indent}{macro} ({obj_name}, "{key}", {struct_name}.{key});')
+            lines.append(f'{indent}{macro} ({ctxt}{obj_name}, "{key}", {struct_name}.{key});')
 
     elif isinstance(value, dict):
         # Nested object - find function name based on current context + key
@@ -102,7 +107,7 @@ def generate_field_code(
         func_name = function_map.get(child_path_key, f"{operation.lower()}_{key}")
         macro_name = f"{operation.upper()}_OBJECT"
         lines.append(
-            f'{indent}{macro_name} ({obj_name}, "{key}", {struct_name}.{key}, {func_name});'
+            f'{indent}{macro_name} ({ctxt}{obj_name}, "{key}", {struct_name}.{key}, {func_name});'
         )
 
     elif isinstance(value, list) and len(value) > 0:
@@ -117,11 +122,11 @@ def generate_field_code(
 
             if operation.lower() == "serialize":
                 lines.append(
-                    f'{indent}{macro_name} ({obj_name}, "{key}", {struct_name}.{key}, ARRAY_SIZE ({struct_name}.{key}), {func_name});'
+                    f'{indent}{macro_name} ({ctxt}{obj_name}, "{key}", {struct_name}.{key}, ARRAY_SIZE ({struct_name}.{key}), {func_name});'
                 )
             else:
                 lines.append(
-                    f'{indent}{macro_name} ({obj_name}, "{key}", {struct_name}.{key}, {func_name});'
+                    f'{indent}{macro_name} ({ctxt}{obj_name}, "{key}", {struct_name}.{key}, {func_name});'
                 )
         else:
             raise ValueError(f"Arrays of non-object types are not yet supported: {key}")
@@ -175,7 +180,7 @@ def generate_function(
 
     if operation.lower() == "parse":
         lines.append("static void")
-        lines.append(f"parse_{full_name} (const json::object *jo, T &{local_name})")
+        lines.append(f"parse_{full_name} (gcc_json_context &ctxt, const json::object &jo, T &{local_name})")
         lines.append("{")
 
         for key, value in schema.items():

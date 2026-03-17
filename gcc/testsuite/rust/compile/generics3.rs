@@ -1,4 +1,7 @@
 // { dg-error "mismatched types, expected .i32. but got .i8." "" { target *-*-* } 0 }
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}

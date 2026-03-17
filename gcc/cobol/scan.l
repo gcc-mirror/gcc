@@ -313,6 +313,59 @@ PROCEDURE{SPC}DIVISION	{ yy_push_state(procedure_div);
 }
 
 <INITIAL,procedure_div,cdf_state>{
+  (IS{SPC})?"<"         { return '<'; }
+  (IS{SPC})?"<="        { return LE;  }
+  (IS{SPC})?"="         { static char eq[] = "=";
+			  ydflval.string = yylval.string = eq;
+  			  return EQ; }
+  (IS{SPC})?"<>"        { return NE;  }
+  (IS{SPC})?">="        { return GE;  }
+  (IS{SPC})?">"         { return '>'; }
+
+  {LESS_THAN} 		{ return '<'; }
+  {LESS_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return LE; }
+  (IS{SPC})?EQUALS?({SPC}TO)?/[[:space:]] {
+		  static char eq[] = "EQUAL";
+		  ydflval.string = yylval.string = eq;
+		  return EQ; }
+  {GREATER_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return GE; }
+  {GREATER_THAN}				{ return '>'; }
+
+  {ISNT}{OSPC}">="        { verify_ws(yytext[yyleng - 3]); return '<'; }
+  {ISNT}{OSPC}">"         { verify_ws(yytext[yyleng - 2]); return LE;  }
+  {ISNT}{OSPC}"="         { verify_ws(yytext[yyleng - 2]); return NE;  }
+  {ISNT}{OSPC}"<"         { verify_ws(yytext[yyleng - 2]); return GE;  }
+  {ISNT}{OSPC}"<="        { verify_ws(yytext[yyleng - 3]); return '>'; }
+
+  {ISNT}{SPC}GREATER{SPC}(THAN)?{SPC}{OR_EQUAL}/[[:space:]] { return '<'; }
+  {ISNT}{SPC}GREATER{SPC}(THAN)?	{ return LE; }
+  {ISNT}{SPC}EQUALS?{SPC}(TO)?		{ return NE; }
+  {ISNT}{SPC}LESS{SPC}(THAN)?		{ return GE; }
+  {ISNT}{SPC}LESS{SPC}(THAN)?{SPC}{OR_EQUAL}/[[:space:]] { return '>'; }
+
+  [*]{2}	{ return POW; }
+
+  /* 
+   * "A boolean operator specifies the type of boolean operation to be performed
+   *  on one or two operands, for a unary operator or binary operator,
+   *  respectively."
+   * Binary boolean operators
+   *  B-AND B-OR B-XOR
+   * Unary boolean operator
+   *  B-NOT
+   * Boolean shift operators
+   *  B-SHIFT-L B-SHIFT-LC B-SHIFT-R B-SHIFT-RC
+   */
+  /****
+B-AND
+B-OR
+B-XOR
+B-NOT
+B-SHIFT-L
+B-SHIFT-LC
+B-SHIFT-R
+B-SHIFT-RC
+  ****/
 
 	/* unused Context Words */
 ARITHMETIC			{ return ARITHMETIC; }
@@ -1089,6 +1142,7 @@ USE({SPC}FOR)?		{ return USE; }
   DEPENDING		{ return DEPENDING; }
   DESCENDING		{ return DESCENDING; }
   DISPLAY		{ return DISPLAY; }
+  EBCDIC		{ return EBCDIC; }
   EJECT{DOTEOL}?  	{
 			  dialect_ok(yylloc, IbmEjectE, "EJECT"); 
 			  auto len = yyleng - 1;
@@ -1107,6 +1161,7 @@ USE({SPC}FOR)?		{ return USE; }
   LEADING		{ return LEADING; }
   LEFT    		{ return LEFT; }
   MODE			{ return MODE; }
+  NATIVE		{ return NATIVE; }
   NO			{ return NO; }
   OCCURS/{SPC}{NAME} 	{ return OCCURS; }
   OCCURS		{ yy_push_state(integer_count);  return OCCURS; }
@@ -1127,6 +1182,7 @@ USE({SPC}FOR)?		{ return USE; }
   SIGN			{ return SIGN; }
   SIZE			{ return SIZE; }
   STANDARD		{ return STANDARD; }
+  STANDARD{SPC}ALPHABET		{ return STANDARD_ALPHABET; }
   STRONG		{ return STRONG; }
   SYNC(HRONIZED)?	{ return SYNCHRONIZED; }
   TIMES			{ return TIMES; }
@@ -1506,62 +1562,6 @@ USE({SPC}FOR)?		{ return USE; }
 			     }
 }
 
-<cdf_state,procedure_div>{
-  (IS{SPC})?"<"         { return '<'; }
-  (IS{SPC})?"<="        { return LE;  }
-  (IS{SPC})?"="         { static char eq[] = "=";
-			  ydflval.string = yylval.string = eq;
-  			  return EQ; }
-  (IS{SPC})?"<>"        { return NE;  }
-  (IS{SPC})?">="        { return GE;  }
-  (IS{SPC})?">"         { return '>'; }
-
-  {LESS_THAN} 		{ return '<'; }
-  {LESS_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return LE; }
-  (IS{SPC})?EQUALS?({SPC}TO)?/[[:space:]] {
-		  static char eq[] = "EQUAL";
-		  ydflval.string = yylval.string = eq;
-		  return EQ; }
-  {GREATER_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return GE; }
-  {GREATER_THAN}				{ return '>'; }
-
-  {ISNT}{OSPC}">="        { verify_ws(yytext[yyleng - 3]); return '<'; }
-  {ISNT}{OSPC}">"         { verify_ws(yytext[yyleng - 2]); return LE;  }
-  {ISNT}{OSPC}"="         { verify_ws(yytext[yyleng - 2]); return NE;  }
-  {ISNT}{OSPC}"<"         { verify_ws(yytext[yyleng - 2]); return GE;  }
-  {ISNT}{OSPC}"<="        { verify_ws(yytext[yyleng - 3]); return '>'; }
-
-  {ISNT}{SPC}GREATER{SPC}(THAN)?{SPC}{OR_EQUAL}/[[:space:]] { return '<'; }
-  {ISNT}{SPC}GREATER{SPC}(THAN)?	{ return LE; }
-  {ISNT}{SPC}EQUALS?{SPC}(TO)?		{ return NE; }
-  {ISNT}{SPC}LESS{SPC}(THAN)?		{ return GE; }
-  {ISNT}{SPC}LESS{SPC}(THAN)?{SPC}{OR_EQUAL}/[[:space:]] { return '>'; }
-
-  [*]{2}	{ return POW; }
-
-  /* 
-   * "A boolean operator specifies the type of boolean operation to be performed
-   *  on one or two operands, for a unary operator or binary operator,
-   *  respectively."
-   * Binary boolean operators
-   *  B-AND B-OR B-XOR
-   * Unary boolean operator
-   *  B-NOT
-   * Boolean shift operators
-   *  B-SHIFT-L B-SHIFT-LC B-SHIFT-R B-SHIFT-RC
-   */
-
-B-AND
-B-OR
-B-XOR
-B-NOT
-B-SHIFT-L
-B-SHIFT-LC
-B-SHIFT-R
-B-SHIFT-RC
-
-}
-
 <procedure_div>{
   (ID|IDENTIFICATION|ENVIRONMENT|DATA|PROCEDURE){SPC}DIVISION  {
 			          myless(0); BEGIN(INITIAL); }
@@ -1591,8 +1591,16 @@ B-SHIFT-RC
   {ISNT}{SPC}NEGATIVE/[[:space:]] { yylval.number = NOT; return NEGATIVE; }
   {ISNT}{SPC}ZERO/[[:space:]]     { yylval.number = NOT; return ZERO; }
 
+  {ISNT}{SPC}/OMITTED { return NOT; }
+
   [(:)] 			{ return *yytext; }
   [(]/[^(:)""'']*[:][^)]*[)] 	{ return LPAREN; /* parentheses around a colon */ }
+  [(][^:""''\n]*[:][^)]*[)] 	{ // does not match foo(bar)\n:  :-(  
+                                  int tok = is_refmod(yytext, yytext + yyleng)?
+                                      int(LPAREN) : '(';
+                                  myless(1);
+                                  return tok; 
+                                }
 
   FILLER			{ return FILLER_kw; }
   INVALID			{ yylval.number = INVALID; return INVALID; }
@@ -2177,8 +2185,9 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 
   {POP_FILE}	 	{
 			  yy_set_bol(true);
+			  yylineno = input_file_status.pending().lineno;
 			  input_file_status.leave();
-			  yylineno = cobol_lineno();
+                          dbgmsg("banged yylineno to %d", yylineno);
 			}
 
   {LINE_DIRECTIVE} 	{

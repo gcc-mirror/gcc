@@ -28,7 +28,20 @@ dg-init
 set saved-dg-do-what-default ${dg-do-what-default}
 
 set dg-do-what-default "compile"
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.rs]] "" ""
+
+set tests [lsort [glob -nocomplain $srcdir/$subdir/*.rs]]
+set ignore_list [list "issue_4402_foo.rs"]
+
+set tests_to_run [list]
+foreach t $tests {
+    set filename [file tail $t]
+    if {[lsearch -exact $ignore_list $filename] == -1} {
+        lappend tests_to_run $t
+    }
+}
+
+dg-runtest $tests_to_run "" ""
+
 set dg-do-what-default ${saved-dg-do-what-default}
 
 # All done.

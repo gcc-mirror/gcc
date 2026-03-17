@@ -298,7 +298,7 @@ AC_CHECK_TYPES([ptrdiff_t])
 AC_CHECK_HEADERS_ONCE(unistd.h sys/random.h sys/time.h sys/times.h \
 sys/resource.h sys/types.h sys/stat.h sys/uio.h sys/wait.h \
 floatingpoint.h ieeefp.h fenv.h fptrap.h \
-fpxcp.h pwd.h complex.h xlocale.h)
+fpxcp.h pwd.h complex.h xlocale.h sys/mman.h)
 
 GCC_HEADER_STDINT(gstdint.h)
 
@@ -334,7 +334,7 @@ if test "${hardwire_newlib:-0}" -eq 1; then
 else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getentropy getlogin gethostname kill link symlink \
-   sleep ttyname sigaction waitpid \
+   sleep ttyname sigaction waitpid mmap setenv\
    alarm access fork posix_spawn setmode fcntl writev \
    gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
@@ -342,6 +342,16 @@ else
    secure_getenv __secure_getenv mkostemp strnlen strndup newlocale \
    freelocale uselocale strerror_l strtof128 strfromf128)
 fi
+
+# Check for existing and usable pthreads.
+AX_PTHREAD([
+  enable_caf_shmem=true
+  CAF_SHMEM_CFLAGS="$PTHREAD_CFLAGS"
+  CAF_SHMEM_LIBS="$PTHREAD_LIBS"
+  ], [
+  enable_caf_shmem=false
+  ])
+AM_CONDITIONAL([ENABLE_CAF_SHMEM], [test x$enable_caf_shmem = xtrue])
 
 # Check strerror_r, cannot be above as versions with two and three arguments exist
 LIBGFOR_CHECK_STRERROR_R

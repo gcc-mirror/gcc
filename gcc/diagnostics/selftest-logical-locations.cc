@@ -45,27 +45,27 @@ test_manager::dump (FILE *outfile, int indent) const
   dumping::emit_heading (outfile, indent, "test_manager");
 }
 
-const char *
+label_text
 test_manager::get_short_name (key k) const
 {
   auto item = item_from_key (k);
   if (!item)
-    return nullptr;
-  return item->m_name;
+    return label_text ();
+  return label_text::borrow (item->m_name);
 }
 
-const char *
+label_text
 test_manager::get_name_with_scope (key k) const
 {
   auto item = item_from_key (k);
-  return item->m_name;
+  return label_text::borrow (item->m_name);
 }
 
-const char *
+label_text
 test_manager::get_internal_name (key k) const
 {
   auto item = item_from_key (k);
-  return item->m_name;
+  return label_text::borrow (item->m_name);
 }
 
 enum diagnostics::logical_locations::kind
@@ -118,8 +118,8 @@ selftest_logical_locations_cc_tests ()
 
   ASSERT_NE (loc_foo, loc_bar);
 
-  ASSERT_STREQ (mgr.get_short_name (loc_foo), "foo");
-  ASSERT_STREQ (mgr.get_short_name (loc_bar), "bar");
+  ASSERT_STREQ (mgr.get_short_name (loc_foo).get (), "foo");
+  ASSERT_STREQ (mgr.get_short_name (loc_bar).get (), "bar");
 }
 
 } // namespace diagnostics::logical_locations::selftest

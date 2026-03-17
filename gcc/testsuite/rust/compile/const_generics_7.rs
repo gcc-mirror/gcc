@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct S<const N: usize>;
 
 pub fn foo<const N: FooBar>() {} // { dg-error "could not resolve" }

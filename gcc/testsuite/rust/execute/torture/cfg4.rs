@@ -1,5 +1,8 @@
 // { dg-additional-options "-w -frust-cfg=A" }
 // { dg-output "test1\r*\ntest2\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

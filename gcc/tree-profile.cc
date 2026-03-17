@@ -164,29 +164,30 @@ namespace
    wasted memory.  */
 struct conds_ctx
 {
-    /* This is both a reusable shared allocation which is also used to return
-       single expressions, which means it for most code should only hold a
-       couple of elements.  */
-    auto_vec<basic_block, 64> blocks;
+  /* This is both a reusable shared allocation which is also used to return
+     single expressions, which means it for most code should only hold a
+     couple of elements.  */
+  auto_vec<basic_block, 64> blocks;
 
-    /* Index for the topological order indexed by basic_block->index to an
-       ordering so that expression (a || b && c) => top_index[a] < top_index[b]
-       < top_index[c].  */
-    auto_vec<int, 256> top_index;
+  /* Index for the topological order indexed by basic_block->index to an
+     ordering so that expression (a || b && c) => top_index[a] < top_index[b]
+     < top_index[c].  */
+  auto_vec<int, 256> top_index;
 
-    /* Pre-allocate bitmaps and vectors for per-function book keeping.  This is
-       pure instance reuse and the bitmaps carry no data between function
-       calls.  */
-    auto_vec<basic_block, 64> B1;
-    auto_vec<basic_block, 64> B2;
-    auto_sbitmap G1;
-    auto_sbitmap G2;
-    auto_sbitmap G3;
+  /* Pre-allocate bitmaps and vectors for per-function book keeping.  This is
+     pure instance reuse and the bitmaps carry no data between function
+     calls.  */
+  auto_vec<basic_block, 64> b1;
+  auto_vec<basic_block, 64> b2;
+  auto_sbitmap g1;
+  auto_sbitmap g2;
+  auto_sbitmap g3;
+  auto_vec<edge, 64> edges;
 
-    explicit conds_ctx (unsigned size) noexcept (true) : G1 (size), G2 (size),
-    G3 (size)
-    {
-    }
+  explicit conds_ctx (unsigned size) noexcept (true) : g1 (size), g2 (size),
+  g3 (size)
+  {
+  }
 };
 
 /* Only instrument terms with fewer than number of bits in a (wide) gcov
@@ -211,10 +212,20 @@ struct conds_ctx
 int
 topological_cmp (const void *lhs, const void *rhs, void *top_index)
 {
-    const_basic_block l = *(const basic_block*) lhs;
-    const_basic_block r = *(const basic_block*) rhs;
-    const vec<int>* im = (const vec<int>*) top_index;
-    return (*im)[l->index] - (*im)[r->index];
+  const_basic_block l = *(const basic_block *) lhs;
+  const_basic_block r = *(const basic_block *) rhs;
+  const vec<int> *im = (const vec<int> *) top_index;
+  return (*im)[l->index] - (*im)[r->index];
+}
+
+/* topological_cmp of the src block of LHS and RHS.  The TOP_INDEX argument
+   should be the top_index vector from ctx.  */
+int
+topological_src_cmp (const void *lhs, const void *rhs, void *top_index)
+{
+  const_edge l = *(const edge *) lhs;
+  const_edge r = *(const edge *) rhs;
+  return topological_cmp (&l->src, &r->src, top_index);
 }
 
 /* Find the index of NEEDLE in BLOCKS; return -1 if not found.  This has two
@@ -224,10 +235,10 @@ topological_cmp (const void *lhs, const void *rhs, void *top_index)
 int
 index_of (const basic_block needle, array_slice<basic_block> blocks)
 {
-    for (size_t i = 0; i < blocks.size (); i++)
-	if (blocks[i] == needle)
-	    return int (i);
-    return -1;
+  for (size_t i = 0; i < blocks.size (); i++)
+    if (blocks[i] == needle)
+      return int (i);
+  return -1;
 }
 
 /* Special cases of the single_*_p and single_*_edge functions in basic-block.h
@@ -238,15 +249,15 @@ index_of (const basic_block needle, array_slice<basic_block> blocks)
 bool
 single_p (const vec<edge, va_gc> *edges)
 {
-    int n = EDGE_COUNT (edges);
-    if (n == 0)
-	return false;
+  int n = EDGE_COUNT (edges);
+  if (n == 0)
+    return false;
 
-    for (edge e : edges)
-	if (e->flags & EDGE_COMPLEX)
-	    n -= 1;
+  for (edge e : edges)
+    if (e->flags & EDGE_COMPLEX)
+      n -= 1;
 
-    return n == 1;
+  return n == 1;
 }
 
 /* Get the single, non-complex edge.  Behavior is undefined edges have more
@@ -254,14 +265,14 @@ single_p (const vec<edge, va_gc> *edges)
 edge
 single_edge (const vec<edge, va_gc> *edges)
 {
-    gcc_checking_assert (single_p (edges));
-    for (edge e : edges)
+  gcc_checking_assert (single_p (edges));
+  for (edge e : edges)
     {
-	if (e->flags & EDGE_COMPLEX)
-	    continue;
-	return e;
+      if (e->flags & EDGE_COMPLEX)
+	continue;
+      return e;
     }
-    return NULL;
+  return NULL;
 }
 
 /* Sometimes, for example with function calls, goto labels, and C++
@@ -294,14 +305,14 @@ single_edge (const vec<edge, va_gc> *edges)
 edge
 contract_edge_up (edge e)
 {
-    while (true)
+  while (true)
     {
-	basic_block src = e->src;
-	if (!single_p (src->preds))
-	    return e;
-	if (!single_p (src->succs))
-	    return e;
-	e = single_edge (src->preds);
+      basic_block src = e->src;
+      if (!single_p (src->preds))
+	return e;
+      if (!single_p (src->succs))
+	return e;
+      e = single_edge (src->preds);
     }
 }
 
@@ -309,13 +320,13 @@ contract_edge_up (edge e)
    blocks are set or both are NULL.  */
 struct outcomes
 {
-    basic_block t = NULL;
-    basic_block f = NULL;
+  basic_block t = NULL;
+  basic_block f = NULL;
 
-    operator bool () const noexcept (true)
-    {
-	return t && f;
-    }
+  operator bool () const noexcept (true)
+  {
+    return t && f;
+  }
 };
 
 /* Get the true/false successors of a basic block.  If b is not a conditional
@@ -323,17 +334,17 @@ struct outcomes
 outcomes
 conditional_succs (const basic_block b)
 {
-    outcomes c;
-    for (edge e : b->succs)
+  outcomes c;
+  for (edge e : b->succs)
     {
-	if (e->flags & EDGE_TRUE_VALUE)
-	    c.t = e->dest;
-	if (e->flags & EDGE_FALSE_VALUE)
-	    c.f = e->dest;
+      if (e->flags & EDGE_TRUE_VALUE)
+	c.t = e->dest;
+      if (e->flags & EDGE_FALSE_VALUE)
+	c.f = e->dest;
     }
 
-    gcc_assert ((c.t && c.f) || (!c.t && !c.f));
-    return c;
+  gcc_assert ((c.t && c.f) || (!c.t && !c.f));
+  return c;
 }
 
 /* Get the index or offset of a conditional flag, 0 for true and 1 for false.
@@ -342,7 +353,7 @@ conditional_succs (const basic_block b)
 unsigned
 condition_index (unsigned flag)
 {
-    return (flag & EDGE_CONDITION) == EDGE_TRUE_VALUE ? 0 : 1;
+  return (flag & EDGE_CONDITION) == EDGE_TRUE_VALUE ? 0 : 1;
 }
 
 /* Returns the condition identifier for the basic block if set, otherwise 0.
@@ -368,12 +379,12 @@ condition_index (unsigned flag)
 unsigned
 condition_uid (struct function *fn, basic_block b)
 {
-    gimple *stmt = gsi_stmt (gsi_last_bb (b));
-    if (!safe_is_a <gcond*> (stmt) || !fn->cond_uids)
-	return 0;
+  gimple *stmt = gsi_stmt (gsi_last_bb (b));
+  if (!safe_is_a <gcond *> (stmt) || !fn->cond_uids)
+    return 0;
 
-    unsigned *v = fn->cond_uids->get (as_a <gcond*> (stmt));
-    return v ? *v : 0;
+  unsigned *v = fn->cond_uids->get (as_a <gcond *> (stmt));
+  return v ? *v : 0;
 }
 
 /* Compute the masking table.
@@ -437,7 +448,17 @@ condition_uid (struct function *fn, basic_block b)
 
    We find the terms by marking the outcomes (in this case c, T) and walk the
    predecessors starting at top (in this case b) and masking nodes when both
-   successors are marked.
+   successors are marked.  This is equivalent to removing the two outcome nodes
+   of the subexpression and finding the nodes not in the inverse reachability
+   set.
+
+   We only have to consider the pairs of top, bot where top is the the closest
+   (highest-index'd) candidate that still satisfies top < bot in the
+   topological order, as this will be the immediate left operand.  The nodes of
+   the other left operands will also be found when going through the righmost
+   term, and a lower-index'd top would just find subsets.  This has a
+   significant performance impact, 15-20x faster for the worst cases of (x && y
+   && ..) with no nesting.
 
    The masking table is represented as two bitfields per term in the expression
    with the index corresponding to the term in the Boolean expression.
@@ -452,133 +473,138 @@ void
 masking_vectors (conds_ctx& ctx, array_slice<basic_block> blocks,
 		 array_slice<sbitmap> maps, array_slice<uint64_t> masks)
 {
-    gcc_assert (blocks.is_valid ());
-    gcc_assert (!blocks.empty ());
-    gcc_assert (maps.is_valid ());
-    gcc_assert (masks.is_valid ());
-    gcc_assert (sizeof (masks[0]) * BITS_PER_UNIT >= CONDITIONS_MAX_TERMS);
+  gcc_assert (blocks.is_valid ());
+  gcc_assert (!blocks.empty ());
+  gcc_assert (maps.is_valid ());
+  gcc_assert (masks.is_valid ());
+  gcc_assert (sizeof (masks[0]) * BITS_PER_UNIT >= CONDITIONS_MAX_TERMS);
 
-    if (bitmap_count_bits (maps[0]) == 1)
-	return;
+  if (bitmap_count_bits (maps[0]) == 1)
+    return;
 
-    sbitmap marks = ctx.G1;
-    const sbitmap core = maps[0];
-    const sbitmap allg = maps[1];
-    vec<basic_block>& queue = ctx.B1;
-    vec<basic_block>& body = ctx.B2;
-    const vec<int>& top_index = ctx.top_index;
+  sbitmap marks = ctx.g1;
+  const sbitmap core = maps[0];
+  const sbitmap allg = maps[1];
+  vec<basic_block> &queue = ctx.b1;
+  vec<basic_block> &body = ctx.b2;
+  const vec<int> &top_index = ctx.top_index;
 
-    /* Set up for the iteration - include the outcome nodes in the traversal.
-       The algorithm compares pairs of nodes and is not really sensitive to
-       traversal order, but need to maintain topological order because the
-       index of masking nodes maps to the index in the accumulators.  We must
-       also check the incoming-to-outcome pairs.  These edges may in turn be
-       split (this happens with labels on top of then/else blocks) so we must
-       follow any single-in single-out path.  The non-condition blocks do not
-       have to be in order as they are non-condition blocks and will not be
-       considered for the set-bit index.  */
-    body.truncate (0);
-    body.reserve (blocks.size () + 2);
-    for (const basic_block b : blocks)
-	if (bitmap_bit_p (core, b->index))
-	    body.quick_push (b);
+  /* Set up for the iteration - include the outcome nodes in the traversal.
+     The algorithm compares pairs of nodes and is not really sensitive to
+     traversal order, but need to maintain topological order because the
+     index of masking nodes maps to the index in the accumulators.  We must
+     also check the incoming-to-outcome pairs.  These edges may in turn be
+     split (this happens with labels on top of then/else blocks) so we must
+     follow any single-in single-out path.  The non-condition blocks do not
+     have to be in order as they are non-condition blocks and will not be
+     considered for the set-bit index.  */
+  body.truncate (0);
+  body.reserve (blocks.size () + 2);
+  for (const basic_block b : blocks)
+    if (bitmap_bit_p (core, b->index))
+      body.quick_push (b);
 
-    for (basic_block b : blocks)
+  for (basic_block b : blocks)
     {
-	if (!bitmap_bit_p (core, b->index))
-	    continue;
+      if (!bitmap_bit_p (core, b->index))
+	continue;
 
-	for (edge e : b->succs)
+      for (edge e : b->succs)
 	{
-	    if (e->flags & EDGE_COMPLEX)
-		continue;
-	    if (bitmap_bit_p (allg, e->dest->index))
-		continue;
-	    body.safe_push (e->dest);
+	  if (e->flags & EDGE_COMPLEX)
+	    continue;
+	  if (bitmap_bit_p (allg, e->dest->index))
+	    continue;
+	  body.safe_push (e->dest);
 
-	    /* There may be multiple nodes between the condition edge and the
-	       actual outcome, and we need to know when these paths join to
-	       determine if there is short circuit/masking.  This is
-	       effectively creating a virtual edge from the condition node to
-	       the real outcome.  */
-	    while (!(e->flags & EDGE_DFS_BACK) && single_p (e->dest->succs))
+	  /* There may be multiple nodes between the condition edge and the
+	     actual outcome, and we need to know when these paths join to
+	     determine if there is short circuit/masking.  This is
+	     effectively creating a virtual edge from the condition node to
+	     the real outcome.  */
+	  while (!(e->flags & EDGE_DFS_BACK) && single_p (e->dest->succs))
 	    {
-		e = single_edge (e->dest->succs);
-		body.safe_push (e->dest);
+	      e = single_edge (e->dest->succs);
+	      body.safe_push (e->dest);
 	    }
 	}
     }
 
-    /* Find the masking.  The leftmost element cannot mask anything, so
-       start at 1.  */
-    for (size_t i = 1; i != body.length (); i++)
+  /* Find the masking.  The leftmost element cannot mask anything, so
+     start at 1.  */
+  for (size_t i = 1; i != body.length (); i++)
     {
-	const basic_block b = body[i];
-	for (edge e1 : b->preds)
-	for (edge e2 : b->preds)
+      const basic_block b = body[i];
+      if (b->preds->length () < 2)
+	continue;
+      ctx.edges.truncate (0);
+      ctx.edges.reserve (b->preds->length ());
+      for (edge e : b->preds)
+	if (!(e->flags & EDGE_COMPLEX))
+	  ctx.edges.quick_push (contract_edge_up (e));
+      if (ctx.edges.length () < 2)
+	continue;
+      ctx.edges.sort (topological_src_cmp, &ctx.top_index);
+
+      for (size_t i0 = 0, i1 = 1; i1 != ctx.edges.length (); ++i0, ++i1)
 	{
-	    if (e1 == e2)
-		continue;
-	    if ((e1->flags | e2->flags) & EDGE_COMPLEX)
-		continue;
+	  edge etop = ctx.edges[i0];
+	  edge ebot = ctx.edges[i1];
+	  gcc_assert (etop != ebot);
 
-	    edge etop = contract_edge_up (e1);
-	    edge ebot = contract_edge_up (e2);
-	    gcc_assert (etop != ebot);
+	  const basic_block top = etop->src;
+	  const basic_block bot = ebot->src;
+	  const unsigned cond = etop->flags & ebot->flags & EDGE_CONDITION;
+	  if (!cond)
+	    continue;
+	  if (top_index[top->index] > top_index[bot->index])
+	    continue;
+	  if (!bitmap_bit_p (core, top->index))
+	    continue;
+	  if (!bitmap_bit_p (core, bot->index))
+	    continue;
 
-	    const basic_block top = etop->src;
-	    const basic_block bot = ebot->src;
-	    const unsigned cond = etop->flags & ebot->flags & EDGE_CONDITION;
-	    if (!cond)
-		continue;
-	    if (top_index[top->index] > top_index[bot->index])
-		continue;
-	    if (!bitmap_bit_p (core, top->index))
-		continue;
-	    if (!bitmap_bit_p (core, bot->index))
-		continue;
+	  outcomes out = conditional_succs (top);
+	  gcc_assert (out);
+	  bitmap_clear (marks);
+	  bitmap_set_bit (marks, out.t->index);
+	  bitmap_set_bit (marks, out.f->index);
+	  queue.truncate (0);
+	  queue.safe_push (top);
 
-	    outcomes out = conditional_succs (top);
-	    gcc_assert (out);
-	    bitmap_clear (marks);
-	    bitmap_set_bit (marks, out.t->index);
-	    bitmap_set_bit (marks, out.f->index);
-	    queue.truncate (0);
-	    queue.safe_push (top);
-
-	    // The edge bot -> outcome triggers the masking
-	    const int m = 2*index_of (bot, body) + condition_index (cond);
-	    gcc_assert (m >= 0);
-	    while (!queue.is_empty ())
+	  // The edge bot -> outcome triggers the masking
+	  const int m = 2 * index_of (bot, body) + condition_index (cond);
+	  gcc_assert (m >= 0);
+	  while (!queue.is_empty ())
 	    {
-		basic_block q = queue.pop ();
-		/* q may have been processed & completed by being added to the
-		   queue multiple times, so check that there is still work to
-		   do before continuing.  */
-		if (bitmap_bit_p (marks, q->index))
-		    continue;
+	      basic_block q = queue.pop ();
+	      /* q may have been processed & completed by being added to the
+		 queue multiple times, so check that there is still work to
+		 do before continuing.  */
+	      if (bitmap_bit_p (marks, q->index))
+		continue;
 
-		outcomes succs = conditional_succs (q);
-		if (!bitmap_bit_p (marks, succs.t->index))
-		    continue;
-		if (!bitmap_bit_p (marks, succs.f->index))
-		    continue;
+	      outcomes succs = conditional_succs (q);
+	      if (!bitmap_bit_p (marks, succs.t->index))
+		continue;
+	      if (!bitmap_bit_p (marks, succs.f->index))
+		continue;
 
-		const int index = index_of (q, body);
-		gcc_assert (index != -1);
-		masks[m] |= uint64_t (1) << index;
-		bitmap_set_bit (marks, q->index);
+	      const int index = index_of (q, body);
+	      gcc_assert (index != -1);
+	      masks[m] |= uint64_t (1) << index;
+	      bitmap_set_bit (marks, q->index);
 
-		for (edge e : q->preds)
+	      for (edge e : q->preds)
 		{
-		    e = contract_edge_up (e);
-		    if (e->flags & EDGE_DFS_BACK)
-			continue;
-		    if (bitmap_bit_p (marks, e->src->index))
-			continue;
-		    if (!bitmap_bit_p (core, e->src->index))
-			continue;
-		    queue.safe_push (e->src);
+		  e = contract_edge_up (e);
+		  if (e->flags & EDGE_DFS_BACK)
+		    continue;
+		  if (bitmap_bit_p (marks, e->src->index))
+		    continue;
+		  if (!bitmap_bit_p (core, e->src->index))
+		    continue;
+		  queue.safe_push (e->src);
 		}
 	    }
 	}
@@ -591,56 +617,56 @@ masking_vectors (conds_ctx& ctx, array_slice<basic_block> blocks,
 tree
 emit_assign (edge e, tree lhs, tree rhs)
 {
-    gassign *w = gimple_build_assign (lhs, rhs);
-    gsi_insert_on_edge (e, w);
-    return lhs;
+  gassign *w = gimple_build_assign (lhs, rhs);
+  gsi_insert_on_edge (e, w);
+  return lhs;
 }
 
 /* Emit lhs = RHS on edges.  The lhs is created.  */
 tree
 emit_assign (edge e, tree rhs)
 {
-    return emit_assign (e, make_ssa_name (gcov_type_node), rhs);
+  return emit_assign (e, make_ssa_name (gcov_type_node), rhs);
 }
 
 /* Emit LHS = OP1 <OP> OP2 on edges.  */
 tree
 emit_bitwise_op (edge e, tree op1, tree_code op, tree op2 = NULL_TREE)
 {
-    tree lhs = make_ssa_name (gcov_type_node);
-    gassign *w = gimple_build_assign (lhs, op, op1, op2);
-    gsi_insert_on_edge (e, w);
-    return lhs;
+  tree lhs = make_ssa_name (gcov_type_node);
+  gassign *w = gimple_build_assign (lhs, op, op1, op2);
+  gsi_insert_on_edge (e, w);
+  return lhs;
 }
 
 /* Visitor for make_top_index.  */
 void
-make_top_index_visit (basic_block b, vec<basic_block>& L, vec<int>& marks)
+make_top_index_visit (basic_block b, vec<basic_block> &l, vec<int> &marks)
 {
-    if (marks[b->index])
-	return;
+  if (marks[b->index])
+    return;
 
-    /* Follow the false edge first, if it exists, so that true paths are given
-       the lower index in the ordering.  Any iteration order
-       would yield a valid and useful topological ordering, but making sure the
-       true branch has the lower index first makes reporting work better for
-       expressions with ternaries.  Walk the false branch first because the
-       array will be reversed to finalize the topological order.
+  /* Follow the false edge first, if it exists, so that true paths are given
+     the lower index in the ordering.  Any iteration order
+     would yield a valid and useful topological ordering, but making sure the
+     true branch has the lower index first makes reporting work better for
+     expressions with ternaries.  Walk the false branch first because the
+     array will be reversed to finalize the topological order.
 
-       With the wrong ordering (a ? b : c) && d could become [a c b d], but the
-       (expected) order is really [a b c d].  */
+     With the wrong ordering (a ? b : c) && d could become [a c b d], but the
+     (expected) order is really [a b c d].  */
 
-    const unsigned false_fwd = EDGE_DFS_BACK | EDGE_FALSE_VALUE;
-    for (edge e : b->succs)
-	if ((e->flags & false_fwd) == EDGE_FALSE_VALUE)
-	    make_top_index_visit (e->dest, L, marks);
+  const unsigned false_fwd = EDGE_DFS_BACK | EDGE_FALSE_VALUE;
+  for (edge e : b->succs)
+    if ((e->flags & false_fwd) == EDGE_FALSE_VALUE)
+      make_top_index_visit (e->dest, l, marks);
 
-    for (edge e : b->succs)
-	if (!(e->flags & false_fwd))
-	    make_top_index_visit (e->dest, L, marks);
+  for (edge e : b->succs)
+    if (!(e->flags & false_fwd))
+      make_top_index_visit (e->dest, l, marks);
 
-    marks[b->index] = 1;
-    L.quick_push (b);
+  marks[b->index] = 1;
+  l.quick_push (b);
 }
 
 /* Find a topological sorting of the blocks in a function so that left operands
@@ -653,32 +679,32 @@ make_top_index_visit (basic_block b, vec<basic_block>& L, vec<int>& marks)
 
    For the expression (a || (b && c) || d) the blocks should be [a b c d].  */
 void
-make_top_index (array_slice<basic_block> blocks, vec<basic_block>& L,
-		vec<int>& top_index)
+make_top_index (array_slice<basic_block> blocks, vec<basic_block> &l,
+		vec<int> &top_index)
 {
-    L.truncate (0);
-    L.reserve (blocks.size ());
+  l.truncate (0);
+  l.reserve (blocks.size ());
 
-    /* Use of the output map as a temporary for tracking visited status.  */
-    top_index.truncate (0);
-    top_index.safe_grow_cleared (blocks.size ());
-    for (const basic_block b : blocks)
-	make_top_index_visit (b, L, top_index);
+  /* Use of the output map as a temporary for tracking visited status.  */
+  top_index.truncate (0);
+  top_index.safe_grow_cleared (blocks.size ());
+  for (const basic_block b : blocks)
+    make_top_index_visit (b, l, top_index);
 
-    /* Insert canaries - if there are unreachable nodes (for example infinite
-       loops) then the unreachable nodes should never be needed for comparison,
-       and L.length () < max_index.  An index mapping should also never be
-       recorded twice.  */
-    for (unsigned i = 0; i != top_index.length (); i++)
-	top_index[i] = -1;
+  /* Insert canaries - if there are unreachable nodes (for example infinite
+     loops) then the unreachable nodes should never be needed for comparison,
+     and l.length () < max_index.  An index mapping should also never be
+     recorded twice.  */
+  for (unsigned i = 0; i != top_index.length (); i++)
+    top_index[i] = -1;
 
-    gcc_assert (blocks.size () == L.length ());
-    L.reverse ();
-    const unsigned nblocks = L.length ();
-    for (unsigned i = 0; i != nblocks; i++)
+  gcc_assert (blocks.size () == l.length ());
+  l.reverse ();
+  const unsigned nblocks = l.length ();
+  for (unsigned i = 0; i != nblocks; i++)
     {
-	gcc_assert (L[i]->index != -1);
-	top_index[L[i]->index] = int (i);
+      gcc_assert (l[i]->index != -1);
+      top_index[l[i]->index] = int (i);
     }
 }
 
@@ -696,70 +722,70 @@ make_top_index (array_slice<basic_block> blocks, vec<basic_block>& L,
 
    It is assumed GRAPH is an array_slice of the basic blocks of this function
    sorted by the basic block index.  */
-vec<basic_block>&
+vec<basic_block> &
 paths_between (conds_ctx &ctx, array_slice<basic_block> graph,
-	       const vec<basic_block>& expr)
+	       const vec<basic_block> &expr)
 {
-    if (expr.length () == 1)
+  if (expr.length () == 1)
     {
-	ctx.blocks.truncate (0);
-	ctx.blocks.safe_push (expr[0]);
-	return ctx.blocks;
+      ctx.blocks.truncate (0);
+      ctx.blocks.safe_push (expr[0]);
+      return ctx.blocks;
     }
 
-    basic_block dom;
-    sbitmap up = ctx.G1;
-    sbitmap down = ctx.G2;
-    sbitmap paths = ctx.G3;
-    vec<basic_block>& queue = ctx.B1;
+  basic_block dom;
+  sbitmap up = ctx.g1;
+  sbitmap down = ctx.g2;
+  sbitmap paths = ctx.g3;
+  vec<basic_block> &queue = ctx.b1;
 
-    queue.truncate (0);
-    bitmap_clear (down);
-    dom = get_immediate_dominator (CDI_POST_DOMINATORS, expr[0]);
-    for (basic_block b : expr)
-	if (dom != b)
-	    dom = nearest_common_dominator (CDI_POST_DOMINATORS, dom, b);
-    queue.safe_splice (expr);
-    while (!queue.is_empty ())
+  queue.truncate (0);
+  bitmap_clear (down);
+  dom = get_immediate_dominator (CDI_POST_DOMINATORS, expr[0]);
+  for (basic_block b : expr)
+    if (dom != b)
+      dom = nearest_common_dominator (CDI_POST_DOMINATORS, dom, b);
+  queue.safe_splice (expr);
+  while (!queue.is_empty ())
     {
-	basic_block b = queue.pop ();
-	if (!bitmap_set_bit (down, b->index))
-	    continue;
-	if (b == dom)
-	    continue;
-	for (edge e : b->succs)
-	    if (!(e->flags & (EDGE_COMPLEX | EDGE_DFS_BACK)))
-		queue.safe_push (e->dest);
+      basic_block b = queue.pop ();
+      if (!bitmap_set_bit (down, b->index))
+	continue;
+      if (b == dom)
+	continue;
+      for (edge e : b->succs)
+	if (!(e->flags & (EDGE_COMPLEX | EDGE_DFS_BACK)))
+	  queue.safe_push (e->dest);
     }
 
-    queue.truncate (0);
-    bitmap_clear (up);
-    dom = expr[0];
-    for (basic_block b : expr)
-	if (dom != b)
-	    dom = nearest_common_dominator (CDI_DOMINATORS, dom, b);
-    queue.safe_splice (expr);
-    while (!queue.is_empty ())
+  queue.truncate (0);
+  bitmap_clear (up);
+  dom = expr[0];
+  for (basic_block b : expr)
+    if (dom != b)
+      dom = nearest_common_dominator (CDI_DOMINATORS, dom, b);
+  queue.safe_splice (expr);
+  while (!queue.is_empty ())
     {
-	basic_block b = queue.pop ();
-	if (!bitmap_set_bit (up, b->index))
-	    continue;
-	if (b == dom)
-	    continue;
-	for (edge e : b->preds)
-	    if (!(e->flags & (EDGE_COMPLEX | EDGE_DFS_BACK)))
-		queue.safe_push (e->src);
+      basic_block b = queue.pop ();
+      if (!bitmap_set_bit (up, b->index))
+	continue;
+      if (b == dom)
+	continue;
+      for (edge e : b->preds)
+	if (!(e->flags & (EDGE_COMPLEX | EDGE_DFS_BACK)))
+	  queue.safe_push (e->src);
     }
 
-    bitmap_and (paths, up, down);
-    vec<basic_block>& blocks = ctx.blocks;
-    blocks.truncate (0);
-    blocks.reserve (graph.size ());
-    sbitmap_iterator itr;
-    unsigned index;
-    EXECUTE_IF_SET_IN_BITMAP (paths, 0, index, itr)
-	blocks.quick_push (graph[index]);
-    return blocks;
+  bitmap_and (paths, up, down);
+  vec<basic_block> &blocks = ctx.blocks;
+  blocks.truncate (0);
+  blocks.reserve (graph.size ());
+  sbitmap_iterator itr;
+  unsigned index;
+  EXECUTE_IF_SET_IN_BITMAP (paths, 0, index, itr)
+    blocks.quick_push (graph[index]);
+  return blocks;
 }
 
 }
@@ -770,70 +796,70 @@ paths_between (conds_ctx &ctx, array_slice<basic_block> graph,
    avoid having to reallocate for most programs.  */
 struct condcov
 {
-    explicit condcov (unsigned nblocks) noexcept (true) : ctx (nblocks),
-    m_maps (sbitmap_vector_alloc (2 * nblocks, nblocks))
-    {
-	bitmap_vector_clear (m_maps, 2 * nblocks);
-    }
-    auto_vec<size_t, 128> m_index;
-    auto_vec<basic_block, 256> m_blocks;
-    auto_vec<uint64_t, 512> m_masks;
-    conds_ctx ctx;
-    sbitmap *m_maps;
+  explicit condcov (unsigned nblocks) noexcept (true) : ctx (nblocks),
+  m_maps (sbitmap_vector_alloc (2 * nblocks, nblocks))
+  {
+    bitmap_vector_clear (m_maps, 2 * nblocks);
+  }
+  auto_vec<size_t, 128> m_index;
+  auto_vec<basic_block, 256> m_blocks;
+  auto_vec<uint64_t, 512> m_masks;
+  conds_ctx ctx;
+  sbitmap *m_maps;
 };
 
 /* Get the length, that is the number of Boolean expression found.  cov_length
    is the one-past index for cov_{blocks,masks,maps}.  */
 size_t
-cov_length (const struct condcov* cov)
+cov_length (const struct condcov *cov)
 {
-    if (cov->m_index.is_empty ())
-	return 0;
-    return cov->m_index.length () - 1;
+  if (cov->m_index.is_empty ())
+    return 0;
+  return cov->m_index.length () - 1;
 }
 
 /* The subgraph, exluding intermediates, for the nth Boolean expression.  */
 array_slice<basic_block>
-cov_blocks (struct condcov* cov, size_t n)
+cov_blocks (struct condcov *cov, size_t n)
 {
-    if (n >= cov->m_index.length ())
-	return array_slice<basic_block>::invalid ();
+  if (n >= cov->m_index.length ())
+    return array_slice<basic_block>::invalid ();
 
-    basic_block *begin = cov->m_blocks.begin () + cov->m_index[n];
-    basic_block *end = cov->m_blocks.begin () + cov->m_index[n + 1];
-    return array_slice<basic_block> (begin, end - begin);
+  basic_block *begin = cov->m_blocks.begin () + cov->m_index[n];
+  basic_block *end = cov->m_blocks.begin () + cov->m_index[n + 1];
+  return array_slice<basic_block> (begin, end - begin);
 }
 
 /* The masks for the nth Boolean expression.  */
 array_slice<uint64_t>
-cov_masks (struct condcov* cov, size_t n)
+cov_masks (struct condcov *cov, size_t n)
 {
-    if (n >= cov->m_index.length ())
-	return array_slice<uint64_t>::invalid ();
+  if (n >= cov->m_index.length ())
+    return array_slice<uint64_t>::invalid ();
 
-    uint64_t *begin = cov->m_masks.begin () + 2*cov->m_index[n];
-    uint64_t *end = cov->m_masks.begin () + 2*cov->m_index[n + 1];
-    return array_slice<uint64_t> (begin, end - begin);
+  uint64_t *begin = cov->m_masks.begin () + 2 * cov->m_index[n];
+  uint64_t *end = cov->m_masks.begin () + 2 * cov->m_index[n + 1];
+  return array_slice<uint64_t> (begin, end - begin);
 }
 
 /* The maps for the nth Boolean expression.  */
 array_slice<sbitmap>
-cov_maps (struct condcov* cov, size_t n)
+cov_maps (struct condcov *cov, size_t n)
 {
-    if (n >= cov->m_index.length ())
-	return array_slice<sbitmap>::invalid ();
+  if (n >= cov->m_index.length ())
+    return array_slice<sbitmap>::invalid ();
 
-    sbitmap *begin = cov->m_maps + 2*n;
-    sbitmap *end = begin + 2;
-    return array_slice<sbitmap> (begin, end - begin);
+  sbitmap *begin = cov->m_maps + 2 * n;
+  sbitmap *end = begin + 2;
+  return array_slice<sbitmap> (begin, end - begin);
 }
 
 /* Deleter for condcov.  */
 void
-cov_free (struct condcov* cov)
+cov_free (struct condcov *cov)
 {
-    sbitmap_vector_free (cov->m_maps);
-    delete cov;
+  sbitmap_vector_free (cov->m_maps);
+  delete cov;
 }
 
 /* Condition coverage (MC/DC)
@@ -857,75 +883,75 @@ cov_free (struct condcov* cov)
    in the expression.
 
    The returned condcov should be released by the caller with cov_free.  */
-struct condcov*
+struct condcov *
 find_conditions (struct function *fn)
 {
-    mark_dfs_back_edges (fn);
-    const bool have_dom = dom_info_available_p (fn, CDI_DOMINATORS);
-    const bool have_post_dom = dom_info_available_p (fn, CDI_POST_DOMINATORS);
-    if (!have_dom)
-	calculate_dominance_info (CDI_DOMINATORS);
-    if (!have_post_dom)
-	calculate_dominance_info (CDI_POST_DOMINATORS);
+  mark_dfs_back_edges (fn);
+  const bool have_dom = dom_info_available_p (fn, CDI_DOMINATORS);
+  const bool have_post_dom = dom_info_available_p (fn, CDI_POST_DOMINATORS);
+  if (!have_dom)
+    calculate_dominance_info (CDI_DOMINATORS);
+  if (!have_post_dom)
+    calculate_dominance_info (CDI_POST_DOMINATORS);
 
-    const unsigned nblocks = n_basic_blocks_for_fn (fn);
-    basic_block *fnblocksp = basic_block_info_for_fn (fn)->address ();
-    condcov *cov = new condcov (nblocks);
-    conds_ctx& ctx = cov->ctx;
-    array_slice<basic_block> fnblocks (fnblocksp, nblocks);
-    make_top_index (fnblocks, ctx.B1, ctx.top_index);
+  const unsigned nblocks = n_basic_blocks_for_fn (fn);
+  basic_block *fnblocksp = basic_block_info_for_fn (fn)->address ();
+  condcov *cov = new condcov (nblocks);
+  conds_ctx &ctx = cov->ctx;
+  array_slice<basic_block> fnblocks (fnblocksp, nblocks);
+  make_top_index (fnblocks, ctx.b1, ctx.top_index);
 
-    /* Bin the Boolean expressions so that exprs[id] -> [x1, x2, ...].  */
-    hash_map<int_hash<unsigned, 0>, auto_vec<basic_block>> exprs;
-    for (basic_block b : fnblocks)
+  /* Bin the Boolean expressions so that exprs[id] -> [x1, x2, ...].  */
+  hash_map<int_hash<unsigned, 0>, auto_vec<basic_block>> exprs;
+  for (basic_block b : fnblocks)
     {
-	const unsigned uid = condition_uid (fn, b);
-	if (uid == 0)
-	    continue;
-	exprs.get_or_insert (uid).safe_push (b);
+      const unsigned uid = condition_uid (fn, b);
+      if (uid == 0)
+	continue;
+      exprs.get_or_insert (uid).safe_push (b);
     }
 
-    /* Visit all reachable nodes and collect conditions.  Topological order is
-       important so the first node of a boolean expression is visited first
-       (it will mark subsequent terms).  */
-    cov->m_index.safe_push (0);
-    for (auto expr : exprs)
+  /* Visit all reachable nodes and collect conditions.  Topological order is
+     important so the first node of a boolean expression is visited first
+     (it will mark subsequent terms).  */
+  cov->m_index.safe_push (0);
+  for (auto expr : exprs)
     {
-	vec<basic_block>& conds = expr.second;
-	if (conds.length () > CONDITIONS_MAX_TERMS)
+      vec<basic_block> &conds = expr.second;
+      if (conds.length () > CONDITIONS_MAX_TERMS)
 	{
-	    location_t loc = gimple_location (gsi_stmt (gsi_last_bb (conds[0])));
-	    warning_at (loc, OPT_Wcoverage_too_many_conditions,
-			"Too many conditions (found %u); giving up coverage",
-			conds.length ());
-	    continue;
+	  location_t loc = gimple_location (gsi_stmt (gsi_last_bb (conds[0])));
+	  warning_at (loc, OPT_Wcoverage_too_many_conditions,
+		      "too many conditions (found %u); giving up coverage",
+		      conds.length ());
+	  continue;
 	}
-	conds.sort (topological_cmp, &ctx.top_index);
-	vec<basic_block>& subgraph = paths_between (ctx, fnblocks, conds);
-	subgraph.sort (topological_cmp, &ctx.top_index);
-	const unsigned index = cov->m_index.length () - 1;
-	sbitmap condm = cov->m_maps[0 + 2*index];
-	sbitmap subgm = cov->m_maps[1 + 2*index];
-	for (basic_block b : conds)
-	    bitmap_set_bit (condm, b->index);
-	for (basic_block b : subgraph)
-	    bitmap_set_bit (subgm, b->index);
-	cov->m_blocks.safe_splice (subgraph);
-	cov->m_index.safe_push (cov->m_blocks.length ());
+      conds.sort (topological_cmp, &ctx.top_index);
+      vec<basic_block> &subgraph = paths_between (ctx, fnblocks, conds);
+      subgraph.sort (topological_cmp, &ctx.top_index);
+      const unsigned index = cov->m_index.length () - 1;
+      sbitmap condm = cov->m_maps[0 + 2 * index];
+      sbitmap subgm = cov->m_maps[1 + 2 * index];
+      for (basic_block b : conds)
+	bitmap_set_bit (condm, b->index);
+      for (basic_block b : subgraph)
+	bitmap_set_bit (subgm, b->index);
+      cov->m_blocks.safe_splice (subgraph);
+      cov->m_index.safe_push (cov->m_blocks.length ());
     }
 
-    if (!have_dom)
-	free_dominance_info (fn, CDI_DOMINATORS);
-    if (!have_post_dom)
-	free_dominance_info (fn, CDI_POST_DOMINATORS);
+  if (!have_dom)
+    free_dominance_info (fn, CDI_DOMINATORS);
+  if (!have_post_dom)
+    free_dominance_info (fn, CDI_POST_DOMINATORS);
 
-    cov->m_masks.safe_grow_cleared (2 * cov->m_index.last ());
-    const size_t length = cov_length (cov);
-    for (size_t i = 0; i != length; i++)
-	masking_vectors (ctx, cov_blocks (cov, i), cov_maps (cov, i),
-			 cov_masks (cov, i));
+  cov->m_masks.safe_grow_cleared (2 * cov->m_index.last ());
+  const size_t length = cov_length (cov);
+  for (size_t i = 0; i != length; i++)
+    masking_vectors (ctx, cov_blocks (cov, i), cov_maps (cov, i),
+		     cov_masks (cov, i));
 
-    return cov;
+  return cov;
 }
 
 namespace
@@ -938,70 +964,70 @@ namespace
    tend to be identical for the different counters.  */
 struct counters
 {
-    edge e;
-    tree counter[3];
-    tree& operator [] (size_t i) { return counter[i]; }
+  edge e;
+  tree counter[3];
+  tree &operator[] (size_t i) { return counter[i]; }
 };
 
 /* Find the counters for the incoming edge e, or NULL if the edge has not been
    recorded (could be for complex incoming edges).  */
-counters*
-find_counters (vec<counters>& candidates, edge e)
+counters *
+find_counters (vec<counters> &candidates, edge e)
 {
-    for (counters& candidate : candidates)
-	if (candidate.e == e)
-	    return &candidate;
-    return NULL;
+  for (counters &candidate : candidates)
+    if (candidate.e == e)
+      return &candidate;
+  return NULL;
 }
 
 /* Resolve the SSA for a specific counter KIND.  If it is not modified by any
    incoming edges, simply forward it, otherwise create a phi node of all the
    candidate counters and return it.  */
 tree
-resolve_counter (vec<counters>& cands, size_t kind)
+resolve_counter (vec<counters> &cands, size_t kind)
 {
-    gcc_assert (!cands.is_empty ());
-    gcc_assert (kind < 3);
+  gcc_assert (!cands.is_empty ());
+  gcc_assert (kind < 3);
 
-    counters& fst = cands[0];
+  counters &fst = cands[0];
 
-    if (!fst.e || fst.e->dest->preds->length () == 1)
+  if (!fst.e || fst.e->dest->preds->length () == 1)
     {
-	gcc_assert (cands.length () == 1);
-	return fst[kind];
+      gcc_assert (cands.length () == 1);
+      return fst[kind];
     }
 
-    tree zero0 = build_int_cst (gcov_type_node, 0);
-    tree ssa = make_ssa_name (gcov_type_node);
-    gphi *phi = create_phi_node (ssa, fst.e->dest);
-    for (edge e : fst.e->dest->preds)
+  tree zero0 = build_int_cst (gcov_type_node, 0);
+  tree ssa = make_ssa_name (gcov_type_node);
+  gphi *phi = create_phi_node (ssa, fst.e->dest);
+  for (edge e : fst.e->dest->preds)
     {
-	counters *prev = find_counters (cands, e);
-	if (prev)
-	    add_phi_arg (phi, (*prev)[kind], e, UNKNOWN_LOCATION);
-	else
+      counters *prev = find_counters (cands, e);
+      if (prev)
+	add_phi_arg (phi, (*prev)[kind], e, UNKNOWN_LOCATION);
+      else
 	{
-	    tree zero = make_ssa_name (gcov_type_node);
-	    gimple_stmt_iterator gsi = gsi_after_labels (e->src);
-	    gassign *set = gimple_build_assign (zero, zero0);
-	    gsi_insert_before (&gsi, set, GSI_NEW_STMT);
-	    add_phi_arg (phi, zero, e, UNKNOWN_LOCATION);
+	  tree zero = make_ssa_name (gcov_type_node);
+	  gimple_stmt_iterator gsi = gsi_after_labels (e->src);
+	  gassign *set = gimple_build_assign (zero, zero0);
+	  gsi_insert_before (&gsi, set, GSI_NEW_STMT);
+	  add_phi_arg (phi, zero, e, UNKNOWN_LOCATION);
 	}
     }
-    return ssa;
+  return ssa;
 }
 
 /* Resolve all the counters for a node.  Note that the edge is undefined, as
    the counters are intended to form the base to push to the successors, and
    because the is only meaningful for nodes with a single predecessor.  */
 counters
-resolve_counters (vec<counters>& cands)
+resolve_counters (vec<counters> &cands)
 {
-    counters next;
-    next[0] = resolve_counter (cands, 0);
-    next[1] = resolve_counter (cands, 1);
-    next[2] = resolve_counter (cands, 2);
-    return next;
+  counters next;
+  next[0] = resolve_counter (cands, 0);
+  next[1] = resolve_counter (cands, 1);
+  next[2] = resolve_counter (cands, 2);
+  return next;
 }
 
 }
@@ -1041,133 +1067,134 @@ size_t
 instrument_decisions (array_slice<basic_block> expr, size_t condno,
 		      array_slice<sbitmap> maps, array_slice<uint64_t> masks)
 {
-    tree zero = build_int_cst (gcov_type_node, 0);
-    tree poison = build_int_cst (gcov_type_node, ~0ULL);
-    const sbitmap core = maps[0];
-    const sbitmap allg = maps[1];
+  tree zero = build_int_cst (gcov_type_node, 0);
+  tree poison = build_int_cst (gcov_type_node, ~0ULL);
+  const sbitmap core = maps[0];
+  const sbitmap allg = maps[1];
 
-    hash_map<basic_block, vec<counters>> table;
-    counters zerocounter;
-    zerocounter.e = NULL;
-    zerocounter[0] = zero;
-    zerocounter[1] = zero;
-    zerocounter[2] = zero;
+  hash_map<basic_block, vec<counters>> table;
+  counters zerocounter;
+  zerocounter.e = NULL;
+  zerocounter[0] = zero;
+  zerocounter[1] = zero;
+  zerocounter[2] = zero;
 
-    unsigned xi = 0;
-    bool increment = false;
-    tree rhs = build_int_cst (gcov_type_node, 1ULL << xi);
-    for (basic_block current : expr)
+  unsigned xi = 0;
+  bool increment = false;
+  tree rhs = build_int_cst (gcov_type_node, 1ULL << xi);
+  for (basic_block current : expr)
     {
-	vec<counters>& candidates = table.get_or_insert (current);
-	if (candidates.is_empty ())
-	    candidates.safe_push (zerocounter);
-	counters prev = resolve_counters (candidates);
+      vec<counters> &candidates = table.get_or_insert (current);
+      if (candidates.is_empty ())
+	candidates.safe_push (zerocounter);
+      counters prev = resolve_counters (candidates);
 
-	if (increment)
+      if (increment)
 	{
-	    xi += 1;
-	    gcc_checking_assert (xi < sizeof (uint64_t) * BITS_PER_UNIT);
-	    rhs = build_int_cst (gcov_type_node, 1ULL << xi);
-	    increment = false;
+	  xi += 1;
+	  gcc_checking_assert (xi < sizeof (uint64_t) * BITS_PER_UNIT);
+	  rhs = build_int_cst (gcov_type_node, 1ULL << xi);
+	  increment = false;
 	}
 
-	for (edge e : current->succs)
+      for (edge e : current->succs)
 	{
-	    counters next = prev;
-	    next.e = e;
+	  counters next = prev;
+	  next.e = e;
 
-	    if (bitmap_bit_p (core, e->src->index) && (e->flags & EDGE_CONDITION))
+	  if (bitmap_bit_p (core, e->src->index) && (e->flags & EDGE_CONDITION))
 	    {
-		const int k = condition_index (e->flags);
-		next[k] = emit_bitwise_op (e, prev[k], BIT_IOR_EXPR, rhs);
-		if (masks[2*xi + k])
+	      const int k = condition_index (e->flags);
+	      next[k] = emit_bitwise_op (e, prev[k], BIT_IOR_EXPR, rhs);
+	      if (masks[2 * xi + k])
 		{
-		    tree m = build_int_cst (gcov_type_node, masks[2*xi + k]);
-		    next[2] = emit_bitwise_op (e, prev[2], BIT_IOR_EXPR, m);
+		  tree m = build_int_cst (gcov_type_node, masks[2 * xi + k]);
+		  next[2] = emit_bitwise_op (e, prev[2], BIT_IOR_EXPR, m);
 		}
-		increment = true;
+	      increment = true;
 	    }
-	    else if (e->flags & EDGE_COMPLEX)
+	  else if (e->flags & EDGE_COMPLEX)
 	    {
-		/* A complex edge has been taken - wipe the accumulators and
-		   poison the mask so that this path does not contribute to
-		   coverage.  */
-		next[0] = poison;
-		next[1] = poison;
-		next[2] = poison;
+	      /* A complex edge has been taken - wipe the accumulators and
+		 poison the mask so that this path does not contribute to
+		 coverage.  */
+	      next[0] = poison;
+	      next[1] = poison;
+	      next[2] = poison;
 	    }
-	    table.get_or_insert (e->dest).safe_push (next);
+	  table.get_or_insert (e->dest).safe_push (next);
 	}
     }
 
-    /* Since this is also the return value, the number of conditions, make sure
-       to include the increment of the last basic block.  */
-    if (increment)
-	xi += 1;
+  /* Since this is also the return value, the number of conditions, make sure
+     to include the increment of the last basic block.  */
+  if (increment)
+    xi += 1;
 
-    gcc_assert (xi == bitmap_count_bits (core));
+  gcc_assert (xi == bitmap_count_bits (core));
 
-    const tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
-    const bool atomic = flag_profile_update == PROFILE_UPDATE_ATOMIC;
-    const tree atomic_ior = builtin_decl_explicit
-	(TYPE_PRECISION (gcov_type_node) > 32
-	 ? BUILT_IN_ATOMIC_FETCH_OR_8
-	 : BUILT_IN_ATOMIC_FETCH_OR_4);
+  const tree relaxed = build_int_cst (integer_type_node, MEMMODEL_RELAXED);
+  const bool atomic = flag_profile_update == PROFILE_UPDATE_ATOMIC;
+  const tree atomic_ior
+    = builtin_decl_explicit (TYPE_PRECISION (gcov_type_node) > 32
+			     ? BUILT_IN_ATOMIC_FETCH_OR_8
+			     : BUILT_IN_ATOMIC_FETCH_OR_4);
 
-    /* Flush to the gcov accumulators.  */
-    for (const basic_block b : expr)
+  /* Flush to the gcov accumulators.  */
+  for (const basic_block b : expr)
     {
-	if (!bitmap_bit_p (core, b->index))
-	    continue;
+      if (!bitmap_bit_p (core, b->index))
+	continue;
 
-	for (edge e : b->succs)
+      for (edge e : b->succs)
 	{
-	    /* Flush the accumulators on leaving the Boolean function.  The
-	       destination may be inside the function only when it returns to
-	       the loop header, such as do { ... } while (x);  */
-	    if (bitmap_bit_p (allg, e->dest->index)) {
-		if (!(e->flags & EDGE_DFS_BACK))
-		    continue;
-		if (e->dest != expr[0])
-		    continue;
+	  /* Flush the accumulators on leaving the Boolean function.  The
+	     destination may be inside the function only when it returns to
+	     the loop header, such as do { ... } while (x);  */
+	  if (bitmap_bit_p (allg, e->dest->index))
+	    {
+	      if (!(e->flags & EDGE_DFS_BACK))
+		continue;
+	      if (e->dest != expr[0])
+		continue;
 	    }
 
-	    vec<counters> *cands = table.get (e->dest);
-	    gcc_assert (cands);
-	    counters *prevp = find_counters (*cands, e);
-	    gcc_assert (prevp);
-	    counters prev = *prevp;
+	  vec<counters> *cands = table.get (e->dest);
+	  gcc_assert (cands);
+	  counters *prevp = find_counters (*cands, e);
+	  gcc_assert (prevp);
+	  counters prev = *prevp;
 
-	    /* _true &= ~mask, _false &= ~mask  */
-	    counters next;
-	    next[2] = emit_bitwise_op (e, prev[2], BIT_NOT_EXPR);
-	    next[0] = emit_bitwise_op (e, prev[0], BIT_AND_EXPR, next[2]);
-	    next[1] = emit_bitwise_op (e, prev[1], BIT_AND_EXPR, next[2]);
+	  /* _true &= ~mask, _false &= ~mask  */
+	  counters next;
+	  next[2] = emit_bitwise_op (e, prev[2], BIT_NOT_EXPR);
+	  next[0] = emit_bitwise_op (e, prev[0], BIT_AND_EXPR, next[2]);
+	  next[1] = emit_bitwise_op (e, prev[1], BIT_AND_EXPR, next[2]);
 
-	    /* _global_true |= _true, _global_false |= _false  */
-	    for (size_t k = 0; k != 2; ++k)
+	  /* _global_true |= _true, _global_false |= _false  */
+	  for (size_t k = 0; k != 2; ++k)
 	    {
-		tree ref = tree_coverage_counter_ref (GCOV_COUNTER_CONDS,
-						      2*condno + k);
-		if (atomic)
+	      tree ref = tree_coverage_counter_ref (GCOV_COUNTER_CONDS,
+						    2 * condno + k);
+	      if (atomic)
 		{
-		    ref = unshare_expr (ref);
-		    gcall *flush = gimple_build_call (atomic_ior, 3,
-						      build_addr (ref),
-						      next[k], relaxed);
-		    gsi_insert_on_edge (e, flush);
+		  ref = unshare_expr (ref);
+		  gcall *flush = gimple_build_call (atomic_ior, 3,
+						    build_addr (ref),
+						    next[k], relaxed);
+		  gsi_insert_on_edge (e, flush);
 		}
-		else
+	      else
 		{
-		    tree get = emit_assign (e, ref);
-		    tree put = emit_bitwise_op (e, next[k], BIT_IOR_EXPR, get);
-		    emit_assign (e, unshare_expr (ref), put);
+		  tree get = emit_assign (e, ref);
+		  tree put = emit_bitwise_op (e, next[k], BIT_IOR_EXPR, get);
+		  emit_assign (e, unshare_expr (ref), put);
 		}
 	    }
 	}
     }
 
-    return xi;
+  return xi;
 }
 
 #undef CONDITIONS_MAX_TERMS
@@ -1176,10 +1203,9 @@ instrument_decisions (array_slice<basic_block> expr, size_t condno,
 /* Do initialization work for the edge profiler.  */
 
 /* Add code:
-   __thread gcov*	__gcov_indirect_call.counters; // pointer to actual counter
-   __thread void*	__gcov_indirect_call.callee; // actual callee address
-   __thread int __gcov_function_counter; // time profiler function counter
-*/
+   __thread gcov *__gcov_indirect_call.counters; // pointer to actual counter
+   __thread void *__gcov_indirect_call.callee; // actual callee address
+   __thread int __gcov_function_counter; // time profiler function counter  */
 static void
 init_ic_make_global_vars (void)
 {
@@ -1235,10 +1261,10 @@ gimple_init_gcov_profiler (void)
 
       /* void (*) (gcov_type *, gcov_type, int, unsigned)  */
       interval_profiler_fn_type
-	      = build_function_type_list (void_type_node,
-					  gcov_type_ptr, gcov_type_node,
-					  integer_type_node,
-					  unsigned_type_node, NULL_TREE);
+	= build_function_type_list (void_type_node,
+				    gcov_type_ptr, gcov_type_node,
+				    integer_type_node,
+				    unsigned_type_node, NULL_TREE);
       fn_name = concat ("__gcov_interval_profiler", fn_suffix, NULL);
       tree_interval_profiler_fn = build_fn_decl (fn_name,
 						 interval_profiler_fn_type);
@@ -1250,9 +1276,9 @@ gimple_init_gcov_profiler (void)
 
       /* void (*) (gcov_type *, gcov_type)  */
       pow2_profiler_fn_type
-	      = build_function_type_list (void_type_node,
-					  gcov_type_ptr, gcov_type_node,
-					  NULL_TREE);
+	= build_function_type_list (void_type_node,
+				    gcov_type_ptr, gcov_type_node,
+				    NULL_TREE);
       fn_name = concat ("__gcov_pow2_profiler", fn_suffix, NULL);
       tree_pow2_profiler_fn = build_fn_decl (fn_name, pow2_profiler_fn_type);
       free (const_cast<char *> (fn_name));
@@ -1263,9 +1289,9 @@ gimple_init_gcov_profiler (void)
 
       /* void (*) (gcov_type *, gcov_type)  */
       topn_values_profiler_fn_type
-	      = build_function_type_list (void_type_node,
-					  gcov_type_ptr, gcov_type_node,
-					  NULL_TREE);
+	= build_function_type_list (void_type_node,
+				    gcov_type_ptr, gcov_type_node,
+				    NULL_TREE);
       fn_name = concat ("__gcov_topn_values_profiler", fn_suffix, NULL);
       tree_topn_values_profiler_fn
 	= build_fn_decl (fn_name, topn_values_profiler_fn_type);
@@ -1280,10 +1306,10 @@ gimple_init_gcov_profiler (void)
 
       /* void (*) (gcov_type, void *)  */
       ic_profiler_fn_type
-	       = build_function_type_list (void_type_node,
-					  gcov_type_node,
-					  ptr_type_node,
-					  NULL_TREE);
+	= build_function_type_list (void_type_node,
+				    gcov_type_node,
+				    ptr_type_node,
+				    NULL_TREE);
       fn_name = concat ("__gcov_indirect_call_profiler_v4", fn_suffix, NULL);
       tree_indirect_call_profiler_fn
 	= build_fn_decl (fn_name, ic_profiler_fn_type);
@@ -1306,8 +1332,8 @@ gimple_init_gcov_profiler (void)
 
       /* void (*) (gcov_type *, gcov_type)  */
       average_profiler_fn_type
-	      = build_function_type_list (void_type_node,
-					  gcov_type_ptr, gcov_type_node, NULL_TREE);
+	= build_function_type_list (void_type_node,
+				    gcov_type_ptr, gcov_type_node, NULL_TREE);
       fn_name = concat ("__gcov_average_profiler", fn_suffix, NULL);
       tree_average_profiler_fn = build_fn_decl (fn_name,
 						average_profiler_fn_type);
@@ -1325,7 +1351,7 @@ gimple_init_gcov_profiler (void)
 		     DECL_ATTRIBUTES (tree_ior_profiler_fn));
 
       /* LTO streamer needs assembler names.  Because we create these decls
-         late, we need to initialize them by hand.  */
+	 late, we need to initialize them by hand.  */
       DECL_ASSEMBLER_NAME (tree_interval_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_pow2_profiler_fn);
       DECL_ASSEMBLER_NAME (tree_topn_values_profiler_fn);

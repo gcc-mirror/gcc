@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 enum E1 {
     E2(E2),
     None,

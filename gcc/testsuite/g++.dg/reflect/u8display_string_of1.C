@@ -17,6 +17,7 @@ struct B {};
 struct S : B {
   int mem;
   int : 0;
+  union { int a; };
 };
 struct T {
   T () {}
@@ -106,6 +107,7 @@ foo (int a, const long b, T c, int d[4], T &e)
   static_assert (u8display_string_of (^^S) == u8"S");
   static_assert (u8display_string_of (^^S::mem) == u8"S::mem");
   static_assert (u8display_string_of (members_of (^^S, ctx)[1]) == u8"S::<unnamed bit-field>");
+  static_assert (u8display_string_of (nonstatic_data_members_of (^^S, ctx)[1]) == u8"S::<anonymous union>");
   static_assert (u8display_string_of (^^TCls) == u8"template<auto <anonymous> > struct TCls");
   static_assert (u8display_string_of (^^TFn) == u8"template<auto <anonymous> > void TFn()");
   static_assert (u8display_string_of (^^TVar) == u8"template<auto <anonymous> > int TVar<<anonymous> >");
@@ -145,6 +147,7 @@ namespace NS5 {
   struct S : B {
     int mem;
     int : 0;
+    union { int a; };
   };
   struct T {
     T () {}
@@ -212,6 +215,7 @@ namespace NS5 {
     static_assert (u8display_string_of (^^S) == u8"NS5::S");
     static_assert (u8display_string_of (^^S::mem) == u8"NS5::S::mem");
     static_assert (u8display_string_of (members_of (^^S, ctx)[1]) == u8"NS5::S::<unnamed bit-field>");
+    static_assert (u8display_string_of (nonstatic_data_members_of (^^S, ctx)[1]) == u8"NS5::S::<anonymous union>");
     static_assert (u8display_string_of (^^TCls) == u8"template<auto <anonymous> > struct NS5::TCls");
     static_assert (u8display_string_of (^^TFn) == u8"template<auto <anonymous> > void NS5::TFn()");
     static_assert (u8display_string_of (^^TVar) == u8"template<auto <anonymous> > int NS5::TVar<<anonymous> >");

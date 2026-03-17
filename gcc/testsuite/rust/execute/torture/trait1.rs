@@ -1,4 +1,7 @@
 /* { dg-output "S::f\r*\nT1::f\r*\nT2::f\r*\n" } */
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 
 extern "C" {

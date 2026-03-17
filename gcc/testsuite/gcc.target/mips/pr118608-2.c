@@ -1,5 +1,5 @@
-/* { dg-do run } */
-/* { dg-options "-mabi=64 -Os" } */
+/* { dg-do compile } */
+/* { dg-options "-mabi=64 -march=octeon2" } */
 
 #define COUNT 10
 

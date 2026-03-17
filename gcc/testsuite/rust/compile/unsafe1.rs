@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn foo(_a: &i32) {}
 fn bar(_a: i32) {}
 

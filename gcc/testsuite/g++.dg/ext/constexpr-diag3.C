@@ -1,4 +1,5 @@
 // { dg-do compile { target c++26 } }
+// { dg-skip-if "" { implicit_constexpr } }
 
 struct A {
   constexpr const char *data () const { return "foo"; }

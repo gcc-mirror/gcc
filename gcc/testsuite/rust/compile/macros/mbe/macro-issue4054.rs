@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 #[allow(path_statements)]
 
 macro_rules! array_impl_default {

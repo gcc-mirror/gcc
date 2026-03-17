@@ -1,5 +1,8 @@
 // { dg-shouldfail "i8 overflow" }
 // { dg-options "-fdump-tree-original" }
+#![feature(no_core)]
+#![no_core]
+
 
 fn five() -> i8 {
     5

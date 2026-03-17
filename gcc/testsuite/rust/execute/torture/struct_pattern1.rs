@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 struct A {
     // the two warnings are invalid but this should be fixed by our lint rework
     // with this year's GSoC so ok for now

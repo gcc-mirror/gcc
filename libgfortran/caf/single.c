@@ -129,7 +129,7 @@ caf_internal_error (const char *msg, int *stat, char *errmsg,
       *stat = 1;
       if (errmsg_len > 0)
 	{
-	  int len = snprintf (errmsg, errmsg_len, msg, args);
+	  int len = vsnprintf (errmsg, errmsg_len, msg, args);
 	  if (len >= 0 && errmsg_len > (size_t) len)
 	    memset (&errmsg[len], ' ', errmsg_len - len);
 	}

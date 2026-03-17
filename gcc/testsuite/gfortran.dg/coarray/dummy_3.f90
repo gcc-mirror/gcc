@@ -15,6 +15,7 @@ program pr77871
    p%i = 42
    allocate (p2(5)[*])
    p2(:)%i = (/(i, i=0, 4)/)
+   sync all
    call s(p, 1)
    call s2(p2, 1)
 contains

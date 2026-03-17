@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 const N: usize = 2;
 const ARR: [i32; N] = [42; X];
 // { dg-error {cannot find value .X. in this scope \[E0425\]} "" { target *-*-* } .-1 }

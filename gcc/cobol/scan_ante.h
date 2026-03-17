@@ -396,14 +396,33 @@ class enter_leave_t {
   }
 };
 
-static class input_file_status_t {
+/*
+ * The lexer knows the immediate status of the input file and its line number
+ * from the PUSH, POP, and LINE directives.  It saves yylineno whenever it
+ * encounters a PUSH, and updates it for a POP.  
+ *
+ * The line number trickles into the parser by way of location.  Only the
+ * parser knows what token it is parsing.  As for the filename, the lexer
+ * queues enter/leave notices for the parser.  
+ *
+ * Whenever the parser fetches a token, it gets the current line number from
+ * yylineno, and the current filename by depleting the notification queue, if
+ * any, and using the last one.
+ */
+class input_file_status_t {
+ public:
+  struct input_pos_t { int lineno; const char *filename; };
+ private:
   std::queue <enter_leave_t> inputs;
+  std::stack<input_pos_t> positions;
  public:
   void enter(const char *filename) {
     inputs.push( enter_leave_t(parser_enter_file, filename) );
+    positions.push( input_pos_t{ yylineno, filename } );
   }
   void leave() {
     inputs.push( enter_leave_t(parser_leave_file) );
+    positions.pop();
   }
   void notify() {
     while( ! inputs.empty() ) {
@@ -412,7 +431,10 @@ static class input_file_status_t {
       inputs.pop();
     }
   }
-} input_file_status;
+  input_pos_t pending() const { assert( ! positions.empty() ); return positions.top(); }
+};
+
+static input_file_status_t input_file_status;
 
 void input_file_status_notify() { input_file_status.notify(); }
 
@@ -636,12 +658,11 @@ binary_integer_usage( const char name[]) {
 }
       
 static void
-verify_ws( const YYLTYPE& loc, const char [] /* input[] */, char ch ) {
+verify_ws( char ch ) {
   if( ! fisspace(ch) ) {
-    dialect_ok(loc, LexSeparatorE, "missing separator space");
+    dialect_ok(yylloc, LexSeparatorE, "missing separator space");
   }
 }
-#define verify_ws(C) verify_ws(yylloc, yytext, C)
 
 int
 binary_integer_usage_of( const char name[] ) {
@@ -1253,8 +1274,60 @@ integer_of( const char input[], bool is_hex = false) {
   return output;
 }
 
-
-
-
-
-
+/*
+ * Loosely parse what might be a refmod expression.  This is used to decide
+ * whether to indicate a refmod to the parser with an LPAREN token, or not,
+ * with a '(' token.  The input is known to have a first line that begins with
+ * '('., includes ':', and ends with ')'.
+ */
+static bool
+is_refmod( const char input[], const char enput[] ) {
+  if( input == enput ) return false;
+  
+  switch(*input) {
+  case '(':
+    input = std::find( ++input, enput, ')');
+    if( input == enput ) return false;
+    return is_refmod(++input, enput);
+  case ':':
+    return is_refmod(++input, enput);
+  case ')':
+    if( ++input == enput ) return true;
+    return is_refmod(input, enput);
+  default:
+    if( ISSPACE(*input) ) {
+      input = std::find_if( ++input, enput,
+                         []( char ch ) {
+                           return ! ISSPACE(ch);
+                         } );
+      return is_refmod(input, enput);
+    }
+    break;
+  }
+  input = std::find_if( input, enput,
+                        [start = *input]( char ch ) {
+                          bool yes = false;
+                          if( ISDIGIT(start) ) {
+                            switch(ch) {
+                            case '+': case '-': case '*': case '/':
+                              yes = true; break;
+                            case '.': case ',':
+                              yes = true; break;
+                            default:
+                              yes = ISDIGIT(ch);
+                              break;
+                            }
+                          } else {
+                            assert(ISALNUM(start));
+                            switch(ch) {
+                            case '-':
+                              yes = true; break;
+                            default:
+                              yes = ISALNUM(ch);
+                              break;
+                            }
+                          }
+                          return !yes;
+                        } );
+  return is_refmod(input, enput);
+}

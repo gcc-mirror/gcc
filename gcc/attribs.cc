@@ -1230,7 +1230,11 @@ make_dispatcher_decl (const tree decl)
   /* Set flags on the cgraph_node for the new decl.  */
   cgraph_node *func_node = cgraph_node::get_create (func_decl);
   func_node->dispatcher_function = true;
-  func_node->definition = true;
+  /* For targets with TARGET_HAS_FMV_TARGET_ATTRIBUTE, the resolver is created
+     unconditionally if any versioned nodes are present.
+     For !TARGET_HAS_FMV_TARGET_ATTRIBUTE, the dispatcher is only defined when
+     the default node is defined.  */
+  func_node->definition = node->definition || TARGET_HAS_FMV_TARGET_ATTRIBUTE;
 
   cgraph_function_version_info *func_v
     = func_node->insert_new_function_version ();

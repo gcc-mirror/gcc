@@ -651,10 +651,17 @@ demangle_binder (struct rust_demangler *rdm)
     return;
 
   bound_lifetimes = parse_opt_integer_62 (rdm, 'G');
+  /* Reject implausibly large lifetime counts to prevent
+     resource exhaustion from crafted symbols (PR demangler/106641).  */
+  if (bound_lifetimes > 1024)
+    {
+      rdm->errored = 1;
+      return;
+    }
   if (bound_lifetimes > 0)
     {
       PRINT ("for<");
-      for (i = 0; i < bound_lifetimes; i++)
+      for (i = 0; i < bound_lifetimes && !rdm->errored; i++)
         {
           if (i > 0)
             PRINT (", ");

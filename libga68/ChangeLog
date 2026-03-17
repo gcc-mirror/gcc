@@ -1,3 +1,12 @@
+2026-03-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.map: Add public symbols from posix and standard preludes.
+
+2026-03-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* standard.a68.in (float): Fix typo from RR and handle short* int
+	arguments properly.
+
 2026-02-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* transput.a68.in: Remove and move content to..

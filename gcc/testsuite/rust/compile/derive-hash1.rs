@@ -1,4 +1,6 @@
+#![feature(no_core)]
 #![feature(intrinsics, lang_items)]
+#![no_core]
 
 #[lang = "sized"]
 trait Sized {}
@@ -17,6 +19,8 @@ pub mod core {
     }
 
     pub mod hash {
+        use crate::Sized;
+
         pub trait Hasher {}
 
         pub trait Hash {

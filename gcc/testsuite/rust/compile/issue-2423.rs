@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 impl NonExistant {
     // { dg-error "could not resolve" "" { target *-*-* } .-1 }
     fn test() {}

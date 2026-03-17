@@ -1,5 +1,6 @@
-/* { dg-do assemble { target arm_thumb2 } } */
-/* { dg-options " -Os " } */
+/* { dg-require-effective-target arm_arch_v7a_thumb_ok } */
+/* { dg-options "-Os" } */
+/* { dg-add-options arm_arch_v7a_thumb } */
 
 int t (int a, int b, int c, int d)
 {
@@ -18,4 +19,4 @@ int t (int a, int b, int c, int d)
   return r;
 }
 
-/* { dg-final { object-size text <= 40 } } */
+/* { dg-final { scan-assembler-not {\tit[tf]*\t} } } */

@@ -1,4 +1,7 @@
 /* { dg-output "mut_deref\r*\n123\r*\n" } */
+#![feature(no_core)]
+#![no_core]
+
 #![feature(lang_items)]
 
 extern "C" {

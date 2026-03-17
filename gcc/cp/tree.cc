@@ -5912,6 +5912,12 @@ handle_annotation_attribute (tree *node, tree ARG_UNUSED (name),
       *no_add_attrs = true;
       return NULL_TREE;
     }
+  if (TREE_CODE (*node) == PARM_DECL && VOID_TYPE_P (TREE_TYPE (*node)))
+    {
+      error ("annotation on void parameter");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
   if (!type_dependent_expression_p (TREE_VALUE (args)))
     {
       if (!structural_type_p (TREE_TYPE (TREE_VALUE (args))))

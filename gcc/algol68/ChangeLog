@@ -1,3 +1,48 @@
+2026-03-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-strings.cc (a68_string_mult): Adjust to RR semantics for
+	negative or zero factor argument.
+	* ga68.texi (String operators): Adjust documentation accordingly.
+
+2026-03-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/124372
+	* a68-low-units.cc (a68_lower_denotation): Call to strtoull if
+	INT64_T_IS_LONG is not defined, strtol otherwise.
+	* a68-parser-scanner.cc (get_next_token): Use strtoul for radix
+	instead of strtol.
+
+2026-03-05  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/124322
+	* a68-low-holes.cc (a68_wrap_formal_proc_hole): Wrap functions
+	returning void properly.
+
+2026-02-27  James Bohl  <bohlj47@gmail.com>
+
+	* a68-low-prelude.cc (a68_lower_negate2): Annotate denotation
+	as being negated.
+	* a68-low-units.cc (a68_lower_denotation): Allow the full range
+	of negative values if the denotation is negated.
+	* a68-types.h (struct NODE_T): Add negated field.
+	(NEGATED): Define.
+	* a68-parser.cc (a68_new_node): Initialize NEGATED.
+
+2026-02-26  James Bohl  <bohlj47@gmail.com>
+
+	* a68-low-units.cc (a68_lower_denotation): Add error on
+	integral denotation overflow.
+
+2026-02-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-imports-archive.cc (Archive_file): Handle Darwin #1/NN
+	archive members.
+
+2026-02-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-units.cc (lower_subscript_for_trimmers): Do not revise
+	bounds if no trimscript.
+
 2026-02-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68.h: Remove prototypes for *_width functions.

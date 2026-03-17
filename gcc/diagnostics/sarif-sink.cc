@@ -3063,16 +3063,20 @@ ensure_sarif_logical_location_for (logical_locations::key k)
 
   auto sarif_logical_loc = std::make_unique<sarif_logical_location> ();
 
-  if (const char *short_name = logical_loc_mgr->get_short_name (k))
-    sarif_logical_loc->set_string ("name", short_name);
+  label_text short_name = logical_loc_mgr->get_short_name (k);
+  if (short_name.get ())
+    sarif_logical_loc->set_string ("name", short_name.get ());
 
   /* "fullyQualifiedName" property (SARIF v2.1.0 section 3.33.5).  */
-  if (const char *name_with_scope = logical_loc_mgr->get_name_with_scope (k))
-    sarif_logical_loc->set_string ("fullyQualifiedName", name_with_scope);
+  label_text name_with_scope = logical_loc_mgr->get_name_with_scope (k);
+  if (name_with_scope.get ())
+    sarif_logical_loc->set_string ("fullyQualifiedName",
+				   name_with_scope.get ());
 
   /* "decoratedName" property (SARIF v2.1.0 section 3.33.6).  */
-  if (const char *internal_name = logical_loc_mgr->get_internal_name (k))
-    sarif_logical_loc->set_string ("decoratedName", internal_name);
+  label_text internal_name = logical_loc_mgr->get_internal_name (k);
+  if (internal_name.get ())
+    sarif_logical_loc->set_string ("decoratedName", internal_name.get ());
 
   /* "kind" property (SARIF v2.1.0 section 3.33.7).  */
   enum logical_locations::kind kind = logical_loc_mgr->get_kind (k);
@@ -3118,9 +3122,11 @@ make_minimal_sarif_logical_location (logical_locations::key logical_loc)
   sarif_logical_loc->set_integer ("index", index);
 
   /* "fullyQualifiedName" property (SARIF v2.1.0 section 3.33.5).  */
-  if (const char *name_with_scope
-	= logical_loc_mgr->get_name_with_scope (logical_loc))
-    sarif_logical_loc->set_string ("fullyQualifiedName", name_with_scope);
+  label_text name_with_scope
+    = logical_loc_mgr->get_name_with_scope (logical_loc);
+  if (name_with_scope.get ())
+    sarif_logical_loc->set_string ("fullyQualifiedName",
+				   name_with_scope.get ());
 
   return sarif_logical_loc;
 }

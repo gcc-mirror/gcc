@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 enum A {
     X { inner: i32 },
     Y,

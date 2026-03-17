@@ -1,6 +1,11 @@
 // { dg-options "-w" }
+#![feature(no_core)]
+#![no_core]
+
+#![feature(no_core)]
 #![feature(intrinsics)]
 #![feature(lang_items)]
+#![no_core]
 
 #[lang = "sized"]
 trait Sized {}
@@ -19,6 +24,8 @@ pub mod core {
     pub mod slice {
         use crate::core::marker::PhantomData;
         use crate::core::option::Option;
+        use crate::offset;
+        use crate::transmute;
 
         impl<T> crate::core::iter::IntoIterator for &[T] {
             type Item = &T;

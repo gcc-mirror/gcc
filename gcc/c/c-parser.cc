@@ -960,7 +960,11 @@ c_parser_consume_token (c_parser *parser)
   gcc_assert (parser->tokens_avail >= 1);
   gcc_assert (parser->tokens[0].type != CPP_EOF);
   gcc_assert (!parser->in_pragma || parser->tokens[0].type != CPP_PRAGMA_EOL);
-  gcc_assert (parser->error || parser->tokens[0].type != CPP_PRAGMA);
+  /* CPP_PRAGMA should not show up here except if there was an error or inside
+     another pragma.  */
+  gcc_assert (parser->in_pragma
+	      || parser->error
+	      || parser->tokens[0].type != CPP_PRAGMA);
   parser->last_token_location = parser->tokens[0].location;
   if (parser->tokens != &parser->tokens_buf[0])
     parser->tokens++;

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 mod frob {}
 
 use foo::bar::baz; // { dg-error "unresolved import .foo::bar::baz." }

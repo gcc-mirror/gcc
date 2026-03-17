@@ -1,4 +1,7 @@
 // ErrorCode::E0308
+#![feature(no_core)]
+#![no_core]
+
 #![allow(unused)]
 fn main() {
     fn plus_one(x: i32) -> i32 { 

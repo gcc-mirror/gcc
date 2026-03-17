@@ -1,3 +1,23 @@
+2026-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124365
+	* simple-object.c (handle_lto_debug_sections): Also copy over
+	.ARM.attributes section.
+
+2026-02-26  Ruslan Valiyev  <linuxoid@gmail.com>
+
+	PR demangler/106641
+	* rust-demangle.c (demangle_binder): Reject bound_lifetimes
+	above 1024 to prevent resource exhaustion from crafted symbols.
+	Add rdm->errored check in the loop condition.
+	* testsuite/rust-demangle-expected: Add regression test.
+
+2026-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* simple-object-mach-o.c
+	(simple_object_mach_o_segment): Account for the offset of
+	this Mach-O object from the start of any container.
+
 2026-02-12  LIU Hao  <lh_mouse@126.com>
 
 	* vprintf-support.c (do_strtoul): New function.

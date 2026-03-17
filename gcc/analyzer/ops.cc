@@ -1481,7 +1481,7 @@ ggoto_edge_op::
 apply_constraints (const superedge *,
 		   region_model &model,
 		   region_model_context *ctxt,
-		   std::unique_ptr<rejected_constraint> */*out_rc*/) const
+		   std::unique_ptr<rejected_constraint> *out_rc) const
 {
   const ggoto &goto_stmt = get_ggoto ();
   tree dest = gimple_goto_dest (&goto_stmt);
@@ -1497,7 +1497,15 @@ apply_constraints (const superedge *,
 	= mgr->get_ptr_svalue (ptr_type_node, dst_label_reg);
 
       if (!model.add_constraint (dest_sval, EQ_EXPR, dst_label_ptr, ctxt))
-	return false;
+	{
+	  if (out_rc)
+	    *out_rc
+	      = std::make_unique <rejected_op_constraint> (model,
+							   dest_sval,
+							   EQ_EXPR,
+							   dst_label_ptr);
+	  return false;
+	}
     }
 
   return true;

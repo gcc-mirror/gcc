@@ -1,4 +1,7 @@
 // check that macros by example do not get inserted in ribs like regular items
+#![feature(no_core)]
+#![no_core]
+
 pub mod foo {
     pub mod bar {
         pub mod baz {

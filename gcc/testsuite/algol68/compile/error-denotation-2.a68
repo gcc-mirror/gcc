@@ -1,0 +1,7 @@
+{ dg-options {-fstropping=supper} }
+{ dg-require-effective-target int32 }
+begin int i0 := 2147483648; { dg-error "denotation is too large for int" }
+      int i1 := 2147483647;
+      int i2 := -2147483648;
+      skip
+end

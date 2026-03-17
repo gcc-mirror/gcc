@@ -42,17 +42,18 @@ DerivePartialEq::partialeq_impls (
   std::unique_ptr<AssociatedItem> &&eq_fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  auto eq = builder.type_path (LangItem::Kind::EQ);
+  auto eq = [this] () { return builder.type_path (LangItem::Kind::EQ); };
   auto speq = builder.type_path (LangItem::Kind::STRUCTURAL_PEQ);
 
   auto trait_items = vec (std::move (eq_fn));
 
   // no extra bound on StructuralPeq
-  auto peq_generics
-    = setup_impl_generics (name, type_generics, builder.trait_bound (eq));
+  auto peq_generics = setup_impl_generics (name, type_generics, [&, this] () {
+    return builder.trait_bound (eq ());
+  });
   auto speq_generics = setup_impl_generics (name, type_generics);
 
-  auto peq = builder.trait_impl (eq, std::move (peq_generics.self_type),
+  auto peq = builder.trait_impl (eq (), std::move (peq_generics.self_type),
 				 std::move (trait_items),
 				 std::move (peq_generics.impl));
 

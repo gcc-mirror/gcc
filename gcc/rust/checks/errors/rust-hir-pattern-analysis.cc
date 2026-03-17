@@ -1315,8 +1315,12 @@ lower_struct_pattern (Resolver::TypeCheckContext *ctx,
 	  break;
 	case HIR::StructPatternField::ItemType::TUPLE_PAT:
 	  {
-	    // TODO: tuple: pat
-	    rust_unreachable ();
+	    HIR::StructPatternFieldTuplePat *tuple_pat
+	      = static_cast<HIR::StructPatternFieldTuplePat *> (elem.get ());
+	    int field_idx = tuple_pat->get_index ();
+	    fields.at (field_idx) = lower_pattern (
+	      ctx, tuple_pat->get_tuple_pattern (),
+	      variant->get_fields ().at (field_idx)->get_field_type ());
 	  }
 	  break;
 	default:

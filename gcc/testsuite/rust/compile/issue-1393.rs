@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn tst() {
     let a = 123;
     let b = 0;

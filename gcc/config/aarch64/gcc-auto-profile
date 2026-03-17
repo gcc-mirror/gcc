@@ -43,11 +43,11 @@ if [ "$use_brbe" = true ] ; then
     echo >&2 "Warning: branch profiling may not be functional in VMs"
   fi
   set -x
-  perf record -j any,$FLAGS "$@"
+  perf record --inherit -o perf.data -j any,$FLAGS "$@"
   set +x
 else
   echo >&2 "Warning: branch profiling may not be functional without BRBE"
   set -x
-  perf record "$@"
+  perf record --inherit -o perf.data "$@"
   set +x
 fi

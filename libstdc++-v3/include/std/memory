@@ -125,6 +125,7 @@
 #define __glibcxx_want_to_address
 #define __glibcxx_want_transparent_operators
 #define __glibcxx_want_smart_ptr_owner_equality
+#define __glibcxx_want_allocate_at_least
 #include <bits/version.h>
 
 #if __cplusplus >= 201103L && __cplusplus <= 202002L && _GLIBCXX_HOSTED

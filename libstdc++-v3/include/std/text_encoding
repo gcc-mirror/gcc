@@ -38,7 +38,7 @@
 #define __glibcxx_want_text_encoding
 #include <bits/version.h>
 
-#ifdef __cpp_lib_text_encoding
+#ifdef __cpp_lib_text_encoding // >= C++26
 #include <compare>
 #include <string_view>
 #include <bits/functional_hash.h> // hash
@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * @brief An interface for accessing the IANA Character Sets registry.
    * @ingroup locales
-   * @since C++23
+   * @since C++26
    */
   struct text_encoding
   {

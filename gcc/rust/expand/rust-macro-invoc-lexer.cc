@@ -27,7 +27,7 @@ MacroInvocLexer::peek_token (int n)
   if ((offs + n) >= token_stream.size ())
     return Token::make (END_OF_FILE, UNDEF_LOCATION);
 
-  return token_stream.at (offs + n)->get_tok_ptr ();
+  return token_stream.at (offs + n);
 }
 
 void
@@ -39,14 +39,12 @@ MacroInvocLexer::split_current_token (TokenId new_left, TokenId new_right)
   auto l_tok = Token::make (new_left, current_token->get_locus ());
   auto r_tok = Token::make (new_right, current_token->get_locus ());
 
-  token_stream.erase (current_pos);
+  current_pos = token_stream.erase (current_pos);
 
   // `insert` inserts before the specified position, so we insert the right one
   // then the left
-  token_stream.insert (current_pos,
-		       std::unique_ptr<AST::Token> (new AST::Token (r_tok)));
-  token_stream.insert (current_pos,
-		       std::unique_ptr<AST::Token> (new AST::Token (l_tok)));
+  current_pos = token_stream.insert (current_pos, r_tok);
+  token_stream.insert (current_pos, l_tok);
 }
 
 void
@@ -56,12 +54,12 @@ MacroInvocLexer::split_current_token (std::vector<TokenPtr> new_tokens)
 
   auto current_pos = token_stream.begin () + offs;
 
-  token_stream.erase (current_pos);
+  current_pos = token_stream.erase (current_pos);
 
-  for (size_t i = 1; i < new_tokens.size (); i++)
+  for (auto &tk : new_tokens)
     {
-      token_stream.insert (current_pos + i, std::unique_ptr<AST::Token> (
-					      new AST::Token (new_tokens[i])));
+      current_pos = token_stream.insert (current_pos, std::move (tk));
+      current_pos++;
     }
 }
 
@@ -73,7 +71,8 @@ MacroInvocLexer::get_token_slice (size_t start_idx, size_t end_idx) const
   rust_assert (end_idx < token_stream.size ());
 
   for (size_t i = start_idx; i < end_idx; i++)
-    slice.emplace_back (token_stream[i]->clone_token ());
+    slice.emplace_back (
+      std::unique_ptr<AST::Token> (new AST::Token (token_stream[i])));
 
   return slice;
 }

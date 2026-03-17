@@ -1143,6 +1143,19 @@ protected:
   Item *clone_stmt_impl () const final override { return clone_item_impl (); }
 };
 
+class GlobContainer
+{
+public:
+  enum class Kind
+  {
+    Crate,
+    Module,
+    Enum,
+  };
+
+  virtual Kind get_glob_container_kind () const = 0;
+};
+
 // Item that supports visibility - abstract base class
 class VisItem : public Item
 {
@@ -1437,6 +1450,28 @@ class TraitBound;
 class Type : public Visitable
 {
 public:
+  enum Kind
+  {
+    MacroInvocation,
+    TypePath,
+    QualifiedPathInType,
+    ImplTrait,
+    TraitObject,
+    Parenthesised,
+    ImplTraitTypeOneBound,
+    TraitObjectTypeOneBound,
+    Tuple,
+    Never,
+    RawPointer,
+    Reference,
+    Array,
+    Slice,
+    Inferred,
+    BareFunction,
+  };
+
+  virtual Kind get_type_kind () const = 0;
+
   // Unique pointer custom clone function
   std::unique_ptr<Type> clone_type () const
   {
@@ -2021,7 +2056,7 @@ public:
 };
 
 // A crate AST object - holds all the data for a single compilation unit
-struct Crate
+struct Crate final : public GlobContainer
 {
   std::vector<Attribute> inner_attrs;
   // dodgy spacing required here
@@ -2081,6 +2116,8 @@ public:
     // TODO: is this the best way to do this?
   }
 
+  void inject_extern_crate (std::string name);
+
   NodeId get_node_id () const { return node_id; }
   const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
   std::vector<Attribute> &get_inner_attrs () { return inner_attrs; }
@@ -2093,6 +2130,11 @@ public:
   void set_items (std::vector<std::unique_ptr<AST::Item>> &&new_items)
   {
     items = std::move (new_items);
+  }
+
+  GlobContainer::Kind get_glob_container_kind () const override
+  {
+    return GlobContainer::Kind::Crate;
   }
 };
 

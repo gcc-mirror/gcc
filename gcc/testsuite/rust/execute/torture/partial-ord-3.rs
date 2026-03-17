@@ -1,5 +1,8 @@
 /* { dg-output "x == y\r*\nx > z\r*\nx < z\r*\nx >= y\r*\nx <= y\r*\n" } */
 /* { dg-options "-w" } */
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(intrinsics, lang_items)]
 

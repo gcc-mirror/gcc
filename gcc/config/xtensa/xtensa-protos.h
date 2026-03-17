@@ -80,6 +80,7 @@ extern void xtensa_adjust_reg_alloc_order (void);
 extern enum reg_class xtensa_regno_to_class (int regno);
 extern HOST_WIDE_INT xtensa_initial_elimination_offset (int from, int to);
 extern const char **xtensa_get_config_strings (void);
-extern rtl_opt_pass *make_pass_xtensa_largeconst (gcc::context *);
+extern rtl_opt_pass *make_pass_xtensa_largeconst1 (gcc::context *);
+extern rtl_opt_pass *make_pass_xtensa_largeconst2 (gcc::context *);
 
 #endif /* !__XTENSA_PROTOS_H__ */

@@ -13,8 +13,8 @@ struct T {
       int d;
       int e[4];
       int f;
-    } v;
-  } u;
+    } __attribute__((preserve_access_index)) v;
+  } __attribute__((preserve_access_index)) u;
 } __attribute__((preserve_access_index));
 
 

@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! impl_uint {
     ($($ty:ident),*) => {
         impl $ty {} // { dg-error "metavariable is still repeating at this depth" }

@@ -818,6 +818,11 @@ public:
     return Item::Kind::MacroInvocation;
   }
 
+  Type::Kind get_type_kind () const override
+  {
+    return Type::Kind::MacroInvocation;
+  }
+
 protected:
   Item *clone_item_impl () const override
   {
@@ -1129,7 +1134,7 @@ private:
   std::unique_ptr<Parser<MacroInvocLexer>> parser;
 
 public:
-  AttributeParser (std::vector<std::unique_ptr<Token>> token_stream,
+  AttributeParser (std::vector<const_TokenPtr> token_stream,
 		   int stream_start_pos = 0);
 
   ~AttributeParser ();

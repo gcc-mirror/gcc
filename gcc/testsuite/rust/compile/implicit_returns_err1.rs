@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn test(x: i32) -> i32 {
     if x > 1 { // { dg-error "mismatched types, expected .... but got .<integer>." }
         1

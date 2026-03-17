@@ -696,21 +696,11 @@ check_add_new_component (gfc_symbol *type, gfc_expr *e, gfc_symbol *add_data)
 	    check_add_new_component (type, actual->expr, add_data);
 	  break;
 	case EXPR_FUNCTION:
-	  if (!e->symtree->n.sym->attr.pure
-	      && !e->symtree->n.sym->attr.elemental
-	      && !(e->value.function.isym
-		   && (e->value.function.isym->pure
-		       || e->value.function.isym->elemental)))
-	    /* Treat non-pure/non-elemental functions.  */
-	    check_add_new_comp_handle_array (e, type, add_data);
-	  else
-	    for (gfc_actual_arglist *actual = e->value.function.actual; actual;
-		 actual = actual->next)
-	      check_add_new_component (type, actual->expr, add_data);
+	  check_add_new_comp_handle_array (e, type, add_data);
 	  break;
 	case EXPR_VARIABLE:
-	    check_add_new_comp_handle_array (e, type, add_data);
-	    break;
+	  check_add_new_comp_handle_array (e, type, add_data);
+	  break;
 	case EXPR_ARRAY:
 	case EXPR_PPC:
 	case EXPR_STRUCTURE:

@@ -1,4 +1,7 @@
 // { dg-output "Value is 10\r*\n" }
+#![feature(no_core)]
+#![no_core]
+
 
 const BAZ: i32 = 10;
 

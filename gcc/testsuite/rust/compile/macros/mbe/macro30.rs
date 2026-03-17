@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 macro_rules! m {
     ($e:expr $f:expr) => {
         // { dg-error "fragment is not allowed after .expr. fragment" "" { target *-*-* } .-1 }

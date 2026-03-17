@@ -1,4 +1,7 @@
 // { dg-output "2\r*" }
+#![feature(no_core)]
+#![no_core]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

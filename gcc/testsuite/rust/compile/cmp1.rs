@@ -1,5 +1,8 @@
 // { dg-options "-w" }
 // taken from https://github.com/rust-lang/rust/blob/e1884a8e3c3e813aada8254edfa120e85bf5ffca/library/core/src/cmp.rs#L98
+#![feature(no_core)]
+#![no_core]
+
 
 #![feature(lang_items)]
 #[lang = "sized"]

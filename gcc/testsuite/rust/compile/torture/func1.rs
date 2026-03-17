@@ -1,3 +1,6 @@
+#![feature(no_core)]
+#![no_core]
+
 fn not_void() -> i32 {
     8
 }

@@ -1,4 +1,7 @@
 // https://doc.rust-lang.org/error_codes/E0045.html
+#![feature(no_core)]
+#![no_core]
+
 #![allow(unused)]
 fn main() {
     extern "Rust" {

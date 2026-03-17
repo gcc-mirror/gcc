@@ -2562,20 +2562,30 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
      force masking.  */
   if (loop_vinfo
       && dr_safe_speculative_read_required (stmt_info)
-      && LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-      && (mat_gather_scatter_p (*memory_access_type)
-	  || *memory_access_type == VMAT_STRIDED_SLP))
+      && LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
     {
-      if (dump_enabled_p ())
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "early break not supported: cannot peel for "
-			   "alignment. With non-contiguous memory vectorization"
-			   " could read out of bounds at %G ",
-			   STMT_VINFO_STMT (stmt_info));
-      if (inbounds)
-	LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
-      else
-	return false;
+      if (mat_gather_scatter_p (*memory_access_type)
+	  || *memory_access_type == VMAT_STRIDED_SLP)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "early break not supported: cannot peel for "
+			     "alignment. With non-contiguous memory vectorization"
+			     " could read out of bounds at %G ",
+			     STMT_VINFO_STMT (stmt_info));
+	  if (inbounds)
+	    LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	  else
+	    return false;
+	}
+      /* Block-level alignment: Even though individual accesses of
+	 VMAT_ELEMENTWISE type do not cause alignment problems, loading the
+	 whole vector's worth of values in a speculative early-break context
+	 might cross a page boundary.  Set the alignment scheme to `dr_aligned'
+	 here in order to force checking of whether such accesses meet
+	 alignment criteria.  */
+      else if (*memory_access_type == VMAT_ELEMENTWISE && !inbounds)
+	*alignment_support_scheme = dr_aligned;
     }
 
   /* If this DR needs alignment for correctness, we must ensure the target

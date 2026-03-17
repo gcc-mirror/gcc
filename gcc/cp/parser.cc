@@ -6158,7 +6158,7 @@ cp_parser_splice_specifier (cp_parser *parser, bool template_p = false,
      int q = A ().[: ^^x :];
      should be an error -- x is not a member-qualified name and isn't
      in scope.  */
-  parser->context->object_type = NULL;
+  parser->context->object_type = NULL_TREE;
   tree expr = cp_parser_constant_expression (parser,
 					     /*allow_non_constant_p=*/false,
 					     /*non_constant_p=*/nullptr,
@@ -6318,7 +6318,8 @@ cp_parser_splice_expression (cp_parser *parser, bool template_p,
 
   if (error_operand_p (t))
     {
-      gcc_assert (seen_error ());
+      gcc_assert (seen_error ()
+		  || cp_parser_uncommitted_to_tentative_parse_p (parser));
       return error_mark_node;
     }
 
@@ -9733,14 +9734,10 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	      parser->object_scope = NULL_TREE;
 	    }
 	  if ((parser->scope || splice_p) && name && BASELINK_P (name))
-	    adjust_result_of_qualified_name_lookup
-	      (name,
-	       /* For obj->[:^^R:] we won't have parser->scope, but we still
-		  have to perform this adjustment.  */
-	       (splice_p
-		? BINFO_TYPE (BASELINK_ACCESS_BINFO (name))
-		: parser->scope),
-	       scope);
+	    /* For obj->[:^^R:] we won't have parser->scope, but we still
+	       have to perform this adjustment.  */
+	    name = (adjust_result_of_qualified_name_lookup
+		    (name, parser->scope, scope));
 	  postfix_expression
 	    = finish_class_member_access_expr (postfix_expression, name,
 					       template_p,
@@ -30624,6 +30621,18 @@ cp_parser_class_head (cp_parser* parser,
   if (type && type != error_mark_node)
     start_lambda_scope (TYPE_NAME (type));
 
+  /* Check that it's valid to declare this type here.  */
+  if (modules_p () && type)
+    {
+      if (module_may_redeclare (TYPE_NAME (type)))
+	{
+	  set_instantiating_module (TYPE_NAME (type));
+	  set_defining_module (TYPE_NAME (type));
+	}
+      else
+	type = NULL_TREE;
+    }
+
   /* We will have entered the scope containing the class; the names of
      base classes should be looked up in that context.  For example:
 
@@ -31822,7 +31831,7 @@ cp_parser_base_specifier (cp_parser* parser)
   tree std_attrs = cp_parser_std_attribute_spec_seq (parser);
   tree annotations = NULL_TREE;
 
-  if (std_attrs != NULL_TREE)
+  if (std_attrs != NULL_TREE && std_attrs != error_mark_node)
     {
       tree *pannotations = &annotations;
       for (tree attr = std_attrs; attr; attr = TREE_CHAIN (attr))
@@ -31930,21 +31939,11 @@ cp_parser_base_specifier (cp_parser* parser)
   template_p = class_scope_p && cp_parser_optional_template_keyword (parser);
 
   if (typename_token && cp_lexer_peek_token (parser->lexer) != splice_token)
-    {
-      /* Emit deferred diagnostics for invalid typename keyword if
-	 cp_parser_nested_name_specifier_opt parsed splice-scope-specifier.  */
-      // TODO This error should be removed:
-      // struct A { struct B {}; };
-      // typename A::B b;
-      // is valid.
-      if (!processing_template_decl)
-	error_at (typename_token->location,
-		  "keyword %<typename%> not allowed outside of templates");
-      else
-	error_at (typename_token->location,
-		  "keyword %<typename%> not allowed in this context "
-		  "(the base class is implicitly a type)");
-    }
+    /* Emit deferred diagnostics for invalid typename keyword if
+       cp_parser_nested_name_specifier_opt parsed splice-scope-specifier.  */
+    error_at (typename_token->location,
+	      "keyword %<typename%> not allowed in this context "
+	      "(the base class is implicitly a type)");
 
   if (!parser->scope
       && cp_lexer_next_token_is_decltype (parser->lexer))
@@ -51116,7 +51115,7 @@ cp_parser_omp_taskwait (cp_parser *parser, cp_token *pragma_tok)
   if (clauses)
     {
       tree stmt = make_node (OMP_TASK);
-      TREE_TYPE (stmt) = void_node;
+      TREE_TYPE (stmt) = void_type_node;
       OMP_TASK_CLAUSES (stmt) = clauses;
       OMP_TASK_BODY (stmt) = NULL_TREE;
       SET_EXPR_LOCATION (stmt, pragma_tok->location);
@@ -53471,7 +53470,7 @@ cp_parser_omp_dispatch (cp_parser *parser, cp_token *pragma_tok)
   if (depend_clauses != NULL_TREE)
     {
       tree stmt = make_node (OMP_TASK);
-      TREE_TYPE (stmt) = void_node;
+      TREE_TYPE (stmt) = void_type_node;
       OMP_TASK_CLAUSES (stmt) = depend_clauses;
       OMP_TASK_BODY (stmt) = NULL_TREE;
       SET_EXPR_LOCATION (stmt, loc);

@@ -13,9 +13,8 @@ template <typename T>
 consteval std::meta::info baz () { int v = 42; return parent_of (^^v); }
 
 constexpr auto ctx = std::meta::access_context::unchecked ();
-// TODO: These should work
-//static_assert (^^a == members_of (parent_of (^^a), ctx)[0]);
-//static_assert (^^S::~S == (members_of (^^S, ctx) | std::views::filter (std::meta::is_destructor) | std::ranges::to <std::vector> ())[0]);
+static_assert (^^a == members_of (parent_of (^^a), ctx)[0]);
+static_assert (^^S::~S == (members_of (^^S, ctx) | std::views::filter (std::meta::is_destructor) | std::ranges::to <std::vector> ())[0]);
 static_assert (^^S::foo == members_of (^^S, ctx)[0]);
 static_assert (^^bar <int> == bar <int> ());
 constexpr auto b = ^^bar <long>;

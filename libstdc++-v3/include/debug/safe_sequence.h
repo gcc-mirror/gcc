@@ -110,6 +110,10 @@ namespace __gnu_debug
   template<typename _Sequence>
     class _Safe_sequence : public _Safe_sequence_base
     {
+      template<typename _Predicate>
+	void
+	_M_invalidate_if_impl(_Predicate __pred) const;
+
     public:
       /** Invalidates all iterators @c x that reference this sequence,
 	  are not singular, and for which @c __pred(x) returns @c
@@ -117,7 +121,13 @@ namespace __gnu_debug
 	  in the safe ones. */
       template<typename _Predicate>
 	_GLIBCXX20_CONSTEXPR void
-	_M_invalidate_if(_Predicate __pred) const;
+	_M_invalidate_if(_Predicate __pred) const
+	{
+	  if (std::__is_constant_evaluated())
+	    return;
+
+	  _M_invalidate_if_impl(__pred);
+	}
 
       /** Transfers all iterators @c x that reference @c from sequence,
 	  are not singular, and for which @c __pred(x) returns @c
