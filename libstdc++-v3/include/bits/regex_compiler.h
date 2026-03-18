@@ -170,9 +170,9 @@ namespace __detail
       _StateSeqT
       _M_pop()
       {
-	auto ret = _M_stack.top();
+	auto __ret = _M_stack.top();
 	_M_stack.pop();
-	return ret;
+	return __ret;
       }
 
       static _FlagT
