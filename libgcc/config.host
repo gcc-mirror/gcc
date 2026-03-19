@@ -1325,6 +1325,7 @@ powerpc*-wrs-vxworks7*)
                 exit 1
                 ;;
         esac
+        md_unwind_header=rs6000/vxworks-unwind.h
         ;;
 powerpc-wrs-vxworks*)
 	tmake_file="$tmake_file rs6000/t-vxworks rs6000/t-savresfgpr t-fdpbit"
