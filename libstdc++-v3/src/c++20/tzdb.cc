@@ -247,11 +247,14 @@ namespace std::chrono
       // If not, indic is unchanged. Callers should set a default first.
       friend istream& operator>>(istream& in, Indicator& indic)
       {
-	auto [val, yes] = at_time::is_indicator(in.peek());
-	if (yes)
+	if (!in.eof())
 	  {
-	    in.ignore(1);
-	    indic = val;
+	    auto [val, yes] = at_time::is_indicator(in.peek());
+	    if (yes)
+	      {
+		in.ignore(1);
+		indic = val;
+	      }
 	  }
 	return in;
       }
@@ -2101,10 +2104,11 @@ namespace std::chrono
     istream& operator>>(istream& in, at_time& at)
     {
       int sign = 1;
-      if (in.peek() == '-')
+      if (ws(in).peek() == '-')
 	{
 	  in.ignore(1);
-	  if (auto [val, yes] = at_time::is_indicator(in.peek()); yes)
+	  if (auto [val, yes] = at_time::is_indicator(in.peek());
+	      in.eof() || yes)
 	    {
 	      in.ignore(1);
 	      at.time = 0s;
@@ -2123,11 +2127,11 @@ namespace std::chrono
 	  in.ignore(1); // discard the colon.
 	  in >> i;
 	  m = minutes{i};
-	  if (in.peek() == ':')
+	  if (!in.eof() && in.peek() == ':')
 	    {
 	      in.ignore(1); // discard the colon.
 	      in >> i;
-	      if (in.peek() == '.')
+	      if (!in.eof() && in.peek() == '.')
 		{
 		  double frac;
 		  in >> frac;
