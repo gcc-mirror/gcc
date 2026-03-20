@@ -8,36 +8,34 @@ on:
 permissions:
   contents: write
 
+env:
+  BOT_NAME: BPF CI Bot
+  BOT_EMAIL: bot+bpf-ci@kernel.org
+
 jobs:
   sync:
     runs-on: ubuntu-slim
     timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          ref: master
-          fetch-depth: 0
-
-      - name: Add upstream remote
-        run: git remote add upstream https://github.com/gcc-mirror/gcc.git
-
-      - name: Fetch upstream
-        run: git fetch upstream master
-
-      - name: Fast-forward master
+      - name: Clone (blobless)
         run: |
-          git checkout master
+          git clone --filter=blob:none --sparse \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" .
+          git sparse-checkout set .github
+          git config user.name "$BOT_NAME"
+          git config user.email "$BOT_EMAIL"
+          git remote add upstream https://github.com/gcc-mirror/gcc.git
+
+      - name: Sync master
+        run: |
+          git fetch --filter=blob:none upstream master
+          git checkout -b master origin/master
           git merge --ff-only upstream/master
+          git push origin master
 
-      - name: Push master
-        run: git push origin master
-
-      - name: Rebase ci-base onto master
+      - name: Rebase ci-base
         run: |
           git fetch origin ci-base
           git checkout ci-base
           git rebase master
-
-      - name: Force-push ci-base
-        run: git push --force-with-lease origin ci-base
+          git push --force-with-lease origin ci-base
