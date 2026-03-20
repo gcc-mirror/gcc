@@ -1,0 +1,39 @@
+name: Build GCC BPF
+
+on:
+  push:
+    branches:
+      - ci-base
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  INSTALL_DIR: /opt/gcc-bpf
+  BINUTILS_VERSION: '2.44'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        run: .github/scripts/install-deps.sh
+
+      - name: Build binutils
+        run: .github/scripts/build-binutils.sh "$INSTALL_DIR" "$BINUTILS_VERSION"
+
+      - name: Build GCC
+        run: .github/scripts/build-gcc.sh "$GITHUB_WORKSPACE" "$INSTALL_DIR"
+
+      - name: Smoke test
+        run: |
+          export PATH="${INSTALL_DIR}/bin:$PATH"
+          echo 'int test(void) { return 0; }' > /tmp/test.c
+          bpf-unknown-none-gcc -c /tmp/test.c -o /tmp/test.o
+          file /tmp/test.o
