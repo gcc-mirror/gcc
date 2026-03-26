@@ -101,7 +101,7 @@ proc postbase  { src_code run groups args } {
 
     set compile_type "none"
 
-    case $actions {
+    switch $actions {
 	compile
 	{
 	    set compile_type "assembly"
