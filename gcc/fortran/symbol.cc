@@ -3090,7 +3090,15 @@ gfc_get_unique_symtree (gfc_namespace *ns)
   static int serial = 0;
 
   sprintf (name, "@%d", serial++);
-  return gfc_new_symtree (&ns->sym_root, name);
+  if (ns)
+    return gfc_new_symtree (&ns->sym_root, name);
+  else
+    {
+      /* Some uses need a symtree that is cleaned up locally.  */
+      gfc_symtree *st = XCNEW (gfc_symtree);
+      st->name = gfc_get_string ("%s", name);
+      return st;
+    }
 }
 
 
