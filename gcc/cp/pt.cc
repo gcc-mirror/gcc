@@ -6904,7 +6904,8 @@ has_value_dependent_address (tree op)
       if (VAR_P (op)
 	  && TREE_STATIC (op)
 	  && TREE_CODE (ctx) == FUNCTION_DECL
-	  && type_dependent_expression_p (ctx))
+	  && DECL_TEMPLATE_INFO (ctx)
+	  && any_dependent_template_arguments_p (DECL_TI_ARGS (ctx)))
 	return true;
     }
 
