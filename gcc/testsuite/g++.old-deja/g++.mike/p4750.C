@@ -1,5 +1,6 @@
 // { dg-do assemble }
 // { dg-options "-fpic -pedantic-errors -S" }
+// { dg-require-effective-target fpic }
 // prms-id: 4750
 
 extern const int FRAME_VEC_MAX;

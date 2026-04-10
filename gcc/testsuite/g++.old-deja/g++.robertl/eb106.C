@@ -1,5 +1,6 @@
 // { dg-do assemble }
 // { dg-options "-O2 -fPIC " }
+// { dg-require-effective-target fpic }
 struct T
 {
 	const char*	f1;

@@ -2,6 +2,7 @@
 /* { dg-options "-fprofile-arcs -ftest-coverage -fpic -fno-implicit-constexpr" } */
 /* { dg-do run } */
 /* { dg-additional-sources "gcovpart-12b.C" } */
+/* { dg-require-effective-target fpic } */
 
 struct Foo {
   Foo ()
