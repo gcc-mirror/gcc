@@ -19,6 +19,7 @@
 #ifndef RUST_COMPILE_EXPR
 #define RUST_COMPILE_EXPR
 
+#include "optional.h"
 #include "rust-compile-base.h"
 #include "rust-gcc.h"
 #include "rust-hir-expr.h"
@@ -165,6 +166,8 @@ protected:
   tree lookup_label (NodeId to_be_resolved);
   Bvariable *lookup_label_temp_var (NodeId to_be_resolved);
   HirId resolve_nodeid (NodeId to_be_resolved, Resolver2_0::Namespace ns);
+  std::pair<tree, tree>
+  construct_loop_labels (tl::optional<HIR::LoopLabel> loop_label);
 
 private:
   CompileExpr (Context *ctx);

@@ -224,7 +224,7 @@ NameResolutionContext::insert (Identifier name, NodeId id, Namespace ns)
       return macros.insert (name, id);
     case Namespace::Labels:
     default:
-      // return labels.insert (name, id);
+      return labels.insert (name, id);
       rust_unreachable ();
     }
 }
@@ -252,8 +252,8 @@ NameResolutionContext::insert_shadowable (Identifier name, NodeId id,
     case Namespace::Macros:
       return macros.insert_shadowable (name, id);
     case Namespace::Labels:
+      return labels.insert (name, id);
     default:
-      // return labels.insert (name, id);
       rust_unreachable ();
     }
 }
@@ -270,8 +270,8 @@ NameResolutionContext::insert_globbed (Identifier name, NodeId id, Namespace ns)
     case Namespace::Macros:
       return macros.insert_globbed (name, id);
     case Namespace::Labels:
+      return labels.insert (name, id);
     default:
-      // return labels.insert (name, id);
       rust_unreachable ();
     }
 }
@@ -348,14 +348,14 @@ NameResolutionContext::scoped (Rib::Kind rib_kind, NodeId id,
   values.push (rib_kind, id, path);
   types.push (rib_kind, id, path);
   macros.push (rib_kind, id, path);
-  // labels.push (rib, id);
+  labels.push (rib_kind, id, path);
 
   lambda ();
 
   values.pop ();
   types.pop ();
   macros.pop ();
-  // labels.pop (rib);
+  labels.pop ();
 }
 
 void
@@ -376,6 +376,8 @@ NameResolutionContext::scoped (Rib::Kind rib_kind, Namespace ns,
       types.push (rib_kind, scope_id, path);
       break;
     case Namespace::Labels:
+      labels.push (rib_kind, scope_id, path);
+      break;
     case Namespace::Macros:
       gcc_unreachable ();
     }
@@ -391,6 +393,8 @@ NameResolutionContext::scoped (Rib::Kind rib_kind, Namespace ns,
       types.pop ();
       break;
     case Namespace::Labels:
+      labels.pop ();
+      break;
     case Namespace::Macros:
       gcc_unreachable ();
     }

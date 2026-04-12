@@ -91,6 +91,26 @@ DefaultResolver::visit (AST::Function &function)
 }
 
 void
+DefaultResolver::visit (AST::LoopExpr &expr)
+{
+  ctx.scoped (Rib::Kind::Normal, expr.get_node_id (),
+	      [this, &expr] () { AST::DefaultASTVisitor::visit (expr); });
+}
+
+void
+DefaultResolver::visit (AST::WhileLoopExpr &expr)
+{
+  ctx.scoped (Rib::Kind::Normal, expr.get_node_id (),
+	      [this, &expr] () { AST::DefaultASTVisitor::visit (expr); });
+}
+
+void
+DefaultResolver::visit (AST::WhileLetLoopExpr &expr)
+{
+  ctx.scoped (Rib::Kind::Normal, expr.get_node_id (),
+	      [this, &expr] () { AST::DefaultASTVisitor::visit (expr); });
+}
+void
 DefaultResolver::visit (AST::ForLoopExpr &expr)
 {
   ctx.scoped (Rib::Kind::Normal, expr.get_node_id (),

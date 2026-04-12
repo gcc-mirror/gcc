@@ -17,6 +17,8 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-expr.h"
+#include "line-map.h"
+#include "optional.h"
 #include "rust-backend.h"
 #include "rust-compile-context.h"
 #include "rust-compile-type.h"
@@ -38,7 +40,6 @@
 #include "rust-hir-bound.h"
 #include "rust-hir-expr.h"
 #include "rust-rib.h"
-#include "rust-system.h"
 #include "rust-tree.h"
 #include "rust-tyty.h"
 #include "tree-core.h"
@@ -944,29 +945,21 @@ CompileExpr::visit (HIR::LoopExpr &expr)
   ctx->add_statement (ret_var_stmt);
   ctx->push_loop_context (tmp);
 
+  tl::optional<HIR::LoopLabel> loop_label = tl::nullopt;
   if (expr.has_loop_label ())
     {
-      HIR::LoopLabel &loop_label = expr.get_loop_label ();
-      tree label
-	= Backend::label (fnctx.fndecl, loop_label.get_lifetime ().get_name (),
-			  loop_label.get_locus ());
-      tree label_decl = Backend::label_definition_statement (label);
-      ctx->add_statement (label_decl);
-      ctx->insert_label_decl (
-	loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
-      // Associate the loop's result temporary with the label so that a
-      // `break 'label value` can locate it (see visit (HIR::BreakExpr)).
+      loop_label = expr.get_loop_label ();
       ctx->insert_var_decl (
-	loop_label.get_lifetime ().get_mappings ().get_hirid (), tmp);
+	loop_label.value ().get_lifetime ().get_mappings ().get_hirid (), tmp);
     }
+  std::pair<tree, tree> loop_labels = construct_loop_labels (loop_label);
+  tree loop_begin_label = loop_labels.first;
+  tree loop_end_label = loop_labels.second;
 
-  tree loop_begin_label
-    = Backend::label (fnctx.fndecl, tl::nullopt, expr.get_locus ());
-  tree loop_begin_label_decl
-    = Backend::label_definition_statement (loop_begin_label);
-  ctx->add_statement (loop_begin_label_decl);
-  ctx->push_loop_begin_label (loop_begin_label);
+  // label before the loop - continue should goto here
+  ctx->add_statement (loop_begin_label);
 
+  // loop body
   tree code_block
     = CompileBlock::compile (expr.get_loop_block (), ctx, nullptr);
   tree loop_expr = Backend::loop_expression (code_block, expr.get_locus ());
@@ -975,40 +968,34 @@ CompileExpr::visit (HIR::LoopExpr &expr)
   ctx->pop_loop_context ();
   translated = Backend::var_expression (tmp, expr.get_locus ());
 
+  // label after the loop - break should goto here
+  ctx->add_statement (loop_end_label);
+
+  // in construct_loop fn we push these labels
   ctx->pop_loop_begin_label ();
+  ctx->pop_loop_end_label ();
 }
 
 void
 CompileExpr::visit (HIR::WhileLoopExpr &expr)
 {
   fncontext fnctx = ctx->peek_fn ();
+  tree enclosing_scope = ctx->peek_enclosing_scope ();
+  ctx->push_loop_context (nullptr);
+  tl::optional<HIR::LoopLabel> loop_label = tl::nullopt;
   if (expr.has_loop_label ())
-    {
-      HIR::LoopLabel &loop_label = expr.get_loop_label ();
-      tree label
-	= Backend::label (fnctx.fndecl, loop_label.get_lifetime ().get_name (),
-			  loop_label.get_locus ());
-      tree label_decl = Backend::label_definition_statement (label);
-      ctx->add_statement (label_decl);
-      ctx->insert_label_decl (
-	loop_label.get_lifetime ().get_mappings ().get_hirid (), label);
-    }
-
+    loop_label = tl::optional<HIR::LoopLabel> (expr.get_loop_label ());
+  std::pair<tree, tree> loop_labels = construct_loop_labels (loop_label);
+  tree loop_begin_label = loop_labels.first;
+  tree loop_end_label = loop_labels.second;
   std::vector<Bvariable *> locals;
   location_t start_location = expr.get_loop_block ().get_locus ();
   location_t end_location = expr.get_loop_block ().get_locus (); // FIXME
 
-  tree enclosing_scope = ctx->peek_enclosing_scope ();
   tree loop_block = Backend::block (fnctx.fndecl, enclosing_scope, locals,
 				    start_location, end_location);
   ctx->push_block (loop_block);
-
-  tree loop_begin_label
-    = Backend::label (fnctx.fndecl, tl::nullopt, expr.get_locus ());
-  tree loop_begin_label_decl
-    = Backend::label_definition_statement (loop_begin_label);
-  ctx->add_statement (loop_begin_label_decl);
-  ctx->push_loop_begin_label (loop_begin_label);
+  ctx->add_statement (loop_begin_label);
 
   HIR::Expr &predicate = expr.get_predicate_expr ();
   TyTy::BaseType *predicate_type = nullptr;
@@ -1037,6 +1024,9 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
 
   tree loop_expr = Backend::loop_expression (loop_block, expr.get_locus ());
   ctx->add_statement (loop_expr);
+  ctx->add_statement (loop_end_label);
+  ctx->pop_loop_end_label ();
+
   translated = unit_expression (expr.get_locus ());
 }
 
@@ -1051,8 +1041,12 @@ CompileExpr::visit (HIR::BreakExpr &expr)
       tree assign
 	= Backend::assignment_statement (tvar->get_tree (label.get_locus ()),
 					 value, label.get_locus ());
-      tree block_label = lookup_label (label.get_mappings ().get_nodeid ());
-      tree go_to = Backend::goto_statement (block_label, label.get_locus ());
+      HirId label_hirid = resolve_nodeid (label.get_mappings ().get_nodeid (),
+					  Resolver2_0::Namespace::Labels);
+      tl::optional<tree> block_label = ctx->lookup_break_label (label_hirid);
+      rust_assert (block_label.has_value ());
+      tree go_to
+	= Backend::goto_statement (block_label.value (), label.get_locus ());
       ctx->add_statement (assign);
       ctx->add_statement (go_to);
       return;
@@ -1066,6 +1060,9 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 	return;
 
       Bvariable *loop_result_holder = ctx->peek_loop_context ();
+      if (loop_result_holder == nullptr)
+	return;
+
       tree result_reference
 	= Backend::var_expression (loop_result_holder,
 				   expr.get_expr ().get_locus ());
@@ -1104,15 +1101,10 @@ CompileExpr::visit (HIR::BreakExpr &expr)
 	}
       auto ref = hid.value ();
 
-      tree label = NULL_TREE;
-      if (!ctx->lookup_label_decl (ref, &label))
-	{
-	  rust_error_at (expr.get_label ().get_locus (),
-			 "failed to lookup compiled label");
-	  return;
-	}
-
-      tree goto_label = Backend::goto_statement (label, expr.get_locus ());
+      tl::optional<tree> label = ctx->lookup_break_label (ref);
+      rust_assert (label.has_value ());
+      tree goto_label
+	= Backend::goto_statement (label.value (), expr.get_locus ());
       ctx->add_statement (goto_label);
     }
   else
@@ -1128,8 +1120,7 @@ void
 CompileExpr::visit (HIR::ContinueExpr &expr)
 {
   translated = error_mark_node;
-  if (!ctx->have_loop_context ())
-    return;
+  rust_assert (ctx->have_loop_context () && "continue is outside of loop");
 
   tree label = ctx->peek_loop_begin_label ();
   if (expr.has_label ())
@@ -1160,13 +1151,9 @@ CompileExpr::visit (HIR::ContinueExpr &expr)
 	  return;
 	}
       auto ref = hid.value ();
-
-      if (!ctx->lookup_label_decl (ref, &label))
-	{
-	  rust_error_at (expr.get_label ().get_locus (),
-			 "failed to lookup compiled label");
-	  return;
-	}
+      tl::optional<tree> opt_label = ctx->lookup_continue_label (ref);
+      rust_assert (opt_label.has_value ());
+      label = opt_label.value ();
     }
 
   translated = Backend::goto_statement (label, expr.get_locus ());
@@ -3046,7 +3033,7 @@ CompileExpr::construct_block_label (HIR::BlockExpr &expr)
       tree label_decl
 	= Backend::label (fnctx.fndecl, label_name, label.get_locus ());
       tree label_expr = Backend::label_definition_statement (label_decl);
-      ctx->insert_label_decl (label_id, label_decl);
+      ctx->insert_break_label (label_id, label_decl);
       return label_expr;
     }
   return NULL_TREE;
@@ -3085,6 +3072,44 @@ CompileExpr::resolve_nodeid (NodeId to_be_resolved, Resolver2_0::Namespace ns)
   HirId ref
     = ctx->get_mappings ().lookup_node_to_hir (resolved_node_id).value ();
   return ref;
+}
+
+std::pair<tree, tree>
+CompileExpr::construct_loop_labels (tl::optional<HIR::LoopLabel> opt_loop_label)
+{
+  fncontext fnctx = ctx->peek_fn ();
+  tree break_label_decl = NULL_TREE;
+  tree break_label_expr = NULL_TREE;
+  tree continue_label_decl = NULL_TREE;
+  tree continue_label_expr = NULL_TREE;
+  location_t label_locus = UNKNOWN_LOCATION;
+  tl::optional<std::string> continue_label_name = tl::nullopt;
+  tl::optional<std::string> break_label_name = tl::nullopt;
+  tl::optional<HirId> label_hirid = tl::nullopt;
+  if (opt_loop_label.has_value ())
+    {
+      label_locus = opt_loop_label.value ().get_locus ();
+      HIR::LoopLabel &loop_label = opt_loop_label.value ();
+      std::string label_name = loop_label.get_lifetime ().get_name ();
+      continue_label_name = label_name + "_continue";
+      break_label_name = label_name + "_break";
+      label_hirid = loop_label.get_lifetime ().get_mappings ().get_hirid ();
+    }
+  continue_label_decl
+    = Backend::label (fnctx.fndecl, continue_label_name, label_locus);
+  continue_label_expr
+    = Backend::label_definition_statement (continue_label_decl);
+  break_label_decl
+    = Backend::label (fnctx.fndecl, break_label_name, label_locus);
+  break_label_expr = Backend::label_definition_statement (break_label_decl);
+  if (label_hirid.has_value ())
+    {
+      ctx->insert_continue_label (label_hirid.value (), continue_label_decl);
+      ctx->insert_break_label (label_hirid.value (), break_label_decl);
+    }
+  ctx->push_loop_begin_label (continue_label_decl);
+  ctx->push_loop_end_label (break_label_decl);
+  return std::make_pair (continue_label_expr, break_label_expr);
 }
 
 } // namespace Compile
