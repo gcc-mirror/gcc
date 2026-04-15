@@ -1131,8 +1131,11 @@ cleanup_control_flow_pre ()
   return retval;
 }
 
+/* Callback function for make_forwarder_block which returns
+   true when E is not a latch.  */
+
 static bool
-mfb_keep_latches (edge e)
+mfb_keep_latches (edge e, void*)
 {
   return !((dom_info_available_p (CDI_DOMINATORS)
 	    && dominated_by_p (CDI_DOMINATORS, e->src, e->dest))
@@ -1192,7 +1195,7 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
 	       create a forwarder.  */
 	    if (found_latch && ! any_abnormal && n > 1)
 	      {
-		edge fallthru = make_forwarder_block (bb, mfb_keep_latches);
+		edge fallthru = make_forwarder_block (bb, mfb_keep_latches, NULL);
 		loop->header = fallthru->dest;
 		if (! loops_state_satisfies_p (LOOPS_NEED_FIXUP))
 		  {

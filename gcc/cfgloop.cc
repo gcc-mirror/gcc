@@ -709,13 +709,13 @@ find_subloop_latch_edge (class loop *loop)
 }
 
 /* Callback for make_forwarder_block.  Returns true if the edge E is marked
-   in the set MFB_REIS_SET.  */
+   in the set SET(DATA).  */
 
-static hash_set<edge> *mfb_reis_set;
 static bool
-mfb_redirect_edges_in_set (edge e)
+mfb_redirect_edges_in_set (edge e, void *data)
 {
-  return mfb_reis_set->contains (e);
+  hash_set<edge> *set = (hash_set<edge> *)data;
+  return set->contains (e);
 }
 
 /* Creates a subloop of LOOP with latch edge LATCH.  */
@@ -727,14 +727,14 @@ form_subloop (class loop *loop, edge latch)
   edge e, new_entry;
   class loop *new_loop;
 
-  mfb_reis_set = new hash_set<edge>;
+  hash_set<edge> *reis_set = new hash_set<edge>;
   FOR_EACH_EDGE (e, ei, loop->header->preds)
     {
       if (e != latch)
-	mfb_reis_set->add (e);
+	reis_set->add (e);
     }
-  new_entry = make_forwarder_block (loop->header, mfb_redirect_edges_in_set);
-  delete mfb_reis_set;
+  new_entry = make_forwarder_block (loop->header, mfb_redirect_edges_in_set, reis_set);
+  delete reis_set;
 
   loop->header = new_entry->src;
 
@@ -765,11 +765,11 @@ merge_latch_edges (class loop *loop)
       if (dump_file)
 	fprintf (dump_file, "Merged latch edges of loop %d\n", loop->num);
 
-      mfb_reis_set = new hash_set<edge>;
+      hash_set<edge> *reis_set = new hash_set<edge>;
       FOR_EACH_VEC_ELT (latches, i, e)
-	mfb_reis_set->add (e);
-      latch = make_forwarder_block (loop->header, mfb_redirect_edges_in_set);
-      delete mfb_reis_set;
+	reis_set->add (e);
+      latch = make_forwarder_block (loop->header, mfb_redirect_edges_in_set, reis_set);
+      delete reis_set;
 
       loop->header = latch->dest;
       loop->latch = latch->src;

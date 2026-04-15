@@ -38,8 +38,6 @@ enum
 						      discriminators to
 						      distinguish loop
 						      iterations.  */
-extern edge mfb_kj_edge;
-
 extern bool remove_path (edge, bool * = NULL, bitmap = NULL);
 extern void place_new_loop (struct function *, class loop *);
 extern void add_loop (class loop *, class loop *);
@@ -62,7 +60,7 @@ extern bool can_duplicate_loop_p (const class loop *loop);
 extern bool
 duplicate_loop_body_to_header_edge (class loop *, edge, unsigned, sbitmap, edge,
 				    vec<edge> *, int);
-extern bool mfb_keep_just (edge);
+extern bool mfb_keep_just (edge, void *);
 basic_block create_preheader (class loop *, int);
 extern void create_preheaders (int);
 extern void force_single_succ_latches (void);

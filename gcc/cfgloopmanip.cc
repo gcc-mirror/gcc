@@ -1640,14 +1640,14 @@ duplicate_loop_body_to_header_edge (class loop *loop, edge e,
 }
 
 /* A callback for make_forwarder block, to redirect all edges except for
-   MFB_KJ_EDGE to the entry part.  E is the edge for that we should decide
+   OTHER(DATA) to the entry part.  E is the edge for that we should decide
    whether to redirect it.  */
 
-edge mfb_kj_edge;
 bool
-mfb_keep_just (edge e)
+mfb_keep_just (edge e, void *data)
 {
-  return e != mfb_kj_edge;
+  edge other = (edge)data;
+  return e != other;
 }
 
 /* True when a candidate preheader BLOCK has predecessors from LOOP.  */
@@ -1729,15 +1729,16 @@ create_preheader (class loop *loop, int flags)
 	return NULL;
     }
 
-  mfb_kj_edge = loop_latch_edge (loop);
-  latch_edge_was_fallthru = (mfb_kj_edge->flags & EDGE_FALLTHRU) != 0;
+  edge latch;
+  latch = loop_latch_edge (loop);
+  latch_edge_was_fallthru = (latch->flags & EDGE_FALLTHRU) != 0;
   if (nentry == 1
       && ((flags & CP_FALLTHRU_PREHEADERS) == 0
   	  || (single_entry->flags & EDGE_CROSSING) == 0))
     dummy = split_edge (single_entry);
   else
     {
-      edge fallthru = make_forwarder_block (loop->header, mfb_keep_just);
+      edge fallthru = make_forwarder_block (loop->header, mfb_keep_just, latch);
       dummy = fallthru->src;
       loop->header = fallthru->dest;
     }

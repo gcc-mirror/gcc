@@ -1867,9 +1867,10 @@ fwd_jt_path_registry::thread_through_loop_header (class loop *loop,
      must have only a single successor, but the original header had at
      least two successors.  */
   loop->latch = NULL;
-  mfb_kj_edge = single_succ_edge (new_preheader);
-  loop->header = mfb_kj_edge->dest;
-  latch = make_forwarder_block (tgt_bb, mfb_keep_just);
+  edge keep_edge;
+  keep_edge = single_succ_edge (new_preheader);
+  loop->header = keep_edge->dest;
+  latch = make_forwarder_block (tgt_bb, mfb_keep_just, keep_edge);
   loop->header = latch->dest;
   loop->latch = latch->src;
   return true;
