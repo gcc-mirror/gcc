@@ -82,9 +82,9 @@ proc errchk { test opts } {
 	set filename "errchk-$filename"
     }
     set fdin [open $test r]
-    fconfigure $fdin -encoding binary
+    fconfigure $fdin -translation binary
     set fdout [open $filename w]
-    fconfigure $fdout -encoding binary
+    fconfigure $fdout -translation binary
     while { [gets $fdin copy_line] >= 0 } {
 	if [string match "*////*" $copy_line] {
 	    puts $fdout $copy_line
