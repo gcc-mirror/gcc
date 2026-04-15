@@ -7962,6 +7962,10 @@ cxx_mark_addressable (tree exp, bool array_ref_p)
 		    || DECL_IN_AGGR_P (x) == 0
 		    || TREE_STATIC (x)
 		    || DECL_EXTERNAL (x));
+	if (VAR_P (x)
+	    && DECL_ANON_UNION_VAR_P (x)
+	    && !TREE_ADDRESSABLE (x))
+	  cxx_mark_addressable (DECL_VALUE_EXPR (x));
 	/* Fall through.  */
 
       case RESULT_DECL:
