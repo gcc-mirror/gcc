@@ -1869,7 +1869,7 @@ fwd_jt_path_registry::thread_through_loop_header (class loop *loop,
   loop->latch = NULL;
   mfb_kj_edge = single_succ_edge (new_preheader);
   loop->header = mfb_kj_edge->dest;
-  latch = make_forwarder_block (tgt_bb, mfb_keep_just, NULL);
+  latch = make_forwarder_block (tgt_bb, mfb_keep_just);
   loop->header = latch->dest;
   loop->latch = latch->src;
   return true;

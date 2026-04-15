@@ -1737,7 +1737,7 @@ create_preheader (class loop *loop, int flags)
     dummy = split_edge (single_entry);
   else
     {
-      edge fallthru = make_forwarder_block (loop->header, mfb_keep_just, NULL);
+      edge fallthru = make_forwarder_block (loop->header, mfb_keep_just);
       dummy = fallthru->src;
       loop->header = fallthru->dest;
     }

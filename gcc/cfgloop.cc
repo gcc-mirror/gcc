@@ -733,8 +733,7 @@ form_subloop (class loop *loop, edge latch)
       if (e != latch)
 	mfb_reis_set->add (e);
     }
-  new_entry = make_forwarder_block (loop->header, mfb_redirect_edges_in_set,
-				    NULL);
+  new_entry = make_forwarder_block (loop->header, mfb_redirect_edges_in_set);
   delete mfb_reis_set;
 
   loop->header = new_entry->src;
@@ -769,8 +768,7 @@ merge_latch_edges (class loop *loop)
       mfb_reis_set = new hash_set<edge>;
       FOR_EACH_VEC_ELT (latches, i, e)
 	mfb_reis_set->add (e);
-      latch = make_forwarder_block (loop->header, mfb_redirect_edges_in_set,
-				    NULL);
+      latch = make_forwarder_block (loop->header, mfb_redirect_edges_in_set);
       delete mfb_reis_set;
 
       loop->header = latch->dest;

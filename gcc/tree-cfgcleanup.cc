@@ -1192,8 +1192,7 @@ cleanup_tree_cfg_noloop (unsigned ssa_update_flags)
 	       create a forwarder.  */
 	    if (found_latch && ! any_abnormal && n > 1)
 	      {
-		edge fallthru = make_forwarder_block (bb, mfb_keep_latches,
-						      NULL);
+		edge fallthru = make_forwarder_block (bb, mfb_keep_latches);
 		loop->header = fallthru->dest;
 		if (! loops_state_satisfies_p (LOOPS_NEED_FIXUP))
 		  {

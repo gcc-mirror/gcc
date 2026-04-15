@@ -926,8 +926,7 @@ merge_blocks (basic_block a, basic_block b)
    part.  Returns the edge connecting the entry part to the rest.  */
 
 edge
-make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
-		      void (*new_bb_cbk) (basic_block))
+make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge))
 {
   edge e, fallthru;
   edge_iterator ei;
@@ -966,9 +965,6 @@ make_forwarder_block (basic_block bb, bool (*redirect_edge_p) (edge),
               && dummy->loop_father->header == dummy
               && dummy->loop_father->latch == e_src)
             dummy->loop_father->latch = jump;
-
-          if (new_bb_cbk != NULL)
-            new_bb_cbk (jump);
         }
     }
 
