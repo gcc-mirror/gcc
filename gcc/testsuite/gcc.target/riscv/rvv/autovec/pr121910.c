@@ -31,4 +31,4 @@ void mc_chroma(uint8_t* dst, int i_dst_stride, uint8_t* src, int i_src_stride,
 }
 
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
-/* { dg-final { scan-tree-dump "Choosing vector mode RVVM1QI" "vect" } } */
+/* { dg-final { scan-tree-dump "Choosing vector mode RVVM2QI" "vect" } } */

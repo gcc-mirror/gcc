@@ -346,6 +346,23 @@ variable_vectorized_p (class loop *loop, stmt_vec_info stmt_info,
 		   || type != load_vec_info_type));
 }
 
+/* Return the pattern result if the original definition of VAR is replaced by
+   a pattern stmt.  Otherwise, return VAR.  */
+static tree
+get_pattern_var (tree var, loop_vec_info loop_vinfo)
+{
+  stmt_vec_info stmt_info;
+
+  if ((stmt_info = loop_vinfo->lookup_def (var))
+      && STMT_VINFO_IN_PATTERN_P (stmt_info))
+    {
+      stmt_info = STMT_VINFO_RELATED_STMT (stmt_info);
+      var = gimple_get_lhs (stmt_info->stmt);
+    }
+
+  return var;
+}
+
 /* Compute local live ranges of each vectorized variable.
    Note that we only compute local live ranges (within a block) since
    local live ranges information is accurate enough for us to determine
@@ -426,6 +443,7 @@ costs::compute_local_live_ranges (
 		  if (variable_vectorized_p (loop, program_point.stmt_info,
 					     *node, var, false))
 		    {
+		      var = get_pattern_var (var, loop_vinfo);
 		      biggest_mode
 			= get_biggest_mode (biggest_mode,
 					    TYPE_MODE (TREE_TYPE (var)));
