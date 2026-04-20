@@ -119,7 +119,7 @@ const pass_data pass_data_gcn_simt_cbranch =
   RTL_PASS, // type
   "simt_cbranch", // name
   OPTGROUP_NONE, // optinfo_flags
-  TV_NONE, // tv_id
+  TV_SIMT, // tv_id
   0, // properties_required
   0, // properties_provided
   0, // properties_destroyed
