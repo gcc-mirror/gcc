@@ -155,26 +155,47 @@ extern void link_error(int, int);
     link_error(__LINE__, VAL_NUM); \
   } while (0)
 
-/* For complex numbers, call the TESTIT_COMPLEX_R2 macro for all
+/* Similar to TESTIT_COMPLEX_R2, but doesn't check sign of imag part
+   if imag part is zero.  MPC between 1.3.1 and 1.4.0 changed the
+   handling of it.  */
+#define TESTIT_COMPLEX_R2_ISZ(VAL_NUM, FUNC, ARG0, ARG1, RES) do { \
+  if (COMPLEX_DIFF1PCT_F (__builtin_##FUNC##f(ARG0, ARG1), (RES)) \
+      || CKSGN_F (__real__ (__builtin_##FUNC##f(ARG0, ARG1)), __real__ (RES)) \
+      || (__imag__ (RES) != 0 \
+	  && CKSGN_F (__imag__ (__builtin_##FUNC##f(ARG0, ARG1)), __imag__ (RES)))) \
+    link_error(__LINE__, VAL_NUM); \
+  if (COMPLEX_DIFF1PCT (__builtin_##FUNC(ARG0, ARG1), (RES)) \
+      || CKSGN (__real__ (__builtin_##FUNC(ARG0, ARG1)), __real__ (RES)) \
+      || (__imag__ (RES) != 0 \
+	  && CKSGN (__imag__ (__builtin_##FUNC(ARG0, ARG1)), __imag__ (RES)))) \
+    link_error(__LINE__, VAL_NUM); \
+  if (COMPLEX_DIFF1PCT_L (__builtin_##FUNC##l(ARG0, ARG1), (RES)) \
+      || CKSGN_L (__real__ (__builtin_##FUNC##l(ARG0, ARG1)), __real__ (RES)) \
+      || (__imag__ (RES) != 0 \
+	  && CKSGN_L (__imag__ (__builtin_##FUNC##l(ARG0, ARG1)), __imag__ (RES)))) \
+    link_error(__LINE__, VAL_NUM); \
+  } while (0)
+
+/* For complex numbers, call the TESTIT_COMPLEX_R2_ISZ macro for all
    combinations of neg and conj.  */
 #define TESTIT_COMPLEX_R2_ALLNEG(FUNC, ARG0, ARG1, RES1, RES2, RES3, RES4, RES5,\
  RES6, RES7, RES8, RES9, RES10, RES11, RES12, RES13, RES14, RES15, RES16) do{ \
-  TESTIT_COMPLEX_R2(1, FUNC, (_Complex float)(ARG0),(_Complex float)(ARG1), RES1);\
-  TESTIT_COMPLEX_R2(2, FUNC, (_Complex float)(ARG0),CONJ(ARG1), RES2); \
-  TESTIT_COMPLEX_R2(3, FUNC, (_Complex float)(ARG0),-(_Complex float)(ARG1), RES3); \
-  TESTIT_COMPLEX_R2(4, FUNC, (_Complex float)(ARG0),-CONJ(ARG1), RES4); \
-  TESTIT_COMPLEX_R2(5, FUNC, -(_Complex float)(ARG0),(_Complex float)(ARG1), RES5); \
-  TESTIT_COMPLEX_R2(6, FUNC, -(_Complex float)(ARG0),CONJ(ARG1), RES6); \
-  TESTIT_COMPLEX_R2(7, FUNC, -(_Complex float)(ARG0),-(_Complex float)(ARG1), RES7); \
-  TESTIT_COMPLEX_R2(8, FUNC, -(_Complex float)(ARG0),-CONJ(ARG1), RES8); \
-  TESTIT_COMPLEX_R2(9, FUNC, CONJ(ARG0),(_Complex float)(ARG1), RES9); \
-  TESTIT_COMPLEX_R2(10, FUNC, CONJ(ARG0),CONJ(ARG1), RES10); \
-  TESTIT_COMPLEX_R2(11, FUNC, CONJ(ARG0),-(_Complex float)(ARG1), RES11); \
-  TESTIT_COMPLEX_R2(12, FUNC, CONJ(ARG0),-CONJ(ARG1), RES12); \
-  TESTIT_COMPLEX_R2(13, FUNC, -CONJ(ARG0),(_Complex float)(ARG1), RES13); \
-  TESTIT_COMPLEX_R2(14, FUNC, -CONJ(ARG0),CONJ(ARG1), RES14); \
-  TESTIT_COMPLEX_R2(15, FUNC, -CONJ(ARG0),-(_Complex float)(ARG1), RES15); \
-  TESTIT_COMPLEX_R2(16, FUNC, -CONJ(ARG0),-CONJ(ARG1), RES16); \
+  TESTIT_COMPLEX_R2_ISZ(1, FUNC, (_Complex float)(ARG0),(_Complex float)(ARG1), RES1);\
+  TESTIT_COMPLEX_R2_ISZ(2, FUNC, (_Complex float)(ARG0),CONJ(ARG1), RES2); \
+  TESTIT_COMPLEX_R2_ISZ(3, FUNC, (_Complex float)(ARG0),-(_Complex float)(ARG1), RES3); \
+  TESTIT_COMPLEX_R2_ISZ(4, FUNC, (_Complex float)(ARG0),-CONJ(ARG1), RES4); \
+  TESTIT_COMPLEX_R2_ISZ(5, FUNC, -(_Complex float)(ARG0),(_Complex float)(ARG1), RES5); \
+  TESTIT_COMPLEX_R2_ISZ(6, FUNC, -(_Complex float)(ARG0),CONJ(ARG1), RES6); \
+  TESTIT_COMPLEX_R2_ISZ(7, FUNC, -(_Complex float)(ARG0),-(_Complex float)(ARG1), RES7); \
+  TESTIT_COMPLEX_R2_ISZ(8, FUNC, -(_Complex float)(ARG0),-CONJ(ARG1), RES8); \
+  TESTIT_COMPLEX_R2_ISZ(9, FUNC, CONJ(ARG0),(_Complex float)(ARG1), RES9); \
+  TESTIT_COMPLEX_R2_ISZ(10, FUNC, CONJ(ARG0),CONJ(ARG1), RES10); \
+  TESTIT_COMPLEX_R2_ISZ(11, FUNC, CONJ(ARG0),-(_Complex float)(ARG1), RES11); \
+  TESTIT_COMPLEX_R2_ISZ(12, FUNC, CONJ(ARG0),-CONJ(ARG1), RES12); \
+  TESTIT_COMPLEX_R2_ISZ(13, FUNC, -CONJ(ARG0),(_Complex float)(ARG1), RES13); \
+  TESTIT_COMPLEX_R2_ISZ(14, FUNC, -CONJ(ARG0),CONJ(ARG1), RES14); \
+  TESTIT_COMPLEX_R2_ISZ(15, FUNC, -CONJ(ARG0),-(_Complex float)(ARG1), RES15); \
+  TESTIT_COMPLEX_R2_ISZ(16, FUNC, -CONJ(ARG0),-CONJ(ARG1), RES16); \
 } while (0)
 
 int main (void)
