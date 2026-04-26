@@ -470,12 +470,13 @@ namespace std::chrono
 
       ZoneInfo(sys_info&& info)
       : m_buf(std::move(info.abbrev)), m_expanded(true), m_save(info.save),
-	m_offset(info.offset), m_until(info.end)
+	m_offset(info.offset - seconds(info.save)), m_until(info.end)
       { }
 
       ZoneInfo(const pair<sys_info, string_view>& info)
-      : m_expanded(true), m_save(info.first.save), m_offset(info.first.offset),
-	m_until(info.first.end)
+      : m_expanded(true), m_save(info.first.save),
+	m_offset(info.first.offset - seconds(info.first.save)),
+       	m_until(info.first.end)
       {
 	if (info.second.size())
 	  {
@@ -486,7 +487,7 @@ namespace std::chrono
 	m_buf += info.first.abbrev;
       }
 
-      // STDOFF: Seconds from UTC during standard time.
+      // STDOFF: Seconds from UTC during standard time (without any save).
       seconds
       offset() const noexcept { return m_offset; }
 
@@ -531,7 +532,7 @@ namespace std::chrono
 	  return false;
 
 	info.end = until();
-	info.offset = offset();
+	info.offset = offset() + seconds(m_save);
 	info.save = minutes(m_save);
 	info.abbrev = format();
 	format_abbrev_str(info); // expand %z
