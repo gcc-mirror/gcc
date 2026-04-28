@@ -197,15 +197,19 @@
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="numerics.xml">
 </xi:include>
 
-<!-- Chapter 10 : Input Output -->
+<!-- Chapter 10 : Time -->
+<xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="time.xml">
+</xi:include>
+
+<!-- Chapter 11 : Input Output -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="io.xml">
 </xi:include>
 
-<!-- Chapter 11 : Atomics -->
+<!-- Chapter 12 : Atomics -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="atomics.xml">
 </xi:include>
 
-<!-- Chapter 12 : Concurrency -->
+<!-- Chapter 13 : Concurrency -->
 <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="concurrency.xml">
 </xi:include>
 

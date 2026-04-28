@@ -357,6 +357,7 @@ xml_sources_manual = \
 	${xml_dir}/manual/support.xml \
 	${xml_dir}/manual/test.xml \
 	${xml_dir}/manual/test_policy_data_structures.xml \
+	${xml_dir}/manual/time.xml \
 	${xml_dir}/manual/using.xml \
 	${xml_dir}/manual/using_exceptions.xml \
 	${xml_dir}/manual/utilities.xml \

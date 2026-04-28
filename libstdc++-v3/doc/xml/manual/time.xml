@@ -1,0 +1,242 @@
+<chapter xmlns="http://docbook.org/ns/docbook" version="5.0"
+	 xml:id="std.time" xreflabel="Time">
+<?dbhtml filename="time.html"?>
+
+<info><title>
+  Time
+  <indexterm><primary>Time</primary></indexterm>
+</title>
+  <keywordset>
+    <keyword>ISO C++</keyword>
+    <keyword>library</keyword>
+  </keywordset>
+</info>
+
+<!-- Sect1 01 : Time zone database -->
+<section xml:id="std.time.zone.db" xreflabel=""><info><title>Time zone database</title></info>
+<?dbhtml filename="tzdb.html"?>
+
+   <para>
+     Since C++20 the <code>&lt;chrono&gt;</code> header provides time zone
+     support via <code>std::chrono::tzdb</code>, a complete interface to the
+     <link xmlns:xlink="http://www.w3.org/1999/xlink"
+     xlink:href="https://www.iana.org/time-zones">IANA Time Zone Database</link>.
+     The library supports converting times between UTC and the local time
+     in a specific time zone, querying UTC offsets and DST information for a
+     given time zone on a given date, and finding the system's current time zone.
+     Key entry points are <code>std::chrono::get_tzdb()</code> to access
+     the database, <code>std::chrono::locate_zone()</code> to look up
+     a zone by name, and <code>std::chrono::current_zone()</code> to obtain
+     the system's local time zone. The <code>std::chrono::zoned_time</code>
+     class template represents a time point in a given time zone.
+     The database can be reloaded at runtime
+     via <code>std::chrono::reload_tzdb()</code> to pick up updated zone
+     data without restarting the program.
+   </para>
+
+   <para>
+     The <link xmlns:xlink="http://www.w3.org/1999/xlink"
+     xlink:href="https://howardhinnant.github.io/date/tz.html">Time Zone Database
+     Parser</link> by Howard E. Hinnant is a valuable source of information and
+     examples of usage for the <code>date</code> library, on which the standard
+     API is based.
+   </para>
+
+   <section xml:id="zone.db.zic" xreflabel="tzdb uses zic format"><info><title>tzdb uses zic format</title></info>
+
+   <para>
+     When support is enabled (which is default) the time zone database class,
+     <code>tzdb</code>, uses the <link xmlns:xlink="http://www.w3.org/1999/xlink"
+     xlink:href="https://man7.org/linux/man-pages/man8/zic.8.html#FILES">
+     <code>zic</code> file format</link>, both as the format of the input
+     files, and for in-memory representation. This results in a reduced
+     memory footprint for many programs, as time zone data is stored in
+     a compact form until needed by the application.
+   </para>
+   <para>
+     The transitions to/from DST (Daylight Savings Time) are generated and
+     cached on the fly, when information
+     for a given zone is requested. Consequently, the initial request for
+     UTC conversion for a given <code>time_zone</code> object is slower.
+     To mitigate this, a <code>time_zone</code> can be expanded for a
+     particular time range at the start
+     of the program (and after each reload), by iterating over the
+     <code>sys_info</code> dequence, as in the example below.
+   </para>
+   <programlisting>
+     void
+     expand_zone(const std::chrono::time_zone* tz,
+                 const std::chrono::sys_seconds start,
+                 const std::chrono::sys_seconds end)
+     {
+       std::chrono::sys_seconds time = start;
+       while (time &lt; end) {
+         const std::chrono::sys_info&amp; info = tz->get_info(time);
+         time = info.end + std::chrono::seconds(1);
+       }
+     }
+   </programlisting>
+  </section>
+
+  <section xml:id="zone.current" xreflabel="current zone"><info><title>current zone</title></info>
+
+   <para>
+     The <code>time_zone</code> pointer returned from
+     <code>std::chrono::current_zone</code>, is determined by looking up
+     (by <code>std::chrono::locate_zone</code>) IANA zone name
+     determined as follows (for platforms other than AIX and Windows):
+   </para>
+   <itemizedlist>
+     <listitem>
+       On system supporting <code>readlink</code>, suffix components of the
+       path of the file linked by <code>/etc/localtime</code>. The suffixes
+       are matched in the other of increasing length, starting from the final
+       component, until the match is found in the time zone database.
+       Any repeated slashes (<code>//</code>) are eliminated.
+     </listitem>
+     <listitem>
+       Names stored in the files <code>/etc/timezone</code> (Debian
+       derivatives) or <code>/var/db/zoneinfo</code> (FreeBSD) in that order.
+     </listitem>
+     <listitem>
+       Values for <code>TIMEZONE</code> and <code>ZONE</code> keys in
+       <code>/etc/sysconfig/clock</code>.
+     </listitem>
+     <listitem>
+       <code>UTC</code>.
+     </listitem>
+   </itemizedlist>
+
+   <para>
+     For AIX, the value of <code>TZ</code> environment value is used, with
+     fallback to <code>UTC</code>.
+   </para>
+
+   <para>
+     On Windows <code>TimeZoneKeyName</code> is mapped to the IANA zone, using
+     internal mapping hard-coded in library, with fallback to <code>UTC</code>:
+   </para>
+   <itemizedlist>
+     <listitem>
+       If the returned <code>TimeZoneKeyName</code> is empty or DST is disabled,
+       then a value based on <code>Bias</code> is returned: <code>Etc/UTC</code>
+       for zero, <code>Etc/GMT+/-N</code> for value that is multiply of 60,
+       and empty string otherwise.
+     </listitem>
+     <listitem>
+       If the mapping contains a single entry for <code>TimeZoneKeyName</code>,
+       that name is used.
+     </listitem>
+     <listitem>
+       If <code>TimeZoneKeyName</code> corresponds to multiple IANA zones,
+       a 2-letter country code is used, retrieved by applying <code>GetGeoInfoW</code>
+       on the result of <code>GetUserGeoID(GEOCLASS_NATION)</code>.
+       If determining the country code fails, or no entry exits for a given code,
+       the first mapping entry (<code>001</code>) is returned.
+     </listitem>
+   </itemizedlist>
+  </section>
+
+  <section xml:id="zone.db.sources" xreflabel="data sources"><info><title>data sources</title></info>
+    <para>
+      Depending on the build configuration (see
+      <code>--with-libstdcxx-zoneinfo=</code> documentation in
+      <xref linkend="manual.intro.setup.configure">Configure section</xref>).
+      the content of the time zone database is sourced from
+      <filename>tzdata.zi</filename> and <filename>leapseconds</filename> files
+      located in <emphasis>zoneinfo_dir</emphasis>, or from static information
+      embedded in the library.
+    </para>
+
+    <para>
+      By default, <emphasis>zoneinfo_dir</emphasis> is set to the
+      system-specific default directory (if a suitable dir is known for target),
+      usually <code>/usr/share/zoneinfo</code>. If no such directory
+      exits, or it does not contain the required files in the correct format,
+      embedded static data is used as fallback.
+    </para>
+
+    <para>
+      In addition to <code>--with-libstdcxx-zoneinfo=</code> configure option
+      (used during GCC build), the path of <emphasis>zoneinfo_dir</emphasis>
+      can be overridden by the application by providing a definition of the
+      <code>__gnu_cxx::zoneinfo_dir_overrride()</code> function. The
+      returned path should be directory that contains <code>tzdata.zi</code>
+      and <code>leapseconds</code> files in the
+      <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      xlink:href="https://man7.org/linux/man-pages/man8/zic.8.html#FILES">
+      <code>zic</code> format</link>.
+    </para>
+
+    <para>
+      The embedded timezone information corresponds to the copy of the
+      IANA database at the time of the release, and its version can be queried
+      using <code>std::chrono::get_tzdb().version</code>.
+    </para>
+
+    <para>
+      The full time zone database can be disabled when GCC is configured,
+      in which case a minimal time zone database is provided. This minimal
+      database can be identified by <code>chrono::get_tzdb().version</code>
+      being set to <code>"ersatz"</code>. This database contains leapseconds
+      data, <code>Etc/UTC</code>, <code>Etc/GMT</code> zones, and their aliases
+      (<code>Etc/Zulu</code>, <code>Etc/UCT</code>, <code>Etc/Universal</code>,
+      <code>Etc/Greenwich</code>, <code>Etc/GMT0</code>, <code>Etc/GMT+0</code>,
+      <code>Etc/GMT-0</code>). This information is sufficient to support
+      conversion between <code>utc_clock</code> and <code>sys_clock</code>,
+      as well as a <code>UTC</code> fallback for <code>current_zone</code>
+      (<xref linkend="zone.current">link</xref>).
+    </para>
+  </section>
+
+  <section xml:id="zone.db.iterator" xreflabel="tzdb_list::const_iterator extends lifetime">
+    <info><title>tzdb_list::const_iterator extends lifetime</title></info>
+
+    <para>
+      The <code>std::chrono::reload_tzdb()</code> function may be used to load
+      updated content of the <code>tzdata.zi</code> and <code>leapseconds</code>
+      files from <emphasis>zoneinfo_dir</emphasis> (if
+      <xref linkend="zone.db.sources">enabled</xref>). If the version is different
+      (<code>std::chrono::remote_version() != std::chrono::get_tzdb().version</code>),
+      a new element is added at the front of the <code>tzdb_list</code>.
+      This new database is used for subsequent calls to <code>current_zone</code>
+      and <code>locate_zone</code>.
+    </para>
+
+    <para>
+      The above process is thread-safe, and does not invalidate nor change any
+      pre-existing pointers to <code>time_zone</code> objects. However, for a
+      long-running application it may lead to accumulation of time zone data,
+      and thus increased memory usage. In most cases, this is acceptable even
+      for long-running applications, due to infrequent updates to the IANA database,
+      and the reduced footprint of the libstdc++ implementation (see
+      <xref linkend="zone.db.zic">link</xref>).
+    </para>
+
+    <para>
+      If accumulating old <code>tzdb</code> databases is not acceptable
+      (e.g. due to memory constraints), entries
+      may be removed from <code>tzdb_list</code> using <code>tzdb_list::erase_after</code>.
+      When using this function, you are responsible for ensuring that the application
+      no longer is no longer using any <code>time_zone*</code> to a removed database.
+      If you erase a <code>tzdb</code> while some part of the application is still
+      using it (or one of its <code>time_zone</code> objects) you will create
+      a dangling pointer, leading to undefined behaviour.
+      To make <code>tzdb_list::erase_after</code> safer, libstdc++ provides an
+      <emphasis>extension</emphasis> that avoids creating dangling pointers.
+      The <code>tzdb_list</code> uses <code>shared_ptr&lt;tzdb&gt;</code> to
+      refer to each entry in the list, and <code>tzdb_list::const_iterator</code>
+      also uses a <code>shared_ptr&lt;tzdb&gt;</code> to refer to its target.
+      This means that iterators into the list share ownership of the list elements,
+      so that erasing an element from the list does not destroy it if there are
+      any iterators which share ownership of the element. The application can
+      use this to ensure that <code>tzdb</code> and <code>time_zone</code>
+      objects are not destroyed while they're still being used. The lifetime
+      of a <code>tzdb</code> that is still in use can be extended by holding
+      onto a <code>tzdb_list::const_iterator</code> that refers to it.
+    </para>
+  </section>
+
+</section>
+
+</chapter>
