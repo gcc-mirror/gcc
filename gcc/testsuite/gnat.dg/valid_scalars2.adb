@@ -1,5 +1,5 @@
 --  { dg-do run }
---  { dg-options "-O0 -gnata -gnateV" }
+--  { dg-options "-gnata -gnateV" }
 
 with Ada.Exceptions; use Ada.Exceptions;
 

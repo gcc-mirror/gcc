@@ -1,4 +1,4 @@
-package Validity_Check3 is
+package Valid_Scalars3 is
    procedure Call_All;
 
    type Rec_1 is private;
@@ -113,4 +113,4 @@ private
 
    procedure Proc_Priv_Tag_6 (Param : Tag_6);
    procedure Proc_Priv_CW_6  (Param : Tag_6'Class);
-end Validity_Check3;
+end Valid_Scalars3;
