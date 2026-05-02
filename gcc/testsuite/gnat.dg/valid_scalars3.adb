@@ -1,7 +1,7 @@
 --  { dg-do compile }
 --  { dg-options "-gnata -gnateV" }
 
-package body Validity_Check3 is
+package body Valid_Scalars3 is
    procedure Proc_Priv_CW_1 (Param : Tag_1'Class) is begin null; end;
    procedure Proc_Priv_CW_2 (Param : Tag_2'Class) is begin null; end;
    procedure Proc_Priv_CW_3 (Param : Tag_3'Class) is begin null; end;
@@ -93,4 +93,4 @@ package body Validity_Check3 is
       Proc_Vis_Tag_5 (Obj_Tag_5);
       Proc_Vis_Tag_6 (Obj_Tag_6);
    end Call_All;
-end Validity_Check3;
+end Valid_Scalars3;
