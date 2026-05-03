@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "64b Darwin does not support non-PIC" *-*-darwin* } */
 /* { dg-options "-O2 -mno-avx -msse2 -mtune=generic" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target { lp64 } } {^\t?\.} } } */
