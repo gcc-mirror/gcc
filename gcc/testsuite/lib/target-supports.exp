@@ -996,6 +996,10 @@ proc add_options_for_check_function_bodies { flags } {
 	# off on Solaris/x86 with as and ld.  Similarly it also expects
 	# the .LFB/.LFE labels, which aren't emitted for 32-bit.
 	return "-fdwarf2-cfi-asm -fasynchronous-unwind-tables $flags "
+    } elseif { [istarget *-*-darwin*] } {
+        # Darwin does not currently use .cfi_ instructions and also requires
+        # unwind tables to be forced on for 32bit.
+	return "-fno-dwarf2-cfi-asm -fasynchronous-unwind-tables $flags "
     }
     return $flags
 }
