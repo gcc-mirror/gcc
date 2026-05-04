@@ -200,7 +200,8 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi)
 
   bitmap_set_bit (cfgcleanup_altered_bbs, bb->index);
   gsi_remove (&gsi, true);
-  taken_edge->flags = EDGE_FALLTHRU;
+  taken_edge->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
+  taken_edge->flags |= EDGE_FALLTHRU;
 
   return retval;
 }
