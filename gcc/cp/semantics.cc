@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "contracts.h"
 #include "c-family/c-pragma.h"
+#include "gcc-rich-location.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -12676,6 +12677,62 @@ finish_omp_allocate (const location_t loc, const tree var_list,
     } (); /* IILE.  */
   const bool any_static_vars = any_of_vars (tree_static_p);
 
+  /* Create an auto_diagnostic_group before calling this.  */
+  const auto emit_diag_for_var_group
+    = [] (const var_predicate pred,
+	  void (*diag_fn)(rich_location *, const char *, ...),
+	  const char *msg,
+	  const const_tree var_list)
+	{
+	  auto next_match = [&pred] (const_tree first)
+	    {
+	      const_tree vn = first;
+	      for (; vn != NULL_TREE; vn = TREE_CHAIN (vn))
+		if (TREE_PURPOSE (vn) != error_mark_node
+		    && pred (TREE_PURPOSE (vn)))
+		  return vn;
+	      return vn;
+	    };
+	  gcc_assert (var_list != NULL_TREE);
+	  const const_tree first_node = next_match (var_list);
+	  gcc_assert (first_node != NULL_TREE);
+
+	  gcc_rich_location rich_loc (EXPR_LOCATION (TREE_VALUE (first_node)));
+	  /* Don't add another range for the first node.  */
+	  for (const_tree vn = next_match (TREE_CHAIN (first_node));
+	       vn != NULL_TREE;
+	       vn = next_match (TREE_CHAIN (vn)))
+	    rich_loc.add_range (EXPR_LOCATION (TREE_VALUE (vn)));
+	  diag_fn (&rich_loc, msg);
+
+	  const_tree vn = first_node;
+	  for (; vn != NULL_TREE; vn = next_match (TREE_CHAIN (vn)))
+	    inform (DECL_SOURCE_LOCATION (TREE_PURPOSE (vn)),
+		    "%qD declared here", TREE_PURPOSE (vn));
+	};
+
+  /* Defer error marking vars until after other diagnostics are done, we might
+     still need access to them when diagnosing the allocator clause.  */
+  hash_set<tree> deferred_erroneous_var_nodes;
+
+  const auto ref_var_p
+    = [] (const_tree t) -> bool { return TYPE_REF_P (TREE_TYPE (t)); };
+  if (any_of_vars (ref_var_p))
+    {
+      auto_diagnostic_group d;
+      emit_diag_for_var_group (ref_var_p,
+			       &error_at,
+			       G_("variables with reference type may not "
+				  "appear in an %<allocate%> directive"),
+			       var_list);
+      for (tree vn = var_list; vn != NULL_TREE; vn = TREE_CHAIN (vn))
+	{
+	  if (!ref_var_p (TREE_PURPOSE (vn)))
+	    continue;
+	  deferred_erroneous_var_nodes.add (vn);
+	}
+    }
+
   /* (OpenMP 5.2, 174:15) Type: expression of integer type
 			  Properties: constant, positive  */
   const tree align = [&align_in] ()
@@ -12732,9 +12789,12 @@ finish_omp_allocate (const location_t loc, const tree var_list,
 	 allocator values.  */
       const auto emit_diag_for_static_vars = [&] ()
 	{
-	  inform (UNKNOWN_LOCATION,
-		  "because one or more variables with static storage duration "
-		  "appear in the %<allocate%> directive");
+	  emit_diag_for_var_group (tree_static_p,
+				   &inform,
+				   G_("because one or more variables with "
+				      "static storage duration appear "
+				      "in the %<allocate%> directive"),
+				   var_list);
 	};
       if (alloc_in == NULL_TREE)
 	{
@@ -12779,9 +12839,14 @@ finish_omp_allocate (const location_t loc, const tree var_list,
 		  return cached_alloc_type;
 		}
 	      auto_diagnostic_group d;
-	      error_at (EXPR_LOCATION (alloc_in),
+	      gcc_rich_location loc (EXPR_LOCATION (alloc_in));
+	      maybe_add_include_fixit (&loc, "<omp.h>", false);
+	      error_at (&loc,
 			"%<allocator%> clause requires a valid declaration "
 			"of %<omp_allocator_handle_t%>");
+	      inform (&loc,
+		      "%<omp_allocator_handle_t%> is defined in header "
+		      "%<<omp.h>%>");
 	      cached_alloc_type = error_mark_node;
 	      return cached_alloc_type;
 	    }
@@ -12920,6 +12985,10 @@ finish_omp_allocate (const location_t loc, const tree var_list,
       /* Prevent further diagnostics for this var.  */
       TREE_PURPOSE (node) = error_mark_node;
     };
+
+  for (tree vn = var_list; vn != NULL_TREE; vn = TREE_CHAIN (vn))
+    if (deferred_erroneous_var_nodes.contains (vn))
+      finalize_var_node_with_error (vn);
 
   /* Even if there have been errors, save the current state, there might be
      more to diagnose on a later instantiation.  */

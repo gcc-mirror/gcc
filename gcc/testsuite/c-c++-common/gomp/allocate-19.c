@@ -56,19 +56,17 @@ get ()
   return &A1[q];
 }
 
-static int invalid1, okay1, invalid2, invalid3; /* { dg-note "'invalid\[123\]' declared here" "" { target c++ xfail c++ } } */
+static int invalid1, okay1, invalid2, invalid3; /* { dg-note "'invalid\[123\]' declared here" "" { target c++ } } */
 #pragma omp allocate(invalid1) align(128) allocator(ompx_gnu_pinned_bogus_1) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid1' is static" "" { target c } }  */
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target c++ } .-1 } */
-/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ xfail c++ } .-2 } */
+/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ } .-2 } */
 /* { dg-note "expression evaluates to '9'" "" { target c++ } .-3 } */
 #pragma omp allocate(okay1) align(128) allocator(ompx_gnu_pinned_mem_alloc)  /* Okay */
 #pragma omp allocate(invalid2) align(128) allocator(ompx_gnu_pinned_bogus_2) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid2' is static" "" { target c } }  */
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target c++ } .-1 } */
-/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ xfail c++ } .-2 } */
+/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ } .-2 } */
 /* { dg-note "expression evaluates to '199'" "" { target c++ } .-3 } */
 #pragma omp allocate(invalid3) align(128) allocator(ompx_gnu_pinned_bogus_3) /* { dg-error "'allocator' clause requires a predefined allocator as 'invalid3' is static" "" { target c } }  */
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target c++ } .-1 } */
-/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ xfail c++ } .-2 } */
+/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ } .-2 } */
 /* { dg-note "expression evaluates to '2001'" "" { target c++ } .-3 } */
-
-/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ } 0 } */

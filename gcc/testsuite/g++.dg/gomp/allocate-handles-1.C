@@ -15,49 +15,47 @@
 #define GOMP_OMPX_PREDEF_ALLOC_MIN	200
 #define GOMP_OMPX_PREDEF_ALLOC_MAX	201
 
-int g0 = 42; /* { dg-note "'g0' declared here" "" { xfail *-*-* } } */
+int g0 = 42; /* { dg-note "'g0' declared here" } */
 #pragma omp allocate(g0) allocator(omp_null_allocator)
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target *-*-* } .-1 } */
-/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail *-*-* } .-2 } */
+/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target *-*-* } .-2 } */
 /* { dg-note "expression evaluates to '0'" "" { target *-*-* } .-3 } */
-int g1 = 42; /* { dg-note "'g1' declared here" "" { xfail *-*-* } }*/
+int g1 = 42; /* { dg-note "'g1' declared here" } */
 #pragma omp allocate(g1) allocator(static_cast<omp_allocator_handle_t>(GOMP_OMP_PREDEF_ALLOC_MAX + 1)) 
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "If this test fails because of added predefined allocators please ensure everything is updated accordingly, see this test case for more information" { target *-*-* } .-1 } */
-/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail *-*-* } .-2 } */
+/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target *-*-* } .-2 } */
 /* { dg-note "expression evaluates to '9'" "" { target *-*-* } .-3 } */
-int g2 = 42; /* { dg-note "'g2' declared here" "" { xfail *-*-* } }*/
+int g2 = 42; /* { dg-note "'g2' declared here" } */
 #pragma omp allocate(g2) allocator(static_cast<omp_allocator_handle_t>(GOMP_OMPX_PREDEF_ALLOC_MIN - 1))
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target *-*-* } .-1 } */
-/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail *-*-* } .-2 } */
+/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target *-*-* } .-2 } */
 /* { dg-note "expression evaluates to '199'" "" { target *-*-* } .-3 } */
-int g3 = 42; /* { dg-note "'g3' declared here" "" { xfail *-*-* } }*/
+int g3 = 42; /* { dg-note "'g3' declared here" } */
 #pragma omp allocate(g3) allocator(static_cast<omp_allocator_handle_t>(GOMP_OMPX_PREDEF_ALLOC_MAX + 1))
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "If this test fails because of added predefined allocators please ensure everything is updated accordingly, see this test case for more information" { target *-*-* } .-1 } */
-/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail *-*-* } .-2 } */
+/* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target *-*-* } .-2 } */
 /* { dg-note "expression evaluates to '202'" "" { target *-*-* } .-3 } */
 
 void test_predefined_allocs()
 {
-  static int a0 = 42; /* { dg-note "'a0' declared here" "" { xfail *-*-* } }*/
+  static int a0 = 42; /* { dg-note "'a0' declared here" }*/
   #pragma omp allocate(a0) allocator(omp_null_allocator)
   /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target *-*-* } .-1 } */
-  /* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail *-*-* } .-2 } */
+  /* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target *-*-* } .-2 } */
   /* { dg-note "expression evaluates to '0'" "" { target *-*-* } .-3 } */
-  static int a1 = 42; /* { dg-note "'a1' declared here" "" { xfail *-*-* } }*/
+  static int a1 = 42; /* { dg-note "'a1' declared here" }*/
   #pragma omp allocate(a1) allocator(static_cast<omp_allocator_handle_t>(GOMP_OMP_PREDEF_ALLOC_MAX + 1))
   /* { dg-error "'allocator' clause requires a constant predefined allocator" "If this test fails because of added predefined allocators please ensure everything is updated accordingly, see this test case for more information" { target *-*-* } .-1 } */
-  /* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail *-*-* } .-2 } */
+  /* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target *-*-* } .-2 } */
   /* { dg-note "expression evaluates to '9'" "" { target *-*-* } .-3 } */
-  static int a2 = 42; /* { dg-note "'a2' declared here" "" { xfail *-*-* } }*/
+  static int a2 = 42; /* { dg-note "'a2' declared here" }*/
   #pragma omp allocate(a2) allocator(static_cast<omp_allocator_handle_t>(GOMP_OMPX_PREDEF_ALLOC_MIN - 1))
   /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target *-*-* } .-1 } */
-  /* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail *-*-* } .-2 } */
+  /* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target *-*-* } .-2 } */
   /* { dg-note "expression evaluates to '199'" "" { target *-*-* } .-3 } */
-  static int a3 = 42; /* { dg-note "'a3' declared here" "" { xfail *-*-* } }*/
+  static int a3 = 42; /* { dg-note "'a3' declared here" }*/
   #pragma omp allocate(a3) allocator(static_cast<omp_allocator_handle_t>(GOMP_OMPX_PREDEF_ALLOC_MAX + 1))
   /* { dg-error "'allocator' clause requires a constant predefined allocator" "If this test fails because of added predefined allocators please ensure everything is updated accordingly, see this test case for more information" { target *-*-* } .-1 } */
-  /* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail *-*-* } .-2 } */
+  /* { dg-note "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target *-*-* } .-2 } */
   /* { dg-note "expression evaluates to '202'" "" { target *-*-* } .-3 } */
 }
-
-/* { dg-bogus "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail c++ } 0 }*/

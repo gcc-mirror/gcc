@@ -5,7 +5,7 @@ static int A2[5] = {1,2,3,4,5};
 static int A3[5] = {1,2,3,4,5};
 static int A4[5] = {1,2,3,4,5}; /* { dg-line A4_decl } */
 static int A5[5] = {1,2,3,4,5}; /* { dg-line A5_decl } */
-int B, C, C2, D; /* { dg-note "declared here" "" { xfail c++ } } */
+int B, C, C2, D; /* { dg-note "declared here" } */
 
 /* If the following fails because of added predefined allocators, please update
    - include/gomp-constants.h's GOMP_OMP_PREDEF_ALLOC_MAX or GOMP_OMPX_PREDEF_ALLOC_MAX
@@ -18,9 +18,9 @@ int B, C, C2, D; /* { dg-note "declared here" "" { xfail c++ } } */
 #pragma omp allocate(A1) align(32) allocator((omp_allocator_handle_t) 9)
 /* { dg-error "'allocator' clause requires a predefined allocator as 'A1' is static" "" { target c } .-1 } */
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target c++ } .-2 } */
-/* { dg-message "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ xfail c++ } .-3 } */
+/* { dg-message "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ } .-3 } */
 /* { dg-message "expression evaluates to '9'" "" { target c++ } .-4 } */
-/* { dg-note "'A1' declared here" "" { target c++ xfail c++ } A_decl } */
+/* { dg-note "'A1' declared here" "" { target c++ } A_decl } */
 // typo in allocator name:
 #pragma omp allocate(A2) allocator(omp_low_latency_mem_alloc)
 /* { dg-error "'omp_low_latency_mem_alloc' undeclared here \\(not in a function\\); did you mean 'omp_low_lat_mem_alloc'\\?" "" { target c } .-1 } */
@@ -35,8 +35,8 @@ int B, C, C2, D; /* { dg-note "declared here" "" { xfail c++ } } */
 #pragma omp allocate(A4) align(32)
 /* { dg-error "'allocator' clause required for static variable 'A4'" "" { target c } .-1 } */
 /* { dg-error "'allocator' clause must be specified" "" { target c++ } .-2 } */
-/* { dg-message "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ xfail c++ } .-3 } */
-/* { dg-note "'A4' declared here" "" { target c++ xfail c++ } A4_decl } */
+/* { dg-message "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ } .-3 } */
+/* { dg-note "'A4' declared here" "" { target c++ } A4_decl } */
 
 /* "expression in the clause must be a constant expression that evaluates to one of the
    predefined memory allocator values -> omp_low_lat_mem_alloc"  */
@@ -49,9 +49,9 @@ int B, C, C2, D; /* { dg-note "declared here" "" { xfail c++ } } */
 #pragma omp allocate(A5) align(32) allocator(omp_null_allocator)
 /* { dg-error "'allocator' clause requires a predefined allocator as 'A5' is static" "" { target c } .-1 } */
 /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target c++ } .-2 } */
-/* { dg-message "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ xfail c++ } .-3 } */
+/* { dg-message "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ } .-3 } */
 /* { dg-message "expression evaluates to '0'" "" { target c++ } .-4 } */
-/* { dg-note "'A5' declared here" "" { target c++ xfail c++ } A5_decl } */
+/* { dg-note "'A5' declared here" "" { target c++ } A5_decl } */
 
 #pragma omp allocate(C2) align(32) allocator(omp_large_cap_mem_alloc)
 
@@ -59,7 +59,7 @@ int B, C, C2, D; /* { dg-note "declared here" "" { xfail c++ } } */
 // allocate directive in same TU
 int f()
 {
-  #pragma omp allocate(D) align(32) allocator(omp_large_cap_mem_alloc) /* { dg-error "'allocate' directive must be in the same scope as 'D'" "" { xfail c++ } } */
+  #pragma omp allocate(D) align(32) allocator(omp_large_cap_mem_alloc) /* { dg-error "'allocate' directive must be in the same scope as 'D'" } */
   return A1[0];
 }
 
@@ -71,29 +71,29 @@ int g()
 /* { dg-note "'a2' previously appeared here" "" { target c++ } .-2 } */
   {
     int c2=3;
-    #pragma omp allocate(c2, b2) /* { dg-error "'allocate' directive must be in the same scope as 'b2'" "" { xfail c++ } } */
-/* { dg-note "declared here" "" { target *-*-* xfail c++ } g_a2_b2_decl } */
+    #pragma omp allocate(c2, b2) /* { dg-error "'allocate' directive must be in the same scope as 'b2'" } */
+/* { dg-note "declared here" "" { target *-*-* } g_a2_b2_decl } */
     return c2+a2+b2;
   }
 }
 
 int h(int q)
 {
-  #pragma omp allocate(q)  /* { dg-error "function parameter 'q' may not appear as list item in an 'allocate' directive" "" { xfail c++ } } */
-/* { dg-note "parameter 'q' declared here" "" { target c++ xfail c++ } .-3 } */
+  #pragma omp allocate(q)  /* { dg-error "function parameter 'q' may not appear as list item in an 'allocate' directive" } */
+/* { dg-note "parameter 'q' declared here" "" { target c++ } .-3 } */
   return q;
 }
 
 int
 k ()
 {
-  static int var3 = 8; /* { dg-note "'var3' declared here" "" { target c++ xfail c++ } } */
+  static int var3 = 8; /* { dg-note "'var3' declared here" "" { target c++ } } */
   #pragma omp allocate(var3) allocator((omp_allocator_handle_t)-1L)
   /* { dg-error "'allocator' clause requires a predefined allocator as 'var3' is static" "" { target c } .-1 } */
   /* { dg-error "'allocator' clause requires a constant predefined allocator" "" { target c++ } .-2 } */
-  /* { dg-message "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ xfail c++ } .-3 } */
+  /* { dg-message "because one or more variables with static storage duration appear in the 'allocate' directive" "" { target c++ } .-3 } */
   /* { dg-message "expression evaluates to '\\d+'" "" { target c++ } .-4 } */
   return var3;
 }
 
-/* { dg-bogus "because one or more variables with static storage duration appear in the 'allocate' directive" "" { xfail c++ } 0 } */
+/* { dg-bogus "because one or more variables with static storage duration appear in the 'allocate' directive" 0 } */
