@@ -28,12 +28,19 @@
 #include <atomic>
 #include <bits/atomic_timed_wait.h>
 #include <utility> // cmp_less
+#include <numbers> // numbers::phi
 #include <cstdint> // uint32_t, uint64_t, uintptr_t
 #include <climits> // INT_MAX
 #include <cerrno>  // errno, ETIMEDOUT, etc.
 #include <bits/std_mutex.h>  // std::mutex, std::__condvar
 #include <bits/functexcept.h> // __throw_system_error
 #include <bits/functional_hash.h>
+
+#ifdef _GLIBCXX_HAVE_ARC4RANDOM
+# include <stdlib.h> // arc4random
+#else
+# include <random> // random_device
+#endif
 
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
 # include <sys/syscall.h> // SYS_futex
@@ -332,15 +339,58 @@ namespace
       return __res != 0;
     }
 
+    class Table;
+
     static __waitable_state&
-    _S_state_for(const void* __addr) noexcept
-    {
-      constexpr __UINTPTR_TYPE__ __ct = 16;
-      static __waitable_state __w[__ct];
-      auto __key = ((__UINTPTR_TYPE__)__addr >> 2) % __ct;
-      return __w[__key];
-    }
+    _S_state_for(const void* addr) noexcept;
   };
+
+  // This aggregates the array of states and the seed into a single object,
+  // so that there is only one static initialization guard needed.
+  class __waitable_state::Table
+  {
+    static constexpr size_t size = 16;
+    __waitable_state wait_states[size];
+
+    static uint32_t gen_seed()
+    {
+#ifdef _GLIBCXX_HAVE_ARC4RANDOM  // glibc 2.36 and BSD
+      // Avoid the overhead of constructing+destroying std::random_device.
+      return arc4random();
+#else
+# if __cpp_exceptions
+      // Use the default platform-specific source of entropy.
+      try { return std::random_device{}(); } catch (...) { }
+# endif
+      return 0;
+#endif
+    }
+
+    const uint32_t seed{ gen_seed() }; // Per-process random seed.
+
+    static size_t
+    hash(const void* p, size_t seed) noexcept
+    {
+      size_t x = reinterpret_cast<uintptr_t>(p);
+      x ^= seed;
+      x ^= x >> (__SIZE_WIDTH__ / 2 + 1);
+      x *= size_t(__SIZE_MAX__ / std::numbers::phi);
+      x ^= x >> (__SIZE_WIDTH__ / 2 - 1);
+      return x;
+    }
+
+  public:
+    __waitable_state&
+    operator[](const void* p)
+    { return wait_states[hash(p, seed) % size]; }
+  };
+
+  inline __waitable_state&
+  __waitable_state::_S_state_for(const void* addr) noexcept
+  {
+    static Table table;
+    return table[addr];
+  }
 
   // Scope-based contention tracking.
   struct scoped_wait
