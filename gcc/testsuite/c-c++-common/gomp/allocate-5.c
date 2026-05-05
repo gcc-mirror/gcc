@@ -40,7 +40,7 @@ bar ()
 #pragma omp allocate(a) foo(my_allocator) /* { dg-error "expected 'allocator'" } */
   /* { dg-error "expected end of line before '\\(' token" "" { target *-*-* } .-1 } */
   /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-2 } */
-#pragma omp allocate(a2) allocator(b)  /* { dg-error "'allocator' clause allocator expression has type 'int' rather than 'omp_allocator_handle_t'" "todo: cp/semantics.c" { xfail c++ } } */
+#pragma omp allocate(a2) allocator(b)  /* { dg-error "'allocator' clause expression has type 'int' rather than 'omp_allocator_handle_t'" "todo: cp/semantics.c" { xfail c++ } } */
   /* { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-1 } */
 }
 
