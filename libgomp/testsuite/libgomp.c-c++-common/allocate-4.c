@@ -1,6 +1,3 @@
-/* TODO: move to ../libgomp.c-c++-common once C++ is implemented. */
-/* NOTE: { target c } is unsupported with with the C compiler.  */
-
 /* { dg-do run } */
 /* { dg-additional-options "-fdump-tree-gimple" } */
 

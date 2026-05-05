@@ -47,17 +47,6 @@ static int g10;
 #pragma omp allocate(g8) allocator(omp_thread_mem_alloc)  // { dg-error "'allocator' clause for static variable 'g8' must not be 'omp_cgroup_mem_alloc', 'omp_pteam_mem_alloc', or 'omp_thread_mem_alloc'" "" { target c } }
 #pragma omp allocate(g9) allocator(ompx_gnu_pinned_mem_alloc)
 #pragma omp allocate(g10) allocator(ompx_gnu_managed_mem_alloc)
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-// { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
 
 
 void local_static ()
@@ -85,15 +74,4 @@ void local_static ()
   #pragma omp allocate(s8) allocator(omp_thread_mem_alloc)  // { dg-error "'allocator' clause for static variable 's8' must not be 'omp_cgroup_mem_alloc', 'omp_pteam_mem_alloc', or 'omp_thread_mem_alloc'" "" { target c } }
   #pragma omp allocate(s9) allocator(ompx_gnu_pinned_mem_alloc)
   #pragma omp allocate(s10) allocator(ompx_gnu_managed_mem_alloc)
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
-  // { dg-message "sorry, unimplemented: '#pragma omp allocate' not yet supported" "" { target c++ } .-11 }
 }

@@ -232,8 +232,8 @@ The OpenMP 4.5 specification is fully supported.
 @item Predefined memory spaces, memory allocators, allocator traits
       @tab Y @tab See also @ref{Memory allocation}
 @item Memory management routines @tab Y @tab
-@item @code{allocate} directive @tab P
-      @tab C++ unsupported; see also @ref{Memory allocation}
+@item @code{allocate} directive @tab Y
+      @tab C++ minor edge cases disabled; see also @ref{Memory allocation}
 @item @code{allocate} clause @tab Y @tab
 @item @code{use_device_addr} clause on @code{target data} @tab Y @tab
 @item @code{ancestor} modifier on @code{device} clause @tab Y @tab
@@ -305,8 +305,7 @@ The OpenMP 4.5 specification is fully supported.
 @item Loop transformation constructs @tab Y @tab
 @item @code{strict} modifier in the @code{grainsize} and @code{num_tasks}
       clauses of the @code{taskloop} construct @tab Y @tab
-@item @code{align} clause in @code{allocate} directive @tab P
-      @tab Only C and Fortran
+@item @code{align} clause in @code{allocate} directive @tab Y
 @item @code{align} modifier in @code{allocate} clause @tab Y @tab
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
@@ -7778,7 +7777,8 @@ The description below applies to:
       @code{omp_default_mem_alloc} and no @code{align} clause has been
       specified. (In that case, the normal allocation is used: stack allocation
       and, sometimes for Fortran, also @code{malloc} [depending on flags such as
-      @option{-fstack-arrays}].)
+      @option{-fstack-arrays}].)  In C++, static variables in an implicit
+      constexpr function are not supported.
 @item In Fortran, the @code{allocators} directive and the executable
       @code{allocate} directive for Fortran pointers and allocatables is
       supported, but requires that files containing those directives has to be

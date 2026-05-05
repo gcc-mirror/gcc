@@ -1,7 +1,6 @@
-/* TODO: move to ../libgomp.c-c++-common once C++ is implemented. */
-/* NOTE: { target c } is unsupported with with the C compiler.  */
+/* { dg-do run { target c } } */
 
-/* { dg-do run } */
+/* In C++, omp allocate in an omp::decl attribute is not currently supported.  */
 
 #include <omp.h>
 

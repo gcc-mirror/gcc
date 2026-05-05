@@ -11362,6 +11362,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
     case OMP_DEPOBJ:
+    case OMP_ALLOCATE:
     case OACC_PARALLEL:
     case OACC_KERNELS:
     case OACC_SERIAL:
@@ -13209,6 +13210,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
     case OMP_DEPOBJ:
+    case OMP_ALLOCATE:
     case OACC_PARALLEL:
     case OACC_KERNELS:
     case OACC_SERIAL:

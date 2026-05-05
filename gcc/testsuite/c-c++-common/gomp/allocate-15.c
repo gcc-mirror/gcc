@@ -1,6 +1,3 @@
-/* TODO: enable for C++ once implemented. */
-/* { dg-do compile { target c } } */
-
 #pragma omp requires dynamic_allocators
 
 #pragma omp begin declare target

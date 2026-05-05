@@ -1,6 +1,3 @@
-/* TODO: enable for C++ once implemented. */
-/* { dg-do compile { target c } } */
-
 typedef enum omp_allocator_handle_t 
 #if __cplusplus >= 201103L 
 : __UINTPTR_TYPE__ 
@@ -17,12 +14,15 @@ omp_allocator_handle_t foo(int, int *);
 void
 f ()
 {
-  int v;  /* { dg-note "to be allocated variable declared here" } */
-  int n = 5;
-  int a = 1;  /* { dg-note "declared here" } */
+  int v;  /* { dg-note "to be allocated variable declared here" "" { xfail c++ } } */
+  static const int n = 5;
+  int a = 1;
+  /* { dg-note "declared here" "" { xfail c++ } .-1 } */
   int b[n];
+  /* { dg-note "declared here" "" { target c++ xfail c++ } .-1 } */
   b[a] = 5;
-  #pragma omp allocate (v) allocator (foo (a, &b[a]))  /* { dg-error "variable 'a' used in the 'allocator' clause must be declared before 'v'" } */
+  #pragma omp allocate (v) allocator (foo (a, &b[a]))
+  /* { dg-error "variable 'a' used in the 'allocator' clause must be declared before 'v'" "" { xfail c++ } .-1 } */
 }
 
 void
@@ -32,7 +32,8 @@ g ()
   int a = 1;
   int b[n];
   b[a] = 5;
-  int v;  /* { dg-note "to be allocated variable declared here" } */
-  a = 2;  /* { dg-note "modified here" } */
-  #pragma omp allocate (v) allocator (foo (a, &b[a]))  /* { dg-error "variable 'a' used in the 'allocator' clause must not be modified between declaration of 'v' and its 'allocate' directive" } */
+  int v;  /* { dg-note "to be allocated variable declared here" "" { xfail c++ } } */
+  a = 2;  /* { dg-note "modified here" "" { xfail c++ } } */
+  #pragma omp allocate (v) allocator (foo (a, &b[a]))
+  /* { dg-error "variable 'a' used in the 'allocator' clause must not be modified between declaration of 'v' and its 'allocate' directive" "" { xfail c++ } .-1 } */
 }

@@ -1,5 +1,3 @@
-/* TODO: enable for C++ once implemented. */
-/* { dg-do compile { target c } } */
 /* { dg-additional-options "-Wall -fdump-tree-gimple" } */
 
 typedef enum omp_allocator_handle_t
@@ -23,6 +21,7 @@ void
 h1()
 {
   omp_allocator_handle_t my_handle;
+  /* { dg-bogus "variable 'my_handle' set but not used" "" { target *-*-* } .-1 } */
   int B1[3]; /* { dg-warning "'my_handle' is used uninitialized" } */
   /* { dg-warning "variable 'B1' set but not used" "" { target *-*-* } .-1 } */
   #pragma omp allocate(B1) allocator(my_handle)
@@ -36,6 +35,7 @@ void
 h2()
 {
   omp_allocator_handle_t my_handle;
+  /* { dg-bogus "variable 'my_handle' set but not used" "" { target *-*-* } .-1 } */
   int B2[3];  /* { dg-warning "unused variable 'B2'" } */
   #pragma omp allocate(B2) allocator(my_handle) /* No warning as 'B2' is unused */
 }
@@ -44,6 +44,7 @@ void
 h3()
 {
   omp_allocator_handle_t my_handle;
+  /* { dg-bogus "variable 'my_handle' set but not used" "" { target *-*-* } .-1 } */
   int B3[3] = {1,2,3};  /* { dg-warning "unused variable 'B3'" } */
   #pragma omp allocate(B3) allocator(my_handle) /* No warning as 'B3' is unused */
 }

@@ -1,6 +1,3 @@
-/* TODO: enable for C++ once implemented. */
-/* { dg-do compile { target c } } */
-
 #pragma omp begin declare target
 void
 f ()
