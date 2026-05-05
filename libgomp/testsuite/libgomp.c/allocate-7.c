@@ -10,7 +10,7 @@ int AAA [[omp::decl(allocate,allocator(omp_low_lat_mem_alloc),align(4096))]];
 #ifndef __cplusplus
   _Static_assert (_Alignof(AAA) == _Alignof(int), "wrong alignment");
 #elif __cplusplus >= 201103L
-  static_assert (alignof(AAA) == _Alignof(int), "wrong alignment");
+  static_assert (alignof(AAA) == alignof(int), "wrong alignment");
 #endif
 
 
