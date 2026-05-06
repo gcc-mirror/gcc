@@ -314,6 +314,9 @@ struct vect_load_store_data : vect_data {
   unsigned n_loads; // SLP_TREE_LOAD_PERMUTATION
   /* Whether the load permutation is consecutive and simple.  */
   bool subchain_p; // VMAT_STRIDED_SLP and VMAT_GATHER_SCATTER
+  /* Whether the gather offset is the same for all lanes of each vector,
+     so a scalar load plus broadcast can replace the gather.  */
+  bool gs_offset_uniform_p; // VMAT_GATHER_SCATTER_EMULATED
 };
 
 struct match_elt_t {
@@ -2646,6 +2649,8 @@ extern bool vect_check_gather_scatter (stmt_vec_info, tree,
 				       vec<int> * = nullptr);
 extern void vect_describe_gather_scatter_call (stmt_vec_info,
 					       gather_scatter_info *);
+extern bool vect_check_gather_load_offset_uniform (class loop *,
+						   HOST_WIDE_INT, tree);
 extern opt_result vect_find_stmt_data_reference (loop_p, gimple *,
 						 vec<data_reference_p> *,
 						 vec<int> *, int, bool = false);

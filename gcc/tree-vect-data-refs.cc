@@ -4704,6 +4704,141 @@ vect_describe_gather_scatter_call (stmt_vec_info stmt_info,
   info->memory_type = TREE_TYPE (DR_REF (dr));
 }
 
+/* Return true if the gather load offset OFF is the same for all lanes of
+   each vector of N = CONST_NUNITS lanes in LOOP.  This assumes every vector
+   starts at a scalar iteration S with S % N == 0; the caller must check that
+   against peeling and epilogue loops.  N rather than the vectorization
+   factor is the chunk size: vector copy J covers the scalar iterations
+   S + J * N to S + J * N + N - 1, and the vectorization factor is a multiple
+   of N.  If the offset is uniform, the gather can use a scalar load plus
+   broadcast instead of a full emulated gather.
+
+   For example, with i = {0, +, 1}, N = 4 and a load of a[i >> 2]:
+
+     chunk 0: i = {0,1,2,3} -> i >> 2 = {0,0,0,0}
+     chunk 1: i = {4,5,6,7} -> i >> 2 = {1,1,1,1}
+
+   OFF must be i OP k with k an INTEGER_CST and the SCEV of i must be
+   {B, +, 1} with B >= 0, B % N == 0 and N < 2^precision of i, so that
+   each chunk is m * N to m * N + N - 1.  N is a power of two, N = 2^p.
+   Then:
+   * i >> k is uniform iff N - 1 < 2^k.
+   * i / k is uniform iff k % N == 0.  N - 1 < k is not enough for a
+     divisor that is not a power of two (N = 4, k = 5: chunk {4,5,6,7}
+     gives {0,1,1,1}).  A signed i must not wrap: with -fwrapv it can
+     become negative, and division truncates toward zero, so
+     {-8,-7,-6,-5} / 4 gives {-2,-1,-1,-1}.
+   * i & k is uniform iff (k & (N - 1)) == 0.  The low p bits of i vary
+     across the lanes of a chunk and the higher bits are fixed (N = 8,
+     chunk 5: i = 40 to 47, binary 101000 to 101111), so i & k is the same
+     on every lane iff k has none of the low p bits set.  */
+
+bool
+vect_check_gather_load_offset_uniform (class loop *loop,
+				       HOST_WIDE_INT const_nunits,
+				       tree off)
+{
+  /* Check ensures that the offset is an SSA_NAME which is qualified for
+     uniform detection.  */
+  if (!off || TREE_CODE (off) != SSA_NAME)
+    return false;
+  tree chrec1 = NULL_TREE, rhs1 = NULL_TREE, rhs2 = NULL_TREE;
+  gimple *def_stmt = SSA_NAME_DEF_STMT (off);
+  if (!is_gimple_assign (def_stmt))
+    return false;
+  tree_code op_code = ERROR_MARK;
+  op_code = gimple_assign_rhs_code (def_stmt);
+  if (op_code != BIT_AND_EXPR && op_code != TRUNC_DIV_EXPR
+      && op_code != RSHIFT_EXPR)
+    return false;
+  rhs1 = gimple_assign_rhs1 (def_stmt);
+  rhs2 = gimple_assign_rhs2 (def_stmt);
+  /* Strict check for operand 2 to be constant.  */
+  if (TREE_CODE (rhs2) != INTEGER_CST)
+    return false;
+  /* OFF can be defined by a pattern stmt, whose operands need not be in
+     the IL.  */
+  if (TREE_CODE (rhs1) != SSA_NAME
+      || SSA_NAME_IS_DEFAULT_DEF (rhs1)
+      || !gimple_bb (SSA_NAME_DEF_STMT (rhs1)))
+    return false;
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "offset uniformity check at vector nunits=%wd\n",
+		     const_nunits);
+  chrec1 = analyze_scalar_evolution
+	   (gimple_bb (SSA_NAME_DEF_STMT (rhs1))->loop_father, rhs1);
+  chrec1 = instantiate_parameters (loop, chrec1);
+  if (!chrec1 || chrec1 == chrec_dont_know)
+    return false;
+  /* Strict check for operand 1 to be poly rec in LOOP.  */
+  if (TREE_CODE (chrec1) != POLYNOMIAL_CHREC
+      || CHREC_VARIABLE (chrec1) != (unsigned) loop->num)
+    return false;
+  tree scev_base = CHREC_LEFT (chrec1);
+  tree scev_step = CHREC_RIGHT (chrec1);
+  /* Valid for {B, +, 1} induction pattern now.
+     TODO Extend to handle general case.  */
+  if (TREE_CODE (scev_base) != INTEGER_CST
+      || TREE_CODE (scev_step) != INTEGER_CST
+      || !integer_onep (scev_step)
+      || tree_int_cst_sgn (scev_base) < 0)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "cannot determine uniformity"
+			 " because of non-constant or negative base or non-one"
+			 " step\n");
+      return false;
+    }
+  /* N must be below 2^precision of i: otherwise N truncates to 0 below
+     and i wraps within a single vector.  */
+  if (exact_log2 (const_nunits) >= (int) TYPE_PRECISION (TREE_TYPE (rhs1)))
+    return false;
+  /* Convert SCEV components and operands to wide_int for uniformity analysis.
+     These values are used to determine if the gather load offset is uniform
+     across vector lanes based on the operation type (RSHIFT, TRUNC_DIV, or
+     BIT_AND) and the relationship between the vector number of lanes and the
+     operand.  */
+  wide_int rhs_wi = wi::to_wide (rhs2);
+  unsigned prec = TYPE_PRECISION (TREE_TYPE (rhs1));
+  unsigned int base_prec = TYPE_PRECISION (TREE_TYPE (scev_base));
+  wide_int base_wi = wi::to_wide (scev_base);
+  wide_int vf_m1 = wi::uhwi (const_nunits - 1, prec);
+  wide_int vf_base = wi::uhwi (const_nunits, base_prec);
+  /* {B,+,1} has the {0,+,1} chunk shape iff B is a multiple of N.
+     All three operators need this, so reject once.  */
+  if (!wi::eq_p (wi::umod_trunc (base_wi, vf_base), wi::zero (base_prec)))
+    return false;
+  bool is_uniform = false;
+  if (op_code == RSHIFT_EXPR)
+    {
+      wide_int pow2_k = wi::lshift (wi::one (prec), rhs_wi);
+      if (tree_int_cst_sgn (rhs2) >= 0 && wi::ltu_p (vf_m1, pow2_k))
+	is_uniform = true;
+    }
+  else if (op_code == TRUNC_DIV_EXPR
+	   && !(!TYPE_UNSIGNED (TREE_TYPE (rhs1))
+		&& TYPE_OVERFLOW_WRAPS (TREE_TYPE (rhs1))))
+    {
+      wide_int vf_wi = wi::uhwi (const_nunits, prec);
+      if (wi::eq_p (wi::umod_trunc (rhs_wi, vf_wi), wi::zero (prec)))
+	is_uniform = true;
+    }
+  else if (op_code == BIT_AND_EXPR)
+    {
+      wide_int mask_m1 = wi::bit_and (rhs_wi, vf_m1);
+      if (wi::eq_p (mask_m1, wi::zero (prec)))
+	is_uniform = true;
+    }
+  if (is_uniform && dump_enabled_p ())
+    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+		     "gather offset is uniform across %wd vector lanes, "
+		     "broadcast optimization possible\n",
+		     const_nunits);
+  return is_uniform;
+}
+
 /* Return true if a non-affine read or write in STMT_INFO is suitable for a
    gather load or scatter store with VECTYPE.  Describe the operation in *INFO
    if so.  If it is suitable and ELSVALS is nonzero store the supported else

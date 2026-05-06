@@ -2112,6 +2112,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   *n_perms = -1U;
   *n_loads = -1U;
   ls->subchain_p = false;
+  ls->gs_offset_uniform_p = false;
 
   bool perm_ok = true;
   poly_int64 vf = loop_vinfo ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) : 1;
@@ -2224,6 +2225,30 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	      return false;
 	    }
 	  *memory_access_type = VMAT_GATHER_SCATTER_EMULATED;
+
+	  /* A single-lane gather load whose offset is the same for all lanes
+	     of each vector can use a scalar load plus broadcast.  The
+	     uniformity check assumes each vector starts at a scalar iteration
+	     that is a multiple of the number of lanes.  Peeling for alignment
+	     (with or without masks) and epilogue loops shift the start, so
+	     reject those.  */
+	  if (vls_type == VLS_LOAD
+	      && SLP_TREE_LANES (slp_node) == 1
+	      && vect_check_gather_load_offset_uniform
+		   (loop, nunits.to_constant (),
+		    vect_get_slp_scalar_def (offset_node, 0)))
+	    {
+	      if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) != 0
+		  || LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "not using broadcast for uniform gather "
+				     "offset because of peeling or epilogue\n");
+		}
+	      else
+		ls->gs_offset_uniform_p = true;
+	    }
 	}
     }
   else
@@ -11309,18 +11334,38 @@ vectorizable_load (vec_info *vinfo,
 	      unsigned HOST_WIDE_INT const_nunits = nunits.to_constant ();
 	      if (costing_p)
 		{
-		  /* For emulated gathers N offset vector element
-		     offset add is consumed by the load).  */
-		  inside_cost = record_stmt_cost (cost_vec, 1, vec_deconstruct,
-						  slp_node, 0, vect_body);
-		  /* N scalar loads plus gathering them into a
-		     vector.  */
-		  inside_cost
-		    = record_stmt_cost (cost_vec, const_nunits, scalar_load,
-					slp_node, 0, vect_body);
-		  inside_cost
-		    = record_stmt_cost (cost_vec, 1, vec_construct,
-					slp_node, 0, vect_body);
+		  if (ls.gs_offset_uniform_p)
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_NOTE, vect_location,
+					 "computing cost for broadcast\n");
+		      /* Broadcast optimization: 1 extract + 1 load
+			 + 1 broadcast.  */
+		      inside_cost = record_stmt_cost (cost_vec, 1,
+						      vec_to_scalar, slp_node,
+						      0, vect_body);
+		      inside_cost += record_stmt_cost (cost_vec, 1, scalar_load,
+						       slp_node, 0, vect_body);
+		      inside_cost += record_stmt_cost (cost_vec, 1,
+						       scalar_to_vec, slp_node,
+						       0, vect_body);
+		    }
+		  else
+		    {
+		      /* For emulated gathers N offset vector element
+			 offset add is consumed by the load).  */
+		      inside_cost = record_stmt_cost (cost_vec, 1,
+						      vec_deconstruct, slp_node,
+						      0, vect_body);
+		      /* N scalar loads plus gathering them into a
+			 vector.  */
+		      inside_cost
+			= record_stmt_cost (cost_vec, const_nunits, scalar_load,
+					    slp_node, 0, vect_body);
+		      inside_cost
+			= record_stmt_cost (cost_vec, 1, vec_construct,
+					    slp_node, 0, vect_body);
+		    }
 		  continue;
 		}
 	      tree offset_vectype = TREE_TYPE (vec_offsets[0]);
@@ -11340,23 +11385,32 @@ vectorizable_load (vec_info *vinfo,
 	      tree ltype = build_aligned_type (TREE_TYPE (vectype), align);
 	      for (unsigned k = 0; k < const_nunits; ++k)
 		{
-		  tree boff = size_binop (MULT_EXPR, TYPE_SIZE (idx_type),
-					  bitsize_int (k + elt_offset));
-		  tree idx = gimple_build (&stmts, BIT_FIELD_REF, idx_type,
-					   vec_offset, TYPE_SIZE (idx_type),
-					   boff);
-		  idx = gimple_convert (&stmts, sizetype, idx);
-		  idx = gimple_build (&stmts, MULT_EXPR, sizetype, idx, scale);
-		  tree ptr = gimple_build (&stmts, PLUS_EXPR,
-					   TREE_TYPE (dataref_ptr),
-					   dataref_ptr, idx);
-		  ptr = gimple_convert (&stmts, ptr_type_node, ptr);
-		  tree elt = make_ssa_name (TREE_TYPE (vectype));
-		  tree ref = build2 (MEM_REF, ltype, ptr,
-				     build_int_cst (ref_type, 0));
-		  new_stmt = gimple_build_assign (elt, ref);
-		  gimple_set_vuse (new_stmt, gimple_vuse (gsi_stmt (*gsi)));
-		  gimple_seq_add_stmt (&stmts, new_stmt);
+		  tree elt;
+		  /* If all lanes are uniform then generate broadcast otherwise
+		     emulated gathers.  */
+		  if (ls.gs_offset_uniform_p && k > 0)
+		    elt = (*ctor_elts)[0].value;
+		  else
+		    {
+		      tree boff = size_binop (MULT_EXPR, TYPE_SIZE (idx_type),
+					      bitsize_int (k + elt_offset));
+		      tree idx = gimple_build (&stmts, BIT_FIELD_REF, idx_type,
+					       vec_offset, TYPE_SIZE (idx_type),
+					       boff);
+		      idx = gimple_convert (&stmts, sizetype, idx);
+		      idx = gimple_build (&stmts, MULT_EXPR, sizetype, idx,
+					  scale);
+		      tree ptr = gimple_build (&stmts, PLUS_EXPR,
+					       TREE_TYPE (dataref_ptr),
+					       dataref_ptr, idx);
+		      ptr = gimple_convert (&stmts, ptr_type_node, ptr);
+		      elt = make_ssa_name (TREE_TYPE (vectype));
+		      tree ref = build2 (MEM_REF, ltype, ptr,
+					 build_int_cst (ref_type, 0));
+		      new_stmt = gimple_build_assign (elt, ref);
+		      gimple_set_vuse (new_stmt, gimple_vuse (gsi_stmt (*gsi)));
+		      gimple_seq_add_stmt (&stmts, new_stmt);
+		    }
 		  CONSTRUCTOR_APPEND_ELT (ctor_elts, NULL_TREE, elt);
 		}
 	      gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
