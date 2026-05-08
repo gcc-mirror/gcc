@@ -33,7 +33,6 @@
 #include <debug/safe_local_iterator.h>
 #include <debug/vector>
 
-#include <cassert>
 #include <cstdio>	// for std::fprintf, stderr
 #include <cstdlib>	// for std::abort
 #include <cctype>	// for std::isspace.
@@ -794,7 +793,7 @@ namespace
   void
   print_named_name(PrintContext& ctx, const _Parameter::_Named& named)
   {
-    assert(named._M_name);
+    __glibcxx_assert(named._M_name);
     pretty_print(ctx, named._M_name, print_word);
   }
 
@@ -891,7 +890,7 @@ namespace
 	print_iterator_state(ctx, iterator);
       else if (__builtin_strcmp(fname, "sequence") == 0)
 	{
-	  assert(iterator._M_sequence);
+	  __glibcxx_assert(iterator._M_sequence);
 	  print_address(ctx, iterator._M_sequence);
 	}
       else if (__builtin_strcmp(fname, "seq_type") == 0)
@@ -905,43 +904,43 @@ namespace
   void
   print_field(PrintContext& ctx, const _Parameter& param, const char* fname)
   {
-    assert(param._M_kind != _Parameter::__unused_param);
+    __glibcxx_assert(param._M_kind != _Parameter::__unused_param);
 
     const auto& variant = param._M_variant;
     switch (param._M_kind)
     {
     case _Parameter::__iterator:
       if (!print_iterator_field(ctx, fname, variant._M_iterator))
-	assert(false);
+	__glibcxx_assert(false);
       break;
 
     case _Parameter::__sequence:
       if (!print_instance_field(ctx, fname, variant._M_sequence))
-	assert(false);
+	__glibcxx_assert(false);
       break;
 
     case _Parameter::__integer:
       if (!print_named_field(ctx, fname, variant._M_integer))
-	assert(false);
+	__glibcxx_assert(false);
       break;
 
     case _Parameter::__string:
       if (!print_named_field(ctx, fname, variant._M_string))
-	assert(false);
+	__glibcxx_assert(false);
       break;
 
     case _Parameter::__instance:
       if (!print_instance_field(ctx, fname, variant._M_instance))
-	assert(false);
+	__glibcxx_assert(false);
       break;
 
     case _Parameter::__iterator_value_type:
       if (!print_type_field(ctx, fname, variant._M_iterator_value_type))
-	assert(false);
+	__glibcxx_assert(false);
       break;
 
     default:
-      assert(false);
+      __glibcxx_assert(false);
       break;
     }
   }
@@ -1104,9 +1103,9 @@ namespace
 	  }
 
 	// Get the parameter number
-	assert(*str >= '1' && *str <= '9');
+	__glibcxx_assert(*str >= '1' && *str <= '9');
 	size_t param_index = *str - '0' - 1;
-	assert(param_index < num_parameters);
+	__glibcxx_assert(param_index < num_parameters);
 	const auto& param = parameters[param_index];
 
 	// '.' separates the parameter number from the field
@@ -1114,7 +1113,7 @@ namespace
 	++str;
 	if (*str != '.')
 	  {
-	    assert(*str == ';');
+	    __glibcxx_assert(*str == ';');
 	    ++str;
 	    if (param._M_kind == _Parameter::__integer)
 	      print_integer(ctx, param._M_variant._M_integer._M_value);
@@ -1132,8 +1131,8 @@ namespace
 	++str;
 	while (*str != ';')
 	  {
-	    assert(*str);
-	    assert(field_idx < max_field_len - 1);
+	    __glibcxx_assert(*str);
+	    __glibcxx_assert(field_idx < max_field_len - 1);
 	    field[field_idx++] = *str++;
 	  }
 	++str;
@@ -1288,7 +1287,7 @@ namespace __gnu_debug
     print_literal(ctx, "Error: ");
 
     // Print the error message
-    assert(_M_text);
+    __glibcxx_assert(_M_text);
     print_string(ctx, _M_text, -1, _M_parameters, _M_num_parameters);
     print_literal(ctx, ".\n");
 
