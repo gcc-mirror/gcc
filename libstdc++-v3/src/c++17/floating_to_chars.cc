@@ -26,7 +26,6 @@
 
 #include <bit>
 #include <cfenv>
-#include <cassert>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -106,6 +105,9 @@ namespace
 
   namespace ryu
   {
+#pragma push_macro("assert")
+#undef assert
+#define assert __glibcxx_assert
 #include "ryu/common.h"
 #include "ryu/digit_table.h"
 #include "ryu/d2s_intrinsics.h"
@@ -123,6 +125,7 @@ namespace
 # include "ryu/ryu_generic_128.h"
 # include "ryu/generic_128.c"
     } // namespace generic128
+#pragma pop_macro("assert")
 
     using generic128::floating_decimal_128;
     using generic128::generic_binary_to_decimal;
