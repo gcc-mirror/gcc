@@ -120,7 +120,7 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	}
       generation |= gen & BAR_WAITING_FOR_TASK;
     }
-  while (!gomp_barrier_state_is_incremented (gen, state));
+  while ((gen & -BAR_INCR) != state + BAR_INCR);
 }
 
 void
@@ -189,7 +189,7 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 	}
       generation |= gen & BAR_WAITING_FOR_TASK;
     }
-  while (!gomp_barrier_state_is_incremented (gen, state));
+  while ((gen & -BAR_INCR) != state + BAR_INCR);
 
   return false;
 }
