@@ -2971,7 +2971,7 @@ make_sarif_node (const digraphs::node &n,
   auto result = std::make_unique<sarif_node> ();
 
   // 3.40.2 id property
-  result->set_string ("id", n.get_id ().c_str ());
+  result->set_string ("id", n.get_id ());
 
   copy_any_property_bag (n, *result);
 
@@ -3019,7 +3019,7 @@ make_sarif_edge (const digraphs::edge &e,
   auto result = std::make_unique<sarif_edge> ();
 
   // 3.41.2 id property
-  result->set_string ("id", e.get_id ().c_str ());
+  result->set_string ("id", e.get_id ());
 
   copy_any_property_bag (e, *result);
 
@@ -3030,10 +3030,10 @@ make_sarif_edge (const digraphs::edge &e,
 				  builder->make_message_object (label));
 
   // 3.41.4 sourceNodeId property
-  result->set_string ("sourceNodeId", e.get_src_node ().get_id ().c_str ());
+  result->set_string ("sourceNodeId", e.get_src_node ().get_id ());
 
   // 3.41.5 targetNodeId property
-  result->set_string ("targetNodeId", e.get_dst_node ().get_id ().c_str ());
+  result->set_string ("targetNodeId", e.get_dst_node ().get_id ());
 
   return result;
 }
@@ -3316,7 +3316,7 @@ set_string_property_escaping_braces (json::object &obj,
 				     const char *value)
 {
   std::string escaped (escape_braces (value));
-  obj.set_string (property_name, escaped.c_str ());
+  obj.set_string (property_name, escaped);
 }
 
 /* Make a "message" object (SARIF v2.1.0 section 3.11) for MSG.  */

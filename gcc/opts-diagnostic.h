@@ -73,6 +73,9 @@ public:
   virtual std::unique_ptr<diagnostics::sink::extension>
   make_cfg_extension (diagnostics::sink &sink) const = 0;
 
+  virtual std::unique_ptr<diagnostics::sink::extension>
+  make_analyzer_graphs_extension (diagnostics::sink &sink) const = 0;
+
   static const gcc_extension_factory *singleton;
 };
 

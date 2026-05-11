@@ -276,6 +276,8 @@ class pending_diagnostic
   /* Hand-coded RTTI: get an ID for the subclass.  */
   virtual const char *get_kind () const = 0;
 
+  virtual std::unique_ptr<json::object> to_json () const;
+
   /* A vfunc for identifying "use of uninitialized value".  */
   virtual bool use_of_uninit_p () const { return false; }
 

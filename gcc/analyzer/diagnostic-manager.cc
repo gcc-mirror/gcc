@@ -767,8 +767,19 @@ saved_diagnostic::to_json () const
     sd_obj->set ("state", m_state->to_json ());
   if (m_best_epath)
     sd_obj->set_integer ("path_length", get_epath_length ());
-  sd_obj->set_string ("pending_diagnostic", m_d->get_kind ());
+  sd_obj->set<json::object> ("pending_diagnostic", m_d->to_json ());
   sd_obj->set_integer ("idx", m_idx);
+  if (m_problem)
+    sd_obj->set<json::object> ("feasibility_problem", m_problem->to_json ());
+  if (!m_duplicates.is_empty ())
+    {
+      auto arr = std::make_unique<json::array> ();
+
+      for (auto &dup : m_duplicates)
+	arr->append (std::make_unique <json::integer_number> (dup->m_idx));
+
+      sd_obj->set<json::array> ("duplicates", std::move (arr));
+    }
 
   return sd_obj;
 }

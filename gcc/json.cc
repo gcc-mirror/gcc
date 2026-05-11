@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -425,6 +426,16 @@ const json::string *
 object::set_string (const char *key, const char *utf8_value)
 {
   json::string *str = new json::string (utf8_value);
+  set (key, str);
+  return str;
+}
+
+/* As above, but taking a std::string.  */
+
+const json::string *
+object::set_string (const char *key, std::string utf8_value)
+{
+  json::string *str = new json::string (utf8_value.c_str ());
   set (key, str);
   return str;
 }

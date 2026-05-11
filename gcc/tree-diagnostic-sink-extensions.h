@@ -27,6 +27,9 @@ class compiler_extension_factory : public gcc_extension_factory
 public:
   std::unique_ptr<diagnostics::sink::extension>
   make_cfg_extension (diagnostics::sink &sink) const final override;
+
+  std::unique_ptr<diagnostics::sink::extension>
+  make_analyzer_graphs_extension (diagnostics::sink &sink) const final override;
 };
 
 #endif /* TREE_DIAGNOSTIC_SINK_EXTENSIONS_H */

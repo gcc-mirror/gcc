@@ -1915,6 +1915,181 @@ exploded_edge::maybe_get_op () const
   return m_sedge->get_op ();
 }
 
+/* A way to export the exploded_graph as a diagnostics::digraphs::digraph,
+   and thus to export it to SARIF diagnostic sinks.  */
+
+class exploded_graph_diagnostic_digraph : public diagnostics::digraphs::digraph
+{
+public:
+  exploded_graph_diagnostic_digraph (const exploded_graph &eg)
+  : m_eg (eg)
+  {
+    set_graph_kind ("exploded_graph");
+
+    int i;
+    exploded_node *n;
+    FOR_EACH_VEC_ELT (m_eg.m_nodes, i, n)
+      add_node_for_enode (*n);
+
+    exploded_edge *e;
+    FOR_EACH_VEC_ELT (m_eg.m_edges, i, e)
+      add_edge_for_eedge (*e);
+
+    const json::json_property worklist_prop
+      ("gcc/analyzer/exploded_graph/worklist");
+    set_property (worklist_prop,
+		  m_eg.get_worklist ().to_json ());
+
+    /* The following are global, rather than part of the
+       exploded graph; we add them as part of the exploded graph's
+       diagnostic digraph for convenience.  */
+
+    // TODO: analysis_plan
+
+    const json::json_property diagnostic_manager_prop
+      ("gcc/analyzer/diagnostic_manager");
+    set_property (diagnostic_manager_prop,
+		  m_eg.get_diagnostic_manager ().to_json ());
+
+    auto model_mgr = m_eg.get_ext_state ().get_model_manager ();
+
+    const json::json_property known_functions_prop
+      ("gcc/analyzer/known_functions");
+    set_property (known_functions_prop,
+		  model_mgr->get_known_function_manager ()->to_json ());
+
+    const json::json_property ext_state_prop
+      ("gcc/analyzer/extrinsic_state");
+    set_property (ext_state_prop,
+		  m_eg.get_ext_state ().to_json ());
+  }
+
+private:
+  void
+  add_node_for_enode (const exploded_node &enode)
+  {
+    pretty_printer pp;
+    enode.dump_dot_id (&pp);
+    auto node_for_enode
+      = std::make_unique<diagnostics::digraphs::node> (*this,
+						       pp_formatted_text (&pp));
+
+    if (auto fun = enode.get_function ())
+      node_for_enode->set_logical_loc
+	(tree_logical_location_manager::key_from_tree (fun->decl));
+    node_for_enode->set_physical_loc (enode.get_location ());
+
+    auto &point = enode.get_point ();
+    if (auto snode = point.get_supernode ())
+      {
+	const json::string_property enode_prop_supernode
+	  ("gcc/analyzer/exploded_node/supernode");
+	pretty_printer pp;
+	snode->dump_dot_id (&pp);
+	node_for_enode->set_property
+	  (enode_prop_supernode,
+	   pp_formatted_text (&pp));
+      }
+
+    auto &cs = point.get_call_string ();
+    auto cs_arr = std::make_unique<json::array> ();
+    for (int i = 0; i < cs.length (); ++i)
+      {
+	auto e = cs[i];
+	auto obj = std::make_unique<json::object> ();
+
+	{
+	  pretty_printer pp;
+	  e.m_call_sedge->m_src->dump_dot_id (&pp);
+	  obj->set_string ("source supernode", pp_formatted_text (&pp));
+	}
+	{
+	  pretty_printer pp;
+	  e.m_call_sedge->m_dest->dump_dot_id (&pp);
+	  obj->set_string ("destination supernode", pp_formatted_text (&pp));
+	}
+	{
+	  pretty_printer pp;
+	  pp_format_decoder (&pp) = default_tree_printer;
+	  e.m_call_op->print_as_edge_label (&pp, false);
+	  obj->set_string ("call operation", pp_formatted_text (&pp));
+	}
+	cs_arr->append (std::move (obj));
+      }
+    const json::json_property enode_prop_call_string
+      ("gcc/analyzer/exploded_node/call_string");
+    node_for_enode->set_property (enode_prop_call_string,
+				  std::move (cs_arr));
+
+    const json::json_property enode_prop_program_state
+      ("gcc/analyzer/exploded_node/program_state");
+    node_for_enode->set_property
+      (enode_prop_program_state,
+       enode.get_state ().to_json (m_eg.get_ext_state ()));
+
+    const json::string_property enode_prop_status
+      ("gcc/analyzer/exploded_node/status");
+    node_for_enode->set_property
+      (enode_prop_status,
+       exploded_node::status_to_str (enode.get_status ()));
+
+    m_node_for_enode.insert ({&enode, node_for_enode.get ()});
+    add_node (std::move (node_for_enode));
+  }
+
+  void
+  add_edge_for_eedge (const exploded_edge &eedge)
+  {
+    diagnostics::digraphs::node *src_node
+      = get_node_for_enode (eedge.m_src);
+    diagnostics::digraphs::node *dst_node
+      = get_node_for_enode (eedge.m_dest);
+    auto e = std::make_unique<diagnostics::digraphs::edge> (*this,
+							    nullptr,
+							    *src_node,
+							    *dst_node);
+    if (auto *sedge = eedge.m_sedge)
+      {
+	const json::string_property eedge_prop_superedge
+	  ("gcc/analyzer/exploded_edge/superedge");
+	pretty_printer pp;
+	pp_format_decoder (&pp) = default_tree_printer;
+	sedge->dump_label_to_pp (&pp, false);
+	e->set_property (eedge_prop_superedge,
+			 pp_formatted_text (&pp));
+      }
+    if (auto *custom_info = eedge.m_custom_info.get ())
+      {
+	const json::string_property eedge_prop_custom_edge_info
+	  ("gcc/analyzer/exploded_edge/custom_edge_info");
+	pretty_printer pp;
+	pp_format_decoder (&pp) = default_tree_printer;
+	custom_info->print (&pp);
+	e->set_property (eedge_prop_custom_edge_info,
+			 pp_formatted_text (&pp));
+      }
+    add_edge (std::move (e));
+  }
+
+  diagnostics::digraphs::node *
+  get_node_for_enode (const exploded_node *enode)
+  {
+    auto iter = m_node_for_enode.find (enode);
+    gcc_assert (iter != m_node_for_enode.end ());
+    return iter->second;
+  }
+
+  const exploded_graph &m_eg;
+  std::map<const exploded_node *,
+	   diagnostics::digraphs::node *> m_node_for_enode;
+};
+
+std::unique_ptr<diagnostics::digraphs::digraph>
+exploded_graph::make_diagnostics_digraph () const
+{
+  return std::make_unique<exploded_graph_diagnostic_digraph> (*this);
+}
+
 /* struct stats.  */
 
 /* stats' ctor.  */
@@ -3781,6 +3956,20 @@ feasibility_problem::dump_to_pp (pretty_printer *pp) const
     }
 }
 
+std::unique_ptr<json::object>
+feasibility_problem::to_json () const
+{
+  auto obj = std::make_unique<json::object> ();
+
+  obj->set_integer ("eedge_idx", m_eedge_idx);
+  obj->set_integer ("eedge src enode", m_eedge.m_src->m_index);
+  obj->set_integer ("eedge dst enode", m_eedge.m_dest->m_index);
+  if (m_rc)
+    obj->set <json::object> ("rejected_constraint", m_rc->to_json ());
+
+  return obj;
+}
+
 /* class feasibility_state.  */
 
 /* Ctor for feasibility_state, at the beginning of a path.  */
@@ -4569,8 +4758,11 @@ private:
 		    const char *compass_pt) const
   {
     if (const supernode *snode = enode.get_supernode ())
-      pp_printf (pp, "node_%i:en_%i:%s",
-		 snode->m_id, enode.m_index, compass_pt);
+      {
+	snode->dump_dot_id (pp);
+	pp_printf (pp, ":en_%i:%s",
+		   enode.m_index, compass_pt);
+      }
     else
       pp_printf (pp, "en_%i:%s",
 		 enode.m_index, compass_pt);
@@ -4885,6 +5077,10 @@ impl_run_checkers (logger *logger)
 
   if (flag_dump_analyzer_untracked)
     eng.get_model_manager ()->dump_untracked_regions ();
+
+  if (auto channel
+	= g->get_channels ().analyzer_events_channel.get_if_active ())
+    channel->publish (gcc::topics::analyzer_events::on_ana_done {eng, eg});
 
   delete purge_map;
 

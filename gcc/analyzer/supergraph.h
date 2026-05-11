@@ -173,6 +173,9 @@ public:
 
   supernode *add_node (function *fun, basic_block bb, logger *logger);
 
+  std::unique_ptr<diagnostics::digraphs::digraph>
+  make_diagnostics_digraph () const;
+
 private:
   gimple *
   populate_for_basic_block (basic_block bb,

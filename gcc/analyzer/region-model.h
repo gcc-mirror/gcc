@@ -1261,6 +1261,7 @@ class rejected_constraint
 public:
   virtual ~rejected_constraint () {}
   virtual void dump_to_pp (pretty_printer *pp) const = 0;
+  virtual std::unique_ptr<json::object> to_json () const = 0;
 
   const region_model &get_model () const { return m_model; }
 
@@ -1268,6 +1269,9 @@ protected:
   rejected_constraint (const region_model &model)
   : m_model (model)
   {}
+
+  std::unique_ptr<json::object>
+  make_base_json (const char *kind) const;
 
   region_model m_model;
 };
@@ -1282,6 +1286,7 @@ public:
   {}
 
   void dump_to_pp (pretty_printer *pp) const final override;
+  std::unique_ptr<json::object> to_json () const final override;
 
   const svalue *m_lhs;
   enum tree_code m_op;
@@ -1296,6 +1301,7 @@ public:
   {}
 
   void dump_to_pp (pretty_printer *pp) const final override;
+  std::unique_ptr<json::object> to_json () const final override;
 };
 
 class rejected_ranges_constraint : public rejected_constraint
@@ -1308,6 +1314,7 @@ public:
   {}
 
   void dump_to_pp (pretty_printer *pp) const final override;
+  std::unique_ptr<json::object> to_json () const final override;
 
 private:
   tree m_expr;

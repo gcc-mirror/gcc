@@ -712,6 +712,15 @@ struct on_frame_popped
   ana::region_model_context *m_ctxt;
 };
 
+/* A message published by the analyzer when it has finished and is about
+   to clean up.  */
+
+struct on_ana_done
+{
+  const ana::engine &m_engine;
+  const ana::exploded_graph &m_eg;
+};
+
 struct subscriber {
 
   virtual ~subscriber () = default;
@@ -719,6 +728,7 @@ struct subscriber {
   virtual void on_message (const on_tu_finished &) {}
   virtual void on_message (const on_ana_init &) {}
   virtual void on_message (const on_frame_popped &) {}
+  virtual void on_message (const on_ana_done &) {}
 };
 
 } // namespace gcc::topics::analyzer_events

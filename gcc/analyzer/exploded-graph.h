@@ -899,6 +899,12 @@ public:
   exploded_node *find_previous_entry_to (function *top_of_stack_fun,
 					 exploded_node *enode) const;
 
+  std::unique_ptr<diagnostics::digraphs::digraph>
+  make_diagnostics_digraph () const;
+
+  const worklist &
+  get_worklist () const { return m_worklist; }
+
 private:
   void print_bar_charts (pretty_printer *pp) const;
 
@@ -962,6 +968,9 @@ public:
   {}
 
   void dump_to_pp (pretty_printer *pp) const;
+
+  std::unique_ptr<json::object>
+  to_json () const;
 
   unsigned m_eedge_idx;
   const exploded_edge &m_eedge;

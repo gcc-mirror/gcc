@@ -1948,6 +1948,10 @@ public:
   {
     pp_printf (pp, "rejected_eh_dispatch");
   }
+  std::unique_ptr<json::object> to_json () const final override
+  {
+    return rejected_constraint::make_base_json ("rejected_eh_dispatch");
+  }
 };
 
 static bool

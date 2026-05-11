@@ -7495,6 +7495,17 @@ debug (const region_model &rmodel)
   rmodel.dump (false);
 }
 
+// class rejected_constraint
+
+std::unique_ptr<json::object>
+rejected_constraint::make_base_json (const char *kind) const
+{
+  auto obj = std::make_unique<json::object> ();
+  obj->set_string ("kind", kind);
+  obj->set<json::object> ("region_model", m_model.to_json ());
+  return obj;
+}
+
 /* class rejected_op_constraint : public rejected_constraint.  */
 
 void
@@ -7506,12 +7517,28 @@ rejected_op_constraint::dump_to_pp (pretty_printer *pp) const
   m_rhs->dump_to_pp (pp, true);
 }
 
+std::unique_ptr<json::object>
+rejected_op_constraint::to_json () const
+{
+  auto obj = rejected_constraint::make_base_json ("rejected_op_constraint");
+  obj->set<json::value> ("lhs", m_lhs->to_json ());
+  obj->set_string ("op", op_symbol_code (m_op));
+  obj->set<json::value> ("rhs", m_rhs->to_json ());
+  return obj;
+}
+
 /* class rejected_default_case : public rejected_constraint.  */
 
 void
 rejected_default_case::dump_to_pp (pretty_printer *pp) const
 {
   pp_string (pp, "implicit default for enum");
+}
+
+std::unique_ptr<json::object>
+rejected_default_case::to_json () const
+{
+  return rejected_constraint::make_base_json ("rejected_default_case");
 }
 
 /* class rejected_ranges_constraint : public rejected_constraint.  */
@@ -7524,6 +7551,16 @@ rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
   sval->dump_to_pp (pp, true);
   pp_string (pp, " in ");
   m_ranges->dump_to_pp (pp, true);
+}
+
+std::unique_ptr<json::object>
+rejected_ranges_constraint::to_json () const
+{
+  auto obj = rejected_constraint::make_base_json ("rejected_ranges_constraint");
+  if (m_expr)
+    obj->set ("expr", tree_to_json (m_expr));
+  obj->set<json::value> ("ranges", m_ranges->to_json ());
+  return obj;
 }
 
 /* class engine.  */

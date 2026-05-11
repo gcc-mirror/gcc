@@ -223,6 +223,7 @@ class object : public value
   const map_t &get_map () const { return m_map; }
 
   const json::string *set_string (const char *key, const char *utf8_value);
+  const json::string *set_string (const char *key, std::string utf8_value);
   const json::integer_number *set_integer (const char *key, long v);
   void set_float (const char *key, double v);
 

@@ -51,6 +51,8 @@ public:
   const known_function *get_match (tree fndecl, const call_details &cd) const;
   const known_function *get_internal_fn (enum internal_fn) const;
 
+  std::unique_ptr<json::object> to_json () const;
+
 private:
   DISABLE_COPY_AND_ASSIGN (known_function_manager);
 

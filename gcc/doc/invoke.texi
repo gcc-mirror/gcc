@@ -6522,6 +6522,12 @@ This is a debugging feature and defaults to @code{no}.
 If @code{state-graphs=yes}, then attempt to capture detailed state
 information from @option{-fanalyzer} in the generated SARIF.
 
+@item analyzer-graphs=@r{[}yes@r{|}no@r{]}
+This is a debugging feature and defaults to @code{no}.
+If @code{analyzer-graphs=yes}, then attempt to capture detailed
+information about the analysis by @option{-fanalyzer} in the
+generated SARIF.
+
 @end table
 
 @opindex fdiagnostics-add-output=experimental-html

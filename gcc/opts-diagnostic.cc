@@ -49,7 +49,8 @@ class gcc_extra_keys : public diagnostics::output_spec::key_handler
 {
 public:
   gcc_extra_keys ()
-  : m_cfgs (false)
+  : m_analyzer_graphs (false),
+    m_cfgs (false)
   {
   }
   enum result
@@ -57,6 +58,8 @@ public:
 		   const std::string &key,
 		   const std::string &value) final override
   {
+    if (key == "analyzer-graphs")
+      return parse_bool_value (ctxt, key, value, m_analyzer_graphs);
     if (key == "cfgs")
       return parse_bool_value (ctxt, key, value, m_cfgs);
     return result::unrecognized;
@@ -65,9 +68,11 @@ public:
   void
   get_keys (auto_vec<const char *> &out_known_keys) const final override
   {
+    out_known_keys.safe_push ("analyzer-graphs");
     out_known_keys.safe_push ("cfgs");
   }
 
+  bool m_analyzer_graphs;
   bool m_cfgs;
 };
 
@@ -107,6 +112,8 @@ handle_gcc_specific_keys (const gcc_extra_keys &gcc_keys,
 {
   if (gcc_keys.m_cfgs)
     sink.add_extension (ext_factory.make_cfg_extension (sink));
+  if (gcc_keys.m_analyzer_graphs)
+    sink.add_extension (ext_factory.make_analyzer_graphs_extension (sink));
 }
 
 static std::unique_ptr<diagnostics::sink>

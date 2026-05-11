@@ -31,8 +31,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "cfganal.h"
 #include "except.h"
+#include "tree-logical-location.h"
 
 #include "diagnostics/file-cache.h"
+#include "diagnostics/digraphs.h"
 
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
@@ -554,6 +556,191 @@ supergraph::dump_dot (const char *path, const dump_args_t &dump_args) const
   fclose (fp);
 }
 
+/* A way to export the supergraph as a diagnostics::digraphs::digraph, and thus
+   to export it to SARIF diagnostic sinks.  */
+
+class supergraph_diagnostic_digraph : public diagnostics::digraphs::digraph
+{
+public:
+  supergraph_diagnostic_digraph (const supergraph &sg)
+  : m_sg (sg)
+  {
+    set_graph_kind ("supergraph");
+
+    /* TODO: maybe (optionally) sub-subdivide by TU, for LTO; see also:
+       https://gcc-python-plugin.readthedocs.io/en/latest/_images/sample-supergraph.png
+    */
+
+    /* Break out the supernodes into clusters by function.  */
+    {
+      cgraph_node *node;
+      FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+	{
+	  function *fun = node->get_fun ();
+	  gcc_assert (fun);
+	  auto_cfun sentinel (fun);
+	  const char *funcname = function_name (fun);
+	  pretty_printer pp;
+	  pp_printf (&pp, "cluster for %s", funcname);
+	  std::string id = pp_formatted_text (&pp);
+
+	  auto diag_node_for_func
+	    = std::make_unique<diagnostics::digraphs::node> (*this, id);
+	  diag_node_for_func->set_logical_loc
+	    (tree_logical_location_manager::key_from_tree (fun->decl));
+
+	  if (loops_for_fn (fun))
+	    add_nodes_for_loop (diag_node_for_func.get (),
+				get_loop (fun, 0),
+				fun);
+	  else
+	    {
+	      basic_block bb;
+	      FOR_ALL_BB_FN (bb, fun)
+		add_nodes_for_bb (*diag_node_for_func, bb, fun);
+	    }
+
+	  add_node (std::move (diag_node_for_func));
+	}
+    }
+
+    /* Superedges.  */
+    int i;
+    superedge *e;
+    FOR_EACH_VEC_ELT (m_sg.m_edges, i, e)
+      add_edge_for_superedge (*e);
+  }
+
+private:
+  /* Recursively add nodes into PARENT for all the snodes within LOOP
+     and the loops within it.  */
+  void
+  add_nodes_for_loop (diagnostics::digraphs::node *parent,
+		      class loop *loop,
+		      function *fun)
+  {
+    gcc_assert (parent);
+    gcc_assert (loop);
+    gcc_assert (fun);
+
+    basic_block *body;
+    unsigned int i;
+
+    if (loop->header != NULL
+	&& loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun))
+      {
+	pretty_printer pp;
+	pp_printf (&pp, "cluster for loop %d of %d",
+		   loop->num, fun->funcdef_no);
+
+	auto loop_node
+	  = std::make_unique<diagnostics::digraphs::node> (*this,
+							   pp_formatted_text (&pp));
+	loop_node->set_logical_loc
+	  (tree_logical_location_manager::key_from_tree (fun->decl));
+
+	auto new_parent = loop_node.get ();
+	parent->add_child (std::move (loop_node));
+	parent = new_parent;
+      }
+
+    // Recurse
+    for (class loop *inner = loop->inner; inner; inner = inner->next)
+      add_nodes_for_loop (parent, inner, fun);
+
+    if (loop->header == nullptr)
+      return;
+
+    if (loop->latch == EXIT_BLOCK_PTR_FOR_FN (cfun))
+      body = get_loop_body (loop);
+    else
+      body = get_loop_body_in_bfs_order (loop);
+
+    for (i = 0; i < loop->num_nodes; i++)
+      {
+	basic_block bb = body[i];
+	if (bb->loop_father == loop)
+	  add_nodes_for_bb (*parent, bb, fun);
+      }
+
+    free (body);
+  }
+
+  /* Add nodes for all the snodes from BB.  */
+  void
+  add_nodes_for_bb (diagnostics::digraphs::node &parent,
+		    basic_block bb,
+		    function *fun)
+  {
+    pretty_printer pp;
+    const char *funcname = function_name (fun);
+    pp_printf (&pp, "%s_bb_%i", funcname, bb->index);
+    auto node_for_bb
+      = std::make_unique<diagnostics::digraphs::node> (*this,
+						       pp_formatted_text (&pp));
+    node_for_bb->set_logical_loc
+      (tree_logical_location_manager::key_from_tree (fun->decl));
+
+    // TODO: maybe keep an index per-function/per-bb to speed this up???
+    int i;
+    supernode *snode;
+    FOR_EACH_VEC_ELT (m_sg.m_nodes, i, snode)
+      if (snode->m_fun == fun && snode->m_bb == bb)
+	add_node_for_supernode (*node_for_bb, *snode);
+    parent.add_child (std::move (node_for_bb));
+  }
+
+  void
+  add_node_for_supernode (diagnostics::digraphs::node &bb_node,
+			  const supernode &snode)
+  {
+    pretty_printer pp;
+    snode.dump_dot_id (&pp);
+    auto node_for_snode
+      = std::make_unique<diagnostics::digraphs::node> (*this,
+						       pp_formatted_text (&pp));
+    m_node_for_snode.insert ({&snode, node_for_snode.get ()});
+
+    node_for_snode->set_logical_loc
+      (tree_logical_location_manager::key_from_tree (snode.m_fun->decl));
+    /* TODO: if we have an m_label, it would be nice to use this as the
+       logical location, within the function.  However SARIF doesn't support
+       this yet (https://github.com/oasis-tcs/sarif-spec/issues/802).  */
+
+    node_for_snode->set_physical_loc (snode.m_loc);
+
+    bb_node.add_child (std::move (node_for_snode));
+  }
+
+  void
+  add_edge_for_superedge (const superedge &sedge)
+  {
+    diagnostics::digraphs::node *src_node
+      = get_node_for_snode (sedge.m_src);
+    diagnostics::digraphs::node *dst_node
+      = get_node_for_snode (sedge.m_dest);
+    label_text desc = sedge.get_description (false);
+    add_edge (nullptr, *src_node, *dst_node, desc.get ());
+  }
+
+  diagnostics::digraphs::node *
+  get_node_for_snode (const supernode *snode)
+  {
+    auto iter = m_node_for_snode.find (snode);
+    gcc_assert (iter != m_node_for_snode.end ());
+    return iter->second;
+  }
+
+  const supergraph &m_sg;
+  std::map<const supernode *, diagnostics::digraphs::node *> m_node_for_snode;
+};
+
+std::unique_ptr<diagnostics::digraphs::digraph>
+supergraph::make_diagnostics_digraph () const
+{
+  return std::make_unique<supergraph_diagnostic_digraph> (*this);
+}
+
 /* Return a new json::object of the form
    {"nodes" : [objs for snodes],
     "edges" : [objs for sedges]}.  */
@@ -898,7 +1085,7 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 void
 supernode::dump_dot_id (pretty_printer *pp) const
 {
-  pp_printf (pp, "node_%i", m_id);
+  pp_printf (pp, "supernode_%i", m_id);
 }
 
 /* Return a new json::object of the form

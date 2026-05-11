@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "diagnostics/event-id.h"
 #include "diagnostics/logging.h"
+#include "diagnostics/sarif-sink.h"
 #include "cpplib.h"
 #include "digraph.h"
 #include "ordered-hash-map.h"
@@ -150,6 +151,16 @@ diagnostic_emission_context::inform (const char *gmsgid, ...)
 			       pd.get_controlling_option (),
 			       gmsgid, &ap);
   va_end (ap);
+}
+
+std::unique_ptr<json::object>
+pending_diagnostic::to_json () const
+{
+  /* maybe_add_sarif_properties assumes a sarif_object, so use one here.  */
+  auto obj = std::make_unique<diagnostics::sarif_object> ();
+  obj->set_string ("kind", get_kind ());
+  maybe_add_sarif_properties (*obj);
+  return obj;
 }
 
 /* Return true if T1 and T2 are "the same" for the purposes of
