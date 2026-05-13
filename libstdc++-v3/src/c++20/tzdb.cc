@@ -359,13 +359,6 @@ namespace std::chrono
 	return ymd;
       }
 
-      struct on_day_t // tag type for reading ON and DAY fields only
-      {
-	on_month_day& parent;
-	friend istream& operator>>(istream&, on_day_t&&);
-      };
-
-      on_day_t on_day() { return on_day_t{*this}; }
 
       friend istream& operator>>(istream&, on_month_day&);
     };
@@ -2076,70 +2069,52 @@ namespace std::chrono
       }
     };
 
-    // Read the day-component of an on_month_day expression (everything after
-    // the month).  Three forms are accepted: a plain day-of-month number,
-    // "lastXxx" where Xxx is a weekday name (LastWeekday), or "Xxx<=N" or
-    // "Xxx>=N" (LessEq / GreaterEq).  On failure the function sets failbit
-    // and leaves `to.parent` unchanged.
-    istream& operator>>(istream& in, on_month_day::on_day_t&& to)
+    // Read the MONTH DAY. Three forms are accepted for DAY:
+    // * a plain day-of-month number (DayOfMonth),
+    // * "lastWww" where Www is a weekday name (LastWeekday),
+    // * "Www<=N" or "Www>=N" (LessEq / GreaterEq).
+    // On failure to read either MONTH or DAY this function sets
+    // failbit. If DAY is not parsed, only `on.month` is modified,
+    // otherwise `on` is left unchanged.
+    istream& operator>>(istream& in, on_month_day& on)
     {
       using enum on_month_day::Kind;
-
-      on_month_day& on = to.parent;
-      int c = ws(in).peek();
-      if ('0' <= c && c <= '9')
+      if (abbrev_month m{}; in >> m)
 	{
-	  unsigned d;
-	  in >> d;
-	  if (d <= 31) [[likely]]
+ 	  on.month = static_cast<unsigned>(m.m);
+	  if (int c = ws(in).peek(); '0' <= c && c <= '9')
 	    {
-	      on.kind = DayOfMonth;
-	      on.day_of_month = d;
-	      return in;
-	    }
-	}
-      else if (c == 'l') // lastSunday, lastWed, ...
-	{
-	  in.ignore(4);
-	  if (abbrev_weekday w{}; in >> w) [[likely]]
-	    {
-	      on.kind = LastWeekday;
-	      on.day_of_week = w.wd.c_encoding();
-	      return in;
-	    }
-	}
-      else
-	{
-	  abbrev_weekday w;
-	  in >> w;
-	  if (auto c = in.get(); c == '<' || c == '>')
-	    {
-	      if (in.get() == '=')
+	      if (unsigned d; (in >> d) && (d <= 31)) [[likely]]
 		{
-		  unsigned d;
-		  in >> d;
-		  if (d <= 31) [[likely]]
+		  on.kind = DayOfMonth;
+		  on.day_of_month = d;
+		  return in;
+		}
+	    }
+	  else if (c == 'l') // lastSunday, lastWed, ...
+	    {
+	      in.ignore(4);
+	      if (abbrev_weekday w{}; in >> w) [[likely]]
+		{
+		  on.kind = LastWeekday;
+		  on.day_of_week = w.wd.c_encoding();
+		  return in;
+		}
+	    }
+	  else if (abbrev_weekday w; in >> w) [[likely]]
+	    {
+	      if (c = in.get(); c == '<' || c == '>')
+		if (in.get() == '=')
+	          if (unsigned d; (in >> d) && (d <= 31)) [[likely]]
 		    {
 		      on.kind = c == '<' ? LessEq : GreaterEq;
 		      on.day_of_week = w.wd.c_encoding();
 		      on.day_of_month = d;
 		      return in;
 		    }
-		}
 	    }
 	}
       in.setstate(ios::failbit);
-      return in;
-    }
-
-    istream& operator>>(istream& in, on_month_day& to)
-    {
-      on_month_day md{};
-      abbrev_month m{};
-      in >> m;
-      md.month = static_cast<unsigned>(m.m);
-      if (in >> md.on_day())
-	to = md;
       return in;
     }
 
@@ -2248,11 +2223,7 @@ namespace std::chrono
 	  on_month_day on{ .kind = on_month_day::DayOfMonth,
 			   .month = 1, .day_of_month = 1 };
 	  at_time t{};
-	  if (abbrev_month m{January}; in >> m)
-	    {
-	      on.month = static_cast<unsigned>(m.m);
-	      in >> on.on_day() >> t;
-	    }
+	  in >> on >> t;
 	  year_month_day ymd = on.pin(year(y));
 	  inf.m_until = sys_days(ymd) + seconds(t.time);
 	  if (t.indicator != at_time::Universal)
