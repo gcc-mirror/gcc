@@ -261,6 +261,45 @@ esac
 
 GCC_LINUX_FUTEX(:)
 
+LIBGOMP_ENABLE(linux-futex-waitv, default, ,
+  [use the Linux futex_waitv system call],
+  permit yes|no|default)
+
+case "$target" in
+  *-linux* | *-uclinux*)
+    if test x$enable_linux_futex != xyes; then
+      if test x$enable_linux_futex_waitv = xyes; then
+	AC_MSG_ERROR([--enable-linux-futex-waitv requires --enable-linux-futex])
+      fi
+      enable_linux_futex_waitv=no
+    else
+      case "$enable_linux_futex_waitv" in
+	default)
+	  enable_linux_futex_waitv=no
+	  AC_LINK_IFELSE(
+	   [AC_LANG_PROGRAM(
+	    [#include <sys/syscall.h>
+	     #include <unistd.h>],
+	    [syscall (SYS_futex_waitv, 0, 0, 0, 0, 0);])],
+	    [enable_linux_futex_waitv=yes],
+	    [enable_linux_futex_waitv=no])
+	  ;;
+	yes)
+	  AC_LINK_IFELSE(
+	   [AC_LANG_PROGRAM(
+	    [#include <sys/syscall.h>
+	     #include <unistd.h>],
+	    [syscall (SYS_futex_waitv, 0, 0, 0, 0, 0);])],[],
+	    [AC_MSG_ERROR([SYS_futex_waitv required for --enable-linux-futex-waitv])])
+	  ;;
+      esac
+    fi
+    ;;
+  *)
+    enable_linux_futex_waitv=no
+    ;;
+esac
+
 # Check for pthread_{,attr_}[sg]etaffinity_np.
 AC_LINK_IFELSE(
  [AC_LANG_PROGRAM(

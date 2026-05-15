@@ -828,6 +828,7 @@ enable_libtool_lock
 enable_darwin_at_rpath
 enable_maintainer_mode
 enable_linux_futex
+enable_linux_futex_waitv
 enable_tls
 enable_symvers
 enable_cet
@@ -1488,6 +1489,9 @@ Optional Features:
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
   --enable-linux-futex    use the Linux futex system call [default=default]
+  --enable-linux-futex-waitv
+                          use the Linux futex_waitv system call
+                          [default=default]
   --enable-tls            Use thread-local storage [default=yes]
   --enable-symvers=STYLE  enables symbol versioning of the shared library
                           [default=yes]
@@ -11858,7 +11862,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11861 "configure"
+#line 11866 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11964,7 +11968,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11967 "configure"
+#line 11972 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15846,6 +15850,80 @@ if test x$enable_linux_futex = xyes; then
   :
 fi
 
+
+ # Check whether --enable-linux-futex-waitv was given.
+if test "${enable_linux_futex_waitv+set}" = set; then :
+  enableval=$enable_linux_futex_waitv;
+      case "$enableval" in
+       yes|no|default) ;;
+       *) as_fn_error $? "Unknown argument to enable/disable linux-futex-waitv" "$LINENO" 5 ;;
+                          esac
+
+else
+  enable_linux_futex_waitv=default
+fi
+
+
+
+case "$target" in
+  *-linux* | *-uclinux*)
+    if test x$enable_linux_futex != xyes; then
+      if test x$enable_linux_futex_waitv = xyes; then
+	as_fn_error $? "--enable-linux-futex-waitv requires --enable-linux-futex" "$LINENO" 5
+      fi
+      enable_linux_futex_waitv=no
+    else
+      case "$enable_linux_futex_waitv" in
+	default)
+	  enable_linux_futex_waitv=no
+	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/syscall.h>
+	     #include <unistd.h>
+int
+main ()
+{
+syscall (SYS_futex_waitv, 0, 0, 0, 0, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  enable_linux_futex_waitv=yes
+else
+  enable_linux_futex_waitv=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	  ;;
+	yes)
+	  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/syscall.h>
+	     #include <unistd.h>
+int
+main ()
+{
+syscall (SYS_futex_waitv, 0, 0, 0, 0, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+else
+  as_fn_error $? "SYS_futex_waitv required for --enable-linux-futex-waitv" "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	  ;;
+      esac
+    fi
+    ;;
+  *)
+    enable_linux_futex_waitv=no
+    ;;
+esac
 
 # Check for pthread_{,attr_}[sg]etaffinity_np.
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext

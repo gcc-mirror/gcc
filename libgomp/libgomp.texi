@@ -4667,32 +4667,34 @@ host and non-host devices for which a more specific corresponding environment
 variable is not set.
 
 @menu
-* OMP_ALLOCATOR::           Set the default allocator
-* OMP_AFFINITY_FORMAT::     Set the format string used for affinity display
-* OMP_CANCELLATION::        Set whether cancellation is activated
-* OMP_DISPLAY_AFFINITY::    Display thread affinity information
-* OMP_DISPLAY_ENV::         Show OpenMP version and environment variables
-* OMP_DEFAULT_DEVICE::      Set the device used in target regions
-* OMP_DYNAMIC::             Dynamic adjustment of threads
-* OMP_MAX_ACTIVE_LEVELS::   Set the maximum number of nested parallel regions
-* OMP_MAX_TASK_PRIORITY::   Set the maximum task priority value
-* OMP_NESTED::              Nested parallel regions
-* OMP_NUM_TEAMS::           Specifies the number of teams to use by teams region
-* OMP_NUM_THREADS::         Specifies the number of threads to use
-* OMP_PROC_BIND::           Whether threads may be moved between CPUs
-* OMP_PLACES::              Specifies on which CPUs the threads should be placed
-* OMP_STACKSIZE::           Set default thread stack size
-* OMP_SCHEDULE::            How threads are scheduled
-* OMP_TARGET_OFFLOAD::      Controls offloading behavior
-* OMP_TEAMS_THREAD_LIMIT::  Set the maximum number of threads imposed by teams
-* OMP_THREAD_LIMIT::        Set the maximum number of threads
-* OMP_WAIT_POLICY::         How waiting threads are handled
-* GOMP_CPU_AFFINITY::       Bind threads to specific CPUs
-* GOMP_DEBUG::              Enable debugging output
-* GOMP_RUNTIME_USM::        Control runtime Unified Shared Memory application
-* GOMP_STACKSIZE::          Set default thread stack size
-* GOMP_SPINCOUNT::          Set the busy-wait spin count
-* GOMP_RTEMS_THREAD_POOLS:: Set the RTEMS specific thread pools
+* OMP_ALLOCATOR::              Set the default allocator
+* OMP_AFFINITY_FORMAT::        Set the format string used for affinity display
+* OMP_CANCELLATION::           Set whether cancellation is activated
+* OMP_DISPLAY_AFFINITY::       Display thread affinity information
+* OMP_DISPLAY_ENV::            Show OpenMP version and environment variables
+* OMP_DEFAULT_DEVICE::         Set the device used in target regions
+* OMP_DYNAMIC::                Dynamic adjustment of threads
+* OMP_MAX_ACTIVE_LEVELS::      Set the maximum number of nested parallel regions
+* OMP_MAX_TASK_PRIORITY::      Set the maximum task priority value
+* OMP_NESTED::                 Nested parallel regions
+* OMP_NUM_TEAMS::              Specifies the number of teams to use by teams region
+* OMP_NUM_THREADS::            Specifies the number of threads to use
+* OMP_PROC_BIND::              Whether threads may be moved between CPUs
+* OMP_PLACES::                 Specifies on which CPUs the threads should be placed
+* OMP_STACKSIZE::              Set default thread stack size
+* OMP_SCHEDULE::               How threads are scheduled
+* OMP_TARGET_OFFLOAD::         Controls offloading behavior
+* OMP_TEAMS_THREAD_LIMIT::     Set the maximum number of threads imposed by teams
+* OMP_THREAD_LIMIT::           Set the maximum number of threads
+* OMP_WAIT_POLICY::            How waiting threads are handled
+* GOMP_BARRIER_TYPE::          Choose barrier algorithm
+* GOMP_FORKJOIN_BARRIER_TYPE:: Choose parallel region implicit barrier algorithm
+* GOMP_CPU_AFFINITY::          Bind threads to specific CPUs
+* GOMP_DEBUG::                 Enable debugging output
+* GOMP_RUNTIME_USM::           Control runtime Unified Shared Memory application
+* GOMP_STACKSIZE::             Set default thread stack size
+* GOMP_SPINCOUNT::             Set the busy-wait spin count
+* GOMP_RTEMS_THREAD_POOLS::    Set the RTEMS specific thread pools
 @end menu
 
 
@@ -5268,6 +5270,59 @@ before waiting passively.
 
 @item @emph{Reference}: 
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 4.8
+@end table
+
+
+
+@node GOMP_BARRIER_TYPE
+@section @env{GOMP_BARRIER_TYPE} -- Choose barrier algorithm
+@cindex Environment Variable
+@cindex Implementation specific setting
+@table @asis
+@item @emph{Description}:
+Choose barrier algorithm.
+This variable should be set to one of @code{flat}, @code{tree},
+@code{centralized}, or @code{auto}.  This choice is only effective on targets
+which have the @code{futex_waitv} syscall.  As a rule of thumb, @code{flat} and
+@code{tree} are faster when @env{GOMP_SPINCOUNT} is high enough that no thread
+waits passively for some variable to change while @code{centralized} is faster
+when some threads do wait passively.  Accordingly @code{auto} chooses between
+@code{flat} and @code{centralized} based on the spin count.  However the
+microarchitecture of the base CPU and the work a user's program is running both
+matter so this is not a hard rule.
+
+If this is set and @env{GOMP_FORKJOIN_BARRIER_TYPE} is not set, then
+@env{GOMP_FORKJOIN_BARRIER_TYPE} takes its value from this.
+
+@item @emph{See also}:
+@ref{OMP_WAIT_POLICY}, @ref{GOMP_SPINCOUNT}, @ref{GOMP_FORKJOIN_BARRIER_TYPE}
+@end table
+
+
+
+@node GOMP_FORKJOIN_BARRIER_TYPE
+@section @env{GOMP_FORKJOIN_BARRIER_TYPE} -- Choose parallel region implicit barrier algorithm
+@cindex Environment Variable
+@cindex Implementation specific setting
+@table @asis
+@item @emph{Description}:
+Choose barrier algorithm for the implicit barrier at the end/start of
+parallel regions.  This variable should be set to one of @code{flat},
+@code{tree}, @code{centralized}, or @code{auto}.  This choice is only effective
+on targets which have the @code{futex_waitv} syscall.  As a rule of thumb,
+@code{flat} and @code{tree} are faster when @env{GOMP_SPINCOUNT} is high
+enough that no thread waits passively for some variable to change @emph{or}
+when there are no tasks executed at this barrier.  @code{centralized} is faster
+when neither of these constraints holds.  Accordingly @code{auto} chooses
+between @code{tree} and @code{flat} based on spin count.  However the
+microarchitecture of the host CPU and the work a user's program is running both
+matter so this is not a hard rule.
+
+If this is not set and @env{GOMP_BARRIER_TYPE} is set, then
+@env{GOMP_FORKJOIN_BARRIER_TYPE} takes its value from @env{GOMP_BARRIER_TYPE}.
+
+@item @emph{See also}:
+@ref{OMP_WAIT_POLICY}, @ref{GOMP_SPINCOUNT}, @ref{GOMP_BARRIER_TYPE}
 @end table
 
 

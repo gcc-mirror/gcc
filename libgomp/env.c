@@ -125,6 +125,9 @@ enum gomp_runtime_usm_t gomp_runtime_usm_var = GOMP_RUNTIME_USM_DISABLED;
 char *goacc_device_type;
 int goacc_device_num;
 int goacc_default_dims[GOMP_DIM_MAX];
+enum gomp_barrier_type gomp_barrier_request = GOMP_BARRIER_BY_SPINCOUNT;
+enum gomp_barrier_type gomp_forkjoin_barrier_request
+  = GOMP_BARRIER_BY_SPINCOUNT;
 
 #ifndef LIBGOMP_OFFLOADED_ONLY
 
@@ -1179,7 +1182,44 @@ parse_wait_policy (const char *env, const char *val, void *const params[])
   return false;
 }
 
-/* Parse the GOMP_CPU_AFFINITY environment variable.  Return true if one was
+/* Parse the GOMP_{FORKJOIN_,}BARRIER_TYPE environment variable.  */
+static void
+parse_barrier_choice (const char *name, enum gomp_barrier_type *val)
+{
+  char *env = getenv (name);
+  if (env == NULL)
+    return;
+  enum gomp_barrier_type ret;
+  *val = GOMP_BARRIER_BY_SPINCOUNT;
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env == '\0')
+    goto invalid;
+  if (strncasecmp (env, "tree", 4) == 0)
+    ret = GOMP_TREE_BARRIER;
+  else if (strncasecmp (env, "flat", 4) == 0)
+    ret = GOMP_FLAT_BARRIER;
+  else if (strncasecmp (env, "centralized", 11) == 0)
+    {
+      ret = GOMP_CENTRALIZED_BARRIER;
+      env += 11 - 4;
+    }
+  else if (strncasecmp (env, "auto", 4) == 0)
+    ret = GOMP_BARRIER_BY_SPINCOUNT;
+  else
+    goto invalid;
+  env += 4;
+  while (isspace ((unsigned char) *env))
+    ++env;
+  if (*env != '\0')
+    goto invalid;
+  *val = ret;
+  return;
+invalid:
+  gomp_error ("Invalid value for environment variable %s", name);
+}
+
+/* Parse the GOMP_CPU_AFFINITY environment varible.  Return true if one was
    present and it was successfully parsed.  */
 
 static bool
@@ -2036,6 +2076,18 @@ omp_display_env (int verbose)
 	  break;
 	}
       fputs ("'\n", stderr);
+      fprintf (stderr, "  [host] GOMP_BARRIER_TYPE = '%s'\n",
+	       gomp_barrier_request == GOMP_FLAT_BARRIER   ? "flat"
+	       : gomp_barrier_request == GOMP_TREE_BARRIER ? "tree"
+	       : gomp_barrier_request == GOMP_CENTRALIZED_BARRIER
+		 ? "centralized"
+		 : "auto");
+      fprintf (stderr, "  [host] GOMP_FORKJOIN_BARRIER_TYPE = '%s'\n",
+	       gomp_forkjoin_barrier_request == GOMP_FLAT_BARRIER   ? "flat"
+	       : gomp_forkjoin_barrier_request == GOMP_TREE_BARRIER ? "tree"
+	       : gomp_forkjoin_barrier_request == GOMP_CENTRALIZED_BARRIER
+		 ? "centralized"
+		 : "auto");
     }
   fputs ("OPENMP DISPLAY ENVIRONMENT END\n", stderr);
 }
@@ -2562,6 +2614,11 @@ initialize_env (void)
       if (err != 0)
 	gomp_error ("Stack size change failed: %s", strerror (err));
     }
+
+  parse_barrier_choice ("GOMP_BARRIER_TYPE", &gomp_barrier_request);
+  gomp_forkjoin_barrier_request = gomp_barrier_request;
+  parse_barrier_choice ("GOMP_FORKJOIN_BARRIER_TYPE",
+			&gomp_forkjoin_barrier_request);
 
   handle_omp_display_env ();
 

@@ -44,6 +44,7 @@ gomp_get_thread_pool (struct gomp_thread *thr, unsigned nthreads)
       pool->threads_size = 0;
       pool->threads_used = 0;
       pool->last_team = NULL;
+      pool->prev_barrier = NULL;
       pool->threads_busy = nthreads;
       thr->thread_pool = pool;
       pthread_setspecific (gomp_thread_destructor, thr);

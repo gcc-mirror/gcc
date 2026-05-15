@@ -36,57 +36,63 @@ tmake_file=
 # Since we require POSIX threads, assume a POSIX system by default.
 config_path="posix"
 
+if test x$enable_linux_futex_waitv = xyes; then
+  linux_path="linux/futex_waitv linux"
+else
+  linux_path="linux"
+fi
+
 # Check for futex enabled all at once.
 if test x$enable_linux_futex = xyes; then
   case "${target}" in
 
     aarch64*-*-linux*)
-	config_path="linux posix"
+	config_path="$linux_path posix"
 	;;
 
     alpha*-*-linux*)
-	config_path="linux/alpha linux posix"
+	config_path="linux/alpha $linux_path posix"
 	;;
 
     arm*-*-linux*)
-	config_path="linux posix"
+	config_path="$linux_path posix"
 	;;
 
     hppa*-*-linux*)
-	config_path="linux posix"
+	config_path="$linux_path posix"
 	;;
 
     ia64*-*-linux*)
-	config_path="linux/ia64 linux posix"
+	config_path="linux/ia64 $linux_path posix"
 	;;
 
     loongarch*-*-linux*)
-	config_path="linux posix"
+	config_path="$linux_path posix"
 	;;
 
     mips*-*-linux*)
-	config_path="linux/mips linux posix"
+	config_path="linux/mips $linux_path posix"
 	;;
 
     powerpc*-*-linux*)
-	config_path="linux/powerpc linux posix"
+	config_path="linux/powerpc $linux_path posix"
 	;;
 
     riscv64*-*-linux*)
-	config_path="linux posix"
+	config_path="$linux_path posix"
 	;;
 
     s390*-*-linux*)
-	config_path="linux/s390 linux posix"
+	config_path="linux/s390 $linux_path posix"
 	;;
 
     tile*-*-linux*)
-	config_path="linux/tile linux posix"
+	config_path="linux/tile $linux_path posix"
 	;;
 
     # Note that bare i386 is not included here.  We need cmpxchg.
     i[456]86-*-linux* | x86_64-*-linux*)
-	config_path="linux/x86 linux posix"
+	config_path="linux/x86 $linux_path posix"
 	cat > conftestx.c <<EOF
 #ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
 #error need -march=i486
@@ -108,7 +114,7 @@ EOF
     sparcv9-*-linux* | sparc64-*-linux*)
 	echo "int i;" > conftestx.c
 	if ${CC} ${CFLAGS} -c -o conftestx.o conftestx.c > /dev/null 2>&1; then
-	  config_path="linux/sparc linux posix"
+	  config_path="linux/sparc $linux_path posix"
 	  case "`/usr/bin/file conftestx.o`" in
 	    *32-bit*)
 	      case " ${CC} ${CFLAGS}" in

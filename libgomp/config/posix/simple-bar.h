@@ -39,13 +39,13 @@ typedef struct
 static inline void
 gomp_simple_barrier_init (gomp_simple_barrier_t *bar, unsigned count)
 {
-  gomp_barrier_init (&bar->bar, count);
+  gomp_barrier_init (&bar->bar, count, NULL);
 }
 
 static inline void
-gomp_simple_barrier_reinit (gomp_simple_barrier_t *bar, unsigned count)
+gomp_simple_barrier_reinit (gomp_simple_barrier_t *sbar, unsigned nthreads)
 {
-  gomp_barrier_reinit (&bar->bar, count);
+  gomp_barrier_reinit (&sbar->bar, nthreads);
 }
 
 static inline void
@@ -57,13 +57,15 @@ gomp_simple_barrier_destroy (gomp_simple_barrier_t *bar)
 static inline void
 gomp_simple_barrier_wait (gomp_simple_barrier_t *bar)
 {
-  gomp_barrier_wait (&bar->bar);
+  /* In default implementation the barrier ID argument is unused.  */
+  gomp_barrier_wait (&bar->bar, 0);
 }
 
 static inline void
 gomp_simple_barrier_wait_last (gomp_simple_barrier_t *bar)
 {
-  gomp_barrier_wait_last (&bar->bar);
+  /* In default implementation the barrier ID argument is unused.  */
+  gomp_barrier_wait_last (&bar->bar, 0);
 }
 
 #endif /* GOMP_SIMPLE_BARRIER_H */

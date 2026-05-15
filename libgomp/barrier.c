@@ -40,7 +40,7 @@ GOMP_barrier (void)
   if (team == NULL)
     return;
 
-  gomp_team_barrier_wait (&team->barrier);
+  gomp_team_barrier_wait (&team->barrier, thr->ts.team_id);
 }
 
 void
@@ -53,7 +53,7 @@ GOMP_barrier_ext (int kind __attribute__ ((unused)))
   if (team == NULL)
     return;
 
-  gomp_team_barrier_wait (&team->barrier);
+  gomp_team_barrier_wait (&team->barrier, thr->ts.team_id);
 }
 
 /* GOMP_barrier_cancel is no longer called by new code; it is only kept for
@@ -68,7 +68,7 @@ GOMP_barrier_cancel (void)
   /* The compiler transforms to barrier_cancel when it sees that the
      barrier is within a construct that can cancel.  Thus we should
      never have an orphaned cancellable barrier.  */
-  return gomp_team_barrier_wait_cancel (&team->barrier);
+  return gomp_team_barrier_wait_cancel (&team->barrier, thr->ts.team_id);
 }
 
 bool
@@ -80,5 +80,5 @@ GOMP_barrier_cancel_ext (int kind __attribute__ ((unused)))
   /* The compiler transforms to barrier_cancel when it sees that the
      barrier is within a construct that can cancel.  Thus we should
      never have an orphaned cancellable barrier.  */
-  return gomp_team_barrier_wait_cancel (&team->barrier);
+  return gomp_team_barrier_wait_cancel (&team->barrier, thr->ts.team_id);
 }

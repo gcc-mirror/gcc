@@ -30,9 +30,9 @@
 
 #include "libgomp.h"
 
-
 void
-gomp_barrier_init (gomp_barrier_t *bar, unsigned count)
+gomp_barrier_init (gomp_barrier_t *bar, unsigned count,
+		   void *ptr __attribute__ ((unused)))
 {
   gomp_mutex_init (&bar->mutex1);
 #ifndef HAVE_SYNC_BUILTINS
@@ -105,13 +105,14 @@ gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 }
 
 void
-gomp_barrier_wait (gomp_barrier_t *barrier)
+gomp_barrier_wait (gomp_barrier_t *barrier, unsigned id)
 {
-  gomp_barrier_wait_end (barrier, gomp_barrier_wait_start (barrier));
+  gomp_barrier_wait_end (barrier, gomp_barrier_wait_start (barrier, id));
 }
 
 void
-gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
+gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state,
+			    unsigned id __attribute__ ((unused)))
 {
   unsigned int n;
 
@@ -127,7 +128,7 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	= __atomic_load_n (&team->task_count, MEMMODEL_ACQUIRE);
       if (task_count)
 	{
-	  gomp_barrier_handle_tasks (state);
+	  gomp_barrier_handle_tasks (state, bar, BAR_INCR);
 	  if (n > 0)
 	    gomp_sem_wait (&bar->sem2);
 	  gomp_mutex_unlock (&bar->mutex1);
@@ -154,7 +155,7 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	  gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
 	  if (gen & BAR_TASK_PENDING)
 	    {
-	      gomp_barrier_handle_tasks (state);
+	      gomp_barrier_handle_tasks (state, bar, BAR_INCR);
 	      gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
 	    }
 	}
@@ -175,7 +176,8 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 
 bool
 gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
-				   gomp_barrier_state_t state)
+				   gomp_barrier_state_t state,
+				   unsigned id __attribute__ ((unused)))
 {
   unsigned int n;
 
@@ -191,7 +193,7 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 	= __atomic_load_n (&team->task_count, MEMMODEL_ACQUIRE);
       if (task_count)
 	{
-	  gomp_barrier_handle_tasks (state);
+	  gomp_barrier_handle_tasks (state, bar, BAR_INCR);
 	  if (n > 0)
 	    gomp_sem_wait (&bar->sem2);
 	  gomp_mutex_unlock (&bar->mutex1);
@@ -226,7 +228,7 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 	    break;
 	  if (gen & BAR_TASK_PENDING)
 	    {
-	      gomp_barrier_handle_tasks (state);
+	      gomp_barrier_handle_tasks (state, bar, BAR_INCR);
 	      gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
 	      if (gen & BAR_CANCELLED)
 		break;
@@ -251,9 +253,10 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 }
 
 void
-gomp_team_barrier_wait (gomp_barrier_t *barrier)
+gomp_team_barrier_wait (gomp_barrier_t *barrier, unsigned id)
 {
-  gomp_team_barrier_wait_end (barrier, gomp_barrier_wait_start (barrier));
+  gomp_team_barrier_wait_end (barrier, gomp_barrier_wait_start (barrier, id),
+			      id);
 }
 
 void
@@ -266,10 +269,10 @@ gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
 }
 
 bool
-gomp_team_barrier_wait_cancel (gomp_barrier_t *bar)
+gomp_team_barrier_wait_cancel (gomp_barrier_t *bar, unsigned id)
 {
-  gomp_barrier_state_t state = gomp_barrier_wait_cancel_start (bar);
-  return gomp_team_barrier_wait_cancel_end (bar, state);
+  gomp_barrier_state_t state = gomp_barrier_wait_cancel_start (bar, id);
+  return gomp_team_barrier_wait_cancel_end (bar, state, id);
 }
 
 void

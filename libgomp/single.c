@@ -108,7 +108,7 @@ GOMP_single_copy_start (void)
     }
   else
     {
-      gomp_team_barrier_wait (&thr->ts.team->barrier);
+      gomp_team_barrier_wait (&thr->ts.team->barrier, thr->ts.team_id);
 
       ret = thr->ts.work_share->copyprivate;
       gomp_work_share_end_nowait ();
@@ -129,7 +129,7 @@ GOMP_single_copy_end (void *data)
   if (team != NULL)
     {
       thr->ts.work_share->copyprivate = data;
-      gomp_team_barrier_wait (&team->barrier);
+      gomp_team_barrier_wait (&team->barrier, thr->ts.team_id);
     }
 
   gomp_work_share_end_nowait ();

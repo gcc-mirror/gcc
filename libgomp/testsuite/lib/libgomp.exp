@@ -389,6 +389,12 @@ proc check_effective_target_nonstandard_math_functions { } {
     } "-lm" ]
 }
 
+proc check_effective_target_linux_futex_waitv { } {
+    global libgomp_config_path
+    return [expr {
+	      [lsearch -exact $libgomp_config_path "linux/futex_waitv"] >= 0}]
+}
+
 # Return 1 if compiling for the specified offload target
 # Takes -foffload=... into account by checking OFFLOAD_TARGET_NAMES=
 # in the -v compiler output.
@@ -453,7 +459,7 @@ proc check_effective_target_offload_device_nonshared_as { } {
 	}
     } ]
 }
-  
+
 # Return 1 if offload device is available and it has shared address space.
 proc check_effective_target_offload_device_shared_as { } {
     return [check_runtime_nocache offload_device_shared_as {

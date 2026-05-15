@@ -53,7 +53,9 @@ typedef unsigned int gomp_barrier_state_t;
 #define BAR_CANCELLED		4
 #define BAR_INCR		8
 
-static inline void gomp_barrier_init (gomp_barrier_t *bar, unsigned count)
+static inline void
+gomp_barrier_init (gomp_barrier_t *bar, unsigned count,
+		   void *ptr __attribute__ ((unused)))
 {
   bar->total = count;
   bar->awaited = count;
@@ -71,22 +73,32 @@ static inline void gomp_barrier_destroy (gomp_barrier_t *bar)
 {
 }
 
-extern void gomp_barrier_wait (gomp_barrier_t *);
-extern void gomp_barrier_wait_last (gomp_barrier_t *);
-extern void gomp_barrier_wait_end (gomp_barrier_t *, gomp_barrier_state_t);
-extern void gomp_team_barrier_wait (gomp_barrier_t *);
-extern void gomp_team_barrier_wait_final (gomp_barrier_t *);
-extern void gomp_team_barrier_wait_end (gomp_barrier_t *,
-					gomp_barrier_state_t);
-extern bool gomp_team_barrier_wait_cancel (gomp_barrier_t *);
+static inline struct gomp_barrier_extra_alloc_needs
+gomp_barrier_extra_alloc (unsigned count __attribute__ ((unused)))
+{
+  return (struct gomp_barrier_extra_alloc_needs){0, 1};
+}
+
+extern void gomp_barrier_wait (gomp_barrier_t *, unsigned);
+extern void gomp_barrier_wait_last (gomp_barrier_t *, unsigned);
+extern void gomp_barrier_wait_end (gomp_barrier_t *, gomp_barrier_state_t,
+				   unsigned);
+
+extern void gomp_team_barrier_wait (gomp_barrier_t *, unsigned);
+extern void gomp_team_barrier_wait_final (gomp_barrier_t *, unsigned);
+extern void gomp_team_barrier_wait_end (gomp_barrier_t *, gomp_barrier_state_t,
+					unsigned);
+
+extern bool gomp_team_barrier_wait_cancel (gomp_barrier_t *, unsigned);
 extern bool gomp_team_barrier_wait_cancel_end (gomp_barrier_t *,
-					       gomp_barrier_state_t);
+					       gomp_barrier_state_t, unsigned);
 extern void gomp_team_barrier_wake (gomp_barrier_t *, int);
 struct gomp_team;
 extern void gomp_team_barrier_cancel (struct gomp_team *);
 
 static inline gomp_barrier_state_t
-gomp_barrier_wait_start (gomp_barrier_t *bar)
+gomp_barrier_wait_start (gomp_barrier_t *bar,
+			 unsigned id __attribute__ ((unused)))
 {
   unsigned int ret = __atomic_load_n (&bar->generation, MEMMODEL_RELAXED);
   ret &= -BAR_INCR | BAR_CANCELLED;
@@ -101,16 +113,17 @@ gomp_barrier_wait_start (gomp_barrier_t *bar)
 }
 
 static inline gomp_barrier_state_t
-gomp_barrier_wait_cancel_start (gomp_barrier_t *bar)
+gomp_barrier_wait_cancel_start (gomp_barrier_t *bar, unsigned id)
 {
-  return gomp_barrier_wait_start (bar);
+  return gomp_barrier_wait_start (bar, id);
 }
 
 /* This is like gomp_barrier_wait_start, except it decrements
    bar->awaited_final rather than bar->awaited and should be used
    for the gomp_team_end barrier only.  */
 static inline gomp_barrier_state_t
-gomp_barrier_wait_final_start (gomp_barrier_t *bar)
+gomp_barrier_wait_final_start (gomp_barrier_t *bar,
+			       unsigned id __attribute__ ((unused)))
 {
   unsigned int ret = __atomic_load_n (&bar->generation, MEMMODEL_RELAXED);
   ret &= -BAR_INCR | BAR_CANCELLED;
@@ -160,7 +173,8 @@ gomp_team_barrier_cancelled (gomp_barrier_t *bar)
 }
 
 static inline void
-gomp_team_barrier_done (gomp_barrier_t *bar, gomp_barrier_state_t state)
+gomp_team_barrier_done (gomp_barrier_t *bar, gomp_barrier_state_t state,
+			unsigned increment __attribute__ ((unused)))
 {
   /* Need the atomic store for acquire-release synchronisation with the
      load in `gomp_team_barrier_wait_{cancel_,}end`.  See PR112356  */
@@ -169,10 +183,30 @@ gomp_team_barrier_done (gomp_barrier_t *bar, gomp_barrier_state_t state)
 }
 
 static inline bool
-gomp_barrier_has_completed (gomp_barrier_state_t state, gomp_barrier_t *bar)
+gomp_barrier_has_completed (gomp_barrier_state_t state, gomp_barrier_t *bar,
+			    unsigned increment __attribute__ ((unused)))
 {
   unsigned int gen = bar->generation;
   return (gen & -BAR_INCR) == (state & -BAR_INCR) + BAR_INCR;
 }
+
+static inline bool
+gomp_barrier_can_hold (gomp_barrier_t *bar)
+{
+  return false;
+}
+
+static inline bool
+gomp_team_barrier_wake_on_increment (unsigned increment
+				     __attribute__ ((unused)))
+{
+  return true;
+}
+
+/* Functions dummied out for this implementation.  */
+static inline void
+gomp_team_barrier_done_final (gomp_barrier_t *bar,
+			      unsigned id __attribute__ ((unused)))
+{}
 
 #endif /* GOMP_BARRIER_H */

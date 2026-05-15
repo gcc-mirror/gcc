@@ -104,6 +104,7 @@ gomp_nvptx_main (void (*fn) (void *), void *fn_data)
       pool->threads_used = ntids;
       pool->threads_busy = 1;
       pool->last_team = NULL;
+      pool->prev_barrier = NULL;
       gomp_simple_barrier_init (&pool->threads_dock, ntids);
 
       nvptx_thrs[0].thread_pool = pool;
@@ -139,7 +140,7 @@ gomp_thread_start (struct gomp_thread_pool *pool)
       thr->fn = NULL;
 
       struct gomp_task *task = thr->task;
-      gomp_team_barrier_wait_final (&thr->ts.team->barrier);
+      gomp_team_barrier_wait_final (&thr->ts.team->barrier, thr->ts.team_id);
       gomp_finish_task (task);
     }
   /* Work around an NVIDIA driver bug: when generating sm_50 machine code,

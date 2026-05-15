@@ -31,6 +31,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void
+gomp_release_held_threads (struct gomp_thread_pool *pool,
+			   struct gomp_team *team, unsigned team_id)
+{
+  gomp_assert (team_id == 0, "releasing threads from non-primary thread %u",
+	       team_id);
+  if (pool->prev_barrier)
+    {
+      struct gomp_team *saved_team __attribute__ ((unused))
+	= pool->last_team ? pool->last_team : team;
+      gomp_assert (pool->prev_barrier == &saved_team->barrier,
+		   "prev_barrier not within cached team: %p != %p",
+		   pool->prev_barrier, &saved_team->barrier);
+      gomp_team_barrier_done_final (pool->prev_barrier, team_id);
+      pool->prev_barrier = NULL;
+    }
+}
+
 #ifdef LIBGOMP_USE_PTHREADS
 pthread_attr_t gomp_thread_attr;
 
@@ -61,7 +79,6 @@ struct gomp_thread_start_data
   bool nested;
   pthread_t handle;
 };
-
 
 /* This function is a pthread_create entry point.  This contains the idle
    loop in which a thread waits to be called up to become part of a team.  */
@@ -109,12 +126,12 @@ gomp_thread_start (void *xdata)
       struct gomp_team *team = thr->ts.team;
       struct gomp_task *task = thr->task;
 
-      gomp_barrier_wait (&team->barrier);
+      gomp_barrier_wait (&team->barrier, thr->ts.team_id);
 
       local_fn (local_data);
-      gomp_team_barrier_wait_final (&team->barrier);
+      gomp_team_barrier_wait_final (&team->barrier, thr->ts.team_id);
       gomp_finish_task (task);
-      gomp_barrier_wait_last (&team->barrier);
+      gomp_barrier_wait_last (&team->barrier, thr->ts.team_id);
     }
   else
     {
@@ -127,10 +144,19 @@ gomp_thread_start (void *xdata)
 	  struct gomp_task *task = thr->task;
 
 	  local_fn (local_data);
-	  gomp_team_barrier_wait_final (&team->barrier);
+	  gomp_team_barrier_wait_final (&team->barrier, thr->ts.team_id);
 	  gomp_finish_task (task);
-
-	  gomp_simple_barrier_wait (&pool->threads_dock);
+	  /* Hold at the simple barrier if we're exiting.
+	     Do this in order to synchronise with the primary thread that could
+	     (after the next piece of work has been performed) free our team.
+	     Need to ensure that the barrier waited on above is not freed until
+	     we've completed it.  With any threads that will be used in the
+	     next iteration we know that it will synchronise with the primary
+	     thread before it frees this team because it will synchronise with
+	     the primary thread in the next iteration of this loop (in
+	     `gomp_team_barrier_wait_final`).  */
+	  if (!gomp_barrier_can_hold (&team->barrier) || thr->fn == NULL)
+	    gomp_simple_barrier_wait (&pool->threads_dock);
 
 	  local_fn = thr->fn;
 	  local_data = thr->data;
@@ -153,13 +179,20 @@ get_last_team (unsigned nthreads)
   struct gomp_thread *thr = gomp_thread ();
   if (thr->ts.team == NULL)
     {
+      gomp_assert (thr->ts.level == 0,
+		   "looking for cached team in nested region %u thr->ts.level",
+		   thr->ts.level);
       struct gomp_thread_pool *pool = gomp_get_thread_pool (thr, nthreads);
       struct gomp_team *last_team = pool->last_team;
       if (last_team != NULL && last_team->nthreads == nthreads)
         {
-          pool->last_team = NULL;
-          return last_team;
-        }
+	  gomp_assert (!pool->prev_barrier
+			 || pool->prev_barrier == &pool->last_team->barrier,
+		       "prev_barrier not within cached team: %p != %p",
+		       pool->prev_barrier, &pool->last_team->barrier);
+	  pool->last_team = NULL;
+	  return last_team;
+	}
     }
   return NULL;
 }
@@ -175,19 +208,44 @@ gomp_new_team (unsigned nthreads)
   team = get_last_team (nthreads);
   if (team == NULL)
     {
+      void *barrier_extra;
+      struct gomp_barrier_extra_alloc_needs barrier_extra_alloc
+	= gomp_barrier_extra_alloc (nthreads);
       size_t extra = sizeof (team->ordered_release[0])
 		     + sizeof (team->implicit_task[0]);
+      size_t team_extra = nthreads * extra;
+      size_t barrier_padding = 0;
+      if (barrier_extra_alloc.size)
+	{
+	  /* `offsetof` in case the structure is padded and `implicit_task` is
+	     not at the end of `sizeof (*team)`.  */
+	  size_t barrier_offset
+	    = offsetof (struct gomp_team, implicit_task) + team_extra;
+	  gomp_assert (barrier_extra_alloc.align
+			 <= __alignof (struct gomp_team),
+		       "barrier extra alignment too large: %lu > %lu",
+		       (unsigned long) barrier_extra_alloc.align,
+		       (unsigned long) __alignof (struct gomp_team));
+	  barrier_padding = ((barrier_offset + barrier_extra_alloc.align - 1)
+			     & ~(barrier_extra_alloc.align - 1))
+			    - barrier_offset;
+	}
+      size_t alloc_extra
+	= team_extra + barrier_padding + barrier_extra_alloc.size;
 #ifdef GOMP_USE_ALIGNED_WORK_SHARES
       team = gomp_aligned_alloc (__alignof (struct gomp_team),
-				 sizeof (*team) + nthreads * extra);
+				 sizeof (*team) + alloc_extra);
 #else
-      team = team_malloc (sizeof (*team) + nthreads * extra);
+      team = team_malloc (sizeof (*team) + alloc_extra);
 #endif
 
 #ifndef HAVE_SYNC_BUILTINS
       gomp_mutex_init (&team->work_share_list_free_lock);
 #endif
-      gomp_barrier_init (&team->barrier, nthreads);
+      barrier_extra = (char *) &team->implicit_task[nthreads]
+		      + nthreads * sizeof (team->ordered_release[0])
+		      + barrier_padding;
+      gomp_barrier_init (&team->barrier, nthreads, barrier_extra);
       gomp_mutex_init (&team->task_lock);
 
       team->nthreads = nthreads;
@@ -278,9 +336,11 @@ gomp_free_thread (void *arg __attribute__((unused)))
 	      nthr->data = pool;
 	    }
 	  /* This barrier undocks threads docked on pool->threads_dock.  */
-	  gomp_simple_barrier_wait (&pool->threads_dock);
-	  /* And this waits till all threads have called gomp_barrier_wait_last
-	     in gomp_free_pool_helper.  */
+	  gomp_release_held_threads (pool, NULL, thr->ts.team_id);
+	  if (!gomp_barrier_can_hold (pool->prev_barrier))
+	    gomp_simple_barrier_wait (&pool->threads_dock);
+	  /* And this waits till all threads have called
+	     gomp_simple_barrier_wait_last in gomp_free_pool_helper.  */
 	  gomp_simple_barrier_wait (&pool->threads_dock);
 	  /* Now it is safe to destroy the barrier and free the pool.  */
 	  gomp_simple_barrier_destroy (&pool->threads_dock);
@@ -315,6 +375,21 @@ gomp_free_thread (void *arg __attribute__((unused)))
 /* Launch a team.  */
 
 #ifdef LIBGOMP_USE_PTHREADS
+static unsigned
+gomp_barrier_calc_wait (unsigned num_new_threads, unsigned num_exiting_threads,
+			unsigned old_threads_used, unsigned nthreads,
+			unsigned affinity_count, bool can_hold)
+{
+  if (can_hold)
+    {
+      unsigned tmp = num_new_threads + num_exiting_threads;
+      return tmp ? tmp + 1 : 0;
+    }
+  if (!affinity_count)
+    return old_threads_used > nthreads ? old_threads_used : nthreads;
+  return nthreads + affinity_count;
+}
+
 void
 gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 		 unsigned flags, struct gomp_team *team,
@@ -327,6 +402,10 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   bool nested;
   struct gomp_thread_pool *pool;
   unsigned i, n, old_threads_used = 0;
+  unsigned simple_barrier_n = 0;
+  unsigned num_new_threads = 0;
+  unsigned spawned_new_threads __attribute__ ((unused)) = 0;
+  unsigned num_exiting_threads = 0;
   pthread_attr_t thread_attr, *attr;
   unsigned long nthreads_var;
   char bind, bind_var;
@@ -464,22 +543,61 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
      only the initial program thread will modify gomp_threads.  */
   if (!nested)
     {
+      gomp_assert (team->prev_ts.team_id == 0,
+		   "starting a team from thread with id %u in previous team\n",
+		   team->prev_ts.team_id);
       old_threads_used = pool->threads_used;
 
-      if (nthreads <= old_threads_used)
-	n = nthreads;
+      if (nthreads == old_threads_used)
+	{
+	  n = nthreads;
+	  num_new_threads = 0;
+	  num_exiting_threads = 0;
+	  simple_barrier_n
+	    = gomp_barrier_calc_wait (num_new_threads, num_exiting_threads,
+				      old_threads_used, nthreads,
+				      affinity_count,
+				      gomp_barrier_can_hold (
+					pool->prev_barrier));
+	  if (gomp_barrier_can_hold (pool->prev_barrier))
+	    gomp_simple_barrier_reinit (&pool->threads_dock, simple_barrier_n);
+	}
+      else if (nthreads < old_threads_used)
+	{
+	  n = nthreads;
+	  num_new_threads = 0;
+	  num_exiting_threads = old_threads_used - nthreads;
+	  simple_barrier_n
+	    = gomp_barrier_calc_wait (num_new_threads, num_exiting_threads,
+				      old_threads_used, nthreads,
+				      affinity_count,
+				      gomp_barrier_can_hold (
+					pool->prev_barrier));
+	  if (gomp_barrier_can_hold (pool->prev_barrier))
+	    gomp_simple_barrier_reinit (&pool->threads_dock, simple_barrier_n);
+	}
       else if (old_threads_used == 0)
 	{
 	  n = 0;
+	  num_new_threads = nthreads - 1;
+	  num_exiting_threads = 0;
+	  simple_barrier_n = nthreads;
 	  gomp_simple_barrier_init (&pool->threads_dock, nthreads);
 	}
       else
 	{
 	  n = old_threads_used;
-
+	  num_new_threads = nthreads - old_threads_used;
+	  num_exiting_threads = 0;
+	  simple_barrier_n
+	    = gomp_barrier_calc_wait (num_new_threads, num_exiting_threads,
+				      old_threads_used, nthreads,
+				      affinity_count,
+				      gomp_barrier_can_hold (
+					pool->prev_barrier));
 	  /* Increase the barrier threshold to make sure all new
 	     threads arrive before the team is released.  */
-	  gomp_simple_barrier_reinit (&pool->threads_dock, nthreads);
+	  gomp_simple_barrier_reinit (&pool->threads_dock, simple_barrier_n);
 	}
 
       /* Not true yet, but soon will be.  We're going to release all
@@ -640,7 +758,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	    }
 	  else
 	    nthr = pool->threads[i];
-	  nthr->ts.team = team;
+	  __atomic_store_n (&nthr->ts.team, team, MEMMODEL_RELEASE);
 	  nthr->ts.work_share = &team->work_shares[0];
 	  nthr->ts.last_work_share = NULL;
 	  nthr->ts.team_id = i;
@@ -719,14 +837,68 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 		 threads and all the threads we're going to let die
 		 arrive before the team is released.  */
 	      if (affinity_count)
-		gomp_simple_barrier_reinit (&pool->threads_dock,
-					    nthreads + affinity_count);
+		{
+		  /* Total number of threads running is:
+		     nthreads + affinity_count
+		     Equation to be satisfied is:
+		      (nthreads + affinity_count ==
+		       old_threads_used + num_new_threads).
+		     So num_new_threads
+			 == (nthreads + affinity_count - old_threads_used)
+		     Originally
+		      num_new_threads == nthreads > old_threads_used
+			  ? (nthreads - old_threads_used)
+			  : 0;
+
+		     Now:
+		       nthreads + num_exiting_threads
+			 == old_threads_used + num_new_threads
+		     So:
+		       num_exiting_threads
+			 == old_threads_used + num_new_threads - nthreads
+			 == affinity_count
+		     */
+		  gomp_assert (nthreads + affinity_count > old_threads_used,
+			       "not spawning more threads but "
+			       "reinitialising barrier "
+			       "nthreads = %u"
+			       ", affinity_count = %u"
+			       ", old_threads_used = %u",
+			       nthreads, affinity_count, old_threads_used);
+		  num_new_threads
+		    = (nthreads + affinity_count) - old_threads_used;
+		  num_exiting_threads = affinity_count;
+		  simple_barrier_n
+		    = gomp_barrier_calc_wait (num_new_threads,
+					      num_exiting_threads,
+					      old_threads_used, nthreads,
+					      affinity_count,
+					      gomp_barrier_can_hold (
+						pool->prev_barrier));
+		  gomp_simple_barrier_reinit (&pool->threads_dock,
+					      simple_barrier_n);
+		}
 	    }
 	}
 
       if (i == nthreads)
-	goto do_release;
-
+	{
+	  gomp_assert (num_new_threads == 0,
+		       "calculated need %u new threads but spawning none",
+		       num_new_threads);
+	  gomp_assert (gomp_barrier_can_hold (pool->prev_barrier)
+			 ? (simple_barrier_n
+			    == (num_exiting_threads ? num_exiting_threads + 1
+						    : 0))
+			 : simple_barrier_n == old_threads_used,
+		       "have calculated need simple_barrier_n == %u"
+		       " starting 0 threads, affinity_count == %u, "
+		       "old_threads_used == %u, calculated "
+		       "num_exiting_threads == %u, nthreads == %u",
+		       simple_barrier_n, affinity_count, old_threads_used,
+		       num_exiting_threads, nthreads);
+	  goto do_release;
+	}
     }
 
   if (__builtin_expect (nthreads + affinity_count > old_threads_used, 0))
@@ -858,9 +1030,34 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       attr = gomp_adjust_thread_attr (attr, &thread_attr);
       err = pthread_create (&start_data->handle, attr, gomp_thread_start,
 			    start_data);
+      spawned_new_threads += 1;
       start_data++;
       if (err != 0)
 	gomp_fatal ("Thread creation failed: %s", strerror (err));
+    }
+  if (!nested)
+    {
+      gomp_assert (spawned_new_threads == num_new_threads,
+		   "calculated num_new_threads != spawned_new_threads: "
+		   " %u != %u",
+		   num_new_threads, spawned_new_threads);
+      bool calc_check __attribute__ ((unused)) = false;
+      if (old_threads_used == 0)
+	calc_check = (num_new_threads == (simple_barrier_n - 1));
+      else if (gomp_barrier_can_hold (pool->prev_barrier))
+	calc_check
+	  = ((num_new_threads + num_exiting_threads) == (simple_barrier_n - 1));
+      else
+	calc_check = (num_new_threads == (simple_barrier_n - old_threads_used));
+      gomp_assert (calc_check,
+		   "simple barrier calculation incorrect for %s team: "
+		   "simple_barrier_n: %u"
+		   ", nthreads: %u"
+		   ", num_new_threads: %u"
+		   ", num_exiting_threads: %u"
+		   ", old_threads_used: %u",
+		   nested ? "nested" : "top-level", simple_barrier_n, nthreads,
+		   num_new_threads, num_exiting_threads, old_threads_used);
     }
 
   if (__builtin_expect (attr == &thread_attr, 0))
@@ -868,9 +1065,14 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 
  do_release:
   if (nested)
-    gomp_barrier_wait (&team->barrier);
+    gomp_barrier_wait (&team->barrier, thr->ts.team_id);
   else
-    gomp_simple_barrier_wait (&pool->threads_dock);
+    {
+      gomp_release_held_threads (pool, team, thr->ts.team_id);
+      if (num_new_threads || num_exiting_threads
+	  || !gomp_barrier_can_hold (pool->prev_barrier))
+	gomp_simple_barrier_wait (&pool->threads_dock);
+    }
 
   /* Decrease the barrier threshold to match the number of threads
      that should arrive back at the end of this team.  The extra
@@ -898,6 +1100,14 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       gomp_mutex_unlock (&gomp_managed_threads_lock);
 #endif
     }
+  else if (!nested && gomp_barrier_can_hold (pool->prev_barrier))
+    {
+      /* Need to adjust the simple barrier threshold once it's been used in
+	 order to account for all threads that would need to be waited on in
+	 something like `gomp_free_thread` or `gomp_pause_thread`.  */
+      gomp_simple_barrier_reinit (&pool->threads_dock, nthreads);
+    }
+
   if (__builtin_expect (gomp_display_affinity_var, 0))
     {
       if (nested
@@ -949,12 +1159,15 @@ gomp_team_end (void)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
+  unsigned team_id = thr->ts.team_id;
 
   /* This barrier handles all pending explicit threads.
      As #pragma omp cancel parallel might get awaited count in
      team->barrier in a inconsistent state, we need to use a different
      counter here.  */
-  gomp_team_barrier_wait_final (&team->barrier);
+  gomp_team_barrier_wait_final (&team->barrier, team_id);
+  /* After this point all tasking has finished.  Just haven't told all
+     secondary threads that they're good to continue.  */
   if (__builtin_expect (team->team_cancelled, 0))
     {
       struct gomp_work_share *ws = team->work_shares_to_free;
@@ -974,8 +1187,11 @@ gomp_team_end (void)
   gomp_end_task ();
   thr->ts = team->prev_ts;
 
+  bool finished_threads __attribute__ ((unused)) = false;
   if (__builtin_expect (thr->ts.level != 0, 0))
     {
+      gomp_team_barrier_done_final (&team->barrier, team_id);
+      finished_threads = true;
 #ifdef HAVE_SYNC_BUILTINS
       __sync_fetch_and_add (&gomp_managed_threads, 1L - team->nthreads);
 #else
@@ -985,7 +1201,7 @@ gomp_team_end (void)
 #endif
       /* This barrier has gomp_barrier_wait_last counterparts
 	 and ensures the team can be safely destroyed.  */
-      gomp_barrier_wait (&team->barrier);
+      gomp_barrier_wait (&team->barrier, team_id);
     }
 
   if (__builtin_expect (team->work_shares[0].next_alloc != NULL, 0))
@@ -1001,16 +1217,45 @@ gomp_team_end (void)
     }
   gomp_sem_destroy (&team->master_release);
 
-  if (__builtin_expect (thr->ts.team != NULL, 0)
+  if (__builtin_expect (thr->ts.team != NULL
+			  && (thr->ts.team->nthreads != 1
+			      || thr->ts.level != 0),
+			0)
       || __builtin_expect (team->nthreads == 1, 0))
-    free_team (team);
+    {
+      gomp_assert (finished_threads || team->nthreads == 1,
+		   "freeing team while threads may be waiting on it."
+		   " team = %p, level = %u",
+		   team, thr->ts.level + 1);
+      free_team (team);
+    }
   else
     {
       struct gomp_thread_pool *pool = thr->thread_pool;
       if (pool->last_team)
 	free_team (pool->last_team);
       pool->last_team = team;
-      gomp_release_thread_pool (pool);
+      gomp_assert (!finished_threads,
+		   "have let threads go while still recording prev_barrier"
+		   " level = %u, team = %p, nthreads = %u",
+		   thr->ts.level + 1, team, team->nthreads);
+      gomp_assert (!pool->prev_barrier,
+		   "previous barrier not released before it gets overridden"
+		   " level = %u, team = %p, nthreads = %u",
+		   thr->ts.level + 1, team, team->nthreads);
+      /* Only record `prev_barrier` when `gomp_barrier_can_hold`:
+	 - It's only used when gomp_barrier_can_hold.
+	 - Some targets have custom versions of `gomp_team_start` that doesn't
+	   call `gomp_release_held_threads` and hence don't clear this value.
+	 */
+      if (gomp_barrier_can_hold (&team->barrier))
+	pool->prev_barrier = &team->barrier;
+      /* Releasing pool should only happen if we're going to then
+	 `gomp_get_thread_pool` later.  When `thr->ts.team != NULL` we don't
+	 fetch the last team and call `gomp_get_thread_pool`.  Hence we don't
+	 want to release the pool here.  */
+      if (thr->ts.team == NULL)
+	gomp_release_thread_pool (pool);
     }
 }
 
@@ -1081,9 +1326,11 @@ gomp_pause_host (void)
 	      thrs[i] = gomp_thread_to_pthread_t (nthr);
 	    }
 	  /* This barrier undocks threads docked on pool->threads_dock.  */
-	  gomp_simple_barrier_wait (&pool->threads_dock);
-	  /* And this waits till all threads have called gomp_barrier_wait_last
-	     in gomp_pause_pool_helper.  */
+	  gomp_release_held_threads (pool, NULL, thr->ts.team_id);
+	  if (!gomp_barrier_can_hold (pool->prev_barrier))
+	    gomp_simple_barrier_wait (&pool->threads_dock);
+	  /* And this waits till all threads have called
+	     gomp_simple_barrier_wait_last in gomp_pause_pool_helper.  */
 	  gomp_simple_barrier_wait (&pool->threads_dock);
 	  /* Now it is safe to destroy the barrier and free the pool.  */
 	  gomp_simple_barrier_destroy (&pool->threads_dock);

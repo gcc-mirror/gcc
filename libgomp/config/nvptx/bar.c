@@ -31,7 +31,8 @@
 #include "libgomp.h"
 
 void
-gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
+gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state,
+		       unsigned id __attribute__ ((unused)))
 {
   if (__builtin_expect (state & BAR_WAS_LAST, 0))
     {
@@ -45,9 +46,9 @@ gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 }
 
 void
-gomp_barrier_wait (gomp_barrier_t *bar)
+gomp_barrier_wait (gomp_barrier_t *bar, unsigned id)
 {
-  gomp_barrier_wait_end (bar, gomp_barrier_wait_start (bar));
+  gomp_barrier_wait_end (bar, gomp_barrier_wait_start (bar, id), id);
 }
 
 /* Like gomp_barrier_wait, except that if the encountering thread
@@ -58,7 +59,8 @@ gomp_barrier_wait (gomp_barrier_t *bar)
    the barrier can be safely destroyed.  */
 
 void
-gomp_barrier_wait_last (gomp_barrier_t *bar)
+gomp_barrier_wait_last (gomp_barrier_t *bar,
+			unsigned id __attribute__ ((unused)))
 {
   /* The above described behavior matches 'bar.arrive' perfectly.  */
   if (bar->total > 1)
@@ -77,7 +79,8 @@ gomp_barrier_wait_last (gomp_barrier_t *bar)
    on GPUs).  */
 
 void
-gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
+gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state,
+			    unsigned id __attribute__ ((unused)))
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
@@ -98,7 +101,7 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
     {
       while (__atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE)
 	     & BAR_TASK_PENDING)
-	gomp_barrier_handle_tasks (state);
+	gomp_barrier_handle_tasks (state, bar, 0);
 
       if (bar->total > 1)
 	asm volatile ("bar.sync 1, %0;" : : "r" (32 * bar->total));
@@ -106,25 +109,26 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 }
 
 void
-gomp_team_barrier_wait (gomp_barrier_t *bar)
+gomp_team_barrier_wait (gomp_barrier_t *bar, unsigned id)
 {
-  gomp_team_barrier_wait_end (bar, gomp_barrier_wait_start (bar));
+  gomp_team_barrier_wait_end (bar, gomp_barrier_wait_start (bar, id), id);
 }
 
 void
-gomp_team_barrier_wait_final (gomp_barrier_t *bar)
+gomp_team_barrier_wait_final (gomp_barrier_t *bar, unsigned id)
 {
-  gomp_barrier_state_t state = gomp_barrier_wait_final_start (bar);
+  gomp_barrier_state_t state = gomp_barrier_wait_final_start (bar, id);
   if (__builtin_expect (state & BAR_WAS_LAST, 0))
     bar->awaited_final = bar->total;
-  gomp_team_barrier_wait_end (bar, state);
+  gomp_team_barrier_wait_end (bar, state, id);
 }
 
 /* See also comments for gomp_team_barrier_wait_end.  */
 
 bool
 gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
-				   gomp_barrier_state_t state)
+				   gomp_barrier_state_t state,
+				   unsigned id __attribute__ ((unused)))
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
@@ -152,7 +156,7 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
     {
       while (__atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE)
 	     & BAR_TASK_PENDING)
-	gomp_barrier_handle_tasks (state);
+	gomp_barrier_handle_tasks (state, bar, 0);
 
       if (bar->total > 1)
 	asm volatile ("bar.sync 1, %0;" : : "r" (32 * bar->total));
@@ -162,9 +166,11 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 }
 
 bool
-gomp_team_barrier_wait_cancel (gomp_barrier_t *bar)
+gomp_team_barrier_wait_cancel (gomp_barrier_t *bar, unsigned id)
 {
-  return gomp_team_barrier_wait_cancel_end (bar, gomp_barrier_wait_start (bar));
+  return gomp_team_barrier_wait_cancel_end (bar,
+					    gomp_barrier_wait_start (bar, id),
+					    id);
 }
 
 void

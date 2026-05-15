@@ -110,6 +110,7 @@ gomp_gcn_enter_kernel (void)
       pool->threads_used = numthreads;
       pool->threads_busy = 1;
       pool->last_team = NULL;
+      pool->prev_barrier = NULL;
       gomp_simple_barrier_init (&pool->threads_dock, numthreads);
       thrs->thread_pool = pool;
 
@@ -205,7 +206,7 @@ gomp_thread_start (struct gomp_thread_pool *pool)
       thr->fn = NULL;
 
       struct gomp_task *task = thr->task;
-      gomp_team_barrier_wait_final (&thr->ts.team->barrier);
+      gomp_team_barrier_wait_final (&thr->ts.team->barrier, thr->ts.team_id);
       gomp_finish_task (task);
     }
   while (1);

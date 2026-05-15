@@ -1570,10 +1570,39 @@ gomp_task_run_post_remove_taskgroup (struct gomp_task *child_task)
 }
 
 void
-gomp_barrier_handle_tasks (gomp_barrier_state_t state)
+gomp_barrier_handle_tasks (gomp_barrier_state_t state, gomp_barrier_t *bar,
+			   unsigned increment)
 {
   struct gomp_thread *thr = gomp_thread ();
-  struct gomp_team *team = thr->ts.team;
+  /* acquire-release between the store in `gomp_team_start` because otherwise
+     very small chance that the `team->barrier` we just read is seen as
+     uninitialised (despite happening before the assignment of `nthr->ts.team`
+     in the primary thread) and that uninitialised value happens to match
+     `bar`.  */
+  struct gomp_team *team = __atomic_load_n (&thr->ts.team, MEMMODEL_ACQUIRE);
+  /* When performing the barrier in between iterations of non-nested threads in
+     `gomp_thread_start`, there's the race condition where:
+     - Secondary thread calls this function.
+     - Some other thread finishes the last task.
+     - Barrier is marked as completed.
+     - Primary thread continues to starting a new parallel region.
+     - Primary thread creates a new team.
+     - Primary thread stores the team on this secondary threads TLS storage
+       (before we read the `thr->ts.team` value above.
+     We pass `bar` in from the barrier functions in order to identify this
+     case.  When this happens we know that all tasks on the barrier have
+     completed (otherwise the primary thread would not have continued past the
+     barrier).  Hence we can simply return.
+
+     This race condition was mostly harmless (attempt to run tasks on the
+     barrier of this new team, but new team would have no tasks on it anyway).
+     With the switch to only have one barrier per iteration in
+     `gomp_thread_start` we add the possibility that we could perform tasks on
+     "the next" parallel region (no longer a second synch point between the
+     above race condition and where new tasks could be scheduled).  This
+     outcome is something we want to avoid.  */
+  if (&team->barrier != bar)
+    return;
   struct gomp_task *task = thr->task;
   struct gomp_task *child_task = NULL;
   struct gomp_task *to_free = NULL;
@@ -1591,7 +1620,7 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
      When `task_count == 0` we're not going to perform tasks anyway, so the
      problem of PR122314 is naturally avoided.  */
   if (team->task_count != 0
-      && gomp_barrier_has_completed (state, &team->barrier))
+      && gomp_barrier_has_completed (state, &team->barrier, increment))
     {
       gomp_mutex_unlock (&team->task_lock);
       return;
@@ -1601,9 +1630,10 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
     {
       if (team->task_count == 0)
 	{
-	  gomp_team_barrier_done (&team->barrier, state);
+	  gomp_team_barrier_done (&team->barrier, state, increment);
 	  gomp_mutex_unlock (&team->task_lock);
-	  gomp_team_barrier_wake (&team->barrier, 0);
+	  if (gomp_team_barrier_wake_on_increment (increment))
+	    gomp_team_barrier_wake (&team->barrier, 0);
 	  return;
 	}
       gomp_team_barrier_set_waiting_for_tasks (&team->barrier);
@@ -1638,7 +1668,7 @@ gomp_barrier_handle_tasks (gomp_barrier_state_t state)
       else if (team->task_count == 0
 	       && gomp_team_barrier_waiting_for_tasks (&team->barrier))
 	{
-	  gomp_team_barrier_done (&team->barrier, state);
+	  gomp_team_barrier_done (&team->barrier, state, increment);
 	  gomp_mutex_unlock (&team->task_lock);
 	  gomp_team_barrier_wake (&team->barrier, 0);
 	  if (to_free)
@@ -2264,7 +2294,7 @@ GOMP_taskgroup_end (void)
 	 is #pragma omp target nowait that creates an implicit
 	 team with a single thread.  In this case, we want to wait
 	 for all outstanding tasks in this team.  */
-      gomp_team_barrier_wait (&team->barrier);
+      gomp_team_barrier_wait (&team->barrier, thr->ts.team_id);
       return;
     }
 
@@ -2719,7 +2749,7 @@ GOMP_workshare_task_reduction_unregister (bool cancelled)
     htab_free ((struct htab *) data[5]);
 
   if (!cancelled)
-    gomp_team_barrier_wait (&team->barrier);
+    gomp_team_barrier_wait (&team->barrier, thr->ts.team_id);
 }
 
 int

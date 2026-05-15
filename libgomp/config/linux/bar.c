@@ -24,15 +24,15 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* This is a Linux specific implementation of a barrier synchronization
-   mechanism for libgomp.  This type is private to the library.  This 
+   mechanism for libgomp.  This type is private to the library.  This
    implementation uses atomic instructions and the futex syscall.  */
 
 #include <limits.h>
 #include "wait.h"
 
-
 void
-gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
+gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state,
+		       unsigned id __attribute__ ((unused)))
 {
   if (__builtin_expect (state & BAR_WAS_LAST, 0))
     {
@@ -51,9 +51,9 @@ gomp_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 }
 
 void
-gomp_barrier_wait (gomp_barrier_t *bar)
+gomp_barrier_wait (gomp_barrier_t *bar, unsigned id)
 {
-  gomp_barrier_wait_end (bar, gomp_barrier_wait_start (bar));
+  gomp_barrier_wait_end (bar, gomp_barrier_wait_start (bar, id), id);
 }
 
 /* Like gomp_barrier_wait, except that if the encountering thread
@@ -64,11 +64,11 @@ gomp_barrier_wait (gomp_barrier_t *bar)
    the barrier can be safely destroyed.  */
 
 void
-gomp_barrier_wait_last (gomp_barrier_t *bar)
+gomp_barrier_wait_last (gomp_barrier_t *bar, unsigned id)
 {
-  gomp_barrier_state_t state = gomp_barrier_wait_start (bar);
+  gomp_barrier_state_t state = gomp_barrier_wait_start (bar, id);
   if (state & BAR_WAS_LAST)
-    gomp_barrier_wait_end (bar, state);
+    gomp_barrier_wait_end (bar, state, id);
 }
 
 void
@@ -78,7 +78,8 @@ gomp_team_barrier_wake (gomp_barrier_t *bar, int count)
 }
 
 void
-gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
+gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state,
+			    unsigned id __attribute__ ((unused)))
 {
   unsigned int generation, gen;
 
@@ -94,7 +95,7 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	= __atomic_load_n (&team->task_count, MEMMODEL_ACQUIRE);
       if (__builtin_expect (task_count, 0))
 	{
-	  gomp_barrier_handle_tasks (state);
+	  gomp_barrier_handle_tasks (state, bar, BAR_INCR);
 	  state &= ~BAR_WAS_LAST;
 	}
       else
@@ -115,7 +116,7 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
       gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
       if (__builtin_expect (gen & BAR_TASK_PENDING, 0))
 	{
-	  gomp_barrier_handle_tasks (state);
+	  gomp_barrier_handle_tasks (state, bar, BAR_INCR);
 	  gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
 	}
       generation |= gen & BAR_WAITING_FOR_TASK;
@@ -124,23 +125,24 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 }
 
 void
-gomp_team_barrier_wait (gomp_barrier_t *bar)
+gomp_team_barrier_wait (gomp_barrier_t *bar, unsigned id)
 {
-  gomp_team_barrier_wait_end (bar, gomp_barrier_wait_start (bar));
+  gomp_team_barrier_wait_end (bar, gomp_barrier_wait_start (bar, id), id);
 }
 
 void
-gomp_team_barrier_wait_final (gomp_barrier_t *bar)
+gomp_team_barrier_wait_final (gomp_barrier_t *bar, unsigned id)
 {
-  gomp_barrier_state_t state = gomp_barrier_wait_final_start (bar);
+  gomp_barrier_state_t state = gomp_barrier_wait_final_start (bar, id);
   if (__builtin_expect (state & BAR_WAS_LAST, 0))
     bar->awaited_final = bar->total;
-  gomp_team_barrier_wait_end (bar, state);
+  gomp_team_barrier_wait_end (bar, state, id);
 }
 
 bool
 gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
-				   gomp_barrier_state_t state)
+				   gomp_barrier_state_t state,
+				   unsigned id __attribute__ ((unused)))
 {
   unsigned int generation, gen;
 
@@ -160,7 +162,7 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 	= __atomic_load_n (&team->task_count, MEMMODEL_ACQUIRE);
       if (__builtin_expect (task_count, 0))
 	{
-	  gomp_barrier_handle_tasks (state);
+	  gomp_barrier_handle_tasks (state, bar, BAR_INCR);
 	  state &= ~BAR_WAS_LAST;
 	}
       else
@@ -184,7 +186,7 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 	return true;
       if (__builtin_expect (gen & BAR_TASK_PENDING, 0))
 	{
-	  gomp_barrier_handle_tasks (state);
+	  gomp_barrier_handle_tasks (state, bar, BAR_INCR);
 	  gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
 	}
       generation |= gen & BAR_WAITING_FOR_TASK;
@@ -195,9 +197,11 @@ gomp_team_barrier_wait_cancel_end (gomp_barrier_t *bar,
 }
 
 bool
-gomp_team_barrier_wait_cancel (gomp_barrier_t *bar)
+gomp_team_barrier_wait_cancel (gomp_barrier_t *bar, unsigned id)
 {
-  return gomp_team_barrier_wait_cancel_end (bar, gomp_barrier_wait_start (bar));
+  return gomp_team_barrier_wait_cancel_end (bar,
+					    gomp_barrier_wait_start (bar, id),
+					    id);
 }
 
 void

@@ -59,6 +59,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <limits.h>
 
 /* Needed for memset in priority_queue.c.  */
 #if _LIBGOMP_CHECKING_
@@ -200,9 +201,56 @@ extern void gomp_vfatal (const char *, va_list)
 extern void gomp_fatal (const char *, ...)
 	__attribute__ ((noreturn, format (printf, 1, 2)));
 
+#if _LIBGOMP_CHECKING_
+#define gomp_assert(EXPR, MSG, ...)					       \
+  do									       \
+    {									       \
+      if (!(EXPR))							       \
+	gomp_fatal ("%s:%d " MSG, __FILE__, __LINE__, ##__VA_ARGS__);	       \
+    }									       \
+  while (0)
+#else
+#define gomp_assert(...)						       \
+  do									       \
+    {									       \
+    }									       \
+  while (0)
+#endif
+
 struct gomp_task;
 struct gomp_taskgroup;
 struct htab;
+
+struct gomp_barrier_extra_alloc_needs
+{
+  size_t size;
+  size_t align;
+};
+
+enum gomp_barrier_type
+{
+  GOMP_TREE_BARRIER,
+  GOMP_FLAT_BARRIER,
+  GOMP_CENTRALIZED_BARRIER,
+  GOMP_BARRIER_BY_SPINCOUNT
+};
+extern enum gomp_barrier_type gomp_barrier_request;
+extern enum gomp_barrier_type gomp_forkjoin_barrier_request;
+
+extern unsigned long long gomp_spin_count_var, gomp_throttled_spin_count_var;
+extern unsigned long gomp_available_cpus, gomp_managed_threads;
+
+static inline unsigned long long
+spin_count ()
+{
+  unsigned long long count = gomp_spin_count_var;
+  if (__builtin_expect (__atomic_load_n (&gomp_managed_threads,
+					 MEMMODEL_RELAXED)
+			  > gomp_available_cpus,
+			0))
+    count = gomp_throttled_spin_count_var;
+  return count;
+}
 
 #include "priority_queue.h"
 #include "sem.h"
@@ -603,11 +651,10 @@ extern struct gomp_task_icv gomp_global_icv;
 #ifndef HAVE_SYNC_BUILTINS
 extern gomp_mutex_t gomp_managed_threads_lock;
 #endif
+/* Included here for the variables.  */
 extern bool gomp_cancel_var;
 extern enum gomp_target_offload_t gomp_target_offload_var;
 extern int gomp_max_task_priority_var;
-extern unsigned long long gomp_spin_count_var, gomp_throttled_spin_count_var;
-extern unsigned long gomp_available_cpus, gomp_managed_threads;
 extern unsigned long *gomp_nthreads_var_list, gomp_nthreads_var_list_len;
 extern char *gomp_bind_var_list;
 extern unsigned long gomp_bind_var_list_len;
@@ -970,6 +1017,7 @@ struct gomp_thread_pool
 
   /* This barrier holds and releases threads waiting in thread pools.  */
   gomp_simple_barrier_t threads_dock;
+  gomp_barrier_t *prev_barrier;
 };
 
 enum gomp_cancel_kind
@@ -1143,7 +1191,8 @@ extern unsigned gomp_dynamic_max_threads (void);
 extern void gomp_init_task (struct gomp_task *, struct gomp_task *,
 			    struct gomp_task_icv *);
 extern void gomp_end_task (void);
-extern void gomp_barrier_handle_tasks (gomp_barrier_state_t);
+extern void gomp_barrier_handle_tasks (gomp_barrier_state_t, gomp_barrier_t *,
+				       unsigned);
 extern void gomp_task_maybe_wait_for_dependencies (void **);
 extern bool gomp_create_target_task (struct gomp_device_descr *,
 				     void (*) (void *), size_t, void **,
