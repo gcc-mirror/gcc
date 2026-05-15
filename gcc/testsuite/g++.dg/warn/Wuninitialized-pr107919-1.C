@@ -14,4 +14,4 @@ void do_something(void* storage)
   std::swap(event, swappedValue);
 }
 
-// { dg-bogus "may be used uninitialized" "" 0 }
+// { dg-bogus "may be used uninitialized" "" { target *-*-* } 0 }
