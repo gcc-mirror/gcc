@@ -976,7 +976,7 @@ test_spans_3 ()
 				      table::size_t (buf_size, 1)),
 		       styled_string::from_fmt (sm,
 						     nullptr,
-						     "'buf' (char[%i])",
+						     "'buf' (%<char%>[%i])",
 						     (int)buf_size));
   table.set_cell_span (table::rect_t (table::coord_t (buf_size + 1, 2),
 				      table::size_t (str_size - buf_size, 1)),
