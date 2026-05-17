@@ -2785,7 +2785,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   bool cache_hit = false;
   enum alg_code cache_alg = alg_zero;
   bool speed = optimize_insn_for_speed_p ();
-  scalar_int_mode imode;
+  scalar_int_mode imode = QImode;
   struct alg_hash_entry *entry_ptr;
 
   /* Indicate that no algorithm is yet found.  If no algorithm
