@@ -1800,7 +1800,11 @@ interprocedural_return::try_to_rewind_data_flow (rewind_context &ctxt) const
 
   ctxt.on_data_flow (DECL_RESULT (fndecl), lhs);
 
+  (void)logger;
+  (void)fn_result;
+
   return true;
+}
 }
 
 /* class exploded_edge : public dedge<eg_traits>.  */
