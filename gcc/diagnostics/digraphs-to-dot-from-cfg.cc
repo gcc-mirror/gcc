@@ -170,7 +170,7 @@ public:
 		  xp.push_tag ("td", true);
 		  xp.set_attr ("align", "left");
 		  pretty_printer pp;
-		  pp_printf (&pp, "<bb %li>:", bb_index);
+		  pp_printf (&pp, "%<<bb %li>%::", bb_index);
 		  xp.add_text_from_pp (pp);
 		  xp.pop_tag ("td");
 		  xp.pop_tag ("tr");
