@@ -189,7 +189,11 @@ int
 main()
 {
     using TestUtils::float64_t;
+#ifndef _GLIBCXX_DEBUG
     const std::size_t N = 100000;
+#else
+    const std::size_t N = 10000;
+#endif
 
     for (std::size_t n = 0; n < N; n = n < 16 ? n + 1 : size_t(3.14159 * n))
     {
