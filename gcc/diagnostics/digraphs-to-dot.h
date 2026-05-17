@@ -35,6 +35,7 @@ using digraph_edge = diagnostics::digraphs::edge;
 class converter
 {
 public:
+  virtual ~converter () = default;
   static std::unique_ptr<converter>
   make (const digraph &dg);
 
