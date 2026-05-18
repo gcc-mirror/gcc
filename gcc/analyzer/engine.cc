@@ -3927,14 +3927,14 @@ class exploded_cluster : public cluster<eg_traits>
 
 /* Cluster containing all exploded_node instances for one supernode.  */
 
-class supernode_cluster : public exploded_cluster
+class supernode_cluster : public ana::exploded_cluster
 {
 public:
   supernode_cluster (const supernode *supernode) : m_supernode (supernode) {}
 
   // TODO: dtor?
 
-  void dump_dot (graphviz_out *gv, const dump_args_t &args) const final override
+  void dump_dot (graphviz_out *gv, const dnode<ana::eg_traits>::dump_args_t &args) const final override
   {
     gv->println ("subgraph \"cluster_supernode_%i\" {", m_supernode->m_id);
     gv->indent ();
@@ -3977,7 +3977,7 @@ private:
 /* Cluster containing all supernode_cluster instances for one
    (function, call_string) pair.  */
 
-class function_call_string_cluster : public exploded_cluster
+class function_call_string_cluster : public ana::exploded_cluster
 {
 public:
   function_call_string_cluster (function *fun, const call_string &cs)
@@ -3991,7 +3991,7 @@ public:
       delete (*iter).second;
   }
 
-  void dump_dot (graphviz_out *gv, const dump_args_t &args) const final override
+  void dump_dot (graphviz_out *gv, const dnode<ana::eg_traits>::dump_args_t &args) const final override
   {
     const char *funcname = function_name (m_fun);
 
@@ -4140,7 +4140,7 @@ public:
       delete (*iter).second;
   }
 
-  void dump_dot (graphviz_out *gv, const dump_args_t &args) const final override
+  void dump_dot (graphviz_out *gv, const dnode<ana::eg_traits>::dump_args_t &args) const final override
   {
     int i;
     exploded_node *enode;
