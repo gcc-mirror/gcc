@@ -484,6 +484,17 @@ PatternChecker::visit (UseDeclaration &)
 void
 PatternChecker::visit (Function &function)
 {
+  for (auto &param : function.get_function_params ())
+    {
+      TyTy::BaseType *param_ty;
+      bool ok
+	= tyctx.lookup_type (param.get_mappings ().get_hirid (), &param_ty);
+      rust_assert (ok);
+
+      if (param.get_param_name ().is_refutable (*param_ty))
+	rust_error_at (param.get_locus (), ErrorCode::E0005,
+		       "refutable pattern in function parameter");
+    }
   function.get_definition ().accept_vis (*this);
 }
 
@@ -684,6 +695,20 @@ PatternChecker::visit (LetStmt &stmt)
 {
   if (stmt.has_init_expr ())
     stmt.get_init_expr ().accept_vis (*this);
+
+  // skip let-else (allows refutable patterns)
+  if (stmt.has_else_expr ())
+    return;
+
+  TyTy::BaseType *binding_ty;
+  bool ok = tyctx.lookup_type (stmt.get_pattern ().get_mappings ().get_hirid (),
+			       &binding_ty);
+  if (!ok)
+    return; // type-check failed earlier
+
+  if (stmt.get_pattern ().is_refutable (*binding_ty))
+    rust_error_at (stmt.get_pattern ().get_locus (), ErrorCode::E0005,
+		   "refutable pattern in local binding");
 }
 
 void
