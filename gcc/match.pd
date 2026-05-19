@@ -10389,6 +10389,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
    (IFN_COND_FMA @4 @0 @1 @2 (negate @5)))))
 
+/* min (clz (x), clz (y)) -> clz (x | y) and
+   min (ctz (x), ctz (y)) -> ctz (x | y).  */
+(for func (CLZ CTZ)
+ (simplify
+  (min (func:s @0) (func:s @1))
+  (if (types_match (@0, @1)
+       && (!sanitize_flags_p (SANITIZE_BUILTIN)
+	   || (cfun && (cfun->curr_properties & PROP_ssa) != 0)))
+   (func (bit_ior @0 @1)))))
+(for func (IFN_CLZ IFN_CTZ)
+ (simplify
+  (min (func:s @0 INTEGER_CST@2) (func:s @1 @2))
+  (if (types_match (@0, @1)
+       && wi::geu_p (wi::to_wide (@2),
+		     TYPE_PRECISION (TREE_TYPE (@0))))
+   (func (bit_ior @0 @1) @2))))
+
 /* CLZ simplifications.  */
 (for clz (CLZ)
  (for op (eq ne)
