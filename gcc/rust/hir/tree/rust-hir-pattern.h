@@ -586,7 +586,12 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
 
   TupleIndex get_index () { return index; }
+
+  TupleIndex get_index () const { return index; }
+
   Pattern &get_tuple_pattern () { return *tuple_pattern; }
+
+  const Pattern &get_tuple_pattern () const { return *tuple_pattern; }
 
   ItemType get_item_type () const override final { return ItemType::TUPLE_PAT; }
 
@@ -645,6 +650,7 @@ public:
   Identifier get_identifier () const { return ident; }
 
   Pattern &get_pattern () { return *ident_pattern; }
+  Pattern &get_pattern () const { return *ident_pattern; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -751,6 +757,12 @@ public:
   std::string to_string () const;
 
   std::vector<std::unique_ptr<StructPatternField>> &get_struct_pattern_fields ()
+  {
+    return fields;
+  }
+
+  const std::vector<std::unique_ptr<StructPatternField>> &
+  get_struct_pattern_fields () const
   {
     return fields;
   }
