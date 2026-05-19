@@ -258,6 +258,12 @@ protected:
   PathPattern (LangItem::Kind lang_item)
     : segments ({}), lang_item (lang_item), kind (Kind::LangItem)
   {}
+  bool is_refutable (const TyTy::BaseType &scrutinee) const override;
+  bool is_refutable () const override
+  {
+    // Needs to be called with the other overload
+    rust_unreachable ();
+  }
 
   // Returns whether path has segments.
   bool has_segments () const

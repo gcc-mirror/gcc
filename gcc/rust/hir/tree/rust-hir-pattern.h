@@ -35,6 +35,9 @@ class LiteralPattern : public Pattern
   bool has_minus;
 
 public:
+  using Pattern::is_refutable;
+  bool is_refutable () const override { return true; }
+
   std::string to_string () const override;
 
   // Constructor for a literal pattern
@@ -95,6 +98,14 @@ class IdentifierPattern : public Pattern
   Analysis::NodeMapping mappings;
 
 public:
+  bool is_refutable () const override
+  {
+    // Needs to be called with the other overload
+    rust_unreachable ();
+  }
+
+  bool is_refutable (const TyTy::BaseType &scrutinee) const override;
+
   std::string to_string () const override;
 
   // Returns whether the IdentifierPattern has a pattern to bind.
@@ -176,6 +187,9 @@ class WildcardPattern : public Pattern
   Analysis::NodeMapping mappings;
 
 public:
+  using Pattern::is_refutable;
+  bool is_refutable () const override { return false; }
+
   std::string to_string () const override { return "_"; }
 
   WildcardPattern (Analysis::NodeMapping mappings, location_t locus)
@@ -364,6 +378,7 @@ class RangePattern : public Pattern
   Analysis::NodeMapping mappings;
 
 public:
+  using Pattern::is_refutable;
   std::string to_string () const override;
 
   // Constructor
@@ -400,6 +415,15 @@ public:
   // default move semantics
   RangePattern (RangePattern &&other) = default;
   RangePattern &operator= (RangePattern &&other) = default;
+
+  bool is_refutable () const override
+  {
+    // TODO This needs to use exhaustiveness of ranges to determine
+    // refutability.
+    rust_sorry_at (get_locus (),
+		   "range pattern refutability is not yet implemented");
+    rust_unreachable ();
+  };
 
   location_t get_locus () const override { return locus; }
 
@@ -442,6 +466,13 @@ class ReferencePattern : public Pattern
 
 public:
   std::string to_string () const override;
+
+  bool is_refutable () const override
+  {
+    // Needs to be called with the other overload
+    rust_unreachable ();
+  }
+  bool is_refutable (const TyTy::BaseType &scrutinee) const override;
 
   ReferencePattern (Analysis::NodeMapping mappings,
 		    std::unique_ptr<Pattern> pattern, Mutability reference_mut,
@@ -776,6 +807,32 @@ class StructPattern : public Pattern
   Analysis::NodeMapping mappings;
 
 public:
+  bool is_refutable () const override
+  {
+    for (const auto &field : elems.get_struct_pattern_fields ())
+      {
+	switch (field->get_item_type ())
+	  {
+	  case StructPatternField::ItemType::TUPLE_PAT:
+	    if (static_cast<StructPatternFieldTuplePat &> (*field)
+		  .get_tuple_pattern ()
+		  .is_refutable ())
+	      return true;
+	    break;
+	  case StructPatternField::ItemType::IDENT_PAT:
+	    if (static_cast<StructPatternFieldIdentPat &> (*field)
+		  .get_pattern ()
+		  .is_refutable ())
+	      return true;
+	    break;
+	  case StructPatternField::ItemType::IDENT:
+	    break;
+	  }
+      }
+    return false;
+  }
+  bool is_refutable (const TyTy::BaseType &scrutinee) const override;
+
   std::string to_string () const override;
 
   StructPattern (Analysis::NodeMapping mappings, PathInExpression struct_path,
@@ -1004,6 +1061,12 @@ class TupleStructPattern : public Pattern
    * data */
 
 public:
+  bool is_refutable (const TyTy::BaseType &scrutinee) const override;
+  bool is_refutable () const override
+  {
+    // Needs to be called with the other overload
+    rust_unreachable ();
+  }
   std::string to_string () const override;
 
   TupleStructPattern (Analysis::NodeMapping mappings,
@@ -1220,6 +1283,30 @@ class TuplePattern : public Pattern
   Analysis::NodeMapping mappings;
 
 public:
+  bool is_refutable () const override
+  {
+    switch (items->get_item_type ())
+      {
+      case TuplePatternItems::ItemType::NO_REST:
+	for (const auto &pattern :
+	     static_cast<TuplePatternItemsNoRest &> (*items).get_patterns ())
+	  if (pattern->is_refutable ())
+	    return true;
+	break;
+      case TuplePatternItems::ItemType::HAS_REST:
+	auto &items_has_rest = static_cast<TuplePatternItemsHasRest &> (*items);
+	for (const auto &pattern : items_has_rest.get_lower_patterns ())
+	  if (pattern->is_refutable ())
+	    return true;
+	for (const auto &pattern : items_has_rest.get_upper_patterns ())
+	  if (pattern->is_refutable ())
+	    return true;
+	break;
+      }
+    return false;
+  }
+  bool is_refutable (const TyTy::BaseType &scrutinee) const override;
+
   std::string to_string () const override;
 
   // Returns true if the tuple pattern has items
@@ -1432,6 +1519,12 @@ class SlicePattern : public Pattern
   Analysis::NodeMapping mappings;
 
 public:
+  bool is_refutable (const TyTy::BaseType &scrutinee) const override;
+  bool is_refutable () const override
+  {
+    // Needs to be called with the other overload
+    rust_unreachable ();
+  }
   std::string to_string () const override;
 
   SlicePattern (Analysis::NodeMapping mappings,
@@ -1527,6 +1620,16 @@ public:
   // move constructors
   AltPattern (AltPattern &&other) = default;
   AltPattern &operator= (AltPattern &&other) = default;
+
+  using Pattern::is_refutable;
+  bool is_refutable () const override
+  {
+    // TODO We need exhaustiveness checks of the type being matched on to
+    // correctly determine refutability, so we conservatively return true
+    rust_sorry_at (get_locus (),
+		   "alt pattern refutability is not yet implemented");
+    rust_unreachable ();
+  }
 
   std::vector<std::unique_ptr<Pattern>> &get_alts () { return alts; }
   const std::vector<std::unique_ptr<Pattern>> &get_alts () const

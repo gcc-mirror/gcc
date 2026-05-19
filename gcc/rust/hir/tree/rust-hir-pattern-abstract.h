@@ -25,8 +25,10 @@
 #include "rust-system.h"
 
 namespace Rust {
+namespace TyTy {
+class BaseType;
+}
 namespace HIR {
-
 // Pattern base HIR node
 class Pattern : public Node, virtual public FullVisitable
 {
@@ -57,9 +59,21 @@ public:
     return std::unique_ptr<Pattern> (clone_pattern_impl ());
   }
 
-  // possible virtual methods: is_refutable()
-
   virtual ~Pattern () {}
+
+  // Syntactic refutability. ICEs for patterns whose refutability depends
+  // on type context (Path, Range, Slice, Alt). Callers that might
+  // encounter such patterns must use the typed overload.
+  virtual bool is_refutable () const = 0;
+  // Type-aware refutability. Defaults to the syntactic answer for
+  // patterns whose refutability is independent of the scrutinee type.
+
+  // Virtual method overriden by classes that enable this.
+  virtual bool
+  is_refutable (const TyTy::BaseType &scrutinee ATTRIBUTE_UNUSED) const
+  {
+    return is_refutable ();
+  }
 
   virtual std::string to_string () const = 0;
 

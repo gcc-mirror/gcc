@@ -210,6 +210,7 @@ GRS_OBJS = \
     rust/rust-hir-type-check-path.o \
     rust/rust-unsafe-checker.o \
     rust/rust-hir-pattern-analysis.o \
+    rust/rust-hir-pattern-abstract.o \
     rust/rust-intrinsic-handlers.o \
     rust/rust-compile-intrinsic.o \
     rust/rust-compile-pattern.o \
