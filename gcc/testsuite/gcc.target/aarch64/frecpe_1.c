@@ -15,4 +15,4 @@ f2 (double x)
   return 1 / x;
 }
 
-/* { dg-final { scan-assembler {\tfrecpe\t(d[0-9]+), d0\n\tfrecps\t(d[0-9]+), \1, d0\n\tfmul\t\1, \1, \2\n\tfrecps\t\2, \1, d0\n\tfmul\td0, \1, \2\n} } } */
+/* { dg-final { scan-assembler {\tfrecpe\t(d[0-9]+), d0\n\tfrecps\t(d[0-9]+), \1, d0\n\tfmul\t(d[0-9]+), \1, \2\n\tfrecps\t(d[0-9]+), \1, d0\n\tfmul\td0, \3, \4\n} } } */

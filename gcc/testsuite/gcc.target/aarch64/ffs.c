@@ -9,9 +9,9 @@
 /*
 ** ffsw1:
 **	cmp	w1, 0
-**	rbit	w0, w1
-**	clz	w0, w0
-**	csinc	w0, wzr, w0, eq
+**	rbit	(w[0-9]+), w1
+**	clz	(w[0-9]+), \1
+**	csinc	w0, wzr, \2, eq
 **	ret
 */
 
@@ -23,9 +23,9 @@ int ffsw1 (int y, uint32_t x)
 /*
 ** ffsx1:
 **	cmp	x1, 0
-**	rbit	x0, x1
-**	clz	x0, x0
-**	csinc	x0, xzr, x0, eq
+**	rbit	(x[0-9]+), x1
+**	clz	(x[0-9]+), \1
+**	csinc	x0, xzr, \2, eq
 **	ret
 */
 
@@ -39,8 +39,8 @@ int ffsx1 (int y, uint64_t x)
 /*
 ** ffsw2:
 **	cmp	w1, 0
-**	ctz	w0, w1
-**	csinc	w0, wzr, w0, eq
+**	ctz	(w[0-9]+), w1
+**	csinc	w0, wzr, \1, eq
 **	ret
 */
 
@@ -52,8 +52,8 @@ int ffsw2 (int y, uint32_t x)
 /*
 ** ffsx2:
 **	cmp	x1, 0
-**	ctz	x0, x1
-**	csinc	x0, xzr, x0, eq
+**	ctz	(x[0-9]+), x1
+**	csinc	x0, xzr, \1, eq
 **	ret
 */
 
