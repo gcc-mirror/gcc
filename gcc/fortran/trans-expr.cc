@@ -12441,13 +12441,19 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      needed.  */
   lhs_attr = gfc_expr_attr (expr1);
 
+  /* What can be sent to trans_class_assignment includes all the obvious
+     candidates but scalar assignment of a class expression to a derived type
+     must be done using gfc_trans_scalar_assign; partly because it is simpler
+     and partly because some cases fail, eg. class assignment to derived_type
+     select type temporaries.  */
   is_poly_assign
     = (use_vptr_copy
        || ((lhs_attr.pointer || lhs_attr.allocatable) && !lhs_attr.dimension))
       && (expr1->ts.type == BT_CLASS || gfc_is_class_array_ref (expr1, NULL)
 	  || gfc_is_class_scalar_expr (expr1)
 	  || gfc_is_class_array_ref (expr2, NULL)
-	  || gfc_is_class_scalar_expr (expr2))
+	  || (gfc_is_class_scalar_expr (expr2)
+	      && !(expr1->ts.type == BT_DERIVED && !lhs_attr.dimension)))
       && lhs_attr.flavor != FL_PROCEDURE;
 
   realloc_flag = flag_realloc_lhs
