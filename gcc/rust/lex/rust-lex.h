@@ -207,7 +207,13 @@ public:
   void split_current_token (std::vector<TokenPtr> new_tokens);
 
   Linemap *get_line_map () { return line_map; }
-  std::string get_filename () { return std::string (input.get_filename ()); }
+  std::string get_filename ()
+  {
+    if (input.ok ())
+      return std::string (input.get_filename ());
+    else
+      return "";
+  }
 
 private:
   void start_line (int current_line, int current_column);
