@@ -15805,6 +15805,8 @@ grokdeclarator (const cp_declarator *declarator,
 	      && TREE_CODE (type) == FUNCTION_TYPE)
 	    {
 	      memfn_quals |= type_memfn_quals (type);
+	      if (rqual == REF_QUAL_NONE)
+		rqual = type_memfn_rqual (type);
 	      type = build_memfn_type (type,
 				       declarator->u.pointer.class_type,
 				       memfn_quals,
