@@ -42,6 +42,8 @@ public:
 
   void emit_trait (const HIR::Trait &trait);
   void emit_function (const HIR::Function &fn);
+  void begin_module (const HIR::Module &module);
+  void end_module ();
 
   /**
    * Macros are a bit particular - they only live at the AST level, so we can

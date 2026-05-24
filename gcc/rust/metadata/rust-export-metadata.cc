@@ -112,6 +112,20 @@ ExportContext::emit_function (const HIR::Function &fn)
 }
 
 void
+ExportContext::begin_module (const HIR::Module &module)
+{
+  if (module.get_visibility ().is_public ())
+    public_interface_buffer
+      += "pub mod " + module.get_module_name ().as_string () + "{\n";
+}
+
+void
+ExportContext::end_module ()
+{
+  public_interface_buffer += "}\n";
+}
+
+void
 ExportContext::emit_macro (AST::MacroRulesDefinition &macro)
 {
   std::stringstream oss;
@@ -135,7 +149,21 @@ class ExportVisItems : public HIR::HIRVisItemVisitor
 public:
   ExportVisItems (ExportContext &context) : ctx (context) {}
 
-  void visit (HIR::Module &) override {}
+  void visit (HIR::Module &module) override
+  {
+    ctx.begin_module (module);
+    for (auto &item : module.get_items ())
+      {
+	bool is_vis_item
+	  = item->get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM;
+	if (!is_vis_item)
+	  continue;
+
+	HIR::VisItem &vis_item = static_cast<HIR::VisItem &> (*item.get ());
+	vis_item.accept_vis (*this);
+      }
+    ctx.end_module ();
+  }
   void visit (HIR::ExternCrate &) override {}
   void visit (HIR::UseDeclaration &) override {}
   void visit (HIR::TypeAlias &) override {}
