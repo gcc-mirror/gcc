@@ -40,10 +40,11 @@ public:
 
   const HIR::Module &pop_module_scope ();
 
-  void emit_trait (const HIR::Trait &trait);
-  void emit_function (const HIR::Function &fn);
-  void begin_module (const HIR::Module &module);
-  void end_module ();
+  void emit_trait (AST::Trait &trait);
+  void emit_function (AST::Function &fn);
+  void emit_use_declaration (AST::UseDeclaration &use_decl);
+  void begin_module (const AST::Module &module);
+  void end_module (const AST::Module &module);
 
   /**
    * Macros are a bit particular - they only live at the AST level, so we can
