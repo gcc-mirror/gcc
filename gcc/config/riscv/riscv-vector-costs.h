@@ -137,6 +137,12 @@ private:
 			     loop_vec_info,
 			     stmt_vec_info stmt_info, slp_tree,
 			     tree vectype, int stmt_cost);
+  unsigned scale_vector_cost (enum vect_cost_for_stmt kind,
+			      loop_vec_info,
+			      stmt_vec_info stmt_info, slp_tree,
+			      tree vectype,
+			      vect_cost_model_location where,
+			      unsigned stmt_cost);
 };
 
 } // namespace riscv_vector

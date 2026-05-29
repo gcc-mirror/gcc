@@ -22,11 +22,11 @@
 ;; Regarding functional units we assume a three-way split:
 ;; - Integer ALU (IXU) - 4 symmetric units.
 ;; - Floating-point (FXU) - 2 symmetric units.
-;; - Vector Unit (VXU) - 1 unit.
+;; - Vector Unit (VXU) - 2 units.
 
-;; We assume 6-wide issue:
+;; We assume 7-wide issue:
 ;; - 5-wide generic/integer issue.
-;; - 1-wide vector issue.
+;; - 2-wide vector issue.
 
 ;; For now, the only subunits are for non-pipelined integer division and
 ;; vector div/mult/sqrt.

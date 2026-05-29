@@ -1626,7 +1626,38 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
     stmt_cost = adjust_stmt_cost (kind, loop_vinfo, stmt_info, node, vectype,
 				  stmt_cost);
 
+  stmt_cost = scale_vector_cost (kind, loop_vinfo, stmt_info, node,
+				 vectype, where, stmt_cost);
+
   return record_stmt_cost (stmt_info, where, count * stmt_cost);
+}
+
+unsigned
+costs::scale_vector_cost (enum vect_cost_for_stmt kind,
+			  loop_vec_info loop_vinfo,
+			  stmt_vec_info stmt_info, slp_tree node,
+			  tree vectype, vect_cost_model_location where,
+			  unsigned stmt_cost)
+{
+  unsigned int scalar_units = get_scalar_units ();
+  unsigned int vector_units = get_vector_units ();
+
+  /* TODO: we should try to estimate throughput as well
+     as the critical path.  */
+  /* Scale integer vector body costs by the scalar/vector unit ratio.  */
+  if (!costing_for_scalar ()
+      && loop_vinfo
+      && where == vect_body
+      && kind == vector_stmt
+      && !is_reduction (stmt_info, node)
+      && !(stmt_info && STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+      && !(node && mat_gather_scatter_p (SLP_TREE_MEMORY_ACCESS_TYPE (node)))
+      && vectype
+      && VECTOR_INTEGER_TYPE_P (vectype)
+      && scalar_units != 0 && vector_units != 0)
+    stmt_cost = CEIL (stmt_cost * scalar_units, vector_units);
+
+  return stmt_cost;
 }
 
 /* For some target specific vectorization cost which can't be handled per stmt,

@@ -23,13 +23,16 @@
 (define_automaton "vector_ooo")
 
 ;; Separate issue queue for vector instructions.
-(define_cpu_unit "vxu_ooo_issue" "vector_ooo")
+(define_cpu_unit "vxu_issue0,vxu_issue1" "vector_ooo")
+(define_reservation "vxu_ooo_issue" "vxu_issue0|vxu_issue1")
 
 ;; Vector execution unit.
-(define_cpu_unit "vxu_ooo_alu" "vector_ooo")
+(define_cpu_unit "vxu_alu0,vxu_alu1" "vector_ooo")
+(define_reservation "vxu_ooo_alu" "vxu_alu0|vxu_alu1")
 
 ;; Vector subunit that does mult/div/sqrt.
-(define_cpu_unit "vxu_ooo_multicycle" "vector_ooo")
+(define_cpu_unit "vxu_multicycle0,vxu_multicycle1" "vector_ooo")
+(define_reservation "vxu_ooo_multicycle" "vxu_multicycle0|vxu_multicycle1")
 
 (define_insn_reservation "vec_load" 6
   (and (eq_attr "tune" "generic_ooo,generic")

@@ -310,6 +310,10 @@ struct riscv_tune_param
     AUTOPREFETCHER_OFF,
     AUTOPREFETCHER_WEAK
   } autoprefetcher_model = AUTOPREFETCHER_OFF;
+  /* scalar and vector units used for vector costing.
+     A zero value disables the scaling.  */
+  unsigned short scalar_units = 0;
+  unsigned short vector_units = 0;
 };
 
 
@@ -726,6 +730,11 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   2,						/* int_reassoc_width.  */
   2,						/* fp_reassoc_width.  */
   1,						/* vec_reassoc_width.  */
+  4,						/* small_loop_unroll_ninsns.  */
+  2,						/* small_loop_unroll_factor.  */
+  riscv_tune_param::AUTOPREFETCHER_OFF,		/* autoprefetcher_model.  */
+  4,						/* scalar_units.  */
+  2,						/* vector_units.  */
 };
 
 static const common_vector_cost xt_c9501_vls_vector_cost = {
@@ -14294,6 +14303,22 @@ get_vector_costs ()
   if (!costs)
     return &generic_vector_cost;
   return costs;
+}
+
+/* Return the number of vector units.  */
+
+unsigned int
+get_vector_units ()
+{
+  return tune_param->vector_units;
+}
+
+/* Return the number of scalar units.  */
+
+unsigned int
+get_scalar_units ()
+{
+  return tune_param->scalar_units;
 }
 
 /* Return the cost of operation that move from gpr to vr.
