@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
-/* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
-/* { dg-final { check-function-bodies "**" "" "" { target *-*-* } {^\t?\.} } } */
+/* { dg-add-options check_function_bodies } */
+/* { dg-final { check-function-bodies "**" "*#" "" { target { ! *-*-darwin* } } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "*D" "*E" "" { target *-*-darwin* } {^\t?\.} } } */
 
 /*
 **foo:
@@ -12,6 +13,17 @@
 **	ret
 **	.cfi_endproc
 **...
+*#
+
+* Darwin indirects accesses to externs.
+*Dfoo:
+*D	movq	_bar1@GOTPCREL\(%rip\), %rax
+*D	movq	_bar2@GOTPCREL\(%rip\), %rdx
+*D	movl	\(%rax\), %eax
+*D	addl	\(%rdx\), %eax
+*D	ret
+*D...
+*E
 */
 
 extern volatile int bar1, bar2;

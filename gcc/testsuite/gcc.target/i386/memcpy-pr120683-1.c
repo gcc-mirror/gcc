@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mno-sse -mmemcpy-strategy=unrolled_loop:256:noalign,libcall:-1:noalign" } */
-/* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
-/* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "**" "*#" "" { target { lp64 && { ! *-*-darwin* } } } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "*D" "*E" "" { target { lp64 && *-*-darwin* } } {^\t?\.} } } */
 
 /*
 **foo:
@@ -31,6 +31,34 @@
 **	jb	.L[0-9]+
 **	ret
 **...
+*#
+
+*Dfoo:
+*D	movq	221\(%rsi\), %rax
+*D	xorl	%edx, %edx
+*D	movq	%rax, 221\(%rdi\)
+*D	movq	229\(%rsi\), %rax
+*D	movq	%rax, 229\(%rdi\)
+*D	movq	237\(%rsi\), %rax
+*D	movq	%rax, 237\(%rdi\)
+*D	movq	245\(%rsi\), %rax
+*D	movq	%rax, 245\(%rdi\)
+*D.L[0-9]+:
+*D	movl	%edx, %eax
+*D	addl	\$32, %edx
+*D	movq	\(%rsi,%rax\), %r10
+*D	cmpl	\$224, %edx
+*D	movq	8\(%rsi,%rax\), %r9
+*D	movq	16\(%rsi,%rax\), %r8
+*D	movq	24\(%rsi,%rax\), %rcx
+*D	movq	%r10, \(%rdi,%rax\)
+*D	movq	%r9, 8\(%rdi,%rax\)
+*D	movq	%r8, 16\(%rdi,%rax\)
+*D	movq	%rcx, 24\(%rdi,%rax\)
+*D	jb	.L[0-9]+
+*D	ret
+*D...
+*E
 */
 
 void

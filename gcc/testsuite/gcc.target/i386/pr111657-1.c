@@ -1,7 +1,8 @@
 /* { dg-do assemble } */
 /* { dg-options "-O2 -mno-sse -mtune=generic -save-temps" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
-/* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "**" "*#" "" { target { lp64 && { ! *-*-darwin* } } } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "*D" "*E" "" { target { lp64 && *-*-darwin* } } {^\t?\.} } } */
 
 /*
 **bar:
@@ -20,6 +21,26 @@
 **	cmpl	\$224, %eax
 **	jb	.L[0-9]+
 **...
+*#
+
+* Darwin caches the address of m in rax.
+*Dbar:
+*D...
+*DL[0-9]+:
+*D	movl	%edx, %ecx
+*D	addl	\$32, %edx
+*D	movq	%gs:\(%rax,%rcx\), %r10
+*D	movq	%gs:8\(%rax,%rcx\), %r9
+*D	movq	%gs:16\(%rax,%rcx\), %r8
+*D	movq	%gs:24\(%rax,%rcx\), %rsi
+*D	movq	%r10, \(%rdi,%rcx\)
+*D	movq	%r9, 8\(%rdi,%rcx\)
+*D	movq	%r8, 16\(%rdi,%rcx\)
+*D	movq	%rsi, 24\(%rdi,%rcx\)
+*D	cmpl	\$224, %edx
+*D	jb	L[0-9]+
+*D...
+*E
 */
 
 typedef unsigned long uword __attribute__ ((mode (word)));

@@ -12,7 +12,7 @@
 **	je	.L[0-9]*
 **	subq	\$[0-9]*, %rsp
 **	.cfi_def_cfa_offset [0-9]*
-**	call	f1
+**	call	_?f1
 **	addq	\$[0-9]*, %rsp
 **	.cfi_def_cfa_offset [0-9]*
 **	ret

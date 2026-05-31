@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=x86-64-v3" } */
-/* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
-/* { dg-final { check-function-bodies "**" "" "" { target { ! ia32 } } {^\t?\.}  } } */
+/* { dg-final { check-function-bodies "**" "*#" "" { target { { ! ia32 } && { ! *-*-darwin* } } } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "*D" "*E" "" { target { lp64 && *-*-darwin* } } {^\t?\.} } } */
 
 /*
 **foo:
@@ -12,6 +12,18 @@
 **	vmovdqu	%xmm0, cost2\(%rip\)
 **	ret
 **...
+*#
+
+*Dfoo:
+*D	movq	_cost@GOTPCREL\(%rip\), %rax
+*D	vpbroadcastw	\(%rax\), %xmm0
+*D	movq	_cost1@GOTPCREL\(%rip\), %rax
+*D	vmovq	%xmm0, \(%rax\)
+*D	movq	_cost2@GOTPCREL\(%rip\), %rax
+*D	vmovdqu	%xmm0, \(%rax\)
+*D	ret
+*D...
+*E
 */
 
 extern struct {

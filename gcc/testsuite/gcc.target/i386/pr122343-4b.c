@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fomit-frame-pointer -fno-fuse-ops-with-volatile-access" } */
-/* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
-/* { dg-final { check-function-bodies "**" "" "" { target *-*-* } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "**" "*#" "" { target { ! *-*-darwin* } } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "*D" "*E" "" { target { *-*-darwin* && lp64 } } {^\t?\.} } } */
 
 /*
 **foo:
@@ -19,6 +19,23 @@
 **	ret
 **	.cfi_endproc
 **...
+*#
+
+* Darwin indirects extern accesses
+*Dfoo:
+*D	movq	_bar@GOTPCREL\(%rip\), %rdx
+*D	movl	\(%rdx\), %eax
+*D	movl	\(%rdx\), %eax
+*D...
+*D	barrier
+*D...
+*D	movl	\(%rdx\), %ecx
+*D	movl	\(%rdx\), %edx
+*D	addl	%ecx, %eax
+*D	subl	%edx, %eax
+*D	ret
+*D...
+*E
 */
 
 #include "pr122343-4a.c"

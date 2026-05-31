@@ -6,8 +6,8 @@
 /*
 **foo.cold:
 **...
-**	call	memmove
-**	call	abort
+**	call	_?memmove
+**	call	_?abort
 **	.cfi_endproc
 **...
 */

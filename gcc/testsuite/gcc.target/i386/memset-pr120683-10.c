@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mno-sse -mmemset-strategy=unrolled_loop:256:noalign,libcall:-1:noalign" } */
-/* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
-/* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "**" "*#" "" { target { lp64 && { ! *-*-darwin* } } } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "*D" "*E" "" { target { lp64 && *-*-darwin* } } {^\t?\.} } } */
 
 /*
 **foo:
@@ -17,6 +17,20 @@
 **	movq	\$0, 53\(%rdi\)
 **	ret
 **...
+*#
+
+*Dfoo:
+*D	movq	\$0, 29\(%rdi\)
+*D	movq	\$0, 37\(%rdi\)
+*D	movq	\$0, 45\(%rdi\)
+*D	movq	\$0, 53\(%rdi\)
+*D	movq	\$0, \(%rdi\)
+*D	movq	\$0, 8\(%rdi\)
+*D	movq	\$0, 16\(%rdi\)
+*D	movq	\$0, 24\(%rdi\)
+*D	ret
+*D...
+*E
 */
 
 void

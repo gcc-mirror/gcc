@@ -7,7 +7,7 @@
 **foo:
 **.LFB0:
 **	.cfi_startproc
-**	jmp	memmove
+**	jmp	_?memmove
 **	.cfi_endproc
 **...
 */

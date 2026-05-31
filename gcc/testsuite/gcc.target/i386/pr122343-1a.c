@@ -2,7 +2,8 @@
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 /* { dg-additional-options "-mregparm=1" { target ia32 } } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
-/* { dg-final { check-function-bodies "**" "" "" { target *-*-* } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "**" "*#" "" { target { ! *-*-darwin* } } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "*D" "*E" "" { target { *-*-darwin* && lp64 } } {^\t?\.} } } */
 
 /*
 **foo:
@@ -13,6 +14,16 @@
 **	ret
 **	.cfi_endproc
 **...
+*#
+
+* Darwin indirects the extern
+*Dfoo:
+*D	movq	_bar@GOTPCREL\(%rip\), %rdx
+*D	imull	\$123, %edi, %eax
+*D	addl	\(%rdx\), %eax
+*D	ret
+*D...
+*E
 */
 
 extern volatile int bar;
