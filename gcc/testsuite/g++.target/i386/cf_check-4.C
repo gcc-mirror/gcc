@@ -21,4 +21,4 @@ foo (void)
 {
 }
 
-/* { dg-final { scan-assembler ".weak\[ \t\]_?_Z3foov" } } */
+/* { dg-final { scan-assembler ".weak(|_definition)\[ \t\]_?_Z3foov" } } */

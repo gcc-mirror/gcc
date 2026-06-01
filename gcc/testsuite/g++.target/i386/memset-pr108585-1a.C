@@ -18,7 +18,7 @@
 **	movaps	%xmm0, 48\(%rsp\)
 **	movaps	%xmm0, 64\(%rsp\)
 **	movaps	%xmm0, 80\(%rsp\)
-**	call	_Z3fooPc
+**	call	_?_Z3fooPc
 **	addq	\$104, %rsp
 **	.cfi_def_cfa_offset 8
 **	ret
