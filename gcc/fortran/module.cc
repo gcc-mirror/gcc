@@ -6666,7 +6666,8 @@ write_symtree (gfc_symtree *st)
 	&& sym->ns->proc_name->attr.if_source == IFSRC_IFBODY)
     return;
 
-  if (!gfc_check_symbol_access (sym)
+  if ((!gfc_check_symbol_access (sym)
+       && (!sym->attr.public_used || submodule_name == NULL))
       || (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
 	  && !sym->attr.subroutine && !sym->attr.function))
     return;
