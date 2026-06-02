@@ -1050,6 +1050,7 @@ mcore-*-elf)
 	;;
 microblaze*-linux*)
 	tmake_file="${tmake_file} microblaze/t-microblaze t-fdpbit t-slibgcc-libgcc"
+	md_unwind_header=microblaze/linux-unwind.h
 	;;
 microblaze*-*-elf)
 	tmake_file="${tmake_file} microblaze/t-microblaze t-fdpbit"
