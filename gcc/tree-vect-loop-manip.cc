@@ -4149,7 +4149,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 	     && (!loop_outer (loop_to_version)->inner->next
 		 || vect_loop_vectorized_call (loop_to_version))
 	     && (!loop_outer (loop_to_version)->inner->next
-		 || !loop_outer (loop_to_version)->inner->next->next))
+		 || !loop_outer (loop_to_version)->inner->next->next)
+	     && can_duplicate_loop_p (loop_outer (loop_to_version)))
 	loop_to_version = loop_outer (loop_to_version);
     }
 
