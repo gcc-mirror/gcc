@@ -7694,7 +7694,7 @@ gfc_use_module (gfc_use_list *module)
   only_flag = module->only_flag;
   current_intmod = INTMOD_NONE;
 
-  if (!only_flag)
+  if (!only_flag && gfc_state_stack->state != COMP_SUBMODULE)
     gfc_warning_now (OPT_Wuse_without_only,
 		     "USE statement at %C has no ONLY qualifier");
 
