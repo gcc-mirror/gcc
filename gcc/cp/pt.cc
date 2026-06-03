@@ -16962,7 +16962,34 @@ tsubst_splice_scope (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 static tree
 tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
-  tree op = tsubst_expr (TREE_OPERAND (t, 0), args, complain, in_decl);
+  tree template_id = NULL_TREE;
+  auto apply_template = [&](tree templ)
+    {
+      if (!template_id)
+	return templ;
+      template_id = copy_node (template_id);
+      tree ret = template_id;
+
+      /* follow the example of lookup_template_function, but for all
+	 templates.  */
+      if (BASELINK_P (templ))
+	{
+	  ret = copy_node (templ);
+	  BASELINK_FUNCTIONS (ret) = template_id;
+	  templ = BASELINK_FUNCTIONS (templ);
+	}
+      TREE_OPERAND (template_id, 0) = templ;
+      return ret;
+    };
+
+  if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
+    {
+      template_id = t;
+      t = TREE_OPERAND (t, 0);
+    }
+
+  tree op = tsubst_expr (TREE_OPERAND (t, 0), args,
+			 (complain & ~tf_no_name_lookup), in_decl);
   if (op == error_mark_node)
     return error_mark_node;
   op = splice (op);
@@ -16980,8 +17007,12 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	SET_SPLICE_EXPR_TEMPLATE_P (op, true);
       if (SPLICE_EXPR_TARGS_P (t))
 	SET_SPLICE_EXPR_TARGS_P (op, true);
-      return op;
+      return apply_template (op);
     }
+
+  /* We have to form a template-id for checking too.  */
+  op = apply_template (op);
+
   if (SPLICE_EXPR_EXPRESSION_P (t)
       && !check_splice_expr (input_location, UNKNOWN_LOCATION, op,
 			     SPLICE_EXPR_ADDRESS_P (t),
@@ -16990,6 +17021,11 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			     SPLICE_EXPR_TARGS_P (t),
 			     (complain & tf_error)))
     return error_mark_node;
+
+  /* For the template-id case, we have to substitute only after checking, to
+     reject the case where the template part is a type.  */
+  if (template_id)
+    op = tsubst_expr (op, args, complain, in_decl);
 
   if (SPLICE_EXPR_ADDRESS_P (t))
     {
@@ -21500,11 +21536,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree object;
 	tree templ = TREE_OPERAND (t, 0);
 	tree targs = TREE_OPERAND (t, 1);
+	tsubst_flags_t complain_lookup = complain | no_name_lookup_flag;
 
-	if (no_name_lookup_flag)
-	  templ = tsubst_name (templ, args, complain, in_decl);
-	else
-	  templ = tsubst_expr (templ, args, complain, in_decl);
+	if (TREE_CODE (templ) == SPLICE_EXPR)
+	  return tsubst_splice_expr (t, args, complain_lookup, in_decl);
+
+	templ = tsubst_expr (templ, args, complain_lookup, in_decl);
 
 	if (targs)
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
