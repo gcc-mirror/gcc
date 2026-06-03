@@ -1723,7 +1723,7 @@ eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
   enum gimple_code code = gimple_code (stmt);
   enum tree_code rhs_code;
 
-  if (!optimize)
+  if (!optimize || gimple_has_volatile_ops (stmt))
     return 0;
 
   switch (code)
@@ -1791,6 +1791,16 @@ eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
 	  if (rhs_free && is_gimple_reg (lhs))
 	    lhs_free = true;
 
+	  /* Whether the statement writes to the return value, either directly
+	     or through the invisible reference.  */
+	  bool lhs_retval
+	    = (TREE_CODE (inner_lhs) == RESULT_DECL
+	       || (TREE_CODE (inner_lhs) == MEM_REF
+		   && TREE_CODE (TREE_OPERAND (inner_lhs, 0)) == SSA_NAME
+		   && SSA_NAME_VAR (TREE_OPERAND (inner_lhs, 0))
+		   && (TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (inner_lhs, 0)))
+		       == RESULT_DECL)));
+
 	  /* Writes to parameters, parameters passed by value and return value
 	     (either directly or passed via invisible reference) are free.
 
@@ -1820,22 +1830,27 @@ eliminated_by_inlining_prob (ipa_func_body_info *fbi, gimple *stmt)
 	     }
 	     For that we either need to copy ipa-split logic detecting writes
 	     to return value.  */
-	  if (TREE_CODE (inner_lhs) == PARM_DECL
-	      || TREE_CODE (inner_lhs) == RESULT_DECL
+	  if (lhs_retval
+	      || TREE_CODE (inner_lhs) == PARM_DECL
 	      || (TREE_CODE (inner_lhs) == MEM_REF
-		  && (unmodified_parm (fbi, stmt, TREE_OPERAND (inner_lhs, 0),
-				       NULL)
-		      || (TREE_CODE (TREE_OPERAND (inner_lhs, 0)) == SSA_NAME
-			  && SSA_NAME_VAR (TREE_OPERAND (inner_lhs, 0))
-			  && TREE_CODE (SSA_NAME_VAR (TREE_OPERAND
-						      (inner_lhs,
-						       0))) == RESULT_DECL))))
+		  && unmodified_parm (fbi, stmt, TREE_OPERAND (inner_lhs, 0),
+				      NULL)))
 	    lhs_free = true;
 	  if (lhs_free
 	      && (is_gimple_reg (rhs) || is_gimple_min_invariant (rhs)))
 	    rhs_free = true;
 	  if (lhs_free && rhs_free)
 	    return 1;
+	  /* Credit an aggregate copy into the return value from a local
+	     variable or parameter whose address is not taken as eliminated
+	     by inlining.  Field accesses in the caller can allow SRA to
+	     remove the copy.  */
+	  if (lhs_retval
+	      && AGGREGATE_TYPE_P (TREE_TYPE (lhs))
+	      && (VAR_P (inner_rhs) || TREE_CODE (inner_rhs) == PARM_DECL)
+	      && auto_var_in_fn_p (inner_rhs, current_function_decl)
+	      && !TREE_ADDRESSABLE (inner_rhs))
+	    return 2;
 	}
       return 0;
     default:
