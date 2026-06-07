@@ -1,6 +1,5 @@
 /* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -mno-avx -msse2 -mno-stackrealign -fomit-frame-pointer" } */
-/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^\t?\.}  } } */
 

@@ -3424,6 +3424,12 @@ locally when using pic/PIC passes in the testsuite.
 Add the target-specific flags needed to use
 @code{check-function-bodies} from @code{dg-final}.
 
+These options are also added automatically by:
+
+@smallexample
+/* @{ dg-final @{ check-function-bodies @dots{} @} @dots{} @} */
+@end smallexample
+
 @item float@var{n}
 Add the target-specific flags needed to use the @code{_Float@var{n}} type.
 
@@ -3764,6 +3770,15 @@ A line containing just:
 
 stands for zero or more unmatched lines; the whitespace after
 @var{prefix} is again not significant.
+
+@code{check-function-bodies} automatically adds the same options as:
+
+@smallexample
+/* @{ dg-add-options check_function_bodies @} */
+@end smallexample
+
+For this reason, @code{check-function-bodies} must come after the final
+@code{dg-options} directive.
 
 @end table
 
