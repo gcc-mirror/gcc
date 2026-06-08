@@ -1324,7 +1324,7 @@ c_cpp_builtins (cpp_reader *pfile)
     }
 
   /* For fixed-point fibt, ibit, max, min, and epsilon.  */
-  if (targetm.fixed_point_supported_p ())
+  if (!c_dialect_cxx () && targetm.fixed_point_supported_p ())
     {
       builtin_define_fixed_point_constants ("SFRACT", "HR",
 					    short_fract_type_node);
