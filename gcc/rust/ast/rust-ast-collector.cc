@@ -642,14 +642,6 @@ TokenCollector::visit (TypePathSegmentGeneric &segment)
   //    `<` `>`
   //    | `<` ( GenericArg `,` )* GenericArg `,`? `>`
   describe_node (std::string ("TypePathSegmentGeneric"), [this, &segment] () {
-    auto ident_segment
-      = segment.is_lang_item ()
-	  ? PathIdentSegment ("LANG_ITEM", segment.get_locus ())
-	  : segment.get_ident_segment ();
-    auto id = ident_segment.as_string ();
-    push (Rust::Token::make_identifier (ident_segment.get_locus (),
-					std::move (id)));
-
     auto locus = segment.is_lang_item ()
 		   ? segment.get_locus ()
 		   : segment.get_ident_segment ().get_locus ();
