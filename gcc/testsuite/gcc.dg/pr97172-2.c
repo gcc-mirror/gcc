@@ -2,6 +2,7 @@
    streams
    { dg-do link }
    { dg-options "-Wall -flto -fpic -shared" }
+   { dg-additional-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
    { dg-require-effective-target fpic }
    { dg-require-effective-target shared }
    { dg-require-effective-target lto } */
