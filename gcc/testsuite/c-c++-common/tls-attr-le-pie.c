@@ -12,4 +12,6 @@ ppfoo (void)
 }
 
 /* tls_model should be local-exec due to -fPIE.  */
-/* { dg-final { scan-ipa-dump "Varpool flags: initialized tls-local-exec" "whole-program" } } */
+/* { dg-final { scan-ipa-dump "Varpool flags: initialized tls-emulated" "whole-program" { target { ! tls_native } } } } */
+/* { dg-final { scan-ipa-dump "Varpool flags: tls-local-exec" "whole-program" { target { ! tls_native } } } } */
+/* { dg-final { scan-ipa-dump "Varpool flags: initialized tls-local-exec" "whole-program" { target tls_native } } } */
