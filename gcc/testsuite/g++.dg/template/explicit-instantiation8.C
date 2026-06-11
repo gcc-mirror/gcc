@@ -21,4 +21,5 @@ extern template struct use_shallow<char>;
 template struct shallow<char>;
 template struct use_shallow<char>;
 
-// { dg-final { scan-assembler "_ZN7shallowIcEC2Ev" } }
+// { dg-final { scan-assembler "_?_ZN7shallowIcEC2Ev" { target alias } } }
+// { dg-final { scan-assembler "_?_ZN7shallowIcEC1Ev" { target { ! alias } } } }
