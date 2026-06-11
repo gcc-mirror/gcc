@@ -8622,7 +8622,7 @@
 ;; This creates a false dependency on z0 which can result in stalls.
 ;; The zeroing will be done via a movi d0, 0 which is cheaper.
 ;;
-(define_insn "*vcond_mask_<mode><vpred>"
+(define_insn_and_rewrite "*vcond_mask_<mode><vpred>"
   [(set (match_operand:SVE_ALL 0 "register_operand")
 	(unspec:SVE_ALL
 	  [(match_operand:<VPRED> 3 "aarch64_predicate_operand")
@@ -8639,6 +8639,13 @@
      [ w        , Ufc , 0  , Upa ; *              ] fmov\t%0.<Vetype>, %3/m, #%1
      [ ?&w      , vss , w  , Upa ; yes            ] movprfx\t%0, %2\;mov\t%0.<Vetype>, %3/m, #%I1
      [ ?&w      , Ufc , w  , Upa ; yes            ] movprfx\t%0, %2\;fmov\t%0.<Vetype>, %3/m, #%1
+  }
+  "&& reload_completed
+   && aarch64_simd_or_scalar_imm_zero (operands[2], <MODE>mode)
+   && !TARGET_SVE_PREFER_ZEROING_MOVIMM"
+  {
+    emit_move_insn (operands[0], operands[2]);
+    operands[2] = copy_rtx (operands[0]);
   }
 )
 

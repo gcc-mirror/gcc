@@ -81,4 +81,7 @@ AARCH64_EXTRA_TUNING_OPTION ("dispatch_sched", DISPATCH_SCHED)
    32 bits are unused.  */
 AARCH64_EXTRA_TUNING_OPTION ("narrow_gp_writes", NARROW_GP_WRITES)
 
+/* Enable when the target prefers SVE merging movimm over zeroing.  */
+AARCH64_EXTRA_TUNING_OPTION ("avoid_zeroing_movimm", AVOID_MOVIMM_Z)
+
 #undef AARCH64_EXTRA_TUNING_OPTION

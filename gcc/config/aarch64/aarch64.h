@@ -522,6 +522,10 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 				 && (aarch64_tune_params.extra_tuning_flags \
 				     & AARCH64_EXTRA_TUNE_AVOID_PRED_RMW))
 
+/* Set if we prefer SVE merging predicated mov immediate over zeroing.  */
+#define TARGET_SVE_PREFER_ZEROING_MOVIMM \
+  !(aarch64_tune_params.extra_tuning_flags & AARCH64_EXTRA_TUNE_AVOID_MOVIMM_Z)
+
 /* fp8 instructions are enabled through +fp8.  */
 #define TARGET_FP8 AARCH64_HAVE_ISA (FP8)
 
