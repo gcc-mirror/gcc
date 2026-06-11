@@ -3243,6 +3243,8 @@ typedef struct gfc_forall_iterator
   gfc_loop_annot annot;
   /* index-name shadows a variable from outer scope.  */
   bool shadow;
+  /* The shadowed outer-scope symbol, set when SHADOW is true.  */
+  gfc_symbol *shadow_outer_sym;
   struct gfc_forall_iterator *next;
 }
 gfc_forall_iterator;

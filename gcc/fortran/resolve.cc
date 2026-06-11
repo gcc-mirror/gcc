@@ -8709,11 +8709,9 @@ check_default_none_expr (gfc_expr **e, int *, void *data)
 	      if (!iter->var || !iter->var->symtree)
 		continue;
 	      const char *iter_name = iter->var->symtree->name;
-	      /* Shadow iterators (from inline type-spec: integer :: i = ...)
-		 store the iterator with a leading underscore internally; the
-		 user-visible name does not have the underscore.  */
+	      /* Use the user-visible name of a shadow iterator.  */
 	      if (iter->shadow)
-		iter_name++;
+		iter_name = iter->shadow_outer_sym->name;
 	      if (strcmp (sym->name, iter_name) == 0)
 		return 0;
 	    }
@@ -12895,8 +12893,19 @@ replace_in_code_recursive (gfc_code *code, gfc_symbol *old_sym, gfc_symtree *new
 	  break;
 	}
 
-      /* Recurse into blocks */
-      if (c->block)
+      /* Recurse into blocks, except a nested FORALL/DO CONCURRENT that
+	 shadows OLD_SYM itself.  */
+      bool skip_nested_shadow = false;
+      if (c->op == EXEC_FORALL || c->op == EXEC_DO_CONCURRENT)
+	for (gfc_forall_iterator *fa = c->ext.concur.forall_iterator;
+	     fa; fa = fa->next)
+	  if (fa->shadow && fa->shadow_outer_sym == old_sym)
+	    {
+	      skip_nested_shadow = true;
+	      break;
+	    }
+
+      if (c->block && !skip_nested_shadow)
 	replace_in_code_recursive (c->block->next, old_sym, new_st);
     }
 }
@@ -12991,29 +13000,9 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 	{
 	  if (fa->shadow)
 	    {
-	      gfc_symtree *shadow_st;
-	      const char *shadow_name_str;
-	      char *outer_name;
+	      gfc_symtree *shadow_st = fa->var->symtree;
 
-	      /* fa->var now points to the shadow variable "_name".  */
-	      shadow_name_str = fa->var->symtree->name;
-	      shadow_st = fa->var->symtree;
-
-	      if (shadow_name_str[0] != '_')
-		gfc_internal_error ("Expected shadow variable name to start with _");
-
-	      outer_name = (char *) alloca (strlen (shadow_name_str));
-	      strcpy (outer_name, shadow_name_str + 1);
-
-	      /* Find the ITERATOR symbol in the current namespace.
-		 This is the local DO CONCURRENT variable that body expressions reference.  */
-	      gfc_symtree *iter_st = gfc_find_symtree (ns->sym_root, outer_name);
-
-	      if (!iter_st)
-		/* No iterator variable found - this shouldn't happen */
-		continue;
-
-	      gfc_symbol *iter_sym = iter_st->n.sym;
+	      gfc_symbol *iter_sym = fa->shadow_outer_sym;
 
 	      /* Walk the FORALL/DO CONCURRENT body and replace all references.  */
 	      if (code->block && code->block->next)
