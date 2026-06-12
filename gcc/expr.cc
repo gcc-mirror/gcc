@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "flags.h"
 #include "internal-fn.h"
+#include "gimple-range.h"
 
 
 /* If this is nonzero, we do not bother generating VOLATILE
@@ -9801,6 +9802,28 @@ expand_misaligned_mem_ref (rtx temp, machine_mode mode, int unsignedp,
   return temp;
 }
 
+/* Return true if OP is known to be either LOWER or LOWER + 1, with one
+   value a positive power of two.  */
+
+static bool
+near_pow2_divisor_range_p (tree op, wide_int &lower)
+{
+  if (TREE_CODE (op) != SSA_NAME)
+    return false;
+
+  int_range_max range;
+  range_query *query = get_range_query (cfun);
+  if (!query->range_of_expr (range, op, currently_expanding_gimple_stmt)
+      || range.num_pairs () != 1)
+    return false;
+
+  lower = range.lower_bound ();
+  wide_int upper = lower + 1;
+  return (range.upper_bound () == upper
+	  && wi::gt_p (lower, 0, TYPE_SIGN (TREE_TYPE (op)))
+	  && (wi::popcount (lower) == 1 || wi::popcount (upper) == 1));
+}
+
 /* Helper function of expand_expr_2, expand a division or modulo.
    op0 and op1 should be already expanded treeop0 and treeop1, using
    expand_operands.  */
@@ -9811,6 +9834,47 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
 {
   bool mod_p = (code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR
 		|| code == CEIL_MOD_EXPR || code == ROUND_MOD_EXPR);
+  bool speed_p = optimize_insn_for_speed_p ();
+
+  scalar_int_mode int_mode;
+  wide_int lower;
+  /* Split x / y when y is one of two neighboring constants and the target can
+     select between the constant divisions cheaply.  */
+  if (code == TRUNC_DIV_EXPR
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && speed_p
+      && can_conditionally_move_p (int_mode)
+      && near_pow2_divisor_range_p (treeop1, lower))
+    {
+      signop sgn = TYPE_SIGN (TREE_TYPE (treeop1));
+      unsigned int prec = GET_MODE_PRECISION (int_mode);
+      wide_int upper = lower + 1;
+      rtx op_lower
+	= immed_wide_int_const (wide_int::from (lower, prec, sgn), int_mode);
+      rtx op_upper
+	= immed_wide_int_const (wide_int::from (upper, prec, sgn), int_mode);
+
+      do_pending_stack_adjust ();
+      start_sequence ();
+      rtx q_lower = expand_divmod (0, TRUNC_DIV_EXPR, mode, op0, op_lower,
+				   NULL_RTX, unsignedp);
+      rtx q_upper = expand_divmod (0, TRUNC_DIV_EXPR, mode, op0, op_upper,
+				   NULL_RTX, unsignedp);
+      rtx split_ret
+	= emit_conditional_move (target, { EQ, op1, op_lower, int_mode },
+				 q_lower, q_upper, int_mode, unsignedp);
+      rtx_insn *split_insns = end_sequence ();
+
+      /* Cost the unsplit form as a single DIV/UDIV.  */
+      rtx div_rtx = gen_rtx_fmt_ee (unsignedp ? UDIV : DIV, int_mode, op0, op1);
+      unsigned div_cost = set_src_cost (div_rtx, int_mode, speed_p);
+      if (split_ret && seq_cost (split_insns, speed_p) < div_cost)
+	{
+	  emit_insn (split_insns);
+	  return split_ret;
+	}
+    }
+
   if (SCALAR_INT_MODE_P (mode)
       && optimize >= 2
       && get_range_pos_neg (treeop0, currently_expanding_gimple_stmt) == 1
@@ -9819,7 +9883,6 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
       /* If both arguments are known to be positive when interpreted
 	 as signed, we can expand it as both signed and unsigned
 	 division or modulo.  Choose the cheaper sequence in that case.  */
-      bool speed_p = optimize_insn_for_speed_p ();
       do_pending_stack_adjust ();
       start_sequence ();
       rtx uns_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 1);
