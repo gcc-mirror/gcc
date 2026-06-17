@@ -9846,6 +9846,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (abs @0)
      (negate (abs @0))))))
 
+/* (signbit (x) cmp1 0) cmp (signbit (y) cmp2 0) ? y : -y
+   -> copysign (y, +-x).  */
+#if GIMPLE
+(for cmp (eq ne)
+ (for icmp1 (eq ne)
+  (for icmp2 (eq ne)
+   (for sign (SIGNBIT)
+    (simplify
+     (cond (cmp:c (icmp1 (sign @0) integer_zerop)
+		  (icmp2 (sign @1) integer_zerop))
+	   @1 (negate @1))
+     (if (SCALAR_FLOAT_TYPE_P (type)
+	  && types_match (type, TREE_TYPE (@0))
+	  && direct_internal_fn_supported_p (IFN_COPYSIGN, type,
+					     OPTIMIZE_FOR_BOTH))
+      (if ((cmp == EQ_EXPR) == (icmp1 == icmp2))
+       (IFN_COPYSIGN @1 @0)
+       (IFN_COPYSIGN @1 (negate @0)))))))))
+#endif
+
 (simplify
  /* signbit(x) -> 0 if x is nonnegative.  */
  (SIGNBIT tree_expr_nonnegative_p@0)
