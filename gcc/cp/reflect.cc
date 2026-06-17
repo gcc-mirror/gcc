@@ -1828,11 +1828,13 @@ eval_is_data_member_spec (const_tree r, reflect_kind kind)
    object parameter.  Otherwise, false.  */
 
 static tree
-eval_is_explicit_object_parameter (const_tree r, reflect_kind kind)
+eval_is_explicit_object_parameter (tree r, reflect_kind kind)
 {
-  if (eval_is_function_parameter (r, kind) == boolean_true_node
-      && r == DECL_ARGUMENTS (DECL_CONTEXT (r))
-      && DECL_XOBJ_MEMBER_FUNCTION_P (DECL_CONTEXT (r)))
+  if (eval_is_function_parameter (r, kind) == boolean_false_node)
+    return boolean_false_node;
+  r = maybe_update_function_parm (r);
+  tree fn = DECL_CONTEXT (r);
+  if (r == DECL_ARGUMENTS (fn) && DECL_XOBJ_MEMBER_FUNCTION_P (fn))
     return boolean_true_node;
   else
     return boolean_false_node;
