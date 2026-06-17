@@ -384,6 +384,36 @@ NameResolutionContext::scoped (Rib::Kind rib_kind, Namespace ns,
     }
 }
 
+void
+NameResolutionContext::merge (NameResolutionContext &other, NodeId at)
+{
+  auto merge_fstack = [&] (auto &stack, auto &other_stack) {
+    auto node = stack.dfs_node (stack.root, at);
+    if (node)
+      {
+	auto &extern_crate_node = node.value ();
+	for (auto kv : other_stack.root.children)
+	  {
+	    auto link = kv.first;
+	    auto child = kv.second;
+	    extern_crate_node.insert_child (link, child);
+	    child.parent = extern_crate_node;
+	  }
+	for (auto kv : other_stack.root.rib.get_values ())
+	  {
+	    auto name = kv.first;
+	    auto def = kv.second;
+	    extern_crate_node.rib.insert (name, def);
+	  }
+      }
+  };
+
+  merge_fstack (values, other.values);
+  merge_fstack (types, other.types);
+  merge_fstack (macros, other.macros);
+  merge_fstack (labels, other.labels);
+}
+
 #if 0
 void
 NameResolutionContext::flatten ()

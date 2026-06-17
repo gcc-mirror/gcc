@@ -62,6 +62,7 @@
 #include "rust-tyty-variance-analysis.h"
 #include "rust-attribute-checker.h"
 #include "rust-builtin-attribute-checker.h"
+#include "rust-extern-crate-loader.h"
 
 #include "input.h"
 #include "selftest.h"
@@ -1070,11 +1071,16 @@ Session::expansion (AST::Crate &crate, Resolver2_0::NameResolutionContext &ctx)
 
   while (!fixed_point_reached && iterations < cfg.recursion_limit)
     {
+      std::vector<Session::LoadedCrate> loaded_crates;
       CfgStrip (cfg).go (crate);
       // Errors might happen during cfg strip pass
 
+      ExternCrateLoaderVisitor (loaded_crates).go (crate);
+
       Resolver2_0::Early early (ctx);
       early.go (crate);
+      for (auto &loaded_crate : loaded_crates)
+	ctx.merge (loaded_crate.ctx, loaded_crate.node_id);
       macro_errors = early.get_macro_resolve_errors ();
 
       if (saw_errors ())
@@ -1234,7 +1240,7 @@ Session::dump_hir_pretty (HIR::Crate &crate) const
 
 // imports
 
-NodeId
+tl::expected<Session::LoadedCrate, Session::AlreadyLoadedError>
 Session::load_extern_crate (const std::string &crate_name, location_t locus)
 {
   // has it already been loaded?
@@ -1243,7 +1249,8 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
       auto resolved_node_id = mappings.crate_num_to_nodeid (*crate_num);
       rust_assert (resolved_node_id);
 
-      return *resolved_node_id;
+      return tl::make_unexpected (
+	AlreadyLoadedError::make_already_loaded (*resolved_node_id));
     }
 
   std::string relative_import_path = "";
@@ -1273,7 +1280,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
       && proc_macros.empty ()) // no proc macros
     {
       rust_error_at (locus, "failed to locate crate %qs", import_name.c_str ());
-      return UNKNOWN_NODEID;
+      return tl::make_unexpected (AlreadyLoadedError::make_failed_to_locate ());
     }
 
   auto extern_crate
@@ -1287,7 +1294,8 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
       if (!ok)
 	{
 	  rust_error_at (locus, "failed to load crate metadata");
-	  return UNKNOWN_NODEID;
+	  return tl::make_unexpected (
+	    AlreadyLoadedError::make_failed_to_locate ());
 	}
     }
 
@@ -1297,7 +1305,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     {
       rust_error_at (locus, "current crate name %qs collides with this",
 		     current_crate_name.c_str ());
-      return UNKNOWN_NODEID;
+      return tl::make_unexpected (AlreadyLoadedError::make_collision ());
     }
 
   // setup mappings
@@ -1313,6 +1321,11 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
 
   AST::Crate &parsed_crate
     = mappings.insert_ast_crate (std::move (metadata_crate), crate_num);
+
+  auto ctx = Resolver2_0::NameResolutionContext ();
+
+  Resolver2_0::Early early (ctx);
+  early.go (parsed_crate);
 
   std::vector<AttributeProcMacro> attribute_macros;
   std::vector<CustomDeriveProcMacro> derive_macros;
@@ -1343,7 +1356,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   // always restore the crate_num
   mappings.set_current_crate (saved_crate_num);
 
-  return parsed_crate.get_node_id ();
+  return LoadedCrate{crate_name, parsed_crate.get_node_id (), std::move (ctx)};
 }
 //
 

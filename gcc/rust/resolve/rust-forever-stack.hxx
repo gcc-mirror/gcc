@@ -53,7 +53,7 @@ template <Namespace N>
 void
 ForeverStack<N>::Node::insert_child (Link link, Node child)
 {
-  auto res = children.insert ({link, child});
+  children.insert ({link, child});
 
   // Do we want to error if the child already exists? Probably not, right?
   // That's kinda the point, isn't it. So this method always succeeds, right?

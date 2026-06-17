@@ -442,7 +442,8 @@ void
 DefaultResolver::visit_extern_crate (AST::ExternCrate &extern_crate,
 				     AST::Crate &crate, CrateNum num)
 {
-  visit (crate);
+  // We do *NOT* visit the crate because loaded crates are resolved
+  // independently.
 }
 
 void

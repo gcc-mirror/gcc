@@ -433,7 +433,46 @@ public:
     return extra_files.back ().c_str ();
   }
 
-  NodeId load_extern_crate (const std::string &crate_name, location_t locus);
+  struct LoadedCrate
+  {
+    LoadedCrate (const LoadedCrate &) = delete;
+    LoadedCrate &operator= (const LoadedCrate &) = delete;
+    LoadedCrate (LoadedCrate &&other) = default;
+
+    std::string name;
+    NodeId node_id;
+    Resolver2_0::NameResolutionContext ctx;
+  };
+
+  struct AlreadyLoadedError
+  {
+  public:
+    enum class Kind
+    {
+      ALREADY_LOADED,
+      FAILED_TO_LOCATE,
+      COLLISION,
+    } kind;
+
+    static AlreadyLoadedError make_already_loaded (NodeId node_id)
+    {
+      return AlreadyLoadedError{Kind::ALREADY_LOADED, node_id};
+    }
+
+    static AlreadyLoadedError make_failed_to_locate ()
+    {
+      return AlreadyLoadedError{Kind::FAILED_TO_LOCATE, UNKNOWN_NODEID};
+    }
+
+    static AlreadyLoadedError make_collision ()
+    {
+      return AlreadyLoadedError{Kind::COLLISION, UNKNOWN_NODEID};
+    }
+    NodeId node_id;
+  };
+
+  tl::expected<LoadedCrate, AlreadyLoadedError>
+  load_extern_crate (const std::string &crate_name, location_t locus);
 
 private:
   Session () : mappings (Analysis::Mappings::get ()) {}

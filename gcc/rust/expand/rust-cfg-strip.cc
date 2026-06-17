@@ -1793,13 +1793,6 @@ CfgStrip::visit (AST::ExternCrate &extern_crate)
       extern_crate.mark_for_strip ();
       return;
     }
-
-  if (!extern_crate.references_self ())
-    {
-      Session &session = Session::get_instance ();
-      session.load_extern_crate (extern_crate.get_referenced_crate (),
-				 extern_crate.get_locus ());
-    }
 }
 
 void

@@ -844,8 +844,18 @@ public:
 			 std::forward<Args> (args)...);
   }
 
-  // We disable this function for now as it causes regressions, but I think it
-  // is important for a more proper final nameres context - need to investigate
+  /*
+   * Merge a name resolution context within another one at a given location.
+   *
+   * @param other The other name resolution context to merge within the current
+   * one.
+   * @param at The node id of the container were the nr context should be
+   * merged. Usually an extern crate node.
+   */
+  void merge (NameResolutionContext &other, NodeId at);
+
+// We disable this function for now as it causes regressions, but I think it
+// is important for a more proper final nameres context - need to investigate
 #if 0
   /**
    * We've now collected every definition and import, and errored out when
