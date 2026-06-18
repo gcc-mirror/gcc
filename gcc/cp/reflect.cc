@@ -7031,6 +7031,10 @@ namespace_members_of (location_t loc, tree ns)
 	  return;
 	}
 
+      /* Skip GCC built-ins.  */
+      if (DECL_P (b) && DECL_IS_UNDECLARED_BUILTIN (b))
+	return;
+
       /* eval_is_accessible should be always true for namespace members,
 	 so don't bother calling it here.  */
       CONSTRUCTOR_APPEND_ELT (data->elts, NULL_TREE,
