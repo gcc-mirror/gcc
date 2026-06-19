@@ -739,6 +739,8 @@ HIRCompileBase::compile_function_body (tree fndecl,
 	  // just add the stmt expression
 	  ctx->add_statement (return_value);
 
+	  CompileDrop::emit_current_scope_drop_calls (ctx);
+
 	  // now just return unit expression
 	  tree unit_expr = unit_expression (locus);
 	  tree return_stmt
