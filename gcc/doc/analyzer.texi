@@ -322,7 +322,7 @@ Consider this example C code:
 void *
 calls_malloc (size_t n)
 @{
-  void *result = malloc (1024);
+  void *result = malloc (n);
   return result; /* HERE */
 @}
 
@@ -373,8 +373,8 @@ various local variables within frames for @code{test} and
 within @code{test} the whole cluster for @code{_1} is bound
 to a @code{binop_svalue} representing @code{n * 4}, and
 @item
-within @code{test} the whole cluster for @code{result_4} is bound to a
-@code{region_svalue} pointing at @code{HEAP_ALLOCATED_REGION(12)}.
+within @code{calls_malloc} the whole cluster for @code{result_4} is bound to a
+@code{region_svalue} pointing at @code{HEAP_ALLOCATED_REGION(27)}.
 @end itemize
 
 Additionally, this latter pointer has the @code{unchecked} state for the
@@ -383,6 +383,12 @@ Additionally, this latter pointer has the @code{unchecked} state for the
 
 We also see that the state has captured the size of the heap-allocated
 region (``Dynamic Extents'').
+
+@noindent
+The specific numbering of heap-allocated regions (such as the ``27'' in
+@code{HEAP_ALLOCATED_REGION(27)} above) depend on what other code has been
+explored and in what order before this point is reached, and thus should not be
+relied upon.
 
 This visualization can also be seen within the output of
 @option{-fdump-analyzer-exploded-nodes-2} and
