@@ -21,6 +21,7 @@
 #include "rust-compile-stmt.h"
 #include "rust-compile-expr.h"
 #include "rust-compile-drop.h"
+#include "rust-compile-drop-builder.h"
 #include "rust-compile-fnparam.h"
 #include "rust-compile-var-decl.h"
 #include "rust-compile-type.h"
@@ -739,7 +740,7 @@ HIRCompileBase::compile_function_body (tree fndecl,
 	  // just add the stmt expression
 	  ctx->add_statement (return_value);
 
-	  CompileDrop::emit_current_scope_drop_calls (ctx);
+	  CompileDrop (ctx).emit_current_scope_drop_calls ();
 
 	  // now just return unit expression
 	  tree unit_expr = unit_expression (locus);
@@ -845,6 +846,7 @@ HIRCompileBase::compile_function (
   // setup the params
   TyTy::BaseType *tyret = fntype->get_return_type ();
   std::vector<Bvariable *> param_vars;
+  std::vector<DropCandidate> param_drop_candidates;
   if (self_param)
     {
       rust_assert (fntype->is_method ());
@@ -880,6 +882,11 @@ HIRCompileBase::compile_function (
       const HIR::Pattern &param_pattern = referenced_param.get_param_name ();
       ctx->insert_var_decl (param_pattern.get_mappings ().get_hirid (),
 			    compiled_param_var);
+
+      if (CompileDrop (ctx).type_has_drop_impl (param_tyty))
+	param_drop_candidates.emplace_back (
+	  param_pattern.get_mappings ().get_hirid (),
+	  param_pattern.get_locus ());
     }
 
   if (!Backend::function_set_parameters (fndecl, param_vars))
@@ -892,6 +899,10 @@ HIRCompileBase::compile_function (
   tree code_block = Backend::block (fndecl, enclosing_scope, {} /*locals*/,
 				    start_location, end_location);
   ctx->push_block (code_block);
+
+  DropBuilder drop_builder (*ctx);
+  for (auto &candidate : param_drop_candidates)
+    drop_builder.note_simple_drop_candidate (candidate.hirid, candidate.locus);
 
   Bvariable *return_address = nullptr;
   tree return_type = TyTyResolveCompile::compile (ctx, tyret);
