@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "text-art/dump.h"
 #include "text-art/tree-widget.h"
+#include "langhooks.h"
 
 #include "analyzer/ops.h"
 #include "analyzer/call-details.h"
@@ -1950,18 +1951,10 @@ public:
 };
 
 static bool
-exception_matches_type_p (tree exception_type,
-			  tree catch_type)
+exception_matches_type_p (tree handler_type, tree exception_type)
 {
-  if (catch_type == exception_type)
+  if (lang_hooks.exception_matches_type_p (handler_type, exception_type))
     return true;
-
-  /* TODO (PR analyzer/119697): we should also handle subclasses etc;
-     see the rules in https://en.cppreference.com/w/cpp/language/catch
-
-     It looks like we should be calling (or emulating)
-     can_convert_eh from the C++ FE, but that's specific to the C++ FE.  */
-
   return false;
 }
 

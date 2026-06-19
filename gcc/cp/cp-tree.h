@@ -7872,6 +7872,7 @@ extern tree build_exc_ptr			(void);
 extern tree build_throw				(location_t, tree,
 						 tsubst_flags_t);
 extern int nothrow_libfn_p			(const_tree);
+extern bool can_convert_eh			(tree, tree);
 extern void check_handlers			(tree);
 extern tree finish_noexcept_expr		(tree, tsubst_flags_t);
 extern bool expr_noexcept_p			(tree, tsubst_flags_t);

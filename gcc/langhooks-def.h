@@ -149,6 +149,7 @@ extern const char *lhd_get_sarif_source_language (const char *);
 #define LANG_HOOKS_INIT_TS		lhd_do_nothing
 #define LANG_HOOKS_EH_PERSONALITY	lhd_gcc_personality
 #define LANG_HOOKS_EH_RUNTIME_TYPE	lhd_pass_through_t
+#define LANG_HOOKS_EXCEPTION_MATCHES_TYPE_P hook_bool_tree_tree_false
 #define LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS	NULL
 #define LANG_HOOKS_BLOCK_MAY_FALLTHRU	hook_bool_const_tree_true
 #define LANG_HOOKS_EH_USE_CXA_END_CLEANUP	false
@@ -406,6 +407,7 @@ extern void lhd_end_section (void);
   LANG_HOOKS_EXPR_TO_DECL, \
   LANG_HOOKS_EH_PERSONALITY, \
   LANG_HOOKS_EH_RUNTIME_TYPE, \
+  LANG_HOOKS_EXCEPTION_MATCHES_TYPE_P, \
   LANG_HOOKS_EH_PROTECT_CLEANUP_ACTIONS, \
   LANG_HOOKS_BLOCK_MAY_FALLTHRU, \
   LANG_HOOKS_EH_USE_CXA_END_CLEANUP, \

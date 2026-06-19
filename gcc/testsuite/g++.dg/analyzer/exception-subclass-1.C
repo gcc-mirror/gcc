@@ -13,7 +13,7 @@ int test ()
   try {
     throw io_error();
   } catch (exception &exc) {
-    __analyzer_dump_path (); // { dg-message "path" "PR analyzer/119697" { xfail *-*-* } }
+    __analyzer_dump_path (); // { dg-message "path" }
     return -1;
   }
   __analyzer_dump_path (); // { dg-bogus "path" }

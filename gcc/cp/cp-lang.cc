@@ -78,6 +78,8 @@ static const char *cp_get_sarif_source_language (const char *);
 #define LANG_HOOKS_EH_PERSONALITY cp_eh_personality
 #undef LANG_HOOKS_EH_RUNTIME_TYPE
 #define LANG_HOOKS_EH_RUNTIME_TYPE build_eh_type_type
+#undef LANG_HOOKS_EXCEPTION_MATCHES_TYPE_P
+#define LANG_HOOKS_EXCEPTION_MATCHES_TYPE_P can_convert_eh
 #undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
 #undef LANG_HOOKS_PREPROCESS_MAIN_FILE

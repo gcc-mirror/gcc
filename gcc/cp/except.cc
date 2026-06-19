@@ -973,7 +973,7 @@ nothrow_libfn_p (const_tree fn)
 /* Returns nonzero if an exception of type FROM will be caught by a
    handler for type TO, as per [except.handle].  */
 
-static bool
+bool
 can_convert_eh (tree to, tree from)
 {
   to = non_reference (to);

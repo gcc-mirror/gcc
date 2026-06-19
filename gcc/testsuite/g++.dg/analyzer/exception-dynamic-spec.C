@@ -26,7 +26,7 @@ void test_2 (int flag) throw (io_error) // { dg-warning "throwing exception of u
 
 // Valid intraprocedural with subclass:
 
-void test_3 (int flag) throw (io_error) // { dg-bogus "throwing exception of unexpected type 'file_io_error' from 'test_3'" "PR analyzer/119697" { xfail *-*-* } }
+void test_3 (int flag) throw (io_error) // { dg-bogus "throwing exception of unexpected type 'file_io_error' from 'test_3'" }
 {
     if (flag)
       throw file_io_error();
