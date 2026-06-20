@@ -5927,6 +5927,10 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 	  WALK_SUBTREE (DECL_SIZE (decl));
 	  WALK_SUBTREE (DECL_SIZE_UNIT (decl));
 	}
+      if (is_typedef_decl (TREE_OPERAND (t, 0)))
+	/* We avoid walking into typedefs above, but we do want to walk
+	   into them if we're looking at the actual declaration.  */
+	WALK_SUBTREE (DECL_ORIGINAL_TYPE (TREE_OPERAND (t, 0)));
       break;
 
     case LAMBDA_EXPR:
