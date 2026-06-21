@@ -335,7 +335,7 @@ proc check_weak_available { } {
 
     # VxWorks supports it only since VxWorks 7 (assumed >= r2) for RTPs.
     # Kernel mode works fine as well for our testsuite's purposes.
- 
+
     if { [istarget *-*-vxworks*] } {
 	return [istarget *-*-vxworks7*]
     }
@@ -554,6 +554,16 @@ proc check_effective_target_alias { } {
 
 proc check_effective_target_elf { } {
     if { [gcc_target_object_format] == "elf" } {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+# Returns 1 if the target uses the Mach-O object format, 0 otherwise.
+
+proc check_effective_target_macho { } {
+    if { [gcc_target_object_format] == "mach-o" } {
 	return 1;
     } else {
 	return 0;
@@ -6341,7 +6351,7 @@ foreach { armfunc armflag armdefs } {
 #        /* { dg-add-options arm_cpu_xscale } */
 #	 /* { dg-require-effective-target arm_xscale_multilib } */
 
-# NOTE: -mcpu does not override -mtune, so to ensure the tuning is consistent 
+# NOTE: -mcpu does not override -mtune, so to ensure the tuning is consistent
 # for tests using these flags all entries should set -mcpu and -mtune explicitly
 
 # This table should only be used to set -mcpu= (and associated
@@ -13751,7 +13761,7 @@ proc check_effective_target_autoincdec { } {
 #
 proc check_effective_target_supports_stack_clash_protection { } {
 
-    if { [check_effective_target_x86] 
+    if { [check_effective_target_x86]
 	  || [istarget powerpc*-*-*] || [istarget rs6000*-*-*]
 	  || [istarget aarch64*-**] || [istarget s390*-*-*]
 	  || [istarget loongarch64*-**] || [istarget riscv64*-**] } {
@@ -14766,7 +14776,7 @@ proc check_nvptx_default_ptx_isa_version_at_least { major minor } {
 	     "#error unsupported" \
 	     "#endif"]
     set src [join $src "\n"]
-    
+
     set res [check_no_compiler_messages $name assembly $src ""]
 
     return $res
@@ -14801,7 +14811,7 @@ proc check_nvptx_default_ptx_isa_target_architecture_at_least { ta } {
 	     "#error unsupported" \
 	     "#endif"]
     set src [join $src "\n"]
-    
+
     set res [check_no_compiler_messages $name assembly $src ""]
 
     return $res
@@ -14916,7 +14926,7 @@ proc check_effective_target_alarm { } {
 	#include <stdlib.h>
 	#include <unistd.h>
 	void do_exit(int i) { exit (0); }
-	int main (void) { 
+	int main (void) {
 	  struct sigaction s;
 	  sigemptyset (&s.sa_mask);
 	  s.sa_handler = exit;

@@ -876,9 +876,9 @@ included, in this file you should guard declarations using these types
 inside appropriate @code{#ifdef RTX_CODE} or @code{#ifdef TREE_CODE}
 conditional code segments.
 
-If the backend uses shared data structures that require @code{GTY} markers 
+If the backend uses shared data structures that require @code{GTY} markers
 for garbage collection (@pxref{Type Information}), you must declare those
-in @file{@var{machine}.h} rather than @file{@var{machine}-protos.h}.  
+in @file{@var{machine}.h} rather than @file{@var{machine}-protos.h}.
 Any definitions required for building libgcc must also go in
 @file{@var{machine}.h}.
 
@@ -1505,6 +1505,25 @@ with which the test will be compiled, including the multilib options.
 By convention, keywords ending in @code{_nocache} can also include options
 specified for the particular test in an earlier @code{dg-options} or
 @code{dg-add-options} directive.
+
+@subsubsection Object file format
+
+This identifies the object file format emitted by the compiler. Matching
+assembler output often depends on content that differs between file formats.
+
+@table @code
+
+@item elf
+Target uses the ELF file format (note that ELFv2 is matched specifically for
+the powerpc platform, below).
+
+@item macho
+Target uses the Mach-O file format (currently applies only to Darwin / macOS).
+
+@item pe
+Target uses the PE/COFF file format (e.g. for Windows).
+
+@end table
 
 @subsubsection Endianness
 
