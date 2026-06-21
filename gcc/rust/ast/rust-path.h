@@ -834,7 +834,7 @@ public:
 
 private:
   tl::optional<LangItem::Kind> lang_item;
-  tl::optional<PathIdentSegment> ident_segment;
+  PathIdentSegment ident_segment;
   location_t locus;
 
 protected:
@@ -880,8 +880,9 @@ public:
       node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
-  TypePathSegment (LangItem::Kind lang_item, location_t locus)
-    : lang_item (lang_item), ident_segment (tl::nullopt), locus (locus),
+  TypePathSegment (LangItem::Kind lang_item, PathIdentSegment ident_segment,
+		   location_t locus)
+    : lang_item (lang_item), ident_segment (ident_segment), locus (locus),
       has_separating_scope_resolution (false),
       node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
@@ -897,7 +898,7 @@ public:
 
   // General constructor
   TypePathSegment (tl::optional<LangItem::Kind> lang_item,
-		   tl::optional<PathIdentSegment> ident_segment,
+		   PathIdentSegment ident_segment,
 		   bool has_separating_scope_resolution, location_t locus)
     : lang_item (lang_item), ident_segment (ident_segment), locus (locus),
       has_separating_scope_resolution (has_separating_scope_resolution),
@@ -930,16 +931,12 @@ public:
     if (lang_item.has_value ())
       return LangItem::PrettyString (*lang_item);
 
-    return ident_segment->as_string ();
+    return ident_segment.as_string ();
   }
 
   /* Returns whether the type path segment is in an error state. May be
    * virtual in future. */
-  bool is_error () const
-  {
-    rust_assert (ident_segment);
-    return ident_segment->is_error ();
-  }
+  bool is_error () const { return ident_segment.is_error (); }
 
   /* Returns whether segment is identifier only (as opposed to generic args or
    * function). Overridden in derived classes with other segments. */
@@ -957,17 +954,9 @@ public:
     return has_separating_scope_resolution;
   }
 
-  PathIdentSegment &get_ident_segment ()
-  {
-    rust_assert (!is_lang_item ());
-    return *ident_segment;
-  };
+  PathIdentSegment &get_ident_segment () { return ident_segment; };
 
-  const PathIdentSegment &get_ident_segment () const
-  {
-    rust_assert (!is_lang_item ());
-    return *ident_segment;
-  };
+  const PathIdentSegment &get_ident_segment () const { return ident_segment; };
 
   LangItem::Kind get_lang_item () const
   {
@@ -1016,9 +1005,10 @@ public:
       generic_args (std::move (generic_args))
   {}
 
-  TypePathSegmentGeneric (LangItem::Kind lang_item, GenericArgs generic_args,
-			  location_t locus)
-    : TypePathSegment (lang_item, locus),
+  TypePathSegmentGeneric (LangItem::Kind lang_item,
+			  PathIdentSegment ident_segment,
+			  GenericArgs generic_args, location_t locus)
+    : TypePathSegment (lang_item, ident_segment, locus),
       generic_args (std::move (generic_args))
   {}
 

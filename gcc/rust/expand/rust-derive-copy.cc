@@ -42,8 +42,9 @@ DeriveCopy::copy_impl (
   std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  auto copy_trait_path
-    = [this] () { return builder.type_path (LangItem::Kind::COPY); };
+  auto copy_trait_path = [this, &name] () {
+    return builder.type_path (LangItem::Kind::COPY, name);
+  };
 
   auto generics = setup_impl_generics (name, type_generics, [&, this] () {
     return builder.trait_bound (copy_trait_path ());

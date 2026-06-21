@@ -182,10 +182,10 @@ Builder::type_path_segment (std::string seg) const
 }
 
 std::unique_ptr<TypePathSegment>
-Builder::type_path_segment (LangItem::Kind lang_item) const
+Builder::type_path_segment (LangItem::Kind lang_item, std::string &name) const
 {
   return std::unique_ptr<TypePathSegment> (
-    new TypePathSegment (lang_item, loc));
+    new TypePathSegment (lang_item, PathIdentSegment (name, loc), loc));
 }
 
 std::unique_ptr<TypePathSegment>
@@ -196,11 +196,12 @@ Builder::type_path_segment_generic (std::string seg, GenericArgs args) const
 }
 
 std::unique_ptr<TypePathSegment>
-Builder::type_path_segment_generic (LangItem::Kind lang_item,
+Builder::type_path_segment_generic (LangItem::Kind lang_item, std::string &name,
 				    GenericArgs args) const
 {
   return std::unique_ptr<TypePathSegment> (
-    new TypePathSegmentGeneric (lang_item, args, loc));
+    new TypePathSegmentGeneric (lang_item, PathIdentSegment (name, loc), args,
+				loc));
 }
 
 std::unique_ptr<Type>
@@ -228,11 +229,11 @@ Builder::single_generic_type_path (std::string type, GenericArgs args) const
 }
 
 std::unique_ptr<Type>
-Builder::single_generic_type_path (LangItem::Kind lang_item,
+Builder::single_generic_type_path (LangItem::Kind lang_item, std::string &name,
 				   GenericArgs args) const
 {
   auto segments = std::vector<std::unique_ptr<TypePathSegment>> ();
-  segments.emplace_back (type_path_segment_generic (lang_item, args));
+  segments.emplace_back (type_path_segment_generic (lang_item, name, args));
 
   return std::unique_ptr<Type> (new TypePath (std::move (segments), loc));
 }
@@ -272,9 +273,9 @@ Builder::type_path (std::string type) const
 }
 
 TypePath
-Builder::type_path (LangItem::Kind lang_item) const
+Builder::type_path (LangItem::Kind lang_item, std::string &name) const
 {
-  return type_path (type_path_segment (lang_item));
+  return type_path (type_path_segment (lang_item, name));
 }
 
 std::unique_ptr<Type>

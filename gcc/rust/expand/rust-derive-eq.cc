@@ -69,8 +69,9 @@ DeriveEq::assert_param_is_eq ()
   auto eq_bound = std::unique_ptr<TypeParamBound> (
     new TraitBound (get_eq_trait_path (builder), loc));
 
+  auto name = std::string{"Sized"};
   auto sized_bound = std::unique_ptr<TypeParamBound> (
-    new TraitBound (builder.type_path (LangItem::Kind::SIZED), loc, false,
+    new TraitBound (builder.type_path (LangItem::Kind::SIZED, name), loc, false,
 		    true /* opening_question_mark */));
 
   auto bounds = vec (std::move (eq_bound), std::move (sized_bound));
@@ -80,12 +81,14 @@ DeriveEq::assert_param_is_eq ()
   auto t = std::unique_ptr<GenericParam> (
     new TypeParam (Identifier ("T"), loc, std::move (bounds)));
 
+  std::string phantom_data = "PhantomData";
+
   return builder.struct_struct (
     assert_param_is_eq, vec (std::move (t)),
     {StructField (
       Identifier ("_t"),
       builder.single_generic_type_path (
-	LangItem::Kind::PHANTOM_DATA,
+	LangItem::Kind::PHANTOM_DATA, phantom_data,
 	GenericArgs (
 	  {}, {GenericArg::create_type (builder.single_type_path ("T"))}, {})),
       Visibility::create_private (), loc)});
@@ -121,7 +124,7 @@ DeriveEq::eq_impls (
   auto eq = [this] () { return get_eq_trait_path (builder); };
   auto eq_bound = [&, this] () { return builder.trait_bound (eq ()); };
 
-  auto steq = builder.type_path (LangItem::Kind::STRUCTURAL_TEQ);
+  auto steq = builder.type_path (LangItem::Kind::STRUCTURAL_TEQ, name);
 
   auto trait_items = vec (std::move (fn));
 
