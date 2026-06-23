@@ -796,6 +796,10 @@ public:
   tl::optional<const Node &> dfs_node (const Node &starting_point,
 				       NodeId to_find) const;
 
+  std::unordered_map<NodeId, Node &> dfs_cache;
+  tl::optional<Node &> check_cache (NodeId to_find);
+  void cache (NodeId found, Node &result);
+
   bool forward_declared (NodeId definition, NodeId usage)
   {
     if (peek ().kind != Rib::Kind::ForwardTypeParamBan)

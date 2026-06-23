@@ -610,8 +610,15 @@ tl::optional<typename ForeverStack<N>::Node &>
 ForeverStack<N>::dfs_node (ForeverStack<N>::Node &starting_point,
 			   NodeId to_find)
 {
+  if (auto found = check_cache (to_find))
+    return found;
+
   if (starting_point.id == to_find)
-    return starting_point;
+    {
+      cache (to_find, starting_point);
+
+      return starting_point;
+    }
 
   for (auto &child : starting_point.children)
     {
@@ -641,6 +648,25 @@ ForeverStack<N>::dfs_node (const ForeverStack<N>::Node &starting_point,
     }
 
   return tl::nullopt;
+}
+
+template <Namespace N>
+tl::optional<typename ForeverStack<N>::Node &>
+ForeverStack<N>::check_cache (NodeId to_find)
+{
+  auto entry = dfs_cache.find (to_find);
+
+  if (entry != dfs_cache.end ())
+    return entry->second;
+
+  return tl::nullopt;
+}
+
+template <Namespace N>
+void
+ForeverStack<N>::cache (NodeId found, typename ForeverStack<N>::Node &result)
+{
+  dfs_cache.insert ({found, result});
 }
 
 template <Namespace N>
