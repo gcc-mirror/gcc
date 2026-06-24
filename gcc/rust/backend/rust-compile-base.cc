@@ -708,10 +708,30 @@ HIRCompileBase::compile_function_body (tree fndecl,
 	  return_value = coercion_site (id, return_value, actual, expected,
 					lvalue_locus, rvalue_locus);
 
+	  /* Save the non-unit tail expression result before emitting scope
+	    drops, so a tail call like foo() is evaluated before locals are
+	    dropped.  Conceptually, this changes lowering from:
+
+	      drop (_x);
+	      return foo ();
+
+	    to:
+
+	      ret_slot = foo ();
+	      drop (_x);
+	      return ret_slot; */
+	  fncontext fnctx = ctx->peek_fn ();
+	  tree result_reference
+	    = Backend::var_expression (fnctx.ret_addr, lvalue_locus);
+	  tree assignment = Backend::assignment_statement (result_reference,
+							   return_value, locus);
+	  ctx->add_statement (assignment);
+
 	  CompileDrop (ctx).emit_current_scope_drop_calls ();
 
+	  result_reference = Backend::var_expression (fnctx.ret_addr, locus);
 	  tree return_stmt
-	    = Backend::return_statement (fndecl, return_value, locus);
+	    = Backend::return_statement (fndecl, result_reference, locus);
 	  ctx->add_statement (return_stmt);
 	}
       else
