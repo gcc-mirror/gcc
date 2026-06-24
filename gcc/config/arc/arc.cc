@@ -9286,6 +9286,15 @@ prepare_move_operands (rtx *operands, machine_mode mode)
 	{
 	  if (!REG_P (operands[1]))
 	    operands[1] = force_reg (mode, operands[1]);
+
+	  if (!move_dest_operand (operands[0], mode))
+	    {
+	      rtx tmp0 = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
+	      rtx tmp1 = change_address (operands[0], mode, tmp0);
+	      MEM_COPY_ATTRIBUTES (tmp1, operands[0]);
+	      operands[0] = tmp1;
+	    }
+
 	  emit_insn (gen_rtx_UNSPEC_VOLATILE
 		     (VOIDmode, gen_rtvec (2, operands[0], operands[1]),
 		      VUNSPEC_ARC_STDI));

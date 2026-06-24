@@ -4786,7 +4786,7 @@ archs4x, archs4xd"
   [(set_attr "type" "load")])
 
 (define_insn "stdi<mode>"
-  [(unspec_volatile [(match_operand:ALLI 0 "memory_operand"    "m,m,Usc")
+  [(unspec_volatile [(match_operand:ALLI 0 "move_dest_operand" "m,m,Usc")
 		     (match_operand:ALLI 1 "nonmemory_operand" "r,Cm3,i")]
 		    VUNSPEC_ARC_STDI)]
   ""
@@ -4795,7 +4795,7 @@ archs4x, archs4xd"
    (set_attr "type" "store")])
 
 (define_insn_and_split "*stdidi_split"
-  [(unspec_volatile [(match_operand:DI 0 "memory_operand"   "m")
+  [(unspec_volatile [(match_operand:DI 0 "non_mod_move_dest_operand" "m")
 		     (match_operand:DI 1 "register_operand" "r")]
 		    VUNSPEC_ARC_STDI)]
   "!TARGET_LL64"
