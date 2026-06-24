@@ -38,5 +38,12 @@ DropBuilder::peek_block_drop_candidates ()
   return ctx.block_drop_candidates.back ();
 }
 
+const std::vector<std::vector<DropCandidate>> &
+DropBuilder::get_block_drop_candidate_stack () const
+{
+  rust_assert (!ctx.block_drop_candidates.empty ());
+  return ctx.block_drop_candidates;
+}
+
 } // namespace Compile
 } // namespace Rust

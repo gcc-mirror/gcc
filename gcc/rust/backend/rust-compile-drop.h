@@ -36,6 +36,9 @@ public:
 private:
   tree compile_drop_call (Bvariable *var, TyTy::BaseType *ty, location_t locus);
 
+  void
+  emit_drop_candidate_calls (const std::vector<DropCandidate> &drop_candidates);
+
   Context *ctx;
 };
 
