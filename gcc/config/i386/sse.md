@@ -32039,15 +32039,17 @@
 })
 
 (define_insn "vpdp<vpdotprodtype>_<mode>"
-  [(set (match_operand:VI4_AVX 0 "register_operand" "=v")
+  [(set (match_operand:VI4_AVX 0 "register_operand" "=x,v")
 	(unspec:VI4_AVX
-	  [(match_operand:VI4_AVX 1 "register_operand" "0")
-	   (match_operand:VI4_AVX 2 "register_operand" "v")
-	   (match_operand:VI4_AVX 3 "nonimmediate_operand" "vm")]
+	  [(match_operand:VI4_AVX 1 "register_operand" "0,0")
+	   (match_operand:VI4_AVX 2 "register_operand" "x,v")
+	   (match_operand:VI4_AVX 3 "nonimmediate_operand" "xjm,vm")]
 	  VPDOTPROD))]
   "TARGET_AVXVNNIINT8 || TARGET_AVX10_2"
   "vpdp<vpdotprodtype>\t{%3, %2, %0|%0, %2, %3}"
-   [(set_attr "prefix" "maybe_evex")])
+   [(set_attr "prefix" "maybe_evex")
+    (set_attr "addr" "gpr16,*")
+    (set_attr "isa" "avxvnniint8,avx10_2")])
 
 (define_insn "vpdp<vpdotprodtype>_v16si"
   [(set (match_operand:V16SI 0 "register_operand" "=v")
