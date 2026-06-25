@@ -38,21 +38,27 @@ elif [ "$1" = "--all" ] ; then
   shift
 fi
 
+perf_file="perf.data"
+if [ "$1" = "--perf" ]; then
+  perf_file="$2"
+  shift 2
+fi
+
 if [ "$use_brbe" = true ] ; then
   if grep -q hypervisor /proc/cpuinfo ; then
     echo >&2 "Warning: branch profiling may not be functional in VMs"
   fi
   set -x
-  perf record --inherit -o perf.data -j any,$FLAGS "$@"
+  perf record --inherit -o "$perf_file" -j any,$FLAGS "$@"
   set +x
 elif [ -n "$(perf list pmu | grep arm_spe)" ]; then
   echo >&2 "Info: Using SPE to collect branch profiles"
   set -x
-  perf record --inherit -o perf.data -e arm_spe_0/branch_filter=1/ "$@"
+  perf record --inherit -o "$perf_file" -e arm_spe_0/branch_filter=1/ "$@"
   set +x
 else
   echo >&2 "Warning: branch profiling may not be functional without BRBE"
   set -x
-  perf record --inherit -o perf.data "$@"
+  perf record --inherit -o "$perf_file" "$@"
   set +x
 fi

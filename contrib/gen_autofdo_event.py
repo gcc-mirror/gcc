@@ -138,6 +138,12 @@ if [ "$1" = "--all" ] ; then
   shift
 fi
 
+perf_file="perf.data"
+if [ "$1" = "--perf" ]; then
+  perf_file="$2"
+  shift 2
+fi
+
 if grep -q AuthenticAMD /proc/cpuinfo ; then
   vendor=AMD
   if ! grep -q " brs" /proc/cpuinfo && ! grep -q amd_lbr_v2 /proc/cpuinfo ; then
@@ -175,14 +181,14 @@ echo >&2 "AMD CPU without support for ex_ret_brn_tkn event"
         fi ;;''')
     print(r"esac")
     print(r"set -x")
-    print(r'if ! perf record -e $E -b "$@" ; then')
+    print(r'if ! perf record --inherit -o "$perf_file" -e $E -b "$@" ; then')
     print(r'  # PEBS may not actually be working even if the processor supports it')
     print(r'  # (e.g., in a virtual machine). Trying to run without /p.')
     print(r'  set +x')
     print(r'  echo >&2 "Retrying without /p."')
     print(r'  E="$(echo "${E}" | sed -e \'s/\/p/\//\ -e s/:p//)"')
     print(r'  set -x')
-    print(r'  exec perf record -e $E -b "$@"')
+    print(r'  exec perf record --inherit -o "$perf_file" -e $E -b "$@"')
     print(r' set +x')
     print(r'fi')
 
