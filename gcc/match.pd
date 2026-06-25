@@ -12805,6 +12805,24 @@ and,
    products by the forwprop consumer (long_mul_check_consistency).  */
 (match (mul_cross_sum @mul_hilo0 @mul_hilo1)
   (plus:c @mul_hilo0 @mul_hilo1))
+/* Low sum: cross_sum + (xl*yl >> N).  */
+(match (mul_low_sum @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
+  (plus:c
+    (mul_cross_sum @mul_hilo0 @mul_hilo1)
+    (mul_hi
+      (mul_lolo @op0 @op1 INTEGER_CST@1)
+      INTEGER_CST@0)))
+/* Carry from low-sum overflow: (cast?) (hilo > low_sum) << N.
+   No explicit type/width guard needed: mul_low_sum delegates to
+   mul_cross_sum + mul_hi + mul_lolo, which provide deep structural
+   constraints, and @0 ties the shift amount to the inner constants.  */
+(match (mul_carry_low_sum @op0 @op1 @mul_hilo0 @mul_hilo1 @mul_hilo2 @0 @1)
+  (lshift
+    (convert? (gt
+      @mul_hilo0
+      (mul_low_sum @op0 @op1 @mul_hilo1 @mul_hilo2 INTEGER_CST@0
+       INTEGER_CST@1)))
+    INTEGER_CST@0))
 /* Carry from cross-sum overflow: (cast?) (hilo > cross_sum) << N.
    Explicit guard required because mul_cross_sum is just (plus:c @0 @1)
    with no inherent type or halfwidth constraint.  */

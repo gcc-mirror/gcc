@@ -3621,8 +3621,10 @@ extern bool gimple_mul_hilo (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_lolo (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_hihi (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_cross_sum (tree, tree *, tree (*)(tree));
+extern bool gimple_mul_low_sum (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_low_accum (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_carry_cross_sum (tree, tree *, tree (*)(tree));
+extern bool gimple_mul_carry_low_sum (tree, tree *, tree (*)(tree));
 
 /* Append to SEQ statements assigning DEST the high-part multiply of
    OP1 and OP2, emitted as
@@ -3707,7 +3709,7 @@ create_mul_low_seq (tree op1, tree op2, gassign *stmt,
   gsi_replace_with_seq (&gsi, seq, true);
 }
 
-/* Widest match.pd atom (mul_low_accum) takes 6 captures; round up
+/* Widest match.pd atom (mul_carry_low_sum) takes 7 captures; round up
    to 8 for the scratch buffers below.  */
 static constexpr unsigned LONG_MUL_MAX_CAPTURES = 8;
 
@@ -3724,7 +3726,9 @@ enum long_mul_kind {
   LMK_MUL_HILO,
   LMK_CROSS_SUM,
   LMK_LOW_ACCUM,
+  LMK_LOW_SUM,
   LMK_CARRY_CROSS_SUM,
+  LMK_CARRY_LOW_SUM,
 };
 
 /* How the leaf wraps its inner kind.  Carry kinds use LMX_NONE: their
@@ -3837,12 +3841,18 @@ long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
       n_hilos = 2;
       break;
     case LMK_LOW_ACCUM:
+    case LMK_LOW_SUM:
       n_ops = 2;
       n_hilos = 2;
       break;
     case LMK_CARRY_CROSS_SUM:
       n_hilos = 3;
       shift_idx = 3;
+      break;
+    case LMK_CARRY_LOW_SUM:
+      n_ops = 2;
+      n_hilos = 3;
+      shift_idx = 5;
       break;
     }
   if (n_ops >= 1)
@@ -3863,13 +3873,22 @@ long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
 }
 
 /* Classify LEAF as a carry-kind summand.  The lshift amount is baked
-   into mul_carry_cross_sum, so it's tried before any branch that looks
-   for a generic (X >> N) or (X << N) wrapper.  */
+   into mul_carry_cross_sum / mul_carry_low_sum, so they're tried before
+   any branch that looks for a generic (X >> N) or (X << N) wrapper.  */
 
 static bool
 long_mul_classify_carry (tree leaf, long_mul_summand *info)
 {
   tree res_ops[LONG_MUL_MAX_CAPTURES];
+  /* mul_carry_low_sum's inner is constrained to mul_low_sum (cross_sum
+     + mul_hi(mul_lolo)); mul_carry_cross_sum's inner is just
+     mul_cross_sum (any plus).  Most specific first, so the less-
+     constrained pattern doesn't shadow the more-constrained one.  */
+  if (gimple_mul_carry_low_sum (leaf, res_ops, NULL))
+    {
+      long_mul_set_summand (info, LMK_CARRY_LOW_SUM, res_ops);
+      return true;
+    }
   if (gimple_mul_carry_cross_sum (leaf, res_ops, NULL))
     {
       long_mul_set_summand (info, LMK_CARRY_CROSS_SUM, res_ops);
@@ -3879,7 +3898,9 @@ long_mul_classify_carry (tree leaf, long_mul_summand *info)
 }
 
 /* Plus-based summand kinds shared by the (X >> SHIFT) and (X << SHIFT)
-   classifiers.  */
+   classifiers.  Order is by specificity: mul_low_sum's first arm is
+   any plus, so mul_low_accum (which constrains both arms) shadows it
+   and must come first.  */
 
 static bool
 long_mul_classify_plus_kinds (tree inner, long_mul_summand *info)
@@ -3888,6 +3909,11 @@ long_mul_classify_plus_kinds (tree inner, long_mul_summand *info)
   if (gimple_mul_low_accum (inner, res_ops, NULL))
     {
       long_mul_set_summand (info, LMK_LOW_ACCUM, res_ops);
+      return true;
+    }
+  if (gimple_mul_low_sum (inner, res_ops, NULL))
+    {
+      long_mul_set_summand (info, LMK_LOW_SUM, res_ops);
       return true;
     }
   return false;
@@ -4199,14 +4225,22 @@ long_mul_signature_matches (const vec<long_mul_summand> &summands,
    sort order, so a plain element-wise compare suffices.  Rows describe
    unsigned schoolbook expansions on an even-width 2N-bit type split at
    half-width N; EXTRA_CHECK carries invariants the (kind, extract)
-   signature cannot express.  */
+   signature cannot express.
+
+   The formula on each row uses xh, xl, yh, yl for the half-width pieces
+   of x and y, cross_sum for xh*yl + xl*yh, and hilo for either cross-half
+   product (consumers validate the operand shape).  */
 
 static const long_mul_row long_mul_table[] = {
-  /* HIGH-PART fold.  Notation: xh, xl, yh, yl are the half-width pieces
-     of x and y; N is the half-width.  cross_sum = xh*yl + xl*yh; hilo is
-     either xh*yl or xl*yh (consumers validate the operand shape).  */
-  /* xh*yh + (low_accum >> N) + (cross_sum >> N)
-     + ((hilo > cross_sum) << N),
+  /* HIGH-PART folds.  */
+  /* xh*yh + (low_sum >> N) + ((hilo > low_sum) << N),
+     low_sum = cross_sum + (xl*yl >> N).  */
+  { long_mul_row::HIGH_PART, PLUS_EXPR, 3,
+    { { LMK_MUL_HIHI, LMX_NONE },
+      { LMK_LOW_SUM, LMX_HI },
+      { LMK_CARRY_LOW_SUM, LMX_NONE } },
+    NULL },
+  /* xh*yh + (low_accum >> N) + (cross_sum >> N) + ((hilo > cross_sum) << N),
      low_accum = (xl*yl >> N) + (cross_sum & mask).  */
   { long_mul_row::HIGH_PART, PLUS_EXPR, 4,
     { { LMK_MUL_HIHI, LMX_NONE },
@@ -4214,13 +4248,19 @@ static const long_mul_row long_mul_table[] = {
       { LMK_LOW_ACCUM, LMX_HI },
       { LMK_CARRY_CROSS_SUM, LMX_NONE } },
     NULL },
-  /* LOW-PART fold.  Recover the lower 2N bits from xl*yl plus a
-     shifted cross-half term.  Notation as for the HIGH-PART row above.  */
+  /* LOW-PART folds.  Recover the lower 2N bits from xl*yl plus a
+     shifted cross-half term.  */
   /* (xl*yl & mask) | (low_accum << N),
      low_accum = (xl*yl >> N) + (cross_sum & mask).  */
   { long_mul_row::LOW_PART, BIT_IOR_EXPR, 2,
     { { LMK_MUL_LOLO, LMX_LO },
       { LMK_LOW_ACCUM, LMX_SHL_N } },
+    NULL },
+  /* (xl*yl & mask) | (low_sum << N),
+     low_sum = cross_sum + (xl*yl >> N).  */
+  { long_mul_row::LOW_PART, BIT_IOR_EXPR, 2,
+    { { LMK_MUL_LOLO, LMX_LO },
+      { LMK_LOW_SUM, LMX_SHL_N } },
     NULL },
 };
 
