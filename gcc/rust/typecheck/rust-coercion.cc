@@ -322,6 +322,7 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
 	      source->debug_str ().c_str (), target->debug_str ().c_str ());
 
   bool source_is_ref = source->get_kind () == TyTy::TypeKind::REF;
+  bool source_is_ptr = source->get_kind () == TyTy::TypeKind::POINTER;
   bool target_is_ref = target->get_kind () == TyTy::TypeKind::REF;
   bool target_is_ptr = target->get_kind () == TyTy::TypeKind::POINTER;
 
@@ -380,6 +381,30 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
       adjustments.emplace_back (Adjustment::AdjustmentType::INDIRECTION,
 				source_ref, ty_a);
     }
+  else if (source_is_ptr && target_is_ptr)
+    {
+      TyTy::PointerType *source_ref = static_cast<TyTy::PointerType *> (source);
+      TyTy::PointerType *target_ref = static_cast<TyTy::PointerType *> (target);
+
+      Mutability from_mutbl = source_ref->mutability ();
+      Mutability to_mutbl = target_ref->mutability ();
+      if (!coerceable_mutability (from_mutbl, to_mutbl))
+	{
+	  location_t lhs = mappings.lookup_location (source->get_ref ());
+	  location_t rhs = mappings.lookup_location (target->get_ref ());
+	  mismatched_mutability_error (locus, lhs, rhs);
+	  return tl::unexpected<CoerceUnsizedError> (
+	    CoerceUnsizedError::Unsafe);
+	}
+
+      ty_a = source_ref->get_base ();
+      ty_b = target_ref->get_base ();
+      needs_reborrow = true;
+      expected_mutability = to_mutbl;
+
+      adjustments.emplace_back (Adjustment::AdjustmentType::INDIRECTION,
+				source_ref, ty_a);
+    }
 
   // FIXME
   // there is a bunch of code to ensure something is coerce able to a dyn trait
@@ -392,6 +417,9 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
 
   bool expect_dyn = b->get_kind () == TyTy::TypeKind::DYNAMIC;
   bool need_unsize = a->get_kind () != TyTy::TypeKind::DYNAMIC;
+
+  bool expect_slice = b->get_kind () == TyTy::TypeKind::SLICE;
+  bool is_array = a->get_kind () == TyTy::TypeKind::ARRAY;
 
   if (expect_dyn && need_unsize)
     {
@@ -413,6 +441,50 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
 	    = new TyTy::ReferenceType (source->get_ref (),
 				       TyTy::TyVar (result->get_ref ()),
 				       expected_mutability);
+
+	  Adjustment::AdjustmentType borrow_type
+	    = expected_mutability == Mutability::Imm ? Adjustment::IMM_REF
+						     : Adjustment::MUT_REF;
+	  adjustments.emplace_back (borrow_type, result, reborrow);
+	  result = reborrow;
+	}
+      return CoercionResult{adjustments, result};
+    }
+  else if (expect_slice && is_array)
+    {
+      auto array_type = static_cast<const TyTy::ArrayType *> (a);
+      auto slice_type = static_cast<const TyTy::SliceType *> (b);
+
+      TyTy::BaseType *array_element = array_type->get_element_type ();
+      TyTy::BaseType *slice_element = slice_type->get_element_type ();
+
+      if (!array_element->is_equal (*slice_element))
+	{
+	  adjustments.clear ();
+	  return tl::unexpected<CoerceUnsizedError> (
+	    CoerceUnsizedError::Regular);
+	}
+      TyTy::BaseType *result = b->clone ();
+
+      adjustments.emplace_back (Adjustment::UNSIZE, a, result);
+
+      if (needs_reborrow)
+	{
+	  TyTy::BaseType *reborrow = nullptr;
+	  if (target->get_kind () == TyTy::TypeKind::POINTER)
+	    {
+	      reborrow
+		= new TyTy::PointerType (source->get_ref (),
+					 TyTy::TyVar (result->get_ref ()),
+					 expected_mutability);
+	    }
+	  else
+	    {
+	      reborrow
+		= new TyTy::ReferenceType (source->get_ref (),
+					   TyTy::TyVar (result->get_ref ()),
+					   expected_mutability);
+	    }
 
 	  Adjustment::AdjustmentType borrow_type
 	    = expected_mutability == Mutability::Imm ? Adjustment::IMM_REF
