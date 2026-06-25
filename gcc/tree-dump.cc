@@ -367,7 +367,9 @@ dequeue_and_dump (dump_info_p di)
   else if (code_class == tcc_type)
     {
       /* All types have qualifiers.  */
-      int quals = lang_hooks.tree_dump.type_quals (t);
+      cv_qualifier quals;
+      addr_space_t as;
+      std::tie (quals, as) = lang_hooks.tree_dump.type_quals (t).split ();
 
       if (quals != TYPE_UNQUALIFIED)
 	{
@@ -377,6 +379,9 @@ dequeue_and_dump (dump_info_p di)
 		   (quals & TYPE_QUAL_RESTRICT) ? 'r' : ' ');
 	  di->column += 14;
 	}
+
+      if (!ADDR_SPACE_GENERIC_P (as))
+	dump_int (di, "addr-space", as);
 
       /* All types have associated declarations.  */
       dump_child ("name", TYPE_NAME (t));

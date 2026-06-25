@@ -2808,7 +2808,7 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope,
       else
 	{
 	  /* Set the cv qualifiers.  */
-	  int quals = cp_type_quals (TREE_TYPE (object));
+	  auto quals = cp_type_quals (TREE_TYPE (object));
 
 	  if (DECL_MUTABLE_P (decl))
 	    quals &= ~TYPE_QUAL_CONST;
@@ -14099,7 +14099,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
 
 	  if (type && !TYPE_REF_P (type))
 	    {
-	      int quals;
+	      cv_qualifier quals;
 	      if (current_function_decl
 		  && LAMBDA_FUNCTION_P (current_function_decl)
 		  && DECL_XOBJ_MEMBER_FUNCTION_P (current_function_decl))

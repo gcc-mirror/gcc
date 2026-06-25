@@ -67,7 +67,7 @@ extern void handle_ignored_attributes_option (vec<char *> *);
 
 extern tree build_type_attribute_variant (tree, tree);
 extern tree build_decl_attribute_variant (tree, tree);
-extern tree build_type_attribute_qual_variant (tree, tree, int);
+extern tree build_type_attribute_qual_variant (tree, tree, qualifier_set);
 
 extern bool simple_cst_list_equal (const_tree, const_tree);
 extern bool attribute_value_equal (const_tree, const_tree);

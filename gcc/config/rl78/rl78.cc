@@ -4731,7 +4731,7 @@ rl78_insert_attributes (tree decl, tree *attributes ATTRIBUTE_UNUSED)
     {
       tree type = TREE_TYPE (decl);
       tree attr = TYPE_ATTRIBUTES (type);
-      int q = TYPE_QUALS_NO_ADDR_SPACE (type) | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_FAR);
+      auto q = TYPE_QUALS (type).with_as (ADDR_SPACE_FAR);
 
       TREE_TYPE (decl) = build_type_attribute_qual_variant (type, attr, q);
     }

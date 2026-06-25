@@ -1271,7 +1271,7 @@ function_resolver::infer_pointer_type (unsigned int argno)
     {
       error_at (location, "passing %qT to argument %d of %qE, but %qT is not"
 		" a valid MVE element type", actual, argno + 1, fndecl,
-		build_qualified_type (target, 0));
+		build_qualified_type (target, TYPE_UNQUALIFIED));
       return NUM_TYPE_SUFFIXES;
     }
 

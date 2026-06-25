@@ -444,9 +444,8 @@ free_lang_data_in_type (tree type, class free_lang_data_d *fld)
 	  tree arg_type = TREE_VALUE (p);
 	  if (TYPE_READONLY (arg_type) || TYPE_VOLATILE (arg_type))
 	    {
-	      int quals = TYPE_QUALS (arg_type)
-		& ~TYPE_QUAL_CONST
-		& ~TYPE_QUAL_VOLATILE;
+	      auto quals = (TYPE_QUALS (arg_type)
+			    .without (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE));
 	      TREE_VALUE (p) = build_qualified_type (arg_type, quals);
 	      if (!fld->pset.add (TREE_VALUE (p)))
 		free_lang_data_in_type (TREE_VALUE (p), fld);

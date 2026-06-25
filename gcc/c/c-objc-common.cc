@@ -385,7 +385,9 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       return true;
 
     case 'v':
-      pp_c_cv_qualifiers (cpp, va_arg (*text->m_args_ptr, int), hash);
+      pp_c_cv_qualifiers (cpp,
+			  cv_qualifier (va_arg (*text->m_args_ptr, int)),
+			  hash);
       return true;
 
     default:

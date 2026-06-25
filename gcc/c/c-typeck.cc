@@ -362,9 +362,9 @@ qualify_type (tree type, tree like)
     }
 
   return c_build_qualified_type (type,
-				 TYPE_QUALS_NO_ADDR_SPACE (type)
-				 | TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (like)
-				 | ENCODE_QUAL_ADDR_SPACE (as_common));
+				 {TYPE_QUALS_NO_ADDR_SPACE (type)
+				  | TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (like),
+				  as_common});
 }
 
 
@@ -511,11 +511,11 @@ c_build_function_type (tree type, tree args, bool no)
 tree
 c_build_array_type (tree type, tree domain)
 {
-  int type_quals = TYPE_QUALS (type);
+  auto type_quals = TYPE_QUALS (type);
 
   /* Identify typeless storage as introduced in C2Y
      and supported also in earlier language modes.  */
-  bool typeless = (char_type_p (type) && !(type_quals & TYPE_QUAL_ATOMIC))
+  bool typeless = (char_type_p (type) && !(type_quals.has (TYPE_QUAL_ATOMIC)))
 		  || (AGGREGATE_TYPE_P (type) && TYPE_TYPELESS_STORAGE (type));
 
   tree ret = build_array_type (type, domain, typeless);
@@ -554,7 +554,7 @@ c_build_array_type_zero_size (tree type)
 }
 
 tree
-c_build_type_attribute_qual_variant (tree type, tree attrs, int quals)
+c_build_type_attribute_qual_variant (tree type, tree attrs, qualifier_set quals)
 {
   tree ret = build_type_attribute_qual_variant (type, attrs, quals);
   return c_set_type_bits (ret, type);
@@ -920,7 +920,7 @@ composite_type_internal (tree t1, tree t2, tree cond,
 	   up TYPE_MAIN_VARIANT correctly, we need to form the
 	   composite of the unqualified types and add the qualifiers
 	   back at the end.  */
-	int quals = TYPE_QUALS (strip_array_types (elt));
+	auto quals = TYPE_QUALS (strip_array_types (elt));
 	tree unqual_elt = c_build_qualified_type (elt, TYPE_UNQUALIFIED);
 
 	if ((!d1 || d1_zero) && (!d2 || d2_zero) && (d1 || d2))
@@ -1136,9 +1136,9 @@ static tree
 common_pointer_type (tree t1, tree t2, tree cond)
 {
   tree attributes;
-  unsigned target_quals;
+  qualifier_set target_quals;
   addr_space_t as1, as2, as_common;
-  int quals1, quals2;
+  cv_qualifier quals1, quals2;
 
   /* Save time if the two types are the same.  */
 
@@ -1183,7 +1183,7 @@ common_pointer_type (tree t1, tree t2, tree cond)
   if (!addr_space_superset (as1, as2, &as_common))
     gcc_unreachable ();
 
-  target_quals |= ENCODE_QUAL_ADDR_SPACE (as_common);
+  target_quals.set_as (as_common);
 
   t1 = c_build_pointer_type (c_build_qualified_type (target, target_quals));
   return c_build_type_attribute_variant (t1, attributes);
@@ -2142,10 +2142,12 @@ function_types_compatible_p (const_tree f1, const_tree f2,
     pedwarn (input_location, 0, "function return types not compatible due to %<volatile%>");
   if (TYPE_VOLATILE (ret1))
     ret1 = build_qualified_type (TYPE_MAIN_VARIANT (ret1),
-				 TYPE_QUALS (ret1) & ~TYPE_QUAL_VOLATILE);
+				 TYPE_QUALS (ret1)
+				 .without (TYPE_QUAL_VOLATILE));
   if (TYPE_VOLATILE (ret2))
     ret2 = build_qualified_type (TYPE_MAIN_VARIANT (ret2),
-				 TYPE_QUALS (ret2) & ~TYPE_QUAL_VOLATILE);
+				 TYPE_QUALS (ret2)
+				 .without (TYPE_QUAL_VOLATILE));
 
   bool ignore_pargs = data->ignore_promoting_args;
   data->ignore_promoting_args = false;
@@ -3421,7 +3423,7 @@ build_component_ref (location_t loc, tree datum, tree component,
       do
 	{
 	  tree subdatum = TREE_VALUE (field);
-	  int quals;
+	  qualifier_set quals;
 	  tree subtype;
 	  bool use_datum_quals;
 
@@ -3437,7 +3439,17 @@ build_component_ref (location_t loc, tree datum, tree component,
 
 	  quals = TYPE_QUALS (strip_array_types (TREE_TYPE (subdatum)));
 	  if (use_datum_quals)
-	    quals |= TYPE_QUALS (TREE_TYPE (datum));
+	    {
+	      /* SUBDATUM refers to a field, which lack their own address
+		 space.  */
+	      gcc_assert (ADDR_SPACE_GENERIC_P (quals.addr_space ()));
+	      addr_space_t datum_as;
+	      cv_qualifier datum_cv;
+	      std::tie (datum_cv, datum_as)
+		= TYPE_QUALS (TREE_TYPE (datum)).split ();
+	      quals |= datum_cv;
+	      quals.set_as (datum_as);
+	    }
 	  subtype = c_build_qualified_type (TREE_TYPE (subdatum), quals);
 
 	  ref = build3 (COMPONENT_REF, subtype, datum, subdatum,
@@ -6313,8 +6325,7 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	  && (TREE_READONLY (arg) || TREE_THIS_VOLATILE (arg))
 	  && TREE_CODE (argtype) == FUNCTION_TYPE)
 	{
-	  int orig_quals = TYPE_QUALS (strip_array_types (argtype));
-	  int quals = orig_quals;
+	  auto quals = TYPE_QUALS (strip_array_types (argtype));
 
 	  if (TREE_READONLY (arg))
 	    quals |= TYPE_QUAL_CONST;
@@ -6937,7 +6948,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	   }
 	  tree t2_stripped = strip_array_types (t2);
 	  if ((TREE_CODE (t2) == ARRAY_TYPE)
-	      && (TYPE_QUALS (t2_stripped) & ~TYPE_QUALS (t1)))
+	      && !TYPE_QUALS (t1).superset_of (TYPE_QUALS (t2_stripped)))
 	    {
 	      if (!flag_isoc23)
 		warning_at (colon_loc, OPT_Wdiscarded_array_qualifiers,
@@ -6962,7 +6973,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	result_type = objc_common_type (type1, type2);
       else
 	{
-	  int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
+	  qualifier_set qual {TYPE_UNQUALIFIED, as_common};
 	  enum diagnostics::kind kind = diagnostics::kind::permerror;
 	  if (!flag_isoc99)
 	    /* This downgrade to a warning ensures that -std=gnu89
@@ -7357,7 +7368,7 @@ handle_warn_cast_qual (location_t loc, tree type, tree otype)
     {
       in_type = TREE_TYPE (in_type);
       in_otype = TREE_TYPE (in_otype);
-      if ((TYPE_QUALS (in_type) &~ TYPE_QUALS (in_otype)) != 0
+      if (!TYPE_QUALS (in_otype).superset_of (TYPE_QUALS (in_type))
 	  && !is_const)
 	{
 	  warning_at (loc, OPT_Wcast_qual,
@@ -8752,14 +8763,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		  || (VOID_TYPE_P (ttr) && !TYPE_ATOMIC (ttr))
 		  || comp_target_types (location, memb_type, rhstype))
 		{
-		  int lquals = TYPE_QUALS (ttl) & ~TYPE_QUAL_ATOMIC;
-		  int rquals = TYPE_QUALS (ttr) & ~TYPE_QUAL_ATOMIC;
+		  auto lquals = TYPE_QUALS (ttl).without (TYPE_QUAL_ATOMIC);
+		  auto rquals = TYPE_QUALS (ttr).without (TYPE_QUAL_ATOMIC);
 		  /* If this type won't generate any warnings, use it.  */
 		  if (lquals == rquals
 		      || ((TREE_CODE (ttr) == FUNCTION_TYPE
 			   && TREE_CODE (ttl) == FUNCTION_TYPE)
-			  ? ((lquals | rquals) == rquals)
-			  : ((lquals | rquals) == lquals)))
+			  ? (rquals.superset_of (lquals))
+			  : (lquals.superset_of (rquals))))
 		    break;
 
 		  /* Keep looking for a better type, but remember this one.  */
@@ -8810,7 +8821,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 					       "unqualified"),
 					    G_("return makes %q#v qualified function "
 					       "pointer from unqualified"),
-					    TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
+					    TYPE_QUALS_NO_ADDR_SPACE (ttl)
+					    & ~TYPE_QUALS_NO_ADDR_SPACE (ttr));
 		}
 	      else if (TYPE_QUALS_NO_ADDR_SPACE (ttr)
 		       & ~TYPE_QUALS_NO_ADDR_SPACE (ttl))
@@ -8824,7 +8836,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 					   "from pointer target type"),
 				        G_("return discards %qv qualifier from "
 					   "pointer target type"),
-				        TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
+					TYPE_QUALS_NO_ADDR_SPACE (ttr)
+					& ~TYPE_QUALS_NO_ADDR_SPACE (ttl));
 
 	      memb = marginal_memb;
 	    }
@@ -9087,7 +9100,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 					   "from pointer target type"),
 					G_("return discards %qv qualifier from "
 					   "pointer target type"),
-					TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
+					TYPE_QUALS_NO_ADDR_SPACE (ttr)
+					& ~TYPE_QUALS_NO_ADDR_SPACE (ttl));
             }
           else if (pedantic
 	      && ((VOID_TYPE_P (ttl) && TREE_CODE (ttr) == FUNCTION_TYPE)
@@ -9130,7 +9144,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 					   "from pointer target type"),
 					G_("return discards %qv qualifier from "
 					   "pointer target type"),
-					TYPE_QUALS (ttr) & ~TYPE_QUALS (ttl));
+					TYPE_QUALS_NO_ADDR_SPACE (ttr)
+					& ~TYPE_QUALS_NO_ADDR_SPACE (ttl));
 	      else if (warn_quals_ped)
 		pedwarn_c11 (location, OPT_Wc11_c23_compat,
 			     "array with qualifier on the element is not qualified before C23");
@@ -9198,7 +9213,8 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 					   "function pointer from unqualified"),
 				        G_("return makes %q#v qualified function "
 					   "pointer from unqualified"),
-				        TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
+					TYPE_QUALS_NO_ADDR_SPACE (ttl)
+					& ~TYPE_QUALS_NO_ADDR_SPACE (ttr));
 	    }
 	}
       /* Avoid warning about the volatile ObjC EH puts on decls.  */
@@ -14990,7 +15006,7 @@ build_binary_op (location_t location, enum tree_code code,
 
 	  if (result_type == NULL_TREE)
 	    {
-	      int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
+	      qualifier_set qual {TYPE_UNQUALIFIED, as_common};
 	      result_type = c_build_pointer_type
 			      (c_build_qualified_type (void_type_node, qual));
 	    }
@@ -15124,7 +15140,7 @@ build_binary_op (location_t location, enum tree_code code,
 	    }
 	  else
 	    {
-	      int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
+	      qualifier_set qual {TYPE_UNQUALIFIED, as_common};
 	      result_type = c_build_pointer_type
 			      (c_build_qualified_type (void_type_node, qual));
               pedwarn (location, OPT_Wcompare_distinct_pointer_types,
@@ -18730,8 +18746,8 @@ c_finish_transaction (location_t loc, tree block, int flags)
    type was derived).  */
 
 tree
-c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
-			size_t orig_qual_indirect)
+c_build_qualified_type (tree type, qualifier_set type_quals,
+			tree orig_qual_type, size_t orig_qual_indirect)
 {
   if (type == error_mark_node)
     return type;
@@ -18792,12 +18808,12 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
   /* A restrict-qualified pointer type must be a pointer to object or
      incomplete type.  Note that the use of POINTER_TYPE_P also allows
      REFERENCE_TYPEs, which is appropriate for C++.  */
-  if ((type_quals & TYPE_QUAL_RESTRICT)
+  if ((type_quals.has (TYPE_QUAL_RESTRICT))
       && (!POINTER_TYPE_P (type)
 	  || !C_TYPE_OBJECT_OR_INCOMPLETE_P (TREE_TYPE (type))))
     {
       error ("invalid use of %<restrict%>");
-      type_quals &= ~TYPE_QUAL_RESTRICT;
+      type_quals.remove (TYPE_QUAL_RESTRICT);
     }
 
   tree var_type = (orig_qual_type && orig_qual_indirect == 0

@@ -159,7 +159,7 @@ ix86_get_builtin_type (enum ix86_builtin_type tcode)
     }
   else
     {
-      int quals;
+      cv_qualifier quals;
 
       index = tcode - IX86_BT_LAST_VECT - 1;
       if (tcode <= IX86_BT_LAST_PTR)

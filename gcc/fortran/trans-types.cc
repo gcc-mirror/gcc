@@ -2397,7 +2397,8 @@ gfc_nonrestricted_type (tree t)
 	  else
 	    ret = build_reference_type (totype);
 	  ret = build_qualified_type (ret,
-				      TYPE_QUALS (t) & ~TYPE_QUAL_RESTRICT);
+				      TYPE_QUALS (t)
+				      .without (TYPE_QUAL_RESTRICT));
 	}
 	break;
 

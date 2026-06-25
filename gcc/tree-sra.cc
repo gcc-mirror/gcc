@@ -1904,8 +1904,7 @@ build_ref_for_offset (location_t loc, tree base, poly_int64 offset,
   addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (base));
   if (as != TYPE_ADDR_SPACE (exp_type))
     exp_type = build_qualified_type (exp_type,
-				     TYPE_QUALS (exp_type)
-				     | ENCODE_QUAL_ADDR_SPACE (as));
+				     TYPE_QUALS (exp_type).with_as (as));
 
   poly_int64 byte_offset = exact_div (offset, BITS_PER_UNIT);
   get_object_alignment_1 (base, &align, &misalign);

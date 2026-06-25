@@ -1948,14 +1948,14 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	 matching further down.  */
       if (POINTER_TYPE_P (decl_type)
 	  && POINTER_TYPE_P (type)
-	  && TYPE_QUALS (TREE_TYPE (type)) != 0)
+	  && TYPE_QUALS (TREE_TYPE (type)).nonempty_p ())
 	{
 	  if (TYPE_READONLY (TREE_TYPE (type))
 	      && !TYPE_READONLY (TREE_TYPE (decl_type)))
 	    warning (0, "passing argument %d of %qE discards %qs "
 		     "qualifier from pointer target type", n + 1, fndecl,
 		     "const");
-	  type = build_qualified_type (TREE_TYPE (type), 0);
+	  type = build_qualified_type (TREE_TYPE (type), TYPE_UNQUALIFIED);
 	  type = build_pointer_type (type);
 	  arg = c_fold_convert (type, arg);
 	}
@@ -1966,7 +1966,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  && POINTER_TYPE_P (type)
 	  && TYPE_READONLY (TREE_TYPE (type)))
 	{
-	  type = build_qualified_type (TREE_TYPE (type), 0);
+	  type = build_qualified_type (TREE_TYPE (type), TYPE_UNQUALIFIED);
 	  type = build_pointer_type (type);
 	  arg = c_fold_convert (type, arg);
 	}

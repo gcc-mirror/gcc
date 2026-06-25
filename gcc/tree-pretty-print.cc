@@ -2349,7 +2349,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case OPAQUE_TYPE:
     case NULLPTR_TYPE:
       {
-	unsigned int quals = TYPE_QUALS (node);
+	auto quals = TYPE_QUALS_NO_ADDR_SPACE (node);
 	enum tree_code_class tclass;
 
 	if (quals & TYPE_QUAL_ATOMIC)
@@ -2525,17 +2525,17 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	}
       else
         {
-	  unsigned int quals = TYPE_QUALS (node);
+	  auto quals = TYPE_QUALS (node);
 
           dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
 	  pp_space (pp);
 	  pp_string (pp, str);
 
-	  if (quals & TYPE_QUAL_CONST)
+	  if (quals.has (TYPE_QUAL_CONST))
 	    pp_string (pp, " const");
-	  if (quals & TYPE_QUAL_VOLATILE)
+	  if (quals.has (TYPE_QUAL_VOLATILE))
 	    pp_string (pp, " volatile");
-	  if (quals & TYPE_QUAL_RESTRICT)
+	  if (quals.has (TYPE_QUAL_RESTRICT))
 	    pp_string (pp, " restrict");
 
 	  if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (node)))
@@ -2561,7 +2561,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 
     case ARRAY_TYPE:
       {
-	unsigned int quals = TYPE_QUALS (node);
+	auto quals = TYPE_QUALS_NO_ADDR_SPACE (node);
 	tree tmp;
 
 	if (quals & TYPE_QUAL_ATOMIC)
@@ -2591,7 +2591,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
       {
-	unsigned int quals = TYPE_QUALS (node);
+	auto quals = TYPE_QUALS_NO_ADDR_SPACE (node);
 
 	if (quals & TYPE_QUAL_ATOMIC)
 	  pp_string (pp, "atomic ");

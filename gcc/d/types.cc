@@ -226,7 +226,7 @@ make_struct_type (const char *name, int nfields, ...)
 tree
 insert_type_modifiers (tree type, unsigned mod)
 {
-  int quals = 0;
+  cv_qualifier quals = TYPE_UNQUALIFIED;
 
   switch (mod)
     {

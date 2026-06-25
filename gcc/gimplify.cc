@@ -3161,12 +3161,19 @@ canonicalize_component_ref (tree *expr_p)
 #ifdef ENABLE_TYPES_CHECKING
       tree old_type = TREE_TYPE (expr);
 #endif
-      int type_quals;
+      auto type_quals = TYPE_QUALS (type);
+      gcc_checking_assert (/* Fields should lack address space
+			      qualification.  */
+			   ADDR_SPACE_GENERIC_P (type_quals.addr_space ()));
 
       /* We need to preserve qualifiers and propagate them from
 	 operand 0.  */
-      type_quals = TYPE_QUALS (type)
-	| TYPE_QUALS (TREE_TYPE (TREE_OPERAND (expr, 0)));
+      addr_space_t op_as;
+      cv_qualifier op_cv;
+      std::tie (op_cv, op_as)
+	= TYPE_QUALS (TREE_TYPE (TREE_OPERAND (expr, 0))).split ();
+      type_quals |= op_cv;
+      type_quals.set_as (op_as);
       if (TYPE_QUALS (type) != type_quals)
 	type = build_qualified_type (TYPE_MAIN_VARIANT (type), type_quals);
 

@@ -306,11 +306,6 @@ The elements are indexed from zero.
 @tindex OPAQUE_TYPE
 @tindex UNKNOWN_TYPE
 @tindex OFFSET_TYPE
-@findex TYPE_UNQUALIFIED
-@findex TYPE_QUAL_CONST
-@findex TYPE_QUAL_VOLATILE
-@findex TYPE_QUAL_RESTRICT
-@findex TYPE_MAIN_VARIANT
 @cindex qualified type
 @findex TYPE_SIZE
 @findex TYPE_ALIGN
@@ -339,13 +334,8 @@ use the @code{RECORD_TYPE} code.  Therefore, when writing a
 particular type, you should take care to handle pointers to member
 functions under the @code{RECORD_TYPE} case label.
 
-The following functions and macros deal with cv-qualification of types:
-@ftable @code
-@item TYPE_MAIN_VARIANT
-This macro returns the unqualified version of a type.  It may be applied
-to an unqualified type, but it is not always the identity function in
-that case.
-@end ftable
+A type may have qualifiers, as described below, in @ref{Qualifier
+Representation}.
 
 A few other macros and functions are usable with all types:
 @ftable @code
@@ -608,6 +598,433 @@ A node for @code{char}.
 @noindent
 It may sometimes be useful to compare one of these variables with a type
 in hand, using @code{same_type_p}.
+
+@menu
+* Qualifier Representation:: Qualifiers and qualified types.
+@end menu
+
+@node Qualifier Representation
+@subsection Qualifiers and qualified types
+@cindex qualified type
+@cindex qualifiers
+Types in GCC may be qualified with (in C syntax) @code{const},
+@code{volatile}, @code{restrict}, @code{_Atomic} qualifiers, and with
+an address space qualifiers.
+
+The following @code{tree.h} macros allow accessing each qualifier
+separately:
+
+@table @code
+@findex TYPE_READONLY
+@item TYPE_READONLY
+Accesses the @code{const} qualification of the given type.  Boolean
+value, @code{true} if type is @code{const}-qualified.
+
+@findex TYPE_VOLATILE
+@item TYPE_VOLATILE
+Accesses the @code{volatile} qualification of the given type.  Boolean
+value, @code{true} if type is @code{volatile}-qualified.
+
+@findex TYPE_RESTRICT
+@item TYPE_RESTRICT
+Accesses the @code{restrict} qualification of the given type.  Boolean
+value, @code{true} if type is @code{restrict}-qualified.
+
+@findex TYPE_ATOMIC
+@item TYPE_ATOMIC
+Accesses the @code{_Atomic} qualification of the given type.  Boolean
+value, @code{true} if type is @code{_Atomic}-qualified.
+
+@findex TYPE_ADDR_SPACE
+@item TYPE_ADDR_SPACE
+Accesses the address space qualifier of a given type.  Always present.
+
+@tindex addr_space_t
+The the address space qualifier is represented by the
+@code{addr_space_t} type, and this macro produces a value of that type.
+
+It is a @code{unsigned char}, where each value represents a distinct
+address space.  @xref{Named Address Spaces}, for a description of address
+spaces.
+
+Unlike with CV qualifiers, an address space qualifier is present on all
+types.  Types not otherwise qualified with a named address space are
+qualified with the @emph{generic address space}, which is syntactically
+an empty string in C.
+
+@findex ADDR_SPACE_GENERIC
+@findex ADDR_SPACE_GENERIC_P
+The generic address space is represented by the
+@code{ADDR_SPACE_GENERIC} constant, which can be tested for using
+@code{ADDR_SPACE_GENERIC_P}.  In C, there's no syntax for the generic
+address space: all types not otherwise qualified are in the generic
+address space.
+@end table
+
+In addition to individual access, it is possible to work with aggregates
+of qualifiers:
+
+@ftable @code
+@item TYPE_QUALS
+This macro returns the set of qualifiers attached to a given type.  The
+result is of type @code{qualifier_set} (described below) and contains
+both the cv-qualifiers and address space qualifier.
+
+@item TYPE_QUALS_NO_ADDR_SPACE
+Like @code{TYPE_QUALS}, but without the address space qualifier.  Thus,
+this macro returns only the cv-qualifiers, and its result is of type
+@code{cv_qualifier}, described below.
+
+@item TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC
+Like @code{TYPE_QUALS_NO_ADDR_SPACE}, but also excluding the
+@code{_Atomic} qualifier, thus returning only the ``access'' qualifiers
+(@code{const}, @code{volatile}, @code{restrict}).
+@end ftable
+
+The types that represent these aggregates are described in the following
+sections.
+
+@findex TYPE_MAIN_VARIANT
+To get the unqualified version of a type, use the
+@code{TYPE_MAIN_VARIANT} macro.  It also may be applied to an
+unqualified type, but it is not always the identity function in that
+case.
+@c XXX when?  On an over-aligned type (as returned by
+@c build_aligned_type?)
+
+@findex get_qualified_type
+@findex build_qualified_type
+To get the @var{qs}-qualified version of a type @var{t} if one exists,
+you can call @code{get_qualified_type} with @var{t} and @var{qs}.  The
+returned type will be @var{qs}-qualified, or @code{NULL_TREE} if a
+so-qualified variant does not exist already.
+
+Instead, if you call @code{build_qualified_type}, and there is not
+already a variant with the requisite qualification, it will be built.
+Thus, @code{build_qualified_type} always returns a @var{qs}-qualified
+variant of @var{t}.
+
+@menu
+* cv_qualifier:: The CV-style qualifiers, that are either present or
+  absent.
+* qualifier_set:: The type representing the set of all possible
+  qualifiers.
+* Avoiding qualifier_set:: Avoiding the complexity of qualifier sets in
+  frontends that only use CV qualifiers.
+@end menu
+
+@node cv_qualifier
+@subsubsection @code{cv_qualifier}
+@tindex cv_qualifier
+The four CV-qualifiers---@code{const}, @code{volatile}, @code{restrict},
+and @code{_Atomic}---are represented by the @code{cv_qualifier} type.
+
+This type is an enum which represents a set of zero or more of the
+qualifiers named above, and which may be operated on with the ``usual''
+bit operations (bit-or represents union, bit-and intersection, etc.).
+
+The following named constants are provided by the @code{cv_qualifier}
+type:
+
+@ftable @code
+@item TYPE_UNQUALIFIED
+Represents no qualification, i.e. the empty set of CV-qualifiers.  This
+value is zero, i.e.@: @code{!TYPE_UNQUALIFIED} holds.
+
+@item TYPE_QUAL_CONST
+Represents the @code{const} qualifier and, thus, the singleton set of
+just that qualifier.
+
+@item TYPE_QUAL_VOLATILE
+Represents the @code{volatile} qualifier and, thus, the singleton set of
+just that qualifier.
+
+@item TYPE_QUAL_RESTRICT
+Represents the @code{restrict} qualifier and, thus, the singleton set of
+just that qualifier.
+
+@item TYPE_QUAL_ATOMIC
+Represents the @code{_Atomic} qualifier and, thus, the singleton set of
+just that qualifier.
+
+@item TYPE_QUAL_ALL
+Represents the set of all @emph{CV-qualifiers}, and thus represents the
+set containing the @code{const}, @code{volatile}, @code{restrict}, and
+@code{_Atomic} qualifiers (i.e.@: the universe).
+@end ftable
+
+@code{cv_qualifier} also provides convenience operator overloads for the
+bit-OR, bit-AND, bit-XOR and bit-NOT operators (and the assignment
+variants thereof) which inhibit integer promotion.
+
+A @code{cv_qualifier} may implicitly be converted into the
+@code{qualifier_set} type described below, as such a conversion is
+always safe (no information is lost; only a generic address space
+qualifier is gained).
+
+@node qualifier_set
+@subsubsection @code{qualifier_set}
+@tindex qualifier_set
+The @code{qualifier_set} type represents the set of @emph{all}
+qualifiers together.
+
+The @code{qualifier_set} type is equality-comparable, and can be dumped
+to standard error.
+
+@deftypemethod qualifier_set void debug () const
+Dump the contents of @var{this} to standard error, for instance, the
+qualifier set containing @code{const}, @code{_Atomic}, and address space
+3 would print as @code{@{const, _Atomic, AS3@}}.
+@end deftypemethod
+
+A default-constructed qualifier set corresponds to the ``default''
+qualification in C, i.e.@: the syntactically empty qualifier set.  This
+qualifier set includes only the generic address space qualifier.
+
+You can check for such a qualifier set:
+
+@deftypemethod qualifier_set bool nonempty_p () const
+@deftypemethodx qualifier_set {} {operator bool} () const
+@code{true} iff @var{this} is syntactically nonempty, i.e.@: if it
+contains any qualifier other than the generic address space qualifier.
+@end deftypemethod
+
+A @code{qualifier_set} is, in fact, an aggregate of the two components
+named above.  As such, it is possible to construct a
+@code{qualifier_set} from one or both of the above, and break it back
+down into its constituent parts.
+
+@deftypemethod qualifier_set {pair<cv_qualifier, addr_space_t>} @
+               split () const
+This function breaks a @code{qualifier_set} into its constituent parts.
+It is intended to be used in combination with @code{std::tie}:
+
+@example Cplusplus
+qualifier_set qs = @r{given};
+cv_qualifier cv;
+addr_space_t as;
+std::tie (cv, as) = qs.split ();
+@end example
+
+Usually, if you need to process the constituent parts of a qualifier set
+separately, this is what you want.  By doing something like the above,
+if a new component is added to @code{qualifier_set}s, all places that
+need to process all the components become compile errors, and thus
+handling new qualifiers can be guided by the compiler.
+@end deftypemethod
+
+It is also possible to access the individual components of a qualifier
+set:
+
+@deftypemethod qualifier_set cv_qualifier cv_quals () const
+@deftypemethodx qualifier_set addr_space_t addr_space () const
+Returns the respective component of this @code{qualifier_set}.
+
+Most of the time, if you need one of the components, you need both.
+Consider using @code{split} (described above), so that adding a new
+component to a qualifier set raises a build error.
+@end deftypemethod
+
+@code{qualifier_set} themselves form a partially-ordered set, with
+@code{superset_of} representing their ordering relation.
+
+@deftypemethod qualifier_set bool superset_of @
+                             (qualifier_set @var{other}, @
+                              bool @var{pointee} = false) const
+Returns @code{true} if qualifiers in @var{other} can be replaced with
+qualifiers in @var{this} safely.
+
+If not @var{pointee}, such a replacement is safe iff @code{@var{cv2} int
+*} can be converted into @code{@var{cv1} int *} where @var{cv1} are the
+qualifiers in @var{this} and @var{cv2} the qualifiers in @var{other}.
+
+Otherwise, such a replacement is safe iff @code{@var{cv2} int * const *}
+can be converted into @code{@var{cv1} int * const *} where @var{cv1} are
+the qualifiers in @var{this} and @var{cv2} the qualifiers in
+@var{other}.
+@end deftypemethod
+
+To add, remove, query the presence of or change the elements of
+qualifier sets, the following functions are available:
+
+@deftypemethod qualifier_set bool has (cv_qualifier @var{other_cv})
+@code{true} iff any qualifier in @var{other_cv} is part of @var{this},
+i.e.@: if their intersection is nonempty.
+@end deftypemethod
+
+@deftypemethod qualifier_set void add (cv_qualifier @var{qual})
+@deftypemethodx qualifier_set qualifier_set @
+                              with (cv_qualifier @var{qual}) const
+Add @var{qual} to the current qualifier set, if not already present.
+
+The former variant mutates an existing qualifier set, and the latter
+returns a new qualifier set.
+
+These operations can also be invoked via the assignment and
+non-assignment bit-OR operators, respectively.
+@end deftypemethod
+
+@deftypemethod qualifier_set void remove (cv_qualifier @var{qual})
+@deftypemethodx qualifier_set qualifier_set @
+                              without (cv_qualifier @var{qual}) const
+Remove @var{qual} to the current qualifier set, if present.
+
+The former variant mutates an existing qualifier set, and the latter
+returns a new qualifier set.
+@end deftypemethod
+
+@deftypemethod qualifier_set void set_as (addr_space_t @var{as})
+@deftypemethodx qualifier_set qualifier_set @
+                with_as (addr_space_t @var{as}) const
+Replace address space qualifier in @var{this} with @var{as}.
+
+The former variant mutates an existing qualifier set, and the latter
+returns a new qualifier set.
+@end deftypemethod
+
+@deftypemethod qualifier_set cv_qualifier @
+                             intersect (cv_qualifier @var{qual}) const
+Returns the @code{cv_qualifier}s present in both @var{this} and
+@var{qual}.
+@end deftypemethod
+
+@deftypemethod qualifier_set cv_qualifier @
+                             symmetric_difference @
+                             (cv_qualifier @var{qual}) const
+Returns the symmetric difference of @var{this} and @var{qual}.
+
+As the latter lacks an address space qualifier, the address space
+qualifier of @var{this} is kept.
+
+This operation can also be invoked via the assignment and non-assignment
+bit-XOR operators.
+@end deftypemethod
+
+@code{qualifier_set} provides fewer operations than @code{cv_qualifier}.
+This is because not all set operations make sense on a
+@code{qualifier_set}.
+
+For instance, there is @emph{not} necessarily always a union of two
+@code{qualifier_set} values, and it does not make sense to ask for the
+intersection of two @code{qualifier_set} values, due to the address
+space qualifier.
+
+Instead, @code{qualifier_set} provides two partial operations for
+the union of two qualifier sets, depending on situation:
+
+@deftypemethod qualifier_set expected<qualifier_set, merge_error> @
+                             merge (qualifier_set @var{other}, @
+                                    bool @var{strict_addr_space} @
+                                         = false) const
+
+Attempt to produce a @code{qualifier_set} that's a @emph{merge} of the
+qualifiers in @var{this} and in @var{other}.  Such a qualifier set can
+be used instead of either @var{this} or @var{other} safely (i.e. it is
+compatible with both), though perhaps through a conversion.
+
+This corresponds to trying to find a common type for two expressions,
+for instance to determine the type of a conditional expression.
+
+Such a qualifier set may not exist.  If so, an @code{unexpected} value
+is returned containing a reason why.
+
+If @var{strict_addr_space}, address space differences are forbidden.
+This corresponds to the @var{pointee} case in @code{superset_of}.
+
+You may consider writing a wrapper for this function for your front-end,
+which emits a diagnostic and performs error recovery.
+@end deftypemethod
+
+@deftypemethod qualifier_set expected<qualifier_set, join_error> @
+                             join (qualifier_set @var{other}) const
+
+Attempt to produce a @code{qualifier_set} that's a @emph{syntactic join}
+of the qualifiers in @var{this} and in @var{other}.
+
+Such a qualifier set is gotten by syntactically concatenating the two
+qualifier sets, i.e. if @var{other} is syntactically:
+
+@example
+@{x_1, x_2, ..., x_n@}
+@end example
+
+@noindent
+and @var{this} is syntactically:
+
+@example
+@{y_1, y_2, ..., y_m@}
+@end example
+
+@noindent
+then the resulting qualifier set is:
+
+@example
+@{x_1, x_2, ..., x_n, y_1, y_2, ..., y_m@}
+@end example
+
+This corresponds to adding extra qualifiers when using a type alias, as
+in:
+
+@example C
+typedef const int cint;
+volatile cint x;
+@end example
+
+@noindent
+where the qualification of the type of @var{x} is the join of the
+qualifier set containing @code{const} (and the generic address space),
+and the qualifier set containing @code{volatile} (and the generic
+address space).
+
+Such a qualifier set may not exist.  If so, an @code{unexpected} value
+is returned containing a reason why.
+
+You should consider writing a wrapper for this function for your
+front-end, which emits a diagnostic and performs error recovery.
+@end deftypemethod
+
+@node Avoiding qualifier_set
+@subsubsection Avoiding @code{qualifier_set}
+The two types described prior were designed to permit front-ends that do
+not support address space qualification to avoid incurring extra
+complexity for handling it, while also preventing mishandling address
+space qualifiers, if the frontend is ever to start supporting them.
+
+Thus, a frontend can opt to avoid using @code{qualifier_set}, and stick
+only with @code{cv_qualifier} in a way which allows a later change to
+permit address space qualification.
+
+To do so, implement a function, say @code{@var{lang}_type_quals}, that
+returns @code{cv_qualifier} instead of @code{qualifier_set}, and use it
+instead of @code{TYPE_QUALS}, that looks like:
+
+@example Cplusplus
+cv_qualifier
+@var{lang}_type_quals (const_tree type)
+@{
+  cv_qualifier quals;
+  addr_space_t as;
+  std::tie (quals, as) = TYPE_QUALS (type).split ();
+  /* No address space support yet.  */
+  gcc_assert (ADDR_SPACE_GENERIC_P (as));
+  return quals;
+@}
+@end example
+
+@noindent
+then, you can use @code{cv_qualifier} in the rest of the frontend.
+
+As a @code{cv_qualifier} can convert implicitly to a
+@code{qualifier_set}, GCC core functions can accept @code{cv_qualifier}
+values already.
+
+If, at some point, your frontend gains support for address space
+qualification, it suffices to update this function to return
+@code{qualifier_set} and then fix the ensuing compiler errors.
+
+Because @code{qualifier_set} lacks those operations of
+@code{cv_qualifier} that require extra work, each place where extra work
+is now needed will be diagnosed at compile time.
 
 @c ---------------------------------------------------------------------
 @c Declarations
@@ -2994,11 +3411,6 @@ should submit your patches for inclusion in GCC@.
 @tindex TYPENAME_TYPE
 @tindex TYPEOF_TYPE
 @findex cp_type_quals
-@findex TYPE_UNQUALIFIED
-@findex TYPE_QUAL_CONST
-@findex TYPE_QUAL_VOLATILE
-@findex TYPE_QUAL_RESTRICT
-@findex TYPE_MAIN_VARIANT
 @cindex qualified type
 @findex TYPE_SIZE
 @findex TYPE_ALIGN
@@ -3026,12 +3438,14 @@ the type @code{const int ()[7]}, denoting an array of seven @code{int}s.
 The following functions and macros deal with cv-qualification of types:
 @ftable @code
 @item cp_type_quals
-This function returns the set of type qualifiers applied to this type.
-This value is @code{TYPE_UNQUALIFIED} if no qualifiers have been
-applied.  The @code{TYPE_QUAL_CONST} bit is set if the type is
-@code{const}-qualified.  The @code{TYPE_QUAL_VOLATILE} bit is set if the
-type is @code{volatile}-qualified.  The @code{TYPE_QUAL_RESTRICT} bit is
-set if the type is @code{restrict}-qualified.
+This function returns the set of type qualifiers applied to this type,
+as a @code{cv_qualifier}.
+
+As the C++ frontend currently does not support address space
+qualification, this function cannot be applied to types that have a
+non-generic address space.
+
+@xref{cv_qualifier}, for a description of the @code{cv_qualifier} type.
 
 @item CP_TYPE_CONST_P
 This macro holds if the type is @code{const}-qualified.

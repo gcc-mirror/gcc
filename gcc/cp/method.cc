@@ -736,7 +736,7 @@ do_build_copy_constructor (tree fndecl)
 
       if (!inh)
 	{
-	  int cvquals = cp_type_quals (TREE_TYPE (parm));
+	  auto cvquals = cp_type_quals (TREE_TYPE (parm));
 
 	  for (tree fields = TYPE_FIELDS (current_class_type);
 	       fields; fields = DECL_CHAIN (fields))
@@ -767,7 +767,7 @@ do_build_copy_constructor (tree fndecl)
 		 types.)  */
 	      if (!TYPE_REF_P (expr_type))
 		{
-		  int quals = cvquals;
+		  auto quals = cvquals;
 
 		  if (DECL_MUTABLE_P (field))
 		    quals &= ~TYPE_QUAL_CONST;
@@ -820,7 +820,7 @@ do_build_copy_assign (tree fndecl)
   else
     {
       tree fields;
-      int cvquals = cp_type_quals (TREE_TYPE (parm));
+      auto cvquals = cp_type_quals (TREE_TYPE (parm));
       int i;
       tree binfo, base_binfo;
 
@@ -856,7 +856,7 @@ do_build_copy_assign (tree fndecl)
 	  tree init = parm;
 	  tree field = fields;
 	  tree expr_type;
-	  int quals;
+	  cv_qualifier quals;
 
 	  if (TREE_CODE (field) != FIELD_DECL || DECL_ARTIFICIAL (field))
 	    continue;
@@ -1900,7 +1900,7 @@ maybe_synthesize_method (tree fndecl)
    rvalue if RVALUE is true.  */
 
 tree
-build_stub_type (tree type, int quals, bool rvalue)
+build_stub_type (tree type, cv_qualifier quals, bool rvalue)
 {
   tree argtype
     = cp_build_qualified_type (type, quals,
@@ -2209,8 +2209,8 @@ get_default_ctor (tree type)
 tree
 get_copy_ctor (tree type, tsubst_flags_t complain)
 {
-  int quals = (TYPE_HAS_CONST_COPY_CTOR (type)
-	       ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
+  auto quals = (TYPE_HAS_CONST_COPY_CTOR (type)
+		? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
   tree argtype = build_stub_type (type, quals, false);
   tree fn = locate_fn_flags (type, complete_ctor_identifier, argtype,
 			     LOOKUP_NORMAL, complain);
@@ -2224,8 +2224,8 @@ get_copy_ctor (tree type, tsubst_flags_t complain)
 tree
 get_copy_assign (tree type)
 {
-  int quals = (TYPE_HAS_CONST_COPY_ASSIGN (type)
-	       ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
+  auto quals = (TYPE_HAS_CONST_COPY_ASSIGN (type)
+		? TYPE_QUAL_CONST : TYPE_UNQUALIFIED);
   tree argtype = build_stub_type (type, quals, false);
   tree fn = locate_fn_flags (type, assign_op_identifier, argtype,
 			     LOOKUP_NORMAL, tf_warning_or_error);
@@ -2700,7 +2700,7 @@ process_subob_fn (tree fn, special_function_kind sfk, tree *spec_p,
 
 static void
 walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
-		   int quals, tree *spec_p, bool *trivial_p,
+		   cv_qualifier quals, tree *spec_p, bool *trivial_p,
 		   bool *deleted_p, bool *constexpr_p,
 		   bool diag, int flags, tsubst_flags_t complain,
 		   bool dtor_from_ctor)
@@ -2866,7 +2866,7 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 
       if (SFK_COPY_P (sfk) || SFK_MOVE_P (sfk))
 	{
-	  int mem_quals = cp_type_quals (mem_type) | quals;
+	  auto mem_quals = cp_type_quals (mem_type) | quals;
 	  if (DECL_MUTABLE_P (field))
 	    mem_quals &= ~TYPE_QUAL_CONST;
 	  argtype = build_stub_type (mem_type, mem_quals, SFK_MOVE_P (sfk));
@@ -2947,9 +2947,9 @@ walk_field_subobs (tree fields, special_function_kind sfk, tree fnname,
 
 static tree
 synthesized_method_base_walk (tree binfo, tree base_binfo,
-			      special_function_kind sfk, tree fnname, int quals,
-			      tree *inheriting_ctor, tree inherited_parms,
-			      int flags, bool diag,
+			      special_function_kind sfk, tree fnname,
+			      cv_qualifier quals, tree *inheriting_ctor,
+			      tree inherited_parms, int flags, bool diag,
 			      tree *spec_p, bool *trivial_p,
 			      bool *deleted_p, bool *constexpr_p)
 {
@@ -3139,7 +3139,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     /* We're in get_defaulted_eh_spec; we don't actually want any walking
        diagnostics, we just want complain set.  */
     diag = false;
-  int quals = const_p ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED;
+  auto quals = const_p ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED;
 
   for (binfo = TYPE_BINFO (ctype), i = 0;
        BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
@@ -3540,7 +3540,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   else
     return_type = void_type_node;
 
-  int this_quals = TYPE_UNQUALIFIED;
+  auto this_quals = TYPE_UNQUALIFIED;
   switch (kind)
     {
     case sfk_destructor:

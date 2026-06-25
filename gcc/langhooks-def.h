@@ -177,7 +177,7 @@ extern const char *lhd_get_sarif_source_language (const char *);
 
 /* Tree dump hooks.  */
 extern bool lhd_tree_dump_dump_tree (void *, tree);
-extern int lhd_tree_dump_type_quals (const_tree);
+extern qualifier_set lhd_tree_dump_type_quals (const_tree);
 extern tree lhd_make_node (enum tree_code);
 
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN lhd_tree_dump_dump_tree

@@ -1475,10 +1475,16 @@ move (tree expr)
    the C version of this function does not properly maintain canonical
    types (which are not used in C).  */
 tree
-c_build_qualified_type (tree type, int type_quals, tree /* orig_qual_type */,
+c_build_qualified_type (tree type, qualifier_set type_quals,
+			tree /* orig_qual_type */,
 			size_t /* orig_qual_indirect */)
 {
-  return cp_build_qualified_type (type, type_quals);
+  cv_qualifier cv_quals;
+  addr_space_t as;
+  std::tie (cv_quals, as) = type_quals.split ();
+  /* No address space support yet.  */
+  gcc_assert (ADDR_SPACE_GENERIC_P (as));
+  return cp_build_qualified_type (type, cv_quals);
 }
 
 
@@ -1503,11 +1509,11 @@ c_build_qualified_type (tree type, int type_quals, tree /* orig_qual_type */,
    in a similar manner for restricting non-pointer types.  */
 
 tree
-cp_build_qualified_type (tree type, int type_quals,
+cp_build_qualified_type (tree type, cv_qualifier type_quals,
 			 tsubst_flags_t complain /* = tf_warning_or_error */)
 {
   tree result;
-  int bad_quals = TYPE_UNQUALIFIED;
+  auto bad_quals = TYPE_UNQUALIFIED;
 
   if (type == error_mark_node)
     return type;
@@ -1646,12 +1652,10 @@ cp_build_function_type (tree value_type, tree arg_types)
 tree
 cv_unqualified (tree type)
 {
-  int quals;
-
   if (type == error_mark_node)
     return type;
 
-  quals = cp_type_quals (type);
+  auto quals = cp_type_quals (type);
   quals &= ~(TYPE_QUAL_CONST|TYPE_QUAL_VOLATILE);
   return cp_build_qualified_type (type, quals);
 }
@@ -2455,8 +2459,9 @@ build_qualified_name (tree type, tree scope, tree name, bool template_p)
    parameters.  */
 
 static bool
-cp_check_qualified_type (const_tree cand, const_tree base, int type_quals,
-			 cp_ref_qualifier rqual, tree raises, bool late)
+cp_check_qualified_type (const_tree cand, const_tree base,
+			 cv_qualifier type_quals, cp_ref_qualifier rqual,
+			 tree raises, bool late)
 {
   return (TYPE_QUALS (cand) == type_quals
 	  && check_base_type (cand, base)
@@ -2944,7 +2949,14 @@ tree
 build_cp_fntype_variant (tree type, cp_ref_qualifier rqual,
 			 tree raises, bool late)
 {
-  cp_cv_quals type_quals = TYPE_QUALS (type);
+  cv_qualifier type_quals;
+  addr_space_t as;
+  std::tie (type_quals, as) = TYPE_QUALS (type).split ();
+  /* AS here is the address space of the method or function.  For the latter,
+     it won't ever make sense.  For the former, it may, one day, if we support
+     address space qualification on non-static member functions.  But not
+     today.  */
+  gcc_assert (ADDR_SPACE_GENERIC_P (as));
 
   if (cp_check_qualified_type (type, type, type_quals, rqual, raises, late))
     return type;
@@ -4676,7 +4688,7 @@ maybe_dummy_object (tree type, tree* binfop)
 	 non-lambda) 'this' if available.  */
       if (ctype)
 	{
-	  int quals = TYPE_UNQUALIFIED;
+	  auto quals = TYPE_UNQUALIFIED;
 	  if (tree lambda = CLASSTYPE_LAMBDA_EXPR (ctype))
 	    {
 	      if (tree cap = lambda_expr_this_capture (lambda, false))

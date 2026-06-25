@@ -1999,7 +1999,7 @@ plugin_build_method_type (cc1_plugin::connection *self,
 {
   tree class_type = convert_in (class_type_in);
   tree func_type = convert_in (func_type_in);
-  cp_cv_quals quals = 0;
+  cp_cv_quals quals {};
   cp_ref_qualifier rquals;
 
   if ((quals_in & GCC_CP_QUALIFIER_CONST) != 0)
@@ -3401,7 +3401,7 @@ plugin_build_qualified_type (cc1_plugin::connection *,
 			     enum gcc_cp_qualifiers qualifiers)
 {
   tree unqualified_type = convert_in (unqualified_type_in);
-  cp_cv_quals quals = 0;
+  cp_cv_quals quals {};
 
   if ((qualifiers & GCC_CP_QUALIFIER_CONST) != 0)
     quals |= TYPE_QUAL_CONST;

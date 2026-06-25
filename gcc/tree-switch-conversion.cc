@@ -1007,8 +1007,7 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
 						    ARTIFICIAL_RODATA_CSWITCH);
       if (!ADDR_SPACE_GENERIC_P (as))
 	{
-	  int quals = (TYPE_QUALS_NO_ADDR_SPACE (value_type)
-		       | ENCODE_QUAL_ADDR_SPACE (as));
+	  qualifier_set quals {TYPE_QUALS_NO_ADDR_SPACE (value_type), as};
 	  value_type = build_qualified_type (value_type, quals);
 	  array_type = build_array_type (value_type, arr_index_type);
 	}

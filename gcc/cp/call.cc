@@ -1279,7 +1279,7 @@ strip_top_quals (tree t)
 {
   if (TREE_CODE (t) == ARRAY_TYPE)
     return t;
-  return cp_build_qualified_type (t, 0);
+  return cp_build_qualified_type (t, TYPE_UNQUALIFIED);
 }
 
 /* Returns the standard conversion path (see [conv]) from type FROM to type
@@ -1452,7 +1452,7 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	{
 	  tree nfrom = TREE_TYPE (from);
 	  /* Don't try to apply restrict to void.  */
-	  int quals = cp_type_quals (nfrom) & ~TYPE_QUAL_RESTRICT;
+	  auto quals = cp_type_quals (nfrom) & ~TYPE_QUAL_RESTRICT;
 	  from_pointee = cp_build_qualified_type (void_type_node, quals);
 	  from = build_pointer_type (from_pointee);
 	  conv = build_conv (ck_ptr, from, conv);

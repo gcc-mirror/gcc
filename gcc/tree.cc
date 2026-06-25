@@ -76,6 +76,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "attr-callback.h"
 
+/* For qualifier_set::{join,merge}.  */
+#include "stdbackport/expected"
+
 /* Names of tree components.
    Used for printing out the tree and error messages.  */
 #define DEFTREECODE(SYM, NAME, TYPE, LEN) NAME,
@@ -282,7 +285,7 @@ static GTY ((cache ("gt_value_expr_mark")))
 static GTY ((cache))
      hash_table<tree_vec_map_cache_hasher> *debug_args_for_decl;
 
-static void set_type_quals (tree, int);
+static void set_type_quals (tree, qualifier_set);
 static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
@@ -5700,17 +5703,166 @@ protected_set_expr_location_if_unset (tree t, location_t loc)
     protected_set_expr_location (t, loc);
 }
 
-/* Set the type qualifiers for TYPE to TYPE_QUALS, which is a bitmask
-   of the various TYPE_QUAL values.  */
+
+/* Attempt to produce a qualifier_set that's a merge of qualifiers in THIS and
+   OTHER.  Such a qualifier set can be used instead of either THIS or OTHER
+   safely.  (i.e. if a type was qualified by either THIS or OTHER, it can be
+   qualified by their merge instead safely, possibly through a conversion)
+
+   This operation may fail.  In that case, the error value returned provides
+   reasoning for the failure.
+
+   If STRICT_ADDR_SPACE, then no address space mismatch is permitted.  This is
+   useful if merging below the top-level of pointers (i.e. in a case such as
+   'AS1 T**' vs 'AS2 T**').
+
+   You'll need to include stdbackport/expected to use this.  */
+
+gcc::expected<qualifier_set, qualifier_set::merge_error>
+qualifier_set::merge (qualifier_set other,
+		      bool strict_addr_space /* = false */) const
+{
+  using ME = qualifier_set::merge_error;
+
+  if (has (TYPE_QUAL_ATOMIC) != other.has (TYPE_QUAL_ATOMIC))
+    return gcc::make_unexpected (ME::atomic_mismatch);
+
+  auto cv_merged = cv_quals () | other.cv_quals ();
+  auto as1 = addr_space ();
+  auto as2 = other.addr_space ();
+
+  addr_space_t as_super;
+  if (as1 == as2)
+    as_super = as1;
+  else if (!strict_addr_space
+	   && targetm.addr_space.subset_p (as1, as2))
+    as_super = as2;
+  else if (!strict_addr_space
+	   && targetm.addr_space.subset_p (as2, as1))
+    as_super = as1;
+  else
+    return gcc::make_unexpected (ME::disjoint_address_spaces);
+
+  return qualifier_set {cv_merged, as_super};
+}
+
+/* Return a qualifier set that has all the qualifiers of THIS and OTHER.
+   Unlike 'merge', this operation operates purely syntactically; if THIS is
+   {q1_1, q1_2, ..., q1_i} and OTHER {q2_1, q2_2, ..., q2_j}, then returns the
+   qualifier set obtained by concatenating the sequences q1 and q2 without
+   duplicates, if such a qualifier set is valid.
+
+   Specifically, this implies that if THIS or OTHER both (syntactically)
+   contain an address space qualifier, and they're different, the operation
+   fails (even if one is subset of the other).
+
+   This operation may fail.  In that case, the error value returned provides
+   reasoning for the failure.
+
+   You'll need to include stdbackport/expected to use this.  */
+
+gcc::expected<qualifier_set, qualifier_set::join_error>
+qualifier_set::join (qualifier_set other) const
+{
+  using JE = qualifier_set::join_error;
+  auto cv_merged = cv_quals () | other.cv_quals ();
+  auto as1 = addr_space ();
+  auto as2 = other.addr_space ();
+
+  addr_space_t as = ADDR_SPACE_GENERIC;
+  if (as1 == as2)
+    as = as1;
+  else if (!ADDR_SPACE_GENERIC_P (as1) && !ADDR_SPACE_GENERIC_P (as2))
+    return gcc::make_unexpected (JE::double_addr_space);
+  else if (ADDR_SPACE_GENERIC_P (as1))
+    as = as2;
+  else
+    as = as1;
+
+  return qualifier_set {cv_merged, as};
+}
+
+/* Returns true if qualifiers in OTHER can be replaced with qualifiers in THIS
+   safely.
+
+   If !POINTEE, such a replacement is safe iff 'cv2 int *' can be converted
+   into 'cv1 int *' where cv1 are the qualifiers in THIS and cv2 the qualifiers
+   in OTHER.
+
+   Otherwise, such a replacement is safe iff 'cv2 int * const *' can be
+   converted into 'cv1 int * const *' with cv1 and cv2 as above.  */
+
+bool
+qualifier_set::superset_of (qualifier_set other,
+			    bool pointee /* = false */) const
+{
+  /* Compatible if THIS contains all of CVR of OTHER, has the same value of
+     the _Atomic qualifier as OTHER, and has a superset address space.
+
+     If POINTEE, then it must be possible to reinterpret the value of one
+     qualification as a value of the other qualification, and thus, the
+     address spaces must be strictly equal.  */
+  auto cv_this = cv_quals ();
+  auto cv_other = other.cv_quals ();
+  auto as_this = addr_space ();
+  auto as_other = other.addr_space ();
+  return ((cv_this & cv_other) == cv_other
+	  /* Differences in the _Atomic qualifier cannot be crossed.  */
+	  && (cv_this & TYPE_QUAL_ATOMIC) == (cv_other & TYPE_QUAL_ATOMIC)
+	  && (as_this == as_other
+	      || (!pointee
+		  && targetm.addr_space.subset_p (as_other, as_this))));
+}
+
+DEBUG_FUNCTION void
+qualifier_set::debug () const
+{
+  putc ('{', stderr);
+  cv_qualifier cv;
+  addr_space_t as;
+  std::tie (cv, as) = split ();
+  bool has_previous = false;
+  auto handle_bit = [&] (cv_qualifier bit, const char *lbl)
+  {
+    if (!(cv & bit))
+      return;
+
+    if (has_previous)
+      fputs (", ", stderr);
+
+    has_previous = true;
+    fputs (lbl, stderr);
+  };
+
+  handle_bit (TYPE_QUAL_CONST, "const");
+  handle_bit (TYPE_QUAL_VOLATILE, "volatile");
+  handle_bit (TYPE_QUAL_RESTRICT, "restrict");
+  handle_bit (TYPE_QUAL_ATOMIC, "_Atomic");
+
+  /* If new bits appear, let the developer know.  */
+  static_assert ((TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT
+		  | TYPE_QUAL_ATOMIC)
+		 == TYPE_QUAL_ALL,
+		"new qualifiers added, update handle_bit calls above");
+
+  if (has_previous)
+    fputs (", ", stderr);
+
+  fprintf (stderr, "AS%d", as);
+
+  fputs ("}\n", stderr);
+}
+
+/* Set the type qualifiers for TYPE to TYPE_QUALS.  */
 
 static void
-set_type_quals (tree type, int type_quals)
+set_type_quals (tree type, qualifier_set type_quals)
 {
-  TYPE_READONLY (type) = (type_quals & TYPE_QUAL_CONST) != 0;
-  TYPE_VOLATILE (type) = (type_quals & TYPE_QUAL_VOLATILE) != 0;
-  TYPE_RESTRICT (type) = (type_quals & TYPE_QUAL_RESTRICT) != 0;
-  TYPE_ATOMIC (type) = (type_quals & TYPE_QUAL_ATOMIC) != 0;
-  TYPE_ADDR_SPACE (type) = DECODE_QUAL_ADDR_SPACE (type_quals);
+  TYPE_READONLY (type) = type_quals.has (TYPE_QUAL_CONST);
+  TYPE_VOLATILE (type) = type_quals.has (TYPE_QUAL_VOLATILE);
+  TYPE_RESTRICT (type) = type_quals.has (TYPE_QUAL_RESTRICT);
+  TYPE_ATOMIC (type) = type_quals.has (TYPE_QUAL_ATOMIC);
+  TYPE_ADDR_SPACE (type) = type_quals.addr_space ();
 }
 
 /* Returns true iff CAND and BASE have equivalent language-specific
@@ -5786,7 +5938,7 @@ check_base_type (const_tree cand, const_tree base)
     return true;
   /* Atomic types increase minimal alignment.  We must to do so as well
      or we get duplicated canonical types. See PR88686.  */
-  if ((TYPE_QUALS (cand) & TYPE_QUAL_ATOMIC))
+  if (TYPE_QUALS (cand).has (TYPE_QUAL_ATOMIC))
     {
       /* See if this object can map to a basic atomic type.  */
       tree atomic_type = find_atomic_core_type (cand);
@@ -5799,7 +5951,7 @@ check_base_type (const_tree cand, const_tree base)
 /* Returns true iff CAND is equivalent to BASE with TYPE_QUALS.  */
 
 bool
-check_qualified_type (const_tree cand, const_tree base, int type_quals)
+check_qualified_type (const_tree cand, const_tree base, qualifier_set type_quals)
 {
   return (TYPE_QUALS (cand) == type_quals
 	  && check_base_type (cand, base)
@@ -5830,7 +5982,7 @@ check_aligned_type (const_tree cand, const_tree base, unsigned int align)
    return NULL_TREE.  */
 
 tree
-get_qualified_type (tree type, int type_quals)
+get_qualified_type (tree type, qualifier_set type_quals)
 {
   if (TYPE_QUALS (type) == type_quals)
     return type;
@@ -5862,7 +6014,7 @@ get_qualified_type (tree type, int type_quals)
    exist.  This function never returns NULL_TREE.  */
 
 tree
-build_qualified_type (tree type, int type_quals MEM_STAT_DECL)
+build_qualified_type (tree type, qualifier_set type_quals MEM_STAT_DECL)
 {
   tree t;
 
@@ -5875,7 +6027,7 @@ build_qualified_type (tree type, int type_quals MEM_STAT_DECL)
       t = build_variant_type_copy (type PASS_MEM_STAT);
       set_type_quals (t, type_quals);
 
-      if (((type_quals & TYPE_QUAL_ATOMIC) == TYPE_QUAL_ATOMIC))
+      if (type_quals.has (TYPE_QUAL_ATOMIC))
 	{
 	  /* See if this object can map to a basic atomic type.  */
 	  tree atomic_type = find_atomic_core_type (type);

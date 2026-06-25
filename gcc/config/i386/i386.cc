@@ -26215,7 +26215,7 @@ ix86_stack_protect_guard (void)
   if (TARGET_SSP_TLS_GUARD)
     {
       tree type_node = lang_hooks.types.type_for_mode (ptr_mode, 1);
-      int qual = ENCODE_QUAL_ADDR_SPACE (ix86_stack_protector_guard_reg);
+      qualifier_set qual {TYPE_UNQUALIFIED, ix86_stack_protector_guard_reg};
       tree type = build_qualified_type (type_node, qual);
       tree t;
 

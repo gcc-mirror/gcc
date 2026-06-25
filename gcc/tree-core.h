@@ -1,4 +1,4 @@
-/* Core data structures for the 'tree' type.
+/* Core data structures for the 'tree' type.  -*- C++ -*-
    Copyright (C) 1989-2026 Free Software Foundation, Inc.
 
 This file is part of GCC.
@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_CORE_H
 #define GCC_TREE_CORE_H
 
+#include "coretypes.h"
 #include "symtab.h"
 
 /* This file contains all the data structures that define the 'tree' type.
@@ -702,16 +703,75 @@ enum omp_memory_order {
 };
 #define OMP_FAIL_MEMORY_ORDER_SHIFT 3
 
-/* There is a TYPE_QUAL value for each type qualifier.  They can be
-   combined by bitwise-or to form the complete set of qualifiers for a
-   type.  */
-enum cv_qualifier {
+/* The cv_qualifier enum represents a set of the CV-style qualifiers (const,
+   volatile, restrict and atomic).  These are either present or absent on a
+   given type.  This set can be manipulated using the "usual" bit operations.
+
+   Note that this type does *not* represent all possible qualifiers.  Address
+   space qualification in particular is carried by addr_space_t.  The set of
+   all qualifiers a given type may carry is represented by qualifier_set.  */
+enum cv_qualifier : unsigned char {
   TYPE_UNQUALIFIED   = 0x0,
   TYPE_QUAL_CONST    = 0x1,
   TYPE_QUAL_VOLATILE = 0x2,
   TYPE_QUAL_RESTRICT = 0x4,
-  TYPE_QUAL_ATOMIC   = 0x8
+  TYPE_QUAL_ATOMIC   = 0x8,
+
+  /* Useful as a mask.  */
+  TYPE_QUAL_ALL = (TYPE_QUAL_CONST
+		   | TYPE_QUAL_VOLATILE
+		   | TYPE_QUAL_RESTRICT
+		   | TYPE_QUAL_ATOMIC)
 };
+
+/* Convenience operator, making it so that the bit-ops of two CV-qualifiers is
+   also of type cv_qualifier, rather than 'int'.  This is sound for
+   CV-qualifiers as they act like sets (unlike general qualifier sets, which
+   are slightly more complex).  */
+
+constexpr cv_qualifier
+operator| (cv_qualifier l, cv_qualifier r)
+{
+  return (cv_qualifier) ((static_cast<unsigned char> (l)
+			  | static_cast<unsigned char> (r))
+			 & TYPE_QUAL_ALL);
+}
+constexpr cv_qualifier &
+operator|= (cv_qualifier &l, cv_qualifier r)
+{
+  return l = l | r;
+}
+
+constexpr cv_qualifier
+operator& (cv_qualifier l, cv_qualifier r)
+{
+  return (cv_qualifier) (static_cast<unsigned char> (l)
+			 & static_cast<unsigned char> (r)
+			 & TYPE_QUAL_ALL);
+}
+constexpr cv_qualifier &
+operator&= (cv_qualifier &l, cv_qualifier r)
+{
+  return l = l & r;
+}
+
+constexpr cv_qualifier
+operator^ (cv_qualifier l, cv_qualifier r)
+{
+  return (cv_qualifier) ((static_cast<unsigned char> (l)
+			  ^ static_cast<unsigned char> (r))
+			 & TYPE_QUAL_ALL);
+}
+constexpr cv_qualifier &
+operator^= (cv_qualifier &l, cv_qualifier r)
+{
+  return l = l ^ r;
+}
+
+
+constexpr cv_qualifier
+operator~ (cv_qualifier x)
+{ return (cv_qualifier) (~static_cast<unsigned char> (x) & TYPE_QUAL_ALL); }
 
 /* Standard named or nameless data types of the C compiler.  */
 enum tree_index : unsigned {
@@ -1199,7 +1259,7 @@ struct GTY(()) tree_base {
 	 For CONSTRUCTOR nodes this holds the clobber_kind enum.
 	 The C++ front-end uses this in IDENTIFIER_NODE, REFLECT_EXPR, and
 	 NAMESPACE_DECL.  */
-      unsigned address_space : 8;
+      addr_space_t address_space : 8;
     } bits;
 
     /* The following fields are present in tree_base to save space.  The

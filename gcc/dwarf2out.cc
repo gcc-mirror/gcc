@@ -3869,8 +3869,8 @@ static void output_line_info (bool);
 static void output_file_names (void);
 static bool is_base_type (tree);
 static dw_die_ref subrange_type_die (tree, tree, tree, tree, dw_die_ref);
-static int decl_quals (const_tree);
-static dw_die_ref modified_type_die (tree, int, tree, bool, dw_die_ref);
+static cv_qualifier decl_quals (const_tree);
+static dw_die_ref modified_type_die (tree, cv_qualifier, tree, bool, dw_die_ref);
 static dw_die_ref generic_parameter_die (tree, tree, bool, dw_die_ref);
 static dw_die_ref template_parameter_pack_die (tree, tree, dw_die_ref);
 static unsigned int debugger_reg_number (const_rtx);
@@ -3938,7 +3938,7 @@ static dw_die_ref scope_die_for (tree, dw_die_ref);
 static inline bool local_scope_p (dw_die_ref);
 static inline bool class_scope_p (dw_die_ref);
 static inline bool class_or_namespace_scope_p (dw_die_ref);
-static void add_type_attribute (dw_die_ref, tree, int, bool, dw_die_ref);
+static void add_type_attribute (dw_die_ref, tree, cv_qualifier, bool, dw_die_ref);
 static void add_calling_convention_attribute (dw_die_ref, tree);
 static const char *type_tag (const_tree);
 static tree member_declared_type (const_tree);
@@ -13584,7 +13584,7 @@ subrange_type_die (tree type, tree low, tree high, tree bias,
    the decl node.  This will normally be augmented with the
    cv_qualifiers of the underlying type in add_type_attribute.  */
 
-static int
+static cv_qualifier
 decl_quals (const_tree decl)
 {
   return ((TREE_READONLY (decl)
@@ -13601,11 +13601,13 @@ decl_quals (const_tree decl)
    of the given TYPE_QUALS, and return its qualifiers.  Ignore all
    qualifiers outside QUAL_MASK.  */
 
-static int
-get_nearest_type_subqualifiers (tree type, int type_quals, int qual_mask)
+static cv_qualifier
+get_nearest_type_subqualifiers (tree type, cv_qualifier type_quals,
+				cv_qualifier qual_mask)
 {
   tree t;
-  int best_rank = 0, best_qual = 0, max_rank;
+  int best_rank = 0, max_rank;
+  cv_qualifier best_qual = TYPE_UNQUALIFIED;
 
   type_quals &= qual_mask;
   max_rank = popcount_hwi (type_quals) - 1;
@@ -13613,7 +13615,7 @@ get_nearest_type_subqualifiers (tree type, int type_quals, int qual_mask)
   for (t = TYPE_MAIN_VARIANT (type); t && best_rank < max_rank;
        t = TYPE_NEXT_VARIANT (t))
     {
-      int q = TYPE_QUALS (t) & qual_mask;
+      auto q = TYPE_QUALS (t).intersect (qual_mask);
 
       if ((q & type_quals) == q && q != type_quals
 	  && check_base_type (t, type))
@@ -13631,7 +13633,7 @@ get_nearest_type_subqualifiers (tree type, int type_quals, int qual_mask)
   return best_qual;
 }
 
-struct dwarf_qual_info_t { int q; enum dwarf_tag t; };
+struct dwarf_qual_info_t { cv_qualifier q; enum dwarf_tag t; };
 static const dwarf_qual_info_t dwarf_qual_info[] =
 {
   { TYPE_QUAL_CONST, DW_TAG_const_type },
@@ -13646,7 +13648,7 @@ static const unsigned int dwarf_qual_info_size = ARRAY_SIZE (dwarf_qual_info);
    qualifiers added compared to the returned DIE.  */
 
 static dw_die_ref
-qualified_die_p (dw_die_ref die, int *mask, unsigned int depth)
+qualified_die_p (dw_die_ref die, cv_qualifier *mask, unsigned int depth)
 {
   unsigned int i;
   for (i = 0; i < dwarf_qual_info_size; i++)
@@ -13902,7 +13904,7 @@ maybe_gen_btf_decl_tag_dies (tree t, dw_die_ref target)
    in the reverse storage order wrt the target order.  */
 
 static dw_die_ref
-modified_type_die (tree type, int cv_quals, tree type_attrs, bool reverse,
+modified_type_die (tree type, cv_qualifier cv_quals, tree type_attrs, bool reverse,
 		   dw_die_ref context_die)
 {
   enum tree_code code = TREE_CODE (type);
@@ -13915,8 +13917,8 @@ modified_type_die (tree type, int cv_quals, tree type_attrs, bool reverse,
   dw_die_ref mod_scope;
   struct array_descr_info info;
   /* Only these cv-qualifiers are currently handled.  */
-  const int cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
-			    | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC);
+  const auto cv_qual_mask = (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE
+			     | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC);
   /* DW_AT_endianity is specified only for base types in the standard.  */
   const bool reverse_type
     = need_endianity_attribute_p (reverse)
@@ -14027,7 +14029,7 @@ modified_type_die (tree type, int cv_quals, tree type_attrs, bool reverse,
 	}
       else
 	{
-	  int dquals = TYPE_QUALS_NO_ADDR_SPACE (dtype);
+	  auto dquals = TYPE_QUALS_NO_ADDR_SPACE (dtype);
 	  dquals &= cv_qual_mask;
 	  if ((dquals & ~cv_quals) != TYPE_UNQUALIFIED
 	      || (cv_quals == dquals && DECL_ORIGINAL_TYPE (name) != type))
@@ -14069,7 +14071,7 @@ modified_type_die (tree type, int cv_quals, tree type_attrs, bool reverse,
 
   if (cv_quals)
     {
-      int sub_quals = 0, first_quals = 0;
+      cv_qualifier sub_quals = TYPE_UNQUALIFIED, first_quals = TYPE_UNQUALIFIED;
       unsigned i;
       dw_die_ref first = NULL, last = NULL;
 
@@ -14090,7 +14092,7 @@ modified_type_die (tree type, int cv_quals, tree type_attrs, bool reverse,
 	      needed = true;
 	    else if (needed && (dwarf_qual_info[i].q & cv_quals))
 	      {
-		sub_quals = 0;
+		sub_quals = TYPE_UNQUALIFIED;
 		break;
 	      }
 	}
@@ -14115,7 +14117,7 @@ modified_type_die (tree type, int cv_quals, tree type_attrs, bool reverse,
 	       count < (1U << dwarf_qual_info_size);
 	       count++, last = last->die_sib)
 	    {
-	      int quals = 0;
+	      cv_qualifier quals = TYPE_UNQUALIFIED;
 	      if (last == mod_scope->die_child)
 		break;
 	      if (qualified_die_p (last->die_sib, &quals, dwarf_qual_info_size)
@@ -14132,7 +14134,7 @@ modified_type_die (tree type, int cv_quals, tree type_attrs, bool reverse,
 	      {
 		for (d = first->die_sib; ; d = d->die_sib)
 		  {
-		    int quals = 0;
+		    cv_qualifier quals = TYPE_UNQUALIFIED;
 		    qualified_die_p (d, &quals, dwarf_qual_info_size);
 		    if (quals == (first_quals | dwarf_qual_info[i].q))
 		      break;
@@ -22750,7 +22752,7 @@ class_or_namespace_scope_p (dw_die_ref context_die)
    adds a DW_AT_type attribute below the given die.  */
 
 static void
-add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
+add_type_attribute (dw_die_ref object_die, tree type, cv_qualifier cv_quals,
 		    bool reverse, dw_die_ref context_die)
 {
   enum tree_code code  = TREE_CODE (type);
@@ -22775,7 +22777,7 @@ add_type_attribute (dw_die_ref object_die, tree type, int cv_quals,
     return;
 
   type_die = modified_type_die (type,
-				cv_quals | TYPE_QUALS (type),
+				cv_quals | TYPE_QUALS_NO_ADDR_SPACE (type),
 				TYPE_ATTRIBUTES (type),
 				reverse,
 				context_die);
@@ -24872,7 +24874,7 @@ override_type_for_decl_p (tree decl, dw_die_ref old_die,
 			  dw_die_ref context_die)
 {
   tree type = TREE_TYPE (decl);
-  int cv_quals;
+  cv_qualifier cv_quals;
 
   if (decl_by_reference_p (decl))
     {
@@ -24884,7 +24886,7 @@ override_type_for_decl_p (tree decl, dw_die_ref old_die,
 
   dw_die_ref type_die
     = modified_type_die (type,
-			 cv_quals | TYPE_QUALS (type),
+			 cv_quals | TYPE_QUALS_NO_ADDR_SPACE (type),
 			 TYPE_ATTRIBUTES (type),
 			 false,
 			 context_die);

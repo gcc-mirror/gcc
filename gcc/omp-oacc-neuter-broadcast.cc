@@ -573,7 +573,9 @@ install_var_field (tree var, tree record_type, field_map_t *fields)
 
   if (POINTER_TYPE_P (type)
       && TYPE_RESTRICT (type))
-    type = build_qualified_type (type, TYPE_QUALS (type) & ~TYPE_QUAL_RESTRICT);
+    type = build_qualified_type (type,
+				 TYPE_QUALS (type)
+				 .without (TYPE_QUAL_RESTRICT));
 
   tree field = build_decl (BUILTINS_LOCATION, FIELD_DECL, name, type);
 

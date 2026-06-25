@@ -21,8 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_H
 
 #include "tree-core.h"
+#include "coretypes.h"
 #include "options.h"
 #include "vec.h"
+#include "stdbackport/expectedfwd"
 
 /* Convert a target-independent built-in function code to a combined_fn.  */
 
@@ -2581,39 +2583,267 @@ extern tree vector_element_bits_tree (const_tree);
 /* The address space the type is in.  */
 #define TYPE_ADDR_SPACE(NODE) (TYPE_CHECK (NODE)->base.u.bits.address_space)
 
-/* Encode/decode the named memory support as part of the qualifier.  If more
-   than 8 qualifiers are added, these macros need to be adjusted.  */
-#define ENCODE_QUAL_ADDR_SPACE(NUM) (((NUM) & 0xFF) << 8)
-#define DECODE_QUAL_ADDR_SPACE(X) (((X) >> 8) & 0xFF)
+/* A qualifier set is the aggregate of all qualifiers on a given type.  It
+   consists of the 'const', 'volatile', 'restrict', and 'atomic' qualification,
+   which are all either present or absent, and an address space qualifier,
+   which is always present (but possibly ADDR_SPACE_GENERIC).  */
 
-/* Return all qualifiers except for the address space qualifiers.  */
-#define CLEAR_QUAL_ADDR_SPACE(X) ((X) & ~0xFF00)
+struct qualifier_set
+{
+  /* Construct an empty qualifier set with the generic address space.  Such a
+     qualifier set corresponds to unqualified types.
 
-/* Only keep the address space out of the qualifiers and discard the other
-   qualifiers.  */
-#define KEEP_QUAL_ADDR_SPACE(X) ((X) & 0xFF00)
+     This constructor is guaranteed to be trivial, so that it is possible to
+     initialize an empty qualifier set in a given location using a zeroing
+     'memset'.
 
-/* The set of type qualifiers for this type.  */
-#define TYPE_QUALS(NODE)					\
-  ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
-	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
-	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
-	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)		\
-	  | (ENCODE_QUAL_ADDR_SPACE (TYPE_ADDR_SPACE (NODE)))))
+     This is currently relied on for 'c_declarator' and 'cp_declarator', which
+     are initialized via 'memset', and which store qualifier sets in unions.
+
+     Note that this means that a declaration like:
+
+       qualifier_set qs;
+
+     ... leaves 'qs' uninitialized.  Always specify an initializer, like so:
+
+       qualifier_set qs {};  */
+  qualifier_set () = default;
+
+  /* Construct a qualifier set containing the qualifiers CV_QUALS and the
+     generic address space.  */
+  constexpr
+  qualifier_set (cv_qualifier cv_quals)
+    : m_cv_quals {cv_quals}
+    , m_addr_space {ADDR_SPACE_GENERIC}
+  {}
+
+  /* Construct a qualifier set containing the qualifiers CV_QUALS and the
+     address space AS.  */
+  constexpr
+  qualifier_set (cv_qualifier cv_quals, addr_space_t as)
+    : m_cv_quals {cv_quals}
+    , m_addr_space {as}
+  {}
+
+  /* Add QUAL to this qualifier set.  */
+  constexpr void
+  add (cv_qualifier qual)
+  {
+    m_cv_quals |= qual;
+  }
+
+  /* Remove QUAL from this qualifier set.  */
+  constexpr void
+  remove (cv_qualifier qual)
+  {
+    m_cv_quals &= ~qual;
+  }
+
+  /* Set the address space of this qualifier set to AS.  */
+  constexpr void
+  set_as (addr_space_t as)
+  {
+    this->m_addr_space = as;
+  }
+
+  /* Returns a new qualifier set, with QUAL added (as with 'add').  */
+  WARN_UNUSED_RESULT constexpr qualifier_set
+  with (cv_qualifier qual) const
+  {
+    auto ret = *this;
+    ret.add (qual);
+    return ret;
+  }
+
+  /* Returns a new qualifier set, with QUAL removed (as with 'remove').  */
+  WARN_UNUSED_RESULT constexpr qualifier_set
+  without (cv_qualifier qual) const
+  {
+    auto ret = *this;
+    ret.remove (qual);
+    return ret;
+  }
+
+  /* Return this qualifier set, with address space set to AS.  */
+  WARN_UNUSED_RESULT constexpr qualifier_set
+  with_as (addr_space_t as) const
+  {
+    auto ret = *this;
+    ret.set_as (as);
+    return ret;
+  }
+
+  /* Get CV qualifiers of this qualifier set.
+
+     Using this getter alone is usually a mistake; most of the time, where
+     there is a qualifier_set, there should be handling for all its components,
+     rather than just one of them.  Prefer using 'split' at least once in a
+     given hunk.  */
+  constexpr cv_qualifier
+  cv_quals () const
+  { return m_cv_quals; }
+
+  /* Get address space qualifier of this qualifier set.
+
+     Using this getter alone is usually a mistake; most of the time, where
+     there is a qualifier_set, there should be handling for all its components,
+     rather than just one of them.  Prefer using 'split' at least once in a
+     given hunk.  */
+  constexpr addr_space_t
+  addr_space () const
+  { return m_addr_space; }
+
+  /* Return all qualifiers both in this qualifier set and in OTHER_CV.  */
+  WARN_UNUSED_RESULT constexpr cv_qualifier
+  intersect (cv_qualifier other_cv) const
+  { return cv_quals () & other_cv; }
+
+  /* Return true iff any of OTHER_CV are contained in THIS.  */
+  constexpr bool
+  has (cv_qualifier other_cv) const
+  { return intersect (other_cv); }
+
+  /* Get the symmetric difference of this qualifier set with CV-qualifiers
+     QUAL.  Of course, as QUAL lacks an address space, the address space of
+     this qualifier set is preserved.  */
+  WARN_UNUSED_RESULT constexpr qualifier_set
+  symmetric_difference (cv_qualifier qual) const
+  {
+    return {cv_quals () ^ qual, addr_space ()};
+  }
+
+  bool superset_of (qualifier_set subset, bool nop_only = false) const;
+
+  enum class merge_error : unsigned char
+  {
+    /* The address spaces of the to-be-merged qualifier sets were disjoint,
+       i.e. neither contained the other.  */
+    disjoint_address_spaces,
+
+    /* The to-be-merged qualifier sets differed in TYPE_QUAL_ATOMIC.  */
+    atomic_mismatch,
+  };
+
+  gcc::expected<qualifier_set, merge_error>
+  merge (qualifier_set other, bool strict_addr_space = false) const;
+
+  enum class join_error : unsigned char
+  {
+    /* The joined qualifier set would've contained two address space
+       qualifiers.  */
+    double_addr_space,
+  };
+
+  gcc::expected<qualifier_set, join_error> join (qualifier_set other) const;
+
+  friend constexpr bool
+  operator== (const qualifier_set &a, const qualifier_set &b)
+  {
+    return ((a.cv_quals () == b.cv_quals ())
+	    && (a.addr_space () == b.addr_space ()));
+  }
+
+  friend constexpr bool
+  operator!= (const qualifier_set &a, const qualifier_set &b)
+  {
+    return !(a == b);
+  }
+
+  /* Split this qualifier set into its constituent parts.  Useful where you
+     need to make sure you've handled all the components of a qualifier
+     set.  */
+
+  constexpr std::pair<cv_qualifier, addr_space_t>
+  split () const
+  { return std::make_pair (cv_quals (), addr_space ()); }
+
+  /* True iff this qualifier set is different to {ADDR_SPACE_GENERIC} (i.e. if
+     it is syntactically non-empty).  */
+  constexpr bool
+  nonempty_p () const
+  { return *this != qualifier_set {}; }
+
+  /* Shorthand for 'nonempty_p', for use in conditions.  */
+  explicit constexpr
+  operator bool () const
+  { return nonempty_p (); }
+
+  /* Dump the contents of this qualifier set to stderr.  */
+  void debug () const;
+
+private:
+  cv_qualifier m_cv_quals;
+  addr_space_t m_addr_space;
+};
+static_assert (std::is_trivially_copyable<qualifier_set>::value, "");
+static_assert (std::is_trivially_destructible<qualifier_set>::value, "");
+static_assert (std::is_trivially_default_constructible<qualifier_set>::value,
+	       "");
+static_assert ((qualifier_set {}
+		== qualifier_set {TYPE_UNQUALIFIED,
+				  ADDR_SPACE_GENERIC}),
+	       "We want the trivial default constructor to create a "
+	       "syntactically-empty qualifier set");
+
+/* Operators & and &= are intentionally omitted, as they permit losing
+   information too easily, and silently changed the meaning of existing code.
+   Use 'superset_of', 'intersect' and 'has' instead.  */
+
+/* For OR (union) and XOR (mutual difference) operations, we could keep an
+   address space, ergo we must return qualifier_sets.  */
+
+constexpr qualifier_set
+operator| (qualifier_set qs, cv_qualifier cvs)
+{
+  return qs.with (cvs);
+}
+
+constexpr qualifier_set
+operator| (cv_qualifier cvs, qualifier_set qs)
+{
+  return qs.with (cvs);
+}
+
+constexpr qualifier_set
+operator^ (qualifier_set qs, cv_qualifier cvs)
+{
+  return qs.symmetric_difference (cvs);
+}
+
+constexpr qualifier_set
+operator^ (cv_qualifier cvs, qualifier_set qs)
+{
+  return qs.symmetric_difference (cvs);
+}
+
+constexpr qualifier_set &
+operator|= (qualifier_set &qs, cv_qualifier quals)
+{
+  return qs = qs | quals;
+}
+constexpr qualifier_set &
+operator^= (qualifier_set &qs, cv_qualifier quals)
+{
+  return qs = qs ^ quals;
+}
 
 /* The same as TYPE_QUALS without the address space qualifications.  */
-#define TYPE_QUALS_NO_ADDR_SPACE(NODE)				\
-  ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
-	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
-	  | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
-	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
+#define TYPE_QUALS_NO_ADDR_SPACE(NODE)					\
+  (cv_qualifier ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
+		 | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
+		 | (TYPE_ATOMIC (NODE) * TYPE_QUAL_ATOMIC)		\
+		 | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
+
+/* The set of type qualifiers for this type.  */
+#define TYPE_QUALS(NODE)			\
+  (qualifier_set {(TYPE_QUALS_NO_ADDR_SPACE (NODE)), (TYPE_ADDR_SPACE (NODE))})
 
 /* The same as TYPE_QUALS without the address space and atomic
    qualifications.  */
-#define TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC(NODE)		\
-  ((int) ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
-	  | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
-	  | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
+#define TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC(NODE)			\
+  (cv_qualifier ((TYPE_READONLY (NODE) * TYPE_QUAL_CONST)		\
+		 | (TYPE_VOLATILE (NODE) * TYPE_QUAL_VOLATILE)		\
+		 | (TYPE_RESTRICT (NODE) * TYPE_QUAL_RESTRICT)))
 
 /* These flags are available for each language front end to use internally.  */
 #define TYPE_LANG_FLAG_0(NODE) (TYPE_CHECK (NODE)->type_common.lang_flag_0)
@@ -5283,18 +5513,18 @@ extern bool check_base_type (const_tree cand, const_tree base);
 /* Check whether CAND is suitable to be returned from get_qualified_type
    (BASE, TYPE_QUALS).  */
 
-extern bool check_qualified_type (const_tree, const_tree, int);
+extern bool check_qualified_type (const_tree, const_tree, qualifier_set);
 
 /* Return a version of the TYPE, qualified as indicated by the
    TYPE_QUALS, if one exists.  If no qualified version exists yet,
    return NULL_TREE.  */
 
-extern tree get_qualified_type (tree, int);
+extern tree get_qualified_type (tree, qualifier_set);
 
 /* Like get_qualified_type, but creates the type if it does not
    exist.  This function never returns NULL_TREE.  */
 
-extern tree build_qualified_type (tree, int CXX_MEM_STAT_INFO);
+extern tree build_qualified_type (tree, qualifier_set CXX_MEM_STAT_INFO);
 
 /* Create a variant of type T with alignment ALIGN.  */
 
@@ -5306,9 +5536,10 @@ extern tree build_aligned_type (tree, unsigned int);
    build_qualified_type instead.  */
 
 #define build_type_variant(TYPE, CONST_P, VOLATILE_P)			\
-  build_qualified_type ((TYPE),						\
-			((CONST_P) ? TYPE_QUAL_CONST : 0)		\
-			| ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : 0))
+  (build_qualified_type							\
+   ((TYPE),								\
+    (((CONST_P) ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED)			\
+     | ((VOLATILE_P) ? TYPE_QUAL_VOLATILE : TYPE_UNQUALIFIED))))
 
 /* Make a copy of a type node.  */
 

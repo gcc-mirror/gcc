@@ -11979,7 +11979,8 @@ avr_addr_space_for_artificial_rodata (tree /*type*/,
 {
   return avr_rodata_in_flash_p ()
     ? ADDR_SPACE_GENERIC
-    : avropt_n_flash > 1 ? ADDR_SPACE_FLASHX : ADDR_SPACE_FLASH;
+    : ((addr_space_t) (avropt_n_flash > 1
+		       ? ADDR_SPACE_FLASHX : ADDR_SPACE_FLASH));
 }
 
 
@@ -16521,7 +16522,7 @@ avr_ftype_strlen (addr_space_t as)
 {
   tree const_AS_char_node
     = build_qualified_type (char_type_node,
-			    TYPE_QUAL_CONST | ENCODE_QUAL_ADDR_SPACE (as));
+			    qualifier_set {TYPE_QUAL_CONST, as});
   tree const_AS_ptr_type_node
     = build_pointer_type_for_mode (const_AS_char_node,
 				   avr_addr_space_pointer_mode (as), false);
@@ -16578,8 +16579,7 @@ avr_init_builtins (void)
 
   tree const_memx_void_node
     = build_qualified_type (void_type_node,
-			    TYPE_QUAL_CONST
-			    | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_MEMX));
+			    qualifier_set {TYPE_QUAL_CONST, ADDR_SPACE_MEMX});
 
   tree const_memx_ptr_type_node
     = build_pointer_type_for_mode (const_memx_void_node, PSImode, false);

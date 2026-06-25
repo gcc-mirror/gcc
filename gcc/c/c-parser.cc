@@ -4853,12 +4853,12 @@ c_parser_typeof_specifier (c_parser *parser)
       if (is_unqual)
 	{
 	  bool is_array = TREE_CODE (ret.spec) == ARRAY_TYPE;
-	  int quals = TYPE_QUALS (strip_array_types (ret.spec));
-	  if ((is_array ? quals & ~TYPE_QUAL_ATOMIC : quals)
+	  auto quals = TYPE_QUALS (strip_array_types (ret.spec));
+	  if ((is_array ? quals.without (TYPE_QUAL_ATOMIC) : quals)
 	      != TYPE_UNQUALIFIED)
 	    {
 	      ret.spec = TYPE_MAIN_VARIANT (ret.spec);
-	      if (quals & TYPE_QUAL_ATOMIC && is_array)
+	      if (quals.has (TYPE_QUAL_ATOMIC) && is_array)
 		ret.spec = c_build_qualified_type (ret.spec,
 						   TYPE_QUAL_ATOMIC);
 	    }
@@ -13932,7 +13932,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
 	 restrict qualified or have a member with such a qualifier.
 	 const qualification is implicitly added.  */
       if (TYPE_QUALS (type_no_array)
-	  & (TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC))
+	  .has (TYPE_QUAL_VOLATILE | TYPE_QUAL_RESTRICT | TYPE_QUAL_ATOMIC))
 	error_at (type_loc, "invalid qualifiers for %<constexpr%> object");
       else if (RECORD_OR_UNION_TYPE_P (type_no_array)
 	       && C_TYPE_FIELDS_NON_CONSTEXPR (type_no_array))

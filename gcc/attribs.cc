@@ -726,7 +726,7 @@ decl_attributes (tree *node, tree attributes, int flags,
       tree *anode = node;
       const struct attribute_spec *spec
 	= lookup_scoped_attribute_spec (ns, name);
-      int fn_ptr_quals = 0;
+      qualifier_set fn_ptr_quals {};
       tree fn_ptr_tmp = NULL_TREE;
       const bool cxx11_attr_p = cxx11_attribute_p (attr);
 
@@ -1307,7 +1307,8 @@ build_decl_attribute_variant (tree ddecl, tree attribute)
    Record such modified types already made so we don't make duplicates.  */
 
 tree
-build_type_attribute_qual_variant (tree otype, tree attribute, int quals)
+build_type_attribute_qual_variant (tree otype, tree attribute,
+				   qualifier_set quals)
 {
   tree ttype = otype;
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
@@ -2720,7 +2721,7 @@ attr_access::array_as_string (tree type) const
 	  arat = build_tree_list (get_identifier ("array "), flag);
 	}
 
-      const int quals = TYPE_QUALS (type);
+      const auto quals = TYPE_QUALS (type);
       type = build_array_type (eltype, index_type);
       type = build_type_attribute_qual_variant (type, arat, quals);
     }

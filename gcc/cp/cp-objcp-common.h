@@ -42,6 +42,7 @@ extern tree cxx_simulate_enum_decl (location_t, const char *,
 				    vec<string_int_pair> *);
 extern tree cxx_simulate_record_decl (location_t, const char *,
 				      array_slice<const tree>);
+extern qualifier_set cp_type_quals_as_set (const_tree type);
 
 /* Lang hooks that are shared between C++ and ObjC++ are defined here.  Hooks
    specific to C++ or ObjC++ go in cp/cp-lang.cc and objcp/objcp-lang.cc,
@@ -142,7 +143,7 @@ static const scoped_attribute_specs *const cp_objcp_attribute_table[] =
 #undef LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN
 #define LANG_HOOKS_TREE_DUMP_DUMP_TREE_FN cp_dump_tree
 #undef LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN
-#define LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN cp_type_quals
+#define LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN cp_type_quals_as_set
 
 #undef LANG_HOOKS_MAKE_TYPE
 #define LANG_HOOKS_MAKE_TYPE cxx_make_type_hook

@@ -6906,7 +6906,7 @@ inline tree ovl_op_identifier (tree_code code) { return ovl_op_identifier (false
 /* A type-qualifier, or bitmask therefore, using the TYPE_QUAL
    constants.  */
 
-typedef int cp_cv_quals;
+typedef cv_qualifier cp_cv_quals;
 
 /* Non-static member functions have an optional virt-specifier-seq.
    There is a VIRT_SPEC value for each virt-specifier.
@@ -8025,7 +8025,7 @@ extern tree get_copy_ctor			(tree, tsubst_flags_t);
 extern tree get_copy_assign			(tree);
 extern tree get_default_ctor			(tree);
 extern tree get_dtor				(tree, tsubst_flags_t);
-extern tree build_stub_type			(tree, int, bool);
+extern tree build_stub_type			(tree, cv_qualifier, bool);
 extern tree build_stub_object			(tree);
 extern bool is_stub_object			(tree);
 extern tree build_invoke			(tree, const_tree,
@@ -8889,7 +8889,7 @@ extern tree make_ptrmem_cst			(tree, tree);
 extern tree cp_build_type_attribute_variant     (tree, tree);
 extern tree cp_build_reference_type		(tree, bool);
 extern tree move				(tree);
-extern tree cp_build_qualified_type		(tree, int,
+extern tree cp_build_qualified_type		(tree, cv_qualifier,
 						 tsubst_flags_t = tf_warning_or_error);
 extern tree cp_build_function_type		(tree, tree);
 extern bool cv_qualified_p			(const_tree);
@@ -9052,14 +9052,14 @@ extern bool error_type_p			(const_tree);
 extern bool ptr_reasonably_similar		(const_tree, const_tree);
 extern tree build_ptrmemfunc			(tree, tree, int, bool,
 						 tsubst_flags_t);
-extern int cp_type_quals			(const_tree);
-extern int type_memfn_quals			(const_tree);
+extern cv_qualifier cp_type_quals		(const_tree);
+extern cv_qualifier type_memfn_quals		(const_tree);
 extern cp_ref_qualifier type_memfn_rqual	(const_tree);
 extern tree apply_memfn_quals			(tree, cp_cv_quals,
 						 cp_ref_qualifier = REF_QUAL_NONE);
 extern bool cp_has_mutable_p			(const_tree);
 extern bool at_least_as_qualified_p		(const_tree, const_tree);
-extern void cp_apply_type_quals_to_decl		(int, tree);
+extern void cp_apply_type_quals_to_decl		(cv_qualifier, tree);
 extern tree build_ptrmemfunc1			(tree, tree, tree);
 extern void expand_ptrmemfunc_cst		(tree, tree *, tree *);
 extern tree type_after_usual_arithmetic_conversions (tree, tree);

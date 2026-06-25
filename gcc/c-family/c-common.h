@@ -897,7 +897,10 @@ extern bool decl_with_nonnull_addr_p (const_tree);
 extern tree c_fully_fold (tree, bool, bool *, bool = false);
 extern tree c_wrap_maybe_const (tree, bool);
 extern tree c_common_truthvalue_conversion (location_t, tree);
-extern void c_apply_type_quals_to_decl (int, tree);
+extern void c_apply_type_quals_to_decl (cv_qualifier, tree);
+inline void
+c_apply_type_quals_to_decl (qualifier_set qs, tree decl)
+{ c_apply_type_quals_to_decl (qs.cv_quals (), decl); }
 extern tree c_sizeof_or_alignof_type (location_t, tree, bool, bool, int);
 extern tree c_alignof_expr (location_t, tree);
 extern tree c_countof_type (location_t, tree);
@@ -975,7 +978,8 @@ extern tree pointer_int_sum (location_t, enum tree_code, tree, tree,
 			     bool = true);
 
 /* Add qualifiers to a type, in the fashion for C.  */
-extern tree c_build_qualified_type (tree, int, tree = NULL_TREE, size_t = 0);
+extern tree c_build_qualified_type (tree, qualifier_set, tree = NULL_TREE,
+				    size_t = 0);
 
 /* Build tree nodes and builtin functions common to both C and C++ language
    frontends.  */

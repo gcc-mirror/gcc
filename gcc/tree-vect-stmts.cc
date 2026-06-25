@@ -13521,7 +13521,8 @@ get_related_vectype_for_scalar_type (machine_mode prevailing_mode,
      type.  */
   if (TYPE_ADDR_SPACE (orig_scalar_type) != TYPE_ADDR_SPACE (vectype))
     return build_qualified_type
-	     (vectype, KEEP_QUAL_ADDR_SPACE (TYPE_QUALS (orig_scalar_type)));
+      (vectype, qualifier_set {TYPE_UNQUALIFIED,
+			       TYPE_ADDR_SPACE (orig_scalar_type)});
 
   return vectype;
 }

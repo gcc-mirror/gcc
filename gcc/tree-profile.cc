@@ -2114,7 +2114,7 @@ tree_profiling (void)
 		tree fntype = gimple_call_fntype (call);
 		if (fntype && TYPE_READONLY (fntype))
 		  {
-		    int quals = TYPE_QUALS (fntype) & ~TYPE_QUAL_CONST;
+		    auto quals = TYPE_QUALS (fntype).without (TYPE_QUAL_CONST);
 		    fntype = build_qualified_type (fntype, quals);
 		    gimple_call_set_fntype (call, fntype);
 		  }

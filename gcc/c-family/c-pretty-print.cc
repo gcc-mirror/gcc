@@ -168,7 +168,8 @@ pp_c_exclamation (c_pretty_printer *pp)
 /* Print out the external representation of QUALIFIERS.  */
 
 void
-pp_c_cv_qualifiers (c_pretty_printer *pp, int qualifiers, bool func_type)
+pp_c_cv_qualifiers (c_pretty_printer *pp, cv_qualifier qualifiers,
+		    bool func_type)
 {
   const char *p = pp_last_position_in_text (pp);
 
@@ -242,7 +243,7 @@ pp_c_space_for_pointer_operator (c_pretty_printer *pp, tree t)
 void
 pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
 {
-  int qualifiers;
+  cv_qualifier qualifiers;
 
   if (!t || t == error_mark_node)
     return;
@@ -252,7 +253,7 @@ pp_c_type_qualifier_list (c_pretty_printer *pp, tree t)
 
   if (TREE_CODE (t) != ARRAY_TYPE)
     {
-      qualifiers = TYPE_QUALS (t);
+      qualifiers = TYPE_QUALS_NO_ADDR_SPACE (t);
       pp_c_cv_qualifiers (pp, qualifiers,
 			  TREE_CODE (t) == FUNCTION_TYPE);
     }
@@ -627,7 +628,7 @@ c_pretty_printer::direct_abstract_declarator (tree t)
     case ARRAY_TYPE:
       pp_c_left_bracket (this);
 
-      if (int quals = TYPE_QUALS (t))
+      if (auto quals = TYPE_QUALS_NO_ADDR_SPACE (t))
 	{
 	  /* Print the array qualifiers such as in "T[const restrict 3]".  */
 	  pp_c_cv_qualifiers (this, quals, false);

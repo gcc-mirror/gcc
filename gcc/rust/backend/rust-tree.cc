@@ -956,10 +956,9 @@ decl_maybe_constant_var_p (tree decl)
 /* Returns the type qualifiers for this type, including the qualifiers on the
    elements for an array type.  */
 
-int
+cv_qualifier
 rs_type_quals (const_tree type)
 {
-  int quals;
   /* This CONST_CAST is okay because strip_array_types returns its
      argument unmodified and we assign it to a const_tree.  */
   type = strip_array_types (const_cast<tree> (type));
@@ -967,12 +966,17 @@ rs_type_quals (const_tree type)
       /* Quals on a FUNCTION_TYPE are memfn quals.  */
       || TREE_CODE (type) == FUNCTION_TYPE)
     return TYPE_UNQUALIFIED;
-  quals = TYPE_QUALS (type);
+
+  addr_space_t addr_space;
+  cv_qualifier quals;
+  std::tie (quals, addr_space) = TYPE_QUALS (type).split ();
   /* METHOD and REFERENCE_TYPEs should never have quals.  */
   // gcc_assert (
   //   (TREE_CODE (type) != METHOD_TYPE && !TYPE_REF_P (type))
   //   || ((quals & (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE)) ==
   //   TYPE_UNQUALIFIED));
+  /* At the moment, the Rust front-end does not do address spaces.  */
+  gcc_assert (ADDR_SPACE_GENERIC_P (addr_space));
   return quals;
 }
 
@@ -1297,15 +1301,24 @@ lookup_add (tree fns, tree lookup)
 /* Returns the function-cv-quals for TYPE, which must be a FUNCTION_TYPE or
    METHOD_TYPE.  */
 
-int
+cv_qualifier
 type_memfn_quals (const_tree type)
 {
+  qualifier_set quals;
   if (TREE_CODE (type) == FUNCTION_TYPE)
-    return TYPE_QUALS (type);
+    quals = TYPE_QUALS (type);
   else if (TREE_CODE (type) == METHOD_TYPE)
-    return rs_type_quals (class_of_this_parm (type));
+    quals = rs_type_quals (class_of_this_parm (type));
   else
     rust_unreachable ();
+
+  addr_space_t as;
+  cv_qualifier cv;
+  std::tie (cv, as) = quals.split ();
+  /* These should never include an address space, at least for the time
+     being.  */
+  gcc_checking_assert (ADDR_SPACE_GENERIC_P (as));
+  return cv;
 }
 
 // forked from gcc/cp/pt.cc find_parameter_pack_data
@@ -2507,11 +2520,11 @@ build_cplus_array_type (tree elt_type, tree index_type, int dependent)
    in a similar manner for restricting non-pointer types.  */
 
 tree
-rs_build_qualified_type_real (tree type, int type_quals,
+rs_build_qualified_type_real (tree type, cv_qualifier type_quals,
 			      tsubst_flags_t complain)
 {
   tree result;
-  int bad_quals = TYPE_UNQUALIFIED;
+  auto bad_quals = TYPE_UNQUALIFIED;
 
   if (type == error_mark_node)
     return type;
@@ -3328,12 +3341,10 @@ check_for_uninitialized_const_var (tree decl, bool constexpr_context_p,
 tree
 cv_unqualified (tree type)
 {
-  int quals;
-
   if (type == error_mark_node)
     return type;
 
-  quals = rs_type_quals (type);
+  auto quals = rs_type_quals (type);
   quals &= ~(TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
   return rs_build_qualified_type (type, quals);
 }
@@ -3848,7 +3859,7 @@ strip_top_quals (tree t)
 {
   if (TREE_CODE (t) == ARRAY_TYPE)
     return t;
-  return rs_build_qualified_type (t, 0);
+  return rs_build_qualified_type (t, TYPE_UNQUALIFIED);
 }
 
 // forked from gcc/cp/typeck2.cc cxx_incomplete_type_inform

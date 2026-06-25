@@ -3038,9 +3038,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      process_attributes (&gnu_type, &attr_list, false, gnat_entity);
 	      if (Treat_As_Volatile (gnat_entity))
 		{
-		  const int quals
+		  const auto quals
 		    = TYPE_QUAL_VOLATILE
-		      | (Is_Full_Access (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+		      | (Is_Full_Access (gnat_entity)
+			 ? TYPE_QUAL_ATOMIC : TYPE_UNQUALIFIED);
 		  gnu_type = change_qualified_type (gnu_type, quals);
 		}
 	      /* Make it artificial only if the base type was artificial too.
@@ -4989,9 +4990,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       if (Treat_As_Volatile (gnat_entity)
 	  && !Is_Packed_Array_Impl_Type (gnat_entity))
 	{
-	  const int quals
+	  const auto quals
 	    = TYPE_QUAL_VOLATILE
-	      | (Is_Full_Access (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+	      | (Is_Full_Access (gnat_entity)
+		 ? TYPE_QUAL_ATOMIC : TYPE_UNQUALIFIED);
 	  /* This is required by free_lang_data_in_type to disable the ODR.  */
 	  if (TREE_CODE (gnu_type) == ENUMERAL_TYPE)
 	    TYPE_STUB_DECL (gnu_type)
@@ -5663,9 +5665,10 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
 
   if (Has_Volatile_Components (gnat_array))
     {
-      const int quals
+      const auto quals
 	= TYPE_QUAL_VOLATILE
-	  | (Has_Atomic_Components (gnat_array) ? TYPE_QUAL_ATOMIC : 0);
+	  | (Has_Atomic_Components (gnat_array)
+	     ? TYPE_QUAL_ATOMIC : TYPE_UNQUALIFIED);
       gnu_type = change_qualified_type (gnu_type, quals);
     }
 

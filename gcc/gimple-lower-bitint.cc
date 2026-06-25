@@ -644,8 +644,8 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
   if (DECL_P (var) && tree_fits_uhwi_p (idx))
     {
       if (as != TYPE_ADDR_SPACE (ltype))
-	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
-				      | ENCODE_QUAL_ADDR_SPACE (as));
+	ltype = build_qualified_type (ltype,
+				      TYPE_QUALS (ltype).with_as (as));
       tree ptype = build_pointer_type (strip_array_types (TREE_TYPE (var)));
       unsigned HOST_WIDE_INT off = tree_to_uhwi (idx) * m_limb_size;
       if (bitint_big_endian)
@@ -659,8 +659,8 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
   else if (TREE_CODE (var) == MEM_REF && tree_fits_uhwi_p (idx))
     {
       if (as != TYPE_ADDR_SPACE (ltype))
-	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
-				      | ENCODE_QUAL_ADDR_SPACE (as));
+	ltype = build_qualified_type (ltype,
+				      TYPE_QUALS (ltype).with_as (as));
       unsigned HOST_WIDE_INT off = tree_to_uhwi (idx) * m_limb_size;
       if (bitint_big_endian)
 	off += m_limb_size - tree_to_uhwi (TYPE_SIZE_UNIT (ltype));
@@ -677,8 +677,8 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
     {
       ltype = m_limb_type;
       if (as != TYPE_ADDR_SPACE (ltype))
-	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
-				      | ENCODE_QUAL_ADDR_SPACE (as));
+	ltype = build_qualified_type (ltype,
+				      TYPE_QUALS (ltype).with_as (as));
       var = unshare_expr (var);
       if (TREE_CODE (TREE_TYPE (var)) != ARRAY_TYPE
 	  || !useless_type_conversion_p (m_limb_type,
@@ -717,8 +717,8 @@ bitint_large_huge::build_bit_field_ref (tree ftype, tree obj,
       tree ltype = m_limb_type;
       addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (obj));
       if (as != TYPE_ADDR_SPACE (ltype))
-	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
-				      | ENCODE_QUAL_ADDR_SPACE (as));
+	ltype = build_qualified_type (ltype,
+				      TYPE_QUALS (ltype).with_as (as));
       tree atype = build_array_type_nelts (ltype, nelts);
       obj = build1 (VIEW_CONVERT_EXPR, atype, obj);
     }
@@ -6759,8 +6759,7 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 		  if (as != TYPE_ADDR_SPACE (ltype))
 		    ltype
 		      = build_qualified_type (ltype,
-					      TYPE_QUALS (ltype)
-					      | ENCODE_QUAL_ADDR_SPACE (as));
+					      TYPE_QUALS (ltype).with_as (as));
 		  rhs1 = build1 (VIEW_CONVERT_EXPR, ltype, unshare_expr (mem));
 		  gimple_assign_set_rhs1 (stmt, rhs1);
 		}
@@ -6865,7 +6864,7 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 		      ltype
 			= build_qualified_type (ltype,
 						TYPE_QUALS (TREE_TYPE (lhs))
-						| ENCODE_QUAL_ADDR_SPACE (as));
+						.with_as (as));
 		      lhs = build1 (VIEW_CONVERT_EXPR, ltype, lhs);
 		      gimple_assign_set_lhs (stmt, lhs);
 		      gimple_assign_set_rhs1 (stmt, rhs1);

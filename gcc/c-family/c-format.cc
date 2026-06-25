@@ -4391,7 +4391,7 @@ deref_n_times (tree type, int n)
       type = TREE_TYPE (type);
     }
   /* Strip off any "const" etc.  */
-  return build_qualified_type (type, 0);
+  return build_qualified_type (type, TYPE_UNQUALIFIED);
 }
 
 /* Lookup the format code for FORMAT_LEN within FLI,

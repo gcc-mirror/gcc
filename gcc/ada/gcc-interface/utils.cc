@@ -4629,7 +4629,8 @@ update_pointer_to (tree old_type, tree new_type)
      initial set, and will often end up with OLD_TYPE == NEW_TYPE then.  */
   new_type
     = build_qualified_type (new_type,
-			    TYPE_QUALS (old_type) | TYPE_QUALS (new_type));
+			    ada_type_quals (old_type)
+			    | ada_type_quals (new_type));
 
   /* If old type and new type are identical, there is nothing to do.  */
   if (old_type == new_type)

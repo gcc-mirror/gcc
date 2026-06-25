@@ -567,7 +567,7 @@ struct c_declarator {
       /* The array dimension, or NULL for [] and [*].  */
       tree dimen;
       /* The qualifiers inside [].  */
-      int quals;
+      qualifier_set quals;
       /* The attributes (currently ignored) inside [].  */
       tree attrs;
       /* Whether [static] was used.  */
@@ -576,7 +576,7 @@ struct c_declarator {
       bool vla_unspec_p : 1;
     } array;
     /* For pointers, the qualifiers on the pointer type.  */
-    int pointer_quals;
+    qualifier_set pointer_quals;
     /* For attributes.  */
     tree attrs;
   } u;
@@ -685,7 +685,7 @@ extern void record_inline_static (location_t, tree, tree,
 				  enum c_inline_static_type);
 extern void c_init_decl_processing (void);
 extern void c_print_identifier (FILE *, tree, int);
-extern int quals_from_declspecs (const struct c_declspecs *);
+extern qualifier_set quals_from_declspecs (const struct c_declspecs *);
 extern struct c_declarator *build_array_declarator (location_t, tree,
     						    struct c_declspecs *,
 						    bool, bool);

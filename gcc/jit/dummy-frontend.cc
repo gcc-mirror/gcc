@@ -757,7 +757,7 @@ recording::type* tree_type_to_jit_type (tree type)
     tree tp = TYPE_MAIN_VARIANT (type);
     for ( ; tp != NULL ; tp = TYPE_NEXT_VARIANT (tp))
     {
-      if (TYPE_QUALS (tp) == 0 && type != tp)
+      if (!TYPE_QUALS (tp) && type != tp)
       {
 	recording::type* result = tree_type_to_jit_type (tp);
 	if (result != NULL)

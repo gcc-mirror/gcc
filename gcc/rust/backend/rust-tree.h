@@ -2976,7 +2976,7 @@ extern bool maybe_constexpr_fn (tree);
 
 extern bool var_in_maybe_constexpr_fn (tree);
 
-extern int rs_type_quals (const_tree type);
+extern cv_qualifier rs_type_quals (const_tree type);
 
 inline bool type_unknown_p (const_tree);
 
@@ -3004,7 +3004,7 @@ extern bool builtin_pack_fn_p (tree);
 
 extern tree make_conv_op_name (tree);
 
-extern int type_memfn_quals (const_tree);
+extern cv_qualifier type_memfn_quals (const_tree);
 
 struct c_fileinfo *get_fileinfo (const char *);
 
@@ -3024,7 +3024,7 @@ extern bool rs_tree_equal (tree, tree);
 
 extern bool compparms (const_tree, const_tree);
 
-extern tree rs_build_qualified_type_real (tree, int, tsubst_flags_t);
+extern tree rs_build_qualified_type_real (tree, cv_qualifier, tsubst_flags_t);
 #define rs_build_qualified_type(TYPE, QUALS)                                   \
   rs_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
 extern bool cv_qualified_p (const_tree);
@@ -3214,10 +3214,6 @@ enum
   ce_normal,
   ce_exact
 };
-
-extern tree rs_build_qualified_type_real (tree, int, tsubst_flags_t);
-#define rs_build_qualified_type(TYPE, QUALS)                                   \
-  rs_build_qualified_type_real ((TYPE), (QUALS), tf_warning_or_error)
 
 extern tree rs_walk_subtrees (tree *, int *, walk_tree_fn, void *,
 			      hash_set<tree> *);

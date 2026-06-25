@@ -1731,7 +1731,7 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
       bool always_modifier = false;
 
       if (!openacc
-	  && !(TYPE_QUALS (TREE_TYPE (ptr)) & TYPE_QUAL_RESTRICT))
+	  && !TYPE_QUALS (TREE_TYPE (ptr)).has (TYPE_QUAL_RESTRICT))
 	always_modifier = true;
 
       if (present)

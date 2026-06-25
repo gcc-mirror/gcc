@@ -28,6 +28,9 @@ struct gimplify_omp_ctx;
 
 struct array_descr_info;
 
+/* Forward-declaration for qualifier_set in tree.h.  */
+struct qualifier_set;
+
 /* A print hook for print_tree ().  */
 typedef void (*lang_print_tree_hook) (FILE *, tree, int indent);
 
@@ -53,7 +56,7 @@ struct lang_hooks_for_tree_dump
   bool (*dump_tree) (void *, tree);
 
   /* Determine type qualifiers in a language-specific way.  */
-  int (*type_quals) (const_tree);
+  qualifier_set (*type_quals) (const_tree);
 };
 
 /* Hooks related to types.  */

@@ -699,7 +699,7 @@ plugin_build_qualified_type (cc1_plugin::connection *,
 			     enum gcc_qualifiers qualifiers)
 {
   tree unqualified_type = convert_in (unqualified_type_in);
-  int quals = 0;
+  qualifier_set quals {};
 
   if ((qualifiers & GCC_QUALIFIER_CONST) != 0)
     quals |= TYPE_QUAL_CONST;

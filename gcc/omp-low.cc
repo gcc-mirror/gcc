@@ -835,7 +835,9 @@ install_var_field (tree var, bool by_ref, int mask, omp_context *ctx,
      the pointed-to type will be ignored by points-to analysis.  */
   if (POINTER_TYPE_P (type)
       && TYPE_RESTRICT (type))
-    type = build_qualified_type (type, TYPE_QUALS (type) & ~TYPE_QUAL_RESTRICT);
+    type = build_qualified_type (type,
+				 TYPE_QUALS (type)
+				 .without (TYPE_QUAL_RESTRICT));
 
   if (mask & 4)
     {

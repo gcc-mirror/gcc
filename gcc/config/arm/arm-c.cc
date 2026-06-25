@@ -95,7 +95,8 @@ arm_resolve_cde_builtin (location_t loc, tree fndecl, void *arglist)
 	 a constant parameter to mean that the return value of the builtin is
 	 also constant.  */
       if (i == 1)
-	to_return = build_qualified_type (param_type, 0 MEM_STAT_INFO);
+	to_return = build_qualified_type (param_type, TYPE_UNQUALIFIED
+					  MEM_STAT_INFO);
 
       /* The only requirement of these intrinsics on the type of the variable
 	 is that it's 128 bits wide.  All other types are valid and we simply

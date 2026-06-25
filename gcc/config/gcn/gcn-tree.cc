@@ -315,8 +315,7 @@ gcn_goacc_get_worker_red_decl (tree type, unsigned offset)
 
   tree var_type
     = build_qualified_type (type,
-			    (TYPE_QUALS (type)
-			     | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS)));
+			    (TYPE_QUALS (type).with_as (ADDR_SPACE_LDS)));
 
   gcc_assert (offset
 	      < (machfun->reduction_limit - machfun->reduction_base));
@@ -536,8 +535,8 @@ gcn_goacc_adjust_private_decl (location_t, tree var, int level)
 
   tree type = TREE_TYPE (var);
   tree lds_type = build_qualified_type (type,
-		    TYPE_QUALS_NO_ADDR_SPACE (type)
-		    | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS));
+					TYPE_QUALS (type)
+					.with_as (ADDR_SPACE_LDS));
   machine_function *machfun = cfun->machine;
 
   TREE_TYPE (var) = lds_type;
@@ -565,8 +564,8 @@ gcn_goacc_create_worker_broadcast_record (tree record_type, bool sender,
 					  unsigned HOST_WIDE_INT offset)
 {
   tree type = build_qualified_type (record_type,
-				    TYPE_QUALS_NO_ADDR_SPACE (record_type)
-				    | ENCODE_QUAL_ADDR_SPACE (ADDR_SPACE_LDS));
+				    TYPE_QUALS (record_type)
+				    .with_as (ADDR_SPACE_LDS));
 
   if (!sender)
     {

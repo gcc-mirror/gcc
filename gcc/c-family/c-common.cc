@@ -3877,7 +3877,7 @@ static void def_builtin_1  (enum built_in_function fncode,
 /* Apply the TYPE_QUALS to the new DECL.  */
 
 void
-c_apply_type_quals_to_decl (int type_quals, tree decl)
+c_apply_type_quals_to_decl (cv_qualifier type_quals, tree decl)
 {
   tree type = TREE_TYPE (decl);
 
@@ -7355,7 +7355,8 @@ int
 complete_array_type (tree *ptype, tree initial_value, bool do_default)
 {
   tree maxindex, type, main_type, elt, unqual_elt;
-  int failure = 0, quals;
+  int failure = 0;
+  qualifier_set quals;
   bool overflow_p = false;
 
   maxindex = size_zero_node;
@@ -7449,10 +7450,13 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   type = *ptype;
   elt = TREE_TYPE (type);
   quals = TYPE_QUALS (strip_array_types (elt));
-  if (quals == 0)
+  if (!quals)
     unqual_elt = elt;
   else
-    unqual_elt = c_build_qualified_type (elt, KEEP_QUAL_ADDR_SPACE (quals));
+    unqual_elt = c_build_qualified_type (elt,
+					 /* Keep only the address space.  */
+					 {TYPE_UNQUALIFIED,
+					  quals.addr_space ()});
 
   /* Using build_distinct_type_copy and modifying things afterward instead
      of using build_array_type to create a new type preserves all of the
@@ -7488,7 +7492,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 			  TYPE_CANONICAL (TYPE_DOMAIN (main_type)),
 			  TYPE_TYPELESS_STORAGE (main_type));
 
-  if (quals == 0)
+  if (!quals)
     type = main_type;
   else
     type = c_build_qualified_type (main_type, quals);
@@ -8022,9 +8026,9 @@ get_atomic_generic_size (location_t loc, tree function,
 
       {
 	auto_diagnostic_group d;
-	int quals = TYPE_QUALS (TREE_TYPE (type));
+	auto quals = TYPE_QUALS (TREE_TYPE (type));
 	/* Must not write to an argument of a const-qualified type.  */
-	if (outputs & (1 << x) && quals & TYPE_QUAL_CONST)
+	if (outputs & (1 << x) && quals.has (TYPE_QUAL_CONST))
 	  {
 	    if (c_dialect_cxx ())
 	      {
@@ -8041,7 +8045,7 @@ get_atomic_generic_size (location_t loc, tree function,
 		       function);
 	  }
 	/* Only the first argument is allowed to be volatile.  */
-	if (x > 0 && quals & TYPE_QUAL_VOLATILE)
+	if (x > 0 && quals.has (TYPE_QUAL_VOLATILE))
 	  {
 	    if (c_dialect_cxx ())
 	      {

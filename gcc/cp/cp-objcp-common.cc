@@ -745,4 +745,11 @@ cp_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
   return c_common_handle_option (scode, arg, value, kind, loc, handlers);
 }
 
+/* Like cp_type_quals, but returns a qualifier set.  Will become unnecessary
+   once the C++ FE supports named address spaces.  */
+
+qualifier_set
+cp_type_quals_as_set (const_tree type)
+{ return { cp_type_quals (type) }; }
+
 #include "gt-cp-cp-objcp-common.h"

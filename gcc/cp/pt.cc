@@ -17316,7 +17316,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       else
 	{
 	  /* We don't have an instantiation yet, so drop the typedef.  */
-	  int quals = cp_type_quals (t);
+	  auto quals = cp_type_quals (t);
 	  t = DECL_ORIGINAL_TYPE (decl);
 	  t = cp_build_qualified_type (t, quals,
 				       complain | tf_ignore_bad_quals);
@@ -17497,11 +17497,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
 	    if (code == TEMPLATE_TYPE_PARM)
 	      {
-		int quals;
-
 		gcc_assert (TYPE_P (arg));
 
-		quals = cp_type_quals (arg) | cp_type_quals (t);
+		auto quals = cp_type_quals (arg) | cp_type_quals (t);
 
 		return cp_build_qualified_type
 		  (arg, quals, complain | tf_ignore_bad_quals);
@@ -17594,7 +17592,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	/* If we get here, we must have been looking at a parm for a
 	   more deeply nested template.  Make a new version of this
 	   template parameter, but with a lower level.  */
-	int quals;
+	cv_qualifier quals;
 	switch (code)
 	  {
 	  case TEMPLATE_TYPE_PARM:
@@ -31273,7 +31271,6 @@ resolve_typename_type (tree type, bool only_current_p)
   tree scope;
   tree name;
   tree decl;
-  int quals;
   tree pushed_scope;
   tree result;
 
@@ -31395,7 +31392,7 @@ resolve_typename_type (tree type, bool only_current_p)
     }
 
   /* Qualify the resulting type.  */
-  quals = cp_type_quals (type);
+  auto quals = cp_type_quals (type);
   if (quals)
     result = cp_build_qualified_type (result, cp_type_quals (result) | quals);
 

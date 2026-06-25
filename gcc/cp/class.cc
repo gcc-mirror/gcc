@@ -593,7 +593,7 @@ build_simple_base_path (tree expr, tree binfo)
 	/* We don't use build_class_member_access_expr here, as that
 	   has unnecessary checks, and more importantly results in
 	   recursive calls to dfs_walk_once.  */
-	int type_quals = cp_type_quals (TREE_TYPE (expr));
+	auto type_quals = cp_type_quals (TREE_TYPE (expr));
 
 	expr = build3 (COMPONENT_REF,
 		       cp_build_qualified_type (type, type_quals),

@@ -2651,7 +2651,7 @@ type_of (tree r, reflect_kind kind)
       r = TREE_TYPE (TREE_VALUE (TREE_VALUE (r)));
       if (CLASS_TYPE_P (r))
 	{
-	  int quals = cp_type_quals (r);
+	  auto quals = cp_type_quals (r);
 	  quals |= TYPE_QUAL_CONST;
 	  r = cp_build_qualified_type (r, quals);
 	}
@@ -5401,7 +5401,7 @@ static tree
 eval_remove_volatile (location_t loc, tree type)
 {
   type = strip_typedefs (type);
-  int quals = cp_type_quals (type);
+  auto quals = cp_type_quals (type);
   quals &= ~TYPE_QUAL_VOLATILE;
   type = cp_build_qualified_type (type, quals);
   return get_reflection_raw (loc, type);
@@ -5431,7 +5431,7 @@ eval_add_const (location_t loc, tree type)
   type = strip_typedefs (type);
   if (!TYPE_REF_P (type) && !FUNC_OR_METHOD_TYPE_P (type))
     {
-      int quals = cp_type_quals (type);
+      auto quals = cp_type_quals (type);
       quals |= TYPE_QUAL_CONST;
       type = cp_build_qualified_type (type, quals);
     }
@@ -5449,7 +5449,7 @@ eval_add_volatile (location_t loc, tree type)
   type = strip_typedefs (type);
   if (!TYPE_REF_P (type) && !FUNC_OR_METHOD_TYPE_P (type))
     {
-      int quals = cp_type_quals (type);
+      auto quals = cp_type_quals (type);
       quals |= TYPE_QUAL_VOLATILE;
       type = cp_build_qualified_type (type, quals);
     }
@@ -5467,7 +5467,7 @@ eval_add_cv (location_t loc, tree type)
   type = strip_typedefs (type);
   if (!TYPE_REF_P (type) && !FUNC_OR_METHOD_TYPE_P (type))
     {
-      int quals = cp_type_quals (type);
+      auto quals = cp_type_quals (type);
       quals |= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
       type = cp_build_qualified_type (type, quals);
     }
@@ -5558,7 +5558,7 @@ eval_make_signed (location_t loc, const constexpr_ctx *ctx, tree type,
     ret = c_common_signed_or_unsigned_type (unsignedp, type);
   if (ret != type)
     {
-      int quals = cp_type_quals (type);
+      auto quals = cp_type_quals (type);
       quals &= (TYPE_QUAL_CONST | TYPE_QUAL_VOLATILE);
       ret = cp_build_qualified_type (ret, quals);
     }

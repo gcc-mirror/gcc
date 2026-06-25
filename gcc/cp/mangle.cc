@@ -2893,7 +2893,12 @@ write_CV_qualifiers_for_type (const tree type)
   /* Note that we do not use cp_type_quals below; given "const
      int[3]", the "const" is emitted with the "int", not with the
      array.  */
-  cp_cv_quals quals = TYPE_QUALS (type);
+  cv_qualifier quals;
+  addr_space_t as;
+  std::tie (quals, as) = TYPE_QUALS (type).split ();
+
+  /* No address space support yet.  */
+  gcc_checking_assert (ADDR_SPACE_GENERIC_P (as));
 
   if (quals & TYPE_QUAL_RESTRICT)
     {

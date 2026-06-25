@@ -2313,7 +2313,7 @@ dump_ada_node (pretty_printer *pp, tree node, tree type, int spc,
       else
 	{
 	  tree ref_type = TREE_TYPE (node);
-	  const unsigned int quals = TYPE_QUALS (ref_type);
+	  const auto quals = TYPE_QUALS (ref_type);
 	  bool is_access;
 
 	  if (VOID_TYPE_P (ref_type))
@@ -2377,12 +2377,12 @@ dump_ada_node (pretty_printer *pp, tree node, tree type, int spc,
 			  is_access = true;
 			  pp_string (pp, "access ");
 
-			  if (quals & TYPE_QUAL_CONST)
+			  if (quals.has (TYPE_QUAL_CONST))
 			    pp_string (pp, "constant ");
 			  else if (!name_only)
 			    pp_string (pp, "all ");
 			}
-		      else if (quals & TYPE_QUAL_CONST)
+		      else if (quals.has (TYPE_QUAL_CONST))
 			{
 			  is_access = false;
 			  pp_string (pp, "in ");

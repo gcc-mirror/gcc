@@ -2507,7 +2507,7 @@ build_vthis_function (tree basetype, tree type)
   tree fntype = build_function_type (TREE_TYPE (type), argtypes);
 
   /* Copy volatile qualifiers from the original function type.  */
-  if (TYPE_QUALS (type) & TYPE_QUAL_VOLATILE)
+  if (TYPE_QUALS (type).has (TYPE_QUAL_VOLATILE))
     fntype = build_qualified_type (fntype, TYPE_QUAL_VOLATILE);
 
   if (RECORD_OR_UNION_TYPE_P (basetype))

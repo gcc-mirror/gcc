@@ -1920,26 +1920,31 @@ oacc_rewrite_var_decl (tree *tp, int *walk_subtrees, void *data)
       if (!new_decl)
 	return NULL;
 
-      int base_quals = TYPE_QUALS (TREE_TYPE (*new_decl));
+      auto base_quals = TYPE_QUALS (TREE_TYPE (*new_decl));
+      cv_qualifier base_cv;
+      addr_space_t base_as;
+      std::tie (base_cv, base_as) = base_quals.split ();
       tree field = TREE_OPERAND (*tp, 1);
 
       /* Adjust the type of the field.  */
-      int field_quals = TYPE_QUALS (TREE_TYPE (field));
+      auto field_quals = TYPE_QUALS (TREE_TYPE (field));
       if (TREE_CODE (field) == FIELD_DECL && field_quals != base_quals)
 	{
 	  tree *field_type = &TREE_TYPE (field);
 	  while (TREE_CODE (*field_type) == ARRAY_TYPE)
 	    field_type = &TREE_TYPE (*field_type);
-	  field_quals |= base_quals;
+	  field_quals |= base_cv;
+	  field_quals.set_as (base_as);
 	  *field_type = build_qualified_type (*field_type, field_quals);
 	}
 
       /* Adjust the type of the component ref itself.  */
       tree comp_type = TREE_TYPE (*tp);
-      int comp_quals = TYPE_QUALS (comp_type);
+      auto comp_quals = TYPE_QUALS (comp_type);
       if (TREE_CODE (*tp) == COMPONENT_REF && comp_quals != base_quals)
 	{
-	  comp_quals |= base_quals;
+	  comp_quals |= base_cv;
+	  comp_quals.set_as (base_as);
 	  TREE_TYPE (*tp)
 	    = build_qualified_type (comp_type, comp_quals);
 	}
