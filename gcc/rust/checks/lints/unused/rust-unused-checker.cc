@@ -24,6 +24,7 @@
 
 #include "options.h"
 #include "rust-keyword-values.h"
+#include "rust-attribute-values.h"
 #include "rust-rib.h"
 
 namespace Rust {
@@ -331,6 +332,19 @@ UnusedChecker::visit (HIR::MatchExpr &expr)
     }
 
   walk (expr);
+}
+
+void
+UnusedChecker::visit (HIR::LetStmt &stmt)
+{
+  for (auto &attr : stmt.get_outer_attrs ())
+    if (attr.get_path ().as_string () == Values::Attributes::DOC)
+      {
+	rust_warning_at (stmt.get_locus (), OPT_Wunused_variable,
+			 "unused doc comment");
+	break;
+      }
+  walk (stmt);
 }
 
 } // namespace Analysis
