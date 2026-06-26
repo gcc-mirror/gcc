@@ -143,7 +143,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_Compare& __comp)
     {
       _Distance __parent = (__holeIndex - 1) / 2;
-      while (__holeIndex > __topIndex && __comp(*(__first + __parent), __value))
+      while (__holeIndex > __topIndex
+	     && bool(__comp(*(__first + __parent), __value)))
 	{
 	  *(__first + __holeIndex) = _GLIBCXX_MOVE(*(__first + __parent));
 	  __holeIndex = __parent;

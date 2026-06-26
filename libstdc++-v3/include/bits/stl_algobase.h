@@ -1930,7 +1930,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     __mismatch(_InputIterator1 __first1, _InputIterator1 __last1,
 	       _InputIterator2 __first2, _BinaryPredicate __binary_pred)
     {
-      while (__first1 != __last1 && __binary_pred(*__first1, *__first2))
+      while (__first1 != __last1 && bool(__binary_pred(*__first1, *__first2)))
 	{
 	  ++__first1;
 	  ++__first2;
@@ -2011,7 +2011,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	       _BinaryPredicate __binary_pred)
     {
       while (__first1 != __last1 && __first2 != __last2
-	     && __binary_pred(*__first1, *__first2))
+	     && bool(__binary_pred(*__first1, *__first2)))
 	{
 	  ++__first1;
 	  ++__first2;
@@ -2097,7 +2097,7 @@ _GLIBCXX_END_NAMESPACE_ALGO
     __find_if(_Iterator __first, _Iterator __last, _Predicate __pred)
     {
 #pragma GCC unroll 4
-      while (__first != __last && !__pred(*__first))
+      while (__first != __last && !bool(__pred(*__first)))
 	++__first;
       return __first;
     }
