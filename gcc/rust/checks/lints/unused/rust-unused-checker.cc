@@ -330,6 +330,15 @@ UnusedChecker::visit (HIR::LetStmt &stmt)
 			 "unused doc comment");
 	break;
       }
+  if (stmt.has_init_expr ()
+      && stmt.get_init_expr ().get_expression_type ()
+	   == HIR::Expr::ExprType::Block)
+    {
+      auto &block = static_cast<HIR::BlockExpr &> (stmt.get_init_expr ());
+      if (block.get_statements ().empty () && block.has_expr ())
+	rust_warning_at (block.get_locus (), OPT_Wunused,
+			 "unnecessary braces around assigned value");
+    }
   walk (stmt);
 }
 
