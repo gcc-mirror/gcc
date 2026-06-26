@@ -144,7 +144,8 @@ Resolver::CanonicalPath
 CanonicalPathRecordNormal::as_path (const NameResolutionContext &ctx,
 				    Namespace ns)
 {
-  auto parent_path = get_parent ().as_path (ctx, ns);
+  auto &parent = ctx.canonical_ctx.get_record (get_parent ());
+  auto parent_path = parent.as_path (ctx, ns);
   return parent_path.append (Resolver::CanonicalPath::new_seg (node_id, seg));
 }
 
@@ -177,7 +178,8 @@ Resolver::CanonicalPath
 CanonicalPathRecordImpl::as_path (const NameResolutionContext &ctx,
 				  Namespace ns)
 {
-  auto parent_path = get_parent ().as_path (ctx, ns);
+  auto parent_path
+    = ctx.canonical_ctx.get_record (get_parent ()).as_path (ctx, ns);
   return parent_path.append (
     Resolver::CanonicalPath::inherent_impl_seg (impl_id,
 						type_record.as_path (ctx, ns)));
@@ -188,7 +190,8 @@ CanonicalPathRecordTraitImpl::as_path (const NameResolutionContext &ctx,
 				       Namespace ns)
 {
   // Maybe this doesn't need the namespace and will always be in the types NS?
-  auto parent_path = get_parent ().as_path (ctx, ns);
+  auto parent_path
+    = ctx.canonical_ctx.get_record (get_parent ()).as_path (ctx, ns);
   return parent_path.append (
     Resolver::CanonicalPath::trait_impl_projection_seg (
       impl_id, trait_path_record.as_path (ctx, ns),
@@ -414,6 +417,7 @@ NameResolutionContext::merge (NameResolutionContext &other, NodeId at)
   merge_fstack (types, other.types);
   merge_fstack (macros, other.macros);
   merge_fstack (labels, other.labels);
+  canonical_ctx.merge (std::move (other.canonical_ctx));
 }
 
 #if 0

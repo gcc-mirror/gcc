@@ -235,15 +235,16 @@ public:
 class CanonicalPathRecordWithParent : public CanonicalPathRecord
 {
 public:
-  CanonicalPathRecordWithParent (CanonicalPathRecord &parent) : parent (&parent)
+  CanonicalPathRecordWithParent (NodeId parent_node_id)
+    : parent_node_id (parent_node_id)
   {}
 
-  CanonicalPathRecord &get_parent () { return *parent; }
+  NodeId get_parent () { return parent_node_id; }
 
   bool is_root () const override final { return false; }
 
 private:
-  CanonicalPathRecord *parent;
+  NodeId parent_node_id;
 };
 
 class CanonicalPathRecordCrateRoot : public CanonicalPathRecord
@@ -270,9 +271,9 @@ private:
 class CanonicalPathRecordNormal : public CanonicalPathRecordWithParent
 {
 public:
-  CanonicalPathRecordNormal (CanonicalPathRecord &parent, NodeId node_id,
+  CanonicalPathRecordNormal (NodeId parent_node_id, NodeId node_id,
 			     std::string seg)
-    : CanonicalPathRecordWithParent (parent), node_id (node_id),
+    : CanonicalPathRecordWithParent (parent_node_id), node_id (node_id),
       seg (std::move (seg))
   {
     rust_assert (!Analysis::Mappings::get ().node_is_crate (node_id));
@@ -306,9 +307,9 @@ private:
 class CanonicalPathRecordImpl : public CanonicalPathRecordWithParent
 {
 public:
-  CanonicalPathRecordImpl (CanonicalPathRecord &parent, NodeId impl_id,
+  CanonicalPathRecordImpl (NodeId parent_node_id, NodeId impl_id,
 			   NodeId type_id)
-    : CanonicalPathRecordWithParent (parent), impl_id (impl_id),
+    : CanonicalPathRecordWithParent (parent_node_id), impl_id (impl_id),
       type_record (type_id)
   {}
 
@@ -323,9 +324,9 @@ private:
 class CanonicalPathRecordTraitImpl : public CanonicalPathRecordWithParent
 {
 public:
-  CanonicalPathRecordTraitImpl (CanonicalPathRecord &parent, NodeId impl_id,
+  CanonicalPathRecordTraitImpl (NodeId parent_node_id, NodeId impl_id,
 				NodeId type_id, NodeId trait_path_id)
-    : CanonicalPathRecordWithParent (parent), impl_id (impl_id),
+    : CanonicalPathRecordWithParent (parent_node_id), impl_id (impl_id),
       type_record (type_id), trait_path_record (trait_path_id)
   {}
 
@@ -342,7 +343,7 @@ class CanonicalPathCtx
 {
 public:
   CanonicalPathCtx (const NameResolutionContext &ctx)
-    : current_record (nullptr), nr_ctx (&ctx)
+    : current_record (UNKNOWN_NODEID), nr_ctx (&ctx)
   {}
 
   Resolver::CanonicalPath get_path (NodeId id, Namespace ns) const
@@ -373,13 +374,13 @@ public:
 
   void insert_record (NodeId id, std::string seg)
   {
-    rust_assert (current_record != nullptr);
+    rust_assert (current_record != UNKNOWN_NODEID);
 
     auto it = records.find (id);
     if (it == records.end ())
       {
-	auto record = new CanonicalPathRecordNormal (*current_record, id,
-						     std::move (seg));
+	auto record
+	  = new CanonicalPathRecordNormal (current_record, id, std::move (seg));
 	bool ok
 	  = records.emplace (id, std::unique_ptr<CanonicalPathRecord> (record))
 	      .second;
@@ -394,33 +395,33 @@ public:
 
   template <typename F> void scope (NodeId id, std::string seg, F &&f)
   {
-    rust_assert (current_record != nullptr);
+    rust_assert (current_record != UNKNOWN_NODEID);
 
     scope_inner (id, std::forward<F> (f), [this, id, &seg] () {
-      return new CanonicalPathRecordNormal (*current_record, id,
+      return new CanonicalPathRecordNormal (current_record, id,
 					    std::move (seg));
     });
   }
 
   template <typename F> void scope_impl (AST::InherentImpl &impl, F &&f)
   {
-    rust_assert (current_record != nullptr);
+    rust_assert (current_record != UNKNOWN_NODEID);
 
     NodeId id = impl.get_node_id ();
     scope_inner (id, std::forward<F> (f), [this, id, &impl] () {
-      return new CanonicalPathRecordImpl (*current_record, id,
+      return new CanonicalPathRecordImpl (current_record, id,
 					  impl.get_type ().get_node_id ());
     });
   }
 
   template <typename F> void scope_impl (AST::TraitImpl &impl, F &&f)
   {
-    rust_assert (current_record != nullptr);
+    rust_assert (current_record != UNKNOWN_NODEID);
 
     NodeId id = impl.get_node_id ();
     scope_inner (id, std::forward<F> (f), [this, id, &impl] () {
       return new CanonicalPathRecordTraitImpl (
-	*current_record, id, impl.get_type ().get_node_id (),
+	current_record, id, impl.get_type ().get_node_id (),
 	impl.get_trait_path ().get_node_id ());
     });
   }
@@ -431,6 +432,15 @@ public:
     scope_inner (node_id, std::forward<F> (f), [node_id, &crate_name] () {
       return new CanonicalPathRecordCrateRoot (node_id, std::move (crate_name));
     });
+  }
+
+  /** Merge another CanonicalPathCtx within this one. Intended to be used when
+   * merging crate name resolution context.
+   */
+  void merge (CanonicalPathCtx &&other)
+  {
+    records.insert (std::make_move_iterator (other.records.begin ()),
+		    std::make_move_iterator (other.records.end ()));
   }
 
 private:
@@ -446,11 +456,11 @@ private:
       }
 
     rust_assert (it->second->is_root ()
-		 || &static_cast<CanonicalPathRecordWithParent &> (*it->second)
+		 || static_cast<CanonicalPathRecordWithParent &> (*it->second)
 			.get_parent ()
 		      == current_record);
 
-    CanonicalPathRecord *stash = it->second.get ();
+    NodeId stash = it->first;
     std::swap (stash, current_record);
 
     std::forward<FCallback> (f_callback) ();
@@ -459,7 +469,7 @@ private:
   }
 
   std::unordered_map<NodeId, std::unique_ptr<CanonicalPathRecord>> records;
-  CanonicalPathRecord *current_record;
+  NodeId current_record;
 
   const NameResolutionContext *nr_ctx;
 };
