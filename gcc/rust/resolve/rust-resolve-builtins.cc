@@ -64,20 +64,50 @@ static constexpr const char *builtin_names[] = {BUILTIN_TYPES};
 #undef TYPE0
 #undef TYPE1
 
-static NodeId builtin_node_ids[builtin_count];
+class LangPreludeSingleton
+{
+  std::array<NodeId, builtin_count> builtin_node_ids;
+  std::array<HirId, builtin_count> builtin_hir_ids;
+  LangPreludeSingleton ()
+  {
+    auto &mappings = Analysis::Mappings::get ();
+    for (size_t i = 0; i < builtin_node_ids.size (); i++)
+      {
+	NodeId node_id = mappings.get_next_node_id ();
+	builtin_node_ids[i] = node_id;
+	HirId hirid = mappings.get_next_hir_id ();
+	builtin_hir_ids[i] = hirid;
+      }
+  }
+
+public:
+  static LangPreludeSingleton &get ()
+  {
+    static LangPreludeSingleton instance{};
+    return instance;
+  }
+
+  const std::array<NodeId, builtin_count> &get_node_ids ()
+  {
+    return builtin_node_ids;
+  }
+
+  const std::array<HirId, builtin_count> &get_hir_ids ()
+  {
+    return builtin_hir_ids;
+  }
+};
 
 void
 setup_lang_prelude (NameResolutionContext &ctx)
 {
-  auto &mappings = Analysis::Mappings::get ();
-
   // insert into prelude rib
-  ctx.scoped (Rib::Kind::Prelude, 0, [&mappings, &ctx] (void) -> void {
+  ctx.scoped (Rib::Kind::Prelude, 0, [&ctx] (void) -> void {
     for (size_t i = 0; i < builtin_count; i++)
       {
-	NodeId node_id = mappings.get_next_node_id ();
-	rust_assert (ctx.types.insert (Identifier (builtin_names[i]), node_id));
-	builtin_node_ids[i] = node_id;
+	rust_assert (
+	  ctx.types.insert (Identifier (builtin_names[i]),
+			    LangPreludeSingleton::get ().get_node_ids ()[i]));
       }
   });
 }
@@ -88,18 +118,16 @@ setup_type_ctx ()
   auto &mappings = Analysis::Mappings::get ();
   auto &ty_ctx = *Resolver::TypeCheckContext::get ();
 
-  HirId hir_ids[builtin_count];
-  for (size_t i = 0; i < builtin_count; i++)
-    hir_ids[i] = mappings.get_next_hir_id ();
-
   TyTy::BaseType *types[builtin_count];
   {
     size_t i = 0;
 #define TYPE_BASE(stub)                                                        \
   types[i] = new TyTy::stub;                                                   \
   i++;
-#define TYPE0(n, ty) TYPE_BASE (ty (hir_ids[i]))
-#define TYPE1(n, ty, p1) TYPE_BASE (ty (hir_ids[i], TyTy::p1))
+#define TYPE0(n, ty)                                                           \
+  TYPE_BASE (ty (LangPreludeSingleton::get ().get_hir_ids ()[i]))
+#define TYPE1(n, ty, p1)                                                       \
+  TYPE_BASE (ty (LangPreludeSingleton::get ().get_hir_ids ()[i], TyTy::p1))
     BUILTIN_TYPES
 #undef TYPE_BASE
 #undef TYPE0
@@ -108,8 +136,8 @@ setup_type_ctx ()
 
   for (size_t i = 0; i < builtin_count; i++)
     {
-      NodeId node_id = builtin_node_ids[i];
-      HirId hir_id = hir_ids[i];
+      NodeId node_id = LangPreludeSingleton::get ().get_node_ids ()[i];
+      HirId hir_id = LangPreludeSingleton::get ().get_hir_ids ()[i];
       mappings.insert_node_to_hir (node_id, hir_id);
       ty_ctx.insert_builtin (hir_id, node_id, types[i]);
     }
@@ -125,7 +153,7 @@ find_builtin_node_id (const std::string &name)
 {
   for (size_t i = 0; i < builtin_count; i++)
     if (strcmp (name.c_str (), builtin_names[i]) == 0)
-      return builtin_node_ids[i];
+      return LangPreludeSingleton::get ().get_node_ids ()[i];
 
   return tl::nullopt;
 }

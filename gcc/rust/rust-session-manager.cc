@@ -1323,6 +1323,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     = mappings.insert_ast_crate (std::move (metadata_crate), crate_num);
 
   auto ctx = Resolver2_0::NameResolutionContext ();
+  Resolver2_0::Builtins::setup_lang_prelude (ctx);
 
   Resolver2_0::Early early (ctx);
   early.go (parsed_crate);
