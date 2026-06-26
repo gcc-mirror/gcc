@@ -92,15 +92,20 @@ running in gdb, rather than in the inferior:
 For usability, the type is printed first (e.g. "function_decl"), rather
 than just "tree".
 
-RTL expressions use a kludge: they are pretty-printed by injecting
-calls into print-rtl.c into the inferior:
-  Value returned is $1 = (note 9 8 10 [bb 3] NOTE_INSN_BASIC_BLOCK)
-  (gdb) p $1
-  $2 = (note 9 8 10 [bb 3] NOTE_INSN_BASIC_BLOCK)
-  (gdb) p /r $1
-  $3 = (rtx_def *) 0x7ffff043e140
-This won't work for coredumps, and probably in other circumstances, but
-it's a quick way of getting lots of debuggability quickly.
+RTL expressions show at least the rtx code in parenthesis:
+  (gdb) p pattern
+  $11 = <rtx_def 0x7ffff78f1798 (set)>
+Insns show the unique number and machine description name, if an icode is
+recorded ("<unrecognised>" otherwise):
+  (gdb) p insn
+  $12 = <rtx_def 0x7ffff7ae2380 (insn 1 <unrecognized>)>
+  (gdb) p insn
+  $17 = <rtx_def 0x7ffff78dc690 (call_insn 6 *call_value)>
+Registers show the mode, number, and either the hardreg name or "pseudo":
+  (gdb) p x
+  $13 = <rtx_def 0x7ffff78f1708 (reg:SI 98 pseudo)>
+For all other cases, use "pp x" to print full RTL expressions via the print-rtl.c
+routines (not available for coredumps).
 
 Callgraph nodes are printed with the name of the function decl, if
 available:
@@ -423,6 +428,9 @@ class Rtx:
     def GET_CODE(self):
         return self.gdbval['code']
 
+    def XINT(self, n):
+        return self.gdbval['u']['fld'][n]['rt_int']
+
 def GET_RTX_LENGTH(code):
     val_rtx_length = gdb.parse_and_eval('rtx_length')
     return intptr(val_rtx_length[code])
@@ -435,30 +443,44 @@ def GET_RTX_FORMAT(code):
     val_rtx_format = gdb.parse_and_eval('rtx_format')
     return val_rtx_format[code].string()
 
+def get_insn_name(icode):
+    return gdb.parse_and_eval('insn_data')[icode]['name'].string()
+
+def reg_name(regno):
+    try:
+        val_reg_names = gdb.parse_and_eval('this_target_hard_regs->x_reg_names')
+    except:
+        val_reg_names = gdb.parse_and_eval('default_target_hard_regs.x_reg_names')
+    try:
+        return val_reg_names[regno].string()
+    except:
+        return "pseudo"
+
+def mode_name(mode):
+    return gdb.parse_and_eval('mode_name')[mode].string()
+
 class RtxPrinter:
     def __init__(self, gdbval):
         self.gdbval = gdbval
         self.rtx = Rtx(gdbval)
 
     def to_string (self):
-        """
-        For now, a cheap kludge: invoke the inferior's print
-        function to get a string to use the user, and return an empty
-        string for gdb
-        """
-        # We use print_inline_rtx to avoid a trailing newline
-        gdb.execute('call print_inline_rtx (stderr, (const_rtx) %s, 0)'
-                    % intptr(self.gdbval))
-        return ''
-
-        # or by hand; based on gcc/print-rtl.c:print_rtx
         result = ('<rtx_def 0x%x'
                   % (intptr(self.gdbval)))
         code = self.rtx.GET_CODE()
-        result += ' (%s' % GET_RTX_NAME(code)
-        format_ = GET_RTX_FORMAT(code)
-        for i in range(GET_RTX_LENGTH(code)):
-            print(format_[i])
+        name = GET_RTX_NAME(code)
+        result += ' (%s' % name
+        if name == 'insn' or name == 'call_insn' or name == 'jump_insn':
+            result += ' %d' % self.gdbval['u2']['insn_uid']
+            icode = self.rtx.XINT(5)  # INSN_CODE
+            if icode != -1:
+                result += ' %s' % get_insn_name(icode)
+            else:
+                result += ' <unrecognized>'
+        elif name == 'reg':
+            regno = self.gdbval['u']['reg']['regno']
+            mode = mode_name(self.gdbval['mode'])
+            result += ':%s %d %s' % (mode, regno, reg_name(regno))
         result += ')>'
         return result
 
@@ -661,7 +683,11 @@ def build_pretty_printer():
     pp.add_printer_for_types(['edge', 'edge_def *'],
                              'edge',
                              CfgEdgePrinter)
-    pp.add_printer_for_types(['rtx_def *'], 'rtx_def', RtxPrinter)
+    pp.add_printer_for_types(['rtx_def *', 'rtx', 'const_rtx', 'rtx_insn *',
+                              'const rtx_insn *', 'rtx_jump_insn *',
+                              'const rtx_jump_insn *', 'rtx_call_insn *',
+                              'const rtx_call_insn *'],
+                             'rtx_def', RtxPrinter)
     pp.add_printer_for_types(['opt_pass *'], 'opt_pass', PassPrinter)
 
     pp.add_printer_for_regex(r'vec<(\S+), (\S+), (\S+)> \*',
