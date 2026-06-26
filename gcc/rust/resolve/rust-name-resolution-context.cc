@@ -406,6 +406,8 @@ NameResolutionContext::merge (NameResolutionContext &other, NodeId at)
 	    extern_crate_node.rib.insert (name, def);
 	  }
       }
+    stack.resolved_nodes.insert (other_stack.resolved_nodes.begin (),
+				 other_stack.resolved_nodes.end ());
   };
 
   merge_fstack (values, other.values);
