@@ -1326,6 +1326,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
 
   Resolver2_0::Early early (ctx);
   early.go (parsed_crate);
+  Resolver2_0::Late (ctx).go (parsed_crate);
 
   std::vector<AttributeProcMacro> attribute_macros;
   std::vector<CustomDeriveProcMacro> derive_macros;
