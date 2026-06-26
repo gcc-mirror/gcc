@@ -26,6 +26,7 @@
 #include "rust-system.h"
 #include "rust-finalized-name-resolution-context.h"
 #include "rust-intrinsic-values.h"
+#include "options.h"
 
 namespace Rust {
 namespace HIR {
@@ -43,8 +44,15 @@ UnsafeChecker::go (HIR::Crate &crate)
     item->accept_vis (*this);
 }
 
-static void
-check_static_mut (HIR::Item *maybe_static, location_t locus)
+void
+UnsafeChecker::mark_unsafe_used ()
+{
+  if (unsafe_context.is_in_context ())
+    used_unsafe_blocks.insert (unsafe_context.peek ());
+}
+
+static bool
+check_static_mut (HIR::Item *maybe_static, location_t locus, bool in_context)
 {
   if (maybe_static->get_hir_kind () == Node::BaseKind::VIS_ITEM)
     {
@@ -53,42 +61,62 @@ check_static_mut (HIR::Item *maybe_static, location_t locus)
 	{
 	  auto static_item = static_cast<StaticItem *> (item);
 	  if (static_item->is_mut ())
-	    rust_error_at (
-	      locus, "use of mutable static requires unsafe function or block");
+	    {
+	      if (!in_context)
+		rust_error_at (locus, "use of mutable static requires unsafe "
+				      "function or block");
+	      return true;
+	    }
 	}
     }
+  return false;
 }
 
-static void
-check_extern_static (HIR::ExternalItem *maybe_static, location_t locus)
+static bool
+check_extern_static (HIR::ExternalItem *maybe_static, location_t locus,
+		     bool in_context)
 {
   if (maybe_static->get_extern_kind () == ExternalItem::ExternKind::Static)
-    rust_error_at (locus,
-		   "use of extern static requires unsafe function or block");
+    {
+      if (!in_context)
+	rust_error_at (
+	  locus, "use of extern static requires unsafe function or block");
+      return true;
+    }
+  return false;
 }
 
 void
 UnsafeChecker::check_use_of_static (HirId node_id, location_t locus)
 {
-  if (unsafe_context.is_in_context ())
-    return;
+  bool in_context = unsafe_context.is_in_context ();
+  bool unsafe_op = false;
 
   if (auto maybe_static_mut = mappings.lookup_hir_item (node_id))
-    check_static_mut (*maybe_static_mut, locus);
+    unsafe_op |= check_static_mut (*maybe_static_mut, locus, in_context);
 
   if (auto maybe_extern_static = mappings.lookup_hir_extern_item (node_id))
-    check_extern_static (static_cast<ExternalItem *> (
-			   maybe_extern_static->first),
-			 locus);
+    unsafe_op |= check_extern_static (static_cast<ExternalItem *> (
+					maybe_extern_static->first),
+				      locus, in_context);
+
+  if (unsafe_op && in_context)
+    mark_unsafe_used ();
 }
 
-static void
-check_unsafe_call (HIR::Function *fn, location_t locus, const std::string &kind)
+static bool
+check_unsafe_call (HIR::Function *fn, location_t locus, const std::string &kind,
+		   bool in_context)
 {
   if (fn->get_qualifiers ().is_unsafe ())
-    rust_error_at (locus, ErrorCode::E0133,
-		   "call to unsafe %s requires unsafe function or block",
-		   kind.c_str ());
+    {
+      if (!in_context)
+	rust_error_at (locus, ErrorCode::E0133,
+		       "call to unsafe %s requires unsafe function or block",
+		       kind.c_str ());
+      return true;
+    }
+  return false;
 }
 
 static bool
@@ -137,9 +165,9 @@ is_safe_intrinsic (const std::string &fn_name)
   return safe_intrinsics.find (fn_name) != safe_intrinsics.end ();
 }
 
-static void
+static bool
 check_extern_call (HIR::ExternalItem *maybe_fn, HIR::ExternBlock *parent_block,
-		   location_t locus)
+		   location_t locus, bool in_context)
 {
   // We have multiple operations to perform here
   //     1. Is the item an actual function we're calling
@@ -151,37 +179,45 @@ check_extern_call (HIR::ExternalItem *maybe_fn, HIR::ExternBlock *parent_block,
   // "Rust"` blocks) is unsafe to call
 
   if (maybe_fn->get_extern_kind () != ExternalItem::ExternKind::Function)
-    return;
+    return false;
 
   // Some intrinsics are safe to call
   if (parent_block->get_abi () == Rust::ABI::INTRINSIC
       && is_safe_intrinsic (maybe_fn->get_item_name ().as_string ()))
-    return;
+    return false;
 
-  rust_error_at (locus,
-		 "call to extern function requires unsafe function or block");
+  if (!in_context)
+    rust_error_at (locus,
+		   "call to extern function requires unsafe function or block");
+  return true;
 }
 
 void
 UnsafeChecker::check_function_call (HirId node_id, location_t locus)
 {
-  if (unsafe_context.is_in_context ())
-    return;
+  bool in_context = unsafe_context.is_in_context ();
+  bool unsafe_op = false;
 
   auto maybe_fn = mappings.lookup_hir_item (node_id);
 
   if (maybe_fn
       && maybe_fn.value ()->get_item_kind () == Item::ItemKind::Function)
-    check_unsafe_call (static_cast<Function *> (*maybe_fn), locus, "function");
+    unsafe_op |= check_unsafe_call (static_cast<Function *> (*maybe_fn), locus,
+				    "function", in_context);
 
   if (auto maybe_extern = mappings.lookup_hir_extern_item (node_id))
-    check_extern_call (static_cast<ExternalItem *> (maybe_extern->first),
-		       *mappings.lookup_hir_extern_block (maybe_extern->second),
-		       locus);
+    unsafe_op
+      |= check_extern_call (static_cast<ExternalItem *> (maybe_extern->first),
+			    *mappings.lookup_hir_extern_block (
+			      maybe_extern->second),
+			    locus, in_context);
+
+  if (unsafe_op && in_context)
+    mark_unsafe_used ();
 }
 
-static void
-check_target_attr (HIR::Function *fn, location_t locus)
+static bool
+check_target_attr (HIR::Function *fn, location_t locus, bool in_context)
 {
   if (std::any_of (fn->get_outer_attrs ().begin (),
 		   fn->get_outer_attrs ().end (),
@@ -189,22 +225,29 @@ check_target_attr (HIR::Function *fn, location_t locus)
 		     return attr.get_path ().as_string ()
 			    == Values::Attributes::TARGET_FEATURE;
 		   }))
-    rust_error_at (locus,
-		   "call to function with %<#[target_feature]%> requires "
-		   "unsafe function or block");
+    {
+      if (!in_context)
+	rust_error_at (locus,
+		       "call to function with %<#[target_feature]%> requires "
+		       "unsafe function or block");
+      return true;
+    }
+  return false;
 }
 
 void
 UnsafeChecker::check_function_attr (HirId node_id, location_t locus)
 {
-  if (unsafe_context.is_in_context ())
-    return;
+  bool in_context = unsafe_context.is_in_context ();
 
   auto maybe_fn = mappings.lookup_hir_item (node_id);
 
   if (maybe_fn
-      && maybe_fn.value ()->get_item_kind () == Item::ItemKind::Function)
-    check_target_attr (static_cast<Function *> (*maybe_fn), locus);
+      && maybe_fn.value ()->get_item_kind () == Item::ItemKind::Function
+      && check_target_attr (static_cast<Function *> (*maybe_fn), locus,
+			    in_context)
+      && in_context)
+    mark_unsafe_used ();
 }
 
 void
@@ -280,10 +323,14 @@ UnsafeChecker::visit (DereferenceExpr &expr)
 
   rust_assert (context.lookup_type (to_deref, &to_deref_type));
 
-  if (to_deref_type->get_kind () == TyTy::TypeKind::POINTER
-      && !unsafe_context.is_in_context ())
-    rust_error_at (expr.get_locus (), "dereference of raw pointer requires "
-				      "unsafe function or block");
+  if (to_deref_type->get_kind () == TyTy::TypeKind::POINTER)
+    {
+      if (unsafe_context.is_in_context ())
+	mark_unsafe_used ();
+      else
+	rust_error_at (expr.get_locus (), "dereference of raw pointer requires "
+					  "unsafe function or block");
+    }
 }
 
 void
@@ -465,9 +512,12 @@ UnsafeChecker::visit (MethodCallExpr &expr)
   // should probably use the defid lookup instead
   // tl::optional<HIR::Item *> lookup_defid (DefId id);
   auto method = mappings.lookup_hir_implitem (fn.get_ref ());
-  if (!unsafe_context.is_in_context () && method)
-    check_unsafe_call (static_cast<Function *> (method->first),
-		       expr.get_locus (), "method");
+  if (method
+      && check_unsafe_call (static_cast<Function *> (method->first),
+			    expr.get_locus (), "method",
+			    unsafe_context.is_in_context ())
+      && unsafe_context.is_in_context ())
+    mark_unsafe_used ();
 
   expr.get_receiver ().accept_vis (*this);
 
@@ -480,21 +530,23 @@ UnsafeChecker::visit (FieldAccessExpr &expr)
 {
   expr.get_receiver_expr ().accept_vis (*this);
 
-  if (unsafe_context.is_in_context ())
-    return;
-
   TyTy::BaseType *receiver_ty;
-  auto ok = context.lookup_type (
-    expr.get_receiver_expr ().get_mappings ().get_hirid (), &receiver_ty);
-  rust_assert (ok);
+  if (!context.lookup_type (
+	expr.get_receiver_expr ().get_mappings ().get_hirid (), &receiver_ty))
+    return;
 
   if (receiver_ty->get_kind () == TyTy::TypeKind::ADT)
     {
       auto maybe_union = static_cast<TyTy::ADTType *> (receiver_ty);
       if (maybe_union->is_union ())
-	rust_error_at (
-	  expr.get_locus (),
-	  "access to union field requires unsafe function or block");
+	{
+	  if (unsafe_context.is_in_context ())
+	    mark_unsafe_used ();
+	  else
+	    rust_error_at (
+	      expr.get_locus (),
+	      "access to union field requires unsafe function or block");
+	}
     }
 }
 
@@ -582,11 +634,17 @@ UnsafeChecker::visit (ReturnExpr &expr)
 void
 UnsafeChecker::visit (UnsafeBlockExpr &expr)
 {
-  unsafe_context.enter (expr.get_mappings ().get_hirid ());
+  auto id = expr.get_mappings ().get_hirid ();
+  unsafe_context.enter (id);
 
   expr.get_block_expr ().accept_vis (*this);
 
   unsafe_context.exit ();
+
+  if (flag_unused_check_2_0
+      && used_unsafe_blocks.find (id) == used_unsafe_blocks.end ())
+    rust_warning_at (expr.get_locus (), OPT_Wunused,
+		     "unnecessary %<unsafe%> block");
 }
 
 void
@@ -649,7 +707,10 @@ void
 UnsafeChecker::visit (InlineAsm &expr)
 {
   if (unsafe_context.is_in_context ())
-    return;
+    {
+      mark_unsafe_used ();
+      return;
+    }
 
   rust_error_at (
     expr.get_locus (), ErrorCode::E0133,
@@ -660,7 +721,10 @@ void
 UnsafeChecker::visit (LlvmInlineAsm &expr)
 {
   if (unsafe_context.is_in_context ())
-    return;
+    {
+      mark_unsafe_used ();
+      return;
+    }
 
   rust_error_at (
     expr.get_locus (), ErrorCode::E0133,
