@@ -655,6 +655,16 @@ TypeCheckType::visit (HIR::TraitObjectType &type)
 	specified_bounds.push_back (std::move (predicate));
     }
 
+  // The dyn_drop lint: a trait object with a `Drop` bound is pointless, as
+  // values are dropped automatically regardless of the bound.
+  if (flag_unused_check_2_0)
+    if (auto drop = mappings.lookup_lang_item (LangItem::Kind::DROP))
+      for (auto &bound : specified_bounds)
+	if (bound.get_id () == drop.value ())
+	  rust_warning_at (type.get_locus (), OPT_Wunused,
+			   "this trait object has a %<Drop%> bound, which has "
+			   "no effect");
+
   RustIdent ident{CanonicalPath::create_empty (), type.get_locus ()};
   translated
     = new TyTy::DynamicObjectType (type.get_mappings ().get_hirid (), ident,

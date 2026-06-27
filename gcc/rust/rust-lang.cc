@@ -136,6 +136,8 @@ grs_langhook_init_options_struct (struct gcc_options *opts)
 
   /* We need to warn on unused variables by default */
   opts->x_warn_unused_variable = 1;
+  /* Experimental lints under -frust-unused-check-2.0 warn by default */
+  opts->x_warn_unused = 1;
   /* For const variables too */
   opts->x_warn_unused_const_variable = 1;
   /* And finally unused result for #[must_use] */
