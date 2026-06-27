@@ -378,5 +378,36 @@ UnusedChecker::visit (HIR::BorrowExpr &expr)
   walk (expr);
 }
 
+namespace {
+// Probe whether an expression is itself an arithmetic negation, without
+// recursing (so it only inspects the node it is dispatched on). Used to detect
+// `- -x` for the double_negations lint, since gccrs builds with -fno-rtti and
+// HIR has no down-cast helper.
+class NegationProbe : public HIR::HIRFullVisitorBase
+{
+public:
+  bool is_negation = false;
+  using HIR::HIRFullVisitorBase::visit;
+  void visit (HIR::NegationExpr &expr) override
+  {
+    is_negation = expr.get_expr_type () == HIR::NegationExpr::ExprType::NEGATE;
+  }
+};
+} // namespace
+
+void
+UnusedChecker::visit (HIR::NegationExpr &expr)
+{
+  if (expr.get_expr_type () == HIR::NegationExpr::ExprType::NEGATE)
+    {
+      NegationProbe probe;
+      expr.get_expr ().accept_vis (probe);
+      if (probe.is_negation)
+	rust_warning_at (expr.get_locus (), OPT_Wunused,
+			 "use of a double negation");
+    }
+  walk (expr);
+}
+
 } // namespace Analysis
 } // namespace Rust
