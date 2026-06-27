@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-base.h"
+#include "options.h"
 #include "rust-compile-base.h"
 #include "rust-hir-item.h"
 #include "rust-hir-type-check-expr.h"
@@ -715,6 +716,18 @@ TypeCheckBase::resolve_generic_params (
       auto pty = static_cast<TyTy::ParamType *> (bpty);
 
       TypeResolveGenericParam::ApplyAnyTraitBounds (type_param, pty);
+
+      // The drop_bounds lint: a `T: Drop` bound is most likely a mistake, as
+      // `Drop` bounds do not constrain a generic parameter in a useful way.
+      if (flag_unused_check_2_0)
+	if (auto drop = mappings.lookup_lang_item (LangItem::Kind::DROP))
+	  for (auto &bound : pty->get_specified_bounds ())
+	    if (bound.get_id () == drop.value ())
+	      rust_warning_at (
+		type_param.get_locus (), OPT_Wunused_variable,
+		"bounds on %<Drop%> are most likely incorrect, "
+		"use %<core::mem::needs_drop%> to detect whether "
+		"a type has a destructor");
     }
 }
 
