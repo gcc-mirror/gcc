@@ -152,6 +152,22 @@ UnusedChecker::visit (HIR::Function &fct)
     rust_warning_at (fct.get_locus (), OPT_Wunused_variable,
 		     "function %qs should have a snake case name",
 		     fct.get_function_name ().as_string ().c_str ());
+
+  // The no_mangle_generic_items lint: a generic function cannot be exported
+  // with a fixed symbol, so `#[no_mangle]`/`#[export_name]` has no effect.
+  if (fct.has_generics ())
+    for (auto &attr : fct.get_outer_attrs ())
+      {
+	auto name = attr.get_path ().as_string ();
+	if (name == "no_mangle" || name == "export_name")
+	  {
+	    rust_warning_at (fct.get_locus (), OPT_Wattributes,
+			     "generic functions must be mangled, %qs has no "
+			     "effect",
+			     name.c_str ());
+	    break;
+	  }
+      }
   walk (fct);
 }
 
