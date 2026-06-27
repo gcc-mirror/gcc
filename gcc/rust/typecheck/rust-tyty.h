@@ -910,7 +910,7 @@ public:
     INT,
     ALIGN,
     PACKED,
-    // TRANSPARENT,
+    TRANSPARENT,
     // SIMD,
     // ...
   };
