@@ -347,5 +347,25 @@ UnusedChecker::visit (HIR::LetStmt &stmt)
   walk (stmt);
 }
 
+void
+UnusedChecker::visit (HIR::BorrowExpr &expr)
+{
+  // The static_mut_refs lint: taking a reference to a mutable static is
+  // discouraged as it can easily lead to undefined behaviour.
+  NodeId ast_node_id = expr.get_expr ().get_mappings ().get_nodeid ();
+  if (auto def
+      = nr_context.lookup (ast_node_id, Resolver2_0::Namespace::Values))
+    if (auto id = mappings.lookup_node_to_hir (*def))
+      if (auto item = mappings.lookup_hir_item (*id))
+	if (item.value ()->get_item_kind () == HIR::Item::ItemKind::Static)
+	  {
+	    auto &static_item = static_cast<HIR::StaticItem &> (*item.value ());
+	    if (static_item.is_mut ())
+	      rust_warning_at (expr.get_locus (), OPT_Wunused,
+			       "creating a reference to a mutable static");
+	  }
+  walk (expr);
+}
+
 } // namespace Analysis
 } // namespace Rust
