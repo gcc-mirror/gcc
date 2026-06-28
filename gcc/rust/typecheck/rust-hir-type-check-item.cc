@@ -36,9 +36,51 @@
 #include "rust-type-util.h"
 #include "rust-tyty-variance-analysis.h"
 #include "rust-tyty.h"
+#include "options.h"
+#include "rust-compile-base.h"
+#include "rust-compile-context.h"
 
 namespace Rust {
 namespace Resolver {
+
+// Const-evaluate the discriminants of a repr(C) enum and warn when a value does
+// not fit into a C int/unsigned int. Done here, during type resolution, using
+// the compile context (a singleton shared with the backend).
+static void
+check_repr_c_enum_discriminants (Compile::Context *ctx, TyTy::BaseType *type)
+{
+  if (type->get_kind () != TyTy::TypeKind::ADT)
+    return;
+
+  auto &adt = static_cast<TyTy::ADTType &> (*type);
+  if (!adt.is_enum ()
+      || adt.get_repr_options ().repr_kind != TyTy::ADTType::ReprKind::C)
+    return;
+
+  for (auto &variant : adt.get_variants ())
+    {
+      if (!variant->has_discriminant ())
+	continue;
+
+      HIR::Expr &discriminant = variant->get_discriminant ();
+      TyTy::BaseType *discrim_ty = nullptr;
+      if (!ctx->get_tyctx ()->lookup_type (
+	    discriminant.get_mappings ().get_hirid (), &discrim_ty))
+	continue;
+
+      tree folded
+	= Compile::HIRCompileBase::query_compile_const_expr (ctx, discrim_ty,
+							     discriminant);
+      if (folded == error_mark_node || TREE_CODE (folded) != INTEGER_CST)
+	continue;
+
+      widest_int value = wi::to_widest (folded);
+      if (wi::lts_p (value, INT32_MIN) || wi::gts_p (value, UINT32_MAX))
+	rust_warning_at (discriminant.get_locus (), OPT_Woverflow,
+			 "%<repr(C)%> enum discriminant does not fit into C "
+			 "%<int%> nor into C %<unsigned int%>");
+    }
+}
 
 TypeCheckItem::TypeCheckItem () : TypeCheckBase (), infered (nullptr) {}
 
@@ -493,6 +535,9 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
   infered = type;
 
   context->get_variance_analysis_ctx ().add_type_constraints (*type);
+
+  if (flag_unused_check_2_0)
+    check_repr_c_enum_discriminants (Compile::Context::get (), type);
 }
 
 void
