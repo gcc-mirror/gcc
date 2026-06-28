@@ -484,7 +484,58 @@ enum class LookupFinalizeError
   Loop,
 };
 
-template <Namespace N> class ForeverStack
+class ForeverStackBase
+{
+public:
+  /**
+   * A link between two Nodes in our trie data structure. This class represents
+   * the edges of the graph
+   */
+  class Link
+  {
+  public:
+    Link (NodeId id, tl::optional<Identifier> path) : id (id), path (path) {}
+
+    bool compare (const Link &other) const { return id < other.id; }
+
+    NodeId id;
+    tl::optional<Identifier> path;
+  };
+
+  /* Link comparison class, which we use in a Node's `children` map */
+  class LinkCmp
+  {
+  public:
+    bool operator() (const Link &lhs, const Link &rhs) const
+    {
+      return lhs.compare (rhs);
+    }
+  };
+
+  class Node
+  {
+  public:
+    Node (Rib rib, NodeId id) : rib (rib), id (id) {}
+    Node (Rib rib, NodeId id, Node &parent)
+      : rib (rib), id (id), parent (parent)
+    {}
+
+    inline bool is_root () const;
+    inline bool is_prelude () const;
+    inline bool is_leaf () const;
+
+    inline void insert_child (Link link, Node child);
+
+    Rib rib; // this is the "value" of the node - the data it keeps.
+    std::map<Link, Node, LinkCmp> children; // all the other nodes it links to
+
+    NodeId id; // The node id of the Node's scope
+
+    tl::optional<Node &> parent; // `None` only if the node is a root
+  };
+};
+
+template <Namespace N> class ForeverStack : public ForeverStackBase
 {
 public:
   ForeverStack ()
@@ -624,53 +675,6 @@ public:
    * Intended for use in the privacy checker
    */
   bool is_module_descendant (NodeId parent, NodeId child) const;
-
-  /**
-   * A link between two Nodes in our trie data structure. This class represents
-   * the edges of the graph
-   */
-  class Link
-  {
-  public:
-    Link (NodeId id, tl::optional<Identifier> path) : id (id), path (path) {}
-
-    bool compare (const Link &other) const { return id < other.id; }
-
-    NodeId id;
-    tl::optional<Identifier> path;
-  };
-
-  /* Link comparison class, which we use in a Node's `children` map */
-  class LinkCmp
-  {
-  public:
-    bool operator() (const Link &lhs, const Link &rhs) const
-    {
-      return lhs.compare (rhs);
-    }
-  };
-
-  class Node
-  {
-  public:
-    Node (Rib rib, NodeId id) : rib (rib), id (id) {}
-    Node (Rib rib, NodeId id, Node &parent)
-      : rib (rib), id (id), parent (parent)
-    {}
-
-    bool is_root () const;
-    bool is_prelude () const;
-    bool is_leaf () const;
-
-    void insert_child (Link link, Node child);
-
-    Rib rib; // this is the "value" of the node - the data it keeps.
-    std::map<Link, Node, LinkCmp> children; // all the other nodes it links to
-
-    NodeId id; // The node id of the Node's scope
-
-    tl::optional<Node &> parent; // `None` only if the node is a root
-  };
 
   tl::optional<Rib::Definition> get (Node &start, const Identifier &name);
 

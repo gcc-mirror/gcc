@@ -28,30 +28,26 @@
 namespace Rust {
 namespace Resolver2_0 {
 
-template <Namespace N>
 bool
-ForeverStack<N>::Node::is_root () const
+ForeverStackBase::Node::is_root () const
 {
   return !parent.has_value ();
 }
 
-template <Namespace N>
 bool
-ForeverStack<N>::Node::is_prelude () const
+ForeverStackBase::Node::is_prelude () const
 {
   return rib.kind == Rib::Kind::Prelude;
 }
 
-template <Namespace N>
 bool
-ForeverStack<N>::Node::is_leaf () const
+ForeverStackBase::Node::is_leaf () const
 {
   return children.empty ();
 }
 
-template <Namespace N>
 void
-ForeverStack<N>::Node::insert_child (Link link, Node child)
+ForeverStackBase::Node::insert_child (Link link, Node child)
 {
   children.insert ({link, child});
 
