@@ -42,6 +42,8 @@ public:
 
   void emit_trait (AST::Trait &trait);
   void emit_function (AST::Function &fn);
+  void begin_extern_block (AST::ExternBlock &block);
+  void end_extern_block ();
   void emit_use_declaration (AST::UseDeclaration &use_decl);
   void begin_module (const AST::Module &module);
   void end_module (const AST::Module &module);

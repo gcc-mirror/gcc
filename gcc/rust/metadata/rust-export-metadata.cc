@@ -107,6 +107,18 @@ ExportContext::emit_function (AST::Function &fn)
 }
 
 void
+ExportContext::begin_extern_block (AST::ExternBlock &block)
+{
+  public_interface_buffer += "extern \"" + block.get_abi () + "\" {\n";
+}
+
+void
+ExportContext::end_extern_block ()
+{
+  public_interface_buffer += "}\n";
+}
+
+void
 ExportContext::begin_module (const AST::Module &module)
 {
   if (module.get_visibility ().is_public ())
@@ -151,6 +163,12 @@ public:
   void visit (AST::Function &function) override
   {
     ctx.emit_function (function);
+  }
+  void visit (AST::ExternBlock &block) override
+  {
+    ctx.begin_extern_block (block);
+    AST::DefaultASTVisitor::visit (block);
+    ctx.end_extern_block ();
   }
   void visit (AST::Trait &trait) override { ctx.emit_trait (trait); }
   void visit (AST::Module &module) override
