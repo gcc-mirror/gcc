@@ -524,6 +524,12 @@ public:
 	       std::function<void (void)> lambda,
 	       tl::optional<Identifier> path = {});
 
+  using Node = ForeverStackBase::Node;
+
+  std::unique_ptr<Node> root;
+  std::unique_ptr<Node> lang_prelude;
+  std::unique_ptr<Node> extern_prelude;
+
   ForeverStack<Namespace::Values> values;
   ForeverStack<Namespace::Types> types;
   ForeverStack<Namespace::Macros> macros;

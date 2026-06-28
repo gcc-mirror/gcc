@@ -42,7 +42,7 @@ NameResolutionContext::should_search_prelude (
   // Check whether we're at the start of a module (we can't travel elsewhere
   // from the start of a module)
   if (is_start (iterator, segments)
-      && current_node->rib.kind == Rib::Kind::Module)
+      && current_node->rib (N).kind == Rib::Kind::Module)
     return true;
 
   return false;
@@ -203,31 +203,20 @@ NameResolutionContext::resolve_path (
   // We do the first part of path resolution exclusively in the types NS - this
   // gives us a node in which to resolve the last segment of the path.
 
-  // We take our starting point and then get the equivalent Node from the Types
-  // NS - since it existed in whatever namespace we are right now, we assume it
-  // exists in the types NS.
-  auto types_starting_point
-    = types.dfs_node (types.root, starting_point.get ().id);
-
-  // TODO: Add a method for converting a node between namespaces? Make all of
-  // the starting point stuff return a NodeId rather than a Node&? And take a
-  // NodeId as a starting point rather than a Node?
-
+  // nodes are shared between stacks
   auto node
-    = resolve_segments (types, types_starting_point.value (), segments,
-			iterator, insert_segment_resolution, collect_errors);
+    = resolve_segments (types, starting_point.get (), segments, iterator,
+			insert_segment_resolution, collect_errors);
 
   if (!node)
     return tl::nullopt;
 
   // This node now represents the Node which *should* contain the definition
-  // used by the last segment. We now get the equivalent Node from this
-  // namespace after finding it in the types NS.
-  auto final_node_id = node.value ().id;
-  auto final_node = stack.dfs_node (stack.root, final_node_id).value ();
+  // used by the last segment.
+  auto &final_node = node.value ();
 
   // leave resolution within impl blocks to type checker
-  if (final_node.rib.kind == Rib::Kind::TraitOrImpl)
+  if (final_node.rib (N).kind == Rib::Kind::TraitOrImpl)
     return tl::nullopt;
 
   auto &seg = segments.back ();
@@ -294,7 +283,7 @@ NameResolutionContext::resolve_segments (
       while (true)
 	{
 	  if (is_start (iterator, segments)
-	      && current_node->rib.kind == Rib::Kind::TraitOrImpl)
+	      && current_node->rib (N).kind == Rib::Kind::TraitOrImpl)
 	    {
 	      // we can't reference associated types/functions like this
 	      current_node = &current_node->parent.value ();
@@ -323,7 +312,7 @@ NameResolutionContext::resolve_segments (
 	      break;
 	    }
 
-	  auto rib_lookup = current_node->rib.get (seg.name);
+	  auto rib_lookup = current_node->rib (N).get (seg.name);
 	  if (rib_lookup && !rib_lookup->is_ambiguous ())
 	    {
 	      if (Analysis::Mappings::get ()
@@ -369,7 +358,7 @@ NameResolutionContext::resolve_segments (
 	    }
 
 	  if (!is_start (iterator, segments)
-	      || current_node->rib.kind == Rib::Kind::Module
+	      || current_node->rib (N).kind == Rib::Kind::Module
 	      || current_node->is_prelude ())
 	    {
 	      return tl::nullopt;
@@ -398,7 +387,7 @@ NameResolutionContext::resolve_final_segment (
   if (is_lower_self)
     return Rib::Definition::NonShadowable (final_node.id);
   else
-    return final_node.rib.get (seg_name);
+    return final_node.rib_types.get (seg_name);
 }
 
 template <Namespace N>
@@ -407,7 +396,7 @@ NameResolutionContext::resolve_final_segment (
   ForeverStack<N> &stack, typename ForeverStack<N>::Node &final_node,
   std::string &seg_name, bool is_lower_self)
 {
-  return final_node.rib.get (seg_name);
+  return final_node.rib (N).get (seg_name);
 }
 
 } // namespace Resolver2_0

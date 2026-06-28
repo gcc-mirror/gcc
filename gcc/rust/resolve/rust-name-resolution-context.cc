@@ -199,7 +199,16 @@ CanonicalPathRecordTraitImpl::as_path (const NameResolutionContext &ctx,
 }
 
 NameResolutionContext::NameResolutionContext ()
-  : mappings (Analysis::Mappings::get ()), canonical_ctx (*this)
+  : root (std::make_unique<Node> (Rib::Kind::Normal, UNKNOWN_NODEID)),
+    lang_prelude (
+      std::make_unique<Node> (Rib::Kind::Prelude, UNKNOWN_NODEID, *root)),
+    extern_prelude (
+      std::make_unique<Node> (Rib::Kind::Prelude, UNKNOWN_NODEID)),
+    values (*root, *lang_prelude, *extern_prelude),
+    types (*root, *lang_prelude, *extern_prelude),
+    macros (*root, *lang_prelude, *extern_prelude),
+    labels (*root, *lang_prelude, *extern_prelude),
+    mappings (Analysis::Mappings::get ()), canonical_ctx (*this)
 {}
 
 tl::expected<NodeId, DuplicateNameError>
@@ -390,7 +399,9 @@ NameResolutionContext::scoped (Rib::Kind rib_kind, Namespace ns,
 void
 NameResolutionContext::merge (NameResolutionContext &other, NodeId at)
 {
-  auto merge_fstack = [&] (auto &stack, auto &other_stack) {
+  // TODO: merge once, for all namespaces at once
+
+  auto merge_fstack = [&] (auto &stack, auto &other_stack, Namespace ns) {
     auto node = stack.dfs_node (stack.root, at);
     if (node)
       {
@@ -402,21 +413,21 @@ NameResolutionContext::merge (NameResolutionContext &other, NodeId at)
 	    extern_crate_node.insert_child (link, child);
 	    child.parent = extern_crate_node;
 	  }
-	for (auto kv : other_stack.root.rib.get_values ())
+	for (auto kv : other_stack.root.rib (ns).get_values ())
 	  {
 	    auto name = kv.first;
 	    auto def = kv.second;
-	    extern_crate_node.rib.insert (name, def);
+	    extern_crate_node.rib (ns).insert (name, def);
 	  }
       }
     stack.resolved_nodes.insert (other_stack.resolved_nodes.begin (),
 				 other_stack.resolved_nodes.end ());
   };
 
-  merge_fstack (values, other.values);
-  merge_fstack (types, other.types);
-  merge_fstack (macros, other.macros);
-  merge_fstack (labels, other.labels);
+  merge_fstack (values, other.values, Namespace::Values);
+  merge_fstack (types, other.types, Namespace::Types);
+  merge_fstack (macros, other.macros, Namespace::Macros);
+  merge_fstack (labels, other.labels, Namespace::Labels);
   canonical_ctx.merge (std::move (other.canonical_ctx));
 }
 

@@ -515,10 +515,36 @@ public:
   class Node
   {
   public:
-    Node (Rib rib, NodeId id) : rib (rib), id (id) {}
-    Node (Rib rib, NodeId id, Node &parent)
-      : rib (rib), id (id), parent (parent)
+    Node (Rib::Kind rib_kind, NodeId id)
+      : rib_values (rib_kind), rib_types (rib_kind), rib_labels (rib_kind),
+	rib_macros (rib_kind), id (id)
     {}
+    Node (Rib::Kind rib_kind, NodeId id, Node &parent)
+      : rib_values (rib_kind), rib_types (rib_kind), rib_labels (rib_kind),
+	rib_macros (rib_kind), id (id), parent (parent)
+    {}
+
+    const Rib &rib (Namespace n) const
+    {
+      switch (n)
+	{
+	case Namespace::Values:
+	  return rib_values;
+	case Namespace::Types:
+	  return rib_types;
+	case Namespace::Labels:
+	  return rib_labels;
+	case Namespace::Macros:
+	  return rib_macros;
+	default:
+	  rust_unreachable ();
+	}
+    }
+
+    Rib &rib (Namespace n)
+    {
+      return const_cast<Rib &> (const_cast<const Node *> (this)->rib (n));
+    }
 
     inline bool is_root () const;
     inline bool is_prelude () const;
@@ -526,22 +552,44 @@ public:
 
     inline void insert_child (Link link, Node child);
 
-    Rib rib; // this is the "value" of the node - the data it keeps.
+    // these are the "values" of the node - the data it keeps.
+    Rib rib_values;
+    Rib rib_types;
+    Rib rib_labels;
+    Rib rib_macros;
+
     std::map<Link, Node, LinkCmp> children; // all the other nodes it links to
 
     NodeId id; // The node id of the Node's scope
 
     tl::optional<Node &> parent; // `None` only if the node is a root
   };
+
+  ForeverStackBase (Node &root, Node &lang_prelude, Node &extern_prelude)
+    : root (root), lang_prelude (lang_prelude), extern_prelude (extern_prelude)
+  {}
+
+  /* The forever stack's actual nodes */
+  Node &root;
+
+  /*
+   * A special prelude node used currently for resolving language builtins
+   * It has the root node as a parent, and acts as a "special case" for name
+   * resolution
+   */
+  Node &lang_prelude;
+
+  /*
+   * The extern prelude, used for resolving external crates
+   */
+  Node &extern_prelude;
 };
 
 template <Namespace N> class ForeverStack : public ForeverStackBase
 {
 public:
-  ForeverStack ()
-    : root (Node (Rib (Rib::Kind::Normal), UNKNOWN_NODEID)),
-      lang_prelude (Node (Rib (Rib::Kind::Prelude), UNKNOWN_NODEID, root)),
-      extern_prelude (Node (Rib (Rib::Kind::Prelude), UNKNOWN_NODEID)),
+  ForeverStack (Node &root, Node &lang_prelude, Node &extern_prelude)
+    : ForeverStackBase (root, lang_prelude, extern_prelude),
       cursor_reference (root)
   {
     rust_assert (root.is_root ());
@@ -686,7 +734,7 @@ public:
   };
 
   /* Add a new Rib to the stack. This is an internal method */
-  void push_inner (Rib rib, Link link);
+  void push_inner (Rib::Kind rib, Link link);
 
   /* Reverse iterate on `Node`s from the cursor, in an outwards fashion */
   void reverse_iter (std::function<KeepGoing (Node &)> lambda);
@@ -701,20 +749,6 @@ public:
   const Node &cursor () const;
 
   void update_cursor (Node &new_cursor);
-
-  /* The forever stack's actual nodes */
-  Node root;
-  /*
-   * A special prelude node used currently for resolving language builtins
-   * It has the root node as a parent, and acts as a "special case" for name
-   * resolution
-   */
-  Node lang_prelude;
-
-  /*
-   * The extern prelude, used for resolving external crates
-   */
-  Node extern_prelude;
 
   std::reference_wrapper<Node> cursor_reference;
 

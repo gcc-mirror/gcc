@@ -37,7 +37,7 @@ ForeverStackBase::Node::is_root () const
 bool
 ForeverStackBase::Node::is_prelude () const
 {
-  return rib.kind == Rib::Kind::Prelude;
+  return rib_values.kind == Rib::Kind::Prelude;
 }
 
 bool
@@ -65,9 +65,9 @@ ForeverStack<N>::push (Rib::Kind rib_kind, NodeId id,
 
 template <Namespace N>
 void
-ForeverStack<N>::push_inner (Rib rib, Link link)
+ForeverStack<N>::push_inner (Rib::Kind rib_kind, Link link)
 {
-  if (rib.kind == Rib::Kind::Prelude)
+  if (rib_kind == Rib::Kind::Prelude)
     {
       // If you push_inner into the prelude from outside the root, you will pop
       // back into the root, which could screw up a traversal.
@@ -83,7 +83,7 @@ ForeverStack<N>::push_inner (Rib rib, Link link)
   // points to it. Otherwise, it points to the newly emplaced value, so we can
   // just update our cursor().
   auto emplace = cursor ().children.emplace (
-    std::make_pair (link, Node (rib, link.id, cursor ())));
+    std::make_pair (link, Node (rib_kind, link.id, cursor ())));
 
   auto it = emplace.first;
   auto existed = !emplace.second;
@@ -105,12 +105,12 @@ ForeverStack<N>::pop ()
 
   rust_debug ("popping link");
 
-  for (const auto &kv : cursor ().rib.get_values ())
+  for (const auto &kv : cursor ().rib (N).get_values ())
     rust_debug ("current_rib: k: %s, v: %s", kv.first.c_str (),
 		kv.second.to_string ().c_str ());
 
   if (cursor ().parent.has_value ())
-    for (const auto &kv : cursor ().parent.value ().rib.get_values ())
+    for (const auto &kv : cursor ().parent.value ().rib (N).get_values ())
       rust_debug ("new cursor: k: %s, v: %s", kv.first.c_str (),
 		  kv.second.to_string ().c_str ());
 
@@ -161,7 +161,7 @@ template <Namespace N>
 tl::expected<NodeId, DuplicateNameError>
 ForeverStack<N>::insert_at_root (Identifier name, NodeId node)
 {
-  auto &root_rib = root.rib;
+  auto &root_rib = root.rib (N);
 
   // inserting in the root of the crate is never a shadowing operation, even for
   // macros
@@ -207,7 +207,7 @@ template <Namespace N>
 inline void
 ForeverStack<N>::insert_lang_prelude (Identifier name, NodeId id)
 {
-  insert_inner (lang_prelude.rib, name.as_string (),
+  insert_inner (lang_prelude.rib (N), name.as_string (),
 		Rib::Definition::NonShadowable (id, false));
 }
 
@@ -215,14 +215,14 @@ template <Namespace N>
 Rib &
 ForeverStack<N>::peek ()
 {
-  return cursor ().rib;
+  return cursor ().rib (N);
 }
 
 template <Namespace N>
 const Rib &
 ForeverStack<N>::peek () const
 {
-  return cursor ().rib;
+  return cursor ().rib (N);
 }
 
 template <Namespace N>
@@ -310,10 +310,10 @@ ForeverStack<N>::get (Node &start, const Identifier &name)
   // TODO: Can we improve the API? have `reverse_iter` return an optional?
   reverse_iter (start, [&resolved_definition, &name] (Node &current) {
     // we can't reference associated types/functions like this
-    if (current.rib.kind == Rib::Kind::TraitOrImpl)
+    if (current.rib (N).kind == Rib::Kind::TraitOrImpl)
       return KeepGoing::Yes;
 
-    auto candidate = current.rib.get (name.as_string ());
+    auto candidate = current.rib (N).get (name.as_string ());
 
     if (candidate)
       {
@@ -329,7 +329,7 @@ ForeverStack<N>::get (Node &start, const Identifier &name)
       }
     else
       {
-	if (current.rib.kind == Rib::Kind::Module)
+	if (current.rib (N).kind == Rib::Kind::Module)
 	  return KeepGoing::No;
 	else
 	  return KeepGoing::Yes;
@@ -350,14 +350,14 @@ template <Namespace N>
 tl::optional<Rib::Definition>
 ForeverStack<N>::get_lang_prelude (const Identifier &name)
 {
-  return lang_prelude.rib.get (name.as_string ());
+  return lang_prelude.rib (N).get (name.as_string ());
 }
 
 template <Namespace N>
 tl::optional<Rib::Definition>
 ForeverStack<N>::get_lang_prelude (const std::string &name)
 {
-  return lang_prelude.rib.get (name);
+  return lang_prelude.rib (N).get (name);
 }
 
 template <Namespace N>
@@ -380,10 +380,10 @@ tl::optional<Rib::Definition> inline ForeverStack<Namespace::Labels>::get (
   reverse_iter ([&resolved_definition, &name] (Node &current) {
     // looking up for labels cannot go through function ribs
     // TODO: What other ribs?
-    if (current.rib.kind == Rib::Kind::Function)
+    if (current.rib_labels.kind == Rib::Kind::Function)
       return KeepGoing::No;
 
-    auto candidate = current.rib.get (name.as_string ());
+    auto candidate = current.rib_labels.get (name.as_string ());
 
     // FIXME: Factor this in a function with the generic `get`
     return candidate.map_or (
@@ -421,7 +421,7 @@ ForeverStack<N>::find_closest_module (Node &starting_point)
   auto *closest_module = &starting_point;
 
   reverse_iter (starting_point, [&closest_module] (Node &current) {
-    if (current.rib.kind == Rib::Kind::Module || current.is_root ())
+    if (current.rib (N).kind == Rib::Kind::Module || current.is_root ())
       {
 	closest_module = &current;
 	return KeepGoing::No;
@@ -526,7 +526,7 @@ template <Namespace N>
 tl::optional<typename ForeverStack<N>::DfsResult>
 ForeverStack<N>::dfs (ForeverStack<N>::Node &starting_point, NodeId to_find)
 {
-  auto values = starting_point.rib.get_values ();
+  auto values = starting_point.rib (N).get_values ();
 
   for (auto &kv : values)
     {
@@ -557,7 +557,7 @@ tl::optional<typename ForeverStack<N>::ConstDfsResult>
 ForeverStack<N>::dfs (const ForeverStack<N>::Node &starting_point,
 		      NodeId to_find) const
 {
-  auto values = starting_point.rib.get_values ();
+  auto values = starting_point.rib (N).get_values ();
 
   for (auto &kv : values)
     {
@@ -588,7 +588,7 @@ tl::optional<Rib &>
 ForeverStack<N>::dfs_rib (ForeverStack<N>::Node &starting_point, NodeId to_find)
 {
   return dfs_node (starting_point, to_find).map ([] (Node &x) -> Rib & {
-    return x.rib;
+    return x.rib (N);
   });
 }
 
@@ -598,7 +598,7 @@ ForeverStack<N>::dfs_rib (const ForeverStack<N>::Node &starting_point,
 			  NodeId to_find) const
 {
   return dfs_node (starting_point, to_find)
-    .map ([] (const Node &x) -> const Rib & { return x.rib; });
+    .map ([] (const Node &x) -> const Rib & { return x.rib (N); });
 }
 
 template <Namespace N>
@@ -692,7 +692,7 @@ ForeverStack<N>::stream_node (std::stringstream &stream, unsigned indentation,
 	 << next << "is_leaf: " << (node.is_leaf () ? "true" : "false")
 	 << ",\n";
 
-  stream_rib (stream, node.rib, next, next_next);
+  stream_rib (stream, node.rib (N), next, next_next);
 
   stream << indent << "}\n";
 
