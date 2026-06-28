@@ -1,5 +1,5 @@
 #! /bin/sh
-# ylwrap - wrapper for lex/yacc invocations.
+# ylwrap - wrapper for lex/yacc invocations..
 
 scriptversion=2013-01-12.17; # UTC
 
