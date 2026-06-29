@@ -444,7 +444,7 @@ public:
     Resolver2_0::NameResolutionContext ctx;
   };
 
-  struct AlreadyLoadedError
+  struct LoadingError
   {
   public:
     enum class Kind
@@ -454,24 +454,24 @@ public:
       COLLISION,
     } kind;
 
-    static AlreadyLoadedError make_already_loaded (NodeId node_id)
+    static LoadingError make_already_loaded (NodeId node_id)
     {
-      return AlreadyLoadedError{Kind::ALREADY_LOADED, node_id};
+      return LoadingError{Kind::ALREADY_LOADED, node_id};
     }
 
-    static AlreadyLoadedError make_failed_to_locate ()
+    static LoadingError make_failed_to_locate ()
     {
-      return AlreadyLoadedError{Kind::FAILED_TO_LOCATE, UNKNOWN_NODEID};
+      return LoadingError{Kind::FAILED_TO_LOCATE, UNKNOWN_NODEID};
     }
 
-    static AlreadyLoadedError make_collision ()
+    static LoadingError make_collision ()
     {
-      return AlreadyLoadedError{Kind::COLLISION, UNKNOWN_NODEID};
+      return LoadingError{Kind::COLLISION, UNKNOWN_NODEID};
     }
     NodeId node_id;
   };
 
-  tl::expected<LoadedCrate, AlreadyLoadedError>
+  tl::expected<LoadedCrate, LoadingError>
   load_extern_crate (const std::string &crate_name, location_t locus);
 
 private:

@@ -1240,7 +1240,7 @@ Session::dump_hir_pretty (HIR::Crate &crate) const
 
 // imports
 
-tl::expected<Session::LoadedCrate, Session::AlreadyLoadedError>
+tl::expected<Session::LoadedCrate, Session::LoadingError>
 Session::load_extern_crate (const std::string &crate_name, location_t locus)
 {
   // has it already been loaded?
@@ -1250,7 +1250,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
       rust_assert (resolved_node_id);
 
       return tl::make_unexpected (
-	AlreadyLoadedError::make_already_loaded (*resolved_node_id));
+	LoadingError::make_already_loaded (*resolved_node_id));
     }
 
   std::string relative_import_path = "";
@@ -1280,7 +1280,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
       && proc_macros.empty ()) // no proc macros
     {
       rust_error_at (locus, "failed to locate crate %qs", import_name.c_str ());
-      return tl::make_unexpected (AlreadyLoadedError::make_failed_to_locate ());
+      return tl::make_unexpected (LoadingError::make_failed_to_locate ());
     }
 
   auto extern_crate
@@ -1294,8 +1294,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
       if (!ok)
 	{
 	  rust_error_at (locus, "failed to load crate metadata");
-	  return tl::make_unexpected (
-	    AlreadyLoadedError::make_failed_to_locate ());
+	  return tl::make_unexpected (LoadingError::make_failed_to_locate ());
 	}
     }
 
@@ -1305,7 +1304,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     {
       rust_error_at (locus, "current crate name %qs collides with this",
 		     current_crate_name.c_str ());
-      return tl::make_unexpected (AlreadyLoadedError::make_collision ());
+      return tl::make_unexpected (LoadingError::make_collision ());
     }
 
   // setup mappings
