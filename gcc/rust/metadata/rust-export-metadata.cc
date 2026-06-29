@@ -107,30 +107,25 @@ ExportContext::emit_function (AST::Function &fn)
 }
 
 void
-ExportContext::begin_extern_block (AST::ExternBlock &block)
+ExportContext::emit_extern_block (const AST::ExternBlock &block,
+				  std::function<void (void)> sub_visitor)
 {
   public_interface_buffer += "extern \"" + block.get_abi () + "\" {\n";
-}
-
-void
-ExportContext::end_extern_block ()
-{
+  sub_visitor ();
   public_interface_buffer += "}\n";
 }
 
 void
-ExportContext::begin_module (const AST::Module &module)
+ExportContext::emit_module (const AST::Module &module,
+			    std::function<void (void)> sub_visitor)
 {
   if (module.get_visibility ().is_public ())
-    public_interface_buffer
-      += "pub mod " + module.get_name ().as_string () + "{\n";
-}
-
-void
-ExportContext::end_module (const AST::Module &module)
-{
-  if (module.get_visibility ().is_public ())
-    public_interface_buffer += "}\n";
+    {
+      public_interface_buffer
+	+= "pub mod " + module.get_name ().as_string () + "{\n";
+      sub_visitor ();
+      public_interface_buffer += "}\n";
+    }
 }
 
 void
@@ -166,16 +161,14 @@ public:
   }
   void visit (AST::ExternBlock &block) override
   {
-    ctx.begin_extern_block (block);
-    AST::DefaultASTVisitor::visit (block);
-    ctx.end_extern_block ();
+    auto sub_visitor = [&] () { AST::DefaultASTVisitor::visit (block); };
+    ctx.emit_extern_block (block, sub_visitor);
   }
   void visit (AST::Trait &trait) override { ctx.emit_trait (trait); }
   void visit (AST::Module &module) override
   {
-    ctx.begin_module (module);
-    AST::DefaultASTVisitor::visit (module);
-    ctx.end_module (module);
+    auto sub_visitor = [&] () { AST::DefaultASTVisitor::visit (module); };
+    ctx.emit_module (module, sub_visitor);
   }
 
   void visit (AST::UseDeclaration &use_decl) override

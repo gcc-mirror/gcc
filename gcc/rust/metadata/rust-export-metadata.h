@@ -42,11 +42,11 @@ public:
 
   void emit_trait (AST::Trait &trait);
   void emit_function (AST::Function &fn);
-  void begin_extern_block (AST::ExternBlock &block);
-  void end_extern_block ();
+  void emit_extern_block (const AST::ExternBlock &block,
+			  std::function<void (void)> sub_visitor);
   void emit_use_declaration (AST::UseDeclaration &use_decl);
-  void begin_module (const AST::Module &module);
-  void end_module (const AST::Module &module);
+  void emit_module (const AST::Module &,
+		    std::function<void (void)> sub_visitor);
 
   /**
    * Macros are a bit particular - they only live at the AST level, so we can
