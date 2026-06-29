@@ -242,6 +242,8 @@ struct CompileOptions
   bool debug_assertions = false;
   std::string metadata_output_path;
 
+  int compat_version = 49;
+
   /** Structure containing additional attributes to be injected within the
    * compiled crate from the command line instead of the source code.
    *
@@ -343,6 +345,30 @@ struct CompileOptions
   }
 
   const Edition &get_edition () const { return edition; }
+
+  void set_compat_version (const char *version)
+  {
+    if (!strcmp (version, "max"))
+      {
+	compat_version = INT_MAX;
+	return;
+      }
+
+    long res;
+    char *end_ptr;
+    if (version[0] != '1' || version[1] != '.' || version[2] == '\0'
+	|| (res = strtol (version + 2, &end_ptr, 10), *end_ptr) || res < 0
+	|| res > INT_MAX)
+      {
+	rust_error_at (UNKNOWN_LOCATION,
+		       "compat version must be of form 1.x or be \"max\"");
+	return;
+      }
+
+    compat_version = res;
+  }
+
+  int get_compat_version () const { return compat_version; }
 
   void set_crate_type (int raw_type) { target_data.set_crate_type (raw_type); }
 
@@ -473,6 +499,10 @@ public:
 
   tl::expected<LoadedCrate, LoadingError>
   load_extern_crate (const std::string &crate_name, location_t locus);
+
+  int get_compat_version () const { return options.get_compat_version (); }
+
+  bool should_support_offset_of () const { return get_compat_version () >= 71; }
 
 private:
   Session () : mappings (Analysis::Mappings::get ()) {}

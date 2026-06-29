@@ -1,3 +1,4 @@
+// { dg-additional-options "-frust-compat-version=1.50" }
 #![feature(rustc_attrs)]
 #![feature(lang_items)]
 #![feature(no_core)]

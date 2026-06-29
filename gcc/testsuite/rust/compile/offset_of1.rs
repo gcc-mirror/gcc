@@ -1,4 +1,4 @@
-// { dg-additional-options "-frust-compile-until=lowering -frust-assume-builtin-offset-of" }
+// { dg-additional-options "-frust-compile-until=lowering -frust-compat-version=1.71" }
 #![feature(no_core)]
 #![no_core]
 

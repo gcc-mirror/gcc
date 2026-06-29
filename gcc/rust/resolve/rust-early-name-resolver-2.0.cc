@@ -30,6 +30,7 @@
 #include "rust-finalize-imports-2.0.h"
 #include "rust-attribute-values.h"
 #include "rust-identifier-path.h"
+#include "rust-session-manager.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -318,8 +319,8 @@ Early::visit (AST::MacroInvocation &invoc)
 
   // We special case the `offset_of!()` macro if the flag is here, otherwise
   // we accept whatever `offset_of!()` definition we resolved to.
-  auto resolve_offset_of
-    = flag_assume_builtin_offset_of && (path.as_string () == "offset_of");
+  auto resolve_offset_of = Session::get_instance ().should_support_offset_of ()
+			   && (path.as_string () == "offset_of");
 
   if (invoc.get_kind () == AST::MacroInvocation::InvocKind::Builtin)
     for (auto &pending_invoc : invoc.get_pending_eager_invocations ())

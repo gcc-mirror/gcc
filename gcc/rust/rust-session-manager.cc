@@ -289,6 +289,9 @@ Session::handle_option (
     case OPT_frust_edition_:
       options.set_edition (flag_rust_edition);
       break;
+    case OPT_frust_compat_version_:
+      options.set_compat_version (flag_rust_compat_version);
+      break;
     case OPT_frust_compile_until_:
       options.set_compile_step (flag_rust_compile_until);
       break;

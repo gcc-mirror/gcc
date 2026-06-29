@@ -229,9 +229,9 @@ frust-overflow-checks
 Rust Var(flag_overflow_checks) Init(1)
 Enable the overflow checks in code generation.
 
-frust-assume-builtin-offset-of
-Rust Var(flag_assume_builtin_offset_of)
-Define a built-in offset_of macro in the compiler and assume it is present.
+frust-compat-version=
+Rust Joined RejectNegative Var(flag_rust_compat_version)
+Select a version of rust to target for compatibility. Must be of form '1.x' or 'max'.
 
 frust-unused-check-2.0
 Rust Var(flag_unused_check_2_0)

@@ -29,6 +29,7 @@
 #include "rust-cfg-strip.h"
 #include "rust-proc-macro.h"
 #include "rust-token-tree-desugar.h"
+#include "rust-session-manager.h"
 
 namespace Rust {
 
@@ -311,7 +312,7 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc,
   // We special case the `offset_of!()` macro if the flag is here and manually
   // resolve to the builtin transcriber we have specified
   auto assume_builtin_offset_of
-    = flag_assume_builtin_offset_of
+    = Session::get_instance ().should_support_offset_of ()
       && (invoc.get_invoc_data ().get_path ().as_string () == "offset_of")
       && !rules_def;
 

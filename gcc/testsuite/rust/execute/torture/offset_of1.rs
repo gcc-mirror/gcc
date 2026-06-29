@@ -1,5 +1,5 @@
 // { dg-do run { target x86_64*-*-* } }
-// { dg-additional-options "-frust-assume-builtin-offset-of" }
+// { dg-additional-options "-frust-compat-version=1.71" }
 #![feature(no_core)]
 #![no_core]
 
