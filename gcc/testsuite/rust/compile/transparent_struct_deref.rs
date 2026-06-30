@@ -1,4 +1,3 @@
-// { dg-additional-options "-frust-c-style-string-literals" }
 #![feature(no_core, intrinsics, staged_api, lang_items)]
 #![no_core]
 
@@ -26,26 +25,19 @@ impl<T> *const T {
     }
 }
 
-extern "C" {
-    fn printf(s: *const u8, ...);
-}
-
-type c_char = u8;
-
-#[lang = "CStr"]
 #[repr(transparent)]
-pub struct CStr {
-    inner: [c_char]
+pub struct Foo {
+    inner: i32
 }
 
-impl CStr {
-    pub const fn to_ptr(&self) -> *const c_char {
-        &self.inner as *const [c_char] as *const c_char
+impl Foo {
+    pub const fn to_ptr(&self) -> *const i32 {
+        &self.inner as *const i32
     }
 }
 
-pub fn main() -> u8 {
-    let a = c"gccrs";
-    let val = unsafe { a.to_ptr().add(5) };
-    unsafe { *val }
+pub fn main() -> i32 {
+    let a = Foo { inner: 67 };
+    let val = unsafe { a.to_ptr() };
+    unsafe { *val - 67 }
 }

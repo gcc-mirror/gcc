@@ -145,6 +145,9 @@ protected:
 			  const TyTy::ArrayType &array_tyty, tree array_type,
 			  HIR::ArrayElemsCopied &elems);
 
+  tree compile_transparent_field_access (TyTy::VariantDef *variant,
+					 location_t locus, tree source_expr);
+
 protected:
   tree generate_closure_function (HIR::ClosureExpr &expr,
 				  TyTy::ClosureType &closure_tyty,

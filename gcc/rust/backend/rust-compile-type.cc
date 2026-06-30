@@ -295,7 +295,35 @@ void
 TyTyResolveCompile::visit (const TyTy::ADTType &type)
 {
   tree type_record = error_mark_node;
-  if (!type.is_enum ())
+
+  TyTy::ADTType::ReprOptions repr = type.get_repr_options ();
+  if (repr.repr_kind == TyTy::ADTType::ReprKind::TRANSPARENT)
+    {
+      rust_assert (type.number_of_variants () == 1);
+      TyTy::VariantDef &variant = *type.get_variants ().at (0);
+
+      rust_assert (variant.num_fields () <= 1);
+      if (variant.num_fields () == 0)
+	{
+	  // 0-field transparent repr
+	  // Rustonomicon states that transparent structs should have a single
+	  // non-zero-sized field, but rustc compiles one with 0 fields happily
+	  // without errors, so not sure what's the correct treatment.
+	  //
+	  // For now, treat it as a unit struct
+	  type_record = Backend::struct_type ({});
+	}
+      else
+	{
+	  // single field transparent repr
+	  const TyTy::StructFieldType *field = variant.get_field_at_index (0);
+	  type_record
+	    = TyTyResolveCompile::compile (ctx, field->get_field_type ());
+	}
+    }
+
+  // compilation of non-transparent ADTs below
+  else if (!type.is_enum ())
     {
       rust_assert (type.number_of_variants () == 1);
 
@@ -442,22 +470,24 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
   // TODO: "packed" should only narrow type alignment and "align" should only
   // widen it. Do we need to check and enforce this here, or is it taken care of
   // later on in the gcc middle-end?
-  TyTy::ADTType::ReprOptions repr = type.get_repr_options ();
-  if (repr.pack)
+  if (repr.repr_kind != TyTy::ADTType::ReprKind::TRANSPARENT)
     {
-      TYPE_PACKED (type_record) = 1;
-      if (repr.pack > 1)
+      if (repr.pack)
 	{
-	  SET_TYPE_ALIGN (type_record, repr.pack * 8);
+	  TYPE_PACKED (type_record) = 1;
+	  if (repr.pack > 1)
+	    {
+	      SET_TYPE_ALIGN (type_record, repr.pack * 8);
+	      TYPE_USER_ALIGN (type_record) = 1;
+	    }
+	}
+      else if (repr.align)
+	{
+	  SET_TYPE_ALIGN (type_record, repr.align * 8);
 	  TYPE_USER_ALIGN (type_record) = 1;
 	}
+      layout_type (type_record);
     }
-  else if (repr.align)
-    {
-      SET_TYPE_ALIGN (type_record, repr.align * 8);
-      TYPE_USER_ALIGN (type_record) = 1;
-    }
-  layout_type (type_record);
 
   std::string named_struct_str
     = type.get_ident ().path.get () + type.subst_as_string ();

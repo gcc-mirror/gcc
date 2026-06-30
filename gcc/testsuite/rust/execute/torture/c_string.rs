@@ -10,6 +10,7 @@ extern "C" {
 type c_char = u8;
 
 #[lang = "CStr"]
+#[repr(transparent)]
 pub struct CStr {
     inner: [c_char]
 }
