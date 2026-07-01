@@ -27,50 +27,13 @@
 #include "rust-diagnostics.h"
 #include "rust-keyword-values.h"
 #include "rust-cloneable.h"
+#include "rust-ast-identifier.h"
 
 namespace Rust {
 // TODO: remove typedefs and make actual types for these
 typedef int TupleIndex;
 struct Session;
 struct MacroExpander;
-
-class Identifier
-{
-public:
-  // Create dummy identifier
-  Identifier () : ident (""), loc (UNDEF_LOCATION) {}
-  // Create identifier with dummy location
-  Identifier (std::string ident, location_t loc = UNDEF_LOCATION)
-    : ident (ident), loc (loc)
-  {}
-  // Create identifier from token
-  Identifier (const_TokenPtr token)
-    : ident (token->get_str ()), loc (token->get_locus ())
-  {}
-
-  Identifier (const Identifier &) = default;
-  Identifier (Identifier &&) = default;
-  Identifier &operator= (const Identifier &) = default;
-  Identifier &operator= (Identifier &&) = default;
-
-  location_t get_locus () const { return loc; }
-  const std::string &as_string () const { return ident; }
-
-  bool empty () const { return ident.empty (); }
-
-  bool operator== (const Identifier &other) const
-  {
-    return ident == other.ident;
-  }
-
-  operator const std::string & () const { return ident; }
-
-private:
-  std::string ident;
-  location_t loc;
-};
-
-std::ostream &operator<< (std::ostream &os, Identifier const &i);
 
 namespace AST {
 // foward decl: ast visitor
