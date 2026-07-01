@@ -2062,7 +2062,9 @@ replace_proxy (tree *here, int *do_subtree, void *d)
 {
   proxy_replace *data = (proxy_replace *) d;
 
-  if (*here == data->from)
+  if (*here == data->from
+      || (TREE_CODE (data->from) == TARGET_EXPR
+	  && *here == TARGET_EXPR_SLOT (data->from)))
     {
       *here = data->to;
       *do_subtree = 0;
@@ -3302,8 +3304,8 @@ flatten_await_stmt (var_nest_node *n, hash_set<tree> *promoted,
 		= new var_nest_node (var, init, n->prev, n);
 	      /* We have to replace the target expr... */
 	      *v.entry = var;
-	      /* ... and any uses of its var.  */
-	      proxy_replace pr = {TARGET_EXPR_SLOT (t), var};
+	      /* ... and any other uses of it or its slot.  */
+	      proxy_replace pr = {t, var};
 	      cp_walk_tree (&n->init, replace_proxy, &pr, NULL);
 	      /* Compiler-generated temporaries can also have uses in
 		 following arms of compound expressions, which will be listed
