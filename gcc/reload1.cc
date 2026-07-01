@@ -1390,7 +1390,8 @@ maybe_fix_stack_asms (void)
 		  if (insn_extra_address_constraint (cn))
 		    cls = (int) reg_class_subunion[cls]
 		      [(int) base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-					     ADDRESS, SCRATCH, chain->insn)];
+					     ADDRESS, SCRATCH, NULL_RTX,
+					     chain->insn)];
 		  else
 		    cls = (int) reg_class_subunion[cls]
 		      [reg_class_for_constraint (cn)];

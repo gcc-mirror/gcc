@@ -1299,16 +1299,17 @@ scan_rtx_reg (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions act
 }
 
 /* A wrapper around base_reg_class which returns ALL_REGS if INSN is a
-   DEBUG_INSN.  The arguments MODE, AS, CODE and INDEX_CODE are as for
-   base_reg_class.  */
+   DEBUG_INSN.  The arguments MODE, AS, CODE, INDEX_CODE and MEM are as
+   for base_reg_class.  */
 
 static reg_class
 base_reg_class_for_rename (rtx_insn *insn, machine_mode mode, addr_space_t as,
-			   rtx_code code, rtx_code index_code)
+			   rtx_code code, rtx_code index_code,
+			   rtx mem = NULL_RTX)
 {
   if (DEBUG_INSN_P (insn))
     return ALL_REGS;
-  return base_reg_class (mode, as, code, index_code);
+  return base_reg_class (mode, as, code, index_code, mem, insn);
 }
 
 /* Adapted from find_reloads_address_1.  CL is INDEX_REG_CLASS or
@@ -1452,7 +1453,7 @@ scan_rtx_address (rtx_insn *insn, rtx *loc, enum reg_class cl,
       {
 	reg_class bclass = base_reg_class_for_rename (insn, GET_MODE (x),
 						      MEM_ADDR_SPACE (x),
-						      MEM, SCRATCH);
+						      MEM, SCRATCH, x);
 	scan_rtx_address (insn, &XEXP (x, 0), bclass, action, GET_MODE (x),
 			  MEM_ADDR_SPACE (x));
       }
@@ -1503,7 +1504,7 @@ scan_rtx (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
       {
 	reg_class bclass = base_reg_class_for_rename (insn, GET_MODE (x),
 						      MEM_ADDR_SPACE (x),
-						      MEM, SCRATCH);
+						      MEM, SCRATCH, x);
 
 	scan_rtx_address (insn, &XEXP (x, 0), bclass, action, GET_MODE (x),
 			  MEM_ADDR_SPACE (x));

@@ -2322,6 +2322,37 @@ default_preferred_output_reload_class (rtx x ATTRIBUTE_UNUSED,
   return rclass;
 }
 
+/* The default implementation of TARGET_BASE_REG_CLASS.  */
+
+reg_class_t
+default_base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
+			addr_space_t as ATTRIBUTE_UNUSED,
+			enum rtx_code outer_code ATTRIBUTE_UNUSED,
+			enum rtx_code index_code ATTRIBUTE_UNUSED,
+			rtx mem ATTRIBUTE_UNUSED,
+			rtx_insn *insn ATTRIBUTE_UNUSED)
+{
+#ifdef MODE_CODE_BASE_REG_CLASS
+  return MODE_CODE_BASE_REG_CLASS (MACRO_MODE (mode), as, outer_code,
+				   index_code);
+#else
+#ifdef MODE_BASE_REG_REG_CLASS
+  if (index_code == REG)
+    return MODE_BASE_REG_REG_CLASS (MACRO_MODE (mode));
+#endif
+#ifdef MODE_BASE_REG_CLASS
+  return MODE_BASE_REG_CLASS (MACRO_MODE (mode));
+#elif defined (BASE_REG_CLASS)
+  return BASE_REG_CLASS;
+#else
+  /* No target that leaves TARGET_BASE_REG_CLASS at its default also fails
+     to define BASE_REG_CLASS or one of the other macros above; a target
+     that defines none of them must override the hook directly instead.  */
+  gcc_unreachable ();
+#endif
+#endif
+}
+
 /* The default implementation of TARGET_PREFERRED_RENAME_CLASS.  */
 reg_class_t
 default_preferred_rename_class (reg_class_t rclass ATTRIBUTE_UNUSED)

@@ -21,6 +21,7 @@
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "rtl.h"
 #include "df.h"
 #include "memmodel.h"
@@ -34,7 +35,6 @@
 #include "tree-pass.h"
 #include "rtl-iter.h"
 #include "cfgrtl.h"
-#include "target.h"
 #include "function-abi.h"
 #include "cfgcleanup.h"
 
@@ -696,7 +696,9 @@ replace_oldest_value_addr (rtx *loc, enum reg_class cl,
 	if (locB)
 	  changed |= replace_oldest_value_addr (locB,
 						base_reg_class (mode, as, PLUS,
-								index_code),
+								index_code,
+								NULL_RTX,
+								insn),
 						mode, as, insn, vd);
 	return changed;
       }
@@ -744,7 +746,8 @@ replace_oldest_value_mem (rtx x, rtx_insn *insn, struct value_data *vd)
   if (DEBUG_INSN_P (insn))
     cl = ALL_REGS;
   else
-    cl = base_reg_class (GET_MODE (x), MEM_ADDR_SPACE (x), MEM, SCRATCH);
+    cl = base_reg_class (GET_MODE (x), MEM_ADDR_SPACE (x), MEM, SCRATCH,
+			 x, insn);
 
   return replace_oldest_value_addr (&XEXP (x, 0), cl,
 				    GET_MODE (x), MEM_ADDR_SPACE (x),

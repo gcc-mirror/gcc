@@ -6178,6 +6178,38 @@ reload from using some alternatives, like @code{TARGET_PREFERRED_RELOAD_CLASS}."
  default_preferred_output_reload_class)
 
 DEFHOOK
+(base_reg_class,
+ "A target hook that returns the register class to which a valid base\n\
+register for memory addressing must belong.  @var{mode} and @var{as} are\n\
+the mode and address space of the value being addressed, @var{outer_code}\n\
+and @var{index_code} are the codes of the address expression and of the\n\
+index expression respectively (or @code{SCRATCH} where an index is not\n\
+applicable).\n\
+\n\
+If the address being asked about is the address of a particular\n\
+@code{MEM}, @var{mem} is that @code{MEM} rtx; otherwise it is null.  When\n\
+non-null, targets should determine the required class by examining\n\
+@var{mem} directly (for example, to see whether the address side of the\n\
+@code{MEM} is itself held in a general or a vector register) rather than\n\
+by making assumptions from @var{mode} and @var{as} alone, since more than\n\
+one @code{MEM} of the same mode and address space can appear within a\n\
+single @var{insn} with different base-register requirements.\n\
+\n\
+If the specific instruction being processed is known, @var{insn} is that\n\
+instruction; otherwise it is null.  This is provided for targets that\n\
+need context wider than a single @code{MEM}, such as avoiding particular\n\
+addressing-register encodings on specific instructions.\n\
+\n\
+The default implementation ignores @var{mem} and @var{insn} and calls the\n\
+legacy macros @code{BASE_REG_CLASS}, @code{MODE_BASE_REG_CLASS},\n\
+@code{MODE_BASE_REG_REG_CLASS} and @code{MODE_CODE_BASE_REG_CLASS} instead,\n\
+based on @var{mode}, @var{as}, @var{outer_code} and @var{index_code} alone.",
+ reg_class_t,
+ (machine_mode mode, addr_space_t as, enum rtx_code outer_code,
+  enum rtx_code index_code, rtx mem, rtx_insn *insn),
+ default_base_reg_class)
+
+DEFHOOK
 (select_early_remat_modes,
  "On some targets, certain modes cannot be held in registers around a\n\
 standard ABI call and are relatively expensive to spill to the stack.\n\

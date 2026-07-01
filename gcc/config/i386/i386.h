@@ -1099,9 +1099,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define ADJUST_REG_ALLOC_ORDER x86_order_regs_for_local_alloc ()
 
-#define INSN_BASE_REG_CLASS(INSN) \
-  ix86_insn_base_reg_class (INSN)
-
 #define REGNO_OK_FOR_INSN_BASE_P(NUM, INSN) \
   ix86_regno_ok_for_insn_base_p (NUM, INSN)
 

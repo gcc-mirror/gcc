@@ -1763,7 +1763,8 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 				  [ira_class_hard_regs
 				   [base_reg_class (GET_MODE (subst),
 						    MEM_ADDR_SPACE (subst),
-						    ADDRESS, SCRATCH)][0]],
+						    ADDRESS, SCRATCH,
+						    subst, curr_insn)][0]],
 				  MEM_ADDR_SPACE (subst))))
 	{
 	  /* If we change the address for a paradoxical subreg of memory, the
@@ -2945,7 +2946,8 @@ process_alt_operands (int only_alternative)
 		      if (satisfies_address_constraint_p (op, cn))
 			win = true;
 		      cl = base_reg_class (VOIDmode, ADDR_SPACE_GENERIC,
-					   ADDRESS, SCRATCH);
+					   ADDRESS, SCRATCH, NULL_RTX,
+					   curr_insn);
 		      cl_filter = nullptr;
 		      cl_dep_filter = nullptr;
 		      badop = false;
@@ -3862,7 +3864,7 @@ base_to_reg (struct address_info *ad)
 
   lra_assert (ad->disp == ad->disp_term);
   cl = base_reg_class (ad->mode, ad->as, ad->base_outer_code,
-                       get_index_code (ad));
+                       get_index_code (ad), ad->mem, curr_insn);
   new_reg = lra_create_new_reg (GET_MODE (*ad->base), NULL_RTX, cl, NULL,
 				"base");
   new_inner = simplify_gen_binary (PLUS, GET_MODE (new_reg), new_reg,
@@ -3891,7 +3893,7 @@ base_plus_disp_to_reg (struct address_info *ad, rtx disp)
 
   lra_assert (ad->base == ad->base_term);
   cl = base_reg_class (ad->mode, ad->as, ad->base_outer_code,
-		       get_index_code (ad));
+		       get_index_code (ad), ad->mem, curr_insn);
   new_reg = lra_create_new_reg (GET_MODE (*ad->base_term), NULL_RTX, cl, NULL,
 				"base + disp");
   lra_emit_add (new_reg, *ad->base_term, disp);
@@ -4184,7 +4186,7 @@ process_address_1 (int nop, bool check_only_p,
 				     REGNO (*ad.base_term)) != NULL_RTX)
 	    ? after : NULL),
 	   base_reg_class (ad.mode, ad.as, ad.base_outer_code,
-			   get_index_code (&ad), curr_insn))))
+			   get_index_code (&ad), ad.mem, curr_insn))))
     {
       change_p = true;
       if (ad.base_term2 != NULL)
@@ -4235,7 +4237,7 @@ process_address_1 (int nop, bool check_only_p,
 	  int code = -1;
 	  enum reg_class cl = base_reg_class (ad.mode, ad.as,
 					      SCRATCH, SCRATCH,
-					      curr_insn);
+					      ad.mem, curr_insn);
 	  rtx addr = *ad.inner;
 
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "addr");
@@ -4299,7 +4301,7 @@ process_address_1 (int nop, bool check_only_p,
 	     case (1) above.  */
 	  enum reg_class cl = base_reg_class (ad.mode, ad.as, PLUS,
 					      GET_CODE (*ad.index),
-					      curr_insn);
+					      ad.mem, curr_insn);
 
 	  lra_assert (index_cl != NO_REGS);
 	  new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "disp");
@@ -4316,7 +4318,7 @@ process_address_1 (int nop, bool check_only_p,
       rtx_insn *insns, *last_insn;
 
       cl = base_reg_class (ad.mode, ad.as, ad.base_outer_code,
-			   get_index_code (&ad), curr_insn);
+			   get_index_code (&ad), ad.mem, curr_insn);
 
       if (REG_P (*ad.base_term)
 	  && ira_class_subset_p[get_reg_class (REGNO (*ad.base_term))][cl])
@@ -4414,7 +4416,8 @@ process_address_1 (int nop, bool check_only_p,
       enum reg_class cl;
       rtx addr;
     reload_inner_addr:
-      cl = base_reg_class (ad.mode, ad.as, SCRATCH, SCRATCH, curr_insn);
+      cl = base_reg_class (ad.mode, ad.as, SCRATCH, SCRATCH, ad.mem,
+			   curr_insn);
       addr = *ad.inner;
       new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "addr");
       /* addr => new_base.  */
@@ -5186,7 +5189,7 @@ curr_insn_transform (bool check_only_p)
 
 	  push_to_sequence (before);
 	  rclass = base_reg_class (GET_MODE (op), MEM_ADDR_SPACE (op),
-				   MEM, SCRATCH, curr_insn);
+				   MEM, SCRATCH, op, curr_insn);
 	  if (GET_RTX_CLASS (code) == RTX_AUTOINC)
 	    new_reg = emit_inc (rclass, *loc,
 				/* This value does not matter for MODIFY.  */

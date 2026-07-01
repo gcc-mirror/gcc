@@ -2231,6 +2231,10 @@ struct address_info {
   /* True if this is an RTX_AUTOINC address.  */
   bool autoinc_p;
 
+  /* The MEM whose address this is, or null if this describes an address
+     operand with no enclosing MEM (an ADDRESS rather than a MEM address).  */
+  rtx mem;
+
   /* A pointer to the top-level address.  */
   rtx *outer;
 
