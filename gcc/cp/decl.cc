@@ -9383,10 +9383,14 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	      tree guard = NULL_TREE;
 	      if (cleanups || cleanup)
 		{
-		  guard = get_internal_target_expr (boolean_false_node);
-		  add_stmt (guard);
-		  guard = TARGET_EXPR_SLOT (guard);
+		  /* Since the CLEANUP_STMT will refer to the guard, we need it
+		      to be a variable with the same lifetime.  ??? It might be
+		      better to use wrap_temporary_cleanups.  */
+		  guard = get_temp_regvar (boolean_type_node, boolean_false_node);
+		  /* And make sure register_local_var_uses sees it.  */
+		  pushdecl (guard);
 		}
+
 	      tree sl = push_stmt_list ();
 	      initialize_local_var (decl, init, true);
 	      if (guard)
@@ -9412,9 +9416,8 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 		     popped that all, so push those extra cleanups around
 		     the whole sequence with a guard variable.  */
 		  gcc_assert (TREE_CODE (sl) == STATEMENT_LIST);
-		  guard = get_internal_target_expr (integer_zero_node);
-		  add_stmt (guard);
-		  guard = TARGET_EXPR_SLOT (guard);
+		  guard = get_temp_regvar (integer_type_node, integer_zero_node);
+		  pushdecl (guard);
 		  for (unsigned i = 0; i < n_extra_cleanups; ++i)
 		    {
 		      tree_stmt_iterator tsi = tsi_last (sl);
