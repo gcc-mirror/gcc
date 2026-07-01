@@ -6879,6 +6879,7 @@ decompose_mem_address (struct address_info *info, rtx x)
   gcc_assert (MEM_P (x));
   decompose_address (info, &XEXP (x, 0), GET_MODE (x),
 		     MEM_ADDR_SPACE (x), MEM);
+  info->mem = x;
 }
 
 /* Update INFO after a change to the address it describes.  */

@@ -17,38 +17,20 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* Wrapper function to unify target macros MODE_CODE_BASE_REG_CLASS,
-   MODE_BASE_REG_REG_CLASS, MODE_BASE_REG_CLASS and BASE_REG_CLASS.
-   Arguments as for the MODE_CODE_BASE_REG_CLASS macro.  */
+/* Wrapper function around the TARGET_BASE_REG_CLASS hook.  MEM is the
+   MEM rtx being addressed, if known, and INSN is the instruction it
+   belongs to, if known; both may be null.  */
 
 #ifndef GCC_ADDRESSES_H
 #define GCC_ADDRESSES_H
 
 inline enum reg_class
-base_reg_class (machine_mode mode ATTRIBUTE_UNUSED,
-		addr_space_t as ATTRIBUTE_UNUSED,
-		enum rtx_code outer_code ATTRIBUTE_UNUSED,
-		enum rtx_code index_code ATTRIBUTE_UNUSED,
-		rtx_insn *insn ATTRIBUTE_UNUSED = NULL)
+base_reg_class (machine_mode mode, addr_space_t as,
+		enum rtx_code outer_code, enum rtx_code index_code,
+		rtx mem = NULL_RTX, rtx_insn *insn = NULL)
 {
-#ifdef INSN_BASE_REG_CLASS
-  return INSN_BASE_REG_CLASS (insn);
-#else
-#ifdef MODE_CODE_BASE_REG_CLASS
-  return MODE_CODE_BASE_REG_CLASS (MACRO_MODE (mode), as, outer_code,
-				   index_code);
-#else
-#ifdef MODE_BASE_REG_REG_CLASS
-  if (index_code == REG)
-    return MODE_BASE_REG_REG_CLASS (MACRO_MODE (mode));
-#endif
-#ifdef MODE_BASE_REG_CLASS
-  return MODE_BASE_REG_CLASS (MACRO_MODE (mode));
-#else
-  return BASE_REG_CLASS;
-#endif
-#endif
-#endif
+  return (enum reg_class) targetm.base_reg_class (mode, as, outer_code,
+						   index_code, mem, insn);
 }
 
 inline enum reg_class
