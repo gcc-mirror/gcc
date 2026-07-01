@@ -182,8 +182,10 @@ Builder::type_path_segment (std::string seg) const
 }
 
 std::unique_ptr<TypePathSegment>
-Builder::type_path_segment (LangItem::Kind lang_item, std::string &name) const
+Builder::type_path_segment (LangItem::Kind lang_item) const
 {
+  auto &mappings = Analysis::Mappings::get ();
+  auto name = mappings.get_lang_item_identifier (lang_item);
   return std::unique_ptr<TypePathSegment> (
     new TypePathSegment (lang_item, PathIdentSegment (name, loc), loc));
 }
@@ -196,9 +198,11 @@ Builder::type_path_segment_generic (std::string seg, GenericArgs args) const
 }
 
 std::unique_ptr<TypePathSegment>
-Builder::type_path_segment_generic (LangItem::Kind lang_item, std::string &name,
+Builder::type_path_segment_generic (LangItem::Kind lang_item,
 				    GenericArgs args) const
 {
+  auto &mappings = Analysis::Mappings::get ();
+  auto name = mappings.get_lang_item_identifier (lang_item);
   return std::unique_ptr<TypePathSegment> (
     new TypePathSegmentGeneric (lang_item, PathIdentSegment (name, loc), args,
 				loc));
@@ -229,11 +233,11 @@ Builder::single_generic_type_path (std::string type, GenericArgs args) const
 }
 
 std::unique_ptr<Type>
-Builder::single_generic_type_path (LangItem::Kind lang_item, std::string &name,
+Builder::single_generic_type_path (LangItem::Kind lang_item,
 				   GenericArgs args) const
 {
   auto segments = std::vector<std::unique_ptr<TypePathSegment>> ();
-  segments.emplace_back (type_path_segment_generic (lang_item, name, args));
+  segments.emplace_back (type_path_segment_generic (lang_item, args));
 
   return std::unique_ptr<Type> (new TypePath (std::move (segments), loc));
 }
@@ -273,9 +277,9 @@ Builder::type_path (std::string type) const
 }
 
 TypePath
-Builder::type_path (LangItem::Kind lang_item, std::string &name) const
+Builder::type_path (LangItem::Kind lang_item) const
 {
-  return type_path (type_path_segment (lang_item, name));
+  return type_path (type_path_segment (lang_item));
 }
 
 std::unique_ptr<Type>

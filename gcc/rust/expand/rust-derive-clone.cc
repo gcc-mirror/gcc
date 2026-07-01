@@ -86,9 +86,8 @@ DeriveClone::clone_impl (
   std::unique_ptr<AssociatedItem> &&clone_fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  auto clone_trait_path = [this, &name] () {
-    return builder.type_path (LangItem::Kind::CLONE, name);
-  };
+  auto clone_trait_path
+    = [this] () { return builder.type_path (LangItem::Kind::CLONE); };
 
   auto trait_items = vec (std::move (clone_fn));
 
@@ -350,10 +349,8 @@ DeriveClone::visit_union (Union &item)
   // FIXME: Should be $crate::core::clone::AssertParamIsCopy (or similar)
   // (Rust-GCC#3329)
 
-  std::string copy_name = "Copy";
-  std::string sized_name = "Sized";
-  auto copy_path = builder.type_path (LangItem::Kind::COPY, copy_name);
-  auto sized_path = builder.type_path (LangItem::Kind::SIZED, sized_name);
+  auto copy_path = builder.type_path (LangItem::Kind::COPY);
+  auto sized_path = builder.type_path (LangItem::Kind::SIZED);
 
   auto copy_bound = std::unique_ptr<TypeParamBound> (
     new TraitBound (copy_path, item.get_locus ()));
@@ -367,13 +364,12 @@ DeriveClone::visit_union (Union &item)
   auto assert_param_is_copy = "AssertParamIsCopy";
   auto t = std::unique_ptr<GenericParam> (
     new TypeParam (Identifier ("T"), item.get_locus (), std::move (bounds)));
-  std::string phantom_data_name = "PhantomData";
   auto assert_param_is_copy_struct = builder.struct_struct (
     assert_param_is_copy, vec (std::move (t)),
     {StructField (
       Identifier ("_t"),
       builder.single_generic_type_path (
-	LangItem::Kind::PHANTOM_DATA, phantom_data_name,
+	LangItem::Kind::PHANTOM_DATA,
 	GenericArgs (
 	  {}, {GenericArg::create_type (builder.single_type_path ("T"))}, {})),
       Visibility::create_private (), item.get_locus ())});

@@ -1350,6 +1350,25 @@ Mappings::get_lang_item_node (LangItem::Kind item_type)
 		    LangItem::PrettyString (item_type).c_str ());
 }
 
+std::string &
+Mappings::get_lang_item_identifier (LangItem::Kind item_type)
+{
+  // Lang item names are hardcoded because they're only required for metadata
+  // dump which will get removed at some point
+  static std::unordered_map<LangItem::Kind, std::string> identifiers
+    = {{LangItem::Kind::COPY, "Copy"},
+       {LangItem::Kind::CLONE, "Clone"},
+       {LangItem::Kind::STRUCTURAL_PEQ, "StructuralPartialEq"},
+       {LangItem::Kind::STRUCTURAL_TEQ, "StructuralEq"},
+       {LangItem::Kind::SIZED, "Sized"},
+       {LangItem::Kind::EQ, "PartialEq"},
+       {LangItem::Kind::PHANTOM_DATA, "PhantomData"}};
+  auto result = identifiers.find (item_type);
+  if (result != identifiers.cend ())
+    return result->second;
+  rust_unreachable ();
+}
+
 void
 Mappings::insert_auto_trait (HIR::Trait *trait)
 {

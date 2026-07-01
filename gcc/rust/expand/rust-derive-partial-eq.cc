@@ -42,9 +42,8 @@ DerivePartialEq::partialeq_impls (
   std::unique_ptr<AssociatedItem> &&eq_fn, std::string name,
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
-  auto eq
-    = [this, &name] () { return builder.type_path (LangItem::Kind::EQ, name); };
-  auto speq = builder.type_path (LangItem::Kind::STRUCTURAL_PEQ, name);
+  auto eq = [this] () { return builder.type_path (LangItem::Kind::EQ); };
+  auto speq = builder.type_path (LangItem::Kind::STRUCTURAL_PEQ);
 
   auto trait_items = vec (std::move (eq_fn));
 
