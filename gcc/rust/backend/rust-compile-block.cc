@@ -85,9 +85,9 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 					 expr.get_locus ());
       ctx->add_statement (assignment);
     }
-  CompileDrop (ctx).emit_current_scope_drop_calls ();
+  tree cleanup = CompileDrop (ctx).build_current_scope_drop_cleanup ();
 
-  ctx->pop_block ();
+  ctx->pop_block_with_cleanup (cleanup, expr.get_locus ());
   translated = new_block;
 }
 
