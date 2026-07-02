@@ -90,9 +90,11 @@ CompileDrop::compile_drop_call (Bvariable *var, TyTy::BaseType *ty,
   return Backend::call_expression (fn_addr, {var_addr}, nullptr, locus);
 }
 
-void
-CompileDrop::emit_current_scope_drop_calls ()
+tree
+CompileDrop::build_current_scope_drop_cleanup ()
 {
+  std::vector<tree> drop_stmts;
+
   DropBuilder drop_builder (*ctx);
   auto &drop_candidates = drop_builder.peek_block_drop_candidates ();
 
@@ -109,8 +111,21 @@ CompileDrop::emit_current_scope_drop_calls ()
 
       tree drop_call = compile_drop_call (var, ty, it->locus);
       if (drop_call != NULL_TREE)
-	ctx->add_statement (convert_to_void (drop_call, ICV_STATEMENT));
+	drop_stmts.push_back (convert_to_void (drop_call, ICV_STATEMENT));
     }
+
+  if (drop_stmts.empty ())
+    return NULL_TREE;
+
+  return Backend::statement_list (drop_stmts);
+}
+
+void
+CompileDrop::emit_current_scope_drop_calls ()
+{
+  tree cleanup = build_current_scope_drop_cleanup ();
+  if (cleanup != NULL_TREE)
+    ctx->add_statement (cleanup);
 }
 
 } // namespace Compile

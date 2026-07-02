@@ -31,6 +31,7 @@ public:
 
   bool type_has_drop_impl (TyTy::BaseType *ty);
 
+  tree build_current_scope_drop_cleanup ();
   void emit_current_scope_drop_calls ();
 
 private:
