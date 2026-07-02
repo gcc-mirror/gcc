@@ -449,33 +449,11 @@ namespace simd
 	  static_assert(_Shift < _S_size && -_Shift < _S_size);
 	  if constexpr (_Shift == 0)
 	    return *this;
-#ifdef __SSE2__
-	  else if (!__is_const_known(*this))
-	    {
-	      if constexpr (sizeof(_M_data) == 16 && _Shift > 0)
-		return reinterpret_cast<_DataType>(
-			 __builtin_ia32_psrldqi128(__vec_bit_cast<long long>(_M_data),
-						   _Shift * sizeof(value_type) * 8));
-	      else if constexpr (sizeof(_M_data) == 16 && _Shift < 0)
-		return reinterpret_cast<_DataType>(
-			 __builtin_ia32_pslldqi128(__vec_bit_cast<long long>(_M_data),
-						   -_Shift * sizeof(value_type) * 8));
-	      else if constexpr (sizeof(_M_data) < 16)
-		{
-		  auto __x = reinterpret_cast<__vec_builtin_type_bytes<long long, 16>>(
-			       __vec_zero_pad_to_16(_M_data));
-		  if constexpr (_Shift > 0)
-		    __x = __builtin_ia32_psrldqi128(__x, _Shift * sizeof(value_type) * 8);
-		  else
-		    __x = __builtin_ia32_pslldqi128(__x, -_Shift * sizeof(value_type) * 8);
-		  return _VecOps<_DataType>::_S_extract(__vec_bit_cast<__canon_value_type>(__x));
-		}
-	    }
-#endif
-	  return _S_static_permute(*this, [](int __i) consteval {
-		   int __off = __i + _Shift;
-		   return __off >= _S_size || __off < 0 ? zero_element : __off;
-		 });
+	  else
+	    return _S_static_permute(*this, [](int __i) consteval {
+		     int __off = __i + _Shift;
+		     return __off >= _S_size || __off < 0 ? zero_element : __off;
+		   });
 	}
 
       /** @internal

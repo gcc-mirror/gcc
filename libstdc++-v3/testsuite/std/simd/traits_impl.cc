@@ -49,7 +49,7 @@ void test()
       static_assert(__vectorizable<__integer_from<N>>);
     }
   template for (constexpr int N : {
-#ifdef __STDCPP_BFLOAT16_T__
+#ifdef __STDCPP_FLOAT16_T__
 				  2,
 #endif
 				  4, 8})
