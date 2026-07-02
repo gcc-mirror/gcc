@@ -76,6 +76,7 @@ VECTOR_MODE (INT, SI, 2);     /*                 V2SI  */
    combination.  */
 PARTIAL_INT_MODE (TI, 128, PTI);
 
-/* Modes used by __vector_pair and __vector_quad.  */
+/* Modes used by __vector_pair, __vector_quad and __dmr1024.  */
 OPAQUE_MODE (OO, 32);
 OPAQUE_MODE (XO, 64);
+OPAQUE_MODE (TDO, 128);
