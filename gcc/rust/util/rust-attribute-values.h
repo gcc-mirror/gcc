@@ -61,6 +61,9 @@ public:
 
   static constexpr auto &TARGET_FEATURE = "target_feature";
   static constexpr auto &FEATURE = "feature";
+
+  static constexpr auto &GLOBAL_ALLOCATOR = "global_allocator";
+
   // From now on, these are reserved by the compiler and gated through
   // #![feature(rustc_attrs)]
   static constexpr auto &RUSTC_DEPRECATED = "rustc_deprecated";
