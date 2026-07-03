@@ -39,11 +39,14 @@ IdentifierPathPass::go (AST::Crate &crate, NameResolutionContext &ctx,
 void
 IdentifierPathPass::reseat (std::unique_ptr<AST::Pattern> &ptr)
 {
-  AST::IdentifierPattern *ident_pat;
-  if (ptr->get_pattern_kind () == AST::Pattern::Kind::Identifier)
-    ident_pat = static_cast<AST::IdentifierPattern *> (ptr.get ());
-  else
-    return;
+  if (ptr->get_pattern_kind () != AST::Pattern::Kind::Identifier)
+    {
+      // bail out, but make sure to still visit
+      visit (ptr);
+      return;
+    }
+
+  auto ident_pat = static_cast<AST::IdentifierPattern *> (ptr.get ());
 
   if (ident_path_to_convert.find (ident_pat->get_node_id ())
       != ident_path_to_convert.end ())
@@ -54,6 +57,10 @@ IdentifierPathPass::reseat (std::unique_ptr<AST::Pattern> &ptr)
       ptr = std::make_unique<AST::PathInExpression> (
 	std::move (segments), std::vector<AST::Attribute> (),
 	ident_pat->get_locus ());
+    }
+  else
+    {
+      visit (ptr);
     }
 }
 
