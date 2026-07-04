@@ -433,9 +433,17 @@ DefaultResolver::visit (AST::StaticItem &item)
 void
 DefaultResolver::visit (AST::TypeParam &param)
 {
-  auto expr_vis = [this, &param] () { AST::DefaultASTVisitor::visit (param); };
+  auto param_ban_vis = [this, &param] () {
+    visit_outer_attrs (param);
+    if (param.has_type ())
+      visit (param.get_type ());
+  };
 
-  ctx.scoped (Rib::Kind::ForwardTypeParamBan, param.get_node_id (), expr_vis);
+  ctx.scoped (Rib::Kind::ForwardTypeParamBan, param.get_node_id (),
+	      param_ban_vis);
+
+  for (auto &bound : param.get_type_param_bounds ())
+    visit (bound);
 }
 
 void
