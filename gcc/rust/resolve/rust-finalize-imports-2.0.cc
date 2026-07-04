@@ -33,145 +33,66 @@ GlobbingVisitor::go (AST::GlobContainer *container)
   switch (container->get_glob_container_kind ())
     {
     case AST::GlobContainer::Kind::Module:
-      visit_module_container (static_cast<AST::Module &> (*container));
+      visit_container (static_cast<AST::Module &> (*container).get_node_id ());
       break;
     case AST::GlobContainer::Kind::Crate:
-      visit_crate_container (static_cast<AST::Crate &> (*container));
+      visit_container (static_cast<AST::Crate &> (*container).get_node_id ());
       break;
     case AST::GlobContainer::Kind::Enum:
-      visit_enum_container (static_cast<AST::Enum &> (*container));
+      visit_container (static_cast<AST::Enum &> (*container).get_node_id ());
       break;
     default:
       rust_unreachable ();
     }
 }
 
+template <typename T>
 void
-GlobbingVisitor::visit_crate_container (AST::Crate &crate)
+GlobbingVisitor::visit_container (T &stack, NodeId nodeid)
 {
-  for (auto &i : crate.items)
-    visit (i);
+  auto rib = stack.dfs_rib (stack.root, nodeid);
+  if (rib.has_value ())
+    glob_definitions (stack.peek (), rib.value ());
 }
 
 void
-GlobbingVisitor::visit_module_container (AST::Module &module)
+GlobbingVisitor::visit_container (NodeId nodeid)
 {
-  for (auto &i : module.get_items ())
-    visit (i);
+  visit_container (ctx.values, nodeid);
+  visit_container (ctx.types, nodeid);
+  visit_container (ctx.macros, nodeid);
+  visit_container (ctx.labels, nodeid);
 }
 
 void
-GlobbingVisitor::visit_enum_container (AST::Enum &item)
+GlobbingVisitor::glob_definitions (Rib &dst, Rib &src)
 {
-  for (auto &variant : item.get_variants ())
+  for (auto &ent : src.get_values ())
     {
-      ctx.insert_globbed (variant->get_identifier (), variant->get_node_id (),
-			  Namespace::Types);
-      if (variant->get_enum_item_kind () != AST::EnumItem::Kind::Struct)
-	ctx.insert_globbed (variant->get_identifier (), variant->get_node_id (),
-			    Namespace::Values);
+      auto globbed = glob_definition (ent.second);
+      if (globbed.has_value ())
+	{
+	  auto res = dst.insert (ent.first, globbed.value ());
+	  // inserting a globbed definition should (?) always succeed
+	  // TODO: double check
+	  // TODO: mark fixed point as dirty/changed?
+	  rust_assert (res.has_value ()
+		       || res.error ().existing
+			    == globbed.value ().get_node_id ());
+	}
     }
 }
 
-void
-GlobbingVisitor::visit (AST::Module &module)
+tl::optional<Rib::Definition>
+GlobbingVisitor::glob_definition (const Rib::Definition &def)
 {
-  ctx.insert_globbed (module.get_name (), module.get_node_id (),
-		      Namespace::Types);
-}
+  if (def.is_ambiguous ())
+    {
+      // TODO: error?
+      return tl::nullopt;
+    }
 
-void
-GlobbingVisitor::visit (AST::MacroRulesDefinition &macro)
-{
-  ctx.insert_globbed (macro.get_rule_name (), macro.get_node_id (),
-		      Namespace::Macros);
-}
-
-void
-GlobbingVisitor::visit (AST::Function &function)
-{
-  ctx.insert_globbed (function.get_function_name (), function.get_node_id (),
-		      Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::StaticItem &static_item)
-{
-  ctx.insert_globbed (static_item.get_identifier (), static_item.get_node_id (),
-		      Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::StructStruct &struct_item)
-{
-  ctx.insert_globbed (struct_item.get_identifier (), struct_item.get_node_id (),
-		      Namespace::Types);
-  if (struct_item.is_unit_struct ())
-    ctx.insert_globbed (struct_item.get_identifier (),
-			struct_item.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::TupleStruct &tuple_struct)
-{
-  ctx.insert_globbed (tuple_struct.get_identifier (),
-		      tuple_struct.get_node_id (), Namespace::Types);
-
-  ctx.insert_globbed (tuple_struct.get_identifier (),
-		      tuple_struct.get_node_id (), Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::Enum &enum_item)
-{
-  ctx.insert_globbed (enum_item.get_identifier (), enum_item.get_node_id (),
-		      Namespace::Types);
-}
-
-void
-GlobbingVisitor::visit (AST::Union &union_item)
-{
-  ctx.insert_globbed (union_item.get_identifier (), union_item.get_node_id (),
-		      Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::ConstantItem &const_item)
-{
-  ctx.insert_globbed (const_item.get_identifier (), const_item.get_node_id (),
-		      Namespace::Values);
-}
-
-void
-GlobbingVisitor::visit (AST::TypeAlias &type)
-{
-  ctx.insert_globbed (type.get_new_type_name (), type.get_node_id (),
-		      Namespace::Types);
-}
-
-void
-GlobbingVisitor::visit (AST::Trait &trait)
-{
-  ctx.insert_globbed (trait.get_identifier (), trait.get_node_id (),
-		      Namespace::Types);
-}
-
-void
-GlobbingVisitor::visit (AST::InherentImpl &impl)
-{}
-
-void
-GlobbingVisitor::visit (AST::TraitImpl &impl)
-{}
-
-void
-GlobbingVisitor::visit (AST::ExternCrate &crate)
-{}
-
-void
-GlobbingVisitor::visit (AST::UseDeclaration &use)
-{
-  // Handle cycles ?
+  return Rib::Definition::Globbed (def.get_node_id ());
 }
 
 } // namespace Resolver2_0
