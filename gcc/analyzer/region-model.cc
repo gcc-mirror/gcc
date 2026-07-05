@@ -48,6 +48,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "channels.h"
 #include "value-relation.h"
 #include "range-op.h"
+#include "ipa-utils.h"
+#include "gimple-iterator.h"
+#include "gimple-fold.h"
 
 #include "text-art/tree-widget.h"
 
@@ -2210,6 +2213,14 @@ can_throw_p (const gcall &call, tree fndecl)
 
   if (fndecl)
     {
+      /* If we are checking a thunk, we want to verify whether or not the
+	 underlying function is nothrow.  */
+      if (cgraph_node *n = cgraph_node::get (fndecl))
+	fndecl = n->function_symbol ()->decl;
+
+      if (TREE_NOTHROW (fndecl))
+	return false;
+
       const function_set fs = get_fns_assumed_not_to_throw ();
       if (fs.contains_decl_p (fndecl))
 	return false;
@@ -6479,6 +6490,75 @@ region_model::can_merge_with_p (const region_model &other_model,
   return true;
 }
 
+/* Attempt to get the fndecl for a virtual call via OBJ_TYPE_REF, or
+   NULL_TREE if it can't be resolved.
+
+   Reads the value bound to the object's vptr field (OBJ_TYPE_REF_OBJECT's
+   vfield).
+   If that value has the form "&vtable_decl + constant" (a region_svalue for a
+   _ZTV* decl plus a byte offset), recover the vtable decl and offset and use
+   gimple_get_virt_method_for_vtable, together with OBJ_TYPE_REF_TOKEN, to look
+   up the concrete fndecl in the vtable's initializer.
+
+   Relies on the store having bound the vptr field to the _ZTV* instance, so no
+   separate modeling of the object's dynamic type is needed.  */
+
+tree
+region_model::get_fndecl_for_virtual_call (const_tree obj_type_ref,
+					   region_model_context *ctxt)
+{
+  tree obj = OBJ_TYPE_REF_OBJECT (obj_type_ref);
+  tree obj_type = obj_type_ref_class (obj_type_ref);
+  if (!obj_type)
+    return NULL_TREE;
+  tree vfield = TYPE_VFIELD (obj_type);
+  if (!vfield)
+    return NULL_TREE;
+
+  const svalue *obj_sval = get_rvalue (obj, ctxt);
+  const region *obj_reg = deref_rvalue (obj_sval, obj, ctxt);
+  const region *vptr_reg = m_mgr->get_field_region (obj_reg, vfield);
+
+  const svalue *vptr_sval = get_store_value (vptr_reg, ctxt);
+  while (const svalue *cast = vptr_sval->maybe_undo_cast ())
+    vptr_sval = cast;
+
+  const binop_svalue *b = vptr_sval->dyn_cast_binop_svalue ();
+  if (!b || b->get_op () != POINTER_PLUS_EXPR)
+    return NULL_TREE;
+
+  vptr_sval = b->get_arg0 ();
+  const svalue *offset_sval = b->get_arg1 ();
+
+  tree offset_const = offset_sval->maybe_get_constant ();
+  if (!offset_const || TREE_CODE (offset_const) != INTEGER_CST)
+    return NULL_TREE;
+  unsigned HOST_WIDE_INT offset = tree_to_uhwi (offset_const);
+
+  const region_svalue *vptr = vptr_sval->dyn_cast_region_svalue ();
+  /* Give up if we have a conjured vptr.  */
+  if (!vptr)
+    return NULL_TREE;
+
+  tree vtable = vptr->get_pointee ()->maybe_get_decl ();
+  if (!vtable)
+    return NULL_TREE;
+
+  unsigned HOST_WIDE_INT token
+    = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (obj_type_ref));
+  bool can_refer;
+  tree vptr_fn
+    = gimple_get_virt_method_for_vtable (token, vtable, offset, &can_refer);
+  if (!vptr_fn || !can_refer)
+    return NULL_TREE;
+
+  if (cgraph_node *node = cgraph_node::get_create (vptr_fn))
+    if (const cgraph_node *ultimate = node->ultimate_alias_target ())
+      return ultimate->decl;
+
+  return NULL_TREE;
+}
+
 /* Attempt to get the fndecl used at CALL, if known, or NULL_TREE
    otherwise.  */
 
@@ -6489,6 +6569,12 @@ region_model::get_fndecl_for_call (const gcall &call,
   tree fn_ptr = gimple_call_fn (&call);
   if (fn_ptr == NULL_TREE)
     return NULL_TREE;
+
+  /* Handle OBJ_TYPE_REF so that we can try to find the definition for a virtual
+     call and treat it like any other call.  */
+  if (TREE_CODE (fn_ptr) == OBJ_TYPE_REF)
+    return get_fndecl_for_virtual_call (fn_ptr, ctxt);
+
   const svalue *fn_ptr_sval = get_rvalue (fn_ptr, ctxt);
   if (const region_svalue *fn_ptr_ptr
 	= fn_ptr_sval->dyn_cast_region_svalue ())

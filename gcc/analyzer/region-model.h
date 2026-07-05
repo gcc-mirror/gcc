@@ -509,6 +509,8 @@ class region_model
 
   tree get_fndecl_for_call (const gcall &call,
 			    region_model_context *ctxt);
+  tree get_fndecl_for_virtual_call (const_tree fn_ptr,
+				    region_model_context *ctxt);
 
   void get_regions_for_current_frame (auto_vec<const decl_region *> *out) const;
   static void append_regions_cb (const region *base_reg,
