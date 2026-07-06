@@ -1821,6 +1821,9 @@ do-clean: clean-stage[+id+]
 # only possibility, but now it conflicts with no-bootstrap rules
 @if gcc-bootstrap
 [+ IF compare-target +]
+# Run the comparisons in parallel through a generated sub-makefile under
+# the jobserver.  Each failing recipe writes a separate result shard that
+# is collected after the sub-make finishes.
 [+compare-target+]:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -1829,29 +1832,52 @@ do-clean: clean-stage[+id+]
 	  exit 0; \
 	fi; \
 	: $(MAKE); $(stage); \
-	rm -f .bad_compare; \
+	compare_id=$$$$; \
+	bad_compare=.bad_compare.$$compare_id; export bad_compare; \
+	compare_makefile=[+compare-target+].$$compare_id.mk; \
+	trap 'st=$$?; rm -f "$$compare_makefile" "$$bad_compare" \
+	  "$$bad_compare".*; trap - 0; exit $$st' 0; \
+	trap 'exit 1' 1 2 3 15; \
 	echo Comparing stages [+prev+] and [+id+]; \
         sed=`echo stage[+id+] | sed 's,^stage,,;s,.,.,g'`; \
 	files=`find stage[+id+]-* -name "*$(objext)" -print | \
 		 sed -n s,^stage$$sed-,,p`; \
-	for file in $${files} ${extra-compare}; do \
-	  f1=$$r/stage[+prev+]-$$file; f2=$$r/stage[+id+]-$$file; \
-	  if test ! -f $$f1; then continue; fi; \
-	  $(do-[+compare-target+]) > /dev/null 2>&1; \
-	  if test $$? -eq 1; then \
-	    case $$file in \
-	      @compare_exclusions@) \
-	        echo warning: $$file differs ;; \
-	      *) \
-	        echo $$file differs >> .bad_compare ;; \
-	    esac; \
-	  fi; \
-	done; \
-	if [ -f .bad_compare ]; then \
+	cmp_raw='$(do-[+compare-target+])'; \
+	{ \
+	  echo 'all:'; \
+	  echo '.PHONY: all FORCE'; \
+	  echo 'FORCE:'; \
+	  printf '[+compare-target+]/%%: FORCE ; @'; \
+	  printf 'f1=$$$$r/stage[+prev+]-$$*; '; \
+	  printf 'f2=$$$$r/stage[+id+]-$$*; '; \
+	  printf '%s' "$$cmp_raw" | sed 's,\$$,$$$$,g'; \
+	  printf ' > /dev/null 2>&1; st=$$$$?; '; \
+	  printf 'if test $$$$st -eq 1; then '; \
+	  printf 'case $$* in '; \
+	  printf '@compare_exclusions@) echo warning: $$* differs ;; '; \
+	  printf '*) echo $$* differs >> "$$$$bad_compare.$$$$$$$$" ;; '; \
+	  printf 'esac; '; \
+	  printf 'elif test $$$$st -ne 0; then '; \
+	  printf 'echo "$$* compare: error status $$$$st" '; \
+	  printf '>> "$$$$bad_compare.$$$$$$$$"; fi\n'; \
+	  for file in $${files} ${extra-compare}; do \
+	    if test ! -f $$r/stage[+prev+]-$$file; then continue; fi; \
+	    echo "all: [+compare-target+]/$$file"; \
+	  done; \
+	} > "$$compare_makefile"; \
+	$(MAKE) -s -f "$$compare_makefile" all; compare_status=$$?; \
+	if test $$compare_status -ne 0; then \
+	  exit $$compare_status; \
+	fi; \
+	set -- "$$bad_compare".*; \
+	if test -f "$$1"; then \
 	  echo "Bootstrap comparison failure!"; \
-	  cat .bad_compare; \
+	  LC_ALL=C sort "$$bad_compare".* > "$$bad_compare" || exit 1; \
+	  cat "$$bad_compare"; \
+	  mv -f "$$bad_compare" .bad_compare; \
 	  exit 1; \
 	else \
+	  rm -f .bad_compare; \
 	  echo Comparison successful.; \
 	fi; \
 	$(STAMP) [+compare-target+][+ IF prev +]
