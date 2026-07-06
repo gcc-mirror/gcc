@@ -522,6 +522,15 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 
 	  if (oparen == std::string::npos)
 	    {
+	      if (inline_option.compare ("align") == 0)
+		{
+		  rust_error_at (attr.get_locus (), ErrorCode::E0589,
+				 "invalid %<repr(align)%> attribute: %<align%> "
+				 "needs an argument");
+		  delete meta_items;
+		  break;
+		}
+
 	      is_pack = inline_option.compare ("packed") == 0;
 	      is_c = inline_option.compare ("C") == 0;
 	      is_integer = (inline_option.compare ("isize") == 0
@@ -571,6 +580,10 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	    }
 	  else if (is_align)
 	    {
+	      if (value == 0 || (value & (value - 1)) != 0)
+		rust_error_at (
+		  attr.get_locus (), ErrorCode::E0589,
+		  "invalid %<repr(align)%> attribute: not a power of two");
 	      repr.repr_kind = TyTy::ADTType::ReprKind::ALIGN;
 	      repr.align = value;
 	    }
