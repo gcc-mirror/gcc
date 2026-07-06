@@ -7892,7 +7892,7 @@ if test x$PERF != xno; then
 	if test ! -n "$($PERF record -j any,u -o /dev/null /bin/true 2>&1 | grep "PMU Hardware or event type doesn't support branch stack sampling.")"; then
 	  AFDO_PROFILER=perf
 	  aarch64_spe_support="using BRBE instead"
-	elif test -n "$($PERF list | grep arm_spe)"; then
+	elif test -n "$($PERF list pmu | grep arm_spe)"; then
 	  AFDO_PROFILER=perf_spe
 	  aarch64_spe_support=yes
 	fi

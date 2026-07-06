@@ -456,7 +456,7 @@ proc profopt-execute { src } {
                 set bprefix "afdo."
 		set compiler [lindex $GCC_UNDER_TEST 0]
 		set autofdo_version [string trim [lindex [remote_exec target "$compiler --print-autofdo-gcov-version"] 1] ]
-		set profiler_check [string trim [lindex [remote_exec target "perf --no-pager list | grep arm_spe"] 1]]
+		set profiler_check [string trim [lindex [remote_exec target "perf --no-pager list pmu | grep arm_spe"] 1]]
 		if {$profiler_check ne ""} {
 		    set profiler "perf_spe"
 		} else {
