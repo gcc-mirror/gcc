@@ -1012,9 +1012,14 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
   // FIXME: make this an error for some edititons
   if (parser.peek_current_token ()->get_id () == SEMICOLON)
     {
-      rust_warning_at (
-	parser.peek_current_token ()->get_locus (), 0,
-	"trailing semicolon in macro used in expression context");
+      // TODO bandaid for now, make this a member for MacroExpander instead in
+      // the future
+      static std::unordered_set<location_t> warned_loc;
+      auto locus = parser.peek_current_token ()->get_locus ();
+      if (warned_loc.insert (locus).second)
+	rust_warning_at (
+	  parser.peek_current_token ()->get_locus (), 0,
+	  "trailing semicolon in macro used in expression context");
       parser.skip_token ();
     }
 
