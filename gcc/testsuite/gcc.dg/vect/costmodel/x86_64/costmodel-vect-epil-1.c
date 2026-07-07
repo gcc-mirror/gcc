@@ -52,7 +52,6 @@ void test (const unsigned char * __restrict__ pi,
     pp_avg_rgb[3] = pp_avg_rgb_3;
 }
 
-/* Even though there's an SLP opportunity in-order reductions should never use
-   masked epilogs.  */
-/* { dg-final { scan-tree-dump "optimized: loop vectorized using 64 byte vectors" "vect" } } */
-/* { dg-final { scan-tree-dump "optimized: epilogue loop vectorized using 32 byte vectors" "vect" } } */
+/* In-order reductions should not use masked epilogs here.  */
+/* { dg-final { scan-tree-dump "optimized: loop vectorized using 16 byte vectors" "vect" } } */
+/* { dg-final { scan-tree-dump-not "optimized: epilogue loop vectorized using masked" "vect" } } */

@@ -17,5 +17,5 @@ foo (double *a, char *mask, int n)
   return sum;
 }
 
-/* { dg-final { scan-tree-dump "optimized: loop vectorized using 64 byte vectors" "vect" } } */
-/* { dg-final { scan-tree-dump "optimized: epilogue loop vectorized using masked 64 byte vectors" "vect" } } */
+/* { dg-final { scan-tree-dump "optimized: loop vectorized using 32 byte vectors" "vect" } } */
+/* { dg-final { scan-tree-dump "optimized: epilogue loop vectorized using masked 32 byte vectors" "vect" } } */

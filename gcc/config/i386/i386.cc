@@ -26452,6 +26452,7 @@ public:
 
 private:
 
+  bool better_fold_left_reduc_than_p (const vector_costs *) const;
   /* Estimate register pressure of the vectorized code.  */
   void ix86_vect_estimate_reg_pressure ();
   /* Number of GENERAL_REGS/SSE_REGS used in the vectorizer, it's used for
@@ -26468,6 +26469,8 @@ private:
   unsigned m_num_reduc[X86_REDUC_LAST];
   /* Don't do unroll if m_prefer_unroll is false, default is true.  */
   bool m_prefer_unroll;
+  /* Scalar lanes in fold-left reductions.  */
+  unsigned int m_num_fold_left_reduc_lanes;
 };
 
 ix86_vector_costs::ix86_vector_costs (vec_info* vinfo, bool costing_for_scalar)
@@ -26477,7 +26480,8 @@ ix86_vector_costs::ix86_vector_costs (vec_info* vinfo, bool costing_for_scalar)
     m_num_avx256_vec_perm (),
     m_num_avx512_vec_perm (),
     m_num_reduc (),
-    m_prefer_unroll (true)
+    m_prefer_unroll (true),
+    m_num_fold_left_reduc_lanes (0)
 {}
 
 /* Implement targetm.vectorize.create_costs.  */
@@ -27183,6 +27187,20 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
   loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo);
   if (loop_vinfo && !m_costing_for_scalar)
     {
+      unsigned int vf = vect_vf_for_cost (loop_vinfo);
+      for (auto inst : LOOP_VINFO_SLP_INSTANCES (loop_vinfo))
+	if ((SLP_INSTANCE_KIND (inst) == slp_inst_kind_reduc_group
+	     || SLP_INSTANCE_KIND (inst) == slp_inst_kind_reduc_chain)
+	    && (vect_reduc_type (loop_vinfo, SLP_INSTANCE_TREE (inst))
+		== FOLD_LEFT_REDUCTION))
+	  m_num_fold_left_reduc_lanes
+	    += vf * SLP_TREE_LANES (SLP_INSTANCE_TREE (inst));
+
+      if (m_num_fold_left_reduc_lanes && dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "in-order FP reduction lanes: %u\n",
+			 m_num_fold_left_reduc_lanes);
+
       /* We are currently not asking the vectorizer to compare costs
 	 between different vector mode sizes.  When using predication
 	 that will end up always choosing the preferred mode size even
@@ -27347,6 +27365,21 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
   vector_costs::finish_cost (scalar_costs);
 }
 
+/* Return true if THIS has a shorter fold-left reduction chain than OTHER.  */
+
+bool
+ix86_vector_costs::better_fold_left_reduc_than_p
+  (const vector_costs *other) const
+{
+  auto other_costs = static_cast<const ix86_vector_costs *> (other);
+  if (m_num_fold_left_reduc_lanes >= other_costs->m_num_fold_left_reduc_lanes)
+    return false;
+
+  /* Do not let emulated sub-SSE modes win on this alone.  */
+  loop_vec_info loop_vinfo = as_a<loop_vec_info> (m_vinfo);
+  return known_ge (GET_MODE_SIZE (loop_vinfo->vector_mode), 16);
+}
+
 /* Return true if THIS should be preferred over OTHER as main vector loop.  */
 
 bool
@@ -27354,6 +27387,9 @@ ix86_vector_costs::better_main_loop_than_p (const vector_costs *other) const
 {
   loop_vec_info this_loop_vinfo = as_a<loop_vec_info> (this->vinfo ());
   loop_vec_info other_loop_vinfo = as_a<loop_vec_info> (other->vinfo ());
+
+  if (better_fold_left_reduc_than_p (other))
+    return true;
 
   /* If the other loop is masked it does not need an epilog.  Prefer that
      if the current loop cannot be vectorized fully with a vector
@@ -27377,6 +27413,10 @@ ix86_vector_costs::better_epilogue_loop_than_p (const vector_costs *other,
 						loop_vec_info main_loop) const
 {
   loop_vec_info this_loop_info = as_a <loop_vec_info> (this->vinfo ());
+
+  if (better_fold_left_reduc_than_p (other))
+    return true;
+
   /* The x86 target allows for multiple vector epilogues, if THIS is
      the suggested epilog mode of OTHER then keep the latter unless
      THIS has a VF of one which means no further epilog needed.  */
