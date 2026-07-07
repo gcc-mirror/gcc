@@ -437,8 +437,14 @@ private:
 	if (body == NULL_TREE)
 	  body = build_empty_stmt (cleanup_locus);
 
+	tree exceptional_cleanup = build_empty_stmt (cleanup_locus);
+	tree cleanup_selector
+	  = build2_loc (cleanup_locus, EH_ELSE_EXPR, void_type_node, cleanup,
+			exceptional_cleanup);
+
 	tree try_finally
-	  = Backend::exception_handler_statement (body, NULL_TREE, cleanup,
+	  = Backend::exception_handler_statement (body, NULL_TREE,
+						  cleanup_selector,
 						  cleanup_locus);
 	Backend::block_add_statements (block, {try_finally});
       }
