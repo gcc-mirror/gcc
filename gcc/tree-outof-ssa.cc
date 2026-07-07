@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
+#include "gimple-expr.h"
 #include "cfghooks.h"
 #include "ssa.h"
 #include "tree-ssa.h"
@@ -1049,6 +1050,86 @@ expand_phi_nodes (struct ssaexpand *sa)
 }
 
 
+/* Out-of-SSA can leave several partitions sharing one base VAR_DECL, when
+   that variable's SSA versions are simultaneously live and so cannot all be
+   coalesced.  When such a partition is spilled (it has no register mode,
+   e.g.  an oversized vector that is BLKmode), set_mem_attributes would give
+   every one of those slots that single decl as its MEM_EXPR at offset 0, so
+   the distinct slots appear to be the same object and mislead MEM_EXPR-based
+   disambiguation, and the load/store pair-fusion pass then fuses across the
+   slots and corrupts one.  Give every partition but one of such a decl its
+   own artificial decl so the slots are distinguished at the source.
+   The new decl carries a DECL_DEBUG_EXPR back to the user variable so debug
+   info still attributes the storage to it (cf.  create_access_replacement in
+   tree-sra.cc).  PARM_DECLs and RESULT_DECLs are left alone, as they require
+   a single partition holding the canonical RTL.  */
+
+static void
+split_overlapping_partition_decls (var_map map)
+{
+  unsigned n = num_var_partitions (map);
+  hash_set<tree> seen;
+  auto_vec<tree> new_decl;
+  new_decl.safe_grow_cleared (n);
+  bool any = false;
+
+  for (unsigned i = 0; i < n; i++)
+    {
+      tree repr = partition_to_var (map, i);
+      if (!repr)
+	continue;
+      tree var = SSA_NAME_VAR (repr);
+      if (!var || !VAR_P (var))
+	continue;
+      /* Only partitions that will live in memory can end up with a
+	 misleading shared MEM_EXPR.  Mirror the decision that
+	 expand_one_ssa_partition will make.  */
+      if (use_register_for_decl (repr))
+	continue;
+      /* One partition of VAR keeps the user decl, the rest are split.
+	 A default definition cannot change its variable, so if VAR has a
+	 partitioned default definition, its partition is the one that
+	 keeps the user decl.  Otherwise the first partition seen does.  */
+      tree ddef = ssa_default_def (cfun, var);
+      int keep = ddef ? var_to_partition (map, ddef) : NO_PARTITION;
+      if (keep == NO_PARTITION)
+	{
+	  if (!seen.add (var))
+	    continue;
+	}
+      else if (keep >= 0 && (unsigned) keep == i)
+	continue;
+
+      tree nvar = create_tmp_var_raw (TREE_TYPE (var));
+      DECL_CONTEXT (nvar) = DECL_CONTEXT (var);
+      DECL_SOURCE_LOCATION (nvar) = DECL_SOURCE_LOCATION (var);
+      SET_DECL_ALIGN (nvar, DECL_ALIGN (var));
+      if (!DECL_ARTIFICIAL (var) && DECL_NAME (var))
+	{
+	  SET_DECL_DEBUG_EXPR (nvar, var);
+	  DECL_HAS_DEBUG_EXPR_P (nvar) = 1;
+	}
+      copy_warning (nvar, var);
+      add_local_decl (cfun, nvar);
+      new_decl[i] = nvar;
+      any = true;
+    }
+
+  if (!any)
+    return;
+
+  unsigned ver;
+  tree name;
+  FOR_EACH_SSA_NAME (ver, name, cfun)
+    {
+      if (SSA_NAME_IS_DEFAULT_DEF (name))
+	continue;
+      int p = var_to_partition (map, name);
+      if (p != NO_PARTITION && new_decl[p])
+	SET_SSA_NAME_VAR_OR_IDENTIFIER (name, new_decl[p]);
+    }
+}
+
 /* Remove the ssa-names in the current function and translate them into normal
    compiler variables.  PERFORM_TER is true if Temporary Expression Replacement
    should also be used.  */
@@ -1079,6 +1160,11 @@ remove_ssa_form (bool perform_ter, struct ssaexpand *sa)
       if (values && dump_file && (dump_flags & TDF_DETAILS))
 	dump_replaceable_exprs (dump_file, values);
     }
+
+  /* Distinct partitions of one decl must not share a MEM_EXPR once they are
+     spilled to separate stack slots.  Done after TER so reassigning
+     SSA_NAME_VAR does not perturb find_replaceable_exprs.  */
+  split_overlapping_partition_decls (map);
 
   rewrite_trees (map);
 
