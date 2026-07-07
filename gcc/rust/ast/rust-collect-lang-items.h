@@ -45,6 +45,8 @@ public:
 
   using DefaultASTVisitor::visit;
 
+  // Should we move this to the default ast visitor ?
+  void visit (AST::ExternCrate &extern_crate) override;
   void visit (AST::Trait &item) override;
   void visit (AST::TraitItemType &item) override;
   void visit (AST::Function &item) override;

@@ -39,95 +39,14 @@ ExportContext::ExportContext () : mappings (Analysis::Mappings::get ()) {}
 ExportContext::~ExportContext () {}
 
 void
-ExportContext::push_module_scope (const HIR::Module &module)
-{
-  module_stack.push_back (module);
-}
-
-const HIR::Module &
-ExportContext::pop_module_scope ()
-{
-  rust_assert (!module_stack.empty ());
-  const HIR::Module &poped = module_stack.back ();
-  module_stack.pop_back ();
-  return poped;
-}
-
-void
-ExportContext::emit_trait (AST::Trait &trait)
+ExportContext::emit_crate (AST::Crate &c)
 {
   std::stringstream oss;
   AST::Dump dumper (oss);
-  dumper.process (trait);
+  dumper.process (c);
 
   public_interface_buffer += oss.str ();
 }
-
-void
-ExportContext::emit_use_declaration (AST::UseDeclaration &use_decl)
-{
-  std::stringstream oss;
-  AST::Dump dumper (oss);
-  dumper.process (use_decl);
-
-  public_interface_buffer += oss.str ();
-}
-
-void
-ExportContext::emit_function (AST::Function &fn)
-{
-  // is this a CFG macro or not
-  if (fn.is_marked_for_strip ())
-    return;
-
-  // if its a generic function we need to output the full declaration
-  // otherwise we can let people link against this
-
-  std::stringstream oss;
-  AST::Dump dumper (oss);
-  if (!fn.has_generics ())
-    {
-      std::vector<std::unique_ptr<AST::ExternalItem>> external_items;
-      external_items.emplace_back (fn.clone_external_item ());
-
-      AST::ExternBlock extern_block (get_string_from_abi (Rust::ABI::RUST),
-				     std::move (external_items),
-				     fn.get_visibility (), {}, {},
-				     fn.get_locus ());
-
-      dumper.go (extern_block);
-    }
-  else
-    {
-      dumper.process (fn);
-    }
-
-  // store the dump
-  public_interface_buffer += oss.str ();
-}
-
-void
-ExportContext::emit_extern_block (const AST::ExternBlock &block,
-				  std::function<void (void)> sub_visitor)
-{
-  public_interface_buffer += "extern \"" + block.get_abi () + "\" {\n";
-  sub_visitor ();
-  public_interface_buffer += "}\n";
-}
-
-void
-ExportContext::emit_module (const AST::Module &module,
-			    std::function<void (void)> sub_visitor)
-{
-  if (module.get_visibility ().is_public ())
-    {
-      public_interface_buffer
-	+= "pub mod " + module.get_name ().as_string () + "{\n";
-      sub_visitor ();
-      public_interface_buffer += "}\n";
-    }
-}
-
 void
 ExportContext::emit_macro (AST::MacroRulesDefinition &macro)
 {
@@ -144,41 +63,6 @@ ExportContext::get_interface_buffer () const
 {
   return public_interface_buffer;
 }
-
-// implicitly by using HIR nodes we know that these have passed CFG expansion
-// and they exist in the compilation unit
-class ExportVisItems : public AST::DefaultASTVisitor
-{
-public:
-  using AST::DefaultASTVisitor::visit;
-  ExportVisItems (ExportContext &context) : ctx (context) {}
-
-  void go (AST::Crate &c) { visit (c); }
-
-  void visit (AST::Function &function) override
-  {
-    ctx.emit_function (function);
-  }
-  void visit (AST::ExternBlock &block) override
-  {
-    auto sub_visitor = [&] () { AST::DefaultASTVisitor::visit (block); };
-    ctx.emit_extern_block (block, sub_visitor);
-  }
-  void visit (AST::Trait &trait) override { ctx.emit_trait (trait); }
-  void visit (AST::Module &module) override
-  {
-    auto sub_visitor = [&] () { AST::DefaultASTVisitor::visit (module); };
-    ctx.emit_module (module, sub_visitor);
-  }
-
-  void visit (AST::UseDeclaration &use_decl) override
-  {
-    ctx.emit_use_declaration (use_decl);
-  }
-
-private:
-  ExportContext &ctx;
-};
 
 PublicInterface::PublicInterface (HIR::Crate &crate)
   : crate (crate), mappings (Analysis::Mappings::get ()), context ()
@@ -203,11 +87,10 @@ PublicInterface::ExportTo (HIR::Crate &crate, const std::string &output_path)
 void
 PublicInterface::gather_export_data ()
 {
-  ExportVisItems visitor (context);
   auto crate_num
     = mappings.lookup_crate_num (crate.get_mappings ().get_nodeid ());
   auto &ast_crate = mappings.get_ast_crate (crate_num.value ());
-  visitor.go (ast_crate);
+  context.emit_crate (ast_crate);
 
   for (auto &macro : mappings.get_exported_macros ())
     context.emit_macro (macro);
