@@ -3626,6 +3626,10 @@ extern bool gimple_mul_low_accum (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_carry_cross_sum (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_carry_low_sum (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_carry_low (tree, tree *, tree (*)(tree));
+extern bool gimple_mul_ladder_sum1 (tree, tree *, tree (*)(tree));
+extern bool gimple_mul_ladder_sum2 (tree, tree *, tree (*)(tree));
+extern bool gimple_mul_ladder_sum3 (tree, tree *, tree (*)(tree));
+extern bool gimple_mul_ladder_part_sum (tree, tree *, tree (*)(tree));
 
 /* Append to SEQ statements assigning DEST the high-part multiply of
    OP1 and OP2, emitted as
@@ -3728,6 +3732,10 @@ enum long_mul_kind {
   LMK_CROSS_SUM,
   LMK_LOW_ACCUM,
   LMK_LOW_SUM,
+  LMK_LADDER_SUM1,
+  LMK_LADDER_SUM2,
+  LMK_LADDER_SUM3,
+  LMK_LADDER_PART_SUM,
   LMK_CARRY_LOW,
   LMK_CARRY_CROSS_SUM,
   LMK_CARRY_LOW_SUM,
@@ -3845,8 +3853,15 @@ long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
       break;
     case LMK_LOW_ACCUM:
     case LMK_LOW_SUM:
+    case LMK_LADDER_SUM1:
+    case LMK_LADDER_SUM2:
+    case LMK_LADDER_SUM3:
       n_ops = 2;
       n_hilos = 2;
+      break;
+    case LMK_LADDER_PART_SUM:
+      n_ops = 2;
+      n_hilos = 1;
       break;
     case LMK_CARRY_CROSS_SUM:
       n_hilos = 3;
@@ -3911,9 +3926,10 @@ long_mul_classify_carry (tree leaf, long_mul_summand *info)
 }
 
 /* Plus-based summand kinds shared by the (X >> SHIFT) and (X << SHIFT)
-   classifiers.  Order is by specificity: mul_low_sum's first arm is
-   any plus, so mul_low_accum (which constrains both arms) shadows it
-   and must come first.  */
+   classifiers.  Order is by specificity: mul_low_sum's first arm is any
+   plus, so mul_ladder_sum1/3 (which constrain that arm to a plus
+   containing a mul_lo) and mul_low_accum (which constrains both arms)
+   shadow it and must come first.  */
 
 static bool
 long_mul_classify_plus_kinds (tree inner, long_mul_summand *info)
@@ -3924,9 +3940,24 @@ long_mul_classify_plus_kinds (tree inner, long_mul_summand *info)
       long_mul_set_summand (info, LMK_LOW_ACCUM, res_ops);
       return true;
     }
+  if (gimple_mul_ladder_sum3 (inner, res_ops, NULL))
+    {
+      long_mul_set_summand (info, LMK_LADDER_SUM3, res_ops);
+      return true;
+    }
+  if (gimple_mul_ladder_sum1 (inner, res_ops, NULL))
+    {
+      long_mul_set_summand (info, LMK_LADDER_SUM1, res_ops);
+      return true;
+    }
   if (gimple_mul_low_sum (inner, res_ops, NULL))
     {
       long_mul_set_summand (info, LMK_LOW_SUM, res_ops);
+      return true;
+    }
+  if (gimple_mul_ladder_sum2 (inner, res_ops, NULL))
+    {
+      long_mul_set_summand (info, LMK_LADDER_SUM2, res_ops);
       return true;
     }
   return false;
@@ -3934,8 +3965,9 @@ long_mul_classify_plus_kinds (tree inner, long_mul_summand *info)
 
 /* Classify INNER -- already unwrapped from an outer (X >> SHIFT) -- as
    a high-half-extracted summand.  mul_hilo (mult-shape) is orthogonal
-   to the plus-based kinds and is tried first; mul_cross_sum (any plus)
-   is the fallback after the shared plus-based kinds.  */
+   to the plus-based kinds and is tried first; ladder_part_sum (one arm
+   unconstrained) and mul_cross_sum (any plus) are the fallbacks after
+   the shared plus-based ladder.  */
 
 static bool
 long_mul_classify_hi_extract (tree inner, unsigned HOST_WIDE_INT shift,
@@ -3951,6 +3983,11 @@ long_mul_classify_hi_extract (tree inner, unsigned HOST_WIDE_INT shift,
     }
   if (long_mul_classify_plus_kinds (inner, info))
     return true;
+  if (gimple_mul_ladder_part_sum (inner, res_ops, NULL))
+    {
+      long_mul_set_summand (info, LMK_LADDER_PART_SUM, res_ops);
+      return true;
+    }
   if (gimple_mul_cross_sum (inner, res_ops, NULL))
     {
       long_mul_set_summand (info, LMK_CROSS_SUM, res_ops);
@@ -3976,8 +4013,8 @@ long_mul_classify_lo_extract (tree inner, long_mul_summand *info)
 }
 
 /* Classify INNER -- already unwrapped from an outer (X << SHIFT) -- as
-   a left-shifted summand.  No mul_hilo here -- that shape appears only
-   under (X >> SHIFT).  */
+   a left-shifted summand.  No mul_hilo / ladder_part_sum here -- those
+   shapes appear only under (X >> SHIFT).  */
 
 static bool
 long_mul_classify_shl_extract (tree inner, unsigned HOST_WIDE_INT shift,
@@ -4325,6 +4362,30 @@ static const long_mul_row long_mul_table[] = {
       { LMK_CARRY_LOW, LMX_NONE },
       { LMK_CARRY_CROSS_SUM, LMX_NONE } },
     long_mul_check_two_carries },
+  /* xh*yh + (hilo >> N) + (ladder_sum1 >> N),
+     ladder_sum1 = (hilo & mask) + hilo' + (xl*yl >> N),
+     hilo, hilo' the two cross-half products.  */
+  { long_mul_row::HIGH_PART, PLUS_EXPR, 3,
+    { { LMK_MUL_HIHI, LMX_NONE },
+      { LMK_MUL_HILO, LMX_HI },
+      { LMK_LADDER_SUM1, LMX_HI } },
+    NULL },
+  /* xh*yh + (ladder_sum2 >> N) + (ladder_part_sum >> N),
+     ladder_part_sum = (xl*yl >> N) + hilo,
+     ladder_sum2 = (ladder_part_sum & mask) + hilo'.  */
+  { long_mul_row::HIGH_PART, PLUS_EXPR, 3,
+    { { LMK_MUL_HIHI, LMX_NONE },
+      { LMK_LADDER_SUM2, LMX_HI },
+      { LMK_LADDER_PART_SUM, LMX_HI } },
+    NULL },
+  /* xh*yh + (hilo >> N) + (hilo' >> N) + (ladder_sum3 >> N),
+     ladder_sum3 = (hilo & mask) + (hilo' & mask) + (xl*yl >> N).  */
+  { long_mul_row::HIGH_PART, PLUS_EXPR, 4,
+    { { LMK_MUL_HIHI, LMX_NONE },
+      { LMK_MUL_HILO, LMX_HI },
+      { LMK_MUL_HILO, LMX_HI },
+      { LMK_LADDER_SUM3, LMX_HI } },
+    NULL },
   /* LOW-PART folds.  Recover the lower 2N bits from xl*yl plus a
      shifted cross-half term.  */
   /* (xl*yl & mask) | (low_accum << N),
@@ -4338,6 +4399,24 @@ static const long_mul_row long_mul_table[] = {
   { long_mul_row::LOW_PART, BIT_IOR_EXPR, 2,
     { { LMK_MUL_LOLO, LMX_LO },
       { LMK_LOW_SUM, LMX_SHL_N } },
+    NULL },
+  /* (xl*yl & mask) | (ladder_sum1 << N),
+     ladder_sum1 as in the high ladder row above.  */
+  { long_mul_row::LOW_PART, BIT_IOR_EXPR, 2,
+    { { LMK_MUL_LOLO, LMX_LO },
+      { LMK_LADDER_SUM1, LMX_SHL_N } },
+    NULL },
+  /* (xl*yl & mask) | (ladder_sum2 << N),
+     ladder_sum2 as in the high ladder row above.  */
+  { long_mul_row::LOW_PART, BIT_IOR_EXPR, 2,
+    { { LMK_MUL_LOLO, LMX_LO },
+      { LMK_LADDER_SUM2, LMX_SHL_N } },
+    NULL },
+  /* (xl*yl & mask) | (ladder_sum3 << N),
+     ladder_sum3 as in the high ladder-long row above.  */
+  { long_mul_row::LOW_PART, BIT_IOR_EXPR, 2,
+    { { LMK_MUL_LOLO, LMX_LO },
+      { LMK_LADDER_SUM3, LMX_SHL_N } },
     NULL },
 };
 

@@ -12852,6 +12852,60 @@ and,
       (mul_lolo @op0 @op1 INTEGER_CST@0)
       INTEGER_CST@1)
     (mul_lo (mul_cross_sum @mul_hilo0 @mul_hilo1) INTEGER_CST@0)))
+/* Ladder sum form 1: (hilo0 & mask) + hilo1 + (xl*yl >> N).
+   First variant: @mul_hilo1 is inside the inner plus:c alongside
+   (mul_lo ...).  */
+(match (mul_ladder_sum1 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
+  (plus:c
+    (plus:c
+      (mul_lo
+	@mul_hilo0
+	INTEGER_CST@0)
+      @mul_hilo1)
+    (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1)))
+/* Second variant: @mul_hilo1 is the outermost addend and could match
+   anything, so guard that its definition is a MULT_EXPR.  */
+(match (mul_ladder_sum1 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
+  (plus:c
+    (plus:c
+      (mul_lo @mul_hilo0 INTEGER_CST@0)
+      (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1))
+    @mul_hilo1)
+  (with {
+    tree_code mul_hilo_code = TREE_CODE (@mul_hilo1);
+    tree_code rhs_code = ERROR_MARK;
+    if (mul_hilo_code == SSA_NAME)
+      {
+	gimple *def = SSA_NAME_DEF_STMT (@mul_hilo1);
+	if (def && gimple_code (def) == GIMPLE_ASSIGN)
+	  rhs_code = gimple_assign_rhs_code (def);
+      } }
+  (if (rhs_code == MULT_EXPR))))
+/* Partial ladder sum: (xl*yl >> N) + hilo.  */
+(match (mul_ladder_part_sum @op0 @op1 @mul_hilo0 @0 @1)
+  (plus:c
+    (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1)
+    @mul_hilo0))
+/* Ladder sum form 2: (ladder_part_sum & mask) + hilo.  */
+(match (mul_ladder_sum2 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
+  (plus:c
+    (mul_lo
+      (mul_ladder_part_sum @op0 @op1 @mul_hilo0 INTEGER_CST@0 INTEGER_CST@1)
+      INTEGER_CST@0)
+    @mul_hilo1))
+/* Ladder sum form 3: (hilo0 & mask) + (hilo1 & mask) + (xl*yl >> N).  */
+(match (mul_ladder_sum3 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
+  (plus:c
+    (plus:c
+      (mul_lo @mul_hilo0 INTEGER_CST@0)
+      (mul_lo @mul_hilo1 INTEGER_CST@0))
+    (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1)))
+(match (mul_ladder_sum3 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
+  (plus:c
+    (plus:c
+      (mul_lo @mul_hilo0 INTEGER_CST@0)
+      (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1))
+    (mul_lo @mul_hilo1 INTEGER_CST@0)))
 #endif
 
 /* Floatint point/integer comparison and integer->integer
