@@ -1,6 +1,5 @@
 #![feature(no_core)]
 #![no_core]
-
 #![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
@@ -8,14 +7,16 @@ pub trait Sized {}
 #[lang = "copy"]
 trait Copy {}
 
-#[lang = "clone"]
-pub trait Clone {
-    fn clone(&self) -> Self;
-}
+mod clone {
+    #[lang = "clone"]
+    pub trait Clone {
+        fn clone(&self) -> Self;
+    }
 
-impl Clone for i32 {
-    fn clone(&self) -> i32 {
-        *self
+    impl Clone for i32 {
+        fn clone(&self) -> i32 {
+            *self
+        }
     }
 }
 

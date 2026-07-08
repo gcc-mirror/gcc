@@ -1,13 +1,20 @@
 #![feature(no_core)]
 #![no_core]
-
 #![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 
-#[lang = "clone"]
-pub trait Clone {
-    fn clone(&self) -> Self;
+mod clone {
+    #[lang = "clone"]
+    pub trait Clone {
+        fn clone(&self) -> Self;
+    }
+
+    impl Clone for i32 {
+        fn clone(&self) -> Self {
+            *self
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -21,12 +28,11 @@ struct S {
     b: Foo,
 }
 
-impl Clone for i32 {
-    fn clone(&self) -> Self { *self }
-}
-
 fn main() -> i32 {
-    let s1 = S { a: 15, b: Foo { a: 14 }};
+    let s1 = S {
+        a: 15,
+        b: Foo { a: 14 },
+    };
     let s2 = s1.clone();
 
     let l = s1.a - s2.a;

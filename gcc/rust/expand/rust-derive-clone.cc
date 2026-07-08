@@ -30,10 +30,6 @@ namespace AST {
 std::unique_ptr<Expr>
 DeriveClone::clone_call (std::unique_ptr<Expr> &&to_clone)
 {
-  // $crate::core::clone::Clone::clone for the fully qualified path - we don't
-  // link with `core` yet so that might be an issue. Use `Clone::clone` for now?
-  // TODO: Factor this function inside the DeriveAccumulator
-
   // Interestingly, later versions of Rust have a `clone_fn` lang item which
   // corresponds to this. But because we are first targeting 1.49, we cannot use
   // it yet. Once we target a new, more recent version of the language, we'll
@@ -45,7 +41,10 @@ DeriveClone::clone_call (std::unique_ptr<Expr> &&to_clone)
   auto args = std::vector<std::unique_ptr<Expr>> ();
   args.emplace_back (std::move (to_clone));
 
-  return builder.qualified_call ({"Clone", "clone"}, std::move (args));
+  // FIXME: Misses :: prefix to avoid collision with potential core module
+  return builder.qualified_call ({builder.get_path_start (), "clone", "Clone",
+				  "clone"},
+				 std::move (args));
 }
 
 /**

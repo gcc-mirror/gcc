@@ -1,16 +1,17 @@
 #![feature(no_core)]
 #![no_core]
-
 #![feature(lang_items)]
 
-#[lang = "clone"]
-trait Clone {
-    pub fn clone(&self) -> Self;
-}
+mod clone {
+    #[lang = "clone"]
+    trait Clone {
+        pub fn clone(&self) -> Self;
+    }
 
-impl Clone for i32 {
-    fn clone(&self) -> Self {
-        *self
+    impl Clone for i32 {
+        fn clone(&self) -> Self {
+            *self
+        }
     }
 }
 
@@ -18,7 +19,7 @@ impl Clone for i32 {
 enum MixAndMatch {
     A,
     B(i32),
-    C { inner: i32 }
+    C { inner: i32 },
 }
 
 fn main() -> i32 {
@@ -36,7 +37,7 @@ fn main() -> i32 {
     let a_copy = a.clone();
 
     match a_copy {
-        MixAndMatch::B(15) => {},
+        MixAndMatch::B(15) => {}
         _ => res += 1,
     };
 
@@ -48,7 +49,7 @@ fn main() -> i32 {
             if inner != 15 {
                 res += 1;
             }
-        },
+        }
         _ => res += 1,
     };
 

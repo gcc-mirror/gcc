@@ -1,11 +1,24 @@
 #![feature(no_core)]
 #![no_core]
-
 #![feature(lang_items)]
 
-#[lang = "clone"]
-trait Clone {
-    fn clone(&self) -> Self;
+mod clone {
+    #[lang = "clone"]
+    trait Clone {
+        fn clone(&self) -> Self;
+    }
+
+    impl Clone for u32 {
+        fn clone(&self) -> Self {
+            *self
+        }
+    }
+
+    impl Clone for usize {
+        fn clone(&self) -> Self {
+            *self
+        }
+    }
 }
 
 #[lang = "sized"]
@@ -19,30 +32,24 @@ struct Abound {
 }
 
 #[derive(Clone)]
-struct Be<T:Clone> {
+struct Be<T: clone::Clone> {
     a: T,
     b: Abound,
 }
 
-impl Clone for u32 {
+impl clone::Clone for Abound {
     fn clone(&self) -> Self {
-        *self
-    }
-}
-
-impl Clone for usize {
-    fn clone(&self) -> Self {
-        *self
-    }
-}
-
-impl Clone for Abound {
-    fn clone(&self) -> Self {
-        return Abound { a: self.a.clone(), b: self.b.clone() };
+        return Abound {
+            a: self.a.clone(),
+            b: self.b.clone(),
+        };
     }
 }
 
 fn main() {
-    let b: Be<usize> = Be {a:1,b:Abound { a:0,b:1 }};
+    let b: Be<usize> = Be {
+        a: 1,
+        b: Abound { a: 0, b: 1 },
+    };
     let _: Be<usize> = b.clone();
 }
