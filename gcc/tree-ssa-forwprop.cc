@@ -3625,6 +3625,7 @@ extern bool gimple_mul_low_sum (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_low_accum (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_carry_cross_sum (tree, tree *, tree (*)(tree));
 extern bool gimple_mul_carry_low_sum (tree, tree *, tree (*)(tree));
+extern bool gimple_mul_carry_low (tree, tree *, tree (*)(tree));
 
 /* Append to SEQ statements assigning DEST the high-part multiply of
    OP1 and OP2, emitted as
@@ -3727,6 +3728,7 @@ enum long_mul_kind {
   LMK_CROSS_SUM,
   LMK_LOW_ACCUM,
   LMK_LOW_SUM,
+  LMK_CARRY_LOW,
   LMK_CARRY_CROSS_SUM,
   LMK_CARRY_LOW_SUM,
 };
@@ -3747,6 +3749,7 @@ struct long_mul_summand {
   long_mul_extract extract;
   tree op0, op1;
   tree hilo0, hilo1, hilo2;
+  tree carry_a, carry_b;
   unsigned HOST_WIDE_INT shift;
 };
 
@@ -3854,6 +3857,10 @@ long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
       n_hilos = 3;
       shift_idx = 5;
       break;
+    case LMK_CARRY_LOW:
+      info->carry_a = res_ops[0];
+      info->carry_b = res_ops[1];
+      return;
     }
   if (n_ops >= 1)
     info->op0 = res_ops[0];
@@ -3882,8 +3889,9 @@ long_mul_classify_carry (tree leaf, long_mul_summand *info)
   tree res_ops[LONG_MUL_MAX_CAPTURES];
   /* mul_carry_low_sum's inner is constrained to mul_low_sum (cross_sum
      + mul_hi(mul_lolo)); mul_carry_cross_sum's inner is just
-     mul_cross_sum (any plus).  Most specific first, so the less-
-     constrained pattern doesn't shadow the more-constrained one.  */
+     mul_cross_sum (any plus); mul_carry_low matches gt:c (@0, plus(@0,
+     @1)) without a baked-in shift.  Most specific first, so the
+     less-constrained pattern doesn't shadow the more-constrained one.  */
   if (gimple_mul_carry_low_sum (leaf, res_ops, NULL))
     {
       long_mul_set_summand (info, LMK_CARRY_LOW_SUM, res_ops);
@@ -3892,6 +3900,11 @@ long_mul_classify_carry (tree leaf, long_mul_summand *info)
   if (gimple_mul_carry_cross_sum (leaf, res_ops, NULL))
     {
       long_mul_set_summand (info, LMK_CARRY_CROSS_SUM, res_ops);
+      return true;
+    }
+  if (gimple_mul_carry_low (leaf, res_ops, NULL))
+    {
+      long_mul_set_summand (info, LMK_CARRY_LOW, res_ops);
       return true;
     }
   return false;
@@ -4124,6 +4137,18 @@ long_mul_canonical_ops (const vec<long_mul_summand> &summands,
   return false;
 }
 
+/* Return the first summand in SUMMANDS whose kind matches KIND, or NULL.  */
+
+static const long_mul_summand *
+long_mul_find_summand (const vec<long_mul_summand> &summands,
+		       long_mul_kind kind)
+{
+  for (const long_mul_summand &s : summands)
+    if (s.kind == kind)
+      return &s;
+  return NULL;
+}
+
 /* Run the cross-summand validation invariants and return the canonical
    (op0, op1).  Returns false unless all summands that carry operands use
    the same (op0, op1) pair (in either order), every LMX_HI/LMX_SHL_N shift
@@ -4219,6 +4244,50 @@ long_mul_signature_matches (const vec<long_mul_summand> &summands,
   return true;
 }
 
+/* Extra check for the two-carries high-part row: the LMK_CARRY_LOW summand's
+   two operands (carry_a, carry_b) must be a (cross_shifted, mul_lolo) pair
+   consistent with the multiset's canonical (op0, op1).  */
+
+static bool
+long_mul_check_two_carries (const vec<long_mul_summand> &summands,
+			    gimple *)
+{
+  tree op0, op1;
+  if (!long_mul_canonical_ops (summands, &op0, &op1))
+    return false;
+  unsigned int halfwidth = TYPE_PRECISION (TREE_TYPE (op0)) / 2;
+
+  const long_mul_summand *cl = long_mul_find_summand (summands, LMK_CARRY_LOW);
+  if (!cl)
+    return false;
+
+  /* The two carry_low operands must be (cross_shifted, mul_lolo) in either
+     order.  cross_shifted = LSHIFT_EXPR (mul_cross_sum, halfwidth).  */
+  tree cs = cl->carry_a, lolo = cl->carry_b;
+  tree inner;
+  unsigned HOST_WIDE_INT shift;
+  if (!long_mul_is_lshift_def (cs, &inner, &shift))
+    {
+      std::swap (cs, lolo);
+      if (!long_mul_is_lshift_def (cs, &inner, &shift))
+	return false;
+    }
+  if (shift != halfwidth)
+    return false;
+
+  tree scratch[LONG_MUL_MAX_CAPTURES];
+  if (!gimple_mul_cross_sum (inner, scratch, NULL))
+    return false;
+  for (int i = 0; i < 2; i++)
+    if (!long_mul_is_cross_half (scratch[i], op0, op1))
+      return false;
+  if (!gimple_mul_lolo (lolo, scratch, NULL)
+      || !long_mul_same_ops (scratch[0], scratch[1], op0, op1))
+    return false;
+
+  return true;
+}
+
 /* Long-multiply variant table.  Each row enumerates the multiset of
    (kind, extract) summands that compose one long-multiply form.  Rows
    are sorted by long_mul_summand_compare, matching the input summands'
@@ -4248,6 +4317,14 @@ static const long_mul_row long_mul_table[] = {
       { LMK_LOW_ACCUM, LMX_HI },
       { LMK_CARRY_CROSS_SUM, LMX_NONE } },
     NULL },
+  /* xh*yh + (cross_sum >> N) + carry_low + ((hilo > cross_sum) << N),
+     carry_low = (xl*yl + (cross_sum << N)) < (cross_sum << N).  */
+  { long_mul_row::HIGH_PART, PLUS_EXPR, 4,
+    { { LMK_MUL_HIHI, LMX_NONE },
+      { LMK_CROSS_SUM, LMX_HI },
+      { LMK_CARRY_LOW, LMX_NONE },
+      { LMK_CARRY_CROSS_SUM, LMX_NONE } },
+    long_mul_check_two_carries },
   /* LOW-PART folds.  Recover the lower 2N bits from xl*yl plus a
      shifted cross-half term.  */
   /* (xl*yl & mask) | (low_accum << N),

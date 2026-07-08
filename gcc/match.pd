@@ -12838,6 +12838,13 @@ and,
        && TYPE_PRECISION (op_type) % 2 == 0
        && tree_fits_uhwi_p (@0)
        && tree_to_uhwi (@0) == TYPE_PRECISION (op_type) / 2))))
+/* Carry from addition overflow: (cast?) (a > a + b).
+   :c on gt also matches the LT form: (cast?) (a + b < a).  */
+(match (mul_carry_low @0 @1)
+  (convert?
+    (gt:c @0 (plus:c @1 @0)))
+  (with { tree op_type = TREE_TYPE (@0); }
+  (if (INTEGRAL_TYPE_P (op_type) && TYPE_UNSIGNED (op_type)))))
 /* Low accumulate: (xl*yl >> N) + (cross_sum & mask).  */
 (match (mul_low_accum @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
   (plus:c
