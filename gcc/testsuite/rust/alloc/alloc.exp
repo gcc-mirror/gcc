@@ -1,0 +1,47 @@
+# Copyright (C) 2026 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Compile test liballoc, no torture testing.
+#
+# These tests focus on successfully compiling liballoc.
+
+# Load support procs.
+load_lib rust-dg.exp
+
+# Initialize `dg'.
+dg-init
+
+if { [check_effective_target_lp64] } {
+	# Main loop.
+	set saved-dg-do-what-default ${dg-do-what-default}
+
+	set dg-do-what-default "compile"
+	set individual_timeout 600
+
+	dg-additional-files [ lsort [ glob -nocomplain \
+		$srcdir/$subdir/core.rs \
+		$srcdir/$subdir/prelude.rs \
+		$srcdir/$subdir/alloc/* \
+	]]
+
+	dg-runtest $srcdir/$subdir/alloc/src/lib.rs "-frust-edition=2015 -frust-crate=alloc -frust-compile-until=nameresolution -frust-cfg=target_has_atomic=\"ptr\" -w" ""
+	set dg-do-what-default ${saved-dg-do-what-default}
+} else {
+	unsupported "alloc crate tests require a 64-bit target "
+}
+
+# All done.
+dg-finish
