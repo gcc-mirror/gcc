@@ -1181,6 +1181,8 @@ Session::dump_ast_pretty_internal (AST::Crate &crate) const
 	       AST::Dump::Configuration::InternalComment::Dump,
 	       AST::Dump::Configuration::NodeDescription::Dump,
 	       AST::Dump::Configuration::Comment::Dump,
+	       AST::Dump::Configuration::Newline::Dump,
+	       AST::Dump::Configuration::Indentation::Space4,
 	     },
 	     str_tmp)
     .go (crate);

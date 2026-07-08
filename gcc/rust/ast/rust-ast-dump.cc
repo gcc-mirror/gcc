@@ -28,6 +28,8 @@ Dump::Dump (std::ostream &stream)
       Configuration::InternalComment::Hide,
       Configuration::NodeDescription::Hide,
       Configuration::Comment::Dump,
+      Configuration::Newline::Dump,
+      Configuration::Indentation::Space4,
     })
 {}
 

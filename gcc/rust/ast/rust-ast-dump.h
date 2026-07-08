@@ -49,6 +49,16 @@ public:
       Dump,
       Hide,
     } dump_comments;
+    enum class Newline
+    {
+      Dump,
+      Hide,
+    } newline;
+    enum class Indentation
+    {
+      Space4,
+      None,
+    } indentation;
   };
 
   Dump (std::ostream &stream);
@@ -87,11 +97,14 @@ public:
 	  case AST::CollectItem::Kind::Indentation:
 	    for (size_t i = 0; i < item.get_indent_level (); i++)
 	      {
-		stream << "    ";
+		if (configuration.indentation
+		    == Configuration::Indentation::Space4)
+		  stream << "    ";
 	      }
 	    break;
 	  case AST::CollectItem::Kind::Newline:
-	    stream << "\n";
+	    if (configuration.newline == Configuration::Newline::Dump)
+	      stream << "\n";
 	    previous = nullptr;
 	    break;
 	  case AST::CollectItem::Kind::BeginNodeDescription:

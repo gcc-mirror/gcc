@@ -42,7 +42,15 @@ void
 ExportContext::emit_crate (AST::Crate &c)
 {
   std::stringstream oss;
-  AST::Dump dumper (oss);
+  using AST::Dump;
+  AST::Dump dumper (
+    oss,
+    Dump::Configuration{Dump::Configuration::InternalComment::Hide,
+			Dump::Configuration::NodeDescription::Hide,
+			Dump::Configuration::Comment::Hide,
+			Dump::Configuration::Newline::Hide,
+			Dump::Configuration::Indentation::None},
+    {});
   dumper.process (c);
 
   public_interface_buffer += oss.str ();
