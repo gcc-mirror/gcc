@@ -1,0 +1,181 @@
+/* { dg-do compile } */
+/* { dg-options "-O3 -fdump-tree-forwprop-details" } */
+
+typedef __UINT32_TYPE__ uint32_t;
+typedef __UINT64_TYPE__ uint64_t;
+typedef struct { uint32_t v[2]; } v2i32;
+
+/* High part follows the long form
+   xh*yh + carry + (cross_sum >> N) + (low_accum >> N).  */
+
+uint64_t mulh_carry (uint64_t x, uint64_t y)
+{
+  uint64_t x_lo = x & 0xFFFFFFFF;
+  uint64_t x_hi = x >> 32;
+  uint64_t y_lo = y & 0xFFFFFFFF;
+  uint64_t y_hi = y >> 32;
+  uint64_t y_lo_x_hi = y_lo * x_hi;
+  uint64_t y_hi_x_hi = y_hi * x_hi;
+  uint64_t y_hi_x_lo = y_hi * x_lo;
+  uint64_t y_lo_x_lo = y_lo * x_lo;
+  uint64_t cross_sum = y_hi_x_lo + y_lo_x_hi;
+  int carry_out = cross_sum < y_lo_x_hi;
+  uint64_t carry = (uint64_t) carry_out << 32;
+  uint64_t y_lo_x_lo_hi = y_lo_x_lo >> 32;
+  uint64_t cross_sum_lo = cross_sum & 0xFFFFFFFF;
+  uint64_t cross_sum_hi = cross_sum >> 32;
+  uint64_t low_accum = cross_sum_lo + y_lo_x_lo_hi;
+  uint64_t interm = cross_sum_hi + y_hi_x_hi;
+  uint64_t low_accum_hi = low_accum >> 32;
+  uint64_t interm_plus_carry = interm + carry;
+  uint64_t hw64 = interm_plus_carry + low_accum_hi;
+
+  return hw64;
+}
+
+uint64_t mulh_carry_comm (uint64_t x, uint64_t y)
+{
+  uint64_t x_lo = x & 0xFFFFFFFF;
+  uint64_t y_lo = y & 0xFFFFFFFF;
+  uint64_t x_hi = x >> 32;
+  uint64_t y_hi = y >> 32;
+  uint64_t y_lo_x_hi = x_hi * y_lo;
+  uint64_t y_hi_x_hi = y_hi * x_hi;
+  uint64_t y_hi_x_lo = x_lo * y_hi;
+  uint64_t y_lo_x_lo = x_lo * y_lo;
+  uint64_t cross_sum = y_lo_x_hi + y_hi_x_lo;
+  int carry_out = (cross_sum < y_lo_x_hi);
+  uint64_t carry = (uint64_t) carry_out << 32;
+  uint64_t y_lo_x_lo_hi = y_lo_x_lo >> 32;
+  uint64_t cross_sum_lo = cross_sum & 0xFFFFFFFF;
+  uint64_t cross_sum_hi = cross_sum >> 32;
+  uint64_t low_accum = y_lo_x_lo_hi + cross_sum_lo;
+  uint64_t inter = y_hi_x_hi + cross_sum_hi;
+  uint64_t low_accum_hi = low_accum >> 32;
+  uint64_t interm_plus_carry = carry + inter;
+  uint64_t hw64 = low_accum_hi + interm_plus_carry;
+
+  return hw64;
+}
+
+uint32_t mulh_carry_32 (uint32_t x, uint32_t y)
+{
+  uint32_t x_lo = x & 0xFFFF;
+  uint32_t x_hi = x >> 16;
+  uint32_t y_lo = y & 0xFFFF;
+  uint32_t y_hi = y >> 16;
+  uint32_t y_lo_x_hi = y_lo * x_hi;
+  uint32_t y_hi_x_hi = y_hi * x_hi;
+  uint32_t y_hi_x_lo = y_hi * x_lo;
+  uint32_t y_lo_x_lo = y_lo * x_lo;
+  uint32_t cross_sum = y_hi_x_lo + y_lo_x_hi;
+  int carry_out = (cross_sum < y_lo_x_hi);
+  uint32_t carry = (uint32_t) carry_out << 16;
+  uint32_t y_lo_x_lo_hi = y_lo_x_lo >> 16;
+  uint32_t cross_sum_lo = cross_sum & 0xFFFF;
+  uint32_t cross_sum_hi = cross_sum >> 16;
+  uint32_t low_accum = cross_sum_lo + y_lo_x_lo_hi;
+  uint32_t interm = cross_sum_hi + y_hi_x_hi;
+  uint32_t low_accum_hi = low_accum >> 16;
+  uint32_t interm_plus_carry = interm + carry;
+  uint32_t hw64 = interm_plus_carry + low_accum_hi;
+
+  return hw64;
+}
+
+/* The 128-bit variant lowers to longhand in pass_optimize_widening_mul;
+   no target provides a 256-bit multiply.  */
+#ifdef __SIZEOF_INT128__
+__uint128_t mulh_carry_128 (__uint128_t x, __uint128_t y)
+{
+  __uint128_t x_lo = x & (__uint128_t)0xFFFFFFFFFFFFFFFF;
+  __uint128_t x_hi = x >> 64;
+  __uint128_t y_lo = y & (__uint128_t)0xFFFFFFFFFFFFFFFF;
+  __uint128_t y_hi = y >> 64;
+  __uint128_t y_lo_x_hi = y_lo * x_hi;
+  __uint128_t y_hi_x_hi = y_hi * x_hi;
+  __uint128_t y_hi_x_lo = y_hi * x_lo;
+  __uint128_t y_lo_x_lo = y_lo * x_lo;
+  __uint128_t cross_sum = y_hi_x_lo + y_lo_x_hi;
+  int carry_out = cross_sum < y_lo_x_hi;
+  __uint128_t carry = (__uint128_t) carry_out << 64;
+  __uint128_t y_lo_x_lo_hi = y_lo_x_lo >> 64;
+  __uint128_t cross_sum_lo = cross_sum & (__uint128_t)0xFFFFFFFFFFFFFFFF;
+  __uint128_t cross_sum_hi = cross_sum >> 64;
+  __uint128_t low_accum = cross_sum_lo + y_lo_x_lo_hi;
+  __uint128_t interm = cross_sum_hi + y_hi_x_hi;
+  __uint128_t low_accum_hi = low_accum >> 64;
+  __uint128_t interm_plus_carry = interm + carry;
+  __uint128_t hw64 = interm_plus_carry + low_accum_hi;
+
+  return hw64;
+}
+#endif
+
+void full_mul_carry (uint64_t x, uint64_t y, uint64_t* p) {
+  uint64_t x_lo = x & 0xFFFFFFFF;
+  uint64_t y_lo = y & 0xFFFFFFFF;
+  uint64_t x_hi = x >> 32;
+  uint64_t y_hi = y >> 32;
+  uint64_t y_lo_x_hi = y_lo * x_hi;
+  uint64_t y_hi_x_hi = y_hi * x_hi;
+  uint64_t y_hi_x_lo = y_hi * x_lo;
+  uint64_t y_lo_x_lo = y_lo * x_lo;
+  uint64_t cross_sum = y_hi_x_lo + y_lo_x_hi;
+  int carry_out = (cross_sum < y_lo_x_hi);
+  uint64_t carry = (uint64_t) carry_out << 32;
+  uint64_t y_lo_x_lo_hi = y_lo_x_lo >> 32;
+  uint64_t cross_sum_lo = cross_sum & 0xFFFFFFFF;
+  uint64_t cross_sum_hi = cross_sum >> 32;
+  uint64_t low_accum = cross_sum_lo + y_lo_x_lo_hi;
+  uint64_t upper_mid = y_hi_x_hi + carry;
+  uint64_t low_accum_hi = low_accum >> 32;
+  uint64_t upper_mid_with_cross = upper_mid + cross_sum_hi;
+  uint64_t hw64 = upper_mid_with_cross + low_accum_hi;
+  p[1] = hw64;
+  uint64_t low_accum_shifted = low_accum << 32;
+  uint64_t y_lo_x_lo_lo = y_lo_x_lo & 0xFFFFFFFF;
+  uint64_t lw64 = low_accum_shifted | y_lo_x_lo_lo;
+  p[0] = lw64;
+}
+
+/* This will be optimized during the second forwprop run.
+   Disable SLP so the expected fold count is target-independent.  */
+__attribute__((optimize("no-tree-slp-vectorize")))
+v2i32 mulh_carry_v2i32 (v2i32 x, v2i32 y)
+{
+  v2i32 result;
+  for (int i = 0; i < 2; i++)
+    {
+      uint32_t x_lo = x.v[i] & 0xFFFF;
+      uint32_t y_lo = y.v[i] & 0xFFFF;
+      uint32_t x_hi = x.v[i] >> 16;
+      uint32_t y_hi = y.v[i] >> 16;
+
+      uint32_t y_lo_x_hi = y_lo * x_hi;
+      uint32_t y_hi_x_hi = y_hi * x_hi;
+      uint32_t y_hi_x_lo = y_hi * x_lo;
+      uint32_t y_lo_x_lo = y_lo * x_lo;
+
+      uint32_t cross_sum = y_hi_x_lo + y_lo_x_hi;
+      int carry_out = cross_sum < y_lo_x_hi;
+      uint32_t carry = (uint32_t) carry_out << 16;
+
+      uint32_t y_lo_x_lo_hi = y_lo_x_lo >> 16;
+      uint32_t cross_sum_lo = cross_sum & 0xFFFF;
+      uint32_t cross_sum_hi = cross_sum >> 16;
+
+      uint32_t low_accum = cross_sum_lo + y_lo_x_lo_hi;
+      uint32_t interm = cross_sum_hi + y_hi_x_hi;
+      uint32_t low_accum_hi = low_accum >> 16;
+      uint32_t interm_plus_carry = interm + carry;
+
+      result.v[i] = interm_plus_carry + low_accum_hi;
+    }
+
+  return result;
+}
+
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded." 4 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded." 1 "forwprop2" } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication low part folded." 1 "forwprop1" } } */

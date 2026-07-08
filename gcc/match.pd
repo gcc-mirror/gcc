@@ -12760,6 +12760,75 @@ and,
    INTEGER_CST@2) INTEGER_CST@3)
   (if (compare_tree_int (@sub1, 1) == 0)))
 
+#if GIMPLE
+/* Match low and high parts of longhand multiplication.
+   Given a 2N-bit unsigned type, x = xh*2^N + xl and y = yh*2^N + yl,
+   where xh, xl, yh, yl are N-bit halves extracted via shifts and masks.  */
+
+/* High half: op >> N.  */
+(match (mul_hi @op @0)
+  (rshift @op INTEGER_CST@0)
+  (with { tree op_type = TREE_TYPE (@op); }
+  (if (INTEGRAL_TYPE_P (op_type)
+       && TYPE_UNSIGNED (op_type)
+       && TYPE_PRECISION (op_type) % 2 == 0
+       && tree_fits_uhwi_p (@0)
+       && tree_to_uhwi (@0) == TYPE_PRECISION (op_type) / 2))))
+/* Low half: op & mask.  */
+(match (mul_lo @op @0)
+  (bit_and @op INTEGER_CST@0)
+  (with { tree op_type = TREE_TYPE (@op); }
+  (if (INTEGRAL_TYPE_P (op_type)
+       && TYPE_UNSIGNED (op_type)
+       && TYPE_PRECISION (op_type) % 2 == 0
+       && tree_fits_uhwi_p (@0)
+       && (tree_to_uhwi (@0)
+	   == wi::mask (TYPE_PRECISION (op_type) / 2, false,
+			TYPE_PRECISION (op_type)))))))
+/* Cross product: high(op0) * low(op1).  */
+(match (mul_hilo @op0 @op1 @0 @1)
+  (mult:c
+    (mul_hi @op0 INTEGER_CST@0)
+    (mul_lo @op1 INTEGER_CST@1)))
+/* Low-low product: low(op0) * low(op1).  */
+(match (mul_lolo @op0 @op1 @0)
+  (mult:c
+    (mul_lo @op0 INTEGER_CST@0)
+    (mul_lo @op1 INTEGER_CST@0)))
+/* High-high product: high(op0) * high(op1).  */
+(match (mul_hihi @op0 @op1 @0)
+  (mult:c
+    (mul_hi @op0 INTEGER_CST@0)
+    (mul_hi @op1 INTEGER_CST@0)))
+/* Cross sum: xh*yl + xl*yh.
+   Note: matches any PLUS; operands are validated as actual cross
+   products by the forwprop consumer (long_mul_check_consistency).  */
+(match (mul_cross_sum @mul_hilo0 @mul_hilo1)
+  (plus:c @mul_hilo0 @mul_hilo1))
+/* Carry from cross-sum overflow: (cast?) (hilo > cross_sum) << N.
+   Explicit guard required because mul_cross_sum is just (plus:c @0 @1)
+   with no inherent type or halfwidth constraint.  */
+(match (mul_carry_cross_sum @mul_hilo0 @mul_hilo1 @mul_hilo2 @0)
+  (lshift
+    (convert? (gt
+      @mul_hilo0
+      (mul_cross_sum @mul_hilo1 @mul_hilo2)))
+    INTEGER_CST@0)
+  (with { tree op_type = TREE_TYPE (@mul_hilo0); }
+  (if (INTEGRAL_TYPE_P (op_type)
+       && TYPE_UNSIGNED (op_type)
+       && TYPE_PRECISION (op_type) % 2 == 0
+       && tree_fits_uhwi_p (@0)
+       && tree_to_uhwi (@0) == TYPE_PRECISION (op_type) / 2))))
+/* Low accumulate: (xl*yl >> N) + (cross_sum & mask).  */
+(match (mul_low_accum @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
+  (plus:c
+    (mul_hi
+      (mul_lolo @op0 @op1 INTEGER_CST@0)
+      INTEGER_CST@1)
+    (mul_lo (mul_cross_sum @mul_hilo0 @mul_hilo1) INTEGER_CST@0)))
+#endif
+
 /* Floatint point/integer comparison and integer->integer
    or floating point -> float point conversion.  */
 (match (cond_expr_convert_p @0 @2 @3 @6)
