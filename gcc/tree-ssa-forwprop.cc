@@ -4325,6 +4325,55 @@ long_mul_check_two_carries (const vec<long_mul_summand> &summands,
   return true;
 }
 
+/* The lolo + cross_shifted shape is also the low half of a two-carry
+   long-multiply, where an unsigned overflow compare against one of
+   the PLUS operands is the low-carry term consumed by the matching
+   high-part fold.  Folding to mul_lo here destroys cross_shifted,
+   which both the compare and the high-part match still need; defer
+   so the high-part fold runs first.  After it does, the compare is
+   dead and the surviving lolo + cross_shifted is picked up by this
+   row in the next forwprop instance.  Returns false to defer.  */
+
+static bool
+long_mul_check_low_plus_defer (const vec<long_mul_summand> &, gimple *stmt)
+{
+  if (!is_gimple_assign (stmt))
+    return false;
+
+  tree lhs = gimple_assign_lhs (stmt);
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  tree rhs2 = gimple_assign_rhs2 (stmt);
+
+  imm_use_iterator iter;
+  gimple *use_stmt;
+  FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+    {
+      tree cmp_op1 = NULL_TREE, cmp_op2 = NULL_TREE;
+      enum tree_code use_code = ERROR_MARK;
+      if (is_gimple_assign (use_stmt))
+	{
+	  use_code = gimple_assign_rhs_code (use_stmt);
+	  cmp_op1 = gimple_assign_rhs1 (use_stmt);
+	  cmp_op2 = gimple_assign_rhs2 (use_stmt);
+	}
+      else if (gcond *cond = dyn_cast<gcond *> (use_stmt))
+	{
+	  use_code = gimple_cond_code (cond);
+	  cmp_op1 = gimple_cond_lhs (cond);
+	  cmp_op2 = gimple_cond_rhs (cond);
+	}
+      if (use_code == GT_EXPR || use_code == LT_EXPR
+	  || use_code == GE_EXPR || use_code == LE_EXPR)
+	{
+	  tree other = (cmp_op1 == lhs) ? cmp_op2
+		     : (cmp_op2 == lhs) ? cmp_op1 : NULL_TREE;
+	  if (other && (other == rhs1 || other == rhs2))
+	    return false;
+	}
+    }
+  return true;
+}
+
 /* Long-multiply variant table.  Each row enumerates the multiset of
    (kind, extract) summands that compose one long-multiply form.  Rows
    are sorted by long_mul_summand_compare, matching the input summands'
@@ -4388,6 +4437,11 @@ static const long_mul_row long_mul_table[] = {
     NULL },
   /* LOW-PART folds.  Recover the lower 2N bits from xl*yl plus a
      shifted cross-half term.  */
+  /* xl*yl + (cross_sum << N).  */
+  { long_mul_row::LOW_PART, PLUS_EXPR, 2,
+    { { LMK_MUL_LOLO, LMX_NONE },
+      { LMK_CROSS_SUM, LMX_SHL_N } },
+    long_mul_check_low_plus_defer },
   /* (xl*yl & mask) | (low_accum << N),
      low_accum = (xl*yl >> N) + (cross_sum & mask).  */
   { long_mul_row::LOW_PART, BIT_IOR_EXPR, 2,

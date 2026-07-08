@@ -105,8 +105,9 @@ uint64_t full_mul_two_carry (uint64_t x, uint64_t y, uint64_t *lo)
   return high;
 }
 
-/* Folds land in forwprop3 because the LT_EXPR low-carry compare is
-   only canonicalized into the gt:c-plus-overflow shape that
-   mul_carry_low matches by an earlier pass between forwprop1 and
-   forwprop3.  */
+/* The LOW fold for full_mul_two_carry lands in forwprop4 because
+   `lolo + cross_shifted' also feeds the HIGH fold's low-carry
+   compare; long_mul_check_low_plus_defer holds it until the HIGH
+   fold has consumed the compare.  */
 /* { dg-final { scan-tree-dump-times "Long multiplication high part folded." 4 "forwprop3" } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication low part folded." 1 "forwprop4" } } */
