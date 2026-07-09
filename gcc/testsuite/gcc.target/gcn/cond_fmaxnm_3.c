@@ -30,8 +30,8 @@
 TEST_ALL (DEF_LOOP)
 
 /* { dg-final { scan-assembler-times {smaxv64sf3} 3 } } */
-/* { dg-final { scan-assembler-times {movv64sf_exec} 3 } } */
-/* { dg-final { scan-assembler-times {smaxv64sf3} 3 } } */
-/* { dg-final { scan-assembler-times {movv64df_exec} 3 } } */
+/* { dg-final { scan-assembler-times {v_cndmask[^\n]*movv64sf} 3 } } */
+/* { dg-final { scan-assembler-times {smaxv64df3} 3 } } */
+/* { dg-final { scan-assembler-times {v_mov[^\n]*movv64df[^\n]*exec} 3 } } */
 
 /* { dg-final { scan-assembler-not {\tv_writelane_b32\tv[0-9]+, vcc_..} } } */
