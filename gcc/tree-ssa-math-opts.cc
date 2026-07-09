@@ -6529,6 +6529,689 @@ optimize_spaceship (gcond *stmt)
 }
 
 
+/* Long-multiply inverse-lowering helper.
+
+   The forwprop long-multiply recognizer canonicalizes a hand-written
+   longhand high-part multiply into a cast+mult+shift+cast chain
+   `(N) ((2N) a * (2N) b) >> N'.  When the target lacks an expansion
+   path for the wide form, `lower_long_mul_high_chain' resynthesizes
+   the longhand at narrow precision via `build_long_mul_partials'.  */
+
+/* Test whether the target supports an (HALF)-by-(HALF)->NARROW unsigned
+   widening multiply.  Returns true on success, with the half-width
+   scalar int mode placed in *HALF_MODE.  */
+
+static bool
+can_widen_to_narrow_p (scalar_int_mode narrow_mode, unsigned int half_width,
+		       scalar_int_mode *half_mode)
+{
+  if (!int_mode_for_size (half_width, 0).exists (half_mode))
+    return false;
+  return convert_optab_handler (umul_widen_optab, narrow_mode, *half_mode)
+	 != CODE_FOR_nothing;
+}
+
+/* Append to *SEQ the operand split and partial products for an unsigned
+   long multiply of OP1 by OP2 at the precision of TREE_TYPE (OP1).
+   HALF_TYPE is the (N/2)-bit unsigned type; HALF_AMT is the integer-typed
+   shift constant equal to N/2.
+
+   Outputs the four partial products via *LOLO, *HILO, *LOHI, *HIHI.
+
+   USE_WIDEN selects the partial-product form:
+     true  - cast halves to HALF_TYPE and use WIDEN_MULT_EXPR (needs
+	     an (N/2)-by-(N/2)->N widening multiply optab).
+     false - mask/shift halves within the N-bit accumulator and use
+	     plain MULT_EXPR; the halves fit in N/2 bits so the N-bit
+	     low product is exact.  */
+
+static void
+build_long_mul_partials (gimple_seq *seq, location_t loc, tree op1, tree op2,
+			 tree half_type, tree half_amt,
+			 tree *lolo, tree *hilo, tree *lohi, tree *hihi,
+			 bool use_widen)
+{
+  tree acc_type = TREE_TYPE (op1);
+  tree op1_hi = gimple_build (seq, loc, RSHIFT_EXPR, acc_type, op1, half_amt);
+  tree op2_hi = gimple_build (seq, loc, RSHIFT_EXPR, acc_type, op2, half_amt);
+  tree op1_lo, op2_lo;
+  tree_code mul_code;
+
+  if (use_widen)
+    {
+      op1_lo = gimple_build (seq, loc, NOP_EXPR, half_type, op1);
+      op2_lo = gimple_build (seq, loc, NOP_EXPR, half_type, op2);
+      op1_hi = gimple_build (seq, loc, NOP_EXPR, half_type, op1_hi);
+      op2_hi = gimple_build (seq, loc, NOP_EXPR, half_type, op2_hi);
+      mul_code = WIDEN_MULT_EXPR;
+    }
+  else
+    {
+      tree mask = wide_int_to_tree (acc_type,
+				    wi::mask (TYPE_PRECISION (half_type), false,
+					      TYPE_PRECISION (acc_type)));
+      op1_lo = gimple_build (seq, loc, BIT_AND_EXPR, acc_type, op1, mask);
+      op2_lo = gimple_build (seq, loc, BIT_AND_EXPR, acc_type, op2, mask);
+      mul_code = MULT_EXPR;
+    }
+
+  *lolo = gimple_build (seq, loc, mul_code, acc_type, op1_lo, op2_lo);
+  *hilo = gimple_build (seq, loc, mul_code, acc_type, op1_hi, op2_lo);
+  *lohi = gimple_build (seq, loc, mul_code, acc_type, op1_lo, op2_hi);
+  *hihi = gimple_build (seq, loc, mul_code, acc_type, op1_hi, op2_hi);
+}
+
+/* Emit into *SEQ the high N bits of the unsigned product A * B, where A and B
+   are NARROW_TYPE (N-bit) values, as a longhand over (N/2)-bit partials.
+   Returns the high-part SSA.  */
+
+static tree
+emit_long_mul_highpart (gimple_seq *seq, location_t loc, tree a, tree b,
+			tree narrow_type)
+{
+  scalar_int_mode narrow_mode
+    = as_a <scalar_int_mode> (TYPE_MODE (narrow_type));
+  unsigned int half_width = GET_MODE_PRECISION (narrow_mode) / 2;
+  /* Prefer (N/2)-by-(N/2)->N widening partials; fall back to plain MULT_EXPR
+     when the target lacks the widen optab.  See build_long_mul_partials.  */
+  scalar_int_mode half_mode;
+  bool use_widen = can_widen_to_narrow_p (narrow_mode, half_width, &half_mode);
+  tree half_type = build_nonstandard_integer_type (half_width, 1);
+  tree half_amt = build_int_cst (integer_type_node, half_width);
+  tree half_mask = wide_int_to_tree (narrow_type,
+				     wi::mask (half_width, false,
+					       TYPE_PRECISION (narrow_type)));
+
+  tree lolo, hilo, lohi, hihi;
+  build_long_mul_partials (seq, loc, a, b, half_type, half_amt,
+			   &lolo, &hilo, &lohi, &hihi, use_widen);
+  tree cross_sum = gimple_build (seq, loc, PLUS_EXPR, narrow_type, hilo, lohi);
+  tree cross_lt = gimple_build (seq, loc, LT_EXPR, boolean_type_node,
+				cross_sum, hilo);
+  tree cross_lt_n = gimple_build (seq, loc, NOP_EXPR, narrow_type, cross_lt);
+  tree cross_carry = gimple_build (seq, loc, LSHIFT_EXPR, narrow_type,
+				   cross_lt_n, half_amt);
+  tree lolo_hi = gimple_build (seq, loc, RSHIFT_EXPR, narrow_type,
+			       lolo, half_amt);
+  tree cross_lo = gimple_build (seq, loc, BIT_AND_EXPR, narrow_type,
+				cross_sum, half_mask);
+  tree low_accum = gimple_build (seq, loc, PLUS_EXPR, narrow_type,
+				 lolo_hi, cross_lo);
+  tree low_accum_hi = gimple_build (seq, loc, RSHIFT_EXPR, narrow_type,
+				    low_accum, half_amt);
+  tree cross_hi = gimple_build (seq, loc, RSHIFT_EXPR, narrow_type,
+				cross_sum, half_amt);
+  tree t1 = gimple_build (seq, loc, PLUS_EXPR, narrow_type, hihi, cross_hi);
+  tree t2 = gimple_build (seq, loc, PLUS_EXPR, narrow_type, t1, low_accum_hi);
+  return gimple_build (seq, loc, PLUS_EXPR, narrow_type, t2, cross_carry);
+}
+
+/* Emit into *SEQ the high N bits (NARROW_TYPE) of the unsigned product of two
+   2N-bit values given as N-bit halves, x = L1 + H1*2^N and y = L2 + H2*2^N:
+   the high half of x*y is the high N bits of L1*L2, plus H1*L2 and L1*H2, all
+   mod 2^N.  */
+
+static tree
+combine_long_mul_halves (gimple_seq *seq, location_t loc, tree l1, tree h1,
+			 tree l2, tree h2, tree narrow_type)
+{
+  tree hh = emit_long_mul_highpart (seq, loc, l1, l2, narrow_type);
+  tree c1 = gimple_build (seq, loc, MULT_EXPR, narrow_type, h1, l2);
+  tree c2 = gimple_build (seq, loc, MULT_EXPR, narrow_type, l1, h2);
+  tree s = gimple_build (seq, loc, PLUS_EXPR, narrow_type, hh, c1);
+  return gimple_build (seq, loc, PLUS_EXPR, narrow_type, s, c2);
+}
+
+/* True when OP fits NARROW_PREC bits as an unsigned value.  Looks
+   through widening casts and PHIs, falling back to `tree_nonzero_bits'
+   otherwise.  PHI_SEEN guards against cycles.  */
+
+static bool
+long_mul_op_fits_p (tree op, unsigned narrow_prec, bitmap phi_seen)
+{
+  if (!TYPE_UNSIGNED (TREE_TYPE (op)))
+    return false;
+  if (TYPE_PRECISION (TREE_TYPE (op)) <= narrow_prec)
+    return true;
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (op);
+      if (is_gimple_assign (def)
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
+	return long_mul_op_fits_p (gimple_assign_rhs1 (def), narrow_prec,
+				   phi_seen);
+      if (gphi *phi = dyn_cast <gphi *> (def))
+	if (bitmap_set_bit (phi_seen, SSA_NAME_VERSION (op)))
+	  {
+	    for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	      if (!long_mul_op_fits_p (gimple_phi_arg_def (phi, i),
+				       narrow_prec, phi_seen))
+		return false;
+	    return true;
+	  }
+    }
+  return wi::min_precision (tree_nonzero_bits (op), UNSIGNED) <= narrow_prec;
+}
+
+static bool long_mul_split_operand (gimple_seq *, location_t, tree, tree,
+				    tree *, tree *);
+
+struct long_mul_halves
+{
+  tree lo;
+  tree hi;
+};
+
+/* Halves recorded for one run of the pass, keyed on the PHI they came from.
+   Several chains can reach one operand PHI, and each that splits it again
+   leaves another redundant pair of half PHIs behind.  */
+
+static hash_map<tree, long_mul_halves> *long_mul_phi_halves;
+
+struct long_mul_arg_split
+{
+  gimple_seq seq;
+  tree lo;
+  tree hi;
+};
+
+/* Split the 2N-bit result of PHI into N-bit halves *LO and *HI, by splitting
+   each argument and merging the halves with two new PHIs.  A split goes at
+   the end of its argument's incoming block, where the argument is available,
+   rather than on the edge, which could split a critical edge while the
+   dominator walk is still running.  Returns false, having changed nothing,
+   when an argument cannot be split.  A split that succeeds stands even if
+   the caller then gives up.  */
+
+static bool
+long_mul_split_phi (gphi *phi, tree narrow_type, tree *lo, tree *hi)
+{
+  tree res = gimple_phi_result (phi);
+  if (long_mul_halves *prev = long_mul_phi_halves->get (res))
+    {
+      /* Every operand reaching a split has the 2N type, so the width is
+	 fixed by the PHI's own type.  */
+      gcc_checking_assert (types_compatible_p (TREE_TYPE (prev->lo),
+					       narrow_type));
+      *lo = prev->lo;
+      *hi = prev->hi;
+      return true;
+    }
+
+  unsigned int n = gimple_phi_num_args (phi);
+  location_t loc = gimple_location (phi);
+  basic_block bb = gimple_bb (phi);
+  auto_vec<long_mul_arg_split, 4> args;
+
+  for (unsigned int i = 0; i < n; i++)
+    {
+      edge e = gimple_phi_arg_edge (phi, i);
+      /* A back edge could lead back to PHI and recurse forever.  The entry
+	 block cannot hold a split.  */
+      if (dominated_by_p (CDI_DOMINATORS, e->src, bb)
+	  || e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	return false;
+
+      long_mul_arg_split arg = {};
+      if (!long_mul_split_operand (&arg.seq, loc, gimple_phi_arg_def (phi, i),
+				   narrow_type, &arg.lo, &arg.hi))
+	return false;
+
+      args.safe_push (arg);
+    }
+
+  /* Every argument split, so the rewrite can be committed.  */
+  gphi *lo_phi = create_phi_node (make_ssa_name (narrow_type), bb);
+  gphi *hi_phi = create_phi_node (make_ssa_name (narrow_type), bb);
+  for (unsigned int i = 0; i < n; i++)
+    {
+      edge e = gimple_phi_arg_edge (phi, i);
+      if (args[i].seq)
+	{
+	  gimple_stmt_iterator gsi = gsi_last_bb (e->src);
+	  if (!gsi_end_p (gsi) && stmt_ends_bb_p (gsi_stmt (gsi)))
+	    gsi_insert_seq_before (&gsi, args[i].seq, GSI_SAME_STMT);
+	  else
+	    gsi_insert_seq_after (&gsi, args[i].seq, GSI_CONTINUE_LINKING);
+	}
+      add_phi_arg (lo_phi, args[i].lo, e, UNKNOWN_LOCATION);
+      add_phi_arg (hi_phi, args[i].hi, e, UNKNOWN_LOCATION);
+    }
+  *lo = gimple_phi_result (lo_phi);
+  *hi = gimple_phi_result (hi_phi);
+  long_mul_phi_halves->put (res, { *lo, *hi });
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Split long-multiply operand PHI.\n");
+  return true;
+}
+
+/* Split the 2N-bit unsigned value OP into its low and high N bits (*LO and
+   *HI, both NARROW_TYPE) using only N-bit operations, as the target has no 2N
+   multiply or shift.  A 2N product recurses on its operands, its high half
+   coming from combine_long_mul_halves.  A value shifted down by N recurses on
+   the shifted value and takes its high half, rather than reading the 2N shift.
+   A widening cast's low half is the truncated source and its high half is what
+   the cast extended with, zero or the source's replicated sign bit.  A value
+   that provably fits N bits has a zero high half.  A PHI is split through its
+   arguments as a last resort.  Returns false otherwise.  */
+
+static bool
+long_mul_split_operand (gimple_seq *seq, location_t loc, tree op,
+			tree narrow_type, tree *lo, tree *hi)
+{
+  unsigned int narrow_prec = TYPE_PRECISION (narrow_type);
+  if (TREE_CODE (op) == SSA_NAME)
+    {
+      gimple *def = SSA_NAME_DEF_STMT (op);
+      if (is_gimple_assign (def) && gimple_assign_rhs_code (def) == MULT_EXPR)
+	{
+	  tree a_lo, a_hi, b_lo, b_hi;
+	  if (!long_mul_split_operand (seq, loc, gimple_assign_rhs1 (def),
+				       narrow_type, &a_lo, &a_hi)
+	      || !long_mul_split_operand (seq, loc, gimple_assign_rhs2 (def),
+					  narrow_type, &b_lo, &b_hi))
+	    return false;
+	  *lo = gimple_build (seq, loc, MULT_EXPR, narrow_type, a_lo, b_lo);
+	  *hi = combine_long_mul_halves (seq, loc, a_lo, a_hi, b_lo, b_hi,
+					 narrow_type);
+	  return true;
+	}
+      /* A 2N value shifted down by N is its own high half: split the source
+	 and use that half.  Reading the shift instead leaves the 2N source
+	 live, and the target cannot expand it.  This has to come before the
+	 widening-cast case below, which would take such a value as it
+	 stands.  */
+      if (is_gimple_assign (def)
+	  && gimple_assign_rhs_code (def) == RSHIFT_EXPR
+	  && tree_fits_uhwi_p (gimple_assign_rhs2 (def))
+	  && tree_to_uhwi (gimple_assign_rhs2 (def)) == narrow_prec)
+	{
+	  tree src_lo, src_hi;
+	  if (!long_mul_split_operand (seq, loc, gimple_assign_rhs1 (def),
+				       narrow_type, &src_lo, &src_hi))
+	    return false;
+	  *lo = src_hi;
+	  *hi = build_zero_cst (narrow_type);
+	  return true;
+	}
+      if (is_gimple_assign (def)
+	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
+	{
+	  tree src = gimple_assign_rhs1 (def);
+	  tree src_type = TREE_TYPE (src);
+	  if (INTEGRAL_TYPE_P (src_type)
+	      && TYPE_PRECISION (src_type) <= narrow_prec)
+	    {
+	      *lo = gimple_convert (seq, loc, narrow_type, src);
+	      if (TYPE_UNSIGNED (src_type))
+		*hi = build_zero_cst (narrow_type);
+	      else
+		{
+		  /* Sign extension: the high N bits replicate the sign bit.  */
+		  tree snarrow = signed_type_for (narrow_type);
+		  tree s = gimple_convert (seq, loc, snarrow, *lo);
+		  tree amt = build_int_cst (integer_type_node, narrow_prec - 1);
+		  tree sh = gimple_build (seq, loc, RSHIFT_EXPR, snarrow, s,
+					  amt);
+		  *hi = gimple_convert (seq, loc, narrow_type, sh);
+		}
+	      return true;
+	    }
+	}
+    }
+
+  /* A value provably within N bits: its low half is the truncation to N bits
+     (a subreg, not a 2N shift), its high half is zero.  */
+  auto_bitmap phi_seen;
+  if (long_mul_op_fits_p (op, narrow_prec, phi_seen))
+    {
+      *lo = gimple_convert (seq, loc, narrow_type, op);
+      *hi = build_zero_cst (narrow_type);
+      return true;
+    }
+
+  /* A PHI that does not fit N bits can still be split through its arguments,
+     which is how a sign-extended value reaches the cast case above.  */
+  if (TREE_CODE (op) == SSA_NAME)
+    if (gphi *phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (op)))
+      return long_mul_split_phi (phi, narrow_type, lo, hi);
+  return false;
+}
+
+/* Collect into HIGH_USES the uses of PROD forming its high half,
+   `PROD >> NARROW_PREC'.  A use reading only the low NARROW_PREC bits is
+   accepted but not collected.  Returns false on any other use.  */
+
+static bool
+long_mul_high_half_uses (tree prod, unsigned int narrow_prec,
+			 vec<gimple *> *high_uses)
+{
+  imm_use_iterator iui;
+  gimple *use_stmt;
+  FOR_EACH_IMM_USE_STMT (use_stmt, iui, prod)
+    {
+      if (is_gimple_debug (use_stmt))
+	continue;
+      if (!is_gimple_assign (use_stmt))
+	return false;
+      tree_code code = gimple_assign_rhs_code (use_stmt);
+      if (code == RSHIFT_EXPR
+	  && gimple_assign_rhs1 (use_stmt) == prod
+	  && tree_fits_uhwi_p (gimple_assign_rhs2 (use_stmt))
+	  && tree_to_uhwi (gimple_assign_rhs2 (use_stmt)) == narrow_prec)
+	high_uses->safe_push (use_stmt);
+      else if (CONVERT_EXPR_CODE_P (code))
+	{
+	  tree t = TREE_TYPE (gimple_assign_lhs (use_stmt));
+	  if (!INTEGRAL_TYPE_P (t) || TYPE_PRECISION (t) > narrow_prec)
+	    return false;
+	}
+      else if (code == BIT_AND_EXPR
+	       && TREE_CODE (gimple_assign_rhs2 (use_stmt)) == INTEGER_CST)
+	{
+	  if (wi::min_precision (wi::to_wide (gimple_assign_rhs2 (use_stmt)),
+				 UNSIGNED) > narrow_prec)
+	    return false;
+	}
+      else
+	return false;
+    }
+  return true;
+}
+
+/* True when every use of PROD reads only its low NARROW_PREC bits.  */
+
+static bool
+long_mul_only_low_half_used_p (tree prod, unsigned int narrow_prec)
+{
+  auto_vec<gimple *, 4> high_uses;
+  return (long_mul_high_half_uses (prod, narrow_prec, &high_uses)
+	  && high_uses.is_empty ());
+}
+
+/* True when STMT is res = a * b whose unsigned 2N-bit result is in a mode the
+   target cannot multiply, having neither insn nor libcall, so that expand_mult
+   would abort; set *NARROW_TYPE to the N-bit unsigned type its halves are
+   built at.  A mode the target does support is left to convert_mult_to_widen
+   and convert_mult_to_highpart.  */
+
+static bool
+unexpandable_long_mul_p (gimple *stmt, tree *narrow_type)
+{
+  if (!is_gimple_assign (stmt) || gimple_assign_rhs_code (stmt) != MULT_EXPR)
+    return false;
+
+  tree wide_type = TREE_TYPE (gimple_assign_lhs (stmt));
+  scalar_int_mode wide_mode;
+  if (!INTEGRAL_TYPE_P (wide_type)
+      || !TYPE_UNSIGNED (wide_type)
+      || !is_a <scalar_int_mode> (TYPE_MODE (wide_type), &wide_mode)
+      || targetm.scalar_mode_supported_p (wide_mode))
+    return false;
+
+  *narrow_type
+    = build_nonstandard_integer_type (TYPE_PRECISION (wide_type) / 2, 1);
+  return true;
+}
+
+static bool narrow_long_mul_low_half (gimple_stmt_iterator *);
+
+/* OP1 and OP2 are the operands of a 2N multiply just narrowed or lowered;
+   that rewrite now reads each through an N-bit low-half cast.  An operand
+   defined by another 2N multiply can thereby become low-half-only -- narrow
+   it too, recursing through chained wide products such as (a*b)*c.  */
+
+static void
+narrow_long_mul_operands (tree op1, tree op2)
+{
+  for (tree op : { op1, op2 })
+    if (TREE_CODE (op) == SSA_NAME)
+      {
+	gimple *def = SSA_NAME_DEF_STMT (op);
+	if (is_gimple_assign (def) && gimple_assign_rhs_code (def) == MULT_EXPR)
+	  {
+	    gimple_stmt_iterator dgsi = gsi_for_stmt (def);
+	    narrow_long_mul_low_half (&dgsi);
+	  }
+      }
+}
+
+/* If the statement at *GSI is res = a * b with a 2N-bit unsigned result the
+   target cannot multiply and every use reads only the low N bits, narrow it
+   to res = (2N) ((N) a * (N) b) and return true.  The low N bits of a product
+   depend only on the low N bits of the operands, so this preserves every use;
+   the unused high half becomes zero.  match.pd's shorten rule omits this for
+   MULT_EXPR.  */
+
+static bool
+narrow_long_mul_low_half (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+  tree narrow_type;
+  if (!unexpandable_long_mul_p (stmt, &narrow_type))
+    return false;
+
+  tree lhs = gimple_assign_lhs (stmt);
+  if (!long_mul_only_low_half_used_p (lhs, TYPE_PRECISION (narrow_type)))
+    return false;
+
+  tree op1 = gimple_assign_rhs1 (stmt);
+  tree op2 = gimple_assign_rhs2 (stmt);
+  location_t loc = gimple_location (stmt);
+  gimple_seq seq = NULL;
+  tree a = gimple_convert (&seq, loc, narrow_type, op1);
+  tree b = gimple_convert (&seq, loc, narrow_type, op2);
+  tree np = gimple_build (&seq, loc, MULT_EXPR, narrow_type, a, b);
+  gsi_insert_seq_before (gsi, seq, GSI_SAME_STMT);
+  gimple *conv = gimple_build_assign (lhs, NOP_EXPR, np);
+  gimple_set_location (conv, loc);
+  gsi_replace (gsi, conv, true);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Narrowed low-half-only long multiply.\n");
+
+  narrow_long_mul_operands (op1, op2);
+  return true;
+}
+
+/* The 2N multiply at *GSI has had its high half synthesized elsewhere, so any
+   use left reads only its low half: narrow it in place, or remove it when it
+   has no use at all.  Removing it drops a use of each operand, so a 2N
+   multiply defining one may become low-half-only.  Narrow those operands.  */
+
+static void
+finish_long_mul_low_half (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+
+  if (has_zero_uses (gimple_assign_lhs (stmt)))
+    {
+      tree op1 = gimple_assign_rhs1 (stmt);
+      tree op2 = gimple_assign_rhs2 (stmt);
+      gsi_remove (gsi, true);
+      release_defs (stmt);
+      narrow_long_mul_operands (op1, op2);
+      return;
+    }
+
+  narrow_long_mul_low_half (gsi);
+}
+
+/* Rewrite the multiply STMT into the N-bit halves its uses read, when the
+   target can neither multiply at 2N bits nor form an N-bit high part.
+   Returns true on a rewrite, which may remove STMT.
+
+   Runs once lower_long_mul_high_chain has been applied to every statement:
+   both rewrite products with a high half, and this one, keyed on the
+   definition rather than on a consumer, would otherwise pre-empt it.  What
+   reaches it is a product that lowering could not retire, its high half also
+   read as an operand of another product, or read alongside the low half.  A
+   product read only for its low half is left to narrow_long_mul_low_half.  */
+
+static bool
+narrow_long_mul_halves (gimple *stmt)
+{
+  tree narrow_type;
+  if (!unexpandable_long_mul_p (stmt, &narrow_type))
+    return false;
+
+  /* Only worth lowering where the target cannot form the N-bit high part.  */
+  scalar_int_mode narrow_mode;
+  if (!is_a <scalar_int_mode> (TYPE_MODE (narrow_type), &narrow_mode)
+      || can_mult_highpart_p (narrow_mode, true))
+    return false;
+
+  tree lhs = gimple_assign_lhs (stmt);
+  auto_vec<gimple *, 4> high_uses;
+  if (!long_mul_high_half_uses (lhs, TYPE_PRECISION (narrow_type), &high_uses)
+      || high_uses.is_empty ())
+    return false;
+
+  tree op1 = gimple_assign_rhs1 (stmt);
+  tree op2 = gimple_assign_rhs2 (stmt);
+  location_t loc = gimple_location (stmt);
+  gimple_seq seq = NULL;
+  tree l1, h1, l2, h2;
+  if (!long_mul_split_operand (&seq, loc, op1, narrow_type, &l1, &h1)
+      || !long_mul_split_operand (&seq, loc, op2, narrow_type, &l2, &h2))
+    return false;
+  tree hi = combine_long_mul_halves (&seq, loc, l1, h1, l2, h2, narrow_type);
+  /* The high part is < 2^N, so widening it back to 2N leaves every use of a
+     shift, full width or truncated, reading the same value.  */
+  tree hi_wide = gimple_convert (&seq, loc, TREE_TYPE (lhs), hi);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+
+  unsigned int i;
+  gimple *shift_stmt;
+  FOR_EACH_VEC_ELT (high_uses, i, shift_stmt)
+    {
+      gimple_stmt_iterator sgsi = gsi_for_stmt (shift_stmt);
+      gimple *conv = gimple_build_assign (gimple_assign_lhs (shift_stmt),
+					  hi_wide);
+      gimple_set_location (conv, loc);
+      gsi_replace (&sgsi, conv, true);
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Narrowed high half of long multiply.\n");
+
+  finish_long_mul_low_half (&gsi);
+  return true;
+}
+
+/* Match.pd recognizer for the long-multiply recognizer's high-part
+   emit chain.  */
+
+extern bool gimple_long_mul_high_chain (tree, tree *, tree (*)(tree));
+
+/* Rewrite the `long_mul_high_chain' whose tail is the statement at GSI
+
+     wide_a    = (T_2N) op1
+     wide_b    = (T_2N) op2
+     wide_prod = wide_a * wide_b
+     hi        = wide_prod >> N
+     lhs       = (convert) hi
+
+   to a longhand high-part synthesis at T_N precision.  Never materializes
+   T_2N in gimple, so it covers cases where the 2N mode has no expansion path
+   (e.g. the high 128 bits of a 128x128 product where 2N=OImode).  An operand
+   wider than T_N -- a shared wide product or a sign-extended cast -- is split
+   into T_N halves rather than truncated, so no high input bits are dropped.
+   Returns true on a rewrite.  */
+
+static bool
+lower_long_mul_high_chain (gimple_stmt_iterator *gsi)
+{
+  gimple *trunc_stmt = gsi_stmt (*gsi);
+  if (!is_gimple_assign (trunc_stmt))
+    return false;
+
+  tree narrow_lhs = gimple_assign_lhs (trunc_stmt);
+  tree ops[2];
+  if (!gimple_long_mul_high_chain (narrow_lhs, ops, NULL))
+    return false;
+
+  /* Walk the matched chain back to the 2N multiply and take narrow_type at
+     half its precision.  */
+  gimple *shift_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (trunc_stmt));
+  gimple *mult_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (shift_stmt));
+  unsigned int narrow_prec
+    = TYPE_PRECISION (TREE_TYPE (gimple_assign_lhs (mult_stmt))) / 2;
+  tree narrow_type = build_nonstandard_integer_type (narrow_prec, /*uns=*/1);
+  scalar_int_mode narrow_mode;
+  if (!is_a <scalar_int_mode> (TYPE_MODE (narrow_type), &narrow_mode))
+    return false;
+
+  /* Lower only when the target cannot form the N-bit high part itself.  */
+  if (can_mult_highpart_p (narrow_mode, true))
+    return false;
+
+  location_t loc = gimple_location (trunc_stmt);
+  gimple_seq seq = NULL;
+
+  /* Split each operand into N-bit halves and combine.  An operand that fits
+     N bits yields h == 0, so its cross term folds away; with both fitting
+     the combine is just a plain N-bit high part.  */
+  tree l1, h1, l2, h2;
+  if (!long_mul_split_operand (&seq, loc, gimple_assign_rhs1 (mult_stmt),
+			       narrow_type, &l1, &h1)
+      || !long_mul_split_operand (&seq, loc, gimple_assign_rhs2 (mult_stmt),
+				  narrow_type, &l2, &h2))
+    return false;
+  tree hi = combine_long_mul_halves (&seq, loc, l1, h1, l2, h2, narrow_type);
+
+  /* Merging the chain's truncation with a later user cast can retarget the
+     outer convert to any integral type, so convert the narrow result once
+     here (the high part is < 2^N, so the conversion preserves it).  */
+  gimple *result_stmt;
+  tree lhs_type = TREE_TYPE (narrow_lhs);
+  if (useless_type_conversion_p (lhs_type, narrow_type))
+    result_stmt = gimple_build_assign (narrow_lhs, hi);
+  else
+    result_stmt = gimple_build_assign (narrow_lhs, NOP_EXPR, hi);
+  gimple_set_location (result_stmt, loc);
+  gimple_seq_add_stmt (&seq, result_stmt);
+
+  gsi_replace_with_seq (gsi, seq, true);
+
+  /* Clean up the shift and the 2N mult now -- LTRANS runs no DCE between
+     widening_mul and expand, and a dead 2N mult would abort expand_mult.
+     Dead upstream (T_2N) casts, if any, are harmless NOP_EXPRs and land
+     with normal DCE.  */
+  if (has_zero_uses (gimple_assign_lhs (shift_stmt)))
+    {
+      gimple_stmt_iterator dgsi = gsi_for_stmt (shift_stmt);
+      gsi_remove (&dgsi, true);
+      release_defs (shift_stmt);
+    }
+
+  /* The mult is either dead (low half recomputed elsewhere) or now read only
+     for its low half.  */
+  gimple_stmt_iterator mgsi = gsi_for_stmt (mult_stmt);
+  finish_long_mul_low_half (&mgsi);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Lowered long-mul high-part chain.\n");
+  return true;
+}
+
+/* True when pass_optimize_widening_mul will run.  Shared with the
+   forwprop long-multiply recognizer so its wide-chain emit stays
+   paired with the lowering that rescues an unsupported 2N shape.
+   The -Og pipeline (pass_all_optimizations_g) does not contain
+   pass_optimize_widening_mul at all, so -Og -fexpensive-optimizations
+   must not enable the emit: the unlowered 2N multiply would reach
+   expand as an unexpandable mode (e.g. OImode) and ICE.
+   -fdisable-tree-widening_mul is not observed.  */
+
+bool
+optimize_widening_mul_active_p (void)
+{
+  return flag_expensive_optimizations && optimize && !optimize_debug;
+}
+
 /* Find integer multiplications where the operands are extended from
    smaller types, and replace the MULT_EXPR with a WIDEN_MULT_EXPR
    or MULT_HIGHPART_EXPR where appropriate.  */
@@ -6558,7 +7241,7 @@ public:
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return flag_expensive_optimizations && optimize;
+      return optimize_widening_mul_active_p ();
     }
 
   unsigned int execute (function *) final override;
@@ -6626,6 +7309,8 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	  switch (code)
 	    {
 	    case MULT_EXPR:
+	      if (narrow_long_mul_low_half (&gsi))
+		break;
 	      if (!convert_mult_to_widen (stmt, &gsi)
 		  && !convert_expand_mult_copysign (stmt, &gsi)
 		  && convert_mult_to_fma (stmt,
@@ -6692,6 +7377,16 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      match_unsigned_saturation_mul (&gsi, as_a<gassign *> (stmt));
 	      match_unsigned_saturation_trunc (&gsi, as_a<gassign *> (stmt));
 	      match_saturation_add_with_assign (&gsi, as_a<gassign *> (stmt));
+	      /* fall-through  */
+	    case CONVERT_EXPR:
+	      /* The long-multiply recognizer's high-part emit ends in an
+		 outer convert.  If the trailing cast+mult+shift+cast
+		 chain has no expansion strategy at the 2N width, lower
+		 the whole chain to a longhand high-part at narrow
+		 precision.  */
+	      if (gsi_stmt (gsi) == stmt
+		  && lower_long_mul_high_chain (&gsi))
+		continue;
 	      break;
 
 	    default:;
@@ -6768,7 +7463,24 @@ pass_optimize_widening_mul::execute (function *fun)
   calculate_dominance_info (CDI_DOMINATORS);
   renumber_gimple_stmt_uids (cfun);
 
+  long_mul_phi_halves = new hash_map<tree, long_mul_halves>;
+
   math_opts_dom_walker (&cfg_changed).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+  /* A 2N multiply the target cannot expand would abort expand_mult.  Every
+     statement has been through the lowerings above, so one left here matched
+     none of them.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fun)
+    for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+      {
+	gimple *stmt = gsi_stmt (gsi);
+	gsi_next (&gsi);
+	narrow_long_mul_halves (stmt);
+      }
+
+  delete long_mul_phi_halves;
+  long_mul_phi_halves = NULL;
 
   statistics_counter_event (fun, "widening multiplications inserted",
 			    widen_mul_stats.widen_mults_inserted);

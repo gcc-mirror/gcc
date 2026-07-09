@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "gimple-range.h"
 #include "tree-ssa-dce.h"
+#include "tree-ssa-math-opts.h"
 
 /* This pass propagates the RHS of assignment statements into use
    sites of the LHS of the assignment.  It's basically a specialized
@@ -4512,14 +4513,19 @@ long_mul_classify_match (const vec<long_mul_summand> &summands,
 			 tree *out_op0, tree *out_op1)
 {
   /* HIGH_PART rows emit a 2N-bit multiply that pass_optimize_widening_mul
-     converts to a WIDEN_MULT_EXPR or a MULT_HIGHPART_EXPR; LOW_PART rows
-     emit a plain MULT_EXPR.  Emission needs a 2N mode the target can
-     multiply, since one it cannot would reach RTL expand.  */
+     consumes -- either via WIDEN_MULT_EXPR / MULT_HIGHPART conversion when
+     the target has a native 2N multiply, or via lower_long_mul_high_chain
+     when it does not.  LOW_PART rows emit a plain MULT_EXPR.  Emission
+     needs a 2N mode to exist in the mode table AND the widening_mul pass
+     to be active: without the pass, the emit could reach RTL expand as an
+     unexpandable 2N multiply (e.g. OImode).  BITINT_TYPE is
+     refused -- the long_mul_high_chain atom excludes it.  */
   scalar_int_mode mode, wide_mode;
   bool can_emit_high
-    = is_a <scalar_int_mode> (TYPE_MODE (lhs_type), &mode)
-      && GET_MODE_2XWIDER_MODE (mode).exists (&wide_mode)
-      && targetm.scalar_mode_supported_p (wide_mode);
+    = optimize_widening_mul_active_p ()
+      && TREE_CODE (lhs_type) != BITINT_TYPE
+      && is_a <scalar_int_mode> (TYPE_MODE (lhs_type), &mode)
+      && GET_MODE_2XWIDER_MODE (mode).exists (&wide_mode);
 
   for (const long_mul_row &row : long_mul_table)
     {

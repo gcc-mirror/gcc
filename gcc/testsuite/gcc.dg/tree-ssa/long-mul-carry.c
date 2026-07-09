@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-forwprop-details" } */
+/* { dg-options "-O3 -fdump-tree-forwprop-details -fdump-tree-widening_mul-details" } */
 
 typedef __UINT32_TYPE__ uint32_t;
 typedef __UINT64_TYPE__ uint64_t;
@@ -372,10 +372,14 @@ uint32_t mulh_carry_phi_neg (uint32_t x, uint32_t y)
 /* On targets with __int128 support the two 128-bit highparts also
    fold; without it they are elided by #ifdef and the count drops
    by 2.  */
-/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 10 "forwprop1" { target int128 } } } */
-/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 8 "forwprop1" { target { ! int128 } } } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 10 "forwprop1" { target { oi_mode && int128 } } } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 8 "forwprop1" { target { ! { oi_mode && int128 } } } } } */
 /* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 2 "forwprop2" } } */
 /* { dg-final { scan-tree-dump-times "Long multiplication low part folded\\." 2 "forwprop1" } } */
 /* Three PHI-form highparts, one per polarity pair (gt via mulh_carry_phi
    and mulh_carry_long_phi, le via mulh_carry_phi_neg).  */
 /* { dg-final { scan-tree-dump-times "Long multiplication high part folded \\(carry PHI\\)" 3 "forwprop1" } } */
+/* Only the two 128-bit (OImode) chains are lowered.  sparc64 and hppa64
+   have OImode and __int128 but no native DImode high part, so their u64
+   chains lower too and the count would exceed 2; exclude them.  */
+/* { dg-final { scan-tree-dump-times "Lowered long-mul high-part chain" 2 "widening_mul" { target { { oi_mode && int128 } && { ! { sparc*-*-* hppa*-*-* } } } } } } */

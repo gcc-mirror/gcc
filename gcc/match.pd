@@ -12931,6 +12931,26 @@ and,
       (mul_lo @mul_hilo0 INTEGER_CST@0)
       (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1))
     (mul_lo @mul_hilo1 INTEGER_CST@0)))
+/* Long-multiply high-part emit chain produced by forwprop's recognizer:
+
+     (N) ((2N) op1 * (2N) op2) >> N
+
+   `(convert? @X)` accepts a bare operand (PRE may hoist the (T_2N) cast
+   out into a PHI on a shared slot).  The lowering splits an operand
+   wider than T_N into T_N halves rather than truncating it.  Wide type
+   must be unsigned mode-precision integer of even width; BITINT_TYPE is
+   refused.  */
+(match (long_mul_high_chain @0 @1)
+  (convert (rshift (mult:c@3 (convert? @0) (convert? @1)) INTEGER_CST@2))
+  (with { tree wide_type = TREE_TYPE (@3); }
+  (if (INTEGRAL_TYPE_P (wide_type)
+       && TYPE_UNSIGNED (wide_type)
+       && type_has_mode_precision_p (wide_type)
+       && TREE_CODE (wide_type) != BITINT_TYPE
+       && TYPE_PRECISION (wide_type) >= 8
+       && (TYPE_PRECISION (wide_type) & 3) == 0
+       && tree_fits_uhwi_p (@2)
+       && tree_to_uhwi (@2) * 2 == TYPE_PRECISION (wide_type)))))
 #endif
 
 /* Floatint point/integer comparison and integer->integer
