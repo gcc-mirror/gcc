@@ -6813,6 +6813,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (lshift (convert (bit_xor (convert:boolean_type_node @0)
 				{ boolean_true_node; })) { shift; })))))))
 
+/* Recognize a 2-arg PHI of the form
+     PHI<base + pow2, base>
+   guarded by an unsigned compare on (@0, @1).  @1 is captured without
+   further structure; the long-mul fold in tree-ssa-forwprop.cc
+   classifies it to drive a PHI-form carry summand.  The consumer
+   treats the carry as strict @0 > @1, so each polarity's compare
+   must encode that same condition:
+     cond_carry_add:     true edge selects (base + pow2), so the
+			 compare itself must be @0 > @1.
+     cond_carry_add_neg: true edge selects base, so the compare's
+			 negation must be @0 > @1, i.e. the
+			 compare itself must be @0 <= @1.
+   Matches the 2-arg PHI form via cond^.  */
+(if (INTEGRAL_TYPE_P (type)
+     && TYPE_UNSIGNED (type)
+     && type_has_mode_precision_p (type))
+ (match (cond_carry_add @0 @1 @2 @3)
+  (cond^ (gt @0 @1) (plus @2 integer_pow2p@3) @2))
+ (match (cond_carry_add @0 @1 @2 @3)
+  (cond^ (lt @1 @0) (plus @2 integer_pow2p@3) @2))
+ (match (cond_carry_add_neg @0 @1 @2 @3)
+  (cond^ (le @0 @1) @2 (plus @2 integer_pow2p@3)))
+ (match (cond_carry_add_neg @0 @1 @2 @3)
+  (cond^ (ge @1 @0) @2 (plus @2 integer_pow2p@3))))
+
 /* (a > 1) ? 0 : (cast)a is the same as (cast)(a == 1)
    for unsigned types. */
 (simplify

@@ -308,6 +308,74 @@ v2i32 mulh_carry_low_sum_v2i32 (v2i32 x, v2i32 y)
   return result;
 }
 
-/* { dg-final { scan-tree-dump-times "Long multiplication high part folded." 8 "forwprop1" } } */
-/* { dg-final { scan-tree-dump-times "Long multiplication high part folded." 2 "forwprop2" } } */
-/* { dg-final { scan-tree-dump-times "Long multiplication low part folded." 2 "forwprop1" } } */
+/* PHI-form coverage: the carry summand is the join of a 2-arg PHI
+   guarded by an unsigned compare, recognized by cond_carry_add /
+   cond_carry_add_neg and folded by match_long_mul_phi.  */
+
+uint32_t mulh_carry_phi (uint32_t x, uint32_t y)
+{
+    uint32_t x_hi = x >> 16;
+    uint32_t x_lo = x & 0xFFFF;
+    uint32_t y_hi = y >> 16;
+    uint32_t y_lo = y & 0xFFFF;
+    uint32_t mulhilo = x_hi * y_lo;
+    uint32_t mullohi = x_lo * y_hi;
+    uint32_t cross_sum = mulhilo + mullohi;
+    uint32_t mullolo = x_lo * y_lo;
+    uint32_t add_cross_sum = cross_sum + (mullolo >> 16);
+    uint32_t add = x_hi * y_hi + (add_cross_sum >> 16);
+    if (add_cross_sum < mulhilo)
+      add += (uint32_t)1 << 16;
+    return add;
+}
+
+uint64_t mulh_carry_long_phi (uint64_t x, uint64_t y)
+{
+  uint64_t x_lo = x & 0xFFFFFFFF;
+  uint64_t x_hi = x >> 32;
+  uint64_t y_lo = y & 0xFFFFFFFF;
+  uint64_t y_hi = y >> 32;
+  uint64_t y_lo_x_hi = y_lo * x_hi;
+  uint64_t y_hi_x_hi = y_hi * x_hi;
+  uint64_t y_hi_x_lo = y_hi * x_lo;
+  uint64_t y_lo_x_lo = y_lo * x_lo;
+  uint64_t cross_sum = y_hi_x_lo + y_lo_x_hi;
+  uint64_t cross_sum_lo = cross_sum & 0xFFFFFFFF;
+  uint64_t cross_sum_hi = cross_sum >> 32;
+  uint64_t low_accum = cross_sum_lo + (y_lo_x_lo >> 32);
+  uint64_t hw64 = y_hi_x_hi + cross_sum_hi + (low_accum >> 32);
+  if (cross_sum < y_lo_x_hi)
+    hw64 += (uint64_t)1 << 32;
+  return hw64;
+}
+
+/* PHI-form, cond_carry_add_neg (negated branch, carry-on-false).  */
+uint32_t mulh_carry_phi_neg (uint32_t x, uint32_t y)
+{
+    uint32_t x_hi = x >> 16;
+    uint32_t x_lo = x & 0xFFFF;
+    uint32_t y_hi = y >> 16;
+    uint32_t y_lo = y & 0xFFFF;
+    uint32_t mulhilo = x_hi * y_lo;
+    uint32_t mullohi = x_lo * y_hi;
+    uint32_t cross_sum = mulhilo + mullohi;
+    uint32_t mullolo = x_lo * y_lo;
+    uint32_t add_cross_sum = cross_sum + (mullolo >> 16);
+    uint32_t add = x_hi * y_hi + (add_cross_sum >> 16);
+    if (add_cross_sum >= mulhilo)
+      ;
+    else
+      add += (uint32_t)1 << 16;
+    return add;
+}
+
+/* On targets with __int128 support the two 128-bit highparts also
+   fold; without it they are elided by #ifdef and the count drops
+   by 2.  */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 10 "forwprop1" { target int128 } } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 8 "forwprop1" { target { ! int128 } } } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 2 "forwprop2" } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication low part folded\\." 2 "forwprop1" } } */
+/* Three PHI-form highparts, one per polarity pair (gt via mulh_carry_phi
+   and mulh_carry_long_phi, le via mulh_carry_phi_neg).  */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded \\(carry PHI\\)" 3 "forwprop1" } } */
