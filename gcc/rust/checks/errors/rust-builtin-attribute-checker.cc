@@ -389,6 +389,7 @@ const std::unordered_map<std::string, std::function<void (AST::Attribute &)>>
     {Attrs::RUSTC_ALLOCATOR, handlers::expect_no_input},
     {Attrs::RUSTC_ALLOCATOR_NOUNWIND, handlers::expect_no_input},
     {Attrs::GLOBAL_ALLOCATOR, handlers::expect_no_input},
+    {Attrs::RUSTC_CONVERSION_SUGGESTION, handlers::expect_no_input},
 };
 
 tl::optional<std::function<void (AST::Attribute &)>>
@@ -449,6 +450,19 @@ check_valid_attribute_for_item (const AST::Attribute &attr,
 		     "the %<#[%s]%> attribute may only be applied "
 		     "to static items",
 		     attr.get_path ().as_string ().c_str ());
+    }
+  else if (attr.get_path () == Values::Attributes::RUSTC_CONVERSION_SUGGESTION)
+    {
+      auto attr_path = attr.get_path ().as_string ();
+      rust_warning_at (attr.get_locus (), 0,
+		       "%<#[%s]%> is not implemented yet and has no effect",
+		       attr_path.c_str ());
+      if (item.get_item_kind () != AST::Item::Kind::Function)
+	{
+	  rust_error_at (item.get_locus (),
+			 "%<#[%s]%> can only be applied to functions",
+			 attr_path.c_str ());
+	}
     }
 }
 

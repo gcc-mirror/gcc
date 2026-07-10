@@ -115,6 +115,9 @@ public:
 
   static constexpr auto &RUSTC_ALLOCATOR = "rustc_allocator";
   static constexpr auto &RUSTC_ALLOCATOR_NOUNWIND = "rustc_allocator_nounwind";
+
+  static constexpr auto &RUSTC_CONVERSION_SUGGESTION
+    = "rustc_conversion_suggestion";
 };
 } // namespace Values
 } // namespace Rust
