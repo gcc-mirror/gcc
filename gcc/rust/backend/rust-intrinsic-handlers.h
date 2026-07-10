@@ -104,6 +104,8 @@ tree write_bytes_handler (Context *ctx, TyTy::FnType *fntype,
 			  location_t expr_locus);
 tree arith_offset_handler (Context *ctx, TyTy::FnType *fntype,
 			   location_t expr_locus);
+tree assert_zero_valid_handler (Context *ctx, TyTy::FnType *fntype,
+				location_t expr_locus);
 
 } // namespace handlers
 

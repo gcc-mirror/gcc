@@ -2176,6 +2176,57 @@ arith_offset_handler (Context *ctx, TyTy::FnType *fntype, location_t expr_locus)
   return fndecl;
 }
 
+/**
+ * pub fn assert_zero_valid<T>();
+ *
+ * TODO: Since gccrs currently lacks comprehensive layout engine support for
+ * validity ranges (such as `rustc_layout_scalar_valid_range_start`), we cannot
+ * accurately determine if a type is safely zeroable. Therefore, this is
+ * implemented as a temporary no-op stub that always returns void (unit) and
+ * succeeds for all types.
+ */
+tree
+assert_zero_valid_handler (Context *ctx, TyTy::FnType *fntype, location_t)
+{
+  rust_assert (fntype->get_params ().size () == 0);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  rust_assert (fntype->get_num_substitutions () == 1);
+  auto &param_mapping = fntype->get_substs ().at (0);
+  const auto param_tyty = param_mapping.get_param_ty ();
+  auto resolved_tyty = param_tyty->resolve ();
+
+  // Safely resolve the template parameter type to ensure monomorphization
+  // works.
+  // Suppress unused-variable warning since layout verification is a FIXME.
+  [[gnu::unused]] tree template_parameter_type
+    = TyTyResolveCompile::compile (ctx, resolved_tyty);
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN assert_zero_valid FN BODY BEGIN
+
+  // TODO: Implement layout verification via template_parameter_type once
+  // niche-filling and valid scalar ranges are supported in the layout engine.
+  // If invalid, this should emit a panic.
+
+  // we always return unit for now.
+  auto return_statement
+    = Backend::return_statement (fndecl, void_node, UNDEF_LOCATION);
+  ctx->add_statement (return_statement);
+
+  // BUILTIN assert_zero_valid FN BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
 } // namespace handlers
 } // namespace Compile
 } // namespace Rust
