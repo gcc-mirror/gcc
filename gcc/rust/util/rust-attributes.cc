@@ -95,6 +95,7 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::NON_EXHAUSTIVE, TYPE_CHECK},
      {Attrs::RUSTFMT, EXTERNAL},
      {Attrs::TEST, CODE_GENERATION},
+     {Attrs::NEEDS_ALLOCATOR, CODE_GENERATION},
      {Attrs::RUSTC_ALLOCATOR, CODE_GENERATION},
      {Attrs::RUSTC_ALLOCATOR_NOUNWIND, CODE_GENERATION},
      {Attrs::GLOBAL_ALLOCATOR, CODE_GENERATION}};

@@ -38,6 +38,13 @@ check_inner_attribute (const AST::Attribute &attribute)
   if (Attributes::valid_outer_attribute (result.name))
     rust_error_at (attribute.get_locus (),
 		   "attribute cannot be used at crate level");
+
+  if (result.name == Values::Attributes::NEEDS_ALLOCATOR)
+    {
+      rust_warning_at (attribute.get_locus (), 0,
+		       "%<#[%s]%> is not implemented yet and has no effect",
+		       attribute.as_string ().c_str ());
+    }
 }
 
 /**

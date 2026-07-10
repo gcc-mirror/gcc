@@ -111,6 +111,8 @@ public:
   static constexpr auto &RUSTC_ARGS_REQUIRED_CONST
     = "rustc_args_required_const";
 
+  static constexpr auto &NEEDS_ALLOCATOR = "needs_allocator";
+
   static constexpr auto &RUSTC_ALLOCATOR = "rustc_allocator";
   static constexpr auto &RUSTC_ALLOCATOR_NOUNWIND = "rustc_allocator_nounwind";
 };
