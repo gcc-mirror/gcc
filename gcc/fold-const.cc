@@ -3002,14 +3002,21 @@ combine_comparisons (enum tree_code code, enum tree_code lcode,
             || (code == TRUTH_ANDIF_EXPR && !(lcompcode & COMPCODE_UNORD)))
           rtrap = false;
 
+	/* Allow combining of `a != b && a < b` since NAN will cause != to be
+	   always true, and `a < b` will cause a trap. This is trap neutral.  */
+	if (code == TRUTH_ANDIF_EXPR && lcompcode == COMPCODE_NE && rtrap && trap)
+	  ;
+	/* Likewise of `a == b || a < b` for the same reason.  */
+	else if (code == TRUTH_ORIF_EXPR && lcompcode == COMPCODE_EQ && rtrap && trap)
+	  ;
         /* If the comparison was short-circuited, and only the RHS
 	   trapped, we may now generate a spurious trap.  */
-	if (rtrap && !ltrap
-	    && (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR))
+	else if (rtrap && !ltrap
+		 && (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR))
 	  return ERROR_MARK;
 
 	/* If we changed the conditions that cause a trap, we lose.  */
-	if ((ltrap || rtrap) != trap)
+	else if ((ltrap || rtrap) != trap)
 	  return ERROR_MARK;
       }
 
