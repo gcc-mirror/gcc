@@ -198,6 +198,15 @@ NameResolutionContext::resolve_path (
 	iterator = *res;
       else
 	return tl::nullopt;
+
+      // if find_starting_point used all segments, return early
+      if (iterator == segments.end ())
+	{
+	  if (N == Namespace::Types)
+	    return Rib::Definition::NonShadowable (starting_point.get ().id);
+	  else
+	    return tl::nullopt;
+	}
     }
 
   // We do the first part of path resolution exclusively in the types NS - this

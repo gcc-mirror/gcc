@@ -463,9 +463,13 @@ ForeverStack<N>::find_starting_point (
 {
   auto iterator = segments.begin ();
 
-  for (; !is_last (iterator, segments); iterator++)
+  for (; iterator != segments.end (); iterator++)
     {
       auto &seg = *iterator;
+
+      // don't include a final self segment
+      if (is_last (iterator, segments) && seg.is_lower_self_seg ())
+	break;
 
       bool is_self_or_crate
 	= seg.is_crate_path_seg () || seg.is_lower_self_seg ();
@@ -487,12 +491,12 @@ ForeverStack<N>::find_starting_point (
 	}
       if (seg.is_lower_self_seg ())
 	{
-	  // insert segment resolution and exit
+	  // insert segment resolution
 	  starting_point = find_closest_module (starting_point);
 	  insert_segment_resolution (Usage (seg.node_id),
 				     Definition (starting_point.get ().id), N);
-	  iterator++;
-	  break;
+	  // don't exit -- we could see some "super" segments
+	  continue;
 	}
       if (seg.is_super_path_seg ())
 	{
