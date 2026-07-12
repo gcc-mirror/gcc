@@ -10352,10 +10352,7 @@ alloc_scalar_allocatable_subcomponent (stmtblock_t *block, tree comp,
 	    }
 	  else
 	    {
-	      if (expr2->ts.type == BT_DERIVED)
-		tmp = gfc_get_symbol_decl (expr2->ts.u.derived);
-	      else
-		tmp = gfc_typenode_for_spec (&expr2->ts);
+	      tmp = gfc_typenode_for_spec (&expr2->ts);
 	      size = TYPE_SIZE_UNIT (tmp);
 	    }
 	}
