@@ -155,7 +155,9 @@ bb_no_side_effects_p (basic_block bb)
       gassign *ass;
       enum tree_code rhs_code;
       if (gimple_has_side_effects (stmt)
-	  || gimple_could_trap_p (stmt)
+	  /* Ignore GIMPLE_COND for trapping.  */
+	  || (!is_a<gcond*>(stmt)
+	      && gimple_could_trap_p (stmt))
 	  || gimple_vdef (stmt)
 	  /* We need to rewrite stmts with undefined overflow to use
 	     unsigned arithmetic but cannot do so for signed division.  */
@@ -841,6 +843,99 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
   gcond *outer_cond = safe_dyn_cast <gcond *> (*gsi_last_bb (outer_cond_bb));
   if (!outer_cond)
     return false;
+
+  /* If the inner condition can trap, there is no combining unless
+     the operands are the same.  */
+  if (gimple_could_trap_p (inner_cond))
+    {
+      if (!operand_equal_p (gimple_cond_lhs (inner_cond),
+			    gimple_cond_lhs (outer_cond))
+	  || !operand_equal_p (gimple_cond_rhs (inner_cond),
+			       gimple_cond_rhs (outer_cond)))
+	return false;
+     // We don't check if the outer will cause a trap as combine_comparisons
+     // will take care if the combining happens or not. Specifically in the
+     // case of losing a trap or cause a trap that was not there before.
+     tree res = NULL_TREE;
+     tree_code outer_cond_code = gimple_cond_code (outer_cond);
+     tree_code inner_cond_code = gimple_cond_code (inner_cond);
+     tree larg = gimple_cond_lhs (inner_cond);
+     tree rarg = gimple_cond_rhs (inner_cond);
+     // Handle `(a && b)`, no inverse
+     if (!inner_inv && !outer_inv)
+	res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ANDIF_EXPR,
+				   outer_cond_code, inner_cond_code,
+				   boolean_type_node, larg, rarg);
+      // If both are inverse, `!a && !b`, then handle it as `!(a || b)`
+      // As that !a or !b are most likely not producing a comparison code.
+      else if (inner_inv && outer_inv)
+	{
+	  res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ORIF_EXPR,
+				     outer_cond_code, inner_cond_code,
+				     boolean_type_node, larg, rarg);
+	  if (res)
+	    res = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (res), res);
+	}
+      else
+	{
+	  // Handles the case where one is inverted and the other is not.
+	  tree_code inner_cond_code1 = inner_cond_code;
+	  tree_code outer_cond_code1 = outer_cond_code;
+	  // Try first `!a && b` and `a && !b`, those might be invertable.
+	  if (inner_inv)
+	    inner_cond_code1 = invert_tree_comparison (inner_cond_code1,
+						       HONOR_NANS (larg));
+	  else if (outer_inv)
+	    outer_cond_code1 = invert_tree_comparison (outer_cond_code1,
+						       HONOR_NANS (larg));
+	  if (inner_cond_code1 != ERROR_MARK && outer_cond_code1 != ERROR_MARK)
+	    res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ANDIF_EXPR,
+				       outer_cond_code1, inner_cond_code1,
+				       boolean_type_node, larg, rarg);
+	  // Otherwise, we need to try `!(!a || b)
+	  else if (inner_cond_code1 == ERROR_MARK)
+	    {
+	      // a && !b -> !(!a || b)
+	      outer_cond_code1 = invert_tree_comparison (outer_cond_code,
+							 HONOR_NANS (larg));
+	      if (outer_cond_code1 != ERROR_MARK)
+		res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ORIF_EXPR,
+					   outer_cond_code1, inner_cond_code,
+					   boolean_type_node, larg, rarg);
+	      if (res)
+		res = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (res), res);
+	    }
+	  // Or `!(a || !b)`
+	  else
+	    {
+	      // !a && b -> !(a || !b)
+	      inner_cond_code1 = invert_tree_comparison (inner_cond_code,
+							 HONOR_NANS (larg));
+	      if (inner_cond_code1 != ERROR_MARK)
+		res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ORIF_EXPR,
+					   outer_cond_code, inner_cond_code1,
+					   boolean_type_node, larg, rarg);
+	      if (res)
+		res = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (res), res);
+	    }
+	}
+      if (res)
+	{
+	  if (!ifcombine_replace_cond (inner_cond, inner_inv,
+				       outer_cond, outer_inv,
+				       res, true, NULL_TREE))
+	    return false;
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "optimizing trapping cond to ");
+	      print_generic_expr (dump_file, res);
+	      fprintf (dump_file, "\n");
+	    }
+	  return true;
+	}
+      return false;
+    }
 
   /* niter analysis does not cope with boolean typed loop exit conditions, nor
      with boolean loop guards.  Avoid turning an analyzable loop exit or guard
