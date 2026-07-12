@@ -1846,8 +1846,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 		    gfc_add_decl_to_parent_function (length);
 		}
 
-	      gcc_assert (sym->backend_decl == current_function_decl
-			  ? DECL_CONTEXT (length) == current_function_decl
+	      /* When the symbol's own backend_decl is a FUNCTION_DECL, its
+		 DECL_CONTEXT is where that function itself is declared, not
+		 where its locals live.  */
+	      gcc_assert (TREE_CODE (sym->backend_decl) == FUNCTION_DECL
+			  ? DECL_CONTEXT (length) == sym->backend_decl
 			  : (DECL_CONTEXT (sym->backend_decl)
 			     == DECL_CONTEXT (length)));
 
