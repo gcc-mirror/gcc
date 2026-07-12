@@ -302,7 +302,6 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
       rust_assert (type.number_of_variants () == 1);
       TyTy::VariantDef &variant = *type.get_variants ().at (0);
 
-      rust_assert (variant.num_fields () <= 1);
       if (variant.num_fields () == 0)
 	{
 	  // 0-field transparent repr
@@ -313,12 +312,26 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	  // For now, treat it as a unit struct
 	  type_record = Backend::struct_type ({});
 	}
-      else
+      else if (variant.num_fields () == 1)
 	{
 	  // single field transparent repr
 	  const TyTy::StructFieldType *field = variant.get_field_at_index (0);
 	  type_record
 	    = TyTyResolveCompile::compile (ctx, field->get_field_type ());
+	}
+      else
+	{
+	  // more than one field - typechecking already ensures there's only one
+	  // non-zero-sized field, just compile accessor for that
+	  // non-zero-sized.
+	  for (size_t i = 0; i < variant.num_fields (); i++)
+	    {
+	      auto field_ty = variant.get_field_at_index (i)->get_field_type ();
+	      if (!field_ty->is_zero_sized ())
+		{
+		  type_record = TyTyResolveCompile::compile (ctx, field_ty);
+		}
+	    }
 	}
     }
 

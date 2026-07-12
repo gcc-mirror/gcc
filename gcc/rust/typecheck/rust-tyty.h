@@ -256,6 +256,10 @@ public:
   // primitives
   bool is_concrete () const;
 
+  // returns if the type is a zero-sized type, which is a type that occupies no
+  // space in memory
+  bool is_zero_sized () const;
+
   // return the type-kind
   TypeKind get_kind () const;
 
@@ -775,6 +779,8 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
+  bool is_zero_sized () const;
+
   size_t num_fields () const;
 
   BaseType *get_field (size_t index) const;
@@ -973,6 +979,8 @@ public:
   std::string as_string () const override;
 
   bool is_equal (const BaseType &other) const override;
+
+  bool is_zero_sized () const;
 
   std::string get_identifier () const { return identifier; }
 
@@ -1374,6 +1382,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool is_equal (const BaseType &other) const override;
+
+  bool is_zero_sized () const;
 
   BaseType *get_element_type () const;
   const TyVar &get_var_element_type () const;

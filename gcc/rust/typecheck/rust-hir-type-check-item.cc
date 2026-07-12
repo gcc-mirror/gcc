@@ -343,14 +343,6 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
   const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
   TyTy::ADTType::ReprOptions repr
     = parse_repr_options (attrs, struct_decl.get_locus ());
-  if (repr.repr_kind == TyTy::ADTType::ReprKind::TRANSPARENT
-      && struct_decl.get_fields ().size () > 1)
-    {
-      rust_error_at (struct_decl.get_locus (), ErrorCode::E0690,
-		     "transparent struct needs at most one field with "
-		     "non-trivial size or alignment, but has %lu",
-		     (unsigned long) struct_decl.get_fields ().size ());
-    }
 
   std::vector<TyTy::StructFieldType *> fields;
   for (auto &field : struct_decl.get_fields ())
@@ -371,6 +363,24 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 				     field_type, field.get_locus ());
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
+    }
+
+  if (repr.repr_kind == TyTy::ADTType::ReprKind::TRANSPARENT)
+    {
+      size_t num_non_zst = 0;
+      for (auto &field : fields)
+	{
+	  if (!field->get_field_type ()->is_zero_sized ())
+	    num_non_zst++;
+	}
+      if (num_non_zst > 1)
+	{
+	  rust_error_at (struct_decl.get_locus (), ErrorCode::E0690,
+			 "transparent struct needs at most one field with "
+			 "non-trivial size or alignment, but has %lu",
+			 (unsigned long) struct_decl.get_fields ().size ());
+	  return;
+	}
     }
 
   auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
