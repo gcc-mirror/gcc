@@ -813,6 +813,70 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
   return NULL;
 }
 
+/* one_feeding_comparison_into_p returns true if BB has one comparison
+   statement and it sets STMT to that statement.  Note the comparison can
+   be trapping too.  */
+static bool
+one_feeding_comparison_into_p (basic_block bb,
+			       gimple *phi,
+			       gassign *&assign)
+{
+  assign = nullptr;
+  gimple *stmt = nullptr;
+
+  if (empty_block_p (bb))
+    return false;
+
+  if (!single_pred_p (bb))
+    return false;
+
+  if (!gimple_seq_empty_p (phi_nodes (bb)))
+    return false;
+
+  gimple_stmt_iterator gsi;
+  gsi = gsi_start_nondebug_after_labels_bb (bb);
+  while (!gsi_end_p (gsi))
+    {
+      gimple *s = gsi_stmt (gsi);
+      gsi_next_nondebug (&gsi);
+      /* Skip over Predict and nop statements. */
+      if (gimple_code (s) == GIMPLE_PREDICT
+	  || gimple_code (s) == GIMPLE_NOP)
+	continue;
+      /* If there is more one statement return false. */
+      if (stmt)
+	return false;
+      stmt = s;
+    }
+
+  if (!stmt)
+    return false;
+
+  if (gimple_vuse (stmt))
+    return false;
+
+  gassign *a = dyn_cast<gassign*>(stmt);
+  if (!a || TREE_CODE_CLASS (gimple_assign_rhs_code (a)) != tcc_comparison)
+    return false;
+
+  tree lhs = gimple_assign_lhs (a);
+
+  gimple *use_stmt;
+  use_operand_p use_p;
+  /* Allow only a statement which feeds into the other stmt.  */
+  if (!lhs || TREE_CODE (lhs) != SSA_NAME
+      || !single_imm_use (lhs, &use_p, &use_stmt)
+      || use_stmt != phi)
+    return false;
+
+  // Don't handle non-call exceptions
+  if (stmt_could_throw_p (cfun, a))
+    return false;
+
+  assign = a;
+  return true;
+}
+
 /* empty_bb_or_one_feeding_into_p returns true if bb was empty basic block
    or it has one cheap preparation statement that feeds into the PHI
    statement and it sets STMT to that statement. */
@@ -1196,6 +1260,142 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
   statistics_counter_event (cfun, "match-simplify PHI replacement", 1);
 
   /* Note that we optimized this PHI.  */
+  return true;
+}
+
+/*  The function comparison_combine tries to handle cases like:
+    if (a CMP0 b)
+      d = a CMP1 b;
+    PHI<d, [0,1]>
+    This has to be seperately as `a CMP1 b` might be trapping and
+    match_simplify_replacement does not handle trapping statements.
+    Returns true if a replacement happens.  */
+
+static bool
+comparison_combine (basic_block cond_bb, basic_block middle_bb,
+		    basic_block middle_bb_alt,
+		    edge e0, edge e1, gphi *phi,
+		    tree arg0, tree arg1, bool threeway_p)
+{
+  gcond *stmt;
+  gimple_stmt_iterator gsi;
+  edge true_edge, false_edge;
+  tree arg_true, arg_false;
+
+  if (!types_compatible_p (boolean_type_node, TREE_TYPE (arg0)))
+    return false;
+
+  /* Do not make conditional undefs unconditional.  */
+  if ((TREE_CODE (arg0) == SSA_NAME
+       && ssa_name_maybe_undef_p (arg0))
+      || (TREE_CODE (arg1) == SSA_NAME
+	  && ssa_name_maybe_undef_p (arg1)))
+    return false;
+
+  stmt = as_a<gcond*>(last_nondebug_stmt (cond_bb));
+
+  // Handle only floating point types as they only trap.
+  // The match and simplify will handle the non-trapping case.
+  if (!FLOAT_TYPE_P (TREE_TYPE (gimple_cond_lhs (stmt))))
+    return false;
+
+  /* Needs to be PHI<[1,0],arg1> PHI<arg0,[1,0]>.  */
+  if (((!integer_onep (arg0) && !integer_zerop (arg0))
+        || TREE_CODE (arg1) != SSA_NAME)
+      && ((!integer_onep (arg1) && !integer_zerop (arg1))
+           || TREE_CODE (arg0) != SSA_NAME))
+    return false;
+
+  gassign *other_cmp = nullptr;
+  if (!one_feeding_comparison_into_p (middle_bb, phi, other_cmp))
+    {
+      if (!threeway_p || middle_bb == middle_bb_alt)
+	return false;
+      if (!empty_block_p (middle_bb))
+	return false;
+      if (!one_feeding_comparison_into_p (middle_bb_alt, phi, other_cmp))
+	return false;
+    }
+  else if (threeway_p
+	   && middle_bb != middle_bb_alt
+	   && !empty_block_p (middle_bb_alt))
+    return false;
+ 
+  /* We need to know which is the true edge and which is the false
+     edge so that we know when to invert the condition below.  */
+  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
+
+  /* Forward the edges over the middle basic block.  */
+  if (true_edge->dest == middle_bb)
+    true_edge = EDGE_SUCC (true_edge->dest, 0);
+  if (false_edge->dest == middle_bb)
+    false_edge = EDGE_SUCC (false_edge->dest, 0);
+  /* When THREEWAY_P then e1 will point to the edge of the final transition
+     from middle-bb to end.  */
+  if (true_edge == e0)
+    {
+      if (!threeway_p)
+	gcc_assert (false_edge == e1);
+      arg_true = arg0;
+      arg_false = arg1;
+    }
+  else
+    {
+      gcc_assert (false_edge == e0);
+      if (!threeway_p)
+	gcc_assert (true_edge == e1);
+      arg_true = arg1;
+      arg_false = arg0;
+    }
+  if (TREE_CODE (arg_true) == SSA_NAME
+      && arg_true != gimple_assign_lhs (other_cmp))
+    return false;
+  if (TREE_CODE (arg_false) == SSA_NAME
+      && arg_false != gimple_assign_lhs (other_cmp))
+    return false;
+
+  tree larg = gimple_cond_lhs (stmt);
+  tree rarg = gimple_cond_rhs (stmt);
+  if (!operand_equal_p (larg, gimple_assign_rhs1 (other_cmp))
+      || !operand_equal_p (rarg, gimple_assign_rhs2 (other_cmp)))
+    return false;
+
+  tree_code logical;
+  // a CMP0 b ? 1 : a CMP1 b -> `a CMP0 b || a CMP1 b`
+  // a CMP0 b ? a CMP1 b : 1 -> `!(a CMP0 b) || a CMP1 b`
+  
+  // a CMP0 b ? a CMP1 b : 0 -> `a CMP0 b && a CMP1 b`
+  // a CMP0 b ? 0 : a CMP1 b -> `!(a CMP0 b) && a CMP1 b`
+  if (integer_onep (arg_true) || integer_onep (arg_false))
+    logical = TRUTH_ORIF_EXPR;
+  else
+    logical = TRUTH_ANDIF_EXPR;
+  tree_code outer_code = gimple_cond_code (stmt);
+  tree_code inner_code = gimple_assign_rhs_code (other_cmp);
+  // Invert the outter if needed.
+  if (integer_onep (arg_false) || integer_zerop (arg_true))
+    {
+      outer_code = invert_tree_comparison (outer_code,
+					   HONOR_NANS (larg));
+      // In theory could handle it as !((a CMP0 b) LOGICAL' !(a CMP1 b))
+      // Most likely the outer comparison will be EQ/NE which is invertable.
+      if (outer_code == ERROR_MARK)
+	return false;
+    }
+  tree result;
+  tree_code newcmp_code;
+  newcmp_code = combine_comparisons (logical, outer_code, inner_code,
+				     boolean_type_node,
+				     HONOR_NANS (larg), &result);
+  if (newcmp_code == ERROR_MARK)
+    return false;
+  gimple_seq seq = nullptr;
+  if (newcmp_code != INTEGER_CST)
+   result = gimple_build (&seq, newcmp_code, boolean_type_node,
+			  larg, rarg);
+  gsi = gsi_last_bb (cond_bb);
+  gsi_insert_seq_before (&gsi, seq, GSI_CONTINUE_LINKING);
+  replace_phi_edge_with_variable (cond_bb, e1, phi, result);
   return true;
 }
 
@@ -4745,6 +4945,9 @@ pass_phiopt::execute (function *)
       /* Do the replacement of conditional if it can be done.  */
       if (match_simplify_replacement (bb, bb1, bb2, e1, e2, phi,
 				      arg0, arg1, early_p, diamond_p))
+	cfgchanged = true;
+      else if (comparison_combine (bb, bb1, bb2, e1, e2, phi,
+				   arg0, arg1, diamond_p))
 	cfgchanged = true;
       else if (!early_p
 	       && !diamond_p
