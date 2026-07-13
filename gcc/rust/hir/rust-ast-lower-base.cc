@@ -853,6 +853,28 @@ ASTLoweringBase::handle_doc_item_attribute (const ItemWrapper &,
   rust_assert (meta_item);
 }
 
+static void
+warn_if_stub_lang_item (location_t locus, LangItem::Kind kind)
+{
+  switch (kind)
+    {
+    case LangItem::Kind::FUTURE_TRAIT:
+    case LangItem::Kind::POLL:
+    case LangItem::Kind::READY:
+    case LangItem::Kind::PENDING:
+    case LangItem::Kind::GENERATOR:
+    case LangItem::Kind::GENERATOR_STATE:
+    case LangItem::Kind::MAYBE_UNINIT:
+    case LangItem::Kind::BOX_FREE:
+    case LangItem::Kind::DROP_IN_PLACE:
+      rust_warning_at (locus, 0, "%qs is not implemented and has no effect",
+		       LangItem::PrettyString (kind).c_str ());
+      break;
+    default:
+      break;
+    }
+}
+
 void
 ASTLoweringBase::handle_lang_item_attribute (const ItemWrapper &item,
 					     const AST::Attribute &attr)
@@ -863,8 +885,11 @@ ASTLoweringBase::handle_lang_item_attribute (const ItemWrapper &item,
   auto lang_item_type = LangItem::Parse (*lang_item_type_str);
 
   if (lang_item_type)
-    mappings.insert_lang_item (*lang_item_type,
-			       item.get_mappings ().get_defid ());
+    {
+      mappings.insert_lang_item (*lang_item_type,
+				 item.get_mappings ().get_defid ());
+      warn_if_stub_lang_item (attr.get_locus (), *lang_item_type);
+    }
   else
     rust_error_at (attr.get_locus (), "unknown lang item");
 }

@@ -160,9 +160,21 @@ public:
     DISCRIMINANT_KIND,
 
     MANUALLY_DROP,
+    DROP_IN_PLACE,
 
     EXCHANGE_MALLOC,
     OWNED_BOX,
+    OOM,
+    ALLOC_LAYOUT,
+    BOX_FREE,
+    MAYBE_UNINIT,
+
+    FUTURE_TRAIT,
+    POLL,
+    READY,
+    PENDING,
+    GENERATOR,
+    GENERATOR_STATE,
   };
 
   static const BiMap<std::string, Kind> lang_items;
