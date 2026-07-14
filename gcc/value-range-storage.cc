@@ -569,6 +569,11 @@ frange_storage::get_frange (frange &r, tree type) const
       r.set_undefined ();
       return;
     }
+  if (m_kind == VR_VARYING)
+    {
+      r.set_varying (type);
+      return;
+    }
 
   // Rebuild piecewise, like irange_storage::get_irange().
   r.set_undefined ();

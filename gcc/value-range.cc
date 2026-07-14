@@ -1157,6 +1157,60 @@ frange::set_pairs (frange_pair *pairs, unsigned n)
     verify_range ();
 }
 
+// Set the range to everything except the closed interval [MIN, MAX], which
+// takes two sub-ranges:
+//
+//	[-INF, prev (MIN)] U [next (MAX), +INF]
+//
+// Either half falls away when the excluded interval reaches the edge of the
+// domain, and if it covers the entire domain.
+
+void
+frange::set_excluding (tree type, const REAL_VALUE_TYPE &min,
+		       const REAL_VALUE_TYPE &max, const nan_state &nan)
+{
+  gcc_checking_assert (frange_cmp (min, max) <= 0);
+
+  machine_mode mode = TYPE_MODE (type);
+  REAL_VALUE_TYPE dom_min = frange_val_min (type);
+  REAL_VALUE_TYPE dom_max = frange_val_max (type);
+  frange_pair pairs[MAX_PAIRS];
+  unsigned n = 0;
+
+  // PREV is the largest value below MIN, so DOM_MIN <= PREV whenever there is
+  // anything below MIN at all.  Likewise for NEXT above MAX.
+  if (frange_cmp (dom_min, min) < 0)
+    {
+      REAL_VALUE_TYPE prev = min;
+      frange_nextafter (mode, prev, dconstninf);
+      pairs[n++] = { dom_min, prev };
+    }
+  if (frange_cmp (max, dom_max) < 0)
+    {
+      REAL_VALUE_TYPE next = max;
+      frange_nextafter (mode, next, dconstinf);
+      pairs[n++] = { next, dom_max };
+    }
+
+  // The excluded interval covered the entire domain.
+  if (n == 0)
+    {
+      if (HONOR_NANS (type) && (nan.pos_p () || nan.neg_p ()))
+	set_nan (type, nan);
+      else
+	set_undefined ();
+      return;
+    }
+
+  set (type, pairs[0].min, pairs[0].max, nan);
+  if (n == 2)
+    {
+      frange tmp;
+      tmp.set (type, pairs[1].min, pairs[1].max, nan);
+      union_ (tmp);
+    }
+}
+
 // Setter for franges.
 
 void
@@ -1164,22 +1218,16 @@ frange::set (tree type,
 	     const REAL_VALUE_TYPE &min, const REAL_VALUE_TYPE &max,
 	     const nan_state &nan, value_range_kind kind)
 {
-  switch (kind)
-    {
-    case VR_UNDEFINED:
-      set_undefined ();
-      return;
-    case VR_VARYING:
-    case VR_ANTI_RANGE:
-      set_varying (type);
-      return;
-    case VR_RANGE:
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
+  // VARYING and UNDEFINED go through set_varying() and set_undefined()
+  // respectively, like we do for irange.
+  gcc_checking_assert (kind == VR_RANGE || kind == VR_ANTI_RANGE);
   gcc_checking_assert (!real_isnan (&min) && !real_isnan (&max));
+
+  if (kind == VR_ANTI_RANGE)
+    {
+      set_excluding (type, min, max, nan);
+      return;
+    }
 
   m_kind = kind;
   m_type = type;
@@ -3678,10 +3726,114 @@ range_tests_sub_ranges ()
   ASSERT_TRUE (r0.undefined_p ());
 }
 
+// Build a range that excludes the single point C.
+
+static frange
+frange_float_excluding (const char *c)
+{
+  REAL_VALUE_TYPE r = real_from_str (c);
+  frange f;
+  f.set (float_type_node, r, r, VR_ANTI_RANGE);
+  return f;
+}
+
+static void
+range_tests_excluding ()
+{
+  frange r0, r1;
+
+  // "x != 1.0" is two sub-ranges with 1.0 missing.
+  r0 = frange_float_excluding ("1.0");
+  ASSERT_FALSE (r0.varying_p ());
+  ASSERT_FALSE (r0.undefined_p ());
+  ASSERT_EQ (r0.num_pairs (), 2);
+  ASSERT_FALSE (r0.contains_p (real_from_str ("1.0")));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("2.0")));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("0.0")));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("-1.0")));
+  ASSERT_FALSE (r0.singleton_p ());
+  // A NAN compares unequal to everything, so this says nothing about NANs.
+  if (HONOR_NANS (float_type_node))
+    ASSERT_TRUE (r0.maybe_isnan ());
+  // The extremes still span the domain.
+  REAL_VALUE_TYPE dom_min = frange_val_min (float_type_node);
+  REAL_VALUE_TYPE dom_max = frange_val_max (float_type_node);
+  ASSERT_TRUE (real_identical (&r0.lower_bound (), &dom_min));
+  ASSERT_TRUE (real_identical (&r0.upper_bound (), &dom_max));
+
+  // Any constant, not just 0.0 or 1.0.
+  r0 = frange_float_excluding ("5.5");
+  ASSERT_EQ (r0.num_pairs (), 2);
+  ASSERT_FALSE (r0.contains_p (real_from_str ("5.5")));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("5.4")));
+
+  // "x != 1.0" met with [1.0, 1.0] is empty.
+  r0 = frange_float_excluding ("1.0");
+  r1 = frange_float ("1.0", "1.0");
+  r1.clear_nan ();
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.undefined_p ());
+
+  // Excluding a point outside a range changes nothing.
+  r0 = frange_float ("3.0", "5.0");
+  r0.clear_nan ();
+  r1 = frange_float_excluding ("1.0");
+  r0.intersect (r1);
+  ASSERT_EQ (r0.num_pairs (), 1);
+  ASSERT_TRUE (r0.contains_p (real_from_str ("3.0")));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("5.0")));
+
+  // Union puts the point back.
+  r0 = frange_float_excluding ("1.0");
+  r1 = frange_float ("1.0", "1.0");
+  r0.union_ (r1);
+  ASSERT_TRUE (r0.varying_p ());
+
+  // Two different exclusions cannot both be held.
+  r0 = frange_float_excluding ("1.0");
+  r1 = frange_float_excluding ("2.0");
+  r0.union_ (r1);
+  ASSERT_TRUE (r0.varying_p ());
+
+  // Nor can an intersection hold both.
+  r0 = frange_float_excluding ("1.0");
+  r1 = frange_float_excluding ("2.0");
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.contains_p (real_from_str ("0.0")));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("3.0")));
+
+  // Equality accounts for the gap.
+  r0 = frange_float_excluding ("1.0");
+  r1 = frange_float_excluding ("2.0");
+  ASSERT_NE (r0, r1);
+  r1 = frange_float_excluding ("1.0");
+  ASSERT_EQ (r0, r1);
+}
+
 static void
 range_tests_sub_ranges_zero ()
 {
   frange r0, r1;
+
+  // "x != 0.0" must exclude BOTH zeros, since -0.0 == 0.0 and so "x != 0.0" is
+  // false for either.  The seam lands on the denormals either side of zero,
+  // which falls out of nextafter with no special case.
+  r0 = frange_float_excluding ("0.0");
+  ASSERT_EQ (r0.num_pairs (), 2);
+  ASSERT_FALSE (r0.contains_p (dconst0));
+  ASSERT_FALSE (r0.contains_p (dconstm0));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("1.0")));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("-1.0")));
+
+  // Excluding zero from [-0.0, 5.0] eats the lower end entirely.
+  r0 = frange_float ("-0.0", "5.0");
+  r0.clear_nan ();
+  r1 = frange_float_excluding ("0.0");
+  r0.intersect (r1);
+  ASSERT_EQ (r0.num_pairs (), 1);
+  ASSERT_FALSE (r0.contains_p (dconst0));
+  ASSERT_FALSE (r0.contains_p (dconstm0));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("5.0")));
 
   // -0.0 and +0.0 abut: nothing is representable between them, so the two
   // halves fuse into one interval rather than leaving a gap.
@@ -4052,6 +4204,7 @@ range_tests_floats ()
   range_tests_flush_denormals ();
   range_tests_sub_ranges ();
   range_tests_sub_ranges_storage ();
+  range_tests_excluding ();
 
   if (HONOR_SIGNED_ZEROS (float_type_node))
     {

@@ -681,6 +681,8 @@ private:
   bool intersect_nans (const frange &);
   void set_pairs (frange_pair *, unsigned);
   void canonicalize_zeros (frange_pair &);
+  void set_excluding (tree type, const REAL_VALUE_TYPE &,
+		      const REAL_VALUE_TYPE &, const nan_state &);
 
   tree m_type;
   frange_pair m_pairs[MAX_PAIRS];
