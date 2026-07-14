@@ -261,6 +261,78 @@ Z Europe/Lisbon -0:36:45 - LMT 1884
   VERIFY( at_boundary.abbrev == "WET" );
 }
 
+void
+test_last_transition()
+{
+   std::ofstream("tzdata.zi") << R"(# version test_bishkek
+R R 1984 1995 - S lastSu 2s 0 -
+R R 1985 2010 - Mar lastSu 2s 1 S
+R R 1996 2010 - O lastSu 2s 0 -
+R KG 1992 1996 - Ap Su>=7 0s 1 -
+R KG 1992 1996 - S lastSu 0 0 -
+R KG 1997 2005 - Mar lastSu 2:30 1 -
+R KG 1997 2004 - O lastSu 2:30 0 -
+Z Test/Bishkek 4:58:24 - LMT 1924 May 2
+5 R %z 1991 Au 31 2
+5 KG %z 2005 Au 12
+   )";
+
+  const auto& db = reload_tzdb();
+  VERIFY( override_used ); // If this fails then XFAIL for the target.
+  VERIFY( db.version == "test_bishkek" );
+
+  auto* tz = locate_zone("Test/Bishkek");
+
+  sys_seconds transitions[]{
+    sys_seconds{sys_days{1991y/August/30}} + 20h, // from 5 R %z 1991 Au 31 2
+    sys_seconds{sys_days{1992y/April/11}} + 19h,
+    sys_seconds{sys_days{1992y/September/26}} + 18h,
+    sys_seconds{sys_days{1993y/April/10}} + 19h,
+    sys_seconds{sys_days{1993y/September/25}} + 18h,
+    sys_seconds{sys_days{1994y/April/9}} + 19h,
+    sys_seconds{sys_days{1994y/September/24}} + 18h,
+    sys_seconds{sys_days{1995y/April/8}} + 19h,
+    sys_seconds{sys_days{1995y/September/23}} + 18h,
+    sys_seconds{sys_days{1996y/April/6}} + 19h,
+    sys_seconds{sys_days{1996y/September/28}} + 18h,
+    sys_seconds{sys_days{1997y/March/29}} + 21h + 30min,
+    sys_seconds{sys_days{1997y/October/25}} + 20h + 30min,
+    sys_seconds{sys_days{1998y/March/28}} + 21h + 30min,
+    sys_seconds{sys_days{1998y/October/24}} + 20h + 30min,
+    sys_seconds{sys_days{1999y/March/27}} + 21h + 30min,
+    sys_seconds{sys_days{1999y/October/30}} + 20h + 30min,
+    sys_seconds{sys_days{2000y/March/25}} + 21h + 30min,
+    sys_seconds{sys_days{2000y/October/28}} + 20h + 30min,
+    sys_seconds{sys_days{2001y/March/24}} + 21h + 30min,
+    sys_seconds{sys_days{2001y/October/27}} + 20h + 30min,
+    sys_seconds{sys_days{2002y/March/30}} + 21h + 30min,
+    sys_seconds{sys_days{2002y/October/26}} + 20h + 30min,
+    sys_seconds{sys_days{2003y/March/29}} + 21h + 30min,
+    sys_seconds{sys_days{2003y/October/25}} + 20h + 30min,
+    sys_seconds{sys_days{2004y/March/27}} + 21h + 30min,
+    sys_seconds{sys_days{2004y/October/30}} + 20h + 30min,
+    sys_seconds{sys_days{2005y/March/26}} + 21h + 30min,
+    sys_seconds{sys_days{2005y/August/11}} + 18h, // 5 KG %z 2005 Au 12 
+  };
+
+  for (size_t i = 1; i < std::size(transitions); ++i)
+    {
+      const minutes save = (i % 2) ? 0h : 1h;
+      const sys_seconds t = transitions[i-1];
+      const sys_info info = tz->get_info(t);
+      VERIFY( info.begin == t );
+      VERIFY( info.offset == 5h + save );
+      VERIFY( info.save == save );
+      VERIFY( info.end == transitions[i] );
+    }
+
+  // The transition 2005 Au 12 has total offset 6 (5h + 1h).
+  sys_seconds t = transitions[std::size(transitions)-1];
+  const sys_info info = tz->get_info(t);
+  VERIFY( info.offset == 6h );
+  VERIFY( info.save == 1h );
+}
+
 int
 main()
 {
@@ -270,4 +342,5 @@ main()
   test_prev_year();
   test_earlier_year();
   test_at_boundary();
+  test_last_transition();
 }

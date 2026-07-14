@@ -65,8 +65,8 @@ test_apia()
   auto* tz = locate_zone("Pacific/Apia");
   local_seconds t = local_days(2011y/December/29) + 24h;
 
-  // FIXME: this should be + 10h but we do not account for DST yet, so + 11h.
-  sys_seconds ut(t.time_since_epoch() + 11h );
+  // The wall UNTIL is interpreted in the prior offset (-11h + 1h)
+  sys_seconds ut(t.time_since_epoch() + 10h);
   sys_info info;
   info = tz->get_info(ut - 1s);
   VERIFY( info.offset == (-11h + info.save) );
