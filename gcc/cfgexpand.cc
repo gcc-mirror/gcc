@@ -2381,6 +2381,9 @@ expand_used_vars (bitmap forced_stack_vars)
 	  HOST_WIDE_INT offset, sz, redzonesz;
 	  redzonesz = ASAN_RED_ZONE_SIZE;
 	  sz = data.asan_vec[0] - prev_offset;
+	  data.asan_alignb = MAX (data.asan_alignb,
+				  crtl->stack_alignment_needed
+				  / BITS_PER_UNIT);
 	  if (data.asan_alignb > ASAN_RED_ZONE_SIZE
 	      && data.asan_alignb <= 4096
 	      && sz + ASAN_RED_ZONE_SIZE >= (int) data.asan_alignb)
