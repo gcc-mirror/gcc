@@ -796,18 +796,30 @@ void
 ASTLoweringExpr::visit (AST::RangeFromToInclExpr &expr)
 {
   auto crate_num = mappings.get_current_crate ();
-  Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
-				 mappings.get_next_hir_id (crate_num),
-				 UNKNOWN_LOCAL_DEFID);
+  Analysis::NodeMapping path_mapping (crate_num, mappings.get_next_node_id (),
+				      mappings.get_next_hir_id (crate_num),
+				      UNKNOWN_LOCAL_DEFID);
+  Analysis::NodeMapping call_mapping (crate_num, expr.get_node_id (),
+				      mappings.get_next_hir_id (crate_num),
+				      UNKNOWN_LOCAL_DEFID);
+
+  HIR::Expr *func
+    = new HIR::PathInExpression (path_mapping,
+				 LangItem::Kind::RANGE_INCLUSIVE_NEW,
+				 expr.get_locus (), false);
 
   HIR::Expr *range_from = ASTLoweringExpr::translate (expr.get_from_expr ());
   HIR::Expr *range_to = ASTLoweringExpr::translate (expr.get_to_expr ());
 
+  std::vector<std::unique_ptr<HIR::Expr>> params;
+  params.reserve (2);
+  params.emplace_back (std::unique_ptr<HIR::Expr> (range_from));
+  params.emplace_back (std::unique_ptr<HIR::Expr> (range_to));
+
   translated
-    = new HIR::RangeFromToInclExpr (mapping,
-				    std::unique_ptr<HIR::Expr> (range_from),
-				    std::unique_ptr<HIR::Expr> (range_to),
-				    expr.get_locus ());
+    = new HIR::CallExpr (call_mapping, std::unique_ptr<HIR::Expr> (func),
+			 std::move (params), expr.get_outer_attrs (),
+			 expr.get_locus ());
 }
 
 void

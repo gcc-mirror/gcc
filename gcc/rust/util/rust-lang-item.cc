@@ -55,6 +55,7 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"RangeTo", Kind::RANGE_TO},
   {"RangeInclusive", Kind::RANGE_INCLUSIVE},
   {"RangeToInclusive", Kind::RANGE_TO_INCLUSIVE},
+  {"range_inclusive_new", Kind::RANGE_INCLUSIVE_NEW},
   {"phantom_data", Kind::PHANTOM_DATA},
   {"fn", Kind::FN},
   {"fn_mut", Kind::FN_MUT},

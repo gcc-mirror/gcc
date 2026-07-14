@@ -77,6 +77,7 @@ public:
     RANGE_TO,
     RANGE_INCLUSIVE,
     RANGE_TO_INCLUSIVE,
+    RANGE_INCLUSIVE_NEW,
 
     // https://github.com/rust-lang/rust/blob/master/library/core/src/marker.rs
     PHANTOM_DATA,

@@ -29,6 +29,18 @@ pub struct RangeTo<Idx> {
 pub struct RangeInclusive<Idx> {
     pub start: Idx,
     pub end: Idx,
+    pub exhausted: bool,
+}
+
+impl<Idx> RangeInclusive<Idx> {
+    #[lang = "range_inclusive_new"]
+    pub const fn new(start: Idx, end: Idx) -> Self {
+        Self {
+            start,
+            end,
+            exhausted: false,
+        }
+    }
 }
 
 fn test() {
