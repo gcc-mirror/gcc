@@ -1685,18 +1685,35 @@ frange::verify_range () const
 			 || !frange_val_is_max (m_pairs[0].max, m_type));
 }
 
-// We can't do much with nonzeros yet.
 void
 frange::set_nonzero (tree type)
 {
-  set_varying (type);
+  set (type, dconstm0, dconst0, VR_ANTI_RANGE);
 }
 
-// We can't do much with nonzeros yet.
+// Return TRUE when this range is exactly the "everything but zero" set that
+// set_nonzero builds, mirroring irange::nonzero_p.  Callers wanting "does not
+// contain zero" should use the !contains_p (0) idiom.
+//
+// A NAN is not a zero, so nonzero-ness depends only on the intervals, not on
+// whether the range may also be a NAN.  We therefore recognize the nonzero
+// range by comparing intervals against set_nonzero's with the NAN state
+// ignored.  A strict *this == set_nonzero () would be wrong: set_nonzero
+// leaves the NAN able to be either sign, so a range that is otherwise exactly
+// nonzero but whose NAN has been cleared would compare unequal.
+
 bool
 frange::nonzero_p () const
 {
-  return false;
+  if (undefined_p () || known_isnan ())
+    return false;
+
+  frange nz;
+  nz.set_nonzero (type ());
+  nz.clear_nan ();
+  frange tmp = *this;
+  tmp.clear_nan ();
+  return tmp == nz;
 }
 
 // Set range to [+0.0, +0.0] if honoring signed zeros, or [0.0, 0.0]
@@ -3826,11 +3843,27 @@ range_tests_sub_ranges_zero ()
   ASSERT_TRUE (r0.contains_p (real_from_str ("-1.0")));
 
   // Excluding zero from [-0.0, 5.0] eats the lower end entirely.
+  r0.set_nonzero (float_type_node);
+  ASSERT_TRUE (r0.nonzero_p ());
+  ASSERT_FALSE (r0.contains_p (dconst0));
+  ASSERT_FALSE (r0.contains_p (dconstm0));
+
+  // A NAN is not a zero, so clearing the NAN leaves a nonzero range nonzero.
+  r0.clear_nan ();
+  ASSERT_TRUE (r0.nonzero_p ());
+
+  // A range that merely avoids zero is not the nonzero range.
+  r0 = frange_float ("1.0", "10.0");
+  ASSERT_FALSE (r0.nonzero_p ());
+
+  // Excluding zero from [-0.0, 5.0] leaves (0, 5]: it avoids zero but is not
+  // the whole nonzero range.
   r0 = frange_float ("-0.0", "5.0");
   r0.clear_nan ();
   r1 = frange_float_excluding ("0.0");
   r0.intersect (r1);
   ASSERT_EQ (r0.num_pairs (), 1);
+  ASSERT_FALSE (r0.nonzero_p ());
   ASSERT_FALSE (r0.contains_p (dconst0));
   ASSERT_FALSE (r0.contains_p (dconstm0));
   ASSERT_TRUE (r0.contains_p (real_from_str ("5.0")));
