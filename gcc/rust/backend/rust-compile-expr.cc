@@ -2637,29 +2637,6 @@ CompileExpr::visit (HIR::RangeFullExpr &expr)
 }
 
 void
-CompileExpr::visit (HIR::RangeFromToInclExpr &expr)
-{
-  tree from = CompileExpr::Compile (expr.get_from_expr (), ctx);
-  tree to = CompileExpr::Compile (expr.get_to_expr (), ctx);
-  if (from == error_mark_node || to == error_mark_node)
-    {
-      translated = error_mark_node;
-      return;
-    }
-
-  TyTy::BaseType *tyty = nullptr;
-  bool ok
-    = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (), &tyty);
-  rust_assert (ok);
-
-  tree adt = TyTyResolveCompile::compile (ctx, tyty);
-
-  // make the constructor
-  translated = Backend::constructor_expression (adt, false, {from, to}, -1,
-						expr.get_locus ());
-}
-
-void
 CompileExpr::visit (HIR::ArrayIndexExpr &expr)
 {
   tree array_reference = CompileExpr::Compile (expr.get_array_expr (), ctx);

@@ -1392,17 +1392,6 @@ Dump::visit (RangeFullExpr &e)
 }
 
 void
-Dump::visit (RangeFromToInclExpr &e)
-{
-  begin ("RangeFromToInclExpr");
-
-  visit_field ("from", e.get_from_expr ());
-  visit_field ("to", e.get_to_expr ());
-
-  end ("RangeFromToInclExpr");
-}
-
-void
 Dump::visit (RangeToInclExpr &e)
 {
   begin ("RangeToInclExpr");

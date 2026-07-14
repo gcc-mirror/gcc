@@ -2176,53 +2176,6 @@ protected:
   }
 };
 
-// Range from (inclusive) and to (inclusive) expression HIR node object
-// aka RangeInclusiveExpr; constructs a std::ops::RangeInclusive object
-class RangeFromToInclExpr : public RangeExpr
-{
-  std::unique_ptr<Expr> from;
-  std::unique_ptr<Expr> to;
-
-public:
-  std::string to_string () const override;
-
-  RangeFromToInclExpr (Analysis::NodeMapping mappings,
-		       std::unique_ptr<Expr> range_from,
-		       std::unique_ptr<Expr> range_to, location_t locus);
-  // outer attributes not allowed
-
-  // Copy constructor with clone
-  RangeFromToInclExpr (RangeFromToInclExpr const &other);
-
-  // Overload assignment operator to use clone
-  RangeFromToInclExpr &operator= (RangeFromToInclExpr const &other);
-
-  // move constructors
-  RangeFromToInclExpr (RangeFromToInclExpr &&other) = default;
-  RangeFromToInclExpr &operator= (RangeFromToInclExpr &&other) = default;
-
-  void accept_vis (HIRFullVisitor &vis) override;
-  void accept_vis (HIRExpressionVisitor &vis) override;
-
-  Expr &get_from_expr () { return *from; }
-  Expr &get_to_expr () { return *to; }
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  RangeFromToInclExpr *clone_expr_impl () const override
-  {
-    return new RangeFromToInclExpr (*this);
-  }
-
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  RangeFromToInclExpr *clone_expr_without_block_impl () const override
-  {
-    return new RangeFromToInclExpr (*this);
-  }
-};
-
 // Range to (inclusive) expression HIR node object
 // aka RangeToInclusiveExpr; constructs a std::ops::RangeToInclusive object
 class RangeToInclExpr : public RangeExpr

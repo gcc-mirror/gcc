@@ -154,7 +154,6 @@ private:
   virtual void visit (RangeFromExpr &) override;
   virtual void visit (RangeToExpr &) override;
   virtual void visit (RangeFullExpr &) override;
-  virtual void visit (RangeFromToInclExpr &) override;
   virtual void visit (RangeToInclExpr &) override;
   virtual void visit (BoxExpr &) override;
   virtual void visit (ReturnExpr &) override;

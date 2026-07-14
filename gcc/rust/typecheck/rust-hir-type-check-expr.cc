@@ -1067,56 +1067,6 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
 }
 
 void
-TypeCheckExpr::visit (HIR::RangeFromToInclExpr &expr)
-{
-  auto lang_item_type = LangItem::Kind::RANGE_INCLUSIVE;
-
-  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
-  // we need to have it maybe
-  if (!lang_item_defined)
-    {
-      rust_internal_error_at (expr.get_locus (),
-			      "unable to find relevant lang item: %s",
-			      LangItem::ToString (lang_item_type).c_str ());
-      return;
-    }
-  DefId respective_lang_item_id = lang_item_defined.value ();
-
-  // look it up and it _must_ be a struct definition
-  HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
-
-  TyTy::BaseType *item_type = nullptr;
-  bool ok
-    = context->lookup_type (item->get_mappings ().get_hirid (), &item_type);
-  rust_assert (ok);
-  rust_assert (item_type->get_kind () == TyTy::TypeKind::ADT);
-  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (item_type);
-
-  // this is a single generic item lets assert that
-  rust_assert (adt->get_num_substitutions () == 1);
-
-  // resolve the range expressions and these types must unify then we use that
-  // type to substitute into the ADT
-  TyTy::BaseType *from_ty = TypeCheckExpr::Resolve (expr.get_from_expr ());
-  TyTy::BaseType *to_ty = TypeCheckExpr::Resolve (expr.get_to_expr ());
-  TyTy::BaseType *unified = unify_site (
-    expr.get_mappings ().get_hirid (),
-    TyTy::TyWithLocation (from_ty, expr.get_from_expr ().get_locus ()),
-    TyTy::TyWithLocation (to_ty, expr.get_to_expr ().get_locus ()),
-    expr.get_locus ());
-
-  // substitute it in
-  std::vector<TyTy::SubstitutionArg> subst_mappings;
-  const TyTy::SubstitutionParamMapping *param_ref = &adt->get_substs ().at (0);
-  subst_mappings.emplace_back (param_ref, unified);
-
-  TyTy::SubstitutionArgumentMappings subst (
-    subst_mappings, {}, adt->get_substitution_arguments ().get_regions (),
-    expr.get_locus ());
-  infered = SubstMapperInternal::Resolve (adt, subst);
-}
-
-void
 TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
 {
   auto array_expr_ty = TypeCheckExpr::Resolve (expr.get_array_expr ());

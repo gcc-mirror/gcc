@@ -1657,12 +1657,6 @@ IfExprConseqElse::to_string () const
 }
 
 std::string
-RangeFromToInclExpr::to_string () const
-{
-  return from->to_string () + "..=" + to->to_string ();
-}
-
-std::string
 ErrorPropagationExpr::to_string () const
 {
   return main_or_left_expr->to_string () + "?";
@@ -4247,12 +4241,6 @@ RangeFullExpr::accept_vis (HIRFullVisitor &vis)
 }
 
 void
-RangeFromToInclExpr::accept_vis (HIRFullVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
 RangeToInclExpr::accept_vis (HIRFullVisitor &vis)
 {
   vis.visit (*this);
@@ -5046,12 +5034,6 @@ WhileLoopExpr::accept_vis (HIRExpressionVisitor &vis)
 
 void
 CallExpr::accept_vis (HIRExpressionVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-RangeFromToInclExpr::accept_vis (HIRExpressionVisitor &vis)
 {
   vis.visit (*this);
 }

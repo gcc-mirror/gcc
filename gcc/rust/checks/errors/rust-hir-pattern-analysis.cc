@@ -331,13 +331,6 @@ PatternChecker::visit (RangeFullExpr &)
 {}
 
 void
-PatternChecker::visit (RangeFromToInclExpr &expr)
-{
-  expr.get_from_expr ().accept_vis (*this);
-  expr.get_to_expr ().accept_vis (*this);
-}
-
-void
 PatternChecker::visit (RangeToInclExpr &expr)
 {
   expr.get_to_expr ().accept_vis (*this);

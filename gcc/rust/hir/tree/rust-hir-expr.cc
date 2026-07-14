@@ -930,29 +930,6 @@ RangeFullExpr::RangeFullExpr (Analysis::NodeMapping mappings, location_t locus)
   : RangeExpr (std::move (mappings), locus)
 {}
 
-RangeFromToInclExpr::RangeFromToInclExpr (Analysis::NodeMapping mappings,
-					  std::unique_ptr<Expr> range_from,
-					  std::unique_ptr<Expr> range_to,
-					  location_t locus)
-  : RangeExpr (std::move (mappings), locus), from (std::move (range_from)),
-    to (std::move (range_to))
-{}
-
-RangeFromToInclExpr::RangeFromToInclExpr (RangeFromToInclExpr const &other)
-  : RangeExpr (other), from (other.from->clone_expr ()),
-    to (other.to->clone_expr ())
-{}
-
-RangeFromToInclExpr &
-RangeFromToInclExpr::operator= (RangeFromToInclExpr const &other)
-{
-  RangeExpr::operator= (other);
-  from = other.from->clone_expr ();
-  to = other.to->clone_expr ();
-
-  return *this;
-}
-
 RangeToInclExpr::RangeToInclExpr (Analysis::NodeMapping mappings,
 				  std::unique_ptr<Expr> range_to,
 				  location_t locus)

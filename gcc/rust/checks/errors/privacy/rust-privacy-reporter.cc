@@ -576,13 +576,6 @@ PrivacyReporter::visit (HIR::RangeFullExpr &)
 {}
 
 void
-PrivacyReporter::visit (HIR::RangeFromToInclExpr &expr)
-{
-  expr.get_from_expr ().accept_vis (*this);
-  expr.get_to_expr ().accept_vis (*this);
-}
-
-void
 PrivacyReporter::visit (HIR::RangeToInclExpr &)
 {
   // Not handled yet

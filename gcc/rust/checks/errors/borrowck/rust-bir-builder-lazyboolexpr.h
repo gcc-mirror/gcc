@@ -237,7 +237,6 @@ protected: // Illegal at this position.
   void visit (HIR::RangeFromExpr &expr) override { rust_unreachable (); }
   void visit (HIR::RangeToExpr &expr) override { rust_unreachable (); }
   void visit (HIR::RangeFullExpr &expr) override { rust_unreachable (); }
-  void visit (HIR::RangeFromToInclExpr &expr) override { rust_unreachable (); }
   void visit (HIR::RangeToInclExpr &expr) override { rust_unreachable (); }
   void visit (HIR::ReturnExpr &expr) override { rust_unreachable (); }
   void visit (HIR::BoxExpr &expr) override { rust_unreachable (); }

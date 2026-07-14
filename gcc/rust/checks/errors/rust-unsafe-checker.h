@@ -103,7 +103,6 @@ private:
   virtual void visit (RangeFromExpr &expr) override;
   virtual void visit (RangeToExpr &expr) override;
   virtual void visit (RangeFullExpr &expr) override;
-  virtual void visit (RangeFromToInclExpr &expr) override;
   virtual void visit (RangeToInclExpr &expr) override;
   virtual void visit (BoxExpr &expr) override;
   virtual void visit (ReturnExpr &expr) override;

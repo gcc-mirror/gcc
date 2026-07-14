@@ -490,15 +490,6 @@ ExprStmtBuilder::visit (HIR::RangeFullExpr &expr)
 }
 
 void
-ExprStmtBuilder::visit (HIR::RangeFromToInclExpr &expr)
-{
-  auto from = visit_expr (expr.get_from_expr ());
-  auto to = visit_expr (expr.get_to_expr ());
-  return_expr (new InitializerExpr ({from, to}), lookup_type (expr),
-	       expr.get_locus ());
-}
-
-void
 ExprStmtBuilder::visit (HIR::RangeToInclExpr &expr)
 {
   auto to = visit_expr (expr.get_to_expr ());

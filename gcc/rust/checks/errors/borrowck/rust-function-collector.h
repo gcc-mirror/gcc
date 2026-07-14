@@ -113,7 +113,6 @@ public:
   void visit (HIR::RangeFromExpr &expr) override {}
   void visit (HIR::RangeToExpr &expr) override {}
   void visit (HIR::RangeFullExpr &expr) override {}
-  void visit (HIR::RangeFromToInclExpr &expr) override {}
   void visit (HIR::RangeToInclExpr &expr) override {}
   void visit (HIR::BoxExpr &expr) override {}
   void visit (HIR::ReturnExpr &expr) override {}

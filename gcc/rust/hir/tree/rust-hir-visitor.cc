@@ -423,13 +423,6 @@ DefaultHIRVisitor::walk (RangeFullExpr &)
 {}
 
 void
-DefaultHIRVisitor::walk (RangeFromToInclExpr &expr)
-{
-  expr.get_from_expr ().accept_vis (*this);
-  expr.get_to_expr ().accept_vis (*this);
-}
-
-void
 DefaultHIRVisitor::walk (RangeToInclExpr &expr)
 {
   expr.get_to_expr ().accept_vis (*this);

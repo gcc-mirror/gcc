@@ -104,7 +104,6 @@ class RangeFromToExpr;
 class RangeFromExpr;
 class RangeToExpr;
 class RangeFullExpr;
-class RangeFromToInclExpr;
 class RangeToInclExpr;
 class BoxExpr;
 class ReturnExpr;

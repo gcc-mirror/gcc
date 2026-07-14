@@ -74,7 +74,6 @@ public:
   virtual void visit (RangeFromExpr &expr) = 0;
   virtual void visit (RangeToExpr &expr) = 0;
   virtual void visit (RangeFullExpr &expr) = 0;
-  virtual void visit (RangeFromToInclExpr &expr) = 0;
   virtual void visit (RangeToInclExpr &expr) = 0;
   virtual void visit (BoxExpr &expr) = 0;
   virtual void visit (ReturnExpr &expr) = 0;
@@ -244,7 +243,6 @@ public:
   virtual void visit (RangeFromExpr &node) override { walk (node); }
   virtual void visit (RangeToExpr &node) override { walk (node); }
   virtual void visit (RangeFullExpr &node) override { walk (node); }
-  virtual void visit (RangeFromToInclExpr &node) override { walk (node); }
   virtual void visit (RangeToInclExpr &node) override { walk (node); }
   virtual void visit (BoxExpr &node) override { walk (node); }
   virtual void visit (ReturnExpr &node) override { walk (node); }
@@ -386,7 +384,6 @@ protected:
   virtual void walk (RangeFromExpr &) final;
   virtual void walk (RangeToExpr &) final;
   virtual void walk (RangeFullExpr &) final;
-  virtual void walk (RangeFromToInclExpr &) final;
   virtual void walk (RangeToInclExpr &) final;
   virtual void walk (BoxExpr &) final;
   virtual void walk (ReturnExpr &) final;
@@ -528,7 +525,6 @@ public:
   virtual void visit (RangeFromExpr &) override {}
   virtual void visit (RangeToExpr &) override {}
   virtual void visit (RangeFullExpr &) override {}
-  virtual void visit (RangeFromToInclExpr &) override {}
   virtual void visit (RangeToInclExpr &) override {}
   virtual void visit (BoxExpr &) override {}
   virtual void visit (ReturnExpr &) override {}
@@ -761,7 +757,6 @@ public:
   virtual void visit (RangeFromExpr &expr) = 0;
   virtual void visit (RangeToExpr &expr) = 0;
   virtual void visit (RangeFullExpr &expr) = 0;
-  virtual void visit (RangeFromToInclExpr &expr) = 0;
   virtual void visit (RangeToInclExpr &expr) = 0;
   virtual void visit (BoxExpr &expr) = 0;
   virtual void visit (ReturnExpr &expr) = 0;
