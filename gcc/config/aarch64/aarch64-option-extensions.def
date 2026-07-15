@@ -150,7 +150,7 @@ AARCH64_FMV_FEATURE("aes", PMULL, (AES))
 /* +nocrypto disables AES, SHA2 and SM4, and anything that depends on them
    (such as SHA3 and the SVE2 crypto extensions).  */
 AARCH64_OPT_EXTENSION_ALIAS("crypto", CRYPTO, (AES, SHA2), (), (AES, SHA2, SM4),
-			    (AES, SHA2), "aes pmull sha1 sha2")
+			    (AES, SHA2), "")
 
 AARCH64_OPT_EXTENSION("sha3", SHA3, (SHA2), (), (), "sha3 sha512")
 
@@ -209,26 +209,26 @@ AARCH64_OPT_FMV_EXTENSION("sve2", SVE2, (SVE), (), (), "sve2")
 
 AARCH64_OPT_EXTENSION("sve-aes", SVE_AES, (AES), (), (), "sveaes | smeaes")
 
-AARCH64_OPT_EXTENSION_ALIAS("sve2-aes", SVE2_AES, (SVE2, SVE_AES), (), (SVE_AES), (SVE_AES), "sveaes")
+AARCH64_OPT_EXTENSION_ALIAS("sve2-aes", SVE2_AES, (SVE2, SVE_AES), (), (SVE_AES), (SVE_AES), "")
 
 AARCH64_FMV_FEATURE("sve2-aes", SVE_PMULL128, (SVE2, SVE_AES))
 
 AARCH64_OPT_EXTENSION("sve-bitperm", SVE_BITPERM, (), (), (), "svebitperm | smesbitperm")
 
 AARCH64_OPT_EXTENSION_ALIAS("sve2-bitperm", SVE2_BITPERM, (SVE2, SVE_BITPERM), (), (SVE_BITPERM),
-			    (SVE_BITPERM), "svebitperm")
+			    (SVE_BITPERM), "")
 
 AARCH64_FMV_FEATURE("sve2-bitperm", SVE_BITPERM, (SVE2, SVE_BITPERM))
 
 AARCH64_OPT_EXTENSION("sve-sha3", SVE_SHA3, (SHA3), (), (), "svesha3")
 
-AARCH64_OPT_EXTENSION_ALIAS("sve2-sha3", SVE2_SHA3, (SVE2, SVE_SHA3), (), (SVE_SHA3), (SVE_SHA3), "svesha3")
+AARCH64_OPT_EXTENSION_ALIAS("sve2-sha3", SVE2_SHA3, (SVE2, SVE_SHA3), (), (SVE_SHA3), (SVE_SHA3), "")
 
 AARCH64_FMV_FEATURE("sve2-sha3", SVE_SHA3, (SVE2, SVE_SHA3))
 
 AARCH64_OPT_EXTENSION("sve-sm4", SVE_SM4, (SM4), (), (), "svesm4")
 
-AARCH64_OPT_EXTENSION_ALIAS("sve2-sm4", SVE2_SM4, (SVE2, SVE_SM4), (), (SVE_SM4), (SVE_SM4), "svesm4")
+AARCH64_OPT_EXTENSION_ALIAS("sve2-sm4", SVE2_SM4, (SVE2, SVE_SM4), (), (SVE_SM4), (SVE_SM4), "")
 
 AARCH64_FMV_FEATURE("sve2-sm4", SVE_SM4, (SVE2, SVE_SM4))
 
