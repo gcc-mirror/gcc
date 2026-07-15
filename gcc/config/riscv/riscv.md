@@ -4471,12 +4471,23 @@
   "mnret"
   [(set_attr "type" "ret")])
 
-(define_insn "stack_tie<mode>"
+(define_insn "@stack_tie<mode>"
   [(set (mem:BLK (scratch))
 	(unspec:BLK [(match_operand:X 0 "register_operand" "r")
 		     (match_operand:X 1 "register_operand" "r")]
 		    UNSPEC_TIE))]
   "!rtx_equal_p (operands[0], operands[1])"
+  ""
+  [(set_attr "type" "ghost")
+   (set_attr "length" "0")]
+)
+
+;; Keep stack loads before an SP adjustment without a second register.
+(define_insn "@stack_tie_sp<mode>"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK [(match_operand:X 0 "register_operand" "r")]
+		    UNSPEC_TIE))]
+  "rtx_equal_p (operands[0], stack_pointer_rtx)"
   ""
   [(set_attr "type" "ghost")
    (set_attr "length" "0")]

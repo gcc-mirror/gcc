@@ -144,7 +144,7 @@ riscv_sr_match_epilogue (void)
      standard epilogue (of the form we expect to handle) consists of the
      following instructions:
 
-     1. A stack_tiesi or stack_tiedi (for RV32 and RV64 respectively),
+     1. A stack tie instruction,
 
      2. An optional use instruction for the register holding the return
         value.  This will be missing in functions with no return value,
@@ -154,7 +154,9 @@ riscv_sr_match_epilogue (void)
      4. A jump instruction of type gpr_restore_return.  */
   start = insn;
   if (INSN_CODE (insn) != CODE_FOR_stack_tiesi
-      && INSN_CODE (insn) != CODE_FOR_stack_tiedi)
+      && INSN_CODE (insn) != CODE_FOR_stack_tiedi
+      && INSN_CODE (insn) != CODE_FOR_stack_tie_spsi
+      && INSN_CODE (insn) != CODE_FOR_stack_tie_spdi)
     return NULL;
 
   insn = NEXT_INSN (insn);
