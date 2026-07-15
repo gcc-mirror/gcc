@@ -92,6 +92,7 @@
    UNSPEC_MMA_XXMFACC
    UNSPEC_MMA_XXMTACC
    UNSPEC_DMF_INSERT512
+   UNSPEC_DMF_EXTRACT512
    UNSPEC_DMF_INSERT1024
   ])
 
@@ -449,6 +450,90 @@
   "TARGET_DMF"
   "dmxxinstdmr512 %0,%x1,%x2,0\n\tdmxxinstdmr512 %0,%x3,%x4,1"
   [(set_attr "type" "dmf")])
+
+(define_insn "dm_extract512"
+  [(set (match_operand:XO 0 "vsx_register_operand" "=wa")
+        (unspec:XO [(match_operand:TDO 1 "dmr_register_operand" "wD")
+		    (match_operand 2 "const_0_to_1_operand" "n")]
+		   UNSPEC_DMF_EXTRACT512))]
+  "TARGET_DMF"
+  "dmxxextfdmr512 %x0,%W0,%1,%2"
+  [(set_attr "type" "dmf")])
+
+;; TDO (1024-bit dense-math) move expander.
+(define_expand "movtdo"
+  [(set (match_operand:TDO 0 "nonimmediate_operand")
+        (match_operand:TDO 1 "input_operand"))]
+  "TARGET_DMF"
+{
+  rs6000_emit_move (operands[0], operands[1], TDOmode);
+  DONE;
+})
+
+(define_insn_and_split "*movtdo"
+  [(set (match_operand:TDO 0 "nonimmediate_operand" "=wa,m,wa,wD,wa,wD")
+        (match_operand:TDO 1 "input_operand"         "m,wa,wa,wD,wD,wa"))]
+  "TARGET_DMF
+   && (gpc_reg_operand (operands[0], TDOmode)
+       || gpc_reg_operand (operands[1], TDOmode))"
+{
+  if (which_alternative == 3)
+    return "dmmr %0,%1";
+  else
+    return "#";
+}
+"reload_completed
+ && (!dmr_register_operand (operands[0], TDOmode)
+     || !dmr_register_operand (operands[1], TDOmode))"
+  [(const_int 0)]
+{
+  rtx dst = operands[0];
+  rtx src = operands[1];
+
+  /* Memory-involving moves (alt 0/1) and wa<-wa VSX moves (alt 2)
+     both go through the generic multiregister splitter.  */
+  if (!REG_P (dst) || !REG_P (src)
+      || (VSX_REGNO_P (REGNO (dst)) && VSX_REGNO_P (REGNO (src))))
+    {
+      rs6000_split_multireg_move (dst, src);
+      DONE;
+    }
+
+  unsigned dst_regno = REGNO (dst);
+  unsigned src_regno = REGNO (src);
+  bool dst_is_dmr = DMR_REGNO_P (dst_regno);
+  bool src_is_dmr = DMR_REGNO_P (src_regno);
+  bool dst_is_vsx = VSX_REGNO_P (dst_regno);
+  bool src_is_vsx = VSX_REGNO_P (src_regno);
+
+  /* wD <- wD: already a dmmr move, nothing to split.  */
+  if (dst_is_dmr && src_is_dmr)
+    DONE;
+
+  /* wD <- wa  */
+  if (dst_is_dmr && src_is_vsx)
+    {
+      rtx chunk0 = gen_rtx_REG (OOmode, src_regno);
+      rtx chunk1 = gen_rtx_REG (OOmode, src_regno + 2);
+      rtx chunk2 = gen_rtx_REG (OOmode, src_regno + 4);
+      rtx chunk3 = gen_rtx_REG (OOmode, src_regno + 6);
+
+      emit_insn (gen_dm_insert1024 (dst, chunk0, chunk1, chunk2, chunk3));
+      DONE;
+    }
+
+  /* wa <- wD  */
+  if (dst_is_vsx && src_is_dmr)
+    {
+      rtx chunk0 = gen_rtx_REG (XOmode, dst_regno);
+      rtx chunk1 = gen_rtx_REG (XOmode, dst_regno + 4);
+      emit_insn (gen_dm_extract512 (chunk0, src, const0_rtx));
+      emit_insn (gen_dm_extract512 (chunk1, src, const1_rtx));
+      DONE;
+    }
+
+  gcc_unreachable ();
+})
 
 (define_expand "mma_assemble_acc"
   [(match_operand:XO 0 "accumulator_operand")

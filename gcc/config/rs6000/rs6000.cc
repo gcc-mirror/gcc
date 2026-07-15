@@ -11301,6 +11301,12 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	       (mode == OOmode) ? "__vector_pair" : "__vector_quad");
       break;
 
+    case E_TDOmode:
+      if (CONST_INT_P (operands[1]))
+	error ("%qs is an opaque type, and you cannot set it to constants",
+	       "__dmr1024");
+      break;
+
     case E_SImode:
     case E_DImode:
       /* Use default pattern for address of ELF small data */
@@ -27595,9 +27601,10 @@ rs6000_split_multireg_move (rtx dst, rtx src)
   mode = GET_MODE (dst);
   nregs = hard_regno_nregs (reg, mode);
 
-  /* If we have a vector quad register for MMA, and this is a load or store,
-     see if we can use vector paired load/stores.  */
-  if (mode == XOmode && TARGET_MMA
+  /* If we have a vector quad register for MMA or DMR register for Dense Math,
+     and this is a load or store, see if we can use vector paired
+     load/stores.  */
+  if ((mode == XOmode || mode == TDOmode) && (TARGET_MMA || TARGET_DMF)
       && (MEM_P (dst) || MEM_P (src)))
     {
       reg_mode = OOmode;
@@ -27605,7 +27612,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
     }
   /* If we have a vector pair/quad mode, split it into two/four separate
      vectors.  */
-  else if (mode == OOmode || mode == XOmode)
+  else if (mode == OOmode || mode == XOmode || mode == TDOmode)
     reg_mode = V1TImode;
   else if (FP_REGNO_P (reg))
     reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode :
@@ -27651,13 +27658,13 @@ rs6000_split_multireg_move (rtx dst, rtx src)
       return;
     }
 
-  /* The __vector_pair and __vector_quad modes are multi-register
+  /* The __vector_pair, __vector_quad and __dmr1024 modes are multi-register
      modes, so if we have to load or store the registers, we have to be
      careful to properly swap them if we're in little endian mode
      below.  This means the last register gets the first memory
      location.  We also need to be careful of using the right register
      numbers if we are splitting XO to OO.  */
-  if (mode == OOmode || mode == XOmode)
+  if (mode == OOmode || mode == XOmode || mode == TDOmode)
     {
       nregs = hard_regno_nregs (reg, mode);
       int reg_mode_nregs = hard_regno_nregs (reg, reg_mode);
@@ -27795,8 +27802,8 @@ rs6000_split_multireg_move (rtx dst, rtx src)
       /* Move register range backwards, if we might have destructive
 	 overlap.  */
       int i;
-      /* XO/OO are opaque so cannot use subregs. */
-      if (mode == OOmode || mode == XOmode )
+      /* XO/OO/TDO are opaque so cannot use subregs. */
+      if (mode == OOmode || mode == XOmode || mode == TDOmode)
 	{
 	  for (i = nregs - 1; i >= 0; i--)
 	    {
@@ -27971,8 +27978,8 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	  if (j == 0 && used_update)
 	    continue;
 
-	  /* XO/OO are opaque so cannot use subregs. */
-	  if (mode == OOmode || mode == XOmode )
+	  /* XO/OO/TDO are opaque so cannot use subregs. */
+	  if (mode == OOmode || mode == XOmode || mode == TDOmode)
 	    {
 	      rtx dst_i = gen_rtx_REG (reg_mode, REGNO (dst) + j);
 	      rtx src_i = gen_rtx_REG (reg_mode, REGNO (src) + j);
