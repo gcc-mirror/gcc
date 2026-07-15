@@ -135,6 +135,7 @@ _slp_tree::_slp_tree ()
   this->lanes = 0;
   SLP_TREE_TYPE (this) = undef_vec_info_type;
   this->data = NULL;
+  this->si = NULL;
 }
 
 /* Tear down a SLP node.  */
@@ -9073,7 +9074,7 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
 
   unsigned i;
   stmt_vec_info stmt_info;
-  stmt_vec_info last_stmt = vect_find_last_scalar_stmt_in_slp (node);
+  gimple *last_stmt = NULL;
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
       if (!stmt_info || svisited.contains (stmt_info))
@@ -9125,7 +9126,11 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
 		    || !PURE_SLP_STMT (use_stmt_info)))
 	      {
 		live_p = true;
-		if (!vect_stmt_dominates_stmt_p (last_stmt->stmt, use_stmt))
+		if (!last_stmt)
+		  last_stmt
+		    = (node->si ? node->si
+		       : vect_find_last_scalar_stmt_in_slp (node)->stmt);
+		if (!vect_stmt_dominates_stmt_p (last_stmt, use_stmt))
 		  {
 		    if (dump_enabled_p ())
 		      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -10244,6 +10249,9 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
   /* Mark all the statements that we vectorize.  */
   vect_bb_slp_mark_stmts_vectorized (bb_vinfo);
 
+  /* Compute vector stmt placement.  */
+  vect_schedule_slp (bb_vinfo, BB_VINFO_SLP_INSTANCES (bb_vinfo), true);
+
   /* Compute vectorizable live stmts.  */
   vect_bb_slp_mark_live_stmts (bb_vinfo);
 
@@ -10398,11 +10406,10 @@ vect_slp_region (vec<basic_block> bbs, vec<data_reference_p> datarefs,
 	      dump_user_location_t saved_vect_location = vect_location;
 	      vect_location = instance->location ();
 
-	      vect_schedule_slp (bb_vinfo, instance->subgraph_entries);
+	      vect_schedule_slp (bb_vinfo, instance->subgraph_entries, false);
 
 	      vect_location = saved_vect_location;
 	    }
-
 
 	  /* Generate the invariant statements.  */
 	  if (!gimple_seq_empty_p (bb_vinfo->inv_pattern_def_seq))
@@ -11845,13 +11852,13 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   return true;
 }
 
-/* Vectorize SLP NODE.  */
+/* Vectorize SLP NODE.  Only compute the vector insertion places when
+   PLACE_ONLY is true.  */
 
 static void
 vect_schedule_slp_node (vec_info *vinfo,
-			slp_tree node, slp_instance instance)
+			slp_tree node, slp_instance instance, bool place_only)
 {
-  gimple_stmt_iterator si;
   int i;
   slp_tree child;
 
@@ -11859,6 +11866,33 @@ vect_schedule_slp_node (vec_info *vinfo,
   if (SLP_TREE_DEF_TYPE (node) == vect_constant_def
       || SLP_TREE_DEF_TYPE (node) == vect_external_def)
     {
+      if (place_only)
+	{
+	  if (SLP_TREE_DEF_TYPE (node) == vect_constant_def)
+	    return;
+	  gimple *last_stmt = NULL;
+	  vec<tree> &defs = (!SLP_TREE_SCALAR_OPS (node).is_empty ()
+			     ? SLP_TREE_SCALAR_OPS (node)
+			     : SLP_TREE_VEC_DEFS (node));
+	  for (tree def : defs)
+	    /* If the stmt is not inside the region do not
+	       use it as possible insertion point.  */
+	    if (auto stmt_info = vinfo->lookup_def (def))
+	      {
+		gimple *stmt = stmt_info->stmt;
+		if (!last_stmt)
+		  last_stmt = stmt;
+		else if (vect_stmt_dominates_stmt_p (last_stmt, stmt))
+		  last_stmt = stmt;
+		else if (vect_stmt_dominates_stmt_p (stmt, last_stmt))
+		  ;
+		else
+		  gcc_unreachable ();
+	      }
+	  node->si = last_stmt;
+	  return;
+	}
+
       /* ???  vectorizable_shift can end up using a scalar operand which is
 	 currently denoted as !SLP_TREE_VECTYPE.  No need to vectorize the
 	 node in this case.  */
@@ -11878,9 +11912,15 @@ vect_schedule_slp_node (vec_info *vinfo,
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 
   gcc_assert (SLP_TREE_VEC_DEFS (node).is_empty ());
-  if (SLP_TREE_VECTYPE (node))
+  if (!place_only && SLP_TREE_VECTYPE (node))
     SLP_TREE_VEC_DEFS (node).create (vect_get_num_copies (vinfo, node));
 
+  gimple *last_stmt;
+  gimple_stmt_iterator si;
+  /* ???  When !place_only we'd like to re-use place_only computed info,
+     but this is a bit awkward due to using gsi_insert_before and the
+     requirement to insert after vector defs.  So we compute last_stmt
+     during pre-scheduling and si during scheduling.  */
   if (!SLP_TREE_PERMUTE_P (node) && STMT_VINFO_DATA_REF (stmt_info))
     {
       /* Vectorized loads go before the first scalar load to make it
@@ -11891,7 +11931,8 @@ vect_schedule_slp_node (vec_info *vinfo,
 	last_stmt_info = vect_find_first_scalar_stmt_in_slp (node);
       else /* DR_IS_WRITE */
 	last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
-      si = gsi_for_stmt (last_stmt_info->stmt);
+      last_stmt = last_stmt_info->stmt;
+      si = gsi_for_stmt (last_stmt);
     }
   else if (!SLP_TREE_PERMUTE_P (node)
 	   && (SLP_TREE_TYPE (node) == cycle_phi_info_type
@@ -11899,15 +11940,37 @@ vect_schedule_slp_node (vec_info *vinfo,
 	       || SLP_TREE_TYPE (node) == phi_info_type))
     {
       /* For PHI node vectorization we do not use the insertion iterator.  */
+      last_stmt = SLP_TREE_SCALAR_STMTS (node)[0]->stmt;
       si = gsi_none ();
     }
   else
     {
       /* Emit other stmts after the children vectorized defs which is
 	 earliest possible.  */
-      gimple *last_stmt = NULL;
+      last_stmt = NULL;
       FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-	if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
+	if (place_only)
+	  {
+	    gimple *vstmt = child->si;
+	    if (!vstmt)
+	      {
+		/* vect_constant_def and defs at region boundary do not
+		   constrain placement.  */
+		gcc_assert (SLP_TREE_DEF_TYPE (child) == vect_constant_def
+			    /* ???  Region boundary is not representated
+			       by a NULL stmt.  */
+			    || true);
+	      }
+	    else if (!last_stmt)
+	      last_stmt = vstmt;
+	    else if (vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+	      last_stmt = vstmt;
+	    else if (vect_stmt_dominates_stmt_p (vstmt, last_stmt))
+	      ;
+	    else
+	      gcc_unreachable ();
+	  }
+	else if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	  {
 	    /* For fold-left reductions we are retaining the scalar
 	       reduction PHI but we still have SLP_TREE_NUM_VEC_STMTS
@@ -12021,11 +12084,16 @@ vect_schedule_slp_node (vec_info *vinfo,
 					 gimple_bb (stmt_info->stmt),
 					 gimple_bb (last_stmt)));
 	  si = gsi_after_labels (gimple_bb (stmt_info->stmt));
+	  last_stmt = gsi_stmt (si);
 	}
       /* When there is no in-region child def to guide placement, insert
 	 at region boundary.  */
       else if (!last_stmt)
-	si = gsi_after_labels (vinfo->bbs[0]);
+	{
+	  si = gsi_after_labels (vinfo->bbs[0]);
+	  /* ???  last_stmt can be NULL if the block is empty.  */
+	  last_stmt = gsi_stmt (si);
+	}
       else if (is_a <gphi *> (last_stmt))
 	si = gsi_after_labels (gimple_bb (last_stmt));
       else
@@ -12037,6 +12105,8 @@ vect_schedule_slp_node (vec_info *vinfo,
 
 	  if (auto loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
 	    {
+	      /* We'll have to fix this up for loop vect.  */
+	      gcc_assert (!place_only);
 	      /* Avoid scheduling stmts to random places in the CFG, any
 		 stmt dominance check we performed is possibly wrong as UIDs
 		 are not initialized for all of the function for loop
@@ -12066,6 +12136,46 @@ vect_schedule_slp_node (vec_info *vinfo,
 			  && vect_stmt_dominates_stmt_p (last_stmt, *si2)))
 		    si = si2;
 		}
+	    }
+	}
+    }
+
+  if (place_only)
+    {
+      if (dump_enabled_p () && last_stmt)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "placing node %p at %G:", (void *)node, last_stmt);
+      /* Verify we either get a stmt anchor or region start.  */
+      gcc_assert ((last_stmt && gimple_bb (last_stmt))
+		  || (!last_stmt && gsi_bb (si)));
+      node->si = last_stmt;
+      return;
+    }
+
+  /* ???  Asserting vect_stmt_dominates_stmt_p (gsi_stmt (si), node->si)
+     does not work because in some cases we advance si from last_stmt (as
+     we want to insert after vector stmts) and because vector stmts of
+     children have been inserted possibly at the same location constraint,
+     moving si even further.  */
+  if (flag_checking && node->si && gimple_bb (node->si) && !gsi_end_p (si))
+    {
+      auto gsi2 = si;
+      while (1)
+	{
+	  if (vect_stmt_dominates_stmt_p (gsi_stmt (gsi2), node->si))
+	    break;
+	  /* As we have possibly advanced si it might now point to the
+	     scalar stmt immediately following node->si.  That's OK.  */
+	  if (gsi_stmt (gsi2) != gsi_stmt (si)
+	      && gimple_uid (gsi_stmt (gsi2)) != 0)
+	    gcc_unreachable ();
+	  gsi_prev (&gsi2);
+	  if (gsi_end_p (gsi2))
+	    {
+	      if (is_a <gphi *> (node->si)
+		  && gimple_bb (node->si) == gsi_bb (si))
+		break;
+	      gcc_unreachable ();
 	    }
 	}
     }
@@ -12295,7 +12405,7 @@ struct slp_scc_info
 static void
 vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 		   hash_map<slp_tree, slp_scc_info> &scc_info,
-		   int &maxdfs, vec<slp_tree> &stack)
+		   int &maxdfs, vec<slp_tree> &stack, bool place_only)
 {
   bool existed_p;
   slp_scc_info *info = &scc_info.get_or_insert (node, &existed_p);
@@ -12308,7 +12418,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     {
       info->on_stack = false;
-      vect_schedule_slp_node (vinfo, node, instance);
+      vect_schedule_slp_node (vinfo, node, instance, place_only);
       return;
     }
 
@@ -12325,7 +12435,8 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
       slp_scc_info *child_info = scc_info.get (child);
       if (!child_info)
 	{
-	  vect_schedule_scc (vinfo, child, instance, scc_info, maxdfs, stack);
+	  vect_schedule_scc (vinfo, child, instance, scc_info, maxdfs, stack,
+			     place_only);
 	  /* Recursion might have re-allocated the node.  */
 	  info = scc_info.get (node);
 	  child_info = scc_info.get (child);
@@ -12344,7 +12455,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
     {
       stack.pop ();
       info->on_stack = false;
-      vect_schedule_slp_node (vinfo, node, instance);
+      vect_schedule_slp_node (vinfo, node, instance, place_only);
       if (!SLP_TREE_PERMUTE_P (node)
 	  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
 	phis_to_fixup.quick_push (node);
@@ -12396,7 +12507,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 		    }
 	      if (ready)
 		{
-		  vect_schedule_slp_node (vinfo, entry, instance);
+		  vect_schedule_slp_node (vinfo, entry, instance, place_only);
 		  scc_info.get (entry)->on_stack = false;
 		  stack[idx] = NULL;
 		  todo--;
@@ -12410,6 +12521,9 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
       /* Pop the SCC.  */
       stack.truncate (last_idx);
     }
+
+  if (place_only)
+    return;
 
   /* Now fixup the backedge def of the vectorized PHIs in this SCC.  */
   slp_tree phi_node;
@@ -12461,10 +12575,12 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
     }
 }
 
-/* Generate vector code for SLP_INSTANCES in the loop/basic block.  */
+/* Generate vector code for SLP_INSTANCES in the loop/basic block.  Perform
+   vector stmt placement only when PLACE_ONLY is true.  */
 
 void
-vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances)
+vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances,
+		   bool place_only)
 {
   slp_instance instance;
   unsigned int i;
@@ -12474,7 +12590,7 @@ vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances)
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       slp_tree node = SLP_INSTANCE_TREE (instance);
-      if (dump_enabled_p ())
+      if (!place_only && dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
 			   "Vectorizing SLP tree:\n");
@@ -12489,15 +12605,19 @@ vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances)
 	 have a PHI be the node breaking the cycle.  */
       auto_vec<slp_tree> stack;
       if (!scc_info.get (node))
-	vect_schedule_scc (vinfo, node, instance, scc_info, maxdfs, stack);
+	vect_schedule_scc (vinfo, node, instance, scc_info, maxdfs, stack,
+			   place_only);
 
-      if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
+      if (!place_only && !SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
 	vectorize_slp_instance_root_stmt (vinfo, node, instance);
 
-      if (dump_enabled_p ())
+      if (!place_only && dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.\n");
     }
+
+  if (place_only)
+    return;
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
