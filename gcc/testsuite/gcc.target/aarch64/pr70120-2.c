@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
 /* { dg-options "-Og -freorder-functions -g3 -mcmodel=large -fno-pie" } */
+/* { dg-require-effective-target aarch64_mcmodel_large } */
 
 typedef short v32u16 __attribute__ ((vector_size (32)));
 typedef int v32u32 __attribute__ ((vector_size (32)));

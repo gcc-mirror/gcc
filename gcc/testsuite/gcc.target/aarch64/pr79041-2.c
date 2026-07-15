@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mcmodel=large" } */
 /* { dg-require-effective-target lp64 } */
+/* { dg-require-effective-target aarch64_mcmodel_large } */
 
 __int128
 t (void)

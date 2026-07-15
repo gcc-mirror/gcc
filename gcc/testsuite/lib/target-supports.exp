@@ -13077,6 +13077,23 @@ proc check_effective_target_aarch64_tiny { } {
     }
 }
 
+# True if the compiler will emit tiny code model when provided with the
+# -mcmodel=tiny compiler switch.
+
+proc check_effective_target_aarch64_mcmodel_tiny { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_mcmodel_tiny object {
+	    #ifdef __AARCH64_CMODEL_TINY__
+	    int dummy;
+	    #else
+	    #error target not AArch64 tiny code model
+	    #endif
+	} "-mcmodel=tiny"]
+    } else {
+	return 0
+    }
+}
+
 # Return 1 if Gas supports AEABI build attributes on AArch64 target
 proc check_effective_target_aarch64_gas_has_build_attributes { } {
     if { ![istarget aarch64*-*-*] } {
@@ -13195,6 +13212,23 @@ proc check_effective_target_aarch64_large { } {
 	    #error target not AArch64 large code model
 	    #endif
 	}]
+    } else {
+	return 0
+    }
+}
+
+# True if the compiler will emit large code model when provided with the
+# -mcmodel=large compiler switch.
+
+proc check_effective_target_aarch64_mcmodel_large { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_mcmodel_large object {
+	    #ifdef __AARCH64_CMODEL_LARGE__
+	    int dummy;
+	    #else
+	    #error target not AArch64 large code model
+	    #endif
+	} "-mcmodel=large"]
     } else {
 	return 0
     }

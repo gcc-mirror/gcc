@@ -1,5 +1,6 @@
 /* { dg-do link } */
 /* { dg-options "-O3 -save-temps -mcmodel=tiny" } */
+/* { dg-require-effective-target aarch64_mcmodel_tiny } */
 
 char fixed_regs[0x00080000];
 

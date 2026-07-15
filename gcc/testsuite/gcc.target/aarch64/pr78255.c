@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mcmodel=tiny" } */
+/* { dg-require-effective-target aarch64_mcmodel_tiny } */
 
 extern int bar (void *);
 
