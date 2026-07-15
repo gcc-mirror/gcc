@@ -485,11 +485,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return {__it, true};
 	}
 
-      template<typename... _Args>
-	_GLIBCXX26_CONSTEXPR
-	pair<iterator, bool>
-	_M_try_emplace(optional<const_iterator> __hint)
-	{ return _M_try_emplace(__hint, value_type()); }
+      _GLIBCXX26_CONSTEXPR
+      pair<iterator, bool>
+      _M_try_emplace(optional<const_iterator> __hint)
+      { return _M_try_emplace(__hint, value_type()); }
 
       template<typename... _Args>
 	requires is_constructible_v<value_type, _Args...>
