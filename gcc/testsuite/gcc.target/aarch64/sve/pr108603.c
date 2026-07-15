@@ -1,3 +1,4 @@
+/* { dg-require-effective-target aarch64_mabi_ilp32 } */
 /* { dg-options "-O2 -mabi=ilp32 -Wno-deprecated -fdata-sections" } */
 
 int a[128];

@@ -14136,6 +14136,16 @@ proc check_effective_target_arm_thumb2_ok_no_arm_v8_1m_lob { } {
     return 0
 }
 
+# Return 1 if this is an AArch64 target where -mabi=ilp32 can be used.
+# The option is deprecated, but we have active tests.
+
+proc check_effective_target_aarch64_mabi_ilp32 { } {
+  return [check_no_compiler_messages_nocache aarch64_mabi_ilp32 assembly {
+     int main() { return 0; }
+  } "-mabi=ilp32 -Wno-deprecated"]
+}
+
+
 # Returns 1 if the target is using glibc, 0 otherwise.
 
 proc check_effective_target_glibc { } {
