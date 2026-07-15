@@ -461,6 +461,11 @@ public:
 
   struct LoadedCrate
   {
+    LoadedCrate (std::string name, NodeId node_id,
+		 Resolver2_0::NameResolutionContext ctx)
+      : name (std::move (name)), node_id (node_id), ctx (std::move (ctx))
+    {}
+
     LoadedCrate (const LoadedCrate &) = delete;
     LoadedCrate &operator= (const LoadedCrate &) = delete;
     LoadedCrate (LoadedCrate &&other) = default;
