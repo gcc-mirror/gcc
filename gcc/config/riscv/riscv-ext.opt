@@ -62,6 +62,9 @@ TargetVariable
 int riscv_xthead_subext
 
 TargetVariable
+int riscv_xxt_subext
+
+TargetVariable
 int riscv_za_subext
 
 TargetVariable
@@ -89,6 +92,9 @@ TargetVariable
 int riscv_zt_subext
 
 TargetVariable
+int riscv_zvabd_subext
+
+TargetVariable
 int riscv_zvb_subext
 
 TargetVariable
@@ -102,9 +108,6 @@ int riscv_zvk_subext
 
 TargetVariable
 int riscv_zvl_subext
-
-TargetVariable
-int riscv_zvabd_subext
 
 Mask(RVE) Var(riscv_base_subext)
 
@@ -493,4 +496,6 @@ Mask(XANDESVDOT) Var(riscv_xandes_subext)
 Mask(XSMTVDOT) Var(riscv_xsmt_subext)
 
 Mask(XSMTVDOTII) Var(riscv_xsmt_subext)
+
+Mask(XXTVARITH) Var(riscv_xxt_subext)
 

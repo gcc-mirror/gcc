@@ -794,4 +794,8 @@
 @tab 1.0
 @tab SpacemiT vector dot product II extension
 
+@item @samp{xxtvarith}
+@tab 1.0
+@tab XuanTie vector arith turbo extension
+
 @end multitable

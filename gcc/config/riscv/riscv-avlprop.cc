@@ -137,12 +137,23 @@ avl_can_be_propagated_p (rtx_insn *rinsn)
 	   vcompress v1, v2, v0 with avl = 4, v1 = {0x8, 0x2, 0x3, 0x4}.
 	   vcompress v1, v2, v0 with avl = 2, v1 will be unchanged.
 	   Thus, we cannot propagate avl of vcompress because it may has
-	   semantics change to the result.  */
+	   semantics change to the result.
+       xt.vilo:
+	 - It can read past AVL when AVL is odd.  When xt.vilo has an AVL of 3
+	   while a producer has an AVL of 4, we cannot propagate the AVL of
+	   xt.vilo.
+       xt.vcrcfold:
+	 - It read pairs of adjacent elements of source vectors.  It does not
+	   read past AVL when AVL is odd, but needs an even AVL to perform
+	   correctly even if the consumer only nees an odd number of
+	   elements.  */
   return get_attr_type (rinsn) != TYPE_VGATHER
 	 && get_attr_type (rinsn) != TYPE_VSLIDEDOWN
 	 && get_attr_type (rinsn) != TYPE_VISLIDE1DOWN
 	 && get_attr_type (rinsn) != TYPE_VFSLIDE1DOWN
-	 && get_attr_type (rinsn) != TYPE_VCOMPRESS;
+	 && get_attr_type (rinsn) != TYPE_VCOMPRESS
+	 && get_attr_type (rinsn) != TYPE_XT_VCRCFOLD
+	 && get_attr_type (rinsn) != TYPE_XT_VILO;
 }
 
 static bool

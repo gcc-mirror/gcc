@@ -405,5 +405,6 @@
       vsha2cl,vsha2ch,vaesz,vclmulh,vghsh,vaeskf1,vaesdm,vgmul,
       vaesem,vaesdf,ghost,vsm3me,sf_vc_se,vsm3c,
       vaeskf2,vsha2ms,vector,wrvxrm,
-      vclmul,rdfrm,wrfrm,sf_vc,vsm4k,vsm4r"))
+      vclmul,rdfrm,wrfrm,sf_vc,vsm4k,vsm4r,
+      xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo"))
   "nothing")

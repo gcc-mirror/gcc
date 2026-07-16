@@ -266,7 +266,7 @@ RISCV_CORE("xt-c9501fdvt",    "rva23s64_zfbfmin_zfh_zicfilp_zicfiss_zkr_zmmul_"
 			      "zvkng_zvknha_zvknhb_zvksc_zvksed_zvksg_zvksh_"
 			      "zvl256b_smaia_smcntrpmf_smcsrind_smepmp_smmpm_"
 			      "smnpm_smrnmi_ssaia_sscsrind_sspm_ssstrict_"
-			      "svadu_svvptc",
+			      "svadu_svvptc_xxtvarith",
 			      "xt-c9501fdvt",
 			      /* MVENDORID */ UNKNOWN_ID,
 			      /* MARCHID */ UNKNOWN_ID,

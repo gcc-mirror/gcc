@@ -380,5 +380,5 @@
   (and (eq_attr "tune" "tt_ascalon_d8,tt_ascalon_xg")
        (eq_attr "type" "sf_vc,sf_vc_se,sf_vqmacc,sf_vfnrclip,\
 			vsm3me,vsm4r,vsm4k,vsm3c,ghost,\
-			mfc,mtc,rdfrm"))
+			mfc,mtc,rdfrm,xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo"))
   "tt_ascalon_d8_decode,tt_ascalon_d8_vec")

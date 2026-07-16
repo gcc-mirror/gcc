@@ -2349,6 +2349,17 @@ proc check_effective_target_riscv_zbkc { } {
     }]
 }
 
+# Return 1 if the target arch supports the XXTVarith extension, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_riscv_xxtvarith { } {
+    return [check_no_compiler_messages riscv_ext_xxtvarith assembly {
+       #ifndef __riscv_xxtvarith
+       #error "Not __riscv_xxtvarith"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the XTheadVector extension, 0 otherwise.
 # Cache the result.
 
@@ -2409,6 +2420,28 @@ proc check_effective_target_riscv_v_ok { } {
     # options to set special elf flags / sections to effect that.
 
     return 0
+}
+
+# Return 1 if we can execute code when using dg-add-options riscv_xxtvarith.
+
+proc check_effective_target_riscv_xxtvarith_ok { } {
+    if { [check_effective_target_riscv_xxtvarith] } {
+	return 1
+    }
+
+    set gcc_march [riscv_get_arch]
+    return [check_runtime riscv_xxtvarith_exec {
+	int main ()
+	{
+	    asm volatile ("vsetivli zero,4,e8,m1,ta,ma\n\t"
+			  "vmv.v.i v8,0\n\t"
+			  "vmv.v.i v10,0\n\t"
+			  "xt.vile.vv v12,v8,v10\n\t"
+			  "xt.vilo.vv v12,v8,v10"
+			  : : : "v8", "v10", "v12");
+	    return 0;
+	}
+    } "-march=${gcc_march}_xxtvarith"]
 }
 
 # Return 1 if we can execute code when using dg-add-options riscv_zfh
@@ -2645,8 +2678,8 @@ proc remove_options_for_riscv_a { flags } {
 	# If there are any -march flags, we have to adjust all of them.
 	set modified_flags [remove_options_for_riscv_a_only $flags]
 	# Also removed implied extensions
-	set modified_flags [remove_options_for_riscv_z_ext zaamo $flags]
-	set modified_flags [remove_options_for_riscv_z_ext zalrsc $flags]
+	set modified_flags [remove_options_for_riscv_multi_letter_ext zaamo $flags]
+	set modified_flags [remove_options_for_riscv_multi_letter_ext zalrsc $flags]
 	return $modified_flags
     }
     if { [check_effective_target_riscv_a] } {
@@ -2702,7 +2735,7 @@ proc remove_options_for_riscv_v { flags } {
     return $flags
 }
 
-proc add_options_for_riscv_z_ext { ext flags } {
+proc add_options_for_riscv_multi_letter_ext { ext flags } {
     if {[lsearch $flags "-march=*"] >= 0} {
         # If there are any -march flags, we have to adjust all of them.
         set modified_flags {}
@@ -2724,7 +2757,7 @@ proc add_options_for_riscv_z_ext { ext flags } {
     return "$flags -march=[riscv_get_arch]_${ext}"
 }
 
-proc remove_options_for_riscv_z_ext { ext flags } {
+proc remove_options_for_riscv_multi_letter_ext { ext flags } {
     if { [lsearch $flags -march=*] >= 0 } {
 	# If there are multiple -march flags, we have to adjust all of them.
 	set modified_flags ""
@@ -2741,23 +2774,23 @@ proc remove_options_for_riscv_z_ext { ext flags } {
     }
     if { [check_effective_target_riscv_$ext] } {
 	# Manually specify the -march and remove it with another call
-	return [remove_options_for_riscv_z_ext $ext "$flags -march=[riscv_get_arch]"]
+	return [remove_options_for_riscv_multi_letter_ext $ext "$flags -march=[riscv_get_arch]"]
     }
     return $flags
 }
 
 proc add_options_for_riscv_zaamo { flags } {
-    return [add_options_for_riscv_z_ext zaamo $flags]
+    return [add_options_for_riscv_multi_letter_ext zaamo $flags]
 }
 
 proc remove_options_for_riscv_zaamo { flags } {
-    set modified_flags [remove_options_for_riscv_z_ext zaamo $flags]
+    set modified_flags [remove_options_for_riscv_multi_letter_ext zaamo $flags]
     # If zabha is set then zaamo will be implied. We need to remove zabha
     # as well.
-    set modified_flags [remove_options_for_riscv_z_ext zabha $modified_flags]
+    set modified_flags [remove_options_for_riscv_multi_letter_ext zabha $modified_flags]
     # If zacas is set then zaamo will be implied. We need to remove zacas
     # as well.
-    set modified_flags [remove_options_for_riscv_z_ext zacas $modified_flags]
+    set modified_flags [remove_options_for_riscv_multi_letter_ext zacas $modified_flags]
     # If 'a' is set then zaamo will be implied. We need to downgrade instances
     # of 'a' to 'zalrsc'
     set no_a_flags [remove_options_for_riscv_a_only $modified_flags]
@@ -2769,11 +2802,11 @@ proc remove_options_for_riscv_zaamo { flags } {
 }
 
 proc add_options_for_riscv_zalrsc { flags } {
-    return [add_options_for_riscv_z_ext zalrsc $flags]
+    return [add_options_for_riscv_multi_letter_ext zalrsc $flags]
 }
 
 proc remove_options_for_riscv_zalrsc { flags } {
-    set modified_flags [remove_options_for_riscv_z_ext zalrsc $flags]
+    set modified_flags [remove_options_for_riscv_multi_letter_ext zalrsc $flags]
     # If 'a' is set then zalrsc will be implied. We need to downgrade instances
     # of 'a' to 'zaamo'
     set no_a_flags [remove_options_for_riscv_a_only $modified_flags]
@@ -2785,61 +2818,69 @@ proc remove_options_for_riscv_zalrsc { flags } {
 }
 
 proc add_options_for_riscv_zalasr { flags } {
-    return [add_options_for_riscv_z_ext zalasr $flags]
+    return [add_options_for_riscv_multi_letter_ext zalasr $flags]
 }
 
 proc remove_options_for_riscv_zalasr { flags } {
-    return [remove_options_for_riscv_z_ext zalasr $flags]
+    return [remove_options_for_riscv_multi_letter_ext zalasr $flags]
 }
 
 proc add_options_for_riscv_zabha { flags } {
-    return [add_options_for_riscv_z_ext zabha $flags]
+    return [add_options_for_riscv_multi_letter_ext zabha $flags]
 }
 
 proc remove_options_for_riscv_zabha { flags } {
     set modified_flags [remove_options_for_riscv_zaamo $flags]
-    return [remove_options_for_riscv_z_ext zabha $modified_flags]
+    return [remove_options_for_riscv_multi_letter_ext zabha $modified_flags]
 }
 
 proc add_options_for_riscv_zacas { flags } {
-    return [add_options_for_riscv_z_ext zacas $flags]
+    return [add_options_for_riscv_multi_letter_ext zacas $flags]
 }
 
 proc remove_options_for_riscv_zacas { flags } {
     set modified_flags [remove_options_for_riscv_zaamo $flags]
-    return [remove_options_for_riscv_z_ext zacas $modified_flags]
+    return [remove_options_for_riscv_multi_letter_ext zacas $modified_flags]
 }
 
 proc add_options_for_riscv_zfh { flags } {
-    return [add_options_for_riscv_z_ext zfh $flags]
+    return [add_options_for_riscv_multi_letter_ext zfh $flags]
 }
 
 proc remove_options_for_riscv_zfh { flags } {
-    return [remove_options_for_riscv_z_ext zfh $flags]
+    return [remove_options_for_riscv_multi_letter_ext zfh $flags]
 }
 
 proc add_options_for_riscv_ztso { flags } {
-    return [add_options_for_riscv_z_ext ztso $flags]
+    return [add_options_for_riscv_multi_letter_ext ztso $flags]
 }
 
 proc remove_options_for_riscv_ztso { flags } {
-    return [remove_options_for_riscv_z_ext ztso $flags]
+    return [remove_options_for_riscv_multi_letter_ext ztso $flags]
 }
 
 proc add_options_for_riscv_zvbb { flags } {
-    return [add_options_for_riscv_z_ext zvbb $flags]
+    return [add_options_for_riscv_multi_letter_ext zvbb $flags]
 }
 
 proc remove_options_for_riscv_zvbb { flags } {
-    return [add_options_for_riscv_z_ext zvbb $flags]
+    return [add_options_for_riscv_multi_letter_ext zvbb $flags]
 }
 
 proc add_options_for_riscv_zvfh { flags } {
-    return [add_options_for_riscv_z_ext zvfh $flags]
+    return [add_options_for_riscv_multi_letter_ext zvfh $flags]
 }
 
 proc remove_options_for_riscv_zvfh { flags } {
-    return [remove_options_for_riscv_z_ext zvfh $flags]
+    return [remove_options_for_riscv_multi_letter_ext zvfh $flags]
+}
+
+proc add_options_for_riscv_xxtvarith { flags } {
+    return [add_options_for_riscv_multi_letter_ext xxtvarith $flags]
+}
+
+proc remove_options_for_riscv_xxtvarith { flags } {
+    return [remove_options_for_riscv_multi_letter_ext xxtvarith $flags]
 }
 
 # Return 1 if the target is ia32 or x86_64.

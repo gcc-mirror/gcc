@@ -186,5 +186,5 @@
 			vfslide1up,vfncvtftof,vsetvl,viwmuladd,vfredu,vfwredu,
 			vlsegde,vmiota,vstr,vgather,vssegts,vldux,vlsegds,vimul,
 			vste,vsetvl_pre,vimuladd,vcompress,vssegtux,wrfrm,rdfrm,
-			vired"))
+			vired,xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo"))
   "andes_23_dummies")

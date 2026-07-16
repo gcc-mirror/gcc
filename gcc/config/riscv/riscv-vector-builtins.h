@@ -140,6 +140,7 @@ enum required_ext
   XANDESVSINTLOAD_EXT,	/* XANDESVSINTLOAD extension */
   XANDESVPACKFPH_EXT,	/* XANDESVPACKFPH extension */
   XANDESVDOT_EXT,	/* XANDESVDOT extension */
+  XXTVARITH_EXT,	/* XXTVARITH extension */
   /* Please update required_ext_to_isa_name and required_extensions_specified
      when adding or removing enum values.  */
 };
@@ -172,6 +173,7 @@ enum rvv_builtin_partition
   RVV_PARTITION_XANDESVSINTLOAD,
   RVV_PARTITION_XANDESVPACKFPH,
   RVV_PARTITION_XANDESVDOT,
+  RVV_PARTITION_XXTVARITH,
   NUM_RVV_EXT_PARTITIONS
 };
 
@@ -236,6 +238,8 @@ static inline const char * required_ext_to_isa_name (enum required_ext required)
       return "xandesvpackfph";
     case XANDESVDOT_EXT:
       return "xandesvdot";
+    case XXTVARITH_EXT:
+      return "xxtvarith";
     default:
       gcc_unreachable ();
   }
@@ -295,6 +299,8 @@ static inline bool required_extensions_specified (enum required_ext required)
       return TARGET_XANDESVPACKFPH;
     case XANDESVDOT_EXT:
       return TARGET_XANDESVDOT;
+    case XXTVARITH_EXT:
+      return TARGET_XXTVARITH;
     default:
       gcc_unreachable ();
   }

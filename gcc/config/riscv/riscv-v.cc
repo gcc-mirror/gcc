@@ -3649,6 +3649,42 @@ shuffle_consecutive_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Recognize the patterns of xt.vile and xt.vilo.  */
+
+static bool
+shuffle_interleave_even_odd_patterns (struct expand_vec_perm_d *d)
+{
+  machine_mode vmode = d->vmode;
+  poly_int64 vec_len = d->perm.length ();
+
+  if (!TARGET_XXTVARITH || d->one_vector_p || !known_ge (vec_len, 2))
+    return false;
+
+  bool even = false;
+  if (d->perm.series_p (0, 2, 0, 2)
+      && d->perm.series_p (1, 2, vec_len, 2))
+    even = true;
+  else if (d->perm.series_p (0, 2, 1, 2)
+	   && d->perm.series_p (1, 2, vec_len + 1, 2))
+    even = false;
+  else
+    return false;
+
+  /* Success!  */
+  if (d->testing_p)
+    return true;
+
+  rtx ops[] = {gen_lowpart (vmode, d->target), gen_lowpart (vmode, d->op0),
+	       gen_lowpart (vmode, d->op1)};
+
+  insn_code icode
+    = code_for_xt_pred (even ? UNSPEC_XT_VILE : UNSPEC_XT_VILO, vmode);
+
+  emit_vlmax_insn (icode, __NORMAL_OP_TA2 | BINARY_OP_P, ops);
+
+  return true;
+}
+
 /* Recognize the patterns that we can use compress operation to shuffle the
    vectors.  The perm selector of compress pattern is divided into 2 part:
    The first part is the random index number < NUNITS.
@@ -4499,6 +4535,8 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (shuffle_merge_patterns (d))
 	    return true;
 	  if (shuffle_consecutive_patterns (d))
+	    return true;
+	  if (shuffle_interleave_even_odd_patterns (d))
 	    return true;
 	  if (shuffle_slide_patterns (d))
 	    return true;

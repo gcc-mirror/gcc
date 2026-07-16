@@ -4,6 +4,7 @@
 #include <riscv_vector.h>
 #include <sifive_vector.h>
 #include <andes_vector.h>
+#include <xuantie_vector.h>
 
 #if defined (__riscv_vector) || defined (__riscv_zvabd) \
     || defined (__riscv_zvbb) \
@@ -52,7 +53,8 @@
     || !defined (__riscv_intrinsic_xandesvbfhcvt) \
     || !defined (__riscv_intrinsic_xandesvdot) \
     || !defined (__riscv_intrinsic_xandesvpackfph) \
-    || !defined (__riscv_intrinsic_xandesvsintload)
+    || !defined (__riscv_intrinsic_xandesvsintload) \
+    || !defined (__riscv_intrinsic_xxtvarith)
 #error "missing vector intrinsic detection macro"
 #endif
 
@@ -89,6 +91,7 @@
     || __riscv_intrinsic_xandesvbfhcvt != 1 \
     || __riscv_intrinsic_xandesvdot != 1 \
     || __riscv_intrinsic_xandesvpackfph != 1 \
-    || __riscv_intrinsic_xandesvsintload != 1
+    || __riscv_intrinsic_xandesvsintload != 1 \
+    || __riscv_intrinsic_xxtvarith != 1
 #error "bad vector intrinsic detection macro value"
 #endif

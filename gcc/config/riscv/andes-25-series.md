@@ -318,5 +318,6 @@
 			vaeskf1,vandn,vaesdm,vclmul,vclmulh,vrol,vcpop,vbrev8,
 			vsm3me,vbrev,vctz,vgmul,vsha2ms,vaesz,vrev8,
 			vaeskf2,vsha2cl,vwsll,vaesdf,vaesem,vfwmaccbf16,
-			sf_vqmacc,sf_vc,sf_vc_se,sf_vfnrclip"))
+			sf_vqmacc,sf_vc,sf_vc_se,sf_vfnrclip,
+			xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo"))
   "andes_25_vector_dummies")

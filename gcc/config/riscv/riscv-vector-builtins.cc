@@ -53,6 +53,7 @@
 #include "riscv-vector-builtins-bases.h"
 #include "sifive-vector-builtins-bases.h"
 #include "andes-vector-builtins-bases.h"
+#include "xuantie-vector-builtins-bases.h"
 
 using namespace riscv_vector;
 
@@ -581,6 +582,12 @@ static const rvv_type_info q_ops[] = {
 /* A list of all vuint8m_t will be registered for intrinsic functions.  */
 static const rvv_type_info qu_ops[] = {
 #define DEF_RVV_QU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all v[u]int64m_t will be registered for intrinsic functions.  */
+static const rvv_type_info diu_ops[] = {
+#define DEF_RVV_DIU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
@@ -3509,6 +3516,18 @@ static constexpr const rvv_op_info u_s_ops
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      x_v_args /* Args */};
 
+static constexpr const rvv_op_info xt_qu_vvv_ops
+  = {qu_ops,			/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vvv_args /* Args */};
+
+static constexpr const rvv_op_info xt_diu_vvvv_ops
+  = {diu_ops,				/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vvv_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static constexpr const function_type_info function_types[] = {
 #define DEF_RVV_TYPE_INDEX(                                                    \
@@ -3619,6 +3638,9 @@ static function_group_info function_groups[] = {
 #define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
   {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, REQUIRED_EXTENSIONS},
 #include "andes-vector-builtins-functions.def"
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)                         \
+  {#NAME, &bases::NAME, &shapes::SHAPE, PREDS, OPS_INFO, REQUIRED_EXTENSIONS},
+#include "xuantie-vector-builtins-functions.def"
 
 };
 
@@ -3742,6 +3764,8 @@ get_builtin_partition (required_ext ext, const function_instance &instance)
       return RVV_PARTITION_XANDESVPACKFPH;
     case XANDESVDOT_EXT:
       return RVV_PARTITION_XANDESVDOT;
+    case XXTVARITH_EXT:
+      return RVV_PARTITION_XXTVARITH;
     default:
       gcc_unreachable ();
     }

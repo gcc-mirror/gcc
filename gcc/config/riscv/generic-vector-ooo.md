@@ -71,7 +71,7 @@
 (define_insn_reservation "vec_imul" 4
   (and (eq_attr "tune" "generic_ooo,generic")
        (eq_attr "type" "vimul,viwmul,vimuladd,viwmuladd,vsmul,vclmul,vclmulh,\
-                        vghsh,vgmul"))
+                        vghsh,vgmul,xt_vgmulxor,xt_vcrcfold"))
   "vxu_ooo_issue,vxu_ooo_alu")
 
 ;; Vector float addition.
@@ -114,7 +114,8 @@
 (define_insn_reservation "vec_perm" 3
   (and (eq_attr "tune" "generic_ooo,generic")
        (eq_attr "type" "vimerge,vfmerge,vslideup,vslidedown,vislide1up,\
-                        vislide1down,vfslide1up,vfslide1down,vgather,vcompress"))
+                        vislide1down,vfslide1up,vfslide1down,vgather,vcompress,\
+                        xt_vile,xt_vilo"))
   "vxu_ooo_issue,vxu_ooo_alu")
 
 ;; Vector reduction.

@@ -104,7 +104,7 @@
                         vimerge,vror,rdvlenb,vfwcvtitof,vaesdf,viwmuladd,vrev8,
                         vsm4r,vsalu,vfminmax,vicalu,vslideup,vldox,vstm,
                         vfwcvtbf16,vfmovfv,vfslide1up,vimovxv,sf_vc,sf_vqmacc,
-                        sf_vc_se"))
+                        sf_vc_se,xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo"))
   "(arcv_rhx100_issueA_fuse0 + arcv_rhx100_issueA_fuse1) | (arcv_rhx100_issueB_fuse0 + arcv_rhx100_issueB_fuse1)")
 
 ;; Bypasses

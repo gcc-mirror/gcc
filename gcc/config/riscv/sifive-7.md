@@ -301,5 +301,6 @@
        (eq_attr "type" "vector,vclmul,vclmulh,vghsh,vgmul,
                         vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,
                         vaesz,vsha2ms,vsha2ch,vsha2cl,
-                        vsm4k,vsm4r,vsm3me,vsm3c,sf_vc,sf_vc_se"))
+                        vsm4k,vsm4r,vsm3me,vsm3c,sf_vc,sf_vc_se,
+                        xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo"))
   "sifive_7_vcq,sifive_7_va*6")
