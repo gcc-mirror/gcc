@@ -180,6 +180,8 @@ public:
     GENERATOR_STATE,
 
     VA_LIST,
+    PIN,
+    UNPIN,
   };
 
   static const BiMap<std::string, Kind> lang_items;

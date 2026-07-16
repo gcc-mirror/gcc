@@ -144,6 +144,8 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"generator_state", Kind::GENERATOR_STATE},
 
   {"va_list", Kind::VA_LIST},
+  {"pin", Kind::PIN},
+  {"unpin", Kind::UNPIN},
 }};
 
 tl::optional<LangItem::Kind>
