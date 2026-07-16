@@ -99,14 +99,15 @@ Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
   if (!result)
     return false;
 
+  auto &imports = import_mappings.new_or_access (use_dec_id);
+
   // here, we insert the module's NodeId into the import_mappings and will look
   // up the module proper in `FinalizeImports`
   // The namespace does not matter here since we are dealing with a glob
   // FIXME: Does the namespace not matter? Is that valid?
   // TODO: Ugly
-  import_mappings.insert (use_dec_id,
-			  ImportPair (std::move (glob),
-				      ImportData::Glob (resolved->definition)));
+  imports.emplace_back (
+    ImportPair (std::move (glob), ImportData::Glob (resolved->definition)));
 
   return true;
 }

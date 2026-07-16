@@ -157,17 +157,6 @@ public:
       return iter.first->second;
     }
 
-    void insert (NodeId path_id, std::vector<ImportPair> &&pairs)
-    {
-      mappings.insert ({{path_id}, std::move (pairs)});
-    }
-
-    // Same as `insert`, but with just one node
-    void insert (NodeId path_id, ImportPair &&pair)
-    {
-      mappings.insert ({{path_id}, {pair}});
-    }
-
     std::vector<ImportPair> &get (NodeId use_id) { return mappings[use_id]; }
 
   private:

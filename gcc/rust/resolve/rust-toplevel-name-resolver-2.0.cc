@@ -440,7 +440,6 @@ flatten (
 	flatten_glob (*glob, glob_paths, ctx);
 	break;
       }
-      break;
     }
 }
 
