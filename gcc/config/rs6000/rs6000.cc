@@ -14257,6 +14257,15 @@ print_operand (FILE *file, rtx x, int code)
 	 output_operand.  */
 
     case 'A':
+      /* Use dense math register if TARGET_DMF enabled.  */
+      if (TARGET_DMF)
+	{
+	  if (!REG_P (x) || !DMR_REGNO_P (REGNO (x)))
+	    output_operand_lossage ("invalid %%A value");
+	  else
+	    fprintf (file, "%d", REGNO (x) - FIRST_DMR_REGNO);
+	  return;
+	}
       /* Write the MMA accumulator number associated with VSX register X.  */
       if (!REG_P (x) || !FP_REGNO_P (REGNO (x)) || (REGNO (x) % 4) != 0)
 	output_operand_lossage ("invalid %%A value");
