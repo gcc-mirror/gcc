@@ -133,6 +133,8 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"box_free", Kind::BOX_FREE},
   {"maybe_uninit", Kind::MAYBE_UNINIT},
 
+  {"unsafe_cell", Kind::UNSAFE_CELL},
+
   {"future_trait", Kind::FUTURE_TRAIT},
   {"poll", Kind::POLL},
   {"Ready", Kind::READY},

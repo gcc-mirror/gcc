@@ -773,7 +773,17 @@ TyTyResolveCompile::visit (const TyTy::ReferenceType &type)
     }
   else
     {
-      auto base = Backend::immutable_type (base_compiled_type);
+      // https://doc.rust-lang.org/core/cell/struct.UnsafeCell.html
+      // If you have a reference &T, then normally in Rust the compiler performs
+      // optimizations based on the knowledge that &T points to immutable data.
+      // Mutating that data, for example through an alias or by transmuting a &T
+      // into a &mut T, is considered undefined behavior. UnsafeCell<T> opts-out
+      // of the immutability guarantee for &T: a shared reference &UnsafeCell<T>
+      // may point to data that is being mutated. This is called “interior
+      // mutability”.
+      auto base = type.get_base ()->contains_unsafe_cell ()
+		    ? base_compiled_type
+		    : Backend::immutable_type (base_compiled_type);
       translated = Backend::reference_type (base);
     }
 }

@@ -356,6 +356,8 @@ public:
   virtual BaseConstType *as_const_type () { return nullptr; }
   virtual const BaseConstType *as_const_type () const { return nullptr; }
 
+  virtual bool contains_unsafe_cell () const { return false; }
+
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	    std::set<HirId> refs = std::set<HirId> ());
@@ -793,6 +795,8 @@ public:
 
   TupleType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
+  bool contains_unsafe_cell () const override;
+
 private:
   std::vector<TyVar> fields;
 };
@@ -1034,6 +1038,8 @@ public:
 
   ADTType *
   handle_substitions (SubstitutionArgumentMappings &mappings) override final;
+
+  bool contains_unsafe_cell () const override;
 
 private:
   DefId id;
@@ -1395,6 +1401,8 @@ public:
 
   ArrayType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
+  bool contains_unsafe_cell () const override;
+
 private:
   TyVar element_type;
   TyVar capacity;
@@ -1434,6 +1442,8 @@ public:
   BaseType *clone () const final override;
 
   SliceType *handle_substitions (SubstitutionArgumentMappings &mappings);
+
+  bool contains_unsafe_cell () const override;
 
 private:
   TyVar element_type;

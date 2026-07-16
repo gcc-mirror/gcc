@@ -2053,6 +2053,23 @@ ADTType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
   return adt;
 }
 
+bool
+ADTType::contains_unsafe_cell () const
+{
+  if (auto unsafe_cell
+      = mappings.lookup_lang_item (LangItem::Kind::UNSAFE_CELL))
+    {
+      if (get_id () == *unsafe_cell)
+	return true;
+
+      for (auto &variant : get_variants ())
+	for (auto &field : variant->get_fields ())
+	  if (field->get_field_type ()->contains_unsafe_cell ())
+	    return true;
+    }
+  return false;
+}
+
 // TupleType
 
 TupleType::TupleType (HirId ref, location_t locus, std::vector<TyVar> fields,
@@ -2204,6 +2221,15 @@ TupleType::handle_substitions (SubstitutionArgumentMappings &mappings)
     }
 
   return tuple;
+}
+
+bool
+TupleType::contains_unsafe_cell () const
+{
+  for (auto &field : get_fields ())
+    if (field.get_tyty ()->contains_unsafe_cell ())
+      return true;
+  return false;
 }
 
 void
@@ -2670,6 +2696,12 @@ ArrayType::handle_substitions (SubstitutionArgumentMappings &mappings)
   return ref;
 }
 
+bool
+ArrayType::contains_unsafe_cell () const
+{
+  return get_element_type ()->contains_unsafe_cell ();
+}
+
 void
 SliceType::accept_vis (TyVisitor &vis)
 {
@@ -2735,6 +2767,12 @@ SliceType::handle_substitions (SubstitutionArgumentMappings &mappings)
   ref->element_type = TyVar::subst_covariant_var (base, concrete);
 
   return ref;
+}
+
+bool
+SliceType::contains_unsafe_cell () const
+{
+  return get_element_type ()->contains_unsafe_cell ();
 }
 
 // BoolType

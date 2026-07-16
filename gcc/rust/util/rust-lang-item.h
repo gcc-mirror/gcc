@@ -169,6 +169,8 @@ public:
     BOX_FREE,
     MAYBE_UNINIT,
 
+    UNSAFE_CELL,
+
     FUTURE_TRAIT,
     POLL,
     READY,
