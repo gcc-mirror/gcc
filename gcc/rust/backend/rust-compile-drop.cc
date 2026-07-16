@@ -120,13 +120,5 @@ CompileDrop::build_current_scope_drop_cleanup ()
   return Backend::statement_list (drop_stmts);
 }
 
-void
-CompileDrop::emit_current_scope_drop_calls ()
-{
-  tree cleanup = build_current_scope_drop_cleanup ();
-  if (cleanup != NULL_TREE)
-    ctx->add_statement (cleanup);
-}
-
 } // namespace Compile
 } // namespace Rust
