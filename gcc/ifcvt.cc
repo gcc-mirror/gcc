@@ -4440,11 +4440,20 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost)
 /* Compute average of two given costs weighted by relative probabilities
    of respective basic blocks in an IF-THEN-ELSE.  E is the IF-THEN edge.
    With P as the probability to take the IF-THEN branch, return
-   P * THEN_COST + (1 - P) * ELSE_COST.  */
+   P * THEN_COST + (1 - P) * ELSE_COST.  Evaluate this as
+   ELSE_COST + P * (THEN_COST - ELSE_COST) when THEN_COST >= ELSE_COST, and
+   THEN_COST + (1 - P) * (ELSE_COST - THEN_COST) otherwise.  Both forms pass
+   a nonnegative value to profile_probability::apply and make its rounding
+   independent of the CFG arm order.  */
 static unsigned
 average_cost (unsigned then_cost, unsigned else_cost, edge e)
 {
-  return else_cost + e->probability.apply ((signed) (then_cost - else_cost));
+  if (then_cost < else_cost)
+    return then_cost
+      + e->probability.invert ().apply ((gcov_type) else_cost - then_cost);
+
+  return else_cost
+    + e->probability.apply ((gcov_type) then_cost - else_cost);
 }
 
 /* Given a simple IF-THEN-JOIN or IF-THEN-ELSE-JOIN block, attempt to convert
