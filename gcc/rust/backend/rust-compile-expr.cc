@@ -1132,10 +1132,9 @@ CompileExpr::visit (HIR::BreakExpr &expr)
     }
   else
     {
-      tree exit_expr
+      translated
 	= Backend::exit_expression (Backend::boolean_constant_expression (true),
 				    expr.get_locus ());
-      ctx->add_statement (exit_expr);
     }
 }
 

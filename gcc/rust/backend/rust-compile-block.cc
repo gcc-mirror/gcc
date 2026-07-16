@@ -25,6 +25,15 @@
 namespace Rust {
 namespace Compile {
 
+static bool
+is_control_flow_expr (HIR::Expr &expr)
+{
+  HIR::Expr::ExprType expr_type = expr.get_expression_type ();
+
+  return expr_type == HIR::Expr::ExprType::Break
+	 || expr_type == HIR::Expr::ExprType::Continue;
+}
+
 CompileBlock::CompileBlock (Context *ctx, Bvariable *result)
   : HIRCompileBase (ctx), translated (nullptr), result (result)
 {}
@@ -62,16 +71,24 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 
   if (expr.has_expr ())
     {
-      tree compiled_expr = CompileExpr::Compile (expr.get_final_expr (), ctx);
+      HIR::Expr &final_expr = expr.get_final_expr ();
+      tree compiled_expr = CompileExpr::Compile (final_expr, ctx);
+
       if (result != nullptr)
 	{
-	  location_t locus = expr.get_final_expr ().get_locus ();
+	  location_t locus = final_expr.get_locus ();
 	  tree result_reference = Backend::var_expression (result, locus);
 
 	  tree assignment
 	    = Backend::assignment_statement (result_reference, compiled_expr,
 					     expr.get_locus ());
 	  ctx->add_statement (assignment);
+	}
+      else if (compiled_expr != nullptr && is_control_flow_expr (final_expr)
+	       && compiled_expr != error_mark_node)
+	{
+	  tree stmt = convert_to_void (compiled_expr, ICV_STATEMENT);
+	  ctx->add_statement (stmt);
 	}
     }
   else if (result != nullptr)
