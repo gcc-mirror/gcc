@@ -248,6 +248,7 @@ extern void path_coverage_cc_tests ();
 extern void predict_cc_tests ();
 extern void pretty_print_cc_tests ();
 extern void pretty_print_token_buffer_cc_tests ();
+extern void profile_count_cc_tests ();
 extern void pub_sub_cc_tests ();
 extern void range_op_tests ();
 extern void range_tests ();

@@ -72,6 +72,7 @@ selftest::run_tests ()
   wide_int_cc_tests ();
   ggc_tests_cc_tests ();
   sreal_cc_tests ();
+  profile_count_cc_tests ();
   fibonacci_heap_cc_tests ();
   typed_splay_tree_cc_tests ();
   opt_suggestions_cc_tests ();

@@ -513,11 +513,35 @@ public:
       return ret;
     }
 
+  /* Return VAL scaled by this probability.  Round initialized probabilities
+     to the nearest integer, with halfway values away from zero.  Treat an
+     uninitialized probability as one half and truncate toward zero.  */
   gcov_type apply (gcov_type val) const
     {
       if (*this == uninitialized ())
 	return val / 2;
-      return RDIV (val * m_val, max_probability);
+
+      /* A unit probability leaves VAL unchanged.  Return it directly because
+	 the magnitude of the minimum gcov_type value is one greater than the
+	 maximum gcov_type value.  */
+      if (m_val == max_probability)
+	return val;
+
+      /* Convert to unsigned before negating so that the minimum gcov_type
+	 value has a representable magnitude.  Scale the magnitude with
+	 overflow-safe arithmetic, then restore the sign.  */
+      gcov_type_unsigned magnitude
+	= val < 0 ? -(gcov_type_unsigned) val : (gcov_type_unsigned) val;
+      uint64_t scaled;
+      bool scaled_p
+	= safe_scale_64bit (magnitude, m_val, max_probability, &scaled);
+      /* The scaled result fits in uint64_t.  With the unit case handled above,
+	 it also fits in the nonnegative range of gcov_type.  */
+      gcc_checking_assert (scaled_p);
+      gcc_checking_assert
+	(scaled <= (gcov_type_unsigned) INTTYPE_MAXIMUM (gcov_type));
+
+      return val < 0 ? -(gcov_type) scaled : (gcov_type) scaled;
     }
 
   /* Return 1-*THIS.  */
