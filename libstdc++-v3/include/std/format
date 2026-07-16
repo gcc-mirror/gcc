@@ -3542,6 +3542,124 @@ namespace __format
       { }
     };
 
+  // A format sink that writes directly to a basic_streambuf.
+  // Prefers zero-copy writes into the streambuf's put area
+  // (pptr/epptr/pbump), falling back to the stack buffer
+  // (_M_buf) and bulk sputn.
+  template<typename _CharT>
+    class _Streambuf_sink : public _Buf_sink<_CharT>
+    {
+    protected:
+      basic_streambuf<_CharT>* _M_sbuf;
+      bool _M_write_failed = false;
+
+      bool
+      _M_on_stack() const noexcept
+      { return this->_M_used().data() == this->_M_buf; }
+
+      // Try to point our span directly into the streambuf's put
+      // area for zero-copy writes.  Caller must fall back to
+      // using local buffer (_M_reset(_M_buf)).
+      bool
+      _M_reserve_put_area(size_t __n = 0)
+      {
+	if (auto __p = _M_sbuf->pptr())
+	  if (auto __e = _M_sbuf->epptr(); __e > __p)
+	    if (size_t __a(__e - __p); __a >= __n)
+	      {
+		this->_M_reset(span<_CharT>(__p, __a));
+		return true;
+	      }
+	return false;
+      }
+
+      // Write characters to the streambuf, tracking errors.
+      // I/O exceptions from sputn are caught and converted to
+      // _M_write_failed so they do not propagate as vformat exceptions
+      // per [ostream.formatted.print]/(4.2).
+      void
+      _M_flush()
+      {
+	span<const _CharT> __s = this->_M_used();
+	if (__s.empty() || _M_write_failed) [[unlikely]]
+	  return;
+
+	__try
+	  {
+	    if (!_M_on_stack())
+	      _M_sbuf->__safe_pbump(__s.size());
+	    else if (_M_sbuf->sputn(__s.data(), __s.size())
+		       != static_cast<streamsize>(__s.size()))
+	      _M_write_failed = true;
+	  }
+	__catch(const __cxxabiv1::__forced_unwind&)
+	  { throw; }
+	__catch(...)
+	  { _M_write_failed = true; }
+      }
+
+      void
+      _M_overflow() override
+      {
+	_M_flush();
+	if (!_M_write_failed) [[likely]]
+	  if (_M_reserve_put_area())
+	    return;
+	this->_M_reset(this->_M_buf);
+      }
+
+    public:
+      [[__gnu__::__always_inline__]]
+      explicit
+      _Streambuf_sink(basic_streambuf<_CharT>* __sbuf) noexcept
+      : _M_sbuf(__sbuf), _M_write_failed(!__sbuf)
+      { 
+	if (!_M_write_failed) [[likely]]
+	  _M_reserve_put_area();
+      }
+
+      // _M_bump is not overridden: the default advances _M_next within
+      // the current span (stack buffer or put area).  Actual commit
+      // to the streambuf happens via _M_flush, called from _M_overflow
+      // (buffer full) or _M_finish (end of formatting).
+
+      typename _Sink<_CharT>::_Reservation
+      _M_reserve(size_t __n) override
+      {
+	if (_M_write_failed) [[unlikely]]
+	  return { nullptr };
+
+	if (__n <= this->_M_unused().size())
+	  return { this };
+
+	if (!this->_M_used().empty())
+	  _M_flush();
+
+	// Try to write directly into the streambuf's put area.
+	if (_M_reserve_put_area(__n))
+	  return { this };
+
+	// Otherwise reset to the stack buffer.
+	this->_M_reset(this->_M_buf);
+	if (__n <= this->_M_unused().size())
+	  return { this };
+
+	return { nullptr };
+      }
+
+      bool
+      _M_discarding() const override
+      { return _M_write_failed; }
+
+      void
+      _M_finish()
+      { _M_flush(); }
+
+      bool
+      _M_failed() const noexcept
+      { return _M_write_failed; }
+    };
+
   using _GLIBCXX_STD_C::vector;
 
   // A sink that fills a sequence (e.g. std::string, std::vector, std::deque).
