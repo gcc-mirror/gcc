@@ -42,6 +42,14 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+#ifdef __glibcxx_format // C++ >= 20 && HOSTED
+  namespace __format {
+    template<typename, typename> class _Iter_sink;
+    template<typename _CharT>
+      class _Iter_sink<_CharT, ostreambuf_iterator<_CharT>>;
+  }
+#endif
+
   /**
    * @addtogroup iterators
    * @{
@@ -265,6 +273,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				    ostreambuf_iterator<_CharT2> >::__type
 	copy(istreambuf_iterator<_CharT2>, istreambuf_iterator<_CharT2>,
 	     ostreambuf_iterator<_CharT2>);
+
+#ifdef __glibcxx_format // C++ >= 20 && HOSTED
+      friend class __format::_Iter_sink<char_type, ostreambuf_iterator<char_type>>;
+#endif
 
     private:
       streambuf_type*	_M_sbuf;
