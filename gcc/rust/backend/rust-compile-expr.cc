@@ -294,11 +294,10 @@ CompileExpr::visit (HIR::ReturnExpr &expr)
 	= Backend::var_expression (fncontext.ret_addr, expr.get_locus ());
     }
 
-  CompileDrop (ctx).emit_return_scope_drop_calls ();
-
   tree return_stmt = Backend::return_statement (fncontext.fndecl, return_value,
 						expr.get_locus ());
-  ctx->add_statement (return_stmt);
+
+  translated = return_stmt;
 }
 
 void

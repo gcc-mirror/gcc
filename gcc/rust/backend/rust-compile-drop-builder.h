@@ -33,8 +33,6 @@ public:
 
   void note_simple_drop_candidate (HirId hirid, location_t locus);
   std::vector<DropCandidate> &peek_block_drop_candidates ();
-  const std::vector<std::vector<DropCandidate>> &
-  get_block_drop_candidate_stack () const;
 
 private:
   Context &ctx;
