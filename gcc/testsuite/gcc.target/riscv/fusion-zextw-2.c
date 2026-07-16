@@ -3,7 +3,7 @@
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-Og" "-Os" "-Oz" "-flto" } } */
 /* { dg-options "-march=rv64gc -mabi=lp64d -mtune=xiangshan-nanhu -fdump-rtl-sched2" } */
 /* { dg-final { check-function-bodies "**" "" } } */
-/* { dg-final { scan-rtl-dump "RISCV_FUSE_ZEXTWS" "sched2" } } */
+/* { dg-final { scan-rtl-dump {RISCV_FUSE_ZEXTW\M} "sched2" } } */
 
 /*
 **bar:

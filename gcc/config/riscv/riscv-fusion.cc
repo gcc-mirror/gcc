@@ -73,7 +73,7 @@ riscv_fusion_same_dest_p (rtx prev_set, rtx curr_set)
 }
 
 /* Matches an add:
-   (set (reg:DI rd) (plus:SI (reg:SI rs1) (reg:SI rs2))) */
+   (set (reg rd) (plus (reg rs1) (reg rs2))) */
 
 static bool
 riscv_set_is_add_p (rtx set)
@@ -85,7 +85,7 @@ riscv_set_is_add_p (rtx set)
 }
 
 /* Matches an addi:
-   (set (reg:DI rd) (plus:SI (reg:SI rs1) (const_int imm))) */
+   (set (reg rd) (plus (reg rs1) (const_int imm12))) */
 
 static bool
 riscv_set_is_addi_p (rtx set)
@@ -111,8 +111,8 @@ riscv_set_is_adduw_p (rtx set)
 }
 
 /* Matches a shNadd:
-  (set (reg:DI rd)
-       (plus:DI (ashift:DI (reg:DI rs1) (const_int N)) (reg:DI rS2)) */
+   (set (reg rd)
+	(plus (ashift (reg rs1) (const_int N)) (reg rs2))) */
 
 static bool
 riscv_set_is_shNadd_p (rtx set)
@@ -130,8 +130,8 @@ riscv_set_is_shNadd_p (rtx set)
 /* Matches a shNadd.uw:
   (set (reg:DI rd)
        (plus:DI (and:DI (ashift:DI (reg:DI rs1) (const_int N))
-			(const_int N))
-		(reg:DI rs2)) */
+			(const_int mask))
+		(reg:DI rs2))) */
 
 static bool
 riscv_set_is_shNadduw_p (rtx set)
@@ -147,73 +147,92 @@ riscv_set_is_shNadduw_p (rtx set)
 	  && REG_P (SET_DEST (set)));
 }
 
-/* Check for RISCV_FUSE_ZEXTW and RISCV_FUSE_ZEXTWS fusion.
-   prev (slli) == (set (reg:DI rD) (ashift:DI (reg:DI rS) (const_int 32)))
-   curr (srli) == (set (reg:DI rD) (lshiftrt:DI (reg:DI rD) (const_int N)))
-   with N being 32 for FUSE_ZEXTW, or less than 32 for FUSE_ZEXTWS.  */
+/* Check the common RTL for ZEXTW, ZEXTWS and ZEXTH fusion.  */
+
+static bool
+riscv_fuse_zext_common (rtx_insn *prev, rtx_insn *curr,
+			int shl_amount, bool zextws_p)
+{
+  rtx prev_set = single_set (prev);
+  rtx curr_set = single_set (curr);
+  if (!prev_set || !curr_set || any_condjump_p (curr))
+    return false;
+
+  if (!riscv_fusion_same_dest_p (prev_set, curr_set))
+    return false;
+
+  if (GET_CODE (SET_SRC (prev_set)) == ASHIFT
+      && GET_CODE (SET_SRC (curr_set)) == LSHIFTRT
+      && REG_P (SET_DEST (prev_set))
+      && REG_P (SET_DEST (curr_set))
+      && REG_P (XEXP (SET_SRC (curr_set), 0))
+      && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO (SET_DEST (curr_set))
+      && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
+      && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
+      && INTVAL (XEXP (SET_SRC (prev_set), 1)) == shl_amount
+      && (zextws_p
+	  ? INTVAL (XEXP (SET_SRC (curr_set), 1)) < shl_amount
+	  : INTVAL (XEXP (SET_SRC (curr_set), 1)) == shl_amount))
+    return true;
+
+  return false;
+}
+
+/* Check for RISCV_FUSE_ZEXTW fusion.
+   prev (slli) == (set (reg:DI rd1)
+		       (ashift:DI (reg:DI rs1) (const_int 32)))
+   curr (srli) == (set (reg:DI rd2)
+		       (lshiftrt:DI (reg:DI rd1) (const_int 32)))
+
+   Constraints:
+     rd1 == rd2.  */
+
+static bool
+riscv_fuse_zextw (rtx_insn *prev, rtx_insn *curr)
+{
+  return riscv_fuse_zext_common (prev, curr, 32, false);
+}
+
+/* Check for RISCV_FUSE_ZEXTWS fusion.
+   prev (slli) == (set (reg:DI rd1)
+		       (ashift:DI (reg:DI rs1) (const_int 32)))
+   curr (srli) == (set (reg:DI rd2)
+		       (lshiftrt:DI (reg:DI rd1) (const_int imm5)))
+
+   Constraints:
+     rd1 == rd2.  */
 
 static bool
 riscv_fuse_zextws (rtx_insn *prev, rtx_insn *curr)
 {
-  rtx prev_set = single_set (prev);
-  rtx curr_set = single_set (curr);
-  if (!prev_set || !curr_set || any_condjump_p (curr))
-    return false;
-
-  if (!riscv_fusion_same_dest_p (prev_set, curr_set))
-    return false;
-
-  if (GET_CODE (SET_SRC (prev_set)) == ASHIFT
-      && GET_CODE (SET_SRC (curr_set)) == LSHIFTRT
-      && REG_P (SET_DEST (prev_set))
-      && REG_P (SET_DEST (curr_set))
-      && REG_P (XEXP (SET_SRC (curr_set), 0))
-      && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO (SET_DEST (curr_set))
-      && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
-      && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
-      && INTVAL (XEXP (SET_SRC (prev_set), 1)) == 32
-      && ((INTVAL (XEXP (SET_SRC (curr_set), 1)) == 32
-	   && riscv_fusion_enabled_p (RISCV_FUSE_ZEXTW))
-	  || (INTVAL (XEXP (SET_SRC (curr_set), 1)) < 32
-	      && riscv_fusion_enabled_p (RISCV_FUSE_ZEXTWS))))
-    return true;
-
-  return false;
+  return riscv_fuse_zext_common (prev, curr, 32, true);
 }
 
 /* Check for RISCV_FUSE_ZEXTH fusion.
-   prev (slli) == (set (reg:DI rD) (ashift:DI (reg:DI rS) (const_int 48)))
-   curr (srli) == (set (reg:DI rD) (lshiftrt:DI (reg:DI rD) (const_int 48)))  */
+   prev (slli) == (set (reg:DI rd1)
+		       (ashift:DI (reg:DI rs1) (const_int 48)))
+   curr (srli) == (set (reg:DI rd2)
+		       (lshiftrt:DI (reg:DI rd1) (const_int 48)))
+
+   Constraints:
+     rd1 == rd2.  */
 
 static bool
 riscv_fuse_zexth (rtx_insn *prev, rtx_insn *curr)
 {
-  rtx prev_set = single_set (prev);
-  rtx curr_set = single_set (curr);
-  if (!prev_set || !curr_set || any_condjump_p (curr))
-    return false;
-
-  if (!riscv_fusion_same_dest_p (prev_set, curr_set))
-    return false;
-
-  if (GET_CODE (SET_SRC (prev_set)) == ASHIFT
-      && GET_CODE (SET_SRC (curr_set)) == LSHIFTRT
-      && REG_P (SET_DEST (prev_set))
-      && REG_P (SET_DEST (curr_set))
-      && REG_P (XEXP (SET_SRC (curr_set), 0))
-      && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO (SET_DEST (curr_set))
-      && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
-      && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
-      && INTVAL (XEXP (SET_SRC (prev_set), 1)) == 48
-      && INTVAL (XEXP (SET_SRC (curr_set), 1)) == 48)
-    return true;
-
-  return false;
+  return riscv_fuse_zext_common (prev, curr, 48, false);
 }
 
 /* Check for RISCV_FUSE_LDINDEXED fusion.
-   prev (add) == (set (reg:DI rD) (plus:DI (reg:DI rS1) (reg:DI rS2)))
-   curr (ld)  == (set (reg:DI rD) (mem:DI (reg:DI rD)))  */
+   prev (add) == (set (reg rd1)
+		      (plus (reg rs1) (reg rs2)))
+   curr (one of the following):
+     (load) == (set (reg rd2) (mem (reg rd1)))
+     (load) == (set (reg rd2)
+		    (any_extend (mem (reg rd1))))
+
+   Constraints:
+     rd1 == rd2.  */
 
 static bool
 riscv_fuse_ldindexed (rtx_insn *prev, rtx_insn *curr)
@@ -235,7 +254,8 @@ riscv_fuse_ldindexed (rtx_insn *prev, rtx_insn *curr)
       && REG_P (XEXP (SET_SRC (prev_set), 1)))
     return true;
 
-  /* curr (lw) == (set (any_extend:DI (mem:SUBX (reg:DI rD)))).  */
+  /* curr (lw) == (set (reg:DI rd2)
+		       (any_extend:DI (mem:SUBX (reg:DI rd1)))).  */
   if ((GET_CODE (SET_SRC (curr_set)) == SIGN_EXTEND
        || (GET_CODE (SET_SRC (curr_set)) == ZERO_EXTEND))
       && MEM_P (XEXP (SET_SRC (curr_set), 0))
@@ -252,8 +272,29 @@ riscv_fuse_ldindexed (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_EXPANDED_LD fusion.
-   Covers add/addi/shNadd + ld (with or without displacement) and
-   add.uw/shNadd.uw + lw (with or without displacement).  */
+   prev (one of the following):
+     (add) == (set (reg rd1) (plus (reg rs1) (reg rs2)))
+     (addi) == (set (reg rd1) (plus (reg rs1) (const_int imm12)))
+     (shNadd) == (set (reg rd1) (plus (ashift (reg rs1) (const_int N))
+				      (reg rs2)))
+     (add.uw) == (set (reg rd1) (plus (zero_extend (reg rs1))
+				      (reg rs2)))
+     (shNadd.uw) == (set (reg rd1)
+			 (plus (and (ashift (reg rs1)
+					    (const_int N))
+				    (const_int mask))
+			       (reg rs2)))
+   curr (one of the following):
+     (load) == (set (reg rd2) (mem (rd1, offset)))
+     (load) == (set (reg rd2) (any_extend (mem (rd1, offset))))
+
+   Constraints:
+     rd1 == rd2
+     add pairs only with a displaced non-extended load
+     addi and shNadd pair only with non-extended loads
+     add.uw and shNadd.uw pair only with extended loads
+     N is 1, 2, or 3 for shNadd and shNadd.uw
+     mask >> N == 0xffffffff for shNadd.uw.  */
 
 static bool
 riscv_fuse_expanded_ld (rtx_insn *prev, rtx_insn *curr)
@@ -266,9 +307,9 @@ riscv_fuse_expanded_ld (rtx_insn *prev, rtx_insn *curr)
   if (!riscv_fusion_same_dest_p (prev_set, curr_set))
     return false;
 
-  /* Match ld with displacement:
-     curr (ld) == (set (reg:DI rD)
-		       (mem:DI (plus:DI (reg:DI rD) (const_int IMM12))))  */
+  /* Match a load with displacement:
+     curr (load) == (set (reg rd2)
+			 (mem (plus (reg rd1) (const_int offset))))  */
   if (MEM_P (SET_SRC (curr_set))
       && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
       && GET_CODE (XEXP (SET_SRC (curr_set), 0)) == PLUS
@@ -282,8 +323,8 @@ riscv_fuse_expanded_ld (rtx_insn *prev, rtx_insn *curr)
 	return true;
     }
 
-  /* Match ld without displacement:
-     curr (ld) == (set (reg:DI rD) (mem:DI (reg:DI rD))).  */
+  /* Match a load without displacement:
+     curr (load) == (set (reg rd2) (mem (reg rd1))).  */
   if (MEM_P (SET_SRC (curr_set))
       && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
       && REG_P (XEXP (SET_SRC (curr_set), 0))
@@ -327,8 +368,12 @@ riscv_fuse_expanded_ld (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_LDPREINCREMENT fusion.
-   prev (addi) == (set (reg:DI rS) (plus:DI (reg:DI rS) (const_int)))
-   curr (ld)   == (set (reg:DI rD) (mem:DI (reg:DI rS)))  */
+   prev (addi) == (set (reg rd1)
+		       (plus (reg rd1) (const_int offset)))
+   curr (load) == (set (reg rd2) (mem (reg rd1)))
+
+   Constraints:
+     rd1 == rd2.  */
 
 static bool
 riscv_fuse_ldpreincrement (rtx_insn *prev, rtx_insn *curr)
@@ -354,8 +399,19 @@ riscv_fuse_ldpreincrement (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_LUI_ADDI fusion.
-   prev (lui)  == (set (reg:DI rD) (const_int UPPER_IMM_20))
-   curr (addi) == (set (reg:DI rD) (plus:DI (reg:DI rD) (const_int IMM12)))  */
+   prev (one of the following):
+     (lui) == (set (reg rd1) (const_int imm20))
+     (lui) == (set (reg rd1) (high symbol1))
+   curr (one of the following):
+     (addi) == (set (reg rd2)
+		    (plus (reg rd1) (const_int imm12)))
+     (addi) == (set (reg rd2)
+		    (lo_sum (reg rd1) symbol2))
+
+   Constraints:
+     rd1 == rd2
+     rd1 != x0
+     imm20 != 0 for the constant form.  */
 
 static bool
 riscv_fuse_lui_addi (rtx_insn *prev, rtx_insn *curr)
@@ -381,8 +437,16 @@ riscv_fuse_lui_addi (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_AUIPC_ADDI fusion.
-   prev (auipc) == (set (reg:DI rD) (unspec:DI UNSPEC_AUIPC))
-   curr (addi)  == (set (reg:DI rD) (plus:DI (reg:DI rD) (const_int)))  */
+   prev (auipc) == (set (reg rd1) (unspec UNSPEC_AUIPC))
+   curr (one of the following):
+     (addi) == (set (reg rd2)
+		    (plus (reg rd1) (const_int imm12)))
+     (addi) == (set (reg rd2)
+		    (lo_sum (reg rd1) symbol))
+
+   Constraints:
+     rd1 == rd2
+     rd1 != x0.  */
 
 static bool
 riscv_fuse_auipc_addi (rtx_insn *prev, rtx_insn *curr)
@@ -407,8 +471,20 @@ riscv_fuse_auipc_addi (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_LUI_LD fusion.
-   prev (lui) == (set (reg:DI rD) (const_int UPPER_IMM_20))
-   curr (ld)  == (set (reg:DI rD) (mem:DI (plus:DI (reg:DI rD) ...)))  */
+   prev (one of the following):
+     (lui) == (set (reg rd1) (const_int imm20))
+     (lui) == (set (reg rd1) (high symbol1))
+   curr (one of the following):
+     (load) == (set (reg rd2) (mem (rd1, offset)))
+     (load) == (set (reg rd2) (mem (lo_sum (reg rd1) symbol2)))
+     (load) == (set (reg rd2)
+		    (any_extend (mem (lo_sum (reg rd1) symbol2))))
+
+   Constraints:
+     rd1 == rd2
+     the constant form pairs only with a base-plus-offset load
+     the symbolic form pairs only with a lo_sum load
+     imm20 != 0 for the constant form.  */
 
 static bool
 riscv_fuse_lui_ld (rtx_insn *prev, rtx_insn *curr)
@@ -458,8 +534,11 @@ riscv_fuse_lui_ld (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_AUIPC_LD fusion.
-   prev (auipc) == (set (reg:DI rD) (unspec:DI UNSPEC_AUIPC))
-   curr (ld)    == (set (reg:DI rD) (mem:DI (plus:DI (reg:DI rD) ...)))  */
+   prev (auipc) == (set (reg rd1) (unspec UNSPEC_AUIPC))
+   curr (load)  == (set (reg rd2) (mem (rd1, offset)))
+
+   Constraints:
+     rd1 == rd2.  */
 
 static bool
 riscv_fuse_auipc_ld (rtx_insn *prev, rtx_insn *curr)
@@ -483,8 +562,13 @@ riscv_fuse_auipc_ld (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_CACHE_ALIGNED_STD fusion.
-   prev (sd) == (set (mem (plus (reg sp|fp) (const_int))) (reg rS1))
-   curr (sd) == (set (mem (plus (reg sp|fp) (const_int))) (reg rS2))  */
+   prev (sd) == (set (mem:DI (rs1, offset1)) (reg:DI rs2))
+   curr (sd) == (set (mem:DI (rs1, offset2)) (reg:DI rs3))
+
+   Constraints:
+     rs1 has at least 128-bit pointer alignment
+     min (offset1, offset2) is 16-byte aligned
+     abs (offset1 - offset2) == 8.  */
 
 static bool
 riscv_fuse_cache_aligned_std (rtx_insn *prev, rtx_insn *curr)
@@ -540,11 +624,14 @@ riscv_fuse_cache_aligned_std (rtx_insn *prev, rtx_insn *curr)
   return false;
 }
 
-/* Check for RISCV_FUSE_ALIGNED_STD fusion.  More general form of
-   RISCV_FUSE_CACHE_ALIGNED_STD.  The dependency on the stores being
-   opposite halves of a cache line is dropped.  Instead the lowest
-   address needs 2X the alignment of the object and the higher address
-   immediately follows the first object.  */
+/* Check for RISCV_FUSE_ALIGNED_STD fusion.
+   prev (store) == (set (mem (rs1, offset1)) (reg rs2))
+   curr (store) == (set (mem (rs1, offset2)) (reg rs3))
+
+   Constraints:
+     both stores use the same scalar integer mode
+     min (offset1, offset2) is aligned to twice the access size
+     abs (offset1 - offset2) equals the access size.  */
 
 static bool
 riscv_fuse_aligned_std (rtx_insn *prev, rtx_insn *curr)
@@ -598,8 +685,18 @@ riscv_fuse_aligned_std (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_BFEXT fusion.
-   prev (slli) == (set (reg:DI rD) (ashift:DI (reg:DI rS) (const_int)))
-   curr (srli) == (set (reg:DI rD) (lshiftrt:DI (reg:DI rD) (const_int)))  */
+   prev (slli) == (set (reg rd1)
+		       (ashift (reg rs1) (const_int shamt1)))
+   curr (one of the following):
+     (srli) == (set (reg rd2)
+		    (lshiftrt (reg rd1)
+			      (const_int shamt2)))
+     (srai) == (set (reg rd2)
+		    (ashiftrt (reg rd1)
+			      (const_int shamt2)))
+
+   Constraints:
+     rd1 == rd2.  */
 
 static bool
 riscv_fuse_bfext (rtx_insn *prev, rtx_insn *curr)
@@ -626,7 +723,26 @@ riscv_fuse_bfext (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_B_ALUI fusion.
-   Covers orc.b+not, ctz+andi, sub+smax, neg+smax patterns.  */
+   prev/curr (one of the following pairs):
+     prev (orc.b) == (set (reg rd1)
+			  (unspec (reg rs1) UNSPEC_ORC_B))
+     curr (not)   == (set (reg rd2) (not (reg rd1)))
+
+     prev (ctz)  == (set (reg rd1) (ctz (reg rs1)))
+     curr (andi) == (set (reg rd2)
+			 (and (reg rd1) (const_int 63)))
+
+     prev (sub)  == (set (reg rd1)
+			 (minus (const_int 0) (reg rs1)))
+     curr (smax) == (set (reg rd2)
+		       (smax (reg rd1) (reg rs1)))
+
+     prev (neg)  == (set (reg rd1) (neg (reg rs1)))
+     curr (smax) == (set (reg rd2)
+			 (smax (reg rd1) (reg rs1)))
+
+   Constraints:
+     rd1 == rd2.  */
 
 static bool
 riscv_fuse_b_alui (rtx_insn *prev, rtx_insn *curr)
@@ -700,9 +816,8 @@ typedef bool (*fusion_checker_fn) (rtx_insn *, rtx_insn *);
 
 struct riscv_fusion_entry
 {
-  /* The fusion operation flag to check enablement.  For entries that
-     check multiple flags (ZEXTW/ZEXTWS), use the bitwise OR.  */
-  unsigned int op_flags;
+  /* The fusion operation to check enablement.  */
+  enum riscv_fusion_pairs op;
 
   /* The checker function.  */
   fusion_checker_fn checker;
@@ -715,7 +830,9 @@ struct riscv_fusion_entry
 
 static const struct riscv_fusion_entry riscv_fusion_table[] =
 {
-  { RISCV_FUSE_ZEXTW | RISCV_FUSE_ZEXTWS,
+  { RISCV_FUSE_ZEXTW,
+    riscv_fuse_zextw, "RISCV_FUSE_ZEXTW" },
+  { RISCV_FUSE_ZEXTWS,
     riscv_fuse_zextws, "RISCV_FUSE_ZEXTWS" },
   { RISCV_FUSE_ZEXTH,
     riscv_fuse_zexth, "RISCV_FUSE_ZEXTH" },
@@ -764,13 +881,14 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
       const struct riscv_fusion_entry *entry = &riscv_fusion_table[i];
 
       /* Check if this fusion type is enabled.  */
-      if (!(riscv_get_fusible_ops () & entry->op_flags))
+      if (!riscv_fusion_enabled_p (entry->op))
 	continue;
 
       if (entry->checker (prev, curr))
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "%s\n", entry->fusion_type);
+	    fprintf (dump_file, ";; macro fusion: insn %d + insn %d -> %s\n",
+		     INSN_UID (prev), INSN_UID (curr), entry->fusion_type);
 	  return true;
 	}
     }
