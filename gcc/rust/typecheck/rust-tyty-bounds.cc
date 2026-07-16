@@ -181,6 +181,34 @@ TypeBoundsProbe::add_trait_bound (HIR::Trait *trait)
 {
   auto trait_ref = TraitResolver::Resolve (*trait);
 
+  for (const auto &existing : trait_references)
+    if (existing.first->is_equal (*trait_ref))
+      return;
+
+  if (receiver->get_kind () == TyTy::TypeKind::ADT)
+    {
+      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver);
+      for (auto &variant : adt->get_variants ())
+	{
+	  for (auto &field : variant->get_fields ())
+	    {
+	      TyTy::BaseType *field_ty = field->get_field_type ();
+
+	      // TODO: A loop guard is needed here to prevent infinite
+	      // recursion, but self-referential types currently crash due to
+	      // issue Rust-GCC/gccrs#4709. Therefore, I avoided adding an
+	      // untested guard for now.
+
+	      if (!field_ty->satisfies_bound (
+		    TyTy::TypeBoundPredicate (*trait_ref,
+					      BoundPolarity::RegularBound,
+					      UNDEF_LOCATION),
+		    false))
+		return;
+	    }
+	}
+    }
+
   trait_references.emplace_back (trait_ref, mappings.lookup_builtin_marker ());
 }
 

@@ -324,10 +324,18 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate, bool emit_error)
       if (!bound->is_equal (*query))
 	continue;
 
-      // builtin ones have no impl-block this needs fixed and use a builtin node
-      // of somekind
+      // builtin ones have no impl-block this needs fixed and use a builtin
+      // node of somekind
       if (b.second == nullptr)
-	return true;
+	{
+	  return predicate.get_polarity () == BoundPolarity::RegularBound;
+	}
+      else
+	{
+	  const auto &impl = *(b.second);
+	  if (predicate.get_polarity () != impl.get_polarity ())
+	    continue;
+	}
 
       // need to check that associated types can match as well
       const HIR::ImplBlock &impl = *(b.second);
