@@ -1010,10 +1010,10 @@ namespace std::chrono
 	  result_index = new_infos.size() - 1;
 	else if (result_index >= 0 && !merged)
 	  {
-	    // Finish on a DST sys_info if possible, so that if we resume
+	    // Finish before a STD sys_info if possible, so that if we resume
 	    // generating sys_info objects after this time point, save=0
 	    // should be correct for the next sys_info.
-	    if (num_after > 1 || info.save != 0min)
+	    if (num_after > 1 || !next_rule || next_rule->save == 0s)
 	      --num_after;
 	  }
 
