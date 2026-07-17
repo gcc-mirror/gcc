@@ -1,6 +1,6 @@
-/* PR target/98872 */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=power10" } */
+/* Header file for pr103127.c test - contains test functions only */
+
+/* PR target/103127 */
 
 /* Verify we do not ICE on the following tests.  */
 

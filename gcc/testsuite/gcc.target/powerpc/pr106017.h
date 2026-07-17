@@ -1,6 +1,6 @@
+/* Header file for pr106017.c test - contains test functions only */
+
 /* PR target/106017 */
-/* { dg-options "-O1 -mdejagnu-cpu=power10" } */
-/* { dg-require-effective-target power10_ok } */
 
 /* Make sure we do not flag any errors on the following test cases.  */
 

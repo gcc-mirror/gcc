@@ -1,7 +1,6 @@
+/* Header file for pr96446.c test - contains test functions only */
+
 /* PR target/96466 */
-/* { dg-do compile } */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-options "-mdejagnu-cpu=power10 -O2" } */
 
 /* Verify we do not ICE on the following.  */
 
