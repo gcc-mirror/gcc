@@ -237,6 +237,8 @@ public:
   //     2. (For functions) have the same signature
   virtual bool is_equal (const BaseType &other) const;
 
+  bool unsize_to (const BaseType *target) const;
+
   bool satisfies_bound (const TypeBoundPredicate &predicate, bool emit_error);
 
   bool bounds_compatible (BaseType &other, location_t locus, bool emit_error);

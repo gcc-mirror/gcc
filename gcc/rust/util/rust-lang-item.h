@@ -94,6 +94,7 @@ public:
     DROP,
     SIZED,
     FREEZE,
+    UNSIZE,
     SYNC,
 
     // https://github.com/Rust-GCC/gccrs/issues/1896
