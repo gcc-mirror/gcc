@@ -37,6 +37,7 @@
 #include "cfgrtl.h"
 #include "cfganal.h"
 #include "cfgcleanup.h"
+#include "explow.h"
 #include "expr.h"
 #include "output.h"
 #include "cfgloop.h"
@@ -2423,6 +2424,15 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
     return NULL_RTX;
 }
 
+/* Return true if X is a constant or register operand suitable for simple
+   conditional-move handling.  */
+
+static bool
+noce_simple_cmove_operand_p (rtx x)
+{
+  return CONSTANT_P (x) || register_operand (x, VOIDmode);
+}
+
 /* Try only simple constants and registers here.  More complex cases
    are handled in noce_try_cmove_arith after noce_try_store_flag_arith
    has had a go at it.  */
@@ -2437,8 +2447,8 @@ noce_try_cmove (struct noce_if_info *if_info)
   if (!noce_simple_bbs (if_info))
     return false;
 
-  if ((CONSTANT_P (if_info->a) || register_operand (if_info->a, VOIDmode))
-      && (CONSTANT_P (if_info->b) || register_operand (if_info->b, VOIDmode)))
+  if (noce_simple_cmove_operand_p (if_info->a)
+      && noce_simple_cmove_operand_p (if_info->b))
     {
       start_sequence ();
 
@@ -4126,13 +4136,17 @@ try_emit_cmove_seq (struct noce_if_info *if_info, rtx temp,
    conditional set to use the temporary we introduced earlier.
 
    IF_INFO contains the useful information about the block structure and
-   jump instructions.  */
+   jump instructions.  For an IF-THEN-ELSE-JOIN, first evaluate the secondary
+   arm's sets into temporaries and retain their final values for the
+   conditional moves.  Return true if the replacement is valid and profitable
+   and its CFG changes have been committed, otherwise return false.  */
 
 static bool
 noce_convert_multiple_sets (struct noce_if_info *if_info)
 {
   basic_block test_bb = if_info->test_bb;
   basic_block then_bb = if_info->then_bb;
+  basic_block else_bb = if_info->else_bb;
   basic_block join_bb = if_info->join_bb;
   rtx_insn *jump = if_info->jump;
   rtx_insn *cond_earliest;
@@ -4247,8 +4261,16 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   emit_insn_before_setloc (seq, if_info->jump,
 			   INSN_LOCATION (insn_info.last ()->unmodified_insn));
 
-  /* Clean up THEN_BB and the edges in and out of it.  */
-  remove_edge (find_edge (test_bb, join_bb));
+  /* Clean up the THEN (and, for a diamond, ELSE) block and the edges into and
+     out of the if-region.  An IF-THEN-ELSE-JOIN has no test->join edge.
+     Deleting ELSE_BB removes the test->else and else->join edges instead.  */
+  if (else_bb)
+    {
+      delete_basic_block (else_bb);
+      num_true_changes++;
+    }
+  else
+    remove_edge (find_edge (test_bb, join_bb));
   remove_edge (find_edge (then_bb, join_bb));
   redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
   delete_basic_block (then_bb);
@@ -4266,8 +4288,15 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   return true;
 }
 
-/* This goes through all relevant insns of IF_INFO->then_bb and tries to create
-   conditional moves.  Information for the insns is kept in INSN_INFO.  */
+/* Try to emit the multiple-set conversion described by IF_INFO.  INSN_INFO
+   holds the primary-arm metadata.  For a diamond, evaluate the secondary arm
+   first and retain its final values for the conditional moves.
+
+   LAST_NEEDS_COMPARISON is -1 on the first attempt.  Record in it the last set
+   that needs a temporary to preserve the comparison, then use that boundary
+   on the second attempt.  Set USE_COND_EARLIEST if the emitted sequence uses
+   IF_INFO->cond_earliest.  Return true if the complete sequence was
+   emitted.  */
 
 static bool
 noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
@@ -4293,6 +4322,73 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
   int count = 0;
   bool second_try = *last_needs_comparison != -1;
   *use_cond_earliest = false;
+  auto_delete_vec<noce_multiple_sets_info> else_insn_info;
+
+  /* For an IF-THEN-ELSE-JOIN, emit the else block's computations first into
+     fresh temporaries.  This leaves the incoming register values available to
+     the then block.  The conditional moves below select the then values or
+     these else values.  */
+  if (if_info->else_bb)
+    {
+      init_noce_multiple_sets_info (if_info->else_bb, else_insn_info);
+      int else_count = 0;
+      rtx_insn *before_else = get_last_insn ();
+      location_t saved_location = curr_insn_location ();
+      rtx_insn *else_insn;
+      FOR_BB_INSNS (if_info->else_bb, else_insn)
+	{
+	  if (!active_insn_p (else_insn))
+	    continue;
+
+	  noce_multiple_sets_info *info = else_insn_info[else_count];
+	  rtx set = single_set (else_insn);
+	  gcc_checking_assert (set && REG_P (SET_DEST (set))
+			       && !HARD_REGISTER_P (SET_DEST (set)));
+
+	  rtx target = SET_DEST (set);
+	  rtx value = copy_rtx (SET_SRC (set));
+	  int i, ii;
+	  FOR_EACH_VEC_ELT (info->rewired_src, i, ii)
+	    value = simplify_replace_rtx (value,
+					  else_insn_info[ii]->target,
+					  else_insn_info[ii]->temporary);
+
+	  set_curr_insn_location (INSN_LOCATION (else_insn));
+	  rtx temporary = copy_to_mode_reg (GET_MODE (target), value);
+
+	  info->target = target;
+	  info->temporary = temporary;
+	  info->unmodified_insn = else_insn;
+	  else_count++;
+	}
+
+      set_curr_insn_location (saved_location);
+
+      gcc_checking_assert (else_count == (int) else_insn_info.length ());
+
+      /* These insns run ahead of the conditional moves.  If they change a
+	 register the comparison reads we cannot reuse it, so bail.  If they
+	 only clobber the condition code, drop the shared compare so that every
+	 move re-materializes its own.  */
+
+      rtx_insn *first_else
+	= before_else ? NEXT_INSN (before_else) : get_insns ();
+      for (rtx_insn *ei = first_else; ei; ei = NEXT_INSN (ei))
+	{
+	  if (modified_in_p (cond, ei))
+	    {
+	      end_sequence ();
+	      return false;
+	    }
+	  if (cc_cmp
+	      && (modified_in_p (cc_cmp, ei)
+		  || (rev_cc_cmp && modified_in_p (rev_cc_cmp, ei))))
+	    {
+	      cc_cmp = NULL_RTX;
+	      rev_cc_cmp = NULL_RTX;
+	    }
+	}
+    }
 
   FOR_BB_INSNS (then_bb, insn)
     {
@@ -4316,6 +4412,17 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 					insn_info[ii]->temporary);
 
       rtx old_val = target;
+
+      /* Use the final value assigned to TARGET on the else arm.  Scanning in
+	 reverse is important when the arm assigns the same register more than
+	 once.  */
+      if (if_info->else_bb)
+	for (int j = else_insn_info.length () - 1; j >= 0; --j)
+	  if (rtx_equal_p (target, else_insn_info[j]->target))
+	    {
+	      old_val = else_insn_info[j]->temporary;
+	      break;
+	    }
 
       /* As we are transforming
 	 if (x > y)
@@ -4604,19 +4711,42 @@ init_noce_multiple_sets_info (basic_block bb,
 }
 
 /* Return true iff basic block TEST_BB is suitable for conversion to a
-   series of conditional moves.  Also check that we have more than one
-   set (other routines can handle a single set better than we would),
-   and fewer than PARAM_MAX_RTL_IF_CONVERSION_INSNS sets.  While going
-   through the insns store the sum of their potential costs in COST.  */
+   series of conditional moves.  Unless REQUIRE_MULTIPLE is false, also check
+   that we have more than one set (other routines can handle a single set
+   better than we would).  A diamond arm may have a single set when it is
+   selected as the secondary arm.  Require no more than
+   PARAM_MAX_RTL_IF_CONVERSION_INSNS sets.  While going through the insns store
+   the sum of their potential costs in COST.  On success, if LIVE_OUT_DESTS is
+   nonnull, record the distinct pseudo destinations that are live out of
+   TEST_BB.  If HAS_NON_SIMPLE_SRC is nonnull, set it when an instruction
+   source is neither a constant nor a register operand.  On success, if
+   NONREG_LIVE_OUT_DESTS is nonnull, record live-out destinations whose last
+   RTL definition has a non-register source.  Constants are non-register
+   sources.  On success, if INSN_COUNT is nonnull, store the number of active
+   sets in it.  */
 
 static bool
-bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost)
+bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost,
+				      bool require_multiple = true,
+				      bitmap live_out_dests = NULL,
+				      bool *has_non_simple_src = NULL,
+				      bitmap nonreg_live_out_dests = NULL,
+				      unsigned *insn_count = NULL)
 {
   rtx_insn *insn;
   unsigned count = 0;
   unsigned param = param_max_rtl_if_conversion_insns;
   bool speed_p = optimize_bb_for_speed_p (test_bb);
   unsigned potential_cost = 0;
+  if (live_out_dests)
+    bitmap_clear (live_out_dests);
+  if (has_non_simple_src)
+    *has_non_simple_src = false;
+  if (nonreg_live_out_dests)
+    bitmap_clear (nonreg_live_out_dests);
+  bitmap bb_live_out = NULL;
+  if (live_out_dests || nonreg_live_out_dests)
+    bb_live_out = df_get_live_out (test_bb);
 
   FOR_BB_INSNS (test_bb, insn)
     {
@@ -4631,6 +4761,9 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost)
 
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
+
+      if (has_non_simple_src && !noce_simple_cmove_operand_p (src))
+	*has_non_simple_src = true;
 
       /* Dependency rewiring is keyed by register number, so restrict
 	 destinations to pseudos.  Hard-register definitions can overlap
@@ -4651,6 +4784,19 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost)
       if (!can_conditionally_move_p (GET_MODE (dest)))
 	return false;
 
+      if (bb_live_out && bitmap_bit_p (bb_live_out, REGNO (dest)))
+	{
+	  if (live_out_dests)
+	    bitmap_set_bit (live_out_dests, REGNO (dest));
+	  if (nonreg_live_out_dests)
+	    {
+	      if (register_operand (src, VOIDmode))
+		bitmap_clear_bit (nonreg_live_out_dests, REGNO (dest));
+	      else
+		bitmap_set_bit (nonreg_live_out_dests, REGNO (dest));
+	    }
+	}
+
       potential_cost += insn_cost (insn, speed_p);
 
       count++;
@@ -4659,11 +4805,16 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost)
   *cost += potential_cost;
 
   /* If we would only put out one conditional move, the other strategies
-     this pass tries are better optimized and will be more appropriate.
+     this pass tries are better optimized and will be more appropriate, so
+     require more than one set unless REQUIRE_MULTIPLE is false.  A diamond
+     arm may have one set when it is selected as the secondary arm.
      Some targets want to strictly limit the number of conditional moves
      that are emitted, they set this through PARAM, we need to respect
      that.  */
-  return count > 1 && count <= param;
+  bool ok = count >= (require_multiple ? 2u : 1u) && count <= param;
+  if (ok && insn_count)
+    *insn_count = count;
+  return ok;
 }
 
 /* Compute average of two given costs weighted by relative probabilities
@@ -4708,10 +4859,13 @@ noce_process_if_block (struct noce_if_info *if_info)
      (2) x = b; if (...) x = a;
      (3) if (...) x = a;   // as if with an initial x = x.
      (4) if (...) { x = a; y = b; z = c; }  // Like 3, for multiple SETS.
+     (5) A multi-set IF-THEN-ELSE-JOIN.
      The later patterns require jumps to be more expensive.
-     For the if (...) x = a; else x = b; case we allow multiple insns
-     inside the then and else blocks as long as their only effect is
-     to calculate a value for x.
+     For the diamond case, defer diamonds with only register and constant
+     assignments in both arms to the existing simple conditional-move
+     handling.  Use an arm that sets at least two distinct live-out pseudos as
+     the primary arm.  Every live-out destination set by the secondary arm
+     must also be set by the primary arm.
      ??? For future expansion, further expand the "multiple X" rules.  */
 
   /* First look for multiple SETS.
@@ -4720,25 +4874,99 @@ noce_process_if_block (struct noce_if_info *if_info)
      If a target re-uses the existing CC comparison we keep track of that
      and add the costs before default noce_conversion_profitable_p.  */
 
-  unsigned potential_cost = if_info->original_cost;
   unsigned old_cost = if_info->original_cost;
-  if (!else_bb
-      && HAVE_conditional_move
-      && bb_ok_for_noce_convert_multiple_sets (then_bb, &potential_cost))
+  unsigned ms_then_cost = 0, ms_else_cost = 0;
+  unsigned ms_then_insn_count = 0, ms_else_insn_count = 0;
+  bool ms_then_has_non_simple_src, ms_else_has_non_simple_src;
+  auto_bitmap ms_then_live_out_dests, ms_else_live_out_dests;
+  auto_bitmap ms_then_nonreg_live_out_dests;
+  auto_bitmap ms_else_nonreg_live_out_dests;
+  noce_if_info ms_if_info = *if_info;
+  bool multiple_sets_p = false;
+
+  if (HAVE_conditional_move)
     {
-      /* Temporarily set the original costs to what we estimated so
-	 we can determine if the transformation is worth it.  */
-      if_info->original_cost = potential_cost;
-      if (noce_convert_multiple_sets (if_info))
+      if (!else_bb)
+	multiple_sets_p
+	  = bb_ok_for_noce_convert_multiple_sets (then_bb, &ms_then_cost);
+      else if (!if_info->then_else_reversed
+	       && bb_ok_for_noce_convert_multiple_sets
+		    (then_bb, &ms_then_cost, false,
+		     ms_then_live_out_dests, &ms_then_has_non_simple_src,
+		     ms_then_nonreg_live_out_dests, &ms_then_insn_count)
+	       && bb_ok_for_noce_convert_multiple_sets
+		    (else_bb, &ms_else_cost, false,
+		     ms_else_live_out_dests, &ms_else_has_non_simple_src,
+		     ms_else_nonreg_live_out_dests, &ms_else_insn_count))
 	{
-	  if (dump_file && if_info->transform_name)
+	  /* Keep this path for diamonds that share a live-out whose last RTL
+	     definition has a non-register source in at least one arm.  This
+	     includes a value computed in one arm and forwarded by the
+	     other.  */
+	  bool has_shared_nonreg_live_out
+	    = (bitmap_intersect_p (ms_then_nonreg_live_out_dests,
+				   ms_else_live_out_dests)
+	       || bitmap_intersect_p (ms_else_nonreg_live_out_dests,
+				      ms_then_live_out_dests));
+
+	  if ((ms_then_has_non_simple_src || ms_else_has_non_simple_src)
+	      && has_shared_nonreg_live_out)
+	    {
+	      if (bitmap_count_bits (ms_then_live_out_dests) >= 2
+		  && !bitmap_intersect_compl_p (ms_else_live_out_dests,
+						 ms_then_live_out_dests))
+		multiple_sets_p = true;
+	      else if (bitmap_count_bits (ms_else_live_out_dests) >= 2
+		       && !bitmap_intersect_compl_p (ms_then_live_out_dests,
+							ms_else_live_out_dests))
+		{
+		  /* The branch-target arm is the compatible multi-set
+		     superset.  Make it the primary arm and reverse the select
+		     orientation.  */
+		  std::swap (ms_if_info.then_bb, ms_if_info.else_bb);
+		  ms_if_info.then_else_reversed
+		    = !ms_if_info.then_else_reversed;
+		  std::swap (ms_then_cost, ms_else_cost);
+		  std::swap (ms_then_insn_count, ms_else_insn_count);
+		  multiple_sets_p = true;
+		}
+	    }
+	}
+    }
+
+  /* The diamond conversion evaluates the secondary arm unconditionally.
+     Honor the target limit on the number of instructions made
+     unconditional.  */
+  if (multiple_sets_p
+      && ms_if_info.else_bb
+      && ms_else_insn_count > (unsigned) MAX_CONDITIONAL_EXECUTE)
+    multiple_sets_p = false;
+
+  if (multiple_sets_p)
+    {
+      /* The original code runs the comparison and one arm.  Estimate that cost
+	 (for a diamond weight the two arms by their probabilities) and let
+	 noce_convert_multiple_sets convert only if the conditional moves come
+	 out cheaper.  */
+      unsigned potential_cost = old_cost + ms_then_cost;
+      if (ms_if_info.else_bb)
+	{
+	  if (optimize_bb_for_speed_p (test_bb))
+	    potential_cost
+	      = old_cost + average_cost (ms_then_cost, ms_else_cost,
+					 find_edge (test_bb,
+						    ms_if_info.then_bb));
+	  else
+	    potential_cost = old_cost + ms_then_cost + ms_else_cost;
+	}
+      ms_if_info.original_cost = potential_cost;
+      if (noce_convert_multiple_sets (&ms_if_info))
+	{
+	  if (dump_file && ms_if_info.transform_name)
 	    fprintf (dump_file, "if-conversion succeeded through %s\n",
-		     if_info->transform_name);
+		     ms_if_info.transform_name);
 	  return true;
 	}
-
-      /* Restore the original costs.  */
-      if_info->original_cost = old_cost;
     }
 
   bool speed_p = optimize_bb_for_speed_p (test_bb);
@@ -5046,7 +5274,7 @@ check_cond_move_block (basic_block bb,
 	      && targetm.small_register_classes_for_mode_p (GET_MODE (dest))))
 	return false;
 
-      if (!CONSTANT_P (src) && !register_operand (src, VOIDmode))
+      if (!noce_simple_cmove_operand_p (src))
 	return false;
 
       if (side_effects_p (src) || side_effects_p (dest))
