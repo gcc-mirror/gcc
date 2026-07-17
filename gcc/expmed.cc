@@ -865,12 +865,16 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
      valid for integral modes.  */
   opt_scalar_int_mode op0_mode = int_mode_for_mode (GET_MODE (op0));
   scalar_int_mode imode;
+  bool need_stack_p = false;
   if (!op0_mode.exists (&imode) || imode != GET_MODE (op0))
     {
       if (MEM_P (op0))
 	op0 = adjust_bitfield_address_size (op0, op0_mode.else_blk (),
 					    0, MEM_SIZE (op0));
-      else if (!op0_mode.exists ())
+      else if (!op0_mode.exists ()
+	       || maybe_lt
+	       ((unsigned) UNITS_PER_WORD,
+		(poly_uint64) REGMODE_NATURAL_SIZE (GET_MODE (op0))))
 	{
 	  if (ibitnum == 0
 	      && known_eq (ibitsize, GET_MODE_BITSIZE (GET_MODE (op0)))
@@ -883,16 +887,28 @@ store_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	    }
 	  if (!fallback_p)
 	    return false;
-	  rtx temp = assign_stack_temp (GET_MODE (op0),
-					GET_MODE_SIZE (GET_MODE (op0)));
-	  emit_move_insn (temp, op0);
-	  store_bit_field_1 (temp, bitsize, bitnum, 0, 0, fieldmode, value,
-			     reverse, fallback_p, undefined_p);
-	  emit_move_insn (op0, temp);
-	  return true;
+	  need_stack_p = true;
 	}
       else
 	op0 = gen_lowpart (op0_mode.require (), op0);
+    }
+  else if (!MEM_P (op0)
+	   && maybe_lt ((unsigned) UNITS_PER_WORD,
+			(poly_uint64) REGMODE_NATURAL_SIZE (GET_MODE (op0))))
+    need_stack_p = true;
+
+  /* With or without punning we might be faced with a mode that we cannot
+     split into words.  If so, spill OP0 to the stack and recurse.
+     This happens at most once.  */
+  if (need_stack_p)
+    {
+      rtx temp = assign_stack_temp (GET_MODE (op0),
+				    GET_MODE_SIZE (GET_MODE (op0)));
+      emit_move_insn (temp, op0);
+      store_bit_field_1 (temp, bitsize, bitnum, 0, 0, fieldmode, value,
+			 reverse, fallback_p, undefined_p);
+      emit_move_insn (op0, temp);
+      return true;
     }
 
   return store_integral_bit_field (op0, op0_mode, ibitsize, ibitnum,
@@ -1015,7 +1031,9 @@ store_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	      in BLKmode to handle unaligned memory references and to shift the
 	      last chunk right on big-endian machines if need be.  */
 	  rtx value_word
-	    = fieldmode == BLKmode
+	    = (fieldmode == BLKmode
+	       || maybe_lt ((unsigned) UNITS_PER_WORD,
+			    (poly_uint64) REGMODE_NATURAL_SIZE (value_mode)))
 	      ? extract_bit_field (value, new_bitsize, wordnum * BITS_PER_WORD,
 				   1, NULL_RTX, word_mode, word_mode, false,
 				   NULL)
@@ -1851,12 +1869,16 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
      if we aren't.  */
   opt_scalar_int_mode op0_mode = int_mode_for_mode (GET_MODE (op0));
   scalar_int_mode imode;
+  bool need_stack_p = false;
   if (!op0_mode.exists (&imode) || imode != GET_MODE (op0))
     {
       if (MEM_P (op0))
 	op0 = adjust_bitfield_address_size (op0, op0_mode.else_blk (),
 					    0, MEM_SIZE (op0));
-      else if (op0_mode.exists (&imode))
+      else if (op0_mode.exists (&imode)
+	       && known_ge
+	       ((unsigned) UNITS_PER_WORD,
+		(poly_uint64) REGMODE_NATURAL_SIZE (GET_MODE (op0))))
 	{
 	  op0 = gen_lowpart (imode, op0);
 
@@ -1866,12 +1888,19 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
 	    op0 = force_reg (imode, op0);
 	}
       else
-	{
-	  poly_int64 size = GET_MODE_SIZE (GET_MODE (op0));
-	  rtx mem = assign_stack_temp (GET_MODE (op0), size);
-	  emit_move_insn (mem, op0);
-	  op0 = adjust_bitfield_address_size (mem, BLKmode, 0, size);
-	}
+	need_stack_p = true;
+    }
+  else if (!MEM_P (op0)
+	   && maybe_lt ((unsigned) UNITS_PER_WORD,
+			(poly_uint64) REGMODE_NATURAL_SIZE (GET_MODE (op0))))
+    need_stack_p = true;
+
+  if (need_stack_p)
+    {
+      poly_int64 size = GET_MODE_SIZE (GET_MODE (op0));
+      rtx mem = assign_stack_temp (GET_MODE (op0), size);
+      emit_move_insn (mem, op0);
+      op0 = adjust_bitfield_address_size (mem, BLKmode, 0, size);
     }
 
   /* ??? We currently assume TARGET is at least as big as BITSIZE.

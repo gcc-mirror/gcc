@@ -4199,9 +4199,6 @@ read_complex_part (rtx cplx, bool imag_p)
 				     imag_p ? GET_MODE_SIZE (imode) : 0);
       if (ret)
         return ret;
-      else
-	/* simplify_gen_subreg may fail for sub-word MEMs.  */
-	gcc_assert (MEM_P (cplx) && ibitsize < BITS_PER_WORD);
     }
 
   return extract_bit_field (cplx, ibitsize, imag_p ? ibitsize : 0,

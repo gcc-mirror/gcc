@@ -1878,6 +1878,10 @@ should give the natural size in bytes for the specified mode.  It is
 used by the register allocator to try to optimize its results.  This
 happens for example on SPARC 64-bit where the natural size of
 floating-point registers is still 32-bit.
+
+If a target specifies @code{REGMODE_NATURAL_SIZE}, it must provide
+move patterns for all scalar integer modes no larger than the
+largest @code{REGMODE_NATURAL_SIZE}.
 @end defmac
 
 @hook TARGET_HARD_REGNO_MODE_OK

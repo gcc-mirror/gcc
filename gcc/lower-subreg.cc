@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "expmed.h"
+#include "regs.h"
 #include "insn-config.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -112,6 +113,9 @@ interesting_mode_p (machine_mode mode, unsigned int *bytes,
 		    unsigned int *words)
 {
   if (!GET_MODE_SIZE (mode).is_constant (bytes))
+    return false;
+  if (maybe_lt ((unsigned) UNITS_PER_WORD,
+		(poly_uint64) REGMODE_NATURAL_SIZE (mode)))
     return false;
   *words = CEIL (*bytes, UNITS_PER_WORD);
   return true;
@@ -302,7 +306,20 @@ static bool
 simple_move_operand (rtx x)
 {
   if (GET_CODE (x) == SUBREG)
-    x = SUBREG_REG (x);
+    {
+      /* Exclude subregs whose outer mode can be split into multiple words
+	 but whose inner mode cannot.  Attempting to split such a subreg
+	 would mean trying to split the unsplittable inner register.
+
+	 If instead the subreg occupies a single word, we can keep it as-is,
+	 regardless of what the SUBREG_REG is.  If the outer mode cannot be
+	 split then the subreg makes things no worse than they already are.  */
+      unsigned int factor, size;
+      if (interesting_mode_p (GET_MODE (x), &size, &factor) && factor > 1
+	  && !interesting_mode_p (GET_MODE (SUBREG_REG (x)), &size, &factor))
+	return false;
+      x = SUBREG_REG (x);
+    }
 
   if (!OBJECT_P (x))
     return false;
@@ -649,18 +666,21 @@ decompose_register (unsigned int regno)
 static rtx
 simplify_subreg_concatn (machine_mode outermode, rtx op, poly_uint64 orig_byte)
 {
-  unsigned int outer_size, outer_words, inner_size, inner_words;
+  unsigned int outer_size, inner_size, inner_words;
   machine_mode innermode, partmode;
   rtx part;
   unsigned int final_offset;
   unsigned int byte;
 
   innermode = GET_MODE (op);
-  if (!interesting_mode_p (outermode, &outer_size, &outer_words)
-      || !interesting_mode_p (innermode, &inner_size, &inner_words))
+
+  if (!interesting_mode_p (innermode, &inner_size, &inner_words))
     gcc_unreachable ();
 
-  /* Must be constant if interesting_mode_p passes.  */
+  if (!GET_MODE_SIZE (outermode).is_constant (&outer_size))
+    return NULL_RTX;
+
+  /* Must be constant if outer_size is.  */
   byte = orig_byte.to_constant ();
   gcc_assert (GET_CODE (op) == CONCATN);
   gcc_assert (byte % outer_size == 0);
