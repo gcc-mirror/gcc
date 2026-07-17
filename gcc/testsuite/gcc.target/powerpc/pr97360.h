@@ -1,7 +1,6 @@
+/* Header file for pr97360.c test - contains test functions only */
+
 /* PR target/97360 */
-/* { dg-do compile } */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=power10" } */
 
 /* Verify we do not ICE on the test below.  */
 

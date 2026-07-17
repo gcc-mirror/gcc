@@ -1,6 +1,6 @@
-/* PR target/103127 */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=power10 -ftrivial-auto-var-init=zero" } */
+/* Header file for pr98872.c test - contains test functions only */
+
+/* PR target/98872 */
 
 /* Verify we do not ICE on the following tests.  */
 

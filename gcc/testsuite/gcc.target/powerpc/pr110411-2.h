@@ -1,6 +1,6 @@
+/* Header file for pr110411-2.c test - contains test functions only */
+
 /* PR target/110411 */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-options "-O2 -mdejagnu-cpu=power10" } */
 
 /* Verify we do not ICE on the following.  */
 

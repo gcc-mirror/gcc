@@ -1,7 +1,6 @@
+/* Header file for pr100777.c test - contains test functions only */
+
 /* PR target/100777 */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-require-effective-target fopenmp } */
-/* { dg-options "-O1 -mdejagnu-cpu=power10 -fopenmp" } */
 
 /* Verify we do not ICE on the following.  */
 
