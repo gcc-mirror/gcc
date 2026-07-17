@@ -1,16 +1,8 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target power10_ok } */
-/* { dg-options "-Wno-psabi -mdejagnu-cpu=power10 -O2" } */
+/* { dg-options "-Wno-psabi -mdejagnu-cpu=power10 -O2 -mno-dense-math" } */
 
-void
-foo (__vector_quad *dst)
-{
-  __vector_quad acc0, acc1;
-  __builtin_mma_xxsetaccz (&acc0);
-  __builtin_mma_xxsetaccz (&acc1);
-  dst[0] = acc0;
-  dst[1] = acc1;
-}
+#include "mma-builtin-6.h"
 
 /* { dg-final { scan-assembler-not {\mlxv\M} } } */
 /* { dg-final { scan-assembler-not {\mlxvp\M} } } */

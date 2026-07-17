@@ -1,6 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-options "-mdejagnu-cpu=power10 -O2" } */
+/* Header file for mma-builtin-8.c test - contains test functions only */
 
 void
 foo (__vector_pair *dst, __vector_pair *src, long idx)
@@ -18,10 +16,3 @@ foo (__vector_pair *dst, __vector_pair *src, long idx)
 #if !__has_builtin (__builtin_vsx_stxvp)
 #  error "__has_builtin (__builtin_vsx_stxvp) failed"
 #endif
-
-/* { dg-final { scan-assembler-not {\mlxv\M} } } */
-/* { dg-final { scan-assembler-not {\mstxv\M} } } */
-/* { dg-final { scan-assembler-times {\mlxvp\M} 1 } } */
-/* { dg-final { scan-assembler-times {\mstxvp\M} 3 } } */
-/* { dg-final { scan-assembler-times {\mstxvpx\M} 1 } } */
-/* { dg-final { scan-assembler-times {\mpstxvp\M} 1 } } */

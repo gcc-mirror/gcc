@@ -1,6 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-options "-Wno-psabi -mdejagnu-cpu=power10 -O2" } */
+/* Header file for mma-builtin-5.c test - contains test functions only */
 
 typedef unsigned char vec_t __attribute__((vector_size(16)));
 
@@ -38,10 +36,3 @@ bar (vec_t *dst, __vector_quad *src)
 #if !__has_builtin (__builtin_mma_build_acc)
 #  error "__has_builtin (__builtin_mma_build_acc) failed"
 #endif
-
-/* { dg-final { scan-assembler-times {\mlxv\M} 8 } } */
-/* { dg-final { scan-assembler-times {\mlxvp\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mstxv\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mstxvp\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mxxmfacc\M} 3 } } */
-/* { dg-final { scan-assembler-times {\mxxmtacc\M} 3 } } */

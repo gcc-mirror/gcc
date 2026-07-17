@@ -1,6 +1,4 @@
-/* { dg-do compile } */
-/* { dg-require-effective-target power10_ok } */
-/* { dg-options "-mdejagnu-cpu=power10 -O2" } */
+/* Header file for mma-builtin-9.c test - contains test functions only */
 
 typedef unsigned char  vec_t __attribute__((vector_size(16)));
 
@@ -21,8 +19,3 @@ bar (__vector_quad *dst, vec_t *src)
   __builtin_mma_build_acc (&quad, src[0], src[1], src[2], src[3]);
   *dst = quad;
 }
-
-/* { dg-final { scan-assembler-not {\mlxv\M} } } */
-/* { dg-final { scan-assembler-not {\mstxv\M} } } */
-/* { dg-final { scan-assembler-times {\mlxvp\M} 3 } } */
-/* { dg-final { scan-assembler-times {\mstxvp\M} 3 } } */
