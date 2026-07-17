@@ -464,6 +464,9 @@ UrlSuffix(gcc/x86-Options.html#index-mstack-protector-guard-symbol)
 mgeneral-regs-only
 UrlSuffix(gcc/x86-Options.html#index-mgeneral-regs-only-2)
 
+m128bit-atomic
+UrlSuffix(gcc/x86-Options.html#index-m128bit-atomic)
+
 mshstk
 UrlSuffix(gcc/x86-Options.html#index-mshstk)
 

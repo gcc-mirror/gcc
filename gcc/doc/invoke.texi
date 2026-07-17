@@ -1576,7 +1576,7 @@ See RS/6000 and PowerPC Options.
 -mstack-protector-guard-offset=@var{offset}
 -mstack-protector-guard-symbol=@var{symbol}
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues  -mtls-dialect=@var{type}
--mrelax-cmpxchg-loop
+-m128bit-atomic -mrelax-cmpxchg-loop
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice}
 -mindirect-branch-register  -mharden-sls=@var{choice}
 -mindirect-branch-cs-prefix  -mapx-inline-asm-use-gpr32
@@ -36726,8 +36726,7 @@ This option enables GCC to generate @code{CMPXCHG16B} instructions in 64-bit
 code to implement compare-and-exchange operations on 16-byte aligned 128-bit
 objects.  This is useful for atomic updates of data structures exceeding one
 machine word in size.  The compiler uses this instruction to implement
-@ref{__sync Builtins}.  However, for @ref{__atomic Builtins} operating on
-128-bit integers, a library call is always used.
+@ref{__sync Builtins}.
 
 @opindex msahf
 @opindex mno-sahf
@@ -37291,6 +37290,25 @@ the offset with a symbol reference to a canary in the TLS block.
 Generate code that uses only the general-purpose registers.  This
 prevents the compiler from using floating-point, vector, mask and bound
 registers.
+
+@opindex m128bit-atomic
+@opindex mno-128bit-atomic
+@item -m128bit-atomic
+Generate cmpxchg16b, 128-bit atomic vector load and store instructions
+for the x86-64 architecture.  This is safe to use only on x86-64-v3
+capable processors as well as AVX capable processors from Intel, AMD,
+Hygon and Zhaoxin, which guarantee that 128-bit aligned vector loads
+and stores are atomic.  This option requires SSE2 and CMPXCHG16B.  It
+implies @option{-mcx16} which enables CMPXCHG16B.  This option is
+enabled in 64-bit mode by default if supported by the targeting
+processor.  For @ref{__atomic Builtins} operating on 128-bit integers,
+this option generates atomic instructions directly, instead of calling
+a library function in the @file{libatomic} runtime library.
+
+Note that when SSE2 is disabled, i.e., by @option{-mgeneral-regs-only},
+128-bit atomic operations are unsupported and @file{libatomic} shouldn't
+be used since it may use SSE2 or AVX instructions to implement 128-bit
+atomic operations.
 
 @opindex mrelax-cmpxchg-loop
 @opindex mno-relax-cmpxchg-loop

@@ -300,3 +300,129 @@ enum processor_features
 #define M_VENDOR(a) (a)
 #define M_CPU_TYPE(a) (M_CPU_TYPE_START + int (a))
 #define M_CPU_SUBTYPE(a) (M_CPU_SUBTYPE_START + a)
+
+#ifdef __cplusplus
+/* Extract processor VENDOR, TYPE and SUBTYPE from MODEL.  */
+
+static inline void
+ix86_decode_cpu_info (int model, processor_vendor &vendor,
+		      processor_types &type,
+		      processor_subtypes &subtype)
+{
+  if (model > M_CPU_SUBTYPE_START)
+    {
+      subtype = (processor_subtypes) (model - M_CPU_SUBTYPE_START);
+      if (subtype <= INTEL_COREI7_SANDYBRIDGE
+	  || (subtype >= INTEL_COREI7_IVYBRIDGE
+	      && subtype <= INTEL_COREI7_ICELAKE_SERVER)
+	  || (subtype >= INTEL_COREI7_CASCADELAKE
+	      && subtype <= INTEL_COREI7_ALDERLAKE)
+	  || subtype == INTEL_COREI7_ROCKETLAKE
+	  || (subtype >= INTEL_COREI7_GRANITERAPIDS
+	      && subtype <= INTEL_COREI7_PANTHERLAKE)
+	  || subtype == INTEL_COREI7_DIAMONDRAPIDS
+	  || subtype == INTEL_COREI7_NOVALAKE)
+	{
+	  vendor = VENDOR_INTEL;
+	  type = INTEL_COREI7;
+	}
+      else if (subtype >= AMDFAM10H_BARCELONA
+	       && subtype <= AMDFAM10H_ISTANBUL)
+	{
+	  vendor = VENDOR_AMD;
+	  type = AMDFAM10H;
+	}
+      else if (subtype >= AMDFAM15H_BDVER1
+	       && subtype <= AMDFAM15H_BDVER4)
+	{
+	  vendor = VENDOR_AMD;
+	  type = AMDFAM15H;
+	}
+      else if (subtype == AMDFAM17H_ZNVER1
+	       || subtype == AMDFAM17H_ZNVER2)
+	{
+	  vendor = VENDOR_AMD;
+	  type = AMDFAM17H;
+	}
+      else if (subtype == AMDFAM19H_ZNVER3
+	       || subtype == AMDFAM19H_ZNVER4)
+	{
+	  vendor = VENDOR_AMD;
+	  type = AMDFAM19H;
+	}
+      else if (subtype == AMDFAM1AH_ZNVER5
+	       || subtype == AMDFAM1AH_ZNVER6)
+	{
+	  vendor = VENDOR_AMD;
+	  type = AMDFAM1AH;
+	}
+      else if (subtype == ZHAOXIN_FAM7H_LUJIAZUI
+	       || subtype == ZHAOXIN_FAM7H_YONGFENG
+	       || subtype == ZHAOXIN_FAM7H_SHIJIDADAO)
+	{
+	  vendor = VENDOR_ZHAOXIN;
+	  type = ZHAOXIN_FAM7H;
+	}
+      else if (subtype >= HYGONFAM18H_C86_4G_M4
+	       && subtype <= HYGONFAM18H_C86_4G_M8)
+	{
+	  vendor = VENDOR_HYGON;
+	  type = HYGONFAM18H;
+	}
+      else
+	{
+	  /* Set VENDOR to VENDOR_OTHER and TYPE to CPU_TYPE_MAX for
+	     unsupported SUBTYPE.  */
+	  vendor = VENDOR_OTHER;
+	  type = CPU_TYPE_MAX;
+	}
+    }
+  else if (model > M_CPU_TYPE_START)
+    {
+      type = (processor_types) (model - M_CPU_TYPE_START);
+      if ((type >= INTEL_BONNELL && type <= INTEL_COREI7)
+	  || type == INTEL_SILVERMONT
+	  || (type >= INTEL_GOLDMONT && type <= INTEL_TREMONT)
+	  || (type >= INTEL_SIERRAFOREST
+	      && type <= INTEL_CLEARWATERFOREST))
+	{
+	  vendor = VENDOR_INTEL;
+	  subtype = CPU_SUBTYPE_MAX;
+	}
+      else if (type == AMDFAM10H
+	       || type == AMDFAM15H
+	       || (type >= AMD_BTVER1 && type <= AMDFAM17H)
+	       || type == AMDFAM19H
+	       || type == AMDFAM1AH)
+	{
+	  vendor = VENDOR_AMD;
+	  subtype = CPU_SUBTYPE_MAX;
+	}
+      else if (type == ZHAOXIN_FAM7H)
+	{
+	  vendor = VENDOR_ZHAOXIN;
+	  subtype = CPU_SUBTYPE_MAX;
+	}
+      else if (type == HYGONFAM18H)
+	{
+	  vendor = VENDOR_HYGON;
+	  subtype = CPU_SUBTYPE_MAX;
+	}
+      else
+	{
+	  /* Set VENDOR to VENDOR_OTHER and SUBTYPE to CPU_SUBTYPE_MAX
+	     for unsupported TYPE.  */
+	  vendor = VENDOR_OTHER;
+	  subtype = CPU_SUBTYPE_MAX;
+	}
+    }
+  else
+    {
+      vendor = (processor_vendor) model;
+      /* Set TYPE to CPU_TYPE_MAX and SUBTYPE to CPU_SUBTYPE_MAX for
+	 unknown TYPE and SUBTYPE.  */
+      type = CPU_TYPE_MAX;
+      subtype = CPU_SUBTYPE_MAX;
+    }
+}
+#endif

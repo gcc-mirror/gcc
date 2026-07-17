@@ -1043,6 +1043,10 @@ mgeneral-regs-only
 Target RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save
 Generate code which uses only the general registers.
 
+m128bit-atomic
+Target Mask(128BIT_ATOMIC) Var(ix86_target_flags) Save
+Generate cmpxchg16b, 128-bit atomic vector loads and stores for the x86-64 architecture.
+
 mshstk
 Target Mask(ISA_SHSTK) Var(ix86_isa_flags) Save
 Enable shadow stack built-in functions from Control-flow Enforcement

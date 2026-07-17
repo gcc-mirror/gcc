@@ -150,9 +150,8 @@
 ;;
 ;; Note that the TARGET_CMPXCHG8B test below is a stand-in for "Pentium".
 ;;
-;; Importantly, *no* processor makes atomicity guarantees for larger
-;; accesses.  In particular, there's no way to perform an atomic TImode
-;; move, despite the apparent applicability of MOVDQA et al.
+;; AVX capable processors from Intel, AMD, Hygon and Zhaoxin guarantee
+;; that 128-bit aligned vector loads and stores are atomic.
 
 (define_mode_iterator ATOMIC
    [QI HI SI
@@ -387,6 +386,61 @@
 }
   [(set_attr "type" "ssemov")
    (set_attr "mode" "DI")])
+
+(define_expand "atomic_loadti"
+  [(set (match_operand:TI 0 "register_operand")
+     (unspec:TI [(match_operand:TI 1 "memory_operand")
+                 (match_operand:SI 2 "const_int_operand")]
+                UNSPEC_LDA))]
+  "TARGET_128BIT_ATOMIC_ENABLED"
+{
+  emit_insn (gen_atomic_loadti_sse (operands[0], operands[1]));
+  DONE;
+})
+
+(define_insn_and_split "atomic_loadti_sse"
+  [(set (match_operand:TI 0 "register_operand" "=v")
+     (unspec:TI [(match_operand:TI 1 "memory_operand" "m")]
+                UNSPEC_LDX_ATOMIC))]
+  "TARGET_128BIT_ATOMIC_ENABLED"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))])
+
+(define_expand "atomic_storeti"
+  [(set (match_operand:TI 0 "memory_operand")
+     (unspec:TI [(match_operand:TI 1 "nonimmediate_operand")
+                 (match_operand:SI 2 "const_int_operand")]
+                UNSPEC_STA))]
+  "TARGET_128BIT_ATOMIC_ENABLED"
+{
+  enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
+
+  /* Use V1TImode to force vector register for atomic store.  */
+  rtx src = gen_reg_rtx (V1TImode);
+  rtx op1 = gen_lowpart (V1TImode, operands[1]);
+  emit_move_insn (src, op1);
+  emit_insn (gen_atomic_storeti_sse (operands[0], src));
+
+  /* ... followed by an MFENCE, if required.  */
+  if (is_mm_seq_cst (model))
+    emit_insn (gen_mem_thread_fence (operands[2]));
+  DONE;
+})
+
+(define_insn_and_split "atomic_storeti_sse"
+  [(set (match_operand:TI 0 "memory_operand" "=m")
+     (unspec:TI [(match_operand:V1TI 1 "nonimmediate_operand" "v")]
+                UNSPEC_STX_ATOMIC))]
+  "TARGET_128BIT_ATOMIC_ENABLED"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx src = gen_lowpart (TImode, operands[1]);
+  emit_move_insn (operands[0], src);
+  DONE;
+})
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:QI 0 "register_operand")	;; bool success output

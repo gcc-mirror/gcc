@@ -1,0 +1,45 @@
+/* { dg-do run { target { ! ia32 } } } */
+/* { dg-additional-options "-O2 -march=x86-64 -m128bit-atomic" } */
+
+#include <stdlib.h>
+#include "pr126293-3a.c"
+
+#define FUNC_CMPXCHG_RELAX(TYPE) \
+__attribute__ ((noinline, noclone, target ("relax-cmpxchg-loop")))	\
+TYPE relax_##TYPE##_cmpxchg (TYPE *lock, TYPE newval, TYPE oldval)  \
+{ \
+  do  \
+  { \
+    newval = oldval | 1;  \
+  } while (! __atomic_compare_exchange_n (lock, &oldval, newval,  \
+					  0, __ATOMIC_RELEASE,  \
+					  __ATOMIC_RELAXED));  \
+  return *lock;	\
+}
+
+FUNC_CMPXCHG_RELAX (__int128_t)
+
+#define TEST_CMPXCHG_LOOP(TYPE)	\
+{ \
+  TYPE a = 11, b = 20, c = 11, res, exp; \
+  TYPE d = 11, e = 20, f = 11;	\
+  res = relax_##TYPE##_cmpxchg (&a, b, c); \
+  exp = f_##TYPE##_cmpxchg (&d, e, f); \
+  if (res != exp || a != d) \
+    abort (); \
+}
+
+__attribute__((noinline))
+static void
+do_test (void)
+{
+  TEST_CMPXCHG_LOOP (__int128_t)
+}
+
+int
+main (void)
+{
+  if (__builtin_cpu_supports ("cmpxchg16b"))
+    do_test ();
+  return 0;
+}

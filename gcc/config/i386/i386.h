@@ -3085,6 +3085,15 @@ extern void debug_dispatch_window (int);
 #define TARGET_RECIP_VEC_DIV	((recip_mask & RECIP_MASK_VEC_DIV) != 0)
 #define TARGET_RECIP_VEC_SQRT	((recip_mask & RECIP_MASK_VEC_SQRT) != 0)
 
+/* -m128bit-atomic requires CMPXCHG16B and SSE2.
+
+   Note: Pre-Tiger Lake (Desktop/Mobile): Generations including Kaby
+   Lake, Coffee Lake, and Comet Lake (e.g., Pentium Gold G5400, Celeron
+   G5900, N4020) do not support AVX.  However, 128-bit aligned SSE loads
+   and stores are atomic on these processors.  Should AVX be required?  */
+#define TARGET_128BIT_ATOMIC_ENABLED \
+  (TARGET_CX16 && TARGET_SSE2 && TARGET_128BIT_ATOMIC)
+
 /* Use 128-bit AVX instructions in the auto-vectorizer.  */
 #define TARGET_PREFER_AVX128	(prefer_vector_width_type == PVW_AVX128)
 /* Use 256-bit AVX instructions in the auto-vectorizer.  */
