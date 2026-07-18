@@ -4120,8 +4120,6 @@ top_array_vla_p (const_tree type)
 {
   if (TREE_CODE (type) != ARRAY_TYPE)
     return false;
-  if (!COMPLETE_TYPE_P (type))
-    return false;
 
   tree d = TYPE_DOMAIN (type);
 
