@@ -294,7 +294,7 @@ struct riscv_tune_param
   bool overlap_op_by_pieces;
   bool use_zero_stride_load;
   bool speculative_sched_vsetvl;
-  unsigned int fusible_ops;
+  unsigned HOST_WIDE_INT fusible_ops;
   const struct cpu_vector_cost *vec_costs;
   const char *function_align;
   const char *jump_align;
@@ -11636,7 +11636,7 @@ riscv_sched_reorder (FILE *, int, rtx_insn **ready, int *nreadyp, int)
 
 /* Return the set of fusible operations for the current tune.  */
 
-unsigned int
+unsigned HOST_WIDE_INT
 riscv_get_fusible_ops (void)
 {
   return tune_param->fusible_ops;
