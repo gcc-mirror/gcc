@@ -701,7 +701,11 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 {
   bool use_pow2 = true;
   bool has_vector_shift = true;
+  bool has_vector_negate = true;
   bool use_abs_op1 = false;
+  /* For the power-of-two path: 1 if the quotient is negated (all divisors
+     are negative), 0 if not, -1 if undetermined.  */
+  int negate_p = -1;
   int mode = -1, this_mode;
   int pre_shift = -1, post_shift;
   unsigned int nunits = nunits_for_known_piecewise_op (type);
@@ -725,6 +729,17 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       || !can_implement_p (op, TYPE_MODE (type)))
     has_vector_shift = false;
 
+  /* expand_unop falls back to 0 - x for a missing vector negation.  */
+  op = optab_for_tree_code (NEGATE_EXPR, type, optab_default);
+  if (op == unknown_optab
+      || !can_implement_p (op, TYPE_MODE (type)))
+    {
+      op = optab_for_tree_code (MINUS_EXPR, type, optab_default);
+      if (op == unknown_optab
+	  || !can_implement_p (op, TYPE_MODE (type)))
+	has_vector_negate = false;
+    }
+
   /* Analysis phase.  Determine if all op1 elements are either power
      of two and it is possible to expand it using shifts (or for remainder
      using masking).  Additionally compute the multiplicative constants
@@ -740,16 +755,35 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       pre_shifts[i] = 0;
       post_shifts[i] = 0;
       mulc[i] = 0;
-      if (use_pow2
-	  && (!integer_pow2p (cst) || tree_int_cst_sgn (cst) != 1))
-	use_pow2 = false;
       if (use_pow2)
 	{
-	  shifts[i] = tree_log2 (cst);
-	  if (shifts[i] != shifts[0]
-	      && code == TRUNC_DIV_EXPR
-	      && !has_vector_shift)
+	  /* Divide by a negative power of two as by its absolute value and
+	     negate the quotient, as expand_divmod does.  The quotient needs
+	     all elements to have the same sign; the remainder does not
+	     depend on the sign, as x % d == x % -d.  INT_MIN is excluded,
+	     as its magnitude does not fit.  */
+	  int this_neg = 0;
+	  wide_int w = wi::to_wide (cst);
+	  if (sign_p == SIGNED && wi::neg_p (w))
+	    {
+	      this_neg = code == TRUNC_DIV_EXPR;
+	      w = wi::neg (w);
+	    }
+	  int log2 = wi::exact_log2 (w);
+	  if (log2 < 0
+	      || (sign_p == SIGNED && log2 >= prec - 1)
+	      || (this_neg && !has_vector_negate)
+	      || (negate_p >= 0 && negate_p != this_neg))
 	    use_pow2 = false;
+	  else
+	    {
+	      negate_p = this_neg;
+	      shifts[i] = log2;
+	      if (shifts[i] != shifts[0]
+		  && code == TRUNC_DIV_EXPR
+		  && !has_vector_shift)
+		use_pow2 = false;
+	    }
 	}
       if (mode == -2)
 	continue;
@@ -952,7 +986,8 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  else if (addend != NULL_TREE)
 	    {
 	      /* t1 = op0 + addend;
-		 q = t1 >> shift;  */
+		 q = t1 >> shift;
+		 and, for a negative power-of-two divisor, q = -q.  */
 	      op = optab_for_tree_code (PLUS_EXPR, type, optab_default);
 	      if (op != unknown_optab
 		  && can_implement_p (op, TYPE_MODE (type)))
@@ -960,7 +995,12 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 		  cur_op = gimplify_build2 (gsi, PLUS_EXPR, type, op0, addend);
 		  cur_op = add_shift (gsi, type, cur_op, shifts, RSHIFT_EXPR);
 		  if (cur_op != NULL_TREE)
-		    return cur_op;
+		    {
+		      if (negate_p == 1)
+			cur_op = gimplify_build1 (gsi, NEGATE_EXPR, type,
+						  cur_op);
+		      return cur_op;
+		    }
 		}
 	    }
 	}
