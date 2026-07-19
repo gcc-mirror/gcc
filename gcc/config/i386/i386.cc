@@ -8625,18 +8625,53 @@ struct stack_access_data
   unsigned int *stack_alignment;
 };
 
-/* Return true if OP references an argument passed on stack.  */
+/* SET stores into OP, a MEM linked to parameter BASE.  Return true if
+   SET stores BASE's argument register into OP.  This is a spill: the
+   callee saves its own register argument to the stack.  It is not a
+   stack argument set up by the caller:
+
+     (set (mem/c:V2DI (plus:DI (reg/f:DI 7 sp)
+		(const_int -16 [0xfffffffffffffff0])) [4 a1+0 S16 A128])
+	  (reg:V2DI 20 xmm0 [ a1 ]))
+ */
 
 static bool
-ix86_argument_passed_on_stack_p (const_rtx op)
+ix86_spill_register_argument_p (const_rtx set, const_rtx op, tree base)
+{
+  rtx src = SET_SRC (set);
+
+  /* Not a hard register store, so not a spill.  */
+  if (!REG_P (src) || !HARD_REGISTER_P (src))
+    return false;
+
+  rtx dest = SET_DEST (set);
+  tree reg_expr = REG_EXPR (src);
+
+  return dest == op && reg_expr == base;
+}
+
+/* Return true if OP, found in PAT, is a stack argument set up by the
+   caller.  Return false if OP is a register argument that the callee
+   spilled to its own stack frame.  Both cases share the same MEM_EXPR,
+   so we must check PAT to tell them apart.  */
+
+static bool
+ix86_argument_passed_on_stack_p (const_rtx op, const_rtx pat)
 {
   tree mem_expr = MEM_EXPR (op);
-  if (mem_expr)
-    {
-      tree var = get_base_address (mem_expr);
-      return TREE_CODE (var) == PARM_DECL;
-    }
-  return false;
+  if (!mem_expr)
+    return false;
+
+  tree var = get_base_address (mem_expr);
+  if (TREE_CODE (var) != PARM_DECL)
+    return false;
+
+  /* PAT is always a single SET here: note_stores splits PARALLEL
+     patterns into separate SETs before calling this function.  */
+  if (GET_CODE (pat) == SET)
+    return !ix86_spill_register_argument_p (pat, op, var);
+
+  return true;
 }
 
 /* Update the maximum stack slot alignment from memory alignment in PAT.  */
@@ -8658,7 +8693,7 @@ ix86_update_stack_alignment (rtx, const_rtx pat, void *data)
 	     responsible to align the outgoing stack for arguments
 	     passed on stack.  */
 	  if (reg_mentioned_p (p->reg, XEXP (op, 0))
-	      && !ix86_argument_passed_on_stack_p (op))
+	      && !ix86_argument_passed_on_stack_p (op, pat))
 	    {
 	      unsigned int alignment = MEM_ALIGN (op);
 
