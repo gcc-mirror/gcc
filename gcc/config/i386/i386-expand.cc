@@ -12684,6 +12684,8 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V16BF_FTYPE_V16SF:
     case V8BF_FTYPE_V8SF:
     case V8BF_FTYPE_V4SF:
+    case V16QI_FTYPE_V32QI:
+    case V32QI_FTYPE_V64QI:
       nargs = 1;
       break;
     case V4SF_FTYPE_V4SF_VEC_MERGE:
@@ -13064,6 +13066,7 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4SF_FTYPE_V16QI_V4SF_UQI:
     case V8SF_FTYPE_V16QI_V8SF_UQI:
     case V16SF_FTYPE_V16QI_V16SF_UHI:
+    case V64QI_FTYPE_V32QI_V64QI_UDI:
       nargs = 3;
       break;
     case V32QI_FTYPE_V32QI_V32QI_INT:

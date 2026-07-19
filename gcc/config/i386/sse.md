@@ -272,6 +272,9 @@
   UNSPEC_VCVTBIASPS2HF8S
   UNSPEC_VCVTBF82PS
   UNSPEC_VCVTHF82PS
+  UNSPEC_VCVTBF82BF4S
+  UNSPEC_VCVTHF82BF4S
+  UNSPEC_VCVTBF42HF8
 ])
 
 (define_c_enum "unspecv" [
@@ -33210,7 +33213,8 @@
   [(set_attr "prefix" "evex")])
 
 (define_mode_attr ssebvecmode_2
-  [(V8HF "V16QI") (V16HF "V16QI") (V32HF "V32QI")])
+  [(V8HF "V16QI") (V16HF "V16QI") (V32HF "V32QI")
+   (V16QI "V16QI") (V32QI "V16QI") (V64QI "V32QI")])
 
 (define_mode_attr iptrssebvec_2
   [(V8HF "q") (V16HF "") (V32HF "")])
@@ -34545,3 +34549,58 @@
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+;; FP8 to FP4 converts (VCVTBF82BF4S, VCVTHF82BF4S) - no masking
+
+(define_int_iterator UNSPEC_CONVERTFP82BF4S
+  [UNSPEC_VCVTBF82BF4S UNSPEC_VCVTHF82BF4S])
+
+(define_int_attr convertfp82bf4s
+  [(UNSPEC_VCVTBF82BF4S "bf82bf4s")
+   (UNSPEC_VCVTHF82BF4S "hf82bf4s")])
+
+(define_expand "vcvt<convertfp82bf4s>v16qi"
+  [(set (match_operand:V16QI 0 "nonimmediate_operand")
+	(vec_concat:V16QI
+	  (unspec:V8QI
+	    [(match_operand:V16QI 1 "register_operand")]
+	    UNSPEC_CONVERTFP82BF4S)
+	  (match_dup 2)))]
+  "TARGET_AVX10V2AUX"
+  "operands[2] = CONST0_RTX (V8QImode);")
+
+(define_insn "*vcvt<convertfp82bf4s>v16qi"
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=vm")
+	(vec_concat:V16QI
+	  (unspec:V8QI
+	    [(match_operand:V16QI 1 "register_operand" "v")]
+	    UNSPEC_CONVERTFP82BF4S)
+	  (match_operand:V8QI 2 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertfp82bf4s>\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "vcvt<convertfp82bf4s><mode>"
+  [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=vm")
+	(unspec:<ssehalfvecmode>
+	  [(match_operand:VI1_AVX512_3264 1 "register_operand" "v")]
+	  UNSPEC_CONVERTFP82BF4S))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertfp82bf4s>\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+;; FP4 to FP8 converts (VCVTBF42HF8) with masking
+
+(define_mode_attr iptrssebvec_4
+  [(V16QI "q") (V32QI "") (V64QI "")])
+
+(define_insn "vcvtbf42hf8<mode><mask_name>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI1_AVX512VL
+	  [(match_operand:<ssebvecmode_2> 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_VCVTBF42HF8))]
+  "TARGET_AVX10V2AUX"
+  "vcvtbf42hf8\t{%1, %0<mask_operand2>|%0<mask_operand2>, %<iptrssebvec_4>1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])

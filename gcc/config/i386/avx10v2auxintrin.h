@@ -1195,6 +1195,145 @@ _mm512_maskz_cvthf8_ps (__mmask16 __U, __m128i __A)
 						     (__mmask16) __U);
 }
 
+// VCVTBF82BF4S
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvts_bf8_bf4 (__m128i __A)
+{
+  return (__m128i) __builtin_ia32_vcvtbf82bf4s128 ((__v16qi) __A);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvts_bf8_bf4 (__m256i __A)
+{
+  return (__m128i) __builtin_ia32_vcvtbf82bf4s256 ((__v32qi) __A);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvts_bf8_bf4 (__m512i __A)
+{
+  return (__m256i) __builtin_ia32_vcvtbf82bf4s512 ((__v64qi) __A);
+}
+
+// VCVTHF82BF4S
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvts_hf8_bf4 (__m128i __A)
+{
+  return (__m128i) __builtin_ia32_vcvthf82bf4s128 ((__v16qi) __A);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvts_hf8_bf4 (__m256i __A)
+{
+  return (__m128i) __builtin_ia32_vcvthf82bf4s256 ((__v32qi) __A);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvts_hf8_bf4 (__m512i __A)
+{
+  return (__m256i) __builtin_ia32_vcvthf82bf4s512 ((__v64qi) __A);
+}
+
+// VCVTBF42HF8 - 128-bit
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtbf4_hf8 (__m128i __A)
+{
+  return (__m128i) __builtin_ia32_vcvtbf42hf8128_mask ((__v16qi) __A,
+						       (__v16qi)
+						       _mm_undefined_si128 (),
+						       (__mmask16) -1);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_mask_cvtbf4_hf8 (__m128i __W, __mmask16 __U, __m128i __A)
+{
+  return (__m128i) __builtin_ia32_vcvtbf42hf8128_mask ((__v16qi) __A,
+						       (__v16qi) __W,
+						       (__mmask16) __U);
+}
+
+extern __inline __m128i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_maskz_cvtbf4_hf8 (__mmask16 __U, __m128i __A)
+{
+  return (__m128i) __builtin_ia32_vcvtbf42hf8128_mask ((__v16qi) __A,
+						       (__v16qi)
+						       _mm_setzero_si128 (),
+						       (__mmask16) __U);
+}
+
+// VCVTBF42HF8 - 256-bit
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_cvtbf4_hf8 (__m128i __A)
+{
+  return (__m256i) __builtin_ia32_vcvtbf42hf8256_mask ((__v16qi) __A,
+						       (__v32qi)
+						       _mm256_undefined_si256 (),
+						       (__mmask32) -1);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_mask_cvtbf4_hf8 (__m256i __W, __mmask32 __U, __m128i __A)
+{
+  return (__m256i) __builtin_ia32_vcvtbf42hf8256_mask ((__v16qi) __A,
+						       (__v32qi) __W,
+						       (__mmask32) __U);
+}
+
+extern __inline __m256i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_maskz_cvtbf4_hf8 (__mmask32 __U, __m128i __A)
+{
+  return (__m256i) __builtin_ia32_vcvtbf42hf8256_mask ((__v16qi) __A,
+						       (__v32qi)
+						       _mm256_setzero_si256 (),
+						       (__mmask32) __U);
+}
+
+// VCVTBF42HF8 - 512-bit
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_cvtbf4_hf8 (__m256i __A)
+{
+  return (__m512i) __builtin_ia32_vcvtbf42hf8512_mask ((__v32qi) __A,
+						       (__v64qi)
+						       _mm512_undefined_si512 (),
+						       (__mmask64) -1);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_mask_cvtbf4_hf8 (__m512i __W, __mmask64 __U, __m256i __A)
+{
+  return (__m512i) __builtin_ia32_vcvtbf42hf8512_mask ((__v32qi) __A,
+						       (__v64qi) __W,
+						       (__mmask64) __U);
+}
+
+extern __inline __m512i
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_maskz_cvtbf4_hf8 (__mmask64 __U, __m256i __A)
+{
+  return (__m512i) __builtin_ia32_vcvtbf42hf8512_mask ((__v32qi) __A,
+						       (__v64qi)
+						       _mm512_setzero_si512 (),
+						       (__mmask64) __U);
+}
+
 #ifdef __DISABLE_AVX10V2AUX__
 #undef __DISABLE_AVX10V2AUX__
 #pragma GCC pop_options
