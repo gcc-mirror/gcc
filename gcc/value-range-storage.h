@@ -167,8 +167,8 @@ class GTY((tag ("VR_FRANGE"))) frange_storage : public vrange_storage
   DISABLE_COPY_AND_ASSIGN (frange_storage);
 
   enum value_range_kind m_kind;
-  REAL_VALUE_TYPE m_min;
-  REAL_VALUE_TYPE m_max;
+  frange_pair m_pairs[frange::MAX_PAIRS];
+  unsigned char m_num_ranges;
   bool m_pos_nan;
   bool m_neg_nan;
 };

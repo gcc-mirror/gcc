@@ -1023,6 +1023,7 @@ frange::flush_denormals_to_zero ()
 
   machine_mode mode = TYPE_MODE (type ());
 
+  // FIXME: Rewrite for sub-ranges.
   // Flush a denormal endpoint to a zero of the same sign: a +denormal lower
   // bound to +0.0, and a -denormal upper bound to -0.0.  Then call
   // canonicalize_zeros to rewrite the sign to whatever the flags make
@@ -1033,15 +1034,15 @@ frange::flush_denormals_to_zero ()
   //
   // keeping contains_p (-0.0) true; under HONOR_SIGNED_ZEROS the sign stands and
   // it stays [ +0.0, 5.0 ].
-  if (real_isdenormal (&m_max, mode) && real_isneg (&m_max))
-    m_max = dconstm0;
-  if (real_isdenormal (&m_min, mode) && !real_isneg (&m_min))
-    m_min = dconst0;
-  canonicalize_zeros (m_min, m_max);
+  if (real_isdenormal (&m_pairs[0].max, mode) && real_isneg (&m_pairs[0].max))
+    m_pairs[0].max = dconstm0;
+  if (real_isdenormal (&m_pairs[0].min, mode) && !real_isneg (&m_pairs[0].min))
+    m_pairs[0].min = dconst0;
+  canonicalize_zeros (m_pairs[0]);
 }
 
-// Canonicalize the signed zeros of the endpoints MIN and MAX according with what
-// the target and flags want:
+// Canonicalize the signed zeros of a sub-range according with what the target
+// and flags want:
 //
 //   !MODE_HAS_SIGNED_ZEROS: the mode has no signed zero, so any zero is +0.0.
 //
@@ -1051,21 +1052,21 @@ frange::flush_denormals_to_zero ()
 //   Otherwise the sign is a real distinction, and we keep it.
 
 void
-frange::canonicalize_zeros (REAL_VALUE_TYPE &min, REAL_VALUE_TYPE &max)
+frange::canonicalize_zeros (frange_pair &p)
 {
   if (!MODE_HAS_SIGNED_ZEROS (TYPE_MODE (m_type)))
     {
-      if (real_iszero (&min, 1))
-	min.sign = 0;
-      if (real_iszero (&max, 1))
-	max.sign = 0;
+      if (real_iszero (&p.min, 1))
+	p.min.sign = 0;
+      if (real_iszero (&p.max, 1))
+	p.max.sign = 0;
     }
   else if (!HONOR_SIGNED_ZEROS (m_type))
     {
-      if (real_iszero (&max, 1))
-	max.sign = 0;
-      if (real_iszero (&min, 0))
-	min.sign = 1;
+      if (real_iszero (&p.max, 1))
+	p.max.sign = 0;
+      if (real_iszero (&p.min, 0))
+	p.min.sign = 1;
     }
 }
 
@@ -1095,8 +1096,9 @@ frange::set (tree type,
 
   m_kind = kind;
   m_type = type;
-  m_min = min;
-  m_max = max;
+  m_num_ranges = 1;
+  m_pairs[0].min = min;
+  m_pairs[0].max = max;
   if (HONOR_NANS (m_type))
     {
       m_pos_nan = nan.pos_p ();
@@ -1108,7 +1110,7 @@ frange::set (tree type,
       m_neg_nan = false;
     }
 
-  canonicalize_zeros (m_min, m_max);
+  canonicalize_zeros (m_pairs[0]);
 
   // For -ffinite-math-only we can drop ranges outside the
   // representable numbers to min/max for the type.
@@ -1116,14 +1118,14 @@ frange::set (tree type,
     {
       REAL_VALUE_TYPE min_repr = frange_val_min (m_type);
       REAL_VALUE_TYPE max_repr = frange_val_max (m_type);
-      if (real_less (&m_min, &min_repr))
-	m_min = min_repr;
-      else if (real_less (&max_repr, &m_min))
-	m_min = max_repr;
-      if (real_less (&max_repr, &m_max))
-	m_max = max_repr;
-      else if (real_less (&m_max, &min_repr))
-	m_max = min_repr;
+      if (real_less (&m_pairs[0].min, &min_repr))
+	m_pairs[0].min = min_repr;
+      else if (real_less (&max_repr, &m_pairs[0].min))
+	m_pairs[0].min = max_repr;
+      if (real_less (&max_repr, &m_pairs[0].max))
+	m_pairs[0].max = max_repr;
+      else if (real_less (&m_pairs[0].max, &min_repr))
+	m_pairs[0].max = min_repr;
     }
 
   // Check for swapped ranges.
@@ -1162,8 +1164,9 @@ bool
 frange::normalize_kind ()
 {
   if (m_kind == VR_RANGE
-      && frange_val_is_min (m_min, m_type)
-      && frange_val_is_max (m_max, m_type))
+      && m_num_ranges == 1
+      && frange_val_is_min (m_pairs[0].min, m_type)
+      && frange_val_is_max (m_pairs[0].max, m_type))
     {
       if (!HONOR_NANS (m_type) || (m_pos_nan && m_neg_nan))
 	{
@@ -1176,8 +1179,9 @@ frange::normalize_kind ()
       if (HONOR_NANS (m_type) && (!m_pos_nan || !m_neg_nan))
 	{
 	  m_kind = VR_RANGE;
-	  m_min = frange_val_min (m_type);
-	  m_max = frange_val_max (m_type);
+	  m_num_ranges = 1;
+	  m_pairs[0].min = frange_val_min (m_type);
+	  m_pairs[0].max = frange_val_max (m_type);
 	  if (flag_checking)
 	    verify_range ();
 	  return true;
@@ -1199,8 +1203,9 @@ frange::union_nans (const frange &r)
   if (known_isnan () && m_kind != r.m_kind)
     {
       m_kind = r.m_kind;
-      m_min = r.m_min;
-      m_max = r.m_max;
+      m_num_ranges = r.m_num_ranges;
+      for (unsigned i = 0; i < r.m_num_ranges; ++i)
+	m_pairs[i] = r.m_pairs[i];
       changed = true;
     }
   if (m_pos_nan != r.m_pos_nan || m_neg_nan != r.m_neg_nan)
@@ -1241,15 +1246,16 @@ frange::union_ (const vrange &v)
       changed = true;
     }
 
-  // Combine endpoints.
-  if (frange_cmp (r.m_min, m_min) < 0)
+  // FIXME: Rewrite for sub-ranges.
+  // Combine endpoints.  This needs to be rewritten for sub-ranges.
+  if (frange_cmp (r.m_pairs[0].min, m_pairs[0].min) < 0)
     {
-      m_min = r.m_min;
+      m_pairs[0].min = r.m_pairs[0].min;
       changed = true;
     }
-  if (frange_cmp (m_max, r.m_max) < 0)
+  if (frange_cmp (m_pairs[0].max, r.m_pairs[0].max) < 0)
     {
-      m_max = r.m_max;
+      m_pairs[0].max = r.m_pairs[0].max;
       changed = true;
     }
 
@@ -1304,21 +1310,23 @@ frange::intersect (const vrange &v)
       changed = true;
     }
 
+  // FIXME: Rewrite for sub-ranges.
   // Combine endpoints.
-  if (frange_cmp (m_min, r.m_min) < 0)
+  if (frange_cmp (m_pairs[0].min, r.m_pairs[0].min) < 0)
     {
-      m_min = r.m_min;
+      m_pairs[0].min = r.m_pairs[0].min;
       changed = true;
     }
-  if (frange_cmp (r.m_max, m_max) < 0)
+  if (frange_cmp (r.m_pairs[0].max, m_pairs[0].max) < 0)
     {
-      m_max = r.m_max;
+      m_pairs[0].max = r.m_pairs[0].max;
       changed = true;
     }
 
+  // FIXME: Rewrite for sub-ranges.
   // If the endpoints are swapped, the resulting range is empty.  This also
   // catches [+0.0, -0.0], which is also empty.
-  if (frange_cmp (m_max, m_min) < 0)
+  if (frange_cmp (m_pairs[0].max, m_pairs[0].min) < 0)
     {
       if (maybe_isnan ())
 	m_kind = VR_NAN;
@@ -1338,8 +1346,9 @@ frange::operator= (const frange &src)
 {
   m_kind = src.m_kind;
   m_type = src.m_type;
-  m_min = src.m_min;
-  m_max = src.m_max;
+  m_num_ranges = src.m_num_ranges;
+  for (unsigned i = 0; i < src.m_num_ranges; ++i)
+    m_pairs[i] = src.m_pairs[i];
   m_pos_nan = src.m_pos_nan;
   m_neg_nan = src.m_neg_nan;
 
@@ -1369,9 +1378,14 @@ frange::operator== (const frange &src) const
 	  return false;
 	}
 
-      return (real_identical (&m_min, &src.m_min)
-	      && real_identical (&m_max, &src.m_max)
-	      && m_pos_nan == src.m_pos_nan
+      if (m_num_ranges != src.m_num_ranges)
+	return false;
+      for (unsigned i = 0; i < m_num_ranges; ++i)
+	if (!real_identical (&m_pairs[i].min, &src.m_pairs[i].min)
+	    || !real_identical (&m_pairs[i].max, &src.m_pairs[i].max))
+	  return false;
+
+      return (m_pos_nan == src.m_pos_nan
 	      && m_neg_nan == src.m_neg_nan
 	      && types_compatible_p (m_type, src.m_type));
     }
@@ -1404,7 +1418,12 @@ frange::contains_p (const REAL_VALUE_TYPE &r) const
   if (known_isnan ())
     return false;
 
-  return frange_cmp (r, m_min) >= 0 && frange_cmp (r, m_max) <= 0;
+  for (unsigned i = 0; i < m_num_ranges; ++i)
+    if (frange_cmp (r, m_pairs[i].min) >= 0
+	&& frange_cmp (r, m_pairs[i].max) <= 0)
+      return true;
+
+  return false;
 }
 
 // If range is a singleton, place it in RESULT and return TRUE.  If
@@ -1415,7 +1434,9 @@ frange::contains_p (const REAL_VALUE_TYPE &r) const
 bool
 frange::internal_singleton_p (REAL_VALUE_TYPE *result) const
 {
-  if (m_kind == VR_RANGE && real_identical (&m_min, &m_max))
+  if (m_kind == VR_RANGE
+      && m_num_ranges == 1
+      && real_identical (&m_pairs[0].min, &m_pairs[0].max))
     {
       // Return false for any singleton that may be a NAN.
       if (HONOR_NANS (m_type) && maybe_isnan ())
@@ -1428,16 +1449,16 @@ frange::internal_singleton_p (REAL_VALUE_TYPE *result) const
 	  // or -0.0.  Since this means there is more than one way to
 	  // represent a value, return false to avoid propagating it.
 	  // See libgcc/config/rs6000/ibm-ldouble-format for details.
-	  if (real_isinf (&m_min))
+	  if (real_isinf (&m_pairs[0].min))
 	    return false;
 	  REAL_VALUE_TYPE r;
-	  real_convert (&r, DFmode, &m_min);
-	  if (real_identical (&r, &m_min))
+	  real_convert (&r, DFmode, &m_pairs[0].min);
+	  if (real_identical (&r, &m_pairs[0].min))
 	    return false;
 	}
 
       if (result)
-	*result = m_min;
+	*result = m_pairs[0].min;
       return true;
     }
   return false;
@@ -1449,7 +1470,7 @@ frange::singleton_p (tree *result) const
   if (internal_singleton_p ())
     {
       if (result)
-	*result = build_real (m_type, m_min);
+	*result = build_real (m_type, m_pairs[0].min);
       return true;
     }
   return false;
@@ -1479,8 +1500,9 @@ frange::verify_range () const
       return;
     case VR_VARYING:
       gcc_checking_assert (m_type);
-      gcc_checking_assert (frange_val_is_min (m_min, m_type));
-      gcc_checking_assert (frange_val_is_max (m_max, m_type));
+      gcc_checking_assert (m_num_ranges == 1);
+      gcc_checking_assert (frange_val_is_min (m_pairs[0].min, m_type));
+      gcc_checking_assert (frange_val_is_max (m_pairs[0].max, m_type));
       if (HONOR_NANS (m_type))
 	gcc_checking_assert (m_pos_nan && m_neg_nan);
       else
@@ -1497,24 +1519,32 @@ frange::verify_range () const
       gcc_unreachable ();
     }
 
-  // NANs cannot appear in the endpoints of a range.
-  gcc_checking_assert (!real_isnan (&m_min) && !real_isnan (&m_max));
+  for (unsigned i = 0; i < m_num_ranges; ++i)
+    {
+      // NANs cannot appear in the endpoints of a range.
+      gcc_checking_assert (!real_isnan (&m_pairs[i].min)
+			   && !real_isnan (&m_pairs[i].max));
 
-  // Make sure we don't have swapped ranges.  This also catches [ +0.0, -0.0].
-  gcc_checking_assert (frange_cmp (m_min, m_max) <= 0);
+      // Make sure we don't have swapped ranges.
+      // This also catches [ +0.0, -0.0].
+      gcc_checking_assert (frange_cmp (m_pairs[i].min, m_pairs[i].max) <= 0);
 
-  // A zero endpoint must carry its canonical sign.  Every producer runs
-  // canonicalize_zeros, so a zero bound can only descend from a canonical one.
-  if (!MODE_HAS_SIGNED_ZEROS (TYPE_MODE (m_type)))
-    gcc_checking_assert (!real_iszero (&m_min, 1) && !real_iszero (&m_max, 1));
-  else if (!HONOR_SIGNED_ZEROS (m_type))
-    gcc_checking_assert (!real_iszero (&m_min, 0) && !real_iszero (&m_max, 1));
+      // A zero endpoint must carry its canonical sign.  Every producer runs
+      // canonicalize_zeros, so a zero bound can only descend from a canonical
+      // one.
+      if (!MODE_HAS_SIGNED_ZEROS (TYPE_MODE (m_type)))
+	gcc_checking_assert (!real_iszero (&m_pairs[i].min, 1)
+			     && !real_iszero (&m_pairs[i].max, 1));
+      else if (!HONOR_SIGNED_ZEROS (m_type))
+	gcc_checking_assert (!real_iszero (&m_pairs[i].min, 0)
+			     && !real_iszero (&m_pairs[i].max, 1));
+    }
 
   // If all the properties are clear, we better not span the entire
   // domain, because that would make us varying.
-  if (m_pos_nan && m_neg_nan)
-    gcc_checking_assert (!frange_val_is_min (m_min, m_type)
-			 || !frange_val_is_max (m_max, m_type));
+  if (m_num_ranges == 1 && m_pos_nan && m_neg_nan)
+    gcc_checking_assert (!frange_val_is_min (m_pairs[0].min, m_type)
+			 || !frange_val_is_max (m_pairs[0].max, m_type));
 }
 
 // We can't do much with nonzeros yet.
@@ -1552,8 +1582,9 @@ bool
 frange::zero_p () const
 {
   return (m_kind == VR_RANGE
-	  && real_iszero (&m_min)
-	  && real_iszero (&m_max));
+	  && m_num_ranges == 1
+	  && real_iszero (&m_pairs[0].min)
+	  && real_iszero (&m_pairs[0].max));
 }
 
 // Set the range to non-negative numbers, that is [+0.0, +INF].

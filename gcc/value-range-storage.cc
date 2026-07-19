@@ -524,8 +524,9 @@ frange_storage::set_frange (const frange &r)
   gcc_checking_assert (fits_p (r));
 
   m_kind = r.m_kind;
-  m_min = r.m_min;
-  m_max = r.m_max;
+  m_num_ranges = r.m_num_ranges;
+  for (unsigned i = 0; i < r.m_num_ranges; ++i)
+    m_pairs[i] = r.m_pairs[i];
   m_pos_nan = r.m_pos_nan;
   m_neg_nan = r.m_neg_nan;
 }
@@ -555,13 +556,11 @@ frange_storage::get_frange (frange &r, tree type) const
       return;
     }
 
-  // We use the constructor to create the new range instead of writing
-  // out the bits into the frange directly, because the global range
-  // being read may be being inlined into a function with different
-  // restrictions as when it was originally written.  We want to make
-  // sure the resulting range is canonicalized correctly for the new
-  // consumer.
-  r = frange (type, m_min, m_max, m_kind);
+  // FIXME: Rewrite for sub-ranges.  This only reconstructs the first pair.
+  // Eventually do it piecewise like irange_storage::get_irange: start
+  // undefined and union each sub-range built through the constructor (so
+  // every piece is re-canonicalized).
+  r = frange (type, m_pairs[0].min, m_pairs[0].max, m_kind);
 
   // The constructor will set the NAN bits for HONOR_NANS, but we must
   // make sure to set the NAN sign if known.

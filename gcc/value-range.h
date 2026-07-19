@@ -584,10 +584,18 @@ nan_state::neg_p () const
   return m_neg_nan;
 }
 
+// A sub-range in an frange.
+
+struct frange_pair
+{
+  REAL_VALUE_TYPE min;
+  REAL_VALUE_TYPE max;
+};
+
 // A subset of possible values for a floating point type.
 //
-// The representation is a type with a couple of endpoints, unioned
-// with a subset of { -NaN, +NaN }.
+// The representation is a single interval, unioned with a subset of
+// { -NaN, +NaN }.
 
 class frange final : public vrange
 {
@@ -657,6 +665,11 @@ public:
   bool known_isnormal () const;
   bool known_isdenormal_or_zero () const;
   virtual void verify_range () const override;
+
+  static const unsigned int MAX_PAIRS = 1;
+  unsigned num_pairs () const { return m_num_ranges; }
+  const REAL_VALUE_TYPE &lower_bound (unsigned pair) const;
+  const REAL_VALUE_TYPE &upper_bound (unsigned pair) const;
 protected:
   virtual bool contains_p (tree cst) const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;
@@ -666,11 +679,11 @@ private:
   bool normalize_kind ();
   bool union_nans (const frange &);
   bool intersect_nans (const frange &);
-  void canonicalize_zeros (REAL_VALUE_TYPE &, REAL_VALUE_TYPE &);
+  void canonicalize_zeros (frange_pair &);
 
   tree m_type;
-  REAL_VALUE_TYPE m_min;
-  REAL_VALUE_TYPE m_max;
+  frange_pair m_pairs[MAX_PAIRS];
+  unsigned char m_num_ranges;
   bool m_pos_nan;
   bool m_neg_nan;
 };
@@ -679,14 +692,30 @@ inline const REAL_VALUE_TYPE &
 frange::lower_bound () const
 {
   gcc_checking_assert (!undefined_p () && !known_isnan ());
-  return m_min;
+  return m_pairs[0].min;
 }
 
 inline const REAL_VALUE_TYPE &
 frange::upper_bound () const
 {
   gcc_checking_assert (!undefined_p () && !known_isnan ());
-  return m_max;
+  return m_pairs[m_num_ranges - 1].max;
+}
+
+inline const REAL_VALUE_TYPE &
+frange::lower_bound (unsigned pair) const
+{
+  gcc_checking_assert (!undefined_p () && !known_isnan ());
+  gcc_checking_assert (pair < m_num_ranges);
+  return m_pairs[pair].min;
+}
+
+inline const REAL_VALUE_TYPE &
+frange::upper_bound (unsigned pair) const
+{
+  gcc_checking_assert (!undefined_p () && !known_isnan ());
+  gcc_checking_assert (pair < m_num_ranges);
+  return m_pairs[pair].max;
 }
 
 // Return the NAN state.
@@ -1634,8 +1663,9 @@ frange::set_varying (tree type)
 {
   m_kind = VR_VARYING;
   m_type = type;
-  m_min = frange_val_min (type);
-  m_max = frange_val_max (type);
+  m_num_ranges = 1;
+  m_pairs[0].min = frange_val_min (type);
+  m_pairs[0].max = frange_val_max (type);
   if (HONOR_NANS (m_type))
     {
       m_pos_nan = true;
@@ -1653,9 +1683,10 @@ frange::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
   m_type = NULL;
+  m_num_ranges = 1;
   m_pos_nan = false;
   m_neg_nan = false;
-  // m_min and m_min are uninitialized as they are REAL_VALUE_TYPE ??.
+  // Leave the rest undefined; as it speeds up initializing undefined ranges.
   if (flag_checking)
     verify_range ();
 }
@@ -1789,6 +1820,7 @@ frange::set_nan (tree type, const nan_state &nan)
     {
       m_kind = VR_NAN;
       m_type = type;
+      m_num_ranges = 1;
       m_neg_nan = nan.neg_p ();
       m_pos_nan = nan.pos_p ();
       if (flag_checking)
@@ -1823,7 +1855,9 @@ frange::known_isfinite () const
 {
   if (undefined_p () || varying_p () || m_kind == VR_ANTI_RANGE)
     return false;
-  return (!maybe_isnan () && !real_isinf (&m_min) && !real_isinf (&m_max));
+  return (!maybe_isnan ()
+	  && !real_isinf (&lower_bound ())
+	  && !real_isinf (&upper_bound ()));
 }
 
 // Return TRUE if range is known to be normal.
@@ -1835,9 +1869,11 @@ frange::known_isnormal () const
     return false;
 
   machine_mode mode = TYPE_MODE (type ());
-  return (!real_isdenormal (&m_min, mode) && !real_isdenormal (&m_max, mode)
-	  && !real_iszero (&m_min) && !real_iszero (&m_max)
-	  && (!real_isneg (&m_min) || real_isneg (&m_max)));
+  const REAL_VALUE_TYPE &min = lower_bound ();
+  const REAL_VALUE_TYPE &max = upper_bound ();
+  return (!real_isdenormal (&min, mode) && !real_isdenormal (&max, mode)
+	  && !real_iszero (&min) && !real_iszero (&max)
+	  && (!real_isneg (&min) || real_isneg (&max)));
 }
 
 // Return TRUE if range is known to be denormal.
@@ -1849,8 +1885,10 @@ frange::known_isdenormal_or_zero () const
     return false;
 
   machine_mode mode = TYPE_MODE (type ());
-  return ((real_isdenormal (&m_min, mode) || real_iszero (&m_min))
-	  && (real_isdenormal (&m_max, mode) || real_iszero (&m_max)));
+  const REAL_VALUE_TYPE &min = lower_bound ();
+  const REAL_VALUE_TYPE &max = upper_bound ();
+  return ((real_isdenormal (&min, mode) || real_iszero (&min))
+	  && (real_isdenormal (&max, mode) || real_iszero (&max)));
 }
 
 // Return TRUE if range may be infinite.
@@ -1862,7 +1900,7 @@ frange::maybe_isinf () const
     return false;
   if (varying_p ())
     return true;
-  return real_isinf (&m_min) || real_isinf (&m_max);
+  return real_isinf (&lower_bound ()) || real_isinf (&upper_bound ());
 }
 
 // Return TRUE if range is known to be the [-INF,-INF] or [+INF,+INF].
@@ -1871,9 +1909,10 @@ inline bool
 frange::known_isinf () const
 {
   return (m_kind == VR_RANGE
+	  && m_num_ranges == 1
 	  && !maybe_isnan ()
-	  && real_identical (&m_min, &m_max)
-	  && real_isinf (&m_min));
+	  && real_identical (&m_pairs[0].min, &m_pairs[0].max)
+	  && real_isinf (&m_pairs[0].min));
 }
 
 // Return TRUE if range is possibly a NAN.
@@ -1921,9 +1960,9 @@ frange::signbit_p (bool &signbit) const
   // No NAN.
   if (!m_pos_nan && !m_neg_nan)
     {
-      if (m_min.sign == m_max.sign)
+      if (lower_bound ().sign == upper_bound ().sign)
 	{
-	  signbit = m_min.sign;
+	  signbit = lower_bound ().sign;
 	  return true;
 	}
       return false;
@@ -1931,7 +1970,8 @@ frange::signbit_p (bool &signbit) const
   // NAN with known sign.
   bool nan_sign = m_neg_nan;
   if (known_isnan ()
-      || (nan_sign == m_min.sign && nan_sign == m_max.sign))
+      || (nan_sign == lower_bound ().sign
+	  && nan_sign == upper_bound ().sign))
     {
       signbit = nan_sign;
       return true;
