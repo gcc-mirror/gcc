@@ -275,6 +275,10 @@
   UNSPEC_VCVTBF82BF4S
   UNSPEC_VCVTHF82BF4S
   UNSPEC_VCVTBF42HF8
+  UNSPEC_VCVTBF82BF6S
+  UNSPEC_VCVTHF82HF6S
+  UNSPEC_VCVTBF62HF8
+  UNSPEC_VCVTHF62HF8
 ])
 
 (define_c_enum "unspecv" [
@@ -34602,5 +34606,43 @@
 	  UNSPEC_VCVTBF42HF8))]
   "TARGET_AVX10V2AUX"
   "vcvtbf42hf8\t{%1, %0<mask_operand2>|%0<mask_operand2>, %<iptrssebvec_4>1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+;; FP8 to FP6 converts (VCVTBF82BF6S, VCVTHF82HF6S) - no masking
+
+(define_int_iterator UNSPEC_CONVERTFP82FP6S
+  [UNSPEC_VCVTBF82BF6S UNSPEC_VCVTHF82HF6S])
+
+(define_int_attr convertfp82fp6s
+  [(UNSPEC_VCVTBF82BF6S "bf82bf6s")
+   (UNSPEC_VCVTHF82HF6S "hf82hf6s")])
+
+(define_insn "vcvt<convertfp82fp6s><mode>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+      (unspec:VI1_AVX512VL
+        [(match_operand:VI1_AVX512VL 1 "register_operand" "v")]
+        UNSPEC_CONVERTFP82FP6S))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertfp82fp6s>\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+;; FP6 to FP8 converts (VCVTBF62HF8, VCVTHF62HF8) with masking
+
+(define_int_iterator UNSPEC_CONVERTFP62HF8
+  [UNSPEC_VCVTBF62HF8 UNSPEC_VCVTHF62HF8])
+
+(define_int_attr convertfp62hf8
+  [(UNSPEC_VCVTBF62HF8 "bf62hf8")
+   (UNSPEC_VCVTHF62HF8 "hf62hf8")])
+
+(define_insn "vcvt<convertfp62hf8><mode><mask_name>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI1_AVX512VL
+	  [(match_operand:VI1_AVX512VL 1 "register_operand" "v")]
+	  UNSPEC_CONVERTFP62HF8))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertfp62hf8>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
