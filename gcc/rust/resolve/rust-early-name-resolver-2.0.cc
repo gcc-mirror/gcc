@@ -491,7 +491,9 @@ Early::finalize_glob_import (NameResolutionContext &ctx,
       ctx.prelude = mapping.data.container ().get_node_id ();
     }
 
-  GlobbingVisitor (ctx).go (container.value ());
+  GlobbingVisitor glob_visit (ctx);
+  glob_visit.go (container.value ());
+  dirty |= glob_visit.is_dirty ();
 }
 
 void
