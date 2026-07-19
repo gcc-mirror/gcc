@@ -479,7 +479,8 @@ i[34567]86-*-* | x86_64-*-*)
 		       avx10_2bf16intrin.h avx10_2satcvtintrin.h
 		       avx10_2minmaxintrin.h avx10_2copyintrin.h
 		       amxavx512intrin.h amxfp8intrin.h movrsintrin.h
-		       amxmovrsintrin.h avx512bmmintrin.h avx512bmmvlintrin.h"
+		       amxmovrsintrin.h avx512bmmintrin.h avx512bmmvlintrin.h
+		       avx10v2auxintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h

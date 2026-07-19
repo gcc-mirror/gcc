@@ -1124,6 +1124,7 @@ get_available_features (struct __processor_model *cpu_model,
   if (avx10_set && max_cpuid_level >= 0x24)
     {
       __cpuid_count (0x24, 0, eax, ebx, ecx, edx);
+      unsigned int max_subleaf_level = eax;
       version = ebx & 0xff;
       switch (version)
 	{
@@ -1136,6 +1137,12 @@ get_available_features (struct __processor_model *cpu_model,
 	default:
 	  set_feature (FEATURE_AVX10_1);
 	  break;
+	}
+	if (max_subleaf_level>=1)
+	{
+	  __cpuid_count (0x24, 1, eax, ebx, ecx, edx);
+	  if (ecx & bit_AVX10V2AUX)
+	    set_feature (FEATURE_AVX10V2AUX);
 	}
     }
 

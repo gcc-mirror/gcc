@@ -258,6 +258,12 @@
 
   ;; For MOVRS support
   UNSPEC_VMOVRS
+
+  ;; For AVX10V2AUX support
+  UNSPEC_VCVTPS2BF8
+  UNSPEC_VCVTPS2BF8S
+  UNSPEC_VCVTPS2HF8
+  UNSPEC_VCVTPS2HF8S
 ])
 
 (define_c_enum "unspecv" [
@@ -34217,3 +34223,143 @@
   "vbitrevb\t{%1, %0|%0, %1}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+;; AVX10V2AUX instructions
+;; FP32 to FP8 single-source converts (VCVTPS2BF8, VCVTPS2BF8S,
+;; VCVTPS2HF8, VCVTPS2HF8S)
+
+(define_int_iterator UNSPEC_CONVERTPS2FP8
+  [UNSPEC_VCVTPS2BF8 UNSPEC_VCVTPS2BF8S
+   UNSPEC_VCVTPS2HF8 UNSPEC_VCVTPS2HF8S])
+
+(define_int_attr convertps2fp8
+  [(UNSPEC_VCVTPS2BF8 "ps2bf8")
+   (UNSPEC_VCVTPS2BF8S "ps2bf8s")
+   (UNSPEC_VCVTPS2HF8 "ps2hf8")
+   (UNSPEC_VCVTPS2HF8S "ps2hf8s")])
+
+(define_expand "vcvt<convertps2fp8>v4sf"
+  [(set (match_operand:V16QI 0 "register_operand")
+	(vec_concat:V16QI
+	  (unspec:V4QI
+	    [(match_operand:V4SF 1 "nonimmediate_operand")]
+	    UNSPEC_CONVERTPS2FP8)
+	  (match_dup 2)))]
+  "TARGET_AVX10V2AUX"
+  "operands[2] = CONST0_RTX (V12QImode);")
+
+(define_insn "*vcvt<convertps2fp8>v4sf"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_concat:V16QI
+	  (unspec:V4QI
+	    [(match_operand:V4SF 1 "nonimmediate_operand" "vm")]
+	    UNSPEC_CONVERTPS2FP8)
+	  (match_operand:V12QI 2 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertps2fp8>{x}\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "V4SF")])
+
+(define_expand "vcvt<convertps2fp8>v8sf"
+  [(set (match_operand:V16QI 0 "register_operand")
+	(vec_concat:V16QI
+	  (unspec:V8QI
+	    [(match_operand:V8SF 1 "nonimmediate_operand")]
+	    UNSPEC_CONVERTPS2FP8)
+	  (match_dup 2)))]
+  "TARGET_AVX10V2AUX"
+  "operands[2] = CONST0_RTX (V8QImode);")
+
+(define_insn "*vcvt<convertps2fp8>v8sf"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_concat:V16QI
+	  (unspec:V8QI
+	    [(match_operand:V8SF 1 "nonimmediate_operand" "vm")]
+	    UNSPEC_CONVERTPS2FP8)
+	  (match_operand:V8QI 2 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertps2fp8>{y}\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "V8SF")])
+
+(define_expand "vcvt<convertps2fp8>v4sf_mask"
+  [(set (match_operand:V16QI 0 "register_operand")
+	(vec_concat:V16QI
+	  (vec_merge:V4QI
+	    (unspec:V4QI
+	      [(match_operand:V4SF 1 "nonimmediate_operand")]
+	      UNSPEC_CONVERTPS2FP8)
+	    (vec_select:V4QI
+	      (match_operand:V16QI 2 "nonimm_or_0_operand")
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)]))
+	    (match_operand:QI 3 "register_operand"))
+	  (match_dup 4)))]
+  "TARGET_AVX10V2AUX"
+  "operands[4] = CONST0_RTX (V12QImode);")
+
+(define_insn "*vcvt<convertps2fp8>v4sf_mask"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_concat:V16QI
+	  (vec_merge:V4QI
+	    (unspec:V4QI
+	      [(match_operand:V4SF 1 "nonimmediate_operand" "vm")]
+	      UNSPEC_CONVERTPS2FP8)
+	    (vec_select:V4QI
+	      (match_operand:V16QI 2 "nonimm_or_0_operand" "0C")
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)]))
+	    (match_operand:QI 3 "register_operand" "Yk"))
+	  (match_operand:V12QI 4 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertps2fp8>{x}\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "V4SF")])
+
+(define_expand "vcvt<convertps2fp8>v8sf_mask"
+  [(set (match_operand:V16QI 0 "register_operand")
+	(vec_concat:V16QI
+	  (vec_merge:V8QI
+	    (unspec:V8QI
+	      [(match_operand:V8SF 1 "nonimmediate_operand")]
+	      UNSPEC_CONVERTPS2FP8)
+	    (vec_select:V8QI
+	      (match_operand:V16QI 2 "nonimm_or_0_operand")
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)
+			 (const_int 4) (const_int 5)
+			 (const_int 6) (const_int 7)]))
+	    (match_operand:QI 3 "register_operand"))
+	  (match_dup 4)))]
+  "TARGET_AVX10V2AUX"
+  "operands[4] = CONST0_RTX (V8QImode);")
+
+(define_insn "*vcvt<convertps2fp8>v8sf_mask"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_concat:V16QI
+	  (vec_merge:V8QI
+	    (unspec:V8QI
+	      [(match_operand:V8SF 1 "nonimmediate_operand" "vm")]
+	      UNSPEC_CONVERTPS2FP8)
+	    (vec_select:V8QI
+	      (match_operand:V16QI 2 "nonimm_or_0_operand" "0C")
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)
+			 (const_int 4) (const_int 5)
+			 (const_int 6) (const_int 7)]))
+	    (match_operand:QI 3 "register_operand" "Yk"))
+	  (match_operand:V8QI 4 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertps2fp8>{y}\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "V8SF")])
+
+(define_insn "vcvt<convertps2fp8>v16sf<mask_name>"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(unspec:V16QI
+	  [(match_operand:V16SF 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_CONVERTPS2FP8))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertps2fp8>{z}\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "V16SF")])

@@ -11680,6 +11680,17 @@ proc check_effective_target_avx10_2 { } {
     } "" ]
 }
 
+# Return 1 if avx10v2aux instructions can be compiled.
+proc check_effective_target_avx10v2aux { } {
+    return [check_no_compiler_messages avx10v2aux object {
+	void
+	foo ()
+	{
+	  __asm__ volatile ("vcvtps2bf8\t{%%xmm1, %%xmm0|%%xmm0, %%xmm1}");
+	}
+    } "-mavx10v2aux" ]
+}
+
 # Return 1 if amx-avx512 instructions can be compiled.
 proc check_effective_target_amx_avx512 { } {
     return [check_no_compiler_messages amx_avx512 object {

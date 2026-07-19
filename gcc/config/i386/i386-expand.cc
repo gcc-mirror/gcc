@@ -13058,6 +13058,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8DI_FTYPE_V8SF_V8DI_UQI:
     case V8DI_FTYPE_V8DF_V8DI_UQI:
     case V8SI_FTYPE_V8DF_V8SI_UQI:
+    case V16QI_FTYPE_V4SF_V16QI_UQI:
+    case V16QI_FTYPE_V8SF_V16QI_UQI:
+    case V16QI_FTYPE_V16SF_V16QI_UHI:
       nargs = 3;
       break;
     case V32QI_FTYPE_V32QI_V32QI_INT:

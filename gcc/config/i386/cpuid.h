@@ -170,6 +170,10 @@
 /* Sub leaf (%eax == 0x21) */
 #define bit_AVX512BMM	( 1<<23 )
 
+/* AVX10 sub leaf (%eax == 0x24, %ecx == 1) */
+/* %ecx */
+#define bit_AVX10V2AUX	(1 << 3)
+
 /* AMX sub leaf (%eax == 0x1e, %ecx == 1) */
 /* %eax */
 #define bit_AMX_FP8	(1 << 4)

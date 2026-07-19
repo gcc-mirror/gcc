@@ -2688,6 +2688,9 @@ Target supports compiling @code{avx} instructions.
 @item avx_runtime
 Target supports the execution of @code{avx} instructions.
 
+@item avx10v2aux
+Target supports the execution of @code{avx10v2aux} instructions.
+
 @item avx10.1
 Target supports the execution of @code{avx10.1} instructions.
 
