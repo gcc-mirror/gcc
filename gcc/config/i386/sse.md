@@ -270,6 +270,8 @@
   UNSPEC_VCVTBIASPS2BF8S
   UNSPEC_VCVTBIASPS2HF8
   UNSPEC_VCVTBIASPS2HF8S
+  UNSPEC_VCVTBF82PS
+  UNSPEC_VCVTHF82PS
 ])
 
 (define_c_enum "unspecv" [
@@ -34520,3 +34522,26 @@
   "vcvt<biasps2fp8>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "V16SF")])
+
+;; FP8 to FP32 converts (VCVTBF82PS, VCVTHF82PS)
+
+(define_int_iterator UNSPEC_CONVERTFP82PS
+  [UNSPEC_VCVTBF82PS UNSPEC_VCVTHF82PS])
+
+(define_int_attr convertfp82ps
+  [(UNSPEC_VCVTBF82PS "bf82ps")
+   (UNSPEC_VCVTHF82PS "hf82ps")])
+
+(define_mode_attr iptrssebvec_3
+  [(V4SF "k") (V8SF "q") (V16SF "")])
+
+(define_insn "vcvt<convertfp82ps><mode><mask_name>"
+  [(set (match_operand:VF1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VF1_AVX512VL
+	  [(match_operand:V16QI 1 "nonimmediate_operand" "vm")]
+	  UNSPEC_CONVERTFP82PS))]
+  "TARGET_AVX10V2AUX"
+  "vcvt<convertfp82ps>\t{%1, %0<mask_operand2>|%0<mask_operand2>,%<iptrssebvec_3>1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
