@@ -248,8 +248,10 @@ protected:
   relation_kind find_relation_block (int bb, unsigned v1, unsigned v2,
 				     relation_chain **obj = NULL) const;
   relation_kind find_relation_dom (basic_block bb, unsigned v1, unsigned v2) const;
-  relation_chain *set_one_relation (basic_block bb, relation_kind k, tree op1,
-				    tree op2);
+  relation_chain *create_relation_in_bb (basic_block bb, relation_kind k,
+					 tree op1, tree op2);
+  relation_chain *search_and_merge_relation (basic_block bb, relation_kind k,
+					     tree op1, tree op2);
   void register_transitives (basic_block, const class value_relation &);
   relation_kind recomputed_relation (basic_block, edge, tree, tree) const;
 };

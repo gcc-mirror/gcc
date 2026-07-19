@@ -1175,7 +1175,7 @@ dom_oracle::record (basic_block bb, relation_kind k, tree op1, tree op2)
       // there will be no transitive.
       bool check = bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op1))
 		   || bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op2));
-      relation_chain *ptr = set_one_relation (bb, k, op1, op2);
+      relation_chain *ptr = search_and_merge_relation (bb, k, op1, op2);
       if (ptr && check
 	  && (m_relations[bb->index].m_num_relations
 	      < param_relation_block_limit))
@@ -1184,21 +1184,27 @@ dom_oracle::record (basic_block bb, relation_kind k, tree op1, tree op2)
     }
 }
 
-// Register relation K between OP! and OP2 in block BB.
-// This creates the record and searches for existing records in the dominator
-// tree to merge with.  Return the record, or NULL if no record was created.
+// Register relation K between OP1 and OP2 in block BB by creating a new
+// record.  It is an error for there to be an existing record.
+// Return the record, or NULL if no record was created.
 
 relation_chain *
-dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
-			      tree op2)
+dom_oracle::create_relation_in_bb (basic_block bb, relation_kind k, tree op1,
+				   tree op2)
 {
-  gcc_checking_assert (k != VREL_VARYING && k != VREL_EQ);
-
-  value_relation vr(k, op1, op2);
   int bbi = bb->index;
 
   if (bbi >= (int)m_relations.length())
     m_relations.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
+
+  if (m_relations[bbi].m_num_relations >= param_relation_block_limit)
+    return NULL;
+  m_relations[bbi].m_num_relations++;
+  // Check for an existing relation further up the DOM chain.
+  // By including dominating relations, The first one found in any search
+  // will be the aggregate of all the previous ones.
+
+  relation_chain *ptr;
 
   // Summary bitmap indicating what ssa_names have relations in this BB.
   bitmap bm = m_relations[bbi].m_names;
@@ -1207,6 +1213,36 @@ dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
   unsigned v1 = SSA_NAME_VERSION (op1);
   unsigned v2 = SSA_NAME_VERSION (op2);
 
+  gcc_checking_assert (find_relation_block (bbi, v1, v2, &ptr) == VREL_VARYING);
+
+  bitmap_set_bit (bm, v1);
+  bitmap_set_bit (bm, v2);
+  bitmap_set_bit (m_relation_set, v1);
+  bitmap_set_bit (m_relation_set, v2);
+
+  ptr = (relation_chain *) obstack_alloc (&m_chain_obstack,
+					  sizeof (relation_chain));
+  ptr->set_relation (k, op1, op2);
+  ptr->m_next = m_relations[bbi].m_head;
+  m_relations[bbi].m_head = ptr;
+  return ptr;
+}
+
+// Register relation K between OP1 and OP2 in block BB by searching the
+// dominator tree for any existing record to merge with.  If there were
+// none, create a new record.
+// Return the record, or NULL if no record was found or created.
+
+relation_chain *
+dom_oracle::search_and_merge_relation (basic_block bb, relation_kind k,
+				       tree op1, tree op2)
+{
+  gcc_checking_assert (k != VREL_VARYING && k != VREL_EQ);
+
+  int bbi = bb->index;
+
+  unsigned v1 = SSA_NAME_VERSION (op1);
+  unsigned v2 = SSA_NAME_VERSION (op2);
   relation_kind curr;
   relation_chain *ptr;
   curr = find_relation_block (bbi, v1, v2, &ptr);
@@ -1216,14 +1252,12 @@ dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
       // Check into whether we can simply replace the relation rather than
       // intersecting it.  This may help with some optimistic iterative
       // updating algorithms.  If there was no change, return no record..
+      value_relation vr (k, op1, op2);
       if (!ptr->intersect (vr))
 	return NULL;
     }
   else
     {
-      if (m_relations[bbi].m_num_relations >= param_relation_block_limit)
-	return NULL;
-      m_relations[bbi].m_num_relations++;
       // Check for an existing relation further up the DOM chain.
       // By including dominating relations, The first one found in any search
       // will be the aggregate of all the previous ones.
@@ -1231,17 +1265,7 @@ dom_oracle::set_one_relation (basic_block bb, relation_kind k, tree op1,
 				v1, v2);
       if (curr != VREL_VARYING)
 	k = relation_intersect (curr, k);
-
-      bitmap_set_bit (bm, v1);
-      bitmap_set_bit (bm, v2);
-      bitmap_set_bit (m_relation_set, v1);
-      bitmap_set_bit (m_relation_set, v2);
-
-      ptr = (relation_chain *) obstack_alloc (&m_chain_obstack,
-					      sizeof (relation_chain));
-      ptr->set_relation (k, op1, op2);
-      ptr->m_next = m_relations[bbi].m_head;
-      m_relations[bbi].m_head = ptr;
+      ptr = create_relation_in_bb (bb, k, op1, op2);
     }
   return ptr;
 }
@@ -1340,8 +1364,8 @@ dom_oracle::register_transitives (basic_block root_bb,
 		  // further processing is already reflected above it.
 		  // When we ran into the limit of relations on root_bb
 		  // we can give up as well.
-		  if (!set_one_relation (root_bb, nr.kind (),
-					 nr.op1 (), nr.op2 ()))
+		  if (!search_and_merge_relation (root_bb, nr.kind (),
+						  nr.op1 (), nr.op2 ()))
 		    return;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    {
