@@ -536,6 +536,11 @@ namespace std::chrono
       bool
       calc_save(span<const Rule> all_rules) noexcept;
 
+      // save value at the transition boundary, usable if expanded()
+      // is true or after calc_save() was called.
+      seconds
+      save() const noexcept { return m_save; }
+
       friend istream& operator>>(istream&, ZoneInfo&);
 
       bool
@@ -1101,8 +1106,7 @@ namespace std::chrono
     // This is true by construction, because this function always tries to
     // finish so that the last ZoneInfo object expanded is for daylight time.
     // This means that i[-1] is either an expanded ZoneInfo for a DST sys_info
-    // or is an unexpanded (rule-based) ZoneInfo for a different rule, and
-    // rule changes always occur between periods of standard time.
+    // or is an unexpanded (rule-based) ZoneInfo for a different rule.
     info.offset = ri.offset();
     info.save = 0min;
     info.end = ri.until();
@@ -1126,6 +1130,18 @@ namespace std::chrono
 	  }
 	else if (const Rule* first_std = find_first_std(rules))
 	  letters = first_std->letters;
+      }
+
+    // For transitions, that leads to backward jump in the local time,
+    // and window of duplicated local time, the rule transition occurring
+    // during that window are considered to apply immediately at the boundary.
+    // This window is [info.begin, info.begin + merge_window].
+    seconds merge_window(0);
+    if (i != infos.begin())
+      {
+	const auto prev_offset = i[-1].offset() + i[-1].save();
+	if (prev_offset > info.offset)
+	  merge_window = prev_offset - info.offset;
       }
 
     const Rule* curr_rule = nullptr;
@@ -1173,9 +1189,6 @@ namespace std::chrono
 
 	    if (t < rule_start && rule_start < info.end)
 	      {
-		if (rule_start - t < days(1)) // XXX shouldn't be needed!
-		  continue;
-
 		// Found a closer transition than the previous info.end.
 		info.end = rule_start;
 		next_rule = &rule;
@@ -1184,41 +1197,34 @@ namespace std::chrono
 
 	format_abbrev_str(info, letters);
 
-	bool merged = false;
-#if 0
-	if (!new_infos.empty())
-	  {
-	    auto& back = new_infos.back();
-	    if (back.offset == info.offset && back.abbrev == info.abbrev
-		  && back.save == info.save)
-	      {
-		// This is a continuation of the previous sys_info.
-		back.end = info.end;
-		merged = true;
-	      }
-	  }
-#endif
-
 	if (next_rule)
 	  letters = next_rule->letters;
 	else
 	  letters = {};
 
-	if (!merged)
-	  new_infos.emplace_back(info, letters);
-
-	if (info.begin <= tp && tp < info.end) // Found the result.
-	  result_index = new_infos.size() - 1;
-	else if (result_index >= 0 && !merged)
+	// Transitions occuring in the backward jump time window occuring
+	// on zone transitions should be folded into zone change.
+	if (info.end - t <= merge_window)
+	  info.begin = t;
+	else
 	  {
-	    // Finish before a STD sys_info if possible, so that if we resume
-	    // generating sys_info objects after this time point, save=0
-	    // should be correct for the next sys_info.
-	    if (num_after > 1 || !next_rule || next_rule->save == 0s)
-	      --num_after;
-	  }
+	    new_infos.emplace_back(info, letters);
 
-	info.begin = info.end;
+	    if (info.begin <= tp && tp < info.end) // Found the result.
+	      result_index = new_infos.size() - 1;
+	    else if (result_index >= 0)
+	      {
+		// Finish before a STD sys_info if possible, so that if we resume
+		// generating sys_info objects after this time point, save=0
+		// should be correct for the next sys_info.
+		if (num_after > 1 || !next_rule || next_rule->save == 0s)
+		  --num_after;
+	      }
+
+	    info.begin = info.end;
+	  }
+	merge_window = seconds(0);
+
 	if (next_rule)
 	  {
 	    info.end = ri.until();

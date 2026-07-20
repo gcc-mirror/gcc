@@ -82,7 +82,7 @@ test_negative()
   std::ofstream("tzdata.zi") << R"(# version test_negative_cascade
 R Fr 1945 o - Apr 2  2 -3 M
 R Fr 1945 o - Sep 16 0 0 -
-Z Test/Negative 0  -  X     1945 Sep 16 1u
+Z Test/Negative -2  -  X     1945 Sep 16 1u
              1  Fr CE%sT
 )";
 
@@ -109,11 +109,9 @@ Z Test/Negative 0  -  X     1945 Sep 16 1u
   // Test the firing of Sep 16 rule
   auto at_sep_rule = tz->get_info(sys_seconds{
     sys_days(1945y/September/16) + 2h});
-  // The transition_window < 1d condition triggers, and
-  // transition is ignored.
-  // VERIFY( at_sep_rule.offset == 1h );
-  // VERIFY( at_sep_rule.save == 0h );
-  // VERIFY( at_sep_rule.abbrev == "CET" );
+  VERIFY( at_sep_rule.offset == 1h );
+  VERIFY( at_sep_rule.save == 0h );
+  VERIFY( at_sep_rule.abbrev == "CET" );
 }
 
 void
@@ -137,13 +135,34 @@ Z Pacific/AucklandUT 11:39:4 - LMT 1868 N 2
   VERIFY( override_used ); // If this fails then XFAIL for the target.
   VERIFY( db.version == "test_next_year" );
 
-  // Pacific/Auckland requires both PR124854 and PR116110 to work
-  // correctly. TODO test it once implemented.
-  // The UT version uses 1945-12-31 13:00:00 UT after
-  // the rule application change.
-  auto* utz = locate_zone("Pacific/AucklandUT");
+  // The time zone change happens at 1945-12-31 12:00:00 UT, as
+  // total offset is 11:30 + 0:30
+  auto* tz = locate_zone("Pacific/Auckland");
 
   // Before the change
+  auto before_boundary
+   = tz->get_info(sys_seconds{sys_days(1945y/December/31) + 12h - 1s});
+  VERIFY( before_boundary.offset == 12h );
+  VERIFY( before_boundary.save == 30min );
+  VERIFY( before_boundary.abbrev == "NZST" );
+
+  // The Jan 1 rule is immediatelly in effect
+  auto at_boundary
+    = tz->get_info(sys_seconds{sys_days(1945y/December/31) + 12h});
+  VERIFY( at_boundary.offset == 12h );
+  VERIFY( at_boundary.save == 0h );
+  VERIFY( at_boundary.abbrev == "NZST" );
+
+  auto after_boundary
+    = tz->get_info(sys_seconds{sys_days(1945y/December/31) + 13h});
+  VERIFY( after_boundary.offset == 12h );
+  VERIFY( after_boundary.save == 0h );
+
+  // The UT version uses 1945-12-31 13:00:00 UT after the rule
+  // Jan 1 1946 rule application.
+  auto* utz = locate_zone("Pacific/AucklandUT");
+
+  // Before the Jan 1 rule application
   auto before_utboundary
    = utz->get_info(sys_seconds{sys_days(1945y/December/31) + 11h});
   VERIFY( before_utboundary.offset == 12h );
