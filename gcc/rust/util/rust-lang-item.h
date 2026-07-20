@@ -79,6 +79,9 @@ public:
     RANGE_TO_INCLUSIVE,
     RANGE_INCLUSIVE_NEW,
 
+    // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/unsize.rs
+    COERCE_UNSIZED,
+
     // https://github.com/rust-lang/rust/blob/master/library/core/src/marker.rs
     PHANTOM_DATA,
 

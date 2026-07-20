@@ -504,7 +504,7 @@ CompileExpr::visit (HIR::TypeCastExpr &expr)
   if (ok)
     {
       casted_expr
-	= resolve_adjustements (*adjustments, casted_expr, expr.get_locus ());
+	= resolve_adjustments (*adjustments, casted_expr, expr.get_locus ());
     }
 
   translated
@@ -1761,8 +1761,8 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   rust_assert (ok);
 
   // apply adjustments for the fn call
-  self = resolve_adjustements (*adjustments, self,
-			       expr.get_receiver ().get_locus ());
+  self = resolve_adjustments (*adjustments, self,
+			      expr.get_receiver ().get_locus ());
 
   std::vector<tree> args;
   args.push_back (self); // adjusted self
@@ -1895,7 +1895,7 @@ CompileExpr::resolve_operator_overload (
   rust_assert (ok);
 
   // apply adjustments for the fn call
-  tree self = resolve_adjustements (*adjustments, lhs, lhs_expr.get_locus ());
+  tree self = resolve_adjustments (*adjustments, lhs, lhs_expr.get_locus ());
 
   std::vector<tree> args;
   args.push_back (self); // adjusted self
@@ -2398,7 +2398,7 @@ CompileExpr::array_copied_expr (location_t expr_locus,
 }
 
 tree
-HIRCompileBase::resolve_adjustements (
+HIRCompileBase::resolve_adjustments (
   std::vector<Resolver::Adjustment> &adjustments, tree expression,
   location_t locus)
 {
@@ -2492,6 +2492,8 @@ HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
     = adjustment.get_expected ()->get_kind () == TyTy::TypeKind::SLICE;
   bool expect_dyn
     = adjustment.get_expected ()->get_kind () == TyTy::TypeKind::DYNAMIC;
+  bool expect_adt
+    = adjustment.get_expected ()->get_kind () == TyTy::TypeKind::ADT;
 
   // assumes this is an array
   tree expr_type = TREE_TYPE (expression);
@@ -2500,6 +2502,9 @@ HIRCompileBase::resolve_unsized_adjustment (Resolver::Adjustment &adjustment,
       rust_assert (TREE_CODE (expr_type) == ARRAY_TYPE);
       return resolve_unsized_slice_adjustment (adjustment, expression, locus);
     }
+
+  if (expect_adt)
+    return resolve_unsized_adt_adjustment (adjustment, expression, locus);
 
   rust_assert (expect_dyn);
   return resolve_unsized_dyn_adjustment (adjustment, expression, locus);
@@ -2535,6 +2540,105 @@ HIRCompileBase::resolve_unsized_slice_adjustment (
 
   return Backend::constructor_expression (fat_pointer, false, {data, size}, -1,
 					  locus);
+}
+
+tree
+HIRCompileBase::resolve_unsized_adt_adjustment (
+  Resolver::Adjustment &adjustment, tree expression, location_t locus)
+{
+  /*
+   * FIXME: This method is implemented as a temporary workaround to enable the
+   * compilation of intra-ADT conversions for the `coerce_unsized` lang item.
+   * Currently, it generates incorrect GIMPLE, though it allows the compilation
+   * to succeed. Execution tests relying on this will exhibit undefined behavior
+   * at runtime. This must be revisited and properly refactored once the DST
+   * memory layout is fully supported.
+   */
+
+  auto source_adt
+    = static_cast<const TyTy::ADTType *> (adjustment.get_actual ());
+  auto target_adt
+    = static_cast<const TyTy::ADTType *> (adjustment.get_expected ());
+
+  auto s_variant = source_adt->get_variants ().front ();
+  auto t_variant = target_adt->get_variants ().front ();
+
+  std::vector<tree> constructor_elements;
+
+  for (size_t i = 0; i < s_variant->num_fields (); i++)
+    {
+      auto s_field_ty = s_variant->get_field_at_index (i)
+			  ->get_field_type ()
+			  ->monomorphized_clone ();
+      auto t_field_ty = t_variant->get_field_at_index (i)
+			  ->get_field_type ()
+			  ->monomorphized_clone ();
+
+      tree field_expr = Backend::struct_field_expression (expression, i, locus);
+      if (s_field_ty->is_equal (*t_field_ty))
+	constructor_elements.push_back (field_expr);
+      else
+	{
+	  bool is_ptr = s_field_ty->get_kind () == TyTy::TypeKind::POINTER;
+	  bool is_ref = s_field_ty->get_kind () == TyTy::TypeKind::REF;
+
+	  if (is_ptr || is_ref)
+	    {
+	      TyTy::BaseType *s_base = nullptr;
+	      TyTy::BaseType *t_base = nullptr;
+	      Resolver::Adjustment::AdjustmentType ref_adj_type
+		= Resolver::Adjustment::AdjustmentType::IMM_REF;
+
+	      if (is_ptr)
+		{
+		  auto s_ptr
+		    = static_cast<const TyTy::PointerType *> (s_field_ty);
+		  auto t_ptr
+		    = static_cast<const TyTy::PointerType *> (t_field_ty);
+		  s_base = s_ptr->get_base ();
+		  t_base = t_ptr->get_base ();
+		  if (t_ptr->mutability () == Mutability::Mut)
+		    ref_adj_type
+		      = Resolver::Adjustment::AdjustmentType::MUT_REF;
+		}
+	      else
+		{
+		  auto s_ref
+		    = static_cast<const TyTy::ReferenceType *> (s_field_ty);
+		  auto t_ref
+		    = static_cast<const TyTy::ReferenceType *> (t_field_ty);
+		  s_base = s_ref->get_base ();
+		  t_base = t_ref->get_base ();
+		  if (t_ref->mutability () == Mutability::Mut)
+		    ref_adj_type
+		      = Resolver::Adjustment::AdjustmentType::MUT_REF;
+		}
+	      std::vector<Resolver::Adjustment> inner_adjs;
+	      inner_adjs.push_back (Resolver::Adjustment (
+		Resolver::Adjustment::AdjustmentType::INDIRECTION, s_field_ty,
+		s_base));
+	      inner_adjs.push_back (Resolver::Adjustment (
+		Resolver::Adjustment::AdjustmentType::UNSIZE, s_base, t_base));
+	      inner_adjs.push_back (
+		Resolver::Adjustment (ref_adj_type, t_base, t_field_ty));
+
+	      tree coerced_ptr
+		= resolve_adjustments (inner_adjs, field_expr, locus);
+	      constructor_elements.push_back (coerced_ptr);
+	    }
+	  else
+	    {
+	      Resolver::Adjustment inner_adj (adjustment.get_type (),
+					      s_field_ty, t_field_ty);
+	      tree unsized_inner_expr
+		= resolve_unsized_adjustment (inner_adj, field_expr, locus);
+	      constructor_elements.push_back (unsized_inner_expr);
+	    }
+	}
+    }
+  tree target_type_tree = TyTyResolveCompile::compile (ctx, target_adt);
+  return Backend::constructor_expression (target_type_tree, false,
+					  constructor_elements, -1, locus);
 }
 
 tree
@@ -2987,7 +3091,7 @@ CompileExpr::generate_possible_fn_trait_call (HIR::CallExpr &expr,
   rust_assert (ok);
 
   // apply adjustments for the fn call
-  tree self = resolve_adjustements (*adjustments, receiver, expr.get_locus ());
+  tree self = resolve_adjustments (*adjustments, receiver, expr.get_locus ());
 
   // resolve the arguments
   std::vector<tree> tuple_arg_vals;
