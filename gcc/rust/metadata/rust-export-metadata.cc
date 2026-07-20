@@ -99,9 +99,6 @@ PublicInterface::gather_export_data ()
     = mappings.crate.lookup_crate_num (crate.get_mappings ().get_nodeid ());
   auto &ast_crate = mappings.crate.get_ast_crate (crate_num.value ());
   context.emit_crate (ast_crate);
-
-  for (auto &macro : mappings.get_exported_macros ())
-    context.emit_macro (macro);
 }
 
 void
