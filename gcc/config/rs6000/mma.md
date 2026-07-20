@@ -344,10 +344,10 @@
     gcc_assert (false);
 })
 
-(define_insn_and_split "*movxo"
-  [(set (match_operand:XO 0 "nonimmediate_operand" "=d,ZwO,d")
-	(match_operand:XO 1 "input_operand" "ZwO,d,d"))]
-  "TARGET_MMA
+(define_insn_and_split "*movxo_nodmf"
+  [(set (match_operand:XO 0 "nonimmediate_operand" "=wD,ZwO,wD")
+	(match_operand:XO 1 "input_operand" "ZwO,wD,wD"))]
+  "TARGET_MMA && !TARGET_DMF
    && (gpc_reg_operand (operands[0], XOmode)
        || gpc_reg_operand (operands[1], XOmode))"
   "@
@@ -363,6 +363,31 @@
   [(set_attr "type" "vecload,vecstore,veclogical")
    (set_attr "length" "*,*,16")
    (set_attr "max_prefixed_insns" "2,2,*")])
+
+(define_insn_and_split "*movxo_dmf"
+  [(set (match_operand:XO 0 "nonimmediate_operand" "=wa,ZwO,wa,wD,wD,wa")
+        (match_operand:XO 1 "input_operand"        "ZwO,wa, wa,wa,wD,wD"))]
+  "TARGET_DMF
+   && (gpc_reg_operand (operands[0], XOmode)
+       || gpc_reg_operand (operands[1], XOmode))"
+  "@
+   #
+   #
+   #
+   dmxxinstdmr512 %0,%x1,%W1,0
+   dmmr %0,%1
+   dmxxextfdmr512 %x0,%W0,%1,0"
+  "&& reload_completed
+   && !dmr_register_operand (operands[0], XOmode)
+   && !dmr_register_operand (operands[1], XOmode)"
+  [(const_int 0)]
+{
+  rs6000_split_multireg_move (operands[0], operands[1]);
+  DONE;
+}
+  [(set_attr "type" "vecload,vecstore,veclogical,dmf,dmf,dmf")
+   (set_attr "length" "*,*,16,*,*,*")
+   (set_attr "max_prefixed_insns" "2,2,*,*,*,*")])
 
 (define_expand "vsx_assemble_pair"
   [(match_operand:OO 0 "vsx_register_operand")
