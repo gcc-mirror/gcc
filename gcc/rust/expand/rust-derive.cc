@@ -143,12 +143,14 @@ DeriveVisitor::setup_impl_generics (
 	    ConstGenericParam &const_param
 	      = (ConstGenericParam &) *generic.get ();
 
-	    std::unique_ptr<Type> associated_type
-	      = builder.single_type_path (const_param.get_name ().as_string ());
+	    auto associated_expr
+	      = std::make_unique<IdentifierExpr> (const_param.get_name (),
+						  std::vector<Attribute> (),
+						  const_param.get_locus ());
 
-	    GenericArg type_arg
-	      = GenericArg::create_type (std::move (associated_type));
-	    generic_args.push_back (std::move (type_arg));
+	    GenericArg const_arg
+	      = GenericArg::create_const (std::move (associated_expr));
+	    generic_args.push_back (std::move (const_arg));
 
 	    auto impl_const_param = builder.new_const_param (const_param);
 	    impl_generics.push_back (std::move (impl_const_param));
