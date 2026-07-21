@@ -1101,6 +1101,11 @@ split_overlapping_partition_decls (var_map map)
 	continue;
 
       tree nvar = create_tmp_var_raw (TREE_TYPE (var));
+      /* Avoid a register-only NVAR when the partition already has a MEM,
+	 since set_rtl cannot assign that MEM to NVAR.  */
+      if (use_register_for_decl (nvar))
+	DECL_IGNORED_P (nvar) = DECL_IGNORED_P (var);
+      gcc_checking_assert (!use_register_for_decl (nvar));
       DECL_CONTEXT (nvar) = DECL_CONTEXT (var);
       DECL_SOURCE_LOCATION (nvar) = DECL_SOURCE_LOCATION (var);
       SET_DECL_ALIGN (nvar, DECL_ALIGN (var));
