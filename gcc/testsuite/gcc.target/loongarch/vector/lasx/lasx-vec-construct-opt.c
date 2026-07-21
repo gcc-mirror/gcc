@@ -26,7 +26,7 @@ vec_construct_v4i64 ()
 /* Remove some unnecessary vinsgr2vr.w as the corresponding elements
    have already been set.  */
 /* { dg-final { scan-assembler-not "v8i32:.*\tvinsgr2vr\\.w.*v8i32" } } */
-/* { dg-final { scan-assembler-times "v8i32:.*\txvreplgr2vr\\.w.*v8i32" 1 } } */
+/* { dg-final { scan-assembler-times "v8i32:.*\txvldrepl\\.w.*v8i32" 1 } } */
 v8i32
 vec_construct_v8i32 ()
 {
