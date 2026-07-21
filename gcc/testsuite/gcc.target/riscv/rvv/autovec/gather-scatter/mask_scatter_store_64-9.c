@@ -39,3 +39,4 @@ TEST_ALL (TEST_LOOP)
 /* { dg-final { scan-tree-dump " \.MASK_LEN_SCATTER_STORE" "vect" } } */
 /* { dg-final { scan-tree-dump-not " \.SCATTER_STORE" "vect" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_SCATTER_STORE" "vect" } } */
+/* { dg-final { scan-assembler-not "vsuxei" } } */

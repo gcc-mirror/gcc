@@ -34,4 +34,5 @@ TEST_ALL (TEST_LOOP)
 /* { dg-final { scan-tree-dump-not " \.SCATTER_STORE" "vect" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_SCATTER_STORE" "vect" } } */
 /* { dg-final { scan-assembler-not {vluxei64\.v} } } */
-/* { dg-final { scan-assembler-not {vsuxei64\.v} } } */
+/* { dg-final { scan-assembler-not {vsoxei64\.v} } } */
+/* { dg-final { scan-assembler-not {vsuxei32\.v} } } */

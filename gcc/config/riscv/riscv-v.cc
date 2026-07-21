@@ -4708,7 +4708,7 @@ get_gather_scatter_code (machine_mode vec_mode, machine_mode idx_mode,
 	  (UNSPEC_UNORDERED, vec_mode);
       else
 	return code_for_pred_indexed_store_same_eew
-	  (UNSPEC_UNORDERED, vec_mode);
+	  (UNSPEC_ORDERED, vec_mode);
     }
   else if (dst_eew_bitsize > src_eew_bitsize)
     {
@@ -4723,21 +4723,21 @@ get_gather_scatter_code (machine_mode vec_mode, machine_mode idx_mode,
 	  else
 	    return
 	      code_for_pred_indexed_store_x2_greater_eew
-		(UNSPEC_UNORDERED, vec_mode);
+		(UNSPEC_ORDERED, vec_mode);
 	case 4:
 	  if (is_load)
 	    return code_for_pred_indexed_load_x4_greater_eew
 		(UNSPEC_UNORDERED, vec_mode);
 	  else
 	    return code_for_pred_indexed_store_x4_greater_eew
-		(UNSPEC_UNORDERED, vec_mode);
+		(UNSPEC_ORDERED, vec_mode);
 	case 8:
 	  if (is_load)
 	    return code_for_pred_indexed_load_x8_greater_eew
 	      (UNSPEC_UNORDERED, vec_mode);
 	  else
 	    return code_for_pred_indexed_store_x8_greater_eew
-	      (UNSPEC_UNORDERED, vec_mode);
+	      (UNSPEC_ORDERED, vec_mode);
 	default:
 	  gcc_unreachable ();
 	}
@@ -4753,21 +4753,21 @@ get_gather_scatter_code (machine_mode vec_mode, machine_mode idx_mode,
 	      (UNSPEC_UNORDERED, vec_mode);
 	  else
 	    return code_for_pred_indexed_store_x2_smaller_eew
-	      (UNSPEC_UNORDERED, vec_mode);
+	      (UNSPEC_ORDERED, vec_mode);
 	case 4:
 	  if (is_load)
 	    return code_for_pred_indexed_load_x4_smaller_eew
 	      (UNSPEC_UNORDERED, vec_mode);
 	  else
 	    return code_for_pred_indexed_store_x4_smaller_eew
-	      (UNSPEC_UNORDERED, vec_mode);
+	      (UNSPEC_ORDERED, vec_mode);
 	case 8:
 	  if (is_load)
 	    return code_for_pred_indexed_load_x8_smaller_eew
 	      (UNSPEC_UNORDERED, vec_mode);
 	  else
 	    return code_for_pred_indexed_store_x8_smaller_eew
-	      (UNSPEC_UNORDERED, vec_mode);
+	      (UNSPEC_ORDERED, vec_mode);
 	default:
 	  gcc_unreachable ();
 	}
