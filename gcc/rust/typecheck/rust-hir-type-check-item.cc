@@ -378,7 +378,7 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 	  rust_error_at (struct_decl.get_locus (), ErrorCode::E0690,
 			 "transparent struct needs at most one field with "
 			 "non-trivial size or alignment, but has %lu",
-			 (unsigned long) struct_decl.get_fields ().size ());
+			 (unsigned long) num_non_zst);
 	  return;
 	}
     }

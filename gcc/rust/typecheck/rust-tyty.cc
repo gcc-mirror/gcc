@@ -2602,6 +2602,9 @@ ArrayType::is_equal (const BaseType &other) const
 bool
 ArrayType::is_zero_sized () const
 {
+  if (element_type.get_tyty ()->is_zero_sized ())
+    return true;
+
   auto *capacity_ty = get_capacity ();
   if (capacity_ty != nullptr
       && capacity_ty->get_kind () == TyTy::TypeKind::CONST)

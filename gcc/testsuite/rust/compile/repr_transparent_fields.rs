@@ -26,3 +26,15 @@ struct Qux {
     foo: i32,
     phantom: PhantomData<i32>,
 }
+
+#[repr(transparent)]
+struct Quux {
+    phantom_array: [(); 6],
+    foo: i32,
+}
+
+#[repr(transparent)]
+struct Corge {
+    empty_array: [i32; 0],
+    foo: i32,
+}
