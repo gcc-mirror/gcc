@@ -4008,7 +4008,7 @@ prepare_gather_scatter (machine_mode vec_mode, machine_mode idx_mode,
 			bool is_load)
 {
   if (!is_load)
-    return code_for_pred_indexed_store (UNSPEC_UNORDERED, vec_mode, idx_mode);
+    return code_for_pred_indexed_store (UNSPEC_ORDERED, vec_mode, idx_mode);
   else
     {
       unsigned src_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (idx_mode));
