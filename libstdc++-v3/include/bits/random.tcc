@@ -242,7 +242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr size_t
     mersenne_twister_engine<_UIntType, __w, __n, __m, __r, __a, __u, __d,
 			    __s, __b, __t, __c, __l, __f>::tempering_u;
-   
+
   template<typename _UIntType,
 	   size_t __w, size_t __n, size_t __m, size_t __r,
 	   _UIntType __a, size_t __u, _UIntType __d, size_t __s,
@@ -3807,38 +3807,155 @@ namespace __detail
       constexpr unsigned __log2R
 	= sizeof(_UIntR) * __CHAR_BIT__ - __builtin_clzg(__R) - 1;
       // We overstimate number of required bits, by computing
-      // r such that l * log2(R) >= d, so:
-      // R^l >= (2 ^ log2(R)) ^ l == 2 ^ (log2(r) * l) >= 2^d
-      // And then requiring l * bit_width(R) bits.
-      constexpr unsigned __l = (__d + __log2R - 1) / __log2R;
-      constexpr unsigned __bits = (__log2R + 1) * __l;
-      using _UInt = typename __detail::_Select_uint_least_t<__bits>::type;
-
-      _GLIBCXX_GEN_CANON_CONST _UInt __rd = _UInt(1) << __d;
-      _GLIBCXX_GEN_CANON_CONST auto __logRrd = __gen_canon_log(__rd, __R);
-      _GLIBCXX_GEN_CANON_CONST unsigned __k
-	 = __logRrd.__floor_log + (__rd > __logRrd.__floor_pow);
-
-      _GLIBCXX_GEN_CANON_CONST _UInt __Rk
-	 = (__k > __logRrd.__floor_log)
-	   ? _UInt(__logRrd.__floor_pow) * _UInt(__R)
-	   : _UInt(__logRrd.__floor_pow);
-      _GLIBCXX_GEN_CANON_CONST _UInt __x =  __Rk / __rd;
-
-      while (true)
+      // m such that m * log2(R) >= d, so:
+      // R^m >= (2 ^ log2(R)) ^ m == 2 ^ (log2(R) * m) >= 2^d
+      // And then requiring m * bit_width(R) bits.
+      constexpr unsigned __m = (__d + __log2R - 1) / __log2R;
+      constexpr unsigned __bits = (__log2R + 1) * __m;
+      if constexpr (__log2R >= __d)
 	{
-	  _UInt __Ri{1};
-	  _UInt __sum(__urng() - _Urbg::min());
-	  for (int __i = __k - 1; __i > 0; --__i)
+	  // range already provide required number of bits,
+	  // so in this case __k == 1, and single call to generator
+	  // is sufficient. Furthermore 2^d fits in _UIntR
+	  constexpr _UIntR __rd = _UIntR(1) << __d;
+	  constexpr _UIntR __x = __R >> __d;
+
+	  while (true)
 	    {
-	      __Ri *= _UInt(__R);
-	      __sum += _UInt(__urng() - _Urbg::min()) * __Ri;
+	      _UIntR __val(__urng() - _Urbg::min());
+	      const _RealT __ret = _RealT(__val / __x) / _RealT(__rd);
+	      if (__ret < _RealT(1.0))
+		return __ret;
 	    }
-	  const _RealT __ret = _RealT(__sum / __x) / _RealT(__rd);
-	  if (__ret < _RealT(1.0))
-	    return __ret;
 	}
-#undef _GLIBCXX_GEN_CANON_CONST 
+      // generator call produce fewer bits than __d, but R^k > rd fits
+      // into 128 bits.
+      else if constexpr (__bits <= 128)
+	{
+	  using _UInt = typename __detail::_Select_uint_least_t<__bits>::type;
+
+	  _GLIBCXX_GEN_CANON_CONST _UInt __rd = _UInt(1) << __d;
+	  _GLIBCXX_GEN_CANON_CONST auto __logRrd = __gen_canon_log(__rd, __R);
+	  // __rd is power of two, and __R is not, so __floor_pow is never
+	  // equal to __rd.
+	  _GLIBCXX_GEN_CANON_CONST unsigned __k = __logRrd.__floor_log + 1;
+	  _GLIBCXX_GEN_CANON_CONST _UInt __Rk = __logRrd.__floor_pow * _UInt(__R);
+	  // x = floor(R^k / 2^d) = R^k >> d;
+	  _GLIBCXX_GEN_CANON_CONST _UInt __x =  __Rk >> __d;
+
+	  while (true)
+	    {
+	      _UInt __Ri{1};
+	      _UInt __sum(__urng() - _Urbg::min());
+	      for (int __i = __k - 1; __i > 0; --__i)
+		{
+		  __Ri *= __R;
+		  __sum += __Ri * _UIntR(__urng() - _Urbg::min());
+		}
+	      const _RealT __ret = _RealT(__sum / __x) / _RealT(__rd);
+	      if (__ret < _RealT(1.0))
+		return __ret;
+	    }
+	}
+      else
+	{
+	  static_assert(__log2R < 64, "Only generators emitting up to 64 bits are supported");
+	  using _UInt = typename __detail::_Select_uint_least_t<128>::type;
+	  using _UInt64 = typename __detail::_Select_uint_least_t<64>::type;
+
+	  _GLIBCXX_GEN_CANON_CONST _UInt __rd = _UInt(1) << __d;
+	  _GLIBCXX_GEN_CANON_CONST auto __logRrd = __gen_canon_log(__rd, __R);
+	  // __rd is power of two, and __R is not, so __floor_pow is never
+	  // equal to __rd, and l == k - 1
+	  _GLIBCXX_GEN_CANON_CONST unsigned __l = __logRrd.__floor_log;
+	  _GLIBCXX_GEN_CANON_CONST _UInt __Rl = __logRrd.__floor_pow;
+
+	  // __abits is maximum bit width of the value, that can
+	  // be multiplied by R^l without overflowing 128 bit integer
+	  _GLIBCXX_GEN_CANON_CONST unsigned __bwRl
+#ifndef __SIZEOF_INT128__
+	    = __Rl._M_hi ? 128 - __builtin_clzg(__Rl._M_hi)
+			 : 64 - __builtin_clzg(__Rl._M_lo);
+#else
+	    = 128 - __builtin_clzg(__Rl);
+#endif
+
+	  // For __R close to power of two, the actual __k may be smaller than __m,
+	  // and will use less than 128bits, default to two 32 bits chunks.
+	  _GLIBCXX_GEN_CANON_CONST unsigned __abits = __bwRl > 96 ? 128 - __bwRl : 32;
+	  _GLIBCXX_GEN_CANON_CONST _UInt64 __amask = (_UInt64(1) << __abits) - 1;
+
+	  // Compute __x = _Rk / __rd (_Rk >> __d), by spliting _R into chunks
+	  // (_pR) of __abits, so their multiplication does not overflow 128 bits.
+	  // __x fits in 64bits, becuse __R^l < __rd < __R^k, thus __x < _R
+	  _UInt64 __x(0), __pR(__R); _UInt __pRk(0);
+	  for (unsigned __shift = __d; __pR; __shift -= __abits)
+	    {
+	      __pRk += __Rl * (__pR & __amask);
+	      __pR >>= __abits;
+
+	      _UInt __xp(__pRk >> __shift);
+	      __x += _UInt64(__xp);
+	      __pRk -= (__xp << __shift);
+	      __pRk >>= __abits;
+	    }
+
+	  while (true)
+	    {
+	      // Compute sum of __urng() * R^i for i in range [0, l).
+	      // The value is smaller than R^l which is smaller than
+	      // __rd so fits into 128 bit integer.
+	      _UInt __Ri{1};
+	      _UInt __lsum(__urng() - _Urbg::min());
+	      for (int __i = __l - 1; __i > 0; --__i)
+		{
+		  __Ri *= _UInt64(__R);
+		  __lsum += __Ri * _UInt64(__urng() - _Urbg::min());
+		}
+
+	      // The last iteration __urng() * R^k may overflow 128bit
+	      // integer. We use the fact that we reject __sum / __x >= __rd,
+	      // and split __urng() value into chunks of __abits, so their
+	      // products with R^l does not overflow 128bit. These products
+	      // are then multiplied by 2^__shift, scaled by __x and added into
+	      // the __sumx, until their value is smaller than remaining value
+	      // __remx [(__rd - __sumx) * 2^__shift], or whole value was
+	      // multiplied (__kth is zero). The remainder of division by
+	      // __x are accumulated into __modx value, and handled later.
+	      // In consequence this guarantees that __sumx never exceeds
+	      // __rd value, and thus does not overflow 128 bit integer.
+	      _UInt __sumx = __lsum / __x, __modx = __lsum % __x;
+	      _UInt __remx = __rd - __sumx;
+	      _UInt64 __kth(__urng() - _Urbg::min());
+	      for (unsigned __shift = 0; __kth; __shift += __abits)
+		{
+		  const _UInt __val = __Rl * (__kth & __amask);
+		  const _UInt __valx = __val / __x;
+		  if (__valx > __remx)
+		    break;
+		  __kth >>= __abits;
+
+		  __sumx += (__valx << __shift);
+		  __modx += ((__val % __x) << __shift);
+
+		  __remx -= __valx;
+		  __remx >>= __abits;
+		}
+	      if (__kth) // (__sum / __x) > _rd after adding __kth iteration
+		continue;
+
+	      // Handle accumulated remainders
+	      const _UInt __valx = __modx / __x;
+	      if (__valx > __rd - __sumx) // avoids overflow
+		continue;
+
+	      __sumx += __valx;
+	      const _RealT __ret = _RealT(__sumx) / _RealT(__rd);
+	      if (__ret < _RealT(1.0))
+		return __ret;
+	    }
+	  }
+#undef _GLIBCXX_GEN_CANON_CONST
     }
 
 #if !defined(_GLIBCXX_GENERATE_CANONICAL_STRICT)
