@@ -57,8 +57,18 @@
 
 #define NULL_BLOCK	((basic_block) NULL)
 
-/* True if after combine pass.  */
-static bool ifcvt_after_combine;
+/* Which of the three RTL if-conversion passes is running.  ce1 runs before
+   combine, ce2 after combine and ce3 after reload.  The cost model treats the
+   pre-combine run specially, so the phase is recorded here.  */
+enum ifcvt_phase
+{
+  IFCVT_BEFORE_COMBINE,	/* ce1.  */
+  IFCVT_AFTER_COMBINE,	/* ce2.  */
+  IFCVT_AFTER_RELOAD	/* ce3.  */
+};
+
+/* The if-conversion pass currently running.  */
+static ifcvt_phase ifcvt_pass_phase;
 
 /* True if the target has the cbranchcc4 optab.  */
 static bool have_cbranchcc4;
@@ -153,7 +163,8 @@ cheap_bb_rtx_cost_p (const_basic_block bb,
      Use optimize_function_for_speed_p instead of the pre-defined
      variable speed to make sure it is set to same value for all
      basic blocks in one if-conversion transformation.  */
-  if (!optimize_function_for_speed_p (cfun) && ifcvt_after_combine)
+  if (!optimize_function_for_speed_p (cfun)
+      && ifcvt_pass_phase != IFCVT_BEFORE_COMBINE)
     scale = REG_BR_PROB_BASE;
   /* Our branch probability/scaling factors are just estimates and don't
      account for cases where we can get speculation for free and other
@@ -6845,11 +6856,11 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   return false;
 }
 
-/* Main entry point for all if-conversion.  AFTER_COMBINE is true if
-   we are after combine pass.  */
+/* Main entry point for all if-conversion.  PHASE selects the ce1, ce2 or ce3
+   run: before combine, after combine, or after reload.  */
 
 static void
-if_convert (bool after_combine)
+if_convert (ifcvt_phase phase)
 {
   basic_block bb;
   int pass;
@@ -6860,8 +6871,8 @@ if_convert (bool after_combine)
       df_live_set_all_dirty ();
     }
 
-  /* Record whether we are after combine pass.  */
-  ifcvt_after_combine = after_combine;
+  /* Record which pass is running for the cost model.  */
+  ifcvt_pass_phase = phase;
   have_cbranchcc4 = (direct_optab_handler (cbranch_optab, CCmode)
 		     != CODE_FOR_nothing);
   num_possible_if_blocks = 0;
@@ -6964,7 +6975,7 @@ rest_of_handle_if_conversion (void)
 	  dump_flow_info (dump_file, dump_flags);
 	}
       cleanup_cfg (CLEANUP_EXPENSIVE);
-      if_convert (false);
+      if_convert (IFCVT_BEFORE_COMBINE);
       if (num_updated_if_blocks)
 	/* Get rid of any dead CC-related instructions.  */
 	flags |= CLEANUP_FORCE_FAST_DCE;
@@ -6988,41 +6999,8 @@ const pass_data pass_data_rtl_ifcvt =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_rtl_ifcvt : public rtl_opt_pass
-{
-public:
-  pass_rtl_ifcvt (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_rtl_ifcvt, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate (function *) final override
-    {
-      return (optimize > 0) && dbg_cnt (if_conversion);
-    }
-
-  unsigned int execute (function *) final override
-    {
-      rest_of_handle_if_conversion ();
-      return 0;
-    }
-
-}; // class pass_rtl_ifcvt
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_rtl_ifcvt (gcc::context *ctxt)
-{
-  return new pass_rtl_ifcvt (ctxt);
-}
-
-
-/* Rerun if-conversion, as combine may have simplified things enough
-   to now meet sequence length restrictions.  */
-
-namespace {
-
+/* ce2 reruns if-conversion after combine has simplified things enough to
+   meet the sequence-length restrictions.  */
 const pass_data pass_data_if_after_combine =
 {
   RTL_PASS, /* type */
@@ -7036,39 +7014,7 @@ const pass_data pass_data_if_after_combine =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_if_after_combine : public rtl_opt_pass
-{
-public:
-  pass_if_after_combine (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_if_after_combine, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate (function *) final override
-    {
-      return optimize > 0 && flag_if_conversion
-	&& dbg_cnt (if_after_combine);
-    }
-
-  unsigned int execute (function *) final override
-    {
-      if_convert (true);
-      return 0;
-    }
-
-}; // class pass_if_after_combine
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_if_after_combine (gcc::context *ctxt)
-{
-  return new pass_if_after_combine (ctxt);
-}
-
-
-namespace {
-
+/* ce3 reruns if-conversion after reload.  */
 const pass_data pass_data_if_after_reload =
 {
   RTL_PASS, /* type */
@@ -7082,32 +7028,67 @@ const pass_data pass_data_if_after_reload =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_if_after_reload : public rtl_opt_pass
+/* The three if-conversion passes (ce1/ce2/ce3) share this class.  M_PHASE
+   selects the gate condition and the work: ce1 (before combine) also cleans
+   up the CFG and is gated only on optimize, while ce2 and ce3 rerun once
+   combine and reload have simplified the RTL.  */
+
+class pass_rtl_ifcvt : public rtl_opt_pass
 {
 public:
-  pass_if_after_reload (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_if_after_reload, ctxt)
+  pass_rtl_ifcvt (gcc::context *ctxt, const pass_data &data, ifcvt_phase phase)
+    : rtl_opt_pass (data, ctxt), m_phase (phase)
   {}
 
   /* opt_pass methods: */
   bool gate (function *) final override
     {
-      return optimize > 0 && flag_if_conversion2
-	&& dbg_cnt (if_after_reload);
+      if (optimize == 0)
+	return false;
+      switch (m_phase)
+	{
+	case IFCVT_BEFORE_COMBINE:
+	  return dbg_cnt (if_conversion);
+	case IFCVT_AFTER_COMBINE:
+	  return flag_if_conversion && dbg_cnt (if_after_combine);
+	case IFCVT_AFTER_RELOAD:
+	  return flag_if_conversion2 && dbg_cnt (if_after_reload);
+	}
+      gcc_unreachable ();
     }
 
   unsigned int execute (function *) final override
     {
-      if_convert (true);
+      if (m_phase == IFCVT_BEFORE_COMBINE)
+	rest_of_handle_if_conversion ();
+      else
+	if_convert (m_phase);
       return 0;
     }
 
-}; // class pass_if_after_reload
+private:
+  ifcvt_phase m_phase;
+
+}; // class pass_rtl_ifcvt
 
 } // anon namespace
 
 rtl_opt_pass *
+make_pass_rtl_ifcvt (gcc::context *ctxt)
+{
+  return new pass_rtl_ifcvt (ctxt, pass_data_rtl_ifcvt, IFCVT_BEFORE_COMBINE);
+}
+
+rtl_opt_pass *
+make_pass_if_after_combine (gcc::context *ctxt)
+{
+  return new pass_rtl_ifcvt (ctxt, pass_data_if_after_combine,
+			     IFCVT_AFTER_COMBINE);
+}
+
+rtl_opt_pass *
 make_pass_if_after_reload (gcc::context *ctxt)
 {
-  return new pass_if_after_reload (ctxt);
+  return new pass_rtl_ifcvt (ctxt, pass_data_if_after_reload,
+			     IFCVT_AFTER_RELOAD);
 }
