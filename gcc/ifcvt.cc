@@ -4159,12 +4159,14 @@ init_noce_multiple_sets_info (basic_block bb,
       gcc_checking_assert (REG_P (dest) && !HARD_REGISTER_P (dest));
       info->need_cmov = bitmap_bit_p (bb_live_out, REGNO (dest));
 
-      /* Check if the current SET's source is the same
-	 as any previously seen destination.
+      /* Check if the current SET's source mentions any previously seen
+	 destination.  Keep only the newest definition of each pseudo register.
 	 This is quadratic but the number of insns in BB
 	 is bounded by PARAM_MAX_RTL_IF_CONVERSION_INSNS.  */
+      auto_bitmap rewired_regs;
       for (int i = count - 1; i >= 0; --i)
-	if (reg_mentioned_p (dests[i], src))
+	if (reg_mentioned_p (dests[i], src)
+	    && bitmap_set_bit (rewired_regs, REGNO (dests[i])))
 	  insn_info[count]->rewired_src.safe_push (i);
 
       dests.safe_push (dest);
