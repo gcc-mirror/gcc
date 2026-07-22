@@ -6935,7 +6935,7 @@ gomp_target_init (void)
 		    if (((omp_requires_mask & GOMP_REQUIRES_UNIFIED_ADDRESS)
 			 && !(dev_caps & GOMP_OFFLOAD_CAP_UNIFIED_ADDR))
 			|| ((omp_requires_mask & GOMP_REQUIRES_REVERSE_OFFLOAD)
-			    && !(dev_caps & GOMP_REQUIRES_REVERSE_OFFLOAD)))
+			    && !(dev_caps & GOMP_OFFLOAD_CAP_REV_OFFLOAD)))
 		      continue;
 
 		    if (omp_requires_mask & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
