@@ -3800,7 +3800,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool visited_p : 1;    /* A walk-once flag. */
   /* Record extensions emitted or permitted.  */
   unsigned extensions : SE_BITS;
-  /* 14 bits used, 2 bits remain  */
+  /* 16 bits used, 0 bits remain.  */
 
  public:
   module_state (tree name, module_state *, bool);
