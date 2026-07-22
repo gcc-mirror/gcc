@@ -135,7 +135,7 @@ public:
   /* Return true if any change.  */
   bool apply_implied_ext (riscv_subset_list *subset_list) const;
 
-  const std::vector<riscv_implied_info_t> implied_exts () const
+  const std::vector<riscv_implied_info_t> &implied_exts () const
   {
     return m_implied_exts;
   }
