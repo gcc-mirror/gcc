@@ -2551,7 +2551,7 @@ static bool
 bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
 {
   rtx_insn *a_insn;
-  bitmap bba_sets = BITMAP_ALLOC (&reg_obstack);
+  auto_bitmap bba_sets (&reg_obstack);
 
   df_ref def;
   df_ref use;
@@ -2565,7 +2565,6 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
 
       if (!sset_a)
 	{
-	  BITMAP_FREE (bba_sets);
 	  return false;
 	}
       /* Record all registers that BB_A sets.  */
@@ -2585,7 +2584,6 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
 
       if (!sset_b)
 	{
-	  BITMAP_FREE (bba_sets);
 	  return false;
 	}
 
@@ -2601,7 +2599,6 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
       else if (!REG_P (SET_DEST (sset_b))
 	       && !paradoxical_subreg_p (SET_DEST (sset_b)))
 	{
-	  BITMAP_FREE (bba_sets);
 	  return false;
 	}
 
@@ -2610,14 +2607,12 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
 	{
 	  if (bitmap_bit_p (bba_sets, DF_REF_REGNO (use)))
 	    {
-	      BITMAP_FREE (bba_sets);
 	      return false;
 	    }
 	}
 
     }
 
-  BITMAP_FREE (bba_sets);
   return true;
 }
 
@@ -3950,7 +3945,7 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
   if (REG_P (x) && reg_set_between_p (x, first_insn, prev_last_insn))
     return false;
 
-  bitmap test_bb_temps = BITMAP_ALLOC (&reg_obstack);
+  auto_bitmap test_bb_temps (&reg_obstack);
 
   /* The regs that are live out of test_bb.  */
   bitmap test_bb_live_out = df_get_live_out (test_bb);
@@ -3965,7 +3960,7 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
 	    continue;
 
 	  if (!insn_valid_noce_process_p (insn, cc))
-	    goto free_bitmap_and_fail;
+	    return false;
 
 	  rtx sset = single_set (insn);
 	  gcc_assert (sset);
@@ -3976,7 +3971,7 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
 	  if (contains_mem_rtx_p (SET_SRC (sset))
 	      || !REG_P (dest)
 	      || reg_overlap_mentioned_p (dest, cond))
-	    goto free_bitmap_and_fail;
+	    return false;
 
 	  potential_cost += pattern_cost (sset, speed_p);
 	  bitmap_set_bit (test_bb_temps, REGNO (dest));
@@ -3986,16 +3981,11 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
   /* If any of the intermediate results in test_bb are live after test_bb
      then fail.  */
   if (bitmap_intersect_p (test_bb_live_out, test_bb_temps))
-    goto free_bitmap_and_fail;
+    return false;
 
-  BITMAP_FREE (test_bb_temps);
   *cost += potential_cost;
   *simple_p = false;
   return true;
-
- free_bitmap_and_fail:
-  BITMAP_FREE (test_bb_temps);
-  return false;
 }
 
 /* Helper function to emit a cmov sequence encapsulated in
@@ -4217,7 +4207,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
      have the same target.  */
   unsigned i;
   noce_multiple_sets_info *info;
-  bitmap set_targets = BITMAP_ALLOC (&reg_obstack);
+  auto_bitmap set_targets (&reg_obstack);
   FOR_EACH_VEC_ELT_REVERSE (insn_info, i, info)
     {
       gcc_checking_assert (REG_P (info->target));
@@ -4228,7 +4218,6 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 
       bitmap_set_bit (set_targets, REGNO (info->target));
     }
-  BITMAP_FREE (set_targets);
 
   /* Actually emit the sequence if it isn't too expensive.  */
   rtx_insn *seq = get_insns ();
@@ -6538,7 +6527,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   rtx_insn *head, *end, *jump;
   rtx_insn *earliest = NULL;
   rtx old_dest;
-  bitmap merge_set = NULL;
+  auto_bitmap merge_set (&reg_obstack);
   /* Number of pending changes.  */
   int n_validated_changes = 0;
   rtx new_dest_label = NULL_RTX;
@@ -6663,7 +6652,6 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
     {
       rtx cond;
       rtx_insn *insn;
-      regset live;
       bool success;
 
       /* In the non-conditional execution case, we have to verify that there
@@ -6678,18 +6666,15 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
       if (!cond)
 	return false;
 
-      live = BITMAP_ALLOC (&reg_obstack);
+      auto_bitmap live (&reg_obstack);
       simulate_backwards_to_point (merge_bb, live, end);
       success = can_move_insns_across (head, end, earliest, jump,
 				       merge_bb, live,
 				       df_get_live_in (other_bb), NULL);
-      BITMAP_FREE (live);
       if (!success)
 	return false;
 
       /* Collect the set of registers set in MERGE_BB.  */
-      merge_set = BITMAP_ALLOC (&reg_obstack);
-
       FOR_BB_INSNS (merge_bb, insn)
 	if (NONDEBUG_INSN_P (insn))
 	  df_simulate_find_defs (insn, merge_set);
@@ -6706,10 +6691,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	  && single_succ (new_dest) == EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && bitmap_intersect_p (df_get_live_in (new_dest), merge_set))
 	{
-	  regset return_regs;
 	  unsigned int i;
 
-	  return_regs = BITMAP_ALLOC (&reg_obstack);
+	  auto_bitmap return_regs (&reg_obstack);
 
 	  /* Start off with the intersection of regs used to pass
 	     params and regs used to return values.  */
@@ -6739,13 +6723,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 			}
 		  }
 	      if (bitmap_intersect_p (merge_set, return_regs))
-		{
-		  BITMAP_FREE (return_regs);
-		  BITMAP_FREE (merge_set);
-		  return false;
-		}
+		return false;
 	    }
-	  BITMAP_FREE (return_regs);
 	}
     }
 
@@ -6817,17 +6796,13 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	} while (insn != end && (insn = NEXT_INSN (insn)));
 
       /* PR46315: when moving insns above a conditional branch, the REG_EQUAL
-	 notes referring to the registers being set might become invalid.  */
-      if (merge_set)
-	{
-	  unsigned i;
-	  bitmap_iterator bi;
-
-	  EXECUTE_IF_SET_IN_BITMAP (merge_set, 0, i, bi)
-	    remove_reg_equal_equiv_notes_for_regno (i);
-
-	  BITMAP_FREE (merge_set);
-	}
+	 notes referring to the registers being set might become invalid.
+	 MERGE_SET is empty on the conditional-execution path, which does not
+	 move anything.  */
+      unsigned i;
+      bitmap_iterator bi;
+      EXECUTE_IF_SET_IN_BITMAP (merge_set, 0, i, bi)
+	remove_reg_equal_equiv_notes_for_regno (i);
 
       reorder_insns (head, end, PREV_INSN (earliest));
     }
@@ -6845,9 +6820,6 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
  cancel:
   cancel_changes (0);
-
-  if (merge_set)
-    BITMAP_FREE (merge_set);
 
   return false;
 }
