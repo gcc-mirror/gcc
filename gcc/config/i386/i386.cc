@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-globals.h"
 #include "gimple-iterator.h"
 #include "gimple-fold.h"
+#include "internal-fn.h"
 #include "tree-vectorizer.h"
 #include "shrink-wrap.h"
 #include "builtins.h"
@@ -19831,6 +19832,58 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  return true;
 	}
       break;
+
+    case IX86_BUILTIN_PAVGUSB:
+    case IX86_BUILTIN_PAVGB:
+    case IX86_BUILTIN_PAVGW:
+    case IX86_BUILTIN_PAVGB128:
+    case IX86_BUILTIN_PAVGW128:
+    case IX86_BUILTIN_PAVGB256:
+    case IX86_BUILTIN_PAVGW256:
+    case IX86_BUILTIN_PAVGB128_MASK:
+    case IX86_BUILTIN_PAVGW128_MASK:
+    case IX86_BUILTIN_PAVGB256_MASK:
+    case IX86_BUILTIN_PAVGW256_MASK:
+    case IX86_BUILTIN_PAVGB512:
+    case IX86_BUILTIN_PAVGW512:
+      gcc_assert (n_args == 2 || n_args == 4);
+      if (!gimple_call_lhs (stmt))
+	break;
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      /* For masked PAVG, only canonicalize if the mask is all ones.  */
+      if (n_args == 4)
+	{
+	  elems = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+	  if (!ix86_masked_all_ones (elems, gimple_call_arg (stmt, 3)))
+	    break;
+	}
+      {
+	/* PAVG computes an unsigned average rounded towards positive
+	   infinity.  The IFN selects signedness from its operand type.  */
+	tree utype = unsigned_type_for (TREE_TYPE (arg0));
+	bool equal_p = operand_equal_p (arg0, arg1, 0);
+	if (!equal_p
+	    && !direct_internal_fn_supported_p (IFN_AVG_CEIL, utype,
+						OPTIMIZE_FOR_BOTH))
+	  break;
+
+	loc = gimple_location (stmt);
+	tree uarg0 = gimple_build (&stmts, loc, VIEW_CONVERT_EXPR,
+				    utype, arg0);
+	tree uarg1 = equal_p
+	  ? uarg0
+	  : gimple_build (&stmts, loc, VIEW_CONVERT_EXPR, utype, arg1);
+	tree res = gimple_build (&stmts, loc, IFN_AVG_CEIL, utype,
+				 uarg0, uarg1);
+	res = gimple_build (&stmts, loc, VIEW_CONVERT_EXPR,
+			    TREE_TYPE (gimple_call_lhs (stmt)), res);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	g = gimple_build_assign (gimple_call_lhs (stmt), res);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, false);
+	return true;
+      }
 
     case IX86_BUILTIN_PBLENDVB256:
     case IX86_BUILTIN_BLENDVPS256:
