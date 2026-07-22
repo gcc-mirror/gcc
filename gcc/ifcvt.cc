@@ -111,7 +111,7 @@ static void noce_emit_move_insn (rtx, rtx);
 static rtx_insn *block_has_only_trap (basic_block);
 static void init_noce_multiple_sets_info (basic_block,
   auto_delete_vec<noce_multiple_sets_info> &);
-static bool noce_convert_multiple_sets_1 (struct noce_if_info *,
+static bool noce_convert_multiple_sets_1 (noce_if_info *, rtx,
   auto_delete_vec<noce_multiple_sets_info> &,
   auto_delete_vec<noce_multiple_sets_info> &, unsigned,
   const vec<unsigned> &, int *, bool *);
@@ -4190,7 +4190,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   bool use_cond_earliest = false;
 
   bool ok = noce_convert_multiple_sets_1
-    (if_info, insn_info, else_insn_info, then_count, else_only_indices,
+    (if_info, cond, insn_info, else_insn_info, then_count, else_only_indices,
      &last_needs_comparison, &use_cond_earliest);
   if (!ok)
       return false;
@@ -4203,7 +4203,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   end_sequence ();
   start_sequence ();
   ok = noce_convert_multiple_sets_1
-    (if_info, insn_info, else_insn_info, then_count, else_only_indices,
+    (if_info, cond, insn_info, else_insn_info, then_count, else_only_indices,
      &last_needs_comparison, &use_cond_earliest);
 
   /* Actually we should not fail anymore if we reached here,
@@ -4299,7 +4299,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
    emitted.  */
 
 static bool
-noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
+noce_convert_multiple_sets_1 (noce_if_info *if_info, rtx cond,
 			      auto_delete_vec<noce_multiple_sets_info> &insn_info,
 			      auto_delete_vec<noce_multiple_sets_info>
 				&else_insn_info,
@@ -4309,10 +4309,6 @@ noce_convert_multiple_sets_1 (struct noce_if_info *if_info,
 			      bool *use_cond_earliest)
 {
   rtx_insn *jump = if_info->jump;
-  rtx_insn *cond_earliest;
-
-  /* Decompose the condition attached to the jump.  */
-  rtx cond = noce_get_condition (jump, &cond_earliest, false);
 
   rtx cc_cmp = cond_exec_get_condition (jump);
   if (cc_cmp)
