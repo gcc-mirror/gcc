@@ -790,6 +790,9 @@ decode_oacc_directive (void)
     case 'h':
       matcha ("host_data", gfc_match_oacc_host_data, ST_OACC_HOST_DATA);
       break;
+    case 'i':
+      matcha ("init", gfc_match_oacc_init, ST_OACC_INIT);
+      break;
     case 'p':
       matcha ("parallel loop", gfc_match_oacc_parallel_loop,
 	      ST_OACC_PARALLEL_LOOP);
@@ -806,6 +809,8 @@ decode_oacc_directive (void)
     case 's':
       matcha ("serial loop", gfc_match_oacc_serial_loop, ST_OACC_SERIAL_LOOP);
       matcha ("serial", gfc_match_oacc_serial, ST_OACC_SERIAL);
+      matcha ("set", gfc_match_oacc_set, ST_OACC_SET);
+      matcha ("shutdown", gfc_match_oacc_shutdown, ST_OACC_SHUTDOWN);
       break;
     case 'u':
       matcha ("update", gfc_match_oacc_update, ST_OACC_UPDATE);
@@ -1975,7 +1980,8 @@ next_statement (void)
   case ST_FORM_TEAM: case ST_SYNC_TEAM: \
   case ST_EVENT_POST: case ST_EVENT_WAIT: case ST_FAIL_IMAGE: \
   case ST_OACC_UPDATE: case ST_OACC_WAIT: case ST_OACC_CACHE: \
-  case ST_OACC_ENTER_DATA: case ST_OACC_EXIT_DATA
+  case ST_OACC_ENTER_DATA: case ST_OACC_EXIT_DATA: \
+  case ST_OACC_INIT: case ST_OACC_SHUTDOWN: case ST_OACC_SET
 
 /* Statements that mark other executable statements.  */
 
@@ -2691,6 +2697,15 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OACC_END_ATOMIC:
       p = "!$ACC END ATOMIC";
+      break;
+    case ST_OACC_INIT:
+      p = "!ACC INIT";
+      break;
+    case ST_OACC_SHUTDOWN:
+      p = "!ACC SHUTDOWN";
+      break;
+    case ST_OACC_SET:
+      p = "!ACC SET";
       break;
     case ST_OMP_ALLOCATE:
     case ST_OMP_ALLOCATE_EXEC:
@@ -8039,6 +8054,9 @@ is_oacc (gfc_state_data *sd)
     case EXEC_OACC_EXIT_DATA:
     case EXEC_OACC_ATOMIC:
     case EXEC_OACC_ROUTINE:
+    case EXEC_OACC_INIT:
+    case EXEC_OACC_SHUTDOWN:
+    case EXEC_OACC_SET:
       return true;
 
     default:

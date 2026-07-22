@@ -6412,6 +6412,10 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
   /* OpenACC 'nohost' clauses cannot appear here.  */
   gcc_checking_assert (!clauses->nohost);
 
+  /* OpenACC 'device_num' and 'device_type' clauses cannot appear here.  */
+  gcc_checking_assert (!clauses->device_num_expr
+		       && !clauses->oacc_device_type_present);
+
   return nreverse (omp_clauses);
 }
 
@@ -6482,7 +6486,7 @@ gfc_trans_oacc_construct (gfc_code *code)
   return gfc_finish_block (&block);
 }
 
-/* update, enter_data, exit_data, cache. */
+/* update, enter_data, exit_data, cache, init, set, shutdown.  */
 static tree
 gfc_trans_oacc_executable_directive (gfc_code *code)
 {
@@ -6504,6 +6508,10 @@ gfc_trans_oacc_executable_directive (gfc_code *code)
       case EXEC_OACC_CACHE:
 	construct_code = OACC_CACHE;
 	break;
+      case EXEC_OACC_INIT:
+      case EXEC_OACC_SHUTDOWN:
+      case EXEC_OACC_SET:
+	goto builtin_oacc_exec_directive;
       default:
 	gcc_unreachable ();
     }
@@ -6514,6 +6522,67 @@ gfc_trans_oacc_executable_directive (gfc_code *code)
   stmt = build1_loc (input_location, construct_code, void_type_node,
 		     oacc_clauses);
   gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
+
+builtin_oacc_exec_directive:
+
+  enum built_in_function builtin_code;
+
+  switch (code->op)
+  {
+    case EXEC_OACC_INIT:
+      builtin_code = BUILT_IN_GOACC_INIT;
+      break;
+    case EXEC_OACC_SHUTDOWN:
+      builtin_code = BUILT_IN_GOACC_SHUTDOWN;
+      break;
+    case EXEC_OACC_SET:
+      builtin_code = BUILT_IN_GOACC_SET_DEVICE;
+      break;
+    default:
+      gcc_unreachable ();
+  }
+
+  location_t loc = input_location;
+  gfc_omp_clauses *clauses = code->ext.omp_clauses;
+
+  gfc_start_block (&block);
+
+  tree n_device;
+  if (clauses->device_num_expr)
+    n_device = gfc_convert_expr_to_tree (&block, clauses->device_num_expr);
+  else
+    /* no 'device_num' clause specified by
+       the user, we don't modify the value of ICV
+       'acc-current-device-num-var' or we do not
+       take any action in init and shutdown directive
+       using -1 value.  */
+    n_device = build_int_cst (integer_type_node, -1);
+
+  /* GOMP_DEVICE_NONE is used to make the operation
+     in all the devices.
+
+     GOMP_DEVICE_DEFAULT is used in set directive
+     to do nothing if the clause do not appear.  */
+  int device_type = code->op == EXEC_OACC_SET ?
+		    GOMP_DEVICE_DEFAULT	      :
+		    GOMP_DEVICE_NONE;
+  if (clauses->oacc_device_type_present)
+    device_type = clauses->oacc_device_type;
+
+  tree d_type = build_int_cst (integer_type_node, device_type);
+
+  stmt = builtin_decl_explicit (builtin_code);
+
+  stmt = build_call_expr_loc (loc, stmt, 2, n_device, d_type);
+
+  if (clauses->if_expr)
+    stmt = build3_loc (input_location, COND_EXPR, void_type_node,
+		       gfc_convert_expr_to_tree (&block, clauses->if_expr),
+		       stmt, NULL_TREE);
+
+  gfc_add_expr_to_block (&block, stmt);
+
   return gfc_finish_block (&block);
 }
 
@@ -9893,6 +9962,9 @@ gfc_trans_oacc_directive (gfc_code *code)
     case EXEC_OACC_CACHE:
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
+    case EXEC_OACC_INIT:
+    case EXEC_OACC_SHUTDOWN:
+    case EXEC_OACC_SET:
       return gfc_trans_oacc_executable_directive (code);
     case EXEC_OACC_WAIT:
       return gfc_trans_oacc_wait_directive (code);

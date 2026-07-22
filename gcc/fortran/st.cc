@@ -221,6 +221,9 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
     case EXEC_OACC_ROUTINE:
+    case EXEC_OACC_INIT:
+    case EXEC_OACC_SHUTDOWN:
+    case EXEC_OACC_SET:
     case EXEC_OMP_ALLOCATE:
     case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:

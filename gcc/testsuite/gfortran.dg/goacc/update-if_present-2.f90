@@ -20,8 +20,8 @@ subroutine t1
 
   !$acc declare link(a) if_present ! { dg-error "Unexpected junk after" }
 
-  !$acc init if_present ! { dg-error "Unclassifiable OpenACC directive" }
-  !$acc shutdown if_present ! { dg-error "Unclassifiable OpenACC directive" }
+  !$acc init if_present ! { dg-error "Failed to match clause" }
+  !$acc shutdown if_present ! { dg-error "Failed to match clause" }
   
   !$acc update self(a) device_type(nvidia) device(b) if_present ! { dg-error "Failed to match clause" }
 end subroutine t1

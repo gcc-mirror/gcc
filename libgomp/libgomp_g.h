@@ -413,6 +413,12 @@ extern void GOMP_error (const char *, size_t);
 
 extern void GOACC_wait (int, int, ...);
 
+/* oacc-init.c */
+
+extern void GOACC_init (int, int);
+extern void GOACC_shutdown (int, int);
+extern void GOACC_set_device (int, int);
+
 /* oacc-mem.c */
 
 extern void GOACC_enter_exit_data (int, size_t, void **, size_t *,

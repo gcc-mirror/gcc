@@ -2494,6 +2494,28 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       show_expr (omp_clauses->nocontext);
       fputc (')', dumpfile);
     }
+  if (omp_clauses->oacc_device_type_present)
+    {
+      const char *s;
+      switch (omp_clauses->oacc_device_type)
+	{
+	case GOMP_DEVICE_NONE: s = "all"; break;
+	case GOMP_DEVICE_HOST: s = "host"; break;
+	case GOMP_DEVICE_NVIDIA_PTX: s = "nvidia"; break;
+	case GOMP_DEVICE_GCN: s = "radeon"; break;
+	default:
+	  gcc_unreachable ();
+	}
+      fputs (" DEVICE_TYPE(", dumpfile);
+      fputs (s, dumpfile);
+      fputc (')', dumpfile);
+    }
+  if (omp_clauses->device_num_expr)
+    {
+      fputs (" DEVICE_NUM(", dumpfile);
+      show_expr (omp_clauses->device_num_expr);
+      fputc (')', dumpfile);
+    }
 }
 
 /* Show a single OpenMP or OpenACC directive node and everything underneath it
@@ -2523,6 +2545,9 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OACC_CACHE: name = "CACHE"; is_oacc = true; break;
     case EXEC_OACC_ENTER_DATA: name = "ENTER DATA"; is_oacc = true; break;
     case EXEC_OACC_EXIT_DATA: name = "EXIT DATA"; is_oacc = true; break;
+    case EXEC_OACC_INIT: name = "INIT"; is_oacc = true; break;
+    case EXEC_OACC_SHUTDOWN: name = "SHUTDOWN"; is_oacc = true; break;
+    case EXEC_OACC_SET: name = "SET"; is_oacc = true; break;
     case EXEC_OMP_ALLOCATE: name = "ALLOCATE"; break;
     case EXEC_OMP_ALLOCATORS: name = "ALLOCATORS"; break;
     case EXEC_OMP_ASSUME: name = "ASSUME"; break;
@@ -2634,6 +2659,9 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OACC_CACHE:
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
+    case EXEC_OACC_INIT:
+    case EXEC_OACC_SHUTDOWN:
+    case EXEC_OACC_SET:
     case EXEC_OMP_ALLOCATE:
     case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:
@@ -4031,6 +4059,9 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OACC_CACHE:
     case EXEC_OACC_ENTER_DATA:
     case EXEC_OACC_EXIT_DATA:
+    case EXEC_OACC_INIT:
+    case EXEC_OACC_SHUTDOWN:
+    case EXEC_OACC_SET:
     case EXEC_OMP_ALLOCATE:
     case EXEC_OMP_ALLOCATORS:
     case EXEC_OMP_ASSUME:

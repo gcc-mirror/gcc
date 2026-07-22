@@ -5740,6 +5740,14 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		      WALK_SUBEXPR (n->expr);
 		}
 	      break;
+
+	    case EXEC_OACC_INIT:
+	    case EXEC_OACC_SHUTDOWN:
+	    case EXEC_OACC_SET:
+	      if (co->ext.omp_clauses)
+		WALK_SUBEXPR (co->ext.omp_clauses->device_num_expr);
+	      break;
+
 	    default:
 	      break;
 	    }

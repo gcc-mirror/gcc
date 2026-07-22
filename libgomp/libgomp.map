@@ -691,6 +691,13 @@ GOACC_2.0.2 {
 	GOACC_exit_data;
 } GOACC_2.0.1;
 
+GOACC_2.5 {
+  global:
+	GOACC_init;
+	GOACC_shutdown;
+	GOACC_set_device;
+} GOACC_2.0.2;
+
 GOMP_PLUGIN_1.0 {
   global:
 	GOMP_PLUGIN_malloc;

@@ -13053,6 +13053,9 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OACC_ENTER_DATA:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ROUTINE:
+	case EXEC_OACC_INIT:
+	case EXEC_OACC_SHUTDOWN:
+	case EXEC_OACC_SET:
 	case EXEC_OMP_ALLOCATE:
 	case EXEC_OMP_ALLOCATORS:
 	case EXEC_OMP_ASSUME:
@@ -14839,6 +14842,9 @@ start:
 	case EXEC_OACC_EXIT_DATA:
 	case EXEC_OACC_ATOMIC:
 	case EXEC_OACC_DECLARE:
+	case EXEC_OACC_INIT:
+	case EXEC_OACC_SHUTDOWN:
+	case EXEC_OACC_SET:
 	  gfc_resolve_oacc_directive (code, ns);
 	  break;
 

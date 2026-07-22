@@ -3,12 +3,13 @@
 
 program test
   implicit none
-  logical :: b, b2, bs, b3, b4
+  logical :: b, b2, bs, b3, b4, b5
   ! { dg-note {'b' was declared here} {} { target *-*-* } .-1 }
   ! { dg-note {'b2' was declared here} {} { target *-*-* } .-2 }
   ! { dg-note {'bs' was declared here} {} { target *-*-* } .-3 }
   ! { dg-note {'b3' was declared here} {} { target *-*-* } .-4 }
   ! { dg-note {'b4' was declared here} {} { target *-*-* } .-5 }
+  ! { dg-note {'b5' was declared here} {} { target *-*-* } .-6 }
   integer :: data, data2
 
   !$acc parallel if(b) ! { dg-warning "is used uninitialized" }
@@ -24,5 +25,7 @@ program test
   !$acc end data
 
   !$acc update if(b4) self(data2) ! { dg-warning "is used uninitialized" }
+
+  !$acc init if(b5) ! { dg-warning "is used uninitialized" }
 
 end program test

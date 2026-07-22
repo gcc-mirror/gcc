@@ -131,6 +131,9 @@ gfc_common_head *gfc_get_common (const char *, int);
 /* OpenACC directive matchers.  */
 match gfc_match_oacc_atomic (void);
 match gfc_match_oacc_cache (void);
+match gfc_match_oacc_init (void);
+match gfc_match_oacc_shutdown (void);
+match gfc_match_oacc_set (void);
 match gfc_match_oacc_wait (void);
 match gfc_match_oacc_update (void);
 match gfc_match_oacc_declare (void);

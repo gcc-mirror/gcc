@@ -273,6 +273,7 @@ enum gfc_statement
   ST_OACC_SERIAL_LOOP, ST_OACC_END_SERIAL_LOOP, ST_OACC_SERIAL,
   ST_OACC_END_SERIAL, ST_OACC_ENTER_DATA, ST_OACC_EXIT_DATA, ST_OACC_ROUTINE,
   ST_OACC_ATOMIC, ST_OACC_END_ATOMIC,
+  ST_OACC_INIT, ST_OACC_SHUTDOWN, ST_OACC_SET,
   ST_OMP_ATOMIC, ST_OMP_BARRIER, ST_OMP_CRITICAL, ST_OMP_END_ATOMIC,
   ST_OMP_END_CRITICAL, ST_OMP_END_DO, ST_OMP_END_MASTER, ST_OMP_END_ORDERED,
   ST_OMP_END_PARALLEL, ST_OMP_END_PARALLEL_DO, ST_OMP_END_PARALLEL_SECTIONS,
@@ -1770,12 +1771,14 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *num_gangs_expr;
   struct gfc_expr *num_workers_expr;
   struct gfc_expr *vector_length_expr;
+  struct gfc_expr *device_num_expr;
   gfc_expr_list *wait_list;
   gfc_expr_list *tile_list;
   unsigned async:1, gang:1, worker:1, vector:1, seq:1, independent:1;
   unsigned par_auto:1, gang_static:1;
   unsigned if_present:1, finalize:1;
   unsigned nohost:1;
+  unsigned oacc_device_type:4, oacc_device_type_present:1;
   locus loc;
 }
 gfc_omp_clauses;
@@ -3286,6 +3289,7 @@ enum gfc_exec_op
   EXEC_OACC_DATA, EXEC_OACC_HOST_DATA, EXEC_OACC_LOOP, EXEC_OACC_UPDATE,
   EXEC_OACC_WAIT, EXEC_OACC_CACHE, EXEC_OACC_ENTER_DATA, EXEC_OACC_EXIT_DATA,
   EXEC_OACC_ATOMIC, EXEC_OACC_DECLARE,
+  EXEC_OACC_INIT, EXEC_OACC_SHUTDOWN, EXEC_OACC_SET,
   EXEC_OMP_CRITICAL, EXEC_OMP_FIRST_OPENMP_EXEC = EXEC_OMP_CRITICAL,
   EXEC_OMP_DO, EXEC_OMP_FLUSH, EXEC_OMP_MASTER,
   EXEC_OMP_ORDERED, EXEC_OMP_PARALLEL, EXEC_OMP_PARALLEL_DO,
