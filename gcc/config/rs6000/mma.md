@@ -94,6 +94,8 @@
    UNSPEC_DMF_INSERT512
    UNSPEC_DMF_EXTRACT512
    UNSPEC_DMF_INSERT1024
+   UNSPEC_DMF_RELOAD_FROM_MEMORY
+   UNSPEC_DMF_RELOAD_TO_MEMORY
   ])
 
 (define_c_enum "unspecv"
@@ -534,6 +536,74 @@
 
   gcc_unreachable ();
 })
+
+
+(define_insn_and_split "reload_tdo_load"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+        (unspec:TDO [(match_operand:TDO 1 "memory_operand" "m")]
+                    UNSPEC_DMF_RELOAD_FROM_MEMORY))
+   (clobber (match_operand:OO 2 "vsx_register_operand" "=wa"))
+   (clobber (match_operand:OO 3 "vsx_register_operand" "=wa"))
+   (clobber (match_operand:OO 4 "vsx_register_operand" "=wa"))
+   (clobber (match_operand:OO 5 "vsx_register_operand" "=wa"))]
+  "TARGET_DMF"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx dest = operands[0];
+  rtx src = operands[1];
+  rtx pair0 = operands[2];
+  rtx pair1 = operands[3];
+  rtx pair2 = operands[4];
+  rtx pair3 = operands[5];
+
+  if (BYTES_BIG_ENDIAN)
+    {
+      emit_move_insn (pair0, adjust_address (src, OOmode, 0));
+      emit_move_insn (pair1, adjust_address (src, OOmode, 32));
+      emit_move_insn (pair2, adjust_address (src, OOmode, 64));
+      emit_move_insn (pair3, adjust_address (src, OOmode, 96));
+    }
+  else
+    {
+      emit_move_insn (pair3, adjust_address (src, OOmode, 0));
+      emit_move_insn (pair2, adjust_address (src, OOmode, 32));
+      emit_move_insn (pair1, adjust_address (src, OOmode, 64));
+      emit_move_insn (pair0, adjust_address (src, OOmode, 96));
+    }
+  emit_insn (gen_dm_insert1024 (dest, pair0, pair1, pair2, pair3));
+  DONE;
+}
+  [(set_attr "max_prefixed_insns" "4")])
+
+
+;; Reload dense math register to memory
+(define_insn_and_split "reload_tdo_store"
+  [(set (match_operand:TDO 0 "memory_operand" "=m")
+        (unspec:TDO [(match_operand:TDO 1 "dmr_register_operand" "wD")]
+                    UNSPEC_DMF_RELOAD_TO_MEMORY))
+   (clobber (match_operand:XO 2 "vsx_register_operand" "=wa"))]
+  "TARGET_DMF"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  rtx dest = operands[0];
+  rtx src = operands[1];
+  rtx tmp_vsx_512 = operands[2];
+  rtx high_mem = adjust_address (dest, XOmode, BYTES_BIG_ENDIAN ? 0 : 64);
+  rtx low_mem = adjust_address (dest, XOmode, BYTES_BIG_ENDIAN ? 64 : 0);
+
+  emit_insn (gen_dm_extract512 (tmp_vsx_512, src, const0_rtx));
+  emit_move_insn (high_mem, tmp_vsx_512);
+
+  emit_insn (gen_dm_extract512 (tmp_vsx_512, src, const1_rtx));
+  emit_move_insn (low_mem, tmp_vsx_512);
+  DONE;
+}
+  [(set_attr "max_prefixed_insns" "4")])
+
 
 (define_expand "mma_assemble_acc"
   [(match_operand:XO 0 "accumulator_operand")

@@ -3219,6 +3219,12 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	}
     }
 
+  if (TARGET_DMF)
+    {
+      reg_addr[TDOmode].reload_load = CODE_FOR_reload_tdo_load;
+      reg_addr[TDOmode].reload_store = CODE_FOR_reload_tdo_store;
+    }
+
   /* Precalculate HARD_REGNO_NREGS.  */
   for (r = 0; HARD_REGISTER_NUM_P (r); ++r)
     for (m = 0; m < NUM_MACHINE_MODES; ++m)
