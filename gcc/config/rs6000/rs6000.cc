@@ -20791,6 +20791,8 @@ rs6000_mangle_type (const_tree type)
     return "u13__vector_pair";
   if (type == vector_quad_type_node)
     return "u13__vector_quad";
+  if (type == dmr1024_type_node)
+    return "u9__dmr1024";
 
   /* For all other types, use the default mangling.  */
   return NULL;
@@ -29014,7 +29016,8 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 
   if (frommode != tomode)
     {
-      /* Do not allow conversions to/from XOmode and OOmode types.  */
+      /* Do not allow conversions to/from XOmode, OOmode and TDOmode
+	 types.  */
       if (frommode == XOmode)
 	return N_("invalid conversion from type %<__vector_quad%>");
       if (tomode == XOmode)
@@ -29023,6 +29026,10 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 	return N_("invalid conversion from type %<__vector_pair%>");
       if (tomode == OOmode)
 	return N_("invalid conversion to type %<__vector_pair%>");
+      if (frommode == TDOmode)
+	return N_("invalid conversion from type %<__dmr1024%>");
+      if (tomode == TDOmode)
+	return N_("invalid conversion to type %<__dmr1024%>");
     }
 
   /* Conversion allowed.  */
@@ -29504,33 +29511,44 @@ constant_generates_xxspltidp (vec_const_128bit_type *vsx_const)
   return sf_value;
 }
 
-/* Now we have only two opaque types, they are __vector_quad and
-   __vector_pair built-in types.  They are target specific and
-   only available when MMA is supported.  With MMA supported, it
-   simply returns true, otherwise it checks if the given gimple
-   STMT is an assignment, asm or call stmt and uses either of
-   these two opaque types unexpectedly, if yes, it would raise
-   an error message and returns true, otherwise it returns false.  */
+/* Now we have three opaque types: the __vector_quad, __vector_pair and
+   __dmr1024 built-in types.  They are target specific and each one is
+   only available when its required ISA support is enabled:
+   __vector_pair requires MMA or DMF (vector pairs are used by both),
+   __vector_quad requires MMA, and __dmr1024 requires DMF.  Note that
+   DMF does not imply MMA (e.g. -mcpu=future -mno-mma).  With both MMA
+   and DMF enabled, all three types are usable and this simply returns
+   false, otherwise it checks if the given gimple STMT is an
+   assignment, asm or call stmt and uses one of these opaque types
+   whose ISA support is missing, if yes, it would raise an error
+   message and returns true, otherwise it returns false.  */
 
 bool
 rs6000_opaque_type_invalid_use_p (gimple *stmt)
 {
-  if (TARGET_MMA)
+  if (TARGET_MMA && TARGET_DMF)
     return false;
 
-  /* If the given TYPE is one MMA opaque type, emit the corresponding
-     error messages and return true, otherwise return false.  */
+  /* If the given TYPE is one MMA/DMF opaque type whose required ISA
+     support is missing, emit the corresponding error message and
+     return true, otherwise return false.  */
   auto check_and_error_invalid_use = [](tree type)
   {
     tree mv = TYPE_MAIN_VARIANT (type);
-    if (mv == vector_quad_type_node)
+    if (!TARGET_MMA && mv == vector_quad_type_node)
       {
 	error ("type %<__vector_quad%> requires the %qs option", "-mmma");
 	return true;
       }
-    else if (mv == vector_pair_type_node)
+    else if (!TARGET_MMA && !TARGET_DMF && mv == vector_pair_type_node)
       {
-	error ("type %<__vector_pair%> requires the %qs option", "-mmma");
+	error ("type %<__vector_pair%> requires the %qs or %qs option", "-mmma"
+	       , "-mdense-math");
+	return true;
+      }
+    else if (!TARGET_DMF && mv == dmr1024_type_node)
+      {
+	error ("type %<__dmr1024%> requires the %qs option", "-mdense-math");
 	return true;
       }
     return false;

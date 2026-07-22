@@ -2279,6 +2279,7 @@ enum rs6000_builtin_type_index
   RS6000_BTI_const_str,		 /* pointer to const char * */
   RS6000_BTI_vector_pair,	 /* unsigned 256-bit types (vector pair).  */
   RS6000_BTI_vector_quad,	 /* unsigned 512-bit types (vector quad).  */
+  RS6000_BTI_dmr1024,            /* unsigned 1024-bit type (dmr1024).  */
   RS6000_BTI_const_ptr_void,     /* const pointer to void */
   RS6000_BTI_ptr_V16QI,
   RS6000_BTI_ptr_V1TI,
@@ -2317,6 +2318,7 @@ enum rs6000_builtin_type_index
   RS6000_BTI_ptr_dfloat128,
   RS6000_BTI_ptr_vector_pair,
   RS6000_BTI_ptr_vector_quad,
+  RS6000_BTI_ptr_dmr1024,
   RS6000_BTI_ptr_long_long,
   RS6000_BTI_ptr_long_long_unsigned,
   RS6000_BTI_INTPTI,
@@ -2378,6 +2380,7 @@ enum rs6000_builtin_type_index
 #define const_str_type_node		 (rs6000_builtin_types[RS6000_BTI_const_str])
 #define vector_pair_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_pair])
 #define vector_quad_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_quad])
+#define dmr1024_type_node                (rs6000_builtin_types[RS6000_BTI_dmr1024])
 #define pcvoid_type_node		 (rs6000_builtin_types[RS6000_BTI_const_ptr_void])
 #define ptr_V16QI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V16QI])
 #define ptr_V1TI_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_V1TI])
@@ -2416,6 +2419,7 @@ enum rs6000_builtin_type_index
 #define ptr_dfloat128_type_node		 (rs6000_builtin_types[RS6000_BTI_ptr_dfloat128])
 #define ptr_vector_pair_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_vector_pair])
 #define ptr_vector_quad_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_vector_quad])
+#define ptr_dmr1024_type_node            (rs6000_builtin_types[RS6000_BTI_ptr_dmr1024])
 #define ptr_long_long_integer_type_node	 (rs6000_builtin_types[RS6000_BTI_ptr_long_long])
 #define ptr_long_long_unsigned_type_node (rs6000_builtin_types[RS6000_BTI_ptr_long_long_unsigned])
 
