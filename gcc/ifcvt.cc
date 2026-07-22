@@ -4098,6 +4098,42 @@ try_emit_cmove_seq (struct noce_if_info *if_info, rtx temp,
   return seq;
 }
 
+/* Finish a successful noce if-conversion of IF_INFO whose replacement insns
+   have already been emitted before the branch.  Delete the now-dead THEN
+   block, and ELSE too if this was a diamond.  An IF-THEN-JOIN also has an edge
+   from TEST_BB straight to JOIN_BB that bypassed THEN, and that goes as well.
+   An IF-THEN-ELSE-JOIN has no such edge, and deleting ELSE_BB removes its two
+   edges instead.  Redirect TEST_BB to JOIN_BB and merge the two when the tail
+   no longer needs its own block.  */
+
+static void
+noce_finish_if_conversion (noce_if_info *if_info)
+{
+  basic_block test_bb = if_info->test_bb;
+  basic_block then_bb = if_info->then_bb;
+  basic_block else_bb = if_info->else_bb;
+  basic_block join_bb = if_info->join_bb;
+
+  if (else_bb)
+    {
+      delete_basic_block (else_bb);
+      num_true_changes++;
+    }
+  else
+    remove_edge (find_edge (test_bb, join_bb));
+
+  remove_edge (find_edge (then_bb, join_bb));
+  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
+  delete_basic_block (then_bb);
+  num_true_changes++;
+
+  if (can_merge_blocks_p (test_bb, join_bb))
+    {
+      merge_blocks (test_bb, join_bb);
+      num_true_changes++;
+    }
+}
+
 /* We have something like:
 
      if (x > y)
@@ -4148,7 +4184,6 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   basic_block test_bb = if_info->test_bb;
   basic_block then_bb = if_info->then_bb;
   basic_block else_bb = if_info->else_bb;
-  basic_block join_bb = if_info->join_bb;
   rtx_insn *jump = if_info->jump;
   rtx_insn *cond_earliest;
   rtx_insn *insn;
@@ -4300,27 +4335,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 
   emit_insn_before_setloc (seq, if_info->jump, sequence_location);
 
-  /* Clean up the THEN (and, for a diamond, ELSE) block and the edges into and
-     out of the if-region.  An IF-THEN-ELSE-JOIN has no test->join edge.
-     Deleting ELSE_BB removes the test->else and else->join edges instead.  */
-  if (else_bb)
-    {
-      delete_basic_block (else_bb);
-      num_true_changes++;
-    }
-  else
-    remove_edge (find_edge (test_bb, join_bb));
-  remove_edge (find_edge (then_bb, join_bb));
-  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
-  delete_basic_block (then_bb);
-  num_true_changes++;
-
-  /* Maybe merge blocks now the jump is simple enough.  */
-  if (can_merge_blocks_p (test_bb, join_bb))
-    {
-      merge_blocks (test_bb, join_bb);
-      num_true_changes++;
-    }
+  noce_finish_if_conversion (if_info);
 
   num_updated_if_blocks++;
   if_info->transform_name = "noce_convert_multiple_sets";
@@ -4876,7 +4891,6 @@ noce_process_if_block (struct noce_if_info *if_info)
   basic_block test_bb = if_info->test_bb;	/* test block */
   basic_block then_bb = if_info->then_bb;	/* THEN */
   basic_block else_bb = if_info->else_bb;	/* ELSE or NULL */
-  basic_block join_bb = if_info->join_bb;	/* JOIN */
   rtx_insn *jump = if_info->jump;
   rtx cond = if_info->cond;
   rtx_insn *insn_a, *insn_b;
@@ -5214,27 +5228,9 @@ noce_process_if_block (struct noce_if_info *if_info)
       emit_insn_before_setloc (seq, BB_END (test_bb), INSN_LOCATION (insn_a));
     }
 
-  /* The original THEN and ELSE blocks may now be removed.  The test block
-     must now jump to the join block.  If the test block and the join block
-     can be merged, do so.  */
-  if (else_bb)
-    {
-      delete_basic_block (else_bb);
-      num_true_changes++;
-    }
-  else
-    remove_edge (find_edge (test_bb, join_bb));
-
-  remove_edge (find_edge (then_bb, join_bb));
-  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
-  delete_basic_block (then_bb);
-  num_true_changes++;
-
-  if (can_merge_blocks_p (test_bb, join_bb))
-    {
-      merge_blocks (test_bb, join_bb);
-      num_true_changes++;
-    }
+  /* The original THEN and ELSE blocks may now be removed and the test block
+     redirected to the join block.  */
+  noce_finish_if_conversion (if_info);
 
   num_updated_if_blocks++;
   return true;
@@ -5400,10 +5396,8 @@ cond_move_convert_if_block (struct noce_if_info *if_infop,
 static bool
 cond_move_process_if_block (struct noce_if_info *if_info)
 {
-  basic_block test_bb = if_info->test_bb;
   basic_block then_bb = if_info->then_bb;
   basic_block else_bb = if_info->else_bb;
-  basic_block join_bb = if_info->join_bb;
   rtx_insn *jump = if_info->jump;
   rtx cond = if_info->cond;
   rtx_insn *seq, *loc_insn;
@@ -5489,24 +5483,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
     }
   emit_insn_before_setloc (seq, jump, INSN_LOCATION (loc_insn));
 
-  if (else_bb)
-    {
-      delete_basic_block (else_bb);
-      num_true_changes++;
-    }
-  else
-    remove_edge (find_edge (test_bb, join_bb));
-
-  remove_edge (find_edge (then_bb, join_bb));
-  redirect_edge_and_branch_force (single_succ_edge (test_bb), join_bb);
-  delete_basic_block (then_bb);
-  num_true_changes++;
-
-  if (can_merge_blocks_p (test_bb, join_bb))
-    {
-      merge_blocks (test_bb, join_bb);
-      num_true_changes++;
-    }
+  noce_finish_if_conversion (if_info);
 
   num_updated_if_blocks++;
   success_p = true;
