@@ -18,6 +18,7 @@
 
 #include "rust-coercion.h"
 #include "rust-type-util.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Resolver {
@@ -313,6 +314,7 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 // &[T; n] or &mut [T; n] -> &[T]
 // or &mut [T; n] -> &mut [T]
 // or &Concrete -> &Trait, etc.
+// https://doc.rust-lang.org/stable/reference/type-coercions.html
 tl::expected<TypeCoercionRules::CoercionResult,
 	     TypeCoercionRules::CoerceUnsizedError>
 TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
@@ -336,7 +338,7 @@ TypeCoercionRules::coerce_unsized (TyTy::BaseType *source,
   auto b = setup->ty_b;
 
   tl::expected<TyTy::BaseType *, CoerceUnsizedError> inner_result
-    = tl::unexpected (CoerceUnsizedError::Regular);
+    = tl::unexpected<CoerceUnsizedError> (CoerceUnsizedError::Regular);
 
   bool expect_dyn = b->get_kind () == TyTy::TypeKind::DYNAMIC;
   bool need_unsize = a->get_kind () != TyTy::TypeKind::DYNAMIC;
@@ -546,11 +548,16 @@ TypeCoercionRules::coerce_unsized_adt (TyTy::BaseType *a, TyTy::BaseType *b,
 		       ? t_field_raw
 		       : t_field_raw->monomorphized_clone ();
 
-      if (s_field->is_zero_sized () && t_field->is_zero_sized ())
-	continue;
-
+      // https://doc.rust-lang.org/reference/dynamically-sized-types.html
       if (!s_field->is_equal (*t_field))
 	{
+	  if (s_field->is<TyTy::ADTType> () && t_field->is<TyTy::ADTType> ())
+	    if (auto phantom_data
+		= mappings.lookup_lang_item (LangItem::Kind::PHANTOM_DATA))
+	      if (s_field->as<TyTy::ADTType> ()->get_id () == phantom_data
+		  && t_field->as<TyTy::ADTType> ()->get_id () == phantom_data)
+		continue;
+
 	  differing_source_field = s_field;
 	  differing_target_field = t_field;
 	  diff_count++;

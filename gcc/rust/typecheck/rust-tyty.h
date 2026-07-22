@@ -360,6 +360,9 @@ public:
 
   virtual bool contains_unsafe_cell () const { return false; }
 
+  // is_unsized returns true if the type is a DST
+  virtual bool is_unsized () const { return false; }
+
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	    std::set<HirId> refs = std::set<HirId> ());
@@ -1042,6 +1045,7 @@ public:
   handle_substitions (SubstitutionArgumentMappings &mappings) override final;
 
   bool contains_unsafe_cell () const override;
+  virtual bool is_unsized () const override;
 
 private:
   DefId id;
@@ -1446,6 +1450,7 @@ public:
   SliceType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
   bool contains_unsafe_cell () const override;
+  virtual bool is_unsized () const override { return true; }
 
 private:
   TyVar element_type;
@@ -1643,6 +1648,8 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () const final override;
+
+  virtual bool is_unsized () const override { return true; }
 };
 
 class DynamicObjectType : public BaseType
@@ -1673,6 +1680,8 @@ public:
   const std::vector<
     std::pair<const Resolver::TraitItemReference *, const TypeBoundPredicate *>>
   get_object_items () const;
+
+  virtual bool is_unsized () const override { return true; }
 };
 
 class ReferenceType : public BaseType
@@ -1713,6 +1722,7 @@ public:
   bool is_dyn_slice_type (const TyTy::SliceType **slice = nullptr) const;
   bool is_dyn_str_type (const TyTy::StrType **str = nullptr) const;
   bool is_dyn_obj_type (const TyTy::DynamicObjectType **dyn = nullptr) const;
+  bool is_dyn_adt_type (const TyTy::ADTType **adt = nullptr) const;
   bool is_dyn_cstr_type (const TyTy::ADTType **adt = nullptr) const;
 
 private:
@@ -1753,6 +1763,7 @@ public:
   bool is_dyn_slice_type (const TyTy::SliceType **slice = nullptr) const;
   bool is_dyn_str_type (const TyTy::StrType **str = nullptr) const;
   bool is_dyn_obj_type (const TyTy::DynamicObjectType **dyn = nullptr) const;
+  bool is_dyn_adt_type (const TyTy::ADTType **adt = nullptr) const;
 
 private:
   TyVar base;

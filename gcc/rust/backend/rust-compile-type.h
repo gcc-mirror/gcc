@@ -69,6 +69,7 @@ protected:
   tree create_slice_type_record (const TyTy::SliceType &type);
   tree create_str_type_record (const TyTy::StrType &type);
   tree create_dyn_obj_record (const TyTy::DynamicObjectType &type);
+  tree create_dyn_adt_record (const TyTy::ADTType &type);
   tree get_implicit_enumeral_node_type (TyTy::BaseType *repr);
 
 private:

@@ -353,6 +353,40 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 				 type.get_ty_ref ()));
 	}
 
+      if (!type.is_union () && variant.num_fields () > 0)
+	{
+	  const TyTy::StructFieldType *tail_field
+	    = variant.get_field_at_index (variant.num_fields () - 1);
+	  TyTy::BaseType *tail_ty = tail_field->get_field_type ();
+
+	  if (tail_ty->is_unsized ())
+	    {
+	      tree raw_dst_type = error_mark_node;
+
+	      if (tail_ty->get_kind () == TyTy::TypeKind::SLICE)
+		{
+		  auto slice = static_cast<TyTy::SliceType *> (tail_ty);
+		  tree elem_type
+		    = TyTyResolveCompile::compile (ctx,
+						   slice->get_element_type ());
+		  raw_dst_type = build_array_type (elem_type, NULL_TREE);
+		}
+	      else if (tail_ty->get_kind () == TyTy::TypeKind::DYNAMIC)
+		{
+		  raw_dst_type = make_node (RECORD_TYPE);
+		  TYPE_SIZE (raw_dst_type) = bitsize_zero_node;
+		  TYPE_SIZE_UNIT (raw_dst_type) = size_zero_node;
+		  layout_type (raw_dst_type);
+		}
+	      else
+		{
+		  raw_dst_type = fields.back ().type;
+		}
+	      fields.pop_back ();
+	      fields.emplace_back (tail_field->get_name (), raw_dst_type,
+				   type.get_locus ());
+	    }
+	}
       type_record = type.is_union () ? Backend::union_type (fields, false)
 				     : Backend::struct_type (fields, false);
     }
@@ -742,6 +776,16 @@ TyTyResolveCompile::visit (const TyTy::ReferenceType &type)
 
       return;
     }
+  else if (type.is_dyn_adt_type (&adt))
+    {
+      tree type_record = create_dyn_adt_record (*adt);
+      std::string dyn_str_type_str
+	= std::string (type.is_mutable () ? "&mut" : "& ") + adt->get_name ();
+
+      translated = Backend::named_type (dyn_str_type_str, type_record,
+					adt->get_locus ());
+      return;
+    }
   // Check for CStr, create a specific record for it
   else if (type.is_dyn_cstr_type (&adt))
     {
@@ -794,6 +838,7 @@ TyTyResolveCompile::visit (const TyTy::PointerType &type)
   const TyTy::SliceType *slice = nullptr;
   const TyTy::StrType *str = nullptr;
   const TyTy::DynamicObjectType *dyn = nullptr;
+  const TyTy::ADTType *adt = nullptr;
   if (type.is_dyn_slice_type (&slice))
     {
       tree type_record = create_slice_type_record (*slice);
@@ -827,6 +872,17 @@ TyTyResolveCompile::visit (const TyTy::PointerType &type)
       translated = Backend::named_type (dyn_str_type_str, type_record,
 					dyn->get_locus ());
 
+      return;
+    }
+  else if (type.is_dyn_adt_type (&adt))
+    {
+      tree type_record = create_dyn_adt_record (*adt);
+      std::string dyn_str_type_str
+	= std::string (type.is_mutable () ? "*mut" : "*const ")
+	  + adt->get_name ();
+
+      translated = Backend::named_type (dyn_str_type_str, type_record,
+					adt->get_locus ());
       return;
     }
 
@@ -957,6 +1013,65 @@ TyTyResolveCompile::create_str_type_record (const TyTy::StrType &type)
   Backend::typed_identifier len_field ("len", len_field_ty, type.get_locus ());
 
   tree record = Backend::struct_type ({data_field, len_field});
+  RS_DST_FLAG (record) = 1;
+  TYPE_MAIN_VARIANT (record) = ctx->insert_main_variant (record);
+
+  return record;
+}
+
+tree
+TyTyResolveCompile::create_dyn_adt_record (const TyTy::ADTType &type)
+{
+  location_t locus = type.get_locus ();
+
+  tree adt_record = TyTyResolveCompile::compile (ctx, &type);
+  tree data_field_ty = build_pointer_type (adt_record);
+  Backend::typed_identifier data_field ("data", data_field_ty, locus);
+
+  rust_assert (type.number_of_variants () > 0);
+  TyTy::VariantDef &variant = *type.get_variants ().front ();
+  rust_assert (variant.num_fields () > 0);
+
+  const TyTy::BaseType *tail_field
+    = variant.get_field_at_index (variant.num_fields () - 1)->get_field_type ();
+
+  tree meta_field_ty = error_mark_node;
+  std::string meta = "meta";
+
+  if (tail_field->get_kind () == TyTy::TypeKind::SLICE
+      || tail_field->get_kind () == TyTy::TypeKind::STR)
+    {
+      TyTy::BaseType *usize = nullptr;
+      bool ok = ctx->get_tyctx ()->lookup_builtin ("usize", &usize);
+      rust_assert (ok);
+      meta_field_ty = TyTyResolveCompile::compile (ctx, usize);
+      meta = "len";
+    }
+  else if (tail_field->get_kind () == TyTy::TypeKind::DYNAMIC)
+    {
+      const TyTy::DynamicObjectType *dyn
+	= static_cast<const TyTy::DynamicObjectType *> (tail_field);
+      tree dyn_record = create_dyn_obj_record (*dyn);
+      tree vtable_field = DECL_CHAIN (TYPE_FIELDS (dyn_record));
+      meta_field_ty = TREE_TYPE (vtable_field);
+      meta = "vtable";
+    }
+  else if (tail_field->get_kind () == TyTy::TypeKind::ADT)
+    {
+      const TyTy::ADTType *inner_adt
+	= static_cast<const TyTy::ADTType *> (tail_field);
+      tree inner_fat_ptr = create_dyn_adt_record (*inner_adt);
+      tree inner_meta_field = DECL_CHAIN (TYPE_FIELDS (inner_fat_ptr));
+      meta_field_ty = TREE_TYPE (inner_meta_field);
+      tree name_ident = DECL_NAME (inner_meta_field);
+      if (name_ident != NULL_TREE)
+	meta = IDENTIFIER_POINTER (name_ident);
+    }
+  else
+    rust_unreachable ();
+
+  Backend::typed_identifier meta_field (meta, meta_field_ty, locus);
+  tree record = Backend::struct_type ({data_field, meta_field});
   RS_DST_FLAG (record) = 1;
   TYPE_MAIN_VARIANT (record) = ctx->insert_main_variant (record);
 

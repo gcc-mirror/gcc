@@ -915,6 +915,15 @@ CompileExpr::visit (HIR::FieldAccessExpr &expr)
 	}
       else
 	{
+	  if (RS_DST_FLAG_P (TREE_TYPE (receiver_ref)))
+	    {
+	      tree data_ptr_field = TYPE_FIELDS (TREE_TYPE (receiver_ref));
+	      tree data_ptr_expr
+		= build3_loc (expr.get_locus (), COMPONENT_REF,
+			      TREE_TYPE (data_ptr_field), receiver_ref,
+			      data_ptr_field, NULL_TREE);
+	      receiver_ref = data_ptr_expr;
+	    }
 	  tree indirect = indirect_expression (receiver_ref, expr.get_locus ());
 	  receiver_ref = indirect;
 	}
@@ -1197,6 +1206,49 @@ CompileExpr::visit (HIR::BorrowExpr &expr)
     return;
 
   tree expected_type = TyTyResolveCompile::compile (ctx, tyty);
+
+  bool is_fat_ptr
+    = tyty->is<TyTy::ReferenceType> ()
+	? tyty->as<TyTy::ReferenceType> ()->get_base ()->is_unsized ()
+      : tyty->is<TyTy::PointerType> ()
+	? tyty->as<TyTy::PointerType> ()->get_base ()->is_unsized ()
+	: false;
+
+  if (is_fat_ptr)
+    {
+      tree data_ptr
+	= address_expression (main_expr, expr.get_locus (), NULL_TREE);
+      tree meta = error_mark_node;
+      if (TREE_CODE (main_expr) == COMPONENT_REF)
+	{
+	  tree indirect = TREE_OPERAND (main_expr, 0);
+	  if (TREE_CODE (indirect) == INDIRECT_REF)
+	    {
+	      tree data_ptr_expr = TREE_OPERAND (indirect, 0);
+	      if (TREE_CODE (data_ptr_expr) == COMPONENT_REF)
+		{
+		  tree fat_ptr = TREE_OPERAND (data_ptr_expr, 0);
+		  if (RS_DST_FLAG_P (TREE_TYPE (fat_ptr)))
+		    {
+		      tree meta_field
+			= DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (fat_ptr)));
+		      meta = build3_loc (expr.get_locus (), COMPONENT_REF,
+					 TREE_TYPE (meta_field), fat_ptr,
+					 meta_field, NULL_TREE);
+		    }
+		}
+	    }
+	}
+      if (meta != error_mark_node)
+	{
+	  std::vector<tree> constructor_elements = {data_ptr, meta};
+	  translated = Backend::constructor_expression (expected_type, false,
+							constructor_elements,
+							-1, expr.get_locus ());
+	  return;
+	}
+    }
+
   translated = address_expression (main_expr, expr.get_locus (), expected_type);
 }
 
@@ -2549,10 +2601,6 @@ HIRCompileBase::resolve_unsized_adt_adjustment (
   /*
    * FIXME: This method is implemented as a temporary workaround to enable the
    * compilation of intra-ADT conversions for the `coerce_unsized` lang item.
-   * Currently, it generates incorrect GIMPLE, though it allows the compilation
-   * to succeed. Execution tests relying on this will exhibit undefined behavior
-   * at runtime. This must be revisited and properly refactored once the DST
-   * memory layout is fully supported.
    */
 
   auto source_adt
@@ -2560,85 +2608,182 @@ HIRCompileBase::resolve_unsized_adt_adjustment (
   auto target_adt
     = static_cast<const TyTy::ADTType *> (adjustment.get_expected ());
 
-  auto s_variant = source_adt->get_variants ().front ();
-  auto t_variant = target_adt->get_variants ().front ();
-
-  std::vector<tree> constructor_elements;
-
-  for (size_t i = 0; i < s_variant->num_fields (); i++)
+  if (target_adt->is_unsized ())
     {
-      auto s_field_ty = s_variant->get_field_at_index (i)
-			  ->get_field_type ()
-			  ->monomorphized_clone ();
-      auto t_field_ty = t_variant->get_field_at_index (i)
-			  ->get_field_type ()
-			  ->monomorphized_clone ();
+      TyTy::TyVar t_tyvar = TyTy::TyVar::get_implicit_infer_var (locus);
+      TyTy::BaseType *cloned_target = target_adt->clone ();
+      cloned_target->set_ref (t_tyvar.get_ref ());
+      Analysis::NodeMapping pseudo_mapping (
+	ctx->get_mappings ().get_current_crate (), 0, t_tyvar.get_ref (), 0);
+      ctx->get_tyctx ()->insert_type (pseudo_mapping, cloned_target);
 
-      tree field_expr = Backend::struct_field_expression (expression, i, locus);
-      if (s_field_ty->is_equal (*t_field_ty))
-	constructor_elements.push_back (field_expr);
+      const TyTy::ReferenceType r (ctx->get_mappings ().get_next_hir_id (),
+				   t_tyvar, Mutability::Imm);
+
+      tree fat_pointer = TyTyResolveCompile::compile (ctx, &r);
+      rust_assert (fat_pointer != error_mark_node);
+      tree data_ptr = address_expression (expression, locus);
+
+      size_t tail_idx = source_adt->get_variants ().front ()->num_fields () - 1;
+      tree tail_expr
+	= Backend::struct_field_expression (expression, tail_idx, locus);
+
+      auto s_tail_ty = source_adt->get_variants ()
+			 .front ()
+			 ->get_field_at_index (tail_idx)
+			 ->get_field_type ();
+      auto t_tail_ty = target_adt->get_variants ()
+			 .front ()
+			 ->get_field_at_index (tail_idx)
+			 ->get_field_type ();
+
+      Resolver::Adjustment tail_adj (
+	Resolver::Adjustment::AdjustmentType::UNSIZE, s_tail_ty, t_tail_ty);
+      tree inner_fat_ptr
+	= resolve_unsized_adjustment (tail_adj, tail_expr, locus);
+      rust_assert (inner_fat_ptr != error_mark_node);
+      tree meta = error_mark_node;
+      if (TREE_CODE (inner_fat_ptr) == CONSTRUCTOR)
+	{
+	  unsigned HOST_WIDE_INT ix;
+	  tree field ATTRIBUTE_UNUSED, val;
+	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (inner_fat_ptr), ix, field,
+				    val)
+	    if (ix == 1)
+	      {
+		meta = val;
+		break;
+	      }
+	}
       else
 	{
-	  bool is_ptr = s_field_ty->get_kind () == TyTy::TypeKind::POINTER;
-	  bool is_ref = s_field_ty->get_kind () == TyTy::TypeKind::REF;
+	  tree meta_field_decl
+	    = DECL_CHAIN (TYPE_FIELDS (TREE_TYPE (inner_fat_ptr)));
+	  meta = fold_build3_loc (locus, COMPONENT_REF,
+				  TREE_TYPE (meta_field_decl), inner_fat_ptr,
+				  meta_field_decl, NULL_TREE);
+	}
 
-	  if (is_ptr || is_ref)
+      std::vector<tree> constructor_elements = {data_ptr, meta};
+      tree result
+	= Backend::constructor_expression (fat_pointer, false,
+					   constructor_elements, -1, locus);
+      rust_assert (result != error_mark_node);
+      RS_DST_FLAG (TREE_TYPE (result)) = 1;
+      return result;
+    }
+  else
+    {
+      tree target = TyTyResolveCompile::compile (ctx, target_adt);
+      size_t coerce_idx = -1;
+      auto s_variant = source_adt->get_variants ().front ();
+      auto t_variant = target_adt->get_variants ().front ();
+
+      for (size_t idx = 0; idx < s_variant->num_fields (); idx++)
+	{
+	  auto s_field_ty
+	    = s_variant->get_field_at_index (idx)->get_field_type ();
+	  auto t_field_ty
+	    = t_variant->get_field_at_index (idx)->get_field_type ();
+	  if (!s_field_ty->is_equal (*t_field_ty))
 	    {
-	      TyTy::BaseType *s_base = nullptr;
-	      TyTy::BaseType *t_base = nullptr;
-	      Resolver::Adjustment::AdjustmentType ref_adj_type
-		= Resolver::Adjustment::AdjustmentType::IMM_REF;
+	      bool is_phantom = false;
+	      if (s_field_ty->is<TyTy::ADTType> ())
+		if (auto phantom_data
+		    = Analysis::Mappings::get ().lookup_lang_item (
+		      LangItem::Kind::PHANTOM_DATA))
+		  if (s_field_ty->as<TyTy::ADTType> ()->get_id ()
+		      == phantom_data)
+		    is_phantom = true;
 
-	      if (is_ptr)
+	      if (!is_phantom)
 		{
-		  auto s_ptr
-		    = static_cast<const TyTy::PointerType *> (s_field_ty);
-		  auto t_ptr
-		    = static_cast<const TyTy::PointerType *> (t_field_ty);
-		  s_base = s_ptr->get_base ();
-		  t_base = t_ptr->get_base ();
-		  if (t_ptr->mutability () == Mutability::Mut)
-		    ref_adj_type
-		      = Resolver::Adjustment::AdjustmentType::MUT_REF;
+		  coerce_idx = idx;
+		  break;
 		}
-	      else
-		{
-		  auto s_ref
-		    = static_cast<const TyTy::ReferenceType *> (s_field_ty);
-		  auto t_ref
-		    = static_cast<const TyTy::ReferenceType *> (t_field_ty);
-		  s_base = s_ref->get_base ();
-		  t_base = t_ref->get_base ();
-		  if (t_ref->mutability () == Mutability::Mut)
-		    ref_adj_type
-		      = Resolver::Adjustment::AdjustmentType::MUT_REF;
-		}
-	      std::vector<Resolver::Adjustment> inner_adjs;
-	      inner_adjs.push_back (Resolver::Adjustment (
-		Resolver::Adjustment::AdjustmentType::INDIRECTION, s_field_ty,
-		s_base));
-	      inner_adjs.push_back (Resolver::Adjustment (
-		Resolver::Adjustment::AdjustmentType::UNSIZE, s_base, t_base));
-	      inner_adjs.push_back (
-		Resolver::Adjustment (ref_adj_type, t_base, t_field_ty));
+	    }
+	}
+      rust_assert (coerce_idx != (size_t) -1);
+      std::vector<tree> constructor_elements;
+      for (size_t i = 0; i < s_variant->num_fields (); i++)
+	{
+	  tree field_expr
+	    = Backend::struct_field_expression (expression, i, locus);
 
-	      tree coerced_ptr
-		= resolve_adjustments (inner_adjs, field_expr, locus);
-	      constructor_elements.push_back (coerced_ptr);
+	  if (i != coerce_idx)
+	    {
+	      constructor_elements.push_back (field_expr);
 	    }
 	  else
 	    {
-	      Resolver::Adjustment inner_adj (adjustment.get_type (),
-					      s_field_ty, t_field_ty);
-	      tree unsized_inner_expr
-		= resolve_unsized_adjustment (inner_adj, field_expr, locus);
-	      constructor_elements.push_back (unsized_inner_expr);
+	      auto s_coerce_ty
+		= s_variant->get_field_at_index (i)->get_field_type ();
+	      auto t_coerce_ty
+		= t_variant->get_field_at_index (i)->get_field_type ();
+
+	      Resolver::Adjustment adj (adjustment.get_type (), s_coerce_ty,
+					t_coerce_ty);
+	      tree coerced_inner_expr = error_mark_node;
+
+	      if (t_coerce_ty->get_kind () == TyTy::TypeKind::SLICE
+		  || t_coerce_ty->get_kind () == TyTy::TypeKind::STR)
+		coerced_inner_expr
+		  = resolve_unsized_slice_adjustment (adj, field_expr, locus);
+	      else if (t_coerce_ty->get_kind () == TyTy::TypeKind::DYNAMIC)
+		coerced_inner_expr
+		  = resolve_unsized_dyn_adjustment (adj, field_expr, locus);
+	      else if (t_coerce_ty->get_kind () == TyTy::TypeKind::ADT)
+		coerced_inner_expr
+		  = resolve_unsized_adt_adjustment (adj, field_expr, locus);
+	      else if (t_coerce_ty->get_kind () == TyTy::TypeKind::POINTER
+		       || t_coerce_ty->get_kind () == TyTy::TypeKind::REF)
+		{
+		  bool is_ptr
+		    = t_coerce_ty->get_kind () == TyTy::TypeKind::POINTER;
+
+		  TyTy::BaseType *s_base
+		    = is_ptr ? s_coerce_ty->as<TyTy::PointerType> ()
+				 ->get_base ()
+				 ->monomorphized_clone ()
+			     : s_coerce_ty->as<TyTy::ReferenceType> ()
+				 ->get_base ()
+				 ->monomorphized_clone ();
+		  TyTy::BaseType *t_base
+		    = is_ptr ? t_coerce_ty->as<TyTy::PointerType> ()
+				 ->get_base ()
+				 ->monomorphized_clone ()
+			     : t_coerce_ty->as<TyTy::ReferenceType> ()
+				 ->get_base ()
+				 ->monomorphized_clone ();
+
+		  Resolver::Adjustment::AdjustmentType ref_adj_type
+		    = Resolver::Adjustment::AdjustmentType::IMM_REF;
+
+		  std::vector<Resolver::Adjustment> inner_adjs;
+		  inner_adjs.push_back (Resolver::Adjustment (
+		    Resolver::Adjustment::AdjustmentType::INDIRECTION,
+		    s_coerce_ty, s_base));
+		  inner_adjs.push_back (Resolver::Adjustment (
+		    Resolver::Adjustment::AdjustmentType::UNSIZE, s_base,
+		    t_base));
+		  inner_adjs.push_back (
+		    Resolver::Adjustment (ref_adj_type, t_base, t_coerce_ty));
+
+		  coerced_inner_expr
+		    = resolve_adjustments (inner_adjs, field_expr, locus);
+		}
+	      else
+		rust_unreachable ();
+
+	      constructor_elements.push_back (coerced_inner_expr);
 	    }
 	}
+
+      return Backend::constructor_expression (target, false,
+					      constructor_elements, -1, locus);
     }
-  tree target_type_tree = TyTyResolveCompile::compile (ctx, target_adt);
-  return Backend::constructor_expression (target_type_tree, false,
-					  constructor_elements, -1, locus);
+
+  return error_mark_node;
 }
 
 tree

@@ -2169,6 +2169,23 @@ ADTType::contains_unsafe_cell () const
   return false;
 }
 
+bool
+ADTType::is_unsized () const
+{
+  if (is_enum () || is_union () || number_of_variants () == 0)
+    return false;
+
+  auto &variant = get_variants ().front ();
+  if (variant->num_fields () == 0)
+    return false;
+
+  const TyTy::BaseType *last_field_type
+    = variant->get_field_at_index (variant->num_fields () - 1)
+	->get_field_type ();
+
+  return last_field_type->is_unsized ();
+}
+
 // TupleType
 
 TupleType::TupleType (HirId ref, location_t locus, std::vector<TyVar> fields,
@@ -3317,7 +3334,7 @@ bool
 ReferenceType::is_dyn_object () const
 {
   return is_dyn_slice_type () || is_dyn_str_type () || is_dyn_obj_type ()
-	 || is_dyn_cstr_type ();
+	 || is_dyn_adt_type () || is_dyn_cstr_type ();
 }
 
 static const TyTy::BaseType *
@@ -3376,6 +3393,24 @@ ReferenceType::is_dyn_obj_type (const TyTy::DynamicObjectType **dyn) const
     return true;
 
   *dyn = static_cast<const TyTy::DynamicObjectType *> (element);
+  return true;
+}
+
+bool
+ReferenceType::is_dyn_adt_type (const TyTy::ADTType **adt) const
+{
+  const TyTy::BaseType *element = destructure_through_projections (get_base ());
+
+  if (element->get_kind () != TyTy::TypeKind::ADT)
+    return false;
+
+  const TyTy::ADTType *adt_ty = static_cast<const TyTy::ADTType *> (element);
+
+  if (!adt_ty->is_unsized ())
+    return false;
+  if (adt != nullptr)
+    *adt = adt_ty;
+
   return true;
 }
 
@@ -3513,7 +3548,8 @@ PointerType::is_const () const
 bool
 PointerType::is_dyn_object () const
 {
-  return is_dyn_slice_type () || is_dyn_str_type () || is_dyn_obj_type ();
+  return is_dyn_slice_type () || is_dyn_str_type () || is_dyn_obj_type ()
+	 || is_dyn_adt_type ();
 }
 
 bool
@@ -3552,6 +3588,23 @@ PointerType::is_dyn_obj_type (const TyTy::DynamicObjectType **dyn) const
     return true;
 
   *dyn = static_cast<const TyTy::DynamicObjectType *> (element);
+  return true;
+}
+
+bool
+PointerType::is_dyn_adt_type (const TyTy::ADTType **adt) const
+{
+  const TyTy::BaseType *element = destructure_through_projections (get_base ());
+  if (element->get_kind () != TyTy::TypeKind::ADT)
+    return false;
+
+  const TyTy::ADTType *adt_ty = static_cast<const TyTy::ADTType *> (element);
+
+  if (!adt_ty->is_unsized ())
+    return false;
+  if (adt != nullptr)
+    *adt = adt_ty;
+
   return true;
 }
 

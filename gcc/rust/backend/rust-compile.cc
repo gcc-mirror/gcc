@@ -64,7 +64,7 @@ HIRCompileBase::coercion_site (HirId id, tree rvalue, TyTy::BaseType *rval,
   bool ok = ctx->get_tyctx ()->lookup_autoderef_mappings (id, &adjustments);
   if (ok)
     {
-      rvalue = resolve_adjustements (*adjustments, rvalue, rvalue_locus);
+      rvalue = resolve_adjustments (*adjustments, rvalue, rvalue_locus);
     }
 
   return coercion_site1 (rvalue, rval, lval, lvalue_locus, rvalue_locus);
@@ -188,11 +188,7 @@ HIRCompileBase::coerce_to_dyn_object (tree compiled_ref, TyTy::BaseType *actual,
 				      const TyTy::DynamicObjectType *ty,
 				      location_t locus)
 {
-  // DST's get wrapped in a pseudo reference that doesnt exist...
-  const TyTy::ReferenceType r (ctx->get_mappings ().get_next_hir_id (),
-			       TyTy::TyVar (ty->get_ref ()), Mutability::Imm);
-
-  tree dynamic_object = TyTyResolveCompile::compile (ctx, &r);
+  tree dynamic_object = TyTyResolveCompile::compile (ctx, ty);
   tree dynamic_object_fields = TYPE_FIELDS (dynamic_object);
   tree vtableptr_field = DECL_CHAIN (dynamic_object_fields);
   rust_assert (TREE_CODE (TREE_TYPE (vtableptr_field)) == POINTER_TYPE);

@@ -184,6 +184,19 @@ finalize_intrinsic_block (Context *ctx, tree fndecl)
   maybe_save_constexpr_fundef (fndecl);
 }
 
+static TyTy::BaseType *
+get_inner_dst (TyTy::BaseType *type)
+{
+  TyTy::BaseType *curr = type;
+  while (curr->get_kind () == TyTy::TypeKind::ADT)
+    {
+      auto variant = curr->as<TyTy::ADTType> ()->get_variants ().front ();
+      curr = variant->get_field_at_index (variant->num_fields () - 1)
+	       ->get_field_type ();
+    }
+  return curr;
+}
+
 namespace inner {
 
 static std::string
@@ -1645,23 +1658,26 @@ size_of_val_handler (Context *ctx, TyTy::FnType *fntype, location_t)
   // BUILTIN size_of FN BODY BEGIN
 
   tree size_expr = NULL_TREE;
-  if (RS_DST_FLAG_P (template_parameter_type))
+
+  tree param = Backend::var_expression (__param, UNDEF_LOCATION);
+  tree param_ty = TREE_TYPE (param);
+  if (RS_DST_FLAG_P (param_ty))
     {
-      tree param = Backend::var_expression (__param, UNDEF_LOCATION);
-      tree param_ty = TREE_TYPE (param);
       tree data_field = TYPE_FIELDS (param_ty);
       tree meta_field = DECL_CHAIN (data_field);
       tree meta_field_expr
 	= build3_loc (locus, COMPONENT_REF, TREE_TYPE (meta_field), param,
 		      meta_field, NULL_TREE);
 
-      if (resolved_tyty->get_kind () == TyTy::TypeKind::SLICE
-	  || resolved_tyty->get_kind () == TyTy::TypeKind::STR)
+      TyTy::BaseType *inner_dst = get_inner_dst (resolved_tyty);
+      tree tail_size_expr = NULL_TREE;
+      if (inner_dst->get_kind () == TyTy::TypeKind::SLICE
+	  || inner_dst->get_kind () == TyTy::TypeKind::STR)
 	{
 	  tree elem_type = NULL_TREE;
-	  if (resolved_tyty->get_kind () == TyTy::TypeKind::SLICE)
+	  if (inner_dst->get_kind () == TyTy::TypeKind::SLICE)
 	    {
-	      auto slice_tyty = static_cast<TyTy::SliceType *> (resolved_tyty);
+	      auto slice_tyty = static_cast<TyTy::SliceType *> (inner_dst);
 	      elem_type
 		= TyTyResolveCompile::compile (ctx,
 					       slice_tyty->get_element_type ());
@@ -1670,13 +1686,13 @@ size_of_val_handler (Context *ctx, TyTy::FnType *fntype, location_t)
 	    elem_type = char_type_node;
 
 	  tree elem_size = TYPE_SIZE_UNIT (elem_type);
-	  size_expr
+	  tail_size_expr
 	    = build2_loc (locus, MULT_EXPR, size_type_node,
 			  fold_convert_loc (locus, size_type_node,
 					    meta_field_expr),
 			  fold_convert_loc (locus, size_type_node, elem_size));
 	}
-      else if (resolved_tyty->get_kind () == TyTy::TypeKind::DYNAMIC)
+      else if (inner_dst->get_kind () == TyTy::TypeKind::DYNAMIC)
 	{
 	  tree vtable_ptr_ty = TREE_TYPE (meta_field_expr);
 	  tree vtable_ty = TREE_TYPE (vtable_ptr_ty);
@@ -1688,7 +1704,7 @@ size_of_val_handler (Context *ctx, TyTy::FnType *fntype, location_t)
 	  tree vtable_field_size = DECL_CHAIN (vtable_field_0);
 	  rust_assert (vtable_field_size != NULL_TREE);
 
-	  size_expr
+	  tail_size_expr
 	    = build3_loc (locus, COMPONENT_REF, TREE_TYPE (vtable_field_size),
 			  vtable_ref, vtable_field_size, NULL_TREE);
 	}
@@ -1696,6 +1712,14 @@ size_of_val_handler (Context *ctx, TyTy::FnType *fntype, location_t)
 	{
 	  rust_unreachable ();
 	}
+      if (resolved_tyty->get_kind () == TyTy::TypeKind::ADT)
+	size_expr = build2_loc (locus, PLUS_EXPR, size_type_node,
+				fold_convert_loc (locus, size_type_node,
+						  TYPE_SIZE_UNIT (
+						    template_parameter_type)),
+				tail_size_expr);
+      else
+	size_expr = tail_size_expr;
     }
   else
     size_expr = TYPE_SIZE_UNIT (template_parameter_type);
@@ -1786,23 +1810,26 @@ min_align_of_val_handler (Context *ctx, TyTy::FnType *fntype, location_t)
   // BUILTIN size_of FN BODY BEGIN
 
   tree align_expr = NULL_TREE;
-  if (RS_DST_FLAG_P (template_parameter_type))
+  tree param = Backend::var_expression (__param, UNDEF_LOCATION);
+  tree param_ty = TREE_TYPE (param);
+  if (RS_DST_FLAG_P (param_ty))
     {
-      tree param = Backend::var_expression (__param, UNDEF_LOCATION);
-      tree param_ty = TREE_TYPE (param);
       tree data_field = TYPE_FIELDS (param_ty);
       tree meta_field = DECL_CHAIN (data_field);
       tree meta_field_expr
 	= build3_loc (locus, COMPONENT_REF, TREE_TYPE (meta_field), param,
 		      meta_field, NULL_TREE);
 
-      if (resolved_tyty->get_kind () == TyTy::TypeKind::SLICE
-	  || resolved_tyty->get_kind () == TyTy::TypeKind::STR)
+      TyTy::BaseType *inner_dst = get_inner_dst (resolved_tyty);
+      tree tail_align_expr = NULL_TREE;
+
+      if (inner_dst->get_kind () == TyTy::TypeKind::SLICE
+	  || inner_dst->get_kind () == TyTy::TypeKind::STR)
 	{
 	  tree elem_type = NULL_TREE;
-	  if (resolved_tyty->get_kind () == TyTy::TypeKind::SLICE)
+	  if (inner_dst->get_kind () == TyTy::TypeKind::SLICE)
 	    {
-	      auto slice_tyty = static_cast<TyTy::SliceType *> (resolved_tyty);
+	      auto slice_tyty = static_cast<TyTy::SliceType *> (inner_dst);
 	      elem_type
 		= TyTyResolveCompile::compile (ctx,
 					       slice_tyty->get_element_type ());
@@ -1810,10 +1837,10 @@ min_align_of_val_handler (Context *ctx, TyTy::FnType *fntype, location_t)
 	  else
 	    elem_type = char_type_node;
 
-	  align_expr
+	  tail_align_expr
 	    = build_int_cst (size_type_node, TYPE_ALIGN_UNIT (elem_type));
 	}
-      else if (resolved_tyty->get_kind () == TyTy::TypeKind::DYNAMIC)
+      else if (inner_dst->get_kind () == TyTy::TypeKind::DYNAMIC)
 	{
 	  tree vtable_ptr_ty = TREE_TYPE (meta_field_expr);
 	  tree vtable_ty = TREE_TYPE (vtable_ptr_ty);
@@ -1826,7 +1853,7 @@ min_align_of_val_handler (Context *ctx, TyTy::FnType *fntype, location_t)
 	  tree vtable_field_align = DECL_CHAIN (vtable_field_1);
 	  rust_assert (vtable_field_align != NULL_TREE);
 
-	  align_expr
+	  tail_align_expr
 	    = build3_loc (locus, COMPONENT_REF, TREE_TYPE (vtable_field_align),
 			  vtable_ref, vtable_field_align, NULL_TREE);
 	}
@@ -1834,6 +1861,17 @@ min_align_of_val_handler (Context *ctx, TyTy::FnType *fntype, location_t)
 	{
 	  rust_unreachable ();
 	}
+
+      if (resolved_tyty->get_kind () == TyTy::TypeKind::ADT)
+	{
+	  tree base_align_expr
+	    = build_int_cst (size_type_node,
+			     TYPE_ALIGN_UNIT (template_parameter_type));
+	  align_expr = build2_loc (locus, MAX_EXPR, size_type_node,
+				   base_align_expr, tail_align_expr);
+	}
+      else
+	align_expr = tail_align_expr;
     }
   else
     align_expr = build_int_cst (size_type_node,
