@@ -1309,6 +1309,27 @@ noce_simple_bbs (struct noce_if_info *if_info)
   return true;
 }
 
+/* Commit the wound-up candidate SEQ produced by a noce transform for IF_INFO.
+   Reject it (returning false, emitting nothing) if it failed to build, or if
+   CHECK_PROFITABLE and the target deems it not worthwhile.  Otherwise emit it
+   before the branch, record NAME as the winning transform and return true.
+   This is the shared tail of the noce_try_* matchers.  */
+
+static bool
+noce_commit_sequence (noce_if_info *if_info, rtx_insn *seq,
+		      bool check_profitable, const char *name)
+{
+  if (!seq
+      || (check_profitable
+	  && !targetm.noce_conversion_profitable_p (seq, if_info)))
+    return false;
+
+  emit_insn_before_setloc (seq, if_info->jump,
+			   INSN_LOCATION (if_info->insn_a));
+  if_info->transform_name = name;
+  return true;
+}
+
 /* Convert "if (a != b) x = a; else x = b" into "x = a" and
    "if (a == b) x = a; else x = b" into "x = b".  */
 
@@ -1552,14 +1573,7 @@ noce_try_sign_bit_splat (struct noce_if_info *if_info)
 
   /* This ends the sequence and tests the cost model.  */
   seq = end_ifcvt_sequence (if_info);
-  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-    return false;
-
-  /* Everything looks good.  Install the if-converted sequence.  */
-  emit_insn_before_setloc (seq, if_info->jump,
-			   INSN_LOCATION (if_info->insn_a));
-  if_info->transform_name = "splat_sign_bit_trivial";
-  return true;
+  return noce_commit_sequence (if_info, seq, true, "splat_sign_bit_trivial");
 
  fail:
   end_ifcvt_sequence (if_info);
@@ -1589,14 +1603,7 @@ noce_try_ifelse_collapse (struct noce_if_info * if_info)
   start_sequence ();
   noce_emit_move_insn (if_info->x, if_then_else);
   seq = end_ifcvt_sequence (if_info);
-  if (!seq)
-    return false;
-
-  emit_insn_before_setloc (seq, if_info->jump,
-			  INSN_LOCATION (if_info->insn_a));
-
-  if_info->transform_name = "noce_try_ifelse_collapse";
-  return true;
+  return noce_commit_sequence (if_info, seq, false, "noce_try_ifelse_collapse");
 }
 
 
@@ -1636,13 +1643,7 @@ noce_try_store_flag (struct noce_if_info *if_info)
 	noce_emit_move_insn (if_info->x, target);
 
       seq = end_ifcvt_sequence (if_info);
-      if (! seq)
-	return false;
-
-      emit_insn_before_setloc (seq, if_info->jump,
-			       INSN_LOCATION (if_info->insn_a));
-      if_info->transform_name = "noce_try_store_flag";
-      return true;
+      return noce_commit_sequence (if_info, seq, false, "noce_try_store_flag");
     }
   else
     {
@@ -1714,14 +1715,8 @@ noce_try_inverse_constants (struct noce_if_info *if_info)
 	noce_emit_move_insn (if_info->x, target);
 
       seq = end_ifcvt_sequence (if_info);
-
-      if (!seq)
-	return false;
-
-      emit_insn_before_setloc (seq, if_info->jump,
-			       INSN_LOCATION (if_info->insn_a));
-      if_info->transform_name = "noce_try_inverse_constants";
-      return true;
+      return noce_commit_sequence (if_info, seq, false,
+				   "noce_try_inverse_constants");
     }
 
   end_sequence ();
@@ -1856,14 +1851,8 @@ noce_try_shifted_store_flag (struct noce_if_info *if_info)
     noce_emit_move_insn (if_info->x, target);
 
   seq = end_ifcvt_sequence (if_info);
-  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-    return false;
-
-  emit_insn_before_setloc (seq, if_info->jump,
-			   INSN_LOCATION (if_info->insn_a));
-  if_info->transform_name = "noce_try_shifted_store_flag";
-
-  return true;
+  return noce_commit_sequence (if_info, seq, true,
+			       "noce_try_shifted_store_flag");
 }
 
 
@@ -2073,14 +2062,8 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	noce_emit_move_insn (if_info->x, target);
 
       seq = end_ifcvt_sequence (if_info);
-      if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-	return false;
-
-      emit_insn_before_setloc (seq, if_info->jump,
-			       INSN_LOCATION (if_info->insn_a));
-      if_info->transform_name = "noce_try_store_flag_constants";
-
-      return true;
+      return noce_commit_sequence (if_info, seq, true,
+				   "noce_try_store_flag_constants");
     }
 
   return false;
@@ -2146,13 +2129,8 @@ noce_try_store_flag_logical (struct noce_if_info *if_info)
   /* We've generated all the RTL, make sure it recognizes and is
      profitable.  */
   rtx_insn *seq = end_ifcvt_sequence (if_info);
-  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-    return false;
-
-  emit_insn_before_setloc (seq, if_info->jump,
-			   INSN_LOCATION (if_info->insn_a));
-  if_info->transform_name = "noce_try_store_flag_logical";
-  return true;
+  return noce_commit_sequence (if_info, seq, true,
+			       "noce_try_store_flag_logical");
 }
 
 /* Convert "if (test) foo++" into "foo += (test != 0)", and
@@ -2204,14 +2182,8 @@ noce_try_addcc (struct noce_if_info *if_info)
 		noce_emit_move_insn (if_info->x, target);
 
 	      seq = end_ifcvt_sequence (if_info);
-	      if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-		return false;
-
-	      emit_insn_before_setloc (seq, if_info->jump,
-				       INSN_LOCATION (if_info->insn_a));
-	      if_info->transform_name = "noce_try_addcc";
-
-	      return true;
+	      return noce_commit_sequence (if_info, seq, true,
+					   "noce_try_addcc");
 	    }
 	  end_sequence ();
 	}
@@ -2246,13 +2218,8 @@ noce_try_addcc (struct noce_if_info *if_info)
 		noce_emit_move_insn (if_info->x, target);
 
 	      seq = end_ifcvt_sequence (if_info);
-	      if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-		return false;
-
-	      emit_insn_before_setloc (seq, if_info->jump,
-				       INSN_LOCATION (if_info->insn_a));
-	      if_info->transform_name = "noce_try_addcc";
-	      return true;
+	      return noce_commit_sequence (if_info, seq, true,
+					   "noce_try_addcc");
 	    }
 	  end_sequence ();
 	}
@@ -2300,14 +2267,8 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = end_ifcvt_sequence (if_info);
-	  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-	    return false;
-
-	  emit_insn_before_setloc (seq, if_info->jump,
-				   INSN_LOCATION (if_info->insn_a));
-	  if_info->transform_name = "noce_try_store_flag_mask";
-
-	  return true;
+	  return noce_commit_sequence (if_info, seq, true,
+				       "noce_try_store_flag_mask");
 	}
 
       end_sequence ();
@@ -2469,14 +2430,7 @@ noce_try_cmove (struct noce_if_info *if_info)
 	    noce_emit_move_insn (if_info->x, target);
 
 	  seq = end_ifcvt_sequence (if_info);
-	  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-	    return false;
-
-	  emit_insn_before_setloc (seq, if_info->jump,
-				   INSN_LOCATION (if_info->insn_a));
-	  if_info->transform_name = "noce_try_cmove";
-
-	  return true;
+	  return noce_commit_sequence (if_info, seq, true, "noce_try_cmove");
 	}
       /* If both a and b are constants try a last-ditch transformation:
 	 if (test) x = a; else x = b;
@@ -2522,13 +2476,8 @@ noce_try_cmove (struct noce_if_info *if_info)
 		noce_emit_move_insn (if_info->x, target);
 
 	      seq = end_ifcvt_sequence (if_info);
-	      if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-		return false;
-
-	      emit_insn_before_setloc (seq, if_info->jump,
-				   INSN_LOCATION (if_info->insn_a));
-	      if_info->transform_name = "noce_try_cmove";
-	      return true;
+	      return noce_commit_sequence (if_info, seq, true,
+					   "noce_try_cmove");
 	    }
 	  else
 	    {
@@ -2965,13 +2914,8 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
     noce_emit_move_insn (x, target);
 
   ifcvt_seq = end_ifcvt_sequence (if_info);
-  if (!ifcvt_seq || !targetm.noce_conversion_profitable_p (ifcvt_seq, if_info))
-    return false;
-
-  emit_insn_before_setloc (ifcvt_seq, if_info->jump,
-			   INSN_LOCATION (if_info->insn_a));
-  if_info->transform_name = "noce_try_cmove_arith";
-  return true;
+  return noce_commit_sequence (if_info, ifcvt_seq, true,
+			       "noce_try_cmove_arith");
 
  end_seq_and_fail:
   end_sequence ();
@@ -3478,13 +3422,7 @@ noce_try_sign_mask (struct noce_if_info *if_info)
   noce_emit_move_insn (if_info->x, t);
 
   seq = end_ifcvt_sequence (if_info);
-  if (!seq)
-    return false;
-
-  emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
-  if_info->transform_name = "noce_try_sign_mask";
-
-  return true;
+  return noce_commit_sequence (if_info, seq, false, "noce_try_sign_mask");
 }
 
 /* Return the arithmetic operation in X, looking through an extension.  */
@@ -3752,12 +3690,7 @@ success:
     noce_emit_move_insn (if_info->x, target);
 
   seq = end_ifcvt_sequence (if_info);
-  if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-    goto fail;
-
-  emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
-  if_info->transform_name = "noce_try_cond_arith";
-  return true;
+  return noce_commit_sequence (if_info, seq, true, "noce_try_cond_arith");
 
 end_seq_n_fail:
   end_sequence ();
