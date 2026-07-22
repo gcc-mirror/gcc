@@ -3563,9 +3563,10 @@ execute (void)
 		 thinking there's a compiler bug.  Much more likely is
 		 the user or OOM killer nuked it.  */
 	      fatal_error (input_location,
-			   "%s signal terminated program %s",
-			   strsignal (WTERMSIG (status)),
-			   commands[i].prog);
+			   "%s terminated by signal %d (%s)",
+			   commands[i].prog,
+			   WTERMSIG (status),
+			   strsignal (WTERMSIG (status)));
 	      break;
 
 #ifdef SIGPIPE
