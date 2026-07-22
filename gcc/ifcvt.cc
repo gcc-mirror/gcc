@@ -4819,6 +4819,25 @@ average_cost (unsigned then_cost, unsigned else_cost, edge e)
     + e->probability.apply ((gcov_type) then_cost - else_cost);
 }
 
+/* Return the estimated cost of the original, un-converted if-region described
+   by IF_INFO whose THEN and ELSE arms cost THEN_COST and ELSE_COST.  BASE_COST
+   already accounts for the branch, and any compare, that the conversion
+   removes.  When optimizing for speed (SPEED_P) only one arm runs, so charge
+   the branch-probability-weighted average of the two.  When optimizing for
+   size both arms are emitted, so sum them.  */
+
+static unsigned
+noce_original_region_cost (const noce_if_info *if_info, bool speed_p,
+			   unsigned base_cost, unsigned then_cost,
+			   unsigned else_cost)
+{
+  if (speed_p)
+    return base_cost + average_cost (then_cost, else_cost,
+				     find_edge (if_info->test_bb,
+						if_info->then_bb));
+  return base_cost + then_cost + else_cost;
+}
+
 /* Given a simple IF-THEN-JOIN or IF-THEN-ELSE-JOIN block, attempt to convert
    it without using conditional execution.  Return TRUE if we were successful
    at converting the block.  */
@@ -4849,13 +4868,15 @@ noce_process_if_block (struct noce_if_info *if_info)
      arms.
      ??? For future expansion, further expand the "multiple X" rules.  */
 
-  /* First look for multiple SETS.
-     The original costs already include costs for the jump insn as well
-     as for a CC comparison if there is any.
-     If a target re-uses the existing CC comparison we keep track of that
-     and add the costs before default noce_conversion_profitable_p.  */
+  /* The base cost recorded so far covers the branch, and any compare, that
+     if-conversion removes.  Each candidate path below derives its estimate
+     from this base plus the cost of the arms it folds in.  If a target
+     re-uses the existing CC comparison, noce_convert_multiple_sets accounts
+     for that against the base before it calls
+     noce_conversion_profitable_p.  */
+  unsigned base_cost = if_info->original_cost;
+  bool speed_p = optimize_bb_for_speed_p (test_bb);
 
-  unsigned old_cost = if_info->original_cost;
   unsigned ms_then_cost = 0, ms_else_cost = 0;
   unsigned ms_then_insn_count = 0, ms_else_insn_count = 0;
   bool ms_then_has_non_simple_src, ms_else_has_non_simple_src;
@@ -4901,21 +4922,13 @@ noce_process_if_block (struct noce_if_info *if_info)
   if (multiple_sets_p)
     {
       /* The original code runs the comparison and one arm.  Estimate that cost
-	 (for a diamond weight the two arms by their probabilities) and let
-	 noce_convert_multiple_sets convert only if the conditional moves come
-	 out cheaper.  */
-      unsigned potential_cost = old_cost + ms_then_cost;
-      if (ms_if_info.else_bb)
-	{
-	  if (optimize_bb_for_speed_p (test_bb))
-	    potential_cost
-	      = old_cost + average_cost (ms_then_cost, ms_else_cost,
-					 find_edge (test_bb,
-						    ms_if_info.then_bb));
-	  else
-	    potential_cost = old_cost + ms_then_cost + ms_else_cost;
-	}
-      ms_if_info.original_cost = potential_cost;
+	 and let noce_convert_multiple_sets convert only if the conditional
+	 moves come out cheaper.  */
+      ms_if_info.original_cost
+	= ms_if_info.else_bb
+	  ? noce_original_region_cost (&ms_if_info, speed_p, base_cost,
+				       ms_then_cost, ms_else_cost)
+	  : base_cost + ms_then_cost;
       if (noce_convert_multiple_sets (&ms_if_info))
 	{
 	  if (dump_file && ms_if_info.transform_name)
@@ -4925,7 +4938,6 @@ noce_process_if_block (struct noce_if_info *if_info)
 	}
     }
 
-  bool speed_p = optimize_bb_for_speed_p (test_bb);
   unsigned int then_cost = 0, else_cost = 0;
   if (!bb_valid_for_noce_process_p (then_bb, cond, &then_cost,
 				    &if_info->then_simple))
@@ -4936,11 +4948,9 @@ noce_process_if_block (struct noce_if_info *if_info)
 				       &if_info->else_simple))
     return false;
 
-  if (speed_p)
-    if_info->original_cost += average_cost (then_cost, else_cost,
-					    find_edge (test_bb, then_bb));
-  else
-    if_info->original_cost += then_cost + else_cost;
+  if_info->original_cost
+    = noce_original_region_cost (if_info, speed_p, base_cost, then_cost,
+				 else_cost);
 
   insn_a = last_active_insn (then_bb, false);
   set_a = single_set (insn_a);
