@@ -163,6 +163,22 @@
   return VINT_REGNO_P (REGNO (op));
 })
 
+;; Return 1 if op is a dense math register
+(define_predicate "dmr_register_operand"
+  (match_operand 0 "register_operand")
+{
+  if (!TARGET_DMF)
+    return 0;
+
+  if (!REG_P (op))
+    return 0;
+
+  if (!HARD_REGISTER_P (op))
+    return 1;
+
+  return DMR_REGNO_P (REGNO (op));
+})
+
 ;; Return 1 if op is an accumulator.  On power10/11 systems, the accumulators
 ;; overlap with the FPRs. If TARGET_DMF is true, it will be Dense math register.
 (define_predicate "accumulator_operand"
@@ -385,6 +401,9 @@
     return 1;
 
   if (TARGET_VSX && VSX_REGNO_P (REGNO (op)))
+    return 1;
+
+  if (TARGET_DMF && DMR_REGNO_P (REGNO (op)))
     return 1;
 
   return INT_REGNO_P (REGNO (op)) || FP_REGNO_P (REGNO (op));

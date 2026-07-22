@@ -91,6 +91,8 @@
    UNSPEC_MMA_XVI8GER4SPP
    UNSPEC_MMA_XXMFACC
    UNSPEC_MMA_XXMTACC
+   UNSPEC_DMF_INSERT512
+   UNSPEC_DMF_INSERT1024
   ])
 
 (define_c_enum "unspecv"
@@ -270,7 +272,7 @@
 	(match_operand:OO 1 "input_operand"))]
   ""
 {
-  if (TARGET_MMA)
+  if (TARGET_MMA || TARGET_DMF)
     {
       rs6000_emit_move (operands[0], operands[1], OOmode);
       DONE;
@@ -295,7 +297,7 @@
 (define_insn_and_split "*movoo"
   [(set (match_operand:OO 0 "nonimmediate_operand" "=wa,ZwO,wa")
 	(match_operand:OO 1 "input_operand" "ZwO,wa,wa"))]
-  "TARGET_MMA
+  "(TARGET_MMA || TARGET_DMF)
    && (gpc_reg_operand (operands[0], OOmode)
        || gpc_reg_operand (operands[1], OOmode))"
   "@
@@ -363,7 +365,7 @@
   [(match_operand:OO 0 "vsx_register_operand")
    (match_operand:V16QI 1 "mma_assemble_input_operand")
    (match_operand:V16QI 2 "mma_assemble_input_operand")]
-  "TARGET_MMA"
+  "TARGET_MMA || TARGET_DMF"
 {
   rtx src = gen_rtx_UNSPEC (OOmode,
 			    gen_rtvec (2, operands[1], operands[2]),
@@ -380,7 +382,7 @@
 	(unspec:OO [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
 		    (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")]
 		   UNSPEC_VSX_ASSEMBLE))]
-  "TARGET_MMA"
+  "TARGET_MMA || TARGET_DMF"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -396,7 +398,7 @@
   [(match_operand:V16QI 0 "mma_disassemble_output_operand")
    (match_operand:OO 1 "vsx_register_operand")
    (match_operand 2 "const_0_to_1_operand")]
-  "TARGET_MMA"
+  "TARGET_MMA || TARGET_DMF"
 {
   rtx src;
   int regoff = INTVAL (operands[2]);
@@ -412,7 +414,7 @@
        (unspec:V16QI [(match_operand:OO 1 "vsx_register_operand" "wa")
                       (match_operand 2 "const_0_to_1_operand")]
                       UNSPEC_MMA_EXTRACT))]
-  "TARGET_MMA
+  "(TARGET_MMA || TARGET_DMF)
    && vsx_register_operand (operands[1], OOmode)"
   "#"
   "&& reload_completed"
@@ -425,19 +427,53 @@
   DONE;
 })
 
+(define_insn "dm_insert512"
+  [(set (match_operand:XO 0 "dmr_register_operand" "=wD")
+	(unspec:XO [(match_operand:OO 1 "vsx_register_operand" "wa")
+		    (match_operand:OO 2 "vsx_register_operand" "wa")
+		    (match_operand 3 "const_0_to_1_operand")]
+		   UNSPEC_DMF_INSERT512))]
+  "TARGET_DMF"
+  "dmxxinstdmr512 %0,%x1,%x2,%3"
+  [(set_attr "type" "dmf")])
+
+;; Move from VSX registers to DMR registers via two insert 512 bit
+;; instructions.
+(define_insn "dm_insert1024"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+	(unspec:TDO [(match_operand:OO 1 "vsx_register_operand" "wa")
+		     (match_operand:OO 2 "vsx_register_operand" "wa")
+		     (match_operand:OO 3 "vsx_register_operand" "wa")
+		     (match_operand:OO 4 "vsx_register_operand" "wa")]
+		    UNSPEC_DMF_INSERT1024))]
+  "TARGET_DMF"
+  "dmxxinstdmr512 %0,%x1,%x2,0\n\tdmxxinstdmr512 %0,%x3,%x4,1"
+  [(set_attr "type" "dmf")])
+
 (define_expand "mma_assemble_acc"
-  [(match_operand:XO 0 "fpr_reg_operand")
+  [(match_operand:XO 0 "accumulator_operand")
    (match_operand:V16QI 1 "mma_assemble_input_operand")
    (match_operand:V16QI 2 "mma_assemble_input_operand")
    (match_operand:V16QI 3 "mma_assemble_input_operand")
    (match_operand:V16QI 4 "mma_assemble_input_operand")]
-  "TARGET_MMA"
+  "TARGET_MMA || TARGET_DMF"
 {
-  rtx src = gen_rtx_UNSPEC_VOLATILE (XOmode,
-			    	     gen_rtvec (4, operands[1], operands[2],
-				       		operands[3], operands[4]),
-			    	     UNSPECV_MMA_ASSEMBLE);
-  emit_move_insn (operands[0], src);
+  if (TARGET_DMF)
+    {
+      rtx vp0 = gen_reg_rtx (OOmode);
+      rtx vp1 = gen_reg_rtx (OOmode);
+      emit_insn (gen_vsx_assemble_pair (vp0, operands[1], operands[2]));
+      emit_insn (gen_vsx_assemble_pair (vp1, operands[3], operands[4]));
+      emit_insn (gen_dm_insert512 (operands[0], vp0, vp1, const0_rtx));
+    }
+  else
+    {
+      rtx src = gen_rtx_UNSPEC_VOLATILE (XOmode,
+					 gen_rtvec (4, operands[1], operands[2],
+						    operands[3], operands[4]),
+					 UNSPECV_MMA_ASSEMBLE);
+      emit_move_insn (operands[0], src);
+    }
   DONE;
 })
 
@@ -445,7 +481,7 @@
 ;; as an early clobber so we don't accidentally clobber the input operands.  */
 
 (define_insn_and_split "*mma_assemble_acc"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
+  [(set (match_operand:XO 0 "accumulator_operand" "=&wD")
 	(unspec_volatile:XO
 	  [(match_operand:V16QI 1 "mma_assemble_input_operand" "mwa")
 	   (match_operand:V16QI 2 "mma_assemble_input_operand" "mwa")
@@ -453,7 +489,7 @@
 	   (match_operand:V16QI 4 "mma_assemble_input_operand" "mwa")]
 	  UNSPECV_MMA_ASSEMBLE))]
   "TARGET_MMA
-   && fpr_reg_operand (operands[0], XOmode)"
+   && accumulator_operand (operands[0], XOmode)"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -468,7 +504,7 @@
 
 (define_expand "mma_disassemble_acc"
   [(match_operand:V16QI 0 "mma_disassemble_output_operand")
-   (match_operand:XO 1 "fpr_reg_operand")
+   (match_operand:XO 1 "accumulator_operand")
    (match_operand 2 "const_0_to_3_operand")]
   "TARGET_MMA"
 {
@@ -499,15 +535,36 @@
   DONE;
 })
 
+;; xxmtacc/xxmfacc prime/deprime an accumulator that lives in 4 adjacent
+;; FPRs -- they reformat that shared FPR/accumulator storage in place.  On
+;; TARGET_DMF, DMRs are a register file entirely separate from the FPRs,
+;; so there is no such format to convert and these are a nop.  This expand
+;; only exists so __builtin_mma_xxmfacc/xxmtacc (which always resolve to
+;; this pattern) correctly do nothing on TARGET_DMF instead of failing
+;; to match any insn.
+(define_expand "mma_<acc>"
+  [(set (match_operand:XO 0 "accumulator_operand")
+	(unspec:XO [(match_operand:XO 1 "accumulator_operand")]
+		   MMA_ACC))]
+  "TARGET_MMA || TARGET_DMF"
+{
+  if (TARGET_DMF)
+    {
+      emit_move_insn (operands[0], operands[1]);
+      DONE;
+    }
+})
+
+
 ;; MMA instructions that do not use their accumulators as an input, still
 ;; must not allow their vector operands to overlap the registers used by
 ;; the accumulator.  We enforce this by marking the output as early clobber.
 
-(define_insn "mma_<acc>"
-  [(set (match_operand:XO 0 "fpr_reg_operand" "=&d")
-	(unspec:XO [(match_operand:XO 1 "fpr_reg_operand" "0")]
+(define_insn "*mma_<acc>"
+  [(set (match_operand:XO 0 "accumulator_operand" "=&wD")
+	(unspec:XO [(match_operand:XO 1 "accumulator_operand" "0")]
 		    MMA_ACC))]
-  "TARGET_MMA"
+  "TARGET_MMA && !TARGET_DMF"
   "<acc> %A0"
   [(set_attr "type" "mma")])
 

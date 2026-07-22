@@ -1163,7 +1163,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 
       /* If we're disassembling an accumulator into a different type, we need
 	 to emit a xxmfacc instruction now, since we cannot do it later.  */
-      if (fncode == RS6000_BIF_DISASSEMBLE_ACC)
+      if (fncode == RS6000_BIF_DISASSEMBLE_ACC && !TARGET_DMF)
 	{
 	  new_decl = rs6000_builtin_decls[RS6000_BIF_XXMFACC_INTERNAL];
 	  new_call = gimple_build_call (new_decl, 1, src);

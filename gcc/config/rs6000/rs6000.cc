@@ -27667,8 +27667,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	  unsigned size = GET_MODE_SIZE (reg_mode);
 
 	  /* If we are reading an accumulator register, we have to
-	     deprime it before we can access it.  */
-	  if (TARGET_MMA
+	     deprime it before we can access it, unless we have dense math
+	     registers, which do not need priming/depriming.  */
+	  if (TARGET_MMA && !TARGET_DMF
 	      && GET_MODE (src) == XOmode && FP_REGNO_P (REGNO (src)))
 	    emit_insn (gen_mma_xxmfacc (src, src));
 
@@ -27701,8 +27702,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	    }
 
 	  /* If we are writing an accumulator register, we have to
-	     prime it after we've written it.  */
-	  if (TARGET_MMA
+	     prime it after we've written it, unless we have dense math
+	     registers, which do not need priming/depriming.  */
+	  if (TARGET_MMA && !TARGET_DMF
 	      && GET_MODE (dst) == XOmode && FP_REGNO_P (REGNO (dst)))
 	    emit_insn (gen_mma_xxmtacc (dst, dst));
 
@@ -27770,8 +27772,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	    }
 
 	  /* We are writing an accumulator register, so we have to
-	     prime it after we've written it.  */
-	  if (GET_MODE (src) == XOmode)
+	     prime it after we've written it, unless we have dense math
+	     registers, which do not need priming/depriming.  */
+	  if (GET_MODE (src) == XOmode && !TARGET_DMF)
 	    emit_insn (gen_mma_xxmtacc (dst, dst));
 
 	  return;
@@ -27783,8 +27786,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
   if (REG_P (src) && REG_P (dst) && (REGNO (src) < REGNO (dst)))
     {
       /* If we are reading an accumulator register, we have to
-	 deprime it before we can access it.  */
-      if (TARGET_MMA
+	 deprime it before we can access it, unless we have dense math
+	 registers, which do not need priming/depriming.  */
+      if (TARGET_MMA && !TARGET_DMF
 	  && GET_MODE (src) == XOmode && FP_REGNO_P (REGNO (src)))
 	emit_insn (gen_mma_xxmfacc (src, src));
 
@@ -27811,8 +27815,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	}
 
       /* If we are writing an accumulator register, we have to
-	 prime it after we've written it.  */
-      if (TARGET_MMA
+	 prime it after we've written it, unless we have dense math
+	 registers, which do not need priming/depriming.  */
+      if (TARGET_MMA && !TARGET_DMF
 	  && GET_MODE (dst) == XOmode && FP_REGNO_P (REGNO (dst)))
 	emit_insn (gen_mma_xxmtacc (dst, dst));
     }
@@ -27948,8 +27953,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	}
 
       /* If we are reading an accumulator register, we have to
-	 deprime it before we can access it.  */
-      if (TARGET_MMA && REG_P (src)
+	 deprime it before we can access it, unless we have dense math
+	 registers, which do not need priming/depriming.  */
+      if (TARGET_MMA && !TARGET_DMF && REG_P (src)
 	  && GET_MODE (src) == XOmode && FP_REGNO_P (REGNO (src)))
 	emit_insn (gen_mma_xxmfacc (src, src));
 
@@ -27980,8 +27986,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	}
 
       /* If we are writing an accumulator register, we have to
-	 prime it after we've written it.  */
-      if (TARGET_MMA && REG_P (dst)
+	 prime it after we've written it, unless we have dense math
+	 registers, which do not need priming/depriming.  */
+      if (TARGET_MMA && !TARGET_DMF && REG_P (dst)
 	  && GET_MODE (dst) == XOmode && FP_REGNO_P (REGNO (dst)))
 	emit_insn (gen_mma_xxmtacc (dst, dst));
 
