@@ -4352,7 +4352,7 @@ init_noce_multiple_sets_info (basic_block bb,
       rtx src = SET_SRC (set);
       rtx dest = SET_DEST (set);
 
-      gcc_checking_assert (REG_P (dest));
+      gcc_checking_assert (REG_P (dest) && !HARD_REGISTER_P (dest));
       info->need_cmov = bitmap_bit_p (bb_live_out, REGNO (dest));
 
       /* Check if the current SET's source is the same
@@ -4397,10 +4397,14 @@ bb_ok_for_noce_convert_multiple_sets (basic_block test_bb, unsigned *cost)
       rtx dest = SET_DEST (set);
       rtx src = SET_SRC (set);
 
-      /* Do not handle anything involving memory loads/stores since it might
-	 violate data-race-freedom guarantees.  Make sure we can force SRC
-	 to a register as that may be needed in try_emit_cmove_seq.  */
-      if (!REG_P (dest) || contains_mem_rtx_p (src)
+      /* Dependency rewiring is keyed by register number, so restrict
+	 destinations to pseudos.  Hard-register definitions can overlap
+	 without having the same mode.  Do not handle anything involving
+	 memory loads/stores since it might violate data-race-freedom
+	 guarantees.  Make sure we can force SRC to a register as that may
+	 be needed in try_emit_cmove_seq.  */
+      if (!REG_P (dest) || HARD_REGISTER_P (dest)
+	  || contains_mem_rtx_p (src)
 	  || !noce_can_force_operand (src))
 	return false;
 
