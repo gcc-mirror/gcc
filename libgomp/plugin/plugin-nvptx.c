@@ -354,7 +354,7 @@ struct ptx_device
 
 static struct ptx_device **ptx_devices;
 
-static bool using_usm = false;
+static int using_usm = -1;
 
 /* "Native" GPU thread stack size.  */
 static unsigned native_gpu_thread_stack_size = 0;
@@ -1431,7 +1431,59 @@ GOMP_OFFLOAD_supported_threads_dim (int ord, int dim)
 unsigned int
 GOMP_OFFLOAD_get_caps (void)
 {
-  return GOMP_OFFLOAD_CAP_OPENACC_200 | GOMP_OFFLOAD_CAP_OPENMP_400;
+  /* For unified-shared address: see comment in
+     nvptx_open_device for CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING.  */
+
+  return (GOMP_OFFLOAD_CAP_OPENMP_400 | GOMP_OFFLOAD_CAP_OPENACC_200
+	  | GOMP_OFFLOAD_CAP_UNIFIED_ADDR | GOMP_OFFLOAD_CAP_REV_OFFLOAD);
+}
+
+/* Return any additional capabilities that are specific to the specified
+   device.  Currently returns:
+   * GOMP_OFFLOAD_CAP_SHARED_MEM
+       when USM is supported
+   * GOMP_OFFLOAD_CAP_APU_SHARED_MEM
+       when USM is supported and CPU and GPU are integrated using the
+       same memory controller. As of July 2026 no such Nvidia GPU seems
+       to exist.  */
+
+unsigned int
+GOMP_OFFLOAD_get_dev_caps (int n)
+{
+  unsigned int caps = 0;
+
+  /* Check for USM.  */
+
+  int pi;
+  CUresult r;
+  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			 CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS,
+			 n);
+  if (r != CUDA_SUCCESS)
+    return 0;
+
+  if (pi)
+    {
+      caps |= GOMP_OFFLOAD_CAP_SHARED_MEM;
+      if (using_usm == -1)
+	using_usm = true;
+    }
+  else
+    using_usm = false;
+
+#if 0
+  int pi;
+  CUresult r;
+  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			 CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
+  if (r == CUDA_SUCCESS && pi != 0)
+    {
+      caps |= GOMP_OFFLOAD_CAP_SHARED_MEM;
+      caps |= GOMP_OFFLOAD_CAP_APU_SHARED_MEM;
+    }
+#endif
+
+  return caps;
 }
 
 int
@@ -1441,40 +1493,9 @@ GOMP_OFFLOAD_get_type (void)
 }
 
 int
-GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
+GOMP_OFFLOAD_get_num_devices ()
 {
-  int num_devices = nvptx_get_num_devices ();
-  /* Return -1 if no omp_requires_mask cannot be fulfilled but
-     devices were present.  Unified-shared address: see comment in
-     nvptx_open_device for CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING.  */
-  if (num_devices > 0
-      && ((omp_requires_mask
-	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
-	       | GOMP_REQUIRES_SELF_MAPS
-	       | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
-	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
-    return -1;
-  /* Check whether host page access (direct or via migration) is supported;
-     if so, enable USM.  Currently, capabilities is per device type, hence,
-     check all devices.  */
-  if (num_devices > 0
-      && (omp_requires_mask
-	  & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
-    {
-      for (int dev = 0; dev < num_devices; dev++)
-	{
-	  int pi;
-	  CUresult r;
-	  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
-				 CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS,
-				 dev);
-	  if (r != CUDA_SUCCESS || pi == 0)
-	    return -1;
-	}
-
-      using_usm = true;
-    }
-  return num_devices;
+  return nvptx_get_num_devices ();
 }
 
 bool
@@ -2030,11 +2051,12 @@ int
 GOMP_OFFLOAD_is_accessible_ptr (int ord,
 				const void *ptr, size_t size)
 {
+  struct ptx_device *ptx_dev = ptx_devices[ord];
+
   /* USM implies access.  */
-  if (using_usm)
+  if (using_usm > 0)
     return 1;
 
-  struct ptx_device *ptx_dev = ptx_devices[ord];
   CUcontext old_ctx;
   CUDA_CALL_ERET (false, cuCtxPushCurrent, ptx_dev->ctx);
 

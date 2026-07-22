@@ -3648,61 +3648,6 @@ gcn_exec (struct kernel_info *kernel, struct gomp_offload_session *session,
 /* }}}  */
 /* {{{ Generic Plugin API  */
 
-#if 0  /* TODO: Use to enable self-mapping/USM automatically.  */
-/* FIXME: The auto-self-map feature depends on still mapping 'declare target'
-   variables, even if ignoring all other mappings. Cf. PR 115279.  */
-
-/* Return TRUE if the GPU is an APU, i.e. the GPU is integrated with the CPU
-   such that both use the same memory controller such that mapping or memory
-   migration is pointless.  If CHECK_XNACK is TRUE, it additionally requires
-   that the GPU has *no* XNACK support otherwise FALSE is returned.
-
-   In theory, enabling unified-shared memory for APUs should always work,
-   however, with AMD GPUs some APUs (e.g. MI300A) still require XNACK to be
-   enabled as it is required to handle page faults.
-
-   Thus, for unified-shared memory access, either of the following must hold:
-   * HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT is TRUE
-     This implies that all GPUs support USM access, either directly (as APU)
-     or via page migration.  For MI300A, this is only the case if
-     HSA_AMD_SYSTEM_INFO_XNACK_ENABLED is TRUE.
-   * If the GPU an APU *and* it does not support XNACK.  */
-
-static bool
-is_integrated_apu (struct agent_info *agent, bool check_xnack)
-{
-  enum {
-    HSACO_ATTR_UNSUPPORTED,
-    HSACO_ATTR_OFF,
-    HSACO_ATTR_ON,
-    HSACO_ATTR_ANY,
-    HSACO_ATTR_DEFAULT
-  };
-
-  bool is_apu;
-  uint8_t mem_prop[8];
-  hsa_status_t status;
-
-  status = hsa_fns.hsa_agent_get_info_fn (
-	     agent->id, (hsa_agent_info_t) HSA_AMD_AGENT_INFO_MEMORY_PROPERTIES,
-	     mem_prop);
-  _Static_assert (HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU < 8,
-		  "HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU < 8");
-  is_apu = (status == HSA_STATUS_SUCCESS
-	    && (mem_prop[0] & (1 << HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU)));
-
-  if (check_xnack)
-    switch(agent->device_isa)
-      {
-#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, ...) \
-      case ELF: return is_apu && (XNACK == HSACO_ATTR_UNSUPPORTED);
-#include "../../gcc/config/gcn/gcn-devices.def"
-      default: return false;  /* Just to be save.  */
-      }
-  return is_apu;
-}
-#endif
-
 /* Return the name of the accelerator, which is "gcn".  */
 
 const char *
@@ -3806,9 +3751,113 @@ GOMP_OFFLOAD_supported_threads_dim (int ord, int dim)
 unsigned int
 GOMP_OFFLOAD_get_caps (void)
 {
-  /* FIXME: Enable shared memory for APU, but not discrete GPU.  */
-  return /*GOMP_OFFLOAD_CAP_SHARED_MEM |*/ GOMP_OFFLOAD_CAP_OPENMP_400
-	    | GOMP_OFFLOAD_CAP_OPENACC_200;
+  return (GOMP_OFFLOAD_CAP_OPENMP_400 | GOMP_OFFLOAD_CAP_OPENACC_200
+	  | GOMP_OFFLOAD_CAP_UNIFIED_ADDR | GOMP_OFFLOAD_CAP_REV_OFFLOAD);
+}
+
+/* Return any additional capabilities that are specific to the specified
+   device.  Currently returns:
+   * GOMP_OFFLOAD_CAP_SHARED_MEM
+       when USM is supported
+   * GOMP_OFFLOAD_CAP_APU_SHARED_MEM
+       when USM is supported and the system is an APU. This assumes that the
+       same memory controler is used.
+       NOTE: To avoid potential issues with swapped-out memory, this is not
+       set if XNACK is not supported */
+
+unsigned int
+GOMP_OFFLOAD_get_dev_caps (int n)
+{
+  unsigned int caps = 0;
+
+  /* The device agents have been enumerated, but might not have been
+     initialized, so get_agent_info won't work here.  */
+  struct agent_info *agent = &hsa_context.agents[n];
+
+  /* First, check for general USM support - this is system wide, i.e.
+     implies that all devices support it.  */
+  bool b;
+  hsa_system_info_t type = HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT;
+  hsa_status_t status = hsa_fns.hsa_system_get_info_fn (type, &b);
+  if (status != HSA_STATUS_SUCCESS)
+    {
+      GOMP_PLUGIN_error ("HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT failed");
+      return 0;
+    }
+
+  if (b)
+    caps |= GOMP_OFFLOAD_CAP_SHARED_MEM;
+
+  /* Next check whether the device is an APU.  */
+  bool is_apu;
+  uint8_t mem_prop[8];
+
+  status = hsa_fns.hsa_agent_get_info_fn (
+	     agent->id, (hsa_agent_info_t) HSA_AMD_AGENT_INFO_MEMORY_PROPERTIES,
+	     mem_prop);
+  _Static_assert (HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU < 8,
+		  "HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU < 8");
+  is_apu = (status == HSA_STATUS_SUCCESS
+	    && (mem_prop[0] & (1 << HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU)));
+
+  /* If it is an APU:
+     - set GOMP_OFFLOAD_CAP_SHARED_MEM, unless the support is known
+       to be broken.
+     - Set GOMP_OFFLOAD_CAP_APU_SHARED_MEM to state that it might make
+       sense to enable USM automatically.  */
+  if (is_apu)
+    {
+      char name[64];
+      status = hsa_fns.hsa_agent_get_info_fn (agent->id, HSA_AGENT_INFO_NAME,
+					      &name);
+      if (status != HSA_STATUS_SUCCESS)
+	return 0;
+      gcn_isa device_isa = isa_code (name);
+
+      /* Known not to work (well): MI100 and the gfx902 APU. */
+      if (device_isa == EF_AMDGPU_MACH_AMDGCN_GFX908
+	  || device_isa == EF_AMDGPU_MACH_AMDGCN_GFX902)
+	return 0;
+
+      /* Obtain XNACK status.  */
+      enum {
+	HSACO_ATTR_UNSUPPORTED,
+	HSACO_ATTR_OFF,
+	HSACO_ATTR_ON,
+	HSACO_ATTR_ANY,
+	HSACO_ATTR_DEFAULT
+      };
+
+      int xnack;
+      switch(device_isa)
+	{
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, ...) \
+	case ELF: xnack = XNACK;
+#include "../../gcc/config/gcn/gcn-devices.def"
+	default: return 0;  /* Just to be save.  */
+	}
+
+      /* USM requires either enabled XNACK support or XNACK being
+	 unsupported.  For GOMP_OFFLOAD_CAP_APU_SHARED_MEM be prudent and
+	 require XNACK support in addition as this ensures it also works
+	 with swapped-out memory.  */
+      if (caps && xnack != HSACO_ATTR_UNSUPPORTED)
+	caps |= GOMP_OFFLOAD_CAP_APU_SHARED_MEM;
+      else if (xnack == HSACO_ATTR_UNSUPPORTED)
+	caps |= GOMP_OFFLOAD_CAP_SHARED_MEM;
+      else
+	{
+	  type = HSA_AMD_SYSTEM_INFO_XNACK_ENABLED;
+	  status = hsa_fns.hsa_system_get_info_fn (type, &b);
+	  if (status != HSA_STATUS_SUCCESS)
+	    return 0;
+	  if (b)
+	    caps |= (GOMP_OFFLOAD_CAP_SHARED_MEM
+		     | GOMP_OFFLOAD_CAP_APU_SHARED_MEM);
+	}
+    }
+
+  return caps;
 }
 
 /* Identify as GCN accelerator.  */
@@ -3831,36 +3880,10 @@ GOMP_OFFLOAD_version (void)
 /* Return the number of GCN devices on the system.  */
 
 int
-GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
+GOMP_OFFLOAD_get_num_devices ()
 {
   if (!init_hsa_context (true))
     exit (EXIT_FAILURE);
-  /* Return -1 if no omp_requires_mask cannot be fulfilled but
-     devices were present.  */
-  if (hsa_context.agent_count > 0
-      && ((omp_requires_mask
-	   & ~(GOMP_REQUIRES_UNIFIED_ADDRESS
-	       | GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
-	       | GOMP_REQUIRES_SELF_MAPS
-	       | GOMP_REQUIRES_REVERSE_OFFLOAD)) != 0))
-    return -1;
-  /* Check whether host page access is supported; this is per system level
-     (all GPUs supported by HSA).  While intrinsically true for APUs, it
-     requires XNACK support for discrete GPUs.  */
-  if (hsa_context.agent_count > 0
-      && (omp_requires_mask
-	  & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
-    {
-      bool b;
-      hsa_system_info_t type = HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT;
-      hsa_status_t status = hsa_fns.hsa_system_get_info_fn (type, &b);
-      if (status != HSA_STATUS_SUCCESS)
-	GOMP_PLUGIN_error ("HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT "
-			   "failed");
-      if (!b)
-	return -1;
-    }
-
   return hsa_context.agent_count;
 }
 

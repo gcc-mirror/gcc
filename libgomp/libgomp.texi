@@ -3480,7 +3480,7 @@ successive clock ticks.
 @item @emph{Description}:
 Elapsed wall clock time in seconds.  The time is measured per thread, no
 guarantee can be made that two distinct threads measure the same time.
-Time is measured from some "time in the past", which is an arbitrary time
+Time is measured from some ``time in the past'', which is an arbitrary time
 guaranteed not to change during the execution of the program.
 
 @item @emph{C/C++}:
@@ -7670,16 +7670,18 @@ The implementation remark:
       such that the next reverse offload region is only executed after the previous
       one returned.
 @item OpenMP code that has a @code{requires} directive with @code{self_maps} or
-      @code{unified_shared_memory} is only supported if @emph{all} the AMD GPUs
-      present have the @code{HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT}
-      property; some systems require the "xnack" feature enabled for this to be
-      true, in which case the runtime will attempt to set the @code{HSA_XNACK}
-      environment variable to @samp{1} automatically (user-set values are not
-      overridden, and the setting only affects the executable itself and any
-      child processes).  If any AMD GPU device does not support unified-shared
-      memory, all AMD GPUs are removed from the list of available devices
-      (``host fallback''); consider using @code{ROCR_VISIBLE_DEVICES} to only
-      enable devices supporting it.
+      @code{unified_shared_memory} is only supported if either @emph{all} the
+      AMD GPUs present have the @code{HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT}
+      property or if a device is an APU (integrated GPU) and either it does not
+      support XNACK or XNACK is enabled; some systems require the ``xnack''
+      feature enabled for this to be true, in which case the runtime will
+      attempt to set the @code{HSA_XNACK} environment variable to @samp{1}
+      automatically (user-set values are not overridden, and the setting only
+      affects the executable itself and any child processes).  AMD GPU devices
+      that do not support unified-shared memory are removed from the list of
+      available devices, possibly leaving only the initial device (``host
+      fallback''); consider using @code{ROCR_VISIBLE_DEVICES} to only enable
+      devices supporting unified-shared memory.
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
       environment variable; the default is 32 kiB per thread.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
@@ -7858,11 +7860,11 @@ The implementation remark:
       the next reverse offload region is only executed after the previous
       one returned.
 @item OpenMP code that has a @code{requires} directive with @code{self_maps} or
-      @code{unified_shared_memory} runs on nvptx devices if and only if
-      all of those support the @code{pageableMemoryAccess} property;@footnote{
-      @uref{https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-requirements}}
-      otherwise, all nvptx device are removed from the list of available
-      devices (``host fallback'').
+      @code{unified_shared_memory} runs on those nvptx devices that support
+      the @code{pageableMemoryAccess} property;@footnote{
+      @uref{https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/unified-memory.html}}
+      all other nvptx device are removed from the list of available devices,
+      possibly leaving only the initial device (``host fallback'').
 @item The default per-warp stack size is 128 kiB; see also @code{-msoft-stack}
       in the GCC manual.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the

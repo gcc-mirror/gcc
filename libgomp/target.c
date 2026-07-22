@@ -6728,6 +6728,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM_OPT (supported_threads_dim, supported_threads_dim);
   DLSYM_OPT (supported_teams_dim, supported_teams_dim);
   DLSYM (get_caps);
+  DLSYM_OPT (get_dev_caps, get_dev_caps);
   DLSYM (get_type);
   DLSYM (get_num_devices);
   DLSYM (init_device);
@@ -6895,38 +6896,10 @@ gomp_target_init (void)
 
 	if (gomp_load_plugin_for_device (&current_device, plugin_name))
 	  {
-	    int omp_req = omp_requires_mask & ~GOMP_REQUIRES_TARGET_USED;
-	    new_num_devs = current_device.get_num_devices_func (omp_req);
-	    if (gomp_debug_var > 0 && new_num_devs < 0)
-	      {
-		bool found = false;
-		int type = current_device.get_type_func ();
-		for (int img = 0; img < num_offload_images; img++)
-		  if (type == offload_images[img].type)
-		    found = true;
-		if (found)
-		  {
-		    char buf[GOMP_REQUIRES_NAME_BUF_LEN];
-		    gomp_requires_to_name (buf, sizeof (buf), omp_req);
-		    char *name = (char *) malloc (cur_len + 1);
-		    memcpy (name, cur, cur_len);
-		    name[cur_len] = '\0';
-		    gomp_debug (1,
-				"%s devices present but 'omp requires %s' "
-				"cannot be fulfilled\n", name, buf);
-		    free (name);
-		  }
-	      }
-	    else if (new_num_devs >= 1)
+	    new_num_devs = current_device.get_num_devices_func ();
+	    if (new_num_devs >= 1)
 	      {
 		/* Augment DEVICES and NUM_DEVICES.  */
-
-		/* If USM has been requested and is supported by all devices
-		   of this type, set the capability accordingly.  */
-		if (omp_requires_mask
-		    & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS))
-		  current_device.capabilities |= GOMP_OFFLOAD_CAP_SHARED_MEM;
-
 		devs = realloc (devs, (num_devs + new_num_devs)
 				      * sizeof (struct gomp_device_descr));
 		if (!devs)
@@ -6944,12 +6917,58 @@ gomp_target_init (void)
 		current_device.mem_map.root = NULL;
 		current_device.mem_map_rev.root = NULL;
 		current_device.state = GOMP_DEVICE_UNINITIALIZED;
+		int saved_num_devs = num_devs;
 		for (i = 0; i < new_num_devs; i++)
 		  {
 		    current_device.target_id = i;
 		    devs[num_devs] = current_device;
 		    gomp_mutex_init (&devs[num_devs].lock);
+
+		    /* Skip the device (= remove from available devices)
+		       if a requirement cannot be fulfilled.
+		       For USM/self_maps, set SHARED_MEM capability for the
+		       device.  */
+		    int dev_caps = current_device.capabilities;
+		    if (current_device.get_dev_caps_func)
+		      dev_caps |= current_device.get_dev_caps_func (i);
+
+		    if (((omp_requires_mask & GOMP_REQUIRES_UNIFIED_ADDRESS)
+			 && !(dev_caps & GOMP_OFFLOAD_CAP_UNIFIED_ADDR))
+			|| ((omp_requires_mask & GOMP_REQUIRES_REVERSE_OFFLOAD)
+			    && !(dev_caps & GOMP_REQUIRES_REVERSE_OFFLOAD)))
+		      continue;
+
+		    if (omp_requires_mask & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
+					     | GOMP_REQUIRES_SELF_MAPS))
+		      {
+			if (dev_caps & GOMP_OFFLOAD_CAP_SHARED_MEM)
+			  devs[num_devs].capabilities
+			    |= GOMP_OFFLOAD_CAP_SHARED_MEM;
+			else
+			  continue;
+		      }
 		    num_devs++;
+		  }
+		if (saved_num_devs == num_devs)
+		  {
+		    bool found = false;
+		    for (int img = 0; img < num_offload_images; img++)
+		      if (current_device.type == offload_images[img].type)
+			found = true;
+		    if (found)
+		      {
+			char buf[GOMP_REQUIRES_NAME_BUF_LEN];
+			gomp_requires_to_name (buf, sizeof (buf),
+					       omp_requires_mask);
+			char *name = (char *) malloc (cur_len + 1);
+			memcpy (name, cur, cur_len);
+			name[cur_len] = '\0';
+			gomp_debug (1,
+				    "%d %s devices present but 'omp requires "
+				    "%s' cannot be fulfilled\n",
+				    new_num_devs, name, buf);
+			free (name);
+		      }
 		  }
 	      }
 	  }

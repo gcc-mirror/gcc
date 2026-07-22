@@ -480,7 +480,8 @@ typedef enum {
   * an Agent by declaration of accessibility with hsa_amd_svm_set_attributes.
   * The type of this attribute is bool.
   */
-  HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT = 0x202
+  HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT = 0x202,
+  HSA_AMD_SYSTEM_INFO_XNACK_ENABLED = 0x206
 } hsa_system_info_t;
 
 /**
