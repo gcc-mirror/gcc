@@ -4095,3 +4095,58 @@
 
   const vf __builtin_altivec_unpack_int8_to_fp32 (vui, const int<2>);
     VUPKINT8TOFP32 altivec_vupkint8tofp32 {}
+
+[dm]
+  void __builtin_dmsetdmrz (dmr1024 *);
+    DMSETDMRZ nothing {dm,dmint}
+
+  dmr1024 __builtin_dmsetdmrz_internal ();
+    DMSETDMRZ_INTERNAL dmf_dmsetdmrz {dm}
+
+  void __builtin_dmmr (dmr1024 *, dmr1024 *);
+    DMMR nothing {dm,dmint}
+
+  dmr1024 __builtin_dmmr_internal (dmr1024);
+    DMMR_INTERNAL movtdo {dm}
+
+  void __builtin_dmxor (dmr1024 *, dmr1024 *);
+    DMXOR nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxor_internal (dmr1024, dmr1024);
+    DMXOR_INTERNAL dmf_dmxor {dm}
+
+  void __builtin_build_dmr (dmr1024 *, vuc, vuc, vuc, vuc, vuc, vuc, vuc, vuc);
+    BUILD_DMR nothing {dm,dmint}
+
+  dmr1024 __builtin_build_dmr_internal (vuc, vuc, vuc, vuc, vuc, vuc, vuc, vuc);
+    BUILD_DMR_INTERNAL dmf_build_dmr {dm}
+
+  void __builtin_mma_dmxvi8gerx4 (dmr1024 *, v256, vuc);
+    DMXVI8GERX4 nothing {dm,dmint}
+
+  dmr1024 __builtin_mma_dmxvi8gerx4_internal (v256, vuc);
+    DMXVI8GERX4_INTERNAL dmf_dmxvi8gerx4 {dm}
+
+  void __builtin_mma_dmxvi8gerx4pp (dmr1024 *, v256, vuc);
+    DMXVI8GERX4PP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvi8gerx4pp_internal (dmr1024, v256, vuc);
+    DMXVI8GERX4PP_INTERNAL dmf_dmxvi8gerx4pp {dm}
+
+  void __builtin_mma_pmdmxvi8gerx4 (dmr1024 *, v256, vuc, const int<8>, \
+                                   const int<4>, const int<4>);
+    PMDMXVI8GERX4 nothing {dm,pair,dmint}
+
+  dmr1024 __builtin_mma_pmdmxvi8gerx4_internal (v256, vuc, const int<8>, \
+                                              const int<4>, const int<4>);
+    PMDMXVI8GERX4_INTERNAL dmf_pmdmxvi8gerx4 {dm,pair}
+
+  void __builtin_mma_pmdmxvi8gerx4pp (dmr1024 *, v256, vuc, const int<8>, \
+                                     const int<4>, const int<4>);
+    PMDMXVI8GERX4PP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvi8gerx4pp_internal (dmr1024, v256, vuc, \
+                                                const int<8>, const int<4>, \
+                                                const int<4>);
+    PMDMXVI8GERX4PP_INTERNAL dmf_pmdmxvi8gerx4pp {dm,pair}
+

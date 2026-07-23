@@ -24,7 +24,7 @@
 ;; __vector_pair types that the MMA built-in functions reference.  We
 ;; use OPAQUE_MODE to prevent anything from trying to open them up.
 
-(define_constants [(MAX_MMA_OPERANDS 7)])
+(define_constants [(MAX_MMA_OPERANDS 9)])
 
 ;; Constants for creating unspecs
 
@@ -96,6 +96,12 @@
    UNSPEC_DMF_INSERT1024
    UNSPEC_DMF_RELOAD_FROM_MEMORY
    UNSPEC_DMF_RELOAD_TO_MEMORY
+   UNSPEC_DMF_DMXOR
+   UNSPEC_DMF_DMXVI8GERX4
+   UNSPEC_DMF_DMXVI8GERX4PP
+   UNSPEC_DMF_PMDMXVI8GERX4
+   UNSPEC_DMF_PMDMXVI8GERX4PP
+   UNSPEC_DMF_DMSETDMRZ
   ])
 
 (define_c_enum "unspecv"
@@ -138,11 +144,17 @@
 ;; MMA instructions with 1 vector pair and 1 vector arguments
 (define_int_iterator MMA_PV		[UNSPEC_MMA_XVF64GER])
 
+; DMF instructions with 1 vector pair and 1 vector arguments
+(define_int_iterator DMF_PV		[UNSPEC_DMF_DMXVI8GERX4])
+
 ;; MMA instructions with 1 accumulator, 1 vector pair and 1 vector arguments
 (define_int_iterator MMA_APV		[UNSPEC_MMA_XVF64GERPP
 					 UNSPEC_MMA_XVF64GERPN
 					 UNSPEC_MMA_XVF64GERNP
 					 UNSPEC_MMA_XVF64GERNN])
+
+;; DMF instructions with 1 dmr, 1 vector pair and 1 vector arguments
+(define_int_iterator DMF_DPV		[UNSPEC_DMF_DMXVI8GERX4PP])
 
 ;; MMA instructions with 2 vector, 2 4-bit and 1 8-bit arguments
 (define_int_iterator MMA_VVI4I4I8	[UNSPEC_MMA_PMXVI4GER8])
@@ -193,6 +205,14 @@
 (define_int_iterator MMA_AVVI4I4I4	[UNSPEC_MMA_PMXVI8GER4PP
 					 UNSPEC_MMA_PMXVI8GER4SPP])
 
+; DMF instructions with 1 vector pair, 1 vector and 1 8-bit and 2 4-bit
+;; arguments
+(define_int_iterator DMF_PVI8I4I4	[UNSPEC_DMF_PMDMXVI8GERX4])
+
+;; DMF instructions with 1 dmr, 1 vector pair, 1 vector and 1 8-bit and
+;; 2 4-bit arguments
+(define_int_iterator DMF_DPVI8I4I4	[UNSPEC_DMF_PMDMXVI8GERX4PP])
+
 (define_int_attr acc		[(UNSPEC_MMA_XXMFACC		"xxmfacc")
 				 (UNSPEC_MMA_XXMTACC		"xxmtacc")])
 
@@ -222,12 +242,14 @@
 				 (UNSPEC_MMA_XVF32GERNP		"xvf32gernp")
 				 (UNSPEC_MMA_XVF32GERNN		"xvf32gernn")])
 
-(define_int_attr pv		[(UNSPEC_MMA_XVF64GER		"xvf64ger")])
+(define_int_attr pv		[(UNSPEC_MMA_XVF64GER		"xvf64ger")
+				 (UNSPEC_DMF_DMXVI8GERX4        "dmxvi8gerx4")])
 
 (define_int_attr apv		[(UNSPEC_MMA_XVF64GERPP		"xvf64gerpp")
 				 (UNSPEC_MMA_XVF64GERPN		"xvf64gerpn")
 				 (UNSPEC_MMA_XVF64GERNP		"xvf64gernp")
-				 (UNSPEC_MMA_XVF64GERNN		"xvf64gernn")])
+				 (UNSPEC_MMA_XVF64GERNN		"xvf64gernn")
+				 (UNSPEC_DMF_DMXVI8GERX4PP      "dmxvi8gerx4pp")])
 
 (define_int_attr vvi4i4i8	[(UNSPEC_MMA_PMXVI4GER8		"pmxvi4ger8")])
 
@@ -268,6 +290,9 @@
 (define_int_attr avvi4i4i4	[(UNSPEC_MMA_PMXVI8GER4PP	"pmxvi8ger4pp")
 				 (UNSPEC_MMA_PMXVI8GER4SPP	"pmxvi8ger4spp")])
 
+(define_int_attr pvi8i4i4	[(UNSPEC_DMF_PMDMXVI8GERX4      "pmdmxvi8gerx4")])
+
+(define_int_attr dpvi8i4i4	[(UNSPEC_DMF_PMDMXVI8GERX4PP    "pmdmxvi8gerx4pp")])
 
 ;; Vector pair support.  OOmode can only live in VSRs.
 (define_expand "movoo"
@@ -682,6 +707,30 @@
   DONE;
 })
 
+(define_expand "dmf_build_dmr"
+  [(match_operand:TDO 0 "dmr_register_operand")
+   (match_operand:V16QI 1 "mma_assemble_input_operand")
+   (match_operand:V16QI 2 "mma_assemble_input_operand")
+   (match_operand:V16QI 3 "mma_assemble_input_operand")
+   (match_operand:V16QI 4 "mma_assemble_input_operand")
+   (match_operand:V16QI 5 "mma_assemble_input_operand")
+   (match_operand:V16QI 6 "mma_assemble_input_operand")
+   (match_operand:V16QI 7 "mma_assemble_input_operand")
+   (match_operand:V16QI 8 "mma_assemble_input_operand")]
+  "TARGET_DMF"
+{
+  rtx vp0 = gen_reg_rtx (OOmode);
+  rtx vp1 = gen_reg_rtx (OOmode);
+  rtx vp2 = gen_reg_rtx (OOmode);
+  rtx vp3 = gen_reg_rtx (OOmode);
+  emit_insn (gen_vsx_assemble_pair (vp0, operands[2], operands[1]));
+  emit_insn (gen_vsx_assemble_pair (vp1, operands[4], operands[3]));
+  emit_insn (gen_vsx_assemble_pair (vp2, operands[6], operands[5]));
+  emit_insn (gen_vsx_assemble_pair (vp3, operands[8], operands[7]));
+  emit_insn (gen_dm_insert1024 (operands[0], vp0, vp1, vp2, vp3));
+  DONE;
+})
+
 (define_expand "mma_disassemble_acc"
   [(match_operand:V16QI 0 "mma_disassemble_output_operand")
    (match_operand:XO 1 "accumulator_operand")
@@ -758,6 +807,13 @@
   "TARGET_MMA"
   "xxsetaccz %A0"
   [(set_attr "type" "mma")])
+
+(define_insn "dmf_dmsetdmrz"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+	(unspec:TDO [(const_int 0)] UNSPEC_DMF_DMSETDMRZ))]
+  "TARGET_DMF"
+  "dmsetdmrz %0"
+  [(set_attr "type" "dmf")])
 
 (define_insn "mma_<vv>"
   [(set (match_operand:XO 0 "fpr_reg_operand" "=&d,&d")
@@ -927,3 +983,67 @@
   "<avvi4i4i4> %A0,%x2,%x3,%4,%5,%6"
   [(set_attr "type" "mma")
    (set_attr "prefixed" "yes")])
+
+(define_insn "dmf_dmxor"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+	(unspec:TDO [(match_operand:TDO 1 "dmr_register_operand" "0")
+		     (match_operand:TDO 2 "dmr_register_operand" "wD")]
+		    UNSPEC_DMF_DMXOR))]
+  "TARGET_DMF"
+  "dmxor %0,%2"
+  [(set_attr "type" "dmf")])
+
+(define_insn "dmf_<pv>"
+  [(set (match_operand:TDO 0 "accumulator_operand" "=wD")
+	(unspec:TDO [(match_operand:OO 1 "vsx_register_operand" "wa")
+		     (match_operand:V16QI 2 "vsx_register_operand" "wa")]
+		    DMF_PV))]
+  "TARGET_DMF"
+{
+  return "<pv> %0,%x1,%x2";
+}
+  [(set_attr "type" "dmf")])
+
+(define_insn "dmf_<apv>"
+  [(set (match_operand:TDO 0 "accumulator_operand" "=wD")
+	(unspec:TDO [(match_operand:TDO 1 "accumulator_operand" "0")
+		     (match_operand:OO 2 "vsx_register_operand" "wa")
+		     (match_operand:V16QI 3 "vsx_register_operand" "wa")]
+		    DMF_DPV))]
+  "TARGET_DMF"
+{
+  return "<apv> %0,%x2,%x3";
+}
+  [(set_attr "type" "dmf")])
+
+(define_insn "dmf_<pvi8i4i4>"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+	(unspec:TDO [(match_operand:OO 1 "vsx_register_operand" "wa")
+		     (match_operand:V16QI 2 "vsx_register_operand" "wa")
+		     (match_operand:SI 3 "u8bit_cint_operand" "n")
+		     (match_operand:SI 4 "const_0_to_15_operand" "n")
+		     (match_operand:SI 5 "const_0_to_15_operand" "n")]
+		    DMF_PVI8I4I4))]
+  "TARGET_DMF"
+{
+  return "<pvi8i4i4> %0,%x1,%x2,%3,%4,%5";
+}
+  [(set_attr "type" "dmf")
+   (set_attr "prefixed" "yes")])
+
+(define_insn "dmf_<dpvi8i4i4>"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+	(unspec:TDO [(match_operand:TDO 1 "dmr_register_operand" "0")
+		     (match_operand:OO 2 "vsx_register_operand" "wa")
+		     (match_operand:V16QI 3 "vsx_register_operand" "wa")
+		     (match_operand:SI 4 "u8bit_cint_operand" "n")
+		     (match_operand:SI 5 "const_0_to_15_operand" "n")
+		     (match_operand:SI 6 "const_0_to_15_operand" "n")]
+		    DMF_DPVI8I4I4))]
+  "TARGET_DMF"
+{
+  return "<dpvi8i4i4> %0,%x2,%x3,%4,%5,%6";
+}
+  [(set_attr "type" "dmf")
+   (set_attr "prefixed" "yes")])
+
