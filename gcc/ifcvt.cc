@@ -53,8 +53,6 @@
    + 1)
 #endif
 
-#define IFCVT_MULTIPLE_DUMPS 1
-
 #define NULL_BLOCK	((basic_block) NULL)
 
 /* Which of the three RTL if-conversion passes is running.  ce1 runs before
@@ -6876,10 +6874,8 @@ if_convert (ifcvt_phase phase)
       cond_exec_changed_p = false;
       pass++;
 
-#ifdef IFCVT_MULTIPLE_DUMPS
       if (dump_file && pass > 1)
 	fprintf (dump_file, "\n\n========== Pass %d ==========\n", pass);
-#endif
 
       FOR_EACH_BB_FN (bb, cfun)
 	{
@@ -6889,17 +6885,13 @@ if_convert (ifcvt_phase phase)
             bb = new_bb;
 	}
 
-#ifdef IFCVT_MULTIPLE_DUMPS
       if (dump_file && cond_exec_changed_p)
 	print_rtl_with_bb (dump_file, get_insns (), dump_flags);
-#endif
     }
   while (cond_exec_changed_p);
 
-#ifdef IFCVT_MULTIPLE_DUMPS
   if (dump_file)
     fprintf (dump_file, "\n\n========== no more changes\n");
-#endif
 
   free_dominance_info (CDI_POST_DOMINATORS);
 
