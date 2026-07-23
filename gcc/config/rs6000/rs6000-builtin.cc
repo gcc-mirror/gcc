@@ -1131,13 +1131,82 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
   if (rs6000_builtin_info[fncode].assoc_bif == RS6000_BIF_NONE
       && fncode != RS6000_BIF_LXVP
       && fncode != RS6000_BIF_STXVP
-      && fncode != RS6000_BIF_DMMR)
+      && fncode != RS6000_BIF_DMMR
+      && fncode != RS6000_BIF_DISASSEMBLE_DMR)
     return false;
 
   bifdata *bd = &rs6000_builtin_info[fncode];
   gimple_seq new_seq = NULL;
   gimple *new_call;
   tree new_decl;
+
+  if (fncode == RS6000_BIF_DMF_EXTRACT512
+      || fncode == RS6000_BIF_DISASSEMBLE_DMR)
+    {
+      unsigned num_extract512;
+      push_gimplify_context (true);
+      tree dst_ptr = gimple_call_arg (stmt, 0);
+      tree src_ptr = gimple_call_arg (stmt, 1);
+      tree src_type = build_pointer_type (dmr1024_type_node);
+
+      if (TREE_TYPE (src_ptr) != src_type)
+       src_ptr = build1 (NOP_EXPR, src_type, src_ptr);
+
+      /* The following code will ensure we are sending *src as parameter.  */
+      tree src = make_ssa_name (TREE_TYPE (src_type));
+      gimplify_assign (src, build_simple_mem_ref (src_ptr), &new_seq);
+
+      /* Now we should call the internal builtin RS6000_BIF_DMF_EXTRACT512_INTERNAL.  */
+      if (fncode == RS6000_BIF_DISASSEMBLE_DMR)
+       num_extract512 = 2;
+      else
+       num_extract512 = 1;
+
+      tree extract_decl = rs6000_builtin_decls[RS6000_BIF_DMF_EXTRACT512_INTERNAL];
+
+      for (unsigned i = 0; i < num_extract512; i++)
+	{
+	  tree const_arg;
+	  if (fncode == RS6000_BIF_DISASSEMBLE_DMR)
+	    const_arg = build_int_cstu (uint16_type_node, i);
+	  else
+	    const_arg = gimple_call_arg (stmt, 2);
+
+	  /* Create call.  */
+	  new_call = gimple_build_call (extract_decl, 2, src, const_arg);
+	  /* Create a tmp reg to denote lhs of call.  */
+	  tree lhs = make_ssa_name (vector_quad_type_node);
+
+	  /* lhs = new_call  */
+	  gimple_call_set_lhs (new_call, lhs);
+
+	  /* Add gimple stmt to gimple sequence.  */
+	  gimple_seq_add_stmt (&new_seq, new_call);
+
+	  /* Now lhs contains the 512-bit value in vector_quad. We have to now
+	     split up the vector_quad into individual vectors.  */
+
+	  new_decl = rs6000_builtin_decls[RS6000_BIF_DISASSEMBLE_ACC_INTERNAL];
+	  tree dst_type = build_pointer_type_for_mode (unsigned_V16QI_type_node,
+						       ptr_mode, true);
+
+	  tree dst_base = build1 (NOP_EXPR, dst_type, dst_ptr);
+	  for (unsigned j = 0; j < 4; j++)
+	    {
+	      tree dst = build2 (MEM_REF, unsigned_V16QI_type_node, dst_base,
+				 build_int_cst (dst_type, j * 16 + i * 64));
+	      tree dstssa = make_ssa_name (unsigned_V16QI_type_node);
+	      new_call = gimple_build_call (new_decl, 2, lhs,
+					    build_int_cstu (uint16_type_node, j));
+	      gimple_call_set_lhs (new_call, dstssa);
+	      gimple_seq_add_stmt (&new_seq, new_call);
+	      gimplify_assign (dst, dstssa, &new_seq);
+	    }
+	}
+      pop_gimplify_context (NULL);
+      gsi_replace_with_seq (gsi, new_seq, true);
+      return true;
+    }
 
   /* Compatibility built-ins; we used to call these
      __builtin_mma_{dis,}assemble_pair, but now we call them
