@@ -4243,3 +4243,73 @@
   dmr1024 __builtin_mma_pmdmxvbf16gerx2nn_internal (dmr1024, v256, vuc, const int<8>, \
                                                 const int<4>, const int<2>);
     PMDMXVBF16GERX2NN_INTERNAL dmf_pmdmxvbf16gerx2nn {dm,pair}
+
+  void __builtin_mma_dmxvf16gerx2 (dmr1024 *, v256, vuc);
+    DMXVF16GERX2 nothing {dm,dmint}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2_internal (v256, vuc);
+    DMXVF16GERX2_INTERNAL dmf_dmxvf16gerx2 {dm}
+
+  void __builtin_mma_dmxvf16gerx2pp (dmr1024 *, v256, vuc);
+    DMXVF16GERX2PP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2pp_internal (dmr1024, v256, vuc);
+    DMXVF16GERX2PP_INTERNAL dmf_dmxvf16gerx2pp {dm}
+
+  void __builtin_mma_dmxvf16gerx2pn (dmr1024 *, v256, vuc);
+    DMXVF16GERX2PN nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2pn_internal (dmr1024, v256, vuc);
+    DMXVF16GERX2PN_INTERNAL dmf_dmxvf16gerx2pn {dm}
+
+  void __builtin_mma_dmxvf16gerx2np (dmr1024 *, v256, vuc);
+    DMXVF16GERX2NP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2np_internal (dmr1024, v256, vuc);
+    DMXVF16GERX2NP_INTERNAL dmf_dmxvf16gerx2np {dm}
+
+  void __builtin_mma_dmxvf16gerx2nn (dmr1024 *, v256, vuc);
+    DMXVF16GERX2NN nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2nn_internal (dmr1024, v256, vuc);
+    DMXVF16GERX2NN_INTERNAL dmf_dmxvf16gerx2nn {dm}
+
+  void __builtin_mma_pmdmxvf16gerx2 (dmr1024 *, v256, vuc, const int<8>, \
+				    const int<4>, const int<2>);
+    PMDMXVF16GERX2 nothing {dm,pair,dmint}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2_internal (v256, vuc, const int<8>, \
+					       const int<4>, const int<2>);
+    PMDMXVF16GERX2_INTERNAL dmf_pmdmxvf16gerx2 {dm,pair}
+
+  void __builtin_mma_pmdmxvf16gerx2pp (dmr1024 *, v256, vuc, const int<8>, \
+				      const int<4>, const int<2>);
+    PMDMXVF16GERX2PP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2pp_internal (dmr1024, v256, vuc, const int<8>, \
+						 const int<4>, const int<2>);
+    PMDMXVF16GERX2PP_INTERNAL dmf_pmdmxvf16gerx2pp {dm,pair}
+
+  void __builtin_mma_pmdmxvf16gerx2pn (dmr1024 *, v256, vuc, const int<8>, \
+				      const int<4>, const int<2>);
+    PMDMXVF16GERX2PN nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2pn_internal (dmr1024, v256, vuc, const int<8>, \
+						 const int<4>, const int<2>);
+    PMDMXVF16GERX2PN_INTERNAL dmf_pmdmxvf16gerx2pn {dm,pair}
+
+  void __builtin_mma_pmdmxvf16gerx2np (dmr1024 *, v256, vuc, const int<8>, \
+				      const int<4>, const int<2>);
+    PMDMXVF16GERX2NP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2np_internal (dmr1024, v256, vuc, const int<8>, \
+						 const int<4>, const int<2>);
+    PMDMXVF16GERX2NP_INTERNAL dmf_pmdmxvf16gerx2np {dm,pair}
+
+  void __builtin_mma_pmdmxvf16gerx2nn (dmr1024 *, v256, vuc, const int<8>, \
+				      const int<4>, const int<2>);
+    PMDMXVF16GERX2NN nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2nn_internal (dmr1024, v256, vuc, const int<8>, \
+						 const int<4>, const int<2>);
+    PMDMXVF16GERX2NN_INTERNAL dmf_pmdmxvf16gerx2nn {dm,pair}

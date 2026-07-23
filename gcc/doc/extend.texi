@@ -27367,6 +27367,18 @@ void __builtin_mma_pmdmxvbf16gerx2pp (__dmr1024 *, __vector_pair, vec_t, uint8, 
 void __builtin_mma_pmdmxvbf16gerx2pn (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
 void __builtin_mma_pmdmxvbf16gerx2np (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
 void __builtin_mma_pmdmxvbf16gerx2nn (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+
+void __builtin_mma_dmxvf16gerx2 (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvf16gerx2pp (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvf16gerx2pn (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvf16gerx2np (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvf16gerx2nn (__dmr1024 *, __vector_pair, vec_t);
+
+void __builtin_mma_pmdmxvf16gerx2 (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvf16gerx2pp (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvf16gerx2pn (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvf16gerx2np (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvf16gerx2nn (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
 @end smallexample
 
 @node PowerPC Dense Math Facility Built-in Functions

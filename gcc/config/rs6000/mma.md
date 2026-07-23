@@ -114,6 +114,16 @@
    UNSPEC_DMF_PMDMXVBF16GERX2PN
    UNSPEC_DMF_PMDMXVBF16GERX2NP
    UNSPEC_DMF_PMDMXVBF16GERX2NN
+   UNSPEC_DMF_DMXVF16GERX2
+   UNSPEC_DMF_DMXVF16GERX2PP
+   UNSPEC_DMF_DMXVF16GERX2PN
+   UNSPEC_DMF_DMXVF16GERX2NP
+   UNSPEC_DMF_DMXVF16GERX2NN
+   UNSPEC_DMF_PMDMXVF16GERX2
+   UNSPEC_DMF_PMDMXVF16GERX2PP
+   UNSPEC_DMF_PMDMXVF16GERX2PN
+   UNSPEC_DMF_PMDMXVF16GERX2NP
+   UNSPEC_DMF_PMDMXVF16GERX2NN
   ])
 
 (define_c_enum "unspecv"
@@ -158,7 +168,8 @@
 
 ; DMF instructions with 1 vector pair and 1 vector arguments
 (define_int_iterator DMF_PV		[UNSPEC_DMF_DMXVI8GERX4
-					 UNSPEC_DMF_DMXVBF16GERX2])
+					 UNSPEC_DMF_DMXVBF16GERX2
+					 UNSPEC_DMF_DMXVF16GERX2])
 
 ;; MMA instructions with 1 accumulator, 1 vector pair and 1 vector arguments
 (define_int_iterator MMA_APV		[UNSPEC_MMA_XVF64GERPP
@@ -172,7 +183,11 @@
 					 UNSPEC_DMF_DMXVBF16GERX2PP
 					 UNSPEC_DMF_DMXVBF16GERX2PN
 					 UNSPEC_DMF_DMXVBF16GERX2NP
-					 UNSPEC_DMF_DMXVBF16GERX2NN])
+					 UNSPEC_DMF_DMXVBF16GERX2NN
+					 UNSPEC_DMF_DMXVF16GERX2PP
+					 UNSPEC_DMF_DMXVF16GERX2PN
+					 UNSPEC_DMF_DMXVF16GERX2NP
+					 UNSPEC_DMF_DMXVF16GERX2NN])
 
 ;; MMA instructions with 2 vector, 2 4-bit and 1 8-bit arguments
 (define_int_iterator MMA_VVI4I4I8	[UNSPEC_MMA_PMXVI4GER8])
@@ -234,14 +249,19 @@
 
 ;; DMF instructions with 1 vector pair, 1 vector, 1 8-bit, 1 4-bit
 ;; and 1 2-bit arguments
-(define_int_iterator DMF_PVI8I4I2      [UNSPEC_DMF_PMDMXVBF16GERX2])
+(define_int_iterator DMF_PVI8I4I2      [UNSPEC_DMF_PMDMXVBF16GERX2
+					 UNSPEC_DMF_PMDMXVF16GERX2])
 
 ;; DMF instructions with 1dmr, 1 vector pair, 1 vector, 1 8-bit,
 ;; 1 4-bit and 1 2-bit arguments
 (define_int_iterator DMF_DPVI8I4I2     [UNSPEC_DMF_PMDMXVBF16GERX2PP
 					UNSPEC_DMF_PMDMXVBF16GERX2PN
 					UNSPEC_DMF_PMDMXVBF16GERX2NP
-					UNSPEC_DMF_PMDMXVBF16GERX2NN])
+					UNSPEC_DMF_PMDMXVBF16GERX2NN
+					UNSPEC_DMF_PMDMXVF16GERX2PP
+					UNSPEC_DMF_PMDMXVF16GERX2PN
+					UNSPEC_DMF_PMDMXVF16GERX2NP
+					UNSPEC_DMF_PMDMXVF16GERX2NN])
 
 (define_int_attr acc		[(UNSPEC_MMA_XXMFACC		"xxmfacc")
 				 (UNSPEC_MMA_XXMTACC		"xxmtacc")])
@@ -274,7 +294,8 @@
 
 (define_int_attr pv		[(UNSPEC_MMA_XVF64GER		"xvf64ger")
 				 (UNSPEC_DMF_DMXVI8GERX4        "dmxvi8gerx4")
-				 (UNSPEC_DMF_DMXVBF16GERX2      "dmxvbf16gerx2")])
+				 (UNSPEC_DMF_DMXVBF16GERX2      "dmxvbf16gerx2")
+				 (UNSPEC_DMF_DMXVF16GERX2	"dmxvf16gerx2")])
 
 (define_int_attr apv		[(UNSPEC_MMA_XVF64GERPP		"xvf64gerpp")
 				 (UNSPEC_MMA_XVF64GERPN		"xvf64gerpn")
@@ -286,7 +307,11 @@
 				 (UNSPEC_DMF_DMXVBF16GERX2PP	"dmxvbf16gerx2pp")
 				 (UNSPEC_DMF_DMXVBF16GERX2PN	"dmxvbf16gerx2pn")
 				 (UNSPEC_DMF_DMXVBF16GERX2NP	"dmxvbf16gerx2np")
-				 (UNSPEC_DMF_DMXVBF16GERX2NN	"dmxvbf16gerx2nn")])
+				 (UNSPEC_DMF_DMXVBF16GERX2NN	"dmxvbf16gerx2nn")
+				 (UNSPEC_DMF_DMXVF16GERX2PP	"dmxvf16gerx2pp")
+				 (UNSPEC_DMF_DMXVF16GERX2PN	"dmxvf16gerx2pn")
+				 (UNSPEC_DMF_DMXVF16GERX2NP	"dmxvf16gerx2np")
+				 (UNSPEC_DMF_DMXVF16GERX2NN	"dmxvf16gerx2nn")])
 
 (define_int_attr vvi4i4i8	[(UNSPEC_MMA_PMXVI4GER8		"pmxvi4ger8")])
 
@@ -332,12 +357,17 @@
 (define_int_attr dpvi8i4i4	[(UNSPEC_DMF_PMDMXVI8GERX4PP    "pmdmxvi8gerx4pp")
 				 (UNSPEC_DMF_PMDMXVI8GERX4SPP   "pmdmxvi8gerx4spp")])
 
-(define_int_attr pvi8i4i2	[(UNSPEC_DMF_PMDMXVBF16GERX2	"pmdmxvbf16gerx2")])
+(define_int_attr pvi8i4i2	[(UNSPEC_DMF_PMDMXVBF16GERX2	"pmdmxvbf16gerx2")
+				 (UNSPEC_DMF_PMDMXVF16GERX2	"pmdmxvf16gerx2")])
 
 (define_int_attr dpvi8i4i2	[(UNSPEC_DMF_PMDMXVBF16GERX2PP "pmdmxvbf16gerx2pp")
 				 (UNSPEC_DMF_PMDMXVBF16GERX2PN  "pmdmxvbf16gerx2pn")
 				 (UNSPEC_DMF_PMDMXVBF16GERX2NP  "pmdmxvbf16gerx2np")
-				 (UNSPEC_DMF_PMDMXVBF16GERX2NN  "pmdmxvbf16gerx2nn")])
+				 (UNSPEC_DMF_PMDMXVBF16GERX2NN  "pmdmxvbf16gerx2nn")
+				 (UNSPEC_DMF_PMDMXVF16GERX2PP	"pmdmxvf16gerx2pp")
+				 (UNSPEC_DMF_PMDMXVF16GERX2PN	"pmdmxvf16gerx2pn")
+				 (UNSPEC_DMF_PMDMXVF16GERX2NP	"pmdmxvf16gerx2np")
+				 (UNSPEC_DMF_PMDMXVF16GERX2NN	"pmdmxvf16gerx2nn")])
 
 ;; Vector pair support.  OOmode can only live in VSRs.
 (define_expand "movoo"
@@ -1039,7 +1069,7 @@
   [(set_attr "type" "dmf")])
 
 (define_insn "dmf_<pv>"
-  [(set (match_operand:TDO 0 "accumulator_operand" "=wD")
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
 	(unspec:TDO [(match_operand:OO 1 "vsx_register_operand" "wa")
 		     (match_operand:V16QI 2 "vsx_register_operand" "wa")]
 		    DMF_PV))]
