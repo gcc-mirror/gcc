@@ -4168,12 +4168,39 @@ factor_out_conditional_load (edge e0, edge e1, basic_block merge, gphi *phi,
 
   tree ref0 = gimple_assign_rhs1 (load0);
   tree ref1 = gimple_assign_rhs1 (load1);
+  tree index = nullptr;
+  tree step = nullptr;
+  tree index2 = nullptr;
 
   /* Both must be *P loads of a compatible value type.  The
      TBAA alias-ptr type carried by MEM_REF operand 1 need not match; it is
      merged the way get_alias_type_for_stmts does when the load is built.  */
-  if (TREE_CODE (ref0) != MEM_REF || TREE_CODE (ref1) != MEM_REF
-      || !types_compatible_p (TREE_TYPE (ref0), TREE_TYPE (ref1)))
+  if (TREE_CODE (ref0) != MEM_REF)
+    {
+      if (TREE_CODE (ref0) != TARGET_MEM_REF)
+	return false;
+      index = TMR_INDEX (ref0);
+      step = TMR_STEP (ref0);
+      index2 = TMR_INDEX2 (ref0);
+    }
+  if (TREE_CODE (ref1) == MEM_REF)
+    {
+      if (index || step || index2)
+	return false;
+    }
+  else
+    {
+      if (TREE_CODE (ref1) != TARGET_MEM_REF)
+	return false;
+      if (!safe_operand_equal_p (index, TMR_INDEX (ref1)))
+	return false;
+      if (!safe_operand_equal_p (step, TMR_STEP (ref1)))
+	return false;
+      if (!safe_operand_equal_p (index2, TMR_INDEX2 (ref1)))
+	return false;
+    }
+
+  if (!types_compatible_p (TREE_TYPE (ref0), TREE_TYPE (ref1)))
     return false;
 
   /* The alignment of the two accesses need to be the same.  */
@@ -4297,7 +4324,12 @@ factor_out_conditional_load (edge e0, edge e1, basic_block merge, gphi *phi,
 
   /* Build the combined load RES = *PTR, reusing the PHI result so any range
      info on it is preserved (as factor_out_conditional_operation does).  */
-  tree nref = build2 (MEM_REF, TREE_TYPE (ref0), newptr, newindex);
+  tree nref;
+  if (index || step || index2)
+    nref = build5 (TARGET_MEM_REF, TREE_TYPE (ref0), newptr,
+		   newindex, index, step, index2);
+  else
+    nref = build2 (MEM_REF, TREE_TYPE (ref0), newptr, newindex);
   MR_DEPENDENCE_CLIQUE (nref) = clique;
   MR_DEPENDENCE_BASE (nref) = base;
   tree res = gimple_phi_result (phi);

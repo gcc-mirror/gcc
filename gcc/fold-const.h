@@ -301,4 +301,17 @@ private:
 			unsigned int flags);
 };
 
+/* Like operand_equal_p but supports nullptrs which compare
+   equals to each other but not to others.   */
+
+inline bool
+safe_operand_equal_p (const_tree op0, const_tree op1, unsigned int flags = 0)
+{
+  if (op0 == op1)
+    return true;
+  if (!op0 || !op1)
+    return false;
+  return operand_equal_p (op0, op1, flags);
+}
+
 #endif // GCC_FOLD_CONST_H
