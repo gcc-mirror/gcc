@@ -316,6 +316,18 @@ struct vect_load_store_data : vect_data {
   bool subchain_p; // VMAT_STRIDED_SLP and VMAT_GATHER_SCATTER
 };
 
+struct match_elt_t {
+  int v;
+  operator bool () const = delete;
+  match_elt_t& operator= (bool) = delete;
+  match_elt_t& operator= (int v_) { v = v_; return *this; }
+};
+
+inline bool operator!= (const match_elt_t &m, const match_elt_t &m2) { return m.v != m2.v; }
+inline bool operator== (const match_elt_t &m, const match_elt_t &m2) { return m.v == m2.v; }
+inline bool operator== (const match_elt_t &m, int v) { return m.v == v; }
+inline bool operator!= (const match_elt_t &m, int v) { return m.v != v; }
+
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */
 struct _slp_tree {
@@ -400,7 +412,7 @@ struct _slp_tree {
   /* If not NULL this is a cached failed SLP discovery attempt with
      the lanes that failed during SLP discovery as 'false'.  This is
      a copy of the matches array.  */
-  bool *failed;
+  match_elt_t *failed;
 
   /* Allocate from slp_tree_pool.  */
   static void *operator new (size_t);

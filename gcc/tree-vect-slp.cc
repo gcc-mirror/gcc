@@ -1099,12 +1099,34 @@ compatible_calls_p (gcall *call1, gcall *call2, bool allow_two_operators)
 
 /* Verify if the scalar stmts STMTS are isomorphic, require data
    permutation or are of unsupported types of operation.
-   Return false if at least one stmt is unvectorizable or the comparison
-   could not be carried out.
-   Return true if they all are and indicate in *MATCHES which stmts are
-   not isomorphic to the first one.
+   Return false if at least one (or all in case of BB vectorization)
+   stmt is unvectorizable or the comparison could not be carried out.
+   Return true if they all (or at least one in case of BB vectorization)
+   are and indicate in MATCHES[] which stmts are not isomorphic to the
+   stmt at *START_I.
 
-   Note COND_EXPR is possibly isomorphic to another one after swapping its
+   This function is designed to be invoked repeatedly on the same
+   set of STMTS with increasing *START_I.
+
+   When *START_I is zero and the function returns true MATCHES[] will be
+   initialized with, in case of BB vectorization, unvectorizable stmts
+   marked with -2, stmts isomorphic to *START_I as *START_I and
+   other vectorizable stmts with -1 (not isomorphic to *START_I).
+   *START_I, when initially zero, is updated to the first vectorizable
+   statement, so MATCHES[] can have a prefix with entries valued -2.
+
+   When *START_I is not zero MATCHES[] is expected to be pre-initialized
+   by a former call with *START_I zero and MATCHES[*START_I] should be -1.
+   The function will return true and have the stmts isomorphic to
+   MATCHES[*START_I] marked with *START_I.
+
+   *TWO_OPERATORS indicates whether the group of isomorphic statements
+   uses two related operations like PLUS_EXPR and MINUS_EXPR.  If
+   TWO_OPERATORS is NULL such case is not considered isomorphic.
+
+   SWAP[] indicates whether for a stmt to be isomorphic to its group
+   leader, has to have its operands swapped (1) or its predicate inverted (2).
+   COND_EXPR is possibly isomorphic to another one after swapping its
    operands.  Set SWAP[i] to 1 if stmt I is COND_EXPR and isomorphic to
    the first stmt by swapping the two operands of comparison; set SWAP[i]
    to 2 if stmt I is isormorphic to the first stmt by inverting the code
@@ -1112,12 +1134,11 @@ compatible_calls_p (gcall *call1, gcall *call2, bool allow_two_operators)
    to (B1 <= A1 ? X1 : Y1); or be inverted to (A1 < B1) ? Y1 : X1.  */
 
 static bool
-vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
-		       vec<stmt_vec_info> stmts, bool *matches,
-		       bool *two_operators, tree vectype)
+vect_build_slp_tree_3 (vec_info *vinfo, vec<stmt_vec_info> stmts,
+		       match_elt_t *matches, unsigned char *swap,
+		       bool *two_operators, tree vectype, unsigned *start_i)
 {
-  unsigned int i;
-  stmt_vec_info first_stmt_info = stmts[0];
+  stmt_vec_info first_stmt_info = NULL;
   code_helper first_stmt_code = ERROR_MARK;
   code_helper alt_stmt_code = ERROR_MARK;
   code_helper first_cond_code = ERROR_MARK;
@@ -1129,22 +1150,31 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
   bool first_stmt_phi_p = false;
   int first_reduc_idx = -1;
 
-  basic_block common_bb = gimple_bb (first_stmt_info->stmt);
+  basic_block common_bb = NULL;
   gimple *trapping_stmt = NULL;
+  int first_match = -1;
 
-  stmt_vec_info stmt_info;
-  FOR_EACH_VEC_ELT (stmts, i, stmt_info)
+  for (unsigned i = *start_i; i < stmts.length (); ++i)
     {
+      stmt_vec_info stmt_info = stmts[i];
       bool ldst_p = false;
       bool ldst_masklen_p = false;
       bool phi_p = false;
       code_helper rhs_code = ERROR_MARK;
 
-      swap[i] = 0;
-      matches[i] = false;
+      if (*start_i == 0)
+	{
+	  swap[i] = 0;
+	  matches[i] = -1;
+	}
+      else if (matches[i] != -1)
+	continue;
+
       if (!stmt_info)
 	{
-	  matches[i] = true;
+	  /* ???  We shouldn't run into this.  */
+	  gcc_assert (first_match != -1);
+	  matches[i] = first_match;
 	  continue;
 	}
 
@@ -1162,12 +1192,11 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "Build SLP failed: unvectorizable statement %G",
 			     stmt);
-	  /* ???  For BB vectorization we want to commutate operands in a way
-	     to shuffle all unvectorizable defs into one operand and have
-	     the other still vectorized.  The following doesn't reliably
-	     work for this though but it's the easiest we can do here.  */
-	  if (is_a <bb_vec_info> (vinfo) && i != 0)
-	    continue;
+	  if (is_a <bb_vec_info> (vinfo))
+	    {
+	      matches[i] = -2;
+	      continue;
+	    }
           return false;
         }
 
@@ -1179,8 +1208,11 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "Build SLP failed: not GIMPLE_ASSIGN nor "
 			     "GIMPLE_CALL %G", stmt);
-	  if (is_a <bb_vec_info> (vinfo) && i != 0)
-	    continue;
+	  if (is_a <bb_vec_info> (vinfo))
+	    {
+	      matches[i] = -2;
+	      continue;
+	    }
 	  return false;
 	}
 
@@ -1224,8 +1256,11 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: unsupported call type %G",
 				 (gimple *) call_stmt);
-	      if (is_a <bb_vec_info> (vinfo) && i != 0)
-		continue;
+	      if (is_a <bb_vec_info> (vinfo))
+		{
+		  matches[i] = -2;
+		  continue;
+		}
 	      return false;
 	    }
 	}
@@ -1256,8 +1291,11 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "Build SLP failed: operation unsupported %G",
 			     stmt);
-	  if (is_a <bb_vec_info> (vinfo) && i != 0)
-	    continue;
+	  if (is_a <bb_vec_info> (vinfo))
+	    {
+	      matches[i] = -2;
+	      continue;
+	    }
 	  return false;
 	}
 
@@ -1278,15 +1316,21 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: "
 				 "BIT_FIELD_REF not supported\n");
-	      if (i != 0)
-		continue;
+	      if (is_a <bb_vec_info> (vinfo))
+		{
+		  matches[i] = -2;
+		  continue;
+		}
 	      return false;
 	    }
 	}
 
       /* Check the operation.  */
-      if (i == 0)
+      if (first_match == -1)
 	{
+	  first_match = i;
+	  first_stmt_info = stmt_info;
+	  common_bb = gimple_bb (stmt_info->stmt);
 	  first_lhs = lhs;
 	  first_stmt_code = rhs_code;
 	  first_stmt_ldst_p = ldst_p;
@@ -1354,6 +1398,7 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 	      continue;
 	    }
 	  if (!ldst_p
+	      && two_operators
 	      && first_stmt_code != rhs_code
 	      && alt_stmt_code == ERROR_MARK)
 	    alt_stmt_code = rhs_code;
@@ -1471,6 +1516,22 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 	      /* Mismatch.  */
 	      continue;
 	    }
+
+	  /* We need to ensure all stmts are in the same BB when one stmt could
+	     trap.  */
+	  if (trapping_stmt || gimple_could_trap_p (stmt))
+	    {
+	      gcc_assert (!trapping_stmt || common_bb);
+	      if (gimple_bb (stmt) != common_bb)
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: not all stmts in same "
+				     "BB but possibly trapping operation in %G",
+				     trapping_stmt);
+		  continue;
+		}
+	    }
 	}
 
       /* Grouped store or load.  */
@@ -1534,9 +1595,9 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: not grouped load %G", stmt);
 
-	      if (i != 0)
-		continue;
-	      return false;
+	      if (is_a <bb_vec_info> (vinfo))
+		matches[i] = -2;
+	      continue;
 	    }
 	}
       /* Not memory operation.  */
@@ -1549,7 +1610,7 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 	      enum tree_code swap_code = ERROR_MARK;
 	      enum tree_code invert_code = ERROR_MARK;
 
-	      if (i == 0)
+	      if (i == (unsigned)first_match)
 		first_cond_code = TREE_CODE (cond_expr);
 	      else if (TREE_CODE_CLASS (cond_code) == tcc_comparison)
 		{
@@ -1577,7 +1638,7 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 		}
 	    }
 
-	  if (i != 0
+	  if (i != (unsigned) first_match
 	      && first_stmt_code != rhs_code
 	      && first_stmt_code.is_tree_code ()
 	      && rhs_code.is_tree_code ()
@@ -1586,7 +1647,7 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 		  == (tree_code)rhs_code))
 	    swap[i] = 1;
 
-	  if (i != 0
+	  if (i != (unsigned) first_match
 	      && first_reduc_idx != STMT_VINFO_REDUC_IDX (stmt_info)
 	      && first_reduc_idx != -1
 	      && STMT_VINFO_REDUC_IDX (stmt_info) != -1
@@ -1601,50 +1662,49 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
       if (!trapping_stmt && gimple_could_trap_p (stmt))
 	trapping_stmt = stmt;
       if (common_bb != gimple_bb (stmt))
-	common_bb = NULL;
+	{
+	  common_bb = NULL;
+	  gcc_assert (!trapping_stmt);
+	}
 
-      matches[i] = true;
+      matches[i] = first_match;
     }
 
-  if (trapping_stmt && common_bb == NULL)
+  /* Record if we allowed two distinct operations for the SLP node.  */
+  if (((first_stmt_code == PLUS_EXPR
+	|| first_stmt_code == MINUS_EXPR)
+       && (alt_stmt_code == PLUS_EXPR
+	   || alt_stmt_code == MINUS_EXPR))
+      || ((first_stmt_code == CFN_FMA
+	   || first_stmt_code == CFN_FMS)
+	  && (alt_stmt_code == CFN_FMA
+	      || alt_stmt_code == CFN_FMS)))
+    *two_operators = true;
+
+  if (first_match == -1)
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Build SLP failed: not all stmts in same BB but "
-			 "possibly trapping operation in %G", trapping_stmt);
+      /* If there was no useful stmt, fail.  Can only happen during
+	 the first sweep.  */
+      gcc_assert (*start_i == 0);
+      *start_i = stmts.length () - 1;
       return false;
     }
 
-  /* If we allowed a two-operation SLP node verify the target can cope
-     with the permute we are going to use.  */
-  if (alt_stmt_code != ERROR_MARK
-      && (!alt_stmt_code.is_tree_code ()
-	  || (TREE_CODE_CLASS (tree_code (alt_stmt_code)) != tcc_reference
-	      && TREE_CODE_CLASS (tree_code (alt_stmt_code)) != tcc_comparison)))
-    {
-      *two_operators = true;
-    }
-
+  *start_i = first_match;
   return true;
 }
 
 /* Verify if the scalar stmts STMTS are isomorphic, require data
    permutation or are of unsupported types of operation.  Return
    true if they are, otherwise return false and indicate in *MATCHES
-   which stmts are not isomorphic to the first one.  If MATCHES[0]
-   is false then this indicates the comparison could not be
-   carried out or the stmts will never be vectorized by SLP.
-
-   Note COND_EXPR is possibly isomorphic to another one after swapping its
-   operands.  Set SWAP[i] to 1 if stmt I is COND_EXPR and isomorphic to
-   the first stmt by swapping the two operands of comparison; set SWAP[i]
-   to 2 if stmt I is isormorphic to the first stmt by inverting the code
-   of comparison.  Take A1 >= B1 ? X1 : Y1 as an example, it can be swapped
-   to (B1 <= A1 ? X1 : Y1); or be inverted to (A1 < B1) ? Y1 : X1.  */
+   the groups of isomorphic stmts.  See vect_build_slp_tree_3 for
+   details.  *TWO_OPERATORS is for the first isomorphic group,
+   knowledge whether following isomorphic groups have one or two operators
+   is not retained.  */
 
 static bool
 vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
-		       vec<stmt_vec_info> stmts, bool *matches,
+		       vec<stmt_vec_info> stmts, match_elt_t *matches,
 		       bool *two_operators, tree *node_vectype)
 {
   stmt_vec_info first_stmt_info = stmts[0];
@@ -1654,7 +1714,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 				       group_size))
     {
       /* Fatal mismatch.  */
-      matches[0] = false;
+      matches[0] = -1;
       return false;
     }
   if (is_a <bb_vec_info> (vinfo)
@@ -1664,7 +1724,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "Build SLP failed: not using single lane "
 			 "vector type %T\n", vectype);
-      matches[0] = false;
+      matches[0] = -1;
       return false;
     }
   /* Check nunits required but continue analysis, producing matches[]
@@ -1684,7 +1744,7 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	  || const_nunits > group_size)
 	{
 	  /* Fatal mismatch.  */
-	  matches[0] = false;
+	  matches[0] = -1;
 	  return false;
 	}
       maybe_soft_fail = true;
@@ -1693,24 +1753,41 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   gcc_assert (vectype || !gimple_get_lhs (first_stmt_info->stmt));
   *node_vectype = vectype;
 
-  if (!vect_build_slp_tree_3 (vinfo, swap, stmts, matches, two_operators,
-			      vectype))
+  unsigned start_i = 0;
+  if (!vect_build_slp_tree_3 (vinfo, stmts, matches, swap, two_operators,
+			      vectype, &start_i))
     {
       /* Fatal mismatch.  */
-      matches[0] = false;
+      matches[0] = -1;
       return false;
     }
+  gcc_assert (matches[start_i] == (int)start_i);
+  /* Discover further isomorphic groups.  */
+  for (start_i = start_i + 1; start_i < group_size; ++start_i)
+    if (matches[start_i] == -1)
+      {
+	unsigned prev_start_i = start_i;
+	bool tem_two_operators;
+	bool res = vect_build_slp_tree_3 (vinfo, stmts, matches, swap,
+					  &tem_two_operators,
+					  vectype, &start_i);
+	gcc_assert (res && matches[start_i] == (int)prev_start_i);
+      }
 
+  bool res = true;
   for (unsigned i = 0; i < group_size; ++i)
-    if (!matches[i])
-      return false;
+    if (matches[i] != 0)
+      res = false;
+  if (!res)
+    return false;
 
   if (maybe_soft_fail)
     {
       /* With constant vector elements simulate a mismatch at the
-	 point we need to split.  */
+	 point we need to split.  But indicate the tail is isomorphic.  */
       unsigned tail = group_size & (const_nunits - 1);
-      memset (&matches[group_size - tail], 0, sizeof (bool) * tail);
+      for (unsigned i = group_size - tail; i < group_size; ++i)
+	matches[i] = (int)(group_size - tail);
       return false;
     }
 
@@ -1879,13 +1956,14 @@ static unsigned least_upthread_swappable_op_distance = -1U;
 static slp_tree
 vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		       vec<stmt_vec_info> stmts,
-		       bool *matches, unsigned *limit, unsigned *tree_size,
+		       match_elt_t *matches, unsigned *limit,
+		       unsigned *tree_size,
 		       scalar_stmts_to_slp_tree_map_t *bst_map);
 
 static slp_tree
 vect_build_slp_tree (vec_info *vinfo,
 		     vec<stmt_vec_info> stmts,
-		     bool *matches, unsigned *limit, unsigned *tree_size,
+		     match_elt_t *matches, unsigned *limit, unsigned *tree_size,
 		     scalar_stmts_to_slp_tree_map_t *bst_map)
 {
   unsigned int group_size = stmts.length ();
@@ -1901,7 +1979,7 @@ vect_build_slp_tree (vec_info *vinfo,
 	  stmts.release ();
 	  return *leader;
 	}
-      memcpy (matches, (*leader)->failed, sizeof (bool) * group_size);
+      memcpy (matches, (*leader)->failed, sizeof (match_elt_t) * group_size);
       return NULL;
     }
 
@@ -1914,7 +1992,7 @@ vect_build_slp_tree (vec_info *vinfo,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "SLP discovery limit exceeded\n");
-	  memset (matches, 0, sizeof (bool) * group_size);
+	  memset (matches, -1, sizeof (match_elt_t) * group_size);
 	  return NULL;
 	}
       --*limit;
@@ -1942,16 +2020,16 @@ vect_build_slp_tree (vec_info *vinfo,
 	 as backedge destinations.  */
       SLP_TREE_SCALAR_STMTS (res) = vNULL;
       SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
-      res->failed = XNEWVEC (bool, group_size);
+      res->failed = XNEWVEC (match_elt_t, group_size);
       if (flag_checking)
 	{
 	  unsigned i;
 	  for (i = 0; i < group_size; ++i)
-	    if (!matches[i])
+	    if (matches[i] != 0)
 	      break;
 	  gcc_assert (i < group_size);
 	}
-      memcpy (res->failed, matches, sizeof (bool) * group_size);
+      memcpy (res->failed, matches, sizeof (match_elt_t) * group_size);
     }
   else
     {
@@ -2016,13 +2094,14 @@ vect_slp_build_two_operator_nodes (slp_tree perm, tree vectype,
 static slp_tree
 vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		       vec<stmt_vec_info> stmts,
-		       bool *matches, unsigned *limit, unsigned *tree_size,
+		       match_elt_t *matches, unsigned *limit,
+		       unsigned *tree_size,
 		       scalar_stmts_to_slp_tree_map_t *bst_map)
 {
   unsigned int group_size = stmts.length ();
   unsigned nops, i, this_tree_size = 0;
 
-  matches[0] = false;
+  matches[0] = -1;
 
   stmt_vec_info stmt_info = stmts[0];
   if (!is_a<gcall *> (stmt_info->stmt)
@@ -2170,7 +2249,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		  || STMT_VINFO_STRIDED_P (stmt_info))
 		{
 		  load_permutation.release ();
-		  matches[0] = false;
+		  matches[0] = -1;
 		  return NULL;
 		}
 
@@ -2195,7 +2274,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 			  stmts2[i++] = NULL;
 		      stmts2[i++] = si;
 		    }
-		  bool *matches2 = XALLOCAVEC (bool, dr_group_size);
+		  match_elt_t *matches2
+		    = XALLOCAVEC (match_elt_t, dr_group_size);
 		  slp_tree unperm_load
 		    = vect_build_slp_tree (vinfo, stmts2, matches2, limit,
 					   &this_tree_size, bst_map);
@@ -2219,7 +2299,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		    }
 		  stmts2.release ();
 		  load_permutation.release ();
-		  matches[0] = false;
+		  matches[0] = -1;
 		  return NULL;
 		}
 	      load_permutation.release ();
@@ -2255,7 +2335,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 				       bit_field_size (bfref), &lane))
 	    {
 	      lperm.release ();
-	      matches[0] = false;
+	      matches[0] = -1;
 	      return NULL;
 	    }
 	  lperm.safe_push (std::make_pair (0, (unsigned)lane));
@@ -2367,9 +2447,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	    {
 	      /* ???  Here we could slip in magic to compensate with
 		 neutral operands.  */
-	      matches[lane] = false;
+	      matches[lane] = -1;
 	      if (lane != group_size - 1)
-		matches[0] = false;
+		matches[0] = -1;
 	      break;
 	    }
 	  chains.quick_push (chain.copy ());
@@ -2430,9 +2510,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "giving up on chain due to mismatched "
 				     "def types\n");
-		  matches[lane] = false;
+		  matches[lane] = -1;
 		  if (lane != group_size - 1)
-		    matches[0] = false;
+		    matches[0] = -1;
 		  goto out;
 		}
 	      dts[n] = dt;
@@ -2447,7 +2527,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 			  || !can_duplicate_and_interleave_p (vinfo, group_size,
 							      type)))
 		    {
-		      matches[0] = false;
+		      matches[0] = -1;
 		      goto out;
 		    }
 		}
@@ -2507,7 +2587,8 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		      /* ???  We're likely getting too many fatal mismatches
 			 here so maybe we want to ignore them (but then we
 			 have no idea which lanes fatally mismatched).  */
-		      if (child || !matches[0])
+		      /* ???  Revisit this with matches[] improvements.  */
+		      if (child || matches[0] != 0)
 			break;
 		      /* Swap another lane we have not yet matched up into
 			 lanes that did not match.  If we run out of
@@ -2515,7 +2596,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 			 search.  */
 		      bool term = false;
 		      for (lane = 1; lane < group_size; ++lane)
-			if (!matches[lane])
+			if (matches[lane] != 0)
 			  {
 			    if (n + perms[lane] + 1 == chain_len)
 			      {
@@ -2542,9 +2623,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 					 "failed to match up op %d\n", n);
 		      op_stmts.release ();
 		      if (lane != group_size - 1)
-			matches[0] = false;
+			matches[0] = -1;
 		      else
-			matches[lane] = false;
+			matches[lane] = -1;
 		      goto out;
 		    }
 		  if (dump_enabled_p ())
@@ -2687,12 +2768,13 @@ out:
 					     swap[i], skip_args,
 					     stmts, i, &oprnds_info);
       if (res != 0)
-	matches[(res == -1) ? 0 : i] = false;
-      if (!matches[0])
+	/* ???  This puts -1 back into matches[] and the cache.  */
+	matches[(res == -1) ? 0 : i] = -1;
+      if (matches[0] == -1)
 	break;
     }
   for (i = 0; i < group_size; ++i)
-    if (!matches[i])
+    if (matches[i] != 0)
       {
 	vect_free_oprnd_info (oprnds_info);
 	return NULL;
@@ -2884,7 +2966,7 @@ out:
 						      oprnd_info->ops.length (),
 						      TREE_TYPE (op0)))
 		{
-		  matches[j] = false;
+		  matches[j] = -1;
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "Build SLP failed: invalid type of def "
@@ -3024,7 +3106,7 @@ out:
 	 and one can be commuted try that for the scalar stmts
 	 that failed the match.  */
       if (/* A first scalar stmt mismatch signals a fatal mismatch.  */
-	  matches[0]
+	  matches[0] == 0
 	  && can_swap)
 	{
 	  /* See whether we can swap the matching or the non-matching
@@ -3034,7 +3116,7 @@ out:
 	    {
 	      for (j = 0; j < group_size; ++j)
 		{
-		  if (matches[j] != !swap_not_matching)
+		  if ((matches[j] == 0) != !swap_not_matching)
 		    continue;
 		  /* Verify if we can swap operands of this stmt.  */
 		  if (!stmt_can_swap[j])
@@ -3053,7 +3135,7 @@ out:
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "Re-trying with swapped operands of stmts ");
 	  for (j = 0; j < group_size; ++j)
-	    if (matches[j] == !swap_not_matching)
+	    if ((matches[j] == 0) == !swap_not_matching)
 	      {
 		std::swap (oprnds_info[0]->def_stmts[j],
 			   oprnds_info[1]->def_stmts[j]);
@@ -3069,7 +3151,7 @@ out:
 	  if (oprnds_info[0]->any_pattern || oprnds_info[1]->any_pattern)
 	    oprnds_info[0]->any_pattern = oprnds_info[1]->any_pattern = true;
 	  /* And try again with scratch 'matches' ... */
-	  bool *tem = XALLOCAVEC (bool, group_size);
+	  match_elt_t *tem = XALLOCAVEC (match_elt_t, group_size);
 	  if ((child = vect_build_slp_tree (vinfo, oprnd_info->def_stmts,
 					    tem, limit,
 					    &this_tree_size, bst_map)) != NULL)
@@ -3097,8 +3179,10 @@ fail:
 	     discovery may still be fixed by retrying with swapped operands.  */
 	  && (least_upthread_swappable_op_distance != 1
 	      /* A first scalar stmt mismatch signals a fatal mismatch
-		 that the parent commutative retry cannot recover.  */
-	      || !matches[0])
+		 that the parent commutative retry cannot recover.
+		 ???  Possibly revisit this with the matches[] improvements
+		 as we can have matches[0] == -2 here.  */
+	      || matches[0] != 0)
 	  && !is_pattern_stmt_p (stmt_info)
 	  && !oprnd_info->any_pattern)
 	{
@@ -3108,7 +3192,7 @@ fail:
 	  /* ???  We might want to split here and combine the results to support
 	     multiple vector sizes better.  */
 	  for (j = 0; j < group_size; ++j)
-	    if (!matches[j])
+	    if (matches[j] != 0)
 	      break;
 	  if (!known_ge (j, TYPE_VECTOR_SUBPARTS (vectype))
 	      && vect_slp_can_convert_to_external (oprnd_info->def_stmts))
@@ -3168,7 +3252,7 @@ fail:
 	      && is_a <gphi *> (stmt_info->stmt)))
 	{
 	  /* Roll back.  */
-	  matches[0] = false;
+	  matches[0] = -1;
 	  FOR_EACH_VEC_ELT (children, j, child)
 	    if (child)
 	      vect_free_slp_tree (child);
@@ -3793,7 +3877,7 @@ optimize_load_redistribution_1 (scalar_stmts_to_slp_tree_map_t *bst_map,
 			 "converting stmts on permute node %p\n",
 			 (void *) root);
 
-      bool *matches = XALLOCAVEC (bool, group_size);
+      match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
       unsigned tree_size = 0, limit = 1;
       node = vect_build_slp_tree (vinfo, stmts,
 				  matches, &limit, &tree_size, bst_map);
@@ -4206,14 +4290,14 @@ vect_build_slp_instance (vec_info *vinfo,
 
   /* Build the tree for the SLP instance.  */
   unsigned int group_size = scalar_stmts.length ();
-  bool *matches = XALLOCAVEC (bool, group_size);
+  match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
   unsigned tree_size = 0;
 
   slp_tree node = NULL;
   if (group_size > 1 && force_single_lane)
     {
-      matches[0] = true;
-      matches[1] = false;
+      matches[0] = 0;
+      matches[1] = -1;
     }
   else
     node = vect_build_slp_tree (vinfo, scalar_stmts, matches, limit,
@@ -4272,11 +4356,11 @@ vect_build_slp_instance (vec_info *vinfo,
      otherwise we get the non-power-of-two tail of the lanes failed.
      For BB reductions we mainly want to catch the first case so we pick
      a more useful subset of lanes to reduce.  */
-  if (kind == slp_inst_kind_bb_reduc && matches[0])
+  if (kind == slp_inst_kind_bb_reduc && matches[0] == 0)
     {
       unsigned n_matching = 0;
       for (unsigned i = 0; i < group_size; ++i)
-	if (matches[i])
+	if (matches[i] == 0)
 	  n_matching++;
       vec<stmt_vec_info> scalar_stmts2 = vNULL;
       /* Try matched parts and put the rest to remain.  */
@@ -4288,7 +4372,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	     finish discovery.  */
 	  scalar_stmts2.create (n_matching);
 	  for (unsigned i = 0; i < group_size; ++i)
-	    if (matches[i])
+	    if (matches[i] == 0)
 	      scalar_stmts2.quick_push (scalar_stmts[i]);
 	    else
 	      remain.safe_push
@@ -4303,7 +4387,7 @@ vect_build_slp_instance (vec_info *vinfo,
 	     time prefering the matching[] part.  */
 	  scalar_stmts2.create (scalar_stmts.length () - n_matching);
 	  for (unsigned i = 0; i < group_size; ++i)
-	    if (!matches[i])
+	    if (matches[i] != 0)
 	      scalar_stmts2.quick_push (scalar_stmts[i]);
 	    else
 	      remain.safe_push
@@ -4500,7 +4584,7 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
 	}
 
       unsigned int group_size = scalar_stmts.length ();
-      bool *matches = XALLOCAVEC (bool, group_size);
+      match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
       unsigned tree_size = 0;
       slp_tree node = vect_build_slp_tree (vinfo, scalar_stmts, matches, limit,
 					   &tree_size, bst_map);
@@ -4641,7 +4725,7 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
 
   /* Build the tree for the SLP instance.  */
   unsigned int group_size = scalar_stmts.length ();
-  bool *matches = XALLOCAVEC (bool, group_size);
+  match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
   unsigned tree_size = 0;
 
   /* ???  We need this only for SLP discovery.  */
@@ -4787,7 +4871,7 @@ vect_analyze_slp_reduction (loop_vec_info vinfo,
 
   /* Build the tree for the SLP instance.  */
   unsigned int group_size = scalar_stmts.length ();
-  bool *matches = XALLOCAVEC (bool, group_size);
+  match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
   unsigned tree_size = 0;
 
   slp_tree node = vect_build_slp_tree (vinfo, scalar_stmts, matches, limit,
@@ -4849,7 +4933,7 @@ vect_analyze_slp_reduction_group (loop_vec_info loop_vinfo,
 				  vec<stmt_vec_info> scalar_stmts,
 				  scalar_stmts_to_slp_tree_map_t *bst_map,
 				  unsigned max_tree_size, unsigned *limit,
-				  bool *matches)
+				  match_elt_t *matches)
 {
   /* Try to form a reduction group.  Size-1 groups are not suitable
      for SLP reduction and should fall back to single-lane reduction.  */
@@ -4857,7 +4941,7 @@ vect_analyze_slp_reduction_group (loop_vec_info loop_vinfo,
   if (group_size <= 1)
     return false;
   if (!matches)
-    matches = XALLOCAVEC (bool, group_size);
+    matches = XALLOCAVEC (match_elt_t, group_size);
   unsigned tree_size = 0;
   slp_tree node = vect_build_slp_tree (loop_vinfo, scalar_stmts, matches, limit,
 				       &tree_size, bst_map);
@@ -4953,7 +5037,7 @@ vect_analyze_slp_reductions (loop_vec_info loop_vinfo,
     {
       /* Try to form a reduction group.  */
       unsigned int group_size = scalar_stmts.length ();
-      bool *matches = XALLOCAVEC (bool, group_size);
+      match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
       if (vect_analyze_slp_reduction_group (loop_vinfo, scalar_stmts, bst_map,
 					    max_tree_size, limit, matches))
 	return true;
@@ -4963,13 +5047,14 @@ vect_analyze_slp_reductions (loop_vec_info loop_vinfo,
 	 that on failure (to limit compile-time costs), but recurse
 	 for the initial non-matching parts.  Everything not covered
 	 by a sub-group gets single-reduction treatment.  */
+      /* ???  Improve this with the matches[] improvements.  */
       vec<stmt_vec_info> cands = vNULL;
-      while (matches[0])
+      while (matches[0] == 0)
 	{
 	  cands.truncate (0);
 	  cands.reserve (group_size, true);
 	  for (unsigned i = 0; i < group_size; ++i)
-	    if (matches[i])
+	    if (matches[i] == 0)
 	      cands.quick_push (scalar_stmts[i]);
 
 	  /* Try to form a reduction group.  */
@@ -4995,7 +5080,7 @@ vect_analyze_slp_reductions (loop_vec_info loop_vinfo,
 	     possibly repeating the above with updated matches[].  */
 	  unsigned j = 0;
 	  for (unsigned i = 0; i < group_size; ++i)
-	    if (!matches[i])
+	    if (matches[i] != 0)
 	      {
 		scalar_stmts[j] = scalar_stmts[i];
 		++j;
@@ -5073,15 +5158,15 @@ vect_analyze_slp_instance (vec_info *vinfo,
 
   /* Build the tree for the SLP instance.  */
   unsigned int group_size = scalar_stmts.length ();
-  bool *matches = XALLOCAVEC (bool, group_size);
+  match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
   unsigned tree_size = 0;
   unsigned i;
 
   slp_tree node = NULL;
   if (group_size > 1 && force_single_lane)
     {
-      matches[0] = true;
-      matches[1] = false;
+      matches[0] = 0;
+      matches[1] = -1;
     }
   else
     node = vect_build_slp_tree (vinfo, scalar_stmts, matches, limit,
@@ -5125,13 +5210,14 @@ vect_analyze_slp_instance (vec_info *vinfo,
   /* Failed to SLP.  */
 
   /* Try to break the group up into pieces.  */
+  /* ???  Improve this with the matches[] improvements.  */
   if (*limit > 0 && kind == slp_inst_kind_store)
     {
       /* ???  We could delay all the actual splitting of store-groups
 	 until after SLP discovery of the original group completed.
 	 Then we can recurse to vect_build_slp_instance directly.  */
       for (i = 0; i < group_size; i++)
-	if (!matches[i])
+	if (matches[i] != 0)
 	  break;
 
       /* For basic block SLP, try to break the group up into multiples of
@@ -5272,11 +5358,11 @@ vect_analyze_slp_instance (vec_info *vinfo,
 		     build at a mismatch but the matching part hard-fails
 		     later.  As we know we arrived here with a group
 		     larger than one try a group of size one!  */
-		  if (!matches[0])
+		  if (matches[0] != 0)
 		    end = start + 1;
 		  else
 		    for (unsigned j = start; j < end; j++)
-		      if (!matches[j - start])
+		      if (matches[j - start] != 0)
 			{
 			  end = j;
 			  break;
@@ -5602,7 +5688,7 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	}
       for (unsigned i = 0; i < DR_GROUP_GAP (first); ++i)
 	stmts.quick_push (NULL);
-      bool *matches = XALLOCAVEC (bool, group_lanes);
+      match_elt_t *matches = XALLOCAVEC (match_elt_t, group_lanes);
       unsigned limit = 1;
       unsigned tree_size = 0;
       slp_tree l0 = vect_build_slp_tree (loop_vinfo, stmts, matches, &limit,
