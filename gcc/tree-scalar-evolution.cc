@@ -3850,12 +3850,16 @@ analyze_and_compute_bitop_with_inv_effect (class loop* loop, tree phidef,
 
   if (code1 == BIT_XOR_EXPR)
     {
-       if (!tree_fits_uhwi_p (niter))
-	return NULL_TREE;
-       unsigned HOST_WIDE_INT niter_num;
-       niter_num = tree_to_uhwi (niter);
-       if (niter_num % 2 != 0)
-	match_op[0] =  build_zero_cst (type);
+      tree niter_type = TREE_TYPE (niter);
+      tree one = build_one_cst (niter_type);
+      tree contributes = fold_build2 (BIT_XOR_EXPR, niter_type,
+				      fold_build2 (BIT_AND_EXPR, niter_type,
+						   niter, one),
+				      one);
+      /* mask is all-ones when the invariant contributes, zero otherwise.  */
+      tree mask = fold_build1 (NEGATE_EXPR, type,
+			       fold_convert (type, contributes));
+      match_op[0] = fold_build2 (BIT_AND_EXPR, type, match_op[0], mask);
     }
 
   inv = PHI_ARG_DEF_FROM_EDGE (header_phi, loop_preheader_edge (loop));

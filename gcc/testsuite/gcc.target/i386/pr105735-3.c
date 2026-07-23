@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-sccp-details" } */
-/* { dg-final { scan-tree-dump-times {final value replacement} 8 "sccp" } } */
+/* { dg-final { scan-tree-dump-times {final value replacement} 9 "sccp" } } */
 
 unsigned int
 __attribute__((noipa))
