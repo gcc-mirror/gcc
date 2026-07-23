@@ -1098,11 +1098,11 @@ compatible_calls_p (gcall *call1, gcall *call2, bool allow_two_operators)
 }
 
 /* Verify if the scalar stmts STMTS are isomorphic, require data
-   permutation or are of unsupported types of operation.  Return
-   true if they are, otherwise return false and indicate in *MATCHES
-   which stmts are not isomorphic to the first one.  If MATCHES[0]
-   is false then this indicates the comparison could not be
-   carried out or the stmts will never be vectorized by SLP.
+   permutation or are of unsupported types of operation.
+   Return false if at least one stmt is unvectorizable or the comparison
+   could not be carried out.
+   Return true if they all are and indicate in *MATCHES which stmts are
+   not isomorphic to the first one.
 
    Note COND_EXPR is possibly isomorphic to another one after swapping its
    operands.  Set SWAP[i] to 1 if stmt I is COND_EXPR and isomorphic to
@@ -1112,11 +1112,10 @@ compatible_calls_p (gcall *call1, gcall *call2, bool allow_two_operators)
    to (B1 <= A1 ? X1 : Y1); or be inverted to (A1 < B1) ? Y1 : X1.  */
 
 static bool
-vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
+vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 		       vec<stmt_vec_info> stmts, bool *matches,
-		       bool *two_operators, tree *node_vectype)
+		       bool *two_operators, tree vectype)
 {
-  unsigned int group_size = stmts.length ();
   unsigned int i;
   stmt_vec_info first_stmt_info = stmts[0];
   code_helper first_stmt_code = ERROR_MARK;
@@ -1130,54 +1129,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   bool first_stmt_phi_p = false;
   int first_reduc_idx = -1;
 
-  tree vectype;
-  if (!vect_get_vector_types_for_stmt (vinfo, first_stmt_info, &vectype,
-				       group_size))
-    {
-      /* Fatal mismatch.  */
-      matches[0] = false;
-      return false;
-    }
-  if (is_a <bb_vec_info> (vinfo)
-      && known_le (TYPE_VECTOR_SUBPARTS (vectype), 1U))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Build SLP failed: not using single lane "
-			 "vector type %T\n", vectype);
-      matches[0] = false;
-      return false;
-    }
-  /* Check nunits required but continue analysis, producing matches[]
-     as if nunits was not an issue.  This allows splitting of groups
-     to happen.  */
-  bool maybe_soft_fail = false;
-  unsigned HOST_WIDE_INT const_nunits = 0;
-  if (vectype
-      && is_a <bb_vec_info> (vinfo)
-      && !multiple_p (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Build SLP failed: unrolling required "
-			 "in basic block SLP\n");
-      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
-	  || const_nunits > group_size)
-	{
-	  /* Fatal mismatch.  */
-	  matches[0] = false;
-	  return false;
-	}
-      maybe_soft_fail = true;
-    }
-
-  gcc_assert (vectype || !gimple_get_lhs (first_stmt_info->stmt));
-  *node_vectype = vectype;
-
   basic_block common_bb = gimple_bb (first_stmt_info->stmt);
   gimple *trapping_stmt = NULL;
 
-  /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
     {
@@ -1214,8 +1168,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	     work for this though but it's the easiest we can do here.  */
 	  if (is_a <bb_vec_info> (vinfo) && i != 0)
 	    continue;
-	  /* Fatal mismatch.  */
-	  matches[0] = false;
           return false;
         }
 
@@ -1229,8 +1181,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 			     "GIMPLE_CALL %G", stmt);
 	  if (is_a <bb_vec_info> (vinfo) && i != 0)
 	    continue;
-	  /* Fatal mismatch.  */
-	  matches[0] = false;
 	  return false;
 	}
 
@@ -1276,8 +1226,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 				 (gimple *) call_stmt);
 	      if (is_a <bb_vec_info> (vinfo) && i != 0)
 		continue;
-	      /* Fatal mismatch.  */
-	      matches[0] = false;
 	      return false;
 	    }
 	}
@@ -1341,8 +1289,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "Build SLP failed: "
 				     "BIT_FIELD_REF not supported\n");
-		  /* Fatal mismatch.  */
-		  matches[0] = false;
 		  return false;
 		}
 	    }
@@ -1567,8 +1513,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
 	      if (i != 0)
 		continue;
-	      /* Fatal mismatch.  */
-	      matches[0] = false;
 	      return false;
 	    }
 	}
@@ -1592,8 +1536,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 				 stmt);
 	      if (is_a <bb_vec_info> (vinfo) && i != 0)
 		continue;
-	      /* Fatal mismatch.  */
-	      matches[0] = false;
 	      return false;
 	    }
 
@@ -1667,14 +1609,8 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "Build SLP failed: not all stmts in same BB but "
 			 "possibly trapping operation in %G", trapping_stmt);
-      /* Fatal mismatch.  */
-      matches[0] = false;
       return false;
     }
-
-  for (i = 0; i < group_size; ++i)
-    if (!matches[i])
-      return false;
 
   /* If we allowed a two-operation SLP node verify the target can cope
      with the permute we are going to use.  */
@@ -1685,6 +1621,86 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
     {
       *two_operators = true;
     }
+
+  return true;
+}
+
+/* Verify if the scalar stmts STMTS are isomorphic, require data
+   permutation or are of unsupported types of operation.  Return
+   true if they are, otherwise return false and indicate in *MATCHES
+   which stmts are not isomorphic to the first one.  If MATCHES[0]
+   is false then this indicates the comparison could not be
+   carried out or the stmts will never be vectorized by SLP.
+
+   Note COND_EXPR is possibly isomorphic to another one after swapping its
+   operands.  Set SWAP[i] to 1 if stmt I is COND_EXPR and isomorphic to
+   the first stmt by swapping the two operands of comparison; set SWAP[i]
+   to 2 if stmt I is isormorphic to the first stmt by inverting the code
+   of comparison.  Take A1 >= B1 ? X1 : Y1 as an example, it can be swapped
+   to (B1 <= A1 ? X1 : Y1); or be inverted to (A1 < B1) ? Y1 : X1.  */
+
+static bool
+vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
+		       vec<stmt_vec_info> stmts, bool *matches,
+		       bool *two_operators, tree *node_vectype)
+{
+  stmt_vec_info first_stmt_info = stmts[0];
+  unsigned int group_size = stmts.length ();
+  tree vectype;
+  if (!vect_get_vector_types_for_stmt (vinfo, first_stmt_info, &vectype,
+				       group_size))
+    {
+      /* Fatal mismatch.  */
+      matches[0] = false;
+      return false;
+    }
+  if (is_a <bb_vec_info> (vinfo)
+      && known_le (TYPE_VECTOR_SUBPARTS (vectype), 1U))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Build SLP failed: not using single lane "
+			 "vector type %T\n", vectype);
+      matches[0] = false;
+      return false;
+    }
+  /* Check nunits required but continue analysis, producing matches[]
+     as if nunits was not an issue.  This allows splitting of groups
+     to happen.  */
+  bool maybe_soft_fail = false;
+  unsigned HOST_WIDE_INT const_nunits = 0;
+  if (vectype
+      && is_a <bb_vec_info> (vinfo)
+      && !multiple_p (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Build SLP failed: unrolling required "
+			 "in basic block SLP\n");
+      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
+	  || const_nunits > group_size)
+	{
+	  /* Fatal mismatch.  */
+	  matches[0] = false;
+	  return false;
+	}
+      maybe_soft_fail = true;
+    }
+
+  gcc_assert (vectype || !gimple_get_lhs (first_stmt_info->stmt));
+  *node_vectype = vectype;
+
+  if (!vect_build_slp_tree_3 (vinfo, swap, stmts, matches, two_operators,
+			      vectype))
+    {
+      /* Fatal mismatch.  */
+      matches[0] = false;
+      return false;
+    }
+
+  for (unsigned i = 0; i < group_size; ++i)
+    if (!matches[i])
+      return false;
 
   if (maybe_soft_fail)
     {
