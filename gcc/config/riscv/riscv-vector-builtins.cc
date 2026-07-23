@@ -590,6 +590,20 @@ static const rvv_type_info f16_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+/* A list of all vuint8m_t and vuint16m_t will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info qu_hu_ops[] = {
+#define DEF_RVV_QU_HU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
+/* A list of all vuint16m_t and vuint32m_t will be registered for intrinsic
+ * functions.  */
+static const rvv_type_info hu_su_ops[] = {
+#define DEF_RVV_HU_SU_OPS(TYPE, REQUIRE) {VECTOR_TYPE_##TYPE, REQUIRE},
+#include "riscv-vector-builtins-types.def"
+  {NUM_VECTOR_TYPES, 0}};
+
 static constexpr const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -1265,6 +1279,20 @@ static constexpr const rvv_arg_type_info void_const_ptr_args[]
 static constexpr const rvv_arg_type_info vw_args[]
   = {rvv_arg_type_info (RVV_BASE_vector),
      rvv_arg_type_info (RVV_BASE_float32), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (signed vector_type, signed
+   vector_type) function.  */
+static constexpr const rvv_arg_type_info ss_args[]
+  = {rvv_arg_type_info (RVV_BASE_signed_vector),
+     rvv_arg_type_info (RVV_BASE_signed_vector), rvv_arg_type_info_end};
+
+/* A list of args for vector_type func (vector_type, signed double demote type,
+   signed double demote type) function.  */
+static constexpr const rvv_arg_type_info wwss_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_signed_vector),
+     rvv_arg_type_info (RVV_BASE_double_trunc_signed_vector),
+     rvv_arg_type_info_end};
 
 /* A list of none preds that will be registered for intrinsic functions.  */
 static constexpr const predication_type_index none_preds[]
@@ -3441,6 +3469,46 @@ static constexpr const rvv_op_info sf_vc_v_fvw_ops
      rvv_arg_type_info (RVV_BASE_x2_vector), /* Return type */
      sf_vc_fvw_args /* Args */};
 
+/* A static operand information for vector_type func (signed vector_type,
+   signed vector_type) function registration.  */
+static constexpr const rvv_op_info qu_hu_vss_ops
+  = {qu_hu_ops,			/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     ss_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, vector_type)
+ * function registration.  */
+static constexpr const rvv_op_info qu_hu_vvv_ops
+  = {qu_hu_ops,			/* Types */
+     OP_TYPE_vv,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     vv_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, signed
+   double demote type, signed double demote type) function registration.  */
+static constexpr const rvv_op_info hu_su_wwss_ops
+  = {hu_su_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwss_args /* Args */};
+
+/* A static operand information for vector_type func (vector_type, double demote
+ * type, double demote type) function registration.  */
+static constexpr const rvv_op_info hu_su_wwvv_ops
+  = {hu_su_ops,				  /* Types */
+     OP_TYPE_vv,			  /* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     wwvv_args /* Args */};
+
+/* A static operand information for vector_type func (signed vector_type)
+   function registration.  */
+static constexpr const rvv_op_info u_s_ops
+  = {u_ops,				/* Types */
+     OP_TYPE_v,			/* Suffix */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type */
+     x_v_args /* Args */};
+
 /* A list of all RVV base function types.  */
 static constexpr const function_type_info function_types[] = {
 #define DEF_RVV_TYPE_INDEX(                                                    \
@@ -3656,6 +3724,8 @@ get_builtin_partition (required_ext ext, const function_instance &instance)
       return RVV_PARTITION_ZVFBFWMA;
     case ZVFOFP8MIN_EXT:
       return RVV_PARTITION_ZVFOFP8MIN;
+    case ZVABD_EXT:
+      return RVV_PARTITION_ZVABD;
     case XSFVQMACCQOQ_EXT:
       return RVV_PARTITION_XSFVQMACCQOQ;
     case XSFVQMACCDOD_EXT:

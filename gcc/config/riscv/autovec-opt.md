@@ -698,9 +698,9 @@
   "&& 1"
   [(const_int 0)]
 {
-  rtx ops[] = {operands[0], operands[1], operands[2]};
+  rtx ops[] = {operands[0], operands[3], operands[1], operands[2]};
   riscv_vector::emit_vlmax_insn (CODE_FOR_pred_widen_abd_plus<su><mode>,
-				 riscv_vector::BINARY_OP, ops);
+				 riscv_vector::WIDEN_TERNARY_OP, ops);
   DONE;
 }
 [(set_attr "type" "viwalu")])
@@ -720,9 +720,9 @@
   "&& 1"
   [(const_int 0)]
 {
-  rtx ops[] = {operands[0], operands[2], operands[3]};
+  rtx ops[] = {operands[0], operands[1], operands[2], operands[3]};
   riscv_vector::emit_vlmax_insn (CODE_FOR_pred_widen_abd_plus<su><mode>,
-				 riscv_vector::BINARY_OP, ops);
+				 riscv_vector::WIDEN_TERNARY_OP, ops);
   DONE;
 }
 [(set_attr "type" "viwalu")])

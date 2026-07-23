@@ -131,6 +131,7 @@ enum required_ext
   ZVFBFMIN_EXT,		/* Zvfbfmin extension */
   ZVFBFWMA_EXT,		/* Zvfbfwma extension */
   ZVFOFP8MIN_EXT,	/* Zvfofp8min extension */
+  ZVABD_EXT,		/* Zvabd extension */
   XSFVQMACCQOQ_EXT,	/* XSFVQMACCQOQ extension */
   XSFVQMACCDOD_EXT,	/* XSFVQMACCDOD extension */
   XSFVFNRCLIPXFQF_EXT,	/* XSFVFNRCLIPXFQF extension */
@@ -162,6 +163,7 @@ enum rvv_builtin_partition
   RVV_PARTITION_ZVFHMIN,
   RVV_PARTITION_ZVFH,
   RVV_PARTITION_ZVFOFP8MIN,
+  RVV_PARTITION_ZVABD,
   RVV_PARTITION_XSFVQMACCQOQ,
   RVV_PARTITION_XSFVQMACCDOD,
   RVV_PARTITION_XSFVFNRCLIPXFQF,
@@ -216,6 +218,8 @@ static inline const char * required_ext_to_isa_name (enum required_ext required)
       return "zvfbfwma";
     case ZVFOFP8MIN_EXT:
       return "zvfofp8min";
+    case ZVABD_EXT:
+      return "zvabd";
     case XSFVQMACCQOQ_EXT:
       return "xsfvqmaccqoq";
     case XSFVQMACCDOD_EXT:
@@ -273,6 +277,8 @@ static inline bool required_extensions_specified (enum required_ext required)
       return TARGET_ZVFBFWMA;
     case ZVFOFP8MIN_EXT:
       return TARGET_ZVFOFP8MIN;
+    case ZVABD_EXT:
+      return TARGET_ZVABD;
     case XSFVQMACCQOQ_EXT:
       return TARGET_XSFVQMACCQOQ;
     case XSFVQMACCDOD_EXT:

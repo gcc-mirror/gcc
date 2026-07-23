@@ -47,6 +47,7 @@
 #define __riscv_intrinsic_zvknhb 1
 #define __riscv_intrinsic_zvksed 1
 #define __riscv_intrinsic_zvksh 1
+#define __riscv_intrinsic_zvabd 1
 
 #if defined (__riscv_intrinsic_zvkned) \
     && defined (__riscv_intrinsic_zvknhb) \

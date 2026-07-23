@@ -2462,6 +2462,41 @@ public:
   }
 };
 
+/* Implements vabd/vabdu.  */
+template<int UNSPEC>
+class vabd : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_vabd (UNSPEC, e.vector_mode ()));
+  }
+};
+
+/* Implements vabs.  */
+class vabs : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_pred_abs (e.vector_mode ()));
+  }
+};
+
+/* Implements vwabda/vwabdau.  */
+template<int UNSPEC>
+class vabda : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_widen_ternop_insn (
+      code_for_pred_widen_abd_plus (UNSPEC, e.vector_mode ()));
+  }
+};
+
 static constexpr const vsetvl<false> vsetvl_obj;
 static constexpr const vsetvl<true> vsetvlmax_obj;
 static constexpr const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -2786,6 +2821,13 @@ static constexpr const vfwcvtbf16_f vfwcvtbf16_f_obj;
 /* Zvfbfwma; */
 static constexpr const vfwmaccbf16<NO_FRM> vfwmaccbf16_obj;
 static constexpr const vfwmaccbf16<HAS_FRM> vfwmaccbf16_frm_obj;
+
+/* Zvabd */
+static constexpr const vabs vabs_obj;
+static constexpr const vabd<UNSPEC_VSABD> vabd_obj;
+static constexpr const vabd<UNSPEC_VUABD> vabdu_obj;
+static constexpr const vabda<UNSPEC_VSABDA> vwabda_obj;
+static constexpr const vabda<UNSPEC_VUABDA> vwabdau_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -3114,4 +3156,10 @@ BASE (vfwcvtbf16_f)
 /* Zvfbfwma */
 BASE (vfwmaccbf16)
 BASE (vfwmaccbf16_frm)
+/* Zvabd.  */
+BASE (vabs)
+BASE (vabd)
+BASE (vabdu)
+BASE (vwabda)
+BASE (vwabdau)
 } // end namespace riscv_vector

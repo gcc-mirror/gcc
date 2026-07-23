@@ -5,7 +5,8 @@
 #include <sifive_vector.h>
 #include <andes_vector.h>
 
-#if defined (__riscv_vector) || defined (__riscv_zvbb) \
+#if defined (__riscv_vector) || defined (__riscv_zvabd) \
+    || defined (__riscv_zvbb) \
     || defined (__riscv_zve32f) || defined (__riscv_zve32x) \
     || defined (__riscv_zve64d) || defined (__riscv_zve64f) \
     || defined (__riscv_zve64x) \
@@ -24,6 +25,7 @@
     || !defined (__riscv_intrinsic_zve64d) \
     || !defined (__riscv_intrinsic_zve64f) \
     || !defined (__riscv_intrinsic_zve64x) \
+    || !defined (__riscv_intrinsic_zvabd) \
     || !defined (__riscv_intrinsic_zvbb) \
     || !defined (__riscv_intrinsic_zvbc) \
     || !defined (__riscv_intrinsic_zvfbfmin) \
@@ -60,6 +62,7 @@
     || __riscv_intrinsic_zve64d != 1 \
     || __riscv_intrinsic_zve64f != 1 \
     || __riscv_intrinsic_zve64x != 1 \
+    || __riscv_intrinsic_zvabd != 1 \
     || __riscv_intrinsic_zvbb != 1 \
     || __riscv_intrinsic_zvbc != 1 \
     || __riscv_intrinsic_zvfbfmin != 1 \
