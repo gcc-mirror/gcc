@@ -805,7 +805,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
 	{
 	  gimple *stmt = gsi_stmt (si);
 	  gimple_set_uid (stmt, 0);
-	  if (is_gimple_debug (stmt))
+	  if (is_gimple_debug (stmt) || is_a <glabel *> (stmt))
 	    continue;
 	  add_stmt (stmt);
 	  /* If .GOMP_SIMD_LANE call for the current loop has 3 arguments, the

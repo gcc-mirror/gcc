@@ -8648,7 +8648,7 @@ _bb_vec_info::_bb_vec_info (vec<basic_block> _bbs, vec_info_shared *shared)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  gimple_set_uid (stmt, 0);
-	  if (is_gimple_debug (stmt))
+	  if (is_gimple_debug (stmt) || is_a <glabel *> (stmt))
 	    continue;
 	  add_stmt (stmt);
 	}

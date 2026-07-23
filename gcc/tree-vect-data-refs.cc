@@ -729,7 +729,7 @@ vect_analyze_early_break_dependences (loop_vec_info loop_vinfo)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  gsi_prev (&gsi);
-	  if (is_gimple_debug (stmt))
+	  if (is_gimple_debug (stmt) || is_a <glabel *> (stmt))
 	    continue;
 
 	  stmt_vec_info orig_stmt_vinfo = loop_vinfo->lookup_stmt (stmt);
