@@ -21,7 +21,7 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump "= __builtin_omp_is_initial_device \\(\\);" "gimple" } } */
-/* { dg-final { scan-tree-dump "__builtin_GOMP_error \\(\"Executing device-type ..nohost.. target region on the host\"," "gimple" } } */
+/* { dg-final { scan-tree-dump "__builtin_GOMP_error \\(&\"Executing device-type ..nohost.. target region on the host\"\\\[0\\\]," "gimple" } } */
 
 /* { dg-output "libgomp: fatal error: Executing device-type 'nohost' target region on the host" } */
 /* { dg-shouldfail "'nohost' target region on the host" } */

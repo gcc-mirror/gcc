@@ -19018,15 +19018,8 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
 	    tree err = builtin_decl_explicit (BUILT_IN_GOMP_ERROR);
 	    const char *str = "Executing device-type 'nohost' target region "
 			      "on the host";
-	    const int len = strlen (str) + 1;
-	    tree msg = build_string (len, str);
-	    TREE_TYPE (msg) = build_array_type_nelts (char_type_node, len);
-	    TREE_READONLY (msg) = 1;
-	    TREE_STATIC (msg) = 1;
-	    msg = build_fold_addr_expr (msg);
-	    tree msglen = fold_build2 (MINUS_EXPR, size_type_node,
-				       build_all_ones_cst (size_type_node),
-				       size_one_node);
+	    tree msg = build_string_literal (strlen (str) + 1, str);
+	    tree msglen = build_int_cst (size_type_node, -2);
 	    err = build_call_expr_loc (loc, err, 2, msg, msglen);
 	    tree l1 = create_artificial_label (UNKNOWN_LOCATION);
 	    tree l2 = create_artificial_label (UNKNOWN_LOCATION);
