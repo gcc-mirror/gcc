@@ -248,7 +248,7 @@ first_active_insn (basic_block bb)
   return insn;
 }
 
-/* Return the last non-jump active (non-jump) insn in the basic block.  */
+/* Return the last non-jump active insn in the basic block.  */
 
 static rtx_insn *
 last_active_insn (basic_block bb, bool skip_use_p)
@@ -316,7 +316,7 @@ find_active_insn_after (basic_block curr_bb, rtx_insn *insn)
   return insn;
 }
 
-/* Return the basic block reached by falling though the basic block BB.  */
+/* Return the basic block reached by falling through the basic block BB.  */
 
 static basic_block
 block_fallthru (basic_block bb)
@@ -1364,7 +1364,7 @@ noce_try_move (struct noce_if_info *if_info)
       || HONOR_SIGNED_ZEROS (if_info->x))
     return false;
 
-  /* Check whether the operands of the comparison are A and in
+  /* Check whether the operands of the comparison are A and B, in
      either order.  */
   if ((rtx_equal_p (if_info->a, XEXP (cond, 0))
        && rtx_equal_p (if_info->b, XEXP (cond, 1)))
@@ -1396,7 +1396,7 @@ noce_try_move (struct noce_if_info *if_info)
 
 /* If a sign bit test is selecting across constants, we may be able
    to generate efficient code utilizing the -1/0 result of a sign
-   bit splat idiom. 
+   bit splat idiom.
 
    Do this before trying the generalized conditional move as these
    (when applicable) are hopefully faster than a conditional move.  */
@@ -2288,7 +2288,11 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
   return false;
 }
 
-/* Helper function for noce_try_cmove and noce_try_cmove_arith.  */
+/* Emit a conditional move selecting VTRUE or VFALSE into X, and return the
+   destination it landed in, or NULL_RTX on failure.  CODE, CMP_A and CMP_B
+   give the canonicalized comparison.  CC_CMP and REV_CC_CMP, when given, are
+   the non-canonicalized condition and its reverse, which let a target emit
+   the move without materializing its own compare.  */
 
 static rtx
 noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
@@ -2410,9 +2414,9 @@ noce_simple_cmove_operand_p (rtx x)
   return CONSTANT_P (x) || register_operand (x, VOIDmode);
 }
 
-/* Try only simple constants and registers here.  More complex cases
-   are handled in noce_try_cmove_arith after noce_try_store_flag_arith
-   has had a go at it.  */
+/* Try only simple constants and registers here.  More complex cases are
+   handled in noce_try_cmove_arith, which the dispatch table reaches after
+   the store-flag matchers have had a go.  */
 
 static bool
 noce_try_cmove (struct noce_if_info *if_info)
@@ -3466,8 +3470,9 @@ noce_operand_known_extended_p (rtx x, machine_mode outer_mode,
   return false;
 }
 
-/*  Helper function to return REG itself,
-    otherwise NULL_RTX for other RTX_CODE.  */
+/* Return the register or constant that EXP selects on: EXP itself for a
+   register or a constant, the inner register of a subreg, and NULL_RTX for
+   anything else.  */
 
 static rtx
 get_base_reg_or_constant (rtx exp)
@@ -3481,29 +3486,31 @@ get_base_reg_or_constant (rtx exp)
   return NULL_RTX;
 }
 
-/*  Try to covert if-then-else with conditional zero,
-    returning TURE on success or FALSE on failure.
-    IF_INFO describes the if-conversion scenario under consideration.
+/* Try to convert if-then-else with conditional zero, returning TRUE on
+   success or FALSE on failure.  IF_INFO describes the if-conversion scenario
+   under consideration.
 
-    It verifies the branch structure on left and transforms it into branchless
-    sequence on the right, with a backend provided conditional zero or orig for
-    operand z. If true, tmp is z, 0 otherwise (y op 0 is same as y for most op).
+   It verifies the branch structure on the left and transforms it into the
+   branchless sequence on the right, with a backend-provided conditional zero
+   or orig for operand z.  If true, tmp is z, 0 otherwise (y op 0 is the same
+   as y for most op).
 
-      if (cond)		|  tmp = cond ? z : 0
-	x = y op z	|    x = y op tmp
-      else		|
-	x = y		|
+     if (cond)		|  tmp = cond ? z : 0
+       x = y op z	|    x = y op tmp
+     else		|
+       x = y		|
 
-    AND is special as it needs to be handled differently.
+   AND is special as it needs to be handled differently.
 
-      tmp = !cond ? y : 0
-	x = (y & z) | tmp
-    Also for AND try:
-      tmp = cond ? z : -1
-	x = y op tmp
-    To see if it is cheaper to produce `!cond ? y : 0`
-    or `cond ? z : -1`.
-  */
+     tmp = !cond ? y : 0
+       x = (y & z) | tmp
+
+   Also for AND try:
+
+     tmp = cond ? z : -1
+       x = y op tmp
+
+   to see if it is cheaper to produce `!cond ? y : 0` or `cond ? z : -1`.  */
 
 static bool
 noce_try_cond_arith (struct noce_if_info *if_info)
@@ -4275,11 +4282,11 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   return true;
 }
 
-/* Try to emit the multiple-set conversion described by IF_INFO.  INSN_INFO
-   holds THEN_COUNT then-arm entries followed by entries for the else-only
-   definitions recorded in ELSE_ONLY_INDICES.  For a diamond,
-   evaluate ELSE_INSN_INFO first and retain its final values for the
-   conditional moves.
+/* Try to emit the multiple-set conversion described by IF_INFO, selecting on
+   the already decoded jump condition COND.  INSN_INFO holds THEN_COUNT
+   then-arm entries followed by entries for the else-only definitions recorded
+   in ELSE_ONLY_INDICES.  For a diamond, evaluate ELSE_INSN_INFO first and
+   retain its final values for the conditional moves.
 
    LAST_NEEDS_COMPARISON is -1 on the first attempt.  Record in it the last set
    that needs a temporary to preserve the comparison, then use that boundary
@@ -4622,9 +4629,9 @@ noce_convert_multiple_sets_1 (noce_if_info *if_info, rtx cond,
   return true;
 }
 
-/* Find local swap-style idioms in BB and mark the first insn (1)
-   that is only a temporary as not needing a conditional move as
-   it is going to be dead afterwards anyway.
+/* Fill INSN_INFO with one entry per active insn in BB.  Find local swap-style
+   idioms and mark the first insn (1) that is only a temporary as not needing
+   a conditional move, as it is going to be dead afterwards anyway.
 
      (1) int tmp = a;
 	 a = b;
@@ -4637,18 +4644,17 @@ noce_convert_multiple_sets_1 (noce_if_info *if_info, rtx cond,
 	 a = cond ? b : a_old;
 	 b = cond ? tmp : b_old;
 
-    Additionally, store the index of insns like (2) when a subsequent
-    SET reads from their destination.
+   Additionally, store the index of insns like (2) when a subsequent
+   SET reads from their destination.
 
-    (2) int c = a;
-	int d = c;
+     (2) int c = a;
+	 int d = c;
 
-	ifcvt
-	-->
+	 ifcvt
+	 -->
 
-	c = cond ? a : c_old;
-	d = cond ? d : c;     // Need to use c rather than c_old here.
-*/
+	 c = cond ? a : c_old;
+	 d = cond ? d : c;     // Need to use c rather than c_old here.  */
 
 static void
 init_noce_multiple_sets_info (basic_block bb,
@@ -5168,8 +5174,8 @@ noce_process_if_block (struct noce_if_info *if_info)
 /* Check whether a block is suitable for conditional move conversion.
    Every insn must be a simple set of a register to a constant or a
    register.  For each assignment, store the value in the pointer map
-   VALS, keyed indexed by register pointer, then store the register
-   pointer in REGS.  COND is the condition we will test.  */
+   VALS, keyed by register pointer, then store the register pointer in
+   REGS.  COND is the condition we will test.  */
 
 static bool
 check_cond_move_block (basic_block bb,
@@ -5792,10 +5798,10 @@ find_if_header (basic_block test_bb, int pass)
   return ce_info.test_bb;
 }
 
-/* Return true if a block has two edges, one of which falls through to the next
-   block, and the other jumps to a specific block, so that we can tell if the
-   block is part of an && test or an || test.  Returns either -1 or the number
-   of non-note, non-jump, non-USE/CLOBBER insns in the block.  */
+/* CUR_BB has two edges, one falling through to the next block and one
+   jumping to TARGET_BB, so it can be part of an && test or an || test.
+   Return the number of non-note, non-jump, non-USE/CLOBBER insns in it, or
+   -1 if CUR_BB is not of that form.  */
 
 static int
 block_jumps_and_fallthru (basic_block cur_bb, basic_block target_bb)
@@ -6513,11 +6519,12 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
 /* Used by the code above to perform the actual rtl transformations.
    Return TRUE if successful.
 
-   TEST_BB is the block containing the conditional branch.  MERGE_BB
-   is the block containing the code to manipulate.  DEST_EDGE is an
-   edge representing a jump to the join block; after the conversion,
-   TEST_BB should be branching to its destination.
-   REVERSEP is true if the sense of the branch should be reversed.  */
+   TEST_BB is the block containing the conditional branch.  MERGE_BB is the
+   block containing the code to manipulate.  OTHER_BB is the other successor
+   of TEST_BB, the one the code is being moved past.  DEST_EDGE is an edge
+   representing a jump to the join block; after the conversion, TEST_BB should
+   be branching to its destination.  REVERSEP is true if the sense of the
+   branch should be reversed.  */
 
 static bool
 dead_or_predicable (basic_block test_bb, basic_block merge_bb,
