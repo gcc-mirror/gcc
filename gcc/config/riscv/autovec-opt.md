@@ -685,14 +685,14 @@
 [(set_attr "type" "viwalu")])
 
 (define_insn_and_split "*vwabda<su><mode>"
-  [(set (match_operand:VWEXTI 0 "register_operand" "+&vr")
-	(plus:VWEXTI
-	  (zero_extend:VWEXTI
+  [(set (match_operand:VWEXTI_HS 0 "register_operand" "+&vr")
+	(plus:VWEXTI_HS
+	  (zero_extend:VWEXTI_HS
 	    (unspec:<V_DOUBLE_TRUNC>
 	      [(match_operand:<V_DOUBLE_TRUNC> 1 "register_operand" "vr")
 	       (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand" "vr")]
 	      UNSPEC_VABD))
-	  (match_operand:VWEXTI 3 "register_operand" "0")))]
+	  (match_operand:VWEXTI_HS 3 "register_operand" "0")))]
   "TARGET_ZVABD && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -707,10 +707,10 @@
 
 ;; have this since we don't canonicalize the plus in the presence of an unspec.
 (define_insn_and_split "*vwabda_right<su><mode>"
-  [(set (match_operand:VWEXTI 0 "register_operand" "+&vr")
-	(plus:VWEXTI
-	  (match_operand:VWEXTI 1 "register_operand" "0")
-	  (zero_extend:VWEXTI
+  [(set (match_operand:VWEXTI_HS 0 "register_operand" "+&vr")
+	(plus:VWEXTI_HS
+	  (match_operand:VWEXTI_HS 1 "register_operand" "0")
+	  (zero_extend:VWEXTI_HS
 	    (unspec:<V_DOUBLE_TRUNC>
 	      [(match_operand:<V_DOUBLE_TRUNC> 2 "register_operand" "vr")
 	       (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "vr")]

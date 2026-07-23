@@ -3,8 +3,8 @@
 
 #include <stdint-gcc.h>
 
-static int
-abs (int i)
+static int64_t
+abs64 (int64_t i)
 {
   return i < 0 ? -i : i;
 }
@@ -16,7 +16,7 @@ abs (int i)
   {                                                                        \
     int i;                                                                 \
     for (i = 0; i < n; i++)                                                \
-      dst[i] = abs (a[i]);                                                 \
+      dst[i] = abs64 (a[i]);                                               \
   }
 
 #define TEST_VABD(TYPE1, TYPE2)                                            \
@@ -27,7 +27,7 @@ abs (int i)
   {                                                                        \
     int i;                                                                 \
     for (i = 0; i < n; i++)                                                \
-      dst[i] = abs (a[i] - b[i]);                                          \
+      dst[i] = abs64 ((int64_t) a[i] - (int64_t) b[i]);                    \
   }
 
 #define TEST_VWABDA(TYPE1, TYPE2)                                       \
@@ -37,7 +37,7 @@ abs (int i)
   {                                                                     \
     int i;                                                              \
     for (i = 0; i < n; i++)                                             \
-      dst[i] += abs (a[i] - b[i]);                                      \
+      dst[i] += abs64 ((int64_t) a[i] - (int64_t) b[i]);                \
   }
 
 #define TEST_ALL()                 \
@@ -47,14 +47,17 @@ abs (int i)
   TEST_VABD (uint8_t, uint8_t)     \
   TEST_VABD (int16_t, int16_t)     \
   TEST_VABD (uint16_t, uint16_t)   \
-  TEST_VWABDA (int16_t, int8_t)   \
-  TEST_VWABDA (uint16_t, uint8_t) \
-  TEST_VWABDA (int32_t, int16_t)  \
-  TEST_VWABDA (uint32_t, uint16_t)
+  TEST_VABD (int32_t, int32_t)     \
+  TEST_VWABDA (int16_t, int8_t)    \
+  TEST_VWABDA (uint16_t, uint8_t)  \
+  TEST_VWABDA (int32_t, int16_t)   \
+  TEST_VWABDA (uint32_t, uint16_t) \
+  TEST_VWABDA (int64_t, int32_t)   \
+  TEST_VWABDA (uint64_t, uint32_t)
 
 TEST_ALL()
 
-/* { dg-final { scan-assembler-times {\tvabs\.v} 2 } } */
+/* { dg-final { scan-assembler-times {\tvabs\.v} 5 } } */
 /* { dg-final { scan-assembler-times {\tvabd\.vv} 2 } } */
 /* { dg-final { scan-assembler-times {\tvabdu\.vv} 2 } } */
 /* { dg-final { scan-assembler-times {\tvwabda\.vv} 2 } } */

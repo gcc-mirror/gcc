@@ -3080,10 +3080,10 @@
 ; == Absolute difference (not including sum)
 ; ========
 (define_insn_and_split "<su>abd<mode>3"
-  [(set (match_operand:V_VLSI 0 "register_operand" "=vr")
-       (unspec:V_VLSI
-	 [(match_operand:V_VLSI 1 "register_operand" "vr")
-	  (match_operand:V_VLSI 2 "register_operand" "vr")]
+  [(set (match_operand:VI_QH 0 "register_operand" "=vr")
+	(unspec:VI_QH
+	 [(match_operand:VI_QH 1 "register_operand" "vr")
+	  (match_operand:VI_QH 2 "register_operand" "vr")]
 	 UNSPEC_VABD))]
   "TARGET_ZVABD && can_create_pseudo_p ()"
   "#"
