@@ -1240,6 +1240,50 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
 	  ldst_p = STMT_VINFO_DATA_REF (stmt_info) != nullptr;
 	}
 
+      if (!ldst_p
+	  && !phi_p
+	  && rhs_code.is_tree_code ()
+	  && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_binary
+	  && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_unary
+	  && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_expression
+	  && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_comparison
+	  && rhs_code != VIEW_CONVERT_EXPR
+	  && rhs_code != CALL_EXPR
+	  && rhs_code != BIT_FIELD_REF
+	  && rhs_code != SSA_NAME)
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Build SLP failed: operation unsupported %G",
+			     stmt);
+	  if (is_a <bb_vec_info> (vinfo) && i != 0)
+	    continue;
+	  return false;
+	}
+
+      if (!ldst_p && rhs_code == BIT_FIELD_REF)
+	{
+	  tree vec = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
+	  if (!is_a <bb_vec_info> (vinfo)
+	      || TREE_CODE (vec) != SSA_NAME
+	      /* When the element types are not compatible we pun the
+		 source to the target vectype which requires equal size.  */
+	      || ((!VECTOR_TYPE_P (TREE_TYPE (vec))
+		   || !types_compatible_p (TREE_TYPE (vectype),
+					   TREE_TYPE (TREE_TYPE (vec))))
+		  && !operand_equal_p (TYPE_SIZE (vectype),
+				       TYPE_SIZE (TREE_TYPE (vec)))))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "Build SLP failed: "
+				 "BIT_FIELD_REF not supported\n");
+	      if (i != 0)
+		continue;
+	      return false;
+	    }
+	}
+
       /* Check the operation.  */
       if (i == 0)
 	{
@@ -1271,27 +1315,6 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
               need_same_oprnds = true;
               first_op1 = gimple_assign_rhs2 (stmt);
             }
-	  else if (!ldst_p
-		   && rhs_code == BIT_FIELD_REF)
-	    {
-	      tree vec = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
-	      if (!is_a <bb_vec_info> (vinfo)
-		  || TREE_CODE (vec) != SSA_NAME
-		  /* When the element types are not compatible we pun the
-		     source to the target vectype which requires equal size.  */
-		  || ((!VECTOR_TYPE_P (TREE_TYPE (vec))
-		       || !types_compatible_p (TREE_TYPE (vectype),
-					       TREE_TYPE (TREE_TYPE (vec))))
-		      && !operand_equal_p (TYPE_SIZE (vectype),
-					   TYPE_SIZE (TREE_TYPE (vec)))))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				     "Build SLP failed: "
-				     "BIT_FIELD_REF not supported\n");
-		  return false;
-		}
-	    }
 	  else if (rhs_code == CFN_DIV_POW2)
 	    {
 	      need_same_oprnds = true;
@@ -1519,26 +1542,6 @@ vect_build_slp_tree_3 (vec_info *vinfo, unsigned char *swap,
       /* Not memory operation.  */
       else
 	{
-	  if (!phi_p
-	      && rhs_code.is_tree_code ()
-	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_binary
-	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_unary
-	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_expression
-	      && TREE_CODE_CLASS (tree_code (rhs_code)) != tcc_comparison
-	      && rhs_code != VIEW_CONVERT_EXPR
-	      && rhs_code != CALL_EXPR
-	      && rhs_code != BIT_FIELD_REF
-	      && rhs_code != SSA_NAME)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: operation unsupported %G",
-				 stmt);
-	      if (is_a <bb_vec_info> (vinfo) && i != 0)
-		continue;
-	      return false;
-	    }
-
 	  if (rhs_code == COND_EXPR)
 	    {
 	      tree cond_expr = gimple_assign_rhs1 (stmt);
