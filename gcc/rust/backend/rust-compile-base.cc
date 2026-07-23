@@ -842,7 +842,17 @@ HIRCompileBase::compile_function (
   // setup the params
   TyTy::BaseType *tyret = fntype->get_return_type ();
   std::vector<Bvariable *> param_vars;
-  std::vector<DropCandidate> param_drop_candidates;
+
+  tree enclosing_scope = NULL_TREE;
+  location_t start_location = function_body->get_locus ();
+  location_t end_location = function_body->get_end_locus ();
+
+  tree arg_scope_block = Backend::block (fndecl, enclosing_scope, {} /*locals*/,
+					 start_location, end_location);
+  ctx->push_block (arg_scope_block);
+
+  DropBuilder drop_builder (*ctx);
+
   if (self_param)
     {
       rust_assert (fntype->is_method ());
@@ -880,25 +890,16 @@ HIRCompileBase::compile_function (
 			    compiled_param_var);
 
       if (CompileDrop (ctx).type_has_drop_impl (param_tyty))
-	param_drop_candidates.emplace_back (
+	drop_builder.note_simple_drop_candidate (
 	  param_pattern.get_mappings ().get_hirid (),
 	  param_pattern.get_locus ());
     }
 
   if (!Backend::function_set_parameters (fndecl, param_vars))
-    return error_mark_node;
-
-  tree enclosing_scope = NULL_TREE;
-  location_t start_location = function_body->get_locus ();
-  location_t end_location = function_body->get_end_locus ();
-
-  tree code_block = Backend::block (fndecl, enclosing_scope, {} /*locals*/,
-				    start_location, end_location);
-  ctx->push_block (code_block);
-
-  DropBuilder drop_builder (*ctx);
-  for (auto &candidate : param_drop_candidates)
-    drop_builder.note_simple_drop_candidate (candidate.hirid, candidate.locus);
+    {
+      ctx->pop_block ();
+      return error_mark_node;
+    }
 
   Bvariable *return_address = nullptr;
   tree return_type = TyTyResolveCompile::compile (ctx, tyret);
@@ -906,17 +907,27 @@ HIRCompileBase::compile_function (
   bool address_is_taken = false;
   tree ret_var_stmt = NULL_TREE;
   return_address
-    = Backend::temporary_variable (fndecl, code_block, return_type, NULL,
+    = Backend::temporary_variable (fndecl, arg_scope_block, return_type, NULL,
 				   address_is_taken, locus, &ret_var_stmt);
 
   ctx->add_statement (ret_var_stmt);
 
   ctx->push_fn (fndecl, return_address, tyret);
+  tree body_scope_block
+    = Backend::block (fndecl, arg_scope_block, {} /*locals*/, start_location,
+		      end_location);
+  ctx->push_block (body_scope_block);
+
   compile_function_body (fndecl, *function_body, tyret);
 
-  tree cleanup = CompileDrop (ctx).build_current_scope_drop_cleanup ();
+  tree body_cleanup = CompileDrop (ctx).build_current_scope_drop_cleanup ();
+  tree body_bind_tree
+    = ctx->pop_block_with_cleanup (body_cleanup, function_body->get_locus ());
+  ctx->add_statement (body_bind_tree);
+
+  tree arg_cleanup = CompileDrop (ctx).build_current_scope_drop_cleanup ();
   tree bind_tree
-    = ctx->pop_block_with_cleanup (cleanup, function_body->get_locus ());
+    = ctx->pop_block_with_cleanup (arg_cleanup, function_body->get_locus ());
 
   gcc_assert (TREE_CODE (bind_tree) == BIND_EXPR);
   DECL_SAVED_TREE (fndecl) = bind_tree;
