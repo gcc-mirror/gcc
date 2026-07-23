@@ -5059,7 +5059,7 @@ noce_process_if_block (struct noce_if_info *if_info)
 	{
 	  rtx note;
 
-	  if (else_bb && insn_b == BB_END (else_bb))
+	  if (insn_b == BB_END (else_bb))
 	    BB_END (else_bb) = PREV_INSN (insn_b);
 	  reorder_insns (insn_b, insn_b, PREV_INSN (jump));
 
