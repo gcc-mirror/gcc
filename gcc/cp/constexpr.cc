@@ -3908,13 +3908,29 @@ cxx_eval_thunk_call (const constexpr_ctx *ctx, tree t, tree thunk_fndecl,
       CALL_EXPR_ARG (new_call, 0) = this_arg;
     }
   else
-    /* Return-adjusting thunk.  */
-    new_call = build2 (POINTER_PLUS_EXPR, TREE_TYPE (new_call),
-		       new_call, offset);
+    {
+      /* Return-adjusting thunk.  As in expand_thunk, adjust a pointer only
+	 if it is non-null.  */
+      tree call = new_call;
+      if (TYPE_PTR_P (TREE_TYPE (call)))
+	call = save_expr (call);
+      new_call = build2 (POINTER_PLUS_EXPR, TREE_TYPE (call), call, offset);
+      if (TYPE_PTR_P (TREE_TYPE (call)))
+	new_call = build_if_nonnull (call, new_call, tf_none);
+    }
 
-  return cxx_eval_constant_expression (ctx, new_call, lval,
-				       non_constant_p, overflow_p,
-				       jump_target);
+  tree result = cxx_eval_constant_expression (ctx, new_call, lval,
+					       non_constant_p, overflow_p,
+					       jump_target);
+  if (!*non_constant_p
+      && !*overflow_p
+      && !*jump_target
+      && result != void_node
+      && INDIRECT_TYPE_P (TREE_TYPE (t))
+      && !(same_type_ignoring_top_level_qualifiers_p
+	   (TREE_TYPE (result), TREE_TYPE (t))))
+    result = adjust_temp_type (TREE_TYPE (t), result);
+  return result;
 }
 
 /* If OBJECT is of const class type, evaluate it to a CONSTRUCTOR and set
@@ -4746,6 +4762,22 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     clear_no_implicit_zero (result);
 
   pop_cx_call_context ();
+
+  /* A virtual call with a zero-offset covariant return needs no thunk, so
+     constant evaluation can evaluate the final overrider directly.  The
+     result then has the overrider's return type rather than the static type
+     of the call.  Adjust after caching so a direct call can reuse the result
+     with its original type.  */
+  if (!*non_constant_p
+      && !*overflow_p
+      && !*jump_target
+      && DECL_VIRTUAL_P (fun)
+      && result != void_node
+      && INDIRECT_TYPE_P (TREE_TYPE (t))
+      && !(same_type_ignoring_top_level_qualifiers_p
+	   (TREE_TYPE (result), TREE_TYPE (t))))
+    result = adjust_temp_type (TREE_TYPE (t), result);
+
   return result;
 }
 
