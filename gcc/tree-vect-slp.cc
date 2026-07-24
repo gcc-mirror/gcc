@@ -3380,7 +3380,6 @@ fail:
       SLP_TREE_CHILDREN (node).quick_push (two);
       SLP_TREE_REPRESENTATIVE (node) = NULL;
       enum tree_code code0 = ERROR_MARK;
-      enum tree_code ocode = ERROR_MARK;
       if (gassign *stmt = dyn_cast <gassign *> (stmts[0]->stmt))
 	code0 = gimple_assign_rhs_code (stmt);
       stmt_vec_info ostmt_info;
@@ -3388,28 +3387,17 @@ fail:
       FOR_EACH_VEC_ELT (stmts, i, ostmt_info)
 	{
 	  int op = 0;
-	  if (gassign *ostmt = dyn_cast <gassign *> (ostmt_info->stmt))
+	  gassign *ostmt = dyn_cast<gassign *> (ostmt_info->stmt);
+	  if ((ostmt && gimple_assign_rhs_code (ostmt) != code0)
+	      || (!ostmt
+		  && gimple_call_combined_fn (stmts[0]->stmt)
+		     != gimple_call_combined_fn (ostmt_info->stmt)))
 	    {
-	      if (gimple_assign_rhs_code (ostmt) != code0)
-		{
-		  ocode = gimple_assign_rhs_code (ostmt);
-		  op = 1;
-		  j = i;
-		}
-	    }
-	  else
-	    {
-	      if (gimple_call_combined_fn (stmts[0]->stmt)
-		  != gimple_call_combined_fn (ostmt_info->stmt))
-		{
-		  op = 1;
-		  j = i;
-		}
+	      op = 1;
+	      j = i;
 	    }
 	  SLP_TREE_LANE_PERMUTATION (node).safe_push (std::make_pair (op, i));
 	}
-      SLP_TREE_CODE (one) = code0;
-      SLP_TREE_CODE (two) = ocode;
       SLP_TREE_LANES (one) = stmts.length ();
       SLP_TREE_LANES (two) = stmts.length ();
       SLP_TREE_REPRESENTATIVE (one) = stmts[0];
