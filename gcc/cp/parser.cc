@@ -57597,7 +57597,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	    gcc_unreachable ();
 	}
 
-	if (context == pragma_external)
+	if (context != pragma_stmt && context != pragma_compound)
 	  {
 	    error_at (pragma_tok->location,
 		      "%<#pragma GCC %s%> must be inside a function",
