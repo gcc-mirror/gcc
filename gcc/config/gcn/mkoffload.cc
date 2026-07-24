@@ -1333,9 +1333,15 @@ main (int argc, char **argv)
 	obstack_ptr_grow (&ld_argv_obstack, "-save-temps");
 
       for (int i = 1; i < argc; i++)
-	if (startswith (argv[i], "-l")
-	    || startswith (argv[i], "-Wl")
-	    || startswith (argv[i], "-march"))
+	if (strcmp (argv[i], "-L") == 0 && i + 1 < argc)
+	  {
+	    obstack_ptr_grow (&ld_argv_obstack, argv[i]);
+	    obstack_ptr_grow (&ld_argv_obstack, argv[++i]);
+	  }
+	else if (startswith (argv[i], "-l")
+		 || startswith (argv[i], "-L")
+		 || startswith (argv[i], "-Wl")
+		 || startswith (argv[i], "-march"))
 	  obstack_ptr_grow (&ld_argv_obstack, argv[i]);
 
       obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
