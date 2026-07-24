@@ -1894,7 +1894,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_strides[__i] =
 	      __mdspan::__index_type_cast<index_type>(as_const(__strides[__i]));
 
-	  __glibcxx_assert(_M_check_unique());
+	  if constexpr (extents_type::rank() > 0)
+	    __glibcxx_assert(_M_check_unique());
 	}
 
       template<typename _OIndexType>
@@ -2036,19 +2037,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_check_unique() const
       {
 	constexpr size_t __rank = extents_type::rank();
-	if constexpr (__rank == 0)
-	  return true;
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 4603. `layout_stride` should accept zero strides for empty `extents`
-	else if (__mdspan::__empty(_M_extents))
+	// 4606. Bullet (4.3) preconditions are too strict to implement submdspan
+
+	if (__mdspan::__empty(_M_extents))
 	  return true;
-	else if constexpr (__rank == 1)
-	  return _M_strides[0] > 0;
-	else if (__mdspan::__contains_zero<const index_type, __rank>(_M_strides))
-	  return false;
+
+	auto __stride_nonzero = [&](size_t __idx)
+	{ return (_M_strides[__idx] > 0) || (_M_extents.extent(__idx) == 1); };
+
+	if constexpr (__rank == 1)
+	  return __stride_nonzero(0);
 	else if constexpr (__rank == 2)
-	  return (_M_strides[1] >= _M_strides[0] * _M_extents.extent(0))
-	      || (_M_strides[0] >= _M_strides[1] * _M_extents.extent(1));
+	  {
+	    if (_M_extents.extent(0) == 1)
+	      return __stride_nonzero(1);
+	    if (_M_extents.extent(1) == 1)
+	      return __stride_nonzero(0);
+	    if (!_M_strides[0] || !_M_strides[1])
+	      return false;
+	    return (_M_strides[1] > _M_strides[0] * (_M_extents.extent(0) - 1))
+		|| (_M_strides[0] > _M_strides[1] * (_M_extents.extent(1) - 1));
+	  }
 	else
 	  {
 	    // This is necessary, but not sufficient condition for uniqueness.
@@ -2064,15 +2075,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    for (size_t __i = 0; __i < __rank; ++__i)
 	      __perm[__i] = __i;
 
-	    auto __popmin = [&](size_t __from)
+	    auto __getstride = [&](size_t __idx) { return _M_strides[__idx]; };
+	    auto __getextent = [&](size_t __idx) { return _M_extents.extent(__idx); };
+	    auto __popmin = [&](size_t __from, auto __getter)
 	    {
 	      size_t __min = __perm[__rank - 1];
 	      for (size_t __i = __rank - 1; __i > __from; --__i)
 		{
 		  const size_t __cur = __perm[__i - 1];
-		  const auto __res = _M_strides[__cur] <=> _M_strides[__min];
-		  // Equal strides are allowed only for extent one, so apply it first.
-		  if (__res < 0 || (__res == 0 && _M_extents.extent(__cur) == 1))
+		  if (__getter(__cur) < __getter(__min))
 		    {
 		      __perm[__i] = __min;
 		      __min = __cur;
@@ -2081,18 +2092,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    __perm[__i] = __cur;
 		}
 	      __perm[__from] = __min;
-	      return __min;
+	      return __getter(__min);
 	    };
 
 	    // We use eager insertion-sort based algorithm to permute the __perm.
-	    size_t __prev = __popmin(0);
-	    for (size_t __i = 1; __i < __rank; ++__i)
+	    size_t __idx = 0;
+
+	    // Stride values are not relevant for dimension with single element
+	    while (__popmin(__idx, __getextent) == 1)
+	      if (++__idx == __rank)
+		return true;
+
+	    size_t __prev_span = 1;
+	    for (; __idx < __rank; ++__idx)
 	      {
-		const size_t __next = __popmin(__i);
-		if (_M_strides[__next] < _M_strides[__prev] * _M_extents.extent(__prev))
+		const size_t __stride = __popmin(__idx, __getstride);
+		if (__stride < __prev_span)
 		  return false;
-		__prev = __next;
+		__prev_span += __stride * (__getextent(__perm[__idx]) - 1);
 	      }
+#else
+	    // Otherwise check obvious cases where stride is zero.
+	    for (size_t __idx = 0; __idx < __rank; ++__idx)
+	      if (!__stride_nonzero(__idx))
+		return false;
 #endif
 	    return true;
 	  }
