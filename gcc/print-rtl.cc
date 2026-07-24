@@ -1619,7 +1619,8 @@ print_exp (pretty_printer *pp, const_rtx x, int verbose)
 	auto unspec = XINT (x, 1);
 #if !defined(GENERATOR_FILE)
 	if (unspec < 0)
-	  ;
+	  {
+	  }
 #if NUM_UNSPECV_VALUES > 0
 	else if (GET_CODE (x) == UNSPEC_VOLATILE
 		 && unspec < NUM_UNSPECV_VALUES)
