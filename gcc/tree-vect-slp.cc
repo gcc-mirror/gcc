@@ -1164,8 +1164,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   bool first_stmt_ldst_p = false, first_stmt_ldst_masklen_p = false;
   bool first_stmt_phi_p = false;
   int first_reduc_idx = -1;
-  bool maybe_soft_fail = false;
-  tree soft_fail_nunits_vectype = NULL_TREE;
 
   tree vectype, nunits_vectype;
   if (!vect_get_vector_types_for_stmt (vinfo, first_stmt_info, &vectype,
@@ -1188,13 +1186,21 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   /* Record nunits required but continue analysis, producing matches[]
      as if nunits was not an issue.  This allows splitting of groups
      to happen.  */
+  bool maybe_soft_fail = false;
+  unsigned HOST_WIDE_INT const_nunits = 0;
   if (nunits_vectype
       && !vect_record_vectype (vinfo, first_stmt_info, group_size,
 			       nunits_vectype))
     {
       gcc_assert (is_a <bb_vec_info> (vinfo));
+      if (!TYPE_VECTOR_SUBPARTS (nunits_vectype).is_constant (&const_nunits)
+	  || const_nunits > group_size)
+	{
+	  /* Fatal mismatch.  */
+	  matches[0] = false;
+	  return false;
+	}
       maybe_soft_fail = true;
-      soft_fail_nunits_vectype = nunits_vectype;
     }
 
   gcc_assert (vectype || !gimple_get_lhs (first_stmt_info->stmt));
@@ -1714,18 +1720,10 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
   if (maybe_soft_fail)
     {
-      unsigned HOST_WIDE_INT const_nunits;
-      if (!TYPE_VECTOR_SUBPARTS
-	    (soft_fail_nunits_vectype).is_constant (&const_nunits)
-	  || const_nunits > group_size)
-	matches[0] = false;
-      else
-	{
-	  /* With constant vector elements simulate a mismatch at the
-	     point we need to split.  */
-	  unsigned tail = group_size & (const_nunits - 1);
-	  memset (&matches[group_size - tail], 0, sizeof (bool) * tail);
-	}
+      /* With constant vector elements simulate a mismatch at the
+	 point we need to split.  */
+      unsigned tail = group_size & (const_nunits - 1);
+      memset (&matches[group_size - tail], 0, sizeof (bool) * tail);
       return false;
     }
 
