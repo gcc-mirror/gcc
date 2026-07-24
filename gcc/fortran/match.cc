@@ -5443,6 +5443,23 @@ gfc_match_allocate (void)
 	  goto cleanup;
 	}
 
+      /* F2018(11.1.5.2): Track coarrays allocated in team blocks.  */
+      gfc_namespace *team_ns = get_current_team_context ();
+      bool codim = tail->expr->symtree->n.sym->attr.codimension
+		   || (tail->expr->symtree->n.sym->as
+		       && tail->expr->symtree->n.sym->as->corank);
+      for (gfc_ref *r = tail->expr->ref; r; r = r->next)
+	if (r->type == REF_COMPONENT && r->u.c.component)
+	  codim = r->u.c.component->attr.codimension
+		  || (r->u.c.component->as && r->u.c.component->as->corank);
+
+      if (flag_coarray == GFC_FCOARRAY_LIB && team_ns && codim)
+	{
+	  gfc_expr *e = gfc_copy_expr (tail->expr);
+	  vec<gfc_expr *> &allocated = team_allocated_coarrays.get_or_insert (team_ns);
+	  allocated.safe_push (e);
+	}
+
       if (gfc_match_char (',') != MATCH_YES)
 	break;
 
