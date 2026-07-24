@@ -39,8 +39,6 @@ public:
 
   void glob_definitions (Rib &dst, Rib &src);
 
-  tl::optional<Rib::Definition> glob_definition (const Rib::Definition &def);
-
   bool is_dirty () const { return dirty; }
 
 private:

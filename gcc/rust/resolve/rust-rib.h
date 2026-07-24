@@ -246,6 +246,16 @@ public:
 						   Definition def);
 
   /**
+   * Insert a new node, but as a glob import, in the rib
+   *
+   * @param name The name associated with the AST node
+   * @param def The `Definition` to insert
+   *
+   * @return true if the insertion wasn't redundant
+   */
+  bool insert_globbed (std::string name, const Definition &def);
+
+  /**
    * Access an inserted NodeId.
    *
    * @return tl::nullopt if the key does not exist, the NodeId otherwise
