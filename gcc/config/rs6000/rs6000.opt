@@ -599,6 +599,10 @@ Target Undocumented Mask(POWER11) Var(rs6000_isa_flags) WarnRemoved
 mfuture
 Target Undocumented Mask(FUTURE) Var(rs6000_isa_flags) Warn(Do not use %<-mfuture>, use %<-mcpu=future>)
 
+mdense-math
+Target Mask(DMF) Var(rs6000_isa_flags)
+Generate (do not generate) DMF (Dense Math Facility) instructions.
+
 mprefixed
 Target Mask(PREFIXED) Var(rs6000_isa_flags)
 Generate (do not generate) prefixed memory instructions.

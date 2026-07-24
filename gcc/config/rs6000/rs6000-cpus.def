@@ -85,7 +85,8 @@
 
 /* -mcpu=future flags.  */
 #define FUTURE_MASKS_SERVER	(POWER11_MASKS_SERVER			\
-				 | OPTION_MASK_FUTURE)
+				 | OPTION_MASK_FUTURE			\
+				 | OPTION_MASK_DMF)
 
 /* Flags that need to be turned off if -mno-vsx.  */
 #define OTHER_VSX_VECTOR_MASKS	(OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
@@ -126,6 +127,7 @@
 				 | OPTION_MASK_POWER10			\
 				 | OPTION_MASK_POWER11			\
 				 | OPTION_MASK_FUTURE			\
+				 | OPTION_MASK_DMF			\
 				 | OPTION_MASK_P10_FUSION		\
 				 | OPTION_MASK_HTM			\
 				 | OPTION_MASK_ISEL			\
