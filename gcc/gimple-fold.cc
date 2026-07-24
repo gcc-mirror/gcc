@@ -7677,17 +7677,18 @@ follow_outer_ssa_edges (tree val)
 	      && (def_bb == fosa_bb
 		  || dominated_by_p (CDI_DOMINATORS, fosa_bb, def_bb))))
 	return val;
-      /* We cannot temporarily rewrite stmts with undefined overflow
-	 behavior, so avoid expanding them.  */
-      if ((ANY_INTEGRAL_TYPE_P (TREE_TYPE (val))
-	   || POINTER_TYPE_P (TREE_TYPE (val)))
-	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (val)))
-	return NULL_TREE;
       flow_sensitive_info_storage storage;
       storage.save_and_clear (val);
       /* If the definition does not dominate fosa_bb temporarily reset
 	 flow-sensitive info.  */
       fosa_unwind->safe_push (std::make_pair (val, storage));
+      /* We cannot temporarily rewrite stmts with undefined overflow
+	 behavior, so avoid expanding them. But still save off the
+	 flow-sensitive info as we might be using the ssa name as the leaf.  */
+      if ((ANY_INTEGRAL_TYPE_P (TREE_TYPE (val))
+	   || POINTER_TYPE_P (TREE_TYPE (val)))
+	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (val)))
+	return NULL_TREE;
       return val;
     }
   return val;
