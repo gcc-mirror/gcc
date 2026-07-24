@@ -113,6 +113,145 @@
     ST_F ((void *)out, vd14, VL); OUT += VL;                           \
     ST_F ((void *)out, vd15, VL); OUT += VL;                           \
 
+#define LOOP_WIDEN_BINARY_BODY_X8(NT, WT, LD_NF, LD_WF, OUT_F, ST_F, OUT,   \
+				   START, VL)                               \
+    NT vs0 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs1 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs2 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs3 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs4 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs5 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs6 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs7 = LD_NF ((void *)START, VL); START += VL;                        \
+    WT vw0 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw1 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw2 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw3 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw4 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw5 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw6 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw7 = LD_WF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WT vd0 = OUT_F (vw0, vs0, VL);                                          \
+    WT vd1 = OUT_F (vw1, vs1, VL);                                          \
+    WT vd2 = OUT_F (vw2, vs2, VL);                                          \
+    WT vd3 = OUT_F (vw3, vs3, VL);                                          \
+    WT vd4 = OUT_F (vw4, vs4, VL);                                          \
+    WT vd5 = OUT_F (vw5, vs5, VL);                                          \
+    WT vd6 = OUT_F (vw6, vs6, VL);                                          \
+    WT vd7 = OUT_F (vw7, vs7, VL);                                          \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd2, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd3, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd4, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd5, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd6, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd7, VL); OUT += VL;                                 \
+
+#define LOOP_WIDEN_BINARY_BODY_X4(NT, WT, LD_NF, LD_WF, OUT_F, ST_F, OUT,   \
+				   START, VL)                               \
+    NT vs0 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs1 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs2 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs3 = LD_NF ((void *)START, VL); START += VL;                        \
+    WT vw0 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw1 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw2 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw3 = LD_WF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WT vd0 = OUT_F (vw0, vs0, VL);                                          \
+    WT vd1 = OUT_F (vw1, vs1, VL);                                          \
+    WT vd2 = OUT_F (vw2, vs2, VL);                                          \
+    WT vd3 = OUT_F (vw3, vs3, VL);                                          \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd2, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd3, VL); OUT += VL;                                 \
+
+#define LOOP_WIDEN_BINARY_BODY_X16(NT, WT, LD_NF, LD_WF, OUT_F, ST_F, OUT,  \
+				   START, VL)                               \
+    NT vs0 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs1 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs2 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs3 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs4 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs5 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs6 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs7 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs8 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs9 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs10 = LD_NF ((void *)START, VL); START += VL;                       \
+    NT vs11 = LD_NF ((void *)START, VL); START += VL;                       \
+    NT vs12 = LD_NF ((void *)START, VL); START += VL;                       \
+    NT vs13 = LD_NF ((void *)START, VL); START += VL;                       \
+    NT vs14 = LD_NF ((void *)START, VL); START += VL;                       \
+    NT vs15 = LD_NF ((void *)START, VL); START += VL;                       \
+    WT vw0 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw1 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw2 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw3 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw4 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw5 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw6 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw7 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw8 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw9 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw10 = LD_WF ((void *)START, VL); START += VL;                       \
+    WT vw11 = LD_WF ((void *)START, VL); START += VL;                       \
+    WT vw12 = LD_WF ((void *)START, VL); START += VL;                       \
+    WT vw13 = LD_WF ((void *)START, VL); START += VL;                       \
+    WT vw14 = LD_WF ((void *)START, VL); START += VL;                       \
+    WT vw15 = LD_WF ((void *)START, VL); START += VL;                       \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WT vd0 = OUT_F (vw0, vs0, VL);                                          \
+    WT vd1 = OUT_F (vw1, vs1, VL);                                          \
+    WT vd2 = OUT_F (vw2, vs2, VL);                                          \
+    WT vd3 = OUT_F (vw3, vs3, VL);                                          \
+    WT vd4 = OUT_F (vw4, vs4, VL);                                          \
+    WT vd5 = OUT_F (vw5, vs5, VL);                                          \
+    WT vd6 = OUT_F (vw6, vs6, VL);                                          \
+    WT vd7 = OUT_F (vw7, vs7, VL);                                          \
+    WT vd8 = OUT_F (vw8, vs8, VL);                                          \
+    WT vd9 = OUT_F (vw9, vs9, VL);                                          \
+    WT vd10 = OUT_F (vw10, vs10, VL);                                       \
+    WT vd11 = OUT_F (vw11, vs11, VL);                                       \
+    WT vd12 = OUT_F (vw12, vs12, VL);                                       \
+    WT vd13 = OUT_F (vw13, vs13, VL);                                       \
+    WT vd14 = OUT_F (vw14, vs14, VL);                                       \
+    WT vd15 = OUT_F (vw15, vs15, VL);                                       \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd2, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd3, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd4, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd5, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd6, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd7, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd8, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd9, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd10, VL); OUT += VL;                                \
+    ST_F ((void *)out, vd11, VL); OUT += VL;                                \
+    ST_F ((void *)out, vd12, VL); OUT += VL;                                \
+    ST_F ((void *)out, vd13, VL); OUT += VL;                                \
+    ST_F ((void *)out, vd14, VL); OUT += VL;                                \
+    ST_F ((void *)out, vd15, VL); OUT += VL;                                \
+
 #define DEF_GROUP_OVERLAP_UNARY_0(VL_F, NT, WT, LD_F, OUT_F, ST_F, NAME, \
 				  LOOP_BODY)                             \
   void test_group_overlap_##NAME##_##NT##_unary_0(uint8_t *data,         \
@@ -126,6 +265,21 @@
     while (start < end) {                                                \
       LOOP_BODY (NT, WT, LD_F, OUT_F, ST_F, out, start, vl);             \
     }                                                                    \
+  }
+
+#define DEF_GROUP_OVERLAP_BINARY_0(VL_F, NT, WT, LD_NF, LD_WF, OUT_F, ST_F, \
+				   NAME, LOOP_BODY)                          \
+  void test_group_overlap_##NAME##_##NT##_binary_0(uint8_t *data,           \
+						   uint8_t *out,            \
+						   size_t limit)            \
+  {                                                                         \
+    uint8_t *start = data;                                                  \
+    uint8_t *end = data + limit;                                            \
+    size_t vl = VL_F ();                                                    \
+                                                                            \
+    while (start < end) {                                                   \
+      LOOP_BODY (NT, WT, LD_NF, LD_WF, OUT_F, ST_F, out, start, vl);         \
+    }                                                                       \
   }
 
 #endif
