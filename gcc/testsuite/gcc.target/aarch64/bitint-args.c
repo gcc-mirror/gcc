@@ -40,7 +40,7 @@ CHECK_ARG(16)
 CHECK_ARG(19)
 /*
 ** f19:
-**	sbfx	x([0-9]+), x1, 0, 19
+**	sbfx	w([0-9]+), w1, 0, 19
 **	str	w\1, \[x0\]
 **	ret
 */
