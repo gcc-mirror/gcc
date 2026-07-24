@@ -6,12 +6,12 @@ struct A1 {
     int y1 = 1;
   };
 
-  A1(const B1& opts = B1()) {}  // { dg-error "default member initializer" }
+  A1(const B1& opts = B1()) {}
 };
 
 struct A2 {
   struct B2 {
-    int x2, y2 = 1;
+    int x2, y2 = x2;
   };
 
   A2(const B2& opts = B2()) {}  // { dg-error "default member initializer" }

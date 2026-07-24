@@ -3108,6 +3108,8 @@ static tree cp_parser_late_parse_one_default_arg
   (cp_parser *, tree, tree, tree);
 static void cp_parser_late_parsing_nsdmi
   (cp_parser *, tree);
+static bool cp_parser_early_parsing_nsdmi
+  (cp_parser *, tree);
 static void cp_parser_late_parsing_default_args
   (cp_parser *, tree);
 static tree cp_parser_sizeof_operand
@@ -31748,7 +31750,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      if (DECL_DECLARES_FUNCTION_P (decl))
 		cp_parser_save_default_args (parser, STRIP_TEMPLATE (decl));
 	      else if (TREE_CODE (decl) == FIELD_DECL
-		       && DECL_INITIAL (decl))
+		       && DECL_INITIAL (decl)
+		       && !cp_parser_early_parsing_nsdmi (parser, decl))
 		/* Add DECL to the queue of NSDMI to be parsed later.  */
 		vec_safe_push (unparsed_nsdmis, decl);
 	    }
@@ -37280,6 +37283,43 @@ cp_parser_late_parsing_nsdmi (cp_parser *parser, tree field)
   maybe_end_member_template_processing ();
 
   DECL_INITIAL (field) = def;
+}
+
+/* If the DEFERRED_PARSE for FIELD is safe to parse immediately, do so.
+   Returns true if deferred parsing is no longer needed.
+
+   CWG direction on issue 2335 is to parse DMI as needed rather than only at
+   the end of the class, which we do not yet implement; this function allows a
+   subset of trivial cases that are intended to be well-formed.
+
+   A further subset could be trying to parse immediately but giving up if name
+   lookup fails, since "A name N used in a class S shall refer to the same
+   declaration in its context and when re-evaluated in the completed scope of
+   S." ([basic.scope.class].
+
+   WIP for c++/96645 tries to parse as a pseudo-template and then
+   pseudo-instantiate when needed, like requires-expressions; this would
+   completely implement the CWG direction (and also rely on the above
+   rule).  */
+
+static bool
+cp_parser_early_parsing_nsdmi (cp_parser *parser, tree field)
+{
+  tree init = DECL_INITIAL (field);
+  if (TREE_CODE (init) != DEFERRED_PARSE)
+    return true;
+
+  cp_token_cache *tokens = DEFPARSE_TOKENS (init);
+  for (cp_token *p = tokens->first; p != tokens->last; ++p)
+    if (p->type == CPP_NAME
+	|| p->keyword == RID_THIS
+	|| p->keyword == RID_OPERATOR)
+      /* There's a name to look up or 'this', give up.  */
+      return false;
+
+  /* It's trivial, parse now.  */
+  cp_parser_late_parsing_nsdmi (parser, field);
+  return true;
 }
 
 /* FN is a FUNCTION_DECL which may contains a parameter with an
