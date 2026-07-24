@@ -6520,7 +6520,7 @@ riscv_v_widen_constraint_ok (unsigned int regno, machine_mode mode,
   gcc_checking_assert (riscv_vector_mode_p (mode)
 		       && riscv_vector_mode_p (wide_mode));
 
-  if (riscv_tuple_mode_p (mode))
+  if (riscv_tuple_mode_p (mode) || wide_mode == mode)
      return false;
 
   unsigned int wide_nregs = riscv_hard_regno_nregs (wide_regno, wide_mode);
