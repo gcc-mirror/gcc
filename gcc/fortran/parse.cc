@@ -5526,12 +5526,28 @@ loop:
   pop_state ();
 }
 
+
+/* F2018(11.1.5.2): Track coarrays allocated within CHANGE TEAM blocks.
+   Map from team namespace to vector of allocated coarray symbols.  */
+hash_map<gfc_namespace *, vec<gfc_expr *>> team_allocated_coarrays;
+
+/* Stack to track current CHANGE TEAM context.  */
+vec<gfc_namespace *> team_context_stack;
+
+gfc_namespace *
+get_current_team_context (void)
+{
+  return team_context_stack.is_empty () ? NULL : team_context_stack.last ();
+}
+
+
 static void
 parse_change_team (void)
 {
   gfc_namespace *my_ns;
   gfc_state_data s;
   gfc_statement st;
+  vec<gfc_expr *> *team_allocs;
 
   gfc_notify_std (GFC_STD_F2018, "CHANGE TEAM construct at %C");
 
@@ -5549,6 +5565,9 @@ parse_change_team (void)
   accept_statement (ST_CHANGE_TEAM);
   push_state (&s, COMP_CHANGE_TEAM, my_ns->proc_name);
 
+  /* Push team context for tracking coarrays allocated in a team block.  */
+  team_context_stack.safe_push (gfc_current_ns);
+
 loop:
   st = parse_executable (ST_NONE);
   switch (st)
@@ -5559,6 +5578,13 @@ loop:
     case_end:
       accept_statement (st);
       my_ns->code = gfc_state_stack->head;
+      /* F2018(11.1.5.2): Deallocate coarray expressions allocated in this
+	 team block,  */
+      team_allocs = team_allocated_coarrays.get (gfc_current_ns);
+      if (team_allocs)
+	deallocate_allocated_coarrays (team_allocs);
+      /* Pop team context.  */
+      team_context_stack.pop ();
       break;
 
     default:

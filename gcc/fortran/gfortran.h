@@ -4052,13 +4052,13 @@ bool has_parameterized_comps (gfc_symbol *);
 
 /* st.cc */
 extern gfc_code new_st;
-
 void gfc_clear_new_st (void);
 gfc_code *gfc_get_code (gfc_exec_op);
 gfc_code *gfc_append_code (gfc_code *, gfc_code *);
 void gfc_free_statement (gfc_code *);
 void gfc_free_statements (gfc_code *);
 void gfc_free_association_list (gfc_association_list *);
+void deallocate_allocated_coarrays (vec<gfc_expr *> *);
 
 /* resolve.cc */
 void gfc_resolve_symbol (gfc_symbol *);
@@ -4234,6 +4234,9 @@ void gfc_global_used (gfc_gsymbol *, locus *);
 gfc_namespace* gfc_build_block_ns (gfc_namespace *);
 gfc_statement match_omp_directive (void);
 bool is_omp_declarative_stmt (gfc_statement);
+extern hash_map<gfc_namespace *, vec<gfc_expr *>> team_allocated_coarrays;
+extern vec<gfc_namespace *> team_context_stack;
+gfc_namespace *get_current_team_context (void);
 
 /* dependency.cc */
 int gfc_dep_compare_functions (gfc_expr *, gfc_expr *, bool);
