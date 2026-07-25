@@ -1154,40 +1154,8 @@ DEFUN __mulQ64_work
     eor     __tmp_reg__, B7
     push    __tmp_reg__
 
-    ;; A = |A|
-    .call_if_neg  A7, __negdi2
-
-    ;; Stash away |A|
-    wmov    r26, A6
-#ifdef __AVR_HAVE_MUL__
-    wmov    r0, A4
-#else
-    push    A5
-    push    A4
-#endif
-    push    A3
-    push    A2
-    push    A1
-    push    A0
-
-    ;; A = |B|
-    mov8    A0, B0
-    .call_if_neg  A7, __negdi2
-
-    ;; Restore B = |A|
-    wmov    B6, r26
-    pop     B0
-    pop     B1
-    pop     B2
-    pop     B3
-#ifdef __AVR_HAVE_MUL__
-    wmov    B4, r0
-    ;; No need to clear zero_reg since it won't be used until the
-    ;; next MUL in __umulditi3_raw -> __umulsidi3 -> __umulhisi3.
-#else
-    pop     B4
-    pop     B5
-#endif
+    .call_if_neg  A7, __negdi2          ; A = |A|
+    .call_if_neg  B7, __negdi2_r10      ; B = |B|
 
     set    ; for signed
     XICALL ; __muluxx3.2

@@ -1816,26 +1816,15 @@ DEFUN  __divdi3_moddi3
 22: ldi     NN, 1 << 7
     eor     SS, NN
 
-    ldi NN, -1
-    com B4     $  com B5     $  com B6     $  com B7
-               $  com B1     $  com B2     $  com B3
-    NEG B0
-               $  sbc B1,NN  $  sbc B2,NN  $  sbc B3,NN
-    sbc B4,NN  $  sbc B5,NN  $  sbc B6,NN  $  sbc B7,NN
+    XCALL   __negdi2_r10
 
 3:  ;; Do the unsigned 64-Bit Division/Modulo (depending on T-flag)
     XCALL   __udivmod64
 
     ;; Adjust Result's Sign
-#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
-    tst     SS
-    brpl    4f
-#else
-    sbrc    SS, 7
-#endif /* __AVR_HAVE_JMP_CALL__ */
-    XCALL   __negdi2
+    .call_if_neg  SS, __negdi2
 
-4:  ;; Epilogue: Restore 12 Registers and return
+    ;; Epilogue: Restore 12 Registers and return
     do_epilogue_restores 12
 
 ENDF __divdi3_moddi3
@@ -1930,6 +1919,20 @@ DEFUN __negdi2
     ret
 ENDF __negdi2
 #endif /* L_negdi2 */
+
+#if defined (L_negdi2_r10)
+;; (set (reg:DI 10)
+;;      (neg:DI (reg:DI 10)))
+;; Requires zero_reg R1 = 0.
+DEFUN __negdi2_r10
+    COM  B7         $ com  B6       $ com  B5       $ com  B4
+    com  B3         $ com  B2       $ com  B1       $ com  B0
+
+    ADC  B0, r1     $ adc  B1, r1   $ adc  B2, r1   $ adc  B3, r1
+    adc  B4, r1     $ adc  B5, r1   $ adc  B6, r1   $ adc  B7, r1
+    ret
+ENDF __negdi2_r10
+#endif /* L_negdi2_r10 */
 
 #undef TT
 

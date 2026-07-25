@@ -67,7 +67,7 @@ FUNCS_notiny = \
 	_mulsidi3 _umulsidi3 \
 	_divdi3 _udivdi3 \
 	_udivmod64 \
-	_negdi2 \
+	_negdi2 _negdi2_r10 \
 	_prologue \
 	_epilogue \
 	_load_3 _load_4 \
