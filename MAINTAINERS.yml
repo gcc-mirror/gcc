@@ -4162,6 +4162,15 @@ users:
   roles:
   - WriteAfter
   account: aldot
+- sn: Ribeiro
+  cn: Egas
+  email:
+  - egas.g.ribeiro@gmail.com
+  - egas@gcc.gnu.org
+  roles:
+  - WriteAfter
+  - DCO: egas.g.ribeiro@gmail.com
+  account: egas
 - sn: Richards
   cn: Alfie Richards
   email:
