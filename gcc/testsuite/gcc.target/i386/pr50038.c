@@ -1,6 +1,6 @@
 /* PR target/50038 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mno-sse" } */
 
 void
 test (int len, unsigned char *in, unsigned char *out)

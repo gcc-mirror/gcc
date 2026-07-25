@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ilp32 } */
-/* { dg-options "-O2 -mfpmath=387" } */
+/* { dg-options "-O2 -mno-sse -mfpmath=387" } */
 
 double a, b;
 double f(double c)
