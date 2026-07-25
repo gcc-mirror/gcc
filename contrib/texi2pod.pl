@@ -301,7 +301,7 @@ while(<$inf>) {
 	push @icstack, $ic;
 	$endw = $1;
 	$ic = $2;
-	$ic =~ s/\@(?:samp|strong|key|gcctabopt|env)/B/;
+	$ic =~ s/\@(?:samp|strong|key|option|gcctabopt|env)/B/;
 	$ic =~ s/\@(?:code|kbd)/C/;
 	$ic =~ s/\@(?:dfn|var|emph|cite|i)/I/;
 	$ic =~ s/\@(?:file)/F/;
