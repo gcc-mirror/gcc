@@ -224,6 +224,7 @@ static bool uses_outer_template_parms (tree);
 static tree alias_ctad_tweaks (tree, tree);
 static tree inherited_ctad_tweaks (tree, tree, tsubst_flags_t);
 static tree deduction_guides_for (tree, bool&, tsubst_flags_t);
+static void mark_template_arguments_used_1 (tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -23739,6 +23740,14 @@ mark_template_arguments_used (tree tmpl, tree args)
   /* We already marked outer arguments when specializing the context.  */
   args = INNERMOST_TEMPLATE_ARGS (args);
 
+  mark_template_arguments_used_1 (args);
+}
+
+/* Main recursive part of the above.  */
+
+static void
+mark_template_arguments_used_1 (tree args)
+{
   for (tree arg : tree_vec_range (args))
     {
       /* A (pointer/reference to) function or variable NTTP argument.  */
@@ -23779,6 +23788,8 @@ mark_template_arguments_used (tree tmpl, tree args)
 	  cp_walk_tree_without_duplicates (&DECL_INITIAL (arg),
 					   mark_used_r, nullptr);
 	}
+      else if (TREE_CODE (arg) == NONTYPE_ARGUMENT_PACK)
+	mark_template_arguments_used_1 (ARGUMENT_PACK_ARGS (arg));
     }
 }
 
