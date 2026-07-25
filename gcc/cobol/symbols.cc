@@ -1150,9 +1150,9 @@ symbols_dump( size_t first, bool header ) {
         auto p = prototype_args(L.name);
         unsigned long narg = p.second? p.first.size() : 0;
         char *base = s;
-        s = xasprintf("%s (%s%zu args)",  base,
+        s = xasprintf("%s (%s" HOST_SIZE_T_PRINT_UNSIGNED " args)",  base,
                       L.prototype? "prototype, " : "",
-                      narg);
+                      (fmt_size_t) narg);
         free(base);
       }
       break;

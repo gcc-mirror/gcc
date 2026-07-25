@@ -400,7 +400,8 @@ symbolic_bit::print ()
   if (dump_file)
     {
       print_generic_expr (dump_file, m_origin, dump_flags);
-      fprintf (dump_file, "[%zu]", m_index);
+      fprintf (dump_file, "[" HOST_SIZE_T_PRINT_UNSIGNED "]",
+	       (fmt_size_t) m_index);
     }
 }
 

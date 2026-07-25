@@ -1176,8 +1176,10 @@ main (int argc, const char **argv)
 	    max_len = len;
 	}
       printf ("void\nverify_reg_names_in_constraints ()\n{\n");
-      printf ("  static const char hregnames[%zu][%zu] = {\n",
-	      used_reg_names.elements (), max_len + 1);
+      printf ("  static const char hregnames[" HOST_SIZE_T_PRINT_UNSIGNED "]["
+	      HOST_SIZE_T_PRINT_UNSIGNED "] = {\n",
+	      (fmt_size_t) used_reg_names.elements (),
+	      (fmt_size_t) (max_len + 1));
       auto it = used_reg_names.begin ();
       while (it != used_reg_names.end ())
 	{
@@ -1188,8 +1190,8 @@ main (int argc, const char **argv)
 	  printf ("\n");
 	}
       printf ("  };\n");
-      printf ("  for (size_t i = 0; i < %zu; ++i)\n",
-	      used_reg_names.elements ());
+      printf ("  for (size_t i = 0; i < " HOST_SIZE_T_PRINT_UNSIGNED
+	      "; ++i)\n", (fmt_size_t) used_reg_names.elements ());
       printf ("    if (decode_reg_name (hregnames[i]) < 0)\n");
       printf ("      internal_error (\"invalid register %%qs used in "
 	      "constraint of machine description\", hregnames[i]);\n");
