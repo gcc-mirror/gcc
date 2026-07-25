@@ -1,3 +1,118 @@
+2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* gcc.target/powerpc/dmf-builtin-2.c: New test.
+
+2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* gcc.target/powerpc/dmf-builtin-1.c: New test.
+
+2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* gcc.target/powerpc/dmf-extract512.c: New test.
+	* gcc.target/powerpc/dmf-disassemble-dmr.c: New test.
+
+2026-07-24  Kishan Parmar  <kishan@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Peter Bergner  <bergner@linux.ibm.com>
+		    Surya Kumari Jangala  <jskumari@linux.ibm.com>
+		    Kishan Parmar  <kishan@linux.ibm.com>
+
+	* gcc.target/powerpc/dmf-build-dmr.c: New test.
+	* gcc.target/powerpc/dmf-builtin.c: New test.
+
+2026-07-24  Manjunath S Matti  <mmatti@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Manjunath Matti  <mmatti@linux.ibm.com>
+
+	* gcc.target/powerpc/dmr1024-alignment.c: New test case.
+	* gcc.target/powerpc/dmr1024-compile.c: Likewise.
+	* gcc.target/powerpc/dmr1024-invalid-use-1.c: Likewise.
+	* gcc.target/powerpc/dmr1024-invalid-use-2.c: Likewise.
+	* gcc.target/powerpc/dmf-no-mma.c: Likewise.
+
+2026-07-24  Kishan Parmar  <kishan@linux.ibm.com>
+
+	Backported from master:
+	2026-07-22  Kishan Parmar  <kishan@linux.ibm.com>
+
+	* gcc.target/powerpc/dmf-xxacc.c: New test.
+	* gcc.target/powerpc/nodmf-xxacc.c: New test.
+
+2026-07-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126341
+	* gcc.dg/pr126341.c: New test.
+
+2026-07-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/123625
+	PR target/121957
+	* gcc.c-torture/execute/pr121957.c: New test.
+	* gcc.c-torture/execute/pr123625.c: New test.
+	* gcc.c-torture/execute/pr123625-2.c: New test.
+	* gcc.c-torture/execute/pr123625-3.c: New test.
+	* gcc.dg/pr123625-1.c: New test.
+
+2026-07-24  Boudewijn van der Heide  <boudewijn@delta-utec.com>
+
+	Backported from master:
+	2026-05-11  Boudewijn van der Heide  <boudewijn@delta-utec.com>
+
+	PR rtl-optimization/125209
+	* gcc.dg/pr125209.c: New test.
+
+2026-07-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2026-05-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/124637
+	* gcc.target/powerpc/pr124637.c: New test case.
+
+2026-07-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126171
+	* gcc.dg/pr126171-1.c: New testcase.
+	* gcc.dg/torture/pr126171-2.c: Likewise.
+
+2026-07-24  Cem Akgok  <cemakgok@gmail.com>
+
+	Backported from master:
+	2026-07-14  Cem Akgok  <cemakgok@gmail.com>
+
+	PR tree-optimization/126225
+	* gcc.dg/vect/vect-iv-12.c: New test.
+	* gcc.dg/vect/vect-iv-13.c: New test.
+	* gcc.dg/vect/vect-iv-14.c: New test.
+
+2026-07-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-07-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR tree-optimization/124663
+	* g++.dg/tree-ssa/pr124663.C: New test.
+
 2026-07-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:

@@ -1,3 +1,469 @@
+2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* config/rs6000/mma.md (UNSPEC_DMF_DMXVF16GERX2): New UNSPEC entry.
+	(UNSPEC_DMF_DMXVF16GERX2PP): Likewise.
+	(UNSPEC_DMF_DMXVF16GERX2PN): Likewise.
+	(UNSPEC_DMF_DMXVF16GERX2NP): Likewise.
+	(UNSPEC_DMF_DMXVF16GERX2NN): Likewise.
+	(UNSPEC_DMF_PMDMXVF16GERX2): Likewise.
+	(UNSPEC_DMF_PMDMXVF16GERX2PP): Likewise.
+	(UNSPEC_DMF_PMDMXVF16GERX2PN): Likewise.
+	(UNSPEC_DMF_PMDMXVF16GERX2NP): Likewise.
+	(UNSPEC_DMF_PMDMXVF16GERX2NN): Likewise.
+	(DMF_PV): Add UNSPEC_DMF_DMXVF16GERX2.
+	(DMF_DPV): Add f16 variants.
+	(DMF_PVI8I4I2): Add UNSPEC_DMF_PMDMXVF16GERX2.
+	(DMF_DPVI8I4I2): Add f16 prefixed variants.
+	(pv): Add dmxvf16gerx2 attribute.
+	(dpv): Add f16 attributes.
+	(pvi8i4i2): Add pmdmxvf16gerx2 attribute.
+	(dpvi8i4i2): Add f16 prefixed attributes.
+	* config/rs6000/rs6000-builtins.def (__builtin_mma_dmxvf16gerx2): New
+	builtin.
+	(__builtin_mma_dmxvf16gerx2pp): Likewise.
+	(__builtin_mma_dmxvf16gerx2pn): Likewise.
+	(__builtin_mma_dmxvf16gerx2np): Likewise.
+	(__builtin_mma_dmxvf16gerx2nn): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2pp): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2pn): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2np): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2nn): Likewise.
+	(__builtin_mma_dmxvf16gerx2_internal): New internal builtin.
+	(__builtin_mma_dmxvf16gerx2pp_internal): Likewise.
+	(__builtin_mma_dmxvf16gerx2pn_internal): Likewise.
+	(__builtin_mma_dmxvf16gerx2np_internal): Likewise.
+	(__builtin_mma_dmxvf16gerx2nn_internal): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2_internal): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2pp_internal): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2pn_internal): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2np_internal): Likewise.
+	(__builtin_mma_pmdmxvf16gerx2nn_internal): Likewise.
+	* doc/extend.texi (PowerPC Matrix-Multiply Assist Built-in Functions):
+	Document new MMA+ builtins for f16 operations.
+
+2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* config/rs6000/mma.md (UNSPEC_DMF_DMXVI8GERX4SPP): New UNSPEC entry.
+	(UNSPEC_DMF_PMDMXVI8GERX4SPP): Likewise.
+	(UNSPEC_DMF_DMXVBF16GERX2): Likewise.
+	(UNSPEC_DMF_DMXVBF16GERX2PP): Likewise.
+	(UNSPEC_DMF_DMXVBF16GERX2PN): Likewise.
+	(UNSPEC_DMF_DMXVBF16GERX2NP): Likewise.
+	(UNSPEC_DMF_DMXVBF16GERX2NN): Likewise.
+	(UNSPEC_DMF_PMDMXVBF16GERX2): Likewise.
+	(UNSPEC_DMF_PMDMXVBF16GERX2PP): Likewise.
+	(UNSPEC_DMF_PMDMXVBF16GERX2PN): Likewise.
+	(UNSPEC_DMF_PMDMXVBF16GERX2NP): Likewise.
+	(UNSPEC_DMF_PMDMXVBF16GERX2NN): Likewise.
+	(DMF_PV): Add UNSPEC_DMF_DMXVBF16GERX2.
+	(DMF_DPV): Add bf16 and int8 signed accumulate variants.
+	(DMF_DPVI8I4I4): Add UNSPEC_DMF_PMDMXVI8GERX4SPP.
+	(DMF_PVI8I4I2): New int iterator.
+	(DMF_DPVI8I4I2): Likewise.
+	(pv): Add dmxvbf16gerx2 attribute.
+	(apv): Removed dmxvi8gerx4pp attribute.
+	(dpv): New attribute.
+	(dpvi8i4i4): Add pmdmxvi8gerx4spp attribute.
+	(pvi8i4i2): New attribute.
+	(dpvi8i4i2): Likewise.
+	(dmf_<dpv>): Rename from dmf_<apv> and update to use dpv attribute.
+	(dmf_<pvi8i4i2>): New insn pattern.
+	(dmf_<dpvi8i4i2>): Likewise.
+	* config/rs6000/rs6000-builtins.def (__builtin_mma_dmxvi8gerx4spp): New
+	builtin.
+	(__builtin_mma_pmdmxvi8gerx4spp): Likewise.
+	(__builtin_mma_dmxvbf16gerx2): Likewise.
+	(__builtin_mma_dmxvbf16gerx2pp): Likewise.
+	(__builtin_mma_dmxvbf16gerx2pn): Likewise.
+	(__builtin_mma_dmxvbf16gerx2np): Likewise.
+	(__builtin_mma_dmxvbf16gerx2nn): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2pp): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2pn): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2np): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2nn): Likewise.
+	(__builtin_mma_dmxvi8gerx4spp_internal): New internal builtin.
+	(__builtin_mma_pmdmxvi8gerx4spp_internal): Likewise.
+	(__builtin_mma_dmxvbf16gerx2_internal): Likewise.
+	(__builtin_mma_dmxvbf16gerx2pp_internal): Likewise.
+	(__builtin_mma_dmxvbf16gerx2pn_internal): Likewise.
+	(__builtin_mma_dmxvbf16gerx2np_internal): Likewise.
+	(__builtin_mma_dmxvbf16gerx2nn_internal): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2_internal): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2pp_internal): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2pn_internal): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2np_internal): Likewise.
+	(__builtin_mma_pmdmxvbf16gerx2nn_internal): Likewise.
+	* doc/extend.texi (PowerPC Matrix-Multiply Assist Built-in Functions):
+	Document new MMA+ builtins for int8 and bf16 operations.
+
+2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtins.def (__builtin_dmr_extract512): New
+	built-in.
+	(__builtin_disassemble_dmr): Likewise.
+	(__builtin_dmr_extract512_internal): New internal built-in.
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_mma_builtin):
+	Exempt RS6000_BIF_DISASSEMBLE_DMR from the early-return guard.
+	Generate appropriate gimple code for the extract builtins.
+
+2026-07-24  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Avinash Jayakar  <avinashd@linux.ibm.com>
+		    Vijay Shankar  <vijay@linux.ibm.com>
+
+	* config/rs6000/mma.md (mma_xxsetaccz): Use wD constraint and
+	accumulator operand.
+	(mma_<vv>): Likewise.
+	(mma_<avv>): Likewise.
+	(mma_<pv>): Likewise.
+	(mma_<apv>): Likewise.
+	(mma_<vvi4i4i8>): Likewise.
+	(mma_<avvi4i4i8>): Likewise.
+	(mma_<vvi4i4i2>): Likewise.
+	(mma_<avvi4i4i2>): Likewise.
+	(mma_<vvi4i4>): Likewise.
+	(mma_<avvi4i4>): Likewise.
+	(mma_<pvi4i2>): Likewise.
+	(mma_<apvi4i2>): Likewise.
+	(mma_<vvi4i4i4>): Likewise.
+	(mma_<avvi4i4i4>): Likewise.
+	* config/rs6000/rs6000.cc (print_operand): Print DMR register
+	numbers if dense math option enabled.
+
+2026-07-24  Kishan Parmar  <kishan@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Peter Bergner  <bergner@linux.ibm.com>
+		    Surya Kumari Jangala  <jskumari@linux.ibm.com>
+		    Kishan Parmar  <kishan@linux.ibm.com>
+
+	* config/rs6000/mma.md (MAX_MMA_OPERANDS): Increase from 7 to 9.
+	(UNSPEC_DMF_DMXOR): New unspec.
+	(UNSPEC_DMF_DMXVI8GERX4): Likewise.
+	(UNSPEC_DMF_DMXVI8GERX4PP): Likewise.
+	(UNSPEC_DMF_PMDMXVI8GERX4): Likewise.
+	(UNSPEC_DMF_PMDMXVI8GERX4PP): Likewise.
+	(UNSPEC_DMF_DMSETDMRZ): Likewise.
+	(DMF_PV): New iterator.
+	(DMF_DPV): Likewise.
+	(DMF_PVI8I4I4): Likewise.
+	(DMF_DPVI8I4I4): Likewise.
+	(pv): Add DMF mappings.
+	(apv): Likewise.
+	(pvi8i4i4): New attribute.
+	(dpvi8i4i4): Likewise.
+	(dmf_build_dmr): New define_expand.
+	(dmf_dmsetdmrz): New insn.
+	(dmf_dmxor): Likewise.
+	(dmf_<pv>): New insn pattern.
+	(dmf_<apv>): Likewise.
+	(dmf_<pvi8i4i4>): Likewise.
+	(dmf_<dpvi8i4i4>): Likewise.
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_mma_builtin): Add
+	DMF builtin support. Handle DMR pass-by-reference semantics.
+	Support up to nine builtin operands.
+	(mma_expand_builtin): Likewise.
+	(rs6000_expand_builtin): Handle DMF builtins.
+	* config/rs6000/rs6000-builtins.def: Add DMF and MMA+ builtin
+	definitions.
+	* doc/extend.texi
+	(PowerPC Matrix-Multiply Assist Built-in Functions): Document
+	MMA+ builtins.
+	(PowerPC Dense Math Facility Built-in Functions): Document DMF builtins.
+
+2026-07-24  Manjunath S Matti  <mmatti@linux.ibm.com>
+
+	Backported from master:
+	2026-07-23  Manjunath Matti  <mmatti@linux.ibm.com>
+
+	* config/rs6000/rs6000.h (RS6000_BTI_dmr1024): New enumerator.
+	(RS6000_BTI_ptr_dmr1024): New enumerator.
+	(dmr1024_type_node): New macro.
+	(ptr_dmr1024_type_node): New macro.
+	* config/rs6000/rs6000-builtin.cc (rs6000_type_string): Handle
+	dmr1024_type_node.
+	(rs6000_init_builtins): Register the __dmr1024 opaque type and
+	its pointer-to-const variant, with 512-bit alignment.
+	* config/rs6000/rs6000.cc (rs6000_mangle_type): Handle
+	dmr1024_type_node.
+	(rs6000_invalid_conversion): Reject conversions to/from TDOmode.
+	(rs6000_opaque_type_invalid_use_p): Gate __vector_quad and
+	__vector_pair on TARGET_MMA and __dmr1024 on TARGET_DMF
+	independently, and require -mdense-math for __dmr1024.
+
+2026-07-24  Vijay Shankar  <vijay@linux.ibm.com>
+
+	Backported from master:
+	2026-07-22  Vijay Shankar  <vijay@linux.ibm.com>
+
+	* config/rs6000/mma.md (*movxo): renamed to movxo_nodmf
+	(*movxo_nodmf): updated contraint to use wD and add !TARGET_DMF
+	(*movxo_dmf): New pattern to handle dmf insert/extract from vsx
+
+2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	Backported from master:
+	2026-07-22  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+		    Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/mma.md (UNSPEC_DMR_RELOAD_FROM_MEMORY): New unspec.
+	(UNSPEC_DMR_RELOAD_TO_MEMORY): Likewise.
+	(reload_tdo_load): New define_insn_and_split.
+	(reload_tdo_store): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_init_hard_regno_mode_ok): Set
+	reload_load and reload_store for TDOmode when TARGET_DMF.
+
+2026-07-24  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2026-07-22  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	* config/rs6000/mma.md (UNSPEC_DMF_EXTRACT512): New unspec.
+	(dm_extract512): New insn.
+	(movtdo): New expander.
+	(*movtdo): New insn_and_split to support TDOmode moves between
+	memory, VSX registers, and Dense Math Registers.
+	* config/rs6000/rs6000.cc (rs6000_emit_move): Diagnose constant
+	assignments to TDOmode objects.
+	(rs6000_split_multireg_move): Handle TDOmode when splitting
+	multi-register moves.
+
+2026-07-24  Kishan Parmar  <kishan@linux.ibm.com>
+
+	Backported from master:
+	2026-07-22  Kishan Parmar  <kishan@linux.ibm.com>
+
+	* config/rs6000/mma.md (UNSPEC_DMF_INSERT512): New unspec.
+	(UNSPEC_DMF_INSERT1024): Likewise.
+	(movoo): Enable for TARGET_DMF.
+	(*movoo): Likewise.
+	(vsx_assemble_pair): Likewise.
+	(*vsx_assemble_pair): Likewise.
+	(vsx_disassemble_pair): Likewise.
+	(*vsx_disassemble_pair): Likewise.
+	(dm_insert512): New insn.
+	(dm_insert1024): Likewise.
+	(mma_assemble_acc): Use accumulator_operand.
+	Build accumulators via DMR insert operations when TARGET_DMF.
+	(*mma_assemble_acc): Use accumulator_operand.
+	(mma_<acc>): New define_expand treating xxmtacc/xxmfacc as no-ops
+	for TARGET_DMF.
+	(*mma_<acc>): Restrict to !TARGET_DMF and use accumulator_operand.
+	(mma_disassemble_acc): Use accumulator_operand.
+	* config/rs6000/predicates.md (dmr_register_operand): New predicate.
+	(gpc_reg_operand): Accept DMR registers.
+	* config/rs6000/rs6000-builtin.cc (rs6000_gimple_fold_mma_builtin): Do
+	not emit xxmfacc for DISASSEMBLE_ACC when TARGET_DMF.
+	* config/rs6000/rs6000.cc (rs6000_hard_regno_mode_ok_uncached): Allow
+	OOmode in VSX register pairs for TARGET_DMF.
+	(rs6000_split_multireg_move): Avoid emitting xxmtacc/xxmfacc when
+	TARGET_DMF.
+	* config/rs6000/rs6000.md (type): Add dmf type.
+	(isa): Add mma and dmf ISA attributes.
+	(enabled): Add mma and dmf enable conditions.
+
+2026-07-24  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	Backported from master:
+	2026-07-22  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* config/rs6000/constraints.md
+	(rs6000_constraints[RS6000_CONSTRAINT_wD]): New wD constraint.
+	* config/rs6000/predicates.md (accumulator_operand): New predicate.
+	* config/rs6000/rs6000.cc (rs6000_debug_reg_global): Support wD
+	register class.
+	(rs6000_init_hard_regno_mode_ok): Map wD to FLOAT_REGS.
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Add wD constraint.
+	* doc/md.texi: Document the new constraint.
+
+2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	Backported from master:
+	2026-07-22  Surya Kumari jangala  <jskumari@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (enum rs6000_reg_type): Add DMR_REG_TYPE.
+	(enum rs6000_reload_reg_type): Add RELOAD_REG_DMR.
+	(LAST_RELOAD_REG_CLASS): Update to RELOAD_REG_DMR.
+	(reload_reg_map): Add DMR entry.
+	(rs6000_reg_names): Add DMR register names.
+	(alt_reg_names): Add alternate DMR register names.
+	(rs6000_hard_regno_nregs_internal): Handle DMR registers.
+	(rs6000_hard_regno_mode_ok_uncached): Add TDOmode and XOmode support for
+	DMR registers.
+	(rs6000_debug_reg_global): Add TDOmode to debug modes and print DMR
+	register range.
+	(rs6000_setup_reg_addr_masks): Handle RELOAD_REG_DMR.
+	Allow offset loads for TDOmode values.
+	(rs6000_init_hard_regno_mode_ok): Add DMR_REGS to reg_class_to_reg_type
+	mapping.
+	Update precalculation of CLASS_MAX_NREGS.
+	(rs6000_secondary_reload_memory): Handle DMR_REGS class.
+	(rs6000_secondary_reload_simple_move): Add DMR to VSX moves.
+	(rs6000_preferred_reload_class): Handle DMR_REGS.
+	(rs6000_modes_tieable_p): Exclude TDOmode from register tying.
+	(reg_offset_addressing_ok_p): Allow XOmode with TARGET_DMF.
+	Add TDOmode support with TARGET_DMF.
+	(rs6000_secondary_reload_class): Handle DMR_REGS reload routing.
+	(rs6000_dmr_register_move_cost): New helper.
+	(rs6000_register_move_cost): Handle DMR_REGS as source or destination.
+	(rs6000_memory_move_cost): Add DMR_REGS case routing cost through VSX.
+	(rs6000_compute_pressure_classes): Add DMR_REGS when TARGET_DMF.
+	(rs6000_debugger_regno): Add DMR register numbering.
+	* config/rs6000/rs6000.h (UNITS_PER_DMR_WORD): Define as 128.
+	(FIRST_PSEUDO_REGISTER): Increase from 111 to 119.
+	(FIXED_REGISTERS): Add 8 DMR registers as non-fixed.
+	(CALL_USED_REGISTERS): Mark all DMR registers as call-used.
+	(REG_ALLOC_ORDER): Add DMR registers to allocation order.
+	(DMR_REGNO_P): New macro.
+	(VECTOR_ALIGNMENT_P): Add TDOmode.
+	(enum reg_class): Add DMR_REGS entry.
+	(REG_CLASS_CONTENTS): Add DMR_REGS bitmask.
+	(REGISTER_NAMES): Add dmr0-dmr7 register names.
+	(ADDITIONAL_REGISTER_NAMES): Add dmr0-dmr7 mappings.
+	* config/rs6000/rs6000.md (FIRST_DMR_REGNO): Define as 111.
+	(LAST_DMR_REGNO): Define as 118.
+
+2026-07-24  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2026-07-21  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+		    Kishan Parmar  <kishan@linux.ibm.com>
+
+	* config/rs6000/rs6000.cc (print_operand): Add the `%W`
+	print modifier to print the VSX register number plus two.
+
+2026-07-24  Kishan Parmar  <kishan@linux.ibm.com>
+
+	Backported from master:
+	2026-07-16  Peter Bergner  <bergner@linux.ibm.com>
+		    Kishan Parmar  <kishan@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (rs6000_invalid_builtin): Add
+	ENB_DM diagnostic.
+	(rs6000_builtin_is_supported): Handle ENB_DM.
+	* config/rs6000/rs6000-gen-builtins.cc: Update comments for new
+	Dense Math builtin attributes.
+	(bif_stanza): Add BSTZ_DM.
+	(stanza_map): Add "dm" stanza.
+	(enable_string): Add ENB_DM.
+	(basetype): Add BT_DMR.
+	(attrinfo): Add isdm, isdmint and isdmr fields.
+	(type_map): Add dmr1024 and ptr_dmr1024 type mappings.
+	(match_type): Recognize dmr1024 type.
+	(parse_bif_attrs): Parse dm, dmint and dmr attributes.
+	(complete_vector_type): Handle BT_DMR.
+	(write_decls): Emit ENB_DM and Dense Math builtin attribute bits
+	and predicates.
+	(write_bif_static_init): Initialize Dense Math builtin attributes
+	and associate dmint builtins with their internal variants.
+
+2026-07-24  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2026-07-13  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.cc (rs6000_return_in_memory): Handle
+	TDOmode and emit "Dense Math" diagnostics.
+	(rs6000_function_arg): Reject TDOmode function parameters and
+	emit "Dense Math" diagnostics.
+	* config/rs6000/rs6000-modes.def: Add TDOmode.
+
+2026-07-24  jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2026-07-11  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (FUTURE_MASKS_SERVER): Add OPTION_MASK_DMF.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal): Enable
+	OPTION_MASK_DMF by default when TARGET_FUTURE is set and the
+	flag was not explicitly given; emit an error and clear the flag
+	when -mdense-math is requested on a non-future target.
+	(rs6000_opt_masks): Add "dense-math" entry for OPTION_MASK_DMF.
+	* config/rs6000/rs6000.opt (mdense-math): New option backed by Mask(DMF).
+	* doc/invoke.texi: Add -mdense-math.
+
+2026-07-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126341
+	* tree-outof-ssa.cc (split_overlapping_partition_decls): Preserve
+	DECL_IGNORED_P.  Check that the replacement uses memory.
+
+2026-07-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/123625
+	PR target/121957
+	* tree-outof-ssa.cc (split_overlapping_partition_decls): New function.
+	Use use_register_for_decl to identify memory partitions.
+	(remove_ssa_form): Call split_overlapping_partition_decls.
+
+2026-07-24  Boudewijn van der Heide  <boudewijn@delta-utec.com>
+
+	Backported from master:
+	2026-05-11  Boudewijn van der Heide  <boudewijn@delta-utec.com>
+
+	PR rtl-optimization/125209
+	* combine.cc (make_compound_operation_int): Return NULL_RTX if we got CLOBBER.
+
+2026-07-24  Roger Sayle  <roger@nextmovesoftware.com>
+
+	Backported from master:
+	2026-05-08  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/124637
+	* calls.cc (load_register_parameters): If using store_constructor
+	to place a constant structure in a register, use a right shift to
+	align the structure/padding if required on big-endian targets.
+
+2026-07-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-07-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126171
+	* tree-scalar-evolution.cc (scev_dfs::add_to_evolution):
+	Remove code argument.  Remove MINUS_EXPR handling here.
+	(scev_dfs::follow_ssa_edge_binary): Likewise.
+	(scev_dfs::follow_ssa_edge_expr): Handle MINUS_EXPR
+	separately here, promoting the whole operation to unsigned
+	instead of just the addend.
+
+2026-07-24  Cem Akgok  <cemakgok@gmail.com>
+
+	Backported from master:
+	2026-07-14  Cem Akgok  <cemakgok@gmail.com>
+
+	PR tree-optimization/126225
+	* tree-vect-loop.cc (vect_slp_induction_reuse_p): New function.
+	(vectorizable_induction): Validate SLP induction IV reuse.  Reuse
+	generated IVs cyclically when filling the SLP group.
+
+2026-07-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-07-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR tree-optimization/124663
+	* match.pd: Fold constant conditional selects.
+
 2026-07-23  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

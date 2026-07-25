@@ -1,3 +1,19 @@
+2026-07-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+	    Álvaro Begué  <alvaro.begue@gmail.com>
+
+	PR libstdc++/124853
+	* src/c++20/tzdb.cc
+	(time_zone::_M_get_sys_info): Extract code blocks to
+	separate functions, and invoke them.
+	(<unnamed>::find_active_rule): Modify algorithm to
+	handle cascading saves.
+	(<unnamed>::find_first_std): Simplified implementation
+	benefiting from reordering of rules.
+	(chrono::reload_tzdb): Sort rules by name, from and save.
+	* testsuite/std/time/time_zone/wall_cascade.cc: New test.
+	(cherry picked from commits f7cde200320e0800e4fcc5cea399e9faef50f8d4)
+	(610134a51fa3d0bcd3e0980c6574557172dc88c0)
+
 2026-07-23  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	Backported from master:
