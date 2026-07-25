@@ -6085,6 +6085,29 @@ proc check_effective_target_arm_fp16_alternative_ok { } {
 		check_effective_target_arm_fp16_alternative_ok_nocache]
 }
 
+# Return 1 if the target supports executing FP16 alternative format
+# instructions selected by arm_fp16_alternative_ok.
+
+proc check_effective_target_arm_fp16_alternative_hw { } {
+    if { ! [check_effective_target_arm_fp16_alternative_ok] } {
+	return 0
+    }
+
+    global et_arm_fp16_alternative_flags
+    check_runtime arm_fp16_alternative_hw {
+	int
+	main (int argc, char **argv)
+	{
+	  __fp16 a = 1.0;
+	  float r;
+	  asm ("vcvtb.f32.f16 %0, %1"
+	       : "=w" (r) : "w" (a)
+	       : /* No clobbers.  */);
+	  return (r == 1.0) ? 0 : 1;
+	}
+    } "$et_arm_fp16_alternative_flags"
+}
+
 # Return 1 if this is an ARM target supports specifying the FP16 none
 # format.  Some multilibs may be incompatible with the options needed.
 
