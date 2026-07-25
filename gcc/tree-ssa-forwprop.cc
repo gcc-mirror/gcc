@@ -2454,6 +2454,35 @@ optimize_stack_restore (gimple_stmt_iterator *gsi, gimple *call)
   return true;
 }
 
+/* Optimizes strlen (s) ==/!= 0 to *s ==/!= 0. */
+static bool
+optimize_strlen_comp (gimple_stmt_iterator *gsi, gimple *call)
+{
+  if (!fold_before_rtl_expansion_p ())
+    return false;
+
+  tree lhs = gimple_call_lhs (call);
+  if (lhs == NULL_TREE || use_in_zero_equality (lhs, true) == NULL)
+    return false;
+
+  /* The string passed to strlen. */
+  tree ptr = gimple_call_arg (call, 0);
+
+  /* Dereference the string. */
+  tree deref = fold_build2 (MEM_REF, char_type_node, ptr,
+			    build_zero_cst (ptr_type_node));
+
+  /* Perform a type conversion. */
+  deref = fold_convert_loc (gimple_location (call),
+			    TREE_TYPE (lhs),
+			    deref);
+
+  /* Replace the original call to strlen with the dereference we just built. */
+  gimplify_and_update_call_from_tree (gsi, deref);
+
+  return true;
+}
+
 /* *GSI_P is a GIMPLE_CALL to a builtin function.
    Optimize
    memcpy (p, "abcd", 4);
@@ -2485,6 +2514,8 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk
 
   switch (DECL_FUNCTION_CODE (callee2))
     {
+    case BUILT_IN_STRLEN:
+      return optimize_strlen_comp (gsi_p, as_a<gcall*>(stmt2));
     case BUILT_IN_STACK_RESTORE:
       return optimize_stack_restore (gsi_p, as_a<gcall*>(stmt2));
     case BUILT_IN_MEMCMP:
