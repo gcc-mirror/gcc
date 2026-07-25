@@ -1,3 +1,89 @@
+2026-07-24  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* print-rtl.cc (print_exp): Avoid -Wempty-body warning.
+
+2026-07-24  H.J. Lu  <hjl.tools@gmail.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/126320
+	* config/i386/i386.cc (ix86_spill_register_argument_p): New
+	function.
+	(ix86_argument_passed_on_stack_p): Add a pattern argument.  Call
+	ix86_spill_register_argument_p to check spill of register argument
+	by callee.
+	(ix86_update_stack_alignment): Pass pat to
+	ix86_argument_passed_on_stack_p.
+
+2026-07-24  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/126363
+	* builtins.cc (fold_builtin_atomic_always_lock_free): Replace
+	INTEGER_CST + expand_normal with tree_to_uwhi.
+
+2026-07-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/mkoffload.cc (main): Pass -L<dir> on to the
+	device compiler.
+
+2026-07-24  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* config/aarch64/tuning_models/neoversev2.h: Update the costs
+	of SVE structure loads and stores.
+
+2026-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/126328
+	PR target/126383
+	* config/i386/i386.md (cost_special): New attribute.
+	* config/i386/sse.md (avx_h<insn>v4df3): Add cost_special
+	attribute with value haddsub.
+	(*sse3_haddv2df3): Likewise.
+	(sse3_hsubv2df3): Likewise.
+	(*sse3_haddv2df3_low): Likewise.
+	(*sse3_hsubv2df3_low): Likewise.
+	(avx_h<insn>v8sf3): Likewise.
+	(sse3_h<insn>v4sf3): Likewise.
+	* config/i386/i386.cc (ix86_insn_cost): Cost insns with
+	the cost_special attribute value of haddsub like an add.
+
+2026-07-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Remove failure
+	on unvectorizable shifts.
+
+2026-07-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/126328
+	* combine.cc (combine_validate_cost): New arguments for
+	the insn codes.  Set INSN_CODE to recognized values
+	before calling insn_cost.
+	(try_combine): Adjust.
+
+2026-07-24  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vec_set_builtin): Don't
+	force op1 to a register when it is CONST0_RTX (mode1).
+	(ix86_expand_vector_set_var): For now, force VAL to a register.
+	(ix86_expand_vector_set): If val is CONST0_RTX, expand using
+	the new sse4_1_insertps_v4s[if]_zero patterns on TARGET_SSE4_1.
+	Otherwise, force val to a register (restoring previous behaviour).
+	* config/i386/sse.md (sse4_1_insertps_<mode>_zero): New insn
+	using vec_merge to select which elements to clear/preserve.
+	(vec_set<mode>): Tweak operand 1 to allow both REGs and CONST0_RTX.
+
+2026-07-24  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* ifcvt.cc (noce_emit_store_flag): Document that a NULL_RTX
+	return signals an unreversible condition.
+	(noce_try_store_flag): Drop redundant noce_reversed_cond_code
+	pre-check.
+	(noce_try_shifted_store_flag): Likewise.
+	(noce_try_store_flag_constants): Drop redundant can_reverse
+	guards on the reversed 2^n and -1 cases.
+	(noce_try_store_flag_mask): Set reversep unconditionally; the
+	store-flag emission now handles an unreversible condition.
+
 2026-07-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* crc-verification.cc (sb_match): Use HOST_SIZE_T_PRINT_UNSIGNED

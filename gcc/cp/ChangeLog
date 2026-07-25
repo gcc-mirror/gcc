@@ -1,3 +1,8 @@
+2026-07-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* pt.cc (tsubst_omp_clauses): Add OMP_CLAUSE_DEVICE_TYPE
+	to switch statement.
+
 2026-07-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/112908

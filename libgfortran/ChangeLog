@@ -1,3 +1,30 @@
+2026-07-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR libfortran/126305
+	* c99_protos.h (acosl, acoshl, asinl, asinhl,atan2l, atanl,
+	atanhl, ceill, cosl, coshl, expl, hypotl, logl, sinl, sinhl,
+	sqrtl, tanl, tanhl, truncl, nextafterl, powl, erfl, erfcl):
+	Add declarations.
+	* configure.ac (powl, erfl): Add GCC_CHECK_MATH_FUNCs.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+	* intrinsics/c99_functions.c: Include math_imp.h.  Move code
+	to manipulate the floating-point type to math_imp.h.
+	(erfl, erfcl, acosl, acoshl, asinl, asinhl, atan2l, atanl,
+	atanhl, ceill, cosl, coshl, expl, floorl, fmodl, hypotl,
+	logl, sinl, sinhl, sqrtl, tanl, tanhl, truncl, nextafterl,
+	powl, log10l): Implement.
+	(frexpl): Move code to intrinsics/frexpl_16.c.
+	(scalbnl): Move code to intrinsics/scalbnl_16.c.
+	* intrinsics/ceill_16.c: New.
+	* intrinsics/floorl_16.c: New.
+	* intrinsics/frexpl_16.c: New.
+	* intrinsics/math_imp.h: New.
+	* intrinsics/nextafterl_16.c: New.
+	* intrinsics/scalbnl_16.c: New.
+	* intrinsics/truncl_16.c: New.
+	* libgfortran.h (USE_LIBQUADLIB): Define on hppa-hpux.
+
 2026-07-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/93727
