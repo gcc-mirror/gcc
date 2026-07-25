@@ -97,7 +97,7 @@ compiles \*[lang] source code to object code, and optionally produces
 an executable binary or shared object.  As a GCC component, it accepts
 all options that affect code-generation and linking.  Options specific
 to \*[lang] are listed below.
-.Bl -tag -width "\0\0debug"
+.Bl -tag -width 00debug
 .It Fl main Ar filename
 .Nm
 will generate a
@@ -714,7 +714,6 @@ Warn if a SEGMENT range is negative (instead of error).
 Warn if IBM-style STOP <number> is used (instead of error).
 .It Fl Wno-stray-indicator
 Warn if indicator column has no recognized meaning (instead of error).
-
 .El
 .
 .Sh COMPILATION SCENARIOS
@@ -1395,7 +1394,7 @@ suite has been identified.
 .
 .Ss CDF Text Manipulation
 .Bl -tag -width >>DEFINE
-.It Sy COPY Ar copybook Li Oo OF|IN Ar library Oc Oo Sy REPLACING ... Oc
+.It Sy COPY Ar copybook Oo Li OF|IN Ar library Oc Oo Sy REPLACING ... Oc
 If
 .Ar copybook
 is a literal, it treated a literal filename, which either does or does not exist.  If
@@ -2061,7 +2060,7 @@ to see it compile, please get in touch with the developers.
 .El
 .
 .Ss Status of NIST \*[lang] Compiler Verification Suite
-.Bl -tag -compact -width "\0\0100% NC"
+.Bl -tag -compact -width "00100% NC"
 .It NC 100%
 Nucleus
 .It SQ 100%
@@ -2160,22 +2159,22 @@ to the I/O support will be readily available to the paying customer.
 .El
 .
 .Sh COPYRIGHT
-.Bd -unfilled -indent
+.Bd -unfilled
 Copyright (c) 2021-2026 Symas Corporation
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
 met:
 
-* Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-* Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.
-* Neither the name of the Symas Corporation nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
+\(bu Redistributions of source code must retain the above copyright
+  notice, this list of conditions and the following disclaimer.
+\(bu Redistributions in binary form must reproduce the above
+  copyright notice, this list of conditions and the following disclaimer
+  in the documentation and/or other materials provided with the
+  distribution.
+\(bu Neither the name of the Symas Corporation nor the names of its
+  contributors may be used to endorse or promote products derived from
+  this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT

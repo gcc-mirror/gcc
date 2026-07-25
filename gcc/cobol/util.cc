@@ -561,7 +561,6 @@ determine_intermediate_type( const cbl_refer_t& aref,
     {
     output.type = FldNumericBin5;
     output.data.capacity(16);
-    output.data.digits   = MAX_FIXED_POINT_DIGITS;
     output.attr = (intermediate_e | signable_e );
     }
 

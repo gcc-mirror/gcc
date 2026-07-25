@@ -239,6 +239,10 @@ static const char *last_exception_paragraph;
 static const char *last_exception_source_file;
 static int         last_exception_line_number;
 static const char *last_exception_statement;
+// last_exception_call is a special case.  It gets set immediately before the
+// default_exception_handler is invoked, so it's followed immediately by an
+// abort().
+static const char *last_exception_call;
 // These variables are similar, and are established when an exception is
 // raised for a file I-O operation.
 static cblc_file_prior_op_t last_exception_file_operation;
@@ -2494,21 +2498,29 @@ __gg__field_from_string(cblc_field_t *field,
   }
 
 static void
-field_from_ascii(cblc_field_t *field, char *psz)
+field_from_ascii(cblc_field_t *field,
+                 size_t offset,
+                 size_t length,
+                 char *psz)
   {
   cblc_field_t source = {};
   source.type = FldAlphanumeric;
   source.capacity = strlen(psz);
   source.data = as_unsigned_chars(psz);
   source.encoding = __gg__console_encoding;
-  __gg__move(  field, field->offset, field->capacity,
-             &source, source.offset, source.capacity,
-             0, truncation_e );
+  __gg__move( field,
+              offset,
+              length,
+             &source,
+             source.offset,
+             source.capacity,
+             0,
+             truncation_e );
   }
 
 extern "C"
 void
-__gg__get_date_yymmdd(cblc_field_t *field)
+__gg__get_date_yymmdd(cblc_field_t *field, size_t offset, size_t length)
   {
   char ach[32];
 
@@ -2520,12 +2532,12 @@ __gg__get_date_yymmdd(cblc_field_t *field)
           local->tm_year  % 100,
           local->tm_mon+1 % 100,
           local->tm_mday  % 100 );
-  field_from_ascii(field, ach);
+  field_from_ascii(field, offset, length, ach);
   }
 
 extern "C"
 void
-__gg__get_date_yyyymmdd(cblc_field_t *field)
+__gg__get_date_yyyymmdd(cblc_field_t *field, size_t offset, size_t length)
   {
   char ach[32];
   time_t t = cobol_time();
@@ -2535,12 +2547,12 @@ __gg__get_date_yyyymmdd(cblc_field_t *field)
           local->tm_year + 1900,
           local->tm_mon+1,
           local->tm_mday);
-  field_from_ascii(field, ach);
+  field_from_ascii(field, offset, length, ach);
   }
 
 extern "C"
 void
-__gg__get_date_yyddd(cblc_field_t *field)
+__gg__get_date_yyddd(cblc_field_t *field, size_t offset, size_t length)
   {
   char ach[32];
 
@@ -2551,12 +2563,12 @@ __gg__get_date_yyddd(cblc_field_t *field)
           "%2.2d%3.3d",
           local->tm_year % 100,
           local->tm_yday+1);
-  field_from_ascii(field, ach);
+  field_from_ascii(field, offset, length, ach);
   }
 
 extern "C"
 void
-__gg__get_yyyyddd(cblc_field_t *field)
+__gg__get_yyyyddd(cblc_field_t *field, size_t offset, size_t length)
   {
   char ach[32];
 
@@ -2567,12 +2579,12 @@ __gg__get_yyyyddd(cblc_field_t *field)
           "%4.4d%3.3d",
           local->tm_year + 1900,
           local->tm_yday+1);
-  field_from_ascii(field, ach);
+  field_from_ascii(field, offset, length, ach);
   }
 
 extern "C"
 void
-__gg__get_date_dow(cblc_field_t *field)
+__gg__get_date_dow(cblc_field_t *field, size_t offset, size_t length)
   {
   char ach[32];
 
@@ -2582,7 +2594,7 @@ __gg__get_date_dow(cblc_field_t *field)
   sprintf(ach,
           "%1.1d",
           local->tm_wday == 0 ? 7 : local->tm_wday);
-  field_from_ascii(field, ach);
+  field_from_ascii(field, offset, length, ach);
   }
 
 static int
@@ -2682,7 +2694,7 @@ __gg__clock_gettime(struct cbl_timespec *tp)
 
 extern "C"
 void
-__gg__get_date_hhmmssff(cblc_field_t *field)
+__gg__get_date_hhmmssff(cblc_field_t *field, size_t offset, size_t length)
   {
   char ach[32];
   struct cbl_timespec tv;
@@ -2705,7 +2717,7 @@ __gg__get_date_hhmmssff(cblc_field_t *field)
           tm.tm_min,
           tm.tm_sec,
           hundredths);
-  field_from_ascii(field, ach);
+  field_from_ascii(field, offset, length, ach);
   }
 
 static
@@ -3528,7 +3540,7 @@ format_for_display_internal(char **dest,
         const unsigned char *digits_e;
         // This is the running index into our output destination.
         int index = 0;
-        bool is_negative;
+        bool is_negative=false;
 
         switch(signtype)
           {
@@ -10533,6 +10545,21 @@ default_exception_handler( ec_type_t ec )
       assert( ec_status.is_enabled(ec) );
     }
 
+    if( !filename && last_exception_call) {
+      char *callname = strdup(last_exception_call);
+      massert(callname);
+      char *p = callname+strlen(callname)-1;
+      while(p >= callname)
+        {
+        if( *p != ascii_space )
+          {
+          break;
+          }
+        *p-- = '\0';
+        }
+      filename = callname;
+    }
+
     switch( disposition ) {
     case ec_category_none_e:
     case uc_category_none_e:
@@ -11178,6 +11205,7 @@ __gg__set_exception_code(ec_type_t ec, int from_raise_statement)
     last_exception_paragraph      = NULL         ;
     last_exception_source_file    = NULL         ;
     last_exception_line_number    = 0            ;
+    last_exception_call           = NULL         ;
     last_exception_statement      = NULL         ;
     last_exception_file_operation = file_op_none ;
     last_exception_file_status    = FsSuccess    ;
@@ -14082,3 +14110,20 @@ __gg__compare_binary_to_string( int *result,
   return;
   }
 
+extern "C"
+void
+__gg__set_exception_call(const cblc_field_t *field,
+                         size_t offset)
+  {
+  size_t nbytes;
+  cbl_encoding_t enc = field->encoding;
+  if( field->encoding == custom_encoding_e)
+    {
+    enc = DEFAULT_SOURCE_ENCODING;
+    }
+  last_exception_call = __gg__miconverter(enc,
+                                          DEFAULT_SOURCE_ENCODING,
+                                          field->data + offset,
+                                          field->capacity,
+                                          &nbytes);
+  }

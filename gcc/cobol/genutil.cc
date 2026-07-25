@@ -1059,6 +1059,36 @@ get_power_of_ten(int n)
   return retval;
   }
 
+FIXED_WIDE_INT(128)
+get_power_of_two(int nbytes)
+  {
+  // This is used for determining if a binary value is truncated as part of a
+  // move to pure binary variable.
+  FIXED_WIDE_INT(128) retval = 1;
+  static const int MAX_POWER = 8 ;
+  static const unsigned long long pos[MAX_POWER+1] =
+    {
+    1ULL,                       // 0 byte
+    256ULL,                     // 1 bytes
+    65536ULL,                   // 2
+    16777216ULL,                // 3
+    4294967296ULL,              // 4
+    1099511627776ULL,           // 5
+    281474976710656ULL,         // 6
+    72057594037927936ULL,       // 7
+    };
+  if( nbytes < MAX_POWER )
+    {
+    retval = pos[nbytes];
+    }
+  else
+    {
+    retval = pos[nbytes];
+    retval *= retval;
+    }
+  return retval;
+  }
+
 void
 scale_by_power_of_ten_N(tree value,
                       int N,

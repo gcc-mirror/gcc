@@ -107,7 +107,7 @@ struct cbl_loc_base_t {
 };
 struct cbl_loc_t : public cbl_loc_base_t {
 
-  cbl_loc_t() = default; 
+  cbl_loc_t() = default; // cppcheck-suppress uninitDerivedMemberVar
 
   cbl_loc_t(   int first_line, int first_column,
                int last_line,  int last_column ) 

@@ -5905,62 +5905,38 @@ accept_body:    ACCEPT scalar[r]
                 {
                   statement_begin(@1, ACCEPT);
 		  $$.func = accept_done_e;
-                  if( $r->is_reference() ) {
-                    error_msg(@1, "subscripts are unsupported here");
-                    YYERROR;
-                  }
-                  parser_accept_date_yymmdd($r->field);
+                  parser_accept_date_yymmdd(*$r);
                 }
         |       ACCEPT scalar[r] FROM DATE YYYYMMDD
                 {
                   statement_begin(@1, ACCEPT);
 		  $$.func = accept_done_e;
-                  if( $r->is_reference() ) {
-                    error_msg(@1, "subscripts are unsupported here");
-                    YYERROR;
-                  }
-                  parser_accept_date_yyyymmdd($r->field);
+                  parser_accept_date_yyyymmdd(*$r);
                 }
         |       ACCEPT scalar[r] FROM DAY
                 {
                   statement_begin(@1, ACCEPT);
 		  $$.func = accept_done_e;
-                  if( $r->is_reference() ) {
-                    error_msg(@1, "subscripts are unsupported here");
-                    YYERROR;
-                  }
-                  parser_accept_date_yyddd($r->field);
+                  parser_accept_date_yyddd(*$r);
                 }
         |       ACCEPT scalar[r] FROM DAY YYYYDDD
                 {
                   statement_begin(@1, ACCEPT);
 		  $$.func = accept_done_e;
-                  if( $r->is_reference() ) {
-                    error_msg(@1, "subscripts are unsupported here");
-                    YYERROR;
-                  }
-                  parser_accept_date_yyyyddd($r->field);
+                  parser_accept_date_yyyyddd(*$r);
                 }
         |       ACCEPT scalar[r] FROM DAY_OF_WEEK
                 {
                   statement_begin(@1, ACCEPT);
 		  $$.func = accept_done_e;
-                  if( $r->is_reference() ) {
-                    error_msg(@1, "subscripts are unsupported here");
-                    YYERROR;
-                  }
-                  parser_accept_date_dow($r->field);
+                  parser_accept_date_dow(*$r);
                 }
 
         |       ACCEPT scalar[r] FROM TIME
                 {
                   statement_begin(@1, ACCEPT);
 		  $$.func = accept_done_e;
-                  if( $r->is_reference() ) {
-                    error_msg(@1, "subscripts are unsupported here");
-                    YYERROR;
-                  }
-                  parser_accept_date_hhmmssff($r->field);
+                  parser_accept_date_hhmmssff(*$r);
                 }
         |       ACCEPT scalar[r] FROM acceptable
                 {
@@ -10157,6 +10133,8 @@ filename:       NAME
         |       device_name[dev]
                 {
                   auto dev = symbol_special($dev.id);
+                  error_msg(@dev, "invalid device %qs: FD name required", dev->name);
+                  YYERROR;
                   auto e = symbol_file(PROGRAM, dev->name);
                   if( ! e ) {
                     error_msg(@dev, "no FD selected for device '%s'", dev->name);

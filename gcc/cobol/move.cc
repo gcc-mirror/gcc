@@ -175,24 +175,18 @@ mh_identical(const cbl_refer_t &destref,
       &&       (destref.field->attr   & (signable_e|separate_e|leading_e))
             == (sourceref.field->attr & (signable_e|separate_e|leading_e))
       &&  destref.field->codeset.encoding == sourceref.field->codeset.encoding
+      &&  !sourceref.refmod.from
+      &&  !sourceref.refmod.len
+      &&  !destref.refmod.from
+      &&  !destref.refmod.len
+      &&  !sourceref.subscripts.size()
+      &&  !destref.subscripts.size()
+      &&  !(sourceref.field->attr & intermediate_e)
+      &&  !(destref.field->attr & intermediate_e)
+      &&  !(sourceref.field->attr & any_length_e)
+      &&  !(destref.field->attr & any_length_e)
       )
     {
-    // These next tests were added because of the DEBUG- registers, which are
-    // global external, and most of which have a parent.  It turns out that
-    // get_location gets flummoxed by that, so we divert it here to the library
-    if(   sourceref.field->parent
-       && sourceref.field->data_decl_node
-       && DECL_EXTERNAL(sourceref.field->data_decl_node) )
-      {
-      return false;
-      }
-    if(   destref.field->parent
-       && destref.field->data_decl_node
-       && DECL_EXTERNAL(destref.field->data_decl_node) )
-      {
-      return false;
-      }
-
     // The source and destination are identical in type and the
     // source doesn't have a depending_on clause
     SHOW_PARSE1
@@ -200,22 +194,18 @@ mh_identical(const cbl_refer_t &destref,
       SHOW_PARSE_INDENT
       SHOW_PARSE_TEXT("mh_identical()");
       }
-    if(    refer_is_super_clean(destref)
-        && refer_is_super_clean(sourceref) )
-      {
-      // They are identical, and they have no subscripts
 
-      tree source;
-      tree dest;
-      get_location(source, sourceref);
-      get_location(dest, destref);
+    // They are identical, and they have no refmods or subscripts
+    tree source;
+    tree dest;
+    get_location(source, sourceref);
+    get_location(dest, destref);
 
-      gg_memcpy(dest,
-                source,
-                build_int_cst_type(SIZE_T,
-                                   destref.field->data.capacity()));
-      moved = true;
-      }
+    gg_memcpy(dest,
+              source,
+              build_int_cst_type(SIZE_T,
+                                 destref.field->data.capacity()));
+    moved = true;
     }
   return moved;
   }
@@ -1779,12 +1769,22 @@ copy_native_into_place(cbl_field_t *dest,
                               bool check_for_error,
                         const tree &size_error)
   {
+  tree value_type = TREE_TYPE(value);
+  tree dest_type = tree_type_from_field(dest);
+
+  if( gg_sizeof(dest_type) > gg_sizeof(value_type) )
+    {
+    // Because the dest_type is greater than the value_type, we don't need to
+    // do any size checking.
+    check_for_error = false;
+    }
+
   if( !(dest->attr & signable_e) )
     {
     gg_assign(value, gg_abs(value));
     }
 
-  if( check_for_error )
+  if( check_for_error && dest->data.digits)
     {
     // We need to see if value can fit into destref
 
@@ -1813,10 +1813,142 @@ copy_native_into_place(cbl_field_t *dest,
   scale_by_power_of_ten_N(value, dest->data.rdigits - rhs_rdigits);
 
   // Create a variable of our target type.
-  tree dest_type = tree_type_from_field(dest);
   tree target = gg_define_variable(dest_type);
   // Cast the source to the target
   gg_assign(target, gg_cast(dest_type, value));
+
+  if( check_for_error && !dest->data.digits )
+    {
+    // The destination is pure binary.  Make sure we fit:
+    int nbytes = gg_sizeof(dest_type);
+    // We are making sure that value is less than the power of two
+    FIXED_WIDE_INT(128) power_of_two = get_power_of_two(nbytes);
+    tree p_of_two = wide_int_to_tree(value_type, power_of_two);
+
+    IF( value, ge_op, p_of_two )
+      {
+      // Flag the size error
+      gg_assign(size_error, gg_bitwise_or(size_error, integer_one_node));
+      }
+    ELSE
+      {
+      }
+    ENDIF
+    }
+
+  tree dest_pointer = gg_define_variable(UCHAR_P);
+  gg_assign(dest_pointer, gg_add(member(dest->var_decl_node, "data"),
+                                 dest_offset));
+
+  if( dest->type == FldNumericBinary )
+    {
+    // We need the target to be big-endian.
+    if( BYTES_BIG_ENDIAN )
+      {
+      // 'target' is already big-endian, so we can leave it be.
+      }
+    else
+      {
+      // 'target' is little-endian, so make it big-endian
+      gg_assign(target, gg_bswap(target));
+      }
+    }
+  else
+    {
+    // We need the target to be native binary, so just leave it be
+    }
+  // Copy the target to the destination.
+  gg_memcpy(dest_pointer,
+            gg_get_address_of(target),
+            build_int_cst_type(SIZE_T, gg_sizeof(dest_type)));
+  }
+
+static void
+copy_intermediate_into_place(cbl_field_t *dest,
+                              tree         dest_offset,
+                              tree value,
+                              tree rhs_rdigits,
+                              bool check_for_error,
+                        const tree &size_error)
+  {
+  // This is just like copy_native_into_place, except that we picked up the
+  // number of rdigits, which isn't a constant, from the intermediate source.
+
+  tree value_type = TREE_TYPE(value);
+  tree dest_type = tree_type_from_field(dest);
+
+  if( gg_sizeof(dest_type) > gg_sizeof(value_type) )
+    {
+    // Because the dest_type is greater than the value_type, we don't need to
+    // do any size checking.
+    check_for_error = false;
+    }
+
+  if( !(dest->attr & signable_e) )
+    {
+    gg_assign(value, gg_abs(value));
+    }
+
+  if( check_for_error && dest->data.digits )
+    {
+    // We need to see if value can fit into destref
+
+    // We do this by comparing value to 10^(lhs.ldigits + rhs_rdigits)
+    // Example:  rhs is 123.45, whichis 12345 with rdigits 2
+    // lhs is 99.999.  So, lhs.digits is 5, and lhs.rdigits is 3.
+    // 10^(5 - 3 + 2) is 10^4, which is 10000.  Because 12345 is >= 10000, the
+    // source can't fit into the destination.
+
+    tree abs_value = gg_define_variable(TREE_TYPE(value));
+    gg_assign(abs_value, gg_abs(value));
+
+    tree power_of_ten = gg_define_variable(INT128);
+    gg_assign(power_of_ten,
+              gg_call_expr(INT128,
+                           "__gg__power_of_ten",
+                            gg_add(build_int_cst_type(INT,
+                                                        dest->data.digits
+                                                      - dest->data.rdigits),
+                                   gg_cast(INT, rhs_rdigits)),
+                            NULL_TREE));
+
+    IF( gg_cast(INT128, abs_value),
+        ge_op,
+        power_of_ten )
+      {
+      // Flag the size error
+      gg_assign(size_error, integer_one_node);
+      }
+    ELSE
+      ENDIF
+    }
+  scale_by_power_of_ten(value,
+                        gg_subtract(build_int_cst_type(INT, dest->data.rdigits),
+                                    gg_cast(INT, rhs_rdigits)));
+
+  // Create a variable of our target type.
+  tree target = gg_define_variable(dest_type);
+  // Cast the source to the target
+  gg_assign(target, gg_cast(dest_type, value));
+
+  if( check_for_error && !dest->data.digits )
+    {
+    // The destination is pure binary.  Make sure we fit:
+    int nbytes = gg_sizeof(dest_type);
+    // We are making sure that value is less than the power of two
+    FIXED_WIDE_INT(128) power_of_two = get_power_of_two(nbytes);
+    tree p_of_two = wide_int_to_tree(value_type, power_of_two);
+
+    IF( value, ge_op, p_of_two )
+      {
+      // Flag the size error
+      gg_assign(size_error, gg_bitwise_or(size_error, integer_one_node));
+      }
+    ELSE
+      {
+      }
+    ENDIF
+    }
 
   tree dest_pointer = gg_define_variable(UCHAR_P);
   gg_assign(dest_pointer, gg_add(member(dest->var_decl_node, "data"),
@@ -1854,6 +1986,14 @@ mh_to_binary( const cbl_refer_t &destref,
   {
   // This routine moves a numeric value to a binary destination.  The dest
   // can be little-endian or big-endian.
+
+  /* In July of 2026, I attempted to create GENERIC for moving intermediates
+     to binaries.  It's here, and it can be activated by commenting out the
+     line
+           &&  !(sourceref.field->attr  & (intermediate_e  ))
+     But it runs slower than the library version.  I didn't attempt to figure
+     out why that is (other things to do!) so I still have the code here.  But
+     it isn't being used.  Dubner, 2026-07-22 */
 
   bool moved = false;
 
@@ -1908,21 +2048,36 @@ mh_to_binary( const cbl_refer_t &destref,
                                     destref.field->data.rdigits,
                                     check_for_error,
                                     size_error);
-      moved = true;
       }
     else
       {
-      tree source_type = tree_type_from_refer(sourceref);
-      tree source;
-      get_binary_value(source, sourceref, source_type);
-      copy_native_into_place(destref.field,
-                                    refer_offset(destref),
-                                    source,
-                                    sourceref.field->data.rdigits,
-                                    check_for_error,
-                                    size_error);
-      moved = true;
+      if( sourceref.field->attr & intermediate_e )
+        {
+        tree source_type = tree_type_from_refer(sourceref);
+        tree source;
+        get_binary_value(source, sourceref, source_type);
+        copy_intermediate_into_place( destref.field,
+                                      refer_offset(destref),
+                                      source,
+                                      member(sourceref.field->var_decl_node,
+                                             "rdigits"),
+                                      check_for_error,
+                                      size_error);
+        }
+      else
+        {
+        tree source_type = tree_type_from_refer(sourceref);
+        tree source;
+        get_binary_value(source, sourceref, source_type);
+        copy_native_into_place( destref.field,
+                                refer_offset(destref),
+                                source,
+                                sourceref.field->data.rdigits,
+                                check_for_error,
+                                size_error);
+        }
       }
+    moved = true;
     }
   return moved;
   }
@@ -3445,7 +3600,7 @@ move_helper(tree size_error,        // This is an INT
     moved = mh_to_binary( destref,
                               sourceref,
                               tsource,
-                              restore_on_error,
+                              check_for_error,
                               size_error);
     }
 
@@ -3560,7 +3715,7 @@ move_helper(tree size_error,        // This is an INT
       {
       IF(size_error, ne_op, integer_zero_node)
         {
-        // We had a size error, but  there was no restore_on_error. Pointer
+        // We had a size error, but there was no restore_on_error.
         // Let our lord and master know there was a truncation:
         set_exception_code(ec_size_truncation_e);
         }

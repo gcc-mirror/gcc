@@ -53,7 +53,7 @@ extern int yydebug;
  */
 struct funcname {
   std::string output;
-  funcname( const char name[] ) {
+  funcname( const char name[] ) { // cppcheck-suppress noExplicitConstructor
     auto ename = name + strlen(name);
     auto p = std::find(name, ename, ' ');
     p = p == ename? name : p + 1;

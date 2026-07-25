@@ -80,12 +80,12 @@ void parser_accept_command_line(const cbl_refer_t &tgt,
                                 cbl_label_t *not_error );
 void parser_accept_command_line_count( const cbl_refer_t &tgt );
 
-void parser_accept_date_yymmdd( cbl_field_t *tgt );
-void parser_accept_date_yyyymmdd( cbl_field_t *tgt );
-void parser_accept_date_yyddd( cbl_field_t *tgt );
-void parser_accept_date_yyyyddd( cbl_field_t *tgt );
-void parser_accept_date_dow( cbl_field_t *tgt );
-void parser_accept_date_hhmmssff( cbl_field_t *tgt );
+void parser_accept_date_yymmdd( const cbl_refer_t& tgt );
+void parser_accept_date_yyyymmdd( const cbl_refer_t& tgt );
+void parser_accept_date_yyddd( const cbl_refer_t& tgt );
+void parser_accept_date_yyyyddd( const cbl_refer_t& tgt );
+void parser_accept_date_dow( const cbl_refer_t& tgt );
+void parser_accept_date_hhmmssff( const cbl_refer_t& tgt );
 
 void
 parser_alphabet( const cbl_alphabet_t *alphabet );

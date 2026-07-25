@@ -2493,29 +2493,29 @@ symbol_table_init(void) {
    **/
 
   static cbl_field_t debug_registers[] = {
-    { FldGroup, register_e,
+    { FldGroup, external_e|register_e,
       {132,132,0,0, NULL}, 1, "DEBUG-ITEM", cp1252 },
-    { FldAlphanumeric, register_e,
+    { FldAlphanumeric, external_e|register_e,
       {6,6,0,0, "      "}, 2, "DEBUG-LINE", cp1252 },
-    { FldAlphanumeric, register_e|filler_e,
+    { FldAlphanumeric, external_e|register_e|filler_e,
       {1,1,0,0, " "},      2, "FILLER", cp1252 },
-    { FldAlphanumeric, register_e,
+    { FldAlphanumeric, external_e|register_e,
       {30,30,0,0, NULL},   2, "DEBUG-NAME", cp1252 },
-    { FldAlphanumeric, register_e|filler_e,
+    { FldAlphanumeric, external_e|register_e|filler_e,
       {1,1,0,0, " "},      2, "FILLER", cp1252 },
-    { FldNumericDisplay, signable_e | register_e | leading_e | separate_e,
+    { FldNumericDisplay, signable_e | external_e|register_e | leading_e | separate_e,
       {5,5,4,0, NULL},     2, "DEBUG-SUB-1", cp1252 },
-    { FldAlphanumeric, register_e|filler_e,
+    { FldAlphanumeric, external_e|register_e|filler_e,
       {1,1,0,0, " "},      2, "FILLER", cp1252 },
-    { FldNumericDisplay, signable_e | register_e | leading_e | separate_e,
+    { FldNumericDisplay, signable_e | external_e|register_e | leading_e | separate_e,
       {5,5,4,0, NULL},     2, "DEBUG-SUB-2", cp1252 },
-    { FldAlphanumeric, register_e|filler_e,
+    { FldAlphanumeric, external_e|register_e|filler_e,
       {1,1,0,0, " "},      2, "FILLER", cp1252 },
-    { FldNumericDisplay, signable_e | register_e | leading_e | separate_e,
+    { FldNumericDisplay, signable_e | external_e|register_e | leading_e | separate_e,
       {5,5,4,0, NULL},     2, "DEBUG-SUB-3", cp1252 },
-    { FldAlphanumeric, register_e | filler_e,
+    { FldAlphanumeric, external_e|register_e | filler_e,
       {1,1,0,0, " "},      2, "FILLER", cp1252 },
-    { FldAlphanumeric, register_e,
+    { FldAlphanumeric, external_e|register_e,
       {76,76,0,0, NULL},   2, "DEBUG-CONTENTS", cp1252 },
   };
 
@@ -3709,7 +3709,7 @@ new_temporary_impl( enum cbl_field_type_t type, const cbl_name_t name = nullptr 
   static const struct cbl_field_t empty_comp5 = {
                                 FldNumericBin5,
                                 signable_e | intermediate_e,
-                                {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL} };
+                                {16, 16, 0, 0, NULL} };
   static const struct cbl_field_t empty_conditional = {
                                 FldConditional, intermediate_e, cbl_field_data_t{} };
   static struct cbl_field_t empty_literal = {

@@ -4225,7 +4225,7 @@ parser_set_envar( const struct cbl_refer_t &name,
   }
 
 void
-parser_accept_date_yymmdd( struct cbl_field_t *target )
+parser_accept_date_yymmdd( const cbl_refer_t& refer )
   {
   Analyze();
   SHOW_PARSE
@@ -4234,11 +4234,14 @@ parser_accept_date_yymmdd( struct cbl_field_t *target )
     SHOW_PARSE_END
     }
 
+  auto target = refer.field;
   CHECK_FIELD(target);
 
   gg_call(VOID,
           "__gg__get_date_yymmdd",
           gg_get_address_of(target->var_decl_node),
+          refer_offset(refer),
+          refer_size_dest(refer),
           NULL_TREE);
   TRACE1
     {
@@ -4249,7 +4252,7 @@ parser_accept_date_yymmdd( struct cbl_field_t *target )
   }
 
 void
-parser_accept_date_yyyymmdd( struct cbl_field_t *target )
+parser_accept_date_yyyymmdd( const cbl_refer_t& refer )
   {
   Analyze();
   SHOW_PARSE
@@ -4257,9 +4260,12 @@ parser_accept_date_yyyymmdd( struct cbl_field_t *target )
     SHOW_PARSE_HEADER
     SHOW_PARSE_END
     }
+  auto target = refer.field;
   gg_call(VOID,
           "__gg__get_date_yyyymmdd",
           gg_get_address_of(target->var_decl_node),
+          refer_offset(refer),
+          refer_size_dest(refer),
           NULL_TREE);
   TRACE1
     {
@@ -4270,7 +4276,7 @@ parser_accept_date_yyyymmdd( struct cbl_field_t *target )
   }
 
 void
-parser_accept_date_yyddd( struct cbl_field_t *target )
+parser_accept_date_yyddd( const cbl_refer_t& refer )
   {
   Analyze();
   SHOW_PARSE
@@ -4279,11 +4285,14 @@ parser_accept_date_yyddd( struct cbl_field_t *target )
     SHOW_PARSE_END
     }
 
+  auto target = refer.field;
   CHECK_FIELD(target);
 
   gg_call(VOID,
           "__gg__get_date_yyddd",
           gg_get_address_of(target->var_decl_node),
+          refer_offset(refer),
+          refer_size_dest(refer),
           NULL_TREE);
   TRACE1
     {
@@ -4294,7 +4303,7 @@ parser_accept_date_yyddd( struct cbl_field_t *target )
   }
 
 void
-parser_accept_date_yyyyddd( struct cbl_field_t *target )
+parser_accept_date_yyyyddd( const cbl_refer_t& refer )
   {
   Analyze();
   SHOW_PARSE
@@ -4303,11 +4312,14 @@ parser_accept_date_yyyyddd( struct cbl_field_t *target )
     SHOW_PARSE_END
     }
 
+  auto target = refer.field;
   CHECK_FIELD(target);
 
   gg_call(VOID,
           "__gg__get_yyyyddd",
           gg_get_address_of(target->var_decl_node),
+          refer_offset(refer),
+          refer_size_dest(refer),
           NULL_TREE);
   TRACE1
     {
@@ -4318,7 +4330,7 @@ parser_accept_date_yyyyddd( struct cbl_field_t *target )
   }
 
 void
-parser_accept_date_dow( struct cbl_field_t *target )
+parser_accept_date_dow( const cbl_refer_t& refer )
   {
   Analyze();
   SHOW_PARSE
@@ -4327,11 +4339,14 @@ parser_accept_date_dow( struct cbl_field_t *target )
     SHOW_PARSE_END
     }
 
+  auto target = refer.field;
   CHECK_FIELD(target);
 
   gg_call(VOID,
           "__gg__get_date_dow",
           gg_get_address_of(target->var_decl_node),
+          refer_offset(refer),
+          refer_size_dest(refer),
           NULL_TREE);
   TRACE1
     {
@@ -4342,7 +4357,7 @@ parser_accept_date_dow( struct cbl_field_t *target )
   }
 
 void
-parser_accept_date_hhmmssff( struct cbl_field_t *target )
+parser_accept_date_hhmmssff( const cbl_refer_t& refer )
   {
   Analyze();
   SHOW_PARSE
@@ -4351,11 +4366,14 @@ parser_accept_date_hhmmssff( struct cbl_field_t *target )
     SHOW_PARSE_END
     }
 
+  auto target = refer.field;
   CHECK_FIELD(target);
 
   gg_call(VOID,
           "__gg__get_date_hhmmssff",
           gg_get_address_of(target->var_decl_node),
+          refer_offset(refer),
+          refer_size_dest(refer),
           NULL_TREE);
   TRACE1
     {
@@ -5787,6 +5805,10 @@ walk_initialization(cbl_field_t *field, bool initialized, bool deallocate)
           }
         }
       first_time = false;
+
+      // We need to propagate the based_e attribute:
+      cbl_field_of(&element)->attr |= based_e;
+
       if( this_one->level == 00 )
         {
         // Ignore LEVEL00 "INDEXED BY" variables
@@ -9113,17 +9135,15 @@ parser_file_open( struct cbl_file_t *file, int mode_char )
     }
 
 
-//#pragma message "parser_file_open: consult cbl_file_t::filename_of and cbl_file_t::device"
-
   /*
-   * The filename of a cbl_file_t may be found in three places: 
+   * The filename of a cbl_file_t may be found in three places:
    * 1.  As before, in the cbl_field_t indexed by cbl_file_t::filename.
    * 2.  Now, in the cbl_special_name_t indexed by cbl_file_t::device.
-   * 3.  As ever, in neither, from the environment.  
+   * 3.  As ever, in neither, from the environment.
    *
    * If both filename and device are nonzero and not FldForward, the filename
-   * supersedes. The syntax was 
-   *     SELECT fd-name ASSIGN TO device-name USING filename  
+   * supersedes. The syntax was
+   *     SELECT fd-name ASSIGN TO device-name USING filename
    * That just creates in the parser an alias of device-name to fd-name.  It's
    * still the same file and does *not* change the device characteristics.
    *
@@ -9131,10 +9151,8 @@ parser_file_open( struct cbl_file_t *file, int mode_char )
    * taken from cbl_special_name_t::os_filename.  It is tiny, hard-coded name
    * in /dev.
    *
-   * Upon implementation please feel free to delete this message. 
    * --jkl
    */
-
 
   tree pszFilename = gg_define_char_star();
   cbl_field_t *field_of_name = symbol_field_forward(file->filename);
@@ -13127,7 +13145,13 @@ parser_call(   cbl_refer_t name,
       }
     ELSE
       {
-      // We have a bad function pointer, which is the except condition:
+      // We have a bad function pointer, which is the exception condition:
+      // Set the exception message to "name"
+      gg_call(VOID,
+              "__gg__set_exception_call",
+              gg_get_address_of(name.field->var_decl_node),
+              refer_offset(name),
+              NULL_TREE);
       parser_exception_raise(ec_program_not_found_e);
       if( except )
         {
