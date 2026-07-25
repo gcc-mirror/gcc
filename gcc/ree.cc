@@ -567,10 +567,10 @@ enum ext_modified_kind
 struct ext_modified
 {
   /* Mode from which ree has zero or sign extended the destination.  */
-  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
+  machine_mode mode : MACHINE_MODE_BITSIZE;
 
   /* Kind of modification of the insn.  */
-  ENUM_BITFIELD(ext_modified_kind) kind : 2;
+  enum ext_modified_kind kind : 2;
 
   unsigned int do_not_reextend : 1;
 

@@ -313,10 +313,10 @@ struct GTY((desc("0"), tag("0"),
 	    chain_next ("RTX_NEXT (&%h)"),
 	    chain_prev ("RTX_PREV (&%h)"))) rtx_def {
   /* The kind of value the expression has.  */
-  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
+  machine_mode mode : MACHINE_MODE_BITSIZE;
 
   /* The kind of expression this is.  */
-  ENUM_BITFIELD(rtx_code) code: RTX_CODE_BITSIZE;
+  enum rtx_code code: RTX_CODE_BITSIZE;
 
   /* 1 in a MEM if we should keep the alias set for this mem unchanged
      when we access a component.

@@ -455,7 +455,7 @@ struct iv_cand
   bool important;	/* Whether this is an "important" candidate, i.e. such
 			   that it should be considered by all uses.  */
   bool involves_undefs; /* Whether the IV involves undefined values.  */
-  ENUM_BITFIELD(iv_position) pos : 8;	/* Where it is computed.  */
+  enum iv_position pos : 8;/* Where it is computed.  */
   gimple *incremented_at;/* For original biv, the statement where it is
 			   incremented.  */
   tree var_before;	/* The variable used for it before increment.  */

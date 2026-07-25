@@ -271,12 +271,12 @@ struct ira_dependent_filter
 {
   /* Filter ID and MODE of this (dependent) op.  */
   int id;
-  ENUM_BITFIELD (machine_mode) mode : MACHINE_MODE_BITSIZE;
+  machine_mode mode : MACHINE_MODE_BITSIZE;
 
   /* Allocno, hard regno and mode of the referenced op.  */
   ira_allocno_t ref_allocno;
   unsigned int ref_hard_regno;
-  ENUM_BITFIELD (machine_mode) ref_mode : MACHINE_MODE_BITSIZE;
+  machine_mode ref_mode : MACHINE_MODE_BITSIZE;
 
   struct ira_dependent_filter *next;
 };
@@ -298,13 +298,13 @@ struct ira_allocno
   int regno;
   /* Mode of the allocno which is the mode of the corresponding
      pseudo-register.  */
-  ENUM_BITFIELD (machine_mode) mode : MACHINE_MODE_BITSIZE;
+  machine_mode mode : MACHINE_MODE_BITSIZE;
   /* Widest mode of the allocno which in at least one case could be
      for paradoxical subregs where wmode > mode.  */
-  ENUM_BITFIELD (machine_mode) wmode : MACHINE_MODE_BITSIZE;
+  machine_mode wmode : MACHINE_MODE_BITSIZE;
   /* Register class which should be used for allocation for given
      allocno.  NO_REGS means that we should use memory.  */
-  ENUM_BITFIELD (reg_class) aclass : 16;
+  enum reg_class aclass : 16;
   /* Hard register assigned to given allocno.  Negative value means
      that memory was allocated to the allocno.  During the reload,
      spilled allocno has value equal to the corresponding stack slot

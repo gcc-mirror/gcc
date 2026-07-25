@@ -196,7 +196,7 @@ struct reg_stat_type {
 
   unsigned HOST_WIDE_INT	last_set_nonzero_bits;
   unsigned short		last_set_sign_bit_copies;
-  ENUM_BITFIELD(machine_mode)	last_set_mode : MACHINE_MODE_BITSIZE;
+  machine_mode			last_set_mode : MACHINE_MODE_BITSIZE;
 
   /* Set to true if references to register n in expressions should not be
      used.  last_set_invalid is set nonzero when this register is being
@@ -231,7 +231,7 @@ struct reg_stat_type {
      truncation if we know that value already contains a truncated
      value.  */
 
-  ENUM_BITFIELD(machine_mode)	truncated_to_mode : MACHINE_MODE_BITSIZE;
+  machine_mode			truncated_to_mode : MACHINE_MODE_BITSIZE;
 };
 
 

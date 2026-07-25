@@ -63,7 +63,7 @@ public:
   /* speculative id is used to link direct calls with their corresponding
      IPA_REF_ADDR references when representing speculative calls.  */
   unsigned int speculative_id : 16;
-  ENUM_BITFIELD (ipa_ref_use) use:3;
+  enum ipa_ref_use use:3;
   unsigned int speculative:1;
 };
 

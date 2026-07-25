@@ -51,7 +51,7 @@ typedef struct vn_nary_op_s
   vn_nary_op_s *unwind_to;
   /* Unique identify that all expressions with the same value have. */
   unsigned int value_id;
-  ENUM_BITFIELD(tree_code) opcode : 16;
+  tree_code opcode : 16;
   unsigned length : 16;
   hashval_t hashcode;
   unsigned predicated_values : 1;
@@ -105,7 +105,7 @@ typedef const struct vn_phi_s *const_vn_phi_t;
 
 typedef struct vn_reference_op_struct
 {
-  ENUM_BITFIELD(tree_code) opcode : 16;
+  tree_code opcode : 16;
   /* Dependence info, used for [TARGET_]MEM_REF only.  For internal
      function calls clique is also used for the internal function code.  */
   unsigned short clique;

@@ -207,7 +207,7 @@ public:
 
   /* An integer estimation of the number of iterations.  Estimate_state
      describes what is the state of the estimation.  */
-  ENUM_BITFIELD(loop_estimation) estimate_state : 8;
+  enum loop_estimation estimate_state : 8;
 
   unsigned any_upper_bound : 1;
   unsigned any_estimate : 1;

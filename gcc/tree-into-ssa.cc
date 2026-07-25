@@ -154,7 +154,7 @@ struct common_info
   /* This field indicates whether or not the variable may need PHI nodes.
      See the enum's definition for more detailed information about the
      states.  */
-  ENUM_BITFIELD (need_phi_state) need_phi_state : 2;
+  enum need_phi_state need_phi_state : 2;
 
   /* The current reaching definition replacing this var.  */
   tree current_def;

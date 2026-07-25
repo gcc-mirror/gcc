@@ -50,7 +50,7 @@ struct operand_alternative
   const char *constraint;
 
   /* The register class valid for this alternative (possibly NO_REGS).  */
-  ENUM_BITFIELD (reg_class) cl : 16;
+  enum reg_class cl : 16;
 
   /* "Badness" of this alternative, computed from number of '?' and '!'
      characters in the constraint string.  */
@@ -505,7 +505,7 @@ struct insn_operand_data
 
   const char *const constraint;
 
-  ENUM_BITFIELD(machine_mode) const mode : 16;
+  machine_mode const mode : 16;
 
   const char strict_low;
 

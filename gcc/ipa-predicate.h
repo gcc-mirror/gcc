@@ -40,7 +40,7 @@ struct GTY(()) expr_eval_op
   /* Index of parameter operand in expression.  */
   unsigned index : 2;
   /* Operation code of expression.  */
-  ENUM_BITFIELD(tree_code) code : 16;
+  tree_code code : 16;
 };
 
 typedef vec<expr_eval_op, va_gc> *expr_eval_ops;
@@ -54,7 +54,7 @@ struct GTY(()) condition
   tree type;
   tree val;
   int operand_num;
-  ENUM_BITFIELD(tree_code) code : 16;
+  tree_code code : 16;
   /* Set if the used data were loaded from an aggregate parameter or from
      data received by reference.  */
   unsigned agg_contents : 1;

@@ -411,11 +411,11 @@ struct c_declspecs {
   enum c_storage_class storage_class;
   /* Any type specifier keyword used such as "int", not reflecting
      modifiers such as "short", or cts_none if none.  */
-  ENUM_BITFIELD (c_typespec_keyword) typespec_word : 8;
+  enum c_typespec_keyword typespec_word : 8;
   /* The kind of type specifier if one has been seen, ctsk_none
      otherwise.  */
-  ENUM_BITFIELD (c_typespec_kind) typespec_kind : 4;
-  ENUM_BITFIELD (c_declspec_il) declspec_il : 3;
+  enum c_typespec_kind typespec_kind : 4;
+  enum c_declspec_il declspec_il : 3;
   /* Whether any expressions in typeof specifiers may appear in
      constant expressions.  */
   bool expr_const_operands : 1;

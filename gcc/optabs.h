@@ -45,7 +45,7 @@ enum expand_operand_type {
 class expand_operand {
 public:
   /* The type of operand.  */
-  ENUM_BITFIELD (expand_operand_type) type : 8;
+  enum expand_operand_type type : 8;
 
   /* True if any conversion should treat VALUE as being unsigned
      rather than signed.  Only meaningful for certain types.  */
@@ -59,7 +59,7 @@ public:
 
   /* The mode passed to the convert_*_operand function.  It has a
      type-dependent meaning.  */
-  ENUM_BITFIELD (machine_mode) mode : 16;
+  machine_mode mode : 16;
 
   /* The value of the operand.  */
   rtx value;

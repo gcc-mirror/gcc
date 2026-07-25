@@ -58,7 +58,7 @@ public:
 
   // Stack initialization disallowed.
   vrange_storage (enum value_range_discriminator d) : m_discriminator (d) { }
-  const ENUM_BITFIELD(value_range_discriminator) m_discriminator : 4;
+  const enum value_range_discriminator m_discriminator : 4;
 };
 
 // Efficient memory storage for an irange.

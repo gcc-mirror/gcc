@@ -25,8 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 struct token_indent_info
 {
   location_t location;
-  ENUM_BITFIELD (cpp_ttype) type : 8;
-  ENUM_BITFIELD (rid) keyword : 8;
+  enum cpp_ttype type : 8;
+  enum rid keyword : 8;
 };
 
 /* Extract token information from TOKEN, which ought to either be a

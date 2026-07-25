@@ -3193,8 +3193,8 @@ enum lang_decl_selector
    not make this struct larger than 32 bits.  */
 
 struct GTY(()) lang_decl_base {
-  ENUM_BITFIELD(lang_decl_selector) selector : 3;
-  ENUM_BITFIELD(languages) language : 1;
+  enum lang_decl_selector selector : 3;
+  enum languages language : 1;
   unsigned use_template : 2;
   unsigned not_really_extern : 1;	   /* var or fn */
   unsigned initialized_in_class : 1;	   /* var or fn */
@@ -3296,7 +3296,7 @@ struct GTY(()) lang_decl_fn {
 
   unsigned xobj_func : 1;
   unsigned contract_wrapper : 1;
-  ENUM_BITFIELD(lang_contract_helper) contract_helper : 2;
+  enum lang_contract_helper contract_helper : 2;
 
   unsigned spare : 4;
 
@@ -7081,7 +7081,7 @@ struct cp_parameter_declarator {
 /* A declarator.  */
 struct cp_declarator {
   /* The kind of declarator.  */
-  ENUM_BITFIELD (cp_declarator_kind) kind : 4;
+  enum cp_declarator_kind kind : 4;
   /* Whether we parsed an ellipsis (`...') just before the declarator,
      to indicate this is a parameter pack.  */
   bool parameter_pack_p : 1;

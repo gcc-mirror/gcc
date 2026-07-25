@@ -2894,7 +2894,7 @@ struct GTY(()) machine_function {
 
   /* This value is used for amd64 targets and specifies the current abi
      to be used. MS_ABI means ms abi. Otherwise SYSV_ABI means sysv abi.  */
-  ENUM_BITFIELD(calling_abi) call_abi : 8;
+  enum calling_abi call_abi : 8;
 
   /* Nonzero if the function accesses a previous frame.  */
   bool accesses_prev_frame : 1;
@@ -2929,20 +2929,20 @@ struct GTY(()) machine_function {
   bool no_drap_save_restore : 1;
 
   /* Function type.  */
-  ENUM_BITFIELD(function_type) func_type : 2;
+  enum function_type func_type : 2;
 
   /* How to generate indirec branch.  */
-  ENUM_BITFIELD(indirect_branch) indirect_branch_type : 3;
+  enum indirect_branch indirect_branch_type : 3;
 
   /* If true, the current function has local indirect jumps, like
      "indirect_jump" or "tablejump".  */
   bool has_local_indirect_jump : 1;
 
   /* How to generate function return.  */
-  ENUM_BITFIELD(indirect_branch) function_return_type : 3;
+  enum indirect_branch function_return_type : 3;
 
   /* Call saved registers type.  */
-  ENUM_BITFIELD(call_saved_registers_type) call_saved_registers : 3;
+  enum call_saved_registers_type call_saved_registers : 3;
 
   /* If true, there is register available for argument passing.  This
      is used only in ix86_function_ok_for_sibcall by 32-bit to determine
@@ -2969,7 +2969,7 @@ struct GTY(()) machine_function {
   bool outgoing_args_on_stack : 1;
 
   /* If true, ENDBR or patchable area is queued at function entrance.  */
-  ENUM_BITFIELD(queued_insn_type) insn_queued_at_entrance : 2;
+  enum queued_insn_type insn_queued_at_entrance : 2;
 
   /* If true, the function label has been emitted.  */
   bool function_label_emitted : 1;

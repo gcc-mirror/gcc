@@ -230,7 +230,7 @@ struct _dep
 
   /* Dependency major type.  This field is superseded by STATUS above.
      Though, it is still in place because some targets use it.  */
-  ENUM_BITFIELD(reg_note) type:6;
+  enum reg_note type:6;
 
   unsigned nonreg:1;
   unsigned multiple:1;

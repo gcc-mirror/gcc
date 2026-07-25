@@ -124,8 +124,8 @@ public:
   virtual void verify_range () const { }
 protected:
   vrange (enum value_range_discriminator d) : m_discriminator (d) { }
-  ENUM_BITFIELD(value_range_kind) m_kind : 8;
-  const ENUM_BITFIELD(value_range_discriminator) m_discriminator : 4;
+  enum value_range_kind m_kind : 8;
+  const enum value_range_discriminator m_discriminator : 4;
 };
 
 namespace inchash

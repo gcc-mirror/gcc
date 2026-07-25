@@ -249,8 +249,8 @@ struct qty_table_elem
   rtx comparison_const;
   int comparison_qty;
   unsigned int first_reg, last_reg;
-  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
-  ENUM_BITFIELD(rtx_code) comparison_code : RTX_CODE_BITSIZE;
+  machine_mode mode : MACHINE_MODE_BITSIZE;
+  enum rtx_code comparison_code : RTX_CODE_BITSIZE;
 };
 
 /* The table of all qtys, indexed by qty number.  */
@@ -403,7 +403,7 @@ struct table_elt
   struct table_elt *related_value;
   int cost;
   int regcost;
-  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
+  machine_mode mode : MACHINE_MODE_BITSIZE;
   char in_memory;
   char is_const;
   char flag;
@@ -4192,7 +4192,7 @@ struct set
   /* The SET_DEST, with SUBREG, etc., stripped.  */
   rtx inner_dest;
   /* Original machine mode, in case it becomes a CONST_INT.  */
-  ENUM_BITFIELD(machine_mode) mode : MACHINE_MODE_BITSIZE;
+  machine_mode mode : MACHINE_MODE_BITSIZE;
   /* Nonzero if the SET_SRC is in memory.  */
   unsigned int src_in_memory : 1;
   /* Nonzero if the SET_SRC contains something

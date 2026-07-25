@@ -72,7 +72,7 @@ struct du_chain
   /* The location inside the insn.  */
   rtx *loc;
   /* The register class required by the insn at this location.  */
-  ENUM_BITFIELD(reg_class) cl : 16;
+  enum reg_class cl : 16;
 };
 
 /* This struct describes data gathered during regrename_analyze about

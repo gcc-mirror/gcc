@@ -345,7 +345,7 @@ struct df_mw_hardreg
   rtx mw_reg;                   /* The multiword hardreg.  */
   /* These two bitfields are intentionally oversized, in the hope that
      accesses to 16-bit fields will usually be quicker.  */
-  ENUM_BITFIELD(df_ref_type) type : 16;
+  enum df_ref_type type : 16;
 				/* Used to see if the ref is read or write.  */
   int flags : 16;		/* Various df_ref_flags.  */
   unsigned int start_regno;     /* First word of the multi word subreg.  */
@@ -361,9 +361,9 @@ struct df_base_ref
 {
   /* These three bitfields are intentionally oversized, in the hope that
      accesses to 8 and 16-bit fields will usually be quicker.  */
-  ENUM_BITFIELD(df_ref_class) cl : 8;
+  enum df_ref_class cl : 8;
 
-  ENUM_BITFIELD(df_ref_type) type : 8;
+  enum df_ref_type type : 8;
 				/* Type of ref.  */
   int flags : 16;		/* Various df_ref_flags.  */
   unsigned int regno;		/* The register number referenced.  */

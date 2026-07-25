@@ -126,7 +126,7 @@ struct GTY ((desc ("%h.type"), tag ("TOPLEVEL_BASE"),
   int order;
 
   /* Type of the node.  */
-  ENUM_BITFIELD (toplevel_type) type : 8;
+  enum toplevel_type type : 8;
 };
 
 /* Base of all entries in the symbol table.
@@ -530,7 +530,7 @@ public:
   }
 
   /* The symbols resolution.  */
-  ENUM_BITFIELD (ld_plugin_symbol_resolution) resolution : 8;
+  enum ld_plugin_symbol_resolution resolution : 8;
 
   /*** Flags representing the symbol type.  ***/
 
@@ -1513,7 +1513,7 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned process : 1;
   /* How commonly executed the node is.  Initialized during branch
      probabilities pass.  */
-  ENUM_BITFIELD (node_frequency) frequency : 2;
+  enum node_frequency frequency : 2;
   /* True when function can only be called at startup (from static ctor).  */
   unsigned only_called_at_startup : 1;
   /* True when function can only be called at startup (from static dtor).  */
@@ -2355,7 +2355,7 @@ struct GTY((tag ("SYMTAB_VARIABLE"))) varpool_node : public symtab_node
      function local statics.   */
   unsigned dynamically_initialized : 1;
 
-  ENUM_BITFIELD(tls_model) tls_model : 3;
+  enum tls_model tls_model : 3;
 
   /* Set if the variable is known to be used by single function only.
      This is computed by ipa_single_use pass and used by late optimizations
