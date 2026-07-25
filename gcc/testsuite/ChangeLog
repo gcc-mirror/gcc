@@ -1,3 +1,11 @@
+2026-07-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-07-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR tree-optimization/124663
+	* g++.dg/tree-ssa/pr124663.C: New test.
+
 2026-07-23  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
