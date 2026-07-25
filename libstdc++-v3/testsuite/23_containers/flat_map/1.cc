@@ -406,6 +406,39 @@ test13()
 }
 
 void
+test14()
+{
+  // Verify optimal number of moves in flat_map::insert_range for sorted_unique
+  static int moves;
+  struct counter
+  {
+    int val;
+    constexpr counter() = default;
+    constexpr counter(int v) : val(v) {}
+    constexpr counter(const counter&) = default;
+    constexpr counter(counter&& o) noexcept : val(o.val) { ++moves; }
+    constexpr counter& operator=(const counter& o) = default;
+    constexpr counter& operator=(counter&& o) noexcept {
+      val = o.val;
+      ++moves;
+      return *this;
+    }
+    constexpr bool operator==(const counter&) const = default;
+    constexpr auto operator<=>(const counter& o) const = default;
+  };
+
+  std::flat_map<counter, counter> m;
+  std::pair<counter, counter> r[] = {
+    {counter(1), counter(10)},
+    {counter(2), counter(20)},
+    {counter(3), counter(30)},
+  };
+  moves = 0;
+  m.insert_range(std::sorted_unique, std::views::as_rvalue(r));
+  VERIFY( moves == 6 );
+}
+
+void
 test()
 {
   test01<std::vector, std::vector>();
@@ -425,6 +458,7 @@ test()
   test11<throwing_vector, std::vector>();
   test12();
   test13();
+  test14();
 }
 
 constexpr
@@ -446,6 +480,7 @@ test_constexpr()
   // test11() is non-constexpr
   test12();
   // test13() is non-constexpr
+  // test14() is non-constexpr
   return true;
 }
 

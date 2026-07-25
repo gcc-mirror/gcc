@@ -635,12 +635,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  auto __guard = _M_make_clear_guard();
 	  auto __n = size();
+	  using __ref = iter_reference_t<_Iter>;
 	  for (; __first != __last; ++__first)
-	    {
-	      value_type __value = *__first;
-	      _M_cont.keys.emplace_back(std::move(__value.first));
-	      _M_cont.values.emplace_back(std::move(__value.second));
-	    }
+	    if constexpr (__pair_like<__ref>)
+	      {
+		__ref __value = *__first;
+		_M_cont.keys.emplace_back(std::get<0>(std::forward<__ref>(__value)));
+		_M_cont.values.emplace_back(std::get<1>(std::forward<__ref>(__value)));
+	      }
+	    else
+	      {
+		value_type __value = *__first;
+		_M_cont.keys.emplace_back(std::move(__value.first));
+		_M_cont.values.emplace_back(std::move(__value.second));
+	      }
 	  auto __zv = views::zip(_M_cont.keys, _M_cont.values);
 	  if (__is_sorted)
 	    _GLIBCXX_DEBUG_ASSERT(ranges::is_sorted(__zv.begin() + __n, __zv.end(),
