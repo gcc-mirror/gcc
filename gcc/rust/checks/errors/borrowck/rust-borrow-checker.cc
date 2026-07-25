@@ -21,6 +21,7 @@
 #include "rust-function-collector.h"
 #include "rust-bir-fact-collector.h"
 #include "rust-bir-builder.h"
+#include "rust-bir-drop-analysis.h"
 #include "rust-bir-dump.h"
 #include "polonius/rust-polonius.h"
 
@@ -68,6 +69,8 @@ BorrowChecker::go (HIR::Crate &crate)
       BIR::BuilderContext ctx;
       BIR::Builder builder (ctx);
       auto bir = builder.build (*func);
+
+      BIR::DropAnalysis::analyze (bir);
 
       if (enable_dump_bir)
 	{

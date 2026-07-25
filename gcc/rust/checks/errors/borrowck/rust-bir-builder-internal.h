@@ -167,7 +167,29 @@ protected:
     return place_id;
   }
 
+  PlaceId declare_argument (const Analysis::NodeMapping &node,
+			    TyTy::BaseType *ty)
+  {
+    const NodeId nodeid = node.get_nodeid ();
+
+    // In debug mode, check that the argument is not already declared.
+    rust_assert (ctx.place_db.lookup_variable (nodeid) == INVALID_PLACE);
+
+    return ctx.place_db.add_variable (nodeid, ty);
+  }
+
   void push_new_scope () { ctx.place_db.push_new_scope (); }
+
+  void push_drop (PlaceId place)
+  {
+    ctx.get_current_bb ().statements.push_back (Statement::make_drop (place));
+  }
+
+  void push_function_argument_drops ()
+  {
+    std::for_each (ctx.arguments.rbegin (), ctx.arguments.rend (),
+		   [&] (PlaceId argument) { push_drop (argument); });
+  }
 
   void pop_scope ()
   {
@@ -175,7 +197,10 @@ protected:
     if (ctx.place_db.get_current_scope_id () != INVALID_SCOPE)
       {
 	std::for_each (scope.locals.rbegin (), scope.locals.rend (),
-		       [&] (PlaceId place) { push_storage_dead (place); });
+		       [&] (PlaceId place) {
+			 push_drop (place);
+			 push_storage_dead (place);
+		       });
       }
     ctx.place_db.pop_scope ();
   }
@@ -200,7 +225,10 @@ protected:
 	// TODO: Perform stable toposort based on `borrowed_by`.
 
 	std::for_each (scope.locals.rbegin (), scope.locals.rend (),
-		       [&] (PlaceId place) { push_storage_dead (place); });
+		       [&] (PlaceId place) {
+			 push_drop (place);
+			 push_storage_dead (place);
+		       });
 	current_scope_id = scope.parent;
       }
   }
@@ -305,6 +333,8 @@ protected: // Helpers to add BIR statements
 
   void push_return (location_t location)
   {
+    push_function_argument_drops ();
+
     ctx.get_current_bb ().statements.push_back (
       Statement::make_return (location));
   }

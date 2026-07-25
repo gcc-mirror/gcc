@@ -75,12 +75,21 @@ struct Function
 class Statement
 {
 public:
+  enum class DropStyle
+  {
+    UNCLASSIFIED,
+    STATIC,
+    DEAD,
+    CONDITIONAL,
+  };
+
   enum class Kind
   {
     ASSIGNMENT,		  // <place> = <expr>
     SWITCH,		  // switch <place>
     RETURN,		  // return
     GOTO,		  // goto
+    DROP,		  // Drop(<place>)
     STORAGE_DEAD,	  // StorageDead(<place>)
     STORAGE_LIVE,	  // StorageLive(<place>)
     USER_TYPE_ASCRIPTION, // UserTypeAscription(<place>, <tyty>)
@@ -91,9 +100,11 @@ private:
   Kind kind;
   // ASSIGNMENT: lhs
   // SWITCH: switch_val
-  // StorageDead/StorageLive: place
+  // DROP/StorageDead/StorageLive: place
   // otherwise: <unused>
   PlaceId place;
+  // DROP: drop classification
+  DropStyle drop_style = DropStyle::UNCLASSIFIED;
   // ASSIGNMENT: rhs
   // otherwise: <unused>
   std::unique_ptr<AbstractExpr> expr;
@@ -118,6 +129,10 @@ public:
     return Statement (Kind::RETURN, INVALID_PLACE, nullptr, nullptr, location);
   }
   static Statement make_goto () { return Statement (Kind::GOTO); }
+  static Statement make_drop (PlaceId place)
+  {
+    return Statement (Kind::DROP, place);
+  }
   static Statement make_storage_dead (PlaceId place)
   {
     return Statement (Kind::STORAGE_DEAD, place);
@@ -147,6 +162,8 @@ private:
 public:
   WARN_UNUSED_RESULT Kind get_kind () const { return kind; }
   WARN_UNUSED_RESULT PlaceId get_place () const { return place; }
+  WARN_UNUSED_RESULT DropStyle get_drop_style () const { return drop_style; }
+  void set_drop_style (DropStyle style) { drop_style = style; }
   WARN_UNUSED_RESULT AbstractExpr &get_expr () const { return *expr; }
   WARN_UNUSED_RESULT TyTy::BaseType *get_type () const { return type; }
   WARN_UNUSED_RESULT location_t get_location () const { return location; }

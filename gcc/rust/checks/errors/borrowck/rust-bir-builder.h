@@ -125,7 +125,7 @@ private:
 	&& !static_cast<HIR::IdentifierPattern &> (pattern).get_is_ref ())
       {
 	// Avoid useless temporary variable for parameter to look like MIR.
-	translated = declare_variable (pattern.get_mappings ());
+	translated = declare_argument (pattern.get_mappings (), param_type);
 	ctx.arguments.push_back (translated);
       }
     else

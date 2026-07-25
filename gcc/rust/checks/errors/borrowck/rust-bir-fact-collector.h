@@ -250,6 +250,13 @@ protected: // Main collection entry points (for different categories).
 	  issue_jumps ();
 	}
 	break;
+
+      case Statement::Kind::DROP:
+	{
+	  // Drop statements are currently used only by BIR drop analysis.
+	  break;
+	}
+
       case Statement::Kind::RETURN:
 	{
 	  issue_place_access (RETURN_VALUE_PLACE);
