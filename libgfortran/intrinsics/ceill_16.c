@@ -26,7 +26,7 @@ ceill (long double x)
   int64_t i0, i1, j0;
   uint64_t i, j;
 
-  GET_LDOUBLE_WORDS64 (i0 ,i1 ,x);
+  GET_LDOUBLE_WORDS64 (i0, i1, x);
   j0 = ((i0 >> 48) & 0x7fff) - 0x3fff;
   if (j0 < 48)
     {
