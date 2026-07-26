@@ -10878,6 +10878,11 @@ ssa_uniform_vector_p (tree op)
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
       if (gimple_assign_single_p (def_stmt))
 	return uniform_vector_p (gimple_assign_rhs1 (def_stmt));
+      /* A VEC_DUPLICATE_EXPR is a unary assignment, so it is not covered
+	 by the gimple_assign_single_p case above.  */
+      if (is_gimple_assign (def_stmt)
+	  && gimple_assign_rhs_code (def_stmt) == VEC_DUPLICATE_EXPR)
+	return gimple_assign_rhs1 (def_stmt);
     }
   return NULL_TREE;
 }
