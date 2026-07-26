@@ -3059,6 +3059,18 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
 	return false;
     }
 
+  /* Try the points-to information recorded for the base pointers the
+     references were originally analyzed from.  DR_BASE_OBJECT can be less
+     precise, rooting at another SSA name or at one created after points-to
+     information was computed and thus without SSA_NAME_PTR_INFO.  A
+     recorded solution is not revalidated.  It covers every dynamic value
+     of its SSA name, so it holds for cross-iteration queries as well.  */
+  struct ptr_info_def *pi_a = DR_PTR_INFO (a);
+  struct ptr_info_def *pi_b = DR_PTR_INFO (b);
+  if (pi_a && pi_b
+      && !pt_solutions_intersect (&pi_a->pt, &pi_b->pt))
+    return false;
+
   if ((TREE_CODE (addr_a) == MEM_REF || TREE_CODE (addr_a) == TARGET_MEM_REF)
       && (TREE_CODE (addr_b) == MEM_REF || TREE_CODE (addr_b) == TARGET_MEM_REF)
       /* For cross-iteration dependences the cliques must be valid for the
