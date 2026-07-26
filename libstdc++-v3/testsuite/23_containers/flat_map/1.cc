@@ -433,6 +433,12 @@ test14()
     {counter(2), counter(20)},
     {counter(3), counter(30)},
   };
+
+  auto [keys,values] = std::move(m).extract();
+  keys.reserve(std::size(r));
+  values.reserve(std::size(r));
+  m.replace(std::move(keys), std::move(values));
+
   moves = 0;
   m.insert_range(std::sorted_unique, std::views::as_rvalue(r));
   VERIFY( moves == 6 );
