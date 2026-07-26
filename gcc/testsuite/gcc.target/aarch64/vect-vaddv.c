@@ -41,8 +41,11 @@ double input_float64[] = {0.1, -0.1, 0.4, 10.3,
 			  7.9, -870.0, 10.4, 310.11,
 			  0.0, -865.0, -2213.0, -1.5};
 
-#define EQUALF(a, b) (fabsf (a - b) < DELTA)
-#define EQUALD(a, b) (fabs (a - b) < DELTA)
+/* The reference sum and the vaddv reduction associate the addends
+   differently, so they agree only to within a few ULP.  Compare with a
+   relative tolerance: every reference value here is non-zero.  */
+#define EQUALF(a, b) (fabsf (a - b) <= DELTA * fabsf (b))
+#define EQUALD(a, b) (fabs (a - b) <= DELTA * fabs (b))
 #define EQUALL(a, b) (a == b)
 
 #define TEST(SUFFIX, Q, TYPE, LANES, FLOAT)				\
