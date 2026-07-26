@@ -3566,7 +3566,7 @@ matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
       ar->start[0] = get_array_inq_function (GFC_ISYM_SIZE, a, 1);
       cond = build_logical_expr (INTRINSIC_NE,
 				 get_array_inq_function (GFC_ISYM_SIZE, c, 1),
-				 get_array_inq_function (GFC_ISYM_SIZE, a, 2));
+				 get_array_inq_function (GFC_ISYM_SIZE, a, 1));
       break;
 
     case A1B2:
