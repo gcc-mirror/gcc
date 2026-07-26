@@ -24,6 +24,7 @@ extern tree gimple_assign_rhs_to_tree (gimple *);
 extern HOST_WIDE_INT estimated_stack_frame_size (struct cgraph_node *);
 extern void expand_remove_edge (edge);
 extern void set_parm_rtl (tree, rtx);
+extern tree expand_leader_merge (tree, tree);
 
 
 #endif /* GCC_CFGEXPAND_H */
