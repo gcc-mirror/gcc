@@ -8337,7 +8337,8 @@ vectorizable_store (vec_info *vinfo,
 
   /* Transform.  */
 
-  ensure_base_align (dr_info);
+  if (!costing_p)
+    ensure_base_align (dr_info);
 
   if (STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) >= 3)
     {
@@ -9977,7 +9978,8 @@ vectorizable_load (vec_info *vinfo,
   /* Transform.  */
 
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info), *first_dr_info = NULL;
-  ensure_base_align (dr_info);
+  if (!costing_p)
+    ensure_base_align (dr_info);
 
   if (memory_access_type == VMAT_INVARIANT)
     {
