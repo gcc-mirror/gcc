@@ -13,9 +13,9 @@
 **	movq	%rdx, 104\(%rsp\)
 **	movq	%r8, 112\(%rsp\)
 **	movq	%r9, 120\(%rsp\)
-**	movq	\$0, 56\(%rsp\)
 **	movq	\$0, 64\(%rsp\)
-**	movq	%rax, 48\(%rsp\)
+**	movq	\$0, 72\(%rsp\)
+**	movq	%rax, 56\(%rsp\)
 **	cmpl	\$47, %eax
 **	ja	.L2
 **	leal	8\(%rax\), %edx

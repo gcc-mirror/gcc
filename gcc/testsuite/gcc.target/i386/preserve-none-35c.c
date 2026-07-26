@@ -20,11 +20,11 @@
 **	movl	64\(%rsp\), %r8d
 **	movq	%r9, 72\(%rsp\)
 **	movl	72\(%rsp\), %r9d
-**	movq	%rax, 8\(%rsp\)
-**	leaq	32\(%rsp\), %rax
 **	movq	%rax, 16\(%rsp\)
+**	leaq	32\(%rsp\), %rax
+**	movq	%rax, 24\(%rsp\)
 **	xorl	%eax, %eax
-**	movl	\$8, \(%rsp\)
+**	movl	\$8, 8\(%rsp\)
 **	call	continuation
 **	addq	\$88, %rsp
 **	.cfi_def_cfa_offset 8
