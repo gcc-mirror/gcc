@@ -1,3 +1,18 @@
+2026-07-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-07-24  H.J. Lu  <hjl.tools@gmail.com>
+		    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/126320
+	* config/i386/i386.cc (ix86_spill_register_argument_p): New
+	function.
+	(ix86_argument_passed_on_stack_p): Add a pattern argument.  Call
+	ix86_spill_register_argument_p to check spill of register argument
+	by callee.
+	(ix86_update_stack_alignment): Pass pat to
+	ix86_argument_passed_on_stack_p.
+
 2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
 
 	Backported from master:

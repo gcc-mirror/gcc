@@ -1,3 +1,139 @@
+2026-07-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-07-24  H.J. Lu  <hjl.tools@gmail.com>
+		    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/126320
+	* gcc.target/i386/pr126320.c: New test.
+
+2026-07-25  Avinash Jayakar  <avinashd@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-24  Avinash Jayakar  <avinashd@gcc.gnu.org>
+
+	* gcc.target/powerpc/mma-builtin-1.c: Move to...
+	* gcc.target/powerpc/mma-builtin-1.h: ...here.
+	* gcc.target/powerpc/mma-builtin-10-pair.c: Move to...
+	* gcc.target/powerpc/mma-builtin-10-pair.h: ...here.
+	* gcc.target/powerpc/mma-builtin-2.c: Move to...
+	* gcc.target/powerpc/mma-builtin-2.h: ...here.
+	* gcc.target/powerpc/mma-builtin-3.c: Move to...
+	* gcc.target/powerpc/mma-builtin-3.nodmf.c: ...here.
+	* gcc.target/powerpc/mma-builtin-4.c: Move to...
+	* gcc.target/powerpc/mma-builtin-4.h: ...here.
+	* gcc.target/powerpc/mma-builtin-5.c: Move to...
+	* gcc.target/powerpc/mma-builtin-5.h: ...here.
+	* gcc.target/powerpc/mma-builtin-6.c: Move to...
+	* gcc.target/powerpc/mma-builtin-6.nodmf.c: ...here.
+	* gcc.target/powerpc/mma-builtin-7.c: Move to...
+	* gcc.target/powerpc/mma-builtin-7.h: ...here.
+	* gcc.target/powerpc/mma-builtin-8.c: Move to...
+	* gcc.target/powerpc/mma-builtin-8.h: ...here.
+	* gcc.target/powerpc/mma-builtin-9.c: Move to...
+	* gcc.target/powerpc/mma-builtin-9.h: ...here.
+	* gcc.target/powerpc/mma-builtin-10-quad.c: Removed.
+	* gcc.target/powerpc/mma-builtin-1.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-1.nodmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-10-pair.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-10-pair.nodmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-10-quad.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-10-quad.h: New test.
+	* gcc.target/powerpc/mma-builtin-10-quad.nodmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-2.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-2.nodmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-3.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-3.h: New test.
+	* gcc.target/powerpc/mma-builtin-4.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-4.nodmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-5.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-5.nodmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-6.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-6.h: New test.
+	* gcc.target/powerpc/mma-builtin-7.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-7.nodmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-8.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-8.nodmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-9.dmf.c: New test.
+	* gcc.target/powerpc/mma-builtin-9.nodmf.c: New test.
+
+2026-07-25  Avinash Jayakar  <avinashd@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-25  Avinash Jayakar  <avinashd@gcc.gnu.org>
+
+	PR target/100777
+	PR target/101849
+	PR target/102976
+	PR target/103127
+	PR target/104923
+	PR target/106016
+	PR target/106017
+	PR target/106833
+	PR target/110411
+	PR target/96446
+	PR target/96530
+	PR target/96808
+	PR target/97360
+	PR target/98872
+	* gcc.target/powerpc/pr100777.c: Move to...
+	* gcc.target/powerpc/pr100777.h: ...here.
+	* gcc.target/powerpc/pr101849.c: Move to...
+	* gcc.target/powerpc/pr101849.h: ...here.
+	* gcc.target/powerpc/pr103127.c: Move to...
+	* gcc.target/powerpc/pr103127.h: ...here.
+	* gcc.target/powerpc/pr104923.c: Move to...
+	* gcc.target/powerpc/pr104923.h: ...here.
+	* gcc.target/powerpc/pr106016.c: Move to...
+	* gcc.target/powerpc/pr106016.h: ...here.
+	* gcc.target/powerpc/pr106017.c: Move to...
+	* gcc.target/powerpc/pr106017.h: ...here.
+	* gcc.target/powerpc/pr110411-2.c: Move to...
+	* gcc.target/powerpc/pr110411-2.h: ...here.
+	* gcc.target/powerpc/pr96446.c: Move to...
+	* gcc.target/powerpc/pr96446.h: ...here.
+	* gcc.target/powerpc/pr96530.c: Move to...
+	* gcc.target/powerpc/pr96530.h: ...here.
+	* gcc.target/powerpc/pr96808.c: Move to...
+	* gcc.target/powerpc/pr96808.h: ...here.
+	* gcc.target/powerpc/pr97360.c: Move to...
+	* gcc.target/powerpc/pr97360.h: ...here.
+	* gcc.target/powerpc/pr98872.c: Move to...
+	* gcc.target/powerpc/pr98872.h: ...here.
+	* gcc.target/powerpc/pr102976.c: Removed.
+	* gcc.target/powerpc/pr103627-1.c: Removed.
+	* gcc.target/powerpc/pr106833.c: Removed.
+	* gcc.target/powerpc/pr100777.dmf.c: New test.
+	* gcc.target/powerpc/pr100777.nodmf.c: New test.
+	* gcc.target/powerpc/pr101849.dmf.c: New test.
+	* gcc.target/powerpc/pr101849.nodmf.c: New test.
+	* gcc.target/powerpc/pr102976.dmf.c: New test.
+	* gcc.target/powerpc/pr102976.h: New test.
+	* gcc.target/powerpc/pr102976.nodmf.c: New test.
+	* gcc.target/powerpc/pr103127.dmf.c: New test.
+	* gcc.target/powerpc/pr103127.nodmf.c: New test.
+	* gcc.target/powerpc/pr104923.dmf.c: New test.
+	* gcc.target/powerpc/pr104923.nodmf.c: New test.
+	* gcc.target/powerpc/pr106016.dmf.c: New test.
+	* gcc.target/powerpc/pr106016.nodmf.c: New test.
+	* gcc.target/powerpc/pr106017.dmf.c: New test.
+	* gcc.target/powerpc/pr106017.nodmf.c: New test.
+	* gcc.target/powerpc/pr106833.dmf.c: New test.
+	* gcc.target/powerpc/pr106833.h: New test.
+	* gcc.target/powerpc/pr106833.nodmf.c: New test.
+	* gcc.target/powerpc/pr110411-2.dmf.c: New test.
+	* gcc.target/powerpc/pr110411-2.nodmf.c: New test.
+	* gcc.target/powerpc/pr96446.dmf.c: New test.
+	* gcc.target/powerpc/pr96446.nodmf.c: New test.
+	* gcc.target/powerpc/pr96530.dmf.c: New test.
+	* gcc.target/powerpc/pr96530.nodmf.c: New test.
+	* gcc.target/powerpc/pr96808.dmf.c: New test.
+	* gcc.target/powerpc/pr96808.nodmf.c: New test.
+	* gcc.target/powerpc/pr97360.dmf.c: New test.
+	* gcc.target/powerpc/pr97360.nodmf.c: New test.
+	* gcc.target/powerpc/pr98872.dmf.c: New test.
+	* gcc.target/powerpc/pr98872.nodmf.c: New test.
+
 2026-07-24  Surya Kumari Jangala  <jskumari@linux.ibm.com>
 
 	Backported from master:
