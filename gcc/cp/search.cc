@@ -1280,9 +1280,10 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
     {
       tree decl = is_overloaded_fn (rval) ? get_first_fn (rval) : rval;
       decl = strip_using_decl (decl);
-      /* A dependent USING_DECL will be checked after tsubsting.  */
-      if (TREE_CODE (decl) != USING_DECL
-	  && !DECL_IOBJ_MEMBER_FUNCTION_P (decl)
+      /* A dependent declaration will be checked after tsubsting.  */
+      if (!dependent_scope_p (DECL_CONTEXT (decl))
+	  && !(DECL_DECLARES_FUNCTION_P (decl)
+	       && DECL_IOBJ_MEMBER_FUNCTION_P (decl))
 	  && !perform_or_defer_access_check (basetype_path, decl, decl,
 					     complain, afi))
 	return error_mark_node;
