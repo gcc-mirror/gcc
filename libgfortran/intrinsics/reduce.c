@@ -54,7 +54,6 @@ reduce (parray *ret,
   index_type idx0, idx1, idx2;
   index_type dimen, dimen_m1, ldx, ext, str;
   bool started;
-  bool masked = false;
   bool dim_present = dim != NULL;
   bool mask_present = mask != NULL;
   bool identity_present = identity != NULL;
@@ -106,7 +105,7 @@ reduce (parray *ret,
       ext = GFC_DESCRIPTOR_EXTENT (array,i);
       str = GFC_DESCRIPTOR_STRIDE (array,i);
 
-      if (masked && (ext != GFC_DESCRIPTOR_EXTENT (mask, i)))
+      if (mask_present && (ext != GFC_DESCRIPTOR_EXTENT (mask, i)))
 	{
 	  int mext = (int)GFC_DESCRIPTOR_EXTENT (mask, i);
 	  runtime_error ("shape mismatch between ARRAY and MASK in the REDUCE "
