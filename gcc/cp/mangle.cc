@@ -4077,6 +4077,10 @@ write_expression (tree expr)
 		     "use library traits instead", expr);
 	      break;
 
+	    case ERROR_MARK:
+	      if (seen_error ())
+		break;
+	      /* FALLTHROUGH */
 	    default:
 	      sorry ("mangling %C", code);
 	      break;
