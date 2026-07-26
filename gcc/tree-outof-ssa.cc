@@ -1062,8 +1062,9 @@ expand_phi_nodes (struct ssaexpand *sa)
    own artificial decl so the slots are distinguished at the source.
    The new decl carries a DECL_DEBUG_EXPR back to the user variable so debug
    info still attributes the storage to it (cf.  create_access_replacement in
-   tree-sra.cc).  PARM_DECLs and RESULT_DECLs are left alone, as they require
-   a single partition holding the canonical RTL.  */
+   tree-sra.cc).  A PARM_DECL or RESULT_DECL keeps the partition of its default
+   definition, which holds the canonical RTL, and only its other partitions are
+   split.  */
 
 static void
 split_overlapping_partition_decls (var_map map)
@@ -1106,7 +1107,7 @@ split_overlapping_partition_decls (var_map map)
       tree var = SSA_NAME_VAR (repr);
       if (part_var[i])
 	var = expand_leader_merge (var, part_var[i]);
-      if (!var || !VAR_P (var))
+      if (!var)
 	continue;
       /* Only partitions that will live in memory can end up with a
 	 misleading shared MEM_EXPR.  Mirror the decision that
