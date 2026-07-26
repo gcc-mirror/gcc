@@ -155,10 +155,11 @@ gimple_assign_rhs_to_tree (gimple *stmt)
 /* Choose either CUR or NEXT as the leader DECL for a partition.
    Prefer ignored decls, to simplify debug dumps and reduce ambiguity
    out of the same user variable being in multiple partitions (this is
-   less likely for compiler-introduced temps).  */
+   less likely for compiler-introduced temps).  Also used by out-of-SSA
+   to work out which variable a partition will be given.  */
 
-static tree
-leader_merge (tree cur, tree next)
+tree
+expand_leader_merge (tree cur, tree next)
 {
   if (cur == NULL || cur == next)
     return next;
@@ -251,7 +252,8 @@ set_rtl (tree t, rtx x)
       else
 	gcc_unreachable ();
 
-      tree next = skip ? cur : leader_merge (cur, SSAVAR (t) ? SSAVAR (t) : t);
+      tree next
+	= skip ? cur : expand_leader_merge (cur, SSAVAR (t) ? SSAVAR (t) : t);
 
       if (cur != next)
 	{
