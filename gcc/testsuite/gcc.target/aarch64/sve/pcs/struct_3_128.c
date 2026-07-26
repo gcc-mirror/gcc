@@ -1074,7 +1074,7 @@ SEL2 (struct, nonpst8)
 
 /*
 ** test_nonpst8:
-**	ubfx	x0, x0, 8, 8
+**	ubfx	[wx]0, [wx]0, 8, 8
 **	ret
 */
 /* { dg-final { scan-assembler-not {\t\.variant_pcs\ttest_nonpst8\n} } } */
