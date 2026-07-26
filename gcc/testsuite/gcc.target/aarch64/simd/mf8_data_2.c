@@ -14,6 +14,7 @@ void test(mfloat8x8_t x8, mfloat8x16_t x16,
   vcopy_lane_mf8(x8, 0, x8, -1); /* { dg-error {passing -1 to argument 4 of 'vcopy_lane_mf8', which expects a value in the range \[0, 7\]} } */
   vcopy_lane_mf8(x8, 0, x8, 8); /* { dg-error {passing 8 to argument 4 of 'vcopy_lane_mf8', which expects a value in the range \[0, 7\]} } */
   vcopy_lane_mf8(x8, 100, x8, 100); /* { dg-error {passing 100 to argument 2 of 'vcopy_lane_mf8', which expects a value in the range \[0, 7\]} } */
+  /* { dg-error {passing 100 to argument 4 of 'vcopy_lane_mf8', which expects a value in the range \[0, 7\]} "" { target *-*-* } .-1 } */
 
   vcopy_laneq_mf8(x8, -1, x16, 0); /* { dg-error {passing -1 to argument 2 of 'vcopy_laneq_mf8', which expects a value in the range \[0, 7\]} } */
   vcopy_laneq_mf8(x8, 8, x16, 0); /* { dg-error {passing 8 to argument 2 of 'vcopy_laneq_mf8', which expects a value in the range \[0, 7\]} } */
