@@ -1,3 +1,46 @@
+2026-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* symbols.cc (symbols_dump): Use HOST_SIZE_T_PRINT_UNSIGNED instead
+	of "%zu" and add cast to fmt_size_t.
+
+2026-07-25  Robert Dubner  <rdubner@symas.com>
+
+	* cbldiag.h (struct cbl_loc_t): Mollify cppcheck.
+	* gcobol.1: Documentation.
+	* genapi.cc (parser_accept_date_yymmdd): Changes to ACCEPT.
+	(parser_accept_date_yyyymmdd): Likewise.
+	(parser_accept_date_yyddd): Likewise.
+	(parser_accept_date_yyyyddd): Likewise.
+	(parser_accept_date_dow): Likewise.
+	(parser_accept_date_hhmmssff): Likewise.
+	(walk_initialization): Propagate based_e attribute to child variables.
+	(parser_file_open): SELECT ASSIGN TO DEVICE changes.
+	(parser_call): Include function name in error message when the
+	function name cannot be found.
+	* genapi.h (parser_accept_date_yymmdd): Changes to ACCEPT.
+	(parser_accept_date_yyyymmdd): Likewise.
+	(parser_accept_date_yyddd): Likewise.
+	(parser_accept_date_yyyyddd): Likewise.
+	(parser_accept_date_dow): Likewise.
+	(parser_accept_date_hhmmssff): Likewise.
+	* genutil.cc (FIXED_WIDE_INT): Potential improvement to MOVE
+	statements involving intermediate_e variables.
+	(get_power_of_two): Likewise.
+	* genutil.h (FIXED_WIDE_INT): Likewise.
+	* lexio.h (struct filespan_t): Mollify cppcheck.
+	* move.cc (mh_identical): Improve MOVE execution speed.
+	(copy_native_into_place): Likewise.
+	(copy_intermediate_into_place): Likewise.
+	(mh_to_binary): Likewise.
+	(move_helper): Likewise.
+	* parse.y: Changes to ACCEPT.
+	* symbols.cc (symbol_table_init): Add external_e attribute to
+	DEBUG-ITEM and children.
+	(new_temporary_impl): Mollify cppcheck.
+	* symfind.cc (struct funcname): Likewise.
+	* util.cc (determine_intermediate_type): Set output.data.digits to
+	zero.
+
 2026-07-23  James K. Lowden  <jklowden@cobolworx.com>
 
 	* gcobc: Consolidate warning cases and update comments.

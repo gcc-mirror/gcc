@@ -1,3 +1,18 @@
+2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126280
+	* pt.cc (mark_template_arguments_used): Split out loop into ...
+	(mark_template_arguments_used_1): ... here. Recurse into
+	argument packs.
+
+2026-07-25  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/125507
+	* cp-tree.h (struct lang_decl_base): Remove ENUM_BITFIELD.
+	(struct lang_decl_fn): Ditto.
+	(struct cp_declarator): Ditto.
+	* name-lookup.h (struct cp_binding_level): Ditto.
+
 2026-07-24  Tobias Burnus  <tburnus@baylibre.com>
 
 	* pt.cc (tsubst_omp_clauses): Add OMP_CLAUSE_DEVICE_TYPE

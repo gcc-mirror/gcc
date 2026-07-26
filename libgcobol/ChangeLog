@@ -1,3 +1,20 @@
+2026-07-25  Robert Dubner  <rdubner@symas.com>
+
+	* constants.cc (struct cblc_field_t):  Add external_e attribute to
+	DEBUG-ITEM and children.
+	* libgcobol.cc (field_from_ascii): Changes to ACCEPT.
+	(__gg__get_date_yymmdd): Likewise.
+	(__gg__get_date_yyyymmdd): Likewise.
+	(__gg__get_date_yyddd): Likewise.
+	(__gg__get_yyyyddd): Likewise.
+	(__gg__get_date_dow): Likewise.
+	(__gg__get_date_hhmmssff): Likewise.
+	(format_for_display_internal): Initialize an automatic variable.
+	(default_exception_handler): Include function name in "missing
+	function" run-time error.
+	(__gg__set_exception_code): Likewise.
+	(__gg__set_exception_call): Likewise.
+
 2026-07-17  Robert Dubner  <rdubner@symas.com>
 
 	* charmaps.h (ebcdic_newline): Use just SPACES instead of both

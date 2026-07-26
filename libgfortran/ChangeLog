@@ -1,3 +1,7 @@
+2026-07-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	* intrinsics/ceill_16.c: Fix whitespace.
+
 2026-07-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR libfortran/126305

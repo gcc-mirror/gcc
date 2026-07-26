@@ -1,3 +1,98 @@
+2026-07-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126138
+	* tree-ssa-phiopt.cc (one_feeding_comparison_into_p): New function.
+	(comparison_combine): New function.
+	(pass_phiopt::execute): Call comparison_combine.
+
+2026-07-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126138
+	* tree-ssa-ifcombine.cc (bb_no_side_effects_p): Don't reject GIMPLE_COND
+	that can trap.
+	(ifcombine_ifandif): Handle trapping inner conditional specially.
+
+2026-07-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126138
+	* fold-const.cc (combine_comparisons): Allow eq to combine
+	with || and ne combine with && if the original rcode was trapping
+	and the new code is trapping.
+
+2026-07-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* sym-exec/sym-exec-expression.cc (symbolic_bit::print): Use
+	HOST_SIZE_T_PRINT_UNSIGNED instead of "%zu" and add cast to
+	fmt_size_t.
+	* genoutput.cc (main): Likewise.
+
+2026-07-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126184
+	* ifcvt.cc (init_noce_multiple_sets_info): Record only the most
+	recent prior definition of each pseudo register.
+
+2026-07-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126184
+	* ifcvt.cc (init_noce_multiple_sets_info): Assert that destinations
+	are pseudos.
+	(bb_ok_for_noce_convert_multiple_sets): Reject hard-register
+	destinations.
+
+2026-07-25  Ashley Chekhova  <giraffe.commits@aol.com>
+
+	PR tree-optimization/92408
+	* tree-ssa-forwprop.cc (optimize_strlen_comp): Rewrite
+	strlen(s) == 0 as *s == 0 and strlen(s) != 0 as *s != 0.
+	(simplify_builtin_call): Added call to optimize_strlen_comp.
+
+2026-07-25  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/126334
+	* config/riscv/riscv-v.cc (get_gather_scatter_code): Use ordered
+	indexed stores.
+
+2026-07-25  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/125507
+	* cfgloop.h (class loop): Remove ENUM_BITFIELD.
+	* cgraph.h (struct toplevel_node): Ditto.
+	(struct symtab_node): Ditto.
+	(struct cgraph_node): Ditto.
+	* combine.cc (struct reg_stat_type): Ditto.
+	* config/i386/i386.h (struct machine_function): Ditto.
+	* cse.cc (struct qty_table_elem): Ditto.
+	(struct table_elt): Ditto.
+	(struct set): Ditto.
+	* df.h (struct df_mw_hardreg): Ditto.
+	(struct df_base_ref): Ditto.
+	* domwalk.h (class dom_walker): Ditto.
+	* dwarf2out.h (struct dw_val_node): Ditto.
+	* gimple.h (struct gimple): Ditto.
+	* ipa-predicate.h (struct expr_eval_op): Ditto.
+	(struct condition): Ditto.
+	* ipa-ref.h (struct ipa_ref): Ditto.
+	* ira-int.h (struct ira_dependent_filter): Ditto.
+	(struct ira_allocno): Ditto.
+	* lra-int.h (struct lra_operand_data): Ditto.
+	(struct lra_insn_reg): Ditto.
+	* optabs.h (class expand_operand): Ditto.
+	* recog.h (struct operand_alternative): Ditto.
+	(struct insn_operand_data): Ditto.
+	* ree.cc (struct ext_modified): Ditto.
+	* regrename.h (struct du_chain): Ditto.
+	* rtl.h (struct rtx_def): Ditto.
+	* sched-int.h (struct _dep): Ditto.
+	* tree-into-ssa.cc (struct common_info): Ditto.
+	* tree-ssa-loop-ivopts.cc (struct iv_cand): Ditto.
+	* tree-ssa-sccvn.h (struct vn_nary_op_s): Ditto.
+	(struct vn_reference_op_struct): Ditto.
+	* value-range-storage.h (class vrange_storage): Ditto.
+	* value-range.h (class vrange): Ditto.
+	* var-tracking.cc (struct variable): Ditto.
+	* vmsdbg.h (struct _DST_HEADER): Ditto.
+
 2026-07-24  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	* print-rtl.cc (print_exp): Avoid -Wempty-body warning.

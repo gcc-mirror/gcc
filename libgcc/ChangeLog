@@ -1,3 +1,10 @@
+2026-07-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (FUNCS_notiny): Add _negdi2_r10.
+	* config/avr/lib1funcs.S (__negdi2_r10): New function.
+	(__divdi3_moddi3): Use it.
+	* config/avr/lib1funcs-fixed.S (__mulQ64_work): Use it.
+
 2026-07-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/lib1funcs.S (__mulqihi3): Use .branch_plus.

@@ -1,3 +1,28 @@
+2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__compatible_joinable_ranges):
+	Remove.
+	(__detail::__concat_reference_t): Move definition up.
+	(__detail::__concat_value_t): Likewise.
+	(__detail::__concat_rvalue_reference_t): Likewise.
+	(__detail::__concat_indirectly_readable_impl): Likewise.
+	(__detail::__concat_indirectly_readable): Likewise.
+	(__detail::__concatable): Likewise.
+	(join_with_view): Use __concatable instead of
+	__compatible_joinable_ranges in constraints as per LWG 4074.
+	(join_with_view::begin): Add __concatable constraint as per
+	LWG 4074.
+	(join_with_view::end): Likewise.
+	(join_with_view::_Iterator): Adjust out-of-line declaration.
+	(join_with_view::_Sentinel): Likewise.
+
+2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/flat_map (flat_map::_M_insert): Avoid constructing
+	value_type temporary when the iterator already has pair-like
+	elements.
+	* testsuite/23_containers/flat_map/1.cc (test14): New test.
+
 2026-07-23  Anlai Lu  <agicy@qq.com>
 
 	* include/bits/chrono_io.h (__formatter_chrono::_S_empty_fs):

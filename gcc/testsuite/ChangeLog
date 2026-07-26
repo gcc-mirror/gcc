@@ -1,3 +1,195 @@
+2026-07-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126138
+	* gcc.dg/tree-ssa/fp-trapping-cmp-4.c: New test.
+	* gcc.dg/tree-ssa/fp-trapping-cmp-5.c: New test.
+
+2026-07-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126138
+	* gcc.dg/tree-ssa/fp-trapping-cmp-2.c: New test.
+	* gcc.dg/tree-ssa/fp-trapping-cmp-3.c: New test.
+
+2026-07-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126138
+	* gcc.dg/tree-ssa/fp-trapping-cmp-1.c: New test.
+
+2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126280
+	* g++.dg/template/fn-ptr6.C: New test.
+
+2026-07-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126184
+	* gcc.target/aarch64/pr126184.c: New test.
+
+2026-07-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126184
+	* gcc.target/aarch64/pr126184-2.c: New test.
+
+2026-07-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/126028
+	* gcc.target/i386/pr27827.c: Compile with -mno-sse.
+	* gcc.target/i386/pr50038.c: Likewise.
+
+2026-07-25  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/ACCEPT_FROM__date__with_subscripts_and_refmods.cob: New test.
+	* cobol.dg/group2/ACCEPT_FROM__date__with_subscripts_and_refmods.out: New test.
+	* cobol.dg/group2/MOVE__identical__operations.cob: New test.
+	* cobol.dg/group2/MOVE__identical__operations.out: New test.
+	* cobol.dg/group2/RT3574_PR__40-_Repository_section_intrinsic_funcs.cob: New test.
+
+2026-07-25  Ashley Chekhova  <giraffe.commits@aol.com>
+
+	PR tree-optimization/92408
+	* gcc.dg/pr92408.c: New test.
+
+2026-07-25  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/126334
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-1.c:
+	Adjust test expectations.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-12.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/gather_load_32-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-11.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_gather_load_32-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_32-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/mask_scatter_store_64-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_32-9.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-10.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-3.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-5.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-6.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-9.c: Ditto.
+
+2026-07-25  Avinash Jayakar  <avinashd@gcc.gnu.org>
+
+	PR target/100777
+	PR target/101849
+	PR target/102976
+	PR target/103127
+	PR target/104923
+	PR target/106016
+	PR target/106017
+	PR target/106833
+	PR target/110411
+	PR target/96446
+	PR target/96530
+	PR target/96808
+	PR target/97360
+	PR target/98872
+	* gcc.target/powerpc/pr100777.c: Move to...
+	* gcc.target/powerpc/pr100777.h: ...here.
+	* gcc.target/powerpc/pr101849.c: Move to...
+	* gcc.target/powerpc/pr101849.h: ...here.
+	* gcc.target/powerpc/pr103127.c: Move to...
+	* gcc.target/powerpc/pr103127.h: ...here.
+	* gcc.target/powerpc/pr104923.c: Move to...
+	* gcc.target/powerpc/pr104923.h: ...here.
+	* gcc.target/powerpc/pr106016.c: Move to...
+	* gcc.target/powerpc/pr106016.h: ...here.
+	* gcc.target/powerpc/pr106017.c: Move to...
+	* gcc.target/powerpc/pr106017.h: ...here.
+	* gcc.target/powerpc/pr110411-2.c: Move to...
+	* gcc.target/powerpc/pr110411-2.h: ...here.
+	* gcc.target/powerpc/pr96446.c: Move to...
+	* gcc.target/powerpc/pr96446.h: ...here.
+	* gcc.target/powerpc/pr96530.c: Move to...
+	* gcc.target/powerpc/pr96530.h: ...here.
+	* gcc.target/powerpc/pr96808.c: Move to...
+	* gcc.target/powerpc/pr96808.h: ...here.
+	* gcc.target/powerpc/pr97360.c: Move to...
+	* gcc.target/powerpc/pr97360.h: ...here.
+	* gcc.target/powerpc/pr98872.c: Move to...
+	* gcc.target/powerpc/pr98872.h: ...here.
+	* gcc.target/powerpc/pr102976.c: Removed.
+	* gcc.target/powerpc/pr103627-1.c: Removed.
+	* gcc.target/powerpc/pr106833.c: Removed.
+	* gcc.target/powerpc/pr100777.dmf.c: New test.
+	* gcc.target/powerpc/pr100777.nodmf.c: New test.
+	* gcc.target/powerpc/pr101849.dmf.c: New test.
+	* gcc.target/powerpc/pr101849.nodmf.c: New test.
+	* gcc.target/powerpc/pr102976.dmf.c: New test.
+	* gcc.target/powerpc/pr102976.h: New test.
+	* gcc.target/powerpc/pr102976.nodmf.c: New test.
+	* gcc.target/powerpc/pr103127.dmf.c: New test.
+	* gcc.target/powerpc/pr103127.nodmf.c: New test.
+	* gcc.target/powerpc/pr104923.dmf.c: New test.
+	* gcc.target/powerpc/pr104923.nodmf.c: New test.
+	* gcc.target/powerpc/pr106016.dmf.c: New test.
+	* gcc.target/powerpc/pr106016.nodmf.c: New test.
+	* gcc.target/powerpc/pr106017.dmf.c: New test.
+	* gcc.target/powerpc/pr106017.nodmf.c: New test.
+	* gcc.target/powerpc/pr106833.dmf.c: New test.
+	* gcc.target/powerpc/pr106833.h: New test.
+	* gcc.target/powerpc/pr106833.nodmf.c: New test.
+	* gcc.target/powerpc/pr110411-2.dmf.c: New test.
+	* gcc.target/powerpc/pr110411-2.nodmf.c: New test.
+	* gcc.target/powerpc/pr96446.dmf.c: New test.
+	* gcc.target/powerpc/pr96446.nodmf.c: New test.
+	* gcc.target/powerpc/pr96530.dmf.c: New test.
+	* gcc.target/powerpc/pr96530.nodmf.c: New test.
+	* gcc.target/powerpc/pr96808.dmf.c: New test.
+	* gcc.target/powerpc/pr96808.nodmf.c: New test.
+	* gcc.target/powerpc/pr97360.dmf.c: New test.
+	* gcc.target/powerpc/pr97360.nodmf.c: New test.
+	* gcc.target/powerpc/pr98872.dmf.c: New test.
+	* gcc.target/powerpc/pr98872.nodmf.c: New test.
+
 2026-07-24  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* gcc.target/aarch64/bitint-args.c (f19): Fix

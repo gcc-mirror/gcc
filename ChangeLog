@@ -1,3 +1,8 @@
+2026-07-25  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	* MAINTAINERS: Add myself.
+	* MAINTAINERS.yml: Regenerate.
+
 2026-07-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
 
 	* .github/CONTRIBUTING.md: Update text.
