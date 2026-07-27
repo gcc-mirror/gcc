@@ -49,6 +49,7 @@ enum class BuiltinMacro
   Env,
   OptionEnv,
   Cfg,
+  CfgSelect,
   Include,
   FormatArgs,
   FormatArgsNl,
@@ -167,6 +168,10 @@ public:
   static tl::optional<AST::Fragment> cfg_handler (location_t invoc_locus,
 						  AST::MacroInvocData &invoc,
 						  AST::InvocKind semicolon);
+
+  static tl::optional<AST::Fragment>
+  cfg_select_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
+		      AST::InvocKind semicolon);
 
   static tl::optional<AST::Fragment>
   include_handler (location_t invoc_locus, AST::MacroInvocData &invoc,

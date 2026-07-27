@@ -21,6 +21,7 @@
 #include "rust-macro-builtins.h"
 #include "rust-macro-builtins-helpers.h"
 #include "rust-session-manager.h"
+#include "rust-stmt.h"
 
 namespace Rust {
 
@@ -342,6 +343,139 @@ MacroBuiltin::cfg_handler (location_t invoc_locus, AST::MacroInvocData &invoc,
     Token::make (result ? TRUE_LITERAL : FALSE_LITERAL, invoc_locus));
 
   return AST::Fragment ({literal_exp}, std::move (tok));
+}
+
+tl::optional<AST::Fragment>
+MacroBuiltin::cfg_select_handler (location_t invoc_locus,
+				  AST::MacroInvocData &invoc,
+				  AST::InvocKind semicolon)
+{
+  auto invoc_token_tree = invoc.get_delim_tok_tree ();
+  MacroInvocLexer lex (invoc_token_tree.to_token_stream ());
+
+  Parser<MacroInvocLexer> parser (lex);
+
+  if (!parser.skip_token (LEFT_CURLY))
+    {
+      rust_error_at (invoc_locus, "expected %<(%> in %<cfg_select!%>");
+      return AST::Fragment::create_error ();
+    }
+
+  std::vector<AST::SingleASTNode> matched_body_nodes;
+  std::vector<std::unique_ptr<AST::Token>> matched_body_tokens;
+  bool has_match = false;
+
+  while (lex.peek_token ()->get_id () != RIGHT_CURLY
+	 && lex.peek_token ()->get_id () != END_OF_FILE)
+    {
+      if (lex.peek_token ()->get_id () == UNDERSCORE)
+	{
+	  // wildcard predicate
+	  lex.skip_token (); // consume '_'
+	  has_match = true;
+	}
+      else
+	{
+	  size_t pred_start = lex.get_offs ();
+
+	  // parse the predicate (until =>)
+	  while (lex.peek_token ()->get_id () != MATCH_ARROW)
+	    {
+	      if (lex.peek_token ()->get_id () == END_OF_FILE)
+		{
+		  rust_error_at (invoc_locus,
+				 "unterminated %<cfg_select!%>arm");
+		  return AST::Fragment::create_error ();
+		}
+	      lex.skip_token ();
+	    }
+
+	  size_t pred_end = lex.get_offs ();
+
+	  std::vector<const_TokenPtr> synth;
+	  synth.emplace_back (Token::make (LEFT_PAREN, invoc_locus));
+	  auto pred_tokens = lex.get_token_slice (pred_start, pred_end);
+	  for (auto &t : pred_tokens)
+	    synth.emplace_back (t->get_tok_ptr ());
+	  synth.emplace_back (Token::make (RIGHT_PAREN, invoc_locus));
+
+	  AST::AttributeParser attr_parser (std::move (synth));
+	  auto items = attr_parser.parse_meta_item_seq ();
+	  if (items.size () != 1)
+	    {
+	      rust_error_at (invoc_locus,
+			     "  %<cfg_select!%> arm predicate must "
+			     "be a single cfg expression");
+	      return AST::Fragment::create_error ();
+	    }
+
+	  bool result
+	    = items[0]->check_cfg_predicate (Session::get_instance ());
+	  if (result)
+	    has_match = true;
+	}
+
+      if (!parser.skip_token (MATCH_ARROW))
+	{
+	  rust_error_at (lex.peek_token ()->get_locus (),
+			 "expected %<=>%> in %<cfg_select!%> arm");
+	  return AST::Fragment::create_error ();
+	}
+
+      // parse the body (after =>)
+      // always parse the body regardless of whether has_match is set, so lex
+      // will be at the next predicate in the next loop
+      size_t body_start = lex.get_offs ();
+      auto block_res = parser.parse_block_expr ();
+      if (has_match)
+	{
+	  size_t body_end = lex.get_offs ();
+	  if (!block_res)
+	    {
+	      rust_error_at (lex.peek_token ()->get_locus (),
+			     "failed to parse %<cfg_select!%> arm body");
+	      return AST::Fragment::create_error ();
+	    }
+
+	  auto block = std::move (*block_res);
+	  for (auto &stmt : block->get_statements ())
+	    {
+	      if (stmt->get_stmt_kind () == AST::Stmt::Kind::Item)
+		{
+		  AST::Stmt *raw = stmt.release ();
+		  matched_body_nodes.emplace_back (std::unique_ptr<AST::Item> (
+		    static_cast<AST::Item *> (raw)));
+		}
+	      else
+		{
+		  matched_body_nodes.emplace_back (std::move (stmt));
+		}
+	    }
+	  if (block->has_tail_expr ())
+	    {
+	      auto tail = block->take_tail_expr ();
+	      matched_body_nodes.emplace_back (AST::SingleASTNode (
+		std::make_unique<AST::ExprStmt> (std::move (tail), invoc_locus,
+						 false)));
+	    }
+
+	  matched_body_tokens = lex.get_token_slice (body_start, body_end);
+	  break;
+	}
+
+      parser.maybe_skip_token (COMMA);
+    }
+
+  if (!has_match)
+    {
+      rust_error_at (
+	invoc_locus,
+	"no %<cfg_select!%> arm matched and no %<_%> arm was provided");
+      return AST::Fragment::create_error ();
+    }
+
+  return AST::Fragment (std::move (matched_body_nodes),
+			std::move (matched_body_tokens));
 }
 
 tl::optional<AST::Fragment>
