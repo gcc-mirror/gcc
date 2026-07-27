@@ -1,3 +1,9 @@
+2026-07-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/126386
+	* frontend-passes.cc (matmul_lhs_realloc):  Fix size calculation of
+	A2B1 case.
+
 2026-07-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/78718

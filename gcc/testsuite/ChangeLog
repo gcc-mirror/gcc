@@ -1,3 +1,67 @@
+2026-07-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/reduce_5.f90: Verify the previously dead
+	code error message occurs.
+
+2026-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* g++.dg/cpp0x/nsdmi10.C: Distinguish simple case.
+	* g++.dg/ext/is_constructible7.C: New.
+
+2026-07-26  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	PR c++/126323
+	* g++.dg/parse/pr126323.C: New test.
+
+2026-07-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/126386
+	* gfortran.dg/inline_matmul_28.f90: New test.
+
+2026-07-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-11.c: Remove
+	xfail.
+
+2026-07-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u8-mf8.c: New test.
+
+2026-07-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i8-mf8.c: New test.
+
 2026-07-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/126138

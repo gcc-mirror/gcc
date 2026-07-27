@@ -1,3 +1,9 @@
+2026-07-26  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/riscv-v.cc (riscv_v_widen_constraint_ok): Return
+	false when wide_mode and mode are same.
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-07-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/126138

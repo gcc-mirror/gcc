@@ -1,3 +1,15 @@
+2026-07-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96645
+	* parser.cc (cp_parser_early_parsing_nsdmi): New.
+	(cp_parser_member_declaration): Call it.
+
+2026-07-26  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	PR c++/126323
+	* parser.cc (cp_parser_pragma): Reject GCC loop pragmas outside
+	statement contexts.
+
 2026-07-25  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/126280

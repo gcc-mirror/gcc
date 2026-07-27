@@ -1,3 +1,7 @@
+2026-07-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* intrinsics/reduce.c (reduce): Fix the mask_present.
+
 2026-07-25  John David Anglin  <danglin@gcc.gnu.org>
 
 	* intrinsics/ceill_16.c: Fix whitespace.

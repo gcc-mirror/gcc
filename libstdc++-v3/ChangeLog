@@ -1,3 +1,9 @@
+2026-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/23_containers/flat_map/1.cc (test14): Reserve
+	sufficient capacity for the underlying containers before
+	calling insert_range.
+
 2026-07-25  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (__detail::__compatible_joinable_ranges):
