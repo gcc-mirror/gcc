@@ -262,18 +262,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(!_Wp_traits::__is_signed, "W must be unsigned");
 	  static_assert(_Wp_traits::__digits == (2 * _Up_traits::__digits),
 			"W must be twice as wide as U");
+	  constexpr auto __min = _Urbg::min();
 
 	  // reference: Fast Random Integer Generation in an Interval
 	  // ACM Transactions on Modeling and Computer Simulation 29 (1), 2019
 	  // https://arxiv.org/abs/1805.10941
-	  _Wp __product = _Wp(__g()) * _Wp(__range);
+	  _Wp __product = _Wp(__g() - __min) * _Wp(__range);
 	  _Up __low = _Up(__product);
 	  if (__low < __range)
 	    {
 	      _Up __threshold = -__range % __range;
 	      while (__low < __threshold)
 		{
-		  __product = _Wp(__g()) * _Wp(__range);
+		  __product = _Wp(__g() - __min) * _Wp(__range);
 		  __low = _Up(__product);
 		}
 	    }
