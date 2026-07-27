@@ -1,3 +1,11 @@
+2026-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126280
+	* g++.dg/template/fn-ptr6.C: New test.
+
 2026-07-25  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

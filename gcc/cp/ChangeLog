@@ -1,3 +1,13 @@
+2026-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126280
+	* pt.cc (mark_template_arguments_used): Split out loop into ...
+	(mark_template_arguments_used_1): ... here. Recurse into
+	argument packs.
+
 2026-07-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/126215
