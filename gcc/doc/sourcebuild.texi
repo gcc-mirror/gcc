@@ -2095,7 +2095,7 @@ options, including @code{-mfp16-format=ieee} if necessary to obtain the
 
 @item arm_neon_fp16_hw
 Test system supports executing Neon half-precision float instructions.
-(Implies @code(arm_neon_fp16_ok).)
+(Implies @code{arm_neon_fp16_ok}.)
 
 @item arm_fp16_alternative_ok
 ARM target supports the ARM FP16 alternative format.  Some multilibs
@@ -2104,7 +2104,7 @@ may be incompatible with the options needed.
 @item arm_fp16_alternative_hw
 Test system supports executing VFP half-precision floating-point
 instructions in the ARM FP16 alternative format.  (Implies
-@code(arm_fp16_alternative_ok).)
+@code{arm_fp16_alternative_ok}.)
 
 @item arm_fp16_none_ok
 ARM target supports specifying none as the ARM FP16 format.
