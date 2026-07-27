@@ -908,7 +908,7 @@ class StdMapPrinter(printer_base):
         node = lookup_node_type('_Rb_tree_node', self._val.type).pointer()
         return self._iter(RbtreeIterator(self._val), node)
 
-    def num_children(slf):
+    def num_children(self):
         return len(RbtreeIterator(self._val))
 
     def display_hint(self):
@@ -950,7 +950,7 @@ class StdSetPrinter(printer_base):
         node = lookup_node_type('_Rb_tree_node', self._val.type).pointer()
         return self._iter(RbtreeIterator(self._val), node)
 
-    def num_children(slf):
+    def num_children(self):
         return len(RbtreeIterator(self._val))
 
 class StdBitsetPrinter(printer_base):
