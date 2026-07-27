@@ -29860,6 +29860,10 @@ cp_parser_class_specifier (cp_parser* parser)
       return error_mark_node;
     }
 
+  /* Remember whether cp_parser_class_head opened a lambda scope;
+     begin_class_definition can replace TYPE with error_mark_node.  */
+  bool has_lambda_scope = type != error_mark_node;
+
   cp_ensure_no_omp_declare_simd (parser);
   cp_ensure_no_oacc_routine (parser);
 
@@ -29943,10 +29947,9 @@ cp_parser_class_specifier (cp_parser* parser)
   if (cp_parser_allow_gnu_extensions_p (parser))
     attributes = cp_parser_gnu_attributes_opt (parser);
   if (type != error_mark_node)
-    {
-      type = finish_struct (type, attributes);
-      finish_lambda_scope ();
-    }
+    type = finish_struct (type, attributes);
+  if (has_lambda_scope)
+    finish_lambda_scope ();
   if (nested_name_specifier_p)
     pop_inner_scope (old_scope, scope);
 
