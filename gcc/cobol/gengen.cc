@@ -3415,19 +3415,6 @@ gg_sizeof(tree node)
   }
 
 tree
-gg_array_of_size_t( size_t N, size_t *values)
-  {
-  tree retval = gg_define_variable(build_pointer_type(SIZE_T));
-  tree sz = build_int_cst_type(SIZE_T, N * int_size_in_bytes(SIZE_T));
-  gg_assign(retval, gg_cast(build_pointer_type(SIZE_T), gg_malloc(sz)));
-  for(size_t i=0; i<N; i++)
-    {
-    gg_assign(gg_array_value(retval, i), build_int_cst_type(SIZE_T, values[i]));
-    }
-  return retval;
-  }
-
-tree
 gg_array_of_bytes( size_t N, unsigned char *values)
   {
   tree retval = gg_define_variable(UCHAR_P);

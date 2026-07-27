@@ -884,33 +884,97 @@ parser_initialize_programs( size_t nprogs,
     }
   }
 
-static
-tree
-array_of_long_long(const char *name, const std::vector<uint64_t>& vals)
+static tree
+array_of_long_long(const char *name,
+                   const std::vector<uint64_t> &vals)
   {
-  // We need to create a file-static static array of 64-bit integers:
-  tree array_of_ulonglong_type = build_array_type_nelts(ULONGLONG, vals.size()+1);
-  tree array_of_ulonglong = gg_define_variable( array_of_ulonglong_type,
-                                                name,
-                                                vs_file_static);
-  // We have the array.  Now we need to build the constructor for it
-  tree constr = make_node(CONSTRUCTOR);
-  TREE_TYPE(constr) = array_of_ulonglong_type;
-  TREE_STATIC(constr)    = 1;
-  TREE_CONSTANT(constr)  = 1;
+  /*
+   * Create:
+   *
+   *   static const unsigned long long name[] =
+   *     {
+   *     vals.size(),
+   *     vals[0],
+   *     vals[1],
+   *     ...
+   *     };
+   */
+  tree const_ulonglong_type =
+    build_qualified_type( ULONGLONG,
+                          TYPE_QUAL_CONST );
+  tree array_of_ulonglong_type =
+    build_array_type_nelts( const_ulonglong_type,
+                            vals.size()+1 );
+  tree array_of_ulonglong =
+    gg_define_variable( array_of_ulonglong_type,
+                        name,
+                        vs_file_static );
+  vec<constructor_elt, va_gc> *elts = NULL;
+  /*
+   * The first element contains the number of elements that follow.
+   */
+  CONSTRUCTOR_APPEND_ELT(
+    elts,
+    bitsize_int( 0 ),
+    build_int_cstu( ULONGLONG, vals.size() ) );
 
-  // The first element of the array contains the number of elements to follow
-  CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
-                          build_int_cst_type(SIZE_T, 0),
-                          build_int_cst_type(ULONGLONG, vals.size()) );
-  for(size_t i=0; i<vals.size(); i++)
+  for( size_t i=0; i<vals.size(); i++ )
     {
-    CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
-                            build_int_cst_type(SIZE_T, i+1),
-                            build_int_cst_type(ULONGLONG, vals[i]) );
+    CONSTRUCTOR_APPEND_ELT(
+      elts,
+      bitsize_int( i+1 ),
+      build_int_cstu( ULONGLONG, vals[i] ) );
     }
-  DECL_INITIAL(array_of_ulonglong) = constr;
+  tree constr =
+    build_constructor( array_of_ulonglong_type,
+                       elts );
+  /*
+   * build_constructor() determines TREE_CONSTANT from its elements.
+   * All of these elements are INTEGER_CST nodes.
+   */
+  gcc_assert( TREE_CONSTANT( constr ) );
+  /*
+   * The constructor represents a value suitable for static storage.
+   */
+  TREE_STATIC( constr ) = 1;
+  /*
+   * Record the const qualification on the declaration itself.
+   */
+  TREE_READONLY( array_of_ulonglong ) = 1;
+  DECL_INITIAL( array_of_ulonglong ) = constr;
   return array_of_ulonglong;
+  }
+
+tree
+gg_array_of_size_t(const std::vector<size_t> &values)
+  {
+  gcc_assert( !values.empty() );
+  tree const_size_t_type = build_qualified_type( SIZE_T, TYPE_QUAL_CONST );
+  tree array_type = build_array_type_nelts( const_size_t_type, values.size() );
+
+  vec<constructor_elt, va_gc> *elts = NULL;
+  for( size_t i = 0; i < values.size(); i++ )
+    {
+    CONSTRUCTOR_APPEND_ELT(
+      elts,
+      bitsize_int( i ),
+      build_int_cstu( SIZE_T, values[i] ) );
+    }
+  tree constr = build_constructor( array_type, elts );
+  /*
+   * This marks the constant constructor as suitable for static
+   * allocation.  It does not give the VAR_DECL static storage
+   * duration.
+   */
+  TREE_STATIC( constr ) = 1;
+  tree array_decl = gg_define_variable( array_type );
+  /*
+   * Represent the const qualification on the object as well as on
+   * its array element type.
+   */
+  TREE_READONLY( array_decl ) = 1;
+  DECL_INITIAL( array_decl ) = constr;
+  return gg_pointer_to_array(array_decl);
   }
 
 /*
@@ -11592,19 +11656,82 @@ parser_bsearch_end( cbl_label_t* name )
   }
 
 tree
-gg_array_of_field_pointers( size_t N,
-                            cbl_field_t **fields )
+gg_array_of_field_pointers( const std::vector<const cbl_field_t *> &fields )
   {
-  tree retval = gg_define_variable(build_pointer_type(cblc_field_p_type_node));
-  gg_assign(retval, gg_cast(build_pointer_type(cblc_field_p_type_node),
-                            gg_malloc(build_int_cst_type(SIZE_T,
-                                                         N * int_size_in_bytes(VOID_P)))));
-  for(size_t i=0; i<N; i++)
+  size_t N = fields.size();
+  gcc_assert(N);
+
+  tree const_field_pointer_type =
+    build_qualified_type( cblc_field_p_type_node,
+                          TYPE_QUAL_CONST );
+
+  tree array_type =
+    build_array_type_nelts( const_field_pointer_type, N );
+
+  vec<constructor_elt, va_gc> *elts = NULL;
+  vec_alloc( elts, N );
+
+  for( size_t i=0; i<N; i++ )
     {
-    gg_assign(gg_array_value(retval, i), gg_get_address_of(fields[i]->var_decl_node));
+    gcc_assert( fields[i] != NULL );
+    gcc_assert( fields[i]->var_decl_node != NULL_TREE );
+
+    tree field_pointer =
+      gg_cast( cblc_field_p_type_node,
+               gg_get_address_of( fields[i]->var_decl_node ) );
+
+    CONSTRUCTOR_APPEND_ELT( elts,
+                            bitsize_int( i ),
+                            field_pointer );
     }
+
+  tree constr = build_constructor( array_type, elts );
+
+  tree retval = gg_define_variable( array_type );
+
+  TREE_READONLY( retval ) = 1;
+  DECL_INITIAL( retval ) = constr;
+
   return retval;
   }
+
+tree
+gg_array_of_uchar_p( const std::vector<tree> &uchar_p )
+  {
+  size_t N = uchar_p.size();
+  if( !N )
+    {
+    return null_pointer_node;
+    }
+
+  tree const_uchar_p_type =
+    build_qualified_type( UCHAR_P,
+                          TYPE_QUAL_CONST );
+
+  tree array_type =
+    build_array_type_nelts( const_uchar_p_type, N );
+
+  vec<constructor_elt, va_gc> *elts = NULL;
+  vec_alloc( elts, N );
+
+  for( size_t i=0; i<N; i++ )
+    {
+    CONSTRUCTOR_APPEND_ELT( elts,
+                            bitsize_int( i ),
+                            uchar_p[i] );
+    }
+
+  tree constr = build_constructor( array_type, elts );
+
+  tree retval = gg_define_variable( array_type );
+
+  TREE_READONLY( retval ) = 1;
+  DECL_INITIAL( retval ) = constr;
+
+  // Return a pointer to the first element:
+  return gg_pointer_to_array(retval);
+  }
+
 
 static void
 push_program_state()
@@ -11648,35 +11775,23 @@ parser_sort(cbl_refer_t tableref,
             __func__,
             tableref.field->name);
     }
-  size_t total_keys = std::accumulate( keys.begin(), keys.end(), 0,
-                                       [](size_t n, const cbl_key_t& key ) {
-                                         return n + key.fields.size();
-                                       } );
-  typedef const cbl_field_t * const_field_t;
-  const_field_t *flattened_fields =
-     static_cast<const_field_t *>(xmalloc(total_keys * sizeof(cbl_field_t *)));
-  gcc_assert(flattened_fields);
-  size_t *flattened_ascending =
-                   static_cast<size_t *>(xmalloc(total_keys * sizeof(size_t)));
-  gcc_assert(flattened_ascending);
 
-  size_t key_index = 0;
+  std::vector<const cbl_field_t *>flattened_fields_2;
+  std::vector<size_t>flattened_ascending_2;
   for( size_t i=0; i<keys.size(); i++ )
     {
     for( size_t j=0; j<keys[i].fields.size(); j++ )
       {
-      flattened_fields[key_index]    = keys[i].fields[j];
-      flattened_ascending[key_index] = keys[i].ascending ? 1 : 0;
-      key_index += 1;
+      flattened_fields_2.push_back(keys[i].fields[j]);
+      flattened_ascending_2.push_back(keys[i].ascending ? 1 : 0);
       }
     }
 
-  // Create the array of cbl_field_t pointers for the keys
-  tree all_keys = gg_array_of_field_pointers( total_keys,
-                                              const_cast<cbl_field_t**>(flattened_fields));
+  tree all_keys = gg_pointer_to_array(
+                     gg_array_of_field_pointers(flattened_fields_2));
 
   // Create the array of integers that are the flags for ASCENDING:
-  tree ascending = gg_array_of_size_t( total_keys, flattened_ascending );
+  tree ascending = gg_array_of_size_t(flattened_ascending_2 );
 
   tree depending_on = gg_define_variable(LONG, "_sort_size");
   depending_on_value(depending_on, table);
@@ -11691,7 +11806,7 @@ parser_sort(cbl_refer_t tableref,
           gg_get_address_of(tableref.field->var_decl_node),
           refer_offset(tableref),
           gg_cast(SIZE_T, depending_on),
-          build_int_cst_type(SIZE_T, key_index),
+          build_int_cst_type(SIZE_T, flattened_fields_2.size()),
           all_keys,
           ascending,
           duplicates ? integer_one_node : integer_zero_node,
@@ -11700,12 +11815,6 @@ parser_sort(cbl_refer_t tableref,
     {
     pop_program_state();
     }
-
-  free(flattened_ascending);
-  free(flattened_fields);
-
-  gg_free(ascending);
-  gg_free(all_keys);
   }
 
 void
@@ -11789,35 +11898,23 @@ parser_file_sort(   cbl_file_t *workfile,
   // clone of the code for handling multiple keys, each of which can have
   // multiple fields.
 
-  size_t total_keys = std::accumulate( keys.begin(), keys.end(), 0,
-                                       []( size_t n, const cbl_key_t& key ) {
-                                         return n + key.fields.size();
-                                       } );
-  typedef const cbl_field_t * const_field_t;
-  auto flattened_fields
-   = static_cast<const_field_t *>(xmalloc(total_keys * sizeof(cbl_field_t *)));
-  gcc_assert(flattened_fields);
-  size_t *flattened_ascending =
-                   static_cast<size_t *>(xmalloc(total_keys * sizeof(size_t)));
-  gcc_assert(flattened_ascending);
-
-  size_t key_index = 0;
+  std::vector<const cbl_field_t *>flattened_fields_2;
+  std::vector<size_t>flattened_ascending_2;
   for( size_t i=0; i<keys.size(); i++ )
     {
     for( size_t j=0; j<keys[i].fields.size(); j++ )
       {
-      flattened_fields[key_index]    = keys[i].fields[j];
-      flattened_ascending[key_index] = keys[i].ascending ? 1 : 0;
-      key_index += 1;
+      flattened_fields_2.push_back(keys[i].fields[j]);
+      flattened_ascending_2.push_back(keys[i].ascending ? 1 : 0);
       }
     }
 
   // Create the array of cbl_field_t pointers for the keys
-  tree all_keys = gg_array_of_field_pointers( total_keys,
-                                              const_cast<cbl_field_t**>(flattened_fields));
+  tree all_keys = gg_pointer_to_array(
+                     gg_array_of_field_pointers(flattened_fields_2));
 
   // Create the array of integers that are the flags for ASCENDING:
-  tree ascending = gg_array_of_size_t( total_keys, flattened_ascending );
+  tree ascending = gg_array_of_size_t(flattened_ascending_2 );
 
   // We need to open the workfile for the sorting routine:
   parser_file_open(workfile, 'r');
@@ -11837,7 +11934,7 @@ parser_file_sort(   cbl_file_t *workfile,
   gg_call(VOID,
           "__gg__sort_workfile",
           gg_get_address_of(workfile->var_decl_node),
-          build_int_cst_type(SIZE_T, key_index),
+          build_int_cst_type(SIZE_T, flattened_fields_2.size()),
           all_keys,
           ascending,
           duplicates ? integer_one_node : integer_zero_node,
@@ -11847,11 +11944,6 @@ parser_file_sort(   cbl_file_t *workfile,
     pop_program_state();
     }
   parser_file_close(workfile);
-
-  free(flattened_ascending);
-  free(flattened_fields);
-  gg_free(ascending);
-  gg_free(all_keys);
 
   // The workfile is sorted.  We move to Phase 3 -- transferring the workfile
   // to the output.
@@ -12141,37 +12233,23 @@ parser_file_merge(  cbl_file_t *workfile,
                 build_int_cst_type(INT, file_sequential_e));
     }
 
-  size_t total_keys = std::accumulate( keys.begin(), keys.end(), 0,
-                                       []( size_t i, const cbl_key_t& key ) {
-                                         return i + key.fields.size();
-                                       } );
-  typedef const cbl_field_t * const_field_t;
-  const_field_t *flattened_fields
-                 = static_cast<const_field_t *>
-                   (xmalloc(total_keys * sizeof(cbl_field_t *)));
-  gcc_assert(flattened_fields);
-  size_t *flattened_ascending
-            = static_cast<size_t *>(xmalloc(total_keys * sizeof(size_t)));
-  gcc_assert(flattened_ascending);
-
-  size_t key_index = 0;
+  std::vector<const cbl_field_t *>flattened_fields_2;
+  std::vector<size_t>flattened_ascending_2;
   for( size_t i=0; i<keys.size(); i++ )
     {
     for( size_t j=0; j<keys[i].fields.size(); j++ )
       {
-      flattened_fields[key_index]    = keys[i].fields[j];
-      flattened_ascending[key_index] = keys[i].ascending ? 1 : 0;
-      key_index += 1;
+      flattened_fields_2.push_back(keys[i].fields[j]);
+      flattened_ascending_2.push_back(keys[i].ascending ? 1 : 0);
       }
     }
 
   // Create the array of cbl_field_t pointers for the keys
-  tree all_keys = gg_array_of_field_pointers(
-                                 total_keys,
-                                 const_cast<cbl_field_t**>(flattened_fields));
+  tree all_keys = gg_pointer_to_array(
+                     gg_array_of_field_pointers(flattened_fields_2));
 
   // Create the array of integers that are the flags for ASCENDING:
-  tree ascending = gg_array_of_size_t(total_keys, flattened_ascending);
+  tree ascending = gg_array_of_size_t(flattened_ascending_2 );
 
   tree all_files = gg_array_of_file_pointers(ninputs, inputs);
 
@@ -12248,11 +12326,6 @@ parser_file_merge(  cbl_file_t *workfile,
     {
     pop_program_state();
     }
-
-  free(flattened_ascending);
-  free(flattened_fields);
-  gg_free(ascending);
-  gg_free(all_keys);
 
   parser_file_close(workfile);
   for(size_t i=0; i<ninputs; i++)
