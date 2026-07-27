@@ -2404,13 +2404,10 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 		 * start condition.
                  */
 <*>{
-  ^[ ]{6}D.*\n 	{
-		  if( !is_fixed_format() ) {
-		    myless(6);
-		  } else {
-		    // If WITH DEBUGGING MODE, drop the D, else drop the line.
-		    if( include_debug() ) myless(7);
-		  }
+  ^[ ]{6}\x8d.*\n {
+		  // lexio munged fixed-format D indicator to 0x8D. 
+		  // If WITH DEBUGGING MODE, drop the D, else drop the line.
+		  if( include_debug() ) myless(7);
 		}
   ^[ ]*>>{OBLANK}IF		{ yy_push_state(cdf_state); return CDF_IF; }
   ^[ ]*>>{OBLANK}ELSE	 	{ return CDF_ELSE; }

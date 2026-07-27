@@ -152,9 +152,9 @@ struct filespan_t : public bytespan_t {
    */
   bool was_quote72() const { return iline == line_quote72 + 1; }
 
-  size_t next_line() {
+  size_t next_line(bool is_reference_format) {
     // Before advancing, mark the current line as ending in a quote, if true.
-    if( is_reference_format() && 72 <= line_length() ) {
+    if( is_reference_format && 72 <= line_length() ) {
       if( isquote(cur[71]) ) { line_quote72 = iline; }
     }
 
@@ -186,8 +186,6 @@ struct filespan_t : public bytespan_t {
   }
 
   size_t line_length() const { return eol - cur; }
-
-  static size_t tab_check( const char *src, const char *esrc );
 
   bool is_blank_line() const {
     auto p = std::find_if( cur, eol, []( char ch ) { return !fisspace(ch); } );
@@ -281,13 +279,82 @@ struct replace_t {
   }
 };
 
+/*
+ * The default source format, whether free or fixed, is determined
+ * heuristically by examining the PROGRAM-ID line, if it exists, in the first
+ * input file. If that file does not have such a line, the default is free
+ * format.  Else the format is set to fixed if anything appears on that line
+ * that would prohibit parsing it as free format,
+ */
+class source_format_t {
+  bool first_file, explicitly;
+  int left, right;
+public:
+  source_format_t()
+    : first_file(true), explicitly(false), left(0), right(0)
+  {}
+  void indicator_column_set( int column ) {
+    explicitly = true;
+    if( column == 0 ) right = 0;
+    if( column < 0 ) {
+      column = -column;
+      right = 73;
+    }
+    left = column;
+  }
+  
+  char * indicated( char *bol, const char *eol, char ch = '\0' );
+
+  bool inference_pending() {
+    bool tf = first_file && !explicitly;
+    first_file = false;
+    return tf;
+  }
+
+  inline bool is_fixed() const { return left == 7; }
+  inline bool is_reffmt() const { return is_fixed() && right == 73; }
+  inline bool is_free() const { return ! is_fixed(); }
+  
+  const char * description() const {
+    if( is_reffmt() ) return "REFERENCE";
+    if( is_fixed() ) return "FIXED";
+    if( is_free() ) return "FREE";
+    gcc_unreachable();
+  }    
+
+  inline int left_margin() {
+    return left == 0? left : left - 1;
+  }
+  inline int right_margin() {
+    return right == 0? right : right - 1;
+  }
+
+  void infer( const char *bol, bool want_reference_format ) {
+    if( bol ) {
+      left = 7;
+      if( want_reference_format ) {
+        right = 73;
+      }
+    }
+    dbgmsg("%s:%d: %s format detected", __func__, __LINE__,
+           description());
+  }
+};
+
+typedef std::stack<source_format_t> source_format_stack_t;
+
 #include <cstdio>
-#include <list>
 
 class cdftext {
   static bool please_push_filename;
-  static filespan_t  free_form_reference_format( int fd );
-  static void process_file( filespan_t, int output, bool second_pass = false );
+  static int command_line_indicator_column;
+
+  friend void cobol_set_indicator_column( int column );
+
+  static void process_file( filespan_t mfile, int output, 
+                            source_format_stack_t source_format, 
+                            bool second_pass = false ) ;
+  static filespan_t  free_form_reference_format( int fd, source_format_stack_t& );
 
   static void output_push_directive( const char filename[],
                                     std::ostream_iterator<char>& ofs);
@@ -304,7 +371,5 @@ class cdftext {
  public:
   static FILE * lex_open( const char filename[] );
 };
-
-std::list<replace_t> free_form_reference_format( filespan_t mfile );
 
 #endif

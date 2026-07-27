@@ -323,7 +323,7 @@ class locale_tgt_t {
 
   struct rel_part_t;
 
-  bool set_debug(bool);
+  bool set_debug(bool = true);
 
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
@@ -2868,7 +2868,8 @@ repo_property:  PROPERTY NAME repo_as
                 ;
 
 with_debug:     with DEBUGGING MODE {
-                  if( ! set_debug(true) ) {
+                  if( ! set_debug() ) {
+                    // always true because format not checked in parser
                     error_msg(@2, "DEBUGGING MODE valid only in fixed format");
                   }
                 }

@@ -183,9 +183,6 @@ class cdf_directives_t
     static std::string str(cdf_values_t) {
       return "<dictionary>";
     }
-    static std::string str(source_format_t arg) {
-      return arg.description();
-    }
     static std::string str(cbl_enabled_exceptions_t) {
       return "<enabled_exceptions>";
     }
@@ -195,7 +192,6 @@ class cdf_directives_t
   cdf_stack_t<cbl_call_convention_t> call_convention;
   cdf_stack_t<current_tokens_t> cobol_words;
   cdf_stack_t<cdf_values_t> dictionary;   // DEFINE
-  cdf_stack_t<source_format_t> source_format;
   cdf_stack_t<cbl_enabled_exceptions_t> enabled_exceptions;
 
   cdf_directives_t() {
@@ -206,14 +202,12 @@ class cdf_directives_t
     call_convention.push();
     cobol_words.push();
     dictionary.push();
-    source_format.push();
     enabled_exceptions.push();
   }
   void pop() {
     call_convention.pop();
     cobol_words.pop();
     dictionary.pop();
-    source_format.pop();
     enabled_exceptions.pop();
   }
 };
@@ -282,16 +276,6 @@ cbl_prototype_ok( const cbl_loc_t& loc, size_t iprog, dspc_t clause ) {
   return true;
 }
 
-void
-cobol_set_indicator_column( int column ) {
-  cdf_directives.source_format.value().indicator_column_set(column);
-  dbgmsg("%s: format now %s", __func__,
-         cdf_directives.source_format.value().description());
-}
-source_format_t& cdf_source_format() {
-  return cdf_directives.source_format.value();
-}
-
 cbl_enabled_exceptions_t&
 cdf_enabled_exceptions() {
   return cdf_directives.enabled_exceptions.value();
@@ -302,22 +286,12 @@ void cdf_push_call_convention() { cdf_directives.call_convention.push(); }
 void cdf_push_current_tokens() { cdf_directives.cobol_words.push(); }
 void cdf_push_dictionary() { cdf_directives.dictionary.push(); }
 void cdf_push_enabled_exceptions() { cdf_directives.enabled_exceptions.push(); }
-void cdf_push_source_format() {
-  cdf_directives.source_format.push();
-  dbgmsg("%s: format still %s", __func__,
-         cdf_directives.source_format.value().description());
-}
 
 void cdf_pop() { cdf_directives.pop(); }
 void cdf_pop_call_convention() { cdf_directives.call_convention.pop(); }
 void cdf_pop_current_tokens() { cdf_directives.cobol_words.pop(); }
 void cdf_pop_dictionary() { cdf_directives.dictionary.pop(); }
 void cdf_pop_enabled_exceptions() { cdf_directives.enabled_exceptions.pop(); }
-void cdf_pop_source_format() {
-  cdf_directives.source_format.pop();
-  dbgmsg("%s: format now %s", __func__,
-         cdf_directives.source_format.value().description());
-}
 
 void cdf_unreachable() { gcc_unreachable(); }
 

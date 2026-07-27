@@ -56,8 +56,6 @@ const char * keyword_str( int token );
 
 int repository_function_tok( const char name[] );
 
-void cobol_set_indicator_column( int column );
-
 void next_sentence_label(cbl_label_t*);
 
 int repeat_count( const char picture[] );

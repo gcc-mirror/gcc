@@ -513,7 +513,7 @@ cdf_push:       CDF_PUSH cdf_stackable {
                   case parser::token::YDF_CALL_CONVENTION: cdf_push_call_convention(); break;
                   case parser::token::YDF_CDF_DEFINE: 	cdf_push_dictionary(); break;
                   case parser::token::YDF_COBOL_WORDS: 	cdf_push_current_tokens(); break;
-                  case parser::token::YDF_SOURCE_FORMAT:	cdf_push_source_format(); break;
+                  case parser::token::YDF_SOURCE_FORMAT:
                   default: cdf_unreachable(); 
                   }
                 }
@@ -524,7 +524,7 @@ cdf_pop:        CDF_POP cdf_stackable {
                   case parser::token::YDF_CALL_CONVENTION: cdf_pop_call_convention(); break;
                   case parser::token::YDF_CDF_DEFINE: 	cdf_pop_dictionary(); break;
                   case parser::token::YDF_COBOL_WORDS: 	cdf_pop_current_tokens(); break;
-                  case parser::token::YDF_SOURCE_FORMAT:	cdf_pop_source_format(); break; 
+                  case parser::token::YDF_SOURCE_FORMAT:
                   default: cdf_unreachable(); 
                   }
                 }
