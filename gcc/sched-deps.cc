@@ -4171,7 +4171,6 @@ sched_deps_finish (void)
   dl_pool = NULL;
 
   h_d_i_d.release ();
-  cache_size = 0;
 
   if (true_dependency_cache)
     {
@@ -4203,6 +4202,8 @@ sched_deps_finish (void)
         }
 
     }
+
+  cache_size = 0;
 }
 
 /* Initialize some global variables needed by the dependency analysis
