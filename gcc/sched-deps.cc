@@ -3930,6 +3930,61 @@ sched_free_deps (rtx_insn *head, rtx_insn *tail, bool resolved_p)
       }
 }
 
+/* Pool of all-zero reg_last arrays.  init_deps takes one and free_deps
+   returns it, so the O (MAX_REG) zeroing is paid once per pooled array rather
+   than once per basic block of every region.  free_deps empties every entry
+   that was written, so an array coming back is already zero.  Selective
+   scheduling is excluded: its remove_from_deps can drop a reg_last_in_use bit
+   while control_uses is still live, which would return a dirty array.  */
+static vec<struct deps_reg *> reg_last_pool;
+static int reg_last_pool_max_reg;
+
+/* Return an all-zero array of MAX_REG deps_reg, from the pool if one of the
+   right size is available.  */
+
+static struct deps_reg *
+alloc_reg_last (int max_reg)
+{
+  if (max_reg != reg_last_pool_max_reg)
+    {
+      while (!reg_last_pool.is_empty ())
+	free (reg_last_pool.pop ());
+      reg_last_pool_max_reg = max_reg;
+    }
+  else if (!reg_last_pool.is_empty ())
+    return reg_last_pool.pop ();
+
+  return XCNEWVEC (struct deps_reg, max_reg);
+}
+
+/* Give REG_LAST, an array of MAX_REG deps_reg that free_deps has just
+   emptied, back to the pool.  */
+
+static void
+release_reg_last (struct deps_reg *reg_last, int max_reg)
+{
+  if (reg_last == NULL)
+    return;
+
+  if (sel_sched_p () || max_reg != reg_last_pool_max_reg)
+    {
+      free (reg_last);
+      return;
+    }
+
+  if (flag_checking > 1)
+    for (int i = 0; i < max_reg; i++)
+      gcc_assert (reg_last[i].uses == NULL
+		  && reg_last[i].sets == NULL
+		  && reg_last[i].implicit_sets == NULL
+		  && reg_last[i].control_uses == NULL
+		  && reg_last[i].clobbers == NULL
+		  && reg_last[i].uses_length == 0
+		  && reg_last[i].clobbers_length == 0);
+
+  reg_last_pool.safe_push (reg_last);
+}
+
 /* Initialize variables for region data dependence analysis.
    When LAZY_REG_LAST is true, do not allocate reg_last array
    of class deps_desc immediately.  */
@@ -3943,7 +3998,7 @@ init_deps (class deps_desc *deps, bool lazy_reg_last)
   if (lazy_reg_last)
     deps->reg_last = NULL;
   else
-    deps->reg_last = XCNEWVEC (struct deps_reg, max_reg);
+    deps->reg_last = alloc_reg_last (max_reg);
   INIT_REG_SET (&deps->reg_last_in_use);
   INIT_REG_SET (&deps->reg_last_dirty);
 
@@ -3978,7 +4033,7 @@ init_deps_reg_last (class deps_desc *deps)
   gcc_assert (deps && deps->max_reg > 0);
   gcc_assert (deps->reg_last == NULL);
 
-  deps->reg_last = XCNEWVEC (struct deps_reg, deps->max_reg);
+  deps->reg_last = alloc_reg_last (deps->max_reg);
 }
 
 
@@ -3996,6 +4051,7 @@ free_deps (class deps_desc *deps)
       gcc_assert (deps->reg_last == NULL);
       return;
     }
+  int max_reg = deps->max_reg;
   deps->max_reg = 0;
 
   free_INSN_LIST_list (&deps->pending_read_insns);
@@ -4025,13 +4081,15 @@ free_deps (class deps_desc *deps)
 	free_INSN_LIST_list (&reg_last->control_uses);
       if (reg_last->clobbers)
 	free_INSN_LIST_list (&reg_last->clobbers);
+      reg_last->uses_length = 0;
+      reg_last->clobbers_length = 0;
     }
   CLEAR_REG_SET (&deps->reg_last_in_use);
   CLEAR_REG_SET (&deps->reg_last_dirty);
 
   /* As we initialize reg_last lazily, it is possible that we didn't allocate
      it at all.  */
-  free (deps->reg_last);
+  release_reg_last (deps->reg_last, max_reg);
   deps->reg_last = NULL;
 
   deps = NULL;
@@ -4182,6 +4240,11 @@ sched_deps_finish (void)
   dl_pool = NULL;
 
   h_d_i_d.release ();
+
+  while (!reg_last_pool.is_empty ())
+    free (reg_last_pool.pop ());
+  reg_last_pool.release ();
+  reg_last_pool_max_reg = 0;
 
   if (true_dependency_cache)
     {
@@ -5079,12 +5142,72 @@ test_dirty_reg_last_release ()
   bitmap_obstack_release (&test_obstack);
 }
 
+/* Verify that a pooled reg_last array is empty when it is reused.  */
+
+static void
+test_reg_last_pool ()
+{
+  const int max_reg = 3;
+  ASSERT_TRUE (reg_last_pool.is_empty ());
+
+  bitmap_obstack test_obstack;
+  bitmap_obstack_initialize (&test_obstack);
+
+  deps_desc deps = {};
+  deps.max_reg = max_reg;
+  deps.reg_last = alloc_reg_last (max_reg);
+  struct deps_reg *saved_reg_last = deps.reg_last;
+  bitmap_initialize (&deps.reg_last_in_use, &test_obstack);
+  bitmap_initialize (&deps.reg_last_dirty, &test_obstack);
+
+  deps.reg_last[0].uses = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  deps.reg_last[0].sets = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  deps.reg_last[0].implicit_sets = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  deps.reg_last[0].clobbers = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  deps.reg_last[0].uses_length = 2;
+  deps.reg_last[0].clobbers_length = 3;
+  SET_REGNO_REG_SET (&deps.reg_last_in_use, 0);
+
+  deps.reg_last[1].control_uses = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  SET_REGNO_REG_SET (&deps.reg_last_dirty, 1);
+
+  common_sched_info_def sched_info = {};
+  sched_info.sched_pass_id = SCHED_RGN_PASS;
+  common_sched_info_def *saved_common_sched_info = common_sched_info;
+  common_sched_info = &sched_info;
+  free_deps (&deps);
+
+  ASSERT_EQ (0, deps.max_reg);
+  ASSERT_EQ (NULL, deps.reg_last);
+  ASSERT_EQ (1, reg_last_pool.length ());
+
+  struct deps_reg *reused_reg_last = alloc_reg_last (max_reg);
+  ASSERT_EQ (saved_reg_last, reused_reg_last);
+  ASSERT_TRUE (reg_last_pool.is_empty ());
+  for (int i = 0; i < max_reg; ++i)
+    {
+      ASSERT_EQ (NULL, reused_reg_last[i].uses);
+      ASSERT_EQ (NULL, reused_reg_last[i].sets);
+      ASSERT_EQ (NULL, reused_reg_last[i].implicit_sets);
+      ASSERT_EQ (NULL, reused_reg_last[i].control_uses);
+      ASSERT_EQ (NULL, reused_reg_last[i].clobbers);
+      ASSERT_EQ (0, reused_reg_last[i].uses_length);
+      ASSERT_EQ (0, reused_reg_last[i].clobbers_length);
+    }
+
+  free (reused_reg_last);
+  sched_deps_finish ();
+  common_sched_info = saved_common_sched_info;
+  bitmap_obstack_release (&test_obstack);
+}
+
 /* Run the sched-deps.cc selftests.  */
 
 void
 sched_deps_cc_tests ()
 {
   test_dirty_reg_last_release ();
+  test_reg_last_pool ();
 }
 
 } // namespace selftest
