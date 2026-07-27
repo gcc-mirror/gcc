@@ -4237,7 +4237,7 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
   do
     {
       stmt_vec_info stmt = next_stmt;
-      gimple_match_op op;
+      gimple_match_op op, orig_op;
       if (!gimple_extract_op (STMT_VINFO_STMT (stmt), &op))
 	gcc_unreachable ();
       tree reduc_def = gimple_arg (STMT_VINFO_STMT (stmt),
@@ -4245,14 +4245,15 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       next_stmt = vect_stmt_to_vectorize (vinfo->lookup_def (reduc_def));
       gcc_assert (is_a <gphi *> (STMT_VINFO_STMT (next_stmt))
 		  || STMT_VINFO_REDUC_IDX (next_stmt) != -1);
-      if (!gimple_extract_op (STMT_VINFO_STMT (vect_orig_stmt (stmt)), &op))
+      if (!gimple_extract_op (STMT_VINFO_STMT (vect_orig_stmt (stmt)),
+			      &orig_op))
 	gcc_unreachable ();
       if (CONVERT_EXPR_CODE_P (op.code)
 	  && tree_nop_conversion_p (op.type, TREE_TYPE (op.ops[0]))
 	  && (first
 	      || is_a <gphi *> (STMT_VINFO_STMT (next_stmt))))
 	;
-      else if (code != op.code)
+      else if (code != orig_op.code)
 	{
 	  fail = true;
 	  break;
