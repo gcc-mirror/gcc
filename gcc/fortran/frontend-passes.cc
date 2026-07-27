@@ -2777,6 +2777,9 @@ inner_loop_may_be_skipped (int loop_index, gfc_symbol *outer_sym, mpz_t outer_va
       if (loop == NULL || loop->ext.iterator == NULL || loop->ext.iterator->var == NULL)
 	return true;
 
+      if (loop->ext.iterator->var->symtree->n.sym->ts.type != BT_INTEGER)
+	return true;
+
       if (!evaluate_loop_bound (loop->ext.iterator->step, outer_sym, outer_val, do_step))
 	return true;
 
