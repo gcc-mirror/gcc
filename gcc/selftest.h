@@ -255,6 +255,7 @@ extern void read_rtl_function_cc_tests ();
 extern void relation_tests ();
 extern void rtl_tests_cc_tests ();
 extern void sbitmap_cc_tests ();
+extern void sched_deps_cc_tests ();
 extern void selftest_cc_tests ();
 extern void simple_diagnostic_path_cc_tests ();
 extern void simplify_rtx_cc_tests ();

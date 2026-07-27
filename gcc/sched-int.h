@@ -567,6 +567,12 @@ public:
      in reg_last[N].{uses,sets,clobbers}.  */
   regset_head reg_last_in_use;
 
+  /* Element N is set for each register whose reg_last[N] was written on a
+     path that does not record it in reg_last_in_use, namely debug insn uses
+     and control uses.  Used only to release those lists in free_deps; it
+     takes no part in dependence generation.  */
+  regset_head reg_last_dirty;
+
   /* Shows the last value of reg_pending_barrier associated with the insn.  */
   enum reg_pending_barrier_mode last_reg_pending_barrier;
 

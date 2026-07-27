@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sched-int.h"
 #include "cselib.h"
 #include "function-abi.h"
+#include "selftest.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -3115,6 +3116,8 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	  if (!deps->readonly)
 	    reg_last->uses = alloc_INSN_LIST (insn, reg_last->uses);
 	}
+      if (!deps->readonly)
+	IOR_REG_SET (&deps->reg_last_dirty, reg_pending_uses);
       CLEAR_REG_SET (reg_pending_uses);
 
       /* Quite often, a debug insn will refer to stuff in the
@@ -3306,6 +3309,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	      reg_last->control_uses
 		= alloc_INSN_LIST (insn, reg_last->control_uses);
 	    }
+	  IOR_REG_SET (&deps->reg_last_dirty, reg_pending_control_uses);
 	}
     }
 
@@ -3941,6 +3945,7 @@ init_deps (class deps_desc *deps, bool lazy_reg_last)
   else
     deps->reg_last = XCNEWVEC (struct deps_reg, max_reg);
   INIT_REG_SET (&deps->reg_last_in_use);
+  INIT_REG_SET (&deps->reg_last_dirty);
 
   deps->pending_read_insns = 0;
   deps->pending_read_mems = 0;
@@ -3999,6 +4004,11 @@ free_deps (class deps_desc *deps)
   free_EXPR_LIST_list (&deps->pending_write_mems);
   free_INSN_LIST_list (&deps->last_pending_memory_flush);
 
+  /* Teardown only: fold the entries recorded solely in reg_last_dirty into the
+     live set, so that one loop releases everything.  free_deps creates no
+     dependences, so this merge cannot add one.  */
+  IOR_REG_SET (&deps->reg_last_in_use, &deps->reg_last_dirty);
+
   /* Without the EXECUTE_IF_SET, this loop is executed max_reg * nr_regions
      times.  For a testcase with 42000 regs and 8000 small basic blocks,
      this loop accounted for nearly 60% (84 sec) of the total -O2 runtime.  */
@@ -4017,6 +4027,7 @@ free_deps (class deps_desc *deps)
 	free_INSN_LIST_list (&reg_last->clobbers);
     }
   CLEAR_REG_SET (&deps->reg_last_in_use);
+  CLEAR_REG_SET (&deps->reg_last_dirty);
 
   /* As we initialize reg_last lazily, it is possible that we didn't allocate
      it at all.  */
@@ -5023,4 +5034,74 @@ find_modifiable_mems (rtx_insn *head, rtx_insn *tail)
 	     success_in_block);
 }
 
+#if CHECKING_P
+
+namespace selftest {
+
+/* Verify that free_deps releases entries recorded only in reg_last_dirty.  */
+
+static void
+test_dirty_reg_last_release ()
+{
+  bitmap_obstack test_obstack;
+  bitmap_obstack_initialize (&test_obstack);
+
+  deps_desc deps = {};
+  deps.max_reg = 2;
+  deps.reg_last = XCNEWVEC (deps_reg, deps.max_reg);
+  bitmap_initialize (&deps.reg_last_in_use, &test_obstack);
+  bitmap_initialize (&deps.reg_last_dirty, &test_obstack);
+
+  rtx_insn_list *uses = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  rtx_insn_list *control_uses = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  deps.reg_last[1].uses = uses;
+  deps.reg_last[1].control_uses = control_uses;
+  SET_REGNO_REG_SET (&deps.reg_last_dirty, 1);
+
+  common_sched_info_def sched_info = {};
+  sched_info.sched_pass_id = SCHED_RGN_PASS;
+  common_sched_info_def *saved_common_sched_info = common_sched_info;
+  common_sched_info = &sched_info;
+  free_deps (&deps);
+  common_sched_info = saved_common_sched_info;
+
+  ASSERT_EQ (0, deps.max_reg);
+  ASSERT_EQ (NULL, deps.reg_last);
+
+  rtx_insn_list *first = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  rtx_insn_list *second = alloc_INSN_LIST (NULL_RTX, NULL_RTX);
+  ASSERT_TRUE ((first == control_uses && second == uses)
+	       || (first == uses && second == control_uses));
+  free_INSN_LIST_list (&first);
+  free_INSN_LIST_list (&second);
+
+  sched_deps_finish ();
+  bitmap_obstack_release (&test_obstack);
+}
+
+/* Run the sched-deps.cc selftests.  */
+
+void
+sched_deps_cc_tests ()
+{
+  test_dirty_reg_last_release ();
+}
+
+} // namespace selftest
+
+#endif
+
 #endif /* INSN_SCHEDULING */
+
+#if CHECKING_P && !defined (INSN_SCHEDULING)
+
+namespace selftest {
+
+void
+sched_deps_cc_tests ()
+{
+}
+
+} // namespace selftest
+
+#endif
