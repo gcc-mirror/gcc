@@ -1,12 +1,7 @@
-// { dg-additional-options "-frust-c-style-string-literals" }
+// { dg-additional-options "-frust-c-style-string-literals -frust-compat-version=1.90" }
 // { dg-output "gccrs" }
-#![feature(no_core, lang_items, rustc_attrs)]
+#![feature(no_core, lang_items)]
 #![no_core]
-
-#[rustc_builtin_macro]
-macro_rules! cfg_select {
-    () => {{}};
-}
 
 cfg_select! {
     all(

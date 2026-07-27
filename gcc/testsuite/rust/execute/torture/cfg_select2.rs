@@ -1,12 +1,7 @@
-// { dg-additional-options "-frust-cfg=A=\"foo\"" }
+// { dg-additional-options "-frust-compat-version=1.90 -frust-cfg=A=\"foo\"" }
 // { dg-output "pass\r*\n" }
-#![feature(no_core, rustc_attrs)]
+#![feature(no_core)]
 #![no_core]
-
-#[rustc_builtin_macro]
-macro_rules! cfg_select {
-    () => {{}};
-}
 
 extern "C" {
     fn printf(s: *const i8, ...);

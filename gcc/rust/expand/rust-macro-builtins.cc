@@ -125,7 +125,6 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     {"concat", MacroBuiltin::concat_handler},
     {"env", MacroBuiltin::env_handler},
     {"cfg", MacroBuiltin::cfg_handler},
-    {"cfg_select", MacroBuiltin::cfg_select_handler},
     {"include", MacroBuiltin::include_handler},
     {"format_args", format_args_maker (AST::FormatArgs::Newline::No)},
     {"format_args_nl", format_args_maker (AST::FormatArgs::Newline::Yes)},
@@ -166,6 +165,8 @@ std::unordered_map<std::string, AST::MacroTranscriberFunc>
     /* offset_of is not declared in Rust 1.49 but still needed for
        Rust-for-Linux, so we still create a transcriber and warn the user */
     {"offset_of", MacroBuiltin::offset_of_handler},
+    /* cfg_select! is also not declared in Rust 1.49 but also needed for RfL */
+    {"cfg_select", MacroBuiltin::cfg_select_handler},
 };
 
 tl::optional<BuiltinMacro>

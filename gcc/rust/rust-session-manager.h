@@ -509,6 +509,11 @@ public:
 
   bool should_support_offset_of () const { return get_compat_version () >= 71; }
 
+  bool should_support_cfg_select () const
+  {
+    return get_compat_version () >= 90;
+  }
+
 private:
   Session () : mappings (Analysis::Mappings::get ()) {}
   void compile_crate (const char *filename);

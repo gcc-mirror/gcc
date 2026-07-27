@@ -329,6 +329,24 @@ MacroExpander::expand_invoc (AST::MacroInvocation &invoc,
       return;
     }
 
+  // TODO: Also remove code below as we progress to Rust 1.90, when cfg_select
+  // gets added to nightly.
+  auto assume_builtin_cfg_select
+    = Session::get_instance ().should_support_cfg_select ()
+      && (invoc.get_invoc_data ().get_path ().as_string () == "cfg_select")
+      && !rules_def;
+
+  if (assume_builtin_cfg_select)
+    {
+      fragment = MacroBuiltin::cfg_select_handler (invoc.get_locus (),
+						   invoc_data, semicolon)
+		   .value_or (AST::Fragment::create_empty ());
+
+      set_expanded_fragment (std::move (fragment));
+
+      return;
+    }
+
   // If there's no rule associated with the invocation, we can simply return
   // early. The early name resolver will have already emitted an error.
   if (!rules_def)

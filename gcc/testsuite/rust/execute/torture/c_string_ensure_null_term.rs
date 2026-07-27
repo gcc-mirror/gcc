@@ -1,5 +1,5 @@
-// { dg-additional-options "-frust-c-style-string-literals" }
-#![feature(no_core, intrinsics, staged_api, lang_items, rustc_attrs)]
+// { dg-additional-options "-frust-c-style-string-literals -frust-compat-version=1.90" }
+#![feature(no_core, intrinsics, staged_api, lang_items)]
 #![no_core]
 
 #[lang = "sized"]
@@ -24,11 +24,6 @@ impl<T> *const T {
     pub const fn as_ptr(self) -> *const T {
         self as *const T
     }
-}
-
-#[rustc_builtin_macro]
-macro_rules! cfg_select {
-    () => {{}};
 }
 
 cfg_select! {
