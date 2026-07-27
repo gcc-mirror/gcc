@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cselib.h"
 #include "function-abi.h"
 #include "selftest.h"
+#include "selftest-rtl.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -2891,6 +2892,37 @@ get_implicit_reg_pending_clobbers (HARD_REG_SET *temp, rtx_insn *insn)
   *temp &= ~ira_no_alloc_regs;
 }
 
+/* Write DEPS' pending barriers into register I and return its entry, so that
+   callers can read and write it literally.  A register outside reg_last_in_use
+   carries pending_barriers as the logical value of its sets list; see the
+   comment on the field.  */
+
+struct deps_reg *
+deps_reg_last (class deps_desc *deps, unsigned int i)
+{
+  struct deps_reg *reg_last = &deps->reg_last[i];
+
+  if (deps->pending_barriers
+      && !REGNO_REG_SET_P (&deps->reg_last_in_use, i))
+    {
+      gcc_checking_assert (!deps->readonly);
+      /* Outside reg_last_in_use the entry must be empty: a barrier makes every
+	 reg_last_dirty entry that still holds a list literal before pushing
+	 itself onto pending_barriers.  A live list here means a debug use or
+	 control use escaped a barrier that the eager form would have
+	 consumed.  */
+      gcc_checking_assert (!reg_last->sets && !reg_last->uses
+			   && !reg_last->clobbers && !reg_last->implicit_sets
+			   && !reg_last->control_uses
+			   && reg_last->uses_length == 0
+			   && reg_last->clobbers_length == 0);
+      reg_last->sets = copy_INSN_LIST (deps->pending_barriers);
+      SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+    }
+
+  return reg_last;
+}
+
 /* Analyze an INSN with pattern X to find all dependencies.  */
 static void
 sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
@@ -3026,7 +3058,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
               /* Make latency of jump equal to 0 by using anti-dependence.  */
               EXECUTE_IF_SET_IN_REG_SET (reg_pending_control_uses, 0, i, rsi)
                 {
-                  struct deps_reg *reg_last = &deps->reg_last[i];
+		  struct deps_reg *reg_last = deps_reg_last (deps, i);
                   add_dependence_list (insn, reg_last->sets, 0, REG_DEP_ANTI,
 				       false);
                   add_dependence_list (insn, reg_last->implicit_sets,
@@ -3106,7 +3138,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 
       EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
 	{
-	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  struct deps_reg *reg_last = deps_reg_last (deps, i);
 	  add_dependence_list (insn, reg_last->sets, 1, REG_DEP_ANTI, false);
 	  /* There's no point in making REG_DEP_CONTROL dependencies for
 	     debug insns.  */
@@ -3138,7 +3170,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 
       EXECUTE_IF_SET_IN_REG_SET (reg_pending_uses, 0, i, rsi)
 	{
-	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  struct deps_reg *reg_last = deps_reg_last (deps, i);
 	  add_dependence_list (insn, reg_last->sets, 0, REG_DEP_TRUE, false);
 	  add_dependence_list (insn, reg_last->implicit_sets, 0, REG_DEP_ANTI,
 			       false);
@@ -3155,7 +3187,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
       hard_reg_set_iterator hrsi;
       EXECUTE_IF_SET_IN_HARD_REG_SET (implicit_reg_pending_uses, 0, i, hrsi)
 	{
-	  struct deps_reg *reg_last = &deps->reg_last[i];
+	  struct deps_reg *reg_last = deps_reg_last (deps, i);
 	  add_dependence_list (insn, reg_last->sets, 0, REG_DEP_TRUE, false);
 	  add_dependence_list (insn, reg_last->implicit_sets, 0,
 			       REG_DEP_ANTI, false);
@@ -3194,7 +3226,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	{
 	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
 	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
+	      struct deps_reg *reg_last = deps_reg_last (deps, i);
 	      add_dependence_list (insn, reg_last->sets, 0, REG_DEP_OUTPUT,
 				   false);
 	      add_dependence_list (insn, reg_last->implicit_sets, 0,
@@ -3213,7 +3245,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	    }
 	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i, rsi)
 	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
+	      struct deps_reg *reg_last = deps_reg_last (deps, i);
 	      add_dependence_list (insn, reg_last->sets, 0, REG_DEP_OUTPUT,
 				   false);
 	      add_dependence_list (insn, reg_last->implicit_sets, 0,
@@ -3233,7 +3265,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	{
 	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_clobbers, 0, i, rsi)
 	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
+	      struct deps_reg *reg_last = deps_reg_last (deps, i);
 	      if (reg_last->uses_length >= param_max_pending_list_length
 		  || reg_last->clobbers_length >= param_max_pending_list_length)
 		{
@@ -3279,7 +3311,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	    }
 	  EXECUTE_IF_SET_IN_REG_SET (reg_pending_sets, 0, i, rsi)
 	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
+	      struct deps_reg *reg_last = deps_reg_last (deps, i);
 
 	      add_dependence_list_and_free (deps, insn, &reg_last->sets, 0,
 					    REG_DEP_OUTPUT, false);
@@ -3316,7 +3348,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
   hard_reg_set_iterator hrsi;
   EXECUTE_IF_SET_IN_HARD_REG_SET (implicit_reg_pending_clobbers, 0, i, hrsi)
     {
-      struct deps_reg *reg_last = &deps->reg_last[i];
+      struct deps_reg *reg_last = deps_reg_last (deps, i);
       add_dependence_list (insn, reg_last->sets, 0, REG_DEP_ANTI, false);
       add_dependence_list (insn, reg_last->clobbers, 0, REG_DEP_ANTI, false);
       add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI, false);
@@ -3353,44 +3385,84 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
     {
       /* In the case of barrier the most added dependencies are not
          real, so we use anti-dependence here.  */
-      if (sched_has_condition_p (insn))
+      enum reg_note barrier_dep = (reg_pending_barrier == TRUE_BARRIER
+				   ? REG_DEP_TRUE : REG_DEP_ANTI);
+      bool cond_p = sched_has_condition_p (insn);
+      /* Recording the barrier once pays for itself when max_reg is
+	 max_reg_num (), which init_deps uses before reload.  After reload
+	 max_reg is FIRST_PSEUDO_REGISTER and most entries are touched again
+	 before the next barrier, so materialising on demand costs more than
+	 writing them out.  Selective scheduling re-analyses insns against a
+	 readonly context that must not allocate, so it cannot materialise on
+	 demand at all.  Keep the eager form for both.  */
+      bool eager_p = sel_sched_p () || reload_completed;
+      /* The pending barriers are the sets list of every register the loops
+	 below skip, so their dependence belongs where the first skipped
+	 register would have emitted it.  Find that position while visiting
+	 the materialised registers.  */
+      unsigned next_reg = 0;
+      bool emitted = deps->pending_barriers == NULL;
+
+      if (cond_p)
 	{
 	  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i, rsi)
 	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
+	      struct deps_reg *reg_last;
+
+	      if (!emitted && i != next_reg)
+		{
+		  add_dependence_list (insn, deps->pending_barriers, 0,
+				       barrier_dep, true);
+		  emitted = true;
+		}
+	      if (!emitted)
+		next_reg = i + 1;
+
+	      reg_last = &deps->reg_last[i];
 	      add_dependence_list (insn, reg_last->uses, 0, REG_DEP_ANTI,
 				   true);
-	      add_dependence_list (insn, reg_last->sets, 0,
-				   reg_pending_barrier == TRUE_BARRIER
-				   ? REG_DEP_TRUE : REG_DEP_ANTI, true);
+	      add_dependence_list (insn, reg_last->sets, 0, barrier_dep, true);
 	      add_dependence_list (insn, reg_last->implicit_sets, 0,
 				   REG_DEP_ANTI, true);
-	      add_dependence_list (insn, reg_last->clobbers, 0,
-				   reg_pending_barrier == TRUE_BARRIER
-				   ? REG_DEP_TRUE : REG_DEP_ANTI, true);
+	      add_dependence_list (insn, reg_last->clobbers, 0, barrier_dep,
+				   true);
+
+	      if (!deps->readonly && !eager_p)
+		reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
 	    }
+	  if (!emitted && next_reg < (unsigned) deps->max_reg)
+	    add_dependence_list (insn, deps->pending_barriers, 0, barrier_dep,
+				 true);
 	}
       else
 	{
 	  EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_in_use, 0, i, rsi)
 	    {
-	      struct deps_reg *reg_last = &deps->reg_last[i];
+	      struct deps_reg *reg_last;
+
+	      if (!emitted && i != next_reg)
+		{
+		  add_dependence_list_and_free (deps, insn,
+						&deps->pending_barriers, 0,
+						barrier_dep, true);
+		  emitted = true;
+		}
+	      if (!emitted)
+		next_reg = i + 1;
+
+	      reg_last = &deps->reg_last[i];
 	      add_dependence_list_and_free (deps, insn, &reg_last->uses, 0,
 					    REG_DEP_ANTI, true);
 	      add_dependence_list_and_free (deps, insn,
 					    &reg_last->control_uses, 0,
 					    REG_DEP_CONTROL, true);
 	      add_dependence_list_and_free (deps, insn, &reg_last->sets, 0,
-					    reg_pending_barrier == TRUE_BARRIER
-					    ? REG_DEP_TRUE : REG_DEP_ANTI,
-					    true);
+					    barrier_dep, true);
 	      add_dependence_list_and_free (deps, insn,
 					    &reg_last->implicit_sets, 0,
 					    REG_DEP_ANTI, true);
 	      add_dependence_list_and_free (deps, insn, &reg_last->clobbers, 0,
-					    reg_pending_barrier == TRUE_BARRIER
-					    ? REG_DEP_TRUE : REG_DEP_ANTI,
-					    true);
+					    barrier_dep, true);
 
               if (!deps->readonly)
                 {
@@ -3398,15 +3470,67 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
                   reg_last->clobbers_length = 0;
                 }
 	    }
+	  if (!emitted)
+	    {
+	      if (next_reg < (unsigned) deps->max_reg)
+		add_dependence_list_and_free (deps, insn,
+					      &deps->pending_barriers, 0,
+					      barrier_dep, true);
+	      else
+		/* Every register has its own state, so no register carries the
+		   global list.  */
+		free_INSN_LIST_list (&deps->pending_barriers);
+	    }
 	}
 
       if (!deps->readonly)
-        for (i = 0; i < (unsigned)deps->max_reg; i++)
-          {
-            struct deps_reg *reg_last = &deps->reg_last[i];
-            reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
-            SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
-          }
+	{
+	  if (eager_p)
+	    {
+	      /* Write the barrier into every entry.  pending_barriers then
+		 stays empty and deps_reg_last never writes anything, so the
+		 rest of this file behaves exactly as it did before.  */
+	      for (i = 0; i < (unsigned) deps->max_reg; i++)
+		{
+		  struct deps_reg *reg_last = &deps->reg_last[i];
+		  reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
+		  SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+		}
+	    }
+	  else
+	    {
+	      /* Record the barrier once instead of writing it into every one
+		 of the max_reg entries.  deps_reg_last materialises it per
+		 register on first touch.  The loop above emptied every in-use
+		 entry in the non-conditional case, so they can all go back to
+		 carrying the pending list.  */
+	      if (!cond_p)
+		CLEAR_REG_SET (&deps->reg_last_in_use);
+
+	      /* An entry recorded only in reg_last_dirty holds a debug use or
+		 a control use that nothing has consumed.  The eager form
+		 folded it into reg_last_in_use here so that the next barrier
+		 consumed it, so give it this barrier and make it literal.
+		 Otherwise the use survives into a later insn and depends on
+		 that insn instead.  An entry with no list left needs nothing:
+		 carrying the pending list is what the eager form would have
+		 written into it.  */
+	      EXECUTE_IF_SET_IN_REG_SET (&deps->reg_last_dirty, 0, i, rsi)
+		{
+		  struct deps_reg *reg_last = &deps->reg_last[i];
+		  if ((reg_last->uses || reg_last->control_uses)
+		      && !REGNO_REG_SET_P (&deps->reg_last_in_use, i))
+		    {
+		      reg_last->sets = alloc_INSN_LIST (insn, reg_last->sets);
+		      SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
+		    }
+		}
+	      CLEAR_REG_SET (&deps->reg_last_dirty);
+
+	      deps->pending_barriers
+		= alloc_INSN_LIST (insn, deps->pending_barriers);
+	    }
+	}
 
       /* Don't flush pending lists on speculative checks for
 	 selective scheduling.  */
@@ -4022,6 +4146,7 @@ init_deps (class deps_desc *deps, bool lazy_reg_last)
   deps->last_epilogue = 0;
   deps->last_logue_was_epilogue = false;
   deps->last_reg_pending_barrier = NOT_A_BARRIER;
+  deps->pending_barriers = 0;
   deps->readonly = 0;
 }
 
@@ -4059,6 +4184,7 @@ free_deps (class deps_desc *deps)
   free_INSN_LIST_list (&deps->pending_write_insns);
   free_EXPR_LIST_list (&deps->pending_write_mems);
   free_INSN_LIST_list (&deps->last_pending_memory_flush);
+  free_INSN_LIST_list (&deps->pending_barriers);
 
   /* Teardown only: fold the entries recorded solely in reg_last_dirty into the
      live set, so that one loop releases everything.  free_deps creates no
@@ -5201,6 +5327,261 @@ test_reg_last_pool ()
   bitmap_obstack_release (&test_obstack);
 }
 
+/* Dependence producers recorded by observe_barrier_dependence.  */
+
+static auto_vec<rtx_insn *> *observed_barrier_deps;
+
+/* Record a barrier dependence on PRODUCER.  */
+
+static void
+observe_barrier_dependence (rtx_insn *producer, ds_t)
+{
+  gcc_assert (observed_barrier_deps);
+  observed_barrier_deps->safe_push (producer);
+}
+
+/* Assert that LIST contains FIRST followed by SECOND and nothing else.  */
+
+static void
+assert_insn_list (rtx_insn_list *list, rtx_insn *first, rtx_insn *second)
+{
+  ASSERT_TRUE (list);
+  ASSERT_EQ (first, list->insn ());
+  list = list->next ();
+  ASSERT_TRUE (list);
+  ASSERT_EQ (second, list->insn ());
+  ASSERT_EQ (NULL, list->next ());
+}
+
+/* Verify that a full materialisation bitmap does not emit an inert pending
+   barrier.  OBSTACK owns the context bitmaps.  BARRIER is the current
+   barrier, OLD_BARRIER is pending, and SETTER is in every literal entry.  */
+
+static void
+test_full_lazy_barrier (bitmap_obstack *obstack, rtx_insn *barrier,
+			rtx_insn *old_barrier, rtx_insn *setter)
+{
+  deps_desc deps = {};
+  deps.max_reg = FIRST_PSEUDO_REGISTER;
+  deps.reg_last = alloc_reg_last (deps.max_reg);
+  bitmap_initialize (&deps.reg_last_in_use, obstack);
+  bitmap_initialize (&deps.reg_last_dirty, obstack);
+  bitmap_set_range (&deps.reg_last_in_use, 0, deps.max_reg);
+
+  for (int i = 0; i < deps.max_reg; ++i)
+    deps.reg_last[i].sets = alloc_INSN_LIST (setter, NULL_RTX);
+  deps.pending_barriers = alloc_INSN_LIST (old_barrier, NULL_RTX);
+
+  auto_vec<rtx_insn *> observed;
+  gcc_assert (!observed_barrier_deps);
+  observed_barrier_deps = &observed;
+  sched_analyze_insn (&deps, PATTERN (barrier), barrier);
+  observed_barrier_deps = NULL;
+
+  ASSERT_EQ ((unsigned) deps.max_reg, observed.length ());
+  for (int i = 0; i < deps.max_reg; ++i)
+    ASSERT_EQ (setter, observed[i]);
+  ASSERT_TRUE (deps.pending_barriers);
+  ASSERT_EQ (barrier, deps.pending_barriers->insn ());
+  ASSERT_EQ (NULL, deps.pending_barriers->next ());
+
+  free_deps (&deps);
+}
+
+/* Verify that a pending barrier is emitted at the first gap in the
+   materialisation bitmap.  OBSTACK owns the context bitmaps.  BARRIER is the
+   current barrier, OLD_BARRIER is pending, and SETTER0 and SETTER2 are the
+   literal entries.  */
+
+static void
+test_sparse_lazy_barrier (bitmap_obstack *obstack, rtx_insn *barrier,
+			  rtx_insn *old_barrier, rtx_insn *setter0,
+			  rtx_insn *setter2)
+{
+  deps_desc deps = {};
+  deps.max_reg = 4;
+  deps.reg_last = alloc_reg_last (deps.max_reg);
+  bitmap_initialize (&deps.reg_last_in_use, obstack);
+  bitmap_initialize (&deps.reg_last_dirty, obstack);
+  SET_REGNO_REG_SET (&deps.reg_last_in_use, 0);
+  SET_REGNO_REG_SET (&deps.reg_last_in_use, 2);
+  deps.reg_last[0].sets = alloc_INSN_LIST (setter0, NULL_RTX);
+  deps.reg_last[2].sets = alloc_INSN_LIST (setter2, NULL_RTX);
+  deps.pending_barriers = alloc_INSN_LIST (old_barrier, NULL_RTX);
+
+  auto_vec<rtx_insn *> observed;
+  gcc_assert (!observed_barrier_deps);
+  observed_barrier_deps = &observed;
+  sched_analyze_insn (&deps, PATTERN (barrier), barrier);
+  observed_barrier_deps = NULL;
+
+  ASSERT_EQ (3, observed.length ());
+  ASSERT_EQ (setter0, observed[0]);
+  ASSERT_EQ (old_barrier, observed[1]);
+  ASSERT_EQ (setter2, observed[2]);
+  ASSERT_TRUE (deps.pending_barriers);
+  ASSERT_EQ (barrier, deps.pending_barriers->insn ());
+  ASSERT_EQ (NULL, deps.pending_barriers->next ());
+
+  free_deps (&deps);
+}
+
+/* Verify all combinations of literal and lazy entries in deps_join.
+   OBSTACK owns both contexts' bitmaps.  */
+
+static void
+test_lazy_barrier_join (bitmap_obstack *obstack)
+{
+  const int max_reg = 4;
+  deps_desc succ = {};
+  deps_desc pred = {};
+  succ.max_reg = max_reg;
+  pred.max_reg = max_reg;
+  succ.reg_last = alloc_reg_last (max_reg);
+  pred.reg_last = alloc_reg_last (max_reg);
+  bitmap_initialize (&succ.reg_last_in_use, obstack);
+  bitmap_initialize (&succ.reg_last_dirty, obstack);
+  bitmap_initialize (&pred.reg_last_in_use, obstack);
+  bitmap_initialize (&pred.reg_last_dirty, obstack);
+
+  rtx_insn *p = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *q = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *a1 = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *p2 = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *a3 = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *p3 = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+
+  succ.pending_barriers = alloc_INSN_LIST (q, NULL_RTX);
+  pred.pending_barriers = alloc_INSN_LIST (p, NULL_RTX);
+
+  succ.reg_last[1].sets = alloc_INSN_LIST (a1, NULL_RTX);
+  SET_REGNO_REG_SET (&succ.reg_last_in_use, 1);
+  pred.reg_last[2].sets = alloc_INSN_LIST (p2, NULL_RTX);
+  SET_REGNO_REG_SET (&pred.reg_last_in_use, 2);
+  succ.reg_last[3].sets = alloc_INSN_LIST (a3, NULL_RTX);
+  pred.reg_last[3].sets = alloc_INSN_LIST (p3, NULL_RTX);
+  SET_REGNO_REG_SET (&succ.reg_last_in_use, 3);
+  SET_REGNO_REG_SET (&pred.reg_last_in_use, 3);
+
+  deps_join (&succ, &pred);
+
+  ASSERT_FALSE (REGNO_REG_SET_P (&succ.reg_last_in_use, 0));
+  ASSERT_TRUE (REGNO_REG_SET_P (&succ.reg_last_in_use, 1));
+  ASSERT_TRUE (REGNO_REG_SET_P (&succ.reg_last_in_use, 2));
+  ASSERT_TRUE (REGNO_REG_SET_P (&succ.reg_last_in_use, 3));
+  assert_insn_list (succ.pending_barriers, p, q);
+
+  struct deps_reg *reg0 = deps_reg_last (&succ, 0);
+  assert_insn_list (reg0->sets, p, q);
+  assert_insn_list (succ.reg_last[1].sets, p, a1);
+  assert_insn_list (succ.reg_last[2].sets, p2, q);
+  assert_insn_list (succ.reg_last[3].sets, p3, a3);
+
+  free_deps (&succ);
+  free_deps (&pred);
+}
+
+/* Exercise lazy barriers with target-neutral raw insns.  */
+
+static void
+test_lazy_barriers ()
+{
+  rtl_dump_test rtl_test (SELFTEST_LOCATION, locate_file ("cfg-test.rtl"));
+
+  ASSERT_TRUE (sched_luids.is_empty ());
+  ASSERT_TRUE (h_d_i_d.is_empty ());
+  ASSERT_TRUE (reg_last_pool.is_empty ());
+  ASSERT_EQ (0, reg_last_pool_max_reg);
+  ASSERT_EQ (0, cache_size);
+  ASSERT_EQ (NULL, true_dependency_cache);
+  ASSERT_EQ (NULL, dn_pool);
+  ASSERT_EQ (NULL, dl_pool);
+
+  rtx_insn *old_barrier
+    = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *setter = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  start_sequence ();
+  rtx_insn *full_barrier
+    = emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
+  rtx_insn *sparse_old_barrier
+    = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *setter0 = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *setter2 = make_insn_raw (gen_rtx_USE (VOIDmode, const0_rtx));
+  rtx_insn *sparse_barrier
+    = emit_insn (gen_rtx_ASM_INPUT (VOIDmode, ""));
+  end_sequence ();
+  sched_luids.safe_grow_cleared (get_max_uid () + 1, true);
+
+  bitmap_obstack test_obstack;
+  bitmap_obstack_initialize (&test_obstack);
+  bitmap_head pending_sets;
+  bitmap_head pending_clobbers;
+  bitmap_head pending_uses;
+  bitmap_head pending_control_uses;
+  bitmap_initialize (&pending_sets, &test_obstack);
+  bitmap_initialize (&pending_clobbers, &test_obstack);
+  bitmap_initialize (&pending_uses, &test_obstack);
+  bitmap_initialize (&pending_control_uses, &test_obstack);
+
+  regset saved_pending_sets = reg_pending_sets;
+  regset saved_pending_clobbers = reg_pending_clobbers;
+  regset saved_pending_uses = reg_pending_uses;
+  regset saved_pending_control_uses = reg_pending_control_uses;
+  HARD_REG_SET saved_implicit_clobbers = implicit_reg_pending_clobbers;
+  HARD_REG_SET saved_implicit_uses = implicit_reg_pending_uses;
+  enum reg_pending_barrier_mode saved_pending_barrier = reg_pending_barrier;
+  sched_deps_info_def *saved_sched_deps_info = sched_deps_info;
+  haifa_sched_info *saved_current_sched_info = current_sched_info;
+  common_sched_info_def *saved_common_sched_info = common_sched_info;
+  int saved_reload_completed = reload_completed;
+  enum sched_pressure_algorithm saved_sched_pressure = sched_pressure;
+  bool saved_exposed_pipeline = targetm.sched.exposed_pipeline;
+
+  reg_pending_sets = &pending_sets;
+  reg_pending_clobbers = &pending_clobbers;
+  reg_pending_uses = &pending_uses;
+  reg_pending_control_uses = &pending_control_uses;
+  CLEAR_HARD_REG_SET (implicit_reg_pending_clobbers);
+  CLEAR_HARD_REG_SET (implicit_reg_pending_uses);
+  reg_pending_barrier = NOT_A_BARRIER;
+
+  sched_deps_info_def deps_info = {};
+  deps_info.note_dep = observe_barrier_dependence;
+  sched_deps_info = &deps_info;
+  haifa_sched_info sched_info = {};
+  current_sched_info = &sched_info;
+  common_sched_info_def common_info = haifa_common_sched_info;
+  common_sched_info = &common_info;
+  reload_completed = 0;
+  sched_pressure = SCHED_PRESSURE_NONE;
+  targetm.sched.exposed_pipeline = false;
+
+  test_full_lazy_barrier (&test_obstack, full_barrier, old_barrier, setter);
+  test_sparse_lazy_barrier (&test_obstack, sparse_barrier,
+			    sparse_old_barrier, setter0, setter2);
+  test_lazy_barrier_join (&test_obstack);
+
+  ASSERT_TRUE (!observed_barrier_deps);
+  ASSERT_TRUE (deps_pools_are_empty_p ());
+  sched_deps_finish ();
+  sched_luids.release ();
+
+  targetm.sched.exposed_pipeline = saved_exposed_pipeline;
+  sched_pressure = saved_sched_pressure;
+  reload_completed = saved_reload_completed;
+  common_sched_info = saved_common_sched_info;
+  current_sched_info = saved_current_sched_info;
+  sched_deps_info = saved_sched_deps_info;
+  reg_pending_barrier = saved_pending_barrier;
+  implicit_reg_pending_clobbers = saved_implicit_clobbers;
+  implicit_reg_pending_uses = saved_implicit_uses;
+  reg_pending_sets = saved_pending_sets;
+  reg_pending_clobbers = saved_pending_clobbers;
+  reg_pending_uses = saved_pending_uses;
+  reg_pending_control_uses = saved_pending_control_uses;
+  bitmap_obstack_release (&test_obstack);
+}
+
 /* Run the sched-deps.cc selftests.  */
 
 void
@@ -5208,6 +5589,7 @@ sched_deps_cc_tests ()
 {
   test_dirty_reg_last_release ();
   test_reg_last_pool ();
+  test_lazy_barriers ();
 }
 
 } // namespace selftest

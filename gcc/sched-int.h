@@ -567,10 +567,23 @@ public:
      in reg_last[N].{uses,sets,clobbers}.  */
   regset_head reg_last_in_use;
 
+  /* Barriers whose "this insn sets every register" effect has not been written
+     into the per-register entries yet, newest first.  Empty after reload and
+     under selective scheduling, where the barrier path writes every entry
+     instead.
+
+     A register in reg_last_in_use has a literal entry that evolves
+     independently.  Every other register has an empty reg_last entry whose
+     sets list is logically pending_barriers, because a barrier makes every
+     reg_last_dirty entry that still holds a list literal before pushing itself
+     here.  Thus, outside reg_last_in_use there is never a live uses, clobbers,
+     implicit_sets or control_uses list.  */
+  rtx_insn_list *pending_barriers;
+
   /* Element N is set for each register whose reg_last[N] was written on a
      path that does not record it in reg_last_in_use, namely debug insn uses
-     and control uses.  Used only to release those lists in free_deps; it
-     takes no part in dependence generation.  */
+     and control uses.  Barrier handling reconciles these entries with
+     reg_last_in_use, and free_deps releases any that remain.  */
   regset_head reg_last_dirty;
 
   /* Shows the last value of reg_pending_barrier associated with the insn.  */
@@ -1359,6 +1372,7 @@ extern bool sched_insn_is_legitimate_for_speculation_p (const rtx_insn *, ds_t);
 extern void add_dependence (rtx_insn *, rtx_insn *, enum reg_note);
 extern void sched_analyze (class deps_desc *, rtx_insn *, rtx_insn *);
 extern void init_deps (class deps_desc *, bool);
+extern struct deps_reg *deps_reg_last (class deps_desc *, unsigned int);
 extern void init_deps_reg_last (class deps_desc *);
 extern void free_deps (class deps_desc *);
 extern void init_deps_global (void);

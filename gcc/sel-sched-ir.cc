@@ -3393,6 +3393,10 @@ has_dependence_p (expr_t expr, insn_t pred, ds_t **has_dep_pp)
 
   dc = &INSN_DEPS_CONTEXT (pred);
 
+  /* Selective scheduling keeps the eager barrier form, so the reg_last entries
+     the callbacks below read are always materialised.  */
+  gcc_checking_assert (!dc->pending_barriers);
+
   /* We init this field lazily.  */
   if (dc->reg_last == NULL)
     init_deps_reg_last (dc);
