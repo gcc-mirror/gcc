@@ -28,8 +28,6 @@ enum callback_position
   CB_UNKNOWN_POS = 0
 };
 
-#define CALLBACK_ATTR_IDENT " callback"
-
 /* Returns a callback attribute with callback index FN_IDX, and ARG_COUNT
    arguments specified by VA_ARGS.  */
 tree callback_build_attr (unsigned fn_idx, unsigned arg_count...);
@@ -63,11 +61,6 @@ auto_vec<int> callback_get_arg_mapping (cgraph_edge *e, cgraph_edge *carrying);
 /* For a callback pair, returns the 0-based index of the address of
    E's callee in the argument list of CARRYING's callee decl.  */
 int callback_fetch_fn_position (cgraph_edge *e, cgraph_edge *carrying);
-
-/* Handle a "callback" attribute; arguments as in
-   struct attribute_spec.handler.  */
-tree handle_callback_attribute (tree *node, tree name, tree args, int flags,
-				bool *no_add_attrs);
 
 /* Returns TRUE if E is considered useful in the callgraph, FALSE otherwise.  If
    this predicate returns FALSE, then E wasn't used to optimize its callee and

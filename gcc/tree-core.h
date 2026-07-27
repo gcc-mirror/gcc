@@ -103,7 +103,7 @@ class irange;
    meant to be used for the construction of builtin functions.  They were only
    added because Fortran uses them for attributes of builtins.  */
 
-/* callback(1, 2) */
+/* callback_only (1, 2) */
 #define ECF_CB_1_2		  (1 << 17)
 
 /* Call argument flags.  */

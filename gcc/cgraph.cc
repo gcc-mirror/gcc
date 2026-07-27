@@ -1844,7 +1844,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
     {
       cgraph_edge *carrying = e->get_callback_carrying_edge ();
       if (!callback_is_special_cased (carrying->callee->decl, e->call_stmt)
-	  && !lookup_attribute (CALLBACK_ATTR_IDENT,
+	  && !lookup_attribute ("callback_only",
 				DECL_ATTRIBUTES (carrying->callee->decl)))
 	/* Callback attribute is removed if the dispatching function changes
 	   signature, as the indices wouldn't be correct anymore.  These edges
@@ -4420,10 +4420,11 @@ cgraph_node::verify_node (void)
 	    {
 	      int ncallbacks = 0;
 	      int nfound_edges = 0;
-	      for (tree cb = lookup_attribute (CALLBACK_ATTR_IDENT, DECL_ATTRIBUTES (
-							     e->callee->decl));
-		   cb; cb = lookup_attribute (CALLBACK_ATTR_IDENT, TREE_CHAIN (cb)),
-			ncallbacks++)
+	      for (tree cb
+		   = lookup_attribute ("callback_only",
+				       DECL_ATTRIBUTES (e->callee->decl));
+		   cb; cb = lookup_attribute ("callback_only", TREE_CHAIN (cb)),
+		       ncallbacks++)
 		;
 	      for (cgraph_edge *cbe = callees; cbe; cbe = cbe->next_callee)
 		{

@@ -314,7 +314,7 @@ drop_type_attribute_if_params_changed_p (tree name)
 static bool
 drop_decl_attribute_if_params_changed_p (tree name)
 {
-  if (is_attribute_p (CALLBACK_ATTR_IDENT, name))
+  if (is_attribute_p ("callback_only", name))
     return true;
   return false;
 }

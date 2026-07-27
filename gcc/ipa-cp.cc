@@ -6477,7 +6477,7 @@ purge_useless_callback_edges ()
 	      if (dump_file)
 		fprintf (dump_file, "\tExamining callbacks of edge %s -> %s:\n",
 			 e->caller->dump_name (), e->callee->dump_name ());
-	      if (!lookup_attribute (CALLBACK_ATTR_IDENT,
+	      if (!lookup_attribute ("callback_only",
 				     DECL_ATTRIBUTES (e->callee->decl))
 		  && !callback_is_special_cased (e->callee->decl, e->call_stmt))
 		{

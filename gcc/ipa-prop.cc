@@ -2595,11 +2595,11 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 		  /* Argument is a pointer to a function. Look for a callback
 		     attribute describing this argument.  */
 		  tree callback_attr
-		    = lookup_attribute (CALLBACK_ATTR_IDENT,
+		    = lookup_attribute ("callback_only",
 					DECL_ATTRIBUTES (cs->callee->decl));
 		  for (; callback_attr;
 		       callback_attr
-		       = lookup_attribute (CALLBACK_ATTR_IDENT,
+		       = lookup_attribute ("callback_only",
 					   TREE_CHAIN (callback_attr)))
 		    if (callback_get_fn_index (callback_attr) == n)
 		      break;
