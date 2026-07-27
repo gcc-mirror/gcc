@@ -4673,25 +4673,6 @@ handle_tm_wrap_attribute (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
-/* Returns the element at index idx in the list or NULL_TREE if
-   the list isn't long enough.  NULL_TREE is used as the endpoint.  */
-static tree
-get_nth_list_elem (tree list, unsigned idx)
-{
-  tree res = NULL_TREE;
-  unsigned i = 0;
-  tree it;
-  for (it = list; it != NULL_TREE; it = TREE_CHAIN (it), i++)
-    {
-      if (i == idx)
-	{
-	  res = TREE_VALUE (it);
-	  break;
-	}
-    }
-  return res;
-}
-
 /* Handle a "callback_only" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
@@ -4745,7 +4726,7 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
 
   /* Search for the type of the callback function
      in parameters of the original function.  */
-  tree cfn = get_nth_list_elem (decl_type_args, callback_fn_idx);
+  tree cfn = chain_index (callback_fn_idx, decl_type_args);
   if (cfn == NULL_TREE)
     {
       error_at (DECL_SOURCE_LOCATION (decl),
@@ -4753,6 +4734,7 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
       *no_add_attrs = true;
       return NULL_TREE;
     }
+  cfn = TREE_VALUE (cfn);
   tree cfn_pointee_type = TREE_TYPE (cfn);
   if (TREE_CODE (cfn) != POINTER_TYPE
       || TREE_CODE (cfn_pointee_type) != FUNCTION_TYPE)
@@ -4819,7 +4801,9 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
 	  continue;
 	}
 
-      tree arg_type = get_nth_list_elem (decl_type_args, arg_idx);
+      tree arg_type = chain_index (arg_idx, decl_type_args);
+      gcc_checking_assert (arg_type != NULL_TREE);
+      arg_type = TREE_VALUE (arg_type);
       tree expected_type = TREE_VALUE (it);
       /* Check the type of the value we are about to pass ("arg_type")
 	 for compatibility with the actual type the callback function
