@@ -152,6 +152,23 @@ struct filespan_t : public bytespan_t {
    */
   bool was_quote72() const { return iline == line_quote72 + 1; }
 
+  bool line_contains_nul() const {
+    char *nul = std::find(cur, eol, '\0');
+    return nul != eol;
+  }
+
+  void sanitize_nul() {
+    char *nul = std::find(cur, eol, '\0');
+    if( nul != eol ) {
+      int icol = nul - cur; // cppcheck-suppress shadowVariable
+      fprintf(stderr, "%s:%d:%d: error: NUL character detected in input\n%*s\n",
+              cobol_filename(), int(iline), ++icol,
+              int(eol - cur)-1, cur);
+      parse_error_inc();
+      std::replace(nul, eol, '\0', SPACE);
+    }
+  }
+
   size_t next_line(bool is_reference_format) {
     // Before advancing, mark the current line as ending in a quote, if true.
     if( is_reference_format && 72 <= line_length() ) {
@@ -163,19 +180,6 @@ struct filespan_t : public bytespan_t {
     if( cur == eodata ) return 0;
 
     eol = std::find(cur, eodata, '\n');
-
-    char *nul = std::find(cur, eol, '\0');
-    if( nul != eol ) {
-      if( std::any_of( nul, eodata,
-                       []( char ch ) { return ch != '\0'; } ) ) {
-        int icol = nul - cur; // cppcheck-suppress shadowVariable
-        fprintf(stderr, "%s:%d:%d: error: NUL character detected in input\n%*s\n",
-                cobol_filename(), int(iline + 1), ++icol,
-                int(eol - cur), cur);
-        parse_error_inc();
-        std::replace(nul, eol, '\0', SPACE);
-      }
-    }
 
     if( eol < eodata ) {
       ++eol;

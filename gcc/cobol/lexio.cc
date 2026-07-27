@@ -1785,6 +1785,7 @@ cdftext::free_form_reference_format( int input,
             erase_source(p, mfile.eol);
           }
         }
+        gcc_assert( ! mfile.line_contains_nul() );
         continue;
       case SPACE:
         break;
@@ -1808,6 +1809,7 @@ cdftext::free_form_reference_format( int input,
         if( indcol < mfile.eol - 1 ) {
           erase_source(indcol, mfile.eol);
         }
+        mfile.sanitize_nul();
         continue;
       case '$':
         if( lexio_dialect_mf() ) {
@@ -1825,6 +1827,7 @@ cdftext::free_form_reference_format( int input,
         break;
       }
     }
+    mfile.sanitize_nul();
     current.line.update(mfile.cur, mfile.eol, format.top().right_margin());
     current.lineno = mfile.lineno();
   } // next line
