@@ -704,6 +704,16 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_NUM_THREADS:
       pp_string (pp, "num_threads(");
+      if (OMP_CLAUSE_NUM_THREADS_STRICT (clause))
+	pp_string (pp, "strict");
+      if (OMP_CLAUSE_NUM_THREADS_STRICT (clause)
+	  && OMP_CLAUSE_NUM_THREADS_DIMS (clause))
+	pp_comma (pp);
+      if (OMP_CLAUSE_NUM_THREADS_DIMS (clause))
+	pp_string (pp, "dims()");
+      if (OMP_CLAUSE_NUM_THREADS_STRICT (clause)
+	  || OMP_CLAUSE_NUM_THREADS_DIMS (clause))
+	pp_colon (pp);
       dump_generic_node (pp, OMP_CLAUSE_NUM_THREADS_EXPR (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
@@ -818,6 +828,29 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_MERGEABLE:
       pp_string (pp, "mergeable");
+      break;
+
+    case OMP_CLAUSE_MESSAGE:
+      if (OMP_CLAUSE_MESSAGE_EXPR (clause))
+	{
+	  pp_string (pp, "message(");
+	  dump_generic_node (pp, OMP_CLAUSE_MESSAGE_EXPR (clause),
+			     spc, flags, false);
+	  if (OMP_CLAUSE_MESSAGE_LEN (clause))
+	    {
+	      pp_string (pp, " [len:");
+	      dump_generic_node (pp, OMP_CLAUSE_MESSAGE_LEN (clause),
+				 spc, flags, false);
+	      pp_right_bracket (pp);
+	    }
+	  pp_right_paren (pp);
+	  if (OMP_CLAUSE_MESSAGE_SEVERITY_WARN (clause))
+	    pp_space (pp);
+	}
+      if (OMP_CLAUSE_MESSAGE_SEVERITY_WARN (clause))
+	pp_string (pp, "severity(warning)");
+      else
+	pp_string (pp, "severity(fatal)");
       break;
 
     case OMP_CLAUSE_LINEAR:
@@ -1272,6 +1305,8 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_NUM_TEAMS:
       pp_string (pp, "num_teams(");
+      if (OMP_CLAUSE_NUM_TEAMS_DIMS (clause))
+	pp_string (pp, "dims():");
       if (OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (clause))
 	{
 	  dump_generic_node (pp, OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (clause),
@@ -1285,6 +1320,16 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_THREAD_LIMIT:
       pp_string (pp, "thread_limit(");
+      if (OMP_CLAUSE_THREAD_LIMIT_STRICT (clause))
+	pp_string (pp, "strict");
+      if (OMP_CLAUSE_THREAD_LIMIT_STRICT (clause)
+	  && OMP_CLAUSE_THREAD_LIMIT_DIMS (clause))
+	pp_comma (pp);
+      if (OMP_CLAUSE_THREAD_LIMIT_DIMS (clause))
+	pp_string (pp, "dims()");
+      if (OMP_CLAUSE_THREAD_LIMIT_STRICT (clause)
+	  || OMP_CLAUSE_THREAD_LIMIT_DIMS (clause))
+	pp_colon (pp);
       dump_generic_node (pp, OMP_CLAUSE_THREAD_LIMIT_EXPR (clause),
 			 spc, flags, false);
       pp_right_paren (pp);

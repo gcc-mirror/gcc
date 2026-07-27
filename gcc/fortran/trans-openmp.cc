@@ -5640,6 +5640,35 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
+  if (clauses->message || clauses->severity != OMP_SEVERITY_UNSET)
+    {
+      tree message = NULL_TREE;
+      tree len = NULL_TREE;
+
+      if (clauses->message)
+	{
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_expr (&se, clauses->message);
+	  gfc_add_block_to_block (block, &se.pre);
+	  message = se.expr;
+	  len = se.string_length;
+	  if (!DECL_P (se.expr))
+	    message = gfc_evaluate_now (message, block);
+	  gfc_add_block_to_block (block, &se.post);
+
+	  if (!POINTER_TYPE_P (TREE_TYPE (message)))
+	    /* To ensure an ARRAY_TYPE is not passed as such.  */
+	    message = gfc_build_addr_expr (NULL, message);
+	}
+
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_MESSAGE);
+      OMP_CLAUSE_MESSAGE_EXPR (c) = message;
+      OMP_CLAUSE_MESSAGE_LEN (c) = len;
+      if (clauses->severity == OMP_SEVERITY_WARNING)
+	OMP_CLAUSE_MESSAGE_SEVERITY_WARN (c) = 1;
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
   if (clauses->novariants)
     {
       tree novariants_var;
@@ -5672,29 +5701,15 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses->num_threads_list)
     {
-      tree num_threads;
-
-      if (clauses->num_threads_dims)
-	sorry_at (gfc_get_location (&clauses->num_threads_list->expr->where),
-		  "%<num_threads%> with %<dims%> modifier");
-      else if (clauses->num_threads_strict)
-	sorry_at (gfc_get_location (&clauses->num_threads_list->expr->where),
-		  "%<num_threads%> with %<strict%> modifier");
-      else if (clauses->num_threads_list->next)
-	{
-	  gfc_expr *expr = clauses->num_threads_list->next->expr;
-	  sorry_at (gfc_get_location (&expr->where),
-		    "%<num_threads%> with more than one argument");
-	}
-
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, clauses->num_threads_list->expr);
-      gfc_add_block_to_block (block, &se.pre);
-      num_threads = gfc_evaluate_now (se.expr, block);
-      gfc_add_block_to_block (block, &se.post);
-
+      tree num_threads = NULL_TREE;
+      for (gfc_expr_list *el = clauses->num_threads_list; el; el = el->next)
+	num_threads = tree_cons (NULL_TREE,
+				 gfc_convert_expr_to_tree (block, el->expr),
+				 num_threads);
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_NUM_THREADS);
-      OMP_CLAUSE_NUM_THREADS_EXPR (c) = num_threads;
+      OMP_CLAUSE_NUM_THREADS_EXPR (c) = nreverse (num_threads);
+      OMP_CLAUSE_NUM_THREADS_STRICT (c) = clauses->num_threads_strict;
+      OMP_CLAUSE_NUM_THREADS_DIMS (c) = clauses->num_threads_dims;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -5995,32 +6010,15 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses->num_teams_list)
     {
-      tree num_teams_lower = NULL_TREE, num_teams_upper;
-
-      if (clauses->num_teams_dims)
-	sorry_at (gfc_get_location (&clauses->num_teams_list->expr->where),
-		    "%<num_teams%> with %<dims%> modifier");
-
-      gfc_expr_list *el = clauses->num_teams_list;
-      if (el->next)
-	{
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr (&se, el->expr);
-	  gfc_add_block_to_block (block, &se.pre);
-	  num_teams_lower = gfc_evaluate_now (se.expr, block);
-	  gfc_add_block_to_block (block, &se.post);
-	  el = el->next;
-	}
-
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, el->expr);
-      gfc_add_block_to_block (block, &se.pre);
-      num_teams_upper = gfc_evaluate_now (se.expr, block);
-      gfc_add_block_to_block (block, &se.post);
-
+      tree num_teams = NULL_TREE;
+      for (gfc_expr_list *el = clauses->num_teams_list; el; el = el->next)
+	num_teams = tree_cons (NULL_TREE,
+			       gfc_convert_expr_to_tree (block, el->expr),
+			       num_teams);
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_NUM_TEAMS);
-      OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = num_teams_lower;
-      OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = num_teams_upper;
+      OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = NULL_TREE;
+      OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = nreverse (num_teams);
+      OMP_CLAUSE_NUM_TEAMS_DIMS (c) = clauses->num_teams_dims;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -6045,22 +6043,15 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses->thread_limit_list)
     {
-      tree thread_limit;
-
-      if (clauses->thread_limit_dims)
-	sorry_at (gfc_get_location (&clauses->thread_limit_list->expr->where),
-		    "%<thread_limit%> with %<dims%> modifier");
-      else if (clauses->thread_limit_strict)
-	sorry_at (gfc_get_location (&clauses->thread_limit_list->expr->where),
-		    "%<thread_limit%> with %<strict%> modifier");
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, clauses->thread_limit_list->expr);
-      gfc_add_block_to_block (block, &se.pre);
-      thread_limit = gfc_evaluate_now (se.expr, block);
-      gfc_add_block_to_block (block, &se.post);
-
+      tree thread_limit = NULL_TREE;
+      for (gfc_expr_list *el = clauses->thread_limit_list; el; el = el->next)
+	thread_limit = tree_cons (NULL_TREE,
+				  gfc_convert_expr_to_tree (block, el->expr),
+				  thread_limit);
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_THREAD_LIMIT);
-      OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = thread_limit;
+      OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = nreverse (thread_limit);
+      OMP_CLAUSE_THREAD_LIMIT_STRICT (c) = clauses->thread_limit_strict;
+      OMP_CLAUSE_THREAD_LIMIT_DIMS (c) = clauses->thread_limit_dims;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -8527,6 +8518,10 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->nowait;
 	  clausesa[GFC_OMP_SPLIT_TARGET].device_type
 	    = code->ext.omp_clauses->device_type;
+	  clausesa[GFC_OMP_SPLIT_TARGET].message
+	    = code->ext.omp_clauses->message;
+	  clausesa[GFC_OMP_SPLIT_TARGET].severity
+	    = code->ext.omp_clauses->severity;
 	}
       if (mask & GFC_OMP_MASK_TEAMS)
 	{
@@ -8547,6 +8542,11 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->lists[OMP_LIST_SHARED];
 	  clausesa[GFC_OMP_SPLIT_TEAMS].default_sharing
 	    = code->ext.omp_clauses->default_sharing;
+	  /* Message is used on target, teams, and parallel.  */
+	  clausesa[GFC_OMP_SPLIT_TEAMS].message
+	    = code->ext.omp_clauses->message;
+	  clausesa[GFC_OMP_SPLIT_TEAMS].severity
+	    = code->ext.omp_clauses->severity;
 	}
       if (mask & GFC_OMP_MASK_DISTRIBUTE)
 	{
@@ -8589,6 +8589,10 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* And this is copied to all.  */
 	  clausesa[GFC_OMP_SPLIT_PARALLEL].if_expr
 	    = code->ext.omp_clauses->if_expr;
+	  clausesa[GFC_OMP_SPLIT_PARALLEL].message
+	    = code->ext.omp_clauses->message;
+	  clausesa[GFC_OMP_SPLIT_PARALLEL].severity
+	    = code->ext.omp_clauses->severity;
 	}
       if (mask & GFC_OMP_MASK_MASKED)
 	clausesa[GFC_OMP_SPLIT_MASKED].filter = code->ext.omp_clauses->filter;

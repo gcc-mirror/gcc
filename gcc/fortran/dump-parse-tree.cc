@@ -2456,7 +2456,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     }
   if (omp_clauses->message)
     {
-      fputs (" ERROR (", dumpfile);
+      fputs (" MESSAGE (", dumpfile);
       show_expr (omp_clauses->message);
       fputc (')', dumpfile);
     }

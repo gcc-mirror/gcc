@@ -90,22 +90,22 @@ subroutine three
   !$omp teams num_teams(  ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list'" }
   block; end block
 
-  !$omp teams num_teams( dims ! { dg-error "Failed to match clause" }
+  !$omp teams num_teams( dims ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list' at .1." }
   block; end block
 
-  !$omp teams num_teams( dims(1) ! { dg-error "Invalid character in name" }
+  !$omp teams num_teams( dims(1) ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list'" }
   block; end block
 
   !$omp teams num_teams( dims(1) : ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list'" }
   block; end block
 
-  !$omp teams num_teams( dims(1) : 1 ! { dg-error "Syntax error in OpenMP expression" }
+  !$omp teams num_teams( dims(1) : 1 ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list'" }
   block; end block
 
-  !$omp teams num_teams( 5 : ! { dg-error "Invalid character in name" }
+  !$omp teams num_teams( 5 : ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list'" }
   block; end block
 
-  !$omp teams num_teams( 5 : 5 ! { dg-error "Failed to match clause" }
+  !$omp teams num_teams( 5 : 5 ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list' at .1." }
   block; end block
 end
 
@@ -168,7 +168,7 @@ subroutine five
 end
 
 subroutine six
-  !$omp teams num_teams (dims(1), dims(1) : 1) ! { dg-error "Invalid character in name" }
+  !$omp teams num_teams (dims(1), dims(1) : 1) ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list'" }
   block; end block
 
 
@@ -241,12 +241,18 @@ subroutine six
 end subroutine
 
 subroutine seven
-  !$omp teams num_teams (2,2)  ! { dg-error "Failed to match clause" }
+  !$omp teams num_teams (2,2)  ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list'" }
   block; end block
 
   !$omp teams thread_limit (2,2)  ! { dg-error "Without the DIM modifier, only a single integer expression may be specified" }
   block; end block
 
   !$omp parallel num_threads (2,2)  ! OK
+  block; end block
+
+  !$omp teams num_teams(39 ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list' at .1." }
+  block; end block
+ 
+  !$omp teams num_teams(strict : 4 : 5 )  ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list' at .1." }
   block; end block
 end

@@ -14829,7 +14829,23 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_WORKER:
 	case OMP_CLAUSE_VECTOR:
 	  if (OMP_CLAUSE_OPERAND (c, 0)
-	      && !is_gimple_min_invariant (OMP_CLAUSE_OPERAND (c, 0)))
+	      && TREE_CODE (OMP_CLAUSE_OPERAND (c, 0)) == TREE_LIST)
+	    {
+	      for (tree t = OMP_CLAUSE_OPERAND (c, 0); t; t = TREE_CHAIN (t))
+		if (!is_gimple_min_invariant (TREE_VALUE (t)))
+		  {
+		    if (error_operand_p (TREE_VALUE (t)))
+		      {
+			remove = true;
+			break;
+		      }
+		    TREE_VALUE (t)
+		      = get_initialized_tmp_var (TREE_VALUE (t), pre_p,
+						 NULL, true);
+		  }
+	    }
+	  else if (OMP_CLAUSE_OPERAND (c, 0)
+		   && !is_gimple_min_invariant (OMP_CLAUSE_OPERAND (c, 0)))
 	    {
 	      if (error_operand_p (OMP_CLAUSE_OPERAND (c, 0)))
 		{
@@ -14877,6 +14893,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_INDEPENDENT:
 	case OMP_CLAUSE_MERGEABLE:
+	case OMP_CLAUSE_MESSAGE:
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_SIMDLEN:
@@ -16432,6 +16449,7 @@ end_adjust_omp_map_clause:
 	case OMP_CLAUSE_EXCLUSIVE:
 	case OMP_CLAUSE_USES_ALLOCATORS:
 	case OMP_CLAUSE_DEVICE_TYPE:
+	case OMP_CLAUSE_MESSAGE:
 	  break;
 
 	case OMP_CLAUSE_NOHOST:

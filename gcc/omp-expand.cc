@@ -661,6 +661,25 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
     {
       val = OMP_CLAUSE_NUM_THREADS_EXPR (c);
       clause_loc = OMP_CLAUSE_LOCATION (c);
+      if (TREE_CODE (val) == TREE_LIST)
+	{
+	  if (OMP_CLAUSE_NUM_THREADS_DIMS (c)
+	      && (TREE_CHAIN (val) || OMP_CLAUSE_NUM_THREADS_STRICT (c)))
+	    /* Accept 'dim(1),relaxed'. */
+	    sorry_at (clause_loc,
+		      "%<num_threads%> clause with %<dims%> modifier");
+	  else if (TREE_CHAIN (val))
+	    sorry_at (clause_loc,
+		      "%<num_threads%> clause with more than one argument");
+	  else if (OMP_CLAUSE_NUM_THREADS_STRICT (c))
+	    sorry_at (clause_loc,
+		      "%<num_threads%> clause with %<strict%> modifier");
+	  val = TREE_VALUE (val);
+	}
+      else if (OMP_CLAUSE_NUM_THREADS_STRICT (c))
+	sorry_at (clause_loc,
+		  "%<num_threads%> clause with %<strict%> modifier");
+      /* FIXME: Handle OMP_CLAUSE_MESSAGE (only relevant with 'strict').  */
     }
   else
     clause_loc = gimple_location (entry_stmt);
@@ -969,20 +988,54 @@ expand_teams_call (basic_block bb, gomp_teams *entry_stmt)
 {
   tree clauses = gimple_omp_teams_clauses (entry_stmt);
   tree num_teams = omp_find_clause (clauses, OMP_CLAUSE_NUM_TEAMS);
+  tree thread_limit = omp_find_clause (clauses, OMP_CLAUSE_THREAD_LIMIT);
+  tree message = omp_find_clause (clauses, OMP_CLAUSE_MESSAGE);
+  if (message
+      && ((thread_limit && OMP_CLAUSE_THREAD_LIMIT_STRICT (thread_limit))
+	  || (num_teams && (TREE_CODE (num_teams) != INTEGER_CST
+			    || tree_int_cst_sgn (num_teams) < 0))))
+    sorry_at (OMP_CLAUSE_LOCATION (message), "%<message%> clause");
   if (num_teams == NULL_TREE)
     num_teams = build_int_cst (unsigned_type_node, 0);
   else
     {
-      num_teams = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
-      num_teams = fold_convert (unsigned_type_node, num_teams);
+      tree expr = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
+      /* FIXME: Implement lower-bound handling as well; however, currently,
+	 on the host the use-specified value is always used.  */
+      if (TREE_CODE (expr) == TREE_LIST
+	  && OMP_CLAUSE_NUM_TEAMS_DIMS (num_teams)
+	  && TREE_CHAIN (expr))
+	{
+	  sorry_at (OMP_CLAUSE_LOCATION (num_teams),
+		    "%<num_teams%> clause with %<dims%> modifier");
+	  expr = TREE_VALUE (expr);
+	}
+      else if (TREE_CODE (expr) == TREE_LIST)
+	expr = (TREE_CHAIN (expr)
+		? TREE_VALUE (TREE_CHAIN (expr)) : TREE_VALUE (expr));
+      num_teams = fold_convert (unsigned_type_node, expr);
     }
-  tree thread_limit = omp_find_clause (clauses, OMP_CLAUSE_THREAD_LIMIT);
   if (thread_limit == NULL_TREE)
     thread_limit = build_int_cst (unsigned_type_node, 0);
   else
     {
-      thread_limit = OMP_CLAUSE_THREAD_LIMIT_EXPR (thread_limit);
-      thread_limit = fold_convert (unsigned_type_node, thread_limit);
+      tree expr = OMP_CLAUSE_THREAD_LIMIT_EXPR (thread_limit);
+      if (TREE_CODE (expr) == TREE_LIST)
+	{
+	  if (OMP_CLAUSE_THREAD_LIMIT_DIMS (thread_limit)
+	      && (TREE_CHAIN (expr)
+		  || OMP_CLAUSE_THREAD_LIMIT_STRICT (thread_limit)))
+	    sorry_at (OMP_CLAUSE_LOCATION (thread_limit),
+		      "%<thread_limit%> clause with %<dims%> modifier");
+	  else if (OMP_CLAUSE_THREAD_LIMIT_STRICT (thread_limit))
+	    sorry_at (OMP_CLAUSE_LOCATION (thread_limit),
+		      "%<thread_limit%> clause with %<strict%> modifier");
+	  expr = TREE_VALUE (expr);
+	}
+      else if (OMP_CLAUSE_THREAD_LIMIT_STRICT (thread_limit))
+	sorry_at (OMP_CLAUSE_LOCATION (thread_limit),
+		  "%<thread_limit%> clause with %<strict%> modifier");
+      thread_limit = fold_convert (unsigned_type_node, expr);
     }
 
   gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
@@ -1000,7 +1053,7 @@ expand_teams_call (basic_block bb, gomp_teams *entry_stmt)
   args->quick_push (t1);
   args->quick_push (num_teams);
   args->quick_push (thread_limit);
-  /* For future extensibility.  */
+  /* For future extensibility: flags.  */
   args->quick_push (build_zero_cst (unsigned_type_node));
 
   t = build_call_expr_loc_vec (UNKNOWN_LOCATION,
@@ -9935,22 +9988,64 @@ get_target_arguments (gimple_stmt_iterator *gsi, gomp_target *tgt_stmt)
 {
   auto_vec <tree, 6> args;
   tree clauses = gimple_omp_target_clauses (tgt_stmt);
-  tree t, c = omp_find_clause (clauses, OMP_CLAUSE_NUM_TEAMS);
-  if (c)
-    t = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c);
+  tree num_teams = omp_find_clause (clauses, OMP_CLAUSE_NUM_TEAMS);
+  tree thread_limit = omp_find_clause (clauses, OMP_CLAUSE_THREAD_LIMIT);
+  tree message = omp_find_clause (clauses, OMP_CLAUSE_MESSAGE);
+  if (message)
+    /* FIXME: error termination checking also requires to check
+       OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR not only UPPER, i.e. it
+       needs to be passed to the runtime! Note that both target and
+       a nested teams can have a 'message' clause - and both take a
+       thread_limit clause.  */
+    sorry_at (OMP_CLAUSE_LOCATION (message), "%<message%> clause");
+  if (num_teams)
+    {
+      tree expr = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
+      /* FIXME: Update omp-low.cc's lower_omp_teams when implementing.  */
+      if (TREE_CODE (expr) == TREE_LIST
+	  && OMP_CLAUSE_NUM_TEAMS_DIMS (num_teams)
+	  && TREE_CHAIN (expr))
+	{
+	  sorry_at (OMP_CLAUSE_LOCATION (num_teams),
+		    "%<num_teams%> clause with %<dims%> modifier");
+	  num_teams = TREE_VALUE (expr);
+	}
+      else if (TREE_CODE (expr) == TREE_LIST)
+	num_teams = (TREE_CHAIN (expr)
+		     ? TREE_VALUE (TREE_CHAIN (expr)) : TREE_VALUE (expr));
+      else
+	num_teams = expr;
+    }
   else
-    t = integer_minus_one_node;
+    num_teams = integer_minus_one_node;
   push_target_argument_according_to_value (gsi, GOMP_TARGET_ARG_DEVICE_ALL,
-					   GOMP_TARGET_ARG_NUM_TEAMS, t, &args);
-
-  c = omp_find_clause (clauses, OMP_CLAUSE_THREAD_LIMIT);
-  if (c)
-    t = OMP_CLAUSE_THREAD_LIMIT_EXPR (c);
+					   GOMP_TARGET_ARG_NUM_TEAMS,
+					   num_teams, &args);
+  if (thread_limit)
+    {
+      tree expr = OMP_CLAUSE_THREAD_LIMIT_EXPR (thread_limit);
+      if (TREE_CODE (expr) == TREE_LIST)
+	{
+	  if (OMP_CLAUSE_THREAD_LIMIT_DIMS (thread_limit)
+	      && (TREE_CHAIN (expr)
+		  || OMP_CLAUSE_THREAD_LIMIT_STRICT (thread_limit)))
+	    sorry_at (OMP_CLAUSE_LOCATION (thread_limit),
+		      "%<thread_limit%> clause with %<dims%> modifier");
+	  else if (OMP_CLAUSE_THREAD_LIMIT_STRICT (thread_limit))
+	    sorry_at (OMP_CLAUSE_LOCATION (thread_limit),
+		      "%<thread_limit%> clause with %<strict%> modifier");
+	  expr = TREE_VALUE (expr);
+	}
+      else if (OMP_CLAUSE_THREAD_LIMIT_STRICT (thread_limit))
+	sorry_at (OMP_CLAUSE_LOCATION (thread_limit),
+		  "%<thread_limit%> clause with %<strict%> modifier");
+      thread_limit = expr;
+    }
   else
-    t = integer_minus_one_node;
+    thread_limit = integer_minus_one_node;
   push_target_argument_according_to_value (gsi, GOMP_TARGET_ARG_DEVICE_ALL,
-					   GOMP_TARGET_ARG_THREAD_LIMIT, t,
-					   &args);
+					   GOMP_TARGET_ARG_THREAD_LIMIT,
+					   thread_limit, &args);
 
   /* Produce more, perhaps device specific, arguments here.  */
 

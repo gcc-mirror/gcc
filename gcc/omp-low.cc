@@ -1858,6 +1858,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_INIT:
 	case OMP_CLAUSE_USE:
 	case OMP_CLAUSE_DESTROY:
+	case OMP_CLAUSE_MESSAGE:
 	  break;
 
 	case OMP_CLAUSE__CACHE_:
@@ -2061,6 +2062,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_DESTROY:
 	case OMP_CLAUSE_DEVICE_TYPE:
 	case OMP_CLAUSE_USES_ALLOCATORS:
+	case OMP_CLAUSE_MESSAGE:
 	  break;
 
 	case OMP_CLAUSE__CACHE_:
@@ -15051,6 +15053,14 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 			 fb_rvalue);
 	}
       num_teams = OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (num_teams);
+      // FIXME: Handle dim(x), cf. omp-expand.cc's get_target_arguments.  */
+      if (TREE_CODE (num_teams) == TREE_LIST && TREE_CHAIN (num_teams))
+	{
+	  num_teams_lower = TREE_VALUE (num_teams);
+	  num_teams = TREE_VALUE (TREE_CHAIN (num_teams));
+	}
+      else if (TREE_CODE (num_teams) == TREE_LIST)
+	num_teams = TREE_VALUE (num_teams);
       num_teams = fold_convert (unsigned_type_node, num_teams);
       gimplify_expr (&num_teams, &bind_body, NULL, is_gimple_val, fb_rvalue);
     }
@@ -15063,6 +15073,9 @@ lower_omp_teams (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   else
     {
       thread_limit = OMP_CLAUSE_THREAD_LIMIT_EXPR (thread_limit);
+      // FIXME: Handle dim(x), cf. omp-expand.cc's get_target_arguments.  */
+      if (TREE_CODE (thread_limit) == TREE_LIST)
+	thread_limit = TREE_VALUE (thread_limit);
       thread_limit = fold_convert (unsigned_type_node, thread_limit);
       gimplify_expr (&thread_limit, &bind_body, NULL, is_gimple_val,
 		     fb_rvalue);

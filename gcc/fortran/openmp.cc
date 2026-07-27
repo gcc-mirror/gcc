@@ -4135,6 +4135,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      goto error;
 		    }
 		  c->num_teams_dims = true;
+		  continue;
 		}
 	      else if (gfc_match ("%e ", &expr) == MATCH_YES)
 		{
@@ -4143,21 +4144,20 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		  if (gfc_peek_ascii_char () == ':')
 		    {
 		      expr = NULL;
-		      if (gfc_match (": %e ", &expr) != MATCH_YES)
-			goto error;
-		      c->num_teams_list->next = gfc_get_expr_list();
-		      c->num_teams_list->next->expr = expr;
+		      if (gfc_match (": %e ", &expr) == MATCH_YES)
+			{
+			  c->num_teams_list->next = gfc_get_expr_list();
+			  c->num_teams_list->next->expr = expr;
+			  if (gfc_match (") ") == MATCH_YES)
+			    continue;
+			}
 		    }
-		  if (gfc_match (") ") != MATCH_YES)
-		    goto error;
+		  else if (gfc_match (") ") == MATCH_YES)
+		    continue;
 		}
-	      else
-		{
-		  gfc_error ("Expected either %<[lower-expr : ] upper-expr%> or "
+	      gfc_error ("Expected either %<[lower-expr : ] upper-expr%> or "
 			     "%<dims(N): expr-list%> at %C");
-		  goto error;
-		}
-	      continue;
+	      goto error;
 	    }
 	  if ((mask & OMP_CLAUSE_NUM_THREADS)
 	      && (m = gfc_match_dupl_check (!c->num_threads_list,
@@ -5534,7 +5534,8 @@ cleanup:
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_COPYIN | OMP_CLAUSE_REDUCTION	\
    | OMP_CLAUSE_IF | OMP_CLAUSE_NUM_THREADS | OMP_CLAUSE_DEFAULT	\
-   | OMP_CLAUSE_PROC_BIND | OMP_CLAUSE_ALLOCATE)
+   | OMP_CLAUSE_PROC_BIND | OMP_CLAUSE_ALLOCATE | OMP_CLAUSE_MESSAGE	\
+   | OMP_CLAUSE_SEVERITY)
 #define OMP_DECLARE_SIMD_CLAUSES \
   (omp_mask (OMP_CLAUSE_SIMDLEN) | OMP_CLAUSE_LINEAR			\
    | OMP_CLAUSE_UNIFORM	| OMP_CLAUSE_ALIGNED | OMP_CLAUSE_INBRANCH	\
@@ -5583,7 +5584,8 @@ cleanup:
    | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
    | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE			\
    | OMP_CLAUSE_HAS_DEVICE_ADDR | OMP_CLAUSE_USES_ALLOCATORS		\
-   | OMP_CLAUSE_DYN_GROUPPRIVATE | OMP_CLAUSE_DEVICE_TYPE)
+   | OMP_CLAUSE_DYN_GROUPPRIVATE | OMP_CLAUSE_DEVICE_TYPE		\
+   | OMP_CLAUSE_MESSAGE | OMP_CLAUSE_SEVERITY)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -5599,7 +5601,8 @@ cleanup:
 #define OMP_TEAMS_CLAUSES \
   (omp_mask (OMP_CLAUSE_NUM_TEAMS) | OMP_CLAUSE_THREAD_LIMIT		\
    | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_FIRSTPRIVATE	\
-   | OMP_CLAUSE_SHARED | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_ALLOCATE)
+   | OMP_CLAUSE_SHARED | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_ALLOCATE	\
+   | OMP_CLAUSE_MESSAGE | OMP_CLAUSE_SEVERITY)
 #define OMP_DISTRIBUTE_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_DIST_SCHEDULE \

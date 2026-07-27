@@ -400,6 +400,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_NOCONTEXT */
   1, /* OMP_CLAUSE_DYN_GROUPPRIVATE  */
   3, /* OMP_CLAUSE_USES_ALLOCATORS */
+  2, /* OMP_CLAUSE_MESSAGE */
 };
 
 const char * const omp_clause_code_name[] =
@@ -505,6 +506,7 @@ const char * const omp_clause_code_name[] =
   "nocontext",
   "dyn_groupprivate",
   "uses_allocators",
+  "message"
 };
 
 /* Unless specific to OpenACC, we tend to internally maintain OpenMP-centric
