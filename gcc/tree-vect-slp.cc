@@ -9212,7 +9212,7 @@ vectorizable_bb_reduc_epilogue (slp_instance instance,
 	 be included here.  */
       || (needs_fold_left_reduction_p (TREE_TYPE (vectype), reduc_code)
 	  && (!instance->remain_defs.is_empty ()
-	      || maybe_ne (TYPE_VECTOR_SUBPARTS (vectype), 2u))))
+	      || SLP_TREE_LANES (SLP_INSTANCE_TREE (instance)) != 2)))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
