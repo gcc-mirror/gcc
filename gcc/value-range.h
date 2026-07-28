@@ -679,6 +679,7 @@ private:
   bool normalize_kind ();
   bool union_nans (const frange &);
   bool intersect_nans (const frange &);
+  void set_pairs (frange_pair *, unsigned);
   void canonicalize_zeros (frange_pair &);
 
   tree m_type;
