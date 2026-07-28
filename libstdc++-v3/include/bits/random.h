@@ -569,36 +569,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       struct _Shift<_UIntType, __w, true>
       { static constexpr _UIntType __value = _UIntType(1) << __w; };
 
-    template<int __s,
-	     int __which = ((__s <= __CHAR_BIT__ * sizeof (int))
-			    + (__s <= __CHAR_BIT__ * sizeof (long))
-			    + (__s <= __CHAR_BIT__ * sizeof (long long))
-			    /* assume long long no bigger than __int128 */
-			    + (__s <= 128))>
-      struct _Select_uint_least_t
-      {
-	static_assert(__which < 0, /* needs to be dependent */
-		      "sorry, would be too much trouble for a slow result");
-      };
-
-    template<int __s>
-      struct _Select_uint_least_t<__s, 4>
-      { using type = unsigned int; };
-
-    template<int __s>
-      struct _Select_uint_least_t<__s, 3>
-      { using type = unsigned long; };
-
-    template<int __s>
-      struct _Select_uint_least_t<__s, 2>
-      { using type = unsigned long long; };
-
-#if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
-    template<int __s>
-      struct _Select_uint_least_t<__s, 1>
-      { __extension__ using type = unsigned __int128; };
-#elif __has_builtin(__builtin_add_overflow) \
-    && __has_builtin(__builtin_sub_overflow) \
+// Primary template and other specializtions are defined in bits/uniform_int_dist.h.
+#if __SIZEOF_INT128__ <= __SIZEOF_LONG_LONG__ \
+    && __has_builtin(__builtin_add_overflow)  \
+    && __has_builtin(__builtin_sub_overflow)  \
     && defined __UINT64_TYPE__
     template<int __s>
       struct _Select_uint_least_t<__s, 1>
