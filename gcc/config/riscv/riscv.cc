@@ -8110,9 +8110,20 @@ riscv_legitimize_call_address (rtx addr, bool sibcall_p)
 {
   if (!call_insn_operand (addr, VOIDmode))
     {
-      rtx reg = sibcall_p
-		? gen_reg_rtx (Pmode)
-		: RISCV_CALL_ADDRESS_TEMP (Pmode);
+      rtx reg;
+      if (sibcall_p && can_create_pseudo_p ())
+	reg = gen_reg_rtx (Pmode);
+      else if (sibcall_p)
+	{
+	  /* MI thunks are expanded as post-reload code and cannot create
+	     pseudos.  STATIC_CHAIN_REGNUM is available as a temporary there
+	     and is suitable for an indirect sibling call.  */
+	  gcc_assert (riscv_in_thunk_func
+		      && SIBCALL_REG_P (STATIC_CHAIN_REGNUM));
+	  reg = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
+	}
+      else
+	reg = RISCV_CALL_ADDRESS_TEMP (Pmode);
       riscv_emit_move (reg, addr);
 
       if (is_zicfilp_p ())
