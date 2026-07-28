@@ -1076,10 +1076,9 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
     }
 
   /* See if we have two comparisons that we can merge into one.  */
-  else bits_test_failed:
-    if (TREE_CODE_CLASS (gimple_cond_code (inner_cond)) == tcc_comparison
-	   && TREE_CODE_CLASS (gimple_cond_code (outer_cond)) == tcc_comparison)
+  else
     {
+    bits_test_failed:
       tree t, ts = NULL_TREE;
       enum tree_code inner_cond_code = gimple_cond_code (inner_cond);
       enum tree_code outer_cond_code = gimple_cond_code (outer_cond);
