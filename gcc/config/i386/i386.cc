@@ -8618,7 +8618,11 @@ ix86_spill_register_argument_p (const_rtx set, const_rtx op, tree base)
   rtx dest = SET_DEST (set);
   tree reg_expr = REG_EXPR (src);
 
-  return dest == op && reg_expr == base;
+  /* If spilling an SSA_NAME into OP, the argument-linked memory is
+     also used to store a local variable.  */
+  return dest == op && (reg_expr == base
+			|| (reg_expr
+			    && TREE_CODE (reg_expr) == SSA_NAME));
 }
 
 /* Return true if OP, found in PAT, is a stack argument set up by the
