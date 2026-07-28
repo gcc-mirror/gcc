@@ -1802,7 +1802,7 @@ cdftext::free_form_reference_format( int input,
          * Use the weird input value to signify fixed format, information
          * otherwise not available and not significant to the parser.
          */
-        if( format.top().is_fixed() ) *indcol = 0x8D;
+        if( format.top().is_fixed() ) *indcol = char(0x8D);
         break;
       case '*':
       case '/':
