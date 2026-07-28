@@ -1574,7 +1574,6 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	      __n = __last._M_cur - __from;
 	    else
 	      __n = __first._M_last - __from;
-	    _OTp* __sres = __result._M_cur;
 	    __n = std::min<ptrdiff_t>(__n, __result._M_last - __result._M_cur);
 	    std::uninitialized_copy(__from, __from + __n, __result._M_cur);
 	    __first += __n;
