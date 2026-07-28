@@ -1,3 +1,12 @@
+2026-07-27  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2026-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126310
+	* call.cc (standard_conversion): Don't build a mixed METHOD_TYPE if
+	it isn't needed.
+
 2026-07-26  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

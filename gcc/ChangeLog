@@ -1,3 +1,41 @@
+2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/sourcebuild.texi (arm_neon_fp16_hw, arm_fp16_alternative_hw):
+	Use @code{...} instead of @code(...).
+
+2026-07-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-07-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* doc/sourcebuild.texi (arm_fp16_alternative_hw): Document.
+	(arm_neon_fp16_hw): Add reference to arm_neon_fp16_ok.
+
+2026-07-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2026-05-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/125396
+	* tree-cfgcleanup.cc (bb_phis_references_abnormal_uses): New function.
+	(maybe_remove_forwarder_block): Check to make sure the
+	forwarder block does not have a phi that references ssa name that has
+	abnormal uses.
+
+2026-07-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2026-05-15  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/125290
+	* tree-cfg.cc (group_case_labels_stmt): Remove code that was
+	added to remove `cases` that goto blocks of unreachable.
+	* tree-ssa-forwprop.cc (optimize_unreachable): Remove the
+	comment about switch cases being handled.
+
 2026-07-25  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

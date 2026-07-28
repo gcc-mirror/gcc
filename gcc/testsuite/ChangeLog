@@ -1,3 +1,66 @@
+2026-07-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/126386
+	* gfortran.dg/inline_matmul_28.f90: New test.
+
+2026-07-27  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2026-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126310
+	* g++.dg/opt/pmf2.C: New test.
+
+2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/126303
+	* gfortran.dg/pr126303.f: New test.
+
+2026-07-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-07-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-3.C: Require effective target
+	arm_fp16_alternative_hw instead of arm_fp16_alternative_ok.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-4.C: Likewise.
+	* gcc.dg/torture/arm-fp16-int-convert-alt.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-3.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-4.c: Likewise.
+	* lib/target-supports.exp (arm_fp16_alternative_hw): New proc.
+
+2026-07-27  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-05-15  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wuninitialized-pr107919-1.C: Fix a dg-bogus.
+
+2026-07-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2026-05-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/125396
+	* gcc.dg/torture/pr125396-1.c: New test.
+
+2026-07-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2026-05-15  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/125290
+	* g++.dg/warn/Wuninitialized-pr107919-1.C: Remove xfail.
+	* gcc.dg/analyzer/taint-assert.c: Update for the non-removal
+	of block containing unreachable.
+	* gcc.dg/torture/pr125290-1.c: New test.
+
 2026-07-26  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
