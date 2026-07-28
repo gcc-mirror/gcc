@@ -470,19 +470,6 @@
 	     (match_operand:SI 3 "const48_operand")]
 		UNSPEC_EMBEDDED_ROUNDING))])
 
-(define_subst_attr "maskz_half_name" "maskz_half" "" "_maskz_1")
-(define_subst_attr "maskz_half_operand4" "maskz_half" "" "%{%5%}%N4")
-
-(define_subst "maskz_half"
-  [(set (match_operand:SUBST_V 0)
-        (match_operand:SUBST_V 1))]
-  ""
-  [(set (match_dup 0)
-        (vec_merge:SUBST_V
-	  (match_dup 1)
-	  (match_operand:SUBST_V 2 "const0_operand")
-	  (match_operand:<avx512fmaskhalfmode> 3 "register_operand" "Yk")))])
-
 (define_subst_attr "round_zext_name" "round_zext" "_zext" "_round_zext")
 (define_subst_attr "round_zext_constraint" "round_zext" "vm" "v")
 (define_subst_attr "round_zext_constraint2" "round_zext" "m" "v")
