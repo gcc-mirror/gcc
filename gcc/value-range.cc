@@ -1013,6 +1013,18 @@ frange_cmp (const REAL_VALUE_TYPE &a, const REAL_VALUE_TYPE &b)
   return 0;
 }
 
+static inline const REAL_VALUE_TYPE &
+frange_min (const REAL_VALUE_TYPE &a, const REAL_VALUE_TYPE &b)
+{
+  return frange_cmp (a, b) <= 0 ? a : b;
+}
+
+static inline const REAL_VALUE_TYPE &
+frange_max (const REAL_VALUE_TYPE &a, const REAL_VALUE_TYPE &b)
+{
+  return frange_cmp (a, b) >= 0 ? a : b;
+}
+
 // Return TRUE if [..., A_MAX] and [B_MIN, ...] can be fused into one interval,
 // either because they overlap or because no representable value exists between
 // them.  The latter is how -0.0 and +0.0 abut: there is nothing in between, so
@@ -1347,11 +1359,9 @@ frange::intersect_nans (const frange &r)
   m_pos_nan &= r.m_pos_nan;
   m_neg_nan &= r.m_neg_nan;
   if (maybe_isnan ())
-    m_kind = VR_NAN;
+    set_nan (m_type, get_nan_state ());
   else
     set_undefined ();
-  if (flag_checking)
-    verify_range ();
   return true;
 }
 
@@ -1376,43 +1386,44 @@ frange::intersect (const vrange &v)
   // Combine NAN info.
   if (known_isnan () || r.known_isnan ())
     return intersect_nans (r);
-  bool changed = false;
-  if (m_pos_nan != r.m_pos_nan || m_neg_nan != r.m_neg_nan)
-    {
-      m_pos_nan &= r.m_pos_nan;
-      m_neg_nan &= r.m_neg_nan;
-      changed = true;
-    }
 
-  // FIXME: Rewrite for sub-ranges.
-  // Combine endpoints.
-  if (frange_cmp (m_pairs[0].min, r.m_pairs[0].min) < 0)
-    {
-      m_pairs[0].min = r.m_pairs[0].min;
-      changed = true;
-    }
-  if (frange_cmp (r.m_pairs[0].max, m_pairs[0].max) < 0)
-    {
-      m_pairs[0].max = r.m_pairs[0].max;
-      changed = true;
-    }
+  frange save = *this;
+  m_pos_nan &= r.m_pos_nan;
+  m_neg_nan &= r.m_neg_nan;
 
-  // FIXME: Rewrite for sub-ranges.
-  // If the endpoints are swapped, the resulting range is empty.  This also
-  // catches [+0.0, -0.0], which is also empty.
-  if (frange_cmp (m_pairs[0].max, m_pairs[0].min) < 0)
+  // Meet every sub-range against every other.  Two sorted, disjoint sets of at
+  // most MAX_PAIRS each cannot yield more than MAX_PAIRS^2 pieces.
+  //
+  // NOTE: Since both operands are sorted, a merge-style meet like irange would
+  // be O(n) and leave set_pairs nothing to sort.  Not worth it while MAX_PAIRS
+  // is tiny; revisit if it grows.
+  frange_pair pairs[MAX_PAIRS * MAX_PAIRS];
+  unsigned n = 0;
+  for (unsigned i = 0; i < save.m_num_ranges; ++i)
+    for (unsigned j = 0; j < r.m_num_ranges; ++j)
+      {
+	const REAL_VALUE_TYPE &min
+	  = frange_max (save.m_pairs[i].min, r.m_pairs[j].min);
+	const REAL_VALUE_TYPE &max
+	  = frange_min (save.m_pairs[i].max, r.m_pairs[j].max);
+	// A reversed interval means these two do not overlap.  This also
+	// catches [+0.0, -0.0], which is empty rather than nonsensical.
+	if (frange_cmp (min, max) <= 0)
+	  pairs[n++] = { min, max };
+      }
+
+  // Nothing but a possible NAN survives.
+  if (n == 0)
     {
       if (maybe_isnan ())
-	m_kind = VR_NAN;
+	set_nan (m_type, get_nan_state ());
       else
 	set_undefined ();
-      if (flag_checking)
-	verify_range ();
       return true;
     }
 
-  changed |= normalize_kind ();
-  return changed;
+  set_pairs (pairs, n);
+  return *this != save;
 }
 
 frange &
