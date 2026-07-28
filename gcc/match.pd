@@ -4987,7 +4987,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (INTEGRAL_TYPE_P (type)
       && !TYPE_SATURATING (type)
       && (GIMPLE || !TREE_SIDE_EFFECTS (@0)))
-  (cond (convert:boolean_type_node @1) (negate @0) @0)))
+  /* Do the negate in unsigned type always; otherwise
+     we would be introducing an overflow.  */
+  (with { tree utype = unsigned_type_for (type); }
+   (cond
+    (convert:boolean_type_node @1)
+    (convert:type (negate (convert:utype @0)))
+    @0))))
 
 /* Transform A & (B*cmp) into (A&B)*cmp.  */
 (simplify
