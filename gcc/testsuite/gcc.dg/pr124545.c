@@ -25,5 +25,4 @@ int func4(int *a, int j) {
 }
 
 /* All four functions should fold to return 1 after FRE.  */
-/* The pattern is not applied on ilp32 targets (PR116845).  */
-/* { dg-final { scan-tree-dump-times "return 1;" 4 "fre1" { xfail { ilp32 } } } } */
+/* { dg-final { scan-tree-dump-times "return 1;" 4 "fre1" } } */

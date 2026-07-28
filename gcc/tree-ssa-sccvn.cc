@@ -5642,6 +5642,37 @@ valueized_wider_op (tree wide_type, tree op, bool allow_truncate)
   return NULL_TREE;
 }
 
+/* Return true if RESULT, the result of a value-number lookup, may be
+   used at the statement being visited.  A result of wrapping type can
+   be inserted for code hoisting without introducing undefined
+   overflow; anything else has to be available.  See PR86554.  */
+
+static bool
+vn_nary_result_avail_or_insertable_p (tree result)
+{
+  return (TYPE_OVERFLOW_WRAPS (TREE_TYPE (result))
+	  || (rpo_avail && vn_context_bb
+	      && rpo_avail->eliminate_avail (vn_context_bb, result)));
+}
+
+/* If OP is an SSA name defined by a conversion from an integral type,
+   return the valueized source of the conversion, otherwise return
+   NULL_TREE.  */
+
+static tree
+ssa_integral_conversion_op (tree op)
+{
+  if (TREE_CODE (op) != SSA_NAME)
+    return NULL_TREE;
+  gassign *def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (op));
+  if (!def || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
+    return NULL_TREE;
+  const tree src = gimple_assign_rhs1 (def);
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (src)))
+    return NULL_TREE;
+  return vn_valueize (src);
+}
+
 /* Visit a nary operator RHS, value number it, and return true if the
    value number of LHS has changed as a result.  */
 
@@ -5698,15 +5729,7 @@ visit_nary_op (tree lhs, gassign *stmt)
 		  ops[0] = vn_nary_op_lookup_pieces
 		      (2, gimple_assign_rhs_code (def), type, ops, NULL);
 		  /* We have wider operation available.  */
-		  if (ops[0]
-		      /* If the leader is a wrapping operation we can
-		         insert it for code hoisting w/o introducing
-			 undefined overflow.  If it is not it has to
-			 be available.  See PR86554.  */
-		      && (TYPE_OVERFLOW_WRAPS (TREE_TYPE (ops[0]))
-			  || (rpo_avail && vn_context_bb
-			      && rpo_avail->eliminate_avail (vn_context_bb,
-							     ops[0]))))
+		  if (ops[0] && vn_nary_result_avail_or_insertable_p (ops[0]))
 		    {
 		      unsigned lhs_prec = TYPE_PRECISION (type);
 		      unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs1));
@@ -5746,6 +5769,72 @@ visit_nary_op (tree lhs, gassign *stmt)
 		}
 	    }
 	}
+      break;
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+      {
+	/* Match (T)A +- B against an existing (T)(A +- B'), the inverse
+	   of the conversion case above, so the redundancy is detected
+	   regardless of the order the two forms appear in the IL.
+	   See PR124545.  The narrow operation is only ever looked up,
+	   never created: assuming no overflow is only valid for
+	   operations the program actually executes, so the narrow
+	   leader has to be available.  Creating the narrow operation
+	   instead is wrong-code, see PR126415.  */
+	const tree narrow1 = ssa_integral_conversion_op (vn_valueize (rhs1));
+	if (!INTEGRAL_TYPE_P (type) || !narrow1)
+	  break;
+	const tree ntype = TREE_TYPE (narrow1);
+	/* A sign-change keeps the value bit-identical; a widening is
+	   only handled when the narrow operation cannot wrap.  */
+	const bool sign_change_p
+	  = TYPE_PRECISION (ntype) == TYPE_PRECISION (type);
+	const bool nowrap_widening_p
+	  = (TYPE_PRECISION (ntype) < TYPE_PRECISION (type)
+	     && TYPE_OVERFLOW_UNDEFINED (ntype));
+	if (!sign_change_p && !nowrap_widening_p)
+	  break;
+	/* Determine the narrow variant of the second operand: a
+	   constant that narrows and extends back unchanged, or a
+	   conversion from the same narrow type.  */
+	const tree rhs2 = gimple_assign_rhs2 (stmt);
+	tree narrow2 = NULL_TREE;
+	if (TREE_CODE (rhs2) == INTEGER_CST)
+	  {
+	    const widest_int cst = wi::to_widest (rhs2);
+	    const widest_int narrowed
+	      = wi::ext (cst, TYPE_PRECISION (ntype), TYPE_SIGN (ntype));
+	    const widest_int extended
+	      = wi::ext (narrowed, TYPE_PRECISION (type), TYPE_SIGN (type));
+	    if (cst == extended)
+	      narrow2 = fold_convert (ntype, rhs2);
+	  }
+	else if (TREE_CODE (rhs2) == SSA_NAME)
+	  {
+	    const tree op = ssa_integral_conversion_op (vn_valueize (rhs2));
+	    if (op && types_compatible_p (TREE_TYPE (op), ntype))
+	      narrow2 = op;
+	  }
+	if (!narrow2)
+	  break;
+	tree ops[3] = { narrow1, narrow2 };
+	const tree narrow_val
+	  = vn_nary_op_lookup_pieces (2, code, ntype, ops, NULL);
+	/* We have a narrower or sign-changed operation available.  */
+	if (narrow_val && vn_nary_result_avail_or_insertable_p (narrow_val))
+	  {
+	    gimple_match_op match_op (gimple_match_cond::UNCOND,
+				      NOP_EXPR, type, narrow_val);
+	    result = vn_nary_build_or_lookup (&match_op);
+	    if (result)
+	      {
+		const bool changed = set_ssa_val_to (lhs, result);
+		if (TREE_CODE (result) == SSA_NAME)
+		  vn_nary_op_insert_stmt (stmt, result);
+		return changed;
+	      }
+	  }
+      }
       break;
     case BIT_AND_EXPR:
       if (INTEGRAL_TYPE_P (type)

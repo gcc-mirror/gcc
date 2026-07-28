@@ -4087,38 +4087,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (plus (convert @0) (op @2 (convert @1))))))
 #endif
 
-/* Inverse of the above: (T)(A) +- CST -> (T)(A +- CST') when T is a
-   widening conversion from a type with undefined overflow and the outer
-   type wraps.  This allows VN to discover that (T)A + (T)C == (T)(A + C)
-   regardless of which form appears first in program order.  PR124545.
-   The rewrite is unsound for unsigned inner types: the narrow op wraps
-   mod 2^prec (defined) while the widened op does not, changing the
-   observed value.  Cover the unsigned case separately once ranger can
-   prove no wrap.  */
-#if GIMPLE
-  (for op (plus minus)
-   (simplify
-    (op (convert @0) INTEGER_CST@1)
-     (if (TREE_CODE (TREE_TYPE (@0)) == INTEGER_TYPE
-	  && TREE_CODE (type) == INTEGER_TYPE
-	  && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (@0))
-	  && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
-	  && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
-	  && TYPE_OVERFLOW_WRAPS (type)
-	  /* CST must be the sign-extension of its low inner-precision bits,
-	     otherwise narrowing changes the value.  Use min_precision (..,
-	     SIGNED) rather than int_fits_type_p so that small negative offsets
-	     encoded as large unsigned constants (e.g. -1 as sizetype) still
-	     qualify.  */
-	  && wi::min_precision (wi::to_wide (@1), SIGNED)
-	     <= TYPE_PRECISION (TREE_TYPE (@0)))
-       (with {
-	  wide_int c1 = wi::to_wide (@1);
-	  tree inner_cst = wide_int_to_tree (TREE_TYPE (@0),
-			     wi::sext (c1, TYPE_PRECISION (TREE_TYPE (@0)))); }
-	(convert (op! @0 { inner_cst; }))))))
-#endif
-
 /* (T)(A) +- (T)(B) -> (T)(A +- B) only when (A +- B) could be simplified
    to a simple value.  */
   (for op (plus minus)
