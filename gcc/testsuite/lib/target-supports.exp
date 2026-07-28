@@ -7413,6 +7413,47 @@ proc add_options_for_arm_fp16fml_neon { flags } {
     return "$flags $et_arm_fp16fml_neon_flags"
 }
 
+# Return 1 if the target supports F16F32DOT
+# instructions, 0 otherwise. This test is valid
+# for AARCH64.
+# Record the command line options needed.
+
+proc check_effective_target_aarch64_f16f32dot_neon_ok_nocache { } {
+    global et_aarch64_f16f32dot_neon_flags
+    set et_aarch64_f16f32dot_neon_flags ""
+
+    if { ![istarget aarch64*-*-*] } {
+	return 0;
+    }
+
+    foreach flags {"" "" } {
+	if { [check_no_compiler_messages_nocache aarch64_f16f32dot_neon_ok object {
+	    #include <arm_neon.h>
+	    #if !defined (__ARM_FEATURE_F16F32DOT)
+	    #error "__ARM_FEATURE_F16F32DOT not defined"
+	    #endif
+	} "$flags -march=armv8.2-a+fp16+f16f32dot"] } {
+	    set et_aarch64_f16f32dot_neon_flags "$flags -march=armv8.2-a+fp16+f16f32dot"
+	    return 1
+	}
+    }
+
+    return 0;
+}
+
+proc check_effective_target_aarch64_f16f32dot_neon_ok { } {
+    return [check_cached_effective_target aarch64_f16f32dot_neon_ok \
+		check_effective_target_aarch64_f16f32dot_neon_ok_nocache]
+}
+
+proc add_options_for_aarch64_f16f32dot_neon { flags } {
+    if { ! [check_effective_target_aarch64_f16f32dot_neon_ok] } {
+	return "$flags"
+    }
+    global et_aarch64_f16f32dot_neon_flags
+    return "$flags $et_aarch64_f16f32dot_neon_flags"
+}
+
 # Return 1 if the target supports BFloat16 SIMD instructions, 0 otherwise.
 # The test is valid for ARM and for AArch64.
 

@@ -22109,6 +22109,8 @@ extension.
 @item ssve-fp8dot2
 Enable the fp8 (8-bit floating point) to half-precision 2-way dot product
 extension in streaming mode.
+@item f16f32dot
+Enable the Half-precision to single-precision dot product extension.
 @item faminmax
 Enable the Floating Point Absolute Maximum/Minimum extension.
 @item lut

@@ -172,6 +172,9 @@
 ;; BFmode vector modes.
 (define_mode_iterator VBF [V4BF V8BF])
 
+;; Fmode vector modes.
+(define_mode_iterator VF [V4HF V8HF])
+
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; addresses in different modes.  In LP64, only DI will match, while in
 ;; ILP32, either can match.
@@ -2668,9 +2671,11 @@
 		      (V4HF "v") (V8HF  "v")])
 
 (define_mode_attr vsi2qi [(V2SI "v8qi") (V4SI "v16qi")
-			  (VNx4SI "vnx16qi") (VNx2DI "vnx8hi")])
+			  (VNx4SI "vnx16qi") (VNx2DI "vnx8hi")
+			  (V2SF "v4hf") (V4SF "v8hf")])
 (define_mode_attr VSI2QI [(V2SI "V8QI") (V4SI "V16QI")
-			  (VNx4SI "VNx16QI") (VNx2DI "VNx8HI")])
+			  (VNx4SI "VNx16QI") (VNx2DI "VNx8HI")
+			  (V2SF "V4HF") (V4SF "V8HF")])
 
 
 ;; Register suffix for DOTPROD input types from the return type.
@@ -2720,7 +2725,8 @@
 
 (define_mode_attr f16quad [(V2SF "") (V4SF "q")])
 
-(define_mode_attr isquadop [(V8QI "") (V16QI "q") (V4BF "") (V8BF "q")])
+(define_mode_attr isquadop [(V8QI "") (V16QI "q") (V4BF "") (V8BF "q")
+			    (V4HF "") (V8HF "q")])
 
 (define_code_attr f16mac [(plus "a") (minus "s")])
 

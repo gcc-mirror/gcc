@@ -320,6 +320,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (AARCH64_HAVE_ISA (SSVE_FEXPA),
 			"__ARM_FEATURE_SSVE_FEXPA", pfile);
   builtin_define ("__ARM_PREFETCH_RANGE");
+  aarch64_def_or_undef (TARGET_F16F32DOT, "__ARM_FEATURE_F16F32DOT", pfile);
 
   // Function multi-versioning defines
   aarch64_def_or_undef (targetm.has_ifunc_p (),

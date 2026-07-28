@@ -22404,6 +22404,56 @@ vst4q_lane_bf16 (bfloat16_t *__ptr, bfloat16x8x4_t __val, const int __lane)
 
 #pragma GCC pop_options
 
+#pragma GCC push_options
+#pragma GCC target ("+nothing+f16f32dot")
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdot_f32_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
+{
+  return __builtin_aarch64_sdot_prodv4hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdotq_f32_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
+{
+  return __builtin_aarch64_sdot_prodv8hf (__r, __a, __b);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdot_lane_f32_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b,
+		 const int __index)
+{
+  return __builtin_aarch64_sdot_lanev4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x2_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdot_laneq_f32_f16 (float32x2_t __r, float16x4_t __a, float16x8_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_sdot_laneqv4hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdotq_lane_f32_f16 (float32x4_t __r, float16x8_t __a, float16x4_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_sdot_lanev8hf (__r, __a, __b, __index);
+}
+
+__extension__ extern __inline float32x4_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vdotq_laneq_f32_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b,
+		  const int __index)
+{
+  return __builtin_aarch64_sdot_laneqv8hf (__r, __a, __b, __index);
+}
+
+#pragma GCC pop_options
 /* AdvSIMD 8-bit Integer Matrix Multiply (I8MM) intrinsics.  */
 
 #pragma GCC push_options

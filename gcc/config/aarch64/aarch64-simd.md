@@ -782,6 +782,36 @@
   [(set_attr "type" "neon_dot<VS:q>")]
 )
 
+(define_insn "sdot_prod<VDQSF:vsi2qi><vczle><vczbe>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(plus:VDQSF
+	  (unspec:VDQSF
+	   [(match_operand:<VSI2QI> 2 "register_operand" "w")
+	    (match_operand:<VSI2QI> 3 "register_operand" "w")]
+	    UNSPEC_FDOT)
+	  (match_operand:VDQSF 1 "register_operand" "0")))]
+  "TARGET_F16F32DOT"
+  "fdot\t%0.<Vtype>, %2.<Vbfdottype>, %3.<Vbfdottype>"
+  [(set_attr "type" "neon_dot<q>")]
+)
+
+(define_insn "sdot_lane<VF:isquadop><VDQSF:vsi2qi><vczle><vczbe>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+	(plus:VDQSF
+	  (unspec:VDQSF
+	   [(match_operand:<VDQSF:VSI2QI> 2 "register_operand" "w")
+	    (match_operand:VF 3 "register_operand" "w")
+	    (match_operand:SI 4 "immediate_operand" "i")]
+	    UNSPEC_FDOT)
+	  (match_operand:VDQSF 1 "register_operand" "0")))]
+  "TARGET_F16F32DOT"
+{
+  operands[4] = aarch64_endian_lane_rtx (<VF:MODE>mode, INTVAL (operands[4]));
+  return "fdot\t%0.<VDQSF:Vtype>, %2.<VDQSF:Vbfdottype>, %3.2h[%4]";
+}
+  [(set_attr "type" "neon_dot<VDQSF:q>")]
+)
+
 (define_expand "copysign<mode>3"
   [(match_operand:VHSDF 0 "register_operand")
    (match_operand:VHSDF 1 "register_operand")
