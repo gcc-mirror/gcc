@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-additional-options "-march=x86-64-v4" { target { x86_64-*-* i?86-*-* } } } */
 
 unsigned ff(int g7)
 {
