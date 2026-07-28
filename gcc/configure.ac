@@ -3549,6 +3549,14 @@ gcc_GAS_CHECK_FEATURE([cfi directives], gcc_cv_as_cfi_directive,,
 	.cfi_escape 1, 2, 3, 4, 5
 	.cfi_endproc],
 [case "$target" in
+  hppa*-*-hpux*)
+    # The HP dynamic linker relocates text and data separately, so
+    # differences between text and data don't work.  As a result,
+    # gas defines CFI_DIFF_EXPR_OK to 0.  We want to use difference
+    # expressions for symbols in the data segment, so we need to
+    # make sure CFI directives aren't emitted.
+    gcc_cv_as_cfi_directive=no
+    ;;
   *-*-solaris*)
     # If the linker used on Solaris (like Sun ld) isn't capable of merging
     # read-only and read-write sections, we need to make sure that the
