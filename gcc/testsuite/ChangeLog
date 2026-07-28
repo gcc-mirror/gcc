@@ -1,3 +1,24 @@
+2026-07-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/126386
+	* gfortran.dg/inline_matmul_28.f90: New test.
+
+2026-07-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-07-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-3.C: Require effective target
+	arm_fp16_alternative_hw instead of arm_fp16_alternative_ok.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-4.C: Likewise.
+	* gcc.dg/torture/arm-fp16-int-convert-alt.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-3.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-4.c: Likewise.
+	* lib/target-supports.exp (arm_fp16_alternative_hw): New proc.
+
 2026-07-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:
