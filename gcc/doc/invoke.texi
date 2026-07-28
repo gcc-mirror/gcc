@@ -21997,6 +21997,9 @@ Enable SVE2 sha3 instructions.  This also enables SVE2 instructions.
 Enable SVE2.1 instructions.  This also enables SVE2 instructions.
 @item sve2p2
 Enable SVE2.2 instructions.  This also enables SVE2 and SVE2.1 instructions.
+@item sve2p3
+Enable SVE2.3 instructions.  This also enables SVE2 and SVE2.1 and
+SVE2.2 instructions.
 @item i8mm
 Enable 8-bit Integer Matrix Multiply instructions.  This also enables
 Advanced SIMD and floating-point instructions.  This option is enabled by
@@ -22060,6 +22063,9 @@ instructions.
 @item sme2p2
 Enable the Scalable Matrix Extension version 2.2.  This also enables SME2
 and SME2.1 instructions.
+@item sme2p3
+Enable the Scalable Matrix Extension version 2.3.  This also enables SME2,
+SME2.1 and SME2.2 instructions.
 @item fcma
 Enable the complex number SIMD extensions.
 @item jscvt

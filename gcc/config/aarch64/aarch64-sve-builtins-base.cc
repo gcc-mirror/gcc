@@ -938,13 +938,17 @@ public:
 };
 
 
-class svdot_impl : public function_base
+class svdot_impl : public unspec_based_function_base
 {
 public:
+  using unspec_based_function_base::unspec_based_function_base;
+
   rtx
   expand (function_expander &e) const override
   {
     insn_code icode;
+    machine_mode mode0 = GET_MODE (e.args[0]);
+    machine_mode mode1 = GET_MODE (e.args[1]);
     if (e.fpm_mode == aarch64_acle::FPM_set)
       icode = code_for_aarch64_sve_dot (e.result_mode ());
     else
@@ -952,6 +956,7 @@ public:
 	/* In the optab, the multiplication operands come before the accumulator
 	   operand.  The optab is keyed off the multiplication mode.  */
 	e.rotate_inputs_left (0, 3);
+	int unspec = unspec_for (e);
 	if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
 	  icode = e.convert_optab_handler_for_sign (sdot_prod_optab,
 						    udot_prod_optab,
@@ -960,9 +965,7 @@ public:
 	else
 	  icode = (e.type_suffix (0).float_p
 		   ? CODE_FOR_aarch64_sve_fdotvnx4sfvnx8hf
-		   : e.type_suffix (0).unsigned_p
-		   ? CODE_FOR_udot_prodvnx4sivnx8hi
-		   : CODE_FOR_sdot_prodvnx4sivnx8hi);
+		   : code_for_dot_prod (unspec, mode0, mode1));
       }
     return e.use_unpred_insn (icode);
   }
@@ -3617,7 +3620,7 @@ FUNCTION (svcvt, svcvt_impl,)
 FUNCTION (svcvtnt, NARROWING_TOP_CONVERT0 (aarch64_sve_cvtnt),)
 FUNCTION (svdiv, svdiv_impl,)
 FUNCTION (svdivr, rtx_code_function_rotated, (DIV, UDIV, UNSPEC_COND_FDIV))
-FUNCTION (svdot, svdot_impl,)
+FUNCTION (svdot, svdot_impl,(UNSPEC_SDOT, UNSPEC_UDOT, UNSPEC_FDOT))
 FUNCTION (svdot_lane, svdotprod_lane_impl, (UNSPEC_SDOT, UNSPEC_UDOT,
 					    UNSPEC_FDOT, UNSPEC_DOT_LANE_FP8))
 FUNCTION (svdup, svdup_impl,)

@@ -6815,6 +6815,23 @@ proc check_effective_target_aarch64_sve2p2_hw { } {
     }]
 }
 
+# Return true if this is an AArch64 target that can run SVE2.3 code.
+
+proc check_effective_target_aarch64_sve2p3_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_sve2p3_hw_available {
+	#pragma GCC target "+sve2p3"
+	int
+	main (void)
+	{
+	  asm volatile ("sdot z0.h,z0.b,z1.b");
+	  return 0;
+	}
+    }]
+}
+
 # Return true if this is an AArch64 target that can run SVE code and
 # if its SVE vectors have exactly BITS bits.
 
@@ -12991,6 +13008,7 @@ set exts {
     "sve-sha3" "f8f16mm" "f8f32mm" "sve-f16f32mm"
     "sme-f8f16" "sme-f8f32"
     "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1" "sme2p2"
+    "sme2p3"
     "ssve-fp8dot2" "ssve-fp8dot4" "ssve-fp8fma" "sve-bfscale" "sme-lutv2"
     "ssve-fexpa" "ssve-bitperm" "ssve-aes"
 }
@@ -13034,6 +13052,16 @@ proc check_effective_target_aarch64_asm_sve2p2_ok { } {
 	return [check_no_compiler_messages aarch64_sve2p2_assembler object {
 	    __asm__ (".arch_extension sve2p2; compact z0.b,p0,z1.b");
 	} "-march=armv8-a+sve2p2"]
+    } else {
+	return 0
+    }
+}
+
+proc check_effective_target_aarch64_asm_sve2p3_ok { } {
+    if { [istarget aarch64*-*-*] } {
+	return [check_no_compiler_messages aarch64_sve2p3_assembler object {
+	    __asm__ (".arch_extension sve2p3; sdot z0.h,z0.b,z1.b");
+	} "-march=armv8-a+sve2p3"]
     } else {
 	return 0
     }

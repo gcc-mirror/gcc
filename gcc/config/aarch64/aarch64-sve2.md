@@ -2862,14 +2862,14 @@
 )
 
 ;; Two-way dot-product.
-(define_insn "<sur>dot_prodvnx4sivnx8hi"
-  [(set (match_operand:VNx4SI 0 "register_operand")
-	(plus:VNx4SI
-	  (unspec:VNx4SI
-	    [(match_operand:VNx8HI 1 "register_operand")
-	     (match_operand:VNx8HI 2 "register_operand")]
+(define_insn "@<sur>dot_prod<VNx4SI_ONLY:mode><VNx8HI_ONLY:mode>"
+  [(set (match_operand:VNx4SI_ONLY 0 "register_operand")
+	(plus:VNx4SI_ONLY
+	  (unspec:VNx4SI_ONLY
+	    [(match_operand:VNx8HI_ONLY 1 "register_operand")
+	     (match_operand:VNx8HI_ONLY 2 "register_operand")]
 	    DOTPROD)
-	  (match_operand:VNx4SI 3 "register_operand")))]
+	  (match_operand:VNx4SI_ONLY 3 "register_operand")))]
   "TARGET_SVE2p1_OR_SME2"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , w , w , 0 ; *              ] <sur>dot\t%0.s, %1.h, %2.h
@@ -2878,6 +2878,41 @@
   [(set_attr "sve_type" "sve_int_dot")]
 )
 
+;; Two-way dot-product SME2p3 || SVE2p3.
+(define_insn "@<sur>dot_prod<VNx8HI_ONLY:mode><VNx16QI_ONLY:mode>"
+  [(set (match_operand:VNx8HI_ONLY 0 "register_operand")
+	(plus:VNx8HI_ONLY
+	  (unspec:VNx8HI_ONLY
+	    [(match_operand:VNx16QI_ONLY 1 "register_operand")
+	     (match_operand:VNx16QI_ONLY 2 "register_operand")]
+	    DOTPROD)
+	  (match_operand:VNx8HI_ONLY 3 "register_operand")))]
+  "TARGET_SVE2p3_OR_SME2p3"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , w , w , 0 ; *              ] <sur>dot\t%0.h, %1.b, %2.b
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %3\;<sur>dot\t%0.h, %1.b, %2.b
+  }
+  [(set_attr "sve_type" "sve_int_dot")]
+)
+
+(define_insn "@aarch64_<sur>dot_prod_lane<VNx8HI_ONLY:mode><VNx16QI_ONLY:mode>"
+  [(set (match_operand:VNx8HI_ONLY 0 "register_operand")
+	(plus:VNx8HI_ONLY
+	  (unspec:VNx8HI_ONLY
+	    [(match_operand:VNx16QI_ONLY 1 "register_operand")
+	     (unspec:VNx16QI_ONLY
+	       [(match_operand:VNx16QI_ONLY 2 "register_operand")
+		(match_operand:SI 3 "const_int_operand")]
+	       UNSPEC_SVE_LANE_SELECT)]
+	    DOTPROD)
+	  (match_operand:VNx8HI_ONLY 4 "register_operand")))]
+  "TARGET_SVE2p3_OR_SME2p3"
+  {@ [ cons: =0 , 1 , 2 , 4 ; attrs: movprfx ]
+     [ w        , w , y , 0 ; *              ] <sur>dot\t%0.h, %1.b, %2.b[%3]
+     [ ?&w      , w , y , w ; yes            ] movprfx\t%0, %4\;<sur>dot\t%0.h, %1.b, %2.b[%3]
+  }
+  [(set_attr "sve_type" "sve_fp_mul")]
+)
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Multi-register operations
 ;; -------------------------------------------------------------------------

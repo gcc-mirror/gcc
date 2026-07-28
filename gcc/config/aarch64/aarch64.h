@@ -318,6 +318,9 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 /* SVE2p2 instructions, enabled through +sve2p2.  */
 #define TARGET_SVE2p2 AARCH64_HAVE_ISA (SVE2p2)
 
+/* SVE2p3 instructions, enabled through +sve2p3.  */
+#define TARGET_SVE2p3 AARCH64_HAVE_ISA (SVE2p3)
+
 /* SME instructions, enabled through +sme.  Note that this does not
    imply anything about the state of PSTATE.SM; instructions that require
    SME and streaming mode should use TARGET_STREAMING instead.  */
@@ -351,12 +354,17 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 /* SME2p2 instructions, enabled through +sme2p2.  */
 #define TARGET_SME2p2 AARCH64_HAVE_ISA (SME2p2)
 
+/* SME2p3 instructions, enabled through +sme2p3.  */
+#define TARGET_SME2p3 AARCH64_HAVE_ISA (SME2p3)
+
 /* Same with streaming mode enabled.  */
 #define TARGET_STREAMING_SME2 (TARGET_STREAMING && TARGET_SME2)
 
 #define TARGET_STREAMING_SME2p1 (TARGET_STREAMING && AARCH64_HAVE_ISA (SME2p1))
 
 #define TARGET_STREAMING_SME2p2 (TARGET_STREAMING && AARCH64_HAVE_ISA (SME2p2))
+
+#define TARGET_STREAMING_SME2p3 (TARGET_STREAMING && AARCH64_HAVE_ISA (SME2p3))
 
 #define TARGET_SME_B16B16 AARCH64_HAVE_ISA (SME_B16B16)
 
@@ -531,6 +539,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 /* There's no need to check TARGET_SME for streaming or streaming-compatible
    functions, since streaming mode itself implies SME.  */
 #define TARGET_SVE2p1_OR_SME (TARGET_SVE2p1 || TARGET_STREAMING)
+
+#define TARGET_SVE2p3_OR_SME2p3 (TARGET_SVE2p3 || TARGET_SME2p3)
 
 #define TARGET_SVE2p1_OR_SME2 \
   ((TARGET_SVE2p1 || TARGET_STREAMING) \

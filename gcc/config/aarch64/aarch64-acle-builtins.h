@@ -1646,6 +1646,11 @@ function_expander::result_mode () const
 #define TYPES_s_narrow_fsu(S, D, T) \
   D (f32, f16), D (s32, s16), D (u32, u16)
 
+/* _s16_s8
+   _u16_u8.  */
+#define TYPES_s_narrow_su(S, D, T) \
+  D (s16, s8), D (u16, u8)
+
 /* _za8 _za16 _za32 _za64 _za128.  */
 #define TYPES_all_za(S, D, T) \
   S (za8), S (za16), S (za32), S (za64), S (za128)
@@ -2025,6 +2030,7 @@ DEF_SVE_TYPES_ARRAY (while);
 DEF_SVE_TYPES_ARRAY (while_x);
 DEF_SVE_TYPES_ARRAY (while_x_c);
 DEF_SVE_TYPES_ARRAY (s_narrow_fsu);
+DEF_SVE_TYPES_ARRAY (s_narrow_su);
 DEF_SVE_TYPES_ARRAY (all_za);
 DEF_SVE_TYPES_ARRAY (d_za);
 DEF_SVE_TYPES_ARRAY (za_bhsd_data);
