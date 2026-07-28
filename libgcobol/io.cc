@@ -35,7 +35,6 @@
 
 #include <cassert>
 #include <cerrno>
-#include <cstdbool>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>

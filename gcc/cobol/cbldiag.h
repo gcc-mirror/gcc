@@ -286,22 +286,7 @@ void gcc_location_set( const cbl_loc_t& loc );
 
 void gcc_location_dump();
 
-// tree.h defines yy_flex_debug as a macro because options.h
-#if ! defined(yy_flex_debug)
-template <typename LOC>
-static void
-location_dump( const char func[], int line, const char tag[], const LOC& loc) {
-  extern int yy_flex_debug; // cppcheck-suppress shadowVariable
-  if( yy_flex_debug ) {
-    const char *detail = gcobol_getenv("update_location");
-    if( detail ) { // cppcheck-suppress knownConditionTrueFalse
-      fprintf(stderr, "%s:%d: %s location (%d,%d) to (%d,%d) '%c'\n",
-              func, line, tag,
-              loc.first_line, loc.first_column, loc.last_line, loc.last_column, detail[0]);
-      if( *detail == '2' ) gcc_location_dump();
-    }
-  }
-}
-#endif // defined(yy_flex_debug)
-
+void
+location_dump( const char func[], int line, const char tag[],
+               const cbl_loc_t& loc, bool force = false);
 #endif

@@ -356,15 +356,42 @@ static void level_found() {
 }
 
 /*
- * Trim the scanned location by the amount about to re-scanned. 
+ * Return all but the first N characters, to be rescanned by the nexst yylex.
+ * IOW, keep N characters as the token, and relinquish the rest. 
  * Must be a macro because it expands yyless. 
  */
 #define myless(N)				\
   do {						\
-    auto n(N);					\
-    trim_location(n);				\
-    yyless(n);					\
+    auto _n(N);					\
+    trim_location(_n);				\
+    yyless(_n);					\
   } while(0)
+
+static inline int
+length_upto( char ch ) {
+    auto pend = std::find( yytext, yytext + yyleng, ch );
+    return pend - yytext;
+}
+
+static inline bool
+is_name_char( char ch ) {
+  switch(ch) {
+  case '-': case '_':
+    return true;
+  }
+  return ISALNUM(ch);
+}
+
+static inline int
+length_of_name() {
+  // Find first character in yyext that is not a name character.
+  auto pend = std::find_if( yytext, yytext + yyleng,
+                            []( char ch ) {
+                              return ! is_name_char(ch);
+                            } );
+  assert(yytext < pend); // scanner ensures yytext begins with {NAME}
+  return pend - yytext;
+}
 
 class enter_leave_t {
   typedef void( parser_enter_file_f)(const char *filename);
@@ -474,36 +501,41 @@ reset_location() {
 
 #define YY_USER_ACTION update_location();
 
+/*
+ * Before calling yyless to tell the generated scanner to rescan nkeep
+ * characters, set the scanner's location to reflect the cbl_loc_t of what
+ * we're keeping.  Set last_line and last_column by adding the newline count
+ * and characters after the last newline (if any) of the kept region to the
+ * first_line and first_column.
+ */
 static void
 trim_location( int nkeep) {
   gcc_assert( 0 <= nkeep && nkeep <= yyleng );
-  struct { char *p, *pend;
-    size_t size() const { return pend - p; }
-  } rescan = { yytext + nkeep, yytext + yyleng };
+  auto nline = std::count(yytext, yytext + nkeep, '\n');
+  auto ntoss = yyleng - nkeep;
+  dbgmsg("%s:%d: yyless(%d), rescan '%.*s' (%d bytes)",
+         __func__, __LINE__, nkeep, ntoss, yytext + nkeep, ntoss);
 
-  auto nline = std::count(rescan.p, rescan.pend, '\n');
-  dbgmsg("%s:%d: yyless(%d), rescan '%.*s' (" HOST_SIZE_T_PRINT_UNSIGNED
-         " lines, " HOST_SIZE_T_PRINT_UNSIGNED " bytes)",
-         __func__, __LINE__,
-         nkeep,
-         int(rescan.size()), rescan.p,
-         (fmt_size_t)nline, (fmt_size_t)rescan.size());
-  if( nline ) {
-    gcc_assert( yylloc.first_line + nline <= yylloc.last_line );
-    yylloc.last_line -= int(nline);
-    gcc_assert( yylloc.first_line <= yylloc.last_line );
-    char *p = static_cast<char*>(memrchr(rescan.p, '\n', rescan.size()));
-    yylloc.last_column = rescan.pend - ++p;
-    return;
+  gcc_assert( yylloc.first_line + nline <= yylloc.last_line );
+  yylloc.last_line = yylloc.first_line + int(nline);
+  gcc_assert( yylloc.first_line <= yylloc.last_line );
+
+  if( nline == 0) {
+    yylloc.last_column = yylloc.first_column + nkeep;
+  } else {
+    auto eokeep = yytext + nkeep;
+    std::reverse_iterator beg(eokeep);
+    std::reverse_iterator end(yytext);
+    auto nl = std::find(beg, end, '\n');
+    gcc_assert( nl != end );
+    gcc_assert( nl.base() != yytext );
+    yylloc.last_column = 1 + (eokeep - nl.base());
   }
 
-  gcc_assert( int(rescan.size()) < yylloc.last_column );
-  yylloc.last_column -= rescan.size();
-  if( yylloc.last_column < yylloc.first_column ) {
-    yylloc.first_column = 1;
-  }
+  gcc_assert( yylloc.first_line <= yylloc.last_line );    
+  gcc_assert( 0 < yylloc.last_column );    
 
-  location_dump(__func__, __LINE__, "yylloc", yylloc);
+  location_dump(__func__, __LINE__, "yylloc", yylloc, true);
 }
 
 static void
@@ -678,9 +710,11 @@ level_of( const char input[] ) {
   return output;
 }
 
+// Called by lexer with leading or trailing V, which is ignored.
 static inline int
 ndigit(int len) {
-  char *input = TOUPPER(yytext[0]) == 'V'? yytext + 1 : yytext;
+  const char *input = yytext + (TOUPPER(yytext[0]) == 'V'? 1 : 0);
+  if( input == yytext + yyleng ) return 0; // Only the V
   int n = repeat_count(input);
   return n == -1? len : n;
 }

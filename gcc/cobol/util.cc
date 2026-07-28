@@ -3501,28 +3501,28 @@ void current_location_minus_one_clear()
 void
 gcc_location_set( const cbl_loc_t& loc ) {
   // Set the position to the first line & column in the location.
- static location_t loc_m_1 = 0;
- const location_t
-   start_line   = linemap_line_start( line_table, loc.first_line, 80 ),
-   token_start  = linemap_position_for_column( line_table, loc.first_column),
-   finish_line  = linemap_line_start( line_table, loc.last_line, 80 ),
-   token_finish = linemap_position_for_column( line_table, loc.last_column);
- token_location = make_location (token_start, token_start, token_finish);
-
- if( loc.first_line > first_line_minus_1 ) {
-   // In order for GDB-COBOL to be able to step through COBOL code properly,
-   // it is sometimes necessary for the code at the beginning of a COBOL
-   // line to be using the location_t of the previous line.  This is true, for
-   // example, when laying down the infrastructure code between the last
-   // statement of a paragraph and the code created at the beginning of the
-   // following paragragh.  This code assumes that token_location values of
-   // interest are monotonic, and stores that prior value.
-   first_line_minus_1 = loc.first_line;
-   token_location_minus_1 = loc_m_1;
-   loc_m_1 = token_location;
- }
-
-  location_dump(__func__, __LINE__, "parser", loc);
+  static location_t loc_m_1 = 0;
+  const location_t
+    start_line   = linemap_line_start( line_table, loc.first_line, 80 ),
+    token_start  = linemap_position_for_column( line_table, loc.first_column),
+    finish_line  = linemap_line_start( line_table, loc.last_line, 80 ),
+    token_finish = linemap_position_for_column( line_table, loc.last_column);
+  token_location = make_location (token_start, token_start, token_finish);
+  
+  if( loc.first_line > first_line_minus_1 ) {
+    // In order for GDB-COBOL to be able to step through COBOL code properly,
+    // it is sometimes necessary for the code at the beginning of a COBOL
+    // line to be using the location_t of the previous line.  This is true, for
+    // example, when laying down the infrastructure code between the last
+    // statement of a paragraph and the code created at the beginning of the
+    // following paragragh.  This code assumes that token_location values of
+    // interest are monotonic, and stores that prior value.
+    first_line_minus_1 = loc.first_line;
+    token_location_minus_1 = loc_m_1;
+    loc_m_1 = token_location;
+  }
+  
+  location_dump(__func__, __LINE__, "parser", loc, true);
 }
 
 #ifdef NDEBUG
@@ -3561,6 +3561,25 @@ void gcc_location_dump() {
     fprintf(stderr, "\n");
 }
 
+// tree.h defines yy_flex_debug as a macro because options.h
+#ifdef yy_flex_debug
+#undef yy_flex_debug
+#endif
+void
+location_dump( const char func[], int line, const char tag[],
+               const cbl_loc_t& loc, bool force) {
+  extern int yy_flex_debug; // cppcheck-suppress shadowVariable
+  if( yy_flex_debug ) {
+    const char *detail = gcobol_getenv("update_location");
+    if( force || detail ) { // cppcheck-suppress knownConditionTrueFalse
+      bool gcc_detail = force || (detail && detail[0] == '2');
+      fprintf(stderr, "%s:%d: %s location (%d,%d) to (%d,%d)\n",
+              func, line, tag,
+              loc.first_line, loc.first_column, loc.last_line, loc.last_column);
+      if( gcc_detail ) gcc_location_dump();
+    }
+  }
+}
 
 void ydferror( const char gmsgid[], ... ) ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
@@ -4201,6 +4220,7 @@ static const std::set<std::string> reserved_words = {
   "END-SUBTRACT",
   "END-UNSTRING",
   "END-WRITE",
+  "END-XML",
   "ENVIRONMENT",
   "EO",
   "EOP",

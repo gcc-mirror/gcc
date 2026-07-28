@@ -101,6 +101,7 @@ DOTEOL    [[:blank:]]*[.]{BLANK_EOL}
 	   *  (without an intervening separator space) by the separator period."
 	   */
 NONPIC	  [,]{DOTSEP} 
+EOPIC	  [.,;]?[[:space:]]
 
 SKIP	  [[:blank:]]*SKIP[123][[:blank:]]*[.]?{BLANK_EOL}
 TITLE	  [[:blank:]]*TITLE($|[.]|[^\n]*)
@@ -131,7 +132,7 @@ ALPHED   {ALPHEDREQ}([AX9B0/]{COUNT}?)*
 			 */
 NUMEDCHAR  [BPVZ90/,]+{COUNT}?
 NUMEDCHARS {NUMEDCHAR}([.]?{NUMEDCHAR})*
-NUMED     ([+-]{NUMEDCHARS}+)|({NUMEDCHARS}+[+-])
+NUMED     ([+-]{NUMEDCHARS}+)|({NUMEDCHARS}+[+-]?)
 CURRENCY [A-Zfhijklmoqtuwy\x80-\xFF]{-}[ABCDEGNPRSVXZ]
 NUMEDCUR (([.]?[$0B/Z*+,P9()V+-]|{CURRENCY}+|{COUNT})+([.][$0B/Z*+P9()V+-])*)+
 
@@ -1288,27 +1289,40 @@ USE({SPC}FOR)?		{ return USE; }
 
   [[:blank:]]+[-+]/{EDITED} 	{ return picset(yytext[yyleng-1]); }
 
-  S/({N9}|{NP}|V)+ { return picset('S'); }
-  V?{NP}/{N9}      { yylval.number = ndigit(yyleng);     return picset(PIC_P); }
-  {N9}/{N9}*{NP}V? { yylval.number = ndigit(yyleng);     return picset(NINES); }
-  {NP}V?/[,.]?     { yylval.number = ndigit(yyleng);     return picset(PIC_P); }
-  {N9}*V/{N9}*     { yylval.number = ndigit(yyleng - 1); return picset(NINEV); }
-  {N9}/{N9}*[,.]?  { yylval.number = ndigit(yyleng);     return picset(NINES); }
-  P+/[,.]?{EOL}    { yylval.number = yyleng;             return picset(PIC_P); }
+  /* Sign, if any, first */
+  S/({NP}|{N9}|V)+{EOPIC} { return picset('S'); }
+  /* P's either lead (after sign) or trail, with any V adjacent, see Table 10. */
+  V?{NP}/{N9}*{EOPIC}   { yylval.number =   ndigit(yyleng); return picset(PIC_P); }
+  {NP}V?/{EOPIC}        { yylval.number =   ndigit(yyleng); return picset(PIC_P); }
+  /* Parser accepts any sequence of 9's with one optional V. */
+  {N9}?V/{N9}*{EOPIC}   { yylval.number = ndigit(yyleng - 1); return picset(NINEV); }
+  {N9}/{NP}?V?{EOPIC}   { yylval.number = ndigit(yyleng); return picset(NINES); }
+  /* Match 99(5) as 9 and 9(5) */
+  99+{COUNT}/(V|{N9})*{EOPIC} {
+    auto len = length_upto('(');
+    yylval.number = len;
+    myless(len);
+    return picset(NINES);
+  }
+  [9P]+[(]{NAME}[)] {
+    cbl_unimplemented_at(yylloc, "unimplemented: symbolic count for numeric PICTURE" );
+  }
 
   1{1,31}/({COUNT}|[(]{NAME}[)]) {
                          yy_push_state(picture_count);
                          yylval.string = xstrdup(yytext); return picset(ONES); }
   1{1,31} {              yylval.string = xstrdup(yytext); return picset(ONES); }
 
-  {ALNUM}/{COUNT}({ALNUM}{COUNT}?)+ {
+  {ALNUM}{COUNT}/({ALNUM}{COUNT}?)* {
+			 auto len = length_upto('(');
+			 myless(len); // avoid dangerous trailing context
                          yy_push_state(picture_count);
                          yylval.string = xstrdup(yytext); return picset(ALNUM); }
-  {ALNUM}/{COUNT}      { yy_push_state(picture_count);
+  {ALNUM}[(]{NAME}[)] { auto len = length_upto('(');
+			 myless(len); // avoid dangerous trailing context
+                         yy_push_state(picture_count);
                          yylval.string = xstrdup(yytext); return picset(ALNUM); }
-  {ALNUM}/[(]{NAME}[)] { yy_push_state(picture_count);
-                         yylval.string = xstrdup(yytext); return picset(ALNUM); }
-  {ALNUM}/{NONPIC}?    { yylval.string = xstrdup(yytext); return picset(ALNUM); }
+  {ALNUM}/{EOPIC}?     { yylval.string = xstrdup(yytext); return picset(ALNUM); }
 
   {ALPHED}             { yylval.string = xstrdup(yytext); return picset(ALPHED); }
   {NUMEDITED}          { yylval.string = xstrdup(yytext); return picset(NUMED); }
@@ -1883,9 +1897,11 @@ USE({SPC}FOR)?		{ return USE; }
   STACK                 { return STACK; }
   TOP-LEVEL             { return TOP_LEVEL; }
 
-  {NAME}/{SPC}SECTION{OSPC}{DOTSEP} {
-				    yylval.string = xstrdup(yytext);
-				    return NAME; }
+  {NAME}{SPC}SECTION{OSPC}{DOTSEP} { // Keep only {NAME}.
+				     auto len = length_upto(0x20);
+			 	     myless(len); // avoid dangerous trailing context
+                         	     yylval.string = xstrdup(yytext);
+				     return NAME; }
 
   (IS{SPC})?POSITIVE/[)[:space:]]  { yylval.number =  IS; return POSITIVE; }
   (IS{SPC})?NEGATIVE/[)[:space:]]  { yylval.number =  IS; return NEGATIVE; }
@@ -1976,8 +1992,10 @@ USE({SPC}FOR)?		{ return USE; }
   [.]+({SPC}(EJECT|SKIP[123]))*{SPC}EXIT{OSPC}/{DOTSEP} {
                    // EXIT format-1 is a "continue" statement
                  }
-  {NAME}/{OSPC}{DOTSEP} {
-		   assert(YY_START == procedure_div);
+  {NAME}{OSPC}{DOTSEP} { // Keep only {NAME}.
+		   auto len = length_of_name();
+		   myless(len); // avoid dangerous trailing context
+                   assert(YY_START == procedure_div);
 		   int token;
 		   if( 0 != (token = binary_integer_usage(yytext)) ) return token;
                    if( 0 != (token = keyword_tok(yytext)) ) return token;
@@ -1987,15 +2005,9 @@ USE({SPC}FOR)?		{ return USE; }
                    return typed_name(yytext);
                  }
   LENGTH{SPC}OF/{SPC}{NAME}	 { return LENGTH_OF; }
-  {NAME}/{SPC}(IN|OF){SPC}{NAME}{SPC}(IN|OF)[[:space:]] {
-                    int token = keyword_tok(yytext);
-                    if( token ) return token;
-                    if( is_integer_token() ) return numstr_of(yytext);
-		    myless(0);
-	            yy_push_state(partial_name);
-		    tee_up_empty();
-		}
-  {NAME}/{SPC}(IN|OF){SPC}{NAME} {
+  {NAME}{SPC}(IN|OF){SPC}{NAME} { // Keep only {NAME}.
+		    auto len = length_upto(0x20);
+		    myless(len); // avoid dangerous trailing context
                     int token = keyword_tok(yytext);
                     if( token ) return token;
                     if( is_integer_token() ) return numstr_of(yytext);
@@ -2032,6 +2044,16 @@ USE({SPC}FOR)?		{ return USE; }
 		        return NAME;
 		      }
 		    }
+		    myless(0);
+	            yy_push_state(partial_name);
+		    tee_up_empty();
+		}
+  {NAME}({SPC}(IN|OF){SPC}{NAME})+ { // Keep only {NAME}.
+		    auto len = length_upto(0x20);
+		    myless(len); // avoid dangerous trailing context
+                    int token = keyword_tok(yytext);
+                    if( token ) return token;
+                    if( is_integer_token() ) return numstr_of(yytext);
 		    myless(0);
 	            yy_push_state(partial_name);
 		    tee_up_empty();

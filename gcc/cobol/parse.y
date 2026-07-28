@@ -398,7 +398,7 @@ class locale_tgt_t {
 			NUMED     "NUMERIC-EDITED picture"
 			NUMED_CR  "NUMERIC-EDITED CR picture"
 			NUMED_DB  "NUMERIC-EDITED DB picture"
-%token  <number>        NINEDOT NINES NINEV PIC_P ONES
+%token  <number>        NINEDOT NINES NINEV PIC_P "PICTURE P symbol" ONES
 %token  <string>        SPACES EQ "EQUAL"
 %token  <literal>       LITERAL
 %token  <number>        END EOP
@@ -4759,7 +4759,7 @@ data_clause:    any_length        { $$ = any_length_e; }
         |       volatile_clause      { $$ = volatile_clause_e; }
                 ;
 
-picture_clause: PIC signed nps[fore] nines nps[aft]
+picture_clause: PIC signed PIC_P[fore] nines
                 {
                   cbl_field_t *field = current_field();
                   if( ! field->codeset.set() ) {
@@ -4784,13 +4784,44 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   auto nchar = type_capacity(field->type, $nines);
                   field->set_capacity(nchar);
                   field->blank_initial(nchar);
-                  if( $fore && $aft ) { // leading and trailing P's
-                    error_msg(@2, "PIC cannot have both leading and trailing P");
+                  assert($fore);
+                  field->attr |= scaled_e;
+                  field->data.rdigits = $fore;
+                  
+                  if( ! field->reasonable_capacity() ) {
+                    error_msg(@2, "%s limited to capacity of %d (would need %u)",
+			     field->name, MAX_FIXED_POINT_DIGITS, field->char_capacity());
+                  }
+                }
+
+        |       PIC signed nines nps[aft]
+                {
+                  cbl_field_t *field = current_field();
+                  if( ! field->codeset.set() ) {
+                    error_msg(@nines, "PICTURE inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
+                  }
+                  if( !field_type_update(field, FldNumericDisplay, @$) ) {
                     YYERROR;
                   }
-                  if( $fore || $aft ) {
+                  ERROR_IF_CAPACITY(@PIC, field);
+                  // If signable_e is inherited from the group, it is effective
+                  // regardless of an 'S' in PICTURE.
+                  if( field->has_attr(signable_e) && ! $signed ) {
+                    dbgmsg("%s PICTURE must be signed for SIGN IS", field->name);
+                  }
+                  if( field->type == FldNumericEdited && $signed ) {
+                    gcc_assert(field->has_attr(blank_zero_e));
+                    error_msg(@signed, "%<S%> in PICTURE invalid with BLANK WHEN ZERO");
+                  }
+                  field->attr |= $signed;
+                  field->data.digits = $nines;
+                  auto nchar = type_capacity(field->type, $nines);
+                  field->set_capacity(nchar);
+                  field->blank_initial(nchar);
+                  if( $aft ) {
                     field->attr |= scaled_e;
-                    field->data.rdigits = $fore? $fore : -$aft;
+                    field->data.rdigits = -$aft;
                   }
                   if( ! field->reasonable_capacity() ) {
                     error_msg(@2, "%s limited to capacity of %d (would need %u)",
@@ -8734,8 +8765,8 @@ subtract_body:  sum FROM rnames
                     corresponding_arith_fields( $sum->refers.front().field,
                                                 rhs.front().refer.field );
                     if( pairs.empty() ) {
-                      cbl_message(ParNoCorrespondingW,
-                                  "%s and %s have no corresponding fields",
+                      cbl_message(@$, ParNoCorrespondingW,
+                                  "%qs and %qs have no corresponding fields",
                                   $sum->refers.front().field->name,
                                   rhs.front().refer.field->name );
                     }
@@ -12550,7 +12581,7 @@ xmlgen_impl:
 xmlgen_cond:    XMLGENERATE xmlgen_body[body] xmlexcepts[err]
                 ;
 
-xmlgen_body:    XMLGENERATE name[id1] FROM name[id2]
+xmlgen_body:    name[id1] FROM name[id2]
                 xmlgen_count xmlencoding xmlgen_decl xmlgen_namespace
                 xmlgen_nameof xmlgen_typeof xmlgen_suppress
                 ;
@@ -12740,8 +12771,8 @@ xmlexcept:      EXCEPTION
                 }
                 ;
 
-end_xml:        %empty     %prec XMLPARSE
-        |       END_XML    %prec XMLPARSE
+end_xml:        %empty   %prec XMLPARSE
+        |       END_XML  %prec XMLPARSE
                 ;
 %%
 
