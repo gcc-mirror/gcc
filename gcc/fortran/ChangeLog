@@ -1,3 +1,20 @@
+2026-07-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Fix 'message' clause name.
+	* openmp.cc (gfc_match_omp_clauses): Improve num_team's error
+	diagnostic.
+	(OMP_PARALLEL_CLAUSES, OMP_TARGET_CLAUSES, OMP_TEAMS_CLAUSES): Add
+	OMP_CLAUSE_MESSAGE and OMP_CLAUSE_SEVERITY.
+	* trans-openmp.cc (gfc_split_omp_clauses): Handle message/severity.
+	(gfc_trans_omp_clauses): Likewise; replace 'sorry' by updated tree
+	generation for num_teams, num_threads, thread_num clauses.
+
+2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/126303
+	* frontend-passes.cc (inner_loop_may_be_skipped): If inner loop iterator
+	is not integral, return true.
+
 2026-07-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/126386

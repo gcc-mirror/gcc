@@ -1,3 +1,49 @@
+2026-07-27  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	* match.pd: Combine two for into one for.
+
+2026-07-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle also TREE_LIST
+	for num_teams, num_threads, thread_num clauses. Add message clause
+	to switch statement.
+	* omp-expand.cc (expand_parallel_call, expand_teams_call,
+	get_target_arguments): Handle, mostly with 'sorry, unimplemented',
+	the 'dims' and 'strict' modifiers and the 'message' clause.
+	* omp-low.cc (scan_sharing_clauses): Add message clause to switch.
+	(lower_omp_teams): Handle TREE_LIST for num_threads + thread_num.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_MESSAGE.
+	* tree-pretty-print.cc (dump_omp_clause): Handle 'message' clause,
+	update num_teams, num_threads, thread_num clause printing.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Update for
+	message clause.
+	* tree.h (OMP_CLAUSE_NUM_THREADS_STRICT,
+	OMP_CLAUSE_THREAD_LIMIT_STRICT, OMP_CLAUSE_NUM_TEAMS_DIMS,
+	OMP_CLAUSE_NUM_THREADS_DIMS, OMP_CLAUSE_THREAD_LIMIT_DIMS,
+	OMP_CLAUSE_MESSAGE_EXPR, OMP_CLAUSE_MESSAGE_LEN,
+	OMP_CLAUSE_MESSAGE_SEVERITY_WARN): New.
+
+2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/sourcebuild.texi (arm_neon_fp16_hw, arm_fp16_alternative_hw):
+	Use @code{...} instead of @code(...).
+
+2026-07-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* doc/sourcebuild.texi (arm_fp16_alternative_hw): Document.
+	(arm_neon_fp16_hw): Add reference to arm_neon_fp16_ok.
+
+2026-07-27  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_vector_costs): Add
+	better_fold_left_reduc_than_p and m_num_fold_left_reduc_lanes.
+	(ix86_vector_costs::ix86_vector_costs): Initialize it.
+	(ix86_vector_costs::finish_cost): Count and dump fold-left
+	reduction lanes.
+	(ix86_vector_costs::better_fold_left_reduc_than_p): New function.
+	(ix86_vector_costs::better_main_loop_than_p): Use it.
+	(ix86_vector_costs::better_epilogue_loop_than_p): Likewise.
+
 2026-07-26  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/riscv-v.cc (riscv_v_widen_constraint_ok): Return

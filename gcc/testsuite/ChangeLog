@@ -1,3 +1,70 @@
+2026-07-27  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126296
+	* g++.dg/tree-ssa/pr126296-1.C: New test.
+	* g++.dg/tree-ssa/pr126296-2.C: New test.
+
+2026-07-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/spatial-dimensions-1.f90: Move to gimple dumps
+	and extend tree-dump checking.
+	* gfortran.dg/gomp/spatial-dimensions-2.f90: Remove sorry and
+	check omplower and ompexp tree dumps.
+	* gfortran.dg/gomp/spatial-dimensions-3.f90: Update dg-error.
+	* gfortran.dg/gomp/spatial-dimensions-4.f90: New test.
+	* gfortran.dg/gomp/spatial-dimensions-5.f90: New test.
+
+2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/126303
+	* gfortran.dg/pr126303.f: New test.
+
+2026-07-27  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/vect-vaddv.c (EQUALF, EQUALD): Compare
+	relative to the reference value.
+
+2026-07-27  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/mf8_data_2.c: Restore the dg-error for
+	the second out-of-range lane index of vcopy_lane_mf8.
+
+2026-07-27  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve/pcs/struct_3_128.c (test_nonpst8): Accept
+	a ubfx of either width.
+	* gcc.target/aarch64/sve/pcs/struct_3_256.c (test_nonpst8):
+	Likewise for little endian.
+
+2026-07-27  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/fuse_cmp_csel-1.c: Accept csel with either
+	le or gt.
+	* gcc.target/aarch64/fuse_cmp_csel.c: Likewise.
+
+2026-07-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-3.C: Require effective target
+	arm_fp16_alternative_hw instead of arm_fp16_alternative_ok.
+	* g++.dg/ext/arm-fp16/arm-fp16-ops-4.C: Likewise.
+	* gcc.dg/torture/arm-fp16-int-convert-alt.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-3.c: Likewise.
+	* gcc.dg/torture/arm-fp16-ops-4.c: Likewise.
+	* lib/target-supports.exp (arm_fp16_alternative_hw): New proc.
+
+2026-07-27  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/fold-left-reduc-cost.c: New test.
+	* gcc.target/i386/fold-left-reduc-chain-cost.c: New test.
+	* gcc.target/i386/vect-epilogues-6.c: Update expected vector size.
+	* gcc.target/i386/vect-epilogues-7.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-epil-1.c: Likewise.
+
+2026-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126310
+	* g++.dg/opt/pmf2.C: New test.
+
 2026-07-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/reduce_5.f90: Verify the previously dead

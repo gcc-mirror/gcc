@@ -1,3 +1,66 @@
+2026-07-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* lexio.cc (cdftext::free_form_reference_format): Use new sanitize_nul function.
+	* lexio.h (struct filespan_t): Define sanitize_nul().
+
+2026-07-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (cdf_push_source_format): Remove declaration.
+	(cdf_pop_source_format): Same.
+	* cdf-copy.cc (is_fixed_format): Same.
+	(is_reference_format): Same.
+	(esc): Pass new format parameter and use new 0x8D Debug indicator.
+	* cdf.y: Ignore SOURCE FORMAT directive (handled in lexio.cc).
+	* lexio.cc (cdf_source_format): Delete function definition.
+	(source_format_t::infer): Same.
+	(is_fixed_format): Same.
+	(is_reference_format): Same.
+	(left_margin): Same.
+	(right_margin): Same.
+	(include_debug): Assume fixed format.
+	(set_debug): Same.
+	(continues_at): Remove unused function.
+	(indicated): Move function to source_format_t class.
+	(source_format_t::indicated): Replace ::indicated().
+	(filespan_t::tab_check): Delete function.
+	(check_push_pop_directive): Add format stack parameter.
+	(check_source_format_directive): Same.
+	(esc): Add format parameter and use 0x8D indicator.
+	(parse_replace_pairs): Add format parameter.
+	(parse_copy_directive): Same.
+	(parse_replace_text): Same.
+	(parse_replace_directive): Same.
+	(cdftext::lex_open): Instantiate and pass format stack.
+	(cdftext::free_form_reference_format): Add format stack parameter and 0x8D indicator.
+	(cobol_set_indicator_column): Stash command-line option.
+	(cdftext::process_file): Add format stack parameter.
+	* lexio.h (struct filespan_t): Remove tab_check() function.
+	(class source_format_t): Lift into header file to share with cdf-copy.cc.
+	(class cdftext): Add several functions, formerly file-scope.
+	(free_form_reference_format): Move to source_format_t.
+	* parse.y: Slightly simplify parse of WITH DEBUGGING MODE.
+	* scan.l: Recognize new 0x8D indicator.
+	* scan_ante.h (cobol_set_indicator_column): Remove declaration.
+	* util.cc (class cdf_directives_t): Remove source format support.
+	(cobol_set_indicator_column): Move function to lexio.cc.
+	(cdf_source_format): Delete function.
+	(cdf_push_source_format): Same.
+	(cdf_pop_source_format): Same.
+	* util.h (class source_format_t): Move to lexio.h.
+
+2026-07-27  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (array_of_long_long): Improved creation.
+	(gg_array_of_size_t): Likewise.
+	(gg_array_of_field_pointers): Likewise.
+	(gg_array_of_uchar_p): Likewise.
+	(parser_sort): Use modified routine.
+	(parser_file_sort): Likewise.
+	(parser_file_merge): Likewise.
+	* gengen.cc (gg_array_of_size_t): Improved creation.
+	* gengen.h (gg_array_of_field_pointers): Likewise.
+	(gg_array_of_size_t): Likewise.
+
 2026-07-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* symbols.cc (symbols_dump): Use HOST_SIZE_T_PRINT_UNSIGNED instead
