@@ -560,13 +560,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #pragma GCC diagnostic push // PR tree-optimization/122197
 #pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+#pragma GCC diagnostic ignored "-Warray-bounds"
   template<typename> class auto_ptr;
       ~_Sp_counted_deleter() noexcept { }
-#pragma GCC diagnostic pop
 
       virtual void
       _M_dispose() noexcept
       { _M_del._M_obj(_M_ptr); }
+#pragma GCC diagnostic pop
 
       virtual void
       _M_destroy() noexcept
@@ -642,13 +643,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic push // PR tree-optimization/122197
 #pragma GCC diagnostic ignored "-Warray-bounds"
       ~_Sp_counted_ptr_inplace() noexcept { }
-#pragma GCC diagnostic pop
 
       virtual void
       _M_dispose() noexcept
       {
 	allocator_traits<_Alloc>::destroy(_M_alloc._M_obj, _M_ptr());
       }
+#pragma GCC diagnostic pop
 
       // Override because the allocator needs to know the dynamic type
       virtual void
