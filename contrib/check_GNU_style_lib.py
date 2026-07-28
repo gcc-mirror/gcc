@@ -78,10 +78,9 @@ class CheckError:
 class LineLengthCheck:
     def __init__(self):
         self.limit = 80
-        self.expanded_tab = ' ' * ts
 
     def check(self, filename, lineno, line):
-        line_expanded = line.replace('\t', self.expanded_tab)
+        line_expanded = line.expandtabs(ts)
         if not filename.endswith(".opt") and len(line_expanded) > self.limit:
             return CheckError(filename, lineno,
                 line_expanded[:self.limit]
