@@ -70,6 +70,8 @@ namespace aarch64_acle
     extern const function_base *const svcvtlt1;
     extern const function_base *const svcvtlt2;
     extern const function_base *const svcvtn;
+    extern const function_base *const svcvtt;
+    extern const function_base *const svcvtb;
     extern const function_base *const svcvtnb;
     extern const function_base *const svcvtnt;
     extern const function_base *const svcvtx;

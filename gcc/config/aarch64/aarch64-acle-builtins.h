@@ -1524,6 +1524,22 @@ function_expander::result_mode () const
 #define TYPES_cvtnx_mf8(S, D, T) \
   D (mf8, f32)
 
+#define TYPES_cvtzn(S, D, T) \
+  D (s8, f16), \
+  D (u8, f16), \
+  D (s16, f32), \
+  D (u16, f32), \
+  D (s32, f64), \
+  D (u32, f64)
+
+#define TYPES_cvttb(S, D, T) \
+  D (f16, s8), \
+  D (f16, u8), \
+  D (f32, s16), \
+  D (f32, u16), \
+  D (f64, s32), \
+  D (f64, u32)
+
 /* { _s32 _s64 } x { _b8 _b16 _b32 _b64 }
    { _u32 _u64 }.  */
 #define TYPES_inc_dec_n1(D, A) \
@@ -2017,6 +2033,8 @@ DEF_SVE_TYPES_ARRAY (cvt_narrow);
 DEF_SVE_TYPES_ARRAY (cvt_s_s);
 DEF_SVE_TYPES_ARRAY (cvtn_mf8);
 DEF_SVE_TYPES_ARRAY (cvtnx_mf8);
+DEF_SVE_TYPES_ARRAY (cvtzn);
+DEF_SVE_TYPES_ARRAY (cvttb);
 DEF_SVE_TYPES_ARRAY (inc_dec_n);
 DEF_SVE_TYPES_ARRAY (qcvt_x2);
 DEF_SVE_TYPES_ARRAY (qcvt_x4);

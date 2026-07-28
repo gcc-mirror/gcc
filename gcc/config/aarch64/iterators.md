@@ -1123,6 +1123,12 @@
     UNSPEC_COND_FCVTNT	; Used in aarch64-sve2.md.
     UNSPEC_COND_FCVTX	; Used in aarch64-sve2.md.
     UNSPEC_COND_FCVTXNT	; Used in aarch64-sve2.md.
+    UNSPEC_FCVTZSN	; Used in aarch64-sve2.md.
+    UNSPEC_FCVTZUN	; Used in aarch64-sve2.md.
+    UNSPEC_SCVTFB	; Used in aarch64-sve2.md.
+    UNSPEC_SCVTFLT	; Used in aarch64-sve2.md.
+    UNSPEC_UCVTFB	; Used in aarch64-sve2.md.
+    UNSPEC_UCVTFLT	; Used in aarch64-sve2.md.
     UNSPEC_COND_FLOGB	; Used in aarch64-sve2.md.
     UNSPEC_DOT_FP8	; Used in aarch64-sve2.md.
     UNSPEC_DOT_LANE_FP8	; Used in aarch64-sve2.md.
@@ -2278,7 +2284,7 @@
 			  (V8HI "4s") (V4SI "2d")])
 
 ;; SVE vector after narrowing.
-(define_mode_attr Ventype [(VNx8HI "b")
+(define_mode_attr Ventype [(VNx8HI "b") (VNx8HF "b")
 			   (VNx4SI "h") (VNx4SF "h")
 			   (VNx2DI "s") (VNx2DF "s")
 			   (VNx8SI "h") (VNx16SI "b")
@@ -2908,6 +2914,14 @@
 (define_mode_attr FCMLA_maybe_lane [(V2SF "<Vtype>") (V4SF "<Vetype>[%4]")
 				    (V4HF "<Vetype>[%4]") (V8HF "<Vetype>[%4]")
 				    ])
+
+(define_mode_attr FCVTZN_SRC [(VNx16QI "VNx16HF")
+			      (VNx8HI "VNx8SF")
+			      (VNx4SI "VNx4DF")])
+
+(define_mode_attr CVTTB_SRC [(VNx8HF "VNx16QI")
+			     (VNx4SF "VNx8HI")
+			     (VNx2DF "VNx4SI")])
 
 (define_mode_attr za16_offset_range [(VNx16QI "0_to_14_step_2")
 				     (VNx32QI "0_to_6_step_2")

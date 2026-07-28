@@ -245,8 +245,42 @@ public:
     insn_code icode;
     if (e.fpm_mode == FPM_set)
       icode = code_for_aarch64_sve2_fp8_cvtn (GET_MODE (e.args[0]));
-    else
+    else if (e.type_suffix (0).float_p)
       icode = code_for_aarch64_sve_cvtn (e.result_mode ());
+    else if (e.type_suffix (0).unsigned_p)
+      icode = code_for_aarch64_sve2_fcvtzun (e.result_mode ());
+    else
+      icode = code_for_aarch64_sve2_fcvtzsn (e.result_mode ());
+    return e.use_exact_insn (icode);
+  }
+};
+
+class svcvtt_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code icode;
+    if (e.type_suffix (1).unsigned_p)
+      icode = code_for_aarch64_sve2_ucvtflt (e.result_mode ());
+    else
+      icode = code_for_aarch64_sve2_scvtflt (e.result_mode ());
+    return e.use_exact_insn (icode);
+  }
+};
+
+class svcvtb_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    insn_code icode;
+    if (e.type_suffix (1).unsigned_p)
+      icode = code_for_aarch64_sve2_ucvtfb (e.result_mode ());
+    else
+      icode = code_for_aarch64_sve2_scvtfb (e.result_mode ());
     return e.use_exact_insn (icode);
   }
 };
@@ -1072,6 +1106,8 @@ FUNCTION (svcvtn, svcvtn_impl,)
 FUNCTION (svcvtnb, fixed_insn_function, (CODE_FOR_aarch64_sve2_fp8_cvtnbvnx16qi))
 FUNCTION (svcvtx, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTX))
 FUNCTION (svcvtxnt, NARROWING_TOP_CONVERT1 (aarch64_sve2_cvtxnt),)
+FUNCTION (svcvtt, svcvtt_impl,)
+FUNCTION (svcvtb, svcvtb_impl,)
 FUNCTION (svdup_laneq, svdup_laneq_impl,)
 FUNCTION (sveor3, CODE_FOR_MODE0 (aarch64_sve2_eor3),)
 FUNCTION (sveorbt, unspec_based_function, (UNSPEC_EORBT, UNSPEC_EORBT, -1))

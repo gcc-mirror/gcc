@@ -105,6 +105,7 @@
 ;;
 ;; == Conversions
 ;; ---- [FP<-FP] Widening conversions
+;; ---- [FP<-INT] Widening conversions
 ;; ---- [FP<-FP] Narrowing conversions
 ;; ---- [FP<-FP] Multi-vector widening conversions
 ;; ---- [FP<-FP] Multi-vector narrowing conversions
@@ -3669,6 +3670,56 @@
 )
 
 ;; -------------------------------------------------------------------------
+;; ---- [FP<-INT] Widening conversions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - SCVTF (SME_2p3)
+;; - SCVTFLT (SME_2p3)
+;; - UCVTF (SME_2p3)
+;; - UCVTFLT (SME_2p3)
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve2_scvtfb<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<CVTTB_SRC> 1 "register_operand" "w")]
+	  UNSPEC_SCVTFB))]
+  "TARGET_SVE2p3_OR_SME2p3"
+  "scvtf\t%0.<Vetype>, %1.<Ventype>"
+  [(set_attr "sve_type" "sve_fp_cvt")]
+)
+
+(define_insn "@aarch64_sve2_scvtflt<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<CVTTB_SRC> 1 "register_operand" "w")]
+	  UNSPEC_SCVTFLT))]
+  "TARGET_SVE2p3_OR_SME2p3"
+  "scvtflt\t%0.<Vetype>, %1.<Ventype>"
+  [(set_attr "sve_type" "sve_fp_cvt")]
+)
+
+(define_insn "@aarch64_sve2_ucvtfb<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<CVTTB_SRC> 1 "register_operand" "w")]
+	  UNSPEC_UCVTFB))]
+  "TARGET_SVE2p3_OR_SME2p3"
+  "ucvtf\t%0.<Vetype>, %1.<Ventype>"
+  [(set_attr "sve_type" "sve_fp_cvt")]
+)
+
+(define_insn "@aarch64_sve2_ucvtflt<mode>"
+  [(set (match_operand:SVE_FULL_F 0 "register_operand" "=w")
+	(unspec:SVE_FULL_F
+	  [(match_operand:<CVTTB_SRC> 1 "register_operand" "w")]
+	  UNSPEC_UCVTFLT))]
+  "TARGET_SVE2p3_OR_SME2p3"
+  "ucvtflt\t%0.<Vetype>, %1.<Ventype>"
+  [(set_attr "sve_type" "sve_fp_cvt")]
+)
+
+;; -------------------------------------------------------------------------
 ;; ---- [FP<-FP] Narrowing conversions
 ;; -------------------------------------------------------------------------
 ;; Includes:
@@ -3935,6 +3986,8 @@
 ;; Includes the multi-register forms of:
 ;; - FCVTZS (SME2)
 ;; - FCVTZU (SME2)
+;; - FCVTZSN (SME2p3)
+;; - FCVTZUN (SME2p3)
 ;; -------------------------------------------------------------------------
 
 (define_insn "<optab><mode><v_int_equiv>2"
@@ -3943,6 +3996,26 @@
 	  (match_operand:SVE_SFx24 1 "aligned_register_operand" "Uw<vector_count>")))]
   "TARGET_STREAMING_SME2"
   "fcvtz<su>\t%0, %1"
+  [(set_attr "sve_type" "sve_fp_cvt")]
+)
+
+(define_insn "@aarch64_sve2_fcvtzsn<mode>"
+  [(set (match_operand:SVE_FULL_BHSI 0 "register_operand" "=w")
+	(unspec:SVE_FULL_BHSI
+	  [(match_operand:<FCVTZN_SRC> 1 "aligned_register_operand" "Uw2")]
+	  UNSPEC_FCVTZSN))]
+  "TARGET_SVE2p3_OR_SME2p3"
+  "fcvtzsn\t%0.<Vetype>, %1"
+  [(set_attr "sve_type" "sve_fp_cvt")]
+)
+
+(define_insn "@aarch64_sve2_fcvtzun<mode>"
+  [(set (match_operand:SVE_FULL_BHSI 0 "register_operand" "=w")
+	(unspec:SVE_FULL_BHSI
+	  [(match_operand:<FCVTZN_SRC> 1 "aligned_register_operand" "Uw2")]
+	  UNSPEC_FCVTZUN))]
+  "TARGET_SVE2p3_OR_SME2p3"
+  "fcvtzun\t%0.<Vetype>, %1"
   [(set_attr "sve_type" "sve_fp_cvt")]
 )
 

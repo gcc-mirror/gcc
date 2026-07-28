@@ -468,6 +468,9 @@ DEF_SVE_FUNCTION_GS_FPM (svmmla, mmla, s_float_mf8, none, none, set)
 #define REQUIRED_EXTENSIONS sve_and_sme (AARCH64_FL_SVE2p3, AARCH64_FL_SME2p3)
 DEF_SVE_FUNCTION (svdot, ternary_qq_opt_n_or_011, s_narrow_su, none)
 DEF_SVE_FUNCTION (svdot_lane, ternary_qq_or_011_lane, s_narrow_su, none)
+DEF_SVE_FUNCTION_GS (svcvtn, unary_convertxn, cvtzn, x2, none)
+DEF_SVE_FUNCTION (svcvtt, unary_convert, cvttb, none)
+DEF_SVE_FUNCTION (svcvtb, unary_convert, cvttb, none)
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS nonstreaming_sve (AARCH64_FL_SVE_F16F32MM)
