@@ -1120,7 +1120,7 @@ is_CFI_desc (gfc_symbol *sym, gfc_expr *e)
       && e && e->expr_type == EXPR_VARIABLE)
     sym = e->symtree->n.sym;
 
-  if (sym && sym->attr.dummy
+  if (sym && sym->attr.dummy && sym->ns && sym->ns->proc_name
       && sym->ns->proc_name->attr.is_bind_c
       && (sym->attr.pointer
 	  || sym->attr.allocatable
