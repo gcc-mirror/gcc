@@ -6,14 +6,15 @@ abstract project Libgnat_Common is
                     "-DSTANDALONE") &
                    External_As_List ("EXTRALIBFLAGS", " ");
    Ada_Flags    := Common_Flags & ("-nostdinc", "-I../adainclude", "-gnatg")
-                   & Split (External ("ADAFLAGS", "-gnatpg"), " ");
+                   & Split (External ("ADAFLAGS", ""), " ");
    Library_Kind := External ("LIBRARY_KIND", "static");
+   Version      := External ("LIBRARY_VERSION", "0");
 
    No_Opt      := ("-O0");
    Force_Debug := ("-g");
    No_Inline   := ("-fno-inline");
    No_Omit     := ("-fno-omit-frame-pointer");
    No_Sibling  := ("-fno-optimize-sibling-calls");
-   No_Reorder  := ("-fno-toplevel-reorder", "-O0");
+   No_Reorder  := ("-fno-toplevel-reorder");
 
 end Libgnat_Common;
