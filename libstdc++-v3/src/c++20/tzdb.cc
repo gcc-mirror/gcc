@@ -1069,35 +1069,19 @@ namespace std::chrono
     // Find the transition info for the time point.
     auto i = ranges::upper_bound(infos, tp, ranges::less{}, &ZoneInfo::until);
 
-    // Perform the comparison on save adjusted until values (if needed)
-    // Assume that applying the save will not change relative order of
-    // ZoneInfo objects.
-    if (i != infos.begin() && i[-1].calc_save(node->rules) && (i[-1].until() > tp))
-      --i;
-    else if (i != infos.end() && i->calc_save(node->rules) && (i->until() <= tp))
-      ++i;
-
     if (i == infos.end())
       {
 	if (infos.empty())
 	  __throw_runtime_error("std::chrono::time_zone::get_info: invalid data");
-	(--i)->calc_save(node->rules);
-	tp = i->until();
+	tp = (--i)->until();
       }
-    else // Guarantee that i->until() is correct
-      i->calc_save(node->rules);
-
 
     sys_info info;
 
     if (i == infos.begin())
       info.begin = sys_days(year::min()/January/1);
     else
-      {
-	ZoneInfo& prev = i[-1];
-	prev.calc_save(node->rules);
-	info.begin = prev.until();
-      }
+      info.begin = i[-1].until();
 
     if (i->to(info)) // We already know a sys_info for this time.
       return info;
@@ -2049,6 +2033,11 @@ constinit tzdb_list::_Node::NumLeapSeconds tzdb_list::_Node::num_leap_seconds;
 	return result < 0;
       return lhs.save < rhs.save;
     });
+
+    // Calculate the SAVE value at UNTIL, and adjust it if necessary.
+    for (time_zone& tz : node->db.zones)
+      for (ZoneInfo& info : tz._M_impl->infos)
+	info.calc_save(node->rules);
 
     return Node::_S_replace_head(std::move(head), std::move(node));
 #else
