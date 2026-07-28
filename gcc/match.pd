@@ -1231,13 +1231,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    show up.  Else it is safe if the negation is done in an unsigned type.
    Note the outer cast cannot be a boolean type as the only valid values
    are 0,-1/1 (depending on the signedness of the boolean) and the negative
-   is there to get the correct value.  */
+   is there to get the correct value.
+   Also handle the case where we know that we won't cause a signed
+   integer overflow at the point of the negation.  */
 (simplify
- (convert (negate:s@1 (convert:s @0)))
+ (convert (negate:s@1 (convert:s@ic @0)))
  (if (INTEGRAL_TYPE_P (type)
       && tree_nop_conversion_p (type, TREE_TYPE (@1))
       && (TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (@0))
-	  || TYPE_UNSIGNED (type))
+	  || TYPE_OVERFLOW_WRAPS (type)
+	  || expr_not_equal_to (@ic, wi::min_value (signed_type_for (type)),
+				gimple_match_ctx (@1)))
       && TREE_CODE (type) != BOOLEAN_TYPE)
     (negate (convert @0))))
 
