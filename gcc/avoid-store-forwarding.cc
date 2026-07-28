@@ -444,7 +444,9 @@ process_store_forwarding (vec<store_fwd_info> &stores, rtx_insn *load_insn,
       else
 	move_src = dest;
 
-      rtx move = gen_rtx_SET (SET_DEST (load), move_src);
+      /* In the non-elimination case the load insn is retained, so unshare
+	 its destination to avoid sharing a SUBREG between two insns.  */
+      rtx move = gen_rtx_SET (copy_rtx (SET_DEST (load)), move_src);
 
       start_sequence ();
       rtx_insn *insn = emit_insn (move);
