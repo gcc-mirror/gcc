@@ -50,27 +50,35 @@ void test01()
 {
   using namespace __gnu_test;
 
-  std::mt19937 eng;
+  std::mt19937 mteng;
 
   std::uniform_int_distribution<> uid1(0, 2);
-  auto buid1 = std::bind(uid1, eng);
+  auto buid1 = std::bind(uid1, mteng);
   testDiscreteDist<ARGS>(buid1, [](int n) { return uniform_int_pdf(n, 0, 2); } );
 
   std::uniform_int_distribution<> uid2(3, 7);
-  auto buid2 = std::bind(uid2, eng);
+  auto buid2 = std::bind(uid2, mteng);
   testDiscreteDist<ARGS>(buid2, [](int n) { return uniform_int_pdf(n, 3, 7); } );
 
   std::uniform_int_distribution<> uid3(1, 20);
-  auto buid3 = std::bind(uid3, eng);
+  auto buid3 = std::bind(uid3, mteng);
   testDiscreteDist<ARGS>(buid3, [](int n) { return uniform_int_pdf(n, 1, 20); } );
 
-  shifted<(std::uint64_t(1) << 16)> s16e;
-  auto buid4 = std::bind(uid3, s16e);
+  std::ranlux24 r24eng;
+  auto buid4 = std::bind(uid3, r24eng);
   testDiscreteDist<ARGS>(buid4, [](int n) { return uniform_int_pdf(n, 1, 20); } );
 
-  shifted<(std::uint64_t(1) << 32)> s32e;
-  auto buid5 = std::bind(uid3, s32e);
+  std::ranlux48 r48eng;
+  auto buid5 = std::bind(uid3, r48eng);
   testDiscreteDist<ARGS>(buid5, [](int n) { return uniform_int_pdf(n, 1, 20); } );
+
+  shifted<(std::uint64_t(1) << 16)> s16e;
+  auto buid6 = std::bind(uid3, s16e);
+  testDiscreteDist<ARGS>(buid6, [](int n) { return uniform_int_pdf(n, 1, 20); } );
+
+  shifted<(std::uint64_t(1) << 32)> s32e;
+  auto buid7 = std::bind(uid3, s32e);
+  testDiscreteDist<ARGS>(buid7, [](int n) { return uniform_int_pdf(n, 1, 20); } );
 }
 
 int main()

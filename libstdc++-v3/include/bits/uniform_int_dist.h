@@ -252,7 +252,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Lemire's nearly divisionless algorithm.
       // Returns an unbiased random number from __g downscaled to [0,__range)
       // using an unsigned type _Wp twice as wide as unsigned type _Up.
-      template<typename _Wp, typename _Urbg, typename _Up>
+      template<size_t _Bits, typename _Wp, typename _Urbg, typename _Up>
 	static _Up
 	_S_nd(_Urbg& __g, _Up __range)
 	{
@@ -263,33 +263,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  static_assert(_Wp_traits::__digits == (2 * _Up_traits::__digits),
 			"W must be twice as wide as U");
 	  constexpr auto __min = _Urbg::min();
+	  constexpr _Up __mask = (_Bits < _Up_traits::__digits)
+				 ? (_Up(1) << _Bits) - 1 : ~_Up(0);
 
 	  // reference: Fast Random Integer Generation in an Interval
 	  // ACM Transactions on Modeling and Computer Simulation 29 (1), 2019
 	  // https://arxiv.org/abs/1805.10941
 	  _Wp __product = _Wp(__g() - __min) * _Wp(__range);
-	  _Up __low = _Up(__product);
+	  _Up __low = _Up(__product) & __mask;
 	  if (__low < __range)
 	    {
 	      const _Up __threshold = -__range % __range;
 	      while (__low < __threshold)
 		{
-       		  __product = _Wp(__g() - __min) * _Wp(__range);
-		  __low = _Up(__product);
+		  __product = _Wp(__g() - __min) * _Wp(__range);
+		  __low = _Up(__product) & __mask;
 
 		  // The algorithm is modified to alternate between rejecting
 		  // from the beginning and end of the range. This guarantees
 		  // that we stop for non-uniform engines that always result
 		  // in values below the __threshold.
-		  const _Up __back_treshold = _Up_traits::__max - __threshold;
-		  if (__low <= __back_treshold)
+		  const _Up __back_threshold = __mask - __threshold;
+		  if (__low <= __back_threshold)
 		    break;
 
 		  __product = _Wp(__g() - __min) * _Wp(__range);
-		  __low = _Up(__product);
+		  __low = _Up(__product) & __mask;
 		}
 	    }
-	  return __product >> _Up_traits::__digits;
+	  return _Up(__product >> _Bits) & __mask;
 	}
     };
 
@@ -322,25 +324,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
-#if defined __UINT64_TYPE__ && defined __UINT32_TYPE__
-#if __SIZEOF_INT128__
-	    if constexpr (__urngrange == __UINT64_MAX__)
+#if defined __UINT64_TYPE__ && defined __UINT32_TYPE__ && __has_builtin(__builtin_popcountg)
+      	    constexpr auto __bits = __builtin_popcountg(__urngrange);
+	    if constexpr (__detail::_Power_of_2(__urngrange + 1) && __bits <= 32)
 	      {
-		// __urng produces values that use exactly 64-bits,
-		// so use 128-bit integers to downscale to desired range.
-		__UINT64_TYPE__ __u64erange = __uerange;
-		__ret = __extension__ _S_nd<unsigned __int128>(__urng,
-							       __u64erange);
-	      }
-	    else
-#endif
-	    if constexpr (__urngrange == __UINT32_MAX__)
-	      {
-		// __urng produces values that use exactly 32-bits,
+		// __urng produces values that use no more than 32-bits,
 		// so use 64-bit integers to downscale to desired range.
 		__UINT32_TYPE__ __u32erange = __uerange;
-		__ret = _S_nd<__UINT64_TYPE__>(__urng, __u32erange);
+		__ret = _S_nd<__bits, __UINT64_TYPE__>(__urng, __u32erange);
 	      }
+# if __SIZEOF_INT128__
+	    else if constexpr (__detail::_Power_of_2(__urngrange + 1) && __bits <= 64)
+	      {
+		// __urng produces values that use no more than 64-bits,
+		// so use 128-bit integers to downscale to desired range.
+		__UINT64_TYPE__ __u64erange = __uerange;
+		__ret = __extension__ _S_nd<__bits, unsigned __int128>(
+			  __urng, __u64erange);
+	      }
+# endif
 	    else
 #endif
 	      {
