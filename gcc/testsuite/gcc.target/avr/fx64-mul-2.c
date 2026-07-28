@@ -3,7 +3,7 @@
 
 // !!! Requires the fx64 <-> float conversions from AVR-LibC.
 
-#include "fx64-mul.h"
+#include "fx64.h"
 
 NI void test_mul (float fa, float fb, uint64_t res)
 {

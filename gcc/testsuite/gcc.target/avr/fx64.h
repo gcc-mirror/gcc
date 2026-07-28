@@ -35,6 +35,7 @@ typedef unsigned long long fract ullr_t;
 #define UMAX 0xffffffffffffffff
 #define SMAX 0x7fffffffffffffff
 #define SMIN 0x8000000000000000
+#define X80  0x8000000000000000
 
 // Values are in min <= x <= max.
 #define max_lk lkbits (SMAX)
@@ -51,6 +52,11 @@ typedef unsigned long long fract ullr_t;
 #define min_llr llrbits (SMIN)
 #define max_ullr ullrbits (UMAX)
 #define min_ullr ullrbits (0)
+
+#define lk_1   (1ull << __DA_FBIT__)
+#define ulk_1  (1ull << __UDA_FBIT__)
+#define llk_1  (1ull << __TA_FBIT__)
+#define ullk_1 (1ull << __UTA_FBIT__)
 
 #define id_lk   10
 #define id_ulk  20
