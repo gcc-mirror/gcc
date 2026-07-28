@@ -754,7 +754,6 @@ class locale_tgt_t {
 %type	<log_expr_t>	log_expr rel_abbrs eval_abbrs
 %type   <rel_term_t>	rel_term rel_term1
 
-%type   <field_data>    value78
 %type   <field>         literal name nume typename
 %type   <field>         num_constant num_literal signed_literal
 
@@ -765,7 +764,7 @@ class locale_tgt_t {
 
 %type   <refer>         eval_subject1
 %type   <vargs>         vargs disp_vargs trim_expr
-%type   <field>         level_name
+%type   <field>         level_name level_constant
 %type   <number>        fd_name
 %type   <string>        picture_sym name66 paragraph_name
 %type   <literal>       literalism
@@ -3998,6 +3997,8 @@ level_name:     LEVEL ctx_name
                   case 77:
                   case 88:
                     break;
+                  case 78:
+                      break;
                   default:
 		    if( 1 <= $LEVEL && $LEVEL <= 49 ) break;
                     error_msg(@LEVEL, "LEVEL %d not supported", $LEVEL);
@@ -4020,6 +4021,9 @@ level_name:     LEVEL ctx_name
                   case 77:
                   case 88:
                     break;
+                  case 78:
+                      dialect_ok(@LEVEL, MfLevel78, "LEVEL 78");
+                      break;
                   default:
 		    if( 1 <= $LEVEL && $LEVEL <= 49 ) break;
                     error_msg(@LEVEL, "LEVEL %d not supported", $LEVEL);
@@ -4033,6 +4037,28 @@ level_name:     LEVEL ctx_name
                   if( !$$ ) {
                     YYERROR;
                   }
+                  current_field($$); // make available for data_clauses
+                }
+                ;
+
+level_constant: level_name CONSTANT is_global as {
+                  cbl_field_t& field = *$1;
+                  if( field.level != 1 ) {
+                    error_msg(@1, "%s must be an 01-level data item", field.name);
+                    YYERROR;
+                  }
+                  field.attr |= constant_e;
+                  if( $is_global ) field.attr |= global_e;
+                  $$ = $1;
+                }
+        |       LEVEL78[level] NAME[name] VALUE is {
+                  dialect_ok(@level, MfLevel78, "LEVEL 78");
+                  struct cbl_field_t field = { FldInvalid, 
+		                               uint32_t($level),
+		                               @level.first_line };
+                  namcpy(@name, field.name, $name);
+                  field.attr |= constant_e;
+                  $$ = field_add(@1, &field);
                   current_field($$); // make available for data_clauses
                 }
                 ;
@@ -4063,37 +4089,6 @@ const_value:    cce_expr
                 }
                 ;
 
-value78:        literalism
-                {
-                  cbl_field_data_t data;
-                  data.capacity( capacity_cast(strlen($1.data)) );
-                  data.original($1.data);
-                  $$.encoding = $1.encoding;
-                  $$.data = new cbl_field_data_t(data);
-                }
-        |       const_value
-                {
-                  cbl_field_data_t data;
-		  data = build_real (float128_type_node, $1.r);
-                  auto s = $1.s ? $1.s : reinterpret_cast<char*>(data.etc.value);
-                  data.original(s);
-                  $$.encoding = no_encoding_e;
-                  $$.data = new cbl_field_data_t(data);
-                }
-        |       reserved_value[value]
-                {
-		  const auto figconst = constant_of(constant_index($value));
-                  $$.encoding = current_encoding('A');
-                  $$.data = new cbl_field_data_t(figconst->data);
-                }
-
-        |       true_false
-                {
-                  cbl_unimplemented("Boolean constant");
-                  YYERROR;
-                }
-                ;
-
 data_descr1:    level_name
                 {
                   assert($1 == current_field());
@@ -4102,16 +4097,9 @@ data_descr1:    level_name
                   }
                 }
 
-        |       level_name CONSTANT is_global as const_value[cce]
+        |       level_constant const_value[cce]
                 {
                   cbl_field_t& field = *$1;
-                  if( field.level != 1 ) {
-                    error_msg(@1, "%s must be an 01-level data item", field.name);
-                    YYERROR;
-                  }
-
-                  field.attr |= constant_e;
-                  if( $is_global ) field.attr |= global_e;
                   field.type = FldLiteralN;
 		  field.data = build_real (float128_type_node, $cce.r);
                   const char *s = $cce.s? $cce.s : string_of($cce.r);
@@ -4125,15 +4113,9 @@ data_descr1:    level_name
                   }
                 }
 
-        |       level_name CONSTANT is_global as reserved_value[value]
+        |       level_constant reserved_value[value]
                 {
                   cbl_field_t& field = *$1;
-                  if( field.level != 1 ) {
-                    error_msg(@1, "%s must be an 01-level data item", field.name);
-                    YYERROR;
-                  }
-                  field.attr |= constant_e;
-                  if( $is_global ) field.attr |= global_e;
                   field.type = FldLiteralA;
 		  auto fig = constant_of(constant_index($value));
                   field.data = fig->data;
@@ -4141,11 +4123,9 @@ data_descr1:    level_name
                   field.set_initial(@value);
                 }
 
-        |       level_name CONSTANT is_global as literalism[lit]
+        |       level_constant literalism[lit]
                 {
                   cbl_field_t& field = *$1;
-                  field.attr |= constant_e;
-                  if( $is_global ) field.attr |= global_e;
                   field.type = FldLiteralA;
                   field.attr |= literal_attr($lit.prefix);
 
@@ -4156,10 +4136,6 @@ data_descr1:    level_name
                   field.data.original( $lit.data );
                   field.set_initial(@lit);
 
-                  if( field.level != 1 ) {
-                    error_msg(@lit, "%s must be an 01-level data item", field.name);
-                    YYERROR;
-                  }
                   if( cdf_value(field.name) ) {
                     cbl_message(@1, Par78CdfDefinedW,
                                 "%s was defined by CDF", field.name);
@@ -4187,34 +4163,6 @@ data_descr1:    level_name
                   } else {
                     field.data.capacity(sizeof(field.data.value_of()));
                     field.data = cdfval->number;
-                  }
-                }
-        |       LEVEL78 NAME[name] VALUE is value78[data]
-                {
-                  dialect_ok(@1, MfLevel78, "LEVEL 78");
-                  cbl_field_t field = { FldLiteralA, constant_e, *$data.data,
-                                        78, $name, @name.first_line };
-                  // cce reports no encoded initial value
-                  if( $data.encoding == no_encoding_e ) { 
-                    field.type = FldLiteralN;
-                    field.codeset.set();
-                    field.data.initial = string_of(field.data.value_of());
-                    if( cdf_value(field.name) ) {
-                      cbl_message(@name, Par78CdfDefinedW,
-                                  "%s was defined by CDF", field.name);
-                    }
-                  } else{ 
-                    field.attr |= quoted_e;
-                    field.codeset.set($data.encoding);
-                    field.set_initial(@data);
-                    if( cdf_value(field.name) ) {
-                      cbl_message(@name, Par78CdfDefinedW,
-                                  "%s was defined by CDF", field.name);
-                    }
-                  }
-
-                  if( ($$ = field_add(@name, &field)) == NULL ) {
-                    error_msg(@name, "failed level 78");
                   }
                 }
 

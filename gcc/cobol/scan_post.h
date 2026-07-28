@@ -421,7 +421,7 @@ prelex() {
         token = LEVEL78;
         break;
       case 88:
-        token = LEVEL78;
+        token = LEVEL88;
         break;
       }
     }
