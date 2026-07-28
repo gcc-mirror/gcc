@@ -1180,6 +1180,8 @@ bool
 symbol_field_type_update( cbl_field_t *field,
                           cbl_field_type_t type, bool is_usage );
 
+void symbol_field_capacity_set( cbl_field_t *field );
+
 struct sort_key_t;
 struct sort_key_t;
 

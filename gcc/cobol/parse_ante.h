@@ -3376,6 +3376,9 @@ set_real_from_capacity( const cbl_loc_t& loc,
     error_msg(loc, "cannot define %s via self-reference", field->name);
     return;
   }
+  if( field->type == FldGroup ) {
+    symbol_field_capacity_set(field);
+  }
   field->data.set_real_from_capacity(r);
 }
 

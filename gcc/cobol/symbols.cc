@@ -1250,7 +1250,7 @@ grow_redefined_group( cbl_field_t *redefined, const cbl_field_t *field ) {
  * For groups, return the element after the last field in the group.
  */
 static struct symbol_elem_t *
- calculate_capacity( struct symbol_elem_t *e) {
+calculate_capacity( struct symbol_elem_t *e) {
   // For each group, sum capacities of children.  Exclude:
   //    FldClass, FldForward
   //    FldIndex with level 0 (really, any level 0)
@@ -1406,6 +1406,12 @@ static struct symbol_elem_t *
     }
   }
   return e;
+}
+
+void
+symbol_field_capacity_set( cbl_field_t *field ) {
+  gcc_assert(field->type == FldGroup);
+  calculate_capacity( symbol_elem_of(field) );
 }
 
 static void
