@@ -556,11 +556,13 @@ frange_storage::get_frange (frange &r, tree type) const
       return;
     }
 
-  // FIXME: Rewrite for sub-ranges.  This only reconstructs the first pair.
-  // Eventually do it piecewise like irange_storage::get_irange: start
-  // undefined and union each sub-range built through the constructor (so
-  // every piece is re-canonicalized).
-  r = frange (type, m_pairs[0].min, m_pairs[0].max, m_kind);
+  // Rebuild piecewise, like irange_storage::get_irange().
+  r.set_undefined ();
+  for (unsigned i = 0; i < m_num_ranges; ++i)
+    {
+      frange tmp (type, m_pairs[i].min, m_pairs[i].max, m_kind);
+      r.union_ (tmp);
+    }
 
   // The constructor will set the NAN bits for HONOR_NANS, but we must
   // make sure to set the NAN sign if known.

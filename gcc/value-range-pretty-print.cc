@@ -219,15 +219,17 @@ vrange_printer::visit (const frange &r) const
       print_frange_nan (r);
       return;
     }
-  pp_character (pp, '[');
-  bool has_endpoints = !r.known_isnan ();
-  if (has_endpoints)
-    {
-      print_real_value (type, r.lower_bound ());
-      pp_string (pp, ", ");
-      print_real_value (type, r.upper_bound ());
-    }
-  pp_character (pp, ']');
+  if (r.known_isnan ())
+    pp_string (pp, "[]");
+  else
+    for (unsigned i = 0; i < r.num_pairs (); ++i)
+      {
+	pp_character (pp, '[');
+	print_real_value (type, r.lower_bound (i));
+	pp_string (pp, ", ");
+	print_real_value (type, r.upper_bound (i));
+	pp_character (pp, ']');
+      }
   print_frange_nan (r);
 }
 
