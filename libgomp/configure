@@ -649,8 +649,6 @@ OMP_NEST_LOCK_SIZE
 OMP_LOCK_ALIGN
 OMP_LOCK_SIZE
 INTPTR_T_KIND
-USE_FORTRAN_FALSE
-USE_FORTRAN_TRUE
 link_gomp
 tmake_file
 XLDFLAGS
@@ -677,6 +675,8 @@ offload_targets
 offload_plugins
 DL_LIBS
 libtool_VERSION
+USE_FORTRAN_FALSE
+USE_FORTRAN_TRUE
 ac_ct_FC
 FCFLAGS
 FC
@@ -12265,17 +12265,7 @@ FCFLAGS="$FCFLAGS -L."
 # We need gfortran to compile parts of the library
 # We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
-case `echo $GFORTRAN` in
-  -* | no* )
-    FC=no ;;
-  *)
-    set dummy $GFORTRAN; ac_word=$2
-    if test -x "$ac_word"; then
-      FC="$GFORTRAN"
-    else
-      FC=no
-    fi ;;
-esac
+FC="$GFORTRAN"
 ac_ext=${ac_fc_srcext-f}
 ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
 ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
@@ -15241,6 +15231,23 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 FCFLAGS="$FCFLAGS -Wall -L../libgfortran"
 
+case ,${enable_languages}, in
+  *,fortran,* )
+   use_fortran=true
+   ;;
+  * )
+   use_fortran=false
+   ;;
+esac
+ if "$use_fortran"; then
+  USE_FORTRAN_TRUE=
+  USE_FORTRAN_FALSE='#'
+else
+  USE_FORTRAN_TRUE='#'
+  USE_FORTRAN_FALSE=
+fi
+
+
 # For libtool versioning info, format is CURRENT:REVISION:AGE
 libtool_VERSION=1:0:0
 
@@ -17351,15 +17358,6 @@ else
 fi
 
 
- if test "$ac_cv_fc_compiler_gnu" = yes; then
-  USE_FORTRAN_TRUE=
-  USE_FORTRAN_FALSE='#'
-else
-  USE_FORTRAN_TRUE='#'
-  USE_FORTRAN_FALSE=
-fi
-
-
 # ??? 2006-01-24: Paulo committed to asking autoconf folk to document
 # and export AC_COMPUTE_INT.  If that happens, then we'll need to remove
 # the underscore here and update the PREREQ.  If it doesn't, then we'll
@@ -17646,6 +17644,10 @@ if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   as_fn_error $? "conditional \"MAINTAINER_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
+if test -z "${USE_FORTRAN_TRUE}" && test -z "${USE_FORTRAN_FALSE}"; then
+  as_fn_error $? "conditional \"USE_FORTRAN\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
 if test -z "${PLUGIN_NVPTX_TRUE}" && test -z "${PLUGIN_NVPTX_FALSE}"; then
   as_fn_error $? "conditional \"PLUGIN_NVPTX\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
@@ -17664,10 +17666,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_TRUE}" && test -z "${LIBGOMP_BUILD_VERSIONED_SHLIB_SUN_FALSE}"; then
   as_fn_error $? "conditional \"LIBGOMP_BUILD_VERSIONED_SHLIB_SUN\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${USE_FORTRAN_TRUE}" && test -z "${USE_FORTRAN_FALSE}"; then
-  as_fn_error $? "conditional \"USE_FORTRAN\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

@@ -159,19 +159,19 @@ FCFLAGS="$FCFLAGS -L."
 # We need gfortran to compile parts of the library
 # We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
-case `echo $GFORTRAN` in
-  -* | no* )
-    FC=no ;;
-  *)
-    set dummy $GFORTRAN; ac_word=$2
-    if test -x "$ac_word"; then
-      FC="$GFORTRAN"
-    else
-      FC=no
-    fi ;;
-esac
+FC="$GFORTRAN"
 AC_PROG_FC(gfortran)
 FCFLAGS="$FCFLAGS -Wall -L../libgfortran"
+
+case ,${enable_languages}, in
+  *,fortran,* )
+   use_fortran=true
+   ;;
+  * )
+   use_fortran=false
+   ;;
+esac
+AM_CONDITIONAL([USE_FORTRAN], ["$use_fortran"])
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
 libtool_VERSION=1:0:0
@@ -426,8 +426,6 @@ else
   link_gomp="-lgomp $LIBS${DL_LIBS:+ $DL_LIBS}"
 fi
 AC_SUBST(link_gomp)
-
-AM_CONDITIONAL([USE_FORTRAN], [test "$ac_cv_fc_compiler_gnu" = yes])
 
 # ??? 2006-01-24: Paulo committed to asking autoconf folk to document
 # and export AC_COMPUTE_INT.  If that happens, then we'll need to remove
