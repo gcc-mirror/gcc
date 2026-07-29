@@ -11365,7 +11365,6 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
       first_def = gimple_assign_lhs (conv_stmt);
     }
   gassign *perm_stmt;
-  tree perm_dest = make_ssa_name (vectype);
   if (mask_vec)
     {
       if (operand_equal_p (TYPE_SIZE (TREE_TYPE (first_def)),
@@ -11379,6 +11378,7 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	  vect_finish_stmt_generation (vinfo, NULL, conv_stmt, gsi);
 	  second_def = gimple_assign_lhs (conv_stmt);
 	}
+      tree perm_dest = make_ssa_name (vectype);
       perm_stmt = gimple_build_assign (perm_dest, VEC_PERM_EXPR,
 				       first_def, second_def,
 				       mask_vec);
@@ -11396,6 +11396,7 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	{
 	  /* For identity permutes we still need to handle the case
 	     of offsetted extracts or concats.  */
+	  tree perm_dest = make_ssa_name (vectype);
 	  unsigned HOST_WIDE_INT c;
 	  if (known_le (TYPE_VECTOR_SUBPARTS (vectype), def_nunits))
 	    {
@@ -11420,9 +11421,9 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	}
       else
 	{
-	  /* We need a copy here in case the def was external.  */
 	  gcc_assert (known_eq (eltno, 0U));
-	  perm_stmt = gimple_build_assign (perm_dest, def);
+	  node->push_vec_def (def);
+	  return;
 	}
     }
   vect_finish_stmt_generation (vinfo, NULL, perm_stmt, gsi);
@@ -11929,17 +11930,19 @@ vect_schedule_slp_node (vec_info *vinfo,
 	    unsigned j;
 	    tree vdef;
 	    FOR_EACH_VEC_ELT (SLP_TREE_VEC_DEFS (child), j, vdef)
-	      {
-		gimple *vstmt = SSA_NAME_DEF_STMT (vdef);
-		if (!last_stmt)
-		  last_stmt = vstmt;
-		else if (vect_stmt_dominates_stmt_p (last_stmt, vstmt))
-		  last_stmt = vstmt;
-		else if (vect_stmt_dominates_stmt_p (vstmt, last_stmt))
-		  ;
-		else
-		  gcc_unreachable ();
-	      }
+	      if (TREE_CODE (vdef) == SSA_NAME
+		  && !SSA_NAME_IS_DEFAULT_DEF (vdef))
+		{
+		  gimple *vstmt = SSA_NAME_DEF_STMT (vdef);
+		  if (!last_stmt)
+		    last_stmt = vstmt;
+		  else if (vect_stmt_dominates_stmt_p (last_stmt, vstmt))
+		    last_stmt = vstmt;
+		  else if (vect_stmt_dominates_stmt_p (vstmt, last_stmt))
+		    ;
+		  else
+		    gcc_unreachable ();
+		}
 	  }
 	else if (!SLP_TREE_VECTYPE (child))
 	  {
