@@ -37,6 +37,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Used for building error message strings.  */
 #define IOMSG_LEN 256
 
+/* Size of the namelist read error message buffer.  */
+#define NML_ERR_MSG_LEN 200
+
 /* POSIX 2008 specifies that the extended locale stuff is found in
    locale.h, but some systems have them in xlocale.h.  */
 
@@ -553,7 +556,10 @@ typedef struct st_parameter_dt
 	  unsigned expanded_read : 1;
 	  /* Flag to indicate if the statement has async="YES". */
 	  unsigned async : 1;
-	  /* 12 unused bits.  */
+	  /* A namelist specific flag set when a read error message has
+	     been saved into the unit's nml_err_msg buffer.  */
+	  unsigned nml_err_pending : 1;
+	  /* 11 unused bits.  */
 
 	  int child_saved_iostat;
 	  int nml_delim;
@@ -658,6 +664,10 @@ typedef struct gfc_unit
 
   /* Position information for better diagnostics.  */
   int line_number, column_number;
+
+  /* Error message buffer used while a namelist read is in progress.  Valid
+     only when the transfer's nml_err_pending flag is set.  */
+  char nml_err_msg[NML_ERR_MSG_LEN];
 
   enum
   { NO_ENDFILE, AT_ENDFILE, AFTER_ENDFILE }

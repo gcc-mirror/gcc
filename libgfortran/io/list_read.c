@@ -69,6 +69,24 @@ typedef unsigned char uchar;
 #define next_char(dtp) ((dtp)->u.p.current_unit->next_char_fn_ptr (dtp))
 #define push_char(dtp, c) ((dtp)->u.p.current_unit->push_char_fn_ptr (dtp, c))
 
+/* During a namelist read, the error message is saved to the namelist error
+   buffer and flagged as pending.  The saved message will be issued from
+   nml_read_obj.  Non namelist errors are issued now.  */
+
+static void
+nml_error (st_parameter_dt *dtp, int errcode, const char *message)
+{
+  if (dtp->u.p.namelist_mode)
+    {
+      snprintf (dtp->u.p.current_unit->nml_err_msg, NML_ERR_MSG_LEN, "%s",
+		message);
+      dtp->u.p.nml_err_pending = 1;
+      return;
+    }
+
+  generate_error (&dtp->common, errcode, message);
+}
+
 /* Worker function to save a default KIND=1 character to a string
    buffer, enlarging it as necessary.  */
 
@@ -516,8 +534,8 @@ eat_separator (st_parameter_dt *dtp)
     case ',':
       if (dtp->u.p.current_unit->decimal_status == DECIMAL_COMMA)
 	{
-	  generate_error (&dtp->common, LIBERROR_READ_VALUE,
-	   "Comma not allowed as separator with DECIMAL='comma'");
+	  nml_error (dtp, LIBERROR_READ_VALUE,
+		     "Comma not allowed as separator with DECIMAL='comma'");
 	  unget_char (dtp, c);
 	  break;
 	}
@@ -528,8 +546,8 @@ eat_separator (st_parameter_dt *dtp)
     case ';':
       if (dtp->u.p.current_unit->decimal_status == DECIMAL_POINT)
 	{
-	  generate_error (&dtp->common, LIBERROR_READ_VALUE,
-	   "Semicolon not allowed as separator with DECIMAL='point'");
+	  nml_error (dtp, LIBERROR_READ_VALUE,
+		     "Semicolon not allowed as separator with DECIMAL='point'");
 	  unget_char (dtp, c);
 	  break;
 	}
@@ -726,7 +744,7 @@ convert_integer (st_parameter_dt *dtp, int length, int negative)
 	  snprintf (message, IOMSG_LEN, "Zero repeat count in item %d of list "
 		    "input", dtp->u.p.item_count);
 
-	  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+	  nml_error (dtp, LIBERROR_READ_VALUE, message);
 	  m = 1;
 	}
     }
@@ -743,7 +761,7 @@ convert_integer (st_parameter_dt *dtp, int length, int negative)
 	     dtp->u.p.item_count);
 
   free_saved (dtp);
-  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+  nml_error (dtp, LIBERROR_READ_VALUE, message);
 
   return 1;
 }
@@ -805,7 +823,7 @@ convert_unsigned (st_parameter_dt *dtp, int length, int negative)
 	  snprintf (message, IOMSG_LEN, "Zero repeat count in item %d of list input",
 		   dtp->u.p.item_count);
 
-	  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+	  nml_error (dtp, LIBERROR_READ_VALUE, message);
 	  m = 1;
 	}
     }
@@ -824,7 +842,7 @@ convert_unsigned (st_parameter_dt *dtp, int length, int negative)
 	      "item %d of list input", dtp->u.p.item_count);
 
   free_saved (dtp);
-  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+  nml_error (dtp, LIBERROR_READ_VALUE, message);
 
   return 1;
 }
@@ -838,9 +856,16 @@ parse_repeat (st_parameter_dt *dtp)
 {
   char message[IOMSG_LEN];
   int c, repeat;
+  int initial_line = dtp->u.p.current_unit->line_number;
+  int initial_col = dtp->u.p.current_unit->column_number;
 
   if ((c = next_char (dtp)) == EOF)
     goto bad_repeat;
+
+  /* Remember where the repeat count starts, for diagnostics.  */
+  initial_line = dtp->u.p.current_unit->line_number;
+  initial_col = dtp->u.p.current_unit->column_number;
+
   switch (c)
     {
     CASE_DIGITS:
@@ -867,11 +892,16 @@ parse_repeat (st_parameter_dt *dtp)
 
 	  if (repeat > MAX_REPEAT)
 	    {
+	      if (dtp->u.p.namelist_mode)
+		{
+		  dtp->u.p.current_unit->line_number = initial_line;
+		  dtp->u.p.current_unit->column_number = initial_col;
+		}
 	      snprintf (message, IOMSG_LEN,
 		       "Repeat count overflow in item %d of list input",
 		       dtp->u.p.item_count);
 
-	      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+	      nml_error (dtp, LIBERROR_READ_VALUE, message);
 	      return 1;
 	    }
 
@@ -880,11 +910,16 @@ parse_repeat (st_parameter_dt *dtp)
 	case '*':
 	  if (repeat == 0)
 	    {
+	      if (dtp->u.p.namelist_mode)
+		{
+		  dtp->u.p.current_unit->line_number = initial_line;
+		  dtp->u.p.current_unit->column_number = initial_col;
+		}
 	      snprintf (message, IOMSG_LEN,
 		       "Zero repeat count in item %d of list input",
 		       dtp->u.p.item_count);
 
-	      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+	      nml_error (dtp, LIBERROR_READ_VALUE, message);
 	      return 1;
 	    }
 
@@ -910,9 +945,14 @@ parse_repeat (st_parameter_dt *dtp)
     }
   else
     eat_line (dtp);
+  if (dtp->u.p.namelist_mode)
+    {
+      dtp->u.p.current_unit->line_number = initial_line;
+      dtp->u.p.current_unit->column_number = initial_col;
+    }
   snprintf (message, IOMSG_LEN, "Bad repeat count in item %d of list input",
 	   dtp->u.p.item_count);
-  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+  nml_error (dtp, LIBERROR_READ_VALUE, message);
   return 1;
 }
 
@@ -1081,7 +1121,7 @@ next:
   snprintf (message, IOMSG_LEN, "Bad logical value while reading item %d",
 	      dtp->u.p.item_count);
   free_line (dtp);
-  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+  nml_error (dtp, LIBERROR_READ_VALUE, message);
   return;
 
  logical_done:
@@ -1254,7 +1294,7 @@ next:
 	      dtp->u.p.item_count);
 
   free_line (dtp);
-  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+  nml_error (dtp, LIBERROR_READ_VALUE, message);
 
   return;
 
@@ -1290,13 +1330,18 @@ static void
 read_character (st_parameter_dt *dtp, int length __attribute__ ((unused)))
 {
   char quote, message[IOMSG_LEN];
-  int c;
+  int c, initial_line, initial_col;
 
   quote = ' ';			/* Space means no quote character.  */
 
 next:
   if ((c = next_char (dtp)) == EOF)
     goto eof;
+
+  /* Save diagnostics info.  */
+  initial_line = dtp->u.p.current_unit->line_number;
+  initial_col = dtp->u.p.current_unit->column_number;
+
   if (c == ';')
     {
       push_char (dtp, c);
@@ -1364,9 +1409,15 @@ next:
 	     was a string of digits it should have had the closing quote.  */
 	  if (dtp->u.p.namelist_mode)
 	    {
+	      dtp->u.p.current_unit->line_number = initial_line;
+	      dtp->u.p.current_unit->column_number = initial_col;
 	      snprintf (message, IOMSG_LEN, "Missing quote while reading item %d",
 			dtp->u.p.item_count);
-	      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+	      nml_error (dtp, LIBERROR_READ_VALUE, message);
+	      /* If there is a pending error, exit here to preserve the
+		 position information.  */
+	      if (dtp->u.p.nml_err_pending)
+		return;
 	    }
 	  unget_char (dtp, c);
 	  goto done;		/* String was only digits!  */
@@ -1420,9 +1471,14 @@ next:
      read should have been set.  */
   if (dtp->u.p.namelist_mode && (quote == ' '))
     {
+      dtp->u.p.current_unit->line_number = initial_line;
+      dtp->u.p.current_unit->column_number = initial_col;
       snprintf (message, IOMSG_LEN, "Missing quote while reading item %d",
 		dtp->u.p.item_count);
-      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+      nml_error (dtp, LIBERROR_READ_VALUE, message);
+      /* Stop consuming input so the reported position stays put.  */
+      if (dtp->u.p.nml_err_pending)
+	return;
     }
 
   for (;;)
@@ -1493,7 +1549,7 @@ next:
       free_saved (dtp);
       snprintf (message, IOMSG_LEN, "Invalid string input in item %d",
 		  dtp->u.p.item_count);
-      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+      nml_error (dtp, LIBERROR_READ_VALUE, message);
     }
   free_line (dtp);
   return;
@@ -1764,7 +1820,7 @@ parse_real (st_parameter_dt *dtp, void *buffer, int length)
   snprintf (message, IOMSG_LEN, "Bad complex floating point "
 	    "number for item %d", dtp->u.p.item_count);
   free_line (dtp);
-  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+  nml_error (dtp, LIBERROR_READ_VALUE, message);
 
   return 1;
 }
@@ -1880,7 +1936,7 @@ eol_4:
   snprintf (message, IOMSG_LEN, "Bad complex value in item %d of list input",
 	      dtp->u.p.item_count);
   free_line (dtp);
-  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+  nml_error (dtp, LIBERROR_READ_VALUE, message);
 }
 
 
@@ -2360,7 +2416,7 @@ next:
   snprintf (message, IOMSG_LEN, "Bad real number in item %d of list input",
 	      dtp->u.p.item_count);
   free_line (dtp);
-  generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+  nml_error (dtp, LIBERROR_READ_VALUE, message);
 }
 
 
@@ -2378,7 +2434,7 @@ check_type (st_parameter_dt *dtp, bt type, int kind)
 		  type_name (dtp->u.p.saved_type), type_name (type),
 		  dtp->u.p.item_count);
       free_line (dtp);
-      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+      nml_error (dtp, LIBERROR_READ_VALUE, message);
       return 1;
     }
 
@@ -2395,7 +2451,7 @@ check_type (st_parameter_dt *dtp, bt type, int kind)
 		  type_name (dtp->u.p.saved_type), kind,
 		  dtp->u.p.item_count);
       free_line (dtp);
-      generate_error (&dtp->common, LIBERROR_READ_VALUE, message);
+      nml_error (dtp, LIBERROR_READ_VALUE, message);
       return 1;
     }
 
@@ -2579,8 +2635,7 @@ list_formatted_read_scalar (st_parameter_dt *dtp, bt type, void *p,
 	      free_line (dtp);
 	      fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
 	      message[child_iomsg_len] = '\0';
-	      generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
-			      message);
+	      nml_error (dtp, dtp->u.p.child_saved_iostat, message);
 	    }
       }
       break;
@@ -3459,8 +3514,7 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 		    child_iomsg_len = string_len_trim (IOMSG_LEN, child_iomsg);
 		    fstrcpy (message, child_iomsg_len, child_iomsg, child_iomsg_len);
 		    message[child_iomsg_len] = '\0';
-		    generate_error (&dtp->common, dtp->u.p.child_saved_iostat,
-				    message);
+		    nml_error (dtp, dtp->u.p.child_saved_iostat, message);
 		    goto nml_err_ret;
 		  }
 
@@ -3473,6 +3527,10 @@ nml_read_obj (st_parameter_dt *dtp, namelist_info *nl, index_type offset,
 	    internal_error (&dtp->common, nml_err_msg);
 	    goto nml_err_ret;
           }
+
+	  /* If there is a pending error, return now.  */
+	  if (dtp->u.p.nml_err_pending)
+	    return false;
         }
 
       /* The standard permits array data to stop short of the number of
@@ -3933,7 +3991,7 @@ void
 namelist_read (st_parameter_dt *dtp)
 {
   int c;
-  char nml_err_msg[200];
+  char *nml_err_msg = dtp->u.p.current_unit->nml_err_msg;
 
   /* Initialize the error string buffer just in case we get an unexpected fail
      somewhere and end up at nml_err_ret.  */
@@ -3946,6 +4004,9 @@ namelist_read (st_parameter_dt *dtp)
 
   dtp->u.p.input_complete = 0;
   dtp->u.p.expanded_read = 0;
+
+  /* Initialize the pending error flag.  */
+  dtp->u.p.nml_err_pending = 0;
 
   /* Set the next_char and push_char worker functions.  */
   set_workers (dtp);
@@ -4012,7 +4073,8 @@ find_nml_name:
 
   while (!dtp->u.p.input_complete)
     {
-      if (!nml_get_obj_data (dtp, &prev_nl, nml_err_msg, sizeof nml_err_msg))
+      if (!nml_get_obj_data (dtp, &prev_nl, nml_err_msg, NML_ERR_MSG_LEN)
+	  || dtp->u.p.nml_err_pending)
 	goto nml_err_ret;
 
       /* Reset the previous namelist pointer if we know we are not going
@@ -4031,6 +4093,7 @@ nml_err_ret:
   /* All namelist error calls return from here */
   free_saved (dtp);
   free_line (dtp);
+  dtp->u.p.nml_err_pending = 0;
 
   if (dtp->u.p.current_unit)
     {
