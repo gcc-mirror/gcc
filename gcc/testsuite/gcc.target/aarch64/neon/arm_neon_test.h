@@ -12,6 +12,12 @@
 #define TEST_BINARY(NAME, RET_TYPE, ARG_1_TYPE, ARG_2_TYPE)                    \
   RET_TYPE test_##NAME (ARG_1_TYPE a, ARG_2_TYPE b) { return NAME (a, b); }
 
+#define TEST_BINARY_LANE(NAME, RET_TYPE, ARG_1_TYPE, ARG_2_TYPE)               \
+  RET_TYPE test_##NAME (ARG_1_TYPE a, ARG_2_TYPE b)                            \
+  {                                                                            \
+    return NAME (a, b, VEC_LEN (b) - 1);                                       \
+  }
+
 #define TEST_UNIFORM_BINARY(NAME, TYPE) TEST_BINARY (NAME, TYPE, TYPE, TYPE)
 
 #define TEST_TERNARY(NAME, RET_TYPE, ARG_1_TYPE, ARG_2_TYPE, ARG_3_TYPE)       \

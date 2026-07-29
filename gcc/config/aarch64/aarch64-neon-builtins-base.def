@@ -76,6 +76,20 @@ DEF_NEON_FUNCTION (vaddq, bhdq_poly,	     ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsubd, d_integer,	     ("s0,s0,s0"))
 DEF_NEON_FUNCTION (vsub,  all_arith_no_fp16, ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vsubq, all_arith_no_fp16, ("Q0,Q0,Q0"))
+
+// Multiplication
+DEF_NEON_FUNCTION (vmul,	neon_mul, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vmulq,       neon_mul, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vmul_n,      neon_mul, ("D0,D0,s0"))
+DEF_NEON_FUNCTION (vmulq_n,     neon_mul, ("Q0,Q0,s0"))
+DEF_NEON_FUNCTION (vmul_lane,   neon_mul, ("D0,D0,D0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmul_laneq,  neon_mul, ("D0,D0,Q0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmulq_lane,  neon_mul, ("Q0,Q0,D0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmulq_laneq, neon_mul, ("Q0,Q0,Q0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmuls_lane,  neon_mul, ("s0,s0,D0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmuls_laneq, neon_mul, ("s0,s0,Q0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmuld_lane,  neon_mul, ("s0,s0,D0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmuld_laneq, neon_mul, ("s0,s0,Q0,ss32", lane<2>))
 #undef REQUIRED_EXTENSIONS
 
 // Lanewise arithmetic (FP16)
@@ -87,6 +101,18 @@ DEF_NEON_FUNCTION (vaddq, h_float, ("Q0,Q0,Q0"))
 // Subtraction
 DEF_NEON_FUNCTION (vsub,  h_float, ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vsubq, h_float, ("Q0,Q0,Q0"))
+
+// Multiplication
+DEF_NEON_FUNCTION (vmul,	h_float, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vmulq,       h_float, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vmul_n,      h_float, ("D0,D0,s0"))
+DEF_NEON_FUNCTION (vmulq_n,     h_float, ("Q0,Q0,s0"))
+DEF_NEON_FUNCTION (vmul_lane,   h_float, ("D0,D0,D0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmul_laneq,  h_float, ("D0,D0,Q0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmulq_lane,  h_float, ("Q0,Q0,D0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmulq_laneq, h_float, ("Q0,Q0,Q0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmulh_lane,  h_float, ("s0,s0,D0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vmulh_laneq, h_float, ("s0,s0,Q0,ss32", lane<2>))
 #undef REQUIRED_EXTENSIONS
 
 // Saturating arithmetic

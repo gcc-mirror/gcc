@@ -1951,6 +1951,10 @@ function_expander::result_mode () const
   TYPES_bhs_integer (S, D, T), \
   TYPES_hs_float (S, D, T)
 
+#define TYPES_neon_mul(S,D,T) \
+  TYPES_bhs_integer (S,D,T), \
+  TYPES_sd_float (S,D,T)
+
 /* _p8  _s8  _u8  _mf8
    _p16 _s16 _u16 _f16
 	_s32 _u32 _f32
@@ -2228,6 +2232,7 @@ DEF_SVE_TYPES_ARRAY (neon_rev32);
 DEF_SVE_TYPES_ARRAY (neon_rev64);
 DEF_SVE_TYPES_ARRAY (neon_reinterpret);
 DEF_SVE_TYPES_ARRAY (neon_reinterpretq);
+DEF_SVE_TYPES_ARRAY (neon_mul);
 
 static const group_suffix_index groups_none[] = {
   GROUP_none, NUM_GROUP_SUFFIXES

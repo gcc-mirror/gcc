@@ -1,4 +1,4 @@
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-trapping-math" } */
 
 #include <arm_neon.h>
 typedef struct {

@@ -254,21 +254,29 @@ public:
   }
 };
 
+enum class arith_kind
+{
+  normal,
+  dup,
+  lane
+};
+
 /* Like gimple_expr above, but converts signed inputs to unsigned first, to
    avoid undefined behaviour on overflow.  */
-class gimple_arith : public gimple_function_base
+template <arith_kind kind>
+class gimple_arith_base : public gimple_function_base
 {
   tree_code m_int_code;
   tree_code m_float_code;
   tree_code m_poly_code;
 
 public:
-  constexpr gimple_arith (tree_code code)
+  constexpr gimple_arith_base (tree_code code)
     : m_int_code (code), m_float_code (code), m_poly_code (code)
   {}
 
-  constexpr gimple_arith (tree_code int_code, tree_code float_code,
-			  tree_code poly_code)
+  constexpr gimple_arith_base (tree_code int_code, tree_code float_code,
+			       tree_code poly_code)
     : m_int_code (int_code), m_float_code (float_code), m_poly_code (poly_code)
   {}
 
@@ -277,6 +285,18 @@ public:
     auto nargs = gimple_call_num_args (f.call);
     auto arg0 = nargs >= 1 ? gimple_call_arg (f.call, 0) : nullptr;
     auto arg1 = nargs >= 2 ? gimple_call_arg (f.call, 1) : nullptr;
+
+    if (kind == arith_kind::dup)
+      arg1 = f.force_val (build_vec_dup (TREE_TYPE (arg0), arg1));
+
+    if (kind == arith_kind::lane)
+      {
+	auto lane_idx = gimple_call_arg (f.call, 2);
+	arg1 = f.force_val (build_lane_get (arg1, lane_idx));
+	if (VECTOR_TYPE_P (TREE_TYPE (arg0)))
+	  arg1 = f.force_val (build_vec_dup (TREE_TYPE (arg0), arg1));
+      }
+
     auto build = [&] (auto code, auto type) {
       auto ret = nargs == 1 ? fold_build1 (code, type, arg0)
 			    : fold_build2 (code, type, arg0, arg1);
@@ -317,6 +337,9 @@ public:
     return this->maybe_optimization_barrier (f, ret);
   }
 };
+using gimple_arith = gimple_arith_base<arith_kind::normal>;
+using gimple_arith_dup = gimple_arith_base<arith_kind::dup>;
+using gimple_arith_lane = gimple_arith_base<arith_kind::lane>;
 
 struct gimple_create : public gimple_function_base
 {
@@ -877,6 +900,14 @@ NEON_FUNCTION (vdupb_lane, vdupb_laneq, vduph_lane,   vduph_laneq,
 // Lanewise arithmetic
 NEON_FUNCTION (vadd, vaddq, vaddd, gimple_arith, (PLUS_EXPR, PLUS_EXPR, BIT_XOR_EXPR))
 NEON_FUNCTION (vsub, vsubq, vsubd, gimple_arith, (MINUS_EXPR))
+
+NEON_FUNCTION (vmul, vmulq,		gimple_arith, (MULT_EXPR))
+NEON_FUNCTION (vmul_n, vmulq_n,		gimple_arith_dup, (MULT_EXPR))
+NEON_FUNCTION (vmul_lane, vmul_laneq,
+	       vmulq_lane, vmulq_laneq,
+	       vmulh_lane, vmulh_laneq,
+	       vmuls_lane, vmuls_laneq,
+	       vmuld_lane, vmuld_laneq, gimple_arith_lane, (MULT_EXPR))
 
 // Saturating arithmetic
 NEON_FUNCTION (vqaddb, vqaddh, vqadds, vqaddd, vqadd, vqaddq, gimple_ifn, (IFN_SAT_ADD))
