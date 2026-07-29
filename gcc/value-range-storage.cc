@@ -507,15 +507,29 @@ debug (const irange_storage &storage)
 // frange_storage implementation
 //============================================================================
 
+// Return the number of bytes to allocate for an frange_storage holding R.
+
+size_t
+frange_storage::size (const frange &r)
+{
+  return sizeof (frange_storage) + (r.num_pairs () - 1) * sizeof (frange_pair);
+}
+
 // Allocate a new frange_storage object initialized to R.
 
 frange_storage *
 frange_storage::alloc (vrange_internal_alloc &allocator, const frange &r)
 {
-  size_t size = sizeof (frange_storage);
-  frange_storage *p = static_cast <frange_storage *> (allocator.alloc (size));
+  frange_storage *p
+    = static_cast <frange_storage *> (allocator.alloc (size (r)));
   new (p) frange_storage (r);
   return p;
+}
+
+frange_storage::frange_storage (const frange &r)
+  : vrange_storage (VR_FRANGE), m_max_ranges (r.num_pairs ())
+{
+  set_frange (r);
 }
 
 void
@@ -584,9 +598,9 @@ frange_storage::equal_p (const frange &r) const
 }
 
 bool
-frange_storage::fits_p (const frange &) const
+frange_storage::fits_p (const frange &r) const
 {
-  return true;
+  return m_max_ranges >= r.num_pairs ();
 }
 
 //============================================================================
