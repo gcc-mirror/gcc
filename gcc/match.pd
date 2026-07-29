@@ -11878,6 +11878,41 @@ and,
   (simplify (reduc (op @0 VECTOR_CST@1))
     (op (reduc:type @0) (reduc:type @1))))
 
+/* Fold REDUC_PLUS (@0) +- REDUC_PLUS (@1) as REDUC_PLUS (@0 +- @1).  This
+   trades one lane-crossing reduction for one elementwise operation.  The
+   elementwise operation is done in the unsigned type because the reduction
+   itself wraps and the signed vector type has undefined overflow.  */
+(for op (plus minus)
+ (simplify
+  (op (IFN_REDUC_PLUS:s @0) (IFN_REDUC_PLUS:s @1))
+  (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+       && ((ANY_INTEGRAL_TYPE_P (type)
+	    && !TYPE_OVERFLOW_TRAPS (type)
+	    && !TYPE_OVERFLOW_SANITIZED (type))
+	   || (FLOAT_TYPE_P (type)
+	       && flag_associative_math
+	       && !HONOR_SIGNED_ZEROS (type)
+	       && !flag_trapping_math))
+       && target_supports_op_p (TREE_TYPE (@0), op, optab_vector))
+   (with { tree vtype = (ANY_INTEGRAL_TYPE_P (type)
+			 ? unsigned_type_for (TREE_TYPE (@0))
+			 : TREE_TYPE (@0));
+	   tree stype = TREE_TYPE (vtype); }
+    (convert (IFN_REDUC_PLUS:stype
+	      (op (view_convert:vtype @0) (view_convert:vtype @1))))))))
+
+/* Fold REDUC (@0) op REDUC (@1) as REDUC (@0 op @1) for the reductions whose
+   scalar operation is associative and commutative with no flag needed.  This
+   removes one lane-crossing reduction.  */
+(for reduc (IFN_REDUC_MAX IFN_REDUC_MIN IFN_REDUC_AND IFN_REDUC_IOR
+	    IFN_REDUC_XOR)
+     op (max min bit_and bit_ior bit_xor)
+ (simplify
+  (op (reduc:s @0) (reduc:s @1))
+  (if (types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+       && target_supports_op_p (TREE_TYPE (@0), op, optab_vector))
+   (reduc (op @0 @1)))))
+
 /* Simplify .REDUC_IOR (@0) ==/!= 0 to @0 ==/!= 0.  */
 (for cmp (eq ne)
  (simplify
