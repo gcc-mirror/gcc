@@ -388,6 +388,9 @@ namespace pmr
 
   template<typename _Alloc> struct allocator_traits;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-specialization"
+
   /// Partial specialization for `std::pmr::polymorphic_allocator`
   /**
    * @ingroup pmr
@@ -534,6 +537,7 @@ namespace pmr
       max_size(const allocator_type&) noexcept
       { return size_t(-1) / sizeof(value_type); }
     };
+#pragma GCC diagnostic pop
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

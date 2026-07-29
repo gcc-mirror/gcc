@@ -239,6 +239,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       = typename __allocator_traits_base::template __rebind<_Alloc, _Up>::type;
   /// @endcond
 
+#if __cplusplus > 202002L
+# define _GLIBCXX_NO_ALLOC_TRAITS_SPECIALIZATIONS _GLIBCXX_NO_SPECIALIZATIONS
+#else
+# define _GLIBCXX_NO_ALLOC_TRAITS_SPECIALIZATIONS
+#endif
+
   /**
    * @brief  Uniform interface to all allocator types.
    * @headerfile memory
@@ -246,7 +252,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @since C++11
   */
   template<typename _Alloc>
-    struct allocator_traits : __allocator_traits_base
+    struct _GLIBCXX_NO_ALLOC_TRAITS_SPECIALIZATIONS allocator_traits
+    : __allocator_traits_base
     {
       /// The allocator type
       typedef _Alloc allocator_type;
@@ -571,7 +578,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #pragma GCC diagnostic pop
 
+#undef _GLIBCXX_NO_ALLOC_TRAITS_SPECIALIZATIONS
+
 #if _GLIBCXX_HOSTED
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winvalid-specialization"
+ 
   /**
    * @brief  Partial specialization for `std::allocator`
    * @headerfile memory
@@ -876,6 +888,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       select_on_container_copy_construction(const allocator_type& __rhs)
       { return __rhs; }
     };
+#pragma GCC diagnostic pop
 #endif // _GLIBCXX_HOSTED
 
   /// @cond undocumented
