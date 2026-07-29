@@ -1,3 +1,18 @@
+2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Backported from master:
+	2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/126429
+	* config/i386/sse.md (avx512fmaskhalfmode): Removed.
+	(avx512f_dpbf16ps_<mode>_maskz): Use avx512fmaskmode instead of
+	avx512fmaskhalfmode.
+	(avx512f_dpbf16ps_<mode>_mask): Ditto.
+	(avx512f_dpbf16ps_<mode><maskz_half_name>): Rename to ...
+	(avx512f_dpbf16ps_<mode><sd_maskz_name>): ... this. Use
+	corresponding sd_mask_op4.
+	* config/i386/subst.md (maskz_half): Remove not used pattern.
+
 2026-07-21  Alice Carlotti  <alice.carlotti@arm.com>
 
 	* config/aarch64/aarch64.cc (aarch64_start_call_args): Extend
