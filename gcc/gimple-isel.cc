@@ -69,10 +69,11 @@ gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
 
   tree val = gimple_assign_rhs1 (stmt);
   tree op0 = TREE_OPERAND (lhs, 0);
-  if (TREE_CODE (op0) == VIEW_CONVERT_EXPR && DECL_P (TREE_OPERAND (op0, 0))
+  if (TREE_CODE (op0) == VIEW_CONVERT_EXPR
+      && DECL_P (TREE_OPERAND (op0, 0))
       && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (op0, 0)))
-      && TYPE_MODE (TREE_TYPE (lhs))
-	   == TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (op0, 0)))))
+      && (TYPE_MODE (TREE_TYPE (lhs))
+	  == TYPE_MODE (TREE_TYPE (TREE_TYPE (TREE_OPERAND (op0, 0))))))
     {
       tree pos = TREE_OPERAND (lhs, 1);
       tree view_op0 = TREE_OPERAND (op0, 0);
@@ -82,9 +83,13 @@ gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
       if (poly_int_tree_p (pos, &idx_poly))
 	{
 	  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (view_op0));
-	  if (known_gt (idx_poly, nelts))
+	  if (known_ge (idx_poly, nelts))
 	    return false;
 	}
+      else if (poly_int_tree_p (pos))
+	// if idx doesn't fit into poly_uint64, but is constant, it
+	// must be out of bounds
+	return false;
       machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
       if ((auto_var_in_fn_p (view_op0, fun->decl)
 	   || (VAR_P (view_op0) && DECL_HARD_REGISTER (view_op0)))
