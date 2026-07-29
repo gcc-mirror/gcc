@@ -93,6 +93,7 @@
 	"%{Wreturning-number} %{Wno-returning-number} "
 	"%{Wsegment-error} %{Wno-segment-error} "
 	"%{Wsegment-negative} %{Wno-segment-negative} "
+	"%{Wset-numeric} %{Wno-set-numeric} "
 	"%{Wstop-number} %{Wno-stop-number} "
 	"%{Wstray-indicator} %{Wno-stray-indicator} "
 	"%{Wusage-typename} %{Wno-usage-typename} "

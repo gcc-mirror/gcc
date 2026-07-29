@@ -3436,11 +3436,11 @@ parser_move_carefully( const char */*F*/, int /*L*/,
 
     if( is_index ) {
       if( tgt.field->type != FldIndex && src.field->type != FldIndex) {
-        error_msg(src.loc, "invalid SET %qs (%s) TO %qs (%s): not a field index",
-                  name_of(tgt.field), 3 + cbl_field_type_str(tgt.field->type),
-                  name_of(src.field), 3 + cbl_field_type_str(src.field->type));
-        delete tgt_list;
-        return false;
+        auto msg = xasprintf("invalid SET %qs (%s) TO %qs (%s): not a field index",
+                             name_of(tgt.field), cbl_field_type_name(tgt.field->type),
+                             name_of(src.field), cbl_field_type_name(src.field->type));
+        dialect_ok(src.loc, MfSetNumeric, msg);
+        free(msg);
       }
     } else {
       if( ! valid_move( tgt.field, src.field ) ) {

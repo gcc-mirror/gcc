@@ -629,6 +629,10 @@ cobol_langhook_handle_option (size_t scode,
           cobol_warning(MfMovePointer, move_pointer, warning_as_error);
           return true;
 
+        case OPT_Wset_numeric:
+          cobol_warning(MfSetNumeric, set_numeric, warning_as_error);
+          return true;
+
         case OPT_Wlevel_78:
           cobol_warning(MfLevel78, level_78, warning_as_error);
           return true;

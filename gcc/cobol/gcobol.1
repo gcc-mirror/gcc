@@ -83,6 +83,7 @@
 .Op Fl Wno-returning-number
 .Op Fl Wno-segment-error
 .Op Fl Wno-segment-negative
+.Op Fl Wno-set-numeric
 .Op Fl Wno-stop-number
 .Op Fl Wno-stray-indicator
 .Op Fl Wno-usage-typename
@@ -504,17 +505,19 @@ used with
 .It
 .Sy INSPECT ... TRAILING
 .It
+.Sy LEVEL 78
+constants
+.It
 .Sy OCCURS
 at
 .Sy "LEVEL 01"
-.It
-.Sy LEVEL 78
-constants
 .It
 .Sy MOVE POINTER
 .It
 .Sy RETURNING
 <number>
+.It
+.Sy SET NUMERIC
 .It
 .Sy USAGE IS TYPENAME
 .El
@@ -635,6 +638,8 @@ Warn if CDF defines Level 78 constant.
 Warn if MOVE INDEX is used.
 .It Fl Wno-move-pointer
 Warn if MOVE POINTER is used.
+.It Fl Wno-set-numeric
+Warn if SET is used with NUMERIC target.
 .It Fl Wno-returning-number
 Warn if RETURNING <number> is used.
 .It Fl Wno-usage-typename

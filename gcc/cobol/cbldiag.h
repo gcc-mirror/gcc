@@ -204,8 +204,9 @@ enum cbl_diag_id_t : uint64_t {
   MfMoveIndex, 
   MfMovePointer, 
   MfReturningNum,
-  MfUsageTypename,
+  MfSetNumeric,
   MfTrailing,
+  MfUsageTypename,
   
   Par78CdfDefinedW,
   ParIconvE, 

@@ -141,8 +141,8 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { IsoResume, "-Wcobol-resume", diagnostics::kind::error, dialect_ibm_e },
   // IBM, MF, and GNU all support ASSIGN TO filename, so we keep mum. 
   { IsoAssignFile, "-Wassign-file", diagnostics::kind::ignored, dialect_ibm_mf_gnu },
-  
 
+  { MfAnyLength, "-Wany-length", diagnostics::kind::error, dialect_mf_gnu },
   { MfAssignExternal, "-Wassign-external", diagnostics::kind::error, dialect_mf_gnu },
   { MfBinaryLongLong, "-Wbinary-long-long", diagnostics::kind::error, dialect_mf_gnu },
   { MfCallGiving, "-Wcall-giving", diagnostics::kind::error, dialect_mf_gnu },
@@ -150,14 +150,14 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { MfCdfDollar, "-Wcdf-dollar", diagnostics::kind::error, dialect_mf_gnu },
   { MfComp6, "-Wcomp-6", diagnostics::kind::error, dialect_mf_gnu },
   { MfCompX, "-Wcomp-x", diagnostics::kind::error, dialect_mf_gnu },
-  { MfLevel_1_Occurs, "-Wlevel-1-occurs", diagnostics::kind::error, dialect_mf_gnu },
   { MfLevel78, "-Wlevel-78", diagnostics::kind::error, dialect_mf_gnu },
-  { MfAnyLength, "-Wany-length", diagnostics::kind::error, dialect_mf_gnu },
+  { MfLevel_1_Occurs, "-Wlevel-1-occurs", diagnostics::kind::error, dialect_mf_gnu },
   { MfMoveIndex, "-Wmove-index", diagnostics::kind::error, dialect_gnu_e },
   { MfMovePointer, "-Wmove-pointer", diagnostics::kind::error, dialect_mf_gnu },
   { MfReturningNum, "-Wreturning-number", diagnostics::kind::error, dialect_mf_gnu },
-  { MfUsageTypename, "-Wusage-typename", diagnostics::kind::error, dialect_mf_gnu },
+  { MfSetNumeric, "-Wset-numeric", diagnostics::kind::error, dialect_mf_gnu },
   { MfTrailing, "-Winspect-trailing", diagnostics::kind::error, dialect_mf_gnu },
+  { MfUsageTypename, "-Wusage-typename", diagnostics::kind::error, dialect_mf_gnu },
 
   { LexIncludeE, "-Winclude-file-not-found", diagnostics::kind::error }, 
   { LexIncludeOkN, "-Winclude-file-found", diagnostics::kind::note }, 

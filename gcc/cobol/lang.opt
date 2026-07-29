@@ -179,6 +179,11 @@ Wreturning-number
 Cobol Warning Var(returning_number, 1) Init(1)
 Warn if RETURNING <number> is used.
 
+; MfSetNumeric, 
+Wset-numeric
+Cobol Warning Var(set_numeric, 1) Init(1)
+Warn if SET is used with NUMERIC target.
+
 ; MfUsageTypename
 Wusage-typename
 Cobol Warning Var(usage_typename, 1) Init(1)
