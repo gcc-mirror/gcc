@@ -2032,6 +2032,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (bit_and (plus @0 @1)
 	    { build_uniform_cst
 		(type, wide_int_to_tree (etype, wi::bit_not (c))); }))))
+/* (x + y) - min (x, y) -> max (x, y)
+   (x + y) - max (x, y) -> min (x, y)
+   The sum of the minimum and the maximum is the sum of the operands.  */
+(for minmax (min max)
+     maxmin (max min)
+ (simplify
+  (minus (plus @0 @1) (minmax @0 @1))
+  (if ((ANY_INTEGRAL_TYPE_P (type)
+	&& !TYPE_OVERFLOW_SANITIZED (type) && !TYPE_OVERFLOW_TRAPS (type))
+	|| (FLOAT_TYPE_P (type)
+	    && flag_associative_math
+	    && !HONOR_SIGNED_ZEROS (type)
+	    && !flag_trapping_math))
+   (maxmin @0 @1))))
 
 /* (x | y) - y -> (x & ~y) */
 (simplify
