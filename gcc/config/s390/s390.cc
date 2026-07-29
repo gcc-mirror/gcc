@@ -1796,7 +1796,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       && XINT (*op0, 1) == UNSPEC_STRCMPCC_TO_INT
       && XVECLEN (*op0, 0) == 1
       && GET_MODE (XVECEXP (*op0, 0, 0)) == CCUmode
-      && GET_CODE (XVECEXP (*op0, 0, 0)) == REG
+      && REG_P (XVECEXP (*op0, 0, 0))
       && REGNO (XVECEXP (*op0, 0, 0)) == CC_REGNUM
       && *op1 == const0_rtx)
     {
@@ -1823,7 +1823,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
   if (GET_CODE (*op0) == UNSPEC
       && XINT (*op0, 1) == UNSPEC_CC_TO_INT
       && XVECLEN (*op0, 0) == 1
-      && GET_CODE (XVECEXP (*op0, 0, 0)) == REG
+      && REG_P (XVECEXP (*op0, 0, 0))
       && REGNO (XVECEXP (*op0, 0, 0)) == CC_REGNUM
       && CONST_INT_P (*op1))
     {
@@ -1859,6 +1859,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       && GET_CODE (XEXP (*op0, 0)) == UNSPEC
       && XINT (XEXP (*op0, 0), 1) == UNSPEC_CC_TO_INT
       && XVECLEN (XEXP (*op0, 0), 0) == 1
+      && REG_P (XVECEXP (XEXP (*op0, 0), 0, 0))
       && REGNO (XVECEXP (XEXP (*op0, 0), 0, 0)) == CC_REGNUM
       && CONST_INT_P (XEXP (*op0, 1))
       && CONST_INT_P (*op1)
@@ -1882,6 +1883,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       && GET_CODE (XEXP (*op0, 0)) == UNSPEC
       && XINT (XEXP (*op0, 0), 1) == UNSPEC_CC_TO_INT
       && XVECLEN (XEXP (*op0, 0), 0) == 1
+      && REG_P (XVECEXP (XEXP (*op0, 0), 0, 0))
       && REGNO (XVECEXP (XEXP (*op0, 0), 0, 0)) == CC_REGNUM
       && CONST_INT_P (XEXP (*op0, 1))
       && CONST_INT_P (*op1)
@@ -1918,6 +1920,7 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       if (GET_CODE (*op0) == UNSPEC
 	  && XINT (*op0, 1) == UNSPEC_CC_TO_INT
 	  && XVECLEN (*op0, 0) == 1
+	  && REG_P (XVECEXP (*op0, 0, 0))
 	  && REGNO (XVECEXP (*op0, 0, 0)) == CC_REGNUM
 	  && CONST_INT_P (*op1))
 	{
