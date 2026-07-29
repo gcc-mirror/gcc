@@ -19,6 +19,8 @@ void fun2(uint32_t *x, int n)
 
 #include "bic-bitmask.h"
 
-/* { dg-final { scan-tree-dump-times {>\s* 1} 1 dce7 { target vect_int } } } */
+/* The loop guard (n & -16) > 0 now folds to n > 15, so anchor the scan on
+   the statement end to keep it matching only the comparison under test.  */
+/* { dg-final { scan-tree-dump-times {>\s* 1;} 1 dce7 { target vect_int } } } */
 /* { dg-final { scan-tree-dump-not {&\s* 4294967294} dce7 { target vect_int } } } */
 

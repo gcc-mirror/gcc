@@ -5319,6 +5319,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && wi::lshift (wi::to_wide (@0), cand) == wi::to_wide (@2))
      (cmp @1 { build_int_cst (TREE_TYPE (@1), cand); }))))))
 
+/* Fold ((X + C1) & LOWMASK) ==/!= C2 into (X & LOWMASK) ==/!= C2 - C1.
+   Only the low bits of the addition survive the mask, so the constant can
+   move to the other side of the comparison and the addition goes away.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (bit_and:s (plus:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+       && wi::popcount (wi::to_wide (@2) + 1) == 1)
+   (with { wide_int mask = wi::to_wide (@2);
+	   wide_int rhs = (wi::to_wide (@3) - wi::to_wide (@1)) & mask; }
+    (if ((wi::to_wide (@3) & ~mask) == 0)
+     (cmp (bit_and @0 @2)
+	  { wide_int_to_tree (TREE_TYPE (@0), rhs); })
+     { constant_boolean_node (cmp == NE_EXPR, type); })))))
+
+/* Fold (X & HIGHMASK) >/<= C into X >/<= (C | ~HIGHMASK).  Clearing the
+   low bits of X rounds it down, and a rounded value passes the comparison
+   exactly when X passes it against the constant with those bits set.  */
+(for cmp (gt le)
+ (simplify
+  (cmp (bit_and:s @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && bitmask_inv_cst_vector_p (@1))
+   (with { wide_int c = wi::to_wide (@2) | wi::bit_not (wi::to_wide (@1)); }
+    (cmp @0 { wide_int_to_tree (TREE_TYPE (@0), c); })))))
+
 /* Fold ((X << C1) & C2) cmp C3 into (X & (C2 >> C1)) cmp (C3 >> C1)
 	((X >> C1) & C2) cmp C3 into (X & (C2 << C1)) cmp (C3 << C1).  */
 (for cmp (ne eq)
