@@ -7208,6 +7208,16 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       return false;
     }
 
+  /* We'll verify the reduction operation only later - avoid
+     all operations that mismatch on the number of SLP children.  */
+  if (op.num_ops != SLP_TREE_CHILDREN (slp_for_stmt_info).length ())
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "unsupported reduction operation.\n");
+      return false;
+    }
+
   /* All uses but the last are expected to be defined in the loop.
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
