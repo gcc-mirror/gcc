@@ -161,10 +161,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))))
 (match (nop_convert @0)
  (view_convert @0)
- (if (VECTOR_TYPE_P (type) && VECTOR_TYPE_P (TREE_TYPE (@0))
-      && known_eq (TYPE_VECTOR_SUBPARTS (type),
-		   TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)))
-      && tree_nop_conversion_p (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
+ (if (vector_nop_conversion_p (type, TREE_TYPE (@0)))))
 
 /* These are used by gimple_bitwise_inverted_equal_p to simplify
    detection of BIT_NOT and comparisons. */
@@ -1573,20 +1570,33 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (x == 0 & y == 0) -> (x | typeof(x)(y)) == 0.
     (x != 0 | y != 0) -> (x | typeof(x)(y)) != 0.  */
  (simplify
-  (bitop (cmp @0 integer_zerop@2) (cmp @1 integer_zerop))
+  (bitop (cmp@3 @0 integer_zerop@2) (cmp@4 @1 integer_zerop))
+  (switch
    (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	&& INTEGRAL_TYPE_P (TREE_TYPE (@1))
 	&& TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
-    (cmp (bit_ior @0 (convert @1)) @2)))
+    (cmp (bit_ior @0 (convert @1)) @2))
+   (if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0))
+	&& VECTOR_INTEGER_TYPE_P (TREE_TYPE (@1))
+	&& vector_nop_conversion_p (TREE_TYPE (@0), TREE_TYPE (@1))
+	&& single_use (@3) && single_use (@4))
+    (cmp (bit_ior @0 (view_convert @1)) @2))))
  /* Transform:
     (x == -1 & y == -1) -> (x & typeof(x)(y)) == -1.
     (x != -1 | y != -1) -> (x & typeof(x)(y)) != -1.  */
  (simplify
-  (bitop (cmp @0 integer_all_onesp@2) (cmp @1 integer_all_onesp))
+  (bitop (cmp@3 @0 integer_all_onesp@2)
+	 (cmp@4 @1 integer_all_onesp))
+  (switch
    (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
 	&& INTEGRAL_TYPE_P (TREE_TYPE (@1))
 	&& TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
-    (cmp (bit_and @0 (convert @1)) @2))))
+    (cmp (bit_and @0 (convert @1)) @2))
+   (if (VECTOR_INTEGER_TYPE_P (TREE_TYPE (@0))
+	&& VECTOR_INTEGER_TYPE_P (TREE_TYPE (@1))
+	&& vector_nop_conversion_p (TREE_TYPE (@0), TREE_TYPE (@1))
+	&& single_use (@3) && single_use (@4))
+    (cmp (bit_and @0 (view_convert @1)) @2)))))
 
 /* Fold (A & ~B) - (A & B) into (A ^ B) - B.  */
 (simplify

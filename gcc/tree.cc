@@ -12467,6 +12467,21 @@ tree_nop_conversion_p (const_tree outer_type, const_tree inner_type)
   return TYPE_MODE (outer_type) == TYPE_MODE (inner_type);
 }
 
+/* Return true iff a view conversion from vector type INNER_TYPE to vector
+   type OUTER_TYPE has the same number of elements and does not change the
+   representation of an element.  */
+
+bool
+vector_nop_conversion_p (const_tree outer_type, const_tree inner_type)
+{
+  return (VECTOR_TYPE_P (outer_type)
+	  && VECTOR_TYPE_P (inner_type)
+	  && known_eq (TYPE_VECTOR_SUBPARTS (outer_type),
+		       TYPE_VECTOR_SUBPARTS (inner_type))
+	  && tree_nop_conversion_p (TREE_TYPE (outer_type),
+				    TREE_TYPE (inner_type)));
+}
+
 /* Return true iff conversion in EXP generates no instruction.  Mark
    it inline so that we fully inline into the stripping functions even
    though we have two uses of this function.  */
