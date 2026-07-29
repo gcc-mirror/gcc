@@ -71,6 +71,11 @@ DEF_NEON_FUNCTION (vaddq, all_arith_no_fp16, ("Q0,Q0,Q0"))
 // Polynomial "addition" (really xor)
 DEF_NEON_FUNCTION (vadd,  bhd_poly,	     ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vaddq, bhdq_poly,	     ("Q0,Q0,Q0"))
+
+// Subtraction
+DEF_NEON_FUNCTION (vsubd, d_integer,	     ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vsub,  all_arith_no_fp16, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vsubq, all_arith_no_fp16, ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
 // Lanewise arithmetic (FP16)
@@ -78,6 +83,10 @@ DEF_NEON_FUNCTION (vaddq, bhdq_poly,	     ("Q0,Q0,Q0"))
 // Addition
 DEF_NEON_FUNCTION (vadd,  h_float, ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vaddq, h_float, ("Q0,Q0,Q0"))
+
+// Subtraction
+DEF_NEON_FUNCTION (vsub,  h_float, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vsubq, h_float, ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
 // Saturating arithmetic
