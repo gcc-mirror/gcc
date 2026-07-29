@@ -31,6 +31,7 @@ typedef struct _slp_tree *slp_tree;
 #include "tree-ssa-operands.h"
 #include "gimple-match.h"
 #include "dominance.h"
+#include "ssa.h"
 
 /* Used for naming of new temporaries.  */
 enum vect_var_kind {
@@ -2998,6 +2999,34 @@ vect_is_extending_load (class vec_info *vinfo, stmt_vec_info stmt_info)
   return (def_stmt_info
 	  && STMT_VINFO_DATA_REF (def_stmt_info)
 	  && DR_IS_READ (STMT_VINFO_DATA_REF (def_stmt_info)));
+}
+
+/* Return true if STMT_INFO truncates the input of a store.  */
+inline bool
+vect_is_truncating_store (class vec_info *vinfo, stmt_vec_info stmt_info)
+{
+  /* Although this is quite large for an inline function, this part
+     at least should be inline.  */
+  gassign *assign = dyn_cast<gassign *> (stmt_info->stmt);
+  if (!assign || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign)))
+    return false;
+
+  tree rhs = gimple_assign_rhs1 (stmt_info->stmt);
+  tree lhs = gimple_assign_lhs (assign);
+  tree lhs_type = TREE_TYPE (lhs);
+  tree rhs_type = TREE_TYPE (rhs);
+  if (!INTEGRAL_TYPE_P (lhs_type) || !INTEGRAL_TYPE_P (rhs_type)
+      || TYPE_PRECISION (lhs_type) >= TYPE_PRECISION (rhs_type))
+    return false;
+
+  gimple *use_stmt;
+  use_operand_p use_p;
+  if (!single_imm_use (lhs, &use_p, &use_stmt))
+    return false;
+
+  stmt_vec_info use_stmt_info = vinfo->lookup_stmt (use_stmt);
+  return (use_stmt_info && STMT_VINFO_DATA_REF (use_stmt_info)
+	  && DR_IS_WRITE (STMT_VINFO_DATA_REF (use_stmt_info)));
 }
 
 /* Return true if STMT_INFO is an integer truncation.  */

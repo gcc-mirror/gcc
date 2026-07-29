@@ -18247,9 +18247,12 @@ aarch64_detect_scalar_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
 				    stmt_vec_info stmt_info,
 				    fractional_cost stmt_cost)
 {
-  /* Detect an extension of a loaded value.  In general, we'll be able to fuse
-     the extension with the load.  */
-  if (kind == scalar_stmt && vect_is_extending_load (vinfo, stmt_info))
+  /* Detect an extension of a loaded value or truncation of a value being
+     stored.  In general, we'll be able to fuse the extension/truncation with
+     the load/store.  */
+  if (kind == scalar_stmt
+      && (vect_is_extending_load (vinfo, stmt_info)
+	  || vect_is_truncating_store (vinfo, stmt_info)))
     return 0;
 
   return stmt_cost;
@@ -18375,6 +18378,13 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
      will fold to this form during combine, and that the extension therefore
      comes for free.  */
   if (kind == vector_stmt && vect_is_extending_load (vinfo, stmt_info))
+    stmt_cost = 0;
+
+  /* Most stores have truncating forms that can do the truncation on the fly.
+     Optimistically assume that a truncation followed by a store will fold to
+     this form during combine, and that the truncation therefore comes for free.
+   */
+  if (kind == vector_stmt && vect_is_truncating_store (vinfo, stmt_info))
     stmt_cost = 0;
 
   /* For similar reasons, vector_stmt integer truncations are a no-op,
