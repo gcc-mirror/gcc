@@ -1,3 +1,36 @@
+2026-07-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse_ante.h (set_real_from_capacity): Use symbol_field_capacity_set().
+	* symbols.cc (calculate_capacity): Whitespace.
+	(symbol_field_capacity_set): New function.
+	* symbols.h (symbol_field_capacity_set): Declare function.
+
+2026-07-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Remove value78 nonterminal, introduce
+	level_constant nonterminal for all constants.  Move validation
+	to level_constant.  Remove other special handling for Level 78.
+	* scan_post.h (prelex): Correct Level 78/88 typo.
+
+2026-07-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (location_dump): Only declare function.
+	* parse.y: Update numeric PICTURE parse, and better diagnostic.
+	* scan.l: Rewrite numeric and numeric-edited PICTURE scan.
+	* scan_ante.h (myless): Use "unique" local variable name.
+	(length_upto): New function.
+	(is_name_char): New function.
+	(length_of_name): New function.
+	(trim_location): Set location endpoint by addition, not subtraction.
+	(ndigit): Allow 'V' at beginning or end of PICTURE string.
+	* util.cc (gcc_location_set): Indentation, and more verbose debugging.
+	(yy_flex_debug): Undefine tree.h symbol.
+	(location_dump): Define function in .cc file, now public.
+
+2026-07-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* lexio.cc (cdftext::free_form_reference_format): Assign from char(0x8D).
+
 2026-07-27  James K. Lowden  <jklowden@cobolworx.com>
 
 	* lexio.cc (cdftext::free_form_reference_format): Use new sanitize_nul function.

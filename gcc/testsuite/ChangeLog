@@ -1,3 +1,125 @@
+2026-07-28  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* gcc.target/i386/pr126382.c: New test.
+
+2026-07-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/116274
+	* gcc.target/i386/pr116274-2.c: Add check-function-bodies.
+
+2026-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125866
+	* gfortran.dg/pr125866.f90: New test.
+
+2026-07-28  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR analyzer/97114
+	* g++.dg/analyzer/devirt-1.C: New test.
+	* g++.dg/analyzer/devirt-multiple-inheritance-1.C: New test.
+	* g++.dg/analyzer/devirt-noexcept-1.C: New test.
+	* g++.dg/analyzer/devirt-unknown-1.C: New test.
+
+2026-07-28  Richard Ball  <Richard.Ball@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/cvtb_f16_s8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtb_f16_u8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtb_f32_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtb_f32_u16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtb_f64_s32.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtb_f64_u32.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_s16_f32_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_s32_f64_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_s8_f16_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_u16_f32_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_u32_f64_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_u8_f16_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtt_f16_s8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtt_f16_u8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtt_f32_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtt_f32_u16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtt_f64_s32.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/cvtt_f64_u32.c: New test.
+
+2026-07-28  Richard Ball  <Richard.Ball@arm.com>
+
+	* lib/target-supports.exp: New check_effective_target.
+	* gcc.target/aarch64/advsimd-intrinsics/fdot-1.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/fdot-2.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/fdot-3.c: New test.
+
+2026-07-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/fx64-div-1.c: New test.
+	* gcc.target/avr/fx64-div-2.c: New test.
+	* gcc.target/avr/fx64-div-3.c: New test.
+	* gcc.target/avr/fx64-mul.h: Rename to...
+	* gcc.target/avr/fx64.h: ...this.
+	* gcc.target/avr/fx64-mul-1.c: Same.
+	* gcc.target/avr/fx64-mul-2.c: Same.
+
+2026-07-28  Richard Ball  <Richard.Ball@arm.com>
+
+	* lib/target-supports.exp: New check_effective_targets.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_u16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_u16.c: New test.
+	* gcc.target/aarch64/sve2/dotproduct_intrinsicless.c: New test.
+
+2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126404
+	* gcc.dg/vect/vect-pr126404.c: Adjust.
+
+2026-07-28  H.J. Lu  <hjl.tools@gmail.com>
+	    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/126410
+	* gcc.target/i386/pr126410-1a.c: New test.
+	* gcc.target/i386/pr126410-1b.c: Likewise.
+	* gcc.target/i386/pr126410-1c.c: Likewise.
+	* gcc.target/i386/pr126410-2a.c: Likewise.
+	* gcc.target/i386/pr126410-2b.c: Likewise.
+	* gcc.target/i386/pr126410-2c.c: Likewise.
+	* gcc.target/i386/preserve-none-35a.c: Adjust.
+	* gcc.target/i386/preserve-none-35b.c: Likewise.
+	* gcc.target/i386/preserve-none-35c.c: Likewise.
+	* gcc.target/i386/preserve-none-35d.c: Likewise.
+	* gcc.target/i386/preserve-none-35e.c: Likewise.
+	* gcc.target/i386/preserve-none-35f.c: Likewise.
+	* gcc.target/i386/preserve-none-35g.c: Likewise.
+
+2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/126429
+	* gcc.target/i386/pr126429-1.c: New test.
+
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* gcc.c-torture/execute/pr126405-3.c: New test.
+
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* gcc.c-torture/execute/pr126405.c: New test.
+	* gcc.c-torture/execute/pr126405-2.c: New test.
+	* gcc.dg/pr126405-1.c: New test.
+	* gcc.dg/pr126405-2.c: New test.
+	* gcc.dg/pr126405-3.c: New test.
+
+2026-07-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/126433
+	* gcc.target/i386/xchg-1.c: Scan for ROL instead of XCHG.
+	* gcc.target/i386/xchg-2.c: Use -O2 -march=pentium4 to emit XCHG.
+
+2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126404
+	* gcc.dg/vect/vect-pr126404.c: New testcase.
+
 2026-07-27  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/126296

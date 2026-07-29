@@ -1,3 +1,8 @@
+2026-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125866
+	* expr.cc (is_CFI_desc): Add check for proc_name.
+
 2026-07-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	* dump-parse-tree.cc (show_omp_clauses): Fix 'message' clause name.

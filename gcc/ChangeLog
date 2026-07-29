@@ -1,3 +1,210 @@
+2026-07-28  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/126397
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Remove
+	true condition.
+
+2026-07-28  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* config/i386/i386-features.cc (ix86_emit_tls_call): Additional
+	check to see if DRAP register is live in basic block with DF_LR_IN.
+
+2026-07-28  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range-storage.cc (frange_storage::get_frange): Restore
+	every sub-range.
+	* value-range-pretty-print.cc (vrange_printer::visit): Print each
+	sub-range.
+
+2026-07-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure.ac: Set gcc_cv_as_cfi_directive to no on
+	hppa*-*-hpux*.
+	* configure: Regenerate.
+
+2026-07-28  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* gcc.cc (execute): Make "signal terminated program" message
+	clearer.
+
+2026-07-28  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.h (struct frange_pair): New.
+	(class frange): Replace m_min and m_max with m_pairs[MAX_PAIRS]
+	and m_num_ranges.  Add MAX_PAIRS, num_pairs, and the indexed
+	lower_bound and upper_bound.  Have canonicalize_zeros take an
+	frange_pair.
+	(frange::lower_bound, frange::upper_bound): Adjust.
+	(frange::set_varying, frange::set_undefined, frange::set_nan)
+	(frange::known_isfinite, frange::known_isnormal)
+	(frange::known_isdenormal_or_zero, frange::maybe_isinf)
+	(frange::known_isinf, frange::signbit_p): Adjust.
+	* value-range.cc (frange::flush_denormals_to_zero): Adjust.
+	(frange::canonicalize_zeros): Take an frange_pair.
+	(frange::set, frange::normalize_kind, frange::union_nans)
+	(frange::union_, frange::intersect, frange::operator=)
+	(frange::operator==, frange::contains_p)
+	(frange::internal_singleton_p, frange::singleton_p)
+	(frange::verify_range, frange::zero_p): Adjust.
+	* value-range-storage.h (class frange_storage): Replace m_min
+	and m_max with m_pairs and m_num_ranges.
+	* value-range-storage.cc (frange_storage::set_frange): Adjust.
+	(frange_storage::get_frange): Adjust.
+
+2026-07-28  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	* match.pd: Combine patterns into five for.
+
+2026-07-28  Richard Ball  <Richard.Ball@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.h
+	(TYPES_cvtzn): New function types.
+	(TYPES_cvttb): Likewise.
+	(cvtzn): Likewise.
+	(cvttb): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc
+	(class svcvtt_impl): New function impl.
+	(class svcvtb_impl): Likewise.
+	(FUNCTION): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def
+	(svcvtn): New function.
+	(svcvtt): Likewise.
+	(svcvtb): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.h: Likewise.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve2_scvtfb<mode>): New pattern.
+	(@aarch64_sve2_scvtflt<mode>): Likewise.
+	(@aarch64_sve2_ucvtfb<mode>): Likewise.
+	(@aarch64_sve2_ucvtflt<mode>): Likewise.
+	(@aarch64_sve2_fcvtzsn<mode>): Likewise.
+	(@aarch64_sve2_fcvtzun<mode>): Likewise.
+	* config/aarch64/iterators.md
+	(b): Ventype changes.
+	(VNx16HF): Likewise.
+	(VNx16QI): Likewise.
+
+2026-07-28  Richard Ball  <Richard.Ball@arm.com>
+
+	* config/aarch64/aarch64-c.cc
+	(aarch64_update_cpp_builtins): New target flag.
+	* config/aarch64/aarch64-simd-builtins.def: New functions.
+	* config/aarch64/aarch64-simd.md
+	(sdot_prod<VDQSF:vsi2qi><vczle><vczbe>): New pattern.
+	(sdot_lane<VF:isquadop><VDQSF:vsi2qi><vczle><vczbe>): Likewise.
+	* config/aarch64/aarch64.h
+	(TARGET_F16F32DOT): New target flag.
+	* config/aarch64/arm_neon.h
+	(target): Add f16f32dot section.
+	(__attribute__): New builtin function calls.
+	(vdot_f32_f16): Likewise.
+	(vdotq_f32_f16): Likewise.
+	(vdot_lane_f32_f16): Likewise.
+	(vdot_laneq_f32_f16): Likewise.
+	(vdotq_lane_f32_f16): Likewise.
+	(vdotq_laneq_f32_f16): Likewise.
+	* config/aarch64/iterators.md
+	(q): New options for isquadop.
+	* doc/invoke.texi: Add f16f32dot.
+
+2026-07-28  Richard Ball  <Richard.Ball@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.h
+	(TYPES_s_narrow_su): New type array.
+	(s_narrow_su): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(class svdot_impl): Update impl.
+	(FUNCTION): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def
+	(REQUIRED_EXTENSIONS): New function.
+	(svdot): Likewise.
+	(svdot_lane): Likewise.
+	* config/aarch64/aarch64-sve2.md
+	(<sur>dot_prodvnx4sivnx8hi): Renamed.
+	(@<sur>dot_prod<VNx4SI_ONLY:mode><VNx8HI_ONLY:mode>): New Name.
+	(@<sur>dot_prod<VNx8HI_ONLY:mode><VNx16QI_ONLY:mode>): New pattern.
+	(@aarch64_<sur>dot_prod_lane<VNx8HI_ONLY:mode><VNx16QI_ONLY:mode>): Likewise.
+	* config/aarch64/aarch64.h
+	(TARGET_SVE2p3): New Target Flag.
+	(TARGET_SME2p3): Likewise.
+	(TARGET_STREAMING_SME2p3): Likewise.
+	(TARGET_SVE2p3_OR_SME2p3): Likewise.
+	* doc/invoke.texi: Add sve2p3/sme2p3.
+
+2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126404
+	* tree-vect-patterns.cc (vect_recog_popcount_clz_ctz_ffs_pattern):
+	Avoid recursing to vect_recog_ctz_ffs_pattern with a reduction.
+
+2026-07-28  H.J. Lu  <hjl.tools@gmail.com>
+	    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/126410
+	* tree-vect-stmts.cc (vectorizable_store): Only commit to
+	recorded base alignment when transforming.
+	(vectorizable_load): Likewise.
+
+2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/126429
+	* config/i386/sse.md (avx512fmaskhalfmode): Removed.
+	(avx512f_dpbf16ps_<mode>_maskz): Use avx512fmaskmode instead of
+	avx512fmaskhalfmode.
+	(avx512f_dpbf16ps_<mode>_mask): Ditto.
+	(avx512f_dpbf16ps_<mode><maskz_half_name>): Rename to ...
+	(avx512f_dpbf16ps_<mode><sd_maskz_name>): ... this. Use
+	corresponding sd_mask_op4.
+	* config/i386/subst.md (maskz_half): Remove not used pattern.
+
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* cfgexpand.cc (verify_partition_mem_exprs): New function.
+	(pass_expand::execute): Call it.
+
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* tree-outof-ssa.cc (split_overlapping_partition_decls): Also split
+	partitions of PARM_DECLs and RESULT_DECLs.
+
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* cfgexpand.cc (leader_merge): Rename to...
+	(expand_leader_merge): ...this.  Make external.
+	* cfgexpand.h (expand_leader_merge): Declare.
+	* tree-outof-ssa.cc: Include cfgexpand.h.
+	(split_overlapping_partition_decls): Determine the variable of a
+	partition from all of its names.
+
+2026-07-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/126433
+	* config/i386/i386.md (*bswaphi2_movbe) Use enabled attribute.
+	Remove preferred_for_speed and preferred_for_size attributes.
+	(*bswaphi2): Ditto.
+	(*bswaphisi2_lowpart): Ditto.
+
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree.cc (ssa_uniform_vector_p): Look through a
+	VEC_DUPLICATE_EXPR SSA definition.
+
+2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126417
+	* tree-vect-slp.cc (vectorizable_bb_reduc_epilogue): Check
+	the total number of lanes instead of the vector type against
+	the two-lane special case that doesn't need fold-left reduction
+	handling.
+
+2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126404
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Fixup
+	conversion detection.
+
 2026-07-27  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	* match.pd: Combine two for into one for.

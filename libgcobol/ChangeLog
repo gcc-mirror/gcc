@@ -1,3 +1,7 @@
+2026-07-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* io.cc: Remove reference to cstdbool, now obsolete.
+
 2026-07-25  Robert Dubner  <rdubner@symas.com>
 
 	* constants.cc (struct cblc_field_t):  Add external_e attribute to

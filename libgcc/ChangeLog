@@ -1,3 +1,12 @@
+2026-07-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (FUNCS_notiny): Add _udivuQ64_common, _udivuda3,
+	_udivuta3, _udivudq3, _divda3, _divta3, _divdq3, _divQ64_tail.
+	* config/avr/lib1funcs-fixed.S (__udivuta3, __usdivuta3)
+	(__udivudq3, __usdivudq3, __udivuda3, __usdivuda3)
+	(__udivuQ64_common, __divda3, __ssdivda3, __divta3, __ssdivta3)
+	(__divdq3, __ssdivdq3, __divQ64_tail): New functions.
+
 2026-07-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (FUNCS_notiny): Add _negdi2_r10.

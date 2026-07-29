@@ -1,3 +1,27 @@
+2026-07-28  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* testsuite/lib/libstdc++.exp: Load gcc-defs.exp.  Load
+	prune.exp and dg-options.exp after GCC testsuite libs.
+	(libstdc++_init): Use gcc-set-multilib-library-path to calculate
+	LD_LIBRARY_PATH for installed G++ compilers.
+
+2026-07-28  David Faure  <david.faure@kdab.com>
+
+	* python/libstdcxx/v6/printers.py (StdMapPrinter.num_children):
+	Count two children per element.
+	(Tr1UnorderedMapPrinter.num_children): Likewise.
+
+2026-07-28  David Faure  <david.faure@kdab.com>
+
+	* python/libstdcxx/v6/printers.py (StdMapPrinter.num_children):
+	Fix parameter name.
+	(StdSetPrinter.num_children): Likewise.
+
+2026-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/deque.tcc (std::__uninitialized_copy_a): Remove unused
+	variable __sres.
+
 2026-07-26  Patrick Palka  <ppalka@redhat.com>
 
 	* testsuite/23_containers/flat_map/1.cc (test14): Reserve
