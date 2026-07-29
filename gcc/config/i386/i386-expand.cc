@@ -16724,6 +16724,11 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
   machine_mode mmode = VOIDmode;
   rtx (*gen_blendm) (rtx, rtx, rtx, rtx);
 
+  if (!IN_RANGE (elt, 0, GET_MODE_NUNITS (mode)))
+    {
+      emit_move_insn (target, target);
+      return;
+    }
   switch (mode)
     {
     case E_V2SImode:
