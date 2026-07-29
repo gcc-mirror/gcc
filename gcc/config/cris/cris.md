@@ -430,21 +430,19 @@
 ;; power of 2, or if val + 1 is a power of two, where we check for a bunch
 ;; of zeros starting at bit 0).
 
-;; SImode.  This mode is the only one needed, since gcc automatically
-;; extends subregs for lower-size modes.
-(define_insn "*btst<mode>"
+(define_insn "*btst<BWD:mode><ZnNNZSET:mode>"
   [(set (reg:ZnNNZSET CRIS_CC0_REGNUM)
 	(compare:ZnNNZSET
-	 (zero_extract:SI
-	  (match_operand:SI 0 "nonmemory_operand" "r, r,r, r,r, r,Kp")
+	 (zero_extract:BWD
+	  (match_operand:BWD 0 "nonmemory_operand" "r, r,r, r,r, r,Kp")
 	  (match_operand:SI 1 "const_int_operand" "Kc,n,Kc,n,Kc,n,n")
 	  (match_operand:SI 2 "nonmemory_operand" "M, M,Kc,n,r, r,r"))
 	 (const_int 0)))]
   ;; Either it is a single bit, or consecutive ones starting at 0.
   "reload_completed
    && CONST_INT_P (operands[1])
-   && ((operands[1] == const1_rtx && <MODE>mode == CC_ZnNmode)
-       || (operands[2] == const0_rtx && <MODE>mode == CC_NZmode))
+   && ((operands[1] == const1_rtx && <ZnNNZSET:MODE>mode == CC_ZnNmode)
+       || (operands[2] == const0_rtx && <ZnNNZSET:MODE>mode == CC_NZmode))
    && (REG_S_P (operands[0])
        || (operands[1] == const1_rtx
 	   && REG_S_P (operands[2])
@@ -2380,7 +2378,7 @@
   "&& reload_completed"
   [(set (reg:CC_ZnN CRIS_CC0_REGNUM)
 	(compare:CC_ZnN
-	 (zero_extract:SI (match_dup 0) (const_int 1) (match_dup 1))
+	 (zero_extract:BWD (match_dup 0) (const_int 1) (match_dup 1))
 	 (const_int 0)))
    (set (pc)
 	(if_then_else (zcond (reg:CC_ZnN CRIS_CC0_REGNUM) (const_int 0))
@@ -2406,7 +2404,7 @@
   "&& reload_completed"
   [(set (reg:CC_NZ CRIS_CC0_REGNUM)
 	(compare:CC_NZ
-	 (zero_extract:SI (match_dup 0) (match_dup 1) (const_int 0))
+	 (zero_extract:BWD (match_dup 0) (match_dup 1) (const_int 0))
 	 (const_int 0)))
    (set (pc)
 	(if_then_else (zcond (reg:CC_NZ CRIS_CC0_REGNUM) (const_int 0))
