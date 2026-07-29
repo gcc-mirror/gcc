@@ -39,6 +39,13 @@ TEST_UNIFORM_BINARY (vadd_u16, uint16x4_t)
 TEST_UNIFORM_BINARY (vadd_s16, int16x4_t)
 
 /*
+** test_vadd_f16:
+** fadd	v0\.4h, (v0\.4h, v1\.4h|v1\.4h, v0\.4h)
+** ret
+*/
+TEST_UNIFORM_BINARY (vadd_f16, float16x4_t)
+
+/*
 ** test_vadd_p16:
 ** eor	v0\.8b, (v0\.8b, v1\.8b|v1\.8b, v0\.8b)
 ** ret
@@ -60,6 +67,13 @@ TEST_UNIFORM_BINARY (vadd_u32, uint32x2_t)
 TEST_UNIFORM_BINARY (vadd_s32, int32x2_t)
 
 /*
+** test_vadd_f32:
+** fadd	v0\.2s, (v0\.2s, v1\.2s|v1\.2s, v0\.2s)
+** ret
+*/
+TEST_UNIFORM_BINARY (vadd_f32, float32x2_t)
+
+/*
 ** test_vadd_u64:
 ** add	d0, (d0, d1|d1, d0)
 ** ret
@@ -72,6 +86,13 @@ TEST_UNIFORM_BINARY (vadd_u64, uint64x1_t)
 ** ret
 */
 TEST_UNIFORM_BINARY (vadd_s64, int64x1_t)
+
+/*
+** test_vadd_f64:
+** fadd	d0, (d0, d1|d1, d0)
+** ret
+*/
+TEST_UNIFORM_BINARY (vadd_f64, float64x1_t)
 
 /*
 ** test_vadd_p64:
@@ -179,7 +200,7 @@ TEST_UNIFORM_BINARY (vaddq_f64, float64x2_t)
 TEST_UNIFORM_BINARY (vaddq_p64, poly64x2_t)
 
 /* `poly128_t` is a scalar type, like `__uint128_t`, so it is passed in two GPR
-    registers.  *
+    registers.  */
 /*
 ** test_vaddq_p128:
 ** eor	x[0-9], x[0-9]+, x[0-9]+

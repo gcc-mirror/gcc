@@ -221,6 +221,70 @@ public:
   }
 };
 
+/* Like gimple_expr above, but converts signed inputs to unsigned first, to
+   avoid undefined behaviour on overflow.  */
+class gimple_arith : public gimple_function_base
+{
+  tree_code m_int_code;
+  tree_code m_float_code;
+  tree_code m_poly_code;
+
+public:
+  constexpr gimple_arith (tree_code code)
+    : m_int_code (code), m_float_code (code), m_poly_code (code)
+  {}
+
+  constexpr gimple_arith (tree_code int_code, tree_code float_code,
+			  tree_code poly_code)
+    : m_int_code (int_code), m_float_code (float_code), m_poly_code (poly_code)
+  {}
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto nargs = gimple_call_num_args (f.call);
+    auto arg0 = nargs >= 1 ? gimple_call_arg (f.call, 0) : nullptr;
+    auto arg1 = nargs >= 2 ? gimple_call_arg (f.call, 1) : nullptr;
+    auto build = [&] (auto code, auto type) {
+      auto ret = nargs == 1 ? fold_build1 (code, type, arg0)
+			    : fold_build2 (code, type, arg0, arg1);
+      return f.force_val (ret);
+    };
+
+    tree ret;
+    auto type_class = f.type_suffix (0).tclass;
+    switch (type_class)
+      {
+      case TYPE_signed:
+	{
+	  auto signed_type = TREE_TYPE (arg0);
+	  auto unsigned_type = unsigned_type_for (signed_type);
+	  auto to_unsigned = [&] (auto arg) {
+	    return arg ? f.force_val (build_cast (unsigned_type, arg))
+		       : nullptr;
+	  };
+	  arg0 = to_unsigned (arg0);
+	  arg1 = to_unsigned (arg1);
+	  ret = build (m_int_code, unsigned_type);
+	  ret = build_cast (signed_type, f.force_val (ret));
+	  break;
+	}
+      case TYPE_unsigned:
+	ret = build (m_int_code, TREE_TYPE (arg0));
+	break;
+      case TYPE_float:
+	ret = build (m_float_code, TREE_TYPE (arg0));
+	break;
+      case TYPE_poly:
+	ret = build (m_poly_code, TREE_TYPE (arg0));
+	break;
+      default:
+	gcc_unreachable ();
+      }
+
+    return gimple_build_assign (f.lhs, ret);
+  }
+};
+
 struct gimple_create : public gimple_function_base
 {
   gimple *fold (gimple_folder &f) const override
@@ -778,9 +842,7 @@ NEON_FUNCTION (vdupb_lane, vdupb_laneq, vduph_lane,   vduph_laneq,
 	       vdups_lane, vdups_laneq, vdupd_lane,   vdupd_laneq, gimple_get_lane,)
 
 // Lanewise arithmetic
-NEON_FUNCTION (vaddd, gimple_expr, (PLUS_EXPR))
-NEON_FUNCTION (vadd,  gimple_expr, (PLUS_EXPR, PLUS_EXPR, BIT_XOR_EXPR))
-NEON_FUNCTION (vaddq, gimple_expr, (PLUS_EXPR, PLUS_EXPR, BIT_XOR_EXPR))
+NEON_FUNCTION (vadd, vaddq, vaddd, gimple_arith, (PLUS_EXPR, PLUS_EXPR, BIT_XOR_EXPR))
 
 // Saturating arithmetic
 NEON_FUNCTION (vqaddb, vqaddh, vqadds, vqaddd, vqadd, vqaddq, gimple_ifn, (IFN_SAT_ADD))

@@ -63,15 +63,19 @@ DEF_NEON_FUNCTION (vcopyq_laneq, neon_copy_lane,
 
 // Lanewise arithmetic
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+// Addition
 DEF_NEON_FUNCTION (vaddd, d_integer,	     ("s0,s0,s0"))
 DEF_NEON_FUNCTION (vadd,  all_arith_no_fp16, ("D0,D0,D0"))
-DEF_NEON_FUNCTION (vadd,  bhd_poly,	     ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vaddq, all_arith_no_fp16, ("Q0,Q0,Q0"))
+
+// Polynomial "addition" (really xor)
+DEF_NEON_FUNCTION (vadd,  bhd_poly,	     ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vaddq, bhdq_poly,	     ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
 // Lanewise arithmetic (FP16)
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_F16)
+// Addition
 DEF_NEON_FUNCTION (vadd,  h_float, ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vaddq, h_float, ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
