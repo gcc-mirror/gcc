@@ -276,10 +276,10 @@
 ;; is chosen with length 2 when the instruction is predicated for
 ;; arm_restrict_it.
 (define_insn "*thumb2_movsi_vfp"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,l,r,r,l,*hk,m,*m,*t,\
-						    r,*t,*t,*Uv, Up, r,Uf,r")
-	(match_operand:SI 1 "general_operand" "rk,I,Py,K,j,mi,*mi,l,*hk,r,*t,\
-					       *t,*UvTu,*t, r, Up,r,Uf"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand"
+	 "=rk,r,l, r,r,l, *hk,m,*m, *t,r,*t,*t,	  *Uv,Up,r, Uf,r")
+	(match_operand:SI 1 "general_operand"
+	 "rk, I,Py,K,j,mi,*mi,l,*hk,r, t,*t,*UvTu,*t, r, Up,r, Uf"))]
   "TARGET_THUMB2 && TARGET_VFP_BASE
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
