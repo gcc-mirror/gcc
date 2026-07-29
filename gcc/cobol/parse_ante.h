@@ -3436,7 +3436,7 @@ parser_move_carefully( const char */*F*/, int /*L*/,
 
     if( is_index ) {
       if( tgt.field->type != FldIndex && src.field->type != FldIndex) {
-        auto msg = xasprintf("invalid SET %qs (%s) TO %qs (%s): not a field index",
+        auto msg = xasprintf("invalid SET %s (%s) TO %s (%s): not a field index",
                              name_of(tgt.field), cbl_field_type_name(tgt.field->type),
                              name_of(src.field), cbl_field_type_name(src.field->type));
         dialect_ok(src.loc, MfSetNumeric, msg);
