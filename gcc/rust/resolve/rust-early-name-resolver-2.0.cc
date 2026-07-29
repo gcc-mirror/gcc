@@ -314,6 +314,22 @@ Early::visit (AST::Module &module)
 }
 
 void
+Early::maybe_prelude_import ()
+{
+  // handle prelude import
+  if (ctx.prelude)
+    {
+      auto container = Analysis::Mappings::get ().lookup_glob_container (
+	ctx.prelude.value ());
+      rust_assert (container);
+
+      GlobbingVisitor glob_visit (ctx);
+      glob_visit.go (container.value ());
+      dirty |= glob_visit.is_dirty ();
+    }
+}
+
+void
 Early::visit (AST::MacroInvocation &invoc)
 {
   auto &path = invoc.get_invoc_data ().get_path ();
@@ -488,6 +504,10 @@ Early::finalize_glob_import (NameResolutionContext &ctx,
     {
       rust_assert (container.value ()->get_glob_container_kind ()
 		   == AST::GlobContainer::Kind::Module);
+
+      // TODO: catch multiple attempted prelude imports
+      if (!ctx.prelude)
+	dirty = true;
 
       ctx.prelude = mapping.data.container ().get_node_id ();
     }

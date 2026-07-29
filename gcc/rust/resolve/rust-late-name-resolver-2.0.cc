@@ -369,17 +369,6 @@ Late::visit (AST::IdentifierExpr &expr)
 	  resolved = type;
 	  ns = Namespace::Types;
 	}
-      else if (!resolved && ctx.prelude)
-	{
-	  resolved
-	    = ctx.values.get_from_prelude (*ctx.prelude, expr.get_ident ());
-	  ns = Namespace::Values;
-
-	  if (!resolved)
-	    resolved
-	      = ctx.types.get_from_prelude (*ctx.prelude, expr.get_ident ());
-	  ns = Namespace::Types;
-	}
 
       if (!resolved)
 	{

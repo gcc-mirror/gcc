@@ -59,6 +59,7 @@ public:
 
   // as well as lexical scopes
   void visit (AST::BlockExpr &) override;
+  void maybe_prelude_import () override;
   void visit (AST::Module &) override;
 
   void visit (AST::MacroInvocation &) override;

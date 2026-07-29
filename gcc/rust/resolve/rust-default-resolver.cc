@@ -36,7 +36,10 @@ DefaultResolver::visit (AST::Crate &crate)
   if (!visited_crates.insert (crate.get_node_id ()).second)
     return;
 
-  auto inner_fn = [this, &crate] () { AST::DefaultASTVisitor::visit (crate); };
+  auto inner_fn = [this, &crate] () {
+    maybe_prelude_import ();
+    AST::DefaultASTVisitor::visit (crate);
+  };
 
   auto &mappings = Analysis::Mappings::get ();
 
@@ -62,8 +65,10 @@ DefaultResolver::visit (AST::BlockExpr &expr)
 void
 DefaultResolver::visit (AST::Module &module)
 {
-  auto item_fn_1
-    = [this, &module] () { AST::DefaultASTVisitor::visit (module); };
+  auto item_fn_1 = [this, &module] () {
+    maybe_prelude_import ();
+    AST::DefaultASTVisitor::visit (module);
+  };
 
   auto item_fn_2 = [this, &module, &item_fn_1] () {
     ctx.canonical_ctx.scope (module.get_node_id (), module.get_name (),
