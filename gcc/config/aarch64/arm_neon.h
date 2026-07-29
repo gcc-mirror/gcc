@@ -441,34 +441,6 @@ vraddhn_high_u64 (uint32x2_t __a, uint64x2_t __b, uint64x2_t __c)
   return __builtin_aarch64_raddhn2v2di_uuuu (__a, __b, __c);
 }
 
-__extension__ extern __inline float32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdiv_f32 (float32x2_t __a, float32x2_t __b)
-{
-  return __a / __b;
-}
-
-__extension__ extern __inline float64x1_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdiv_f64 (float64x1_t __a, float64x1_t __b)
-{
-  return __a / __b;
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdivq_f32 (float32x4_t __a, float32x4_t __b)
-{
-  return __a / __b;
-}
-
-__extension__ extern __inline float64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdivq_f64 (float64x2_t __a, float64x2_t __b)
-{
-  return __a / __b;
-}
-
 __extension__ extern __inline poly8x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmul_p8 (poly8x8_t __a, poly8x8_t __b)
@@ -18242,20 +18214,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcvtq_n_u16_f16 (float16x8_t __a, const int __b)
 {
   return __builtin_aarch64_fcvtzuv8hf_uss (__a, __b);
-}
-
-__extension__ extern __inline float16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdiv_f16 (float16x4_t __a, float16x4_t __b)
-{
-  return __a / __b;
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vdivq_f16 (float16x8_t __a, float16x8_t __b)
-{
-  return __a / __b;
 }
 
 __extension__ extern __inline float16x4_t

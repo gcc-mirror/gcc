@@ -900,6 +900,7 @@ NEON_FUNCTION (vdupb_lane, vdupb_laneq, vduph_lane,   vduph_laneq,
 // Lanewise arithmetic
 NEON_FUNCTION (vadd, vaddq, vaddd, gimple_arith, (PLUS_EXPR, PLUS_EXPR, BIT_XOR_EXPR))
 NEON_FUNCTION (vsub, vsubq, vsubd, gimple_arith, (MINUS_EXPR))
+NEON_FUNCTION (vdiv, vdivq,	   gimple_arith, (RDIV_EXPR))
 
 NEON_FUNCTION (vmul, vmulq,		gimple_arith, (MULT_EXPR))
 NEON_FUNCTION (vmul_n, vmulq_n,		gimple_arith_dup, (MULT_EXPR))
