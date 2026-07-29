@@ -1,3 +1,11 @@
+2026-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/deque.tcc (std::__uninitialized_copy_a): Remove unused
+	variable __sres.
+
 2026-07-26  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

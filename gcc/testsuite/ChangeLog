@@ -1,3 +1,27 @@
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126184
+	* gcc.target/aarch64/pr126184.c: New test.
+
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126184
+	* gcc.target/aarch64/pr126184-2.c: New test.
+
+2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Backported from master:
+	2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/126429
+	* gcc.target/i386/pr126429-1.c: New test.
+
 2026-07-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backported from master:

@@ -1,3 +1,38 @@
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126184
+	* ifcvt.cc (init_noce_multiple_sets_info): Record only the most
+	recent prior definition of each pseudo register.
+
+2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126184
+	* ifcvt.cc (init_noce_multiple_sets_info): Assert that destinations
+	are pseudos.
+	(bb_ok_for_noce_convert_multiple_sets): Reject hard-register
+	destinations.
+
+2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Backported from master:
+	2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/126429
+	* config/i386/sse.md (avx512fmaskhalfmode): Removed.
+	(avx512f_dpbf16ps_<mode>_maskz): Use avx512fmaskmode instead of
+	avx512fmaskhalfmode.
+	(avx512f_dpbf16ps_<mode>_mask): Ditto.
+	(avx512f_dpbf16ps_<mode><maskz_half_name>): Rename to ...
+	(avx512f_dpbf16ps_<mode><sd_maskz_name>): ... this. Use
+	corresponding sd_mask_op4.
+	* config/i386/subst.md (maskz_half): Remove not used pattern.
+
 2026-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
