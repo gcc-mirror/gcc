@@ -4735,22 +4735,22 @@ namespace __detail
 		    {
 		      auto __val = __read_unsigned(2);
 		      if (__val == -1 || __val > 23) [[unlikely]]
-			{
-			  if ((_M_need & _ChronoParts::_TimeOfDay) != 0)
+			if ((_M_need & _ChronoParts::_TimeOfDay) != 0)
+			  {
 			    __err |= ios_base::failbit;
-			  break;
-			}
+			    break;
+			  }
 		      if (!__read_chr(':')) [[unlikely]]
 			break;
 		      __h = hours(__val);
 
 		      __val = __read_unsigned(2);
 		      if (__val == -1 || __val > 60) [[unlikely]]
-			{
-			  if ((_M_need & _ChronoParts::_TimeOfDay) != 0)
+			if ((_M_need & _ChronoParts::_TimeOfDay) != 0)
+			  {
 			    __err |= ios_base::failbit;
-			  break;
-			}
+			    break;
+			  }
 		      __min = minutes(__val);
 
 		      if (__c == 'R')
