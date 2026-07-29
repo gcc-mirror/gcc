@@ -940,6 +940,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
      (cmp (mod (convert:utype @0) (convert:utype @2)) (convert:utype @1)))))))
 
+/* (X % C1) % C2 is X % C2 when C2 divides C1.  Truncating remainder keeps
+   the sign of X and the magnitude modulo C1, so reducing modulo C2 gives
+   the same result as reducing X directly.  */
+(simplify
+ (trunc_mod (trunc_mod @0 INTEGER_CST@1) INTEGER_CST@2)
+ (if (INTEGRAL_TYPE_P (type)
+      && ((!TYPE_OVERFLOW_TRAPS (type)
+	   && !TYPE_OVERFLOW_SANITIZED (type))
+	  || !integer_minus_onep (@1))
+      && !integer_zerop (@1)
+      && !integer_zerop (@2)
+      && wi::multiple_of_p (wi::to_widest (@1), wi::to_widest (@2), SIGNED))
+  (if (!TYPE_UNSIGNED (type) && integer_minus_onep (@2))
+   { build_zero_cst (type); }
+   (trunc_mod @0 @2))))
+
 /* X % -C is the same as X % C.  */
 (simplify
  (trunc_mod @0 INTEGER_CST@1)
