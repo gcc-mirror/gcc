@@ -1915,7 +1915,7 @@ USE({SPC}FOR)?		{ return USE; }
 
   [(:)] 			{ return *yytext; }
   [(]/[^(:)""'']*[:][^)]*[)] 	{ return LPAREN; /* parentheses around a colon */ }
-  [(][^:""''\n]*[:][^)]*[)] 	{ // does not match foo(bar)\n:  :-(  
+  [(][^:""'']*[:][^)]*[)] 	{ // does not match foo(bar)\n:  :-(  
                                   int tok = is_refmod(yytext, yytext + yyleng)?
                                       int(LPAREN) : '(';
                                   myless(1);

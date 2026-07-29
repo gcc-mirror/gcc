@@ -501,6 +501,13 @@ reset_location() {
 
 #define YY_USER_ACTION update_location();
 
+template <typename T>
+T * rsearch( T* a, T* z, T sarg ) {
+  std::reverse_iterator<T*> beg(z), end(a);
+  auto p = std::find(beg, end, sarg);
+  return p != end? p.base() : nullptr;
+}
+
 /*
  * Before calling yyless to tell the generated scanner to rescan nkeep
  * characters, set the scanner's location to reflect the cbl_loc_t of what
@@ -524,12 +531,9 @@ trim_location( int nkeep) {
     yylloc.last_column = yylloc.first_column + nkeep;
   } else {
     auto eokeep = yytext + nkeep;
-    std::reverse_iterator beg(eokeep);
-    std::reverse_iterator end(yytext);
-    auto nl = std::find(beg, end, '\n');
-    gcc_assert( nl != end );
-    gcc_assert( nl.base() != yytext );
-    yylloc.last_column = 1 + (eokeep - nl.base());
+    auto nl = rsearch(yytext, eokeep, '\n');
+    gcc_assert( nl != nullptr );
+    yylloc.last_column = 1 + (eokeep - nl);
   }
 
   gcc_assert( yylloc.first_line <= yylloc.last_line );    
@@ -1313,6 +1317,27 @@ integer_of( const char input[], bool is_hex = false) {
   return output;
 }
 
+static inline bool is_quote( const char ch ) {
+  return ch == '\'' || ch == '"';
+}
+
+static const char*
+skip_string(const char* p, const char* pend, char delimiter) {
+  p++; // Skip opening delimiter
+  while (p < pend) {
+    if (p[0] == delimiter) {
+      if (p[1] == delimiter) {
+        p += 2; // doubled delimiter is escaped 
+      } else {
+        return ++p; // Found valid closing delimiter
+      }
+    } else {
+      p++;
+    }
+  }
+  return pend;
+}
+
 /*
  * Loosely parse what might be a refmod expression.  This is used to decide
  * whether to indicate a refmod to the parser with an LPAREN token, or not,
@@ -1325,40 +1350,34 @@ integer_of( const char input[], bool is_hex = false) {
  */
 static bool
 is_refmod( const char input[], const char enput[] ) {
-	if( input == enput || *input != '(' ) return false;
-	int depth = 0;
-	bool colon_at_depth1 = false;
-	const char *p = input;
+  if( input == enput ) return false;
+  gcc_assert( *input == '(' );
+  int depth = 1;
+  bool colon_at_depth1 = false;
 
-	while( p < enput ) {
-		char ch = *p++;
-		if( ch == '"' || ch == '\'' ) {
-			/* Skip quoted region; doubled quote is escape.  */
-			const char quote = ch;
-			while( p < enput ) {
-				ch = *p++;
-				if( ch == quote ) {
-					if( p < enput && *p == quote ) { p++; continue; }
-					break;
-				}
-			}
-			continue;
-		}
-		if( ch == '(' ) {
-			depth++;
-			continue;
-		}
-		if( ch == ')' ) {
-			depth--;
-			if( depth < 0 ) return false;
-			if( depth == 0 ) return colon_at_depth1;
-			continue;
-		}
-		if( ch == ':' && depth == 1 ) {
-			if( colon_at_depth1 ) return false;
-			colon_at_depth1 = true;
-			continue;
-		}
-	}
-	return false;
+  for( const char *p = input + 1; p < enput; p++ ) {
+    char ch = *p;
+    if( is_quote(ch) ) {
+      p = skip_string(p, enput, ch) - 1;
+      continue;
+    }
+    if( ch == '(' ) {
+      depth++;
+      continue;
+    }
+    if( ch == ')' ) {
+      depth--;
+      if( depth < 0 ) return false;
+      if( depth == 0 ) return colon_at_depth1;
+      continue;
+    }
+    if( ch == ':' && depth == 1 ) {
+      if( colon_at_depth1 ) return false;
+      colon_at_depth1 = true;
+      continue;
+    }
+  }
+  dbgmsg("%s:%d: '%.*s' is %sa refmod", __func__, __LINE__,
+         int(enput - input), input, colon_at_depth1? "" : "not ");
+  return colon_at_depth1;
 }

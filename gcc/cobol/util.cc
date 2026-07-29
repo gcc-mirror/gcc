@@ -3522,7 +3522,7 @@ gcc_location_set( const cbl_loc_t& loc ) {
     loc_m_1 = token_location;
   }
   
-  location_dump(__func__, __LINE__, "parser", loc, true);
+  location_dump(__func__, __LINE__, "parser", loc);
 }
 
 #ifdef NDEBUG
