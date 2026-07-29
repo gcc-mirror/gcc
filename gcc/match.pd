@@ -4908,7 +4908,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         && tree_expr_nonzero_p (@1)
 	/* Cannot make a expression with side effects
 	   unconditional. */
-	&& expr_no_side_effects_p (@3))
+	&& expr_no_side_effects_p (@1))
     @2)))
 
 /* Note we prefer the != case here
