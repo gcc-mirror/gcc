@@ -402,41 +402,121 @@ test_vmov_n_f16 (float16_t a)
 {
   return vmov_n_f16 (a);
 }
+/*
+** test_vmov_n_f16:
+** (
+    softfp
+**	vdup.16	(d[0-9]+), r0
+**	vmov	r0, r1, \1  @ v4hf
+** |
+    hardfp
+    Note: We should be able to do this with 'vdup.16 d0, d[0]'
+**	vmov.f16	(r[0-9]+), s0	@ __fp16
+**	vdup.16	d0, \2
+** )
+**	bx	lr
+*/
 
 float16x4_t
 test_vdup_n_f16 (float16_t a)
 {
   return vdup_n_f16 (a);
 }
-/* { dg-final { scan-assembler-times {vdup\.16\td[0-9]+, r[0-9]+} 3 } }  */
+/*
+** test_vdup_n_f16:
+** (
+    softfp
+**	vdup.16	(d[0-9]+), r0
+**	vmov	r0, r1, \1  @ v4hf
+** |
+    hardfp
+    Note: We should be able to do this with 'vdup.16 d0, d[0]'
+**	vmov.f16	(r[0-9]+), s0	@ __fp16
+**	vdup.16	d0, \2
+** )
+**	bx	lr
+*/
 
 float16x8_t
 test_vmovq_n_f16 (float16_t a)
 {
   return vmovq_n_f16 (a);
 }
+/*
+** test_vmovq_n_f16:
+** (
+    softfp
+**	vdup.16	q[0-9]+, r0
+**	vmov	r0, r1, d[0-9]+  @ v8hf
+**	vmov	r2, r3, d[0-9]+
+** |
+    hardfp
+    Note: We should be able to do this with 'vdup.16 d0, d[0]'
+**	vmov.f16	(r[0-9]+), s0	@ __fp16
+**	vdup.16	q0, \1
+** )
+**	bx	lr
+*/
 
 float16x8_t
 test_vdupq_n_f16 (float16_t a)
 {
   return vdupq_n_f16 (a);
 }
-/* { dg-final { scan-assembler-times {vdup\.16\tq[0-9]+, r[0-9]+} 3 { target arm_hf_eabi } } }  */
-/* { dg-final { scan-assembler-times {vdup\.16\tq[0-9]+, r[0-9]+} 2 { target { ! arm_hf_eabi } } } }  */
+/*
+** test_vdupq_n_f16:
+** (
+    softfp
+**	vdup.16	q[0-9]+, r0
+**	vmov	r0, r1, d[0-9]+  @ v8hf
+**	vmov	r2, r3, d[0-9]+
+** |
+    hardfp
+    Note: We should be able to do this with 'vdup.16 d0, d[0]'
+**	vmov.f16	(r[0-9]+), s0	@ __fp16
+**	vdup.16	q0, \1
+** )
+**	bx	lr
+*/
 
 float16x4_t
 test_vdup_lane_f16 (float16x4_t a)
 {
   return vdup_lane_f16 (a, 1);
 }
-/* { dg-final { scan-assembler-times {vdup\.16\td[0-9]+, d[0-9]+\[1\]} 1 } }  */
+/*
+** test_vdup_lane_f16:
+** (
+    softfp
+**	lsrs?	(r[0-9]+), r0, #16
+**	vdup.16	(d[0-9]+), \1
+**	vmov	r0, r1, \2  @ v4hf
+** |
+    hard
+**	vdup.16	d0, d0\[1\]
+** )
+**	bx	lr
+*/
 
 float16x8_t
 test_vdupq_lane_f16 (float16x4_t a)
 {
   return vdupq_lane_f16 (a, 1);
 }
-/* { dg-final { scan-assembler-times {vdup\.16\tq[0-9]+, d[0-9]+\[1\]} 1 } }  */
+/*
+** test_vdupq_lane_f16:
+** (
+    softfp
+**	lsrs?	(r[0-9]+), r0, #16
+**	vdup.16	q[0-9], \1
+**	vmov	r0, r1, d[0-9]+  @ v8hf
+**	vmov	r2, r3, d[0-9]+
+** |
+    hard
+**	vdup.16	q0, d0\[1\]
+** )
+**	bx	lr
+*/
 
 float16x4_t
 test_vext_f16 (float16x4_t a, float16x4_t b)
