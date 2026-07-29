@@ -7577,6 +7577,46 @@ gimple_lower_bitint (void)
 		add_phi_arg (phi, rhs2, e3, UNKNOWN_LOCATION);
 		break;
 	      }
+	  else if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (s)
+		   && is_gimple_call (stmt)
+		   && gimple_call_internal_p (stmt))
+	    switch (gimple_call_internal_fn (stmt))
+	      {
+	      case IFN_UBSAN_CHECK_ADD:
+	      case IFN_UBSAN_CHECK_SUB:
+		if (!bitint_big_endian)
+		  break;
+		/* FALLTHRU */
+	      case IFN_UBSAN_CHECK_MUL:
+	      case IFN_BSWAP:
+	      case IFN_BITREVERSE:
+		for (unsigned i = 0; i < gimple_call_num_args (stmt); ++i)
+		  {
+		    location_t loc = gimple_location (stmt);
+		    gsi = gsi_for_stmt (stmt);
+		    /* Similar case to multiplication/division with (ab)
+		       above for internal functions which set muldiv_p.  */
+		    tree arg = gimple_call_arg (stmt, i);
+		    if (TREE_CODE (arg) == SSA_NAME
+			&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (arg))
+		      {
+			first_large_huge = 0;
+			tree t = make_ssa_name (TREE_TYPE (arg));
+			g = gimple_build_assign (t, SSA_NAME, arg);
+			gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+			gimple_set_location (g, loc);
+			gimple_call_set_arg (stmt, i, t);
+			if (i == 0
+			    && gimple_call_num_args (stmt) >= 2
+			    && gimple_call_arg (stmt, 1) == arg)
+			  gimple_call_set_arg (stmt, 1, t);
+			update_stmt (stmt);
+		      }
+		  }
+		break;
+	      default:
+		break;
+	      }
 	}
       /* We need to also rewrite stores of large/huge _BitInt INTEGER_CSTs
 	 into memory.  Such functions could have no large/huge SSA_NAMEs.  */
