@@ -1,3 +1,11 @@
+2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	Backported from master:
+	2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/126429
+	* gcc.target/i386/pr126429-1.c: New test.
+
 2026-07-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backported from master:
