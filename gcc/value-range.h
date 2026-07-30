@@ -594,8 +594,8 @@ struct frange_pair
 
 // A subset of possible values for a floating point type.
 //
-// The representation is a single interval, unioned with a subset of
-// { -NaN, +NaN }.
+// The representation is a handful of disjoint intervals, unioned with a
+// subset of { -NaN, +NaN }.
 
 class frange final : public vrange
 {
@@ -666,7 +666,7 @@ public:
   bool known_isdenormal_or_zero () const;
   virtual void verify_range () const override;
 
-  static const unsigned int MAX_PAIRS = 1;
+  static const unsigned int MAX_PAIRS = 2;
   unsigned num_pairs () const { return m_num_ranges; }
   const REAL_VALUE_TYPE &lower_bound (unsigned pair) const;
   const REAL_VALUE_TYPE &upper_bound (unsigned pair) const;

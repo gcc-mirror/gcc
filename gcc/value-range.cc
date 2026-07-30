@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "tree-pretty-print.h"
 #include "value-range-pretty-print.h"
+#include "value-range-storage.h"
 #include "fold-const.h"
 #include "gimple-range.h"
 #include "tree-dfa.h"
@@ -3601,6 +3602,148 @@ frange_float (const char *lb, const char *ub, tree type = float_type_node)
   return frange (type, min, max);
 }
 
+// Build the REAL_VALUE_TYPE for the string S.
+
+static REAL_VALUE_TYPE
+real_from_str (const char *s)
+{
+  REAL_VALUE_TYPE r;
+  gcc_assert (real_from_string (&r, s) == 0);
+  return r;
+}
+
+static void
+range_tests_sub_ranges ()
+{
+  frange r0, r1;
+
+  // A union of two disjoint intervals keeps both.
+  r0 = frange_float ("3", "5");
+  r1 = frange_float ("10", "12");
+  r0.union_ (r1);
+  ASSERT_EQ (r0.num_pairs (), 2);
+  ASSERT_TRUE (r0.contains_p (real_from_str ("4")));
+  ASSERT_TRUE (r0.contains_p (real_from_str ("11")));
+  ASSERT_FALSE (r0.contains_p (real_from_str ("7")));
+
+  REAL_VALUE_TYPE three = real_from_str ("3");
+  REAL_VALUE_TYPE twelve = real_from_str ("12");
+  ASSERT_TRUE (real_identical (&r0.lower_bound (), &three));
+  ASSERT_TRUE (real_identical (&r0.upper_bound (), &twelve));
+
+  // Intersecting away one side leaves a single interval again.
+  r1 = frange_float ("0", "6");
+  r0.intersect (r1);
+  ASSERT_EQ (r0.num_pairs (), 1);
+  ASSERT_TRUE (r0.contains_p (real_from_str ("4")));
+  ASSERT_FALSE (r0.contains_p (real_from_str ("11")));
+
+  // Overlapping intervals fuse rather than leave a gap.
+  r0 = frange_float ("3", "8");
+  r1 = frange_float ("5", "12");
+  r0.union_ (r1);
+  ASSERT_EQ (r0.num_pairs (), 1);
+  ASSERT_TRUE (r0.contains_p (real_from_str ("7")));
+
+  if (frange::MAX_PAIRS == 2)
+    {
+      // When more pieces arrive than fit, the last slot swallows the tail:
+      // [0,1] stays and [3,4], [100,101] merge into [3,101].
+      r0 = frange_float ("0", "1");
+      r1 = frange_float ("100", "101");
+      r0.union_ (r1);
+      r1 = frange_float ("3", "4");
+      r0.union_ (r1);
+      ASSERT_EQ (r0.num_pairs (), 2);
+      ASSERT_TRUE (r0.contains_p (real_from_str ("50")));
+      ASSERT_TRUE (r0.contains_p (real_from_str ("3.5")));
+      ASSERT_TRUE (r0.contains_p (real_from_str ("100.5")));
+    }
+
+  // Equality accounts for the sub-ranges.
+  r0 = frange_float ("3", "5");
+  r1 = frange_float ("10", "12");
+  r0.union_ (r1);
+  r1 = frange_float ("3", "12");
+  ASSERT_NE (r0, r1);
+
+  // Intersecting every piece away, with the NAN cleared, leaves UNDEFINED.
+  r0 = frange_float ("3", "5");
+  r1 = frange_float ("10", "12");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  r1 = frange_float ("20", "25");
+  r1.clear_nan ();
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.undefined_p ());
+}
+
+static void
+range_tests_sub_ranges_zero ()
+{
+  frange r0, r1;
+
+  // -0.0 and +0.0 abut: nothing is representable between them, so the two
+  // halves fuse into one interval rather than leaving a gap.
+  r0 = frange_float ("-5", "-0.0");
+  r0.clear_nan ();
+  r1 = frange_float ("0.0", "5");
+  r1.clear_nan ();
+  r0.union_ (r1);
+  ASSERT_EQ (r0.num_pairs (), 1);
+  ASSERT_TRUE (r0.contains_p (dconst0));
+  ASSERT_TRUE (r0.contains_p (dconstm0));
+}
+
+// A cached frange must come back with every sub-range intact.
+
+static void
+range_tests_sub_ranges_storage ()
+{
+  vrange_allocator alloc (false);
+
+  // A two-piece range comes back as two pieces, unchanged.
+  frange r0 = frange_float ("3", "5");
+  frange r1 = frange_float ("10", "12");
+  r0.union_ (r1);
+  ASSERT_EQ (r0.num_pairs (), 2);
+
+  vrange_storage *slot = alloc.clone (r0);
+  frange r2;
+  slot->get_vrange (r2, float_type_node);
+  ASSERT_EQ (r2.num_pairs (), 2);
+  ASSERT_EQ (r2, r0);
+}
+
+// NANs and sub-ranges: unioning in a NAN keeps the intervals, while
+// intersecting the intervals away collapses to a plain NAN with a single
+// pair.
+
+static void
+range_tests_sub_ranges_nan ()
+{
+  frange r0, r1;
+
+  // Union with a NAN keeps both intervals and gains the NAN.
+  r0 = frange_float ("3", "5");
+  r1 = frange_float ("10", "12");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  r1.set_nan (float_type_node);
+  r0.union_ (r1);
+  ASSERT_EQ (r0.num_pairs (), 2);
+  ASSERT_TRUE (r0.maybe_isnan ());
+
+  // Intersecting the intervals away leaves just the NAN.
+  r0 = frange_float ("3", "5");
+  r1 = frange_float ("10", "12");
+  r0.union_ (r1);
+  r1 = frange_float ("20", "25");
+  r0.intersect (r1);
+  ASSERT_TRUE (r0.known_isnan ());
+  ASSERT_EQ (r0.num_pairs (), 1);
+}
+
 static void
 range_tests_nan ()
 {
@@ -3901,12 +4044,20 @@ range_tests_floats ()
   frange r0, r1;
 
   if (HONOR_NANS (float_type_node))
-    range_tests_nan ();
+    {
+      range_tests_nan ();
+      range_tests_sub_ranges_nan ();
+    }
   range_tests_signbit ();
   range_tests_flush_denormals ();
+  range_tests_sub_ranges ();
+  range_tests_sub_ranges_storage ();
 
   if (HONOR_SIGNED_ZEROS (float_type_node))
-    range_tests_signed_zeros ();
+    {
+      range_tests_signed_zeros ();
+      range_tests_sub_ranges_zero ();
+    }
 
   // A range of [-INF,+INF] is actually VARYING if no other properties
   // are set.
@@ -3929,11 +4080,12 @@ range_tests_floats ()
       ASSERT_NE (r0, r1);
     }
 
-  // [3,5] U [10,12] = [3,12].
+  // [3,5] U [10,12] = [3,5][10,12]
   r0 = frange_float ("3", "5");
   r1 = frange_float ("10", "12");
   r0.union_ (r1);
-  ASSERT_EQ (r0, frange_float ("3", "12"));
+  ASSERT_EQ (r0.num_pairs (), 2);
+  ASSERT_NE (r0, frange_float ("3", "12"));
 
   // [5,10] U [4,8] = [4,10]
   r0 = frange_float ("5", "10");
