@@ -25,15 +25,15 @@ unknown_2(void (*)(int*, double*), int*, double*, char*);
 
 [[gnu::callback_only(1, 0, 3, 3)]]
 void
-too_many(void (*)(int*, double*), int*, double*); /* { dg-error "argument number mismatch, 2 expected, got 3" }*/
+too_many(void (*)(int*, double*), int*, double*); /* { dg-warning "argument number mismatch, 2 expected, got 3" }*/
 
 [[gnu::callback_only(1, 2)]]
 void
-too_few_1(void (*)(int*, double*), int*, double*); /* { dg-error "argument number mismatch, 2 expected, got 1" }*/
+too_few_1(void (*)(int*, double*), int*, double*); /* { dg-warning "argument number mismatch, 2 expected, got 1" }*/
 
 [[gnu::callback_only(1)]]
 void
-too_few_2(void (*)(int*, double*), int*, double*); /* { dg-error "argument number mismatch, 2 expected, got 0" }*/
+too_few_2(void (*)(int*, double*), int*, double*); /* { dg-warning "argument number mismatch, 2 expected, got 0" }*/
 
 [[gnu::callback_only(3, 1)]]
 void
@@ -45,52 +45,70 @@ downcast(char*, void* (*)(float*), double*);
 
 [[gnu::callback_only(1, 2, 5)]]
 void
-out_of_range_1(char (*)(float*, double*), float*, double*, int*); /* { dg-error "callback argument index 5 is out of range" } */
+out_of_range_1(char (*)(float*, double*), float*, double*, int*); /* { dg-warning "exceeds the number of function parameters" } */
 
 [[gnu::callback_only(1, -2, 3)]]
 void
-out_of_range_2(char (*)(float*, double*), float*, double*, int*); /* { dg-error "callback argument index -2 is out of range" } */
+out_of_range_2(char (*)(float*, double*), float*, double*, int*); /* { dg-warning "exceeds the number of function parameters" } */
 
 [[gnu::callback_only(-1, 2, 3)]]
 void
-out_of_range_3(char (*)(float*, double*), float*, double*, int*); /* { dg-error "callback function index -1 is out of range" } */
+out_of_range_3(char (*)(float*, double*), float*, double*, int*);  /* { dg-warning "exceeds the number of function parameters" } */
 
 [[gnu::callback_only(67, 2, 3)]]
 void
-out_of_range_4(char (*)(float*, double*), float*, double*, int*); /* { dg-error "callback function index 67 is out of range" } */
+out_of_range_4(char (*)(float*, double*), float*, double*, int*); /* { dg-warning "exceeds the number of function parameters" } */
 
 [[gnu::callback_only(0, 2, 3)]]
 void
-unknown_fn(char (*)(float*, double*), float*, double*, int*); /* { dg-error "callback function position cannot be marked as unknown" } */
+unknown_fn(char (*)(float*, double*), float*, double*, int*); /* { dg-warning "callback function position cannot be marked as unknown" } */
 
 [[gnu::callback_only(1, 2)]]
 void
-not_a_fn(int, int); /* { dg-error "argument no. 1 is not an address of a function" } */
+not_a_fn(int, int); /* { dg-warning "refers to" } */
 
 struct S
 {
   int x;
 };
 
+static struct S placeholder;
+
+static int one = 1;
+
+static const int const_one = 1;
+
 [[gnu::callback_only(1, 2)]]
 void
-incompatible_types_1(void (*)(struct S*), struct S); /* { dg-error "argument type at index 2 is not compatible with callback argument type at index 1" } */
+incompatible_types_1(void (*)(struct S*), struct S); /* { dg-warning "refers to" } */
 
 [[gnu::callback_only(1, 3, 2)]]
 void
-incompatible_types_2(void (*)(struct S*, int*), int*, double); /* { dg-error "argument type at index 3 is not compatible with callback argument type at index 1" } */
+incompatible_types_2(void (*)(struct S*, int*), int*, double); /* { dg-warning "refers to" } */
 
 [[gnu::callback_only(1, "2")]]
 void
-wrong_arg_type_1(void (*)(void*), void*); /* { dg-error "argument no. 1 is not an integer constant" } */
+wrong_arg_type_1(void (*)(void*), void*); /* { dg-warning "argument no. 1 is not an integer constant" } */
 
 [[gnu::callback_only("not a number", 2, 2)]]
 void
-wrong_arg_type_2(void (*)(void*, void*), void*); /* { dg-error "argument specifying callback function position is not an integer constant" } */
+wrong_arg_type_2(void (*)(void*, void*), void*); /* { dg-warning "has type" } */
+
+[[gnu::callback_only(placeholder, 2, 2)]]
+void
+wrong_arg_type_3(void (*)(void*, void*), void*); /* { dg-warning "has type" } */
+
+[[gnu::callback_only(one, 2, 2)]]
+void
+int_identifier(void (*)(void*, void*), void*); /* { dg-warning "is not an integer constant" } */
+
+[[gnu::callback_only(one, 2, 2)]]
+void
+int_identifier_1(void (*)(void*, void*), void*); /* { dg-warning "is not an integer constant" } */
 
 [[gnu::callback_only(1, 2), gnu::callback_only(1, 3)]]
 void
-multiple_single_fn(void (*)(int*), int*, int*); /* { dg-error "function declaration has multiple callback attributes describing argument no. 1" } */
+multiple_single_fn(void (*)(int*), int*, int*); /* { dg-warning "function declaration has multiple callback attributes describing argument no. 1" } */
 
 /* Check that the attribute won't resolve outside of our namespace.  */
 

@@ -4682,66 +4682,52 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
   tree decl = *node;
   if (TREE_CODE (decl) != FUNCTION_DECL)
     {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"%qE attribute can only be used on functions", name);
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "%qE attribute can only be used on functions", name);
       *no_add_attrs = true;
     }
 
-  tree cb_fn_idx_node = TREE_VALUE (args);
-  if (TREE_CODE (cb_fn_idx_node) != INTEGER_CST)
+  tree val = positional_argument (decl, name, TREE_VALUE (args), POINTER_TYPE,
+				  1, POSARG_ZERO);
+  if (!val)
     {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"argument specifying callback function position is not an "
-		"integer constant");
       *no_add_attrs = true;
       return NULL_TREE;
     }
+  TREE_VALUE (args) = val;
+
   /* We have to use the function type for validation, as
      DECL_ARGUMENTS returns NULL at this point.  */
-  int callback_fn_idx = TREE_INT_CST_LOW (cb_fn_idx_node);
+  int callback_fn_idx = TREE_INT_CST_LOW (val);
   tree decl_type_args = TYPE_ARG_TYPES (TREE_TYPE (decl));
   tree it;
-  int decl_nargs = list_length (decl_type_args);
   for (it = decl_type_args; it != NULL_TREE; it = TREE_CHAIN (it))
     if (it == void_list_node)
-      {
-	--decl_nargs;
-	break;
-      }
+      break;
+
   if (callback_fn_idx == CB_UNKNOWN_POS)
     {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"callback function position cannot be marked as unknown");
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
-  --callback_fn_idx;
-  if (callback_fn_idx >= decl_nargs)
-    {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"callback function position out of range");
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "callback function position cannot be marked as unknown");
       *no_add_attrs = true;
       return NULL_TREE;
     }
 
-  /* Search for the type of the callback function
-     in parameters of the original function.  */
+  --callback_fn_idx;
+
+  /* Search for the type of the callback function in parameters of the original
+     function.  We know it's there because it's been validated by
+     positional_argument.  */
   tree cfn = chain_index (callback_fn_idx, decl_type_args);
-  if (cfn == NULL_TREE)
-    {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"could not retrieve callback function from arguments");
-      *no_add_attrs = true;
-      return NULL_TREE;
-    }
+  gcc_checking_assert (cfn != NULL_TREE);
   cfn = TREE_VALUE (cfn);
   tree cfn_pointee_type = TREE_TYPE (cfn);
   if (TREE_CODE (cfn) != POINTER_TYPE
       || TREE_CODE (cfn_pointee_type) != FUNCTION_TYPE)
     {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"argument no. %d is not an address of a function",
-		callback_fn_idx + 1);
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "argument no. %d is not an address of a function",
+		  callback_fn_idx + 1);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -4759,9 +4745,9 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
       }
   if (cfn_nargs != type_nargs)
     {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"argument number mismatch, %d expected, got %d", type_nargs,
-		cfn_nargs);
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "argument number mismatch, %d expected, got %d", type_nargs,
+		  cfn_nargs);
       *no_add_attrs = true;
       return NULL_TREE;
     }
@@ -4777,12 +4763,23 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
     {
       if (TREE_CODE (TREE_VALUE (cfn_it)) != INTEGER_CST)
 	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "argument no. %d is not an integer constant", curr + 1);
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		      "argument no. %d is not an integer constant", curr + 1);
 	  *no_add_attrs = true;
 	  continue;
 	}
 
+      tree expected_type = TREE_VALUE (it);
+      tree arg_val = positional_argument (decl, name, TREE_VALUE (cfn_it),
+					  TREE_CODE (expected_type), curr + 1,
+					  POSARG_ZERO);
+      if (!arg_val)
+	{
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      TREE_VALUE (cfn_it) = arg_val;
       int arg_idx = TREE_INT_CST_LOW (TREE_VALUE (cfn_it));
 
       /* No need to check for type compatibility,
@@ -4791,29 +4788,18 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
 	continue;
 
       arg_idx -= 1;
-      /* Report an error if the position is out of bounds,
-	 but we can still check the rest of the arguments.  */
-      if (arg_idx >= decl_nargs)
-	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "callback argument index %d is out of range", arg_idx + 1);
-	  *no_add_attrs = true;
-	  continue;
-	}
-
       tree arg_type = chain_index (arg_idx, decl_type_args);
       gcc_checking_assert (arg_type != NULL_TREE);
       arg_type = TREE_VALUE (arg_type);
-      tree expected_type = TREE_VALUE (it);
       /* Check the type of the value we are about to pass ("arg_type")
 	 for compatibility with the actual type the callback function
 	 expects ("expected_type").  */
       if (!types_compatible_p (expected_type, arg_type))
 	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "argument type at index %d is not compatible with callback "
-		    "argument type at index %d",
-		    arg_idx + 1, curr + 1);
+	  warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		      "argument type at index %d is not compatible with "
+		      "callback argument type at index %d",
+		      arg_idx + 1, curr + 1);
 	  *no_add_attrs = true;
 	  continue;
 	}
@@ -4825,10 +4811,10 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
   for (; it; it = lookup_attribute ("callback_only", TREE_CHAIN (it)))
     if (callback_get_fn_index (it) == callback_fn_idx)
       {
-	error_at (DECL_SOURCE_LOCATION (decl),
-		  "function declaration has multiple callback attributes "
-		  "describing argument no. %d",
-		  callback_fn_idx + 1);
+	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		    "function declaration has multiple callback attributes "
+		    "describing argument no. %d",
+		    callback_fn_idx + 1);
 	*no_add_attrs = true;
 	break;
       }
