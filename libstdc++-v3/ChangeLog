@@ -1,3 +1,18 @@
+2026-07-29  Álvaro Begué  <alvaro.begue@gmail.com>
+
+	Backported from master:
+	2026-05-13  Álvaro Begué  <alvaro.begue@gmail.com>
+
+	PR libstdc++/124851
+	* src/c++20/tzdb.cc (ZoneInfo::ZoneInfo(sys_info&&)): Store
+	stdoff only in m_offset (subtract info.save).
+	(ZoneInfo::ZoneInfo(const pair<sys_info, string_view>&)):
+	Likewise.
+	(ZoneInfo::offset()): Document new semantics.
+	(ZoneInfo::to(sys_info&)): Add m_save back to offset() when
+	populating sys_info::offset.
+	* testsuite/std/time/time_zone/numeric_save.cc: New test.
+
 2026-07-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
