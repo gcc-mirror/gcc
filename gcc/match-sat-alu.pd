@@ -131,6 +131,15 @@ along with GCC; see the file COPYING3.  If not see
   /* SAT_U_SUB = (X - Y) * (X >= Y)  */
   (mult:c (minus @0 @1) (convert (ge @0 @1)))
   (if (types_match (type, @0, @1))))
+ /* The wrapped difference exceeds the minuend exactly when the subtraction
+    borrows, so a source that names the difference and then tests it against
+    the minuend is a saturating subtract.  */
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = (X - Y) > X ? 0 : X - Y, and the commuted comparison.  */
+  (cond^ (gt:c (minus@2 @0 @1) @0) integer_zerop @2))
+ (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = (X - Y) <= X ? X - Y : 0, and the commuted comparison.  */
+  (cond^ (le:c (minus@2 @0 @1) @0) @2 integer_zerop))
  (match (unsigned_integer_sat_sub @0 @1)
   /* DIFF = SUB_OVERFLOW (X, Y)
      SAT_U_SUB = REALPART (DIFF) | (IMAGPART (DIFF) + (-1))  */
