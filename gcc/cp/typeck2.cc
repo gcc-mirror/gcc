@@ -671,7 +671,7 @@ build_disable_temp_cleanup (tree f)
 /* The recursive part of split_nonconstant_init.  DEST is an lvalue
    expression to which INIT should be assigned.  INIT is a CONSTRUCTOR.
    Return true if the whole of the value was initialized by the
-   generated statements.  */
+   generated statements or modifying DECL_INITIAL.  */
 
 static bool
 split_nonconstant_init_1 (tree dest, tree init, bool last,
@@ -940,6 +940,13 @@ split_nonconstant_init (tree dest, tree init)
       if (TREE_CODE (TREE_TYPE (dest)) != ARRAY_TYPE)
 	flags = make_tree_vector ();
 
+      /* We are about to call split_nonconstant_init_1 which might
+	 set DECL_INITIAL, so make sure we aren't overwriting an
+	 existing initializer.  Also, if we split out everything,
+	 we clear INIT so won't set DECL_INITIAL below.  Make
+	 sure it's null so that we're not forgetting to clear it.  */
+      gcc_assert (!(VAR_P (dest) && DECL_INITIAL (dest)));
+
       if (split_nonconstant_init_1 (dest, init, true, &flags))
 	init = NULL_TREE;
 
@@ -950,8 +957,16 @@ split_nonconstant_init (tree dest, tree init)
       code = pop_stmt_list (code);
       if (VAR_P (dest) && !is_local_temp (dest))
 	{
-	  DECL_INITIAL (dest) = init;
-	  TREE_READONLY (dest) = 0;
+	  /* If we are initializing an array, split_nonconstant_init_1
+	     might've delegated to build_vec_init in which case it always
+	     returns true so we clear INIT.  But if we're initializing
+	     a static array, build_vec_init can put constant initializers
+	     into DECL_INITIAL.  Clearing it would mean losing some of the
+	     initializers as in c++/126335.  */
+	  if (init)
+	    DECL_INITIAL (dest) = init;
+	  if (TREE_SIDE_EFFECTS (code))
+	    TREE_READONLY (dest) = 0;
 	}
       else if (init)
 	{
