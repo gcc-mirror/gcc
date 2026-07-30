@@ -3185,6 +3185,18 @@ maybe_instrument_call (gimple_stmt_iterator *iter)
 	    case BUILT_IN_UNREACHABLE:
 	    case BUILT_IN_UNREACHABLE_TRAP:
 	    case BUILT_IN_TRAP:
+	    case BUILT_IN_ASAN_REPORT_LOAD1:
+	    case BUILT_IN_ASAN_REPORT_LOAD2:
+	    case BUILT_IN_ASAN_REPORT_LOAD4:
+	    case BUILT_IN_ASAN_REPORT_LOAD8:
+	    case BUILT_IN_ASAN_REPORT_LOAD16:
+	    case BUILT_IN_ASAN_REPORT_LOAD_N:
+	    case BUILT_IN_ASAN_REPORT_STORE1:
+	    case BUILT_IN_ASAN_REPORT_STORE2:
+	    case BUILT_IN_ASAN_REPORT_STORE4:
+	    case BUILT_IN_ASAN_REPORT_STORE8:
+	    case BUILT_IN_ASAN_REPORT_STORE16:
+	    case BUILT_IN_ASAN_REPORT_STORE_N:
 	      /* Don't instrument these.  */
 	      return false;
 	    default:
@@ -3585,6 +3597,7 @@ initialize_sanitizer_builtins (void)
   if (builtin_decl_implicit_p (BUILT_IN_ASAN_INIT))
     return;
 
+  tree ptrmode_type = (*lang_hooks.types.type_for_mode) (ptr_mode, 0);
   tree BT_FN_VOID = build_function_type_list (void_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR
     = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
@@ -3598,7 +3611,7 @@ initialize_sanitizer_builtins (void)
 				ptr_type_node, ptr_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR_PTRMODE
     = build_function_type_list (void_type_node, ptr_type_node,
-				pointer_sized_int_node, NULL_TREE);
+				ptrmode_type, NULL_TREE);
   tree BT_FN_VOID_INT
     = build_function_type_list (void_type_node, integer_type_node, NULL_TREE);
   tree BT_FN_SIZE_CONST_PTR_INT
@@ -3633,7 +3646,7 @@ initialize_sanitizer_builtins (void)
   tree BT_FN_VOID_PTR_UINT8_PTRMODE
     = build_function_type_list (void_type_node, ptr_type_node,
 				unsigned_char_type_node,
-				pointer_sized_int_node, NULL_TREE);
+				ptrmode_type, NULL_TREE);
 
   tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
   tree BT_FN_IX_CONST_VPTR_INT[5];
@@ -4385,11 +4398,13 @@ asan_expand_poison_ifn (gimple_stmt_iterator *iter,
 	{
 	  tree fun = report_error_func (store_p, recover_p, tree_to_uhwi (size),
 					&nargs);
+	  tree ptrmode_type
+	    = (nargs == 2 ? (*lang_hooks.types.type_for_mode) (ptr_mode, 0)
+	       : NULL_TREE);
 	  call = gimple_build_call (fun, nargs,
 				    build_fold_addr_expr (shadow_var),
 				    nargs == 2
-				    ? fold_convert (pointer_sized_int_node,
-						    size)
+				    ? fold_convert (ptrmode_type, size)
 				    : NULL_TREE);
 	}
       gimple_set_location (call, gimple_location (use));
