@@ -730,7 +730,7 @@ class locale_tgt_t {
     // https://savannah.gnu.org/forum/forum.php?forum_id=9735
 %token  YYEOF 0 "end of file"
 
-%type   <number>        sentence statements statement
+%type   <number>        statements statement
 %type   <number>        star_cbl_opt close_how
 
 %type   <number>        test_before usage_clause1 might_be alphanational
@@ -1566,7 +1566,7 @@ class locale_tgt_t {
 %locations
 %token-table
 %define parse.error verbose // custom
-%expect 6
+%expect 7
 %require "3.5.1"  //    3.8.2 also works, but not 3.8.0
 %%
 
@@ -5691,7 +5691,8 @@ paragraph_name: NAME
         |       NUMSTR { $$ = $1.string; }
 		;
 
-sentence:       statements  '.'
+sentence:       '.'
+        |       statements  '.'
         |       statements  YYEOF
                 {
                   if( ! goodnight_gracie() ) {
