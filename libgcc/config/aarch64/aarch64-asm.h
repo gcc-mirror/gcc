@@ -109,8 +109,7 @@
     .aeabi_attribute Tag_Feature_GCS, 1;				\
     .else;								\
     .aeabi_attribute Tag_Feature_GCS, 0;				\
-    .endif;								\
-    .previous
+    .endif;
 #else
 /* Add a NT_GNU_PROPERTY_TYPE_0 note.  */
 # define FEATURE_1_AND_MARK(value) GNU_PROPERTY (FEATURE_1_AND, value)
