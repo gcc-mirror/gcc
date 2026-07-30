@@ -4821,6 +4821,52 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     @0
     @2)))
 
+/* Narrow a saturating add or subtract that promotions or explicit vector
+   conversions widened.
+   For an unsigned type,
+     (type) MAX ((wide_type) a - (wide_type) b, 0) -> a - MIN (a, b)
+     (type) MIN ((wide_type) a + (wide_type) b, MAX) -> a + MIN (~a, b)
+   Both results are exact in the narrow type: the difference is clamped at
+   zero and the sum at MAX, so the truncation never loses a bit.  Require the
+   outer clamp to have one use.  For a vector, also require target support for
+   each narrow operation that the result introduces.  */
+(simplify
+ (convert (max:s (minus@2 (convert @0) (convert @1)) integer_zerop))
+ (if (ANY_INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1)
+      && !TYPE_UNSIGNED (TREE_TYPE (@2))
+      && element_precision (TREE_TYPE (@2)) > element_precision (type)
+      && (!VECTOR_TYPE_P (type)
+	  || (target_supports_op_p (type, MIN_EXPR, optab_vector)
+	      && target_supports_op_p (type, MINUS_EXPR, optab_vector))))
+  (minus @0 (min @0 @1))))
+
+(simplify
+ (convert (min:s (plus@2 (convert @0) (convert @1))
+		 uniform_integer_cst_p@3))
+ (if (ANY_INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (type)
+      && types_match (type, @0, @1)
+      && (!VECTOR_TYPE_P (type)
+	  || (target_supports_op_p (type, BIT_NOT_EXPR, optab_vector)
+	      && target_supports_op_p (type, MIN_EXPR, optab_vector)
+	      && target_supports_op_p (type, PLUS_EXPR, optab_vector))))
+  (with
+   {
+    unsigned precision = element_precision (type);
+    tree wide_type = TREE_TYPE (@2);
+    unsigned wide_precision = element_precision (wide_type);
+    tree max_cst = uniform_integer_cst_p (@3);
+    /* The widened sum reaches 2 * (2^precision - 1), which needs one bit
+       more than the narrow type, and one further bit for a sign.  */
+    unsigned needed = precision + (TYPE_UNSIGNED (wide_type) ? 1 : 2);
+   }
+   (if (wide_precision >= needed
+	&& wi::eq_p (wi::to_wide (max_cst),
+		     wi::mask (precision, false, wide_precision)))
+    (plus @0 (min @1 (bit_not @0)))))))
+
 /* MIN (MAX (X, Y + CST), Y) -> Y for a positive CST, and the dual
    MAX (MIN (X, Y + CST), Y) -> Y for a negative one.  The inner select is
    at least Y + CST, which the absence of wrapping puts strictly beyond Y,
