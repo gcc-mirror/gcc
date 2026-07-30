@@ -11089,6 +11089,8 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
   /* Since the vectors are created in the reverse order, we should invert
      them.  */
   vec_num = voprnds.length ();
+  gcc_checking_assert (vec_num > 0);
+
   for (j = vec_num; j != 0; j--)
     {
       vop = voprnds[j - 1];
