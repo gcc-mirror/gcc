@@ -1655,7 +1655,8 @@ was_declared (gfc_symbol *sym)
   if (a.allocatable || a.dimension || a.dummy || a.external || a.intrinsic
       || a.optional || a.pointer || a.save || a.target || a.volatile_
       || a.value || a.access != ACCESS_UNKNOWN || a.intent != INTENT_UNKNOWN
-      || a.asynchronous || a.codimension || a.subroutine || a.result)
+      || a.asynchronous || a.codimension
+      || (a.subroutine && a.proc != PROC_UNKNOWN) || a.result)
     return 1;
 
   return 0;
