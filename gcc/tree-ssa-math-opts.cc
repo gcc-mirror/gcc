@@ -4123,7 +4123,7 @@ extern bool gimple_signed_integer_sat_add (tree, tree*, tree (*)(tree));
 extern bool gimple_signed_integer_sat_sub (tree, tree*, tree (*)(tree));
 extern bool gimple_signed_integer_sat_trunc (tree, tree*, tree (*)(tree));
 
-static void
+static bool
 build_saturation_binary_arith_call_and_replace (gimple_stmt_iterator *gsi,
 						internal_fn fn, tree lhs,
 						tree op_0, tree op_1)
@@ -4133,7 +4133,10 @@ build_saturation_binary_arith_call_and_replace (gimple_stmt_iterator *gsi,
       gcall *call = gimple_build_call_internal (fn, 2, op_0, op_1);
       gimple_call_set_lhs (call, lhs);
       gsi_replace (gsi, call, /* update_eh_info */ true);
+      return true;
     }
+
+  return false;
 }
 
 static bool
@@ -4177,9 +4180,10 @@ build_saturation_binary_arith_call_and_insert (gimple_stmt_iterator *gsi,
  * # _9 = PHI <_2(3), 128(2)>
  * _4 = (int8_t) _9;
  *   =>
- * _4 = .SAT_ADD (x_5, -1); */
+ * _4 = .SAT_ADD (x_5, -1);
+ * Return true if the statement was replaced.  */
 
-static void
+static bool
 match_saturation_add_with_assign (gimple_stmt_iterator *gsi, gassign *stmt)
 {
   tree ops[2];
@@ -4187,8 +4191,10 @@ match_saturation_add_with_assign (gimple_stmt_iterator *gsi, gassign *stmt)
 
   if (gimple_unsigned_integer_sat_add (lhs, ops, NULL)
       || gimple_signed_integer_sat_add (lhs, ops, NULL))
-    build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_ADD, lhs,
-						    ops[0], ops[1]);
+    return build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_ADD,
+							   lhs, ops[0], ops[1]);
+
+  return false;
 }
 
 /*
@@ -4257,17 +4263,20 @@ match_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
  *   _3 = _4 - _5;
  *   _6 = _1 ? _3 : 0;
  *   =>
- *   _6 = .SAT_SUB (_4, _5);  */
+ *   _6 = .SAT_SUB (_4, _5);
+ * Return true if the statement was replaced.  */
 
-static void
+static bool
 match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gassign *stmt)
 {
   tree ops[2];
   tree lhs = gimple_assign_lhs (stmt);
 
   if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL))
-    build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_SUB, lhs,
-						    ops[0], ops[1]);
+    return build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_SUB,
+							   lhs, ops[0], ops[1]);
+
+  return false;
 }
 
 /*
@@ -7335,11 +7344,14 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 	      break;
 
 	    case PLUS_EXPR:
-	      match_saturation_add_with_assign (&gsi, as_a<gassign *> (stmt));
-	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
+	      if (match_saturation_add_with_assign (&gsi,
+						    as_a<gassign *> (stmt)))
+		break;
 	      /* fall-through  */
 	    case MINUS_EXPR:
-	      if (!convert_plusminus_to_widen (&gsi, stmt, code))
+	      if (!match_unsigned_saturation_sub (&gsi,
+						  as_a<gassign *> (stmt))
+		  && !convert_plusminus_to_widen (&gsi, stmt, code))
 		{
 		  match_arith_overflow (&gsi, stmt, code, m_cfg_changed_p);
 		  if (gsi_stmt (gsi) == stmt)

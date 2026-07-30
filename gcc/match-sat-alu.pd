@@ -170,6 +170,12 @@ along with GCC; see the file COPYING3.  If not see
   /* SAT_U_SUB = (X - Y) <= X ? X - Y : 0, and the commuted comparison.  */
   (cond^ (le:c (minus@2 @0 @1) @0) @2 integer_zerop))
  (match (unsigned_integer_sat_sub @0 @1)
+  /* SAT_U_SUB = X - MIN (X, Y).  The MIN has to be single use: while it
+     stays live the saturating subtract is computed beside it instead of
+     replacing it, which costs an instruction.  */
+  (minus @0 (min:c@2 @0 @1))
+  (if (single_use (@2))))
+ (match (unsigned_integer_sat_sub @0 @1)
   /* DIFF = SUB_OVERFLOW (X, Y)
      SAT_U_SUB = REALPART (DIFF) | (IMAGPART (DIFF) + (-1))  */
   (bit_and:c (realpart (IFN_SUB_OVERFLOW@2 @0 @1))
