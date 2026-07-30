@@ -4795,6 +4795,104 @@ match_long_mul_phi (gphi *phi)
   return true;
 }
 
+/* Verify if we have the following structure:
+
+   iftmp1 = PHI <pow2a, pow2b, pow2c, ...>
+   _ssa1 = _ssa2 MOD|DIV iftmp1;
+   _ssa3 = _ssa1 EQ|NE 0;
+
+   And, if the right conditions are met, change the PHI args
+   and "_ssa1" stmt to a cheaper alternative.
+
+   - for MOD, if either "_ssa2" is known to be positive or
+   "_ssa1" is used just in zero comparisons:
+
+   iftmp1 = PHI <(pow2a - 1), (pow2b - 1), (pow2c - 1), ...>
+   _ssa1 = _ssa2 & iftmp1;
+
+   - for DIV, if "_ssa2" is known to be positive:
+
+   iftmp1 = PHI <log2 (pow2a), log2 (pow2b), log2 (pow2c), ...>
+   _ssa1 = _ssa2 >> iftmp1;  */
+static bool
+simplify_phi_result_movdiv (gimple *stmt, tree_code code)
+{
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  tree_code new_code;
+
+  switch (code)
+    {
+      case TRUNC_MOD_EXPR:
+      case FLOOR_MOD_EXPR:
+	if (!tree_expr_nonnegative_p (rhs1)
+	    && !use_in_zero_equality (gimple_assign_lhs (stmt), true))
+	  return false;
+
+	new_code = BIT_AND_EXPR;
+	break;
+
+      case TRUNC_DIV_EXPR:
+      case FLOOR_DIV_EXPR:
+      case EXACT_DIV_EXPR:
+	if (!tree_expr_nonnegative_p (rhs1))
+	  return false;
+
+	new_code = RSHIFT_EXPR;
+	break;
+
+     default:
+	return false;
+    }
+
+  gphi *phi = as_a<gphi *> (SSA_NAME_DEF_STMT (gimple_assign_rhs2 (stmt)));
+
+  for (unsigned int i = 0; i < gimple_phi_num_args (phi); i++)
+    if (!integer_pow2p (gimple_phi_arg_def (phi, i))
+	|| tree_int_cst_sgn (gimple_phi_arg_def (phi, i)) < 0)
+      return false;
+
+  tree type = TREE_TYPE (gimple_phi_result (phi));
+  tree new_phires = make_ssa_name (type);
+  gphi *new_phi = create_phi_node (new_phires, phi->bb);
+
+  for (unsigned int i = 0; i < gimple_phi_num_args (phi); i++)
+    {
+      tree phi_arg = gimple_phi_arg_def (phi, i);
+      edge e = gimple_phi_arg_edge (phi, i);
+      tree arg;
+
+      if (new_code == RSHIFT_EXPR)
+	arg = wide_int_to_tree (type, wi::exact_log2 (wi::to_wide (phi_arg)));
+      else
+	arg = wide_int_to_tree (type, wi::to_wide (phi_arg) - 1);
+
+      add_phi_arg (new_phi, arg, e,
+		   gimple_phi_arg_location (phi, e->dest_idx));
+    }
+
+  /* Add a gimple_convert to integer_type_node for new_phires
+     since it might be a long long which we want to convert
+     into an integer or a bit_int that we want to convert into
+     an integer.  */
+  gimple_stmt_iterator gsi;
+  if (new_code == RSHIFT_EXPR)
+    {
+      gsi = gsi_for_stmt (stmt);
+      new_phires = gimple_convert (&gsi, true, GSI_SAME_STMT,
+				   gimple_location (stmt),
+				   integer_type_node, new_phires);
+    }
+
+  gimple_assign_set_rhs2 (stmt, new_phires);
+  gimple_assign_set_rhs_code (stmt, new_code);
+  update_stmt (stmt);
+
+  gsi = gsi_for_phi (phi);
+  remove_phi_node (&gsi, true);
+
+  return true;
+}
+
 /* Determine whether applying the 2 permutations (mask1 then mask2)
    gives back one of the input.  */
 
@@ -7073,6 +7171,13 @@ pass_forwprop::execute (function *fun)
 		      changed |= simplify_vector_constructor (&gsi);
 		    else if (code == ARRAY_REF)
 		      changed |= simplify_count_zeroes (&gsi);
+		    else if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS
+			     && TREE_CODE (
+				    gimple_assign_rhs2 (stmt)) == SSA_NAME
+			     && has_single_use (gimple_assign_rhs2 (stmt))
+			     && is_a<gphi*> (SSA_NAME_DEF_STMT (
+						gimple_assign_rhs2 (stmt))))
+		      changed |= simplify_phi_result_movdiv (stmt, code);
 		    break;
 		  }
 
