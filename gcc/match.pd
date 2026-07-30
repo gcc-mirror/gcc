@@ -8296,7 +8296,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* (X & C) op (Y & C) into (X ^ Y) & C op 0.  */
  (simplify
   (cmp (bit_and:cs @0 @2) (bit_and:cs @1 @2))
-  (cmp (bit_and (bit_xor @0 @1) @2) { build_zero_cst (TREE_TYPE (@2)); })))
+  (cmp (bit_and (bit_xor @0 @1) @2)
+       { build_zero_cst (TREE_TYPE (@2)); }))
+
+ /* (X | C) op (Y | C) into (X ^ Y) & ~C op 0, the dual of the rule above.
+    The two values agree on the bits C forces, so only the bits outside C
+    can differ.  */
+ (simplify
+  (cmp (bit_ior:cs @0 @2) (bit_ior:cs @1 @2))
+  (cmp (bit_and (bit_xor @0 @1) (bit_not! @2))
+       { build_zero_cst (TREE_TYPE (@2)); })))
 
 /* (X < 0) != (Y < 0) into (X ^ Y) < 0.
    (X >= 0) != (Y >= 0) into (X ^ Y) < 0.
