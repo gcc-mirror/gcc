@@ -9652,7 +9652,11 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 
   if (dump_enabled_p ())
     {
-      dump_printf_loc (MSG_NOTE, vect_location, "Costing subgraph: \n");
+      dump_printf_loc (MSG_NOTE, vect_location, "Costing subgraph:\n");
+      FOR_EACH_VEC_ELT (slp_instances, i, instance)
+	dump_printf_loc (MSG_NOTE, vect_location, "   entry instance %p -> "
+			 "node %p\n", (void *)instance,
+			 (void *)SLP_INSTANCE_TREE (instance));
       hash_set<slp_tree> visited;
       FOR_EACH_VEC_ELT (slp_instances, i, instance)
 	vect_print_slp_graph (MSG_NOTE, vect_location,
