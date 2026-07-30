@@ -144,22 +144,31 @@ along with GCC; see the file COPYING3.  If not see
 /* Saturation sub for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
  (match (unsigned_integer_sat_sub @0 @1)
-  /* SAT_U_SUB = X > Y ? X - Y : 0  */
-  (cond^ (gt @0 @1) (minus @0 @1) integer_zerop)
+  /* SAT_U_SUB = X > Y ? X - Y : 0, and the commuted comparison.  */
+  (cond^ (gt:c @0 @1) (minus @0 @1) integer_zerop)
   (if (types_match (type, @0, @1))))
  (match (unsigned_integer_sat_sub @0 @1)
-  /* SAT_U_SUB = X >= Y ? X - Y : 0  */
-  (cond^ (ge @0 @1) (convert? (minus (convert1? @0) (convert1? @1)))
+  /* SAT_U_SUB = X >= Y ? X - Y : 0, and the commuted comparison.  */
+  (cond^ (ge:c @0 @1) (convert? (minus (convert1? @0) (convert1? @1)))
 		    integer_zerop)
   (if (TYPE_UNSIGNED (TREE_TYPE (@0)) && types_match (@0, @1))))
  (match (unsigned_integer_sat_sub @0 @1)
-  /* SAT_U_SUB = (X - Y) * (X > Y)  */
-  (mult:c (minus @0 @1) (convert (gt @0 @1)))
+  /* SAT_U_SUB = (X - Y) * (X > Y), and the commuted comparison.  */
+  (mult:c (minus @0 @1) (convert (gt:c @0 @1)))
   (if (types_match (type, @0, @1))))
  (match (unsigned_integer_sat_sub @0 @1)
-  /* SAT_U_SUB = (X - Y) * (X >= Y)  */
-  (mult:c (minus @0 @1) (convert (ge @0 @1)))
+  /* SAT_U_SUB = (X - Y) * (X >= Y), and the commuted comparison.  */
+  (mult:c (minus @0 @1) (convert (ge:c @0 @1)))
   (if (types_match (type, @0, @1))))
+ /* A source with two returns can keep zero on the taken arm.  Accept a
+    commuted comparison in this form too.  */
+ (match (unsigned_integer_sat_sub @0 @1)
+  (cond^ (lt:c @0 @1) integer_zerop (minus @0 @1))
+  (if (types_match (type, @0, @1))))
+ (match (unsigned_integer_sat_sub @0 @1)
+  (cond^ (le:c @0 @1) integer_zerop
+	 (convert? (minus (convert1? @0) (convert1? @1))))
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0)) && types_match (@0, @1))))
  /* The wrapped difference exceeds the minuend exactly when the subtraction
     borrows, so a source that names the difference and then tests it against
     the minuend is a saturating subtract.  */
