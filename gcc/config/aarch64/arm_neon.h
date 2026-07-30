@@ -12111,111 +12111,6 @@ vmlsq_laneq_u32 (uint32x4_t __a, uint32x4_t __b,
   return (__a - (__b * __aarch64_vget_lane_any (__c, __lane)));
 }
 
-/* vneg  */
-
-__extension__ extern __inline float32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vneg_f32 (float32x2_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline float64x1_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vneg_f64 (float64x1_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline int8x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vneg_s8 (int8x8_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline int16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vneg_s16 (int16x4_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline int32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vneg_s32 (int32x2_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline int64x1_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vneg_s64 (int64x1_t __a)
-{
-  return -__a;
-}
-
-/* According to the ACLE, the negative of the minimum (signed)
-   value is itself.  This leads to a semantics mismatch, as this is
-   undefined behaviour in C.  The value range predictor is not
-   aware that the negation of a negative number can still be negative
-   and it may try to fold the expression.  See the test in
-   gcc.target/aarch64/vnegd_s64.c for an example.
-
-   The cast below tricks the value range predictor to include
-   INT64_MIN in the range it computes.  So for x in the range
-   [INT64_MIN, y] the range prediction after vnegd_s64 (x) will
-   be ~[INT64_MIN + 1, y].  */
-
-__extension__ extern __inline int64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vnegd_s64 (int64_t __a)
-{
-  return - (uint64_t) __a;
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vnegq_f32 (float32x4_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline float64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vnegq_f64 (float64x2_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vnegq_s8 (int8x16_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vnegq_s16 (int16x8_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vnegq_s32 (int32x4_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vnegq_s64 (int64x2_t __a)
-{
-  return -__a;
-}
-
 /* vpadd  */
 
 __extension__ extern __inline float32x2_t
@@ -17974,20 +17869,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcvtpq_u16_f16 (float16x8_t __a)
 {
   return __builtin_aarch64_lceiluv8hfv8hi_us (__a);
-}
-
-__extension__ extern __inline float16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vneg_f16 (float16x4_t __a)
-{
-  return -__a;
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vnegq_f16 (float16x8_t __a)
-{
-  return -__a;
 }
 
 __extension__ extern __inline float16x4_t

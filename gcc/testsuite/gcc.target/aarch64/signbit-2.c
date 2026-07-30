@@ -33,4 +33,4 @@ int8x8_t foo6 (int8x8_t a)
   return vshr_n_s8 (vneg_s8 (a), 7);
 }
 
-/* { dg-final { scan-assembler-times {\tcmgt\t} 6 } } */
+/* { dg-final { scan-assembler-times {\tcmlt\t} 6 } } */

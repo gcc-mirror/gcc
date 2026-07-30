@@ -94,6 +94,13 @@ DEF_NEON_FUNCTION (vmuld_laneq, neon_mul, ("s0,s0,Q0,ss32", lane<2>))
 // Division
 DEF_NEON_FUNCTION (vdiv,  sd_float, ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vdivq, sd_float, ("Q0,Q0,Q0"))
+
+// Negation
+DEF_NEON_FUNCTION (vnegd, d_signed,   ("s0,s0"))
+DEF_NEON_FUNCTION (vneg,  all_signed, ("D0,D0"))
+DEF_NEON_FUNCTION (vnegq, all_signed, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vneg,  sd_float,   ("D0,D0"))
+DEF_NEON_FUNCTION (vnegq, sd_float,   ("Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
 // Lanewise arithmetic (FP16)
@@ -121,6 +128,10 @@ DEF_NEON_FUNCTION (vmulh_laneq, h_float, ("s0,s0,Q0,ss32", lane<2>))
 // Division
 DEF_NEON_FUNCTION (vdiv,  h_float, ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vdivq, h_float, ("Q0,Q0,Q0"))
+
+// Negation
+DEF_NEON_FUNCTION (vneg,  h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vnegq, h_float, ("Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
 // Saturating arithmetic

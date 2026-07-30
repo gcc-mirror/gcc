@@ -1453,6 +1453,10 @@ function_expander::result_mode () const
 #define TYPES_d_float(S, D, T) \
   S (f64)
 
+/* _s64.  */
+#define TYPES_d_signed(S, D, T) \
+  S (s64)
+
 /* _u64.  */
 #define TYPES_d_unsigned(S, D, T) \
   S (u64)
@@ -2140,6 +2144,7 @@ DEF_SVE_TYPES_ARRAY (sd_integer);
 DEF_SVE_TYPES_ARRAY (sd_data);
 DEF_SVE_TYPES_ARRAY (all_float_and_sd_integer);
 DEF_SVE_TYPES_ARRAY (d_float);
+DEF_SVE_TYPES_ARRAY (d_signed);
 DEF_SVE_TYPES_ARRAY (d_unsigned);
 DEF_SVE_TYPES_ARRAY (d_integer);
 DEF_SVE_TYPES_ARRAY (d_data);
