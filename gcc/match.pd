@@ -10137,10 +10137,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #endif
 
 /* PARITY simplifications.  */
-/* parity(~X) is parity(X).  */
+/* parity(~X) is parity(X) for even precision and parity(X) ^ 1 otherwise.  */
 (simplify
   (PARITY (bit_not @0))
-  (PARITY @0))
+  (if ((element_precision (TREE_TYPE (@0)) & 1) == 0)
+   (PARITY @0)
+   (bit_xor (PARITY:type @0) { build_one_cst (type); })))
 
 /* parity(bswap(x)) is parity(x).  */
 (for parity (PARITY)
