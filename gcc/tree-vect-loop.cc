@@ -10366,7 +10366,6 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 
   /* Get the correct slp vectorized stmt.  */
   tree vec_lhs = SLP_TREE_VEC_DEFS (slp_node)[vec_entry];
-  gimple *vec_stmt = SSA_NAME_DEF_STMT (vec_lhs);
 
   /* In case we need to early break vectorize also get the first stmt.  */
   tree vec_lhs0 = SLP_TREE_VEC_DEFS (slp_node)[0];
@@ -10454,7 +10453,10 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
       if (TREE_CODE (new_tree) == SSA_NAME
 	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree) = 1;
-      if (is_a <gphi *> (vec_stmt))
+      gimple *vec_stmt = SSA_NAME_DEF_STMT (vec_lhs);
+      if (TREE_CODE (vec_lhs) != SSA_NAME || SSA_NAME_IS_DEFAULT_DEF (vec_lhs))
+	vinfo->insert_seq_on_entry (stmt_info, stmts);
+      else if (is_a <gphi *> (vec_stmt))
 	{
 	  gimple_stmt_iterator si = gsi_after_labels (gimple_bb (vec_stmt));
 	  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
@@ -10505,6 +10507,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 		edge e;
 		if (TREE_CODE (new_tree) == SSA_NAME
 		    && !SSA_NAME_IS_DEFAULT_DEF (new_tree)
+		    && TREE_CODE (vec_lhs) == SSA_NAME
+		    && !SSA_NAME_IS_DEFAULT_DEF (vec_lhs)
 		    && (gimple_bb (use_stmt)->loop_father
 			!= gimple_bb (vec_stmt)->loop_father)
 		    /* But a replacement in a LC PHI is OK.  This happens
