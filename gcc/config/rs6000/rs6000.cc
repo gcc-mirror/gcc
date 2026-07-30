@@ -5301,7 +5301,7 @@ rs6000_cost_data::density_test (loop_vec_info loop_vinfo)
       basic_block bb = bbs[i];
       gimple_stmt_iterator gsi;
 
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (is_gimple_debug (stmt))
