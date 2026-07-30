@@ -3527,6 +3527,7 @@ package body Sem_Attr is
         and then Aname /= Name_Code_Address
         and then Aname /= Name_Result
         and then Aname /= Name_Unchecked_Access
+        and then Aname /= Name_Unrestricted_Access
       then
          --  The prefix must be resolvable by itself, without reference to the
          --  attribute. One case that requires special handling is a prefix
