@@ -465,7 +465,7 @@ find_comparison_dom_walker::before_dom_children (basic_block bb)
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
 	      basic_block dest = e->dest;
-	      if (bitmap_bit_p (df_get_live_in (bb), targetm.flags_regnum)
+	      if (bitmap_bit_p (df_get_live_in (dest), targetm.flags_regnum)
 		  && !single_pred_p (dest))
 		{
 		  last_cmp->missing_uses = true;
