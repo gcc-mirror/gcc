@@ -10758,8 +10758,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* parity(bswap(x)) is parity(x).  */
 (for parity (PARITY)
-  (for bswap (BUILT_IN_BSWAP16 BUILT_IN_BSWAP32
-	      BUILT_IN_BSWAP64 BUILT_IN_BSWAP128)
+  (for bswap (BSWAP BITREVERSE)
     (simplify
       (parity (convert?@0 (bswap:s@1 @2)))
       (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
