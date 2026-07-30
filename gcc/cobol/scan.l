@@ -1987,6 +1987,7 @@ USE({SPC}FOR)?		{ return USE; }
 
   FUNCTION 			{ yy_push_state(function); return FUNCTION; }
 
+  SECTION{OSPC}/{DOTSEP} { yylval.string = NULL; return SECTION; }
   SECTION{OSPC}[.]+{SPC}/USE[[:space:]]	{ yylval.string = NULL; return SECTION; }
 
   [.]+({SPC}(EJECT|SKIP[123]))*{SPC}EXIT{OSPC}/{DOTSEP} {

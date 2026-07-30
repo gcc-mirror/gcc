@@ -8032,31 +8032,27 @@ section_name:	NAME section_kw '.'
                 ;
 
 section_kw:     SECTION
-/* Dubner commented out this code on 2026-06-28 as part of getting the
-   compiler working on the IBM S390. It was failing in an off-by-one way;
-   the $1 parameter, on the S390, wasn't the section number, but rather the
-   section name.  */
-//                {
-//                  if( $1 && dialect_ok(@1, IbmSectionSegmentW, "SECTION segment") ) {
-//		    cbl_message(@1, IbmSectionSegmentW,
-//                                "SECTION segment %qs was ignored", $1);
-//		    if( *$1 == '-' ) {
-//                      cbl_message(@1, IbmSectionNegE,
-//                                  "SECTION segment %qs is negative", $1);
-//                    } else {
-//                      int sectno;
-//                      sscanf($1, "%d", &sectno);
-//                      if( ! (0 <= sectno && sectno <= 99) ) {
-//                        cbl_message(@1, IbmSectionRangeE,
-//                                     "SECTION segment %qs must be 0-99", $1);
-//		      } 
-//                    }
-//		  }
-//                }
-//        |       SECTION error
-//                {
-//                  error_msg(@1, "unknown section qualifier");
-//                }
+               {
+                 if( $1 && dialect_ok(@1, IbmSectionSegmentW, "SECTION segment") ) {
+		    cbl_message(@1, IbmSectionSegmentW,
+                               "SECTION segment %qs was ignored", $1);
+		    if( *$1 == '-' ) {
+                     cbl_message(@1, IbmSectionNegE,
+                                 "SECTION segment %qs is negative", $1);
+                   } else {
+                     int sectno;
+                     sscanf($1, "%d", &sectno);
+                     if( ! (0 <= sectno && sectno <= 99) ) {
+                       cbl_message(@1, IbmSectionRangeE,
+                                    "SECTION segment %qs must be 0-99", $1);
+		      } 
+                   }
+		  }
+               }
+       |       SECTION error
+               {
+                 error_msg(@1, "unknown section qualifier");
+               }
                 ;
 
 stop:           STOP RUN exit_with
