@@ -138,8 +138,12 @@ along with GCC; see the file COPYING3.  If not see
      unsigned widen_precision = TYPE_PRECISION (TREE_TYPE (@2));
      wide_int max = wi::mask (precision, false, widen_precision);
      wide_int c4 = wi::to_wide (@4);
+     /* A source written with < rather than <= puts MAX - 1 in the compare.
+	The sum equal to MAX then takes the other arm, which is also MAX.  */
+     wide_int c4_add_1 = wi::add (c4, wi::uhwi (1, widen_precision));
     }
-    (if (wi::eq_p (c4, max) && widen_precision > precision))))))
+    (if ((wi::eq_p (c4, max) || wi::eq_p (c4_add_1, max))
+	 && widen_precision > precision))))))
 
 /* Saturation sub for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
