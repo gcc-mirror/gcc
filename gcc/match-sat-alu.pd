@@ -69,6 +69,13 @@ along with GCC; see the file COPYING3.  If not see
     }
     (if (wi::eq_p (max, sum))))))
  (match (unsigned_integer_sat_add @0 @1)
+  /* SAT_U_ADD = X + MIN (~X, Y).  ~X is MAX - X, so the MIN caps Y at the
+     largest addend that does not overflow.  The MIN has to be single use:
+     while it stays live the saturating add is computed beside it instead of
+     replacing it, which costs an instruction.  */
+  (plus:c (min:c@2 (bit_not @0) @1) @0)
+  (if (single_use (@2))))
+ (match (unsigned_integer_sat_add @0 @1)
   /* SUM = ADD_OVERFLOW (X, Y)
      SAT_U_ADD = REALPART (SUM) | -IMAGPART (SUM)   */
   (bit_ior:c (realpart (IFN_ADD_OVERFLOW@2 @0 @1)) (negate (imagpart @2)))
