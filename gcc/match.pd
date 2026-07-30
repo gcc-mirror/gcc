@@ -5106,6 +5106,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			- TYPE_PRECISION (TREE_TYPE (@2)))))
   (bit_and (convert @0) (lshift { build_minus_one_cst (type); } @1))))
 
+/* (X op Y) >> C -> X >> C when every set bit of Y lies below bit C.
+   Neither an inclusive nor an exclusive or can carry into the bits the
+   shift keeps, so Y contributes nothing to the result.  */
+(for op (bit_ior bit_xor)
+ (simplify
+  (rshift (op @0 @1) INTEGER_CST@2)
+  (if (INTEGRAL_TYPE_P (type)
+       && tree_fits_uhwi_p (@2)
+       && tree_to_uhwi (@2) < TYPE_PRECISION (type))
+   (with { wide_int mask = wi::mask (tree_to_uhwi (@2), true,
+				     TYPE_PRECISION (type)); }
+    (if ((tree_nonzero_bits (@1) & mask) == 0)
+     (rshift @0 @2)
+     (if ((tree_nonzero_bits (@0) & mask) == 0)
+      (rshift @1 @2)))))))
 #if GIMPLE
 /* (X >> C1) << (C1 + C2) -> X << C2 if the low C1 bits of X are zero.  */
 (simplify
