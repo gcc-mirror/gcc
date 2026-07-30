@@ -1,3 +1,105 @@
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126446
+	* gimple-isel.cc (gimple_expand_vec_set_extract_expr): Punt if
+	idx doesn't fit into poly_uint64 but is poly_int_tree_p.  Use
+	known_ge rather than known_gt for out of bounds check.  Formatting
+	fixes.
+
+2026-07-29  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/126276
+	* config/cris/cris.md (*btst<BWD><ZnNNZSET): Handle BWD modes,
+	not just SImode.
+	(*cbranch<mode>4_btstrq1_<CC>): Likewise.
+	(*cbranch<mode>4_btstqb0_<CC>): Likewise.
+
+2026-07-29  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/126434
+	* avoid-store-forwarding.cc (process_store_forwarding): Unshare the
+	load destination when building the re-extension move.
+
+2026-07-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126465
+	* match.pd: Fix FMS patterns.
+
+2026-07-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/126415
+	PR tree-optimization/124545
+	* match.pd ((T)A +- CST -> (T)(A +- CST')): Revert.
+	* tree-ssa-sccvn.cc (ssa_integral_conversion_op): New function.
+	(vn_nary_result_avail_or_insertable_p): New function, split out
+	from ...
+	(visit_nary_op): ... here.  Handle ((T)p) +- X by looking up
+	(p +- X') and converting the result, for X an integer constant
+	that narrows and extends back unchanged or a conversion from
+	the same narrow type.
+
+2026-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126457
+	* tree-vect-loop.cc (vectorizable_reduction): Reject
+	operations where not all operands correspond to a SLP
+	child early.
+
+2026-07-29  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gimplify.cc (gimplify_omp_workshare)
+	[OMP_TARGET && OMP_CLAUSE_DEVICE_TYPE_NOHOST]: Use
+	'build_string_literal'.  Use 'build_int_cst'.
+
+2026-07-29  mengqinggang  <mengqinggang@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_output_dwarf_dtprel):
+	Remove 0x8000.
+
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126446
+	* config/i386/i386-expand.cc (ix86_expand_vector_set): If elt is
+	out of bounds, emit a no-op move.
+
+2026-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126450
+	* config/i386/i386.cc (ix86_spill_register_argument_p): Check
+	the argument-linked memory used to store local variable.
+
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126447
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For
+	ifn calls with large/huge _BitInt (ab) SSA_NAME lhs if they
+	have such (ab) argument too, force it into temporary SSA_NAME
+	for IFN_BSWAP, IFN_BITREVERSE, IFN_UBSAN_CHECK_MUL and, if
+	bitint_big_endian, also for IFN_UBSAN_CHECK_{ADD,SUB}.
+
+2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/gcc-auto-profile: Probe for arm_spe with
+	"perf list pmu" instead of "perf list".
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+
+2026-07-29  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_canonicalize_comparison): Verify op0
+	for an UNSPEC_CC_TO_INT is a register.
+
+2026-07-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.md (*addqi_1<nf_name>): Merge the two
+	preferred_for_speed attributes into one.
+	(*andqi_1<nf_name>): Likewise.
+	(*andqi_2_maybe_si): Likewise.
+	(*<code>qi_1<nf_name>): Likewise.
+	(*notxorqi_1): Likewise.
+	(*one_cmplqi2_1): Likewise.
+	(*ashlqi3_1<nf_name>): Likewise.
+
 2026-07-28  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR tree-optimization/126397

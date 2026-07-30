@@ -1,3 +1,28 @@
+2026-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/126452
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Use LC_ALL_C and
+	match both "Warning" and "warning" in ld output.
+	* configure: Regenerate.
+
+2026-07-29  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/116110
+	* src/c++20/tzdb.cc (time_zone::_M_get_sys_info): Remove
+	ZoneInfo::calc_save invocation and related iterator adjustment.
+	(chrono::reload_tzdb): Calculate save (invoke calc_save) for
+	all infos on all zones.
+
+2026-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122197
+	* include/bits/shared_ptr_base.h (~_Sp_counted_deleter): Disable
+	-Warray-bounds warnings.
+	(_Sp_counted_deleter::_M_dispose): Likewise.
+	(_Sp_counted_ptr_inplace::_M_dispose): Likewise.
+	* testsuite/20_util/shared_ptr/dest/122197-2.cc: New test.
+	* testsuite/20_util/shared_ptr/dest/122197.cc: New test.
+
 2026-07-28  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* testsuite/lib/libstdc++.exp: Load gcc-defs.exp.  Load

@@ -1,3 +1,28 @@
+2026-07-29  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse_ante.h (parser_move_carefully): Use ordinary %s in message.
+
+2026-07-29  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): Add MfSetNumeric and sort alphabetically.
+	* cobol1.cc (cobol_langhook_handle_option): Handle OPT_Wset_numeric.
+	* gcobol.1: Document Wset-numeric option.
+	* lang-specs.h: Add Wset-numeric to specs string.
+	* lang.opt: Add Wset-numeric option.
+	* messages.cc: Add MfSetNumeric to mf and gnu dialects, and sort alphabetically.
+	* parse_ante.h (parser_move_carefully): Report diagnotic per dialect.
+
+2026-07-29  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Report LPAREN token as '(', not ')'.
+	* scan.l: Remove newline exclusion from LPAREN pattern.
+	* scan_ante.h (rsearch): Helper function to ensure c++11 compatibility.
+	(trim_location): Use rsearch function.
+	(is_quote): New inline function to test quotiness.
+	(skip_string): New function to find end of string literal.
+	(is_refmod): Stay in bounds.
+	* util.cc (gcc_location_set): Decrease debug message verbosity.
+
 2026-07-28  James K. Lowden  <jklowden@cobolworx.com>
 
 	* parse_ante.h (set_real_from_capacity): Use symbol_field_capacity_set().

@@ -1,3 +1,75 @@
+2026-07-29  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/126434
+	* gcc.dg/pr126434.c: New test.
+
+2026-07-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126465
+	* gcc.target/aarch64/sve/cond_fma.c: New test.
+	* gcc.target/aarch64/sve/cond_fma_neg_addend.c: New test.
+	* gcc.target/aarch64/sve/cond_fms.c: New test.
+	* gcc.target/aarch64/sve/cond_fnma.c: New test.
+	* gcc.target/aarch64/sve/cond_fnms.c: New test.
+
+2026-07-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/126415
+	PR tree-optimization/124545
+	* gcc.dg/torture/pr126415.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-113.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-114.c: New testcase.
+	* gcc.dg/pr124545.c: Remove the ilp32 xfail.
+
+2026-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126457
+	* gcc.dg/vect/vect-pr126457.c: New testcase.
+
+2026-07-29  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gfortran.dg/gomp/spatial-dimensions-5.f90: Scan 'gimple' dumps.
+	'message("fourth")' has 'len:6'.
+
+2026-07-29  zhaozhou  <zhaozhou@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-vec-construct-opt.c:
+	Adjust testcase.
+
+2026-07-29  mengqinggang  <mengqinggang@loongson.cn>
+
+	* gcc.target/loongarch/dtprel.c: New test.
+
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126446
+	* gcc.target/i386/avx2-pr126446.c: New test.
+
+2026-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126450
+	* gcc.target/i386/pr126450-1.c: New test.
+	* gcc.target/i386/pr126450-2.c: Likewise.
+
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126447
+	* gcc.dg/ubsan/bitint-5.c: New test.
+	* gcc.dg/bitint-138.c: New test.
+
+2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gfortran.target/aarch64/pr122408_1.f90: Update the fcmla
+	rotation counts.
+
+2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* lib/profopt.exp: Likewise.
+
+2026-07-29  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/apx-ndd-mem-tune.c: New test.
+
 2026-07-28  Reshma Roy  <Reshma.Roy@amd.com>
 
 	* gcc.target/i386/pr126382.c: New test.

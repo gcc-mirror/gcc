@@ -1,3 +1,23 @@
+2026-07-29  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c/target-device-type-1.c: Adjust.
+	* testsuite/libgomp.c/target-device-type-2.c: Likewise.
+
+2026-07-29  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C:
+	Simplify offload tree dump scanning.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-2.C:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/target-is-initial-host-2.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/target-is-initial-host.c:
+	Likewise.
+	* testsuite/libgomp.fortran/target-is-initial-host-2.f90:
+	Likewise.
+	* testsuite/libgomp.fortran/target-is-initial-host.f: Likewise.
+	* testsuite/libgomp.fortran/target-is-initial-host.f90: Likewise.
+
 2026-07-22  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* target.c (gomp_target_init): Fix OpenMP reverse offload
