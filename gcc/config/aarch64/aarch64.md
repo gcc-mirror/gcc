@@ -4554,7 +4554,8 @@
 	  (plus:GPI (match_operand:GPI 1 "register_operand" "r")
 		    (match_operand:GPI 2 "register_operand" "r"))
 	  (match_dup ovf_commutate)))
-   (clobber (match_scratch:GPI 3 "=r"))]
+   (clobber (match_scratch:GPI 3 "=r"))
+   (clobber (reg:CC CC_REGNUM))]
   "!TARGET_CSSC"
   "#"
   "&& 1"
@@ -4584,7 +4585,8 @@
 	  (minus:GPI (match_operand:GPI 1 "register_operand" "r")
 		     (match_operand:GPI 2 "register_operand" "r"))
 	  (match_dup 1)))
-   (clobber (match_scratch:GPI 3 "=r"))]
+   (clobber (match_scratch:GPI 3 "=r"))
+   (clobber (reg:CC CC_REGNUM))]
   "!TARGET_CSSC"
   "#"
   "&& 1"
