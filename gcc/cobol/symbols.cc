@@ -762,6 +762,11 @@ symbol_redefines( const struct cbl_field_t *field ) {
   return NULL;
 }
 
+/*
+ * Find the first REDEFINES in a chain of redefines, which may be the input
+ * field itself.  ISO disallows a chain; one may not redefine something that
+ * redefines something else.  That is allowed under -dialect mf.
+ */
 cbl_field_t *
 symbol_redefines_root( const struct cbl_field_t *field ) {
   cbl_field_t *root = const_cast<cbl_field_t *>(field);
@@ -769,13 +774,6 @@ symbol_redefines_root( const struct cbl_field_t *field ) {
   while( (r = symbol_redefines(root)) != NULL )
     root = r;
   return root;
-}
-
-static cbl_field_t *
-symbol_explicitly_redefines( const cbl_field_t *field ) {
-  auto f = symbol_redefines(field);
-  if( f && is_record_area(f) ) return NULL;
-  return f;
 }
 
 static uint32_t
@@ -1892,13 +1890,7 @@ symbols_update( size_t first, bool parsed_ok ) {
       }
     }
 
-    bool size_invalid = field->data.memsize > 0 && symbol_redefines(field);
-    if( size_invalid ) { // redefine of record area is ok
-      const cbl_field_t * redefined = symbol_redefines(field);
-      size_invalid = ! is_record_area(redefined);
-    }
-
-    if( !field->is_valid() || size_invalid )
+    if( !field->is_valid() )
     {
       size_t isym = p - symbols_begin();
       symbols_dump(symbols.first_program, true);
@@ -1950,7 +1942,6 @@ symbols_update( size_t first, bool parsed_ok ) {
               (fmt_size_t)symbol_index(p), field_str(cbl_field_of(p)) );
     }
     assert(field->data.memsize == 0 || field_size(field) <= field_memsize(field));
-    assert( !(field->data.memsize > 0 && symbol_explicitly_redefines(field)) );
   }
 
   // A shared record area has no 01 child because that child redefines its parent.
