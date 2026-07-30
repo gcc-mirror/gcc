@@ -131,6 +131,7 @@ jit.serial = $(LIBGCCJIT_FILENAME)
 .PHONY: jit
 
 JIT_OBJS = attribs.o \
+	attr-handlers.o \
 	jit/dummy-frontend.o \
 	jit/libgccjit.o \
 	jit/jit-logging.o \
