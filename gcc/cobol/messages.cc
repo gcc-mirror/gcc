@@ -154,6 +154,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { MfLevel_1_Occurs, "-Wlevel-1-occurs", diagnostics::kind::error, dialect_mf_gnu },
   { MfMoveIndex, "-Wmove-index", diagnostics::kind::error, dialect_gnu_e },
   { MfMovePointer, "-Wmove-pointer", diagnostics::kind::error, dialect_mf_gnu },
+  { MfRedefinesFirst, "-Wredefines-first", diagnostics::kind::error, dialect_mf_gnu },
   { MfReturningNum, "-Wreturning-number", diagnostics::kind::error, dialect_mf_gnu },
   { MfSetNumeric, "-Wset-numeric", diagnostics::kind::error, dialect_mf_gnu },
   { MfTrailing, "-Winspect-trailing", diagnostics::kind::error, dialect_mf_gnu },
@@ -404,8 +405,14 @@ dialect_ok( const cbl_loc_t& loc, cbl_diag_id_t id, const char term[], bool ok )
     if( !ok ) return true; // current dialect correctly does not match the feature
   }
 
-  cbl_message(loc, id, "%qs %s %<-dialect %s%>",
-              term, verb, cbl_dialect_str(diag->dialect));
+  if( term[0] == '-' ) {
+    term++; // do not quote
+    cbl_message(loc, id, "%s %s %<-dialect %s%>",
+                term, verb, cbl_dialect_str(diag->dialect));
+  } else {
+    cbl_message(loc, id, "%qs %s %<-dialect %s%>",
+                term, verb, cbl_dialect_str(diag->dialect));
+  }
   return false;
 }
 

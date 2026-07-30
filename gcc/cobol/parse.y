@@ -4550,7 +4550,7 @@ data_clauses:   data_clause
                 data_clause_t clause = data_clause_t($1);
                 proto_field.add_clause(clause);
                 }
-        |       data_clauses data_clause {
+        |       data_clauses[clauses] data_clause {
                   const char *clause = "data";
                   switch($2) {
                   case occurs_clause_e:     clause = "OCCURS";    break;
@@ -4575,16 +4575,12 @@ data_clauses:   data_clause
                     YYERROR;
                   }
 
-		  // We could be more judicious. We could clear the map when
-		  // the first clause is encountered, and e.g. set the location
-		  // to just the VALUE string, not the whole clause.  As of now
-		  // the map isn't used, though.
                   data_clause_locations[data_clause_t($2)] = @data_clause;
 
-                  if( $data_clause == redefines_clause_e ) {
-                    error_msg(@2, "REDEFINES must appear "
-                             "immediately after LEVEL and NAME");
-                    YYERROR;
+                  if( $clauses && $data_clause == redefines_clause_e ) {
+                      dialect_ok(@2, MfRedefinesFirst,
+                                 "-REDEFINES must appear "
+                                 "immediately after LEVEL and NAME");
                   }
                   cbl_field_t *field = current_field();
                   const int globex = (global_e | external_e);

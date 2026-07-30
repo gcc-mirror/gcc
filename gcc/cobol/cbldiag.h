@@ -203,6 +203,7 @@ enum cbl_diag_id_t : uint64_t {
   MfAnyLength, 
   MfMoveIndex, 
   MfMovePointer, 
+  MfRedefinesFirst,
   MfReturningNum,
   MfSetNumeric,
   MfTrailing,

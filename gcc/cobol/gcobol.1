@@ -80,6 +80,7 @@
 .Op Fl Wno-procedure-not-found
 .Op Fl Wno-procedure-pointer
 .Op Fl Wno-replace-error
+.Op Fl Wno-redefines-first
 .Op Fl Wno-returning-number
 .Op Fl Wno-segment-error
 .Op Fl Wno-segment-negative
@@ -640,9 +641,12 @@ Warn if CDF defines Level 78 constant.
 .It Fl Wno-move-index
 Warn if MOVE INDEX is used.
 .It Fl Wno-move-pointer
-Warn if MOVE POINTER is used.
+Warn if
+MOVE POINTER is used.
 .It Fl Wno-set-numeric
 Warn if SET is used with NUMERIC target.
+.It Fl Wno-redefines-first
+Warn if REDEFINES does not appear immediately after NAME.
 .It Fl Wno-returning-number
 Warn if RETURNING <number> is used.
 .It Fl Wno-usage-typename
