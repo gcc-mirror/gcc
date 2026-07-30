@@ -11258,7 +11258,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& compare_tree_int (@1, 0x55555555) == 0
 	&& compare_tree_int (@3, 0x33333333) == 0
 	&& compare_tree_int (@5, 0x0F0F0F0F) == 0
-	&& compare_tree_int (@5, 0x0F0F0F0F) == 0)
+	&& compare_tree_int (@7, 0x0000003F) == 0)
      (if (direct_internal_fn_supported_p (IFN_POPCOUNT, type,
 					  OPTIMIZE_FOR_BOTH))
 	(convert (IFN_POPCOUNT:type @0))))))
