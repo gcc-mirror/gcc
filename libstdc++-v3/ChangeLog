@@ -1,3 +1,80 @@
+2026-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122197
+	* include/bits/shared_ptr_base.h (~_Sp_counted_deleter): Disable
+	-Warray-bounds warnings.
+	(_Sp_counted_deleter::_M_dispose): Likewise.
+	(_Sp_counted_ptr_inplace::_M_dispose): Likewise.
+	* testsuite/20_util/shared_ptr/dest/122197-2.cc: New test.
+	* testsuite/20_util/shared_ptr/dest/122197.cc: New test.
+
+2026-07-29  David Faure  <david.faure@kdab.com>
+
+	Backported from master:
+	2026-07-28  David Faure  <david.faure@kdab.com>
+
+	* python/libstdcxx/v6/printers.py (StdMapPrinter.num_children):
+	Count two children per element.
+	(Tr1UnorderedMapPrinter.num_children): Likewise.
+
+2026-07-29  David Faure  <david.faure@kdab.com>
+
+	Backported from master:
+	2026-07-28  David Faure  <david.faure@kdab.com>
+
+	* python/libstdcxx/v6/printers.py (StdMapPrinter.num_children):
+	Fix parameter name.
+	(StdSetPrinter.num_children): Likewise.
+
+2026-07-29  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-07-20  Tomasz Kamiński  <tkaminsk@redhat.com>
+		    Álvaro Begué  <alvaro.begue@gmail.com>
+
+	PR libstdc++/124854
+	* src/c++20/tzdb.cc (ZoneInfo::save): Define.
+	(time_zone::_M_get_sys_info): Fold initial transition if they
+	occurs in duplicated local time window (merge_window) due move
+	from DST to STD zone.
+	* testsuite/std/time/time_zone/wall_cascade.cc (test_next_year):
+	Test that 1945 Pacific/Auckland transition is properly handled.
+	(test_negative): Adjust test to avoid zone merge.
+	* testsuite/std/time/time_zone/zone_merge.cc: New test.
+
+2026-07-29  Tomasz Kamiński  <tkaminsk@redhat.com>
+	    Álvaro Begué  <alvaro.begue@gmail.com>
+
+	PR libstdc++/116110
+	* src/c++20/tzdb.cc (ZoneInfo::calc_save, ZoneInfo::State): Define.
+	(ZoneInfo::m_expanded): Replaced with m_state.
+	(ZoneInfo::m_pos): Reduce the bit with to 14.
+	(ZoneInfo::m_state): Expands m_expanded with four state enum.
+	(ZoneInfo::ZoneInfo, ZoneInfo::expanded, ZoneInfo::set_abbrev):
+	Replace m_expanded usage with m_state and State::Expanded.
+	(Transitions, find_surrounding_transitions): Extracted from
+	find_active_rule.
+	(find_active_rule): Define overload for local_seconds. Implement
+	both in terms of find_surrounding_transitions.
+	(chrono::reload_tzdb): Calculate save (invoke calc_save) for
+	all infos on all zones.
+	(time_zone::_M_get_sys_info): Define rules as span<const Rules>,
+	and remove the comment.
+	(operator>>(istream&, ZoneInfo&)): Set m_state for UntilPending
+	for UNTIL time using wall time, and SaveKnown for lines without
+	end date. For clarity, set m_save to 0 if daylight is not used.
+	* testsuite/std/time/time_zone/116110.cc (test_apia): Use correct
+	value of the the total offset.
+	* testsuite/std/time/time_zone/pr116110_named.cc: New test.
+	* testsuite/std/time/time_zone/wall_cascade.cc: Add test
+	for last_transition.
+	(cherry picked from commits 020e02fcf281bd24065c8663219a22aba9d0a47d)
+	(4426e08a4fd0d35643d16a14c9e9b81488823a23)
+	(ce285dde2110f453fdbbd89fbb2f85a4d039705d)
+
 2026-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

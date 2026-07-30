@@ -1,3 +1,345 @@
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/builtin-memmove-13.c: Add support for Mach-O.
+	* gcc.target/i386/cf_check-11.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-1.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-13.c: Likewise.
+	* gcc.target/i386/memset-pr120683-10.c: Likewise.
+	* gcc.target/i386/memset-pr120683-20.c: Likewise.
+	* gcc.target/i386/memset-pr120683-21.c: Likewise.
+	* gcc.target/i386/memset-strategy-27.c: Likewise.
+	* gcc.target/i386/opt-comi-1.c: Likewise.
+	* gcc.target/i386/pr111657-1.c: Likewise.
+	* gcc.target/i386/pr122343-1a.c: Likewise.
+	* gcc.target/i386/pr122343-1b.c: Likewise.
+	* gcc.target/i386/pr122343-2a.c: Likewise.
+	* gcc.target/i386/pr122343-2b.c: Likewise.
+	* gcc.target/i386/pr122343-3.c: Likewise.
+	* gcc.target/i386/pr122343-4a.c: Likewise.
+	* gcc.target/i386/pr122343-4b.c: Likewise.
+	* gcc.target/i386/pr122343-5a.c: Likewise.
+	* gcc.target/i386/pr122343-5b.c: Likewise.
+	* gcc.target/i386/pr122343-6a.c: Likewise.
+	* gcc.target/i386/pr122343-6b.c: Likewise.
+	* gcc.target/i386/pr122343-7.c: Likewise.
+	* gcc.target/i386/pr122675-1.c: Likewise.
+	* gcc.target/i386/pr125351.c: Likewise.
+	* gcc.target/i386/pr125355-2.c: Likewise.
+	* gcc.target/i386/pr125355.c: Likewise.
+	* gcc.target/i386/pr92080-17.c: Likewise.
+	* gcc.target/i386/prefetchi-1.c: Likewise.
+	* gcc.target/i386/prefetchi-1b.c: Likewise.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-05-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/builtin-memmove-12.c: Skip for Darwin.
+	* gcc.target/i386/memcpy-pr120683-2.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-3.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-4.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-5.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-6.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-7.c: Likewise.
+	* gcc.target/i386/memset-pr120683-13.c: Likewise.
+	* gcc.target/i386/memset-pr120683-17.c: Likewise.
+	* gcc.target/i386/memset-pr120683-18.c: Likewise.
+	* gcc.target/i386/memset-pr120683-19.c: Likewise.
+	* gcc.target/i386/memset-pr120683-23.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1b.c: Likewise.
+
+2026-07-29  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Backported from master:
+	2026-06-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* lib/gcc-dg.exp (dg-final): Add check_function_bodies options
+	for check-function-bodies directives.
+	* g++.target/i386/cf_check-3.C: Remove explicit
+	{ dg-add-options check_function_bodies }.
+	* g++.target/i386/cf_check-4.C: Likewise.
+	* g++.target/i386/memset-pr101366-1.C: Likewise.
+	* g++.target/i386/memset-pr101366-2.C: Likewise.
+	* g++.target/i386/memset-pr108585-1a.C: Likewise.
+	* g++.target/i386/memset-pr108585-1b.C: Likewise.
+	* g++.target/i386/memset-pr118276-1a.C: Likewise.
+	* g++.target/i386/memset-pr118276-1b.C: Likewise.
+	* g++.target/i386/memset-pr118276-1c.C: Likewise.
+	* gcc.target/i386/20040112-1.c: Likewise.
+	* gcc.target/i386/builtin-copysign-2.c: Likewise.
+	* gcc.target/i386/builtin-copysign-3.c: Likewise.
+	* gcc.target/i386/builtin-copysign-4.c: Likewise.
+	* gcc.target/i386/builtin-copysign-5.c: Likewise.
+	* gcc.target/i386/builtin-copysign-6.c: Likewise.
+	* gcc.target/i386/builtin-copysign-7.c: Likewise.
+	* gcc.target/i386/builtin-copysign-8a.c: Likewise.
+	* gcc.target/i386/builtin-copysign-8b.c: Likewise.
+	* gcc.target/i386/builtin-fabs-1.c: Likewise.
+	* gcc.target/i386/builtin-memmove-10.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-12.c: Likewise.
+	* gcc.target/i386/builtin-memmove-13.c: Likewise.
+	* gcc.target/i386/builtin-memmove-14.c: Likewise.
+	* gcc.target/i386/builtin-memmove-15.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1d.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2d.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-6.c: Likewise.
+	* gcc.target/i386/builtin-memmove-7.c: Likewise.
+	* gcc.target/i386/builtin-memmove-8.c: Likewise.
+	* gcc.target/i386/builtin-memmove-9.c: Likewise.
+	* gcc.target/i386/cf_check-11.c: Likewise.
+	* gcc.target/i386/cf_check-7.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-1.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-2.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-3.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-4.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-5.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-6.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-7.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-12.c: Likewise.
+	* gcc.target/i386/memset-pr120683-1.c: Likewise.
+	* gcc.target/i386/memset-pr120683-10.c: Likewise.
+	* gcc.target/i386/memset-pr120683-11.c: Likewise.
+	* gcc.target/i386/memset-pr120683-12.c: Likewise.
+	* gcc.target/i386/memset-pr120683-13.c: Likewise.
+	* gcc.target/i386/memset-pr120683-14.c: Likewise.
+	* gcc.target/i386/memset-pr120683-15.c: Likewise.
+	* gcc.target/i386/memset-pr120683-16.c: Likewise.
+	* gcc.target/i386/memset-pr120683-17.c: Likewise.
+	* gcc.target/i386/memset-pr120683-18.c: Likewise.
+	* gcc.target/i386/memset-pr120683-19.c: Likewise.
+	* gcc.target/i386/memset-pr120683-2.c: Likewise.
+	* gcc.target/i386/memset-pr120683-20.c: Likewise.
+	* gcc.target/i386/memset-pr120683-21.c: Likewise.
+	* gcc.target/i386/memset-pr120683-22.c: Likewise.
+	* gcc.target/i386/memset-pr120683-23.c: Likewise.
+	* gcc.target/i386/memset-pr120683-3.c: Likewise.
+	* gcc.target/i386/memset-pr120683-4.c: Likewise.
+	* gcc.target/i386/memset-pr120683-5.c: Likewise.
+	* gcc.target/i386/memset-pr120683-6.c: Likewise.
+	* gcc.target/i386/memset-pr120683-7.c: Likewise.
+	* gcc.target/i386/memset-pr120683-8.c: Likewise.
+	* gcc.target/i386/memset-pr120683-9.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1a.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1b.c: Likewise.
+	* gcc.target/i386/memset-strategy-10.c: Likewise.
+	* gcc.target/i386/memset-strategy-13.c: Likewise.
+	* gcc.target/i386/memset-strategy-25.c: Likewise.
+	* gcc.target/i386/memset-strategy-28.c: Likewise.
+	* gcc.target/i386/memset-strategy-29.c: Likewise.
+	* gcc.target/i386/memset-strategy-30.c: Likewise.
+	* gcc.target/i386/pr111673.c: Likewise.
+	* gcc.target/i386/pr120936-1.c: Likewise.
+	* gcc.target/i386/pr120936-11.c: Likewise.
+	* gcc.target/i386/pr120936-2.c: Likewise.
+	* gcc.target/i386/pr120936-4.c: Likewise.
+	* gcc.target/i386/pr120936-5.c: Likewise.
+	* gcc.target/i386/pr120936-9.c: Likewise.
+	* gcc.target/i386/pr122343-1a.c: Likewise.
+	* gcc.target/i386/pr122343-1b.c: Likewise.
+	* gcc.target/i386/pr122343-2a.c: Likewise.
+	* gcc.target/i386/pr122343-2b.c: Likewise.
+	* gcc.target/i386/pr122343-3.c: Likewise.
+	* gcc.target/i386/pr122343-4a.c: Likewise.
+	* gcc.target/i386/pr122343-4b.c: Likewise.
+	* gcc.target/i386/pr122343-5a.c: Likewise.
+	* gcc.target/i386/pr122343-5b.c: Likewise.
+	* gcc.target/i386/pr122343-6a.c: Likewise.
+	* gcc.target/i386/pr122343-6b.c: Likewise.
+	* gcc.target/i386/pr122343-7.c: Likewise.
+	* gcc.target/i386/pr122675-1.c: Likewise.
+	* gcc.target/i386/pr125355-2.c: Likewise.
+	* gcc.target/i386/pr125355.c: Likewise.
+	* gcc.target/i386/pr82142a.c: Likewise.
+	* gcc.target/i386/pr82142b.c: Likewise.
+	* gcc.target/i386/pr92080-17.c: Likewise.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.target/i386/cf_check-4.C: Support Darwin ABI/Mach-O syntax.
+	* g++.target/i386/memset-pr108585-1a.C: Likewise.
+	* g++.target/i386/memset-pr108585-1b.C: Likewise.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/lto/toplevel-extended-asm-2_0.c: Fix Mach-O syntax.
+	* gcc.dg/lto/toplevel-extended-asm-2_1.c: Likewise.
+	* gcc.dg/lto/toplevel-simple-asm-2_1.c: Fix Mach-O syntax.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/scanasm.exp (target_regex_skip_line,
+	target_regex_verbatim_line, target_substitute_func_regex): New.
+	(check-function-bodies): use the customisation points.
+	(configure_check-function-bodies): Populate the new customisation
+	points for Darwin/Mach-O.
+	* lib/target-supports.exp
+	(add_options_for_check_function_bodies): Add Darwin criteria.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp: Add a check for Mach-O object file
+	format.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/debug/dwarf2/dwarf2-macro.c: Skip for Darwin23+.
+	* gcc.dg/debug/dwarf2/dwarf2-macro2.c: Likewise.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR testsuite/112728
+	* lib/scanasm.exp (remove_lto_sections): New.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/modules/clone-4_b.C: Account for missing strong symbol
+	aliases.
+	* g++.dg/template/explicit-instantiation8.C: Likewise.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/tls-attr-common.c: Add emulated TLS
+	matches.
+	* c-c++-common/tls-attr-le-pic.c: Likewise.
+	* c-c++-common/tls-attr-le-pie.c: Likewise.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/reflect/visibility1.C: Use scan-weak/scan-not-weak to
+	improve portability.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/pr97172-2.c: Allow undefined symbols at link-time.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/debug/dwarf2/dwarf2-macro.c: XFAIL for Darwin23+.
+	* gcc.dg/debug/dwarf2/dwarf2-macro2.c: Likewise.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.misc-tests/outputs.exp: Pass -w to linker invocations
+	when ld64 is in use.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/asan/deep-thread-stack-1.C: Omit duplicate libraries
+	for Darwin.
+
+2026-07-29  Reshma Roy  <Reshma.Roy@amd.com>
+
+	Backported from master:
+	2026-07-28  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* gcc.target/i386/pr126382.c: New test.
+
+2026-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126450
+	* gcc.target/i386/pr126450-1.c: New test.
+	* gcc.target/i386/pr126450-2.c: Likewise.
+
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126446
+	* gcc.target/i386/avx2-pr126446.c: New test.
+
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126447
+	* gcc.dg/ubsan/bitint-5.c: New test.
+
+2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* gcc.c-torture/execute/pr126405-3.c: New test.
+
+2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* gcc.c-torture/execute/pr126405.c: New test.
+	* gcc.c-torture/execute/pr126405-2.c: New test.
+	* gcc.dg/pr126405-1.c: New test.
+	* gcc.dg/pr126405-2.c: New test.
+	* gcc.dg/pr126405-3.c: New test.
+
 2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:

@@ -1,3 +1,87 @@
+2026-07-29  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	Backported from master:
+	2026-06-07  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/sourcebuild.texi: Document that check-function-bodies
+	automatically adds the check_function_bodies options.
+
+2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2026-06-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* doc/sourcebuild.texi: Document object file checks.
+
+2026-07-29  Reshma Roy  <Reshma.Roy@amd.com>
+
+	Backported from master:
+	2026-07-28  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* config/i386/i386-features.cc (ix86_emit_tls_call): Additional
+	check to see if DRAP register is live in basic block with DF_LR_IN.
+
+2026-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-07-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126450
+	* config/i386/i386.cc (ix86_spill_register_argument_p): Check
+	the argument-linked memory used to store local variable.
+
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126446
+	* config/i386/i386-expand.cc (ix86_expand_vector_set): If elt is
+	out of bounds, emit a no-op move.
+
+2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126447
+	* gimple-lower-bitint.cc (gimple_lower_bitint): For
+	ifn calls with large/huge _BitInt (ab) SSA_NAME lhs if they
+	have such (ab) argument too, force it into temporary SSA_NAME
+	for IFN_UBSAN_CHECK_MUL and, if bitint_big_endian, also for
+	IFN_UBSAN_CHECK_{ADD,SUB}.
+
+2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* cfgexpand.cc (verify_partition_mem_exprs): New function.
+	(pass_expand::execute): Call it.
+
+2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* tree-outof-ssa.cc (split_overlapping_partition_decls): Also split
+	partitions of PARM_DECLs and RESULT_DECLs.
+
+2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* cfgexpand.cc (leader_merge): Rename to...
+	(expand_leader_merge): ...this.  Make external.
+	* cfgexpand.h (expand_leader_merge): Declare.
+	* tree-outof-ssa.cc: Include cfgexpand.h.
+	(split_overlapping_partition_decls): Determine the variable of a
+	partition from all of its names.
+
 2026-07-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:
