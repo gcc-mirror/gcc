@@ -1324,29 +1324,26 @@ frange::union_ (const vrange &v)
   // Combine NAN info.
   if (known_isnan () || r.known_isnan ())
     return union_nans (r);
-  bool changed = false;
-  if (m_pos_nan != r.m_pos_nan || m_neg_nan != r.m_neg_nan)
-    {
-      m_pos_nan |= r.m_pos_nan;
-      m_neg_nan |= r.m_neg_nan;
-      changed = true;
-    }
 
-  // FIXME: Rewrite for sub-ranges.
-  // Combine endpoints.  This needs to be rewritten for sub-ranges.
-  if (frange_cmp (r.m_pairs[0].min, m_pairs[0].min) < 0)
-    {
-      m_pairs[0].min = r.m_pairs[0].min;
-      changed = true;
-    }
-  if (frange_cmp (m_pairs[0].max, r.m_pairs[0].max) < 0)
-    {
-      m_pairs[0].max = r.m_pairs[0].max;
-      changed = true;
-    }
+  frange save = *this;
+  m_pos_nan |= r.m_pos_nan;
+  m_neg_nan |= r.m_neg_nan;
 
-  changed |= normalize_kind ();
-  return changed;
+  // Throw both operands' sub-ranges into the pot as set_pairs will
+  // canonicalize things and hand us back at most MAX_PAIRS.
+  //
+  // NOTE: Both operands are already sorted and disjoint, so a merge could
+  // combine them in O(n) like irange::union_ rather than have set_pairs
+  // re-sort.  Not worth it while MAX_PAIRS is tiny; revisit if it grows.
+  frange_pair pairs[2 * MAX_PAIRS];
+  unsigned n = 0;
+  for (unsigned i = 0; i < save.m_num_ranges; ++i)
+    pairs[n++] = save.m_pairs[i];
+  for (unsigned i = 0; i < r.m_num_ranges; ++i)
+    pairs[n++] = r.m_pairs[i];
+
+  set_pairs (pairs, n);
+  return *this != save;
 }
 
 // Intersect two ranges when one is known to be a NAN.
