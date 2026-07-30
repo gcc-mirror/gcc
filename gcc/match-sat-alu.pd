@@ -442,7 +442,52 @@ along with GCC; see the file COPYING3.  If not see
                    integer_zerop)
            (signed_integer_sat_val @0)
            @2)
-   (if (wi::eq_p (wi::to_wide (@1), wi::to_wide (@3))))))
+   (if (wi::eq_p (wi::to_wide (@1), wi::to_wide (@3)))))
+
+ /* A signed saturating add written as a two sided clamp on a wider
+    intermediate, which is a common source form and what the integer
+    promotions leave for a narrow type.  Both nesting orders occur:
+    an if followed by an if or an else if gives MAX then MIN, while
+    max (min (t, HI), LO) gives MIN then MAX.  */
+ (match (signed_integer_sat_add @0 @1)
+  /* WT SUM = (WT)X + (WT)Y
+     SAT_S_ADD = (T)MIN (MAX (SUM, T_MIN), T_MAX)  */
+  (convert (min@4 (max (plus (convert @0) (convert @1)) INTEGER_CST@2)
+		INTEGER_CST@3))
+  (if (types_match (type, @0, @1) && single_use (@4))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     tree wide_type = TREE_TYPE (@2);
+     unsigned wide_precision = TYPE_PRECISION (wide_type);
+     wide_int lo = wide_int::from (wi::min_value (precision, SIGNED),
+				   wide_precision, SIGNED);
+     wide_int hi = wide_int::from (wi::max_value (precision, SIGNED),
+				   wide_precision, SIGNED);
+    }
+    /* One extra bit is enough for a sum of two values of the narrow type,
+       and at equal precision the clamp is not a saturating add at all.  */
+    (if (wide_precision > precision && !TYPE_UNSIGNED (wide_type)
+	 && wi::eq_p (wi::to_wide (@2), lo)
+	 && wi::eq_p (wi::to_wide (@3), hi))))))
+ (match (signed_integer_sat_add @0 @1)
+  /* SAT_S_ADD = (T)MAX (MIN (SUM, T_MAX), T_MIN)  */
+  (convert (max@4 (min (plus (convert @0) (convert @1)) INTEGER_CST@3)
+		INTEGER_CST@2))
+  (if (types_match (type, @0, @1) && single_use (@4))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     tree wide_type = TREE_TYPE (@2);
+     unsigned wide_precision = TYPE_PRECISION (wide_type);
+     wide_int lo = wide_int::from (wi::min_value (precision, SIGNED),
+				   wide_precision, SIGNED);
+     wide_int hi = wide_int::from (wi::max_value (precision, SIGNED),
+				   wide_precision, SIGNED);
+    }
+    (if (wide_precision > precision && !TYPE_UNSIGNED (wide_type)
+	 && wi::eq_p (wi::to_wide (@2), lo)
+	 && wi::eq_p (wi::to_wide (@3), hi)))))))
 
 /* Saturation sub for signed integer.  */
 (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
@@ -479,7 +524,45 @@ along with GCC; see the file COPYING3.  If not see
   (cond^ (ne (imagpart (IFN_SUB_OVERFLOW@2 @0 @1)) integer_zerop)
 	 (signed_integer_sat_val @0)
 	 (realpart @2))
-  (if (types_match (type, @0, @1)))))
+  (if (types_match (type, @0, @1))))
+ /* The same two sided clamp on a wider intermediate, for a subtraction.  */
+ (match (signed_integer_sat_sub @0 @1)
+  /* WT DIFF = (WT)X - (WT)Y
+     SAT_S_SUB = (T)MIN (MAX (DIFF, T_MIN), T_MAX)  */
+  (convert (min@4 (max (minus (convert @0) (convert @1)) INTEGER_CST@2)
+		INTEGER_CST@3))
+  (if (types_match (type, @0, @1) && single_use (@4))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     tree wide_type = TREE_TYPE (@2);
+     unsigned wide_precision = TYPE_PRECISION (wide_type);
+     wide_int lo = wide_int::from (wi::min_value (precision, SIGNED),
+				   wide_precision, SIGNED);
+     wide_int hi = wide_int::from (wi::max_value (precision, SIGNED),
+				   wide_precision, SIGNED);
+    }
+    (if (wide_precision > precision && !TYPE_UNSIGNED (wide_type)
+	 && wi::eq_p (wi::to_wide (@2), lo)
+	 && wi::eq_p (wi::to_wide (@3), hi))))))
+ (match (signed_integer_sat_sub @0 @1)
+  /* SAT_S_SUB = (T)MAX (MIN (DIFF, T_MAX), T_MIN)  */
+  (convert (max@4 (min (minus (convert @0) (convert @1)) INTEGER_CST@3)
+		INTEGER_CST@2))
+  (if (types_match (type, @0, @1) && single_use (@4))
+   (with
+    {
+     unsigned precision = TYPE_PRECISION (type);
+     tree wide_type = TREE_TYPE (@2);
+     unsigned wide_precision = TYPE_PRECISION (wide_type);
+     wide_int lo = wide_int::from (wi::min_value (precision, SIGNED),
+				   wide_precision, SIGNED);
+     wide_int hi = wide_int::from (wi::max_value (precision, SIGNED),
+				   wide_precision, SIGNED);
+    }
+    (if (wide_precision > precision && !TYPE_UNSIGNED (wide_type)
+	 && wi::eq_p (wi::to_wide (@2), lo)
+	 && wi::eq_p (wi::to_wide (@3), hi)))))))
 
 /* Saturation truncate for signed integer.  */
 (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))

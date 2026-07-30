@@ -4258,7 +4258,7 @@ match_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
 }
 
 /*
- * Try to match saturation unsigned sub.
+ * Try to match saturation sub with assign.
  *   _1 = _4 >= _5;
  *   _3 = _4 - _5;
  *   _6 = _1 ? _3 : 0;
@@ -4267,12 +4267,13 @@ match_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
  * Return true if the statement was replaced.  */
 
 static bool
-match_unsigned_saturation_sub (gimple_stmt_iterator *gsi, gassign *stmt)
+match_saturation_sub_with_assign (gimple_stmt_iterator *gsi, gassign *stmt)
 {
   tree ops[2];
   tree lhs = gimple_assign_lhs (stmt);
 
-  if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL))
+  if (gimple_unsigned_integer_sat_sub (lhs, ops, NULL)
+      || gimple_signed_integer_sat_sub (lhs, ops, NULL))
     return build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_SUB,
 							   lhs, ops[0], ops[1]);
 
@@ -7340,7 +7341,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 		  continue;
 		}
 	      match_arith_overflow (&gsi, stmt, code, m_cfg_changed_p);
-	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
+	      match_saturation_sub_with_assign (&gsi, as_a<gassign *> (stmt));
 	      break;
 
 	    case PLUS_EXPR:
@@ -7349,7 +7350,7 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 		break;
 	      /* fall-through  */
 	    case MINUS_EXPR:
-	      if (!match_unsigned_saturation_sub (&gsi,
+	      if (!match_saturation_sub_with_assign (&gsi,
 						  as_a<gassign *> (stmt))
 		  && !convert_plusminus_to_widen (&gsi, stmt, code))
 		{
@@ -7390,13 +7391,14 @@ math_opts_dom_walker::after_dom_children (basic_block bb)
 
 	    case COND_EXPR:
 	    case BIT_AND_EXPR:
-	      match_unsigned_saturation_sub (&gsi, as_a<gassign *> (stmt));
+	      match_saturation_sub_with_assign (&gsi, as_a<gassign *> (stmt));
 	      break;
 
 	    case NOP_EXPR:
 	      match_unsigned_saturation_mul (&gsi, as_a<gassign *> (stmt));
 	      match_unsigned_saturation_trunc (&gsi, as_a<gassign *> (stmt));
 	      match_saturation_add_with_assign (&gsi, as_a<gassign *> (stmt));
+	      match_saturation_sub_with_assign (&gsi, as_a<gassign *> (stmt));
 	      /* fall-through  */
 	    case CONVERT_EXPR:
 	      /* The long-multiply recognizer's high-part emit ends in an
