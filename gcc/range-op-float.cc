@@ -2334,14 +2334,14 @@ zero_to_inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
    in each direction.  See PR109008 for more details.  */
 
 static frange
-float_widen_lhs_range (tree type, const frange &lhs, bool also_inf = false)
+float_widen_lhs_range (tree type, const frange &lhs)
 {
   frange ret = lhs;
   if (lhs.known_isnan ())
     return ret;
   REAL_VALUE_TYPE lb = lhs.lower_bound ();
   REAL_VALUE_TYPE ub = lhs.upper_bound ();
-  if (real_isfinite (&lb) || (also_inf && !real_isneg (&lb)))
+  if (real_isfinite (&lb) || !real_isneg (&lb))
     {
       frange_nextafter (TYPE_MODE (type), lb, dconstninf);
       if (real_isinf (&lb))
@@ -2357,7 +2357,7 @@ float_widen_lhs_range (tree type, const frange &lhs, bool also_inf = false)
 	}
       if (!flag_rounding_math
 	  && !MODE_COMPOSITE_P (TYPE_MODE (type))
-	  && (!also_inf || real_isfinite (&lhs.lower_bound ())))
+	  && real_isfinite (&lhs.lower_bound ()))
 	{
 	  /* If not -frounding-math nor IBM double double, actually widen
 	     just by 0.5ulp rather than 1ulp.  */
@@ -2366,7 +2366,7 @@ float_widen_lhs_range (tree type, const frange &lhs, bool also_inf = false)
 	  real_arithmetic (&lb, RDIV_EXPR, &tem, &dconst2);
 	}
     }
-  if (real_isfinite (&ub) || (also_inf && real_isneg (&ub)))
+  if (real_isfinite (&ub) || real_isneg (&ub))
     {
       frange_nextafter (TYPE_MODE (type), ub, dconstinf);
       if (real_isinf (&ub))
@@ -2377,7 +2377,7 @@ float_widen_lhs_range (tree type, const frange &lhs, bool also_inf = false)
 	}
       if (!flag_rounding_math
 	  && !MODE_COMPOSITE_P (TYPE_MODE (type))
-	  && (!also_inf || real_isfinite (&lhs.upper_bound ())))
+	  && real_isfinite (&lhs.upper_bound ()))
 	{
 	  /* If not -frounding-math nor IBM double double, actually widen
 	     just by 0.5ulp rather than 1ulp.  */
