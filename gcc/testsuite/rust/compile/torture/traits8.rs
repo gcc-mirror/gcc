@@ -10,7 +10,6 @@ trait Foo {
 }
 
 struct Bar(i32);
-// { dg-warning "struct is never constructed" "" { target *-*-* } .-1 }
 
 impl Foo for Bar {
     fn default() -> i32 {

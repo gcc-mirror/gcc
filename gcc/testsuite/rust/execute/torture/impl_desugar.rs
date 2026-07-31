@@ -12,7 +12,7 @@ pub trait Bar {
     type Baz;
 }
 
-struct MyBaz; // { dg-warning "struct is never constructed" }
+struct MyBaz;
 impl Foo for MyBaz {}
 
 struct MyBar;

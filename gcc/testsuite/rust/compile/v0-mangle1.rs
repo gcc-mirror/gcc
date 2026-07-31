@@ -16,7 +16,7 @@ pub mod module_a {
     }
 }
 
-struct S; // { dg-warning "struct is never constructed" }
+struct S;
 
 // name starting with underscore.
 pub fn _uc() {}

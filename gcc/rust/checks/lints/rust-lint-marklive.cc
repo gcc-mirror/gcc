@@ -154,6 +154,21 @@ MarkLive::visit (HIR::MethodCallExpr &expr)
 bool
 MarkLive::visit_path_segment (HIR::PathExprSegment seg)
 {
+  if (seg.has_generic_args ())
+    {
+      for (auto &type : seg.get_generic_args ().get_type_args ())
+	{
+	  NodeId node_id = type->get_mappings ().get_nodeid ();
+
+	  if (auto resolved
+	      = resolver.lookup (node_id, Resolver2_0::Namespace::Types))
+	    {
+	      if (auto hid = mappings.lookup_node_to_hir (*resolved))
+		mark_hir_id (*hid);
+	    }
+	}
+    }
+
   NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
   NodeId ref_node_id = UNKNOWN_NODEID;
 
