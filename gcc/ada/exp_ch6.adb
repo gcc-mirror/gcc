@@ -7859,13 +7859,14 @@ package body Exp_Ch6 is
          return;
       end if;
 
-      --  Cases where the call is not a member of a statement list. This also
-      --  includes the cases where the call is an actual in another function
-      --  call, or is an index, or is an operand of an if-expression, i.e. is
-      --  in an expression context.
+      --  Cases where the call is not a member of a statement list, or cases
+      --  where the call is an actual in an attribute reference, or in another
+      --  function call, or is an index, or is an operand of an if-expression,
+      --  i.e. is in an expression context.
 
       if not Is_List_Member (N)
-        or else Nkind (Context) in N_Function_Call
+        or else Nkind (Context) in N_Attribute_Reference
+                                 | N_Function_Call
                                  | N_If_Expression
                                  | N_Indexed_Component
       then
