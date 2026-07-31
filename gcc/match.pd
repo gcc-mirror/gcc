@@ -5479,7 +5479,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { int cand = wi::ctz (wi::to_wide (@2)) - wi::ctz (wi::to_wide (@0)); }
    (if (cand < 0
 	|| (!integer_zerop (@2)
-	    && wi::lshift (wi::to_wide (@0), cand) != wi::to_wide (@2)))
+	    && wi::lshift (wi::to_wide (@0), cand) != wi::to_wide (@2))
+	|| !wi::fits_to_tree_p (wi::shwi (cand, HOST_BITS_PER_INT),
+				TREE_TYPE (@1)))
     { constant_boolean_node (cmp == NE_EXPR, type); }
     (if (!integer_zerop (@2)
 	 && wi::lshift (wi::to_wide (@0), cand) == wi::to_wide (@2))
@@ -5627,8 +5629,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (bit_and
     (nop_convert? (lshift integer_onep @0)) integer_pow2p@1) integer_zerop)
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)))
-   (icmp @0 { wide_int_to_tree (TREE_TYPE (@0),
-				wi::exact_log2 (wi::to_wide (@1))); }))))
+   (with { int c = wi::exact_log2 (wi::to_wide (@1)); }
+    (if (wi::fits_to_tree_p (wi::shwi (c, HOST_BITS_PER_INT), TREE_TYPE (@0)))
+     (icmp @0 { wide_int_to_tree (TREE_TYPE (@0), c); }))))))
 
 /* Fold (X {&,^,|} C2) << C1 into (X << C1) {&,^,|} (C2 << C1)
    (X {&,^,|} C2) >> C1 into (X >> C1) & (C2 >> C1).  */
