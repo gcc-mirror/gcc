@@ -1114,18 +1114,20 @@ USE({SPC}FOR)?		{ return USE; }
   HIGH-VALUES?	        { return HIGH_VALUES; }
   QUOTES?		{ return QUOTES; }
   NULLS?		{ return NULLS; }
+  OF			{ return OF; }
 
-  OF		           { return OF; }
+  VALUE				{ return VALUE; }
   VALUE({SPC}IS)?/[[:space:]]   { return VALUE; }
   VALUES({SPC}ARE)?/[[:space:]] { return VALUE; }
-  THRU|THROUGH             { return THRU; }
 
   VALUES?({SPC}(IS|ARE))?{SPC}NULLS? { return NULLPTR; }
   VALUES?({SPC}(IS|ARE))?/{SPC}[+-]?{dfc} {
                           yy_push_state(numeric_state); return VALUE; }
 
+  THRU|THROUGH		{ return THRU; }
  (THRU|THROUGH)/{SPC}[[:digit:].,+-] {
-                          yy_push_state(numeric_state); return THRU; }
+                          yy_push_state(numeric_state);
+			  return THRU; }
 
   ALL			{ return ALL; }
   AS			{ return AS; }
