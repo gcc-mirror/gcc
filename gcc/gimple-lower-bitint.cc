@@ -1209,16 +1209,27 @@ bitint_large_huge::handle_plus_minus (tree_code code, tree rhs1, tree rhs2,
     }
   else
     {
-      tree in = add_cast (rhs1_type, data_in);
-      lhs = make_ssa_name (rhs1_type);
+      /* Always perform the two additions or subtractions in
+	 unsigned type, avoid introducing a temporary UB.  While
+	 the end result of the 2 additions or 2 subtractions in
+	 a valid program should not overflow, temporarily it can.
+	 See PR126503.  */
+      tree utype = unsigned_type_for (rhs1_type);
+      tree in = add_cast (utype, data_in);
+      lhs = make_ssa_name (utype);
+      if (utype != rhs1_type)
+	{
+	  rhs1 = add_cast (utype, rhs1);
+	  rhs2 = add_cast (utype, rhs2);
+	}
       g = gimple_build_assign (lhs, code, rhs1, rhs2);
       insert_before (g);
-      rhs1 = make_ssa_name (rhs1_type);
+      rhs1 = make_ssa_name (utype);
       g = gimple_build_assign (rhs1, code, lhs, in);
       insert_before (g);
       m_data[m_data_cnt] = NULL_TREE;
       m_data_cnt += 2;
-      return rhs1;
+      return utype != rhs1_type ? add_cast (rhs1_type, rhs1) : rhs1;
     }
   rhs1 = make_ssa_name (m_limb_type);
   g = gimple_build_assign (rhs1, REALPART_EXPR,
