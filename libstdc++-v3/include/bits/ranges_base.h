@@ -994,6 +994,17 @@ namespace ranges
       constexpr iter_difference_t<_It>
       operator()[[nodiscard]](_It __first, _Sent __last) const
       {
+	if constexpr (__segmented_iterator<_It> && same_as<_It, _Sent>)
+	  {
+	    iter_difference_t<_It> __n = 0;
+	    auto __func = [this, &__n](auto __sfirst, auto __slast) {
+	      __n += iter_difference_t<_It>(this->operator()(__sfirst, __slast));
+	      return __slast;
+	    };
+	    std::__for_each_segment(__first, __last, __func);
+	    return __n;
+	  }
+
 	iter_difference_t<_It> __n = 0;
 	while (__first != __last)
 	  {
