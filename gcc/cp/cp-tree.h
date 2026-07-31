@@ -8683,7 +8683,7 @@ extern void finish_transaction_stmt		(tree, tree, int, tree);
 extern tree build_transaction_expr		(location_t, tree, int, tree);
 extern bool cxx_omp_create_clause_info		(tree, tree, bool, bool,
 						 bool, bool);
-extern tree baselink_for_fns                    (tree);
+extern tree baselink_for_fns                    (tree, bool = false);
 extern void finish_static_assert                (tree, tree, location_t,
 						 bool, bool, bool = false);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);

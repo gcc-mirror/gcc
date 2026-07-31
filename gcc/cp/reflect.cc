@@ -8790,6 +8790,11 @@ splice (tree refl)
      it comes from e.g. members_of it is not.  */
   if (DECL_FUNCTION_TEMPLATE_P (refl))
     refl = ovl_make (refl, NULL_TREE);
+  /* Also add a BASELINK so that we handle &[:R:].  Since R was already
+     resolved (e.g. via members_of), we don't want to consider the enclosing
+     class for the access path.  */
+  if (is_overloaded_fn (refl))
+    refl = baselink_for_fns (refl, /*ignore_current_class_p=*/true);
 
   return refl;
 }
