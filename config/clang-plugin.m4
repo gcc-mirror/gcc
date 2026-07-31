@@ -73,13 +73,13 @@ AC_DEFUN([CLANG_PLUGIN_FILE_FOR_TARGET],[dnl
   saved_CC="$CC"
   CC="$COMPILER_FOR_TARGET"
   AC_CACHE_CHECK([for clang for target], clang_target_cv_working, [
-    AC_TRY_COMPILE([
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 #ifndef __clang__
 #error Not clang
 #endif
-    ],
-    [],
-    clang_target_cv_working=yes, clang_target_cv_working=no)])
+    ]],
+    [[]])],
+    [clang_target_cv_working=yes], [clang_target_cv_working=no])])
   CC="$saved_CC"
   plugin_file=
   if test $clang_target_cv_working = yes; then

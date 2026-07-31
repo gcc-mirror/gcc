@@ -183,11 +183,11 @@ fi
 saved_CC="$CC"
 CC="$COMPILER_FOR_TARGET"
 AC_CACHE_CHECK([for gcc for target], gcc_target_cv_working, [
-  AC_TRY_COMPILE(
-  [],
-  [],
-  gcc_target_cv_working=yes,
-  gcc_target_cv_working=no)])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+  [[]],
+  [[]])],
+  [gcc_target_cv_working=yes],
+  [gcc_target_cv_working=no])])
 CC="$saved_CC"
 AC_MSG_CHECKING([for target -plugin option])
 plugin_option=
