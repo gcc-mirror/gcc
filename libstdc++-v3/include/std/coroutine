@@ -35,6 +35,7 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Winvalid-specialization"
 
 #define __glibcxx_want_coroutine
 #include <bits/version.h>
@@ -195,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   template <typename _Promise>
-    struct coroutine_handle
+    struct _GLIBCXX_NO_SPECIALIZATIONS coroutine_handle
     {
       // [coroutine.handle.con], construct/reset
 
