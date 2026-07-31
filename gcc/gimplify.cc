@@ -3489,6 +3489,13 @@ recalculate_side_effects (tree t)
       /* No side-effects.  */
       return;
 
+    case tcc_declaration:
+      /* These can have side-effects if TREE_THIS_VOLATILE,
+	 but those should be set elsewhere, not in
+	 recalculate_side_effects.  Can be triggered e.g. if
+	 a comparison is folded into one of its operands.  */
+      return;
+
     default:
       if (code == SSA_NAME)
 	/* No side-effects.  */
