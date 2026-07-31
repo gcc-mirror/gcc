@@ -2118,6 +2118,9 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
       DECL_EXCEPTION_REFCOUNT (arg)
 	= size_binop (PLUS_EXPR, DECL_EXCEPTION_REFCOUNT (arg), size_one_node);
       ++ctx->global->uncaught_exceptions;
+      /* Don't cache calls which rethrow, they depend on the current
+	 exception which might be caught in the caller.  */
+      ctx->global->metafns_called = true;
       *jump_target = arg;
       return void_node;
     case CXA_BAD_CAST:
@@ -2196,6 +2199,10 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	  *non_constant_p = true;
 	  return call;
 	}
+      /* Don't cache calls which call __builtin_uncaught_exceptions (),
+	 they depend on the current uncaught exceptions which might
+	 be the state from their caller.  */
+      ctx->global->metafns_called = true;
       return build_int_cst (integer_type_node,
 			    ctx->global->uncaught_exceptions);
     case BUILTIN_CURRENT_EXCEPTION:
@@ -2247,6 +2254,10 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 			      size_one_node);
 	      arg = fold_convert (ptr_type_node, build_address (arg));
 	    }
+	  /* Don't cache calls which call __builtin_current_exception (),
+	     they depend on the current exception which might be caught
+	     in the caller.  */
+	  ctx->global->metafns_called = true;
 	  return build_constructor_single (TREE_TYPE (decl), fld, arg);
 	}
     case STD_RETHROW_EXCEPTION:
