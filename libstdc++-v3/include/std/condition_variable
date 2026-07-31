@@ -107,24 +107,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  wait(__lock);
       }
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 4301. condition_variable{_any}::wait_{for, until} should take timeout by value
+
 #ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
     template<typename _Duration>
       cv_status
       wait_until(unique_lock<mutex>& __lock,
-		 const chrono::time_point<steady_clock, _Duration>& __atime)
+		 chrono::time_point<steady_clock, _Duration> __atime)
       { return __wait_until_impl(__lock, __atime); }
 #endif
 
     template<typename _Duration>
       cv_status
       wait_until(unique_lock<mutex>& __lock,
-		 const chrono::time_point<system_clock, _Duration>& __atime)
+		 chrono::time_point<system_clock, _Duration> __atime)
       { return __wait_until_impl(__lock, __atime); }
 
     template<typename _Clock, typename _Duration>
       cv_status
       wait_until(unique_lock<mutex>& __lock,
-		 const chrono::time_point<_Clock, _Duration>& __atime)
+		 chrono::time_point<_Clock, _Duration> __atime)
       {
 #if __cplusplus > 201703L
 	static_assert(chrono::is_clock_v<_Clock>);
@@ -149,7 +152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Clock, typename _Duration, typename _Predicate>
       bool
       wait_until(unique_lock<mutex>& __lock,
-		 const chrono::time_point<_Clock, _Duration>& __atime,
+		 chrono::time_point<_Clock, _Duration> __atime,
 		 _Predicate __p)
       {
 	while (!__p())
@@ -161,7 +164,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Rep, typename _Period>
       cv_status
       wait_for(unique_lock<mutex>& __lock,
-	       const chrono::duration<_Rep, _Period>& __rtime)
+	       chrono::duration<_Rep, _Period> __rtime)
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 3504. condition_variable::wait_for is overspecified
@@ -174,7 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Rep, typename _Period, typename _Predicate>
       bool
       wait_for(unique_lock<mutex>& __lock,
-	       const chrono::duration<_Rep, _Period>& __rtime,
+	       chrono::duration<_Rep, _Period> __rtime,
 	       _Predicate __p)
       {
 	using __dur = typename steady_clock::duration;
@@ -193,7 +196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Dur>
       cv_status
       __wait_until_impl(unique_lock<mutex>& __lock,
-			const chrono::time_point<steady_clock, _Dur>& __atime)
+			chrono::time_point<steady_clock, _Dur> __atime)
       {
 	__gthread_time_t __ts = chrono::__to_timeout_gthread_time_t(__atime);
 	_M_cond.wait_until(*__lock.mutex(), CLOCK_MONOTONIC, __ts);
@@ -206,7 +209,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Dur>
       cv_status
       __wait_until_impl(unique_lock<mutex>& __lock,
-			const chrono::time_point<system_clock, _Dur>& __atime)
+			chrono::time_point<system_clock, _Dur> __atime)
       {
 	__gthread_time_t __ts = chrono::__to_timeout_gthread_time_t(__atime);
 	_M_cond.wait_until(*__lock.mutex(), __ts);
@@ -312,10 +315,13 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	  wait(__lock);
       }
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 4301. condition_variable{_any}::wait_{for, until} should take timeout by value
+
     template<typename _Lock, typename _Clock, typename _Duration>
       cv_status
       wait_until(_Lock& __lock,
-		 const chrono::time_point<_Clock, _Duration>& __atime)
+		 chrono::time_point<_Clock, _Duration> __atime)
       {
 	shared_ptr<mutex> __mutex = _M_mutex;
 	unique_lock<mutex> __my_lock(*__mutex);
@@ -330,7 +336,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	     typename _Duration, typename _Predicate>
       bool
       wait_until(_Lock& __lock,
-		 const chrono::time_point<_Clock, _Duration>& __atime,
+		 chrono::time_point<_Clock, _Duration> __atime,
 		 _Predicate __p)
       {
 	while (!__p())
@@ -341,14 +347,14 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
     template<typename _Lock, typename _Rep, typename _Period>
       cv_status
-      wait_for(_Lock& __lock, const chrono::duration<_Rep, _Period>& __rtime)
+      wait_for(_Lock& __lock, chrono::duration<_Rep, _Period> __rtime)
       { return wait_until(__lock, __clock_t::now() + __rtime); }
 
     template<typename _Lock, typename _Rep,
 	     typename _Period, typename _Predicate>
       bool
       wait_for(_Lock& __lock,
-	       const chrono::duration<_Rep, _Period>& __rtime, _Predicate __p)
+	       chrono::duration<_Rep, _Period> __rtime, _Predicate __p)
       { return wait_until(__lock, __clock_t::now() + __rtime, std::move(__p)); }
 
 #ifdef __glibcxx_jthread
@@ -383,7 +389,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
     template <class _Lock, class _Clock, class _Duration, class _Predicate>
     bool wait_until(_Lock& __lock,
                     stop_token __stoken,
-                    const chrono::time_point<_Clock, _Duration>& __abs_time,
+                    chrono::time_point<_Clock, _Duration> __abs_time,
                     _Predicate __p)
     {
       if (__stoken.stop_requested())
@@ -418,7 +424,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
     template <class _Lock, class _Rep, class _Period, class _Predicate>
     bool wait_for(_Lock& __lock,
                   stop_token __stoken,
-                  const chrono::duration<_Rep, _Period>& __rel_time,
+                  chrono::duration<_Rep, _Period> __rel_time,
                   _Predicate __p)
     {
       auto __abst = std::chrono::steady_clock::now() + __rel_time;
