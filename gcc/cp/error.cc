@@ -876,10 +876,12 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 
     case NULLPTR_TYPE:
       pp_cxx_ws_string (pp, "std::nullptr_t");
+      pp_c_type_qualifier_list (pp, t);
       break;
 
     case META_TYPE:
       pp_cxx_ws_string (pp, "std::meta::info");
+      pp_c_type_qualifier_list (pp, t);
       break;
 
     case SPLICE_SCOPE:
@@ -3481,7 +3483,24 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	    if (DECL_P (h))
 	      dump_decl (pp, h, flags);
 	    else if (TYPE_P (h))
-	      dump_type (pp, h, flags);
+	      {
+		/* For reflection we care about the difference
+		   between std::meta::info/std::nullptr_t and
+		   decltype(^^int)/decltype(nullptr).  */
+		if (TREE_CODE (h) == META_TYPE && !typedef_variant_p (h))
+		  {
+		    pp_cxx_ws_string (pp, "decltype(^^int)");
+		    pp_c_type_qualifier_list (pp, h);
+		  }
+		else if (TREE_CODE (h) == NULLPTR_TYPE
+			 && !typedef_variant_p (h))
+		  {
+		    pp_cxx_ws_string (pp, "decltype(nullptr)");
+		    pp_c_type_qualifier_list (pp, h);
+		  }
+		else
+		  dump_type (pp, h, flags);
+	      }
 	    else
 	      dump_expr (pp, h, flags);
 	    break;
