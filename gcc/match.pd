@@ -5081,7 +5081,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (bit_and (lshift integer_pow2p@1 @0) integer_pow2p@2) integer_zerop)
    (with { int c1 = wi::clz (wi::to_wide (@1));
 	   int c2 = wi::clz (wi::to_wide (@2)); }
-    (if (c1 < c2)
+    (if (c1 < c2
+	 /* If c1 - c2 isn't representable in TREE_TYPE (@0), it is also
+	    never true, because for any valid x C << x will be smaller
+	    than D.  See PR126476.  */
+	 || !wi::fits_to_tree_p (wi::shwi (c1 - c2, HOST_BITS_PER_INT),
+				 TREE_TYPE (@0)))
      { constant_boolean_node (cmp == NE_EXPR ? false : true, type); }
      (icmp @0 { build_int_cst (TREE_TYPE (@0), c1 - c2); }))))
  (simplify
@@ -5089,7 +5094,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (tree_int_cst_sgn (@1) > 0)
     (with { int c1 = wi::clz (wi::to_wide (@1));
 	    int c2 = wi::clz (wi::to_wide (@2)); }
-     (if (c1 > c2)
+     (if (c1 > c2
+	  || !wi::fits_to_tree_p (wi::shwi (c2 - c1, HOST_BITS_PER_INT),
+				  TREE_TYPE (@0)))
       { constant_boolean_node (cmp == NE_EXPR ? false : true, type); }
       (icmp @0 { build_int_cst (TREE_TYPE (@0), c2 - c1); }))))))
 
