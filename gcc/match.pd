@@ -2445,7 +2445,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      second_op (eq bit_xor)
  (simplify
   (first_op:c (bit_and:c truth_valued_p@0 truth_valued_p@1) (second_op:c @0 @1))
-    (bit_not (bit_ior @0 @1))))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& TYPE_PRECISION (TREE_TYPE (@0)) == 1)
+    (convert:type (bit_not (bit_ior @0 @1)))
+    (convert:type (bit_xor (bit_ior @0 @1) { build_one_cst (TREE_TYPE (@0)); })))))
 
 /* Convert ~ (A - 1) or ~ (A + -1) to -A.  */
 (simplify
