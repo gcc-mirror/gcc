@@ -118,6 +118,10 @@ maintainer_schema = {
                         'minlength': 1,
                         'pattern': '[a-zA-Z][a-zA-Z0-9]*',
                     },
+                    'forgeid': {
+                        'type': 'string',
+                        'minlength': 1,
+                    },
                     'aliases': {
                         'type': 'array',
                         'minlength': 1,
@@ -157,8 +161,17 @@ maintainer_schema = {
                             'pattern': label_pattern,
                         },
                     },
+                    'teams': {
+                        'type': 'array',
+                        'minlength': 1,
+                        'items': {
+                            'type': 'string',
+                            'minlength': 3,
+                        },
+                    },
                 },
                 'additionalProperties': False,
+                # Todo, add 'team' once the data is fully populated.
                 'required': ['name', 'labels'],
             },
         },

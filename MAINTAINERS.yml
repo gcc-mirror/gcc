@@ -204,6 +204,7 @@ users:
   - Maintainer: forge integration
   - WriteAfter
   account: rdfm
+  forgeid: rdfm
 - sn: Barany
   cn: Gergö Barany
   email:
@@ -393,6 +394,7 @@ users:
   - Reviewer: LTO
   - WriteAfter
   account: rguenth
+  forgeid: RichardBiener
   inactive_email:
   - rguenth@tat.physik.uni-tuebingen.de
   - richard.guenther@uni-tuebingen.de
@@ -692,6 +694,7 @@ users:
   - Maintainer: libphobos
   - WriteAfter
   account: ibuclaw
+  forgeid: ibuclaw
   inactive_email:
   - ibuclaw@symmetryinvestments.com
 - sn: Buettner
@@ -971,6 +974,7 @@ users:
   - Maintainer: vectorizer (+ tree-if-conv)
   - WriteAfter
   account: tnfchris
+  forgeid: tnfchris
 - sn: Christopher
   cn: Eric Christopher
   email:
@@ -1026,6 +1030,7 @@ users:
   - Maintainer: libgrust
   - WriteAfter
   account: cohenarthur
+  forgeid: cohenarthur
 - sn: Cohen
   cn: William Cohen
   email:
@@ -1090,6 +1095,7 @@ users:
   - Reviewer: aarch64 port
   - WriteAfter
   account: acoplan
+  forgeid: acoplan
 - sn: Corallo
   cn: Andrea Corallo
   email:
@@ -1337,6 +1343,7 @@ users:
   - Reviewer: aarch64 port
   - WriteAfter
   account: wilco
+  forgeid: Wilco
   inactive_email:
   - wdijkstr@arm.com
 - sn: Dimitrov
@@ -1398,6 +1405,7 @@ users:
   - Maintainer: c++ runtime libs special modes
   - WriteAfter
   account: fdumont
+  forgeid: fdumont
   inactive_email:
   - francois.cppdevs@free.fr
 - sn: Dvorak
@@ -1441,6 +1449,7 @@ users:
   - Maintainer: arm port
   - WriteAfter
   account: rearnsha
+  forgeid: rearnsha
   inactive_email:
   - erich@gnu.org
   - rwe11@cl.cam.ac.uk
@@ -2666,6 +2675,7 @@ users:
   - Reviewer: libsanitizer, asan.cc
   - WriteAfter
   account: jakub
+  forgeid: jakub
   inactive_email:
   - jj@sunsite.ms.mff.cuni.cz
   - jj@ultra.linux.cz
@@ -3612,6 +3622,7 @@ users:
   - Reviewer: arm port (MVE)
   - WriteAfter
   account: clyon
+  forgeid: clyon
   inactive_email:
   - christophe.lyon@foss.st.com
   - christophe.lyon@linaro.org
@@ -3707,6 +3718,7 @@ users:
   - Maintainer: static analyzer
   - WriteAfter
   account: dmalcolm
+  forgeid: dmalcolm
 - sn: Malcomson
   cn: Matthew Malcomson
   email:
@@ -3742,6 +3754,7 @@ users:
   - WriteAfter
   - DCO: jemarch@gnu.org
   account: jemarch
+  forgeid: jemarch
 - sn: Markianos-Wright
   cn: Stamatis Markianos-Wright
   email:
@@ -3935,6 +3948,7 @@ users:
   - Maintainer: dwarf debugging code
   - WriteAfter
   account: jason
+  forgeid: jason
   inactive_email:
   - jason@casey.cygnus.com
   - jason@casey.soma.redhat.com
@@ -4212,6 +4226,7 @@ users:
   - Reviewer: driver
   - WriteAfter
   account: jsm28
+  forgeid: jsm28
   inactive_email:
   - joseph@codesourcery.com
   - jsm28@cam.ac.uk
@@ -4657,6 +4672,7 @@ users:
   - DCO: andrew.pinski@oss.qualcomm.com
   - DCO: quic_apinski@quicinc.com
   account: pinskia
+  forgeid: pinskia
   inactive_email:
   - andrew.pinski@caviumnetworks.com
   - andrew.pinski@playstation.sony.com
@@ -5161,6 +5177,7 @@ users:
   - Reviewer: wide-int
   - WriteAfter
   account: rsandifo
+  forgeid: rsandifo
   inactive_email:
   - r.sandiford@redhat.com
   - r.sandiford@uk.ibm.com
@@ -5180,6 +5197,7 @@ users:
   - Maintainer: objective-c/c++
   - WriteAfter
   account: iains
+  forgeid: iains
   inactive_email:
   - iain.sandoe@sandoe-acoustics.co.uk
   - iain@codesourcery.com
@@ -5352,6 +5370,7 @@ users:
   - Maintainer: OpenACC
   - WriteAfter: thomas@schwinge.name
   account: tschwinge
+  forgeid: tschwinge
   inactive_email:
   - thomas@codesourcery.com
   - tschwinge@gnu.org
@@ -5945,6 +5964,7 @@ users:
   - WriteAfter
   - DCO: ktkachov@nvidia.com
   account: ktkachov
+  forgeid: ktkachov
   inactive_email:
   - kyrylo.tkachov@arm.com
 - sn: Tobler
@@ -6248,6 +6268,7 @@ users:
   - WriteAfter
   - DCO: jwakely@redhat.com
   account: redi
+  forgeid: redi
   inactive_email:
   - cow@compsoc.man.ac.uk
   - jw@kayari.org
@@ -6852,7 +6873,10 @@ subsystems:
   labels: []
 - name: Algol 68
   class: Lang
-  labels: []
+  labels:
+  - Lang/algol68
+  teams:
+  - Maintainers.Algol68
 - name: Android sub-port
   class: OS
   labels: []
@@ -6923,9 +6947,14 @@ subsystems:
 - name: aarch64 ldp/stp
   class: CPU
   labels: []
+  teams:
+  - Maintainers.AArch64
 - name: aarch64 port
   class: CPU
-  labels: []
+  labels:
+  - Target/aarch64
+  teams:
+  - Maintainers.AArch64
 - name: aix
   class: OS
   labels: []
@@ -6940,9 +6969,16 @@ subsystems:
   labels: []
 - name: arm port
   class: CPU
-  labels: []
+  labels:
+  - Target/arm
+  teams:
+  - Maintainers.Arm
 - name: arm port (MVE)
-  labels: []
+  class: CPU
+  labels:
+  - Target/arm
+  teams:
+  - Maintainers.Arm
 - name: avr port
   class: CPU
   labels: []
@@ -6960,7 +6996,10 @@ subsystems:
   labels: []
 - name: c++ runtime libs
   class: Subsystem
-  labels: []
+  labels:
+  - Library/libstdc++
+  teams:
+  - Maintainers.libstdcplusplus
 - name: c++ runtime libs special modes
   class: Subsystem
   labels: []
@@ -7012,7 +7051,10 @@ subsystems:
   labels: []
 - name: forge integration
   class: Subsystem
-  labels: []
+  labels:
+  - Misc/forge
+  teams:
+  - Maintainers.forge
 - name: fp-bit
   class: Subsystem
   labels: []
