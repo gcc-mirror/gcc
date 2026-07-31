@@ -39,6 +39,10 @@
 
 #include <bits/requires_hosted.h> // iostreams
 
+#define __glibcxx_want_spanstream
+#define __glibcxx_want_syncbuf
+#include <bits/version.h>
+
   /**
    *  @defgroup io I/O
    *

@@ -3,6 +3,18 @@
 
 #include <iosfwd>
 
+#if __cplusplus >= 202002L && __cpp_lib_char8_t != 201907L
+# error "Feature-test macro __cpp_lib_char8_t has wrong value in <iosfwd>"
+#endif
+
+#if __cplusplus >= 202202L && __cpp_lib_spanstream != 202106L
+# error "Feature-test macro __cpp_lib_spanstrean has wrong value in <iosfwd>"
+#endif
+
+#if __cplusplus >= 202002L && __cpp_lib_syncbuf != 201803L
+# error "Feature-test macro __cpp_lib_syncbuf has wrong value in <iosfwd>"
+#endif
+
 namespace std
 {
   // [iosfwd.syn]
