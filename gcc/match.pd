@@ -4637,6 +4637,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     @0
     @2)))
 
+/* MIN (MAX (X, Y + CST), Y) -> Y for a positive CST, and the dual
+   MAX (MIN (X, Y + CST), Y) -> Y for a negative one.  The inner select is
+   at least Y + CST, which the absence of wrapping puts strictly beyond Y,
+   so the outer select always takes Y and the whole nest is dead.  */
+(for outer (min max)
+     inner (max min)
+ (simplify
+  (outer:c (inner:c @0 (plus @1 INTEGER_CST@2)) @1)
+  (if (TYPE_OVERFLOW_UNDEFINED (type)
+       && !TYPE_OVERFLOW_SANITIZED (type)
+       && ((outer == MIN_EXPR && tree_int_cst_sgn (@2) > 0)
+	   || (outer == MAX_EXPR && tree_int_cst_sgn (@2) < 0)))
+   @1)))
+
 /* min (a, b) op max (a, b) -> a op b */
 (for op (plus mult bit_and bit_xor bit_ior eq ne min max)
  (simplify
