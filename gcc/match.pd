@@ -811,6 +811,35 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (rdiv (rdiv:s @0 @1) @2)
   (rdiv @0 (mult @1 @2)))
 
+ /* Convert (A/B) * (C/D) to (A*C) / (B*D).  Two divisions become one
+    multiply and one division, and a division costs several multiplies on
+    every target.
+
+    The two products are new places for the exponent to leave the range, so
+    the rule needs more than the rounding licence: with B and D both large
+    B * D is an infinity and the quotient becomes inf / inf, and with both
+    small it is a zero and the quotient becomes 0 / 0.  Either way a finite
+    result turns into a NaN, so the rule is restricted to the case where
+    infinities and NaNs are excluded, as the cancellation rules above are.
+
+    Both quotients have to be dead outside the product, otherwise a division
+    would be added rather than removed, and a shared reciprocal is better
+    left alone for the multiplications to reuse.  That is a hard requirement
+    rather than a :s marker, because :s only forbids emitting new statements
+    and both products can fold away to nothing, as they do for X * X where X
+    is one reciprocal square root.  Requiring two singly used quotients also
+    excludes that case, since a value feeding both operands of the product
+    has two uses.  */
+ (simplify
+  (mult (rdiv@4 @0 @1) (rdiv@5 @2 @3))
+  (if (flag_associative_math
+       && !HONOR_NANS (type) && !HONOR_INFINITIES (type)
+       && !flag_trapping_math
+       && (TREE_CODE (type) != COMPLEX_TYPE
+	   || !HONOR_SIGNED_ZEROS (type))
+       && single_use (@4) && single_use (@5))
+   (rdiv (mult @0 @2) (mult @1 @3))))
+
  /* Canonicalize x / (C1 * y) to (x * C2) / y.  */
  (simplify
   (rdiv @0 (mult:s @1 REAL_CST@2))
