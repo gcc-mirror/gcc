@@ -3149,6 +3149,13 @@ namespace views::__adaptor
 	    : _M_outer(std::move(__outer)), _M_parent(__parent)
 	  { _M_satisfy(); }
 
+	  constexpr
+	  _Iterator(_Parent* __parent, _Outer_iter __outer, _Inner_iter __inner)
+	    requires forward_range<_Base>
+	    : _M_outer(std::move(__outer)), _M_inner(std::move(__inner)),
+	      _M_parent(__parent)
+	  { }
+
 	  constexpr explicit
 	  _Iterator(_Parent* __parent) requires (!forward_range<_Base>)
 	    : _M_parent(__parent)
@@ -3272,6 +3279,50 @@ namespace views::__adaptor
 
 	  friend _Iterator<!_Const>;
 	  template<bool> friend struct _Sentinel;
+
+	  template<typename _Fn>
+	    static constexpr _Iterator
+	    _S_for_each_segment(_Iterator __first, _Iterator __last, _Fn __func)
+	    {
+	      _Inner_iter __first_inner = __first._M_get_inner();
+	      _Outer_iter __first_outer = __first._M_get_outer();
+	      _Inner_iter __last_inner = __last._M_get_inner();
+	      _Outer_iter __last_outer = __last._M_get_outer();
+
+	      if (__first_outer == __last_outer)
+		{
+		  auto __ret = __func(__first_inner, __last_inner);
+		  return _Iterator(__first._M_parent, __first_outer, __ret);
+		}
+	      else
+		{
+		  auto __end = ranges::end(*__first_outer);
+		  auto __ret = __func(__first_inner, __end);
+		  if (__ret != __end)
+		    return _Iterator(__first._M_parent, __first_outer, __ret);
+
+		  while (++__first_outer != __last_outer)
+		    {
+		      __end = ranges::end(*__first_outer);
+		      __ret = __func(ranges::begin(*__first_outer), __end);
+		      if (__ret != __end)
+			return _Iterator(__first._M_parent, __first_outer, __ret);
+		    }
+
+		  if (__last != __last._M_parent->end())
+		    {
+		      __end = __last_inner;
+		      __ret = __func(ranges::begin(*__last_outer), __end);
+		      if (__ret != __end)
+			return _Iterator(__first._M_parent, __first_outer, __ret);
+		    }
+
+		  return __last;
+		}
+	    }
+
+	  static constexpr bool _S_enable_for_each_segment
+	    = forward_iterator<_Iterator>;
 	};
 
       template<bool _Const>
@@ -10347,6 +10398,55 @@ namespace ranges
 	  ranges::swap(*__it1, *__it2);
       }, __x._M_it, __y._M_it);
     }
+
+    template<typename _Fn>
+      static constexpr _Iterator
+      _S_for_each_segment(_Iterator __first, _Iterator __last, _Fn __func)
+      {
+	return _S_invoke_with_runtime_index([&]<size_t _Ix>() -> _Iterator {
+	  return _S_invoke_with_runtime_index([&]<size_t _Iy>() -> _Iterator {
+	    if constexpr (_Ix == _Iy)
+	      {
+		auto __ret = __func(std::get<_Ix>(__first._M_it), std::get<_Iy>(__last._M_it));
+		return _Iterator(__first._M_parent, std::in_place_index<_Ix>, __ret);
+	      }
+	    else if constexpr (_Ix < _Iy)
+	      {
+		auto __first_range = std::get<_Ix>(__first._M_parent->_M_views);
+		auto __ret = __func(std::get<_Ix>(__first._M_it),
+				    ranges::end(__first_range));
+		if (__ret != ranges::end(__first_range))
+		  return _Iterator(__first._M_parent, std::in_place_index<_Ix>, __ret);
+
+		return [&]<size_t _Idx = _Ix + 1>(this auto&& __self) -> _Iterator {
+		  if constexpr (_Idx < _Iy)
+		    {
+		      auto __mid_range = std::get<_Idx>(__first._M_parent->_M_views);
+		      auto __mid_ret = __func(ranges::begin(__mid_range),
+					      ranges::end(__mid_range));
+		      if (__mid_ret != ranges::end(__mid_range))
+			return _Iterator(__first._M_parent, std::in_place_index<_Idx>, __mid_ret);
+		      return __self.template operator()<_Idx + 1>();
+		    }
+		  else
+		    {
+		      auto __last_range = std::get<_Iy>(__last._M_parent->_M_views);
+		      auto __last_ret = __func(ranges::begin(__last_range),
+					       std::get<_Iy>(__last._M_it));
+		      return _Iterator(__first._M_parent, std::in_place_index<_Iy>, __last_ret);
+		    }
+		}();
+	      }
+	    else
+	      {
+		__builtin_unreachable();
+		__glibcxx_assert(false);
+	      }
+	  }, __last._M_it.index());
+	}, __first._M_it.index());
+      }
+
+    static constexpr bool _S_enable_for_each_segment = true;
   };
 
   namespace views

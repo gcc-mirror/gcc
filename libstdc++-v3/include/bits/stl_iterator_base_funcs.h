@@ -66,6 +66,7 @@
 #include <bits/concept_check.h>
 #include <debug/assertions.h>
 #include <bits/stl_iterator_base_types.h>
+#include <bits/move.h> // For _GLIBCXX_MOVE
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -382,6 +383,26 @@ namespace __detail
 #else
 #define _GLIBCXX_ITER_MOVE(__it) _GLIBCXX_MOVE(*__it)
 #endif
+
+  /* Mechanism for traversing ranges that are composed of "segments" of other
+     ranges, such as std::deque and ranges::join_view.  The callback __func
+     is sequentially called on each constituent segment as a pair of inner
+     iterators.  If the callback returns something other than the past-the-end
+     inner iterator, then the rest of the traversal gets short-circuited and
+     returns the iterator at which we stopped.  */
+  template<typename _Iter, typename _Fn>
+#if __cplusplus >= 201103L
+    constexpr
+    __enable_if_t<__enable_for_each_segment<_Iter>, _Iter>
+#else
+    _Iter
+#endif
+    __for_each_segment(_Iter __first, _Iter __last, _Fn __func)
+    {
+      return _Iter::_S_for_each_segment(_GLIBCXX_MOVE(__first),
+					_GLIBCXX_MOVE(__last),
+					_GLIBCXX_MOVE(__func));
+    }
 
   /// @endcond
 

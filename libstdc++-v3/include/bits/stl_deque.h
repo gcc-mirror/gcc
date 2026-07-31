@@ -417,6 +417,43 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       friend _Self
       operator+(difference_type __n, const _Self& __x) _GLIBCXX_NOEXCEPT
       { return __x + __n; }
+
+      template<typename _Fn>
+	static _Self
+	_S_for_each_segment(_Self __first, _Self __last, _Fn __func)
+	{
+	  if (__first._M_node == __last._M_node)
+	    {
+	      _Elt_pointer __ret = __func(__first._M_cur, __last._M_cur);
+	      if (__ret != __last._M_cur)
+		return _Self(__ret, __first._M_node);
+	      return __last;
+	    }
+	  else
+	    {
+	      _Elt_pointer __ret = __func(__first._M_cur, __first._M_last);
+	      if (__ret != __first._M_last)
+		return _Self(__ret, __first._M_node);
+
+	      for (_Map_pointer __node = __first._M_node + 1;
+		   __node < __last._M_node;
+		   ++__node)
+		{
+		  _Elt_pointer __end = *__node + _S_buffer_size();
+		  __ret = __func(*__node, __end);
+		  if (__ret != __end)
+		    return _Self(__ret, __node);
+		}
+
+	      __ret = __func(__last._M_first, __last._M_cur);
+	      if (__ret != __last._M_cur)
+		return _Self(__ret, __last._M_node);
+
+	      return __last;
+	    }
+	}
+
+      static const bool _S_enable_for_each_segment = true;
     };
 
   /**

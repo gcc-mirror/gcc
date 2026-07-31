@@ -582,6 +582,19 @@ namespace __gnu_debug
 	  return __lhs.base() != __rhs.base();
 	}
 #endif // three-way comparison
+
+      template<typename _Fn>
+	static _GLIBCXX14_CONSTEXPR _Self
+	_S_for_each_segment(_Self __first, _Self __last, _Fn __func)
+	{
+	  __glibcxx_check_valid_range(__first, __last);
+	  _Iterator __ret
+	    = _Iterator::_S_for_each_segment(__first.base(), __last.base(), __func);
+	  return _Self(__ret, __first._M_sequence);
+	}
+
+      static const bool _S_enable_for_each_segment
+	= std::__enable_for_each_segment<_Iterator>;
     };
 
   template<typename _Iterator, typename _Sequence>
