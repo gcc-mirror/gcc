@@ -1,3 +1,87 @@
+2026-07-30  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126209
+	* g++.dg/modules/anon-5_a.C: New test.
+	* g++.dg/modules/anon-5_b.C: New test.
+	* g++.dg/modules/anon-5_c.C: New test.
+	* g++.dg/modules/anon-5_d.C: New test.
+
+2026-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125866
+	* gfortran.dg/pr125866.f90: New test.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* gcc.dg/pr126464.c: New test.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126471
+	* gcc.dg/bitint-139.c: New test.
+
+2026-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-07-28  H.J. Lu  <hjl.tools@gmail.com>
+		    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/126410
+	* gcc.target/i386/pr126410-1a.c: New test.
+	* gcc.target/i386/pr126410-1b.c: Likewise.
+	* gcc.target/i386/pr126410-1c.c: Likewise.
+	* gcc.target/i386/pr126410-2a.c: Likewise.
+	* gcc.target/i386/pr126410-2b.c: Likewise.
+	* gcc.target/i386/pr126410-2c.c: Likewise.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126457
+	* gcc.dg/vect/vect-pr126457.c: New testcase.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126404
+	* gcc.dg/vect/vect-pr126404.c: Adjust.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126404
+	* gcc.dg/vect/vect-pr126404.c: New testcase.
+
+2026-07-30  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx10_2-satcvt-1.c: Update intrin names and
+	add _si alias tests.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttsd2sis-2.c: Update intrin names.
+	* gcc.target/i386/avx10_2-vcvttsd2usis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2sis-2.c: Ditto.
+	* gcc.target/i386/avx10_2-vcvttss2usis-2.c: Ditto.
+
 2026-07-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

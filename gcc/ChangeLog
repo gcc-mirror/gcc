@@ -1,3 +1,129 @@
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* range-op-float.cc (float_widen_lhs_range): Add also_inf argument
+	defaulted to false, if true, extend even lb of +inf and ub of -inf.
+	(operator_cast::op1_range): Adjust float_widen_lhs_range caller.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126084
+	* asan.cc (maybe_instrument_call): Don't instrument
+	BUILT_IN_ASAN_REPORT_{LOAD,STORE}{1,2,4,8,16,_N} builtins.
+	(initialize_sanitizer_builtins): Use
+	(*lang_hooks.types.type_for_mode) (ptr_mode, 0) instead of
+	pointer_sized_int_mode for PTRMODE arguments.
+	(asan_expand_poison_ifn): Likewise.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126471
+	* match.pd (parity(~X) is parity(X)): Only optimize this way
+	if element_precision is even, otherwise optimize into parity(X) ^ 1.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126446
+	* gimple-isel.cc (gimple_expand_vec_set_extract_expr): Punt if
+	idx doesn't fit into poly_uint64 but is poly_int_tree_p.  Use
+	known_ge rather than known_gt for out of bounds check.  Formatting
+	fixes.
+
+2026-07-30  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-29  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_canonicalize_comparison): Verify op0
+	for an UNSPEC_CC_TO_INT is a register.
+
+2026-07-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-07-28  H.J. Lu  <hjl.tools@gmail.com>
+		    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/126410
+	* tree-vect-stmts.cc (vectorizable_store): Only commit to
+	recorded base alignment when transforming.
+	(vectorizable_load): Likewise.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-07-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126457
+	* tree-vect-loop.cc (vectorizable_reduction): Reject
+	operations where not all operands correspond to a SLP
+	child early.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126404
+	* tree-vect-patterns.cc (vect_recog_popcount_clz_ctz_ffs_pattern):
+	Avoid recursing to vect_recog_ctz_ffs_pattern with a reduction.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126404
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Fixup
+	conversion detection.
+
+2026-07-30  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/avx10_2satcvtintrin.h
+	(_mm_cvtts_sd_i32): Renamed from _mm_cvtts_sd_epi32.
+	(_mm_cvtts_sd_si32): New alias of _mm_cvtts_sd_i32.
+	(_mm_cvtts_sd_u32): Renamed from _mm_cvtts_sd_epu32.
+	(_mm_cvtts_ss_i32): Renamed from _mm_cvtts_ss_epi32.
+	(_mm_cvtts_ss_si32): New alias of _mm_cvtts_ss_i32.
+	(_mm_cvtts_ss_u32): Renamed from _mm_cvtts_ss_epu32.
+	(_mm_cvtts_roundsd_i32): Renamed from _mm_cvtts_roundsd_epi32.
+	(_mm_cvtts_roundsd_si32): New alias of _mm_cvtts_roundsd_i32.
+	(_mm_cvtts_roundsd_u32): Renamed from _mm_cvtts_roundsd_epu32.
+	(_mm_cvtts_roundss_i32): Renamed from _mm_cvtts_roundss_epi32.
+	(_mm_cvtts_roundss_si32): New alias of _mm_cvtts_roundss_i32.
+	(_mm_cvtts_roundss_u32): Renamed from _mm_cvtts_roundss_epu32.
+	(_mm_cvtts_sd_i64): Renamed from _mm_cvtts_sd_epi64.
+	(_mm_cvtts_sd_si64): New alias of _mm_cvtts_sd_i64.
+	(_mm_cvtts_sd_u64): Renamed from _mm_cvtts_sd_epu64.
+	(_mm_cvtts_ss_i64): Renamed from _mm_cvtts_ss_epi64.
+	(_mm_cvtts_ss_si64): New alias of _mm_cvtts_ss_i64.
+	(_mm_cvtts_ss_u64): Renamed from _mm_cvtts_ss_epu64.
+	(_mm_cvtts_roundsd_i64): Renamed from _mm_cvtts_roundsd_epi64.
+	(_mm_cvtts_roundsd_si64): New alias of _mm_cvtts_roundsd_i64.
+	(_mm_cvtts_roundsd_u64): Renamed from _mm_cvtts_roundsd_epu64.
+	(_mm_cvtts_roundss_i64): Renamed from _mm_cvtts_roundss_epi64.
+	(_mm_cvtts_roundss_si64): New alias of _mm_cvtts_roundss_i64.
+	(_mm_cvtts_roundss_u64): Renamed from _mm_cvtts_roundss_epu64.
+
+2026-07-30  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	Backported from master:
+	2026-07-30  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/126438
+	* config/rs6000/darwin.h (REGISTER_NAMES): Add dmf registers.
+
 2026-07-29  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Backported from master:

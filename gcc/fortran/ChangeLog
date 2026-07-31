@@ -1,3 +1,11 @@
+2026-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125866
+	* expr.cc (is_CFI_desc): Add check for proc_name.
+
 2026-07-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backported from master:

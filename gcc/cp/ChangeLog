@@ -1,3 +1,12 @@
+2026-07-30  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126209
+	* module.cc (depset::hash::add_namespace_entities): Don't
+	force out anonymous namespaces.
+
 2026-07-27  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
