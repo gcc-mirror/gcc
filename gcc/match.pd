@@ -6609,7 +6609,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		     || TYPE_SIGN (c2_type) == TYPE_SIGN (from_type)))))
 	{
 	  tree_code ncmp = cmp == GE_EXPR ? LE_EXPR : GT_EXPR;
-	  widest_int c1 = wi::mask<widest_int>(TYPE_PRECISION (type) - 1, 0);
+	  widest_int c1 = wi::mask<widest_int>(TYPE_PRECISION (c1_type) - 1, 0);
 	  code = minmax_from_comparison (ncmp, @1, c1, wi::to_widest (@2));
 	}
 
