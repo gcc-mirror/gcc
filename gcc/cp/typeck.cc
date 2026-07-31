@@ -11476,6 +11476,11 @@ check_return_expr (tree retval, bool *no_warning, bool *dangling)
 
   if (processing_template_decl)
     {
+      /* If in expansion statement body, we don't know if the body
+	 will be instantiated at all.  */
+      if (in_expansion_stmt)
+	goto dependent;
+
       current_function_returns_value = 1;
 
       if (check_for_bare_parameter_packs (retval))

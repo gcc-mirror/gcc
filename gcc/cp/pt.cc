@@ -19983,9 +19983,12 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    TEMPLATE_FOR_INIT_STMT (stmt) = pop_stmt_list (init);
 	    add_stmt (stmt);
 	    TEMPLATE_FOR_BODY (stmt) = do_pushlevel (sk_block);
+	    auto save_in_expansion_stmt = in_expansion_stmt;
+	    in_expansion_stmt = true;
 	    bool prev = note_iteration_stmt_body_start ();
 	    RECUR (TEMPLATE_FOR_BODY (t));
 	    note_iteration_stmt_body_end (prev);
+	    in_expansion_stmt = save_in_expansion_stmt;
 	    TEMPLATE_FOR_BODY (stmt)
 	      = do_poplevel (TEMPLATE_FOR_BODY (stmt));
 	  }
