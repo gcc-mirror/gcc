@@ -1,3 +1,57 @@
+2026-07-30  Sebastian Galindo  <sebastian.galindo143@gmail.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Dump OpenACC DEVICE_TYPE
+	and DEVICE_NUM clauses.
+	(show_omp_node): Handle INIT, SHUTDOWN, and SET directives.
+	(show_code_node): Likewise.
+	* frontend-passes.cc (gfc_code_walker): Walk device_num_expr for
+	INIT, SHUTDOWN, and SET directives.
+	* gfortran.h (enum gfc_statement): Add ST_OACC_INIT,
+	ST_OACC_SHUTDOWN, and ST_OACC_SET.
+	(gfc_omp_clauses): Add device_num_expr and oacc_device_type
+	fields.
+	(enum gfc_exec_op): Add EXEC_OACC_INIT, EXEC_OACC_SHUTDOWN, and
+	EXEC_OACC_SET.
+	* match.h (gfc_match_oacc_init): Declare.
+	(gfc_match_oacc_shutdown): Likewise.
+	(gfc_match_oacc_set): Likewise.
+	* openmp.cc (gfc_free_omp_clauses): Free device_num_expr.
+	(match_oacc_device_type_kind): New helper to parse OpenACC
+	device_type arguments.
+	(match_oacc_device_type): New helper to match the OpenACC
+	DEVICE_TYPE clause.
+	(enum omp_mask2): Add OMP_CLAUSE_DEVICE_NUM.
+	(gfc_match_omp_clauses): Match OpenACC DEVICE_TYPE and
+	DEVICE_NUM clauses.
+	(OACC_INIT_CLAUSES): New clause mask.
+	(OACC_SHUTDOWN_CLAUSES): Likewise.
+	(OACC_SET_CLAUSES): Likewise.
+	(gfc_match_oacc_init): New matcher.
+	(gfc_match_oacc_shutdown): Likewise.
+	(gfc_match_oacc_set): Likewise.
+	(resolve_omp_clauses): Resolve DEVICE_NUM; require at least one
+	of DEVICE_TYPE and DEVICE_NUM on SET.
+	(oacc_code_to_statement): Map new exec ops to statement codes.
+	(gfc_resolve_oacc_directive): Resolve INIT, SET, and SHUTDOWN
+	directives.
+	* parse.cc (decode_oacc_directive): Recognize init, set, and
+	shutdown directives.
+	(next_statement): Treat INIT, SET, and SHUTDOWN as executable
+	statements.
+	(gfc_ascii_statement): Add ASCII names for new directives.
+	(is_oacc): Recognize new exec ops.
+	* resolve.cc (gfc_resolve_blocks): Resolve INIT, SET, and
+	SHUTDOWN directives.
+	* st.cc (gfc_free_statement): Free clauses for new directives.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Assert that
+	DEVICE_NUM and DEVICE_TYPE do not appear on construct clauses.
+	(gfc_trans_oacc_executable_directive): Lower INIT, SHUTDOWN, and
+	SET to GOACC builtins.
+	(gfc_trans_oacc_directive): Dispatch new directives.
+	* trans.cc (trans_code): Dispatch new directives.
+	* types.def (BT_FN_VOID_INT_INT): New definition.
+
 2026-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/125866

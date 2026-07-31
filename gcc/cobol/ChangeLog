@@ -1,3 +1,34 @@
+2026-07-30  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y (dialect_ok): Enable messages without a quoted tagline.
+	* scan.l: Add SECTION pattern so it is not handled by general NAME pattern.
+
+2026-07-30  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/120804
+	* cbldiag.h (enum cbl_diag_id_t): Add MfRedefinesFirst.
+	* cobol1.cc (cobol_langhook_handle_option): Handle option.
+	* gcobol.1: Document option.
+	* lang-specs.h: Add -Wredefines-first to spec string.
+	* lang.opt: Add option.
+	* messages.cc: Add option to dialect map.
+	* parse.y: Error message depends on option value.
+
+2026-07-30  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/126495
+	PR cobol/126496
+	* gcobol.1: Update manual to reflect new syntax.
+	* parse.y: Allow void sentence and increment s/r expected count to 7.
+	* scan.l: Lex $END-IF, optionally, as $END.
+
+2026-07-30  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/126393
+	* symbols.cc (symbol_redefines_root): Describe purpose in comment.
+	(symbol_explicitly_redefines): Remove function.
+	(symbols_update): Remove over-constrained validation.
+
 2026-07-29  James K. Lowden  <jklowden@cobolworx.com>
 
 	* parse_ante.h (parser_move_carefully): Use ordinary %s in message.

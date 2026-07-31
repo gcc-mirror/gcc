@@ -1,3 +1,16 @@
+2026-07-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126335
+	* typeck2.cc (split_nonconstant_init): Assert that DECL_INITIAL
+	is initially null.  Don't clear DECL_INITIAL if build_vec_init
+	set it.  Only clear TREE_READONLY if CODE has side-effects.
+
+2026-07-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126209
+	* module.cc (depset::hash::add_namespace_entities): Don't
+	force out anonymous namespaces.
+
 2026-07-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/126310

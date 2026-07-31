@@ -1,3 +1,226 @@
+2026-07-30  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range-storage.h (class frange_storage): Replace the fixed
+	m_pairs[MAX_PAIRS] with a variable-length trailing array and an
+	m_max_ranges capacity; declare size and the constructor.
+	* value-range-storage.cc (frange_storage::size): New.
+	(frange_storage::alloc): Allocate size (r) bytes.
+	(frange_storage::frange_storage): New; record m_max_ranges.
+	(frange_storage::fits_p): Check m_max_ranges.
+
+2026-07-30  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.cc (frange::union_): Merge both operands' sub-ranges
+	via set_pairs instead of widening to the hull.
+
+2026-07-30  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.cc (frange_min, frange_max): New.
+	(frange::intersect_nans): Use set_nan.
+	(frange::intersect): Meet every sub-range against every other.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_bb_vectorization_profitable_p):
+	Dump SLP graph entries.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_live_operation): Insert
+	on entry when the vector def is a default def or a constant.
+
+2026-07-30  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/122848
+	* match.pd (zero_extend & sign_extend -> zero_extend): New pattern.
+	(zero_extend | sign_extend -> sign_extend): Likewise.
+
+2026-07-30  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/109843
+	* match.pd ((signbit (x) cmp 0) cmp (signbit (y) cmp 0) ? y : -y):
+	New simplification to copysign (y, +-x).
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	* config/rs6000/rs6000.cc (rs6000_cost_data::density_test):
+	Start BB walk after labels.
+
+2026-07-30  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/autovec-opt.md: Match the new vwmacc-like pattern.
+	* config/riscv/genrvv-type-indexer.cc: Support
+	DOUBLE_TRUNC_SIGNED type for v[u]int types.
+	* config/riscv/riscv-vector-builtins-bases.cc (class vabd): New
+	class.
+	(class vabs): Ditto.
+	(class vabda): Ditto.
+	(BASE): Define.
+	* config/riscv/riscv-vector-builtins-bases.h: Ditto.
+	* config/riscv/riscv-vector-builtins-functions.def (REQUIRED_EXTENSIONS):
+	Ditto.
+	(vabs): Ditto.
+	(vabd): Ditto.
+	(vabdu): Ditto.
+	(vwabda): Ditto.
+	(vwabdau): Ditto.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_QU_HU_OPS):
+	Define.
+	(DEF_RVV_HU_SU_OPS): Ditto.
+	* config/riscv/riscv-vector-builtins.cc (qu_hu_ops): Ditto.
+	(hu_su_ops): Ditto.
+	(ss_args): Ditto.
+	(wwss_args): Ditto.
+	(qu_hu_vss_ops): Ditto
+	(qu_hu_vvv_ops): Ditto
+	(hu_su_wwss_ops): Ditto
+	(hu_su_wwvv_ops): Ditto
+	(u_s_ops): Ditto
+	(get_builtin_partition): Add Zvabd case.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext):
+	Ditto.
+	(enum rvv_builtin_partition): Ditto.
+	(required_ext_to_isa_name): Ditto.
+	(required_extensions_specified): Ditto.
+	* config/riscv/riscv_vector.h (__riscv_intrinsic_zvabd): Define.
+	* config/riscv/vector.md: Rewrite pred_widen_abd_plus as
+	vwmacc-like form.
+
+2026-07-30  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/autovec-opt.md (*vwabda<su><mode>): Limit mode to
+	VWEXTI_HS.
+	(*vwabda_right<su><mode>): Ditto.
+	* config/riscv/autovec.md (<su>abd<mode>3): Limit mode to VI_QH.
+	* config/riscv/vector-iterators.md: New iterators.  VWEXTI
+	rewritten using VWEXTI_HS and VWEXTI_D.
+	* config/riscv/vector.md: Limit modes in Zvabd patterns except
+	vabs.
+
+2026-07-30  Christopher Bazley  <chris.bazley@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_detect_scalar_stmt_subtype):
+	Call the new vect_is_truncating_store function and return 0 if
+	vect_is_truncating_store returns true.
+	(aarch64_sve_adjust_stmt_cost): Call vect_is_truncating_store
+	and assign 0 to stmt_cost if vect_is_truncating_store returns
+	true.
+	* tree-vectorizer.h (vect_is_truncating_store): New function
+	analogous to vect_is_extending_load.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Also
+	skip labels.
+	* tree-vect-slp.cc (_bb_vec_info::_bb_vec_info): Likewise.
+	* tree-vect-data-refs.cc (vect_analyze_early_break_dependences):
+	Skip labels.
+
+2026-07-30  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_add_slp_permutation): We no longer
+	need a copy when the extraction is readily available.
+	(vect_schedule_slp_node): Handle default defs or constants
+	in vector defs.
+
+2026-07-30  Sebastian Galindo  <sebastian.galindo143@gmail.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* builtin-types.def (BT_FN_VOID_INT_INT): New definition.
+	* omp-builtins.def (BUILT_IN_GOACC_INIT): New builtin for
+	init directive.
+	(BUILT_IN_GOACC_SHUTDOWN): New builtin for shutdown directive.
+	(BUILT_IN_GOACC_SET_DEVICE): New builtin for set directive.
+
+2026-07-30  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/123311
+	* match.pd (min(clz(x), clz(y)) -> clz(x | y)): New pattern.
+	(min(ctz(x), ctz(y)) -> ctz(x | y)): Likewise.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* range-op-float.cc (float_widen_lhs_range): Add also_inf argument
+	defaulted to false, if true, extend even lb of +inf and ub of -inf.
+	(operator_cast::op1_range): Adjust float_widen_lhs_range caller.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126084
+	* asan.cc (maybe_instrument_call): Don't instrument
+	BUILT_IN_ASAN_REPORT_{LOAD,STORE}{1,2,4,8,16,_N} builtins.
+	(initialize_sanitizer_builtins): Use
+	(*lang_hooks.types.type_for_mode) (ptr_mode, 0) instead of
+	pointer_sized_int_mode for PTRMODE arguments.
+	(asan_expand_poison_ifn): Likewise.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* match.pd (parity(bswap(x)) is parity(x)): Use BSWAP BITREVERSE
+	instead of BUILT_IN_BSWAP16 BUILT_IN_BSWAP32 BUILT_IN_BSWAP64
+	BUILT_IN_BSWAP128.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126471
+	* match.pd (parity(~X) is parity(X)): Only optimize this way
+	if element_precision is even, otherwise optimize into parity(X) ^ 1.
+
+2026-07-30  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/126449
+	* config/riscv/riscv.cc (riscv_legitimize_call_address): Use
+	STATIC_CHAIN_REGNUM when a sibcall address is materialized in
+	post-reload thunk code.
+
+2026-07-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (AArch64 Options): Spell CPU in uppercase
+	letters.
+	(RS/6000 and PowerPC Options): Ditto.
+	(S/390 and zSeries Options): Ditto.
+	(SPARC Options): Ditto.
+
+2026-07-30  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/126438
+	* config/rs6000/darwin.h (REGISTER_NAMES): Add dmf registers.
+
+2026-07-30  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.h (class frange): Declare set_pairs.  Document the
+	sub-range representation and that the no-argument bounds are the
+	convex hull.
+	* value-range.cc (frange_fusible_p): New.
+	(frange::set_pairs): New.
+	(frange::flush_denormals_to_zero): Reinstall the endpoints through
+	set_pairs.
+	(frange::normalize_kind): Note a range with a gap is never varying.
+	(frange::verify_range): Check the sub-range invariants.
+
+2026-07-30  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126455
+	* match.pd: Fix up patterns dealing with bitwise AND/OR/XOR
+	and comparisons for floating point types.
+
+2026-07-30  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126470
+	* match.pd (`(a != 0) ? (a / b) : 0`): Fix argument
+	to expr_no_side_effects_p.
+
+2026-07-30  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126456
+	* match.pd (`a CMP b ? MIN/MAX<a, c> : MIN/MAX<a, d>`): Fix
+	order of minmax_from_comparison arguments.
+
+2026-07-30  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/126446

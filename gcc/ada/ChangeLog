@@ -1,3 +1,9 @@
+2026-07-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126482
+	* sem_attr.adb (Analyze_Attribute): Treat Unrestricted_Access like
+	[Unchecked_]Access when it comes to the overloading of the prefix.
+
 2026-07-28  Marc Poulhiès  <poulhies@adacore.com>
 
 	* libgnat/libgnat_common.gpr (Ada_Flags): Remove the -gnatpg.

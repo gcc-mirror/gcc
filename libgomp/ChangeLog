@@ -1,3 +1,33 @@
+2026-07-30  Sebastian Galindo  <sebastian.galindo143@gmail.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* libgomp.map (GOACC_2.5): Export GOACC_init, GOACC_shutdown, and
+	GOACC_set_device.
+	* libgomp_g.h (GOACC_init): Declare.
+	(GOACC_shutdown): Likewise.
+	(GOACC_set_device): Likewise.
+	* oacc-init.c (GOACC_DIRECTIVE_DEVICE_MASK): New macro for
+	supported device types.
+	(acc_init_1): Accept explicit device number argument.
+	(acc_shutdown_1): Shut down a single device or all devices of a
+	type.
+	(goacc_attach_host_thread_to_device): Whitespace fix.
+	(GOACC_init): New entry point for init directive.
+	(GOACC_shutdown): New entry point for shutdown directive.
+	(GOACC_set_device): New entry point for set directive.
+	(acc_init): Pass default device number to acc_init_1.
+	(acc_shutdown): Pass default device number to acc_shutdown_1.
+	(acc_set_device_num): Whitespace fix.
+	(goacc_restore_bind): Whitespace fix.
+	(goacc_lazy_initialize): Pass default device number to acc_init_1.
+	* testsuite/libgomp.oacc-fortran/init-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/lib-1-directives.f90: New test.
+	* testsuite/libgomp.oacc-fortran/lib-4-directives.f90: New test.
+	* testsuite/libgomp.oacc-fortran/lib-5-directives.f90: New test.
+	* testsuite/libgomp.oacc-fortran/lib-5-init.f90: New test.
+	* testsuite/libgomp.oacc-fortran/set-1.f90: New test.
+	* testsuite/libgomp.oacc-fortran/shutdown-1.f90: New test.
+
 2026-07-29  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* testsuite/libgomp.c/target-device-type-1.c: Adjust.

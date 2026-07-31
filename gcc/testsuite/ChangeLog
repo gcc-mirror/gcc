@@ -1,3 +1,149 @@
+2026-07-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126335
+	* g++.dg/init/array68.C: New test.
+
+2026-07-30  Christopher Bazley  <chris.bazley@arm.com>
+
+	* gcc.target/aarch64/ffs.c: Relax test expectations.
+	* gcc.target/aarch64/frecpe_1.c: As above.
+	* gcc.target/aarch64/frecpe_2.c: As above.
+
+2026-07-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126209
+	* g++.dg/modules/anon-5_a.C: New test.
+	* g++.dg/modules/anon-5_b.C: New test.
+	* g++.dg/modules/anon-5_c.C: New test.
+	* g++.dg/modules/anon-5_d.C: New test.
+
+2026-07-30  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/122848
+	* gcc.dg/tree-ssa/pr122848.c: New test.
+
+2026-07-30  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/109843
+	* gcc.dg/tree-ssa/pr109843.c: New test.
+
+2026-07-30  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/intrinsic-detection.c: Add Zvabd.
+	* gcc.target/riscv/rvv/base/zvabd-intrinsic.c: New test.
+
+2026-07-30  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/autovec/zvabd-1.c: Add test functions
+	for cases where vabd/vwabda cannot be used.
+
+2026-07-30  Christopher Bazley  <chris.bazley@arm.com>
+
+	* gcc.target/aarch64/pr126480.c: New test.
+
+2026-07-30  Sebastian Galindo  <sebastian.galindo143@gmail.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* gfortran.dg/goacc/acc-init-1.f90: New test.
+	* gfortran.dg/goacc/acc-init-clauses-1.f90: New test.
+	* gfortran.dg/goacc/acc-set-1.f90: New test.
+	* gfortran.dg/goacc/acc-set-clauses-1.f90: New test.
+	* gfortran.dg/goacc/acc-shutdown-1.f90: New test.
+	* gfortran.dg/goacc/acc-shutdown-clauses-1.f90: New test.
+	* gfortran.dg/goacc/uninit-if-clause.f95: Test INIT with
+	uninitialized IF clause.
+	* gfortran.dg/goacc/update-if_present-2.f90: Update expected
+	errors now that INIT and SHUTDOWN are recognized.
+
+2026-07-30  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/123311
+	* gcc.dg/tree-ssa/pr123311-1.c: New test.
+	* gcc.dg/tree-ssa/pr123311-2.c: New test.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* gcc.dg/pr126464.c: New test.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/bitint-140.c: New test.
+
+2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126471
+	* gcc.dg/bitint-139.c: New test.
+
+2026-07-30  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/extract-sign-no-scratch.c: New test.
+	* gcc.target/riscv/extract-zero-no-scratch.c: New test.
+
+2026-07-30  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/126449
+	* g++.target/riscv/pr126449.C: New test.
+
+2026-07-30  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/126194
+	* g++.dg/lto/pr126194_2.C (main): Tolerate argc == 0.
+
+2026-07-30  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126470
+	* gcc.dg/torture/pr126470-1.c: New test.
+
+2026-07-30  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126456
+	* gcc.dg/torture/minmax-1.c: New test.
+	* gcc.dg/tree-ssa/minmax-29.c: New test.
+	* gcc.dg/tree-ssa/minmax-30.c: New test.
+	* gcc.dg/tree-ssa/minmax-31.c: New test.
+	* gcc.dg/tree-ssa/minmax-32.c: New test.
+
+2026-07-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-15.c: New test.
+
+2026-07-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u8-mf8.c: New test.
+
+2026-07-30  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i8-mf8.c: New test.
+
 2026-07-29  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
 
 	PR rtl-optimization/126434
