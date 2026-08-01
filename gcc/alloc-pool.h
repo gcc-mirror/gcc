@@ -100,7 +100,11 @@ public:
   const char *m_pool_name;
 };
 
-extern mem_alloc_description<pool_usage> pool_allocator_usage;
+inline auto &
+pool_allocator_usage ()
+{
+  return mem_alloc_description<pool_usage>::instance<ALLOC_POOL_ORIGIN> ();
+}
 
 #if 0
 /* If a pool with custom block size is needed, one might use the following
@@ -274,7 +278,7 @@ base_pool_allocator <TBlockAllocator>::initialize ()
 
   if (GATHER_STATISTICS)
     {
-      pool_usage *u = pool_allocator_usage.register_descriptor
+      pool_usage *u = pool_allocator_usage ().register_descriptor
 	(this, new mem_location (m_location));
 
       u->m_element_size = m_elt_size;
@@ -315,7 +319,7 @@ base_pool_allocator <TBlockAllocator>::release ()
 
   if (GATHER_STATISTICS && !after_memory_report)
     {
-      pool_allocator_usage.release_instance_overhead
+      pool_allocator_usage ().release_instance_overhead
 	(this, (m_elts_allocated - m_elts_free) * m_elt_size);
     }
 
@@ -357,7 +361,7 @@ base_pool_allocator <TBlockAllocator>::allocate ()
 
   if (GATHER_STATISTICS)
     {
-      pool_allocator_usage.register_instance_overhead (m_elt_size, this);
+      pool_allocator_usage ().register_instance_overhead (m_elt_size, this);
     }
 
 #ifdef ENABLE_VALGRIND_ANNOTATIONS
@@ -458,7 +462,7 @@ base_pool_allocator <TBlockAllocator>::remove (void *object)
 
   if (GATHER_STATISTICS)
     {
-      pool_allocator_usage.release_instance_overhead (this, m_elt_size);
+      pool_allocator_usage ().release_instance_overhead (this, m_elt_size);
     }
 }
 

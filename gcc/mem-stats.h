@@ -276,7 +276,23 @@ public:
 template <class T>
 class mem_alloc_description
 {
+
+  /* Constructor is private to enforce singleton.  */
+  mem_alloc_description ();
+
+  /* Destruction is not allowed, since we might be tracking
+     static objects with undefined destruction order.  */
+  ~mem_alloc_description () = delete;
+
 public:
+
+  template<mem_alloc_origin>
+  static auto &instance ()
+  {
+    static const auto self = new mem_alloc_description;
+    return *self;
+  }
+
   struct mem_location_hash : nofree_ptr_hash <mem_location>
   {
     static hashval_t
@@ -306,11 +322,6 @@ public:
   typedef hash_map <const void *, std::pair<T *, size_t> > reverse_object_map_t;
   typedef std::pair <mem_location *, T *> mem_list_t;
 
-  /* Default constructor.  */
-  mem_alloc_description ();
-
-  /* Default destructor.  */
-  ~mem_alloc_description ();
 
   /* Returns true if instance PTR is registered by the memory description.  */
   bool contains_descriptor_for_instance (const void *ptr);
@@ -558,27 +569,11 @@ template <class T>
 inline
 mem_alloc_description<T>::mem_alloc_description ()
 {
+  /* Note it is important to pass false for the 4th argument (GATHER_MEM_STATS)
+     to avoid infinite recursion in instance ().  */
   m_map = new mem_map_t (13, false, false, false);
   m_reverse_map = new reverse_mem_map_t (13, false, false, false);
   m_reverse_object_map = new reverse_object_map_t (13, false, false, false);
-}
-
-/* Default destructor.  */
-
-template <class T>
-inline
-mem_alloc_description<T>::~mem_alloc_description ()
-{
-  for (typename mem_map_t::iterator it = m_map->begin (); it != m_map->end ();
-       ++it)
-    {
-      delete (*it).first;
-      delete (*it).second;
-    }
-
-  delete m_map;
-  delete m_reverse_map;
-  delete m_reverse_object_map;
 }
 
 /* Get all tracked instances registered by the description. Items are filtered

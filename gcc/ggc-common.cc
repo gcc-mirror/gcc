@@ -1269,7 +1269,11 @@ public:
 };
 
 /* GCC memory description.  */
-static mem_alloc_description<ggc_usage> ggc_mem_desc;
+inline auto &
+ggc_mem_desc ()
+{
+  return mem_alloc_description<ggc_usage>::instance<GGC_ORIGIN> ();
+}
 
 /* Dump per-site memory statistics.  */
 
@@ -1281,17 +1285,17 @@ dump_ggc_loc_statistics ()
 
   ggc_collect (GGC_COLLECT_FORCE);
 
-  ggc_mem_desc.dump (GGC_ORIGIN);
+  ggc_mem_desc ().dump (GGC_ORIGIN);
 }
 
 /* Record ALLOCATED and OVERHEAD bytes to descriptor NAME:LINE (FUNCTION).  */
 void
 ggc_record_overhead (size_t allocated, size_t overhead, void *ptr MEM_STAT_DECL)
 {
-  ggc_usage *usage = ggc_mem_desc.register_descriptor (ptr, GGC_ORIGIN, false
-						       FINAL_PASS_MEM_STAT);
+  ggc_usage *usage = ggc_mem_desc ().register_descriptor (ptr, GGC_ORIGIN, false
+							  FINAL_PASS_MEM_STAT);
 
-  ggc_mem_desc.register_object_overhead (usage, allocated + overhead, ptr);
+  ggc_mem_desc ().register_object_overhead (usage, allocated + overhead, ptr);
   usage->register_overhead (allocated, overhead);
 }
 
@@ -1299,7 +1303,7 @@ ggc_record_overhead (size_t allocated, size_t overhead, void *ptr MEM_STAT_DECL)
 void
 ggc_free_overhead (void *ptr)
 {
-  ggc_mem_desc.release_object_overhead (ptr);
+  ggc_mem_desc ().release_object_overhead (ptr);
 }
 
 /* After live values has been marked, walk all recorded pointers and see if
@@ -1309,13 +1313,13 @@ ggc_prune_overhead_list (void)
 {
   typedef hash_map<const void *, std::pair<ggc_usage *, size_t > > map_t;
 
-  map_t::iterator it = ggc_mem_desc.m_reverse_object_map->begin ();
+  map_t::iterator it = ggc_mem_desc ().m_reverse_object_map->begin ();
 
-  for (; it != ggc_mem_desc.m_reverse_object_map->end (); ++it)
+  for (; it != ggc_mem_desc ().m_reverse_object_map->end (); ++it)
     if (!ggc_marked_p ((*it).first))
       {
         (*it).second.first->m_collected += (*it).second.second;
-	ggc_mem_desc.m_reverse_object_map->remove ((*it).first);
+	ggc_mem_desc ().m_reverse_object_map->remove ((*it).first);
       }
 }
 

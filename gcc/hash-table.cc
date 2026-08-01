@@ -101,17 +101,6 @@ hash_table_higher_prime_index (unsigned long n)
   return low;
 }
 
-/* Return a reference to the lazily initialized hash-table usage description.
-   This needs to be a function rather than a simple global variable so that it
-   is reliably initialized before hash table variables in other files such as
-   sem_item::m_type_hash_cache.  */
-mem_alloc_description<mem_usage>&
-hash_table_usage ()
-{
-  static mem_alloc_description<mem_usage> usage;
-  return usage;
-}
-
 /* Support function for statistics.  */
 void dump_hash_table_loc_statistics (void)
 {

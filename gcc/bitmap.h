@@ -272,9 +272,6 @@ public:
   uint64_t m_search_iter;
 };
 
-/* Bitmap memory description.  */
-extern mem_alloc_description<bitmap_usage> bitmap_mem_desc;
-
 /* Fundamental storage type for bitmap.  */
 
 typedef unsigned long BITMAP_WORD;

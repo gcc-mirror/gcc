@@ -40,7 +40,11 @@ using bitmap_splay_tree
   = splay_tree_without_parent<bitmap_splay_tree_accessors>;
 
 /* Memory allocation statistics purpose instance.  */
-mem_alloc_description<bitmap_usage> bitmap_mem_desc;
+inline auto &
+bitmap_mem_desc ()
+{
+  return mem_alloc_description<bitmap_usage>::instance<BITMAP_ORIGIN> ();
+}
 
 /* Static zero-initialized bitmap obstack used for default initialization
    of bitmap_head.  */
@@ -54,8 +58,8 @@ bitmap_register (bitmap b MEM_STAT_DECL)
   gcc_assert (b->alloc_descriptor == 0);
   b->alloc_descriptor = alloc_descriptor_max_uid++;
 
-  bitmap_mem_desc.register_descriptor (b->get_descriptor (), BITMAP_ORIGIN,
-				       false FINAL_PASS_MEM_STAT);
+  bitmap_mem_desc ().register_descriptor (b->get_descriptor (), BITMAP_ORIGIN,
+					  false FINAL_PASS_MEM_STAT);
 }
 
 /* Account the overhead.  */
@@ -63,8 +67,8 @@ static void
 register_overhead (bitmap b, size_t amount)
 {
   unsigned *d = b->get_descriptor ();
-  if (bitmap_mem_desc.contains_descriptor_for_instance (d))
-    bitmap_mem_desc.register_instance_overhead (amount, d);
+  if (bitmap_mem_desc ().contains_descriptor_for_instance (d))
+    bitmap_mem_desc ().register_instance_overhead (amount, d);
 }
 
 /* Release the overhead.  */
@@ -72,8 +76,8 @@ static void
 release_overhead (bitmap b, size_t amount, bool remove_from_map)
 {
   unsigned *d = b->get_descriptor ();
-  if (bitmap_mem_desc.contains_descriptor_for_instance (d))
-    bitmap_mem_desc.release_instance_overhead (d, amount, remove_from_map);
+  if (bitmap_mem_desc ().contains_descriptor_for_instance (d))
+    bitmap_mem_desc ().release_instance_overhead (d, amount, remove_from_map);
 }
 
 
@@ -374,7 +378,7 @@ bitmap_list_find_element (bitmap head, unsigned int indx)
      call initialize function.  */
   bitmap_usage *usage = NULL;
   if (GATHER_STATISTICS)
-    usage = bitmap_mem_desc.get_descriptor_for_instance (head);
+    usage = bitmap_mem_desc ().get_descriptor_for_instance (head);
 
   /* This bitmap has more than one element, and we're going to look
      through the elements list.  Count that as a search.  */
@@ -481,7 +485,7 @@ bitmap_tree_splay (bitmap head, bitmap_element *t, unsigned int indx)
 
   bitmap_usage *usage = NULL;
   if (GATHER_STATISTICS)
-    usage = bitmap_mem_desc.get_descriptor_for_instance (head);
+    usage = bitmap_mem_desc ().get_descriptor_for_instance (head);
 
   N.prev = N.next = NULL;
   l = r = &N;
@@ -587,7 +591,7 @@ bitmap_tree_find_element (bitmap head, unsigned int indx)
      call initialize function.  */
   bitmap_usage *usage = NULL;
   if (GATHER_STATISTICS)
-    usage = bitmap_mem_desc.get_descriptor_for_instance (head);
+    usage = bitmap_mem_desc ().get_descriptor_for_instance (head);
 
   /* This bitmap has more than one element, and we're going to look
      through the elements list.  Count that as a search.  */
@@ -2857,7 +2861,7 @@ dump_bitmap_statistics (void)
   if (!GATHER_STATISTICS)
     return;
 
-  bitmap_mem_desc.dump (BITMAP_ORIGIN);
+  bitmap_mem_desc ().dump (BITMAP_ORIGIN);
 }
 
 DEBUG_FUNCTION void
