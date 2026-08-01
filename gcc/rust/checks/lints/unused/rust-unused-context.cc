@@ -44,7 +44,12 @@ void
 UnusedContext::remove_assign (HirId id_def)
 {
   if (assigned_vars.find (id_def) != assigned_vars.end ())
-    assigned_vars[id_def].pop_back ();
+    {
+      assigned_vars[id_def].pop_back ();
+
+      if (assigned_vars[id_def].empty ())
+	assigned_vars.erase (id_def);
+    }
 }
 
 bool
