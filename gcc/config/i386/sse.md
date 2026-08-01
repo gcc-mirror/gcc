@@ -20602,6 +20602,21 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
+(define_insn "*vec_interleave_lowv4si_sse"
+  [(set (match_operand:V4SI 0 "register_operand" "=x")
+	(vec_select:V4SI
+	  (vec_concat:V8SI
+	    (match_operand:V4SI 1 "register_operand" "0")
+	    (match_operand:V4SI 2 "vector_operand" "xBm"))
+	  (parallel [(const_int 0) (const_int 4)
+		     (const_int 1) (const_int 5)])))]
+  "TARGET_SSE && !TARGET_SSE2"
+  "unpcklps\t{%2, %0|%0, %2}"
+  [(set_attr "isa" "noavx")
+   (set_attr "type" "sselog")
+   (set_attr "prefix" "orig")
+   (set_attr "mode" "V4SF")])
+
 (define_expand "vec_interleave_high<mode>"
   [(match_operand:VI_256 0 "register_operand")
    (match_operand:VI_256 1 "register_operand")

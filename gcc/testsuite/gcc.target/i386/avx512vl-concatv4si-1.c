@@ -20,4 +20,5 @@ f2 (V x, V *y)
   asm volatile ("" : "+v" (c));
 }
 
-/* { dg-final { scan-assembler-times "vpunpcklqdq\[^\n\r]*xmm16" 2 } } */
+/* { dg-final { scan-assembler-times "vpunpcklqdq\[^\n\r]*xmm16" 1 } } */
+/* { dg-final { scan-assembler-times "vpinsrd" 3 } } */
