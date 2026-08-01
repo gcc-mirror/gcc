@@ -257,18 +257,12 @@ public:
   void visit (AST::UseTreeRebind &) override;
   void visit (AST::UseDeclaration &use_decl) override;
   void visit (AST::Function &function) override;
-  void visit (AST::StructStruct &struct_item) override;
-  void visit (AST::TupleStruct &tuple_struct) override;
   void visit (AST::EnumItem &item) override;
-  void visit (AST::EnumItemTuple &item) override;
-  void visit (AST::EnumItemStruct &item) override;
   void visit (AST::EnumItemDiscriminant &item) override;
-  void visit (AST::Union &union_item) override;
   void visit (AST::Trait &trait) override;
   void visit (AST::InherentImpl &impl) override;
   void visit (AST::TraitImpl &impl) override;
   void visit (AST::ExternalTypeItem &item) override;
-  void visit (AST::ExternalStaticItem &item) override;
   void visit (AST::ExternBlock &block) override;
 
   // I don't think it would be possible to strip macros without expansion
@@ -297,16 +291,6 @@ public:
 private:
   MacroExpander &expander;
   NodeId macro_invoc_expect_id;
-
-  /**
-   * Helper to expand all macro invocations in lieu of types within a vector of
-   * fields (StructField or TupleField).
-   */
-  template <typename T> void expand_fields (std::vector<T> &fields)
-  {
-    for (auto &field : fields)
-      maybe_expand_type (field.get_field_type_ptr ());
-  }
 };
 
 } // namespace Rust
