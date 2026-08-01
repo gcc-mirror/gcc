@@ -447,7 +447,7 @@ get_value_as_double_from_qualified_field( const cblc_field_t *input,
                                           size_t input_s)
   {
   double retval;
-  int rdigits;
+  int128 val128;
 
   switch( input->type )
     {
@@ -458,11 +458,11 @@ get_value_as_double_from_qualified_field( const cblc_field_t *input,
       break;
 
     default:
-      retval = __gg__binary_value_from_qualified_field(&rdigits,
-                                                        input,
-                                                        input_o,
-                                                        input_s);
-      for(int i=0; i<rdigits; i++)
+      retval = __gg__int128_from_qualified_field(val128,
+                                                 input,
+                                                 input_o,
+                                                 input_s);
+      for(int i=0; i<val128.rdigits; i++)
         {
         retval /= 10.0;
         }
@@ -757,11 +757,9 @@ populate_ctm_from_date( struct cobol_tm &ctm,
                         size_t pdate_size)
   {
   // Get the date as an integer
-  int rdigits;
-  double JD = (double)__gg__binary_value_from_qualified_field(&rdigits,
-                                                              pdate,
-                                                              pdate_offset,
-                                                              pdate_size);
+  double JD = (double)__gg__int128_from_qualified_field(pdate,
+                                                        pdate_offset,
+                                                        pdate_size);
   populate_ctm_from_JD(ctm, JD);
   }
 
@@ -800,15 +798,14 @@ populate_ctm_from_time( struct cobol_tm &ctm,
 
   if( poffset )
     {
-    int rdigits;
-    int value = (int)__gg__binary_value_from_qualified_field(&rdigits,
-                                                              poffset,
-                                                              poffset_o,
-                                                              poffset_s);
-    if( rdigits )
+    int128 val128;
+    int value = (int)__gg__int128_from_qualified_field(val128,
+                                                       poffset,
+                                                       poffset_o,
+                                                       poffset_s);
+    if( val128.rdigits )
       {
-      value /= __gg__power_of_ten(rdigits);
-      rdigits = 0;
+      value /= __gg__power_of_ten(val128.rdigits);
       }
     ctm.tz_offset = value;
     if( abs(value) >= 1440 )
@@ -1210,8 +1207,6 @@ __gg__char( cblc_field_t *dest,
             size_t source_offset,
             size_t source_size)
   {
-  int rdigits;
-
   // The CHAR function takes an integer, the ordinal position.  It
   // returns a single-character string, which is the character at that
   // ordinal position in the DISPLAY collation.
@@ -1219,11 +1214,12 @@ __gg__char( cblc_field_t *dest,
   // 'A', with the ascii value of 65, is at the ordinal position 66
   // in the default collation.
 
-  int ordinal = (int)(__gg__binary_value_from_qualified_field(&rdigits,
-                                                              source,
-                                                              source_offset,
-                                                              source_size));
-  ordinal /= __gg__power_of_ten(rdigits);
+  int128 val128;
+  int ordinal = (int)(__gg__int128_from_qualified_field(val128,
+                                                        source,
+                                                        source_offset,
+                                                        source_size));
+  ordinal /= __gg__power_of_ten(val128.rdigits);
   ordinal -= 1;
 
   // We now look for that ordinal position in the collation table:
@@ -1301,7 +1297,6 @@ __gg__char_national(cblc_field_t *dest,
   // Since we haven't tried to implement collation sequences for National,
   // this whole subroutine is a Hail Mary play.  I frankly don't even know
   // why we tried.
-  int rdigits;
 
   // The CHAR function takes an integer, the ordinal position.  It
   // returns a single-character string, which is the character at that
@@ -1310,11 +1305,12 @@ __gg__char_national(cblc_field_t *dest,
   // 'A', with the ascii value of 65, is at the ordinal position 66
   // in the default collation.
 
-  int ordinal = (int)(__gg__binary_value_from_qualified_field(&rdigits,
-                                                              source,
-                                                              source_offset,
-                                                              source_size));
-  ordinal /= __gg__power_of_ten(rdigits);
+  int128 val128;
+  int ordinal = (int)(__gg__int128_from_qualified_field(val128,
+                                                        source,
+                                                        source_offset,
+                                                        source_size));
+  ordinal /= __gg__power_of_ten(val128.rdigits);
   ordinal -= 1;
 
   // We need to convert the ch character to the destination encoding.
@@ -1335,16 +1331,12 @@ __gg__combined_datetime(cblc_field_t *dest,
                         size_t arg2_offset,
                         size_t arg2_size)
   {
-  int rdigits;
-
-  __int128 val1 = (int)(__gg__binary_value_from_qualified_field(&rdigits,
-                                                                arg1,
-                                                                arg1_offset,
-                                                                arg1_size));
-  __int128 val2 = (int)(__gg__binary_value_from_qualified_field(&rdigits,
-                                                                arg2,
-                                                                arg2_offset,
-                                                                arg2_size));
+  __int128 val1 = (int)(__gg__int128_from_qualified_field(arg1,
+                                                          arg1_offset,
+                                                          arg1_size));
+  __int128 val2 = (int)(__gg__int128_from_qualified_field(arg2,
+                                                          arg2_offset,
+                                                          arg2_size));
   __int128 value = val1 * 1000000 + val2;
   __gg__int128_to_field(dest,
                         value,
@@ -1450,11 +1442,9 @@ __gg__date_of_integer(cblc_field_t *dest,
                       size_t source_size)
   {
   // FUNCTION DATE-OF-INTEGER
-  int rdigits;
-  double JD = (double)__gg__binary_value_from_qualified_field(&rdigits,
-                                                              source,
-                                                              source_offset,
-                                                              source_size);
+  double JD = (double)__gg__int128_from_qualified_field(source,
+                                                        source_offset,
+                                                        source_size);
   JD += JD_OF_1601_01_02;
   int Y;
   int M;
@@ -1483,10 +1473,9 @@ __gg__date_to_yyyymmdd( cblc_field_t *dest,
   {
   // FUNCTION DATE-TO-YYYYMMDD
   // See the discussion in ISO/IEC 2014-1989 Section 15.20
-  int rdigits;
-  int arg1 = (int)__gg__binary_value_from_qualified_field(&rdigits, par1, par1_o, par1_s);
-  int arg2 = (int)__gg__binary_value_from_qualified_field(&rdigits, par2, par2_o, par2_s );
-  int arg3 = (int)__gg__binary_value_from_qualified_field(&rdigits, par3, par3_o, par3_s);
+  int arg1 = (int)__gg__int128_from_qualified_field(par1, par1_o, par1_s);
+  int arg2 = (int)__gg__int128_from_qualified_field(par2, par2_o, par2_s );
+  int arg3 = (int)__gg__int128_from_qualified_field(par3, par3_o, par3_s);
 
   int yy   = arg1/10000;
   int mmdd = arg1%10000;
@@ -1507,11 +1496,9 @@ __gg__day_of_integer( cblc_field_t *dest,
                       size_t source_size)
   {
   // FUNCTION DAY-OF_INTEGER
-  int rdigits;
-  double JD = (double)__gg__binary_value_from_qualified_field(&rdigits,
-                                                              source,
-                                                              source_offset,
-                                                              source_size);
+  double JD = (double)__gg__int128_from_qualified_field(source,
+                                                        source_offset,
+                                                        source_size);
   JD += JD_OF_1601_01_02;
   int Y;
   int M;
@@ -1543,10 +1530,9 @@ __gg__day_to_yyyyddd( cblc_field_t *dest,
   {
   // FUNCTION DAY-TO-YYYYDDD
   // See the discussion in ISO/IEC 2014-1989 Section 15.20
-  int rdigits;
-  int arg1 = (int)__gg__binary_value_from_qualified_field(&rdigits, par1, par1_o, par1_s);
-  int arg2 = (int)__gg__binary_value_from_qualified_field(&rdigits, par2, par2_o, par2_s );
-  int arg3 = (int)__gg__binary_value_from_qualified_field(&rdigits, par3, par3_o, par3_s);
+  int arg1 = (int)__gg__int128_from_qualified_field(par1, par1_o, par1_s);
+  int arg2 = (int)__gg__int128_from_qualified_field(par2, par2_o, par2_s );
+  int arg3 = (int)__gg__int128_from_qualified_field(par3, par3_o, par3_s);
 
   int yy  = arg1/1000;
   int ddd = arg1%1000;
@@ -1619,12 +1605,12 @@ __gg__factorial(cblc_field_t *dest,
                 size_t source_size)
   {
   // FUNCTION FACTORIAL
-  int rdigits;
-  int N = (int)__gg__binary_value_from_qualified_field( &rdigits,
-                                                        source,
-                                                        source_offset,
-                                                        source_size);
-  while(rdigits--)
+  int128 val128;
+  int N = (int)__gg__int128_from_qualified_field(val128,
+                                                 source,
+                                                 source_offset,
+                                                 source_size);
+  while(val128.rdigits--)
     {
     N /= 10;
     }
@@ -1918,11 +1904,9 @@ __gg__integer_of_date(cblc_field_t *dest,
                       size_t source_size)
   {
   // FUNCTION INTEGER-OF-DATE
-  int rdigits;
-  long argument_1 = (long)(__gg__binary_value_from_qualified_field(&rdigits,
-                                                              source,
-                                                              source_offset,
-                                                              source_size));
+  long argument_1 = (long)(__gg__int128_from_qualified_field(source,
+                                                             source_offset,
+                                                             source_size));
 
   int retval = 0;
   static const int max_days[13] = {0, 31, 28, 31, 30, 31, 30,
@@ -1974,11 +1958,9 @@ __gg__integer_of_day( cblc_field_t *dest,
   {
   // FUNCTION INTEGER-OF-DAY
   // Convert YYYYDDD to "integer date"
-  int rdigits;
-  int yyyyddd = (int)__gg__binary_value_from_qualified_field( &rdigits,
-                                                              source,
-                                                              source_offset,
-                                                              source_size);
+  int yyyyddd = (int)__gg__int128_from_qualified_field(source,
+                                                       source_offset,
+                                                       source_size);
   int yyyy = yyyyddd / 1000;
   int ddd  = yyyyddd % 1000;
 
@@ -3776,7 +3758,6 @@ __gg__random( cblc_field_t *dest,
               size_t        input_size)
   {
   int32_t retval_31;
-  int rdigits;
 #if HAVE_INITSTATE_R && HAVE_SRANDOM_R && HAVE_RANDOM_R
   // This creates a thread-safe pseudo-random number generator
   // using input as the seed
@@ -3794,18 +3775,16 @@ __gg__random( cblc_field_t *dest,
     __gg__clock_gettime(&ts);
     initstate_r( ts.tv_nsec, state, state_len, buf);
     }
-  int seed = (int)__gg__binary_value_from_qualified_field(&rdigits,
-                                                          input,
-                                                          input_offset,
-                                                          input_size);
+  int seed = (int)__gg__int128_from_qualified_field(input,
+                                                    input_offset,
+                                                    input_size);
   srandom_r(seed, buf);
 
   random_r(buf, &retval_31);
 #else
-  seed = (unsigned)__gg__binary_value_from_qualified_field(&rdigits,
-                                                          input,
-                                                          input_offset,
-                                                          input_size);
+  seed = (unsigned)__gg__int128_from_qualified_field(input,
+                                                     input_offset,
+                                                     input_size);
   srandom (seed);
   retval_31 = random ();
 #endif
@@ -4022,11 +4001,9 @@ __gg__test_date_yyyymmdd( cblc_field_t *dest,
                           size_t source_offset,
                           size_t source_size)
   {
-  int rdigits;
-  int yyyymmdd = (int)__gg__binary_value_from_qualified_field(&rdigits,
-                                                              source,
-                                                              source_offset,
-                                                              source_size);
+  int yyyymmdd = (int)__gg__int128_from_qualified_field(source,
+                                                        source_offset,
+                                                        source_size);
   int retval;
   int mmdd = yyyymmdd % 10000;
   int mm   = mmdd     /   100;
@@ -4075,11 +4052,9 @@ __gg__test_day_yyyyddd( cblc_field_t *dest,
                         size_t source_offset,
                         size_t source_size)
   {
-  int rdigits;
-  int yyyyddd = (int)__gg__binary_value_from_qualified_field(&rdigits,
-                                                              source,
-                                                              source_offset,
-                                                              source_size);
+  int yyyyddd = (int)__gg__int128_from_qualified_field(source,
+                                                       source_offset,
+                                                       source_size);
   int retval;
   int ddd  = yyyyddd % 1000;
   int yyyy = yyyyddd / 1000;
@@ -4164,10 +4139,9 @@ __gg__year_to_yyyy( cblc_field_t *dest,
                     size_t par3_s)
   {
   // FUNCTION YEAR_TO_YYYY
-  int rdigits;
-  int yy   = (int)__gg__binary_value_from_qualified_field(&rdigits, par1, par1_o, par1_s);
-  int arg2 = (int)__gg__binary_value_from_qualified_field(&rdigits, par2, par2_o, par2_s );
-  int arg3 = (int)__gg__binary_value_from_qualified_field(&rdigits, par3, par3_o, par3_s);
+  int yy   = (int)__gg__int128_from_qualified_field(par1, par1_o, par1_s);
+  int arg2 = (int)__gg__int128_from_qualified_field(par2, par2_o, par2_s );
+  int arg3 = (int)__gg__int128_from_qualified_field(par3, par3_o, par3_s);
 
   int retval = year_to_yyyy(yy, arg2, arg3);
 
@@ -6021,11 +5995,9 @@ __gg__locale_time_from_seconds( cblc_field_t *dest,
     // Default locale
     tm tm = {};
 
-    int rdigits=0;
-    long seconds = (long)__gg__binary_value_from_qualified_field(&rdigits,
-                                                                 arg1,
-                                                                 arg1_o,
-                                                                 arg1_s);
+    long seconds = (long)__gg__int128_from_qualified_field(arg1,
+                                                           arg1_o,
+                                                           arg1_s);
     tm.tm_hour   = seconds/3600;
     tm.tm_min    = ((seconds%3600) / 60) % 100;
     tm.tm_sec    = seconds % 100;

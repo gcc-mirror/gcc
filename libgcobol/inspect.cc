@@ -1161,25 +1161,24 @@ inspect_backward_format_1(const size_t integers[],
 
   for(size_t i = 0; i<id_2_results.size(); i++)
     {
-    int rdigits;
-    __int128 id_2_value
-      = __gg__binary_value_from_qualified_field(&rdigits,
-                                                id_2_results[i].id2,
-                                                id_2_results[i].id2_o,
-                                                id_2_results[i].id2_s);
-    while(rdigits--)
+    int128 id_2_value;
+    __gg__int128_from_qualified_field(id_2_value,
+                                      id_2_results[i].id2,
+                                      id_2_results[i].id2_o,
+                                      id_2_results[i].id2_s);
+    while(id_2_value.rdigits--)
       {
-      id_2_value /= 10.0;
+      id_2_value.i128 /= 10.0;
       }
 
     // Accumulate what we've found into it
-    id_2_value += id_2_results[i].result;
+    id_2_value.i128 += id_2_results[i].result;
 
     // And put it back:
     __gg__int128_to_qualified_field(id_2_results[i].id2,
                                     id_2_results[i].id2_o,
                                     id_2_results[i].id2_s,
-                                    id_2_value,
+                                    id_2_value.i128,
                                     0,
                                     truncation_e,
                                     NULL);
@@ -1531,25 +1530,24 @@ __gg__inspect_format_1( int backward,
 
   for(size_t i = 0; i<id_2_results.size(); i++)
     {
-    int rdigits;
-    __int128 id_2_value
-      = __gg__binary_value_from_qualified_field(&rdigits,
-                                                id_2_results[i].id2,
-                                                id_2_results[i].id2_o,
-                                                id_2_results[i].id2_s);
-    while(rdigits--)
+    int128 id_2_value;
+    __gg__int128_from_qualified_field(id_2_value,
+                                      id_2_results[i].id2,
+                                      id_2_results[i].id2_o,
+                                      id_2_results[i].id2_s);
+    while(id_2_value.rdigits--)
       {
-      id_2_value /= 10.0;
+      id_2_value.i128 /= 10.0;
       }
 
     // Accumulate what we've found into it
-    id_2_value += id_2_results[i].result;
+    id_2_value.i128 += id_2_results[i].result;
 
     // And put it back:
     __gg__int128_to_qualified_field(id_2_results[i].id2,
                                     id_2_results[i].id2_o,
                                     id_2_results[i].id2_s,
-                                    id_2_value,
+                                    id_2_value.i128,
                                     0,
                                     truncation_e,
                                     NULL);
@@ -2994,25 +2992,24 @@ __gg__inspect_format_1_sbc( int backward,
 
   for(size_t i = 0; i<id_2_results.size(); i++)
     {
-    int rdigits;
-    __int128 id_2_value
-      = __gg__binary_value_from_qualified_field(&rdigits,
-                                                id_2_results[i].id2,
-                                                id_2_results[i].id2_o,
-                                                id_2_results[i].id2_s);
-    while(rdigits--)
+    int128 id_2_value;
+    __gg__int128_from_qualified_field(id_2_value,
+                                      id_2_results[i].id2,
+                                      id_2_results[i].id2_o,
+                                      id_2_results[i].id2_s);
+    while(id_2_value.rdigits--)
       {
-      id_2_value /= 10.0;
+      id_2_value.i128 /= 10.0;
       }
 
     // Accumulate what we've found into it
-    id_2_value += id_2_results[i].result;
+    id_2_value.i128 += id_2_results[i].result;
 
     // And put it back:
     __gg__int128_to_qualified_field(id_2_results[i].id2,
                                     id_2_results[i].id2_o,
                                     id_2_results[i].id2_s,
-                                    id_2_value,
+                                    id_2_value.i128,
                                     0,
                                     truncation_e,
                                     NULL);

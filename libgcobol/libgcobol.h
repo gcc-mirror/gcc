@@ -105,6 +105,12 @@ struct cbl_timespec
   long    tv_nsec;   // Nanoseconds.
   } ;
 
+typedef struct int128
+  {
+  __int128 i128;
+  int      rdigits;
+  }int128;
+
 extern "C" void __gg__clock_gettime(struct cbl_timespec *tp);
 
 extern "C" GCOB_FP128 __gg__float128_from_location(
@@ -116,10 +122,13 @@ extern "C" void __gg__realloc_if_necessary( char **dest,
                                             size_t *dest_size,
                                             size_t new_size);
 extern "C" void __gg__set_exception_file(const cblc_file_t *file);
-extern "C" __int128 __gg__binary_value_from_qualified_field(int     *rdigits,
-                                                            const cblc_field_t *var,
-                                                            size_t     offset,
-                                                            size_t     size);
+__int128 __gg__int128_from_qualified_field(const cblc_field_t *var,
+                                           size_t              offset,
+                                           size_t              size);
+__int128 __gg__int128_from_qualified_field(struct int128      &i128,
+                                           const cblc_field_t *var,
+                                           size_t              offset,
+                                           size_t              size);
 extern "C"  GCOB_FP128 __gg__float128_from_qualified_field(const cblc_field_t *field,
                                                           size_t offset,
                                                           size_t size);

@@ -598,12 +598,14 @@ get_int256_from_qualified_field(int256 &var,
                                 size_t field_o,
                                 size_t field_s)
   {
-  __int128 incoming = __gg__binary_value_from_qualified_field(&var.rdigits,
-                                                              field,
-                                                              field_o,
-                                                              field_s);
-  int256_set_u128(var, 0, static_cast<uint128>(incoming));
-  if( incoming < 0 )
+  int128 incoming;
+  __gg__int128_from_qualified_field(incoming,
+                                    field,
+                                    field_o,
+                                    field_s);
+  var.rdigits = incoming.rdigits;
+  int256_set_u128(var, 0, static_cast<uint128>(incoming.i128));
+  if( incoming.i128 < 0 )
     {
     // This value is negative, so extend the sign bit:
     var.i64[2] = UINT64_MAX;
@@ -1232,8 +1234,7 @@ __gg__subtractf3( cbl_arith_format_t ,
 
 static bool multiply_intermediate_is_float;
 static GCOB_FP128 multiply_intermediate_float;
-static __int128  multiply_intermediate_int128;
-static int       multiply_intermediate_rdigits;
+static int128 multiply_intermediate_int128;
 
 extern "C"
 void
@@ -1262,23 +1263,22 @@ __gg__multiplyf1_phase1(cbl_arith_format_t ,
   else
     {
     multiply_intermediate_is_float = false;
-    multiply_intermediate_int128 =
-        __gg__binary_value_from_qualified_field(&multiply_intermediate_rdigits,
-                                                A[0].field,
-                                                A[0].offset,
-                                                A[0].size);
+    __gg__int128_from_qualified_field(multiply_intermediate_int128,
+                                      A[0].field,
+                                      A[0].offset,
+                                      A[0].size);
     }
   }
 
 static
 void multiply_int128_by_int128(int256 &ABCD,
-                               __int128 ab_value,
-                               __int128 cd_value)
+                               const int128 &ab_value,
+                               const int128 &cd_value)
   {
-  bool is_negative = (ab_value < 0) != (cd_value < 0);
+  bool is_negative = (ab_value.i128 < 0) != (cd_value.i128 < 0);
 
-  uint128 abs_ab = int128_abs_as_uint128(ab_value);
-  uint128 abs_cd = int128_abs_as_uint128(cd_value);
+  uint128 abs_ab = int128_abs_as_uint128(ab_value.i128);
+  uint128 abs_cd = int128_abs_as_uint128(cd_value.i128);
 
   uint128 AC00;
   uint128 AD0;
@@ -1319,11 +1319,13 @@ void multiply_int128_by_int128(int256 &ABCD,
   temp.i64[3] = uint128_hi64(AC00);
   add_int256_to_int256(ABCD, temp);
 
-  // ABCD is now a 256-bit integer with rdigits decimal places
+  // ABCD is now a 256-bit integer
   if( is_negative )
     {
     negate_int256(ABCD);
     }
+  ABCD.rdigits = ab_value.rdigits + cd_value.rdigits;
+
   }
 
 extern "C"
@@ -1370,10 +1372,11 @@ __gg__multiplyf1_phase2(cbl_arith_format_t ,
     if( C[0].field->type == FldFloat )
       {
       // fixed * float
-      a_value = (GCOB_FP128) multiply_intermediate_int128;
-      if( multiply_intermediate_rdigits )
+      a_value = (GCOB_FP128) multiply_intermediate_int128.i128;
+      if( multiply_intermediate_int128.rdigits )
         {
-        a_value /= (GCOB_FP128)__gg__power_of_ten(multiply_intermediate_rdigits);
+        a_value /= 
+          (GCOB_FP128)__gg__power_of_ten(multiply_intermediate_int128.rdigits);
         }
       b_value = __gg__float128_from_qualified_field(C[0].field,
                                                     C[0].offset,
@@ -1387,19 +1390,17 @@ __gg__multiplyf1_phase2(cbl_arith_format_t ,
       // We have two 128-bit numbers.  Call them AB and CD, where A, B, C, D are
       // 64-bit "digits".  We need to multiply them to create a 256-bit result
 
-      int cd_rdigits;
-      __int128 ab_value = multiply_intermediate_int128;
-      __int128 cd_value = __gg__binary_value_from_qualified_field(&cd_rdigits,
-                                                                  C[0].field,
-                                                                  C[0].offset,
-                                                                  C[0].size);
+      int128 ab_value = multiply_intermediate_int128;
 
-      int rdigits = multiply_intermediate_rdigits + cd_rdigits;
+      int128 cd_value;
 
+      __gg__int128_from_qualified_field(cd_value,
+                                        C[0].field,
+                                        C[0].offset,
+                                        C[0].size);
       int256 ABCD;
       multiply_int128_by_int128(ABCD, ab_value, cd_value);
 
-      ABCD.rdigits = rdigits;
       int overflow = squeeze_int256(ABCD);
       if( overflow )
         {
@@ -1409,7 +1410,7 @@ __gg__multiplyf1_phase2(cbl_arith_format_t ,
       *compute_error |= conditional_stash(C[0].field, C[0].offset, C[0].size,
                                           on_size_error,
                                           int256_get_u128(ABCD, 0),
-                                          rdigits,
+                                          ABCD.rdigits,
                                           *rounded++);
 
       goto done;
@@ -1467,18 +1468,17 @@ __gg__multiplyf2( cbl_arith_format_t ,
     }
   else
     {
-    int a_rdigits;
-    int b_rdigits;
-    __int128 a_value = __gg__binary_value_from_qualified_field(&a_rdigits,
-                                                               A[0].field,
-                                                               A[0].offset,
-                                                               A[0].size);
-    __int128 b_value = __gg__binary_value_from_qualified_field(&b_rdigits,
-                                                               B[0].field,
-                                                               B[0].offset,
-                                                               B[0].size);
+    int128 a_value;
+    int128 b_value;
+    __gg__int128_from_qualified_field(a_value,
+                                      A[0].field,
+                                      A[0].offset,
+                                      A[0].size);
+    __gg__int128_from_qualified_field(b_value,
+                                      B[0].field,
+                                      B[0].offset,
+                                      B[0].size);
     multiply_int128_by_int128(product_fix, a_value, b_value);
-    product_fix.rdigits = a_rdigits + b_rdigits;
     int overflow = squeeze_int256(product_fix);
     if( overflow )
       {
@@ -1798,12 +1798,12 @@ __gg__dividef1_phase2(cbl_arith_format_t ,
     {
     if( C[0].field->type == FldFloat )
       {
-      // gixed * float
-      a_value = (GCOB_FP128) multiply_intermediate_int128;
-      if( multiply_intermediate_rdigits )
+      // fixed by float
+      a_value = (GCOB_FP128) multiply_intermediate_int128.i128;
+      if( multiply_intermediate_int128.rdigits )
         {
         a_value /=
-                 (GCOB_FP128)__gg__power_of_ten(multiply_intermediate_rdigits);
+          (GCOB_FP128)__gg__power_of_ten(multiply_intermediate_int128.rdigits);
         }
       b_value = __gg__float128_from_qualified_field(C[0].field,
                                                     C[0].offset,
@@ -1812,26 +1812,20 @@ __gg__dividef1_phase2(cbl_arith_format_t ,
       }
     else
       {
-      // fixed times fixed
-
-      // We have two 128-bit numbers.  Call them AB and CD, where A, B, C, D
-      // are 64-bit "digits".  We need to multiply them to create a 256-bit
-      // result
-
-      int dividend_rdigits;
-      __int128 dividend = __gg__binary_value_from_qualified_field(
-                                                  &dividend_rdigits,
-                                                  C[0].field,
-                                                  C[0].offset,
-                                                  C[0].size);
+      // fixed by fixed
+      int128 dividend;
+      __gg__int128_from_qualified_field(dividend,
+                                        C[0].field,
+                                        C[0].offset,
+                                        C[0].size);
 
       int256 quotient;
 
       divide_int128_by_int128(quotient,
-                              dividend,
-                              dividend_rdigits,
-                              multiply_intermediate_int128,
-                              multiply_intermediate_rdigits,
+                              dividend.i128,
+                              dividend.rdigits,
+                              multiply_intermediate_int128.i128,
+                              multiply_intermediate_int128.rdigits,
                               compute_error);
 
       int overflow = squeeze_int256(quotient);
@@ -1914,26 +1908,24 @@ __gg__dividef23(cbl_arith_format_t ,
   else
     {
     // fixed divided by fixed
-    int dividend_rdigits;
-    __int128 dividend = __gg__binary_value_from_qualified_field(
-                                                    &dividend_rdigits,
-                                                    A[0].field,
-                                                    A[0].offset,
-                                                    A[0].size);
+    int128 dividend;
+    __gg__int128_from_qualified_field(dividend,
+                                      A[0].field,
+                                      A[0].offset,
+                                      A[0].size);
 
-    int divisor_rdigits;
-    __int128 divisor = __gg__binary_value_from_qualified_field(
-                                                    &divisor_rdigits,
-                                                    B[0].field,
-                                                    B[0].offset,
-                                                    B[0].size);
+    int128 divisor;
+    __gg__int128_from_qualified_field(divisor,
+                                      B[0].field,
+                                      B[0].offset,
+                                      B[0].size);
     int256 quotient;
 
     divide_int128_by_int128(quotient,
-                            dividend,
-                            dividend_rdigits,
-                            divisor,
-                            divisor_rdigits,
+                            dividend.i128,
+                            dividend.rdigits,
+                            divisor.i128,
+                            divisor.rdigits,
                             compute_error);
 
 
@@ -2006,27 +1998,24 @@ __gg__dividef45(cbl_arith_format_t ,
   else
     {
     // fixed divided by fixed
-    int dividend_rdigits;
-    __int128 dividend = __gg__binary_value_from_qualified_field(
-                                              &dividend_rdigits,
-                                              A[0].field,
-                                              A[0].offset,
-                                              A[0].size);
-
-    int divisor_rdigits;
-    __int128 divisor = __gg__binary_value_from_qualified_field(
-                                              &divisor_rdigits,
-                                              B[0].field,
-                                              B[0].offset,
-                                              B[0].size);
+    int128 dividend;
+    __gg__int128_from_qualified_field(dividend,
+                                      A[0].field,
+                                      A[0].offset,
+                                      A[0].size);
+    int128 divisor;                   
+    __gg__int128_from_qualified_field(divisor,
+                                      B[0].field,
+                                      B[0].offset,
+                                      B[0].size);
 
     int256 quotient;
 
     divide_int128_by_int128(quotient,
-                            dividend,
-                            dividend_rdigits,
-                            divisor,
-                            divisor_rdigits,
+                            dividend.i128,
+                            dividend.rdigits,
+                            divisor.i128,
+                            divisor.rdigits,
                             compute_error);
 
     *compute_error |= squeeze_int256(quotient);
@@ -2034,8 +2023,7 @@ __gg__dividef45(cbl_arith_format_t ,
     if( !*compute_error )
       {
       // We are going to need the unrounded quotient to calculate the remainder
-      __int128 unrounded_quotient = 0;
-      int      unrounded_quotient_digits;
+      int128 unrounded_quotient;
       rounded_p += 1;// Skip the rounded value for the remainder
       cbl_round_t rounded = *rounded_p;
       switch(rounded)
@@ -2049,11 +2037,10 @@ __gg__dividef45(cbl_arith_format_t ,
                                               int256_get_u128(quotient, 0),
                                               quotient.rdigits,
                                               *rounded_p++);
-          unrounded_quotient = __gg__binary_value_from_qualified_field(
-                                                  &unrounded_quotient_digits,
-                                                  C[1].field,
-                                                  C[1].offset,
-                                                  C[1].size);
+          __gg__int128_from_qualified_field(unrounded_quotient,
+                                            C[1].field,
+                                            C[1].offset,
+                                            C[1].size);
           break;
           }
         default:
@@ -2063,11 +2050,10 @@ __gg__dividef45(cbl_arith_format_t ,
                             int256_get_u128(quotient, 0),
                             quotient.rdigits,
                             truncation_e);
-          unrounded_quotient = __gg__binary_value_from_qualified_field(
-                                                  &unrounded_quotient_digits,
-                                                  C[1].field,
-                                                  C[1].offset,
-                                                  C[1].size);
+          __gg__int128_from_qualified_field(unrounded_quotient,
+                                            C[1].field,
+                                            C[1].offset,
+                                            C[1].size);
           // At this point, we assign the rounded quotient to *C.
           *compute_error |= conditional_stash(C[1].field,
                                               C[1].offset,
@@ -2100,12 +2086,11 @@ __gg__dividef45(cbl_arith_format_t ,
         int256 temp;
         // Step 1: Multiply the unrounded quotient by the divisor
         multiply_int128_by_int128(temp, unrounded_quotient, divisor);
-        temp.rdigits = unrounded_quotient_digits + divisor_rdigits;
 
         int256 odividend = {};
-        int256_set_u128(odividend, 0, static_cast<uint128>(dividend));
-        odividend.rdigits = dividend_rdigits;
-        if( dividend < 0 )
+        int256_set_u128(odividend, 0, static_cast<uint128>(dividend.i128));
+        odividend.rdigits = dividend.rdigits;
+        if( dividend.i128 < 0 )
           {
           odividend.i64[2] = UINT64_MAX;
           odividend.i64[3] = UINT64_MAX;

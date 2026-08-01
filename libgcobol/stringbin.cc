@@ -407,7 +407,7 @@ packed_from_combined(const COMBINED &combined)
 
   if( combined.run > 9)
     {
-    // Stage 1: pull from int128 until the top half is zero.
+    // Stage 1: pull from __int128 until the top half is zero.
     __int128 value128 = combined.val128;
 #if COBOL_LITTLE_ENDIAN
     while(value128>>64)

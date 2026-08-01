@@ -1036,7 +1036,7 @@ get_power_of_ten(int n)
     };
   if( n < 0 || n>MAX_POWER*2)     // The most we can handle is 10**38
     {
-    fprintf(stderr, "Trying to raise 10 to %d as an int128, which we can't do.\n", n);
+    fprintf(stderr, "Trying to raise 10 to %d as an __int128, which we can't do.\n", n);
     fprintf(stderr, "The problem is in %s.\n", __func__);
     abort();
     }

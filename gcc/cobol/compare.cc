@@ -389,7 +389,7 @@ numeric_compare(tree        &left,
      So consider comparing a 32.0 to a 1.9.  To normalize them, I would have to
      multiply the 32.0 by 10^9, which would mean I would be comparing a
      32.9 to a 1.9 .  This is mathematically correct; the problem is that an
-     int128 can hold only only 38 digits, and thus can't handle the 41 digits
+     __int128 can hold only only 38 digits, and thus can't handle the 41 digits
      of a 32.9.
 
      So, in this routine I make sure the two values can be normalized into no

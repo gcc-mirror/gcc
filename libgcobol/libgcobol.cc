@@ -1350,7 +1350,7 @@ __gg__power_of_ten(int n)
   if( n < 0 || n>MAX_POWER*2)     // The most we can handle is 10**38
     {
     fprintf(stderr,
-            "Trying to raise 10 to %d as an int128, which we can't do.\n",
+            "Trying to raise 10 to %d as an __int128, which we can't do.\n",
             n);
     fprintf(stderr,
             "The problem is in %s %s:%d.\n",
@@ -6422,7 +6422,6 @@ __gg__move( cblc_field_t        *fdest,
   int size_error = 0; // This is the return value
 
   __int128 value;
-  int rdigits;
 
   charmap_t *charmap = __gg__get_charmap(fdest->encoding);
   int stride = charmap->stride();
@@ -6598,10 +6597,9 @@ __gg__move( cblc_field_t        *fdest,
                                       ? -fsource->rdigits : 0) ;
 
               // Pick up the absolute value of the source
-              value = __gg__binary_value_from_qualified_field(&rdigits,
-                                                              fsource,
-                                                              source_offset,
-                                                              source_size);
+              value = __gg__int128_from_qualified_field(fsource,
+                                                        source_offset,
+                                                        source_size);
 
               char ach[128];
 
@@ -6676,10 +6674,9 @@ __gg__move( cblc_field_t        *fdest,
               char ach[128];
 
               // Turn the integer source into a value:
-              value = __gg__binary_value_from_qualified_field(&rdigits,
-                                                              fsource,
-                                                              source_offset,
-                                                              source_size);
+              value = __gg__int128_from_qualified_field(fsource,
+                                                        source_offset,
+                                                        source_size);
 
               source_size   = fsource->digits;
 
@@ -6793,10 +6790,9 @@ __gg__move( cblc_field_t        *fdest,
             char ach[128];
 
             // Turn the integer source into a value:
-            value = __gg__binary_value_from_qualified_field(&rdigits,
-                                                            fsource,
-                                                            source_offset,
-                                                            source_size);
+            value = __gg__int128_from_qualified_field(fsource,
+                                                      source_offset,
+                                                      source_size);
             // Turn the integer value into a string:
             __gg__binary_to_string_encoded(ach,
                                            source_size,
@@ -6881,36 +6877,37 @@ __gg__move( cblc_field_t        *fdest,
           case FldLiteralN:
             {
             // We are moving a number to a number:
-            value = __gg__binary_value_from_qualified_field(&rdigits,
-                                                            fsource,
-                                                            source_offset,
-                                                            source_size);
+            int128 val128;
+            __gg__int128_from_qualified_field(val128,
+                                              fsource,
+                                              source_offset,
+                                              source_size);
 
             if( truncation_mode == trunc_std_e )
               {
               // We need to adjust the value to have the rdigits of the
               // the destination:
 
-              int scaler = rdigits - fdest->rdigits;
+              int scaler = val128.rdigits - fdest->rdigits;
               if( scaler > 0 )
                 {
-                value /= __gg__power_of_ten(scaler);
-                rdigits -= scaler;
+                val128.i128 /= __gg__power_of_ten(scaler);
+                val128.rdigits -= scaler;
                 }
               else if( scaler < 0 )
                 {
-                value *= __gg__power_of_ten(-scaler);
-                rdigits -= scaler;
+                val128.i128 *= __gg__power_of_ten(-scaler);
+                val128.rdigits -= scaler;
                 }
-              if( value < 0 )
+              if( val128.i128 < 0 )
                 {
-                value = -value;
-                value %= __gg__power_of_ten(fdest->digits);
-                value = -value;
+                val128.i128 = -val128.i128;
+                val128.i128 %= __gg__power_of_ten(fdest->digits);
+                val128.i128 = -val128.i128;
                 }
               else
                 {
-                value %= __gg__power_of_ten(fdest->digits);
+                val128.i128 %= __gg__power_of_ten(fdest->digits);
                 }
               }
 
@@ -6918,8 +6915,8 @@ __gg__move( cblc_field_t        *fdest,
                                   fdest,
                                   dest_offset,
                                   dest_size,
-                                  value,
-                                  rdigits,
+                                  val128.i128,
+                                  val128.rdigits,
                                   rounded,
                                   &size_error );
             break;
@@ -6927,7 +6924,7 @@ __gg__move( cblc_field_t        *fdest,
 
           case FldFloat:
             {
-            rdigits = get_scaled_rdigits(fdest);
+            int rdigits = get_scaled_rdigits(fdest);
             bool negative = false;
             __int128 value128 = 0;
             switch(fsource->capacity)
@@ -7032,15 +7029,16 @@ __gg__move( cblc_field_t        *fdest,
           case FldLiteralN:
             {
             // We are moving a number to a number:
-            value = __gg__binary_value_from_qualified_field(&rdigits,
-                                                            fsource,
-                                                            source_offset,
-                                                            source_size);
+            int128 val128;
+            __gg__int128_from_qualified_field(val128,
+                                              fsource,
+                                              source_offset,
+                                              source_size);
            __gg__int128_to_qualified_field( fdest,
                                             dest_offset,
                                             dest_size,
-                                            value,
-                                            rdigits,
+                                            val128.i128,
+                                            val128.rdigits,
                                             rounded,
                                             &size_error );
             break;
@@ -7050,7 +7048,6 @@ __gg__move( cblc_field_t        *fdest,
             {
             // We are converted a floating-point value fixed-point
 
-            rdigits = get_scaled_rdigits(fdest);
             GCOB_FP128 fp128=0;
             switch(fsource->capacity)
               {
@@ -7112,10 +7109,9 @@ __gg__move( cblc_field_t        *fdest,
                               + (fsource->rdigits<0 ? -fsource->rdigits : 0) ;
 
             // Pick up the absolute value of the source
-            value = __gg__binary_value_from_qualified_field(&rdigits,
-                                                            fsource,
-                                                            source_offset,
-                                                            source_size);
+            value = __gg__int128_from_qualified_field(fsource,
+                                                      source_offset,
+                                                      source_size);
             char ach[64];
 
             // Convert it to the full complement of digits available
@@ -8048,9 +8044,7 @@ __gg__string(const size_t integers[], const cblc_referlet_t *ref)
   int overflow = 0;
   if( ref[INDEX_OF_POINTER].field )
     {
-    int rdigits;
-    int p  = (size_t)__gg__binary_value_from_qualified_field(
-                                                    &rdigits,
+    int p  = (size_t)__gg__int128_from_qualified_field(
                                                     ref[INDEX_OF_POINTER]
                                                       .field,
                                                     ref[INDEX_OF_POINTER]
@@ -8603,17 +8597,37 @@ __gg__binary_value_from_field(   int *rdigits,
                                    var->capacity);
   }
 
-extern "C"
 __int128
-__gg__binary_value_from_qualified_field(int          *rdigits,
-                                        const cblc_field_t *var,
+__gg__int128_from_qualified_field(const cblc_field_t *var,
                                         size_t        offset,
                                         size_t        size)
   {
-  return  get_binary_value_local(  rdigits,
+  // Use this version when rdigits isn't relevant
+  int rdigits;
+  return  get_binary_value_local( &rdigits,
                                    var,
                                    var->data + offset,
                                    size);
+  }
+
+__int128
+__gg__int128_from_qualified_field(int128             &i128,
+                                  const cblc_field_t *var,
+                                  size_t             offset,
+                                  size_t             size)
+  {
+  // This routine does double-duty.  It converts VAR to a fixed-point
+  // int128 that carries an rdigits value.  It also returns the __int128
+  // portion of that value, because many routines that know there are no
+  // rdigits also call this routine.  This is a holdover from the time
+  // before this routine was refactored to carry the rdigits, which were
+  // maintained in the external logic before int128::rdigits was implemented/
+
+  i128.i128 = get_binary_value_local(&i128.rdigits,
+                                     var,
+                                     var->data + offset,
+                                     size);
+  return i128.i128;
   }
 
 extern "C"
@@ -8650,14 +8664,14 @@ __gg__float128_from_qualified_field(const cblc_field_t *field,
     }
   else
     {
-    int rdigits;
-    retval = (GCOB_FP128)__gg__binary_value_from_qualified_field(&rdigits,
-                                                                  field,
-                                                                  offset,
-                                                                  size);
-    if( rdigits )
+    int128 i128;
+    retval = (GCOB_FP128)__gg__int128_from_qualified_field(i128,
+                                                           field,
+                                                           offset,
+                                                           size);
+    if( i128.rdigits )
       {
-      retval /= (GCOB_FP128)__gg__power_of_ten(rdigits);
+      retval /= (GCOB_FP128)__gg__power_of_ten(i128.rdigits);
       }
     }
   return retval;
@@ -10077,20 +10091,16 @@ __gg__unstring( const cblc_referlet_t *id2,
 
   if( id8  )
     {
-    int rdigits;
-    tally = (int)__gg__binary_value_from_qualified_field(&rdigits,
-                                                         id8,
-                                                         id8_o,
-                                                         id8_s);
+    tally = (int)__gg__int128_from_qualified_field(id8,
+                                                   id8_o,
+                                                   id8_s);
     }
 
   if( id7 )
     {
-    int rdigits;
-    int p = (int)__gg__binary_value_from_qualified_field(&rdigits,
-                                                         id7,
-                                                         id7_o,
-                                                         id7_s);
+    int p = (int)__gg__int128_from_qualified_field(id7,
+                                                   id7_o,
+                                                   id7_s);
     if( p < 1 )
       {
       overflow = 1;
