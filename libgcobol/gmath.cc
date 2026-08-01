@@ -356,6 +356,7 @@ typedef unsigned __int128 uint128;
 typedef struct int256
   {
   uint64_t i64[4];
+  int rdigits;
   }int256;
 
 static inline uint64_t
@@ -424,19 +425,58 @@ multiply_int256_by_int64(int256 &product, const uint64_t multiplier)
   return carry != 0;
   }
 
-static int
+static void
+scale_int256_by_digits(int256 &val, int digits)
+  {
+  if( digits )
+    {
+    uint64_t pot;
+    while(digits > 17)
+      {
+      pot = (uint64_t)__gg__power_of_ten(17);
+      multiply_int256_by_int64(val, pot);
+      digits -= 17;
+      }
+    pot = (uint64_t)__gg__power_of_ten(digits);
+    multiply_int256_by_int64(val, pot);
+    }
+  }
+
+static void
 add_int256_to_int256(int256 &sum, const int256 &addend)
   {
-  uint128 carry = 0;
-  for(int i=0; i<4; i++)
+  // We are accumulating addend into sum.
+
+  // We have to scale the one with fewer rdigits to match the one with
+  // greater rdigits.
+  if( addend.rdigits >= sum.rdigits )
     {
-    uint128 temp = static_cast<uint128>(sum.i64[i]) + addend.i64[i] + carry;
-    sum.i64[i] = uint128_lo64(temp);
-    carry = temp >> 64;
+    // This is the easier case.  We are accumulating into sum, so we can scale
+    // it in place:
+    scale_int256_by_digits(sum, addend.rdigits - sum.rdigits);
+    sum.rdigits += addend.rdigits - sum.rdigits;
+    uint128 carry = 0;
+    for(int i=0; i<4; i++)
+      {
+      uint128 temp = static_cast<uint128>(sum.i64[i]) + addend.i64[i] + carry;
+      sum.i64[i] = uint128_lo64(temp);
+      carry = temp >> 64;
+      }
     }
-  // Indicate that an overflow took place.  This is not useful unless the two
-  // values are known to be positive.
-  return carry != 0;
+  else
+    {
+    // We aren't rude enough to change addend.  Besides, we declared it const,
+    // just in case we lost our heads.
+    int256 addend2 = addend;
+    scale_int256_by_digits(addend2, sum.rdigits - addend2.rdigits);
+    uint128 carry = 0;
+    for(int i=0; i<4; i++)
+      {
+      uint128 temp = static_cast<uint128>(sum.i64[i]) + addend2.i64[i] + carry;
+      sum.i64[i] = uint128_lo64(temp);
+      carry = temp >> 64;
+      }
+    }
   }
 
 static void
@@ -456,25 +496,11 @@ negate_int256(int256 &val)
     }
   }
 
-static int
+static void
 subtract_int256_from_int256(int256 &difference, int256 subtrahend)
   {
   negate_int256(subtrahend);
-  return add_int256_to_int256(difference, subtrahend);
-  }
-
-static void
-scale_int256_by_digits(int256 &val, int digits)
-  {
-  uint64_t pot;
-  while(digits > 17)
-    {
-    pot = (uint64_t)__gg__power_of_ten(17);
-    multiply_int256_by_int64(val, pot);
-    digits -= 17;
-    }
-  pot = (uint64_t)__gg__power_of_ten(digits);
-  multiply_int256_by_int64(val, pot);
+  add_int256_to_int256(difference, subtrahend);
   }
 
 static void
@@ -491,7 +517,7 @@ divide_int256_by_int64(int256 &val, uint64_t divisor)
   }
 
 static int
-squeeze_int256(int256 &val, int &rdigits)
+squeeze_int256(int256 &val)
   {
   int overflow = 0;
   // It has been decreed that at this juncture the result must fit into
@@ -507,10 +533,10 @@ squeeze_int256(int256 &val, int &rdigits)
   // As long as there are some decimal places left, we hold our nose and
   // right-shift a too-large value rightward by decimal digits.  In other
   // words, we truncate the fractional part to make room for the integer part:
-  while(rdigits > 0 && int256_get_u128(val, 1) )
+  while(val.rdigits > 0 && int256_get_u128(val, 1) )
     {
     divide_int256_by_int64(val, 10UL);
-    rdigits -= 1;
+    val.rdigits -= 1;
     }
 
   // At this point, to be useful, val has to have fewer than 128 bits:
@@ -535,21 +561,21 @@ squeeze_int256(int256 &val, int &rdigits)
     // cppcheck-suppress badBitmaskCheck
       |  static_cast<uint128>(0x098a224000000000ULL);
 
-    // If we still have some rdigits to throw away, we can keep shrinking
+    // If we still have some val.rdigits to throw away, we can keep shrinking
     // the value:
 
-    while(rdigits > 0 && int256_get_u128(val, 0) >= biggest  )
+    while(val.rdigits > 0 && int256_get_u128(val, 0) >= biggest  )
       {
       divide_int256_by_int64(val, 10UL);
-      rdigits -= 1;
+      val.rdigits -= 1;
       }
 
-    // And we have to make sure that rdigits isn't too big
+    // And we have to make sure that val.rdigits isn't too big
 
-    while(rdigits > MAX_FIXED_POINT_DIGITS)
+    while(val.rdigits > MAX_FIXED_POINT_DIGITS)
       {
       divide_int256_by_int64(val, 10UL);
-      rdigits -= 1;
+      val.rdigits -= 1;
       }
 
     if( int256_get_u128(val, 0) >= biggest )
@@ -568,12 +594,11 @@ squeeze_int256(int256 &val, int &rdigits)
 
 static void
 get_int256_from_qualified_field(int256 &var,
-                                int &rdigits,
                           const cblc_field_t *field,
                                 size_t field_o,
                                 size_t field_s)
   {
-  __int128 incoming = __gg__binary_value_from_qualified_field(&rdigits,
+  __int128 incoming = __gg__binary_value_from_qualified_field(&var.rdigits,
                                                               field,
                                                               field_o,
                                                               field_s);
@@ -593,7 +618,6 @@ get_int256_from_qualified_field(int256 &var,
   }
 
 static int256 phase1_result;
-static int    phase1_rdigits;
 
 static GCOB_FP128 phase1_result_float;
 
@@ -617,7 +641,6 @@ __gg__add_fixed_phase1( cbl_arith_format_t ,
 
   // Let us prime the pump with the first value of A[]
   get_int256_from_qualified_field(phase1_result,
-                                  phase1_rdigits,
                                   AA[0].field,
                                   AA[0].offset,
                                   AA[0].size);
@@ -626,34 +649,18 @@ __gg__add_fixed_phase1( cbl_arith_format_t ,
 
   for( size_t i=1; i<nA; i++ )
     {
-    int temp_rdigits;
     int256 temp = {};
     get_int256_from_qualified_field(temp,
-                                    temp_rdigits,
                                     AA[i].field,
                                     AA[i].offset,
                                     AA[i].size);
 
-    // We have to scale the one with fewer rdigits to match the one with
-    // greater rdigits:
-    if( phase1_rdigits > temp_rdigits )
-      {
-      scale_int256_by_digits(temp, phase1_rdigits - temp_rdigits);
-      }
-    else if( phase1_rdigits < temp_rdigits )
-      {
-      scale_int256_by_digits(phase1_result, temp_rdigits - phase1_rdigits);
-      phase1_rdigits = temp_rdigits;
-      }
-
-    // The two numbers have the same number of rdigits.  It's now safe to add
-    // them.
     add_int256_to_int256(phase1_result, temp);
     }
 
-  // phase1_result/phase1_rdigits now reflect the sum of all A[]
+  // phase1_result/phase1_result.rdigits now reflect the sum of all A[]
 
-  int overflow = squeeze_int256(phase1_result, phase1_rdigits);
+  int overflow = squeeze_int256(phase1_result);
   if( overflow )
     {
     *compute_error |= compute_error_overflow;
@@ -687,7 +694,7 @@ __gg__addf1_fixed_phase2( cbl_arith_format_t ,
 
     // Convert the intermediate
     GCOB_FP128 value_a = (GCOB_FP128)int256_get_u128(phase1_result, 0);
-    value_a /= __gg__power_of_ten(phase1_rdigits);
+    value_a /= __gg__power_of_ten(phase1_result.rdigits);
 
     // Pick up the target
     GCOB_FP128 value_b = __gg__float128_from_qualified_field(C[0].field,
@@ -706,37 +713,20 @@ __gg__addf1_fixed_phase2( cbl_arith_format_t ,
     }
   else
     {
-    // We have a fixed-point intermediate, and we are accumulating intoi a
+    // We have a fixed-point intermediate, and we are accumulating into a
     // fixed point target.
     int256 value_a   = phase1_result;
-    int    rdigits_a = phase1_rdigits;
-
     int256 value_b = {};
-    int rdigits_b;
+
+    value_a.rdigits = phase1_result.rdigits;
 
     get_int256_from_qualified_field(value_b,
-                                    rdigits_b,
                                     C[0].field,
                                     C[0].offset,
                                     C[0].size);
-
-    // We have to scale the one with fewer rdigits to match the one with
-    // greater rdigits:
-    if( rdigits_a > rdigits_b )
-      {
-      scale_int256_by_digits(value_b, rdigits_a - rdigits_b);
-      }
-    else if( rdigits_a < rdigits_b )
-      {
-      scale_int256_by_digits(value_a, rdigits_b - rdigits_a);
-      rdigits_a = rdigits_b;
-      }
-
-    // The two numbers have the same number of rdigits.  It's now safe to add
-    // them.
     add_int256_to_int256(value_a, value_b);
 
-    int overflow = squeeze_int256(value_a, rdigits_a);
+    int overflow = squeeze_int256(value_a);
     if( overflow )
       {
       *compute_error |= compute_error_overflow;
@@ -748,7 +738,7 @@ __gg__addf1_fixed_phase2( cbl_arith_format_t ,
                                         C[0].size,
                                         on_size_error,
                                         int256_get_u128(value_a, 0),
-                                        rdigits_a,
+                                        value_a.rdigits,
                                         *rounded++);
     }
   }
@@ -780,7 +770,7 @@ __gg__fixed_phase2_assign_to_c( cbl_arith_format_t ,
 
     // Convert the intermediate
     GCOB_FP128 value_a = (GCOB_FP128)int256_get_u128(phase1_result, 0);
-    value_a /= __gg__power_of_ten(phase1_rdigits);
+    value_a /= __gg__power_of_ten(phase1_result.rdigits);
 
     *compute_error |= conditional_stash(CC[0].field, CC[0].offset, CC[0].size,
                                         on_size_error,
@@ -792,9 +782,9 @@ __gg__fixed_phase2_assign_to_c( cbl_arith_format_t ,
     // We have a fixed-point intermediate, and we are accumulating intoi a
     // fixed point target.
     int256 value_a   = phase1_result;
-    int    rdigits_a = phase1_rdigits;
+    value_a.rdigits = phase1_result.rdigits;
 
-    int overflow = squeeze_int256(value_a, rdigits_a);
+    int overflow = squeeze_int256(value_a);
     if( overflow )
       {
       *compute_error |= compute_error_overflow;
@@ -815,7 +805,7 @@ __gg__fixed_phase2_assign_to_c( cbl_arith_format_t ,
     *compute_error |= conditional_stash(CC[0].field, CC[0].offset, CC[0].size,
                                         on_size_error,
                                         int256_get_u128(value_a, 0),
-                                        rdigits_a,
+                                        value_a.rdigits,
                                        *rounded++);
     }
   }
@@ -950,38 +940,19 @@ __gg__addf3(cbl_arith_format_t ,
       {
       // We have are doing fixed-point arithmetic.
       int256 value_a;
-      int    rdigits_a;
-
       int256 value_b;
-      int rdigits_b;
 
       get_int256_from_qualified_field(value_a,
-                                      rdigits_a,
                                       A[i].field,
                                       A[i].offset,
                                       A[i].size);
       get_int256_from_qualified_field(value_b,
-                                      rdigits_b,
                                       C[i].field,
                                       C[i].offset,
                                       C[i].size);
-      // We have to scale the one with fewer rdigits to match the one with greater
-      // rdigits:
-      if( rdigits_a > rdigits_b )
-        {
-        scale_int256_by_digits(value_b, rdigits_a - rdigits_b);
-        }
-      else if( rdigits_a < rdigits_b )
-        {
-        scale_int256_by_digits(value_a, rdigits_b - rdigits_a);
-        rdigits_a = rdigits_b;
-        }
-
-      // The two numbers have the same number of rdigits.  It's now safe to add
-      // them.
       add_int256_to_int256(value_a, value_b);
 
-      int overflow = squeeze_int256(value_a, rdigits_a);
+      int overflow = squeeze_int256(value_a);
       if( overflow )
         {
         *compute_error |= compute_error_overflow;
@@ -991,7 +962,7 @@ __gg__addf3(cbl_arith_format_t ,
       *compute_error |= conditional_stash(C[i].field, C[i].offset, C[i].size,
                                           on_size_error,
                                           int256_get_u128(value_a, 0),
-                                          rdigits_a,
+                                          value_a.rdigits,
                                           *rounded++);
       }
     }
@@ -1024,7 +995,7 @@ __gg__subtractf1_fixed_phase2(cbl_arith_format_t ,
 
     // Convert the intermediate
     GCOB_FP128 value_a = (GCOB_FP128)int256_get_u128(phase1_result, 0);
-    value_a /= __gg__power_of_ten(phase1_rdigits);
+    value_a /= __gg__power_of_ten(phase1_result.rdigits);
 
     // Pick up the target
     GCOB_FP128 value_b = __gg__float128_from_qualified_field(C[0].field,
@@ -1044,34 +1015,18 @@ __gg__subtractf1_fixed_phase2(cbl_arith_format_t ,
     // We have a fixed-point intermediate, and we are accumulating intoi a
     // fixed point target.
     int256 value_a   = phase1_result;
-    int    rdigits_a = phase1_rdigits;
+    value_a.rdigits = phase1_result.rdigits;
 
     int256 value_b = {};
-    int rdigits_b;
 
     get_int256_from_qualified_field(value_b,
-                                    rdigits_b,
                                     C[0].field,
                                     C[0].offset,
                                     C[0].size);
 
-    // We have to scale the one with fewer rdigits to match the one with
-    // greater rdigits:
-    if( rdigits_a > rdigits_b )
-      {
-      scale_int256_by_digits(value_b, rdigits_a - rdigits_b);
-      rdigits_b = rdigits_a;
-      }
-    else if( rdigits_a < rdigits_b )
-      {
-      scale_int256_by_digits(value_a, rdigits_b - rdigits_a);
-      }
-
-    // The two numbers have the same number of rdigits.  It's now safe to add
-    // them.
     subtract_int256_from_int256(value_b, value_a);
 
-    int overflow = squeeze_int256(value_b, rdigits_b);
+    int overflow = squeeze_int256(value_b);
     if( overflow )
       {
       *compute_error |= compute_error_overflow;
@@ -1081,7 +1036,7 @@ __gg__subtractf1_fixed_phase2(cbl_arith_format_t ,
     *compute_error |= conditional_stash(C[0].field, C[0].offset, C[0].size,
                                         on_size_error,
                                         int256_get_u128(value_b, 0),
-                                        rdigits_b,
+                                        value_b.rdigits,
                                         *rounded++);
     }
   }
@@ -1117,40 +1072,24 @@ __gg__subtractf2_fixed_phase1(cbl_arith_format_t ,
   // Subtract the phase1_result from the B value:
 
   int256 value_a   = phase1_result;
-  int    rdigits_a = phase1_rdigits;
+  value_a.rdigits = phase1_result.rdigits;
 
   int256 value_b = {};
-  int rdigits_b;
 
   get_int256_from_qualified_field(value_b,
-                                  rdigits_b,
                                   BB[0].field,
                                   BB[0].offset,
                                   BB[0].size);
 
-  // We have to scale the one with fewer rdigits to match the one with greater
-  // rdigits:
-  if( rdigits_a > rdigits_b )
-    {
-    scale_int256_by_digits(value_b, rdigits_a - rdigits_b);
-    rdigits_b = rdigits_a;
-    }
-  else if( rdigits_a < rdigits_b )
-    {
-    scale_int256_by_digits(value_a, rdigits_b - rdigits_a);
-    }
-
-  // The two numbers have the same number of rdigits.  It's now safe to take
-  // the difference.
   subtract_int256_from_int256(value_b, value_a);
 
-  int overflow = squeeze_int256(value_b, rdigits_b);
+  int overflow = squeeze_int256(value_b);
   if( overflow )
     {
     *compute_error |= compute_error_overflow;
     }
   phase1_result  = value_b;
-  phase1_rdigits = rdigits_b;
+  phase1_result.rdigits = value_b.rdigits;
   }
 
 extern "C"
@@ -1261,39 +1200,20 @@ __gg__subtractf3( cbl_arith_format_t ,
       {
       // We are doing fixed-point subtraction.
       int256 value_a;
-      int    rdigits_a;
-
       int256 value_b;
-      int rdigits_b;
 
       get_int256_from_qualified_field(value_a,
-                                      rdigits_a,
                                       A[i].field,
                                       A[i].offset,
                                       A[i].size);
       get_int256_from_qualified_field(value_b,
-                                      rdigits_b,
                                       C[i].field,
                                       C[i].offset,
                                       C[i].size);
 
-      // We have to scale the one with fewer rdigits to match the one with
-      // greater rdigits:
-      if( rdigits_a > rdigits_b )
-        {
-        scale_int256_by_digits(value_b, rdigits_a - rdigits_b);
-        rdigits_b = rdigits_a;
-        }
-      else if( rdigits_a < rdigits_b )
-        {
-        scale_int256_by_digits(value_a, rdigits_b - rdigits_a);
-        }
-
-      // The two numbers have the same number of rdigits.  It's now safe to add
-      // them.
       subtract_int256_from_int256(value_b, value_a);
 
-      int overflow = squeeze_int256(value_b, rdigits_b);
+      int overflow = squeeze_int256(value_b);
 
       if( overflow )
         {
@@ -1304,7 +1224,7 @@ __gg__subtractf3( cbl_arith_format_t ,
       *compute_error |= conditional_stash(C[i].field, C[i].offset, C[i].size,
                                           on_size_error,
                                           int256_get_u128(value_b, 0),
-                                          rdigits_b,
+                                          value_b.rdigits,
                                           *rounded++);
       }
     }
@@ -1406,8 +1326,6 @@ void multiply_int128_by_int128(int256 &ABCD,
     }
   }
 
-
-
 extern "C"
 void
 __gg__multiplyf1_phase2(cbl_arith_format_t ,
@@ -1476,12 +1394,13 @@ __gg__multiplyf1_phase2(cbl_arith_format_t ,
                                                                   C[0].offset,
                                                                   C[0].size);
 
-      int256 ABCD;
       int rdigits = multiply_intermediate_rdigits + cd_rdigits;
 
+      int256 ABCD;
       multiply_int128_by_int128(ABCD, ab_value, cd_value);
 
-      int overflow = squeeze_int256(ABCD, rdigits);
+      ABCD.rdigits = rdigits;
+      int overflow = squeeze_int256(ABCD);
       if( overflow )
         {
         *compute_error |= compute_error_overflow;
@@ -1534,7 +1453,6 @@ __gg__multiplyf2( cbl_arith_format_t ,
   bool      got_float = false;
   GCOB_FP128 product_float;
   int256    product_fix;
-  int       product_fix_digits;
 
   if( A[0].field->type == FldFloat || B[0].field->type == FldFloat )
     {
@@ -1559,9 +1477,9 @@ __gg__multiplyf2( cbl_arith_format_t ,
                                                                B[0].field,
                                                                B[0].offset,
                                                                B[0].size);
-    product_fix_digits = a_rdigits + b_rdigits;
     multiply_int128_by_int128(product_fix, a_value, b_value);
-    int overflow = squeeze_int256(product_fix, product_fix_digits);
+    product_fix.rdigits = a_rdigits + b_rdigits;
+    int overflow = squeeze_int256(product_fix);
     if( overflow )
       {
       *compute_error |= compute_error_overflow;
@@ -1582,7 +1500,7 @@ __gg__multiplyf2( cbl_arith_format_t ,
       *compute_error |= conditional_stash(C[i].field, C[i].offset, C[i].size,
                                           on_size_error,
                                           int256_get_u128(product_fix, 0),
-                                          product_fix_digits,
+                                          product_fix.rdigits,
                                           *rounded++);
       }
     }
@@ -1691,7 +1609,6 @@ shift_left_int256(int256 &value, int bits)
 
 static void
 divide_int128_by_int128(int256   &quotient,
-                        int      &quotient_rdigits,
                         __int128  dividend,
                         int       dividend_rdigits,
                         __int128  divisor,
@@ -1703,7 +1620,7 @@ divide_int128_by_int128(int256   &quotient,
     *compute_error |= compute_error_divide_by_zero;
     quotient = int256{};
     quotient.i64[0] = static_cast<uint64_t>(dividend);
-    quotient_rdigits = dividend_rdigits;
+    quotient.rdigits = dividend_rdigits;
     return;
     }
 
@@ -1720,7 +1637,7 @@ divide_int128_by_int128(int256   &quotient,
 
   int scale = MAX_FIXED_POINT_DIGITS;
   scale_int256_by_digits(quotient, scale);
-  quotient_rdigits = scale + dividend_rdigits - divisor_rdigits;
+  quotient.rdigits = scale + dividend_rdigits - divisor_rdigits;
 
   // Now, let's see if we can do a simple divide-by-single-place calculation:
 
@@ -1748,6 +1665,7 @@ divide_int128_by_int128(int256   &quotient,
     uint64_t divisor_high = uint128_hi64(normalized_divisor);
 
     quotient = int256{};
+    quotient.rdigits = scale + dividend_rdigits - divisor_rdigits;
 
     for( int q_place = 1; q_place >= 0; q_place-- )
       {
@@ -1884,7 +1802,7 @@ __gg__dividef1_phase2(cbl_arith_format_t ,
       a_value = (GCOB_FP128) multiply_intermediate_int128;
       if( multiply_intermediate_rdigits )
         {
-        a_value /= 
+        a_value /=
                  (GCOB_FP128)__gg__power_of_ten(multiply_intermediate_rdigits);
         }
       b_value = __gg__float128_from_qualified_field(C[0].field,
@@ -1907,18 +1825,16 @@ __gg__dividef1_phase2(cbl_arith_format_t ,
                                                   C[0].offset,
                                                   C[0].size);
 
-      int quotient_rdigits;
       int256 quotient;
 
       divide_int128_by_int128(quotient,
-                              quotient_rdigits,
                               dividend,
                               dividend_rdigits,
                               multiply_intermediate_int128,
                               multiply_intermediate_rdigits,
                               compute_error);
 
-      int overflow = squeeze_int256(quotient, quotient_rdigits);
+      int overflow = squeeze_int256(quotient);
       if( overflow )
         {
         *compute_error |= compute_error_overflow;
@@ -1927,7 +1843,7 @@ __gg__dividef1_phase2(cbl_arith_format_t ,
       *compute_error |= conditional_stash(C[0].field, C[0].offset, C[0].size,
                                           on_size_error,
                                           int256_get_u128(quotient, 0),
-                                          quotient_rdigits,
+                                          quotient.rdigits,
                                           *rounded++);
 
       goto done;
@@ -2011,18 +1927,17 @@ __gg__dividef23(cbl_arith_format_t ,
                                                     B[0].field,
                                                     B[0].offset,
                                                     B[0].size);
-    int quotient_rdigits;
     int256 quotient;
 
     divide_int128_by_int128(quotient,
-                            quotient_rdigits,
                             dividend,
                             dividend_rdigits,
                             divisor,
                             divisor_rdigits,
                             compute_error);
 
-    *compute_error |= squeeze_int256(quotient, quotient_rdigits);
+
+    *compute_error |= squeeze_int256(quotient);
     if( !*compute_error )
       {
         // At this point, we assign the quotient to *C.
@@ -2031,7 +1946,7 @@ __gg__dividef23(cbl_arith_format_t ,
         *compute_error |= conditional_stash(C[i].field, C[i].offset, C[i].size,
                                             on_size_error,
                                             int256_get_u128(quotient, 0),
-                                            quotient_rdigits,
+                                            quotient.rdigits,
                                             *rounded++);
         }
       }
@@ -2105,18 +2020,16 @@ __gg__dividef45(cbl_arith_format_t ,
                                               B[0].offset,
                                               B[0].size);
 
-    int quotient_rdigits;
     int256 quotient;
 
     divide_int128_by_int128(quotient,
-                            quotient_rdigits,
                             dividend,
                             dividend_rdigits,
                             divisor,
                             divisor_rdigits,
                             compute_error);
 
-    *compute_error |= squeeze_int256(quotient, quotient_rdigits);
+    *compute_error |= squeeze_int256(quotient);
 
     if( !*compute_error )
       {
@@ -2134,7 +2047,7 @@ __gg__dividef45(cbl_arith_format_t ,
                                               C[1].size,
                                               on_size_error,
                                               int256_get_u128(quotient, 0),
-                                              quotient_rdigits,
+                                              quotient.rdigits,
                                               *rounded_p++);
           unrounded_quotient = __gg__binary_value_from_qualified_field(
                                                   &unrounded_quotient_digits,
@@ -2148,7 +2061,7 @@ __gg__dividef45(cbl_arith_format_t ,
           conditional_stash(C[1].field, C[1].offset, C[1].size,
                             false,
                             int256_get_u128(quotient, 0),
-                            quotient_rdigits,
+                            quotient.rdigits,
                             truncation_e);
           unrounded_quotient = __gg__binary_value_from_qualified_field(
                                                   &unrounded_quotient_digits,
@@ -2161,7 +2074,7 @@ __gg__dividef45(cbl_arith_format_t ,
                                               C[1].size,
                                               on_size_error,
                                               int256_get_u128(quotient, 0),
-                                              quotient_rdigits,
+                                              quotient.rdigits,
                                               *rounded_p++);
           break;
           }
@@ -2185,35 +2098,22 @@ __gg__dividef45(cbl_arith_format_t ,
 
         // We need to multiply the unrounded quotient by the divisor.
         int256 temp;
-        int    temp_rdigits;
         // Step 1: Multiply the unrounded quotient by the divisor
         multiply_int128_by_int128(temp, unrounded_quotient, divisor);
-        temp_rdigits = unrounded_quotient_digits + divisor_rdigits;
+        temp.rdigits = unrounded_quotient_digits + divisor_rdigits;
 
         int256 odividend = {};
         int256_set_u128(odividend, 0, static_cast<uint128>(dividend));
+        odividend.rdigits = dividend_rdigits;
         if( dividend < 0 )
           {
           odividend.i64[2] = UINT64_MAX;
           odividend.i64[3] = UINT64_MAX;
           }
 
-        // We need to line up the rdigits so that we can subtract temp from
-        // odividend:
-
-        if( temp_rdigits < dividend_rdigits )
-          {
-          scale_int256_by_digits(temp, dividend_rdigits-temp_rdigits);
-          temp_rdigits = dividend_rdigits;
-          }
-        else if(temp_rdigits > dividend_rdigits)
-          {
-          scale_int256_by_digits(odividend, temp_rdigits-dividend_rdigits);
-          }
-
         subtract_int256_from_int256(odividend, temp);
 
-        *compute_error |= squeeze_int256(odividend, temp_rdigits);
+        *compute_error |= squeeze_int256(odividend);
 
         if( !*compute_error )
           {
@@ -2222,7 +2122,7 @@ __gg__dividef45(cbl_arith_format_t ,
                                               C[0].size,
                                               on_size_error,
                                               int256_get_u128(odividend, 0),
-                                              temp_rdigits,
+                                              odividend.rdigits,
                                               truncation_e);
           }
         }

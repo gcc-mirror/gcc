@@ -3409,10 +3409,10 @@ bool cobol_filename( const char *name, ino_t inode ) {
   linemap_add(line_table, LC_ENTER, sysp, name, 1);
   input_filename_vestige = name;
   bool pushed = input_filenames.push( input_file_t(name, inode, 1) );
-  dbgmsg("%s: %s %s line %d-%d inode %ld", __func__,
+  dbgmsg("%s: %s %s line %d-%d inode %lu", __func__,
          pushed? "pushed" : "set to", name,
          cobol_location().first_line,
-         cobol_location().last_line, inode);
+         cobol_location().last_line, (unsigned long) inode);
   return pushed;
 }
 

@@ -33,6 +33,8 @@
 #else
 #define _COPYBOOK_H
 
+#include <sys/types.h> // where macOS defines ino_t
+
 #if defined(CDF_Y)
 #define gcc_assert(x) assert(x)
 void gcc_unreachable(void);

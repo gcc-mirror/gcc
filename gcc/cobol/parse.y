@@ -4633,7 +4633,7 @@ data_clauses:   data_clause
                         dbgmsg("expanding %s size from %u bytes to %lu "
 			       "because it redefines %s with USAGE POINTER",
                                field->name, field->size(),
-                               int_size_in_bytes(ptr_type_node),
+                               (unsigned long)int_size_in_bytes(ptr_type_node),
                                redefined->name);
                         field->embiggen();
                       }

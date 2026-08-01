@@ -153,7 +153,7 @@ struct filespan_t : public bytespan_t {
   bool was_quote72() const { return iline == line_quote72 + 1; }
 
   bool line_contains_nul() const {
-    char *nul = std::find(cur, eol, '\0');
+    const char *nul = std::find(cur, eol, '\0');
     return nul != eol;
   }
 
