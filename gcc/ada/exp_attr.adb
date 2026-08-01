@@ -781,9 +781,12 @@ package body Exp_Attr is
          if Field_Nam in Name_uObject | Name_uParent | Name_uTag then
             null;
 
-         --  Do not process fields without any scalar components
+         --  Do not process fields without any scalar components, or whose type
+         --  is an unchecked union since we cannot know where they are.
 
-         elsif not Scalar_Part_Present (Field_Typ) then
+         elsif not Scalar_Part_Present (Field_Typ)
+           or else Is_Unchecked_Union (Field_Typ)
+         then
             null;
 
          --  Otherwise the field needs to be validated. Use Make_Identifier
