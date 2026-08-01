@@ -37309,11 +37309,13 @@ cp_parser_early_parsing_nsdmi (cp_parser *parser, tree field)
   if (TREE_CODE (init) != DEFERRED_PARSE)
     return true;
 
+  /* Initializing a class might need other deferred parses.  */
+  if (MAYBE_CLASS_TYPE_P (strip_array_types (TREE_TYPE (field))))
+    return false;
+
   cp_token_cache *tokens = DEFPARSE_TOKENS (init);
   for (cp_token *p = tokens->first; p != tokens->last; ++p)
     if (p->type == CPP_NAME
-	/* = {} might depend on other DMI that haven't been parsed.  */
-	|| p->type == CPP_OPEN_BRACE
 	|| p->keyword == RID_THIS
 	|| p->keyword == RID_OPERATOR)
       /* There's a name to look up or 'this', give up.  */
