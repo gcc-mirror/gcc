@@ -179,7 +179,7 @@ get_reflection (location_t loc, tree t, reflect_kind kind/*=REFLECT_UNDEF*/)
 	       || parsing_lambda_declarator ()))
     {
       auto_diagnostic_group d;
-      error_at (loc, "%<^^%> cannot be applied a local entity for which "
+      error_at (loc, "%<^^%> cannot be applied to a local entity for which "
 		"there is an intervening lambda expression");
       inform (DECL_SOURCE_LOCATION (t), "%qD declared here", t);
       return error_mark_node;

@@ -33,7 +33,7 @@ fn3 ()
   int x = 1;	// { dg-message ".x. declared here" }
 
   [] -> int {
-    static constexpr auto r = ^^x;  // { dg-error "cannot be applied a local entity" }
+    static constexpr auto r = ^^x;  // { dg-error "cannot be applied to a local entity" }
     return [:r:];
   };
 }
@@ -67,7 +67,7 @@ void
 fn6 (int x)   // { dg-message ".x. declared here" }
 {
   [] -> int {
-    static constexpr auto r = ^^x;  // { dg-error "cannot be applied a local entity" }
+    static constexpr auto r = ^^x;  // { dg-error "cannot be applied to a local entity" }
     return [:r:];
   };
 }
