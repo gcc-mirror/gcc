@@ -1,3 +1,78 @@
+2026-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/123211
+	* include/bits/ranges_base.h (__distance_fn::operator()): For
+	the non-sized-sentinel overload, recursively handle segmented
+	iterators via __for_each_segment.
+
+2026-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/123211
+	* include/bits/stl_deque.h (_Deque_iterator::_S_for_each_segment):
+	Define.
+	(_Deque_iterator::_S_enable_for_each_segment): Define.
+	* include/bits/stl_iterator_base_funcs.h: Include <bits/move.h>.
+	(__for_each_segment): Define.
+	* include/bits/stl_iterator_base_types.h: Include
+	<ext/type_traits.h> in C++98 mode.
+	(__enable_for_each_segment): Define.
+	(__segmented_iterator): Define in C++20.
+	* include/debug/safe_iterator.h
+	(_Safe_iterator::_S_for_each_segment): Define.
+	(_Safe_iterator::_S_enable_for_each_segment): Define.
+	* include/std/ranges (join_view::_Iterator::_Iterator): New
+	constructor taking both an inner and outer iterator.
+	(join_view::_Iterator::_S_for_each_segment): Define.
+	(join_view::_Iterator::_S_enable_for_each_segment): Define.
+	(concat_view::_Iterator::_S_for_each_segment): Define.
+	(concat_view::_Iterator::_S_enable_for_each_segment): Define.
+	* testsuite/23_containers/deque/for_each_segment.cc: New test.
+	* testsuite/std/ranges/adaptors/join/for_each_segment.cc: New test.
+	* testsuite/std/ranges/concat/for_each_segment.cc: New test.
+
+2026-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/iosfwd: Provide feature-test macros
+	__cpp_lib_spanstream and __cpp_lib_syncbuf.
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Verify values
+	of these FTMs.
+
+2026-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/condition_variable (condition_variable::wait_until):
+	Take timeout parameter by value as per LWG 4301.
+	(condition_variable::wait_for): Likewise.
+	(condition_variable::__wait_until_impl): Likewise.
+	(condition_variable_any::wait_until): Likewise.
+	(condition_variable_any::wait_for): Likewise.
+
+2026-07-31  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/coroutine: Ignore -Winvalid-specialization in file.
+	(std::coroutine_handle): Add clang::no_specializations attribute.
+	* testsuite/18_support/coroutines/specializations_neg.cc: New test.
+
+2026-07-31  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/alloc_traits.h
+	(_GLIBCXX_NO_ALLOC_TRAITS_SPECIALIZATIONS): Define locally.
+	(std::allocator_traits) [__cplusplus > 202002L]: Add
+	clang::no_specializations attribute.
+	(std::allocator_traits<allocator<_Tp>>)
+	(std::allocator_traits<allocator<void>>): Locally ignore
+	-Winvalid-specialization warnings.
+	* include/bits/memory_resource.h
+	(allocator_traits<pmr::polymorphic_allocator<_Tp>>): Likewise.
+	* testsuite/20_util/allocator_traits/requirements/specializations_neg.cc:
+	New test.
+
+2026-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/126364
+	* include/bits/chrono_io.h (_Parser::operator()) <R>: Only break
+	early when setting failbit.
+	* testsuite/std/time/parse/126364.cc: New test.
+
 2026-07-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/126452

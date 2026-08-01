@@ -1,3 +1,19 @@
+2026-07-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/126205
+	* gfortran.h: Add prototype for deallocate_allocated_coarrays.
+	hash_map team_allocated_coarrays, vector team_context_stack and
+	prototype for get_current_team_context.
+	* match.cc (gfc_match_allocate): Capture allocate expressions
+	of allocatable coarrays and stash in team_allocated_coarrays.
+	* parse.cc (parse_change_team): Push team context. When end is
+	seen, create the code to deallocate allocated coarrays in this
+	context, using deallocate_allocated_coarrays.
+	* st.cc (get_guarded_dealloc): Generate code to produce
+	IF (ALLOCATED (expr)) DEALLOCATE (expr).
+	(deallocate_allocated_coarrays): Modify the final array ref of
+	the allocate expressions and call get_guarded_dealloc.
+
 2026-07-30  Sebastian Galindo  <sebastian.galindo143@gmail.com>
 	    Thomas Schwinge  <tschwinge@baylibre.com>
 

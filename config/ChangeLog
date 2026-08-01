@@ -1,3 +1,9 @@
+2026-07-31  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* clang-plugin.m4: Update AC_TRY_COMPILE to AC_COMPILE_IFELSE.
+	* gcc-plugin.m4: Likewise.
+
 2026-07-12  Manuel Jacob  <me@manueljacob.de>
 
 	* acx.m4 (ACX_CHECK_INSTALLED_TARGET_TOOL): Fix handling of

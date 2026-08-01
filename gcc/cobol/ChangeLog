@@ -1,3 +1,7 @@
+2026-07-31  James K. Lowden  <jklowden@cobolworx.com>
+
+	* scan.l: Add value pattern.
+
 2026-07-30  James K. Lowden  <jklowden@cobolworx.com>
 
 	* parse.y (dialect_ok): Enable messages without a quoted tagline.

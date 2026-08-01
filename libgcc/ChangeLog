@@ -1,3 +1,8 @@
+2026-07-31  Muhammad Kamran  <muhammad.kamran@arm.com>
+
+	* config/aarch64/aarch64-asm.h (FEATURE_1_AND_MARK): Do not emit
+	.previous after AArch64 build attributes.
+
 2026-07-29  Piotr Kubaj  <pkubaj@FreeBSD.org>
 
 	PR target/125803
