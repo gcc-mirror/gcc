@@ -3023,8 +3023,7 @@ dump_phi_nodes (pretty_printer *pp, basic_block bb, int indent,
       if (!virtual_operand_p (gimple_phi_result (phi)) || (flags & TDF_VOPS))
         {
           INDENT (indent);
-	  dump_gimple_phi (pp, phi, indent,
-			   (flags & TDF_GIMPLE) ? false : true, flags);
+	  dump_gimple_phi (pp, phi, indent, !(flags & TDF_GIMPLE), flags);
           pp_newline (pp);
         }
     }

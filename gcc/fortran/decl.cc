@@ -6592,8 +6592,7 @@ bool
 gfc_verify_c_interop (gfc_typespec *ts)
 {
   if (ts->type == BT_DERIVED && ts->u.derived != NULL)
-    return (ts->u.derived->ts.is_c_interop || ts->u.derived->attr.is_bind_c)
-	   ? true : false;
+    return ts->u.derived->ts.is_c_interop || ts->u.derived->attr.is_bind_c;
   else if (ts->type == BT_CLASS)
     return false;
   else if (ts->is_c_interop != 1 && ts->type != BT_ASSUMED)

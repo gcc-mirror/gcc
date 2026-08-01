@@ -3292,7 +3292,7 @@ impure_stmt_fcn (gfc_expr *e, gfc_symbol *sym,
 	|| e->symtree->n.sym->attr.proc == PROC_ST_FUNCTION)
     return false;
 
-  return gfc_pure_function (e, &name) ? false : true;
+  return !gfc_pure_function (e, &name);
 }
 
 

@@ -1546,7 +1546,7 @@ recording::context::set_bool_option (enum gcc_jit_bool_option opt,
 		 "unrecognized (enum gcc_jit_bool_option) value: %i", opt);
       return;
     }
-  m_bool_options[opt] = value ? true : false;
+  m_bool_options[opt] = value;
   log_bool_option (opt);
 }
 
@@ -1555,7 +1555,7 @@ recording::context::set_inner_bool_option (enum inner_bool_option inner_opt,
 					   int value)
 {
   gcc_assert (inner_opt >= 0 && inner_opt < NUM_INNER_BOOL_OPTIONS);
-  m_inner_bool_options[inner_opt] = value ? true : false;
+  m_inner_bool_options[inner_opt] = value;
   log_inner_bool_option (inner_opt);
 }
 

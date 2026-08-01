@@ -1398,7 +1398,7 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 				 int err_len)
 {
   if (s1 == NULL || s2 == NULL)
-    return s1 == s2 ? true : false;
+    return s1 == s2;
 
   if (s1->attr.proc == PROC_ST_FUNCTION || s2->attr.proc == PROC_ST_FUNCTION)
     {

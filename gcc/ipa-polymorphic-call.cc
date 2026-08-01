@@ -1405,7 +1405,7 @@ static inline bool
 csftc_abort_walking_p (unsigned speculative)
 {
   unsigned max = param_max_speculative_devirt_maydefs;
-  return speculative > max ? true : false;
+  return speculative > max;
 }
 
 /* Callback of walk_aliased_vdefs and a helper function for

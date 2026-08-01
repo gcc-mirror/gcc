@@ -354,7 +354,7 @@ gfc_check_character_range (gfc_char_t c, int kind)
     return true;
 
   if (kind == 1)
-    return c <= 255 ? true : false;
+    return c <= 255;
 
   gcc_unreachable ();
 }

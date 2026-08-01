@@ -3413,7 +3413,7 @@ gfc_check_init_expr (gfc_expr *e)
       break;
 
     case EXPR_STRUCTURE:
-      t = e->ts.is_iso_c ? true : false;
+      t = e->ts.is_iso_c;
       if (t)
 	break;
 
@@ -6112,7 +6112,7 @@ gfc_expr_check_typed (gfc_expr* e, gfc_namespace* ns, bool strict)
   check_typed_ns = ns;
   error_found = gfc_traverse_expr (e, NULL, &expr_check_typed_help, 0);
 
-  return error_found ? false : true;
+  return !error_found;
 }
 
 

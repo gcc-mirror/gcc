@@ -2118,7 +2118,7 @@ is_constant_element (gfc_expr *e)
   rv = gfc_is_constant_expr (e);
   gfc_free_expr (e);
 
-  return rv ? true : false;
+  return rv;
 }
 
 

@@ -2129,7 +2129,7 @@ gfc_find_state (gfc_compile_state state)
     if (p->state == state)
       break;
 
-  return (p == NULL) ? false : true;
+  return p != NULL;
 }
 
 

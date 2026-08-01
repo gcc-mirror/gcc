@@ -2223,7 +2223,7 @@ check_open_constraints (gfc_open *open, locus *where)
     } \
 }
 
-  bool warn = (open->err || open->iostat) ? true : false;
+  bool warn = open->err || open->iostat;
 
   /* Checks on the ACCESS specifier.  */
   if (open->access && open->access->expr_type == EXPR_CONSTANT)
@@ -2750,7 +2750,7 @@ cleanup:
 static bool
 check_close_constraints (gfc_close *close, locus *where)
 {
-  bool warn = (close->iostat || close->err) ? true : false;
+  bool warn = close->iostat || close->err;
 
   if (close->unit == NULL)
     {
@@ -3842,7 +3842,7 @@ if (condition) \
   gfc_symbol *sym = NULL;
   bool warn, unformatted;
 
-  warn = (dt->err || dt->iostat) ? true : false;
+  warn = dt->err || dt->iostat;
   unformatted = dt->format_expr == NULL && dt->format_label == NULL
 		&& dt->namelist == NULL;
 

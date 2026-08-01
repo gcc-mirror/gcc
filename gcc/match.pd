@@ -2522,7 +2522,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for op (bit_ior bit_xor eq ne)
  (simplify
   (op:c truth_valued_p@0 (logical_inverted_value @0))
-  { constant_boolean_node (op == EQ_EXPR ? false : true, type); }))
+  { constant_boolean_node (op != EQ_EXPR, type); }))
 
 /* ~~x -> x */
 (simplify
@@ -5289,7 +5289,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    than D.  See PR126476.  */
 	 || !wi::fits_to_tree_p (wi::shwi (c1 - c2, HOST_BITS_PER_INT),
 				 TREE_TYPE (@0)))
-     { constant_boolean_node (cmp == NE_EXPR ? false : true, type); }
+     { constant_boolean_node (cmp != NE_EXPR, type); }
      (icmp @0 { build_int_cst (TREE_TYPE (@0), c1 - c2); }))))
  (simplify
   (cmp (bit_and (rshift integer_pow2p@1 @0) integer_pow2p@2) integer_zerop)
@@ -5299,7 +5299,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (c1 > c2
 	  || !wi::fits_to_tree_p (wi::shwi (c2 - c1, HOST_BITS_PER_INT),
 				  TREE_TYPE (@0)))
-      { constant_boolean_node (cmp == NE_EXPR ? false : true, type); }
+      { constant_boolean_node (cmp != NE_EXPR, type); }
       (icmp @0 { build_int_cst (TREE_TYPE (@0), c2 - c1); }))))))
 
 /* (CST1 << A) == CST2 -> A == ctz (CST2) - ctz (CST1)
@@ -8104,11 +8104,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	}
 	(if (above || below)
 	 (if (cmp == EQ_EXPR || cmp == NE_EXPR)
-	  { constant_boolean_node (cmp == EQ_EXPR ? false : true, type); }
+	  { constant_boolean_node (cmp != EQ_EXPR, type); }
 	  (if (cmp == LT_EXPR || cmp == LE_EXPR)
-	   { constant_boolean_node (above ? true : false, type); }
+	   { constant_boolean_node (above, type); }
 	   (if (cmp == GT_EXPR || cmp == GE_EXPR)
-	    { constant_boolean_node (above ? false : true, type); })))))))
+	    { constant_boolean_node (!above, type); })))))))
 
     /* For eq/ne with narrowing conversion:
        (T)(X) == (T)(Y) -> (T)(X ^ Y) == 0  */
@@ -8584,8 +8584,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp @0 REAL_CST@1)
   (if (REAL_VALUE_ISNAN (TREE_REAL_CST (@1))
        && (cmp != LTGT_EXPR || ! flag_trapping_math))
-   { constant_boolean_node (cmp == ORDERED_EXPR || cmp == LTGT_EXPR
-			    ? false : true, type); })))
+   { constant_boolean_node (cmp != ORDERED_EXPR && cmp != LTGT_EXPR,
+			    type); })))
 
 /* Fold UNORDERED if either operand must be NaN, or neither can be.  */
 (simplify
@@ -10535,9 +10535,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  }
      (if (ok && prec <= MAX_FIXED_MODE_SIZE)
       (if (val <= 0)
-       { constant_boolean_node (cmp == EQ_EXPR ? true : false, type); }
+       { constant_boolean_node (cmp == EQ_EXPR, type); }
        (if (val >= prec)
-	{ constant_boolean_node (cmp == EQ_EXPR ? false : true, type); }
+	{ constant_boolean_node (cmp != EQ_EXPR, type); }
 	(cmp (bit_and @0 { wide_int_to_tree (type0,
 					     wi::mask (val, false, prec)); })
 	     { build_zero_cst (type0); })))))))
@@ -10557,7 +10557,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  }
      (if (ok && prec <= MAX_FIXED_MODE_SIZE)
       (if (tree_int_cst_sgn (@1) < 0 || wi::to_widest (@1) >= prec)
-       { constant_boolean_node (op == EQ_EXPR ? false : true, type); }
+       { constant_boolean_node (op != EQ_EXPR, type); }
        (op (bit_and @0 { wide_int_to_tree (type0,
 					   wi::mask (tree_to_uhwi (@1) + 1,
 						     false, prec)); })
@@ -10593,10 +10593,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  }
      (if (val <= 0)
       (if (ok && zero_val >= val)
-       { constant_boolean_node (cmp == EQ_EXPR ? true : false, type); })
+       { constant_boolean_node (cmp == EQ_EXPR, type); })
       (if (val >= prec)
        (if (ok && zero_val < val)
-	{ constant_boolean_node (cmp == EQ_EXPR ? false : true, type); })
+	{ constant_boolean_node (cmp != EQ_EXPR, type); })
        (if (ok && (zero_val < 0 || zero_val >= prec))
 	(cmp (bit_and @0 { wide_int_to_tree (type0,
 					     wi::mask (val, false, prec)); })
@@ -10612,7 +10612,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (prec <= MAX_FIXED_MODE_SIZE)
      (if (tree_int_cst_sgn (@1) < 0 || wi::to_widest (@1) >= prec)
       (if (zero_val != wi::to_widest (@1))
-       { constant_boolean_node (op == EQ_EXPR ? false : true, type); })
+       { constant_boolean_node (op != EQ_EXPR, type); })
       (if (zero_val < 0 || zero_val >= prec)
        (op (bit_and @0 { wide_int_to_tree (type0,
 					   wi::mask (tree_to_uhwi (@1) + 1,
@@ -11284,7 +11284,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (integer_zerop (@1))
        (cmp @0 { build_zero_cst (TREE_TYPE (@0)); }))
       (if (tree_int_cst_sgn (@1) < 0 || wi::to_widest (@1) > prec)
-       { constant_boolean_node (cmp == NE_EXPR ? true : false, type); })
+       { constant_boolean_node (cmp == NE_EXPR, type); })
       (if (single_use (@2))
        (cmp (bit_and @0 { wide_int_to_tree (TREE_TYPE (@0),
 					    wi::mask (tree_to_uhwi (@1),
@@ -11305,9 +11305,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (integer_zerop (@1))
        (cmp2 @0 { build_zero_cst (TREE_TYPE (@0)); }))
       (if (tree_int_cst_sgn (@1) < 0)
-       { constant_boolean_node (cmp == GT_EXPR ? true : false, type); })
+       { constant_boolean_node (cmp == GT_EXPR, type); })
       (if (wi::to_widest (@1) >= prec)
-       { constant_boolean_node (cmp == GT_EXPR ? false : true, type); })
+       { constant_boolean_node (cmp != GT_EXPR, type); })
       (if (wi::to_widest (@1) == prec - 1)
        (cmp3 @0 { wide_int_to_tree (TREE_TYPE (@0),
 				    wi::shifted_mask (prec - 1, 1,

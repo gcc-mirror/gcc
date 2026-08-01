@@ -3257,7 +3257,7 @@ ref_indep_loop_p (class loop *loop, im_mem_ref *ref, dep_kind kind)
       /* tri-state, { unknown, independent, dependent }  */
       dep_state state = query_loop_dependence (loop, ref, kind);
       if (state != dep_unknown)
-	return state == dep_independent ? true : false;
+	return state == dep_independent;
 
       class loop *inner = loop->inner;
       while (inner)
