@@ -133,7 +133,7 @@ static int var_num = 1;
 
 /* What sort of matrix we are dealing with when inlining MATMUL.  */
 
-enum matrix_case { none=0, A2B2, A2B1, A1B2, A2B2T, A2TB2, A2TB2T };
+enum matrix_case { none=0, A2B2, A2B1, A1B2, A2B2T, A2TB2, A2TB2T, A2TB1 };
 
 /* Keep track of the number of expressions we have inserted so far
    using create_var.  */
@@ -3572,6 +3572,13 @@ matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
 				 get_array_inq_function (GFC_ISYM_SIZE, a, 1));
       break;
 
+    case A2TB1:
+      ar->start[0] = get_array_inq_function (GFC_ISYM_SIZE, a, 2);
+      cond = build_logical_expr (INTRINSIC_NE,
+				 get_array_inq_function (GFC_ISYM_SIZE, c, 1),
+				 get_array_inq_function (GFC_ISYM_SIZE, a, 2));
+      break;
+
     case A1B2:
       ar->start[0] = get_array_inq_function (GFC_ISYM_SIZE, b, 2);
       cond = build_logical_expr (INTRINSIC_NE,
@@ -4222,6 +4229,8 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 	{
 	  if (matrix_b->rank == 2 && !transpose_b)
 	    m_case = A2TB2;
+	  else if (matrix_b->rank == 1)
+	    m_case = A2TB1;
 	}
       else
 	{
@@ -4371,6 +4380,23 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
 	      c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
 	      a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
 	      test = runtime_error_ne (c1, a1, C_ERROR_1);
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+	    }
+	  break;
+
+	case A2TB1:
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	  test = runtime_error_ne (b1, a1, B_ERROR_1);
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  if (!realloc_c)
+	    {
+	      c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	      a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+	      test = runtime_error_ne (c1, a2, C_ERROR_1);
 	      *next_code_point = test;
 	      next_code_point = &test->next;
 	    }
@@ -4615,6 +4641,40 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       ascalar = scalarized_expr (matrix_a, list, 2);
 
       list[0] = var_1;
+      bscalar = scalarized_expr (matrix_b, list, 1);
+
+      break;
+
+    case A2TB1:
+
+      /* Ordering here is
+	   do i=1,size(a,2)
+	     do j=1,size(b,1)
+	       c(i) = c(i) + a(j,i) * b(j)
+	     end do
+	   end do
+      where i is var_1 and j is var_2.  */
+
+      u1 = get_size_m1 (matrix_a, 2);
+      u2 = get_size_m1 (matrix_b, 1);
+
+      do_1 = create_do_loop (gfc_copy_expr (zero), u1, NULL, &co->loc, ns);
+      do_2 = create_do_loop (gfc_copy_expr (zero), u2, NULL, &co->loc, ns);
+
+      do_1->block->next = do_2;
+      do_2->block->next = assign_matmul;
+
+      var_1 = do_1->ext.iterator->var;
+      var_2 = do_2->ext.iterator->var;
+
+      list[0] = var_1;
+      cscalar = scalarized_expr (co->expr1, list, 1);
+
+      list[0] = var_2;
+      list[1] = var_1;
+      ascalar = scalarized_expr (matrix_a, list, 2);
+
+      list[0] = var_2;
       bscalar = scalarized_expr (matrix_b, list, 1);
 
       break;
