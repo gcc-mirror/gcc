@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-invalid-specialization" }
 // https://gcc.gnu.org/PR105475
 // Test the case where we specialize coroutine_handle and break it.
 #include <coroutine>
