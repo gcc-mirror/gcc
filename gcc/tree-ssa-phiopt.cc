@@ -4287,6 +4287,9 @@ factor_out_conditional_load (edge e0, edge e1, basic_block merge, gphi *phi,
 	 FIXME: Refine to check ADDRESSABLE bit.  */
       if (TREE_CODE (p0) != SSA_NAME || TREE_CODE (p1) != SSA_NAME)
 	return false;
+      // Incompatible address spaces or differnt function pointers could show up here.
+      if (!types_compatible_p (TREE_TYPE (p0), TREE_TYPE (p1)))
+	return false;
       /* Build P' = PHI <P, Q> and the single load result = *P'.  */
       newptr = make_ssa_name (TREE_TYPE (p0));
       gphi *pphi = create_phi_node (newptr, merge);
