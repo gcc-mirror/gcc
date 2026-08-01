@@ -1,3 +1,7 @@
+2026-07-31  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.pot: Regenerate.
+
 2026-05-18  Joseph Myers  <josmyers@redhat.com>
 
 	* sv.po: Update.

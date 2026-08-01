@@ -1,3 +1,47 @@
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126508
+	* constexpr.cc (cxx_eval_cxa_builtin_fn): Avoid caching
+	calls which rethrow or call __builtin_uncaught_exceptions
+	or __builtin_current_exception.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126420
+	PR c++/126423
+	* typeck.cc (check_return_expr): If in_expansion_stmt, goto
+	dependent before even setting current_function_returns_value.
+	* pt.cc (tsubst_stmt): Temporarily set in_expansion_stmt around
+	partial instantiation of expansion statement body.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126343
+	* error.cc (dump_type) <case NULLPTR_TYPE>: Call
+	pp_c_type_qualifier_list.
+	(dump_type) <case META_TYPE>: Likewise.
+	(dump_expr) <case REFLECT_EXPR>: For REFLECT_EXPR on
+	non-typedef META_TYPE or NULLPTR_TYPE print
+	decltype(^^int) or decltype(nullptr).
+
+2026-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126406
+	PR c++/119343
+	* pt.cc (resolve_nondeduced_context): Revert r16-5967 change.
+
 2026-07-30  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

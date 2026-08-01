@@ -1,3 +1,68 @@
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126504
+	* match.pd ((CST1 << A) == CST2 -> A == ctz (CST2) - ctz (CST1)):
+	If cand isn't representable in TREE_TYPE (@1), simplify to
+	cmp == NE_EXPR.
+	(((1 << n) & M) != 0 -> n == log2 (M)): Don't simplify if
+	log2 doesn't fit into TREE_TYPE (@0).
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126503
+	* gimple-lower-bitint.cc (bitint_large_huge::handle_plus_minus): If
+	IFN_ADDC/IFN_SUBC can't be used and rhs1_type is not the limb type
+	and is signed, perform both additions or both subtractions in
+	unsigned type for the rhs1_type and cast to rhs1_type at the end.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126497
+	* gimplify.cc (recalculate_side_effects): Return for
+	tcc_declaration.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126490
+	* match.pd ((a & b) == (a ^ b) -> !(a | b)): If @0 has
+	integral one bit precision type, use (convert:type ...) around the
+	bit_not just in case the comparison has a different result type
+	from the type of its operands.  Otherwise do that too but with
+	bit_not replaced with bit_xor with one of the appropriate type.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* range-op-float.cc (float_widen_lhs_range): Remove also_inf
+	argument, replace its uses as if it was always true.
+	(operator_cast::op1_range): Don't pass third argument to
+	float_widen_lhs_range.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126476
+	* match.pd (((C << A) & D) != 0 -> A == 0,
+	((C << A) & D) == 0 -> A != 0): Fold to false/true if
+	c1 - c2 resp. c2 - c1 doesn't fit into TREE_TYPE (@0).
+
 2026-07-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
