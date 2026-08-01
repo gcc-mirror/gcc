@@ -33,7 +33,8 @@ mpc='mpc-1.3.1.tar.gz'
 isl='isl-0.24.tar.bz2'
 gettext='gettext-1.0.tar.gz'
 
-base_url='https://gcc.gnu.org/pub/gcc/infrastructure/'
+base_url="${GCC_PREREQUISITES_BASE_URL:-https://gcc.gnu.org/pub/gcc/infrastructure/}"
+base_url="${base_url%/}/"
 
 echo_archives() {
     echo "${gettext}"
@@ -86,6 +87,11 @@ The following options are available:
  --only-gettext   inhibit downloading any package but gettext
  --help           show this text and exit
  --version        show version information and exit
+
+Environment variables:
+
+ GCC_PREREQUISITES_BASE_URL  URL to download from
+  [${base_url}]
 "
 
 versiontext="${program} ${version}
