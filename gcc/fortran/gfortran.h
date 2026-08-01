@@ -4194,7 +4194,7 @@ bool gfc_op_rank_conformable (gfc_expr *, gfc_expr *);
 bool gfc_resolve_ref (gfc_expr *);
 void gfc_fixup_inferred_type_refs (gfc_expr *);
 bool gfc_resolve_expr (gfc_expr *);
-void gfc_resolve (gfc_namespace *);
+void gfc_resolve (gfc_namespace *, gfc_association_list *a = NULL);
 void gfc_resolve_code (gfc_code *, gfc_namespace *);
 void gfc_resolve_blocks (gfc_code *, gfc_namespace *);
 void gfc_resolve_formal_arglist (gfc_symbol *);

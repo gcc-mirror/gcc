@@ -12970,10 +12970,29 @@ resolve_block_construct (gfc_code* code)
 
   /* For an ASSOCIATE block, the associations (and their targets) will be
      resolved by gfc_resolve_symbol, during resolution of the BLOCK's
-     namespace.  */
-  gfc_resolve (ns);
+     namespace.  However, marking variables as used ans defined requires
+     passing ext.block.assoc.  */
+  gfc_resolve (ns, code->ext.block.assoc);
 }
 
+/* Mark everything in an association list as used and set if applicable,
+   respectively.  */
+
+static void
+mark_assoc_used (gfc_association_list *a)
+{
+  while (a != NULL)
+    {
+      gfc_symbol *n_sym = a->st->n.sym;
+      if (n_sym->attr.value_used != VALUE_UNUSED)
+	gfc_value_used_expr (a->target, n_sym->attr.value_used);
+
+      if (a->variable && n_sym->attr.value_set != VALUE_UNSET)
+	gfc_expr_set_at (a->target, &n_sym->other_loc, n_sym->attr.value_set);
+
+      a = a->next;
+    }
+}
 
 /* Resolve lists of blocks found in IF, SELECT CASE, WHERE, FORALL, GOTO and
    DO code nodes.  */
@@ -21037,7 +21056,7 @@ warn_unused_vs_set (gfc_namespace *ns)
    which functions or subroutines.  */
 
 void
-gfc_resolve (gfc_namespace *ns)
+gfc_resolve (gfc_namespace *ns, gfc_association_list *a)
 {
   gfc_namespace *old_ns;
   code_stack *old_cs_base;
@@ -21059,6 +21078,7 @@ gfc_resolve (gfc_namespace *ns)
   resolve_types (ns);
   component_assignment_level = 0;
   resolve_codes (ns);
+  mark_assoc_used (a);
 
   if (warn_unused_but_set_variable || warn_unused_intent_out
       || warn_unused_read || warn_undefined_vars)
