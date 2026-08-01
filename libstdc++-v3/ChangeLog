@@ -1,3 +1,44 @@
+2026-07-31  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-07-20  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/116110
+	* src/c++20/tzdb.cc (time_zone::_M_get_sys_info): Correct
+	condition for stopping zone expansion before STD zone.
+	* testsuite/std/time/time_zone/116110.cc (test_dawson):
+	Add test for America/Dawson August 1945 transition.
+
+2026-07-31  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-05-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/124852
+	* src/c++20/tzdb.cc (on_month_day::on_day_t, on_month_day::on_day):
+	Remove.
+	(operator>>(istream&, on_month_day::day_t&)): Inlined into...
+	(operator>>(istream&, on_month_day)): Inlined on_month_day::on_day.
+	Avoid modifying on.month if MONTH is not present. Report failure
+	on failure to parse day for LessEq / GreaterEq.
+
+2026-07-31  Álvaro Begué  <alvaro.begue@gmail.com>
+
+	Backported from master:
+	2026-05-13  Álvaro Begué  <alvaro.begue@gmail.com>
+		    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/124852
+	* src/c++20/tzdb.cc (on_day): Rename to...
+	(on_day_month): Rename from on_day.
+	(on_day_month::on_day_t, on_day_month::on_day): Define.
+	(operator>>(istream&, on_day_t&&)): Factored out of
+	operator>>(istream&, on_day&).
+	(operator>>(istream&, on_day&)): Use on_day_t parser.
+	(operator>>(istream&, ZoneInfo&)): Replace the integer DAY
+	parser with on_day_t for the UNTIL field.
+	* testsuite/std/time/time_zone/until_day_on.cc: New test.
+
 2026-07-29  Álvaro Begué  <alvaro.begue@gmail.com>
 
 	Backported from master:

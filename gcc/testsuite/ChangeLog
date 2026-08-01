@@ -1,3 +1,11 @@
+2026-07-31  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2026-07-30  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/126194
+	* g++.dg/lto/pr126194_2.C (main): Tolerate argc == 0.
+
 2026-07-28  Haochen Jiang  <haochen.jiang@intel.com>
 
 	Backported from master:
