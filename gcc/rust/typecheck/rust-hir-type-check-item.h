@@ -88,6 +88,9 @@ protected:
 
   TyTy::BaseType *resolve_impl_block_self (HIR::ImplBlock &impl_block);
 
+  bool validate_repr_simd (const std::vector<TyTy::StructFieldType *> &fields,
+			   location_t locus);
+
 private:
   TypeCheckItem ();
 

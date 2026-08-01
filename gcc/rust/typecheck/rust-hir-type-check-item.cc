@@ -265,6 +265,11 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
       ResolveWhereClauseItem::Resolve (*where_clause_item, region_constraints);
     }
 
+  // Process #[repr(X)] attribute, if any
+  const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
+  TyTy::ADTType::ReprOptions repr
+    = parse_repr_options (attrs, struct_decl.get_locus ());
+
   std::vector<TyTy::StructFieldType *> fields;
   size_t idx = 0;
   for (auto &field : struct_decl.get_fields ())
@@ -278,6 +283,13 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
       fields.push_back (ty_field);
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
       idx++;
+    }
+
+  if (repr.repr_kind == TyTy::ADTType::ReprKind::SIMD)
+    {
+      bool is_valid = validate_repr_simd (fields, struct_decl.get_locus ());
+      if (!is_valid)
+	return;
     }
 
   // get the path
@@ -298,11 +310,6 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 			  struct_decl.get_identifier ().as_string (), ident,
 			  TyTy::VariantDef::VariantType::TUPLE, tl::nullopt,
 			  std::move (fields)));
-
-  // Process #[repr(X)] attribute, if any
-  const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
-  TyTy::ADTType::ReprOptions repr
-    = parse_repr_options (attrs, struct_decl.get_locus ());
 
   auto *type = new TyTy::ADTType (
     struct_decl.get_mappings ().get_defid (),
@@ -365,6 +372,12 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
       context->insert_type (field.get_mappings (), ty_field->get_field_type ());
     }
 
+  if (repr.repr_kind == TyTy::ADTType::ReprKind::SIMD)
+    {
+      bool is_valid = validate_repr_simd (fields, struct_decl.get_locus ());
+      if (!is_valid)
+	return;
+    }
   if (repr.repr_kind == TyTy::ADTType::ReprKind::TRANSPARENT)
     {
       size_t num_non_zst = 0;
@@ -984,6 +997,117 @@ TyTy::BaseType *
 TypeCheckItem::resolve_impl_block_self (HIR::ImplBlock &impl_block)
 {
   return TypeCheckType::Resolve (impl_block.get_type ());
+}
+
+bool
+TypeCheckItem::validate_repr_simd (
+  const std::vector<TyTy::StructFieldType *> &fields, location_t locus)
+{
+  if (fields.empty ())
+    {
+      rust_error_at (locus, ErrorCode::E0075, "SIMD vector cannot be empty");
+      return false;
+    }
+
+  // in 1.49, repr simd assumes all fields are same type with its size
+  // being power-of-two.
+  //
+  // TODO update this typecheck to make repr simd take in a single field
+  // of an array instead when we move past 1.49. Relevant Rust github
+  // issues/PRs:
+  // - https://github.com/rust-lang/compiler-team/issues/621
+  // - https://github.com/rust-lang/rust/pull/78863 (implemented
+  //   for 1.50.0)
+
+  TyTy::BaseType *first_field_ty = fields.at (0)->get_field_type ();
+  TyTy::TypeKind ty_kind = first_field_ty->get_kind ();
+  bool fields_are_same_type = true;
+
+  switch (ty_kind)
+    {
+    case TyTy::TypeKind::INT:
+      {
+	auto int_ty = static_cast<TyTy::IntType *> (first_field_ty);
+	auto int_kind = int_ty->get_int_kind ();
+	for (const auto field : fields)
+	  {
+	    if (field->get_field_type ()->get_kind () != ty_kind)
+	      {
+		fields_are_same_type = false;
+		break;
+	      }
+	    auto field_int_ty
+	      = static_cast<TyTy::IntType *> (field->get_field_type ());
+	    if (field_int_ty->get_int_kind () != int_kind)
+	      {
+		fields_are_same_type = false;
+		break;
+	      }
+	  }
+	break;
+      }
+    case TyTy::TypeKind::UINT:
+      {
+	auto uint_ty = static_cast<TyTy::UintType *> (first_field_ty);
+	auto uint_kind = uint_ty->get_uint_kind ();
+	for (const auto field : fields)
+	  {
+	    if (field->get_field_type ()->get_kind () != ty_kind)
+	      {
+		fields_are_same_type = false;
+		break;
+	      }
+	    auto field_uint_ty
+	      = static_cast<TyTy::UintType *> (field->get_field_type ());
+	    if (field_uint_ty->get_uint_kind () != uint_kind)
+	      {
+		fields_are_same_type = false;
+		break;
+	      }
+	  }
+	break;
+      }
+    case TyTy::TypeKind::FLOAT:
+      {
+	auto float_ty = static_cast<TyTy::FloatType *> (first_field_ty);
+	auto float_kind = float_ty->get_float_kind ();
+	for (const auto field : fields)
+	  {
+	    if (field->get_field_type ()->get_kind () != ty_kind)
+	      {
+		fields_are_same_type = false;
+		break;
+	      }
+	    auto field_float_ty
+	      = static_cast<TyTy::FloatType *> (field->get_field_type ());
+	    if (field_float_ty->get_float_kind () != float_kind)
+	      {
+		fields_are_same_type = false;
+		break;
+	      }
+	  }
+	break;
+      }
+    default:
+      rust_error_at (locus, ErrorCode::E0077,
+		     "SIMD vector element type should be a primitive scalar");
+      return false;
+    }
+
+  if (!fields_are_same_type)
+    {
+      rust_error_at (locus, "SIMD struct fields should be of the same type");
+      return false;
+    }
+
+  // check whether field count is power of 2
+  size_t field_count = fields.size ();
+  if ((field_count & (field_count - 1)) != 0)
+    {
+      rust_error_at (locus, "Size of SIMD struct must be a power of 2");
+      return false;
+    }
+  return true;
 }
 
 } // namespace Resolver

@@ -506,23 +506,24 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	      continue;
 	    }
 
-	  const std::string inline_option = items.at (0)->as_string ();
+	  const std::string repr_option = items.at (0)->as_string ();
 
 	  // TODO: it would probably be better to make the MetaItems more aware
 	  // of constructs with nesting like #[repr(packed(2))] rather than
 	  // manually parsing the string "packed(2)" here.
 
-	  size_t oparen = inline_option.find ('(', 0);
+	  size_t oparen = repr_option.find ('(', 0);
 	  bool is_pack = false;
 	  bool is_align = false;
 	  bool is_c = false;
 	  bool is_integer = false;
 	  bool is_transparent = false;
+	  bool is_simd = false;
 	  unsigned char value = 1;
 
 	  if (oparen == std::string::npos)
 	    {
-	      if (inline_option.compare ("align") == 0)
+	      if (repr_option.compare ("align") == 0)
 		{
 		  rust_error_at (attr.get_locus (), ErrorCode::E0589,
 				 "invalid %<repr(align)%> attribute: %<align%> "
@@ -531,36 +532,37 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 		  break;
 		}
 
-	      is_pack = inline_option.compare ("packed") == 0;
-	      is_c = inline_option.compare ("C") == 0;
-	      is_integer = (inline_option.compare ("isize") == 0
-			    || inline_option.compare ("i8") == 0
-			    || inline_option.compare ("i16") == 0
-			    || inline_option.compare ("i32") == 0
-			    || inline_option.compare ("i64") == 0
-			    || inline_option.compare ("i128") == 0
-			    || inline_option.compare ("usize") == 0
-			    || inline_option.compare ("u8") == 0
-			    || inline_option.compare ("u16") == 0
-			    || inline_option.compare ("u32") == 0
-			    || inline_option.compare ("u64") == 0
-			    || inline_option.compare ("u128") == 0);
-	      is_transparent = inline_option.compare ("transparent") == 0;
+	      is_pack = repr_option.compare ("packed") == 0;
+	      is_c = repr_option.compare ("C") == 0;
+	      is_integer = (repr_option.compare ("isize") == 0
+			    || repr_option.compare ("i8") == 0
+			    || repr_option.compare ("i16") == 0
+			    || repr_option.compare ("i32") == 0
+			    || repr_option.compare ("i64") == 0
+			    || repr_option.compare ("i128") == 0
+			    || repr_option.compare ("usize") == 0
+			    || repr_option.compare ("u8") == 0
+			    || repr_option.compare ("u16") == 0
+			    || repr_option.compare ("u32") == 0
+			    || repr_option.compare ("u64") == 0
+			    || repr_option.compare ("u128") == 0);
+	      is_transparent = repr_option.compare ("transparent") == 0;
+	      is_simd = repr_option.compare ("simd") == 0;
 	    }
 
 	  else
 	    {
-	      std::string rep = inline_option.substr (0, oparen);
+	      std::string rep = repr_option.substr (0, oparen);
 	      is_pack = rep.compare ("packed") == 0;
 	      is_align = rep.compare ("align") == 0;
 
-	      size_t cparen = inline_option.find (')', oparen);
+	      size_t cparen = repr_option.find (')', oparen);
 	      if (cparen == std::string::npos)
 		{
 		  rust_error_at (locus, "malformed attribute");
 		}
 
-	      std::string value_str = inline_option.substr (oparen, cparen);
+	      std::string value_str = repr_option.substr (oparen, cparen);
 	      value = strtoul (value_str.c_str () + 1, NULL, 10);
 	    }
 
@@ -594,12 +596,16 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	  else if (is_integer)
 	    {
 	      repr.repr_kind = TyTy::ADTType::ReprKind::INT;
-	      bool ok = context->lookup_builtin (inline_option, &repr.repr);
+	      bool ok = context->lookup_builtin (repr_option, &repr.repr);
 	      if (!ok)
 		{
 		  rust_error_at (attr.get_locus (), ErrorCode::E0552,
 				 "unrecognized representation hint");
 		}
+	    }
+	  else if (is_simd)
+	    {
+	      repr.repr_kind = TyTy::ADTType::ReprKind::SIMD;
 	    }
 	  else
 	    {
