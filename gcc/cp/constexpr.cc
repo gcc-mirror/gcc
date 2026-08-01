@@ -1221,15 +1221,19 @@ public:
      class types, etc.  Thus, we need to arrange for calls which call
      at least some metafunctions to be non-cacheable, because their behavior
      might not be the same.  Until we figure out which exact metafunctions
-     need this and which don't, do it for all of them.  */
-  bool metafns_called;
+     need this and which don't, do it for all of them.
+     Also used for some cases in constexpr EH, e.g. __cxa_rethrow,
+     __builtin_uncaught_exceptions and __builtin_current_exception, which can
+     be also dependent on some state (pending uncaught or caught exceptions)
+     not tracked in the constexpr call caching.  */
+  bool state_dependent;
 
   /* Constructor.  */
   constexpr_global_ctx ()
     : constexpr_ops_count (0), cleanups (NULL), modifiable (nullptr),
       consteval_block (NULL_TREE), heap_dealloc_count (0),
       uncaught_exceptions (0), contract_statement (NULL_TREE),
-      contract_condition_non_const (false), metafns_called (false) {}
+      contract_condition_non_const (false), state_dependent (false) {}
 
   bool is_outside_lifetime (tree t)
   {
@@ -2120,7 +2124,7 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
       ++ctx->global->uncaught_exceptions;
       /* Don't cache calls which rethrow, they depend on the current
 	 exception which might be caught in the caller.  */
-      ctx->global->metafns_called = true;
+      ctx->global->state_dependent = true;
       *jump_target = arg;
       return void_node;
     case CXA_BAD_CAST:
@@ -2202,7 +2206,7 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
       /* Don't cache calls which call __builtin_uncaught_exceptions (),
 	 they depend on the current uncaught exceptions which might
 	 be the state from their caller.  */
-      ctx->global->metafns_called = true;
+      ctx->global->state_dependent = true;
       return build_int_cst (integer_type_node,
 			    ctx->global->uncaught_exceptions);
     case BUILTIN_CURRENT_EXCEPTION:
@@ -2257,7 +2261,7 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	  /* Don't cache calls which call __builtin_current_exception (),
 	     they depend on the current exception which might be caught
 	     in the caller.  */
-	  ctx->global->metafns_called = true;
+	  ctx->global->state_dependent = true;
 	  return build_constructor_single (TREE_TYPE (decl), fld, arg);
 	}
     case STD_RETHROW_EXCEPTION:
@@ -4069,7 +4073,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  *non_constant_p = true;
 	  return t;
 	}
-      ctx->global->metafns_called = true;
+      ctx->global->state_dependent = true;
       tree e = process_metafunction (ctx, fun, t, non_constant_p, overflow_p,
 				     jump_target);
       if (*jump_target)
@@ -4538,7 +4542,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	  call_ctx.call = &new_call;
 	  unsigned save_heap_alloc_count = ctx->global->heap_vars.length ();
 	  unsigned save_heap_dealloc_count = ctx->global->heap_dealloc_count;
-	  bool save_metafns_called = ctx->global->metafns_called;
+	  bool save_state_dependent = ctx->global->state_dependent;
 
 	  /* Make sure we fold std::is_constant_evaluated to true in an
 	     immediate function.  */
@@ -4570,7 +4574,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		return NULL_TREE;
 	    }
 
-	  ctx->global->metafns_called = false;
+	  ctx->global->state_dependent = false;
 
 	  tree jmp_target = NULL_TREE;
 	  cxx_eval_constant_expression (&call_ctx, body,
@@ -4612,9 +4616,9 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 		}
 	    }
 
-	  if (ctx->global->metafns_called)
+	  if (ctx->global->state_dependent)
 	    cacheable = false;
-	  ctx->global->metafns_called |= save_metafns_called;
+	  ctx->global->state_dependent |= save_state_dependent;
 
 	  /* At this point, the object's constructor will have run, so
 	     the object is no longer under construction, and its possible
