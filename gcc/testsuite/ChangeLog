@@ -1,3 +1,91 @@
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126504
+	* gcc.dg/torture/bitint-105.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126503
+	* gcc.dg/torture/bitint-106.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126497
+	* gcc.dg/bitint-141.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126490
+	* gcc.dg/torture/bitint-104.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* gcc.dg/torture/pr126464.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126476
+	* gcc.dg/torture/bitint-103.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* gcc.dg/pr126464.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126471
+	* gcc.dg/bitint-139.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126446
+	* gcc.target/i386/avx2-pr126446.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/126447
+	* gcc.dg/ubsan/bitint-5.c: New test.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/126303
+	* gfortran.dg/pr126303.f: New test.
+
 2026-07-31  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
