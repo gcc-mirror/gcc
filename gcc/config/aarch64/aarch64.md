@@ -1138,21 +1138,21 @@
   }
 )
 
-(define_insn "@ccmp<CCFP_CCFPE:mode><GPF:mode>"
+(define_insn "@ccmp<CCFP_CCFPE:mode><GPF_F16:mode>"
   [(set (match_operand:CCFP_CCFPE 1 "cc_register" "")
 	(if_then_else:CCFP_CCFPE
 	  (match_operator 4 "aarch64_comparison_operator"
 	   [(match_operand 0 "cc_register" "")
 	    (const_int 0)])
 	  (compare:CCFP_CCFPE
-	    (match_operand:GPF 2 "register_operand" "w")
-	    (match_operand:GPF 3 "register_operand" "w"))
+	    (match_operand:GPF_F16 2 "register_operand" "w")
+	    (match_operand:GPF_F16 3 "register_operand" "w"))
 	  (unspec:CCFP_CCFPE
 	    [(match_operand 5 "immediate_operand")]
 	    UNSPEC_NZCV)))]
   "TARGET_FLOAT"
   "fccmp<e>\\t%<s>2, %<s>3, %k5, %m4"
-  [(set_attr "type" "fccmp<s>")]
+  [(set_attr "type" "fccmp<stype>")]
 )
 
 (define_insn "@ccmp<CC_ONLY:mode><GPI:mode>_rev"
@@ -1175,7 +1175,7 @@
   }
 )
 
-(define_insn "@ccmp<CCFP_CCFPE:mode><GPF:mode>_rev"
+(define_insn "@ccmp<CCFP_CCFPE:mode><GPF_F16:mode>_rev"
   [(set (match_operand:CCFP_CCFPE 1 "cc_register" "")
 	(if_then_else:CCFP_CCFPE
 	  (match_operator 4 "aarch64_comparison_operator"
@@ -1185,11 +1185,11 @@
 	    [(match_operand 5 "immediate_operand")]
 	    UNSPEC_NZCV)
 	  (compare:CCFP_CCFPE
-	    (match_operand:GPF 2 "register_operand" "w")
-	    (match_operand:GPF 3 "register_operand" "w"))))]
+	    (match_operand:GPF_F16 2 "register_operand" "w")
+	    (match_operand:GPF_F16 3 "register_operand" "w"))))]
   "TARGET_FLOAT"
   "fccmp<e>\\t%<s>2, %<s>3, %k5, %M4"
-  [(set_attr "type" "fccmp<s>")]
+  [(set_attr "type" "fccmp<stype>")]
 )
 
 ;; Expansion of signed mod by a power of 2 using CSNEG.

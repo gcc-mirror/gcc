@@ -29729,6 +29729,17 @@ aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
       icode = CODE_FOR_cmpdi;
       break;
 
+    case E_HFmode:
+      if (!TARGET_FP_F16INST)
+	{
+	  end_sequence ();
+	  return NULL_RTX;
+	}
+      cmp_mode = HFmode;
+      cc_mode = aarch64_select_cc_mode (code, op0, op1);
+      icode = cc_mode == CCFPEmode ? CODE_FOR_fcmpehf : CODE_FOR_fcmphf;
+      break;
+
     case E_SFmode:
       cmp_mode = SFmode;
       cc_mode = aarch64_select_cc_mode (code, op0, op1);
@@ -29785,6 +29796,7 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   /* Exit early for modes that are ot handled to avoid O(n^2) part of expand_operands. */
   op_mode = TYPE_MODE (TREE_TYPE (treeop0));
   if (!(op_mode == QImode || op_mode == HImode || op_mode == SImode || op_mode == DImode
+	|| (op_mode == HFmode && TARGET_FP_F16INST)
 	|| op_mode == SFmode || op_mode == DFmode))
    return NULL_RTX;
 
@@ -29810,13 +29822,10 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
       cmp_mode = DImode;
       break;
 
+    case E_HFmode:
     case E_SFmode:
-      cmp_mode = SFmode;
-      cc_mode = aarch64_select_cc_mode (cmp_code, op0, op1);
-      break;
-
     case E_DFmode:
-      cmp_mode = DFmode;
+      cmp_mode = op_mode;
       cc_mode = aarch64_select_cc_mode (cmp_code, op0, op1);
       break;
 
