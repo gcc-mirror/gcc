@@ -6883,30 +6883,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (a != b) | ((a|b) != 0) -> ((a|b) != 0)
 
    (a != b) & ((a|b) == 0) -> false
-   (a == b) | ((a|b) != 0) -> true  */
+   (a == b) | ((a|b) != 0) -> true
+
+   (a == 0) | ((a | b) == 0) -> (a == 0)
+   (a != 0) & ((a | b) != 0) -> (a != 0)  */
 (for bitop (bit_and bit_ior)
      neeq  (ne      eq)
+     eqne  (eq      ne)
  (simplify
   (bitop:c (neeq @0 @1) (neeq (bit_ior @0 @1) integer_zerop))
-  (neeq @0 @1)))
-(for bitop (bit_and bit_ior)
-     neeq  (eq      ne)
+  (neeq @0 @1))
  (simplify
-  (bitop:c (neeq @0 @1) (neeq (bit_ior@2 @0 @1) integer_zerop@3))
-  (neeq @2 @3)))
-(for bitop (bit_and bit_ior)
-     neeql (ne      eq)
-     neeqr (eq      ne)
+  (bitop:c (eqne @0 @1) (eqne (bit_ior@2 @0 @1) integer_zerop@3))
+  (neeq @2 @3))
  (simplify
-  (bitop (neeql @0 @1) (neeqr (bit_ior @0 @1) integer_zerop))
-  { constant_boolean_node (bitop == BIT_IOR_EXPR, type); }))
-
-/* (a == 0) | ((a | b) == 0) -> (a == 0) -- PR125442
-   (a != 0) & ((a | b) != 0) -> (a != 0) -- PR125442 */
-
-(for bitop (bit_and bit_ior)
-     neeq  (ne      eq)
-(simplify
+  (bitop (neeq @0 @1) (eqne (bit_ior @0 @1) integer_zerop))
+  { constant_boolean_node (bitop == BIT_IOR_EXPR, type); })
+ (simplify
   (bitop:c (neeq@2 @0 integer_zerop) (neeq (bit_ior:c @0 @1) integer_zerop))
   @2))
 #endif
