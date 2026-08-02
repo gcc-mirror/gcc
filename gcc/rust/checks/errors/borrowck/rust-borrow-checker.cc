@@ -49,6 +49,8 @@ BorrowChecker::go (HIR::Crate &crate)
 {
   std::string crate_name;
 
+  BIR::DropAnalysis::get ().clear ();
+
   if (enable_dump_bir)
     {
       mkdir ("bir_dump", 0755);
@@ -70,7 +72,7 @@ BorrowChecker::go (HIR::Crate &crate)
       BIR::Builder builder (ctx);
       auto bir = builder.build (*func);
 
-      BIR::DropAnalysis::analyze (bir);
+      BIR::DropAnalysis::get ().analyze (bir);
 
       if (enable_dump_bir)
 	{
