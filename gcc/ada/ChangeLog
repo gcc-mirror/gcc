@@ -1,3 +1,9 @@
+2026-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126379
+	* exp_ch6.adb (Insert_Post_Call_Actions): Also deal with attribute
+	references as parent node.
+
 2026-07-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/126482
