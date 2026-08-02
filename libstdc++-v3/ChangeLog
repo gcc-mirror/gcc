@@ -1,3 +1,11 @@
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/regex_compiler.h (_Compiler::_M_pop): Uglify ret
+	variable name.
+
 2026-05-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

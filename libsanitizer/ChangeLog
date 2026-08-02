@@ -1,3 +1,12 @@
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/126307
+	* tsan/tsan_trace.h: Cherry-pick llvm-project revision
+	cdfdb06c9155080ec97d6e4f4dd90b6e7cefb0ca.
+
 2026-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

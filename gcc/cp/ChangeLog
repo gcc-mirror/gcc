@@ -1,3 +1,29 @@
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125674
+	* pt.cc (tsubst_decl): Diagnose bit-field widths
+	with invalid type.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/124850
+	* typeck.cc (cxx_mark_addressable): For DECL_ANON_UNION_VAR_P vars
+	also mark their DECL_VALUE_EXPR.
+
+2026-08-01  Yang Kun  <yangkun@disroot.org>
+
+	Backported from master:
+	2026-04-08  Yang Kun  <yangkun@disroot.org>
+
+	* parser.cc (cp_parser_omp_clause_proc_bind): Fix error message
+	(cp_parser_omp_clause_device_type): Likewise.
+
 2026-06-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	Backported from master:
