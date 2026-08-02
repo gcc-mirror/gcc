@@ -8,3 +8,6 @@ pub fn foo(a: &[u32]) {
         _ => {}
     }
 }
+
+#[cfg(any())]
+pub fn foo([.., ..]: ()) {}

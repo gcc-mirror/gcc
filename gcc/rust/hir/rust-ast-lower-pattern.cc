@@ -338,27 +338,49 @@ ASTLoweringPattern::visit (AST::ReferencePattern &pattern)
     }
 }
 
+template <typename It>
+static std::vector<std::unique_ptr<HIR::Pattern>>
+lower_pattern_seq (It begin, It end)
+{
+  std::vector<std::unique_ptr<HIR::Pattern>> ret;
+  ret.reserve (end - begin);
+  for (auto it = begin; it != end; it++)
+    ret.emplace_back (ASTLoweringPattern::translate (**it));
+  return ret;
+}
+
 void
 ASTLoweringPattern::visit (AST::SlicePattern &pattern)
 {
+  tl::optional<size_t> rest_index;
+
+  std::vector<std::unique_ptr<AST::Pattern>> &sub_patterns
+    = pattern.get_patterns ();
+
+  for (size_t i = 0; i < sub_patterns.size (); i++)
+    {
+      auto &pat = sub_patterns[i];
+      if (pat->get_pattern_kind () == AST::Pattern::Kind::Rest)
+	{
+	  rest_index = i;
+	  // ASTValidation verified there's only one Rest pattern
+	  break;
+	}
+    }
+
   std::unique_ptr<HIR::SlicePatternItems> items;
 
-  switch (pattern.get_items ().get_item_type ())
+  if (rest_index)
     {
-    case AST::SlicePatternItems::ItemType::NO_REST:
-      {
-	auto &ref
-	  = static_cast<AST::SlicePatternItemsNoRest &> (pattern.get_items ());
-	items = ASTLoweringBase::lower_slice_pattern_no_rest (ref);
-      }
-      break;
-    case AST::SlicePatternItems::ItemType::HAS_REST:
-      {
-	auto &ref
-	  = static_cast<AST::SlicePatternItemsHasRest &> (pattern.get_items ());
-	items = ASTLoweringBase::lower_slice_pattern_has_rest (ref);
-      }
-      break;
+      auto rest_it = sub_patterns.begin () + *rest_index;
+      items = std::make_unique<HIR::SlicePatternItemsHasRest> (
+	lower_pattern_seq (sub_patterns.begin (), rest_it),
+	lower_pattern_seq (rest_it + 1, sub_patterns.end ()));
+    }
+  else
+    {
+      items = std::make_unique<HIR::SlicePatternItemsNoRest> (
+	lower_pattern_seq (sub_patterns.begin (), sub_patterns.end ()));
     }
 
   auto crate_num = mappings.get_current_crate ();

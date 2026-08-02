@@ -327,50 +327,15 @@ GroupedExpr::as_string () const
 }
 
 std::string
-SlicePatternItemsNoRest::as_string () const
+SlicePattern::as_string () const
 {
   std::string str;
 
+  str = "SlicePattern: ";
   for (const auto &pattern : patterns.get ())
     str += "\n " + pattern->as_string ();
 
   return str;
-}
-
-std::string
-SlicePatternItemsHasRest::as_string () const
-{
-  std::string str;
-
-  str += "\n Lower patterns: ";
-  if (lower_patterns.get ().empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &lower : lower_patterns.get ())
-	str += "\n  " + lower->as_string ();
-    }
-
-  str += "\n Upper patterns: ";
-  if (upper_patterns.get ().empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &upper : upper_patterns.get ())
-	str += "\n  " + upper->as_string ();
-    }
-
-  return str;
-}
-
-std::string
-SlicePattern::as_string () const
-{
-  return "SlicePattern: " + items.get ()->as_string ();
 }
 
 std::string
@@ -398,18 +363,6 @@ GroupedPattern::accept_vis (ASTVisitor &vis)
 
 void
 GroupedExpr::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-SlicePatternItemsNoRest::accept_vis (ASTVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-SlicePatternItemsHasRest::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }

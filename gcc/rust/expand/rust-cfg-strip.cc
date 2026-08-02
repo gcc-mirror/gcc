@@ -2440,41 +2440,16 @@ CfgStrip::visit (AST::GroupedPattern &pattern)
 }
 
 void
-CfgStrip::visit (AST::SlicePatternItemsNoRest &items)
-{
-  AST::DefaultASTVisitor::visit (items);
-  // can't strip individual patterns, only sub-patterns
-  for (auto &pattern : items.get_patterns ())
-    {
-      if (pattern->is_marked_for_strip ())
-	rust_error_at (pattern->get_locus (),
-		       "cannot strip pattern in this position");
-    }
-}
-
-void
-CfgStrip::visit (AST::SlicePatternItemsHasRest &items)
-{
-  AST::DefaultASTVisitor::visit (items);
-  // can't strip individual patterns, only sub-patterns
-  for (auto &pattern : items.get_lower_patterns ())
-    {
-      if (pattern->is_marked_for_strip ())
-	rust_error_at (pattern->get_locus (),
-		       "cannot strip pattern in this position");
-    }
-  for (auto &pattern : items.get_upper_patterns ())
-    {
-      if (pattern->is_marked_for_strip ())
-	rust_error_at (pattern->get_locus (),
-		       "cannot strip pattern in this position");
-    }
-}
-
-void
 CfgStrip::visit (AST::SlicePattern &pattern)
 {
   AST::DefaultASTVisitor::visit (pattern);
+  // can't strip individual patterns, only sub-patterns
+  for (auto &sub_pat : pattern.get_patterns ())
+    {
+      if (sub_pat->is_marked_for_strip ())
+	rust_error_at (sub_pat->get_locus (),
+		       "cannot strip pattern in this position");
+    }
 }
 
 void

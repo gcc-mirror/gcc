@@ -919,19 +919,10 @@ PointerVisitor::visit (AST::GroupedPattern &pattern)
 }
 
 void
-PointerVisitor::visit (AST::SlicePatternItemsNoRest &items)
+PointerVisitor::visit (AST::SlicePattern &pattern)
 {
-  for (auto &item : items.get_patterns ())
-    reseat (item);
-}
-
-void
-PointerVisitor::visit (AST::SlicePatternItemsHasRest &items)
-{
-  for (auto &item : items.get_lower_patterns ())
-    reseat (item);
-  for (auto &item : items.get_upper_patterns ())
-    reseat (item);
+  for (auto &pat : pattern.get_patterns ())
+    reseat (pat);
 }
 
 void

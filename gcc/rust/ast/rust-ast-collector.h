@@ -424,8 +424,6 @@ public:
   void visit (TuplePatternItemsHasRest &tuple_items);
   void visit (TuplePattern &pattern);
   void visit (GroupedPattern &pattern);
-  void visit (SlicePatternItemsNoRest &items);
-  void visit (SlicePatternItemsHasRest &items);
   void visit (SlicePattern &pattern);
   void visit (AltPattern &pattern);
 

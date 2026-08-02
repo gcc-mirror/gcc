@@ -41,6 +41,7 @@ public:
   virtual void visit (AST::Union &item);
   virtual void visit (AST::Function &function);
   virtual void visit (AST::Trait &trait);
+  virtual void visit (AST::SlicePattern &pattern);
 };
 
 } // namespace Rust

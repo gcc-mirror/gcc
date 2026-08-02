@@ -1346,25 +1346,10 @@ DefaultASTVisitor::visit (AST::GroupedPattern &pattern)
 }
 
 void
-DefaultASTVisitor::visit (AST::SlicePatternItemsNoRest &items)
-{
-  for (auto &item : items.get_patterns ())
-    visit (item);
-}
-
-void
-DefaultASTVisitor::visit (AST::SlicePatternItemsHasRest &items)
-{
-  for (auto &item : items.get_lower_patterns ())
-    visit (item);
-  for (auto &item : items.get_upper_patterns ())
-    visit (item);
-}
-
-void
 DefaultASTVisitor::visit (AST::SlicePattern &pattern)
 {
-  visit (pattern.get_items ());
+  for (auto &pat : pattern.get_patterns ())
+    visit (pat);
 }
 
 void

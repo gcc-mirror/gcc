@@ -3056,35 +3056,11 @@ TokenCollector::visit (GroupedPattern &pattern)
 }
 
 void
-TokenCollector::visit (SlicePatternItemsNoRest &items)
-{
-  visit_items_joined_by_separator (items.get_patterns (), COMMA);
-}
-
-void
-TokenCollector::visit (SlicePatternItemsHasRest &items)
-{
-  if (!items.get_lower_patterns ().empty ())
-    {
-      visit_items_joined_by_separator (items.get_lower_patterns (), COMMA);
-      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
-    }
-
-  push (Rust::Token::make (DOT_DOT, UNDEF_LOCATION));
-
-  if (!items.get_upper_patterns ().empty ())
-    {
-      push (Rust::Token::make (COMMA, UNDEF_LOCATION));
-      visit_items_joined_by_separator (items.get_upper_patterns (), COMMA);
-    }
-}
-
-void
 TokenCollector::visit (SlicePattern &pattern)
 {
   describe_node (std::string ("SlicePattern"), [this, &pattern] () {
     push (Rust::Token::make (LEFT_SQUARE, pattern.get_locus ()));
-    visit (pattern.get_items ());
+    visit_items_joined_by_separator (pattern.get_patterns (), COMMA);
     push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
   });
 }

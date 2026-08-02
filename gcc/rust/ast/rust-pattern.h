@@ -1211,117 +1211,19 @@ protected:
   }
 };
 
-// Base abstract class representing patterns in a SlicePattern
-class SlicePatternItems : public PatternItems
-{
-public:
-  // Unique pointer custom clone function
-  std::unique_ptr<SlicePatternItems> clone_slice_pattern_items () const
-  {
-    return std::unique_ptr<SlicePatternItems> (clone_pattern_items_impl ());
-  }
-
-protected:
-  // pure virtual clone implementation
-  virtual SlicePatternItems *clone_pattern_items_impl () const = 0;
-};
-
-// Class representing the patterns in a SlicePattern without `..`
-class SlicePatternItemsNoRest : public SlicePatternItems
-{
-  Cloneable<std::vector<std::unique_ptr<Pattern>>> patterns;
-
-public:
-  SlicePatternItemsNoRest (std::vector<std::unique_ptr<Pattern>> patterns)
-    : patterns (std::move (patterns))
-  {}
-
-  std::string as_string () const override;
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern>> &get_patterns ()
-  {
-    return patterns.get ();
-  }
-  const std::vector<std::unique_ptr<Pattern>> &get_patterns () const
-  {
-    return patterns.get ();
-  }
-
-  ItemType get_item_type () const override { return ItemType::NO_REST; }
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  SlicePatternItemsNoRest *clone_pattern_items_impl () const override
-  {
-    return new SlicePatternItemsNoRest (*this);
-  }
-};
-
-// Class representing the patterns in a SlicePattern that contains a `..`
-class SlicePatternItemsHasRest : public SlicePatternItems
-{
-  Cloneable<std::vector<std::unique_ptr<Pattern>>> lower_patterns;
-  Cloneable<std::vector<std::unique_ptr<Pattern>>> upper_patterns;
-
-public:
-  SlicePatternItemsHasRest (
-    std::vector<std::unique_ptr<Pattern>> lower_patterns,
-    std::vector<std::unique_ptr<Pattern>> upper_patterns)
-    : lower_patterns (std::move (lower_patterns)),
-      upper_patterns (std::move (upper_patterns))
-  {}
-
-  std::string as_string () const override;
-
-  void accept_vis (ASTVisitor &vis) override;
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern>> &get_lower_patterns ()
-  {
-    return lower_patterns.get ();
-  }
-  const std::vector<std::unique_ptr<Pattern>> &get_lower_patterns () const
-  {
-    return lower_patterns.get ();
-  }
-
-  // TODO: seems kinda dodgy. Think of better way.
-  std::vector<std::unique_ptr<Pattern>> &get_upper_patterns ()
-  {
-    return upper_patterns.get ();
-  }
-  const std::vector<std::unique_ptr<Pattern>> &get_upper_patterns () const
-  {
-    return upper_patterns.get ();
-  }
-
-  ItemType get_item_type () const override { return ItemType::HAS_REST; }
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  SlicePatternItemsHasRest *clone_pattern_items_impl () const override
-  {
-    return new SlicePatternItemsHasRest (*this);
-  }
-};
-
 // AST node representing patterns that can match slices and arrays
 class SlicePattern : public Pattern
 {
-  Cloneable<std::unique_ptr<SlicePatternItems>> items;
+  Cloneable<std::vector<std::unique_ptr<Pattern>>> patterns;
   location_t locus;
   NodeId node_id;
 
 public:
   std::string as_string () const override;
 
-  SlicePattern (std::unique_ptr<SlicePatternItems> items, location_t locus)
-    : items (std::move (items)), locus (locus),
+  SlicePattern (std::vector<std::unique_ptr<Pattern>> patterns,
+		location_t locus)
+    : patterns (std::move (patterns)), locus (locus),
       node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
@@ -1330,10 +1232,9 @@ public:
   void accept_vis (ASTVisitor &vis) override;
 
   // TODO: seems kinda dodgy. Think of better way.
-  SlicePatternItems &get_items ()
+  std::vector<std::unique_ptr<Pattern>> &get_patterns ()
   {
-    rust_assert (items != nullptr);
-    return *items.get ();
+    return patterns.get ();
   }
 
   NodeId get_node_id () const override { return node_id; }
@@ -1433,18 +1334,6 @@ template <> struct CloneableDelegate<std::unique_ptr<AST::TuplePatternItems>>
       return nullptr;
     else
       return other->clone_tuple_pattern_items ();
-  }
-};
-
-template <> struct CloneableDelegate<std::unique_ptr<AST::SlicePatternItems>>
-{
-  static std::unique_ptr<AST::SlicePatternItems>
-  clone (const std::unique_ptr<AST::SlicePatternItems> &other)
-  {
-    if (other == nullptr)
-      return nullptr;
-    else
-      return other->clone_slice_pattern_items ();
   }
 };
 
