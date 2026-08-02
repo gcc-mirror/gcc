@@ -4710,9 +4710,15 @@ if (BYTES_BIG_ENDIAN)
 			  VSHLL_N))]
   "TARGET_NEON"
 {
-  /* The boundaries are: 0 < imm <= size.  */
-  arm_const_bounds (operands[2], 0, neon_element_bits (<MODE>mode) + 1);
-  return "vshll.<sup>%#<V_sz_elem>\t%q0, %P1, %2";
+  /* The boundaries are: 0 <= imm <= size, but the upper and lower
+     bounds need specific handling.  */
+  HOST_WIDE_INT elt_size = neon_element_bits (<MODE>mode);
+  arm_const_bounds (operands[2], 0, elt_size + 1);
+  if (INTVAL (operands[2]) == 0)
+    return "vmovl.<sup><V_sz_elem>\t%q0, %P1";
+  else if (INTVAL (operands[2]) == elt_size)
+    return "vshll.i<V_sz_elem>\t%q0, %P1, %2";
+  return "vshll.<sup><V_sz_elem>\t%q0, %P1, %2";
 }
   [(set_attr "type" "neon_shift_imm_long")]
 )
