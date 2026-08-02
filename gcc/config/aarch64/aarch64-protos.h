@@ -1066,6 +1066,7 @@ void aarch64_emit_sve_pred_vec_duplicate (machine_mode, rtx, rtx);
 void aarch64_expand_prologue (void);
 void aarch64_decompose_vec_struct_index (machine_mode, rtx *, rtx *, bool);
 void aarch64_expand_vector_init (rtx, rtx);
+void aarch64_expand_reduc_widen_sum (rtx, rtx, rtx, rtx_code);
 void aarch64_sve_expand_vector_init_subvector (rtx, rtx);
 void aarch64_sve_expand_vector_init (rtx, rtx);
 void aarch64_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx,

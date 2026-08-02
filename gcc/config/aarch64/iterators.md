@@ -313,6 +313,10 @@
 ;; All quad integer widen-able modes.
 (define_mode_iterator VQW [V16QI V8HI V4SI])
 
+;; Quad integer modes that reach 64-bit elements through more than one
+;; pairwise widening step.
+(define_mode_iterator VQ_BH [V16QI V8HI])
+
 ;; Double vector modes for combines.
 (define_mode_iterator VDC [V8QI V4HI V4BF V4HF V2SI V2SF DI DF])
 

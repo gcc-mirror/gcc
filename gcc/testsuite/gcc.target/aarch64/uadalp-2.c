@@ -14,5 +14,5 @@ t6(int len, void * dummy, unsigned short * __restrict x)
   return result;
 }
 
-/* { dg-final { scan-assembler "uaddw" } } */
-/* { dg-final { scan-assembler "uaddw2" } } */
+/* { dg-final { scan-assembler {\tuadalp\tv[0-9]+\.4s, v[0-9]+\.8h} } } */
+

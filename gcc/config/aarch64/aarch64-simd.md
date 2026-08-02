@@ -1182,7 +1182,7 @@
   }
 )
 
-(define_expand "aarch64_<su>adalp<mode>"
+(define_expand "@aarch64_<su>adalp<mode>"
   [(set (match_operand:<VDBLW> 0 "register_operand")
 	(plus:<VDBLW>
 	  (plus:<VDBLW>
@@ -5337,19 +5337,17 @@
 
 ;; <su><addsub>w<q>.
 
-(define_expand "reduc_widen_ssum<Vdblw><mode>3"
+;; A widening sum reduction that halves the lane count is a single pairwise
+;; widening accumulate.
+(define_expand "reduc_widen_<su>sum<Vdblw><mode>3"
   [(set (match_operand:<VDBLW> 0 "register_operand")
-	(plus:<VDBLW> (sign_extend:<VDBLW> 
-		        (match_operand:VQW 1 "register_operand"))
+	(plus:<VDBLW> (ANY_EXTEND:<VDBLW>
+			(match_operand:VQW 1 "register_operand"))
 		      (match_operand:<VDBLW> 2 "register_operand")))]
   "TARGET_SIMD"
   {
-    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
-    rtx temp = gen_reg_rtx (GET_MODE (operands[0]));
-
-    emit_insn (gen_aarch64_saddw<mode>_internal (temp, operands[2],
-						operands[1], p));
-    emit_insn (gen_aarch64_saddw2<mode> (operands[0], temp, operands[1]));
+    emit_insn (gen_aarch64_<su>adalp<mode> (operands[0], operands[2],
+					    operands[1]));
     DONE;
   }
 )
@@ -5365,23 +5363,6 @@
   DONE;
 })
 
-(define_expand "reduc_widen_usum<Vdblw><mode>3"
-  [(set (match_operand:<VDBLW> 0 "register_operand")
-	(plus:<VDBLW> (zero_extend:<VDBLW> 
-		        (match_operand:VQW 1 "register_operand"))
-		      (match_operand:<VDBLW> 2 "register_operand")))]
-  "TARGET_SIMD"
-  {
-    rtx p = aarch64_simd_vect_par_cnst_half (<MODE>mode, <nunits>, false);
-    rtx temp = gen_reg_rtx (GET_MODE (operands[0]));
-
-    emit_insn (gen_aarch64_uaddw<mode>_internal (temp, operands[2],
-						 operands[1], p));
-    emit_insn (gen_aarch64_uaddw2<mode> (operands[0], temp, operands[1]));
-    DONE;
-  }
-)
-
 (define_expand "reduc_widen_usum<Vwide><mode>3"
   [(set (match_operand:<VWIDE> 0 "register_operand")
 	(plus:<VWIDE> (zero_extend:<VWIDE>
@@ -5393,38 +5374,45 @@
   DONE;
 })
 
-(define_expand "reduc_widen_ssum<mode><vsi2qi>3"
+;; A widening sum reduction that quarters the lane count.  With dot product
+;; this is one [SU]DOT with a vector of ones, i.e. += a becomes += (a * 1).
+;; Otherwise it is a pairwise widening add feeding a pairwise widening
+;; accumulate.
+(define_expand "reduc_widen_<su>sum<mode><vsi2qi>3"
   [(set (match_operand:VS 0 "register_operand")
-	(plus:VS (sign_extend:VS
+	(plus:VS (ANY_EXTEND:VS
 		   (match_operand:<VSI2QI> 1 "register_operand"))
 		 (match_operand:VS 2 "register_operand")))]
-  "TARGET_DOTPROD"
+  "TARGET_SIMD"
   {
-    rtx ones = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
-    emit_insn (gen_sdot_prod<mode><vsi2qi> (operands[0], operands[1], ones,
-					    operands[2]));
+    if (TARGET_DOTPROD)
+      {
+	rtx ones = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
+	emit_insn (gen_<su>dot_prod<mode><vsi2qi> (operands[0], operands[1],
+						   ones, operands[2]));
+      }
+    else
+      aarch64_expand_reduc_widen_sum (operands[0], operands[2], operands[1],
+				      <CODE>);
     DONE;
   }
 )
 
-;; Use dot product to perform double widening sum reductions by
-;; changing += a into += (a * 1).  i.e. we seed the multiplication with 1.
-(define_expand "reduc_widen_usum<mode><vsi2qi>3"
-  [(set (match_operand:VS 0 "register_operand")
-	(plus:VS (zero_extend:VS
-		        (match_operand:<VSI2QI> 1 "register_operand"))
-		      (match_operand:VS 2 "register_operand")))]
-  "TARGET_DOTPROD"
+;; Widening sum reductions into 64-bit elements.  These need two or three
+;; pairwise widening steps.
+(define_expand "reduc_widen_<su>sumv2di<mode>3"
+  [(set (match_operand:V2DI 0 "register_operand")
+	(plus:V2DI (ANY_EXTEND:V2DI
+		     (match_operand:VQ_BH 1 "register_operand"))
+		   (match_operand:V2DI 2 "register_operand")))]
+  "TARGET_SIMD"
   {
-    rtx ones = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
-    emit_insn (gen_udot_prod<mode><vsi2qi> (operands[0], operands[1], ones,
-					    operands[2]));
+    aarch64_expand_reduc_widen_sum (operands[0], operands[2], operands[1],
+				    <CODE>);
     DONE;
   }
 )
 
-;; Use dot product to perform double widening sum reductions by
-;; changing += a into += (a * 1).  i.e. we seed the multiplication with 1.
 (define_insn "aarch64_<ANY_EXTEND:su>subw<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(minus:<VWIDE> (match_operand:<VWIDE> 1 "register_operand" "w")

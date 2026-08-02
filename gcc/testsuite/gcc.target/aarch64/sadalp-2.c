@@ -14,5 +14,4 @@ t6(int len, void * dummy, int * __restrict x)
   return result;
 }
 
-/* { dg-final { scan-assembler "saddw" } } */
-/* { dg-final { scan-assembler "saddw2" } } */
+/* { dg-final { scan-assembler {\tsadalp\tv[0-9]+\.2d, v[0-9]+\.4s} } } */

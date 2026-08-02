@@ -26327,6 +26327,34 @@ aarch64_expand_vector_init (rtx target, rtx vals)
   emit_insn (seq_total_cost < fallback_seq_cost ? seq : fallback_seq);
 }
 
+/* Expand the widening sum reduction DEST = ACC + (WIDE) SRC, where the
+   Advanced SIMD vector SRC holds an even multiple of the number of lanes
+   of the accumulator ACC and of the result DEST.  EXTEND_CODE is
+   SIGN_EXTEND or ZERO_EXTEND and selects the signed or unsigned form.
+   Halve the lane count with [SU]ADDLP until a single pairwise step is
+   left, then accumulate into ACC with [SU]ADALP.  */
+
+void
+aarch64_expand_reduc_widen_sum (rtx dest, rtx acc, rtx src,
+				rtx_code extend_code)
+{
+  unsigned int dest_nunits = GET_MODE_NUNITS (GET_MODE (dest)).to_constant ();
+  machine_mode mode = GET_MODE (src);
+  gcc_assert (GET_MODE_NUNITS (mode).to_constant () % (dest_nunits * 2) == 0);
+
+  while (GET_MODE_NUNITS (mode).to_constant () > dest_nunits * 2)
+    {
+      insn_code icode = code_for_aarch64_addlp (extend_code, mode);
+      mode = insn_data[icode].operand[0].mode;
+      rtx tmp = gen_reg_rtx (mode);
+      emit_insn (GEN_FCN (icode) (tmp, src));
+      src = tmp;
+    }
+
+  emit_insn (GEN_FCN (code_for_aarch64_adalp (extend_code, mode)) (dest, acc,
+								   src));
+}
+
 /* Emit RTL corresponding to:
    insr TARGET, ELEM.  */
 
