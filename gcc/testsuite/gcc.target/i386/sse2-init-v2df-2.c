@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -msse2 -mno-sse4.1" } */
+/* { dg-options "-O2 -msse2 -mno-sse3" } */
 
 typedef double v2df __attribute__ ((__vector_size__ (16)));
 
