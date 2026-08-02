@@ -1,3 +1,34 @@
+2026-08-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/126558
+	* gfortran.h (gfc_resolve): Add optional argument for
+	an association list.
+	* resolve.cc (mark_assoc_used): New function.
+	(gfc_resolve): Use it.
+
+2026-08-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.cc (enum matrix_case): Add case A2TB1.
+	(matmul_lhs_realloc): Add condition for reallocation and
+	size checks.
+	(inline_matmul_assign): Handle A2TB1.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.cc (gfc_check_init_expr): Remove useless "? true : false".
+	(gfc_expr_check_typed): Replace "? false : true" with negation of the
+	condition.
+	* parse.cc (gfc_find_state): Likewise.
+	* resolve.cc (impure_stmt_fcn): Likewise.
+	* arith.cc (gfc_check_character_range): Remove useless
+	"? true : false".
+	* array.cc (is_constant_element): Likewise.
+	* decl.cc (gfc_verify_c_interop): Likewise.
+	* interface.cc (gfc_check_dummy_characteristics): Likewise.
+	* io.cc (check_open_constraints): Likewise.
+	(check_close_constraints): Likewise.
+	(check_io_constraints): Likewise.
+
 2026-07-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/126205

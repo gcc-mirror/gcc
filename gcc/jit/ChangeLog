@@ -1,3 +1,8 @@
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* jit-recording.cc (recording::context::set_bool_option): Remove
+	useless "? true : false".
+
 2026-06-17  Antoni Boucher  <bouanto@zoho.com>
 	    Robert Zakrzewski  <robert.zakrzewski1@stellantis.com>
 

@@ -1,3 +1,118 @@
+2026-08-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/126558
+	* gfortran.dg/warn_undefined_vars_10.f90: New test.
+
+2026-08-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/inline_matmul_29.f90: New test.
+
+2026-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512vl-concatv4si-1.c: Tweak exisiting test.
+	* gcc.target/i386/avx-init-v16qi-1.c: New test case.
+	* gcc.target/i386/avx-init-v2df-1.c: Likewise.
+	* gcc.target/i386/avx-init-v2df-2.c: Likewise.
+	* gcc.target/i386/avx-init-v2di-1.c: Likewise.
+	* gcc.target/i386/avx-init-v2di-2.c: Likewise.
+	* gcc.target/i386/avx-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/avx-init-v4sf-2.c: Likewise.
+	* gcc.target/i386/avx-init-v4si-1.c: Likewise.
+	* gcc.target/i386/avx-init-v8hi-1.c: Likewise.
+	* gcc.target/i386/avx2-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/avx2-init-v4si-1.c: Likewise.
+	* gcc.target/i386/avx2-init-v4si-2.c: Likewise.
+	* gcc.target/i386/avx512vl-init-v2di-1.c: Likewise.
+	* gcc.target/i386/avx512vl-init-v2di-2.c: Likewise.
+	* gcc.target/i386/avx512vl-init-v4si-1.c: Likewise.
+	* gcc.target/i386/sse-init-v16qi-1.c: Likewise.
+	* gcc.target/i386/sse-init-v2df-1.c: Likewise.
+	* gcc.target/i386/sse-init-v2df-2.c: Likewise.
+	* gcc.target/i386/sse-init-v2di-1.c: Likewise.
+	* gcc.target/i386/sse-init-v2di-2.c: Likewise.
+	* gcc.target/i386/sse-init-v4sf-2.c: Likewise.
+	* gcc.target/i386/sse-init-v4sf-3.c: Likewise.
+	* gcc.target/i386/sse-init-v4si-1.c: Likewise.
+	* gcc.target/i386/sse-init-v8hi-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v16qi-2.c: Likewise.
+	* gcc.target/i386/sse2-init-v16qi-3.c: Likewise.
+	* gcc.target/i386/sse2-init-v2df-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v2df-2.c: Likewise.
+	* gcc.target/i386/sse2-init-v2di-3.c: Likewise.
+	* gcc.target/i386/sse2-init-v2di-4.c: Likewise.
+	* gcc.target/i386/sse2-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v4sf-2.c: Likewise.
+	* gcc.target/i386/sse2-init-v4si-2.c: Likewise.
+	* gcc.target/i386/sse2-init-v8hi-2.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v16qi-2.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v2df-1.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v2df-2.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v2di-2.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v2di-3.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4sf-2.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4sf-3.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4si-2.c: Likewise.
+
+2026-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unchecked_union5.adb: New test.
+
+2026-08-01  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-43.c: New test.
+
+2026-08-01  Pan Li  <pan2.li@intel.com>
+	    Claude Opus 5 (1M context)  <noreply@anthropic.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vv-u8-mf8.c: New test.
+
+2026-08-01  Pan Li  <pan2.li@intel.com>
+	    Claude Opus 5 (1M context)  <noreply@anthropic.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vv-i8-mf8.c: New test.
+
+2026-08-01  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* g++.dg/coroutines/pr105475-3.C: Add -Wno-invalid-specialization
+	option.
+	* g++.dg/coroutines/pr105475-broken-spec.C: Likewise.
+
+2026-08-01  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126313
+	* gcc.dg/torture/pr126313.c: New test.
+
 2026-07-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/126481

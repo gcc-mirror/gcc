@@ -1,3 +1,67 @@
+2026-08-01  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_one_nonzero):
+	Improved implementations for V2DI, V2DF, V4SI, V4SF, V4DI and V4DF
+	modes.  Return false for V2SI and V2SF modes if the one non-zero
+	element isn't the first/lowest.  Improved implementations for V8HI,
+	V16QI, V2HI and V8QI modes.
+	(nonzero_int_const_count): New helper function to count the
+	number of non-zero integer constants in a given array.
+	(nonzero_float_const_count): Likewise for SFmode floats.
+	(nonzero_double_const_count): Likewise for DFmode doubles.
+	(ix86_expand_vector_init_insert): New function to initialize a
+	V4SI, V8HI or V16QI vector using a sequence of pinsr[bwd] insns.
+	(onevar_perm_p): New local helper function.
+	(twovar_perm_p): Likewise.
+	(ix86_expand_vector_init_v2di): New mode-specific function.
+	(ix86_expand_vector_init_v2df): Likewise.
+	(ix86_expand_vector_init_v4si): Likewise.
+	(ix86_expand_vector_init_v4sf): Likewise.
+	(ix86_expand_vector_init_v8hi): Likewise.
+	(ix86_expand_vector_init_v16qi): Likewise.
+	(ix86_expand_vector_init_v4di): Likewise.
+	(ix86_expand_vector_init_v4df): Likewise.
+	(ix86_expand_vector_init_v8si): Likewise.
+	(ix86_expand_vector_init_v8sf): Likewise.
+	(ix86_expand_vector_init_general): Call the above custom helper
+	functions for the relevant modes.
+	* config/i386/sse.md (*vec_interleave_lowv4si_sse): New pattern
+	for (V4SImode) unpcklps on TARGET_SSE but not TARGET_SSE2.
+
+2026-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-polymorphic-call.cc (csftc_abort_walking_p): Remove useless
+	"? true : false".
+	* tree-ssa-loop-im.cc (ref_indep_loop_p): Likewise.
+	* match.pd (X ==/!= !X is false/true): Replace "? false : true"
+	with negation of the condition.
+	(((C << x) & D) != 0): Likewise.
+	(fold_sign_changed_comparison and fold_widened_comparison): Likewise.
+	Remove useless "? true : false".
+	(if the second operand is NaN, the result is constant): Replace
+	"? false : true" with negation of the condition.
+	(__builtin_ctz (x) >= C -> (x & ((1 << C) - 1)) == 0): Likewise.
+	Remove useless "? true : false".
+	(__builtin_ctz (x) == C -> (x & ((1 << (C + 1)) - 1)) == (1 << C)):
+	Replace "? false : true" with negation of the condition.
+	(__builtin_ffs (X) == 0 -> X == 0): Remove useless "? true : false".
+	(__builtin_ffs (X) > 6 -> X != 0 && (X & 63) == 0): Likewise.
+	Replace "? false : true" with negation of the condition.
+	* gimple-pretty-print.cc (dump_phi_nodes): Use !(flags & TDF_GIMPLE)
+	instead of (flags & TDF_GIMPLE) ? false : true.
+
+2026-08-01  Pan Li  <pan2.li@intel.com>
+	    Claude Opus 5 (1M context)  <noreply@anthropic.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
+2026-08-01  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126313
+	* gimple-fold.cc (follow_outer_ssa_edges): Swap around returning
+	for undefined overflow and saving off the global range.
+
 2026-07-31  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/126458

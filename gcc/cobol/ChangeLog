@@ -1,3 +1,15 @@
+2026-08-01  Robert Dubner  <rdubner@symas.com>
+
+	* compare.cc (numeric_compare): Change comment.
+	* genutil.cc (get_power_of_ten): Likewise.
+
+2026-08-01  Robert Dubner  <rdubner@symas.com>
+
+	* copybook.h (_COPYBOOK_H): #include <sys/types.h> for macOS.
+	* lexio.h (struct filespan_t): Mollify cppcheck with a const variable.
+	* parse.y: Adjust a dbgmsg() call.
+	* util.cc (cobol_filename): Likewise.
+
 2026-07-31  James K. Lowden  <jklowden@cobolworx.com>
 
 	* scan.l: Add value pattern.

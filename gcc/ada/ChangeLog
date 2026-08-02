@@ -1,3 +1,9 @@
+2026-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126553
+	* exp_attr.adb (Build_Record_VS_Func.Validate_Field): Do nothing
+	if the field is of an Unchecked_Union type.
+
 2026-07-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/126379

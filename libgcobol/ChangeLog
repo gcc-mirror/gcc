@@ -1,3 +1,66 @@
+2026-08-01  Robert Dubner  <rdubner@symas.com>
+
+	* gmath.cc (get_int256_from_qualified_field): Use int128 structure.
+	(multiply_int128_by_int128): Likewise.
+	(__gg__multiplyf1_phase2): Likewise.
+	(__gg__multiplyf2): Likewise.
+	(__gg__dividef1_phase2): Likewise.
+	(__gg__dividef23): Likewise.
+	(__gg__dividef45): Likewise.
+	* inspect.cc (inspect_backward_format_1): Likewise.
+	(__gg__inspect_format_1): Likewise.
+	(__gg__inspect_format_1_sbc): Likewise.
+	* intrinsic.cc (get_value_as_double_from_qualified_field): Likewise.
+	(populate_ctm_from_date): Likewise.
+	(populate_ctm_from_time): Likewise.
+	(__gg__char): Likewise.
+	(__gg__char_national): Likewise.
+	(__gg__combined_datetime): Likewise.
+	(__gg__date_of_integer): Likewise.
+	(__gg__date_to_yyyymmdd): Likewise.
+	(__gg__day_of_integer): Likewise.
+	(__gg__day_to_yyyyddd): Likewise.
+	(__gg__factorial): Likewise.
+	(__gg__integer_of_date): Likewise.
+	(__gg__integer_of_day): Likewise.
+	(__gg__random): Likewise.
+	(__gg__test_date_yyyymmdd): Likewise.
+	(__gg__test_day_yyyyddd): Likewise.
+	(__gg__year_to_yyyy): Likewise.
+	(__gg__locale_time_from_seconds): Likewise.
+	* libgcobol.cc (__gg__power_of_ten): Change comment.
+	(__gg__move): Use int128 structure.
+	(__gg__string): Likewise.
+	(__gg__binary_value_from_qualified_field): Likewise.
+	(__gg__int128_from_qualified_field): Likewise.
+	(__gg__float128_from_qualified_field): Likewise.
+	(__gg__unstring): Likewise.
+	* libgcobol.h (struct cbl_timespec): Add "struct int128"
+	(__gg__binary_value_from_qualified_field): Use int128 structure.
+	(__gg__int128_from_qualified_field): Use int128 structure.
+	* stringbin.cc (packed_from_combined): Change comment.
+
+2026-08-01  Robert Dubner  <rdubner@symas.com>
+
+	* gmath.cc (scale_int256_by_digits): Switch to int256::rdigits.
+	(add_int256_to_int256): Likewise.
+	(squeeze_int256): Likewise.
+	(get_int256_from_qualified_field): Likewise.
+	(__gg__add_fixed_phase1): Likewise.
+	(__gg__addf1_fixed_phase2): Likewise.
+	(__gg__fixed_phase2_assign_to_c): Likewise.
+	(__gg__addf3): Likewise.
+	(__gg__subtractf1_fixed_phase2): Likewise.
+	(__gg__subtractf2_fixed_phase1): Likewise.
+	(__gg__subtractf3): Likewise.
+	(multiply_int128_by_int128): Likewise.
+	(__gg__multiplyf1_phase2): Likewise.
+	(__gg__multiplyf2): Likewise.
+	(divide_int128_by_int128): Likewise.
+	(__gg__dividef1_phase2): Likewise.
+	(__gg__dividef23): Likewise.
+	(__gg__dividef45): Likewise.
+
 2026-07-28  James K. Lowden  <jklowden@cobolworx.com>
 
 	* io.cc: Remove reference to cstdbool, now obsolete.
