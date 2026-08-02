@@ -3683,6 +3683,8 @@ cond_store_replacement_limited (basic_block middle_bb, basic_block join_bb,
       tree beforelhs = gimple_assign_lhs (vdef_before);
       /* Only allow the store to be right before the condition.  */
       if (gimple_bb (vdef_before) == cond_bb
+	  /* This can't be a clobber */
+	  && !gimple_clobber_p (vdef_before)
 	  /* An exact match is only supported.
 	     FIXME: Allow for clique/base mismatch?  */
 	  && operand_equal_p (lhs, beforelhs))
