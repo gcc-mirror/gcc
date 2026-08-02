@@ -3495,7 +3495,8 @@ move_helper(tree size_error,        // This is an INT
             cbl_refer_t sourceref,  // Call move_helper with this resolved.
             TREEPLET   &tsource,
             cbl_round_t rounded,
-            bool check_for_error,   // True means our called wants to know about truncation errors
+            // True means our caller wants to know about truncation errors
+            bool check_for_error,
             bool restore_on_error
             )
   {
@@ -3511,7 +3512,8 @@ move_helper(tree size_error,        // This is an INT
     gg_assign(size_error, integer_zero_node);
     }
 
-  static tree stash = gg_define_variable(UCHAR_P);
+  static tree stash =
+                gg_define_variable(UCHAR_P, "..move_stasher", vs_file_static);
 
   tree st_data = NULL_TREE;
   tree st_size = NULL_TREE;
