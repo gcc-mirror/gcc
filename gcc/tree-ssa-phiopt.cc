@@ -3689,17 +3689,22 @@ cond_store_replacement_limited (basic_block middle_bb, basic_block join_bb,
 	  tree vuse = gimple_vuse (store_middle);
 	  imm_use_iterator iter;
 	  gimple *use_stmt;
-	  /* There can't be any loads between the store and
-	     the previous store as that might depend on the store.
-	     FIXME: use alias oracle to check dependancies.  */
+	  bool has_load = false;
+	  /* If there is a load, then just reuse the value and not
+	     remove the old store as that might be used by the load.  */
 	  FOR_EACH_IMM_USE_STMT (use_stmt, iter, vuse)
 	    {
 	      if (use_stmt != store_middle
 		  && use_stmt != vphi)
-		return false;
+		{
+		  has_load = true;
+		  break;
+		}
 	    }
 	  other_rhs = gimple_assign_rhs1 (vdef_before);
-	  beforestore = vdef_before;
+	  /* If there is no load, then keep the reference to the store stmt.  */
+	  if (!has_load)
+	    beforestore = vdef_before;
 	}
     }
   /*
@@ -3788,6 +3793,7 @@ cond_store_replacement_limited (basic_block middle_bb, basic_block join_bb,
   gsi_remove (&gsi, true);
   release_defs (store_middle);
 
+  /* Remove the store before the conditional if possible.  */
   if (beforestore)
     {
       gsi = gsi_for_stmt (beforestore);
