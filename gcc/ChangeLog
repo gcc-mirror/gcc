@@ -1,3 +1,30 @@
+2026-08-02  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/19832
+	* match.pd: Combine two patterns into one for.
+
+2026-08-02  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/117760
+	PR tree-optimization/125442
+	* match.pd: Combine four fors into one for.
+
+2026-08-02  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	* match.pd: Combine two patterns into for.
+
+2026-08-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126569
+	* tree-ssa-phiopt.cc (cond_store_replacement_limited): A
+	clobber is not a store.
+
+2026-08-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126571
+	* tree-ssa-phiopt.cc (factor_out_conditional_load): Reject
+	when the pointer types are not compatible when creating a phi.
+
 2026-08-01  Roger Sayle  <roger@nextmovesoftware.com>
 	    Hongtao Liu  <hongtao.liu@intel.com>
 

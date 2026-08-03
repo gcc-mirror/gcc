@@ -1,3 +1,30 @@
+2026-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/sse2-init-v2df-1.c: Replace -mno-sse4.1 with
+	-mno-sse3.
+	* gcc.target/i386/sse2-init-v2df-2.c: Likewise.
+	* gcc.target/i386/sse2-init-v2di-3.c: Likewise.
+	* gcc.target/i386/sse2-init-v2di-4.c: Likewise.
+
+2026-08-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/sse-init-v2df-1.c: Compile with -mfpmath=sse.
+
+2026-08-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126569
+	* gcc.dg/pr126569-1.c: New test.
+
+2026-08-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126571
+	* gcc.dg/torture/pr126571-1.c: New test.
+	* gcc.target/i386/pr126571-1.c: New test.
+
+2026-08-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/tree-ssa/factor_op_phi-restrict-1.c: New test.
+
 2026-08-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/126558
