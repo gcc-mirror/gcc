@@ -141,7 +141,7 @@ get_reflection (location_t loc, tree t, reflect_kind kind/*=REFLECT_UNDEF*/)
 
   /* Constant template parameters and pack-index-expressions cannot
      appear as operands of the reflection operator.  */
-  if (PACK_INDEX_P (t))
+  if (TREE_CODE (t) == PACK_INDEX_EXPR)
     {
       error_at (loc, "%<^^%> cannot be applied to a pack index");
       return error_mark_node;
