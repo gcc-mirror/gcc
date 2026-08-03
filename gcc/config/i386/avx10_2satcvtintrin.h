@@ -3013,6 +3013,137 @@ _mm_cvtts_roundss_u64 (__m128 __A, const int __R)
 #endif
 #endif /* __x86_64__ */
 
+/* The scalar SAT CVT intrinsics were originally named with an _ep[i|u]{32,64}
+   suffix, which is reserved for packed elements.  Keep the original names as
+   aliases.  */
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_sd_epi32 (__m128d __A)
+{
+  return _mm_cvtts_sd_i32 (__A);
+}
+
+extern __inline unsigned int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_sd_epu32 (__m128d __A)
+{
+  return _mm_cvtts_sd_u32 (__A);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_ss_epi32 (__m128 __A)
+{
+  return _mm_cvtts_ss_i32 (__A);
+}
+
+extern __inline unsigned int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_ss_epu32 (__m128 __A)
+{
+  return _mm_cvtts_ss_u32 (__A);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_roundsd_epi32 (__m128d __A, const int __R)
+{
+  return _mm_cvtts_roundsd_i32 (__A, __R);
+}
+
+extern __inline unsigned int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_roundsd_epu32 (__m128d __A, const int __R)
+{
+  return _mm_cvtts_roundsd_u32 (__A, __R);
+}
+
+extern __inline int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_roundss_epi32 (__m128 __A, const int __R)
+{
+  return _mm_cvtts_roundss_i32 (__A, __R);
+}
+
+extern __inline unsigned int
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_roundss_epu32 (__m128 __A, const int __R)
+{
+  return _mm_cvtts_roundss_u32 (__A, __R);
+}
+#else
+#define _mm_cvtts_roundsd_epi32(A, R) _mm_cvtts_roundsd_i32 ((A), (R))
+#define _mm_cvtts_roundsd_epu32(A, R) _mm_cvtts_roundsd_u32 ((A), (R))
+#define _mm_cvtts_roundss_epi32(A, R) _mm_cvtts_roundss_i32 ((A), (R))
+#define _mm_cvtts_roundss_epu32(A, R) _mm_cvtts_roundss_u32 ((A), (R))
+#endif
+
+#ifdef __x86_64__
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_sd_epi64 (__m128d __A)
+{
+  return _mm_cvtts_sd_i64 (__A);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_sd_epu64 (__m128d __A)
+{
+  return _mm_cvtts_sd_u64 (__A);
+}
+
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_ss_epi64 (__m128 __A)
+{
+  return _mm_cvtts_ss_i64 (__A);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_ss_epu64 (__m128 __A)
+{
+  return _mm_cvtts_ss_u64 (__A);
+}
+
+#ifdef __OPTIMIZE__
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_roundsd_epi64 (__m128d __A, const int __R)
+{
+  return _mm_cvtts_roundsd_i64 (__A, __R);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_roundsd_epu64 (__m128d __A, const int __R)
+{
+  return _mm_cvtts_roundsd_u64 (__A, __R);
+}
+
+extern __inline long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_roundss_epi64 (__m128 __A, const int __R)
+{
+  return _mm_cvtts_roundss_i64 (__A, __R);
+}
+
+extern __inline unsigned long long
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_cvtts_roundss_epu64 (__m128 __A, const int __R)
+{
+  return _mm_cvtts_roundss_u64 (__A, __R);
+}
+#else
+#define _mm_cvtts_roundsd_epi64(A, R) _mm_cvtts_roundsd_i64 ((A), (R))
+#define _mm_cvtts_roundsd_epu64(A, R) _mm_cvtts_roundsd_u64 ((A), (R))
+#define _mm_cvtts_roundss_epi64(A, R) _mm_cvtts_roundss_i64 ((A), (R))
+#define _mm_cvtts_roundss_epu64(A, R) _mm_cvtts_roundss_u64 ((A), (R))
+#endif
+#endif /* __x86_64__ */
+
 #ifdef __DISABLE_AVX10_2__
 #undef __DISABLE_AVX10_2__
 #pragma GCC pop_options
