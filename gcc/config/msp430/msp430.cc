@@ -1657,6 +1657,9 @@ msp430_insn_cost (rtx_insn *insn, bool speed ATTRIBUTE_UNUSED)
   if (recog_memoized (insn) < 0)
     return 0;
 
+  if (INSN_CODE (insn) == NOOP_MOVE_INSN_CODE)
+    return 0;
+
   /* The returned cost must be relative to COSTS_N_INSNS (1). An insn with a
      length of 2 bytes is the smallest possible size and so must be equivalent
      to COSTS_N_INSNS (1).  */
