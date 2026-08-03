@@ -2182,6 +2182,18 @@ selected_name:  external NAME {
                   field.codeset.set();
                   $$ = field_add(@name, &field);
                 }
+        |       external OTHER
+                {
+                  if( !dialect_ibm() ) {
+                    error_msg(@2, "ASSIGN OTHER requires -dialect ibm");
+                    YYERROR;
+                  }
+
+                  enum { parent = 0 };
+                  auto e = symbol_field_forward_add(PROGRAM, parent,
+                                                    "OTHER", @$.first_line);
+                  $$ = cbl_field_of(e);
+                }
                 ;
 external:       %empty /* GnuCOBOL uses EXTERNAL to control name resolution.  */
         |       EXTERNAL {
