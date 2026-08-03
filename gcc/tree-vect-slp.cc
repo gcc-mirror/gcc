@@ -8496,6 +8496,127 @@ vect_cse_slp_nodes (scalar_stmts_to_slp_tree_map_t *bst_map, slp_tree& node)
     *bst_map->get (SLP_TREE_SCALAR_STMTS (node)) = node;
 }
 
+/* Associate stmts with possible starts of a subset of lanes of NODE
+   in PART_STARTS.  */
+
+static void
+vect_cse_gather_part_starts (hash_set<slp_tree> &visited,
+			     vec<vec<slp_tree>> part_starts, slp_tree node)
+{
+  /* CSEing external nodes complicates scheduling since we materialize
+     those at the latest position, so avoid that.  */
+  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def
+      || visited.add (node))
+    return;
+
+  /* Besides some VEC_PERM_EXPR, two-operator nodes also lack scalar stmts
+     and thus CSE doesn't work.  For now gather two-lane aligned starts
+     of nodes with a multiple of two number of lanes.  */
+  if (!SLP_TREE_SCALAR_STMTS (node).is_empty ()
+      && SLP_TREE_LANES (node) > 2
+      && (SLP_TREE_LANES (node) & 1) == 0)
+    {
+      auto_vec<unsigned, 8> uids;
+      for (unsigned i = 0; i < SLP_TREE_LANES (node); i += 2)
+	{
+	  stmt_vec_info s = SLP_TREE_SCALAR_STMTS (node)[i];
+	  if (!s)
+	    continue;
+	  unsigned uid = gimple_uid (s->stmt);
+	  if (!uids.contains (uid))
+	    {
+	      uids.safe_push (uid);
+	      part_starts[uid].safe_push (node);
+	    }
+	}
+    }
+
+  for (slp_tree &child : SLP_TREE_CHILDREN (node))
+    if (child)
+      vect_cse_gather_part_starts (visited, part_starts, child);
+}
+
+/* Apply CSE to NODE and its children using lowparts of nodes in BST_MAP.  */
+
+static void
+vect_cse_slp_node_parts (hash_set<slp_tree> &visited,
+			 const vec<vec<slp_tree>> part_starts,
+			 vec<slp_tree> &drops, slp_tree node)
+{
+  if (SLP_TREE_DEF_TYPE (node) != vect_internal_def
+      || visited.add (node))
+    return;
+
+  /* Besides some VEC_PERM_EXPR, two-operator nodes also
+     lack scalar stmts and thus CSE doesn't work.  */
+  unsigned HOST_WIDE_INT c;
+  if (!SLP_TREE_SCALAR_STMTS (node).is_empty ()
+      && SLP_TREE_SCALAR_STMTS (node)[0]
+      /* Avoid touching loads which need care with load permutations
+	 and specialities like load-lane representations.  */
+      && !STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node)))
+    for (slp_tree cand
+	 : part_starts[gimple_uid (SLP_TREE_SCALAR_STMTS (node)[0]->stmt)])
+      /* ???  There is a possible ordering/optimality problem in that
+	 the CSE then can keep a wider feeding live even though it itself
+	 becomes dead by means of CSE.  Which might be solvable by doing
+	 the CSE in a wide-to-narrow order.  */
+      if (SLP_TREE_LANES (cand) > SLP_TREE_LANES (node)
+	  /* We can do high/lo extracts and full vector copies.  */
+	  && constant_multiple_p
+	       (TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (cand)),
+		TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (node)), &c)
+	  && c <= 2)
+	{
+	  unsigned HOST_WIDE_INT s;
+	  bool const_p
+	    = TYPE_VECTOR_SUBPARTS (SLP_TREE_VECTYPE (node)).is_constant (&s);
+	  unsigned i;
+	  for (i = 0; i <= SLP_TREE_LANES (cand) - SLP_TREE_LANES (node);)
+	    {
+	      unsigned j;
+	      for (j = 0; j < SLP_TREE_LANES (node); ++j)
+		if (!SLP_TREE_SCALAR_STMTS (node)[j]
+		    || (SLP_TREE_SCALAR_STMTS (cand)[i+j]
+			!= SLP_TREE_SCALAR_STMTS (node)[j]))
+		  break;
+	      if (j == SLP_TREE_LANES (node))
+		break;
+	      if (!const_p)
+		{
+		  i = SLP_TREE_LANES (cand);
+		  break;
+		}
+	      /* We can extract only aligned on node vector type boundary.  */
+	      i += s;
+	    }
+	  if (i > SLP_TREE_LANES (cand) - SLP_TREE_LANES (node))
+	    continue;
+	  /* Found node within cand at i.  Put a permute in place
+	     of it, selecting the subset from cand.  */
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "CSEd node %p as %spart of node %p\n",
+			 (void *)node, i == 0 ? "low" : "high", (void *)cand);
+	  for (slp_tree child : SLP_TREE_CHILDREN (node))
+	    /* Delay SLP tree release since we might still reference a node
+	       from the part_starts map.  */
+	    drops.safe_push (child);
+	  SLP_TREE_CHILDREN (node).truncate (1);
+	  SLP_TREE_REF_COUNT (cand)++;
+	  SLP_TREE_CHILDREN (node)[0] = cand;
+	  SLP_TREE_CODE (node) = VEC_PERM_EXPR;
+	  SLP_TREE_REPRESENTATIVE (node) = NULL;
+	  SLP_TREE_LANE_PERMUTATION (node).create (SLP_TREE_LANES (node));
+	  for (unsigned j = i; j < i + SLP_TREE_LANES (node); ++j)
+	    SLP_TREE_LANE_PERMUTATION (node).quick_push (std::make_pair (0, j));
+	  return;
+	}
+
+  for (slp_tree &child : SLP_TREE_CHILDREN (node))
+    if (child)
+      vect_cse_slp_node_parts (visited, part_starts, drops, child);
+}
+
 /* Optimize the SLP graph of VINFO.  */
 
 void
@@ -8513,6 +8634,39 @@ vect_optimize_slp (vec_info *vinfo)
     vect_cse_slp_nodes (bst_map, SLP_INSTANCE_TREE (inst));
 
   release_scalar_stmts_to_slp_tree_map (bst_map);
+
+  if (!is_a <bb_vec_info> (vinfo))
+    return;
+
+  /* Attempt to merge SLP sub-graphs that intersect in low or highparts of
+     each other.  Build the reverse mapping from stmt to SLP node for
+     lanes starting at the low or high part.
+     ???  In the future we can extend this to do a two-step permute
+     and extract or extract and permute to put the high/low part in
+     place on the original vector or permute the hogh/low part to
+     match up the target lane order.  */
+  hash_set<slp_tree> visited;
+  vec<vec<slp_tree>> start_for_part;
+  start_for_part.create (vinfo->stmt_vec_infos.length () + 1);
+  start_for_part.quick_grow_cleared (vinfo->stmt_vec_infos.length () + 1);
+  for (auto inst : vinfo->slp_instances)
+    vect_cse_gather_part_starts (visited,
+				 start_for_part, SLP_INSTANCE_TREE (inst));
+
+  /* Now replace low/highpart copies with extracting permutes.  */
+  auto_vec<slp_tree> drops;
+  visited.empty ();
+  for (auto inst : vinfo->slp_instances)
+    vect_cse_slp_node_parts (visited, start_for_part, drops,
+			     SLP_INSTANCE_TREE (inst));
+
+  /* Now perform delayed releases of nodes.  */
+  for (slp_tree node : drops)
+    vect_free_slp_tree (node);
+
+  for (auto v : start_for_part)
+    v.release ();
+  start_for_part.release ();
 }
 
 /* Gather loads reachable from the individual SLP graph entries.  */
