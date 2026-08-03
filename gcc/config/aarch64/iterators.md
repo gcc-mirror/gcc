@@ -2145,6 +2145,9 @@
 			    (DI   "v2si")])
 
 ;; Narrowed double-modes for VQN (Used for XTN).
+;; Lower case VNARROWQ, for the sstrunc and ustrunc optab names.
+(define_mode_attr vnarrowq [(V8HI "v8qi") (V4SI "v4hi") (V2DI "v2si")])
+
 (define_mode_attr VNARROWQ [(V8HI "V8QI") (V4SI "V4HI")
 			    (V2DI "V2SI")
 			    (DI	  "SI")	  (SI	"HI")
@@ -3417,6 +3420,9 @@
 
 (define_code_attr TRUNC_SHIFT [(ss_truncate "ashiftrt")
 			       (us_truncate "lshiftrt") (truncate "lshiftrt")])
+
+;; The optab prefix of a saturating truncation.
+(define_code_attr sat_trunc_op [(ss_truncate "ss") (us_truncate "us")])
 
 (define_code_attr shrn_op [(ss_truncate "sq")
 			   (us_truncate "uq") (truncate "")])
