@@ -3829,6 +3829,13 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
 	}
       else
 	return false;
+
+      /* Check if the beginning and end of the sequence corresponds
+	 to OP0 and OP1 respectively */
+      if (!(known_eq (d->perm[0], vlen - slideup_cnt)
+	  && known_eq (d->perm[vlen - 1], 2 * vlen - 1 - slideup_cnt)))
+	return false;
+
     }
 
   /* Check for a monotonic sequence with one or two pivots.  */
@@ -3841,8 +3848,14 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
       if (i > 0 && i != pivot
 	  && maybe_ne (d->perm[i], d->perm[i - 1] + 1))
 	{
-	  /* A second pivot would indicate the vector length and is in OP0.  */
-	  if (known_ge (d->perm[i], vec_len) || pivot == -1 || len != 0)
+	  /* A second pivot would indicate the vector length and is in OP0.
+	     Also a second pivot would indicate three or more monotonic
+	     sequences in the given permutation which cannot be handled by
+	     slideup function. */
+	  if (known_ge (d->perm[i], vec_len)
+	      || pivot == -1
+	      || len != 0
+	      || need_slideup_p)
 	    return false;
 	  len = i;
 	}
