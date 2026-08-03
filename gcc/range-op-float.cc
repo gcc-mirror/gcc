@@ -2413,14 +2413,22 @@ float_widen_lhs_range (tree type, const frange &lhs)
   frange ret = lhs;
   if (lhs.known_isnan ())
     return ret;
-  REAL_VALUE_TYPE lb = float_widen_bound (type, lhs.lower_bound (), dconstninf);
-  REAL_VALUE_TYPE ub = float_widen_bound (type, lhs.upper_bound (), dconstinf);
   /* Temporarily disable -ffinite-math-only, so that frange::set doesn't
      reduce the range back to real_min_representable (type) as lower bound
      or real_max_representable (type) as upper bound.  */
   bool save_flag_finite_math_only = flag_finite_math_only;
   flag_finite_math_only = false;
-  ret.set (type, lb, ub, lhs.get_nan_state ());
+  ret.set_undefined ();
+  for (unsigned i = 0; i < lhs.num_pairs (); ++i)
+    {
+      REAL_VALUE_TYPE lb = float_widen_bound (type, lhs.lower_bound (i),
+					      dconstninf);
+      REAL_VALUE_TYPE ub = float_widen_bound (type, lhs.upper_bound (i),
+					      dconstinf);
+      frange tmp;
+      tmp.set (type, lb, ub, lhs.get_nan_state ());
+      ret.union_ (tmp);
+    }
   flag_finite_math_only = save_flag_finite_math_only;
   return ret;
 }
@@ -3256,6 +3264,19 @@ range_op_float_tests ()
   plus.fold_range (r, float_type_node, r0, r1);
   if (HONOR_NANS (float_type_node))
     ASSERT_TRUE (r.maybe_isnan ());
+
+  // float_widen_lhs_range widens each sub-range and keeps the gap between
+  // them.
+  r0 = frange_float ("1.0", "2.0");
+  r1 = frange_float ("10.0", "11.0");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  ASSERT_EQ (r0.num_pairs (), 2);
+  r = float_widen_lhs_range (float_type_node, r0);
+  ASSERT_EQ (r.num_pairs (), 2);
+  REAL_VALUE_TYPE five;
+  real_from_string (&five, "5.0");
+  ASSERT_FALSE (r.contains_p (five));
 }
 
 } // namespace selftest
