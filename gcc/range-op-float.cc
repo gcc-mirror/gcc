@@ -2364,6 +2364,40 @@ zero_to_inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
     }
 }
 
+/* Widen a single bound of a sub-range by 1ulp (or 0.5ulp) in the direction of
+   DIR.  */
+
+static REAL_VALUE_TYPE
+float_widen_bound (tree type, const REAL_VALUE_TYPE &bound,
+		   const REAL_VALUE_TYPE &dir)
+{
+  REAL_VALUE_TYPE res = bound;
+  if (!real_isfinite (&bound) && real_isneg (&bound) == real_isneg (&dir))
+    return res;
+  frange_nextafter (TYPE_MODE (type), res, dir);
+  if (real_isinf (&res))
+    {
+      /* For +-DBL_MAX, instead of +-Inf use nexttoward (+-DBL_MAX, +-LDBL_MAX)
+	 in a hypothetical wider type with the same mantissa precision but
+	 larger exponent range; it is outside of range of double values, but
+	 makes it clear it is just one ulp larger rather than infinite amount
+	 larger.  */
+      res = real_isneg (&dir) ? dconstm1 : dconst1;
+      SET_REAL_EXP (&res, FLOAT_MODE_FORMAT (TYPE_MODE (type))->emax + 1);
+    }
+  if (!flag_rounding_math
+      && !MODE_COMPOSITE_P (TYPE_MODE (type))
+      && real_isfinite (&bound))
+    {
+      /* If not -frounding-math nor IBM double double, actually widen
+	 just by 0.5ulp rather than 1ulp.  */
+      REAL_VALUE_TYPE tem;
+      real_arithmetic (&tem, PLUS_EXPR, &bound, &res);
+      real_arithmetic (&res, RDIV_EXPR, &tem, &dconst2);
+    }
+  return res;
+}
+
 /* Extend the LHS range by 1ulp in each direction.  For op1_range
    or op2_range of binary operations just computing the inverse
    operation on ranges isn't sufficient.  Consider e.g.
@@ -2379,53 +2413,8 @@ float_widen_lhs_range (tree type, const frange &lhs)
   frange ret = lhs;
   if (lhs.known_isnan ())
     return ret;
-  REAL_VALUE_TYPE lb = lhs.lower_bound ();
-  REAL_VALUE_TYPE ub = lhs.upper_bound ();
-  if (real_isfinite (&lb) || !real_isneg (&lb))
-    {
-      frange_nextafter (TYPE_MODE (type), lb, dconstninf);
-      if (real_isinf (&lb))
-	{
-	  /* For -DBL_MAX, instead of -Inf use
-	     nexttoward (-DBL_MAX, -LDBL_MAX) in a hypothetical
-	     wider type with the same mantissa precision but larger
-	     exponent range; it is outside of range of double values,
-	     but makes it clear it is just one ulp larger rather than
-	     infinite amount larger.  */
-	  lb = dconstm1;
-	  SET_REAL_EXP (&lb, FLOAT_MODE_FORMAT (TYPE_MODE (type))->emax + 1);
-	}
-      if (!flag_rounding_math
-	  && !MODE_COMPOSITE_P (TYPE_MODE (type))
-	  && real_isfinite (&lhs.lower_bound ()))
-	{
-	  /* If not -frounding-math nor IBM double double, actually widen
-	     just by 0.5ulp rather than 1ulp.  */
-	  REAL_VALUE_TYPE tem;
-	  real_arithmetic (&tem, PLUS_EXPR, &lhs.lower_bound (), &lb);
-	  real_arithmetic (&lb, RDIV_EXPR, &tem, &dconst2);
-	}
-    }
-  if (real_isfinite (&ub) || real_isneg (&ub))
-    {
-      frange_nextafter (TYPE_MODE (type), ub, dconstinf);
-      if (real_isinf (&ub))
-	{
-	  /* For DBL_MAX similarly.  */
-	  ub = dconst1;
-	  SET_REAL_EXP (&ub, FLOAT_MODE_FORMAT (TYPE_MODE (type))->emax + 1);
-	}
-      if (!flag_rounding_math
-	  && !MODE_COMPOSITE_P (TYPE_MODE (type))
-	  && real_isfinite (&lhs.upper_bound ()))
-	{
-	  /* If not -frounding-math nor IBM double double, actually widen
-	     just by 0.5ulp rather than 1ulp.  */
-	  REAL_VALUE_TYPE tem;
-	  real_arithmetic (&tem, PLUS_EXPR, &lhs.upper_bound (), &ub);
-	  real_arithmetic (&ub, RDIV_EXPR, &tem, &dconst2);
-	}
-    }
+  REAL_VALUE_TYPE lb = float_widen_bound (type, lhs.lower_bound (), dconstninf);
+  REAL_VALUE_TYPE ub = float_widen_bound (type, lhs.upper_bound (), dconstinf);
   /* Temporarily disable -ffinite-math-only, so that frange::set doesn't
      reduce the range back to real_min_representable (type) as lower bound
      or real_max_representable (type) as upper bound.  */
