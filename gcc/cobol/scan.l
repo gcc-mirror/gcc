@@ -104,7 +104,6 @@ NONPIC	  [,]{DOTSEP}
 EOPIC	  [.,;]?[[:space:]]
 
 SKIP	  [[:blank:]]*SKIP[123][[:blank:]]*[.]?{BLANK_EOL}
-TITLE	  [[:blank:]]*TITLE($|[.]|[^\n]*)
 
 COUNT     [(][[:digit:]]+[)]
 N9        9+|(9{COUNT})
@@ -974,7 +973,6 @@ INSERTT		{ return INSERTT; }
 LABEL		{ return LABEL; }
 PROCESS		{ return PROCESS; }
 SERVICE[[:blank:]]+RELOAD		{ return SERVICE_RELOAD; }
-TITLE		{ return TITLE; }
 USE({SPC}FOR)?		{ return USE; }
 
 }
@@ -2546,7 +2544,6 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 <*>{
   {COMMA}
   ^{SKIP}
-  ^{TITLE}
 }
 
 <*>{
