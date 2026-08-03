@@ -31,7 +31,8 @@ public:
   // Assigned var
   void add_assign (HirId id_def, HirId id);
   void remove_assign (HirId id_def);
-  bool is_variable_assigned (HirId id_def, HirId id);
+  bool is_variable_assigned (HirId id_ref);
+  bool is_assign_unused (HirId id);
 
   // Mutable var
   void add_mut (HirId id);
@@ -47,7 +48,8 @@ public:
 private:
   std::unordered_set<HirId> used_vars;
   std::unordered_set<HirId> mutable_vars;
-  std::map<HirId, std::vector<HirId>> assigned_vars;
+  std::map<HirId, HirId> assigned_vars;
+  std::unordered_set<HirId> unused_assigns;
   std::unordered_set<HirId> used_labels;
 };
 
