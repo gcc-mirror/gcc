@@ -7,6 +7,7 @@
 # Boyuan Yang <073plan@gmail.com>, 2019, 2023-2025.
 # Zixing Zhou <zixingzhou@foxmail.com>, 2023.
 # Zhanhaoxiang Zhang <zzhx2006@outlook.com>, 2024, 2026.
+# Rocket Ma <marocketbd@gmail.com>, 2026.
 #
 # Fellow translatiors:
 # Many of the fuzzy strings are caused by an addition of a period (".")
@@ -33,11 +34,11 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc-16.1-b20260329\n"
+"Project-Id-Version: gcc-16.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2026-04-22 17:18+0000\n"
-"PO-Revision-Date: 2026-04-08 19:22+0800\n"
-"Last-Translator: Zhanhaoxiang Zhang <zzhx2006@outlook.com>\n"
+"PO-Revision-Date: 2026-07-28 20:15-0400\n"
+"Last-Translator: Boyuan Yang <073plan@gmail.com>\n"
 "Language-Team: Chinese (simplified) <i18n-zh@googlegroups.com>\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
@@ -45,7 +46,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"X-Generator: Poedit 3.8\n"
+"X-Generator: Poedit 3.6\n"
 
 #: cif-code.def:39
 msgid "function not considered for inlining"
@@ -157,7 +158,7 @@ msgstr "函数属性不匹配"
 
 #: cif-code.def:139
 msgid "function has external linkage when the user requests only inlining static for live patching"
-msgstr ""
+msgstr "当用户仅请求对具有动态补丁功能且静态的函数内联时，该函数具有外部链接"
 
 #: cif-code.def:145
 #, fuzzy
@@ -377,7 +378,7 @@ msgstr "取样支持只支持存档格式"
 
 #: config/riscv/riscv.h:127
 msgid "At least one valid -mcpu option must be given after -march=unset"
-msgstr ""
+msgstr "在 -march=unset 后至少需要有一个有效的 -mcpu 选项"
 
 #: config/rs6000/aix.h:286
 #, fuzzy
@@ -466,7 +467,7 @@ msgstr "objc++-cpp-output 已被弃用；请使用 objective-c++-cpp-output 作�
 #: lto/lang.opt:50
 #, no-c-format
 msgid "Set linker output type (used internally during LTO optimization)."
-msgstr ""
+msgstr "设置链接器输出类型（在 LTO 优化过程中内部使用）。"
 
 #: lto/lang.opt:54
 #, no-c-format
@@ -487,33 +488,32 @@ msgstr "符号解析文件"
 #: lto/lang.opt:66
 #, no-c-format
 msgid "Run the link-time optimizer in whole program analysis (WPA) mode."
-msgstr "在全程序分析(WPA)模式下运行链接时优化器。"
+msgstr "在全程序分析 (WPA) 模式下运行链接时优化器。"
 
 #: lto/lang.opt:70
 #, no-c-format
 msgid "Whole program analysis (WPA) mode with number of parallel jobs specified."
-msgstr ""
+msgstr "指定全程序分析 (WPA) 模式运行时并行作业的数量。"
 
 #: lto/lang.opt:78
 #, no-c-format
 msgid "Call the dump function for variables and function in IL."
-msgstr ""
+msgstr "调用 IL 中的变量和函数的 dump 函数。"
 
 #: lto/lang.opt:82
 #, no-c-format
 msgid "Dump the demangled output."
-msgstr ""
+msgstr "转储反修饰后的输出。"
 
 #: lto/lang.opt:86
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dump only the defined symbols."
-msgstr "在类%qs中找不到可溢出的寄存器"
+msgstr "只转储已定义的符号。"
 
 #: lto/lang.opt:90
-#, fuzzy, no-c-format
-#| msgid "Warn about uninitialized automatic variables"
+#, no-c-format
 msgid "Print the initial values of the variables."
-msgstr "自动变量未初始化时警告"
+msgstr "打印变量的初始值。"
 
 #: lto/lang.opt:94
 #, no-c-format
@@ -538,55 +538,52 @@ msgstr "转储 LTO 对象的详细信息。"
 #: lto/lang.opt:113
 #, no-c-format
 msgid "Dump the statistics of tree types."
-msgstr ""
+msgstr "转储 tree 类型的统计信息。"
 
 #: lto/lang.opt:117
 #, no-c-format
 msgid "Dump the statistics of trees."
-msgstr ""
+msgstr "转储 tree 的统计信息。"
 
 #: lto/lang.opt:121
 #, no-c-format
 msgid "Dump the statistics of gimple statements."
-msgstr ""
+msgstr "转储 GIMPLE 语句的统计信息。"
 
 #: lto/lang.opt:131
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Dump the dump tool command line options."
-msgstr "此配置不支持命令行选项%qs"
+msgstr "转储转储工具的命令行选项。"
 
 #: lto/lang.opt:135
 #, no-c-format
 msgid "Dump the symtab callgraph."
-msgstr ""
+msgstr "转储 symtab 的调用图。"
 
 #: config/picolibc.opt:26
 #, no-c-format
 msgid "Specify an OS support library to load after libc."
-msgstr ""
+msgstr "指定一个加载 libc 后需要加载的系统支持库。"
 
 #: config/picolibc.opt:33
-#, fuzzy, no-c-format
-#| msgid "Specify the name of the target CPU."
+#, no-c-format
 msgid "Specify an alternate startup file."
-msgstr "指定目标 CPU 的名称。"
+msgstr "指定另一个启动文件。"
 
 #: config/picolibc.opt:40
-#, fuzzy, no-c-format
-#| msgid "Specify the PTX ISA version to use."
+#, no-c-format
 msgid "Specify the printf version linked from libc."
-msgstr "指定要使用的 PTX ISA 版本。"
+msgstr "指定从 libc 链接的 printf 函数的版本。"
 
 #: config/picolibc.opt:47
-#, fuzzy, no-c-format
-#| msgid "Specify the PTX ISA version to use."
+#, no-c-format
 msgid "Specify the scanf version linked from libc."
-msgstr "指定要使用的 PTX ISA 版本。"
+msgstr "指定从 libc 链接的 scanf 函数的版本。"
 
 #: config/nds32/nds32-elf.opt:3 config/nds32/nds32-linux.opt:3
 #, no-c-format
 msgid "Specify the address generation strategy for code model."
-msgstr ""
+msgstr "指定代码模型的地址生成策略。"
 
 #: config/nds32/nds32-elf.opt:7 config/nds32/nds32-linux.opt:7
 #, fuzzy, no-c-format
@@ -604,21 +601,19 @@ msgid "Generate code in little-endian mode."
 msgstr "生成小端序模式的代码。"
 
 #: config/nds32/nds32.opt:37
-#, fuzzy, no-c-format
-#| msgid "Perform cross-jumping optimization"
+#, no-c-format
 msgid "Force performing fp-as-gp optimization."
-msgstr "进行跨跳转优化"
+msgstr "强制执行 fp-as-gp 优化。"
 
 #: config/nds32/nds32.opt:41
-#, fuzzy, no-c-format
-#| msgid "Perform cross-jumping optimization"
+#, no-c-format
 msgid "Forbid performing fp-as-gp optimization."
-msgstr "进行跨跳转优化"
+msgstr "禁止执行 fp-as-gp 优化。"
 
 #: config/nds32/nds32.opt:47
 #, no-c-format
 msgid "Specify which ABI type to generate code for: 2, 2fp+."
-msgstr ""
+msgstr "指定使用哪个 ABI 类型来生成代码：2, 2fp+。"
 
 #: config/nds32/nds32.opt:51 config/i386/i386.opt:558
 #, no-c-format
@@ -626,16 +621,14 @@ msgid "Known ABIs (for use with the -mabi= option):"
 msgstr "已知 ABI (用于 -mabi= 选项)："
 
 #: config/nds32/nds32.opt:61
-#, fuzzy, no-c-format
-#| msgid "Specify the __fp16 floating-point format"
+#, no-c-format
 msgid "Specify the soft floating-point ABI, aliased to -mabi=2."
-msgstr "指定 __fp16 浮点格式"
+msgstr "指定软浮点 ABI，-mabi=2 的别名。"
 
 #: config/nds32/nds32.opt:65
-#, fuzzy, no-c-format
-#| msgid "Specify the name of the target floating point hardware/format"
+#, no-c-format
 msgid "Specify the hard floating-point ABI, aliased to -mabi=2fp+."
-msgstr "指定目标浮点硬件/格式的名称"
+msgstr "指定硬浮点 ABI，-mabi=2fp+ 的别名。"
 
 #: config/nds32/nds32.opt:71
 #, fuzzy, no-c-format
@@ -653,8 +646,7 @@ msgid "Always align function entry, jump target and return address."
 msgstr ""
 
 #: config/nds32/nds32.opt:85
-#, fuzzy, no-c-format
-#| msgid "Align function entry to 4 byte."
+#, no-c-format
 msgid "Align function entry to 4 bytes."
 msgstr "将函数入口对齐到 4 字节。"
 
@@ -1147,30 +1139,24 @@ msgid "Enable 64-bit Time-Stamp Counter extension instruction."
 msgstr "启用位操作指令"
 
 #: config/arc/arc.opt:392
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Pass -EB option through to linker."
-msgstr ""
-"使用“-Wl,选项”将“选项”传递给链接器。\n"
-"\n"
+msgstr "将 -EB 选项传至链接器。"
 
 #: config/arc/arc.opt:397
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Pass -EL option through to linker."
-msgstr ""
-"使用“-Wl,选项”将“选项”传递给链接器。\n"
-"\n"
+msgstr "将 -EL 选项传至链接器。"
 
 #: config/arc/arc.opt:401
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Pass -marclinux option through to linker."
-msgstr ""
-"使用“-Wl,选项”将“选项”传递给链接器。\n"
-"\n"
+msgstr "将 -marclinux 选项传至链接器。"
 
 #: config/arc/arc.opt:405
 #, no-c-format
 msgid "Pass -marclinux_prof option through to linker."
-msgstr ""
+msgstr "将 -marclinux_prof 选项传至链接器。"
 
 #: config/arc/arc.opt:413
 #, no-c-format
@@ -4872,40 +4858,34 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX512F 内建函数及代码生成。"
 
 #: config/i386/i386.opt:737
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512CD built-in functions and code generation."
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512CD 内建函数及代码生成。"
 
 #: config/i386/i386.opt:741
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512DQ built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512DQ built-in functions and code generation."
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512DQ 内建函数及代码生成。"
 
 #: config/i386/i386.opt:745
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BF16 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BW built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512BF16 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512BW 内建函数及代码生成。"
 
 #: config/i386/i386.opt:749
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512VL built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VL built-in functions and code generation."
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VL 内建函数及代码生成。"
 
 #: config/i386/i386.opt:753
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX5124FMAPS built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512IFMA built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX5124FMAPS 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512IFMA 内建函数及代码生成。"
 
 #: config/i386/i386.opt:757
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI2 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512VBMI built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI2 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512VBMI 内建函数及代码生成。"
 
 #: config/i386/i386.opt:761
 #, no-c-format
@@ -5030,7 +5010,7 @@ msgstr "支持 LCZNT 内建函数及代码生成。"
 #: config/i386/i386.opt:857
 #, no-c-format
 msgid "Support Hardware Lock Elision prefixes."
-msgstr ""
+msgstr "支持硬件锁省略（HLE）前缀。"
 
 #: config/i386/i386.opt:861
 #, no-c-format
@@ -5143,34 +5123,34 @@ msgid "Support F16C built-in functions and code generation."
 msgstr "支持 F16C 内建函数及代码生成。"
 
 #: config/i386/i386.opt:952
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Emit profiling counter call at function entry before prologue."
-msgstr "为取样在函数前言中调用 mcount"
+msgstr "在函数入口，函数前言之前生成取样计数函数调用。"
 
 #: config/i386/i386.opt:956
 #, no-c-format
 msgid "Generate __mcount_loc section with all mcount or __fentry__ calls."
-msgstr ""
+msgstr "为所有的 mcount/__fentry__ 调用生成 __mcount_loc 节。"
 
 #: config/i386/i386.opt:960 config/s390/s390.opt:332
 #, no-c-format
 msgid "Generate mcount/__fentry__ calls as nops. To activate they need to be patched in."
-msgstr ""
+msgstr "为 mcount/__fentry__ 调用生成 nop 指令。需要打补丁才能激活它们。"
 
 #: config/i386/i386.opt:965
 #, no-c-format
 msgid "Set name of __fentry__ symbol called at function entry."
-msgstr ""
+msgstr "设置在函数入口调用的 __fentry__ 符号的名字。"
 
 #: config/i386/i386.opt:969
 #, no-c-format
 msgid "Set name of section to record mrecord-mcount calls."
-msgstr ""
+msgstr "设置记录 mrecord-mcount 调用的节名称。"
 
 #: config/i386/i386.opt:973
 #, no-c-format
 msgid "Skip setting up RAX register when passing variable arguments."
-msgstr ""
+msgstr "在传递变长实参时跳过设置 RAX 寄存器。"
 
 #: config/i386/i386.opt:977
 #, no-c-format
@@ -5220,65 +5200,64 @@ msgid "Support PKU built-in functions and code generation."
 msgstr "支持 PKU 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1013
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Known stack protector guard (for use with the -mstack-protector-guard= option):"
-msgstr "已知堆栈保护方式 (stack protector guard, 用于 -mstack-protector-guard= 选项)："
+msgstr "已知堆栈保护方式 (stack protector guard, 用于 -mstack-protector-guard= 选项):"
 
 #: config/i386/i386.opt:1037
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Use the given symbol for addressing the stack-protector guard."
-msgstr "使用 propolice 来保护堆栈"
+msgstr "使用给定的符号来寻址堆栈保护值（stack-protector guard）。"
 
 #: config/i386/i386.opt:1044 config/aarch64/aarch64.opt:92
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Generate code which uses only the general registers."
-msgstr "生成使用硬件浮点指令的代码"
+msgstr "生成只使用通用寄存器的代码。"
 
 #: config/i386/i386.opt:1048
 #, no-c-format
 msgid "Enable shadow stack built-in functions from Control-flow Enforcement Technology (CET)."
-msgstr ""
+msgstr "启用控制流强制技术（CET）中的内建阴影栈（shadow stack）函数。"
 
 #: config/i386/i386.opt:1053
 #, no-c-format
 msgid "Turn on CET instrumentation for switch statements that use a jump table and an indirect jump."
-msgstr ""
+msgstr "对使用跳转表和间接跳转的 switch 语句启用 CET 插桩。"
 
 #: config/i386/i386.opt:1058
 #, no-c-format
 msgid "Insert ENDBR instruction at function entry only via cf_check attribute for CET instrumentation."
-msgstr ""
+msgstr "在 CET 插桩时，仅通过 cf_check 属性在函数入口处插入 ENDBR 指令。"
 
 #: config/i386/i386.opt:1063
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Make all function calls indirect."
-msgstr "当在算术表达式中使用函数指针时给出警告"
+msgstr "令所有函数调用使用间接跳转。"
 
 #: config/i386/i386.opt:1067
 #, no-c-format
 msgid "Convert indirect call and jump to call and return thunks."
-msgstr ""
+msgstr "转换间接 call 和 jump 为 call 与 return 组合的 thunk 函数。"
 
 #: config/i386/i386.opt:1071
-#, fuzzy, no-c-format
-#| msgid "function return type cannot be function"
+#, no-c-format
 msgid "Convert function return to call and return thunk."
-msgstr "函数不能返回函数"
+msgstr "转换函数返回为 call 与 return 组合的 thunk 函数。"
 
 #: config/i386/i386.opt:1075 config/s390/s390.opt:298
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Known indirect branch choices (for use with the -mindirect-branch=/-mfunction-return= options):"
-msgstr "无效的 __fp16 浮点选项：-mfp16-format=%s"
+msgstr "已知间接分支选项 (用于 -mindirect-branch=/-mfunction-return= 选项):"
 
 #: config/i386/i386.opt:1091
 #, no-c-format
 msgid "Add CS prefix to call and jmp to indirect thunk with branch target in r8-r15 registers."
-msgstr ""
+msgstr "为跳转到分支目标为存放在 r8-r15 寄存器的间接 thunk 函数的 call 和 jmp 指令添加 CS 前缀。"
 
 #: config/i386/i386.opt:1095
 #, no-c-format
 msgid "Force indirect call and jump via register."
-msgstr ""
+msgstr "强制使用寄存器间接 call 和 jump。"
 
 #: config/i386/i386.opt:1099
 #, no-c-format
@@ -5301,30 +5280,29 @@ msgid "Support CLDEMOTE built-in functions and code generation."
 msgstr "支持 CLDEMOTE 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1115
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Instrument function exit in instrumented functions with __fentry__."
-msgstr "函数的实参可能是 format 属性的备选"
+msgstr "对于 __fentry__ 插桩的函数，在函数出口插桩。"
 
 #: config/i386/i386.opt:1119
 #, no-c-format
 msgid "Known choices for return instrumentation with -minstrument-return=:"
-msgstr ""
+msgstr "函数出口插桩的已知选项(用于 -minstrument-return=):"
 
 #: config/i386/i386.opt:1132
 #, no-c-format
 msgid "Generate a __return_loc section pointing to all return instrumentation code."
-msgstr ""
+msgstr "生成一个 __return_loc 节指向所有函数出口插桩代码。"
 
 #: config/i386/i386.opt:1136 config/aarch64/aarch64.opt:96
-#, fuzzy, no-c-format
-#| msgid "Generate code for built-in atomic operations"
+#, no-c-format
 msgid "Generate code to mitigate against straight line speculation."
-msgstr "为内建原子操作生成代码"
+msgstr "生成针对 straight line speculation 的缓解代码。"
 
 #: config/i386/i386.opt:1140
 #, no-c-format
 msgid "Known choices for mitigation against straight line speculation with -mharden-sls=:"
-msgstr ""
+msgstr "针对 straight line speculation 缓解的已知选项(用于 -mharden-sls= 选项):"
 
 #: config/i386/i386.opt:1156
 #, no-c-format
@@ -5384,7 +5362,7 @@ msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 �
 #: config/i386/i386.opt:1202
 #, no-c-format
 msgid "Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property."
-msgstr ""
+msgstr "生成 GNU_PROPERTY_X86_ISA_1_NEEDED GNU 属性。"
 
 #: config/i386/i386.opt:1206
 #, no-c-format
@@ -5397,9 +5375,9 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F a
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512-FP16 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1214
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Do not use GOT to access external symbols."
-msgstr "不使用位段指令"
+msgstr "不使用 GOT 来操作外部符号。"
 
 #: config/i386/i386.opt:1218
 #, no-c-format
@@ -5444,22 +5422,22 @@ msgstr "支持 RAOINT 内建函数及代码生成。"
 #: config/i386/i386.opt:1254
 #, no-c-format
 msgid "Enable conservative small loop unrolling."
-msgstr ""
+msgstr "启用保守的小循环展开。"
 
 #: config/i386/i386.opt:1258 config/aarch64/aarch64.opt:426
 #, no-c-format
 msgid "Limit how much the autovectorizer may unroll a loop."
-msgstr ""
+msgstr "限制自动向量化器展开循环的最大次数。"
 
 #: config/i386/i386.opt:1262
 #, no-c-format
 msgid "Whether x86 vectorizer cost modeling compares costs of different vector sizes."
-msgstr ""
+msgstr "是否开启 x86 向量化器的成本模型对不同向量大小的成本比较。"
 
 #: config/i386/i386.opt:1266
 #, no-c-format
 msgid "-mlam=[none|u48|u57] Instrument meta data position in user data pointers."
-msgstr ""
+msgstr "-mlam=[none|u48|u57] 在用户态指针中嵌入元数据位置信息的类型。"
 
 #: config/i386/i386.opt:1282
 #, no-c-format
@@ -5487,24 +5465,24 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and SM4 built-in
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX 和 SM4 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1306
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Enable vectorization for gather instruction."
-msgstr "在树上进行循环向量化"
+msgstr "启用向量化用于聚集指令。"
 
 #: config/i386/i386.opt:1310
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Enable vectorization for scatter instruction."
-msgstr "在树上进行循环向量化"
+msgstr "启用向量化用于分散指令。"
 
 #: config/i386/i386.opt:1314
 #, no-c-format
 msgid "Support code generation for APX features, including EGPR, PUSH2POP2, NDD, PPX, NF, CCMP and ZU."
-msgstr ""
+msgstr "支持生成 APX 特性机器码，包括 EGPR、PUSH2POP2、NDD、PPX、NF、CCMP 和 ZU。"
 
 #: config/i386/i386.opt:1352
 #, no-c-format
 msgid "Enable GPR32 in inline asm when APX_F enabled."
-msgstr ""
+msgstr "在 APX_F 启用时，在内联汇编中启用 GPR32。"
 
 #: config/i386/i386.opt:1356
 #, no-c-format
@@ -5517,52 +5495,44 @@ msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, and AVX10
 msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2 和 AVX10.1 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1365
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BF16 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1 and AVX10.2 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512BF16 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX10.1 和 AVX10.2 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1370
-#, fuzzy, no-c-format
-#| msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX512F and AVX512BF16 built-in functions and code generation."
+#, no-c-format
 msgid "Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2, AVX10.1, AVX10.2 and AMX-AVX512 built-in functions and code generation."
-msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX512F 和 AVX512BF16 内建函数及代码生成。"
+msgstr "支持 MMX、SSE、SSE2、SSE3、SSSE3、SSE4.1、SSE4.2、AVX、AVX2、AVX10.1、AVX10.2 和 AMX-AVX512 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1375
-#, fuzzy, no-c-format
-#| msgid "Support AMX-TILE built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-TF32 built-in functions and code generation."
-msgstr "支持 AMX-TILE 内建函数及代码生成。"
+msgstr "支持 AMX-TF32 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1379
-#, fuzzy, no-c-format
-#| msgid "Support AMX-FP16 built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-FP8 built-in functions and code generation."
-msgstr "支持 AMX-FP16 内建函数及代码生成。"
+msgstr "支持 AMX-FP8 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1383
-#, fuzzy, no-c-format
-#| msgid "Support MOVDIRI built-in functions and code generation."
+#, no-c-format
 msgid "Support MOVRS built-in functions and code generation."
-msgstr "支持 MOVDIRI 内建函数及代码生成。"
+msgstr "支持 MOVRS 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1387
-#, fuzzy, no-c-format
-#| msgid "Support MOVDIRI built-in functions and code generation."
+#, no-c-format
 msgid "Support AMX-MOVRS built-in functions and code generation."
-msgstr "支持 MOVDIRI 内建函数及代码生成。"
+msgstr "支持 AMX-MOVRS 内建函数及代码生成。"
 
 #: config/i386/i386.opt:1391
-#, fuzzy, no-c-format
-#| msgid "Support AVX512VNNI built-in functions and code generation."
+#, no-c-format
 msgid "Support AVX512BMM built-in functions and code generation."
-msgstr "支持 AVX512VNNI 内建函数及代码生成。"
+msgstr "支持 AVX512BMM 内建函数及代码生成。"
 
 #: config/i386/mingw-w64.opt:23
-#, fuzzy, no-c-format
-#| msgid "Use unicode startup and define UNICODE macro"
+#, no-c-format
 msgid "Use unicode startup and define UNICODE macro."
-msgstr "使用 unicode 启动并且定义 UNICODE 宏"
+msgstr "使用 unicode 启动并定义 UNICODE 宏。"
 
 #: config/arm/arm-tables.opt:25
 #, no-c-format
@@ -5595,129 +5565,114 @@ msgid "Known ARM ABIs (for use with the -mabi= option):"
 msgstr "已知 ARM ABI (用于 -mabi= 选项)："
 
 #: config/arm/arm.opt:65
-#, fuzzy, no-c-format
-#| msgid "Generate a call to abort if a noreturn function returns"
+#, no-c-format
 msgid "Generate a call to abort if a noreturn function returns."
-msgstr "当 noreturn 函数返回时调用 abort"
+msgstr "当 noreturn 函数返回时调用 abort。"
 
 #: config/arm/arm.opt:72
-#, fuzzy, no-c-format
-#| msgid "Generate APCS conformant stack frames"
+#, no-c-format
 msgid "Generate APCS conformant stack frames."
-msgstr "生成与 APCS 相容的栈帧"
+msgstr "生成与 APCS 相容的栈帧。"
 
 #: config/arm/arm.opt:76
-#, fuzzy, no-c-format
-#| msgid "Generate re-entrant, PIC code"
+#, no-c-format
 msgid "Unimplemented option to generate re-entrant, PIC code."
-msgstr "生成可重入的 PIC 代码"
+msgstr "未实现的选项，用以生成可重入的 PIC 代码。"
 
 #: config/arm/arm.opt:80
 #, no-c-format
 msgid "Unimplemented option to generate stack checking code on function entry."
-msgstr ""
+msgstr "未实现的选项，用以生成在函数入口检查栈帧的代码。"
 
 #: config/arm/arm.opt:99
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Generate code in 32 bit ARM state."
-msgstr "为 32 位寻址生成代码"
+msgstr "生成 32 位 ARM 状态（ARM 指令集）的代码。"
 
 #: config/arm/arm.opt:107
-#, fuzzy, no-c-format
-#| msgid "Thumb: Assume non-static functions may be called from ARM code"
+#, no-c-format
 msgid "Thumb: Assume non-static functions may be called from ARM code."
-msgstr "Thumb：假定非静态函数可被 ARM 代码调用"
+msgstr "Thumb：假定非静态函数可被 ARM 代码调用。"
 
 #: config/arm/arm.opt:111
-#, fuzzy, no-c-format
-#| msgid "Thumb: Assume function pointers may go to non-Thumb aware code"
+#, no-c-format
 msgid "Thumb: Assume function pointers may go to non-Thumb aware code."
-msgstr "Thumb：假定函数指针可能为不感知 Thumb 的代码所使用"
+msgstr "Thumb：假定函数指针可能为不感知 Thumb 的代码所使用。"
 
 #: config/arm/arm.opt:123
 #, no-c-format
 msgid "Specify that the compiler should target secure code as per ARMv8-M Security Extensions."
-msgstr ""
+msgstr "指定编译器应按照 ARMv8-M 安全扩展的要求生成安全代码。"
 
 #: config/arm/arm.opt:140
-#, fuzzy, no-c-format
-#| msgid "Switch on/off MIPS16 ASE on alternating functions for compiler testing"
+#, no-c-format
 msgid "Switch ARM/Thumb modes on alternating functions for compiler testing."
-msgstr "为测试编译器为交替的函数切换 MIPS16 ASE 的使用"
+msgstr "在函数之间切换 ARM/Thumb 模式，用于测试编译器。"
 
 #: config/arm/arm.opt:144
-#, fuzzy, no-c-format
-#| msgid "Specify the __fp16 floating-point format"
+#, no-c-format
 msgid "Specify the __fp16 floating-point format."
-msgstr "指定 __fp16 浮点格式"
+msgstr "指定 __fp16 浮点格式。"
 
 #: config/arm/arm.opt:148
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Known __fp16 formats (for use with the -mfp16-format= option):"
-msgstr "无效的 __fp16 浮点选项：-mfp16-format=%s"
+msgstr "已知的 __fp16 格式(用于 -mfp16-format= 选项):"
 
 #: config/arm/arm.opt:161
-#, fuzzy, no-c-format
-#| msgid "Specify the name of the target floating point hardware/format"
+#, no-c-format
 msgid "Specify the name of the target floating point hardware/format."
-msgstr "指定目标浮点硬件/格式的名称"
+msgstr "指定目标浮点硬件/格式的名称。"
 
 #: config/arm/arm.opt:172
-#, fuzzy, no-c-format
-#| msgid "Generate call insns as indirect calls, if necessary"
+#, no-c-format
 msgid "Generate call insns as indirect calls, if necessary."
-msgstr "如有必须，为调用指令生成间接调用"
+msgstr "如有必须，为调用指令生成间接调用。"
 
 #: config/arm/arm.opt:176 config/s390/s390.opt:259
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Assume data segments are relative to text segment."
-msgstr "假定实参不与其他存储重叠"
+msgstr "假定数据段的寻址相对于代码段。"
 
 #: config/arm/arm.opt:180
-#, fuzzy, no-c-format
-#| msgid "Specify the register to be used for PIC addressing"
+#, no-c-format
 msgid "Specify the register to be used for PIC addressing."
-msgstr "指定用于 PIC 寻址的寄存器"
+msgstr "指定用于 PIC 寻址的寄存器。"
 
 #: config/arm/arm.opt:184
-#, fuzzy, no-c-format
-#| msgid "Store function names in object code"
+#, no-c-format
 msgid "Store function names in object code."
-msgstr "在目标文件中存储函数名"
+msgstr "在目标文件中存储函数名。"
 
 #: config/arm/arm.opt:188
-#, fuzzy, no-c-format
-#| msgid "Permit scheduling of a function's prologue sequence"
+#, no-c-format
 msgid "Permit scheduling of a function's prologue sequence."
-msgstr "允许调度函数前言序列"
+msgstr "允许调度函数前言序列。"
 
 #: config/arm/arm.opt:199
-#, fuzzy, no-c-format
-#| msgid "Specify the minimum bit alignment of structures"
+#, no-c-format
 msgid "Specify the minimum bit alignment of structures. (Deprecated)."
-msgstr "为结构指定最小位对齐"
+msgstr "为结构指定最小位对齐。（已弃用）"
 
 #: config/arm/arm.opt:203
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Generate code for Thumb state."
-msgstr "生成大端在前的代码"
+msgstr "生成 Thumb 模式的代码。"
 
 #: config/arm/arm.opt:207
-#, fuzzy, no-c-format
-#| msgid "Support calls between Thumb and ARM instruction sets"
+#, no-c-format
 msgid "Support calls between Thumb and ARM instruction sets."
-msgstr "支持 Thumb 和 ARM 指令集间互相调用g"
+msgstr "支持 Thumb 和 ARM 指令集间互相调用。"
 
 #: config/arm/arm.opt:211
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Specify thread local storage scheme."
-msgstr "使用给定的线程局部存储模式"
+msgstr "指定线程局部存储（TLS）模式。"
 
 #: config/arm/arm.opt:215
-#, fuzzy, no-c-format
-#| msgid "Specify how to access the thread pointer"
+#, no-c-format
 msgid "Specify how to access the thread pointer."
-msgstr "指定如何访问线程指针"
+msgstr "指定如何访问线程指针。"
 
 #: config/arm/arm.opt:219
 #, no-c-format
@@ -5725,43 +5680,39 @@ msgid "Valid arguments to -mtp=:"
 msgstr "-mtp= 的有效参数为："
 
 #: config/arm/arm.opt:241
-#, fuzzy, no-c-format
-#| msgid "Thumb: Generate (non-leaf) stack frames even if not needed"
+#, no-c-format
 msgid "Thumb: Generate (non-leaf) stack frames even if not needed."
-msgstr "Thumb：即使不需要也生成(非叶)栈帧"
+msgstr "Thumb：即使不需要也生成(非叶)栈帧。"
 
 #: config/arm/arm.opt:245
-#, fuzzy, no-c-format
-#| msgid "Thumb: Generate (leaf) stack frames even if not needed"
+#, no-c-format
 msgid "Thumb: Generate (leaf) stack frames even if not needed."
-msgstr "Thumb：即使不需要也生成(叶)栈帧"
+msgstr "Thumb：即使不需要也生成(叶)栈帧。"
 
 #: config/arm/arm.opt:249 config/mn10300/mn10300.opt:42
-#, fuzzy, no-c-format
-#| msgid "Tune code for the given processor"
+#, no-c-format
 msgid "Tune code for the given processor."
-msgstr "为指定的处理器优化代码"
+msgstr "为指定的处理器微调代码。"
 
 #: config/arm/arm.opt:253
 #, no-c-format
 msgid "Print CPU tuning information as comment in assembler file.  This is an option used only for regression testing of the compiler and not intended for ordinary use in compiling code."
-msgstr ""
+msgstr "在汇编文件中以注释打印 CPU 微调信息。此选项只用于编译器的回归测试，不用于常规的代码编译。"
 
 #: config/arm/arm.opt:264
-#, fuzzy, no-c-format
-#| msgid "Use Neon quad-word (rather than double-word) registers for vectorization"
+#, no-c-format
 msgid "Use Neon quad-word (rather than double-word) registers for vectorization."
-msgstr "使用 Neon 四字(而非双字)寄存器来进行向量化"
+msgstr "使用 Neon 四字（而非双字）寄存器来进行向量化。"
 
 #: config/arm/arm.opt:268
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Use Neon double-word (rather than quad-word) registers for vectorization."
-msgstr "使用 Neon 四字(而非双字)寄存器来进行向量化"
+msgstr "使用 Neon 双字（而非四字）寄存器来进行向量化。"
 
 #: config/arm/arm.opt:272
 #, no-c-format
 msgid "Enable more verbose RTX cost dumps during debug.  For GCC developers use only."
-msgstr ""
+msgstr "在调试时启用更详细的 RTX 成本转储。仅供 GCC 开发者使用。"
 
 #: config/arm/arm.opt:276
 #, no-c-format
@@ -5771,28 +5722,27 @@ msgstr "对字大小的值仅产生绝对重定位。"
 #: config/arm/arm.opt:280
 #, no-c-format
 msgid "Generate IT blocks appropriate for ARMv8."
-msgstr ""
+msgstr "生成适用于 ARMv8 的 IT 块。"
 
 #: config/arm/arm.opt:284
-#, fuzzy, no-c-format
-#| msgid "Avoid overlapping destination and address registers on LDRD instructions"
+#, no-c-format
 msgid "Avoid overlapping destination and address registers on LDRD instructions that may trigger Cortex-M3 errata."
-msgstr "在 LDRD 指令中避免重叠的目标和地址寄存器"
+msgstr "在 LDRD 指令中避免可能触发 Cortex-M3 硬件缺陷的重叠的目标和地址寄存器。"
 
 #: config/arm/arm.opt:289
 #, no-c-format
 msgid "Mitigate issues with VLLDM on some M-profile devices (CVE-2021-35465)."
-msgstr ""
+msgstr "缓解一些 M-profile 设备上 VLLDM 指令的问题（CVE-2021-35465）。"
 
 #: config/arm/arm.opt:293
 #, no-c-format
 msgid "Mitigate issues with AES instructions on Cortex-A57 and Cortex-A72 (Arm erratum #1742098)."
-msgstr ""
+msgstr "缓解 Cortex-A57 和 Cortex-A72 上 AES 指令的问题（Arm 硬件缺陷 #1742098）。"
 
 #: config/arm/arm.opt:298
 #, no-c-format
 msgid "Mitigate issues with AES instructions on Cortex-A57 and Cortex-A72 (Arm erratum #1655431)."
-msgstr ""
+msgstr "缓解 Cortex-A57 和 Cortex-A72 上 AES 指令的问题（Arm 硬件缺陷 #1655431）。"
 
 #: config/arm/arm.opt:307
 #, no-c-format
@@ -5802,67 +5752,62 @@ msgstr "该选项已被弃用，且无任何效果。"
 #: config/arm/arm.opt:311
 #, no-c-format
 msgid "Assume loading data from flash is slower than fetching instructions."
-msgstr ""
+msgstr "假设从闪存加载数据比取指令更慢。"
 
 #: config/arm/arm.opt:315
 #, no-c-format
 msgid "Assume unified syntax for inline assembly code."
-msgstr ""
+msgstr "假设内联汇编代码的语法是统一的。"
 
 #: config/arm/arm.opt:319
-#, fuzzy, no-c-format
-#| msgid "Allow branches to be packed with other instructions"
+#, no-c-format
 msgid "Do not allow constant data to be placed in code sections."
-msgstr "允许跳转与其他指令打包在一起"
+msgstr "不允许常量数据和代码节放在一起。"
 
 #: config/arm/arm.opt:323
 #, no-c-format
 msgid "When linking for big-endian targets, generate a BE8 format image."
-msgstr ""
+msgstr "当链接大端目标时，生成 BE8 格式的映像。"
 
 #: config/arm/arm.opt:327
 #, no-c-format
 msgid "When linking for big-endian targets, generate a legacy BE32 format image."
-msgstr ""
+msgstr "当链接大端目标时，生成传统的 BE32 格式的映像。"
 
 #: config/arm/arm.opt:331 config/sh/sh.opt:195
-#, fuzzy, no-c-format
-#| msgid "Cost to assume for a branch insn"
+#, no-c-format
 msgid "Cost to assume for a branch insn."
-msgstr "为跳转指令设定的开销"
+msgstr "为跳转指令设定的开销。"
 
 #: config/arm/arm.opt:335 config/aarch64/aarch64.opt:229
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Use branch-protection features."
-msgstr "使用 propolice 来保护堆栈"
+msgstr "开启分支跳转保护特性。"
 
 #: config/arm/arm.opt:339
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Generate code which uses the core registers only (r0-r14)."
-msgstr "生成使用硬件浮点指令的代码"
+msgstr "生成只使用核心寄存器（r0-r14）的代码。"
 
 #: config/arm/arm.opt:361
 #, no-c-format
 msgid "Use an immediate to offset from the TLS register. This option is for use with fstack-protector-guard=tls and not for use in user-land code."
-msgstr ""
+msgstr "指定相对 TLS 寄存器的立即数偏移。此选项需和 -fstack-protector-guard=tls 一起使用，并且不适用于用户态代码。"
 
 #: config/mcore/mcore.opt:23
-#, fuzzy, no-c-format
-#| msgid "Generate code for the M*Core M210"
+#, no-c-format
 msgid "Generate code for the M*Core M210."
-msgstr "为 M*Core M210 生成代码"
+msgstr "为 M*Core M210 生成代码。"
 
 #: config/mcore/mcore.opt:27
-#, fuzzy, no-c-format
-#| msgid "Generate code for the M*Core M340"
+#, no-c-format
 msgid "Generate code for the M*Core M340."
-msgstr "为 M*Core M340 生成代码"
+msgstr "为 M*Core M340 生成代码。"
 
 #: config/mcore/mcore.opt:31
-#, fuzzy, no-c-format
-#| msgid "Force functions to be aligned to a 4 byte boundary"
+#, no-c-format
 msgid "Force functions to be aligned to a 4 byte boundary."
-msgstr "将函数强行对齐到 4 字节边界上"
+msgstr "将函数强制对齐到 4 字节边界上。"
 
 #: config/mcore/mcore.opt:39
 #, no-c-format
@@ -5875,34 +5820,29 @@ msgid "Use the divide instruction."
 msgstr "使用除法指令。"
 
 #: config/mcore/mcore.opt:47
-#, fuzzy, no-c-format
-#| msgid "Inline constants if it can be done in 2 insns or less"
+#, no-c-format
 msgid "Inline constants if it can be done in 2 insns or less."
-msgstr "当常量可以为两个以下的指令生成时内联常量"
+msgstr "当常量可以用两个及以下的指令生成时内联常量。"
 
 #: config/mcore/mcore.opt:56 config/fr30/fr30.opt:27
-#, fuzzy, no-c-format
-#| msgid "Assume that run-time support has been provided, so omit -lsim from the linker command line"
+#, no-c-format
 msgid "Assume that run-time support has been provided, so omit -lsim from the linker command line."
-msgstr "假定运行时支持已被提供，因此从链接器命令行省略 -lsim"
+msgstr "假设已提供运行时支持，因此从链接器命令行省略 -lsim。"
 
 #: config/mcore/mcore.opt:60
-#, fuzzy, no-c-format
-#| msgid "Use arbitrary sized immediates in bit operations"
+#, no-c-format
 msgid "Use arbitrary sized immediates in bit operations."
-msgstr "在位操作中使用任意大小的立即数"
+msgstr "在位操作中使用任意大小的立即数。"
 
 #: config/mcore/mcore.opt:64
-#, fuzzy, no-c-format
-#| msgid "Prefer word accesses over byte accesses"
+#, no-c-format
 msgid "Prefer word accesses over byte accesses."
-msgstr "尽量按字访问而不是按字节访问"
+msgstr "尽量按字访问而不是按字节访问。"
 
 #: config/mcore/mcore.opt:71
-#, fuzzy, no-c-format
-#| msgid "Set the maximum amount for a single stack increment operation"
+#, no-c-format
 msgid "Set the maximum amount for a single stack increment operation."
-msgstr "设定单个堆栈增量操作运算总量的上限"
+msgstr "指定单个堆栈增长操作的最大值。"
 
 #: config/mcore/mcore.opt:75
 #, no-c-format
@@ -6054,10 +5994,9 @@ msgid "Build application without any of the MicroBlaze vectors."
 msgstr ""
 
 #: config/microblaze/microblaze.opt:128
-#, fuzzy, no-c-format
-#| msgid "Use hardware quad FP instructions"
+#, no-c-format
 msgid "Use hardware prefetch instruction."
-msgstr "使用硬件四浮点指令"
+msgstr "使用硬件预取指令"
 
 #: config/microblaze/microblaze.opt:132
 #, no-c-format
@@ -6154,61 +6093,57 @@ msgstr "小数据区域: none、sdata、use"
 #: config/aarch64/aarch64.opt:70 config/loongarch/loongarch.opt:276
 #, no-c-format
 msgid "The code model option names for -mcmodel:"
-msgstr ""
+msgstr "-mcmodel 选项可用的代码模型名称:"
 
 #: config/aarch64/aarch64.opt:87
 #, no-c-format
 msgid "Generates an error message if an attempt is made to access a system register which is not available on the target architecture."
-msgstr ""
+msgstr "在尝试访问目标架构上不可用的系统寄存器时生成错误消息。"
 
 #: config/aarch64/aarch64.opt:100
 #, no-c-format
 msgid "Workaround for ARM Cortex-A53 Erratum number 835769."
-msgstr ""
+msgstr "ARM Cortex-A53 硬件缺陷 #835769 的规避措施。"
 
 #: config/aarch64/aarch64.opt:104
 #, no-c-format
 msgid "Workaround for ARM Cortex-A53 Erratum number 843419."
-msgstr ""
+msgstr "ARM Cortex-A53 硬件缺陷 #843419 的规避措施。"
 
 #: config/aarch64/aarch64.opt:108
 #, no-c-format
 msgid "Enable narrowing of 64-bit general purpose register writes to 32-bit when upper 32 bits of the register are unused."
-msgstr ""
+msgstr "当寄存器的高 32 位未使用时，将 64 位通用寄存器写缩减为 32 位寄存器写。"
 
 #: config/aarch64/aarch64.opt:121
-#, fuzzy, no-c-format
-#| msgid "Specify how to access the thread pointer"
+#, no-c-format
 msgid "The register used to access the thread pointer:"
-msgstr "指定如何访问线程指针"
+msgstr "用于访问线程指针的寄存器："
 
 #: config/aarch64/aarch64.opt:152
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "Specify the thread pointer register."
-msgstr "使用给定的线程局部存储模式"
+msgstr "指定线程指针寄存器。"
 
 #: config/aarch64/aarch64.opt:156
 #, no-c-format
 msgid "Don't assume that unaligned accesses are handled by the system."
-msgstr ""
+msgstr "不假设不对齐的访问会被系统处理。"
 
 #: config/aarch64/aarch64.opt:168
-#, fuzzy, no-c-format
-#| msgid "Specify bit size of immediate TLS offsets"
+#, no-c-format
 msgid "Specifies bit size of immediate TLS offsets.  Valid values are 12, 24, 32, 48."
-msgstr "指定线程局部存储偏移量立即数的位大小"
+msgstr "指定 TLS 偏移立即数的位大小。有效值有 12、24、32、48。"
 
 #: config/aarch64/aarch64.opt:187
-#, fuzzy, no-c-format
-#| msgid "-march=ARCH\tUse features of architecture ARCH"
+#, no-c-format
 msgid "Use features of architecture ARCH."
-msgstr "-march=ARCH\t使用指定架构 ARCH 的特性"
+msgstr "使用架构 ARCH 的特性。"
 
 #: config/aarch64/aarch64.opt:191
-#, fuzzy, no-c-format
-#| msgid "-mcpu=CPU\tUse features of and optimize for CPU"
+#, no-c-format
 msgid "Use features of and optimize for CPU."
-msgstr "-mcpu=CPU\t使用指定 CPU 的特性并为之优化"
+msgstr "使用 CPU 的特性并为其优化。"
 
 #: config/aarch64/aarch64.opt:195
 #, no-c-format
@@ -6216,61 +6151,59 @@ msgid "Optimize for CPU."
 msgstr "为 CPU 优化。"
 
 #: config/aarch64/aarch64.opt:199
-#, fuzzy, no-c-format
-#| msgid "-mabi=ABI\tGenerate code that conforms to the specified ABI"
+#, no-c-format
 msgid "Generate code that conforms to the specified ABI."
-msgstr "-mabi=ABI\t生成遵循指定 ABI 的代码"
+msgstr "生成遵循指定 ABI 的代码。"
 
 #: config/aarch64/aarch64.opt:203
 #, no-c-format
 msgid "-fdump-tuning-model=<filename> Dump current tuning model to a JSON file."
-msgstr ""
+msgstr "-fdump-tuning-model=<filename> 转储当前微调模型到 JSON 文件。"
 
 #: config/aarch64/aarch64.opt:207
 #, no-c-format
 msgid "-muser-provided-CPU=<json-tuning-file> User specific CPU tunings."
-msgstr ""
+msgstr "-muser-provided-CPU=<json-tuning-file> 用户指定的 CPU 微调文件。"
 
 #: config/aarch64/aarch64.opt:211
 #, no-c-format
 msgid "-moverride=<string>\tPower users only! Override CPU optimization parameters."
-msgstr ""
+msgstr "-moverride=<string>\t仅供高级用户使用！覆盖 CPU 优化参数。"
 
 #: config/aarch64/aarch64.opt:215
 #, no-c-format
 msgid "Known AArch64 ABIs (for use with the -mabi= option):"
-msgstr "已知 AArch64 ABI (用于 -mabi= 选项)："
+msgstr "已知 AArch64 ABI（用于 -mabi= 选项）："
 
 #: config/aarch64/aarch64.opt:225
 #, no-c-format
 msgid "PC relative literal loads."
-msgstr ""
+msgstr "PC 相对字面量加载。"
 
 #: config/aarch64/aarch64.opt:233
 #, no-c-format
 msgid "Select return address signing scope."
-msgstr ""
+msgstr "选择返回地址签名的范围。"
 
 #: config/aarch64/aarch64.opt:237
-#, fuzzy, no-c-format
-#| msgid "Known address mode (for use with the -maddress-mode= option):"
+#, no-c-format
 msgid "Supported AArch64 return address signing scope (for use with -msign-return-address= option):"
-msgstr "已知寻址模式 (用于 -mcmodel= 选项)："
+msgstr "支持的 AArch64 返回地址签名的范围（用于 -msign-return-address= 选项）："
 
 #: config/aarch64/aarch64.opt:250
 #, no-c-format
 msgid "Enable the reciprocal square root approximation.  Enabling this reduces precision of reciprocal square root results to about 16 bits for single precision and to 32 bits for double precision."
-msgstr ""
+msgstr "启用倒数平方根近似。启用此选项会将单精度倒数平方根结果的精度降低至约 16 位，双精度降低至约 32 位。"
 
 #: config/aarch64/aarch64.opt:256
 #, no-c-format
 msgid "Enable the square root approximation.  Enabling this reduces precision of square root results to about 16 bits for single precision and to 32 bits for double precision. If enabled, it implies -mlow-precision-recip-sqrt."
-msgstr ""
+msgstr "启用平方根近似。启用此选项会将单精度平方根结果的精度降低至约 16 位，双精度降低至约 32 位。隐含启用 -mlow-precision-recip-sqrt。"
 
 #: config/aarch64/aarch64.opt:263
 #, no-c-format
 msgid "Enable the division approximation.  Enabling this reduces precision of division results to about 16 bits for single precision and to 32 bits for double precision."
-msgstr ""
+msgstr "启用除法近似。启用此选项会将单精度除法结果的精度降低至约 16 位，双精度降低至约 32 位。"
 
 #: config/aarch64/aarch64.opt:281
 #, no-c-format
@@ -6278,14 +6211,14 @@ msgid "Specify when to enable an early register allocation pass.  The possibilit
 msgstr ""
 
 #: config/aarch64/aarch64.opt:287
-#, fuzzy, no-c-format
+#, no-c-format
 msgid "The possible SVE vector lengths:"
-msgstr "假定大的线程局部存储段"
+msgstr "可能的 SVE 向量长度:"
 
 #: config/aarch64/aarch64.opt:309
 #, no-c-format
 msgid "-msve-vector-bits=<number>\tSet the number of bits in an SVE vector register."
-msgstr ""
+msgstr "-msve-vector-bits=<number>\t指定 SVE 向量寄存器的位数。"
 
 #: config/aarch64/aarch64.opt:313
 #, no-c-format
@@ -6389,10 +6322,9 @@ msgid "Param to control the treshold in number of granules beyond which an expli
 msgstr ""
 
 #: config/aarch64/aarch64.opt:471
-#, fuzzy, no-c-format
-#| msgid "This option is deprecated and has no effect."
+#, no-c-format
 msgid "This option is deprecated."
-msgstr "该选项已被弃用，且无任何效果。"
+msgstr "该选项已被弃用。"
 
 #: config/vms/vms.opt:27
 #, fuzzy, no-c-format
@@ -37328,7 +37260,7 @@ msgstr ""
 #: vec.cc:272
 #, gcc-internal-format
 msgid "qsort checking failed"
-msgstr ""
+msgstr "qsort 检查失败"
 
 #: c-family/c-ada-spec.cc:3030
 #, fuzzy, gcc-internal-format
@@ -37339,7 +37271,7 @@ msgstr "使用紧实的堆栈布局"
 #: c-family/c-attribs.cc:749 c-family/c-attribs.cc:754
 #, gcc-internal-format
 msgid "cannot tail-call: return value must be a call"
-msgstr ""
+msgstr "无法尾调用：返回值必须是一个函数调用"
 
 #: c-family/c-attribs.cc:787 d/d-attribs.cc:1198
 #, fuzzy, gcc-internal-format
@@ -95515,7 +95447,7 @@ msgstr "未使用的名称 %qE"
 #: rust/resolve/rust-late-name-resolver-2.0.cc:351
 #, gcc-internal-format, gfc-internal-format
 msgid "are you trying to break %s? how dare you?"
-msgstr ""
+msgstr "你是在尝试破坏 %s 吗？你怎么敢这么做？"
 
 #, fuzzy, gcc-internal-format
 #~ msgid "%qT is not consteval-only"
