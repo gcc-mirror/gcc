@@ -799,7 +799,8 @@ ASTLoweringBase::handle_outer_attributes (const ItemWrapper &item)
       const auto &str_path = attr.get_path ().as_string ();
       if (!Analysis::Attributes::is_known (str_path))
 	{
-	  rust_error_at (attr.get_locus (), "unknown attribute");
+	  rust_error_at (attr.get_locus (), "unknown attribute: %qs",
+			 str_path.c_str ());
 	  continue;
 	}
 

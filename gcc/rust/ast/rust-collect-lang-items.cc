@@ -36,12 +36,9 @@ get_lang_item_attr (const T &maybe_lang_item)
   for (const auto &attr : maybe_lang_item.get_outer_attrs ())
     {
       const auto &str_path = attr.get_path ().as_string ();
-      if (!Analysis::Attributes::is_known (str_path))
-	{
-	  rust_error_at (attr.get_locus (), "unknown attribute %qs",
-			 str_path.c_str ());
-	  continue;
-	}
+
+      // Attribute checking is done elsewhere, we can just check whether or not
+      // we're dealing with a lang item here
 
       bool is_lang_item = str_path == Values::Attributes::LANG;
 
