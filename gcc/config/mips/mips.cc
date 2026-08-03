@@ -211,6 +211,7 @@ enum mips_ucbranch_type
 };
 
 /* Macros to create an enumeration identifier for a function prototype.  */
+#define MIPS_FTYPE_NAME0(A) MIPS_##A##_FTYPE_VOID
 #define MIPS_FTYPE_NAME1(A, B) MIPS_##A##_FTYPE_##B
 #define MIPS_FTYPE_NAME2(A, B, C) MIPS_##A##_FTYPE_##B##_##C
 #define MIPS_FTYPE_NAME3(A, B, C, D) MIPS_##A##_FTYPE_##B##_##C##_##D
@@ -17137,6 +17138,9 @@ mips_build_cvpointer_type (void)
 
 /* MIPS_FTYPE_ATYPESN takes N MIPS_FTYPES-like type codes and lists
    their associated MIPS_ATYPEs.  */
+#define MIPS_FTYPE_ATYPES0(A) \
+  MIPS_ATYPE_##A
+
 #define MIPS_FTYPE_ATYPES1(A, B) \
   MIPS_ATYPE_##A, MIPS_ATYPE_##B
 
