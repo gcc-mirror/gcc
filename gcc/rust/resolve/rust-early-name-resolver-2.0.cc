@@ -144,22 +144,8 @@ Early::resolve_rebind_import (NodeId use_dec_id,
       import_id = rebind.get_node_id ();
       break;
     case AST::UseTreeRebind::NewBindType::NONE:
-      {
-	const auto &segments = path.get_segments ();
-	// We don't want to insert `self` with `use module::self`
-	if (path.get_final_segment ().is_lower_self_seg ())
-	  {
-	    // Erroneous `self` or `{self}` use declaration
-	    if (segments.size () == 1)
-	      break;
-	    import_id = segments[segments.size () - 2].get_node_id ();
-	  }
-	else
-	  {
-	    import_id = path.get_final_segment ().get_node_id ();
-	  }
-	break;
-      }
+      import_id = path.get_final_segment ().get_node_id ();
+      break;
     case AST::UseTreeRebind::NewBindType::WILDCARD:
       // nothing
       break;
