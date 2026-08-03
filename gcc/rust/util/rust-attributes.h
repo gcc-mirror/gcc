@@ -27,7 +27,24 @@ namespace Analysis {
 class Attributes
 {
 public:
-  static bool is_known (const std::string &attribute_path);
+  enum class AttributeKnowledge
+  {
+    /**
+     * Built-in attribute
+     */
+    Known,
+    /**
+     * Tool attribute, to be handled by the specified tool rather than the
+     * compiler
+     */
+    Tool,
+    /**
+     * Unknown attribute
+     */
+    Unknown,
+  };
+
+  static AttributeKnowledge is_known (const std::string &attribute_path);
   static bool valid_outer_attribute (const std::string &attribute_path);
   static tl::optional<std::string>
   extract_string_literal (const AST::Attribute &attr);

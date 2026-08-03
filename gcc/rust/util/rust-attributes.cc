@@ -94,6 +94,10 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::FUNDAMENTAL, TYPE_CHECK},
      {Attrs::NON_EXHAUSTIVE, TYPE_CHECK},
      {Attrs::RUSTFMT, EXTERNAL},
+     {Attrs::CLIPPY, EXTERNAL},
+     {Attrs::DIAGNOSTIC, EXTERNAL},
+     {Attrs::MIRI, EXTERNAL},
+     {Attrs::RUST_ANALYZER, EXTERNAL},
      {Attrs::TEST, CODE_GENERATION},
      {Attrs::NEEDS_ALLOCATOR, CODE_GENERATION},
      {Attrs::RUSTC_ALLOCATOR, CODE_GENERATION},
@@ -120,13 +124,36 @@ static const std::set<std::string> __outer_attributes
      Attrs::LINK_NAME,
      Attrs::LINK_SECTION};
 
-bool
+Attributes::AttributeKnowledge
 Attributes::is_known (const std::string &attribute_path)
 {
   const auto &lookup
     = BuiltinAttributeMappings::get ()->lookup_builtin (attribute_path);
 
-  return !lookup.is_error ();
+  if (!lookup.is_error ())
+    return AttributeKnowledge::Known;
+
+  // We have to check for tool attributes as well
+  // https://doc.rust-lang.org/reference/attributes.html#tool-attributes
+  //
+  // > rustc currently recognizes the tools “clippy”, “rustfmt”, “diagnostic”,
+  // “miri”, and “rust_analyzer”.
+  static std::unordered_set<std::string> known_tools = {
+    "clippy", "rustfmt", "diagnostic", "miri", "rust_analyzer",
+  };
+
+  auto colon = attribute_path.find ("::");
+  if (colon != std::string::npos)
+    {
+      auto tool = attribute_path.substr (0, colon);
+
+      // If this is a known tool, the attribute is "known". The rest of the path
+      // is up to the tool to interpret.
+      if (known_tools.find (tool) != known_tools.end ())
+	return AttributeKnowledge::Tool;
+    }
+
+  return AttributeKnowledge::Unknown;
 }
 
 bool

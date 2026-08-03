@@ -105,6 +105,10 @@ public:
   static constexpr auto &NON_EXHAUSTIVE = "non_exhaustive";
 
   static constexpr auto &RUSTFMT = "rustfmt";
+  static constexpr auto &CLIPPY = "clippy";
+  static constexpr auto &DIAGNOSTIC = "diagnostic";
+  static constexpr auto &MIRI = "miri";
+  static constexpr auto &RUST_ANALYZER = "rust_analyzer";
 
   static constexpr auto &TEST = "test";
 

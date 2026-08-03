@@ -454,17 +454,21 @@ Early::visit (AST::Attribute &attr)
   auto &mappings = Analysis::Mappings::get ();
 
   auto name = attr.get_path ().get_segments ().at (0).get_segment_name ();
-  auto is_not_builtin = [&name] (AST::Attribute &attr) {
-    return Analysis::BuiltinAttributeMappings::get ()
-      ->lookup_builtin (name)
-      .is_error ();
-  };
+  auto known_check = Analysis::Attributes::is_known (name);
+
+  // If it is a tool attribute, the compiler can ignore it and let the tool
+  // handle it
+  if (known_check == Analysis::Attributes::AttributeKnowledge::Tool)
+    return;
+
+  auto is_builtin
+    = known_check == Analysis::Attributes::AttributeKnowledge::Known;
 
   if (attr.is_derive ())
     {
       visit_derive_attribute (attr, mappings);
     }
-  else if (is_not_builtin (attr)) // Do not resolve builtins
+  else if (!is_builtin) // Do not resolve builtins
     {
       visit_non_builtin_attribute (attr, mappings, name);
     }
