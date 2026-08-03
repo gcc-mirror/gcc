@@ -1704,33 +1704,6 @@ enum cbl_intrinsic_trim_t {
   trim_trailing_e = 2,
 };
 
-enum cbl_ctype_t {
-  c_unknown,
-  c_bool,
-  c_char,
-  c_wchar,
-  c_byte,
-  c_ubyte,
-  c_short,
-  c_ushort,
-  c_int,
-  c_uint,
-  c_long,
-  c_ulong,
-  c_longlong,
-  c_ulonglong,
-  c_size_t,
-  c_ssize_t,
-  c_int128,
-  c_float,
-  c_double,
-  c_longdouble,
-  c_char_p,
-  c_wchar_p,
-  c_void_p,
-  c_nts,      // this is a null-terminated-string char_p
-};
-
 struct function_descr_arg_t {
   size_t isym;
   cbl_ffi_crv_t crv;

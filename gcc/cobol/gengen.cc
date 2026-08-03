@@ -603,58 +603,6 @@ gg_assign(tree dest, const tree source)
   return stmt;
   }
 
-tree
-gg_get_structure_type_decl(const char *type_name, ...)
-  {
-  tree record_type = make_node (RECORD_TYPE);
-
-  tree type_decl = build_decl(UNKNOWN_LOCATION,
-                              TYPE_DECL,
-                              get_identifier (type_name),
-                              record_type);
-  TYPE_NAME (record_type) = type_decl;
-  TYPE_STUB_DECL (record_type) = type_decl;
-  DECL_ARTIFICIAL (type_decl) = 1;
-
-  va_list ap;
-  va_start (ap, type_name);
-
-  tree first = NULL_TREE;
-  tree *link = &first;
-
-  for (;;)
-    {
-    tree arg_type = va_arg (ap, tree);
-    if (!arg_type)
-      {
-      break;
-      }
-
-    const char *member_name = va_arg (ap, const char *);
-
-    tree member_decl = build_decl (UNKNOWN_LOCATION,
-                                   FIELD_DECL,
-                                   get_identifier (member_name),
-                                   arg_type);
-
-    DECL_CONTEXT (member_decl) = record_type;
-    *link = member_decl;
-    link = &DECL_CHAIN (member_decl);
-    }
-  va_end (ap);
-
-  TYPE_FIELDS (record_type) = first;
-
-  layout_type (record_type);
-//  lang_hooks.decls.pushdecl (type_decl);
-
-  gcc_assert (TREE_CODE (record_type) == RECORD_TYPE);
-  gcc_assert (TYPE_NAME (record_type));
-  gcc_assert (TREE_CODE (TYPE_NAME (record_type)) == TYPE_DECL);
-  gcc_assert (TREE_TYPE (TYPE_NAME (record_type)) == record_type);
-
-  return record_type;
-  }
 
 void
 gg_structure_type_constructor(tree record_decl, ...)

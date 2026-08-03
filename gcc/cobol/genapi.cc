@@ -885,7 +885,7 @@ parser_initialize_programs( size_t nprogs,
   }
 
 static tree
-array_of_long_long(const char *name,
+array_of_uint64(const char *name,
                    const std::vector<uint64_t> &vals)
   {
   /*
@@ -899,14 +899,14 @@ array_of_long_long(const char *name,
    *     ...
    *     };
    */
-  tree const_ulonglong_type =
-    build_qualified_type( ULONGLONG,
+  tree const_uint64_type =
+    build_qualified_type( UINT64,
                           TYPE_QUAL_CONST );
-  tree array_of_ulonglong_type =
-    build_array_type_nelts( const_ulonglong_type,
+  tree array_of_uint64_type =
+    build_array_type_nelts( const_uint64_type,
                             vals.size()+1 );
-  tree array_of_ulonglong =
-    gg_define_variable( array_of_ulonglong_type,
+  tree array_of_uint64 =
+    gg_define_variable( array_of_uint64_type,
                         name,
                         vs_file_static );
   vec<constructor_elt, va_gc> *elts = NULL;
@@ -916,17 +916,17 @@ array_of_long_long(const char *name,
   CONSTRUCTOR_APPEND_ELT(
     elts,
     bitsize_int( 0 ),
-    build_int_cstu( ULONGLONG, vals.size() ) );
+    build_int_cstu( UINT64, vals.size() ) );
 
   for( size_t i=0; i<vals.size(); i++ )
     {
     CONSTRUCTOR_APPEND_ELT(
       elts,
       bitsize_int( i+1 ),
-      build_int_cstu( ULONGLONG, vals[i] ) );
+      build_int_cstu( UINT64, vals[i] ) );
     }
   tree constr =
-    build_constructor( array_of_ulonglong_type,
+    build_constructor( array_of_uint64_type,
                        elts );
   /*
    * build_constructor() determines TREE_CONSTANT from its elements.
@@ -940,9 +940,9 @@ array_of_long_long(const char *name,
   /*
    * Record the const qualification on the declaration itself.
    */
-  TREE_READONLY( array_of_ulonglong ) = 1;
-  DECL_INITIAL( array_of_ulonglong ) = constr;
-  return array_of_ulonglong;
+  TREE_READONLY( array_of_uint64 ) = 1;
+  DECL_INITIAL( array_of_uint64 ) = constr;
+  return array_of_uint64;
   }
 
 tree
@@ -1012,7 +1012,7 @@ parser_compile_ecs( const std::vector<uint64_t>& ecs )
   char ach[64];
   static int counter = 1;
   sprintf(ach, "_ecs_table_%d", counter++);
-  tree retval =  array_of_long_long(ach, ecs);
+  tree retval =  array_of_uint64(ach, ecs);
   SHOW_IF_PARSE(nullptr)
     {
     SHOW_PARSE_HEADER
@@ -1059,7 +1059,7 @@ parser_compile_dcls( const std::vector<uint64_t>& dcls )
   char ach[64];
   static int counter = 1;
   sprintf(ach, "_dcls_table_%d", counter++);
-  tree retval =  array_of_long_long(ach, dcls);
+  tree retval =  array_of_uint64(ach, dcls);
   SHOW_IF_PARSE(nullptr)
     {
     SHOW_PARSE_HEADER
@@ -9106,7 +9106,7 @@ parser_file_add(struct cbl_file_t *file)
           "__gg__file_init",
           gg_get_address_of(new_var_decl),
           gg_string_literal(file->name),
-          build_int_cst_type(ULONGLONG, symbol_table_index),
+          build_int_cst_type(UINT64, symbol_table_index),
           array_of_keys,
           key_numbers,
           unique_flags,
@@ -12196,8 +12196,8 @@ static tree
 gg_array_of_file_pointers(  size_t N,
                             cbl_file_t **files )
   {
-  tree retval = gg_define_variable(build_pointer_type(cblc_file_p_type_node));
-  gg_assign(retval, gg_cast(  build_pointer_type(cblc_file_p_type_node),
+  tree retval = gg_define_variable(cblc_file_pp_type_node);
+  gg_assign(retval, gg_cast(  cblc_file_pp_type_node,
                               gg_malloc(  build_int_cst_type(SIZE_T,
                                                              N * int_size_in_bytes(VOID_P)))));
   for(size_t i=0; i<N; i++)

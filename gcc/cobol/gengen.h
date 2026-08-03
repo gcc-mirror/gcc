@@ -60,7 +60,7 @@
 #define LONG       long_integer_type_node
 #define ULONG      long_unsigned_type_node
 #define LONGLONG   long_long_integer_type_node
-#define ULONGLONG  long_long_unsigned_type_node
+#define UINT64  uint64_type_node
 #define SIZE_T     size_type_node
 #define SIZE_T_P   (build_pointer_type(SIZE_T))
 #define SSIZE_T    ptrdiff_type_node
@@ -338,9 +338,7 @@ extern tree gg_cast(tree type, tree var);
 // Assignment, that is to say, A = B
 extern tree gg_assign(tree dest, const tree source);
 
-// struct creation and field access
-// Create struct, and access a field in a struct
-extern tree gg_get_structure_type_decl(const char *type_name, ...);
+// Create constructor for a record_type
 extern void gg_structure_type_constructor(tree record_decl, ...);
 
 extern tree gg_find_field_in_struct(const tree var_decl, const char *field_name);

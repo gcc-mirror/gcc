@@ -54,6 +54,7 @@ extern GTY(()) tree cblc_field_p_type_node;
 extern GTY(()) tree cblc_field_pp_type_node;
 extern GTY(()) tree cblc_file_type_node;
 extern GTY(()) tree cblc_file_p_type_node;
+extern GTY(()) tree cblc_file_pp_type_node;
 extern GTY(()) tree cblc_goto_type_node;
 extern GTY(()) tree cblc_referlet_type_node;
 extern GTY(()) tree cblc_refer_type_node;
