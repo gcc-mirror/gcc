@@ -168,6 +168,10 @@ NAMEQUALS {NAMEQUAL}({SPC}{NAMEQUAL})*
 
 STRING   [^\r\n""]+
 STRING1  [^\r\n'']+
+
+QSTRING1 ['']{STRING1}(['']{2}{STRING1})*['']
+QSTRING2 [""]{STRING}([""]{2}{STRING})*[""]
+                        
 			/* comma & semicolon must be followed by a space */
 COMMA    [,;][[:blank:]]*
 
@@ -1915,12 +1919,10 @@ USE({SPC}FOR)?		{ return USE; }
 
   {ISNT}{SPC}/OMITTED { return NOT; }
 
-  [(:)] 			{ return *yytext; }
+  [:)]	 			{ return *yytext; }
   [(]/[^(:)""'']*[:][^)]*[)] 	{ return LPAREN; /* parentheses around a colon */ }
-  [(][^:""'']*[:][^)]*[)] 	{ // does not match foo(bar)\n:  :-(  
-                                  int tok = is_refmod(yytext, yytext + yyleng)?
-                                      int(LPAREN) : '(';
-                                  myless(1);
+  [(] 				{
+                                  int tok = is_refmod()? int(LPAREN) : '(';
                                   return tok; 
                                 }
 
