@@ -4589,7 +4589,7 @@
 			(UNSPEC_COND_FRINTA "round")
 			(UNSPEC_COND_FRINTI "nearbyint")
 			(UNSPEC_COND_FRINTM "floor")
-			(UNSPEC_COND_FRINTN "frintn")
+			(UNSPEC_COND_FRINTN "roundeven")
 			(UNSPEC_COND_FRINTP "ceil")
 			(UNSPEC_COND_FRINTX "rint")
 			(UNSPEC_COND_FRINTZ "btrunc")
