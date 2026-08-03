@@ -509,6 +509,23 @@
   "TARGET_SIMD"
   "")
 
+;; RBIT reverses the bits within each byte, so a wider element needs its bytes
+;; put in the opposite order as well.  The 64-bit elements are left out because
+;; nothing reaches them: they have no CLZ to pair with in ctz<mode>2, and the
+;; vectorizer does not yet handle IFN_BITREVERSE.
+(define_expand "bitreverse<mode>2"
+  [(set (match_operand:VDQHS 0 "register_operand")
+	(bitreverse:VDQHS (match_operand:VDQHS 1 "register_operand")))]
+  "TARGET_SIMD"
+  {
+    emit_insn (gen_bswap<mode>2 (operands[0], operands[1]));
+    machine_mode qimode = <bitsize> == 64 ? V8QImode : V16QImode;
+    rtx bytes = force_subreg (qimode, operands[0], <MODE>mode, 0);
+    emit_insn (gen_aarch64_rbit (qimode, bytes, bytes));
+    DONE;
+  }
+)
+
 (define_insn "@aarch64_rbit<mode><vczle><vczbe>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(bitreverse:VB (match_operand:VB 1 "register_operand" "w")))]
@@ -517,15 +534,15 @@
   [(set_attr "type" "neon_rbit")]
 )
 
+;; Reversing the bits of an element turns its trailing zeros into leading ones,
+;; so counting them is a bit reversal followed by a CLZ.  The 64-bit elements
+;; have no CLZ and are left to the generic expansion.
 (define_expand "ctz<mode>2"
-  [(set (match_operand:VS 0 "register_operand")
-        (ctz:VS (match_operand:VS 1 "register_operand")))]
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(ctz:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand")))]
   "TARGET_SIMD"
   {
-     emit_insn (gen_bswap<mode>2 (operands[0], operands[1]));
-     rtx op0_castsi2qi = force_subreg (<VS:VSI2QI>mode, operands[0],
-				       <MODE>mode, 0);
-     emit_insn (gen_aarch64_rbit<VS:vsi2qi> (op0_castsi2qi, op0_castsi2qi));
+     emit_insn (gen_bitreverse<mode>2 (operands[0], operands[1]));
      emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
      DONE;
   }
