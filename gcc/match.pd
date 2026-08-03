@@ -7958,20 +7958,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (cmp2 @0 { build_zero_cst (TREE_TYPE (@0)); }))))))
 
 /* Unordered tests if either argument is a NaN.  */
-(simplify
- (bit_ior (unordered @0 @0) (unordered @1 @1))
- (if (types_match (@0, @1))
-  (unordered @0 @1)))
-(simplify
- (bit_and (ordered @0 @0) (ordered @1 @1))
- (if (types_match (@0, @1))
-  (ordered @0 @1)))
-(simplify
- (bit_ior:c (unordered @0 @0) (unordered:c@2 @0 @1))
- @2)
-(simplify
- (bit_and:c (ordered @0 @0) (ordered:c@2 @0 @1))
- @2)
+(for bitop (bit_ior   bit_and)
+     op    (unordered ordered)
+ (simplify
+  (bitop (op @0 @0) (op @1 @1))
+  (if (types_match (@0, @1))
+   (op @0 @1)))
+ (simplify
+  (bitop:c (op @0 @0) (op:c@2 @0 @1))
+  @2))
 
 /* A & (2**N - 1) <= 2**K - 1 -> A & (2**N - 2**K) == 0
    A & (2**N - 1) >  2**K - 1 -> A & (2**N - 2**K) != 0
