@@ -132,6 +132,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __first;
     }
 
+  // Apply __f to each element in [__first, __last)
+  // Dispatches to __for_each_segment for segmented iterators
+  // (e.g. deque::iterator).
+  // Returns an iterator equal to __last.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+#pragma GCC diagnostic ignored "-Wc++20-extensions" // template lambda
+  template<typename _InputIterator, typename _Function>
+    _GLIBCXX20_CONSTEXPR
+    _InputIterator
+    __for_each(_InputIterator __first, _InputIterator __last, _Function& __f)
+    {
+#if __cplusplus >= 201103L
+      if constexpr (__enable_for_each_segment<_InputIterator>)
+	{
+	  std::__for_each_segment(__first, __last,
+	    [&]<typename _Iter>(_Iter __lfirst, _Iter __llast)
+	    { return std::__for_each(__lfirst, __llast, __f); });
+	  return __last;
+	}
+      else
+#endif // C++11
+	{
+	  for (; __first != __last; ++__first)
+	    __f(*__first);
+	  return __first;
+	}
+    }
+#pragma GCC diagnostic pop
+
   // set_difference
   // set_intersection
   // set_symmetric_difference
@@ -3813,8 +3843,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_requires_valid_range(__first, __last);
-      for (; __first != __last; ++__first)
-	__f(*__first);
+      std::__for_each(__first, __last, __f);
       return __f; // N.B. [alg.foreach] says std::move(f) but it's redundant.
     }
 
