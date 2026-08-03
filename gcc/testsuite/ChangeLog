@@ -1,3 +1,19 @@
+2026-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/unchecked_union5.adb: New test.
+
+2026-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/validity_check3.adb: New test.
+
+2026-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/valid_scalars2.adb: Remove -O0 option.
+	* gnat.dg/validity_check3.ads: Rename to...
+	* gnat.dg/valid_scalars3.ads: ...this.
+	* gnat.dg/validity_check3.adb: Rename to...
+	* gnat.dg/valid_scalars3.adb: ...this.
+
 2026-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

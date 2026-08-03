@@ -1,3 +1,21 @@
+2026-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126553
+	* exp_attr.adb (Build_Record_VS_Func.Validate_Field): Do nothing
+	if the field is of an Unchecked_Union type.
+
+2026-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126379
+	* exp_ch6.adb (Insert_Post_Call_Actions): Also deal with attribute
+	references as parent node.
+
+2026-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126482
+	* sem_attr.adb (Analyze_Attribute): Treat Unrestricted_Access like
+	[Unchecked_]Access when it comes to the overloading of the prefix.
+
 2026-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_util.ads (Find_Optional_Prim_Op): Add Controlled_Op parameter
