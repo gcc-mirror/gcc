@@ -2159,15 +2159,9 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	 must be different for non-swapped operands and same for swapped
 	 operands.  */
       if ((lhs2 == lhs1)
-	  ^ (HONOR_NANS (TREE_TYPE (lhs1))
-	     ? ((cmp2 == LT_EXPR || cmp2 == LE_EXPR)
-		!= (cmp1 == LT_EXPR || cmp1 == LE_EXPR))
-	     : (((cond2_phi_edge->flags
-		  & ((cmp2 == LT_EXPR || cmp2 == LE_EXPR)
-		     ? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE)) != 0)
-		!= ((e1->flags
-		     & ((cmp1 == LT_EXPR || cmp1 == LE_EXPR)
-			 ? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE)) != 0))))
+	  ^ ((cmp2 == LT_EXPR || cmp2 == LE_EXPR)
+	     != (cmp1 == LT_EXPR || cmp1 == LE_EXPR))
+	  ^ ((cond2_phi_edge->flags & EDGE_FALSE_VALUE) != 0))
 	return false;
       if (!single_pred_p (cond2_bb) || !cond_only_block_p (cond2_bb))
 	return false;
