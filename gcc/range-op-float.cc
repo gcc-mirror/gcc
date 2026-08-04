@@ -62,9 +62,49 @@ range_operator::fold_range (frange &r, tree type,
       return true;
     }
 
-  rv_fold (r, type,
-	   op1.lower_bound (), op1.upper_bound (),
-	   op2.lower_bound (), op2.upper_bound (), trio.op1_op2 ());
+  relation_kind rel = trio.op1_op2 ();
+  r.set_undefined ();
+  frange tmp;
+  if (relation_equiv_p (rel) && op1 == op2)
+    {
+      // The operands are known equal (x op x).  Fold each sub-range against
+      // itself, the diagonal of the cross product, so a relation-aware rv_fold
+      // like operator_mult's is_square stays valid.
+      //
+      // For x * x with x in [-3, -2] U [2, 3] the diagonal is
+      //
+      //     [-3, -2] * [-3, -2] = [4, 9]
+      //     [ 2,  3] * [ 2,  3] = [4, 9]
+      //
+      // giving the exact [4, 9].  The full cross product would form:
+      //
+      //     [-3, -2] * [-3, -2] = [4, 9]
+      //     [-3, -2] * [ 2,  3] = [-9, -4]
+      //     [ 2,  3] * [-3, -2] = [-9, -4]
+      //     [ 2,  3] * [ 2,  3] = [4, 9]
+      //
+      // whose union [-9, -4] U [4, 9] contains negative products that x * x
+      // can never produce: the off-diagonal terms pair a value from one
+      // sub-range with a value from the other, which x (a single value) can
+      // never do.
+      for (unsigned i = 0; i < op1.num_pairs (); ++i)
+	{
+	  rv_fold (tmp, type,
+		   op1.lower_bound (i), op1.upper_bound (i),
+		   op1.lower_bound (i), op1.upper_bound (i), rel);
+	  r.union_ (tmp);
+	}
+    }
+  else
+    // Otherwise do the straight cross product.
+    for (unsigned i = 0; i < op1.num_pairs (); ++i)
+      for (unsigned j = 0; j < op2.num_pairs (); ++j)
+	{
+	  rv_fold (tmp, type,
+		   op1.lower_bound (i), op1.upper_bound (i),
+		   op2.lower_bound (j), op2.upper_bound (j), rel);
+	  r.union_ (tmp);
+	}
 
   if (r.known_isnan ())
     return true;
@@ -3296,6 +3336,35 @@ range_op_float_tests ()
   range_op_handler (FIX_TRUNC_EXPR).fold_range (ir, integer_type_node,
 						r0, ir_op2);
   ASSERT_EQ (ir.num_pairs (), 2);
+
+  // ([1, 2] U [10, 11]) + 0 stays two pieces.
+  r0 = frange_float ("1.0", "2.0");
+  r1 = frange_float ("10.0", "11.0");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  r1 = frange_float ("0.0", "0.0");
+  r1.clear_nan ();
+  range_op_handler (PLUS_EXPR).fold_range (r, float_type_node, r0, r1);
+  ASSERT_EQ (r.num_pairs (), 2);
+
+  // x * x (VREL_EQ) with a two-piece x: the diagonal fold gives the exact
+  // [4, 9], not the full cross product's [-9, -4] U [4, 9], nor the hull's
+  // looser [0, 9].
+  r0 = frange_float ("-3.0", "-2.0");
+  r1 = frange_float ("2.0", "3.0");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  range_op_handler (MULT_EXPR).fold_range (r, float_type_node, r0, r0,
+					   relation_trio (VREL_VARYING,
+							  VREL_VARYING,
+							  VREL_EQ));
+  REAL_VALUE_TYPE val;
+  real_from_string (&val, "5.0");
+  ASSERT_TRUE (r.contains_p (val));	// the result is [4, 9]
+  real_from_string (&val, "-5.0");
+  ASSERT_FALSE (r.contains_p (val));	// not the cross product's negatives
+  real_from_string (&val, "3.0");
+  ASSERT_FALSE (r.contains_p (val));	// tighter than the hull [0, 9]
 }
 
 } // namespace selftest
