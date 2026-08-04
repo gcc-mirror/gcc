@@ -1536,7 +1536,6 @@ operator_abs::fold_range (frange &r, tree type,
     }
 
   const REAL_VALUE_TYPE lh_lb = op1.lower_bound ();
-  const REAL_VALUE_TYPE lh_ub = op1.upper_bound ();
   // Handle the easy case where everything is positive.
   if (real_compare (GE_EXPR, &lh_lb, &dconst0)
       && !real_iszero (&lh_lb, /*sign=*/true)
@@ -1546,25 +1545,32 @@ operator_abs::fold_range (frange &r, tree type,
       return true;
     }
 
-  REAL_VALUE_TYPE min = real_value_abs (&lh_lb);
-  REAL_VALUE_TYPE max = real_value_abs (&lh_ub);
-  // If the range contains zero then we know that the minimum value in the
-  // range will be zero.
-  if (real_compare (LE_EXPR, &lh_lb, &dconst0)
-      && real_compare (GE_EXPR, &lh_ub, &dconst0))
+  // Take the absolute value of each sub-range and union the results.
+  r.set_undefined ();
+  for (unsigned i = 0; i < op1.num_pairs (); ++i)
     {
-      if (real_compare (GT_EXPR, &min, &max))
-	max = min;
-      min = dconst0;
+      const REAL_VALUE_TYPE lb = op1.lower_bound (i);
+      const REAL_VALUE_TYPE ub = op1.upper_bound (i);
+      REAL_VALUE_TYPE min = real_value_abs (&lb);
+      REAL_VALUE_TYPE max = real_value_abs (&ub);
+      // If the range contains zero then we know that the minimum value in the
+      // range will be zero.
+      if (real_compare (LE_EXPR, &lb, &dconst0)
+	  && real_compare (GE_EXPR, &ub, &dconst0))
+	{
+	  if (real_compare (GT_EXPR, &min, &max))
+	    max = min;
+	  min = dconst0;
+	}
+      else
+	{
+	  // If the range was reversed, swap MIN and MAX.
+	  if (real_compare (GT_EXPR, &min, &max))
+	    std::swap (min, max);
+	}
+      frange tmp (type, min, max);
+      r.union_ (tmp);
     }
-  else
-    {
-      // If the range was reversed, swap MIN and MAX.
-      if (real_compare (GT_EXPR, &min, &max))
-	std::swap (min, max);
-    }
-
-  r.set (type, min, max);
   if (op1.maybe_isnan ())
     r.update_nan (/*sign=*/false);
   else
@@ -3292,6 +3298,15 @@ range_op_float_tests ()
   r0.union_ (r1);
   r0.clear_nan ();
   range_op_handler (NEGATE_EXPR).fold_range (r, float_type_node, r0, trange);
+  ASSERT_EQ (r.num_pairs (), 2);
+
+  // abs([-6, -5] U [1, 2]) => [1, 2] U [5, 6], keeping the gap rather than
+  // collapsing to [0, 6].
+  r0 = frange_float ("-6.0", "-5.0");
+  r1 = frange_float ("1.0", "2.0");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  range_op_handler (ABS_EXPR).fold_range (r, float_type_node, r0, trange);
   ASSERT_EQ (r.num_pairs (), 2);
 }
 
