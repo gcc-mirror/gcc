@@ -5374,10 +5374,7 @@
   DONE;
 })
 
-;; A widening sum reduction that quarters the lane count.  With dot product
-;; this is one [SU]DOT with a vector of ones, i.e. += a becomes += (a * 1).
-;; Otherwise it is a pairwise widening add feeding a pairwise widening
-;; accumulate.
+;; A widening sum reduction that quarters the lane count.
 (define_expand "reduc_widen_<su>sum<mode><vsi2qi>3"
   [(set (match_operand:VS 0 "register_operand")
 	(plus:VS (ANY_EXTEND:VS
@@ -5385,15 +5382,8 @@
 		 (match_operand:VS 2 "register_operand")))]
   "TARGET_SIMD"
   {
-    if (TARGET_DOTPROD)
-      {
-	rtx ones = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
-	emit_insn (gen_<su>dot_prod<mode><vsi2qi> (operands[0], operands[1],
-						   ones, operands[2]));
-      }
-    else
-      aarch64_expand_reduc_widen_sum (operands[0], operands[2], operands[1],
-				      <CODE>);
+    aarch64_expand_reduc_widen_sum (operands[0], operands[2], operands[1],
+				    <CODE>);
     DONE;
   }
 )

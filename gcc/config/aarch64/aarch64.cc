@@ -26331,8 +26331,9 @@ aarch64_expand_vector_init (rtx target, rtx vals)
    Advanced SIMD vector SRC holds an even multiple of the number of lanes
    of the accumulator ACC and of the result DEST.  EXTEND_CODE is
    SIGN_EXTEND or ZERO_EXTEND and selects the signed or unsigned form.
-   Halve the lane count with [SU]ADDLP until a single pairwise step is
-   left, then accumulate into ACC with [SU]ADALP.  */
+   Quarter the lane count of a vector of bytes with a [SU]DOT against a
+   vector of ones where that is available, halve it with [SU]ADDLP until a
+   single pairwise step is left, then accumulate into ACC with [SU]ADALP.  */
 
 void
 aarch64_expand_reduc_widen_sum (rtx dest, rtx acc, rtx src,
@@ -26340,7 +26341,41 @@ aarch64_expand_reduc_widen_sum (rtx dest, rtx acc, rtx src,
 {
   unsigned int dest_nunits = GET_MODE_NUNITS (GET_MODE (dest)).to_constant ();
   machine_mode mode = GET_MODE (src);
-  gcc_assert (GET_MODE_NUNITS (mode).to_constant () % (dest_nunits * 2) == 0);
+  unsigned int nunits = GET_MODE_NUNITS (mode).to_constant ();
+  gcc_assert (nunits % (dest_nunits * 2) == 0);
+
+  /* [SU]DOT against a vector of ones turns += a into += (a * 1), which
+     sums four bytes into each 32-bit element and so covers two halving
+     steps in one operation.  The widest intermediate is 4 * 255, so no
+     product sum can overflow.  Only a step from bytes to words qualifies,
+     and only if the accumulator is at least that wide.  */
+  if (TARGET_DOTPROD
+      && GET_MODE_INNER (mode) == QImode
+      && nunits >= dest_nunits * 4)
+    {
+      machine_mode sum_mode
+	= related_vector_mode (mode, SImode, nunits / 4).require ();
+      convert_optab dot = (extend_code == SIGN_EXTEND
+			   ? sdot_prod_optab : udot_prod_optab);
+      insn_code icode = convert_optab_handler (dot, sum_mode, mode);
+      rtx ones = force_reg (mode, CONST1_RTX (mode));
+
+      /* A dot product that already reaches the element width of DEST
+	 accumulates into ACC itself, otherwise it starts from zero and the
+	 remaining steps carry its result into ACC.  */
+      if (sum_mode == GET_MODE (dest))
+	{
+	  emit_insn (GEN_FCN (icode) (dest, src, ones, acc));
+	  return;
+	}
+
+      rtx tmp = gen_reg_rtx (sum_mode);
+      emit_insn (GEN_FCN (icode) (tmp, src, ones,
+				  force_reg (sum_mode,
+					     CONST0_RTX (sum_mode))));
+      src = tmp;
+      mode = sum_mode;
+    }
 
   while (GET_MODE_NUNITS (mode).to_constant () > dest_nunits * 2)
     {
