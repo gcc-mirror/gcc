@@ -132,7 +132,8 @@ DeriveVisitor::setup_impl_generics (
 	      extra_bounds.emplace_back (extra_bound.value () ());
 
 	    auto impl_type_param
-	      = builder.new_type_param (type_param, std::move (extra_bounds));
+	      = builder.new_type_param (type_param, std::move (extra_bounds),
+					Builder::DefaultParamGen::Remove);
 
 	    impl_generics.push_back (std::move (impl_type_param));
 	  }

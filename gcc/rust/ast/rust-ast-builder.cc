@@ -582,7 +582,8 @@ Builder::new_const_param (ConstGenericParam &param) const
 
 std::unique_ptr<GenericParam>
 Builder::new_type_param (
-  TypeParam &param, std::vector<std::unique_ptr<TypeParamBound>> extra_bounds)
+  TypeParam &param, std::vector<std::unique_ptr<TypeParamBound>> extra_bounds,
+  DefaultParamGen default_param_generation)
 {
   location_t locus = param.get_locus ();
   AST::AttrVec outer_attrs = param.get_outer_attrs ();
@@ -590,7 +591,7 @@ Builder::new_type_param (
   std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds;
   std::unique_ptr<Type> type = nullptr;
 
-  if (param.has_type ())
+  if (default_param_generation == DefaultParamGen::Keep && param.has_type ())
     type = param.get_type ().reconstruct ();
 
   for (auto &&extra_bound : extra_bounds)

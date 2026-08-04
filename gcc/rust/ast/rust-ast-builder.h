@@ -339,9 +339,16 @@ public:
   std::unique_ptr<GenericParam>
   new_const_param (ConstGenericParam &param) const;
 
+  enum class DefaultParamGen
+  {
+    Remove,
+    Keep,
+  };
+
   static std::unique_ptr<GenericParam> new_type_param (
     TypeParam &param,
-    std::vector<std::unique_ptr<TypeParamBound>> extra_trait_bounds = {});
+    std::vector<std::unique_ptr<TypeParamBound>> extra_trait_bounds = {},
+    DefaultParamGen default_param_generation = DefaultParamGen::Keep);
 
   static Lifetime new_lifetime (const Lifetime &lifetime);
 
