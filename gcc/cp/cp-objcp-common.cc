@@ -148,7 +148,6 @@ static constexpr cp_feature_info cp_feature_table[] =
   { "cxx_relaxed_constexpr", cxx14 },
   { "cxx_return_type_deduction", cxx14 },
   { "cxx_variable_templates", cxx14 },
-  { "modules", &flag_modules },
 };
 
 /* Register C++ language features for __has_{feature,extension}.  */
