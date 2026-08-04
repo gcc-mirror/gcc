@@ -2185,7 +2185,7 @@ selected_name:  external NAME {
         |       external OTHER
                 {
                   if( !dialect_ibm() ) {
-                    error_msg(@2, "ASSIGN OTHER requires -dialect ibm");
+                    error_msg(@2, "ASSIGN OTHER requires %<-dialect ibm%>");
                     YYERROR;
                   }
 
