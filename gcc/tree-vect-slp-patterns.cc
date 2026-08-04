@@ -788,7 +788,9 @@ compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
       tree_code acode = gimple_assign_rhs_code (a_stmt);
       tree_code bcode = gimple_assign_rhs_code (b_stmt);
       if ((acode == REALPART_EXPR || acode == IMAGPART_EXPR)
-	  && (bcode == REALPART_EXPR || bcode == IMAGPART_EXPR))
+	  && (bcode == REALPART_EXPR || bcode == IMAGPART_EXPR)
+	  && operand_equal_p (TREE_OPERAND (gimple_assign_rhs1 (a_stmt), 0),
+			      TREE_OPERAND (gimple_assign_rhs1 (b_stmt), 0)))
 	return true;
 
       if (acode != bcode)
