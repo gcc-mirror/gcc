@@ -2092,7 +2092,7 @@ public:
     // TODO: is this the best way to do this?
   }
 
-  void inject_extern_crate (std::string name);
+  NodeId inject_extern_crate (std::string name);
   void inject_inner_attribute (Attribute attribute);
 
   NodeId get_node_id () const { return node_id; }

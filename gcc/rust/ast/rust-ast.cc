@@ -235,12 +235,15 @@ Crate::as_string () const
   return str + "\n";
 }
 
-void
+NodeId
 Crate::inject_extern_crate (std::string name)
 {
-  items.push_back (std::make_unique<AST::ExternCrate> (
+  auto extern_crate = std::make_unique<AST::ExternCrate> (
     AST::ExternCrate (name, AST::Visibility::create_public (UNKNOWN_LOCATION),
-		      {}, UNKNOWN_LOCATION)));
+		      {}, UNKNOWN_LOCATION));
+  auto node_id = extern_crate->get_node_id ();
+  items.push_back (std::move (extern_crate));
+  return node_id;
 }
 
 void
