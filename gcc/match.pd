@@ -7844,10 +7844,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (with
      {
        tree itype = TREE_TYPE (@0);
-       signop isign = TYPE_SIGN (itype);
        format_helper fmt (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (@1))));
-       bool itype_ok = fmt.can_represent_integral_type_p (itype);
-       bool value_ok = itype_ok;
+       bool value_ok = fmt.can_represent_integral_type_p (itype);
        const REAL_VALUE_TYPE *cst = TREE_REAL_CST_PTR (@1);
        /* Be careful to preserve any potential exceptions due to NaNs.
 	  qNaNs are ok in == or != context.  */
@@ -7858,8 +7856,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				  && HONOR_SNANS (TREE_TYPE (@1))));
 #if GIMPLE
        int_range_max vr;
-       if (!value_ok
-	   && gimple_match_range_of_expr (vr, @0, @2))
+       if (gimple_match_range_of_expr (vr, @0, @2))
 	 value_ok = fmt.can_represent_range_value_p (&vr);
 #endif
        /* Conversion may raise FPE_INEXACT with -ftrapping-math.  */
@@ -7874,7 +7871,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 wide_int imin_val = wi::min_value (itype);
 	 wide_int imax_val = wi::max_value (itype);
 #if GIMPLE
-	 if (!itype_ok)
+	 if (!vr.undefined_p ())
 	   {
 	     imin_val = vr.lower_bound ();
 	     imax_val = vr.upper_bound ();
@@ -7897,6 +7894,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 bool overflow_p = false;
 	 wide_int icst_val
 	   = real_to_integer (&icst, &overflow_p, TYPE_PRECISION (itype));
+	 /* Double check that icst is representable in itype.  */
+	 if (isign == SIGNED && !overflow_p)
+	   {
+	     REAL_VALUE_TYPE check;
+	     real_from_integer (&check, fmt, icst_val, isign);
+	     if (!real_identical (&check, &icst))
+	       overflow_p = true;
+	   }
        }
        (switch
 	/* Optimize cases when CST is outside of ITYPE's range.  */
@@ -7915,12 +7920,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	/* Remove cast if CST is an integer representable by ITYPE,
 	   and it is safe to do so.  */
 	(if (cst_int_p
+	     && !overflow_p
 	     && fold_cmp_float_cst_p (imin_val, imax_val, cmp, &icst, fmt,
 				      icst_val, isign))
 	 (cmp @0 { wide_int_to_tree (itype, icst_val); })
 	)
 	/* Otherwise replace with sensible integer constant.  */
 	(if (!cst_int_p
+	     && !overflow_p
 	     && fold_cmp_float_cst_p (imin_val, imax_val, icmp, &icst, fmt,
 				      icst_val, isign))
 	 (icmp @0 { wide_int_to_tree (itype, icst_val); })))))))))
