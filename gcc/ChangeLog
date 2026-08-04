@@ -1,3 +1,24 @@
+2026-08-03  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/126581
+	* config/i386/avx10_2satcvtintrin.h
+	(_mm_cvtts_sd_epi32): New alias of _mm_cvtts_sd_i32.
+	(_mm_cvtts_sd_epu32): New alias of _mm_cvtts_sd_u32.
+	(_mm_cvtts_ss_epi32): New alias of _mm_cvtts_ss_i32.
+	(_mm_cvtts_ss_epu32): New alias of _mm_cvtts_ss_u32.
+	(_mm_cvtts_roundsd_epi32): New alias of _mm_cvtts_roundsd_i32.
+	(_mm_cvtts_roundsd_epu32): New alias of _mm_cvtts_roundsd_u32.
+	(_mm_cvtts_roundss_epi32): New alias of _mm_cvtts_roundss_i32.
+	(_mm_cvtts_roundss_epu32): New alias of _mm_cvtts_roundss_u32.
+	(_mm_cvtts_sd_epi64): New alias of _mm_cvtts_sd_i64.
+	(_mm_cvtts_sd_epu64): New alias of _mm_cvtts_sd_u64.
+	(_mm_cvtts_ss_epi64): New alias of _mm_cvtts_ss_i64.
+	(_mm_cvtts_ss_epu64): New alias of _mm_cvtts_ss_u64.
+	(_mm_cvtts_roundsd_epi64): New alias of _mm_cvtts_roundsd_i64.
+	(_mm_cvtts_roundsd_epu64): New alias of _mm_cvtts_roundsd_u64.
+	(_mm_cvtts_roundss_epi64): New alias of _mm_cvtts_roundss_i64.
+	(_mm_cvtts_roundss_epu64): New alias of _mm_cvtts_roundss_u64.
+
 2026-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
