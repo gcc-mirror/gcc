@@ -248,7 +248,7 @@ remove_unreachable::handle_early (gimple *s, edge e)
     {
       auto_bitmap dce;
       bitmap_set_bit (dce, SSA_NAME_VERSION (ssa));
-      simple_dce_from_worklist (dce);
+      simple_dce_from_worklist (dce, nullptr, true);
     }
 }
 

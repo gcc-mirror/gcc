@@ -2170,10 +2170,16 @@ make_pass_cd_dce (gcc::context *ctxt)
 /* A cheap DCE interface.  WORKLIST is a list of possibly dead stmts and
    is consumed by this function.  The function has linear complexity in
    the number of dead stmts with a constant factor like the average SSA
-   use operands number.  */
+   use operands number.
+   If no_delete is true (defaults to false) then rather than deleting the
+   statement, it is replaced with an assignment to 0.  This allows the
+   same elimination of statement dependencies, but delays the actual statement
+   removal from the IL until the next time DCE is run and they are detected
+   as dead statements with no uses. */
 
 void
-simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup)
+simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup,
+			  bool no_delete)
 {
   int phiremoved = 0;
   int stmtremoved = 0;
@@ -2217,11 +2223,20 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup)
       gimple *t = SSA_NAME_DEF_STMT (def);
       if (gimple_has_side_effects (t))
 	{
-	  if (gcall *call = dyn_cast <gcall *> (t))
+	  gcall *call = dyn_cast <gcall *> (t);
+	  if (call)
 	    {
 	      gimple_call_set_lhs (call, NULL_TREE);
 	      update_stmt (call);
-	      release_ssa_name (def);
+	      if (no_delete)
+		{
+		  tree zero = build_zero_cst (TREE_TYPE (def));
+		  gassign *new_stmt = gimple_build_assign (def, zero);
+		  gimple_stmt_iterator gsi = gsi_for_stmt (t);
+		  gsi_insert_after (&gsi, new_stmt, GSI_SAME_STMT);
+		}
+	      else
+		release_ssa_name (def);
 	    }
 	  continue;
 	}
@@ -2263,19 +2278,38 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup)
       gimple_stmt_iterator gsi = gsi_for_stmt (t);
       if (gimple_code (t) == GIMPLE_PHI)
 	{
-	  remove_phi_node (&gsi, true);
+	  if (no_delete)
+	    {
+	      gphi *phi = as_a<gphi *> (t);
+	      tree zero = build_zero_cst (TREE_TYPE (def));
+	      for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+		SET_PHI_ARG_DEF (phi, i, zero);
+	      update_stmt (phi);
+	    }
+	  else
+	    remove_phi_node (&gsi, true);
+
 	  phiremoved++;
 	}
       else
 	{
 	  unlink_stmt_vdef (t);
-	  gsi_remove (&gsi, true);
-	  release_defs (t);
+	  if (no_delete)
+	    {
+	      tree zero = build_zero_cst (TREE_TYPE (def));
+	      gassign *new_stmt = gimple_build_assign (def, zero);
+	      gsi_replace (&gsi, new_stmt, true);
+	    }
+	  else
+	    {
+	      gsi_remove (&gsi, true);
+	      release_defs (t);
+	    }
 	  stmtremoved++;
 	}
     }
-  statistics_counter_event (cfun, "PHIs removed",
+  statistics_counter_event (cfun, no_delete ? "PHIs rewritten" : "PHIs removed",
 			    phiremoved);
-  statistics_counter_event (cfun, "Statements removed",
-			    stmtremoved);
+  statistics_counter_event (cfun, no_delete ? "Statements rewritten"
+					    : "Statements removed", stmtremoved);
 }
