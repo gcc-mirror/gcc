@@ -1491,11 +1491,16 @@ operator_negate::fold_range (frange &r, tree type,
       return true;
     }
 
-  REAL_VALUE_TYPE lh_lb = op1.lower_bound ();
-  REAL_VALUE_TYPE lh_ub = op1.upper_bound ();
-  lh_lb = real_value_negate (&lh_lb);
-  lh_ub = real_value_negate (&lh_ub);
-  r.set (type, lh_ub, lh_lb);
+  r.set_undefined ();
+  for (unsigned i = 0; i < op1.num_pairs (); ++i)
+    {
+      REAL_VALUE_TYPE lb = op1.lower_bound (i);
+      REAL_VALUE_TYPE ub = op1.upper_bound (i);
+      lb = real_value_negate (&lb);
+      ub = real_value_negate (&ub);
+      frange tmp (type, ub, lb);
+      r.union_ (tmp);
+    }
   if (op1.maybe_isnan ())
     {
       bool sign;
@@ -3280,6 +3285,14 @@ range_op_float_tests ()
   int_range<2> bool_true = range_true ();
   range_op_handler (EQ_EXPR).op1_range (r, float_type_node, bool_true, r0);
   ASSERT_TRUE (r.contains_p (dconst0));
+
+  // negate([1, 2] U [10, 11]) => [-11, -10] U [-2, -1], keeping the gap.
+  r0 = frange_float ("1.0", "2.0");
+  r1 = frange_float ("10.0", "11.0");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  range_op_handler (NEGATE_EXPR).fold_range (r, float_type_node, r0, trange);
+  ASSERT_EQ (r.num_pairs (), 2);
 }
 
 } // namespace selftest
