@@ -583,7 +583,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (div @0 integer_minus_onep@1)
   (if (!TYPE_UNSIGNED (type))
    (negate @0)))
- /* X / bool_range_Y is X.  */ 
+ /* X / bool_range_Y is X.  */
  (simplify
   (div @0 SSA_NAME@1)
   (if (INTEGRAL_TYPE_P (type)
@@ -2630,7 +2630,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && canonicalize_math_after_vectorization_p ())
      (cond @0 @3 @5))))
 
- /* Vector Fold (((a < b) & c) | ((a >= b) & d)) into a < b ? c : d. 
+ /* Vector Fold (((a < b) & c) | ((a >= b) & d)) into a < b ? c : d.
     and ((~(a < b) & c) | (~(a >= b) & d)) into a < b ? c : d.  */
  (simplify
   (bit_ior
@@ -4787,7 +4787,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (cmp @0 @2)))))
 
 /* X <= MAX(X, Y) -> true
-   X > MAX(X, Y) -> false 
+   X > MAX(X, Y) -> false
    X >= MIN(X, Y) -> true
    X < MIN(X, Y) -> false */
 (for minmax (min     min     max     max     )
@@ -6042,7 +6042,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(convert (convert:unsigned_char_type_node @0))
 	(convert (convert:signed_char_type_node @0)))
        (if (bits < prec && bits + 8 > prec)
-	(with 
+	(with
 	 {
 	  tree nst = build_int_cst (integer_type_node, bits & 7);
 	  tree bt = TYPE_UNSIGNED (st) ? unsigned_char_type_node
@@ -8255,6 +8255,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp (bit_and@2 @0 integer_pow2p@1) @1)
   (icmp @2 { build_zero_cst (TREE_TYPE (@0)); })))
+
+/* If we have (A | C) == A where C is a power of 2, convert this into
+   (A & C) != 0.  Similarly for NE_EXPR.  */
+(for cmp (eq ne)
+     icmp (ne eq)
+ (simplify
+  (cmp:c (bit_ior @0 integer_pow2p@1) @0)
+  (icmp (bit_and @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))
 
 (for cmp (ge lt)
 /* x < 0 ? ~y : y into (x >> (prec-1)) ^ y. */
@@ -10698,7 +10706,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (simplify
       (popcount (convert?@0 (rot:s@1 @2 @3)))
       (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-	   && INTEGRAL_TYPE_P (TREE_TYPE (@1))	
+	   && INTEGRAL_TYPE_P (TREE_TYPE (@1))
 	   && (GIMPLE || !TREE_SIDE_EFFECTS (@3)))
 	(with { tree type0 = TREE_TYPE (@0);
 		tree type1 = TREE_TYPE (@1);
@@ -12319,7 +12327,7 @@ and,
       (cond (le @0 @1) @0 (bit_and @0 @1))))))
 
 /* -x & 1 -> x & 1.  */
-(simplify 
+(simplify
  (bit_and (negate @0) integer_onep@1)
  (if (!TYPE_OVERFLOW_SANITIZED (type))
   (bit_and @0 @1)))
