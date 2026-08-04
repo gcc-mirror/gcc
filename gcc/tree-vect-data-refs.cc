@@ -2455,6 +2455,30 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	}
     }
 
+  /* See if we can relax the flags on speculative reads for early break.  Do
+     this outside of the other loops below because they can exit early leading
+     to the flag not being cleared for known in bounds cases.  */
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+    for (auto dr : datarefs)
+      {
+	dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
+	if (!vect_relevant_for_alignment_p (dr_info))
+	  continue;
+
+	stmt_vec_info stmt_info = dr_info->stmt;
+
+	/* With variable VF, unsafe speculative read can be avoided for known
+	   inbounds DRs as long as partial vectors are used.  */
+	if (!vf.is_constant ()
+	    && dr_safe_speculative_read_required (stmt_info)
+	    && DR_SCALAR_KNOWN_BOUNDS (dr_info))
+	  {
+	    dr_set_safe_speculative_read_required (stmt_info, false);
+	    LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	  }
+      }
+
   /* While cost model enhancements are expected in the future, the high level
      view of the code at this time is as follows:
 
@@ -2495,7 +2519,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      - The cost of peeling (the extra runtime checks, the increase
        in code size).  */
 
-  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
@@ -2504,16 +2527,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
       stmt_vec_info stmt_info = dr_info->stmt;
       tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-
-      /* With variable VF, unsafe speculative read can be avoided for known
-	 inbounds DRs as long as partial vectors are used.  */
-      if (!vf.is_constant ()
-	  && dr_safe_speculative_read_required (stmt_info)
-	  && DR_SCALAR_KNOWN_BOUNDS (dr_info))
-	{
-	  dr_set_safe_speculative_read_required (stmt_info, false);
-	  LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo) = true;
-	}
 
       do_peeling = vector_alignment_reachable_p (dr_info, vf);
       if (do_peeling)
