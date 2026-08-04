@@ -3128,25 +3128,31 @@ operator_cast::fold_range (frange &r, tree type, const irange &op1,
 {
   if (empty_range_varying (r, type, op1, op1))
     return true;
-  REAL_VALUE_TYPE lb, ub;
-  wide_int op1_lb = op1.lower_bound ();
-  wide_int op1_ub = op1.upper_bound ();
   tree op1_type = op1.type ();
-  enum machine_mode mode = flag_rounding_math ? VOIDmode : TYPE_MODE (type);
-  real_from_integer (&lb, mode, op1_lb, TYPE_SIGN (op1_type));
-  real_from_integer (&ub, mode, op1_ub, TYPE_SIGN (op1_type));
-  if (flag_rounding_math)
+  r.set_undefined ();
+  for (unsigned i = 0; i < op1.num_pairs (); ++i)
     {
-      REAL_VALUE_TYPE lbo = lb, ubo = ub;
-      mode = TYPE_MODE (type);
-      real_convert (&lb, mode, &lb);
-      real_convert (&ub, mode, &ub);
-      if (real_less (&lbo, &lb))
-	frange_nextafter (mode, lb, dconstninf);
-      if (real_less (&ub, &ubo))
-	frange_nextafter (mode, ub, dconstinf);
+      REAL_VALUE_TYPE lb, ub;
+      wide_int op1_lb = op1.lower_bound (i);
+      wide_int op1_ub = op1.upper_bound (i);
+      enum machine_mode mode = flag_rounding_math ? VOIDmode : TYPE_MODE (type);
+      real_from_integer (&lb, mode, op1_lb, TYPE_SIGN (op1_type));
+      real_from_integer (&ub, mode, op1_ub, TYPE_SIGN (op1_type));
+      if (flag_rounding_math)
+	{
+	  REAL_VALUE_TYPE lbo = lb, ubo = ub;
+	  mode = TYPE_MODE (type);
+	  real_convert (&lb, mode, &lb);
+	  real_convert (&ub, mode, &ub);
+	  if (real_less (&lbo, &lb))
+	    frange_nextafter (mode, lb, dconstninf);
+	  if (real_less (&ub, &ubo))
+	    frange_nextafter (mode, ub, dconstinf);
+	}
+      frange tmp;
+      tmp.set (type, lb, ub, nan_state (false));
+      r.union_ (tmp);
     }
-  r.set (type, lb, ub, nan_state (false));
   if (r.undefined_p ())
     r.set_varying (type);
   return true;
@@ -3307,6 +3313,16 @@ range_op_float_tests ()
   r0.union_ (r1);
   r0.clear_nan ();
   range_op_handler (ABS_EXPR).fold_range (r, float_type_node, r0, trange);
+  ASSERT_EQ (r.num_pairs (), 2);
+
+  // (float)([1, 4] U [6, 10]) keeps the gap.
+  unsigned iprec = TYPE_PRECISION (integer_type_node);
+  int_range<2> i0 (integer_type_node,
+		   wi::shwi (1, iprec), wi::shwi (4, iprec));
+  int_range<2> i1 (integer_type_node,
+		   wi::shwi (6, iprec), wi::shwi (10, iprec));
+  i0.union_ (i1);
+  range_op_handler (FLOAT_EXPR).fold_range (r, float_type_node, i0, trange);
   ASSERT_EQ (r.num_pairs (), 2);
 }
 
