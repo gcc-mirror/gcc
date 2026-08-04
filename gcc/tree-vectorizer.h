@@ -2780,7 +2780,7 @@ extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, const vec<tree> 
 extern bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);
 extern bool vect_slp_analyze_operations (vec_info *);
-extern void vect_schedule_slp (vec_info *, const vec<slp_instance> &, bool);
+extern bool vect_schedule_slp (vec_info *, vec<slp_instance> &, bool);
 extern opt_result vect_analyze_slp (vec_info *, unsigned, bool);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern bool vect_detect_hybrid_slp (loop_vec_info);

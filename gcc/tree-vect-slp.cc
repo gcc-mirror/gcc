@@ -10246,11 +10246,17 @@ vect_slp_analyze_bb_1 (bb_vec_info bb_vinfo, int n_stmts, bool &fatal,
       return false;
     }
 
+  /* Compute vector stmt placement.  */
+  if (!vect_schedule_slp (bb_vinfo, BB_VINFO_SLP_INSTANCES (bb_vinfo), true))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: cannot schedule SLP graph\n");
+      return false;
+    }
+
   /* Mark all the statements that we vectorize.  */
   vect_bb_slp_mark_stmts_vectorized (bb_vinfo);
-
-  /* Compute vector stmt placement.  */
-  vect_schedule_slp (bb_vinfo, BB_VINFO_SLP_INSTANCES (bb_vinfo), true);
 
   /* Compute vectorizable live stmts.  */
   vect_bb_slp_mark_live_stmts (bb_vinfo);
@@ -11853,9 +11859,10 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 }
 
 /* Vectorize SLP NODE.  Only compute the vector insertion places when
-   PLACE_ONLY is true.  */
+   PLACE_ONLY is true.  When placing, return false if there is no possible
+   schedule.  */
 
-static void
+static bool
 vect_schedule_slp_node (vec_info *vinfo,
 			slp_tree node, slp_instance instance, bool place_only)
 {
@@ -11869,7 +11876,7 @@ vect_schedule_slp_node (vec_info *vinfo,
       if (place_only)
 	{
 	  if (SLP_TREE_DEF_TYPE (node) == vect_constant_def)
-	    return;
+	    return true;
 	  gimple *last_stmt = NULL;
 	  vec<tree> &defs = (!SLP_TREE_SCALAR_OPS (node).is_empty ()
 			     ? SLP_TREE_SCALAR_OPS (node)
@@ -11890,14 +11897,14 @@ vect_schedule_slp_node (vec_info *vinfo,
 		  gcc_unreachable ();
 	      }
 	  node->si = last_stmt;
-	  return;
+	  return true;
 	}
 
       /* ???  vectorizable_shift can end up using a scalar operand which is
 	 currently denoted as !SLP_TREE_VECTYPE.  No need to vectorize the
 	 node in this case.  */
       if (!SLP_TREE_VECTYPE (node))
-	return;
+	return true;
 
       /* There are two reasons vector defs might already exist.  The first
 	 is that we are vectorizing an existing vector def.  The second is
@@ -11906,7 +11913,7 @@ vect_schedule_slp_node (vec_info *vinfo,
 	 DFS walk we can end up visiting them twice.  */
       if (! SLP_TREE_VEC_DEFS (node).exists ())
 	vect_create_constant_vectors (vinfo, node);
-      return;
+      return true;
     }
 
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
@@ -11925,12 +11932,27 @@ vect_schedule_slp_node (vec_info *vinfo,
     {
       /* Vectorized loads go before the first scalar load to make it
 	 ready early, vectorized stores go before the last scalar
-	 stmt which is where all uses are ready.  */
+	 stmt which is where all uses are ready.
+	 In theory, if we delay dependence checking until after
+	 placing, we can schedule at other points, but then
+	 dependence checking would need to honor that.  On the
+	 other hand dependence checking could request a different
+	 scheduling point as well, if dependences require that.  */
       stmt_vec_info last_stmt_info = NULL;
       if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
 	last_stmt_info = vect_find_first_scalar_stmt_in_slp (node);
       else /* DR_IS_WRITE */
-	last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
+	{
+	  last_stmt_info = vect_find_last_scalar_stmt_in_slp (node);
+	  if (place_only)
+	    FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+	      {
+		if (child->si
+		    && !vect_stmt_dominates_stmt_p (child->si,
+						    last_stmt_info->stmt))
+		  return false;
+	      }
+	}
       last_stmt = last_stmt_info->stmt;
       si = gsi_for_stmt (last_stmt);
     }
@@ -11968,7 +11990,9 @@ vect_schedule_slp_node (vec_info *vinfo,
 	    else if (vect_stmt_dominates_stmt_p (vstmt, last_stmt))
 	      ;
 	    else
-	      gcc_unreachable ();
+	      /* Non-trapping stmts from different BBs might be combined,
+		 and if we later CSE a low/high part we can run into this.  */
+	      return false;
 	  }
 	else if (SLP_TREE_DEF_TYPE (child) == vect_internal_def)
 	  {
@@ -12149,7 +12173,7 @@ vect_schedule_slp_node (vec_info *vinfo,
       gcc_assert ((last_stmt && gimple_bb (last_stmt))
 		  || (!last_stmt && gsi_bb (si)));
       node->si = last_stmt;
-      return;
+      return true;
     }
 
   /* ???  Asserting vect_stmt_dominates_stmt_p (gsi_stmt (si), node->si)
@@ -12194,6 +12218,7 @@ vect_schedule_slp_node (vec_info *vinfo,
 	}
     }
   vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
+  return true;
 }
 
 /* Replace scalar calls from SLP node NODE with setting of their lhs to zero.
@@ -12400,9 +12425,10 @@ struct slp_scc_info
   int lowlink;
 };
 
-/* Schedule the SLP INSTANCE doing a DFS walk and collecting SCCs.  */
+/* Schedule the SLP INSTANCE doing a DFS walk and collecting SCCs.
+   When PLACE_ONLY, return false if there is no possible schedule.  */
 
-static void
+static bool
 vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 		   hash_map<slp_tree, slp_scc_info> &scc_info,
 		   int &maxdfs, vec<slp_tree> &stack, bool place_only)
@@ -12418,13 +12444,15 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     {
       info->on_stack = false;
-      vect_schedule_slp_node (vinfo, node, instance, place_only);
-      return;
+      bool res = vect_schedule_slp_node (vinfo, node, instance, place_only);
+      gcc_assert (res);
+      return true;
     }
 
   info->on_stack = true;
   stack.safe_push (node);
 
+  bool res = true;
   unsigned i;
   slp_tree child;
   /* DFS recurse.  */
@@ -12435,8 +12463,8 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
       slp_scc_info *child_info = scc_info.get (child);
       if (!child_info)
 	{
-	  vect_schedule_scc (vinfo, child, instance, scc_info, maxdfs, stack,
-			     place_only);
+	  res &= vect_schedule_scc (vinfo, child, instance, scc_info,
+				    maxdfs, stack, place_only);
 	  /* Recursion might have re-allocated the node.  */
 	  info = scc_info.get (node);
 	  child_info = scc_info.get (child);
@@ -12446,7 +12474,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 	info->lowlink = MIN (info->lowlink, child_info->dfs);
     }
   if (info->lowlink != info->dfs)
-    return;
+    return res;
 
   auto_vec<slp_tree, 4> phis_to_fixup;
 
@@ -12455,7 +12483,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
     {
       stack.pop ();
       info->on_stack = false;
-      vect_schedule_slp_node (vinfo, node, instance, place_only);
+      res &= vect_schedule_slp_node (vinfo, node, instance, place_only);
       if (!SLP_TREE_PERMUTE_P (node)
 	  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
 	phis_to_fixup.quick_push (node);
@@ -12523,7 +12551,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
     }
 
   if (place_only)
-    return;
+    return res;
 
   /* Now fixup the backedge def of the vectorized PHIs in this SCC.  */
   slp_tree phi_node;
@@ -12573,13 +12601,18 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 	    }
 	}
     }
+
+  gcc_assert (res);
+  return true;
 }
 
 /* Generate vector code for SLP_INSTANCES in the loop/basic block.  Perform
-   vector stmt placement only when PLACE_ONLY is true.  */
+   vector stmt placement only when PLACE_ONLY is true, removing SLP graph
+   entries that cannot be scheduled.  If placing, return false if a schedule
+   cannot be computed for any entry.  */
 
-void
-vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances,
+bool
+vect_schedule_slp (vec_info *vinfo, vec<slp_instance> &slp_instances,
 		   bool place_only)
 {
   slp_instance instance;
@@ -12587,7 +12620,7 @@ vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances,
 
   hash_map<slp_tree, slp_scc_info> scc_info;
   int maxdfs = 0;
-  FOR_EACH_VEC_ELT (slp_instances, i, instance)
+  for (i = 0; slp_instances.iterate (i, &instance); )
     {
       slp_tree node = SLP_INSTANCE_TREE (instance);
       if (!place_only && dump_enabled_p ())
@@ -12603,21 +12636,44 @@ vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances,
 	}
       /* Schedule the tree of INSTANCE, scheduling SCCs in a way to
 	 have a PHI be the node breaking the cycle.  */
+      bool res = true;
       auto_vec<slp_tree> stack;
       if (!scc_info.get (node))
-	vect_schedule_scc (vinfo, node, instance, scc_info, maxdfs, stack,
-			   place_only);
+	res &= vect_schedule_scc (vinfo, node, instance, scc_info,
+				  maxdfs, stack, place_only);
 
-      if (!place_only && !SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
-	vectorize_slp_instance_root_stmt (vinfo, node, instance);
+      if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
+	{
+	  if (place_only)
+	    {
+	      gimple *root_stmt = instance->root_stmts[0]->stmt;
+	      res &= (!node->si || vect_stmt_dominates_stmt_p (node->si,
+							       root_stmt));
+	    }
+	  else
+	    vectorize_slp_instance_root_stmt (vinfo, node, instance);
+	}
 
       if (!place_only && dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.\n");
+
+      if (!res)
+	{
+	  gcc_assert (place_only);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not vectorized: cannot schedule SLP graph "
+			     "entry %p\n", (void *)instance);
+	  vect_free_slp_instance (instance);
+	  slp_instances.ordered_remove (i);
+	  continue;
+	}
+      ++i;
     }
 
   if (place_only)
-    return;
+    return !slp_instances.is_empty ();
 
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
@@ -12653,4 +12709,6 @@ vect_schedule_slp (vec_info *vinfo, const vec<slp_instance> &slp_instances,
 	    SLP_TREE_REPRESENTATIVE (root) = NULL;
         }
     }
+
+  return true;
 }
