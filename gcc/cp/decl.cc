@@ -7477,6 +7477,7 @@ struct reshape_iter
 };
 
 static tree reshape_init_r (tree, reshape_iter *, tree, tsubst_flags_t);
+static tree reshape_single_init (tree, tree, tsubst_flags_t);
 
 /* FIELD is an element of TYPE_FIELDS or NULL.  In the former case, the value
    returned is the next FIELD_DECL (possibly FIELD itself) that can be
@@ -7662,6 +7663,11 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
 	      RAW_DATA_POINTER (elt_init) += off;
 	    }
 	  TREE_TYPE (elt_init) = elt_type;
+	}
+      else if (d->cur->index)
+	{
+	  elt_init = reshape_single_init (elt_type, d->cur->value, complain);
+	  d->cur++;
 	}
       else
 	elt_init = reshape_init_r (elt_type, d,
@@ -7860,7 +7866,6 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
       constructor_elt *old_cur = d->cur;
       unsigned old_raw_idx = d->raw_idx;
       bool direct_desig = false;
-      bool subclass = false;
 
       /* Handle C++20 designated initializers.  */
       if (d->cur->index)
@@ -8020,7 +8025,6 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	      gcc_assert (aafield);
 	      field = aafield;
 	      direct_desig = false;
-	      subclass = true;
 	    }
 	}
 
@@ -8051,18 +8055,6 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	  field_init = reshape_single_init (TREE_TYPE (field),
 					    d->cur->value, complain);
 	  d->cur++;
-	}
-      else if (subclass)
-	{
-	  if (complain & tf_warning)
-	    warning (OPT_Wmissing_braces,
-		     "missing braces around initializer for %qT",
-		     TREE_TYPE (field));
-	  field_init = reshape_init_class (TREE_TYPE (field), d,
-					   /*first_initializer_p=*/NULL_TREE,
-					   complain);
-	  if (TREE_CODE (field_init) == CONSTRUCTOR)
-	    CONSTRUCTOR_BRACES_ELIDED_P (field_init) = true;
 	}
       else
 	field_init = reshape_init_r (TREE_TYPE (field), d,
@@ -8189,6 +8181,21 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
       return init;
     }
 
+  /* If we have a designator, d doesn't initialize TYPE directly, it
+     initializes an element, with brace elision if !first_initializer_p.  But
+     if TYPE is non-aggregate (and we didn't already return error_mark_node),
+     we should have errored about the designator in has_designator_problem, so
+     now ignore it for error recovery.  */
+  if (d->cur->index)
+    {
+      /* Deliberately not CP_AGGREGATE_TYPE_P to get a better diagnostic for
+	 trying to designate a member of a non-aggregate class.  */
+      if (AGGREGATE_TYPE_P (type))
+	goto skip_single;
+      else
+	gcc_checking_assert (seen_error ());
+    }
+
   /* A non-aggregate type is always initialized with a single
      initializer.  */
   if (!CP_AGGREGATE_TYPE_P (type)
@@ -8239,8 +8246,6 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
      initialized from that element."  Even if T is an aggregate.  */
   if (cxx_dialect >= cxx11 && (CLASS_TYPE_P (type) || VECTOR_TYPE_P (type))
       && first_initializer_p
-      /* But not if it's a designated init.  */
-      && !d->cur->index
       && d->end - d->cur == 1
       && TREE_CODE (init) != RAW_DATA_CST
       && reference_related_p (type, TREE_TYPE (init)))
@@ -8272,6 +8277,8 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 			      : init,
 			      LOOKUP_NORMAL, complain)))
     return consume_init (init, d);
+
+ skip_single:
 
   /* [dcl.init.string]
 
@@ -8317,7 +8324,7 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
   bool braces_elided_p = false;
   if (!first_initializer_p)
     {
-      if (TREE_CODE (stripped_init) == CONSTRUCTOR)
+      if (TREE_CODE (stripped_init) == CONSTRUCTOR && !d->cur->index)
 	{
 	  tree init_type = TREE_TYPE (init);
 	  if (init_type && TYPE_PTRMEMFUNC_P (init_type))
@@ -8330,15 +8337,6 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
 	     to handle initialization of arrays and similar.  */
 	  else if (COMPOUND_LITERAL_P (stripped_init))
 	    gcc_assert (!BRACE_ENCLOSED_INITIALIZER_P (stripped_init));
-	  /* If we have an unresolved designator, we need to find the member it
-	     designates within TYPE, so proceed to the routines below.  For
-	     FIELD_DECL or INTEGER_CST designators, we're already initializing
-	     the designated element.  */
-	  else if (d->cur->index
-		   && TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
-	    /* Brace elision with designators is only permitted for anonymous
-	       aggregates.  */
-	    gcc_checking_assert (ANON_AGGR_TYPE_P (type));
 	  /* A CONSTRUCTOR of the target's type is a previously
 	     digested initializer.  */
 	  else if (same_type_ignoring_top_level_qualifiers_p (type, init_type))
