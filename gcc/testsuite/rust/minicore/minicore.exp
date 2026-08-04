@@ -44,9 +44,9 @@ proc rs-compile-with-core { src1 } {
 	}
 	
     # compile core
-    gcc-dg-runtest [lindex ${src_list} 0] "" "-frust-crate=core"
+    gcc-dg-runtest [lindex ${src_list} 0] "" "-frust-crate=core -frust-edition=2018"
     # compile test
-    gcc-dg-runtest $src1 "" ""
+    gcc-dg-runtest $src1 "" "-frust-edition=2018"
 }
 
 foreach src [lsort [glob -nocomplain $srcdir/$subdir/*.rs]] {
