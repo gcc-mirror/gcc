@@ -3711,7 +3711,7 @@ maybe_optimize_guarding_check (vec<gimple *> &mul_stmts, gimple *cond_stmt,
 	return;
     }
   gimple_stmt_iterator gsi = gsi_after_labels (bb);
-  mul_stmts.quick_push (div_stmt);
+  mul_stmts.safe_push (div_stmt);
   if (is_gimple_debug (gsi_stmt (gsi)))
     gsi_next_nondebug (&gsi);
   unsigned cast_count = 0;
