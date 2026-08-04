@@ -12,3 +12,4 @@ foo (v16 x)
 }
 
 /* { dg-final { scan-assembler-not "vmv.v.i\\sv\[0-9\]+,0" } } */
+/* { dg-final { scan-assembler-times "vle16" 2 } } */
