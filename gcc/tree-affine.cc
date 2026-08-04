@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "cfgexpand.h"
 #include "value-query.h"
+#include "vr-values.h"
+#include "range-op.h"
 
 /* Extends CST as appropriate for the affine combinations COMB.  */
 
@@ -218,10 +220,10 @@ aff_combination_add (aff_tree *comb1, aff_tree *comb2)
     aff_combination_add_elt (comb1, comb2->rest, 1);
 }
 
-/* Converts affine combination COMB to TYPE.  */
+/* Converts affine combination COMB to TYPE.  AT is the range-query context.  */
 
 void
-aff_combination_convert (aff_tree *comb, tree type)
+aff_combination_convert (aff_tree *comb, tree type, gimple *at)
 {
   unsigned i, j;
   tree comb_type = comb->type;
@@ -229,7 +231,7 @@ aff_combination_convert (aff_tree *comb, tree type)
   if  (TYPE_PRECISION (type) > TYPE_PRECISION (comb_type))
     {
       tree val = fold_convert (type, aff_combination_to_tree (comb));
-      tree_to_aff_combination (val, type, comb);
+      tree_to_aff_combination (val, type, comb, at);
       return;
     }
 
@@ -260,27 +262,28 @@ aff_combination_convert (aff_tree *comb, tree type)
     }
 }
 
-/* Tries to handle OP0 CODE OP1 as affine combination of parts.  Returns
-   true when that was successful and returns the combination in COMB.  */
+/* Tries to handle OP0 CODE OP1 as affine combination of parts.  AT is the
+   range-query context.  Returns true when that was successful and returns the
+   combination in COMB.  */
 
 static bool
 expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
-			 tree op0, tree op1 = NULL_TREE)
+			 tree op0, tree op1 = NULL_TREE, gimple *at = NULL)
 {
   aff_tree tmp;
 
   switch (code)
     {
     case POINTER_PLUS_EXPR:
-      tree_to_aff_combination (op0, type, comb);
-      tree_to_aff_combination (op1, sizetype, &tmp);
+      tree_to_aff_combination (op0, type, comb, at);
+      tree_to_aff_combination (op1, sizetype, &tmp, at);
       aff_combination_add (comb, &tmp);
       return true;
 
     case PLUS_EXPR:
     case MINUS_EXPR:
-      tree_to_aff_combination (op0, type, comb);
-      tree_to_aff_combination (op1, type, &tmp);
+      tree_to_aff_combination (op0, type, comb, at);
+      tree_to_aff_combination (op1, type, &tmp, at);
       if (code == MINUS_EXPR)
 	aff_combination_scale (&tmp, -1);
       aff_combination_add (comb, &tmp);
@@ -289,18 +292,18 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
     case MULT_EXPR:
       if (TREE_CODE (op1) != INTEGER_CST)
 	break;
-      tree_to_aff_combination (op0, type, comb);
+      tree_to_aff_combination (op0, type, comb, at);
       aff_combination_scale (comb, wi::to_widest (op1));
       return true;
 
     case NEGATE_EXPR:
-      tree_to_aff_combination (op0, type, comb);
+      tree_to_aff_combination (op0, type, comb, at);
       aff_combination_scale (comb, -1);
       return true;
 
     case BIT_NOT_EXPR:
       /* ~x = -x - 1 */
-      tree_to_aff_combination (op0, type, comb);
+      tree_to_aff_combination (op0, type, comb, at);
       aff_combination_scale (comb, -1);
       aff_combination_add_cst (comb, -1);
       return true;
@@ -315,15 +318,108 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 	/* STRIP_NOPS  */
 	if (tree_nop_conversion_p (otype, itype))
 	  {
-	    tree_to_aff_combination (op0, type, comb);
+	    tree_to_aff_combination (op0, type, comb, at);
 	    return true;
+	  }
+
+	/* Look through (OTYPE) (ITYPE) IOP.  ITYPE and IOTYPE have the
+	   same precision and differ at most in signedness.  */
+	if (INTEGRAL_NB_TYPE_P (otype)
+	    && INTEGRAL_NB_TYPE_P (itype)
+	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype)
+	    && CONVERT_EXPR_P (inner))
+	  {
+	    tree iop = TREE_OPERAND (inner, 0);
+	    tree iotype = TREE_TYPE (iop);
+	    tree_code wcode = TREE_CODE (iop);
+
+	    if (INTEGRAL_NB_TYPE_P (iotype)
+		&& tree_nop_conversion_p (itype, iotype))
+	      {
+		int_range_max vr;
+		range_query *query = get_range_query (cfun);
+
+		/* Distribute the conversions when the operation fits ITYPE:
+		     (OTYPE) (ITYPE) ((IOTYPE) X +- CST)
+		       ->
+		     (OTYPE) (ITYPE) (IOTYPE) X +- (OTYPE) (ITYPE) CST.
+
+		  (OTYPE)(ITYPE) (IOTYPE) X will be further simplified to
+		  (OTYPE) X when X fits ITYPE.
+
+		  So eventually the simplification is like
+		  (OTYPE) (ITYPE) ((IOTYPE) X + CST)
+		  ->
+		  (OTYPE) X + (OTYPE) (ITYPE) CST.
+		  This is used to handle the complicated convert chain which
+		  is created by unsigned canonicalization in IVOPTS, the
+		  canonicalization itself is used to detect more equality
+		  for iv, so handle the redundancy here.  */
+
+		if (!TYPE_UNSIGNED (itype)
+		    && TYPE_UNSIGNED (iotype)
+		    && (wcode == PLUS_EXPR || wcode == MINUS_EXPR)
+		    && TREE_CODE (TREE_OPERAND (iop, 1)) == INTEGER_CST)
+		  {
+		    tree wop0 = fold_convert (itype, TREE_OPERAND (iop, 0));
+		    tree wop1 = fold_convert (itype, TREE_OPERAND (iop, 1));
+
+		    if (query->range_of_expr (vr, wop0, at)
+			&& !vr.varying_p ()
+			&& !vr.undefined_p ())
+		      {
+			wi::overflow_type ovf1 = wi::OVF_NONE;
+			wi::overflow_type ovf2 = wi::OVF_NONE;
+			wide_int cst = wi::to_wide (wop1);
+
+			/* IOP has wrapping type IOTYPE, so check signed
+			   overflow explicitly.  overflow_free_p uses ITYPE's
+			   undefined-overflow semantics and always returns true.  */
+			if (wcode == PLUS_EXPR)
+			  {
+			    wi::add (vr.lower_bound (), cst, SIGNED, &ovf1);
+			    wi::add (vr.upper_bound (), cst, SIGNED, &ovf2);
+			  }
+			else
+			  {
+			    wi::sub (vr.lower_bound (), cst, SIGNED, &ovf1);
+			    wi::sub (vr.upper_bound (), cst, SIGNED, &ovf2);
+			  }
+
+			if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE)
+			  {
+			    wop0 = fold_convert (otype, wop0);
+			    wop1 = fold_convert (otype, wop1);
+			    return expr_to_aff_combination (comb, wcode, otype,
+							    wop0, wop1, at);
+			  }
+		      }
+		  }
+
+		/* Strip the inner conversion when IOP fits ITYPE:
+		     (OTYPE) (ITYPE) IOP -> (OTYPE) IOP.
+
+		  (unsigned long) (int) (unsigned) k is simplified to
+		  (unsigned long) k when we know k >= 0.  */
+		if (TYPE_SIGN (itype) == TYPE_SIGN (iotype)
+		    || (TREE_CODE (iop) == INTEGER_CST
+			? int_fits_type_p (iop, itype)
+			: (query->range_of_expr (vr, iop, at)
+			   && range_fits_type_p (&vr, TYPE_PRECISION (itype),
+						 TYPE_SIGN (itype)))))
+		  {
+		    tree_to_aff_combination (fold_convert (otype, iop), type,
+					     comb, at);
+		    return true;
+		  }
+	      }
 	  }
 
 	/* In principle this is a valid folding, but it isn't necessarily
 	   an optimization, so do it here and not in fold_unary.  */
 	if ((icode == PLUS_EXPR || icode == MINUS_EXPR || icode == MULT_EXPR)
-	    && TREE_CODE (itype) == INTEGER_TYPE
-	    && TREE_CODE (otype) == INTEGER_TYPE
+	    && INTEGRAL_NB_TYPE_P (itype)
+	    && INTEGRAL_NB_TYPE_P (otype)
 	    && TYPE_PRECISION (otype) > TYPE_PRECISION (itype))
 	  {
 	    tree op0 = TREE_OPERAND (inner, 0), op1 = TREE_OPERAND (inner, 1);
@@ -338,7 +434,8 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 	      {
 		op0 = fold_convert (otype, op0);
 		op1 = fold_convert (otype, op1);
-		return expr_to_aff_combination (comb, icode, otype, op0, op1);
+		return expr_to_aff_combination (comb, icode, otype, op0, op1,
+						at);
 	      }
 	    wide_int minv, maxv;
 	    /* If inner type has wrapping overflow behavior, fold conversion
@@ -349,7 +446,7 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 	    if (TYPE_UNSIGNED (itype)
 		&& TYPE_OVERFLOW_WRAPS (itype)
 		&& TREE_CODE (op1) == INTEGER_CST
-		&& get_range_query (cfun)->range_of_expr (vr, op0)
+		&& get_range_query (cfun)->range_of_expr (vr, op0, at)
 		&& !vr.varying_p ()
 		&& !vr.undefined_p ())
 	      {
@@ -369,7 +466,31 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
 		    op0 = fold_convert (otype, op0);
 		    op1 = fold_convert (otype, op1);
 		    return expr_to_aff_combination (comb, icode, otype, op0,
-						    op1);
+						    op1, at);
+		  }
+		/* A negative offset can be handled as an exact subtraction:
+		     (T1) (X + CST) -> (T1) X - (T1) -CST.
+
+		   This rewrites (int) ((unsigned int) k + UINT_MAX) to
+		   (int) k - 1 when k is known >= 1.
+
+		   This also works for the most-negative signed CST: unsigned
+		   negation is modulo 2^precision, so -CST equals CST.  */
+		else if (icode == PLUS_EXPR
+			 && wi::neg_p (wi::to_wide (op1), SIGNED))
+		  {
+		    wide_int pos_cst = wi::neg (wi::to_wide (op1));
+		    int_range<1> cst_range (itype, pos_cst, pos_cst);
+		    range_op_handler minus (MINUS_EXPR);
+
+		    if (minus.overflow_free_p (vr, cst_range))
+		      {
+			op0 = fold_convert (otype, op0);
+			op1 = fold_convert (otype,
+					    wide_int_to_tree (itype, pos_cst));
+			return expr_to_aff_combination (comb, MINUS_EXPR,
+							otype, op0, op1, at);
+		      }
 		  }
 	      }
 	  }
@@ -382,10 +503,11 @@ expr_to_aff_combination (aff_tree *comb, tree_code code, tree type,
   return false;
 }
 
-/* Splits EXPR into an affine combination of parts.  */
+/* Splits EXPR into an affine combination of parts.  AT is the range-query
+   context.  */
 
 void
-tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
+tree_to_aff_combination (tree expr, tree type, aff_tree *comb, gimple *at)
 {
   aff_tree tmp;
   enum tree_code code;
@@ -404,13 +526,14 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
     case MINUS_EXPR:
     case MULT_EXPR:
       if (expr_to_aff_combination (comb, code, type, TREE_OPERAND (expr, 0),
-				   TREE_OPERAND (expr, 1)))
+				   TREE_OPERAND (expr, 1), at))
 	return;
       break;
 
     case NEGATE_EXPR:
     case BIT_NOT_EXPR:
-      if (expr_to_aff_combination (comb, code, type, TREE_OPERAND (expr, 0)))
+      if (expr_to_aff_combination (comb, code, type, TREE_OPERAND (expr, 0),
+				   NULL_TREE, at))
 	return;
       break;
 
@@ -418,9 +541,10 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       /* ???  TREE_TYPE (expr) should be equal to type here, but IVOPTS
 	 calls this with not showing an outer widening cast.  */
       if (expr_to_aff_combination (comb, code,
-				   TREE_TYPE (expr), TREE_OPERAND (expr, 0)))
+				   TREE_TYPE (expr), TREE_OPERAND (expr, 0),
+				   NULL_TREE, at))
 	{
-	  aff_combination_convert (comb, type);
+	  aff_combination_convert (comb, type, at);
 	  return;
 	}
       break;
@@ -430,8 +554,9 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
       if (TREE_CODE (TREE_OPERAND (expr, 0)) == MEM_REF)
 	{
 	  expr = TREE_OPERAND (expr, 0);
-	  tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb);
-	  tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp);
+	  tree_to_aff_combination (TREE_OPERAND (expr, 0), type, comb, at);
+	  tree_to_aff_combination (TREE_OPERAND (expr, 1), sizetype, &tmp,
+				   at);
 	  aff_combination_add (comb, &tmp);
 	  return;
 	}
@@ -454,12 +579,12 @@ tree_to_aff_combination (tree expr, tree type, aff_tree *comb)
 	aff_combination_add_elt (comb, core, 1);
       else
 	{
-	  tree_to_aff_combination (core, type, &tmp);
+	  tree_to_aff_combination (core, type, &tmp, at);
 	  aff_combination_add (comb, &tmp);
 	}
       if (toffset)
 	{
-	  tree_to_aff_combination (toffset, type, &tmp);
+	  tree_to_aff_combination (toffset, type, &tmp, at);
 	  aff_combination_add (comb, &tmp);
 	}
       return;
@@ -1065,4 +1190,3 @@ aff_comb_cannot_overlap_p (aff_tree *diff, const poly_widest_int &size1,
       return known_le (size1, diff->offset);
     }
 }
-

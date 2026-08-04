@@ -73,8 +73,8 @@ void aff_combination_mult (aff_tree *, aff_tree *, aff_tree *);
 void aff_combination_add (aff_tree *, aff_tree *);
 void aff_combination_add_elt (aff_tree *, tree, const widest_int &);
 void aff_combination_remove_elt (aff_tree *, unsigned);
-void aff_combination_convert (aff_tree *, tree);
-void tree_to_aff_combination (tree, tree, aff_tree *);
+void aff_combination_convert (aff_tree *, tree, gimple * = NULL);
+void tree_to_aff_combination (tree, tree, aff_tree *, gimple * = NULL);
 tree aff_combination_to_tree (aff_tree *);
 void unshare_aff_combination (aff_tree *);
 bool aff_combination_constant_multiple_p (aff_tree *, aff_tree *,

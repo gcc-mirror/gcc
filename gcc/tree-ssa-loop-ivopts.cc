@@ -4038,9 +4038,9 @@ get_computation_aff_1 (struct ivopts_data *data, gimple *at, struct iv_use *use,
   common_type = determine_common_wider_type (&ubase, &cbase);
 
   /* use = ubase - ratio * cbase + ratio * var.  */
-  tree_to_aff_combination (ubase, common_type, aff_inv);
-  tree_to_aff_combination (cbase, common_type, &aff_cbase);
-  tree_to_aff_combination (var, uutype, aff_var);
+  tree_to_aff_combination (ubase, common_type, aff_inv, at);
+  tree_to_aff_combination (cbase, common_type, &aff_cbase, at);
+  tree_to_aff_combination (var, uutype, aff_var, at);
 
   /* We need to shift the value if we are after the increment.  */
   if (stmt_after_increment (data->current_loop, cand, at))
@@ -4052,14 +4052,14 @@ get_computation_aff_1 (struct ivopts_data *data, gimple *at, struct iv_use *use,
       else
 	cstep_common = cstep;
 
-      tree_to_aff_combination (cstep_common, common_type, &cstep_aff);
+      tree_to_aff_combination (cstep_common, common_type, &cstep_aff, at);
       aff_combination_add (&aff_cbase, &cstep_aff);
     }
 
   aff_combination_scale (&aff_cbase, -rat);
   aff_combination_add (aff_inv, &aff_cbase);
   if (common_type != uutype)
-    aff_combination_convert (aff_inv, uutype);
+    aff_combination_convert (aff_inv, uutype, at);
 
   aff_combination_scale (aff_var, rat);
   return true;
@@ -8340,6 +8340,8 @@ tree_ssa_iv_optimize (void)
   tree_ssa_iv_optimize_init (&data);
   mark_ssa_maybe_undefs ();
 
+  enable_ranger (cfun, false);
+
   /* Optimize the loops starting with the innermost ones.  */
   for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
@@ -8351,6 +8353,8 @@ tree_ssa_iv_optimize (void)
 
       tree_ssa_iv_optimize_loop (&data, loop, toremove);
     }
+
+  disable_ranger (cfun);
 
   /* Remove eliminated IV defs.  */
   release_defs_bitset (toremove);

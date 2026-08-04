@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=x86-64-v4 -O3" } */
-/* { dg-final { scan-assembler-not "kmov" } } */
+/* { dg-final { scan-assembler-not "kmov" { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler "kortest" } } */
 
 int

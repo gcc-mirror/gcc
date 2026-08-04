@@ -20,8 +20,8 @@ f (unsigned n)
   for(k = 5;k <= n;k += 5)
     g();
 
-  /* So we need the following loop, instead.  */
-  for(k = 4;k <= n;k += 5) /* { dg-missed "missed loop optimization: niters analysis .*" } */
+  /* Ranger can also discharge the assumptions for this loop.  */
+  for(k = 4;k <= n;k += 5)
     g();
   
   for(k = 15;k >= n;k--) /* { dg-missed "missed loop optimization: niters analysis .*" } */
