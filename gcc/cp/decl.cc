@@ -6608,15 +6608,15 @@ start_decl (const cp_declarator *declarator,
       && !processing_template_decl
       && DECL_RESULT (decl)
       && is_auto (TREE_TYPE (DECL_RESULT (decl))))
-    for (tree ca = get_fn_contract_specifiers (decl); ca; ca = TREE_CHAIN (ca))
-      if (POSTCONDITION_P (CONTRACT_STATEMENT (ca))
-	  && POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (ca)))
-	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "postconditions with deduced result name types must only"
-		    " appear on function definitions");
-	  return error_mark_node;
-	}
+    if (tree specs = get_fn_contract_specifiers (decl))
+      for (tree ca : tree_vec_range (specs))
+	if (POSTCONDITION_P (ca) && POSTCONDITION_IDENTIFIER (ca))
+	  {
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "postconditions with deduced result name types must only"
+		      " appear on function definitions");
+	    return error_mark_node;
+	  }
   /* Save the DECL_INITIAL value in case it gets clobbered to assist
      with attribute validation.  */
   initial = DECL_INITIAL (decl);
@@ -15741,11 +15741,12 @@ grokdeclarator (const cp_declarator *declarator,
 		  returned_attrs = attr_chainon (returned_attrs, att);
 	      }
 
-	    /* Actually apply the contract attributes to the declaration.  */
+	    /* Actually apply the contract specifiers to the declaration.  */
 	    if (flag_contracts)
 	      contract_specifiers
-		= attr_chainon (contract_specifiers,
-				declarator->u.function.contract_specifiers);
+		= contract_specifiers_concat
+		    (contract_specifiers,
+		     declarator->u.function.contract_specifiers);
 
 	    if (attrs)
 	      /* [dcl.fct]/2:

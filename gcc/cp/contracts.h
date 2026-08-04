@@ -83,21 +83,13 @@ enum detection_mode : uint16_t {
 #define POSTCONDITION_P(NODE)          \
   (TREE_CODE (NODE) == POSTCONDITION_STMT)
 
+/* The contract specifiers of a function are held in a TREE_VEC, each element
+   of which is a PRECONDITION_STMT or a POSTCONDITION_STMT.  A function with
+   no contracts has NULL_TREE rather than an empty vector.  */
+
 /* True iff the FUNCTION_DECL NODE currently has any contracts.  */
 #define DECL_HAS_CONTRACTS_P(NODE) \
   (get_fn_contract_specifiers (NODE) != NULL_TREE)
-
-/* The wrapper of the original source location of a list of contracts.  */
-#define CONTRACT_SOURCE_LOCATION_WRAPPER(NODE) \
-  (TREE_PURPOSE (TREE_VALUE (NODE)))
-
-/* The original source location of a list of contracts.  */
-#define CONTRACT_SOURCE_LOCATION(NODE) \
-  (EXPR_LOCATION (CONTRACT_SOURCE_LOCATION_WRAPPER (NODE)))
-
-/* The actual code _STMT for a contract specifier.  */
-#define CONTRACT_STATEMENT(NODE) \
-  (TREE_VALUE (TREE_VALUE (NODE)))
 
 /* The parsed condition of the contract.  */
 #define CONTRACT_CONDITION(NODE) \
@@ -157,7 +149,8 @@ enum contract_match_kind
 extern void init_contracts			(void);
 
 extern tree grok_contract			(tree, tree, tree, cp_expr, location_t);
-extern tree finish_contract_specifier 		(tree, tree);
+extern tree build_contract_specifiers		(vec<tree, va_gc> *);
+extern tree contract_specifiers_concat		(tree, tree);
 extern tree finish_contract_condition		(cp_expr);
 extern void update_late_contract		(tree, tree, cp_expr);
 extern void check_redecl_contract		(tree, tree);
