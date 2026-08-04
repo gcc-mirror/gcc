@@ -1570,7 +1570,7 @@ expand_const_vector_single_step_npatterns (rtx target, rvv_builder *builder)
 	  rtx tmp2 = gen_reg_rtx (builder->mode ());
 	  rtx step
 	    = simplify_binary_operation (MINUS, builder->inner_mode (),
-					 builder->elt (v.npatterns()),
+					 builder->elt (builder->npatterns ()),
 					 builder->elt (0));
 	  expand_vec_series (tmp2, const0_rtx, step, tmp1);
 
