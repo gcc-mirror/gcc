@@ -9286,8 +9286,8 @@ bundling (FILE *dump, int verbose, rtx_insn *prev_head_insn, rtx_insn *tail)
 	   curr_state = curr_state->next)
 	if (verbose >= 2 && dump)
 	  {
-	    /* This structure is taken from generated code of the
-	       pipeline hazard recognizer (see file insn-attrtab.cc).
+	    /* This structure is taken from the generated pipeline hazard
+	       recognizer code.
 	       Please don't forget to change the structure if a new
 	       automaton is added to .md file.  */
 	    struct DFA_chip

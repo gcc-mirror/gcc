@@ -24,8 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config/vxworks-dummy.h"
 
-/* Unfortunately, insn-attrtab.cc doesn't include insn-codes.h.  We can't
-   include it here, because bconfig.h is also included by gencodes.cc .  */
+/* Unfortunately, generated attribute code does not include insn-codes.h.
+   We can't include it here, because bconfig.h is also included by
+   gencodes.cc .  */
 /* ??? No longer true.  */
 extern int code_for_indirect_jump_scratch;
 

@@ -314,16 +314,17 @@ static rtx min_fn		   (rtx);
    functions and tables.  This made insn-attrtab.cc _the_ bottle-neck in
    a parallel build, and even made it impossible to build GCC on machines
    with relatively small RAM space (PR other/29442).  Therefore, the
-   attribute functions/tables are now written out to three separate
-   files: all "*insn_default_latency" functions go to LATENCY_FILE_NAME,
-   all "*internal_dfa_insn_code" functions go to DFA_FILE_NAME, and the
-   rest goes to ATTR_FILE_NAME.  */
+   attribute functions/tables are now written out to separate files: all
+   "*insn_default_latency" functions go to the latency output, all
+   "*internal_dfa_insn_code" functions go to the DFA output, and the rest is
+   distributed across the attribute outputs the way genemit and genrecog
+   distribute their output.  */
 
-static const char *attr_file_name = NULL;
-static const char *dfa_file_name = NULL;
-static const char *latency_file_name = NULL;
+/* The files produced by the generator.  */
+static auto_vec<generator_output, 10> output_files;
 
-static FILE *attr_file, *dfa_file, *latency_file;
+static FILE *dfa_file, *latency_file;
+static const char *dfa_file_name, *latency_file_name;
 
 /* Hash table for sharing RTL and strings.  */
 
@@ -5242,6 +5243,9 @@ make_automaton_attrs (void)
   tune_attr = find_tune_attr (all_insn_reservs->condexp);
   if (tune_attr != NULL)
     {
+      /* The function pointers and init_sched_attrs go to the first
+	 attribute file.  */
+      FILE *attr_file = output_files[0].file;
       rtx *condexps = XNEWVEC (rtx, n_insn_reservs * 3);
       struct attr_value *val;
       bool first = true;
@@ -5467,34 +5471,57 @@ write_header (FILE *outf)
   fprintf (outf, "#define operands recog_data.operand\n\n");
 }
 
-static FILE *
-open_outfile (const char *file_name)
-{
-  FILE *outf;
-  outf = fopen (file_name, "w");
-  if (! outf)
-    fatal ("cannot open file %s: %s", file_name, xstrerror (errno));
-  write_header (outf);
-  return outf;
-}
-
 static bool
 handle_arg (const char *arg)
 {
   switch (arg[1])
     {
     case 'A':
-      attr_file_name = &arg[2];
+      add_generator_output (output_files, &arg[2], true);
       return true;
     case 'D':
+      if (dfa_file_name)
+	fatal ("option -D specified more than once");
       dfa_file_name = &arg[2];
       return true;
     case 'L':
+      if (latency_file_name)
+	fatal ("option -L specified more than once");
       latency_file_name = &arg[2];
       return true;
     default:
       return false;
     }
+}
+
+/* Return a measure of how much text write_attr_get will produce for ATTR.
+   For a derived attribute that is the length of its lookup table, and
+   otherwise the number of case labels, since find_most_used turns the
+   remaining value into the default arm.  */
+
+static int
+attr_output_size (class attr_desc *attr)
+{
+  if (attr->derived_from)
+    return attr->derived_from->num_values;
+
+  struct attr_value *common = find_most_used (attr);
+  int size = 0;
+  for (struct attr_value *av = attr->first_value; av; av = av->next)
+    if (av != common)
+      size += av->num_insns;
+  return size;
+}
+
+/* Sort attributes so that the ones producing the most text come first.  */
+
+static int
+cmp_attr_output_size (const void *a, const void *b)
+{
+  class attr_desc *aa = *(class attr_desc *const *) a;
+  class attr_desc *bb = *(class attr_desc *const *) b;
+  int diff = attr_output_size (bb) - attr_output_size (aa);
+  return diff ? diff : strcmp (aa->name, bb->name);
 }
 
 int
@@ -5509,9 +5536,24 @@ main (int argc, const char **argv)
   if (!init_rtx_reader_args_cb (argc, argv, handle_arg))
     return FATAL_EXIT_CODE;
 
-  attr_file = open_outfile (attr_file_name);
-  dfa_file = open_outfile (dfa_file_name);
-  latency_file = open_outfile (latency_file_name);
+  if (output_files.is_empty ())
+    fatal ("no -A output file specified");
+  if (!dfa_file_name)
+    fatal ("no -D output file specified");
+  if (!latency_file_name)
+    fatal ("no -L output file specified");
+
+  /* Add the DFA and latency outputs after the attribute outputs, so that
+     the attribute outputs occupy the first entries of OUTPUT_FILES.  */
+  unsigned int dfa_index
+    = add_generator_output (output_files, dfa_file_name, false);
+  unsigned int latency_index
+    = add_generator_output (output_files, latency_file_name, false);
+  open_generator_outputs (output_files);
+  dfa_file = output_files[dfa_index].file;
+  latency_file = output_files[latency_index].file;
+  for (generator_output &output : output_files)
+    write_header (output.file);
 
   obstack_init (hash_obstack);
   obstack_init (temp_obstack);
@@ -5628,50 +5670,56 @@ main (int argc, const char **argv)
   /* Perform any possible optimizations to speed up compilation.  */
   optimize_attrs (num_insn_codes);
 
-  /* Now write out all the `gen_attr_...' routines.  Do these before the
-     special routines so that they get defined before they are used.  */
+  /* Now write out all the `get_attr_...' routines.  The DFA and latency
+     routines go to their own files; the rest are distributed across the
+     attribute files.  They only refer to each other through the extern
+     declarations in insn-attr.h and insn-attr-common.h.  */
 
+  auto_vec<class attr_desc *> to_write;
   for (i = 0; i < MAX_ATTRS_INDEX; i++)
     for (attr = attrs[i]; attr; attr = attr->next)
-      {
-        FILE *outf;
+      if (!attr->is_special && !attr->is_const)
+	to_write.safe_push (attr);
 
-	if (startswith(attr->name, "*internal_dfa_insn_code"))
-	  outf = dfa_file;
-	else if (startswith (attr->name, "*insn_default_latency"))
-	  outf = latency_file;
-	else
-	  outf = attr_file;
+  /* Give choose_output the largest functions first.  It assigns each one to
+     the shortest output so far, and feeding it an arbitrary order lets a
+     late large function land on an already full partition.  Attribute
+     functions differ in size by two orders of magnitude, so that happens
+     easily.  */
+  to_write.qsort (cmp_attr_output_size);
 
-	if (! attr->is_special && ! attr->is_const)
-	  write_attr_get (outf, attr);
-      }
+  for (class attr_desc *a : to_write)
+    {
+      FILE *outf;
+
+      if (startswith (a->name, "*internal_dfa_insn_code"))
+	outf = dfa_file;
+      else if (startswith (a->name, "*insn_default_latency"))
+	outf = latency_file;
+      else
+	outf = choose_output (output_files);
+
+      write_attr_get (outf, a);
+    }
 
   /* Write out delay eligibility information, if DEFINE_DELAY present.
      (The function to compute the number of delay slots will be written
      below.)  */
-  write_eligible_delay (attr_file, "delay");
+  write_eligible_delay (choose_output (output_files), "delay");
   if (have_annul_true)
-    write_eligible_delay (attr_file, "annul_true");
+    write_eligible_delay (choose_output (output_files), "annul_true");
   else
-    write_dummy_eligible_delay (attr_file, "annul_true");
+    write_dummy_eligible_delay (choose_output (output_files), "annul_true");
   if (have_annul_false)
-    write_eligible_delay (attr_file, "annul_false");
+    write_eligible_delay (choose_output (output_files), "annul_false");
   else
-    write_dummy_eligible_delay (attr_file, "annul_false");
+    write_dummy_eligible_delay (choose_output (output_files), "annul_false");
 
   /* Write out constant delay slot info.  */
-  write_const_num_delay_slots (attr_file);
+  write_const_num_delay_slots (choose_output (output_files));
 
-  write_length_unit_log (attr_file);
+  write_length_unit_log (choose_output (output_files));
 
-  if (fclose (attr_file) != 0)
-    fatal ("cannot close file %s: %s", attr_file_name, xstrerror (errno));
-  if (fclose (dfa_file) != 0)
-    fatal ("cannot close file %s: %s", dfa_file_name, xstrerror (errno));
-  if (fclose (latency_file) != 0)
-    fatal ("cannot close file %s: %s", latency_file_name, xstrerror (errno));
-
-  return SUCCESS_EXIT_CODE;
+  return (close_generator_outputs (output_files)
+	  ? SUCCESS_EXIT_CODE : FATAL_EXIT_CODE);
 }
-

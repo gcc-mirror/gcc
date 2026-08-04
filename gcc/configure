@@ -1882,8 +1882,8 @@ Optional Packages:
                           Set the number of partitions to make for gimple and
                           generic when splitting match.pd. [default=10]
   --with-insnemit-partitions=num
-                          Set the number of partitions of insn-emit.cc for
-                          genemit and genrecog to create. [default=10]
+                          Set the number of partitions used by genemit,
+                          genrecog and genattrtab. [default=10]
   --with-dwarf2           force the default debug format to be DWARF 2 (or
                           later)
   --with-specs=SPECS      add SPECS to driver command-line processing
@@ -7907,7 +7907,8 @@ fi
 
 
 
-# Specify the number of splits of insn-emit.cc and insn-recog.cc to generate.
+# Specify the number of output partitions used by the machine-description
+# generators.
 
 # Check whether --with-insnemit-partitions was given.
 if test "${with_insnemit_partitions+set}" = set; then :
@@ -21921,7 +21922,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21924 "configure"
+#line 21925 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22027,7 +22028,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22030 "configure"
+#line 22031 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
