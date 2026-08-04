@@ -138,47 +138,34 @@ is_linear_load_p (load_permutation_t loads)
   if (loads.length() == 0)
     return PERM_UNKNOWN;
 
-  unsigned load, i;
-  complex_perm_kinds_t candidates[4]
-    = { PERM_ODDODD
-      , PERM_EVENEVEN
-      , PERM_EVENODD
-      , PERM_ODDEVEN
-      };
+  if (loads.length () == 1)
+    return loads[0] == 0 ? PERM_EVENEVEN : PERM_ODDODD;
 
-  int valid_patterns = 4;
-  FOR_EACH_VEC_ELT (loads, i, load)
+  vec_perm_builder builder;
+  builder.new_vector (loads.length (), loads.length (), 1);
+  for (unsigned load : loads)
     {
-      unsigned adj_load = load % 2;
-      if (candidates[0] != PERM_UNKNOWN && adj_load != 1)
-	{
-	  candidates[0] = PERM_UNKNOWN;
-	  valid_patterns--;
-	}
-      if (candidates[1] != PERM_UNKNOWN && adj_load != 0)
-	{
-	  candidates[1] = PERM_UNKNOWN;
-	  valid_patterns--;
-	}
-      if (candidates[2] != PERM_UNKNOWN && load != i)
-	{
-	  candidates[2] = PERM_UNKNOWN;
-	  valid_patterns--;
-	}
-      if (candidates[3] != PERM_UNKNOWN
-	  && load != (i % 2 == 0 ? i + 1 : i - 1))
-	{
-	  candidates[3] = PERM_UNKNOWN;
-	  valid_patterns--;
-	}
-
-      if (valid_patterns == 0)
+      if (load >= loads.length ())
 	return PERM_UNKNOWN;
+      builder.quick_push (load);
     }
 
-  for (i = 0; i < sizeof(candidates); i++)
-    if (candidates[i] != PERM_UNKNOWN)
-      return candidates[i];
+  vec_perm_indices indices (builder, 1, loads.length ());
+
+  if (indices.series_p (0, 2, 1, 2)
+      && indices.series_p (1, 2, 1, 2))
+    return PERM_ODDODD;
+
+  if (indices.series_p (0, 2, 0, 2)
+      && indices.series_p (1, 2, 0, 2))
+    return PERM_EVENEVEN;
+
+  if (indices.series_p (0, 1, 0, 1))
+    return PERM_EVENODD;
+
+  if (indices.series_p (0, 2, 1, 2)
+      && indices.series_p (1, 2, 0, 2))
+    return PERM_ODDEVEN;
 
   return PERM_UNKNOWN;
 }
