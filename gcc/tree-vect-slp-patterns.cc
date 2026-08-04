@@ -853,23 +853,24 @@ compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
 }
 
 
-/* Check to see if the operands to two multiplies, 2 each in LEFT_OP and
-   RIGHT_OP match a complex multiplication  or complex multiply-and-accumulate
-   or complex multiply-and-subtract pattern.  Do this using the permute cache
-   PERM_CACHE and the combination compatibility list COMPAT_CACHE.  If
-   the operation is successful the matching operands are returned in OPS and
-   _STATUS indicates if the operation matched includes a conjugate of one of the
-   operands.  If the operation succeeds True is returned, otherwise False and
-   the values in ops are meaningless.  */
+/* Check to see if the operands to two multiplies, 2 each in ALL_OPS, match
+   a complex multiplication or complex multiply-and-accumulate or complex
+   multiply-and-subtract pattern.  Do this using the permute cache PERM_CACHE
+   and the combination compatibility list COMPAT_CACHE.  If the operation is
+   successful the matching operands are returned in OPS and _STATUS indicates
+   if the operation matched includes a conjugate of one of the operands.  If
+   the operation succeeds True is returned, otherwise False and the values in
+   ops are meaningless.  */
 static inline bool
 vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
 			      slp_compat_nodes_map_t *compat_cache,
-			      const vec<slp_tree> &left_op,
-			      const vec<slp_tree> &right_op,
-			      bool subtract, vec<slp_tree> &ops,
+			      const slp_tree *all_ops,
+			      const unsigned *op_index, bool subtract,
+			      unsigned perm, vec<slp_tree> &ops,
 			      enum _conj_status *_status)
 {
   enum _conj_status stats = CONJ_NONE;
+  gcc_assert (perm < 2);
 
   /* The complex operations can occur in two layouts and two permute sequences
      so declare them and re-use them.  */
@@ -890,19 +891,18 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
       , { { 0, 1 }, { 1, 0 }, { 0, 0 }, { 1, 1 } }
       };
 
-  /* Default to style and perm 0, most operations use this one.  */
+  /* Default to style 0, most operations use this one.  */
   int style = 0;
-  int perm = subtract ? 1 : 0;
+
+  /* Create the combined inputs after remapping.  */
+  ops.create (4);
+  for (unsigned i = 0; i < 4; ++i)
+    ops.quick_push (all_ops[op_index[i]]);
 
   /* Check if we have a negate operation, if so absorb the node and continue
      looking.  */
-  bool neg0 = vect_match_expression_p (right_op[0], NEGATE_EXPR);
-  bool neg1 = vect_match_expression_p (right_op[1], NEGATE_EXPR);
-
-  /* Create the combined inputs after remapping and flattening.  */
-  ops.create (4);
-  ops.safe_splice (left_op);
-  ops.safe_splice (right_op);
+  bool neg0 = vect_match_expression_p (ops[2], NEGATE_EXPR);
+  bool neg1 = vect_match_expression_p (ops[3], NEGATE_EXPR);
 
   /* Determine which style we're looking at.  We only have different ones
      whenever a conjugate is involved.  */
@@ -910,14 +910,14 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
     ;
   else if (neg0)
     {
-      ops[2] = SLP_TREE_CHILDREN (right_op[0])[0];
+      ops[2] = SLP_TREE_CHILDREN (ops[2])[0];
       stats = CONJ_FST;
       if (subtract)
 	perm = 0;
     }
   else if (neg1)
     {
-      ops[3] = SLP_TREE_CHILDREN (right_op[1])[0];
+      ops[3] = SLP_TREE_CHILDREN (ops[3])[0];
       stats = CONJ_SND;
       perm = 1;
     }
@@ -940,6 +940,52 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
 				     cq[perm][1])
 	 && compatible_complex_nodes_p (compat_cache, op2, cq[perm][2], op3,
 					cq[perm][3]);
+}
+
+/* Try to validate LEFT_OP and RIGHT_OP as the operands of a complex
+   multiplication.  Since MULT_EXPR is commutative, try all combinations of
+   swapping the operands of each multiplication and both orders of the two
+   multiplies.  If a match is found, set OPS and STATUS for the matching
+   order.  */
+
+static inline bool
+vect_validate_multiplication_commutative (slp_tree_to_load_perm_map_t *perm_cache,
+					  slp_compat_nodes_map_t *compat_cache,
+					  vec<slp_tree> &left_op,
+					  vec<slp_tree> &right_op,
+					  bool subtract, vec<slp_tree> &ops,
+					  enum _conj_status *status)
+{
+  unsigned perm = subtract ? 1 : 0;
+  static const unsigned op_indices[][4] = {
+    { 0, 1, 2, 3 }, /* (L0 * L1), (R0 * R1).  */
+    { 0, 1, 3, 2 }, /* (L0 * L1), (R1 * R0).  */
+    { 1, 0, 2, 3 }, /* (L1 * L0), (R0 * R1).  */
+    { 1, 0, 3, 2 }, /* (L1 * L0), (R1 * R0).  */
+    { 2, 3, 0, 1 }, /* (R0 * R1), (L0 * L1).  */
+    { 2, 3, 1, 0 }, /* (R0 * R1), (L1 * L0).  */
+    { 3, 2, 0, 1 }, /* (R1 * R0), (L0 * L1).  */
+    { 3, 2, 1, 0 }, /* (R1 * R0), (L1 * L0).  */
+  };
+
+  /* The first four entries only swap operands within each MULT_EXPR.
+     The remaining entries also swap the two product terms, which is not
+     valid for plain subtraction.  */
+  unsigned nperms = subtract ? 4 : ARRAY_SIZE (op_indices);
+  slp_tree all_ops[4] = { left_op[0], left_op[1], right_op[0], right_op[1] };
+  for (unsigned i = 0; i < nperms; ++i)
+    {
+      auto_vec<slp_tree> trial_ops;
+      if (vect_validate_multiplication (perm_cache, compat_cache, all_ops,
+					op_indices[i], subtract, perm,
+					trial_ops, status))
+	{
+	  ops.safe_splice (trial_ops);
+	  return true;
+	}
+    }
+
+  return false;
 }
 
 /* This function combines two nodes containing only even and only odd lanes
@@ -1088,17 +1134,10 @@ complex_mul_pattern::matches (complex_operation_t op,
 
   enum _conj_status status;
   auto_vec<slp_tree> res_ops;
-  if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
-				     right_op, false, res_ops, &status))
-    {
-      /* Try swapping the order and re-trying since multiplication is
-	 commutative.  */
-      std::swap (left_op[0], left_op[1]);
-      std::swap (right_op[0], right_op[1]);
-      if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
-					 right_op, false, res_ops, &status))
-	return IFN_LAST;
-    }
+  if (!vect_validate_multiplication_commutative (perm_cache, compat_cache,
+						 left_op, right_op, false,
+						 res_ops, &status))
+    return IFN_LAST;
 
   if (status == CONJ_NONE)
     {
@@ -1319,18 +1358,10 @@ complex_fms_pattern::matches (complex_operation_t op,
 
   enum _conj_status status;
   auto_vec<slp_tree> res_ops;
-  if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
-				     left_op, true, res_ops, &status))
-    {
-      /* Try swapping the order and re-trying since multiplication is
-	 commutative.  */
-      std::swap (left_op[0], left_op[1]);
-      std::swap (right_op[0], right_op[1]);
-      auto_vec<slp_tree> res_ops;
-      if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
-					 left_op, true, res_ops, &status))
-	return IFN_LAST;
-    }
+  if (!vect_validate_multiplication_commutative (perm_cache, compat_cache,
+						 right_op, left_op, true,
+						 res_ops, &status))
+    return IFN_LAST;
 
   if (status == CONJ_NONE)
     ifn = IFN_COMPLEX_FMS;
