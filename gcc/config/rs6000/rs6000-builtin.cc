@@ -3504,6 +3504,10 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 
       // 0: Boolean return (Output)
       struct expand_operand ops[8];
+      // Make sure we always have a place for bool operand.
+      if (target == const0_rtx || !target)
+	target = gen_reg_rtx (SImode);
+
       create_output_operand (&ops[0], target, SImode);
 
       // 1: Old value return (Output)
