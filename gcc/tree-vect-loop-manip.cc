@@ -464,6 +464,19 @@ vect_iv_increment_position (edge loop_exit, gimple_stmt_iterator *bsi,
   *insert_after = false;
 }
 
+/* If this is a loop where the latch condition should be rewritten to reflect
+   a control flow change from a while-do to a do-while loop.  */
+
+static bool
+vect_use_loop_latch_condition_p (loop_vec_info loop_vinfo)
+{
+  return (loop_vinfo
+	  && LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo)
+	  && LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+	  && (LOOP_VINFO_PARTIAL_VECTORS_STYLE (loop_vinfo)
+	      != vect_partial_vectors_avx512));
+}
+
 /* Helper for vect_set_loop_condition_partial_vectors.  Generate definitions
    for all the rgroup controls in RGC and return a control that is nonzero
    when the loop needs to iterate.  Add any new preheader statements to
@@ -744,6 +757,13 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 					  bias_tree);
 	}
 
+      /* A do-while loop always executes the body once, as such the limit
+	 the end counter should be lowered by 1 iteration.  */
+      if (vect_use_loop_latch_condition_p (loop_vinfo))
+	this_test_limit = gimple_build (preheader_seq, MINUS_EXPR,
+					compare_type, this_test_limit,
+					build_one_cst (compare_type));
+
       /* Create the initial control.  First include all items that
 	 are within the loop limit.  */
       tree init_ctrl = NULL_TREE;
@@ -968,7 +988,62 @@ vect_set_loop_condition_partial_vectors (class loop *loop, edge exit_edge,
       cond_stmt
 	= gimple_build_cond (code, test_ctrl, zero_ctrl, NULL_TREE, NULL_TREE);
     }
-  gsi_insert_before (&loop_cond_gsi, cond_stmt, GSI_SAME_STMT);
+  edge latch_exit_edge = NULL;
+  /* Convert the loop into a do-while form similar to what ch_vect would have
+     done.  We know that after the checks and peeling that we have at least one
+     iteration to perform of the loop because the loop is PEELED.  A PEELED loop
+     has the increment exit before the early ones, i.e. it's a do-while loop but
+     if we materialize the IV edge in that place we are essentially checking one
+     iteration ahead so we exit early.  Instead when using masks and the loop
+     is PEELED we remove the existing loop latch and make it a fall through
+     edge and place the latch back to the end of the loop.  So effectively
+     transform:
+
+     header
+       |
+     latch
+       |
+     body
+       |
+     branch to header
+
+     into
+
+     header
+       |
+     body
+       |
+     newlatch
+       |
+     branch to header
+
+     because the conditions in the pre-header makes it safe to do so for some
+     cases.  */
+  if (vect_use_loop_latch_condition_p (loop_vinfo))
+    {
+      basic_block latch = loop->latch;
+      edge latch_e = single_succ_edge (latch);
+      int exit_flags = exit_edge->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+
+      latch_e->flags &= ~(EDGE_FALLTHRU | EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
+      latch_e->flags |= (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE) ^ exit_flags;
+      latch_exit_edge = make_edge (latch, exit_edge->dest, exit_flags);
+      latch_exit_edge->probability = exit_edge->probability;
+      latch_exit_edge->count () = exit_edge->count ();
+      copy_phi_arg_into_existing_phi (exit_edge, latch_exit_edge);
+      gimple_stmt_iterator latch_gsi = gsi_last_bb (latch);
+      gsi_insert_after (&latch_gsi, cond_stmt, GSI_NEW_STMT);
+      LOOP_VINFO_MAIN_EXIT (loop_vinfo) = latch_exit_edge;
+
+      gcond *old_cond = as_a <gcond *> (gsi_stmt (loop_cond_gsi));
+      if (exit_edge->flags & EDGE_TRUE_VALUE)
+	gimple_cond_make_false (old_cond);
+      else
+	gimple_cond_make_true (old_cond);
+      update_stmt (old_cond);
+    }
+  else
+    gsi_insert_before (&loop_cond_gsi, cond_stmt, GSI_SAME_STMT);
 
   /* The loop iterates (NITERS - 1) / VF + 1 times.
      Subtract one from this to get the latch count.  */
@@ -993,7 +1068,7 @@ vect_set_loop_condition_partial_vectors (class loop *loop, edge exit_edge,
 	}
        else
 	assign = gimple_build_assign (final_iv, orig_niters);
-      gsi_insert_on_edge_immediate (exit_edge, assign);
+      gsi_insert_on_edge_immediate (LOOP_VINFO_MAIN_EXIT (loop_vinfo), assign);
     }
 
   return cond_stmt;
@@ -1470,11 +1545,14 @@ vect_set_loop_condition (class loop *loop, edge loop_e, loop_vec_info loop_vinfo
 
   /* Remove old loop exit test.  */
   stmt_vec_info orig_cond_info;
-  if (loop_vinfo
-      && (orig_cond_info = loop_vinfo->lookup_stmt (orig_cond)))
-    loop_vinfo->remove_stmt (orig_cond_info);
-  else
-    gsi_remove (&loop_cond_gsi, true);
+  if (!vect_use_loop_latch_condition_p (loop_vinfo))
+    {
+      if (loop_vinfo
+	  && (orig_cond_info = loop_vinfo->lookup_stmt (orig_cond)))
+	loop_vinfo->remove_stmt (orig_cond_info);
+      else
+	gsi_remove (&loop_cond_gsi, true);
+    }
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "New loop exit condition: %G",
