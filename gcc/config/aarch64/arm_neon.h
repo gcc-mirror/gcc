@@ -1031,48 +1031,6 @@ vqrdmulhq_s32 (int32x4_t __a, int32x4_t __b)
 
 /* Start of temporary inline asm implementations.  */
 
-__extension__ extern __inline int8x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaba_s8 (int8x8_t __a, int8x8_t __b, int8x8_t __c)
-{
-  return __builtin_aarch64_sabav8qi (__a, __b, __c);
-}
-
-__extension__ extern __inline int16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaba_s16 (int16x4_t __a, int16x4_t __b, int16x4_t __c)
-{
-  return __builtin_aarch64_sabav4hi (__a, __b, __c);
-}
-
-__extension__ extern __inline int32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaba_s32 (int32x2_t __a, int32x2_t __b, int32x2_t __c)
-{
-  return __builtin_aarch64_sabav2si (__a, __b, __c);
-}
-
-__extension__ extern __inline uint8x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaba_u8 (uint8x8_t __a, uint8x8_t __b, uint8x8_t __c)
-{
-  return __builtin_aarch64_uabav8qi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaba_u16 (uint16x4_t __a, uint16x4_t __b, uint16x4_t __c)
-{
-  return __builtin_aarch64_uabav4hi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaba_u32 (uint32x2_t __a, uint32x2_t __b, uint32x2_t __c)
-{
-  return __builtin_aarch64_uabav2si_uuuu (__a, __b, __c);
-}
-
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabal_high_s8 (int16x8_t __a, int8x16_t __b, int8x16_t __c)
@@ -1157,90 +1115,6 @@ vabal_u32 (uint64x2_t __a, uint32x2_t __b, uint32x2_t __c)
   return __builtin_aarch64_uabalv2si_uuuu (__a, __b, __c);
 }
 
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabaq_s8 (int8x16_t __a, int8x16_t __b, int8x16_t __c)
-{
-  return __builtin_aarch64_sabav16qi (__a, __b, __c);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabaq_s16 (int16x8_t __a, int16x8_t __b, int16x8_t __c)
-{
-  return __builtin_aarch64_sabav8hi (__a, __b, __c);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabaq_s32 (int32x4_t __a, int32x4_t __b, int32x4_t __c)
-{
-  return __builtin_aarch64_sabav4si (__a, __b, __c);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabaq_u8 (uint8x16_t __a, uint8x16_t __b, uint8x16_t __c)
-{
-  return __builtin_aarch64_uabav16qi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabaq_u16 (uint16x8_t __a, uint16x8_t __b, uint16x8_t __c)
-{
-  return __builtin_aarch64_uabav8hi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabaq_u32 (uint32x4_t __a, uint32x4_t __b, uint32x4_t __c)
-{
-  return __builtin_aarch64_uabav4si_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline int8x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_s8 (int8x8_t __a, int8x8_t __b)
-{
-  return  __builtin_aarch64_sabdv8qi (__a, __b);
-}
-
-__extension__ extern __inline int16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_s16 (int16x4_t __a, int16x4_t __b)
-{
-  return  __builtin_aarch64_sabdv4hi (__a, __b);
-}
-
-__extension__ extern __inline int32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_s32 (int32x2_t __a, int32x2_t __b)
-{
-  return  __builtin_aarch64_sabdv2si (__a, __b);
-}
-
-__extension__ extern __inline uint8x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_u8 (uint8x8_t __a, uint8x8_t __b)
-{
-  return  __builtin_aarch64_uabdv8qi_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_u16 (uint16x4_t __a, uint16x4_t __b)
-{
-  return  __builtin_aarch64_uabdv4hi_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_u32 (uint32x2_t __a, uint32x2_t __b)
-{
-  return  __builtin_aarch64_uabdv2si_uuu (__a, __b);
-}
-
 __extension__ extern __inline int16x8_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdl_high_s8 (int8x16_t __a, int8x16_t __b)
@@ -1323,48 +1197,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdl_u32 (uint32x2_t __a, uint32x2_t __b)
 {
   return __builtin_aarch64_uabdlv2si_uuu (__a, __b);
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_s8 (int8x16_t __a, int8x16_t __b)
-{
-  return  __builtin_aarch64_sabdv16qi (__a, __b);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_s16 (int16x8_t __a, int16x8_t __b)
-{
-  return  __builtin_aarch64_sabdv8hi (__a, __b);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_s32 (int32x4_t __a, int32x4_t __b)
-{
-  return  __builtin_aarch64_sabdv4si (__a, __b);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_u8 (uint8x16_t __a, uint8x16_t __b)
-{
-  return  __builtin_aarch64_uabdv16qi_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_u16 (uint16x8_t __a, uint16x8_t __b)
-{
-  return  __builtin_aarch64_uabdv8hi_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_u32 (uint32x4_t __a, uint32x4_t __b)
-{
-  return  __builtin_aarch64_uabdv4si_uuu (__a, __b);
 }
 
 __extension__ extern __inline int16_t
@@ -4463,51 +4295,6 @@ vtbx2_p8 (poly8x8_t __r, poly8x8x2_t __tab, uint8x8_t __idx)
 /* End of temporary inline asm.  */
 
 /* Start of optimal implementations in approved order.  */
-
-/* vabd.  */
-
-__extension__ extern __inline float32_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabds_f32 (float32_t __a, float32_t __b)
-{
-  return __builtin_aarch64_fabdsf (__a, __b);
-}
-
-__extension__ extern __inline float64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdd_f64 (float64_t __a, float64_t __b)
-{
-  return __builtin_aarch64_fabddf (__a, __b);
-}
-
-__extension__ extern __inline float32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_f32 (float32x2_t __a, float32x2_t __b)
-{
-  return __builtin_aarch64_fabdv2sf (__a, __b);
-}
-
-__extension__ extern __inline float64x1_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_f64 (float64x1_t __a, float64x1_t __b)
-{
-  return (float64x1_t) {vabdd_f64 (vget_lane_f64 (__a, 0),
-				   vget_lane_f64 (__b, 0))};
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_f32 (float32x4_t __a, float32x4_t __b)
-{
-  return __builtin_aarch64_fabdv4sf (__a, __b);
-}
-
-__extension__ extern __inline float64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_f64 (float64x2_t __a, float64x2_t __b)
-{
-  return __builtin_aarch64_fabdv2df (__a, __b);
-}
 
 /* ARMv8.1-A intrinsics.  */
 #pragma GCC push_options
@@ -17788,20 +17575,6 @@ vrsqrteq_f16 (float16x8_t __a)
 }
 
 /* ARMv8.2-A FP16 two operands vector intrinsics.  */
-
-__extension__ extern __inline float16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabd_f16 (float16x4_t __a, float16x4_t __b)
-{
-  return __builtin_aarch64_fabdv4hf (__a, __b);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabdq_f16 (float16x8_t __a, float16x8_t __b)
-{
-  return __builtin_aarch64_fabdv8hf (__a, __b);
-}
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))

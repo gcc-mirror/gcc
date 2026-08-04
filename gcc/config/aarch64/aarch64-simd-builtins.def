@@ -187,14 +187,6 @@
   BUILTIN_VDQV_L (UNOP, saddlv, 0, DEFAULT)
   BUILTIN_VDQV_L (UNOPU, uaddlv, 0, DEFAULT)
 
-  /* Implemented by aarch64_<su>abd<mode>.  */
-  BUILTIN_VDQ_BHSI (BINOP, sabd, 0, DEFAULT)
-  BUILTIN_VDQ_BHSI (BINOPU, uabd, 0, DEFAULT)
-
-  /* Implemented by aarch64_<su>aba<mode>.  */
-  BUILTIN_VDQ_BHSI (TERNOP, saba, 0, DEFAULT)
-  BUILTIN_VDQ_BHSI (TERNOPU, uaba, 0, DEFAULT)
-
   BUILTIN_VDQV_L (BINOP, sadalp, 0, DEFAULT)
   BUILTIN_VDQV_L (BINOPU, uadalp, 0, DEFAULT)
 
@@ -791,9 +783,6 @@
 
   /* Implemented by aarch64_ursqrte<mode>.  */
   BUILTIN_VDQ_SI (UNOPU, ursqrte, 0, DEFAULT)
-
-  /* Implemented by fabd<mode>3.  */
-  BUILTIN_VHSDF_HSDF (BINOP, fabd, 3, FP)
 
   /* Implemented by aarch64_faddp<mode>.  */
   BUILTIN_VHSDF (BINOP, faddp, 0, FP)

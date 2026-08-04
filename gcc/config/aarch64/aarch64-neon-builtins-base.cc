@@ -43,6 +43,7 @@
 #include "aarch64-neon-builtins-base.h"
 #include "aarch64-neon-builtins-functions.h"
 #include "gimple-fold.h"
+#include "ssa.h"
 
 namespace aarch64_acle {
 /* Build an asm volatile statement that prevents VALUE from being optimized
@@ -902,6 +903,44 @@ struct gimple_abs : public gimple_function_base
   }
 };
 
+/* Build a tree representing the absolute difference between LHS and RHS.
+   For floating-point types, this is just `ABS (LHS - RHS)`.
+   For integer types, it is `.ABD (LHS, RHS)`.  */
+tree
+build_abs_diff (gimple_folder &f, tree lhs, tree rhs)
+{
+  auto type = TREE_TYPE (lhs);
+
+  if (FLOAT_TYPE_P (type))
+    return fold_build1 (ABS_EXPR, type,
+			f.force_val (fold_build2 (MINUS_EXPR, type, lhs, rhs)));
+
+  auto ret
+    = is_gimple_reg_type (type) ? make_ssa_name (type) : create_tmp_var (type);
+  auto call = gimple_build_call_internal (IFN_ABD, 2, lhs, rhs);
+  gimple_seq_add_stmt_without_update (&f.stmts, call);
+  gimple_call_set_lhs (call, ret);
+  return ret;
+}
+
+template<bool accumulate>
+struct gimple_abs_diff : public gimple_function_base
+{
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto lhs = gimple_call_arg (f.call, accumulate ? 1 : 0);
+    auto rhs = gimple_call_arg (f.call, accumulate ? 2 : 1);
+    auto ret = build_abs_diff (f, lhs, rhs);
+    if (accumulate)
+      {
+	auto acc = gimple_call_arg (f.call, 0);
+	ret = fold_build2 (PLUS_EXPR, TREE_TYPE (acc), acc, ret);
+      }
+
+    return this->maybe_optimization_barrier (f, ret);
+  }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -920,7 +959,9 @@ NEON_FUNCTION (vadd, vaddq, vaddd, gimple_arith, (PLUS_EXPR, PLUS_EXPR, BIT_XOR_
 NEON_FUNCTION (vsub, vsubq, vsubd, gimple_arith, (MINUS_EXPR))
 NEON_FUNCTION (vdiv, vdivq,	   gimple_arith, (RDIV_EXPR))
 NEON_FUNCTION (vneg, vnegq, vnegd, gimple_arith, (NEGATE_EXPR))
-NEON_FUNCTION (vabs, vabsq, vabsd, gimple_abs,)
+NEON_FUNCTION (vabs, vabsq,	   vabsd, gimple_abs,)
+NEON_FUNCTION (vabd, vabdq, vabds, vabdd, gimple_abs_diff<false>,)
+NEON_FUNCTION (vaba, vabaq,		  gimple_abs_diff<true>,)
 
 NEON_FUNCTION (vmul, vmulq,		gimple_arith, (MULT_EXPR))
 NEON_FUNCTION (vmul_n, vmulq_n,		gimple_arith_dup, (MULT_EXPR))

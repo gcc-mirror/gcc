@@ -427,7 +427,7 @@ __extension__ extern __inline float16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vabdh_f16 (float16_t __a, float16_t __b)
 {
-  return __builtin_aarch64_fabdhf (__a, __b);
+  return __builtin_fabs (__a - __b);
 }
 
 __extension__ extern __inline uint16_t

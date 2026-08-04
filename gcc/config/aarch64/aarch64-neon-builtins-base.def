@@ -108,6 +108,18 @@ DEF_NEON_FUNCTION (vabs,  all_signed, ("D0,D0"))
 DEF_NEON_FUNCTION (vabsq, all_signed, ("Q0,Q0"))
 DEF_NEON_FUNCTION (vabs,  sd_float,   ("D0,D0"))
 DEF_NEON_FUNCTION (vabsq, sd_float,   ("Q0,Q0"))
+
+// Absolute difference
+DEF_NEON_FUNCTION (vabds, s_float,     ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vabdd, d_float,     ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vabd,  bhs_integer, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vabdq, bhs_integer, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vabd,  sd_float,    ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vabdq, sd_float,    ("Q0,Q0,Q0"))
+
+// Absolute difference and accumulate
+DEF_NEON_FUNCTION (vaba,  bhs_integer, ("D0,D0,D0,D0"))
+DEF_NEON_FUNCTION (vabaq, bhs_integer, ("Q0,Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
 // Lanewise arithmetic (FP16)
@@ -143,6 +155,10 @@ DEF_NEON_FUNCTION (vnegq, h_float, ("Q0,Q0"))
 // Absolute value
 DEF_NEON_FUNCTION (vabs,  h_float, ("D0,D0"))
 DEF_NEON_FUNCTION (vabsq, h_float, ("Q0,Q0"))
+
+// Absolute difference
+DEF_NEON_FUNCTION (vabd,  h_float, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vabdq, h_float, ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
 // Saturating arithmetic
