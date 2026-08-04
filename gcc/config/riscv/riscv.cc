@@ -13565,6 +13565,11 @@ riscv_subword_address (rtx mem, rtx *aligned_mem, rtx *shift, rtx *mask,
   /* Calculate the shift amount.  */
   emit_move_insn (*shift, gen_rtx_AND (SImode, gen_lowpart (SImode, addr),
 				       gen_int_mode (3, SImode)));
+  if (TARGET_BIG_ENDIAN)
+    emit_move_insn (*shift, gen_rtx_XOR (SImode, *shift,
+					gen_int_mode (GET_MODE (mem) == QImode
+						      ? 3 : 2, SImode)));
+
   emit_move_insn (*shift, gen_rtx_ASHIFT (SImode, *shift,
 					  gen_int_mode (3, SImode)));
 
