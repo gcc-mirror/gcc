@@ -790,3 +790,7 @@
 (define_predicate "ads_extract_size_imm_di"
   (and (match_code "const_int")
 	   (match_test "IN_RANGE (INTVAL (op), 1, 64)")))
+
+(define_predicate "riscv_atomic_memory_operand"
+  (and (match_code "mem")
+       (match_test "register_operand (XEXP (op, 0), Pmode)")))
