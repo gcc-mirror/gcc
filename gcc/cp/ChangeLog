@@ -1,3 +1,30 @@
+2026-08-03  EienMiku  <121539739@qq.com>
+
+	* reflect.cc (get_reflection): Add missing "to" in diagnostic.
+
+2026-08-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126606
+	PR c++/126481
+	* parser.cc (cp_parser_early_parsing_nsdmi): Check
+	MAYBE_CLASS_TYPE_P instead of {}.
+
+2026-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124794
+	* cp-tree.h (baselink_for_fns): Adjust declaration.
+	* parser.cc (cp_parser_reflect_expression): Adjust the call to
+	baselink_for_fns.
+	* reflect.cc (splice): Call baselink_for_fns.
+	* semantics.cc (baselink_for_fns): Add a bool parameter.  If
+	it's true, ignore currently_open_derived_class.
+
+2026-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126546
+	* reflect.cc (get_reflection): Check PACK_INDEX_EXPR instead of
+	PACK_INDEX_P.
+
 2026-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* constexpr.cc (class constexpr_global_ctx): Rename metafns_called

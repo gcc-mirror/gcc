@@ -1,3 +1,51 @@
+2026-08-03  James K. Lowden  <jklowden@cobolworx.com>
+
+	* lexio.cc (skip_quoted_literal): New function.
+	(remove_inline_comment): Use new function.
+
+2026-08-03  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Add OTHER as assign target.
+
+2026-08-03  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cdf.y: Update tokens.
+	* parse.y: Remove TITLE token.
+	* scan.l: Remove scanning for TITLE.
+	* token_names.h: Remove TITLE from token set.
+
+2026-08-03  James K. Lowden  <jklowden@cobolworx.com>
+
+	* scan.l: Remove pattern that potentially matches until EOF.
+	* scan_ante.h (skip_string): Recast in terms of input/unput.
+	(yyinput): Declare function.
+	(yyunput): Declare function.
+	(is_refmod): Recast in terms of input/unput.
+
+2026-08-03  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/119461
+	* genapi.cc (array_of_long_long): Renamed array_of_uint64().
+	(array_of_uint64): Likewise.
+	(parser_compile_ecs): Use array_of_uint64().
+	(parser_compile_dcls): Likewise.
+	(parser_file_add): Likewise.
+	(gg_array_of_file_pointers): Use new cblc_file_pp_type_node;
+	* gengen.cc (gg_get_structure_type_decl): Moved to structs.cc and
+	renamed.
+	* gengen.h (ULONGLONG): #define removed and replaced with UINT64.
+	(UINT64): Likewise.
+	(gg_get_structure_type_decl): Declaration removed.
+	* structs.cc (create_structure_type): New function.
+	(get_structure_type_decl): Renamed version of
+	gg_get_structure_type_decl().
+	(create_cblc_field_t): Cleaned up structure creation.
+	(create_referlet_t): Likewise.
+	(create_refer_t): Likewise.
+	(create_our_type_nodes): Likewise.
+	* structs.h (GTY): New declaration for cblc_file_pp_type_node;
+	* symbols.h (enum cbl_ctype_t): Removed.
+
 2026-08-02  Robert Dubner  <rdubner@symas.com>
 
 	PR cobol/126391

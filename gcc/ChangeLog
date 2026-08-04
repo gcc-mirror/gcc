@@ -1,3 +1,66 @@
+2026-08-03  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/msp430/msp430.cc (msp430_insn_cost): Handle insns with
+	NOOP_MOVE_INSN_CODE.
+
+2026-08-03  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/63387
+	* match.pd: Combine four simplify into one for.
+
+2026-08-03  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	* hwint.h (sext_hwi): Combine duplicated C++ code.
+
+2026-08-03  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.cc (frange::set_nonzero): Implement.
+	(frange::nonzero_p): Implement.
+	(range_tests_excluding): Test set_nonzero and nonzero_p.
+
+2026-08-03  Reshma Roy  <Reshma.Roy@amd.com>
+
+	PR tree-optimization/126466
+	* match.pd: Fix incorrect POPCOUNT identification in the third
+	32-bit Hacker's Delight matcher.
+
+2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126484
+	* config/mips/mips-ftypes.def (MIPS_SI_FTYPE_VOID,
+	MIPS_USI_FTYPE_VOID): Use DEF_MIPS_FTYPE with 0 as
+	first argument rather than 1 and leave out ", VOID" from
+	second argument.
+	* config/mips/mips.cc (MIPS_FTYPE_NAME0): Define.
+	(MIPS_FTYPE_ATYPES0): Define.
+
+2026-08-03  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.h (class frange): Declare set_excluding.
+	* value-range.cc (frange::set_excluding): New.
+	(frange::set): Assert KIND is VR_RANGE or VR_ANTI_RANGE and that the
+	endpoints are not NAN.  Turn a VR_ANTI_RANGE into the two sub-ranges
+	that exclude the point.
+	(frange_float_excluding, range_tests_excluding): New.
+	(range_tests_floats): Call range_tests_excluding.
+	* value-range-storage.cc (frange_storage::get_frange): Return early
+	for VR_VARYING, like irange_storage::get_irange.
+
+2026-08-03  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.h (class frange): Raise MAX_PAIRS to 2.
+	* value-range.cc: Include value-range-storage.h.
+	(real_from_str, range_tests_sub_ranges, range_tests_sub_ranges_nan)
+	(range_tests_sub_ranges_zero, range_tests_sub_ranges_storage): New.
+	(range_tests_floats): Call them, and adjust the disjoint-union test.
+
+2026-08-03  Souradipto Das  <souradiptodas6@gmail.com>
+
+	PR target/126411
+	* config/riscv/riscv-v.cc (shuffle_slide_patterns): Check that
+	the sequence endpoints correspond to OP0's and OP1's expected
+	positions and also reject a second pivot when need_slideup_p is set.
+
 2026-08-02  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR tree-optimization/19832

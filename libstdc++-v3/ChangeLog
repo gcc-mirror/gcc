@@ -1,3 +1,13 @@
+2026-08-03  Tomasz Kamiński  <tkaminsk@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.am: Add time.xml.
+	* doc/Makefile.in: Regenerate.
+	* doc/html/*: Regenerate.
+	* doc/xml/manual/spine.xml: Add time.xml.
+	* doc/xml/manual/time.xml: New file.
+	* doc/html/manual/time.html: New file.
+
 2026-07-31  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/123211

@@ -1,3 +1,72 @@
+2026-08-03  EienMiku  <121539739@qq.com>
+
+	* g++.dg/reflect/expr9.C: Adjust expected diagnostic.
+
+2026-08-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126606
+	PR c++/126481
+	* g++.dg/cpp0x/nsdmi-defer9.C: New test.
+
+2026-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124794
+	* g++.dg/reflect/splice17.C: New test.
+
+2026-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126546
+	* g++.dg/reflect/pack-index1.C: Accept a reflection of a
+	pack-index-specifier.  Reject a reflection of a
+	pack-index-expression.
+	* g++.dg/reflect/pack-index2.C: New test.
+
+2026-08-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118793
+	* gfortran.dg/namelist_101.f90: Fix dg-do directive typo and
+	check the expanded diagnostic.
+	* gfortran.dg/namelist_104.f90: New test.
+
+2026-08-03  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* gcc.dg/tree-ssa/popcount10.c: New test.
+
+2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126547
+	* gcc.dg/torture/pr126547.c: New test.
+
+2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126576
+	* gcc.dg/torture/pr126576.c: New test.
+
+2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126484
+	* g++.target/mips/pr126484.C: New test.
+
+2026-08-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* g++.dg/modules/xtreme-header-8.C: Select the serial PSTL
+	backend.
+
+2026-08-03  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/vrp-float-14.c: New test.
+
+2026-08-03  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/vrp-float-15.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-16.c: New test.
+	* gcc.dg/tree-ssa/vrp-float-17.c: New test.
+
+2026-08-03  Souradipto Das  <souradiptodas6@gmail.com>
+
+	PR target/126411
+	* gcc.target/riscv/rvv/base/bug126411.c: New test.
+
 2026-08-02  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc.target/i386/sse2-init-v2df-1.c: Replace -mno-sse4.1 with

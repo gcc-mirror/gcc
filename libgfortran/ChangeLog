@@ -1,3 +1,27 @@
+2026-08-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118793
+	* io/io.h (NML_ERR_MSG_LEN): New macro.
+	(st_parameter_dt): Add nml_err_pending bit.
+	(gfc_unit): Add nml_err_msg.
+	* io/list_read.c (nml_error): New function.
+	(eat_separator): Use new function
+	(convert_integer): Likewise.
+	(convert_unsigned): Likewise.
+	(parse_repeat): Likewise.  Save the position where the repeat
+	count starts and report it.
+	(read_logical): Likewise.
+	(read_integer): Likewise.
+	(parse_real): Likewise.
+	(read_complex): Likewise.
+	(read_real): Likewise.
+	(check_type): Likewise.
+	(list_formatted_read_scalar): Likewise.
+	(read_character): Likewise.  Save the initial position of the value
+	(nml_read_obj): Unwind to nml_err_ret on a deferred error.
+	(namelist_read): Store deferred errors in the unit's nml_err_msg
+	buffer.
+
 2026-07-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* intrinsics/reduce.c (reduce): Fix the mask_present.
