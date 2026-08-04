@@ -1,5 +1,5 @@
 /* PR target/124948 */
-/* { dg-do run { target bitint } } */
+/* { dg-do run { target { bitint && sync_int_long } } } */
 /* { dg-options "-std=c23 -pedantic-errors" } */
 /* { dg-skip-if "" { ! run_expensive_tests }  { "*" } { "-O0" "-O2" } } */
 /* { dg-skip-if "" { ! run_expensive_tests } { "-flto" } { "" } } */
