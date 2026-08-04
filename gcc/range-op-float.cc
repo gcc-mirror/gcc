@@ -3148,7 +3148,6 @@ operator_cast::fold_range (frange &r, tree type, const irange &op1,
 	frange_nextafter (mode, ub, dconstinf);
     }
   r.set (type, lb, ub, nan_state (false));
-  frange_drop_infs (r, type);
   if (r.undefined_p ())
     r.set_varying (type);
   return true;
