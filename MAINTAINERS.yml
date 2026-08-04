@@ -2886,6 +2886,12 @@ users:
   account: davidxl
   inactive: true
 - sn: Lin
+  cn: Jim Lin
+  email:
+  - jim@andestech.com
+  roles:
+  - DCO: jim@andestech.com
+- sn: Lin
   cn: Kewen Lin
   email:
   - linkw@gcc.gnu.org
