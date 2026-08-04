@@ -205,7 +205,7 @@ pass_combine_popretz::execute (function *fn)
 
       rtx_insn *def_a0_insn = NULL;
       rtx_insn *use_a0_insn = NULL;
-      rtx a0_reg = NULL;
+      rtx a0_reg = regno_reg_rtx[A0_REGNUM];
       /* Scan backwards from popret to find the pattern:
          1. First, find the (use a0) pseudo-instruction
          2. Continue scanning to find "li a0, 0" (set a0 to const0_rtx)
@@ -223,29 +223,35 @@ pass_combine_popretz::execute (function *fn)
 	      && REG_P (XEXP (def_pat, 0))
 	      && REGNO (XEXP (def_pat, 0)) == A0_REGNUM)
 	    {
-	      a0_reg = XEXP (def_pat, 0);
 	      use_a0_insn = def_insn;
 	      continue;
 	    }
 
-	  if (use_a0_insn && reg_referenced_p (a0_reg, def_pat))
+	  if (use_a0_insn)
 	    {
-	      /* a0 is used by other instruction before its use in popret.  */
-	      use_a0_insn = NULL;
-	      break;
-	    }
+	      if (reg_referenced_p (a0_reg, def_pat)
+		  || (CALL_P (def_insn)
+		      && find_reg_fusage (def_insn, USE, a0_reg)))
+		{
+		  /* a0 is used by other instruction before its use in
+		     popret.  */
+		  use_a0_insn = NULL;
+		  break;
+		}
 
-	  if (use_a0_insn
-	      && GET_CODE (def_pat) == SET
-	      && REG_P (SET_DEST (def_pat))
-	      && REGNO (SET_DEST (def_pat)) == A0_REGNUM)
-	    {
-	      if (SET_SRC (def_pat) == CONST0_RTX (GET_MODE (SET_SRC (def_pat))))
-	        def_a0_insn = def_insn;
-	      /* Stop the search regardless of the value assigned to a0,
-	         because we only want to match the last (most recent)
-	         definition of a0 before the (use a0).  */
-	      break;
+	      if (reg_set_p (a0_reg, def_insn))
+		{
+		  rtx set = single_set (def_insn);
+		  if (set
+		      && REG_P (SET_DEST (set))
+		      && REGNO (SET_DEST (set)) == A0_REGNUM
+		      && SET_SRC (set) == CONST0_RTX (GET_MODE (SET_SRC (set))))
+		    def_a0_insn = def_insn;
+		  /* Stop the search regardless of the value assigned to a0,
+		     because we only want to match the last (most recent)
+		     definition of a0 before the (use a0).  */
+		  break;
+		}
 	    }
 	  }
 
