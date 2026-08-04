@@ -3935,35 +3935,75 @@ find_optab (optab_pattern *p, const char *name)
   return false;
 }
 
-/* Find the file to write into next.  We try to evenly distribute the contents
-   over the different files.  */
+/* Add output NAME to OUTPUTS.  A null NAME means standard output.
+   PARTITION_P is true if the output participates in size-based selection.
+   Return its index.  */
 
-#define SIZED_BASED_CHUNKS 1
+unsigned int
+add_generator_output (vec<generator_output> &outputs, const char *name,
+		      bool partition_p)
+{
+  gcc_assert (name || outputs.is_empty ());
+  if (name)
+    for (const generator_output &output : outputs)
+      if (output.name && canonical_filename_eq (name, output.name))
+	fatal ("output file %s specified more than once", name);
+
+  generator_output output = { name, name ? NULL : stdout, partition_p };
+  unsigned int index = outputs.length ();
+  outputs.safe_push (output);
+  return index;
+}
+
+/* Open each named file in OUTPUTS.  */
+
+void
+open_generator_outputs (vec<generator_output> &outputs)
+{
+  for (generator_output &output : outputs)
+    if (!output.file)
+      {
+	output.file = fopen (output.name, "w");
+	if (!output.file)
+	  fatal ("cannot open file %s: %s", output.name, xstrerror (errno));
+      }
+}
+
+/* Return the shortest partition file in OUTPUTS.  */
 
 FILE *
-choose_output (const vec<FILE *> &parts, unsigned &idx)
+choose_output (const vec<generator_output> &outputs)
 {
-  if (parts.length () == 0)
-    gcc_unreachable ();
-#ifdef SIZED_BASED_CHUNKS
   FILE *shortest = NULL;
   long min = 0;
-  idx = 0;
-  for (unsigned i = 0; i < parts.length (); i++)
+  for (const generator_output &output : outputs)
     {
-      FILE *part  = parts[i];
-      long len = ftell (part);
+      if (!output.partition_p)
+	continue;
+      long len = ftell (output.file);
       if (!shortest || min > len)
 	{
-	  shortest = part;
+	  shortest = output.file;
 	  min = len;
-	  idx = i;
-       }
+	}
     }
+  if (!shortest)
+    gcc_unreachable ();
   return shortest;
-#else
-  static int current_file;
-  idx = current_file++ % parts.length ();
-  return parts[idx];
-#endif
+}
+
+/* Close all files in OUTPUTS.  Return true if every close succeeds.  */
+
+bool
+close_generator_outputs (const vec<generator_output> &outputs)
+{
+  bool ok = true;
+  for (const generator_output &output : outputs)
+    if (fclose (output.file) != 0)
+      {
+	error ("cannot close output %s: %s",
+	       output.name ? output.name : "<stdout>", xstrerror (errno));
+	ok = false;
+      }
+  return ok;
 }

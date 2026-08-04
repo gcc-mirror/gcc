@@ -5340,11 +5340,10 @@ print_subroutine (FILE *f, output_state *os, state *s, int proc_id,
 /* Print out a routine of type TYPE that performs ROOT.  */
 
 static void
-print_subroutine_group (vec<FILE *> &vec, FILE *header, output_state *os,
+print_subroutine_group (const vec<generator_output> &outputs, FILE *header,
+			output_state *os,
 			routine_type type, state *root)
 {
-  FILE *f;
-  unsigned idx;
   os->type = type;
   if (use_subroutines_p)
     {
@@ -5357,19 +5356,14 @@ print_subroutine_group (vec<FILE *> &vec, FILE *header, output_state *os,
       unsigned int i;
       state *s;
 
-      FILE *f = header;
       FOR_EACH_VEC_ELT (subroutines, i, s)
 	print_subroutine (header, os, s, i + 1, true);
 
       FOR_EACH_VEC_ELT (subroutines, i, s)
-	{
-	  f = choose_output (vec, idx);
-	  print_subroutine (f, os, s, i + 1);
-	}
+	print_subroutine (choose_output (outputs), os, s, i + 1);
     }
   /* Output the main routine.  */
-  f = choose_output (vec, idx);
-  print_subroutine (f, os, root, 0);
+  print_subroutine (choose_output (outputs), os, root, 0);
 }
 
 /* Return the rtx pattern for the list of rtxes in a define_peephole2.  */
@@ -5440,24 +5434,22 @@ remove_clobbers (acceptance_type *acceptance_ptr, rtx *pattern_ptr)
   return true;
 }
 
-auto_vec<FILE *, 10> output_files;
-char header_name[255];
-FILE *header = NULL;
+auto_vec<generator_output, 10> output_files;
+const char *header_name;
 
 static bool
 handle_arg (const char *arg)
 {
-  printf ("%s\n", arg);
   if (arg[1] == 'O')
     {
-      FILE *file = fopen (&arg[2], "w");
-      output_files.safe_push (file);
+      add_generator_output (output_files, &arg[2], true);
       return true;
     }
   if (arg[1] == 'H')
     {
-      snprintf (header_name, 255, "%s", &arg[2]);
-      header = fopen (header_name, "w");
+      if (header_name)
+	fatal ("option -H specified more than once");
+      header_name = &arg[2];
       return true;
     }
   return false;
@@ -5473,14 +5465,18 @@ main (int argc, const char **argv)
   if (!init_rtx_reader_args_cb (argc, argv, handle_arg))
     return (FATAL_EXIT_CODE);
 
+  if (!header_name)
+    fatal ("no -H output file specified");
   if (output_files.is_empty ())
-    output_files.safe_push (stdout);
+    add_generator_output (output_files, NULL, true);
+  unsigned int header_index
+    = add_generator_output (output_files, header_name, false);
+  open_generator_outputs (output_files);
+  FILE *header = output_files[header_index].file;
 
-  for (auto f : output_files)
-    write_header (f, header_name);
-
-  FILE *file = NULL;
-  unsigned file_idx;
+  for (const generator_output &output : output_files)
+    if (output.partition_p)
+      write_header (output.file, header_name);
 
   /* Read the machine description.  */
 
@@ -5488,7 +5484,6 @@ main (int argc, const char **argv)
   while (read_md_rtx (&info))
     {
       rtx def = info.def;
-      file = choose_output (output_files, file_idx);
 
       acceptance_type acceptance;
       acceptance.partial_p = false;
@@ -5546,8 +5541,9 @@ main (int argc, const char **argv)
   if (have_error)
     return FATAL_EXIT_CODE;
 
-  for (auto f : output_files)
-    fprintf (f, "%s", "\n\n");
+  for (const generator_output &output : output_files)
+    if (output.partition_p)
+      fprintf (output.file, "%s", "\n\n");
 
   /* Optimize each routine in turn.  */
   optimize_subroutine_group ("recog", &insn_root);
@@ -5574,10 +5570,7 @@ main (int argc, const char **argv)
 	print_pattern (header, &os, routine, true);
 
       FOR_EACH_VEC_ELT (patterns, i, routine)
-	{
-	  file = choose_output (output_files, file_idx);
-	  print_pattern (file, &os, routine);
-	}
+	print_pattern (choose_output (output_files), &os, routine);
     }
 
   /* Print out the matching routines.  */
@@ -5588,11 +5581,6 @@ main (int argc, const char **argv)
   /* Every test has been printed, so the set of conditions is complete.  */
   print_md_conditions (header);
 
-  fclose (header);
-
-  int ret = SUCCESS_EXIT_CODE;
-  for (FILE *f : output_files)
-    if (fclose (f) != 0)
-      ret = FATAL_EXIT_CODE;
-  return ret;
+  return (close_generator_outputs (output_files)
+	  ? SUCCESS_EXIT_CODE : FATAL_EXIT_CODE);
 }
