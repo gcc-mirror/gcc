@@ -1860,6 +1860,8 @@ wide_int_to_tree_1 (tree type, const wide_int_ref &pcst)
 
       switch (code)
 	{
+	/* This could represent the C++ std::meta::info type.  */
+	case LANG_TYPE:
 	case NULLPTR_TYPE:
 	  gcc_assert (hwi == 0);
 	  /* Fallthru.  */
@@ -2035,6 +2037,8 @@ cache_integer_cst (tree t, bool might_duplicate ATTRIBUTE_UNUSED)
      wide_int_to_type_1.  */
   switch (TREE_CODE (type))
     {
+    /* This could represent the C++ std::meta::info type.  */
+    case LANG_TYPE:
     case NULLPTR_TYPE:
       gcc_checking_assert (integer_zerop (t));
       /* Fallthru.  */

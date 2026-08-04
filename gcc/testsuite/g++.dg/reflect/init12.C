@@ -24,6 +24,6 @@ void
 g ()
 {
   constexpr static auto r = ^^int;
-  constexpr auto x = foo<info>(&r); // { dg-error "pointer into an object of consteval-only type" }
+  constexpr auto x = foo<info>(&r);
   constexpr auto y = bar<info>(nullptr);
 }

@@ -3,7 +3,7 @@
 
 template <class T>
 struct A {
-  void f() requires (this, true) { }
+  void f() requires (this, true) { }	// { dg-error ".this. is not a constant expression" }
 };
 
 template struct A<int>;

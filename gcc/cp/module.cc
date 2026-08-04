@@ -9890,8 +9890,9 @@ trees_out::type_node (tree type)
 	}
       break;
 
-    case META_TYPE:
+    case LANG_TYPE:
       /* No additional data.  */
+      gcc_checking_assert (REFLECTION_TYPE_P (type));
       break;
 
     case SPLICE_SCOPE:
@@ -10745,7 +10746,10 @@ trees_in::tree_node (bool is_use)
 	    }
 	    break;
 
-	  case META_TYPE:
+	  /* LANG_TYPE can be more things, but here we assume it represents
+	     std::meta::info.  Unfortunately here it's not possible to check
+	     REFLECTION_TYPE_P.  */
+	  case LANG_TYPE:
 	    if (!get_overrun ())
 	      res = meta_info_type_node;
 	    break;

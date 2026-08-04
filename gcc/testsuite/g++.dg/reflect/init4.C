@@ -49,7 +49,7 @@ constexpr G g;
 struct H {
   info (*fp)();
 };
-constexpr H h{foo}; // { dg-error "address of immediate function" }
+constexpr H h{foo};	// { dg-bogus "returns address" "" { xfail *-*-* } }
 
 union U {
   int n;

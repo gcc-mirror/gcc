@@ -5,25 +5,25 @@
 
 using info = decltype(^^int);
 
-info r1 = ^^int;  // { dg-error "consteval-only variable .r1. not declared .constexpr. used outside a constant-evaluated context" }
-const info r2 = ^^int;  // { dg-error "consteval-only variable .r2. not declared .constexpr. used outside a constant-evaluated context" }
+info r1 = ^^int;  // { dg-error ".r1. is initialized with a consteval-only value but is not declared .constexpr." }
+const info r2 = ^^int;  // { dg-error ".r2. is initialized with a consteval-only value but is not declared .constexpr." }
 
 constexpr info r3 = ^^int;
-constinit info r4 = ^^int;  // { dg-error "consteval-only variable .r4. not declared .constexpr. used outside a constant-evaluated context" }
-const info *const p1 = &r3;  // { dg-error "consteval-only variable .p1. not declared .constexpr. used outside a constant-evaluated context" }
-info *p2;  // { dg-error "consteval-only variable .p2. not declared .constexpr. used outside a constant-evaluated context" }
-const info &q = r3;  // { dg-error "consteval-only variable .q. not declared .constexpr. used outside a constant-evaluated context" }
+constinit info r4 = ^^int;  // { dg-error ".r4. is initialized with a consteval-only value but is not declared .constexpr." }
+const info *const p1 = &r3;  // { dg-error ".p1. is initialized with a consteval-only value but is not declared .constexpr." }
+info *p2;
+const info &q = r3;  // { dg-error ".q. is initialized with a consteval-only value but is not declared .constexpr." }
 
 void
 g ()
 {
-  info l1 = ^^int;  // { dg-error "consteval-only variable .l1. not declared .constexpr. used outside a constant-evaluated context" }
-  const info l2 = ^^int;  // { dg-error "consteval-only variable .l2. not declared .constexpr. used outside a constant-evaluated context" }
+  info l1 = ^^int;  // { dg-error ".l1. is initialized with a consteval-only value but is not declared .constexpr." }
+  const info l2 = ^^int;  // { dg-error ".l2. is initialized with a consteval-only value but is not declared .constexpr." }
   constexpr info l3 = ^^int;
-  static info l4 = ^^int;  // { dg-error "consteval-only variable .l4. not declared .constexpr. used outside a constant-evaluated context" }
-  static const info l5 = ^^int;  // { dg-error "consteval-only variable .l5. not declared .constexpr. used outside a constant-evaluated context" }
+  static info l4 = ^^int;  // { dg-error ".l4. is initialized with a consteval-only value but is not declared .constexpr." }
+  static const info l5 = ^^int;  // { dg-error ".l5. is initialized with a consteval-only value but is not declared .constexpr." }
   static constexpr info l6 = ^^int;
-  static constinit info l7 = ^^int;  // { dg-error "consteval-only variable .l7. not declared .constexpr. used outside a constant-evaluated context" }
+  static constinit info l7 = ^^int;  // { dg-error ".l7. is initialized with a consteval-only value but is not declared .constexpr." }
 }
 
 consteval void

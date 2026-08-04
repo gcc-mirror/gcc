@@ -11,6 +11,6 @@ consteval const Base& fn(const Derived& derived) { return derived; }
 
 constexpr Derived obj{.r=^^::}; // OK
 constexpr const Derived& d = obj; // OK
-constexpr const Base& b1 = fn(obj); // { dg-error "reference into an object of consteval-only" }
-constexpr const Base& b2 = obj;	  // { dg-error "reference into an object of consteval-only" }
+constexpr const Base& b1 = fn(obj);
+constexpr const Base& b2 = obj;
 constexpr Base b3 = obj;

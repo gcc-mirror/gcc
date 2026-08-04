@@ -2662,9 +2662,7 @@ maybe_make_one_only (tree decl)
   if (! flag_weak)
     return;
 
-  /* These are not to be output.  */
-  if (consteval_only_p (decl))
-    return;
+  gcc_checking_assert (!consteval_only_p (decl));
 
   /* We can't set DECL_COMDAT on functions, or cp_finish_file will think
      we can get away with not emitting them if they aren't used.  We need
@@ -2822,9 +2820,7 @@ var_finalized_p (tree var)
 void
 mark_needed (tree decl)
 {
-  /* These are not to be output.  */
-  if (consteval_only_p (decl))
-    return;
+  gcc_checking_assert (!consteval_only_p (decl));
 
   TREE_USED (decl) = 1;
   if (TREE_CODE (decl) == FUNCTION_DECL)
@@ -5050,14 +5046,6 @@ prune_vars_needing_no_initialization (tree *vars)
 	  continue;
 	}
 
-      /* Reflections are consteval-only types and we don't want them
-	 to survive until gimplification.  */
-      if (consteval_only_p (decl))
-	{
-	  var = &TREE_CHAIN (t);
-	  continue;
-	}
-
       /* This variable is going to need initialization and/or
 	 finalization, so we add it to the list.  */
       *var = TREE_CHAIN (t);
@@ -6098,6 +6086,10 @@ c_parse_final_cleanups (void)
       /* Static data members are just like namespace-scope globals.  */
       FOR_EACH_VEC_SAFE_ELT (pending_statics, i, decl)
 	{
+	  /* Rewrite the REFLECT_EXPR with 0 so that the ME can process it.  */
+	  if (flag_reflection && DECL_INITIAL (decl))
+	    rewrite_null_reflection (DECL_INITIAL (decl));
+
 	  if (consteval_only_p (decl)
 	      || var_finalized_p (decl)
 	      || DECL_REALLY_EXTERN (decl)

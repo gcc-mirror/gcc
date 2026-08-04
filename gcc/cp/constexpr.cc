@@ -5755,7 +5755,8 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
 	lhs = cplus_expand_constant (lhs);
       else if (TREE_CODE (rhs) == PTRMEM_CST)
 	rhs = cplus_expand_constant (rhs);
-      else if (REFLECT_EXPR_P (lhs) && REFLECT_EXPR_P (rhs))
+      else if (REFLECTION_TYPE_P (TREE_TYPE (lhs))
+	       && REFLECTION_TYPE_P (TREE_TYPE (rhs)))
 	{
 	  const bool eq = compare_reflections (lhs, rhs);
 	  r = constant_boolean_node (eq == is_code_eq, type);
@@ -6834,7 +6835,7 @@ cxx_eval_bit_field_ref (const constexpr_ctx *ctx, tree t,
    Check [bit.cast]/3 rules, bit_cast is constexpr only if the To and From
    types and types of all subobjects have is_union_v<T>, is_pointer_v<T>,
    is_member_pointer_v<T>, is_volatile_v<T> false and has no non-static
-   data members of reference type.  */
+   data members of reference or std::meta::info type.  */
 
 static bool
 check_bit_cast_type (const constexpr_ctx *ctx, location_t loc, tree type,
@@ -6908,6 +6909,20 @@ check_bit_cast_type (const constexpr_ctx *ctx, location_t loc, tree type,
 	    error_at (loc, "%qs is not a constant expression because %qT "
 			   "contains a volatile subobject",
 		      "__builtin_bit_cast", orig_type);
+	}
+      return true;
+    }
+  if (REFLECTION_TYPE_P (type))
+    {
+      if (!ctx->quiet)
+	{
+	  if (type == orig_type)
+	    error_at (loc, "%qs is not a constant expression because its "
+			   "type is %qs", "__builtin_bit_cast", "std::meta::info");
+	  else
+	    error_at (loc, "%qs is not a constant expression because %qT "
+			   "contains %qs type",
+		      "__builtin_bit_cast", orig_type, "std::meta::info");
 	}
       return true;
     }
@@ -11762,37 +11777,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
       non_constant_p = true;
     }
 
-  /* Detect consteval-only smuggling: turning a consteval-only object
-     into one that is not.  For instance, in
-       struct B { };
-       struct D : B { info r; };
-       constexpr D d{^^::};
-       constexpr const B &b = d; // #1
-     #1 is wrong because D is a consteval-only type but B is not.  */
-  if (flag_reflection
-      && !non_constant_p
-      && object
-      && POINTER_TYPE_P (TREE_TYPE (object))
-      && !consteval_only_p (object)
-      && check_out_of_consteval_use (r, /*complain=*/false))
-    {
-      if (!allow_non_constant)
-	{
-	  if (TYPE_REF_P (TREE_TYPE (object)))
-	    error_at (cp_expr_loc_or_input_loc (t),
-		      "reference into an object of consteval-only type is "
-		      "not a constant expression unless it also has "
-		      "consteval-only type");
-	  else
-	    error_at (cp_expr_loc_or_input_loc (t),
-		      "pointer into an object of consteval-only type is "
-		      "not a constant expression unless it also has "
-		      "consteval-only type");
-	}
-      r = t;
-      non_constant_p = true;
-    }
-
   if (!non_constant_p && !constexpr_dtor)
     verify_constant (r, allow_non_constant, &non_constant_p, &overflow_p);
 
@@ -12882,7 +12866,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		return false;
 	      }
 	  }
-        return (RECUR (from, TREE_CODE (t) != VIEW_CONVERT_EXPR));
+	/* convert_to_void used to fold these away to void_node, because they
+	   are a discarded-value expression.  */
+	if (TREE_CODE (t) == CONVERT_EXPR && VOID_TYPE_P (TREE_TYPE (t)))
+	  return RECUR (from, /*want_rval=*/false);
+	return RECUR (from, TREE_CODE (t) != VIEW_CONVERT_EXPR);
       }
 
     case ADDRESSOF_EXPR:

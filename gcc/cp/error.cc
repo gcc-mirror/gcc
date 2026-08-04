@@ -697,6 +697,11 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 	pp_string (pp, M_("<brace-enclosed initializer list>"));
       else if (t == unknown_type_node)
 	pp_string (pp, M_("<unresolved overloaded function type>"));
+      else if (REFLECTION_TYPE_P (t))
+	{
+	  pp_cxx_ws_string (pp, "std::meta::info");
+	  pp_c_type_qualifier_list (pp, t);
+	}
       else
 	{
 	  pp_cxx_cv_qualifier_seq (pp, t);
@@ -876,11 +881,6 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 
     case NULLPTR_TYPE:
       pp_cxx_ws_string (pp, "std::nullptr_t");
-      pp_c_type_qualifier_list (pp, t);
-      break;
-
-    case META_TYPE:
-      pp_cxx_ws_string (pp, "std::meta::info");
       pp_c_type_qualifier_list (pp, t);
       break;
 
@@ -1147,7 +1147,6 @@ dump_type_prefix (cxx_pretty_printer *pp, tree t, int flags)
     case FIXED_POINT_TYPE:
     case NULLPTR_TYPE:
     case PACK_INDEX_TYPE:
-    case META_TYPE:
     case SPLICE_SCOPE:
       dump_type (pp, t, flags);
       pp->set_padding (pp_before);
@@ -1282,7 +1281,6 @@ dump_type_suffix (cxx_pretty_printer *pp, tree t, int flags)
     case FIXED_POINT_TYPE:
     case NULLPTR_TYPE:
     case PACK_INDEX_TYPE:
-    case META_TYPE:
     case SPLICE_SCOPE:
       break;
 
@@ -3487,7 +3485,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 		/* For reflection we care about the difference
 		   between std::meta::info/std::nullptr_t and
 		   decltype(^^int)/decltype(nullptr).  */
-		if (TREE_CODE (h) == META_TYPE && !typedef_variant_p (h))
+		if (REFLECTION_TYPE_P (h) && !typedef_variant_p (h))
 		  {
 		    pp_cxx_ws_string (pp, "decltype(^^int)");
 		    pp_c_type_qualifier_list (pp, h);

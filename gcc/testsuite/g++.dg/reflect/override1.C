@@ -9,12 +9,12 @@ struct B {
 };
 
 struct D1 : B {
-  consteval virtual void foo() override { } // { dg-error "overriding" }
+  consteval virtual void foo() override { } // { dg-error "overriding non-.consteval. function" }
 };
 
 struct D2 : B {
   info i;
-  consteval virtual void foo() override { }
+  consteval virtual void foo() override { } // { dg-error "overriding non-.consteval. function" }
 };
 
 struct D3 : B {
@@ -30,10 +30,10 @@ struct D4 : B2 {
 };
 
 struct D5 : B2 {
-  virtual void foo() override { } // { dg-error "overriding" }
+  virtual void foo() override { } // { dg-error "overriding .consteval. function" }
 };
 
 struct D6 : B2 {
   info i;
-  virtual void foo() override { } // { dg-error "consteval-only type|overriding" }
+  virtual void foo() override { } // { dg-error "overriding .consteval. function" }
 };

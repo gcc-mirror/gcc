@@ -1442,9 +1442,13 @@ cxx_pretty_printer::simple_type_specifier (tree t)
       pp_cxx_trait (this, t);
       break;
 
-    case META_TYPE:
-      pp_cxx_ws_string (this, "std::meta::info");
-      break;
+    case LANG_TYPE:
+      if (REFLECTION_TYPE_P (t))
+	{
+	  pp_cxx_ws_string (this, "std::meta::info");
+	  break;
+	}
+      gcc_fallthrough ();
 
     default:
       c_pretty_printer::simple_type_specifier (t);
@@ -1942,7 +1946,6 @@ cxx_pretty_printer::type_id (tree t)
     case NULLPTR_TYPE:
     case TEMPLATE_ID_EXPR:
     case OFFSET_TYPE:
-    case META_TYPE:
       pp_cxx_type_specifier_seq (this, t);
       if (TYPE_PTRMEM_P (t))
 	abstract_declarator (t);
@@ -1974,6 +1977,14 @@ cxx_pretty_printer::type_id (tree t)
 	pp_cxx_right_brace (this);
       }
       break;
+
+    case LANG_TYPE:
+      if (REFLECTION_TYPE_P (t))
+	{
+	  pp_cxx_type_specifier_seq (this, t);
+	  break;
+	}
+      gcc_fallthrough ();
 
     default:
       c_pretty_printer::type_id (t);

@@ -113,7 +113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       consteval exception& operator=(const exception&) = default;
       consteval exception& operator=(exception&&) = default;
 
-      consteval const char*
+      constexpr const char*
       what() const noexcept override
       {
 	// If u8string is not empty and string is empty, conversion

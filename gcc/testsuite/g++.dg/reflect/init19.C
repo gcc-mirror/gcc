@@ -8,5 +8,5 @@ struct N { int i; };
 template<typename T>
 struct X : T { };
 
-auto a = X<C>{}; // { dg-error "outside a constant-evaluated context" }
+auto a = X<C>{};
 auto b = X<N>{};

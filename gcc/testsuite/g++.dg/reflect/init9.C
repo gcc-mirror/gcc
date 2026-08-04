@@ -4,9 +4,9 @@
 
 using info = decltype(^^int);
 
-info foo (); // { dg-error "function of consteval-only type must be declared .consteval." }
-constexpr info bar (); // { dg-error "function of consteval-only type must be declared .consteval." }
-void baz (info); // { dg-error "function of consteval-only type must be declared .consteval." }
+info foo ();
+constexpr info bar ();
+void baz (info);
 
 consteval info
 ok1 ()
@@ -28,26 +28,26 @@ ok3 (info i)
 }
 
 constexpr info
-bad1 () // { dg-error "function of consteval-only type must be declared .consteval." }
+bad1 ()
 {
-  return ^^int;  // { dg-error "consteval-only expressions" }
+  return ^^int;  // { dg-error "consteval-only value" }
 }
 
 info
-bad2 () // { dg-error "function of consteval-only type must be declared .consteval." }
+bad2 ()
 {
-  return ^^int;  // { dg-error "consteval-only expressions" }
+  return ^^int;  // { dg-error "consteval-only value" }
 }
 
 constexpr auto
-bad3 (info i) // { dg-error "function of consteval-only type must be declared .consteval." }
+bad3 (info i)
 {
-  return i;  // { dg-error "consteval-only expressions" }
+  return i;
 }
 
 template<info R>
 info
-bad4 () // { dg-error "function of consteval-only type must be declared .consteval." }
+bad4 ()
 {
-  return R;  // { dg-error "consteval-only expressions" }
+  return R;
 }

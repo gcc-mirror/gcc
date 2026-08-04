@@ -9,8 +9,8 @@ struct A {
   consteval A() : i{^^void} {}
 };
 
-A a1;  // { dg-error "consteval-only variable .a1." }
-constinit A a2;  // { dg-error "consteval-only variable .a2." }
+A a1;  // { dg-error "consteval-only value" }
+constinit A a2;  // { dg-error "consteval-only value" }
 constexpr A a3;
 
 struct B {
@@ -19,6 +19,6 @@ struct B {
  consteval B() : i{}, j{i} {}
 };
 
-B b1;  // { dg-error "consteval-only variable .b1." }
-constinit B b2;  // { dg-error "consteval-only variable .b2." }
+B b1;
+constinit B b2;
 constexpr B b3;

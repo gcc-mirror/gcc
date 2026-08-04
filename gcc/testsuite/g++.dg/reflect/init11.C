@@ -1,6 +1,5 @@
 // { dg-do compile { target c++26 } }
 // { dg-additional-options "-freflection" }
-// Test invalid reflections in member init lists.
 
 using info = decltype(^^void);
 
@@ -16,10 +15,10 @@ struct B {
 
 struct C {
   info i;
-  constexpr C() : i{} {}  // { dg-error "function of consteval-only type must be declared .consteval." }
+  constexpr C() : i{} {}
 };
 
 struct D {
   info i;
-  D() : i{} {}  // { dg-error "function of consteval-only type must be declared .consteval." }
+  D() : i{} {}
 };

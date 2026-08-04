@@ -19,30 +19,30 @@ f ()
 
   if not consteval
     {
-      ^^void;  // { dg-error "consteval-only expressions" }
+      ^^void;  // { dg-error "consteval-only value" }
     }
   if not consteval
     {
-      q;  // { dg-error "consteval-only expressions" }
+      q;  // { dg-error "consteval-only value" }
     }
   if not consteval
     {
-      auto r = ^^int;  // { dg-error "consteval-only variable" }
+      auto r = ^^int;  // { dg-error "consteval-only value" }
     }
   if not consteval
     {
-      if (q != ^^char);  // { dg-error "consteval-only expressions" }
+      if (q != ^^char);  // { dg-error "consteval-only value" }
     }
   if not consteval
     {
-      if (^^char == ^^char);  // { dg-error "consteval-only expressions" }
+      if (^^char == ^^char);  // { dg-error "consteval-only value" }
     }
   if not consteval
     {
-      while (^^char != ^^char);  // { dg-error "consteval-only expressions" }
+      while (^^char != ^^char);  // { dg-error "consteval-only value" }
     }
   if not consteval
     {
-      do {} while (^^char != ^^char);  // { dg-error "consteval-only expressions" }
+      do {} while (^^char != ^^char);  // { dg-error "consteval-only value" }
     }
 }

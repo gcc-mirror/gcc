@@ -17378,7 +17378,6 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case VECTOR_TYPE:
     case BOOLEAN_TYPE:
     case NULLPTR_TYPE:
-    case META_TYPE:
     case LANG_TYPE:
       return t;
 
@@ -26848,7 +26847,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
     case VOID_TYPE:
     case OPAQUE_TYPE:
     case NULLPTR_TYPE:
-    case META_TYPE:
+    case LANG_TYPE:
       if (TREE_CODE (arg) != TREE_CODE (parm))
 	return unify_type_mismatch (explain_p, parm, arg);
 
@@ -28993,8 +28992,6 @@ instantiate_body (tree pattern, tree args, tree d, bool nested_p)
 
       if (DECL_OMP_DECLARE_REDUCTION_P (code_pattern))
 	cp_check_omp_declare_reduction (d);
-
-      check_consteval_only_fn (d);
 
       if (int errs = errorcount + sorrycount)
 	if (errs > current_tinst_level->errors)

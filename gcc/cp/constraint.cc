@@ -2553,7 +2553,10 @@ satisfy_atom (tree t, tree args, sat_info info)
   if (info.noisy ())
     {
       iloc_sentinel ils (EXPR_LOCATION (result));
-      result = cxx_constant_value (result);
+      if (require_constant_expression (result))
+	result = cxx_constant_value (result);
+      else
+	result = error_mark_node;
     }
   else
     {

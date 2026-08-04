@@ -588,9 +588,6 @@ DEFTREECODE (TU_LOCAL_ENTITY, "tu_local_entity", tcc_exceptional, 0)
 /* C++26 reflection expression.  */
 DEFTREECODE (REFLECT_EXPR, "reflect_expr", tcc_expression, 1)
 
-/* Represents the std::meta::info type.  */
-DEFTREECODE (META_TYPE, "meta_type", tcc_type, 0)
-
 /* Represents a dependent splice expression.  If SPLICE_EXPR_EXPRESSION_P
    is set, this tree represents a splice-expression (as opposed to
    a splice-specifier).  */

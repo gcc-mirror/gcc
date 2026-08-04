@@ -20,8 +20,8 @@ empty_body_for_loop ()
   return i;
 }
 
-/* Making the for (;;) multi line should report count per line.  g++ considers
-   the i++ unexecuted, while gcc counts it.  */
+/* Suppressing the loop should suppress everything within the loop, but not the
+   return.  */
 int
 ignored_for_loop ()
 {
@@ -38,7 +38,7 @@ ignored_for_loop ()
 #pragma GCC suppress_coverage begin
   for (i = 0;			/* count(#) */
        i < 20;			/* count(#) */
-       i++)			/* count(-) */
+       i++)			/* count(#) */
     {
       noop ();			/* count(#) */
     }

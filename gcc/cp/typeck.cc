@@ -6389,7 +6389,7 @@ cp_build_binary_op (const op_location_t &location,
 	}
       /* [expr.eq]: "If both operands are of type std::meta::info,
 	 comparison is defined as follows..."  */
-      else if (code0 == META_TYPE && code1 == META_TYPE)
+      else if (REFLECTION_TYPE_P (type0) && REFLECTION_TYPE_P (type1))
 	result_type = type0;
       else
 	{
@@ -11899,12 +11899,6 @@ check_return_expr (tree retval, bool *no_warning, bool *dangling)
 	       && maybe_warn_about_returning_address_of_local (retval, loc)
 	       && INDIRECT_TYPE_P (valtype))
 	*dangling = true;
-    }
-
-  if (check_out_of_consteval_use (retval))
-    {
-      current_function_return_value = error_mark_node;
-      return error_mark_node;
     }
 
   /* A naive attempt to reduce the number of -Wdangling-reference false

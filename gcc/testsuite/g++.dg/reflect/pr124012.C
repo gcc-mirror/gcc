@@ -10,28 +10,28 @@ void
 bar ()
 {
   constexpr auto [a, b] = A {};
-  foo (a);			// { dg-error "consteval-only expressions are only allowed in a constant-evaluated context" }
+  foo (a);
 }
 
 void
 baz ()
 {
   constexpr auto a = A {};
-  foo (a.a);			// { dg-error "consteval-only expressions are only allowed in a constant-evaluated context" }
+  foo (a.a);
 }
 
 void
 qux ()
 {
   constexpr auto a = A {};
-  corge (&a.a);			// { dg-error "consteval-only expressions are only allowed in a constant-evaluated context" }
+  corge (&a.a);
 }
 
 void
 garply ()
 {
   constexpr auto [a, b] = A {};
-  corge (&a);			// { dg-error "consteval-only expressions are only allowed in a constant-evaluated context" }
+  corge (&a);
 }
 
 void

@@ -12,10 +12,10 @@ consteval const Base &fn1() {
   static constexpr Derived d;
   return d;
 }
-constexpr auto &ref = fn1(); // { dg-error "reference into an object of consteval-only type" }
+constexpr auto &ref = fn1();
 
 consteval void *fn2() {
   static constexpr auto v = ^^int;
   return (void *)&v;
 }
-constexpr const void *ptr = fn2(); // { dg-error "pointer into an object of consteval-only type" }
+constexpr const void *ptr = fn2();

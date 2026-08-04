@@ -10,10 +10,20 @@ f ()
   auto a = ^^int;
   auto *b = &a;
   void *c = nullptr;
-  (void) std::bit_cast<void *>(b);  // { dg-message "from here" }
-  (void) std::bit_cast<decltype(^^int) *>(c); // { dg-message "from here" }
-  __builtin_bit_cast (void *, b); // { dg-error ".__builtin_bit_cast. cannot be used with consteval-only types" }
-  __builtin_bit_cast (decltype(^^int) *, c);  // { dg-error ".__builtin_bit_cast. cannot be used with consteval-only types" }
+  (void) std::bit_cast<void *>(b);
+  (void) std::bit_cast<decltype(^^int) *>(c);
+  __builtin_bit_cast (void *, b);
+  __builtin_bit_cast (decltype(^^int) *, c);
 }
 
-// { dg-error ".__builtin_bit_cast. cannot be used with consteval-only types" "" { target *-*-* } 0 }
+void
+g ()
+{
+  constexpr static auto a = ^^int;
+  constexpr auto *b = &a;
+  void *c = nullptr;
+  (void) std::bit_cast<void *>(b);		// { dg-error "consteval-only value outside an immediate function context" }
+  (void) std::bit_cast<decltype(^^int) *>(c);
+  __builtin_bit_cast (void *, b);		// { dg-error "consteval-only value outside an immediate function context" }
+  __builtin_bit_cast (decltype(^^int) *, c);
+}

@@ -7135,6 +7135,8 @@ count_type_elements (const_tree type, bool for_ctor_p)
     case POINTER_TYPE:
     case OFFSET_TYPE:
     case REFERENCE_TYPE:
+    /* This could represent the C++ std::meta::info type.  */
+    case LANG_TYPE:
     case NULLPTR_TYPE:
     case OPAQUE_TYPE:
     case BITINT_TYPE:
@@ -7146,7 +7148,6 @@ count_type_elements (const_tree type, bool for_ctor_p)
     case VOID_TYPE:
     case METHOD_TYPE:
     case FUNCTION_TYPE:
-    case LANG_TYPE:
     default:
       gcc_unreachable ();
     }

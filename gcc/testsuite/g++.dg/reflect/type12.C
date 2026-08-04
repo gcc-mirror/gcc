@@ -17,7 +17,7 @@ struct CE { decltype(^^::) i; };
 struct A {
   static const Array<CE, 10> mData;
 };
-const Array<CE, 10> A::mData{}; // { dg-error "outside a constant-evaluated context" }
+const Array<CE, 10> A::mData{};
 
 struct B {
   static constexpr Array<CE, 11> mData{};

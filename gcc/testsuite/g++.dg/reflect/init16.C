@@ -41,7 +41,7 @@ void fox() {
         do_something_runtime<A>();
         int C = something_of(A);
         constexpr int E = something_of(A);
-        identity(A); // { dg-error "consteval-only expressions" }
-        identity(B); // { dg-error "consteval-only expressions" }
+        identity(A); // { dg-error "consteval-only value" }
+        identity(B); // { dg-error "consteval-only value" }
     }
 }

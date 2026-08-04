@@ -2739,11 +2739,6 @@ write_type (tree type)
 		++is_builtin_type;
 	      break;
 
-	    case META_TYPE:
-	      write_string ("Dm");
-	      ++is_builtin_type;
-	      break;
-
 	    case SPLICE_SCOPE:
 	      write_splice (type);
 	      break;
@@ -2776,6 +2771,12 @@ write_type (tree type)
 	      break;
 
 	    case LANG_TYPE:
+	      if (REFLECTION_TYPE_P (type))
+		{
+		  write_string ("Dm");
+		  ++is_builtin_type;
+		  break;
+		}
 	      /* fall through.  */
 
 	    default:

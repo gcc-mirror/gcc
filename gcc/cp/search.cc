@@ -2131,15 +2131,13 @@ check_final_overrider (tree overrider, tree basefn)
       return 0;
     }
 
-  /* A class with a consteval virtual function that overrides a virtual
-     function that is not consteval shall have consteval-only type (CWG 3117).
-     A consteval virtual function shall not be overridden by a virtual
-     function that is not consteval.  */
+  /* [class.virtual]/18: A non-immediate virtual function shall not be
+     overridden by an immediate virtual function.  An immediate virtual
+     function shall not be overridden by a non-immediate virtual function.  */
   if ((DECL_IMMEDIATE_FUNCTION_P (basefn)
        && !DECL_IMMEDIATE_FUNCTION_P (overrider))
       || (!DECL_IMMEDIATE_FUNCTION_P (basefn)
-	  && DECL_IMMEDIATE_FUNCTION_P (overrider)
-	  && !consteval_only_p (overrider)))
+	  && DECL_IMMEDIATE_FUNCTION_P (overrider)))
     {
       auto_diagnostic_group d;
       if (DECL_IMMEDIATE_FUNCTION_P (overrider))

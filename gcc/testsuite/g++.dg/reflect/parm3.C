@@ -5,23 +5,23 @@
 using info = decltype(^^int);
 
 consteval void foo (info) { }
-constexpr void bar (info) { } // { dg-error "function of consteval-only type must be declared .consteval." }
-void baz (info) { }  // { dg-error "function of consteval-only type must be declared .consteval." }
+constexpr void bar (info) { }
+void baz (info) { }
 
 void
 f ()
 {
   foo (^^void);
-  bar (^^void);  // { dg-error "consteval-only expressions" }
-  baz (^^void);  // { dg-error "consteval-only expressions" }
+  bar (^^void);  // { dg-error "consteval-only value" }
+  baz (^^void);  // { dg-error "consteval-only value" }
 }
 
 constexpr void
 g ()
 {
   foo (^^void);
-  bar (^^void);  // { dg-error "consteval-only expressions" }
-  baz (^^void);  // { dg-error "consteval-only expressions" }
+  bar (^^void);  // { dg-error "consteval-only value" }
+  baz (^^void);  // { dg-error "consteval-only value" }
 }
 
 consteval void

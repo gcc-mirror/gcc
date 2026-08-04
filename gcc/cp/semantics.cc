@@ -15055,12 +15055,6 @@ cp_build_bit_cast (location_t loc, tree type, tree arg,
 			 "is not trivially copyable", type);
 	  return error_mark_node;
 	}
-      if (consteval_only_p (type) || consteval_only_p (arg))
-	{
-	  error_at (loc, "%<__builtin_bit_cast%> cannot be used with "
-			 "consteval-only types");
-	  return error_mark_node;
-	}
     }
 
   if (error_operand_p (arg))

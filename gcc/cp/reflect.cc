@@ -61,7 +61,7 @@ init_reflection ()
   /* The type std::meta::info is a scalar type for which equality and
      inequality are meaningful, but for which no ordering relation is
      defined.  */
-  meta_info_type_node = make_node (META_TYPE);
+  meta_info_type_node = make_node (LANG_TYPE);
   /* Make it a complete type.  */
   TYPE_SIZE (meta_info_type_node) = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
   TYPE_SIZE_UNIT (meta_info_type_node) = size_int (GET_MODE_SIZE (ptr_mode));
@@ -291,8 +291,36 @@ get_null_reflection ()
 bool
 null_reflection_p (const_tree t)
 {
-  return (t && TREE_CODE (t) == REFLECT_EXPR
-	  && REFLECT_EXPR_HANDLE (t) == unknown_type_node);
+  if (!t)
+    return false;
+
+  if (REFLECT_EXPR_P (t) && REFLECT_EXPR_HANDLE (t) == unknown_type_node)
+    return true;
+
+  /* This is the rewritten form.  */
+  return integer_zerop (t) && REFLECTION_TYPE_P (TREE_TYPE (t));
+}
+
+/* If R represents a null reflection, rewrite it with something the ME
+   can process; that is, something that doesn't use REFLECT_EXPR.  */
+
+void
+rewrite_null_reflection (tree &r)
+{
+  /* A tree walk mostly only so that we recurse through CONSTRUCTORs.  */
+  auto walker = [](tree *tp, int *walk_subtrees, void *) -> tree
+    {
+      if (TYPE_P (*tp))
+	*walk_subtrees = 0;
+      else if (null_reflection_p (*tp))
+	{
+	  *tp = build_int_cst (meta_info_type_node, 0);
+	  *walk_subtrees = 0;
+	}
+      return NULL_TREE;
+    };
+
+  cp_walk_tree (&r, walker, nullptr, nullptr);
 }
 
 /* Do strip_typedefs on T, but only for types.  */
@@ -8809,153 +8837,116 @@ splice (tree refl)
   return refl;
 }
 
-/* A cache of the known boolean result of consteval_only_p_walker::walk
-   for class types.  */
+static bool consteval_only_p (tree, hash_set<tree> &);
 
-static GTY((cache)) type_tree_cache_map *consteval_only_class_cache;
+/* True if T is a consteval-only value as per [expr.const.const]/1:
+   A consteval-only value is either
+   -- a reflection value that is not the null reflection value or
+   -- a pointer or pointer-to-member that points to an immediate function
+      or to or past the end of an immediate object.
 
-struct consteval_only_p_walker
+   This function doesn't look for an immediate function; for that, see
+   find_immediate_fndecl.  */
+
+static bool
+consteval_only_value_p (tree t, hash_set<tree> &seen)
 {
-  /* The set of class types we've seen.  */
-  hash_set<tree> class_seen;
-  /* The number of class types we're recursively inside.  */
-  int class_depth = 0;
-  /* True if we've optimistically assumed an already-seen
-     consteval-unknown class type is not consteval.  */
-  bool optimistic_p = false;
+  STRIP_NOPS (t);
 
-  tristate walk (tree);
-};
+  if (REFLECT_EXPR_P (t) && !null_reflection_p (t))
+    return true;
 
-/* True if T is a consteval-only type as per [basic.types.general]/12,
-   or is a declaration with such a type, or a TREE_VEC thereof.  */
+  switch (TREE_CODE (t))
+    {
+    case ADDR_EXPR:
+    case POINTER_PLUS_EXPR:
+    case ARRAY_REF:
+    case COMPONENT_REF:
+      return consteval_only_p (TREE_OPERAND (t, 0), seen);
+    default:
+      break;
+    }
+  return false;
+}
 
-bool
-consteval_only_p (tree t)
+/* Return true if T is an immediate object as per [expr.const.const]/2:
+   An object is an immediate object if its complete object has
+   -- a constituent value that is consteval-only or
+   -- a constituent reference that refers to an immediate object or
+   immediate function.
+
+   Also return true for consteval-only values.  This doesn't check for
+   immediate functions.  */
+
+static bool
+consteval_only_p (tree t, hash_set<tree> &seen)
 {
-  if (!flag_reflection)
+  if (!flag_reflection || !t || t == error_mark_node)
     return false;
 
-  if (!TYPE_P (t))
-    t = TREE_TYPE (t);
+  /* Say that the wrapper itself is consteval-only so that
+     check_out_of_consteval_use_r returns the tree carrying the location.  */
+  STRIP_ANY_LOCATION_WRAPPER (t);
 
-  if (!t || t == error_mark_node)
+  /* Walking COMPONENT_REFs can walk back into a CONSTRUCTOR that's still
+     under construction and we'd loop.  */
+  if (seen.add (t))
     return false;
 
   if (TREE_CODE (t) == TREE_VEC)
     {
       for (tree arg : tree_vec_range (t))
-	if (arg && consteval_only_p (arg))
+	if (arg && consteval_only_p (arg, seen))
 	  return true;
       return false;
     }
 
-  /* For dependent types we can't be sure if this type is consteval-only.  */
-  if (dependent_type_p (t))
-    return false;
+  /* Pull out the initializer.  Don't call fold_non_dependent_expr and
+     similar here because that could prematurely instantiate things.  */
+  if (VAR_P (t))
+    t = DECL_INITIAL (t);
 
-  consteval_only_p_walker walker;
-  return walker.walk (t).is_true ();
+  if (t && TREE_CODE (t) == TARGET_EXPR)
+    t = TARGET_EXPR_INITIAL (t);
+
+  if (t && TREE_CODE (t) == CONSTRUCTOR)
+    {
+      for (constructor_elt &elt : CONSTRUCTOR_ELTS (t))
+	if (consteval_only_p (elt.value, seen))
+	  return true;
+      return false;
+    }
+
+  return t && consteval_only_value_p (t, seen);
 }
 
-/* Recursive workhorse of consteval_only_p.  Returns true if T is definitely
-   consteval-only, false if it's definitely not, and unknown if we saw an
-   incomplete type and therefore don't know.  */
+/* Wrapper for consteval_only_p that sets up a hash set.  */
 
-tristate
-consteval_only_p_walker::walk (tree t)
+bool
+consteval_only_p (tree t)
 {
-  if (t == error_mark_node)
-    return false;
-
-  t = TYPE_MAIN_VARIANT (t);
-
-  if (REFLECTION_TYPE_P (t))
-    return true;
-  else if (INDIRECT_TYPE_P (t))
-    return walk (TREE_TYPE (t));
-  else if (TREE_CODE (t) == ARRAY_TYPE)
-    return walk (TREE_TYPE (t));
-  else if (FUNC_OR_METHOD_TYPE_P (t))
-    {
-      tristate r = walk (TREE_TYPE (t));
-      for (tree parm = TYPE_ARG_TYPES (t);
-	   parm != NULL_TREE && parm != void_list_node;
-	   parm = TREE_CHAIN (parm))
-	{
-	  if (r.is_true ())
-	    break;
-	  r = r || walk (TREE_VALUE (parm));
-	}
-      return r;
-    }
-  else if (RECORD_OR_UNION_TYPE_P (t))
-    {
-      if (tree *slot = hash_map_safe_get (consteval_only_class_cache, t))
-	return *slot == boolean_true_node;
-
-      if (!COMPLETE_TYPE_P (t) && LAMBDA_TYPE_P (t))
-	/* Defer until we've definitely gone through prune_lambda_captures.  */
-	return tristate::unknown ();
-
-      if (class_seen.add (t))
-	{
-	  /* Optimistically assume this already seen consteval-unknown class is
-	     not consteval-only, for sake of mutually recursive classes.  */
-	  optimistic_p = true;
-	  return false;
-	}
-      ++class_depth;
-
-      tristate r = COMPLETE_TYPE_P (t) ? false : tristate::unknown ();
-      for (tree member = TYPE_FIELDS (t); member; member = DECL_CHAIN (member))
-	if (TREE_CODE (member) == FIELD_DECL)
-	  {
-	    r = r || walk (TREE_TYPE (member));
-	    if (r.is_true ())
-	      break;
-	  }
-
-      if (r.is_true ())
-	hash_map_safe_put<hm_ggc> (consteval_only_class_cache,
-				   t, boolean_true_node);
-      else if (r.is_false ()
-	       /* The optimistic assumption above is at odds with caching
-		  'false' results for a nested class type.  */
-	       && (class_depth == 1 || !optimistic_p))
-	hash_map_safe_put<hm_ggc> (consteval_only_class_cache,
-				   t, boolean_false_node);
-
-      --class_depth;
-      return r;
-    }
-  else if (TYPE_PTRMEM_P (t))
-    return (walk (TYPE_PTRMEM_CLASS_TYPE (t))
-	    || walk (TYPE_PTRMEM_POINTED_TO_TYPE (t)));
-  else
-    return false;
+  hash_set<tree> seen;
+  return consteval_only_p (t, seen);
 }
 
 /* A walker for check_out_of_consteval_use_r.  It cannot be a lambda, because
    we have to call this recursively.  */
 
 static tree
-check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset)
+check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset_)
 {
   tree t = *tp;
+  auto pset = static_cast<hash_set<tree> *>(pset_);
 
   /* No need to look into types or unevaluated operands.  */
   if (TYPE_P (t)
       || (unevaluated_p (TREE_CODE (t)) && !REFLECT_EXPR_P (t))
-      /* Don't walk INIT_EXPRs, because we'd emit bogus errors about
-	 member initializers.  */
-      || TREE_CODE (t) == INIT_EXPR
-      /* And don't recurse on DECL_EXPRs.  */
+      /* Don't recurse on DECL_EXPRs.  */
       || TREE_CODE (t) == DECL_EXPR
       /* Neither into USING_STMT.  */
       || TREE_CODE (t) == USING_STMT
       /* The operand of a splice is a constant-expression, thus
-	 manifestly constant-evaluated, so consteval-only types are permitted
+	 manifestly constant-evaluated, so consteval-only values are permitted
 	 here.  */
       || TREE_CODE (t) == SPLICE_EXPR
       /* Blocks can appear in the TREE_VEC operand of OpenMP
@@ -8980,19 +8971,33 @@ check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset)
 	return NULL_TREE;
       }
 
+  if (TREE_CODE (t) == EXPR_STMT)
+    {
+      if (tree r = cp_walk_tree (&EXPR_STMT_EXPR (t),
+				 check_out_of_consteval_use_r, pset, pset))
+	{
+	  /* If we can't give a precise location of the expression,
+	     use the location of the whole statement.  */
+	  if (cp_expr_location (r) == UNKNOWN_LOCATION)
+	    return t;
+	  return r;
+	}
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+
   if (VAR_P (t) && DECL_HAS_VALUE_EXPR_P (t))
     {
       tree vexpr = DECL_VALUE_EXPR (t);
       if (tree ret = cp_walk_tree (&vexpr, check_out_of_consteval_use_r, pset,
-				   (hash_set<tree> *) pset))
+				   pset))
 	return ret;
     }
 
   if (TREE_CODE (t) == BIND_EXPR)
     {
       if (tree r = cp_walk_tree (&BIND_EXPR_BODY (t),
-				 check_out_of_consteval_use_r, pset,
-				 static_cast<hash_set<tree> *>(pset)))
+				 check_out_of_consteval_use_r, pset, pset))
 	return r;
       /* Don't walk BIND_EXPR_VARS.  */
       *walk_subtrees = false;
@@ -9004,8 +9009,7 @@ check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset)
       if (IF_STMT_CONSTEVAL_P (t))
 	{
 	  if (tree r = cp_walk_tree (&ELSE_CLAUSE (t),
-				     check_out_of_consteval_use_r, pset,
-				     static_cast<hash_set<tree> *>(pset)))
+				     check_out_of_consteval_use_r, pset, pset))
 	    return r;
 	  /* Don't walk the consteval branch.  */
 	  *walk_subtrees = false;
@@ -9014,12 +9018,10 @@ check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset)
       else if (IF_STMT_CONSTEXPR_P (t))
 	{
 	  if (tree r = cp_walk_tree (&THEN_CLAUSE (t),
-				     check_out_of_consteval_use_r, pset,
-				     static_cast<hash_set<tree> *>(pset)))
+				     check_out_of_consteval_use_r, pset, pset))
 	    return r;
 	  if (tree r = cp_walk_tree (&ELSE_CLAUSE (t),
-				     check_out_of_consteval_use_r, pset,
-				     static_cast<hash_set<tree> *>(pset)))
+				     check_out_of_consteval_use_r, pset, pset))
 	    return r;
 	  /* Don't walk the condition -- it's a manifestly constant-evaluated
 	     context.  */
@@ -9039,8 +9041,7 @@ check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset)
       return NULL_TREE;
     }
 
-  /* Now check the type to see if we are dealing with a consteval-only
-     expression.  */
+  /* If we don't find an immediate object, there's nothing to do.  */
   if (!consteval_only_p (t))
     return NULL_TREE;
 
@@ -9067,7 +9068,15 @@ check_out_of_consteval_use_r (tree *tp, int *walk_subtrees, void *pset)
 
 /* Detect if a consteval-only expression EXPR or a consteval-only
    variable EXPR not declared constexpr is used outside
-   a manifestly constant-evaluated context.  E.g.:
+   a manifestly constant-evaluated context.
+
+   [expr.const.const]/3: Every immediate object shall be
+   -- the object associated with a constexpr variable or a subobject thereof,
+   -- a template parameter object ([temp.param]) or a subject thereof, or
+   -- an object whose lifetime begins and ends during the evaluation of
+      a core constant expression.
+
+   E.g.:
 
      void f() {
        constexpr auto r = ^^int;  // OK
@@ -9098,20 +9107,9 @@ check_out_of_consteval_use (tree expr, bool complain/*=true*/)
   if (tree t = cp_walk_tree (&expr, check_out_of_consteval_use_r, &pset, &pset))
     {
       if (complain)
-	{
-	  if (VAR_P (t) && !DECL_DECLARED_CONSTEXPR_P (t))
-	    {
-	      auto_diagnostic_group d;
-	      error_at (cp_expr_loc_or_input_loc (t),
-			"consteval-only variable %qD not declared %<constexpr%> "
-			"used outside a constant-evaluated context", t);
-	      inform (DECL_SOURCE_LOCATION (t), "add %<constexpr%>");
-	    }
-	  else
-	    error_at (cp_expr_loc_or_input_loc (t),
-		      "consteval-only expressions are only allowed in "
-		      "a constant-evaluated context");
-	}
+	error_at (cp_expr_loc_or_loc (t, cp_expr_loc_or_input_loc (expr)),
+		  "consteval-only value outside an immediate function "
+		  "context");
       return true;
     }
 
@@ -9123,6 +9121,9 @@ check_out_of_consteval_use (tree expr, bool complain/*=true*/)
 bool
 compare_reflections (tree lhs, tree rhs)
 {
+  if (null_reflection_p (lhs) || null_reflection_p (rhs))
+    return null_reflection_p (lhs) == null_reflection_p (rhs);
+
   reflect_kind lkind;
   do
     {
@@ -9242,21 +9243,6 @@ valid_splice_for_member_access_p (const_tree t, bool decls_only_p/*=true*/)
   return (BASELINK_P (t)
 	  || TREE_CODE (t) == TEMPLATE_ID_EXPR
 	  || TREE_CODE (t) == TREE_BINFO);
-}
-
-/* Check a function DECL for CWG 3115: Every function of consteval-only
-   type shall be an immediate function.  */
-
-void
-check_consteval_only_fn (tree decl)
-{
-  if (!DECL_IMMEDIATE_FUNCTION_P (decl)
-      && consteval_only_p (decl)
-      /* But if the function can be escalated, merrily we roll along.  */
-      && !immediate_escalating_function_p (decl))
-    error_at (DECL_SOURCE_LOCATION (decl),
-	      "function of consteval-only type must be declared %qs",
-	      "consteval");
 }
 
 /* Check if T is a valid result of splice-expression.  ADDRESS_P is true if
