@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fgimple -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fgimple -fdump-tree-optimized -fno-signed-zeros" } */
 
 void __GIMPLE
 foo (__SVFloat64_t x, __SVFloat64_t y, __SVFloat64_t *res1,

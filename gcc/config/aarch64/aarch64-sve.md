@@ -8297,7 +8297,7 @@
 	   [(match_operand:SVE_FULL_F 1 "register_operand")
 	    (match_operand:SVE_FULL_F 2 "register_operand")]
 	  FCMUL_OP))]
-  "TARGET_SVE"
+  "TARGET_SVE && !HONOR_SIGNED_ZEROS (<MODE>mode)"
 {
   rtx pred_reg = aarch64_ptrue_reg (<VPRED>mode);
   rtx gp_mode = gen_int_mode (SVE_RELAXED_GP, SImode);

@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-additional-options "-O2 -march=armv8.3-a" }
+! { dg-additional-options "-O2 -march=armv8.3-a -fno-signed-zeros" }
 
 subroutine c_add_ab(n, a, c, b)         ! C += A * B
   use iso_fortran_env, only: real64

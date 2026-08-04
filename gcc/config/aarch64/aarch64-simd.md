@@ -670,7 +670,7 @@
 	(unspec:VHSDF [(match_operand:VHSDF 1 "register_operand")
 		       (match_operand:VHSDF 2 "register_operand")]
 		       FCMUL_OP))]
-  "TARGET_COMPLEX && !BYTES_BIG_ENDIAN"
+  "TARGET_COMPLEX && !BYTES_BIG_ENDIAN && !HONOR_SIGNED_ZEROS (<MODE>mode)"
 {
   rtx tmp = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
   rtx res1 = gen_reg_rtx (<MODE>mode);
