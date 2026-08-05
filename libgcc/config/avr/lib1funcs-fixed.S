@@ -1568,118 +1568,171 @@ ENDF __divqq_helper
 /*******************************************************
     Fractional Division 16 / 16
 *******************************************************/
-#define r_divdL 26     /* dividend Low */
-#define r_divdH 27     /* dividend Hig */
-#define r_quoL  24     /* quotient Low */
-#define r_quoH  25     /* quotient High */
-#define r_divL  22     /* divisor */
-#define r_divH  23     /* divisor */
-#define r_cnt   21
+;;; Argument 1: Dividend and remainder
+#define A0 26
+#define A1 A0+1
+
+;;; Argument 2: Divisor
+#define B0 22
+#define B1 B0+1
+
+;;; Return value: Quotient
+#define Q0 24
+#define Q1 Q0+1
+
+#define Cnt 21
+#define Sign __tmp_reg__
 
 #if defined (L_divhq3)
-DEFUN   __divhq3
-    mov     __tmp_reg__, r_divdH
-    eor     __tmp_reg__, r_divH
-    sbrs    r_divH, 7
-    rjmp    1f
-    NEG2    r_divL
+;;;  (set (reg:HQ 24)
+;;;       (ss_div:HQ (reg:HQ 26)
+;;;                  (reg:HQ 22)))
+;;;  (clobber (reg:HI 26))
+;;;  (clobber (reg:QI 21))
+;;; Rounds towards zero.  Overflow saturates.
+DEFUN __divhq3
+ENTRY __ssdivhq3
+    mov     Sign, A1
+    tst     B1
+    brpl 1f
+    com     Sign
+    NEG2    B0
 1:
-    sbrs    r_divdH, 7
-    rjmp    2f
-    NEG2    r_divdL
+    tst     A1
+    brpl 2f
+    NEG2    A0
 2:
-    cp      r_divdL, r_divL
-    cpc     r_divdH, r_divH
-    breq    __divhq3_minus1  ; if equal return -1
-    XCALL   __udivuhq3
-    lsr     r_quoH
-    ror     r_quoL
-    brpl    9f
-    ;; negate result if needed
-    NEG2    r_quoL
-9:
-    ret
-__divhq3_minus1:
-    ldi     r_quoH, 0x80
-    clr     r_quoL
-    ret
+    lsr     A1                  ; Adjust for FBIT = 15.
+    ror     A0                  ; Pass LSB in C.
+    clr     Q1
+    XCALL   __udivuhq3.2
+    XJMP    __divQ16_tail
 ENDF __divhq3
 #endif  /* defined (L_divhq3) */
 
-#if defined (L_udivuhq3)
-DEFUN   __udivuhq3
-    sub     r_quoH,r_quoH   ; clear quotient and carry
-    ;; FALLTHRU
-ENDF __udivuhq3
-
-DEFUN   __udivuha3_common
-    clr     r_quoL          ; clear quotient
-    ldi     r_cnt,16        ; init loop counter
-__udivuhq3_loop:
-    rol     r_divdL         ; shift dividend (with CARRY)
-    rol     r_divdH
-    brcs    __udivuhq3_ep   ; dividend overflow
-    cp      r_divdL,r_divL  ; compare dividend & divisor
-    cpc     r_divdH,r_divH
-    brcc    __udivuhq3_ep   ; dividend >= divisor
-    rol     r_quoL          ; shift quotient (with CARRY)
-    rjmp    __udivuhq3_cont
-__udivuhq3_ep:
-    sub     r_divdL,r_divL  ; restore dividend
-    sbc     r_divdH,r_divH
-    lsl     r_quoL          ; shift quotient (without CARRY)
-__udivuhq3_cont:
-    rol     r_quoH          ; shift quotient
-    dec     r_cnt           ; decrement loop counter
-    brne    __udivuhq3_loop
-    com     r_quoL          ; complement result
-    com     r_quoH          ; because C flag was complemented in loop
+#if defined (L_divQ16_tail)
+DEFUN __divQ16_tail
+    ;; In the negative result case, Q = 0x80.. is no overflow,
+    ;; but treating it as such keeps the value unchanged.
+    brmi    .Lsaturate          ; N = sign (Q)
+    ;; Negate result as needed.
+    sbrs    Sign, 7
     ret
-ENDF __udivuha3_common
+    NEG2    Q0
+    ret
+.Lsaturate:
+    ;; Sign.7 = 0 -> 0x7f..
+    ;; Sign.7 = 1 -> 0x80..
+#ifndef __AVR_TINY__
+    ldi     Q0, lo8(0x7fff)
+    ldi     Q1, hi8(0x7fff)
+    sbrc    Sign, 7
+    adiw    Q0, 1
+#else
+    cpi     Sign, 0x80
+    sbc     Q0, Q0
+    sbc     Q1, Q1
+    subi    Q1, 0x80
+#endif
+    ret
+ENDF __divQ16_tail
+#endif /* L_divQ16_tail */
+
+#if defined (L_udivuhq3)
+;;;  (set (reg:UHQ 24)
+;;;       (us_div:UHQ (reg:UHQ 26)
+;;;                   (reg:UHQ 22)))
+;;;  (clobber (reg:HI 26))
+;;;  (clobber (reg:QI 21))
+;;; Rounds towards zero.  Overflow saturates.
+DEFUN __udivuhq3
+ENTRY __usdivuhq3
+    sub     Q1, Q1      ; CLC
+ENTRY __udivuhq3.2
+    clr     Q0          ; Clear quotient
+    ldi     Cnt, 16     ; Init loop counter.
+    ;; C = 0 (unsigned).
+    ;; C = LSB from the caller (signed).
+.Loop:
+    rol     A0          ; Shift one more dividend bit into the remainder.
+    rol     A1
+    brcs .Lsub          ; Divisor always fits in remainder?
+    cp      A0, B0      ; Remainder >= B?
+    cpc     A1, B1
+    brcc .Lsub
+    rol     Q0          ; No: Shift quotient with C = 1 (0 in result).
+    rjmp .Lcont
+.Lsub:
+    sub     A0, B0      ; Yes: Restore remainder by subtracting B...
+    sbc     A1, B1
+    lsl     Q0          ; ...and shift quotient with C = 0 (1 in result).
+.Lcont:
+    rol     Q1          ; Shift quotient.
+    dec     Cnt         ; Decrement loop counter.
+    brne .Loop
+    com     Q0          ; Complement result because C was
+    com     Q1          ; complemented in the loop.
+    ret                 ; N = sign (Q).
+ENDF __udivuhq3
 #endif  /* defined (L_udivuhq3) */
 
 /*******************************************************
     Fixed Division 8.8 / 8.8
 *******************************************************/
 #if defined (L_divha3)
-DEFUN   __divha3
-    mov     __tmp_reg__, r_divdH
-    eor     __tmp_reg__, r_divH
-    sbrs    r_divH, 7
-    rjmp    1f
-    NEG2    r_divL
+;;;  (set (reg:HA 24)
+;;;       (ss_div:HA (reg:HA 26)
+;;;                  (reg:HA 22)))
+;;;  (clobber (reg:HI 26))
+;;;  (clobber (reg:QI 21))
+;;; Rounds towards zero.  Overflow saturates.
+DEFUN __divha3
+ENTRY __ssdivha3
+    mov     Sign, A1
+    tst     B1
+    brpl 1f
+    com     Sign
+    NEG2    B0
 1:
-    sbrs    r_divdH, 7
-    rjmp    2f
-    NEG2    r_divdL
+    tst     A1
+    brpl 2f
+    NEG2    A0
 2:
-    XCALL   __udivuha3
-    lsr     r_quoH  ; adjust to 7 fractional bits
-    ror     r_quoL
-    sbrs    __tmp_reg__, 7  ; negate result if needed
-    ret
-    NEG2    r_quoL
-    ret
+    lsr     A1              ; Adjust to FBIT = 7.
+    ror     A0              ; Pass LSB in C.
+    XCALL   __udivuha3.2    ; N = sign (Q)
+    XJMP    __divQ16_tail
 ENDF __divha3
 #endif  /* defined (L_divha3) */
 
 #if defined (L_udivuha3)
-DEFUN   __udivuha3
-    mov     r_quoH, r_divdL
-    mov     r_divdL, r_divdH
-    clr     r_divdH
-    lsl     r_quoH     ; shift quotient into carry
-    XJMP    __udivuha3_common ; same as fractional after rearrange
+;;;  (set (reg:UHA 24)
+;;;       (us_div:UHA (reg:UHA 26)
+;;;                   (reg:UHA 22)))
+;;;  (clobber (reg:HI 26))
+;;;  (clobber (reg:QI 21))
+;;; Rounds towards zero.  Overflow saturates.
+DEFUN __udivuha3
+ENTRY __usdivuha3
+    clc
+ENTRY __udivuha3.2
+    mov     Q1, A0          ; Put dividend in A0:Q1.
+    mov     A0, A1
+    clr     A1
+    rol     Q1              ; Shift quotient into carry.
+    XJMP    __udivuhq3.2    ; Same as fractional after rearrange.
 ENDF __udivuha3
 #endif  /* defined (L_udivuha3) */
 
-#undef  r_divdL
-#undef  r_divdH
-#undef  r_quoL
-#undef  r_quoH
-#undef  r_divL
-#undef  r_divH
-#undef  r_cnt
+#undef A0
+#undef A1
+#undef Q0
+#undef Q1
+#undef B0
+#undef B1
+#undef Cnt
+#undef Sign
+
 
 /*********************************************************
     Fixed 16.16 and s16.15 saturated [U]SAmode Divisions

@@ -503,48 +503,54 @@
   "%~call __<code><mode>3"
   [(set_attr "type" "xcall")])
 
-;; "divhq3" "udivuhq3"
-;; "divha3" "udivuha3"
-(define_expand "<code><mode>3"
+;; "divhq3" "udivuhq3" "ssdivhq3" "usdivuhq3"
+;; "divha3" "udivuha3" "ssdivha3" "usdivuha3"
+(define_expand "<code_stdname><mode>3"
   [(set (reg:ALL2QA 26)
         (match_operand:ALL2QA 1 "register_operand" ""))
    (set (reg:ALL2QA 22)
         (match_operand:ALL2QA 2 "register_operand" ""))
    (parallel [(set (reg:ALL2QA 24)
-                   (usdiv:ALL2QA (reg:ALL2QA 26)
-                                 (reg:ALL2QA 22)))
+                   (alldiv:ALL2QA (reg:ALL2QA 26)
+                                  (reg:ALL2QA 22)))
               (clobber (reg:HI 26))
               (clobber (reg:QI 21))])
    (set (match_operand:ALL2QA 0 "register_operand" "")
         (reg:ALL2QA 24))]
-  ""
+  "SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
+   == (<CODE> == DIV || <CODE> == SS_DIV)"
   {
     avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, 26));
   })
 
-;; "*divhq3.call" "*udivuhq3.call"
-;; "*divha3.call" "*udivuha3.call"
-(define_insn_and_split "*<code><mode>3.call_split"
+;; "*divhq3.split" "*udivuhq3.split" "*ssdivhq3.split" "*usdivuhq3.split"
+;; "*divha3.split" "*udivuha3.split" "*ssdivha3.split" "*usdivuha3.split"
+(define_insn_and_split "*<code_stdname><mode>3.split"
   [(set (reg:ALL2QA 24)
-        (usdiv:ALL2QA (reg:ALL2QA 26)
-                      (reg:ALL2QA 22)))
+        (alldiv:ALL2QA (reg:ALL2QA 26)
+                       (reg:ALL2QA 22)))
    (clobber (reg:HI 26))
    (clobber (reg:QI 21))]
-  ""
+  "SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
+   == (<CODE> == DIV || <CODE> == SS_DIV)"
   "#"
   "&& reload_completed"
   [(scratch)]
   { DONE_ADD_CCC })
 
-(define_insn "*<code><mode>3.call"
+;; "*divhq3.call" "*udivuhq3.call" "*ssdivhq3.call" "*usdivuhq3.call"
+;; "*divha3.call" "*udivuha3.call" "*ssdivha3.call" "*usdivuha3.call"
+(define_insn "*<code_stdname><mode>3.call"
   [(set (reg:ALL2QA 24)
-        (usdiv:ALL2QA (reg:ALL2QA 26)
-                      (reg:ALL2QA 22)))
+        (alldiv:ALL2QA (reg:ALL2QA 26)
+                       (reg:ALL2QA 22)))
    (clobber (reg:HI 26))
    (clobber (reg:QI 21))
    (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "%~call __<code><mode>3"
+  "reload_completed
+   && SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
+      == (<CODE> == DIV || <CODE> == SS_DIV)"
+  "%~call __<code_stdname><mode>3"
   [(set_attr "type" "xcall")])
 
 ;; Note the first parameter gets passed in already offset by 2 bytes

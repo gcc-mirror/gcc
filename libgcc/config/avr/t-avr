@@ -42,7 +42,7 @@ LIB1ASMFUNCS = \
 	_mulha3 _muluha3 _muluha3_round \
 	_usmuluha3 _ssmulha3 \
 	_divqq3 _udivuqq3 _divqq_helper \
-	_divhq3 _udivuhq3 \
+	_divhq3 _udivuhq3 _divQ16_tail \
 	_divha3 _udivuha3 \
 	_divsa3 _udivusa3 \
 	_ssneg_2 \
