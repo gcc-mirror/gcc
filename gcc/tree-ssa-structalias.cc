@@ -934,7 +934,7 @@ find_what_p_points_to (tree fndecl, tree p)
   varinfo_t vi;
   prange vr;
   get_range_query (DECL_STRUCT_FUNCTION (fndecl))->range_of_expr (vr, p);
-  bool nonnull = vr.nonzero_p ();
+  bool nonnull = !vr.contains_zero_p ();
 
   /* For parameters, get at the points-to set for the actual parm
      decl.  */

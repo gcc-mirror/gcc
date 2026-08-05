@@ -429,7 +429,7 @@ set_range_info (tree name, const vrange &r)
     {
       struct ptr_info_def *pi = get_ptr_info (name);
       // If R is nonnull and pi is not, set nonnull.
-      if (r.nonzero_p () && (!pi || pi->pt.null))
+      if (!r.contains_zero_p () && (!pi || pi->pt.null))
 	set_ptr_nonnull (name);
       else
 	return false;

@@ -5161,7 +5161,7 @@ region_model::eval_condition (const svalue *lhs,
 		  {
 		    if (out.zero_p ())
 		      return tristate::TS_FALSE;
-		    if (out.nonzero_p ())
+		    if (!out.contains_zero_p ())
 		      return tristate::TS_TRUE;
 		  }
 	      }

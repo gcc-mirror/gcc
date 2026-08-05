@@ -1139,7 +1139,7 @@ execute_ranger_vrp (struct function *fun, bool final_p)
 	{
 	  ipa_record_return_value_range (return_range);
 	  if (POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (current_function_decl)))
-	      && return_range.nonzero_p ()
+	      && !return_range.contains_zero_p ()
 	      && cgraph_node::get (current_function_decl)
 			->add_detected_attribute ("returns_nonnull"))
 	    warn_function_returns_nonnull (current_function_decl);

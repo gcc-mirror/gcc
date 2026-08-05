@@ -460,7 +460,7 @@ path_range_query::adjust_for_non_null_uses (basic_block bb)
 
       if (get_cache (r, name))
 	{
-	  if (r.nonzero_p ())
+	  if (!r.contains_zero_p ())
 	    continue;
 	}
       else
