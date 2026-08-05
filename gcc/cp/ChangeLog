@@ -1,3 +1,11 @@
+2026-08-04  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR analyzer/119697
+	* except.cc (can_convert_eh): Make non-static.
+	* cp-tree.h (can_convert_eh): Declare.
+	* cp-lang.cc (LANG_HOOKS_EH_MAY_CATCH_P): Define as
+	can_convert_eh.
+
 2026-08-03  EienMiku  <121539739@qq.com>
 
 	* reflect.cc (get_reflection): Add missing "to" in diagnostic.

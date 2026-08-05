@@ -1,3 +1,8 @@
+2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.y (selected_name): Use %<-dialect ibm%> instead of just
+	-dialect ibm.
+
 2026-08-03  James K. Lowden  <jklowden@cobolworx.com>
 
 	* lexio.cc (skip_quoted_literal): New function.

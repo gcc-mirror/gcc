@@ -1,3 +1,10 @@
+2026-08-04  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR analyzer/119697
+	* ops.cc: Include "langhooks.h".
+	(exception_matches_type_p): Use the exception_matches_type_p
+	langhook; fix catch/exception argument order.
+
 2026-07-28  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
 
 	PR analyzer/97114

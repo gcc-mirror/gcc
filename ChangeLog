@@ -1,3 +1,16 @@
+2026-08-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* Makefile.tpl ([+compare-target+]): Run object comparisons through an
+	invocation-specific parallel sub-make.  Collect sorted failure shards
+	and clean temporary state on exit.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2026-08-04  Jim Lin  <jim@andestech.com>
+
+	* MAINTAINERS: Add myself.
+	* MAINTAINERS.yml: Regenerate.
+
 2026-07-25  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
 
 	* MAINTAINERS: Add myself.

@@ -1,3 +1,9 @@
+2026-08-04  Даниил Гусев  <d.gusev2007@gmail.com>
+
+	* download_prerequisites (base_url): Allow overriding via the
+	GCC_PREREQUISITES_BASE_URL environment variable.  Document it
+	in --help output.
+
 2026-07-29  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* check_GNU_style_lib.py: Use visual tab size rather than

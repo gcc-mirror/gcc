@@ -1,3 +1,8 @@
+2026-08-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* acx.m4 (ACX_PROG_CMP_IGNORE_INITIAL): Use process-specific temporary
+	files and clean them on exit.  Diagnose tail failures as errors.
+
 2026-07-31  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

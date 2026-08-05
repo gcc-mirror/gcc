@@ -1,3 +1,223 @@
+2026-08-04  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/126550
+	* gcc.target/riscv/rvv/autovec/pr126550-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr126550.c: New test.
+
+2026-08-04  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126242
+	PR tree-optimization/126325
+	* gcc.dg/pr126325.c: New test case.
+	* gfortran.dg/pr126242.f90: New reduced test case.
+	* gfortran.dg/pr41928-2.f90: Also compile pr41928.f90 with -Ofast.
+
+2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* gcc.dg/pr126464.c: Guard uses of 1e300 with
+	__DBL_MAX_10_EXP__ >= 301 and uses of 1e4000L with
+	__LDBL_MAX_10_EXP__ >= 4001.
+
+2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124948
+	* gcc.dg/torture/bitint-100.c: Require also sync_int_long effective
+	target.
+
+2026-08-04  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/100173
+	* gcc.dg/tree-ssa/factor_op_phi-load-target_mem-1.c: New test.
+
+2026-08-04  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	Revert:
+	2026-08-04  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+		    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/107090
+	* lib/target-supports.exp: Add check_effective_target_oi_mode,
+	which enumerates targets whose mode table declares OImode.
+	* gcc.dg/long-mul-128-Og.c: New test.
+	* gcc.dg/torture/long-mul-128.c: New test.
+	* gcc.dg/torture/long-mul-64-run.c: New test.
+	* gcc.dg/tree-ssa/long-mul-boundary-64.c: New test.
+	* gcc.dg/tree-ssa/long-mul-boundary.c: New test.
+	* gcc.dg/tree-ssa/long-mul-carry.c: New test.
+	* gcc.dg/tree-ssa/long-mul-chain-cse-128.c: New test.
+	* gcc.dg/tree-ssa/long-mul-chain-trunc-128.c: New test.
+	* gcc.dg/tree-ssa/long-mul-extra-addend.c: New test.
+	* gcc.dg/tree-ssa/long-mul-ladder.c: New test.
+	* gcc.dg/tree-ssa/long-mul-low-plus.c: New test.
+	* gcc.dg/tree-ssa/long-mul-partial.c: New test.
+	* gcc.dg/tree-ssa/long-mul-two-carry.c: New test.
+	* gcc.target/aarch64/long_mul.c: New test.
+	* gcc.target/arm/long-mul-thumb1-inline.c: New test.
+	* gcc.target/arm/long-mul-umull.c: New test.
+	* gcc.target/i386/long_mul.c: New test.
+	* gcc.target/i386/widen_mult_high_chain.c: New test.
+
+2026-08-04  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/107090
+	* lib/target-supports.exp: Add check_effective_target_oi_mode,
+	which enumerates targets whose mode table declares OImode.
+	* gcc.dg/long-mul-128-Og.c: New test.
+	* gcc.dg/torture/long-mul-128.c: New test.
+	* gcc.dg/torture/long-mul-64-run.c: New test.
+	* gcc.dg/tree-ssa/long-mul-boundary-64.c: New test.
+	* gcc.dg/tree-ssa/long-mul-boundary.c: New test.
+	* gcc.dg/tree-ssa/long-mul-carry.c: New test.
+	* gcc.dg/tree-ssa/long-mul-chain-cse-128.c: New test.
+	* gcc.dg/tree-ssa/long-mul-chain-trunc-128.c: New test.
+	* gcc.dg/tree-ssa/long-mul-extra-addend.c: New test.
+	* gcc.dg/tree-ssa/long-mul-ladder.c: New test.
+	* gcc.dg/tree-ssa/long-mul-low-plus.c: New test.
+	* gcc.dg/tree-ssa/long-mul-partial.c: New test.
+	* gcc.dg/tree-ssa/long-mul-two-carry.c: New test.
+	* gcc.target/aarch64/long_mul.c: New test.
+	* gcc.target/arm/long-mul-thumb1-inline.c: New test.
+	* gcc.target/arm/long-mul-umull.c: New test.
+	* gcc.target/i386/long_mul.c: New test.
+	* gcc.target/i386/widen_mult_high_chain.c: New test.
+
+2026-08-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/maskcmp-1.c: New test.
+	* gcc.dg/bic-bitmask-19.c: Anchor the comparison scan.
+	* gcc.dg/pr68217.c: Return the masked value.
+	* gcc.dg/tree-ssa/maskcmp-overflow-1.c: New test.
+	* gcc.dg/tree-ssa/maskcmp-overflow-2.c: New test.
+
+2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126593
+	* gcc.target/aarch64/pr126593.c: New test.
+
+2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126301
+	* gcc.target/aarch64/sve/peeled.c: New test.
+	* gcc.target/aarch64/sve/peeled1.c: New test.
+	* gcc.target/aarch64/sve/peeled1_run.c: New test.
+	* gcc.target/aarch64/sve/peeled2.c: New test.
+	* gcc.target/aarch64/sve/peeled2_run.c: New test.
+	* gcc.target/aarch64/sve/peeled_run.c: New test.
+	* gcc.target/aarch64/sve/peeled3.c: New file.
+	* gcc.target/aarch64/sve/peeled3_run.c: New file.
+
+2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126592
+	* gcc.target/aarch64/pr126592.c: New test.
+
+2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/126589
+	* gcc.target/aarch64/sve/complex_mul_1.c: Add -fno-signed-zeros.
+	* gfortran.target/aarch64/pr122408_1.f90: Likewise.
+	* gcc.target/aarch64/pr126589.c: New test.
+	* gcc.target/aarch64/sve/pr126589.c: New test.
+
+2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126602
+	* gcc.target/aarch64/sve/pr126602.c: New test.
+
+2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126369
+	* gcc.target/aarch64/sve/peeled4.c: New test.
+
+2026-08-04  Aleksa Paunovic  <aleksa.paunovic@htecgroup.com>
+
+	* gcc.target/riscv/amo/big-endian-subword-amo-hi.c: New test.
+	* gcc.target/riscv/amo/big-endian-subword-amo-qi.c: New test.
+
+2026-08-04  Shreya Munnangi  <smunnang@qti.qualcomm.com>
+
+	PR target/108031
+	* gcc.target/riscv/pr108031.c: New test.
+
+2026-08-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/124043
+	* gcc.target/arm/crypto-vsha1cq_u32.c: Remove xfail on vdup.
+	* gcc.target/arm/crypto-vsha1h_u32.c: Likewise.
+	* gcc.target/arm/crypto-vsha1mq_u32.c: Likewise.
+	* gcc.target/arm/crypto-vsha1pq_u32.c: Likewise.
+
+2026-08-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/arm/crypto-vsha1cq_u32.c: Don't expect a vmov.32 in
+	the generated code.
+	* gcc.target/arm/crypto-vsha1h_u32.c: Likewise.
+	* gcc.target/arm/crypto-vsha1mq_u32.c: Likewise.
+	* gcc.target/arm/crypto-vsha1pq_u32.c: Likewise.
+	* gcc.target/arm/armv8_2-fp16-neon-1.c: Update expected output.
+	* gcc.target/arm/armv8_2-fp16-neon-2.c: Likewise.
+
+2026-08-04  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR analyzer/119697
+	* g++.dg/analyzer/exception-dynamic-spec.C: Remove xfail.
+	* g++.dg/analyzer/exception-subclass-1.C: Remove xfail.
+	__analyzer_dump_path in the catch handler.
+	* g++.dg/analyzer/exception-subclass-2.C: Add
+	__analyzer_dump_path in the catch handler;
+	Add __analyzer_eval to interprocedural call.
+	* g++.dg/analyzer/exception-subclass-3.C: New test.
+	* g++.dg/analyzer/exception-subclass-4.C: New test.
+	* g++.dg/analyzer/multiple-inheritance-1.C: New test.
+
+2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126601
+	* gcc.dg/tree-ssa/pr126601.c: New test.
+
+2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126564
+	* gcc.dg/torture/pr126564.c: New test.
+
+2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126549
+	* gcc.dg/torture/pr126549.c: New test.
+	* gcc.dg/torture/bitint-107.c: New test.
+
+2026-08-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/116815
+	* gcc.target/aarch64/pr116815-4.c: New test.
+
+2026-08-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/sched-deps-debug-1.c: New test.
+
+2026-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126320
+	PR target/126450
+	PR target/126529
+	* gcc.target/i386/pr126529-1.c: New test.
+	* gcc.target/i386/pr126529-2.c: Likewise.
+	* gcc.target/i386/pr126529-3.c: Likewise.
+	* gcc.target/i386/pr126529-4.c: Likewise.
+
+2026-08-04  Jin Ma  <jinma@linux.alibaba.com>
+
+	* g++.target/riscv/stack-tie-unwind.C: New test.
+	* gcc.target/riscv/stack-tie-no-fp.c: New test.
+
+2026-08-04  Avinal Kumar  <avinal.xlvii@gmail.com>
+
+	PR tree-optimization/101650
+	* gcc.dg/tree-ssa/bitcmp-7.c: New test.
+
 2026-08-03  EienMiku  <121539739@qq.com>
 
 	* g++.dg/reflect/expr9.C: Adjust expected diagnostic.
