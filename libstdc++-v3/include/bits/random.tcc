@@ -3706,10 +3706,10 @@ namespace __detail
       // Commented-out assignments below are of values specified in
       //  the Standard, but not used here for reasons noted.
       // r = 2;  // Redundant, we only support radix 2.
-      using _Rng = decltype(_Urbg::max());
-      const _Rng __rng_range_less_1 = _Urbg::max() - _Urbg::min();
+      using _URng = typename make_unsigned<decltype(_Urbg::max())>::type;
+      const _URng __rng_range_less_1(_Urbg::max() - _Urbg::min());
       // R = _UInt(__rng_range_less_1) + 1;  // May wrap to 0.
-      const auto __log2_R = __builtin_popcountg(__rng_range_less_1);
+      const auto __log2_R = std::__popcount(__rng_range_less_1);
       const auto __log2_uint_max = sizeof(_UInt) * __CHAR_BIT__;
       // rd = _UInt(1) << __d;  // Could overflow, UB.
       const unsigned __k = (__d + __log2_R - 1) / __log2_R;
@@ -3804,8 +3804,7 @@ namespace __detail
       // Cannot overflow, as _Urbg::max() - _Urbg::min() is not power of
       // two minus one
       constexpr _UIntR __R = _UIntR(_Urbg::max() - _Urbg::min()) + 1;
-      constexpr unsigned __log2R
-	= sizeof(_UIntR) * __CHAR_BIT__ - __builtin_clzg(__R) - 1;
+      constexpr unsigned __log2R = std::__bit_width(__R) - 1;
       // We overstimate number of required bits, by computing
       // m such that m * log2(R) >= d, so:
       // R^m >= (2 ^ log2(R)) ^ m == 2 ^ (log2(R) * m) >= 2^d
@@ -3872,13 +3871,7 @@ namespace __detail
 
 	  // __abits is maximum bit width of the value, that can
 	  // be multiplied by R^l without overflowing 128 bit integer
-	  _GLIBCXX_GEN_CANON_CONST unsigned __bwRl
-#ifndef __SIZEOF_INT128__
-	    = __Rl._M_hi ? 128 - __builtin_clzg(__Rl._M_hi)
-			 : 64 - __builtin_clzg(__Rl._M_lo);
-#else
-	    = 128 - __builtin_clzg(__Rl);
-#endif
+	  _GLIBCXX_GEN_CANON_CONST unsigned __bwRl = std::__bit_width(__Rl);
 
 	  // For __R close to power of two, the actual __k may be smaller than __m,
 	  // and will use less than 128bits, default to two 32 bits chunks.

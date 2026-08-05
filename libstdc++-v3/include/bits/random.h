@@ -31,6 +31,7 @@
 #ifndef _RANDOM_H
 #define _RANDOM_H 1
 
+#include <bit>     // std::__bit_width
 #include <vector>
 #include <bits/ios_base.h>
 #include <bits/uniform_int_dist.h>
@@ -68,13 +69,13 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 #endif
 
   /// @cond undocumented
-  // Implementation-space details.
-  namespace __detail
-  {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
 
 #ifndef __SIZEOF_INT128__
+  // Implementation-space details.
+  namespace __detail
+  {
     // Emulate 128-bit integer type, for the arithmetic ops used in <random>.
     // The __detail::__mod function needs: (type(a) * x + c) % m.
     // std::philox_engine needs multiplication and bitwise ops.
@@ -522,8 +523,42 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       uint64_t _M_hi = 0;
       uint64_t _M_lo = 0;
     };
-#endif // ! __SIZEOF_INT128__
+  } // namespace __detail
 
+  template<>
+    constexpr int
+    __countl_zero(__detail::__rand_uint128 __val) noexcept
+    {
+      return __val._M_hi ? std::__countl_zero(__val._M_hi)
+			 : std::__countl_zero(__val._M_lo) + 64;
+    }
+
+  template<>
+    constexpr int
+    __countr_zero(__detail::__rand_uint128 __val) noexcept
+    {
+      return __val._M_lo ? std::__countr_zero(__val._M_lo)
+			 : std::__countr_zero(__val._M_hi) + 64;
+    }
+
+  template<>
+    constexpr int
+    __popcount(__detail::__rand_uint128 __val) noexcept
+    {
+      return std::__popcount(__val._M_hi) + std::__popcount(__val._M_lo);
+    }
+
+  template<>
+    constexpr int
+    __bit_width(__detail::__rand_uint128 __val) noexcept
+    {
+      return __val._M_hi ? std::__bit_width(__val._M_hi) + 64
+			 : std::__bit_width(__val._M_lo);
+    }
+
+#endif // ! __SIZEOF_INT128__
+  namespace __detail
+  {
     template<typename _UIntType, size_t __w,
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>

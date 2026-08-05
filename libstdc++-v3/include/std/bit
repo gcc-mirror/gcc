@@ -33,7 +33,7 @@
 #pragma GCC system_header
 #endif
 
-#if __cplusplus >= 201402L
+#if __cplusplus >= 201103L
 
 #include <concepts> // for std::integral
 #include <type_traits>
@@ -157,7 +157,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
 
   template<typename _Tp>
-    constexpr _Tp
+    _GLIBCXX14_CONSTEXPR _Tp
     __rotl(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
@@ -179,7 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp>
-    constexpr _Tp
+    _GLIBCXX14_CONSTEXPR _Tp
     __rotr(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
@@ -200,16 +200,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return (__x << -__r) | (__x >> ((_Nd + __r) % _Nd)); // rotl(x, -r)
     }
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_clzg)
   template<typename _Tp>
     constexpr int
     __countl_zero(_Tp __x) noexcept
     {
+      return __builtin_clzg(__x, __gnu_cxx::__int_traits<_Tp>::__digits);
+    }
+#else
+  template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR int
+    __countl_zero(_Tp __x) noexcept
+    {
       using __gnu_cxx::__int_traits;
       constexpr auto _Nd = __int_traits<_Tp>::__digits;
-
-#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_clzg)
-      return __builtin_clzg(__x, _Nd);
-#else
       if (__x == 0)
         return _Nd;
 
@@ -247,8 +251,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  unsigned long long __low = __x & __max_ull;
 	  return (_Nd - _Nd_ull) + __builtin_clzll(__low);
 	}
-#endif
     }
+#endif
 
   template<typename _Tp>
     constexpr int
@@ -257,16 +261,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__countl_zero<_Tp>((_Tp)~__x);
     }
 
-  template<typename _Tp>
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_ctzg)
+   template<typename _Tp>
     constexpr int
+    __countr_zero(_Tp __x) noexcept
+    {
+      return __builtin_ctzg(__x, __gnu_cxx::__int_traits<_Tp>::__digits);
+    } 
+#else
+  template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR int
     __countr_zero(_Tp __x) noexcept
     {
       using __gnu_cxx::__int_traits;
       constexpr auto _Nd = __int_traits<_Tp>::__digits;
-
-#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_ctzg)
-      return __builtin_ctzg(__x, _Nd);
-#else
       if (__x == 0)
         return _Nd;
 
@@ -292,8 +300,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  unsigned long long __high = __x >> _Nd_ull;
 	  return __builtin_ctzll(__high) + _Nd_ull;
 	}
-#endif
     }
+#endif
 
   template<typename _Tp>
     constexpr int
@@ -302,13 +310,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return std::__countr_zero((_Tp)~__x);
     }
 
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_popcountg)
   template<typename _Tp>
     constexpr int
     __popcount(_Tp __x) noexcept
     {
-#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_popcountg)
       return __builtin_popcountg(__x);
+    }
 #else
+  template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR int
+    __popcount(_Tp __x) noexcept
+    {
       using __gnu_cxx::__int_traits;
       constexpr auto _Nd = __int_traits<_Tp>::__digits;
 
@@ -332,8 +345,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  unsigned long long __high = __x >> _Nd_ull;
 	  return __builtin_popcountll(__low) + __builtin_popcountll(__high);
 	}
-#endif
     }
+#endif
 
   template<typename _Tp>
     constexpr bool
@@ -341,7 +354,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return std::__popcount(__x) == 1; }
 
   template<typename _Tp>
+    constexpr int
+    __bit_width(_Tp __x) noexcept
+    {
+      return __gnu_cxx::__int_traits<_Tp>::__digits - std::__countl_zero(__x);
+    }
+
+  template<typename _Tp>
     constexpr _Tp
+    __bit_floor(_Tp __x) noexcept
+    {
+      return (__x == 0) ? (_Tp)0 : ((_Tp)1u << (std::__bit_width(__x) - 1));
+    }
+
+  template<typename _Tp>
+    _GLIBCXX14_CONSTEXPR _Tp
     __bit_ceil(_Tp __x) noexcept
     {
       using __gnu_cxx::__int_traits;
@@ -370,24 +397,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __shift_exponent |= (__shift_exponent & _Nd) << __extra_exp;
 	}
       return (_Tp)1u << __shift_exponent;
-    }
-
-  template<typename _Tp>
-    constexpr _Tp
-    __bit_floor(_Tp __x) noexcept
-    {
-      constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
-      if (__x == 0)
-        return 0;
-      return (_Tp)1u << (_Nd - std::__countl_zero((_Tp)(__x >> 1)));
-    }
-
-  template<typename _Tp>
-    constexpr int
-    __bit_width(_Tp __x) noexcept
-    {
-      constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
-      return _Nd - std::__countl_zero(__x);
     }
 
 #pragma GCC diagnostic pop
@@ -499,5 +508,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // C++14
+#endif // C++11
 #endif // _GLIBCXX_BIT
