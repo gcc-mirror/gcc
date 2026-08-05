@@ -3,6 +3,7 @@
 ! { dg-require-effective-target fortran_real_c_float128 }
 ! { dg-additional-sources PR100914.c }
 ! { dg-additional-options "-Wno-pedantic" }
+! { dg-skip-if "No complex.h header" { hppa*-*-hpux* } }
 !
 ! Test the fix for PR100914
 ! 
