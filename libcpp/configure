@@ -9154,6 +9154,51 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 esac
 
+# The AArch64 SVE2 lexer needs a compiler that understands arm_sve.h and the
+# +sve2 target attribute, an assembler that accepts SVE2 insns, and a way to
+# ask the kernel whether the CPU has them.  The test compiles only on an
+# AArch64 host, so it needs no separate host check.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the AArch64 SVE2 lexer can be built" >&5
+$as_echo_n "checking whether the AArch64 SVE2 lexer can be built... " >&6; }
+if ${libcpp_cv_have_sve2+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <arm_sve.h>
+#include <sys/auxv.h>
+static __attribute__ ((target ("+sve2"))) int
+f (const unsigned char *p)
+{
+  svbool_t pg = svwhilele_b8_u64 ((unsigned long) p, (unsigned long) p);
+  svuint8_t v = svld1_u8 (pg, p);
+  svbool_t m = svmatch_u8 (pg, v, svreinterpret_u8_u32 (svdup_n_u32 (10)));
+  return svcntp_b8 (pg, svbrkb_b_z (pg, m)) + svcntb ();
+}
+int
+main ()
+{
+return getauxval (AT_HWCAP2) ? f ((const unsigned char *) "") : 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libcpp_cv_have_sve2=yes
+else
+  libcpp_cv_have_sve2=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libcpp_cv_have_sve2" >&5
+$as_echo "$libcpp_cv_have_sve2" >&6; }
+if test $libcpp_cv_have_sve2 = yes; then
+
+$as_echo "#define HAVE_SVE2 1" >>confdefs.h
+
+fi
+
 # Enable --enable-host-shared.
 # Check whether --enable-host-shared was given.
 if test "${enable_host_shared+set}" = set; then :

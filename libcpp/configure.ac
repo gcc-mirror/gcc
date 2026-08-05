@@ -202,6 +202,30 @@ case $target in
 		 [Define to 1 if you can assemble SSSE3 insns.])])
 esac
 
+# The AArch64 SVE2 lexer needs a compiler that understands arm_sve.h and the
+# +sve2 target attribute, an assembler that accepts SVE2 insns, and a way to
+# ask the kernel whether the CPU has them.  The test compiles only on an
+# AArch64 host, so it needs no separate host check.
+AC_CACHE_CHECK([whether the AArch64 SVE2 lexer can be built],
+	       [libcpp_cv_have_sve2],
+[AC_LINK_IFELSE([AC_LANG_PROGRAM(
+[[#include <arm_sve.h>
+#include <sys/auxv.h>
+static __attribute__ ((target ("+sve2"))) int
+f (const unsigned char *p)
+{
+  svbool_t pg = svwhilele_b8_u64 ((unsigned long) p, (unsigned long) p);
+  svuint8_t v = svld1_u8 (pg, p);
+  svbool_t m = svmatch_u8 (pg, v, svreinterpret_u8_u32 (svdup_n_u32 (10)));
+  return svcntp_b8 (pg, svbrkb_b_z (pg, m)) + svcntb ();
+}]],
+[[return getauxval (AT_HWCAP2) ? f ((const unsigned char *) "") : 0;]])],
+  [libcpp_cv_have_sve2=yes], [libcpp_cv_have_sve2=no])])
+if test $libcpp_cv_have_sve2 = yes; then
+  AC_DEFINE([HAVE_SVE2], [1],
+	    [Define to 1 if the AArch64 SVE2 lexer can be built.])
+fi
+
 # Enable --enable-host-shared.
 AC_ARG_ENABLE(host-shared,
 [AS_HELP_STRING([--enable-host-shared],

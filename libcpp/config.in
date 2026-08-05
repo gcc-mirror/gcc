@@ -231,6 +231,9 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if the AArch64 SVE2 lexer can be built. */
+#undef HAVE_SVE2
+
 /* Define to 1 if you have the <sys/file.h> header file. */
 #undef HAVE_SYS_FILE_H
 
