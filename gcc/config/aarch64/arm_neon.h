@@ -5279,22 +5279,6 @@ vabsd_s64 (int64_t __a)
   return __a < 0 ? - (uint64_t) __a : __a;
 }
 
-/* vadd */
-
-__extension__ extern __inline int64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaddd_s64 (int64_t __a, int64_t __b)
-{
-  return __a + __b;
-}
-
-__extension__ extern __inline uint64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaddd_u64 (uint64_t __a, uint64_t __b)
-{
-  return __a + __b;
-}
-
 /* vaddv */
 
 __extension__ extern __inline int8_t
