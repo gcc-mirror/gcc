@@ -29,7 +29,9 @@ BEGIN {
 }
 
 /^[ \t]*\{ Process this file/ {
-    print "{ This is auto-generated from " FILENAME ".  Do not edit.  }"
+    srcfile = FILENAME
+    sub (/^.*\//, "", srcfile)
+    print "{ This is auto-generated from " srcfile ".  Do not edit.  }"
     next
 }
 
