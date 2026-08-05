@@ -1681,112 +1681,144 @@ ENDF __udivuha3
 #undef  r_divH
 #undef  r_cnt
 
-/*******************************************************
-    Fixed Division 16.16 / 16.16
-*******************************************************/
+/*********************************************************
+    Fixed 16.16 and s16.15 saturated [U]SAmode Divisions
+*********************************************************/
 
-#ifndef __AVR_TINY__
+;;; Argument 1: Dividend gets passed already in place.
+#define A0 24
+#define A1 A0+1
+#define A2 26
+#define A3 A2+1
 
-#define r_arg1L  24    /* arg1 gets passed already in place */
-#define r_arg1H  25
-#define r_arg1HL 26
-#define r_arg1HH 27
-#define r_divdL  26    /* dividend Low */
-#define r_divdH  27
-#define r_divdHL 30
-#define r_divdHH 31    /* dividend High */
-#define r_quoL   22    /* quotient Low */
-#define r_quoH   23
-#define r_quoHL  24
-#define r_quoHH  25    /* quotient High */
-#define r_divL   18    /* divisor Low */
-#define r_divH   19
-#define r_divHL  20
-#define r_divHH  21    /* divisor High */
-#define r_cnt  __zero_reg__  /* loop count (0 after the loop!) */
+;;; Argument 2: Divisor
+#define B0 18
+#define B1 B0+1
+#define B2 20
+#define B3 B2+1
+
+;;; Return value: Quotient
+#define Q0 22
+#define Q1 Q0+1
+#define Q2 A0
+#define Q3 A0+1
+
+;;; Remainder
+#define M0 A2
+#define M1 A2+1
+#define M2 __tmp_reg__
+#define M3 __zero_reg__
+
+#define Cnt  r31
+#define Sign r30
 
 #if defined (L_divsa3)
+;;; (set (reg:SA 22)
+;;;      (ss_div:SA (reg:SA 24)
+;;;                 (reg:SA 18)))
 DEFUN   __divsa3
-    mov     r0, r_arg1HH
-    eor     r0, r_divHH
-    .call_if_neg r_divHH, __negsi2_r18
-    sbrs    r_arg1HH, 7
+ENTRY   __ssdivsa3
+    mov     Sign, B3
+    .call_if_neg B3, __negsi2_r18
+    sbrs    A3, 7
     rjmp    2f
-    NEG4    r_arg1L
-2:
-    XCALL   __udivusa3
-    lsr     r_quoHH ; adjust to 15 fractional bits
-    ror     r_quoHL
-    ror     r_quoH
-    ror     r_quoL
-    sbrs    r0, 7   ; negate result if needed
+    com     Sign
+    NEG4    A0
+2:  lsr     A3              ; Adjust to 15 fractional bits.
+    ror     A2
+    ror     A1
+    ror     A0              ; Pass LSB in C.
+    XCALL   __udivusa3.2    ; N = sign (Q)
+    ;; In the negative result case, Q = 0x80.. is no overflow,
+    ;; but treating it as such keeps the value unchanged.
+    brmi .Lsaturate          ; Overflow?
+    ;; Handle result sign.
+    sbrs    Sign, 7
     ret
-    ;; negate r_quoL
     XJMP    __negsi2
+.Lsaturate:
+    ;; Sign.7 = 0 -> C = 1 -> 0x7f..
+    ;; Sign.7 = 1 -> C = 0 -> 0x80..
+    cpi     Sign, 0x80
+    sbc     Q0, Q0
+    sbc     Q1, Q1
+    wmov    Q2, Q0
+    subi    Q3, 0x80
+    ret
 ENDF __divsa3
 #endif  /* defined (L_divsa3) */
 
 #if defined (L_udivusa3)
+;;; (set (reg:USA 22)
+;;;      (us_div:USA (reg:USA 24)
+;;;                  (reg:USA 18)))
+;;; Register layout:
+;;;         A3  A2  A1  A0          [---const----]
+;;; M3  M2  M1  M0  Q3  Q2  Q1  Q0  B3  B2  B1  B0
+;;; r1  r0  27  26  25  24  23  22  21  20  19  18
 DEFUN   __udivusa3
-    ldi     r_divdHL, 32    ; init loop counter
-    mov     r_cnt, r_divdHL
-    clr     r_divdHL
-    clr     r_divdHH
-    wmov    r_quoL, r_divdHL
-    lsl     r_quoHL         ; shift quotient into carry
-    rol     r_quoHH
-__udivusa3_loop:
-    rol     r_divdL         ; shift dividend (with CARRY)
-    rol     r_divdH
-    rol     r_divdHL
-    rol     r_divdHH
-    brcs    __udivusa3_ep   ; dividend overflow
-    cp      r_divdL,r_divL  ; compare dividend & divisor
-    cpc     r_divdH,r_divH
-    cpc     r_divdHL,r_divHL
-    cpc     r_divdHH,r_divHH
-    brcc    __udivusa3_ep   ; dividend >= divisor
-    rol     r_quoL          ; shift quotient (with CARRY)
-    rjmp    __udivusa3_cont
-__udivusa3_ep:
-    sub     r_divdL,r_divL  ; restore dividend
-    sbc     r_divdH,r_divH
-    sbc     r_divdHL,r_divHL
-    sbc     r_divdHH,r_divHH
-    lsl     r_quoL          ; shift quotient (without CARRY)
-__udivusa3_cont:
-    rol     r_quoH          ; shift quotient
-    rol     r_quoHL
-    rol     r_quoHH
-    dec     r_cnt           ; decrement loop counter
-    brne    __udivusa3_loop
-    com     r_quoL          ; complement result
-    com     r_quoH          ; because C flag was complemented in loop
-    com     r_quoHL
-    com     r_quoHH
+ENTRY   __usdivusa3
+    clc
+ENTRY   __udivusa3.2
+    ldi     Cnt, 33     ; Init loop counter.
+    clr     M2
+    wmov    Q0, M2      ; M3 === R1 = 0 already.
+    ;; C = 0 (unsigned).
+    ;; C = LSB (from signed caller).
+    rjmp    .Lstart
+.Loop:
+    rol     M0          ; Shift dividend with Carry from Q.
+    rol     M1
+    rol     M2
+    rol     M3
+    brcs .Lsub          ; Remainder overflow: B will always fit.
+    cp      M0, B0      ; Compare remainder and divisor.
+    cpc     M1, B1
+    cpc     M2, B2
+    cpc     M3, B3
+    brcc .Lsub          ; Remainder >= divisor?
+    rol     Q0          ; No: Shift quotient (C = 1, 0 in result)
+    rjmp .Lcont
+.Lsub:
+    sub     M0, B0      ; Yes: Restore remainder.
+    sbc     M1, B1
+    sbc     M2, B2
+    sbc     M3, B3
+    lsl     Q0          ; Shift quotient (C = 0, 1 in result).
+.Lcont:
+    rol     Q1          ; Shift quotient into C into M.
+.Lstart:
+    rol     Q2
+    rol     Q3
+    dec     Cnt         ; Decrement loop counter until 0.
+    brne .Loop
+    clr     __zero_reg__
+    com     Q0          ; Complement result because Carry
+    com     Q1          ; was complemented in the loop.
+    com     Q2
+    com     Q3          ; N is the sign of Q
     ret
 ENDF __udivusa3
 #endif  /* defined (L_udivusa3) */
 
-#undef  r_arg1L
-#undef  r_arg1H
-#undef  r_arg1HL
-#undef  r_arg1HH
-#undef  r_divdL
-#undef  r_divdH
-#undef  r_divdHL
-#undef  r_divdHH
-#undef  r_quoL
-#undef  r_quoH
-#undef  r_quoHL
-#undef  r_quoHH
-#undef  r_divL
-#undef  r_divH
-#undef  r_divHL
-#undef  r_divHH
-#undef  r_cnt
-
-#endif /* ! AVR_TINY */
+#undef A0
+#undef A1
+#undef A2
+#undef A3
+#undef M0
+#undef M1
+#undef M2
+#undef M3
+#undef Q0
+#undef Q1
+#undef Q2
+#undef Q3
+#undef B0
+#undef B1
+#undef B2
+#undef B3
+#undef Cnt
+#undef Sign
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -390,6 +390,7 @@
    (rotate   "rotl")
    (ss_plus  "ssadd")  (ss_minus "sssub")  (ss_neg "ssneg")  (ss_abs "ssabs")
    (us_plus  "usadd")  (us_minus "ussub")  (us_neg "usneg")
+   (ss_div   "ssdiv")  (us_div   "usdiv")  (div "div")  (udiv "udiv")
    ])
 
 ;;========================================================================
