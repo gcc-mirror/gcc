@@ -1465,7 +1465,10 @@ DEFTREECODE (TRANSACTION_EXPR, "transaction_expr", tcc_expression, 1)
    	arg3 = PLUS_EXPR (tmp, arg3);
    or:
 	tmp = WIDEN_MULT_EXPR(arg1, arg2);
-        arg3 = WIDEN_SUM_EXPR (tmp, arg3);		 */
+        arg3 = WIDEN_SUM_EXPR (tmp, arg3);
+   Like WIDEN_SUM_EXPR, this code is only created for a reduction whose
+   summation may be reassociated, so which products are added into which
+   element of arg3 is not observable.  */
 DEFTREECODE (DOT_PROD_EXPR, "dot_prod_expr", tcc_expression, 3)
 
 /* Widening summation.
@@ -1474,7 +1477,16 @@ DEFTREECODE (DOT_PROD_EXPR, "dot_prod_expr", tcc_expression, 3)
    the size of t1. The type of the entire expression is also t2.
    WIDEN_SUM_EXPR is equivalent to first widening (promoting)
    the first argument from type t1 to type t2, and then summing it
-   with the second argument.  */
+   with the second argument.
+
+   This code is only created for a reduction whose summation the vectorizer
+   has established may be reassociated, and the result is reduced to a scalar
+   by a horizontal sum once the loop is done.  Which element of the second
+   argument a given element of the first argument is added to is therefore
+   not observable, and an expander may choose that assignment freely, so long
+   as every element of the first argument is accumulated exactly once and no
+   intermediate sum overflows.  See the reduc_widen_ssum and reduc_widen_usum
+   patterns in md.texi.  */
 DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
 
 /* Widening sad (sum of absolute differences).
@@ -1490,6 +1502,9 @@ DEFTREECODE (WIDEN_SUM_EXPR, "widen_sum_expr", tcc_binary, 2)
        tmp = IFN_VEC_WIDEN_MINUS_EXPR (arg1, arg2)
        tmp2 = ABS_EXPR (tmp)
        arg3 = WIDEN_SUM_EXPR (tmp2, arg3)
+   Like WIDEN_SUM_EXPR, this code is only created for a reduction whose
+   summation may be reassociated, so which absolute differences are added
+   into which element of arg3 is not observable.
  */
 DEFTREECODE (SAD_EXPR, "sad_expr", tcc_expression, 3)
 

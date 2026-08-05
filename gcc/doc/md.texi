@@ -5097,9 +5097,28 @@ in operand 0, which is of the same mode as operand 3.
 @itemx @samp{reduc_widen_usum@var{n}@var{m}3}
 Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
-operand 0. (This is used express accumulation of elements into an accumulator
-of a wider mode.)
+operand 0. (This is used to express accumulation of elements into an
+accumulator of a wider mode.)
 @var{m} is the mode of operand 1 and @var{n} is the mode of operand 0.
+
+These patterns are only used for a reduction whose summation the vectorizer
+has already established may be reassociated.  Operand 0 is the accumulator
+of that reduction and is itself reduced to a scalar by a horizontal sum once
+the loop is done, so which element of the accumulator a given input element
+ends up in is not observable.  An implementation is therefore free to choose
+which elements of operand 1 it accumulates into which element of operand 0,
+provided that every element of operand 1 is accumulated exactly once.  In
+particular it may add adjacent elements of operand 1 to each other before
+accumulating them, which is what a pairwise widening add instruction does.
+
+The intermediate sums must not overflow.  An implementation that combines
+elements of operand 1 with each other before they reach the element width of
+operand 0 therefore has to widen them first.
+
+The names @samp{widen_ssum@var{n}@var{m}3} and
+@samp{widen_usum@var{n}@var{m}3} are deliberately left free for a future
+lane preserving pattern, which would have to add element @var{i} of
+operand 1 to element @var{i} of operand 2 for every @var{i}.
 
 @mdindex smulhs@var{m}3
 @mdindex umulhs@var{m}3
