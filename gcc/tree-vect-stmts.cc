@@ -3410,7 +3410,6 @@ vectorizable_call (vec_info *vinfo,
   gcall *stmt;
   tree vec_dest;
   tree scalar_dest;
-  tree op;
   tree vec_oprnd0 = NULL_TREE;
   tree vectype_out, vectype_in;
   poly_uint64 nunits_in;
@@ -3502,7 +3501,7 @@ vectorizable_call (vec_info *vinfo,
 	}
 
       if (!vect_is_simple_use (vinfo, slp_node,
-			       i, &op, &slp_op[i], &dt[i], &vectypes[i]))
+			       i, &slp_op[i], &dt[i], &vectypes[i]))
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3511,6 +3510,7 @@ vectorizable_call (vec_info *vinfo,
 	}
 
       /* We can only handle calls with arguments of the same type.  */
+      tree op = gimple_call_arg (stmt, i);
       if (rhs_type
 	  && !types_compatible_p (rhs_type, TREE_TYPE (op)))
 	{
