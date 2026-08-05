@@ -1233,6 +1233,10 @@ CompilePatternBindings::visit (HIR::SlicePattern &pattern)
       {
 	auto &items
 	  = static_cast<HIR::SlicePatternItemsHasRest &> (pattern.get_items ());
+
+	// TODO: support rest_bind (c in [a, b, c @ ..])
+	rust_assert (!items.has_rest_bind ());
+
 	for (auto &pattern_member : items.get_lower_patterns ())
 	  {
 	    tree index_tree

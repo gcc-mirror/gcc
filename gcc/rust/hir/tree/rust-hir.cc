@@ -2449,6 +2449,12 @@ SlicePatternItemsHasRest::to_string () const
 	}
     }
 
+  str += "\n Rest binding pattern: ";
+  if (rest_bind)
+    str += rest_bind->to_string ();
+  else
+    str += "none";
+
   str += "\n Upper patterns: ";
   if (upper_patterns.empty ())
     {

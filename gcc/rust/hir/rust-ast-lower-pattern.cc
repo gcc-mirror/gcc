@@ -353,17 +353,46 @@ void
 ASTLoweringPattern::visit (AST::SlicePattern &pattern)
 {
   tl::optional<size_t> rest_index;
+  tl::optional<HIR::IdentifierPattern> rest_bind;
 
   std::vector<std::unique_ptr<AST::Pattern>> &sub_patterns
     = pattern.get_patterns ();
 
+  // need this earlier than usual
+  // since we might need to produce rest_bind
+  auto crate_num = mappings.get_current_crate ();
+
   for (size_t i = 0; i < sub_patterns.size (); i++)
     {
       auto &pat = sub_patterns[i];
-      if (pat->get_pattern_kind () == AST::Pattern::Kind::Rest)
+
+      // ASTValidation verified there's only one Rest pattern
+      // so we can break once we find the first one
+      if (pat->get_pattern_kind () == AST::Pattern::Kind::Identifier)
+	{
+	  auto &ident_pat = static_cast<AST::IdentifierPattern &> (*pat);
+	  if (ident_pat.has_subpattern ())
+	    {
+	      if (ident_pat.get_subpattern ().get_pattern_kind ()
+		  == AST::Pattern::Kind::Rest)
+		{
+		  Analysis::NodeMapping rest_bind_mapping (
+		    crate_num, ident_pat.get_node_id (),
+		    mappings.get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
+
+		  rest_bind = HIR::IdentifierPattern (
+		    std::move (rest_bind_mapping), ident_pat.get_ident (),
+		    ident_pat.get_locus (), ident_pat.get_is_ref (),
+		    ident_pat.get_is_mut () ? Mutability::Mut
+					    : Mutability::Imm);
+		  rest_index = i;
+		  break;
+		}
+	    }
+	}
+      else if (pat->get_pattern_kind () == AST::Pattern::Kind::Rest)
 	{
 	  rest_index = i;
-	  // ASTValidation verified there's only one Rest pattern
 	  break;
 	}
     }
@@ -375,7 +404,8 @@ ASTLoweringPattern::visit (AST::SlicePattern &pattern)
       auto rest_it = sub_patterns.begin () + *rest_index;
       items = std::make_unique<HIR::SlicePatternItemsHasRest> (
 	lower_pattern_seq (sub_patterns.begin (), rest_it),
-	lower_pattern_seq (rest_it + 1, sub_patterns.end ()));
+	lower_pattern_seq (rest_it + 1, sub_patterns.end ()),
+	std::move (rest_bind));
     }
   else
     {
@@ -383,7 +413,6 @@ ASTLoweringPattern::visit (AST::SlicePattern &pattern)
 	lower_pattern_seq (sub_patterns.begin (), sub_patterns.end ()));
     }
 
-  auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);

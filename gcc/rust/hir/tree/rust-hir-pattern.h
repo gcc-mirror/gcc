@@ -1437,16 +1437,22 @@ class SlicePatternItemsHasRest : public SlicePatternItems
   std::vector<std::unique_ptr<Pattern>> lower_patterns;
   std::vector<std::unique_ptr<Pattern>> upper_patterns;
 
+  // c in [a, b, c @ ..]
+  tl::optional<IdentifierPattern> rest_bind;
+
 public:
   SlicePatternItemsHasRest (
     std::vector<std::unique_ptr<Pattern>> lower_patterns,
-    std::vector<std::unique_ptr<Pattern>> upper_patterns)
+    std::vector<std::unique_ptr<Pattern>> upper_patterns,
+    tl::optional<IdentifierPattern> rest_bind)
     : lower_patterns (std::move (lower_patterns)),
-      upper_patterns (std::move (upper_patterns))
+      upper_patterns (std::move (upper_patterns)),
+      rest_bind (std::move (rest_bind))
   {}
 
   // Copy constructor with vector clone
   SlicePatternItemsHasRest (SlicePatternItemsHasRest const &other)
+    : rest_bind (other.rest_bind)
   {
     lower_patterns.reserve (other.lower_patterns.size ());
     for (const auto &e : other.lower_patterns)
@@ -1469,6 +1475,8 @@ public:
     upper_patterns.reserve (other.upper_patterns.size ());
     for (const auto &e : other.upper_patterns)
       upper_patterns.push_back (e->clone_pattern ());
+
+    rest_bind = other.rest_bind;
 
     return *this;
   }
@@ -1500,6 +1508,20 @@ public:
   const std::vector<std::unique_ptr<Pattern>> &get_upper_patterns () const
   {
     return upper_patterns;
+  }
+
+  bool has_rest_bind () const { return rest_bind.has_value (); }
+
+  IdentifierPattern &get_rest_bind ()
+  {
+    rust_assert (has_rest_bind ());
+    return *rest_bind;
+  }
+
+  const IdentifierPattern &get_rest_bind () const
+  {
+    rust_assert (has_rest_bind ());
+    return *rest_bind;
   }
 
 protected:

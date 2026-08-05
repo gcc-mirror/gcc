@@ -2375,6 +2375,8 @@ Dump::visit (SlicePatternItemsHasRest &e)
 {
   begin ("SlicePatternItemsHasRest");
   visit_collection ("lower_patterns", e.get_lower_patterns ());
+  if (e.has_rest_bind ())
+    visit_field ("rest_bind", e.get_rest_bind ());
   visit_collection ("upper_patterns", e.get_upper_patterns ());
   end ("SlicePatternItemsHasRest");
 }

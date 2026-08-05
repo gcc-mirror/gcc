@@ -92,6 +92,10 @@ PatternBindingBuilder::visit (HIR::SlicePattern &pattern)
 	  {
 	    member->accept_vis (*this);
 	  }
+	if (items.has_rest_bind ())
+	  {
+	    items.get_rest_bind ().accept_vis (*this);
+	  }
 	for (auto &member : items.get_upper_patterns ())
 	  {
 	    member->accept_vis (*this);

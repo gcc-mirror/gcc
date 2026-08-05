@@ -1077,6 +1077,8 @@ DefaultHIRVisitor::walk (SlicePatternItemsHasRest &items)
 {
   for (auto &lower : items.get_lower_patterns ())
     lower->accept_vis (*this);
+  if (items.has_rest_bind ())
+    items.get_rest_bind ().accept_vis (*this);
   for (auto &upper : items.get_upper_patterns ())
     upper->accept_vis (*this);
 }

@@ -942,6 +942,10 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
       {
 	auto &ref
 	  = static_cast<HIR::SlicePatternItemsHasRest &> (pattern.get_items ());
+
+	// TODO: support rest_bind (c in [a, b, c @ ..])
+	rust_assert (!ref.has_rest_bind ());
+
 	for (const auto &pattern_member : ref.get_lower_patterns ())
 	  {
 	    TypeCheckPattern::Resolve (*pattern_member, parent_element_ty);
