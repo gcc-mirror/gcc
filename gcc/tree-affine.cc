@@ -1030,10 +1030,11 @@ get_inner_reference_aff (tree ref, aff_tree *addr, poly_widest_int *size)
       aff_combination_add (addr, &tmp);
     }
 
-  aff_combination_const (&tmp, sizetype, bits_to_bytes_round_down (bitpos));
+  poly_int64 bytepos = bits_to_bytes_round_down (bitpos);
+  aff_combination_const (&tmp, sizetype, bytepos);
   aff_combination_add (addr, &tmp);
 
-  *size = bits_to_bytes_round_up (bitsize);
+  *size = bits_to_bytes_round_up (bitpos + bitsize) - bytepos;
 
   return base;
 }
