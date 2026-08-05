@@ -1,4 +1,4 @@
-/* { dg-do compile { target { c || c++23_down } } } */
+/* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
 
 extern int a[][10], a2[][10];
@@ -32,13 +32,23 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
     ;
   #pragma omp task affinity( b[-1:]) /* { dg-error "negative low bound in array section" } */
     ;
+  #pragma omp task affinity( b[-1: ]) /* { dg-error "negative low bound in array section" } */
+    ;
   #pragma omp task affinity( c[:-3][1:1]) /* { dg-error "negative length in array section" } */
+    ;
+  #pragma omp task affinity( c[ :-3][1:1]) /* { dg-error "negative length in array section" } */
+    ;
+  #pragma omp task affinity( d[11: ]) /* { dg-error "low bound \[^\n\r]* above array section size" } */
     ;
   #pragma omp task affinity( d[11:]) /* { dg-error "low bound \[^\n\r]* above array section size" } */
     ;
   #pragma omp task affinity( e[:11]) /* { dg-error "length \[^\n\r]* above array section size" } */
     ;
   #pragma omp task affinity( f[1:10]) /* { dg-error "high bound \[^\n\r]* above array section size" } */
+    ;
+  #pragma omp task affinity( g[: ][2:4]) /* { dg-error "for array function parameter length expression must be specified" } */
+    ;
+  #pragma omp task affinity( g[ :][2:4]) /* { dg-error "for array function parameter length expression must be specified" } */
     ;
   #pragma omp task affinity( g[:][2:4]) /* { dg-error "for array function parameter length expression must be specified" } */
     ;

@@ -8968,6 +8968,22 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 
       switch (token->type)
 	{
+	case CPP_OPEN_SPLICE:
+	  if (!parser->omp_array_section_p)
+	    goto default_case;
+	  /* Parse '[: length]' array section.  */
+	  postfix_expression
+	    = cp_parser_postfix_open_square_expression (parser,
+							postfix_expression,
+							false,
+							decltype_p);
+	  postfix_expression.set_range (start_loc,
+					postfix_expression.get_location ());
+
+	  idk = CP_ID_KIND_NONE;
+	  is_member_access = false;
+	  break;
+
 	case CPP_OPEN_SQUARE:
 	  if (cp_next_tokens_can_be_std_attribute_p (parser))
 	    {
@@ -9243,6 +9259,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  break;
 
 	default:
+	default_case:
 	  if (pidk_return != NULL)
 	    * pidk_return = idk;
           if (member_access_only_p)
@@ -9312,7 +9329,12 @@ cp_parser_parenthesized_expression_list_elt (cp_parser *parser, bool cast_p,
      postfix-expression [ expression-list[opt] ] (C++23)
 
    FOR_OFFSETOF is set if we're being called in that context, which
-   changes how we deal with integer constant expressions.  */
+   changes how we deal with integer constant expressions.
+
+   With parser->omp_array_section_p, it also handles OpenMP
+   array sections of the type [ index : length ] where both
+   index and length are optional. Note that an absent index
+   might be lexed as CPP_OPEN_SPLICE ('[:') since C++26.  */
 
 static tree
 cp_parser_postfix_open_square_expression (cp_parser *parser,
@@ -9326,7 +9348,9 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
   bool saved_greater_than_is_operator_p;
   bool saved_colon_corrects_to_scope_p;
 
-  /* Consume the `[' token.  */
+  bool open_splice = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SPLICE);
+
+  /* Consume the `[' token - or with open_splice the '[:' token.  */
   cp_lexer_consume_token (parser->lexer);
 
   saved_greater_than_is_operator_p = parser->greater_than_is_operator_p;
@@ -9335,6 +9359,9 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
   saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
   if (parser->omp_array_section_p)
     parser->colon_corrects_to_scope_p = false;
+
+  if (open_splice)
+    goto post_colon_parsing;
 
   /* Parse the index expression.  */
   /* ??? For offsetof, there is a question of what to allow here.  If
@@ -9347,7 +9374,8 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
   if (for_offsetof)
     index = cp_parser_constant_expression (parser);
   else if (!parser->omp_array_section_p
-	   || cp_lexer_next_token_is_not (parser->lexer, CPP_COLON))
+	   || (cp_lexer_next_token_is_not (parser->lexer, CPP_COLON)
+	       && cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SPLICE)))
     {
       if (cxx_dialect >= cxx23
 	  && cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SQUARE))
@@ -9414,6 +9442,7 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 				      /*warn_comma_p=*/warn_comma_subscript);
     }
 
+post_colon_parsing:
   parser->greater_than_is_operator_p = saved_greater_than_is_operator_p;
 
   if (cxx_dialect >= cxx23
@@ -9425,12 +9454,25 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 		"section");
       index = error_mark_node;
     }
+
   if (parser->omp_array_section_p
-      && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+      && (open_splice
+	  || cp_lexer_next_token_is (parser->lexer, CPP_COLON)
+	  || cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SPLICE)))
     {
-      cp_lexer_consume_token (parser->lexer);
       tree length = NULL_TREE;
-      if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SQUARE))
+      bool close_splice = cp_lexer_next_token_is (parser->lexer,
+						  CPP_CLOSE_SPLICE);
+      if (!open_splice)
+	cp_lexer_consume_token (parser->lexer);
+      if (open_splice && close_splice)
+	{
+	  cp_parser_required_error (parser, RT_CLOSE_SQUARE, /*keyword=*/false,
+				    UNKNOWN_LOCATION);
+	  length = error_mark_node;
+	}
+      else if (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SQUARE)
+	       && !close_splice)
 	{
 	  if (cxx_dialect >= cxx23)
 	    {
@@ -9469,7 +9511,7 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 	  cp_parser_skip_to_closing_square_bracket (parser);
 	  return error_mark_node;
 	}
-      else
+      else if (!close_splice)
 	cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
 
       return grok_omp_array_section (input_location, postfix_expression, index,
@@ -29190,7 +29232,10 @@ cp_parser_braced_list (cp_parser *parser, bool *non_constant_p /*=nullptr*/)
 }
 
 /* Consume tokens up to, but not including, the next non-nested closing `]'.
-   Returns true iff we found a closing `]'.  */
+   Returns true iff we found a closing `]'.
+   When OpenMP array sections are permitted, the open and close splice, '[:'
+   and ':]', are are treated as '[' and ']' - because an absent lower or size
+   value in '[ lower : size ]' might get parsed as open or closed splice.  */
 
 static bool
 cp_parser_skip_up_to_closing_square_bracket (cp_parser *parser)
@@ -29212,10 +29257,19 @@ cp_parser_skip_up_to_closing_square_bracket (cp_parser *parser)
 	  /* If we've run out of tokens, then there is no closing `]'.  */
 	  return false;
 
+	case CPP_OPEN_SPLICE:
+	  if (!parser->omp_array_section_p)
+	    break;
+	  /* FALLTHRU */
+
         case CPP_OPEN_SQUARE:
           ++square_depth;
           break;
 
+	case CPP_CLOSE_SPLICE:
+	  if (!parser->omp_array_section_p)
+	    break;
+	  /* FALLTHRU */
         case CPP_CLOSE_SQUARE:
 	  if (!square_depth--)
 	    return true;
@@ -41851,7 +41905,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	    case OMP_CLAUSE__CACHE_:
 	      /* The OpenACC cache directive explicitly only allows "array
 		 elements or subarrays".  */
-	      if (cp_lexer_peek_token (parser->lexer)->type != CPP_OPEN_SQUARE)
+	      if (!cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE)
+		  && !cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SPLICE))
 		{
 		  error_at (token->location, "expected %<[%>");
 		  decl = error_mark_node;
@@ -41886,25 +41941,44 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	    case OMP_CLAUSE_HAS_DEVICE_ADDR:
 	      array_section_p = false;
 	      dims.truncate (0);
-	      while (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
+	      while (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE)
+		     || cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SPLICE))
 		{
 		  location_t loc = UNKNOWN_LOCATION;
 		  tree low_bound = NULL_TREE, length = NULL_TREE;
 		  bool no_colon = false;
-
+		  bool open_splice = cp_lexer_next_token_is (parser->lexer,
+							     CPP_OPEN_SPLICE);
 		  parser->colon_corrects_to_scope_p = false;
 		  cp_lexer_consume_token (parser->lexer);
-		  if (!cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+		  bool close_splice = cp_lexer_next_token_is (parser->lexer,
+							     CPP_CLOSE_SPLICE);
+		  if (open_splice && close_splice)
+		    {
+		      cp_parser_required_error (parser, RT_CLOSE_SQUARE,
+						/*keyword=*/false, loc);
+		      if ((kind == OMP_CLAUSE_DEPEND
+			   || kind == OMP_CLAUSE_AFFINITY)
+			  && cp_parser_simulate_error (parser))
+			goto depend_lvalue;
+		      goto skip_comma;
+		    }
+		  if (!open_splice
+		      && !close_splice
+		      && !cp_lexer_next_token_is (parser->lexer, CPP_COLON))
 		    {
 		      loc = cp_lexer_peek_token (parser->lexer)->location;
 		      low_bound = cp_parser_expression (parser);
 		      /* Later handling is not prepared to see through these.  */
 		      gcc_checking_assert (!location_wrapper_p (low_bound));
+		      close_splice = cp_lexer_next_token_is (parser->lexer,
+							     CPP_CLOSE_SPLICE);
 		    }
-		  if (!colon)
-		    parser->colon_corrects_to_scope_p
-		      = saved_colon_corrects_to_scope_p;
-		  if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SQUARE))
+		  parser->colon_corrects_to_scope_p
+		    = saved_colon_corrects_to_scope_p;
+		  if (!open_splice
+		      && cp_lexer_next_token_is (parser->lexer,
+						 CPP_CLOSE_SQUARE))
 		    {
 		      length = integer_one_node;
 		      no_colon = true;
@@ -41912,7 +41986,9 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		  else
 		    {
 		      /* Look for `:'.  */
-		      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+		      if (!open_splice
+			  && !close_splice
+			  && !cp_parser_require (parser, CPP_COLON, RT_COLON))
 			{
 			  if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 			      && cp_parser_simulate_error (parser))
@@ -41923,8 +41999,9 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 			cp_parser_commit_to_tentative_parse (parser);
 		      else
 			array_section_p = true;
-		      if (!cp_lexer_next_token_is (parser->lexer,
-						   CPP_CLOSE_SQUARE))
+		      if (!close_splice
+			  && !cp_lexer_next_token_is (parser->lexer,
+						      CPP_CLOSE_SQUARE))
 			{
 			  length = cp_parser_expression (parser);
 			  /* Later handling is not prepared to see through these.  */
@@ -41932,8 +42009,10 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 			}
 		    }
 		  /* Look for the closing `]'.  */
-		  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
-					  RT_CLOSE_SQUARE))
+		  if (close_splice)
+		    cp_lexer_consume_token (parser->lexer);
+		  else if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
+					       RT_CLOSE_SQUARE))
 		    {
 		      if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 			  && cp_parser_simulate_error (parser))
