@@ -1,7 +1,10 @@
-! { dg-do run { xfail long_double_is_ibm128 } }
+! { dg-do run { xfail { long_double_is_ibm128 || hppa*-*-hpux* } } }
 ! { dg-require-effective-target fortran_large_real }
 ! Test XFAILed on this platform because the system's printf() lacks
 ! proper support for denormalized long doubles. See PR24685
+! On hppa*-*-hpux*, snprintf only provides 33 digits of decimal
+! precision for long doubles.  This is insufficient to uniquely
+! identify long double values.
 !
 ! This tests that the default formats for formatted I/O of reals are
 ! wide enough and have enough precision, by checking that values can
