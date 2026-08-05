@@ -363,6 +363,8 @@ public:
   // is_unsized returns true if the type is a DST
   virtual bool is_unsized () const { return false; }
 
+  virtual bool is_box () const { return false; }
+
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	    std::set<HirId> refs = std::set<HirId> ());
@@ -1046,6 +1048,7 @@ public:
 
   bool contains_unsafe_cell () const override;
   virtual bool is_unsized () const override;
+  virtual bool is_box () const override;
 
 private:
   DefId id;

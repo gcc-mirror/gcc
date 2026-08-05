@@ -2186,6 +2186,15 @@ ADTType::is_unsized () const
   return last_field_type->is_unsized ();
 }
 
+bool
+ADTType::is_box () const
+{
+  if (auto owned_box = mappings.lookup_lang_item (LangItem::Kind::OWNED_BOX))
+    if (get_id () == owned_box)
+      return true;
+  return false;
+}
+
 // TupleType
 
 TupleType::TupleType (HirId ref, location_t locus, std::vector<TyVar> fields,

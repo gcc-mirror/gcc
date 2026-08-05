@@ -59,15 +59,12 @@ pub fn sov3(s: &TailStruct<TailStruct<[i32]>>) -> usize {
 fn main() -> i32 {
     let t = [1, 2, 3];
     let t1 = &t as &[i32];
-    let s1 : TailStruct<[i32; 3]> = TailStruct {
-        a: 10,
-        tail: t,
+    let s1: TailStruct<[i32; 3]> = TailStruct { a: 10, tail: t };
+    let s2_tail: TailStruct<[i32; 3]> = TailStruct { a: 10, tail: t };
+    let s2: TailStruct<TailStruct<[i32; 3]>> = TailStruct {
+        a: 20,
+        tail: s2_tail,
     };
-    let s2_tail: TailStruct<[i32; 3]> = TailStruct {
-        a: 10,
-        tail: t,
-    };
-    let s2 : TailStruct<TailStruct<[i32; 3]>> = TailStruct { a: 20, tail: s2_tail };
 
     let a = sov1(t1);
     let b = sov2(&s1);

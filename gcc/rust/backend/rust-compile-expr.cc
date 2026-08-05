@@ -101,12 +101,6 @@ compile_box (Context *ctx, TyTy::BaseType *box_tyty, TyTy::BaseType *inner_tyty,
 {
   tree inner_type_tree = TyTyResolveCompile::compile (ctx, inner_tyty);
 
-  if (!COMPLETE_TYPE_P (inner_type_tree))
-    {
-      rust_sorry_at (locus,
-		     "dynamically sized types in boxes are not supported yet");
-      return error_mark_node;
-    }
   tree size_tree = TYPE_SIZE_UNIT (inner_type_tree);
   tree align_tree
     = build_int_cst (size_type_node, TYPE_ALIGN_UNIT (inner_type_tree));
@@ -145,6 +139,9 @@ build_box_inner_ptr (tree main_expr, location_t locus)
   // custom allocator is placed as the first field in the RECORD_TYPE.
   while (TREE_CODE (TREE_TYPE (main_expr)) == RECORD_TYPE)
     {
+      if (RS_DST_FLAG_P (TREE_TYPE (main_expr)))
+	break;
+
       tree first_field = TYPE_FIELDS (TREE_TYPE (main_expr));
       if (first_field == NULL_TREE)
 	break;
@@ -186,6 +183,13 @@ CompileExpr::visit (HIR::TupleIndexExpr &expr)
     {
       tree indirect = indirect_expression (receiver_ref, expr.get_locus ());
       receiver_ref = indirect;
+    }
+  else if (auto inner_expr_ty = TyTy::try_get_box_inner_type (tuple_expr_ty))
+    {
+      rust_assert (inner_expr_ty.value ()->get_kind ()
+		   == TyTy::TypeKind::TUPLE);
+      receiver_ref = build_box_inner_ptr (receiver_ref, expr.get_locus ());
+      receiver_ref = indirect_expression (receiver_ref, expr.get_locus ());
     }
 
   translated
@@ -1781,6 +1785,21 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
     expr.get_receiver ().get_mappings ().get_hirid (), &receiver);
   rust_assert (ok);
 
+  // lookup the autoderef mappings
+  HirId autoderef_mappings_id
+    = expr.get_receiver ().get_mappings ().get_hirid ();
+  std::vector<Resolver::Adjustment> *adjustments = nullptr;
+  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
+						     &adjustments);
+  rust_assert (ok);
+
+  // apply adjustments for the fn call
+  self = resolve_adjustments (*adjustments, self,
+			      expr.get_receiver ().get_locus ());
+
+  if (adjustments != nullptr && !adjustments->empty ())
+    receiver = adjustments->back ().get_expected ();
+
   bool is_dyn_dispatch
     = receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC;
   bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
@@ -1803,18 +1822,6 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   else
     // lookup compiled functions since it may have already been compiled
     fn_expr = resolve_method_address (fntype, receiver, expr.get_locus ());
-
-  // lookup the autoderef mappings
-  HirId autoderef_mappings_id
-    = expr.get_receiver ().get_mappings ().get_hirid ();
-  std::vector<Resolver::Adjustment> *adjustments = nullptr;
-  ok = ctx->get_tyctx ()->lookup_autoderef_mappings (autoderef_mappings_id,
-						     &adjustments);
-  rust_assert (ok);
-
-  // apply adjustments for the fn call
-  self = resolve_adjustments (*adjustments, self,
-			      expr.get_receiver ().get_locus ());
 
   std::vector<tree> args;
   args.push_back (self); // adjusted self
@@ -2501,12 +2508,14 @@ HIRCompileBase::resolve_deref_adjustment (Resolver::Adjustment &adjustment,
 	       || adjustment.is_deref_mut_adjustment ());
   if (!adjustment.has_operator_overload ())
     {
-      TyTy::BaseType *receiver = adjustment.get_actual ();
-      if (TyTy::try_get_box_inner_type (receiver))
+      if (TyTy::try_get_box_inner_type (adjustment.get_actual ()))
 	{
-	  tree receiver_ref = expression;
-	  receiver_ref = build_box_inner_ptr (receiver_ref, locus);
-	  return indirect_expression (receiver_ref, locus);
+	  expression = build_box_inner_ptr (expression, locus);
+	  if (TREE_CODE (TREE_TYPE (expression)) == POINTER_TYPE
+	      || TREE_CODE (TREE_TYPE (expression)) == REFERENCE_TYPE)
+	    expression = indirect_expression (expression, locus);
+	  return expression;
+	  ;
 	}
       rust_assert (false);
     }
@@ -2928,6 +2937,13 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
   // do we need to add an indirect reference
   if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
     {
+      array_reference
+	= indirect_expression (array_reference, expr.get_locus ());
+    }
+  else if (TyTy::try_get_box_inner_type (array_expr_ty))
+    {
+      array_reference
+	= build_box_inner_ptr (array_reference, expr.get_locus ());
       array_reference
 	= indirect_expression (array_reference, expr.get_locus ());
     }
