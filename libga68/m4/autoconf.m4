@@ -126,6 +126,8 @@ ac_compiler=$[2]
 _AC_DO_LIMIT([$ac_compiler --version >&AS_MESSAGE_LOG_FD])
 m4_expand_once([_AC_COMPILER_EXEEXT])[]dnl
 m4_expand_once([_AC_COMPILER_OBJEXT])[]dnl
-A68FLAGS="-g -O2"
+if test -z "$A68FLAGS"; then
+  A68FLAGS="-g -O2"
+fi
 AC_LANG_POP(Algol 68)dnl
 ])# AC_PROG_A68

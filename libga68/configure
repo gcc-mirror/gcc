@@ -5906,7 +5906,9 @@ $as_echo "$ac_try_echo"; } >&5
   rm -f conftest.er1 conftest.err
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }
-A68FLAGS="-g -O2"
+if test -z "$A68FLAGS"; then
+  A68FLAGS="-g -O2"
+fi
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
