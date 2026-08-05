@@ -16166,6 +16166,8 @@ split_address_to_core_and_offset (tree exp,
   poly_int64 bitsize;
   location_t loc = EXPR_LOCATION (exp);
 
+  STRIP_NOPS (exp);
+
   if (TREE_CODE (exp) == SSA_NAME)
     if (gassign *def = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (exp)))
       if (gimple_assign_rhs_code (def) == ADDR_EXPR)

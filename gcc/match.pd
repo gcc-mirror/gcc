@@ -3089,12 +3089,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* (&a + b) !=/== (&a[1] + c) -> (&a[0] - &a[1]) + b !=/== c */
 (for neeq (ne eq)
  (simplify
-  (neeq:c (pointer_plus @2 @3) ADDR_EXPR@0)
+  (neeq:c (pointer_plus @2 @3) @0)
    (with { poly_int64 diff; tree inner_type = TREE_TYPE (@3);}
     (if (ptr_difference_const (@0, @2, &diff))
      (neeq { build_int_cst_type (inner_type, diff); } @3))))
  (simplify
-  (neeq (pointer_plus ADDR_EXPR@0 @1) (pointer_plus ADDR_EXPR@2 @3))
+  (neeq (pointer_plus @0 @1) (pointer_plus @2 @3))
    (with { poly_int64 diff; tree inner_type = TREE_TYPE (@1);}
     (if (ptr_difference_const (@0, @2, &diff))
      (neeq (plus { build_int_cst_type (inner_type, diff); } @1) @3)))))
@@ -3310,38 +3310,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Try folding difference of addresses.  */
 (simplify
- (minus (convert ADDR_EXPR@0) (convert (pointer_plus @1 @2)))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+ (minus (convert @0) (convert (pointer_plus @1 @2)))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+      && tree_nop_conversion_p (type, TREE_TYPE (@1)))
   (with { poly_int64 diff; }
    (if (ptr_difference_const (@0, @1, &diff))
     (minus { build_int_cst_type (type, diff); } (convert @2))))))
 (simplify
- (minus (convert (pointer_plus @0 @2)) (convert ADDR_EXPR@1))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+ (minus (convert (pointer_plus @0 @2)) (convert @1))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+      && tree_nop_conversion_p (type, TREE_TYPE (@1)))
   (with { poly_int64 diff; }
    (if (ptr_difference_const (@0, @1, &diff))
     (plus (convert @2) { build_int_cst_type (type, diff); })))))
 (simplify
- (minus (convert ADDR_EXPR@0) (convert @1))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
+ (minus (convert @0) (convert @1))
+ (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
+      && tree_nop_conversion_p (type, TREE_TYPE (@1))
+      && tree_nop_conversion_p (type, ptr_type_node))
   (with { poly_int64 diff; }
    (if (ptr_difference_const (@0, @1, &diff))
     { build_int_cst_type (type, diff); }))))
 (simplify
- (minus (convert @0) (convert ADDR_EXPR@1))
- (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))
-  (with { poly_int64 diff; }
-   (if (ptr_difference_const (@0, @1, &diff))
-    { build_int_cst_type (type, diff); }))))
-(simplify
- (pointer_diff (convert?@2 ADDR_EXPR@0) (convert1?@3 @1))
- (if (tree_nop_conversion_p (TREE_TYPE(@2), TREE_TYPE (@0))
-      && tree_nop_conversion_p (TREE_TYPE(@3), TREE_TYPE (@1)))
-  (with { poly_int64 diff; }
-   (if (ptr_difference_const (@0, @1, &diff))
-    { build_int_cst_type (type, diff); }))))
-(simplify
- (pointer_diff (convert?@2 @0) (convert1?@3 ADDR_EXPR@1))
+ (pointer_diff (convert?@2 @0) (convert1?@3 @1))
  (if (tree_nop_conversion_p (TREE_TYPE(@2), TREE_TYPE (@0))
       && tree_nop_conversion_p (TREE_TYPE(@3), TREE_TYPE (@1)))
   (with { poly_int64 diff; }
@@ -3350,18 +3341,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* (&a+b) - (&a[1] + c) -> sizeof(a[0]) + (b - c) */
 (simplify
- (pointer_diff (pointer_plus ADDR_EXPR@0 @1) (pointer_plus ADDR_EXPR@2 @3))
+ (pointer_diff (pointer_plus @0 @1) (pointer_plus @2 @3))
  (with { poly_int64 diff; }
    (if (ptr_difference_const (@0, @2, &diff))
     (plus { build_int_cst_type (type, diff); } (convert (minus @1 @3))))))
 /* (p + b) - &p->d -> offsetof (*p, d) + b */
 (simplify
- (pointer_diff (pointer_plus @0 @1) ADDR_EXPR@2)
+ (pointer_diff (pointer_plus @0 @1) @2)
  (with { poly_int64 diff; }
    (if (ptr_difference_const (@0, @2, &diff))
     (plus { build_int_cst_type (type, diff); } (convert @1)))))
 (simplify
- (pointer_diff ADDR_EXPR@0 (pointer_plus @1 @2))
+ (pointer_diff @0 (pointer_plus @1 @2))
  (with { poly_int64 diff; }
    (if (ptr_difference_const (@0, @1, &diff))
     (minus { build_int_cst_type (type, diff); } (convert @2)))))
