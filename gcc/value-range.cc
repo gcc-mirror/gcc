@@ -297,6 +297,12 @@ unsupported_range::nonzero_p () const
   return false;
 }
 
+bool
+unsupported_range::contains_zero_p () const
+{
+  return varying_p ();
+}
+
 void
 unsupported_range::set_nonzero (tree type)
 {
@@ -1714,6 +1720,14 @@ frange::nonzero_p () const
   frange tmp = *this;
   tmp.clear_nan ();
   return tmp == nz;
+}
+
+// Return TRUE if the range contains zero (+0.0 or -0.0).
+
+bool
+frange::contains_zero_p () const
+{
+  return contains_p (dconst0) || contains_p (dconstm0);
 }
 
 // Set range to [+0.0, +0.0] if honoring signed zeros, or [0.0, 0.0]

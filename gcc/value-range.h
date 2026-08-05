@@ -103,6 +103,9 @@ public:
   virtual bool contains_p (tree cst) const = 0;
   virtual bool zero_p () const = 0;
   virtual bool nonzero_p () const = 0;
+  // True if val == 0 may hold for some value in the range; for a float
+  // range that means +0.0 or -0.0.
+  virtual bool contains_zero_p () const = 0;
   virtual void set_nonzero (tree type) = 0;
   virtual void set_zero (tree type) = 0;
   virtual void set_nonnegative (tree type) = 0;
@@ -315,6 +318,7 @@ public:
   // Predicates.
   virtual bool zero_p () const override;
   virtual bool nonzero_p () const override;
+  virtual bool contains_zero_p () const override;
   virtual bool singleton_p (tree *result = NULL) const override;
   bool singleton_p (wide_int &) const;
   bool contains_p (const wide_int &) const;
@@ -422,6 +426,7 @@ public:
   virtual bool singleton_p (tree *result = NULL) const final override;
   virtual bool zero_p () const final override;
   virtual bool nonzero_p () const final override;
+  virtual bool contains_zero_p () const final override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) final override;
   virtual tree type () const final override;
   virtual bool union_ (const vrange &v) final override;
@@ -522,6 +527,7 @@ public:
   bool contains_p (tree) const final override;
   bool zero_p () const final override;
   bool nonzero_p () const final override;
+  bool contains_zero_p () const final override;
   void set_nonzero (tree type) final override;
   void set_zero (tree type) final override;
   void set_nonnegative (tree type) final override;
@@ -634,6 +640,7 @@ public:
   virtual void accept (const vrange_visitor &v) const override;
   virtual bool zero_p () const override;
   virtual bool nonzero_p () const override;
+  virtual bool contains_zero_p () const override;
   virtual void set_nonzero (tree type) override;
   virtual void set_zero (tree type) override;
   virtual void set_nonnegative (tree type) override;
@@ -886,6 +893,7 @@ public:
   void set_nonzero (tree type)
     { init (type); return m_vrange->set_nonzero (type); }
   bool nonzero_p () const { return m_vrange->nonzero_p (); }
+  bool contains_zero_p () const { return m_vrange->contains_zero_p (); }
   bool zero_p () const { return m_vrange->zero_p (); }
   tree lbound () const { return m_vrange->lbound (); }
   tree ubound () const { return m_vrange->ubound (); }
@@ -1135,6 +1143,16 @@ irange::nonzero_p () const
 
   wide_int zero = wi::zero (TYPE_PRECISION (type ()));
   return *this == int_range<2> (type (), zero, zero, VR_ANTI_RANGE);
+}
+
+inline bool
+irange::contains_zero_p () const
+{
+  if (undefined_p ())
+    return false;
+
+  wide_int zero = wi::zero (TYPE_PRECISION (type ()));
+  return contains_p (zero);
 }
 
 inline bool
@@ -1468,6 +1486,16 @@ inline bool
 prange::nonzero_p () const
 {
   return m_kind == VR_RANGE && m_min == 1 && m_max == -1;
+}
+
+inline bool
+prange::contains_zero_p () const
+{
+  if (undefined_p ())
+    return false;
+
+  wide_int zero = wi::zero (TYPE_PRECISION (type ()));
+  return contains_p (zero);
 }
 
 inline tree
