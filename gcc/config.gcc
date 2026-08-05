@@ -54,6 +54,12 @@
 #			support, the default value of
 #			$default_gnu_indirect_function is set to
 #			"no" except for targets which are known to be OK.
+#
+#  default_md_generator_partitions
+#			The default partition counts for genemit, genrecog,
+#			and genattrtab.  Set this to N to use the same count
+#			for all three generators, or to E:R:A to set each
+#			count separately.
 
 # This file sets the following shell variables for use by the
 # autoconf-generated configure script:
@@ -240,6 +246,7 @@ gdb_needs_out_file_path=
 thread_file=
 default_use_cxa_atexit=no
 default_gnu_indirect_function=no
+default_md_generator_partitions=10
 target_gtfiles=
 need_64bit_isa=
 native_system_header_dir=/usr/include
@@ -335,6 +342,7 @@ cpu_is_64bit=
 case ${target} in
 aarch64*-*-*)
 	cpu_type=aarch64
+	default_md_generator_partitions=6:6:1
 	extra_headers="${extra_headers} arm_fp16.h"
 	extra_headers="${extra_headers} arm_neon.h"
 	extra_headers="${extra_headers} arm_bf16.h"

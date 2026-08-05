@@ -1963,6 +1963,19 @@ dependencies and thus with parallel make potentially link different
 compilers concurrently.  If the argument is a positive integer, allow
 that number of concurrent link processes for the large binaries.
 
+@item --with-md-generator-partitions=@var{num}
+@itemx --with-md-generator-partitions=@var{counts}
+Set the number of C++ source partitions produced by the internal build-time
+tools @command{genemit}, @command{genrecog} and @command{genattrtab}.  More
+partitions give a parallel build more files to compile at once, and each
+of them is smaller, at the cost of repeating the per-file preamble.  A
+single @var{num} sets all three counts.  The @var{counts} form is
+@code{@var{emit}:@var{recog}:@var{attrtab}}.  Each count must be between
+1 and 9999.  The default is @code{6:6:1} for AArch64 and 10 for each
+generator on other targets.  A target can set a different default in
+@file{config.gcc}.  @option{--with-insnemit-partitions} is a deprecated
+alias.
+
 @item --enable-maintainer-mode
 The build rules that regenerate the Autoconf and Automake output files as
 well as the GCC master message catalog @file{gcc.pot} are normally

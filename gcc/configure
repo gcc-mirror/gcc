@@ -859,6 +859,8 @@ enable_gcov
 enable_shared
 enable_fixed_point
 enable_decimal_float
+DEFAULT_INSNATTRTAB_PARTITIONS
+DEFAULT_INSNRECOG_PARTITIONS
 DEFAULT_INSNEMIT_PARTITIONS
 DEFAULT_MATCHPD_PARTITIONS
 with_multi_buildlist
@@ -987,6 +989,7 @@ enable_multilib
 enable_multiarch
 with_stack_clash_protection_guard_size
 with_matchpd_partitions
+with_md_generator_partitions
 with_insnemit_partitions
 enable___cxa_atexit
 enable_decimal_float
@@ -1881,9 +1884,12 @@ Optional Packages:
   --with-matchpd-partitions=num
                           Set the number of partitions to make for gimple and
                           generic when splitting match.pd. [default=10]
-  --with-insnemit-partitions=num
-                          Set the number of partitions used by genemit,
-                          genrecog and genattrtab. [default=10]
+  --with-md-generator-partitions=num|emit:recog:attrtab
+                          Set the partition counts used by genemit, genrecog
+                          and genattrtab. A single number sets all three
+                          counts. [default=target dependent]
+  --with-insnemit-partitions=num|emit:recog:attrtab
+                          Deprecated alias for --with-md-generator-partitions.
   --with-dwarf2           force the default debug format to be DWARF 2 (or
                           later)
   --with-specs=SPECS      add SPECS to driver command-line processing
@@ -7908,18 +7914,30 @@ fi
 
 
 # Specify the number of output partitions used by the machine-description
-# generators.
+# generators.  Select and validate the effective value after config.gcc has
+# supplied the target default.
+md_generator_partitions_set=no
+md_generator_partitions_legacy=no
+
+# Check whether --with-md-generator-partitions was given.
+if test "${with_md_generator_partitions+set}" = set; then :
+  withval=$with_md_generator_partitions; md_generator_partitions=$with_md_generator_partitions
+md_generator_partitions_set=yes
+fi
+
 
 # Check whether --with-insnemit-partitions was given.
 if test "${with_insnemit_partitions+set}" = set; then :
-  withval=$with_insnemit_partitions; DEFAULT_INSNEMIT_PARTITIONS="$with_insnemit_partitions"
-else
-  DEFAULT_INSNEMIT_PARTITIONS=10
+  withval=$with_insnemit_partitions; if test "$md_generator_partitions_set" = yes; then
+  as_fn_error $? "--with-md-generator-partitions and --with-insnemit-partitions cannot be used together." "$LINENO" 5
+fi
+md_generator_partitions=$with_insnemit_partitions
+md_generator_partitions_set=yes
+md_generator_partitions_legacy=yes
 fi
 
-if (test $DEFAULT_INSNEMIT_PARTITIONS -lt 1); then
-  as_fn_error $? "Invalid value $DEFAULT_INSNEMIT_PARTITIONS for --with-insnemit-partitions. Cannot be negative." "$LINENO" 5
-fi
+
+
 
 
 
@@ -12994,6 +13012,53 @@ target_gtfiles=
 
 # Collect target-machine-specific information.
 . ${srcdir}/config.gcc || exit 1
+
+# Use the target default unless the user specified an option.
+if test "$md_generator_partitions_set" = no; then
+  md_generator_partitions=$default_md_generator_partitions
+fi
+
+# Set all three counts here and let the loop below reject anything that is
+# empty, not a number, or out of range.  A value with too many fields leaves
+# its remainder in the last count, where the colon fails the same check.
+case "$md_generator_partitions" in
+  *:*:*)
+    IFS=: read -r DEFAULT_INSNEMIT_PARTITIONS DEFAULT_INSNRECOG_PARTITIONS \
+      DEFAULT_INSNATTRTAB_PARTITIONS <<EOF
+$md_generator_partitions
+EOF
+    ;;
+  *)
+    DEFAULT_INSNEMIT_PARTITIONS=$md_generator_partitions
+    DEFAULT_INSNRECOG_PARTITIONS=$md_generator_partitions
+    DEFAULT_INSNATTRTAB_PARTITIONS=$md_generator_partitions
+    ;;
+esac
+
+for generator_partitions in \
+  "$DEFAULT_INSNEMIT_PARTITIONS" \
+  "$DEFAULT_INSNRECOG_PARTITIONS" \
+  "$DEFAULT_INSNATTRTAB_PARTITIONS"; do
+  case "$generator_partitions" in
+    '' | *[!0-9]*) generator_partitions= ;;
+    *)
+      while test "${generator_partitions#0}" != "$generator_partitions"; do
+        generator_partitions=${generator_partitions#0}
+      done
+      case "$generator_partitions" in
+        '' | ?????*) generator_partitions= ;;
+      esac
+      ;;
+  esac
+  if test -z "$generator_partitions"; then
+    as_fn_error $? "Invalid machine-description generator partition value $md_generator_partitions. Use N or E:R:A, with each number between 1 and 9999." "$LINENO" 5
+  fi
+done
+
+if test "$md_generator_partitions_legacy" = yes; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: --with-insnemit-partitions is deprecated. Use --with-md-generator-partitions instead." >&5
+$as_echo "$as_me: WARNING: --with-insnemit-partitions is deprecated. Use --with-md-generator-partitions instead." >&2;}
+fi
 
 extra_objs="${host_extra_objs} ${extra_objs}"
 extra_gcc_objs="${host_extra_gcc_objs} ${extra_gcc_objs}"
@@ -21922,7 +21987,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21925 "configure"
+#line 21990 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22028,7 +22093,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22031 "configure"
+#line 22096 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

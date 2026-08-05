@@ -903,19 +903,31 @@ fi
 AC_SUBST(DEFAULT_MATCHPD_PARTITIONS)
 
 # Specify the number of output partitions used by the machine-description
-# generators.
+# generators.  Select and validate the effective value after config.gcc has
+# supplied the target default.
+md_generator_partitions_set=no
+md_generator_partitions_legacy=no
+AC_ARG_WITH(md-generator-partitions,
+[AS_HELP_STRING([--with-md-generator-partitions=num|emit:recog:attrtab],
+[Set the partition counts used by genemit, genrecog and genattrtab.
+A single number sets all three counts. [default=target dependent]])],
+[md_generator_partitions=$with_md_generator_partitions
+md_generator_partitions_set=yes])
 AC_ARG_WITH(insnemit-partitions,
-[AS_HELP_STRING([--with-insnemit-partitions=num],
-[Set the number of partitions used by genemit, genrecog and genattrtab.
-[default=10]])],
-[DEFAULT_INSNEMIT_PARTITIONS="$with_insnemit_partitions"], [DEFAULT_INSNEMIT_PARTITIONS=10])
-if (test $DEFAULT_INSNEMIT_PARTITIONS -lt 1); then
+[AS_HELP_STRING([--with-insnemit-partitions=num|emit:recog:attrtab],
+[Deprecated alias for --with-md-generator-partitions.])],
+[if test "$md_generator_partitions_set" = yes; then
   AC_MSG_ERROR(m4_normalize([
-		Invalid value $DEFAULT_INSNEMIT_PARTITIONS for --with-insnemit-partitions. \
-		Cannot be negative.]))
+		--with-md-generator-partitions and --with-insnemit-partitions \
+		cannot be used together.]))
 fi
+md_generator_partitions=$with_insnemit_partitions
+md_generator_partitions_set=yes
+md_generator_partitions_legacy=yes])
 
 AC_SUBST(DEFAULT_INSNEMIT_PARTITIONS)
+AC_SUBST(DEFAULT_INSNRECOG_PARTITIONS)
+AC_SUBST(DEFAULT_INSNATTRTAB_PARTITIONS)
 
 # Enable __cxa_atexit for C++.
 AC_ARG_ENABLE(__cxa_atexit,
@@ -1927,6 +1939,57 @@ target_gtfiles=
 
 # Collect target-machine-specific information.
 . ${srcdir}/config.gcc || exit 1
+
+# Use the target default unless the user specified an option.
+if test "$md_generator_partitions_set" = no; then
+  md_generator_partitions=$default_md_generator_partitions
+fi
+
+# Set all three counts here and let the loop below reject anything that is
+# empty, not a number, or out of range.  A value with too many fields leaves
+# its remainder in the last count, where the colon fails the same check.
+case "$md_generator_partitions" in
+  *:*:*)
+    IFS=: read -r DEFAULT_INSNEMIT_PARTITIONS DEFAULT_INSNRECOG_PARTITIONS \
+      DEFAULT_INSNATTRTAB_PARTITIONS <<EOF
+$md_generator_partitions
+EOF
+    ;;
+  *)
+    DEFAULT_INSNEMIT_PARTITIONS=$md_generator_partitions
+    DEFAULT_INSNRECOG_PARTITIONS=$md_generator_partitions
+    DEFAULT_INSNATTRTAB_PARTITIONS=$md_generator_partitions
+    ;;
+esac
+
+for generator_partitions in \
+  "$DEFAULT_INSNEMIT_PARTITIONS" \
+  "$DEFAULT_INSNRECOG_PARTITIONS" \
+  "$DEFAULT_INSNATTRTAB_PARTITIONS"; do
+  case "$generator_partitions" in
+    '' | *[[!0-9]]*) generator_partitions= ;;
+    *)
+      while test "${generator_partitions#0}" != "$generator_partitions"; do
+        generator_partitions=${generator_partitions#0}
+      done
+      case "$generator_partitions" in
+        '' | ?????*) generator_partitions= ;;
+      esac
+      ;;
+  esac
+  if test -z "$generator_partitions"; then
+    AC_MSG_ERROR(m4_normalize([
+		Invalid machine-description generator partition value \
+		$md_generator_partitions. \
+		Use N or E:R:A, with each number between 1 and 9999.]))
+  fi
+done
+
+if test "$md_generator_partitions_legacy" = yes; then
+  AC_MSG_WARN(m4_normalize([
+		--with-insnemit-partitions is deprecated. \
+		Use --with-md-generator-partitions instead.]))
+fi
 
 extra_objs="${host_extra_objs} ${extra_objs}"
 extra_gcc_objs="${host_extra_gcc_objs} ${extra_gcc_objs}"

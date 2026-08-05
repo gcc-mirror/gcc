@@ -235,14 +235,16 @@ INSNEMIT_SEQ_SRC = $(patsubst %, insn-emit-%.cc, $(INSNEMIT_SPLITS_SEQ))
 INSNEMIT_SEQ_TMP = $(patsubst %, tmp-emit-%.cc, $(INSNEMIT_SPLITS_SEQ))
 INSNEMIT_SEQ_O = $(patsubst %, insn-emit-%.o, $(INSNEMIT_SPLITS_SEQ))
 
-# Re-use the split number for insn-recog as well.
-INSNRECOG_SPLITS_SEQ = $(wordlist 1,$(NUM_INSNEMIT_SPLITS),$(one_to_9999))
+# The number of splits to be made for the insn-recog files.
+NUM_INSNRECOG_SPLITS = @DEFAULT_INSNRECOG_PARTITIONS@
+INSNRECOG_SPLITS_SEQ = $(wordlist 1,$(NUM_INSNRECOG_SPLITS),$(one_to_9999))
 INSNRECOG_SEQ_SRC = $(patsubst %, insn-recog-%.cc, $(INSNRECOG_SPLITS_SEQ))
 INSNRECOG_SEQ_TMP = $(patsubst %, tmp-recog-%.cc, $(INSNRECOG_SPLITS_SEQ))
 INSNRECOG_SEQ_O = $(patsubst %, insn-recog-%.o, $(INSNRECOG_SPLITS_SEQ))
 
-# Re-use the split number for insn-attrtab as well.
-INSNATTRTAB_SPLITS_SEQ = $(wordlist 1,$(NUM_INSNEMIT_SPLITS),$(one_to_9999))
+# The number of splits to be made for the insn-attrtab files.
+NUM_INSNATTRTAB_SPLITS = @DEFAULT_INSNATTRTAB_PARTITIONS@
+INSNATTRTAB_SPLITS_SEQ = $(wordlist 1,$(NUM_INSNATTRTAB_SPLITS),$(one_to_9999))
 INSNATTRTAB_SEQ_SRC = $(patsubst %, insn-attrtab-%.cc, \
 	$(INSNATTRTAB_SPLITS_SEQ))
 INSNATTRTAB_SEQ_TMP = $(patsubst %, tmp-attrtab-%.cc, \
@@ -1993,9 +1995,9 @@ TREECHECKING = @TREECHECKING@
 FULL_DRIVER_NAME=$(target_noncanonical)-gcc-$(version)$(exeext)
 
 MOSTLYCLEANFILES = insn-flags.h insn-config.h insn-codes.h \
- insn-output.cc $(INSNRECOG_SEQ_SRC) insn-recog.h \
- $(INSNEMIT_SEQ_SRC) insn-extract.cc insn-peep.cc \
- insn-attr.h insn-attr-common.h $(INSNATTRTAB_SEQ_SRC) insn-attrtab.cc \
+ insn-output.cc insn-recog-*.cc insn-recog.h \
+ insn-emit-*.cc insn-extract.cc insn-peep.cc \
+ insn-attr.h insn-attr-common.h insn-attrtab-*.cc insn-attrtab.cc \
  insn-dfatab.cc insn-latencytab.cc insn-opinit.cc \
  insn-opinit.h insn-preds.cc \
  insn-constants.h \
@@ -2832,24 +2834,27 @@ $(simple_generated_c:insn-%.cc=s-%): s-%: build/gen%$(build_exeext)
 # genemit splits its output into different files and doesn't write to
 # stdout. (but rather to tmp-emit-01.cc..tmp-emit-10.cc)
 $(INSNEMIT_SEQ_SRC): s-tmp-emit; @true
-s-tmp-emit: build/genemit$(build_exeext) $(MD_DEPS) insn-conditions.md
+s-tmp-emit: build/genemit$(build_exeext) $(MD_DEPS) insn-conditions.md Makefile
 	$(RUN_GEN) build/genemit$(build_exeext) $(md_file) insn-conditions.md \
 	  $(addprefix -O,${INSNEMIT_SEQ_TMP})
-	$(foreach id, $(INSNEMIT_SPLITS_SEQ), \
-	  $(SHELL) $(srcdir)/../move-if-change tmp-emit-$(id).cc \
-	  insn-emit-$(id).cc;)
+	for id in $(INSNEMIT_SPLITS_SEQ); do \
+	  $(SHELL) $(srcdir)/../move-if-change tmp-emit-$$id.cc \
+	    insn-emit-$$id.cc || exit 1; \
+	done
 	$(STAMP) s-tmp-emit
 
 # Same for genrecog.
 $(INSNRECOG_SEQ_SRC): s-tmp-recog; @true
 insn-recog.h: s-tmp-recog; @true
-s-tmp-recog: build/genrecog$(build_exeext) $(MD_DEPS) insn-conditions.md
+s-tmp-recog: build/genrecog$(build_exeext) $(MD_DEPS) \
+  insn-conditions.md Makefile
 	$(RUN_GEN) build/genrecog$(build_exeext) $(md_file) insn-conditions.md \
 	  -Hinsn-recog.h \
 	  $(addprefix -O,${INSNRECOG_SEQ_TMP})
-	$(foreach id, $(INSNRECOG_SPLITS_SEQ), \
-	  $(SHELL) $(srcdir)/../move-if-change tmp-recog-$(id).cc \
-	  insn-recog-$(id).cc;)
+	for id in $(INSNRECOG_SPLITS_SEQ); do \
+	  $(SHELL) $(srcdir)/../move-if-change tmp-recog-$$id.cc \
+	    insn-recog-$$id.cc || exit 1; \
+	done
 	$(STAMP) s-tmp-recog
 
 # gencheck doesn't read the machine description, and the file produced
@@ -2866,7 +2871,7 @@ s-check : build/gencheck$(build_exeext)
 $(INSNATTRTAB_SEQ_SRC): s-attrtab ; @true
 insn-dfatab.cc insn-latencytab.cc: s-attrtab ; @true
 s-attrtab : $(MD_DEPS) build/genattrtab$(build_exeext) \
-  insn-conditions.md
+  insn-conditions.md Makefile
 	$(RUN_GEN) build/genattrtab$(build_exeext) $(md_file) insn-conditions.md \
 		$(addprefix -A,${INSNATTRTAB_SEQ_TMP}) \
 		-Dtmp-dfatab.cc -Ltmp-latencytab.cc
