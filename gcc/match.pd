@@ -7270,6 +7270,54 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  )
 )
 
+/* X >=/> 0 ? Y + X : Y - X
+   X <=/< 0 ? Y - X : Y + X
+     same as Y + abs (X).
+
+   X >=/> 0 ? Y - X : Y + X
+   X <=/< 0 ? Y + X : Y - X
+     same as Y - abs (X).
+
+   Build the addition or subtraction in an unsigned type for integral
+   types so the replacement does not introduce signed overflow.  */
+
+#if GIMPLE
+(for cmp (ge gt)
+ (simplify
+  (cond (cmp @0 integer_zerop) (plus:c @0 @1) (minus @1 @0))
+  (if (!TYPE_UNSIGNED (type)
+       && !TYPE_OVERFLOW_TRAPS (type)
+       && !TYPE_OVERFLOW_SANITIZED (type))
+   (with { tree utype = unsigned_type_for (type); }
+    (convert (plus:utype (convert:utype @1)
+			 (absu:utype @0))))))
+ (simplify
+  (cond (cmp @0 integer_zerop) (minus @1 @0) (plus:c @0 @1))
+  (if (!TYPE_UNSIGNED (type)
+       && !TYPE_OVERFLOW_TRAPS (type)
+       && !TYPE_OVERFLOW_SANITIZED (type))
+   (with { tree utype = unsigned_type_for (type); }
+    (convert (minus:utype (convert:utype @1)
+			  (absu:utype @0)))))))
+(for cmp (le lt)
+ (simplify
+  (cond (cmp @0 integer_zerop) (minus @1 @0) (plus:c @0 @1))
+  (if (!TYPE_UNSIGNED (type)
+       && !TYPE_OVERFLOW_TRAPS (type)
+       && !TYPE_OVERFLOW_SANITIZED (type))
+   (with { tree utype = unsigned_type_for (type); }
+    (convert (plus:utype (convert:utype @1)
+			 (absu:utype @0))))))
+ (simplify
+  (cond (cmp @0 integer_zerop) (plus:c @0 @1) (minus @1 @0))
+  (if (!TYPE_UNSIGNED (type)
+       && !TYPE_OVERFLOW_TRAPS (type)
+       && !TYPE_OVERFLOW_SANITIZED (type))
+   (with { tree utype = unsigned_type_for (type); }
+    (convert (minus:utype (convert:utype @1)
+			  (absu:utype @0)))))))
+#endif
+
 /* -(type)!A -> (type)A - 1.  */
 (simplify
  (negate (convert?:s (logical_inverted_value:s @0)))
