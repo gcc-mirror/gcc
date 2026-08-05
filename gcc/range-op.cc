@@ -2897,6 +2897,10 @@ operator_lshift::op1_range (irange &r,
       else
 	op_rshift.fold_range (tmp_range, utype, lhs, op2);
 
+      // If no valid range is found, abort the calculation and return falae.
+      if (tmp_range.undefined_p ())
+	return false;
+
       // Start with ranges which can produce the LHS by right shifting the
       // result by the shift amount.
       // ie   [0x08, 0xF0] = op1 << 2 will start with
