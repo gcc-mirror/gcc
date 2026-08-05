@@ -646,6 +646,23 @@ prange_storage::prange_storage (const prange &r) : vrange_storage (VR_PRANGE)
   set_prange (r);
 }
 
+// Return TRUE if R is exactly the nonzero set [1, MAX], which prange_storage
+// encodes compactly as PR_NONZERO.
+//
+// Compare the bounds against a fresh set_nonzero () rather than using
+// prange::operator==, because operator== also compares the bitmask and
+// points-to info, which are stored separately here, so a non-null pointer that
+// also carries e.g. an alignment bitmask still belongs in PR_NONZERO.
+
+static inline bool
+nonzero_range_p (const prange &r)
+{
+  prange nonzero (r.type ());
+  nonzero.set_nonzero (r.type ());
+  return (r.lower_bound () == nonzero.lower_bound ()
+	  && r.upper_bound () == nonzero.upper_bound ());
+}
+
 // Return the prange_kind for range R, and the number of words of storage
 // it requires in NUM_WORDS.
 
@@ -664,7 +681,7 @@ prange_storage::prange_format (const prange &r, unsigned &num_words)
 
   enum prange_kind kind = PR_NONZERO;
 
-  if (!r.nonzero_p ())
+  if (!nonzero_range_p (r))
     {
       prange tmp (r.type ());
       if (r.lower_bound () == tmp.lower_bound ()
@@ -803,7 +820,7 @@ prange_storage::equal_p (const prange &r) const
 	return r.zero_p ();
 
       case PR_NONZERO:
-	if (!r.nonzero_p ())
+	if (!nonzero_range_p (r))
 	  return false;
 	break;
 

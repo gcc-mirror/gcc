@@ -1871,7 +1871,10 @@ get_legacy_range (const prange &r, tree &min, tree &max)
       min = max = r.lbound ();
       return VR_RANGE;
     }
-  if (r.nonzero_p ())
+  prange nonzero (type);
+  nonzero.set_nonzero (type);
+  if (r.lower_bound () == nonzero.lower_bound ()
+      && r.upper_bound () == nonzero.upper_bound ())
     {
       min = max = build_zero_cst (type);
       return VR_ANTI_RANGE;
