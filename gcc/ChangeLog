@@ -1,3 +1,14 @@
+2026-08-04  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2026-07-16  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_regno_to_class): Map t1 to
+	JALR_REGS.
+	* config/riscv/riscv.h (RISCV_PROLOGUE_TEMP_REGNUM): Document
+	the SIBCALL_REGS restriction.
+	(REG_CLASS_CONTENTS): Remove t1 from SIBCALL_REGS.
+
 2026-08-03  Hu, Lin1  <lin1.hu@intel.com>
 
 	PR target/126581

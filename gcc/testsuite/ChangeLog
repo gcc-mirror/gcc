@@ -1,3 +1,13 @@
+2026-08-04  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2026-07-16  Jin Ma  <jinma@linux.alibaba.com>
+
+	* g++.target/riscv/pr97682.C: Accept registers in SIBCALL_REGS.
+	* gcc.target/riscv/rvv/base/sibcall-scalable-frame-indirect.c:
+	New test.
+	* gcc.target/riscv/rvv/base/sibcall-scalable-frame-weak.c: New test.
+
 2026-08-03  Hu, Lin1  <lin1.hu@intel.com>
 
 	PR target/126581
