@@ -292,12 +292,6 @@ unsupported_range::zero_p () const
 }
 
 bool
-unsupported_range::nonzero_p () const
-{
-  return false;
-}
-
-bool
 unsupported_range::contains_zero_p () const
 {
   return varying_p ();
@@ -1695,31 +1689,6 @@ void
 frange::set_nonzero (tree type)
 {
   set (type, dconstm0, dconst0, VR_ANTI_RANGE);
-}
-
-// Return TRUE when this range is exactly the "everything but zero" set that
-// set_nonzero builds, mirroring irange::nonzero_p.  Callers wanting "does not
-// contain zero" should use the !contains_p (0) idiom.
-//
-// A NAN is not a zero, so nonzero-ness depends only on the intervals, not on
-// whether the range may also be a NAN.  We therefore recognize the nonzero
-// range by comparing intervals against set_nonzero's with the NAN state
-// ignored.  A strict *this == set_nonzero () would be wrong: set_nonzero
-// leaves the NAN able to be either sign, so a range that is otherwise exactly
-// nonzero but whose NAN has been cleared would compare unequal.
-
-bool
-frange::nonzero_p () const
-{
-  if (undefined_p () || known_isnan ())
-    return false;
-
-  frange nz;
-  nz.set_nonzero (type ());
-  nz.clear_nan ();
-  frange tmp = *this;
-  tmp.clear_nan ();
-  return tmp == nz;
 }
 
 // Return TRUE if the range contains zero (+0.0 or -0.0).
@@ -3600,10 +3569,10 @@ range_tests_misc ()
   r0 = range_int (0, 0);
   ASSERT_TRUE (r0.zero_p ());
 
-  // Test nonzero_p().
+  // Test contains_zero_p().
   r0 = range_int (0, 0);
   r0.invert ();
-  ASSERT_TRUE (r0.nonzero_p ());
+  ASSERT_FALSE (r0.contains_zero_p ());
 
   // r0 = ~[1,1]
   r0 = range_int (1, 1, VR_ANTI_RANGE);
@@ -3861,26 +3830,25 @@ range_tests_sub_ranges_zero ()
 
   // Excluding zero from [-0.0, 5.0] eats the lower end entirely.
   r0.set_nonzero (float_type_node);
-  ASSERT_TRUE (r0.nonzero_p ());
+  ASSERT_FALSE (r0.contains_zero_p ());
   ASSERT_FALSE (r0.contains_p (dconst0));
   ASSERT_FALSE (r0.contains_p (dconstm0));
 
-  // A NAN is not a zero, so clearing the NAN leaves a nonzero range nonzero.
+  // A NAN is not a zero, so clearing the NAN leaves the range nonzero.
   r0.clear_nan ();
-  ASSERT_TRUE (r0.nonzero_p ());
+  ASSERT_FALSE (r0.contains_zero_p ());
 
-  // A range that merely avoids zero is not the nonzero range.
+  // A range that avoids zero does not contain zero.
   r0 = frange_float ("1.0", "10.0");
-  ASSERT_FALSE (r0.nonzero_p ());
+  ASSERT_FALSE (r0.contains_zero_p ());
 
-  // Excluding zero from [-0.0, 5.0] leaves (0, 5]: it avoids zero but is not
-  // the whole nonzero range.
+  // Excluding zero from [-0.0, 5.0] leaves (0, 5], which does not contain zero.
   r0 = frange_float ("-0.0", "5.0");
   r0.clear_nan ();
   r1 = frange_float_excluding ("0.0");
   r0.intersect (r1);
   ASSERT_EQ (r0.num_pairs (), 1);
-  ASSERT_FALSE (r0.nonzero_p ());
+  ASSERT_FALSE (r0.contains_zero_p ());
   ASSERT_FALSE (r0.contains_p (dconst0));
   ASSERT_FALSE (r0.contains_p (dconstm0));
   ASSERT_TRUE (r0.contains_p (real_from_str ("5.0")));

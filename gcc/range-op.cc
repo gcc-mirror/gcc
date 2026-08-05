@@ -5297,7 +5297,7 @@ range_op_bitwise_and_tests ()
   i1.set_nonzero (integer_type_node);
   i2.set_varying (integer_type_node);
   op_bitwise_or.fold_range (res, integer_type_node, i1, i2);
-  ASSERT_TRUE (res.nonzero_p ());
+  ASSERT_FALSE (res.contains_zero_p ());
 
   // (NEGATIVE | X) is nonzero.
   i1 = int_range<1> (integer_type_node, INT (-5), INT (-3));
