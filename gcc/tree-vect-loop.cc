@@ -8557,8 +8557,7 @@ vect_transform_lc_phi (loop_vec_info loop_vinfo,
   edge e = single_pred_edge (bb);
   tree vec_dest = vect_create_destination_var (scalar_dest, vectype);
   auto_vec<tree> vec_oprnds;
-  vect_get_vec_defs (loop_vinfo, slp_node,
-		     gimple_phi_arg_def (stmt_info->stmt, 0), &vec_oprnds);
+  vect_get_vec_defs (loop_vinfo, slp_node, true, &vec_oprnds);
   for (unsigned i = 0; i < vec_oprnds.length (); i++)
     {
       /* Create the vectorized LC PHI node.  */

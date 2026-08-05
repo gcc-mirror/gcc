@@ -2590,10 +2590,10 @@ extern void vect_finish_stmt_generation (vec_info *, stmt_vec_info, gimple *,
 extern opt_result vect_mark_stmts_to_be_vectorized (loop_vec_info, bool *);
 extern tree vect_get_store_rhs (stmt_vec_info);
 void vect_get_vec_defs (vec_info *, slp_tree,
-			tree, vec<tree> *,
-			tree = NULL, vec<tree> * = NULL,
-			tree = NULL, vec<tree> * = NULL,
-			tree = NULL, vec<tree> * = NULL);
+			bool, vec<tree> *,
+			bool = false, vec<tree> * = NULL,
+			bool = false, vec<tree> * = NULL,
+			bool = false, vec<tree> * = NULL);
 extern tree vect_init_vector (vec_info *, stmt_vec_info, tree, tree,
                               gimple_stmt_iterator *);
 extern tree vect_get_slp_vect_def (slp_tree, unsigned);
