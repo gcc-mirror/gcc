@@ -20,9 +20,9 @@ foo (S &x, S *&y, int n, int v)
       w[i].c[0] = u[i].c[0] = 0;
       w[i].c[1] = u[i].c[1] = 0;
     }
-  #pragma omp taskgroup task_reduction (+: x, y[ :2], z[1:2], u, w[1:v])
+  #pragma omp taskgroup task_reduction (+: x, y[:2], z[1:2], u, w[1:v])
   {
-    #pragma omp task in_reduction (+: x, y[ :2], z[1:2], u, w[1:v])
+    #pragma omp task in_reduction (+: x, y[:2], z[1:2], u, w[1:v])
     {
       x.a++;
       x.b++;
@@ -37,7 +37,7 @@ foo (S &x, S *&y, int n, int v)
       w[1].a += 6;
       w[1].b += 16;
     }
-    #pragma omp target in_reduction (+: x, y[ :2], z[1:2], u, w[1:v])
+    #pragma omp target in_reduction (+: x, y[:2], z[1:2], u, w[1:v])
     {
       x.a += 4;
       x.b += 14;
@@ -52,7 +52,7 @@ foo (S &x, S *&y, int n, int v)
       w[2].a += 7;
       w[2].b += 17;
     }
-    #pragma omp target in_reduction (+: x, y[ :v], z[1:v], u, w[1:2])
+    #pragma omp target in_reduction (+: x, y[:v], z[1:v], u, w[1:2])
     {
       x.a += 9;
       x.b += 19;
@@ -103,9 +103,9 @@ bar (S &x, S *&y, int n, int v)
       w[i].c[1] = u[i].c[1] = 0;
     }
   #pragma omp parallel master
-  #pragma omp taskgroup task_reduction (+: x, y[ :2], z[1:2], u, w[1:v])
+  #pragma omp taskgroup task_reduction (+: x, y[:2], z[1:2], u, w[1:v])
   {
-    #pragma omp task in_reduction (+: x, y[ :2], z[1:2], u, w[1:v])
+    #pragma omp task in_reduction (+: x, y[:2], z[1:2], u, w[1:v])
     {
       x.a++;
       x.b++;
@@ -120,7 +120,7 @@ bar (S &x, S *&y, int n, int v)
       w[1].a += 6;
       w[1].b += 16;
     }
-    #pragma omp target in_reduction (+: x, y[ :2], z[1:2], u, w[1:v])
+    #pragma omp target in_reduction (+: x, y[:2], z[1:2], u, w[1:v])
     {
       x.a += 4;
       x.b += 14;
@@ -135,7 +135,7 @@ bar (S &x, S *&y, int n, int v)
       w[2].a += 7;
       w[2].b += 17;
     }
-    #pragma omp target in_reduction (+: x, y[ :v], z[1:v], u, w[1:2])
+    #pragma omp target in_reduction (+: x, y[:v], z[1:v], u, w[1:2])
     {
       x.a += 9;
       x.b += 19;
