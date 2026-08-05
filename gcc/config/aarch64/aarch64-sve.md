@@ -7884,10 +7884,10 @@
   [(set_attr "sve_type" "sve_int_dot")]
 )
 
-;; Define double widen_[su]sum as dotproduct
+;; Define double reduc_widen_[su]sum as dotproduct
 ;; Use dot product to perform double widening sum reductions by
 ;; changing += a into += (a * 1).  i.e. we seed the multiplication with 1.
-(define_expand "widen_<sur>sum<mode><vsi2qi>3"
+(define_expand "reduc_widen_<sur>sum<mode><vsi2qi>3"
   [(set (match_operand:SVE_FULL_SDI 0 "register_operand")
 	(plus:SVE_FULL_SDI
 	  (unspec:SVE_FULL_SDI

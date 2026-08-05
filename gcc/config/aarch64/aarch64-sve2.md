@@ -2563,8 +2563,8 @@
   [(set_attr "sve_type" "sve_int_general")]
 )
 
-;; Define single step widening for widen_ssum using SADDWB and SADDWT
-(define_expand "widen_ssum<mode><Vnarrow>3"
+;; Define single step widening for reduc_widen_ssum using SADDWB and SADDWT
+(define_expand "reduc_widen_ssum<mode><Vnarrow>3"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand")
 	(unspec:SVE_FULL_HSDI
 	  [(match_operand:SVE_FULL_HSDI 2 "register_operand")
@@ -2590,8 +2590,8 @@
     }
 })
 
-;; Define single step widening for widen_usum using UADDWB and UADDWT
-(define_expand "widen_usum<mode><Vnarrow>3"
+;; Define single step widening for reduc_widen_usum using UADDWB and UADDWT
+(define_expand "reduc_widen_usum<mode><Vnarrow>3"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w")
 	(unspec:SVE_FULL_HSDI
 	  [(match_operand:SVE_FULL_HSDI 2 "register_operand" "w")

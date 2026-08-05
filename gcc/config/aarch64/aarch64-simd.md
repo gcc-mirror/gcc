@@ -5337,7 +5337,7 @@
 
 ;; <su><addsub>w<q>.
 
-(define_expand "widen_ssum<Vdblw><mode>3"
+(define_expand "reduc_widen_ssum<Vdblw><mode>3"
   [(set (match_operand:<VDBLW> 0 "register_operand")
 	(plus:<VDBLW> (sign_extend:<VDBLW> 
 		        (match_operand:VQW 1 "register_operand"))
@@ -5354,7 +5354,7 @@
   }
 )
 
-(define_expand "widen_ssum<Vwide><mode>3"
+(define_expand "reduc_widen_ssum<Vwide><mode>3"
   [(set (match_operand:<VWIDE> 0 "register_operand")
 	(plus:<VWIDE> (sign_extend:<VWIDE>
 		        (match_operand:VD_BHSI 1 "register_operand"))
@@ -5365,7 +5365,7 @@
   DONE;
 })
 
-(define_expand "widen_usum<Vdblw><mode>3"
+(define_expand "reduc_widen_usum<Vdblw><mode>3"
   [(set (match_operand:<VDBLW> 0 "register_operand")
 	(plus:<VDBLW> (zero_extend:<VDBLW> 
 		        (match_operand:VQW 1 "register_operand"))
@@ -5382,7 +5382,7 @@
   }
 )
 
-(define_expand "widen_usum<Vwide><mode>3"
+(define_expand "reduc_widen_usum<Vwide><mode>3"
   [(set (match_operand:<VWIDE> 0 "register_operand")
 	(plus:<VWIDE> (zero_extend:<VWIDE>
 		        (match_operand:VD_BHSI 1 "register_operand"))
@@ -5393,7 +5393,7 @@
   DONE;
 })
 
-(define_expand "widen_ssum<mode><vsi2qi>3"
+(define_expand "reduc_widen_ssum<mode><vsi2qi>3"
   [(set (match_operand:VS 0 "register_operand")
 	(plus:VS (sign_extend:VS
 		   (match_operand:<VSI2QI> 1 "register_operand"))
@@ -5409,7 +5409,7 @@
 
 ;; Use dot product to perform double widening sum reductions by
 ;; changing += a into += (a * 1).  i.e. we seed the multiplication with 1.
-(define_expand "widen_usum<mode><vsi2qi>3"
+(define_expand "reduc_widen_usum<mode><vsi2qi>3"
   [(set (match_operand:VS 0 "register_operand")
 	(plus:VS (zero_extend:VS
 		        (match_operand:<VSI2QI> 1 "register_operand"))

@@ -149,7 +149,8 @@ optab_for_tree_code (enum tree_code code, const_tree type,
       return vec_realign_load_optab;
 
     case WIDEN_SUM_EXPR:
-      return TYPE_UNSIGNED (type) ? usum_widen_optab : ssum_widen_optab;
+      return (TYPE_UNSIGNED (type)
+	      ? reduc_widen_usum_optab : reduc_widen_ssum_optab);
 
     case DOT_PROD_EXPR:
       {
