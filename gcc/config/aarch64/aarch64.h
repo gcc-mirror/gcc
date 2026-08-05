@@ -295,6 +295,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 			    && (AARCH64_HAVE_ISA (SSVE_AES) \
 				|| TARGET_NON_STREAMING))
 
+#define TARGET_SVE_AES2 (TARGET_SVE_AES && AARCH64_HAVE_ISA (SVE_AES2))
+
 /* SVE BITPERM instructions, enabled through +sve-bitperm+sve2 for non-streaming
    and +ssve-bitperm for streaming.  */
 #define TARGET_SVE_BITPERM (AARCH64_HAVE_ISA (SVE_BITPERM) \

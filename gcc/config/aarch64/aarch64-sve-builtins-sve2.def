@@ -206,6 +206,16 @@ DEF_SVE_FUNCTION (svpmullb_pair, binary_opt_n, d_unsigned, none)
 DEF_SVE_FUNCTION (svpmullt_pair, binary_opt_n, d_unsigned, none)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS streaming_compatible (AARCH64_FL_SVE_AES2, \
+					    AARCH64_FL_SSVE_AES)
+DEF_SVE_FUNCTION_GS (svaesd_lane, binary_aes_lane, b_unsigned, x24, none)
+DEF_SVE_FUNCTION_GS (svaese_lane, binary_aes_lane, b_unsigned, x24, none)
+DEF_SVE_FUNCTION_GS (svaesdimc_lane, binary_aes_lane, b_unsigned, x24, none)
+DEF_SVE_FUNCTION_GS (svaesemc_lane, binary_aes_lane, b_unsigned, x24, none)
+DEF_SVE_FUNCTION_GS (svpmull_pair, binary_to_pair_opt_n, d_unsigned, x2, none)
+DEF_SVE_FUNCTION_GS (svpmlal_pair, ternary_to_pair_opt_n, d_unsigned, x2, none)
+#undef REQUIRED_EXTENSIONS
+
 #define REQUIRED_EXTENSIONS streaming_compatible (AARCH64_FL_SVE2 \
 						  | AARCH64_FL_SVE_BITPERM, \
 						  AARCH64_FL_SSVE_BITPERM)

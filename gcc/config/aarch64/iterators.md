@@ -711,6 +711,9 @@
 
 (define_mode_iterator SVE_DIx24 [VNx4DI VNx8DI])
 
+;; SVE integer vector modes with 2 and 4 vectors of 8-bit elements.
+(define_mode_iterator SVE_QIx24 [VNx32QI VNx64QI])
+
 ;; SVE modes with 2 or 4 elements.
 (define_mode_iterator SVE_24 [VNx2QI VNx2HI VNx2HF VNx2BF VNx2SI VNx2SF
 			      VNx2DI VNx2DF
@@ -892,6 +895,8 @@
     UNSPEC_SQDMULH	; Used in aarch64-simd.md.
     UNSPEC_SQRDMULH	; Used in aarch64-simd.md.
     UNSPEC_PMUL		; Used in aarch64-simd.md.
+    UNSPEC_PMULL_PAIR   ; Used in aarch64-sve2.md.
+    UNSPEC_PMLAL_PAIR   ; Used in aarch64-sve2.md.
     UNSPEC_FMULX	; Used in aarch64-simd.md.
     UNSPEC_USQADD	; Used in aarch64-simd.md.
     UNSPEC_SUQADD	; Used in aarch64-simd.md.
@@ -3698,6 +3703,9 @@
 
 (define_int_iterator CRYPTO_AES [UNSPEC_AESE UNSPEC_AESD])
 (define_int_iterator CRYPTO_AESMC [UNSPEC_AESMC UNSPEC_AESIMC])
+(define_int_attr aes_fused_op [(UNSPEC_AESE "emc") (UNSPEC_AESD "dimc")])
+(define_int_attr aes_mc_unspec [(UNSPEC_AESE "UNSPEC_AESMC")
+				      (UNSPEC_AESD "UNSPEC_AESIMC")])
 
 (define_int_iterator CRYPTO_SHA1 [UNSPEC_SHA1C UNSPEC_SHA1M UNSPEC_SHA1P])
 

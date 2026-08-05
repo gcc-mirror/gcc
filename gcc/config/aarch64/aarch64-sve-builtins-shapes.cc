@@ -1522,6 +1522,122 @@ struct binary_int_opt_single_n_def : public overloaded_base<0>
 };
 SHAPE (binary_int_opt_single_n);
 
+/* sv<t0>x<g>_t svfoo[_t0_g](sv<t0>_t, sv<t0>_t)
+   sv<t0>x<g>_t svfoo[_n_t0_g](sv<t0>_t, <t0>_t).  */
+struct binary_to_pair_opt_n_def : public overloaded_base<0>
+{
+  bool explicit_group_suffix_p () const override { return false; }
+
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "t0,v0,v0", group, MODE_none);
+    build_all (b, "t0,v0,s0", group, MODE_n);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    type_suffix_index type;
+    if (!r.check_gp_argument (2, i, nargs)
+	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+      return error_mark_node;
+
+    return r.finish_opt_n_resolution (i + 1, i, type, r.SAME_TYPE_CLASS,
+				      r.SAME_SIZE, sve_type (type, 2));
+  }
+};
+SHAPE (binary_to_pair_opt_n);
+
+/* sv<t0>x<g>_t svfoo[_t0_g](sv<t0>x<g>_t, sv<t0>_t, sv<t0>_t)
+   sv<t0>x<g>_t svfoo[_n_t0_g](sv<t0>x<g>_t, sv<t0>_t, <t0>_t).  */
+struct ternary_to_pair_opt_n_def : public overloaded_base<0>
+{
+  bool explicit_group_suffix_p () const override { return false; }
+
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "t0,t0,v0,v0", group, MODE_none);
+    build_all (b, "t0,t0,v0,s0", group, MODE_n);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    unsigned int i, nargs;
+    sve_type type;
+    if (!r.check_gp_argument (3, i, nargs)
+	|| !(type = r.infer_sve_type (i)))
+      return error_mark_node;
+
+    if (type.num_vectors != 2)
+      {
+	r.report_incorrect_num_vectors (i, type, 2);
+	return error_mark_node;
+      }
+
+    if (!r.require_derived_vector_type (i + 1, i, type))
+      return error_mark_node;
+
+    return r.finish_opt_n_resolution (i + 2, i + 1, type.type,
+				      r.SAME_TYPE_CLASS, r.SAME_SIZE, type);
+  }
+};
+SHAPE (ternary_to_pair_opt_n);
+
+/* svuint8x2_t svaes<...>_lane[_u8_x2] (svuint8x2_t zdn, svuint8_t zm, uint64_t
+   index);
+   and
+   svuint8x4_t svaes<...>_lane[_u8_x4] (svuint8x4_t zdn, svuint8_t zm, uint64_t
+   index);
+   When index is in range[0-3]
+*/
+struct binary_aes_lane_def : public overloaded_base<0>
+{
+  bool explicit_group_suffix_p () const override { return false; }
+
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "t0,t0,v0,su64", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    if (!r.check_num_arguments (3))
+      return error_mark_node;
+
+    sve_type type = r.infer_sve_type (0);
+    if (!type)
+      return error_mark_node;
+
+    if (type.num_vectors != 2 && type.num_vectors != 4)
+      return error_mark_node;
+
+    if (!r.require_vector_type (1, VECTOR_TYPE_svuint8_t))
+      return error_mark_node;
+
+    if (!r.require_integer_immediate (2))
+      return error_mark_node;
+
+    return r.resolve_to (MODE_none, type);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return c.require_immediate_lane_index (2, 0, 4);
+  }
+};
+SHAPE (binary_aes_lane);
+
+
 /* sv<t0>_t svfoo_<t0>(sv<t0>_t, sv<t0>_t, uint64_t)
 
    where the final argument is an integer constant expression in the

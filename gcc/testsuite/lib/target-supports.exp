@@ -13056,8 +13056,8 @@ proc check_effective_target_aarch64_gas_has_dtprel_reloc { } {
 set exts {
     "bf16" "cmpbr" "crc" "crypto" "dotprod" "f32mm" "f64mm" "faminmax"
     "fp" "fp8" "fp8dot2" "fp8dot4" "fp8fma" "i8mm" "ls64" "lse" "lut"
-    "sb" "simd" "sve-b16b16" "sve" "sve2" "sve-sm4" "sve-aes" "sve-bitperm"
-    "sve-sha3" "f8f16mm" "f8f32mm" "sve-f16f32mm"
+    "sb" "simd" "sve-b16b16" "sve" "sve2" "sve-sm4" "sve-aes" "sve-aes2"
+    "sve-bitperm" "sve-sha3" "f8f16mm" "f8f32mm" "sve-f16f32mm"
     "sme-f8f16" "sme-f8f32"
     "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1" "sme2p2"
     "sme2p3"

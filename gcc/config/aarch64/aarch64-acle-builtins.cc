@@ -2326,8 +2326,22 @@ finish_opt_n_resolution (unsigned int argno, unsigned int first_argno,
 			 unsigned int expected_bits,
 			 type_suffix_index inferred_type)
 {
-  if (inferred_type == NUM_TYPE_SUFFIXES)
-    inferred_type = first_type;
+  return finish_opt_n_resolution (argno, first_argno, first_type,
+				  expected_tclass, expected_bits,
+				  (inferred_type == NUM_TYPE_SUFFIXES
+				   ? sve_type (first_type)
+				   : sve_type (inferred_type)));
+}
+
+tree function_resolver::
+finish_opt_n_resolution (unsigned int argno, unsigned int first_argno,
+			 type_suffix_index first_type,
+			 type_class_index expected_tclass,
+			 unsigned int expected_bits,
+			 sve_type inferred_type)
+{
+  if (!inferred_type)
+    inferred_type = sve_type (first_type);
   tree scalar_form = lookup_form (MODE_n, inferred_type);
 
   /* Allow the final argument to be scalar, if an _n form exists.  */

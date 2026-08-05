@@ -397,6 +397,11 @@ typedef unspec_based_function_exact_insn<code_for_aarch64_sve_sub>
 typedef unspec_based_function_exact_insn<code_for_aarch64_sve_sub_lane>
   unspec_based_sub_lane_function;
 
+typedef unspec_based_function_exact_insn<code_for_aarch64_sve2_aes_lane>
+  unspec_based_aes_lane_function;
+typedef unspec_based_function_exact_insn<code_for_aarch64_sve2_aes_lane_mc>
+  unspec_based_aes_lane_mc_function;
+
 /* A function that has conditional and unconditional forms, with both
    forms being associated with a single unspec each.  */
 class cond_or_uncond_unspec_function : public function_base

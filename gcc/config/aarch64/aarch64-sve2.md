@@ -4225,6 +4225,35 @@
   [(set_attr "sve_type" "sve_int_pmul")]
 )
 
+;; Polynomial multiply corresponding D elements and return the widened Q
+;; results as a pair of consecutive destination vectors.
+;;   PMULL { <Zd1>.Q-<Zd2>.Q }, <Zn>.D, <Zm>.D
+(define_insn "aarch64_sve_pmull_pair"
+  [(set (match_operand:VNx4DI 0 "aligned_register_operand" "=Uw2")
+       (unspec:VNx4DI
+	[(match_operand:VNx2DI 1 "register_operand" "w")
+	  (match_operand:VNx2DI 2 "register_operand" "w")]
+	 UNSPEC_PMULL_PAIR))]
+  "TARGET_SVE_AES2"
+  "pmull\t{%S0.q - %T0.q}, %1.d, %2.d"
+  [(set_attr "sve_type" "sve_int_pmul")]
+)
+
+;; Polynomial multiply corresponding D elements and XOR-accumulate the widened
+;; Q results into a pair of consecutive destination vectors.
+;;   PMLAL { <Zda1>.Q-<Zda2>.Q }, <Zn>.D, <Zm>.D
+(define_insn "aarch64_sve_pmlal_pair"
+  [(set (match_operand:VNx4DI 0 "aligned_register_operand" "=Uw2")
+       (unspec:VNx4DI
+	 [(match_operand:VNx4DI 1 "aligned_register_operand" "0")
+	  (match_operand:VNx2DI 2 "register_operand" "w")
+	  (match_operand:VNx2DI 3 "register_operand" "w")]
+	 UNSPEC_PMLAL_PAIR))]
+  "TARGET_SVE_AES2"
+  "pmlal\t{%S0.q - %T0.q}, %2.d, %3.d"
+  [(set_attr "sve_type" "sve_int_pmul")]
+)
+
 ;; =========================================================================
 ;; == Comparisons and selects
 ;; =========================================================================
@@ -4830,6 +4859,10 @@
 ;; - AESE
 ;; - AESIMC
 ;; - AESMC
+;; - AESD (indexed, two registers and four registers)
+;; - AESE (indexed, two registers and four registers)
+;; - AESEMC (indexed, two registers and four registers)
+;; - AESDIMC (indexed, two registers and four registers)
 ;; -------------------------------------------------------------------------
 
 ;; AESD and AESE.
@@ -4889,6 +4922,44 @@
   "aesd\t%0.b, %0.b, %2.b\;aesimc\t%0.b, %0.b"
   [(set_attr "type" "crypto_aese")
    (set_attr "length" "8")]
+)
+
+;; AESE and AESD, indexed, two registers and four registers.
+;;   AES<E/D> { <Zdn1>.B-<Zdn(2/4)>.B }, { <Zdn1>.B-<Zdn(2/4)>.B }, <Zm>.Q[<index>]
+
+(define_insn "@aarch64_sve2_aes<aes_op>_lane<mode>"
+  [(set (match_operand:SVE_QIx24 0 "aligned_register_operand" "=Uw<vector_count>")
+       (unspec:SVE_QIx24
+	 [(xor:SVE_QIx24
+	    (match_operand:SVE_QIx24 1 "aligned_register_operand" "0")
+	    (unspec:SVE_QIx24
+	      [(match_operand:VNx16QI 2 "register_operand" "w")
+	       (match_operand:SI 3 "const_0_to_3_operand")]
+	      UNSPEC_SSVE_LANE_SELECT))]
+	  CRYPTO_AES))]
+  "TARGET_SVE_AES2"
+  "aes<aes_op>\t%0, %0, %2.q[%3]"
+  [(set_attr "type" "crypto_aese")]
+)
+
+;; AESEMC and AESDIMC, indexed, two registers and four registers.
+;;   AESEMC/AESDIMC { <Zdn1>.B-<Zdn (2/4)>.B }, { <Zdn1>.B-<Zdn (2/4)>.B }, <Zm>.Q[<index>]
+
+(define_insn "@aarch64_sve2_aes<CRYPTO_AES>_lane_mc<mode>"
+  [(set (match_operand:SVE_QIx24 0 "aligned_register_operand" "=Uw<vector_count>")
+       (unspec:SVE_QIx24
+	 [(unspec:SVE_QIx24
+	    [(xor:SVE_QIx24
+	       (match_operand:SVE_QIx24 1 "aligned_register_operand" "0")
+	       (unspec:SVE_QIx24
+		 [(match_operand:VNx16QI 2 "register_operand" "w")
+		  (match_operand:SI 3 "const_0_to_3_operand")]
+		 UNSPEC_SSVE_LANE_SELECT))]
+	    CRYPTO_AES)]
+	 <aes_mc_unspec>))]
+  "TARGET_SVE_AES2"
+  "aes<aes_fused_op>\t%0, %0, %2.q[%3]"
+  [(set_attr "type" "crypto_aesmc")]
 )
 
 ;; -------------------------------------------------------------------------

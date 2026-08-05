@@ -81,6 +81,7 @@ namespace aarch64_acle
     extern const function_shape *const adr_index;
     extern const function_shape *const adr_offset;
     extern const function_shape *const binary;
+    extern const function_shape *const binary_aes_lane;
     extern const function_shape *const binary_int_opt_n;
     extern const function_shape *const binary_int_opt_single_n;
     extern const function_shape *const binary_lane;
@@ -95,6 +96,7 @@ namespace aarch64_acle
     extern const function_shape *const binary_rotate;
     extern const function_shape *const binary_scalar;
     extern const function_shape *const binary_single;
+    extern const function_shape *const binary_to_pair_opt_n;
     extern const function_shape *const binary_to_uint;
     extern const function_shape *const binary_uint;
     extern const function_shape *const binary_uint_n;
@@ -233,6 +235,7 @@ namespace aarch64_acle
     extern const function_shape *const ternary_rotate;
     extern const function_shape *const ternary_shift_left_imm;
     extern const function_shape *const ternary_shift_right_imm;
+    extern const function_shape *const ternary_to_pair_opt_n;
     extern const function_shape *const ternary_uint;
     extern const function_shape *const ternary_uintq_intq;
     extern const function_shape *const ternary_uintq_intq_lane;

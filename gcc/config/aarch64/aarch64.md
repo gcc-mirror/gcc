@@ -392,6 +392,9 @@
     ;; Represents an SVE-style lane index, in which the indexing applies
     ;; within the containing 128-bit block.
     UNSPEC_SVE_LANE_SELECT
+    ;; Represents an SVE-style lane index, in which the indexing applies
+    ;; within the containing 512-bit block.
+    UNSPEC_SSVE_LANE_SELECT
     UNSPEC_SVE_CNT_PAT
     UNSPEC_SVE_PREFETCH
     UNSPEC_SVE_PREFETCH_GATHER

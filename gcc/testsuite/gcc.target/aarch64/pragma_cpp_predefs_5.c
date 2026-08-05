@@ -41,6 +41,14 @@
 #error "__ARM_FEATURE_SVE2_SHA3 is defined but should not be!"
 #endif
 
+#ifdef __ARM_FEATURE_SSVE_AES
+#error "__ARM_FEATURE_SSVE_AES is defined but should not be!"
+#endif
+
+#ifdef __ARM_FEATURE_SVE_AES2
+#error "__ARM_FEATURE_SVE_AES2 is defined but should not be!"
+#endif
+
 #pragma GCC pop_options
 
 #pragma GCC push_options
@@ -222,6 +230,20 @@
 
 #ifndef __ARM_FEATURE_SVE2_BITPERM
 #error Foo
+#endif
+#pragma GCC pop_options
+
+#pragma GCC push_options
+#pragma GCC target "arch=armv8-a+ssve-aes"
+#ifndef __ARM_FEATURE_SSVE_AES
+#error "__ARM_FEATURE_SSVE_AES is not defined but should be!"
+#endif
+#pragma GCC pop_options
+
+#pragma GCC push_options
+#pragma GCC target "arch=armv8-a+sve-aes2"
+#ifndef __ARM_FEATURE_SVE_AES2
+#error "__ARM_FEATURE_SVE_AES2 is not defined but should be!"
 #endif
 #pragma GCC pop_options
 

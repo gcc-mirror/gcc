@@ -50,6 +50,10 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 1)")))
 
+(define_predicate "const_0_to_3_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
+
 (define_predicate "const_0_to_7_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 7)")))

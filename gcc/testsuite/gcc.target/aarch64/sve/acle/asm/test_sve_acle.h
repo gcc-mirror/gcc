@@ -687,6 +687,24 @@
     __asm volatile ("" :: "w" (RES));				\
   }
 
+#define TEST_XN_INDEXED(NAME, TTYPE, VTYPE, CODE1, CODE2)      \
+       PROTO (NAME, TTYPE, (TTYPE t, VTYPE v)) \
+       {       \
+          register TTYPE z0 __asm ("z0");      \
+          register TTYPE z1 __asm ("z1");      \
+          register TTYPE z2 __asm ("z2");      \
+          register TTYPE z3 __asm ("z3");      \
+          register VTYPE z4 __asm ("z4");      \
+          register VTYPE z5 __asm ("z5");      \
+          register VTYPE z6 __asm ("z6");      \
+          register VTYPE z7 __asm ("z7");      \
+          register uint64_t x0 __asm ("x0");   \
+          __asm volatile ("" : "=r" (x0));				\
+          INVOKE (CODE1, CODE2);       \
+          __asm volatile ("" :: "w" (t));      \
+          return t;    \
+       }
+
 #define TEST_DUAL_XN(NAME, TTYPE1, TTYPE2, RES, CODE1, CODE2)	\
   PROTO (NAME, void, ())					\
   {								\

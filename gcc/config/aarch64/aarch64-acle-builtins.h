@@ -590,6 +590,8 @@ public:
 				type_class_index = SAME_TYPE_CLASS,
 				unsigned int = SAME_SIZE,
 				type_suffix_index = NUM_TYPE_SUFFIXES);
+  tree finish_opt_n_resolution (unsigned int, unsigned int, type_suffix_index,
+				type_class_index, unsigned int, sve_type);
   tree finish_opt_single_resolution (unsigned int, unsigned int, sve_type,
 				     type_class_index = SAME_TYPE_CLASS);
 
