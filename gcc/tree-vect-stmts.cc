@@ -5284,7 +5284,6 @@ vectorizable_conversion (vec_info *vinfo,
 {
   tree vec_dest, cvt_op = NULL_TREE;
   tree scalar_dest;
-  tree op0, op1 = NULL_TREE;
   tree_code tc1;
   code_helper code, code1, code2;
   code_helper codecvt1 = ERROR_MARK, codecvt2 = ERROR_MARK;
@@ -5366,7 +5365,7 @@ vectorizable_conversion (vec_info *vinfo,
   /* Check the operands of the operation.  */
   slp_tree slp_op0, slp_op1 = NULL;
   if (!vect_is_simple_use (vinfo, slp_node,
-			   0, &op0, &slp_op0, &dt[0], &vectype_in))
+			   0, &slp_op0, &dt[0], &vectype_in))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5374,7 +5373,7 @@ vectorizable_conversion (vec_info *vinfo,
       return false;
     }
 
-  rhs_type = TREE_TYPE (op0);
+  rhs_type = TREE_TYPE (gimple_arg (stmt, 0));
   if ((code != FIX_TRUNC_EXPR && code != FLOAT_EXPR)
       && !((INTEGRAL_TYPE_P (lhs_type)
 	    && INTEGRAL_TYPE_P (rhs_type))
@@ -5398,11 +5397,9 @@ vectorizable_conversion (vec_info *vinfo,
 		  || code == WIDEN_LSHIFT_EXPR
 		  || widening_fn_p (code));
 
-      op1 = is_gimple_assign (stmt) ? gimple_assign_rhs2 (stmt) :
-				     gimple_call_arg (stmt, 0);
       tree vectype1_in;
       if (!vect_is_simple_use (vinfo, slp_node, 1,
-			       &op1, &slp_op1, &dt[1], &vectype1_in))
+			       &slp_op1, &dt[1], &vectype1_in))
 	{
           if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5415,12 +5412,12 @@ vectorizable_conversion (vec_info *vinfo,
 	vectype_in = vectype1_in;
     }
 
-  /* If op0 is an external or constant def, infer the vector type
+  /* If slp_op0 is an external or constant def, infer the vector type
      from the scalar type.  */
-  if (!vectype_in)
-    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type, slp_node);
   if (!cost_vec)
     gcc_assert (vectype_in);
+  if (!vectype_in)
+    vectype_in = get_vectype_for_scalar_type (vinfo, rhs_type, slp_node);
   if (!vectype_in)
     {
       if (dump_enabled_p ())
@@ -5474,7 +5471,7 @@ vectorizable_conversion (vec_info *vinfo,
       gcc_assert (code.is_tree_code ());
       if (supportable_indirect_convert_operation (code,
 						  vectype_out, vectype_in,
-						  converts, op0, slp_op0))
+						  converts, slp_op0))
 	{
 	  gcc_assert (converts.length () <= 2);
 	  if (converts.length () == 1)
@@ -5623,7 +5620,7 @@ vectorizable_conversion (vec_info *vinfo,
 					       &interm_types))
 	    break;
 	}
-      /* If op0 can be represented with low precision integer,
+      /* If slp_op0 can be represented with low precision integer,
 	 truncate it to cvt_type and the do FLOAT_EXPR.  */
       else if (code == FLOAT_EXPR)
 	{
@@ -5728,14 +5725,6 @@ vectorizable_conversion (vec_info *vinfo,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "transform conversion.\n");
 
-  if (op_type == binary_op)
-    {
-      if (CONSTANT_CLASS_P (op0))
-	op0 = fold_convert (TREE_TYPE (op1), op0);
-      else if (CONSTANT_CLASS_P (op1))
-	op1 = fold_convert (TREE_TYPE (op0), op1);
-    }
-
   /* In case of multi-step conversion, we first generate conversion operations
      to the intermediate types, and then from that types to the final one.
      We create vector destinations for the intermediate type (TYPES) received
@@ -5810,7 +5799,7 @@ vectorizable_conversion (vec_info *vinfo,
 	  int oprnds_size = vec_oprnds0.length ();
 	  vec_oprnds1.create (oprnds_size);
 	  for (i = 0; i < oprnds_size; ++i)
-	    vec_oprnds1.quick_push (op1);
+	    vec_oprnds1.quick_push (vect_get_slp_scalar_def (slp_op1, 0));
 	}
       /* Arguments are ready.  Create the new vector stmts.  */
       for (i = multi_step_cvt; i >= 0; i--)
@@ -5871,7 +5860,7 @@ vectorizable_conversion (vec_info *vinfo,
 					     stmt_info, vec_dsts, gsi,
 					     slp_node, code1,
 					     modifier == NARROW_SRC);
-      /* After demoting op0 to cvt_type, convert it to dest.  */
+      /* After demoting slp_op0 to cvt_type, convert it to dest.  */
       if (cvt_type && code == FLOAT_EXPR)
 	{
 	  for (unsigned int i = 0; i != vec_oprnds0.length() / 2;  i++)
@@ -13992,6 +13981,18 @@ vect_is_simple_use (vec_info *vinfo, slp_tree slp_node,
     }
 }
 
+/* Wrapper around vect_is_simple_use that elides the scalar op output.  */
+
+bool
+vect_is_simple_use (vec_info *vinfo, slp_tree slp_node,
+		    unsigned operand, slp_tree *slp_def,
+		    enum vect_def_type *dt, tree *vectype)
+{
+  tree op;
+  return vect_is_simple_use (vinfo, slp_node, operand, &op, slp_def, dt,
+			     vectype);
+}
+
 /* If OP is not NULL and is external or constant update its vector
    type with VECTYPE.  Returns true if successful or false if not,
    for example when conflicting vector types are present.  */
@@ -14531,7 +14532,7 @@ supportable_indirect_convert_operation (code_helper code,
 					tree vectype_out,
 					tree vectype_in,
 					vec<std::pair<tree, tree_code> > &converts,
-					tree op0, slp_tree slp_op0)
+					slp_tree slp_op0)
 {
   bool found_mode = false;
   scalar_mode lhs_mode = GET_MODE_INNER (TYPE_MODE (vectype_out));
@@ -14598,7 +14599,7 @@ supportable_indirect_convert_operation (code_helper code,
 	  if (demotion && float_expr_p)
 	    {
 	      wide_int op_min_value, op_max_value;
-	      /* For vector form, it looks like op0 doesn't have RANGE_INFO.
+	      /* For vector form, it looks like slp_op0 doesn't have RANGE_INFO.
 		 In the future, if it is supported, changes may need to be made
 		 to this part, such as checking the RANGE of each element
 		 in the vector.  */
@@ -14612,11 +14613,7 @@ supportable_indirect_convert_operation (code_helper code,
 					       &op_min_value, &op_max_value))
 		    break;
 		}
-	      else if (!op0
-		       || TREE_CODE (op0) != SSA_NAME
-		       || !SSA_NAME_RANGE_INFO (op0)
-		       || !vect_get_range_info (op0, &op_min_value,
-						&op_max_value))
+	      else
 		break;
 
 	      if (cvt_type == NULL_TREE
