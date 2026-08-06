@@ -736,7 +736,7 @@ operator_equal::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_NE;
 
   // TRUE = op1 == op2 indicates EQ_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_EQ;
   return VREL_VARYING;
 }
@@ -885,7 +885,7 @@ operator_not_equal::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_EQ;
 
   // TRUE = op1 != op2  indicates NE_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_NE;
   return VREL_VARYING;
 }
@@ -999,7 +999,7 @@ operator_lt::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_GE;
 
   // TRUE = op1 < op2 indicates LT_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_LT;
   return VREL_VARYING;
 }
@@ -1106,7 +1106,7 @@ operator_le::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_GT;
 
   // TRUE = op1 <= op2 indicates LE_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_LE;
   return VREL_VARYING;
 }
@@ -1223,7 +1223,7 @@ operator_gt::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_LE;
 
   // TRUE = op1 > op2 indicates GT_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_GT;
   return VREL_VARYING;
 }
@@ -1331,7 +1331,7 @@ operator_ge::op1_op2_relation (const irange &lhs, const frange &,
     return VREL_LT;
 
   // TRUE = op1 >= op2 indicates GE_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_GE;
   return VREL_VARYING;
 }

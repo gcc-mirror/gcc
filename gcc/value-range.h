@@ -1339,16 +1339,6 @@ irange::normalize_kind ()
     verify_range ();
 }
 
-inline bool
-contains_zero_p (const irange &r)
-{
-  if (r.undefined_p ())
-    return false;
-
-  wide_int zero = wi::zero (TYPE_PRECISION (r.type ()));
-  return r.contains_p (zero);
-}
-
 inline wide_int
 irange_val_min (const_tree type)
 {

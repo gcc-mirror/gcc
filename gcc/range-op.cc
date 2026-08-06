@@ -1060,7 +1060,7 @@ operator_equal::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_NE;
 
   // TRUE = op1 == op2 indicates EQ_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_EQ;
   return VREL_VARYING;
 }
@@ -1168,7 +1168,7 @@ operator_not_equal::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_EQ;
 
   // TRUE = op1 != op2  indicates NE_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_NE;
   return VREL_VARYING;
 }
@@ -1335,7 +1335,7 @@ operator_lt::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_GE;
 
   // TRUE = op1 < op2 indicates LT_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_LT;
   return VREL_VARYING;
 }
@@ -1436,7 +1436,7 @@ operator_le::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_GT;
 
   // TRUE = op1 <= op2 indicates LE_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_LE;
   return VREL_VARYING;
 }
@@ -1534,7 +1534,7 @@ operator_gt::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_LE;
 
   // TRUE = op1 > op2 indicates GT_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_GT;
   return VREL_VARYING;
 }
@@ -1630,7 +1630,7 @@ operator_ge::op1_op2_relation (const irange &lhs, const irange &,
     return VREL_LT;
 
   // TRUE = op1 >= op2 indicates GE_EXPR.
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     return VREL_GE;
   return VREL_VARYING;
 }
@@ -2864,7 +2864,7 @@ operator_lshift::op1_range (irange &r,
   if (lhs.undefined_p ())
     return false;
 
-  if (!contains_zero_p (lhs))
+  if (!lhs.contains_zero_p ())
     r.set_nonzero (type);
   else
     r.set_varying (type);
@@ -2975,7 +2975,7 @@ operator_rshift::op1_range (irange &r,
       op_plus.fold_range (ub, type, lb, mask_range);
       r = lb;
       r.union_ (ub);
-      if (!contains_zero_p (lhs_refined))
+      if (!lhs_refined.contains_zero_p ())
 	{
 	  mask_range.invert ();
 	  r.intersect (mask_range);
@@ -3191,7 +3191,7 @@ operator_cast::op1_range (irange &r, tree type,
 	{
 	  // If the LHS is not a pointer nor a singleton, then it is
 	  // either VARYING or non-zero.
-	  if (!lhs.undefined_p () && !contains_zero_p (lhs))
+	  if (!lhs.undefined_p () && !lhs.contains_zero_p ())
 	    r.set_nonzero (type);
 	  else
 	    r.set_varying (type);
@@ -3408,7 +3408,7 @@ operator_logical_and::fold_range (irange &r, tree type,
   if ((wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (lh.upper_bound (), 0))
       || (wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (rh.upper_bound (), 0)))
     r = range_false (type);
-  else if (contains_zero_p (lh) || contains_zero_p (rh))
+  else if (lh.contains_zero_p () || rh.contains_zero_p ())
     // To reach this point, there must be a logical 1 on each side, and
     // the only remaining question is whether there is a zero or not.
     r = range_true_and_false (type);
@@ -3727,7 +3727,7 @@ operator_bitwise_and::wi_fold (irange &r, tree type,
 static void
 set_nonzero_range_from_mask (irange &r, tree type, const irange &lhs)
 {
-  if (lhs.undefined_p () || contains_zero_p (lhs))
+  if (lhs.undefined_p () || lhs.contains_zero_p ())
     r.set_varying (type);
   else
     r.set_nonzero (type);
@@ -4282,7 +4282,7 @@ operator_bitwise_xor::op1_range (irange &r, tree type,
 	  else if (op2.zero_p ())
 	    r = range_true (type);
 	  // See get_bool_state for the rationale
-	  else if (op2.undefined_p () || contains_zero_p (op2))
+	  else if (op2.undefined_p () || op2.contains_zero_p ())
 	    r = range_true_and_false (type);
 	  else
 	    r = range_false (type);
@@ -4843,7 +4843,7 @@ operator_addr_expr::fold_range (irange &r, tree type,
   // Return a non-null pointer of the LHS type (passed in op2).
   if (lh.zero_p ())
     r.set_zero (type);
-  else if (lh.undefined_p () || contains_zero_p (lh))
+  else if (lh.undefined_p () || lh.contains_zero_p ())
     r.set_varying (type);
   else
     r.set_nonzero (type);
@@ -4862,7 +4862,7 @@ operator_addr_expr::op1_range (irange &r, tree type,
   // Return a non-null pointer of the LHS type (passed in op2), but only
   // if we cant overflow, eitherwise a no-zero offset could wrap to zero.
   // See PR 111009.
-  if (!lhs.undefined_p () && !contains_zero_p (lhs) && TYPE_OVERFLOW_UNDEFINED (type))
+  if (!lhs.undefined_p () && !lhs.contains_zero_p () && TYPE_OVERFLOW_UNDEFINED (type))
     r.set_nonzero (type);
   else
     r.set_varying (type);
