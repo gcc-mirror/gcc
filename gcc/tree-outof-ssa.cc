@@ -1103,7 +1103,11 @@ split_overlapping_partition_decls (var_map map)
       /* Expansion hands set_rtl the representative before the other names,
 	 and expand_leader_merge keeps the variable it is given first unless a
 	 later one is DECL_IGNORED_P, so merging the two gives the variable
-	 this partition ends up with.  */
+	 this partition ends up with.  A partition holding the default
+	 definition of a parameter or of the result is instead seeded with that
+	 decl, and is given it back once its RTL is restored at the end of
+	 expansion, so the variable it ends up with is one that the rule below
+	 keeps for it alone.  */
       tree var = SSA_NAME_VAR (repr);
       if (part_var[i])
 	var = expand_leader_merge (var, part_var[i]);

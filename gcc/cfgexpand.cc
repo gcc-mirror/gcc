@@ -2467,7 +2467,12 @@ stack_protect_return_slot_p ()
    MEM_EXPR base and an offset from it, so two stack slots carrying one
    MEM_EXPR read as a single object, which lets an access to one be redirected
    to the other.  out-of-SSA keeps them apart, see the comment above
-   split_overlapping_partition_decls.  */
+   split_overlapping_partition_decls.
+
+   Call this once the RTL of every partition is final.  The partition of a
+   PARM_DECL or RESULT_DECL default definition is given the MEM_EXPR of any
+   other variable in it while its names are walked, and only gets the decl
+   back when its RTL is restored in pass_expand::execute.  */
 
 static void
 verify_partition_mem_exprs (void)
@@ -7197,9 +7202,6 @@ pass_expand::execute (function *fun)
       adjust_one_expanded_partition_var (name);
     }
 
-  if (flag_checking)
-    verify_partition_mem_exprs ();
-
   /* Clean up RTL of variables that straddle across multiple
      partitions, and check that the rtl of any PARM_DECLs that are not
      cleaned up is that of their default defs.  */
@@ -7246,6 +7248,9 @@ pass_expand::execute (function *fun)
 	  SET_DECL_RTL (var, in);
 	}
     }
+
+  if (flag_checking)
+    verify_partition_mem_exprs ();
 
   /* If this function is `main', emit a call to `__main'
      to run global initializers, etc.  */
