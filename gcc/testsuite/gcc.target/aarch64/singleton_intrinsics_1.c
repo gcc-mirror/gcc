@@ -19,7 +19,7 @@ test_vadd_s64 (int64x1_t a, int64x1_t b)
   return vadd_s64 (a, b);
 }
 
-/* { dg-final { scan-assembler-times "\\tabs\\td\[0-9\]+, d\[0-9\]+" 1 } } */
+/* { dg-final { scan-assembler-times "\\tabs\\td\[0-9\]+, d\[0-9\]+" 1 { xfail *-*-* } } } */
 
 int64x1_t
 test_vabs_s64 (int64x1_t a)

@@ -668,12 +668,6 @@
   BUILTIN_VHSDF (UNOP, frecpe, 0, FP)
   BUILTIN_VHSDF_HSDF (BINOP, frecps, 0, FP)
 
-  /* Implemented by a mixture of abs2 patterns.  Note the DImode builtin is
-     only ever used for the int64x1_t intrinsic, there is no scalar version.  */
-  BUILTIN_VSDQ_I_DI (UNOP, abs, 0, QUIET)
-  BUILTIN_VHSDF (UNOP, abs, 2, QUIET)
-  VAR1 (UNOP, abs, 2, QUIET, hf)
-
   BUILTIN_VQ_HSF (UNOP, vec_unpacks_hi_, 10, FP)
   VAR1 (BINOP, float_truncate_hi_, 0, FP, v4sf)
   VAR1 (BINOP, float_truncate_hi_, 0, FP, v8hf)

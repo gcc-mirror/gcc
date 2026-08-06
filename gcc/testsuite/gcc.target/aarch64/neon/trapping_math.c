@@ -72,3 +72,69 @@ test_vaddq_f64 (float64x2_t a, float64x2_t b)
 {
   vaddq_f64 (a, b);
 }
+
+/*
+** test_vabs_f16:
+** fabs	v[0-9]+\.4h, v0\.4h
+** ret
+*/
+void
+test_vabs_f16 (float16x4_t a)
+{
+  vabs_f16 (a);
+}
+
+/*
+** test_vabsq_f16:
+** fabs	v[0-9]+\.8h, v0\.8h
+** ret
+*/
+void
+test_vabsq_f16 (float16x8_t a)
+{
+  vabsq_f16 (a);
+}
+
+/*
+** test_vabs_f32:
+** fabs	v[0-9]+\.2s, v0\.2s
+** ret
+*/
+void
+test_vabs_f32 (float32x2_t a)
+{
+  vabs_f32 (a);
+}
+
+/*
+** test_vabsq_f32:
+** fabs	v[0-9]+\.4s, v0\.4s
+** ret
+*/
+void
+test_vabsq_f32 (float32x4_t a)
+{
+  vabsq_f32 (a);
+}
+
+/*
+** test_vabs_f64:
+** fabs	d[0-9]+, d0
+** ret
+*/
+void
+test_vabs_f64 (float64x1_t a)
+{
+  vabs_f64 (a);
+}
+
+/*
+** test_vabsq_f64:
+** fabs	v[0-9]+\.2d, v0\.2d
+** ret
+*/
+void
+test_vabsq_f64 (float64x2_t a)
+{
+  vabsq_f64 (a);
+}

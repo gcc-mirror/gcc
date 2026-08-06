@@ -926,7 +926,6 @@
  [
     UNSPEC_ASHIFT_SIGNED	; Used in aarch-simd.md.
     UNSPEC_ASHIFT_UNSIGNED	; Used in aarch64-simd.md.
-    UNSPEC_ABS		; Used in aarch64-simd.md.
     UNSPEC_FCVTN_FP8	; Used in aarch64-simd.md.
     UNSPEC_FCVTN2_FP8	; Used in aarch64-builtins.cc.
     UNSPEC_F1CVTL_FP8	; Used in aarch64-simd.md.

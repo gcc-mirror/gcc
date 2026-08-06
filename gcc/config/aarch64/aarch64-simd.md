@@ -974,19 +974,6 @@
   [(set_attr "type" "neon_abs<q>")]
 )
 
-;; The intrinsic version of integer ABS must not be allowed to
-;; combine with any operation with an integrated ABS step, such
-;; as SABD.
-(define_insn "aarch64_abs<mode><vczle><vczbe>"
-  [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w")
-	  (unspec:VSDQ_I_DI
-	    [(match_operand:VSDQ_I_DI 1 "register_operand" "w")]
-	   UNSPEC_ABS))]
-  "TARGET_SIMD"
-  "abs\t%<v>0<Vmtype>, %<v>1<Vmtype>"
-  [(set_attr "type" "neon_abs<q>")]
-)
-
 ;; It's tempting to represent SABD as ABS (MINUS op1 op2).
 ;; This isn't accurate as ABS treats always its input as a signed value.
 ;; So (ABS:QI (minus:QI 64 -128)) == (ABS:QI (192 or -64 signed)) == 64.
@@ -1318,9 +1305,8 @@
 (define_insn_and_split "*aarch64_abs_plus<mode>"
   [(set (match_operand:VDQ_BHSI 0 "register_operand" "=&w")
 	(plus:VDQ_BHSI
-	  (unspec:VDQ_BHSI
-	    [(match_operand:VDQ_BHSI 1 "register_operand" "w")]
-	    UNSPEC_ABS)
+	  (abs:VDQ_BHSI
+	    (match_operand:VDQ_BHSI 1 "register_operand" "w"))
 	  (match_operand:VDQ_BHSI 2 "register_operand" "w")))]
   "TARGET_SIMD && can_create_pseudo_p ()"
   "#"

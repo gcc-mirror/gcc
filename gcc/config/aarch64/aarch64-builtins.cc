@@ -4717,8 +4717,6 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
 {
   switch (fcode)
     {
-      BUILTIN_VDQF (UNOP, abs, 2, ALL)
-	return fold_build1 (ABS_EXPR, type, args[0]);
       VAR1 (UNOP, floatv2si, 2, ALL, v2sf)
       VAR1 (UNOP, floatv4si, 2, ALL, v4sf)
       VAR1 (UNOP, floatv2di, 2, ALL, v2df)

@@ -4509,104 +4509,6 @@ vabdq_f64 (float64x2_t __a, float64x2_t __b)
   return __builtin_aarch64_fabdv2df (__a, __b);
 }
 
-/* vabs  */
-
-__extension__ extern __inline float32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_f32 (float32x2_t __a)
-{
-  return __builtin_aarch64_absv2sf (__a);
-}
-
-__extension__ extern __inline float64x1_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_f64 (float64x1_t __a)
-{
-  return (float64x1_t) {__builtin_fabs (__a[0])};
-}
-
-__extension__ extern __inline int8x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_s8 (int8x8_t __a)
-{
-  return __builtin_aarch64_absv8qi (__a);
-}
-
-__extension__ extern __inline int16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_s16 (int16x4_t __a)
-{
-  return __builtin_aarch64_absv4hi (__a);
-}
-
-__extension__ extern __inline int32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_s32 (int32x2_t __a)
-{
-  return __builtin_aarch64_absv2si (__a);
-}
-
-__extension__ extern __inline int64x1_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_s64 (int64x1_t __a)
-{
-  return (int64x1_t) {__builtin_aarch64_absdi (__a[0])};
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_f32 (float32x4_t __a)
-{
-  return __builtin_aarch64_absv4sf (__a);
-}
-
-__extension__ extern __inline float64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_f64 (float64x2_t __a)
-{
-  return __builtin_aarch64_absv2df (__a);
-}
-
-__extension__ extern __inline int8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_s8 (int8x16_t __a)
-{
-  return __builtin_aarch64_absv16qi (__a);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_s16 (int16x8_t __a)
-{
-  return __builtin_aarch64_absv8hi (__a);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_s32 (int32x4_t __a)
-{
-  return __builtin_aarch64_absv4si (__a);
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_s64 (int64x2_t __a)
-{
-  return __builtin_aarch64_absv2di (__a);
-}
-
-/* Try to avoid moving between integer and vector registers.
-   For why the cast to unsigned is needed check the vnegd_s64 intrinsic.
-   There is a testcase related to this issue:
-   gcc.target/aarch64/vabsd_s64.c.  */
-
-__extension__ extern __inline int64_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabsd_s64 (int64_t __a)
-{
-  return __a < 0 ? - (uint64_t) __a : __a;
-}
-
 /* ARMv8.1-A intrinsics.  */
 #pragma GCC push_options
 #pragma GCC target ("+nothing+rdma")
@@ -17618,20 +17520,6 @@ vuqaddd_s64 (int64_t __a, uint64_t __b)
 #pragma GCC target ("+nothing+simd+fp16")
 
 /* ARMv8.2-A FP16 one operand vector intrinsics.  */
-
-__extension__ extern __inline float16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabs_f16 (float16x4_t __a)
-{
-  return __builtin_aarch64_absv4hf (__a);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vabsq_f16 (float16x8_t __a)
-{
-  return __builtin_aarch64_absv8hf (__a);
-}
 
 __extension__ extern __inline uint16x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))

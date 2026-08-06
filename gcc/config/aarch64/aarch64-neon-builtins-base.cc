@@ -884,6 +884,24 @@ struct gimple_reinterpret : public gimple_function_base
   }
 };
 
+struct gimple_abs : public gimple_function_base
+{
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto arg = gimple_call_arg (f.call, 0);
+    auto arg_type = TREE_TYPE (arg);
+
+    if (!FLOAT_TYPE_P (arg_type))
+      return gimple_build_assign (
+	f.lhs, build_cast (arg_type,
+			   f.force_val (fold_build1 (
+			     ABSU_EXPR, unsigned_type_for (arg_type), arg))));
+
+    auto ret = fold_build1 (ABS_EXPR, arg_type, arg);
+    return this->maybe_optimization_barrier (f, ret);
+  }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -902,6 +920,7 @@ NEON_FUNCTION (vadd, vaddq, vaddd, gimple_arith, (PLUS_EXPR, PLUS_EXPR, BIT_XOR_
 NEON_FUNCTION (vsub, vsubq, vsubd, gimple_arith, (MINUS_EXPR))
 NEON_FUNCTION (vdiv, vdivq,	   gimple_arith, (RDIV_EXPR))
 NEON_FUNCTION (vneg, vnegq, vnegd, gimple_arith, (NEGATE_EXPR))
+NEON_FUNCTION (vabs, vabsq, vabsd, gimple_abs,)
 
 NEON_FUNCTION (vmul, vmulq,		gimple_arith, (MULT_EXPR))
 NEON_FUNCTION (vmul_n, vmulq_n,		gimple_arith_dup, (MULT_EXPR))

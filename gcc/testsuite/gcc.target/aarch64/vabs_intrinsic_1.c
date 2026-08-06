@@ -13,8 +13,9 @@ static void							\
 test_vabs##q##_##size (ETYPE (size) * res,			\
 			const ETYPE (size) *in1)		\
 {								\
-  VTYPE (size, lanes) a = vld1##q##_s##size (res);		\
-  VTYPE (size, lanes) b = vld1##q##_s##size (in1);		\
+  /* Use volatile to prevent constant folding.  */		\
+  volatile VTYPE (size, lanes) a = vld1##q##_s##size (res);	\
+  volatile VTYPE (size, lanes) b = vld1##q##_s##size (in1);	\
   a = vabs##q##_s##size (b);					\
   vst1##q##_s##size (res, a);					\
 }
@@ -54,15 +55,11 @@ test_##size (void)						\
   ETYPE (size) res2[lanes_128] = {0};				\
   ETYPE (size) expected2[lanes_128] = EXPECTED##lanes_128;	\
 								\
-  /* Forcefully avoid optimization.  */				\
-  asm volatile ("" : : : "memory");				\
   test_vabs_##size (res1, pool1);				\
   for (i = 0; i < lanes_64; i++)				\
     if (res1[i] != expected1[i])				\
       abort ();							\
 								\
-  /* Forcefully avoid optimization.  */				\
-  asm volatile ("" : : : "memory");				\
   test_vabsq_##size (res2, pool2);				\
   for (i = 0; i < lanes_128; i++)				\
     if (res2[i] != expected2[i])				\
