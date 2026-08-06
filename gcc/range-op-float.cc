@@ -656,13 +656,9 @@ operator_equal::fold_range (irange &r, tree type,
       tmp.intersect (op2);
       if (tmp.undefined_p ())
 	{
-	  // If one range is [whatever, -0.0] and another
-	  // [0.0, whatever2], we don't know anything either,
-	  // because -0.0 == 0.0.
-	  if ((real_iszero (&op1.upper_bound ())
-	       && real_iszero (&op2.lower_bound ()))
-	      || (real_iszero (&op1.lower_bound ())
-		  && real_iszero (&op2.upper_bound ())))
+	  // If one range contains -0.0 and another +0.0, we don't know
+	  // anything either, because -0.0 == 0.0.
+	  if (op1.contains_zero_p () && op2.contains_zero_p ())
 	    r = range_true_and_false (type);
 	  else
 	    r = range_false (type);
@@ -797,13 +793,9 @@ operator_not_equal::fold_range (irange &r, tree type,
       tmp.intersect (op2);
       if (tmp.undefined_p ())
 	{
-	  // If one range is [whatever, -0.0] and another
-	  // [0.0, whatever2], we don't know anything either,
-	  // because -0.0 == 0.0.
-	  if ((real_iszero (&op1.upper_bound ())
-	       && real_iszero (&op2.lower_bound ()))
-	      || (real_iszero (&op1.lower_bound ())
-		  && real_iszero (&op2.upper_bound ())))
+	  // If one range contains -0.0 and another +0.0, we don't know
+	  // anything either, because -0.0 == 0.0.
+	  if (op1.contains_zero_p () && op2.contains_zero_p ())
 	    r = range_true_and_false (type);
 	  else
 	    r = range_true (type);
