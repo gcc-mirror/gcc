@@ -4186,6 +4186,8 @@ write_expression (tree expr)
 		      [ <alias template-args> ] _ <type> # type alias
 		  ::= ty <type>				# type
 		  ::= dm <prefix> <unqualified-name>	# ns data member
+		  ::= da <prefix> [ <nonnegative number> ] _ # empty anon union
+							     # data member
 		  ::= un <prefix> [ <nonnegative number> ] _ # unnamed bitfld
 		  ::= ct [ <prefix> ] <unqualified-name> # class template
 		  ::= ft [ <prefix> ] <unqualified-name> # function template
@@ -4207,6 +4209,11 @@ write_reflection (tree refl)
 {
   char prefix[3];
   tree arg = reflection_mangle_prefix (refl, prefix);
+  if (strcmp (prefix, "dm") == 0
+      && DECL_NAME (arg) == NULL_TREE
+      && ANON_AGGR_TYPE_P (TREE_TYPE (arg))
+      && anon_aggr_naming_decl (TREE_TYPE (arg)) == NULL_TREE)
+    strcpy (prefix, "da");
   write_string (prefix);
   /* If there is no argument, nothing further needs to be mangled.  */
   if (arg == NULL_TREE)
@@ -4258,6 +4265,21 @@ write_reflection (tree refl)
 	ctx = decl_mangling_context (TYPE_NAME (ctx));
       write_prefix (ctx);
       write_unqualified_name (arg);
+    }
+  else if (strcmp (prefix, "da") == 0)
+    {
+      int idx = 0;
+      tree ctx = decl_mangling_context (arg);
+      for (tree f = TYPE_FIELDS (ctx); f; f = DECL_CHAIN (f))
+	if (f == arg)
+	  break;
+	else if (TREE_CODE (f) == FIELD_DECL
+		 && DECL_NAME (f) == NULL_TREE
+		 && ANON_AGGR_TYPE_P (TREE_TYPE (f))
+		 && anon_aggr_naming_decl (TREE_TYPE (f)) == NULL_TREE)
+	  ++idx;
+      write_prefix (ctx);
+      write_compact_number (idx);
     }
   else if (strcmp (prefix, "un") == 0)
     {
