@@ -16997,7 +16997,7 @@ test_vnx4si_v4si (machine_mode vnx4si_mode, machine_mode v4si_mode)
 	poly_uint64 mask_elems[] = { 0, 4, 1, 5 };
 	builder_push_elems (builder, mask_elems);
 
-	vec_perm_indices sel (builder, 2, res_len);
+	vec_perm_indices sel (builder, 2, 4);
 	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
 
 	tree expected_res[] = { ARG0(0), ARG1(0), ARG0(1), ARG1(1) };
@@ -17021,7 +17021,7 @@ test_vnx4si_v4si (machine_mode vnx4si_mode, machine_mode v4si_mode)
 	poly_uint64 mask_elems[] = { 0, 8, 4, 12 };
 	builder_push_elems (builder, mask_elems);
 
-	vec_perm_indices sel (builder, 2, res_len);
+	vec_perm_indices sel (builder, 2, 4);
 	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
 
 	tree expected_res[] = { ARG0(0), ARG0(0), ARG1(0), ARG1(0) };
@@ -17053,7 +17053,8 @@ test_v4si_vnx4si (machine_mode v4si_mode, machine_mode vnx4si_mode)
 	poly_uint64 mask_elems[] = {0, 1, 2, 3};
 	builder_push_elems (builder, mask_elems);
 
-	vec_perm_indices sel (builder, 2, res_len);
+	vec_perm_indices sel (builder, 2,
+			      TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)));
 	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel);
 
 	tree expected_res[] = { ARG0(0), ARG0(1), ARG0(2), ARG0(3) };
@@ -17078,7 +17079,8 @@ test_v4si_vnx4si (machine_mode v4si_mode, machine_mode vnx4si_mode)
 	poly_uint64 mask_elems[] = {0, 2, 4, 6};
 	builder_push_elems (builder, mask_elems);
 
-	vec_perm_indices sel (builder, 2, res_len);
+	vec_perm_indices sel (builder, 2,
+			      TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)));
 	const char *reason;
 	tree res = fold_vec_perm_cst (res_type, arg0, arg1, sel, &reason);
 
