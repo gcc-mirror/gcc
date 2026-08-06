@@ -110,12 +110,15 @@ namespace __debug
       deque(const deque&) = default;
       deque(deque&&) = default;
 
+      _GLIBCXX26_CONSTEXPR
       deque(const deque& __d, const __type_identity_t<_Allocator>& __a)
       : _Base(__d, __a) { }
 
+      _GLIBCXX26_CONSTEXPR
       deque(deque&& __d, const __type_identity_t<_Allocator>& __a)
       : _Safe(std::move(__d)), _Base(std::move(__d), __a) { }
 
+      _GLIBCXX26_CONSTEXPR
       deque(initializer_list<value_type> __l,
 	    const allocator_type& __a = allocator_type())
       : _Base(__l, __a) { }
@@ -123,15 +126,16 @@ namespace __debug
       ~deque() = default;
 #endif
 
-      explicit
+      explicit _GLIBCXX26_CONSTEXPR
       deque(const _Allocator& __a)
       : _Base(__a) { }
 
 #if __cplusplus >= 201103L
-      explicit
+      explicit _GLIBCXX26_CONSTEXPR
       deque(size_type __n, const _Allocator& __a = _Allocator())
       : _Base(__n, __a) { }
 
+      _GLIBCXX26_CONSTEXPR
       deque(size_type __n, const __type_identity_t<_Tp>& __value,
 	    const _Allocator& __a = _Allocator())
       : _Base(__n, __value, __a) { }
@@ -145,23 +149,26 @@ namespace __debug
 #if __cplusplus >= 201103L
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+	_GLIBCXX26_CONSTEXPR
 #else
       template<class _InputIterator>
 #endif
 	deque(_InputIterator __first, _InputIterator __last,
 	      const _Allocator& __a = _Allocator())
-	: _Base(__gnu_debug::__base(
-		  __glibcxx_check_valid_constructor_range(__first, __last)),
+	: _Base(__gnu_debug::__base(std::__is_constant_evaluated() ? __first
+		  : __glibcxx_check_valid_constructor_range(__first, __last)),
 		__gnu_debug::__base(__last), __a)
 	{ }
 
 #if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
+	_GLIBCXX26_CONSTEXPR
 	deque(from_range_t, _Rg&& __rg, const _Allocator& __a = _Allocator())
 	: _Base(from_range, std::forward<_Rg>(__rg), __a)
 	{ }
 #endif
 
+      _GLIBCXX26_CONSTEXPR
       deque(_Base_ref __x)
       : _Base(__x._M_ref) { }
 
@@ -172,11 +179,12 @@ namespace __debug
       deque&
       operator=(deque&&) = default;
 
-      deque&
+      _GLIBCXX26_CONSTEXPR deque&
       operator=(initializer_list<value_type> __l)
       {
 	_Base::operator=(__l);
-	this->_M_invalidate_all();
+	if (!std::__is_constant_evaluated())
+	  this->_M_invalidate_all();
 	return *this;
       }
 #endif
@@ -187,9 +195,13 @@ namespace __debug
 #else
       template<class _InputIterator>
 #endif
-	void
+	_GLIBCXX26_CONSTEXPR void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
+	  if (std::__is_constant_evaluated())
+	    return _Base::assign(__gnu_debug::__unsafe(__first),
+				 __gnu_debug::__unsafe(__last));
+
 	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
 	  __glibcxx_check_valid_range2(__first, __last, __dist);
 	  if (__dist.second >= __gnu_debug::__dp_sign)
@@ -201,29 +213,32 @@ namespace __debug
 	  this->_M_invalidate_all();
 	}
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       assign(size_type __n, const _Tp& __t)
       {
 	_Base::assign(__n, __t);
-	this->_M_invalidate_all();
+	if (!std::__is_constant_evaluated())
+	  this->_M_invalidate_all();
       }
 
 #if __cplusplus >= 201103L
-      void
+      _GLIBCXX26_CONSTEXPR void
       assign(initializer_list<value_type> __l)
       {
 	_Base::assign(__l);
-	this->_M_invalidate_all();
+	if (!std::__is_constant_evaluated())
+	  this->_M_invalidate_all();
       }
 #endif
 
 #if __glibcxx_containers_ranges // C++ >= 23
       template<std::__detail::__container_compatible_range<_Tp> _Rg>
-	void
+	_GLIBCXX26_CONSTEXPR void
 	assign_range(_Rg&& __rg)
 	{
 	  _Base::assign_range(std::forward<_Rg>(__rg));
-	  this->_M_invalidate_all();
+	  if (!std::__is_constant_evaluated())
+	    this->_M_invalidate_all();
 	}
 #endif
 
@@ -231,69 +246,69 @@ namespace __debug
 
       // iterators:
       _GLIBCXX_NODISCARD
-      iterator
+      _GLIBCXX26_CONSTEXPR iterator
       begin() _GLIBCXX_NOEXCEPT
       { return iterator(_Base::begin(), this); }
 
       _GLIBCXX_NODISCARD
-      const_iterator
+      _GLIBCXX26_CONSTEXPR const_iterator
       begin() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_Base::begin(), this); }
 
       _GLIBCXX_NODISCARD
-      iterator
+      _GLIBCXX26_CONSTEXPR iterator
       end() _GLIBCXX_NOEXCEPT
       { return iterator(_Base::end(), this); }
 
       _GLIBCXX_NODISCARD
-      const_iterator
+      _GLIBCXX26_CONSTEXPR const_iterator
       end() const _GLIBCXX_NOEXCEPT
       { return const_iterator(_Base::end(), this); }
 
       _GLIBCXX_NODISCARD
-      reverse_iterator
+      _GLIBCXX26_CONSTEXPR reverse_iterator
       rbegin() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(end()); }
 
       _GLIBCXX_NODISCARD
-      const_reverse_iterator
+      _GLIBCXX26_CONSTEXPR const_reverse_iterator
       rbegin() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(end()); }
 
       _GLIBCXX_NODISCARD
-      reverse_iterator
+      _GLIBCXX26_CONSTEXPR reverse_iterator
       rend() _GLIBCXX_NOEXCEPT
       { return reverse_iterator(begin()); }
 
       _GLIBCXX_NODISCARD
-      const_reverse_iterator
+      _GLIBCXX26_CONSTEXPR const_reverse_iterator
       rend() const _GLIBCXX_NOEXCEPT
       { return const_reverse_iterator(begin()); }
 
 #if __cplusplus >= 201103L
       [[__nodiscard__]]
-      const_iterator
+      _GLIBCXX26_CONSTEXPR const_iterator
       cbegin() const noexcept
       { return const_iterator(_Base::begin(), this); }
 
       [[__nodiscard__]]
-      const_iterator
+      _GLIBCXX26_CONSTEXPR const_iterator
       cend() const noexcept
       { return const_iterator(_Base::end(), this); }
 
       [[__nodiscard__]]
-      const_reverse_iterator
+      _GLIBCXX26_CONSTEXPR const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
       [[__nodiscard__]]
-      const_reverse_iterator
+      _GLIBCXX26_CONSTEXPR const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(begin()); }
 #endif
 
     private:
-      void
+      _GLIBCXX26_CONSTEXPR void
       _M_invalidate_after_nth(difference_type __n)
       {
 	typedef __gnu_debug::_After_nth_from<_Base_const_iterator> _After_nth;
@@ -306,9 +321,12 @@ namespace __debug
       using _Base::max_size;
 
 #if __cplusplus >= 201103L
-      void
+      _GLIBCXX26_CONSTEXPR void
       resize(size_type __sz)
       {
+	if (std::__is_constant_evaluated())
+	  return _Base::resize(__sz);
+
 	bool __invalidate_all = __sz > this->size();
 	if (__sz < this->size())
 	  this->_M_invalidate_after_nth(__sz);
@@ -319,9 +337,12 @@ namespace __debug
 	  this->_M_invalidate_all();
       }
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       resize(size_type __sz, const _Tp& __c)
       {
+	if (std::__is_constant_evaluated())
+	  return _Base::resize(__sz, __c);
+
 	bool __invalidate_all = __sz > this->size();
 	if (__sz < this->size())
 	  this->_M_invalidate_after_nth(__sz);
@@ -347,11 +368,12 @@ namespace __debug
 #endif
 
 #if __cplusplus >= 201103L
-      void
+      _GLIBCXX26_CONSTEXPR void
       shrink_to_fit() noexcept
       {
 	if (_Base::_M_shrink_to_fit())
-	  this->_M_invalidate_all();
+	  if (!std::__is_constant_evaluated())
+	    this->_M_invalidate_all();
       }
 #endif
 
@@ -359,7 +381,7 @@ namespace __debug
 
       // element access:
       _GLIBCXX_NODISCARD
-      reference
+      _GLIBCXX26_CONSTEXPR reference
       operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_subscript(__n);
@@ -367,7 +389,7 @@ namespace __debug
       }
 
       _GLIBCXX_NODISCARD
-      const_reference
+      _GLIBCXX26_CONSTEXPR const_reference
       operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_subscript(__n);
@@ -377,7 +399,7 @@ namespace __debug
       using _Base::at;
 
       _GLIBCXX_NODISCARD
-      reference
+      _GLIBCXX26_CONSTEXPR reference
       front() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
@@ -385,7 +407,7 @@ namespace __debug
       }
 
       _GLIBCXX_NODISCARD
-      const_reference
+      _GLIBCXX26_CONSTEXPR const_reference
       front() const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
@@ -393,7 +415,7 @@ namespace __debug
       }
 
       _GLIBCXX_NODISCARD
-      reference
+      _GLIBCXX26_CONSTEXPR reference
       back() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
@@ -401,7 +423,7 @@ namespace __debug
       }
 
       _GLIBCXX_NODISCARD
-      const_reference
+      _GLIBCXX26_CONSTEXPR const_reference
       back() const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
@@ -409,14 +431,14 @@ namespace __debug
       }
 
       // 23.2.1.3 modifiers:
-      void
+      _GLIBCXX26_CONSTEXPR void
       push_front(const _Tp& __x)
       {
 	_Base::push_front(__x);
 	this->_M_invalidate_all();
       }
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       push_back(const _Tp& __x)
       {
 	_Base::push_back(__x);
@@ -424,24 +446,25 @@ namespace __debug
       }
 
 #if __cplusplus >= 201103L
-      void
+      _GLIBCXX26_CONSTEXPR void
       push_front(_Tp&& __x)
       { emplace_front(std::move(__x)); }
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       push_back(_Tp&& __x)
       { emplace_back(std::move(__x)); }
 
       template<typename... _Args>
 #if __cplusplus > 201402L
-	reference
+	_GLIBCXX26_CONSTEXPR reference
 #else
 	void
 #endif
 	emplace_front(_Args&&... __args)
 	{
 	  _Base::emplace_front(std::forward<_Args>(__args)...);
-	  this->_M_invalidate_all();
+	  if (!std::__is_constant_evaluated())
+	    this->_M_invalidate_all();
 #if __cplusplus > 201402L
 	  return front();
 #endif
@@ -449,23 +472,29 @@ namespace __debug
 
       template<typename... _Args>
 #if __cplusplus > 201402L
-	reference
+	_GLIBCXX26_CONSTEXPR reference
 #else
 	void
 #endif
 	emplace_back(_Args&&... __args)
 	{
 	  _Base::emplace_back(std::forward<_Args>(__args)...);
-	  this->_M_invalidate_all();
+	  if (!std::__is_constant_evaluated())
+	    this->_M_invalidate_all();
 #if __cplusplus > 201402L
 	  return back();
 #endif
 	}
 
       template<typename... _Args>
-	iterator
+	_GLIBCXX26_CONSTEXPR iterator
 	emplace(const_iterator __position, _Args&&... __args)
 	{
+	  if (std::__is_constant_evaluated())
+	    return iterator(_Base::emplace(__position.base(),
+					   std::forward<_Args>(__args)...),
+			    this);
+
 	  __glibcxx_check_insert(__position);
 	  _Base_iterator __res = _Base::emplace(__position.base(),
 						std::forward<_Args>(__args)...);
@@ -474,13 +503,16 @@ namespace __debug
 	}
 #endif
 
-      iterator
+      _GLIBCXX26_CONSTEXPR iterator
 #if __cplusplus >= 201103L
       insert(const_iterator __position, const _Tp& __x)
 #else
       insert(iterator __position, const _Tp& __x)
 #endif
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::insert(__position.base(), __x), this);
+
 	__glibcxx_check_insert(__position);
 	_Base_iterator __res = _Base::insert(__position.base(), __x);
 	this->_M_invalidate_all();
@@ -488,13 +520,16 @@ namespace __debug
       }
 
 #if __cplusplus >= 201103L
-      iterator
+      _GLIBCXX26_CONSTEXPR iterator
       insert(const_iterator __position, _Tp&& __x)
       { return emplace(__position, std::move(__x)); }
 
-      iterator
+      _GLIBCXX26_CONSTEXPR iterator
       insert(const_iterator __position, initializer_list<value_type> __l)
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::insert(__position.base(), __l), this);
+
 	__glibcxx_check_insert(__position);
 	_Base_iterator __res = _Base::insert(__position.base(), __l);
 	this->_M_invalidate_all();
@@ -503,9 +538,12 @@ namespace __debug
 #endif
 
 #if __cplusplus >= 201103L
-      iterator
+      _GLIBCXX26_CONSTEXPR iterator
       insert(const_iterator __position, size_type __n, const _Tp& __x)
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::insert(__position.base(), __n, __x), this);
+
 	__glibcxx_check_insert(__position);
 	_Base_iterator __res = _Base::insert(__position.base(), __n, __x);
 	this->_M_invalidate_all();
@@ -524,10 +562,15 @@ namespace __debug
 #if __cplusplus >= 201103L
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
-	iterator
+	_GLIBCXX26_CONSTEXPR iterator
 	insert(const_iterator __position,
 	       _InputIterator __first, _InputIterator __last)
 	{
+	  if (std::__is_constant_evaluated())
+	    return iterator(_Base::insert(__position.base(),
+					  __gnu_debug::__unsafe(__first),
+					  __gnu_debug::__unsafe(__last)), this);
+
 	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
 	  __glibcxx_check_insert_range(__position, __first, __last, __dist);
 	  _Base_iterator __res;
@@ -563,54 +606,66 @@ namespace __debug
 
 #if __glibcxx_containers_ranges // C++ >= 23
       template<__detail::__container_compatible_range<_Tp> _Rg>
-	iterator
+	_GLIBCXX26_CONSTEXPR iterator
 	insert_range(const_iterator __pos, _Rg&& __rg)
 	{
 	  auto __res = _Base::insert_range(__pos.base(), std::forward<_Rg>(__rg));
-	  this->_M_invalidate_all();
+	  if (!std::__is_constant_evaluated())
+	    this->_M_invalidate_all();
 	  return iterator(__res, this);
 	}
 
       template<std::__detail::__container_compatible_range<_Tp> _Rg>
-	void
+	_GLIBCXX26_CONSTEXPR void
 	prepend_range(_Rg&& __rg)
 	{
 	  _Base::prepend_range(std::forward<_Rg>(__rg));
-	  this->_M_invalidate_all();
+	  if (!std::__is_constant_evaluated())
+	    this->_M_invalidate_all();
 	}
 
       template<std::__detail::__container_compatible_range<_Tp> _Rg>
-	void
+	_GLIBCXX26_CONSTEXPR void
 	append_range(_Rg&& __rg)
 	{
 	  _Base::append_range(std::forward<_Rg>(__rg));
-	  this->_M_invalidate_all();
+	  if (!std::__is_constant_evaluated())
+	    this->_M_invalidate_all();
 	}
 #endif
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       pop_front() _GLIBCXX_NOEXCEPT
       {
-	__glibcxx_check_nonempty();
-	this->_M_invalidate_if(_Equal(_Base::begin()));
+	if (!std::__is_constant_evaluated())
+	  {
+	    __glibcxx_check_nonempty();
+	    this->_M_invalidate_if(_Equal(_Base::begin()));
+	  }
 	_Base::pop_front();
       }
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       pop_back() _GLIBCXX_NOEXCEPT
       {
-	__glibcxx_check_nonempty();
-	this->_M_invalidate_if(_Equal(--_Base::end()));
+	if (!std::__is_constant_evaluated())
+	  {
+	    __glibcxx_check_nonempty();
+	    this->_M_invalidate_if(_Equal(_Base::begin()));
+	  }
 	_Base::pop_back();
       }
 
-      iterator
+      _GLIBCXX26_CONSTEXPR iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __position)
 #else
-      erase(iterator __position)	
+      erase(iterator __position)
 #endif
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::erase(__position.base()), this);
+
 	__glibcxx_check_erase(__position);
 #if __cplusplus >= 201103L
 	_Base_const_iterator __victim = __position.base();
@@ -630,13 +685,16 @@ namespace __debug
 	  }
       }
 
-      iterator
+      _GLIBCXX26_CONSTEXPR iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __first, const_iterator __last)
 #else
       erase(iterator __first, iterator __last)
 #endif
       {
+	if (std::__is_constant_evaluated())
+	  return iterator(_Base::erase(__first.base(), __last.base()), this);
+
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
@@ -677,25 +735,27 @@ namespace __debug
 	  }
       }
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       swap(deque& __x)
       _GLIBCXX_NOEXCEPT_IF( noexcept(declval<_Base&>().swap(__x)) )
       {
-	_Safe::_M_swap(__x);
+	if (!std::__is_constant_evaluated())
+	  _Safe::_M_swap(__x);
 	_Base::swap(__x);
       }
 
-      void
+      _GLIBCXX26_CONSTEXPR void
       clear() _GLIBCXX_NOEXCEPT
       {
 	_Base::clear();
-	this->_M_invalidate_all();
+	if (!std::__is_constant_evaluated())
+	  this->_M_invalidate_all();
       }
 
-      _Base&
+      _GLIBCXX26_CONSTEXPR _Base&
       _M_base() _GLIBCXX_NOEXCEPT	{ return *this; }
 
-      const _Base&
+      _GLIBCXX26_CONSTEXPR const _Base&
       _M_base() const _GLIBCXX_NOEXCEPT	{ return *this; }
     };
 
@@ -722,7 +782,7 @@ namespace __debug
 #endif
 
   template<typename _Tp, typename _Alloc>
-    inline bool
+    inline _GLIBCXX26_CONSTEXPR bool
     operator==(const deque<_Tp, _Alloc>& __lhs,
 	       const deque<_Tp, _Alloc>& __rhs)
     { return __lhs._M_base() == __rhs._M_base(); }
@@ -765,7 +825,7 @@ namespace __debug
 #endif // three-way comparison
 
   template<typename _Tp, typename _Alloc>
-    inline void
+    inline _GLIBCXX26_CONSTEXPR void
     swap(deque<_Tp, _Alloc>& __lhs, deque<_Tp, _Alloc>& __rhs)
     _GLIBCXX_NOEXCEPT_IF(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
@@ -775,14 +835,14 @@ namespace __debug
 #ifdef __glibcxx_erase_if // C++ >= 20 && HOSTED
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Alloc, typename _Predicate>
-    inline typename __debug::deque<_Tp, _Alloc>::size_type
+    inline _GLIBCXX26_CONSTEXPR typename __debug::deque<_Tp, _Alloc>::size_type
     erase_if(__debug::deque<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
       return __detail::__erase_if(__cont, __cont._M_base(), std::move(__pred));
     }
 
   template<typename _Tp, typename _Alloc, typename _Up = _Tp>
-    inline typename __debug::deque<_Tp, _Alloc>::size_type
+    inline _GLIBCXX26_CONSTEXPR typename __debug::deque<_Tp, _Alloc>::size_type
     erase(__debug::deque<_Tp, _Alloc>& __cont, const _Up& __value)
     { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
 _GLIBCXX_END_NAMESPACE_VERSION

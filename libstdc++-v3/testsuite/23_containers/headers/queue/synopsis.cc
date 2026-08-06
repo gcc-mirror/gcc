@@ -20,6 +20,12 @@
 
 #include <queue>
 
+#if __cplusplus > 202302L
+# define CONSTEXPR constexpr
+#else
+# define CONSTEXPR
+#endif
+
 #if __cplusplus >= 201103L
 # define NOTHROW noexcept
 #else
@@ -29,28 +35,28 @@
 namespace std {
   template <class T, class Container> class queue;
   template <class T, class Container>
-    bool operator==(const queue<T, Container>& x,
-                    const queue<T, Container>& y);
+    CONSTEXPR bool
+    operator==(const queue<T, Container>& x, const queue<T, Container>& y);
+ 
+  template <class T, class Container>
+    CONSTEXPR bool
+    operator< (const queue<T, Container>& x, const queue<T, Container>& y);
 
   template <class T, class Container>
-    bool operator< (const queue<T, Container>& x,
-                    const queue<T, Container>& y);
+    CONSTEXPR bool
+    operator!=(const queue<T, Container>& x, const queue<T, Container>& y);
 
   template <class T, class Container>
-    bool operator!=(const queue<T, Container>& x,
-                    const queue<T, Container>& y);
+    CONSTEXPR bool
+    operator> (const queue<T, Container>& x, const queue<T, Container>& y);
 
   template <class T, class Container>
-    bool operator> (const queue<T, Container>& x,
-                    const queue<T, Container>& y);
+    CONSTEXPR bool
+    operator>=(const queue<T, Container>& x, const queue<T, Container>& y);
 
   template <class T, class Container>
-    bool operator>=(const queue<T, Container>& x,
-                    const queue<T, Container>& y);
-
-  template <class T, class Container>
-    bool operator<=(const queue<T, Container>& x,
-                    const queue<T, Container>& y);
+    CONSTEXPR bool
+    operator<=(const queue<T, Container>& x, const queue<T, Container>& y);
 
   template <class T, class Container, class Compare>
   class priority_queue;

@@ -666,6 +666,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
   template<typename _ITp, typename _IRef, typename _IPtr, typename _OTp,
 	   typename _Tp>
+    _GLIBCXX26_CONSTEXPR
     _GLIBCXX_STD_C::_Deque_iterator<_OTp, _OTp&, _OTp*>
     __uninitialized_copy_a(
       _GLIBCXX_STD_C::_Deque_iterator<_ITp, _IRef, _IPtr> __first,
@@ -674,6 +675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       allocator<_Tp>&);
 
   template<typename _Iter, typename _OTp, typename _Tp>
+    _GLIBCXX26_CONSTEXPR
     __enable_if_t<__is_random_access_iter<_Iter>::value,
 		  _GLIBCXX_STD_C::_Deque_iterator<_OTp, _OTp&, _OTp*>>
     __uninitialized_copy_a(_Iter __first, _Iter __last,
@@ -682,6 +684,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _ITp, typename _IRef, typename _IPtr, typename _OTp,
 	   typename _Tp>
+    _GLIBCXX26_CONSTEXPR
     _GLIBCXX_STD_C::_Deque_iterator<_OTp, _OTp&, _OTp*>
     __uninitialized_move_a(
       _GLIBCXX_STD_C::_Deque_iterator<_ITp, _IRef, _IPtr> __first,
@@ -1003,7 +1006,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Fills [first, last) with value_types constructed by the allocator
   // alloc, with no arguments passed to the construct call.
   template<typename _ForwardIterator, typename _Allocator>
-    void
+    _GLIBCXX20_CONSTEXPR void
     __uninitialized_default_a(_ForwardIterator __first,
 			      _ForwardIterator __last,
 			      _Allocator& __alloc)
@@ -1018,7 +1021,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if _GLIBCXX_HOSTED
   template<typename _ForwardIterator, typename _Tp>
-    inline void
+    inline _GLIBCXX20_CONSTEXPR void
     __uninitialized_default_a(_ForwardIterator __first,
 			      _ForwardIterator __last,
 			      allocator<_Tp>&)

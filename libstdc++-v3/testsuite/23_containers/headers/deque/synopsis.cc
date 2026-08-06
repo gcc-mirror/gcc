@@ -21,6 +21,12 @@
 
 #include <deque>
 
+#if __cplusplus > 202302L
+# define CONSTEXPR constexpr
+#else
+# define CONSTEXPR
+#endif
+
 #if __cplusplus >= 201103L
 # define NOTHROW(X) noexcept(X)
 #else
@@ -31,24 +37,30 @@ namespace std {
   template <class T, class Allocator> class deque;
 
   template <class T, class Allocator>
-    bool operator== (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
+    CONSTEXPR bool
+    operator== (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
 
   template <class T, class Allocator>
-    bool operator< (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
+    CONSTEXPR bool
+    operator< (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
 
   template <class T, class Allocator>
-    bool operator!= (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
+    CONSTEXPR bool
+    operator!= (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
 
   template <class T, class Allocator>
-    bool operator> (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
+    CONSTEXPR bool
+    operator> (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
 
   template <class T, class Allocator>
-    bool operator>= (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
+    CONSTEXPR bool
+    operator>= (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
 
   template <class T, class Allocator>
-    bool operator<= (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
+    CONSTEXPR bool
+    operator<= (const deque<T,Allocator>& x, const deque<T,Allocator>& y);
 
   template <class T, class Allocator>
-    void swap(deque<T,Allocator>& x, deque<T,Allocator>& y)
+    CONSTEXPR void swap(deque<T,Allocator>& x, deque<T,Allocator>& y)
       NOTHROW(noexcept(x.swap(y)));
 }

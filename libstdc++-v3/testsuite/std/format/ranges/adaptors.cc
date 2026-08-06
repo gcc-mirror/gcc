@@ -6,8 +6,14 @@
 #include <stack>
 #include <testsuite_hooks.h>
 
+#ifdef __glibcxx_constexpr_format
+# define CONSTEXPR constexpr
+#else
+# define CONSTEXPR
+#endif
+
 template<typename... Args>
-bool
+CONSTEXPR bool
 is_format_string_for(const char* str, Args&&... args)
 {
   try {
@@ -22,7 +28,7 @@ is_format_string_for(const char* str, Args&&... args)
 #define WIDEN(S) WIDEN_(CharT, S)
 
 template<template<typename Tp> class Adaptor>
-void
+CONSTEXPR void
 test_format_string()
 {
   Adaptor<int> q;
@@ -41,7 +47,7 @@ struct NoFormat
 struct MutFormat
 {
   MutFormat() = default;
-  MutFormat(int p) : x(p) {}
+  CONSTEXPR MutFormat(int p) : x(p) {}
 
   int x;
   friend auto operator<=>(MutFormat, MutFormat) = default;
@@ -52,7 +58,8 @@ struct std::formatter<MutFormat, CharT>
   : std::formatter<int, CharT>
 {
    template<typename Out>
-   Out format(MutFormat& mf, basic_format_context<Out, CharT>& ctx) const
+   CONSTEXPR Out
+   format(MutFormat& mf, basic_format_context<Out, CharT>& ctx) const
    { return std::formatter<int, CharT>::format(mf.x, ctx); }
 };
 
@@ -68,7 +75,7 @@ constexpr auto std::format_kind<NotFormattableCont<T>>
 
 template<typename CharT,
 	 template<typename Tp, typename Cont = std::vector<Tp>> class Adaptor>
-void
+CONSTEXPR void
 test_output()
 {
   const std::vector<int> v{3, 2, 1};
@@ -133,7 +140,7 @@ test_output()
 }
 
 template<template<typename Tp, typename Cont = std::vector<Tp>> class Adaptor>
-void
+CONSTEXPR void
 test_adaptor()
 {
   test_format_string<Adaptor>();
@@ -145,7 +152,7 @@ test_adaptor()
 }
 
 template<typename CharT>
-void
+CONSTEXPR void
 test_compare()
 {
   const std::vector<int> v{3, 2, 1};
@@ -157,9 +164,20 @@ test_compare()
   VERIFY( res == WIDEN("[1, 2, 3]") );
 }
 
-int main()
+CONSTEXPR bool
+test_all()
 {
   test_adaptor<std::queue>();
   test_adaptor<std::priority_queue>();
   test_compare<char>();
+  return true;
+}
+
+#ifdef __glibcxx_constexpr_format
+  static_assert(test_all());
+#endif
+
+int main()
+{
+  test_all();
 }

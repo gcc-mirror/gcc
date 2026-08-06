@@ -63,6 +63,7 @@
 
 #define __glibcxx_want_adaptor_iterator_pair_constructor
 #define __glibcxx_want_containers_ranges
+#define __glibcxx_want_constexpr_queue
 #include <bits/version.h>
 
 #include <deque>
@@ -73,6 +74,12 @@
 
 #ifdef __glibcxx_format_ranges // C++ >= 23 && HOSTED
 #include <bits/formatfwd.h>
+
+#ifdef __glibcxx_constexpr_format // C++ >= 26 && HOSTED && CXX11 strings
+# define _GLIBCXX_CONSTEXPR_FORMAT constexpr
+#else
+# define _GLIBCXX_CONSTEXPR_FORMAT
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -99,6 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Standard declares this as template accepting unconstrained
       // FormatContext type.
       template<typename _Out>
+	_GLIBCXX_CONSTEXPR_FORMAT
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(__maybe_const_adaptor& __a,
 	       basic_format_context<_Out, _CharT>& __fc) const
@@ -141,6 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Standard declares this as template accepting unconstrained
       // FormatContext type.
       template<typename _Out>
+	_GLIBCXX_CONSTEXPR_FORMAT
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(__maybe_const_adaptor& __a,
 	       basic_format_context<_Out, _CharT>& __fc) const
@@ -162,6 +171,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     enable_nonlocking_formatter_optimization<
       priority_queue<_Tp, _Container, _Comparator>> = false;
 #endif
+
+#undef _GLIBCXX_CONSTEXPR_FORMAT
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

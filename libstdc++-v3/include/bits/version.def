@@ -1464,6 +1464,24 @@ ftms = {
 };
 
 ftms = {
+  name = constexpr_deque;
+  values = {
+    v = 202502;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
+ftms = {
+  name = constexpr_queue;
+  values = {
+    v = 202502;
+    cxxmin = 26;
+    hosted = yes;
+  };
+};
+
+ftms = {
   name = constrained_equality;
   values = {
     v = 202411;
