@@ -300,6 +300,9 @@ struct riscv_tune_param
   const char *jump_align;
   const char *loop_align;
   bool prefer_agnostic;
+  unsigned short int_reassoc_width = 1;
+  unsigned short fp_reassoc_width = 1;
+  unsigned short vec_reassoc_width = 1;
   unsigned int small_loop_unroll_ninsns = 4;
   unsigned int small_loop_unroll_factor = 2;
 };
@@ -665,6 +668,9 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   NULL,						/* jump_align */
   NULL,						/* loop_align */
   true,						/* prefer-agnostic.  */
+  2,						/* int_reassoc_width.  */
+  2,						/* fp_reassoc_width.  */
+  1,						/* vec_reassoc_width.  */
 };
 
 static const common_vector_cost xt_c9501_vls_vector_cost = {
@@ -736,6 +742,9 @@ static const struct riscv_tune_param xt_c9501_tune_info = {
   "8",						/* jump_align */
   "16",						/* loop_align */
   true,						/* prefer-agnostic.  */
+  3,						/* int_reassoc_width.  */
+  2,						/* fp_reassoc_width.  */
+  1,						/* vec_reassoc_width.  */
   4,	/* small_loop_unroll_ninsns.  */
   8,	/* small_loop_unroll_factor.  */
 };
@@ -11440,6 +11449,20 @@ riscv_issue_rate (void)
   return tune_param->issue_rate;
 }
 
+/* Implement TARGET_SCHED_REASSOCIATION_WIDTH.  */
+
+static int
+riscv_reassociation_width (tree_code opc ATTRIBUTE_UNUSED, machine_mode mode)
+{
+  if (VECTOR_MODE_P (mode))
+    return tune_param->vec_reassoc_width;
+  if (INTEGRAL_MODE_P (mode))
+    return tune_param->int_reassoc_width;
+  if (FLOAT_MODE_P (mode))
+    return tune_param->fp_reassoc_width;
+  return 1;
+}
+
 /* Structure for very basic vector configuration tracking in the scheduler.  */
 struct last_vconfig
 {
@@ -16597,6 +16620,9 @@ riscv_memtag_tag_bitsize ()
 
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST riscv_sched_adjust_cost
+
+#undef TARGET_SCHED_REASSOCIATION_WIDTH
+#define TARGET_SCHED_REASSOCIATION_WIDTH riscv_reassociation_width
 
 #undef TARGET_SCHED_CAN_SPECULATE_INSN
 #define TARGET_SCHED_CAN_SPECULATE_INSN riscv_sched_can_speculate_insn
