@@ -476,8 +476,7 @@ frange_add_zeros (frange &r, tree type)
   if (r.undefined_p () || r.known_isnan ())
     return;
 
-  if (HONOR_SIGNED_ZEROS (type)
-      && (real_iszero (&r.lower_bound ()) || real_iszero (&r.upper_bound ())))
+  if (HONOR_SIGNED_ZEROS (type) && r.contains_zero_p ())
     {
       frange zero;
       zero.set_zero (type);
@@ -3269,6 +3268,18 @@ range_op_float_tests ()
   REAL_VALUE_TYPE five;
   real_from_string (&five, "5.0");
   ASSERT_FALSE (r.contains_p (five));
+
+  // op1_range for "op1 == op2" where op2 = [-1.0,-0.0][1.0,1.0] holds -0.0 but
+  // not +0.0 must still admit +0.0 for op1, since -0.0 == +0.0.
+  r0 = frange_float ("-1.0", "-0.0");
+  r1 = frange_float ("1.0", "1.0");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  ASSERT_FALSE (r0.contains_p (dconst0));
+  ASSERT_TRUE (r0.contains_p (dconstm0));
+  int_range<2> bool_true = range_true ();
+  range_op_handler (EQ_EXPR).op1_range (r, float_type_node, bool_true, r0);
+  ASSERT_TRUE (r.contains_p (dconst0));
 }
 
 } // namespace selftest
