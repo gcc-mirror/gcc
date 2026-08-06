@@ -1786,6 +1786,13 @@ pair_fusion_bb_info::fuse_pair (bool load_p,
       gcc_checking_assert (base_regno == REGNO (base));
     }
 
+  // The pair insn addresses its second arm as the first plus ACCESS_SIZE, so
+  // the two accesses have to be that far apart for real.  A pair found through
+  // a MEM_EXPR base is only as good as that base: two objects sharing one
+  // MEM_EXPR look adjacent when they are not, and the second access then
+  // lands in the first object.  Catch that here rather than in the output.
+  gcc_checking_assert (known_eq (offsets[1], offsets[0] + access_size));
+
   // If either of the original insns had writeback, but the resulting pair insn
   // does not (can happen e.g. in the load pair edge case above, or if the
   // writeback effects cancel out), then drop the def (s) of the base register
