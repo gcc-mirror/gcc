@@ -88,7 +88,8 @@ set plugin_test_list [list \
     	  uglification-c++17.C \
     	  uglification-c++20.C \
     	  uglification-c++23.C \
-    	  uglification-c++26.C } \
+    	  uglification-c++26.C \
+    	  uglification-c++29.C } \
     { std_module_exports_plugin.cc \
 	  std-module-exports-c++20.C \
 	  std-module-exports-c++23.C \
