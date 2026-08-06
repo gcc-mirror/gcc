@@ -93,7 +93,8 @@ set plugin_test_list [list \
     { std_module_exports_plugin.cc \
 	  std-module-exports-c++20.C \
 	  std-module-exports-c++23.C \
-	  std-module-exports-c++26.C } \
+	  std-module-exports-c++26.C \
+	  std-module-exports-c++29.C } \
     { comment_plugin.cc comments-1.C } \
 ]
 
