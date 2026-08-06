@@ -1370,9 +1370,9 @@ cpp_check_xid_property (cppchar_t c)
 
   if (flags & NONC)
     return 0;
-  if (flags & CXX23)
+  if ((flags & (CXX23 | NXX23)) == CXX23)
     return CPP_XID_START | CPP_XID_CONTINUE;
-  if (flags & NXX23)
+  if ((flags & (CXX23 | NXX23)) == (CXX23 | NXX23))
     return CPP_XID_CONTINUE;
   return 0;
 }
