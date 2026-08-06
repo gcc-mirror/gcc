@@ -82,7 +82,7 @@ void test01()
   TEST_ERRC(no_lock_available);
 
 #ifdef ENODATA
-  TEST_ERRC(no_message_available);
+  TEST_ERRC(no_message_available); // { dg-warning "deprecated" "" { target c++23 } }
 #endif
 
 #ifdef ENOMSG
@@ -95,7 +95,7 @@ void test01()
 #endif
 
 #ifdef ENOSR
-  TEST_ERRC(no_stream_resources);
+  TEST_ERRC(no_stream_resources); // { dg-warning "deprecated" "" { target c++23 } }
 #endif
 
   TEST_ERRC(no_such_device_or_address);
@@ -106,7 +106,7 @@ void test01()
   TEST_ERRC(not_a_socket);
 
 #ifdef ENOSTR
-  TEST_ERRC(not_a_stream);
+  TEST_ERRC(not_a_stream); // { dg-warning "deprecated" "" { target c++23 } }
 #endif
 
   TEST_ERRC(not_connected);
@@ -153,7 +153,7 @@ void test01()
 #endif
 
 #ifdef ETIME
-  TEST_ERRC(stream_timeout);
+  TEST_ERRC(stream_timeout); // { dg-warning "deprecated" "" { target c++23 } }
 #endif
 
 #ifdef ETXTBSY

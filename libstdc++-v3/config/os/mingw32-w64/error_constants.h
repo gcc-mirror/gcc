@@ -90,7 +90,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
       no_lock_available = 			ENOLCK,
 #ifdef ENODATA
-      no_message_available = 			ENODATA,
+      no_message_available _GLIBCXX23_DEPRECATED = ENODATA,
 #endif
 #ifdef ENOMSG
       no_message = 				ENOMSG,
@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       no_space_on_device = 			ENOSPC,
 #endif
 #ifdef ENOSR
-      no_stream_resources = 			ENOSR,
+      no_stream_resources _GLIBCXX23_DEPRECATED = ENOSR,
 #endif
       no_such_device_or_address = 		ENXIO,
       no_such_device = 				ENODEV,
@@ -109,7 +109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       not_a_directory = 			ENOTDIR,
       not_a_socket = 				ENOTSOCK,
 #ifdef ENOSTR
-      not_a_stream = 				ENOSTR,
+      not_a_stream  _GLIBCXX23_DEPRECATED =	ENOSTR,
 #endif
       not_connected = 				ENOTCONN,
       not_enough_memory = 			ENOMEM,
@@ -139,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       state_not_recoverable = 			ENOTRECOVERABLE,
 #endif
 #ifdef ETIME
-      stream_timeout = 				ETIME,
+      stream_timeout _GLIBCXX23_DEPRECATED =	ETIME,
 #endif
 #ifdef ETXTBSY
       text_file_busy = 				ETXTBSY,
