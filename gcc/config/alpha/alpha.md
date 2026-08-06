@@ -74,6 +74,7 @@
   UNSPECV_MCOUNT
   UNSPECV_FORCE_MOV
   UNSPECV_LDGP1
+  UNSPECV_LDGP2
   UNSPECV_PLDGP2	; prologue ldgp
   UNSPECV_SET_TP
   UNSPECV_RPCC
@@ -5081,6 +5082,20 @@
   "lda %0,0(%1)\t\t!gpdisp!%2"
   [(set_attr "cannot_copy" "true")])
 
+;; Same as *ldgp_er_2, but for the pairs whose first half is the
+;; unspec_volatile *ldgp_er_1.  Both halves of a gpdisp pair have to be
+;; equally deletable: a plain unspec here is removed by DCE as soon as $29
+;; turns out to be unused, and the ldah left behind makes the assembler
+;; complain about a missing lda.
+(define_insn "*ldgp_er_2_v"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "r")
+			     (match_operand 2 "const_int_operand")]
+			    UNSPECV_LDGP2))]
+  "TARGET_EXPLICIT_RELOCS && TARGET_ABI_OSF"
+  "lda %0,0(%1)\t\t!gpdisp!%2"
+  [(set_attr "cannot_copy" "true")])
+
 (define_insn "*prologue_ldgp_er_2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "r")
@@ -5213,7 +5228,7 @@
   [(set (match_dup 1)
 	(unspec_volatile:DI [(match_dup 2) (match_dup 3)] UNSPECV_LDGP1))
    (set (match_dup 1)
-	(unspec:DI [(match_dup 1) (match_dup 3)] UNSPEC_LDGP2))]
+	(unspec_volatile:DI [(match_dup 1) (match_dup 3)] UNSPECV_LDGP2))]
 {
   if (prev_nonnote_insn (curr_insn) != XEXP (operands[0], 0))
     emit_insn (gen_rtx_UNSPEC_VOLATILE (VOIDmode, gen_rtvec (1, operands[0]),
@@ -5266,7 +5281,7 @@
   [(set (match_dup 0)
 	(unspec_volatile:DI [(match_dup 1) (match_dup 2)] UNSPECV_LDGP1))
    (set (match_dup 0)
-	(unspec:DI [(match_dup 0) (match_dup 2)] UNSPEC_LDGP2))]
+	(unspec_volatile:DI [(match_dup 0) (match_dup 2)] UNSPECV_LDGP2))]
 {
   operands[0] = pic_offset_table_rtx;
   operands[1] = gen_rtx_REG (Pmode, 26);
