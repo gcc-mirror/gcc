@@ -33659,6 +33659,7 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
       DECL_NAME (decl) = NULL_TREE;
     }
 
+  tree stmt_list = push_stmt_list ();
   expansion_stmt_bc bc_data = { NULL_TREE, NULL_TREE, NULL, loc, false };
 
   for (unsigned HOST_WIDE_INT i = 0; i < n; ++i)
@@ -33858,7 +33859,19 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 	}
     }
   if (bc_data.break_label)
-    add_stmt (build1 (LABEL_EXPR, void_type_node, bc_data.break_label));
+    {
+      /* If break; is seen, wrap all the expansion stmt bodies in
+	 a single artificial do ... while (0); statement, so that
+	 constant evaluation handles break; correctly.  */
+      tree do_stmt
+	= build_stmt (loc, DO_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
+      DO_COND (do_stmt) = boolean_false_node;
+      DO_BODY (do_stmt) = pop_stmt_list (stmt_list);
+      add_stmt (do_stmt);
+      add_stmt (build1 (LABEL_EXPR, void_type_node, bc_data.break_label));
+    }
+  else
+    add_stmt (pop_stmt_list (stmt_list));
   if (args == NULL_TREE)
     {
       TREE_TYPE (range_decl) = error_mark_node;
