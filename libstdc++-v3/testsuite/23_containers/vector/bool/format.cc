@@ -5,12 +5,18 @@
 #include <vector>
 #include <testsuite_hooks.h>
 
+#ifdef __glibcxx_constexpr_format
+# define CONSTEXPR constexpr
+#else
+# define CONSTEXPR
+#endif
+
 static_assert(!std::formattable<std::vector<bool>::reference, int>);
 static_assert(!std::formattable<std::vector<bool>::reference, char32_t>);
 static_assert(std::enable_nonlocking_formatter_optimization<std::vector<bool>::reference>);
 
 template<typename... Args>
-bool
+CONSTEXPR bool
 is_format_string_for(const char* str, Args&&... args)
 {
   try {
@@ -24,7 +30,7 @@ is_format_string_for(const char* str, Args&&... args)
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
 #define WIDEN(S) WIDEN_(CharT, S)
 
-void
+CONSTEXPR void
 test_format_string()
 {
   std::vector<bool> v(1, true);
@@ -36,7 +42,7 @@ test_format_string()
 }
 
 template<typename CharT>
-void
+CONSTEXPR void
 test_output()
 {
   std::basic_string<CharT> res;
@@ -65,9 +71,21 @@ test_output()
   VERIFY( res == WIDEN("[1, 0]") );
 }
 
-int main()
+CONSTEXPR bool
+test_all()
 {
   test_format_string();
   test_output<char>();
   test_output<wchar_t>();
+ 
+  return true;
+}
+
+#ifdef __glibcxx_constexpr_format
+static_assert(test_all());
+#endif
+
+int main()
+{
+  test_all();
 }
