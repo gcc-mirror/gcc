@@ -469,8 +469,8 @@
 
 #ifndef __cpp_designated_initializers
 #  error "__cpp_designated_initializers"
-#elif __cpp_designated_initializers != 201707
-#  error "__cpp_designated_initializers != 201707"
+#elif __cpp_designated_initializers != 202606
+#  error "__cpp_designated_initializers != 202606"
 #endif
 
 #ifndef __cpp_constexpr_in_decltype

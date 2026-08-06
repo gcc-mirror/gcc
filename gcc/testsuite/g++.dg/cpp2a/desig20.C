@@ -16,5 +16,5 @@ struct B : A {
 int main()
 {
   [[maybe_unused]] B b =
-  { .a = 10, .d = 42 };		// { dg-error "not a direct member" }
+  { .a = 10, .d = 42 };		// { dg-error "not a direct member" "" { target c++26_down } }
 }

@@ -29462,13 +29462,35 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
 	}
       else if (cxx_dialect >= cxx20
 	       && first_designator != error_mark_node
-	       && (!first_designator != !designator))
+	       && (!first_designator != !designator)
+	       && (cxx_dialect < cxx29
+		   || first_designator
+		   || TREE_CODE (designator) != IDENTIFIER_NODE))
 	{
-	  error_at (loc, "either all initializer clauses should be designated "
-			 "or none of them should be");
-	  first_designator = error_mark_node;
+	  if (cxx_dialect < cxx29
+	      && !first_designator
+	      && TREE_CODE (designator) == IDENTIFIER_NODE)
+	    {
+	      pedwarn (loc, OPT_Wc__29_extensions,
+		       "either all initializer clauses should be "
+		       "designated or none of them should be");
+	      first_designator = designator;
+	    }
+	  else
+	    {
+	      if (cxx_dialect < cxx29
+		  || TREE_CODE (first_designator
+				? first_designator
+				: designator) != IDENTIFIER_NODE)
+		error_at (loc, "either all initializer clauses should be "
+			       "designated or none of them should be");
+	      else
+		error_at (loc, "designated initializer clause should not "
+			       "be followed by non-designated");
+	      first_designator = error_mark_node;
+	    }
 	}
-      else if (cxx_dialect < cxx20 && !first_designator)
+      else if (!first_designator)
 	first_designator = designator;
 
       /* Parse the initializer.  */

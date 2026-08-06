@@ -5,10 +5,11 @@ char g[] = { [7] = "abcd" };	     // { dg-error "15:designator .7." }
 int a = { .foo = 6 };		     // { dg-error "designator" }
 int b = { [0] = 1 };		     // { dg-error "12:designator .0." }
 _Complex float c = { .foo = 0,  1 }; // { dg-error "designator" }
-				     // { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++2a } .-1 }
+				     // { dg-error "either all initializer clauses should be designated or none of them should be" "" { target { c++20 && c++26_down } } .-1 }
+				     // { dg-error "designated initializer clause should not be followed by non-designated" "" { target c++29 } .-2 }
 _Complex float d = { [0] = 0,  1 };  // { dg-error "23:designator .0." }
-				     // { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++2a } .-1 }
+				     // { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++20 } .-1 }
 _Complex float e = { 0, .foo = 1 };  // { dg-error "designator" }
-				     // { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++2a } .-1 }
+				     // { dg-warning "either all initializer clauses should be designated or none of them should be" "" { target { c++20 && c++26_down } } .-1 }
 _Complex float f = { 0, [0] = 1 };   // { dg-error "26:designator .0." }
-				     // { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++2a } .-1 }
+				     // { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++20 } .-1 }

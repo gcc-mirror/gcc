@@ -1072,7 +1072,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	  /* Set feature test macros for C++20.  */
 	  cpp_define (pfile, "__cpp_init_captures=201803L");
 	  cpp_define (pfile, "__cpp_generic_lambdas=201707L");
-	  cpp_define (pfile, "__cpp_designated_initializers=201707L");
+	  if (cxx_dialect <= cxx26)
+	    cpp_define (pfile, "__cpp_designated_initializers=201707L");
 	  if (cxx_dialect <= cxx20)
 	    cpp_define (pfile, "__cpp_constexpr=202002L");
 	  cpp_define (pfile, "__cpp_constexpr_in_decltype=201711L");
@@ -1129,6 +1130,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	{
 	  /* Set feature test macros for C++29.  */
 	  cpp_define (pfile, "__cpp_pp_embed=202606L");
+	  cpp_define (pfile, "__cpp_designated_initializers=202606L");
 	}
       if (flag_concepts && cxx_dialect > cxx14)
 	cpp_define (pfile, "__cpp_concepts=202002L");

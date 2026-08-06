@@ -3,8 +3,8 @@
 
 struct S { int a; long b; unsigned char c[63]; int d; };
 S s = {
-#embed __FILE__ limit (64) prefix (.a = 1, .b = ) suffix (, .d = 2)	// { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++20 } }
-};
+#embed __FILE__ limit (64) prefix (.a = 1, .b = ) suffix (, .d = 2)	// { dg-error "either all initializer clauses should be designated or none of them should be" "" { target { c++20 && c++26_down } } }
+};									// { dg-error "designated initializer clause should not be followed by non-designated" "" { target c++29 } .-1 }
 const unsigned char t[66] = {
 #embed __FILE__ limit (64) prefix ([0] = 1, [1] =) suffix (, [65] = 2)	// { dg-error "either all initializer clauses should be designated or none of them should be" "" { target c++20 } }
 };

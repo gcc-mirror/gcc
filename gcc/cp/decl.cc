@@ -7829,8 +7829,25 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
       return new_init;
     }
 
+  /* For C++29 designated initializers we do modify d->cur->index in place
+     to cache name lookup results.  Make sure to undo it before returning.  */
+  struct designator_undo {
+    constructor_elt *start, *end;
+    void undo ()
+    {
+      while (start != end)
+	{
+	  start->index = DECL_NAME (start->index);
+	  ++start;
+	}
+      start = end = nullptr;
+    }
+    ~designator_undo () { undo (); }
+  } desig_undo = { nullptr, nullptr };
+
   /* For C++20 CTAD, handle pack expansions in the base list.  */
   tree last_was_pack_expansion = NULL_TREE;
+  bool first_desig = true;
 
   /* Loop through the initializable fields, gathering initializers.  */
   while (d->cur != d->end)
@@ -7839,6 +7856,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
       constructor_elt *old_cur = d->cur;
       unsigned old_raw_idx = d->raw_idx;
       bool direct_desig = false;
+      bool subclass = false;
 
       /* Handle C++20 designated initializers.  */
       if (d->cur->index)
@@ -7848,22 +7866,37 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 
 	  if (TREE_CODE (d->cur->index) == FIELD_DECL)
 	    {
-	      /* We already reshaped this; we should have returned early from
-		 reshape_init.  */
-	      gcc_checking_assert (false);
-	      if (field != d->cur->index)
-		{
-		  if (tree id = DECL_NAME (d->cur->index))
-		    gcc_checking_assert (d->cur->index
-					 == get_class_binding (type, id));
-		  field = d->cur->index;
-		}
+	      CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
+	      direct_desig = true;
+	      field = d->cur->index;
 	    }
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
 	    {
+	      if (first_desig && cxx_dialect >= cxx20)
+		{
+		  if (CONSTRUCTOR_NELTS (new_init))
+		    {
+		      constructor_elt *last
+			= &CONSTRUCTOR_ELTS (new_init)->last ();
+		      if (last->index == NULL_TREE
+			  || TREE_CODE (last->index) != FIELD_DECL
+			  || !DECL_FIELD_IS_BASE (last->index))
+			{
+			  if (complain & tf_error)
+			    error ("last non-designated initializer clause "
+				   "does not appertain to a base class "
+				   "subobject");
+			  return error_mark_node;
+			}
+		    }
+		  first_desig = false;
+		}
 	      CONSTRUCTOR_IS_DESIGNATED_INIT (new_init) = true;
 	      field = get_class_binding (type, d->cur->index);
 	      direct_desig = true;
+	      if (!field && cxx_dialect >= cxx29)
+		field = lookup_member (type, d->cur->index, /*protect=*/2,
+				       /*want_type=*/false, complain);
 	    }
 	  else
 	    {
@@ -7913,6 +7946,62 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 		  ictx = cctx;
 		}
 
+	      /* In C++29 a designator can name a member of a base; in that
+		 case, go through the designators and replace ids with _DECLs
+		 to record the lookup for the most-derived class.  */
+	      if (cxx_dialect >= cxx29)
+		{
+		  tree ibinfo = lookup_base (type, ictx, ba_unique, NULL,
+					     complain);
+		  if (!ibinfo)
+		    /* The designator names a field outside this base class,
+		       so we're done.  */
+		    break;
+		  else if (ibinfo != error_mark_node)
+		    {
+		      while (BINFO_INHERITANCE_CHAIN (ibinfo) != binfo)
+			ibinfo = BINFO_INHERITANCE_CHAIN (ibinfo);
+		      ictx = TREE_TYPE (ibinfo);
+
+		      desig_undo.undo ();
+
+		      if (d->cur->index != field)
+			{
+			  d->cur->index = field;
+			  desig_undo.start = d->cur;
+			}
+		      constructor_elt *e = d->cur + 1;
+		      for (; e != d->end; ++e)
+			{
+			  if (e->index == NULL_TREE
+			      || e->index == error_mark_node)
+			    break;
+			  if (desig_undo.start)
+			    {
+			      gcc_assert (TREE_CODE (e->index)
+					  == IDENTIFIER_NODE);
+			      field = lookup_member (type, e->index,
+						     /*protect=*/2,
+						     /*want_type=*/false,
+						     tf_none);
+			      if (!field || TREE_CODE (field) != FIELD_DECL)
+				break;
+			    }
+			  else
+			    {
+			      gcc_assert (TREE_CODE (e->index) == FIELD_DECL);
+			      field = e->index;
+			    }
+
+			  if (desig_undo.start)
+			    e->index = field;
+			}
+		      if (desig_undo.start)
+			desig_undo.end = e;
+		      goto found;
+		    }
+		}
+
 	      /* Not found, e.g. FIELD is a member of a base class.  */
 	      if (complain & tf_error)
 		error ("%qD is not a direct member of %qT", field, type);
@@ -7927,6 +8016,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	      gcc_assert (aafield);
 	      field = aafield;
 	      direct_desig = false;
+	      subclass = true;
 	    }
 	}
 
@@ -7957,6 +8047,18 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	  field_init = reshape_single_init (TREE_TYPE (field),
 					    d->cur->value, complain);
 	  d->cur++;
+	}
+      else if (subclass)
+	{
+	  if (complain & tf_warning)
+	    warning (OPT_Wmissing_braces,
+		     "missing braces around initializer for %qT",
+		     TREE_TYPE (field));
+	  field_init = reshape_init_class (TREE_TYPE (field), d,
+					   /*first_initializer_p=*/NULL_TREE,
+					   complain);
+	  if (TREE_CODE (field_init) == CONSTRUCTOR)
+	    CONSTRUCTOR_BRACES_ELIDED_P (field_init) = true;
 	}
       else
 	field_init = reshape_init_r (TREE_TYPE (field), d,
