@@ -1346,8 +1346,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (mult:c @0 (vec_cond (ne @0 integer_zerop) integer_zerop@2 @1))
   @2)
 
-/* Shifts by precision or greater result in zero.  */
 (for shift (lshift rshift)
+ /* Shifts by precision or greater result in zero.  */
  (simplify
   (shift @0 uniform_integer_cst_p@1)
   (if ((GIMPLE || !sanitize_flags_p (SANITIZE_SHIFT_EXPONENT))
@@ -1358,10 +1358,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* Use a signed compare to leave negative shift counts alone.  */
        && wi::ges_p (wi::to_wide (uniform_integer_cst_p (@1)),
 		     element_precision (type)))
-   { build_zero_cst (type); })))
+   { build_zero_cst (type); }))
+ /* Shifts by constants distribute over several binary operations:
+    (X (<<, >>) C) & (Y (<<, >>) C) -> (X & Y) (<<, >>) C.
+    (X (<<, >>) C) | (Y (<<, >>) C) -> (X | Y) (<<, >>) C.
+    (X (<<, >>) C) ^ (Y (<<, >>) C) -> (X ^ Y) (<<, >>) C.  */
+ (for op (bit_and bit_ior bit_xor)
+  (simplify
+   (op (shift:s @0 @1) (shift:s @2 @1))
+   (if (INTEGRAL_TYPE_P (type))
+    (shift (op @0 @2) @1)))))
 
-/* Shifts by constants distribute over several binary operations,
-   hence (X << C) + (Y << C) can be simplified to (X + Y) << C.  */
+/* (X << C) (+,-) (Y << C) -> (X (+,-) Y) << C.  */
 (for op (plus minus)
   (simplify
     (op (lshift:s @0 @1) (lshift:s @2 @1))
@@ -1369,16 +1377,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 && TYPE_OVERFLOW_WRAPS (type)
 	 && !TYPE_SATURATING (type))
       (lshift (op @0 @2) @1))))
-
-(for op (bit_and bit_ior bit_xor)
-  (simplify
-    (op (lshift:s @0 @1) (lshift:s @2 @1))
-    (if (INTEGRAL_TYPE_P (type))
-      (lshift (op @0 @2) @1)))
-  (simplify
-    (op (rshift:s @0 @1) (rshift:s @2 @1))
-    (if (INTEGRAL_TYPE_P (type))
-      (rshift (op @0 @2) @1))))
 
 /* (y << x) == x -> false and (y << x) != x -> true when y != 0.  */
 (for cmp (eq ne)
@@ -1941,26 +1939,28 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_xor:c (bit_ior:c @0 @1) (bit_ior:c @0 (bit_not @1)))
  (bit_not @0))
 
-/* (x & y) | ~(x | y) -> ~(x ^ y)
-   (x ^ y) | ~(x | y) -> ~(x & y)  */
-(for lop (bit_and bit_xor)
-     res (bit_xor bit_and)
+(for op (bit_and bit_xor)
+     rop (bit_xor bit_and)
+ /* (x & y) | ~(x | y) -> ~(x ^ y)
+    (x ^ y) | ~(x | y) -> ~(x & y)  */
  (simplify
-  (bit_ior:c (lop:s @0 @1) (bit_not:s (bit_ior:s @0 @1)))
-  (bit_not (res @0 @1))))
+  (bit_ior:c (op:s @0 @1) (bit_not:s (bit_ior:s @0 @1)))
+  (bit_not (rop @0 @1)))
+ /* (x & y) ^ (x | y) -> x ^ y
+    (x ^ y) ^ (x | y) -> x & y  */
+ (simplify
+  (bit_xor:c (op @0 @1) (bit_ior @0 @1))
+  (rop @0 @1))
+ /* (x | y) - (x & y) -> x ^ y
+    (x | y) - (x ^ y) -> x & y  */
+ (simplify
+  (minus (bit_ior @0 @1) (op @0 @1))
+  (rop @0 @1)))
 
 /* (~x | y) ^ (x ^ y) -> x | ~y */
 (simplify
  (bit_xor:c (bit_ior:cs (bit_not @0) @1) (bit_xor:s @0 @1))
  (bit_ior @0 (bit_not @1)))
-
-/* (x & y) ^ (x | y) -> x ^ y
-   (x ^ y) ^ (x | y) -> x & y  */
-(for lop (bit_and bit_xor)
-     res (bit_xor bit_and)
- (simplify
-  (bit_xor:c (lop @0 @1) (bit_ior @0 @1))
-  (res @0 @1)))
 
 /* (x & y) + (x ^ y) -> x | y */
 /* (x & y) | (x ^ y) -> x | y */
@@ -1989,14 +1989,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (minus (bit_ior:cs @0 @1) @1)
  (bit_and @0 (bit_not @1)))
-
-/* (x | y) - (x ^ y) -> x & y
-   (x | y) - (x & y) -> x ^ y  */
-(for rop (bit_xor bit_and)
-     res (bit_and bit_xor)
- (simplify
-  (minus (bit_ior @0 @1) (rop @0 @1))
-  (res @0 @1)))
 
 /* (x | y) & ~(x & y) -> x ^ y */
 (simplify
