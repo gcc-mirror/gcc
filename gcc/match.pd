@@ -1985,6 +1985,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && !TYPE_SATURATING (type))
    (res @0 @1))))
 
+/* X + (X | -X) -> X & (X - 1).  X | -X has every bit from the lowest set
+   bit of X upwards, so adding it clears that bit.  */
+(simplify
+ (plus:c @0 (bit_ior:cs @0 (negate @0)))
+ (if (ANY_INTEGRAL_TYPE_P (type)
+      && !TYPE_OVERFLOW_SANITIZED (type))
+  (bit_and @0 (plus @0 { build_minus_one_cst (type); }))))
+
+/* X + ((-X) & (C - 1)) -> (X + C - 1) & -C for a power of two C, the
+   round up to a multiple of C written with the padding computed first.  */
+(simplify
+ (plus:c @0 (bit_and:cs (negate @0) uniform_integer_cst_p@1))
+ (with { tree cst = uniform_integer_cst_p (@1);
+	 tree etype = TREE_TYPE (cst);
+	 wide_int c = wi::to_wide (cst); }
+  (if (ANY_INTEGRAL_TYPE_P (type)
+       && !TYPE_OVERFLOW_TRAPS (type)
+       && !TYPE_OVERFLOW_SANITIZED (type)
+       && wi::popcount (c + 1) == 1)
+   (bit_and (plus @0 @1)
+	    { build_uniform_cst
+		(type, wide_int_to_tree (etype, wi::bit_not (c))); }))))
+
 /* (x | y) - y -> (x & ~y) */
 (simplify
  (minus (bit_ior:cs @0 @1) @1)
