@@ -8370,6 +8370,8 @@ finish_struct (tree t, tree attributes)
 	}
       /* It also cannot be a union.  */
       ok &= NON_UNION_CLASS_TYPE_P (t);
+      if (BINFO_N_BASE_BINFOS (TYPE_BINFO (t)))
+	ok = false;
       if (!ok)
 	fatal_error (input_location, "definition of %qD does not match "
 		     "%<#include <initializer_list>%>", TYPE_NAME (t));
