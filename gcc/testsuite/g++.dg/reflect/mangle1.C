@@ -15,6 +15,7 @@ struct S : B {
   int : 0;
   static int var;
 };
+struct W { union {}; union {}; union {}; union {}; };
 template <auto> struct TCls {};
 template <auto> void TFn ();
 template <auto> int TVar;
@@ -172,6 +173,8 @@ baz (int x)
 							    std::meta::reflect_constant (43L),
 							    std::meta::reflect_constant (NS2::AA { 1, 2 }) } })> (); // data member description
   bar <340, ^^NS2::X::~X> (); // function
+  bar <350, members_of (^^W, ctx)[1]> (); // empty anon union non-static data member
+  bar <351, members_of (^^W, ctx)[7]> (); // empty anon union non-static data member
 }
 
 // { dg-final { scan-assembler "_Z3fooILi1EDmEvv" } }
@@ -258,3 +261,5 @@ baz (int x)
 // { dg-final { scan-assembler "_Z3barILi334ELDmdsi___0_EEvv" } }
 // { dg-final { scan-assembler "_Z3barILi335ELDmdsi_1____Li42ELl43EXtlN3NS22AAELi1ELi2EEEEEvv" } }
 // { dg-final { scan-assembler "_Z3barILi340ELDmfnN3NS21XD4EvEEvv" } }
+// { dg-final { scan-assembler "_Z3barILi350ELDmda1W_EEvv" } }
+// { dg-final { scan-assembler "_Z3barILi351ELDmda1W2_EEvv" } }
