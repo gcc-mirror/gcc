@@ -1,3 +1,7 @@
+2026-08-05  Andrew Burgess  <aburgess@redhat.com>
+
+	* texi2pod.pl: Handle @option as indicating command to @table.
+
 2026-08-04  Даниил Гусев  <d.gusev2007@gmail.com>
 
 	* download_prerequisites (base_url): Allow overriding via the

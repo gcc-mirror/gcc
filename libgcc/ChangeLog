@@ -1,3 +1,18 @@
+2026-08-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _divQ16_tail.
+	* config/avr/lib1funcs-fixed.S (__divQ16_tail): New DEFUN.
+	(__divhq3, __udivuhq3, __divha3, __udivuha3): Overhaul.
+	(__ssdivhq3, __usdivuhq3, __ssdivha3, __usdivuha3): New ENTRYs.
+
+2026-08-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (FUNCS_notiny) <_divsa3, _udivusa3>: Move
+	to LIB1ASMFUNCS.
+	* config/avr/lib1funcs-fixed.S (__divsa3, __udivusa3): Overhaul.
+	Saturate result.
+	(__ssdivsa3, __usdivusa3, __udivusa3.2): New ENTRYs.
+
 2026-07-31  Muhammad Kamran  <muhammad.kamran@arm.com>
 
 	* config/aarch64/aarch64-asm.h (FEATURE_1_AND_MARK): Do not emit

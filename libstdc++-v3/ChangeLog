@@ -1,3 +1,16 @@
+2026-08-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119739
+	* include/bits/random.tcc (__generate_canonical_any):
+	Rewrite to support generator with different ranges.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon.cc:
+	Add test for previously unsupported generator.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon_eng.cc:
+	Add test for previously unsupported-generator ranges.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon_eng_neg.cc:
+	Moved (now-supported) generator test to gencanon_eng.cc, and removed
+	the file.
+
 2026-08-03  Tomasz Kamiński  <tkaminsk@redhat.com>
 	    Jonathan Wakely  <jwakely@redhat.com>
 

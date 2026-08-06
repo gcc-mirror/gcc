@@ -1,3 +1,14 @@
+2026-08-05  Trevor Woerner  <twoerner@gmail.com>
+
+	* sppp.awk: Strip any directory prefix from FILENAME in the
+	generated header comment.
+
+2026-08-05  Trevor Woerner  <twoerner@gmail.com>
+
+	* m4/autoconf.m4 (AC_PROG_A68): Only default A68FLAGS when it
+	is unset.
+	* configure: Regenerate.
+
 2026-07-20  chris hermansen  <clhermansen@gmail.com>
 
 	* standard.a68.in (Integer): New mode.

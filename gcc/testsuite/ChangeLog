@@ -1,3 +1,294 @@
+2026-08-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	Revert:
+	2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/goacc/cache-3-1.c: Add dg-skip-if for c++26.
+	* g++.dg/goacc/data-clause-2.C: Likewise.
+	* g++.dg/gomp/allocate-3.C: Likewise.
+	* c-c++-common/gomp/affinity-2.c: Use { c || c++23_down } effective
+	target.
+	* c-c++-common/goacc/cache-3-2.c: Replace [: in OpenMP or OpenACC
+	pragmas or attributes with [ : and :] with : ].
+	* c-c++-common/goacc/data-clause-1.c: Likewise.
+	* c-c++-common/goacc/data-clause-2.c: Likewise.
+	* c-c++-common/goacc/data-clause-duplicate-1.c: Likewise.
+	* c-c++-common/goacc/mdc-2.c: Likewise.
+	* c-c++-common/goacc/readonly-1.c: Likewise.
+	* c-c++-common/gomp/allocate-4.c: Likewise.
+	* c-c++-common/gomp/clauses-3.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-3.c: Likewise.
+	* c-c++-common/gomp/depend-1.c: Likewise.
+	* c-c++-common/gomp/depend-2.c: Likewise.
+	* c-c++-common/gomp/depend-3.c: Likewise.
+	* c-c++-common/gomp/depend-4.c: Likewise.
+	* c-c++-common/gomp/depend-5.c: Likewise.
+	* c-c++-common/gomp/depend-6.c: Likewise.
+	* c-c++-common/gomp/dispatch-1.c: Likewise.
+	* c-c++-common/gomp/loop-5.c: Likewise.
+	* c-c++-common/gomp/map-1.c: Likewise.
+	* c-c++-common/gomp/map-2.c: Likewise.
+	* c-c++-common/gomp/map-4.c: Likewise.
+	* c-c++-common/gomp/map-7.c: Likewise.
+	* c-c++-common/gomp/pr100902-1.c: Likewise.
+	* c-c++-common/gomp/pr103642.c: Likewise.
+	* c-c++-common/gomp/pr120180-1.c: Likewise.
+	* c-c++-common/gomp/pr61486-1.c: Likewise.
+	* c-c++-common/gomp/pr81006.c: Likewise.
+	* c-c++-common/gomp/pr91920.c: Likewise.
+	* c-c++-common/gomp/pr96867.c: Likewise.
+	* c-c++-common/gomp/pr99928-16.c: Likewise.
+	* c-c++-common/gomp/reduction-1.c: Likewise.
+	* c-c++-common/gomp/scan-1.c: Likewise.
+	* c-c++-common/gomp/target-data-1.c: Likewise.
+	* c-c++-common/gomp/target-enter-data-1.c: Likewise.
+	* c-c++-common/gomp/target-has-device-addr-1.c: Likewise.
+	* c-c++-common/gomp/target-implicit-map-2.c: Likewise.
+	* c-c++-common/gomp/target-map-iterators-1.c: Likewise.
+	* c-c++-common/gomp/target-map-iterators-3.c: Likewise.
+	* c-c++-common/gomp/target-update-iterators-1.c: Likewise.
+	* c-c++-common/gomp/target-update-iterators-3.c: Likewise.
+	* g++.dg/goacc/cache-3-1.C: Likewise.
+	* g++.dg/goacc/cache-3-2.C: Likewise.
+	* g++.dg/goacc/data-clause-1.C: Likewise.
+	* g++.dg/goacc/mdc.C: Likewise.
+	* g++.dg/gomp/array-section-2.C: Likewise.
+	* g++.dg/gomp/bad-array-section-10.C: Likewise.
+	* g++.dg/gomp/bad-array-section-11.C: Likewise.
+	* g++.dg/gomp/bad-array-section-9.C: Likewise.
+	* g++.dg/gomp/declare-mapper-1.C: Likewise.
+	* g++.dg/gomp/declare-mapper-2.C: Likewise.
+	* g++.dg/gomp/depend-1.C: Likewise.
+	* g++.dg/gomp/depend-2.C: Likewise.
+	* g++.dg/gomp/ind-base-3.C: Likewise.
+	* g++.dg/gomp/map-1.C: Likewise.
+	* g++.dg/gomp/map-2.C: Likewise.
+	* g++.dg/gomp/map-ptrmem-1.C: Likewise.
+	* g++.dg/gomp/map-ptrmem-2.C: Likewise.
+	* g++.dg/gomp/member-array-2.C: Likewise.
+	* g++.dg/gomp/target-this-3.C: Likewise.
+	* g++.dg/gomp/target-this-4.C: Likewise.
+
+2026-08-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/affinity-2.c: Also run with C++ > 23
+	and add some '[ :' and ': ]' tests.
+	* g++.dg/gomp/allocate-3.C: Remove 'dg-skip-if' for c++26.
+	* g++.dg/goacc/cache-4.C: New test.
+	* g++.dg/gomp/array-section-3.C: New test.
+	* g++.dg/gomp/array-section-4.C: New test.
+	* g++.dg/gomp/array-section-5.C: New test.
+	* g++.dg/gomp/array-section-6.C: New test.
+
+2026-08-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/default_format_2.f90: XFAIL on hppa*-*-hpux*.
+	* gfortran.dg/default_format_denormal_2.f90: Likewise.
+
+2026-08-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gfortran.dg/PR100914.f90: Skip on hppa*-*-hpux*.
+
+2026-08-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.target/aarch64/mv-symbols10.C: Require ifunc support.
+	* g++.target/aarch64/mv-symbols11.C: Likewise.
+	* g++.target/aarch64/mv-symbols12.C: Likewise.
+	* g++.target/aarch64/mv-symbols13.C: Likewise.
+	* g++.target/aarch64/mv-symbols6.C: Likewise.
+	* g++.target/aarch64/mv-symbols7.C: Likewise.
+	* g++.target/aarch64/mv-symbols9.C: Likewise.
+	* gcc.target/aarch64/mv-1.c: Likewise.
+	* gcc.target/aarch64/mv-error8.c: Likewise.
+	* gcc.target/aarch64/mv-symbols1.c: Likewise.
+	* gcc.target/aarch64/mv-symbols10.c: Likewise.
+	* gcc.target/aarch64/mv-symbols11.c: Likewise.
+	* gcc.target/aarch64/mv-symbols12.c: Likewise.
+	* gcc.target/aarch64/mv-symbols13.c: Likewise.
+	* gcc.target/aarch64/mv-symbols14.c: Likewise.
+	* gcc.target/aarch64/mv-symbols2.c: Likewise.
+	* gcc.target/aarch64/mv-symbols3.c: Likewise.
+	* gcc.target/aarch64/mv-symbols4.c: Likewise.
+	* gcc.target/aarch64/mv-symbols5.c: Likewise.
+	* gcc.target/aarch64/mv-symbols6.c: Likewise.
+	* gcc.target/aarch64/mv-symbols7.c: Likewise.
+	* gcc.target/aarch64/mv-symbols8.c: Likewise.
+	* gcc.target/aarch64/mv-symbols9.c: Likewise.
+	* gcc.target/aarch64/mvc-symbols1.c: Likewise.
+	* gcc.target/aarch64/mvc-symbols2.c: Likewise.
+	* gcc.target/aarch64/mvc-symbols3.c: Likewise.
+	* gcc.target/aarch64/mvc-symbols4.c: Likewise.
+	* gcc.target/aarch64/pr124167.c: Likewise.
+
+2026-08-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/fx16.h: New file.
+	* gcc.target/avr/fx16-div-1.c: New test.
+	* gcc.target/avr/fx16-div-2.c: New test.
+	* gcc.target/avr/fx16-div-3.c: New test.
+
+2026-08-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/fx32-div-1.c: New test.
+	* gcc.target/avr/fx32-div-2.c: New test.
+	* gcc.target/avr/fx32-div-3.c: New test.
+	* gcc.target/avr/fx32.h: New file.
+
+2026-08-05  Sivan Shani  <sivan.shani@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_5.c: Test new feature macros.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h
+	(TEST_XN_INDEXED): New macro.
+	* gcc.target/aarch64/sve2/acle/asm/aesd_lane_u8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/aesdimc_lane_u8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/aese_lane_u8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/aesemc_lane_u8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/pmlal_pair_u64.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/pmull_pair_u64.c: New test.
+	* lib/target-supports.exp: Add sve-aes2 assembler probe.
+
+2026-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126650
+	* gcc.dg/torture/pr126650.c: New testcase.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10v2aux-convert-1g.c: New test.
+	* gcc.target/i386/avx10v2aux-convert-1h.c: New test.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10v2aux-convert-1e.c: New test.
+	* gcc.target/i386/avx10v2aux-convert-1f.c: New test.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10v2aux-convert-1d.c: New test.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10v2aux-convert-1c.c: New test.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10v2aux-convert-1b.c: New test.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* lib/target-supports.exp: Check for avx10v2aux.
+	* gcc.target/i386/avx10v2aux-convert-1a.c: New test.
+
+2026-08-05  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/56223
+	* gcc.dg/tree-ssa/pr56223.c: New test.
+	* gcc.dg/tree-ssa/pr56223-2.c: New test.
+	* gcc.dg/tree-ssa/pr56223-3.c: New test.
+	* gcc.dg/tree-ssa/pr56223-4.c: New test.
+
+2026-08-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/125708
+	* gcc.dg/torture/pr125708-1.c: New test.
+	* gcc.target/i386/pr125708-2.c: New test.
+
+2026-08-05  Pan Li  <pan2.li@intel.com>
+	    Claude Opus 5 (1M context)  <noreply@anthropic.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-44.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-45.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-46.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-47.c: New test.
+
+2026-08-05  Pan Li  <pan2.li@intel.com>
+	    Claude Opus 5 (1M context)  <noreply@anthropic.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vv-u8-mf8.c: New test.
+
+2026-08-05  Pan Li  <pan2.li@intel.com>
+	    Claude Opus 5 (1M context)  <noreply@anthropic.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vv-i8-mf8.c: New test.
+
+2026-08-05  Pan Li  <pan2.li@intel.com>
+	    Claude Opus 5 (1M context)  <noreply@anthropic.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vv-u8-mf8.c: New test.
+
+2026-08-05  Pan Li  <pan2.li@intel.com>
+	    Claude Opus 5 (1M context)  <noreply@anthropic.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vv-i8-mf8.c: New test.
+
 2026-08-04  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	PR target/126550

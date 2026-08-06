@@ -1,3 +1,350 @@
+2026-08-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-fixed.md: Use alldiv as code iterator for the
+	16-bit fixed-point insns and expanders of [U]HAmode, [U]HQmode.
+	Support saturated divisions in [U]HAmode, [U]HQmode.
+
+2026-08-05  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md (code_stdname): Add code attributes
+	for: ss_div, us_div, div, udiv.
+	* config/avr/avr-fixed.md (alldiv): New code iterator.
+	Use it in all [U]SAmode division expanders and insns.
+	Use <code_stdname> instead of <code> as needed.
+
+2026-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_conversion): Elide op0/op1.
+	(vect_is_simple_use): New overload.
+	(supportable_indirect_convert_operation): Drop optional and
+	unused scalar op argument.
+	* tree-vectorizer.h (supportable_indirect_convert_operation):
+	Adjust prototype.
+	(vect_is_simple_use): New overload.
+
+2026-08-05  Sivan Shani  <sivan.shani@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_SVE_AES2): Define.
+	* config/aarch64/aarch64.md (UNSPEC_SSVE_LANE_SELECT): New unspec.
+	* config/aarch64/aarch64-acle-builtins.cc
+	(function_resolver::finish_opt_n_resolution): Add overload taking an
+	sve_type argument.  Make the existing overload delegate to it.
+	* config/aarch64/aarch64-acle-builtins.h
+	(function_resolver::finish_opt_n_resolution): Declare the new overload.
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_SVE_AES2 and __ARM_FEATURE_SSVE_AES.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(unspec_based_aes_lane_function): New typedef.
+	(unspec_based_aes_lane_mc_function): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(binary_to_pair_opt_n_def): New shape.
+	(ternary_to_pair_opt_n_def): Likewise.
+	(binary_aes_lane_def): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.h: Declare new shapes.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc: Add new function
+	entries.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Add new ACLE
+	builtin definitions.
+	* config/aarch64/aarch64-sve-builtins-sve2.h: Declare new functions.
+	* config/aarch64/aarch64-sve2.md: Add PMULL/PMLAL pair and AES
+	indexed multi-vector patterns.
+	* config/aarch64/iterators.md: Add iterators and attrs for new
+	patterns.
+	* config/aarch64/predicates.md (const_0_to_3_operand): New predicate.
+
+2026-08-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_get_vec_defs): Adjust to take
+	bool instead of tree arguments.
+	* tree-vect-stmts.cc (vect_get_vec_defs): Likewise.
+	(vectorizable_bswap): Simplify.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison_1): Likewise.
+	* tree-vect-loop.cc (vect_transform_lc_phi): Likewise.
+
+2026-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126650
+	* tree-affine.cc (get_inner_reference_aff): Fixup rounding
+	of size.
+
+2026-08-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.cc (split_address_to_core_and_offset): Use STRIP_NOPS.
+	* match.pd ((&a + b) !=/== (&a[1] + c) -> (&a[0] - &a[1]) + b !=/== c):
+	Don't require captures to be ADDR_EXPR.
+	((&a+b) - (&a[1] + c) -> sizeof(a[0]) + (b - c)): Likewise.
+	((p + b) - &p->d -> offsetof (*p, d) + b): Likewise.
+	(Try folding difference of addresses): Likewise.  Remove
+	redundant simplifications because of that.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10v2auxintrin.h (_mm_cvts_bf8_bf6): New intrin.
+	(_mm256_cvts_bf8_bf6): Ditto.
+	(_mm512_cvts_bf8_bf6): Ditto.
+	(_mm_cvts_hf8_hf6): Ditto.
+	(_mm256_cvts_hf8_hf6): Ditto.
+	(_mm512_cvts_hf8_hf6): Ditto.
+	(_mm_cvtbf6_hf8): Ditto.
+	(_mm_mask_cvtbf6_hf8): Ditto.
+	(_mm_maskz_cvtbf6_hf8): Ditto.
+	(_mm256_cvtbf6_hf8): Ditto.
+	(_mm256_mask_cvtbf6_hf8): Ditto.
+	(_mm256_maskz_cvtbf6_hf8): Ditto.
+	(_mm512_cvtbf6_hf8): Ditto.
+	(_mm512_mask_cvtbf6_hf8): Ditto.
+	(_mm512_maskz_cvtbf6_hf8): Ditto.
+	(_mm_cvthf6_hf8): Ditto.
+	(_mm_mask_cvthf6_hf8): Ditto.
+	(_mm_maskz_cvthf6_hf8): Ditto.
+	(_mm256_cvthf6_hf8): Ditto.
+	(_mm256_mask_cvthf6_hf8): Ditto.
+	(_mm256_maskz_cvthf6_hf8): Ditto.
+	(_mm512_cvthf6_hf8): Ditto.
+	(_mm512_mask_cvthf6_hf8): Ditto.
+	(_mm512_maskz_cvthf6_hf8): Ditto.
+	* config/i386/i386-builtin.def (BDESC): New builtins.
+	* config/i386/sse.md (vcvt<convertfp82fp6s><mode>): New.
+	(vcvt<convertfp62hf8><mode><mask_name>): Ditto.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10v2auxintrin.h (_mm_cvts_bf8_bf4): New intrin.
+	(_mm256_cvts_bf8_bf4): Ditto.
+	(_mm512_cvts_bf8_bf4): Ditto.
+	(_mm_cvts_hf8_bf4): Ditto.
+	(_mm256_cvts_hf8_bf4): Ditto.
+	(_mm512_cvts_hf8_bf4): Ditto.
+	(_mm_cvtbf4_hf8): Ditto.
+	(_mm_mask_cvtbf4_hf8): Ditto.
+	(_mm_maskz_cvtbf4_hf8): Ditto.
+	(_mm256_cvtbf4_hf8): Ditto.
+	(_mm256_mask_cvtbf4_hf8): Ditto.
+	(_mm256_maskz_cvtbf4_hf8): Ditto.
+	(_mm512_cvtbf4_hf8): Ditto.
+	(_mm512_mask_cvtbf4_hf8): Ditto.
+	(_mm512_maskz_cvtbf4_hf8): Ditto.
+	* config/i386/i386-builtin-types.def : New function types.
+	* config/i386/i386-builtin.def (BDESC):  New builtins.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle new function types.
+	* config/i386/sse.md (vcvt<convertfp82bf4s>v16qi): New.
+	(*vcvt<convertfp82bf4s>v16qi): Ditto.
+	(vcvt<convertfp82bf4s><mode>): Ditto.
+	(vcvtbf42hf8<mode><mask_name>): Ditto.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10v2auxintrin.h (_mm_cvtbf8_ps): New intrins.
+	(_mm_mask_cvtbf8_ps): Ditto.
+	(_mm_maskz_cvtbf8_ps): Ditto.
+	(_mm256_cvtbf8_ps): Ditto.
+	(_mm256_mask_cvtbf8_ps): Ditto.
+	(_mm256_maskz_cvtbf8_ps): Ditto.
+	(_mm512_cvtbf8_ps): Ditto.
+	(_mm512_mask_cvtbf8_ps): Ditto.
+	(_mm512_maskz_cvtbf8_ps): Ditto.
+	(_mm_cvthf8_ps): Ditto.
+	(_mm_mask_cvthf8_ps): Ditto.
+	(_mm_maskz_cvthf8_ps): Ditto.
+	(_mm256_cvthf8_ps): Ditto.
+	(_mm256_mask_cvthf8_ps): Ditto.
+	(_mm256_maskz_cvthf8_ps): Ditto.
+	(_mm512_cvthf8_ps): Ditto.
+	(_mm512_mask_cvthf8_ps): Ditto.
+	(_mm512_maskz_cvthf8_ps): Ditto.
+	* config/i386/i386-builtin-types.def: New function types.
+	* config/i386/i386-builtin.def (BDESC): New builtins for avx10v2aux.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle new function types.
+	* config/i386/sse.md (vcvt<convertfp82ps><mode><mask_name>): New.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10v2auxintrin.h (_mm_cvtbiasps_bf8): New intrin.
+	(_mm_mask_cvtbiasps_bf8): Ditto.
+	(_mm_maskz_cvtbiasps_bf8): Ditto.
+	(_mm256_cvtbiasps_bf8): Ditto.
+	(_mm256_mask_cvtbiasps_bf8): Ditto.
+	(_mm256_maskz_cvtbiasps_bf8): Ditto.
+	(_mm512_cvtbiasps_bf8): Ditto.
+	(_mm512_mask_cvtbiasps_bf8): Ditto.
+	(_mm512_maskz_cvtbiasps_bf8): Ditto.
+	(_mm_cvts_biasps_bf8): Ditto.
+	(_mm_mask_cvts_biasps_bf8): Ditto.
+	(_mm_maskz_cvts_biasps_bf8): Ditto.
+	(_mm256_cvts_biasps_bf8): Ditto.
+	(_mm256_mask_cvts_biasps_bf8): Ditto.
+	(_mm256_maskz_cvts_biasps_bf8): Ditto.
+	(_mm512_cvts_biasps_bf8): Ditto.
+	(_mm512_mask_cvts_biasps_bf8): Ditto.
+	(_mm512_maskz_cvts_biasps_bf8): Ditto.
+	(_mm_cvtbiasps_hf8): Ditto.
+	(_mm_mask_cvtbiasps_hf8): Ditto.
+	(_mm_maskz_cvtbiasps_hf8): Ditto.
+	(_mm256_cvtbiasps_hf8): Ditto.
+	(_mm256_mask_cvtbiasps_hf8): Ditto.
+	(_mm256_maskz_cvtbiasps_hf8): Ditto.
+	(_mm512_cvtbiasps_hf8): Ditto.
+	(_mm512_mask_cvtbiasps_hf8): Ditto.
+	(_mm512_maskz_cvtbiasps_hf8): Ditto.
+	(_mm_cvts_biasps_hf8): Ditto.
+	(_mm_mask_cvts_biasps_hf8): Ditto.
+	(_mm_maskz_cvts_biasps_hf8): Ditto.
+	(_mm256_cvts_biasps_hf8): Ditto.
+	(_mm256_mask_cvts_biasps_hf8): Ditto.
+	(_mm256_maskz_cvts_biasps_hf8): Ditto.
+	(_mm512_cvts_biasps_hf8): Ditto.
+	(_mm512_mask_cvts_biasps_hf8): Ditto.
+	(_mm512_maskz_cvts_biasps_hf8): Ditto.
+	* config/i386/i386-builtin-types.def (V16QI): New function types.
+	* config/i386/i386-builtin.def (BDESC): New builtins.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle new function types.
+	* config/i386/sse.md (vcvt<biasps2fp8>v4sf): New.
+	(*vcvt<biasps2fp8>v4sf): Ditto.
+	(vcvt<biasps2fp8>v8sf): Ditto.
+	(*vcvt<biasps2fp8>v8sf): Ditto.
+	(vcvt<biasps2fp8>v4sf_mask): Ditto.
+	(*vcvt<biasps2fp8>v4sf_mask): Ditto.
+	(vcvt<biasps2fp8>v8sf_mask): Ditto.
+	(*vcvt<biasps2fp8>v8sf_mask): Ditto.
+	(vcvt<biasps2fp8>v16sf<mask_name>): Ditto.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10v2auxintrin.h:(_mm_cvtrops_hf8): New intrins.
+	(_mm_mask_cvtrops_hf8): Ditto.
+	(_mm_maskz_cvtrops_hf8): Ditto.
+	(_mm256_cvtrops_hf8): Ditto.
+	(_mm256_mask_cvtrops_hf8): Ditto.
+	(_mm256_maskz_cvtrops_hf8): Ditto.
+	(_mm512_cvtrops_hf8): Ditto.
+	(_mm512_mask_cvtrops_hf8): Ditto.
+	(_mm512_maskz_cvtrops_hf8): Ditto.
+	(_mm_cvts_rops_hf8): Ditto.
+	(_mm_mask_cvts_rops_hf8): Ditto.
+	(_mm_maskz_cvts_rops_hf8): Ditto.
+	(_mm256_cvts_rops_hf8): Ditto.
+	(_mm256_mask_cvts_rops_hf8): Ditto.
+	(_mm256_maskz_cvts_rops_hf8): Ditto.
+	(_mm512_cvts_rops_hf8): Ditto.
+	(_mm512_mask_cvts_rops_hf8): Ditto.
+	(_mm512_maskz_cvts_rops_hf8): Ditto.
+	* config/i386/i386-builtin.def (BDESC): New avx10v2aux builtins.
+	* config/i386/sse.md: Add RTO UNSPEC.
+
+2026-08-05  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Add AVX10V2AUX.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AVX10V2AUX_SET): New.
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): Disable AVX10_1.
+	(OPTION_MASK_ISA2_AVX10V2AUX_UNSET): New.
+	(ix86_handle_option): Handle AVX10V2AUX.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features): Add FEATURE_AVX10V2AUX.
+	* common/config/i386/i386-isas.h: Handle avx10v2aux.
+	* config.gcc: Include avx10v2auxintrin.h.
+	* config/i386/cpuid.h (bit_AVX10V2AUX): New.
+	* config/i386/i386-builtin-types.def: Add new function type.
+	* config/i386/i386-builtin.def (BDESC): New AVX10V2AUX builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Handle avx10v2aux.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle avx10v2aux function types.
+	* config/i386/i386-isa.def (AVX10V2AUX): New DEF_PTA
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p): Handle avx10v2aux.
+	* config/i386/i386.opt: Add avx10v2aux.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/i386/immintrin.h: Include avx10v2auxintrin.h.
+	* config/i386/sse.md (vcvt<convertps2fp8>v4sf): New.
+	(*vcvt<convertps2fp8>v4sf): Ditto.
+	(vcvt<convertps2fp8>v8sf): Ditto.
+	(*vcvt<convertps2fp8>v8sf): Ditto.
+	(vcvt<convertps2fp8>v4sf_mask): Ditto.
+	(*vcvt<convertps2fp8>v4sf_mask): Ditto.
+	(vcvt<convertps2fp8>v8sf_mask): Ditto.
+	(*vcvt<convertps2fp8>v8sf_mask): Ditto.
+	(vcvt<convertps2fp8>v16sf<mask_name>): Ditto.
+	* doc/extend.texi: Add avx10v2aux documentation.
+	* doc/invoke.texi: Ditto.
+	* doc/sourcebuild.texi: Ditto.
+	* config/i386/avx10v2auxintrin.h: New file.
+
+2026-08-05  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/56223
+	* match.pd (X >=/> 0 ? Y + X : Y - X): New simplification.
+	(X <=/< 0 ? Y - X : Y + X): Likewise.
+
+2026-08-05  liuhongt  <hongtao.liu@intel.com>
+
+	PR middle-end/125708
+	* expr.cc: Include gimple-range.h.
+	(near_pow2_divisor_range_p): New function.
+	(expand_expr_divmod): Split eligible TRUNC_DIV_EXPRs into two
+	constant divisions selected by a conditional move.
+
+2026-08-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* mem-stats.h (mem_alloc_description::mem_alloc_description): Make
+	private.
+	(mem_alloc_description::~mem_alloc_description): Disallow
+	destruction entirely.
+	(mem_alloc_description::instance): New function.
+	* alloc-pool.cc (dump_alloc_pool_statistics): Adapt to
+	pool_allocator_usage being a function instead of a variable.
+	* alloc-pool.h (pool_allocator_usage): New function.
+	(TBlockAllocator>::initialize): Adapt to
+	pool_allocator_usage being a function instead of a variable.
+	(TBlockAllocator>::release): Likewise.
+	(TBlockAllocator>::allocate): Likewise.
+	(TBlockAllocator>::remove): Likewise.
+	* bitmap.cc (bitmap_mem_desc): Change from a static variable to an
+	inline function.
+	(bitmap_register): Adapt to bitmap_mem_desc being a function instead
+	of a variable.
+	(register_overhead): Likewise.
+	(release_overhead): Likewise.
+	(bitmap_list_find_element): Likewise.
+	(bitmap_tree_splay): Likewise.
+	(bitmap_tree_find_element): Likewise.
+	(dump_bitmap_statistics): Likewise.
+	* bitmap.h (bitmap_mem_desc): Remove unneeded extern declaration.
+	* ggc-common.cc (ggc_mem_desc): Change from a static variable to an
+	inline function.
+	(ggc_record_overhead): Adapt to ggc_mem_desc being a function
+	instead of a variable.
+	(ggc_free_overhead): Likewise
+	(ggc_prune_overhead_list): Likewise.
+	* vec.cc (vec_mem_desc): Change from a static variable to a
+	function.
+	(vec_prefix::register_overhead): Adapt to vec_mem_desc being a
+	function instead of a variable.
+	(vec_prefix::release_overhead): Likewise.
+	(dump_vec_loc_statistics): Likewise.
+	* hash-table.cc (hash_table_usage): Move to...
+	* hash-table.h (hash_table_usage): ...here, and use new singleton
+	interface.
+
+2026-08-05  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR middle-end/28734
+	* mem-stats.h (mem_alloc_description::release_object_overhead):
+	Handle the case that PTR was not found in the hash map, which can
+	happen after PCH restore.
+
 2026-08-04  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	PR target/126550
