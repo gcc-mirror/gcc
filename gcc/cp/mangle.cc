@@ -4240,7 +4240,9 @@ write_reflection (tree refl)
 	 write_template_args, it shouldn't be
 	 remembered among substitutions.  */
       write_prefix (decl_mangling_context (arg));
-      write_unqualified_name (arg);
+      if (modules_p ())
+	maybe_write_module (arg);
+      write_source_name (DECL_NAME (arg));
       tree template_info = maybe_template_info (arg);
       if (template_info)
 	write_template_args (TI_ARGS (template_info));
