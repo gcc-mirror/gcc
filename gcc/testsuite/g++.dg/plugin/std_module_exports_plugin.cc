@@ -106,13 +106,19 @@ plugin_dump_decl (tree decl, char *scope, hash_set<tree> **exported_usings)
 	if (((int) whitelist[i].enabled_in & (int) this_std) != 0)
 	  {
 	    inform (DECL_SOURCE_LOCATION (decl),
-		    "missing using %s%D; whitelisted", scope, name);
+		    "missing %<using %s%D;%> whitelisted", scope, name);
 	    return;
 	  }
 	break;
       }
 
-  error_at (DECL_SOURCE_LOCATION (decl), "missing using %s%D;", scope, name);
+  auto_diagnostic_group d;
+  error_at (DECL_SOURCE_LOCATION (decl),
+	    "missing %<using %s%D;%> in libstdc++-v3/src/c++23/std*.cc.in",
+	    scope, name);
+  inform (DECL_SOURCE_LOCATION (decl),
+	  "%<%s%D%> found in std namespace but not exported from std module",
+	  scope, name);
 }
 
 void
