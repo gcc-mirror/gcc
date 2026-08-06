@@ -985,7 +985,9 @@ enum {
   /* Might be valid NFKC form?  */
   NKC = 512,
   /* Certain preceding characters might make it not valid NFC/NKFC form?  */
-  CTX = 1024
+  CTX = 1024,
+  /* Valid in C++23 but not in C23.  Set only when CXX23 is also set.  */
+  NONC = 2048
 };
 
 struct ucnrange {
@@ -1366,6 +1368,8 @@ cpp_check_xid_property (cppchar_t c)
 
   unsigned short flags = ucnranges[mn].flags;
 
+  if (flags & NONC)
+    return 0;
   if (flags & CXX23)
     return CPP_XID_START | CPP_XID_CONTINUE;
   if (flags & NXX23)
@@ -1408,14 +1412,19 @@ ucn_valid_in_identifier (cpp_reader *pfile, cppchar_t c,
   if (CPP_PEDANTIC (pfile))
     {
       if (CPP_OPTION (pfile, xid_identifiers))
-	valid_flags = CXX23;
+	{
+	  valid_flags = CXX23;
+	  if (!CPP_OPTION (pfile, cplusplus)
+	      && (ucnranges[mn].flags & NONC))
+	    return 0;
+	}
       else if (CPP_OPTION (pfile, c11_identifiers))
 	valid_flags = C11;
       else if (CPP_OPTION (pfile, c99))
 	valid_flags = C99;
     }
   if (! (ucnranges[mn].flags & valid_flags))
-      return 0;
+    return 0;
 
   /* Update NST.  */
   if (ucnranges[mn].combine != 0 && ucnranges[mn].combine < nst->prev_class)

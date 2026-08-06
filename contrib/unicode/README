@@ -66,7 +66,7 @@ The procedure to update GCC's Unicode support is the following:
 6.  Generate ucnid.h as follows:
       ../../libcpp/makeucnid ../../libcpp/ucnid.tab UnicodeData.txt \
 	DerivedNormalizationProps.txt DerivedCoreProperties.txt \
-	> ../../libcpp/ucnid.h
+	PropList.txt > ../../libcpp/ucnid.h
 
 7.  Read the corresponding Unicode's standard and update correspondingly
     generated_ranges table in libcpp/makeuname2c.cc (in Unicode 17 all

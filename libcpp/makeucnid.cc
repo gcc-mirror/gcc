@@ -17,7 +17,7 @@ along with this program; see the file COPYING3.  If not see
 
 /* Run this program as
    ./makeucnid ucnid.tab UnicodeData.txt DerivedNormalizationProps.txt \
-      DerivedCoreProperties.txt > ucnid.h
+      DerivedCoreProperties.txt PropList.txt > ucnid.h
 */
 
 #include <stdio.h>
@@ -34,10 +34,11 @@ enum {
   N11 = 16,
   CXX23 = 32,
   NXX23 = 64,
-  all_languages = C99 | CXX | C11 | CXX23 | NXX23,
-  not_NFC = 128,
-  not_NFKC = 256,
-  maybe_not_NFC = 512
+  NONC = 128,
+  all_languages = C99 | CXX | C11 | CXX23 | NXX23 | NONC,
+  not_NFC = 256,
+  not_NFKC = 512,
+  maybe_not_NFC = 1024
 };
 
 #define NUM_CODE_POINTS 0x110000
@@ -311,6 +312,75 @@ read_derivedcore (char *fname)
   fclose (f);
 }
 
+/* Read PropList.txt and fill in languages version in
+   flags from the ID_Compat_Math_Start and ID_Compat_Math_Continue
+   properties.  */
+
+static void
+read_proplist (char *fname)
+{
+  FILE * f = fopen (fname, "r");
+
+  if (!f)
+    fail ("opening PropList.txt");
+  for (;;)
+    {
+      char line[256];
+      unsigned long codepoint_start, codepoint_end;
+      char *l;
+      int i, j;
+
+      if (!fgets (line, sizeof (line), f))
+	break;
+      if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
+	continue;
+      codepoint_start = strtoul (line, &l, 16);
+      if (l == line)
+	fail ("parsing PropList.txt, reading code point");
+      if (codepoint_start > MAX_CODE_POINT)
+	fail ("parsing PropList.txt, code point too large");
+
+      if (*l == '.' && l[1] == '.')
+	{
+	  char *l2 = l + 2;
+	  codepoint_end = strtoul (l + 2, &l, 16);
+	  if (l == l2 || codepoint_end < codepoint_start)
+	    fail ("parsing PropList.txt, reading code point");
+	  if (codepoint_end > MAX_CODE_POINT)
+	    fail ("parsing PropList.txt, code point too large");
+	}
+      else
+	codepoint_end = codepoint_start;
+
+      while (*l == ' ')
+	l++;
+      if (*l++ != ';')
+	fail ("parsing PropList.txt, reading code point");
+
+      while (*l == ' ')
+	l++;
+
+      if (codepoint_end < 0x80)
+	continue;
+
+      if (strncmp (l, "ID_Compat_Math_Start ", 21) == 0)
+	{
+	  for (; codepoint_start <= codepoint_end; codepoint_start++)
+	    flags[codepoint_start]
+	      = (flags[codepoint_start] | CXX23 | NONC) & ~NXX23;
+	}
+      else if (strncmp (l, "ID_Compat_Math_Continue ", 24) == 0)
+	{
+	  for (; codepoint_start <= codepoint_end; codepoint_start++)
+	    if ((flags[codepoint_start] & CXX23) == 0)
+	      flags[codepoint_start] |= CXX23 | NXX23 | NONC;
+	}
+    }
+  if (ferror (f))
+    fail ("reading PropList.txt");
+  fclose (f);
+}
+
 /* Write out the table.
    The table consists of two words per entry.  The first word is the flags
    for the unicode code points up to and including the second word.  */
@@ -331,7 +401,7 @@ write_table (void)
 	|| really_safe != (decomp[i][0] == 0)
 	|| combining_value[i] != last_combine)
       {
-	printf ("{ %s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s, %3d, %#06x },\n",
+	printf ("{ %s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s, %3d, %#06x },\n",
 		last_flag & C99 ? "C99" : "  0",
 		last_flag & N99 ? "N99" : "  0",
 		last_flag & CXX ? "CXX" : "  0",
@@ -343,6 +413,7 @@ write_table (void)
 		last_flag & not_NFC ? "  0" : "NFC",
 		last_flag & not_NFKC ? "  0" : "NKC",
 		last_flag & maybe_not_NFC ? "CTX" : "  0",
+		last_flag & NONC ? "NONC" : "   0",
 		combining_value[i - 1],
 		i - 1);
 	last_flag = flags[i];
@@ -511,12 +582,13 @@ write_copyright (void)
 int
 main(int argc, char ** argv)
 {
-  if (argc != 5)
+  if (argc != 6)
     fail ("too few arguments to makeucn");
   read_ucnid (argv[1]);
   read_table (argv[2]);
   read_derived (argv[3]);
   read_derivedcore (argv[4]);
+  read_proplist (argv[5]);
 
   write_copyright ();
   write_table ();
