@@ -983,15 +983,16 @@
 ;; ---- [INT] Unpredicated high-part multiplication
 ;; -------------------------------------------------------------------------
 
-;; SVE2 unpredicated SMULH/UMULH.
+;; SVE2 unpredicated SMULH/UMULH.  V2DI is included so that the Advanced
+;; SIMD high-part multiply optabs can be implemented on top of SVE.
 (define_insn "@aarch64_sve2_<optab><mode>"
-  [(set (match_operand:SVE_I 0 "register_operand" "=w")
-	(unspec:SVE_I
-	  [(match_operand:SVE_I 1 "register_operand" "w")
-	   (match_operand:SVE_I 2 "register_operand" "w")]
+  [(set (match_operand:SVE_I_SIMD_DI 0 "register_operand" "=w")
+	(unspec:SVE_I_SIMD_DI
+	  [(match_operand:SVE_I_SIMD_DI 1 "register_operand" "w")
+	   (match_operand:SVE_I_SIMD_DI 2 "register_operand" "w")]
 	  MUL_HIGHPART))]
   "TARGET_SVE2"
-  "<su>mulh\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
+  "<su>mulh\t%Z0.<Vetype>, %Z1.<Vetype>, %Z2.<Vetype>"
   [(set_attr "sve_type" "sve_int_mul")]
 )
 

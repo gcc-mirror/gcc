@@ -4881,13 +4881,16 @@
 ;; -------------------------------------------------------------------------
 
 ;; Unpredicated highpart multiplication.
+;; Advanced SIMD has no vector DImode high-part multiply, but SVE does.
+;; Make use of the overlap between Z and V registers to implement the V2DI
+;; optab for TARGET_SVE, in the same way as the mul<mode>3 expander above.
 (define_expand "<su>mul<mode>3_highpart"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_I_SIMD_DI 0 "register_operand")
+	(unspec:SVE_I_SIMD_DI
 	  [(match_dup 3)
-	   (unspec:SVE_I
-	     [(match_operand:SVE_I 1 "register_operand")
-	      (match_operand:SVE_I 2 "register_operand")]
+	   (unspec:SVE_I_SIMD_DI
+	     [(match_operand:SVE_I_SIMD_DI 1 "register_operand")
+	      (match_operand:SVE_I_SIMD_DI 2 "register_operand")]
 	     MUL_HIGHPART)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
@@ -4898,22 +4901,22 @@
 
 ;; Predicated highpart multiplication.
 (define_insn_and_split "@aarch64_pred_<optab><mode>"
-  [(set (match_operand:SVE_I 0 "register_operand")
-	(unspec:SVE_I
+  [(set (match_operand:SVE_I_SIMD_DI 0 "register_operand")
+	(unspec:SVE_I_SIMD_DI
 	  [(match_operand:<VPRED> 1 "register_operand")
-	   (unspec:SVE_I
-	     [(match_operand:SVE_I 2 "register_operand")
-	      (match_operand:SVE_I 3 "register_operand")]
+	   (unspec:SVE_I_SIMD_DI
+	     [(match_operand:SVE_I_SIMD_DI 2 "register_operand")
+	      (match_operand:SVE_I_SIMD_DI 3 "register_operand")]
 	     MUL_HIGHPART)]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE"
   {@ [ cons: =0 , 1   , %2 , 3 ; attrs: movprfx ]
-     [ w        , Upl , 0  , w ; *              ] <su>mulh\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
-     [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;<su>mulh\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+     [ w        , Upl , 0  , w ; *              ] <su>mulh\t%Z0.<Vetype>, %1/m, %Z0.<Vetype>, %Z3.<Vetype>
+     [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%Z0, %Z2\;<su>mulh\t%Z0.<Vetype>, %1/m, %Z0.<Vetype>, %Z3.<Vetype>
   }
   "TARGET_SVE2"
   [(set (match_dup 0)
-	(unspec:SVE_I
+	(unspec:SVE_I_SIMD_DI
 	  [(match_dup 2)
 	   (match_dup 3)]
 	  MUL_HIGHPART))]
