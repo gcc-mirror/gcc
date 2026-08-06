@@ -14,5 +14,5 @@ const char32_t *c = U"\N{ I've just made it up }";	/* { dg-error "'\\\\N\\{' not
 const char32_t *d = U"\N{_________    _______}";	/* { dg-error "is not a valid universal character" } */
 const char32_t *e = U"\N{O.X}";				/* { dg-error "'\\\\N\\{' not terminated with '\\}' after" } */
 const char32_t *f = U"\N{.}";				/* { dg-error "'\\\\N\\{' not terminated with '\\}' after" } */
-const char32_t *g = U"\N{BOM}";				/* { dg-error "is not a valid universal character" } */
-const char32_t *h = U"\N{ZWNBSP}";			/* { dg-error "is not a valid universal character" } */
+const char32_t *g = U"\N{BOM}";
+const char32_t *h = U"\N{ZWNBSP}";

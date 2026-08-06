@@ -563,8 +563,8 @@
 
 #ifndef __cpp_named_character_escapes
 #  error "__cpp_named_character_escapes"
-#elif __cpp_named_character_escapes != 202207
-#  error "__cpp_named_character_escapes != 202207"
+#elif __cpp_named_character_escapes != 202606
+#  error "__cpp_named_character_escapes != 202606"
 #endif
 
 #ifndef __cpp_static_call_operator

@@ -220,14 +220,7 @@ read_table (char *fname, bool aliases_p)
 
       aname = NULL;
       if (aliases_p)
-	{
-	  /* Ignore figment and abbreviation aliases.  */
-	  if (strcmp (l + 1, "correction\n") != 0
-	      && strcmp (l + 1, "control\n") != 0
-	      && strcmp (l + 1, "alternate\n") != 0)
-	    continue;
-	  i = ARRAY_SIZE (generated_ranges);
-	}
+	i = ARRAY_SIZE (generated_ranges);
       else
 	{
 	  for (i = 0; i < ARRAY_SIZE (generated_ranges); ++i)

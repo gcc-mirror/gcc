@@ -73,7 +73,7 @@
 #define __cpp_lambdas 200907L			// { dg-error "'__cpp_lambdas' redefined" "" { target c++20 } }
 #define __cpp_modules 201907L			// { dg-error "'__cpp_modules' redefined" "" { target c++20 } }
 #define __cpp_multidimensional_subscript 202211L // { dg-error "'__cpp_multidimensional_subscript' redefined" "" { target c++23 } }
-#define __cpp_named_character_escapes 202207L	// { dg-error "'__cpp_named_character_escapes' redefined" "" { target c++23 } }
+#define __cpp_named_character_escapes 202606L	// { dg-error "'__cpp_named_character_escapes' redefined" "" { target c++23 } }
 #define __cpp_namespace_attributes 201411L	// { dg-error "'__cpp_namespace_attributes' redefined" "" { target c++20 } }
 #define __cpp_noexcept_function_type 201510L	// { dg-error "'__cpp_noexcept_function_type' redefined" "" { target c++20 } }
 #define __cpp_nontype_template_args 201911L	// { dg-error "'__cpp_nontype_template_args' redefined" "" { target c++17 } }

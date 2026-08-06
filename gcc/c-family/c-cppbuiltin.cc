@@ -1100,7 +1100,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	    cpp_define (pfile, "__cpp_constexpr=202211L");
 	  cpp_define (pfile, "__cpp_deduction_guides=202207L");
 	  cpp_define (pfile, "__cpp_multidimensional_subscript=202211L");
-	  cpp_define (pfile, "__cpp_named_character_escapes=202207L");
+	  cpp_define (pfile, "__cpp_named_character_escapes=202606L");
 	  cpp_define (pfile, "__cpp_static_call_operator=202207L");
 	  cpp_define (pfile, "__cpp_implicit_move=202207L");
 	  cpp_define (pfile, "__cpp_explicit_this_parameter=202110L");
