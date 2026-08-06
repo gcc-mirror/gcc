@@ -1813,11 +1813,28 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
   else
     bb = get_immediate_dominator (CDI_DOMINATORS, start_bb);
 
+  bool abnormal_dominator = false;
   // Search until a value is found, pushing blocks which may need calculating.
   for ( ; bb; prev_bb = bb, bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
-      // Accumulate any block exit inferred ranges.
-      infer_oracle ().maybe_adjust_range (infer, name, bb);
+      if (has_abnormal_call_or_eh_pred_edge_p (prev_bb))
+	abnormal_dominator = true;
+
+      // find the taken outgoing edge and check if it is abnormal.
+      if (!abnormal_dominator)
+	{
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    if (dominated_by_p (CDI_DOMINATORS, prev_bb, e->dest))
+	      {
+		if (e->flags & (EDGE_ABNORMAL | EDGE_EH))
+		  abnormal_dominator = true;
+		break;
+	      }
+	  // Accumulate any block exit inferred ranges.
+	  infer_oracle ().maybe_adjust_range (infer, name, bb);
+	}
 
       // This block has an outgoing range.
       if (gori ().has_edge_range_p (name, bb))
@@ -1904,9 +1921,8 @@ ranger_cache::range_from_dom (vrange &r, tree name, basic_block start_bb,
 	}
     }
 
-  // Apply non-null if appropriate.
-  if (!has_abnormal_call_or_eh_pred_edge_p (start_bb))
-    r.intersect (infer);
+  // Apply any inferred ranges discovered.
+  r.intersect (infer);
 
   if (DEBUG_RANGE_CACHE)
     {
