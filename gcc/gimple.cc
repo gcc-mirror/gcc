@@ -3153,9 +3153,17 @@ nonbarrier_call_p (gimple *call)
    This routine only makes a superficial check for a dereference.  Thus
    it must only be used if it is safe to return a false negative.  */
 static bool
-check_loadstore (gimple *, tree op, tree, void *data)
+check_loadstore (gimple *stmt, tree op, tree, void *data)
 {
-  if (TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+  if (TREE_CODE (op) == MEM_REF
+      || (TREE_CODE (op) == TARGET_MEM_REF
+	  && !TMR_INDEX2 (op)
+	  && (!TMR_INDEX (op)
+	      || (TMR_STEP (op)
+		  && expr_not_equal_to (TMR_STEP (op),
+					wi::one (TYPE_PRECISION (TREE_TYPE
+							(TMR_STEP (op)))),
+					stmt)))))
     {
       /* Some address spaces may legitimately dereference zero.  */
       addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (op));
