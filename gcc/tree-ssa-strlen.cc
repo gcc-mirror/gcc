@@ -3995,19 +3995,7 @@ use_in_zero_equality (tree res, bool exclusive)
       if (gimple_code (use_stmt) == GIMPLE_ASSIGN)
 	{
 	  tree_code code = gimple_assign_rhs_code (use_stmt);
-	  if (code == COND_EXPR)
-	    {
-	      tree cond_expr = gimple_assign_rhs1 (use_stmt);
-	      if ((TREE_CODE (cond_expr) != EQ_EXPR
-		   && (TREE_CODE (cond_expr) != NE_EXPR))
-		  || !integer_zerop (TREE_OPERAND (cond_expr, 1)))
-		{
-		  if (exclusive)
-		    return NULL;
-		  continue;
-		}
-	    }
-	  else if (code == EQ_EXPR || code == NE_EXPR)
+	  if (code == EQ_EXPR || code == NE_EXPR)
 	    {
 	      if (!integer_zerop (gimple_assign_rhs2 (use_stmt)))
 		{
