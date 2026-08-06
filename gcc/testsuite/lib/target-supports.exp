@@ -9302,6 +9302,20 @@ proc check_effective_target_vect_mulhrs_hi {} {
 		   && [check_effective_target_aarch64_sve2] }]
 }
 
+# Return 1 if the target plus current options supports both signed
+# and unsigned high-part multiplication on vectors of 8-byte integers.
+
+proc check_effective_target_vect_mulh_di {} {
+    return [expr { ([istarget aarch64*-*-*]
+		    && [check_effective_target_aarch64_sve])
+		   || ([istarget riscv*-*-*]
+		       && [check_effective_target_riscv_v])
+		   || ([istarget powerpc*-*-*]
+		       && [check_effective_target_has_arch_pwr10])
+		   || ([istarget loongarch*-*-*]
+		       && [check_effective_target_loongarch_sx]) }]
+}
+
 # Return 1 if the target plus current options supports signed division
 # by power-of-2 operations on vectors of 4-byte integers.
 

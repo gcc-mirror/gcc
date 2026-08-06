@@ -3412,11 +3412,11 @@ vect_recog_mulhs_pattern (vec_info *vinfo,
 	    (ifn, new_vectype, OPTIMIZE_FOR_SPEED))
     return NULL;
 
-  /* The IR requires a valid vector type for the cast result, even though
-     it's likely to be discarded.  */
+  /* The result is cast back to LHS_TYPE, a cast that the over-widening
+     machinery then removes.  LHS_TYPE need not have a vector type, as for the
+     128-bit product of a 64-bit high-part multiply, so leave *TYPE_OUT null
+     rather than giving up.  */
   *type_out = get_vectype_for_scalar_type (vinfo, lhs_type);
-  if (!*type_out)
-    return NULL;
 
   /* Generate the IFN_MULHRS call.  */
   tree new_var = vect_recog_temp_ssa_var (new_type, NULL);
