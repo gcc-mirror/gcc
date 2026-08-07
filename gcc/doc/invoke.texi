@@ -1393,7 +1393,6 @@ See RS/6000 and PowerPC Options.
 -mblock-move-inline-limit=@var{num}
 -mblock-compare-inline-limit=@var{num}
 -mblock-compare-inline-loop-limit=@var{num}
--mblock-ops-vector-pair -mno-block-ops-vector-pair
 -mblock-ops-unaligned-vsx
 -mstring-compare-inline-limit=@var{num}
 -misel  -mvsx  -mvrsave  -mmulhw  -mdlmzb  -mprototype
@@ -32641,14 +32640,6 @@ are less than or equal to @var{num} bytes, but greater than the limit
 for non-loop inline block compare expansion.  If the block length is not
 constant, at most @var{num} bytes are compared before @code{memcmp}
 is called to compare the remainder of the block.  The default value is
-target-specific.
-
-@opindex mblock-ops-vector-pair
-@opindex mno-block-ops-vector-pair
-@item -mblock-ops-vector-pair
-@itemx -mno-block-ops-vector-pair
-Generate/do not generate load vector pair and store vector pair
-instructions for string and memory operations.  The default value is
 target-specific.
 
 @opindex mstring-compare-inline-limit
