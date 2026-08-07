@@ -326,7 +326,7 @@ public:
   // In-place operators.
   virtual bool union_ (const vrange &) override;
   virtual bool intersect (const vrange &) override;
-  void invert ();
+  bool invert ();
 
   // Operator overloads.
   irange& operator= (const irange &);
@@ -435,7 +435,7 @@ public:
   bool operator== (const prange &) const;
   void set (tree type, const wide_int &, const wide_int &,
 	    value_range_kind = VR_RANGE);
-  void invert ();
+  bool invert ();
   bool contains_p (const wide_int &) const;
   wide_int lower_bound () const;
   wide_int upper_bound () const;

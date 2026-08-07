@@ -1350,7 +1350,8 @@ simplify_using_ranges::simplify_switch_using_ranges (gswitch *stmt)
       // Add case label to the keep list.
       cases.safe_push (x);
       // Remove case_range from needing to be handled by the default.
-      case_range.invert ();
+      if (!case_range.invert ())
+	return false;
       default_range.intersect (case_range);
     }
 

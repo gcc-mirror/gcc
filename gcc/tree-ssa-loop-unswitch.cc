@@ -116,7 +116,13 @@ struct unswitch_predicate
     false_range = true_range;
     if (!false_range.varying_p ()
 	&& !false_range.undefined_p ())
-      false_range.invert ();
+      {
+	if (!false_range.invert ())
+	  {
+	    true_range.set_varying (TREE_TYPE (lhs));
+	    false_range.set_varying (TREE_TYPE (lhs));
+	  }
+      }
     count = e->count ();
     num = predicates->length ();
     predicates->safe_push (this);

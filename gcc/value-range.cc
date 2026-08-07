@@ -126,7 +126,8 @@ irange_bitmask::range_from_mask (irange &r, tree type) const
   // Remove the valid value from the excluded range and form an anti-range.
   wide_int allow = value () & ub;
   mask_range.intersect (int_range<2> (type, allow, allow, VR_ANTI_RANGE));
-  mask_range.invert ();
+  bool res = mask_range.invert ();
+  gcc_checking_assert (res);
   r.intersect (mask_range);
 
   if (TYPE_SIGN (type) == SIGNED)
@@ -138,7 +139,8 @@ irange_bitmask::range_from_mask (irange &r, tree type) const
       // Remove the one allowed value from that set.
       wide_int allow = value () | lb;
       mask_range.intersect (int_range<2> (type, allow, allow, VR_ANTI_RANGE));
-      mask_range.invert ();
+      res = mask_range.invert ();
+      gcc_checking_assert (res);
       r.intersect (mask_range);
     }
   return true;
@@ -882,14 +884,18 @@ prange::operator== (const prange &src) const
 }
 
 
-void
+// Return the inverse of a range.  Return false if thre is no invert
+// calculatable.
+
+bool
 prange::invert ()
 {
-  gcc_checking_assert (!undefined_p () && !varying_p ());
+  if (undefined_p () || varying_p ())
+    return false;
 
   // Invert the points_to object. If that worked, this is done.
   if (pt_invert ())
-    return;
+    return true;
   else
     set_pt_unknown ();
 
@@ -918,6 +924,7 @@ prange::invert ()
     }
   else
     set_varying (type ());
+  return true;
 }
 
 void
@@ -2723,12 +2730,18 @@ add_one (const wide_int &x, tree type, wi::overflow_type &overflow)
     return wi::add (x, 1, UNSIGNED, &overflow);
 }
 
-// Return the inverse of a range.
+// Return the inverse of a range.  Return false if thre is no invert
+// calculatable.
 
-void
+bool
 irange::invert ()
 {
-  gcc_checking_assert (!undefined_p () && !varying_p ());
+  // UNDEFINED cannot be converted to varying because there is no type
+  // assocaited.  Callers need to handle these cases.
+  // Its also ambiguous.. VARYING inverted could also arguably be VARYING
+  // in some cases. Likewise with UNDEFINED.
+  if (undefined_p () || varying_p ())
+    return false;
 
   // We always need one more set of bounds to represent an inverse, so
   // if we're at the limit, we can't properly represent things.
@@ -2737,7 +2750,7 @@ irange::invert ()
   // [5, 10][20, 30], we would need a 3 sub-range set
   // [-MIN, 4][11, 19][31, MAX].
   //
-  // In this case, return the most conservative thing.
+  // In this case, return false.
   //
   // However, if any of the extremes of the range are -MIN/+MAX, we
   // know we will not need an extra bound.  For example:
@@ -2805,10 +2818,19 @@ irange::invert ()
   if (type_max != orig_range.m_base[i])
     {
       tmp = add_one (orig_range.m_base[i], ttype, ovf);
-      m_base[nitems++] = tmp;
-      m_base[nitems++] = type_max;
-      if (ovf)
-	nitems -= 2;
+      if (!ovf)
+	{
+	  // Check to see if this inversion is going to work.
+	  if (nitems / 2 >= m_max_ranges)
+	    {
+	      // No room for the extra field, so revert to the original value
+	      // and return false.
+	      *this = orig_range;
+	      return false;
+	    }
+	  m_base[nitems++] = tmp;
+	  m_base[nitems++] = type_max;
+	}
     }
   m_num_ranges = nitems / 2;
 
@@ -2818,6 +2840,7 @@ irange::invert ()
 
   if (flag_checking)
     verify_range ();
+  return true;
 }
 
 // This routine will take the bounds [LB, UB], and apply the bitmask to those
@@ -2912,7 +2935,8 @@ irange::snap_subranges ()
   // Remove any subranges which are no invalid.
   if (!invalid.undefined_p ())
     {
-      invalid.invert ();
+      bool res = invalid.invert ();
+      gcc_checking_assert (res);
       intersect (invalid);
     }
   return changed;
@@ -3318,6 +3342,9 @@ range_tests_int_range_max ()
   big.intersect (tmp);
   ASSERT_TRUE (big.num_pairs () == 4);
 
+  // Cannot resize tmp, and the invert does not fit,
+  ASSERT_FALSE (tmp.invert ());
+
   // Test that [10,10][20,20] does NOT contain 15.
   {
     int_range_max i1 = range_int (10, 10);
@@ -3469,6 +3496,7 @@ test_irange_snap_bounds ()
 static void
 range_tests_misc ()
 {
+  bool res;
   tree u128_type = build_nonstandard_integer_type (128, /*unsigned=*/1);
   int_range<2> i1, i2, i3;
   int_range<2> r0, r1, rold;
@@ -3493,11 +3521,11 @@ range_tests_misc ()
     int_range<2> max = int_range<2> (one_bit_type, one_bit_max, one_bit_max);
     int_range<2> t;
     t = min;
-    t.invert ();
-    ASSERT_TRUE (t == max);
+    res = t.invert ();
+    ASSERT_TRUE (res && t == max);
     t = max;
-    t.invert ();
-    ASSERT_TRUE (t == min);
+    res = t.invert ();
+    ASSERT_TRUE (res && t == min);
   }
 
   // Test that NOT(255) is [0..254] in 8-bit land.
@@ -3522,8 +3550,8 @@ range_tests_misc ()
   r1 = int_range<1> (u128_type,
 		     wi::uhwi (128, 128),
 		     wi::sub (wi::minus_one (128), wi::uhwi (128, 128)));
-  r0.invert ();
-  ASSERT_TRUE (r0 == r1);
+  res = r0.invert ();
+  ASSERT_TRUE (res && r0 == r1);
 
   r0.set_varying (integer_type_node);
   wide_int minint = r0.lower_bound ();
@@ -3536,7 +3564,8 @@ range_tests_misc ()
 
   // Check that ~[0,5] => [6,MAX] for unsigned int.
   r0 = range_uint (0, 5);
-  r0.invert ();
+  res = r0.invert ();
+  ASSERT_TRUE (res);
   ASSERT_TRUE (r0 == int_range<1> (unsigned_type_node,
 				   wi::uhwi (6, TYPE_PRECISION (unsigned_type_node)),
 				   maxuint));
@@ -3545,8 +3574,8 @@ range_tests_misc ()
   r0 = int_range<1> (unsigned_type_node,
 		     wi::uhwi (10, TYPE_PRECISION (unsigned_type_node)),
 		     maxuint);
-  r0.invert ();
-  ASSERT_TRUE (r0 == range_uint (0, 9));
+  res = r0.invert ();
+  ASSERT_TRUE (res && r0 == range_uint (0, 9));
 
   // Check that ~[0,5] => [6,MAX] for unsigned 128-bit numbers.
   r0 = range_uint128 (0, 5, VR_ANTI_RANGE);
@@ -3578,17 +3607,17 @@ range_tests_misc ()
   r2 = int_range<1> (integer_type_node, minint, INT(9));
   r2.union_ (int_range<1> (integer_type_node, INT(21), maxint));
   ASSERT_FALSE (r2.undefined_p ());
-  r1.invert ();
-  ASSERT_TRUE (r1 == r2);
+  res = r1.invert ();
+  ASSERT_TRUE (res && r1 == r2);
   // Test that NOT(NOT(x)) == x.
-  r2.invert ();
-  ASSERT_TRUE (r0 == r2);
+  res = r2.invert ();
+  ASSERT_TRUE (res && r0 == r2);
 
   // Test that booleans and their inverse work as expected.
   r0.set_zero (boolean_type_node);
   ASSERT_TRUE (r0 == range_false ());
-  r0.invert ();
-  ASSERT_TRUE (r0 == range_true ());
+  res = r0.invert ();
+  ASSERT_TRUE (res && r0 == range_true ());
 
   // Make sure NULL and non-NULL of pointer types work, and that
   // inverses of them are consistent.
@@ -3596,9 +3625,10 @@ range_tests_misc ()
   prange p0;
   p0.set_zero (voidp);
   prange p1 = p0;
-  p0.invert ();
-  p0.invert ();
-  ASSERT_TRUE (p0 == p1);
+  res = p0.invert ();
+  ASSERT_TRUE (res);
+  res = p0.invert ();
+  ASSERT_TRUE (res && p0 == p1);
 
   // The intersection of:
   //    [0, +INF] MASK 0xff..00 VALUE 0xf8
@@ -3657,7 +3687,8 @@ range_tests_misc ()
 
   // Test contains_zero_p().
   r0 = range_int (0, 0);
-  r0.invert ();
+  res = r0.invert ();
+  ASSERT_TRUE (res);
   ASSERT_FALSE (r0.contains_zero_p ());
 
   // r0 = ~[1,1]

@@ -848,7 +848,8 @@ cfn_toupper_tolower::fold_range (irange &r, tree type, const irange &lh,
     {
       // Return the range passed in without any lower case characters,
       // but including all the upper case ones.
-      lowers.invert ();
+      bool res = lowers.invert ();
+      gcc_checking_assert (res);
       r.intersect (lowers);
       r.union_ (uppers);
     }
@@ -856,7 +857,8 @@ cfn_toupper_tolower::fold_range (irange &r, tree type, const irange &lh,
     {
       // Return the range passed in without any lower case characters,
       // but including all the upper case ones.
-      uppers.invert ();
+      bool res = uppers.invert ();
+      gcc_checking_assert (res);
       r.intersect (uppers);
       r.union_ (lowers);
     }

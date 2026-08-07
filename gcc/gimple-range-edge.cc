@@ -166,7 +166,8 @@ gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
 	default_range.set_undefined ();
       else
 	{
-	  def_range.invert ();
+	  bool res = def_range.invert ();
+	  gcc_checking_assert (res);
 	  default_range.intersect (def_range);
 	}
 

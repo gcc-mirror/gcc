@@ -1124,7 +1124,8 @@ operator_equal::op1_range (irange &r, tree type,
 	  && wi::eq_p (op2.lower_bound(), op2.upper_bound()))
 	{
 	  r = op2;
-	  r.invert ();
+	  if (!r.invert ())
+	    return false;
 	}
       else
 	r.set_varying (type);
@@ -1227,7 +1228,8 @@ operator_not_equal::op1_range (irange &r, tree type,
 	  && wi::eq_p (op2.lower_bound(), op2.upper_bound()))
 	{
 	  r = op2;
-	  r.invert ();
+	  if (!r.invert ())
+	    return false;
 	}
       else
 	r.set_varying (type);
@@ -2981,7 +2983,8 @@ operator_rshift::op1_range (irange &r,
       r.union_ (ub);
       if (!lhs_refined.contains_zero_p ())
 	{
-	  mask_range.invert ();
+	  if (!mask_range.invert ())
+	    return false;
 	  r.intersect (mask_range);
 	}
       return true;
@@ -4517,8 +4520,10 @@ operator_logical_not::fold_range (irange &r, tree type,
 
   r = lh;
   if (!lh.varying_p () && !lh.undefined_p ())
-    r.invert ();
-
+    {
+      if (!r.invert ())
+	return false;
+    }
   return true;
 }
 
