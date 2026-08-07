@@ -2365,7 +2365,7 @@ zero_to_inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
    So, for op1_range/op2_range extend the lhs range by 1ulp (or 0.5ulp)
    in each direction.  See PR109008 for more details.  */
 
-static frange
+frange
 float_widen_lhs_range (tree type, const frange &lhs)
 {
   frange ret = lhs;
