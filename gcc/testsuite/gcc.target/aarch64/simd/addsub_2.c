@@ -43,7 +43,7 @@ void d1 (_Float16 *restrict a, _Float16 *restrict b, _Float16 *res, int n)
 ** ...
 ** 	fsub	v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.2d
 ** 	fadd	v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.2d
-** 	ins	v[0-9]+.d\[1\], v[0-9]+.d\[1\]
+** 	ins	v[0-9]+.d\[0\], v[0-9]+.d\[0\]
 ** ...
 */
 void e1 (double *restrict a, double *restrict b, double *res, int n)

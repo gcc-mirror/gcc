@@ -1360,6 +1360,32 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
+;; Lane insert for the two-element modes.  A scalar source always occupies
+;; the low part of its register, architectural lane 0.  When the inserted
+;; element is that same lane, the destination can equally be tied to the
+;; source register and the other lane brought in from operand 3, so offer
+;; that as a second alternative and let the register allocator pick
+;; whichever input already occupies the destination.  The remaining
+;; alternatives are those of the general pattern below, so that a scalar
+;; from a general register or from memory is unaffected.
+(define_insn "*aarch64_simd_vec_set_lane0<mode>"
+  [(set (match_operand:VP_2E 0 "register_operand")
+	(vec_merge:VP_2E
+	    (vec_duplicate:VP_2E
+	      (match_operand:<VEL> 1 "aarch64_simd_nonimmediate_operand"))
+	    (match_operand:VP_2E 3 "register_operand")
+	    (match_operand:SI 2 "immediate_operand")))]
+  "TARGET_SIMD && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 2 : 1)"
+  ;; In the second alternative the destination is the scalar's own register,
+  ;; which already holds it in lane 0, so the other lane comes from operand 3.
+  {@ [ cons: =0 , 1   , 3 ; attrs: type            ]
+     [ w        , w   , 0 ; neon_ins<q>            ] ins\t%0.<Vetype>[0], %1.<Vetype>[0]
+     [ w        , 0   , w ; neon_ins<q>            ] ins\t%0.<Vetype>[1], %3.<Vetype>[1]
+     [ w        , ?r  , 0 ; neon_from_gp<q>        ] ins\t%0.<Vetype>[0], %<vwcore>1
+     [ w        , Utv , 0 ; neon_load1_one_lane<q> ] ld1\t{%0.<Vetype>}[0], %1
+  }
+)
+
 (define_insn "@aarch64_simd_vec_set<mode>"
   [(set (match_operand:VALL_F16 0 "register_operand" "=w,w,w")
 	(vec_merge:VALL_F16
@@ -1428,6 +1454,34 @@
 							 operands[2]));
     operands[2] = GEN_INT ((HOST_WIDE_INT) 1 << elt);
     return "ins\\t%0.<Vetype>[%p2], <vwcore>zr";
+  }
+)
+
+;; Lane copy between two two-element vectors.  When the source and
+;; destination lanes are the same, the copy reads one lane from each input,
+;; so it can equally be done by inserting the live lane of either input into
+;; the other.  Offer both directions and let the register allocator tie
+;; whichever input already occupies the destination, so that neither lane
+;; needs an extra move.  Other lane combinations are left to the general
+;; pattern below, where only the destination can be tied.
+(define_insn "*aarch64_simd_vec_copy_lane_same<mode>"
+  [(set (match_operand:VP_2E 0 "register_operand")
+	(vec_merge:VP_2E
+	    (vec_duplicate:VP_2E
+	      (vec_select:<VEL>
+		(match_operand:VP_2E 3 "register_operand")
+		(parallel
+		  [(match_operand:SI 4 "immediate_operand")])))
+	    (match_operand:VP_2E 1 "register_operand")
+	    (match_operand:SI 2 "immediate_operand")))]
+  "TARGET_SIMD
+   && ENDIAN_LANE_N (2, INTVAL (operands[4])) == 1
+   && INTVAL (operands[2]) == (BYTES_BIG_ENDIAN ? 1 : 2)"
+  ;; In the second alternative the destination is operand 3, which already
+  ;; holds lane 1, so lane 0 comes from operand 1.
+  {@ [ cons: =0 , 1 , 3 ; attrs: type ]
+     [ w        , 0 , w ; neon_ins<q> ] ins\t%0.<Vetype>[1], %3.<Vetype>[1]
+     [ w        , w , 0 ; neon_ins<q> ] ins\t%0.<Vetype>[0], %1.<Vetype>[0]
   }
 )
 
