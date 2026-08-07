@@ -508,7 +508,7 @@ extern void gg_free(tree pointer);
 extern tree gg_strlen(tree psz);
 extern size_t gg_sizeof(tree decl_node);
 
-extern tree gg_array_of_field_pointers( const std::vector<cbl_field_t *> &fields );
+extern tree gg_array_of_field_pointers( const std::vector<const cbl_field_t *> &fields );
 extern tree gg_array_of_bytes( size_t N, unsigned char *values);
 extern tree gg_indirect(tree pointer, tree byte_offset = NULL_TREE);
 extern tree gg_indirect_i(tree pointer, size_t offset=0);

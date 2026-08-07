@@ -109,7 +109,7 @@ typedef struct int128
   {
   __int128 i128;
   int      rdigits;
-  }int128;
+  } int128;
 
 extern "C" void __gg__clock_gettime(struct cbl_timespec *tp);
 

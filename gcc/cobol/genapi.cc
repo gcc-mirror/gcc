@@ -11674,12 +11674,11 @@ gg_array_of_field_pointers( const std::vector<const cbl_field_t *> &fields )
 
   for( size_t i=0; i<N; i++ )
     {
-    gcc_assert( fields[i] != NULL );
-    gcc_assert( fields[i]->var_decl_node != NULL_TREE );
+    tree field_pointer = fields[i] && fields[i]->var_decl_node
+                       ? gg_get_address_of( fields[i]->var_decl_node)
+                       : null_pointer_node;
 
-    tree field_pointer =
-      gg_cast( cblc_field_p_type_node,
-               gg_get_address_of( fields[i]->var_decl_node ) );
+    field_pointer = gg_cast( cblc_field_p_type_node, field_pointer );
 
     CONSTRUCTOR_APPEND_ELT( elts,
                             bitsize_int( i ),
@@ -11693,7 +11692,7 @@ gg_array_of_field_pointers( const std::vector<const cbl_field_t *> &fields )
   TREE_READONLY( retval ) = 1;
   DECL_INITIAL( retval ) = constr;
 
-  return retval;
+  return gg_pointer_to_array(retval);
   }
 
 tree
@@ -11723,9 +11722,7 @@ gg_array_of_uchar_p( const std::vector<tree> &uchar_p )
     }
 
   tree constr = build_constructor( array_type, elts );
-
   tree retval = gg_define_variable( array_type );
-
   TREE_READONLY( retval ) = 1;
   DECL_INITIAL( retval ) = constr;
 
@@ -11788,8 +11785,7 @@ parser_sort(cbl_refer_t tableref,
       }
     }
 
-  tree all_keys = gg_pointer_to_array(
-                     gg_array_of_field_pointers(flattened_fields_2));
+  tree all_keys = gg_array_of_field_pointers(flattened_fields_2);
 
   // Create the array of integers that are the flags for ASCENDING:
   tree ascending = gg_array_of_size_t(flattened_ascending_2 );
@@ -11911,8 +11907,7 @@ parser_file_sort(   cbl_file_t *workfile,
     }
 
   // Create the array of cbl_field_t pointers for the keys
-  tree all_keys = gg_pointer_to_array(
-                     gg_array_of_field_pointers(flattened_fields_2));
+  tree all_keys = gg_array_of_field_pointers(flattened_fields_2);
 
   // Create the array of integers that are the flags for ASCENDING:
   tree ascending = gg_array_of_size_t(flattened_ascending_2 );
@@ -12246,8 +12241,7 @@ parser_file_merge(  cbl_file_t *workfile,
     }
 
   // Create the array of cbl_field_t pointers for the keys
-  tree all_keys = gg_pointer_to_array(
-                     gg_array_of_field_pointers(flattened_fields_2));
+  tree all_keys =  gg_array_of_field_pointers(flattened_fields_2);
 
   // Create the array of integers that are the flags for ASCENDING:
   tree ascending = gg_array_of_size_t(flattened_ascending_2 );

@@ -253,24 +253,9 @@ subtraction_helper_float(GCOB_FP128 a_value,
   return a_value;
   }
 
-extern "C"
-void
-__gg__pow(  cbl_arith_format_t,
-            size_t,
-      const cblc_referlet_t *A,
-            size_t,
-      const cblc_referlet_t *B,
-            size_t,
-      const cblc_referlet_t *C,
-      const cbl_round_t  *rounded,
-            int           on_error_flag,
-            int          *compute_error
-            )
+static GCOB_FP128
+exponentiation_helper(GCOB_FP128 avalue, GCOB_FP128 bvalue, int *compute_error)
   {
-  GCOB_FP128 avalue =
-      __gg__float128_from_qualified_field(A[0].field, A[0].offset, A[0].size);
-  GCOB_FP128 bvalue =
-      __gg__float128_from_qualified_field(B[0].field, B[0].offset, B[0].size);
   GCOB_FP128 tgt_value;
 
   if( avalue == 0 && bvalue == 0 )
@@ -304,6 +289,30 @@ __gg__pow(  cbl_arith_format_t,
       tgt_value = 0;
       }
     }
+  return tgt_value;
+  }
+
+extern "C"
+void
+__gg__pow(  cbl_arith_format_t,
+            size_t,
+      const cblc_referlet_t *A,
+            size_t,
+      const cblc_referlet_t *B,
+            size_t,
+      const cblc_referlet_t *C,
+      const cbl_round_t  *rounded,
+            int           on_error_flag,
+            int          *compute_error
+            )
+  {
+  GCOB_FP128 avalue =
+      __gg__float128_from_qualified_field(A[0].field, A[0].offset, A[0].size);
+  GCOB_FP128 bvalue =
+      __gg__float128_from_qualified_field(B[0].field, B[0].offset, B[0].size);
+
+  GCOB_FP128 tgt_value = exponentiation_helper(avalue, bvalue, compute_error);
+
   if( !(*compute_error & compute_error_exp_minus_by_frac) )
     {
     *compute_error |= conditional_stash(C[0].field,
@@ -320,7 +329,7 @@ void
 __gg__process_compute_error(int compute_error)
   {
   // This routine gets called after a series of parser_op operations is
-  // complete (see parser_assign()) when the source code didn't specify
+ // complete (see parser_assign()) when the source code didn't specify
   // an ON SIZE ERROR clause.
   if( compute_error & compute_error_divide_by_zero)
     {
@@ -357,7 +366,7 @@ typedef struct int256
   {
   uint64_t i64[4];
   int rdigits;
-  }int256;
+  } int256;
 
 static inline uint64_t
 uint128_lo64(uint128 value)
@@ -1325,7 +1334,6 @@ void multiply_int128_by_int128(int256 &ABCD,
     negate_int256(ABCD);
     }
   ABCD.rdigits = ab_value.rdigits + cd_value.rdigits;
-
   }
 
 extern "C"
@@ -1754,7 +1762,6 @@ divide_int128_by_int128(int256   &quotient,
     }
   }
 
-
 extern "C"
 void
 __gg__dividef1_phase2(cbl_arith_format_t ,
@@ -2115,3 +2122,442 @@ __gg__dividef45(cbl_arith_format_t ,
     }
   }
 
+static int
+multiply_int256_by_int256(int256 &left, const int256 &right)
+  {
+  int retval = 0;
+  // The inputs have both been squeezed into 128 bits.
+  int128 l128;
+  int128 r128;
+
+  l128.i128    = int256_get_u128(left, 0);
+  l128.rdigits = left.rdigits;
+
+  r128.i128   = int256_get_u128(right, 0);
+  r128.rdigits = right.rdigits;
+
+  // We need to make both 128-bit operands positive:
+  bool negative = false;
+  if( left.i64[3] & 0x8000000000000000ULL )
+    {
+    negative = !negative;
+    l128.i128 = ~l128.i128 + 1;
+    }
+  if( right.i64[3] & 0x8000000000000000ULL )
+    {
+    negative = !negative;
+    r128.i128 = ~r128.i128 + 1;
+    }
+
+  multiply_int128_by_int128(left, l128, r128);
+
+  if( negative )
+    {
+    // This code takes the two's complement of the 256-bit value:
+    left.i64[0] = ~left.i64[0];
+    left.i64[1] = ~left.i64[1];
+    left.i64[2] = ~left.i64[2];
+    left.i64[3] = ~left.i64[3];
+    // I usually eschew code like this.  But it's just too precious.
+    if(++left.i64[0] == 0)
+    if(++left.i64[1] == 0)
+    if(++left.i64[2] == 0)
+       ++left.i64[3];
+    }
+
+  return retval;
+  }
+
+static int
+divide_int256_by_int256(int256 &left, const int256 &right)
+  {
+  int retval = 0;
+  // The inputs have both been squeezed into 128 bits.
+  int128 l128;
+  int128 r128;
+
+  l128.i128    = int256_get_u128(left, 0);
+  l128.rdigits = left.rdigits;
+
+  r128.i128   = int256_get_u128(right, 0);
+  r128.rdigits = right.rdigits;
+
+  // We need to make both 128-bit operands positive:
+  bool negative = false;
+  if( left.i64[3] & 0x8000000000000000ULL )
+    {
+    negative = !negative;
+    l128.i128 = ~l128.i128 + 1;
+    }
+  if( right.i64[3] & 0x8000000000000000ULL )
+    {
+    negative = !negative;
+    r128.i128 = ~r128.i128 + 1;
+    }
+
+  divide_int128_by_int128(left,
+                          l128.i128,
+                          l128.rdigits,
+                          r128.i128,
+                          r128.rdigits,
+                          &retval);
+
+  if( negative )
+    {
+    // This code takes the two's complement of the 256-bit value:
+    left.i64[0] = ~left.i64[0];
+    left.i64[1] = ~left.i64[1];
+    left.i64[2] = ~left.i64[2];
+    left.i64[3] = ~left.i64[3];
+    // I usually eschew code like this.  But it's just too precious.
+    if(++left.i64[0] == 0)
+    if(++left.i64[1] == 0)
+    if(++left.i64[2] == 0)
+       ++left.i64[3];
+    }
+
+  return retval;
+  }
+
+static std::vector<GCOB_FP128> compute_float_stack;
+static std::vector<int256> compute_fixed_stack;
+
+static int
+compute_fixed_add()
+  {
+  // This is RPN at work, so stack[N-2] += stack[N-1] 
+  int retval = 0;
+
+  size_t level = compute_fixed_stack.size();
+  assert( level >= 2 );
+  int256 left  = compute_fixed_stack[level-2];
+  int256 right = compute_fixed_stack[level-1];
+
+  add_int256_to_int256(left, right);
+
+  compute_fixed_stack[level-2] = left;
+  compute_fixed_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_fixed_subtract()
+  {
+  int retval = 0;
+
+  size_t level = compute_fixed_stack.size();
+  assert( level >= 2 );
+  int256 left  = compute_fixed_stack[level-2];
+  int256 right = compute_fixed_stack[level-1];
+  subtract_int256_from_int256(left, right);
+  compute_fixed_stack[level-2] = left;
+  compute_fixed_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_fixed_multiply()
+  {
+  int retval = 0;
+
+  size_t level = compute_fixed_stack.size();
+  assert( level >= 2 );
+  int256 left  = compute_fixed_stack[level-2];
+  int256 right = compute_fixed_stack[level-1];
+
+  retval |= squeeze_int256(left);
+  retval |= squeeze_int256(right);
+  retval |= multiply_int256_by_int256(left, right);
+
+  compute_fixed_stack[level-2] = left;
+  compute_fixed_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_fixed_divide()
+  {
+  int retval = 0;
+
+  size_t level = compute_fixed_stack.size();
+  assert( level >= 2 );
+  int256 left  = compute_fixed_stack[level-2];
+  int256 right = compute_fixed_stack[level-1];
+
+  retval |= squeeze_int256(left);
+  retval |= squeeze_int256(right);
+  retval |= divide_int256_by_int256(left, right);
+
+  compute_fixed_stack[level-2] = left;
+  compute_fixed_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_fixed_negate()
+  {
+  int retval = 0;
+
+  assert( !compute_fixed_stack.empty() );
+  int256 &left = compute_fixed_stack.back();
+
+  left.i64[0] = ~left.i64[0];
+  left.i64[1] = ~left.i64[1];
+  left.i64[2] = ~left.i64[2];
+  left.i64[3] = ~left.i64[3];
+  // I usually eschew code like this.  But it's just too precious.
+  if(++left.i64[0] == 0)
+  if(++left.i64[1] == 0)
+  if(++left.i64[2] == 0)
+     ++left.i64[3];
+
+  return retval;
+  }
+
+static int
+compute_float_add()
+  {
+  // This is RPN at work, so stack[N-2] += stack[N-1] 
+  int retval = 0;
+
+  size_t level = compute_float_stack.size();
+  assert( level >= 2 );
+  GCOB_FP128 left  = compute_float_stack[level-2];
+  GCOB_FP128 right = compute_float_stack[level-1];
+
+  left = addition_helper_float(left, right, &retval);;
+
+  compute_float_stack[level-2] = left;
+  compute_float_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_float_subtract()
+  {
+  int retval = 0;
+
+  size_t level = compute_float_stack.size();
+  assert( level >= 2 );
+  GCOB_FP128 left  = compute_float_stack[level-2];
+  GCOB_FP128 right = compute_float_stack[level-1];
+
+  left = subtraction_helper_float(left, right, &retval);;
+
+  compute_float_stack[level-2] = left;
+  compute_float_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_float_multiply()
+  {
+  int retval = 0;
+
+  size_t level = compute_float_stack.size();
+  assert( level >= 2 );
+  GCOB_FP128 left  = compute_float_stack[level-2];
+  GCOB_FP128 right = compute_float_stack[level-1];
+
+  left = multiply_helper_float(left, right, &retval);
+
+  compute_float_stack[level-2] = left;
+  compute_float_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_float_divide()
+  {
+  int retval = 0;
+
+  size_t level = compute_float_stack.size();
+  assert( level >= 2 );
+  GCOB_FP128 left  = compute_float_stack[level-2];
+  GCOB_FP128 right = compute_float_stack[level-1];
+
+  left = divide_helper_float(left, right, &retval);
+
+  compute_float_stack[level-2] = left;
+  compute_float_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_float_pow()
+  {
+  int retval = 0;
+
+  size_t level = compute_float_stack.size();
+  assert( level >= 2 );
+  GCOB_FP128 left  = compute_float_stack[level-2];
+  GCOB_FP128 right = compute_float_stack[level-1];
+  
+  left = exponentiation_helper(left, right, &retval);
+
+  compute_float_stack[level-2] = left;
+  compute_float_stack.pop_back();
+  return retval;
+  }
+
+static int
+compute_float_negate()
+  {
+  int retval = 0;
+  assert( !compute_float_stack.empty() );
+  compute_float_stack.back() = -compute_float_stack.back();
+  return retval;
+  }
+
+extern "C"
+int
+__gg__compute_fixed(const char          opstring[],
+                    const cblc_field_t *fields[],
+                    const size_t        offsets[])
+  {
+  int retval = 0;
+  size_t noperations = strlen(opstring);
+
+  // We will compute in fixed-point
+  compute_fixed_stack.clear();
+
+  for(size_t i=0; i<noperations; i++)
+    {
+    char ch = opstring[i];
+    switch(ch)
+      {
+      case 'P':
+        {
+        // We push a value onto the stack:
+        int256 value;
+        get_int256_from_qualified_field(value,
+                                        fields[i],
+                                        offsets[i],
+                                        fields[i]->capacity);
+        compute_fixed_stack.push_back(value);
+        }
+      break;
+
+      case '+':
+        retval |= compute_fixed_add();
+        break;
+
+      case '-':
+        retval |= compute_fixed_subtract();
+        break;
+
+      case '*':
+        retval |= compute_fixed_multiply();
+        break;
+
+      case '/':
+        retval |= compute_fixed_divide();
+        break;
+
+      case '!':
+        retval |= compute_fixed_negate();
+        break;
+
+      case '^':
+        fprintf(stderr, "We shouldn't see an integer a^b compute\n");
+        abort();
+        break;
+      }
+    }
+
+  // The destination was added to the end of the lists
+  cblc_field_t *target = const_cast<cblc_field_t *>(fields[noperations]);
+  size_t target_offset = offsets[noperations];
+
+  assert(compute_fixed_stack.size() == 1);
+  int256 v256 = compute_fixed_stack.back();
+  int overflow = squeeze_int256(v256);
+  if( overflow )
+    {
+    retval |= compute_error_overflow;
+    }
+
+  __int128 value;
+  value   =  v256.i64[1];
+  value <<= 64;
+  value  +=  v256.i64[0];
+
+  __gg__int128_to_qualified_field(target,
+                                  target_offset,
+                                  target->capacity,
+                                  value,
+                                  v256.rdigits,
+                                  truncation_e,
+                                  &retval);
+  return retval;
+  }
+
+extern "C"
+int
+__gg__compute_float(const char          opstring[],
+                    const cblc_field_t *fields[],
+                    const size_t        offsets[])
+  {
+  int retval = 0;
+  size_t noperations = strlen(opstring);
+
+  // We will compute in fixed-point
+  compute_float_stack.clear();
+
+  for(size_t i=0; i<noperations; i++)
+    {
+    char ch = opstring[i];
+    switch(ch)
+      {
+      case 'P':
+        {
+        // We push a value onto the stack:
+        GCOB_FP128 value = 
+                      __gg__float128_from_qualified_field(fields[i],
+                                                          offsets[i],
+                                                          fields[i]->capacity);
+        compute_float_stack.push_back(value);
+        }
+      break;
+
+      case '+':
+        retval |= compute_float_add();
+        break;
+
+      case '-':
+        retval |= compute_float_subtract();
+        break;
+
+      case '*':
+        retval |= compute_float_multiply();
+        break;
+
+      case '/':
+        retval |= compute_float_divide();
+        break;
+
+      case '^':
+        retval |= compute_float_pow();
+        break;
+
+      case '!':
+        retval |= compute_float_negate();
+        break;
+
+      }
+    }
+
+  // The destination was added to the end of the lists
+  cblc_field_t *target = const_cast<cblc_field_t *>(fields[noperations]);
+  size_t target_offset = offsets[noperations];
+
+  assert(compute_float_stack.size() == 1);
+  GCOB_FP128 value = compute_float_stack.back();
+
+  __gg__float128_to_qualified_field(target,
+                                    target_offset,
+                                    value,
+                                    truncation_e,
+                                    &retval);
+  return retval;
+  }

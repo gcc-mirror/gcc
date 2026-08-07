@@ -14137,3 +14137,56 @@ __gg__set_exception_call(const cblc_field_t *field,
                                           field->capacity,
                                           &nbytes);
   }
+
+extern "C"
+int
+__gg__prohibited(const cblc_field_t *field, __int128 value)
+  {
+  // This is the test for ROUNDING MODE PROHIBITED.  Returns non-zero when
+  // value can't fit into field.
+  int retval;
+  if(value < 0)
+    {
+    value = -value;
+    }
+  char ach[128];
+  int index = 0;
+  // Convert value to a stream of "digits", low-order first.
+  while(value)
+    {
+    ach[index++] = value % 10;
+    value /= 10;
+    }
+  if( index <= field->digits )
+    {
+    // We peeled off index digits, and value can hold that many.
+    retval = 0;
+    }
+  else
+    {
+    // we know that index is greater than field->digits
+
+    // Count the number of low-order zeroes in ach[].
+    int trailing_zeroes = 0;
+    for(int i=0; i<index; i++)
+      {
+      if( ach[i] )
+        {
+        break;
+        }
+      trailing_zeroes += 1;
+      }
+    // Subtracting trailing zeroes from index gives us the number of non-zero
+    // digits in ach:
+    index -= trailing_zeroes;
+    if( index <= field->digits )
+      {
+      retval = 0;
+      }
+    else
+      {
+      retval = 1;
+      }
+    }
+  return retval;
+  }

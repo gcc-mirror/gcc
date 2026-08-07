@@ -631,11 +631,156 @@ struct arith_t {
   }
 };
 
-static cbl_refer_t * ast_op( const cbl_loc_t& loc,
-                             cbl_refer_t *lhs, char op, cbl_refer_t *rhs );
+static void 
+ast_relop( const cbl_loc_t& loc, cbl_field_t *tgt,
+           cbl_refer_t lhs, relop_t op, cbl_refer_t rhs );
 
-static void ast_relop( const cbl_loc_t& loc, cbl_field_t *tgt,
-                       cbl_refer_t lhs, relop_t relop, cbl_refer_t rhs );
+
+/*
+ * Collect an RPN stack of operations.  The compute() member function calls
+ * parser_compute to processes the stack to a target.  Alternatively, the
+ * COMPUTE statement calls parser_compute with a list of one or more targets.
+ */
+struct ast_op_t : private std::stack<rpn_t>{  
+  cbl_label_t *lbl; // the COMPUTE error label
+ public:
+  ast_op_t() : lbl(nullptr) {}
+
+  cbl_refer_t * operator=( cbl_refer_t * term ) {
+    top() = rpn_t(*term);
+    return term;
+  }
+
+  static bool op_ok( const cbl_loc_t& loc, char op, const ast_op_t *rhs );
+
+  cbl_refer_t * expr( cbl_refer_t * term ) {
+    dbgmsg("ast_op_t::%s:%d: %s", __func__, __LINE__, field_str(term->field));
+    push( rpn_t(*term) );
+    return term;
+  }
+
+  ast_op_t&  push_op( char op, const ast_op_t& rhs = ast_op_t() ) {
+    c.insert( c.end(), rhs.c.begin(), rhs.c.end() );
+    push( rpn_t(op) );
+    rpn_dump(c);
+    return *this;
+  }
+
+  cbl_refer_t * compute( cbl_refer_t *tgt ) {
+    gcc_assert( ! empty() );
+    if( 1 < c.size() ) {
+      tgt = compute();
+    }
+    return tgt;
+  }
+  
+  cbl_refer_t * compute( ast_op_t *operand ) {
+    return c.size() == 1 ? &operand->top().term : compute();
+  }
+  
+  /*
+   * choose_intermediate_type is a functor that defaults to FldNumericBin5.  If
+   * while iterating over the operands it determines that one is FldFloat, or
+   * that the required digits exceeds the maximum, it selects FldFloat instead.
+   */
+  class choose_intermediate_type {
+    cbl_field_t output;
+    const cbl_field_t *operand;
+   public:
+    choose_intermediate_type() : output( FldNumericBin5,
+                                         (intermediate_e | signable_e),
+                                         {}, 0, "", {} )
+                               , operand(nullptr)
+    {
+      output.data.capacity(16);
+      output.data.digits   = MAX_FIXED_POINT_DIGITS;
+    }
+    choose_intermediate_type& select_highest( const rpn_t& rpn );
+    choose_intermediate_type& operator()( const rpn_t& rpn ) {
+      return select_highest(rpn);
+    }
+    cbl_field_t field() const { return output; }
+  };
+
+  cbl_field_t intermediate_type() const {
+    const auto& selected = std::for_each( c.rbegin(), c.rend(),
+                                          choose_intermediate_type() );
+    return selected.field();
+  }
+
+  const std::deque<rpn_t>& as_deque() const { return this->c; }
+  void reset() { c.clear(); }
+
+  void show( std::vector<cbl_num_result_t>& results ) {
+    if( yydebug ) {
+      int i=0;
+      for( const auto& result : results ) {
+        dbgmsg( "result %u: %s", i++, result.refer.str() );
+      }
+      rpn_dump(c);
+    }
+  }
+                
+  bool rpn_sanity_check() {
+    auto n = std::accumulate( c.rbegin(), c.rend(), 0,
+                              []( int n, const rpn_t& rpn ) {
+                                if( rpn.term.field ) return ++n;
+                                switch(rpn.op) {
+                                case '+': case '-':
+                                case '*': case '/': case '^': return --n;
+                                case '!': return n; // unuary minus
+                                }
+                                dbgmsg("rpn_sanity_check: n=%d, neither field nor op", n);
+                                gcc_unreachable();
+                              } );
+    if( n != 1 ) rpn_dump(c);
+    dbgmsg("rpn_sanity_check: n=%d, %s", n, n == 1? "ok" : "bzzt");
+    return n == 1;
+  }
+
+ protected:
+  bool valid_size() const {
+    return 2 < c.size() || top().op == '!';
+  }
+  cbl_refer_t * compute() {
+    gcc_assert( ! empty() );
+    gcc_assert( 1 < c.size() );
+
+    const cbl_field_t& skel = intermediate_type();
+    cbl_refer_t *tgt = new_reference_like(skel);
+    dbgmsg("ast_op_t::%s:%d: target %s capacity %u", __func__, __LINE__,
+           cbl_field_type_str(tgt->field->type), tgt->field->data.capacity());
+    if( !valid_size() ) {
+      yydebug = 1;
+      rpn_dump(c);
+    }
+    // We have at least 3 operands, or the first operator is unary negation.
+    gcc_assert( valid_size() );
+    rpn_dump(c); // for now
+    rpn_sanity_check();
+    
+    parser_compute(tgt, c, lbl);
+    
+    this->c.clear();
+    dbgmsg("ast_op_t::%s:%d: output %s %s capacity %u", __func__, __LINE__,
+           cbl_field_type_str(tgt->field->type), nice_name_of(tgt->field), 
+           tgt->field->data.capacity());
+    return tgt;
+  }
+
+  static void rpn_dump( const std::deque<rpn_t>& c ) {
+    dbgmsg("ast_op_t::%s:%d: %lu members", __func__, __LINE__, (unsigned long)c.size());
+    for( const auto& operand : c ) {
+      auto f = operand.term.field;
+      if( f ) {
+        auto type = cbl_field_type_str(f->type);
+        dbgmsg("ast_op_t::%s:%d: %-20s %s", __func__, __LINE__, type, field_str(f));
+      } else {
+        dbgmsg("ast_op_t::%s:%d: %c", __func__, __LINE__, operand.op);
+      }
+    }
+  }
+};
 
 static void ast_add( arith_t *arith );
 static bool ast_subtract( arith_t *arith );
@@ -1086,9 +1231,17 @@ struct refer_list_t {
       delete refer;
     }
   }
+  // the source is not always to be deleted
+  explicit refer_list_t( const cbl_refer_t& refer ) {
+    refers.push_back(refer);
+  }
   refer_list_t * push_back( cbl_refer_t *refer ) {
     refers.push_back(*refer);
     delete refer;
+    return this;
+  }
+  refer_list_t * push_back( const cbl_refer_t& refer ) {
+    refers.push_back(refer);
     return this;
   }
   inline list<cbl_refer_t>& items() { return  refers; }
@@ -1378,9 +1531,15 @@ static  list<cbl_refer_t> lhs;
 
 struct vargs_t {
   std::list<cbl_refer_t> args;
-    vargs_t() {}
-    explicit vargs_t( struct cbl_refer_t *p ) { args.push_back(*p); delete p; }
-    void push_back( cbl_refer_t *p ) { args.push_back(*p); delete p; }
+  vargs_t() {}
+  explicit vargs_t( struct cbl_refer_t *p ) { args.push_back(*p); delete p; }
+  void push_back( cbl_refer_t *p ) { args.push_back(*p); delete p; }
+  void dump() const {
+    int i=0;
+    for( auto arg : args ) {
+      dbgmsg("\t%3d: %s", i++, arg.str());
+    }
+  }
 };
 
 static const char intermediate[] = ":intermediate";

@@ -1293,234 +1293,257 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
     tree value ;
     get_binary_value(value, sourceref, work_type);
 
-    tree negative = gg_define_variable(INT);
-    gg_assign(negative, integer_zero_node);
-
-    tree sign_location = NULL_TREE;
-
-    if( destref.field->attr & signable_e )
+    tree prohibited = gg_define_variable(INT, integer_zero_node);
+    if( rounded == prohibited_e )
       {
-      sign_location = gg_define_variable(UCHAR_P);
-      if(    (destref.field->attr & separate_e)
-          && (destref.field->attr & leading_e ) )
+      gg_assign(prohibited,
+                gg_call_expr(INT,
+                             "__gg__prohibited",
+                             gg_get_address_of(destref.field->var_decl_node),
+                             value,
+                             NULL_TREE));
+      }
+    IF(prohibited, eq_op, integer_one_node)
+      {
+      set_exception_code(ec_size_truncation_e);
+      if( size_error )
         {
-        // separate and leading
-        gg_assign(sign_location, dest_location);
-        gg_increment(dest_location);
-        }
-      else if(    (destref.field->attr & separate_e)
-              && !(destref.field->attr & leading_e ) )
-        {
-        // separate and trailing
-        gg_assign(sign_location, gg_add(dest_location,
-                                        build_int_cst_type(SIZE_T,
-                                         destref.field->data.capacity()-1)));
-        }
-      else if(   !(destref.field->attr & separate_e)
-              &&  (destref.field->attr & leading_e ) )
-        {
-        // internal and leading
-        gg_assign(sign_location, dest_location);
-        }
-      else
-        {
-        // internal and trailing
-        gg_assign(sign_location, gg_add(dest_location,
-                                        build_int_cst_type(SIZE_T,
-                                         destref.field->data.capacity()-1)));
+        gg_assign(size_error, integer_one_node);
         }
       }
-
-    if(    (sourceref.field->attr & signable_e)
-        && (destref.field->attr   & signable_e) )
+    ELSE
       {
-      // Both source and dest are signable, which means we have to preserve
-      // the source sign and apply it, eventually, to the target.
-      IF( value, lt_op, gg_cast(work_type, integer_zero_node) )
-        {
-        gg_assign(negative, integer_one_node);
-        }
-      ELSE {} ENDIF
-      }
+      get_binary_value(value, sourceref, work_type);
+      tree negative = gg_define_variable(INT);
+      gg_assign(negative, integer_zero_node);
 
-    // At this point we have to align the source and destination value rdigits.
+      tree sign_location = NULL_TREE;
 
-    if( !(sourceref.field->attr & intermediate_e) )
-      {
-      // Because the source is not intermediate, we can work with the compile-
-      // time values.
-      int source_rdigits = sourceref.field->data.rdigits;
-      int dest_rdigits   = destref.field->data.rdigits;
-      int nshift = source_rdigits - dest_rdigits;
-      if(nshift < 0)
+      if( destref.field->attr & signable_e )
         {
-        // We need to multiply the source by 10^(-nshift) to line them up.
-        FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( -nshift );
-        gg_assign(value, gg_multiply(value,
-                                     wide_int_to_tree(work_type,
-                                                      power_of_ten)));
+        sign_location = gg_define_variable(UCHAR_P);
+        if(    (destref.field->attr & separate_e)
+            && (destref.field->attr & leading_e ) )
+          {
+          // separate and leading
+          gg_assign(sign_location, dest_location);
+          gg_increment(dest_location);
+          }
+        else if(    (destref.field->attr & separate_e)
+                && !(destref.field->attr & leading_e ) )
+          {
+          // separate and trailing
+          gg_assign(sign_location, gg_add(dest_location,
+                                          build_int_cst_type(SIZE_T,
+                                           destref.field->data.capacity()-1)));
+          }
+        else if(   !(destref.field->attr & separate_e)
+                &&  (destref.field->attr & leading_e ) )
+          {
+          // internal and leading
+          gg_assign(sign_location, dest_location);
+          }
+        else
+          {
+          // internal and trailing
+          gg_assign(sign_location, gg_add(dest_location,
+                                          build_int_cst_type(SIZE_T,
+                                           destref.field->data.capacity()-1)));
+          }
         }
-      else if(nshift > 0)
-        {
-        // We need to divide the source by 10^(nshift) to line them up.
-        // This is a potential rounding situation.
-        FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( nshift );
-        tree pot = wide_int_to_tree(work_type, power_of_ten);
-        gg_assign(negative,
-                  gg_bitwise_and( negative,
-                                  round_this_value(value,
-                                                   pot,
-                                                   rounded,
-                                                   size_error)));
-        }
-      }
-    else
-      {
-      // Source is intermediate; we need to use the dynamic source rdigits
-      // Because the source is not intermediate, we can work with the compile-
-      // time values.
-      tree source_rdigits = gg_define_variable(INT);
-      tree dest_rdigits;
-      tree nshift         = gg_define_variable(INT);
 
-      gg_assign(source_rdigits,
-                gg_cast(INT,
-                        member(sourceref.field->var_decl_node,
-                               "rdigits")));
-      dest_rdigits = build_int_cst_type(INT, destref.field->data.rdigits);
-      gg_assign(nshift, gg_subtract(source_rdigits, dest_rdigits));
-      tree power_of_ten = gg_define_variable(work_type);
-      IF( nshift, lt_op, integer_zero_node )
+      if(    (sourceref.field->attr & signable_e)
+          && (destref.field->attr   & signable_e) )
         {
-        // We need to multiply the source by 10^(-nshift) to line them up.
-        gg_assign(power_of_ten,
-                  gg_cast(work_type,
-                          gg_call_expr(INT128,
-                                       "__gg__power_of_ten",
-                                        gg_negate(nshift),
-                                        NULL_TREE)));
-        gg_assign(value, gg_multiply(value, power_of_ten));
+        // Both source and dest are signable, which means we have to preserve
+        // the source sign and apply it, eventually, to the target.
+        IF( value, lt_op, gg_cast(work_type, integer_zero_node) )
+          {
+          gg_assign(negative, integer_one_node);
+          }
+        ELSE {} ENDIF
         }
-      ELSE
+
+      // At this point we have to align the source and destination value rdigits.
+
+      if( !(sourceref.field->attr & intermediate_e) )
         {
-        IF( nshift, gt_op, integer_zero_node )
+        // Because the source is not intermediate, we can work with the compile-
+        // time values.
+        int source_rdigits = sourceref.field->data.rdigits;
+        int dest_rdigits   = destref.field->data.rdigits;
+        int nshift = source_rdigits - dest_rdigits;
+        if(nshift < 0)
+          {
+          // We need to multiply the source by 10^(-nshift) to line them up.
+          FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( -nshift );
+          gg_assign(value, gg_multiply(value,
+                                       wide_int_to_tree(work_type,
+                                                        power_of_ten)));
+          }
+        else if(nshift > 0)
           {
           // We need to divide the source by 10^(nshift) to line them up.
           // This is a potential rounding situation.
+          FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( nshift );
+          tree pot = wide_int_to_tree(work_type, power_of_ten);
+          gg_assign(negative,
+                    gg_bitwise_and( negative,
+                                    round_this_value(value,
+                                                     pot,
+                                                     rounded,
+                                                     size_error)));
+          }
+        }
+      else
+        {
+        // Source is intermediate; we need to use the dynamic source rdigits
+        // Because the source is not intermediate, we can work with the compile-
+        // time values.
+        tree source_rdigits = gg_define_variable(INT);
+        tree dest_rdigits;
+        tree nshift         = gg_define_variable(INT);
+
+        gg_assign(source_rdigits,
+                  gg_cast(INT,
+                          member(sourceref.field->var_decl_node,
+                                 "rdigits")));
+        dest_rdigits = build_int_cst_type(INT, destref.field->data.rdigits);
+        gg_assign(nshift, gg_subtract(source_rdigits, dest_rdigits));
+        tree power_of_ten = gg_define_variable(work_type);
+        IF( nshift, lt_op, integer_zero_node )
+          {
+          // We need to multiply the source by 10^(-nshift) to line them up.
           gg_assign(power_of_ten,
                     gg_cast(work_type,
                             gg_call_expr(INT128,
                                          "__gg__power_of_ten",
-                                          nshift,
+                                          gg_negate(nshift),
                                           NULL_TREE)));
-          gg_assign(negative,
-                    gg_bitwise_and( negative,
-                                    round_this_value(value,
-                                                     power_of_ten,
-                                                     rounded,
-                                                     size_error)));
+          gg_assign(value, gg_multiply(value, power_of_ten));
           }
         ELSE
           {
+          IF( nshift, gt_op, integer_zero_node )
+            {
+            // We need to divide the source by 10^(nshift) to line them up.
+            // This is a potential rounding situation.
+            gg_assign(power_of_ten,
+                      gg_cast(work_type,
+                              gg_call_expr(INT128,
+                                           "__gg__power_of_ten",
+                                            nshift,
+                                            NULL_TREE)));
+            gg_assign(negative,
+                      gg_bitwise_and( negative,
+                                      round_this_value(value,
+                                                       power_of_ten,
+                                                       rounded,
+                                                       size_error)));
+            }
+          ELSE
+            {
+            }
+          ENDIF
           }
         ENDIF
         }
-      ENDIF
-      }
 
-    // At this point, value is lined up with the destination.
+      // At this point, value is lined up with the destination.
 
-    // Make it positive
+      // Make it positive
 
-    if( !TYPE_UNSIGNED(work_type) )
-      {
-      gg_assign(value, gg_abs(value));
-      }
-
-    if( size_error )
-      {
-      // We need to see if is too big to fit
-      FIXED_WIDE_INT(128) power_of_ten =
-                                get_power_of_ten(destref.field->data.digits);
-      tree pot = wide_int_to_tree(work_type, power_of_ten);
-      IF( gg_divide(value, pot),
-          ne_op,
-          gg_cast(work_type, integer_zero_node) )
-          {
-          // The value is too big; flag it:
-          gg_assign(size_error, integer_one_node);
-          }
-        ELSE
-          {
-          }
-        ENDIF
-      }
-
-    if( charmap_dest->is_like_ebcdic() )
-      {
-      gg_call(INT,
-              "__gg__binary_to_string_ebcdic",
-              dest_location,
-              build_int_cst_type(INT, destref.field->data.digits),
-              gg_cast(INT128, value),
-              NULL_TREE);
-      }
-    else
-      {
-      gg_call(INT,
-              "__gg__binary_to_string_ascii",
-              dest_location,
-              build_int_cst_type(INT, destref.field->data.digits),
-              gg_cast(INT128, value),
-              NULL_TREE);
-      }
-
-    if(    (sourceref.field->attr & signable_e )
-        && (destref.field->attr   & signable_e ) )
-      {
-      IF( negative, ne_op, integer_zero_node )
+      if( !TYPE_UNSIGNED(work_type) )
         {
-        if( destref.field->attr & separate_e )
-          {
-          // We flag the separate as negative
-          gg_assign(gg_indirect(sign_location), minus);
-          }
-        else
-          {
-          if( charmap_dest->is_like_ebcdic() )
+        gg_assign(value, gg_abs(value));
+        }
+
+      if( size_error )
+        {
+        // We need to see if is too big to fit
+        FIXED_WIDE_INT(128) power_of_ten =
+                                  get_power_of_ten(destref.field->data.digits);
+        tree pot = wide_int_to_tree(work_type, power_of_ten);
+        IF( gg_divide(value, pot),
+            ne_op,
+            gg_cast(work_type, integer_zero_node) )
             {
-            gg_assign(gg_indirect(sign_location),
-                      gg_bitwise_and(gg_indirect(sign_location),
-                                     build_int_cst_type(UCHAR, 0xDF)));
+            // The value is too big; flag it:
+            gg_assign(size_error, integer_one_node);
+            }
+          ELSE
+            {
+            }
+          ENDIF
+        }
+
+      if( charmap_dest->is_like_ebcdic() )
+        {
+        gg_call(INT,
+                "__gg__binary_to_string_ebcdic",
+                dest_location,
+                build_int_cst_type(INT, destref.field->data.digits),
+                gg_cast(INT128, value),
+                NULL_TREE);
+        }
+      else
+        {
+        gg_call(INT,
+                "__gg__binary_to_string_ascii",
+                dest_location,
+                build_int_cst_type(INT, destref.field->data.digits),
+                gg_cast(INT128, value),
+                NULL_TREE);
+        }
+
+      if(    (sourceref.field->attr & signable_e )
+          && (destref.field->attr   & signable_e ) )
+        {
+        IF( negative, ne_op, integer_zero_node )
+          {
+          if( destref.field->attr & separate_e )
+            {
+            // We flag the separate as negative
+            gg_assign(gg_indirect(sign_location), minus);
             }
           else
             {
-            gg_assign(gg_indirect(sign_location),
-                      gg_bitwise_or(gg_indirect(sign_location),
-                                    build_int_cst_type(UCHAR, 0x70)));
+            if( charmap_dest->is_like_ebcdic() )
+              {
+              gg_assign(gg_indirect(sign_location),
+                        gg_bitwise_and(gg_indirect(sign_location),
+                                       build_int_cst_type(UCHAR, 0xDF)));
+              }
+            else
+              {
+              gg_assign(gg_indirect(sign_location),
+                        gg_bitwise_or(gg_indirect(sign_location),
+                                      build_int_cst_type(UCHAR, 0x70)));
+              }
             }
           }
-        }
-      ELSE
-        {
-        // The result is positive
-        if( destref.field->attr & separate_e )
+        ELSE
           {
-          // We flag the separate as negative
-          gg_assign(gg_indirect(sign_location), plus);
+          // The result is positive
+          if( destref.field->attr & separate_e )
+            {
+            // We flag the separate as negative
+            gg_assign(gg_indirect(sign_location), plus);
+            }
           }
+        ENDIF
         }
-      ENDIF
-      }
-    else if(   (destref.field->attr & signable_e )
-            && (destref.field->attr & separate_e ) )
-      {
-      // The source is not signed, but the destination is signable and
-      // separate:
-      gg_assign(gg_indirect(sign_location), plus);
-      }
+      else if(   (destref.field->attr & signable_e )
+              && (destref.field->attr & separate_e ) )
+        {
+        // The source is not signed, but the destination is signable and
+        // separate:
+        gg_assign(gg_indirect(sign_location), plus);
+        }
 
-    moved = true;
+      moved = true;
+      }
+    ENDIF
     }
 
   return moved;
@@ -3768,36 +3791,36 @@ parser_move(cbl_refer_t destref,
       SHOW_PARSE_REF(" ", sourceref)
       }
     SHOW_PARSE_REF(" TO ", destref)
-      switch(rounded)
-        {
-        case away_from_zero_e:
-          SHOW_PARSE_TEXT(" AWAY_FROM_ZERO")
-          break;
-        case nearest_toward_zero_e:
-          SHOW_PARSE_TEXT(" NEAREST_TOWARD_ZERO")
-          break;
-        case toward_greater_e:
-          SHOW_PARSE_TEXT(" TOWARD_GREATER")
-          break;
-        case toward_lesser_e:
-          SHOW_PARSE_TEXT(" TOWARD_LESSER")
-          break;
-        case nearest_away_from_zero_e:
-          SHOW_PARSE_TEXT(" NEAREST_AWAY_FROM_ZERO")
-          break;
-        case nearest_even_e:
-          SHOW_PARSE_TEXT(" NEAREST_EVEN")
-          break;
-        case prohibited_e:
-          SHOW_PARSE_TEXT(" PROHIBITED")
-          break;
-        case truncation_e:
-          SHOW_PARSE_TEXT(" TRUNCATED")
-          break;
-        default:
-          gcc_unreachable();
-          break;
-        }
+    switch(rounded)
+      {
+      case away_from_zero_e:
+        SHOW_PARSE_TEXT(" AWAY_FROM_ZERO")
+        break;
+      case nearest_toward_zero_e:
+        SHOW_PARSE_TEXT(" NEAREST_TOWARD_ZERO")
+        break;
+      case toward_greater_e:
+        SHOW_PARSE_TEXT(" TOWARD_GREATER")
+        break;
+      case toward_lesser_e:
+        SHOW_PARSE_TEXT(" TOWARD_LESSER")
+        break;
+      case nearest_away_from_zero_e:
+        SHOW_PARSE_TEXT(" NEAREST_AWAY_FROM_ZERO")
+        break;
+      case nearest_even_e:
+        SHOW_PARSE_TEXT(" NEAREST_EVEN")
+        break;
+      case prohibited_e:
+        SHOW_PARSE_TEXT(" PROHIBITED")
+        break;
+      case truncation_e:
+        SHOW_PARSE_TEXT(" TRUNCATED")
+        break;
+      default:
+        gcc_unreachable();
+        break;
+      }
     SHOW_PARSE_END
     }
 
@@ -3867,36 +3890,36 @@ parser_move_multi(cbl_refer_t destref,
       SHOW_PARSE_REF(" ", sourceref)
       }
     SHOW_PARSE_REF(" TO ", destref)
-      switch(rounded)
-        {
-        case away_from_zero_e:
-          SHOW_PARSE_TEXT(" AWAY_FROM_ZERO")
-          break;
-        case nearest_toward_zero_e:
-          SHOW_PARSE_TEXT(" NEAREST_TOWARD_ZERO")
-          break;
-        case toward_greater_e:
-          SHOW_PARSE_TEXT(" TOWARD_GREATER")
-          break;
-        case toward_lesser_e:
-          SHOW_PARSE_TEXT(" TOWARD_LESSER")
-          break;
-        case nearest_away_from_zero_e:
-          SHOW_PARSE_TEXT(" NEAREST_AWAY_FROM_ZERO")
-          break;
-        case nearest_even_e:
-          SHOW_PARSE_TEXT(" NEAREST_EVEN")
-          break;
-        case prohibited_e:
-          SHOW_PARSE_TEXT(" PROHIBITED")
-          break;
-        case truncation_e:
-          SHOW_PARSE_TEXT(" TRUNCATED")
-          break;
-        default:
-          gcc_unreachable();
-          break;
-        }
+    switch(rounded)
+      {
+      case away_from_zero_e:
+        SHOW_PARSE_TEXT(" AWAY_FROM_ZERO")
+        break;
+      case nearest_toward_zero_e:
+        SHOW_PARSE_TEXT(" NEAREST_TOWARD_ZERO")
+        break;
+      case toward_greater_e:
+        SHOW_PARSE_TEXT(" TOWARD_GREATER")
+        break;
+      case toward_lesser_e:
+        SHOW_PARSE_TEXT(" TOWARD_LESSER")
+        break;
+      case nearest_away_from_zero_e:
+        SHOW_PARSE_TEXT(" NEAREST_AWAY_FROM_ZERO")
+        break;
+      case nearest_even_e:
+        SHOW_PARSE_TEXT(" NEAREST_EVEN")
+        break;
+      case prohibited_e:
+        SHOW_PARSE_TEXT(" PROHIBITED")
+        break;
+      case truncation_e:
+        SHOW_PARSE_TEXT(" TRUNCATED")
+        break;
+      default:
+        gcc_unreachable();
+        break;
+      }
     SHOW_PARSE_END
     }
 

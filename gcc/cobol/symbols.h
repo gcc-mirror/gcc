@@ -1109,6 +1109,34 @@ struct cbl_refer_t {
   }
 };
 
+/*
+ * An element in the RPN stack for expression evaluation, either an operation
+ * or an operand.  A NUL operator indicates an operand. 
+ */
+struct rpn_t {
+  char op;
+  cbl_refer_t term;
+  rpn_t( char op ) : op(op) { // cppcheck-suppress noExplicitConstructor
+    static const char ops[] = "+-*/^!";
+    gcc_assert( std::any_of(ops, ops + sizeof(ops),
+                            [op]( char ch ) { return op == ch; }) );
+  }
+  rpn_t( const cbl_refer_t &term ) // cppcheck-suppress noExplicitConstructor
+    : op('\0'), term(term)
+  {}
+};
+
+struct expr_t {
+  char op;
+  cbl_refer_t lhs, rhs;
+  cbl_label_t *lbl;
+  expr_t( char op,
+          const cbl_refer_t& lhs, const cbl_refer_t& rhs,
+          cbl_label_t *lbl )
+    : op(op), lhs(lhs), rhs(rhs), lbl(lbl)
+  {}
+};
+
 struct elem_key_t {
   size_t program;
   const char * name;

@@ -2390,6 +2390,135 @@ parser_divide(  const cbl_refer_t& cref,
   }
 
 void
+parser_compute( cbl_refer_t *tgt,
+                const std::deque<rpn_t>& operations,
+                cbl_label_t * compute_error_label )
+  {
+  CHECK_FIELD(tgt->field);
+  gcc_assert(operations.size());
+
+  set_up_compute_error_label(compute_error_label);
+
+  gg_assign(var_decl_default_compute_error, integer_zero_node);
+  tree compute_error =    compute_error_label
+                        ? gg_get_address_of( compute_error_label->
+                                             structs.compute_error->
+                                             compute_error_code)
+                        : gg_get_address_of(var_decl_default_compute_error) ;
+
+  SHOW_PARSE
+    {
+    SHOW_PARSE_HEADER
+    SHOW_PARSE_REF(" dest: ", *tgt);
+    char *psz;
+    for(auto op : operations)
+      {
+      if( op.op )
+        {
+        psz = xasprintf("%c", op.op);
+        }
+      else
+        {
+        if( !op.term.field )
+          {
+          psz = xasprintf("both op.op and op.term.field are NULL");
+          }
+        else
+          {
+          psz = xasprintf("%s", op.term.field->name);
+          }
+        }
+
+      SHOW_PARSE_INDENT
+      SHOW_PARSE_TEXT(psz);
+      free(psz);
+      }
+    SHOW_PARSE_END
+    }
+
+  std::string opstring;
+  std::vector<const cbl_field_t *>fields;
+  std::vector<tree> offsets;
+
+  //bool compute_float = false;
+  const char *routine = "__gg__compute_fixed";
+  for(auto op : operations)
+    {
+    if(    op.op == '^'
+        || (op.term.field && op.term.field->type == FldFloat) )
+      {
+      //compute_float = true;
+      routine = "__gg__compute_float";
+      }
+    opstring += op.op ? op.op : ascii_P;
+    fields.push_back(op.term.field);
+    offsets.push_back(refer_offset(op.term));
+    }
+
+  // The final element on the stacks is for the destination field:
+  fields.push_back(tgt->field);
+  offsets.push_back(refer_offset(*tgt));
+
+  tree retval = gg_define_variable(INT);
+  gg_assign(retval,
+            gg_call_expr( INT,
+                          routine,
+                          gg_string_literal(opstring.c_str()),
+                          gg_array_of_field_pointers(fields),
+                          gg_array_of_uchar_p(offsets),
+                          NULL_TREE));
+  gg_assign(gg_indirect(compute_error), retval);
+  }
+
+void
+parser_compute( std::vector<cbl_num_result_t>& results,
+                const std::deque<rpn_t>& operations,
+                cbl_label_t *on_error,
+                cbl_label_t *not_error,
+                cbl_label_t *compute_error)
+  {
+  bool compute_float = false;
+  for(auto op : operations)
+    {
+    if(    op.op == '^'
+        || (op.term.field && op.term.field->type == FldFloat) )
+      {
+      compute_float = true;
+      break;
+      }
+    }
+
+  cbl_field_t *temp_field;
+
+  if( compute_float )
+    {
+    temp_field = new_temporary(FldFloat,
+                               nullptr,
+                               intermediate_e);
+    }
+  else
+    {
+    temp_field = new_temporary(FldNumericBin5,
+                               nullptr,
+                               signable_e);
+    }
+  cbl_refer_t  temp_refer;
+  temp_refer.field = temp_field;
+
+  parser_compute( &temp_refer, operations, compute_error );
+
+  if( !results.empty() )
+    {
+    parser_assign(results.size(),
+                  results.data(),
+                  temp_refer,
+                  on_error,
+                  not_error,
+                  compute_error);
+    }
+  }
+
+void
 parser_op( struct cbl_refer_t cref,
            struct cbl_refer_t aref,
            int op,

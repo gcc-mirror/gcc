@@ -205,6 +205,18 @@ parser_classify( struct cbl_field_t *tgt,
                  enum                classify_t type );
 
 void
+parser_compute( cbl_refer_t *tgt,
+                const std::deque<rpn_t>& operations,
+                cbl_label_t *lbl );
+
+void
+parser_compute( std::vector<cbl_num_result_t>& results,
+                const std::deque<rpn_t>& operations,
+                cbl_label_t *on_error,
+                cbl_label_t *not_error,
+                cbl_label_t *compute_error);
+
+void
 parser_op( struct cbl_refer_t cref,
            struct cbl_refer_t aref, int op, struct cbl_refer_t bref,
            struct cbl_label_t *op_error);
