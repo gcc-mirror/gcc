@@ -267,7 +267,6 @@ RTL optimizers          Eric Botcazou           <ebotcazou@libertysurf.fr>
 scev, data dependence   Sebastian Pop           <sebpop@gmail.com>
 scheduler (+ haifa)     Jeff Law                <jeffreyalaw@gmail.com>
 scheduler (+ haifa)     Vladimir Makarov        <vmakarov@redhat.com>
-scheduler (+ haifa)     Michael Meissner        <gnu@the-meissners.org>
 scheduler (+ haifa)     Jim Wilson              <wilson@tuliptree.org>
 soft-fp                 Joseph Myers            <josmyers@redhat.com>
 static analyzer         David Malcolm           <dmalcolm@redhat.com>
@@ -701,7 +700,7 @@ Bryce McKinlay                  bryce           <mckinlay@redhat.com>
 Karl Meakin                     karmea01        <karl.meakin@arm.com>
 Adam Megacz                     megacz          <adam@xwt.org>
 Bingfeng Mei                    meibf           <bmei@broadcom.com>
-Michael Meissner                meissner        <gnu@the-meissners.org>
+Michael Meissner                meissner        <meissner@gcc.gnu.org>
 Josef Melcr                     jmelcr          <josef.melcr@suse.com>
 Jason Merrill                   jason           <jason@redhat.com>
 Jim Meyering                    meyering        <jim@meyering.net>

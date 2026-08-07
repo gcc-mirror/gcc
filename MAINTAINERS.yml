@@ -3317,6 +3317,7 @@ users:
   roles:
   - Global
   - Maintainer: rs6000/powerpc port
+  - WriteAfter
   account: meissner
   inactive: true
 - sn: Melcr
