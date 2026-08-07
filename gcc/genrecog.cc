@@ -113,6 +113,7 @@
 #include "errors.h"
 #include "read-md.h"
 #include "gensupport.h"
+#include "hash-map.h"
 
 #undef GENERATOR_FILE
 enum true_rtx_doe {
@@ -1787,6 +1788,54 @@ public:
   /* A guaranteed lower bound on the value of peep2_current_count.  */
   int peep2_count;
 };
+
+/* The distinct .md conditions, in the order they were first printed, and a
+   map from the condition text to that position.  A condition is written out
+   once as a helper function and called wherever it is needed, rather than
+   inlined at each of the decisions that test it.  */
+
+static auto_vec<const char *> md_conditions;
+static hash_map<nofree_string_hash, unsigned int> md_condition_ids;
+
+/* Return the index of COND's helper function, registering it if this is the
+   first time it has been seen.  */
+
+static unsigned int
+md_condition_id (const char *cond)
+{
+  bool existed;
+  unsigned int &id = md_condition_ids.get_or_insert (cond, &existed);
+  if (!existed)
+    {
+      id = md_conditions.length ();
+      md_conditions.safe_push (cond);
+    }
+  return id;
+}
+
+/* Write a helper function for each condition to F.  They go in the header,
+   which every generated file includes after the target headers, so that a
+   condition is compiled once however many decisions test it.
+
+   The helpers take the operands and the insn, which is everything a
+   condition may read, and are declared inline so that the host compiler can
+   fold them back into their callers.  */
+
+static void
+print_md_conditions (FILE *f)
+{
+  unsigned int i;
+  const char *cond;
+
+  FOR_EACH_VEC_ELT (md_conditions, i, cond)
+    {
+      fprintf (f, "\nstatic inline bool\ninsn_condition_%d "
+	       "(rtx *operands ATTRIBUTE_UNUSED,\n"
+	       "\t\t   rtx_insn *insn ATTRIBUTE_UNUSED)\n{\n  return ", i);
+      rtx_reader_ptr->print_c_condition (f, cond);
+      fprintf (f, ";\n}\n");
+    }
+}
 
 /* Return true if TEST can safely be performed at D, where
    the conditions in KC hold.  TEST is known to occur along the
@@ -4762,10 +4811,13 @@ print_test (FILE *f, output_state *os, const rtx_test &test, bool is_param,
       break;
 
     case rtx_test::C_TEST:
+      /* Pattern routines take no insn, and pattern_c_test_p keeps C tests
+	 out of them for that reason.  */
       gcc_assert (!is_param && value == 1);
       if (invert_p)
 	fprintf (f, "!");
-      rtx_reader_ptr->print_c_condition (f, test.u.string);
+      fprintf (f, "insn_condition_%d (operands, insn)",
+	       md_condition_id (test.u.string));
       break;
 
     case rtx_test::ACCEPT:
@@ -5532,6 +5584,9 @@ main (int argc, const char **argv)
   print_subroutine_group (output_files, header, &os, RECOG, &insn_root);
   print_subroutine_group (output_files, header, &os, SPLIT, &split_root);
   print_subroutine_group (output_files, header, &os, PEEPHOLE2, &peephole2_root);
+
+  /* Every test has been printed, so the set of conditions is complete.  */
+  print_md_conditions (header);
 
   fclose (header);
 
