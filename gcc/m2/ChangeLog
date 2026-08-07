@@ -1,3 +1,7 @@
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
 2026-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
