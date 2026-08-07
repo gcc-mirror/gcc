@@ -2991,31 +2991,37 @@ operator_cast::fold_range (irange &r, tree type, const frange &op1,
       r.set_varying (type);
       return true;
     }
-  REAL_VALUE_TYPE lb, ub;
-  real_trunc (&lb, VOIDmode, &op1.lower_bound ());
-  real_trunc (&ub, VOIDmode, &op1.upper_bound ());
   REAL_VALUE_TYPE l, u;
   l = real_value_from_int_cst (NULL_TREE, TYPE_MIN_VALUE (type));
-  if (real_less (&lb, &l))
-    {
-      r.set_varying (type);
-      return true;
-    }
   u = real_value_from_int_cst (NULL_TREE, TYPE_MAX_VALUE (type));
-  if (real_less (&u, &ub))
+
+  r.set_undefined ();
+  for (unsigned i = 0; i < op1.num_pairs (); ++i)
     {
-      r.set_varying (type);
-      return true;
+      REAL_VALUE_TYPE lb, ub;
+      real_trunc (&lb, VOIDmode, &op1.lower_bound (i));
+      real_trunc (&ub, VOIDmode, &op1.upper_bound (i));
+      if (real_less (&lb, &l))
+	{
+	  r.set_varying (type);
+	  return true;
+	}
+      if (real_less (&u, &ub))
+	{
+	  r.set_varying (type);
+	  return true;
+	}
+      bool fail = false;
+      wide_int wlb = real_to_integer (&lb, &fail, TYPE_PRECISION (type));
+      wide_int wub = real_to_integer (&ub, &fail, TYPE_PRECISION (type));
+      if (fail)
+	{
+	  r.set_varying (type);
+	  return true;
+	}
+      int_range<2> tmp (type, wlb, wub);
+      r.union_ (tmp);
     }
-  bool fail = false;
-  wide_int wlb = real_to_integer (&lb, &fail, TYPE_PRECISION (type));
-  wide_int wub = real_to_integer (&ub, &fail, TYPE_PRECISION (type));
-  if (fail)
-    {
-      r.set_varying (type);
-      return true;
-    }
-  r.set (type, wlb, wub);
   return true;
 }
 
@@ -3281,6 +3287,16 @@ range_op_float_tests ()
   r0.clear_nan ();
   range_op_handler (CONVERT_EXPR).fold_range (r, float_type_node, r0, r0);
   ASSERT_EQ (r.num_pairs (), 2);
+
+  // Cast conversion of (int)([1.0,2.0] U [10.0,11.0]) stays two pieces.
+  r0 = frange_float ("1.0", "2.0");
+  r1 = frange_float ("10.0", "11.0");
+  r0.union_ (r1);
+  r0.clear_nan ();
+  int_range<2> ir, ir_op2;
+  range_op_handler (FIX_TRUNC_EXPR).fold_range (ir, integer_type_node,
+						r0, ir_op2);
+  ASSERT_EQ (ir.num_pairs (), 2);
 }
 
 } // namespace selftest
