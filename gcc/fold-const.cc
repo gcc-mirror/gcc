@@ -14693,6 +14693,19 @@ tree_single_nonnegative_p (tree t, int depth)
       return RECURSE (TREE_OPERAND (t, 1)) && RECURSE (TREE_OPERAND (t, 2));
 
     case SSA_NAME:
+      /* For integral types, query the range if possible. */
+      if (INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	{
+	  int_range_max r;
+	  get_range_query (cfun)->range_of_expr (r, t);
+	  if (!r.undefined_p () && !r.varying_p())
+	    {
+	      if (r.nonnegative_p ())
+		return true;
+	      if (r.nonpositive_p () && !range_includes_zero_p (r))
+		return false;
+	    }
+	}
       /* Limit the depth of recursion to avoid quadratic behavior.
 	 This is expected to catch almost all occurrences in practice.
 	 If this code misses important cases that unbounded recursion
