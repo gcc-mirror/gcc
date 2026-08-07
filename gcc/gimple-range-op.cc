@@ -573,7 +573,10 @@ public:
 	  frange_nextafter (TYPE_MODE (type), lb, dconstninf);
 	if (real_less (&dconst0, &lb))
 	  {
-	    REAL_VALUE_TYPE op = lb;
+	    frange wlhs (type, lb, dconstinf);
+	    wlhs.clear_nan ();
+	    wlhs.widen (type);
+	    REAL_VALUE_TYPE op = wlhs.lower_bound ();
 	    frange_arithmetic (MULT_EXPR, type, lb, op, op, dconstninf);
 	  }
 	else
@@ -587,7 +590,10 @@ public:
 	  frange_nextafter (TYPE_MODE (type), ub, dconstinf);
 	if (real_isfinite (&ub))
 	  {
-	    REAL_VALUE_TYPE op = ub;
+	    frange wlhs (type, dconstninf, ub);
+	    wlhs.clear_nan ();
+	    wlhs.widen (type);
+	    REAL_VALUE_TYPE op = wlhs.upper_bound ();
 	    frange_arithmetic (MULT_EXPR, type, ub, op, op, dconstinf);
 	  }
 	else
