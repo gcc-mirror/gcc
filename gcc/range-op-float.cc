@@ -3227,15 +3227,18 @@ range_op_float_tests ()
 
   // op1_range for "op1 == op2" where op2 = [-1.0,-0.0][1.0,1.0] holds -0.0 but
   // not +0.0 must still admit +0.0 for op1, since -0.0 == +0.0.
-  r0 = frange_float ("-1.0", "-0.0");
-  r1 = frange_float ("1.0", "1.0");
-  r0.union_ (r1);
-  r0.clear_nan ();
-  ASSERT_FALSE (r0.contains_p (dconst0));
-  ASSERT_TRUE (r0.contains_p (dconstm0));
-  int_range<2> bool_true = range_true ();
-  range_op_handler (EQ_EXPR).op1_range (r, float_type_node, bool_true, r0);
-  ASSERT_TRUE (r.contains_p (dconst0));
+  if (HONOR_SIGNED_ZEROS (float_type_node))
+    {
+      r0 = frange_float ("-1.0", "-0.0");
+      r1 = frange_float ("1.0", "1.0");
+      r0.union_ (r1);
+      r0.clear_nan ();
+      ASSERT_FALSE (r0.contains_p (dconst0));
+      ASSERT_TRUE (r0.contains_p (dconstm0));
+      int_range<2> bool_true = range_true ();
+      range_op_handler (EQ_EXPR).op1_range (r, float_type_node, bool_true, r0);
+      ASSERT_TRUE (r.contains_p (dconst0));
+    }
 
   // negate([1, 2] U [10, 11]) => [-11, -10] U [-2, -1], keeping the gap.
   r0 = frange_float ("1.0", "2.0");
