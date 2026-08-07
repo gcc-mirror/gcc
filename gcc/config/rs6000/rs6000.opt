@@ -325,7 +325,7 @@ Target Mask(BLOCK_OPS_UNALIGNED_VSX) Var(rs6000_isa_flags)
 Generate unaligned VSX load/store for inline expansion of memcpy/memmove.
 
 mblock-ops-vector-pair
-Target Undocumented Mask(BLOCK_OPS_VECTOR_PAIR) Var(rs6000_isa_flags)
+Target Mask(BLOCK_OPS_VECTOR_PAIR) Var(rs6000_isa_flags)
 Generate unaligned VSX vector pair load/store for inline expansion of memcpy/memmove.
 
 mblock-compare-inline-limit=
