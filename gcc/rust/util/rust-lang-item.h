@@ -178,6 +178,8 @@ public:
     PENDING,
     GENERATOR,
     GENERATOR_STATE,
+
+    VA_LIST,
   };
 
   static const BiMap<std::string, Kind> lang_items;

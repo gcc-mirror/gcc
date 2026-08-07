@@ -142,6 +142,8 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"Pending", Kind::PENDING},
   {"generator", Kind::GENERATOR},
   {"generator_state", Kind::GENERATOR_STATE},
+
+  {"va_list", Kind::VA_LIST},
 }};
 
 tl::optional<LangItem::Kind>
