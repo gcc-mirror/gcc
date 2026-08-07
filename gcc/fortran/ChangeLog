@@ -1,3 +1,10 @@
+2026-08-06  Josef Melcr  <josef.melcr@suse.com>
+
+	* f95-lang.cc (ATTR_CALLBACK_GOMP_LIST): Rename to
+	ATTR_CALLBACK_ONLY_GOMP_LIST.
+	(ATTR_CALLBACK_ONLY_GOMP_LIST): Fortran counterpart for the
+	attribute list in builtin-attrs.def.
+
 2026-08-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/126558

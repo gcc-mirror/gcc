@@ -1,3 +1,28 @@
+2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Change
+	__cpp_named_character_escapes value from 202207L to 202606L.
+
+2026-08-06  Josef Melcr  <josef.melcr@suse.com>
+
+	* c-attribs.cc (get_nth_list_elem): Removed.
+	(handle_callback_only_attribute): Use chain_index instead of
+	get_nth_list_elem.
+
+2026-08-06  Josef Melcr  <josef.melcr@suse.com>
+
+	* c-attribs.cc (handle_callback_only_attribute): Moved from
+	attr-callback.cc.
+	(get_nth_list_elem): Likewise.
+
+2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/125989
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine
+	__cpp_designated_initializers to 202606 instead of 201707 for
+	C++29.
+
 2026-07-25  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/125507

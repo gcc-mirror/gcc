@@ -1,3 +1,7 @@
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* region-model.cc (region_model::eval_condition): Likewise.
+
 2026-08-04  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
 
 	PR analyzer/119697

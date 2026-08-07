@@ -1,3 +1,260 @@
+2026-08-06  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/126669
+	* tree-ssa-strlen.cc (use_in_zero_equality): Remove dead code.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* range-op-float.cc (operator_abs::fold_range): Take the absolute
+	value of each sub-range and union the results.
+	(range_op_float_tests): New test.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* range-op-float.cc (operator_negate::fold_range): Negate each
+	sub-range and union the results.
+	(range_op_float_tests): New test.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* range-op-float.cc (frange_add_zeros): Detect a contained zero with
+	the contains_zero_p method instead of inspecting the hull endpoints.
+	(range_op_float_tests): Test that op1_range for == admits +0.0 for a
+	multi-pair operand holding an inner -0.0.
+
+2026-08-06  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (X + (X | -X)): New simplification.
+	(X + ((-X) & (C - 1))): Likewise.
+
+2026-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/126685
+	* config/i386/i386.md (bswaphisi2_lowpart): Use %w operand
+	modifier to emit HImode register name for ROLW alternative.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126637
+	* range-op-float.cc (operator_equal::fold_range): Use the
+	contains_zero_p method to detect a contained zero instead of
+	inspecting the hull endpoints.
+	(operator_not_equal::fold_range): Likewise.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.h (contains_zero_p): Remove the free-standing irange
+	overload.
+	* range-op.cc (operator_equal::op1_op2_relation): Use the
+	irange::contains_zero_p method.
+	(operator_not_equal::op1_op2_relation): Likewise.
+	(operator_lt::op1_op2_relation): Likewise.
+	(operator_le::op1_op2_relation): Likewise.
+	(operator_gt::op1_op2_relation): Likewise.
+	(operator_ge::op1_op2_relation): Likewise.
+	(operator_lshift::op1_range): Likewise.
+	(operator_rshift::op1_range): Likewise.
+	(operator_cast::op1_range): Likewise.
+	(operator_logical_and::fold_range): Likewise.
+	(operator_bitwise_and::wi_fold): Likewise.
+	(operator_bitwise_xor::op1_range): Likewise.
+	(operator_addr_expr::fold_range): Likewise.
+	(operator_addr_expr::op1_range): Likewise.
+	* range-op-float.cc (operator_equal::op1_op2_relation): Likewise.
+	(operator_not_equal::op1_op2_relation): Likewise.
+	(operator_lt::op1_op2_relation): Likewise.
+	(operator_le::op1_op2_relation): Likewise.
+	(operator_gt::op1_op2_relation): Likewise.
+	(operator_ge::op1_op2_relation): Likewise.
+
+2026-08-06  Karl Meakin  <karl.meakin@arm.com>
+
+	PR target/126652
+	* config/aarch64/arm_neon.h (vaddd_s64, vaddd_u64): Delete
+	function definitions.
+
+2026-08-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_call): Get scalar argument
+	type from the representative call stmt.
+
+2026-08-06  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-vect-patterns.cc (vect_recog_mulhs_pattern): Do not give up
+	when LHS_TYPE has no vector type.
+
+2026-08-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/123175
+	* fold-const.cc (test_vnx4si_v4si): Fixup vec_perm_indices
+	construction.
+	(test_v4si_vnx4si): Likewise.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.h (vrange::nonzero_p): Remove.
+	(unsupported_range::nonzero_p): Remove.
+	(irange::nonzero_p): Remove.
+	(prange::nonzero_p): Remove.
+	(frange::nonzero_p): Remove.
+	(Value_Range::nonzero_p): Remove.
+	* value-range.cc (unsupported_range::nonzero_p): Remove.
+	(frange::nonzero_p): Remove.
+	(range_tests_misc): Test contains_zero_p instead of nonzero_p.
+	(range_tests_sub_ranges_zero): Likewise.
+	* range-op.cc (range_op_bitwise_and_tests): Likewise.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.cc (get_legacy_range): Compare against a set_nonzero
+	prange instead of calling nonzero_p.
+	* value-range-storage.cc (nonzero_range_p): New.
+	(prange_storage::prange_format): Use it instead of nonzero_p.
+	(prange_storage::equal_p): Likewise.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-path.cc (path_range_query::adjust_for_non_null_uses):
+	Use !contains_zero_p instead of nonzero_p.
+	* tree-ssa-structalias.cc (find_what_p_points_to): Likewise.
+	* tree-ssanames.cc (set_range_info): Likewise.
+	* tree-vrp.cc (execute_ranger_vrp): Likewise.
+
+2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* value-range.h (vrange::contains_zero_p): New pure virtual.
+	(unsupported_range::contains_zero_p): Declare.
+	(irange::contains_zero_p): Declare and define.
+	(prange::contains_zero_p): Declare and define.
+	(frange::contains_zero_p): Declare.
+	(Value_Range::contains_zero_p): New.
+	* value-range.cc (unsupported_range::contains_zero_p): Define.
+	(frange::contains_zero_p): Define.
+
+2026-08-06  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	* match.pd: Combine several patterns into fors.
+
+2026-08-06  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-sve.md (<su>mul<mode>3_highpart): Extend
+	from SVE_I to SVE_I_SIMD_DI.
+	(@aarch64_pred_<optab><mode>): Likewise for the MUL_HIGHPART form,
+	and print the data operands with %Z.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve2_<optab><mode>):
+	Likewise.
+
+2026-08-06  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd ((X / Y) ==/!= 0): Preserve a possible zero-divisor
+	exception.
+	((X % Y) ==/!= X): New simplification.  Preserve a possible
+	zero-divisor exception.
+
+2026-08-06  Josef Melcr  <josef.melcr@suse.com>
+
+	* attr-callback.cc (callback_build_attr): Use "callback_only"
+	instead of the macro.
+	(callback_edge_callee_has_attr): Likewise.
+	(callback_fetch_attr_by_edge): Likewise.
+	(get_nth_list_elem): Move to c-family/c-attribs.cc.
+	(handle_callback_attribute): Rename to
+	handle_callback_only_attribute, move to c-family/c-attribs.cc.
+	* attr-callback.h (CALLBACK_ATTR_IDENT): Remove the macro.
+	(handle_callback_attribute): Remove the declaration.
+	* builtin-attrs.def (ATTR_CALLBACK): Rename to
+	ATTR_CALLBACK_ONLY.
+	(ATTR_CALLBACK_ONLY): Identifier for the attribute for builtins.
+	(DEF_CALLBACK_ATTRIBUTE): Rename to DEF_CALLBACK_ONLY_ATTRIBUTE.
+	(DEF_CALLBACK_ONLY_ATTRIBUTE): Renamed definition macro for builtins.
+	(GOMP): Use the renamed macro.
+	(ATTR_CALLBACK_GOMP_LIST): Renamed to
+	ATTR_CALLBACK_ONLY_GOMP_LIST.
+	(ATTR_CALLBACK_ONLY_GOMP_LIST): ATTR_NOTHROW_LIST with the
+	callback_only attribute for libgomp functions.
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): Use
+	"callback_only" instead of the macro.
+	(cgraph_node::verify_node): Likewise.
+	* doc/extend.texi: Add callback_only attribute docs.
+	* ipa-cp.cc (purge_useless_callback_edges): Use "callback_only"
+	instead of the macro.
+	* ipa-param-manipulation.cc
+	(drop_decl_attribute_if_params_changed_p): Likewise.
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Likewise.
+	* omp-builtins.def (BUILT_IN_GOMP_PARALLEL_LOOP_STATIC): Use the
+	renamed attribute list.
+	(BUILT_IN_GOMP_PARALLEL_LOOP_GUIDED): Likewise.
+	(BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_DYNAMIC): Likewise.
+	(BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_RUNTIME): Likewise.
+	(BUILT_IN_GOMP_PARALLEL): Likewise.
+	(BUILT_IN_GOMP_PARALLEL_SECTIONS): Likewise.
+	(BUILT_IN_GOMP_TEAMS_REG): Likewise.
+	* tree-core.h: Update the ECF_CB flag comment.
+
+2026-08-06  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/126454
+	* config/riscv/riscv-opt-popretz.cc (pass_combine_popretz::execute):
+	Stop the backward scan at any use or definition of a0, including
+	those hidden in CALL_INSN_FUNCTION_USAGE or in a PARALLEL.
+
+2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Make
+	last change valid C89.  Formatting fix.
+
+2026-08-06  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector): Force VLS
+	constants to mem.
+
+2026-08-06  Jin Ma  <jinma@linux.alibaba.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_ext_info_t::implied_exts): Return const reference
+	instead of by-value copy.
+
+2026-08-06  Ewan  <ewanhai-oc@zhaoxin.com>
+
+	* config/i386/cpuid.h (__get_cpuid_max): Update comment to
+	document 0x40000000 and 0xC0000000 as valid ext values.
+	(__get_cpuid): Replace "__leaf & 0x80000000" with explicit
+	range checks for Basic, Hypervisor, Extended, and
+	Centaur/Zhaoxin CPUID ranges.
+	(__get_cpuid_count): Likewise.
+
+2026-08-06  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126580
+	* tree-ssa-phiopt.cc (cond_store_replacement_limited): Allow
+	a load before the store; not removing the store.
+
+2026-08-06  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd ((X | C) ==/!= (Y | C)): New simplification.
+
+2026-08-06  Matt Turner  <mattst88@gmail.com>
+
+	PR target/124495
+	* config/alpha/alpha.md (UNSPECV_LDGP2): New unspec_volatile.
+	(*ldgp_er_2_v): New insn.
+	(*builtin_setjmp_receiver_1): Split the second half of the gpdisp
+	pair to it instead of *ldgp_er_2.
+	(*exception_receiver_1): Ditto.
+
+2026-08-06  Wang Yaduo  <wangyaduo@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_tune_param): Add reassociation
+	widths.
+	(generic_ooo_tune_info): Set reassociation widths.
+	(xt_c9501_tune_info): Likewise.
+	(riscv_reassociation_width): New function.
+	(TARGET_SCHED_REASSOCIATION_WIDTH): Define.
+
+2026-08-06  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-08-05  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr-fixed.md: Use alldiv as code iterator for the

@@ -1,3 +1,7 @@
+2026-08-06  Trevor Woerner  <twoerner@gmail.com>
+
+	* configure: Regenerate.
+
 2026-08-05  Trevor Woerner  <twoerner@gmail.com>
 
 	* sppp.awk: Strip any directory prefix from FILENAME in the

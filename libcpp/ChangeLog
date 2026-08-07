@@ -1,3 +1,40 @@
+2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeuname2c.cc: Implement C++29 P3733R1 - More named universal
+	character escapes as a DR.
+	(read_table): Don't ignore figment and abbreviation aliases.
+	* uname2c.h: Regenerate.
+
+2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* charset.cc (cpp_check_xid_property): Return
+	CPP_XID_START | CPP_XID_CONTINUE only if CXX23 bit is set and NXX23
+	is not.  If both are set, return CPP_XID_CONTINUE.
+
+2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc: Implement C++29 P3658R1 - Adjust identifier
+	following new Unicode recommendations as a DR.  Adjust invocation
+	in the toplevel comment.
+	(NONC): Add another enumerator to the unnamed enum, or it into
+	all_languages, renumber the rest of enumerators.
+	(read_proplist): New function.
+	(write_table): Print also NONC bit.
+	(main): Expect 6 arguments rather than 5.  Call read_proplist.
+	* charset.cc (NONC): Add another enumerator to the unnamed enum.
+	(cpp_check_xid_property): Return 0 if NONC bit is set.
+	(ucn_valid_in_identifier): If pedantic xid_identifiers in C,
+	return 0 if NONC bit is set.
+	* ucnid.h: Regenerate.
+
+2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/125048
+	* macro.cc (replace_args): Remember the position of map
+	in the pfile->line_table->info_macro.maps array and if vostate
+	is DROP, recompute map pointer as expand_arg call could have
+	reallocated the pfile->line_table->info_macro.maps array.
+
 2026-07-17  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* include/line-map.h (linemap_next_start_location): New function.
