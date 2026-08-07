@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-desugar-apit.h"
+#include "rust-ast-visitor.h"
 #include "rust-ast.h"
 #include "rust-type.h"
 
@@ -524,6 +525,8 @@ DesugarApit::visit (AST::Function &function)
 				    function.get_generic_params ());
       processor.go (implicit_generics);
     }
+
+  DefaultASTVisitor::visit (function);
 }
 
 } // namespace AST
