@@ -616,15 +616,6 @@ extern int vsnprintf (char *, size_t, const char *, va_list);
 #endif
 #endif
 
-#if !defined(HAVE_DESIGNATED_UNION_INITIALIZERS)
-#ifdef __cplusplus
-#define HAVE_DESIGNATED_UNION_INITIALIZERS (GCC_VERSION >= 4007)
-#else
-#define HAVE_DESIGNATED_UNION_INITIALIZERS \
-  ((GCC_VERSION >= 2007) || (__STDC_VERSION__ >= 199901L))
-#endif
-#endif
-
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
@@ -1126,7 +1117,8 @@ extern void fancy_abort (const char *, int, const char *)
    LIBGCC2_FLOAT_WORDS_BIG_ENDIAN
 
 /* Miscellaneous macros that are no longer used.  */
- #pragma GCC poison USE_MAPPED_LOCATION GET_ENVIRONMENT
+ #pragma GCC poison USE_MAPPED_LOCATION GET_ENVIRONMENT \
+  HAVE_DESIGNATED_UNION_INITIALIZERS
 
 /* Libiberty macros that are no longer used in GCC.  */
 #undef ANSI_PROTOTYPES

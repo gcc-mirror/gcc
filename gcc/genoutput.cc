@@ -253,29 +253,19 @@ output_operand_data (void)
 
   for (d = odata; d; d = d->next)
     {
-      struct pred_data *pred;
+      struct pred_data *pred = NULL;
 
-      printf ("  {\n");
-
-      printf ("    %s,\n",
-	      d->predicate && d->predicate[0] ? d->predicate : "0");
-
-      printf ("    \"%s\",\n", d->constraint ? d->constraint : "");
-
-      printf ("    E_%smode,\n", GET_MODE_NAME (d->mode));
-
-      printf ("    %d,\n", d->strict_low);
-
-      printf ("    %d,\n", d->constraint == NULL ? 1 : 0);
-
-      printf ("    %d,\n", d->eliminable);
-
-      pred = NULL;
       if (d->predicate)
 	pred = lookup_predicate (d->predicate);
-      printf ("    %d\n", pred && pred->codes[MEM]);
 
-      printf ("  },\n");
+      printf ("  { %s, \"%s\", E_%smode, %d, %d, %d, %d },\n",
+	      d->predicate && d->predicate[0] ? d->predicate : "0",
+	      d->constraint ? d->constraint : "",
+	      GET_MODE_NAME (d->mode),
+	      d->strict_low,
+	      d->constraint == NULL ? 1 : 0,
+	      d->eliminable,
+	      pred && pred->codes[MEM]);
     }
   printf ("};\n\n\n");
 }
@@ -303,11 +293,11 @@ output_insn_data (void)
   for (d = idata; d; d = d->next)
     {
       printf ("  /* %s:%d */\n", d->loc.filename, d->loc.lineno);
-      printf ("  {\n");
+      printf ("  { ");
 
       if (d->name)
 	{
-	  printf ("    \"%s\",\n", d->name);
+	  printf ("\"%s\", ", d->name);
 	  name_offset = 0;
 	  last_name = d->name;
 	  next_name = 0;
@@ -326,32 +316,23 @@ output_insn_data (void)
 	  name_offset++;
 	  if (next_name && (last_name == 0
 			    || name_offset > next_name_offset / 2))
-	    printf ("    \"%s-%d\",\n", next_name,
+	    printf ("\"%s-%d\", ", next_name,
 		    next_name_offset - name_offset);
 	  else
-	    printf ("    \"%s+%d\",\n", last_name, name_offset);
+	    printf ("\"%s+%d\", ", last_name, name_offset);
 	}
 
       switch (d->output_format)
 	{
 	case INSN_OUTPUT_FORMAT_NONE:
-	  printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
-	  printf ("    { 0 },\n");
-	  printf ("#else\n");
-	  printf ("    { 0, 0, 0 },\n");
-	  printf ("#endif\n");
+	  printf ("{}, ");
 	  break;
 	case INSN_OUTPUT_FORMAT_SINGLE:
 	  {
 	    const char *p = d->template_code;
 	    char prev = 0;
 
-	    printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
-	    printf ("    { .single =\n");
-	    printf ("#else\n");
-	    printf ("    {\n");
-	    printf ("#endif\n");
-	    printf ("    \"");
+	    printf ("\"");
 	    while (*p)
 	      {
 		if (IS_VSPACE (*p) && prev != '\\')
@@ -366,45 +347,27 @@ output_insn_data (void)
 		prev = *p;
 		++p;
 	      }
-	    printf ("\",\n");
-	    printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
-	    printf ("    },\n");
-	    printf ("#else\n");
-	    printf ("    0, 0 },\n");
-	    printf ("#endif\n");
+	    printf ("\", ");
 	  }
 	  break;
 	case INSN_OUTPUT_FORMAT_MULTI:
-	  printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
-	  printf ("    { .multi = output_%d },\n", d->code_number);
-	  printf ("#else\n");
-	  printf ("    { 0, output_%d, 0 },\n", d->code_number);
-	  printf ("#endif\n");
+	  printf ("output_%d, ", d->code_number);
 	  break;
 	case INSN_OUTPUT_FORMAT_FUNCTION:
-	  printf ("#if HAVE_DESIGNATED_UNION_INITIALIZERS\n");
-	  printf ("    { .function = output_%d },\n", d->code_number);
-	  printf ("#else\n");
-	  printf ("    { 0, 0, output_%d },\n", d->code_number);
-	  printf ("#endif\n");
+	  printf ("output_%d, ", d->code_number);
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
 
       if (d->name && d->name[0] != '*')
-	printf ("    { (insn_gen_fn::stored_funcptr) gen_%s },\n", d->name);
+	printf ("{ (insn_gen_fn::stored_funcptr) gen_%s }, ", d->name);
       else
-	printf ("    { 0 },\n");
+	printf ("{ 0 }, ");
 
-      printf ("    &operand_data[%d],\n", d->operand_number);
-      printf ("    %d,\n", d->n_generator_args);
-      printf ("    %d,\n", d->n_operands);
-      printf ("    %d,\n", d->n_dups);
-      printf ("    %d,\n", d->n_alternatives);
-      printf ("    %d\n", d->output_format);
-
-      printf ("  },\n");
+      printf ("&operand_data[%d], %d, %d, %d, %d, %d },\n",
+	      d->operand_number, d->n_generator_args, d->n_operands,
+	      d->n_dups, d->n_alternatives, d->output_format);
     }
   printf ("};\n\n\n");
 }

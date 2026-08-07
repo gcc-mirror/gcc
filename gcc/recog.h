@@ -526,19 +526,21 @@ struct insn_operand_data
 struct insn_data_d
 {
   const char *const name;
-#if HAVE_DESIGNATED_UNION_INITIALIZERS
-  union {
+
+  /* How to print the insn.  OUTPUT_FORMAT says which member is live.  The
+     constructors let genoutput write the member's value directly, and pick
+     the member from its type.  */
+  union insn_output_u
+  {
     const char *single;
     const char *const *multi;
     insn_output_fn function;
+
+    constexpr insn_output_u () : single (nullptr) {}
+    constexpr insn_output_u (const char *s) : single (s) {}
+    constexpr insn_output_u (const char *const *m) : multi (m) {}
+    constexpr insn_output_u (insn_output_fn f) : function (f) {}
   } output;
-#else
-  struct {
-    const char *single;
-    const char *const *multi;
-    insn_output_fn function;
-  } output;
-#endif
   const insn_gen_fn genfun;
   const struct insn_operand_data *const operand;
 
