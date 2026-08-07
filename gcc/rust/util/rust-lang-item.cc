@@ -65,6 +65,7 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"clone", Kind::CLONE},
   {"drop", Kind::DROP},
   {"sized", Kind::SIZED},
+  {"freeze", Kind::FREEZE},
   {"sync", Kind::SYNC},
   {"slice_alloc", Kind::SLICE_ALLOC},
   {"slice_u8_alloc", Kind::SLICE_U8_ALLOC},

@@ -93,6 +93,7 @@ public:
     CLONE,
     DROP,
     SIZED,
+    FREEZE,
     SYNC,
 
     // https://github.com/Rust-GCC/gccrs/issues/1896
