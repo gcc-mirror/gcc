@@ -970,9 +970,13 @@ main (int argc, const char **argv)
   output_add_clobbers (file);
   output_added_clobbers_hard_reg_p (file);
 
+  /* Spread these over the output files too.  Emitting them all into
+     whichever file happened to be current leaves that one much bigger than
+     the rest, which is the opposite of what splitting is for.  */
   for (overloaded_name *oname = rtx_reader_ptr->get_overloads ();
        oname; oname = oname->next)
     {
+      file = choose_output (output_files, file_idx);
       handle_overloaded_code_for (oname, file);
       handle_overloaded_gen (oname, file);
     }
