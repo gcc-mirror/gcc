@@ -399,6 +399,7 @@ cmp_significand_0 (const REAL_VALUE_TYPE *a)
 static inline void
 set_significand_bit (REAL_VALUE_TYPE *r, unsigned int n)
 {
+  gcc_checking_assert (n < SIGNIFICAND_BITS);
   r->sig[n / HOST_BITS_PER_LONG]
     |= (unsigned long)1 << (n % HOST_BITS_PER_LONG);
 }
@@ -408,6 +409,7 @@ set_significand_bit (REAL_VALUE_TYPE *r, unsigned int n)
 static inline void
 clear_significand_bit (REAL_VALUE_TYPE *r, unsigned int n)
 {
+  gcc_checking_assert (n < SIGNIFICAND_BITS);
   r->sig[n / HOST_BITS_PER_LONG]
     &= ~((unsigned long)1 << (n % HOST_BITS_PER_LONG));
 }
@@ -420,6 +422,7 @@ test_significand_bit (REAL_VALUE_TYPE *r, unsigned int n)
   /* ??? Compiler bug here if we return this expression directly.
      The conversion to bool strips the "&1" and we wind up testing
      e.g. 2 != 0 -> true.  Seen in gcc version 3.2 20020520.  */
+  gcc_checking_assert (n < SIGNIFICAND_BITS);
   int t = (r->sig[n / HOST_BITS_PER_LONG] >> (n % HOST_BITS_PER_LONG)) & 1;
   return t;
 }
@@ -431,6 +434,7 @@ clear_significand_below (REAL_VALUE_TYPE *r, unsigned int n)
 {
   int i, w = n / HOST_BITS_PER_LONG;
 
+  gcc_checking_assert (n <= SIGNIFICAND_BITS);
   for (i = 0; i < w; ++i)
     r->sig[i] = 0;
 

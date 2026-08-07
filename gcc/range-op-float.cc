@@ -2366,75 +2366,6 @@ zero_to_inf_range (REAL_VALUE_TYPE &lb, REAL_VALUE_TYPE &ub, int signbit_known)
     }
 }
 
-/* Widen a single bound of a sub-range by 1ulp (or 0.5ulp) in the direction of
-   DIR.  */
-
-static REAL_VALUE_TYPE
-float_widen_bound (tree type, const REAL_VALUE_TYPE &bound,
-		   const REAL_VALUE_TYPE &dir)
-{
-  REAL_VALUE_TYPE res = bound;
-  if (!real_isfinite (&bound) && real_isneg (&bound) == real_isneg (&dir))
-    return res;
-  frange_nextafter (TYPE_MODE (type), res, dir);
-  if (real_isinf (&res))
-    {
-      /* For +-DBL_MAX, instead of +-Inf use nexttoward (+-DBL_MAX, +-LDBL_MAX)
-	 in a hypothetical wider type with the same mantissa precision but
-	 larger exponent range; it is outside of range of double values, but
-	 makes it clear it is just one ulp larger rather than infinite amount
-	 larger.  */
-      res = real_isneg (&dir) ? dconstm1 : dconst1;
-      SET_REAL_EXP (&res, FLOAT_MODE_FORMAT (TYPE_MODE (type))->emax + 1);
-    }
-  if (!flag_rounding_math
-      && !MODE_COMPOSITE_P (TYPE_MODE (type))
-      && real_isfinite (&bound))
-    {
-      /* If not -frounding-math nor IBM double double, actually widen
-	 just by 0.5ulp rather than 1ulp.  */
-      REAL_VALUE_TYPE tem;
-      real_arithmetic (&tem, PLUS_EXPR, &bound, &res);
-      real_arithmetic (&res, RDIV_EXPR, &tem, &dconst2);
-    }
-  return res;
-}
-
-/* Extend the LHS range by 1ulp in each direction.  For op1_range
-   or op2_range of binary operations just computing the inverse
-   operation on ranges isn't sufficient.  Consider e.g.
-   [1., 1.] = op1 + [1., 1.].  op1's range is not [0., 0.], but
-   [-0x1.0p-54, 0x1.0p-53] (when not -frounding-math), any value for
-   which adding 1. to it results in 1. after rounding to nearest.
-   So, for op1_range/op2_range extend the lhs range by 1ulp (or 0.5ulp)
-   in each direction.  See PR109008 for more details.  */
-
-static frange
-float_widen_lhs_range (tree type, const frange &lhs)
-{
-  frange ret = lhs;
-  if (lhs.known_isnan ())
-    return ret;
-  /* Temporarily disable -ffinite-math-only, so that frange::set doesn't
-     reduce the range back to real_min_representable (type) as lower bound
-     or real_max_representable (type) as upper bound.  */
-  bool save_flag_finite_math_only = flag_finite_math_only;
-  flag_finite_math_only = false;
-  ret.set_undefined ();
-  for (unsigned i = 0; i < lhs.num_pairs (); ++i)
-    {
-      REAL_VALUE_TYPE lb = float_widen_bound (type, lhs.lower_bound (i),
-					      dconstninf);
-      REAL_VALUE_TYPE ub = float_widen_bound (type, lhs.upper_bound (i),
-					      dconstinf);
-      frange tmp;
-      tmp.set (type, lb, ub, lhs.get_nan_state ());
-      ret.union_ (tmp);
-    }
-  flag_finite_math_only = save_flag_finite_math_only;
-  return ret;
-}
-
 bool
 operator_plus::op1_range (frange &r, tree type, const frange &lhs,
 			  const frange &op2, relation_trio) const
@@ -2444,7 +2375,8 @@ operator_plus::op1_range (frange &r, tree type, const frange &lhs,
   range_op_handler minus (MINUS_EXPR);
   if (!minus)
     return false;
-  frange wlhs = float_widen_lhs_range (type, lhs);
+  frange wlhs = lhs;
+  wlhs.widen (type);
   return float_binary_op_range_finish (minus.fold_range (r, type, wlhs, op2),
 				       r, type, wlhs);
 }
@@ -2502,7 +2434,8 @@ operator_minus::op1_range (frange &r, tree type,
 {
   if (lhs.undefined_p ())
     return false;
-  frange wlhs = float_widen_lhs_range (type, lhs);
+  frange wlhs = lhs;
+  wlhs.widen (type);
   return float_binary_op_range_finish (
 	      range_op_handler (PLUS_EXPR).fold_range (r, type, wlhs, op2),
 	      r, type, wlhs);
@@ -2515,7 +2448,8 @@ operator_minus::op2_range (frange &r, tree type,
 {
   if (lhs.undefined_p ())
     return false;
-  frange wlhs = float_widen_lhs_range (type, lhs);
+  frange wlhs = lhs;
+  wlhs.widen (type);
   return float_binary_op_range_finish (fold_range (r, type, op1, wlhs),
 				       r, type, wlhs);
 }
@@ -2591,7 +2525,8 @@ operator_mult::op1_range (frange &r, tree type,
   range_op_handler rdiv (RDIV_EXPR);
   if (!rdiv)
     return false;
-  frange wlhs = float_widen_lhs_range (type, lhs);
+  frange wlhs = lhs;
+  wlhs.widen (type);
   bool ret = rdiv.fold_range (r, type, wlhs, op2);
   if (ret == false)
     return false;
@@ -2756,7 +2691,8 @@ public:
   {
     if (lhs.undefined_p ())
       return false;
-    frange wlhs = float_widen_lhs_range (type, lhs);
+    frange wlhs = lhs;
+    wlhs.widen (type);
     bool ret = range_op_handler (MULT_EXPR).fold_range (r, type, wlhs, op2);
     if (!ret)
       return ret;
@@ -2788,7 +2724,8 @@ public:
   {
     if (lhs.undefined_p ())
       return false;
-    frange wlhs = float_widen_lhs_range (type, lhs);
+    frange wlhs = lhs;
+    wlhs.widen (type);
     bool ret = fold_range (r, type, op1, wlhs);
     if (!ret)
       return ret;
@@ -3025,7 +2962,8 @@ operator_cast::op1_range (frange &r, tree type, const frange &lhs,
   else
     {
       rm = true;
-      wlhs = float_widen_lhs_range (lhs_type, lhs);
+      wlhs = lhs;
+      wlhs.widen (lhs_type);
     }
   auto save_flag_rounding_math = flag_rounding_math;
   flag_rounding_math = rm;
@@ -3273,14 +3211,15 @@ range_op_float_tests ()
   if (HONOR_NANS (float_type_node))
     ASSERT_TRUE (r.maybe_isnan ());
 
-  // float_widen_lhs_range widens each sub-range and keeps the gap between
+  // r.widen widens each sub-range and keeps the gap between
   // them.
   r0 = frange_float ("1.0", "2.0");
   r1 = frange_float ("10.0", "11.0");
   r0.union_ (r1);
   r0.clear_nan ();
   ASSERT_EQ (r0.num_pairs (), 2);
-  r = float_widen_lhs_range (float_type_node, r0);
+  r = r0;
+  r.widen (float_type_node);
   ASSERT_EQ (r.num_pairs (), 2);
   REAL_VALUE_TYPE five;
   real_from_string (&five, "5.0");

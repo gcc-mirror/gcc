@@ -672,6 +672,8 @@ public:
   unsigned num_pairs () const { return m_num_ranges; }
   const REAL_VALUE_TYPE &lower_bound (unsigned pair) const;
   const REAL_VALUE_TYPE &upper_bound (unsigned pair) const;
+
+  void widen (tree);
 protected:
   virtual bool contains_p (tree cst) const override;
   virtual void set (tree, tree, value_range_kind = VR_RANGE) override;

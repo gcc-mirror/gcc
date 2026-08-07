@@ -1750,6 +1750,92 @@ frange::ubound () const
   return build_real (type (), upper_bound ());
 }
 
+/* Widen a single bound of a sub-range by 1ulp (or 0.5ulp) in the direction of
+   DIR.  */
+
+static REAL_VALUE_TYPE
+float_widen_bound (tree type, const REAL_VALUE_TYPE &bound,
+		   const REAL_VALUE_TYPE &dir)
+{
+  REAL_VALUE_TYPE res = bound;
+  if (!real_isfinite (&bound) && real_isneg (&bound) == real_isneg (&dir))
+    return res;
+  frange_nextafter (TYPE_MODE (type), res, dir);
+  if (real_isinf (&res))
+    {
+      /* For +-DBL_MAX, instead of +-Inf use nexttoward (+-DBL_MAX, +-LDBL_MAX)
+	 in a hypothetical wider type with the same mantissa precision but
+	 larger exponent range; it is outside of range of double values, but
+	 makes it clear it is just one ulp larger rather than infinite amount
+	 larger.  */
+      res = real_isneg (&dir) ? dconstm1 : dconst1;
+      SET_REAL_EXP (&res, FLOAT_MODE_FORMAT (TYPE_MODE (type))->emax + 1);
+    }
+  if (!flag_rounding_math
+      && !MODE_COMPOSITE_P (TYPE_MODE (type))
+      && real_isfinite (&bound))
+    {
+      /* If not -frounding-math nor IBM double double, actually widen
+	 just by 0.5ulp rather than 1ulp.  */
+      REAL_VALUE_TYPE tem;
+      real_arithmetic (&tem, PLUS_EXPR, &bound, &res);
+      real_arithmetic (&res, RDIV_EXPR, &tem, &dconst2);
+    }
+  return res;
+}
+
+/* Extend the *this range by 1ulp in each direction.  For op1_range
+   or op2_range of binary operations just computing the inverse
+   operation on ranges isn't sufficient.  Consider e.g.
+   [1., 1.] = op1 + [1., 1.].  op1's range is not [0., 0.], but
+   [-0x1.0p-54, 0x1.0p-53] (when not -frounding-math), any value for
+   which adding 1. to it results in 1. after rounding to nearest.
+   So, for op1_range/op2_range extend the lhs range by 1ulp (or 0.5ulp)
+   in each direction.  See PR109008 for more details.  */
+
+void
+frange::widen (tree type)
+{
+  if (known_isnan ())
+    return;
+  /* Temporarily disable -ffinite-math-only, so that frange::set doesn't
+     reduce the range back to real_min_representable (type) as lower bound
+     or real_max_representable (type) as upper bound.  */
+  bool save_flag_finite_math_only = flag_finite_math_only;
+  flag_finite_math_only = false;
+  unsigned j = 0;
+  for (unsigned i = 0; i < num_pairs (); ++i)
+    {
+      REAL_VALUE_TYPE lb = float_widen_bound (type, lower_bound (i),
+					      dconstninf);
+      REAL_VALUE_TYPE ub = float_widen_bound (type, upper_bound (i),
+					      dconstinf);
+      /* The result of float_widen_bound is often not representable in
+	 type (could be smaller by 1ulp from representable finite minimum,
+	 0.5ulp from some representable finite value or 1ulp larger than
+	 representable finite maximum).  On such values calling e.g.
+	 frange_nextafter doesn't work properly, so avoid merging the
+	 pairs with union_ because that calls frange_fusible_p etc.
+	 This range is often just something that should have the
+	 real values passed to frange_arithmetic etc. and have the result
+	 of that converted to something actually representable in the
+	 type.  See PR126641 and PR109008.  As lhs should have been
+	 canonicalized before, the slightly adjusted range should have
+	 similar properties, just merge pairs where max would be >= than
+	 min of the next pair.  */
+      if (j && !real_less (&m_pairs[j - 1].max, &lb))
+	m_pairs[j - 1].max = ub;
+      else
+	{
+	  m_pairs[j].min = lb;
+	  m_pairs[j].max = ub;
+	  ++j;
+	}
+    }
+  m_num_ranges = j;
+  flag_finite_math_only = save_flag_finite_math_only;
+}
+
 // Here we copy between any two irange's.
 
 irange &
