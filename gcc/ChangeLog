@@ -1,3 +1,12 @@
+2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2026-07-29  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126405
+	* cfgexpand.cc (verify_partition_mem_exprs): New function.
+	(pass_expand::execute): Call it.
+
 2026-08-04  Jin Ma  <jinma@linux.alibaba.com>
 
 	Backported from master:
