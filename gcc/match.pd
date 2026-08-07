@@ -1986,6 +1986,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (op:c (bit_and @0 @1) (bit_xor @0 @1))
   (bit_ior @0 @1)))
 
+/* ((x >> 1) + (y >> 1)) + (x & y & 1) -> (x & y) + ((x ^ y) >> 1).
+   Both are the average of x and y computed without overflowing, since
+   x + y is 2 * (x & y) + (x ^ y), but the second form needs four
+   operations instead of six.  */
+(simplify
+ (plus:c (plus (rshift @0 integer_onep@2) (rshift @1 @2))
+	 (bit_and (bit_and:c@3 @0 @1) integer_onep))
+ (plus @3 (rshift (bit_xor @0 @1) @2)))
+
 /* (x & y) + (x | y) -> x + y */
 (simplify
  (plus:c (bit_and @0 @1) (bit_ior @0 @1))
