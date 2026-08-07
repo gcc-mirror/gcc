@@ -467,6 +467,8 @@ frange_mpfr_arg1 (REAL_VALUE_TYPE *res_low, REAL_VALUE_TYPE *res_high,
   return true;
 }
 
+extern frange float_widen_lhs_range (tree, const frange &);
+
 class cfn_sqrt : public range_operator
 {
 public:
@@ -573,7 +575,10 @@ public:
 	  frange_nextafter (TYPE_MODE (type), lb, dconstninf);
 	if (real_less (&dconst0, &lb))
 	  {
-	    REAL_VALUE_TYPE op = lb;
+	    frange wlhs (type, lb, dconstinf);
+	    wlhs.clear_nan ();
+	    REAL_VALUE_TYPE op
+	      = float_widen_lhs_range (type, wlhs).lower_bound ();
 	    frange_arithmetic (MULT_EXPR, type, lb, op, op, dconstninf);
 	  }
 	else
@@ -587,7 +592,10 @@ public:
 	  frange_nextafter (TYPE_MODE (type), ub, dconstinf);
 	if (real_isfinite (&ub))
 	  {
-	    REAL_VALUE_TYPE op = ub;
+	    frange wlhs (type, dconstninf, ub);
+	    wlhs.clear_nan ();
+	    REAL_VALUE_TYPE op
+	      = float_widen_lhs_range (type, wlhs).upper_bound ();
 	    frange_arithmetic (MULT_EXPR, type, ub, op, op, dconstinf);
 	  }
 	else
