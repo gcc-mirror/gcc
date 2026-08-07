@@ -304,52 +304,31 @@ walk_rtx (md_rtx_info *info, rtx x, class accum_extract *acc)
     }
 }
 
-/* Given a PATH, representing a path down the instruction's
-   pattern from the root to a certain point, output code to
-   evaluate to the rtx at that point.  */
+/* The character that marks an operand number that a pattern does not use.
+   It cannot clash with a path step, which is always a digit or a letter.  */
+#define MISSING_OPERAND_CHAR '!'
+
+/* The paths of all extraction methods, concatenated.  Each path is NUL
+   terminated; the paths of one method are adjacent, operands first and
+   dups second.  */
+static struct obstack pathpool;
+
+/* The dup numbers of all extraction methods, concatenated.  */
+static vec<int> dupnums;
+
+/* Add PATH, which is null for an operand number that the pattern skips,
+   to the path pool.  */
 
 static void
-print_path (const char *path)
+add_path (const char *path)
 {
-  int len = strlen (path);
-  int i;
-
-  if (len == 0)
-    {
-      /* Don't emit "pat", since we may try to take the address of it,
-	 which isn't what is intended.  */
-      fputs ("PATTERN (insn)", stdout);
-      return;
-    }
-
-  /* We first write out the operations (XEXP or XVECEXP) in reverse
-     order, then write "pat", then the indices in forward order.  */
-
-  for (i = len - 1; i >= 0 ; i--)
-    {
-      if (ISLOWER (path[i]) || ISUPPER (path[i]))
-	fputs ("XVECEXP (", stdout);
-      else if (ISDIGIT (path[i]))
-	fputs ("XEXP (", stdout);
-      else
-	gcc_unreachable ();
-    }
-
-  fputs ("pat", stdout);
-
-  for (i = 0; i < len; i++)
-    {
-      if (ISUPPER (path[i]))
-	printf (", 0, %d)", path[i] - UPPER_OFFSET);
-      else if (ISLOWER (path[i]))
-	printf (", 0, %d)", path[i] - 'a');
-      else if (ISDIGIT (path[i]))
-	printf (", %d)", path[i] - '0');
-      else
-	gcc_unreachable ();
-    }
+  if (path)
+    obstack_grow (&pathpool, path, strlen (path));
+  else
+    obstack_1grow (&pathpool, MISSING_OPERAND_CHAR);
+  obstack_1grow (&pathpool, '\0');
 }
-
+
 static void
 print_header (void)
 {
@@ -374,43 +353,203 @@ print_header (void)
 /* This variable is used as the \"location\" of any missing operand\n\
    whose numbers are skipped by a given pattern.  */\n\
 static rtx junk ATTRIBUTE_UNUSED;\n");
+}
+
+/* Print STR as a C string literal, broken into chunks so that no output
+   line gets excessively long.  */
+
+static void
+print_string_literal (const char *str, unsigned int len)
+{
+  printf ("  \"");
+  for (unsigned int i = 0; i < len; i++)
+    {
+      if (str[i] == '\0')
+	/* Spell the terminator with all three octal digits: the next
+	   character may be a digit, which a shorter escape would absorb.  */
+	printf ("\\000");
+      else
+	putchar (str[i]);
+      if ((i % 60) == 59 && i + 1 < len)
+	printf ("\"\n  \"");
+    }
+  printf ("\"");
+}
+
+/* Print the tables that drive insn_extract, and insn_extract itself.  */
+
+static void
+print_extractions (void)
+{
+  struct extraction *p;
+  struct code_ptr *link;
+  unsigned int i;
+
+  /* Number the methods and record, for every insn code, the method that
+     extracts its operands.  Method 0 means "not an extractable insn" and
+     method 1 means "an old-style define_peephole", whose operand count is
+     only known at run time.  */
+  auto_vec<unsigned int> method_of_code;
+  auto_vec<struct extraction *> methods;
+  auto_vec<unsigned int> path_start;
+  auto_vec<unsigned int> dup_start;
+
+  for (link = peepholes; link; link = link->next)
+    {
+      while (method_of_code.length () <= (unsigned int) link->insn_code)
+	method_of_code.safe_push (0);
+      method_of_code[link->insn_code] = 1;
+    }
+
+  obstack_init (&pathpool);
+  for (p = extractions; p; p = p->next)
+    {
+      unsigned int method = methods.length () + 2;
+      gcc_assert (method <= USHRT_MAX);
+      gcc_assert (p->op_count <= UCHAR_MAX && p->dup_count <= UCHAR_MAX);
+      path_start.safe_push (obstack_object_size (&pathpool));
+      dup_start.safe_push (dupnums.length ());
+      methods.safe_push (p);
+      for (i = 0; i < p->op_count; i++)
+	add_path (p->oplocs[i]);
+      for (i = 0; i < p->dup_count; i++)
+	{
+	  add_path (p->duplocs[i]);
+	  gcc_assert (IN_RANGE (p->dupnums[i], 0, UCHAR_MAX));
+	  dupnums.safe_push (p->dupnums[i]);
+	}
+      for (link = p->insns; link; link = link->next)
+	{
+	  while (method_of_code.length () <= (unsigned int) link->insn_code)
+	    method_of_code.safe_push (0);
+	  method_of_code[link->insn_code] = method;
+	}
+    }
+  path_start.safe_push (obstack_object_size (&pathpool));
+
+  unsigned int pool_len = obstack_object_size (&pathpool);
+  const char *pool = XOBFINISH (&pathpool, const char *);
+
+  printf ("/* The paths that locate the operands and the dups of each\n"
+	  "   extraction method.  A path is a sequence of steps down the\n"
+	  "   pattern: a digit D selects XEXP (x, D - '0'), a lower-case\n"
+	  "   letter L selects XVECEXP (x, 0, L - 'a') and an upper-case\n"
+	  "   letter U selects XVECEXP (x, 0, U - %d).  An empty path denotes\n"
+	  "   the pattern itself and '%c' an operand number that the pattern\n"
+	  "   does not use.  */\n", UPPER_OFFSET, MISSING_OPERAND_CHAR);
+  printf ("#define UPPER_OFFSET %d\n", UPPER_OFFSET);
+  printf ("#define MISSING_OPERAND_CHAR '%c'\n\n", MISSING_OPERAND_CHAR);
+  printf ("static const char extract_paths[] =\n");
+  print_string_literal (pool, pool_len);
+  printf (";\n\n");
+
+  printf ("static const unsigned char extract_dup_num[] = {");
+  for (i = 0; i < dupnums.length (); i++)
+    printf ("%s%d,", (i % 20) == 0 ? "\n  " : " ", dupnums[i]);
+  printf ("%s0\n};\n\n", dupnums.length () ? "\n  " : "");
+
+  printf ("struct extract_method_d {\n"
+	  "  unsigned int paths;\n"
+	  "  unsigned int dups;\n"
+	  "  unsigned char n_operands;\n"
+	  "  unsigned char n_dups;\n"
+	  "};\n\n");
+
+  printf ("static const struct extract_method_d extract_methods[] = {\n"
+	  "  { 0, 0, 0, 0 },\n"
+	  "  { 0, 0, 0, 0 },\n");
+  for (i = 0; i < methods.length (); i++)
+    printf ("  { %u, %u, %u, %u },\n", path_start[i], dup_start[i],
+	    methods[i]->op_count, methods[i]->dup_count);
+  printf ("};\n\n");
+
+  printf ("static const unsigned short extract_method_of_code[] = {");
+  for (i = 0; i < method_of_code.length (); i++)
+    printf ("%s%u,", (i % 20) == 0 ? "\n  " : " ", method_of_code[i]);
+  printf ("\n};\n\n");
+
+  puts ("\
+/* Follow one NUL-terminated path in extract_paths from *PP, starting at\n\
+   the pattern *ROOT, and return the location it selects.  *PP is left\n\
+   just after the path's terminator.  */\n\
+\n\
+static inline rtx *\n\
+follow_extract_path (const char **pp, rtx *root)\n{\n\
+  const char *p = *pp;\n\
+  rtx *loc = root;\n\
+  for (; *p; p++)\n\
+    if (ISDIGIT (*p))\n\
+      loc = &XEXP (*loc, *p - '0');\n\
+    else if (ISLOWER (*p))\n\
+      loc = &XVECEXP (*loc, 0, *p - 'a');\n\
+    else\n\
+      loc = &XVECEXP (*loc, 0, *p - UPPER_OFFSET);\n\
+  *pp = p + 1;\n\
+  return loc;\n\
+}\n");
 
   puts ("\
 void\n\
 insn_extract (rtx_insn *insn)\n{\n\
   rtx *ro = recog_data.operand;\n\
   rtx **ro_loc = recog_data.operand_loc;\n\
-  rtx pat = PATTERN (insn);\n\
-  int i ATTRIBUTE_UNUSED; /* only for peepholes */\n\
+  int icode = INSN_CODE (insn);\n\
 \n\
   if (flag_checking)\n\
     {\n\
       memset (ro, 0xab, sizeof (*ro) * MAX_RECOG_OPERANDS);\n\
       memset (ro_loc, 0xab, sizeof (*ro_loc) * MAX_RECOG_OPERANDS);\n\
-    }\n");
-
-  puts ("\
-  switch (INSN_CODE (insn))\n\
+    }\n\
+\n\
+  unsigned int method = (icode >= 0\n\
+			 && icode < (int) ARRAY_SIZE (extract_method_of_code)\n\
+			 ? extract_method_of_code[icode] : 0);\n\
+  if (method == 0)\n\
     {\n\
-    default:\n\
       /* Control reaches here if insn_extract has been called with an\n\
-         unrecognizable insn (code -1), or an insn whose INSN_CODE\n\
-         corresponds to a DEFINE_EXPAND in the machine description;\n\
-         either way, a bug.  */\n\
-      if (INSN_CODE (insn) < 0)\n\
-        fatal_insn (\"unrecognizable insn:\", insn);\n\
+	 unrecognizable insn (code -1), or an insn whose INSN_CODE\n\
+	 corresponds to a DEFINE_EXPAND in the machine description;\n\
+	 either way, a bug.  */\n\
+      if (icode < 0)\n\
+	fatal_insn (\"unrecognizable insn:\", insn);\n\
       else\n\
-        fatal_insn (\"insn with invalid code number:\", insn);\n");
+	fatal_insn (\"insn with invalid code number:\", insn);\n\
+    }\n\
+\n\
+  if (method == 1)\n\
+    {\n\
+      /* An old-style define_peephole.  The vector in the insn was created\n\
+	 just for this function and contains nothing but operands.  */\n\
+      for (int i = XVECLEN (PATTERN (insn), 0) - 1; i >= 0; i--)\n\
+	ro[i] = *(ro_loc[i] = &XVECEXP (PATTERN (insn), 0, i));\n\
+      return;\n\
+    }\n\
+\n\
+  const struct extract_method_d *m = &extract_methods[method];\n\
+  const char *p = extract_paths + m->paths;\n\
+  for (unsigned int i = 0; i < m->n_operands; i++)\n\
+    if (*p == MISSING_OPERAND_CHAR)\n\
+      {\n\
+	ro[i] = const0_rtx;\n\
+	ro_loc[i] = &junk;\n\
+	p += 2;\n\
+      }\n\
+    else\n\
+      {\n\
+	rtx *loc = follow_extract_path (&p, &PATTERN (insn));\n\
+	ro_loc[i] = loc;\n\
+	ro[i] = *loc;\n\
+      }\n\
+  for (unsigned int i = 0; i < m->n_dups; i++)\n\
+    {\n\
+      recog_data.dup_loc[i] = follow_extract_path (&p, &PATTERN (insn));\n\
+      recog_data.dup_num[i] = extract_dup_num[m->dups + i];\n\
+    }\n}");
 }
 
 int
 main (int argc, const char **argv)
 {
-  unsigned int i;
-  struct extraction *p;
-  struct code_ptr *link;
-  const char *name;
-
   progname = "genextract";
 
   if (!init_rtx_reader_args (argc, argv))
@@ -444,64 +583,7 @@ main (int argc, const char **argv)
     return FATAL_EXIT_CODE;
 
   print_header ();
-
-  /* Write out code to handle peepholes and the insn_codes that it should
-     be called for.  */
-  if (peepholes)
-    {
-      for (link = peepholes; link; link = link->next)
-	printf ("    case %d:\n", link->insn_code);
-
-      /* The vector in the insn says how many operands it has.
-	 And all it contains are operands.  In fact, the vector was
-	 created just for the sake of this function.  We need to set the
-	 location of the operands for sake of simplifications after
-	 extraction, like eliminating subregs.  */
-      puts ("      for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)\n"
-	    "          ro[i] = *(ro_loc[i] = &XVECEXP (pat, 0, i));\n"
-	    "      break;\n");
-    }
-
-  /* Write out all the ways to extract insn operands.  */
-  for (p = extractions; p; p = p->next)
-    {
-      for (link = p->insns; link; link = link->next)
-	{
-	  i = link->insn_code;
-	  name = get_insn_name (i);
-	  if (name)
-	    printf ("    case %d:  /* %s */\n", i, name);
-	  else
-	    printf ("    case %d:\n", i);
-	}
-
-      for (i = 0; i < p->op_count; i++)
-	{
-	  if (p->oplocs[i] == 0)
-	    {
-	      printf ("      ro[%d] = const0_rtx;\n", i);
-	      printf ("      ro_loc[%d] = &junk;\n", i);
-	    }
-	  else
-	    {
-	      printf ("      ro[%d] = *(ro_loc[%d] = &", i, i);
-	      print_path (p->oplocs[i]);
-	      puts (");");
-	    }
-	}
-
-      for (i = 0; i < p->dup_count; i++)
-	{
-	  printf ("      recog_data.dup_loc[%d] = &", i);
-	  print_path (p->duplocs[i]);
-	  puts (";");
-	  printf ("      recog_data.dup_num[%d] = %d;\n", i, p->dupnums[i]);
-	}
-
-      puts ("      break;\n");
-    }
-
-  puts ("    }\n}");
+  print_extractions ();
   fflush (stdout);
   return (ferror (stdout) != 0 ? FATAL_EXIT_CODE : SUCCESS_EXIT_CODE);
 }
