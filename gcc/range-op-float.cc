@@ -2855,7 +2855,6 @@ bool
 operator_cast::fold_range (frange &r, tree type, const frange &op1,
 			   const frange &, relation_trio) const
 {
-  REAL_VALUE_TYPE lb, ub;
   enum machine_mode mode = TYPE_MODE (type);
   bool mode_composite = MODE_COMPOSITE_P (mode);
 
@@ -2872,46 +2871,53 @@ operator_cast::fold_range (frange &r, tree type, const frange &op1,
       return true;
     }
 
-  const REAL_VALUE_TYPE &lh_lb = op1.lower_bound ();
-  const REAL_VALUE_TYPE &lh_ub = op1.upper_bound ();
-  real_convert (&lb, mode, &lh_lb);
-  real_convert (&ub, mode, &lh_ub);
-
-  if (flag_rounding_math)
+  r.set_undefined ();
+  for (unsigned i = 0; i < op1.num_pairs (); ++i)
     {
-      if (real_less (&lh_lb, &lb))
-	{
-	  if (mode_composite
-	      && (real_isdenormal (&lb, mode) || real_iszero (&lb)))
-	    {
-	      // IBM extended denormals only have DFmode precision.
-	      REAL_VALUE_TYPE tmp, tmp2;
-	      real_convert (&tmp2, DFmode, &lh_lb);
-	      real_nextafter (&tmp, REAL_MODE_FORMAT (DFmode), &tmp2,
-			      &dconstninf);
-	      real_convert (&lb, mode, &tmp);
-	    }
-	  else
-	    frange_nextafter (mode, lb, dconstninf);
-	}
-      if (real_less (&ub, &lh_ub))
-	{
-	  if (mode_composite
-	      && (real_isdenormal (&ub, mode) || real_iszero (&ub)))
-	    {
-	      // IBM extended denormals only have DFmode precision.
-	      REAL_VALUE_TYPE tmp, tmp2;
-	      real_convert (&tmp2, DFmode, &lh_ub);
-	      real_nextafter (&tmp, REAL_MODE_FORMAT (DFmode), &tmp2,
-			      &dconstinf);
-	      real_convert (&ub, mode, &tmp);
-	    }
-	  else
-	    frange_nextafter (mode, ub, dconstinf);
-	}
-    }
+      REAL_VALUE_TYPE lb, ub;
+      const REAL_VALUE_TYPE &lh_lb = op1.lower_bound (i);
+      const REAL_VALUE_TYPE &lh_ub = op1.upper_bound (i);
+      real_convert (&lb, mode, &lh_lb);
+      real_convert (&ub, mode, &lh_ub);
 
-  r.set (type, lb, ub, op1.get_nan_state ());
+      if (flag_rounding_math)
+	{
+	  if (real_less (&lh_lb, &lb))
+	    {
+	      if (mode_composite
+		  && (real_isdenormal (&lb, mode) || real_iszero (&lb)))
+		{
+		  // IBM extended denormals only have DFmode precision.
+		  REAL_VALUE_TYPE tmp, tmp2;
+		  real_convert (&tmp2, DFmode, &lh_lb);
+		  real_nextafter (&tmp, REAL_MODE_FORMAT (DFmode), &tmp2,
+				  &dconstninf);
+		  real_convert (&lb, mode, &tmp);
+		}
+	      else
+		frange_nextafter (mode, lb, dconstninf);
+	    }
+	  if (real_less (&ub, &lh_ub))
+	    {
+	      if (mode_composite
+		  && (real_isdenormal (&ub, mode) || real_iszero (&ub)))
+		{
+		  // IBM extended denormals only have DFmode precision.
+		  REAL_VALUE_TYPE tmp, tmp2;
+		  real_convert (&tmp2, DFmode, &lh_ub);
+		  real_nextafter (&tmp, REAL_MODE_FORMAT (DFmode), &tmp2,
+				  &dconstinf);
+		  real_convert (&ub, mode, &tmp);
+		}
+	      else
+		frange_nextafter (mode, ub, dconstinf);
+	    }
+	}
+
+      frange tmp;
+      tmp.set (type, lb, ub, op1.get_nan_state ());
+      r.union_ (tmp);
+    }
 
   if (flag_trapping_math
       && MODE_HAS_INFINITIES (TYPE_MODE (type))
@@ -3265,6 +3271,15 @@ range_op_float_tests ()
 		   wi::shwi (6, iprec), wi::shwi (10, iprec));
   i0.union_ (i1);
   range_op_handler (FLOAT_EXPR).fold_range (r, float_type_node, i0, trange);
+  ASSERT_EQ (r.num_pairs (), 2);
+
+  // Casting the double range [1,2] U [10,11] to float stays two pieces rather
+  // than collapsing to the hull [1, 11].
+  r0 = frange_float ("1.0", "2.0", double_type_node);
+  r1 = frange_float ("10.0", "11.0", double_type_node);
+  r0.union_ (r1);
+  r0.clear_nan ();
+  range_op_handler (CONVERT_EXPR).fold_range (r, float_type_node, r0, r0);
   ASSERT_EQ (r.num_pairs (), 2);
 }
 
