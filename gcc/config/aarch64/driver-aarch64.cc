@@ -79,9 +79,8 @@ struct aarch64_arch_driver_info
   aarch64_feature_flags flags;
 };
 
-/* Skip the leading "V" in the architecture name.  */
 #define AARCH64_ARCH(NAME, CORE, ARCH_IDENT, ARCH_REV, FLAGS) \
-  { #ARCH_IDENT + 1, NAME, feature_deps::ARCH_IDENT ().enable },
+  { #ARCH_IDENT, NAME, feature_deps::ARCH_IDENT ().enable },
 
 static constexpr const aarch64_arch_driver_info aarch64_arches[] =
 {
