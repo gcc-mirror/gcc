@@ -600,8 +600,7 @@ gen_split (const md_rtx_info &info, FILE *file)
     if (*p == '/')
       fn = p + 1;
 
-  fprintf (file, "  if (dump_file)\n");
-  fprintf (file, "    fprintf (dump_file, \"Splitting with gen_%s_%d (%s:%d)\\n\");\n",
+  fprintf (file, "  note_split (\"gen_%s_%d (%s:%d)\");\n",
 	  name, info.index, fn, info.loc.lineno);
 
   fprintf (file, "  start_sequence ();\n");

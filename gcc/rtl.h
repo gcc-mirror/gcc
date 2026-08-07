@@ -3080,6 +3080,7 @@ enum class expand_opcode {
 
 extern rtx expand_rtx (const uint8_t *, rtx *);
 extern rtx_insn *complete_seq (const uint8_t *, rtx *);
+extern void note_split (const char *);
 extern rtx copy_rtx_if_shared (rtx);
 
 /* In rtl.cc */

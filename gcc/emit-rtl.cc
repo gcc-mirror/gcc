@@ -7092,6 +7092,18 @@ complete_seq (const uint8_t *seq, rtx *operands)
   return end_sequence ();
 }
 
+/* Note in the dump file that WHAT, which names a define_split or a
+   define_peephole2 and where it came from, is being applied.  genemit.cc
+   emits a call to this rather than the test and the fprintf, so that the
+   dump is written out once instead of once per pattern.  */
+
+void
+note_split (const char *what)
+{
+  if (dump_file)
+    fprintf (dump_file, "Splitting with %s\n", what);
+}
+
 /* Initialize fields of rtl_data related to stack alignment.  */
 
 void
