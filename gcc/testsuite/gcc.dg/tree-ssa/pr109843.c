@@ -1,6 +1,7 @@
 /* PR tree-optimization/109843 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-additional-options "-msse2 -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 #include <stdbool.h>
 

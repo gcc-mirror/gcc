@@ -1,6 +1,7 @@
 /* PR tree-optimization/112472 */
 /* { dg-do compile } */
 /* { dg-options "-O1 -fdump-tree-optimized" } */
+/* { dg-additional-options "-msse2 -mfpmath=sse" { target { { i?86-*-* x86_64-*-* } && ilp32 } } } */
 
 /* (trunc)copysign ((extend)a, CST) with a negative CST should be
    simplified to .COPYSIGN (a, -1.0e+0).  */
