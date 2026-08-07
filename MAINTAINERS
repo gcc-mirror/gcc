@@ -38,7 +38,7 @@ Richard Earnshaw                                <richard.earnshaw@arm.com>
 Jakub Jelinek                                   <jakub@redhat.com>
 Richard Kenner                                  <kenner@nyu.edu>
 Jeff Law                                        <jeffrey.law@oss.qualcomm.com>
-Michael Meissner                                <gnu@the-meissners.org>
+Michael Meissner                                <meissner@gcc.gnu.org>
 Jason Merrill                                   <jason@redhat.com>
 David S. Miller                                 <davem@redhat.com>
 Joseph Myers                                    <josmyers@redhat.com>
@@ -118,6 +118,7 @@ rs6000 vector extns     Aldy Hernandez          <aldy@quesejoda.com>
 rs6000/powerpc port     Segher Boessenkool      <segher@kernel.crashing.org>
 rs6000/powerpc port     David Edelsohn          <dje.gcc@gmail.com>
 rs6000/powerpc port     Kewen Lin               <linkw@gcc.gnu.org>
+rs6000/powerpc port     Michael Meissner        <meissner@gcc.gnu.org>
 rx port                 Nick Clifton            <nickc@redhat.com>
 s390 port               Andreas Krebbel         <krebbel@linux.ibm.com>
 s390 port               Stefan Schulze Frielinghaus <stefansf@linux.ibm.com>

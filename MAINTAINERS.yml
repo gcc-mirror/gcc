@@ -3313,12 +3313,10 @@ users:
 - sn: Meissner
   cn: Michael Meissner
   email:
-  - gnu@the-meissners.org
   - meissner@gcc.gnu.org
   roles:
   - Global
-  - Maintainer: scheduler (+ haifa)
-  - WriteAfter
+  - Maintainer: rs6000/powerpc port
   account: meissner
   inactive: true
 - sn: Melcr
