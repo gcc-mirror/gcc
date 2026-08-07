@@ -166,6 +166,8 @@ struct attr_value
   struct insn_ent *first_insn;	/* First insn with this value.  */
   int num_insns;		/* Number of insns with this value.  */
   int has_asm_insn;		/* True if this value used for `asm' insns */
+  int enum_index;		/* Position in the attribute's enum, or -1
+				   for a value computed by genattrtab.  */
 };
 
 /* Structure for each attribute.  */
@@ -183,6 +185,13 @@ public:
   unsigned is_numeric	: 1;	/* Values of this attribute are numeric.  */
   unsigned is_const	: 1;	/* Attribute value constant for each run.  */
   unsigned is_special	: 1;	/* Don't call `write_attr_set'.  */
+  int num_values;		/* Number of declared enum values.  */
+
+  /* Set when the attribute is a function of one other attribute alone.
+     DERIVED_FROM is that attribute and DERIVED_TABLE maps each of its
+     enum values to one of ours.  */
+  class attr_desc *derived_from;
+  rtx *derived_table;
 };
 
 /* Structure for each DEFINE_DELAY.  */
@@ -1260,6 +1269,7 @@ get_attr_value (file_location loc, rtx value, class attr_desc *attr,
   av->first_insn = NULL;
   av->num_insns = 0;
   av->has_asm_insn = 0;
+  av->enum_index = -1;
 
   return av;
 }
@@ -2886,6 +2896,247 @@ get_attr_order (class attr_desc ***ret)
   return num;
 }
 
+/* Return the position of ATTR's enum value called NAME, or -1 if ATTR has
+   no such value.  */
+
+static int
+attr_value_index (class attr_desc *attr, const char *name)
+{
+  for (struct attr_value *av = attr->first_value; av; av = av->next)
+    if (av->enum_index >= 0 && !strcmp (XSTR (av->value, 0), name))
+      return av->enum_index;
+  return -1;
+}
+
+/* Record in SET which of Y's enum values make the attribute test EXP true.
+   SET has Y->num_values entries.  Return false if EXP tests anything beyond
+   Y and attributes already known to be functions of Y.  */
+
+static bool
+eq_attr_value_set (rtx exp, class attr_desc *y, array_slice<bool> set)
+{
+  int i;
+
+  switch (GET_CODE (exp))
+    {
+    case EQ_ATTR:
+      {
+	const char *name = XSTR (exp, 0);
+	class attr_desc *z = find_attr (&name, 0);
+
+	if (z == y)
+	  {
+	    int index = attr_value_index (y, XSTR (exp, 1));
+	    if (index < 0)
+	      return false;
+	    for (i = 0; i < y->num_values; i++)
+	      set[i] = false;
+	    set[index] = true;
+	    return true;
+	  }
+
+	/* Testing an attribute that is itself a function of Y still selects
+	   a set of Y values.  */
+	if (!z || z->derived_from != y)
+	  return false;
+	for (i = 0; i < y->num_values; i++)
+	  set[i] = !strcmp (XSTR (z->derived_table[i], 0), XSTR (exp, 1));
+	return true;
+      }
+
+    case IOR:
+    case AND:
+      {
+	auto_vec<bool, 64> other;
+	other.safe_grow (y->num_values);
+	bool ok = (eq_attr_value_set (XEXP (exp, 0), y, set)
+		   && eq_attr_value_set (XEXP (exp, 1), y, other));
+	if (ok)
+	  for (i = 0; i < y->num_values; i++)
+	    set[i] = (GET_CODE (exp) == IOR
+		      ? set[i] || other[i] : set[i] && other[i]);
+	return ok;
+      }
+
+    case NOT:
+      if (!eq_attr_value_set (XEXP (exp, 0), y, set))
+	return false;
+      for (i = 0; i < y->num_values; i++)
+	set[i] = !set[i];
+      return true;
+
+    case CONST_INT:
+      for (i = 0; i < y->num_values; i++)
+	set[i] = INTVAL (exp) != 0;
+      return true;
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if ATTR's values are a plain enumeration, rather than numbers
+   or something genattrtab computes for itself.  */
+
+static bool
+simple_enum_attr_p (class attr_desc *attr)
+{
+  return (!attr->is_const
+	  && !attr->is_special
+	  && !attr->is_numeric
+	  && attr->name[0] != '*');
+}
+
+/* Return the one attribute that EXP tests, or null if it tests none or more
+   than one.  SOFAR is the attribute found so far, or null.  An attribute
+   already known to be a function of another reports that other one.  */
+
+static class attr_desc *
+sole_tested_attr (rtx exp, class attr_desc *sofar)
+{
+  const char *fmt = GET_RTX_FORMAT (GET_CODE (exp));
+  int i;
+
+  if (GET_CODE (exp) == EQ_ATTR)
+    {
+      const char *name = XSTR (exp, 0);
+      class attr_desc *attr = find_attr (&name, 0);
+
+      if (!attr)
+	return NULL;
+      if (attr->derived_from)
+	attr = attr->derived_from;
+      return sofar && sofar != attr ? NULL : attr;
+    }
+
+  for (i = 0; i < GET_RTX_LENGTH (GET_CODE (exp)); i++)
+    if (fmt[i] == 'e')
+      {
+	sofar = sole_tested_attr (XEXP (exp, i), sofar);
+	if (!sofar)
+	  return NULL;
+      }
+  return sofar;
+}
+
+/* Note every attribute whose value is a function of one other attribute
+   alone, so that write_attr_get can emit a lookup table for it rather than
+   repeat the other attribute's decision tree for every insn code.
+
+   Run this after fill_attr, so that a define_insn overriding the attribute
+   is visible, and before optimize_attrs, which folds the cond away.  */
+
+static void
+find_derived_attrs (void)
+{
+  class attr_desc **order;
+  int num = get_attr_order (&order);
+  int n;
+
+  for (n = 0; n < num; n++)
+    {
+      class attr_desc *attr = order[n];
+      rtx cond = attr->default_val->value;
+      class attr_desc *y = NULL;
+      bool overridden = false;
+      rtx *table;
+      int i;
+
+      if (!simple_enum_attr_p (attr)
+	  || GET_CODE (cond) != COND)
+	continue;
+
+      /* A define_insn that sets the attribute directly overrides the cond,
+	 so the attribute is then not a function of anything.  */
+      for (struct attr_value *av = attr->first_value; av; av = av->next)
+	if (av != attr->default_val && av->num_insns != 0)
+	  {
+	    overridden = true;
+	    break;
+	  }
+      if (overridden)
+	continue;
+
+      for (i = 0; i < XVECLEN (cond, 0); i += 2)
+	{
+	  y = sole_tested_attr (XVECEXP (cond, 0, i), y);
+	  if (!y || GET_CODE (XVECEXP (cond, 0, i + 1)) != CONST_STRING)
+	    {
+	      y = NULL;
+	      break;
+	    }
+	}
+
+      /* Y must be a plain enum attribute whose values genattr-common.cc
+	 numbers from zero, so that they can index the table.  */
+      if (!y
+	  || y == attr
+	  || y->num_values == 0
+	  || !simple_enum_attr_p (y)
+	  || y->enum_name
+	  || GET_CODE (XEXP (cond, 1)) != CONST_STRING)
+	continue;
+
+      table = XCNEWVEC (rtx, y->num_values);
+      auto_vec<bool, 64> set;
+      set.safe_grow (y->num_values);
+
+      for (i = 0; i < XVECLEN (cond, 0); i += 2)
+	{
+	  if (!eq_attr_value_set (XVECEXP (cond, 0, i), y, set))
+	    break;
+	  /* The cond takes the first arm that matches, so an entry that is
+	     already filled in stays as it is.  */
+	  for (int k = 0; k < y->num_values; k++)
+	    if (set[k] && !table[k])
+	      table[k] = XVECEXP (cond, 0, i + 1);
+	}
+
+      if (i >= XVECLEN (cond, 0))
+	{
+	  for (i = 0; i < y->num_values; i++)
+	    if (!table[i])
+	      table[i] = XEXP (cond, 1);
+	  for (i = 0; i < y->num_values; i++)
+	    gcc_assert (attr_value_index (attr, XSTR (table[i], 0)) >= 0);
+	  attr->derived_from = y;
+	  attr->derived_table = table;
+	}
+      else
+	free (table);
+    }
+
+  free (order);
+}
+
+/* Emit ATTR's getter as a lookup into a table indexed by the attribute it
+   is derived from.  */
+
+static void
+write_derived_attr_get (FILE *outf, class attr_desc *attr)
+{
+  class attr_desc *y = attr->derived_from;
+  int i;
+
+  gcc_assert (attr->num_values <= USHRT_MAX + 1);
+  fprintf (outf, "static const %s %s_from_%s[] = {\n",
+	   attr->num_values <= UCHAR_MAX + 1
+	   ? "unsigned char" : "unsigned short", attr->name, y->name);
+  for (i = 0; i < y->num_values; i++)
+    {
+      fprintf (outf, "  ");
+      write_attr_valueq (outf, attr, XSTR (attr->derived_table[i], 0));
+      fprintf (outf, ",\n");
+    }
+  fprintf (outf, "};\n\n");
+
+  fprintf (outf, "%s\n", attr->cxx_type);
+  fprintf (outf, "get_attr_%s (rtx_insn *insn ATTRIBUTE_UNUSED)\n{\n",
+	   attr->name);
+  fprintf (outf, "  return (%s) %s_from_%s[get_attr_%s (insn)];\n}\n\n",
+	   attr->cxx_type, attr->name, y->name, y->name);
+}
+
 /* Optimize the attribute lists by seeing if we can determine conditional
    values from the known values of other attributes.  This will save subroutine
    calls during the compilation.  NUM_INSN_CODES is the number of unique
@@ -3059,6 +3310,7 @@ add_attr_value (class attr_desc *attr, const char *name)
   av->first_insn = NULL;
   av->num_insns = 0;
   av->has_asm_insn = 0;
+  av->enum_index = attr->num_values++;
 }
 
 /* Create table entries for DEFINE_ATTR or DEFINE_ENUM_ATTR.  */
@@ -4056,6 +4308,12 @@ write_attr_get (FILE *outf, class attr_desc *attr)
   struct attr_value *av, *common_av;
   int i, j;
 
+  if (attr->derived_from)
+    {
+      write_derived_attr_get (outf, attr);
+      return;
+    }
+
   /* Find the most used attribute value.  Handle that as the `default' of the
      switch we will generate.  */
   common_av = find_most_used (attr);
@@ -4669,6 +4927,9 @@ find_attr (const char **name_p, int create)
   attr->cxx_type = nullptr;
   attr->first_value = attr->default_val = NULL;
   attr->is_numeric = attr->is_const = attr->is_special = 0;
+  attr->num_values = 0;
+  attr->derived_from = NULL;
+  attr->derived_table = NULL;
   attr->next = attrs[index];
   attrs[index] = attr;
 
@@ -5359,6 +5620,10 @@ main (int argc, const char **argv)
 
   /* Construct extra attributes for `length'.  */
   make_length_attrs ();
+
+  /* Note the attributes that are functions of one other attribute alone.
+     This has to happen before optimize_attrs folds their conds away.  */
+  find_derived_attrs ();
 
   /* Perform any possible optimizations to speed up compilation.  */
   optimize_attrs (num_insn_codes);
