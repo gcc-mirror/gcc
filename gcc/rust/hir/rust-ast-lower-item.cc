@@ -412,7 +412,7 @@ ASTLoweringItem::visit (AST::Function &function)
   std::unique_ptr<HIR::Type> return_type
     = function.has_return_type () ? std::unique_ptr<HIR::Type> (
 	ASTLoweringType::translate (function.get_return_type (), false,
-				    true /* impl trait is allowed here*/))
+				    ASTLoweringType::ImplTrait::Allow))
 				  : nullptr;
 
   std::vector<HIR::FunctionParam> function_params;

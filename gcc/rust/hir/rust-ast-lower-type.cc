@@ -210,14 +210,14 @@ ASTLowerQualifiedPathInType::visit (AST::QualifiedPathInType &path)
 }
 
 ASTLoweringType::ASTLoweringType (bool default_to_static_lifetime,
-				  bool impl_trait_allowed)
+				  ImplTrait impl_trait_allowed)
   : ASTLoweringBase (), default_to_static_lifetime (default_to_static_lifetime),
     impl_trait_allowed (impl_trait_allowed), translated (nullptr)
 {}
 
 HIR::Type *
 ASTLoweringType::translate (AST::Type &type, bool default_to_static_lifetime,
-			    bool impl_trait_allowed)
+			    ImplTrait impl_trait_allowed)
 {
   ASTLoweringType resolver (default_to_static_lifetime, impl_trait_allowed);
   type.accept_vis (resolver);
@@ -492,7 +492,7 @@ ASTLoweringType::visit (AST::ParenthesisedType &type)
 void
 ASTLoweringType::visit (AST::ImplTraitType &type)
 {
-  if (!impl_trait_allowed)
+  if (impl_trait_allowed == ImplTrait::Forbid)
     emit_impl_trait_error (type.get_locus ());
 
   std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;
@@ -514,7 +514,7 @@ ASTLoweringType::visit (AST::ImplTraitType &type)
 void
 ASTLoweringType::visit (AST::ImplTraitTypeOneBound &type)
 {
-  if (!impl_trait_allowed)
+  if (impl_trait_allowed == ImplTrait::Forbid)
     emit_impl_trait_error (type.get_locus ());
 
   std::vector<std::unique_ptr<HIR::TypeParamBound>> bounds;

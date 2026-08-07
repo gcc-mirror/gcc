@@ -65,9 +65,18 @@ class ASTLoweringType : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::Type *translate (AST::Type &type,
-			       bool default_to_static_lifetime = false,
-			       bool impl_trait_allowed = false);
+  /**
+   * Allow `arg: impl Trait` types or error out on them
+   */
+  enum class ImplTrait
+  {
+    Allow,
+    Forbid,
+  };
+
+  static HIR::Type *
+  translate (AST::Type &type, bool default_to_static_lifetime = false,
+	     ImplTrait impl_trait_allowed = ImplTrait::Forbid);
 
   void visit (AST::BareFunctionType &fntype) override;
   void visit (AST::TupleType &tuple) override;
@@ -88,11 +97,12 @@ public:
   void emit_impl_trait_error (location_t locus);
 
 private:
-  ASTLoweringType (bool default_to_static_lifetime, bool impl_trait_allowed);
+  ASTLoweringType (bool default_to_static_lifetime,
+		   ImplTrait impl_trait_allowed);
 
   /** Used when compiling const and static items. */
   bool default_to_static_lifetime;
-  bool impl_trait_allowed;
+  ImplTrait impl_trait_allowed;
 
   HIR::Type *translated;
 };
