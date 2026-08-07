@@ -233,8 +233,8 @@ total_digits_tree( tree &left_rdigits,
                    const cbl_refer_t &right_side)
   {
   // This routine is used when we might have to use the run-time values:
-  left_rdigits = gg_define_int();
-  right_rdigits = gg_define_int();
+  left_rdigits = gg_define_variable(INT);
+  right_rdigits = gg_define_variable(INT);
 
   if( left_side.field->attr & intermediate_e )
     {
@@ -638,8 +638,8 @@ alpha_compare_figconst( tree        &left,
                                  right_side.field->data.capacity(),
                                  &nbytes);
     }
-  left  = gg_define_int();
-  right = gg_define_int(0);
+  left  = gg_define_variable(INT);
+  right = gg_define_variable(INT, 0L);
   gg_call(VOID,
           "__gg__compare_string_all",
           gg_get_address_of(left),
@@ -767,8 +767,8 @@ alpha_compare(tree        &left,
       get_length(length_left, left_side);
       get_location(location_right, right_side);
       get_length(length_right, right_side);
-      left  = gg_define_int();
-      right = gg_define_int(0);
+      left  = gg_define_variable(INT);
+      right = gg_define_variable(INT, 0L);
       gg_call(VOID,
               "__gg_compare_string_different",
               gg_get_address_of(left),
@@ -834,8 +834,8 @@ alpha_compare(tree        &left,
             // efficient.
             get_location(location_left, left_side);
             get_location(location_right, right_side);
-            left  = gg_define_int();
-            right = gg_define_int(0);
+            left  = gg_define_variable(INT);
+            right = gg_define_variable(INT, 0L);
             size_t length = std::min(length_l, length_r);
             gg_assign(left,
                       gg_memcmp(location_left,
@@ -848,7 +848,7 @@ alpha_compare(tree        &left,
               // char.
               IF( left, eq_op, integer_zero_node )
                 {
-                tree count = gg_define_int();
+                tree count = gg_define_variable(INT);
                 gg_assign(count, build_int_cst_type(INT,
                                                    length));
                 WHILE( count, lt_op, build_int_cst_type(INT,
@@ -895,7 +895,7 @@ alpha_compare(tree        &left,
               // char.
               IF( left, eq_op, integer_zero_node )
                 {
-                tree count = gg_define_int();
+                tree count = gg_define_variable(INT);
                 gg_assign(count, build_int_cst_type(INT,
                                                    length));
                 WHILE( count, lt_op, build_int_cst_type(INT,
@@ -990,8 +990,8 @@ alpha_compare(tree        &left,
     get_length(length_left, left_side);
     get_location(location_right, right_side);
     get_length(length_right, right_side);
-    left  = gg_define_int();
-    right = gg_define_int(0);
+    left  = gg_define_variable(INT);
+    right = gg_define_variable(INT, 0L);
     gg_call(VOID,
             the_routine,
             gg_get_address_of(left),
@@ -1074,8 +1074,8 @@ numeric_alpha_compare(tree        &left,
                                      right_side.field->data.capacity(),
                                      &nbytes);
         }
-      left  = gg_define_int();
-      right = gg_define_int(0);
+      left  = gg_define_variable(INT);
+      right = gg_define_variable(INT, 0L);
       gg_call(VOID,
               "__gg__compare_string_all",
               gg_get_address_of(left),
@@ -1091,8 +1091,8 @@ numeric_alpha_compare(tree        &left,
       {
       // Corner cases.  One grows to dislike them.  Here we are comparing a
       // FieldLiteraN to a FldLiteralA
-      left  = gg_define_int();
-      right = gg_define_int(0);
+      left  = gg_define_variable(INT);
+      right = gg_define_variable(INT, 0L);
       tree str = gg_string_literal(right_side.field->data.original());
       tree length = build_int_cst_type(SIZE_T,
                                     strlen(right_side.field->data.original()));
@@ -1127,8 +1127,8 @@ numeric_alpha_compare(tree        &left,
 
     if( figconst_right == zero_value_e )
       {
-      left  = gg_define_int();
-      right = gg_define_int(0);
+      left  = gg_define_variable(INT);
+      right = gg_define_variable(INT, 0L);
       gg_assign(left, integer_zero_node);
       IF( value, lt_op, gg_cast(type, integer_zero_node) )
         {
@@ -1164,8 +1164,8 @@ numeric_alpha_compare(tree        &left,
         gg_assign(value, gg_abs(value));
         }
 
-      left  = gg_define_int();
-      right = gg_define_int(0);
+      left  = gg_define_variable(INT);
+      right = gg_define_variable(INT, 0L);
 
       if( figconst_right || right_side.all )
         {
@@ -1187,8 +1187,8 @@ numeric_alpha_compare(tree        &left,
                                        right_side.field->data.capacity(),
                                        &nbytes);
           }
-        left  = gg_define_int();
-        right = gg_define_int(0);
+        left  = gg_define_variable(INT);
+        right = gg_define_variable(INT, 0L);
         gg_call(VOID,
                 "__gg__compare_numeric_all",
                 gg_get_address_of(left),
@@ -1249,8 +1249,8 @@ addr_of_compare(tree        &left,
     get_location(l, left_side);
     get_location(r, right_side);
     }
-  left  = gg_define_int();
-  right = gg_define_int(0);
+  left  = gg_define_variable(INT);
+  right = gg_define_variable(INT, 0L);
 
   gg_assign(left, integer_zero_node);
   IF( gg_cast(type, l), lt_op, gg_cast(type, r) )
@@ -1346,8 +1346,8 @@ compare_class( tree        &left,
          const cbl_refer_t &right_side)
   {
   // Left side is FldClass
-  left  = gg_define_int();
-  right = gg_define_int(0);
+  left  = gg_define_variable(INT);
+  right = gg_define_variable(INT, 0L);
   tree right_loc;
   tree right_length;
   get_location(right_loc, right_side);

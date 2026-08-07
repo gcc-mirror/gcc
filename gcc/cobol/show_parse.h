@@ -211,7 +211,7 @@ extern bool cursor_at_sol;
 
 #define TRACE1_INDENT do{ \
   if(!cursor_at_sol){gg_fprintf(trace_handle , 0, "\n");} \
-  tree counter = gg_define_int(); \
+  tree counter = gg_define_variable(INT); \
   gg_assign(counter, integer_zero_node); \
   WHILE(counter, lt_op, trace_indent) \
     gg_fprintf(trace_handle , 0, " "); \

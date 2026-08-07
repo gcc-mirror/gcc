@@ -229,8 +229,9 @@ create_cblc_string_variable(const char *var_name, const char *var_contents)
   TYPE_NAME(array_of_characters) = get_identifier("cblc_string");
   tree constr = build_string(strlen(var_contents)+1, var_contents);
   TREE_TYPE(constr) = array_of_characters;
-  TREE_STATIC(constr)    = 1;
-  TREE_CONSTANT(constr)  = 1;
+  TREE_STATIC(constr)           = 1;
+
+  // This is a file-scope internal variable
   tree entry_point = gg_declare_variable(array_of_characters,
                                          var_name,
                                          constr,
@@ -1587,14 +1588,14 @@ initialize_variable_internal( cbl_refer_t refer,
     else
       {
       // Convert strings of spaces to "<SPACES>"
-      tree spaces = gg_define_int(0);
+      tree spaces = gg_define_variable(INT, 0L);
       if(   parsed_var->type == FldGroup
          || parsed_var->type == FldAlphanumeric
          || parsed_var->type == FldAlphaEdited
          || parsed_var->type == FldLiteralA )
         {
         gg_assign(spaces, integer_one_node);
-        tree counter = gg_define_int(parsed_var->data.capacity());
+        tree counter = gg_define_variable(INT, parsed_var->data.capacity());
         WHILE(counter, gt_op, integer_zero_node)
           {
           gg_decrement(counter);
@@ -2942,8 +2943,8 @@ enter_program_common(const char *funcname, const char *funcname_)
 
   gg_assign(current_function->first_time_through, integer_zero_node);
 
-  current_function->perform_exit_address
-    = gg_define_void_star("_perform_exit_address");
+  current_function->perform_exit_address =
+                         gg_define_variable (VOID_P, "_perform_exit_address");
 
   // Make sure the following are null, because when we create the unnamed
   // default section, parser_enter_section will attempt to close them out. And
@@ -3881,7 +3882,7 @@ parser_accept(const struct cbl_refer_t &tgt,
     }
   if( function_to_call )
     {
-    tree erf = gg_define_int();
+    tree erf = gg_define_variable(INT);
     gg_assign(erf,
               gg_call_expr(  INT,
                             function_to_call,
@@ -4905,7 +4906,7 @@ parser_display( const struct cbl_special_name_t *upon,
       }
     TRACE1_END
     }
-  tree file_descriptor = gg_define_int();
+  tree file_descriptor = gg_define_variable(INT);
   bool needs_closing = false;
   if( upon )
     {
@@ -5132,7 +5133,7 @@ void
 parser_exhibit( bool /*changed*/, bool /*named*/,
                 const std::vector<cbl_refer_t> &args )
   {
-  tree file_descriptor = gg_define_int();
+  tree file_descriptor = gg_define_variable(INT);
   gg_assign(file_descriptor, integer_one_node);   // stdout is file descriptor 1.
 
   for(size_t i=0; i<args.size(); i++)
@@ -5198,7 +5199,7 @@ parser_assign( size_t nC, cbl_num_result_t *C,
       }
     }
 
-  tree error_flag = gg_define_int(0);
+  tree error_flag = gg_define_variable(INT, 0L);
 
   for(size_t i=0; i<nC; i++ )
     {
@@ -6100,7 +6101,7 @@ parser_xml_parse( cbl_label_t *instance,
   // With the callback in place, we are ready to call the library:
   tree pcallback = gg_get_function_address(VOID, ach);
 
-  tree erc = gg_define_int();
+  tree erc = gg_define_variable(INT);
   gg_assign(erc, gg_call_expr(INT,
                               "__gg__xml_parse",
                               gg_get_address_of(input.field->var_decl_node),
@@ -6445,7 +6446,7 @@ establish_using(size_t nusing,
     // There are 'nusing' elements in the PROCEDURE DIVISION USING list.
 
     tree parameter = NULL_TREE;
-    tree rt_i = gg_define_int();
+    tree rt_i = gg_define_variable(INT);
     for(size_t i=0; i<nusing; i++)
       {
       // And this generates run-time execution code. The
@@ -6847,7 +6848,7 @@ parser_division(cbl_division_t division,
 
     gg_append_statement(current_function->skip_init_label);
     // This is where we check to see if somebody tried to cancel us
-    tree cancelled = gg_define_int();
+    tree cancelled = gg_define_variable(INT);
     gg_assign(cancelled,
               gg_call_expr( INT,
                             "__gg__is_canceled",
@@ -9218,7 +9219,7 @@ parser_file_open( struct cbl_file_t *file, int mode_char )
    * --jkl
    */
 
-  tree pszFilename = gg_define_char_star();
+  tree pszFilename = gg_define_variable(CHAR_P);
   cbl_field_t *field_of_name = symbol_field_forward(file->filename);
   if( field_of_name->type == FldForward )
     {
@@ -9643,10 +9644,10 @@ parser_file_delete_file( cbl_label_t *name,
     SHOW_PARSE_END
     }
   set_up_delete_file_label(name);
-  tree there_was_an_error = gg_define_int(0);
+  tree there_was_an_error = gg_define_variable(INT, 0L);
   for(size_t i=0; i<filenames.size(); i++)
     {
-    tree pszFilename = gg_define_char_star();
+    tree pszFilename = gg_define_variable(CHAR_P);
     cbl_field_t *field_of_name = symbol_field_forward(filenames[i]->filename);
     if( field_of_name->type == FldForward )
       {
@@ -9987,7 +9988,7 @@ inspect_tally(bool backward,
   // all the integers and cbl_inspect_bound_t values, in a strict sequence so
   // that the library routine can peel them off.
 
-  tree int_size = gg_define_variable(INT, integer_zero_node);
+  tree int_size = gg_define_variable(INT, 0L);
   tree integers = gg_define_variable(SIZE_T_P, null_pointer_node);
 
   size_t n_integers = int_index;
@@ -10162,7 +10163,7 @@ inspect_replacing(int backward,
                         + operations[0].nbound()  // Room for all the cbl_inspect_bound_t values
                         + n_all_leading_first;  // Room for all of the  n_identifier_3  counts
 
-  tree int_size = gg_define_variable(INT, integer_zero_node);
+  tree int_size = gg_define_variable(INT, 0L);
   tree integers = gg_define_variable(SIZE_T_P, null_pointer_node);
 
   IF( build_int_cst_type(INT, n_integers), gt_op, int_size )
@@ -12501,7 +12502,7 @@ parser_unstring(cbl_refer_t src,
   tree ref_delimiters = build_array_of_referlets(noutputs,   delimiters);
   tree ref_counts     = build_array_of_referlets(noutputs,   counts);
 
-  tree t_overflow = gg_define_int();
+  tree t_overflow = gg_define_variable(INT);
   gg_assign(t_overflow,
             gg_call_expr( INT,
                           "__gg__unstring",
@@ -12617,7 +12618,7 @@ parser_string(const cbl_refer_t& tgt,
   tree pintegers = build_array_of_size_t( index_int, integers);
   tree referlets = build_array_of_referlets(index_cblc, refers.data());
 
-  tree t_overflow = gg_define_int();
+  tree t_overflow = gg_define_variable(INT);
   gg_assign(t_overflow, gg_call_expr( INT,
                                       "__gg__string",
                                       pintegers,
@@ -12849,7 +12850,7 @@ create_and_call(size_t narg,
           case none_of_e:
             {
             // Allocate the memory, and make the copy:
-            arguments[i] = gg_define_char_star();
+            arguments[i] = gg_define_variable(CHAR_P);
             allocated[i] = 1;
             gg_assign(arguments[i], gg_cast(CHAR_P, gg_malloc(length))) ;
             gg_memcpy(arguments[i], location, length);
@@ -12874,7 +12875,7 @@ create_and_call(size_t narg,
           {
           case address_of_e:
             {
-            arguments[i] = gg_define_size_t();
+            arguments[i] = gg_define_variable(SIZE_T);
             gg_assign(arguments[i], gg_cast(SIZE_T, location ));
             gg_assign(length, build_int_cst_type(SIZE_T, gg_sizeof(CHAR_P)));
             break;
@@ -12882,7 +12883,7 @@ create_and_call(size_t narg,
 
           case length_of_e:
             {
-            arguments[i] = gg_define_size_t();
+            arguments[i] = gg_define_variable(SIZE_T);
             gg_assign(arguments[i], gg_cast(SIZE_T, length));
             gg_assign(length, build_int_cst_type(SIZE_T, gg_sizeof(CHAR_P)));
             break;
@@ -13018,8 +13019,8 @@ create_and_call(size_t narg,
             ||  returned_value_type == DOUBLE
             ||  returned_value_type == FLOAT128)
       {
-      tree returned_location = gg_define_uchar_star();
-      tree returned_length   = gg_define_size_t();
+      tree returned_location = gg_define_variable(UCHAR_P);
+      tree returned_length   = gg_define_variable(SIZE_T);
       // we were given a returned::field, so find its location and length:
       gg_assign(returned_location,
                 qualified_data_location(returned));
@@ -14175,9 +14176,9 @@ hijack_for_development(const char *funcname)
   gg_insert_into_assemblerf("%s HIJACKED CODE START", ASM_COMMENT_START);
 
 
-  tree xxx = gg_define_int("xxx");
-  tree yyy = gg_define_int("yyy");
-  tree zzz = gg_define_int("zzz");
+  tree xxx = gg_define_variable(INT, "xxx");
+  tree yyy = gg_define_variable(INT, "yyy");
+  tree zzz = gg_define_variable(INT, "zzz");
 
   fprintf(stderr, "N is %d\n", N);
   for(int i=0; i<N; i++)

@@ -444,7 +444,7 @@ class locale_tgt_t {
 			OVERRIDE READY RESET
 			RSUB")"
 			SERVICE_RELOAD "SERVICE RELOAD" STAR_CBL "*CBL"
-			SUBSCRIPT SUPPRESS TRACE USE
+			SUBSCRIPT SUPPRESS TITLE TRACE USE
 
 			COBOL_WORDS ">>COBOL-WORDS" EQUATE UNDEFINE
 			CDF_DEFINE ">>DEFINE" CDF_DISPLAY ">>DISPLAY"
@@ -1128,7 +1128,7 @@ class locale_tgt_t {
                         LIST LSUB MAP NOLIST NOMAP NOSOURCE
                         PARAMETER_kw OVERRIDE READY RESET RSUB
                         SERVICE_RELOAD STAR_CBL
-                        SUBSCRIPT SUPPRESS TRACE USE
+                        SUBSCRIPT SUPPRESS TITLE TRACE USE
 
 			COBOL_WORDS EQUATE UNDEFINE
 
@@ -2181,18 +2181,6 @@ selected_name:  external NAME {
                   field.attr |= literal_attr($name.prefix);
                   field.codeset.set();
                   $$ = field_add(@name, &field);
-                }
-        |       external OTHER
-                {
-                  if( !dialect_ibm() ) {
-                    error_msg(@2, "ASSIGN OTHER requires %<-dialect ibm%>");
-                    YYERROR;
-                  }
-
-                  enum { parent = 0 };
-                  auto e = symbol_field_forward_add(PROGRAM, parent,
-                                                    "OTHER", @$.first_line);
-                  $$ = cbl_field_of(e);
                 }
                 ;
 external:       %empty /* GnuCOBOL uses EXTERNAL to control name resolution.  */

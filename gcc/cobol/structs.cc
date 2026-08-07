@@ -45,7 +45,7 @@
         to the current statement list.
 
         Your best bet is to simply emulate the code here to create the type_decl
-        for each structure, and then just use gg_declare_variable() to create the
+        for each structure, and then just use gg_define_variable() to create the
         storage when you need it.
 
         Learning from the code in genapi.c is your best bet.

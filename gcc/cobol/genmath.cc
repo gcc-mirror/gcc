@@ -86,7 +86,7 @@ set_up_compute_error_label(cbl_label_t *compute_label)
         = static_cast<cbl_compute_error_t *>
           (xmalloc(sizeof(struct cbl_compute_error_t)));
       compute_label->structs.compute_error->compute_error_code
-        = gg_define_int(0);
+        = gg_define_variable(INT, 0L);
       }
     }
   }
@@ -1558,7 +1558,7 @@ add_litN_to_numdisp(size_t nC, cbl_num_result_t *C,
           signloc_offset = 0;
           break;
         }
-      tree counter = gg_define_int(digits - rdigits);
+      tree counter = gg_define_variable(INT, digits - rdigits);
       tree pointer = gg_define_variable(UCHAR_P);
       gg_assign(pointer, units);
       if( !(C[0].refer.field->attr & signable_e) )
