@@ -183,7 +183,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (tree_nop_conversion_p (type, TREE_TYPE (@0)))))
 )
 /* `a ^ b` is another form of `a != b` when the type
-    is a 1bit precission integer.  */
+    is a 1bit precision integer.  */
 (match (maybe_cmp @0)
  (bit_xor@0 @1 @2)
  (if (INTEGRAL_TYPE_P (type)
@@ -2532,7 +2532,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (bit_and:c @0 (logical_inverted_value @0))
  { build_zero_cst (type); })
-/* X | !X and X ^ !X -> 1, , if X is truth-valued.
+/* X | !X and X ^ !X -> 1, if X is truth-valued.
    X ==/!= !X is false/true.  */
 (for op (bit_ior bit_xor eq ne)
  (simplify
@@ -2705,13 +2705,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    Check that the shift is well-defined (C is less than TYPE_PRECISION)
    as some targets (such as x86's SSE) may return zero for larger C.  */
 (for neeq (ne eq)
-  (simplify
-    (neeq (lshift zero_one_valued_p@0 INTEGER_CST@1) integer_zerop@2)
-    (if (tree_fits_uhwi_p (@1)
-         && tree_to_uhwi (@1) < TYPE_PRECISION (TREE_TYPE (@0)))
-      (if (neeq == NE_EXPR)
-        (convert @0)
-          (eq @0 @2)))))
+ (simplify
+  (neeq (lshift zero_one_valued_p@0 INTEGER_CST@1) integer_zerop@2)
+   (if (tree_fits_uhwi_p (@1)
+        && tree_to_uhwi (@1) < TYPE_PRECISION (TREE_TYPE (@0)))
+    (if (neeq == NE_EXPR)
+     (convert @0)
+     (eq @0 @2)))))
 
 /* PR110010: (A >> C) != (B >> C) -> (A ^ B) >= (1 << C)
    and likewise (A >> C) == (B >> C) -> (A ^ B) < (1 << C).
