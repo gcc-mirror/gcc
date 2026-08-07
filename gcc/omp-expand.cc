@@ -5278,6 +5278,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   t = fold_convert (itype, t);
   n = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true, GSI_SAME_STMT);
 
+  /* When GOMP_loop_end (or one of its variants) is emitted (e.g. with the
+     inscan modifier), which already implies the end of the scope, _start
+     variants of GOMP builtin calls have to be used and _end can be skipped.  */
+  bool has_gomp_loop_end = fd->have_reductemp
+			   || ((fd->have_pointer_condtemp || fd->have_scantemp)
+			       && !fd->have_nonctrl_scantemp);
   {
     /* Fetch the thread/team id and the number of threads/teams in a single
        call to GOMP_loop_static_worksharing or
@@ -5292,13 +5298,15 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       {
       case GF_OMP_FOR_KIND_FOR:
 	decl = builtin_decl_explicit (
-	  flag_openmp_ompt ? BUILT_IN_GOMP_LOOP_STATIC_WORKSHARING_START
-			   : BUILT_IN_GOMP_LOOP_STATIC_WORKSHARING);
+	  flag_openmp_ompt || has_gomp_loop_end
+	    ? BUILT_IN_GOMP_LOOP_STATIC_WORKSHARING_START
+	    : BUILT_IN_GOMP_LOOP_STATIC_WORKSHARING);
 	break;
       case GF_OMP_FOR_KIND_DISTRIBUTE:
 	decl = builtin_decl_explicit (
-	  flag_openmp_ompt ? BUILT_IN_GOMP_DISTRIBUTE_STATIC_WORKSHARING_START
-			   : BUILT_IN_GOMP_DISTRIBUTE_STATIC_WORKSHARING);
+	  flag_openmp_ompt || has_gomp_loop_end
+	    ? BUILT_IN_GOMP_DISTRIBUTE_STATIC_WORKSHARING_START
+	    : BUILT_IN_GOMP_DISTRIBUTE_STATIC_WORKSHARING);
 	break;
       default:
 	gcc_unreachable ();
@@ -5663,7 +5671,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
     }
 
   gsi = gsi_last_nondebug_bb (exit_bb);
-  if (flag_openmp_ompt)
+  if (flag_openmp_ompt && !has_gomp_loop_end)
     {
       /* Insert call to GOMP_*_static_worksharing_end at the end of exit_bb.
        */
@@ -6109,6 +6117,10 @@ expand_omp_for_static_chunk (struct omp_region *region,
   n = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				true, GSI_SAME_STMT);
 
+  /* When GOMP_loop_end (or one of its variants) is emitted (e.g. with the
+     inscan modifier), which already implies the end of the scope, _start
+     variants of GOMP builtin calls have to be used and _end can be skipped.  */
+  bool has_gomp_loop_end = fd->have_reductemp || fd->have_pointer_condtemp;
   {
     /* Fetch the thread/team id and the number of threads/teams in a single
        call to GOMP_loop_static_worksharing or
@@ -6123,13 +6135,15 @@ expand_omp_for_static_chunk (struct omp_region *region,
       {
       case GF_OMP_FOR_KIND_FOR:
 	decl = builtin_decl_explicit (
-	  flag_openmp_ompt ? BUILT_IN_GOMP_LOOP_STATIC_WORKSHARING_START
-			   : BUILT_IN_GOMP_LOOP_STATIC_WORKSHARING);
+	  flag_openmp_ompt || has_gomp_loop_end
+	    ? BUILT_IN_GOMP_LOOP_STATIC_WORKSHARING_START
+	    : BUILT_IN_GOMP_LOOP_STATIC_WORKSHARING);
 	break;
       case GF_OMP_FOR_KIND_DISTRIBUTE:
 	decl = builtin_decl_explicit (
-	  flag_openmp_ompt ? BUILT_IN_GOMP_DISTRIBUTE_STATIC_WORKSHARING_START
-			   : BUILT_IN_GOMP_DISTRIBUTE_STATIC_WORKSHARING);
+	  flag_openmp_ompt || has_gomp_loop_end
+	    ? BUILT_IN_GOMP_DISTRIBUTE_STATIC_WORKSHARING_START
+	    : BUILT_IN_GOMP_DISTRIBUTE_STATIC_WORKSHARING);
 	break;
       default:
 	gcc_unreachable ();
@@ -6420,7 +6434,7 @@ expand_omp_for_static_chunk (struct omp_region *region,
     }
 
   gsi = gsi_last_nondebug_bb (exit_bb);
-  if (flag_openmp_ompt)
+  if (flag_openmp_ompt && !has_gomp_loop_end)
     {
       /* Insert call to GOMP_*_static_worksharing_end at the end of exit_bb.
        */

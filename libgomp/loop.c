@@ -1201,7 +1201,8 @@ GOMP_loop_static_worksharing (unsigned long long niter
   return nthreads + tid * 1I;
 }
 
-/* OMPT variant enabled by -fopenmp-ompt.  */
+/* OMPT variant enabled by -fopenmp-ompt and when GOMP_loop_end is called
+   (e.g. with the inscan modifier).  */
 
 _Complex int
 GOMP_loop_static_worksharing_start (unsigned long long niter
@@ -1224,7 +1225,8 @@ GOMP_loop_static_worksharing_dispatch (unsigned long long start
 				       __attribute__ ((unused)))
 {}
 
-/* Stub for OMPT callback enabled by -fopenmp-ompt.  */
+/* Stub for OMPT callback enabled by -fopenmp-ompt, except when GOMP_loop_end is
+   already called (e.g. with the inscan modifier).  */
 
 void
 GOMP_loop_static_worksharing_end (void)
