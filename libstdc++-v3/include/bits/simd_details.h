@@ -532,8 +532,13 @@ namespace simd
 
 	// C Annex G defines the behavior of complex<T> where T is IEC60559 floating-point. If
 	// __STDC_IEC_60559_COMPLEX__ is defined then Annex G is implemented - and simd<complex>
-	// will do so as well. However, Clang never defines the macro.
-#if defined __STDC_IEC_60559_COMPLEX__ || defined __STDC_IEC_559_COMPLEX__ || defined _GLIBCXX_CLANG
+	// will do so as well. However, __STDC_IEC_60559_COMPLEX__ is defined (if at all)
+	// by the C library and will typically be absent on non-glibc targets.
+	// GCC nevertheless implements Annex G and std::complex relies on it; the compiler
+	// emits __GCC_IEC_559_COMPLEX with value > 0 where it is enabled/valid.
+	// Clang is flagged to support it unconditionally.
+#if defined __STDC_IEC_60559_COMPLEX__ || defined __STDC_IEC_559_COMPLEX__ \
+      || (defined __GCC_IEC_559_COMPLEX && __GCC_IEC_559_COMPLEX > 0) || defined _GLIBCXX_CLANG
 	  + (1 << 10)
 #endif
 #if __SUPPORT_SNAN__
