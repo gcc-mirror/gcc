@@ -3284,9 +3284,7 @@ accept_statement (gfc_statement st)
 }
 
 
-/* Undo anything tentative that has been built for the current statement,
-   except if a gfc_charlen structure has been added to current namespace's
-   list of gfc_charlen structure.  */
+/* Undo anything tentative that has been built for the current statement.  */
 
 static void
 reject_statement (void)

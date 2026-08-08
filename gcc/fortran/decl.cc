@@ -126,6 +126,7 @@ discard_pending_charlen (gfc_charlen *cl)
   if (!cl || !gfc_current_ns || gfc_current_ns->cl_list != cl)
     return;
 
+  gfc_remove_saved_charlen (cl);
   gfc_current_ns->cl_list = cl->next;
   gfc_free_expr (cl->length);
   free (cl);
@@ -146,6 +147,7 @@ discard_pending_charlens (gfc_charlen *saved_cl)
       gfc_charlen *cl = gfc_current_ns->cl_list;
 
       gcc_assert (cl);
+      gfc_remove_saved_charlen (cl);
       gfc_current_ns->cl_list = cl->next;
       gfc_free_expr (cl->length);
       free (cl);
@@ -2515,7 +2517,12 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 
   c->ts = current_ts;
   if (c->ts.type == BT_CHARACTER)
-    c->ts.u.cl = cl;
+    {
+      c->ts.u.cl = cl;
+      /* The component struct is not tracked by the symbol undo mechanism,
+	 so free the charlen here to prevent a double-free.  */
+      gfc_remove_saved_charlen (cl);
+    }
 
   if (c->ts.type != BT_CLASS && c->ts.type != BT_DERIVED
       && (c->ts.kind == 0 || c->ts.type == BT_CHARACTER)

@@ -1223,6 +1223,7 @@ typedef struct gfc_charlen
 {
   struct gfc_expr *length;
   struct gfc_charlen *next;
+  struct gfc_namespace *cl_ns; /* Namespace this charlen belongs to, for undo.  */
   bool length_from_typespec; /* Length from explicit array ctor typespec?  */
   tree backend_decl;
   tree passed_length; /* Length argument explicitly passed.  */
@@ -2224,6 +2225,7 @@ struct gfc_undo_change_set
 {
   vec<gfc_symbol *> syms;
   vec<gfc_typebound_proc *> tbps;
+  vec<gfc_charlen *> cls;
   gfc_undo_change_set *previous;
 };
 
@@ -3937,6 +3939,7 @@ void gfc_commit_symbols (void);
 void gfc_commit_symbol (gfc_symbol *);
 gfc_charlen *gfc_new_charlen (gfc_namespace *, gfc_charlen *);
 void gfc_free_namespace (gfc_namespace *&);
+void gfc_remove_saved_charlen (gfc_charlen *);
 
 void gfc_symbol_init_2 (void);
 void gfc_symbol_done_2 (void);

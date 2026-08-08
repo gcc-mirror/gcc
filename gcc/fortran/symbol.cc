@@ -108,7 +108,7 @@ gfc_gsymbol *gfc_gsym_root = NULL;
 
 gfc_symbol *gfc_derived_types;
 
-static gfc_undo_change_set default_undo_chgset_var = { vNULL, vNULL, NULL };
+static gfc_undo_change_set default_undo_chgset_var = { vNULL, vNULL, vNULL, NULL };
 static gfc_undo_change_set *latest_undo_chgset = &default_undo_chgset_var;
 
 
@@ -216,6 +216,11 @@ gfc_merge_new_implicit (gfc_typespec *ts)
 	  gfc_current_ns->set_flag[i] = 1;
 	}
     }
+
+  /* The charlen belongs to ns->default_type; remove it.  */
+  if (ts->type == BT_CHARACTER && ts->u.cl)
+    gfc_remove_saved_charlen (ts->u.cl);
+
   return true;
 }
 
@@ -3872,6 +3877,7 @@ free_undo_change_set_data (gfc_undo_change_set &cs)
 {
   cs.syms.release ();
   cs.tbps.release ();
+  cs.cls.release ();
 }
 
 
@@ -3930,6 +3936,7 @@ gfc_drop_last_undo_checkpoint (void)
 
   latest_undo_chgset->previous->syms.safe_splice (latest_undo_chgset->syms);
   latest_undo_chgset->previous->tbps.safe_splice (latest_undo_chgset->tbps);
+  latest_undo_chgset->previous->cls.safe_splice (latest_undo_chgset->cls);
 
   pop_undo_change_set (latest_undo_chgset);
 }
@@ -4037,6 +4044,36 @@ gfc_restore_last_undo_checkpoint (void)
   latest_undo_chgset->syms.truncate (0);
   latest_undo_chgset->tbps.truncate (0);
 
+  /* Remove charlens added during this failed parse attempt.  These are
+     zombie charlens whose length expressions may reference symtrees that
+     have just been freed above via delete_symbol_from_ns.  */
+  {
+    gfc_charlen *cl;
+    unsigned i;
+
+    FOR_EACH_VEC_ELT_REVERSE (latest_undo_chgset->cls, i, cl)
+      {
+	gfc_namespace *ns = cl->cl_ns;
+	if (ns != NULL)
+	  {
+	    if (ns->cl_list == cl)
+	      ns->cl_list = cl->next;
+	    else
+	      {
+		gfc_charlen *prev;
+		for (prev = ns->cl_list; prev && prev->next != cl;
+		     prev = prev->next)
+		  ;
+		if (prev)
+		  prev->next = cl->next;
+	      }
+	  }
+	gfc_free_expr (cl->length);
+	free (cl);
+      }
+    latest_undo_chgset->cls.truncate (0);
+  }
+
   if (!single_undo_checkpoint_p ())
     pop_undo_change_set (latest_undo_chgset);
 }
@@ -4117,6 +4154,9 @@ gfc_commit_symbols (void)
   FOR_EACH_VEC_ELT (latest_undo_chgset->tbps, i, tbp)
     tbp->error = 0;
   latest_undo_chgset->tbps.truncate (0);
+
+  /* Charlens are committed to the namespace; just clear the tracking vector.  */
+  latest_undo_chgset->cls.truncate (0);
 }
 
 
@@ -4318,8 +4358,28 @@ gfc_new_charlen (gfc_namespace *ns, gfc_charlen *old_cl)
   /* Put into namespace.  */
   cl->next = ns->cl_list;
   ns->cl_list = cl;
+  cl->cl_ns = ns;
+
+  /* Track in undo mechanism so reject_statement can remove zombie charlens.  */
+  latest_undo_chgset->cls.safe_push (cl);
 
   return cl;
+}
+
+
+/* Remove the charlen without freeing it.  */
+
+void
+gfc_remove_saved_charlen (gfc_charlen *cl)
+{
+  gfc_charlen *tracked;
+  unsigned j;
+  FOR_EACH_VEC_ELT (latest_undo_chgset->cls, j, tracked)
+    if (tracked == cl)
+      {
+	latest_undo_chgset->cls.unordered_remove (j);
+	return;
+      }
 }
 
 
@@ -4390,6 +4450,16 @@ gfc_free_namespace (gfc_namespace *&ns)
   gfc_free_finalizer_list (ns->finalizers);
   gfc_free_omp_declare_simd_list (ns->omp_declare_simd);
   gfc_free_omp_declare_variant_list (ns->omp_declare_variant);
+
+  /* Remove charlen before freeing.  */
+  {
+    gfc_charlen *cl;
+    unsigned j;
+    FOR_EACH_VEC_ELT (latest_undo_chgset->cls, j, cl)
+      if (cl->cl_ns == ns)
+	latest_undo_chgset->cls.unordered_remove (j--);
+  }
+
   gfc_free_charlen (ns->cl_list, NULL);
   free_st_labels (ns->st_labels);
 
@@ -4627,6 +4697,10 @@ gfc_enforce_clean_symbol_state(void)
 {
   enforce_single_undo_checkpoint ();
   gcc_assert (latest_undo_chgset->syms.is_empty ());
+  /* Charlens may be accumulated by non-tentative contexts such as resolution
+     and translation.  Clear them here so tentative parsing in the next
+     statement starts with a clean slate.  */
+  latest_undo_chgset->cls.truncate (0);
 }
 
 

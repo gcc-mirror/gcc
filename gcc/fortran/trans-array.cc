@@ -2677,7 +2677,8 @@ trans_array_constructor (gfc_ss * ss, locus * where)
       if (nelem > 0)
 	{
 	  tree size = constant_array_constructor_loop_size (loop);
-	  if (size && compare_tree_int (size, nelem) == 0)
+	  if (size && compare_tree_int (size, nelem) == 0
+	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	    {
 	      trans_constant_array_constructor (ss, type);
 	      goto finish;
