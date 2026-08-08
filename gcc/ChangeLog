@@ -1,3 +1,56 @@
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126667
+	* config/s390/s390.md (usubc<mode>5): If operands[4] is
+	an immediate operand other than const0_rtx, force it into reg
+	before using it in xor<mode>3 insn.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126601
+	* tree-ssa-math-opts.cc (maybe_optimize_guarding_check): Use safe_push
+	on mul_stmts rather than quick_push.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126564
+	* tree-ssa-phiopt.cc (spaceship_replacement): Fix up condition
+	when to punt because of redundant cmp1 with cmp2, xor in
+	lhs1 == lhs2 with difference of cmp2 from cmp1 (ignoring
+	LT_EXPR vs. LE_EXPR and GT_EXPR vs. GE_EXPR differences) and
+	1 if cond2_phi_edge is EDGE_FALSE_VALUE.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126549
+	* range-op-float.cc (operator_cast::fold_range): Don't call
+	frange_drop_infs.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126484
+	* config/mips/mips-ftypes.def (MIPS_SI_FTYPE_VOID,
+	MIPS_USI_FTYPE_VOID): Use DEF_MIPS_FTYPE with 0 as
+	first argument rather than 1 and leave out ", VOID" from
+	second argument.
+	* config/mips/mips.cc (MIPS_FTYPE_NAME0): Define.
+	(MIPS_FTYPE_ATYPES0): Define.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.

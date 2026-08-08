@@ -1,3 +1,43 @@
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125541
+	* mangle.cc (write_reflection): Mangle empty anonymous union/struct
+	data members as "da" rather than "dm" and use index of such a data
+	member instead of name.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125680
+	* mangle.cc (write_reflection): For type aliases use maybe_write_module
+	and write_source_name instead of write_unqualified_name.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125601
+	* pt.cc (finish_expansion_stmt): If break; was seen in any of the
+	expansion stmt bodies, wrap all the bodies in an artificial
+	do ... while (0); stmt.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125591
+	* pt.cc (tsubst_pack_expansion): Don't require
+	retrieve_local_specialization on structured binding to
+	always return structured binding, instead handle if it returns
+	ARGUMENT_PACK_SELECT.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.

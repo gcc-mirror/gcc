@@ -1,3 +1,138 @@
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126667
+	* gcc.dg/pr126667.c: New test.
+	* gcc.target/s390/pr126667.c: New test.
+
+2026-08-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/126205
+	* gfortran.dg/coarray/team_allocated_coarrays.f90: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125541
+	* g++.dg/reflect/mangle1.C: Add further 2 tests.
+	* g++.dg/reflect/mangle9.C: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125680
+	* g++.dg/reflect/mangle8.C: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125601
+	* g++.dg/cpp26/expansion-stmt45.C: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125591
+	* g++.dg/cpp26/decomp31.C: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/125200
+	* g++.dg/plugin/std_module_exports_plugin.cc (plugin_dump_decl): Use
+	%< and %>.  Clarify the error message and add a note.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/125048
+	* c-c++-common/cpp/va-opt-11.c: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* gcc.dg/pr126464.c: Guard uses of 1e300 with
+	__DBL_MAX_10_EXP__ >= 301 and uses of 1e4000L with
+	__LDBL_MAX_10_EXP__ >= 4001.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124948
+	* gcc.dg/torture/bitint-100.c: Require also sync_int_long effective
+	target.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126601
+	* gcc.dg/tree-ssa/pr126601.c: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126564
+	* gcc.dg/torture/pr126564.c: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126549
+	* gcc.dg/torture/pr126549.c: New test.
+	* gcc.dg/torture/bitint-107.c: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126547
+	* gcc.dg/torture/pr126547.c: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126576
+	* gcc.dg/torture/pr126576.c: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126484
+	* g++.target/mips/pr126484.C: New test.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.
