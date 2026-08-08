@@ -1522,5 +1522,172 @@ CompilePatternLet::visit (HIR::TuplePattern &pattern)
     }
 }
 
+void
+CompilePatternLet::visit (HIR::StructPattern &pattern)
+{
+  // lookup the type
+  TyTy::BaseType *lookup = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (
+    pattern.get_path ().get_mappings ().get_hirid (), &lookup);
+  rust_assert (ok);
+
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
+  TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
+
+  // only structs and single-variant enums are irrefutable, this check should
+  // already be handled by type check
+  rust_assert (adt->number_of_variants () == 1);
+
+  int variant_index = 0;
+  TyTy::VariantDef *variant = nullptr;
+  if (adt->is_enum ())
+    {
+      // lookup the variant
+      HirId variant_id = UNKNOWN_HIRID;
+      bool ok = ctx->get_tyctx ()->lookup_variant_definition (
+	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
+      rust_assert (ok);
+
+      ok = adt->lookup_variant_by_id (variant_id, &variant, &variant_index);
+      rust_assert (ok);
+    }
+  else
+    {
+      variant = adt->get_variants ().at (0);
+    }
+
+  bool has_by_ref = false;
+  auto &struct_pattern_elems = pattern.get_struct_pattern_elems ();
+  for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())
+    {
+      if (field->get_item_type () == HIR::StructPatternField::ItemType::IDENT)
+	{
+	  HIR::StructPatternFieldIdent &ident
+	    = static_cast<HIR::StructPatternFieldIdent &> (*field);
+	  if (ident.get_has_ref ())
+	    has_by_ref = true;
+	}
+    }
+
+  tree rhs_type = TYPE_MAIN_VARIANT (TREE_TYPE (init_expr));
+  tree init_stmt;
+  Bvariable *tmp_var
+    = Backend::temporary_variable (ctx->peek_fn ().fndecl, NULL_TREE, rhs_type,
+				   init_expr, has_by_ref, pattern.get_locus (),
+				   &init_stmt);
+  ctx->add_statement (init_stmt);
+  tree access_expr = Backend::var_expression (tmp_var, pattern.get_locus ());
+
+  auto make_ident_field_access = [&] (const Identifier &ident, location_t loc) {
+    size_t offs = 0;
+    bool ok = variant->lookup_field (ident.as_string (), nullptr, &offs);
+    rust_assert (ok);
+
+    if (adt->is_enum ())
+      {
+	tree payload_accessor_union
+	  = Backend::struct_field_expression (access_expr, 1, loc);
+	tree variant_accessor
+	  = Backend::struct_field_expression (payload_accessor_union,
+					      variant_index, loc);
+	return Backend::struct_field_expression (variant_accessor, offs, loc);
+      }
+    else
+      {
+	return Backend::struct_field_expression (access_expr, offs, loc);
+      }
+  };
+
+  for (auto &field : struct_pattern_elems.get_struct_pattern_fields ())
+    {
+      switch (field->get_item_type ())
+	{
+	case HIR::StructPatternField::ItemType::TUPLE_PAT:
+	  {
+	    HIR::StructPatternFieldTuplePat &tuple_pat
+	      = static_cast<HIR::StructPatternFieldTuplePat &> (*field);
+
+	    size_t tuple_pat_index = tuple_pat.get_index ();
+	    tree field_expr = NULL_TREE;
+	    if (adt->is_enum ())
+	      {
+		tree payload_accessor_union
+		  = Backend::struct_field_expression (access_expr, 1,
+						      tuple_pat.get_locus ());
+		tree variant_accessor
+		  = Backend::struct_field_expression (payload_accessor_union,
+						      variant_index,
+						      tuple_pat.get_locus ());
+		field_expr
+		  = Backend::struct_field_expression (variant_accessor,
+						      tuple_pat_index,
+						      tuple_pat.get_locus ());
+	      }
+	    else
+	      {
+		field_expr
+		  = Backend::struct_field_expression (access_expr,
+						      tuple_pat_index,
+						      tuple_pat.get_locus ());
+	      }
+
+	    TyTy::BaseType *ty_sub = nullptr;
+	    HirId sub_id
+	      = tuple_pat.get_tuple_pattern ().get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
+	    rust_assert (ok);
+
+	    CompilePatternLet::Compile (&tuple_pat.get_tuple_pattern (),
+					field_expr, ty_sub, rval_locus, ctx);
+	  }
+	  break;
+	case HIR::StructPatternField::ItemType::IDENT_PAT:
+	  {
+	    HIR::StructPatternFieldIdentPat &ident_pat
+	      = static_cast<HIR::StructPatternFieldIdentPat &> (*field);
+
+	    tree field_expr
+	      = make_ident_field_access (ident_pat.get_identifier (),
+					 ident_pat.get_locus ());
+
+	    TyTy::BaseType *ty_sub = nullptr;
+	    HirId sub_id
+	      = ident_pat.get_pattern ().get_mappings ().get_hirid ();
+	    bool ok = ctx->get_tyctx ()->lookup_type (sub_id, &ty_sub);
+	    rust_assert (ok);
+
+	    CompilePatternLet::Compile (&ident_pat.get_pattern (), field_expr,
+					ty_sub, rval_locus, ctx);
+	  }
+	  break;
+
+	case HIR::StructPatternField::ItemType::IDENT:
+	  {
+	    HIR::StructPatternFieldIdent &ident
+	      = static_cast<HIR::StructPatternFieldIdent &> (*field);
+
+	    tree field_expr = make_ident_field_access (ident.get_identifier (),
+						       ident.get_locus ());
+
+	    Bvariable *var = nullptr;
+	    ok
+	      = ctx->lookup_var_decl (ident.get_mappings ().get_hirid (), &var);
+	    rust_assert (ok);
+
+	    if (ident.get_has_ref ())
+	      {
+		field_expr
+		  = address_expression (field_expr, EXPR_LOCATION (field_expr));
+	      }
+
+	    auto fnctx = ctx->peek_fn ();
+	    auto s = Backend::init_statement (fnctx.fndecl, var, field_expr);
+	    ctx->add_statement (s);
+	  }
+	  break;
+	}
+    }
+}
+
 } // namespace Compile
 } // namespace Rust

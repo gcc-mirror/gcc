@@ -129,6 +129,7 @@ public:
   void visit (HIR::IdentifierPattern &) override;
   void visit (HIR::WildcardPattern &) override;
   void visit (HIR::TuplePattern &) override;
+  void visit (HIR::StructPattern &) override;
 
   // check for unimplemented Pattern HIR nodes.
   void visit (HIR::AltPattern &pattern) override
@@ -172,12 +173,6 @@ public:
   {
     rust_sorry_at (pattern.get_locus (),
 		   "slice pattern let statements not supported");
-  }
-
-  void visit (HIR::StructPattern &pattern) override
-  {
-    rust_sorry_at (pattern.get_locus (),
-		   "struct pattern let statements not supported");
   }
 
   void visit (HIR::TupleStructPattern &pattern) override
