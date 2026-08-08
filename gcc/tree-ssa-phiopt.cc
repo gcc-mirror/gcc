@@ -4177,11 +4177,14 @@ factor_out_conditional_load (edge e0, edge e1, basic_block merge, gphi *phi,
   tree index = nullptr;
   tree step = nullptr;
   tree index2 = nullptr;
+  bool rev_order = false;
 
   /* Both must be *P loads of a compatible value type.  The
      TBAA alias-ptr type carried by MEM_REF operand 1 need not match; it is
      merged the way get_alias_type_for_stmts does when the load is built.  */
-  if (TREE_CODE (ref0) != MEM_REF)
+  if (TREE_CODE (ref0) == MEM_REF)
+    rev_order = REF_REVERSE_STORAGE_ORDER (ref0);
+  else
     {
       if (TREE_CODE (ref0) != TARGET_MEM_REF)
 	return false;
@@ -4193,10 +4196,14 @@ factor_out_conditional_load (edge e0, edge e1, basic_block merge, gphi *phi,
     {
       if (index || step || index2)
 	return false;
+      if (rev_order != REF_REVERSE_STORAGE_ORDER (ref1))
+	return false;
     }
   else
     {
       if (TREE_CODE (ref1) != TARGET_MEM_REF)
+	return false;
+      if (rev_order)
 	return false;
       if (!safe_operand_equal_p (index, TMR_INDEX (ref1)))
 	return false;
@@ -4335,7 +4342,10 @@ factor_out_conditional_load (edge e0, edge e1, basic_block merge, gphi *phi,
     nref = build5 (TARGET_MEM_REF, TREE_TYPE (ref0), newptr,
 		   newindex, index, step, index2);
   else
-    nref = build2 (MEM_REF, TREE_TYPE (ref0), newptr, newindex);
+    {
+      nref = build2 (MEM_REF, TREE_TYPE (ref0), newptr, newindex);
+      REF_REVERSE_STORAGE_ORDER (nref) = rev_order;
+    }
   MR_DEPENDENCE_CLIQUE (nref) = clique;
   MR_DEPENDENCE_BASE (nref) = base;
   tree res = gimple_phi_result (phi);
