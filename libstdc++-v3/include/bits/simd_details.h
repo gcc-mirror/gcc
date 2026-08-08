@@ -422,12 +422,14 @@ namespace simd
   // math_errhandling may expand to an extern symbol, in which case we must assume fp exceptions
   // need to be considered. A conforming C library must define math_errhandling, but in case it
   // isn't defined we simply use the fallback.
+  // The macro is used as default template argument (rather than in a requires-clause) so that a
+  // non-constant math_errhandling is a substitution failure in the immediate context instead of a
+  // hard error at the point of definition.
 #ifdef math_errhandling
-  template <int = 0>
-    requires requires { typename bool_constant<0 != (math_errhandling & MATH_ERREXCEPT)>; }
+  template <int _ErrHandling = math_errhandling>
     consteval bool
     __handle_fpexcept_impl(int)
-    { return 0 != (math_errhandling & MATH_ERREXCEPT); }
+    { return 0 != (_ErrHandling & MATH_ERREXCEPT); }
 #endif
 
   // Fallback if math_errhandling doesn't work: implement correct exception behavior.
