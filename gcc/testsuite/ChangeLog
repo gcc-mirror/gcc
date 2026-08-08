@@ -1,3 +1,337 @@
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126534
+	* gcc.dg/pr126534.c: New test.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120681
+	* gcc.target/powerpc/pr120681.c: New test.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126667
+	* gcc.dg/pr126667.c: New test.
+	* gcc.target/s390/pr126667.c: New test.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120528
+	* gcc.target/powerpc/pr120528.c: New test.
+
+2026-08-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110935
+	* gcc.dg/vect/bb-slp-reduc-pr110935.c: New testcase.
+
+2026-08-07  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/cfg_select1.rs: Add new dg-additional-options, remove
+	the no-longer-needed cfg_select! declaration.
+	* rust/execute/torture/cfg_select2.rs: Ditto.
+	* rust/compile/c_string_null_byte_check.rs: Ditto.
+	* rust/execute/torture/c_string.rs: Ditto.
+	* rust/execute/torture/c_string_ensure_null_term.rs: Ditto.
+
+2026-08-07  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/c_string_null_byte_check.rs: Update definition of `c_char`.
+	* rust/execute/torture/c_string_ensure_null_term.rs: Ditto.
+	* rust/execute/torture/c_string.rs: Ditto.
+	* rust/execute/torture/cfg_select1.rs: New file.
+	* rust/execute/torture/cfg_select2.rs: New file.
+
+2026-08-07  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/unsafe_cell.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/slice_rest_pattern.rs: Verify that too many rest
+	patterns in a slice pattern does not produce an error, if that
+	slice pattern is cfg'd out.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/core/core.exp: Compile until lowering phase, avoid
+	spamming the logs with debug messages in an attempt to speed up
+	compilation, and increase test timeout from 600 seconds to 1200
+	seconds.
+
+2026-08-07  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/lang-items-stub.rs: New test.
+	* rust/compile/lang-items-symbol.rs: New test.
+
+2026-08-07  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/derive_clone_enum2.rs: Fix test with a clone module
+	to mimic the core library.
+	* rust/compile/derive_clone_enum3.rs: Likewise.
+	* rust/compile/issue-3139-1.rs: Likewise.
+	* rust/compile/issue-3144.rs: Likewise.
+	* rust/execute/torture/derive_clone_enum1.rs: Likewise.
+	* rust/execute/torture/derive_macro3.rs: Likewise.
+	* rust/execute/torture/derive_macro4.rs: Likewise.
+
+2026-08-07  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/link/simple_function_0.rs: Remove bogus match.
+
+2026-08-07  Aiman Najjar  <aiman.najjar@hurranet.com>
+
+	* rust/compile/issue-4674.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/glob-import-ambiguous.rs: New test.
+
+2026-08-07  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/generic_args_deadcode.rs: New test.
+	* rust/compile/torture/traits8.rs: Remove dg-warning.
+	* rust/compile/v0-mangle1.rs: Remove dg-warning.
+	* rust/execute/torture/impl_desugar.rs: Remove dg-warning.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/glob_import_brace.rs: New test.
+
+2026-08-07  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/torture/range-lang-item1.rs: Update test to use
+	the new lang item.
+
+2026-08-07  Lishin  <lishin1008@gmail.com>
+
+	* rust/execute/drop-explicit-return.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/derive_macro9.rs: New test.
+
+2026-08-07  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/repr_transparent_fields.rs: Add more test cases.
+
+2026-08-07  Islam-Imad  <islamimad404@gmail.com>
+
+	* rust/execute/cf-break-continue.rs: New test.
+	* rust/execute/cf-label-shadowing.rs: New test.
+	* rust/execute/cf-labeled-break-nested.rs: New test.
+	* rust/execute/cf-labeled-continue-nested.rs: New test.
+	* rust/execute/cf-labeled-loops.rs: New test.
+	* rust/execute/cf-loop-break-continue.rs: New test.
+	* rust/execute/cf-mixed-labeled-unlabeled.rs: New test.
+	* rust/execute/cf-nested-loops.rs: New test.
+
+2026-08-07  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/no-mangle-generic-items_0.rs: New test.
+
+2026-08-07  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/unused-braces_0.rs: New test.
+
+2026-08-07  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/static_item_0.rs: Change warning description.
+	* rust/compile/static-mut-refs_0.rs: Make static public.
+	* rust/compile/const_item_0.rs: New test.
+
+2026-08-07  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/repr_transparent_fields.rs: Add new test case with PhantomData.
+
+2026-08-07  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+	    João Novo  <joao.c.novo@tecnico.ulisboa.pt>
+
+	* rust/compile/irrefutable-alt.rs: New test.
+	* rust/compile/irrefutable-basic.rs: New test.
+	* rust/compile/irrefutable-identifier-binding.rs: New test.
+	* rust/compile/irrefutable-nested.rs: New test.
+	* rust/compile/irrefutable-path.rs: New test.
+	* rust/compile/irrefutable-range.rs: New test.
+	* rust/compile/irrefutable-reference.rs: New test.
+	* rust/compile/irrefutable-slice.rs: New test.
+	* rust/compile/irrefutable-struct.rs: New test.
+	* rust/compile/irrefutable-tuple.rs: New test.
+	* rust/compile/refutable-alt.rs: New test.
+	* rust/compile/refutable-binding.rs: New test.
+	* rust/compile/refutable-literal-let.rs: New test.
+	* rust/compile/refutable-literal-parameter.rs: New test.
+	* rust/compile/refutable-path.rs: New test.
+	* rust/compile/refutable-range.rs: New test.
+	* rust/compile/refutable-reference.rs: New test.
+	* rust/compile/refutable-struct.rs: New test.
+	* rust/compile/refutable-tuple.rs: New test.
+
+2026-08-07  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/rustc_conversion_suggestion.rs: New test.
+
+2026-08-07  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/needs_allocator.rs: New test.
+
+2026-08-07  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/static-mut-refs_0.rs: New test.
+
+2026-08-07  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/assert_zero_valid.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/name_resolution29.rs: New test.
+
+2026-08-07  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/dyn-drop_0.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/extern_type_item_resolve.rs: New test.
+
+2026-08-07  Lishin  <lishin1008@gmail.com>
+
+	* rust/execute/drop-function-params.rs: New test.
+
+2026-08-07  Lishin  <lishin1008@gmail.com>
+
+	* rust/execute/drop-function-scope-unit-tail.rs: New test.
+
+2026-08-07  Lishin  <lishin1008@gmail.com>
+
+	* rust/execute/drop-function-scope-non-unit-tail.rs: New test.
+
+2026-08-07  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/unused-doc-comment_0.rs: New test.
+
+2026-08-07  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/invalid_repr_hint.rs: Update existing and add new `align` test cases.
+
+2026-08-07  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/c_string.rs: Fix missing #[repr(transparent)]
+	* rust/execute/torture/c_string_ensure_null_term.rs: Ditto.
+	* rust/compile/c_string_null_byte_check.rs: Ditto.
+	* rust/compile/repr_transparent_fields2.rs: New file.
+	* rust/compile/transparent_struct_deref.rs: New file.
+
+2026-08-07  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/invalid_repr_hint.rs: New file.
+	* rust/compile/repr_transparent_fields.rs: New file.
+
+2026-08-07  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive-debug1.rs: Adapt module structure to make it more core-like.
+	* rust/compile/derive-default1.rs: Likewise.
+	* rust/compile/derive-eq-invalid.rs: Likewise.
+	* rust/compile/derive-hash1.rs: Likewise.
+	* rust/compile/derive_partial_ord1.rs: Likewise.
+	* rust/compile/format_args_basic_expansion.rs: Likewise.
+	* rust/compile/format_args_concat.rs: Likewise.
+	* rust/compile/format_args_extra_comma.rs: Likewise.
+	* rust/compile/issue-4090-1.rs: Likewise.
+	* rust/compile/issue-4090-2.rs: Likewise.
+	* rust/execute/torture/derive-default1.rs: Likewise.
+	* rust/execute/torture/derive-partialeq2.rs: Likewise.
+	* rust/execute/torture/issue-2005.rs: Likewise.
+	* rust/execute/torture/issue-3836.rs: Likewise.
+	* rust/execute/torture/partial-eq-4.rs: Likewise.
+	* rust/execute/torture/partial-ord-5.rs: Likewise.
+	* rust/execute/torture/partial-ord-6.rs: Likewise.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/glob-import-import.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/early_feature_gate_in_macro.rs: Change test
+	options.
+	* rust/compile/offset_of1.rs: Likewise.
+	* rust/compile/offset_of2.rs: Likewise.
+	* rust/compile/parse_time_feature_gate.rs: Likewise.
+	* rust/execute/torture/offset_of1.rs: Likewise.
+
+2026-08-07  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/issue-4116.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/execute/ident_pat_vs_path_3.rs: New test.
+
+2026-08-07  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/drop-bounds_0.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/global-allocator.rs: New test.
+
+2026-08-07  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/generics15.rs: New test.
+
+2026-08-07  Dylan Rees  <dylan.rees@arm.com>
+
+	* gcc.target/i386/pr124407-1.c: Removed x86_cse rtl flag
+	and scans. Replaced with assembly scan for specific
+	'movabsq' instruction.
+	* gcc.target/i386/pr81501-9b.c: Removed check-function-bodies
+	and replaced with orderless assembly scans.
+
+2026-08-07  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/109843
+	PR tree-optimization/112472
+	* gcc.dg/tree-ssa/pr109843.c: Add -msse2 -mfpmath=sse for ilp32 x86.
+	* gcc.dg/tree-ssa/pr112472.c: Likewise.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126641
+	* gcc.dg/pr126641.c: New test.
+
+2026-08-07  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/avg-1.c: New test.
+	* gcc.target/aarch64/sve/pr89007-2.c: Update the expected loop body.
+
+2026-08-07  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/modmod-1.c: New test.
+	* gcc.dg/tree-ssa/modmod-2.c: Likewise.
+	* gcc.dg/tree-ssa/modmod-3.c: Likewise.
+	* gcc.dg/tree-ssa/modmod-4.c: Likewise.
+	* gcc.dg/tree-ssa/modmod-5.c: Likewise.
+
+2026-08-07  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/minmax-offset-absorb-1.c: New test.
+	* gcc.dg/tree-ssa/minmax-offset-absorb-2.c: Likewise.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/99293
+	* gcc.target/powerpc/pr99293.c: New test.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/117487
+	* gcc.target/powerpc/pr117487.c: New test.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/future-3.c: New test.
+
 2026-08-06  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* gcc.dg/tree-ssa/signbit-1.c: New test.

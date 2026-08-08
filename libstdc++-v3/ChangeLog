@@ -1,3 +1,17 @@
+2026-08-07  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* config/os/djgpp/error_constants.h (errc::no_message_available)
+	(errc::no_stream_resources, errc:not_a_stream)
+	(errc::stream_timeout): Mark as _GLIBCXX23_DEPRECATED
+	* config/os/generic/error_constants.h
+	(errc::no_message_available, errc::no_stream_resources)
+	(errc:not_a_stream, errc::stream_timeout): Likewise.
+	* config/os/mingw32-w64/error_constants.h
+	(errc::no_message_available, errc::no_stream_resources)
+	(errc:not_a_stream, errc::stream_timeout): Likewise.
+	* testsuite/19_diagnostics/headers/system_error/errc_std_c++0x.cc:
+	Add dg-warning attributes for expected deprecation warnings.
+
 2026-08-05  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/119739

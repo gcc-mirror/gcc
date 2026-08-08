@@ -1,3 +1,124 @@
+2026-08-07  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126714
+	* range-op-float.cc (range_op_float_tests): Guard the signed-zero
+	== op1_range self-test with HONOR_SIGNED_ZEROS.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126534
+	* gimple-range-op.cc (cfn_sqrt::op1_range): Widen lb or ub
+	by further 0.5ulp or 1ulp before squaring it.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120681
+	* config/rs6000/linux64.h (PCREL_SUPPORTED_BY_OS): Allow large
+	code model as well as medium code model.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal):
+	Likewise.
+	(rs6000_elf_declare_function_name): Don't create the
+	local/non-local labels for large code model if we are using
+	PC-relative addressing.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126667
+	* config/s390/s390.md (usubc<mode>5): If operands[4] is
+	an immediate operand other than const0_rtx, force it into reg
+	before using it in xor<mode>3 insn.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120528
+	* config/rs6000/rs6000.md (zero_extend??ti2 peephole2): Add a
+	peephole2 to simplify zero extending a QI/HI/SI/DImode value in
+	memory to a TImode target in a vector register to use the
+	LXVR{B,H,W,D}X instructins.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126641
+	* value-range.h (class frange): Declare widen method.
+	* range-op-float.cc (float_widen_bound): Move to value-range.cc.
+	(float_widen_lhs_range): Remove.
+	(operator_plus::op1_range, operator_minus::op1_range,
+	operator_minus::op2_range, operator_mult::op1_range,
+	foperator_div::op1_range, foperator_div::op2_range,
+	operator_cast::op1_range, range_op_float_tests): Replace
+	X = float_widen_lhs_range (T, R) with X = R; X.widen (T).
+	* value-range.cc (float_widen_bound): New, moved from
+	range-op-float.cc.
+	(frange::widen): New method, partially based on
+	float_widen_lhs_range, but replace lhs with *this and
+	avoid using set/union_ to construct range, instead modify
+	m_pair and m_num_ranges directly.
+	* real.cc (set_significand_bit, clear_significand_bit,
+	test_significand_bit): Add
+	gcc_checking_assert (n < SIGNIFICAND_BITS).
+	(clear_significand_below): Add
+	gcc_checking_assert (n <= SIGNIFICAND_BITS).
+
+2026-08-07  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* range-op-float.cc (operator_cast::fold_range): Convert each
+	integer sub-range and union the results.
+	(range_op_float_tests): New test.
+
+2026-08-07  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (((x >> 1) + (y >> 1)) + (x & y & 1)): New simplification
+	to (x & y) + ((x ^ y) >> 1).
+
+2026-08-07  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd ((X % C1) % C2): New simplification.
+
+2026-08-07  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (MIN (MAX (X, Y + CST), Y)): New simplification.
+	(MAX (MIN (X, Y + CST), Y)): Likewise.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.opt (-mblock-ops-vector-pair): Undo change to
+	make the -mblock-ops-vector-pair option a documented option.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Likewise.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/99293
+	* config/rs6000/vsx.md (vsx_splat_extract_<mode>): New insn.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/117487
+	* config/rs6000/vsx.md (SFmode logical peephoole): Update comments in
+	the original code that supports power8.
+	(SFBOOL2_*): New constants.
+	(power9/power10 define_peephol2): Add a new define_peephole2 to optimize
+	float and logical operations on power9/power10/power11 similar to the
+	optimiztion that is done on power8.
+
+2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (FUTURE_MASKS_SERVER): Enable using load
+	vector pair and store vector pair instructions for memory and string
+	built-in functions.
+	(POWERPC_MASKS): Make -mblock-ops-vector-pair an option that is set by
+	the -mcpu=<xxx> command line option.
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Disable
+	-mblock-ops-vector-pair from influencing .machine selection.
+	* config/rs6000/rs6000.opt (-mblock-ops-vector-pair): Document the
+	option.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document the
+	-mblock-ops-vector-pair option.
+
+2026-08-07  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/64992
+	* match.pd: Fix two typos and format.
+
 2026-08-06  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR tree-optimization/126669

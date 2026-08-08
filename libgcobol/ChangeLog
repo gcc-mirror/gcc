@@ -1,3 +1,30 @@
+2026-08-07  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* gmath.cc (__gg__pow): Use exponentiation_helper().
+	(exponentiation_helper): New routine.
+	(__gg__process_compute_error): Formatting.
+	(multiply_int128_by_int128): Use new int128 structure.
+	(divide_int128_by_int128): Formatting.
+	(multiply_int256_by_int256): New routine.
+	(divide_int256_by_int256): New routine.
+	(compute_fixed_add): New routine to implement RPN COMPUTE.
+	(compute_fixed_subtract): Likewise.
+	(compute_fixed_multiply): Likewise.
+	(compute_fixed_divide): Likewise.
+	(compute_fixed_negate): Likewise.
+	(compute_float_add): Likewise.
+	(compute_float_subtract): Likewise.
+	(compute_float_multiply): Likewise.
+	(compute_float_divide): Likewise.
+	(compute_float_pow): Likewise.
+	(compute_float_negate): Likewise.
+	(__gg__compute_fixed): Likewise.
+	(__gg__compute_float): Likewise.
+	* libgcobol.cc (__gg__prohibited): New routine tests value and
+	target for ROUNDING MODE PROHIBITED compliance.
+	* libgcobol.h: Formatting.
+
 2026-08-01  Robert Dubner  <rdubner@symas.com>
 
 	* gmath.cc (get_int256_from_qualified_field): Use int128 structure.

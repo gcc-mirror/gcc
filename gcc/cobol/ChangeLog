@@ -1,3 +1,101 @@
+2026-08-07  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* genapi.cc (gg_array_of_field_pointers): Modified to return a
+	pointer to the first element of the array.
+	(gg_array_of_uchar_p): Formatting.
+	(parser_sort): Use updated gg_array_of_field_pointers().
+	(parser_file_sort): Likewise.
+	(parser_file_merge): Likewise.
+	* genapi.h (parser_compute): New declarations.
+	* gengen.h (gg_array_of_field_pointers): Modified declaration.
+	* genmath.cc (parser_compute): New declarations.
+	* genutil.h (gg_array_of_uchar_p): New declaration.
+	* move.cc (mh_binary_to_numdisp): Use new __gg__prohibited()
+	routine.
+	(parser_move): Formatting.
+	(parser_move_multi): Formatting.
+	* parse.y: RPN support.
+	* parse_ante.h (ast_op): Likewise.
+	(ast_relop): Likewise.
+	(struct ast_op_t): Likewise.
+	(struct refer_list_t): Likewise.
+	(struct vargs_t): Likewise.
+	* symbols.h (struct rpn_t): Likewise.
+	(struct expr_t): Likewise.
+
+2026-08-07  Robert Dubner  <rdubner@symas.com>
+
+	* cdf.y: Changes in support of CDF parsing.
+	* compare.cc (total_digits_tree): Use gg_define_variable().
+	(alpha_compare_figconst): Likewise.
+	(alpha_compare): Likewise.
+	(numeric_alpha_compare): Likewise.
+	(addr_of_compare): Likewise.
+	(compare_class): Likewise.
+	* genapi.cc (create_cblc_string_variable): Formatting.
+	(initialize_variable_internal): Use gg_define_variable().
+	(enter_program_common): Likewise.
+	(parser_accept): Likewise.
+	(parser_display): Likewise.
+	(parser_exhibit): Likewise.
+	(parser_assign): Likewise.
+	(parser_xml_parse): Likewise.
+	(establish_using): Likewise.
+	(parser_division): Likewise.
+	(parser_file_open): Likewise.
+	(parser_file_delete_file): Likewise.
+	(inspect_tally): Likewise.
+	(inspect_replacing): Likewise.
+	(parser_unstring): Likewise.
+	(parser_string): Likewise.
+	(create_and_call): Likewise.
+	(hijack_for_development):  Likewise.
+	* gengen.cc (gg_declare_variable): Clean up comments.  Early return
+	when "already_defined".  Clean up VAR_DECL attributes.
+	(gg_define_variable): Clean up how gg_declare_variable is used.
+	(gg_define_volatile_variable): Eliminate.
+	(gg_define_bool): Eliminate.
+	(gg_define_char): Eliminate.
+	(gg_define_uchar): Eliminate.
+	(gg_define_int): Eliminate.
+	(gg_define_size_t): Eliminate.
+	(gg_define_int128): Eliminate.
+	(gg_define_char_star): Eliminate.
+	(gg_define_uchar_star): Eliminate.
+	(gg_define_void_star): Eliminate.
+	(gg_define_longdouble): Eliminate.
+	(gg_fprintf): Use gg_define_variable().
+	(gg_read): Likewise.
+	(gg_memdup): Likewise.
+	* gengen.h (enum gg_variable_scope_t): Eliminate vs_file.
+	(gg_define_variable): New overloaded declaration.
+	(gg_define_volatile_variable): Eliminate.
+	(gg_define_bool): Eliminate.
+	(gg_define_char): Eliminate.
+	(gg_define_uchar): Eliminate.
+	(gg_define_int): Eliminate.
+	(gg_define_size_t): Eliminate.
+	(gg_define_int128): Eliminate.
+	(gg_define_longdouble): Eliminate.
+	(gg_define_void_star): Eliminate.
+	(gg_define_char_star): Eliminate.
+	(gg_define_uchar_star): Eliminate.
+	(gg_get_address_of): Formatting.
+	* genmath.cc (set_up_compute_error_label): Use gg_define_variable().
+	(add_litN_to_numdisp): Likewise.
+	* lexio.cc (skip_quoted_literal): Eliminate.
+	(remove_inline_comment): Change the algorithm.
+	* parse.y: CDF processing changes.
+	* scan.l: Likewise.
+	* scan_ante.h (yyinput): Likewise.
+	(yyunput): Likewise.
+	(skip_string): Likewise.
+	(is_refmod): Likewise.
+	* show_parse.h (TRACE1_INDENT): Use gg_define_variable().
+	* structs.cc: Change comment.
+	* token_names.h: Updated for CDF changes.
+
 2026-08-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* parse.y (selected_name): Use %<-dialect ibm%> instead of just
