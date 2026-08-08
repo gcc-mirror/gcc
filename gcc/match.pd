@@ -1284,6 +1284,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (mult (absu@1 @0) @1)
  (mult (convert@2 @0) @2))
 
+/* abs(x) * abs(y) -> abs(x * y).  */
+(simplify
+ (mult (abs:s @0) (abs:s @1))
+ (if ((FLOAT_TYPE_P (type)
+       && !HONOR_SIGN_DEPENDENT_ROUNDING (type))
+      || (ANY_INTEGRAL_TYPE_P (type)
+	  && TYPE_OVERFLOW_UNDEFINED (type)
+	  && !TYPE_OVERFLOW_SANITIZED (type)))
+  (abs (mult @0 @1))))
+
 #if GIMPLE
 /* Simplify SAD(x, x, acc) -> acc since the absolute difference is zero.  */
 (simplify
