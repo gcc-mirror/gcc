@@ -2075,6 +2075,12 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
 				 spc, flags | TDF_SLIM, false);
 	    }
 	}
+      if (TREE_CODE (node) == MEM_REF
+	  && REF_REVERSE_STORAGE_ORDER (node))
+	{
+	  pp_string (pp, ", ");
+	  pp_decimal_int (pp, REF_REVERSE_STORAGE_ORDER (node));
+	}
       if (MR_DEPENDENCE_CLIQUE (node) != 0)
 	{
 	  pp_string (pp, ", ");
