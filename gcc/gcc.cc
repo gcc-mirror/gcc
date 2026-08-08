@@ -3564,8 +3564,7 @@ execute (void)
 		 the user or OOM killer nuked it.  */
 	      fatal_error (input_location,
 			   "%s terminated by signal %d (%s)",
-			   commands[i].prog,
-			   WTERMSIG (status),
+			   commands[i].prog, WTERMSIG (status),
 			   strsignal (WTERMSIG (status)));
 	      break;
 
@@ -3588,9 +3587,9 @@ execute (void)
 
 	    default:
 	      /* The inferior failed to catch the signal.  */
-	      internal_error_no_backtrace ("%s signal terminated program %s",
-					   strsignal (WTERMSIG (status)),
-					   commands[i].prog);
+	      internal_error_no_backtrace ("%s terminated by signal %d (%s)",
+					   commands[i].prog, WTERMSIG (status),
+					   strsignal (WTERMSIG (status)));
 	    }
 	else if (WIFEXITED (status)
 		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
