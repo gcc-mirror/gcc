@@ -6001,12 +6001,20 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (pointer_diff integer_zerop @1)
  (negate (convert @1)))
 
-/* (ARG0 - ARG1) is the same as (-ARG1 + ARG0).  So check whether
-   ARG0 is zero and X + ARG0 reduces to X, since that would mean
-   (-ARG1 + ARG0) reduces to -ARG1.  */
+/* (0.0 - ARG1) can be transformed to -ARG1, if we don't honor NaNs
+   and signed zeros or ARG1 is known to be non-zero.  Subtraction of
+   NaN may signal or modify payload, but negation doesn't, so it is
+   unsafe to apply this transformation for any kind of NaN.  When
+   ARG1 is +0.0 or -0.0, the behaviour depends upon the rounding
+   mode.  With the default rounding mode, (-0.0 - ARG1) is -ARG1,
+   but (+0.0 - ARG1) is only -ARG1 if ARG1 cannot be +0.0.  */
 (simplify
  (minus real_zerop@0 @1)
- (if (fold_real_zero_addition_p (type, @1, @0, 0))
+ (if (!tree_expr_maybe_nan_p (@1)
+      && (!HONOR_SIGNED_ZEROS (type)
+	  || tree_expr_nonzero_p (@1)
+	  || (!flag_rounding_math
+	      && REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@0)))))
   (negate @1)))
 
 /* Transform x * -1 into -x.  */

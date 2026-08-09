@@ -12,11 +12,6 @@ double sub0(int x)
   return x - 0.0;
 }
 
-double negate(int x)
-{
-  return 0.0 - x;
-}
-
 double subtract(int x)
 {
   return (double)x - (double)x;
