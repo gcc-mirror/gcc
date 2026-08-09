@@ -365,12 +365,11 @@ add_hwi (HOST_WIDE_INT a, HOST_WIDE_INT b, bool *overflow)
     *overflow = true;
   else
     *overflow = false;
-  return result;
 #else
   HOST_WIDE_INT result;
   *overflow = __builtin_add_overflow (a, b, &result);
-  return result;
 #endif
+  return result;
 }
 
 /* Compute the product of signed A and B and indicate in *OVERFLOW whether
@@ -386,12 +385,11 @@ mul_hwi (HOST_WIDE_INT a, HOST_WIDE_INT b, bool *overflow)
     *overflow = true;
   else
     *overflow = false;
-  return result;
 #else
   HOST_WIDE_INT result;
   *overflow = __builtin_mul_overflow (a, b, &result);
-  return result;
 #endif
+  return result;
 }
 
 /* Compute the saturated sum of signed A and B, i.e. upon overflow clamp
