@@ -254,20 +254,42 @@ i386_pe_maybe_mangle_decl_assembler_name (tree decl, tree id)
 
 #endif
 
+/* Return the symbol spelling used by .drectve exclude-symbols directives.
+   This is the external name without the user label prefix, while preserving
+   calling-convention decoration such as fastcall's leading '@' or a
+   stdcall suffix.  */
+
+static const char *
+i386_pe_drectve_name (tree id)
+{
+  const char *name = targetm.strip_name_encoding (IDENTIFIER_POINTER (id));
+  size_t prefix_len = strlen (user_label_prefix);
+
+  if (prefix_len != 0
+      && strncmp (name, user_label_prefix, prefix_len) == 0)
+    name += prefix_len;
+
+  return name;
+}
+
 /* Emit an assembler directive to set symbol for DECL visibility to
    the visibility type VIS, which must not be VISIBILITY_DEFAULT.
-   As for PE there is no hidden support in gas, we just warn for
-   user-specified visibility attributes.  */
+   Emit a -exclude-symbols directive into .drectve, compatible with
+   what Clang emits for hidden visibility on PE/COFF.  */
 
 void
-i386_pe_assemble_visibility (tree decl, int)
+i386_pe_assemble_visibility (tree decl, int vis)
 {
-  if (!decl
-      || !lookup_attribute ("visibility", DECL_ATTRIBUTES (decl)))
+  if (!decl)
     return;
-  if (!DECL_ARTIFICIAL (decl))
-    warning (OPT_Wattributes, "visibility attribute not supported "
-			      "in this configuration; ignored");
+
+  if (vis == VISIBILITY_HIDDEN || vis == VISIBILITY_INTERNAL)
+    {
+      tree id = DECL_ASSEMBLER_NAME (decl);
+      const char *name = i386_pe_drectve_name (id);
+      drectve_section ();
+      fprintf (asm_out_file, "\t.ascii \" -exclude-symbols:%s\"\n", name);
+    }
 }
 
 #if !defined (TARGET_AARCH64_MS_ABI)
