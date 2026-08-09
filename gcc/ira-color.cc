@@ -3154,14 +3154,9 @@ setup_allocno_priorities (ira_allocno_t *consideration_allocnos, int n)
       ira_assert (mult >= 0);
       mult *= ira_reg_class_max_nregs[ALLOCNO_CLASS (a)][ALLOCNO_MODE (a)];
       diff = ALLOCNO_MEMORY_COST (a) - ALLOCNO_CLASS_COST (a);
-#ifdef __has_builtin
-#if __has_builtin(__builtin_smul_overflow)
-#define HAS_SMUL_OVERFLOW
-#endif
-#endif
       /* Multiplication can overflow for very large functions.
 	 Check the overflow and constrain the result if necessary: */
-#ifdef HAS_SMUL_OVERFLOW
+#if STAGE0_CXX_HAS_BUILTIN (smul_overflow)
       if (__builtin_smul_overflow (mult, diff, &priority)
 	  || priority < -INT_MAX)
 	priority = diff >= 0 ? INT_MAX : -INT_MAX;

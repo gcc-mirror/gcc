@@ -22,6 +22,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SYSTEM_H
 #define GCC_SYSTEM_H
 
+/* True if __builtin_* () is supported.
+   This is done for optimizing GCC itself.  */
+#ifdef __has_builtin
+# define STAGE0_CXX_HAS_BUILTIN(NAME) __has_builtin (__builtin_ ## NAME)
+#else
+# define STAGE0_CXX_HAS_BUILTIN(NAME) 0
+#endif
+
 /* Define this so that inttypes.h defines the PRI?64 macros even
    when compiling with a C++ compiler.  Define it here so in the
    event inttypes.h gets pulled in by another header it is already

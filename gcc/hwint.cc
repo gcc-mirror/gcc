@@ -189,12 +189,21 @@ least_common_multiple (HOST_WIDE_INT a, HOST_WIDE_INT b)
   return mul_hwi (abs_hwi (a) / gcd (a, b), abs_hwi (b));
 }
 
-/* Reflect (reverse) the bits of a given VALUE within a specified BITWIDTH.  */
+/* Reflect (reverse) the bits of a given VALUE within a specified BITWIDTH <= 64.  */
 
 unsigned HOST_WIDE_INT
 reflect_hwi (unsigned HOST_WIDE_INT value, unsigned bitwidth)
 {
+  if (bitwidth == 0)
+    return 0;
+
+  gcc_checking_assert (bitwidth <= 64);
+
+#if STAGE0_CXX_HAS_BUILTIN (bitreverse64)
+  return __builtin_bitreverse64 (value) >> (64 - bitwidth);
+#else
   unsigned HOST_WIDE_INT reflected_value = 0;
+
   /* Loop through each bit in the specified BITWIDTH.  */
   for (size_t i = 0; i < bitwidth; i++)
     {
@@ -204,5 +213,7 @@ reflect_hwi (unsigned HOST_WIDE_INT value, unsigned bitwidth)
       reflected_value |= (value & 1);
       value >>= 1;
     }
+
   return reflected_value;
+#endif
 }
