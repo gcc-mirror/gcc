@@ -35,22 +35,37 @@ static const char * const rtx_upname[] = {
 
 #undef DEF_RTL_EXPR
 
+/* An optab pattern and the condition under which it is available.  */
+
+struct pattern_info : optab_pattern
+{
+  /* The pattern's C test, or "" if the pattern is always available.
+     genflags.cc defines HAVE_<name> as 1 for a statically true test and
+     as the test itself otherwise, so two patterns that agree on COND
+     also agree on the definition of HAVE_<name>.  */
+  const char *cond;
+};
+
 /* Vector in which to collect insns that match.  */
-static vec<optab_pattern> patterns;
+static vec<pattern_info> patterns;
 
 static void
 gen_insn (md_rtx_info *info)
 {
-  optab_pattern p;
+  pattern_info p;
   if (find_optab (&p, XSTR (info->def, 0)))
-    patterns.safe_push (p);
+    {
+      const char *cond = get_c_test (info->def);
+      p.cond = maybe_eval_c_test (cond) == 1 ? "" : cond;
+      patterns.safe_push (p);
+    }
 }
 
 static int
 pattern_cmp (const void *va, const void *vb)
 {
-  const optab_pattern *a = (const optab_pattern *)va;
-  const optab_pattern *b = (const optab_pattern *)vb;
+  const pattern_info *a = (const pattern_info *)va;
+  const pattern_info *b = (const pattern_info *)vb;
   return a->sort_num - b->sort_num;
 }
 
@@ -173,12 +188,29 @@ handle_overloaded_gen (FILE *file, overloaded_name *oname)
     }
 }
 
+/* Return the name of the narrowest unsigned integer type that is guaranteed
+   to hold every value below LIMIT.  The generated file is compiled for the
+   host, which need not be the machine that runs this generator, so use the
+   ranges that ISO C requires rather than the ones this machine happens to
+   provide.  GCC hosts have at least 32-bit ints, which cover every vec
+   index.  */
+
+static const char *
+narrowest_uint_type (unsigned int limit)
+{
+  if (limit <= 256)
+    return "unsigned char";
+  if (limit <= 65536)
+    return "unsigned short";
+  return "unsigned int";
+}
+
 int
 main (int argc, const char **argv)
 {
   FILE *h_file, *s_file;
   unsigned int i, j, n, last_kind[5];
-  optab_pattern *p;
+  pattern_info *p;
 
   progname = "genopinit";
 
@@ -367,44 +399,46 @@ main (int argc, const char **argv)
     fprintf (s_file, "  { %#08x, CODE_FOR_%s },\n", p->sort_num, p->name);
   fprintf (s_file, "};\n\n");
 
-  /* Some targets like riscv have a large number of patterns.  In order to
-     prevent pathological situations in dataflow analysis split the init
-     function into separate ones that initialize 1000 patterns each.  */
+  /* Targets have far fewer distinct conditions than optab patterns.  Number
+     the distinct conditions and record the number that each pattern uses, so
+     that init_all_optabs can evaluate every condition once and then fill
+     pat_enable from a table.  That keeps init_all_optabs a fixed size no
+     matter how many patterns a target has, and makes it cheaper to run.  */
 
-  const int patterns_per_function = 1000;
-
-  if (patterns.length () > patterns_per_function)
+  auto_vec<unsigned int> pat_cond (patterns.length ());
+  auto_vec<unsigned int> cond_rep;
+  hash_map<nofree_string_hash, unsigned int> cond_ids;
+  for (i = 0; patterns.iterate (i, &p); ++i)
     {
-      unsigned num_init_functions
-	= patterns.length () / patterns_per_function + 1;
-      for (i = 0; i < num_init_functions; i++)
+      bool existed;
+      unsigned int &id = cond_ids.get_or_insert (p->cond, &existed);
+      if (!existed)
 	{
-	  fprintf (s_file, "static void\ninit_optabs_%02d "
-		   "(struct target_optabs *optabs)\n{\n", i);
-	  fprintf (s_file, "  bool *ena = optabs->pat_enable;\n");
-	  unsigned start = i * patterns_per_function;
-	  unsigned end = MIN (patterns.length (),
-			      (i + 1) * patterns_per_function);
-	  for (j = start; j < end; ++j)
-	    fprintf (s_file, "  ena[%u] = HAVE_%s;\n", j, patterns[j].name);
-	  fprintf (s_file, "}\n\n");
+	  id = cond_rep.length ();
+	  cond_rep.safe_push (i);
 	}
+      pat_cond.quick_push (id);
+    }
 
-      fprintf (s_file, "void\ninit_all_optabs "
-	       "(struct target_optabs *optabs)\n{\n");
-      for (i = 0; i < num_init_functions; ++i)
-	fprintf (s_file, "  init_optabs_%02d (optabs);\n", i);
-      fprintf (s_file, "}\n\n");
-    }
-  else
-    {
-      fprintf (s_file, "void\ninit_all_optabs "
-	       "(struct target_optabs *optabs)\n{\n");
-      fprintf (s_file, "  bool *ena = optabs->pat_enable;\n");
-      for (i = 0; patterns.iterate (i, &p); ++i)
-	fprintf (s_file, "  ena[%u] = HAVE_%s;\n", i, p->name);
-      fprintf (s_file, "}\n\n");
-    }
+  fprintf (s_file, "static const %s pat_cond[NUM_OPTAB_PATTERNS] = {\n ",
+	   narrowest_uint_type (cond_rep.length ()));
+  for (i = 0; i < pat_cond.length (); ++i)
+    fprintf (s_file, " %u,%s", pat_cond[i], (i % 20) == 19 ? "\n " : "");
+  fprintf (s_file, "\n};\n\n");
+
+  /* The conditions are local to init_all_optabs, so that each call evaluates
+     them for the current target options.  Convert each one to bool, since a
+     HAVE_* macro can expand to an int-valued expression and narrowing in a
+     braced initializer is ill-formed.  */
+  fprintf (s_file, "void\ninit_all_optabs (struct target_optabs *optabs)\n{\n");
+  fprintf (s_file, "  const bool cond[] = {\n");
+  for (i = 0; i < cond_rep.length (); ++i)
+    fprintf (s_file, "    bool (HAVE_%s),\n", patterns[cond_rep[i]].name);
+  fprintf (s_file, "  };\n");
+  fprintf (s_file, "  bool *ena = optabs->pat_enable;\n");
+  fprintf (s_file, "  for (unsigned int i = 0; i < NUM_OPTAB_PATTERNS; ++i)\n");
+  fprintf (s_file, "    ena[i] = cond[pat_cond[i]];\n");
+  fprintf (s_file, "}\n\n");
 
   fprintf (s_file,
 	   "/* Returns TRUE if the target supports any of the partial vector\n"
