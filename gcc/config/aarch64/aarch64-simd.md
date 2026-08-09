@@ -7977,7 +7977,7 @@
 	(neg:DI
 	  (COMPARISONS:DI
 	    (match_operand:DI 1 "register_operand" "w,w,r")
-	    (match_operand:DI 2 "aarch64_simd_reg_or_zero" "w,ZDz,r")
+	    (match_operand:DI 2 "aarch64_simd_reg_or_zero" "w,ZDz,rZ")
 	  )))
      (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
