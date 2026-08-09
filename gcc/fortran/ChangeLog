@@ -1,3 +1,12 @@
+2026-08-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-05-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/125263
+	* trans-expr.cc (gfc_trans_assignment_1): Pass scalar class to
+	derived type assignment expressions to gfc_trans_scalar_assign.
+
 2026-08-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
