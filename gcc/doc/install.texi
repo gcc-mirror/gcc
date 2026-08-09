@@ -1719,7 +1719,7 @@ not use transactional memory.
 @item --with-cpu=@var{cpu}
 @itemx --with-cpu-32=@var{cpu}
 @itemx --with-cpu-64=@var{cpu}
-Specify which cpu variant the compiler should generate code for by default.
+Specify which CPU variant the compiler should generate code for by default.
 @var{cpu} will be used as the default value of the @option{-mcpu=} switch.
 This option is only supported on some targets, including ARC, ARM, i386, M68k,
 PowerPC, RISC-V, and SPARC@.  It is mandatory for ARC@.  The
@@ -2496,7 +2496,7 @@ When neither of these configure options are used, the default will be
 Specify whether @code{long double} uses the IBM extended double format
 or the IEEE 128-bit floating point format on PowerPC Linux systems.
 This configuration switch will only work on little endian PowerPC
-Linux systems and on big endian 64-bit systems where the default cpu
+Linux systems and on big endian 64-bit systems where the default CPU
 is at least power7 (i.e.@: @option{--with-cpu=power7},
 @option{--with-cpu=power8}, or @option{--with-cpu=power9} is used).
 
@@ -5241,7 +5241,7 @@ GCC will build under Cygwin without modification; it does not build
 with Microsoft's C++ compiler and there are no plans to make it do so.
 
 The Cygwin native compiler can be configured to target any 32-bit x86
-cpu architecture desired; the default is i686-pc-cygwin.  It should be
+CPU architecture desired; the default is i686-pc-cygwin.  It should be
 used with as up-to-date a version of Binutils as possible; use either
 the latest official GNU Binutils release in the Cygwin distribution,
 or version 2.20 or above if building your own.
