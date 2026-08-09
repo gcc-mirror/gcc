@@ -6495,7 +6495,13 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   gfc_se se;
   int n;
 
-  type = TREE_TYPE (descriptor);
+  if (expr->ts.type == BT_CLASS
+      && expr3_desc != NULL_TREE
+      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (expr3_desc)))
+    type = TREE_TYPE (expr3_desc);
+  else
+    type = TREE_TYPE (descriptor);
+
 
   stride = gfc_index_one_node;
   offset = gfc_index_zero_node;
