@@ -7501,7 +7501,8 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 
       /* Set the vptr only when no source= is set.  When source= is set, then
 	 the trans_assignment below will set the vptr.  */
-      if (al_vptr != NULL_TREE && (!code->expr3 || code->expr3->mold))
+      if (al_vptr != NULL_TREE && (!code->expr3 || code->expr3->mold
+				   || code->expr3->ts.type == BT_CLASS))
 	{
 	  if (expr3_vptr != NULL_TREE)
 	    /* The vtab is already known, so just assign it.  */
