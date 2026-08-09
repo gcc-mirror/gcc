@@ -443,10 +443,14 @@ streamer_write_vrange (struct output_block *ob, const vrange &v)
       // Stream out bounds.
       if (kind != VR_NAN)
 	{
-	  REAL_VALUE_TYPE lb = r.lower_bound ();
-	  REAL_VALUE_TYPE ub = r.upper_bound ();
-	  streamer_write_real_value (ob, &lb);
-	  streamer_write_real_value (ob, &ub);
+	  streamer_write_uhwi (ob, r.num_pairs ());
+	  for (unsigned i = 0; i < r.num_pairs (); ++i)
+	    {
+	      REAL_VALUE_TYPE lb = r.lower_bound (i);
+	      REAL_VALUE_TYPE ub = r.upper_bound (i);
+	      streamer_write_real_value (ob, &lb);
+	      streamer_write_real_value (ob, &ub);
+	    }
 	}
       return;
     }

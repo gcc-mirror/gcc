@@ -257,10 +257,17 @@ streamer_read_value_range (class lto_input_block *ib, data_in *data_in,
 	r.set_nan (type, nan);
       else
 	{
-	  REAL_VALUE_TYPE lb, ub;
-	  streamer_read_real_value (ib, &lb);
-	  streamer_read_real_value (ib, &ub);
-	  r.set (type, lb, ub, nan);
+	  r.set_undefined ();
+	  unsigned HOST_WIDE_INT num_pairs = streamer_read_uhwi (ib);
+	  for (unsigned i = 0; i < num_pairs; ++i)
+	    {
+	      REAL_VALUE_TYPE lb, ub;
+	      streamer_read_real_value (ib, &lb);
+	      streamer_read_real_value (ib, &ub);
+	      frange tmp;
+	      tmp.set (type, lb, ub, nan);
+	      r.union_ (tmp);
+	    }
 	}
       return;
     }
