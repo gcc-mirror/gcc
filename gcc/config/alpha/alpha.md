@@ -2237,21 +2237,28 @@
    (use (match_operand:TF 1 "general_operand"))]
   "TARGET_FP && TARGET_HAS_XFLOATING_LIBS"
 {
-  rtx tmpf, sticky, arg, lo, hi;
+  rtx tmpf, sticky, arg, lo, discarded, kept;
+  HOST_WIDE_INT mask = ((HOST_WIDE_INT) 1 << 60) - 1;
 
   tmpf = gen_reg_rtx (DFmode);
   sticky = gen_reg_rtx (DImode);
   arg = copy_to_mode_reg (TFmode, operands[1]);
   lo = gen_lowpart (DImode, arg);
-  hi = gen_highpart (DImode, arg);
 
-  /* Convert the low word of the TFmode value into a sticky rounding bit,
-     then or it into the low bit of the high word.  This leaves the sticky
-     bit at bit 48 of the fraction, which is representable in DFmode,
-     which prevents rounding error in the final conversion to SFmode.  */
+  /* Round to odd at the last fraction bit DFmode keeps, so that the
+     conversion to DFmode is exact and the one to SFmode is the only
+     rounding.  DFmode keeps 52 fraction bits; the high word holds the first
+     48 of the 112 and the low word the rest, so that is bit 60 of the low
+     word.  Replace everything below it with a sticky bit.  */
 
-  emit_insn (gen_rtx_SET (sticky, gen_rtx_NE (DImode, lo, const0_rtx)));
-  emit_insn (gen_iordi3 (hi, hi, sticky));
+  discarded = expand_binop (DImode, and_optab, lo, GEN_INT (mask),
+			    NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  emit_insn (gen_rtx_SET (sticky, gen_rtx_NE (DImode, discarded, const0_rtx)));
+  kept = expand_binop (DImode, and_optab, lo, GEN_INT (~mask),
+		       NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  sticky = expand_shift (LSHIFT_EXPR, DImode, sticky, 60, NULL_RTX, 1);
+  emit_move_insn (lo, expand_binop (DImode, ior_optab, kept, sticky,
+				    NULL_RTX, 1, OPTAB_LIB_WIDEN));
   emit_insn (gen_trunctfdf2 (tmpf, arg));
   emit_insn (gen_truncdfsf2 (operands[0], tmpf));
   DONE;
