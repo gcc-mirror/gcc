@@ -2256,8 +2256,7 @@ float_binary_op_range_finish (bool ret, frange &r, tree type,
     {
       r.clear_nan ();
       if (div_op2
-	  ? !(real_compare (LE_EXPR, &lhs.lower_bound (), &dconst0)
-	      && real_compare (GE_EXPR, &lhs.upper_bound (), &dconst0))
+	  ? !lhs.contains_zero_p ()
 	  : !(real_isinf (&lhs.lower_bound ())
 	      || real_isinf (&lhs.upper_bound ())))
 	// For reverse + or - or * or op1 of /, if result is finite, then
