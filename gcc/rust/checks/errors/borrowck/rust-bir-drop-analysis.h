@@ -28,7 +28,7 @@ namespace BIR {
   Classifies scheduled whole-local BIR Drop statements according to
   whether their place is initialized at the drop point.
 
-  This initial implementation only handles straight-line control flow.
+  This analysis tracks initialization state across the BIR control-flow graph.
 */
 class DropAnalysis
 {
