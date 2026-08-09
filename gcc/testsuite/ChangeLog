@@ -1,3 +1,43 @@
+2026-08-08  Kevin Stefanov  <kevinstefanov15@gmail.com>
+
+	PR middle-end/111856
+	* gcc.dg/gomp/pr111856.c: New test.
+
+2026-08-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/47425
+	* gfortran.dg/pr47425-1.f90: New test.
+	* gfortran.dg/pr47425-2.f90: New test.
+
+2026-08-08  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/vec-reduc-pair-1.c: New test.
+	* gcc.dg/tree-ssa/vec-reduc-pair-2.c: New test.
+	* gcc.dg/tree-ssa/vec-reduc-pair-3.c: New test.
+	* gcc.dg/tree-ssa/vec-reduc-pair-4.c: New test.
+
+2026-08-08  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* g++.dg/tree-ssa/vec-narrow-1.C: New test.
+	* g++.dg/tree-ssa/vec-narrow-minmax-2.C: New test.
+
+2026-08-08  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/minmax-sum-1.c: New test.
+	* gcc.dg/tree-ssa/minmax-sum-fp-1.c: Likewise.
+	* gcc.dg/tree-ssa/minmax-sum-fp-2.c: Likewise.
+	* g++.target/aarch64/minmax-sum-1.C: Likewise.
+
+2026-08-08  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/signbit-1.c (f1, f2, f3): Remove.
+	Remove the corresponding dump scan.
+
+2026-08-08  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/125383
+	* gfortran.dg/pr125383.f90: New test.
+
 2026-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/126534

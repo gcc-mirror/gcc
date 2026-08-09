@@ -1,3 +1,38 @@
+2026-08-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/47425
+	* decl.cc (discard_pending_charlen): Use new helper
+	function.
+	(discard_pending_charlens): Likewise.
+	(build_struct): Likewise.
+	* gfortran.h (struct gfc_charlen): Add a namespace
+	pointer to track char len for undo.
+	(struct gfc_undo_change_set): Add cls
+	pointer to track charlens created during parsing.
+	(struct gfc_undo_change_set): Add vec<gfc_charlen *> cls.
+	(gfc_remove_saved_charlen): Declare new helper function.
+	* parse.cc (accept_statement): Adjust comment.
+	* symbol.cc (gfc_merge_new_implicit): Use new helper function
+	(free_undo_change_set_data): Release cls.
+	(gfc_drop_last_undo_checkpoint): Splice cls into parent
+	changeset.
+	(gfc_restore_last_undo_checkpoint): Remove and free charlens
+	tracked in cls.
+	(gfc_commit_symbols): Truncate cls.
+	(gfc_remove_saved_charlen): New function to remove
+	previously saved char len.
+	(gfc_free_namespace): Remove charlens from undo before freeing
+	to prevent double-free.
+	(gfc_enforce_clean_symbol_state): Clear cls instead of asserting
+	empty; non-tentative callers leave charlens in cls.
+	* trans-array.cc (trans_array_constructor): Add guard.
+
+2026-08-08  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/125383
+	* resolve.cc (was_declared): Require a known procedure kind for
+	subroutine declarations.
+
 2026-08-06  Josef Melcr  <josef.melcr@suse.com>
 
 	* f95-lang.cc (ATTR_CALLBACK_GOMP_LIST): Rename to

@@ -1,3 +1,41 @@
+2026-08-08  Kevin Stefanov  <kevinstefanov15@gmail.com>
+
+	PR middle-end/111856
+	* omp-simd-clone.cc (simd_clone_adjust_return_type): Use VOID_TYPE_P
+	when checking for void return type in adjusted functions.
+	(simd_clone_adjust): Likewise.
+
+2026-08-08  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gcc.cc (execute) [default]: Use the same wording as above.
+
+2026-08-08  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (REDUC (a) op REDUC (b)): New simplifications combining
+	two reductions into one.
+
+2026-08-08  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd ((type) minmax ((wide_type) a, (wide_type) b)): Accept
+	vector types, using element_precision and requiring the narrow
+	operation to be supported.
+
+2026-08-08  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd ((x + y) - minmax (x, y)): New simplification.
+
+2026-08-08  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* range-op-float.cc (operator_cast::fold_range): Convert each
+	sub-range and union the results.
+	(range_op_float_tests): New test.
+
+2026-08-08  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* range-op-float.cc (operator_cast::fold_range): Convert each
+	sub-range and union the results.
+	(range_op_float_tests): New test.
+
 2026-08-07  Aldy Hernandez  <aldy@quesejoda.com>
 
 	PR tree-optimization/126714
