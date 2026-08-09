@@ -7037,7 +7037,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (neeq @0 @1))
  (simplify
   (bitop:c (eqne @0 @1) (eqne (bit_ior@2 @0 @1) integer_zerop@3))
-  (neeq @2 @3))
+  (eqne @2 @3))
  (simplify
   (bitop (neeq @0 @1) (eqne (bit_ior @0 @1) integer_zerop))
   { constant_boolean_node (bitop == BIT_IOR_EXPR, type); })

@@ -1,15 +1,18 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
-int f1(int a, int b)
+_Bool
+a_ne_b_bit_ior (int a, int b)
 {
-  return (a != b) | ((a | b) != 0);
+  _Bool ret = ((a | b) != 0);
+  return (((a != b) | ret) == ret);
 }
 
-int f2(int a, int b)
+_Bool
+a_eq_b_bit_and (int a, int b)
 {
-  return (a == b) & ((a | b) == 0);
+  _Bool ret = ((a | b) == 0);
+  return (((a == b) & ret) == ret);
 }
 
- /* { dg-final { scan-tree-dump-times "a == b" 0 "optimized" } } */
- /* { dg-final { scan-tree-dump-times "a != b" 0 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "return 1;" 2 "optimized" } } */
