@@ -2072,6 +2072,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (bit_and (plus @0 @1)
 	    { build_uniform_cst
 		(type, wide_int_to_tree (etype, wi::bit_not (c))); }))))
+
+/* ((X - 1) | C) + 1 -> (X + C) & ~C, for C a low mask 2^k - 1.
+   Both forms round X up to a multiple of 2^k.  */
+(simplify
+ (plus (bit_ior:s (plus @0 integer_minus_onep)
+		   uniform_integer_cst_p@1)
+	integer_onep)
+ (with { tree cst = uniform_integer_cst_p (@1);
+	 tree etype = TREE_TYPE (cst);
+	 wide_int c = wi::to_wide (cst); }
+  (if (TYPE_OVERFLOW_WRAPS (type)
+	&& c != 0
+	&& wi::popcount (c + 1) == 1)
+   (bit_and (plus @0 @1)
+	    { build_uniform_cst
+		(type, wide_int_to_tree (etype, wi::bit_not (c))); }))))
+
 /* (x + y) - min (x, y) -> max (x, y)
    (x + y) - max (x, y) -> min (x, y)
    The sum of the minimum and the maximum is the sum of the operands.  */
