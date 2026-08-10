@@ -3219,10 +3219,13 @@
 ;; ---- [INT] Multi-vector narrowing right shifts
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - SQSHRN (SVE2p3, SME2p3)
+;; - SQSHRUN (SVE2p3, SME2p3)
 ;; - SQRSHR (SME2)
 ;; - SQRSHRN (SVE2p1, SME2)
 ;; - SQRSHRU (SME2)
 ;; - SQRSHRUN (SVE2p1, SME2)
+;; - UQSHRN (SVE2p3, SME2p3)
 ;; - UQRSHR (SME2)
 ;; - UQRSHRN (SVE2p1, SME2)
 ;; -------------------------------------------------------------------------
@@ -3234,6 +3237,17 @@
 	   (match_operand:DI 2 "const_int_operand")]
 	  SVE2_INT_SHIFT_IMM_NARROWxN))]
   "(<MODE>mode == VNx8SImode || TARGET_STREAMING_SME2)"
+  "<sve_int_op>\t%0.<Ventype>, %1, #%2"
+  [(set_attr "sve_type" "sve_int_shift")]
+)
+
+(define_insn "@aarch64_sve_<sve_int_op><mode>"
+  [(set (match_operand:<VNARROW> 0 "register_operand" "=w")
+	(unspec:<VNARROW>
+	  [(match_operand:SVE_FULL_HIx2 1 "register_operand" "Uw<vector_count>")
+	   (match_operand:DI 2 "const_int_operand")]
+	  SVE2_INT_SHIFT_IMM_NARROWxN))]
+  "TARGET_SVE2p3_OR_SME2p3"
   "<sve_int_op>\t%0.<Ventype>, %1, #%2"
   [(set_attr "sve_type" "sve_int_shift")]
 )

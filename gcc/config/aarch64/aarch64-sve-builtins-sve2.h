@@ -184,6 +184,8 @@ namespace aarch64_acle
     extern const function_base *const svqrdmulh_lane;
     extern const function_base *const svqrshl;
     extern const function_base *const svqrshr;
+    extern const function_base *const svqshrn;
+    extern const function_base *const svqshrun;
     extern const function_base *const svqrshrn;
     extern const function_base *const svqrshrnb;
     extern const function_base *const svqrshrnt;

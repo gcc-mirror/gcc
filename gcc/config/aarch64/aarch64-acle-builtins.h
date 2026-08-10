@@ -1580,9 +1580,35 @@ function_expander::result_mode () const
   D (s16, s32), \
   D (u16, u32)
 
+/* _s8_s16
+   _u8_u16
+   _s16_s32
+   _u16_u32.  */
+#define TYPES_qshr_x2(S, D, T) \
+  D (s8, s16), \
+  D (u8, u16), \
+  D (s16, s32), \
+  D (u16, u32)
+
+/* _s8_s16
+   _u8_u16.  */
+#define TYPES_qrshr_x2_8(S, D, T) \
+  D (s8, s16), \
+  D (u8, u16)
+
 /* _u16_s32.  */
 #define TYPES_qrshru_x2(S, D, T) \
   D (u16, s32)
+
+/* _u8_s16
+   _u16_s32.  */
+#define TYPES_qshru_x2(S, D, T) \
+  D (u8, s16), \
+  D (u16, s32)
+
+/* _u8_s16.  */
+#define TYPES_qrshrun_x2(S, D, T) \
+  D (u8, s16)
 
 /* _s8_s32
    _s16_s64
@@ -2039,9 +2065,13 @@ DEF_SVE_TYPES_ARRAY (cvttb);
 DEF_SVE_TYPES_ARRAY (inc_dec_n);
 DEF_SVE_TYPES_ARRAY (qcvt_x2);
 DEF_SVE_TYPES_ARRAY (qcvt_x4);
+DEF_SVE_TYPES_ARRAY (qshr_x2);
 DEF_SVE_TYPES_ARRAY (qrshr_x2);
+DEF_SVE_TYPES_ARRAY (qrshr_x2_8);
 DEF_SVE_TYPES_ARRAY (qrshr_x4);
 DEF_SVE_TYPES_ARRAY (qrshru_x2);
+DEF_SVE_TYPES_ARRAY (qrshrun_x2);
+DEF_SVE_TYPES_ARRAY (qshru_x2);
 DEF_SVE_TYPES_ARRAY (qrshru_x4);
 DEF_SVE_TYPES_ARRAY (reinterpret);
 DEF_SVE_TYPES_ARRAY (reinterpret_b);

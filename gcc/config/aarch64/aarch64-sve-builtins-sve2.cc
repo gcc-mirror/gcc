@@ -1250,6 +1250,12 @@ FUNCTION (svqrshr, unspec_based_uncond_function, (UNSPEC_SQRSHR,
 						  UNSPEC_UQRSHR, UNSPEC_NONE, UNSPEC_NONE, 1))
 FUNCTION (svqrshrn, unspec_based_uncond_function, (UNSPEC_SQRSHRN,
 						   UNSPEC_UQRSHRN, UNSPEC_NONE, UNSPEC_NONE, 1))
+FUNCTION (svqshrn, unspec_based_uncond_function, (UNSPEC_SQSHRN,
+						  UNSPEC_UQSHRN, UNSPEC_NONE,
+						  UNSPEC_NONE, 1))
+FUNCTION (svqshrun, unspec_based_uncond_function, (UNSPEC_SQSHRUN,
+						   UNSPEC_NONE, UNSPEC_NONE,
+						   UNSPEC_NONE, 1))
 FUNCTION (svqrshrnb, unspec_based_function, (UNSPEC_SQRSHRNB, UNSPEC_UQRSHRNB))
 FUNCTION (svqrshrnt, unspec_based_function, (UNSPEC_SQRSHRNT, UNSPEC_UQRSHRNT))
 FUNCTION (svqrshru, unspec_based_uncond_function, (UNSPEC_SQRSHRU, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, 1))

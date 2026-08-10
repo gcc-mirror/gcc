@@ -626,6 +626,8 @@
 ;; 2x and 4x tuples of the above, excluding 2x DI.
 (define_mode_iterator SVE_FULL_SIx2_SDIx4 [VNx8SI VNx16SI VNx8DI])
 
+(define_mode_iterator SVE_FULL_HIx2 [VNx16HI])
+
 ;; Fully-packed SVE floating-point vector modes that have 32-bit or 64-bit
 ;; elements.
 (define_mode_iterator SVE_FULL_SDF [VNx4SF VNx2DF])
@@ -1214,6 +1216,8 @@
     UNSPEC_SQRDCMLAH270	; Used in aarch64-sve2.md.
     UNSPEC_SQRDCMLAH90	; Used in aarch64-sve2.md.
     UNSPEC_SQRSHR	; Used in aarch64-sve2.md.
+    UNSPEC_SQSHRN	; Used in aarch64-sve2.md.
+    UNSPEC_SQSHRUN	; Used in aarch64-sve2.md.
     UNSPEC_SQRSHRN	; Used in aarch64-sve2.md.
     UNSPEC_SQRSHRNB	; Used in aarch64-sve2.md.
     UNSPEC_SQRSHRNT	; Used in aarch64-sve2.md.
@@ -1257,6 +1261,7 @@
     UNSPEC_UMULLB	; Used in aarch64-sve2.md.
     UNSPEC_UMULLT	; Used in aarch64-sve2.md.
     UNSPEC_UQRSHR	; Used in aarch64-sve2.md.
+    UNSPEC_UQSHRN	; Used in aarch64-sve2.md.
     UNSPEC_UQRSHRN	; Used in aarch64-sve2.md.
     UNSPEC_UQRSHRNB	; Used in aarch64-sve2.md.
     UNSPEC_UQRSHRNT	; Used in aarch64-sve2.md.
@@ -2152,7 +2157,7 @@
 			   (VNx4SI "VNx8HI") (VNx4SF "VNx8HF")
 			   (VNx2DI "VNx4SI") (VNx2DF "VNx4SF")
 			   (VNx8SI "VNx8HI") (VNx16SI "VNx16QI")
-			   (VNx8DI "VNx8HI")])
+			   (VNx8DI "VNx8HI") (VNx16HI "VNx16QI")])
 (define_mode_attr Vnarrow [(VNx8HI "vnx16qi")
 			   (VNx4SI "vnx8hi") (VNx4SF "vnx8hf")
 			   (VNx2DI "vnx4si") (VNx2DF "vnx4sf")
@@ -2293,7 +2298,7 @@
 			   (VNx4SI "h") (VNx4SF "h")
 			   (VNx2DI "s") (VNx2DF "s")
 			   (VNx8SI "h") (VNx16SI "b")
-			   (VNx8DI "h")])
+			   (VNx8DI "h") (VNx16HI "b")])
 
 ;; SVE vector after widening.
 (define_mode_attr Vewtype [(VNx16QI "h")
@@ -4073,10 +4078,13 @@
 
 (define_int_iterator SVE2_INT_SHIFT_IMM_NARROWxN
   [(UNSPEC_SQRSHR "TARGET_STREAMING_SME2")
+   (UNSPEC_SQSHRN "TARGET_SVE2p3_OR_SME2p3")
+   (UNSPEC_SQSHRUN "TARGET_SVE2p3_OR_SME2p3")
    (UNSPEC_SQRSHRN "TARGET_SVE2p1_OR_SME2")
    (UNSPEC_SQRSHRU "TARGET_STREAMING_SME2")
    (UNSPEC_SQRSHRUN "TARGET_SVE2p1_OR_SME2")
    (UNSPEC_UQRSHR "TARGET_STREAMING_SME2")
+   (UNSPEC_UQSHRN "TARGET_SVE2p3_OR_SME2p3")
    (UNSPEC_UQRSHRN "TARGET_SVE2p1_OR_SME2")])
 
 (define_int_iterator SVE2_INT_SHIFT_INSERT [UNSPEC_SLI UNSPEC_SRI])
@@ -4967,6 +4975,8 @@
 			     (UNSPEC_SQRDMULH "sqrdmulh")
 			     (UNSPEC_SQRSHL "sqrshl")
 			     (UNSPEC_SQRSHR "sqrshr")
+			     (UNSPEC_SQSHRN "sqshrn")
+			     (UNSPEC_SQSHRUN "sqshrun")
 			     (UNSPEC_SQRSHRN "sqrshrn")
 			     (UNSPEC_SQRSHRNB "sqrshrnb")
 			     (UNSPEC_SQRSHRNT "sqrshrnt")
@@ -5017,6 +5027,7 @@
 			     (UNSPEC_UMULLT "umullt")
 			     (UNSPEC_UQRSHL "uqrshl")
 			     (UNSPEC_UQRSHR "uqrshr")
+			     (UNSPEC_UQSHRN "uqshrn")
 			     (UNSPEC_UQRSHRN "uqrshrn")
 			     (UNSPEC_UQRSHRNB "uqrshrnb")
 			     (UNSPEC_UQRSHRNT "uqrshrnt")
