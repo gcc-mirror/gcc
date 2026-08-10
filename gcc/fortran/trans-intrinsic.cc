@@ -2144,8 +2144,7 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
   if (expr->value.function.actual->next->next->expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr_descriptor (&argse,
-				expr->value.function.actual->next->next->expr);
+      gfc_conv_expr_val (&argse, expr->value.function.actual->next->next->expr);
       if (expr->value.function.actual->next->next->expr->ts.type == BT_DERIVED)
 	team = argse.expr;
       else
@@ -2263,7 +2262,7 @@ trans_num_images (gfc_se * se, gfc_expr *expr)
       else
 	team_number = gfc_build_addr_expr (
 	  NULL_TREE,
-	  gfc_trans_force_lval (&se->pre,
+	  gfc_trans_force_lval (&argse.pre,
 				fold_convert (integer_type_node, argse.expr)));
       gfc_add_block_to_block (&se->pre, &argse.pre);
       gfc_add_block_to_block (&se->post, &argse.post);
