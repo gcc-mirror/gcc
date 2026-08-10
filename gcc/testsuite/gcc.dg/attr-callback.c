@@ -67,6 +67,14 @@ unknown_fn(char (*)(float*, double*), float*, double*, int*); /* { dg-warning "c
 void
 not_a_fn(int, int); /* { dg-warning "refers to" } */
 
+[[gnu::callback_only(1, 2)]]
+void
+vararg_1(void (*)(int*), int*, ...); /* { dg-warning "cannot be used on variadic functions" } */
+
+[[gnu::callback_only(1, 2)]]
+void
+vararg_2(void (*)(int*, ...), int*); /* { dg-warning "callback function cannot be variadic" } */
+
 struct S
 {
   int x;

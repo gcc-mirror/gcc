@@ -2358,30 +2358,31 @@ may be silently skipped when generating BTF.
 @cindex functions with callbacks
 @item callback_only
 The @code{callback_only} attribute specifies that the annotated function may
-call the specified callback function. The first parameter identifies the index
+call the specified callback function.  The first parameter identifies the index
 of the callback function, the rest of the arguments specify the indices of the
-arguments of the indirect call. All indices start from 1. If the function takes
+arguments of the indirect call.  All indices start from 1.  If the function takes
 the implicit @code{this} pointer, it is referred to by the index 1, with the
-rest of the arguments starting at index 2. The index 0 marks an argument not
+rest of the arguments starting at index 2.  The index 0 marks an argument not
 present in the arguments of the annotated function, an argument which is
-modified before calling the callback function. The annotated function must pass
+modified before calling the callback function.  The annotated function must pass
 the specified arguments in the specified order to the callback function, which
-must be callable with the number, order and type of the arguments. The
+must be callable with the number, order and type of the arguments.  The
 specified pointer to the callback may not escape the translation unit of the
-annotated function and it may not be captured. The annotated function is
+annotated function and it may not be captured.  The annotated function is
 required to pass the arguments through, it may not change or dereference them.
-The arguments also may not escape. The attribute may be used multiple times per
+The arguments also may not escape.  The attribute may be used multiple times per
 function, though only one @code{callback_only} attribute may be used per
-function parameter.
+function parameter.  Neither the dispatching function nor the callback function
+may be variadic.
 
 The attribute exposes the potentially hidden callsite in the annotated
 function, enabling interprocedural optimizations which may not be possible
-without the attribute. It is most useful for annotating functions from
+without the attribute.  It is most useful for annotating functions from
 dynamically linked libraries, as their bodies are not available during
 compilation.
 
 This attribute is similar to the clang @code{callback} attribute but it is not
-compatible with it. The clang implementation allows identifiers as arguments,
+compatible with it.  The clang implementation allows identifiers as arguments,
 marks an unknown argument with -1 and the @code{this} pointer with the index 0.
 
 An example usage:

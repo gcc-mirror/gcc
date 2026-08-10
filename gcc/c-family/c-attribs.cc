@@ -4692,6 +4692,15 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
       *no_add_attrs = true;
     }
 
+  tree decl_type = TREE_TYPE (decl);
+  if (stdarg_p (decl_type))
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "%qE attribute cannot be used on variadic functions", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
   tree val = positional_argument (decl, name, TREE_VALUE (args), POINTER_TYPE,
 				  1, POSARG_ZERO);
   if (!val)
@@ -4704,7 +4713,7 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
   /* We have to use the function type for validation, as
      DECL_ARGUMENTS returns NULL at this point.  */
   int callback_fn_idx = TREE_INT_CST_LOW (val);
-  tree decl_type_args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+  tree decl_type_args = TYPE_ARG_TYPES (decl_type);
   tree it;
   for (it = decl_type_args; it != NULL_TREE; it = TREE_CHAIN (it))
     if (it == void_list_node)
@@ -4738,6 +4747,15 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
     }
 
   tree type_args = TYPE_ARG_TYPES (cfn_pointee_type);
+
+  if (stdarg_p (cfn_pointee_type))
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "%qE callback function cannot be variadic", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
   /* Compare the length of the list of argument indices
      and the real number of parameters the callback takes.  */
   unsigned cfn_nargs = list_length (TREE_CHAIN (args));
