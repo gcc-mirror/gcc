@@ -5911,9 +5911,17 @@ init_var_both(cblc_field_t  *var,
     return;
     }
 
-  if( !(var->attr & based_e) && (var->attr & external_e) )
+  if( !(var->attr & based_e) && (var->attr & external_e) && !var->initial)
     {
     // These types can't be initialized
+    return;
+    }
+
+  if( flag_bits & JUST_ONCE_BIT && var->attr & external_e )
+    {
+    // This is an EXTERNAL variable with a VALUE clause.  We don't initialize
+    // that on startup.  The value is applicable only for explicit INITIALIZE
+    // statements.
     return;
     }
 

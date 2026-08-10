@@ -863,7 +863,7 @@ is a gcc compiler, and follows gcc conventions where applicable.
 Sometimes those conventions (and user expectations) conflict with
 common Mainframe practice.  Unless required of the compiler by the ISO
 specification, any such conflicts are resolved in favor of gcc.
-.Ss Linking
+.Ss Linking Functions
 Unlike, C, the \*[lang]
 .Sy CALL
 statement implies dynamic linking, because for
@@ -897,11 +897,6 @@ option.  That forces all
 .Sy CALL
 statements to be resolved dynamically, at runtime.
 .ig
-Programs that are expected to execute
-correctly in the presence of an unresolved symbol (perhaps because the
-program logic won't require that particular
-.Sy CALL )
-can use linker options to produce an executable anyway.
 .Pp
 One corner case yet remains.  The
 .Sy CALL
@@ -936,6 +931,53 @@ linking for all
 .Sy CALL
 statement, regardless of compile-time constants.
 ..
+.
+.Ss Linking to C
+.Nm
+can be called from C and can call C functions.  Additionally, 01-level
+data items can be defined by and/or referenced as C global variables.
+.Pp
+A top-level
+.Sy PROGRAM-ID
+has external linkage, just like a non-static C function.  The name is
+exported in lowercase.  Hyphens, being disallowed by the linker, are
+encoded; simplest is not to use such names if they are to be
+referenced outside \*[lang].  Contained programs do not have external
+linkage. 
+.Pp
+A
+.Sy CALL
+statement invokes the target following the C ABI for the platform.  That means for
+.D1 CALL Dq FOO
+the generated code is the same, no matter if
+.Sy FOO
+was compiled with C or \*[lang].  Alphanumeric and group parameters
+are passed as
+.Sy "char *" 
+pointers (not NUL-terminated).  Binary numeric types are passed by
+value, as with C.  See the CDF
+.Sy CALL-CONVENTION
+directive to control how the external reference is rendered. 
+.Pp
+A \*[lang]
+.Sy EXTERNAL
+data item is similar to a Fortran COMMON variable.  Many programs may
+define an item by the same name, preferably with identical
+definitions.  The linker recognizes the multiple definitions as defining a single variable.  (This is unlike C, where there is one definition and potentially N
+.Sy extern
+references.)
+C can participate when COBOL describes a variable as
+.Sy EXTERNAL
+in one of two ways:
+.Bl -enum
+.It
+C can declare an
+.Sy extern 
+variable with the same name.
+.
+.It
+C can define a global nonstatic variable (with or without an initializer) at file scope and the COBOL variables
+will refer to it.
 .
 .Ss Implemented Exception Conditions
 By default, per ISO, no EC is enabled.  Implemented ECs may be enabled

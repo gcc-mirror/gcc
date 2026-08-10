@@ -868,16 +868,43 @@ gg_declare_variable(tree type_decl,
       DECL_EXTERNAL(var_decl)  = 0;
       DECL_CONTEXT (var_decl)  = gg_trans_unit.trans_unit_decl;
       break;
-    case vs_external:
+    case vs_weak:
+      DECL_CONTEXT (var_decl)   = gg_trans_unit.trans_unit_decl;
+      TREE_USED(var_decl)       = 1;
+      TREE_STATIC( var_decl )   = 1;
+      TREE_PUBLIC( var_decl )   = 1;
+      DECL_EXTERNAL( var_decl ) = 0;
+      DECL_COMMON( var_decl )   = 0;
+      DECL_WEAK( var_decl )     = 1;
+      // We are not allowed to try to create a COMMON variable more than once
+      // in a translation unit.
+      seen[unique_name]        = var_decl;
+      break;
+    case vs_common:
+      DECL_CONTEXT (var_decl)   = gg_trans_unit.trans_unit_decl;
+      TREE_USED(var_decl)       = 1;
+      TREE_STATIC( var_decl )   = 1;
+      TREE_PUBLIC( var_decl )   = 1;
+      DECL_EXTERNAL( var_decl ) = 0;
+      DECL_COMMON( var_decl )   = 1;
+      DECL_WEAK( var_decl )     = 0;
+      // We are not allowed to try to create a COMMON variable more than once
+      // in a translation unit.
+      seen[unique_name]        = var_decl;
+      // A COMMON value with an initializer gets converted to a .data or .bss.
+      // So, we make sure it has no initializer.
+      gcc_assert(!initial_value);
+      initial_value = NULL_TREE;
+      break;
+    case vs_global:
       // This is for defining variables with global scope
       DECL_CONTEXT (var_decl) = gg_trans_unit.trans_unit_decl;
       TREE_USED(var_decl)      = 1;
       TREE_STATIC(var_decl)    = 1;
       TREE_PUBLIC(var_decl)    = 1;
       DECL_EXTERNAL(var_decl)  = 0;
-      seen[unique_name]        = var_decl;
       break;
-    case vs_external_reference:
+    case vs_extern:
       // This is for referencing variables defined elsewhere
       DECL_CONTEXT (var_decl) = gg_trans_unit.trans_unit_decl;
       TREE_USED(var_decl)      = 1;

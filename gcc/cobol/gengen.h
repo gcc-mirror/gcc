@@ -109,11 +109,17 @@
     */
 
 enum gg_variable_scope_t {
-  vs_stack,
-  vs_static,
-  vs_file_static,           // static variable of file scope
-  vs_external,              // Creates a PUBLIC STATIC variable of file scope
-  vs_external_reference,    // References a vs_external variable.
+  // These scopes reference the GCC world rather than the COBOL world.
+  // This is in contrast to the cbl_field_attr_t bits, where external_e means
+  // the variable had the COBOL EXTERNAL clause, which causes a variable to
+  // have a weak cblc_field_t and a common cblc_field_t::data.
+  vs_stack,        // An automatic variable.
+  vs_static,       // A static variable of function scope.
+  vs_file_static,  // static variable of file scope.
+  vs_weak,         // A "weak" variable.
+  vs_common,       // A COMMON variable.
+  vs_global,       // A global variable, e.g. "int xxx;" in C
+  vs_extern,       // A declaration for a global; "extern int xxx;"
 };
 
 struct gg_function_t

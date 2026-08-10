@@ -235,7 +235,7 @@ create_cblc_string_variable(const char *var_name, const char *var_contents)
   tree entry_point = gg_declare_variable(array_of_characters,
                                          var_name,
                                          constr,
-                                         vs_external);
+                                         vs_global);
   gg_define_from_declaration(entry_point);
   }
 
@@ -2799,7 +2799,7 @@ parser_enter_file(const char *filename)
   // Establish our variable declarations for global variables in libgcobol:
 
 #define SET_VAR_DECL(A, B, C) \
-  A = gg_declare_variable(B, C, NULL_TREE, vs_external_reference)
+  A = gg_declare_variable(B, C, NULL_TREE, vs_extern)
 
     SET_VAR_DECL(var_decl_exception_code         , INT    , "__gg__exception_code");
     SET_VAR_DECL(var_decl_exception_file_status  , INT    , "__gg__exception_file_status");
@@ -6822,7 +6822,7 @@ parser_division(cbl_division_t division,
       tree globals_are_initialized = gg_declare_variable( INT,
                                                           "__gg__globals_are_initialized",
                                                           NULL,
-                                                          vs_external_reference);
+                                                          vs_extern);
       IF( globals_are_initialized, eq_op, integer_zero_node )
         {
         // one-time initialization happens here
@@ -8970,7 +8970,7 @@ parser_file_add(struct cbl_file_t *file)
   gg_variable_scope_t scope;
   if( file->attr & external_e )
     {
-    scope = vs_external;
+    scope = vs_weak;
     }
   else
     {
@@ -14445,7 +14445,7 @@ psa_global(cbl_field_t *new_var)
       }
     }
 
-  new_var->var_decl_node = gg_declare_variable(cblc_field_type_node, ach, NULL, vs_external_reference);
+  new_var->var_decl_node = gg_declare_variable(cblc_field_type_node, ach, NULL, vs_extern);
 
   // global variables already have a .data area defined.  We can find that
   // variable from the new_var->name.  It's lower-case, with hyphens
@@ -14460,7 +14460,7 @@ psa_global(cbl_field_t *new_var)
       ach[i] = '_';
       }
     }
-  new_var->data_decl_node = gg_declare_variable(UCHAR, ach, NULL, vs_external_reference);
+  new_var->data_decl_node = gg_declare_variable(UCHAR, ach, NULL, vs_extern);
   }
 
 static tree
@@ -14478,7 +14478,7 @@ psa_new_var_decl(cbl_field_t *new_var, const char *external_record_base)
     strcat(ach, "_ra");  // For "Record Area"
     new_var_decl = gg_define_variable(  cblc_field_type_node,
                                         ach,
-                                        vs_external);
+                                        vs_weak);
     SET_DECL_MODE(new_var_decl, BLKmode);
     }
   else
@@ -14511,7 +14511,7 @@ psa_new_var_decl(cbl_field_t *new_var, const char *external_record_base)
     if( new_var->attr & external_e )
       {
       // For external variables, just stick with the original name
-      sprintf(base_name, "%s_cblc_field", new_var->name);
+      sprintf(base_name, "%s.cblc", new_var->name);
       }
     else
       {
@@ -14569,7 +14569,7 @@ psa_new_var_decl(cbl_field_t *new_var, const char *external_record_base)
       //fprintf(stderr, "external_e base name is %s\n", base_name);
       new_var_decl = gg_define_variable(  cblc_field_type_node,
                                           base_name,
-                                          vs_external);
+                                          vs_weak);
       SET_DECL_MODE(new_var_decl, BLKmode);
       }
     else if( new_var->attr & (intermediate_e)
@@ -15150,7 +15150,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
       new_var->data_decl_node = gg_define_variable(
                           array_type,
                           achDataName,
-                          vs_external);
+                          vs_common);
       data_area = gg_pointer_to_array(new_var->data_decl_node);
       goto actual_allocate;
       }
@@ -15255,7 +15255,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
               new_var->data_decl_node = gg_define_variable(
                                   array_type,
                                   achDataName,
-                                  vs_external);
+                                  vs_common);
               data_area = gg_pointer_to_array(new_var->data_decl_node);
               }
             else
@@ -15299,7 +15299,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
     free(level_88_string);
     free(class_string);
 
-    if(    !(new_var->attr & ( linkage_e | based_e))
+    if(    !(new_var->attr & ( linkage_e | based_e ))
         && !(new_var->type == FldLiteralN) )
       {
       static const bool explicitly = false;
