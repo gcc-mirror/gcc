@@ -4690,6 +4690,7 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
       warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
 		  "%qE attribute can only be used on functions", name);
       *no_add_attrs = true;
+      return NULL_TREE;
     }
 
   tree decl_type = TREE_TYPE (decl);
