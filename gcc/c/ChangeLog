@@ -1,3 +1,9 @@
+2026-08-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gimple-parser.cc (c_parser_gimple_postfix_expression):
+	Allow for an optional `, 1/0` in front of the cb pair
+	for MEM_REF.
+
 2026-07-25  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/125507

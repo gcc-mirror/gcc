@@ -1,3 +1,52 @@
+2026-08-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/111959
+	* gcc.dg/pr80776-1.c: xfail and update comment.
+	* gcc.dg/pr80776-1a.c: New test.
+	* gcc.dg/tree-ssa/forwprop-44.c: New test.
+	* g++.dg/ipa/pure-const-3.C: Remove.
+
+2026-08-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126729
+	* gcc.dg/sso/factor_load-1.c: New test.
+
+2026-08-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/gimplefe-59.c: New test.
+
+2026-08-09  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.target/alpha/trunctfsf2-1.c: New test.
+
+2026-08-09  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/126742
+	* gcc.dg/int-bwise-opt-2.c: Also test for PR126742.
+
+2026-08-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98573
+	* gfortran.dg/allocate_class_5.f90: New test.
+
+2026-08-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* g++.dg/tree-ssa/vec-narrow-1.C: Enable AVX512VL and AVX512DQ on
+	x86 targets.
+
+2026-08-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/recip-mult-div-1.c: New test.
+	* gcc.dg/tree-ssa/recip-mult-div-2.c: New test.
+
+2026-08-09  Roger Sayle  <roger@nextmovesofware.com>
+	    Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126467
+	* gcc.dg/pr126467-1.c: New test case.
+	* gcc.dg/pr126467-2.c: Likewise.
+	* gcc.dg/pr96392.c: Fix incorrect test case.
+
 2026-08-08  Kevin Stefanov  <kevinstefanov15@gmail.com>
 
 	PR middle-end/111856
