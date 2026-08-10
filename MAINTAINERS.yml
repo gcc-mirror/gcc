@@ -612,6 +612,7 @@ users:
   cn: Tobias Burnus
   email:
   - tburnus@baylibre.com
+  - burnus@net-b.de
   - burnus@gcc.gnu.org
   roles:
   - Maintainer: libgomp
