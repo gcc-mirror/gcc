@@ -2235,6 +2235,7 @@ users:
   - jskumari@linux.ibm.com
   - jskumari@gcc.gnu.org
   roles:
+  - Reviewer: rs6000/powerpc port
   - WriteAfter
   account: jskumari
 - sn: Jayakar

@@ -327,6 +327,7 @@ register allocation     Peter Bergner           <bergner@tenstorrent.com>
 register allocation     Seongbae Park           <seongbae.park@gmail.com>
 register allocation     Kenneth Zadeck          <zadeck@naturalbridge.com>
 riscv port              Juzhe Zhong             <juzhe.zhong@rivai.ai>
+rs6000/powerpc port     Surya Kumari Jangala    <jskumari@linux.ibm.com>
 RTL optimizers          Steven Bosscher         <steven@gcc.gnu.org>
 selective scheduling    Andrey Belevantsev      <abel@ispras.ru>
 selective scheduling    Alexander Monakov       <amonakov@ispras.ru>
