@@ -167,6 +167,7 @@ test_compare()
 CONSTEXPR bool
 test_all()
 {
+  test_adaptor<std::stack>();
   test_adaptor<std::queue>();
   test_adaptor<std::priority_queue>();
   test_compare<char>();

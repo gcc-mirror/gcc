@@ -63,6 +63,7 @@
 
 #define __glibcxx_want_adaptor_iterator_pair_constructor
 #define __glibcxx_want_containers_ranges
+#define __glibcxx_want_constexpr_stack
 #include <bits/version.h>
 
 #include <deque>
@@ -96,6 +97,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Standard declares this as template accepting unconstrained
       // FormatContext type.
       template<typename _Out>
+#ifdef __glibcxx_constexpr_format // C++ >= 26 && HOSTED && CXX11 string
+	constexpr
+#endif
 	typename basic_format_context<_Out, _CharT>::iterator
 	format(__maybe_const_adaptor& __a,
 	       basic_format_context<_Out, _CharT>& __fc) const

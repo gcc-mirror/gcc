@@ -1616,6 +1616,16 @@
 #endif /* !defined(__cpp_lib_constexpr_queue) */
 #undef __glibcxx_want_constexpr_queue
 
+#if !defined(__cpp_lib_constexpr_stack)
+# if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
+#  define __glibcxx_constexpr_stack 202502L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constexpr_stack)
+#   define __cpp_lib_constexpr_stack 202502L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_constexpr_stack) */
+#undef __glibcxx_want_constexpr_stack
+
 #if !defined(__cpp_lib_constrained_equality)
 # if (__cplusplus >  202002L) && (__glibcxx_three_way_comparison)
 #  define __glibcxx_constrained_equality 202411L

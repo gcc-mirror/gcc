@@ -20,30 +20,36 @@
 
 #include <stack>
 
+#if __cplusplus > 202302L
+# define CONSTEXPR constexpr
+#else
+# define CONSTEXPR
+#endif
+
 namespace std {
   template <class T, class Container> class stack;
 
   template <class T, class Container>
-    bool operator==(const stack<T, Container>& x,
-                    const stack<T, Container>& y);
+    CONSTEXPR bool
+    operator==(const stack<T, Container>& x, const stack<T, Container>& y);
 
   template <class T, class Container>
-    bool operator< (const stack<T, Container>& x,
-                    const stack<T, Container>& y);
+    CONSTEXPR bool
+    operator<(const stack<T, Container>& x, const stack<T, Container>& y);
 
   template <class T, class Container>
-    bool operator!=(const stack<T, Container>& x,
-                    const stack<T, Container>& y);
+    CONSTEXPR bool
+    operator!=(const stack<T, Container>& x, stack<T, Container>& y);
 
   template <class T, class Container>
-    bool operator> (const stack<T, Container>& x,
-                    const stack<T, Container>& y);
+    CONSTEXPR bool
+    operator>(const stack<T, Container>& x, const stack<T, Container>& y);
 
   template <class T, class Container>
-    bool operator>=(const stack<T, Container>& x,
-                    const stack<T, Container>& y);
+    CONSTEXPR bool
+    operator>=(const stack<T, Container>& x, const stack<T, Container>& y);
 
   template <class T, class Container>
-    bool operator<=(const stack<T, Container>& x,
-                    const stack<T, Container>& y);
+    CONSTEXPR bool
+    operator<=(const stack<T, Container>& x, const stack<T, Container>& y);
 }
