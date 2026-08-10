@@ -90,7 +90,7 @@ canonize (HOST_WIDE_INT *val, unsigned int len, unsigned int precision)
     len = blocks_needed;
 
   if (len == 1)
-    return len;
+    return 1;
 
   top = val[len - 1];
   if (len * HOST_BITS_PER_WIDE_INT > precision)
