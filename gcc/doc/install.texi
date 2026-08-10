@@ -3916,10 +3916,6 @@ the @uref{https://www.mingw-w64.org/,,mingw-w64} project.
 @end itemize
 
 @item
-@uref{http://www.openpkg.org/,,OpenPKG} offers binaries for quite a
-number of platforms.
-
-@item
 The @uref{https://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
 links to GNU Fortran binaries for several platforms.
 @end itemize
