@@ -7885,6 +7885,13 @@ match_procedure_decl (void)
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
+  if (current_attr.allocatable)
+    {
+      current_attr.procedure = 1;
+      gfc_check_conflict (&current_attr, NULL, &gfc_current_locus);
+      return MATCH_ERROR;
+    }
+
   if (proc_if && proc_if->attr.is_bind_c && !current_attr.is_bind_c)
     {
       current_attr.is_bind_c = 1;
