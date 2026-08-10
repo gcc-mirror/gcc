@@ -837,6 +837,8 @@ gfc_class_array_data_assign (stmtblock_t *block, tree lhs_desc, tree rhs_desc,
 
   gfc_conv_descriptor_dtype_set (block, lhs_desc,
 				 gfc_conv_descriptor_dtype_get (rhs_desc));
+  gfc_conv_descriptor_span_set (block, lhs_desc,
+				gfc_conv_descriptor_span_get (rhs_desc));
 
   /* Assign the dimension as range-ref.  */
   lhs_dim = gfc_get_descriptor_dimension (lhs_desc);
@@ -6233,14 +6235,12 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       else
 	gfc_conv_expr_descriptor (&se, e);
       gfc = se.expr;
-      /* For dt(:)%var the elem_len*stride != sm, hence, GFC uses
-	 elem_len = sizeof(dt) and base_addr = dt(lb) instead.
-	 gfc_get_dataptr_offset fixes the base_addr; for elem_len, see below.
-	 While sm is fine as it uses span*stride and not elem_len.  */
+      /* For dt(:)%var, the base_addr is that of the subobject and elem_len is
+	 its size, see below.  The descriptor built for a subreference of the
+	 array provides both.  While sm is fine as it uses span*stride and not
+	 elem_len.  */
       if (POINTER_TYPE_P (TREE_TYPE (gfc)))
 	gfc = build_fold_indirect_ref_loc (input_location, gfc);
-      else if (is_subref_array (e) && e->ts.type != BT_CHARACTER)
-	 gfc_get_dataptr_offset (&se.pre, gfc, gfc, NULL, true, e);
     }
   if (e->ts.type == BT_CHARACTER)
     {
@@ -6951,6 +6951,48 @@ conv_null_actual (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym)
 	  parmse->expr = gfc_build_addr_expr (NULL_TREE, tmp);
 	}
     }
+}
+
+
+/* Return true if a subobject of the elements of an array is referenced.  */
+
+static bool
+is_subobject_ref (gfc_expr *e)
+{
+  bool seen_array = false;
+
+  for (gfc_ref *ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
+	seen_array = true;
+      else if (seen_array)
+	return true;
+    }
+
+  return false;
+}
+
+
+/* Return true if the actual argument E for the dummy FSYM may be passed as a
+   copy-in/copy-out temporary.  A pointer associated with a TARGET or POINTER
+   dummy must remain valid after the call, so the actual argument is passed
+   directly, with a descriptor whose span provides the element spacing.  An
+   actual argument with a vector subscript is not definable and its pointer
+   association is undefined on return, so it is still copied.  */
+
+static bool
+copy_in_out_allowed (gfc_symbol *fsym, gfc_expr *e, bool nodesc_arg)
+{
+  if (fsym == NULL || nodesc_arg || gfc_has_vector_subscript (e))
+    return true;
+
+  if (gfc_is_span_addressed_dummy (fsym))
+    return false;
+
+  return !(fsym->attr.pointer && !fsym->attr.contiguous && fsym->as
+	   && (fsym->as->type == AS_ASSUMED_SHAPE
+	       || fsym->as->type == AS_ASSUMED_RANK
+	       || fsym->as->type == AS_DEFERRED));
 }
 
 
@@ -7985,14 +8027,20 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	      else if (e->expr_type == EXPR_VARIABLE
 		    && is_subref_array (e)
-		    && !(fsym && fsym->attr.pointer))
+		    && !(fsym && fsym->attr.pointer)
+		    && copy_in_out_allowed (fsym, e, nodesc_arg))
 		/* The actual argument is a component reference to an
 		   array of derived types.  In this case, the argument
 		   is converted to a temporary, which is passed and then
-		   written back after the procedure call.  */
+		   written back after the procedure call.  The elements of
+		   a span addressed dummy passed on as a whole are usually
+		   contiguous, so the copy is made conditional.  */
 		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
 				fsym ? fsym->attr.intent : INTENT_INOUT,
-				fsym && fsym->attr.pointer);
+				fsym && fsym->attr.pointer, fsym, sym->name,
+				NULL,
+				gfc_is_span_addressed_dummy (e->symtree->n.sym)
+				&& !is_subobject_ref (e));
 
 	      else if (e->ts.type == BT_CLASS && CLASS_DATA (e)->as
 		       && CLASS_DATA (e)->as->type == AS_ASSUMED_SIZE
@@ -8004,20 +8052,19 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		parmse.expr = e->symtree->n.sym->backend_decl;
 
 	      else if (gfc_is_class_array_ref (e, NULL)
-		       && fsym && fsym->ts.type == BT_DERIVED)
+		       && fsym && fsym->ts.type == BT_DERIVED
+		       && copy_in_out_allowed (fsym, e, nodesc_arg))
 		/* The actual argument is a component reference to an
 		   array of derived types.  In this case, the argument
 		   is converted to a temporary, which is passed and then
-		   written back after the procedure call.
-		   OOP-TODO: Insert code so that if the dynamic type is
-		   the same as the declared type, copy-in/copy-out does
-		   not occur.  */
+		   written back after the procedure call.  */
 		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
 					   fsym->attr.intent,
 					   fsym->attr.pointer);
 
 	      else if (gfc_is_class_array_function (e)
-		       && fsym && fsym->ts.type == BT_DERIVED)
+		       && fsym && fsym->ts.type == BT_DERIVED
+		       && copy_in_out_allowed (fsym, e, nodesc_arg))
 		/* See previous comment.  For function actual argument,
 		   the write out is not needed so the intent is set as
 		   intent in.  */
@@ -8038,10 +8085,17 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					     fsym->attr.pointer);
 		}
 	      else
-		/* This is where we introduce a temporary to store the
-		   result of a non-lvalue array expression.  */
-		gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
-					  sym->name, NULL);
+		{
+		  /* Having declined copy-in/copy-out above, a subobject of an
+		     array is described by a spanned descriptor.  */
+		  if (e->expr_type == EXPR_VARIABLE && is_subref_array (e))
+		    parmse.force_no_tmp = 1;
+
+		  /* This is where we introduce a temporary to store the
+		     result of a non-lvalue array expression.  */
+		  gfc_conv_array_parameter (&parmse, e, nodesc_arg, fsym,
+					    sym->name, NULL);
+		}
 
 	      /* If an ALLOCATABLE dummy argument has INTENT(OUT) and is
 		 allocated on entry, it must be deallocated.

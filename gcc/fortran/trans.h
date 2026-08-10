@@ -641,6 +641,9 @@ tree gfc_build_array_ref (tree, tree, tree,
 /* Build an array ref using pointer arithmetic.  */
 tree gfc_build_spanned_array_ref (tree base, tree offset, tree span);
 
+/* Return the descriptor holding the span of a pointer array decl.  */
+tree gfc_get_span_descriptor (tree);
+
 /* Creates a label.  Decl is artificial if label_id == NULL_TREE.  */
 tree gfc_build_label_decl (tree);
 

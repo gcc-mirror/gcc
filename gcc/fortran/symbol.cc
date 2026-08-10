@@ -5702,6 +5702,30 @@ gfc_is_associate_pointer (gfc_symbol* sym)
 }
 
 
+/* Check if a dummy argument must be addressed using the span of its
+   descriptor.  The actual argument of an assumed shape or assumed rank
+   TARGET dummy is never copied, so its elements can be spaced by more
+   than the element size.  CLASS and assumed type entities already carry
+   their element size and are excluded.  */
+
+bool
+gfc_is_span_addressed_dummy (gfc_symbol *sym)
+{
+  return sym->attr.dummy
+	 && sym->attr.target
+	 && sym->attr.dimension
+	 && !sym->attr.value
+	 && !sym->attr.contiguous
+	 && !sym->attr.pointer
+	 && !sym->attr.allocatable
+	 && sym->ts.type != BT_CLASS
+	 && sym->ts.type != BT_ASSUMED
+	 && sym->as
+	 && (sym->as->type == AS_ASSUMED_SHAPE
+	     || sym->as->type == AS_ASSUMED_RANK);
+}
+
+
 gfc_symbol *
 gfc_find_dt_in_generic (gfc_symbol *sym)
 {

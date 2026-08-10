@@ -389,6 +389,27 @@ gfc_build_addr_expr (tree type, tree t)
 }
 
 
+/* Return the descriptor that carries the span of DECL, which is marked as a
+   pointer array.  Such a decl usually is a descriptor.  The local decl of a
+   descriptorless dummy array is not, so its span comes from the descriptor it
+   was built from, which is the saved one.  */
+
+tree
+gfc_get_span_descriptor (tree decl)
+{
+  if (DECL_P (decl)
+      && GFC_ARRAY_TYPE_P (TREE_TYPE (decl))
+      && DECL_LANG_SPECIFIC (decl)
+      && GFC_DECL_SAVED_DESCRIPTOR (decl))
+    decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+
+  if (POINTER_TYPE_P (TREE_TYPE (decl)))
+    decl = build_fold_indirect_ref_loc (input_location, decl);
+
+  return decl;
+}
+
+
 static tree
 get_array_span (tree type, tree decl)
 {
@@ -409,7 +430,9 @@ get_array_span (tree type, tree decl)
       && (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == INTEGER_TYPE)
       && TYPE_STRING_FLAG (type))
     {
-      if (TREE_CODE (decl) == PARM_DECL)
+      if (DECL_P (decl) && GFC_DECL_PTR_ARRAY_P (decl))
+	decl = gfc_get_span_descriptor (decl);
+      else if (TREE_CODE (decl) == PARM_DECL)
 	decl = build_fold_indirect_ref_loc (input_location, decl);
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
 	span = gfc_conv_descriptor_span_get (decl);
@@ -449,11 +472,7 @@ get_array_span (tree type, tree decl)
 	  span = gfc_resize_class_size_with_len (NULL, decl, span);
 	}
       else if (GFC_DECL_PTR_ARRAY_P (decl))
-	{
-	  if (TREE_CODE (decl) == PARM_DECL)
-	    decl = build_fold_indirect_ref_loc (input_location, decl);
-	  span = gfc_conv_descriptor_span_get (decl);
-	}
+	span = gfc_conv_descriptor_span_get (gfc_get_span_descriptor (decl));
       else
 	span = NULL_TREE;
     }

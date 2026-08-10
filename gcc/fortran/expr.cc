@@ -1222,7 +1222,8 @@ is_subref_array (gfc_expr * e)
 
   sym = e->symtree->n.sym;
 
-  if (sym->attr.subref_array_pointer)
+  if (sym->attr.subref_array_pointer
+      || gfc_is_span_addressed_dummy (sym))
     return true;
 
   seen_array = false;
