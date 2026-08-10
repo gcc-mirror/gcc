@@ -894,6 +894,12 @@ optimizing.
 Maximum number of dominators BBs to walk when simplifying loop bounds
 and conditions.
 
+@paindex dom-jump-threading
+@item dom-jump-threading
+Enable jump threading in the dominator optimizer pass.  Disabling it
+is useful to isolate the jump threads found by the backward threader,
+which runs regardless.
+
 @paindex max-jump-thread-duplication-stmts
 @item max-jump-thread-duplication-stmts
 Maximum number of statements allowed in a block that needs to be

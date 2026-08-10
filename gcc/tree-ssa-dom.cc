@@ -1801,7 +1801,8 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
-  m_threader->thread_outgoing_edges (bb);
+  if (param_dom_jump_threading)
+    m_threader->thread_outgoing_edges (bb);
   bitmap_clear_bit (m_state->get_blocks_on_stack (), bb->index);
   m_avail_exprs_stack->pop_to_marker ();
   m_const_and_copies->pop_to_marker ();
