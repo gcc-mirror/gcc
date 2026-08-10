@@ -6344,7 +6344,7 @@ fail:
 void
 gfc_expression_rank (gfc_expr *e)
 {
-  gfc_ref *ref, *last_arr_ref = nullptr;
+  gfc_ref *ref, *coarray_ref = nullptr;
   int i, rank, corank;
 
   /* Just to make sure, because EXPR_COMPCALL's also have an e->ref and that
@@ -6389,10 +6389,27 @@ gfc_expression_rank (gfc_expr *e)
 	  corank = ref->u.c.component->as ? ref->u.c.component->as->corank : 0;
 	}
 
+      /* F2018:5.4.7(5): an allocatable or pointer component selector ends the
+	 codimensions inherited from an enclosing coarray.  */
+      if (ref->type == REF_COMPONENT)
+	{
+	  gfc_component *comp = ref->u.c.component;
+
+	  if (comp->ts.type == BT_CLASS && comp->attr.class_ok)
+	    {
+	      if (CLASS_DATA (comp)->attr.class_pointer
+		  || CLASS_DATA (comp)->attr.allocatable)
+		coarray_ref = nullptr;
+	    }
+	  else if (comp->attr.pointer || comp->attr.allocatable)
+	    coarray_ref = nullptr;
+	}
+
       if (ref->type != REF_ARRAY)
 	continue;
 
-      last_arr_ref = ref;
+      if (!coarray_ref && ref->u.ar.as && ref->u.ar.as->corank > 0)
+	coarray_ref = ref;
       if (ref->u.ar.type == AR_FULL && ref->u.ar.as)
 	{
 	  rank = ref->u.ar.as->rank;
@@ -6413,25 +6430,26 @@ gfc_expression_rank (gfc_expr *e)
 	  break;
 	}
     }
-  if (last_arr_ref && last_arr_ref->u.ar.as
-      && last_arr_ref->u.ar.as->rank != -1)
+  /* The codimensions come from the reference carrying them, which need not be
+     the last array reference: a subobject of a coarray is itself a coarray.  */
+  if (coarray_ref && coarray_ref->u.ar.as->rank != -1)
     {
-      for (i = last_arr_ref->u.ar.as->rank;
-	   i < last_arr_ref->u.ar.as->rank + last_arr_ref->u.ar.as->corank; ++i)
+      for (i = coarray_ref->u.ar.as->rank;
+	   i < coarray_ref->u.ar.as->rank + coarray_ref->u.ar.as->corank; ++i)
 	{
 	  /* For unknown dimen in non-resolved as assume full corank.  */
-	  if (last_arr_ref->u.ar.dimen_type[i] == DIMEN_STAR
-	      || (last_arr_ref->u.ar.dimen_type[i] == DIMEN_UNKNOWN
-		  && !last_arr_ref->u.ar.as->resolved))
+	  if (coarray_ref->u.ar.dimen_type[i] == DIMEN_STAR
+	      || (coarray_ref->u.ar.dimen_type[i] == DIMEN_UNKNOWN
+		  && !coarray_ref->u.ar.as->resolved))
 	    {
-	      corank = last_arr_ref->u.ar.as->corank;
+	      corank = coarray_ref->u.ar.as->corank;
 	      break;
 	    }
-	  else if (last_arr_ref->u.ar.dimen_type[i] == DIMEN_RANGE
-		   || last_arr_ref->u.ar.dimen_type[i] == DIMEN_VECTOR
-		   || last_arr_ref->u.ar.dimen_type[i] == DIMEN_THIS_IMAGE)
+	  else if (coarray_ref->u.ar.dimen_type[i] == DIMEN_RANGE
+		   || coarray_ref->u.ar.dimen_type[i] == DIMEN_VECTOR
+		   || coarray_ref->u.ar.dimen_type[i] == DIMEN_THIS_IMAGE)
 	    corank++;
-	  else if (last_arr_ref->u.ar.dimen_type[i] != DIMEN_ELEMENT)
+	  else if (coarray_ref->u.ar.dimen_type[i] != DIMEN_ELEMENT)
 	    gfc_internal_error ("Illegal coarray index");
 	}
     }

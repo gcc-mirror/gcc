@@ -1820,12 +1820,50 @@ conv_caf_sendget (gfc_code *code)
 }
 
 
+/* F2018:5.4.7(5): a subobject of a coarray is a coarray with the codimensions
+   of that coarray.  Return a copy of E cut back to the reference carrying the
+   codimensions, so that the descriptor built for it holds the cobounds.  */
+
+static gfc_expr *
+strip_subobject_of_coarray (gfc_expr *e)
+{
+  gfc_expr *coarray;
+  gfc_ref *ref;
+  gfc_typespec ts;
+
+  ts = e->symtree->n.sym->ts;
+  for (ref = e->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+	break;
+      if (ref->type == REF_COMPONENT)
+	ts = ref->u.c.component->ts;
+    }
+
+  coarray = gfc_copy_expr (e);
+  if (!ref || !ref->next)
+    return coarray;
+
+  for (ref = coarray->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY && ref->u.ar.codimen > 0)
+      break;
+
+  gfc_free_ref_list (ref->next);
+  ref->next = NULL;
+  coarray->ts = ts;
+  gfc_expression_rank (coarray);
+
+  return coarray;
+}
+
+
 static void
 trans_this_image (gfc_se * se, gfc_expr *expr)
 {
   stmtblock_t loop;
   tree type, desc, dim_arg, cond, tmp, m, loop_var, exit_label, min_var, lbound,
     ubound, extent, ml, team;
+  gfc_expr *coarray;
   gfc_se argse;
   int rank, corank;
 
@@ -1857,16 +1895,19 @@ trans_this_image (gfc_se * se, gfc_expr *expr)
   /* Coarray-argument version: THIS_IMAGE(coarray [, dim]).  */
 
   type = gfc_get_int_type (gfc_default_integer_kind);
-  corank = expr->value.function.actual->expr->corank;
-  rank = expr->value.function.actual->expr->rank;
+
+  coarray = strip_subobject_of_coarray (expr->value.function.actual->expr);
+  corank = coarray->corank;
+  rank = coarray->rank;
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
   argse.want_coarray = 1;
-  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr);
+  gfc_conv_expr_descriptor (&argse, coarray);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   desc = argse.expr;
+  gfc_free_expr (coarray);
 
   if (se->ss)
     {
@@ -2118,20 +2159,24 @@ trans_image_index (gfc_se * se, gfc_expr *expr)
 {
   tree num_images, cond, coindex, type, lbound, ubound, desc, subdesc, tmp,
     invalid_bound, team = null_pointer_node, team_number = null_pointer_node;
+  gfc_expr *coarray;
   gfc_se argse, subse;
   int rank, corank, codim;
 
   type = gfc_get_int_type (gfc_default_integer_kind);
-  corank = expr->value.function.actual->expr->corank;
-  rank = expr->value.function.actual->expr->rank;
+
+  coarray = strip_subobject_of_coarray (expr->value.function.actual->expr);
+  corank = coarray->corank;
+  rank = coarray->rank;
 
   /* Obtain the descriptor of the COARRAY.  */
   gfc_init_se (&argse, NULL);
   argse.want_coarray = 1;
-  gfc_conv_expr_descriptor (&argse, expr->value.function.actual->expr);
+  gfc_conv_expr_descriptor (&argse, coarray);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   desc = argse.expr;
+  gfc_free_expr (coarray);
 
   /* Obtain a handle to the SUB argument.  */
   gfc_init_se (&subse, NULL);
@@ -2639,6 +2684,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 {
   gfc_actual_arglist *arg;
   gfc_actual_arglist *arg2;
+  gfc_expr *coarray;
   gfc_se argse;
   tree bound, lbound, resbound, resbound2, desc, cond, tmp;
   tree type;
@@ -2653,12 +2699,14 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
   arg2 = arg->next;
 
   gcc_assert (arg->expr->expr_type == EXPR_VARIABLE);
-  corank = arg->expr->corank;
+
+  coarray = strip_subobject_of_coarray (arg->expr);
+  corank = coarray->corank;
 
   gfc_init_se (&argse, NULL);
   argse.want_coarray = 1;
 
-  gfc_conv_expr_descriptor (&argse, arg->expr);
+  gfc_conv_expr_descriptor (&argse, coarray);
   gfc_add_block_to_block (&se->pre, &argse.pre);
   gfc_add_block_to_block (&se->post, &argse.post);
   desc = argse.expr;
@@ -2674,7 +2722,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
       bound = fold_convert_loc (input_location, gfc_array_dim_rank_type,
 				se->loop->loopvar[0]);
-      tree rank = gfc_rank_cst[arg->expr->rank];
+      tree rank = gfc_rank_cst[coarray->rank];
       bound = fold_build2_loc (input_location, PLUS_EXPR,
 			       gfc_array_dim_rank_type, bound, rank);
       gfc_advance_se_ss_chain (se);
@@ -2714,7 +2762,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
 
       /* Subtract 1 to get to zero based and add dimensions.  */
-      switch (arg->expr->rank)
+      switch (coarray->rank)
 	{
 	case 0:
 	  bound = fold_build2_loc (input_location, MINUS_EXPR,
@@ -2724,7 +2772,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	  break;
 	default:
 	  {
-	    tree rank = gfc_rank_cst[arg->expr->rank - 1];
+	    tree rank = gfc_rank_cst[coarray->rank - 1];
 	    bound = fold_build2_loc (input_location, PLUS_EXPR,
 				     gfc_array_dim_rank_type, bound, rank);
 	  }
@@ -2755,7 +2803,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	{
           tree cosize;
 
-	  cosize = gfc_conv_descriptor_cosize (desc, arg->expr->rank, corank);
+	  cosize = gfc_conv_descriptor_cosize (desc, coarray->rank, corank);
 	  tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_num_images,
 				     2, null_pointer_node, null_pointer_node);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
@@ -2786,7 +2834,7 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 	  cond = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
 				  bound,
 				  build_int_cst (TREE_TYPE (bound),
-						 arg->expr->rank + corank - 1));
+						 coarray->rank + corank - 1));
 
 	  resbound2 = gfc_conv_descriptor_ubound_get (desc, bound);
 	  se->expr = fold_build3_loc (input_location, COND_EXPR,
@@ -2813,6 +2861,8 @@ conv_intrinsic_cobound (gfc_se * se, gfc_expr * expr)
 
   type = gfc_typenode_for_spec (&expr->ts);
   se->expr = convert (type, se->expr);
+
+  gfc_free_expr (coarray);
 }
 
 
