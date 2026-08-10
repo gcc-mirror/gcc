@@ -103,6 +103,13 @@ MethodResolver::try_hook (const TyTy::BaseType &r)
       predicate_items
 	= get_predicate_items (segment_name, element_ty, specified_bounds);
     }
+  else if (auto inner
+	   = TyTy::try_get_box_inner_type (const_cast<TyTy::BaseType *> (&r)))
+    {
+      const auto &specified_bounds = (*inner)->get_specified_bounds ();
+      predicate_items
+	= get_predicate_items (segment_name, **inner, specified_bounds);
+    }
 }
 
 std::vector<MethodResolver::impl_item_candidate>

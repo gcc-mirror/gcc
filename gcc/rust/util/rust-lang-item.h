@@ -81,6 +81,7 @@ public:
 
     // https://github.com/rust-lang/rust/blob/master/library/core/src/ops/unsize.rs
     COERCE_UNSIZED,
+    DISPATCH_FROM_DYN,
 
     // https://github.com/rust-lang/rust/blob/master/library/core/src/marker.rs
     PHANTOM_DATA,

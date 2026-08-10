@@ -1800,8 +1800,30 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
   if (adjustments != nullptr && !adjustments->empty ())
     receiver = adjustments->back ().get_expected ();
 
-  bool is_dyn_dispatch
-    = receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC;
+  enum
+  {
+    DYN,
+    DYN_BOX,
+    NOT_DYN,
+  } is_dyn_dispatch
+    = NOT_DYN;
+  const TyTy::DynamicObjectType *dyn = nullptr;
+  if (receiver->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC)
+    {
+      is_dyn_dispatch = DYN;
+      dyn
+	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
+    }
+  else if (auto inner = TyTy::try_get_box_inner_type (receiver->get_root ()))
+    {
+      if ((*inner)->get_root ()->get_kind () == TyTy::TypeKind::DYNAMIC)
+	{
+	  is_dyn_dispatch = DYN_BOX;
+	  dyn = static_cast<const TyTy::DynamicObjectType *> (
+	    (*inner)->get_root ());
+	}
+    }
+
   bool is_generic_receiver = receiver->get_kind () == TyTy::TypeKind::PARAM;
   if (is_generic_receiver)
     {
@@ -1810,18 +1832,22 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
     }
 
   tree fn_expr = error_mark_node;
-  if (is_dyn_dispatch)
-    {
-      const TyTy::DynamicObjectType *dyn
-	= static_cast<const TyTy::DynamicObjectType *> (receiver->get_root ());
-      fn_expr
-	= get_fn_addr_from_dyn (dyn, receiver, fntype, self, expr.get_locus ());
-      self = get_receiver_from_dyn (dyn, receiver, fntype, self,
-				    expr.get_locus ());
-    }
-  else
+  if (is_dyn_dispatch == NOT_DYN)
     // lookup compiled functions since it may have already been compiled
     fn_expr = resolve_method_address (fntype, receiver, expr.get_locus ());
+  else
+    {
+      tree target_self
+	= is_dyn_dispatch == DYN
+	    ? self
+	    : build_box_inner_ptr (self, expr.get_receiver ().get_locus ());
+
+      fn_expr = get_fn_addr_from_dyn (dyn, receiver, fntype, target_self,
+				      expr.get_locus ());
+
+      self = get_receiver_from_dyn (dyn, receiver, fntype, target_self,
+				    expr.get_locus ());
+    }
 
   std::vector<tree> args;
   args.push_back (self); // adjusted self
