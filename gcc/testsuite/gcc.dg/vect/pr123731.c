@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 typedef unsigned short A __attribute__ ((vector_size (4 * sizeof (short))));
 typedef short B __attribute__ ((vector_size (8 * sizeof (short))));
 typedef unsigned C __attribute__ ((vector_size (4 * sizeof (int))));

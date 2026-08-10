@@ -1,4 +1,3 @@
-/* { dg-do run } */
 /* { dg-additional-options "-O3" } */
 
 int src_stride = 0;
