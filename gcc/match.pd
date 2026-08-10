@@ -7599,6 +7599,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (single_use (@2))
     (cmp @0 @1)))))
 
+/* Fold ((X CMP1 Y) - (X CMP2 Y)) REL 0 into a single comparison of X and Y,
+   e.g., ((X > Y) - (X < Y)) < 0 to X < Y.  This cannot be merged into the
+   generic X - Y CMP 0 rule above as it would prevent ABS_EXPR synthesis in
+   fold_cond_expr_with_comparison.  */
+(for rel (lt le gt ge)
+ (for cmp1 (gt ge)
+      cmp2 (lt le)
+  (simplify
+   (rel (minus@2 (convert? (cmp1:c @0 @1))
+		 (convert? (cmp2:c @0 @1))) integer_zerop)
+    (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	 && !TYPE_UNSIGNED (TREE_TYPE (@2))
+	 && TYPE_PRECISION (TREE_TYPE (@2)) > 1)
+     (rel @0 @1)))))
+
 /* Simplify (x < 0) ^ (y < 0) to (x ^ y) < 0 and
    (x >= 0) ^ (y >= 0) to (x ^ y) < 0.  */
 (for cmp (lt ge)
