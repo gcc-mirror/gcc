@@ -4901,6 +4901,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bit_not (minmax:cs (bit_not @0) @1))
   (maxmin @0 (bit_not @1))))
 
+/* umin (a, 1) | umin (b, 1) -> umin (a | b, 1).  */
+ (simplify
+  (bit_ior (min @0 integer_onep@2) (min @1 @2))
+    (if (tree_expr_nonnegative_p (@0) && tree_expr_nonnegative_p (@1))
+     (min (bit_ior @0 @1) @2)))
 /* MIN (X, Y) == X -> X <= Y  */
 /* MIN (X, Y) < X -> X > Y  */
 /* MIN (X, Y) >= X -> X <= Y  */
