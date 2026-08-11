@@ -132,6 +132,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-clones.h"
 #include "gimple-range.h"
 #include "attr-callback.h"
+#include "lto-streamer.h"
+#include "callback-info.h"
 
 /* Allocation pools for values and their sources in ipa-cp.  */
 
@@ -6736,6 +6738,7 @@ ipcp_driver (void)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
+  callback_info_sum_t::check_create_info_sum ();
   clone_num_suffixes = new hash_map<const char *, unsigned>;
 
   if (dump_file)

@@ -31,7 +31,10 @@
 #include "options.h"
 #include "gimple-range.h"
 #include "attribs.h"
+#include "symbol-summary.h"
+#include "lto-streamer.h"
 #include "attr-callback.h"
+#include "callback-info.h"
 
 /* Returns a callback attribute with callback index FN_IDX, and ARG_COUNT
    arguments specified by VA_ARGS.  */
@@ -116,12 +119,13 @@ callback_fetch_attr_by_edge (cgraph_edge *e, cgraph_edge *carrying)
   tree cb_attr = lookup_attribute ("callback_only",
 				   DECL_ATTRIBUTES (carrying->callee->decl));
   gcc_checking_assert (cb_attr);
+  callback_info *ci = callback_info_sum->get (e);
   tree res = NULL_TREE;
   for (; cb_attr;
        cb_attr = lookup_attribute ("callback_only", TREE_CHAIN (cb_attr)))
     {
-      unsigned id = callback_get_fn_index (cb_attr);
-      if (id == e->callback_id)
+      unsigned fn_idx = callback_get_fn_index (cb_attr);
+      if (fn_idx == ci->get_id ())
 	{
 	  res = cb_attr;
 	  break;
@@ -131,15 +135,11 @@ callback_fetch_attr_by_edge (cgraph_edge *e, cgraph_edge *carrying)
   return res;
 }
 
-/* Given an instance of callback attribute, return the 0-base indices
-   of arguments passed to the callback.  For a callback function taking
-   n parameters, returns a vector of n indices of their values in the parameter
-   list of it's caller.  Indices with unknown positions contain -1.  */
+/* Returns the argument mapping from the dispatching function to the callback
+   function parsed from the attribute.  */
 auto_vec<int>
-callback_get_arg_mapping (cgraph_edge *e, cgraph_edge *carrying)
+callback_get_arg_mapping_from_attr (tree attr)
 {
-  tree attr = callback_fetch_attr_by_edge (e, carrying);
-  gcc_checking_assert (attr);
   tree args = TREE_VALUE (attr);
   auto_vec<int> res;
   tree it;
@@ -150,21 +150,12 @@ callback_get_arg_mapping (cgraph_edge *e, cgraph_edge *carrying)
     {
       int idx = TREE_INT_CST_LOW (TREE_VALUE (it));
       /* Subtract 1 to account for 1-based indexing.  If the value is unknown,
-	 use constant -1 instead.  */
-      idx = idx == CB_UNKNOWN_POS ? -1 : idx - 1;
+	 use ARG_MAPPING_UNKNOWN_IDX instead.  */
+      idx = idx == CB_UNKNOWN_POS ? ARG_MAPPING_UNKNOWN_IDX : idx - 1;
       res.safe_push (idx);
     }
 
   return res;
-}
-
-/* For a callback pair, returns the 0-based index of the address of
-   E's callee in the argument list of CARRYING's callee decl.  */
-int
-callback_fetch_fn_position (cgraph_edge *e, cgraph_edge *carrying)
-{
-  tree attr = callback_fetch_attr_by_edge (e, carrying);
-  return callback_get_fn_index (attr);
 }
 
 /* Returns TRUE if E is considered useful in the callgraph, FALSE otherwise.  If
@@ -174,19 +165,8 @@ bool
 callback_edge_useful_p (cgraph_edge *e)
 {
   gcc_checking_assert (e->callback);
-  /* If the edge is pointing towards a clone, it is useful.  */
-  if (e->callee->clone_of)
-    return true;
-
-  /* If the callee has been produced by icf, the edge is useful, as it will be
-     used to for the redirection.  */
-  if (e->callee->icf_merged)
-    return true;
-
-  /* In case some future pass redirects edges, it should be added as a case
-     here.  */
-
-  return false;
+  callback_info *ci = callback_info_sum->get (e);
+  return ci->redirected;
 }
 
 /* Returns the number of arguments the callback function described by ATTR

@@ -1925,8 +1925,10 @@ public:
   /* Create a callback edge, representing an indirect call to n2
      passed to a function by argument.  Sets has_callback flag of the original
      edge. Both edges are attached to the same call statement.  Returns created
-     callback edge.  */
-  cgraph_edge *make_callback (cgraph_node *n2, unsigned int callback_hash);
+     callback edge.  FN_IDX is the index of the callback function in dispatching
+     function's argument list.  ATTR is the attribute used to derive the
+     edge.  */
+  cgraph_edge *make_callback (cgraph_node *n2, unsigned fn_idx, tree attr);
 
   /* Returns the callback-carrying edge of a callback edge or NULL, if such edge
      cannot be found.  An edge is considered callback-carrying, if it has it's
@@ -2182,10 +2184,6 @@ public:
      that the callee of this edge takes a function and it's parameters by
      argument and calls it at a later time.  */
   unsigned int has_callback : 1;
-  /* Used to pair callback edges and the attributes that originated them
-     together.  Currently the index of the callback argument, retrieved
-     from the attribute.  */
-  unsigned int callback_id : 16;
   /* Set to true when caller is a constructor or destructor of polymorphic
      type.  */
   unsigned in_polymorphic_cdtor : 1;

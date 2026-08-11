@@ -70,6 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-thunks.h"
 #include "symtab-clones.h"
 #include "attr-callback.h"
+#include "callback-info.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -1107,7 +1108,6 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->speculative = false;
   edge->has_callback = false;
   edge->callback = false;
-  edge->callback_id = 0;
   edge->indirect_unknown_callee = indir_unknown_callee;
   if (call_stmt && caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (edge);
@@ -1356,13 +1356,13 @@ cgraph_edge::make_speculative (cgraph_node *n2, profile_count direct_count,
    the callback-carrying edge, which is the instance this method
    is called on.
 
-   callback_id is used to pair the returned edge with the attribute that
-   originated it.
+   FN_IDX is the index of the callback function in dispatching function's
+   argument list.  ATTR is the attribute used to derive the edge.
 
    Return the resulting callback edge.  */
 
 cgraph_edge *
-cgraph_edge::make_callback (cgraph_node *n2, unsigned int callback_id)
+cgraph_edge::make_callback (cgraph_node *n2, unsigned fn_idx, tree attr)
 {
   cgraph_node *n = caller;
   cgraph_edge *e2;
@@ -1377,12 +1377,13 @@ cgraph_edge::make_callback (cgraph_node *n2, unsigned int callback_id)
       callee->dump_name ());
   e2->inline_failed = CIF_CALLBACK_EDGE;
   e2->callback = true;
-  e2->callback_id = callback_id;
   if (TREE_NOTHROW (n2->decl))
     e2->can_throw_external = false;
   else
     e2->can_throw_external = can_throw_external;
   e2->lto_stmt_uid = lto_stmt_uid;
+  callback_info *ci = callback_info_sum->get_create (e2);
+  ci->init (fn_idx, attr);
   symtab->call_edge_duplication_hooks (this, e2);
   n2->mark_address_taken ();
   return e2;
@@ -1709,7 +1710,7 @@ cgraph_edge::redirect_callee (cgraph_node *n)
       /* When redirecting a callback callee, redirect its ref as well.  */
       ipa_ref *old_ref = caller->find_reference (old_callee, call_stmt,
 						 lto_stmt_uid, IPA_REF_ADDR);
-      gcc_checking_assert(old_ref);
+      gcc_checking_assert (old_ref);
       old_ref->remove_reference ();
       ipa_ref *new_ref = caller->create_reference (n, IPA_REF_ADDR, call_stmt);
       new_ref->lto_stmt_uid = lto_stmt_uid;
@@ -1719,6 +1720,8 @@ cgraph_edge::redirect_callee (cgraph_node *n)
       if (!old_callee->iterate_referring (0, old_ref))
 	old_callee->address_taken = 0;
       n->mark_address_taken ();
+      callback_info *ci = callback_info_sum->get (this);
+      ci->redirected = true;
     }
 
   if (!inline_failed)
@@ -1850,11 +1853,11 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
 	   signature, as the indices wouldn't be correct anymore.  These edges
 	   will get cleaned up later, ignore their redirection for now.  */
 	return e->call_stmt;
-      int fn_idx = callback_fetch_fn_position (e, carrying);
-      tree previous_arg = gimple_call_arg (e->call_stmt, fn_idx);
+      callback_info *ci = callback_info_sum->get (e);
+      tree previous_arg = gimple_call_arg (e->call_stmt, ci->fn_idx);
       location_t loc = EXPR_LOCATION (previous_arg);
       tree new_addr = build_fold_addr_expr_loc (loc, e->callee->decl);
-      gimple_call_set_arg (e->call_stmt, fn_idx, new_addr);
+      gimple_call_set_arg (e->call_stmt, ci->fn_idx, new_addr);
       return e->call_stmt;
     }
 
@@ -4391,12 +4394,6 @@ cgraph_node::verify_node (void)
 
       for (e = callees; e; e = e->next_callee)
 	{
-	  if (!e->callback && e->callback_id)
-	    {
-	      error ("non-callback edge has callback_id set");
-	      error_found = true;
-	    }
-
 	  if (e->callback && e->has_callback)
 	    {
 	      error ("edge has both callback and has_callback set");
@@ -4720,6 +4717,7 @@ cgraph_cc_finalize (void)
   nested_function_info::release ();
   thunk_info::release ();
   clone_info::release ();
+  callback_info_sum_t::free_info_sum ();
   symtab = NULL;
 
   x_cgraph_nodes_queue = NULL;

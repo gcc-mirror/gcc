@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
 #include "symtab-clones.h"
+#include "callback-info.h"
 
 static void output_cgraph_opt_summary (void);
 static void input_cgraph_opt_summary (vec<symtab_node *>  nodes);
@@ -278,7 +279,6 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_value (&bp, edge->speculative, 1);
   bp_pack_value (&bp, edge->callback, 1);
   bp_pack_value (&bp, edge->has_callback, 1);
-  bp_pack_value (&bp, edge->callback_id, 16);
   bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
   gcc_assert (!edge->call_stmt_cannot_inline_p
 	      || edge->inline_failed != CIF_BODY_NOT_AVAILABLE);
@@ -306,6 +306,11 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 		     16);
     }
   streamer_write_bitpack (&bp);
+  if (edge->callback)
+    {
+      callback_info *ci = callback_info_sum->get (edge);
+      ci->stream_out (ob);
+    }
 }
 
 /* Return if NODE contain references from other partitions.  */
@@ -1061,6 +1066,7 @@ output_symtab (void)
 	lto_output_varpool_node (ob, vnode, encoder);
     }
 
+  callback_info_sum_t::check_create_info_sum ();
   /* Go over the nodes in SET again to write edges.  */
   for (int i = 0; i < lto_symtab_encoder_size (encoder); i++)
     {
@@ -1585,7 +1591,13 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
   edge->speculative = bp_unpack_value (&bp, 1);
   edge->callback = bp_unpack_value(&bp, 1);
   edge->has_callback = bp_unpack_value(&bp, 1);
-  edge->callback_id = bp_unpack_value(&bp, 16);
+
+  if (edge->callback)
+    {
+      callback_info *ci = callback_info_sum->get_create (edge);
+      ci->stream_in (ib);
+    }
+
   edge->lto_stmt_uid = stmt_id;
   edge->speculative_id = speculative_id;
   edge->inline_failed = inline_failed;
@@ -1643,6 +1655,7 @@ input_cgraph_1 (struct lto_file_decl_data *file_data,
   tag = streamer_read_enum (ib, LTO_symtab_tags, LTO_symtab_last_tag);
   file_data->order_base = symtab->order;
   file_data->unit_base = symtab->max_unit + 1;
+  callback_info_sum_t::check_create_info_sum ();
   while (tag)
     {
       if (tag == LTO_symtab_edge)

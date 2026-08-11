@@ -1868,6 +1868,7 @@ OBJS = \
 	wide-int.o \
 	wide-int-print.o \
 	attr-callback.o \
+	callback-info.o \
 	$(out_object_file) \
 	$(ANALYZER_OBJS) \
 	$(EXTRA_OBJS) \

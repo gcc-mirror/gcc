@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "attribs.h"
 #include "attr-callback.h"
+#include "callback-info.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -2625,9 +2626,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 		    {
 		      cgraph_node *kernel_node
 			= cgraph_node::get_create (pointee);
-		      unsigned callback_id = n;
 		      cgraph_edge *cbe
-			= cs->make_callback (kernel_node, callback_id);
+			= cs->make_callback (kernel_node, n, callback_attr);
 		      callback_edges.safe_push (cbe);
 		    }
 		}
@@ -2703,12 +2703,12 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	  cgraph_edge *callback_edge = callback_edges[j];
 	  ipa_edge_args *cb_summary
 	    = ipa_edge_args_sum->get_create (callback_edge);
-	  auto_vec<int> arg_mapping
-	    = callback_get_arg_mapping (callback_edge, cs);
+	  callback_info *ci = callback_info_sum->get (callback_edge);
+	  auto_vec<int> &arg_mapping = ci->arg_mapping;
 	  unsigned i;
 	  for (i = 0; i < arg_mapping.length (); i++)
 	    {
-	      if (arg_mapping[i] == -1)
+	      if (arg_mapping[i] == ARG_MAPPING_UNKNOWN_IDX)
 		continue;
 	      class ipa_jump_func *src
 		= ipa_get_ith_jump_func (args, arg_mapping[i]);
@@ -3582,6 +3582,7 @@ ipa_analyze_node (struct cgraph_node *node)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
+  callback_info_sum_t::check_create_info_sum ();
   info = ipa_node_params_sum->get_create (node);
 
   if (info->analysis_done)
@@ -5210,6 +5211,7 @@ ipa_register_cgraph_hooks (void)
 {
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
+  callback_info_sum_t::check_create_info_sum ();
 
   function_insertion_hook_holder =
       symtab->add_cgraph_insertion_hook (&ipa_add_new_function, NULL);

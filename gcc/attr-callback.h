@@ -21,11 +21,22 @@
 #ifndef ATTR_CALLBACK_H
 #define ATTR_CALLBACK_H
 
+/* This enum relates to the attribute's arguments.  */
+
 enum callback_position
 {
   /* Value used when an argument of a callback function
      is unknown or when multiple values may be used. */
   CB_UNKNOWN_POS = 0
+};
+
+/* This enum describes values present in the arg_mapping vector.  */
+
+enum arg_mapping_constants
+{
+  /* Value representing an unknown argument position in the arg_mapping
+     vector.  */
+  ARG_MAPPING_UNKNOWN_IDX = -1
 };
 
 /* Returns a callback attribute with callback index FN_IDX, and ARG_COUNT
@@ -52,15 +63,9 @@ int callback_get_fn_index (tree cb_attr);
    to create E from the callee of CARRYING.  */
 tree callback_fetch_attr_by_edge (cgraph_edge *e, cgraph_edge *carrying);
 
-/* Given an instance of callback attribute, return the 0-base indices
-   of arguments passed to the callback.  For a callback function taking
-   n parameters, returns a vector of n indices of their values in the parameter
-   list of it's caller.  Indices with unknown positions contain -1.  */
-auto_vec<int> callback_get_arg_mapping (cgraph_edge *e, cgraph_edge *carrying);
-
-/* For a callback pair, returns the 0-based index of the address of
-   E's callee in the argument list of CARRYING's callee decl.  */
-int callback_fetch_fn_position (cgraph_edge *e, cgraph_edge *carrying);
+/* Returns the argument mapping from the dispatching function to the callback
+   function parsed from the attribute.  */
+auto_vec<int> callback_get_arg_mapping_from_attr (tree attr);
 
 /* Returns TRUE if E is considered useful in the callgraph, FALSE otherwise.  If
    this predicate returns FALSE, then E wasn't used to optimize its callee and
