@@ -673,6 +673,8 @@ lower_assumption (gimple_stmt_iterator *gsi, struct lower_data *data)
     }
   DECL_ARGUMENTS (lad.id.dst_fn) = parms;
   TREE_TYPE (lad.id.dst_fn) = build_function_type (boolean_type_node, parmt);
+  /* The body function no longer has var. args, unset stdarg.  */
+  DECL_STRUCT_FUNCTION (lad.id.dst_fn)->stdarg = 0;
 
   cgraph_node::add_new_function (lad.id.dst_fn, false);
 
