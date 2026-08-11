@@ -12675,40 +12675,49 @@ aarch64_emit_call_insn (rtx pat)
   return as_a<rtx_call_insn *> (insn);
 }
 
+/* Return the condition code mode for comparison CODE of MODE floating-point
+   operands.  FCMP and FCMPE set the same flags, but FCMPE also raises Invalid
+   for a quiet NaN.  Use CCFPE only when that exception is observable.  */
+
+static machine_mode
+aarch64_fp_cc_mode (rtx_code code, machine_mode mode)
+{
+  if (!HONOR_NANS (mode) || !flag_trapping_math)
+    return CCFPmode;
+
+  switch (code)
+    {
+    case EQ:
+    case NE:
+    case UNORDERED:
+    case ORDERED:
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+    case UNEQ:
+      return CCFPmode;
+
+    case LT:
+    case LE:
+    case GT:
+    case GE:
+    case LTGT:
+      return CCFPEmode;
+
+    default:
+      gcc_unreachable ();
+    }
+}
+
 machine_mode
 aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 {
   machine_mode mode_x = GET_MODE (x);
   rtx_code code_x = GET_CODE (x);
 
-  /* All floating point compares return CCFP if it is an equality
-     comparison, and CCFPE otherwise.  */
   if (GET_MODE_CLASS (mode_x) == MODE_FLOAT)
-    {
-      switch (code)
-	{
-	case EQ:
-	case NE:
-	case UNORDERED:
-	case ORDERED:
-	case UNLT:
-	case UNLE:
-	case UNGT:
-	case UNGE:
-	case UNEQ:
-	  return CCFPmode;
-
-	case LT:
-	case LE:
-	case GT:
-	case GE:
-	case LTGT:
-	  return CCFPEmode;
-
-	default:
-	  gcc_unreachable ();
-	}
-    }
+    return aarch64_fp_cc_mode (code, mode_x);
 
   /* Equality comparisons of short modes against zero can be performed
      using the TST instruction with the appropriate bitmask.  */

@@ -7,8 +7,8 @@
 
 /*
 ** hf_lt:
-**	fcmpe	h0, h1
-**	fccmpe	h2, h3, 0, mi
+**	fcmp	h0, h1
+**	fccmp	h2, h3, 0, mi
 **	cset	w0, mi
 **	ret
 */
@@ -35,8 +35,8 @@ hf_eq (_Float16 a, _Float16 b, _Float16 c, _Float16 d)
 
 /*
 ** hf_ior:
-**	fcmpe	h0, h1
-**	fccmpe	h2, h3, 8, pl
+**	fcmp	h0, h1
+**	fccmp	h2, h3, 8, pl
 **	cset	w0, mi
 **	ret
 */

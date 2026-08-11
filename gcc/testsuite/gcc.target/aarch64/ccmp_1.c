@@ -86,10 +86,12 @@ f13 (int a, int b)
 /* { dg-final { scan-assembler "cmp\t(.)+35" } } */
 
 /* { dg-final { scan-assembler-times "\tcmp\tw\[0-9\]+, 0" 4 } } */
-/* { dg-final { scan-assembler-times "fcmpe\t(?:.)+0\\.0" 1 } } */
-/* { dg-final { scan-assembler-times "fcmp\t(?:.)+0\\.0" 1 } } */
+/* With -ffinite-math-only the signalling compares are not needed.  */
+/* { dg-final { scan-assembler-times {\tfcmp\t[sd][0-9]+, #0\.0} 4 } } */
+/* { dg-final { scan-assembler-not {\tfcmpe\t} } } */
 
 /* { dg-final { scan-assembler "adds\t" } } */
 /* { dg-final { scan-assembler-times "\tccmp\t" 11 } } */
-/* { dg-final { scan-assembler-times "fccmp\t.*0\\.0" 1 } } */
-/* { dg-final { scan-assembler-times "fccmpe\t.*0\\.0" 1 } } */
+/* FCCMP has no zero-immediate form, so both operands are registers.  */
+/* { dg-final { scan-assembler-times {\tfccmp\t[sd][0-9]+, [sd][0-9]+,} 2 } } */
+/* { dg-final { scan-assembler-not {\tfccmpe\t} } } */
