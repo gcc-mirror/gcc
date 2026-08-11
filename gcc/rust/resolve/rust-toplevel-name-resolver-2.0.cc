@@ -50,8 +50,18 @@ TopLevel::check_multiple_insertion_error (
     {
       rich_location rich_loc (line_table, locus);
       rich_loc.add_range (node_locations[result.error ().existing]);
+      auto &mappings = Analysis::Mappings::get ();
+      ErrorCode code;
+      if (mappings.is_extern_crate (node_id)
+	  && mappings.is_extern_crate (result.error ().existing))
+	code = ErrorCode::E0259;
+      else if (mappings.is_extern_crate (node_id)
+	       || mappings.is_extern_crate (result.error ().existing))
+	code = ErrorCode::E0260;
+      else
+	code = ErrorCode::E0428;
 
-      rust_error_at (rich_loc, ErrorCode::E0428, "%qs defined multiple times",
+      rust_error_at (rich_loc, code, "%qs defined multiple times",
 		     identifier.as_string ().c_str ());
     }
 }
@@ -125,6 +135,17 @@ TopLevel::visit (AST::Trait &trait)
   insert_or_error_out (trait.get_identifier (), trait, Namespace::Types);
 
   DefaultResolver::visit (trait);
+}
+
+void
+TopLevel::visit (AST::ExternCrate &crate)
+{
+  auto &name = crate.has_as_clause () ? crate.get_as_clause ()
+				      : crate.get_referenced_crate ();
+  Analysis::Mappings::get ().insert_extern_crate_id (crate.get_node_id ());
+  insert_or_error_out (name, crate, Namespace::Types);
+
+  DefaultResolver::visit (crate);
 }
 
 void

@@ -328,6 +328,9 @@ public:
   void insert_module_id (NodeId);
   bool is_module (NodeId id);
 
+  void insert_extern_crate_id (NodeId);
+  bool is_extern_crate (NodeId id);
+
   void insert_module_child (NodeId module, NodeId child);
   tl::optional<std::vector<NodeId> &> lookup_module_children (NodeId module);
 
@@ -453,6 +456,7 @@ private:
 
   std::map<NodeId, AST::GlobContainer *> glob_containers;
   std::set<NodeId> module_ids;
+  std::set<NodeId> extern_crate_ids;
 
   // AST mappings
   std::map<NodeId, AST::Item *> ast_item_mappings;

@@ -1180,6 +1180,18 @@ Mappings::is_module (NodeId id)
   return module_ids.find (id) != module_ids.end ();
 }
 
+void
+Mappings::insert_extern_crate_id (NodeId id)
+{
+  extern_crate_ids.insert (id);
+}
+
+bool
+Mappings::is_extern_crate (NodeId id)
+{
+  return extern_crate_ids.find (id) != extern_crate_ids.end ();
+}
+
 tl::optional<AST::GlobContainer *>
 Mappings::lookup_glob_container (NodeId id)
 {
