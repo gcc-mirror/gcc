@@ -2832,6 +2832,18 @@ DEFHOOK
  NULL)
 
 DEFHOOK
+(ccmp_first_preference,
+ "Return how strongly the comparison of @var{op0} and @var{op1} with tree\n\
+code @var{code} and mode @var{mode} should start a conditional-compare\n\
+sequence.  Return @code{CCMP_FIRST_REQUIRED} if the comparison cannot be\n\
+conditional, @code{CCMP_FIRST_PREFERRED} if starting with it is profitable,\n\
+@code{CCMP_FIRST_NONE} if its position does not matter, or\n\
+@code{CCMP_FIRST_UNSUPPORTED} if it cannot be part of the sequence.",
+ ccmp_first_kind,
+ (machine_mode mode, tree_code code, const_tree op0, const_tree op1),
+ default_ccmp_first_preference)
+
+DEFHOOK
 (gen_ccmp_next,
  "This function prepares to emit a conditional comparison within a sequence\n\
  of conditional comparisons.  It returns an appropriate comparison with\n\
@@ -7749,4 +7761,3 @@ The default value is NULL.",
 
 /* Close the 'struct gcc_target' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)
-

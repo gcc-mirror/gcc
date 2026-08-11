@@ -297,6 +297,14 @@ enum optimization_type {
   OPTIMIZE_FOR_SIZE
 };
 
+/* How strongly a comparison should start a conditional-compare sequence.  */
+enum ccmp_first_kind {
+  CCMP_FIRST_UNSUPPORTED,
+  CCMP_FIRST_NONE,
+  CCMP_FIRST_PREFERRED,
+  CCMP_FIRST_REQUIRED
+};
+
 /* Enumerates a padding direction.  */
 enum pad_direction {
   /* No padding is required.  */

@@ -12664,6 +12664,15 @@ This function prepares to emit a comparison insn for the first compare in a
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
 @end deftypefn
 
+@deftypefn {Target Hook} ccmp_first_kind TARGET_CCMP_FIRST_PREFERENCE (machine_mode @var{mode}, tree_code @var{code}, const_tree @var{op0}, const_tree @var{op1})
+Return how strongly the comparison of @var{op0} and @var{op1} with tree
+code @var{code} and mode @var{mode} should start a conditional-compare
+sequence.  Return @code{CCMP_FIRST_REQUIRED} if the comparison cannot be
+conditional, @code{CCMP_FIRST_PREFERRED} if starting with it is profitable,
+@code{CCMP_FIRST_NONE} if its position does not matter, or
+@code{CCMP_FIRST_UNSUPPORTED} if it cannot be part of the sequence.
+@end deftypefn
+
 @deftypefn {Target Hook} rtx TARGET_GEN_CCMP_NEXT (rtx_insn **@var{prep_seq}, rtx_insn **@var{gen_seq}, rtx @var{prev}, rtx_code @var{cmp_code}, tree @var{op0}, tree @var{op1}, rtx_code @var{bit_code})
 This function prepares to emit a conditional comparison within a sequence
  of conditional comparisons.  It returns an appropriate comparison with

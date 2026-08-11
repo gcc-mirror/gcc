@@ -29905,6 +29905,38 @@ aarch64_asan_shadow_offset (void)
     return (HOST_WIDE_INT_1 << 36);
 }
 
+/* Implement TARGET_CCMP_FIRST_PREFERENCE.  */
+
+static ccmp_first_kind
+aarch64_ccmp_first_preference (machine_mode mode, tree_code code,
+			       const_tree op0, const_tree op1)
+{
+  if (SCALAR_FLOAT_MODE_P (mode))
+    {
+      if (!((mode == HFmode && TARGET_FP_F16INST)
+	    || mode == SFmode || mode == DFmode))
+	return CCMP_FIRST_UNSUPPORTED;
+      return real_zerop (op1) ? CCMP_FIRST_PREFERRED : CCMP_FIRST_NONE;
+    }
+
+  if (!(mode == QImode || mode == HImode
+	|| mode == SImode || mode == DImode))
+    return CCMP_FIRST_UNSUPPORTED;
+
+  if (TREE_CODE (op1) != INTEGER_CST)
+    return CCMP_FIRST_NONE;
+
+  scalar_int_mode int_mode = as_a <scalar_int_mode> (mode);
+  rtx_code rcode = get_rtx_code (code, TYPE_UNSIGNED (TREE_TYPE (op0)));
+  rtx imm = immed_wide_int_const
+    (wi::to_wide (op1, GET_MODE_PRECISION (int_mode)), int_mode);
+  canonicalize_comparison (int_mode, &rcode, &imm);
+
+  return (aarch64_plus_immediate (imm, int_mode)
+	  && !aarch64_ccmp_immediate (imm, int_mode)
+	  ? CCMP_FIRST_PREFERRED : CCMP_FIRST_NONE);
+}
+
 static rtx
 aarch64_gen_ccmp_first (rtx_insn **prep_seq, rtx_insn **gen_seq,
 			rtx_code code, tree treeop0, tree treeop1)
@@ -30109,6 +30141,9 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
 
 #undef TARGET_GEN_CCMP_FIRST
 #define TARGET_GEN_CCMP_FIRST aarch64_gen_ccmp_first
+
+#undef TARGET_CCMP_FIRST_PREFERENCE
+#define TARGET_CCMP_FIRST_PREFERENCE aarch64_ccmp_first_preference
 
 #undef TARGET_GEN_CCMP_NEXT
 #define TARGET_GEN_CCMP_NEXT aarch64_gen_ccmp_next

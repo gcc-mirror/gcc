@@ -1962,6 +1962,15 @@ default_have_ccmp (void)
   return targetm.gen_ccmp_first != NULL;
 }
 
+/* Default implementation of TARGET_CCMP_FIRST_PREFERENCE.  */
+
+ccmp_first_kind
+default_ccmp_first_preference (machine_mode, tree_code, const_tree,
+			       const_tree)
+{
+  return CCMP_FIRST_UNSUPPORTED;
+}
+
 /* By default we assume that c99 functions are present at the runtime,
    but sincos is not.  */
 bool
