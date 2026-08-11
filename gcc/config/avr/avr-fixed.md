@@ -209,25 +209,11 @@
   "sbrc %0,7\;neg %0\;sbrc %0,7\;dec %0"
   [(set_attr "length" "4")])
 
-;; "ssneghq2"  "ssnegha2"  "ssnegsq2"  "ssnegsa2"
-;; "ssabshq2"  "ssabsha2"  "ssabssq2"  "ssabssa2"
-(define_expand "<code_stdname><mode>2"
-  [(set (match_dup 2)
-        (match_operand:ALL24S 1 "register_operand" ""))
-   (set (match_dup 2)
-        (ss_abs_neg:ALL24S (match_dup 2)))
-   (set (match_operand:ALL24S 0 "register_operand" "")
-        (match_dup 2))]
-  ""
-  {
-    operands[2] = gen_rtx_REG (<MODE>mode, 26 - <SIZE>);
-  })
-
-;; "*ssneghq2"  "*ssnegha2"
-;; "*ssabshq2"  "*ssabsha2"
-(define_insn_and_split "*<code_stdname><mode>2_split"
-  [(set (reg:ALL2S 24)
-        (ss_abs_neg:ALL2S (reg:ALL2S 24)))]
+;; "ssneghq2"  "ssnegha2"
+;; "ssabshq2"  "ssabsha2"
+(define_insn_and_split "<code_stdname><mode>2"
+  [(set (match_operand:ALL2S 0 "register_operand"                  "={r24}")
+        (ss_abs_neg:ALL2S (match_operand:ALL2S 1 "register_operand" "{r24}")))]
   ""
   "#"
   "&& reload_completed"
@@ -242,11 +228,11 @@
   "%~call __<code_stdname>_2"
   [(set_attr "type" "xcall")])
 
-;; "*ssnegsq2"  "*ssnegsa2"
-;; "*ssabssq2"  "*ssabssa2"
-(define_insn_and_split "*<code_stdname><mode>2_split"
-  [(set (reg:ALL4S 22)
-        (ss_abs_neg:ALL4S (reg:ALL4S 22)))]
+;; "ssnegsq2"  "ssnegsa2"
+;; "ssabssq2"  "ssabssa2"
+(define_insn_and_split "<code_stdname><mode>2"
+  [(set (match_operand:ALL4S 0 "register_operand"                  "={r22}")
+        (ss_abs_neg:ALL4S (match_operand:ALL4S 1 "register_operand" "{r22}")))]
   ""
   "#"
   "&& reload_completed"
@@ -315,23 +301,18 @@
   "mul %1,%2\;mov %0,r1\;clr __zero_reg__"
   [(set_attr "length" "3")])
 
-(define_expand "mulqq3_nomul"
-  [(set (reg:QQ 24)
-        (match_operand:QQ 1 "register_operand" ""))
-   (set (reg:QQ 25)
-        (match_operand:QQ 2 "register_operand" ""))
-   ;; "*mulqq3.call"
-   (parallel [(set (reg:QQ 23)
-                   (mult:QQ (reg:QQ 24)
-                            (reg:QQ 25)))
-              (clobber (reg:QI 22))
-              (clobber (reg:HI 24))])
-   (set (match_operand:QQ 0 "register_operand" "")
-        (reg:QQ 23))]
+(define_insn_and_split "mulqq3_nomul"
+  [;; "*mulqq3.call"
+   (set (match_operand:QQ 0 "register_operand"          "={r23}")
+        (mult:QQ (match_operand:QQ 1 "register_operand" "%{r24}")
+                 (match_operand:QQ 2 "register_operand"  "{r25}")))
+   (clobber (match_scratch:QI 3                         "={r22}"))
+   (clobber (match_scratch:HI 4                         "={r24}"))]
   "!AVR_HAVE_MUL"
-  {
-    avr_fix_inputs (operands, 1 << 2, regmask (QQmode, 24));
-  })
+  "#"
+  "&& reload_completed"
+  [(scratch)]
+  { DONE_ADD_CCC })
 
 
 (define_expand "muluqq3_nomul"
@@ -339,7 +320,7 @@
         (match_operand:UQQ 1 "register_operand" ""))
    (set (reg:UQQ 24)
         (match_operand:UQQ 2 "register_operand" ""))
-   ;; "*umulqihi3.call"
+   ;; "*umulqihi3.call_split"
    (parallel [(set (reg:HI 24)
                    (mult:HI (zero_extend:HI (reg:QI 22))
                             (zero_extend:HI (reg:QI 24))))
@@ -351,18 +332,6 @@
   {
     avr_fix_inputs (operands, 1 << 2, regmask (UQQmode, 22));
   })
-
-(define_insn_and_split "*mulqq3.call_split"
-  [(set (reg:QQ 23)
-        (mult:QQ (reg:QQ 24)
-                 (reg:QQ 25)))
-   (clobber (reg:QI 22))
-   (clobber (reg:HI 24))]
-  "!AVR_HAVE_MUL"
-  "#"
-  "&& reload_completed"
-  [(scratch)]
-  { DONE_ADD_CCC })
 
 (define_insn "*mulqq3.call"
   [(set (reg:QQ 23)
@@ -376,32 +345,13 @@
   [(set_attr "type" "xcall")])
 
 
-;; "mulhq3" "muluhq3"
-;; "mulha3" "muluha3"
-(define_expand "mul<mode>3"
-  [(set (reg:ALL2QA 18)
-        (match_operand:ALL2QA 1 "register_operand" ""))
-   (set (reg:ALL2QA 26)
-        (match_operand:ALL2QA 2 "register_operand" ""))
-   ;; "*mulhq3.call.enh"
-   (parallel [(set (reg:ALL2QA 24)
-                   (mult:ALL2QA (reg:ALL2QA 18)
-                                (reg:ALL2QA 26)))
-              (clobber (reg:HI 22))])
-   (set (match_operand:ALL2QA 0 "register_operand" "")
-        (reg:ALL2QA 24))]
-  "AVR_HAVE_MUL"
-  {
-    avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, 18));
-  })
-
-;; "*mulhq3.call"  "*muluhq3.call"
-;; "*mulha3.call"  "*muluha3.call"
-(define_insn_and_split "*mul<mode>3.call_split"
-  [(set (reg:ALL2QA 24)
-        (mult:ALL2QA (reg:ALL2QA 18)
-                     (reg:ALL2QA 26)))
-   (clobber (reg:HI 22))]
+;; "mulhq3.call"  "muluhq3.call"
+;; "mulha3.call"  "muluha3.call"
+(define_insn_and_split "mul<mode>3"
+  [(set (match_operand:ALL2QA 0 "register_operand"              "={r24}")
+        (mult:ALL2QA (match_operand:ALL2QA 1 "register_operand" "%{r18}")
+                     (match_operand:ALL2QA 2 "register_operand"  "{r26}")))
+   (clobber (match_scratch:HI 3                                 "={r22}"))]
   "AVR_HAVE_MUL"
   "#"
   "&& reload_completed"
@@ -419,29 +369,13 @@
   [(set_attr "type" "xcall")])
 
 
-;; On the enhanced core, don't clobber either input and use a separate output
+;; On the enhanced core, don't clobber either input and use a separate output.
 
 ;; "mulsa3" "mulusa3"
-(define_expand "mul<mode>3"
-  [(set (reg:ALL4A 16)
-        (match_operand:ALL4A 1 "register_operand" ""))
-   (set (reg:ALL4A 20)
-        (match_operand:ALL4A 2 "register_operand" ""))
-   (set (reg:ALL4A 24)
-        (mult:ALL4A (reg:ALL4A 16)
-                    (reg:ALL4A 20)))
-   (set (match_operand:ALL4A 0 "register_operand" "")
-        (reg:ALL4A 24))]
-  "AVR_HAVE_MUL"
-  {
-    avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, 16));
-  })
-
-;; "*mulsa3.call" "*mulusa3.call"
-(define_insn_and_split "*mul<mode>3.call_split"
-  [(set (reg:ALL4A 24)
-        (mult:ALL4A (reg:ALL4A 16)
-                    (reg:ALL4A 20)))]
+(define_insn_and_split "mul<mode>3"
+  [(set (match_operand:ALL4A 0 "register_operand"             "={r24}")
+        (mult:ALL4A (match_operand:ALL4A 1 "register_operand" "%{r16}")
+                    (match_operand:ALL4A 2 "register_operand"  "{r20}")))]
   "AVR_HAVE_MUL"
   "#"
   "&& reload_completed"
@@ -464,30 +398,13 @@
 (define_code_iterator alldiv [udiv div us_div ss_div])
 
 ;; "divqq3" "udivuqq3"
-(define_expand "<code><mode>3"
-  [(set (reg:ALL1Q 25)
-        (match_operand:ALL1Q 1 "register_operand" ""))
-   (set (reg:ALL1Q 22)
-        (match_operand:ALL1Q 2 "register_operand" ""))
-   (parallel [(set (reg:ALL1Q 24)
-                   (usdiv:ALL1Q (reg:ALL1Q 25)
-                                (reg:ALL1Q 22)))
-              (clobber (reg:QI 25))])
-   (set (match_operand:ALL1Q 0 "register_operand" "")
-        (reg:ALL1Q 24))]
-  ""
-  {
-    avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, 25));
-  })
-
-
-;; "*divqq3.call" "*udivuqq3.call"
-(define_insn_and_split "*<code><mode>3.call_split"
-  [(set (reg:ALL1Q 24)
-        (usdiv:ALL1Q (reg:ALL1Q 25)
-                     (reg:ALL1Q 22)))
-   (clobber (reg:QI 25))]
-  ""
+(define_insn_and_split "<code><mode>3"
+  [(set (match_operand:ALL1Q 0 "register_operand"              "={r24}")
+        (usdiv:ALL1Q (match_operand:ALL1Q 1 "register_operand"  "{r25}")
+                     (match_operand:ALL1Q 2 "register_operand"  "{r22}")))
+   (clobber (match_scratch:QI 3                                "={r25}"))]
+  "SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
+   == (<CODE> == DIV || <CODE> == SS_DIV)"
   "#"
   "&& reload_completed"
   [(scratch)]
@@ -499,38 +416,20 @@
                      (reg:ALL1Q 22)))
    (clobber (reg:QI 25))
    (clobber (reg:CC REG_CC))]
-  "reload_completed"
+  "reload_completed
+   && SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
+      == (<CODE> == DIV || <CODE> == SS_DIV)"
   "%~call __<code><mode>3"
   [(set_attr "type" "xcall")])
 
 ;; "divhq3" "udivuhq3" "ssdivhq3" "usdivuhq3"
 ;; "divha3" "udivuha3" "ssdivha3" "usdivuha3"
-(define_expand "<code_stdname><mode>3"
-  [(set (reg:ALL2QA 26)
-        (match_operand:ALL2QA 1 "register_operand" ""))
-   (set (reg:ALL2QA 22)
-        (match_operand:ALL2QA 2 "register_operand" ""))
-   (parallel [(set (reg:ALL2QA 24)
-                   (alldiv:ALL2QA (reg:ALL2QA 26)
-                                  (reg:ALL2QA 22)))
-              (clobber (reg:HI 26))
-              (clobber (reg:QI 21))])
-   (set (match_operand:ALL2QA 0 "register_operand" "")
-        (reg:ALL2QA 24))]
-  "SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
-   == (<CODE> == DIV || <CODE> == SS_DIV)"
-  {
-    avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, 26));
-  })
-
-;; "*divhq3.split" "*udivuhq3.split" "*ssdivhq3.split" "*usdivuhq3.split"
-;; "*divha3.split" "*udivuha3.split" "*ssdivha3.split" "*usdivuha3.split"
-(define_insn_and_split "*<code_stdname><mode>3.split"
-  [(set (reg:ALL2QA 24)
-        (alldiv:ALL2QA (reg:ALL2QA 26)
-                       (reg:ALL2QA 22)))
-   (clobber (reg:HI 26))
-   (clobber (reg:QI 21))]
+(define_insn_and_split "<code_stdname><mode>3"
+  [(set (match_operand:ALL2QA 0 "register_operand"               "={r24}")
+        (alldiv:ALL2QA (match_operand:ALL2QA 1 "register_operand" "{r26}")
+                       (match_operand:ALL2QA 2 "register_operand" "{r22}")))
+   (clobber (match_scratch:HI 3                                  "={r26}"))
+   (clobber (match_scratch:QI 4                                  "={r21}"))]
   "SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
    == (<CODE> == DIV || <CODE> == SS_DIV)"
   "#"
@@ -557,31 +456,12 @@
 
 ;; "divsa3" "udivusa3"
 ;; "ssdivsa3" "usdivusa3"
-(define_expand "<code_stdname><mode>3"
-  [(set (reg:ALL4A 24)
-        (match_operand:ALL4A 1 "register_operand" ""))
-   (set (reg:ALL4A 18)
-        (match_operand:ALL4A 2 "register_operand" ""))
-   (parallel [(set (reg:ALL4A 22)
-                   (alldiv:ALL4A (reg:ALL4A 24)
-                                 (reg:ALL4A 18)))
-              (clobber (reg:HI 26))
-              (clobber (reg:HI 30))])
-   (set (match_operand:ALL4A 0 "register_operand" "")
-        (reg:ALL4A 22))]
-  "SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
-   == (<CODE> == DIV || <CODE> == SS_DIV)"
-  {
-    avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, 24));
-  })
-
-;; "*divsa3.split" "*udivusa3.split" "*ssdivsa3.split" "*usdivusa3.split"
-(define_insn_and_split "*<code_stdname><mode>3.split"
-  [(set (reg:ALL4A 22)
-        (alldiv:ALL4A (reg:ALL4A 24)
-                      (reg:ALL4A 18)))
-   (clobber (reg:HI 26))
-   (clobber (reg:HI 30))]
+(define_insn_and_split "<code_stdname><mode>3"
+  [(set (match_operand:ALL4A 0 "register_operand"              "={r22}")
+        (alldiv:ALL4A (match_operand:ALL4A 1 "register_operand" "{r24}")
+                      (match_operand:ALL4A 2 "register_operand" "{r18}")))
+   (clobber (match_scratch:HI 3                                "={r26}"))
+   (clobber (match_scratch:HI 4                                "={r30}"))]
   "SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
    == (<CODE> == DIV || <CODE> == SS_DIV)"
   "#"
@@ -612,37 +492,20 @@
 ;; "roundhq3"  "rounduhq3"  "roundha3"  "rounduha3"
 ;; "roundsq3"  "roundusq3"  "roundsa3"  "roundusa3"
 (define_expand "round<mode>3"
-  [(set (match_dup 4)
-        (match_operand:ALL124QA 1 "register_operand" ""))
-   (set (reg:QI 24)
-        (match_dup 5))
-   (parallel [(set (match_dup 3)
-                   (unspec:ALL124QA [(match_dup 4)
-                                     (reg:QI 24)] UNSPEC_ROUND))
-              (clobber (match_dup 4))])
-   (set (match_operand:ALL124QA 0 "register_operand" "")
-        (match_dup 3))
-   (use (match_operand:HI 2 "nonmemory_operand" ""))]
+  [(parallel [(set (match_operand:ALL124QA 0 "register_operand")
+                   (unspec:ALL124QA [(match_operand:ALL124QA 1 "register_operand")
+                                     (match_operand:HI 2 "nonmemory_operand")]
+                                    UNSPEC_ROUND))
+              (clobber (scratch:ALL124QA))])]
   ""
   {
-    if (CONST_INT_P (operands[2])
-        && !(optimize_size
-             && 4 == <SIZE>))
+    if (CONST_INT_P (operands[2]))
       {
         emit_insn (gen_round<mode>3_const (operands[0], operands[1], operands[2]));
         DONE;
       }
 
-    // Input and output of the libgcc function
-    const unsigned int regno_in[]  = { -1U, 22, 22, -1U, 18 };
-    const unsigned int regno_out[] = { -1U, 24, 24, -1U, 22 };
-
-    operands[3] = gen_rtx_REG (<MODE>mode, regno_out[(size_t) <SIZE>]);
-    operands[4] = gen_rtx_REG (<MODE>mode,  regno_in[(size_t) <SIZE>]);
-    avr_fix_inputs (operands, 1 << 2, regmask (<MODE>mode, REGNO (operands[4])));
-    operands[5] = simplify_gen_subreg (QImode, force_reg (HImode, operands[2]), HImode, 0);
-    // $2 is no more needed, but is referenced for expand.
-    operands[2] = const0_rtx;
+    operands[2] = avr_byte (force_reg (HImode, operands[2]), 0);
   })
 
 ;; Expand rounding with known rounding points inline so that the addend / mask
@@ -680,10 +543,11 @@
 
 ;; "*roundqq3.libgcc"  "*rounduqq3.libgcc"
 (define_insn_and_split "*round<mode>3.libgcc_split"
-  [(set (reg:ALL1Q 24)
-        (unspec:ALL1Q [(reg:ALL1Q 22)
-                       (reg:QI 24)] UNSPEC_ROUND))
-   (clobber (reg:ALL1Q 22))]
+  [(set (match_operand:ALL1Q 0 "register_operand"               "={r24}")
+        (unspec:ALL1Q [(match_operand:ALL1Q 1 "register_operand" "{r22}")
+                       (match_operand:QI 2 "register_operand"    "{r24}")]
+                      UNSPEC_ROUND))
+   (clobber (match_scratch:ALL1Q 3                              "={r22}"))]
   ""
   "#"
   "&& reload_completed"
@@ -703,10 +567,11 @@
 ;; "*roundhq3.libgcc"  "*rounduhq3.libgcc"
 ;; "*roundha3.libgcc"  "*rounduha3.libgcc"
 (define_insn_and_split "*round<mode>3.libgcc_split"
-  [(set (reg:ALL2QA 24)
-        (unspec:ALL2QA [(reg:ALL2QA 22)
-                        (reg:QI 24)] UNSPEC_ROUND))
-   (clobber (reg:ALL2QA 22))]
+  [(set (match_operand:ALL2QA 0 "register_operand"                "={r24}")
+        (unspec:ALL2QA [(match_operand:ALL2QA 1 "register_operand" "{r22}")
+                        (match_operand:QI 2 "register_operand"     "{r24}")]
+                       UNSPEC_ROUND))
+   (clobber (match_scratch:ALL2QA 3                               "={r22}"))]
   ""
   "#"
   "&& reload_completed"
@@ -726,10 +591,11 @@
 ;; "*roundsq3.libgcc"  "*roundusq3.libgcc"
 ;; "*roundsa3.libgcc"  "*roundusa3.libgcc"
 (define_insn_and_split "*round<mode>3.libgcc_split"
-  [(set (reg:ALL4QA 22)
-        (unspec:ALL4QA [(reg:ALL4QA 18)
-                        (reg:QI 24)] UNSPEC_ROUND))
-   (clobber (reg:ALL4QA 18))]
+  [(set (match_operand:ALL4QA 0 "register_operand"                "={r22}")
+        (unspec:ALL4QA [(match_operand:ALL4QA 1 "register_operand" "{r18}")
+                        (match_operand:QI 2 "register_operand"     "{r24}")]
+                       UNSPEC_ROUND))
+   (clobber (match_scratch:ALL4QA 3                               "={r18}"))]
   ""
   "#"
   "&& reload_completed"
