@@ -11,7 +11,7 @@
 # error "Feature-test macro __cpp_lib_spanstrean has wrong value in <iosfwd>"
 #endif
 
-#if __cplusplus >= 202002L && __cpp_lib_syncbuf != 201803L
+#if __cplusplus >= 202002L && _GLIBCXX_USE_CXX11_ABI && __cpp_lib_syncbuf != 201803L
 # error "Feature-test macro __cpp_lib_syncbuf has wrong value in <iosfwd>"
 #endif
 
