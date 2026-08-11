@@ -245,9 +245,9 @@ protected:
   vec <relation_chain_head> m_relations;  // Index by BB, list of relations.
   relation_kind find_relation_block (unsigned bb, const_bitmap b1,
 				     const_bitmap b2) const;
-  relation_kind find_relation_block (int bb, unsigned v1, unsigned v2,
+  relation_kind find_relation_block (int bb, tree ssa1, tree ssa2,
 				     relation_chain **obj = NULL) const;
-  relation_kind find_relation_dom (basic_block bb, unsigned v1, unsigned v2) const;
+  relation_kind find_relation_dom (basic_block bb, tree ssa1, tree ssa2) const;
   relation_chain *create_relation_in_bb (basic_block bb, relation_kind k,
 					 tree op1, tree op2);
   relation_chain *search_and_merge_relation (basic_block bb, relation_kind k,

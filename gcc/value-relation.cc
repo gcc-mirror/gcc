@@ -1213,7 +1213,9 @@ dom_oracle::create_relation_in_bb (basic_block bb, relation_kind k, tree op1,
   unsigned v1 = SSA_NAME_VERSION (op1);
   unsigned v2 = SSA_NAME_VERSION (op2);
 
-  gcc_checking_assert (find_relation_block (bbi, v1, v2, &ptr) == VREL_VARYING);
+  // Assert there is no existing relation.
+  gcc_checking_assert (find_relation_block (bbi, op1, op2, NULL)
+		       == VREL_VARYING);
 
   bitmap_set_bit (bm, v1);
   bitmap_set_bit (bm, v2);
@@ -1241,11 +1243,9 @@ dom_oracle::search_and_merge_relation (basic_block bb, relation_kind k,
 
   int bbi = bb->index;
 
-  unsigned v1 = SSA_NAME_VERSION (op1);
-  unsigned v2 = SSA_NAME_VERSION (op2);
   relation_kind curr;
   relation_chain *ptr;
-  curr = find_relation_block (bbi, v1, v2, &ptr);
+  curr = find_relation_block (bbi, op1, op2, &ptr);
   // There is an existing relation in this block, just intersect with it.
   if (curr != VREL_VARYING)
     {
@@ -1262,7 +1262,7 @@ dom_oracle::search_and_merge_relation (basic_block bb, relation_kind k,
       // By including dominating relations, The first one found in any search
       // will be the aggregate of all the previous ones.
       curr = find_relation_dom (get_immediate_dominator (CDI_DOMINATORS, bb),
-				v1, v2);
+				op1, op2);
       if (curr != VREL_VARYING)
 	k = relation_intersect (curr, k);
       ptr = create_relation_in_bb (bb, k, op1, op2);
@@ -1426,7 +1426,7 @@ dom_oracle::query (basic_block bb, const_bitmap b1, const_bitmap b2)
 // is found, return a pointer to the chain object in OBJ.
 
 relation_kind
-dom_oracle::find_relation_block (int bb, unsigned v1, unsigned v2,
+dom_oracle::find_relation_block (int bb, tree ssa1, tree ssa2,
 				     relation_chain **obj) const
 {
   if (bb >= (int)m_relations.length())
@@ -1436,6 +1436,9 @@ dom_oracle::find_relation_block (int bb, unsigned v1, unsigned v2,
   if (!bm)
     return VREL_VARYING;
 
+  unsigned v1 = SSA_NAME_VERSION (ssa1);
+  unsigned v2 = SSA_NAME_VERSION (ssa2);
+
   // If both b1 and b2 aren't referenced in this block, cant be a relation
   if (!bitmap_bit_p (bm, v1) || !bitmap_bit_p (bm, v2))
     return VREL_VARYING;
@@ -1443,15 +1446,15 @@ dom_oracle::find_relation_block (int bb, unsigned v1, unsigned v2,
   relation_chain *ptr;
   for (ptr = m_relations[bb].m_head; ptr ; ptr = ptr->m_next)
     {
-      unsigned op1 = SSA_NAME_VERSION (ptr->op1 ());
-      unsigned op2 = SSA_NAME_VERSION (ptr->op2 ());
-      if (v1 == op1 && v2 == op2)
+      tree op1 = ptr->op1 ();
+      tree op2 = ptr->op2 ();
+      if (ssa1 == op1 && ssa2 == op2)
 	{
 	  if (obj)
 	    *obj = ptr;
 	  return ptr->kind ();
 	}
-      if (v1 == op2 && v2 == op1)
+      if (ssa1 == op2 && ssa2 == op1)
 	{
 	  if (obj)
 	    *obj = ptr;
@@ -1589,20 +1592,20 @@ dom_oracle::recomputed_relation (basic_block orig_bb, edge e, tree ssa1,
 // starting with block BB
 
 relation_kind
-dom_oracle::find_relation_dom (basic_block start_bb, unsigned v1, unsigned v2) const
+dom_oracle::find_relation_dom (basic_block start_bb, tree ssa1, tree ssa2) const
 {
   relation_kind r;
+  unsigned v1 = SSA_NAME_VERSION (ssa1);
+  unsigned v2 = SSA_NAME_VERSION (ssa2);
   // IF either name does not occur in a relation anywhere, there isn't one.
   if (!bitmap_bit_p (m_relation_set, v1) || !bitmap_bit_p (m_relation_set, v2))
     return VREL_VARYING;
   edge outgoing_edge = NULL;
-  tree ssa1 = ssa_name (v1);
-  tree ssa2 = ssa_name (v2);
   for (basic_block bb = start_bb;
        bb;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
-      r = find_relation_block (bb->index, v1, v2);
+      r = find_relation_block (bb->index, ssa1, ssa2);
       // Now check if recomputed values on the outgoing edge might create
       // a relation.
       if (r == VREL_VARYING && outgoing_edge)
@@ -1649,7 +1652,7 @@ dom_oracle::query (basic_block bb, tree ssa1, tree ssa2)
     return kind;
 
   // Initially look for a direct relationship and just return that.
-  kind = find_relation_dom (bb, v1, v2);
+  kind = find_relation_dom (bb, ssa1, ssa2);
   if (kind != VREL_VARYING)
     return kind;
 
