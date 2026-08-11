@@ -303,6 +303,7 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 			"__ARM_FEATURE_LS64", pfile);
   aarch64_def_or_undef (TARGET_RCPC, "__ARM_FEATURE_RCPC", pfile);
   aarch64_def_or_undef (TARGET_D128, "__ARM_FEATURE_SYSREG128", pfile);
+  aarch64_def_or_undef (TARGET_CSSC, "__ARM_FEATURE_CSSC", pfile);
 
   aarch64_def_or_undef (TARGET_SME, "__ARM_FEATURE_SME", pfile);
   aarch64_def_or_undef (TARGET_SME_I16I64, "__ARM_FEATURE_SME_I16I64", pfile);

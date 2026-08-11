@@ -388,3 +388,38 @@
 #ifndef __ARM_FEATURE_SSVE_FEXPA
 #error Foo
 #endif
+
+#pragma GCC target "arch=armv8.8-a"
+#ifdef __ARM_FEATURE_CSSC
+#error Foo
+#endif
+
+#pragma GCC target "arch=armv8.9-a"
+#ifndef __ARM_FEATURE_CSSC
+#error Foo
+#endif
+
+#pragma GCC target "arch=armv9.3-a"
+#ifdef __ARM_FEATURE_CSSC
+#error Foo
+#endif
+
+#pragma GCC target "arch=armv9.4-a"
+#ifndef __ARM_FEATURE_CSSC
+#error Foo
+#endif
+
+#pragma GCC target "arch=armv8-a+cssc"
+#ifndef __ARM_FEATURE_CSSC
+#error Foo
+#endif
+
+#pragma GCC target "+nothing+cssc"
+#ifndef __ARM_FEATURE_CSSC
+#error Foo
+#endif
+
+#pragma GCC target "arch=armv8.9-a+nocssc"
+#ifdef __ARM_FEATURE_CSSC
+#error Foo
+#endif
