@@ -1,3 +1,16 @@
+2026-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126320
+	PR target/126450
+	PR target/126529
+	* gcc.target/i386/pr126529-1.c: New test.
+	* gcc.target/i386/pr126529-2.c: Likewise.
+	* gcc.target/i386/pr126529-3.c: Likewise.
+	* gcc.target/i386/pr126529-4.c: Likewise.
+
 2026-08-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

@@ -1,3 +1,17 @@
+2026-08-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-08-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126320
+	PR target/126450
+	PR target/126529
+	* config/i386/i386.cc (ix86_spill_register_argument_p): Removed.
+	(ix86_argument_passed_on_stack_p): Remove the second argument.
+	Return true if the argument's DECL_INCOMING_RTL is a memory
+	operand.
+	(ix86_update_stack_alignment): Updated.
+
 2026-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
