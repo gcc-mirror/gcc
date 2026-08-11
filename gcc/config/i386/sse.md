@@ -6332,8 +6332,8 @@
   [(set (match_operand:FMAMODE 0 "register_operand" "=v,v,v,x,x")
 	(fma:FMAMODE
 	  (match_operand:FMAMODE 1 "nonimmediate_operand" "%0,0,v,x,x")
-	  (match_operand:FMAMODE 2 "nonimmediate_operand" "vm,v,vm,x,m")
-	  (match_operand:FMAMODE 3 "nonimmediate_operand" "v,vm,0,xm,x")))]
+	  (match_operand:FMAMODE 2 "nonimmediate_operand" "vm,v,vm,x,jm")
+	  (match_operand:FMAMODE 3 "nonimmediate_operand" "v,vm,0,xjm,x")))]
   "TARGET_FMA || TARGET_FMA4"
   "@
    vfmadd132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
@@ -6343,6 +6343,7 @@
    vfmadd<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "isa" "fma,fma,fma,fma4,fma4")
    (set_attr "type" "ssemuladd")
+   (set_attr "addr" "*,*,*,gpr16,gpr16")
    (set_attr "mode" "<MODE>")])
 
 ;; Suppose AVX-512F as baseline
@@ -6428,9 +6429,9 @@
   [(set (match_operand:FMAMODE 0 "register_operand" "=v,v,v,x,x")
 	(fma:FMAMODE
 	  (match_operand:FMAMODE   1 "nonimmediate_operand" "%0,0,v,x,x")
-	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm,v,vm,x,m")
+	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm,v,vm,x,jm")
 	  (neg:FMAMODE
-	    (match_operand:FMAMODE 3 "nonimmediate_operand" "v,vm,0,xm,x"))))]
+	    (match_operand:FMAMODE 3 "nonimmediate_operand" "v,vm,0,xjm,x"))))]
   "TARGET_FMA || TARGET_FMA4"
   "@
    vfmsub132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
@@ -6440,6 +6441,7 @@
    vfmsub<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "isa" "fma,fma,fma,fma4,fma4")
    (set_attr "type" "ssemuladd")
+   (set_attr "addr" "*,*,*,gpr16,gpr16")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "<avx512>_fmsub_<mode>_maskz<round_expand_name>"
@@ -6535,8 +6537,8 @@
 	(fma:FMAMODE
 	  (neg:FMAMODE
 	    (match_operand:FMAMODE 1 "nonimmediate_operand" "%0,0,v,x,x"))
-	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm,v,vm,x,m")
-	  (match_operand:FMAMODE   3 "nonimmediate_operand" "v,vm,0,xm,x")))]
+	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm,v,vm,x,jm")
+	  (match_operand:FMAMODE   3 "nonimmediate_operand" "v,vm,0,xjm,x")))]
   "TARGET_FMA || TARGET_FMA4"
   "@
    vfnmadd132<ssemodesuffix>\t{%2, %3, %0|%0, %3, %2}
@@ -6546,6 +6548,7 @@
    vfnmadd<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "isa" "fma,fma,fma,fma4,fma4")
    (set_attr "type" "ssemuladd")
+   (set_attr "addr" "*,*,*,gpr16,gpr16")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "<avx512>_fnmadd_<mode>_maskz<round_expand_name>"
@@ -6641,9 +6644,9 @@
 	(fma:FMAMODE
 	  (neg:FMAMODE
 	    (match_operand:FMAMODE 1 "nonimmediate_operand" "%0,0,v,x,x"))
-	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm,v,vm,x,m")
+	  (match_operand:FMAMODE   2 "nonimmediate_operand" "vm,v,vm,x,jm")
 	  (neg:FMAMODE
-	    (match_operand:FMAMODE 3 "nonimmediate_operand" "v,vm,0,xm,x"))))]
+	    (match_operand:FMAMODE 3 "nonimmediate_operand" "v,vm,0,xjm,x"))))]
   "TARGET_FMA || TARGET_FMA4"
   "@
    vfnmsub132<ssemodesuffix>\t{<round_sd_mask_op4>%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2<round_sd_mask_op4>}
@@ -6653,6 +6656,7 @@
    vfnmsub<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "isa" "fma,fma,fma,fma4,fma4")
    (set_attr "type" "ssemuladd")
+   (set_attr "addr" "*,*,*,gpr16,gpr16")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "<avx512>_fnmsub_<mode>_maskz<round_expand_name>"
@@ -6818,8 +6822,8 @@
   [(set (match_operand:VF_128_256 0 "register_operand" "=v,v,v,x,x")
 	(unspec:VF_128_256
 	  [(match_operand:VF_128_256 1 "nonimmediate_operand" "%0,0,v,x,x")
-	   (match_operand:VF_128_256 2 "nonimmediate_operand" "vm,v,vm,x,m")
-	   (match_operand:VF_128_256 3 "nonimmediate_operand" "v,vm,0,xm,x")]
+	   (match_operand:VF_128_256 2 "nonimmediate_operand" "vm,v,vm,x,jm")
+	   (match_operand:VF_128_256 3 "nonimmediate_operand" "v,vm,0,xjm,x")]
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA || TARGET_FMA4"
   "@
@@ -6830,6 +6834,7 @@
    vfmaddsub<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "isa" "fma,fma,fma,fma4,fma4")
    (set_attr "type" "ssemuladd")
+   (set_attr "addr" "*,*,*,gpr16,gpr16")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sd_mask_codefor>fma_fmaddsub_<mode><sd_maskz_name><round_name>"
@@ -6886,9 +6891,9 @@
   [(set (match_operand:VF_128_256 0 "register_operand" "=v,v,v,x,x")
 	(unspec:VF_128_256
 	  [(match_operand:VF_128_256   1 "nonimmediate_operand" "%0,0,v,x,x")
-	   (match_operand:VF_128_256   2 "nonimmediate_operand" "vm,v,vm,x,m")
+	   (match_operand:VF_128_256   2 "nonimmediate_operand" "vm,v,vm,x,jm")
 	   (neg:VF_128_256
-	     (match_operand:VF_128_256 3 "nonimmediate_operand" "v,vm,0,xm,x"))]
+	     (match_operand:VF_128_256 3 "nonimmediate_operand" "v,vm,0,xjm,x"))]
 	  UNSPEC_FMADDSUB))]
   "TARGET_FMA || TARGET_FMA4"
   "@
@@ -6899,6 +6904,7 @@
    vfmsubadd<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "isa" "fma,fma,fma,fma4,fma4")
    (set_attr "type" "ssemuladd")
+   (set_attr "addr" "*,*,*,gpr16,gpr16")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "<sd_mask_codefor>fma_fmsubadd_<mode><sd_maskz_name><round_name>"
@@ -27352,12 +27358,13 @@
 	(xop_plus:VI24_128
 	 (mult:VI24_128
 	  (match_operand:VI24_128 1 "nonimmediate_operand" "%x")
-	  (match_operand:VI24_128 2 "nonimmediate_operand" "xm"))
+	  (match_operand:VI24_128 2 "nonimmediate_operand" "xjm"))
 	 (match_operand:VI24_128 3 "register_operand" "x")))]
   "TARGET_XOP"
   "vp<macs><ssemodesuffix><ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "prefix" "vex")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_p<macs>dql"
@@ -27370,13 +27377,14 @@
 	    (parallel [(const_int 0) (const_int 2)])))
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
-	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
+	    (match_operand:V4SI 2 "nonimmediate_operand" "xjm")
 	    (parallel [(const_int 0) (const_int 2)]))))
 	 (match_operand:V2DI 3 "register_operand" "x")))]
   "TARGET_XOP"
   "vp<macs>dql\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "prefix" "vex")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_p<macs>dqh"
@@ -27389,13 +27397,14 @@
 	    (parallel [(const_int 1) (const_int 3)])))
 	  (sign_extend:V2DI
 	   (vec_select:V2SI
-	    (match_operand:V4SI 2 "nonimmediate_operand" "xm")
+	    (match_operand:V4SI 2 "nonimmediate_operand" "xjm")
 	    (parallel [(const_int 1) (const_int 3)]))))
 	 (match_operand:V2DI 3 "register_operand" "x")))]
   "TARGET_XOP"
   "vp<macs>dqh\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "prefix" "vex")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 ;; XOP parallel integer multiply/add instructions for the intrinisics
@@ -27410,7 +27419,7 @@
 		       (const_int 5) (const_int 7)])))
 	  (sign_extend:V4SI
 	   (vec_select:V4HI
-	    (match_operand:V8HI 2 "nonimmediate_operand" "xm")
+	    (match_operand:V8HI 2 "nonimmediate_operand" "xjm")
 	    (parallel [(const_int 1) (const_int 3)
 		       (const_int 5) (const_int 7)]))))
 	 (match_operand:V4SI 3 "register_operand" "x")))]
@@ -27418,6 +27427,7 @@
   "vp<macs>wd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "prefix" "vex")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_p<madcs>wd"
@@ -27432,7 +27442,7 @@
 			(const_int 4) (const_int 6)])))
 	   (sign_extend:V4SI
 	    (vec_select:V4HI
-	     (match_operand:V8HI 2 "nonimmediate_operand" "xm")
+	     (match_operand:V8HI 2 "nonimmediate_operand" "xjm")
 	     (parallel [(const_int 0) (const_int 2)
 			(const_int 4) (const_int 6)]))))
 	  (mult:V4SI
@@ -27451,18 +27461,20 @@
   "vp<madcs>wd\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssemuladd")
    (set_attr "prefix" "vex")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 ;; XOP parallel XMM conditional moves
 (define_insn "xop_pcmov_<mode><avxsizesuffix>"
   [(set (match_operand:V_128_256 0 "register_operand" "=x,x")
 	(if_then_else:V_128_256
-	  (match_operand:V_128_256 3 "nonimmediate_operand" "x,m")
+	  (match_operand:V_128_256 3 "nonimmediate_operand" "x,jm")
 	  (match_operand:V_128_256 1 "register_operand" "x,x")
-	  (match_operand:V_128_256 2 "nonimmediate_operand" "xm,x")))]
+	  (match_operand:V_128_256 2 "nonimmediate_operand" "xjm,x")))]
   "TARGET_XOP"
   "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "<sseinsnmode>")])
 
 ;; Recognize XOP's vpcmov from canonical (xor (and (xor t f) c) f)
@@ -27497,7 +27509,7 @@
 	(plus:V8HI
 	 (any_extend:V8HI
 	  (vec_select:V8QI
-	   (match_operand:V16QI 1 "nonimmediate_operand" "xm")
+	   (match_operand:V16QI 1 "nonimmediate_operand" "xjm")
 	   (parallel [(const_int 0) (const_int 2)
 		      (const_int 4) (const_int 6)
 		      (const_int 8) (const_int 10)
@@ -27515,6 +27527,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_phadd<u>bd"
@@ -27523,7 +27536,7 @@
 	 (plus:V4SI
 	  (any_extend:V4SI
 	   (vec_select:V4QI
-	    (match_operand:V16QI 1 "nonimmediate_operand" "xm")
+	    (match_operand:V16QI 1 "nonimmediate_operand" "xjm")
 	    (parallel [(const_int 0) (const_int 4)
 		       (const_int 8) (const_int 12)])))
 	  (any_extend:V4SI
@@ -27548,6 +27561,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_phadd<u>bq"
@@ -27557,7 +27571,7 @@
 	  (plus:V2DI
 	   (any_extend:V2DI
 	    (vec_select:V2QI
-	     (match_operand:V16QI 1 "nonimmediate_operand" "xm")
+	     (match_operand:V16QI 1 "nonimmediate_operand" "xjm")
 	     (parallel [(const_int 0) (const_int 8)])))
 	   (any_extend:V2DI
 	    (vec_select:V2QI
@@ -27597,6 +27611,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_phadd<u>wd"
@@ -27604,7 +27619,7 @@
 	(plus:V4SI
 	 (any_extend:V4SI
 	  (vec_select:V4HI
-	   (match_operand:V8HI 1 "nonimmediate_operand" "xm")
+	   (match_operand:V8HI 1 "nonimmediate_operand" "xjm")
 	   (parallel [(const_int 0) (const_int 2)
 		      (const_int 4) (const_int 6)])))
 	 (any_extend:V4SI
@@ -27618,6 +27633,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_phadd<u>wq"
@@ -27626,7 +27642,7 @@
 	 (plus:V2DI
 	  (any_extend:V2DI
 	   (vec_select:V2HI
-	    (match_operand:V8HI 1 "nonimmediate_operand" "xm")
+	    (match_operand:V8HI 1 "nonimmediate_operand" "xjm")
 	    (parallel [(const_int 0) (const_int 4)])))
 	  (any_extend:V2DI
 	   (vec_select:V2HI
@@ -27647,6 +27663,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_phadd<u>dq"
@@ -27654,7 +27671,7 @@
 	(plus:V2DI
 	 (any_extend:V2DI
 	  (vec_select:V2SI
-	   (match_operand:V4SI 1 "nonimmediate_operand" "xm")
+	   (match_operand:V4SI 1 "nonimmediate_operand" "xjm")
 	   (parallel [(const_int 0) (const_int 2)])))
 	 (any_extend:V2DI
 	  (vec_select:V2SI
@@ -27666,6 +27683,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_phsubbw"
@@ -27673,7 +27691,7 @@
 	(minus:V8HI
 	 (sign_extend:V8HI
 	  (vec_select:V8QI
-	   (match_operand:V16QI 1 "nonimmediate_operand" "xm")
+	   (match_operand:V16QI 1 "nonimmediate_operand" "xjm")
 	   (parallel [(const_int 0) (const_int 2)
 		      (const_int 4) (const_int 6)
 		      (const_int 8) (const_int 10)
@@ -27691,6 +27709,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_phsubwd"
@@ -27698,7 +27717,7 @@
 	(minus:V4SI
 	 (sign_extend:V4SI
 	  (vec_select:V4HI
-	   (match_operand:V8HI 1 "nonimmediate_operand" "xm")
+	   (match_operand:V8HI 1 "nonimmediate_operand" "xjm")
 	   (parallel [(const_int 0) (const_int 2)
 		      (const_int 4) (const_int 6)])))
 	 (sign_extend:V4SI
@@ -27712,6 +27731,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_phsubdq"
@@ -27719,7 +27739,7 @@
 	(minus:V2DI
 	 (sign_extend:V2DI
 	  (vec_select:V2SI
-	   (match_operand:V4SI 1 "nonimmediate_operand" "xm")
+	   (match_operand:V4SI 1 "nonimmediate_operand" "xjm")
 	   (parallel [(const_int 0) (const_int 2)])))
 	 (sign_extend:V2DI
 	  (vec_select:V2SI
@@ -27731,6 +27751,7 @@
    (set_attr "c86_attr" "hplus")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 ;; XOP permute instructions
@@ -27738,12 +27759,13 @@
   [(set (match_operand:V16QI 0 "register_operand" "=x,x")
 	(unspec:V16QI
 	  [(match_operand:V16QI 1 "register_operand" "x,x")
-	   (match_operand:V16QI 2 "nonimmediate_operand" "x,m")
-	   (match_operand:V16QI 3 "nonimmediate_operand" "xm,x")]
+	   (match_operand:V16QI 2 "nonimmediate_operand" "x,jm")
+	   (match_operand:V16QI 3 "nonimmediate_operand" "xjm,x")]
 	  UNSPEC_XOP_PERMUTE))]
   "TARGET_XOP && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vpperm\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 ;; XOP pack instructions that combine two vectors into a smaller vector
@@ -27753,11 +27775,12 @@
 	 (truncate:V2SI
 	  (match_operand:V2DI 1 "register_operand" "x,x"))
 	 (truncate:V2SI
-	  (match_operand:V2DI 2 "nonimmediate_operand" "x,m"))))
-   (use (match_operand:V16QI 3 "nonimmediate_operand" "xm,x"))]
+	  (match_operand:V2DI 2 "nonimmediate_operand" "x,jm"))))
+   (use (match_operand:V16QI 3 "nonimmediate_operand" "xjm,x"))]
   "TARGET_XOP && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vpperm\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_pperm_pack_v4si_v8hi"
@@ -27766,11 +27789,12 @@
 	 (truncate:V4HI
 	  (match_operand:V4SI 1 "register_operand" "x,x"))
 	 (truncate:V4HI
-	  (match_operand:V4SI 2 "nonimmediate_operand" "x,m"))))
-   (use (match_operand:V16QI 3 "nonimmediate_operand" "xm,x"))]
+	  (match_operand:V4SI 2 "nonimmediate_operand" "x,jm"))))
+   (use (match_operand:V16QI 3 "nonimmediate_operand" "xjm,x"))]
   "TARGET_XOP && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vpperm\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_pperm_pack_v8hi_v16qi"
@@ -27779,11 +27803,12 @@
 	 (truncate:V8QI
 	  (match_operand:V8HI 1 "register_operand" "x,x"))
 	 (truncate:V8QI
-	  (match_operand:V8HI 2 "nonimmediate_operand" "x,m"))))
-   (use (match_operand:V16QI 3 "nonimmediate_operand" "xm,x"))]
+	  (match_operand:V8HI 2 "nonimmediate_operand" "x,jm"))))
+   (use (match_operand:V16QI 3 "nonimmediate_operand" "xjm,x"))]
   "TARGET_XOP && !(MEM_P (operands[2]) && MEM_P (operands[3]))"
   "vpperm\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 ;; XOP packed rotate instructions
@@ -27854,7 +27879,7 @@
 (define_insn "xop_rotl<mode>3"
   [(set (match_operand:VI_128 0 "register_operand" "=x")
 	(rotate:VI_128
-	 (match_operand:VI_128 1 "nonimmediate_operand" "xm")
+	 (match_operand:VI_128 1 "nonimmediate_operand" "xjm")
 	 (match_operand:SI 2 "const_0_to_<sserotatemax>_operand")))]
   "TARGET_XOP"
   "vprot<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
@@ -27862,12 +27887,13 @@
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_rotr<mode>3"
   [(set (match_operand:VI_128 0 "register_operand" "=x")
 	(rotatert:VI_128
-	 (match_operand:VI_128 1 "nonimmediate_operand" "xm")
+	 (match_operand:VI_128 1 "nonimmediate_operand" "xjm")
 	 (match_operand:SI 2 "const_0_to_<sserotatemax>_operand")))]
   "TARGET_XOP"
 {
@@ -27879,6 +27905,7 @@
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_expand "vrotr<mode>3"
@@ -27907,10 +27934,10 @@
   [(set (match_operand:VI_128 0 "register_operand" "=x,x")
 	(if_then_else:VI_128
 	 (ge:VI_128
-	  (match_operand:VI_128 2 "nonimmediate_operand" "x,m")
+	  (match_operand:VI_128 2 "nonimmediate_operand" "x,jm")
 	  (const_int 0))
 	 (rotate:VI_128
-	  (match_operand:VI_128 1 "nonimmediate_operand" "xm,x")
+	  (match_operand:VI_128 1 "nonimmediate_operand" "xjm,x")
 	  (match_dup 2))
 	 (rotatert:VI_128
 	  (match_dup 1)
@@ -27920,6 +27947,7 @@
   [(set_attr "type" "sseishft")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 ;; XOP packed shift instructions.
@@ -28144,10 +28172,10 @@
   [(set (match_operand:VI_128 0 "register_operand" "=x,x")
 	(if_then_else:VI_128
 	 (ge:VI_128
-	  (match_operand:VI_128 2 "nonimmediate_operand" "x,m")
+	  (match_operand:VI_128 2 "nonimmediate_operand" "x,jm")
 	  (const_int 0))
 	 (ashift:VI_128
-	  (match_operand:VI_128 1 "nonimmediate_operand" "xm,x")
+	  (match_operand:VI_128 1 "nonimmediate_operand" "xjm,x")
 	  (match_dup 2))
 	 (ashiftrt:VI_128
 	  (match_dup 1)
@@ -28157,16 +28185,17 @@
   [(set_attr "type" "sseishft")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_shl<mode>3"
   [(set (match_operand:VI_128 0 "register_operand" "=x,x")
 	(if_then_else:VI_128
 	 (ge:VI_128
-	  (match_operand:VI_128 2 "nonimmediate_operand" "x,m")
+	  (match_operand:VI_128 2 "nonimmediate_operand" "x,jm")
 	  (const_int 0))
 	 (ashift:VI_128
-	  (match_operand:VI_128 1 "nonimmediate_operand" "xm,x")
+	  (match_operand:VI_128 1 "nonimmediate_operand" "xjm,x")
 	  (match_dup 2))
 	 (lshiftrt:VI_128
 	  (match_dup 1)
@@ -28176,6 +28205,7 @@
   [(set_attr "type" "sseishft")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_expand "<insn><mode>3"
@@ -28320,13 +28350,14 @@
 (define_insn "xop_frcz<mode>2"
   [(set (match_operand:FMAMODE 0 "register_operand" "=x")
 	(unspec:FMAMODE
-	 [(match_operand:FMAMODE 1 "nonimmediate_operand" "xm")]
+	 [(match_operand:FMAMODE 1 "nonimmediate_operand" "xjm")]
 	 UNSPEC_FRCZ))]
   "TARGET_XOP"
   "vfrcz<ssemodesuffix>\t{%1, %0|%0, %1}"
   [(set_attr "type" "ssecvt1")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "xop_vmfrcz<mode>2"
@@ -28344,7 +28375,7 @@
   [(set (match_operand:VF_128 0 "register_operand" "=x")
 	(vec_merge:VF_128
 	  (unspec:VF_128
-	   [(match_operand:VF_128 1 "nonimmediate_operand" "xm")]
+	   [(match_operand:VF_128 1 "nonimmediate_operand" "xjm")]
 	   UNSPEC_FRCZ)
 	  (match_operand:VF_128 2 "const0_operand")
 	  (const_int 1)))]
@@ -28353,26 +28384,29 @@
   [(set_attr "type" "ssecvt1")
    (set_attr "prefix" "vex")
    (set_attr "prefix_extra" "1")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "xop_maskcmp<mode>3"
   [(set (match_operand:VI_128 0 "register_operand" "=x")
 	(match_operator:VI_128 1 "ix86_comparison_int_operator"
 	 [(match_operand:VI_128 2 "register_operand" "x")
-	  (match_operand:VI_128 3 "nonimmediate_operand" "xm")]))]
+	  (match_operand:VI_128 3 "nonimmediate_operand" "xjm")]))]
   "TARGET_XOP"
   "vpcom%Y1<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_maskcmp_uns<mode>3"
   [(set (match_operand:VI_128 0 "register_operand" "=x")
 	(match_operator:VI_128 1 "ix86_comparison_uns_operator"
 	 [(match_operand:VI_128 2 "register_operand" "x")
-	  (match_operand:VI_128 3 "nonimmediate_operand" "xm")]))]
+	  (match_operand:VI_128 3 "nonimmediate_operand" "xjm")]))]
   "TARGET_XOP"
   "vpcom%Y1u<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 ;; Version of pcom*u* that is called from the intrinsics that allows pcomequ*
@@ -28383,11 +28417,12 @@
 	(unspec:VI_128
 	 [(match_operator:VI_128 1 "ix86_comparison_uns_operator"
 	  [(match_operand:VI_128 2 "register_operand" "x")
-	   (match_operand:VI_128 3 "nonimmediate_operand" "xm")])]
+	   (match_operand:VI_128 3 "nonimmediate_operand" "xjm")])]
 	 UNSPEC_XOP_UNSIGNED_CMP))]
   "TARGET_XOP"
   "vpcom%Y1u<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 ;; Pcomtrue and pcomfalse support.  These are useless instructions, but are
@@ -28396,7 +28431,7 @@
   [(set (match_operand:VI_128 0 "register_operand" "=x")
 	(unspec:VI_128
 	  [(match_operand:VI_128 1 "register_operand" "x")
-	   (match_operand:VI_128 2 "nonimmediate_operand" "xm")
+	   (match_operand:VI_128 2 "nonimmediate_operand" "xjm")
 	   (match_operand:SI 3 "const_int_operand")]
 	  UNSPEC_XOP_TRUEFALSE))]
   "TARGET_XOP"
@@ -28406,19 +28441,21 @@
 	  : "vpcomfalse<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}");
 }
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "TI")])
 
 (define_insn "xop_vpermil2<mode>3"
   [(set (match_operand:VF_128_256 0 "register_operand" "=x,x")
 	(unspec:VF_128_256
 	  [(match_operand:VF_128_256 1 "register_operand" "x,x")
-	   (match_operand:VF_128_256 2 "nonimmediate_operand" "x,m")
-	   (match_operand:<sseintvecmode> 3 "nonimmediate_operand" "xm,x")
+	   (match_operand:VF_128_256 2 "nonimmediate_operand" "x,jm")
+	   (match_operand:<sseintvecmode> 3 "nonimmediate_operand" "xjm,x")
 	   (match_operand:SI 4 "const_0_to_3_operand")]
 	  UNSPEC_VPERMIL2))]
   "TARGET_XOP"
   "vpermil2<ssemodesuffix>\t{%4, %3, %2, %1, %0|%0, %1, %2, %3, %4}"
   [(set_attr "type" "sse4arg")
+   (set_attr "addr" "gpr16")
    (set_attr "mode" "<MODE>")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
