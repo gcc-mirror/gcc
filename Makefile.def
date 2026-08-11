@@ -679,7 +679,6 @@ dependencies = { module=configure-target-libphobos; on=configure-target-zlib; };
 dependencies = { module=all-target-libphobos; on=all-target-libbacktrace; };
 dependencies = { module=all-target-libphobos; on=all-target-zlib; };
 dependencies = { module=all-target-libphobos; on=all-target-libatomic; };
-dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgomp; };
 dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v3; };
 dependencies = { module=configure-target-libvtv; on=all-target-libstdc++-v3; };
 dependencies = { module=configure-target-libgrust; on=all-target-libstdc++-v3; };

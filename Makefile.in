@@ -69768,16 +69768,6 @@ all-stagetrain-target-libphobos: maybe-all-stagetrain-target-libatomic
 all-stagefeedback-target-libphobos: maybe-all-stagefeedback-target-libatomic
 all-stageautoprofile-target-libphobos: maybe-all-stageautoprofile-target-libatomic
 all-stageautofeedback-target-libphobos: maybe-all-stageautofeedback-target-libatomic
-configure-target-libstdc++-v3: maybe-configure-target-libgomp
-configure-stage1-target-libstdc++-v3: maybe-configure-stage1-target-libgomp
-configure-stage2-target-libstdc++-v3: maybe-configure-stage2-target-libgomp
-configure-stage3-target-libstdc++-v3: maybe-configure-stage3-target-libgomp
-configure-stage4-target-libstdc++-v3: maybe-configure-stage4-target-libgomp
-configure-stageprofile-target-libstdc++-v3: maybe-configure-stageprofile-target-libgomp
-configure-stagetrain-target-libstdc++-v3: maybe-configure-stagetrain-target-libgomp
-configure-stagefeedback-target-libstdc++-v3: maybe-configure-stagefeedback-target-libgomp
-configure-stageautoprofile-target-libstdc++-v3: maybe-configure-stageautoprofile-target-libgomp
-configure-stageautofeedback-target-libstdc++-v3: maybe-configure-stageautofeedback-target-libgomp
 configure-target-libsanitizer: maybe-all-target-libstdc++-v3
 configure-stage1-target-libsanitizer: maybe-all-stage1-target-libstdc++-v3
 configure-stage2-target-libsanitizer: maybe-all-stage2-target-libstdc++-v3
