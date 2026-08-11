@@ -10724,6 +10724,40 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	}
     }
 
+  /* F2023:C1105 - the selector shall be neither a procedure pointer
+     designator nor a function reference returning a procedure pointer.
+     Note that calling a procedure pointer is fine; what matters here is
+     whether the function result is itself a procedure pointer.  */
+  if (target->expr_type == EXPR_VARIABLE
+      && gfc_expr_attr (target).proc_pointer)
+    {
+      gfc_error ("Associating entity %qs at %L is a procedure pointer",
+		 target->symtree->n.sym->name, &target->where);
+      return;
+    }
+
+  if (target->expr_type == EXPR_FUNCTION)
+    {
+      gfc_symbol *fsym = target->value.function.esym;
+      gfc_symbol *result = NULL;
+
+      if (fsym && fsym->attr.proc_pointer)
+	/* Called through a procedure pointer, whose own result symbol is
+	   itself; the result is described by the interface instead.  */
+	result = fsym->ts.interface ? fsym->ts.interface->result : NULL;
+      else if (fsym)
+	result = fsym->result;
+      else if (target->symtree && target->symtree->n.sym->ts.interface)
+	result = target->symtree->n.sym->ts.interface->result;
+
+      if (result && result->attr.proc_pointer)
+	{
+	  gfc_error ("Selector at %L returns a procedure pointer",
+		     &target->where);
+	  return;
+	}
+    }
+
   /* For variable targets, we get some attributes from the target.  */
   if (target->expr_type == EXPR_VARIABLE
       || (target->expr_type == EXPR_OP
@@ -10734,13 +10768,6 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
       tsym = target->expr_type == EXPR_VARIABLE ? target->symtree->n.sym :
 				  target->value.op.op1->symtree->n.sym;
-
-      if (gfc_expr_attr (target).proc_pointer)
-	{
-	  gfc_error ("Associating entity %qs at %L is a procedure pointer",
-		     tsym->name, &target->where);
-	  return;
-	}
 
       if (tsym->attr.flavor == FL_PROCEDURE && tsym->generic
 	  && (dsym = gfc_find_dt_in_generic (tsym)) != NULL
