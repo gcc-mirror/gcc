@@ -6406,6 +6406,108 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (wi::to_wide (@2) == ~wi::to_wide (@1))
    @3))
 
+/* PR124667: Similar to PR64567 above but with the bit given
+   by an (1 << val) lshift.  Note that this shift pattern
+   guarantees that this is a single bit operation.
+
+   The same pattern, if using '!=' instead of '==', will
+   result in just 'A'.
+
+   (A & (1 << val)) == 0 ? A |= (1 << val) : A => A |= (1 << val)
+   (A & (1 << val)) != 0 ? A |= (1 << val) : A => A;  */
+(for neeq (eq ne)
+ (simplify
+  (cond
+   (neeq (bit_and:c @0 (lshift@1 integer_onep @2)) integer_zerop)
+	 (bit_ior:c@3 @0 @1)
+	 @0)
+    (if (neeq == EQ_EXPR)
+     @3
+     @0))
+
+/* PR124667: NE variant of the previous match with switched true/false
+   legs:
+
+   (A & (1 << val)) != 0 ? A : A |= (1 << val) => A |= (1 << val)
+   (A & (1 << val)) == 0 ? A : A |= (1 << val) => A;  */
+ (simplify
+  (cond
+   (neeq (bit_and:c @0 (lshift@1 integer_onep @2)) integer_zerop)
+	 @0
+	 (bit_ior:c@3 @0 @1))
+    (if (neeq == NE_EXPR)
+     @3
+     @0))
+
+/* PR124667: a bitmask set simplification that is possible as
+   long as the whole bitmask is being checked.  Switching the
+   comparison from '==' to '!=' results in 'A':
+
+   (A & B) == B ? A : A |= B  => A |= B
+   (A & B) != B ? A : A |= B  => A;  */
+ (simplify
+  (cond
+   (neeq:c (bit_and @0 @1) @1)
+	   @0
+	   (bit_ior@2 @0 @1))
+    (if (neeq == EQ_EXPR)
+     @2
+     @0))
+
+/* PR124667: similar from above with true/false legs switched:
+
+   (A & B) != B ? A |= B : A => A | B.
+   (A & B) == B ? A |= B : A => A;  */
+(simplify
+ (cond
+  (neeq:c (bit_and @0 @1) @1)
+	  (bit_ior@2 @0 @1)
+	  @0)
+   (if (neeq == NE_EXPR)
+    @2
+    @0)))
+
+/* PR124667: these also reduces to just "A":
+   ((A >> val) & 1) == 0 ?  A : (A | (1 << val))
+   ((A >> val) & 1) != 0 ?  (A | (1 << val)) : A;
+
+   For both cases the zero_one patterns in lines 4860-4890
+   will turn both into the following 'original':
+
+   intD.7 bitshiftD.4489 = 1 << bitD.4485;
+   arrD.4488 = arrD.4488 >> bitD.4485 & 1) * bitshiftD.4489 | arrD.4488;
+
+   And it'll appear back in phiopt as:
+
+   _1 = arrD.4482;
+   _2 = _1 >> bit_7;
+   _3 = _2 & 1;
+   _4 = _3 << bit_7;
+   _6 = _1 | _4;
+
+   I.e. it'll drop the 'mult' and lshift the zero_one result from the
+   bit check.  The 3 middle stmts can be reduced to:
+
+   _3 = 1 << bit_7;
+   _4 = _1 & _3;
+
+   Resulting in:
+
+   _1 = arrD.4482;
+   _3 = 1 << bit_7;
+   _4 = _1 & _3
+   _6 = _1 | _4;
+
+   Which will reduce to just _1.  Simplifying the middle stmts has the
+   advantage of also benefitting other optimizations as well.  Note
+   that this transformation is valid with all CST masks, not just
+   '1'.  */
+(simplify
+  (lshift
+    (bit_and:c (rshift @0 @1) INTEGER_CST@2)
+     @1)
+  (bit_and @0 (lshift @2 @1)))
+
 #if GIMPLE
 (match (nop_atomic_bit_test_and_p @0 @1 @4)
  (bit_and (convert?@4 (ATOMIC_FETCH_OR_XOR_N @2 INTEGER_CST@0 @3))
