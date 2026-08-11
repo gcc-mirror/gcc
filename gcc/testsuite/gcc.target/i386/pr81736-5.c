@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-omit-frame-pointer -mavx" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 
 typedef int v8si __attribute__ ((vector_size (32)));
 

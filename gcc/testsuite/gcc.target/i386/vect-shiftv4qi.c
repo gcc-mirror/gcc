@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -mno-ssse3 -mtune=generic" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 
 #define N 4
 

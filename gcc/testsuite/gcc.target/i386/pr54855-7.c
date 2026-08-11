@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse -mfpmath=sse" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 /* { dg-final { scan-assembler-times "divss" 1 } } */
 /* { dg-final { scan-assembler-not "movaps" } } */
 /* { dg-final { scan-assembler-not "movss" } } */

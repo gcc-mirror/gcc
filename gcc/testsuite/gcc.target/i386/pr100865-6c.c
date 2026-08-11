@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=skylake -mno-avx2" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 
 extern int array[64];
 

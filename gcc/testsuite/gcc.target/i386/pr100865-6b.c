@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=skylake-avx512" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 
 #include "pr100865-6a.c"
 

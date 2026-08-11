@@ -2,6 +2,7 @@
 /* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -march=pentiumpro" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 
 #define regparm __attribute__((__regparm__(1)))
 

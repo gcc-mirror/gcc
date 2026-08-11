@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=skylake" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 
 extern long long int array[64];
 

@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=x86-64" } */
 /* { dg-additional-options "-fno-PIE" { target ia32 } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { *-*-darwin* && ia32 } } } */
 
 extern char *dst;
 
