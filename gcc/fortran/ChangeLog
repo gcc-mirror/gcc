@@ -1,3 +1,9 @@
+2026-08-10  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/102333
+	* decl.cc (match_procedure_decl): Diagnose the PROCEDURE and
+	ALLOCATABLE conflict before creating a hidden result.
+
 2026-08-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/98573

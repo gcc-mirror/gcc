@@ -1,3 +1,18 @@
+2026-08-10  Robert Dubner  <rdubner@symas.com>
+
+	* gcobol.1: Documentation
+	* genapi.cc (create_cblc_string_variable): Use new vs_global enum
+	instead of old vs_external.
+	(SET_VAR_DECL): Use new vs_extern instead of vs_external_reference.
+	(parser_division): Likewise.
+	(parser_file_add): Use vs_weak instead of vs_external.
+	(psa_global): Likewise.
+	(psa_new_var_decl): Likewise; Use new naming convention.
+	(parser_symbol_add): Use vs_common instead of vs_external.
+	* gengen.cc (gg_declare_variable): Clean up VAR_DECL attibute
+	assignments; use new variable_scope constants.
+	* gengen.h (enum gg_variable_scope_t): Update the enum constants.
+
 2026-08-07  Robert Dubner  <rdubner@symas.com>
 	    James K. Lowden  <jklowden@cobolworx.com>
 

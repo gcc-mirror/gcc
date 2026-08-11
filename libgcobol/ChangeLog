@@ -1,3 +1,9 @@
+2026-08-10  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (enum cbl_field_attr_t): Update comments.
+	* libgcobol.cc (init_var_both): Modify how EXTERNAL variables are
+	initialized.
+
 2026-08-07  Robert Dubner  <rdubner@symas.com>
 	    James K. Lowden  <jklowden@cobolworx.com>
 

@@ -1,3 +1,78 @@
+2026-08-10  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/INITIALIZE_EXTERNAL_data_items_with_VALUE.cob: New test.
+	* cobol.dg/group2/INITIALIZE_EXTERNAL_data_items_with_VALUE.out: New test.
+
+2026-08-10  Tudor-Stefan Magirescu  <tudor.magirescu@gmail.com>
+
+	* gcc.c-torture/execute/subcmp-1.c: New test.
+	* gcc.dg/tree-ssa/subcmp-1.c: New test.
+
+2026-08-10  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* gcc.target/i386/visibility-hidden-mingw.c: New test.
+	* gcc.target/i386/visibility-hidden-mingw-32.c: New test.
+
+2026-08-10  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-c++-common/gomp/scan-8.c: New test.
+	* c-c++-common/gomp/scan-9.c: New test.
+
+2026-08-10  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126103
+	* gcc.dg/tree-ssa/dom-jump-threading-1.c: New test.
+	* gcc.dg/tree-ssa/dom-jump-threading-2.c: New test.
+
+2026-08-10  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/124629
+	* gcc.target/aarch64/cpunative/info_36: New test file.
+	* gcc.target/aarch64/cpunative/native_cpu_36.c: New test.
+
+2026-08-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126701
+	* gcc.dg/pr126701.c: New test.
+
+2026-08-10  Josef Melcr  <josef.melcr@suse.com>
+
+	PR testsuite/126708
+	* gcc.dg/attr-callback.c: Expect warnings instead of errors,
+	adjust expected messages.
+
+2026-08-10  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/102333
+	* gfortran.dg/pr102333_2.f90: New test.
+
+2026-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126658
+	* gcc.dg/torture/pr126658.c: New testcase.
+
+2026-08-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/shift-drops-bitop-1.c: New test.
+	* gcc.dg/tree-ssa/shift-drops-bitop-2.c: Likewise.
+
+2026-08-10  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/126513
+	* gcc.target/powerpc/pr126513-acmp-tst-1.c: New test.
+	* gcc.target/powerpc/pr126513-acmp-tst-2.c: New test.
+	* gcc.target/powerpc/pr126513-acmp-tst-3.c: New test.
+
+2026-08-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-zextw-2.c: Expect the ZEXTW dump name.
+	* gcc.target/riscv/fusion-zextw.c: Likewise.
+
+2026-08-10  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/125735
+	* gcc.dg/pr125735.c: New test.
+
 2026-08-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/111959

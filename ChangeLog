@@ -1,3 +1,13 @@
+2026-08-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* MAINTAINERS.yml (Burnus): Add private email as
+	additional active email.
+
+2026-08-10  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	* MAINTAINERS.yml: Add myself.
+	* MAINTAINERS: Regenerate.
+
 2026-08-07  Michael Meissner  <meissner@linux.ibm.com>
 
 	* MAINTAINERS.yml: Update Michael Meissner's information.

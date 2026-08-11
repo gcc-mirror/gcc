@@ -1,3 +1,11 @@
+2026-08-10  Josef Melcr  <josef.melcr@suse.com>
+
+	PR testsuite/126708
+	* c-attribs.cc (handle_callback_only_attribute): Use
+	positional_argument for bounds checking in callback_only
+	attribute handler, downgrade errors to warnings for
+	consistency.
+
 2026-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-cppbuiltin.cc (c_cpp_builtins): Change

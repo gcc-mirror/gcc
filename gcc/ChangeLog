@@ -1,3 +1,124 @@
+2026-08-10  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	* wide-int.cc (canonize): Use return 1 instead of return len.
+
+2026-08-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*movbehi2): New insn, split from the
+	movbe alternatives of *bswaphi2_movbe.
+	(*bswaphi2_movbe): Convert to define_insn_and_split.  Split
+	the MOVBE alternatives (mem<->reg) post-reload into *movbehi2
+	to drop the now-unneeded flags clobber.
+
+2026-08-10  Tudor-Stefan Magirescu  <tudor.magirescu@gmail.com>
+
+	* match.pd (((X CMP1 Y) - (X CMP2 Y)) REL 0): New pattern.
+
+2026-08-10  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* config/mingw/winnt.cc (i386_pe_drectve_name): New.
+	(i386_pe_assemble_visibility): Emit -exclude-symbols
+	directives into .drectve for VISIBILITY_HIDDEN and
+	VISIBILITY_INTERNAL instead of warning.  Use the external
+	symbol spelling for 32-bit PE names.
+
+2026-08-10  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* omp-expand.cc (expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk): Adjust calls to OMPT variants with
+	GOMP_loop_end.
+
+2026-08-10  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126103
+	* doc/params.texi (dom-jump-threading): Document.
+	* params.opt (-param=dom-jump-threading=): New.
+	* tree-ssa-dom.cc (dom_opt_dom_walker::after_dom_children): Honor
+	param_dom_jump_threading.
+
+2026-08-10  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Binaries): Remove reference to OpenPKG.
+
+2026-08-10  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/124629
+	* config/aarch64/driver-aarch64.cc (AARCH64_ARCH):
+	Don't skip first character of #ARCH_IDENT.
+
+2026-08-10  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(aarch64_get_extension_string_for_isa_flags): Check isa_flags.
+	* config/aarch64/aarch64-option-extensions.def
+	(CRYPTO, SVE2_AES, SVE2_BITPERM, SVE2_SHA3, SVE2_SM4): Remove
+	cpuinfo feature string.
+
+2026-08-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* pair-fusion.cc (pair_fusion_bb_info::fuse_pair): Check that the
+	two arms of the pair are one access size apart.
+
+2026-08-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126701
+	* cfgexpand.cc (verify_partition_mem_exprs): Document when it may
+	be called.
+	(pass_expand::execute): Call it after the RTL of PARM_DECL and
+	RESULT_DECL default definitions is restored.
+	* tree-outof-ssa.cc (split_overlapping_partition_decls): Note the
+	variable a partition of a parameter or result default definition
+	ends up with.
+
+2026-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126658
+	* gimple.cc (check_loadstore): Restrict TARGET_MEM_REF
+	handling.
+	* gimple-ssa-isolate-paths.cc (check_loadstore): Likewise.
+	* gimple-range-infer.cc (non_null_loadstore): Likewise.
+
+2026-08-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd ((X | Y) >> C, (X ^ Y) >> C): New simplification.
+
+2026-08-10  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/126513
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Allocate reg
+	if target is null or const0_rtx.
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin): Add
+	error handling for c1, c2 and c3 described in this commit.
+
+2026-08-10  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_zext_common): New function.
+	(riscv_fuse_zextw): Likewise.
+	(riscv_fuse_zextws): Use riscv_fuse_zext_common and document RTL
+	relationships and constraints.
+	(riscv_fuse_zexth): Use riscv_fuse_zext_common.
+	(riscv_fuse_ldindexed): Document RTL relationships and constraints.
+	(riscv_fuse_expanded_ld): Likewise.
+	(riscv_fuse_ldpreincrement): Likewise.
+	(riscv_fuse_lui_addi): Likewise.
+	(riscv_fuse_auipc_addi): Likewise.
+	(riscv_fuse_lui_ld): Likewise.
+	(riscv_fuse_auipc_ld): Likewise.
+	(riscv_fuse_cache_aligned_std): Likewise.
+	(riscv_fuse_aligned_std): Likewise.
+	(riscv_fuse_bfext): Likewise.
+	(riscv_fuse_b_alui): Likewise.
+	(riscv_fusion_entry::op): Rename from op_flags and use an enum.
+	(riscv_fusion_table): Split ZEXTW and ZEXTWS entries.
+	(riscv_macro_fusion_pair_p): Use riscv_fusion_enabled_p and print
+	instruction UIDs.
+
+2026-08-10  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/125735
+	* match.pd: 1 / X -> X == 1 for positive X.
+
 2026-08-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/111959
