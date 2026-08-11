@@ -46,6 +46,26 @@ endif
 SUBDIRS = c++98 c++11 c++17 c++20 c++23 c++26 \
 	$(filesystem_dir) $(backtrace_dir) $(experimental_dir)
 
+# automake walks SUBDIRS with a shell loop, so the source directories are
+# built strictly one after another however large -j is.  They are independent
+# of each other apart from the convenience archives that src/experimental
+# links, so build them from make instead and let it overlap them.  automake's
+# own loop still runs afterwards, where it finds everything already built and
+# costs nothing, and the recursion for install, clean and the rest is
+# untouched.
+all-recursive: all-parallel-subdirs
+
+all-parallel-subdirs: $(SUBDIRS:%=all-in-%)
+
+all-in-%:
+	$(MAKE) $(AM_MAKEFLAGS) -C $* all
+
+# src/experimental links the convenience archives of these directories.
+all-in-experimental: all-in-c++23 all-in-c++26 \
+	$(filesystem_dir:%=all-in-%) $(backtrace_dir:%=all-in-%)
+
+.PHONY: all-parallel-subdirs
+
 # Cross compiler support.
 if VTV_CYGMIN
 toolexeclib_LTLIBRARIES = libvtv.la libstdc++.la

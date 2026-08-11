@@ -1020,6 +1020,26 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .PRECIOUS: Makefile
 
 
+# automake walks SUBDIRS with a shell loop, so the source directories are
+# built strictly one after another however large -j is.  They are independent
+# of each other apart from the convenience archives that src/experimental
+# links, so build them from make instead and let it overlap them.  automake's
+# own loop still runs afterwards, where it finds everything already built and
+# costs nothing, and the recursion for install, clean and the rest is
+# untouched.
+all-recursive: all-parallel-subdirs
+
+all-parallel-subdirs: $(SUBDIRS:%=all-in-%)
+
+all-in-%:
+	$(MAKE) $(AM_MAKEFLAGS) -C $* all
+
+# src/experimental links the convenience archives of these directories.
+all-in-experimental: all-in-c++23 all-in-c++26 \
+	$(filesystem_dir:%=all-in-%) $(backtrace_dir:%=all-in-%)
+
+.PHONY: all-parallel-subdirs
+
 @VTV_CYGMIN_TRUE@vtv_stubs.cc:
 @VTV_CYGMIN_TRUE@	rm -f $@
 @VTV_CYGMIN_TRUE@	$(LN_S) $(toplevel_srcdir)/libstdc++-v3/libsupc++/vtv_stubs.cc $@

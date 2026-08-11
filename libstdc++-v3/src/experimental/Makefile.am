@@ -51,6 +51,8 @@ contract26.o: contract26.cc
 
 libstdc__exp_la_SOURCES = $(sources)
 
+## Keep these lists sync'd with src/Makefile.am:all-in-experimental, which
+## builds those directories before this one links their archives.
 libstdc__exp_la_LIBADD = \
 	$(top_builddir)/src/c++23/libc++23convenience.la \
 	$(top_builddir)/src/c++26/libc++26convenience.la \
