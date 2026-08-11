@@ -11288,6 +11288,9 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	/* Don't add a TARGET_EXPR if our argument didn't have one.  */;
       else if (TREE_CODE (t) == TARGET_EXPR && TARGET_EXPR_CLEANUP (t))
 	r = get_target_expr (r);
+      else if (processing_template_decl)
+	/* Don't insert TARGET_EXPR in template trees.  */
+	return r;
       else
 	{
 	  r = get_target_expr (r, tf_warning_or_error | tf_no_cleanup);
