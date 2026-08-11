@@ -29809,6 +29809,16 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
 	|| op_mode == SFmode || op_mode == DFmode))
    return NULL_RTX;
 
+  /* A conditional comparison does not compare its operands when the preceding
+     condition is false, so it cannot raise the exception that the comparison
+     it replaces would raise.  CCFPE marks a comparison that raises Invalid for
+     a quiet NaN, and every comparison raises it for a signalling NaN.  Reject
+     it here, before the operands are expanded.  */
+  if (FLOAT_MODE_P (op_mode)
+      && (aarch64_fp_cc_mode (cmp_code, op_mode) == CCFPEmode
+	  || HONOR_SNANS (op_mode)))
+    return NULL_RTX;
+
   push_to_sequence (*prep_seq);
   expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
 

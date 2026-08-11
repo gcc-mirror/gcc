@@ -12623,6 +12623,9 @@ This function prepares to emit a conditional comparison within a sequence
  or @code{gen_ccmp_next}.  It may return @code{NULL} if the combination of
  @var{prev} and this comparison is not supported, otherwise the result must
  be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.
+ The comparison is not performed when @var{prev} is false, so this function
+ has to return @code{NULL} for a comparison that raises an exception which
+ has to be preserved.
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.
 @end deftypefn

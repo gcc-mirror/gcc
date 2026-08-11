@@ -2843,6 +2843,9 @@ DEFHOOK
  or @code{gen_ccmp_next}.  It may return @code{NULL} if the combination of\n\
  @var{prev} and this comparison is not supported, otherwise the result must\n\
  be appropriate for passing to @code{gen_ccmp_next} or @code{cbranch_optab}.\n\
+ The comparison is not performed when @var{prev} is false, so this function\n\
+ has to return @code{NULL} for a comparison that raises an exception which\n\
+ has to be preserved.\n\
  @var{code} is the @code{rtx_code} of the compare for @var{op0} and @var{op1}.\n\
  @var{bit_code} is @code{AND} or @code{IOR}, which is the op on the compares.",
  rtx, (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev, rtx_code cmp_code, tree op0, tree op1, rtx_code bit_code),
