@@ -112,6 +112,7 @@ private:
   edge find_taken_edge (const vec<basic_block> &path);
   edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
   edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
+  edge find_taken_edge_goto (const vec<basic_block> &path, ggoto *);
   virtual void debug ();
   virtual void dump (FILE *out);
 
@@ -280,9 +281,42 @@ back_threader::find_taken_edge (const vec<basic_block> &path)
     case GIMPLE_SWITCH:
       return find_taken_edge_switch (path, as_a<gswitch *> (m_last_stmt));
 
+    case GIMPLE_GOTO:
+      return find_taken_edge_goto (path, as_a<ggoto *> (m_last_stmt));
+
     default:
       return NULL;
     }
+}
+
+// Same as find_taken_edge, but for paths ending in a computed goto.
+
+edge
+back_threader::find_taken_edge_goto (const vec<basic_block> &path,
+				     ggoto *stmt)
+{
+  tree dest = gimple_goto_dest (stmt);
+
+  if (TREE_CODE (dest) == SSA_NAME)
+    {
+      prange r;
+      path_range_query solver (*m_ranger, path, m_imports,
+			       m_flags & BT_RESOLVE);
+      if (!solver.range_of_expr (r, dest, stmt))
+	return NULL;
+
+      if (r.undefined_p ())
+	return UNREACHABLE_EDGE;
+
+      dest = r.pt_invariant ();
+      if (!dest)
+	return NULL;
+    }
+
+  // For a destination that did not resolve to a label,
+  // ::find_taken_edge at most returns the block's single successor,
+  // the only place it could go.
+  return ::find_taken_edge (gimple_bb (stmt), dest);
 }
 
 // Same as find_taken_edge, but for paths ending in a switch.
@@ -515,7 +549,8 @@ back_threader::maybe_thread_block (basic_block bb)
 
   enum gimple_code code = gimple_code (stmt);
   if (code != GIMPLE_SWITCH
-      && code != GIMPLE_COND)
+      && code != GIMPLE_COND
+      && code != GIMPLE_GOTO)
     return;
 
   m_last_stmt = stmt;
