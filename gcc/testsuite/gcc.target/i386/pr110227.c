@@ -1,5 +1,6 @@
 /* { dg-do assemble { target { ! ia32 } } } */
 /* { dg-options " -O2 -mavx512vl" } */
+/* { dg-require-effective-target avx512vl } */
 
 #include <immintrin.h>
 

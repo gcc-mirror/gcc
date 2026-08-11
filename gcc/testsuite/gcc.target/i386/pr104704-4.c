@@ -1,5 +1,6 @@
 /* { dg-do run { target { ! ia32 } } } */
 /* { dg-options "-O2 -march=x86-64 -mavx512f" } */
+/* { dg-require-effective-target avx512f } */
 
 #include <immintrin.h>
 

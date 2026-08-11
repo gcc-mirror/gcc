@@ -8,6 +8,7 @@
    This testcase ensures that we do not crash due to that behaviour.  */
 /* { dg-do run } */
 /* { dg-options "-std=gnu17 -O2 -ftree-vectorize -fno-vect-cost-model --param vect-partial-vector-usage=2 -mavx512bw -mprefer-vector-width=512" } */
+/* { dg-require-effective-target avx512bw } */
 /* { dg-require-effective-target mmap } */
 #include <sys/mman.h>
 #include <stdio.h>

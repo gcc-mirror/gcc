@@ -1,6 +1,7 @@
 /* PR target/95524 */
 /* { dg-do run } */
 /* { dg-options "-O2 -mavx512bw -Wno-shift-count-overflow" } */
+/* { dg-require-effective-target avx512bw } */
 
 #ifndef CHECK
 #define CHECK "avx512bw-check.h"
