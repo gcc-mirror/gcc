@@ -157,6 +157,7 @@ endif
 ###
 
 conv_XY=$(conv)$(mode1)$(mode2)
+conv_YX=$(conv)$(mode2)$(mode1)
 func_X=$(func)$(mode)
 
 # Compile C functions from lib2funcs.c and add them to libgcc.a.
@@ -285,22 +286,28 @@ LIB2FUNCS_EXCLUDE += \
 	$(foreach mode,$(usat_modes),$(func_X)))
 
 
-smul_modes =  QQ  HQ  HA  SA
-umul_modes = UQQ UHQ UHA USA
-sdiv_modes =  QQ  HQ  HA  SA
-udiv_modes = UQQ UHQ UHA USA
+smul_modes =  QQ  HQ  HA  SA  DA  DQ  TA
+umul_modes = UQQ UHQ UHA USA UDA UDQ UTA
+sdiv_modes =  QQ  HQ  HA  SA  DA  DQ  TA
+udiv_modes = UQQ UHQ UHA USA UDA UDQ UTA
 
 LIB2FUNCS_EXCLUDE += \
-	$(foreach func,_mul,\
+	$(foreach func,_mul _mulhelper,\
 	$(foreach mode,$(smul_modes) $(umul_modes),$(func_X)))
 
 LIB2FUNCS_EXCLUDE += \
-	$(foreach func,_div,\
-	$(foreach mode,$(sdiv_modes) $(udiv_modes),$(func_X)))
+	$(foreach func,_div _divhelper,\
+	$(foreach mode,$(sdiv_modes),$(func_X)))
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_udiv,\
+	$(foreach mode,$(udiv_modes),$(func_X)))
 
 
-ssmul_modes =  HA  SA
-usmul_modes = UHA USA
+ssmul_modes =  HA  SA  DA  DQ  TA
+usmul_modes = UHA USA UDA UDQ UTA
+ssdiv_modes =  DA  DQ  TA
+usdiv_modes = UDA UDQ UTA
 
 LIB2FUNCS_EXCLUDE += \
 	$(foreach func,_usmul,\
@@ -309,3 +316,28 @@ LIB2FUNCS_EXCLUDE += \
 LIB2FUNCS_EXCLUDE += \
 	$(foreach func,_ssmul,\
 	$(foreach mode,$(ssmul_modes),$(func_X)))
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_usdiv,\
+	$(foreach mode,$(usdiv_modes),$(func_X)))
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_ssdiv,\
+	$(foreach mode,$(ssdiv_modes),$(func_X)))
+
+# Remove modes we don't support.
+
+dont_modes = TQ UTQ TI UTI DF
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach conv,_satfract _satfractuns _fract,\
+	$(foreach mode1,$(dont_modes),\
+	$(foreach mode2,$(convf_modes) SF DF,$(conv_XY) $(conv_YX))))
+
+dont_func  = _mul _mulhelper _ssmul _usmul
+dont_func += _div _divhelper _ssdiv _usdiv _udiv
+dont_func += _saturate1 _saturate2 _ssashl _usashl _ashlhelper _neg
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,$(dont_func),\
+	$(foreach mode,$(dont_modes),$(func_X)))
