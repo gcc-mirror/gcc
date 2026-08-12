@@ -11264,7 +11264,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	 runtime helpers to avoid compile-time infinite recursion.  Generate
 	 a call to _gfortran_cfi_deep_copy_array with an element copy
 	 wrapper.  When inside a wrapper, reuse current_function_decl.  */
-      else if (c->attr.allocatable && c->as && cmp_has_alloc_comps && same_type
+      else if (c->attr.allocatable && cmp_has_alloc_comps && same_type
 	       && purpose == COPY_ALLOC_COMP && !c->attr.proc_pointer
 	       && !c->attr.codimension && !caf_in_coarray (caf_mode)
 	       && c->ts.type == BT_DERIVED && c->ts.u.derived != NULL)
@@ -11282,6 +11282,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		elem_type = gfc_get_element_type (ctype);
 	      else if (TREE_CODE (ctype) == ARRAY_TYPE)
 		elem_type = TREE_TYPE (ctype);
+	      else if (!c->as)
+		elem_type = TREE_TYPE (TREE_TYPE (comp));
 
 	      helper_ptr_type = get_copy_helper_pointer_type ();
 
@@ -11302,16 +11304,31 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 						   purpose, caf_mode);
 	      copy_wrapper = fold_convert (helper_ptr_type, copy_wrapper);
 
-	      /* Build addresses of descriptors.  */
-	      dest_addr = gfc_build_addr_expr (pvoid_type_node, dcmp);
-	      src_addr = gfc_build_addr_expr (pvoid_type_node, comp);
+	      if (c->as)
+		{
+		  /* Build addresses of descriptors.  */
+		  dest_addr = gfc_build_addr_expr (pvoid_type_node, dcmp);
+		  src_addr = gfc_build_addr_expr (pvoid_type_node, comp);
+		}
+	      else
+		{
+		  /* For scalars, create separate descriptors for source and
+		     dest, then pass their addresses.  */
+		  gfc_se se;
+		  gfc_init_se (&se, NULL);
+		  tmp = gfc_conv_scalar_to_descriptor (&se, dcmp, c->attr);
+		  dest_addr = gfc_build_addr_expr (pvoid_type_node, tmp);
+		  tmp = gfc_conv_scalar_to_descriptor (&se, comp, c->attr);
+		  src_addr = gfc_build_addr_expr (pvoid_type_node, tmp);
+		  gfc_add_block_to_block (&fnblock, &se.pre);
+		}
 
-	      /* Build call: _gfortran_cfi_deep_copy_array (&dcmp, &comp,
-		 wrapper).  */
+	      /* Build call: _gfortran_cfi_deep_copy_array (&dcmp, &comp, wrapper).  */
 	      call = build_call_expr_loc (input_location,
 					  gfor_fndecl_cfi_deep_copy_array, 3,
 					  dest_addr, src_addr,
 					  copy_wrapper);
+
 	      gfc_add_expr_to_block (&fnblock, call);
 	    }
 	  /* For allocatable arrays with nested allocatable components,
