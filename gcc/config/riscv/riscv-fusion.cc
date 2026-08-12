@@ -1067,6 +1067,47 @@ riscv_fuse_add_mem_p (rtx_insn *prev, rtx_insn *curr,
   return true;
 }
 
+/* Match an in-place ADDI-type update and a scalar load or store with the
+   same base register.  LOAD_P selects loads rather than stores, and
+   PREINDEX_P selects whether the update precedes the memory instruction.
+   The memory offset is independent of the update amount.  Loads may
+   overwrite the base register.  */
+
+static bool
+riscv_fuse_indexed_mem_p (rtx_insn *prev, rtx_insn *curr,
+			  bool load_p, bool preindex_p)
+{
+  rtx prev_set, curr_set;
+  if (!riscv_fuse_sets_p (prev, curr, &prev_set, &curr_set))
+    return false;
+
+  rtx_insn *update_insn = preindex_p ? prev : curr;
+  rtx_insn *mem_insn = preindex_p ? curr : prev;
+  rtx update_set = preindex_p ? prev_set : curr_set;
+  rtx update_dest = SET_DEST (update_set);
+  rtx update_base = NULL_RTX;
+  struct riscv_fusion_mem_info mem;
+
+  if (!riscv_insn_is_addi_type_p (update_insn, false, &update_base)
+      || update_base == NULL_RTX
+      || !riscv_fuse_mem_p (mem_insn, &mem)
+      || (load_p
+	  ? mem.type == SCHED_FUSION_ST
+	  : mem.type != SCHED_FUSION_ST)
+      || !(mem.addr.type == ADDRESS_REG
+	   || mem.addr.type == ADDRESS_LO_SUM)
+      || riscv_regno (update_dest) == INVALID_REGNUM
+      || !riscv_fuse_same_reg_p (update_base, update_dest)
+      || !riscv_fuse_same_reg_p (mem.addr.reg, update_dest))
+    return false;
+
+  if (load_p)
+    return true;
+
+  /* A multi-register store must not overlap the updated base.  */
+  return !reg_overlap_mentioned_p (update_dest, mem.reg);
+}
+
 /* Check two parsed accesses in their proposed execution order against RULE.
    The caller selects enabled rules and checks the scheduling phase.  Pair
    formation must separately prove that moving the accesses is safe.  */
@@ -1285,36 +1326,25 @@ riscv_fuse_expanded_ld (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_LDPREINCREMENT fusion.
-   prev (addi) == (set (reg rd1)
-		       (plus (reg rd1) (const_int offset)))
-   curr (load) == (set (reg rd2) (mem (reg rd1)))
+   prev (one of the following):
+     (addi) == (set (reg rd1) (plus (reg rd1) (const_int imm12)))
+     (self-mv) == (set (reg rd1) (reg rd1))
+     (addi) == (set (reg rd1) (lo_sum (reg rd1) symbol1))
+   curr (one of the following):
+     (load) == (set (reg rd2) (mem addr))
+     (load) == (set (reg rd2) (any_extend (mem addr)))
+     (fpload) == (set (reg frd) (mem addr))
+   addr (one of the following):
+     (rd1, offset)
+     (lo_sum (reg rd1) symbol2)
 
    Constraints:
-     rd1 == rd2.  */
+     the ADDI-type instruction is not a word form.  */
 
 static bool
 riscv_fuse_ldpreincrement (rtx_insn *prev, rtx_insn *curr)
 {
-  rtx prev_set = single_set (prev);
-  rtx curr_set = single_set (curr);
-  if (!prev_set || !curr_set || any_condjump_p (curr))
-    return false;
-
-  if (!riscv_fuse_same_dest_p (prev_set, curr_set))
-    return false;
-
-  if (MEM_P (SET_SRC (curr_set))
-      && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
-      && REG_P (XEXP (SET_SRC (curr_set), 0))
-      && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO (SET_DEST (prev_set))
-      && GET_CODE (SET_SRC (prev_set)) == PLUS
-      && REG_P (XEXP (SET_SRC (prev_set), 0))
-      && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
-      && riscv_fuse_same_reg_p (XEXP (SET_SRC (prev_set), 0),
-				SET_DEST (prev_set)))
-    return true;
-
-  return false;
+  return riscv_fuse_indexed_mem_p (prev, curr, true, true);
 }
 
 /* Check for RISCV_FUSE_LUI_ADDI fusion.
