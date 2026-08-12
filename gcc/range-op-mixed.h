@@ -849,6 +849,7 @@ public:
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation_effect;
   using range_operator::update_bitmask;
 
   bool fold_range (prange &r, tree type,
@@ -861,6 +862,11 @@ public:
   bool op2_range (irange &r, tree type,
 		  const irange &lhs, const irange &op1,
 		  relation_trio rel = TRIO_VARYING) const override;
+  bool op1_op2_relation_effect (irange &lhs_range,
+				tree type,
+				const irange &op1_range,
+				const irange &op2_range,
+				relation_kind rel) const final override;
   void update_bitmask (irange &r, const irange &lh,
 		       const irange &rh) const override;
   // Check compatibility of all operands.

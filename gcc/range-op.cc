@@ -4103,6 +4103,31 @@ operator_bitwise_or::wi_fold (irange &r, tree type,
 }
 
 bool
+operator_bitwise_or::op1_op2_relation_effect (irange &lhs_range,
+					      tree type,
+					      const irange &,
+					      const irange &,
+					      relation_kind rel) const
+{
+  if (rel == VREL_VARYING)
+    return false;
+
+  int_range<2> rel_range;
+
+  switch (rel)
+    {
+    case VREL_NE:
+      rel_range.set_nonzero (type);
+      break;
+    default:
+      return false;
+    }
+
+  lhs_range.intersect (rel_range);
+  return true;
+}
+
+bool
 operator_bitwise_or::op1_range (irange &r, tree type,
 				const irange &lhs,
 				const irange &op2,
