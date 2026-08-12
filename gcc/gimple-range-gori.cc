@@ -1681,7 +1681,7 @@ gori_on_edge (ssa_cache &r, edge e, range_query *q)
 
 bool
 gori_name_helper (vrange &r, tree name, vrange &lhs, gimple *stmt,
-		  range_query *q)
+		  range_query *q, int depth = 0)
 {
   struct gori_stmt_info si(lhs, stmt, q);
   if (!si)
@@ -1691,6 +1691,11 @@ gori_name_helper (vrange &r, tree name, vrange &lhs, gimple *stmt,
     return si.calc_op1 (r, lhs, si.op2_range);
   if (si.ssa2 == name)
     return si.calc_op2 (r, lhs, si.op1_range);
+
+  // Limit the exponential growth via the logical depth limit.
+  if (si.ssa1 && si.ssa2)
+    if (++depth >= param_ranger_logical_depth)
+      return false;
 
   value_range tmp;
   // Now evaluate operand ranges, and set them in the edge cache.
@@ -1703,7 +1708,7 @@ gori_name_helper (vrange &r, tree name, vrange &lhs, gimple *stmt,
       gimple *src = SSA_NAME_DEF_STMT (si.ssa1);
       // If definition is in the same basic block, evaluate it.
       if (src && gimple_bb (src) == gimple_bb (stmt))
-	if (gori_name_helper (r, name, si.op1_range, src, q))
+	if (gori_name_helper (r, name, si.op1_range, src, q, depth))
 	  return true;
     }
 
@@ -1714,7 +1719,7 @@ gori_name_helper (vrange &r, tree name, vrange &lhs, gimple *stmt,
 	si.op2_range.intersect (tmp);
       gimple *src = SSA_NAME_DEF_STMT (si.ssa2);
       if (src && gimple_bb (src) == gimple_bb (stmt))
-	if (gori_name_helper (r, name, si.op2_range, src, q))
+	if (gori_name_helper (r, name, si.op2_range, src, q, depth))
 	  return true;
     }
   return false;
