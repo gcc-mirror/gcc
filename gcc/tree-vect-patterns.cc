@@ -2570,12 +2570,30 @@ vect_recog_widen_sum_pattern (vec_info *vinfo,
 
   vect_pattern_detected ("vect_recog_widen_sum_pattern", last_stmt);
 
-  if (!vect_supportable_conv_optab_p (vinfo, type, WIDEN_SUM_EXPR,
-				      unprom0.type, type_out))
-    return NULL;
+  /* If the exact input type is not supported, widen it to an intermediate
+     type before adding it to the accumulator.  Start with the narrowest
+     type in order to retain the largest vectorization factor.  */
+  tree input_type = unprom0.type;
+  tree input_vectype = NULL_TREE;
+
+  while (!vect_supportable_conv_optab_p (vinfo, type, WIDEN_SUM_EXPR,
+					 input_type, type_out, &input_vectype))
+    {
+      unsigned int precision
+	= vect_element_precision (TYPE_PRECISION (input_type) + 1);
+
+      if (precision > TYPE_PRECISION (type) / 2)
+	return NULL;
+
+      input_type = build_nonstandard_integer_type
+	(precision, TYPE_UNSIGNED (unprom0.type));
+    }
+
+  tree input = vect_convert_input (vinfo, stmt_vinfo, input_type, &unprom0,
+				   input_vectype);
 
   var = vect_recog_temp_ssa_var (type, NULL);
-  pattern_stmt = gimple_build_assign (var, WIDEN_SUM_EXPR, unprom0.op, oprnd1);
+  pattern_stmt = gimple_build_assign (var, WIDEN_SUM_EXPR, input, oprnd1);
 
   return pattern_stmt;
 }
