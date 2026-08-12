@@ -3964,18 +3964,6 @@ arith_overflow_check_p (gimple *stmt, gimple *cast_stmt, gimple *&use_stmt,
 	  crhs1 = gimple_assign_rhs1 (cur_use_stmt);
 	  crhs2 = gimple_assign_rhs2 (cur_use_stmt);
 	}
-      else if (gimple_assign_rhs_code (cur_use_stmt) == COND_EXPR)
-	{
-	  tree cond = gimple_assign_rhs1 (cur_use_stmt);
-	  if (COMPARISON_CLASS_P (cond))
-	    {
-	      ccode = TREE_CODE (cond);
-	      crhs1 = TREE_OPERAND (cond, 0);
-	      crhs2 = TREE_OPERAND (cond, 1);
-	    }
-	  else
-	    return 0;
-	}
       else
 	return 0;
     }
