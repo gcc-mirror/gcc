@@ -190,9 +190,13 @@ proc gm2_target_compile_default { source dest type options } {
     if [istarget "powerpc-*-*"] {
        lappend options "-mabi=ieeelongdouble"
     }
+    if [check_effective_target_pie] {
+       lappend options "additional_flags=-fPIE"
+    }
 
-    lappend options "timeout=[timeout_value]"
     lappend options "compiler=$GCC_UNDER_TEST"
+    lappend options "timeout=[timeout_value]"    
+
     # puts stderr "options = $options\n"
     # puts stderr "***** target_compile: $source $dest $type $options\n"
     return [target_compile $source $dest $type $options]

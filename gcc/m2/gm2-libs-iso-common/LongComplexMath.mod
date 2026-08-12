@@ -86,27 +86,13 @@ END ln ;
 
 
 (* Returns the sine of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_csinl)) sin (z: LONGCOMPLEX): LONGCOMPLEX;
-BEGIN
-   RETURN cbuiltin.csinl (z)
-END sin ;
-
+(* <MOD_TARGET_PROCEDURE(sin,LONGCOMPLEX,LONGCOMPLEX,__builtin_csinl,cbuiltin.csinl)> *)
 
 (* Returns the cosine of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ccosl)) cos (z: LONGCOMPLEX): LONGCOMPLEX;
-BEGIN
-   RETURN cbuiltin.ccosl (z)
-END cos ;
-
+(* <MOD_TARGET_PROCEDURE(cos,LONGCOMPLEX,LONGCOMPLEX,__builtin_ccosl,cbuiltin.ccosl)> *)
 
 (* Returns the tangent of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ctanl)) tan (z: LONGCOMPLEX): LONGCOMPLEX;
-BEGIN
-   RETURN cbuiltin.ctanl (z)
-END tan ;
+(* <MOD_TARGET_PROCEDURE(tan,LONGCOMPLEX,LONGCOMPLEX,__builtin_ctanl,cbuiltin.ctanl)> *)
 
 
 (* Returns the arcsine of z *)

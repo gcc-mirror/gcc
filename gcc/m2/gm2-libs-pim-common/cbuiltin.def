@@ -55,17 +55,17 @@ EXPORT UNQUALIFIED alloca, memcpy,
                    csqrtf, csqrt, csqrtl,
                    cexpf, cexp, cexpl,
                    clogf, clog, clogl,
-                   csinf, csin, csinl,
-                   ccosf, ccos, ccosl,
-                   ctanf, ctan, ctanl,
+                   (* <CBUILTIN_EXPORT_LIST> *)
                    casinf, casin, casinl,
                    cacosf, cacos, cacosl,
                    catanf, catan, catanl,
 
                    index, rindex,
                    memcmp, memset, memmove,
-                   strcat, strncat, strcpy, strncpy, strcmp, strncmp,
-                   strlen, strstr, strpbrk, strspn, strcspn, strchr, strrchr,
+                   strcat, strncat, strcpy,
+                   strncpy, strcmp, strncmp,
+                   strlen, strstr, strpbrk,
+                   strspn, strcspn, strchr, strrchr,
 
                    clz, clzll,
                    ctz, ctzll ;
@@ -165,17 +165,17 @@ PROCEDURE clogf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
 PROCEDURE clog (z: COMPLEX) : COMPLEX ;
 PROCEDURE clogl (z: LONGCOMPLEX) : LONGCOMPLEX ;
 
-PROCEDURE csinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE csin (z: COMPLEX) : COMPLEX ;
-PROCEDURE csinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(csins,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_csinf,cbuiltin.csinf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(csin,COMPLEX,COMPLEX,__builtin_csin,cbuiltin.csin)> *)
+(* <DEF_CBUILTIN_PROCEDURE(csinl,LONGCOMPLEX,LONGCOMPLEX,__builtin_csinl,cbuiltin.csinl)> *)
 
-PROCEDURE ccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE ccos (z: COMPLEX) : COMPLEX ;
-PROCEDURE ccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(ccoss,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ccosf,cbuiltin.ccosf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(ccos,COMPLEX,COMPLEX,__builtin_ccos,cbuiltin.ccos)> *)
+(* <DEF_CBUILTIN_PROCEDURE(ccosl,LONGCOMPLEX,LONGCOMPLEX,__builtin_ccosl,cbuiltin.ccosl)> *)
 
-PROCEDURE ctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE ctan (z: COMPLEX) : COMPLEX ;
-PROCEDURE ctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(ctans,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ctanf,cbuiltin.ctanf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(ctan,COMPLEX,COMPLEX,__builtin_ctan,cbuiltin.ctan)> *)
+(* <DEF_CBUILTIN_PROCEDURE(ctanl,LONGCOMPLEX,LONGCOMPLEX,__builtin_ctanl,cbuiltin.ctanl)> *)
 
 PROCEDURE casinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
 PROCEDURE casin (z: COMPLEX) : COMPLEX ;

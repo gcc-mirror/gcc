@@ -54,14 +54,14 @@ PROCEDURE exp (z: SHORTCOMPLEX): SHORTCOMPLEX;
 PROCEDURE ln (z: SHORTCOMPLEX): SHORTCOMPLEX;
   (* Returns the principal value of the natural logarithm of z *)
 
-PROCEDURE sin (z: SHORTCOMPLEX): SHORTCOMPLEX;
   (* Returns the sine of z *)
+  (* <DEF_TARGET_PROCEDURE(sin,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_csinf,cbuiltin.csinf)> *)
 
-PROCEDURE cos (z: SHORTCOMPLEX): SHORTCOMPLEX;
   (* Returns the cosine of z *)
+  (* <DEF_TARGET_PROCEDURE(cos,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ccosf,cbuiltin.ccosf)> *)
 
-PROCEDURE tan (z: SHORTCOMPLEX): SHORTCOMPLEX;
   (* Returns the tangent of z *)
+  (* <DEF_TARGET_PROCEDURE(tan,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ctanf,cbuiltin.ctanf)> *)
 
 PROCEDURE arcsin (z: SHORTCOMPLEX): SHORTCOMPLEX;
   (* Returns the arcsine of z *)
@@ -85,4 +85,3 @@ PROCEDURE IsCMathException (): BOOLEAN;
   *)
 
 END ShortComplexMath.
-

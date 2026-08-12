@@ -406,6 +406,10 @@ The default implementation and module filename suffix is @file{.def}.
 If this option is used GNU Modula-2 will still fall back to this
 default if a requested definition module is not found.
 
+@item -fdump-builtins
+Display all builtin procedure functions.
+This is an internal command line option.
+
 @item -fdump-system-exports
 display all inbuilt system items.
 This is an internal command-line option.

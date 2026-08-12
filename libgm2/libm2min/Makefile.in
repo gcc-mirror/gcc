@@ -108,7 +108,8 @@ target_triplet = @target@
 @ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2min
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/ax_python_devel.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/clang-plugin.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gcc-plugin.m4 \
@@ -116,10 +117,10 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../config/gc++filt.m4 \
+	$(top_srcdir)/../config/picflag.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
 	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -293,6 +294,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PICFLAG = @PICFLAG@
+PYTHON = @PYTHON@
+PYTHON_CPPFLAGS = @PYTHON_CPPFLAGS@
+PYTHON_EXTRA_LDFLAGS = @PYTHON_EXTRA_LDFLAGS@
+PYTHON_EXTRA_LIBS = @PYTHON_EXTRA_LIBS@
+PYTHON_LIBS = @PYTHON_LIBS@
+PYTHON_PLATFORM_SITE_PKG = @PYTHON_PLATFORM_SITE_PKG@
+PYTHON_SITE_PKG = @PYTHON_SITE_PKG@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -311,6 +321,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_python_interpreter = @ax_python_interpreter@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -762,19 +773,25 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 
 .mod.lo:
-	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+	$(LIBTOOL) --tag CC \
+                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
                    $(GM2_FOR_TARGET) -c \
                    $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2min_la_M2FLAGS) $< -o $@
 
 libc.o: $(GM2_SRC)/gm2-libs-min/libc.c
 
-SYSTEM.def: Makefile
-	echo "CC = $(CC_FOR_BUILD)  CC_FOR_TARGET = $(CC_FOR_TARGET)  GM2 = $(GM2)  GM2_FOR_TARGET = $(GM2_FOR_TARGET) GM2_FOR_BUILD = $(GM2_FOR_BUILD)"
-	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
-             $(GM2_SRC)/gm2-libs-min/SYSTEM.def \
-             $(GM2_SRC)/gm2-libs-min/SYSTEM.mod \
-             -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs \
-             "$(GM2_FOR_TARGET) -fno-exceptions" $@
+@HAVE_PYTHON_INTERPRETER_TRUE@SYSTEM.def: Makefile
+@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+@HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-min/SYSTEM.def \
+@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-min/SYSTEM.mod \
+@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-min -I=$(GM2_SRC)/gm2-libs \
+@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC) -fno-exceptions" -o $@
+@HAVE_PYTHON_INTERPRETER_FALSE@SYSTEM.def: Makefile
+@HAVE_PYTHON_INTERPRETER_FALSE@	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
+@HAVE_PYTHON_INTERPRETER_FALSE@             $(GM2_SRC)/gm2-libs-min/SYSTEM.def \
+@HAVE_PYTHON_INTERPRETER_FALSE@             $(GM2_SRC)/gm2-libs-min/SYSTEM.mod \
+@HAVE_PYTHON_INTERPRETER_FALSE@             -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs \
+@HAVE_PYTHON_INTERPRETER_FALSE@             "$(GM2_FOR_TARGET) -fno-exceptions" $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

@@ -152,6 +152,9 @@
 /* Define to 1 if you have the <pwd.h> header file. */
 #undef HAVE_PWD_H
 
+/* If available, contains the Python version number currently in use. */
+#undef HAVE_PYTHON
+
 /* function rand exists */
 #undef HAVE_RAND
 

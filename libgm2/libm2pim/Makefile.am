@@ -52,6 +52,7 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
+        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -88,7 +89,9 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
+        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
+	"PYTHON=$(PYTHON)" \
+        "HAVE_PYTHON_INTERPRETER=$(HAVE_PYTHON_INTERPRETER)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
@@ -103,7 +106,7 @@ M2MODS = ASCII.mod \
        M2Diagnostic.mod \
        M2WIDESET.mod \
        Assertion.mod NumberIO.mod \
-       Break.mod SYSTEM.mod \
+       Break.mod \
        CmdArgs.mod Scan.mod \
        StrCase.mod FIO.mod \
        StrIO.mod StrLib.mod \
@@ -182,7 +185,9 @@ libm2pim_la_SOURCES = $(M2MODS) \
                       CFileSysOp.cc
 
 libm2pimdir = libm2pim
-libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
+libm2pim_la_DEPENDENCIES = SYSTEM.def \
+   $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES))) \
+   SYSTEM.lo
 libm2pim_la_CFLAGS = \
   -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
   -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
@@ -194,6 +199,8 @@ libm2pim_la_M2FLAGS = \
   -Wall \
   -fcase -fm2-prefix=m2pim
 
+libm2pim_la_LIBADD = SYSTEM.lo
+
 if TARGET_DARWIN
 libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
@@ -203,26 +210,89 @@ if ENABLE_DARWIN_AT_RPATH
 libm2pim_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
 endif
 libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2pim_la_link_flags) -lm
-BUILT_SOURCES = SYSTEM.def
-CLEANFILES = SYSTEM.def
+BUILT_SOURCES = SYSTEM.def \
+                Builtins.def Builtins.mod \
+                cbuiltin.def
+CLEANFILES = SYSTEM.def \
+             Builtins.def Builtins.mod \
+             cbuiltin.def
 
 M2LIBDIR = /m2/m2pim/
 
+if HAVE_PYTHON_INTERPRETER
+SYSTEM.def: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+             -D=$(GM2_SRC)/gm2-libs-pim-common/SYSTEM.def \
+             -M=$(GM2_SRC)/gm2-libs-pim-common/SYSTEM.mod \
+             -I=$(GM2_SRC)/gm2-libs-pim-common \
+             -I=$(GM2_SRC)/gm2-libs \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
 SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
-             $(GM2_SRC)/gm2-libs/SYSTEM.def \
-             $(GM2_SRC)/gm2-libs/SYSTEM.mod \
+             $(GM2_SRC)/gm2-libs-pim-common/SYSTEM.def \
+             $(GM2_SRC)/gm2-libs-pim-common/SYSTEM.mod \
+             -I$(GM2_SRC)/gm2-libs-pim-common \
              -I$(GM2_SRC)/gm2-libs \
              "$(GM2_FOR_TARGET)" $@
+endif
 
-.mod.lo: SYSTEM.def
-	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+if HAVE_PYTHON_INTERPRETER
+Builtins.def: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+             -D=$(GM2_SRC)/gm2-libs-pim-common/Builtins.def \
+             -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
+             -I=$(GM2_SRC)/gm2-libs-pim-common \
+             -I=$(GM2_SRC)/gm2-libs \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+Builtins.def: Makefile
+	cp $(GM2_SRC)/gm2-libs-pim-common/Builtins.def $@
+endif
+
+if HAVE_PYTHON_INTERPRETER
+Builtins.mod: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+             -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
+             -I=$(GM2_SRC)/gm2-libs-pim-common \
+             -I=$(GM2_SRC)/gm2-libs \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+Builtins.mod: Makefile
+	cp $(GM2_SRC)/gm2-libs-pim-common/Builtins.mod $@
+endif
+
+if HAVE_PYTHON_INTERPRETER
+cbuiltin.def: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+             -D=$(GM2_SRC)/gm2-libs-pim-common/cbuiltin.def \
+             -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
+             -I=$(GM2_SRC)/gm2-libs-pim-common \
+             -I=$(GM2_SRC)/gm2-libs \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+cbuiltin.def: Makefile
+	cp $(GM2_SRC)/gm2-libs-pim-common/cbuiltin.def $@
+endif
+
+SYSTEM.lo: $(GM2_SRC)/gm2-libs-pim-common/SYSTEM.mod
+	$(LIBTOOL) --tag CC \
+                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+                   --mode=compile $(GM2_FOR_TARGET) \
+                   -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
+
+Builtins.lo: Builtins.mod Builtins.def
+
+.mod.lo: SYSTEM.def Builtins.def Builtins.mod cbuiltin.def
+	$(LIBTOOL) --tag CC \
+                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
                    --mode=compile $(GM2_FOR_TARGET) \
                    -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
 
 .cc.lo:
-	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) \
-                   $(CXXFLAGS) $(LIBCFLAGS) $(libm2pim_la_CFLAGS) $< -o $@
+	$(LIBTOOL) --tag CXX --mode=compile \
+                   $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) \
+                   $(libm2pim_la_CFLAGS) $< -o $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

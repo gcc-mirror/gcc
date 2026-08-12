@@ -1,4 +1,4 @@
-(* ComplexMath.mod implement the ISO ComplexMath specification.
+(* ShortComplexMath.mod implements access to the ShortComplex intrincics.
 
 Copyright (C) 2009-2026 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
@@ -24,126 +24,112 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  *)
 
-IMPLEMENTATION MODULE ComplexMath ;
+IMPLEMENTATION MODULE ShortComplexMath ;
 
 IMPORT cbuiltin ;
 
 
 (* Returns the length of z *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_cabs)) abs (z: COMPLEX): REAL;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_cabsf)) abs (z: SHORTCOMPLEX): SHORTREAL;
 BEGIN
-   RETURN cbuiltin.cabs (z)
+   RETURN cbuiltin.cabsf (z)
 END abs ;
 
 
 (* Returns the angle that z subtends to the positive real axis *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carg)) arg (z: COMPLEX): REAL;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_cargf)) arg (z: SHORTCOMPLEX): SHORTREAL;
 BEGIN
-   RETURN cbuiltin.carg (z)
+   RETURN cbuiltin.cargf (z)
 END arg ;
 
 
 (* Returns the complex conjugate of z *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_conj)) conj (z: COMPLEX): COMPLEX;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_conjf)) conj (z: SHORTCOMPLEX): SHORTCOMPLEX;
 BEGIN
-   RETURN cbuiltin.conj (z)
+   RETURN cbuiltin.conjf (z)
 END conj ;
 
 
 (* Returns the value of the number base raised to the power exponent *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_cpower)) power (base: COMPLEX; exponent: REAL): COMPLEX;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_cpowerf)) power (base: SHORTCOMPLEX; exponent: SHORTREAL): SHORTCOMPLEX;
 BEGIN
-   RETURN cbuiltin.cpow (base, exponent)
+   RETURN cbuiltin.cpowf (base, exponent)
 END power ;
 
 
 (* Returns the principal square root of z *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_csqrt)) sqrt (z: COMPLEX): COMPLEX;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_csqrtf)) sqrt (z: SHORTCOMPLEX): SHORTCOMPLEX;
 BEGIN
-   RETURN cbuiltin.csqrt (z)
+   RETURN cbuiltin.csqrtf (z)
 END sqrt ;
 
 
 (* Returns the complex exponential of z *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_cexp)) exp (z: COMPLEX): COMPLEX;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_cexpf)) exp (z: SHORTCOMPLEX): SHORTCOMPLEX;
 BEGIN
-   RETURN cbuiltin.cexp (z)
+   RETURN cbuiltin.cexpf (z)
 END exp ;
 
 
 (* Returns the principal value of the natural logarithm of z *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_cln)) ln (z: COMPLEX): COMPLEX;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_clnf)) ln (z: SHORTCOMPLEX): SHORTCOMPLEX;
 BEGIN
-   RETURN cbuiltin.clog (z)
+   RETURN cbuiltin.clogf (z)
 END ln ;
 
 
 (* Returns the sine of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_csin)) sin (z: COMPLEX): COMPLEX;
-BEGIN
-   RETURN cbuiltin.csin (z)
-END sin ;
-
+(* <MOD_TARGET_PROCEDURE(sin,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_csinf,cbuiltin.csinf)> *)
 
 (* Returns the cosine of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ccos)) cos (z: COMPLEX): COMPLEX;
-BEGIN
-   RETURN cbuiltin.ccos (z)
-END cos ;
-
+(* <MOD_TARGET_PROCEDURE(cos,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ccosf,cbuiltin.ccosf)> *)
 
 (* Returns the tangent of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ctan)) tan (z: COMPLEX): COMPLEX;
-BEGIN
-   RETURN cbuiltin.ctan (z)
-END tan ;
+(* <MOD_TARGET_PROCEDURE(tan,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ctanf,cbuiltin.ctanf)> *)
 
 
 (* Returns the arcsine of z *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carcsin)) arcsin (z: COMPLEX): COMPLEX;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carcsinf)) arcsin (z: SHORTCOMPLEX): SHORTCOMPLEX;
 BEGIN
-   RETURN cbuiltin.casin (z)
+   RETURN cbuiltin.casinf (z)
 END arcsin ;
 
 
 (* Returns the arccosine of z *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carccos)) arccos (z: COMPLEX): COMPLEX;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carccosf)) arccos (z: SHORTCOMPLEX): SHORTCOMPLEX;
 BEGIN
-   RETURN cbuiltin.cacos (z)
+   RETURN cbuiltin.cacosf (z)
 END arccos ;
 
 
 (* Returns the arctangent of z *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carctan)) arctan (z: COMPLEX): COMPLEX;
+PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carctanf)) arctan (z: SHORTCOMPLEX): SHORTCOMPLEX;
 BEGIN
-   RETURN cbuiltin.catan (z)
+   RETURN cbuiltin.catanf (z)
 END arctan ;
 
 
 (* Returns the complex number with the specified polar coordinates *)
 
-PROCEDURE polarToComplex (abs, arg: REAL): COMPLEX;
+PROCEDURE polarToComplex (abs, arg: SHORTREAL): SHORTCOMPLEX;
 BEGIN
-   RETURN CMPLX (abs*cbuiltin.cos(arg), abs*cbuiltin.sin(arg))
+   RETURN CMPLX (abs*cbuiltin.cosf(arg), abs*cbuiltin.sinf(arg))
 END polarToComplex ;
 
 
 (* Returns the scalar product of scalar with z *)
 
-PROCEDURE scalarMult (scalar: REAL; z: COMPLEX): COMPLEX;
+PROCEDURE scalarMult (scalar: SHORTREAL; z: SHORTCOMPLEX): SHORTCOMPLEX;
 BEGIN
    RETURN CMPLX (RE(z)*scalar, IM(z)*scalar)
 END scalarMult ;
@@ -161,4 +147,4 @@ BEGIN
 END IsCMathException ;
 
 
-END ComplexMath.
+END ShortComplexMath.

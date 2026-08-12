@@ -53,6 +53,7 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
+        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -90,7 +91,9 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
+        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
+	"PYTHON=$(PYTHON)" \
+        "HAVE_PYTHON_INTERPRETER=$(HAVE_PYTHON_INTERPRETER)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
@@ -205,6 +208,7 @@ libm2iso_la_CFLAGS = \
 libm2iso_la_M2FLAGS = \
   -fm2-pathname=m2iso -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso \
   -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
+  -fm2-pathname=m2pim -I../libm2pim \
   -fiso -fextended-opaque -fm2-g -g -Wcase-enum \
   -Wall \
   -Wreturn-type -fcase -fm2-prefix=m2iso
@@ -219,31 +223,159 @@ libm2iso_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
 endif
 
 libm2iso_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2iso_la_link_flags) -lm
-CLEANFILES = SYSTEM.def
-BUILT_SOURCES = SYSTEM.def
+CLEANFILES = \
+   SYSTEM.def SYSTEM.mod cbuiltin.def \
+   ShortComplex.def Complex.def LongComplex.def \
+   ShortComplex.mod Complex.mod LongComplex.mod
+BUILT_SOURCES = \
+   SYSTEM.def SYSTEM.mod cbuiltin.def \
+   ShortComplexMath.def ComplexMath.def LongComplexMath.def \
+   ShortComplexMath.mod ComplexMath.mod LongComplexMath.mod
 
 M2LIBDIR = /m2/m2iso/
 
 M2HEADER_FILES = m2rts.h
 
+GENERATED = \
+  SYSTEM.def \
+  SYSTEM.mod \
+  ../libm2pim/Builtins.def \
+  ../libm2pim/Builtins.mod \
+  ../libm2pim/cbuiltin.def
+
+if HAVE_PYTHON_INTERPRETER
+SYSTEM.def: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+             -D=$(GM2_SRC)/gm2-libs-iso-common/SYSTEM.def \
+             -M=$(GM2_SRC)/gm2-libs-iso-common/SYSTEM.mod \
+             -I=$(GM2_SRC)/gm2-libs-iso \
+             -I=$(GM2_SRC)/gm2-libs \
+             -I=$(GM2_SRC)/gm2-libs-iso-common \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
 SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fiso \
-             $(GM2_SRC)/gm2-libs-iso/SYSTEM.def \
-             $(GM2_SRC)/gm2-libs-iso/SYSTEM.mod \
-             -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs \
+             $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.def \
+             $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.mod \
+             -I$(GM2_SRC)/gm2-libs-iso \
+             -I$(GM2_SRC)/gm2-libs \
+             -I$(GM2_SRC)/gm2-libs-iso-common \
              "$(GM2_FOR_TARGET)" $@
+endif
 
-.mod.lo:
-	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+../libm2pim/Builtins.def:
+	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) Builtins.def
+
+../libm2pim/Builtins.mod:
+	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) Builtins.mod
+
+../libm2pim/cbuiltin.def:
+	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) cbuiltin.def
+
+if HAVE_PYTHON_INTERPRETER
+ShortComplexMath.def: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+             -D=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.def \
+             -M=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod \
+             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+             -I=$(GM2_SRC)/gm2-libs-iso-common \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+ShortComplexMath.def: Makefile
+	cp $(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.def $@
+endif
+
+if HAVE_PYTHON_INTERPRETER
+ShortComplexMath.mod: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+             -M=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod \
+             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+             -I=$(GM2_SRC)/gm2-libs-iso-common \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+ShortComplexMath.mod: Makefile
+	cp $(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod $@
+endif
+
+if HAVE_PYTHON_INTERPRETER
+ComplexMath.def: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+             -D=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.def \
+             -M=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod \
+             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+             -I=$(GM2_SRC)/gm2-libs-iso-common \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+ComplexMath.def: Makefile
+	cp $(GM2_SRC)/gm2-libs-iso-common/ComplexMath.def $@
+endif
+
+if HAVE_PYTHON_INTERPRETER
+ComplexMath.mod: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+             -M=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod \
+             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+             -I=$(GM2_SRC)/gm2-libs-iso-common \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+ComplexMath.mod: Makefile
+	cp $(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod $@
+endif
+
+if HAVE_PYTHON_INTERPRETER
+LongComplexMath.def: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+             -D=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.def \
+             -M=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod \
+             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+             -I=$(GM2_SRC)/gm2-libs-iso-common \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+LongComplexMath.def: Makefile
+	cp $(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.def $@
+endif
+
+if HAVE_PYTHON_INTERPRETER
+LongComplexMath.mod: Makefile
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+             -M=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod \
+             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+             -I=$(GM2_SRC)/gm2-libs-iso-common \
+             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+else
+LongComplexMath.mod: Makefile
+	cp $(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod $@
+endif
+
+if HAVE_PYTHON_INTERPRETER
+cbuiltin.def: ../libm2pim/cbuiltin.def
+	cp $< $@
+else
+cbuiltin.def: Makefile
+	cp $(GM2_SRC)/gm2-libs-pim-common/cbuiltin.def $@
+endif
+
+SYSTEM.mod: Makefile
+	cp $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.mod $@
+
+ComplexMath.lo: $(GENERATED) ComplexMath.def ComplexMath.mod
+LongComplexMath.lo: $(GENERATED) LongComplexMath.def LongComplexMath.mod
+ShortComplexMath.lo: $(GENERATED) ShortComplexMath.def ShortComplexMath.mod
+
+.mod.lo: $(BUILT_SOURCES)
+	$(LIBTOOL) --tag CC \
+                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
                    $(GM2_FOR_TARGET) -c \
                    $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_M2FLAGS) $< -o $@
 
 .cc.lo:
-	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) \
+	$(LIBTOOL) --tag CXX --mode=compile \
+                   $(CXX) -c -I$(srcdir) \
                    $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 .c.lo:
-	$(LIBTOOL) --tag=CC --mode=compile $(CC) -c -I$(srcdir) \
+	$(LIBTOOL) --tag CC --mode=compile \
+                   $(CC) -c -I$(srcdir) \
                    $(CFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 install-data-local: force

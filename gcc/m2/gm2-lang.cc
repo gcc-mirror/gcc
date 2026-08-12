@@ -864,6 +864,9 @@ gm2_langhook_handle_option (
     case OPT_fmod_:
       M2Options_setmodextension (arg);
       return 1;
+    case OPT_fdump_builtins:
+      M2Options_SetDumpBuiltins (value);
+      return 1;
     case OPT_fdump_system_exports:
       M2Options_SetDumpSystemExports (value);
       return 1;

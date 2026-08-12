@@ -30,26 +30,27 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2treelib.h"
 #include "m2type.h"
 #include "m2configure.h"
+#include "m2options.h"
 
 #undef DEBUGGING
 
 #define GM2
-#define GM2_BUG_REPORT                                                        \
-  "Please report this crash to the GNU Modula-2 mailing list "                \
+#define GM2_BUG_REPORT \
+  "Please report this crash to the GNU Modula-2 mailing list " \
   "<gm2@nongnu.org>\n"
 
-#define ASSERT(X, Y)                                                          \
-  {                                                                           \
-    if (!(X))                                                                 \
-      {                                                                       \
-        debug_tree (Y);                                                       \
-        internal_error ("%s:%d:assertion of condition %qs failed", __FILE__, __LINE__,  \
-                        #X);                                                  \
-      }                                                                       \
+#define ASSERT(X, Y) \
+  { \
+    if (!(X)) \
+      { \
+        debug_tree (Y); \
+        internal_error ("%s:%d:assertion of condition %qs failed", \
+			__FILE__, __LINE__, #X); \
+      } \
   }
-#define ERROR(X)                                                              \
-  {                                                                           \
-    internal_error ("%s:%d:%s", __FILE__, __LINE__, X);                     \
+#define ERROR(X) \
+  { \
+    internal_error ("%s:%d:%s", __FILE__, __LINE__, X); \
   }
 
 typedef enum {
@@ -1447,6 +1448,15 @@ set_decl_function_code (tree decl, built_in_function f)
   fndecl.function_code = f;
 }
 
+/* dump_available issue a printf containing builtin procedure name.  */
+
+static
+void
+dump_available (const char *name)
+{
+  printf ("builtin procedure function: %s\n", name);
+}
+
 /* Define a single builtin.  */
 
 static void
@@ -1471,6 +1481,8 @@ define_builtin (enum built_in_function val, const char *name, tree prototype,
   bmd.function_node = decl;
   bmd.return_node = TREE_TYPE (prototype);
   vec_safe_push (builtin_macros, bmd);
+  if (M2Options_GetDumpBuiltins ())
+    dump_available (libname);
 }
 
 /* Define a math type variant of the builtin function.  */
@@ -1526,6 +1538,19 @@ define_builtin_gcc (void)
 		  "__builtin_ctzll", ECF_CONST | ECF_NOTHROW | ECF_LEAF);
 }
 
+/* dump_builtin check the availability of name and dump
+   a message to stdout if -fdump-builtins was set.  */
+
+static
+void
+dump_builtin (struct builtin_function_entry *fe)
+{
+  if (M2Options_GetDumpBuiltins () && do_target_support_exists (fe))
+    dump_available (fe->name);
+}
+
+/* m2builtins_init declare function prototypes matching the available GCC builtins.  */
+
 void
 m2builtins_init (location_t location)
 {
@@ -1572,7 +1597,10 @@ m2builtins_init (location_t location)
       integer_type_node, tree_cons (NULL_TREE, long_long_unsigned_type_node, endlink));
 
   for (i = 0; list_of_builtins[i].name != NULL; i++)
-    create_function_prototype (location, &list_of_builtins[i]);
+    {
+      create_function_prototype (location, &list_of_builtins[i]);
+      dump_builtin (&list_of_builtins[i]);
+    }
 
   define_builtin (BUILT_IN_TRAP, "__builtin_trap",
                   build_function_type_list (void_type_node, NULL_TREE),
@@ -1601,7 +1629,7 @@ m2builtins_init (location_t location)
   gm2_alloca_node = find_builtin_tree ("__builtin_alloca");
   gm2_memcpy_node = find_builtin_tree ("__builtin_memcpy");
   gm2_memset_node = find_builtin_tree ("__builtin_memset");
-  gm2_strncpy_node = find_builtin_tree ("__builtin_strncpy");  
+  gm2_strncpy_node = find_builtin_tree ("__builtin_strncpy");
   gm2_huge_valf_node = find_builtin_tree ("__builtin_huge_valf");
   gm2_huge_val_node = find_builtin_tree ("__builtin_huge_val");
   gm2_huge_vall_node = find_builtin_tree ("__builtin_huge_vall");

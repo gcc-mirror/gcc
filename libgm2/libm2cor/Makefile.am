@@ -103,7 +103,8 @@ M2DEFS = Executive.def \
          TimerHandler.def
 
 M2MODS = Executive.mod \
-         SYSTEM.mod  TimerHandler.mod
+         TimerHandler.mod \
+         SYSTEM.mod
 
 toolexeclib_LTLIBRARIES = libm2cor.la
 
@@ -112,7 +113,9 @@ libm2cor_la_SOURCES = $(M2MODS) KeyBoardLEDs.cc
 nodist_EXTRA_libm2cor_la_SOURCES = dummy.c  ## forces automake to generate the LINK definition
 
 libm2cordir = libm2cor
-libm2cor_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2cor_la_SOURCES)))
+libm2cor_la_DEPENDENCIES = SYSTEM.def \
+     $(addsuffix .lo, $(basename $(libm2cor_la_SOURCES)))
+
 libm2cor_la_CFLAGS = \
     -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
     -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
@@ -121,6 +124,7 @@ libm2cor_la_M2FLAGS = \
     -fm2-pathname=m2cor -I. -I$(GM2_SRC)/gm2-libs-coroutines \
     -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
     -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
+    -fm2-pathname=m2cor -I. -I$(GM2_SRC)/gm2-libs-cor-common \
     -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2cor
 
 if TARGET_DARWIN
@@ -133,26 +137,33 @@ libm2cor_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
 endif
 
 libm2cor_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2cor_la_link_flags)
-BUILT_SOURCES = SYSTEM.def
+BUILT_SOURCES = SYSTEM.def SYSTEM.mod
 CLEANFILES = SYSTEM.def
 
 M2LIBDIR = /m2/m2cor/
 
 SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
-             $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.def \
-             $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.mod \
-             -I$(GM2_SRC)/gm2-libs-coroutines -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
+             $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.def \
+             $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.mod \
+             -I$(GM2_SRC)/gm2-libs-cor-common \
+             -I$(GM2_SRC)/gm2-libs-coroutines \
+             -I$(GM2_SRC)/gm2-libs \
+             -I$(GM2_SRC)/gm2-libs-iso \
              "$(GM2_FOR_TARGET)" $@
 
+SYSTEM.mod: $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.mod
+	cp $< $@
+
 .mod.lo:
-	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	$(LIBTOOL) --tag CC \
+                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
                    --mode=compile $(GM2_FOR_TARGET) \
                    -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2cor_la_M2FLAGS) $< -o $@
 
 .cc.lo:
-	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) \
-                   -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2cor_la_CFLAGS) $< -o $@
+	$(LIBTOOL) --tag CXX --mode=compile \
+                   $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2cor_la_CFLAGS) $< -o $@
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

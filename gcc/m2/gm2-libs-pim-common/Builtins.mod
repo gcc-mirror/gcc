@@ -433,50 +433,17 @@ BEGIN
    RETURN cbuiltin.clogl(z)
 END clnl ;
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_csinf)) csinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-BEGIN
-   RETURN cbuiltin.csinf(z)
-END csinf ;
+(* <MOD_BUILTIN_PROCEDURE(csins,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_csinf,cbuiltin.csinf)> *)
+(* <MOD_BUILTIN_PROCEDURE(csin,COMPLEX,COMPLEX,__builtin_csin,cbuiltin.csin)> *)
+(* <MOD_BUILTIN_PROCEDURE(csinl,LONGCOMPLEX,LONGCOMPLEX,__builtin_csinl,cbuiltin.csinl)> *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_csin)) csin (z: COMPLEX) : COMPLEX ;
-BEGIN
-   RETURN cbuiltin.csin(z)
-END csin ;
+(* <MOD_BUILTIN_PROCEDURE(ccoss,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ccosf,cbuiltin.ccosf)> *)
+(* <MOD_BUILTIN_PROCEDURE(ccos,COMPLEX,COMPLEX,__builtin_ccos,cbuiltin.ccos)> *)
+(* <MOD_BUILTIN_PROCEDURE(ccosl,LONGCOMPLEX,LONGCOMPLEX,__builtin_ccosl,cbuiltin.ccosl)> *)
 
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_csinl)) csinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
-BEGIN
-   RETURN cbuiltin.csinl(z)
-END csinl ;
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ccosf)) ccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-BEGIN
-   RETURN cbuiltin.ccosf(z)
-END ccosf ;
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ccos)) ccos (z: COMPLEX) : COMPLEX ;
-BEGIN
-   RETURN cbuiltin.ccos(z)
-END ccos ;
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ccosl)) ccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
-BEGIN
-   RETURN cbuiltin.ccosl(z)
-END ccosl ;
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ctanf)) ctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-BEGIN
-   RETURN cbuiltin.ctanf(z)
-END ctanf ;
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ctan)) ctan (z: COMPLEX) : COMPLEX ;
-BEGIN
-   RETURN cbuiltin.ctan(z)
-END ctan ;
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_ctanl)) ctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
-BEGIN
-   RETURN cbuiltin.ctanl(z)
-END ctanl ;
+(* <MOD_BUILTIN_PROCEDURE(ctans,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ctanf,cbuiltin.ctanf)> *)
+(* <MOD_BUILTIN_PROCEDURE(ctan,COMPLEX,COMPLEX,__builtin_ctan,cbuiltin.ctan)> *)
+(* <MOD_BUILTIN_PROCEDURE(ctanl,LONGCOMPLEX,LONGCOMPLEX,__builtin_ctanl,cbuiltin.ctanl)> *)
 
 PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_casinf)) carcsinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
 BEGIN

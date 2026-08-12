@@ -108,7 +108,8 @@ target_triplet = @target@
 @BUILD_ISOLIB_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2iso
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/ax_python_devel.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/clang-plugin.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gcc-plugin.m4 \
@@ -116,10 +117,10 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../config/gc++filt.m4 \
+	$(top_srcdir)/../config/picflag.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
 	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -340,6 +341,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PICFLAG = @PICFLAG@
+PYTHON = @PYTHON@
+PYTHON_CPPFLAGS = @PYTHON_CPPFLAGS@
+PYTHON_EXTRA_LDFLAGS = @PYTHON_EXTRA_LDFLAGS@
+PYTHON_EXTRA_LIBS = @PYTHON_EXTRA_LIBS@
+PYTHON_LIBS = @PYTHON_LIBS@
+PYTHON_PLATFORM_SITE_PKG = @PYTHON_PLATFORM_SITE_PKG@
+PYTHON_SITE_PKG = @PYTHON_SITE_PKG@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -358,6 +368,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_python_interpreter = @ax_python_interpreter@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -447,6 +458,7 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
+        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -484,7 +496,9 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
+        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
+	"PYTHON=$(PYTHON)" \
+        "HAVE_PYTHON_INTERPRETER=$(HAVE_PYTHON_INTERPRETER)"
 
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -596,6 +610,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@libm2iso_la_M2FLAGS = \
 @BUILD_ISOLIB_TRUE@  -fm2-pathname=m2iso -I. -Ilibm2iso -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_ISOLIB_TRUE@  -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@  -fm2-pathname=m2pim -I../libm2pim \
 @BUILD_ISOLIB_TRUE@  -fiso -fextended-opaque -fm2-g -g -Wcase-enum \
 @BUILD_ISOLIB_TRUE@  -Wall \
 @BUILD_ISOLIB_TRUE@  -Wreturn-type -fcase -fm2-prefix=m2iso
@@ -605,10 +620,25 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@@TARGET_DARWIN_TRUE@libm2iso_la_link_flags = -Wl,-undefined,dynamic_lookup \
 @BUILD_ISOLIB_TRUE@@TARGET_DARWIN_TRUE@	$(am__append_1)
 @BUILD_ISOLIB_TRUE@libm2iso_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2iso_la_link_flags) -lm
-@BUILD_ISOLIB_TRUE@CLEANFILES = SYSTEM.def
-@BUILD_ISOLIB_TRUE@BUILT_SOURCES = SYSTEM.def
+@BUILD_ISOLIB_TRUE@CLEANFILES = \
+@BUILD_ISOLIB_TRUE@   SYSTEM.def SYSTEM.mod cbuiltin.def \
+@BUILD_ISOLIB_TRUE@   ShortComplex.def Complex.def LongComplex.def \
+@BUILD_ISOLIB_TRUE@   ShortComplex.mod Complex.mod LongComplex.mod
+
+@BUILD_ISOLIB_TRUE@BUILT_SOURCES = \
+@BUILD_ISOLIB_TRUE@   SYSTEM.def SYSTEM.mod cbuiltin.def \
+@BUILD_ISOLIB_TRUE@   ShortComplexMath.def ComplexMath.def LongComplexMath.def \
+@BUILD_ISOLIB_TRUE@   ShortComplexMath.mod ComplexMath.mod LongComplexMath.mod
+
 @BUILD_ISOLIB_TRUE@M2LIBDIR = /m2/m2iso/
 @BUILD_ISOLIB_TRUE@M2HEADER_FILES = m2rts.h
+@BUILD_ISOLIB_TRUE@GENERATED = \
+@BUILD_ISOLIB_TRUE@  SYSTEM.def \
+@BUILD_ISOLIB_TRUE@  SYSTEM.mod \
+@BUILD_ISOLIB_TRUE@  ../libm2pim/Builtins.def \
+@BUILD_ISOLIB_TRUE@  ../libm2pim/Builtins.mod \
+@BUILD_ISOLIB_TRUE@  ../libm2pim/cbuiltin.def
+
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -933,24 +963,115 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .PRECIOUS: Makefile
 
 
-@BUILD_ISOLIB_TRUE@SYSTEM.def: Makefile
-@BUILD_ISOLIB_TRUE@	bash $(GM2_SRC)/tools-src/makeSystem -fiso \
-@BUILD_ISOLIB_TRUE@             $(GM2_SRC)/gm2-libs-iso/SYSTEM.def \
-@BUILD_ISOLIB_TRUE@             $(GM2_SRC)/gm2-libs-iso/SYSTEM.mod \
-@BUILD_ISOLIB_TRUE@             -I$(GM2_SRC)/gm2-libs-iso -I$(GM2_SRC)/gm2-libs \
-@BUILD_ISOLIB_TRUE@             "$(GM2_FOR_TARGET)" $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@SYSTEM.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-iso-common/SYSTEM.def \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/SYSTEM.mod \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@SYSTEM.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	bash $(GM2_SRC)/tools-src/makeSystem -fiso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.def \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.mod \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             -I$(GM2_SRC)/gm2-libs-iso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             -I$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             -I$(GM2_SRC)/gm2-libs-iso-common \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             "$(GM2_FOR_TARGET)" $@
 
-@BUILD_ISOLIB_TRUE@.mod.lo:
-@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+@BUILD_ISOLIB_TRUE@../libm2pim/Builtins.def:
+@BUILD_ISOLIB_TRUE@	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) Builtins.def
+
+@BUILD_ISOLIB_TRUE@../libm2pim/Builtins.mod:
+@BUILD_ISOLIB_TRUE@	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) Builtins.mod
+
+@BUILD_ISOLIB_TRUE@../libm2pim/cbuiltin.def:
+@BUILD_ISOLIB_TRUE@	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) cbuiltin.def
+
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@ShortComplexMath.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.def \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@ShortComplexMath.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.def $@
+
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@ShortComplexMath.mod: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@ShortComplexMath.mod: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod $@
+
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@ComplexMath.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.def \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@ComplexMath.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/ComplexMath.def $@
+
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@ComplexMath.mod: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@ComplexMath.mod: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod $@
+
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@LongComplexMath.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.def \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@LongComplexMath.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.def $@
+
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@LongComplexMath.mod: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fiso \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@LongComplexMath.mod: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod $@
+
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@cbuiltin.def: ../libm2pim/cbuiltin.def
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	cp $< $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@cbuiltin.def: Makefile
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-pim-common/cbuiltin.def $@
+
+@BUILD_ISOLIB_TRUE@SYSTEM.mod: Makefile
+@BUILD_ISOLIB_TRUE@	cp $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.mod $@
+
+@BUILD_ISOLIB_TRUE@ComplexMath.lo: $(GENERATED) ComplexMath.def ComplexMath.mod
+@BUILD_ISOLIB_TRUE@LongComplexMath.lo: $(GENERATED) LongComplexMath.def LongComplexMath.mod
+@BUILD_ISOLIB_TRUE@ShortComplexMath.lo: $(GENERATED) ShortComplexMath.def ShortComplexMath.mod
+
+@BUILD_ISOLIB_TRUE@.mod.lo: $(BUILT_SOURCES)
+@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag CC \
+@BUILD_ISOLIB_TRUE@                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
 @BUILD_ISOLIB_TRUE@                   $(GM2_FOR_TARGET) -c \
 @BUILD_ISOLIB_TRUE@                   $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2iso_la_M2FLAGS) $< -o $@
 
 @BUILD_ISOLIB_TRUE@.cc.lo:
-@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) \
+@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag CXX --mode=compile \
+@BUILD_ISOLIB_TRUE@                   $(CXX) -c -I$(srcdir) \
 @BUILD_ISOLIB_TRUE@                   $(CXXFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 @BUILD_ISOLIB_TRUE@.c.lo:
-@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) -c -I$(srcdir) \
+@BUILD_ISOLIB_TRUE@	$(LIBTOOL) --tag CC --mode=compile \
+@BUILD_ISOLIB_TRUE@                   $(CC) -c -I$(srcdir) \
 @BUILD_ISOLIB_TRUE@                   $(CFLAGS) $(LIBCFLAGS) $(libm2iso_la_CFLAGS) $< -o $@
 
 @BUILD_ISOLIB_TRUE@install-data-local: force

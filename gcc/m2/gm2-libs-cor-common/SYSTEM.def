@@ -34,7 +34,9 @@ DEFINITION MODULE SYSTEM ;
 FROM COROUTINES IMPORT PROTECTION ;
 
 EXPORT QUALIFIED (* the following are built into the compiler: *)
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T, (* @SYSTEM_DATATYPES@ *)
+                 (* <SYSTEM_DATATYPES> *)
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T,
+                 (* </SYSTEM_DATATYPES> *)
                  ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE,
                  (* SIZE is exported depending upon -fpim2 and
                     -fpedantic.  *)
@@ -64,7 +66,8 @@ TYPE
    move into another module in the future.  *)
 
 (* The following types are supported on this target:
-   @SYSTEM_TYPES@
+   <SYSTEM_TYPES>
+   </SYSTEM_TYPES>
 *)
 
 

@@ -108,7 +108,8 @@ target_triplet = @target@
 @BUILD_PIMLIB_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2pim
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/ax_python_devel.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/clang-plugin.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gcc-plugin.m4 \
@@ -116,10 +117,10 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../config/gc++filt.m4 \
+	$(top_srcdir)/../config/picflag.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
 	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -158,14 +159,13 @@ am__uninstall_files_from_dir = { \
   }
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-libm2pim_la_LIBADD =
 @BUILD_PIMLIB_TRUE@am__objects_1 = ASCII.lo Args.lo BinDict.lo IO.lo \
 @BUILD_PIMLIB_TRUE@	M2RTS.lo M2Dependent.lo M2Diagnostic.lo \
 @BUILD_PIMLIB_TRUE@	M2WIDESET.lo Assertion.lo NumberIO.lo \
-@BUILD_PIMLIB_TRUE@	Break.lo SYSTEM.lo CmdArgs.lo Scan.lo \
-@BUILD_PIMLIB_TRUE@	StrCase.lo FIO.lo StrIO.lo StrLib.lo \
-@BUILD_PIMLIB_TRUE@	TimeString.lo Environment.lo FpuIO.lo \
-@BUILD_PIMLIB_TRUE@	Debug.lo SysStorage.lo Storage.lo StdIO.lo \
+@BUILD_PIMLIB_TRUE@	Break.lo CmdArgs.lo Scan.lo StrCase.lo \
+@BUILD_PIMLIB_TRUE@	FIO.lo StrIO.lo StrLib.lo TimeString.lo \
+@BUILD_PIMLIB_TRUE@	Environment.lo FpuIO.lo Debug.lo \
+@BUILD_PIMLIB_TRUE@	SysStorage.lo Storage.lo StdIO.lo \
 @BUILD_PIMLIB_TRUE@	SEnvironment.lo DynamicStrings.lo SFIO.lo \
 @BUILD_PIMLIB_TRUE@	SArgs.lo SCmdArgs.lo PushBackInput.lo \
 @BUILD_PIMLIB_TRUE@	StringConvert.lo FormatStrings.lo \
@@ -331,6 +331,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PICFLAG = @PICFLAG@
+PYTHON = @PYTHON@
+PYTHON_CPPFLAGS = @PYTHON_CPPFLAGS@
+PYTHON_EXTRA_LDFLAGS = @PYTHON_EXTRA_LDFLAGS@
+PYTHON_EXTRA_LIBS = @PYTHON_EXTRA_LIBS@
+PYTHON_LIBS = @PYTHON_LIBS@
+PYTHON_PLATFORM_SITE_PKG = @PYTHON_PLATFORM_SITE_PKG@
+PYTHON_SITE_PKG = @PYTHON_SITE_PKG@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -349,6 +358,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_python_interpreter = @ax_python_interpreter@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -437,6 +447,7 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
+        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -473,7 +484,9 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
+        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
+	"PYTHON=$(PYTHON)" \
+        "HAVE_PYTHON_INTERPRETER=$(HAVE_PYTHON_INTERPRETER)"
 
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -486,7 +499,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@       M2Diagnostic.mod \
 @BUILD_PIMLIB_TRUE@       M2WIDESET.mod \
 @BUILD_PIMLIB_TRUE@       Assertion.mod NumberIO.mod \
-@BUILD_PIMLIB_TRUE@       Break.mod SYSTEM.mod \
+@BUILD_PIMLIB_TRUE@       Break.mod \
 @BUILD_PIMLIB_TRUE@       CmdArgs.mod Scan.mod \
 @BUILD_PIMLIB_TRUE@       StrCase.mod FIO.mod \
 @BUILD_PIMLIB_TRUE@       StrIO.mod StrLib.mod \
@@ -565,7 +578,10 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@                      CFileSysOp.cc
 
 @BUILD_PIMLIB_TRUE@libm2pimdir = libm2pim
-@BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES)))
+@BUILD_PIMLIB_TRUE@libm2pim_la_DEPENDENCIES = SYSTEM.def \
+@BUILD_PIMLIB_TRUE@   $(addsuffix .lo, $(basename $(libm2pim_la_SOURCES))) \
+@BUILD_PIMLIB_TRUE@   SYSTEM.lo
+
 @BUILD_PIMLIB_TRUE@libm2pim_la_CFLAGS = \
 @BUILD_PIMLIB_TRUE@  -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_PIMLIB_TRUE@  -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
@@ -577,13 +593,20 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@  -Wall \
 @BUILD_PIMLIB_TRUE@  -fcase -fm2-prefix=m2pim
 
+@BUILD_PIMLIB_TRUE@libm2pim_la_LIBADD = SYSTEM.lo
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@libm2pim_la_link_flags =  \
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_FALSE@	$(am__append_1)
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_TRUE@libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup \
 @BUILD_PIMLIB_TRUE@@TARGET_DARWIN_TRUE@	$(am__append_1)
 @BUILD_PIMLIB_TRUE@libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2pim_la_link_flags) -lm
-@BUILD_PIMLIB_TRUE@BUILT_SOURCES = SYSTEM.def
-@BUILD_PIMLIB_TRUE@CLEANFILES = SYSTEM.def
+@BUILD_PIMLIB_TRUE@BUILT_SOURCES = SYSTEM.def \
+@BUILD_PIMLIB_TRUE@                Builtins.def Builtins.mod \
+@BUILD_PIMLIB_TRUE@                cbuiltin.def
+
+@BUILD_PIMLIB_TRUE@CLEANFILES = SYSTEM.def \
+@BUILD_PIMLIB_TRUE@             Builtins.def Builtins.mod \
+@BUILD_PIMLIB_TRUE@             cbuiltin.def
+
 @BUILD_PIMLIB_TRUE@M2LIBDIR = /m2/m2pim/
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -916,21 +939,68 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .PRECIOUS: Makefile
 
 
-@BUILD_PIMLIB_TRUE@SYSTEM.def: Makefile
-@BUILD_PIMLIB_TRUE@	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
-@BUILD_PIMLIB_TRUE@             $(GM2_SRC)/gm2-libs/SYSTEM.def \
-@BUILD_PIMLIB_TRUE@             $(GM2_SRC)/gm2-libs/SYSTEM.mod \
-@BUILD_PIMLIB_TRUE@             -I$(GM2_SRC)/gm2-libs \
-@BUILD_PIMLIB_TRUE@             "$(GM2_FOR_TARGET)" $@
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@SYSTEM.def: Makefile
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-pim-common/SYSTEM.def \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-pim-common/SYSTEM.mod \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-pim-common \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@SYSTEM.def: Makefile
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             $(GM2_SRC)/gm2-libs-pim-common/SYSTEM.def \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             $(GM2_SRC)/gm2-libs-pim-common/SYSTEM.mod \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             -I$(GM2_SRC)/gm2-libs-pim-common \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             -I$(GM2_SRC)/gm2-libs \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             "$(GM2_FOR_TARGET)" $@
 
-@BUILD_PIMLIB_TRUE@.mod.lo: SYSTEM.def
-@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@Builtins.def: Makefile
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-pim-common/Builtins.def \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-pim-common \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@Builtins.def: Makefile
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-pim-common/Builtins.def $@
+
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@Builtins.mod: Makefile
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-pim-common \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@Builtins.mod: Makefile
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-pim-common/Builtins.mod $@
+
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@cbuiltin.def: Makefile
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-pim-common/cbuiltin.def \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-pim-common \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs \
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@cbuiltin.def: Makefile
+@BUILD_PIMLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-pim-common/cbuiltin.def $@
+
+@BUILD_PIMLIB_TRUE@SYSTEM.lo: $(GM2_SRC)/gm2-libs-pim-common/SYSTEM.mod
+@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag CC \
+@BUILD_PIMLIB_TRUE@                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+@BUILD_PIMLIB_TRUE@                   --mode=compile $(GM2_FOR_TARGET) \
+@BUILD_PIMLIB_TRUE@                   -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
+
+@BUILD_PIMLIB_TRUE@Builtins.lo: Builtins.mod Builtins.def
+
+@BUILD_PIMLIB_TRUE@.mod.lo: SYSTEM.def Builtins.def Builtins.mod cbuiltin.def
+@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag CC \
+@BUILD_PIMLIB_TRUE@                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 @BUILD_PIMLIB_TRUE@                   --mode=compile $(GM2_FOR_TARGET) \
 @BUILD_PIMLIB_TRUE@                   -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2pim_la_M2FLAGS) $< -o $@
 
 @BUILD_PIMLIB_TRUE@.cc.lo:
-@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) -c -I$(srcdir) \
-@BUILD_PIMLIB_TRUE@                   $(CXXFLAGS) $(LIBCFLAGS) $(libm2pim_la_CFLAGS) $< -o $@
+@BUILD_PIMLIB_TRUE@	$(LIBTOOL) --tag CXX --mode=compile \
+@BUILD_PIMLIB_TRUE@                   $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) \
+@BUILD_PIMLIB_TRUE@                   $(libm2pim_la_CFLAGS) $< -o $@
 
 @BUILD_PIMLIB_TRUE@install-data-local: force
 @BUILD_PIMLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

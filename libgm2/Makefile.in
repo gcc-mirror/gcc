@@ -90,7 +90,8 @@ host_triplet = @host@
 target_triplet = @target@
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/ax_python_devel.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/clang-plugin.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gcc-plugin.m4 \
@@ -98,10 +99,10 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../config/gc++filt.m4 \
+	$(top_srcdir)/../config/picflag.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
 	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -237,6 +238,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PICFLAG = @PICFLAG@
+PYTHON = @PYTHON@
+PYTHON_CPPFLAGS = @PYTHON_CPPFLAGS@
+PYTHON_EXTRA_LDFLAGS = @PYTHON_EXTRA_LDFLAGS@
+PYTHON_EXTRA_LIBS = @PYTHON_EXTRA_LIBS@
+PYTHON_LIBS = @PYTHON_LIBS@
+PYTHON_PLATFORM_SITE_PKG = @PYTHON_PLATFORM_SITE_PKG@
+PYTHON_SITE_PKG = @PYTHON_SITE_PKG@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -255,6 +265,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_python_interpreter = @ax_python_interpreter@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -343,7 +354,7 @@ toplevel_srcdir = @toplevel_srcdir@
 # Modula-2 support.
 AUTOMAKE_OPTIONS = 1.8 foreign
 SUFFIXES = .c .mod .def .o .obj .lo .a
-ACLOCAL_AMFLAGS = -I .. -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config -I .
 
 # Multilib support.
 MAKEOVERRIDES = 
@@ -352,6 +363,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 TOP_GCCDIR := $(shell cd $(top_srcdir) && cd .. && pwd)
 GCC_DIR = $(TOP_GCCDIR)/gcc
 GM2_SRC = $(GCC_DIR)/m2
+GM2_FOR_TARGET_ESC = $(shell echo $(GM2_FOR_TARGET) | sed 's/ /\\ /g')
 SUBDIRS = libm2min libm2log libm2cor libm2iso libm2pim
 GM2_BUILDDIR := $(shell pwd)
 gm2_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
@@ -368,6 +380,7 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
+        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -406,7 +419,8 @@ AM_MAKEFLAGS = \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
 	"LIBTOOL=$(GM2_BUILDDIR)/libtool" \
-	"DARWIN_AT_RPATH=$(DARWIN_AT_RPATH)"
+	"DARWIN_AT_RPATH=$(DARWIN_AT_RPATH)" \
+        "HAVE_PYTHON_INTERPRETER=$(HAVE_PYTHON_INTERPRETER)"
 
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
@@ -712,6 +726,8 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
+$(info GM2_FOR_TARGET is $(GM2_FOR_TARGET))
+$(info GM2_FOR_TARGET_ESC is $(GM2_FOR_TARGET_ESC))
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the

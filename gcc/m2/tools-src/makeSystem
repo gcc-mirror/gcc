@@ -90,18 +90,18 @@ displayBuiltinTypes () {
 }
 
 displayStart () {
-   sed -e "1,/@SYSTEM_DATATYPES@/!d" < ${SYSTEMDEF} | \
-   sed -e "/@SYSTEM_DATATYPES@/d" >> ${OUTPUTFILE}
+   sed -e "1,/<SYSTEM_DATATYPES>/!d" < ${SYSTEMDEF} | \
+   sed -e "/<SYSTEM_DATATYPES>/d" >> ${OUTPUTFILE}
 }
 
 displayMiddle () {
-   sed -e "1,/@SYSTEM_DATATYPES@/d" < ${SYSTEMDEF} | \
-   sed -e "1,/@SYSTEM_TYPES@/!d" | \
-   sed -e "/@SYSTEM_TYPES@/d" >> ${OUTPUTFILE}
+   sed -e "1,/<\/SYSTEM_DATATYPES>/d" < ${SYSTEMDEF} | \
+   sed -e "1,/<SYSTEM_TYPES>/!d" | \
+   sed -e "/<SYSTEM_TYPES>/d" >> ${OUTPUTFILE}
 }
 
 displayEnd () {
-   sed -e "1,/@SYSTEM_TYPES@/d" < ${SYSTEMDEF} >> ${OUTPUTFILE}
+   sed -e "1,/<\/SYSTEM_TYPES>/d" < ${SYSTEMDEF} >> ${OUTPUTFILE}
 }
 
 MINIMAL="-fno-scaffold-main -fno-scaffold-dynamic -fno-scaffold-static -fno-m2-plugin"

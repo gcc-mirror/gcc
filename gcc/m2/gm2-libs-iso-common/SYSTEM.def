@@ -17,7 +17,9 @@ DEFINITION MODULE SYSTEM;
   (* The constants and types define underlying properties of storage *)
 
 EXPORT QUALIFIED BITSPERLOC, LOCSPERWORD,
-                 LOC, BYTE, WORD, ADDRESS, CSIZE_T, CSSIZE_T, COFF_T, (* @SYSTEM_DATATYPES@  *)
+                 (* <SYSTEM_DATATYPES> *)
+                 LOC, BYTE, WORD, ADDRESS, CSIZE_T, CSSIZE_T, COFF_T,
+                 (* </SYSTEM_DATATYPES> *)
                  ADDADR, SUBADR, DIFADR, MAKEADR, ADR, ROTATE,
                  SHIFT, CAST, TSIZE,
                  (* Internal GM2 compiler functions *)
@@ -43,14 +45,17 @@ CONST
    COMPLEX64, COMPLEX128, CSIZE_T, CSSIZE_T.
 
    Also note that the non-standard data types will
-   move into another module in the future.  *)
+   move into another module in the future.
+
+TYPE
+   <SYSTEM_TYPES>
+   </SYSTEM_TYPES>
+*)
+
 
 (*
    All the data types and procedures below are declared internally.
    ===============================================================
-
-TYPE
-   @SYSTEM_TYPES@
 
 TYPE
   LOC; (* A system basic type. Values are the uninterpreted

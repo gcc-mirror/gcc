@@ -108,7 +108,8 @@ target_triplet = @target@
 @BUILD_CORLIB_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2cor
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/ax_python_devel.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/clang-plugin.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gcc-plugin.m4 \
@@ -116,10 +117,10 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../config/gc++filt.m4 \
+	$(top_srcdir)/../config/picflag.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
 	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -159,8 +160,8 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libm2cor_la_LIBADD =
-@BUILD_CORLIB_TRUE@am__objects_1 = Executive.lo SYSTEM.lo \
-@BUILD_CORLIB_TRUE@	TimerHandler.lo
+@BUILD_CORLIB_TRUE@am__objects_1 = Executive.lo TimerHandler.lo \
+@BUILD_CORLIB_TRUE@	SYSTEM.lo
 @BUILD_CORLIB_TRUE@am_libm2cor_la_OBJECTS = $(am__objects_1) \
 @BUILD_CORLIB_TRUE@	KeyBoardLEDs.lo
 libm2cor_la_OBJECTS = $(am_libm2cor_la_OBJECTS)
@@ -314,6 +315,15 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PICFLAG = @PICFLAG@
+PYTHON = @PYTHON@
+PYTHON_CPPFLAGS = @PYTHON_CPPFLAGS@
+PYTHON_EXTRA_LDFLAGS = @PYTHON_EXTRA_LDFLAGS@
+PYTHON_EXTRA_LIBS = @PYTHON_EXTRA_LIBS@
+PYTHON_LIBS = @PYTHON_LIBS@
+PYTHON_PLATFORM_SITE_PKG = @PYTHON_PLATFORM_SITE_PKG@
+PYTHON_SITE_PKG = @PYTHON_SITE_PKG@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -332,6 +342,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_python_interpreter = @ax_python_interpreter@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -468,13 +479,16 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_CORLIB_TRUE@         TimerHandler.def
 
 @BUILD_CORLIB_TRUE@M2MODS = Executive.mod \
-@BUILD_CORLIB_TRUE@         SYSTEM.mod  TimerHandler.mod
+@BUILD_CORLIB_TRUE@         TimerHandler.mod \
+@BUILD_CORLIB_TRUE@         SYSTEM.mod
 
 @BUILD_CORLIB_TRUE@toolexeclib_LTLIBRARIES = libm2cor.la
 @BUILD_CORLIB_TRUE@libm2cor_la_SOURCES = $(M2MODS) KeyBoardLEDs.cc
 @BUILD_CORLIB_TRUE@nodist_EXTRA_libm2cor_la_SOURCES = dummy.c  ## forces automake to generate the LINK definition
 @BUILD_CORLIB_TRUE@libm2cordir = libm2cor
-@BUILD_CORLIB_TRUE@libm2cor_la_DEPENDENCIES = SYSTEM.def $(addsuffix .lo, $(basename $(libm2cor_la_SOURCES)))
+@BUILD_CORLIB_TRUE@libm2cor_la_DEPENDENCIES = SYSTEM.def \
+@BUILD_CORLIB_TRUE@     $(addsuffix .lo, $(basename $(libm2cor_la_SOURCES)))
+
 @BUILD_CORLIB_TRUE@libm2cor_la_CFLAGS = \
 @BUILD_CORLIB_TRUE@    -I. -I.. -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_CORLIB_TRUE@    -DBUILD_GM2_LIBS -I@srcdir@/../  -I@srcdir@/../libm2iso
@@ -483,6 +497,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_CORLIB_TRUE@    -fm2-pathname=m2cor -I. -I$(GM2_SRC)/gm2-libs-coroutines \
 @BUILD_CORLIB_TRUE@    -fm2-pathname=m2pim -I$(GM2_SRC)/gm2-libs \
 @BUILD_CORLIB_TRUE@    -fm2-pathname=m2iso -I$(GM2_SRC)/gm2-libs-iso \
+@BUILD_CORLIB_TRUE@    -fm2-pathname=m2cor -I. -I$(GM2_SRC)/gm2-libs-cor-common \
 @BUILD_CORLIB_TRUE@    -fm2-g -g -Wcase-enum -Wreturn-type -fcase -fm2-prefix=m2cor
 
 @BUILD_CORLIB_TRUE@@TARGET_DARWIN_FALSE@libm2cor_la_link_flags =  \
@@ -490,7 +505,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_CORLIB_TRUE@@TARGET_DARWIN_TRUE@libm2cor_la_link_flags = -Wl,-undefined,dynamic_lookup \
 @BUILD_CORLIB_TRUE@@TARGET_DARWIN_TRUE@	$(am__append_1)
 @BUILD_CORLIB_TRUE@libm2cor_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2cor_la_link_flags)
-@BUILD_CORLIB_TRUE@BUILT_SOURCES = SYSTEM.def
+@BUILD_CORLIB_TRUE@BUILT_SOURCES = SYSTEM.def SYSTEM.mod
 @BUILD_CORLIB_TRUE@CLEANFILES = SYSTEM.def
 @BUILD_CORLIB_TRUE@M2LIBDIR = /m2/m2cor/
 all: $(BUILT_SOURCES)
@@ -816,19 +831,26 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 @BUILD_CORLIB_TRUE@SYSTEM.def: Makefile
 @BUILD_CORLIB_TRUE@	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
-@BUILD_CORLIB_TRUE@             $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.def \
-@BUILD_CORLIB_TRUE@             $(GM2_SRC)/gm2-libs-coroutines/SYSTEM.mod \
-@BUILD_CORLIB_TRUE@             -I$(GM2_SRC)/gm2-libs-coroutines -I$(GM2_SRC)/gm2-libs -I$(GM2_SRC)/gm2-libs-iso \
+@BUILD_CORLIB_TRUE@             $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.def \
+@BUILD_CORLIB_TRUE@             $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.mod \
+@BUILD_CORLIB_TRUE@             -I$(GM2_SRC)/gm2-libs-cor-common \
+@BUILD_CORLIB_TRUE@             -I$(GM2_SRC)/gm2-libs-coroutines \
+@BUILD_CORLIB_TRUE@             -I$(GM2_SRC)/gm2-libs \
+@BUILD_CORLIB_TRUE@             -I$(GM2_SRC)/gm2-libs-iso \
 @BUILD_CORLIB_TRUE@             "$(GM2_FOR_TARGET)" $@
 
+@BUILD_CORLIB_TRUE@SYSTEM.mod: $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.mod
+@BUILD_CORLIB_TRUE@	cp $< $@
+
 @BUILD_CORLIB_TRUE@.mod.lo:
-@BUILD_CORLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+@BUILD_CORLIB_TRUE@	$(LIBTOOL) --tag CC \
+@BUILD_CORLIB_TRUE@                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 @BUILD_CORLIB_TRUE@                   --mode=compile $(GM2_FOR_TARGET) \
 @BUILD_CORLIB_TRUE@                   -c $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2cor_la_M2FLAGS) $< -o $@
 
 @BUILD_CORLIB_TRUE@.cc.lo:
-@BUILD_CORLIB_TRUE@	$(LIBTOOL) --tag=CXX --mode=compile $(CXX) \
-@BUILD_CORLIB_TRUE@                   -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2cor_la_CFLAGS) $< -o $@
+@BUILD_CORLIB_TRUE@	$(LIBTOOL) --tag CXX --mode=compile \
+@BUILD_CORLIB_TRUE@                   $(CXX) -c -I$(srcdir) $(CXXFLAGS) $(LIBCFLAGS) $(libm2cor_la_CFLAGS) $< -o $@
 
 @BUILD_CORLIB_TRUE@install-data-local: force
 @BUILD_CORLIB_TRUE@	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)
