@@ -933,9 +933,8 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
 
 /* Try to validate LEFT_OP and RIGHT_OP as the operands of a complex
    multiplication.  Since MULT_EXPR is commutative, try all combinations of
-   swapping the operands of each multiplication and both orders of the two
-   multiplies.  If a match is found, set OPS and STATUS for the matching
-   order.  */
+   swapping the operands of each multiplication.  If a match is found, set OPS
+   and STATUS for the matching order.  */
 
 static inline bool
 vect_validate_multiplication_commutative (slp_tree_to_load_perm_map_t *perm_cache,
@@ -951,18 +950,13 @@ vect_validate_multiplication_commutative (slp_tree_to_load_perm_map_t *perm_cach
     { 0, 1, 3, 2 }, /* (L0 * L1), (R1 * R0).  */
     { 1, 0, 2, 3 }, /* (L1 * L0), (R0 * R1).  */
     { 1, 0, 3, 2 }, /* (L1 * L0), (R1 * R0).  */
-    { 2, 3, 0, 1 }, /* (R0 * R1), (L0 * L1).  */
-    { 2, 3, 1, 0 }, /* (R0 * R1), (L1 * L0).  */
-    { 3, 2, 0, 1 }, /* (R1 * R0), (L0 * L1).  */
-    { 3, 2, 1, 0 }, /* (R1 * R0), (L1 * L0).  */
   };
 
-  /* The first four entries only swap operands within each MULT_EXPR.
-     The remaining entries also swap the two product terms, which is not
-     valid for plain subtraction.  */
-  unsigned nperms = subtract ? 4 : ARRAY_SIZE (op_indices);
+  /* Only try permutations that swap operands within each MULT_EXPR.  Swapping
+     the two product terms is not valid because the real lane is ordered by a
+     subtraction.  */
   slp_tree all_ops[4] = { left_op[0], left_op[1], right_op[0], right_op[1] };
-  for (unsigned i = 0; i < nperms; ++i)
+  for (unsigned i = 0; i < ARRAY_SIZE (op_indices); ++i)
     {
       auto_vec<slp_tree> trial_ops;
       if (vect_validate_multiplication (perm_cache, compat_cache, all_ops,
