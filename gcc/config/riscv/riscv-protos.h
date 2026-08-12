@@ -871,6 +871,7 @@ enum riscv_fusion_pairs
   RISCV_FUSE_B_ALUI = HOST_WIDE_INT_1U << 12,
   RISCV_FUSE_SUB_SEQZ = HOST_WIDE_INT_1U << 13,
   RISCV_FUSE_ADD_ST = HOST_WIDE_INT_1U << 14,
+  RISCV_FUSE_ADD_ANDI = HOST_WIDE_INT_1U << 15,
 };
 
 extern bool riscv_macro_fusion_p (void);

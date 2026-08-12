@@ -452,6 +452,15 @@ riscv_insn_is_addi_type_p (rtx_insn *insn, bool allow_word_p = true,
   return false;
 }
 
+/* Matches an add- or addi-type instruction.  */
+
+static bool
+riscv_insn_is_add_addi_p (rtx_insn *insn)
+{
+  return (riscv_insn_is_add_type_p (insn)
+	  || riscv_insn_is_addi_type_p (insn));
+}
+
 /* Matches a sub or subw:
      (set (reg rd) (minus (reg rs1) (reg rs2)))
    or:
@@ -476,6 +485,48 @@ riscv_insn_is_sub_type_p (rtx_insn *insn)
   return (riscv_set_extract_word_binary_p (set, MINUS, &src)
 	  && REG_P (XEXP (src, 0))
 	  && REG_P (XEXP (src, 1)));
+}
+
+/* Matches an andi:
+     (set (reg rd) (and (reg rs1) (const_int imm12)))
+   or an equivalent zero-extend RTL form.  Store the normalized operands in
+   *SRC0 and *SRC1 when requested.  */
+
+static bool
+riscv_insn_is_andi_type_p (rtx_insn *insn, rtx *src0 = NULL,
+			   rtx *src1 = NULL)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return false;
+
+  rtx src = SET_SRC (set);
+  if (get_attr_type (insn) == TYPE_LOGICAL
+      && GET_CODE (src) == AND
+      && REG_P (XEXP (src, 0))
+      && CONST_INT_P (XEXP (src, 1))
+      && riscv_regno (SET_DEST (set)) != INVALID_REGNUM)
+    {
+      if (src0)
+	*src0 = XEXP (src, 0);
+      if (src1)
+	*src1 = XEXP (src, 1);
+      return true;
+    }
+
+  if (get_attr_move_type (insn) == MOVE_TYPE_ANDI
+      && GET_CODE (src) == ZERO_EXTEND
+      && riscv_regno (XEXP (src, 0)) != INVALID_REGNUM
+      && riscv_regno (SET_DEST (set)) != INVALID_REGNUM)
+    {
+      if (src0)
+	*src0 = XEXP (src, 0);
+      if (src1)
+	*src1 = GEN_INT (0xff);
+      return true;
+    }
+
+  return false;
 }
 
 /* Return true if SET is a non-wrapped scalar shift of CODE.  */
@@ -1273,10 +1324,11 @@ riscv_fuse_b_alui (rtx_insn *prev, rtx_insn *curr)
     return true;
 
   /* ctz + andi.  */
+  rtx andi_src1;
   if (GET_CODE (SET_SRC (prev_set)) == CTZ
-      && GET_CODE (SET_SRC (curr_set)) == AND
-      && CONST_INT_P (XEXP (SET_SRC (curr_set), 1))
-      && INTVAL (XEXP (SET_SRC (curr_set), 1)) == 63)
+      && riscv_insn_is_andi_type_p (curr, NULL, &andi_src1)
+      && CONST_INT_P (andi_src1)
+      && INTVAL (andi_src1) == 63)
     return true;
 
   /* sub + smax (abs pattern).  */
@@ -1325,6 +1377,41 @@ riscv_fuse_sub_seqz (rtx_insn *prev, rtx_insn *curr)
       && (curr_code == EQ || curr_code == NE)
       && riscv_fuse_same_dest_p (prev_set, curr_set, true)
       && XEXP (curr_src, 1) == const0_rtx)
+    return true;
+
+  return false;
+}
+
+/* Check for RISCV_FUSE_ADD_ANDI fusion.
+   prev (one of the following):
+     (add) == (set (reg rd1) (plus (reg rs1) (reg rs2)))
+     (addi) == (set (reg rd1) (plus (reg rs1) (const_int imm12_1)))
+     (addw) == (set (reg rd1)
+		    (sign_extend (plus (reg rs1) (reg rs2))))
+     (addiw) == (set (reg rd1)
+		     (sign_extend (plus (reg rs1) (const_int imm12_1))))
+     (add.uw) == (set (reg rd1) (plus (zero_extend (reg rs1))
+				      (reg rs2)))
+     (mv) == (set (reg rd1) (reg rs1))
+     (li) == (set (reg rd1) (const_int imm12_1))
+     (addi) == (set (reg rd1) (lo_sum (reg rs1) symbol))
+   curr (one of the following):
+     (andi) == (set (reg rd2) (and (reg rd1) (const_int imm12_2)))
+     (andi) == (set (reg rd2) (zero_extend (reg rd1)))
+
+   Constraints:
+     rd1 == rd2.  */
+
+static bool
+riscv_fuse_add_andi (rtx_insn *prev, rtx_insn *curr)
+{
+  rtx prev_set, curr_set;
+  if (!riscv_fuse_sets_p (prev, curr, &prev_set, &curr_set))
+    return false;
+
+  if (riscv_insn_is_add_addi_p (prev)
+      && riscv_insn_is_andi_type_p (curr)
+      && riscv_fuse_same_dest_p (prev_set, curr_set, true))
     return true;
 
   return false;
@@ -1383,6 +1470,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_b_alui, "RISCV_FUSE_B_ALUI" },
   { RISCV_FUSE_SUB_SEQZ,
     riscv_fuse_sub_seqz, "RISCV_FUSE_SUB_SEQZ" },
+  { RISCV_FUSE_ADD_ANDI,
+    riscv_fuse_add_andi, "RISCV_FUSE_ADD_ANDI" },
 };
 
 /* Return the name of fusion operation OP.  */
