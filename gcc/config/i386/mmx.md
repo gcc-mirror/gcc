@@ -2085,11 +2085,13 @@
 
 (define_mode_attr mmxxmmmode
   [(V2HF "V8HF") (V2HI "V8HI") (V2BF "V8BF")
-   (V4HF "V8HF") (V4HI "V8HI") (V4BF "V8BF")])
+   (V4HF "V8HF") (V4HI "V8HI") (V4BF "V8BF")
+   (V2SF "V4SF") (V2SI "V4SI")])
 
 (define_mode_attr mmxxmmmodelower
   [(V2HF "v8hf") (V2HI "v8hi") (V2BF "v8bf")
-   (V4HF "v8hf") (V4HI "v8hi") (V4BF "v8bf")])
+   (V4HF "v8hf") (V4HI "v8hi") (V4BF "v8bf")
+   (V2SF "v4sf") (V2SI "v4si")])
 
 (define_expand "movd_<mode>_to_sse"
   [(set (match_operand:<mmxxmmmode> 0 "register_operand")
@@ -2330,6 +2332,24 @@
 	  (match_operand:V4FI_64 2 "register_operand")
 	  (match_operand:QI 3 "register_operand")))]
   "TARGET_MMX_WITH_SSE && TARGET_AVX512BW && TARGET_AVX512VL"
+{
+  rtx op0 = gen_reg_rtx (<mmxxmmmode>mode);
+  operands[1] = lowpart_subreg (<mmxxmmmode>mode, operands[1], <MODE>mode);
+  operands[2] = lowpart_subreg (<mmxxmmmode>mode, operands[2], <MODE>mode);
+  emit_insn (gen_vcond_mask_<mmxxmmmodelower>qi (op0, operands[1],
+						 operands[2], operands[3]));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, op0, <mmxxmmmode>mode));
+  DONE;
+})
+
+(define_expand "vcond_mask_<mode>qi"
+  [(set (match_operand:V2FI 0 "register_operand")
+	(vec_merge:V2FI
+	  (match_operand:V2FI 1 "register_operand")
+	  (match_operand:V2FI 2 "register_operand")
+	  (match_operand:QI 3 "register_operand")))]
+  "TARGET_MMX_WITH_SSE && TARGET_AVX512VL"
 {
   rtx op0 = gen_reg_rtx (<mmxxmmmode>mode);
   operands[1] = lowpart_subreg (<mmxxmmmode>mode, operands[1], <MODE>mode);

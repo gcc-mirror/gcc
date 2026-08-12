@@ -5778,12 +5778,33 @@ vectorizable_conversion (vec_info *vinfo,
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	      vop0 = new_temp;
 	    }
-	  new_stmt = vect_gimple_build (vec_dest, code1, vop0);
-	  new_temp = make_ssa_name (vec_dest, new_stmt);
-	  gimple_set_lhs (new_stmt, new_temp);
-	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	  if (code1 == COND_EXPR)
+	    {
+	      gcc_assert (!multi_step_cvt);
+	      new_stmt
+		= gimple_build_assign (vec_dest, VEC_COND_EXPR, vop0,
+				       build_minus_one_cst
+					 (TREE_TYPE (vec_dest)),
+				       build_zero_cst (TREE_TYPE (vec_dest)));
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      gimple_set_lhs (new_stmt, new_temp);
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      tree new_temp2 = make_ssa_name (vectype_out);
+	      new_stmt = gimple_build_assign (new_temp2,
+					      build1 (VIEW_CONVERT_EXPR,
+						      vectype_out, new_temp));
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      slp_node->push_vec_def (new_temp2);
+	    }
+	  else
+	    {
+	      new_stmt = vect_gimple_build (vec_dest, code1, vop0);
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      gimple_set_lhs (new_stmt, new_temp);
+	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 
-	  slp_node->push_vec_def (new_stmt);
+	      slp_node->push_vec_def (new_stmt);
+	    }
 	}
       break;
 
@@ -14549,6 +14570,23 @@ supportable_indirect_convert_operation (code_helper code,
     {
       converts.safe_push (std::make_pair (vectype_out, tc1));
       return true;
+    }
+
+  /* For conversions between mask types where the destination has
+     a data mode attempt a vcond_mask conversion.  */
+  if (VECTOR_BOOLEAN_TYPE_P (vectype_in)
+      && VECTOR_BOOLEAN_TYPE_P (vectype_out)
+      && GET_MODE_CLASS (TYPE_MODE (vectype_out)) == MODE_VECTOR_INT)
+    {
+      tree scalar_datatype
+	= build_nonstandard_integer_type (element_precision (vectype_out), 0);
+      tree datatype_out = build_vector_type_for_mode (scalar_datatype,
+						      TYPE_MODE (vectype_out));
+      if (expand_vec_cond_expr_p (datatype_out, vectype_in))
+	{
+	  converts.safe_push (std::make_pair (datatype_out, COND_EXPR));
+	  return true;
+	}
     }
 
   /* For conversions between float and integer types try whether
