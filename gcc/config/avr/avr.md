@@ -382,7 +382,7 @@
 
 ;; Map RTX code to its standard insn name
 (define_code_attr code_stdname
-  [(ashift   "ashl")
+  [(ashift   "ashl")  (ss_ashift "ssashl")  (us_ashift "usashl")
    (ashiftrt "ashr")
    (lshiftrt "lshr")
    (ior      "ior")

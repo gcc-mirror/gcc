@@ -26,6 +26,8 @@
 (define_mode_iterator ALL4A  [SA USA])
 (define_mode_iterator ALL2QA [HQ UHQ HA UHA])
 (define_mode_iterator ALL4QA [SQ USQ SA USA])
+(define_mode_iterator ALL12QA [ QQ   HQ  HA
+                               UQQ  UHQ UHA])
 (define_mode_iterator ALL124QA [ QQ   HQ  HA  SA  SQ
                                 UQQ  UHQ UHA USA USQ])
 
@@ -610,4 +612,67 @@
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   "%~call __round<mode>3"
+  [(set_attr "type" "xcall")])
+
+
+;******************************************************************************
+;** Saturated Shift Left
+;******************************************************************************
+
+;; These functions are default ABI but are clobbering less registers.
+
+(define_code_iterator sat_ashl  [us_ashift ss_ashift])
+
+;; "usashluqq3"  "ssashlqq3"
+;; "usashluhq3"  "ssashlhq3"
+;; "usashluha3"  "ssashlha3"
+(define_insn_and_split "<code_stdname><mode>3"
+  [(set (match_operand:ALL12QA 0 "register_operand"                  "={r24}")
+        (sat_ashl:ALL12QA (match_operand:ALL12QA 1 "register_operand" "{r24}")
+                          (match_operand:QI 2 "register_operand"      "{r22}")))
+   (clobber (match_scratch:QI 3                                      "={r22}"))]
+  "SIGNED_FIXED_POINT_MODE_P (<MODE>mode) == (<CODE> == SS_ASHIFT)"
+  "#"
+  "&& reload_completed"
+  [(scratch)]
+  { DONE_ADD_CCC })
+
+;; "*usashluqq3"  "*ssashlqq3"
+;; "*usashluhq3"  "*ssashlhq3"
+;; "*usashluha3"  "*ssashlha3"
+(define_insn "*<code_stdname><mode>3"
+  [(set (reg:ALL12QA                   REG_24)
+        (sat_ashl:ALL12QA (reg:ALL12QA REG_24)
+                          (reg:QI      REG_22)))
+   (clobber (reg:QI REG_22))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed
+   && SIGNED_FIXED_POINT_MODE_P (<MODE>mode) == (<CODE> == SS_ASHIFT)"
+  "%~call __<code_stdname><mode>3"
+  [(set_attr "type" "xcall")])
+
+;; "usashlusq3"  "ssashlsq3"
+;; "usashlusa3"  "ssashlsa3"
+(define_insn_and_split "<code_stdname><mode>3"
+  [(set (match_operand:ALL4QA 0 "register_operand"                 "={r22}")
+        (sat_ashl:ALL4QA (match_operand:ALL4QA 1 "register_operand" "{r22}")
+                         (match_operand:QI 2 "register_operand"     "{r20}")))
+   (clobber (match_scratch:QI 3                                    "={r20}"))]
+  "SIGNED_FIXED_POINT_MODE_P (<MODE>mode) == (<CODE> == SS_ASHIFT)"
+  "#"
+  "&& reload_completed"
+  [(scratch)]
+  { DONE_ADD_CCC })
+
+;; "*usashlusq3"  "*ssashlsq3"
+;; "*usashlusa3"  "*ssashlsa3"
+(define_insn "*<code_stdname><mode>3"
+  [(set (reg:ALL4QA                REG_22)
+        (sat_ashl:ALL4QA (reg:ALL4QA REG_22)
+                         (reg:QI     REG_20)))
+   (clobber (reg:QI REG_20))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed
+   && SIGNED_FIXED_POINT_MODE_P (<MODE>mode) == (<CODE> == SS_ASHIFT)"
+  "%~call __<code_stdname><mode>3"
   [(set_attr "type" "xcall")])
