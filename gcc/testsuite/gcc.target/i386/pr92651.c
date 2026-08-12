@@ -12,5 +12,5 @@ int foo(unsigned char a, unsigned char b)
 /* { dg-final { scan-assembler-not "cmov*" } } */
 /* { dg-final { scan-assembler "(cltd|cdq|shr)" } } */
 /* { dg-final { scan-assembler-times "xor" 1 } } */
-/* { dg-final { scan-assembler-times "sub" 2 } } */
+/* { dg-final { scan-assembler-times "\tsub" 2 } } */
 

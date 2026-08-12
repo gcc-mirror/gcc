@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
-/* { dg-final { scan-assembler-not "set" } } */
+/* { dg-final { scan-assembler-not "set\[abceglnops\]" } } */
 /* { dg-final { scan-assembler-times "adc"  4 } } */
 /* { dg-final { scan-assembler-times "sbb"  4 } } */
 

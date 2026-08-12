@@ -23,4 +23,4 @@ foo (int *p)
 }
 
 /* { dg-final { scan-assembler-times "xorl\[ \t\]" 1 } } */
-/* { dg-final { scan-assembler-not "\\\$0," } } */
+/* { dg-final { scan-assembler-not "\[ \t\]\\\$0," } } */

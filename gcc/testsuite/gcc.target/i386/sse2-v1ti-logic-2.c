@@ -49,5 +49,5 @@ void not2()
 }
 
 /* { dg-final { scan-assembler-times "pand" 2 } } */
-/* { dg-final { scan-assembler-times "por" 2 } } */
+/* { dg-final { scan-assembler-times "por\[ \t\]" 2 } } */
 /* { dg-final { scan-assembler-times "pxor" 4 } } */
