@@ -561,69 +561,6 @@ riscv_fuse_auipc_ld (rtx_insn *prev, rtx_insn *curr)
   return false;
 }
 
-/* Check for RISCV_FUSE_CACHE_ALIGNED_STD fusion.
-   prev (sd) == (set (mem:DI (rs1, offset1)) (reg:DI rs2))
-   curr (sd) == (set (mem:DI (rs1, offset2)) (reg:DI rs3))
-
-   Constraints:
-     rs1 has at least 128-bit pointer alignment
-     min (offset1, offset2) is 16-byte aligned
-     abs (offset1 - offset2) == 8.  */
-
-static bool
-riscv_fuse_cache_aligned_std (rtx_insn *prev, rtx_insn *curr)
-{
-  rtx prev_set = single_set (prev);
-  rtx curr_set = single_set (curr);
-  if (!prev_set || !curr_set || any_condjump_p (curr))
-    return false;
-
-  if (MEM_P (SET_DEST (prev_set))
-      && MEM_P (SET_DEST (curr_set))
-      && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
-      /* We can probably relax this condition.  The documentation is a bit
-	 unclear about sub-word cases.  So we just model DImode for now.  */
-      && GET_MODE (SET_DEST (curr_set)) == DImode
-      && GET_MODE (SET_DEST (prev_set)) == DImode)
-    {
-      rtx base_prev, base_curr, offset_prev, offset_curr;
-
-      extract_base_offset_in_addr (SET_DEST (prev_set),
-				   &base_prev, &offset_prev);
-      extract_base_offset_in_addr (SET_DEST (curr_set),
-				   &base_curr, &offset_curr);
-
-      /* Proceed only if we find both bases, both bases are register and
-	 bases are the same register.  */
-      if (base_prev != NULL_RTX && base_curr != NULL_RTX
-	  && REG_P (base_prev) && REG_P (base_curr)
-	  && REGNO (base_prev) == REGNO (base_curr)
-	  /* The alignment of the base pointer is more useful than the
-	     alignment of the memory reference for determining if we're
-	     on opposite sides of a cache line.  */
-	  && REGNO_POINTER_ALIGN (ORIGINAL_REGNO (base_prev)) >= 128)
-	{
-	  /* The two stores must be contained within opposite halves of
-	     the same 16 byte aligned block of memory.  We know the
-	     pointer has suitable alignment, so we just need to check
-	     the offsets of the two stores for suitable alignment.  */
-
-	  /* Get the smaller offset into OFFSET_PREV.  */
-	  if (INTVAL (offset_prev) > INTVAL (offset_curr))
-	    std::swap (offset_prev, offset_curr);
-
-	  /* We have a match if the smaller offset (OFFSET_PREV) is 16
-	     byte aligned and the higher offset is 8 bytes more than
-	     the lower offset.  */
-	  if ((INTVAL (offset_prev) % 16) == 0
-	      && (INTVAL (offset_prev) + 8 == INTVAL (offset_curr)))
-	    return true;
-	}
-    }
-
-  return false;
-}
-
 /* Check for RISCV_FUSE_ALIGNED_STD fusion.
    prev (store) == (set (mem (rs1, offset1)) (reg rs2))
    curr (store) == (set (mem (rs1, offset2)) (reg rs3))
@@ -850,8 +787,6 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_lui_ld, "RISCV_FUSE_LUI_LD" },
   { RISCV_FUSE_AUIPC_LD,
     riscv_fuse_auipc_ld, "RISCV_FUSE_AUIPC_LD" },
-  { RISCV_FUSE_CACHE_ALIGNED_STD,
-    riscv_fuse_cache_aligned_std, "RISCV_FUSE_CACHE_ALIGNED_STD" },
   { RISCV_FUSE_ALIGNED_STD,
     riscv_fuse_aligned_std, "RISCV_FUSE_ALIGNED_STD" },
   { RISCV_FUSE_BFEXT,
