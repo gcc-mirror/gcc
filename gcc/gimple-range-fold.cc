@@ -690,6 +690,14 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
   if (gimple_code (s) == GIMPLE_ASSIGN && range_from_readonly_var (r, s))
     return true;
 
+  // Save the current range query and restore it before returning.
+  // If the specified query is different, make it the current one.
+  // PR 125854 - The fold machinery may make a query call.
+  // PR 126814 - tree_expr_nonnegative_p may make a call.
+  range_query *save = cfun->x_range_query;
+  if (src.query () != get_range_query (cfun))
+    cfun->x_range_query = src.query ();
+
   gimple_range_op_handler handler (s);
   if (gimple_code (s) == GIMPLE_ASSIGN
       && gimple_assign_rhs_code (s) == ADDR_EXPR)
@@ -722,6 +730,8 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
 
   if (!res)
     {
+      // Restore the original query.
+      cfun->x_range_query = save;
       // If no name specified or range is unsupported, bail.
       if (!name || !gimple_range_ssa_p (name))
 	return false;
@@ -731,7 +741,11 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
     }
 
   if (r.undefined_p ())
-    return true;
+    {
+      // Restore the original query.
+      cfun->x_range_query = save;
+      return true;
+    }
 
   // We sometimes get compatible types copied from operands, make sure
   // the correct type is being returned.
@@ -741,35 +755,32 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
       range_cast (r, TREE_TYPE (name));
     }
 
-  // IF this is not a prange, we are done.
-  if (!is_a <prange> (r))
-    return true;
-
-  prange &p = as_a <prange> (r);
-  // Check to see if points_to should be set.
-  if (p.pt_unknown_p () && name && gimple_code (s) == GIMPLE_ASSIGN)
+  if (is_a <prange> (r))
     {
-      tree rhs = gimple_assign_rhs1 (s);
-      tree_code code = gimple_assign_rhs_code (s);
-      // If code is SSA_NAME, any points to would already be copied.
-      if (code != SSA_NAME && get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS
-	  && TREE_CODE (rhs) == ADDR_EXPR)
+      prange &p = as_a <prange> (r);
+      // Check to see if points_to should be set.
+      if (p.pt_unknown_p () && name && gimple_code (s) == GIMPLE_ASSIGN)
 	{
-	  p.set_pt (rhs, true);
-	}
-      // PR 125854 - Do not attempt to invoke the fold machinery unless this
-      // query is the same as the current query (which fold may invoke).
-      else if (src.query () == get_range_query (cfun))
-	{
-	  // If we couldn't find anything, try fold.
-	  x_fold_context = { s, src.query () };
-	  rhs = gimple_fold_stmt_to_constant_1 (s, pta_valueize, pta_valueize);
-	  if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
+	  tree rhs = gimple_assign_rhs1 (s);
+	  tree_code code = gimple_assign_rhs_code (s);
+	  // If code is SSA_NAME, any points to would already be copied.
+	  if (code != SSA_NAME
+	      && get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS
+	      && TREE_CODE (rhs) == ADDR_EXPR)
+	    p.set_pt (rhs, true);
+	  else
 	    {
-	      p.set_pt (rhs, true);
+	      // If we couldn't find anything, try fold.
+	      x_fold_context = { s, src.query () };
+	      rhs = gimple_fold_stmt_to_constant_1 (s, pta_valueize,
+						    pta_valueize);
+	      if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
+		p.set_pt (rhs, true);
 	    }
 	}
     }
+  // Restore the original query.
+  cfun->x_range_query = save;
   return true;
 }
 
