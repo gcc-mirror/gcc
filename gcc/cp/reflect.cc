@@ -65,6 +65,10 @@ init_reflection ()
   /* Make it a complete type.  */
   TYPE_SIZE (meta_info_type_node) = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
   TYPE_SIZE_UNIT (meta_info_type_node) = size_int (GET_MODE_SIZE (ptr_mode));
+  TYPE_UNSIGNED (meta_info_type_node) = 1;
+  TYPE_PRECISION (meta_info_type_node) = GET_MODE_BITSIZE (ptr_mode);
+  SET_TYPE_MODE (meta_info_type_node, ptr_mode);
+  SET_TYPE_ALIGN (meta_info_type_node, GET_MODE_ALIGNMENT (ptr_mode));
   /* Name it.  */
   record_builtin_type (RID_MAX, "decltype(^^int)", meta_info_type_node);
 
