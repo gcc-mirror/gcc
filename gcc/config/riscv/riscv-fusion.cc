@@ -529,6 +529,87 @@ riscv_insn_is_andi_type_p (rtx_insn *insn, rtx *src0 = NULL,
   return false;
 }
 
+/* Matches a logical instruction and stores its normalized operands in *SRC0
+   and *SRC1 when requested.  */
+
+static bool
+riscv_insn_is_logical_type_p (rtx_insn *insn,
+			      rtx *src0 = NULL,
+			      rtx *src1 = NULL)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return false;
+
+  /* Handle canonical ANDI and its equivalent zero-extend RTL.  */
+  if (riscv_insn_is_andi_type_p (insn, src0, src1))
+    return true;
+
+  enum attr_type type = get_attr_type (insn);
+  rtx src = SET_SRC (set);
+  rtx_code code = GET_CODE (src);
+
+  if (code == AND || code == IOR || code == XOR)
+    {
+      /* Handle ordinary register and immediate logical operations.  */
+      if (type == TYPE_LOGICAL
+	  && REG_P (XEXP (src, 0))
+	  && (REG_P (XEXP (src, 1))
+	      || CONST_INT_P (XEXP (src, 1))))
+	{
+	  if (src0)
+	    *src0 = XEXP (src, 0);
+	  if (src1)
+	    *src1 = XEXP (src, 1);
+	  return true;
+	}
+
+      /* ANDN and ORN have an inner NOT on the first RTL operand.  */
+      if (type != TYPE_BITMANIP || !(TARGET_ZBB || TARGET_ZBKB))
+	return false;
+
+      rtx sub = XEXP (src, 0);
+      if (GET_CODE (sub) != NOT
+	  || !REG_P (XEXP (src, 1))
+	  || !REG_P (XEXP (sub, 0)))
+	return false;
+      if (src0)
+	*src0 = XEXP (src, 1);
+      if (src1)
+	*src1 = XEXP (sub, 0);
+      return true;
+    }
+
+  if (code != NOT)
+    return false;
+
+  rtx sub = XEXP (src, 0);
+  /* A NOT of a register is an ordinary unary logical operation.  */
+  if (REG_P (sub))
+    {
+      if (type != TYPE_LOGICAL)
+	return false;
+      if (src0)
+	*src0 = sub;
+      return true;
+    }
+
+  /* XNOR is represented as an outer NOT of a register-register XOR.  */
+  if (SUBREG_P (sub)
+      || type != TYPE_BITMANIP
+      || !(TARGET_ZBB || TARGET_ZBKB)
+      || GET_CODE (sub) != XOR
+      || !REG_P (XEXP (sub, 0))
+      || !REG_P (XEXP (sub, 1)))
+    return false;
+
+  if (src0)
+    *src0 = XEXP (sub, 0);
+  if (src1)
+    *src1 = XEXP (sub, 1);
+  return true;
+}
+
 /* Return true if SET is a non-wrapped scalar shift of CODE.  */
 
 static bool
@@ -1451,6 +1532,59 @@ riscv_fuse_andi_add (rtx_insn *prev, rtx_insn *curr)
   return false;
 }
 
+/* Check for RISCV_FUSE_LOGIC_LOGIC fusion.
+   prev (one of the following):
+     (logic) == (set (reg rd1) (op1 (reg rs1) (reg rs2)))
+     (logic) == (set (reg rd1) (op1 (reg rs1) (const_int imm12_1)))
+     (logic) == (set (reg rd1) (op1 (not (reg rs2)) (reg rs1)))
+     (xnor) == (set (reg rd1) (not (xor (reg rs1) (reg rs2))))
+     (not) == (set (reg rd1) (not (reg rs1)))
+     (andi) == (set (reg rd1) (zero_extend (reg rs1)))
+   curr (one of the following):
+     (logic) == (set (reg rd2) (op2 (reg rd1) (reg rs3)))
+     (logic) == (set (reg rd2) (op2 (reg rd1) (const_int imm12_2)))
+     (logic) == (set (reg rd2) (op2 (not (reg rs3)) (reg rd1)))
+     (xnor) == (set (reg rd2) (not (xor (reg rd1) (reg rs3))))
+     (not) == (set (reg rd2) (not (reg rd1)))
+     (andi) == (set (reg rd2) (zero_extend (reg rd1)))
+
+   Constraints:
+     rd1 == rd2
+     rd1 != rs3 when curr uses register source rs3
+     rs2 and rs3 cannot both be register sources
+     op1 and op2, when present, are and, ior, or xor
+     andn/orn/xnor require ZBB or ZBKB.  */
+
+static bool
+riscv_fuse_logic_logic (rtx_insn *prev, rtx_insn *curr)
+{
+  rtx prev_set, curr_set;
+  if (!riscv_fuse_sets_p (prev, curr, &prev_set, &curr_set))
+    return false;
+
+  rtx prev_dest = SET_DEST (prev_set);
+
+  rtx prev_src1 = NULL_RTX;
+  rtx curr_src0 = NULL_RTX, curr_src1 = NULL_RTX;
+  if (!riscv_insn_is_logical_type_p (prev, NULL, &prev_src1)
+      || !riscv_insn_is_logical_type_p (curr, &curr_src0,
+					&curr_src1))
+    return false;
+
+  if (riscv_fuse_same_dest_p (prev_set, curr_set)
+      && riscv_fuse_same_reg_p (prev_dest, curr_src0)
+      && ((curr_src1 == NULL_RTX)
+	  || riscv_regno (curr_src1) == INVALID_REGNUM
+	  || !riscv_fuse_same_reg_p (prev_dest, curr_src1))
+      && !(prev_src1 != NULL_RTX
+	   && curr_src1 != NULL_RTX
+	   && riscv_regno (prev_src1) != INVALID_REGNUM
+	   && riscv_regno (curr_src1) != INVALID_REGNUM))
+    return true;
+
+  return false;
+}
+
 /* Type for a fusion checker function.  Takes the two candidate insns
    and returns true if they should be fused.  */
 
@@ -1508,6 +1642,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_add_andi, "RISCV_FUSE_ADD_ANDI" },
   { RISCV_FUSE_ANDI_ADD,
     riscv_fuse_andi_add, "RISCV_FUSE_ANDI_ADD" },
+  { RISCV_FUSE_LOGIC_LOGIC,
+    riscv_fuse_logic_logic, "RISCV_FUSE_LOGIC_LOGIC" },
 };
 
 /* Return the name of fusion operation OP.  */
