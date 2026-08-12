@@ -647,6 +647,159 @@ riscv_set_is_srli_p (rtx set)
   return riscv_set_is_shift_p (set, LSHIFTRT);
 }
 
+/* Matches an srai:
+     (set (reg rd) (ashiftrt (reg rs1) (const_int shamt))).  */
+
+static bool
+riscv_set_is_srai_p (rtx set)
+{
+  return riscv_set_is_shift_p (set, ASHIFTRT);
+}
+
+/* Match a scalar shift of CODE, including the equivalent RV64 word forms
+   produced for SLLIW and SRLIW.  Store whether the instruction is a word
+   form in *WORD_P and its effective shift amount in *SHIFT_AMOUNT when
+   requested.  */
+
+static bool
+riscv_set_is_shift_type_p (rtx set, rtx_code code, bool *word_p,
+			   HOST_WIDE_INT *shift_amount = NULL)
+{
+  if (riscv_set_is_shift_p (set, code))
+    {
+      rtx src = SET_SRC (set);
+      *word_p = TARGET_64BIT && GET_MODE (src) == SImode;
+      if (shift_amount)
+	*shift_amount = INTVAL (XEXP (src, 1));
+      return true;
+    }
+
+  if (!TARGET_64BIT
+      || riscv_regno (SET_DEST (set)) == INVALID_REGNUM)
+    return false;
+
+  rtx src = SET_SRC (set);
+  if (code == ASHIFT
+      && GET_CODE (src) == SIGN_EXTEND
+      && GET_MODE (src) == DImode)
+    {
+      src = XEXP (src, 0);
+      if (GET_CODE (src) == ASHIFT
+	  && GET_MODE (src) == SImode
+	  && riscv_regno (XEXP (src, 0)) != INVALID_REGNUM
+	  && CONST_INT_P (XEXP (src, 1)))
+	{
+	  *word_p = true;
+	  if (shift_amount)
+	    *shift_amount = INTVAL (XEXP (src, 1)) & 0x1f;
+	  return true;
+	}
+
+      if (GET_CODE (src) == AND
+	  && GET_MODE (src) == SImode
+	  && GET_CODE (XEXP (src, 0)) == ROTATERT
+	  && riscv_regno (XEXP (XEXP (src, 0), 0)) != INVALID_REGNUM
+	  && CONST_INT_P (XEXP (XEXP (src, 0), 1))
+	  && CONST_INT_P (XEXP (src, 1)))
+	{
+	  *word_p = true;
+	  if (shift_amount)
+	    *shift_amount
+	      = (32 - (INTVAL (XEXP (XEXP (src, 0), 1)) & 0x1f)) & 0x1f;
+	  return true;
+	}
+    }
+
+  if (code != LSHIFTRT)
+    return false;
+
+  rtx_code src_code = GET_CODE (src);
+  if ((src_code == ZERO_EXTEND || src_code == SIGN_EXTEND)
+      && GET_MODE (src) == DImode)
+    {
+      rtx_code extend_code = src_code;
+      src = XEXP (src, 0);
+      if (GET_CODE (src) == LSHIFTRT
+	  && GET_MODE (src) == SImode
+	  && riscv_regno (XEXP (src, 0)) != INVALID_REGNUM
+	  && CONST_INT_P (XEXP (src, 1))
+	  && (extend_code == SIGN_EXTEND
+	      || (INTVAL (XEXP (src, 1)) & 0x1f) != 0))
+	{
+	  *word_p = true;
+	  if (shift_amount)
+	    *shift_amount = INTVAL (XEXP (src, 1)) & 0x1f;
+	  return true;
+	}
+      return false;
+    }
+
+  if (src_code == ZERO_EXTRACT
+      && GET_MODE (src) == DImode
+      && riscv_regno (XEXP (src, 0)) != INVALID_REGNUM
+      && CONST_INT_P (XEXP (src, 1))
+      && CONST_INT_P (XEXP (src, 2))
+      && INTVAL (XEXP (src, 2)) > 0
+      && INTVAL (XEXP (src, 1)) + INTVAL (XEXP (src, 2)) == 32)
+    {
+      *word_p = true;
+      if (shift_amount)
+	*shift_amount = INTVAL (XEXP (src, 2));
+      return true;
+    }
+
+  if (src_code == LT
+      && GET_MODE (src) == DImode
+      && riscv_regno (XEXP (src, 0)) != INVALID_REGNUM
+      && GET_MODE (XEXP (src, 0)) == SImode
+      && XEXP (src, 1) == const0_rtx)
+    {
+      *word_p = true;
+      if (shift_amount)
+	*shift_amount = 31;
+      return true;
+    }
+
+  return false;
+}
+
+/* Match a left-shift/right-shift fusion pair.  ALLOW_WORD_P accepts the
+   equivalent RV64 word forms and requires both instructions to have the same
+   wordness.  ALLOW_ARITHMETIC_P accepts an arithmetic right shift.  */
+
+static bool
+riscv_fuse_shift_pair_p (rtx_insn *prev, rtx_insn *curr,
+			 bool allow_word_p, bool allow_arithmetic_p)
+{
+  rtx prev_set, curr_set;
+  if (!riscv_fuse_sets_p (prev, curr, &prev_set, &curr_set)
+      || get_attr_type (prev) != TYPE_SHIFT
+      || get_attr_type (curr) != TYPE_SHIFT)
+    return false;
+
+  bool prev_word_p = false;
+  bool curr_word_p = false;
+  bool prev_match_p
+    = (allow_word_p
+	? riscv_set_is_shift_type_p (prev_set, ASHIFT, &prev_word_p)
+	: riscv_set_is_slli_p (prev_set));
+  bool curr_match_p
+    = (allow_word_p
+	? riscv_set_is_shift_type_p (curr_set, LSHIFTRT, &curr_word_p)
+	: riscv_set_is_srli_p (curr_set));
+
+  if (!curr_match_p && allow_arithmetic_p)
+    curr_match_p = riscv_set_is_srai_p (curr_set);
+
+  if (!prev_match_p
+      || !curr_match_p
+      || prev_word_p != curr_word_p
+      || !riscv_fuse_same_dest_p (prev_set, curr_set, true))
+    return false;
+
+  return true;
+}
+
 /* Check the common RTL for ZEXTW, ZEXTWS and ZEXTH fusion.  */
 
 static bool
@@ -1345,25 +1498,23 @@ riscv_fuse_aligned_std (rtx_insn *prev, rtx_insn *curr)
 static bool
 riscv_fuse_bfext (rtx_insn *prev, rtx_insn *curr)
 {
-  rtx prev_set = single_set (prev);
-  rtx curr_set = single_set (curr);
-  if (!prev_set || !curr_set || any_condjump_p (curr))
-    return false;
+  return riscv_fuse_shift_pair_p (prev, curr, false, true);
+}
 
-  if (!riscv_fuse_same_dest_p (prev_set, curr_set))
-    return false;
+/* Check for RISCV_FUSE_SLLI_SRLI fusion.
+   prev (slli/slliw) == (set (reg rd1) (ashift (reg rs1)
+					      (const_int shamt1)))
+   curr (srli/srliw) == (set (reg rd2) (lshiftrt (reg rd1)
+						(const_int shamt2)))
 
-  if (GET_CODE (SET_SRC (prev_set)) == ASHIFT
-      && (GET_CODE (SET_SRC (curr_set)) == LSHIFTRT
-	  || GET_CODE (SET_SRC (curr_set)) == ASHIFTRT)
-      && REG_P (SET_DEST (prev_set))
-      && REG_P (SET_DEST (curr_set))
-      && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO (SET_DEST (prev_set))
-      && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
-      && CONST_INT_P (XEXP (SET_SRC (curr_set), 1)))
-    return true;
+   Constraints:
+     rd1 == rd2
+     both instructions are word forms or both are non-word forms.  */
 
-  return false;
+static bool
+riscv_fuse_slli_srli (rtx_insn *prev, rtx_insn *curr)
+{
+  return riscv_fuse_shift_pair_p (prev, curr, true, false);
 }
 
 /* Check for RISCV_FUSE_B_ALUI fusion.
@@ -1634,6 +1785,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_aligned_std, "RISCV_FUSE_ALIGNED_STD" },
   { RISCV_FUSE_BFEXT,
     riscv_fuse_bfext, "RISCV_FUSE_BFEXT" },
+  { RISCV_FUSE_SLLI_SRLI,
+    riscv_fuse_slli_srli, "RISCV_FUSE_SLLI_SRLI" },
   { RISCV_FUSE_B_ALUI,
     riscv_fuse_b_alui, "RISCV_FUSE_B_ALUI" },
   { RISCV_FUSE_SUB_SEQZ,
