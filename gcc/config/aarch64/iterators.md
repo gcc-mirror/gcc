@@ -1192,6 +1192,7 @@
     UNSPEC_RSHRNT	; Used in aarch64-sve2.md.
     UNSPEC_RSUBHNB	; Used in aarch64-sve2.md.
     UNSPEC_RSUBHNT	; Used in aarch64-sve2.md.
+    UNSPEC_SABAL	; Used in aarch64-sve2.md.
     UNSPEC_SABDLB	; Used in aarch64-sve2.md.
     UNSPEC_SABDLT	; Used in aarch64-sve2.md.
     UNSPEC_SADDLB	; Used in aarch64-sve2.md.
@@ -1252,6 +1253,7 @@
     UNSPEC_SUBHNT	; Used in aarch64-sve2.md.
     UNSPEC_TBL2		; Used in aarch64-sve2.md.
     UNSPEC_TRN		; Used in aarch64-builtins.cc
+    UNSPEC_UABAL	; Used in aarch64-sve2.md.
     UNSPEC_UABDLB	; Used in aarch64-sve2.md.
     UNSPEC_UABDLT	; Used in aarch64-sve2.md.
     UNSPEC_UADDLB	; Used in aarch64-sve2.md.
@@ -3995,7 +3997,8 @@
 (define_int_iterator SVE2_INT_BINARY_LANE [UNSPEC_SQDMULH
 					   UNSPEC_SQRDMULH])
 
-(define_int_iterator SVE2_INT_BINARY_LONG [UNSPEC_SABDLB
+(define_int_iterator SVE2_INT_BINARY_LONG [UNSPEC_SABAL
+					   UNSPEC_SABDLB
 					   UNSPEC_SABDLT
 					   UNSPEC_SADDLB
 					   UNSPEC_SADDLBT
@@ -4008,6 +4011,7 @@
 					   UNSPEC_SSUBLBT
 					   UNSPEC_SSUBLT
 					   UNSPEC_SSUBLTB
+					   UNSPEC_UABAL
 					   UNSPEC_UABDLB
 					   UNSPEC_UABDLT
 					   UNSPEC_UADDLB
@@ -4154,10 +4158,12 @@
 				    UNSPEC_CDOT180
 				    UNSPEC_CDOT270])
 
-(define_int_iterator SVE2_INT_ADD_BINARY_LONG [UNSPEC_SABDLB
+(define_int_iterator SVE2_INT_ADD_BINARY_LONG [UNSPEC_SABAL
+					       UNSPEC_SABDLB
 					       UNSPEC_SABDLT
 					       UNSPEC_SMULLB
 					       UNSPEC_SMULLT
+					       UNSPEC_UABAL
 					       UNSPEC_UABDLB
 					       UNSPEC_UABDLT
 					       UNSPEC_UMULLB
@@ -4942,6 +4948,7 @@
 			     (UNSPEC_RSQRTE "ursqrte")
 			     (UNSPEC_RSUBHNB "rsubhnb")
 			     (UNSPEC_RSUBHNT "rsubhnt")
+			     (UNSPEC_SABAL "sabal")
 			     (UNSPEC_SABDLB "sabdlb")
 			     (UNSPEC_SABDLT "sabdlt")
 			     (UNSPEC_SADALP "sadalp")
@@ -5013,6 +5020,7 @@
 			     (UNSPEC_SUBHNB "subhnb")
 			     (UNSPEC_SUBHNT "subhnt")
 			     (UNSPEC_SUQADD "suqadd")
+			     (UNSPEC_UABAL "uabal")
 			     (UNSPEC_UABDLB "uabdlb")
 			     (UNSPEC_UABDLT "uabdlt")
 			     (UNSPEC_UADALP "uadalp")
@@ -5064,10 +5072,12 @@
 				 (UNSPEC_URHADD "urhadd")
 				 (UNSPEC_URSHL "urshlr")])
 
-(define_int_attr sve_int_add_op [(UNSPEC_SABDLB "sabalb")
+(define_int_attr sve_int_add_op [(UNSPEC_SABAL "sabal")
+				 (UNSPEC_SABDLB "sabalb")
 				 (UNSPEC_SABDLT "sabalt")
 				 (UNSPEC_SMULLB "smlalb")
 				 (UNSPEC_SMULLT "smlalt")
+				 (UNSPEC_UABAL "uabal")
 				 (UNSPEC_UABDLB "uabalb")
 				 (UNSPEC_UABDLT "uabalt")
 				 (UNSPEC_UMULLB "umlalb")
@@ -5132,6 +5142,7 @@
 				  (UNSPEC_SBCLT "int_general")
 				  (UNSPEC_SQRDMLAH "int_mul")
 				  (UNSPEC_SQRDMLSH "int_mul")
+				  (UNSPEC_SABAL "int_general")
 				  (UNSPEC_SABDLB "int_general")
 				  (UNSPEC_SABDLT "int_general")
 				  (UNSPEC_SADDLB "int_general")
@@ -5146,6 +5157,7 @@
 				  (UNSPEC_SSUBLBT "int_general")
 				  (UNSPEC_SSUBLT "int_general")
 				  (UNSPEC_SSUBLTB "int_general")
+				  (UNSPEC_UABAL "int_general")
 				  (UNSPEC_UABDLB "int_general")
 				  (UNSPEC_UABDLT "int_general")
 				  (UNSPEC_UADDLB "int_general")

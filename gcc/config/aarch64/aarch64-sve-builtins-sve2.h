@@ -25,6 +25,7 @@ namespace aarch64_acle
   namespace functions
   {
     extern const function_base *const svaba;
+    extern const function_base *const svabal;
     extern const function_base *const svabalb;
     extern const function_base *const svabalt;
     extern const function_base *const svabdlb;

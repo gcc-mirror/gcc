@@ -340,6 +340,7 @@ DEF_SVE_FUNCTION_GS (svqshrn, shift_right_imm_narrowxn,
 		     qshr_x2, x2, none)
 DEF_SVE_FUNCTION_GS (svqshrun, shift_right_imm_narrowxn,
 		     qshru_x2, x2, none)
+DEF_SVE_FUNCTION (svabal, ternary_long_opt_n, hsd_integer, none)
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2)

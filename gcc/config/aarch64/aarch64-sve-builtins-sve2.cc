@@ -1052,6 +1052,8 @@ public:
 namespace aarch64_acle {
 
 FUNCTION (svaba, svaba_impl,)
+FUNCTION (svabal, unspec_based_add_function, (UNSPEC_SABAL,
+					      UNSPEC_UABAL, UNSPEC_NONE))
 FUNCTION (svabalb, unspec_based_add_function, (UNSPEC_SABDLB, UNSPEC_UABDLB))
 FUNCTION (svabalt, unspec_based_add_function, (UNSPEC_SABDLT, UNSPEC_UABDLT))
 FUNCTION (svabdlb, unspec_based_function, (UNSPEC_SABDLB, UNSPEC_UABDLB))
