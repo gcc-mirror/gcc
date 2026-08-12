@@ -1517,6 +1517,46 @@ riscv_fuse_slli_srli (rtx_insn *prev, rtx_insn *curr)
   return riscv_fuse_shift_pair_p (prev, curr, true, false);
 }
 
+/* Check for RISCV_FUSE_SRLI_ADD fusion.
+   prev (srli/srliw) == (set (reg rd1) (lshiftrt (reg rs1)
+						 (const_int shamt)))
+   curr (one of the following):
+     (add) == (set (reg rd2) (plus (reg rd1) (reg rs2)))
+     (addw) == (set (reg rd2)
+		  (sign_extend (plus (reg rd1) (reg rs2))))
+     (add.uw) == (set (reg rd2) (plus (zero_extend (reg rd1))
+				   (reg rs2)))
+
+   Constraints:
+     rd1 == rd2
+     both instructions are word forms or both are non-word forms
+     the effective right shift amount is in the range 0 to 3.
+
+   SH1ADD, SH2ADD and SH3ADD instead add a value shifted left by 1, 2 or 3
+   bits, scaling an index for 2-, 4- or 8-byte elements.  They correspond
+   to SLLI + ADD, not this SRLI + ADD fusion.  */
+
+static bool
+riscv_fuse_srli_add (rtx_insn *prev, rtx_insn *curr)
+{
+  rtx prev_set, curr_set;
+  if (!riscv_fuse_sets_p (prev, curr, &prev_set, &curr_set)
+      || get_attr_type (prev) != TYPE_SHIFT)
+    return false;
+
+  bool shift_word_p, add_word_p;
+  HOST_WIDE_INT shift_amount;
+  if (!riscv_set_is_shift_type_p (prev_set, LSHIFTRT, &shift_word_p,
+				  &shift_amount)
+      || !riscv_insn_is_add_type_p (curr, &add_word_p)
+      || shift_word_p != add_word_p
+      || !riscv_fuse_same_dest_p (prev_set, curr_set, true))
+    return false;
+
+  unsigned int mask = shift_word_p ? 0x1f : (TARGET_64BIT ? 0x3f : 0x1f);
+  return (shift_amount & mask) <= 3;
+}
+
 /* Check for RISCV_FUSE_B_ALUI fusion.
    prev/curr (one of the following pairs):
      prev (orc.b) == (set (reg rd1)
@@ -1787,6 +1827,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_bfext, "RISCV_FUSE_BFEXT" },
   { RISCV_FUSE_SLLI_SRLI,
     riscv_fuse_slli_srli, "RISCV_FUSE_SLLI_SRLI" },
+  { RISCV_FUSE_SRLI_ADD,
+    riscv_fuse_srli_add, "RISCV_FUSE_SRLI_ADD" },
   { RISCV_FUSE_B_ALUI,
     riscv_fuse_b_alui, "RISCV_FUSE_B_ALUI" },
   { RISCV_FUSE_SUB_SEQZ,
