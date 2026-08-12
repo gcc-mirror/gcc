@@ -1,3 +1,27 @@
+2026-08-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-07-25  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/126334
+	* config/riscv/riscv-v.cc (get_gather_scatter_code): Use ordered
+	indexed stores.
+
+2026-08-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/126550
+	* config/riscv/riscv-v.cc (expand_const_vector): Fix typo in manually
+	merged patch.
+
+2026-08-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-08-04  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/126550
+	* config/riscv/riscv-v.cc (expand_const_vector_single_step_npatterns):
+	User global builder's npatterns.
+
 2026-08-04  Jin Ma  <jinma@linux.alibaba.com>
 
 	Backported from master:
