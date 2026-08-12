@@ -2499,6 +2499,7 @@ class operator_div : public cross_product_operator
 {
   using range_operator::update_bitmask;
   using range_operator::op2_range;
+  using range_operator::op1_op2_relation_effect;
 public:
   operator_div (tree_code div_kind) { m_code = div_kind; }
   bool op2_range (irange &r, tree type, const irange &lhs, const irange &,
@@ -2511,6 +2512,11 @@ public:
   virtual bool wi_op_overflows (wide_int &res, tree type,
 				const wide_int &, const wide_int &)
     const final override;
+  bool op1_op2_relation_effect (irange &lhs_range,
+				tree type,
+				const irange &op1_range,
+				const irange &op2_range,
+				relation_kind rel) const final override;
   void update_bitmask (irange &r, const irange &lh, const irange &rh)
     const final override
     { update_known_bitmask (r, m_code, lh, rh); }
@@ -2624,6 +2630,35 @@ operator_div::wi_fold (irange &r, tree type,
   gcc_checking_assert (!r.undefined_p ());
 }
 
+bool
+operator_div::op1_op2_relation_effect (irange &lhs_range,
+				       tree type,
+				       const irange &op1_range,
+				       const irange &op2_range,
+				       relation_kind rel) const
+{
+  if (rel == VREL_VARYING)
+    return false;
+
+  int_range<2> rel_range;
+
+  switch (rel)
+    {
+    /* op1/op2 = 0 if op1 < op2 and both op1 and op2
+       are known positives.  */
+    case VREL_LT:
+      if (TYPE_UNSIGNED (type)
+	  || (wi::ge_p (op1_range.lower_bound (), 0, SIGNED)
+	      && wi::ge_p (op2_range.lower_bound (), 0, SIGNED)))
+	rel_range.set_zero (type);
+      break;
+    default:
+      return false;
+    }
+
+  lhs_range.intersect (rel_range);
+  return true;
+}
 
 class operator_exact_divide : public operator_div
 {
