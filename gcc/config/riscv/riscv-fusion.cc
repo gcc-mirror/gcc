@@ -920,6 +920,32 @@ riscv_fuse_ldindexed (rtx_insn *prev, rtx_insn *curr)
 	  && mem.type != SCHED_FUSION_ST);
 }
 
+/* Check for RISCV_FUSE_ADD_ST fusion.
+   prev (one of the following):
+     (add) == (set (reg rd1) (plus (reg rs1) (reg rs2)))
+     (addw) == (set (reg rd1) (sign_extend (plus:SI (reg rs1)
+						    (reg rs2))))
+     (add.uw) == (set (reg rd1) (plus (zero_extend (reg rs1))
+				      (reg rs2)))
+   curr (one of the following):
+     (store) == (set (mem (rd1, offset)) (reg rs3))
+     (store) == (set (mem (rd1, offset)) (const_int 0))
+
+   Constraints:
+     rd1 != rs3 for a register-source store
+     offset == 0.  */
+
+static bool
+riscv_fuse_add_st (rtx_insn *prev, rtx_insn *curr)
+{
+  rtx add_set;
+  struct riscv_fusion_mem_info mem;
+
+  return (riscv_fuse_add_mem_p (prev, curr, &add_set, &mem)
+	  && mem.type == SCHED_FUSION_ST
+	  && !reg_overlap_mentioned_p (SET_DEST (add_set), mem.reg));
+}
+
 /* Check for RISCV_FUSE_EXPANDED_LD fusion.
    prev (one of the following):
      (add) == (set (reg rd1) (plus (reg rs1) (reg rs2)))
@@ -1335,6 +1361,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_zexth, "RISCV_FUSE_ZEXTH" },
   { RISCV_FUSE_LDINDEXED,
     riscv_fuse_ldindexed, "RISCV_FUSE_LDINDEXED" },
+  { RISCV_FUSE_ADD_ST,
+    riscv_fuse_add_st, "RISCV_FUSE_ADD_ST" },
   { RISCV_FUSE_EXPANDED_LD,
     riscv_fuse_expanded_ld, "RISCV_FUSE_EXPANDED_LD" },
   { RISCV_FUSE_LDPREINCREMENT,
