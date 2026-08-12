@@ -3223,9 +3223,10 @@ Valid choices are 'yes' and 'no'.]) ;;
   esac],
  [enable_gnu_indirect_function="$default_gnu_indirect_function"])
 
+gcc_cv_irelative_reloc=
 case "${target}" in
   riscv*-*-linux*)
-    AC_MSG_CHECKING(linker ifunc IRELATIVE support)
+    gcc_cv_irelative_reloc=R_RISCV_IRELATIVE
     cat > conftest.s <<EOF
 	.text
 	.type	foo_resolver, @function
@@ -3244,19 +3245,46 @@ bar:
 	ret
 	.size	bar, .-bar
 EOF
-    if test x"$gcc_cv_as" != x \
-       && test x"$gcc_cv_ld" != x \
-       && test x"$gcc_cv_readelf" != x \
-       && $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
-       && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
-       && $gcc_cv_readelf --relocs --wide conftest \
-	  | grep R_RISCV_IRELATIVE > /dev/null 2>&1; then
-      enable_gnu_indirect_function=yes
-    fi
-    rm -f conftest conftest.o conftest.s
-    AC_MSG_RESULT($enable_gnu_indirect_function)
+    ;;
+  alpha*-*-linux*)
+    # Alpha gas reserves .set for setting assembler modes, so the alias is
+    # spelled with '=' instead, matching the target's ASM_OUTPUT_DEF.
+    gcc_cv_irelative_reloc=R_ALPHA_IRELATIVE
+    cat > conftest.s <<EOF
+	.text
+	.type	foo_resolver, @function
+foo_resolver:
+	ret
+	.size	foo_resolver, .-foo_resolver
+
+	.globl	foo
+	.type	foo, %gnu_indirect_function
+	foo = foo_resolver
+
+	.globl	bar
+	.type	bar, @function
+bar:
+	jsr	\$26, foo
+	ret
+	.size	bar, .-bar
+EOF
     ;;
 esac
+
+if test x"$gcc_cv_irelative_reloc" != x; then
+  AC_MSG_CHECKING(linker ifunc IRELATIVE support)
+  if test x"$gcc_cv_as" != x \
+     && test x"$gcc_cv_ld" != x \
+     && test x"$gcc_cv_readelf" != x \
+     && $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
+     && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
+     && $gcc_cv_readelf --relocs --wide conftest \
+	| grep $gcc_cv_irelative_reloc > /dev/null 2>&1; then
+    enable_gnu_indirect_function=yes
+  fi
+  rm -f conftest conftest.o conftest.s
+  AC_MSG_RESULT($enable_gnu_indirect_function)
+fi
 
 gif=`if test x$enable_gnu_indirect_function = xyes; then echo 1; else echo 0; fi`
 AC_DEFINE_UNQUOTED(HAVE_GNU_INDIRECT_FUNCTION, $gif,
