@@ -1,6 +1,6 @@
 /* PR target/103750 */
 /* { dg-do compile }  */
-/* { dg-options "-O2 -mavx512fp16 -mavx512vl -mavx512dq" } */
+/* { dg-options "-O2 -mavx512fp16 -mavx512vl -mavx512dq -mtune=generic" } */
 /* { dg-final { scan-assembler-not "kmov" } } */
 
 #include <immintrin.h>

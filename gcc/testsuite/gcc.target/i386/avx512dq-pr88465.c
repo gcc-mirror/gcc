@@ -1,6 +1,6 @@
 /* PR target/88465 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512dq -mno-avx512bw" } */
+/* { dg-options "-O2 -mavx512dq -mno-avx512bw -mtune=generic" } */
 /* { dg-final { scan-assembler-times "kxorb\[ \t]" 1 } } */
 /* { dg-final { scan-assembler-times "kxnorb\[ \t]" 1 } } */
 

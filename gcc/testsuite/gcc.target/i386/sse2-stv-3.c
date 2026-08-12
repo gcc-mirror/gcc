@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-O2 -msse2 -mno-sse4 -mno-stackrealign" } */
+/* { dg-options "-O2 -msse2 -mno-sse4 -mno-stackrealign -mtune=generic" } */
 
 __int128 a, b, c, z;
 

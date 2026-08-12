@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-m32 -O2 -msse2 -mno-stackrealign" } */
+/* { dg-options "-m32 -O2 -msse2 -mno-stackrealign -mtune=generic" } */
 
 long long y,z;
 unsigned int p;

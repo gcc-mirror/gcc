@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -mtune=generic" } */
 
 typedef long long v2di __attribute__((vector_size (16)));
 
