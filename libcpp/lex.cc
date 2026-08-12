@@ -644,96 +644,55 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 #elif defined (__ARM_NEON) && defined (__ARM_64BIT_STATE)
 #include "arm_neon.h"
 
-/* This doesn't have to be the exact page size, but no system may use
-   a size smaller than this.  ARMv8 requires a minimum page size of
-   4k.  The impact of being conservative here is a small number of
-   cases will take the slightly slower entry path into the main
-   loop.  */
+/* A fast AdvSIMD scanner implementation using table lookup.
 
-#define AARCH64_MIN_PAGE_SIZE 4096
+   Lookup the low 4 bits of each character using TBL and compare the
+   result with the original input.  The lookup table contains the 4
+   search characters at entries MOD 16, so a match results in the same
+   character.  This works because the low 4 bits of the search
+   characters are unique.
+
+   Typical statistics for number of characters till a match:
+    1-15: 30.9%
+   16-31: 22.2%
+   32-47: 18.3%
+   48-63: 14.1%
+   64-79: 13.0%
+   80-95:  1.1%
+     >96:  0.3%
+
+   To get good performance, what matters is to quickly get the match result
+   for the first few vectors with minimal initialization overhead.
+   We simply loop until a match is found even if the input pointer is
+   unaligned or close to the end.  Since this may overread, it relies on
+   *end containing a match and CPP_BUFFER_PADDING >= 16.  */
+
+static_assert (CPP_BUFFER_PADDING >= 16, "");
+
+/* TBL lookup with each search char at (ch % 16).  Avoid matching NUL by
+   setting the first entry to 1.  */
+static const uint8_t table[16] =
+  { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, '\n', 0, '\\', '\r', 0, '?' };
 
 static const uchar *
 search_line_neon (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {
-  const uint8x16_t repl_nl = vdupq_n_u8 ('\n');
-  const uint8x16_t repl_cr = vdupq_n_u8 ('\r');
-  const uint8x16_t repl_bs = vdupq_n_u8 ('\\');
-  const uint8x16_t repl_qm = vdupq_n_u8 ('?');
-  const uint8x16_t xmask = (uint8x16_t) vdupq_n_u64 (0x8040201008040201ULL);
+  uint8x16_t d, tab, m;
+  uint16x8_t t;
+  uint64_t mask;
+  m = vdupq_n_u8 (0xf);
+  tab = vld1q_u8 (table);
+  d = vld1q_u8 (s);
 
-#ifdef __ARM_BIG_ENDIAN
-  const int16x8_t shift = {8, 8, 8, 8, 0, 0, 0, 0};
-#else
-  const int16x8_t shift = {0, 0, 0, 0, 8, 8, 8, 8};
-#endif
-
-  unsigned int found;
-  const uint8_t *p;
-  uint8x16_t data;
-  uint8x16_t t;
-  uint16x8_t m;
-  uint8x16_t u, v, w;
-
-  /* Align the source pointer.  */
-  p = (const uint8_t *)((uintptr_t)s & -16);
-
-  /* Assuming random string start positions, with a 4k page size we'll take
-     the slow path about 0.37% of the time.  */
-  if (__builtin_expect ((AARCH64_MIN_PAGE_SIZE
-			 - (((uintptr_t) s) & (AARCH64_MIN_PAGE_SIZE - 1)))
-			< 16, 0))
+  while (1)
     {
-      /* Slow path: the string starts near a possible page boundary.  */
-      uint32_t misalign, mask;
-
-      misalign = (uintptr_t)s & 15;
-      mask = (-1u << misalign) & 0xffff;
-      data = vld1q_u8 (p);
-      t = vceqq_u8 (data, repl_nl);
-      u = vceqq_u8 (data, repl_cr);
-      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
-      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
-      t = vorrq_u8 (v, w);
-      t = vandq_u8 (t, xmask);
-      m = vpaddlq_u8 (t);
-      m = vshlq_u16 (m, shift);
-      found = vaddvq_u16 (m);
-      found &= mask;
-      if (found)
-	return (const uchar*)p + __builtin_ctz (found);
+      t = (uint16x8_t) vceqq_u8 (vqtbl1q_u8 (tab, vandq_u8 (d, m)), d);
+      mask = vget_lane_u64 ((uint64x1_t)vaddhn_u16 (t, t), 0);
+      if (mask != 0)
+	return s + (__builtin_ctzl (mask & 0x1111111111111111UL) >> 2);
+      s += 16;
+      d = vld1q_u8 (s);
     }
-  else
-    {
-      data = vld1q_u8 ((const uint8_t *) s);
-      t = vceqq_u8 (data, repl_nl);
-      u = vceqq_u8 (data, repl_cr);
-      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
-      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
-      t = vorrq_u8 (v, w);
-      if (__builtin_expect (vpaddd_u64 ((uint64x2_t)t) != 0, 0))
-	goto done;
-    }
-
-  do
-    {
-      p += 16;
-      data = vld1q_u8 (p);
-      t = vceqq_u8 (data, repl_nl);
-      u = vceqq_u8 (data, repl_cr);
-      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
-      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
-      t = vorrq_u8 (v, w);
-    } while (!vpaddd_u64 ((uint64x2_t)t));
-
-done:
-  /* Now that we've found the terminating substring, work out precisely where
-     we need to stop.  */
-  t = vandq_u8 (t, xmask);
-  m = vpaddlq_u8 (t);
-  m = vshlq_u16 (m, shift);
-  found = vaddvq_u16 (m);
-  return (((((uintptr_t) p) < (uintptr_t) s) ? s : (const uchar *)p)
-	  + __builtin_ctz (found));
 }
 
 #ifdef HAVE_SVE2
