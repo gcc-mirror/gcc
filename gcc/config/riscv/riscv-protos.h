@@ -882,6 +882,7 @@ enum riscv_fusion_pairs
   RISCV_FUSE_LDST_PAIR_INC = HOST_WIDE_INT_1U << 23,
   RISCV_FUSE_LDST_PAIR_DEC = HOST_WIDE_INT_1U << 24,
   RISCV_FUSE_FLDFST_PAIR_INC = HOST_WIDE_INT_1U << 25,
+  RISCV_FUSE_FLDFST_PAIR_DEC = HOST_WIDE_INT_1U << 26,
 };
 
 extern bool riscv_macro_fusion_p (void);
