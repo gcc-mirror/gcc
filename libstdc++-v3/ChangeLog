@@ -1,3 +1,8 @@
+2026-08-11  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/27_io/headers/iosfwd/synopsis.cc: Test __cpp_lib_syncbuf
+	value only if _GLIBCXX_USE_CXX11_ABI.
+
 2026-08-07  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* config/os/djgpp/error_constants.h (errc::no_message_available)

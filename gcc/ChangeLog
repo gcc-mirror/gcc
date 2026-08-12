@@ -1,3 +1,99 @@
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (dom_oracle::create_relation_in_bb): Adjust
+	to use ssa_name instead of version.
+	(dom_oracle::search_and_merge_relation): Likewise.
+	(dom_oracle::find_relation_block): Likewise.
+	(dom_oracle::find_relation_dom): Likewise.
+	(dom_oracle::query): Likewise.
+	* value-relation.h (find_relation_block): Use trees not unsigned.
+	(find_relation_dom): Likewise.
+
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (dom_oracle::record): Use search_and_merge_relation.
+	(dom_oracle::create_relation_in_bb): New.
+	(dom_oracle::search_and_merge_relation): Rename from set_one_relation
+	and extract create_relation code.
+	(dom_oracle::register_transitives): Use search_and_merge_relation.
+	* value-relation.h (set_one_relation): Delete.
+	(create_relation_in_bb): New.
+	(search_and_merge_relation): Rename from set_one_relation.
+
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126536
+	* gimple-range-edge.cc (calc_switch_ranges): Check that invert worked.
+	* gimple-range-op.cc (cfn_toupper_tolower::fold_range): Likewise.
+	* range-op-ptr.cc (operator_equal::op1_range): Likewise.
+	(operator_not_equal::op1_range): Likewise.
+	* range-op.cc (operator_equal::op1_range): Likewise.
+	(operator_not_equal::op1_range): Likewise.
+	(operator_rshift::op1_range): Likewise.
+	(operator_logical_not::fold_range): Likewise.
+	* tree-ssa-loop-unswitch.cc (unswitch_predicate): Likewise.
+	* value-range.cc (irange_bitmask::range_from_mask): Likewise.
+	(prange::invert): Return bool for success/fail.
+	(irange::invert): Likewise.
+	(irange::snap_subranges): Check that invert worked.
+	(range_tests_int_range_max): Confirm failed invert works.
+	(range_tests_misc): Check invert return value.
+	* value-range.h (irange::invert): Add boolean return value.
+	(prange::invert): Add boolean return value.
+	* vr-values.cc (simplify_switch_using_ranges): Check invert result.
+
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126531
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Track
+	abnormal edges throughout the dom search.
+
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126329
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Add no-delete option.
+	* tree-ssa-dce.h (simple_dce_from_worklist): Add no delete param.
+	* tree-vrp.cc (remove_unreachable::handle_early): Use no delete option.
+
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126648
+	* range-op.cc (operator_lshift::op1_range): Handle undefined.
+
+2026-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126789
+	* tree-vect-patterns.cc (build_mask_conversion): Add
+	scalar_type_for_mask parameter and pass it along.
+	(vect_convert_mask_for_vectype): Likewise.
+	(vect_recog_bool_pattern): Adjust.
+	(vect_recog_mask_conversion_pattern): Likewise.
+
+2026-08-11  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	PR tree-optimization/126693
+	* match.pd: Fold abs(x) * abs(y) into abs(x * y).
+
+2026-08-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/121343
+	* config/avr/avr-fixed.md: Rewrite insns and expanders to
+	use hard-register constraints.
+	* config/avr/avr.md (*umulqihi3.call_split): Add comment.
+
+2026-08-11  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR tree-optimization/123951
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_simd_vec_set_lane0<mode>): New pattern.
+	(*aarch64_simd_vec_copy_lane_same<mode>): New pattern.
+
+2026-08-11  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/126676
+	* config/i386/i386-expand.cc (ix86_expand_fp_compare): Only use
+	UNSPEC_OPTCOMX for the modes VCOMX exists for.
+
 2026-08-10  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	* wide-int.cc (canonize): Use return 1 instead of return len.

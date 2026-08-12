@@ -1,3 +1,49 @@
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126536
+	* gcc.dg/pr126536-1.c: New.
+	* gcc.dg/pr126536-2.c: New.
+
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126531
+	* g++.dg/pr126531.C: New.
+
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126329
+	* gcc.dg/pr126329.c: New.
+
+2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126648
+	* gcc.dg/pr126648.c: New.
+
+2026-08-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126789
+	* gcc.target/i386/vect-pr126789.c: New testcase.
+
+2026-08-11  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* gcc.dg/tree-ssa/mult-abs-3.c: New test.
+	* gcc.dg/tree-ssa/mult-abs-4.c: New test.
+	* gcc.dg/tree-ssa/mult-abs-5.c: New test.
+
+2026-08-11  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR tree-optimization/123951
+	* gcc.target/aarch64/pr123951_1.c: New test.
+	* gcc.target/aarch64/pr123951_2.c: New test.
+	* gcc.target/aarch64/simd/addsub_1.c: Update e1 lane insert from
+	d[1] to d[0].
+	* gcc.target/aarch64/simd/addsub_2.c: Likewise.
+
+2026-08-11  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/126676
+	* gcc.target/i386/pr126676.c: New test.
+
 2026-08-10  Robert Dubner  <rdubner@symas.com>
 
 	* cobol.dg/group2/INITIALIZE_EXTERNAL_data_items_with_VALUE.cob: New test.
