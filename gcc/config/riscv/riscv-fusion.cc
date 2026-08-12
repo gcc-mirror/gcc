@@ -1347,6 +1347,29 @@ riscv_fuse_ldpreincrement (rtx_insn *prev, rtx_insn *curr)
   return riscv_fuse_indexed_mem_p (prev, curr, true, true);
 }
 
+/* Check for RISCV_FUSE_PREINDEX_ST fusion.
+   prev (one of the following):
+     (addi) == (set (reg rd1) (plus (reg rd1) (const_int imm12)))
+     (self-mv) == (set (reg rd1) (reg rd1))
+     (addi) == (set (reg rd1) (lo_sum (reg rd1) symbol1))
+   curr (one of the following):
+     (store) == (set (mem addr) (reg rs1))
+     (store) == (set (mem addr) (const_int 0))
+     (fpstore) == (set (mem addr) (reg frs1))
+   addr (one of the following):
+     (rd1, offset)
+     (lo_sum (reg rd1) symbol2)
+
+   Constraints:
+     the ADDI-type instruction is not a word form
+     for a register-source integer store, rd1 != rs1.  */
+
+static bool
+riscv_fuse_preindex_st (rtx_insn *prev, rtx_insn *curr)
+{
+  return riscv_fuse_indexed_mem_p (prev, curr, false, true);
+}
+
 /* Check for RISCV_FUSE_LUI_ADDI fusion.
    prev (one of the following):
      (lui) == (set (reg rd1) (const_int imm20))
@@ -1843,6 +1866,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_expanded_ld, "RISCV_FUSE_EXPANDED_LD" },
   { RISCV_FUSE_LDPREINCREMENT,
     riscv_fuse_ldpreincrement, "RISCV_FUSE_LDPREINCREMENT" },
+  { RISCV_FUSE_PREINDEX_ST,
+    riscv_fuse_preindex_st, "RISCV_FUSE_PREINDEX_ST" },
   { RISCV_FUSE_LUI_ADDI,
     riscv_fuse_lui_addi, "RISCV_FUSE_LUI_ADDI" },
   { RISCV_FUSE_AUIPC_ADDI,
