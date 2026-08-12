@@ -879,6 +879,7 @@ enum riscv_fusion_pairs
   RISCV_FUSE_PREINDEX_ST = HOST_WIDE_INT_1U << 20,
   RISCV_FUSE_POSTINDEX_LD = HOST_WIDE_INT_1U << 21,
   RISCV_FUSE_POSTINDEX_ST = HOST_WIDE_INT_1U << 22,
+  RISCV_FUSE_LDST_PAIR_INC = HOST_WIDE_INT_1U << 23,
 };
 
 extern bool riscv_macro_fusion_p (void);

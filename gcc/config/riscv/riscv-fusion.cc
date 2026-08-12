@@ -1013,6 +1013,9 @@ struct riscv_fusion_mem_rule
 
 static const struct riscv_fusion_mem_rule riscv_fusion_mem_rules[] =
 {
+  { RISCV_FUSE_LDST_PAIR_INC, (1U << 4) | (1U << 8),
+    SCHED_FUSION_LD | SCHED_FUSION_LD_SIGN_EXTEND | SCHED_FUSION_ST,
+    false, false, RISCV_FUSION_INC, 1 },
   /* Allow 1-, 2-, 4- and 8-byte stores.  */
   { RISCV_FUSE_ALIGNED_STD, (1U << 1) | (1U << 2) | (1U << 4) | (1U << 8),
     SCHED_FUSION_ST, false, true, RISCV_FUSION_ANY, 2 }
@@ -1579,6 +1582,27 @@ riscv_fuse_aligned_std (rtx_insn *prev, rtx_insn *curr)
   return riscv_fuse_mem_pair_p (prev, curr, RISCV_FUSE_ALIGNED_STD);
 }
 
+/* Check for RISCV_FUSE_LDST_PAIR_INC fusion.
+   prev/curr (one of the following pairs):
+     prev (lw/ld) == (set (reg rd1) (mem (rs1, offset1)))
+     curr (lw/ld) == (set (reg rd2) (mem (rs1, offset2)))
+
+     prev (sw/sd) == (set (mem (rs1, offset1)) (reg rs2))
+     curr (sw/sd) == (set (mem (rs1, offset2)) (reg rs3))
+
+   Constraints:
+     access size is 4 or 8 bytes
+     offset2 - offset1 equals the access size
+     offsets are aligned to the access size
+     loads are not zero-extending
+     for loads, rd1 != rd2 and rd1 != rs1.  */
+
+static bool
+riscv_fuse_ldst_pair_inc (rtx_insn *prev, rtx_insn *curr)
+{
+  return riscv_fuse_mem_pair_p (prev, curr, RISCV_FUSE_LDST_PAIR_INC);
+}
+
 /* Check for RISCV_FUSE_BFEXT fusion.
    prev (slli) == (set (reg rd1)
 		       (ashift (reg rs1) (const_int shamt1)))
@@ -1927,6 +1951,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_auipc_ld, "RISCV_FUSE_AUIPC_LD" },
   { RISCV_FUSE_ALIGNED_STD,
     riscv_fuse_aligned_std, "RISCV_FUSE_ALIGNED_STD" },
+  { RISCV_FUSE_LDST_PAIR_INC,
+    riscv_fuse_ldst_pair_inc, "RISCV_FUSE_LDST_PAIR_INC" },
   { RISCV_FUSE_BFEXT,
     riscv_fuse_bfext, "RISCV_FUSE_BFEXT" },
   { RISCV_FUSE_SLLI_SRLI,
