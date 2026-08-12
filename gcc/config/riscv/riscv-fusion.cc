@@ -1019,6 +1019,10 @@ static const struct riscv_fusion_mem_rule riscv_fusion_mem_rules[] =
   { RISCV_FUSE_LDST_PAIR_DEC, (1U << 4) | (1U << 8),
     SCHED_FUSION_LD | SCHED_FUSION_LD_SIGN_EXTEND | SCHED_FUSION_ST,
     false, false, RISCV_FUSION_DEC, 1 },
+  { RISCV_FUSE_FLDFST_PAIR_INC, (1U << 4) | (1U << 8),
+    SCHED_FUSION_LD | SCHED_FUSION_LD_SIGN_EXTEND
+    | SCHED_FUSION_LD_ZERO_EXTEND | SCHED_FUSION_ST,
+    true, false, RISCV_FUSION_INC, 1 },
   /* Allow 1-, 2-, 4- and 8-byte stores.  */
   { RISCV_FUSE_ALIGNED_STD, (1U << 1) | (1U << 2) | (1U << 4) | (1U << 8),
     SCHED_FUSION_ST, false, true, RISCV_FUSION_ANY, 2 }
@@ -1627,6 +1631,26 @@ riscv_fuse_ldst_pair_dec (rtx_insn *prev, rtx_insn *curr)
   return riscv_fuse_mem_pair_p (prev, curr, RISCV_FUSE_LDST_PAIR_DEC);
 }
 
+/* Check for RISCV_FUSE_FLDFST_PAIR_INC fusion.
+   prev/curr (one of the following pairs):
+     prev (flw/fld) == (set (reg frd1) (mem (rs1, offset1)))
+     curr (flw/fld) == (set (reg frd2) (mem (rs1, offset2)))
+
+     prev (fsw/fsd) == (set (mem (rs1, offset1)) (reg frs1))
+     curr (fsw/fsd) == (set (mem (rs1, offset2)) (reg frs2))
+
+   Constraints:
+     access size is 4 or 8 bytes
+     offset2 - offset1 equals the access size
+     offsets are aligned to the access size
+     for loads, frd1 != frd2.  */
+
+static bool
+riscv_fuse_fldfst_pair_inc (rtx_insn *prev, rtx_insn *curr)
+{
+  return riscv_fuse_mem_pair_p (prev, curr, RISCV_FUSE_FLDFST_PAIR_INC);
+}
+
 /* Check for RISCV_FUSE_BFEXT fusion.
    prev (slli) == (set (reg rd1)
 		       (ashift (reg rs1) (const_int shamt1)))
@@ -1979,6 +2003,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_ldst_pair_inc, "RISCV_FUSE_LDST_PAIR_INC" },
   { RISCV_FUSE_LDST_PAIR_DEC,
     riscv_fuse_ldst_pair_dec, "RISCV_FUSE_LDST_PAIR_DEC" },
+  { RISCV_FUSE_FLDFST_PAIR_INC,
+    riscv_fuse_fldfst_pair_inc, "RISCV_FUSE_FLDFST_PAIR_INC" },
   { RISCV_FUSE_BFEXT,
     riscv_fuse_bfext, "RISCV_FUSE_BFEXT" },
   { RISCV_FUSE_SLLI_SRLI,
