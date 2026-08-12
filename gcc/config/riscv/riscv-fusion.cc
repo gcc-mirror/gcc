@@ -1417,6 +1417,40 @@ riscv_fuse_add_andi (rtx_insn *prev, rtx_insn *curr)
   return false;
 }
 
+/* Check for RISCV_FUSE_ANDI_ADD fusion.
+   prev (one of the following):
+     (andi) == (set (reg rd1) (and (reg rs1) (const_int imm12_1)))
+     (andi) == (set (reg rd1) (zero_extend (reg rs1)))
+   curr (one of the following):
+     (add) == (set (reg rd2) (plus (reg rd1) (reg rs2)))
+     (addi) == (set (reg rd2) (plus (reg rd1) (const_int imm12_2)))
+     (addw) == (set (reg rd2)
+		    (sign_extend (plus (reg rd1) (reg rs2))))
+     (addiw) == (set (reg rd2)
+		     (sign_extend (plus (reg rd1) (const_int imm12_2))))
+     (add.uw) == (set (reg rd2) (plus (zero_extend (reg rd1))
+				      (reg rs2)))
+     (mv) == (set (reg rd2) (reg rd1))
+     (addi) == (set (reg rd2) (lo_sum (reg rd1) symbol))
+
+   Constraints:
+     rd1 == rd2.  */
+
+static bool
+riscv_fuse_andi_add (rtx_insn *prev, rtx_insn *curr)
+{
+  rtx prev_set, curr_set;
+  if (!riscv_fuse_sets_p (prev, curr, &prev_set, &curr_set))
+    return false;
+
+  if (riscv_insn_is_andi_type_p (prev)
+      && riscv_insn_is_add_addi_p (curr)
+      && riscv_fuse_same_dest_p (prev_set, curr_set, true))
+    return true;
+
+  return false;
+}
+
 /* Type for a fusion checker function.  Takes the two candidate insns
    and returns true if they should be fused.  */
 
@@ -1472,6 +1506,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_sub_seqz, "RISCV_FUSE_SUB_SEQZ" },
   { RISCV_FUSE_ADD_ANDI,
     riscv_fuse_add_andi, "RISCV_FUSE_ADD_ANDI" },
+  { RISCV_FUSE_ANDI_ADD,
+    riscv_fuse_andi_add, "RISCV_FUSE_ANDI_ADD" },
 };
 
 /* Return the name of fusion operation OP.  */
