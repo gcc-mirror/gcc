@@ -406,6 +406,32 @@ riscv_insn_is_addi_type_p (rtx_insn *insn, bool allow_word_p = true,
   return false;
 }
 
+/* Matches a sub or subw:
+     (set (reg rd) (minus (reg rs1) (reg rs2)))
+   or:
+     (set (reg:DI rd)
+	  (sign_extend:DI (minus:SI (reg:SI rs1) (reg:SI rs2))))
+   or an equivalent word-sub RTL form.  */
+
+static bool
+riscv_insn_is_sub_type_p (rtx_insn *insn)
+{
+  rtx set = single_set (insn);
+  if (!set
+      || get_attr_type (insn) != TYPE_ARITH
+      || riscv_regno (SET_DEST (set)) == INVALID_REGNUM)
+    return false;
+
+  rtx src = SET_SRC (set);
+  if (GET_CODE (src) == MINUS)
+    return (REG_P (XEXP (src, 0))
+	    && REG_P (XEXP (src, 1)));
+
+  return (riscv_set_extract_word_binary_p (set, MINUS, &src)
+	  && REG_P (XEXP (src, 0))
+	  && REG_P (XEXP (src, 1)));
+}
+
 /* Return true if SET is a non-wrapped scalar shift of CODE.  */
 
 static bool
@@ -1197,6 +1223,38 @@ riscv_fuse_b_alui (rtx_insn *prev, rtx_insn *curr)
   return false;
 }
 
+/* Check for RISCV_FUSE_SUB_SEQZ fusion.
+   prev (one of the following):
+     (sub) == (set (reg rd1) (minus (reg rs1) (reg rs2)))
+     (subw) == (set (reg rd1)
+		    (sign_extend (minus:SI (reg:SI rs1) (reg:SI rs2))))
+   curr (one of the following):
+     (seqz) == (set (reg rd2) (eq (reg rd1) (const_int 0)))
+     (snez) == (set (reg rd2) (ne (reg rd1) (const_int 0)))
+
+   Constraints:
+     rd1 == rd2.  */
+
+static bool
+riscv_fuse_sub_seqz (rtx_insn *prev, rtx_insn *curr)
+{
+  rtx prev_set, curr_set;
+  if (!riscv_fuse_sets_p (prev, curr, &prev_set, &curr_set))
+    return false;
+
+  rtx curr_src = SET_SRC (curr_set);
+  rtx_code curr_code = GET_CODE (curr_src);
+
+  if (riscv_insn_is_sub_type_p (prev)
+      && get_attr_type (curr) == TYPE_SLT
+      && (curr_code == EQ || curr_code == NE)
+      && riscv_fuse_same_dest_p (prev_set, curr_set, true)
+      && XEXP (curr_src, 1) == const0_rtx)
+    return true;
+
+  return false;
+}
+
 /* Type for a fusion checker function.  Takes the two candidate insns
    and returns true if they should be fused.  */
 
@@ -1246,6 +1304,8 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_bfext, "RISCV_FUSE_BFEXT" },
   { RISCV_FUSE_B_ALUI,
     riscv_fuse_b_alui, "RISCV_FUSE_B_ALUI" },
+  { RISCV_FUSE_SUB_SEQZ,
+    riscv_fuse_sub_seqz, "RISCV_FUSE_SUB_SEQZ" },
 };
 
 /* Return the name of fusion operation OP.  */
