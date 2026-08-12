@@ -57,10 +57,10 @@ subroutine c_sub_a_conjb(n, a, c, b)    ! C -= A * conj(B)
   end do
 end subroutine c_sub_a_conjb
 
-! The two plain multiplies form .COMPLEX_MUL (#0 + #90) and the two conjugate
-! multiplies form .COMPLEX_MUL_CONJ (#0 + #270).  PR122408 is about detecting
-! the conjugate form, so the #270 and #180 counts are the ones that guard it.
-! { dg-final { scan-assembler-times {fcmla\s+v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.2d, #0} 4 } }
+! The accumulations form .COMPLEX_FMA (#0 + #90) and .COMPLEX_FMS (#180 +
+! #270), with the conjugate forms swapping the #90 and #270 rotations.  PR122408
+! is about detecting the conjugate form, so the #90 and #270 counts guard it.
+! { dg-final { scan-assembler-times {fcmla\s+v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.2d, #0} 2 } }
 ! { dg-final { scan-assembler-times {fcmla\s+v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.2d, #90} 2 } }
 ! { dg-final { scan-assembler-times {fcmla\s+v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.2d, #270} 2 } }
-! { dg-final { scan-assembler-not {fcmla\s+v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.2d, #180} } }
+! { dg-final { scan-assembler-times {fcmla\s+v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.2d, #180} 2 } }

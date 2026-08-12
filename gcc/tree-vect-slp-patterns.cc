@@ -1305,7 +1305,94 @@ complex_fms_pattern::matches (complex_operation_t op,
 			      slp_compat_nodes_map_t *compat_cache,
 			      slp_tree * ref_node, vec<slp_tree> *ops)
 {
-  internal_fn ifn = IFN_LAST;
+  /* It's only valid to form FMSs with -ffp-contract=fast.  */
+  if (!SLP_TREE_VECTYPE (*ref_node)
+      || (flag_fp_contract_mode != FP_CONTRACT_FAST
+	  && FLOAT_TYPE_P (SLP_TREE_VECTYPE (*ref_node))))
+    return IFN_LAST;
+
+  /* Match c - a * b when SLP has built the result as:
+
+       c.real + (a.imag * b.imag - a.real * b.real)
+       c.imag - (a.real * b.imag + a.imag * b.real)
+
+     This represents the same operation as the existing FMS matcher below,
+     but with the accumulator outside the complex product node.  */
+  if (op == PLUS_MINUS)
+    {
+      auto plus_ops = SLP_TREE_CHILDREN ((*ops)[0]);
+      auto minus_ops = SLP_TREE_CHILDREN ((*ops)[1]);
+      if (plus_ops.length () != 2 || minus_ops.length () != 2)
+	return IFN_LAST;
+
+      slp_tree acc = minus_ops[0];
+      slp_tree prod = minus_ops[1];
+      if (!((plus_ops[0] == acc && plus_ops[1] == prod)
+	    || (plus_ops[1] == acc && plus_ops[0] == prod)))
+	return IFN_LAST;
+      if (linear_loads_p (perm_cache, acc) != PERM_EVENODD)
+	return IFN_LAST;
+
+      auto_vec<slp_tree> prod_ops;
+      if (vect_detect_pair_op (prod, true, &prod_ops) != MINUS_PLUS)
+	return IFN_LAST;
+      if (prod_ops.length () != 2)
+	return IFN_LAST;
+
+      auto prod_left = SLP_TREE_CHILDREN (prod_ops[0]);
+      auto prod_right = SLP_TREE_CHILDREN (prod_ops[1]);
+      if (prod_left.length () != 2
+	  || prod_right.length () != 2
+	  || !vect_match_expression_p (prod_left[0], MULT_EXPR)
+	  || !vect_match_expression_p (prod_left[1], MULT_EXPR)
+	  || !vect_match_expression_p (prod_right[0], MULT_EXPR)
+	  || !vect_match_expression_p (prod_right[1], MULT_EXPR))
+	return IFN_LAST;
+
+      auto_vec<slp_tree> left_op, right_op;
+      left_op.safe_splice (SLP_TREE_CHILDREN (prod_left[0]));
+      right_op.safe_splice (SLP_TREE_CHILDREN (prod_left[1]));
+
+      enum _conj_status status;
+      auto_vec<slp_tree> res_ops;
+      if (!vect_validate_multiplication_commutative (perm_cache, compat_cache,
+						     right_op, left_op, true,
+						     res_ops, &status))
+	return IFN_LAST;
+
+      internal_fn ifn = status == CONJ_NONE ? IFN_COMPLEX_FMS
+					    : IFN_COMPLEX_FMS_CONJ;
+      if (!vect_pattern_validate_optab (ifn, *ref_node))
+	return IFN_LAST;
+
+      ops->truncate (0);
+      ops->create (4);
+
+      complex_perm_kinds_t kind = linear_loads_p (perm_cache, res_ops[0]);
+      if (kind == PERM_EVENODD || kind == PERM_TOP)
+	{
+	  ops->quick_push (acc);
+	  ops->quick_push (res_ops[0]);
+	  ops->quick_push (res_ops[1]);
+	  ops->quick_push (res_ops[3]);
+	}
+      else if (kind == PERM_EVENEVEN && status != CONJ_SND)
+	{
+	  ops->quick_push (acc);
+	  ops->quick_push (res_ops[1]);
+	  ops->quick_push (res_ops[0]);
+	  ops->quick_push (res_ops[2]);
+	}
+      else
+	{
+	  ops->quick_push (acc);
+	  ops->quick_push (res_ops[1]);
+	  ops->quick_push (res_ops[0]);
+	  ops->quick_push (res_ops[3]);
+	}
+
+      return ifn;
+    }
 
   /* We need to ignore the two_operands nodes that may also match,
      for that we can check if they have any scalar statements and also
@@ -1316,11 +1403,6 @@ complex_fms_pattern::matches (complex_operation_t op,
 
   slp_tree root = *ref_node;
   if (!vect_match_expression_p (root, MINUS_EXPR))
-    return IFN_LAST;
-
-  /* It's only valid to form FMSs with -ffp-contract=fast.  */
-  if (flag_fp_contract_mode != FP_CONTRACT_FAST
-      && FLOAT_TYPE_P (SLP_TREE_VECTYPE (*ref_node)))
     return IFN_LAST;
 
   /* TODO: Support invariants here, with the new layout CADD now
@@ -1352,11 +1434,8 @@ complex_fms_pattern::matches (complex_operation_t op,
 						 res_ops, &status))
     return IFN_LAST;
 
-  if (status == CONJ_NONE)
-    ifn = IFN_COMPLEX_FMS;
-  else
-    ifn = IFN_COMPLEX_FMS_CONJ;
-
+  internal_fn ifn = status == CONJ_NONE ? IFN_COMPLEX_FMS
+					: IFN_COMPLEX_FMS_CONJ;
   if (!vect_pattern_validate_optab (ifn, *ref_node))
     return IFN_LAST;
 
