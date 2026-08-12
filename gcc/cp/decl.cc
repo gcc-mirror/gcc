@@ -4925,8 +4925,12 @@ struct typename_hasher : ggc_ptr_hash<tree_node>
   hash (tree context, tree fullname)
   {
     hashval_t hash = 0;
-    hash = iterative_hash_object (context, hash);
-    hash = iterative_hash_object (fullname, hash);
+    hash = iterative_hash_hashval_t (TYPE_HASH (context), hash);
+    /* FULLNAME could be a template-id, so use iterative_hash_template_arg here.
+       And might as well set comparing_specializations for stronger hashing.  */
+    ++comparing_specializations;
+    hash = iterative_hash_template_arg (fullname, hash);
+    --comparing_specializations;
     return hash;
   }
 
