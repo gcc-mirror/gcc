@@ -543,48 +543,29 @@
   [(set_attr "adjust_len" "round")])
 
 
-;; "*roundqq3.libgcc"  "*rounduqq3.libgcc"
+;; "*roundqq3.libgcc_split"  "*rounduqq3.libgcc_split"
+;; "*roundhq3.libgcc_split"  "*rounduhq3.libgcc_split"
+;; "*roundha3.libgcc_split"  "*rounduha3.libgcc_split"
 (define_insn_and_split "*round<mode>3.libgcc_split"
-  [(set (match_operand:ALL1Q 0 "register_operand"               "={r24}")
-        (unspec:ALL1Q [(match_operand:ALL1Q 1 "register_operand" "{r22}")
-                       (match_operand:QI 2 "register_operand"    "{r24}")]
-                      UNSPEC_ROUND))
-   (clobber (match_scratch:ALL1Q 3                              "={r22}"))]
+  [(set (match_operand:ALL12QA 0 "register_operand"                 "={r24}")
+        (unspec:ALL12QA [(match_operand:ALL12QA 1 "register_operand" "{r22}")
+                         (match_operand:QI 2 "register_operand"      "{r24}")]
+                        UNSPEC_ROUND))
+   (clobber (match_scratch:ALL12QA 3                                "={r22}"))]
   ""
   "#"
   "&& reload_completed"
   [(scratch)]
   { DONE_ADD_CCC })
 
-(define_insn "*round<mode>3.libgcc"
-  [(set (reg:ALL1Q 24)
-        (unspec:ALL1Q [(reg:ALL1Q 22)
-                       (reg:QI 24)] UNSPEC_ROUND))
-   (clobber (reg:ALL1Q 22))
-   (clobber (reg:CC REG_CC))]
-  "reload_completed"
-  "%~call __round<mode>3"
-  [(set_attr "type" "xcall")])
-
+;; "*roundqq3.libgcc"  "*rounduqq3.libgcc"
 ;; "*roundhq3.libgcc"  "*rounduhq3.libgcc"
 ;; "*roundha3.libgcc"  "*rounduha3.libgcc"
-(define_insn_and_split "*round<mode>3.libgcc_split"
-  [(set (match_operand:ALL2QA 0 "register_operand"                "={r24}")
-        (unspec:ALL2QA [(match_operand:ALL2QA 1 "register_operand" "{r22}")
-                        (match_operand:QI 2 "register_operand"     "{r24}")]
-                       UNSPEC_ROUND))
-   (clobber (match_scratch:ALL2QA 3                               "={r22}"))]
-  ""
-  "#"
-  "&& reload_completed"
-  [(scratch)]
-  { DONE_ADD_CCC })
-
 (define_insn "*round<mode>3.libgcc"
-  [(set (reg:ALL2QA 24)
-        (unspec:ALL2QA [(reg:ALL2QA 22)
-                        (reg:QI 24)] UNSPEC_ROUND))
-   (clobber (reg:ALL2QA 22))
+  [(set (reg:ALL12QA 24)
+        (unspec:ALL12QA [(reg:ALL12QA 22)
+                         (reg:QI 24)] UNSPEC_ROUND))
+   (clobber (reg:ALL12QA 22))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   "%~call __round<mode>3"
