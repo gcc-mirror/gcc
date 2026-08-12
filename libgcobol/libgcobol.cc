@@ -679,13 +679,10 @@ __gg__decimal_point_is_comma()
 
 static __int128
 edited_to_binary( const cblc_field_t *field,
-                  char *ps_,
-                  size_t length,
-                  int *rdigits)
+                  const char         *ps_,
+                        size_t        length,
+                        int          *rdigits)
   {
-  charmap_t *charmap = __gg__get_charmap(field->encoding);
-
-  const unsigned char *ps = as_unsigned_chars(ps_);
   // This routine is used for converting NumericEdited strings to
   // binary.
 
@@ -697,7 +694,13 @@ edited_to_binary( const cblc_field_t *field,
   // result as negative.  We are going to look for a decimal point and count up
   // the numerical digits to the right of it.  And we are going to pretend
   // that nothing else matters.
-
+  size_t nbytes;
+  const unsigned char *ps = reinterpret_cast<unsigned char *>
+                                             (__gg__iconverter(field->encoding,
+                                                      DEFAULT_SOURCE_ENCODING,
+                                                      ps_,
+                                                      length,
+                                                      &nbytes));
   int hyphen = 0;
   *rdigits = 0;
 
@@ -716,37 +719,28 @@ edited_to_binary( const cblc_field_t *field,
 
   while( index < length )
     {
-    cbl_char_t ch = charmap->getch(ps, &index);
+    unsigned char ch = ps[index++];
 
     // Save the last two characters for the DB/CR test:
     chm2 = chm1;
     chm1 = ch;
 
-    if( ch == charmap->mapped_character(__gg__decimal_point) )
+    if( ch == __gg__decimal_point )
       {
       delta_r = 1;
       continue;
       }
-    if( ch == charmap->mapped_character(ascii_minus)  )
+    if( ch == ascii_minus  )
       {
       hyphen = 1;
       continue;
       }
 
-    if(  ch >= charmap->mapped_character(ascii_0)
-      && ch <= charmap->mapped_character(ascii_9) )
+    if(  ch >= ascii_0
+      && ch <= ascii_9 )
       {
-      uint8_t the_byte;
-      if( charmap->is_big_endian() )
-        {
-        the_byte = ch >> ((charmap->stride()-1)*8);
-        }
-      else
-        {
-        the_byte = ch;
-        }
       result *= 10;
-      result += the_byte & 0x0F ;
+      result += ch & 0x0F ;
       *rdigits += delta_r ;
       continue;
       }
@@ -756,17 +750,17 @@ edited_to_binary( const cblc_field_t *field,
   // is negative:
   if( !hyphen && length >= 2)
     {
-    if(        (   chm2 == charmap->mapped_character(ascii_D)
-                || chm2 == charmap->mapped_character(ascii_d))
-            && (   chm1 == charmap->mapped_character(ascii_B)
-                || chm1 == charmap->mapped_character(ascii_b)) )
+    if(        (   chm2 == ascii_D
+                || chm2 == ascii_d)
+            && (   chm1 == ascii_B
+                || chm1 == ascii_b) )
       {
       hyphen = 1;
       }
-    else if(   (   chm2 == charmap->mapped_character(ascii_C)
-                || chm2 == charmap->mapped_character(ascii_c))
-            && (   chm1 == charmap->mapped_character(ascii_R)
-                || chm1 == charmap->mapped_character(ascii_r)) )
+    else if(   (   chm2 == ascii_C
+                || chm2 == ascii_c)
+            && (   chm1 == ascii_R
+                || chm1 == ascii_r) )
       {
       hyphen = 1;
       }
@@ -2245,10 +2239,10 @@ int128_to_field(cblc_field_t   *var,
 
                 // First, convert the binary value to the correct-length string
                 size_error =
-                  __gg__binary_to_string_encoded(as_chars( location),
-                                                  var->digits,
-                                                  value,
-                                                  var->encoding);
+                          __gg__binary_to_string_encoded(as_chars( location),
+                                                          var->digits,
+                                                          value,
+                                                          var->encoding);
 
                 // Check for a size error on a negative value.  It conceivably
                 // was truncated down to zero, in which case we need to
@@ -2256,8 +2250,7 @@ int128_to_field(cblc_field_t   *var,
                 if( size_error && is_negative )
                   {
                   // If all of the digits are zero, then the result is zero,
-                  // and
-                  // we have to kill the is_negative flag:
+                  // and we have to kill the is_negative flag:
                   is_negative = false;
                   size_t index = 0;
                   while(index<length)
@@ -2272,13 +2265,10 @@ int128_to_field(cblc_field_t   *var,
                   }
 
                 unsigned char *sign_location =
-                  var->attr & leading_e ? location
-                                        : location + length - stride;
-                cbl_char_t sign_digit = charmap->getch(sign_location,
-                                                       (size_t)0);
-                sign_digit = charmap->set_digit_negative(sign_digit,
-                                                         is_negative);
-                charmap->putch(sign_digit, sign_location, (size_t)0);
+                            var->attr & leading_e ? location
+                                                  : location + length - stride;
+                charmap->set_streamed_digit_negative(sign_location,
+                                                     is_negative);
                 }
               }
             else
@@ -2739,24 +2729,13 @@ uint32_t collation_position( cbl_char_t ch )
 
 static cbl_char_t
 uber_compare(cbl_char_t ch_left,
-             cbl_char_t ch_right,
-             const charmap_t *charmap)
+             cbl_char_t ch_right)
   {
-  if( charmap->is_big_endian() )
-    {
-    // This simple hack works when the big-endian characters nonetheless fit
-    // into zero through 255.  This is short-sighted.  I need glasses.  Again,
-    // I do not know how to fix this until multi-byte collation is addressed.
-    ch_left  >>= 8*(charmap->stride()-1);
-    ch_right >>= 8*(charmap->stride()-1);
-    }
-
+  // This is where collation is going to have to be fixed for multi-byte
+  // encodings.  For now, if both characters fit into 0xFF, then we will
+  // use the current collation.  Otherwise, we just compare them.
   if( ((ch_left | ch_right) & 0xFFFFFF00) == 0x00000000 )
     {
-    // This is where collation is going to have to be fixed for multi-byte
-    // encodings.  For now, if both characters fit into 0xFF, then we will
-    // use the current collation.  Otherwise, we just compare them
-
     // Both characters fit into the current DISPLAY codeset, so assume we
     // are using the DISPLAY collation:
     ch_left  = collated(ch_left);
@@ -2769,7 +2748,6 @@ uber_compare(cbl_char_t ch_left,
   cbl_char_t retval = ch_left - ch_right;
   return retval;
   }
-
 
 extern "C"
 int
@@ -2945,9 +2923,9 @@ __gg__dirty_to_binary_source(const char *dirty,
 
 extern "C"
 __int128
-__gg__dirty_to_binary(const char *dirty,
+__gg__dirty_to_binary(const char *dirty_in,
                       cbl_encoding_t encoding,
-                      int length,
+                      int length_in,
                       int *rdigits)
   {
   // This routine is used for converting uncontrolled strings to a
@@ -2969,17 +2947,12 @@ __gg__dirty_to_binary(const char *dirty,
   // We are limiting the number of digits in the number to
   // MAX_FIXED_POINT_DIGITS
 
-  charmap_t *charmap    = __gg__get_charmap(encoding);
-  int stride = charmap->stride();
-
-  cbl_char_t mapped_minus          = charmap->mapped_character(ascii_minus);
-  cbl_char_t mapped_plus           = charmap->mapped_character(ascii_plus);
-  cbl_char_t mapped_decimal_point =
-    charmap->mapped_character(__gg__decimal_point);
-  cbl_char_t mapped_0              = charmap->mapped_character(ascii_0);
-  cbl_char_t mapped_9              = charmap->mapped_character(ascii_9);
-  cbl_char_t mapped_E              = charmap->mapped_character(ascii_E);
-  cbl_char_t mapped_e              = charmap->mapped_character(ascii_e);
+  size_t length;
+  const char *dirty = __gg__iconverter(encoding,
+                                       DEFAULT_SOURCE_ENCODING,
+                                       dirty_in,
+                                       length_in,
+                                       &length);
 
   __int128 retval = 0;
 
@@ -2993,36 +2966,32 @@ __gg__dirty_to_binary(const char *dirty,
   int delta_r = 0;
 
   // We now loop over the remaining input characters:
-  cbl_char_t ch = '\0';
+  char ch = '\0';
   size_t chindex = 0;
 
   if(length > 0)
     {
-    length -= stride;
-    ch = charmap->getch(dirty, &chindex);
-    if( ch == mapped_minus )
+    length -= 1;
+    ch = dirty[chindex++];
+    if( ch == ascii_minus )
       {
       hyphen = 1;
       }
-    else if( ch == mapped_plus )
+    else if( ch == ascii_plus )
       {
       // A plus sign is okay
       }
-    else if( ch == mapped_decimal_point )
+    else if( ch == __gg__decimal_point )
       {
       delta_r = 1;
       }
-    else if( ch >= mapped_0
-          && ch <= mapped_9  )
+    else if( ch >= ascii_0
+          && ch <= ascii_9  )
       {
-      retval = ch - mapped_0 ;
+      retval = ch - ascii_0 ;
       if( retval )
         {
         digit_count += 1;
-        }
-      if( charmap->is_big_endian() )
-        {
-        retval >>= 8*(stride-1);
         }
       }
     else
@@ -3036,17 +3005,16 @@ __gg__dirty_to_binary(const char *dirty,
 
   while( length > 0 )
     {
-    length -= stride;
-    ch = charmap->getch(dirty, &chindex);
-    if( ch == mapped_decimal_point && delta_r == 0 )
+    ch = dirty[chindex++];
+    if( ch == __gg__decimal_point && delta_r == 0 )
       {
       // This is the first decimal point we've seen, so we
       // can start counting rdigits:
       delta_r = 1;
       continue;
       }
-    if(    ch < mapped_0
-        || ch > mapped_9 )
+    if(    ch < ascii_0
+        || ch > ascii_9 )
       {
       // When we hit something that isn't a digit, then we are done
       break;
@@ -3054,12 +3022,7 @@ __gg__dirty_to_binary(const char *dirty,
     if( digit_count < MAX_FIXED_POINT_DIGITS )
       {
       retval *= 10;
-      ch -= mapped_0;
-      if( charmap->is_big_endian() )
-        {
-        ch >>= 8*(stride-1);
-        }
-
+      ch -= ascii_0;
       retval += ch ;
       *rdigits += delta_r;
       if( retval )
@@ -3070,38 +3033,38 @@ __gg__dirty_to_binary(const char *dirty,
     }
 
   // Let's check for an exponent:
-  if(   ch == mapped_E
-     || ch == mapped_e )
+  if(   ch == ascii_E
+     || ch == ascii_e )
     {
     int exponent = 0;
     int exponent_sign = 1;
     if( length > 0  )
       {
-      ch = charmap->getch(dirty, chindex);
-      if( ch == mapped_plus)
+      ch = dirty[chindex];
+      if( ch == ascii_plus)
         {
-        length -= stride;
-        dirty += stride;
+        length -= 1;
+        dirty += 1;
         }
-      else if( ch == mapped_minus )
+      else if( ch == ascii_minus )
         {
         exponent_sign = -1;
-        length -= stride;
-        dirty += stride;
+        length -= 1;
+        dirty += 1;
         }
       }
     while(length > 0)
       {
-      length -= stride;
-      ch = charmap->getch(dirty, &chindex);
-      if(    ch < mapped_0
-          || ch > mapped_9 )
+      length -= 1;
+      ch = dirty[chindex++];
+      if(    ch < ascii_0
+          || ch > ascii_9 )
         {
         // When we hit something that isn't a digit, then we are done
         break;
         }
       exponent *= 10;
-      exponent += ch - mapped_0 ;
+      exponent += ch - ascii_0 ;
       }
     exponent *= exponent_sign;
     // We need to adjust the retval and the rdigits based on the exponent.
@@ -5054,7 +5017,7 @@ compare_strings(char   *left_string,
     {
     cbl_char_t ch_left  = charmap_left->getch(left_string, &index_left);
     cbl_char_t ch_right = charmap_right->getch(right_string, &index_right);
-    retval = uber_compare(ch_left, ch_right, charmap_left);
+    retval = uber_compare(ch_left, ch_right);
     }
 
   // We need to space-extend the shorter value.  That's because
@@ -5065,7 +5028,7 @@ compare_strings(char   *left_string,
       {
       cbl_char_t ch_left  = charmap_left->getch(left_string, &index_left);
       cbl_char_t ch_right = charmap_right->mapped_character(ascii_space);
-      retval = uber_compare(ch_left, ch_right, charmap_left);
+      retval = uber_compare(ch_left, ch_right);
       }
     }
   else
@@ -5077,7 +5040,7 @@ compare_strings(char   *left_string,
       index_right %= right_length;
       cbl_char_t ch_left  = charmap_left->getch(left_string, &index_left);
       cbl_char_t ch_right = charmap_right->getch(right_string, &index_right);
-      retval = uber_compare(ch_left, ch_right, charmap_left);
+      retval = uber_compare(ch_left, ch_right);
       }
     }
 
@@ -5087,7 +5050,7 @@ compare_strings(char   *left_string,
       {
       cbl_char_t ch_left  = charmap_left->mapped_character(ascii_space);
       cbl_char_t ch_right = charmap_right->getch(right_string, &index_right);
-      retval = uber_compare(ch_left, ch_right, charmap_left);
+      retval = uber_compare(ch_left, ch_right);
       }
     }
   else
@@ -5097,7 +5060,7 @@ compare_strings(char   *left_string,
       index_left %= left_length;
       cbl_char_t ch_left  = charmap_left->mapped_character(ascii_space);
       cbl_char_t ch_right = charmap_right->getch(right_string, &index_right);
-      retval = uber_compare(ch_left, ch_right, charmap_left);
+      retval = uber_compare(ch_left, ch_right);
       }
     }
 
@@ -5174,7 +5137,7 @@ __gg__compare_2(cblc_field_t  *left_side,
   if( left_figconst && right_figconst )
     {
     // We are comparing two figurative constants
-    retval = uber_compare(fig_left, fig_right, charmap_left);
+    retval = uber_compare(fig_left, fig_right);
     compare = true;
     goto fixup_retval;
     }
@@ -5213,7 +5176,7 @@ __gg__compare_2(cblc_field_t  *left_side,
           cbl_char_t fig_of_right =
                              charmap_left->figconst_character(right_figconst);
           cbl_char_t left_ch = charmap_left->getch(left_location, i);
-          retval = uber_compare(left_ch, fig_of_right, charmap_left);
+          retval = uber_compare(left_ch, fig_of_right);
           if( retval )
             {
             break;
@@ -5271,7 +5234,7 @@ __gg__compare_2(cblc_field_t  *left_side,
               unsigned int fig_of_right =
                              charmap_left->figconst_character(right_figconst);
               cbl_char_t ch_left = charmap_left->getch(left_location, i);
-              retval = uber_compare(ch_left, fig_of_right, charmap_left);
+              retval = uber_compare(ch_left, fig_of_right);
               if( retval )
                 {
                 break;

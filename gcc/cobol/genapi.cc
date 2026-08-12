@@ -461,6 +461,25 @@ get_level_88_domain(size_t parent_capacity, cbl_field_t *var, size_t &returned_s
 
   // Numerics are converted to strings, and handled as above
 
+  /*  For example:
+
+       77 var-1 PIC 99V9.
+           88 var-1-z VALUE zero THRU 10.
+           88 var-1-big VALUE 20 THRU 40.
+           88 var-1-huge VALUE 40 THRU 999.
+           88 var-1-asc VALUE "U2" THRU "XYZZY".
+
+    Creates these four string segments:
+
+      "1FZ2A10"
+      "2A202A40"
+      "2A403A999"
+      "2AU25AXYZZY"
+
+    Each gets converted to UTF-32 as the initial value.
+
+    */
+
   size_t retval_capacity = 64;
   char *retval = static_cast<char *>(xmalloc(retval_capacity));
   size_t output_index = 0;
@@ -12754,7 +12773,9 @@ create_and_call(size_t narg,
       // These have to be passed to be passed by value.
       crv = by_value_e;
       }
-    else if( crv == by_value_e && args[i].refer.field->type == FldAlphanumeric)
+    else if(   crv == by_value_e
+            && args[i].refer.field->type == FldAlphanumeric
+            && (args[i].refer.field->attr & FIGCONST_MASK) != zero_value_e )
       {
       // Maybe passing an alphanumeric BY VALUE should be a syntax error?
       crv = by_content_e;

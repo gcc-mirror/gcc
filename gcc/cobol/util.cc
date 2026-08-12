@@ -2684,8 +2684,9 @@ namespace match_proc {
   public:
     procedures_t( size_t program ) {
       // find sections and paragraphs
-      for( symbol_elem_t *e = symbols_begin(program+1); e->program == program; e++ ) {
-        if( e->type == SymLabel ) {
+      for( symbol_elem_t *e = symbols_begin(program+1);
+          e < symbols_end() && e->program == program; e++ ) {
+          if( e->type == SymLabel ) {
           const auto& L = *cbl_label_of(e);
           auto isym = e - symbols_begin();
           switch(L.type) {

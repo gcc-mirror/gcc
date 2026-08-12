@@ -360,7 +360,7 @@ __gg__file_init(
   {
   if( !(file->flags & file_flag_initialized_e) )
     {
-    charmap_t *charmap = __gg__get_charmap(encoding);
+    const charmap_t *charmap = __gg__get_charmap(encoding);
 
     file->name                = strdup(name);
     file->symbol_table_index  = symbol_table_index;
@@ -386,7 +386,6 @@ __gg__file_init(
     file->access              = (cbl_file_access_t)access ;
     file->errnum              = 0 ;
     file->io_status           = FsSuccess ;
-    file->delimiter           = charmap->mapped_character(ascii_newline) ;
     file->stride              = charmap->stride();
     file->flags               = file_flag_none_e;
         file->flags          |= (optional ? file_flag_optional_e : file_flag_none_e)
@@ -397,6 +396,18 @@ __gg__file_init(
     file->prior_op            = file_op_none;
     file->encoding            = encoding;
     file->alphabet            = alphabet;
+
+    // Note: eventually the delimiter needs to be a variable; it can be set
+    // by the programmer.
+    size_t nbytes;
+    const char ch = ascii_newline;
+    const char *delim = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                         file->encoding,
+                                         &ch,
+                                         1,
+                                         &nbytes);
+    memset(&file->delimiter, 0, 4);
+    memcpy(&file->delimiter, delim, file->stride);
 
     if( file->access == file_inaccessible_e )
       {
@@ -2669,9 +2680,11 @@ static void
 write_a_char(cblc_file_t *file, cbl_char_t ch)
   {
   size_t nbytes;
+  // Whether big- or little-endian, this will give us the character we want
+  unsigned char uch = ch % 256;
   const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
                                            file->encoding,
-                                           &ch,
+                                           &uch,
                                            1,
                                            &nbytes);
   fwrite(converted, nbytes, 1, file->file_pointer);
@@ -2730,7 +2743,7 @@ sequential_file_write(cblc_file_t    *file,
 
   if( file->org == file_line_sequential_e )
     {
-    // If file-sequential, then trailing spaces are removed:
+    // If line-sequential, then trailing spaces are removed:
     while(bytes_to_write > 0
            && charmap->getch(location, bytes_to_write-stride)
                                   == charmap->mapped_character(ascii_space) )
@@ -3187,8 +3200,9 @@ line_sequential_file_read_sbc(cblc_file_t *file, char space)
       }
     // Much hinges on where the next newline is to be found:
     pstart = file->buffer+file->buffer_pos;
+    char ch = reinterpret_cast<const char *>(&file->delimiter)[0];
     pnewline = reinterpret_cast<const char *>(memchr(pstart,
-                      static_cast<char>(file->delimiter),
+                      ch,
                       file->buffer_len - file->buffer_pos));
     if( file->buffer_pos >= file->buffer_len )
       {
@@ -3313,8 +3327,9 @@ line_sequential_file_read_sbc(cblc_file_t *file, char space)
           }
         }
       pstart = file->buffer+file->buffer_pos;
+      char ch = reinterpret_cast<const char *>(&file->delimiter)[0];
       pnewline = reinterpret_cast<const char *>(memchr(pstart,
-                        static_cast<char>(file->delimiter),
+                        ch,
                         file->buffer_len - file->buffer_pos));
       if( pnewline )
         {
@@ -3380,7 +3395,7 @@ line_sequential_file_read(  cblc_file_t *file)
   // it makes more sense to me.
 
   // We first stage the data into the record area.
-  cbl_char_t ch;
+  uint8_t ch[4];
 
   long fpos = static_cast<long>(file->file_fpos);
 
@@ -3427,11 +3442,10 @@ line_sequential_file_read(  cblc_file_t *file)
 
     // There are still characters in the file->buffer, and we are still looking
     // to fill the record_area, and we are still looking for a end-of-line.
-    ch = 0;
-    memcpy(&ch, file->buffer+file->buffer_pos, stride);
+    memcpy(ch, file->buffer+file->buffer_pos, stride);
     file->buffer_pos += stride;
     file->file_fpos += stride;
-    if( ch == file->delimiter )
+    if( memcmp(ch, &file->delimiter, stride) == 0)
       {
       break;
       }
@@ -3485,13 +3499,12 @@ line_sequential_file_read(  cblc_file_t *file)
           goto done;
           }
         }
-      ch = 0;
-      memcpy(&ch, file->buffer+file->buffer_pos, stride);
+      memcpy(ch, file->buffer+file->buffer_pos, stride);
       file->buffer_pos += stride;
       file->file_fpos += stride;
       // We can't use handle_ferror() directly, because an EOF is
       // a legitimate way to end the last line.
-      if( ch == file->delimiter )
+    if( memcmp(ch, &file->delimiter, stride) == 0 )
         {
         clearerr(file->file_pointer);
         break;

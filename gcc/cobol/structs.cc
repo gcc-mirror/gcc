@@ -308,7 +308,7 @@ typedef struct cblc_file_t
     int                  errnum;           // most recent errno; can't reuse "errno" as the name
     file_status_t        io_status;        // See 2014 standard, section 9.1.12
     int                  padding;          // Actually a char
-    uint32_t             delimiter;        // ends a record; defaults to '\n'.
+    uint32_t             delimiter;        // This is four bytes in encoding order.
     int                  stride;           // Width of a character
     int                  flags;            // cblc_file_flags_t
     uint32_t             recent_char;      // This is the most recent char sent to the file
