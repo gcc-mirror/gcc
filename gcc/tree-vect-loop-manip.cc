@@ -464,6 +464,32 @@ vect_iv_increment_position (edge loop_exit, gimple_stmt_iterator *bsi,
   *insert_after = false;
 }
 
+/* Get the virtual operand live on E.  The precondition on this is valid
+   immediate dominators and an actual virtual definition dominating E.  */
+/* ???  Costly band-aid.  For the use in question we can populate a
+   live-on-exit/end-of-BB virtual operand when copying stmts.  */
+
+static tree
+get_live_virtual_operand_on_edge (edge e)
+{
+  basic_block bb = e->src;
+  do
+    {
+      for (auto gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  if (gimple_vdef (stmt))
+	    return gimple_vdef (stmt);
+	  if (gimple_vuse (stmt))
+	    return gimple_vuse (stmt);
+	}
+      if (gphi *vphi = get_virtual_phi (bb))
+	return gimple_phi_result (vphi);
+      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+    }
+  while (1);
+}
+
 /* If this is a loop where the latch condition should be rewritten to reflect
    a control flow change from a while-do to a do-while loop.  */
 
@@ -1031,6 +1057,10 @@ vect_set_loop_condition_partial_vectors (class loop *loop, edge exit_edge,
       latch_exit_edge->probability = exit_edge->probability;
       latch_exit_edge->count () = exit_edge->count ();
       copy_phi_arg_into_existing_phi (exit_edge, latch_exit_edge);
+      if (gphi *vphi = get_virtual_phi (latch_exit_edge->dest))
+	SET_PHI_ARG_DEF_ON_EDGE (vphi, latch_exit_edge,
+				 get_live_virtual_operand_on_edge
+				   (latch_exit_edge));
       gimple_stmt_iterator latch_gsi = gsi_last_bb (latch);
       gsi_insert_after (&latch_gsi, cond_stmt, GSI_NEW_STMT);
       LOOP_VINFO_MAIN_EXIT (loop_vinfo) = latch_exit_edge;
@@ -1557,32 +1587,6 @@ vect_set_loop_condition (class loop *loop, edge loop_e, loop_vec_info loop_vinfo
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "New loop exit condition: %G",
 		     (gimple *) cond_stmt);
-}
-
-/* Get the virtual operand live on E.  The precondition on this is valid
-   immediate dominators and an actual virtual definition dominating E.  */
-/* ???  Costly band-aid.  For the use in question we can populate a
-   live-on-exit/end-of-BB virtual operand when copying stmts.  */
-
-static tree
-get_live_virtual_operand_on_edge (edge e)
-{
-  basic_block bb = e->src;
-  do
-    {
-      for (auto gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
-	{
-	  gimple *stmt = gsi_stmt (gsi);
-	  if (gimple_vdef (stmt))
-	    return gimple_vdef (stmt);
-	  if (gimple_vuse (stmt))
-	    return gimple_vuse (stmt);
-	}
-      if (gphi *vphi = get_virtual_phi (bb))
-	return gimple_phi_result (vphi);
-      bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-    }
-  while (1);
 }
 
 /* Given LOOP this function generates a new copy of it and puts it
