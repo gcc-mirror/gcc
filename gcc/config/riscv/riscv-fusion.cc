@@ -316,6 +316,52 @@ riscv_set_is_addiw_p (rtx set, rtx *src0 = NULL)
   return false;
 }
 
+/* Matches an addw:
+     (set (reg:DI rd)
+	  (sign_extend:DI (plus:SI (reg:SI rs1) (reg:SI rs2))))
+   or an equivalent word-add RTL form.  */
+
+static bool
+riscv_set_is_addw_p (rtx set)
+{
+  if (!TARGET_64BIT)
+    return false;
+
+  rtx src;
+  return (riscv_set_extract_word_binary_p (set, PLUS, &src)
+	  && REG_P (XEXP (src, 0))
+	  && REG_P (XEXP (src, 1))
+	  && riscv_regno (SET_DEST (set)) != INVALID_REGNUM);
+}
+
+/* Matches an add-type instruction:
+     (set (reg rd) (plus (reg rs1) (reg rs2)))
+   or an accepted addw or add.uw RTL form.  Store whether the instruction is
+   a word form in *WORD_P when requested.  */
+
+static bool
+riscv_insn_is_add_type_p (rtx_insn *insn, bool *word_p = NULL)
+{
+  rtx set = single_set (insn);
+  if (!set)
+    return false;
+
+  enum attr_type type = get_attr_type (insn);
+  bool is_word_p = false;
+  if (type == TYPE_ARITH && riscv_set_is_add_p (set))
+    is_word_p = TARGET_64BIT && GET_MODE (SET_SRC (set)) == SImode;
+  else if (type == TYPE_ARITH && riscv_set_is_addw_p (set))
+    is_word_p = true;
+  else if (!TARGET_64BIT
+	   || type != TYPE_BITMANIP
+	   || !riscv_set_is_adduw_p (set))
+    return false;
+
+  if (word_p)
+    *word_p = is_word_p;
+  return true;
+}
+
 /* Matches an mv or li instruction:
      (set (reg rd) (reg rs1))
    or:
@@ -709,6 +755,33 @@ riscv_fuse_mem_candidate_p (const struct riscv_fusion_mem_info *mem,
 	  && (rule.access_sizes & (HOST_WIDE_INT_1U << access_size)));
 }
 
+/* Extract an add-type instruction followed by an integer load or store that
+   uses the add result as an undisplaced address.  */
+
+static bool
+riscv_fuse_add_mem_p (rtx_insn *prev, rtx_insn *curr,
+		      rtx *add_set_out,
+		      struct riscv_fusion_mem_info *mem)
+{
+  rtx prev_set, curr_set;
+  if (!riscv_fuse_sets_p (prev, curr, &prev_set, &curr_set))
+    return false;
+
+  rtx add_dest = SET_DEST (prev_set);
+  if (!riscv_insn_is_add_type_p (prev)
+      || !riscv_fuse_mem_p (curr, mem)
+      || mem->fp_p
+      || mem->addr.type != ADDRESS_REG
+      || !CONST_INT_P (mem->addr.offset)
+      || INTVAL (mem->addr.offset) != 0
+      || !riscv_fuse_same_reg_p (add_dest, mem->addr.reg))
+    return false;
+
+  if (add_set_out)
+    *add_set_out = prev_set;
+  return true;
+}
+
 /* Check two parsed accesses in their proposed execution order against RULE.
    The caller selects enabled rules and checks the scheduling phase.  Pair
    formation must separately prove that moving the accesses is safe.  */
@@ -824,51 +897,27 @@ riscv_fuse_zexth (rtx_insn *prev, rtx_insn *curr)
 }
 
 /* Check for RISCV_FUSE_LDINDEXED fusion.
-   prev (add) == (set (reg rd1)
-		      (plus (reg rs1) (reg rs2)))
+   prev (one of the following):
+     (add) == (set (reg rd1) (plus (reg rs1) (reg rs2)))
+     (addw) == (set (reg rd1) (sign_extend (plus:SI (reg rs1)
+						    (reg rs2))))
+     (add.uw) == (set (reg rd1) (plus (zero_extend (reg rs1))
+				      (reg rs2)))
    curr (one of the following):
      (load) == (set (reg rd2) (mem (reg rd1)))
      (load) == (set (reg rd2)
 		    (any_extend (mem (reg rd1))))
 
    Constraints:
-     rd1 == rd2.  */
+     offset == 0.  */
 
 static bool
 riscv_fuse_ldindexed (rtx_insn *prev, rtx_insn *curr)
 {
-  rtx prev_set = single_set (prev);
-  rtx curr_set = single_set (curr);
-  if (!prev_set || !curr_set || any_condjump_p (curr))
-    return false;
+  struct riscv_fusion_mem_info mem;
 
-  if (!riscv_fuse_same_dest_p (prev_set, curr_set))
-    return false;
-
-  if (MEM_P (SET_SRC (curr_set))
-      && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
-      && REG_P (XEXP (SET_SRC (curr_set), 0))
-      && REGNO (XEXP (SET_SRC (curr_set), 0)) == REGNO (SET_DEST (prev_set))
-      && GET_CODE (SET_SRC (prev_set)) == PLUS
-      && REG_P (XEXP (SET_SRC (prev_set), 0))
-      && REG_P (XEXP (SET_SRC (prev_set), 1)))
-    return true;
-
-  /* curr (lw) == (set (reg:DI rd2)
-		       (any_extend:DI (mem:SUBX (reg:DI rd1)))).  */
-  if ((GET_CODE (SET_SRC (curr_set)) == SIGN_EXTEND
-       || (GET_CODE (SET_SRC (curr_set)) == ZERO_EXTEND))
-      && MEM_P (XEXP (SET_SRC (curr_set), 0))
-      && SCALAR_INT_MODE_P (GET_MODE (SET_DEST (curr_set)))
-      && REG_P (XEXP (XEXP (SET_SRC (curr_set), 0), 0))
-      && (REGNO (XEXP (XEXP (SET_SRC (curr_set), 0), 0))
-	  == REGNO (SET_DEST (prev_set)))
-      && GET_CODE (SET_SRC (prev_set)) == PLUS
-      && REG_P (XEXP (SET_SRC (prev_set), 0))
-      && REG_P (XEXP (SET_SRC (prev_set), 1)))
-    return true;
-
-  return false;
+  return (riscv_fuse_add_mem_p (prev, curr, NULL, &mem)
+	  && mem.type != SCHED_FUSION_ST);
 }
 
 /* Check for RISCV_FUSE_EXPANDED_LD fusion.
