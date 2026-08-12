@@ -1337,10 +1337,10 @@ fomit-frame-pointer
 UrlSuffix(gcc/Optimize-Options.html#index-fno-omit-frame-pointer)
 
 fopenmp-ompt
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp-ompt)
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-ompt)
 
-fopenmp-ompt-detailed
-UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp-ompt-detailed)
+fopenmp-ompt=
+UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fopenmp-ompt)
 
 fopenmp-target-simd-clone
 UrlSuffix(gcc/OpenMP-and-OpenACC-Options.html#index-fno-openmp-target-simd-clone)

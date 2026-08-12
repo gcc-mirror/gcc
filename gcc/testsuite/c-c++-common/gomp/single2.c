@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fopenmp-ompt -fdump-tree-ompexp" } */
+/* { dg-additional-options "-fopenmp-ompt=basic -fdump-tree-ompexp" } */
 
 void
 foo (void)

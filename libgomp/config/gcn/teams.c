@@ -64,7 +64,7 @@ GOMP_distribute_static_worksharing_start (unsigned long long niter
   return nteams + tid * 1I;
 }
 
-/* Stub for OMPT callback enabled by -fopenmp-ompt-detailed. START is the
+/* Stub for OMPT callback enabled by -fopenmp-ompt=extended. START is the
    starting index of the chunk in the logical iteration space. ITERATIONS is the
    number of iterations in the chunk.  */
 

@@ -323,7 +323,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{OpenMP and OpenACC Options,,Options Controlling OpenMP and OpenACC}.
 @gccoptlist{-foffload=@var{arg}  -foffload-options=@var{arg}
 -fopenacc  -fopenacc-dim=@var{geom}
--fopenmp  -fopenmp-simd  -fopenmp-ompt  -fopenmp-ompt-detailed
+-fopenmp  -fopenmp-simd  -fopenmp-ompt@r{[}=@var{level}@r{]}
 -fopenmp-target-simd-clone@r{[}=@var{device-type}@r{]}}
 
 @item Diagnostic Message Formatting Options
@@ -5620,28 +5620,48 @@ Fortran.  In fixed source form Fortran, the sentinels can also start with
 to the current task region, independent of the specified @code{bind} clause.
 
 @opindex fopenmp-ompt
-@opindex fno-openmp-ompt
 @cindex OpenMP OMPT
 @item -fopenmp-ompt
-For some OpenMP constructs, generate calls into the OpenMP runtime before and
-after the region instead of only on region entry.  For those constructs, the
-additional calls are only needed to provide better tracing results in tools
-using the OMPT interface and have a small overhead.  The extra calls are
-generated for the @code{masked}, @code{master}, @code{scope}, and @code{single}
-constructs and with static scheduling for the @code{distribute} and worksharing
-loop constructs.  Requires @option{-fopenmp}.
+@itemx -fopenmp-ompt=@var{level}
+Control how much detail GCC reports to an @dfn{OMPT} tool---a tool
+that registers callbacks with the OpenMP runtime to observe events
+such as when a parallel region or worksharing construct starts and
+ends.  The @var{level} argument is one of @samp{minimal}, @samp{basic},
+or @samp{extended}; @option{-fopenmp-ompt} without an argument is
+equivalent to @option{-fopenmp-ompt=basic}.  OMPT support itself is
+always present with @option{-fopenmp}; this option only changes how
+much is reported and at what runtime cost.  Requires
+@option{-fopenmp}.
 
-@opindex fopenmp-ompt-detailed
-@opindex fno-openmp-ompt-detailed
-@cindex OpenMP OMPT
-@item -fopenmp-ompt-detailed
-Add additional calls into the OpenMP runtime for more detailed tracing via OMPT,
-which might have a measurable effect on the performance.  The option enables
-additional constructs to issue events for the @code{dispatch} callback, which
-is invoked when beginning to execute a section or a collapsed iteration in a
-@code{taskloop} or worksharing construct.  The additional calls are generated
-with static scheduling for the @code{distribute} and worksharing loop
-constructs.  Implies @option{-fopenmp-ompt} and requires @option{-fopenmp}.
+@table @samp
+@item minimal
+The level used when @option{-fopenmp-ompt} is not specified.  Some
+OpenMP constructs are reported to an OMPT tool as a single combined
+``encountered'' event, so a tool cannot tell how long the construct's
+region actually ran.  No extra runtime calls are generated beyond
+what the construct's semantics already require.
+
+@item basic
+For the @code{single}, @code{masked}, and @code{master} constructs,
+and for @code{distribute} and worksharing-loop (@code{for}/@code{do})
+constructs that use static scheduling, GCC instead reports a separate
+``begin'' event when the region is entered and an ``end'' event when
+it is left.  This lets an OMPT tool measure the time actually spent in
+those regions, at the cost of one extra runtime call per region.
+
+@item extended
+In addition to what @samp{basic} reports, report a ``dispatch'' event
+each time a new chunk of loop iterations begins within a statically
+scheduled @code{distribute} or worksharing-loop construct (a
+@dfn{chunk} is the contiguous run of iterations handed to one thread
+or team at a time).  This lets an OMPT tool see how work is actually
+split across threads, but adds a runtime call for every chunk, which
+can be measurably slower for loops with many small chunks.
+@end table
+
+There is no @option{-fno-openmp-ompt}: the lowest available level is
+@option{-fopenmp-ompt=minimal}, since OMPT support cannot be disabled
+outright once @option{-fopenmp} is in effect.
 
 @opindex fopenmp-target-simd-clone
 @opindex fno-openmp-target-simd-clone

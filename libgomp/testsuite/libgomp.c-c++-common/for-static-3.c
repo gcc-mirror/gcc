@@ -1,7 +1,7 @@
 /* { dg-do link { target offload_target_any } } */
-/* { dg-additional-options "-O0 -foffload=-fdump-tree-optimized -fopenmp-ompt-detailed" } */
+/* { dg-additional-options "-O0 -foffload=-fdump-tree-optimized -fopenmp-ompt=extended" } */
 
-/* Check that, with -fopenmp-ompt-detailed, _dispatch builtins are called along
+/* Check that, with -fopenmp-ompt=extended, _dispatch builtins are called along
    with the _start and _end variants.  */
 
 #include "for-static.h"

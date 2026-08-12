@@ -1,7 +1,7 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fopenmp-ompt-detailed -fdump-tree-ompexp" } */
+/* { dg-additional-options "-fopenmp-ompt=extended -fdump-tree-ompexp" } */
 
-/* Check that, with -fopenmp-ompt-detailed, _dispatch builtins are called along
+/* Check that, with -fopenmp-ompt=extended, _dispatch builtins are called along
    with the _start and _end variants.  */
 
 #include "for-static.h"

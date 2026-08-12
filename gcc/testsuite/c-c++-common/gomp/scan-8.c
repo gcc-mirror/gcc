@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fopenmp-ompt -fdump-tree-ompexp" } */
+/* { dg-additional-options "-fopenmp-ompt=basic -fdump-tree-ompexp" } */
 
 /* Check that an extra, OMPT variant of GOMP_loop_end is not emitted when the
    inscan modifier is present on the for construct.  */

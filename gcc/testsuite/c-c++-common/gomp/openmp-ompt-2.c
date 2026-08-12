@@ -1,4 +1,4 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp-ompt-detailed" } */
+/* { dg-options "-fopenmp-ompt=extended" } */
 
-/* { dg-error ".-fopenmp-ompt. and .-fopenmp-ompt-detailed. require .-fopenmp." "" { target *-*-* } 0 } */
+/* { dg-error ".-fopenmp-ompt. requires .-fopenmp." "" { target *-*-* } 0 } */

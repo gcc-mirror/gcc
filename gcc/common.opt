@@ -2503,12 +2503,23 @@ Common Var(flag_omit_frame_pointer) Optimization
 When possible do not generate stack frames.
 
 fopenmp-ompt
-Common Var(flag_openmp_ompt) EnabledBy(fopenmp-ompt-detailed)
-Emit additional calls into libgomp, enabling OMPT callbacks before and after some OpenMP worksharing constructs.
+Common Alias(fopenmp-ompt=,basic) RejectNegative
 
-fopenmp-ompt-detailed
-Common Var(flag_openmp_ompt_detailed)
-Like -fopenmp-ompt, and emit additional calls into libgomp, enabling OMPT dispatch callbacks.
+fopenmp-ompt=
+Common Joined RejectNegative Enum(ompt_level) Var(flag_openmp_ompt) Init(OMP_OMPT_LEVEL_MINIMAL)
+Control how much detail GCC reports to an OMPT tool.
+
+Enum
+Name(ompt_level) Type(int)
+
+EnumValue
+Enum(ompt_level) String(minimal) Value(OMP_OMPT_LEVEL_MINIMAL)
+
+EnumValue
+Enum(ompt_level) String(basic) Value(OMP_OMPT_LEVEL_BASIC)
+
+EnumValue
+Enum(ompt_level) String(extended) Value(OMP_OMPT_LEVEL_EXTENDED)
 
 fopenmp-target-simd-clone
 Common Alias(fopenmp-target-simd-clone=,any,none)

@@ -585,6 +585,14 @@ enum omp_target_simd_clone_device_kind
   OMP_TARGET_SIMD_CLONE_ANY = 3
 };
 
+/* Levels for -fopenmp-ompt.  */
+enum omp_ompt_level
+{
+  OMP_OMPT_LEVEL_MINIMAL = 0,
+  OMP_OMPT_LEVEL_BASIC = 1,
+  OMP_OMPT_LEVEL_EXTENDED = 2
+};
+
 #endif
 
 #endif /* ! GCC_FLAG_TYPES_H */

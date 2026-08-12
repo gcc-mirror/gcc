@@ -5644,7 +5644,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 						   cont_bb, body_bb);
     }
 
-  if (flag_openmp_ompt_detailed)
+  if (flag_openmp_ompt == OMP_OMPT_LEVEL_EXTENDED)
     {
       /* Insert call to GOMP_*_static_worksharing_dispatch at the end of
 	 seq_start_bb.  */
@@ -6492,7 +6492,7 @@ expand_omp_for_static_chunk (struct omp_region *region,
     }
   gsi_remove (&gsi, true);
 
-  if (flag_openmp_ompt_detailed)
+  if (flag_openmp_ompt == OMP_OMPT_LEVEL_EXTENDED)
     {
       /* Insert call to GOMP_*_static_worksharing_dispatch at the end of
 	 seq_start_bb.  */

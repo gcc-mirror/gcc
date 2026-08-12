@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fopenmp-ompt -fdump-tree-omplower" } */
+/* { dg-additional-options "-fopenmp-ompt=basic -fdump-tree-omplower" } */
 
 /* Check that OMPT variants of libgomp calls are emitted for the scope
    construct, both with and without a task reduction clause.  */

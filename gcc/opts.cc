@@ -1537,11 +1537,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		    " %<-fstrict-flex-arrays%> is not present");
       }
 
-  if ((opts->x_flag_openmp_ompt || opts->x_flag_openmp_ompt_detailed)
-      && !opts->x_flag_openmp)
-    error_at (
-      loc,
-      "%<-fopenmp-ompt%> and %<-fopenmp-ompt-detailed%> require %<-fopenmp%>");
+  if (opts->x_flag_openmp_ompt && !opts->x_flag_openmp)
+    error_at (loc, "%<-fopenmp-ompt%> requires %<-fopenmp%>");
 
   diagnose_options (opts, opts_set, loc);
 }
