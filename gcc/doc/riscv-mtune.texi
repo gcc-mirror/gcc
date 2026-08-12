@@ -32,6 +32,8 @@ particular CPU name.  Permissible values for this option are:
 
 @samp{tt-ascalon-x},
 
+@samp{tt-ascalon-xg},
+
 @samp{thead-c906},
 
 @samp{xt-c908},
