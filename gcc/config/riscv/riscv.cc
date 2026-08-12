@@ -800,7 +800,16 @@ static const struct riscv_tune_param xt_c9501_tune_info = {
   false,					/* overlap_op_by_pieces */
   true,						/* use_zero_stride_load */
   false,					/* speculative_sched_vsetvl */
-  RISCV_FUSE_NOTHING,				/* fusible_ops */
+  RISCV_FUSE_LUI_ADDI | RISCV_FUSE_AUIPC_ADDI
+  | RISCV_FUSE_SUB_SEQZ
+  | RISCV_FUSE_ADD_ANDI
+  | RISCV_FUSE_LDINDEXED | RISCV_FUSE_ADD_ST
+  | RISCV_FUSE_ANDI_ADD | RISCV_FUSE_LOGIC_LOGIC
+  | RISCV_FUSE_SLLI_SRLI | RISCV_FUSE_SRLI_ADD
+  | RISCV_FUSE_LDPREINCREMENT | RISCV_FUSE_PREINDEX_ST
+  | RISCV_FUSE_POSTINDEX_LD | RISCV_FUSE_POSTINDEX_ST
+  | RISCV_FUSE_LDST_PAIR_INC
+  | RISCV_FUSE_LDST_PAIR_DEC,			/* fusible_ops */
   &xt_c9501_vector_cost,			/* vector cost */
   "32",						/* function_align */
   "8",						/* jump_align */

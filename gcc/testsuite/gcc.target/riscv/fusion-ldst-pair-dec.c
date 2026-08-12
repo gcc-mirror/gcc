@@ -1,7 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-O[sgz]" "-flto" } } */
 /* { dg-options "-march=rv64gc -mabi=lp64d -mtune=xt-c9501fdvt -O2 -fdump-rtl-sched2-details" } */
-/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LDST_PAIR_DEC" 4 "sched2" { xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LDST_PAIR_DEC" 4 "sched2" } } */
 
 /* Present descending pairs directly to sched2 so that earlier passes do
    not choose the memory order.  Each function has exactly one pair.  */

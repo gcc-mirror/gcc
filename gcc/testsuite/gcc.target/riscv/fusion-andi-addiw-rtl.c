@@ -1,7 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-O[sgz]" "-flto" } } */
 /* { dg-options "-march=rv64gc -mabi=lp64d -O2 -mtune=xt-c9501fdvt -fdump-rtl-sched2-details" } */
-/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_ANDI_ADD" 1 "sched2" { xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_ANDI_ADD" 1 "sched2" } } */
 /* { dg-final { scan-assembler {addiw\s+a0,a0,5} } } */
 
 /* Supply ADDIW directly so that earlier passes cannot replace it with ADDI.  */

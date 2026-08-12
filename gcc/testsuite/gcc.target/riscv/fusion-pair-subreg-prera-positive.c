@@ -1,8 +1,8 @@
 /* { dg-do compile { target { rv32 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-O[sgz]" "-flto" } } */
 /* { dg-options "-march=rv32gc -mabi=ilp32d -O2 -mtune=xt-c9501fdvt -fdump-rtl-sched1-details -fdump-rtl-sched2-details" } */
-/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LDST_PAIR_INC" 2 "sched1" { xfail *-*-* } } } */
-/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LDST_PAIR_INC" 2 "sched2" { xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LDST_PAIR_INC" 2 "sched1" } } */
+/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LDST_PAIR_INC" 2 "sched2" } } */
 
 /* Matching low or high parts of the same pseudo remain valid bases.  */
 int __RTL (startwith ("sched1"))

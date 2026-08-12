@@ -1,7 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-O[sgz]" "-flto" } } */
 /* { dg-options "-march=rv64gc -mabi=lp64d -mtune=xt-c9501fdvt -O2 -fdump-rtl-sched2" } */
-/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_PREINDEX_ST" 1 "sched2" { xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_PREINDEX_ST" 1 "sched2" } } */
 
 /* Pre-index update followed by a store of the zero register should fuse.  */
 long __RTL (startwith ("sched2"))

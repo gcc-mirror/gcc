@@ -1,8 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-O[sgz]" "-flto" } } */
 /* { dg-options "-march=rv64gc_zbb -mabi=lp64d -mtune=xt-c9501fdvt -O2 -fdump-rtl-sched2-details" } */
-/* No tune enables this fusion pair yet.  */
-/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LOGIC_LOGIC" 6 "sched2" { xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LOGIC_LOGIC" 6 "sched2" } } */
 
 typedef long int64_t;
 

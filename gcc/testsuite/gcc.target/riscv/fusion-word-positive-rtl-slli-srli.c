@@ -1,7 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-O[sgz]" "-flto" } } */
 /* { dg-options "-march=rv64gc_zbb -mabi=lp64d -mtune=xt-c9501fdvt -O2 -fdump-rtl-sched2-details" } */
-/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_SLLI_SRLI" 2 "sched2" { xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_SLLI_SRLI" 2 "sched2" } } */
 
 /* Raw SImode slli followed by raw SImode srli should fuse.  */
 int __RTL (startwith ("sched2"))

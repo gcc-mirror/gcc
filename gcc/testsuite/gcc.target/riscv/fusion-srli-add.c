@@ -1,8 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-O[sgz]" "-flto" } } */
 /* { dg-options "-march=rv64gc_zba -mabi=lp64d -mtune=xt-c9501fdvt -O2 -fdump-rtl-sched2-details" } */
-/* No tune enables these fusion pairs yet.  */
-/* { dg-final { scan-rtl-dump-times {(?s);; Function test_srli(?:_add|w_addw|_adduw)_[123] (?:(?!;; Function).)*RISCV_FUSE_SRLI_ADD} 9 "sched2" { xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-times {(?s);; Function test_srli(?:_add|w_addw|_adduw)_[123] (?:(?!;; Function).)*RISCV_FUSE_SRLI_ADD} 9 "sched2" } } */
 /* { dg-final { scan-rtl-dump-not {(?s);; Function test_srli(?:_add|w_addw|_adduw)_(?:4|31) (?:(?!;; Function).)*RISCV_FUSE_SRLI_ADD} "sched2" } } */
 
 typedef long int64_t;

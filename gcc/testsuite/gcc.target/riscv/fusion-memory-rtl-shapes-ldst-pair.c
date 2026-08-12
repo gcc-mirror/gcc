@@ -1,7 +1,7 @@
 /* { dg-do compile { target { rv64 } } } */
 /* { dg-skip-if "" { *-*-* } { "-O0" "-O1" "-O3" "-O[sgz]" "-flto" } } */
 /* { dg-options "-march=rv64gc -mabi=lp64d -O2 -mtune=xt-c9501fdvt -fdump-rtl-sched2-details" } */
-/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LDST_PAIR_INC" 1 "sched2" { xfail *-*-* } } } */
+/* { dg-final { scan-rtl-dump-times "RISCV_FUSE_LDST_PAIR_INC" 1 "sched2" } } */
 
 /* The second load destination may be the shared base register.  Offsets
    aligned to the access size need not be aligned to twice that size.  */
