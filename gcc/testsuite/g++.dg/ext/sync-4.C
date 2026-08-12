@@ -1,6 +1,5 @@
 /* { dg-do run { target hppa*-*-hpux* *-*-linux* *-*-gnu* powerpc*-*-darwin* *-*-darwin[912]* *-*-uclinux* } } */
-/* FIXME The following additional option should be removed after the fix for radr://19802258.
-/* { dg-xfail-run-if "PR60563 radr://19802258" { *-*-darwin* } } */
+/* { dg-xfail-run-if "PR60563 radr://19802258" { *-*-darwin1* *-*-darwin2[0-3]* powerpc-*-darwin* } } */
 /* { dg-require-effective-target sync_long_long_runtime } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -O2" } */
 /* { dg-additional-options "-march=pentium" { target { { i?86-*-* x86_64-*-* } && ia32 } } } */
