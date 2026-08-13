@@ -4794,19 +4794,28 @@ $(lang_checks_parallelized): check-% : site.exp
 	    EXPECT=$(EXPECT) \
 	    check-parallel-$* \
 	    $(patsubst %,check-parallel-$*_%, $(check_p_subdirs)); \
-	  sums= ; logs= ; \
+	  sums= ; logs= ; lost= ; \
 	  for dir in $(TESTSUITEDIR)/$* \
 		     $(patsubst %,$(TESTSUITEDIR)/$*%,$(check_p_subdirs));\
 	  do \
 	    if [ -d $$dir ]; then \
-	      mv -f $$dir/$*.sum $$dir/$*.sum.sep; mv -f $$dir/$*.log $$dir/$*.log.sep; \
-	      sums="$$sums $$dir/$*.sum.sep"; logs="$$logs $$dir/$*.log.sep"; \
+	      if [ -f $$dir/$*.sum ]; then \
+		mv -f $$dir/$*.sum $$dir/$*.sum.sep; mv -f $$dir/$*.log $$dir/$*.log.sep; \
+		sums="$$sums $$dir/$*.sum.sep"; logs="$$logs $$dir/$*.log.sep"; \
+	      else \
+		lost="$$lost $$dir"; \
+	      fi; \
 	    fi; \
 	  done; \
+	  if [ -n "$$lost" ]; then \
+	    echo "warning: $*: these runtest instances produced no results:$$lost" >&2; \
+	  fi; \
 	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh $$sums \
-	    > $(TESTSUITEDIR)/$*/$*.sum; \
+	    > $(TESTSUITEDIR)/$*/$*.sum.tmp || exit 1; \
 	  $(SHELL) $(srcdir)/../contrib/dg-extract-results.sh -L $$logs \
-	    > $(TESTSUITEDIR)/$*/$*.log; \
+	    > $(TESTSUITEDIR)/$*/$*.log.tmp || exit 1; \
+	  mv -f $(TESTSUITEDIR)/$*/$*.sum.tmp $(TESTSUITEDIR)/$*/$*.sum; \
+	  mv -f $(TESTSUITEDIR)/$*/$*.log.tmp $(TESTSUITEDIR)/$*/$*.log; \
 	  rm -rf $(TESTSUITEDIR)/$*-parallel || true; \
 	else \
 	  $(MAKE) TESTSUITEDIR="$(TESTSUITEDIR)" RUNTESTFLAGS="$(RUNTESTFLAGS)" \
