@@ -2224,8 +2224,8 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup,
       if (gimple_has_side_effects (t))
 	{
 	  gcall *call = dyn_cast <gcall *> (t);
-	  // For no delete don't remove the lhs.
-	  if (call && no_delete)
+	  // Remove the lhs for a call if not no_delete.
+	  if (call && !no_delete)
 	    {
 	      gimple_call_set_lhs (call, NULL_TREE);
 	      update_stmt (call);
