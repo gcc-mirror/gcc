@@ -450,11 +450,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 		}
 	      /* Local PHIs participate in renaming below.  */
 	      if (gphi *phi = dyn_cast<gphi *> (def_stmt))
-		{
-		  tree res = gimple_phi_result (phi);
-		  if (!SSA_NAME_OCCURS_IN_ABNORMAL_PHI (res))
-		    interesting_phis.safe_push (phi);
-		}
+		interesting_phis.safe_push (phi);
 	      /* For other local defs process their uses, amending
 		 imports on the way.  */
 	      else
