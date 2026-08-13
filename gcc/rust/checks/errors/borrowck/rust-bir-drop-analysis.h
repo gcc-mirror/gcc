@@ -19,6 +19,7 @@
 #ifndef RUST_BIR_DROP_ANALYSIS_H
 #define RUST_BIR_DROP_ANALYSIS_H
 
+#include "rust-system.h"
 #include "rust-bir.h"
 
 namespace Rust {
@@ -39,9 +40,16 @@ public:
   void analyze (Function &function);
 
   bool is_definitely_dead (HirId id) const;
+  bool needs_drop_flag (HirId id) const;
+  bool lookup_move_source (HirId move_site, HirId *source) const;
 
 private:
-  std::set<HirId> definitely_dead;
+  std::unordered_set<HirId> definitely_dead;
+  std::unordered_set<HirId> conditionally_dropped;
+  // This may need to be extended to
+  // std::unordered_map<HirId, std::unordered_set<HirId>>
+  // to support product moves in the future.
+  std::unordered_map<HirId, HirId> move_sources;
 };
 
 } // namespace BIR

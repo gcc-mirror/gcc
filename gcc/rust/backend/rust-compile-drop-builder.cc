@@ -18,6 +18,7 @@
 
 #include "rust-compile-drop-builder.h"
 #include "rust-compile-context.h"
+#include "rust-bir-drop-analysis.h"
 
 namespace Rust {
 namespace Compile {
@@ -29,6 +30,39 @@ DropBuilder::note_simple_drop_candidate (HirId hirid, location_t locus)
 {
   rust_assert (!ctx.block_drop_candidates.empty ());
   ctx.block_drop_candidates.back ().emplace_back (hirid, locus);
+}
+
+void
+DropBuilder::maybe_create_drop_flag (HirId hirid, location_t locus,
+				     bool initialized)
+{
+  if (!BIR::DropAnalysis::get ().needs_drop_flag (hirid))
+    return;
+
+  Bvariable *existing = nullptr;
+  if (ctx.lookup_drop_flag (hirid, &existing))
+    return;
+
+  tree declaration = nullptr;
+  Bvariable *flag = Backend::temporary_variable (
+    ctx.peek_fn ().fndecl, nullptr, boolean_type_node,
+    Backend::boolean_constant_expression (initialized), false, locus,
+    &declaration);
+  ctx.add_statement (declaration);
+  ctx.insert_drop_flag (hirid, flag);
+}
+
+tree
+DropBuilder::drop_flag_assignment (HirId hirid, bool value, location_t locus)
+{
+  Bvariable *flag = nullptr;
+  if (!ctx.lookup_drop_flag (hirid, &flag))
+    return nullptr;
+
+  return Backend::assignment_statement (Backend::var_expression (flag, locus),
+					Backend::boolean_constant_expression (
+					  value),
+					locus);
 }
 
 std::vector<DropCandidate> &

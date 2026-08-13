@@ -145,6 +145,21 @@ public:
     return true;
   }
 
+  void insert_drop_flag (HirId id, ::Bvariable *flag)
+  {
+    drop_flags[{peek_fn ().fndecl, id}] = flag;
+  }
+
+  bool lookup_drop_flag (HirId id, ::Bvariable **flag)
+  {
+    auto it = drop_flags.find ({peek_fn ().fndecl, id});
+    if (it == drop_flags.end ())
+      return false;
+
+    *flag = it->second;
+    return true;
+  }
+
   void insert_function_decl (const TyTy::FnType *ref, tree fn)
   {
     auto id = ref->get_ty_ref ();
@@ -504,6 +519,7 @@ private:
   // state
   std::vector<fncontext> fn_stack;
   std::map<HirId, ::Bvariable *> compiled_var_decls;
+  std::map<std::pair<tree, HirId>, ::Bvariable *> drop_flags;
   std::map<hashval_t, tree> compiled_type_map;
   std::map<HirId, tree> compiled_fn_map;
   std::map<HirId, tree> compiled_consts;

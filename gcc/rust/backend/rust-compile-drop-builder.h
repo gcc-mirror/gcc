@@ -32,6 +32,8 @@ public:
   DropBuilder (Context &ctx);
 
   void note_simple_drop_candidate (HirId hirid, location_t locus);
+  void maybe_create_drop_flag (HirId hirid, location_t locus, bool initialized);
+  tree drop_flag_assignment (HirId hirid, bool value, location_t locus);
   std::vector<DropCandidate> &peek_block_drop_candidates ();
 
 private:

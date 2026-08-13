@@ -38,31 +38,13 @@ struct BlockInitializationState
   bool reachable;
 };
 
-static bool
-is_straight_line (const Function &function)
+struct DropAnalysisResults
 {
-  std::set<BasicBlockId> visited;
-  BasicBlockId current = ENTRY_BASIC_BLOCK;
-
-  while (current != INVALID_BB)
-    {
-      // Revisiting a block means that the CFG contains a cycle.
-      if (!visited.insert (current).second)
-	return false;
-
-      const BasicBlock &block = function.basic_blocks[current];
-
-      if (block.successors.empty ())
-	return true;
-
-      if (block.successors.size () != 1)
-	return false;
-
-      current = block.successors.front ();
-    }
-
-  return true;
-}
+  std::unordered_set<HirId> dead_drop_hir_ids;
+  std::unordered_set<HirId> static_drop_hir_ids;
+  std::unordered_set<HirId> conditional_drop_hir_ids;
+  std::unordered_map<HirId, HirId> move_sources;
+};
 
 static void
 set_initialized (BlockInitializationState &state, PlaceId place)
@@ -247,10 +229,9 @@ compute_entry_states (Function &function)
 }
 
 static void
-record_drop_for_straight_line_backend (const Function &function, PlaceId place,
-				       Statement::DropStyle drop_style,
-				       std::set<HirId> &dead_drop_hir_ids,
-				       std::set<HirId> &non_dead_drop_hir_ids)
+record_drop_for_backend (const Function &function, PlaceId place,
+			 Statement::DropStyle drop_style,
+			 DropAnalysisResults &results)
 {
   const Place &dropped_place = function.place_db[place];
 
@@ -263,10 +244,23 @@ record_drop_for_straight_line_backend (const Function &function, PlaceId place,
   if (!hir_id.has_value ())
     return;
 
-  if (drop_style == Statement::DropStyle::DEAD)
-    dead_drop_hir_ids.insert (hir_id.value ());
-  else
-    non_dead_drop_hir_ids.insert (hir_id.value ());
+  switch (drop_style)
+    {
+    case Statement::DropStyle::UNCLASSIFIED:
+      break;
+
+    case Statement::DropStyle::DEAD:
+      results.dead_drop_hir_ids.insert (hir_id.value ());
+      break;
+
+    case Statement::DropStyle::STATIC:
+      results.static_drop_hir_ids.insert (hir_id.value ());
+      break;
+
+    case Statement::DropStyle::CONDITIONAL:
+      results.conditional_drop_hir_ids.insert (hir_id.value ());
+      break;
+    }
 }
 
 // Walk each reachable block forward from its stable entry state and classify
@@ -274,8 +268,7 @@ record_drop_for_straight_line_backend (const Function &function, PlaceId place,
 static void
 annotate_drop_statements (
   Function &function, const std::vector<BlockInitializationState> &entry_states,
-  bool record_straight_line_backend_drops, std::set<HirId> &dead_drop_hir_ids,
-  std::set<HirId> &non_dead_drop_hir_ids)
+  DropAnalysisResults &results)
 {
   const size_t block_count = function.basic_blocks.size ();
 
@@ -291,6 +284,29 @@ annotate_drop_statements (
 
       for (Statement &statement : block.statements)
 	{
+	  const auto &move_site = statement.get_move_site ();
+	  if (statement.get_kind () == Statement::Kind::ASSIGNMENT
+	      && move_site.has_value ())
+	    {
+	      AbstractExpr &expr = statement.get_expr ();
+	      if (expr.get_kind () == ExprKind::ASSIGNMENT)
+		{
+		  PlaceId rhs = static_cast<Assignment &> (expr).get_rhs ();
+		  const Place &rhs_place = function.place_db[rhs];
+		  if (rhs_place.kind == Place::VARIABLE
+		      && rhs_place.should_be_moved ())
+		    {
+		      auto hirid
+			= Analysis::Mappings::get ().lookup_node_to_hir (
+			  static_cast<NodeId> (
+			    rhs_place.variable_or_field_index));
+		      if (hirid.has_value ())
+			results.move_sources[move_site.value ()]
+			  = hirid.value ();
+		    }
+		}
+	    }
+
 	  // A Drop is classified using the state before it executes.
 	  if (statement.get_kind () == Statement::Kind::DROP)
 	    {
@@ -299,11 +315,7 @@ annotate_drop_statements (
 
 	      statement.set_drop_style (drop_style);
 
-	      if (record_straight_line_backend_drops)
-		record_drop_for_straight_line_backend (function, place,
-						       drop_style,
-						       dead_drop_hir_ids,
-						       non_dead_drop_hir_ids);
+	      record_drop_for_backend (function, place, drop_style, results);
 	    }
 
 	  // Update the state for the following statement.
@@ -325,6 +337,8 @@ void
 DropAnalysis::clear ()
 {
   definitely_dead.clear ();
+  conditionally_dropped.clear ();
+  move_sources.clear ();
 }
 
 bool
@@ -333,26 +347,44 @@ DropAnalysis::is_definitely_dead (HirId id) const
   return definitely_dead.find (id) != definitely_dead.end ();
 }
 
+bool
+DropAnalysis::needs_drop_flag (HirId id) const
+{
+  return conditionally_dropped.find (id) != conditionally_dropped.end ();
+}
+
+bool
+DropAnalysis::lookup_move_source (HirId move_site, HirId *source) const
+{
+  auto it = move_sources.find (move_site);
+  if (it == move_sources.end ())
+    return false;
+
+  *source = it->second;
+  return true;
+}
+
 void
 DropAnalysis::analyze (Function &function)
 {
   std::vector<BlockInitializationState> entry_states
     = compute_entry_states (function);
 
-  // Keep the existing backend handling for straight-line CFGs.
-  const bool record_straight_line_backend_drops = is_straight_line (function);
-
-  std::set<HirId> dead_drop_hir_ids;
-  std::set<HirId> non_dead_drop_hir_ids;
-
-  annotate_drop_statements (function, entry_states,
-			    record_straight_line_backend_drops,
-			    dead_drop_hir_ids, non_dead_drop_hir_ids);
+  DropAnalysisResults results;
+  annotate_drop_statements (function, entry_states, results);
 
   // A local is definitely dead only when all of its Drops are dead.
-  for (HirId hir_id : dead_drop_hir_ids)
-    if (non_dead_drop_hir_ids.find (hir_id) == non_dead_drop_hir_ids.end ())
+  for (HirId hir_id : results.dead_drop_hir_ids)
+    if (results.static_drop_hir_ids.find (hir_id)
+	  == results.static_drop_hir_ids.end ()
+	&& results.conditional_drop_hir_ids.find (hir_id)
+	     == results.conditional_drop_hir_ids.end ())
       definitely_dead.insert (hir_id);
+
+  conditionally_dropped.insert (results.conditional_drop_hir_ids.begin (),
+				results.conditional_drop_hir_ids.end ());
+  move_sources.insert (results.move_sources.begin (),
+		       results.move_sources.end ());
 }
 
 } // namespace BIR

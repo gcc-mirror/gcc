@@ -21,6 +21,9 @@
 #include "rust-compile-expr.h"
 #include "rust-compile-type.h"
 #include "rust-compile-var-decl.h"
+#include "rust-compile-drop.h"
+#include "rust-compile-drop-builder.h"
+#include "rust-bir-drop-analysis.h"
 
 namespace Rust {
 namespace Compile {
@@ -67,6 +70,11 @@ CompileStmt::visit (HIR::LetStmt &stmt)
   tree translated_type = TyTyResolveCompile::compile (ctx, ty);
   CompileVarDecl::compile (fndecl, translated_type, &stmt_pattern, ctx);
 
+  if (stmt_pattern.get_pattern_type () == HIR::Pattern::IDENTIFIER
+      && CompileDrop (ctx).type_has_drop_impl (ty))
+    DropBuilder (*ctx).maybe_create_drop_flag (stmt_id, stmt.get_locus (),
+					       false);
+
   // nothing to do
   if (!stmt.has_init_expr ())
     return;
@@ -89,6 +97,16 @@ CompileStmt::visit (HIR::LetStmt &stmt)
 			expected, lvalue_locus, rvalue_locus);
 
   CompilePatternLet::Compile (&stmt_pattern, init, ty, rvalue_locus, ctx);
+
+  HirId source = UNKNOWN_HIRID;
+  if (BIR::DropAnalysis::get ().lookup_move_source (
+	stmt.get_init_expr ().get_mappings ().get_hirid (), &source))
+    {
+      tree clear
+	= DropBuilder (*ctx).drop_flag_assignment (source, false, rvalue_locus);
+      if (clear != nullptr)
+	ctx->add_statement (clear);
+    }
 }
 
 } // namespace Compile

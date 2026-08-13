@@ -265,16 +265,18 @@ protected:
   }
 
 protected: // Helpers to add BIR statements
-  void push_assignment (PlaceId lhs, AbstractExpr *rhs, location_t location)
+  void push_assignment (PlaceId lhs, AbstractExpr *rhs, location_t location,
+			tl::optional<HirId> move_site = tl::nullopt)
   {
     ctx.get_current_bb ().statements.push_back (
-      Statement::make_assignment (lhs, rhs, location));
+      Statement::make_assignment (lhs, rhs, location, move_site));
     translated = lhs;
   }
 
-  void push_assignment (PlaceId lhs, PlaceId rhs, location_t location)
+  void push_assignment (PlaceId lhs, PlaceId rhs, location_t location,
+			tl::optional<HirId> move_site = tl::nullopt)
   {
-    push_assignment (lhs, new Assignment (rhs), location);
+    push_assignment (lhs, new Assignment (rhs), location, move_site);
   }
 
   void push_tmp_assignment (AbstractExpr *rhs, TyTy::BaseType *tyty,
@@ -600,12 +602,13 @@ protected:
   }
 
   /** Mark place to be a result of processed subexpression. */
-  void return_place (PlaceId place, location_t location, bool can_panic = false)
+  void return_place (PlaceId place, location_t location, bool can_panic = false,
+		     tl::optional<HirId> move_site = tl::nullopt)
   {
     if (expr_return_place != INVALID_PLACE)
       {
 	// Return place is already allocated, no need to defer assignment.
-	push_assignment (expr_return_place, place, location);
+	push_assignment (expr_return_place, place, location, move_site);
       }
     else
       {
