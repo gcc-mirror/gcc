@@ -1922,11 +1922,21 @@ riscv_multi_lib_info_t::parse (
   else
     {
       std::vector<std::string>::const_iterator itr;
+      bool only_arch_abi = true;
       for (itr = conds.begin (); itr != conds.end (); ++itr)
 	if (prefixed_with (*itr, "march="))
 	  multi_lib_info->arch_str = itr->c_str () + strlen ("march=");
 	else if (prefixed_with (*itr, "mabi="))
 	  multi_lib_info->abi_str = itr->c_str () + strlen ("mabi=");
+	else
+	  only_arch_abi = false;
+
+      /* Skip a multi-lib that is exactly equivalent to the default: same
+	 march and mabi with no other distinguishing option. */
+      if (only_arch_abi
+	  && multi_lib_info->arch_str == default_arch_str
+	  && multi_lib_info->abi_str == default_abi_str)
+	return false;
     }
 
   multi_lib_info->subset_list =
