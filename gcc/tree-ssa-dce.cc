@@ -2224,19 +2224,12 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup,
       if (gimple_has_side_effects (t))
 	{
 	  gcall *call = dyn_cast <gcall *> (t);
-	  if (call)
+	  // For no delete don't remove the lhs.
+	  if (call && no_delete)
 	    {
 	      gimple_call_set_lhs (call, NULL_TREE);
 	      update_stmt (call);
-	      if (no_delete)
-		{
-		  tree zero = build_zero_cst (TREE_TYPE (def));
-		  gassign *new_stmt = gimple_build_assign (def, zero);
-		  gimple_stmt_iterator gsi = gsi_for_stmt (t);
-		  gsi_insert_after (&gsi, new_stmt, GSI_SAME_STMT);
-		}
-	      else
-		release_ssa_name (def);
+	      release_ssa_name (def);
 	    }
 	  continue;
 	}
