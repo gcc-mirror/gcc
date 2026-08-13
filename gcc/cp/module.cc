@@ -22415,7 +22415,7 @@ transfer_defining_module (tree olddecl, tree newdecl)
 
   if (DECL_LANG_SPECIFIC (new_inner))
     {
-      gcc_checking_assert (DECL_LANG_SPECIFIC (old_inner));
+      retrofit_lang_decl (old_inner);
       if (DECL_MODULE_PURVIEW_P (new_inner))
 	DECL_MODULE_PURVIEW_P (old_inner) = true;
       if (!DECL_MODULE_IMPORT_P (new_inner))
