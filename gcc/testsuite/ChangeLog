@@ -1,3 +1,21 @@
+2026-08-12  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	Backported from master:
+	2026-06-17  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	* g++.dg/reflect/is_explicit_object_parameter2.C: New test.
+
+2026-08-12  feedable  <feedabl3@gmail.com>
+
+	Backported from master:
+	2026-06-03  feedable  <feedabl3@gmail.com>
+
+	PR c++/124794
+	PR c++/125069
+	* g++.dg/reflect/member19.C: Enable tests.
+	* g++.dg/reflect/splice15.C: New test.
+	* g++.dg/reflect/splice16.C: New test.
+
 2026-08-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	Backported from master:

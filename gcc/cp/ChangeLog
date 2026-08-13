@@ -1,3 +1,28 @@
+2026-08-12  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	Backported from master:
+	2026-06-17  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	* reflect.cc (eval_is_explicit_object_parameter): Call
+	maybe_update_function_parm before checking the parameter
+	against DECL_ARGUMENTS.
+
+2026-08-12  feedable  <feedabl3@gmail.com>
+
+	Backported from master:
+	2026-06-03  feedable  <feedabl3@gmail.com>
+
+	PR c++/124794
+	PR c++/125069
+	* parser.cc (cp_parser_splice_specifier): Do not strip BASELINKs.
+	(cp_parser_splice_expression): Add parsing for member function
+	template specializations without the "template" keyword.
+	* pt.cc (tsubst_splice_expr): Handle TEMPLATE_ID_EXPR where the
+	template part is a SPLICE_EXPR.
+	(tsubst_expr): Defer to tsubst_splice_expr when the template part of
+	TEMPLATE_ID_EXPR is a SPLICE_EXPR.
+	* reflect.cc (check_splice_expr): Add handling for BASELINKs.
+
 2026-08-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:

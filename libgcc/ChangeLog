@@ -1,3 +1,14 @@
+2026-08-12  Piotr Kubaj  <pkubaj@FreeBSD.org>
+
+	PR target/125803
+	* config/rs6000/freebsd-unwind.h (TOC_SAVE_SLOT): New macro,
+	defined according to _CALL_ELF.
+	(frob_update_context): Use TOC_SAVE_SLOT instead of the
+	hard-coded ELFv1 offset 40 when checking for and locating the
+	saved TOC, so that r2 is restored correctly under ELFv2.  Guard
+	the ELFv1-only PLT stub and function pointer call sequences
+	with _CALL_ELF != 2, mirroring linux-unwind.h.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.
