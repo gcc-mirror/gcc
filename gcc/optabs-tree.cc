@@ -375,6 +375,10 @@ supportable_convert_operation (enum tree_code code,
   if (!VECTOR_MODE_P (m1) || !VECTOR_MODE_P (m2))
     return false;
 
+  if (m1 == m2
+      && (CONVERT_EXPR_CODE_P (code) || code == VIEW_CONVERT_EXPR))
+    return true;
+
   /* First check if we can done conversion directly.  */
   if ((code == FIX_TRUNC_EXPR
        && can_fix_p (m1,m2,TYPE_UNSIGNED (vectype_out), &truncp)

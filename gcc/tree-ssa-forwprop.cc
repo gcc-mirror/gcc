@@ -4363,6 +4363,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       /* For a real orig[1] (no splat, constant etc.) we might need to
 	 nop-convert it.  Do so here.  */
       if (orig[1] && orig[1] != error_mark_node
+	  && !converted_orig1
 	  && !useless_type_conversion_p (perm_type, TREE_TYPE (orig[1]))
 	  && tree_nop_conversion_p (TREE_TYPE (perm_type),
 				    TREE_TYPE (TREE_TYPE (orig[1]))))

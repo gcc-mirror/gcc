@@ -5475,7 +5475,14 @@ vectorizable_conversion (vec_info *vinfo,
 	{
 	  gcc_assert (converts.length () <= 2);
 	  if (converts.length () == 1)
-	    code1 = converts[0].second;
+	    {
+	      code1 = converts[0].second;
+	      if (CONVERT_EXPR_CODE_P (code)
+		  && tree_nop_conversion_p (TREE_TYPE (vectype_out),
+					    TREE_TYPE (vectype_in)))
+		/* NOP conversions are handled by vectorizable_assignment.  */
+		return false;
+	    }
 	  else
 	    {
 	      cvt_type = NULL_TREE;
