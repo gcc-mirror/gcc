@@ -5839,24 +5839,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     {
       tree inside_type = TREE_TYPE (@0);
       tree inter_type = TREE_TYPE (@1);
-      int inside_int = INTEGRAL_TYPE_P (inside_type);
+      int inside_int = ANY_INTEGRAL_TYPE_P (inside_type);
       int inside_ptr = POINTER_TYPE_P (inside_type);
       int inside_float = FLOAT_TYPE_P (inside_type);
-      int inside_vec = VECTOR_TYPE_P (inside_type);
       unsigned int inside_prec = element_precision (inside_type);
       int inside_unsignedp = TYPE_UNSIGNED (inside_type);
-      int inter_int = INTEGRAL_TYPE_P (inter_type);
+      int inter_int = ANY_INTEGRAL_TYPE_P (inter_type);
       int inter_ptr = POINTER_TYPE_P (inter_type);
       int inter_float = FLOAT_TYPE_P (inter_type);
-      int inter_vec = VECTOR_TYPE_P (inter_type);
       unsigned int inter_prec = element_precision (inter_type);
       int inter_unsignedp = TYPE_UNSIGNED (inter_type);
-      int final_int = INTEGRAL_TYPE_P (type);
+      int final_int = ANY_INTEGRAL_TYPE_P (type);
       int final_ptr = POINTER_TYPE_P (type);
       int final_float = FLOAT_TYPE_P (type);
-      int final_vec = VECTOR_TYPE_P (type);
       unsigned int final_prec = element_precision (type);
       int final_unsignedp = TYPE_UNSIGNED (type);
+      int is_vec = VECTOR_TYPE_P (type);
+      gcc_checking_assert (is_vec == VECTOR_TYPE_P (inside_type)
+			   && is_vec == VECTOR_TYPE_P (inter_type));
     }
    (switch
     /* In addition to the cases of two conversions in a row
@@ -5868,7 +5868,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (inside_type)))
 	 && (((inter_int || inter_ptr) && final_int)
 	     || (inter_float && final_float))
-	 && inter_prec >= final_prec)
+	 && inter_prec >= final_prec
+	 && (! is_vec
+	     || supportable_convert_operation (ocvt, type, TREE_TYPE (@0))))
      (ocvt @0))
 
     /* Likewise, if the intermediate and initial types are either both
@@ -5879,7 +5881,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (((inter_int && inside_int) || (inter_float && inside_float))
 	 && (final_int || final_float)
 	 && inter_prec >= inside_prec
-	 && (inter_float || inter_unsignedp == inside_unsignedp))
+	 && (inter_float || inter_unsignedp == inside_unsignedp)
+	 && (! is_vec
+	     || supportable_convert_operation (ocvt, type, TREE_TYPE (@0))))
      (ocvt @0))
 
     /* If we have a sign-extension of a zero-extended value, we can
@@ -5892,7 +5896,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      && inside_unsignedp && !inter_unsignedp)
 	     || final_prec == inter_prec
 	     || (inside_prec < inter_prec && inter_prec > final_prec
-		 && !inside_unsignedp && inter_unsignedp)))
+		 && !inside_unsignedp && inter_unsignedp))
+	 && (! is_vec
+	     || supportable_convert_operation (ocvt, type, TREE_TYPE (@0))))
      (ocvt @0))
 
     /* Two conversions in a row are not needed unless:
@@ -5907,7 +5913,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	- the final type is a pointer type and the precisions of the
 	  initial and intermediate types differ.  */
     (if (! inside_float && ! inter_float && ! final_float
-	 && ! inside_vec && ! inter_vec && ! final_vec
+	 && ! is_vec
 	 && (inter_prec >= inside_prec || inter_prec >= final_prec)
 	 && ! (inside_int && inter_int
 	       && inter_unsignedp != inside_unsignedp
@@ -5925,13 +5931,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       a sign change of the type. */
    (if (inside_int && inter_int && final_int
         && final_prec <= inside_prec
-	&& inter_prec >= inside_prec)
+	&& inter_prec >= inside_prec
+	&& (! is_vec
+	    || supportable_convert_operation (ocvt, type, TREE_TYPE (@0))))
     (convert @0))
 
     /* A truncation to an unsigned type (a zero-extension) should be
        canonicalized as bitwise and of a mask.  */
     (if (GIMPLE /* PR70366: doing this in GENERIC breaks -Wconversion.  */
 	 && final_int && inter_int && inside_int
+	 && ! is_vec
 	 && final_prec >= inside_prec
 	 && inside_prec > inter_prec
 	 && inter_unsignedp)
@@ -5944,9 +5953,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        represent it exactly and back to an integer, we can skip the
        floating-point conversion.  */
     (if (GIMPLE /* PR66211 */
-	 && inside_int && inter_float && final_int &&
-	 (unsigned) significand_size (TYPE_MODE (inter_type))
-	 >= inside_prec - !inside_unsignedp)
+	 && inside_int && inter_float && final_int
+	 && ! is_vec
+	 && ((unsigned) significand_size (TYPE_MODE (inter_type))
+	     >= inside_prec - !inside_unsignedp))
      (convert @0)))))))
 
 /* (float_type)(integer_type) x -> trunc (x) if the type of x matches

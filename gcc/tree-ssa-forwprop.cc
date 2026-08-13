@@ -4112,8 +4112,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       if (conv_code == ERROR_MARK && nelts != refnelts)
 	conv_src_type = type;
       if (conv_code != ERROR_MARK
-	  && !supportable_convert_operation (conv_code, type, conv_src_type,
-					     &conv_code))
+	  && !supportable_convert_operation (conv_code, type, conv_src_type))
 	{
 	  /* Only few targets implement direct conversion patterns so try
 	     some simple special cases via VEC_[UN]PACK[_FLOAT]_LO_EXPR.  */
@@ -4275,8 +4274,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       tree mask_type, perm_type;
       perm_type = TREE_TYPE (orig[0]);
       if (conv_code != ERROR_MARK
-	  && !supportable_convert_operation (conv_code, type, conv_src_type,
-					     &conv_code))
+	  && !supportable_convert_operation (conv_code, type, conv_src_type))
 	return false;
 
       /* Now that we know the number of elements of the source build the

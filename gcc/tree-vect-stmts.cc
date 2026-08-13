@@ -5554,12 +5554,11 @@ vectorizable_conversion (vec_info *vinfo,
 
 	  if (GET_MODE_SIZE (rhs_mode) == fltsz)
 	    {
-	      tc1 = ERROR_MARK;
 	      gcc_assert (code.is_tree_code ());
 	      if (!supportable_convert_operation ((tree_code) code, vectype_out,
-						  cvt_type, &tc1))
+						  cvt_type))
 		goto unsupported;
-	      codecvt1 = tc1;
+	      codecvt1 = code;
 	    }
 	  else if (!supportable_widening_operation (code, vectype_out,
 						    cvt_type, evenodd_ok,
@@ -5610,9 +5609,9 @@ vectorizable_conversion (vec_info *vinfo,
 	  cvt_type = get_same_sized_vectype (cvt_type, vectype_in);
 	  if (cvt_type == NULL_TREE)
 	    goto unsupported;
-	  if (supportable_convert_operation ((tree_code) code, cvt_type, vectype_in,
-					      &tc1))
-	    codecvt1 = tc1;
+	  if (supportable_convert_operation ((tree_code) code, cvt_type,
+					     vectype_in))
+	    codecvt1 = code;
 	  else
 	    goto unsupported;
 	  if (supportable_narrowing_operation (NOP_EXPR, vectype_out, cvt_type,
@@ -5652,9 +5651,9 @@ vectorizable_conversion (vec_info *vinfo,
 						&interm_types))
 	    goto unsupported;
 	  if (supportable_convert_operation ((tree_code) code, vectype_out,
-					     cvt_type, &tc1))
+					     cvt_type))
 	    {
-	      codecvt1 = tc1;
+	      codecvt1 = code;
 	      modifier = NARROW_SRC;
 	      break;
 	    }
@@ -14300,17 +14299,16 @@ supportable_indirect_convert_operation (code_helper code,
   bool found_mode = false;
   scalar_mode lhs_mode = GET_MODE_INNER (TYPE_MODE (vectype_out));
   scalar_mode rhs_mode = GET_MODE_INNER (TYPE_MODE (vectype_in));
-  tree_code tc1, tc2, code1, code2;
+  tree_code code1, code2;
 
   tree cvt_type = NULL_TREE;
   poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (vectype_in);
 
   if (supportable_convert_operation ((tree_code) code,
 				     vectype_out,
-				     vectype_in,
-				     &tc1))
+				     vectype_in))
     {
-      converts.safe_push (std::make_pair (vectype_out, tc1));
+      converts.safe_push (std::make_pair (vectype_out, (tree_code) code));
       return true;
     }
 
@@ -14412,11 +14410,9 @@ supportable_indirect_convert_operation (code_helper code,
 	  if (cvt_type == NULL_TREE
 	      || maybe_ne (TYPE_VECTOR_SUBPARTS (cvt_type), nelts)
 	      || !supportable_convert_operation ((tree_code) code1,
-						 vectype_out,
-						 cvt_type, &tc1)
+						 vectype_out, cvt_type)
 	      || !supportable_convert_operation ((tree_code) code2,
-						 cvt_type,
-						 vectype_in, &tc2))
+						 cvt_type, vectype_in))
 	    continue;
 
 	  found_mode = true;
@@ -14425,9 +14421,9 @@ supportable_indirect_convert_operation (code_helper code,
 
       if (found_mode)
 	{
-	  converts.safe_push (std::make_pair (cvt_type, tc2));
+	  converts.safe_push (std::make_pair (cvt_type, code2));
 	  if (TYPE_MODE (cvt_type) != TYPE_MODE (vectype_out))
-	    converts.safe_push (std::make_pair (vectype_out, tc1));
+	    converts.safe_push (std::make_pair (vectype_out, code1));
 	  return true;
 	}
     }

@@ -4726,7 +4726,6 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 
   /* Second pass: No direct match.  This means we try to find a sign-swapped
      offset vectype.  */
-  enum tree_code tmp;
   for (unsigned int i = 0; i < configs.length (); i++)
     {
       unsigned int precision
@@ -4735,7 +4734,7 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 	  && precision >= needed_precision
 	  && (supportable_convert_operation (CONVERT_EXPR,
 					     configs[i].offset_vectype,
-					     offset_vectype, &tmp)
+					     offset_vectype)
 	      || (needed_precision == offset_precision
 		  && tree_nop_conversion_p (configs[i].offset_vectype,
 					    offset_vectype))))
@@ -4789,7 +4788,7 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 	  && precision >= needed_precision
 	  && (supportable_convert_operation (CONVERT_EXPR,
 					     configs[i].offset_vectype,
-					     offset_vectype, &tmp)
+					     offset_vectype)
 	      || (needed_precision == offset_precision
 		  && tree_nop_conversion_p (configs[i].offset_vectype,
 					    offset_vectype))))

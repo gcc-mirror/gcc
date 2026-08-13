@@ -1929,12 +1929,11 @@ expand_vector_conversion (gimple_stmt_iterator *gsi)
 	    {
 	      tree ret1_type = build_vector_type (TREE_TYPE (ret_type), nelts);
 	      tree arg1_type = build_vector_type (TREE_TYPE (arg_type), nelts);
-	      if (supportable_convert_operation (code, ret1_type, arg1_type,
-						 &code1))
+	      if (supportable_convert_operation (code, ret1_type, arg1_type))
 		{
 		  new_rhs = expand_vector_piecewise (gsi, do_vec_conversion,
 						     ret_type, arg1_type, arg,
-						     NULL_TREE, code1, false);
+						     NULL_TREE, code, false);
 		  g = gimple_build_assign (lhs, new_rhs);
 		  gsi_replace (gsi, g, false);
 		  return;

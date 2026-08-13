@@ -316,7 +316,6 @@ supportable_half_widening_operation (enum tree_code code, tree vectype_out,
 				     tree vectype_in, enum tree_code *code1)
 {
   machine_mode m1,m2;
-  enum tree_code dummy_code;
   optab op;
 
   gcc_assert (VECTOR_TYPE_P (vectype_out) && VECTOR_TYPE_P (vectype_in));
@@ -343,8 +342,7 @@ supportable_half_widening_operation (enum tree_code code, tree vectype_out,
       return false;
     }
 
-  if (!supportable_convert_operation (NOP_EXPR, vectype_out, vectype_in,
-				     &dummy_code))
+  if (!supportable_convert_operation (NOP_EXPR, vectype_out, vectype_in))
     return false;
 
   op = optab_for_tree_code (*code1, vectype_out, optab_vector);
@@ -360,16 +358,11 @@ supportable_half_widening_operation (enum tree_code code, tree vectype_out,
 
    Convert operations we currently support directly are FIX_TRUNC and FLOAT.
    This function checks if these operations are supported
-   by the target platform directly (via vector tree-codes).
-
-   Output:
-   - CODE1 is code of vector operation to be used when
-   vectorizing the operation, if available.  */
+   by the target platform directly (via vector tree-codes).  */
 
 bool
 supportable_convert_operation (enum tree_code code,
-			       tree vectype_out, tree vectype_in,
-			       enum tree_code *code1)
+			       tree vectype_out, tree vectype_in)
 {
   machine_mode m1,m2;
   bool truncp;
@@ -389,24 +382,15 @@ supportable_convert_operation (enum tree_code code,
       || (code == FLOAT_EXPR
 	  && can_float_p (m1,m2,TYPE_UNSIGNED (vectype_in))
 	     != CODE_FOR_nothing))
-    {
-      *code1 = code;
-      return true;
-    }
+    return true;
 
   if (GET_MODE_UNIT_PRECISION (m1) > GET_MODE_UNIT_PRECISION (m2)
       && can_extend_p (m1, m2, TYPE_UNSIGNED (vectype_in)))
-    {
-      *code1 = code;
-      return true;
-    }
+    return true;
 
   if (GET_MODE_UNIT_PRECISION (m1) < GET_MODE_UNIT_PRECISION (m2)
       && convert_optab_handler (trunc_optab, m1, m2) != CODE_FOR_nothing)
-    {
-      *code1 = code;
-      return true;
-    }
+    return true;
 
   return false;
 }
