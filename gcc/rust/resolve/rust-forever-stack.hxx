@@ -748,6 +748,10 @@ ForeverStack<N>::as_debug_string () const
   std::stringstream stream;
 
   stream_node (stream, 0, root);
+  stream << "Extern prelude \n";
+  stream_node (stream, 0, extern_prelude);
+  stream << "Lang prelude \n";
+  stream_node (stream, 0, lang_prelude);
 
   return stream.str ();
 }
