@@ -717,7 +717,11 @@ ForeverStack<N>::stream_node (std::stringstream &stream, unsigned indentation,
   auto next = std::string (indentation + 4, ' ');
   auto next_next = std::string (indentation + 8, ' ');
 
-  stream << indent << "Node {\n"
+  std::string cursor_text = "";
+  if (node.id == cursor ().id)
+    cursor_text = "(C)";
+
+  stream << indent << "Node " << cursor_text << "{\n"
 	 << next << "is_root: " << (node.is_root () ? "true" : "false") << ",\n"
 	 << next << "is_leaf: " << (node.is_leaf () ? "true" : "false")
 	 << ",\n";
