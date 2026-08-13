@@ -4760,8 +4760,25 @@ check_p_tool=$(firstword $(subst _, ,$*))
 check_p_count=$(check_$(check_p_tool)_parallelize)
 check_p_subno=$(word 2,$(subst _, ,$*))
 check_p_subdir=$(subst _,,$*)
+# Number of runtest instances to start.  An explicit GCC_TEST_PARALLEL_SLOTS
+# wins.  Otherwise start one per job token, but never fewer than
+# check_p_min_slots: the instances claim work in batches of ten tests, so a
+# batch that runs long is the tail of the whole target, and having more
+# instances than tokens lets the ones that are left pick up the slack.  Above
+# that floor the token count is the useful number, since 128 instances on a
+# machine given -j256 leave half of it idle.  GNU make 4.0 and later put the
+# level in MFLAGS.  A bare -j, and older make, do not, and there the floor
+# stands on its own.
+check_p_min_slots=128
+check_p_jobs=$(patsubst -j%,%,$(filter -j%,$(MFLAGS)))
+# max(check_p_jobs, check_p_min_slots).  A number is <= the floor exactly when
+# it appears among the first check_p_min_slots counting numbers.
+check_p_slots=$(strip $(if $(GCC_TEST_PARALLEL_SLOTS),$(GCC_TEST_PARALLEL_SLOTS),\
+	$(if $(check_p_jobs),$(if $(filter $(check_p_jobs),\
+		$(wordlist 1,$(check_p_min_slots),$(one_to_9999))),\
+		$(check_p_min_slots),$(check_p_jobs)),$(check_p_min_slots))))
 check_p_subdirs=$(wordlist 1,$(check_p_count),$(wordlist 1, \
-		$(if $(GCC_TEST_PARALLEL_SLOTS),$(GCC_TEST_PARALLEL_SLOTS),128), \
+		$(check_p_slots), \
 		$(one_to_9999)))
 
 # For parallelized check-% targets, this decides whether parallelization
