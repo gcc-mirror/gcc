@@ -1,3 +1,441 @@
+2026-08-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/126723
+	* config/darwin.cc (darwin_encode_section_info): Make all
+	string constant labels linker-visible.  Likewise const
+	section anchors.
+
+2026-08-12  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* range-op-float.cc (range_operator::fold_range): Fold each pair
+	of sub-ranges, or the diagonal when the operands are equal.
+	(range_op_float_tests): New test.
+
+2026-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*bt<mode>): Change operand 1 constraint
+	from "q<S>,<S>" to "r<S>,<S>".
+	(*bt<SWI48:mode>_mask): Remove constraints from operand 0.
+
+2026-08-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-fixed.md (*round<mode>3.libgcc_split)
+	(*round<mode>3.libgcc): Use the ALL12QA mode iterator instead
+	of ALL1Q and ALL2QA separately.
+
+2026-08-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-fixed.md (ALL12QA): New mode iterator.
+	(sat_ashl): New code iterator.
+	(usashluqq3, ssashlqq3, usashluhq3, ssashlhq3, usashluha3)
+	(ssashlha3, usashlusq3, ssashlsq3, usashlusa3, ssashlsa3)
+	(*usashluqq3, *ssashlqq3, *usashluhq3, *ssashlhq3)
+	(*usashluha3, *ssashlha3, *usashlusq3, *ssashlsq3, *usashlusa3)
+	(*ssashlsa3): New insns.
+	* config/avr/avr.md (code_stdname): Also map ss_ashift, us_ashift.
+
+2026-08-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (RISC-V Vector Intrinsics): Update link to
+	specification.
+
+2026-08-12  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126418
+	* match.pd (`(A ^ -cmp) + cmp`): Cast to unsigned type
+	before taking the negative.
+
+2026-08-12  Matt Turner  <mattst88@gmail.com>
+
+	* configure.ac (gcc_cv_irelative_reloc): New variable, set for
+	riscv*-*-linux* and alpha*-*-linux*.  Perform the linker
+	IRELATIVE check once, driven by it.
+	* configure: Regenerate.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (reduc_widen_<su>sum<mode><vsi2qi>3):
+	Expand through aarch64_expand_reduc_widen_sum.
+	* config/aarch64/aarch64.cc (aarch64_expand_reduc_widen_sum): Use
+	[SU]DOT for a step from byte to word elements.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_expand_reduc_widen_sum):
+	Declare.
+	* config/aarch64/aarch64.cc (aarch64_expand_reduc_widen_sum): New
+	function.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>adalp<mode>): Rename
+	to ...
+	(@aarch64_<su>adalp<mode>): ... this.
+	(reduc_widen_ssum<Vdblw><mode>3, reduc_widen_usum<Vdblw><mode>3):
+	Replace by ...
+	(reduc_widen_<su>sum<Vdblw><mode>3): ... this.  Expand to [SU]ADALP.
+	(reduc_widen_ssum<mode><vsi2qi>3, reduc_widen_usum<mode><vsi2qi>3):
+	Replace by ...
+	(reduc_widen_<su>sum<mode><vsi2qi>3): ... this.  Handle
+	!TARGET_DOTPROD.
+	(reduc_widen_<su>sumv2di<mode>3): New expander.
+	* config/aarch64/iterators.md (VQ_BH): New mode iterator.
+
+2026-08-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/94649
+	PR target/126293
+	* common/config/i386/i386-cpuinfo.h (ix86_decode_cpu_info): New
+	function.
+	* config/i386/i386-options.cc
+	(ix86_option_override_internal): Issue an error for -m128bit-atomic
+	in 32-bit mode.  Turn on -mcx16 if -m128bit-atomic is enabled.
+	Enable -m128bit-atomic in 64-bit mode by default if supported by
+	the targeting processor.
+	* config/i386/i386.h (TARGET_128BIT_ATOMIC_ENABLED): New.
+	* config/i386/i386.opt (m128bit-atomic): New option.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/i386/sync.md: Update comments for 128-bit aligned vector
+	loads and stores.
+	(atomic_loadti): New pattern.
+	(atomic_loadti_sse): Likewise.
+	(atomic_storeti): Likewise.
+	(atomic_storeti_sse): Likewise.
+	* doc/invoke.texi: Remove __atomic Builtins reference from -mcx16.
+	Document -m128bit-atomic.
+
+2026-08-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126589
+	* tree-vect-slp-patterns.cc (vect_validate_multiplication): Cleanup
+	comment.
+	(vect_validate_multiplication_commutative): Remove last 4 orders.
+
+2026-08-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126589
+	* tree-vect-slp-patterns.cc (complex_fms_pattern::matches): Check
+	another form of FMS.
+
+2026-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/125129
+	* doc/gm2.texi (-fdump-builtins): New switch.
+
+2026-08-12  Abhishek Kaushik  <abhishek.kaushik@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.h
+	(TYPES_qshr_x2): New macro.
+	(TYPES_qrshr_x2_8): Likewise.
+	(TYPES_qshru_x2): Likewise.
+	(TYPES_qrshrun_x2): Likewise.
+	(DEF_SVE_TYPES_ARRAY): Add qshr_x2, qrshr_x2_8,	qrshrun_x2
+	and qshru_x2.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svqshrn): New
+	function.
+	(svqshrun): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svqrshrn): Add
+	SVE2p3/SME2p3 x2 form.
+	(svqrshrun): Likewise.
+	(svqshrn): Add SVE2p3/SME2p3 x2 form.
+	(svqshrun): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svqshrn): Declare.
+	(svqshrun): Likewise.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_<sve_int_op><mode>): New define_insn.
+	* config/aarch64/iterators.md (SVE_FULL_HIx2): New mode iterator.
+	(UNSPEC_SQSHRN, UNSPEC_SQSHRUN, UNSPEC_UQSHRN): New unspecs.
+	(VNARROW): Add VNx16HI mapping.
+	(Ventype): Likewise.
+	(SVE2_INT_SHIFT_IMM_NARROWxN): Add UNSPEC_SQSHRN,
+	UNSPEC_SQSHRUN and UNSPEC_UQSHRN.
+	(sve_int_op): Add sqshrn, sqshrun and uqshrn.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (((X - 1) | C) + 1): New simplification.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* doc/md.texi (reduc_widen_ssum@var{n}@var{m}3)
+	(reduc_widen_usum@var{n}@var{m}3): Document that the assignment of
+	input elements to accumulator elements is unconstrained, that
+	intermediate sums must not overflow, and that the widen_[us]sum
+	names are reserved.  Fix a typo.
+	* tree.def (WIDEN_SUM_EXPR): Document that the assignment of elements
+	of the first argument to elements of the second is unconstrained.
+	(DOT_PROD_EXPR, SAD_EXPR): Note the same freedom.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* optabs.def (ssum_widen_optab): Rename to ...
+	(reduc_widen_ssum_optab): ... this.  Rename the pattern from
+	widen_ssum$a$b3 to reduc_widen_ssum$a$b3.
+	(usum_widen_optab): Rename to ...
+	(reduc_widen_usum_optab): ... this.  Rename the pattern from
+	widen_usum$a$b3 to reduc_widen_usum$a$b3.
+	* optabs-tree.cc (optab_for_tree_code): Update for the renamed
+	optabs.
+	* doc/md.texi (widen_ssum@var{n}@var{m}3): Rename to ...
+	(reduc_widen_ssum@var{n}@var{m}3): ... this.
+	(widen_usum@var{n}@var{m}3): Rename to ...
+	(reduc_widen_usum@var{n}@var{m}3): ... this.
+	* config/aarch64/aarch64-simd.md (widen_ssum<Vdblw><mode>3): Rename
+	to ...
+	(reduc_widen_ssum<Vdblw><mode>3): ... this.
+	(widen_ssum<Vwide><mode>3): Rename to ...
+	(reduc_widen_ssum<Vwide><mode>3): ... this.
+	(widen_usum<Vdblw><mode>3): Rename to ...
+	(reduc_widen_usum<Vdblw><mode>3): ... this.
+	(widen_usum<Vwide><mode>3): Rename to ...
+	(reduc_widen_usum<Vwide><mode>3): ... this.
+	(widen_ssum<mode><vsi2qi>3): Rename to ...
+	(reduc_widen_ssum<mode><vsi2qi>3): ... this.
+	(widen_usum<mode><vsi2qi>3): Rename to ...
+	(reduc_widen_usum<mode><vsi2qi>3): ... this.
+	* config/aarch64/aarch64-sve.md (widen_<sur>sum<mode><vsi2qi>3):
+	Rename to ...
+	(reduc_widen_<sur>sum<mode><vsi2qi>3): ... this.
+	* config/aarch64/aarch64-sve2.md (widen_ssum<mode><Vnarrow>3): Rename
+	to ...
+	(reduc_widen_ssum<mode><Vnarrow>3): ... this.
+	(widen_usum<mode><Vnarrow>3): Rename to ...
+	(reduc_widen_usum<mode><Vnarrow>3): ... this.
+	* config/arm/neon.md (widen_ssum<v_double_width><mode>3): Rename
+	to ...
+	(reduc_widen_ssum<v_double_width><mode>3): ... this.
+	(widen_ssum<V_widen_l><mode>3): Rename to ...
+	(reduc_widen_ssum<V_widen_l><mode>3): ... this.
+	(widen_usum<v_double_width><mode>3): Rename to ...
+	(reduc_widen_usum<v_double_width><mode>3): ... this.
+	(widen_usum<V_widen_l><mode>3): Rename to ...
+	(reduc_widen_usum<V_widen_l><mode>3): ... this.
+	* config/ia64/vect.md (widen_usumv4hiv8qi3): Rename to ...
+	(reduc_widen_usumv4hiv8qi3): ... this.
+	(widen_usumv2siv4hi3): Rename to ...
+	(reduc_widen_usumv2siv4hi3): ... this.
+	(widen_ssumv4hiv8qi3): Rename to ...
+	(reduc_widen_ssumv4hiv8qi3): ... this.
+	(widen_ssumv2siv4hi3): Rename to ...
+	(reduc_widen_ssumv2siv4hi3): ... this.
+	* config/rs6000/altivec.md (widen_usumv4si<mode>3): Rename to ...
+	(reduc_widen_usumv4si<mode>3): ... this.
+	(widen_ssumv4siv16qi3): Rename to ...
+	(reduc_widen_ssumv4siv16qi3): ... this.
+	(widen_ssumv4siv8hi3): Rename to ...
+	(reduc_widen_ssumv4siv8hi3): ... this.
+
+2026-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126099
+	PR tree-optimization/126053
+	* tree-vect-slp.cc (vect_cse_gather_part_starts): New function.
+	(vect_cse_slp_node_parts): Likewise.
+	(vect_optimize_slp): For BB SLP CSE to low/highparts of
+	other nodes.
+
+2026-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_schedule_slp): Adjust prototype.
+	* tree-vect-slp.cc (vect_slp_analyze_bb_1): When scheduling
+	fails, fail vectorization.
+	(vect_schedule_slp_node): Return whether we can schedule
+	the node.
+	(vect_schedule_scc): Likewise.
+	(vect_schedule_slp): When asked, elide SLP graph entries
+	that cannot be scheduled.
+
+2026-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126028
+	* tree-vectorizer.h (_slp_tree::si): New member.
+	(vect_schedule_slp): Adjust prototype.
+	* tree-vect-loop.cc (vect_transform_loop): Adjust.
+	* tree-vect-slp.cc (_slp_tree::_slp_tree): Initialize si.
+	(vect_bb_slp_mark_live_stmts): Use vector stmt placement
+	constraint computed by pre-scheduling of SLP nodes.
+	(vect_slp_analyze_bb_1): Pre-schedule SLP nodes before
+	computing live lane extraction points.
+	(vect_slp_region): Adjust.
+	(vect_schedule_slp_node): Add parameter indicating to whether
+	we should perform pre-scehduling or not.  Compute the
+	insertion place suitable for dominance checks when
+	pre-scheduling.
+	(vect_schedule_scc): Adjust.
+	(vect_schedule_slp): Likewise.
+
+2026-08-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_is_simple_cond): Simplify and
+	inline ...
+	(vectorizable_condition): ... here.  Simplify.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/predicates.md (aarch64_general_reg): Test the
+	register number rather than REGNO_REG_CLASS, which reports the
+	W8_W11_REGS and W12_W15_REGS subclasses for x8-x15.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_CSSC for TARGET_CSSC.
+
+2026-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126789
+	* config/i386/mmx.md (mmxxmmmode): Add V2SF and V2SI.
+	(mmxxmmmodelower): Likewise.
+	(vcond_mask_<mode>qi): New expander for V2SF and V2SI.
+	* tree-vect-stmts.cc (vectorizable_conversion): Handle
+	conversion via VEC_COND_EXPR.
+	(supportable_indirect_convert_operation): For mask vector
+	conversions to vector integer mode try using a VEC_COND_EXPR.
+
+2026-08-12  Jørgen Kvalsvik  <j@lambda.is>
+
+	* cfg-flags.def (COVERAGE_SUPPRESSED): New flag.
+	* doc/extend.texi: Add sections on suppress_coverage.
+	* doc/gcov.texi: Add sections on suppress_coverage.
+	* gcov-dump.cc (tag_suppress): New function.
+	* gcov-io.h (GCOV_TAG_SUPPRESS): New.
+	(GCOV_TAG_SUPPRESS_LENGTH): New.
+	(GCOV_TAG_SUPPRESS_NUM): New.
+	* gcov.cc (struct arc_info): Add field suppressed.
+	(block_info::block_info): Initialize suppressed.
+	(line_info::line_info): Initialize suppressed.
+	(struct coverage_info): Add fields lines_suppressed,
+	(struct path_info): Add fields residual_paths,
+	residual_covered.
+	(executed_summary): Add suppressed argument.
+	(tombstone_p): New function.
+	(remove_tombstones): New function.
+	(tombstone_subsequence_p): New function.
+	(subsumed_by_any_p): New function.
+	(path_info::suppress_blocks): New function.
+	(path_info::get_paths): New function.
+	(path_info::count): New function.
+	(path_info::suppressed_count): New function.
+	(path_info::suppressed_p): New function.
+	(find_arc): Return NULL if arc cannot be found.
+	(main): Pass total_suppressed to executed_summary.
+	(output_intermediate_json_line): Skip suppressed.
+	(json_set_prime_path_coverage): Include suppressed counts.
+	(output_json_intermediate_file): Likewise.
+	(process_all_functions): Record block, arc suppressed status.
+	(generate_results): Count total suppressed.
+	(read_graph_file): Read SUPPRESS tag.
+	(add_branch_counts): Count suppressed.
+	(add_condition_counts): Likewise.
+	(add_path_counts): Likewise.
+	(function_summary): Print info on suppressed blocks.
+	(file_summary): Count suppressed.
+	(add_line_counts): Likewise.
+	(accumulate_line_info): Likewise.
+	(accumulate_line_counts): Likewise.
+	(output_conditions): Skip suppressed.
+	(output_branch_count): Likewise.
+	(print_prime_path_lines): Annotate suppressed arcs.
+	(print_prime_path_source): Likewise, and widen the annotation
+	column.
+	(output_path_coverage): Print info on suppressed paths.
+	(output_line_beginning): Prefix suppressed lines with '#'.
+	(output_line_details): Pass suppressed.
+	(output_lines): Likewise.
+	* profile.cc (suppress_coverage): New function.
+	(suppress_coverage_unset): New function.
+	(coverage_suppressed_p): New function.
+	(any_block_coverage_suppressed_p): New function.
+	(suppress_coverage_begin): New function.
+	(suppress_coverage_end): New function.
+	(in_pragma_suppress_coverage_p): New function.
+	(location_in_pragma_suppress_coverage_p): New function.
+	(fn_in_pragma_suppress_coverage_p): New function.
+	(branch_prob): Write SUPPRESS record, skip MC/DC and path
+	coverage when the entire function is suppressed.
+	* profile.h (in_pragma_suppress_coverage_p): New forward
+	declaration.
+	(location_in_pragma_suppress_coverage_p): Ditto.
+	(coverage_suppressd_p): Ditto.
+	(suppress_coverage): Ditto.
+	(suppress_coverage_unset): Ditto.
+	* tree-cfg.cc (gimple_empty_block_p): New forward declaration.
+	(make_blocks_1): Set coverage-suppresesed on blocks.
+	(make_blocks): Sometimes insert NOP to help coverage
+	suppression on blocks.
+	(gimple_can_merge_blocks_p): Don't merge coverage-suppressed
+	block with non-suppressed blocks.
+	(gimple_merge_blocks): Likewise.
+	(gimple_split_edge): Propagate coverage-suppressed on block
+	splits.
+	(gimple_split_block): Likewise.
+	(gimple_duplicate_bb): Likewise.
+	(insert_cond_bb): Likewise.
+
+2026-08-12  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126103
+	* tree-ssa-threadbackward.cc (class back_threader): Add
+	find_taken_edge_goto.
+	(back_threader::find_taken_edge): Handle GIMPLE_GOTO.
+	(back_threader::find_taken_edge_goto): New.
+	(back_threader::maybe_thread_block): Handle GIMPLE_GOTO.
+
+2026-08-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126778
+	* tree-vect-loop-manip.cc (get_live_virtual_operand_on_edge): Move it.
+	(vect_set_loop_condition_partial_vectors): Use it to update edge.
+
+2026-08-12  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/126787
+	* config/i386/sse.md (*fma_fmadd_<mode>): Use the "jm" to replace
+	"m" constraint and set addr attribute to "gpr16" for vex only
+	alternatives.
+	(*fma_fmsub_<mode>): Likewise.
+	(*fma_fnmadd_<mode>): Likewise.
+	(*fma_fnmsub_<mode>): Likewise.
+	(*fma_fmaddsub_<mode>): Likewise.
+	(*fma_fmsubadd_<mode>): Likewise.
+	(xop_p<macs><ssemodesuffix><ssemodesuffix>): Likewise.
+	(xop_p<macs>dql): Likewise.
+	(xop_p<macs>dqh): Likewise.
+	(xop_p<macs>wd): Likewise.
+	(xop_p<madcs>wd): Likewise.
+	(xop_pcmov_<mode><avxsizesuffix>): Likewise.
+	(xop_phadd<u>bw): Likewise.
+	(xop_phadd<u>bd): Likewise.
+	(xop_phadd<u>bq): Likewise.
+	(xop_phadd<u>wd): Likewise.
+	(xop_phadd<u>wq): Likewise.
+	(xop_phadd<u>dq): Likewise.
+	(xop_phsubbw): Likewise.
+	(xop_phsubwd): Likewise.
+	(xop_phsubdq): Likewise.
+	(xop_pperm): Likewise.
+	(xop_pperm_pack_v2di_v4si): Likewise.
+	(xop_pperm_pack_v4si_v8hi): Likewise.
+	(xop_pperm_pack_v8hi_v16qi): Likewise.
+	(xop_rotl<mode>3): Likewise.
+	(xop_rotr<mode>3): Likewise.
+	(xop_vrotl<mode>3): Likewise.
+	(xop_sha<mode>3): Likewise.
+	(xop_shl<mode>3): Likewise.
+	(xop_frcz<mode>2): Likewise.
+	(*xop_vmfrcz<mode>2): Likewise.
+	(xop_maskcmp<mode>3): Likewise.
+	(xop_maskcmp_uns<mode>3): Likewise.
+	(xop_maskcmp_uns2<mode>3): Likewise.
+	(xop_pcom_tf<mode>3): Likewise.
+	(xop_vpermil2<mode>3): Likewise.
+
+2026-08-12  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Use
+	HOST_WIDE_INT_1U for bit masks.
+	(riscv_get_fusible_ops): Return unsigned HOST_WIDE_INT.
+	* config/riscv/riscv.cc (struct riscv_tune_param): Change
+	fusible_ops to unsigned HOST_WIDE_INT.
+	(riscv_get_fusible_ops): Likewise.
+
 2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	* value-relation.cc (dom_oracle::create_relation_in_bb): Adjust

@@ -1,3 +1,12 @@
+2026-08-12  Jørgen Kvalsvik  <j@lambda.is>
+
+	* c-attribs.cc (handle_suppress_coverage_attribute): New
+	function.
+	* c-pragma.cc (handle_pragma_suppress_coverage): New function.
+	(init_pragma): Register pragma GCC suppress_coverage.
+	* c-pragma.h (suppress_coverage_begin): New forward declaration.
+	(suppress_coverage_end): Ditto.
+
 2026-08-10  Josef Melcr  <josef.melcr@suse.com>
 
 	PR testsuite/126708

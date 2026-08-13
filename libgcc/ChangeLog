@@ -1,3 +1,12 @@
+2026-08-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (LIB1ASMFUNCS): Add _usshift_1, _usshift_2,
+	_usshift_4, _ssshift_1, _ssshift_2, _ssshift_4.
+	(FUNCS_notiny): Add _usshift_8, _ssshift_8.
+	(LIB2FUNCS_EXCLUDE): Add all the default libgcc saturated shifts.
+	* config/avr/lib1funcs-fixed.S: Support saturated ashl for
+	all fixed-point modes.
+
 2026-08-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (conv_YX): New variable.

@@ -1,3 +1,16 @@
+2026-08-12  Patrick Palka  <ppalka@redhat.com>
+	    Bernhard M. Wiedemann  <bwiedemann@suse.de>
+
+	PR c++/124811
+	* decl.cc (typename_hasher::hash): Instead of pointer hashing,
+	hash TYPE_HASH of context and use iterative_hash_template_arg
+	to hash fullname.
+
+2026-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* reflect.cc (init_reflection): Also initialize TYPE_UNSIGNED,
+	TYPE_PRECISION, TYPE_MODE and TYPE_ALIGN of meta_info_type_node.
+
 2026-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/125541

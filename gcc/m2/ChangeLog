@@ -1,3 +1,104 @@
+2026-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/125129
+	* Make-lang.in (escape_path): New define.
+	(GM2_FOR_TARGET_ESC): New define.
+	(RSTSRC): Remove.
+	(gm2-libs.texi-check): Rewrite without $(objdir).
+	(m2/gm2-libs.rst): Remove.
+	(gm2-ebnf.rst): Ditto.
+	(gm2-ebnf.rst-check): Ditto.
+	(SYSTEM-pim-texi-check): Ditto.
+	(m2/SYSTEM-pim.rst): Ditto.
+	(m2/SYSTEM-iso.texi): Rewrite without $(objdir).
+	(Builtins.texi-check): Rewrite specifying $(srcdir).
+	(m2/Builtins.rst): Remove.
+	(MC_ARGS): Add -I$(srcdir)/m2/gm2-libs-pim-common
+	and -I$(srcdir)/m2/mc-boot-ch.
+	(m2/mc-boot/$(SRC_PREFIX)%.o): Add -I$(srcdir)/m2/mc-boot-ch.
+	(m2/mc-boot-ch/$(SRC_PREFIX)%.o): Ditto.
+	(MC_BOOT_INCLUDES): New define.
+	(m2/gm2-libs-boot/UnixArgs.o): Add MC_BOOT_INCLUDES.
+	(m2/gm2-libs-boot/choosetemp.o): Ditto.
+	(m2/gm2-libs-boot/errno.o): Ditto.
+	(m2/gm2-libs-boot/dtoa.o): Ditto.
+	(m2/gm2-libs-boot/ldtoa.o): Ditto.
+	(m2/gm2-libs-boot/termios.o): Ditto.
+	(m2/gm2-libs-boot/SysExceptions.o): Ditto.
+	(m2/gm2-libs-boot/SysStorage.o): Ditto.
+	(m2/gm2-libs/Builtins.def): Rewrite.
+	(m2/gm2-libs/Builtins.mod): Ditto.
+	(m2/gm2-libs/SYSTEM.def): Ditto.
+	(m2/gm2-libs-iso/SYSTEM.def): Ditto.
+	(m2/gm2-libs-coroutines/SYSTEM.def): Ditto.
+	(m2/gm2-libs/%.o): Ditto.
+	* gm2-compiler/M2Options.def (SetDumpBuiltins): New procedure.
+	(GetDumpBuiltins): New procedure function.
+	* gm2-compiler/M2Options.mod (DumpBuiltinsFlag): New variable.
+	(SetDumpBuiltins): Implement new procedure.
+	(GetDumpBuiltins): Implement new procedure function.
+	* gm2-compiler/M2Quads.mod (BuildComponentValue): Removed unused
+	variable virtpos.
+	* gm2-gcc/m2builtins.cc (GM2_BUG_REPORT): Reformat.
+	(ASSERT): Ditto.
+	(ERROR): Ditto.
+	(dump_available): New funmction.
+	(define_builtin): Call dump_available if GetDumpBuiltins is set.
+	(dump_builtin): New function.
+	(m2builtins_init): Call dump_builtin.
+	* gm2-gcc/m2options.h (M2Options_SetDumpBuiltins): New prototype.
+	(M2Options_GetDumpBuiltins): Ditto.
+	* gm2-lang.cc (gm2_langhook_handle_option): Add OPT_fdump_builtins
+	case.
+	* gm2-libs-coroutines/SYSTEM.def: Move to...
+	* gm2-libs-cor-common/SYSTEM.def: ...here.
+	* gm2-libs-coroutines/SYSTEM.mod: Move to...
+	* gm2-libs-cor-common/SYSTEM.mod: ...here.
+	* gm2-libs-iso/ComplexMath.def: Move to...
+	* gm2-libs-iso-common/ComplexMath.def: ...here.
+	Add tags.
+	* gm2-libs-iso/ComplexMath.mod: Move to...
+	* gm2-libs-iso-common/ComplexMath.mod: ...here.
+	Add tags.
+	* gm2-libs-iso/LongComplexMath.def: Move to...
+	* gm2-libs-iso-common/LongComplexMath.def: ...here.
+	Add tags.
+	* gm2-libs-iso/LongComplexMath.mod: Move to...
+	* gm2-libs-iso-common/LongComplexMath.mod: ...here.
+	Add tags.
+	* gm2-libs-iso/SYSTEM.def: Move to...
+	* gm2-libs-iso-common/SYSTEM.def: ...here.
+	Add tags.
+	* gm2-libs-iso/SYSTEM.mod: Move to...
+	* gm2-libs-iso-common/SYSTEM.mod: ...here.
+	Add tags.
+	* gm2-libs-iso/ShortComplexMath.def: Move to...
+	* gm2-libs-iso-common/ShortComplexMath.def: ...here.
+	Add tags.
+	* gm2-libs-iso/ShortComplexMath.mod: Move to...
+	* gm2-libs-iso-common/ShortComplexMath.mod: ...here.
+	Add tags.
+	* gm2-libs/Builtins.def: Move to...
+	* gm2-libs-pim-common/Builtins.def: ...here.
+	Add tags.
+	* gm2-libs/Builtins.mod: Move to...
+	* gm2-libs-pim-common/Builtins.mod: ...here.
+	Add tags.
+	* gm2-libs/SYSTEM.def: Move to...
+	* gm2-libs-pim-common/SYSTEM.def: ...here.
+	Add tags.
+	* gm2-libs/SYSTEM.mod: Move to...
+	* gm2-libs-pim-common/SYSTEM.mod: ...here.
+	Add tags.
+	* gm2-libs/cbuiltin.def: Move to...
+	* gm2-libs-pim-common/cbuiltin.def: ...here.
+	Add tags.
+	* gm2-libs-min/SYSTEM.def: Add tags.
+	* lang.opt (fdump-builtins): Add.
+	* tools-src/def2doc.py: Modified to process tags.
+	* tools-src/makeSystem: Modified to reflect new tags.
+	* tools-src/mktargetsrc.py: New file.
+
 2026-07-10  Léo Hardt  <leom.hardt@inf.ufrgs.br>
 
 	* plugin/m2rte.cc: Removed unused extern bool

@@ -1,3 +1,24 @@
+2026-08-12  Robert Dubner  <rdubner@symas.com>
+
+	* charmaps.h (ascii_at): New define for '@',
+	(charmap_load_unaligned): Eliminate.
+	(charmap_store_unaligned): Eliminate.
+	(store_uint16): Eliminate.
+	(store_uint32): Eliminate.
+	(class charmap_t): Make m_ascii_sign_bit, ::getch, ::putch, and
+	::memset behave for big-endian architectures.
+	* gfileio.cc (write_a_char): Behave properly on big-endian
+	architectures.
+	(sequential_file_write): Likewise.
+	(line_sequential_file_read_sbc): Likewise.
+	(line_sequential_file_read): Likewise.
+	* libgcobol.cc (edited_to_binary): Simplified.
+	(int128_to_field): Proper big-endian behavior.
+	(uber_compare): Proper big-endian behavior, simplified ABI.
+	(__gg__dirty_to_binary): Simplified.
+	(compare_strings): Use new uber_compare call.
+	(__gg__compare_2): Likewise.
+
 2026-08-10  Robert Dubner  <rdubner@symas.com>
 
 	* common-defs.h (enum cbl_field_attr_t): Update comments.

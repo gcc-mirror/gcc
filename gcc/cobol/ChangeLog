@@ -1,3 +1,11 @@
+2026-08-12  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (get_level_88_domain): Expanded comment.
+	(create_and_call): Handle CALL USING BY VALUE ZERO.
+	* structs.cc: Updated comment.
+	* util.cc: Prevent segfault when the procedures_t(size_t)
+	constructor is invoked with exactly 512 symbols.
+
 2026-08-10  Robert Dubner  <rdubner@symas.com>
 
 	* gcobol.1: Documentation

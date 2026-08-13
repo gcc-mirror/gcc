@@ -1,3 +1,209 @@
+2026-08-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/aarch64/dwarf-cfa-reg.c: Require cfi instructions.
+	* gcc.target/aarch64/stack-check-cfa-1.c: Likewise.
+	* gcc.target/aarch64/stack-check-cfa-2.c: Likewise.
+	* gcc.target/aarch64/stack-check-cfa-3.c: Likewise.
+
+2026-08-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/aarch64/inline-mem-set-pr112804.c: Require
+	mabi-ilp32 support.
+	* gcc.target/aarch64/pr100518.c: Likewise.
+	* gcc.target/aarch64/pr113114.c: Likewise.
+	* gcc.target/aarch64/pr80295.c: Likewise.
+	* gcc.target/aarch64/pr94201.c: Likewise.
+	* gcc.target/aarch64/pr94577.c: Likewise.
+	* gcc.target/aarch64/sve/pr108603.c: Likewise.
+	* lib/target-supports.exp: Add target supports for mabi=ilp32.
+
+2026-08-12  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/vrp-float-subrange-1.c: New test.
+
+2026-08-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/fx.h: New file.
+	* gcc.target/avr/sat-shift-s.c: New test.
+	* gcc.target/avr/sat-shift-u.c: New test.
+
+2026-08-12  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126418
+	* gcc.dg/tree-ssa/pr126418-1.c: New test.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/widen_sum_pairwise_2.c: Cover every widening
+	sum shape and check the dot product sequences.
+	* gcc.target/aarch64/widen_sum_pairwise_3.c: New test.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/pr122069_1.c: Update expected output.
+	* gcc.target/aarch64/pr122069_3.c: Likewise.
+	* gcc.target/aarch64/saddw-1.c: Renamed to...
+	* gcc.target/aarch64/sadalp-1.c: ...this.  Update expected output.
+	* gcc.target/aarch64/saddw-2.c: Renamed to...
+	* gcc.target/aarch64/sadalp-2.c: ...this.  Update expected output.
+	* gcc.target/aarch64/uaddw-1.c: Renamed to...
+	* gcc.target/aarch64/uadalp-1.c: ...this.  Update expected output.
+	* gcc.target/aarch64/uaddw-2.c: Renamed to...
+	* gcc.target/aarch64/uadalp-2.c: ...this.  Update expected output.
+	* gcc.target/aarch64/uaddw-3.c: Renamed to...
+	* gcc.target/aarch64/uadalp-3.c: ...this.  Update expected output.
+	* gcc.target/aarch64/widen_sum_pairwise_1.c: New test.
+	* gcc.target/aarch64/widen_sum_pairwise_2.c: New test.
+
+2026-08-12  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/94649
+	PR target/126293
+	* g++.target/i386/pr94649-1.C: New test.
+	* gcc.target/i386/pr126293-1a.c: Likewise.
+	* gcc.target/i386/pr126293-1b.c: Likewise.
+	* gcc.target/i386/pr126293-1c.c: Likewise.
+	* gcc.target/i386/pr126293-1d.c: Likewise.
+	* gcc.target/i386/pr126293-2a.c: Likewise.
+	* gcc.target/i386/pr126293-2b.c: Likewise.
+	* gcc.target/i386/pr126293-3a.c: Likewise.
+	* gcc.target/i386/pr126293-3b.c: Likewise.
+	* gcc.target/i386/pr126293-4a.c: Likewise.
+	* gcc.target/i386/pr126293-4b.c: Likewise.
+	* gcc.target/i386/pr126293-4c.c: Likewise.
+	* gcc.target/i386/pr126293-4d.c: Likewise.
+	* gcc.target/i386/pr126293-4e.c: Likewise.
+	* gcc.target/i386/pr126293-4f.c: Likewise.
+	* gcc.target/i386/pr126293-4g.c: Likewise.
+	* gcc.target/i386/pr126293-4h.c: Likewise.
+	* gcc.target/i386/pr126293-4i.c: Likewise.
+	* gcc.target/i386/pr126293-4j.c: Likewise.
+	* gcc.target/i386/pr126293-4k.c: Likewise.
+	* gcc.target/i386/pr126293-4l.c: Likewise.
+	* gcc.target/i386/pr126293-4m.c: Likewise.
+	* gcc.target/i386/pr126293-4n.c: Likewise.
+	* gcc.target/i386/pr126293-4o.c: Likewise.
+	* gcc.target/i386/pr126293-4p.c: Likewise.
+	* gcc.target/i386/pr126293-4q.c: Likewise.
+	* gcc.target/i386/pr126293-4r.c: Likewise.
+	* gcc.target/i386/pr126293-4s.c: Likewise.
+	* gcc.target/i386/pr126293-5.c: Likewise.
+	* gcc.target/i386/pr126293-6.c: Likewise.
+	* gcc.target/i386/pr126293-7.c: Likewise.
+	* gcc.target/i386/pr126293-8.c: Likewise.
+	* gcc.target/i386/pr126293-9.c: Likewise.
+	* gcc.target/i386/pr126293-10.c: Likewise.
+	* gcc.target/i386/pr126293-11.c: Likewise.
+	* gcc.target/i386/pr126293-12.c: Likewise.
+	* gcc.target/i386/pr126293-13.c: Likewise.
+	* gcc.target/i386/pr126293-14.c: Likewise.
+	* gcc.target/i386/pr126293-15.c: Likewise.
+	* gcc.target/i386/pr126293-16.c: Likewise.
+	* gcc.target/i386/pr126293-17.c: Likewise.
+
+2026-08-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126589
+	* gfortran.target/aarch64/pr122408_1.f90: update scans to check for FMS.
+	* gcc.dg/vect/complex/complex-mul2.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mls-manual-invalid-float.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mls-outofplace-double.c: New test.
+	* gcc.dg/vect/complex/fast-math-complex-mls-outofplace-float.c: New test.
+
+2026-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/125129
+	* gm2/exceptions/run/pass/exceptions-run-pass.exp: Use
+	gm2_target_compiler rather than target_compile.
+	* lib/gm2.exp (gm2_target_compile_default): Check
+	check_effective_target_pie and append -fPIE if necessary.
+
+2026-08-12  Abhishek Kaushik  <abhishek.kaushik@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/qrshrn_s8_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrn_u8_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/qrshrun_u8_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/qshrn_s16_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/qshrn_s8_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/qshrn_u16_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/qshrn_u8_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/qshrun_u16_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/qshrun_u8_x2.c: New test.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/round-up-ior-1.c: New test.
+	* gcc.dg/tree-ssa/round-up-ior-2.c: Likewise.
+
+2026-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126099
+	PR tree-optimization/126053
+	* gcc.dg/vect/bb-slp-pr126099-1.c: New testcase.
+	* gcc.dg/vect/bb-slp-pr126099-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr126099-3.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr126099-4.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr126099-5.c: Likewise.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr126053.c: Likewise.
+
+2026-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126028
+	* gcc.dg/vect/bb-slp-46.c: Un-XFAIL.
+	* gcc.dg/vect/bb-slp-pr126053.c: New testcase.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr126028.c: Likewise.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/rtl/aarch64/subs_general_reg.c: New test.
+
+2026-08-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Add __ARM_FEATURE_CSSC
+	tests.
+
+2026-08-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126789
+	* gcc.target/i386/vect-pr126789-2.c: New testcase.
+
+2026-08-12  Jørgen Kvalsvik  <j@lambda.is>
+
+	* g++.dg/gcov/gcov-24.C: New test.
+	* g++.dg/gcov/gcov-25.C: New test.
+	* g++.dg/gcov/gcov-26.C: New test.
+	* g++.dg/gcov/gcov-27.C: New test.
+	* gcc.dg/pragma-suppress-coverage.c: New test.
+	* gcc.misc-tests/gcov-37.c: New test.
+	* gcc.misc-tests/gcov-38.c: New test.
+	* gcc.misc-tests/gcov-39.c: New test.
+	* gcc.misc-tests/gcov-40.c: New test.
+	* gcc.misc-tests/gcov-41.c: New test.
+	* gcc.misc-tests/gcov-42.c: New test.
+	* gcc.misc-tests/gcov-42.h: New test.
+
+2026-08-12  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126103
+	* gcc.dg/pr89737.c: Add -fno-thread-jumps.
+	* gcc.dg/tree-ssa/backthread-computed-goto-1.c: New test.
+	* gcc.dg/tree-ssa/backthread-computed-goto-3.c: New test.
+
+2026-08-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/reflect/info1.C: New test.
+
+2026-08-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126778
+	* gcc.dg/vect/vect-early-break_145-pr126778_1.c: New test.
+	* gcc.dg/vect/vect-early-break_145-pr126778_2.c: New test.
+
+2026-08-12  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/126787
+	* gcc.target/i386/pr126787.c: New test.
+
 2026-08-11  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/126536

@@ -1,3 +1,35 @@
+2026-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/125129
+	* Makefile.am (GM2_FOR_TARGET_ESC): New define.
+	(AM_MAKEFLAGS): Add GM2_FOR_TARGET_ESC.
+	Add HAVE_PYTHON_INTERPRETER.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call AC_PYTHON_DEVEL.
+	Call GCC_PICFLAG.
+	* libm2cor/Makefile.am (libm2cor_la_M2FLAGS): Add
+	gm2-libs-cor-common and pathname.
+	(SYSTEM.def): Rewrite rule.
+	(SYSTEM.mod): Copy common file.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.am (AM_MAKEFLAGS): Add GM2_FOR_TARGET_ESC.
+	Add HAVE_PYTHON_INTERPRETER.
+	(libm2iso_la_CFLAGS): Add m2pim pathname and ../libm2pim to
+	include path.
+	* libm2log/Makefile.am: Rewrite to handle HAVE_PYTHON_INTERPRETER.
+	Falling back to the common versions of target sources if
+	HAVE_PYTHON_INTERPRETER is false.
+	* libm2min/Makefile.am: Ditto.
+	* libm2pim/Makefile.am:	Ditto.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+	* ax_python_devel.m4: New file.
+
 2026-07-09  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* configure.host: Remove s390 host part; keep s390x.
