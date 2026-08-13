@@ -10238,6 +10238,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 	       && expr->ts.type != BT_CLASS)))
     {
       tree size;
+      tree tmp2;
 
       gfc_init_se (&se, NULL);
       gfc_conv_expr (&se, expr);
@@ -10299,6 +10300,17 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 	  gfc_add_expr_to_block (&block,
 				 gfc_build_memcpy_call (tmp, se.expr, size));
 
+	  if (expr->ts.type == BT_DERIVED
+	      && expr->ts.u.derived->attr.alloc_comp
+	      && expr->expr_type != EXPR_NULL)
+	    {
+	      tmp2 = gfc_class_data_get (dest);
+	      tmp2 = gfc_copy_alloc_comp (expr->ts.u.derived, tmp2,
+					  gfc_class_data_get (dest),
+					  expr->rank, 0);
+	      gfc_add_expr_to_block (&block, tmp2);
+	    }
+
 	  /* Fill the unlimited polymorphic _len field.  */
 	  if (UNLIMITED_POLY (cm) && expr->ts.type == BT_CHARACTER)
 	    {
@@ -10309,8 +10321,20 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 	    }
 	}
       else
-	gfc_add_modify (&block, tmp,
-			fold_convert (TREE_TYPE (tmp), se.expr));
+	{
+	  gfc_add_modify (&block, tmp,
+			  fold_convert (TREE_TYPE (tmp), se.expr));
+	  if (expr->ts.type == BT_DERIVED
+	      && expr->ts.u.derived->attr.alloc_comp
+	      && expr->expr_type != EXPR_NULL)
+	    {
+	      tmp2 = build_fold_indirect_ref_loc (input_location, dest);
+	      tmp2 = gfc_copy_alloc_comp (cm->ts.u.derived, tmp2,
+					  se.expr, expr->rank, 0);
+	      gfc_add_expr_to_block (&block, tmp2);
+	    }
+	}
+
       gfc_add_block_to_block (&block, &se.post);
     }
   else if (expr->ts.type == BT_UNION)
@@ -10409,6 +10433,47 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 	  tmp = gfc_build_memcpy_call (dest, se.expr, size);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
+    }
+  else if (cm->ts.type == BT_CLASS
+	   && !CLASS_DATA (cm)->as
+	   && expr->ts.type == BT_CLASS)
+    {
+      tree vptr1, vptr2;
+      tree data1, data2;
+      tree size, fcn;
+
+      gfc_init_se (&se, NULL);
+
+      gfc_conv_expr (&se, expr);
+
+      /* Copy the _vptr to the destination....  */
+      vptr1 = gfc_class_vptr_get (dest);
+      vptr2 = gfc_class_vptr_get (se.expr);
+      gfc_add_modify (&block, vptr1,
+		      fold_convert (TREE_TYPE (vptr1), vptr2));
+
+      /* ....and the _len field if necessary.  */
+      size = gfc_vptr_size_get (vptr2);
+      if (UNLIMITED_POLY (cm) && UNLIMITED_POLY (expr))
+	{
+	  gfc_add_modify (&block, gfc_class_len_get (dest),
+			  gfc_class_len_get (se.expr));
+	  size = gfc_resize_class_size_with_len (&block, se.expr, size);
+	}
+
+      /* Allocate the destination data.  */
+      data1 = gfc_class_data_get (dest);
+      data2 = gfc_class_data_get (se.expr);
+      tmp = gfc_call_malloc (&block, TREE_TYPE (data1), size);
+      gfc_add_modify (&block, data1, tmp);
+
+      /* Now call the copy function. */
+      fcn = gfc_vptr_copy_get (vptr2);
+      if (POINTER_TYPE_P (TREE_TYPE (fcn)))
+	fcn = build_fold_indirect_ref_loc (input_location, fcn);
+      tmp = build_call_expr_loc (input_location, fcn, 2,
+				 data2, data1);
+      gfc_add_expr_to_block (&block, tmp);
     }
   else if (!cm->attr.artificial)
     {
