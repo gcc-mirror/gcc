@@ -209,6 +209,7 @@ template <typename I, typename T> class IndexVec
 
 public:
   IndexVec () = default;
+  // Creates `size` elements, instead of only reserving space.
   IndexVec (size_t size) : internal_vector (size) {}
 
   T &at (I pid) { return internal_vector[pid.value]; }

@@ -19,14 +19,28 @@
 #include "rust-bir-drop-analysis.h"
 #include "rust-bir.h"
 
+#include <unordered_set>
+
 namespace Rust {
 namespace BIR {
+
+namespace {
+
+struct BasicBlockIdHash
+{
+  size_t operator() (BasicBlockId id) const
+  {
+    return std::hash<uint32_t> () (id.value);
+  }
+};
+
+} // namespace
 
 void
 DropAnalysis::analyze (Function &function)
 {
   std::vector<BasicBlockId> block_order;
-  std::set<BasicBlockId> visited;
+  std::unordered_set<BasicBlockId, BasicBlockIdHash> visited;
 
   BasicBlockId current = ENTRY_BASIC_BLOCK;
 

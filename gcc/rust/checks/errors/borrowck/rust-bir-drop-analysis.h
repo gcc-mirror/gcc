@@ -19,10 +19,9 @@
 #ifndef RUST_BIR_DROP_ANALYSIS_H
 #define RUST_BIR_DROP_ANALYSIS_H
 
+#include "rust-bir.h"
 namespace Rust {
 namespace BIR {
-
-struct Function;
 
 /*
   Classifies scheduled whole-local BIR Drop statements according to
