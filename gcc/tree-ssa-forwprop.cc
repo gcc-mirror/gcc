@@ -2637,16 +2637,6 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk
 		  crhs1 = gimple_assign_rhs1 (use_stmt);
 		  crhs2 = gimple_assign_rhs2 (use_stmt);
 		}
-	      else if (gimple_assign_rhs_code (use_stmt) == COND_EXPR)
-		{
-		  tree cond = gimple_assign_rhs1 (use_stmt);
-		  if (COMPARISON_CLASS_P (cond))
-		    {
-		      ccode = TREE_CODE (cond);
-		      crhs1 = TREE_OPERAND (cond, 0);
-		      crhs2 = TREE_OPERAND (cond, 1);
-		    }
-		}
 	    }
 	  if (ccode == EQ_EXPR || ccode == NE_EXPR)
 	    {
@@ -2753,14 +2743,6 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2, bool full_walk
 		    {
 		      gimple_assign_set_rhs1 (use_stmt, crhs1);
 		      gimple_assign_set_rhs2 (use_stmt, crhs2);
-		    }
-		  else
-		    {
-		      gcc_checking_assert (gimple_assign_rhs_code (use_stmt)
-					   == COND_EXPR);
-		      tree cond = build2 (ccode, boolean_type_node,
-					  crhs1, crhs2);
-		      gimple_assign_set_rhs1 (use_stmt, cond);
 		    }
 		}
 	      update_stmt (use_stmt);
