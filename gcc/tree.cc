@@ -12462,6 +12462,19 @@ tree_nop_conversion_p (const_tree outer_type, const_tree inner_type)
 	  || TREE_CODE (inner_type) == OFFSET_TYPE))
     return TYPE_PRECISION (outer_type) == TYPE_PRECISION (inner_type);
 
+  if (TYPE_MODE (outer_type) == BLKmode
+      && TYPE_MODE (inner_type) == BLKmode)
+    {
+      if (VECTOR_TYPE_P (outer_type)
+	  && VECTOR_TYPE_P (inner_type)
+	  && known_eq (TYPE_VECTOR_SUBPARTS (outer_type),
+		       TYPE_VECTOR_SUBPARTS (inner_type))
+	  && (TYPE_MODE (TREE_TYPE (outer_type))
+	      == TYPE_MODE (TREE_TYPE (inner_type))))
+	return true;
+      return false;
+    }
+
   /* Otherwise fall back on comparing machine modes (e.g. for
      aggregate types, floats).  */
   return TYPE_MODE (outer_type) == TYPE_MODE (inner_type);
