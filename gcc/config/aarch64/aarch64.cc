@@ -28261,6 +28261,46 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Return true if D describes a scalable-vector permutation that takes the
+   last DIST elements from the first input and the remaining elements from
+   the second input.  */
+
+static bool
+aarch64_evpc_splice (struct expand_vec_perm_d *d)
+{
+  poly_int64 nelt = d->perm.length ();
+  HOST_WIDE_INT dist;
+
+  if (d->vec_flags != VEC_SVE_DATA
+      || d->one_vector_p
+      || nelt.is_constant ()
+      || !(nelt - d->perm[0]).is_constant (&dist)
+      || !IN_RANGE (dist, 1, INT_MAX)
+      || !d->perm.series_p (0, 1, nelt - dist, 1))
+    return false;
+
+  machine_mode pred_mode = aarch64_sve_pred_mode (d->vmode);
+  if (aarch64_svpattern_for_vl (pred_mode, dist)
+      == AARCH64_NUM_SVPATTERNS)
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  rtx_vector_builder builder (pred_mode, dist, 2);
+  for (HOST_WIDE_INT i = 0; i < dist; ++i)
+    builder.quick_push (CONST1_RTX (BImode));
+  for (HOST_WIDE_INT i = 0; i < dist; ++i)
+    builder.quick_push (CONST0_RTX (BImode));
+
+  rtx head = force_reg (pred_mode, builder.build ());
+  rtx pred = gen_reg_rtx (pred_mode);
+  emit_insn (gen_aarch64_sve_rev (pred_mode, pred, head));
+  emit_insn (gen_aarch64_sve_splice (d->vmode, d->target, pred,
+				     d->op0, d->op1));
+  return true;
+}
+
 /* Recognize patterns for the REV{64,32,16} insns, which reverse elements
    within each 64-bit, 32-bit or 16-bit granule.  */
 
@@ -28786,6 +28826,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  if (aarch64_evpc_rev_local (d))
 	    return true;
 	  else if (aarch64_evpc_rev_global (d))
+	    return true;
+	  else if (aarch64_evpc_splice (d))
 	    return true;
 	  else if (aarch64_evpc_ext (d))
 	    return true;
