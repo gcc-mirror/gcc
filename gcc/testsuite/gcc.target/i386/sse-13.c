@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -msha -mxsavec -mxsaves -mclflushopt -mavx512vp2intersect -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mpconfig -mwbnoinvd -menqcmd -mserialize -mtsxldtrk -mamx-tile -mamx-int8 -mamx-bf16 -mkl -mwidekl -mavxvnni -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mavx10.2 -mamx-avx512 -mamx-fp8 -mmovrs -mamx-movrs" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -msha -mxsavec -mxsaves -mclflushopt -mavx512vp2intersect -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mpconfig -mwbnoinvd -menqcmd -mserialize -mtsxldtrk -mamx-tile -mamx-int8 -mamx-bf16 -mkl -mwidekl -mavxvnni -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mavx10.2 -mamx-avx512 -mamx-fp8 -mmovrs -mamx-movrs -mavx10v2aux" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -919,5 +919,10 @@
 #define __builtin_ia32_minmaxsd_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsd_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxsh_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsh_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxss_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxss_mask_round (A, B, 4, D, E, 4)
+
+/* avx10v2auxintrin.h */
+#define __builtin_ia32_vunpackb128_mask(A, B, C, D) __builtin_ia32_vunpackb128_mask(A, 8, C, D)
+#define __builtin_ia32_vunpackb256_mask(A, B, C, D) __builtin_ia32_vunpackb256_mask(A, 8, C, D)
+#define __builtin_ia32_vunpackb512_mask(A, B, C, D) __builtin_ia32_vunpackb512_mask(A, 8, C, D)
 
 #include <x86intrin.h>

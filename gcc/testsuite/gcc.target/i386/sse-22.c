@@ -103,7 +103,7 @@
 
 
 #ifndef DIFFERENT_PRAGMAS
-#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,gfni,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,amx-fp16,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2,amx-avx512,amx-fp8,movrs,amx-movrs")
+#pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,gfni,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,amx-fp16,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2,amx-avx512,amx-fp8,movrs,amx-movrs,avx10v2aux")
 #endif
 
 /* Following intrinsics require immediate arguments.  They
@@ -220,7 +220,7 @@ test_4 (_mm_cmpestrz, int, __m128i, int, __m128i, int, 1)
 
 /* immintrin.h (AVX/AVX2/RDRND/FSGSBASE/F16C/RTM/AVX512F/SHA) */
 #ifdef DIFFERENT_PRAGMAS
-#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm,sha,gfni,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,amx-fp16,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2,amx-avx512,amx-fp8,movrs,amx-movrs")
+#pragma GCC target ("avx,avx2,rdrnd,fsgsbase,f16c,rtm,sha,gfni,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,amx-fp16,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2,amx-avx512,amx-fp8,movrs,amx-movrs,avx10v2aux")
 #endif
 #include <immintrin.h>
 test_1 (_cvtss_sh, unsigned short, float, 1)
@@ -1233,3 +1233,14 @@ test_4x (_mm_mask_minmax_round_ss, __m128, __m128, __mmask8, __m128, __m128, 100
 test_2x (_mm_minmax_round_sh, __m128h, __m128h, __m128h, 100, 4)
 test_3x (_mm_maskz_minmax_round_sh, __m128h, __mmask8, __m128h, __m128h, 100, 4)
 test_4x (_mm_mask_minmax_round_sh, __m128h, __m128h, __mmask8, __m128h, __m128h, 100, 4)
+
+/* avx10v2auxintrin.h */
+test_1(_mm_unpack_epi8, __m128i, __m128i, 10)
+test_3(_mm_mask_unpack_epi8, __m128i, __m128i, __mmask16, __m128i, 10)
+test_2(_mm_maskz_unpack_epi8, __m128i, __mmask16, __m128i, 10)
+test_1(_mm256_unpack_epi8, __m256i, __m256i, 10)
+test_3(_mm256_mask_unpack_epi8, __m256i, __m256i, __mmask32, __m256i, 10)
+test_2(_mm256_maskz_unpack_epi8, __m256i, __mmask32, __m256i, 10)
+test_1(_mm512_unpack_epi8, __m512i, __m512i, 10)
+test_3(_mm512_mask_unpack_epi8, __m512i, __m512i, __mmask64, __m512i, 10)
+test_2(_mm512_maskz_unpack_epi8, __m512i, __mmask64, __m512i, 10)

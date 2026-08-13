@@ -279,6 +279,8 @@
   UNSPEC_VCVTHF82HF6S
   UNSPEC_VCVTBF62HF8
   UNSPEC_VCVTHF62HF8
+  UNSPEC_VUNPACKB
+  UNSPEC_VPMOVSSDB
 ])
 
 (define_c_enum "unspecv" [
@@ -34683,3 +34685,239 @@
   "vcvt<convertfp62hf8>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+;; VUNPACKB - Sub-byte element extraction
+
+(define_insn "vunpackb<mode><mask_name>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+       (unspec:VI1_AVX512VL
+	[(match_operand:VI1_AVX512VL 1 "nonimmediate_operand" "vm")
+	(match_operand:QI 2 "const_0_to_255_operand")]
+	UNSPEC_VUNPACKB))]
+  "TARGET_AVX10V2AUX"
+  "vunpackb\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+;; VPMOVSSDB - Symmetric signed saturation narrow (32-bit to 8-bit)
+
+(define_mode_attr pmovss_mem_dest
+  [(V4SI "SI") (V8SI "DI")])
+
+(define_mode_attr pmovss_sel_vec
+  [(V4SI "V4SI") (V8SI "V2DI")])
+
+(define_expand "avx10v2aux_sym_truncatev4siv4qi2"
+  [(set (match_operand:V16QI 0 "nonimmediate_operand")
+	(vec_concat:V16QI
+	  (unspec:V4QI
+	    [(match_operand:V4SI 1 "register_operand")]
+	    UNSPEC_VPMOVSSDB)
+	  (match_dup 2)))]
+  "TARGET_AVX10V2AUX"
+  "operands[2] = CONST0_RTX (V12QImode);")
+
+(define_insn "*avx10v2aux_sym_truncatev4siv4qi2"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_concat:V16QI
+	  (unspec:V4QI
+	   [(match_operand:V4SI 1 "register_operand" "v")]
+	   UNSPEC_VPMOVSSDB)
+	(match_operand:V12QI 2 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vpmovssdb\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_expand "avx10v2aux_sym_truncatev8siv8qi2"
+  [(set (match_operand:V16QI 0 "nonimmediate_operand")
+	(vec_concat:V16QI
+	  (unspec:V8QI
+	    [(match_operand:V8SI 1 "register_operand")]
+	    UNSPEC_VPMOVSSDB)
+	  (match_dup 2)))]
+  "TARGET_AVX10V2AUX"
+  "operands[2] = CONST0_RTX (V8QImode);")
+
+(define_insn "*avx10v2aux_sym_truncatev8siv8qi2"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_concat:V16QI
+	 (unspec:V8QI
+	  [(match_operand:V8SI 1 "register_operand" "v")]
+	  UNSPEC_VPMOVSSDB)
+	 (match_operand:V8QI 2 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vpmovssdb\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "OI")])
+
+(define_expand "avx10v2aux_sym_truncatev4siv4qi2_mask"
+  [(set (match_operand:V16QI 0 "nonimmediate_operand")
+	(vec_concat:V16QI
+	(vec_merge:V4QI
+	  (unspec:V4QI
+	   [(match_operand:V4SI 1 "register_operand")]
+	    UNSPEC_VPMOVSSDB)
+	  (vec_select:V4QI
+	   (match_operand:V16QI 2 "nonimm_or_0_operand")
+	   (parallel [(const_int 0) (const_int 1)
+		      (const_int 2) (const_int 3)]))
+	  (match_operand:QI 3 "register_operand"))
+	(match_dup 4)))]
+  "TARGET_AVX10V2AUX"
+  "operands[4] = CONST0_RTX (V12QImode);")
+
+(define_insn "*avx10v2aux_sym_truncatev4siv4qi2_mask"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_concat:V16QI
+	  (vec_merge:V4QI
+	    (unspec:V4QI
+	     [(match_operand:V4SI 1 "register_operand" "v")]
+	      UNSPEC_VPMOVSSDB)
+	    (vec_select:V4QI
+	      (match_operand:V16QI 2 "nonimm_or_0_operand" "0C")
+	      (parallel [(const_int 0) (const_int 1)
+			 (const_int 2) (const_int 3)]))
+	    (match_operand:QI 3 "register_operand" "Yk"))
+	  (match_operand:V12QI 4 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vpmovssdb\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_expand "avx10v2aux_sym_truncatev8siv8qi2_mask"
+  [(set (match_operand:V16QI 0 "nonimmediate_operand")
+	(vec_concat:V16QI
+	  (vec_merge:V8QI
+	    (unspec:V8QI
+	     [(match_operand:V8SI 1 "register_operand")]
+	      UNSPEC_VPMOVSSDB)
+	    (vec_select:V8QI
+	      (match_operand:V16QI 2 "nonimm_or_0_operand")
+		(parallel [(const_int 0) (const_int 1)
+			   (const_int 2) (const_int 3)
+			   (const_int 4) (const_int 5)
+			   (const_int 6) (const_int 7)]))
+	    (match_operand:QI 3 "register_operand"))
+	(match_dup 4)))]
+  "TARGET_AVX10V2AUX"
+  "operands[4] = CONST0_RTX (V8QImode);")
+
+(define_insn "*avx10v2aux_sym_truncatev8siv8qi2_mask"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(vec_concat:V16QI
+	  (vec_merge:V8QI
+	    (unspec:V8QI
+	     [(match_operand:V8SI 1 "register_operand" "v")]
+	      UNSPEC_VPMOVSSDB)
+	    (vec_select:V8QI
+	      (match_operand:V16QI 2 "nonimm_or_0_operand" "0C")
+		(parallel [(const_int 0) (const_int 1)
+			   (const_int 2) (const_int 3)
+			   (const_int 4) (const_int 5)
+			   (const_int 6) (const_int 7)]))
+	    (match_operand:QI 3 "register_operand" "Yk"))
+	(match_operand:V8QI 4 "const0_operand")))]
+  "TARGET_AVX10V2AUX"
+  "vpmovssdb\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "OI")])
+
+(define_insn "*avx10v2aux_sym_truncatev16siv16qi2"
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=v,m")
+	(unspec:V16QI
+	 [(match_operand:V16SI 1 "register_operand" "v,v")]
+	 UNSPEC_VPMOVSSDB))]
+  "TARGET_AVX10V2AUX"
+  "vpmovssdb\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "none,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_insn "avx10v2aux_sym_truncatev16siv16qi2_mask"
+  [(set (match_operand:V16QI 0 "nonimmediate_operand" "=v,m")
+	(vec_merge:V16QI
+	  (unspec:V16QI
+	   [(match_operand:V16SI 1 "register_operand" "v,v")]
+	   UNSPEC_VPMOVSSDB)
+	  (match_operand:V16QI 2 "nonimm_or_0_operand" "0C,0")
+	  (match_operand:HI 3 "register_operand" "Yk,Yk")))]
+  "TARGET_AVX10V2AUX"
+  "vpmovssdb\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "none,store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "XI")])
+
+(define_expand "avx10v2aux_sym_truncatev16siv16qi2_mask_store"
+  [(set (match_operand:V16QI 0 "memory_operand")
+	(vec_merge:V16QI
+	  (unspec:V16QI
+	   [(match_operand:V16SI 1 "register_operand")]
+	   UNSPEC_VPMOVSSDB)
+	  (match_dup 0)
+	  (match_operand:HI 2 "register_operand")))]
+  "TARGET_AVX10V2AUX")
+
+(define_insn "*avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_store_1"
+  [(set (match_operand:<pmov_dst_3> 0 "memory_operand" "=m")
+	(unspec:<pmov_dst_3>
+	  [(match_operand:VI4_AVX2 1 "register_operand" "v")]
+	  UNSPEC_VPMOVSSDB))]
+  "TARGET_AVX10V2AUX"
+  "vpmovssdb\t{%1, %0|%0, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_store_2"
+  [(set (match_operand:<pmovss_mem_dest> 0 "memory_operand")
+	(vec_select:<pmovss_mem_dest>
+	  (subreg:<pmovss_sel_vec>
+	    (vec_concat:V16QI
+	      (unspec:<pmov_dst_3>
+		[(match_operand:VI4_AVX2 1 "register_operand")]
+		UNSPEC_VPMOVSSDB)
+	      (match_operand:<pmov_dst_zeroed_3> 2 "const0_operand")) 0)
+	  (parallel [(const_int 0)])))]
+  "TARGET_AVX10V2AUX && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:<pmov_dst_3> [(match_dup 1)] UNSPEC_VPMOVSSDB))]
+  "operands[0] = adjust_address_nv (operands[0], <pmov_dst_3>mode, 0);")
+
+(define_insn "avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_mask_store_1"
+  [(set (match_operand:<pmov_dst_3> 0 "memory_operand" "=m")
+	(vec_merge:<pmov_dst_3>
+	  (unspec:<pmov_dst_3>
+	   [(match_operand:VI4_AVX2 1 "register_operand" "v")]
+	   UNSPEC_VPMOVSSDB)
+	  (match_dup 0)
+	  (match_operand:<avx512fmaskmode> 2 "register_operand" "Yk")))]
+  "TARGET_AVX10V2AUX"
+  "vpmovssdb\t{%1, %0%{%2%}|%0%{%2%}, %1}"
+  [(set_attr "type" "ssemov")
+   (set_attr "memory" "store")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_mask_store_2"
+  [(match_operand:<pmov_dst_3> 0 "memory_operand")
+    (unspec:<pmov_dst_3>
+     [(match_operand:VI4_AVX2 1 "register_operand")]
+      UNSPEC_VPMOVSSDB)
+    (match_operand:<avx512fmaskmode> 2 "register_operand")]
+  "TARGET_AVX10V2AUX"
+{
+  operands[0] = adjust_address_nv (operands[0], <pmov_dst_3>mode, 0);
+  emit_insn (gen_avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_mask_store_1
+	    (operands[0], operands[1], operands[2]));
+  DONE;
+})

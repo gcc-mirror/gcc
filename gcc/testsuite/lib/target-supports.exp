@@ -11701,6 +11701,9 @@ proc check_effective_target_avx10v2aux { } {
 	foo ()
 	{
 	  __asm__ volatile ("vcvtps2bf8\t{%%xmm1, %%xmm0|%%xmm0, %%xmm1}");
+	  __asm__ volatile ("vcvtbf82ps\t{%%xmm1, %%xmm0|%%xmm0, %%xmm1}");
+	  __asm__ volatile ("vunpackb\t$1, %%ymm1, %%ymm0");
+	  __asm__ volatile ("vpmovssdb\t{%%zmm1, %%xmm0|%%xmm0, %%zmm1}");
 	}
     } "-mavx10v2aux" ]
 }

@@ -13322,6 +13322,9 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V4DF_FTYPE_V8DF_INT_V4DF_UQI:
     case V4SF_FTYPE_V16SF_INT_V4SF_UQI:
     case V8DI_FTYPE_V8DI_INT_V8DI_UQI:
+    case V16QI_FTYPE_V16QI_INT_V16QI_UHI:
+    case V32QI_FTYPE_V32QI_INT_V32QI_USI:
+    case V64QI_FTYPE_V64QI_INT_V64QI_UDI:
       nargs = 4;
       mask_pos = 2;
       nargs_constant = 1;
@@ -13592,6 +13595,22 @@ ix86_expand_args_builtin (const struct builtin_description *d,
 		  }
 		return const0_rtx;
 	      }
+	  if ((icode == CODE_FOR_vunpackbv16qi_mask
+	       || icode == CODE_FOR_vunpackbv32qi_mask
+	       || icode == CODE_FOR_vunpackbv64qi_mask)
+	      && CONST_INT_P (op))
+	    {
+	      char val = INTVAL (op);
+	      if ((val & 0xc0)
+		  || (!(val & 0x18))
+		  || ((val & 0x02) && ((val & 0x1c) != 0x08))
+		  || ((val & 0x01) && (((val & 0x1c) >> 2) > 0x4)))
+		{
+		  error ("the last argument must not use reserved value "
+			 "immediate");
+		  return const0_rtx;
+		}
+	    }
 	}
       else
 	{

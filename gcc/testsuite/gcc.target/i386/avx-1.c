@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mprefetchi -mavx10.2 -mmovrs" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mprefetchi -mavx10.2 -mmovrs -mavx10v2aux" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -912,6 +912,11 @@
 #define __builtin_ia32_minmaxsd_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsd_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxsh_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxsh_mask_round (A, B, 4, D, E, 4)
 #define __builtin_ia32_minmaxss_mask_round(A, B, C, D, E, F) __builtin_ia32_minmaxss_mask_round (A, B, 4, D, E, 4)
+
+/* avx10v2auxintrin.h */
+#define __builtin_ia32_vunpackb128_mask(A, B, C, D) __builtin_ia32_vunpackb128_mask(A, 8, C, D)
+#define __builtin_ia32_vunpackb256_mask(A, B, C, D) __builtin_ia32_vunpackb256_mask(A, 8, C, D)
+#define __builtin_ia32_vunpackb512_mask(A, B, C, D) __builtin_ia32_vunpackb512_mask(A, 8, C, D)
 
 #include <wmmintrin.h>
 #include <immintrin.h>
