@@ -2335,8 +2335,10 @@ constinit tzdb_list::_Node::NumLeapSeconds tzdb_list::_Node::num_leap_seconds;
 	str = p;
       }
 #else
-    string sbuf = std::filesystem::canonical("/etc/localtime").string();
-    str = sbuf;
+    error_code ec;
+    string sbuf = std::filesystem::canonical("/etc/localtime", ec).string();
+    if (!ec)
+      str = sbuf;
 #endif
 
     if (!str.empty() && str != "/etc/localtime")
