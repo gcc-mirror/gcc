@@ -1241,22 +1241,22 @@ dom_oracle::search_and_merge_relation (basic_block bb, relation_kind k,
 {
   gcc_checking_assert (k != VREL_VARYING && k != VREL_EQ);
 
-  int bbi = bb->index;
-
-  relation_kind curr;
   relation_chain *ptr;
-  curr = find_relation_block (bbi, op1, op2, &ptr);
-  // There is an existing relation in this block, just intersect with it.
+  relation_kind curr = find_relation_block (bb->index, op1, op2, &ptr);
+
+  // If there is an existing relation in this block, just intersect with it.
   if (curr != VREL_VARYING)
     {
-      // Check into whether we can simply replace the relation rather than
-      // intersecting it.  This may help with some optimistic iterative
-      // updating algorithms.  If there was no change, return no record..
+      // If there was no change, return no record.
       value_relation vr (k, op1, op2);
       if (!ptr->intersect (vr))
 	return NULL;
+      return ptr;
     }
-  else
+
+  // Create the relation in this block.
+  ptr = create_relation_in_bb (bb, k, op1, op2);
+  if (ptr)
     {
       // Check for an existing relation further up the DOM chain.
       // By including dominating relations, The first one found in any search
@@ -1264,8 +1264,13 @@ dom_oracle::search_and_merge_relation (basic_block bb, relation_kind k,
       curr = find_relation_dom (get_immediate_dominator (CDI_DOMINATORS, bb),
 				op1, op2);
       if (curr != VREL_VARYING)
-	k = relation_intersect (curr, k);
-      ptr = create_relation_in_bb (bb, k, op1, op2);
+	{
+	  curr = relation_intersect (curr, k);
+	  // Intersect the new relation with the existing one, unless the
+	  // result is UNDEFINED.  Then just leave it.
+	  if (curr != k && curr != VREL_UNDEFINED)
+	    ptr->set_relation (curr, op1, op2);
+	}
     }
   return ptr;
 }
