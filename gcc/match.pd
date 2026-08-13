@@ -1141,6 +1141,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #endif
    ))))
 
+/* Simplify (t * u) % u -> 0.  The product is an exact multiple of u, so
+   the remainder is zero under every rounding convention as long as the
+   multiplication does not overflow.  Mirrors (t * u) / u -> t above.  */
+(for mod (trunc_mod floor_mod ceil_mod round_mod)
+ (simplify
+  (mod (mult:c@2 @0 @1) @1)
+  (if (ANY_INTEGRAL_TYPE_P (type))
+   (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
+    { build_zero_cst (type); }
+#if GIMPLE
+    (with {int_range_max vr0, vr1;}
+     (if (INTEGRAL_TYPE_P (type)
+	  && gimple_match_range_of_expr (vr0, @0, @2)
+	  && gimple_match_range_of_expr (vr1, @1, @2)
+	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
+      { build_zero_cst (type); }))
+#endif
+   ))))
+
 #if GIMPLE
 (for div (trunc_div exact_div)
  /* Simplify (X + M*N) / N -> X / N + M.  */
