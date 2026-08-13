@@ -256,6 +256,10 @@ path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
   basic_block bb = gimple_bb (phi);
   basic_block prev = prev_bb ();
   edge e_in = find_edge (prev, bb);
+  // The incoming edge the path supplies is never abnormal, so the
+  // argument on it is a valid value for the PHI result even when the
+  // result occurs in an abnormal PHI.
+  gcc_checking_assert (!(e_in->flags & EDGE_ABNORMAL));
   tree arg = PHI_ARG_DEF_FROM_EDGE (phi, e_in);
   // Avoid using the cache for ARGs defined in this block, as
   // that could create an ordering problem.
