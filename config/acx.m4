@@ -472,21 +472,24 @@ dnl skip bytes instead of using tail.  The test being performed is
 dnl "if cmp --ignore-initial=2 t1 t2 && ! cmp --ignore-initial=1 t1 t2"
 dnl but we need to sink errors and handle broken shells.  We also test
 dnl for the parameter format "cmp file1 file2 skip1 skip2" which is
-dnl accepted by cmp on some systems.
+dnl accepted by cmp on some systems.  The fallback ends its subshell with
+dnl a builtin so that the exit trap runs, and the trap starts with ':'
+dnl because older bash does not preserve the exit status across an exit
+dnl trap that consists of a single command, which would report a differing
+dnl pair of objects as equal.
 AC_DEFUN([ACX_PROG_CMP_IGNORE_INITIAL],
 [AC_CACHE_CHECK([how to compare bootstrapped objects], gcc_cv_prog_cmp_skip,
 [ echo abfoo >t1
   echo cdfoo >t2
-  gcc_cv_prog_cmp_skip='(trap "st=\$$?; rm -f tmp-foo1.$$$$ '
-  gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'tmp-foo2.$$$$; '
-  gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'trap - 0; exit \$$st" 0; '
+  gcc_cv_prog_cmp_skip='(trap ":; rm -f tmp-foo1.$$$$ '
+  gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'tmp-foo2.$$$$" 0; '
   gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'trap "exit 2" 1 2 3 15; '
   gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'tail -c +17 $$f1 '
   gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'> tmp-foo1.$$$$ || exit 2; '
   gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'tail -c +17 $$f2 '
   gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'> tmp-foo2.$$$$ || exit 2; '
   gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'cmp tmp-foo1.$$$$ '
-  gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'tmp-foo2.$$$$)'
+  gcc_cv_prog_cmp_skip="$gcc_cv_prog_cmp_skip"'tmp-foo2.$$$$; exit $$?)'
   if cmp t1 t2 2 2 > /dev/null 2>&1; then
     if cmp t1 t2 1 1 > /dev/null 2>&1; then
       :

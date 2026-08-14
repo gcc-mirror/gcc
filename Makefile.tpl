@@ -1825,7 +1825,13 @@ do-clean: clean-stage[+id+]
 [+ IF compare-target +]
 # Run the comparisons in parallel through a generated sub-makefile under
 # the jobserver.  Each failing recipe writes a separate result shard that
-# is collected after the sub-make finishes.
+# is collected after the sub-make finishes.  The comparison command is
+# written into that makefile, so double its '$' characters to survive the
+# expansion the sub-make performs when it reads them back, and name the
+# shell there, which a sub-make does not inherit.  The exit trap starts
+# with ':' because older bash does not preserve the exit status across an
+# exit trap that consists of a single command, which would report a
+# comparison failure as a success.
 [+compare-target+]:
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
@@ -1837,22 +1843,24 @@ do-clean: clean-stage[+id+]
 	compare_id=$$$$; \
 	bad_compare=.bad_compare.$$compare_id; export bad_compare; \
 	compare_makefile=[+compare-target+].$$compare_id.mk; \
-	trap 'st=$$?; rm -f "$$compare_makefile" "$$bad_compare" \
-	  "$$bad_compare".*; trap - 0; exit $$st' 0; \
+	trap ':; rm -f "$$compare_makefile" "$$bad_compare" \
+	  "$$bad_compare".*' 0; \
 	trap 'exit 1' 1 2 3 15; \
+	rm -f .bad_compare "$$bad_compare" "$$bad_compare".*; \
 	echo Comparing stages [+prev+] and [+id+]; \
         sed=`echo stage[+id+] | sed 's,^stage,,;s,.,.,g'`; \
 	files=`find stage[+id+]-* -name "*$(objext)" -print | \
 		 sed -n s,^stage$$sed-,,p`; \
-	cmp_raw='$(do-[+compare-target+])'; \
+	cmp_cmd='$(subst $$,$$$$,$(do-[+compare-target+]))'; \
 	{ \
+	  echo 'SHELL = $(SHELL)'; \
 	  echo 'all:'; \
 	  echo '.PHONY: all FORCE'; \
 	  echo 'FORCE:'; \
 	  printf '[+compare-target+]/%%: FORCE ; @'; \
 	  printf 'f1=$$$$r/stage[+prev+]-$$*; '; \
 	  printf 'f2=$$$$r/stage[+id+]-$$*; '; \
-	  printf '%s' "$$cmp_raw" | sed 's,\$$,$$$$,g'; \
+	  printf '%s' "$$cmp_cmd"; \
 	  printf ' > /dev/null 2>&1; st=$$$$?; '; \
 	  printf 'if test $$$$st -eq 1; then '; \
 	  printf 'case $$* in '; \
