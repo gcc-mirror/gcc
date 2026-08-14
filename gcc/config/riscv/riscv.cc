@@ -4773,8 +4773,17 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case LO_SUM:
+      /* The +1 at the end is to make this ever-so-slightly more
+	 expensive than a simple PLUS to encourage CSE-ing the
+	 symbolic expression with related symbolic expressions.
+
+	 While both PLUS and LO_SUM will turn into an add insn, if
+	 we can convert the LO_SUM to a constant offset from another
+	 expression, then we'll be able to eliminate the HIGH
+	 insn.  */
       *total = (set_src_cost (XEXP (x, 0), mode, speed)
-		+ set_src_cost (XEXP (x, 1), mode, speed));
+		+ set_src_cost (XEXP (x, 1), mode, speed)
+		+ 1);
       return true;
 
     case LT:
