@@ -2099,20 +2099,13 @@ conv_intrinsic_team_number (gfc_se *se, gfc_expr *expr)
   args = XALLOCAVEC (tree, num_args);
   gfc_conv_intrinsic_function_args (se, expr, args, num_args);
 
-  if (flag_coarray ==
-      GFC_FCOARRAY_SINGLE && expr->value.function.actual->expr)
-    tmp = gfc_evaluate_now (args[0], &se->pre);
-  else if (flag_coarray == GFC_FCOARRAY_SINGLE)
-    {
-      // the value -1 represents that no team has been created yet
-      tmp = build_int_cst (integer_type_node, -1);
-    }
-  else if (flag_coarray == GFC_FCOARRAY_LIB && expr->value.function.actual->expr)
-    tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
-			       args[0]);
+  if (flag_coarray == GFC_FCOARRAY_SINGLE)
+    /* Only the initial team exists, and its team number is -1.  */
+    tmp = build_int_cst (integer_type_node, -1);
   else if (flag_coarray == GFC_FCOARRAY_LIB)
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_team_number, 1,
-			       null_pointer_node);
+			       expr->value.function.actual->expr
+			       ? args[0] : null_pointer_node);
   else
     gcc_unreachable ();
 

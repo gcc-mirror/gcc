@@ -8781,7 +8781,7 @@ GNU extension
 Returns the image index belonging to a cosubscript.
 
 @item @emph{Class}:
-Inquiry function.
+Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70

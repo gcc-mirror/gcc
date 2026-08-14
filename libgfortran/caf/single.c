@@ -1129,7 +1129,7 @@ _gfortran_caf_sync_team (caf_team_t team __attribute__ ((unused)), int *stat,
 int
 _gfortran_caf_team_number (caf_team_t team)
 {
-  return ((caf_single_team_t) team)->team_no;
+  return team ? ((caf_single_team_t) team)->team_no : caf_team_stack->team_no;
 }
 
 caf_team_t
