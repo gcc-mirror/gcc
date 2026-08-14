@@ -1201,6 +1201,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   gcc_assert (vectype || !gimple_get_lhs (first_stmt_info->stmt));
   *node_vectype = vectype;
 
+  basic_block common_bb = gimple_bb (first_stmt_info->stmt);
+  gimple *trapping_stmt = NULL;
+
   /* For every stmt in NODE find its def stmt/s.  */
   stmt_vec_info stmt_info;
   FOR_EACH_VEC_ELT (stmts, i, stmt_info)
@@ -1489,14 +1492,14 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		}
 	    }
 
-	  if ((phi_p || gimple_could_trap_p (stmt_info->stmt))
+	  if (phi_p
 	      && (gimple_bb (first_stmt_info->stmt)
 		  != gimple_bb (stmt_info->stmt)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: different BB for PHI "
-				 "or possibly trapping operation in %G", stmt);
+				 "Build SLP failed: different BB for PHI %G",
+				 stmt);
 	      /* Mismatch.  */
 	      continue;
 	    }
@@ -1675,7 +1678,25 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	    swap[i] = 1;
 	}
 
+      /* We need to ensure all stmts are in the same BB when one stmt could
+	 trap.  Not matching stmts are not relevant, so exclude those.  */
+      if (!trapping_stmt && gimple_could_trap_p (stmt))
+	trapping_stmt = stmt;
+      if (common_bb != gimple_bb (stmt))
+	common_bb = NULL;
+
       matches[i] = true;
+    }
+
+  if (trapping_stmt && common_bb == NULL)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Build SLP failed: not all stmts in same BB but "
+			 "possibly trapping operation in %G", trapping_stmt);
+      /* Fatal mismatch.  */
+      matches[0] = false;
+      return false;
     }
 
   for (i = 0; i < group_size; ++i)

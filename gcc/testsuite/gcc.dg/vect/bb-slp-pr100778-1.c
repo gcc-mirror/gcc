@@ -15,4 +15,4 @@ double foo (int x, double *p)
 
 /* We may not SLP vectorize the FP division because it can trap and it
    is distributed between two basic-blocks.  */
-/* { dg-final { scan-tree-dump "Build SLP failed: different BB for PHI or possibly trapping operation in _\[0-9\]+ = _\[0-9\]+ / _\[0-9\]+;" "slp2" } } */
+/* { dg-final { scan-tree-dump "Build SLP failed: not all stmts in same BB but possibly trapping operation in tem_\[0-9\]+ = _\[0-9\]+ / _\[0-9\]+;" "slp2" } } */
