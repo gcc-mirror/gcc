@@ -12279,8 +12279,7 @@ vect_schedule_slp_node (vec_info *vinfo,
       else if (!last_stmt)
 	{
 	  si = gsi_after_labels (vinfo->bbs[0]);
-	  /* ???  last_stmt can be NULL if the block is empty.  */
-	  last_stmt = gsi_stmt (si);
+	  /* last_stmt NULL marks the region start.  */
 	}
       else if (is_a <gphi *> (last_stmt))
 	si = gsi_after_labels (gimple_bb (last_stmt));
