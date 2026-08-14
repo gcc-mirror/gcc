@@ -3316,13 +3316,14 @@ noce_try_sign_mask (struct noce_if_info *if_info)
     otherwise NULL_RTX for other RTX_CODE.  */
 
 static rtx
-get_base_reg (rtx exp)
+get_base_reg_or_constant (rtx exp)
 {
   if (REG_P (exp))
     return exp;
   else if (SUBREG_P (exp))
     return SUBREG_REG (exp);
-
+  else if (CONST_INT_P (exp))
+    return exp;
   return NULL_RTX;
 }
 
@@ -3396,24 +3397,27 @@ noce_try_cond_arith (struct noce_if_info *if_info)
   op = GET_CODE (a);
 
   /* Canonicalize x = (z op y) : y to x = (y op z) : y */
-  a_op1 = get_base_reg (XEXP (a, 1));
+  a_op1 = get_base_reg_or_constant (XEXP (a, 1));
   if (a_op1 && rtx_equal_p (a_op1, b) && COMMUTATIVE_ARITH_P (a))
     {
       std::swap (XEXP (a, 0), XEXP (a, 1));
-      a_op1 = get_base_reg (XEXP (a, 1));
+      a_op1 = get_base_reg_or_constant (XEXP (a, 1));
     }
 
   if (a_op1 == NULL_RTX)
     goto fail;
 
   /* Ensure the cond is of form: x = (y op z) : y */
-  a_op0 = get_base_reg (XEXP (a, 0));
+  a_op0 = get_base_reg_or_constant (XEXP (a, 0));
   if (!(a_op0 && rtx_equal_p (a_op0, b)))
     goto fail;
 
   start_sequence ();
 
-  target = gen_reg_rtx (GET_MODE (XEXP (a, op != AND)));
+  if (CONST_INT_P (XEXP (a, 1)))
+    target = gen_reg_rtx (GET_MODE (XEXP (a, 0)));
+  else
+    target = gen_reg_rtx (GET_MODE (XEXP (a, op != AND)));
 
   /* AND requires !cond, instead we swap ops around.  */
   target = noce_emit_cmove (if_info, target, code,
