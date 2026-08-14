@@ -1976,7 +1976,7 @@ check_postcondition_result (tree fndecl, tree type, location_t loc)
 void
 rebuild_postconditions (tree fndecl)
 {
-  if (!fndecl || fndecl == error_mark_node)
+  if (!fndecl || fndecl == error_mark_node || processing_template_decl)
     return;
 
   tree type = TREE_TYPE (TREE_TYPE (fndecl));

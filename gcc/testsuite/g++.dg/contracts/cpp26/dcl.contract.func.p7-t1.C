@@ -99,11 +99,11 @@ void PostCondT<int>::f<NTClass>(NTClass, NTClass&, NTClass*, NTClass const*, NTC
 
 template <typename T>
 int f2(const T i[10])
-post(r : r == i[0]){ return 1;};
+post(r : r == i[0]){ return 1;}; // { dg-error "used in a postcondition must be const" } on use
 
 template
 int f2<int>(const int i[10]);
-// { dg-error "used in a postcondition must be const" "" { target *-*-* } 101  }
+// { dg-error "used in a postcondition must be const" "" { target *-*-* } 101  } on decl
 
 // P3520
 template <typename T>
