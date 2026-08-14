@@ -173,13 +173,14 @@ proc run-sarif-pytest { args } {
     
     verbose "PYTHONPATH=[getenv PYTHONPATH]" 2
 
-    spawn -noecho python3 -m pytest --color=no -rap -s --tb=no $srcdir/$subdir/$pytest_script
+    spawn -noecho {*}[pytest_invoke] $srcdir/$subdir/$pytest_script
 
     if [info exists old_PYTHONPATH] {
 	setenv PYTHONPATH ${old_PYTHONPATH}
     }
 
     set prefix "\[^\r\n\]*"
+    set timeout 300
     expect {
       -re "FAILED($prefix)\[^\r\n\]+\r\n" {
        set output [sarif-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
@@ -196,6 +197,8 @@ proc run-sarif-pytest { args } {
        pass $output
        exp_continue
       }
+      timeout {
+	  fail "$subdir/$testcase $pytest_script timed out"
+      }
     }
 }
-

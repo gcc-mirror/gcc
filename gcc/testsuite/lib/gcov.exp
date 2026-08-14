@@ -694,9 +694,10 @@ proc run-gcov-pytest { args } {
     }
 
     setenv GCOV_PATH $testcase
-    spawn -noecho python3 -m pytest --color=no -rap -s --tb=no $srcdir/$subdir/$pytest_script
+    spawn -noecho {*}[pytest_invoke] $srcdir/$subdir/$pytest_script
 
     set prefix "\[^\r\n\]*"
+    set timeout 300
     expect {
       -re "FAILED($prefix)\[^\r\n\]+\r\n" {
        set output [gcov-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
@@ -712,6 +713,9 @@ proc run-gcov-pytest { args } {
        set output [gcov-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
        pass $output
        exp_continue
+      }
+      timeout {
+	  fail "$subdir/$testcase $pytest_script timed out"
       }
     }
 

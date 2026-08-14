@@ -14402,11 +14402,18 @@ proc check_effective_target_python3_module { module } {
     }]
 }
 
+# Helper to return the common pytest arguments
+proc pytest_invoke { } {
+    return [list python3 -m pytest --color=no -rap -s --tb=no \
+	    --rootdir . --basetemp pytest-tmp \
+	    -p no:cacheprovider]
+}
+
 # Return 1 if pytest module is available for python3.
 
 proc check_effective_target_pytest3 { } {
     return [check_cached_effective_target pytest3 {
-	set result [remote_exec host "python3 -m pytest --color=no -rap -s --tb=no --version"]
+	set result [remote_exec host "[pytest_invoke] --version"]
 	set status [lindex $result 0]
 	if { $status == 0 } then {
 	    return 1;
