@@ -2791,9 +2791,17 @@ inner_loop_may_be_skipped (int loop_index, gfc_symbol *outer_sym, mpz_t outer_va
 	  return true;
 	}
 
-      if (!evaluate_loop_bound (loop->ext.iterator->start, outer_sym, outer_val, do_start)
-	  || !evaluate_loop_bound (loop->ext.iterator->end, outer_sym, outer_val, do_end))
+      if (!evaluate_loop_bound (loop->ext.iterator->start, outer_sym, outer_val,
+				do_start))
 	{
+	  mpz_clear (do_step);
+	  return true;
+	}
+
+      if (!evaluate_loop_bound (loop->ext.iterator->end, outer_sym, outer_val,
+				do_end))
+	{
+	  mpz_clear (do_start);
 	  mpz_clear (do_step);
 	  return true;
 	}
