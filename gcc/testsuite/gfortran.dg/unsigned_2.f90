@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-funsigned" }
 ! Test some list-directed I/O
 program main

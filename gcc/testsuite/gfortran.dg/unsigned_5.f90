@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-options "-funsigned" }
 ! Test conversions from unsigned to different data types by
 ! doing some I/O.

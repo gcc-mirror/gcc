@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR118571 UTF-8 output and the A edit descriptor.
 
 program test

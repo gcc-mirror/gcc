@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! { dg-shouldfail "Missing quote" }
 !
 ! PR libfortran/118793

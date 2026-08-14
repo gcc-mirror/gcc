@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do run { target fd_truncate } }
 ! PR107031 Check that endfile truncates at end of record 5.
 program test_truncate
     integer :: num_rec, tmp, i, nr, j
