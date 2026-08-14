@@ -1735,6 +1735,18 @@ cp_fold_r (tree *stmt_p, int *walk_subtrees, void *data_)
 	 here rather than in cp_genericize to avoid problems with the invisible
 	 reference transition.  */
     case INIT_EXPR:
+      if (!flag_no_inline
+	  && (data->flags & ff_genericize))
+	{
+	  tree to = TREE_OPERAND (*stmt_p, 0);
+	  tree &from = TREE_OPERAND (*stmt_p, 1);
+	  tree folded = maybe_constant_init (from, to,
+					     (data->flags & ff_mce_false
+					      ? mce_false : mce_unknown));
+	  if (folded != from && TREE_CONSTANT (folded))
+	    from = folded;
+	}
+
       if (data->flags & ff_genericize)
 	cp_genericize_init_expr (stmt_p);
       break;
