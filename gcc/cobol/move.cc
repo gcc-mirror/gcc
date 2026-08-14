@@ -1268,6 +1268,7 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
   if(     destref.field->type   == FldNumericDisplay
       &&  !(destref.field->attr   & scaled_e)
       &&  !(sourceref.field->attr & scaled_e)
+      &&  !(sourceref.field->attr & intermediate_e)
       &&  charmap_dest->stride() == 1
       &&  (    sourceref.field->type == FldNumericBinary
             || sourceref.field->type == FldNumericBin5
@@ -1366,87 +1367,29 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
 
       // At this point we have to align the source and destination value rdigits.
 
-      if( !(sourceref.field->attr & intermediate_e) )
+      int source_rdigits = sourceref.field->data.rdigits;
+      int dest_rdigits   = destref.field->data.rdigits;
+      int nshift = source_rdigits - dest_rdigits;
+      if(nshift < 0)
         {
-        // Because the source is not intermediate, we can work with the compile-
-        // time values.
-        int source_rdigits = sourceref.field->data.rdigits;
-        int dest_rdigits   = destref.field->data.rdigits;
-        int nshift = source_rdigits - dest_rdigits;
-        if(nshift < 0)
-          {
-          // We need to multiply the source by 10^(-nshift) to line them up.
-          FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( -nshift );
-          gg_assign(value, gg_multiply(value,
-                                       wide_int_to_tree(work_type,
-                                                        power_of_ten)));
-          }
-        else if(nshift > 0)
-          {
-          // We need to divide the source by 10^(nshift) to line them up.
-          // This is a potential rounding situation.
-          FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( nshift );
-          tree pot = wide_int_to_tree(work_type, power_of_ten);
-          gg_assign(negative,
-                    gg_bitwise_and( negative,
-                                    round_this_value(value,
-                                                     pot,
-                                                     rounded,
-                                                     size_error)));
-          }
+        // We need to multiply the source by 10^(-nshift) to line them up.
+        FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( -nshift );
+        gg_assign(value, gg_multiply(value,
+                                     wide_int_to_tree(work_type,
+                                                      power_of_ten)));
         }
-      else
+      else if(nshift > 0)
         {
-        // Source is intermediate; we need to use the dynamic source rdigits
-        // Because the source is not intermediate, we can work with the compile-
-        // time values.
-        tree source_rdigits = gg_define_variable(INT);
-        tree dest_rdigits;
-        tree nshift         = gg_define_variable(INT);
-
-        gg_assign(source_rdigits,
-                  gg_cast(INT,
-                          member(sourceref.field->var_decl_node,
-                                 "rdigits")));
-        dest_rdigits = build_int_cst_type(INT, destref.field->data.rdigits);
-        gg_assign(nshift, gg_subtract(source_rdigits, dest_rdigits));
-        tree power_of_ten = gg_define_variable(work_type);
-        IF( nshift, lt_op, integer_zero_node )
-          {
-          // We need to multiply the source by 10^(-nshift) to line them up.
-          gg_assign(power_of_ten,
-                    gg_cast(work_type,
-                            gg_call_expr(INT128,
-                                         "__gg__power_of_ten",
-                                          gg_negate(nshift),
-                                          NULL_TREE)));
-          gg_assign(value, gg_multiply(value, power_of_ten));
-          }
-        ELSE
-          {
-          IF( nshift, gt_op, integer_zero_node )
-            {
-            // We need to divide the source by 10^(nshift) to line them up.
-            // This is a potential rounding situation.
-            gg_assign(power_of_ten,
-                      gg_cast(work_type,
-                              gg_call_expr(INT128,
-                                           "__gg__power_of_ten",
-                                            nshift,
-                                            NULL_TREE)));
-            gg_assign(negative,
-                      gg_bitwise_and( negative,
-                                      round_this_value(value,
-                                                       power_of_ten,
-                                                       rounded,
-                                                       size_error)));
-            }
-          ELSE
-            {
-            }
-          ENDIF
-          }
-        ENDIF
+        // We need to divide the source by 10^(nshift) to line them up.
+        // This is a potential rounding situation.
+        FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( nshift );
+        tree pot = wide_int_to_tree(work_type, power_of_ten);
+        gg_assign(negative,
+                  gg_bitwise_and( negative,
+                                  round_this_value(value,
+                                                   pot,
+                                                   rounded,
+                                                   size_error)));
         }
 
       // At this point, value is lined up with the destination.
@@ -1560,6 +1503,7 @@ mh_binary_to_packed(const cbl_refer_t &destref,
   if(     destref.field->type   == FldPacked
       &&  !(destref.field->attr   & scaled_e)
       &&  !(sourceref.field->attr & scaled_e)
+      &&  !(sourceref.field->attr & intermediate_e)
       &&  (    sourceref.field->type == FldNumericBinary
             || sourceref.field->type == FldNumericBin5
             || sourceref.field->type == FldLiteralN
@@ -1598,90 +1542,29 @@ mh_binary_to_packed(const cbl_refer_t &destref,
       }
 
     // At this point we have to align the source and destination value rdigits.
-
-    if( !(sourceref.field->attr & intermediate_e) )
+    int source_rdigits = sourceref.field->data.rdigits;
+    int dest_rdigits   = destref.field->data.rdigits;
+    int nshift = source_rdigits - dest_rdigits;
+    if(nshift < 0)
       {
-      // Because the source is not intermediate, we can work with the compile-
-      // time values.
-      int source_rdigits = sourceref.field->data.rdigits;
-      int dest_rdigits   = destref.field->data.rdigits;
-      int nshift = source_rdigits - dest_rdigits;
-      if(nshift < 0)
-        {
-        // We need to multiply the source by 10^(-nshift) to line them up.
-        FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( -nshift );
-        gg_assign(value, gg_multiply(value,
-                                     wide_int_to_tree(work_type,
-                                                      power_of_ten)));
-        }
-      else if(nshift > 0)
-        {
-        // We need to divide the source by 10^(nshift) to line them up.
-        // This is a potential rounding situation.
-        FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten(nshift);
-        tree pot = wide_int_to_tree(work_type, power_of_ten);
-        gg_assign(negative,
-                  gg_bitwise_and( negative,
-                                  round_this_value(value,
-                                                   pot,
-                                                   rounded,
-                                                   size_error)));
-        }
+      // We need to multiply the source by 10^(-nshift) to line them up.
+      FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( -nshift );
+      gg_assign(value, gg_multiply(value,
+                                   wide_int_to_tree(work_type,
+                                                    power_of_ten)));
       }
-    else
+    else if(nshift > 0)
       {
-      // Source is intermediate; we need to use the dynamic source rdigits
-      // Because the source is not intermediate, we can work with the compile-
-      // time values.
-      tree source_rdigits = gg_define_variable(INT);
-      tree dest_rdigits;
-      tree nshift         = gg_define_variable(INT);
-
-      gg_assign(source_rdigits,
-                gg_cast(INT,
-                        member(sourceref.field->var_decl_node,
-                               "rdigits")));
-      dest_rdigits = build_int_cst_type(INT, destref.field->data.rdigits);
-      gg_assign(nshift, gg_subtract(source_rdigits, dest_rdigits));
-      tree power_of_ten = gg_define_variable(work_type);
-      IF( nshift, lt_op, integer_zero_node )
-        {
-        // We need to multiply the source by 10^(-nshift) to line them up.
-        gg_assign(power_of_ten,
-                  gg_cast(work_type,
-                          gg_call_expr(INT128,
-                                       "__gg__power_of_ten",
-                                        gg_negate(nshift),
-                                        NULL_TREE)));
-        gg_assign(value, gg_multiply(value, power_of_ten));
-        }
-      ELSE
-        {
-        IF( nshift, gt_op, integer_zero_node )
-          {
-          // We need to divide the source by 10^(nshift) to line them up.
-          // This is a potential rounding situation.
-          gg_assign(power_of_ten,
-                    gg_cast(work_type,
-                            gg_call_expr(INT128,
-                                         "__gg__power_of_ten",
-                                          nshift,
-                                          NULL_TREE)));
-          // At this point, value is ten times as big as the final value, so
-          // we are set up to round it:
-          gg_assign(negative,
-                    gg_bitwise_and( negative,
-                                    round_this_value(value,
-                                                     power_of_ten,
-                                                     rounded,
-                                                     size_error)));
-          }
-        ELSE
-          {
-          }
-        ENDIF
-        }
-      ENDIF
+      // We need to divide the source by 10^(nshift) to line them up.
+      // This is a potential rounding situation.
+      FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten(nshift);
+      tree pot = wide_int_to_tree(work_type, power_of_ten);
+      gg_assign(negative,
+                gg_bitwise_and( negative,
+                                round_this_value(value,
+                                                 pot,
+                                                 rounded,
+                                                 size_error)));
       }
 
     // At this point, value is lined up with the destination.
@@ -1886,120 +1769,6 @@ copy_native_into_place(cbl_field_t *dest,
             build_int_cst_type(SIZE_T, gg_sizeof(dest_type)));
   }
 
-static void
-copy_intermediate_into_place(cbl_field_t *dest,
-                              tree         dest_offset,
-                              tree value,
-                              tree rhs_rdigits,
-                              bool check_for_error,
-                        const tree &size_error)
-  {
-  // This is just like copy_native_into_place, except that we picked up the
-  // number of rdigits, which isn't a constant, from the intermediate source.
-
-  tree value_type = TREE_TYPE(value);
-  tree dest_type = tree_type_from_field(dest);
-
-  if( gg_sizeof(dest_type) > gg_sizeof(value_type) )
-    {
-    // Because the dest_type is greater than the value_type, we don't need to
-    // do any size checking.
-    check_for_error = false;
-    }
-
-  if( !(dest->attr & signable_e) )
-    {
-    gg_assign(value, gg_abs(value));
-    }
-
-  if( check_for_error && dest->data.digits )
-    {
-    // We need to see if value can fit into destref
-
-    // We do this by comparing value to 10^(lhs.ldigits + rhs_rdigits)
-    // Example:  rhs is 123.45, whichis 12345 with rdigits 2
-    // lhs is 99.999.  So, lhs.digits is 5, and lhs.rdigits is 3.
-    // 10^(5 - 3 + 2) is 10^4, which is 10000.  Because 12345 is >= 10000, the
-    // source can't fit into the destination.
-
-    tree abs_value = gg_define_variable(TREE_TYPE(value));
-    gg_assign(abs_value, gg_abs(value));
-
-    tree power_of_ten = gg_define_variable(INT128);
-    gg_assign(power_of_ten,
-              gg_call_expr(INT128,
-                           "__gg__power_of_ten",
-                            gg_add(build_int_cst_type(INT,
-                                                        dest->data.digits
-                                                      - dest->data.rdigits),
-                                   gg_cast(INT, rhs_rdigits)),
-                            NULL_TREE));
-
-    IF( gg_cast(INT128, abs_value),
-        ge_op,
-        power_of_ten )
-      {
-      // Flag the size error
-      gg_assign(size_error, integer_one_node);
-      }
-    ELSE
-      ENDIF
-    }
-  scale_by_power_of_ten(value,
-                        gg_subtract(build_int_cst_type(INT, dest->data.rdigits),
-                                    gg_cast(INT, rhs_rdigits)));
-
-  // Create a variable of our target type.
-  tree target = gg_define_variable(dest_type);
-  // Cast the source to the target
-  gg_assign(target, gg_cast(dest_type, value));
-
-  if( check_for_error && !dest->data.digits )
-    {
-    // The destination is pure binary.  Make sure we fit:
-    int nbytes = gg_sizeof(dest_type);
-    // We are making sure that value is less than the power of two
-    FIXED_WIDE_INT(128) power_of_two = get_power_of_two(nbytes);
-    tree p_of_two = wide_int_to_tree(value_type, power_of_two);
-
-    IF( value, ge_op, p_of_two )
-      {
-      // Flag the size error
-      gg_assign(size_error, gg_bitwise_or(size_error, integer_one_node));
-      }
-    ELSE
-      {
-      }
-    ENDIF
-    }
-
-  tree dest_pointer = gg_define_variable(UCHAR_P);
-  gg_assign(dest_pointer, gg_add(member(dest->var_decl_node, "data"),
-                                 dest_offset));
-
-  if( dest->type == FldNumericBinary )
-    {
-    // We need the target to be big-endian.
-    if( BYTES_BIG_ENDIAN )
-      {
-      // 'target' is already big-endian, so we can leave it be.
-      }
-    else
-      {
-      // 'target' is little-endian, so make it big-endian
-      gg_assign(target, gg_bswap(target));
-      }
-    }
-  else
-    {
-    // We need the target to be native binary, so just leave it be
-    }
-  // Copy the target to the destination.
-  gg_memcpy(dest_pointer,
-            gg_get_address_of(target),
-            build_int_cst_type(SIZE_T, gg_sizeof(dest_type)));
-  }
-
 static bool
 mh_to_binary( const cbl_refer_t &destref,
                   const cbl_refer_t &sourceref,
@@ -2074,31 +1843,15 @@ mh_to_binary( const cbl_refer_t &destref,
       }
     else
       {
-      if( sourceref.field->attr & intermediate_e )
-        {
-        tree source_type = tree_type_from_refer(sourceref);
-        tree source;
-        get_binary_value(source, sourceref, source_type);
-        copy_intermediate_into_place( destref.field,
-                                      refer_offset(destref),
-                                      source,
-                                      member(sourceref.field->var_decl_node,
-                                             "rdigits"),
-                                      check_for_error,
-                                      size_error);
-        }
-      else
-        {
-        tree source_type = tree_type_from_refer(sourceref);
-        tree source;
-        get_binary_value(source, sourceref, source_type);
-        copy_native_into_place( destref.field,
-                                refer_offset(destref),
-                                source,
-                                sourceref.field->data.rdigits,
-                                check_for_error,
-                                size_error);
-        }
+      tree source_type = tree_type_from_refer(sourceref);
+      tree source;
+      get_binary_value(source, sourceref, source_type);
+      copy_native_into_place( destref.field,
+                              refer_offset(destref),
+                              source,
+                              sourceref.field->data.rdigits,
+                              check_for_error,
+                              size_error);
       }
     moved = true;
     }
