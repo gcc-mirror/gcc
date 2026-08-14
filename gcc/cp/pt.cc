@@ -23187,7 +23187,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TARGET_EXPR:
       /* TARGET_EXPR represents temporary objects and should not appear in
 	 templated trees.  */
-      gcc_unreachable ();
+      if (flag_checking)
+	gcc_unreachable ();
+      RETURN (t);
 
     case OFFSET_REF:
       {
