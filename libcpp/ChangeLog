@@ -1,3 +1,16 @@
+2026-08-13  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* configure.ac: Test whether the AArch64 SVE2 lexer can be built.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* internal.h (CPP_BUFFER_PADDING): Increase to 256 for SVE2.
+	* lex.cc (search_line_fast): Rename AArch64 Neon version to...
+	(search_line_neon): ...this.
+	(search_line_sve2): New function.
+	(lexer_has_sve2): New variable.
+	(init_vectorized_lexer): New function.
+	(search_line_fast): New function, dispatching between the two.
+
 2026-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* makeuname2c.cc: Implement C++29 P3733R1 - More named universal

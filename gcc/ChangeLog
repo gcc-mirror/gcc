@@ -1,3 +1,178 @@
+2026-08-13  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/120582
+	* tree-ssa-forwprop.cc (simplify_builtin_call): Remove dead code.
+
+2026-08-13  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR sanitizer/120581
+	* sancov.cc (sancov_pass): Remove dead code.
+
+2026-08-13  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/120580
+	* gimple-ssa-nonnull-compare.cc (do_warn_nonnull_compare):
+	Remove dead code.
+
+2026-08-13  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/120579
+	* gimple.cc (gimple_could_trap_p_1): Remove dead code.
+
+2026-08-13  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/120477
+	* tree-ssa-math-opts.cc (arith_overflow_check_p): Remove dead code.
+
+2026-08-13  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126103
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Follow abnormal PHIs.
+
+2026-08-13  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-fold.h (gimple_range_ssa_p): Remove the
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI check.
+	* gimple-range-path.cc (path_range_query::ssa_range_in_phi):
+	Assert the incoming path edge is not abnormal.
+
+2026-08-13  Jim Lin  <jim@andestech.com>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_multi_lib_info_t::parse): Skip a multilib that is exactly
+	equivalent to the default march/mabi.
+
+2026-08-13  Peter Bergner  <bergner@tenstorrent.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add tt-ascalon-xg.
+	(RISCV_CORE): Likewise.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type):
+	Add tt_ascalon_xg.
+	* config/riscv/riscv.md (tune): Likewise.
+	* config/riscv/tt-ascalon-d8.md (asc-xg-fp64-vec0, asc-xg-fp64-vec1):
+	New define_cpu_unit.
+	(tt_ascalon_xg_fp64_vec): New define_reservation.
+	(tt_ascalon_d8_int_load, tt_ascalon_d8_alu, tt_ascalon_d8_sfb,
+	tt_ascalon_d8_branch, tt_ascalon_d8_float_move, tt_ascalon_d8_fcvt,
+	tt_ascalon_d8_fcmp, tt_ascalon_d8_imul, tt_ascalon_d8_idiv,
+	tt_ascalon_d8_fadd, tt_ascalon_d8_mul, tt_ascalon_d8_float_fma,
+	tt_ascalon_d8_float_div_half, tt_ascalon_d8_float_div_single,
+	tt_ascalon_d8_float_div_double, tt_ascalon_d8_popcount,
+	tt_ascalon_d8_vec_load, tt_ascalon_d8_vec_store,
+	tt_ascalon_d8_vec_load_strided, tt_ascalon_d8_vec_store_strided,
+	tt_ascalon_d8_vec_load_indexed, tt_ascalon_d8_vec_store_indexed,
+	tt_ascalon_d8_vec_loadstore_seg, tt_ascalon_d8_vec_alu_1,
+	tt_ascalon_d8_vec_alu_2, tt_ascalon_d8_vec_alu_3,
+	tt_ascalon_d8_vec_alu_4, tt_ascalon_d8_vec_imul, tt_ascalon_d8_vec_pop,
+	tt_ascalon_d8_vec_crypto_aes, tt_ascalon_d8_vec_crypto_sha,
+	tt_ascalon_d8_vec_perm_1, tt_ascalon_d8_vec_perm_3,
+	tt_ascalon_d8_vec_perm_4, tt_ascalon_d8_vec_reduction,
+	tt_ascalon_d8_vec_ordered_reduction, tt_ascalon_d8_vec_idiv_byte,
+	tt_ascalon_d8_vec_idiv_half, tt_ascalon_d8_vec_idiv_single,
+	tt_ascalon_d8_vec_idiv_double, tt_ascalon_d8_vec_float_divsqrt_half,
+	tt_ascalon_d8_vec_float_divsqrt_single,
+	tt_ascalon_d8_vec_float_divsqrt_double, tt_ascalon_d8_vec_mask,
+	tt_ascalon_d8_vec_vesetvl, tt_ascalon_d8_vec_setrm,
+	tt_ascalon_d8_vec_readlen, tt_ascalon_d8_vec_unknown):
+	Use tt_ascalon_xg.
+	(tt_ascalon_d8_vec_fcmp, tt_ascalon_d8_vec_fadd,
+	tt_ascalon_d8_vec_fmul): Disable vector instructions that produce FP64
+	output values when tuning for tt_ascalon_xg.
+	(tt_ascalon_xg_fp64_vec_insns): New define_insn_reservation.
+	* doc/riscv-mcpu.texi: Regenerate.
+	* doc/riscv-mtune.texi: Likewise.
+
+2026-08-13  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/126315
+	* combine.cc (simplify_comparison) <case AND>: Delete
+	transformation that changed (AND (SUBREG x) C) into the
+	non-canonical (SUBREG (AND x C)).
+
+2026-08-13  Richard Biener  <rguenther@suse.de>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	* match.pd ((convert (convert @0))): Allow integer vector
+	types, unify {inside,intrer,final}_vec, guard patterns that
+	are not correct for vectors and those that are with
+	checks the resulting conversion is supported by the target.
+	* optabs-tree.h (supportable_convert_operation): Remove
+	useless last argument.
+	* optabs-tree.cc (supportable_convert_operation): Likewise.
+	(supportable_half_widening_operation): Adjust.
+	* tree-vect-stmts.cc (vectorizable_conversion): Likewise.
+	(supportable_indirect_convert_operation): Likewise.
+	* tree-vect-generic.cc (expand_vector_conversion): Likewise.
+	* tree-vect-data-refs.cc (vect_gather_scatter_fn_p): Likewise.
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Likewise.
+
+2026-08-13  Josef Melcr  <josef.melcr@suse.com>
+
+	* Makefile.in: Add callback-info.o to OBJS.
+	* attr-callback.cc (callback_fetch_attr_by_edge): Use fn_idx
+	from the summary.
+	(callback_get_arg_mapping): Replaced by
+	callback_get_arg_mapping_from_attr and the summary field.
+	(callback_get_arg_mapping_from_attr): New function, parses the
+	attr and returns the computed argument mapping.
+	(callback_fetch_fn_position): Delete, obsoleted by the summary.
+	(callback_edge_useful_p): Check for the redirected flag in the
+	summary instead of cgraph_node fields.
+	* attr-callback.h (enum callback_position): Add comment.
+	(enum arg_mapping_constants): New enum, defines the identifier
+	for -1 in the arg_mapping vector.
+	(callback_get_arg_mapping): Delete.
+	(callback_fetch_fn_position): Delete.
+	(callback_get_arg_mapping_from_attr): Add decl.
+	* cgraph.cc (symbol_table::create_edge): Remove callback_id initializer.
+	(cgraph_edge::make_callback): Initialize the callback_info
+	summary, add necessary arguments.
+	(cgraph_edge::redirect_callee): Set the redirected flag when
+	redirecting a callback edge.
+	(cgraph_edge::redirect_call_stmt_to_callee): Use the summary.
+	(cgraph_node::verify_node): Remove callback_id checks.
+	(cgraph_cc_finalize): Free the summaries.
+	* cgraph.h: Remove callback_id from cgraph_edge, adjust decl of
+	cgraph_edge::make_callback.
+	* cgraphclones.cc (cgraph_edge::clone): Remove callback_id.
+	* ipa-cp.cc (ipcp_driver): Initialize the summary sum.
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Remove
+	callback_id, adjust call to make_callback, use the summary.
+	(ipa_analyze_node): Initialize the summary sum.
+	(ipa_register_cgraph_hooks): Likewise.
+	* lto-cgraph.cc (lto_output_edge): Remove callback_id, stream
+	out the summary.
+	(output_symtab): Initialize the summary sum.
+	(input_edge): Remove callback_id, stream in the summary.
+	(input_cgraph_1): Initialize the summary sum.
+	* callback-info.cc: New file.
+	* callback-info.h: New file.
+
+2026-08-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Fix conditional
+	for no_delete with a call.
+
+2026-08-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126815
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Just don't
+	remove the lhs for no_delete case rather than adding a
+	new stmt.
+
+2026-08-13  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR rtl-optimization/125683
+	* simplify-rtx.cc (simplify_context::simplify_ternary_operation):
+	When folding an IF_THEN_ELSE of two equal MEM operands with
+	different memory attributes, return a copy whose attributes are
+	widened to what both operands allow.
+
+2026-08-13  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-08-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/126723

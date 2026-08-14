@@ -1,3 +1,14 @@
+2026-08-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* src/c++23/std.cc.in: Remove tailing whitespace
+	after #endif.
+
+2026-08-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/125467
+	* src/c++20/tzdb.cc (tzdb::current_zone): Use error_code overload
+	of filesystem::canonical to ignore errors.
+
 2026-08-11  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* testsuite/27_io/headers/iosfwd/synopsis.cc: Test __cpp_lib_syncbuf

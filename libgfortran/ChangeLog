@@ -1,3 +1,15 @@
+2026-08-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/126799
+	* caf/shmem/collective_subroutine.c (collsub_broadcast_array): Use
+	the element length field instead of the span field as element size.
+
+2026-08-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/126799
+	* caf/shmem/collective_subroutine.c (collsub_reduce_array): Use
+	the element length field instead of the span field as element size.
+
 2026-08-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/118793

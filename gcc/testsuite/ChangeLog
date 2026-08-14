@@ -1,3 +1,83 @@
+2026-08-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126783
+	* g++.dg/modules/gmf-6.C: New test.
+
+2026-08-13  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126103
+	* gcc.dg/tree-ssa/ssa-thread-abnormal-phi-1.c: New test.
+	* gcc.dg/tree-ssa/ssa-thread-abnormal-phi-2.c: New test.
+	* gcc.dg/tree-ssa/backthread-computed-goto-2.c: New test.
+
+2026-08-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126815
+	* gcc.dg/torture/returns-twice-1.c: New test.
+
+2026-08-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/126799
+	* gfortran.dg/coarray/collectives_5.f90: New test.
+
+2026-08-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126815
+	* g++.dg/torture/pr126815-1.C: New test.
+
+2026-08-13  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/cpp/vector-scan-align.c: New test.
+
+2026-08-13  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR rtl-optimization/125683
+	* gcc.dg/pr125683.c: New test.
+	* gcc.dg/rtl/aarch64/pr125683-flags.c: New test.
+
+2026-08-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-49.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-50.c: New test.
+
+2026-08-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-mf8.c: New test.
+
+2026-08-13  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-mf8.c: New test.
+
 2026-08-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/aarch64/dwarf-cfa-reg.c: Require cfi instructions.
