@@ -1069,7 +1069,7 @@ cp_get_fndecl_from_callee (tree fn, bool fold /* = true */)
   if (type == NULL_TREE || !INDIRECT_TYPE_P (type))
     return NULL_TREE;
   if (fold)
-    fn = maybe_constant_init (fn);
+    fn = fold_non_dependent_expr (fn);
   STRIP_NOPS (fn);
   if (TREE_CODE (fn) == ADDR_EXPR
       || TREE_CODE (fn) == FDESC_EXPR)
