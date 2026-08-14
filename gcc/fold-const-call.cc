@@ -1911,6 +1911,17 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	}
       return NULL_TREE;
 
+    case CFN_BUILT_IN_STRNLEN:
+      if ((p0 = c_getstr (arg0)))
+	{
+	  unsigned HOST_WIDE_INT s1 = 0;
+	  if (!size_t_cst_p (arg1, &s1))
+	    return NULL_TREE;
+
+	  return build_int_cst (type, strnlen (p0, s1));
+	}
+      return NULL_TREE;
+
     case CFN_FOLD_LEFT_PLUS:
       return fold_const_fold_left (type, arg0, arg1, PLUS_EXPR);
 
