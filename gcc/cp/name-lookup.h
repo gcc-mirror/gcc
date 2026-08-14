@@ -239,6 +239,8 @@ enum scope_kind {
   sk_cond,	     /* The scope of the variable declared in the condition
 			of an if or switch statement.  */
   sk_stmt_expr,	     /* GNU statement expression block.  */
+  sk_contract,	     /* A C++26 contract-assertion scope.
+			[basic.scope.contract] */
   sk_function_parms, /* The scope containing function parameters.  */
   sk_class,	     /* The scope containing the members of a class.  */
   sk_scoped_enum,    /* The scope containing the enumerators of a C++11
@@ -253,8 +255,8 @@ enum scope_kind {
   sk_transaction,    /* A synchronized or atomic statement.  */
   sk_omp,	     /* An OpenMP structured block.  */
   sk_lambda,	     /* A lambda scope.  */
-  sk_contract,	     /* A C++26 contract-assertion scope.
-			[basic.scope.contract] */
+  /* Note that scopes for which local_bindings_p should be true must precede
+     sk_function_parms.  */
   sk_count	     /* Number of scope_kind enumerations.  */
 };
 

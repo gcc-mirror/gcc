@@ -4402,7 +4402,7 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
       purpose = cxx_make_type (TYPE_PACK_EXPANSION);
       PACK_EXPANSION_PATTERN (purpose) = TREE_PURPOSE (arg);
       PACK_EXPANSION_PARAMETER_PACKS (purpose) = parameter_packs;
-      PACK_EXPANSION_LOCAL_P (purpose) = at_function_scope_p ();
+      PACK_EXPANSION_LOCAL_P (purpose) = local_bindings_p ();
 
       /* Just use structural equality for these TYPE_PACK_EXPANSIONS;
 	 they will rarely be compared to anything.  */
@@ -4452,7 +4452,10 @@ make_pack_expansion (tree arg, tsubst_flags_t complain)
     }
   PACK_EXPANSION_PARAMETER_PACKS (result) = parameter_packs;
 
-  PACK_EXPANSION_LOCAL_P (result) = at_function_scope_p ();
+  /* Contract conditions are parsed outside a function body but function
+     parameter pack expansions in them must use the instantiated parameters
+     rather than dummy declarations.  */
+  PACK_EXPANSION_LOCAL_P (result) = local_bindings_p ();
   if (ppd.found_extra_args_tree_p)
     /* If the pattern of this pack expansion contains a subtree that has
        the extra args mechanism for avoiding partial instantiation, then
