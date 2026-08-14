@@ -1,3 +1,13 @@
+2026-08-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126783
+	* module.cc (transfer_defining_module): Call retrofit_lang_decl
+	instead of assuming the old declaration already has
+	DECL_LANG_SPECIFIC allocated.
+
 2026-08-12  Wang Jinghao  <zheng.xianyuwang@gmail.com>
 
 	Backported from master:

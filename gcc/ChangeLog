@@ -1,3 +1,12 @@
+2026-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*bt<mode>): Change operand 1 constraint
+	from "q<S>,<S>" to "r<S>,<S>".
+	(*bt<SWI48:mode>_mask): Remove constraints from operand 0.
+
 2026-08-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	Backported from master:
