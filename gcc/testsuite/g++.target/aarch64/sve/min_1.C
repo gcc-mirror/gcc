@@ -45,29 +45,29 @@ TEST_TYPE (uint32_t, 128, 7, 255)
 /* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.h, z[0-9]+\.h, #-128\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.s, z[0-9]+\.s, #-128\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.b, z[0-9]+\.b, #50\n} 3 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.h, z[0-9]+\.h, #50\n} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.s, z[0-9]+\.s, #50\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.b, z[0-9]+\.b, #50\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.h, z[0-9]+\.h, #50\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.s, z[0-9]+\.s, #50\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.b, z[0-9]+\.b, #100\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.b, z[0-9]+\.b, #110\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.b, z[0-9]+\.b, #120\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.h, z[0-9]+\.h, #127\n} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.s, z[0-9]+\.s, #127\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.b, z[0-9]+\.b, #100\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.b, z[0-9]+\.b, #110\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.b, z[0-9]+\.b, #120\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.h, z[0-9]+\.h, #127\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tsmin\tz[0-9]+\.s, z[0-9]+\.s, #127\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #2\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #3\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.h, z[0-9]+\.h, #4\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #5\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.h, z[0-9]+\.h, #6\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.s, z[0-9]+\.s, #7\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #2\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #3\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.h, z[0-9]+\.h, #4\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #5\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.h, z[0-9]+\.h, #6\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.s, z[0-9]+\.s, #7\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #50\n} 3 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.h, z[0-9]+\.h, #50\n} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.s, z[0-9]+\.s, #50\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #50\n} 3 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.h, z[0-9]+\.h, #50\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.s, z[0-9]+\.s, #50\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #250\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #251\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #253\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.h, z[0-9]+\.h, #255\n} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.s, z[0-9]+\.s, #255\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #250\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #251\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.b, z[0-9]+\.b, #253\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.h, z[0-9]+\.h, #255\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tumin\tz[0-9]+\.s, z[0-9]+\.s, #255\n} 1 } } */

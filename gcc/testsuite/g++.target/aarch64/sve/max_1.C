@@ -39,11 +39,11 @@ TEST_TYPE (uint32_t, 128, 7, 255)
 /* { dg-final { scan-assembler-times {\tumax\tz[0-9]+\.h, p[0-7]/m, z[0-9]+\.h, z[0-9]+\.h\n} 2 } } */
 /* { dg-final { scan-assembler-times {\tumax\tz[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s\n} 1 } } */
 
-/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, z[0-9]+\.b, #-100\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, z[0-9]+\.b, #-110\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, z[0-9]+\.b, #-120\n} 1 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.h, z[0-9]+\.h, #-128\n} 2 { xfail *-*-* } } } */
-/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.s, z[0-9]+\.s, #-128\n} 1 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, z[0-9]+\.b, #-100\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, z[0-9]+\.b, #-110\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, z[0-9]+\.b, #-120\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.h, z[0-9]+\.h, #-128\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.s, z[0-9]+\.s, #-128\n} 1 } } */
 
 /* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.b, z[0-9]+\.b, #50\n} 3 } } */
 /* { dg-final { scan-assembler-times {\tsmax\tz[0-9]+\.h, z[0-9]+\.h, #50\n} 2 } } */

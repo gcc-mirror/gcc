@@ -5411,6 +5411,11 @@ extern tree ssa_uniform_vector_p (tree);
 
 extern tree uniform_integer_cst_p (tree);
 
+/* Return the uniform difference between two INTEGER_CSTs or corresponding
+   elements of two VECTOR_CSTs or NULL_TREE if no such difference exists.  */
+
+extern tree uniform_vector_difference_p (const_tree, const_tree);
+
 extern int single_nonzero_element (const_tree);
 
 /* Given a CONSTRUCTOR CTOR, return the element values as a vector.  */

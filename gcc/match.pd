@@ -7015,6 +7015,42 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && target_supports_op_p (type, MINMAX, optab_vector))
     (minmax @0 @1))))
 
+/* Comparison canonicalization changes X > C to X >= C + 1 and
+   X < C to X <= C - 1.  */
+(for cmp (ge le)
+     minmax (max min)
+     MINMAX (MAX_EXPR MIN_EXPR)
+ (simplify
+  (vec_cond (cmp @0 VECTOR_CST@1) @0 VECTOR_CST@2)
+  (with
+   {
+     tree diff = (minmax == MAX_EXPR
+		  ? uniform_vector_difference_p (@1, @2)
+		  : uniform_vector_difference_p (@2, @1));
+   }
+   (if (VECTOR_INTEGER_TYPE_P (type)
+	&& target_supports_op_p (type, MINMAX, optab_vector)
+	&& diff
+	&& integer_onep (diff))
+    (minmax @0 @2)))))
+
+(for cmp (lt gt)
+     minmax (max min)
+     MINMAX (MAX_EXPR MIN_EXPR)
+ (simplify
+  (vec_cond (cmp @0 VECTOR_CST@1) VECTOR_CST@2 @0)
+  (with
+   {
+     tree diff = (minmax == MAX_EXPR
+		  ? uniform_vector_difference_p (@1, @2)
+		  : uniform_vector_difference_p (@2, @1));
+   }
+   (if (VECTOR_INTEGER_TYPE_P (type)
+	&& target_supports_op_p (type, MINMAX, optab_vector)
+	&& diff
+	&& integer_onep (diff))
+    (minmax @0 @2)))))
+
 /* Try to optimize x < 0 ? -1 : 0 into (signed) x >> 31
    and x < 0 ? 1 : 0 into (unsigned) x >> 31.  */
 (simplify
