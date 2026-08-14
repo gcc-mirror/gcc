@@ -1024,8 +1024,7 @@ check_llvm_asm_support (const std::vector<LlvmOperand> &inputs,
 {
   return outputs.size () == 0 && inputs.size () <= 1
 	 && expr.get_clobbers ().size () <= 1
-	 && expr.get_templates ().size () == 1
-	 && expr.get_templates ()[0].symbol == "";
+	 && expr.get_template ().symbol == "";
 }
 
 } // namespace
@@ -1074,7 +1073,7 @@ ASTLoweringExpr::visit (AST::LlvmInlineAsm &expr)
 
   translated
     = new HIR::LlvmInlineAsm (expr.get_locus (), inputs, outputs,
-			      expr.get_templates (), expr.get_clobbers (),
+			      {expr.get_template ()}, expr.get_clobbers (),
 			      options, expr.get_outer_attrs (), mapping);
 }
 

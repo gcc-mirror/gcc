@@ -990,7 +990,7 @@ validate (InlineAsmContext inline_asm_ctx)
 }
 
 tl::optional<LlvmAsmContext>
-parse_llvm_templates (LlvmAsmContext ctx)
+parse_llvm_template (LlvmAsmContext ctx)
 {
   auto &parser = ctx.parser;
 
@@ -1002,19 +1002,12 @@ parse_llvm_templates (LlvmAsmContext ctx)
       return tl::nullopt;
     }
 
-  ctx.llvm_asm.get_templates ().emplace_back (token->get_locus (),
-					      strip_double_quotes (
-						token->as_string ()));
-  ctx.parser.skip_token ();
+  // TODO: improve string handling?
+  ctx.llvm_asm.set_template (
+    AST::TupleTemplateStr (token->get_locus (),
+			   strip_double_quotes (token->as_string ())));
 
-  token = parser.peek_current_token ();
-  if (token->get_id () != ctx.last_token_id && token->get_id () != COLON
-      && token->get_id () != SCOPE_RESOLUTION)
-    {
-      // We do not handle multiple template string, we provide minimal support
-      // for the black_box intrinsics.
-      rust_unreachable ();
-    }
+  ctx.parser.skip_token ();
 
   return ctx;
 }
@@ -1184,7 +1177,7 @@ parse_llvm_asm (location_t invoc_locus, AST::MacroInvocData &invoc,
   auto asm_ctx = LlvmAsmContext (llvm_asm, parser, last_token_id);
 
   tl::optional<LlvmAsmContext> resulting_context
-    = parse_llvm_templates (asm_ctx).and_then (parse_llvm_arguments);
+    = parse_llvm_template (asm_ctx).and_then (parse_llvm_arguments);
 
   if (resulting_context)
     {

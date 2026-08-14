@@ -759,6 +759,8 @@ DefaultASTVisitor::visit (AST::InlineAsm &expr)
 void
 DefaultASTVisitor::visit (AST::LlvmInlineAsm &expr)
 {
+  visit_outer_attrs (expr);
+
   for (auto &output : expr.get_outputs ())
     visit (output.expr);
 

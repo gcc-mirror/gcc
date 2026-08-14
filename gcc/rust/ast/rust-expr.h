@@ -5844,14 +5844,16 @@ private:
   std::vector<Attribute> outer_attrs;
   std::vector<LlvmOperand> inputs;
   std::vector<LlvmOperand> outputs;
-  std::vector<TupleTemplateStr> templates;
+  TupleTemplateStr template_str;
   std::vector<TupleClobber> clobbers;
   bool volatility;
   bool align_stack;
   Dialect dialect;
 
 public:
-  LlvmInlineAsm (location_t locus) : locus (locus) {}
+  LlvmInlineAsm (location_t locus)
+    : locus (locus), template_str (UNKNOWN_LOCATION, "")
+  {}
 
   Dialect get_dialect () { return dialect; }
 
@@ -5874,11 +5876,13 @@ public:
     return new LlvmInlineAsm (*this);
   }
 
-  std::vector<TupleTemplateStr> &get_templates () { return templates; }
-  const std::vector<TupleTemplateStr> &get_templates () const
+  void set_template (TupleTemplateStr template_str)
   {
-    return templates;
+    this->template_str = std::move (template_str);
   }
+
+  TupleTemplateStr &get_template () { return template_str; }
+  const TupleTemplateStr &get_template () const { return template_str; }
 
   Expr::Kind get_expr_kind () const override
   {

@@ -627,6 +627,8 @@ PointerVisitor::visit (AST::InlineAsm &expr)
 void
 PointerVisitor::visit (AST::LlvmInlineAsm &expr)
 {
+  visit_outer_attrs (expr);
+
   for (auto &output : expr.get_outputs ())
     reseat (output.expr);
 

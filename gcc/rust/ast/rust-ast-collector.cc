@@ -1869,37 +1869,66 @@ TokenCollector::visit (LlvmInlineAsm &expr)
   push (Rust::Token::make_identifier (expr.get_locus (), "llvm_asm"));
   push (Rust::Token::make (EXCLAM, expr.get_locus ()));
   push (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
-  for (auto &template_str : expr.get_templates ())
-    push (Rust::Token::make_string (template_str.get_locus (),
-				    std::move (template_str.symbol)));
+  push (Rust::Token::make_string (expr.get_template ().get_locus (),
+				  std::move (expr.get_template ().symbol)));
 
   push (Rust::Token::make (COLON, expr.get_locus ()));
+
+  bool needs_comma = false;
+
   for (auto output : expr.get_outputs ())
     {
+      if (needs_comma)
+	push (Rust::Token::make (COMMA, expr.get_locus ()));
+      needs_comma = true;
       push (Rust::Token::make_string (expr.get_locus (),
 				      std::move (output.constraint)));
+      push (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
       visit (output.expr);
-      push (Rust::Token::make (COMMA, expr.get_locus ()));
+      push (Rust::Token::make (RIGHT_PAREN, expr.get_locus ()));
     }
 
   push (Rust::Token::make (COLON, expr.get_locus ()));
+  needs_comma = false;
   for (auto input : expr.get_inputs ())
     {
+      if (needs_comma)
+	push (Rust::Token::make (COMMA, expr.get_locus ()));
+      needs_comma = true;
       push (Rust::Token::make_string (expr.get_locus (),
 				      std::move (input.constraint)));
+      push (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
       visit (input.expr);
-      push (Rust::Token::make (COMMA, expr.get_locus ()));
+      push (Rust::Token::make (RIGHT_PAREN, expr.get_locus ()));
     }
 
   push (Rust::Token::make (COLON, expr.get_locus ()));
+  needs_comma = false;
   for (auto &clobber : expr.get_clobbers ())
     {
+      if (needs_comma)
+	push (Rust::Token::make (COMMA, expr.get_locus ()));
+      needs_comma = true;
       push (Rust::Token::make_string (expr.get_locus (),
 				      std::move (clobber.symbol)));
-      push (Rust::Token::make (COMMA, expr.get_locus ()));
     }
   push (Rust::Token::make (COLON, expr.get_locus ()));
-  // Dump options
+
+#define X(code, s)                                                             \
+  if (expr.code)                                                               \
+    {                                                                          \
+      if (needs_comma)                                                         \
+	push (Rust::Token::make (COMMA, expr.get_locus ()));                   \
+      needs_comma = true;                                                      \
+      push (Rust::Token::make_string (expr.get_locus (), s));                  \
+    }
+
+  needs_comma = false;
+  X (is_volatile (), "volatile")
+  X (is_stack_aligned (), "alignstack")
+  X (get_dialect () == LlvmInlineAsm::Dialect::Intel, "intel")
+
+#undef X
 
   push (Rust::Token::make (RIGHT_PAREN, expr.get_locus ()));
 }
