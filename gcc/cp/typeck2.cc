@@ -1129,7 +1129,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
      that might fold away something that needs to be diagnosed at constexpr
      evaluation time.  */
   if (!current_function_decl
-      || !DECL_DECLARED_CONSTEXPR_P (current_function_decl)
+      || !maybe_constexpr_fn (current_function_decl)
       || TREE_STATIC (decl))
     value = cp_fully_fold_init (value);
 
