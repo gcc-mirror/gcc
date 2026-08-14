@@ -375,6 +375,7 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     global tool
     global compile_type
     global board_info
+    global gluefile
 
     upvar dg-messages-by-file dg-messages-by-file
 
@@ -408,16 +409,28 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
 	set board_info($target_board,ldscript) ""
     }
 
+    set is_incr_link [string equal "incr-link" $optstr]
+    if { $is_incr_link && [info exists gluefile] } {
+	set sav_gluefile $gluefile
+	# Setting gluefile to an empty string arranges that we still pass the needed
+	# -wrap flags to the linker, but we don't include the object file.
+	set gluefile ""
+    }
+
     # Link the objects into an executable.
     set comp_output [${tool}_target_compile "$objlist" $dest executable \
 		     "$options"]
+
+    if { [info exists sav_gluefile] } {
+	set gluefile $sav_gluefile
+    }
 
     if { $relocatable } {
 	set board_info($target_board,ldscript) $saved_ldscript
     }
 
     # Check for diagnostics specified by directives
-    if { ! [string equal "incr-link" $optstr] } {
+    if { ! $is_incr_link } {
 	set comp_output [lto_handle_diagnostics $comp_output $optstr]
     }
 
