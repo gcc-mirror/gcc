@@ -12117,6 +12117,16 @@ vect_schedule_slp_node (vec_info *vinfo,
     {
       /* For PHI node vectorization we do not use the insertion iterator.  */
       last_stmt = SLP_TREE_SCALAR_STMTS (node)[0]->stmt;
+      if (place_only)
+	FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+	  {
+	    if (child->si
+		&& !dominated_by_p (CDI_DOMINATORS,
+				    gimple_phi_arg_edge
+				      (as_a <gphi *> (last_stmt), i)->src,
+				    gimple_bb (child->si)))
+	      return false;
+	  }
       si = gsi_none ();
     }
   else
