@@ -3,6 +3,7 @@
 // { dg-require-effective-target fpic }
 // { dg-lto-options { "-flto -fPIC -shared -O1 -fimplicit-constexpr -g1" } }
 // { dg-extra-ld-options "-shared" }
+// { dg-extra-ld-options "-shared -Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
 
 namespace std {
 struct _Sp_counted_base {

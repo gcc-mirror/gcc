@@ -1,6 +1,6 @@
 // { dg-lto-do assemble }
 // { dg-lto-options { { -flto -ffat-lto-objects -fdebug-types-section -g -std=gnu++17 } } }
-
+// { dg-skip-if "no fdebug-types-section"  { *-*-darwin* } }
 template<typename _Tp, _Tp __v>
 struct integral_constant
 {

@@ -4,6 +4,7 @@
 // { dg-require-effective-target shared }
 // { dg-require-effective-target fpic }
 // { dg-extra-ld-options "-shared" }
+// { dg-extra-ld-options "-shared -Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
 
 class A
 {

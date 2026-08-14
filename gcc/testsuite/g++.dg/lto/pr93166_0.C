@@ -5,6 +5,7 @@
 // { dg-require-effective-target fpic }
 // { dg-extra-ld-options "-shared" }
 // { dg-require-visibility "" }
+// { dg-extra-ld-options "-shared -Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
 
 namespace Qt {
 enum DropAction {};

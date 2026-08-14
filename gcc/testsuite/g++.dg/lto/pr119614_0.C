@@ -5,6 +5,7 @@
 // { dg-require-effective-target fpic }
 // { dg-require-effective-target musttail }
 // { dg-extra-ld-options "-shared" }
+// { dg-extra-ld-options "-shared -Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
 
 struct S {} b;
 char *foo ();

@@ -4,6 +4,7 @@
 // { dg-require-effective-target shared }
 // { dg-lto-options { { -O -fPIC -flto } } }
 // { dg-extra-ld-options "-shared -nostdlib" }
+// { dg-extra-ld-options "-shared -nostdlib -Wl,-undefined,dynamic_lookup -lSystem" { target *-*-darwin* } }
 
 namespace com {
 namespace moon {

@@ -2,6 +2,7 @@
 // { dg-require-effective-target fpic }
 // { dg-require-effective-target shared }
 // { dg-lto-options { { -flto -g -nostdlib -shared -fPIC } } }
+// { dg-extra-ld-options "-Wl,-undefined,dynamic_lookup -lSystem" { target *-*-darwin* } }
 namespace Inkscape {
     class a;
 }

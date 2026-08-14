@@ -2,6 +2,7 @@
 // { dg-lto-options { { -O3 -g -flto -shared -fPIC -Wno-odr } } }
 // { dg-require-effective-target fpic }
 // { dg-require-effective-target shared }
+// { dg-extra-ld-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
 
 namespace Inkscape {
 class Anchored {};

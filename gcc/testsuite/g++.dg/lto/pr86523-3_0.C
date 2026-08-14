@@ -2,6 +2,7 @@
 // { dg-require-effective-target fpic }
 // { dg-require-effective-target shared }
 // { dg-lto-options { { -fPIC -flto -g -shared } } }
+// { dg-extra-ld-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
 class a {
     int b;
 };

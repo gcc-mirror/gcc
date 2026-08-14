@@ -2,6 +2,7 @@
 // { dg-require-effective-target shared }
 // { dg-require-effective-target fpic }
 // { dg-lto-options {{-fPIC -shared -flto}} }
+// { dg-extra-ld-options "-Wl,-undefined,dynamic_lookup" { target *-*-darwin* } }
 
 class VclReferenceBase {
   int mnRefCnt;
