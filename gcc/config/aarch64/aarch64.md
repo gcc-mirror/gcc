@@ -4959,8 +4959,8 @@
 ;; CRC32 instructions.
 (define_insn "aarch64_<crc_variant>"
   [(set (match_operand:SI 0 "register_operand" "=r")
-        (unspec:SI [(match_operand:SI 1 "register_operand" "r")
-                    (match_operand:<crc_mode> 2 "register_operand" "r")]
+	(unspec:SI [(match_operand:SI 1 "aarch64_reg_or_zero" "rZ")
+		    (match_operand:<crc_mode> 2 "aarch64_reg_or_zero" "rZ")]
          CRC))]
   "TARGET_CRC32"
   {
