@@ -3824,6 +3824,8 @@ users:
   - pierre-emmanuel.patry@embecosm.com
   - pep@gcc.gnu.org
   roles:
+  - Maintainer: Rust
+  - Maintainer: libgrust
   - WriteAfter
   - DCO: pierre-emmanuel.patry@embecosm.com
   account: pep
