@@ -703,14 +703,11 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 	 into common space, then C cannot initialize global Fortran
 	 variables that it interoperates with and the draft says that
 	 either Fortran or C should be able to initialize it (but not
-	 both, of course.) (J3/04-007, section 15.3).  */
+	 both, of course.) (J3/04-007, section 15.3).  A binding label has
+	 external linkage, so PRIVATE hides only the Fortran name and must
+	 not restrict the symbol's visibility.  */
       TREE_PUBLIC(decl) = 1;
       DECL_COMMON(decl) = 1;
-      if (sym->attr.access == ACCESS_PRIVATE && !sym->attr.public_used)
-	{
-	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
-	  DECL_VISIBILITY_SPECIFIED (decl) = true;
-	}
     }
 
   /* If a variable is USE associated, it's always external.  */
@@ -736,7 +733,8 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
 
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
-      if (sym->attr.access == ACCESS_PRIVATE && !sym->attr.public_used)
+      if (sym->attr.access == ACCESS_PRIVATE && !sym->attr.public_used
+	  && !sym->binding_label)
 	{
 	  DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
 	  DECL_VISIBILITY_SPECIFIED (decl) = true;
@@ -2593,9 +2591,10 @@ build_function_decl (gfc_symbol * sym, bool global)
       /* Mirror the variable treatment (see gfc_finish_var_decl): PRIVATE
 	 module procedures get global linkage but hidden visibility so the
 	 symbol is reachable from submodules in the same link without being
-	 exported to external DSOs.  */
+	 exported to external DSOs.  A binding label has external linkage,
+	 so PRIVATE hides only the Fortran name.  */
       if (in_module_contains && sym->attr.access == ACCESS_PRIVATE
-	  && !sym->attr.public_used)
+	  && !sym->attr.public_used && !sym->binding_label)
 	{
 	  DECL_VISIBILITY (fndecl) = VISIBILITY_HIDDEN;
 	  DECL_VISIBILITY_SPECIFIED (fndecl) = true;
