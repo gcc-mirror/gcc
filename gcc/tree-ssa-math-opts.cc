@@ -2956,6 +2956,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
       && (rhs1_code == MULT_EXPR || rhs1_code == WIDEN_MULT_EXPR))
     {
       if (!has_single_use (rhs1)
+	  || (conv1_stmt
+	      && !has_single_use (gimple_assign_lhs (conv1_stmt)))
 	  || gimple_bb (rhs1_stmt) != gimple_bb (stmt)
 	  || !is_widening_mult_p (rhs1_stmt, &type1, &mult_rhs1,
 				  &type2, &mult_rhs2))
@@ -2966,6 +2968,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   else if (rhs2_code == MULT_EXPR || rhs2_code == WIDEN_MULT_EXPR)
     {
       if (!has_single_use (rhs2)
+	  || (conv2_stmt
+	      && !has_single_use (gimple_assign_lhs (conv2_stmt)))
 	  || gimple_bb (rhs2_stmt) != gimple_bb (stmt)
 	  || !is_widening_mult_p (rhs2_stmt, &type1, &mult_rhs1,
 				  &type2, &mult_rhs2))
