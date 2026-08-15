@@ -1,3 +1,14 @@
+2026-08-14  Harald Anlauf  <anlauf@gmx.de>
+
+	* frontend-passes.cc (inner_loop_may_be_skipped): Clear GMP variables.
+
+2026-08-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104048
+	* trans-array.cc (structure_alloc_comps): Extend the wrapper
+	mechanism for same type allocatable arrays to scalars, creating
+	descriptors for them and passing to the deep copy library fcn..
+
 2026-08-10  Christopher Albert  <albert@tugraz.at>
 
 	PR fortran/102333

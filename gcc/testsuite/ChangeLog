@@ -1,3 +1,162 @@
+2026-08-14  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	PR middle-end/122715
+	* gcc.target/i386/pr122715.c: New test.
+	* gcc.target/i386/pr122715-2.c: New test.
+
+2026-08-14  Shreya Munnangi  <smunnang@qti.qualcomm.com>
+
+	PR rtl-optimization/125731
+	* gcc.target/riscv/pr125731.c: New test.
+
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/opt/is_constant_evaluated3a.C: Remove xfail.
+	* g++.dg/opt/is_constant_evaluated3b.C: Likewise.
+
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126483
+	* g++.dg/opt/is_constant_evaluated3b.C: xfail a1 initializer
+	folding.
+	* g++.dg/cpp2a/is-constant-evaluated16.C: New test.
+
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/opt/is_constant_evaluated3a.C: New test.
+	* g++.dg/opt/is_constant_evaluated3b.C: New test.
+
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123495
+	PR c++/126860
+	* g++.dg/template/non-dependent36.C: New test.
+	* g++.dg/template/non-dependent37.C: New test.
+
+2026-08-14  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/126284
+	* gcc.dg/pr126284.c: New test.
+
+2026-08-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126845
+	* gcc.dg/pr126845.c: New.
+
+2026-08-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126814
+	* gcc.dg/pr126814.c: New.
+
+2026-08-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126533
+	* gcc.dg/pr126533.c: New.
+
+2026-08-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126538
+	* gcc.dg/pr126538.c: New.
+
+2026-08-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/divmul-mod-1.c: New test.
+
+2026-08-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/pr126293-1b.c: Account for USER_LABEL_PREFIX.
+	* gcc.target/i386/pr126293-1c.c: Likwise.
+
+2026-08-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/126723
+	* g++.dg/torture/darwin-cfstring-3.C: Allow linker-visible
+	string labels.
+	* gcc.dg/torture/darwin-cfstring-3.c: Likewise.
+
+2026-08-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126754
+	* g++.dg/cpp1y/constexpr-lambda2.C: New test.
+
+2026-08-14  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gfortran.dg/endfile_5.f90, gfortran.dg/namelist_101.f90,
+	gfortran.dg/namelist_104.f90, gfortran.dg/unsigned_10.f90,
+	gfortran.dg/unsigned_2.f90, gfortran.dg/unsigned_5.f90,
+	gfortran.dg/utf8_3.f03: Gate test on effective_target
+	fd_truncate.
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126865
+	* gcc.dg/vect/bb-slp-pr126865.c: New testcase.
+	* gcc.dg/vect/bb-slp-pr100778-1.c: Adjust.
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126862
+	* gcc.dg/vect/bb-slp-pr126862.c: New testcase.
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126861
+	* g++.dg/vect/slp-pr126861.cc: New testcase.
+
+2026-08-14  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* gcc.dg/tree-ssa/pr126646-1.c: New test.
+	* gcc.dg/tree-ssa/pr126646-2.c: New test.
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126852
+	* gcc.dg/vect/bb-slp-pr126852.c: New testcase.
+
+2026-08-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/vec-mask-zero-1.c: New test.
+
+2026-08-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104048
+	* gfortran.dg/recursive_alloc_comp_7.f90: New test.
+	* gfortran.dg/recursive_alloc_comp_8.f90: New test.
+
+2026-08-14  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/107765
+	* gcc.dg/tree-ssa/neg-cast-1.c: New test.
+	* gcc.dg/tree-ssa/neg-cast-4.c: New test.
+
+2026-08-14  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126355
+	* gcc.dg/debug/dwarf2/pr126355.c: New test.
+
+2026-08-14  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/98602
+	* g++.dg/tree-ssa/pr98602.C: New test.
+	* g++.target/aarch64/sve/max_1.C: Remove fixed XFAILs.
+	* g++.target/aarch64/sve/min_1.C: Likewise.
+
+2026-08-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/108031
+	* gcc.target/riscv/pr108031-2.c: New test.
+
+2026-08-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* lib/lto.exp (lto-link-and-maybe-run): Unset gluefile for the
+	incremental link step, since the wrapper is not needed there and
+	does not contain LTO sections.
+
+2026-08-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/126426
+	* gcc.target/riscv/pr126426.c: New test.
+
 2026-08-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/126783

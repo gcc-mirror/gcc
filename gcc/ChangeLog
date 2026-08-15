@@ -1,3 +1,134 @@
+2026-08-14  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	PR middle-end/122715
+	* config/i386/i386.cc: Include "internal-fn.h".
+	(ix86_gimple_fold_builtin): Canonicalize PAVG builtins to
+	IFN_AVG_CEIL.
+
+2026-08-14  Shreya Munnangi  <smunnang@qti.qualcomm.com>
+
+	PR rtl-optimization/125731
+	* ifcvt.cc (get_base_reg_or_const): Renamed from get_base_reg.
+	Handle CONST_INTs too.
+	(noce_try_cond_arith): Use get_base_reg_or_const.  Handle case where
+	get_base_reg_or_const returns a CONST_INT.
+
+2026-08-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126845
+	* value-relation.cc (dom_oracle::search_and_merge_relation): Create
+	relation immediately and update it later.
+
+2026-08-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126814
+	* gimple-range-fold.cc (fold_using_range::fold_stmt): Temporarily
+	replace the current range query with the specified one.
+
+2026-08-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126533
+	* gimple-range-gori.cc (gori_name_helper): Add depth counter.
+
+2026-08-14  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126538
+	* gimple-range-phi.cc (phi_group::calculate_using_modifier): Limit the
+	iteration upper bound to MAX_FIXED_MODE_SIZE.
+
+2026-08-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (x / y * y == x): Extend to inequality.
+
+2026-08-14  LIU Hao  <lh_mouse@126.com>
+
+	* config/i386/sym-mingw32.cc: Add `extern "C"` and `visibility("hidden")`.
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126865
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Track common
+	BB and whether there's any trapping stmt in the matching set
+	and verify the same BB constraint after we've seen all stmts.
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126862
+	* tree-vect-slp.cc (vect_bb_slp_mark_live_stmts): For PHI
+	uses verify dominance to the PHI use edge source.
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126861
+	* tree-vect-slp.cc (vect_schedule_slp_node): Use NULL for
+	scheduling at region start.
+
+2026-08-14  Reshma Roy  <Reshma.Roy@amd.com>
+
+	PR tree-optimization/126646
+	* match.pd: Fold umin(a, 1) | umin(b, 1) into umin(a | b, 1).
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126852
+	* tree-vect-slp.cc (vect_schedule_slp_node): Verify schedule
+	for PHIs.
+
+2026-08-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (nop_convert): Use vector_nop_conversion_p.
+	((A == 0) & (B == 0), (A != 0) | (B != 0)): Extend the
+	existing simplifications to vector operands.
+	((A == -1) & (B == -1), (A != -1) | (B != -1)): Likewise.
+	* tree.cc (vector_nop_conversion_p): New function.
+	* tree.h (vector_nop_conversion_p): Declare.
+
+2026-08-14  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/107765
+	* match.pd (`(cast)-(cast)a`): Expand to
+	use expr_not_equal_to of INT_MIN.
+
+2026-08-14  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126355
+	* cgraphunit.cc (cgraph_node::create_wrapper): Preserve
+	DECL_IGNORED_P across forced GIMPLE thunk expansion.
+
+2026-08-14  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/98602
+	* match.pd (vec_cond (cmp @0 VECTOR_CST@1) @0 VECTOR_CST@2):
+	New simplification.
+	(vec_cond (cmp @0 VECTOR_CST@1) VECTOR_CST@2 @0): Likewise.
+	* tree.cc (record_uniform_integer_difference): New helper.
+	(uniform_vector_difference_p): New function.
+	* tree.h (uniform_vector_difference_p): Declare.
+
+2026-08-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/108031
+	* config/riscv/riscv.cc (riscv_rtx_costs): Bump the cost of a LO_SUM
+	by one unit to encourage use of related values instead of the symbolic
+	form.
+
+2026-08-14  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126697
+	* config/i386/cpuid.h (__get_cpuid_max): Rename the first
+	argument to __leaf and apply 0xC0000000 mask before passing
+	it to CPUID.
+	(__get_cpuid): Pass __leaf to __get_cpuid_max.
+	(__get_cpuid_count): Likewise.
+
+2026-08-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/126426
+	* ext-dce.cc (carry_backpropagate): Return a conservatively
+	correct mask when presented with vector modes.
+	(ext_dce_process_uses): Don't use GET_MODE_INNER, we need to
+	know the full extent of the bits for vector and complex modes.
+
 2026-08-13  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR tree-optimization/120582

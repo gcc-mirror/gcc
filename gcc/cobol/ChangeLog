@@ -1,3 +1,10 @@
+2026-08-14  Robert Dubner  <rdubner@symas.com>
+
+	* move.cc (mh_binary_to_numdisp): Pass intermediates to __gg__move.
+	(mh_binary_to_packed): Likewise.
+	(mh_to_binary): Likewise.
+	(copy_intermediate_into_place): Eliminate.
+
 2026-08-12  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (get_level_88_domain): Expanded comment.

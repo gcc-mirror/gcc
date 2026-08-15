@@ -1,3 +1,8 @@
+2026-08-14  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* MAINTAINERS: Regenerate.
+	* MAINTAINERS.yml: Add myself to rust and libgrust maintainers.
+
 2026-08-10  Tobias Burnus  <tburnus@baylibre.com>
 
 	* MAINTAINERS.yml (Burnus): Add private email as

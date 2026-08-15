@@ -1,3 +1,8 @@
+2026-08-14  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/126284
+	* c-typeck.cc (top_array_vla_p): Remove check.
+
 2026-08-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* gimple-parser.cc (c_parser_gimple_postfix_expression):

@@ -1,3 +1,35 @@
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-gimplify.cc (cp_fold_r) <case INIT_EXPR>: Add trial
+	maybe_constant_init logic like for TARGET_EXPR.
+
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126483
+	* typeck2.cc (store_init_value): Check maybe_constexpr_fn
+	instead of DECL_DECLARED_CONSTEXPR_P of the function scope.
+
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123495
+	PR c++/126860
+	* cvt.cc (cp_get_fndecl_from_callee): Use fold_non_dependent_expr
+	instead of maybe_constant_init.
+
+2026-08-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126754
+	* constexpr.cc (cxx_eval_outermost_constant_expr): Don't
+	wrap in TARGET_EXPR when processing_template_decl.
+
+2026-08-14  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (reshape_single_init): Declare sooner.
+	(reshape_init_array_1): Use it.
+	(reshape_init_class): Drop "subclass" case.
+	(reshape_init_r): d->cur->index always means initializing
+	an element.
+
 2026-08-13  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/126783
