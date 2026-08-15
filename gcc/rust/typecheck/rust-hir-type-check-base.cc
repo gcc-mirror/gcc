@@ -683,6 +683,10 @@ TypeCheckBase::resolve_generic_params (
 		auto expr_type
 		  = TypeCheckExpr::Resolve (param.get_default_expression ());
 
+		if (specified_type->is<TyTy::ErrorType> ()
+		    || expr_type->is<TyTy::ErrorType> ())
+		  break;
+
 		coercion_site (param.get_mappings ().get_hirid (),
 			       TyTy::TyWithLocation (specified_type),
 			       TyTy::TyWithLocation (

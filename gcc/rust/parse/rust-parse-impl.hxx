@@ -2021,6 +2021,16 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 	    if (default_expr.value ().get_kind ()
 		== AST::GenericArg::Kind::Either)
 	      default_expr = default_expr.value ().disambiguate_to_const ();
+	    else if (default_expr.value ().get_kind ()
+		     != AST::GenericArg::Kind::Const)
+	      {
+		Error error (
+		  default_expr.value ().get_locus (),
+		  "expressions must be enclosed in braces to be used as const "
+		  "generic arguments");
+		add_error (std::move (error));
+		default_expr = tl::nullopt;
+	      }
 	  }
 
 	param = std::unique_ptr<AST::ConstGenericParam> (
