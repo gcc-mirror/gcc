@@ -659,10 +659,20 @@ sem_function::equals_wpa (sem_item *item,
     return return_false_with_msg ("different number of references");
 
   /* Checking function attributes.
-     This is quadratic in number of attributes  */
-  if (comp_type_attributes (TREE_TYPE (decl),
-			    TREE_TYPE (item->decl)) != 1)
+     This is quadratic in number of attributes.
+     comp_type_attributes only considers attributes that affect type
+     identity, but an attribute that leaves the type alone can still let
+     the body assume something, nonnull being one, so compare the lists
+     the same way the decl attributes are compared below.  */
+  if (!attribute_list_equal (TYPE_ATTRIBUTES (TREE_TYPE (decl)),
+			     TYPE_ATTRIBUTES (TREE_TYPE (item->decl))))
     return return_false_with_msg ("different type attributes");
+  /* A METHOD_TYPE promises a nonnull this pointer without carrying an
+     attribute that says so, so it is not interchangeable with a
+     FUNCTION_TYPE that makes no such promise.  */
+  if ((TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE)
+      != (TREE_CODE (TREE_TYPE (item->decl)) == METHOD_TYPE))
+    return return_false_with_msg ("METHOD_TYPE and FUNCTION_TYPE mismatch");
   if (!attribute_list_equal (DECL_ATTRIBUTES (decl),
 			     DECL_ATTRIBUTES (item->decl)))
     return return_false_with_msg ("different decl attributes");
