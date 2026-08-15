@@ -553,6 +553,7 @@ static tree fold_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
 					  bool *non_constant_p,
 					  bool *overflow_p, tree *jump_target);
 static tree maybe_fold_addr_pointer_plus (tree t);
+static tree maybe_fold_reference_address_to_pointer (tree t);
 
 /* Variables and functions to manage constexpr call expansion context.
    These do not need to be marked for PCH or GC.  */
@@ -3157,6 +3158,9 @@ eval_binary_expression (const constexpr_ctx *ctx, tree t, bool lval,
   if (r == NULL_TREE && TREE_CODE_CLASS (code) == tcc_comparison
       && POINTER_TYPE_P (TREE_TYPE (lhs)))
     {
+      lhs = maybe_fold_reference_address_to_pointer (lhs);
+      rhs = maybe_fold_reference_address_to_pointer (rhs);
+
       if (tree lhso = maybe_fold_addr_pointer_plus (lhs))
 	lhs = fold_convert (TREE_TYPE (lhs), lhso);
       if (tree rhso = maybe_fold_addr_pointer_plus (rhs))
@@ -3180,7 +3184,10 @@ eval_binary_expression (const constexpr_ctx *ctx, tree t, bool lval,
 
   if (r == NULL_TREE)
     {
-      r = fold_binary_loc (loc, code, type, lhs, rhs);
+      if (ctx->manifestly_const_eval && TREE_CODE (type) != REAL_TYPE)
+	r = fold_binary_initializer_loc (loc, code, type, lhs, rhs);
+      else
+	r = fold_binary_loc (loc, code, type, lhs, rhs);
     }
 
   if (r == NULL_TREE && (code == LSHIFT_EXPR || code == RSHIFT_EXPR)
@@ -6868,6 +6875,21 @@ maybe_fold_addr_pointer_plus (tree t)
   op1 = fold_convert (ptr_type_node, op1);
   tree r = fold_build2 (MEM_REF, TREE_TYPE (TREE_TYPE (op0)), op0, op1);
   return build1_loc (EXPR_LOCATION (t), ADDR_EXPR, TREE_TYPE (op0), r);
+}
+
+static tree
+maybe_fold_reference_address_to_pointer (tree t)
+{
+  if (!CONVERT_EXPR_P (t) || !POINTER_TYPE_P (TREE_TYPE (t)))
+    return t;
+
+  tree op = TREE_OPERAND (t, 0);
+  if (TREE_CODE (op) != ADDR_EXPR || !TYPE_REF_P (TREE_TYPE (op)))
+    return t;
+
+  return build_fold_addr_expr_with_type_loc (EXPR_LOCATION (t),
+					     TREE_OPERAND (op, 0),
+					     TREE_TYPE (t));
 }
 
 } // namespace Compile
