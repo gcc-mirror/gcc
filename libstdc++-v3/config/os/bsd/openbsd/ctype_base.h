@@ -42,6 +42,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // on the mask type. Because of this, we don't use an enum.
     typedef char		mask;
 
+#ifdef _CTYPE_S
+    // OpenBSD 7.5 uses this style of define.
+    static const mask upper	= _CTYPE_U;
+    static const mask lower	= _CTYPE_L;
+    static const mask alpha	= _CTYPE_U | _CTYPE_L;
+    static const mask digit	= _CTYPE_N;
+    static const mask xdigit	= _CTYPE_N | _CTYPE_X;
+    static const mask space	= _CTYPE_S;
+    static const mask print	= _CTYPE_P | _CTYPE_U | _CTYPE_L | _CTYPE_N | _CTYPE_B;
+    static const mask graph	= _CTYPE_P | _CTYPE_U | _CTYPE_L | _CTYPE_N;
+    static const mask cntrl	= _CTYPE_C;
+    static const mask punct	= _CTYPE_P;
+    static const mask alnum	= _CTYPE_U | _CTYPE_L | _CTYPE_N;
+#else
+    // Older versions use this style.
     static const mask upper	= _U;
     static const mask lower	= _L;
     static const mask alpha	= _U | _L;
@@ -53,6 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const mask cntrl	= _C;
     static const mask punct	= _P;
     static const mask alnum	= _U | _L | _N;
+#endif
 #if __cplusplus >= 201103L
     static const mask blank	= space;
 #endif
