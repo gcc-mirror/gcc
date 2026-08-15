@@ -5852,10 +5852,11 @@ private:
 
 public:
   LlvmInlineAsm (location_t locus)
-    : locus (locus), template_str (UNKNOWN_LOCATION, "")
+    : locus (locus), template_str (UNKNOWN_LOCATION, ""), volatility (false),
+      align_stack (false), dialect (Dialect::Att)
   {}
 
-  Dialect get_dialect () { return dialect; }
+  Dialect get_dialect () const { return dialect; }
 
   location_t get_locus () const override { return locus; }
 
@@ -5890,10 +5891,10 @@ public:
   }
 
   void set_align_stack (bool align_stack) { this->align_stack = align_stack; }
-  bool is_stack_aligned () { return align_stack; }
+  bool is_stack_aligned () const { return align_stack; }
 
   void set_volatile (bool volatility) { this->volatility = volatility; }
-  bool is_volatile () { return volatility; }
+  bool is_volatile () const { return volatility; }
 
   void set_dialect (Dialect dialect) { this->dialect = dialect; }
 

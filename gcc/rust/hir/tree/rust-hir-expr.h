@@ -3297,18 +3297,18 @@ public:
   AST::AttrVec outer_attrs;
   std::vector<LlvmOperand> inputs;
   std::vector<LlvmOperand> outputs;
-  std::vector<AST::TupleTemplateStr> templates;
+  AST::TupleTemplateStr template_str;
   std::vector<AST::TupleClobber> clobbers;
   Options options;
 
   LlvmInlineAsm (location_t locus, std::vector<LlvmOperand> inputs,
 		 std::vector<LlvmOperand> outputs,
-		 std::vector<AST::TupleTemplateStr> templates,
+		 AST::TupleTemplateStr template_str,
 		 std::vector<AST::TupleClobber> clobbers, Options options,
 		 AST::AttrVec outer_attrs, Analysis::NodeMapping mappings)
     : ExprWithoutBlock (mappings, std::move (outer_attrs)), locus (locus),
       inputs (std::move (inputs)), outputs (std::move (outputs)),
-      templates (std::move (templates)), clobbers (std::move (clobbers)),
+      template_str (std::move (template_str)), clobbers (std::move (clobbers)),
       options (options)
   {}
 
@@ -3326,7 +3326,7 @@ public:
     return new LlvmInlineAsm (*this);
   }
 
-  std::vector<AST::TupleTemplateStr> &get_templates () { return templates; }
+  AST::TupleTemplateStr &get_template () { return template_str; }
 
   Expr::ExprType get_expression_type () const override
   {

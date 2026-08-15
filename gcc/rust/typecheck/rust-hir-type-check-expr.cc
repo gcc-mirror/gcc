@@ -1021,13 +1021,15 @@ TypeCheckExpr::visit (HIR::InlineAsm &expr)
 void
 TypeCheckExpr::visit (HIR::LlvmInlineAsm &expr)
 {
+  // TODO: verify input/output types?
+
   for (auto &i : expr.inputs)
     TypeCheckExpr::Resolve (*i.expr);
 
   for (auto &o : expr.outputs)
     TypeCheckExpr::Resolve (*o.expr);
 
-  // Black box hint is unit type
+  // always unit type
   infered = TyTy::TupleType::get_unit_type ();
 }
 

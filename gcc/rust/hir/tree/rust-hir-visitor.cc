@@ -595,6 +595,7 @@ DefaultHIRVisitor::walk (InlineAsm &expr)
 void
 DefaultHIRVisitor::walk (LlvmInlineAsm &expr)
 {
+  visit_outer_attrs (expr);
   for (auto &output : expr.outputs)
     output.expr->accept_vis (*this);
   for (auto &input : expr.inputs)

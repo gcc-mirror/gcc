@@ -187,8 +187,22 @@ CompileLlvmAsm::construct_operands (std::vector<HIR::LlvmOperand> operands)
   for (auto &operand : operands)
     {
       tree t = CompileExpr::Compile (*operand.expr, this->ctx);
-      auto name = build_string (operand.constraint.size () + 1,
-				operand.constraint.c_str ());
+
+      // handle indirect memory operand
+      std::string *constraint;
+      std::string constraint_copy;
+      if (operand.constraint == "=*m")
+	{
+	  constraint = &constraint_copy;
+	  constraint_copy = "=m";
+	  t = indirect_expression (t, operand.expr->get_locus ());
+	}
+      else
+	{
+	  constraint = &operand.constraint;
+	}
+
+      auto name = build_string (constraint->size () + 1, constraint->c_str ());
       ls.push_back (build_tree_list (build_tree_list (NULL_TREE, name), t));
     }
   return ls.get_head ();
@@ -215,13 +229,8 @@ CompileLlvmAsm::tree_codegen_asm (HIR::LlvmInlineAsm &expr)
   SET_EXPR_LOCATION (ret, expr.get_locus ());
   ASM_VOLATILE_P (ret) = expr.options.is_volatile;
 
-  std::stringstream ss;
-  for (const auto &template_str : expr.templates)
-    {
-      ss << template_str.symbol << "\n";
-    }
-
-  ASM_STRING (ret) = Backend::string_constant_expression (ss.str ());
+  ASM_STRING (ret)
+    = Backend::string_constant_expression (expr.template_str.symbol);
   ASM_INPUTS (ret) = construct_operands (expr.inputs);
   ASM_OUTPUTS (ret) = construct_operands (expr.outputs);
   ASM_CLOBBERS (ret) = construct_clobbers (expr.get_clobbers ());
