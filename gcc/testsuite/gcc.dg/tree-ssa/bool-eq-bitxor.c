@@ -36,7 +36,4 @@ xor_ne_ne (u32 a, u32 b)
 }
 
 /* Verify all functions canonicalize to xor-mask tests.  */
-/* { dg-final { scan-tree-dump-times "a_\[0-9\]+\\(D\\) \\^ b_\[0-9\]+\\(D\\)" 3 "optimized" } } */
-
-/* xor_eq_ne not optimized yet due to zero_one_valued_p canonicalization.  */
-/* { dg-final { scan-tree-dump-times "& 1" 2 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "a_\[0-9\]+\\(D\\) \\^ b_\[0-9\]+\\(D\\)" 4 "optimized" } } */

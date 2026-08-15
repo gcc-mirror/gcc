@@ -4037,6 +4037,27 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (types_match (type, TREE_TYPE (@0)))
      (bit_xor @0 { build_one_cst (type); } ))))))
 
+/* For zero_one_valued operands:
+   (a == 0) != b -> a == b.  */
+(simplify
+ (ne:c (convert (eq zero_one_valued_p@0 integer_zerop))
+       (convert zero_one_valued_p@1))
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && types_match (TREE_TYPE (@0), TREE_TYPE (@1)))
+  (eq @0 @1)))
+
+/* For zero_one_valued operands:
+   (a op1 0) cmp (b op2 0) -> a out_cmp b
+   where out_cmp is cmp if op1 == op2, and the inverse of cmp otherwise.  */
+(if (INTEGRAL_TYPE_P (type))
+  (for cmp     (ne ne eq eq ne ne eq eq)
+       op1     (eq ne eq ne eq ne eq ne)
+       op2     (eq ne eq ne ne eq ne eq)
+       out_cmp (ne ne eq eq eq eq ne ne)
+    (simplify
+      (cmp:c (op1 zero_one_valued_p@0 integer_zerop)
+             (op2 zero_one_valued_p@1 integer_zerop))
+      (out_cmp (convert:type @0) (convert:type @1)))))
 
 /* ((a ^ b) & c) cmp d || a != b --> (0 cmp d || a != b). */
 /* ((a ^ b) & c) cmp d && a == b --> (0 cmp d && a == b). */
