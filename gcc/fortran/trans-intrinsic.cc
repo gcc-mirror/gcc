@@ -2400,6 +2400,15 @@ gfc_conv_is_contiguous_expr (gfc_se *se, gfc_expr *arg)
 				  convert (boolean_type_node, se->expr));
     }
 
+  if (as && as->type == AS_ASSUMED_RANK)
+    {
+      tree rank = gfc_conv_descriptor_rank_get (desc);
+      tree scalar = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+				     rank, gfc_rank_cst[0]);
+      se->expr = fold_build2_loc (input_location, TRUTH_ORIF_EXPR,
+				  TREE_TYPE (se->expr), scalar, se->expr);
+    }
+
   gfc_free_ss_chain (ss);
 }
 
