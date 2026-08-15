@@ -1,3 +1,9 @@
+2026-08-14  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-cores.def (armagicpu): New.
+	* config/aarch64/aarch64-tune.md: Renegerate
+	* doc/invoke.texi: Document it.
+
 2026-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
