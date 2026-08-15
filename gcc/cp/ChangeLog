@@ -1,3 +1,18 @@
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126483
+	* typeck2.cc (store_init_value): Check maybe_constexpr_fn
+	instead of DECL_DECLARED_CONSTEXPR_P of the function scope.
+
+2026-08-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126754
+	* pt.cc (tsubst_expr) <case TARGET_EXPR>: Only unreachable
+	when checking.
+
 2026-08-13  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
