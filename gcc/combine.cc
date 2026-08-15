@@ -5954,6 +5954,10 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, bool in_dest, bool in_cond)
   /* A little bit of algebraic simplification here.  */
   switch (code)
     {
+    case PREFETCH:
+      /* A prefetch reaches memory through an address, and targets recognize
+	 that address with the same predicates they use for a MEM, so it
+	 needs the same treatment.  */
     case MEM:
       /* Ensure that our address has any ASHIFTs converted to MULT in case
 	 address-recognizing predicates are called later.  */
