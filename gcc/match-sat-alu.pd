@@ -490,25 +490,24 @@ along with GCC; see the file COPYING3.  If not see
 		     (negate (nop_convert? (convert (lt @0 integer_zerop)))))
 		    INTEGER_CST@3)
 	 (convert @0))
-  /* The comparison has to be the unsigned reinterpretation of X, and the
-     conversion has to narrow, otherwise the constants below do not have the
-     precision the comparison is carried out at.  */
-  (if (!TYPE_UNSIGNED (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@4))
-       && TYPE_PRECISION (TREE_TYPE (@4)) == TYPE_PRECISION (TREE_TYPE (@0))
-       && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@0)))
+  /* The comparison type has to be unsigned and at least as wide as X.  A
+     narrower type would examine only the low bits of X.  The result
+     conversion has to narrow X.  */
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& TYPE_UNSIGNED (TREE_TYPE (@4))
+	&& (TYPE_PRECISION (TREE_TYPE (@4))
+	    >= TYPE_PRECISION (TREE_TYPE (@0)))
+	&& TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@0)))
    (with
     {
-     unsigned itype_prec = TYPE_PRECISION (TREE_TYPE (@0));
      unsigned otype_prec = TYPE_PRECISION (type);
-     wide_int offset = wi::uhwi (HOST_WIDE_INT_1U << (otype_prec - 1),
-				 itype_prec); // Aka 128 for int8_t
-     wide_int limit_0 = wi::mask (otype_prec, false, itype_prec); // Aka 255
-     wide_int limit_1 = wi::uhwi ((HOST_WIDE_INT_1U << otype_prec) - 3,
-				  itype_prec); // Aka 253
-     wide_int limit_2 = wi::uhwi ((HOST_WIDE_INT_1U << otype_prec) - 2,
-				  itype_prec); // Aka 254
+     unsigned range_prec = TYPE_PRECISION (TREE_TYPE (@4));
+     wide_int offset = wi::set_bit_in_zero (otype_prec - 1, range_prec);
+     wide_int limit_0 = wi::mask (otype_prec, false, range_prec); // Aka 255
+     wide_int limit_1 = limit_0 - 2; // Aka 253
+     wide_int limit_2 = limit_0 - 1; // Aka 254
      wide_int otype_max = wi::mask (otype_prec - 1, false, otype_prec);
-     wide_int itype_max = wi::mask (otype_prec - 1, false, itype_prec);
+     wide_int itype_max = wi::mask (otype_prec - 1, false, range_prec);
      wide_int int_cst_1 = wi::to_wide (@1);
      wide_int int_cst_2 = wi::to_wide (@2);
      wide_int int_cst_3 = wi::to_wide (@3);
