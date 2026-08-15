@@ -1564,6 +1564,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (TYPE_UNSIGNED (type))
     (bit_and @0 (bit_not (lshift { build_all_ones_cst (type); } @1)))))
 
+/* PR112533: Canonicalize boolean comparisons of masked pow2 bits into
+   xor-mask tests.
+   ((x & c) == 0) == ((y & c) == 0) -> (((x ^ y) & c) == 0)
+   ((x & c) == 0) != ((y & c) == 0) -> (((x ^ y) & c) != 0)
+   and equivalent xor forms.  */
+(for masked_ocmp (eq ne bit_xor)
+ (for icmp0 (eq eq ne ne)
+      icmp1 (eq ne eq ne)
+  (simplify
+   (masked_ocmp
+    (icmp0:s (bit_and:s @0 integer_pow2p@1) integer_zerop@3)
+    (icmp1:s (bit_and:s @2 @1) @3))
+   (if (types_match (@0, @2))
+    (with {
+      bool innersame = icmp0 == icmp1;
+    }
+     (if (innersame == (masked_ocmp == EQ_EXPR))
+      (eq (bit_and (bit_xor @0 @2) @1) @3)
+      (ne (bit_and (bit_xor @0 @2) @1) @3)))))))
+
 (for bitop (bit_and bit_ior)
      cmp (eq ne)
  /* PR35691: Transform
