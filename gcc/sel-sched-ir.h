@@ -42,12 +42,6 @@ typedef struct idata_def *idata_t;
 struct vinsn_def;
 typedef struct vinsn_def *vinsn_t;
 
-/* RTX list.
-   This type is the backend for ilist.  */
-typedef _list_t _xlist_t;
-#define _XLIST_X(L) ((L)->u.x)
-#define _XLIST_NEXT(L) (_LIST_NEXT (L))
-
 /* Instruction.  */
 typedef rtx_insn *insn_t;
 
@@ -453,51 +447,6 @@ _list_iter_remove_nofree (_list_iterator *ip)
   for (_list_iter_start (&(I), (LP), true);                         \
        _list_iter_cond_##TYPE (*(I).lp, &(ELEM));                   \
        _list_iter_next (&(I)))
-
-
-/* _xlist_t functions.  */
-
-inline void
-_xlist_add (_xlist_t *lp, rtx x)
-{
-  _list_add (lp);
-  _XLIST_X (*lp) = x;
-}
-
-#define _xlist_remove(LP) (_list_remove (LP))
-#define _xlist_clear(LP) (_list_clear (LP))
-
-inline bool
-_xlist_is_in_p (_xlist_t l, rtx x)
-{
-  while (l)
-    {
-      if (_XLIST_X (l) == x)
-        return true;
-      l = _XLIST_NEXT (l);
-    }
-
-  return false;
-}
-
-/* Used through _FOR_EACH.  */
-inline bool
-_list_iter_cond_x (_xlist_t l, rtx *xp)
-{
-  if (l)
-    {
-      *xp = _XLIST_X (l);
-      return true;
-    }
-
-  return false;
-}
-
-#define _xlist_iter_remove(IP) (_list_iter_remove (IP))
-
-typedef _list_iterator _xlist_iterator;
-#define _FOR_EACH_X(X, I, L) _FOR_EACH (x, (X), (I), (L))
-#define _FOR_EACH_X_1(X, I, LP) _FOR_EACH_1 (x, (X), (I), (LP))
 
 
 /* ilist_t functions.  */
@@ -1577,8 +1526,6 @@ extern void av_set_substract_cond_branches (av_set_t *);
 extern void av_set_split_usefulness (av_set_t, int, int);
 extern void av_set_code_motion_filter (av_set_t *, av_set_t);
 
-extern void sel_save_haifa_priorities (void);
-
 extern void sel_init_global_and_expr (bb_vec_t);
 extern void sel_finish_global_and_expr (void);
 
@@ -1593,14 +1540,11 @@ extern int tick_check_p (expr_t, deps_t, fence_t);
 
 /* Functions to work with insns.  */
 extern bool lhs_of_insn_equals_to_dest_p (insn_t, rtx);
-extern bool insn_eligible_for_subst_p (insn_t);
 extern void get_dest_and_mode (rtx, rtx *, machine_mode *);
 
 extern bool bookkeeping_can_be_created_if_moved_through_p (insn_t);
 extern bool sel_remove_insn (insn_t, bool, bool);
 extern bool bb_header_p (insn_t);
-extern void sel_init_invalid_data_sets (insn_t);
-extern bool insn_at_boundary_p (insn_t);
 
 /* Basic block and CFG functions.  */
 
@@ -1644,7 +1588,6 @@ extern bool sel_is_loop_preheader_p (basic_block);
 extern void clear_outdated_rtx_info (basic_block);
 extern void free_data_sets (basic_block);
 extern void exchange_data_sets (basic_block, basic_block);
-extern void copy_data_sets (basic_block, basic_block);
 
 extern void sel_register_cfg_hooks (void);
 extern void sel_unregister_cfg_hooks (void);
