@@ -2348,9 +2348,10 @@ gfc_conv_is_contiguous_expr (gfc_se *se, gfc_expr *arg)
       gfc_conv_expr_descriptor (&argse, arg);
       gfc_add_block_to_block (&se->pre, &argse.pre);
       gfc_add_block_to_block (&se->post, &argse.post);
-      desc = gfc_evaluate_now (argse.expr, &se->pre);
+      tree ptr = gfc_evaluate_now (argse.expr, &se->pre);
       fncall0 = build_call_expr_loc (input_location,
-				     gfor_fndecl_is_contiguous0, 1, desc);
+				     gfor_fndecl_is_contiguous0, 1, ptr);
+      desc = build_fold_indirect_ref_loc (input_location, ptr);
       se->expr = fncall0;
       se->expr = convert (boolean_type_node, se->expr);
     }
