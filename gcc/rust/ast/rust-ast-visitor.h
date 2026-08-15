@@ -479,6 +479,8 @@ protected:
 
   virtual void visit (AST::Trait &trait) override;
 
+  virtual void visit (AST::Function &function) override;
+
   template <typename T> void visit (T &item)
   {
     DefaultASTVisitor::visit (item);

@@ -1536,5 +1536,13 @@ ContextualASTVisitor::visit (AST::Trait &trait)
   ctx.exit ();
 }
 
+void
+ContextualASTVisitor::visit (AST::Function &function)
+{
+  ctx.enter (Kind::FUNCTION);
+  DefaultASTVisitor::visit (function);
+  ctx.exit ();
+}
+
 } // namespace AST
 } // namespace Rust
