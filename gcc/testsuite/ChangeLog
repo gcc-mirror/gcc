@@ -1,3 +1,11 @@
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/124130
+	* g++.dg/torture/pr124130.C: New testcase.
+
 2026-08-05  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

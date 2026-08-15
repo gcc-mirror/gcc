@@ -1,3 +1,21 @@
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/124627
+	* tree-inline.cc (copy_debug_stmts): Only copy debug
+	stmts that are still in the IL.
+
+2026-08-14  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-02-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/124130
+	* tree-inline.cc (copy_edges_for_bb): Fixup noreturn calls
+	with abnormal edge source.
+
 2026-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
