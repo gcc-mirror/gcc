@@ -223,8 +223,8 @@
   { DONE_ADD_CCC })
 
 (define_insn "*<code_stdname><mode>2"
-  [(set (reg:ALL2S 24)
-        (ss_abs_neg:ALL2S (reg:ALL2S 24)))
+  [(set (reg:ALL2S                   REG_24)
+        (ss_abs_neg:ALL2S (reg:ALL2S REG_24)))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   "%~call __<code_stdname>_2"
@@ -242,8 +242,8 @@
   { DONE_ADD_CCC })
 
 (define_insn "*<code_stdname><mode>2"
-  [(set (reg:ALL4S 22)
-        (ss_abs_neg:ALL4S (reg:ALL4S 22)))
+  [(set (reg:ALL4S                   REG_22)
+        (ss_abs_neg:ALL4S (reg:ALL4S REG_22)))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   "%~call __<code_stdname>_4"
@@ -318,29 +318,29 @@
 
 
 (define_expand "muluqq3_nomul"
-  [(set (reg:UQQ 22)
+  [(set (reg:UQQ REG_22)
         (match_operand:UQQ 1 "register_operand" ""))
-   (set (reg:UQQ 24)
+   (set (reg:UQQ REG_24)
         (match_operand:UQQ 2 "register_operand" ""))
    ;; "*umulqihi3.call_split"
-   (parallel [(set (reg:HI 24)
-                   (mult:HI (zero_extend:HI (reg:QI 22))
-                            (zero_extend:HI (reg:QI 24))))
-              (clobber (reg:QI 21))
-              (clobber (reg:HI 22))])
+   (parallel [(set (reg:HI REG_24)
+                   (mult:HI (zero_extend:HI (reg:QI REG_22))
+                            (zero_extend:HI (reg:QI REG_24))))
+              (clobber (reg:QI REG_21))
+              (clobber (reg:HI REG_22))])
    (set (match_operand:UQQ 0 "register_operand" "")
-        (reg:UQQ 25))]
+        (reg:UQQ REG_25))]
   "!AVR_HAVE_MUL"
   {
-    avr_fix_inputs (operands, 1 << 2, regmask (UQQmode, 22));
+    avr_fix_inputs (operands, 1 << 2, regmask (UQQmode, REG_22));
   })
 
 (define_insn "*mulqq3.call"
-  [(set (reg:QQ 23)
-        (mult:QQ (reg:QQ 24)
-                 (reg:QQ 25)))
-   (clobber (reg:QI 22))
-   (clobber (reg:HI 24))
+  [(set (reg:QQ          REG_23)
+        (mult:QQ (reg:QQ REG_24)
+                 (reg:QQ REG_25)))
+   (clobber (reg:QI REG_22))
+   (clobber (reg:HI REG_24))
    (clobber (reg:CC REG_CC))]
   "!AVR_HAVE_MUL && reload_completed"
   "%~call __mulqq3"
@@ -361,10 +361,10 @@
   { DONE_ADD_CCC })
 
 (define_insn "*mul<mode>3.call"
-  [(set (reg:ALL2QA 24)
-        (mult:ALL2QA (reg:ALL2QA 18)
-                     (reg:ALL2QA 26)))
-   (clobber (reg:HI 22))
+  [(set (reg:ALL2QA              REG_24)
+        (mult:ALL2QA (reg:ALL2QA REG_18)
+                     (reg:ALL2QA REG_26)))
+   (clobber (reg:HI REG_22))
    (clobber (reg:CC REG_CC))]
   "AVR_HAVE_MUL && reload_completed"
   "%~call __mul<mode>3"
@@ -385,9 +385,9 @@
   { DONE_ADD_CCC })
 
 (define_insn "*mul<mode>3.call"
-  [(set (reg:ALL4A 24)
-        (mult:ALL4A (reg:ALL4A 16)
-                    (reg:ALL4A 20)))
+  [(set (reg:ALL4A             REG_24)
+        (mult:ALL4A (reg:ALL4A REG_16)
+                    (reg:ALL4A REG_20)))
    (clobber (reg:CC REG_CC))]
   "AVR_HAVE_MUL && reload_completed"
   "%~call __mul<mode>3"
@@ -413,10 +413,10 @@
   { DONE_ADD_CCC })
 
 (define_insn "*<code><mode>3.call"
-  [(set (reg:ALL1Q 24)
-        (usdiv:ALL1Q (reg:ALL1Q 25)
-                     (reg:ALL1Q 22)))
-   (clobber (reg:QI 25))
+  [(set (reg:ALL1Q              REG_24)
+        (usdiv:ALL1Q (reg:ALL1Q REG_25)
+                     (reg:ALL1Q REG_22)))
+   (clobber (reg:QI REG_25))
    (clobber (reg:CC REG_CC))]
   "reload_completed
    && SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
@@ -442,11 +442,11 @@
 ;; "*divhq3.call" "*udivuhq3.call" "*ssdivhq3.call" "*usdivuhq3.call"
 ;; "*divha3.call" "*udivuha3.call" "*ssdivha3.call" "*usdivuha3.call"
 (define_insn "*<code_stdname><mode>3.call"
-  [(set (reg:ALL2QA 24)
-        (alldiv:ALL2QA (reg:ALL2QA 26)
-                       (reg:ALL2QA 22)))
-   (clobber (reg:HI 26))
-   (clobber (reg:QI 21))
+  [(set (reg:ALL2QA                REG_24)
+        (alldiv:ALL2QA (reg:ALL2QA REG_26)
+                       (reg:ALL2QA REG_22)))
+   (clobber (reg:HI REG_26))
+   (clobber (reg:QI REG_21))
    (clobber (reg:CC REG_CC))]
   "reload_completed
    && SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
@@ -473,11 +473,11 @@
 
 ;; "*divsa3.call" "*udivusa3.call" "*ssdivsa3.call" "*usdivusa3.call"
 (define_insn "*<code_stdname><mode>3.call"
-  [(set (reg:ALL4A 22)
-        (alldiv:ALL4A (reg:ALL4A 24)
-                      (reg:ALL4A 18)))
-   (clobber (reg:HI 26))
-   (clobber (reg:HI 30))
+  [(set (reg:ALL4A               REG_22)
+        (alldiv:ALL4A (reg:ALL4A REG_24)
+                      (reg:ALL4A REG_18)))
+   (clobber (reg:HI REG_26))
+   (clobber (reg:HI REG_30))
    (clobber (reg:CC REG_CC))]
   "reload_completed
    && SIGNED_FIXED_POINT_MODE_P (<MODE>mode)
@@ -562,10 +562,10 @@
 ;; "*roundhq3.libgcc"  "*rounduhq3.libgcc"
 ;; "*roundha3.libgcc"  "*rounduha3.libgcc"
 (define_insn "*round<mode>3.libgcc"
-  [(set (reg:ALL12QA 24)
-        (unspec:ALL12QA [(reg:ALL12QA 22)
-                         (reg:QI 24)] UNSPEC_ROUND))
-   (clobber (reg:ALL12QA 22))
+  [(set (reg:ALL12QA                  REG_24)
+        (unspec:ALL12QA [(reg:ALL12QA REG_22)
+                         (reg:QI      REG_24)] UNSPEC_ROUND))
+   (clobber (reg:ALL12QA REG_22))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   "%~call __round<mode>3"
@@ -586,10 +586,10 @@
   { DONE_ADD_CCC })
 
 (define_insn "*round<mode>3.libgcc"
-  [(set (reg:ALL4QA 22)
-        (unspec:ALL4QA [(reg:ALL4QA 18)
-                        (reg:QI 24)] UNSPEC_ROUND))
-   (clobber (reg:ALL4QA 18))
+  [(set (reg:ALL4QA                 REG_22)
+        (unspec:ALL4QA [(reg:ALL4QA REG_18)
+                        (reg:QI     REG_24)] UNSPEC_ROUND))
+   (clobber (reg:ALL4QA REG_18))
    (clobber (reg:CC REG_CC))]
   "reload_completed"
   "%~call __round<mode>3"
@@ -648,7 +648,7 @@
 ;; "*usashlusq3"  "*ssashlsq3"
 ;; "*usashlusa3"  "*ssashlsa3"
 (define_insn "*<code_stdname><mode>3"
-  [(set (reg:ALL4QA                REG_22)
+  [(set (reg:ALL4QA                  REG_22)
         (sat_ashl:ALL4QA (reg:ALL4QA REG_22)
                          (reg:QI     REG_20)))
    (clobber (reg:QI REG_20))
