@@ -116,7 +116,8 @@ private:
   bool update_cfg (bool peel_loop_headers) override;
   void adjust_paths_after_duplication (unsigned curr_path_num);
   bool duplicate_thread_path (edge entry, edge exit, basic_block *region,
-			      unsigned n_region, unsigned current_path_no);
+			      unsigned n_region, unsigned current_path_no,
+			      const char **failure_reason);
   bool rewire_first_differing_edge (unsigned path_num, unsigned edge_num);
 };
 
