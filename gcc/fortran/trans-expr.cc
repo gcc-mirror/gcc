@@ -13684,6 +13684,11 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       && assoc_assign)
     tmp = gfc_trans_pointer_assignment (expr1, expr2);
 
+  /* The finalization above is all that is wanted: the structure copy is done
+     component by component in generate_component_assignments.  */
+  if (expr1->finalize_only)
+    tmp = build_empty_stmt (input_location);
+
   /* If nothing else works, do it the old fashioned way!  */
   if (tmp == NULL_TREE)
     {
