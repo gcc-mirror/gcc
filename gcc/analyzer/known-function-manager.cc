@@ -120,9 +120,13 @@ known_function_manager::get_match (tree fndecl, const call_details &cd) const
       return nullptr;
     }
 
-  if (DECL_CONTEXT (fndecl)
-      && TREE_CODE (DECL_CONTEXT (fndecl)) != TRANSLATION_UNIT_DECL)
-    return nullptr;
+  /* Only match functions declared at global scope, or within namespace
+     __cxxabiv1 (e.g. __dynamic_cast).  */
+  if (!is_cxxabi_function_p (fndecl))
+    if (DECL_CONTEXT (fndecl)
+	&& TREE_CODE (DECL_CONTEXT (fndecl)) != TRANSLATION_UNIT_DECL)
+      return nullptr;
+
   if (tree identifier = DECL_NAME (fndecl))
     if (const known_function *candidate = get_by_identifier (identifier))
       if (candidate->matches_call_types_p (cd))

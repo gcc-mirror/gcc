@@ -544,6 +544,7 @@ extern bool is_named_call_p (const_tree fndecl, const char *funcname);
 extern bool is_named_call_p (const_tree fndecl, const char *funcname,
 			     const gcall &call, unsigned int num_args);
 extern bool is_std_function_p (const_tree fndecl);
+extern bool is_cxxabi_function_p (const_tree fndecl);
 extern bool is_std_named_call_p (const_tree fndecl, const char *funcname);
 extern bool is_std_named_call_p (const_tree fndecl, const char *funcname,
 				 const gcall &call, unsigned int num_args);
