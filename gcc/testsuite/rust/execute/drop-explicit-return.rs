@@ -1,4 +1,4 @@
-// { dg-output "unit\r*\nmake_unit\r*\nunit_expr\r*\nmake_value\r*\nnonunit\r*\ninner\r*\nouter\r*\n" }
+// { dg-output "^unit\r*\nmake_unit\r*\nunit_expr\r*\nmake_value\r*\nnonunit\r*\ninner\r*\nouter\r*\nreturn local\r*\nreturn p2\r*\nreturn p1\r*\n$" }
 // { dg-additional-options "-w" }
 #![feature(no_core)]
 #![feature(lang_items)]
@@ -21,6 +21,15 @@ struct UnitExprDroppable;
 struct NonUnitDroppable;
 struct OuterDroppable;
 struct InnerDroppable;
+struct ReturnFirstParam {
+    value: i32,
+}
+struct ReturnSecondParam {
+    value: i32,
+}
+struct ReturnLocal {
+    value: i32,
+}
 
 impl Drop for UnitDroppable {
     fn drop(&mut self) {
@@ -52,6 +61,27 @@ impl Drop for OuterDroppable {
 impl Drop for InnerDroppable {
     fn drop(&mut self) {
         let msg = "inner\n\0" as *const str as *const i8;
+        unsafe { printf(msg); }
+    }
+}
+
+impl Drop for ReturnFirstParam {
+    fn drop(&mut self) {
+        let msg = "return p1\n\0" as *const str as *const i8;
+        unsafe { printf(msg); }
+    }
+}
+
+impl Drop for ReturnSecondParam {
+    fn drop(&mut self) {
+        let msg = "return p2\n\0" as *const str as *const i8;
+        unsafe { printf(msg); }
+    }
+}
+
+impl Drop for ReturnLocal {
+    fn drop(&mut self) {
+        let msg = "return local\n\0" as *const str as *const i8;
         unsafe { printf(msg); }
     }
 }
@@ -90,6 +120,11 @@ fn nested_return() {
     }
 }
 
+fn parameter_return(_p1: ReturnFirstParam, _p2: ReturnSecondParam) {
+    let _local = ReturnLocal { value: 3 };
+    return;
+}
+
 fn main() -> i32 {
     unit_return ();
     unit_return_expr ();
@@ -100,6 +135,11 @@ fn main() -> i32 {
     }
 
     nested_return();
+
+    parameter_return(
+        ReturnFirstParam { value: 1 },
+        ReturnSecondParam { value: 2 },
+    );
 
     0
 }
