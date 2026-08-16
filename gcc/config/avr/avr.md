@@ -1060,7 +1060,7 @@
 
     // Splitting multi-byte load / stores into 1-byte such insns
     // provided non-volatile, addr-space = generic, no reg-overlap
-    // and the resulting addressings are natively supported.
+    // and the resulting addressing modes are natively supported.
     if (avropt_split_ldst
         // Splitting too early may obfuscate some PRE_DEC / POST_INC
         // opportunities, thus only split after avr-fuse-add.

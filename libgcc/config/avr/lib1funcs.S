@@ -1689,7 +1689,7 @@ DEFUN __udivmod64
     ;; Thus, we can return immediately
     rjmp    5f
 
-2:  ;; Initialze Bit-Counter with Number of Bits still to be performed
+2:  ;; Initialize Bit-Counter with Number of Bits still to be performed
     mov     R_cnt, C7
 
     ;; Push of A7 is not needed because C7 is still 0

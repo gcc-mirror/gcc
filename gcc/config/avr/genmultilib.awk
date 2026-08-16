@@ -132,7 +132,7 @@ BEGIN {
 ##################################################################
 # Run over all AVR_MCU Lines.  If we encounter a required multilib
 # variant, add according combination of options to m_required,
-# but onyl once.  Add encountered cores to m_dirnames and
+# but only once.  Add encountered cores to m_dirnames and
 # according -mmcu= options to m_options.
 ##################################################################
 

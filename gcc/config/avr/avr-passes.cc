@@ -1456,7 +1456,7 @@ plies_t::emit_blds (const insninfo_t &ii, int &n_insns, int istart) const
 
 // Emit insns for a contiguous sequence of SET ply_t's starting at
 // .plies[ISTART].  Advances N_INSNS by the number of emitted insns.
-// MEMO ist the state of the GPRs before II is executed, where II
+// MEMO is the state of the GPRs before II is executed, where II
 // represents the insn under optimization.
 // The emitted insns are "movqi_insn" or "*reload_inqi"
 // when .plies[ISTART].in_set_some is not set, and one "set_some" insn
@@ -2172,7 +2172,7 @@ memento_t::apply_insn1 (rtx_insn *insn, bool unused)
   // Get an abstract representation of src.  Bytes may be unknown,
   // known to equal some 8-bit compile-time constant (CTC) value,
   // or are known to equal some 8-bit register.
-  // TODO: Currently, only the ai[].val8 knowledge ist used.
+  // TODO: Currently, only the ai[].val8 knowledge is used.
   //       What's the best way to make use of ai[].regno ?
 
   absint_t ai = absint_t::explore (src, mold, mode);
@@ -5773,7 +5773,7 @@ avr_byte_maybe_mem (rtx x, int n)
 
 /* Split multi-byte load / stores into 1-byte such insns
    provided non-volatile, addr-space = generic, no reg-overlap
-   and the resulting addressings are all natively supported.
+   and the resulting addressing modes are all natively supported.
    Returns true when the  XOP[0] = XOP[1]  insn has been split and
    false, otherwise.  */
 

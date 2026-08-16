@@ -6162,7 +6162,7 @@ avr_out_set_some (rtx_insn *insn, rtx *xop, int *plen)
   scratch = REG_P (xop[1]) ? xop[1] : NULL_RTX;
   oldval = NULL_RTX;
 
-  /* There are 3 ways to get a scratch, starting withe the most preferred ones:
+  /* There are 3 ways to get a scratch, starting with the most preferred ones:
      1) avr_find_unused_d_reg() need not to be restored, and it takes care
 	of fixed regs.  This is an unlikely case, e.g. with -fno-peephole2.
      2) "set_some" provides a scratch register with a known content.
@@ -9840,7 +9840,7 @@ avr_out_bitop (rtx xinsn, rtx *xop, int *plen)
   /* Number of bytes to operate on.  */
   int n_bytes = GET_MODE_SIZE (mode);
 
-  /* Value of T-flag (0 or 1) or -1 if unknow.  */
+  /* Value of T-flag (0 or 1) or -1 if unknown.  */
   int set_t = -1;
 
   /* Value (0..0xff) held in clobber register op[3] or -1 if unknown.  */
@@ -15900,7 +15900,7 @@ avr_expand_delay_cycles (rtx operands0)
   //
   // where loop_count denotes the start value of the N-byte loop counter.
   // The maximum value that can be loaded into loop_count is  2^{8 * N},
-  // where the maxmium value is realized by loop_count = 0.
+  // where the maximum value is realized by loop_count = 0.
   // Up to  N + 2 - 1  cycles can be added by trailing NOPs without
   // impeding the loop_count calculation, so that we arrive at a
   // condition of
