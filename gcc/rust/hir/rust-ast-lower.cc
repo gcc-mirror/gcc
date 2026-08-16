@@ -117,7 +117,7 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
 	  "this point in "
 	  "the pipeline, they should all have been expanded");
 
-      if (block_did_terminate)
+      if (s->get_stmt_kind () != AST::Stmt::Kind::Item && block_did_terminate)
 	rust_warning_at (s->get_locus (), 0, "unreachable statement");
 
       bool terminated = false;
