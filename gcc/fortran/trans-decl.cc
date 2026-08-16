@@ -2117,7 +2117,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && !(sym->attr.use_assoc && !intrinsic_array_parameter)
       && (sym->attr.save || sym->ns->proc_name->attr.is_main_program
 	  || !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
-	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE)
+	  || sym->attr.data || sym->ns->proc_name->attr.flavor == FL_MODULE
+	  || intrinsic_array_parameter)
       && (flag_coarray != GFC_FCOARRAY_LIB
 	  || !sym->attr.codimension || sym->attr.allocatable)
       && !(IS_PDT (sym) || IS_CLASS_PDT (sym)))
