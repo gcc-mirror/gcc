@@ -68,6 +68,22 @@ test_print_raw()
 }
 
 void
+test_print_setvbuf()
+{
+  __gnu_test::scoped_file f;
+  FILE* strm = std::fopen(f.path.string().c_str(), "w");
+  VERIFY( strm );
+  VERIFY( std::setvbuf(strm, nullptr, _IOFBF, 4096) == 0 );
+  std::string str{"Hello, World!"};
+  std::print(strm, "{}", str);
+  std::fclose(strm);
+
+  std::ifstream in(f.path);
+  std::string txt(std::istreambuf_iterator<char>(in), {});
+  VERIFY( txt == "Hello, World!" );
+}
+
+void
 test_vprint_nonunicode()
 {
   std::vprint_nonunicode_buffered("{0} in \xc0 {0} out\n",
@@ -142,6 +158,7 @@ int main()
   test_print_file();
   test_println_file();
   test_print_raw();
+  test_print_setvbuf();
   test_vprint_nonunicode();
 #ifdef __cpp_exceptions
   test_errors();
