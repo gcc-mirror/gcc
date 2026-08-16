@@ -6490,8 +6490,68 @@ region_model::can_merge_with_p (const region_model &other_model,
   return true;
 }
 
+/* Recover the vtable OBJ's vptr (for OBJ_TYPE) actually points to, plus the
+   byte offset into it, so callers can recover the most-derived type from the
+   vtable's DECL_CONTEXT and BINFO.
+
+   Only recognizes the shape we model for a vptr store, "vptr_field =
+   &vtable_decl + offset", i.e. a POINTER_PLUS_EXPR binop_svalue of a
+   region_svalue for the _ZTV* decl and a constant offset.  The offset is
+   nonzero when this vptr slot belongs to a non-primary base's own sub-vtable
+   group within the same decl; we return it via OUT for callers that need to
+   index into the vtable (e.g. gimple_get_virt_method_for_vtable).  */
+
+tree
+region_model::get_vtable_from_obj (tree obj, tree obj_type,
+				   region_model_manager *mgr,
+				   region_model_context *ctxt,
+				   unsigned HOST_WIDE_INT *out) const
+{
+  if (!obj_type)
+    return NULL_TREE;
+  tree vfield = TYPE_VFIELD (obj_type);
+  if (!vfield)
+    return NULL_TREE;
+
+  const svalue *obj_sval = get_rvalue (obj, ctxt);
+  const region *obj_reg = deref_rvalue (obj_sval, obj, ctxt);
+  const region *vptr_reg = mgr->get_field_region (obj_reg, vfield);
+
+  const svalue *vptr_sval = get_store_value (vptr_reg, ctxt);
+  while (const svalue *cast = vptr_sval->maybe_undo_cast ())
+    vptr_sval = cast;
+
+  const binop_svalue *b = vptr_sval->dyn_cast_binop_svalue ();
+  if (!b || b->get_op () != POINTER_PLUS_EXPR)
+    return NULL_TREE;
+
+  const svalue *offset_sval = b->get_arg1 ();
+  tree offset_const = offset_sval->maybe_get_constant ();
+  if (!offset_const || TREE_CODE (offset_const) != INTEGER_CST)
+    return NULL_TREE;
+  if (out)
+    *out = tree_to_uhwi (offset_const);
+
+  vptr_sval = b->get_arg0 ();
+  const region_svalue *vptr = vptr_sval->dyn_cast_region_svalue ();
+  /* Give up if we have a conjured vptr.  */
+  if (!vptr)
+    return NULL_TREE;
+
+  tree vtable = vptr->get_pointee ()->maybe_get_decl ();
+  return vtable;
+}
+
 /* Attempt to get the fndecl for a virtual call via OBJ_TYPE_REF, or
    NULL_TREE if it can't be resolved.
+
+   A virtual call's callee is a GIMPLE OBJ_TYPE_REF:
+     OBJ_TYPE_REF(EXPR; (TYPE)OBJECT->TOKEN)
+   EXPR is the function pointer actually loaded and called; OBJECT, TYPE and
+   TOKEN are devirtualization metadata, not needed to perform the call itself.
+   OBJECT is the "this" pointer, TYPE its static type, TOKEN the vtable slot
+   index.  We ignore EXPR and instead resolve TOKEN against OBJECT's modeled
+   dynamic type rather than its static TYPE.
 
    Reads the value bound to the object's vptr field (OBJ_TYPE_REF_OBJECT's
    vfield).
@@ -6509,38 +6569,9 @@ region_model::get_fndecl_for_virtual_call (const_tree obj_type_ref,
 {
   tree obj = OBJ_TYPE_REF_OBJECT (obj_type_ref);
   tree obj_type = obj_type_ref_class (obj_type_ref);
-  if (!obj_type)
-    return NULL_TREE;
-  tree vfield = TYPE_VFIELD (obj_type);
-  if (!vfield)
-    return NULL_TREE;
 
-  const svalue *obj_sval = get_rvalue (obj, ctxt);
-  const region *obj_reg = deref_rvalue (obj_sval, obj, ctxt);
-  const region *vptr_reg = m_mgr->get_field_region (obj_reg, vfield);
-
-  const svalue *vptr_sval = get_store_value (vptr_reg, ctxt);
-  while (const svalue *cast = vptr_sval->maybe_undo_cast ())
-    vptr_sval = cast;
-
-  const binop_svalue *b = vptr_sval->dyn_cast_binop_svalue ();
-  if (!b || b->get_op () != POINTER_PLUS_EXPR)
-    return NULL_TREE;
-
-  vptr_sval = b->get_arg0 ();
-  const svalue *offset_sval = b->get_arg1 ();
-
-  tree offset_const = offset_sval->maybe_get_constant ();
-  if (!offset_const || TREE_CODE (offset_const) != INTEGER_CST)
-    return NULL_TREE;
-  unsigned HOST_WIDE_INT offset = tree_to_uhwi (offset_const);
-
-  const region_svalue *vptr = vptr_sval->dyn_cast_region_svalue ();
-  /* Give up if we have a conjured vptr.  */
-  if (!vptr)
-    return NULL_TREE;
-
-  tree vtable = vptr->get_pointee ()->maybe_get_decl ();
+  unsigned HOST_WIDE_INT offset;
+  tree vtable = get_vtable_from_obj (obj, obj_type, m_mgr, ctxt, &offset);
   if (!vtable)
     return NULL_TREE;
 

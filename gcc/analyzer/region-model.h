@@ -512,6 +512,10 @@ class region_model
   tree get_fndecl_for_virtual_call (const_tree fn_ptr,
 				    region_model_context *ctxt);
 
+  tree get_vtable_from_obj (tree obj, tree obj_type, region_model_manager *mgr,
+			    region_model_context *ctxt,
+			    unsigned HOST_WIDE_INT *out = nullptr) const;
+
   void get_regions_for_current_frame (auto_vec<const decl_region *> *out) const;
   static void append_regions_cb (const region *base_reg,
 				 struct append_regions_cb_data *data);
