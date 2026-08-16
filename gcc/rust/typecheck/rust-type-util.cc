@@ -395,7 +395,7 @@ lookup_associated_impl_block (const TyTy::TypeBoundPredicate &bound,
       if (found_impl_trait)
 	{
 	  // compare the bounds from here i think is what we can do:
-	  if (bound.is_equal (associated->get_predicate ()))
+	  if (bound.get ()->is_equal (*associated->get_predicate ().get ()))
 	    {
 	      associated_impl_traits.push_back (associated);
 	    }

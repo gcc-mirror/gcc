@@ -17,15 +17,99 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-trait-resolve.h"
+#include "rich-location.h"
 #include "rust-hir-trait-reference.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-rib.h"
 #include "rust-substitution-mapper.h"
+#include "text-range-label.h"
 #include "rust-type-util.h"
 #include "rust-finalized-name-resolution-context.h"
 
 namespace Rust {
 namespace Resolver {
+
+static bool
+validate_impl_substitution_bounds (
+  const std::vector<TyTy::SubstitutionArg> &resolved_args, location_t locus,
+  bool emit_error)
+{
+  auto &mctx = Analysis::Mappings::get ();
+
+  std::vector<TyTy::SubstitutionArg> args;
+  for (const auto &arg : resolved_args)
+    args.push_back (arg);
+
+  TyTy::SubstitutionArgumentMappings mappings (std::move (args),
+					       {} /*binding_args*/,
+					       TyTy::RegionParamList (0),
+					       locus);
+
+  for (const auto &arg : resolved_args)
+    {
+      TyTy::BaseGeneric *param
+	= const_cast<TyTy::BaseGeneric *> (arg.get_param_ty ());
+      if (param == nullptr)
+	continue;
+
+      TyTy::BaseType *resolved_arg = arg.get_tyty ();
+      if (resolved_arg->get_kind () == TyTy::TypeKind::PARAM)
+	resolved_arg
+	  = static_cast<TyTy::ParamType *> (resolved_arg)->resolve ();
+
+      if (resolved_arg->get_kind () == TyTy::TypeKind::PARAM
+	  || resolved_arg->get_kind () == TyTy::TypeKind::INFER)
+	continue;
+
+      auto arg_type_locus
+	= mctx.lookup_location (arg.get_tyty ()->get_ty_ref ());
+      for (auto bound : param->get_specified_bounds ())
+	{
+	  auto bound_locus = bound.get_locus ();
+	  auto trait_locus = bound.get ()->get_locus ();
+	  bound.apply_argument_mappings (mappings, false /*is_super_trait*/);
+
+	  if (!resolved_arg->satisfies_bound (bound, false /*emit_error*/))
+	    {
+	      if (emit_error)
+		{
+		  rich_location r (line_table, locus);
+
+		  std::string arg_label_text = "the trait " + bound.get_name ()
+					       + " is not implemented for "
+					       + resolved_arg->get_name ();
+
+		  text_range_label arg_label (arg_label_text.c_str ());
+		  r.add_range (arg_type_locus, SHOW_RANGE_WITHOUT_CARET,
+			       &arg_label);
+
+		  bool ambiguous = false;
+		  auto *trait_impl
+		    = lookup_associated_impl_block (bound, resolved_arg,
+						    &ambiguous);
+		  text_range_label trait_label (
+		    "this trait has no implementations, consider adding one");
+		  if (trait_impl == nullptr)
+		    r.add_range (trait_locus, SHOW_RANGE_WITHOUT_CARET,
+				 &trait_label);
+
+		  text_range_label bound_label (
+		    "unsatisfied trait bound introduced here");
+		  r.add_range (bound_locus, SHOW_RANGE_WITHOUT_CARET,
+			       &bound_label);
+
+		  rust_error_at (r, ErrorCode::E0277,
+				 "the trait bound %<%s: %s%> is not satisfied",
+				 resolved_arg->get_name ().c_str (),
+				 bound.get_name ().c_str ());
+		}
+	      return false;
+	    }
+	}
+    }
+
+  return true;
+}
 
 TraitItemReference
 ResolveTraitItemToRef::Resolve (
@@ -598,6 +682,10 @@ AssociatedImplTrait::bind_impl_for_projection (TyTy::ProjectionType &proj,
       resolved_args.emplace_back (&p, r);
     }
 
+  if (!validate_impl_substitution_bounds (resolved_args, locus,
+					  false /*emit_error*/))
+    return TyTy::SubstitutionArgumentMappings::error ();
+
   return TyTy::SubstitutionArgumentMappings (std::move (resolved_args),
 					     {} /*binding_args*/,
 					     TyTy::RegionParamList (0)
@@ -608,7 +696,7 @@ AssociatedImplTrait::bind_impl_for_projection (TyTy::ProjectionType &proj,
 TyTy::SubstitutionArgumentMappings
 AssociatedImplTrait::bind_impl_for_bound (TyTy::BaseType *receiver,
 					  const TyTy::TypeBoundPredicate &bound,
-					  location_t locus)
+					  location_t locus, bool emit_error)
 {
   // Same shape as bind_impl_for_projection but the receiver/trait-args are
   // taken from the (binding, bound) pair instead of a ProjectionType.
@@ -710,6 +798,9 @@ AssociatedImplTrait::bind_impl_for_bound (TyTy::BaseType *receiver,
 	continue;
       resolved_args.emplace_back (&p, r);
     }
+
+  if (!validate_impl_substitution_bounds (resolved_args, locus, emit_error))
+    return TyTy::SubstitutionArgumentMappings::error ();
 
   return TyTy::SubstitutionArgumentMappings (std::move (resolved_args),
 					     {} /*binding_args*/,

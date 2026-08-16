@@ -253,7 +253,8 @@ public:
 
   TyTy::SubstitutionArgumentMappings
   bind_impl_for_bound (TyTy::BaseType *receiver,
-		       const TyTy::TypeBoundPredicate &bound, location_t locus);
+		       const TyTy::TypeBoundPredicate &bound, location_t locus,
+		       bool emit_error = false);
 
 private:
   TraitReference *trait;
