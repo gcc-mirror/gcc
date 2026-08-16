@@ -1,3 +1,9 @@
+2026-08-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/126892
+	* trans-intrinsic.cc (gfc_conv_is_contiguous_expr): Dereference the
+	pointer variable before using it as descriptor.
+
 2026-08-14  Harald Anlauf  <anlauf@gmx.de>
 
 	* frontend-passes.cc (inner_loop_may_be_skipped): Clear GMP variables.

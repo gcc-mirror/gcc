@@ -1,3 +1,17 @@
+2026-08-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_out_perm_compare_eqne): New static func.
+	(avr_out_compare): Use it.
+
+2026-08-15  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* config/t-openbsd (USER_H): Add $(srcdir)/ginclude/stdatomic.h.
+
+2026-08-15  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-fixed.md: Use constants like REG_24
+	instead of magic numbers like 24.
+
 2026-08-14  Odysseas Georgoudis  <odygrd@hotmail.com>
 
 	PR middle-end/122715

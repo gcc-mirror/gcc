@@ -1,3 +1,8 @@
+2026-08-15  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* config/os/bsd/openbsd/ctype_base.h: Use _CTYPE prefixed
+	macros if available.
+
 2026-08-13  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* src/c++23/std.cc.in: Remove tailing whitespace
