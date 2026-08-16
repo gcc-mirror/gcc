@@ -307,4 +307,10 @@ struct Error
 void rust_debug_loc (const location_t location, const char *fmt,
 		     ...) ATTRIBUTE_PRINTF_2;
 
+// like rust_debug, but has gcc diagnostic formatting
+#define rust_debug_fmt(...) rust_debug_fmt_at (UNDEF_LOCATION, __VA_ARGS__)
+
+void rust_debug_fmt_at (location_t location, const char *fmt, ...)
+  RUST_ATTRIBUTE_GCC_DIAG (2, 3);
+
 #endif // !defined(RUST_DIAGNOSTICS_H)
