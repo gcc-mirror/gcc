@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fmath-errno -fdump-tree-optimized" } */
+/* { dg-options "-Ofast -fmath-errno -fdump-tree-optimized -fno-thread-jumps" } */
 
 extern float sinhf (float);
 extern float coshf (float);

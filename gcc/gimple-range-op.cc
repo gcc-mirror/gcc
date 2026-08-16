@@ -794,6 +794,54 @@ private:
   combined_fn m_cfn;
 } op_cfn_sin (CFN_SIN), op_cfn_cos (CFN_COS);
 
+
+// FP functions which are nonnegative independent of the arguments.
+class cfn_fp_nonnegative : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  virtual bool fold_range (frange &r, tree type,
+			   const frange &, const frange &,
+			   relation_trio) const final override
+  {
+    r.set_nonnegative (type);
+    return true;
+  }
+} op_cfn_fp_nonegative;
+
+// FP functions which are nonnegative if arg0 is nonnegative.
+// Also handles pass through of if non-nan
+class cfn_fp_nonnegative_arg0 : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  cfn_fp_nonnegative_arg0(bool nan) : arg_nan (nan) {}
+  virtual bool fold_range (frange &r, tree type,
+			   const frange &op1, const frange &,
+			   relation_trio) const final override
+  {
+    if (op1.undefined_p ())
+      return false;
+    bool changed = false;
+    bool sign = false;
+    if (op1.signbit_p (sign) && !sign)
+      {
+	r.set_nonnegative (type);
+	changed = true;
+      }
+    if (arg_nan && !op1.maybe_isnan ())
+      {
+	if (r.undefined_p ())
+	  r.set_varying (type);
+	r.clear_nan ();
+	changed = true;
+      }
+    return changed;
+  }
+private:
+  bool arg_nan;
+} op_cfn_fp_nonegative_arg0(false), op_cfn_fp_nonegative_nan_arg0(true);
+
 // Implement range operator for CFN_BUILT_IN_TOUPPER and CFN_BUILT_IN_TOLOWER.
 class cfn_toupper_tolower : public range_operator
 {
@@ -1572,6 +1620,92 @@ gimple_range_op_handler::maybe_builtin_call ()
 
     CASE_CFN_PARITY:
       m_operator = &op_cfn_parity;
+      break;
+
+    CASE_CFN_ACOS:
+    CASE_CFN_ACOS_FN:
+    CASE_CFN_ACOSH:
+    CASE_CFN_ACOSH_FN:
+    CASE_CFN_ACOSPI:
+    CASE_CFN_ACOSPI_FN:
+    CASE_CFN_CABS:
+    CASE_CFN_CABS_FN:
+    CASE_CFN_COSH:
+    CASE_CFN_COSH_FN:
+    CASE_CFN_ERFC:
+    CASE_CFN_ERFC_FN:
+    CASE_CFN_EXP:
+    CASE_CFN_EXP_FN:
+    CASE_CFN_EXP10:
+    CASE_CFN_EXP2:
+    CASE_CFN_EXP2_FN:
+    CASE_CFN_FABS:
+    CASE_CFN_FABS_FN:
+    CASE_CFN_FDIM:
+    CASE_CFN_FDIM_FN:
+    CASE_CFN_HYPOT:
+    CASE_CFN_HYPOT_FN:
+    CASE_CFN_POW10:
+      m_operator = &op_cfn_fp_nonegative;
+      break;
+
+    // FIXME: some of these can do better than just nonnegative.
+    CASE_CFN_ASINH:
+    CASE_CFN_ASINH_FN:
+    CASE_CFN_ASINPI:
+    CASE_CFN_ASINPI_FN:
+    CASE_CFN_ATAN:
+    CASE_CFN_ATAN_FN:
+    CASE_CFN_ATANH:
+    CASE_CFN_ATANH_FN:
+    CASE_CFN_ATANPI:
+    CASE_CFN_ATANPI_FN:
+    CASE_CFN_CBRT:
+    CASE_CFN_CBRT_FN:
+    CASE_CFN_ERF:
+    CASE_CFN_ERF_FN:
+    CASE_CFN_EXPM1:
+    CASE_CFN_EXPM1_FN:
+    CASE_CFN_FMOD:
+    CASE_CFN_FMOD_FN:
+    CASE_CFN_FREXP:
+    CASE_CFN_FREXP_FN:
+    CASE_CFN_MODF:
+    CASE_CFN_MODF_FN:
+    CASE_CFN_SCALB:
+    CASE_CFN_SCALBLN:
+    CASE_CFN_SCALBLN_FN:
+    CASE_CFN_SCALBN:
+    CASE_CFN_SCALBN_FN:
+    CASE_CFN_SIGNIFICAND:
+    CASE_CFN_SINH:
+    CASE_CFN_SINH_FN:
+    CASE_CFN_TANH:
+    CASE_CFN_TANH_FN:
+    CASE_CFN_LDEXP:
+      m_operator = &op_cfn_fp_nonegative_arg0;
+      m_op1 = gimple_call_arg (call, 0);
+      break;
+
+
+    // FIXME: these can be improved for the rounding builtins.
+    // Currently just sets non-negative and update nan.
+    CASE_CFN_FLOOR:
+    CASE_CFN_FLOOR_FN:
+    CASE_CFN_CEIL:
+    CASE_CFN_CEIL_FN:
+    CASE_CFN_NEARBYINT:
+    CASE_CFN_NEARBYINT_FN:
+    CASE_CFN_RINT:
+    CASE_CFN_RINT_FN:
+    CASE_CFN_ROUND:
+    CASE_CFN_ROUND_FN:
+    CASE_CFN_ROUNDEVEN:
+    CASE_CFN_ROUNDEVEN_FN:
+    CASE_CFN_TRUNC:
+    CASE_CFN_TRUNC_FN:
+      m_operator = &op_cfn_fp_nonegative_nan_arg0;
+      m_op1 = gimple_call_arg (call, 0);
       break;
 
     default:
