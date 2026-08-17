@@ -396,6 +396,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
   // edge might help here.  Alternatively copying divergent control flow
   // on the way to the backedge could be worthwhile.
   bool large_non_fsm;
+  edge e;
   if (m_path.length () > 1
       && (!profit.possibly_profitable_path_p (m_path, &large_non_fsm)
 	  || (!large_non_fsm
@@ -405,7 +406,10 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
   // The backwards thread copier cannot copy blocks that do not belong
   // to the same loop, so when the new source of the path entry no
   // longer belongs to it we don't need to search further.
-  else if (m_path[0]->loop_father != bb->loop_father)
+  else if (m_path[0]->loop_father != bb->loop_father
+	   && (!(e = loop_exits_from_bb_p (m_path[0]->loop_father,
+					   m_path[0]))
+	       || e->dest->loop_father != bb->loop_father))
     ;
 
   // Continue looking for ways to extend the path but limit the
@@ -481,13 +485,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 	  FOR_EACH_EDGE (e, iter, bb->preds)
 	    {
 	      if (e->flags & EDGE_ABNORMAL
-		  // This is like path_crosses_loops in profitable_path_p but
-		  // more restrictive to avoid peeling off loop iterations (see
-		  // tree-ssa/pr14341.c for an example).
-		  // ???  Note this restriction only applied when visiting an
-		  // interesting PHI with the former resolve_phi.
-		  || (!interesting_phis.is_empty ()
-		      && m_path[0]->loop_father != e->src->loop_father))
+		  || e->src->index == ENTRY_BLOCK)
 		continue;
 	      for (gphi *phi : interesting_phis)
 		{

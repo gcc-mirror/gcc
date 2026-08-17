@@ -2407,8 +2407,15 @@ back_jt_path_registry::duplicate_thread_path (edge entry,
   for (i = 0; i < n_region; i++)
     {
       /* We do not handle subloops, i.e. all the blocks must belong to the
-	 same loop.  */
-      if (region[i]->loop_father != loop)
+	 same loop.  Unless we thread to the subloop exit and thus the
+	 path will belong to loop after the threading.  */
+      if ((region[i]->loop_father != loop
+	   && !(loop_exit_edge_p (region[i]->loop_father, exit)
+		&& exit->dest->loop_father == loop))
+	  /* Avoid creating alternate entries into the original loop.  */
+	  || (loop->header == entry->dest
+	      && region[i] != exit->src
+	      && EDGE_COUNT (region[i]->succs) > 1))
 	return false;
     }
 
@@ -2811,6 +2818,13 @@ jt_path_registry::cancel_invalid_paths (vec<jump_thread_edge *> &path)
       && !crossed_latch
       && flow_loop_nested_p (exit->dest->loop_father, exit->src->loop_father))
     return false;
+
+  if (seen_latch && entry->dest == loop->header)
+    {
+      cancel_thread (&path, "Threading through latch from loop header "
+		     "peels loop");
+      return true;
+    }
 
   if (cfun->curr_properties & PROP_loop_opts_done)
     return false;
