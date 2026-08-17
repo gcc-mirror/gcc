@@ -1,3 +1,7 @@
+2026-08-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S: Fix typo in comment.
+
 2026-08-12  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (LIB1ASMFUNCS): Add _usshift_1, _usshift_2,

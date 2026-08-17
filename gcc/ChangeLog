@@ -1,3 +1,29 @@
+2026-08-16  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc: Fix typos in comments.
+	* config/avr/avr.md: Same.
+	* config/avr/avr-passes.cc: Same.
+	* config/avr/genmultilib.awk: Same.
+
+2026-08-16  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* sel-sched-ir.cc (copy_data_sets): Removed dead code.
+	* sel-sched-ir.h (_XLIST_X): Likewise.
+	(_XLIST_NEXT): Likewise.
+	(_xlist_add): Likewise.
+	(_xlist_remove): Likewise.
+	(_xlist_clear): Likewise.
+	(_xlist_is_in_p): Likewise.
+	(_list_iter_cond_x): Likewise.
+	(_xlist_iter_remove): Likewise.
+	(_FOR_EACH_X): Likewise.
+	(_FOR_EACH_X_1): Likewise.
+	(sel_save_haifa_priorities): Likewise.
+	(insn_eligible_for_subst_p): Likewise.
+	(sel_init_invalid_data_sets): Likewise.
+	(insn_at_boundary_p): Likewise.
+	(copy_data_sets): Likewise.
+
 2026-08-15  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc (avr_out_perm_compare_eqne): New static func.
