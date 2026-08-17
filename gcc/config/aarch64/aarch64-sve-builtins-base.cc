@@ -346,6 +346,26 @@ class svbrk_unary_impl : public function_base
 public:
   constexpr svbrk_unary_impl (unspec unspec) : m_unspec (unspec) {}
 
+  gimple *
+  fold (gimple_folder &f) const override
+  {
+    tree pg = f.gp_value (f.call);
+    if ((f.pred == PRED_z || f.pred == PRED_m)
+	&& is_ptrue (pg, f.type_suffix (0).element_bytes))
+      {
+	tree pn = gimple_call_arg (f.call, f.gp_index + 1);
+	if (is_pfalse (pn))
+	  return f.fold_to_ptrue ();
+	if (is_ptrue (pn, f.type_suffix (0).element_bytes))
+	  {
+	    if (m_unspec == UNSPEC_BRKA)
+	      return f.fold_to_vl_pred (1);
+	    return f.fold_to_pfalse ();
+	  }
+      }
+    return nullptr;
+  }
+
   rtx
   expand (function_expander &e) const override
   {
@@ -2565,6 +2585,17 @@ public:
   expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
+    if (m_unspec == UNSPEC_PFIRST
+	&& rtx_equal_p (e.args[0], CONSTM1_RTX (mode))
+	&& rtx_equal_p (e.args[1], CONST0_RTX (mode)))
+      {
+	rtx pattern = gen_int_mode (AARCH64_SV_VL1, SImode);
+	rtvec vec = gen_rtvec (2, pattern, CONST0_RTX (mode));
+	rtx ptrue = gen_rtx_CONST (VNx16BImode,
+				   gen_rtx_UNSPEC (VNx16BImode, vec,
+						   UNSPEC_PTRUE));
+	return force_reg (VNx16BImode, ptrue);
+      }
     e.add_ptrue_hint (0, mode);
     return e.use_exact_insn (code_for_aarch64_sve (m_unspec, mode));
   }
