@@ -1321,21 +1321,31 @@ static inline bool is_quote( const char ch ) {
   return ch == '\'' || ch == '"';
 }
 
-static const char*
-skip_string(const char* p, const char* pend, char delimiter) {
-  p++; // Skip opening delimiter
-  while (p < pend) {
-    if (p[0] == delimiter) {
-      if (p[1] == delimiter) {
-        p += 2; // doubled delimiter is escaped 
+static int yyinput();
+static void yyunput(int ch, char yytext_ptr[]);
+
+static std::string
+skip_string(char delimiter) {
+  int ch;
+  std::string found;
+
+  while ((ch = yyinput()) != EOF ) {
+    dbgmsg("%s:%d: input '%c'", __func__, __LINE__, ch);
+    found += ch;
+    if (ch == delimiter) {
+      if( (ch = yyinput()) == EOF ) break;
+      dbgmsg("%s:%d: input '%c'", __func__, __LINE__, ch);
+      if (ch == delimiter) {
+        found += ch;
+        continue;
       } else {
-        return ++p; // Found valid closing delimiter
+        unput(ch);
+        dbgmsg("%s:%d: unput '%c'", __func__, __LINE__, ch);
+        return found; // Found valid closing delimiter
       }
-    } else {
-      p++;
     }
   }
-  return pend;
+  return found;
 }
 
 /*
@@ -1349,16 +1359,44 @@ skip_string(const char* p, const char* pend, char delimiter) {
  * parentheses in the left part, e.g. ((LENGTH OF x/2) - (y/2)) : 1.
  */
 static bool
-is_refmod( const char input[], const char enput[] ) {
-  if( input == enput ) return false;
-  gcc_assert( *input == '(' );
-  int depth = 1;
+is_refmod() {
+  class yystr_t {
+    std::string text;
+  public:
+    ~yystr_t() {
+      while( ! text.empty() ) {
+        char ch = text.back();
+        text.pop_back();
+        unput(ch);
+        dbgmsg("%s:%d: unput '%c'", __func__, __LINE__, ch);
+      }
+    }
+    int input() {
+      int ch = yyinput();
+      dbgmsg("%s:%d: input '%c'", __func__, __LINE__, ch);
+      if( ch != EOF) text += ch;
+      return ch;
+    }
+    yystr_t& operator+=( const std::string& that ) {
+      text += that;
+      return *this;
+    }
+    const char * c_str() const { return text.c_str(); }
+    size_t size() const { return text.size(); }
+  } yystr;
+
+  gcc_assert( *yytext == '(' );
+
+  int ch, depth = 1;
   bool colon_at_depth1 = false;
 
-  for( const char *p = input + 1; p < enput; p++ ) {
-    char ch = *p;
+  while( (ch = yystr.input()) != EOF ) {
     if( is_quote(ch) ) {
-      p = skip_string(p, enput, ch) - 1;
+      std::string s = skip_string(ch);
+      if( s.empty() ) {
+        break;
+      }
+      yystr += s;
       continue;
     }
     if( ch == '(' ) {
@@ -1378,6 +1416,6 @@ is_refmod( const char input[], const char enput[] ) {
     }
   }
   dbgmsg("%s:%d: '%.*s' is %sa refmod", __func__, __LINE__,
-         int(enput - input), input, colon_at_depth1? "" : "not ");
+         int(yystr.size()), yystr.c_str(), colon_at_depth1? "" : "not ");
   return colon_at_depth1;
 }

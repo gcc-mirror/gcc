@@ -104,7 +104,6 @@ NONPIC	  [,]{DOTSEP}
 EOPIC	  [.,;]?[[:space:]]
 
 SKIP	  [[:blank:]]*SKIP[123][[:blank:]]*[.]?{BLANK_EOL}
-TITLE	  [[:blank:]]*TITLE($|[.]|[^\n]*)
 
 COUNT     [(][[:digit:]]+[)]
 N9        9+|(9{COUNT})
@@ -168,6 +167,10 @@ NAMEQUALS {NAMEQUAL}({SPC}{NAMEQUAL})*
 
 STRING   [^\r\n""]+
 STRING1  [^\r\n'']+
+
+QSTRING1 ['']{STRING1}(['']{2}{STRING1})*['']
+QSTRING2 [""]{STRING}([""]{2}{STRING})*[""]
+                        
 			/* comma & semicolon must be followed by a space */
 COMMA    [,;][[:blank:]]*
 
@@ -970,7 +973,6 @@ INSERTT		{ return INSERTT; }
 LABEL		{ return LABEL; }
 PROCESS		{ return PROCESS; }
 SERVICE[[:blank:]]+RELOAD		{ return SERVICE_RELOAD; }
-TITLE		{ return TITLE; }
 USE({SPC}FOR)?		{ return USE; }
 
 }
@@ -1915,12 +1917,10 @@ USE({SPC}FOR)?		{ return USE; }
 
   {ISNT}{SPC}/OMITTED { return NOT; }
 
-  [(:)] 			{ return *yytext; }
+  [:)]	 			{ return *yytext; }
   [(]/[^(:)""'']*[:][^)]*[)] 	{ return LPAREN; /* parentheses around a colon */ }
-  [(][^:""'']*[:][^)]*[)] 	{ // does not match foo(bar)\n:  :-(  
-                                  int tok = is_refmod(yytext, yytext + yyleng)?
-                                      int(LPAREN) : '(';
-                                  myless(1);
+  [(] 				{
+                                  int tok = is_refmod()? int(LPAREN) : '(';
                                   return tok; 
                                 }
 
@@ -2544,7 +2544,6 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 <*>{
   {COMMA}
   ^{SKIP}
-  ^{TITLE}
 }
 
 <*>{

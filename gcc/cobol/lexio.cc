@@ -88,18 +88,44 @@ source_format_t::indicated( char *bol, const char *eol, char ch ) {
   return ch == '\0' || ch == *bol? bol : NULL;
 }
 
+/* Advance past a quoted literal */
+static char *
+skip_quoted_literal( char *p, char *pend ) {
+  const char delimiter = *p++;
+  while( p < pend ) {
+    p = std::find(p, pend, delimiter);
+    if( p == pend )
+      return pend;
+    if( p + 1 < pend && p[1] == delimiter ) {
+      p += 2; // nested quote
+      continue;
+    }
+    return ++p;
+  }
+  return pend;
+}
+
 static char *
 remove_inline_comment( char *bol, char *eol ) {
   char *nl = std::find(bol, eol, '\n');
 
   if( bol < nl ) {
-    static char ends = '\0';
-    std::swap(*nl, ends);
-    char *comment = strstr(bol, "*>");
-    if( comment ) {
-      std::fill(comment, nl, SPACE);
+    /* skip *> in alphanumeric literals */
+    static const char markers[] = { '\'', '"', '*' };
+    for( char *p = bol; p < nl; ) {
+      p = std::find_first_of(p, nl, markers, markers + sizeof(markers));
+      if( p == nl )
+        break;
+      if( isquote(*p) ) {
+        p = skip_quoted_literal(p, nl);
+        continue;
+      }
+      if( p + 1 < nl && p[1] == '>' ) {
+        std::fill(p, nl, SPACE);
+        break;
+      }
+      p++;
     }
-    std::swap(*nl, ends);
   }
   return eol;
 }

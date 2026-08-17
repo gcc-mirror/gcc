@@ -9,6 +9,7 @@
  *   notice, this list of conditions and the following disclaimer.
  * * Redistributions in binary form must reproduce the above
  *   copyright notice, this list of conditions and the following disclaimer
+ *   copyright notice, this list of conditions and the following disclaimer
  *   in the documentation and/or other materials provided with the
  *   distribution.
  * * Neither the name of the Symas Corporation nor the names of its
@@ -446,7 +447,7 @@ class locale_tgt_t {
 			OVERRIDE READY RESET
 			RSUB")"
 			SERVICE_RELOAD "SERVICE RELOAD" STAR_CBL "*CBL"
-			SUBSCRIPT SUPPRESS TITLE TRACE USE
+			SUBSCRIPT SUPPRESS TRACE USE
 
 			COBOL_WORDS ">>COBOL-WORDS" EQUATE UNDEFINE
 			CDF_DEFINE ">>DEFINE" CDF_DISPLAY ">>DISPLAY"
@@ -1134,7 +1135,7 @@ class locale_tgt_t {
                         LIST LSUB MAP NOLIST NOMAP NOSOURCE
                         PARAMETER_kw OVERRIDE READY RESET RSUB
                         SERVICE_RELOAD STAR_CBL
-                        SUBSCRIPT SUPPRESS TITLE TRACE USE
+                        SUBSCRIPT SUPPRESS TRACE USE
 
 			COBOL_WORDS EQUATE UNDEFINE
 
@@ -2187,6 +2188,18 @@ selected_name:  external NAME {
                   field.attr |= literal_attr($name.prefix);
                   field.codeset.set();
                   $$ = field_add(@name, &field);
+                }
+        |       external OTHER
+                {
+                  if( !dialect_ibm() ) {
+                    error_msg(@2, "ASSIGN OTHER requires %<-dialect ibm%>");
+                    YYERROR;
+                  }
+
+                  enum { parent = 0 };
+                  auto e = symbol_field_forward_add(PROGRAM, parent,
+                                                    "OTHER", @$.first_line);
+                  $$ = cbl_field_of(e);
                 }
                 ;
 external:       %empty /* GnuCOBOL uses EXTERNAL to control name resolution.  */
