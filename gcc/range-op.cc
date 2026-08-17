@@ -2652,6 +2652,12 @@ operator_div::op1_op2_relation_effect (irange &lhs_range,
 	return false;
       rel_range.set_zero (type);
       break;
+    case VREL_EQ:
+      {
+	wide_int one = wi::one (TYPE_PRECISION (type));
+	rel_range.set (type, one, one);
+	break;
+      }
     default:
       return false;
     }
@@ -4380,6 +4386,7 @@ class operator_trunc_mod : public range_operator
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::update_bitmask;
+  using range_operator::op1_op2_relation_effect;
 public:
   virtual void wi_fold (irange &r, tree type,
 		        const wide_int &lh_lb,
@@ -4396,6 +4403,11 @@ public:
 			  relation_trio) const;
   void update_bitmask (irange &r, const irange &lh, const irange &rh) const
     { update_known_bitmask (r, TRUNC_MOD_EXPR, lh, rh); }
+  bool op1_op2_relation_effect (irange &lhs_range,
+				tree type,
+				const irange &op1_range,
+				const irange &op2_range,
+				relation_kind rel) const final override;
 } op_trunc_mod;
 
 void
@@ -4534,6 +4546,31 @@ operator_trunc_mod::op2_range (irange &r, tree type,
       return true;
     }
   return false;
+}
+
+bool
+operator_trunc_mod::op1_op2_relation_effect (irange &lhs_range,
+					     tree type,
+					     const irange &,
+					     const irange &,
+					     relation_kind rel) const
+{
+  if (rel == VREL_VARYING)
+    return false;
+
+  int_range<2> rel_range;
+
+  switch (rel)
+    {
+    case VREL_EQ:
+      rel_range.set_zero (type);
+      break;
+    default:
+      return false;
+    }
+
+  lhs_range.intersect (rel_range);
+  return true;
 }
 
 
