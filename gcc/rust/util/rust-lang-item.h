@@ -187,6 +187,16 @@ public:
     VA_LIST,
     PIN,
     UNPIN,
+
+    PANIC,
+    PANIC_INFO,
+    PANIC_LOCATION,
+    PANIC_BOUNDS_CHECK,
+    PANIC_STR,
+    ALIGN_OFFSET,
+    NEW_UNCHECKED,
+    FROM_GENERATOR,
+    GET_CONTEXT,
   };
 
   static const BiMap<std::string, Kind> lang_items;

@@ -149,6 +149,16 @@ const BiMap<std::string, LangItem::Kind> Rust::LangItem::lang_items = {{
   {"va_list", Kind::VA_LIST},
   {"pin", Kind::PIN},
   {"unpin", Kind::UNPIN},
+
+  {"panic", Kind::PANIC},
+  {"panic_info", Kind::PANIC_INFO},
+  {"panic_location", Kind::PANIC_LOCATION},
+  {"panic_bounds_check", Kind::PANIC_BOUNDS_CHECK},
+  {"panic_str", Kind::PANIC_STR},
+  {"align_offset", Kind::ALIGN_OFFSET},
+  {"new_unchecked", Kind::NEW_UNCHECKED},
+  {"from_generator", Kind::FROM_GENERATOR},
+  {"get_context", Kind::GET_CONTEXT},
 }};
 
 tl::optional<LangItem::Kind>
