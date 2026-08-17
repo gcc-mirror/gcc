@@ -991,7 +991,7 @@ Objective-C and Objective-C++ Dialects}.
 -mdouble=@var{bits}  -mlong-double=@var{bits}  -mno-call-main
 -mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mpmem-wrap-around
--mrmw  -mstrict-X  -mtiny-stack
+-mrmw  -mstrict-addr-space-subsets  -mstrict-X  -mtiny-stack
 -mrodata-in-ram  -msplit-bit-shift  -msplit-ldst  -mshort-calls
 -mskip-bug  -muse-nonzero-bits  -nodevicelib  -nodevicespecs
 -Wasm-len-notes  -Waddr-space-convert  -Wmisspelled-isr}
@@ -24594,6 +24594,23 @@ aspect of the optimization.
 @opindex mfuse-move2
 @item -mfuse-move2
 Run a post combine optimization pass that tries to fuse move instructions.
+
+@opindex mstrict-addr-space-subsets
+@item -mstrict-addr-space-subsets
+Impose strict named address space subset relations.  Without this option,
+every address space is considered to be a subset of all the other spaces,
+which allows to write code like
+@example
+char read_char (const char *addr, bool in_flash)
+@{
+   return in_flash
+     ? *(const __flash char*) addr  // Read from program memory.
+     : *addr;                       // Read from RAM.
+@}
+@end example
+When the option is on, such code is rejected since address space
+@code{__flash} is not a subset of the generic space, and hence the
+cast in the above code is prohibited.
 
 @opindex mstrict-X
 @item -mstrict-X

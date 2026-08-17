@@ -15404,18 +15404,7 @@ avr_addr_space_convert (rtx src, tree type_old, tree type_new)
 }
 
 
-/* Implement `TARGET_ADDR_SPACE_SUBSET_P'.  */
-
-static bool
-avr_addr_space_subset_p (addr_space_t /*subset*/, addr_space_t /*superset*/)
-{
-  /* Allow any kind of pointer mess.  */
-
-  return true;
-}
-
-
-/* Helps the next function.  */
+/* Helps the next two functions.  */
 
 static bool
 avr_addr_space_contains (addr_space_t super, addr_space_t sub)
@@ -15424,6 +15413,17 @@ avr_addr_space_contains (addr_space_t super, addr_space_t sub)
 	  || super == ADDR_SPACE_MEMX
 	  || (super == ADDR_SPACE_FLASHX
 	      && sub != ADDR_SPACE_MEMX && ! ADDR_SPACE_GENERIC_P (sub)));
+}
+
+
+/* Implement `TARGET_ADDR_SPACE_SUBSET_P'.  */
+
+static bool
+avr_addr_space_subset_p (addr_space_t subset, addr_space_t superset)
+{
+  // Allow any kind of pointer casts with -mno-strict-addr-space-subsets.
+  return (!avropt_strict_addr_space_subsets
+	  || avr_addr_space_contains (superset, subset));
 }
 
 
