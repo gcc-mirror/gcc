@@ -7206,7 +7206,7 @@ riscv_pass_aggregate_in_vr (struct riscv_arg_info *info,
   int n = riscv_flatten_aggregate_argument (type, fields, true, true,
 					    /* vls_p */ true, abi_vlen);
 
-  if (n == -1)
+  if (n <= 0)
     return NULL_RTX;
 
   /* Check all field has same size.  */
