@@ -2501,8 +2501,6 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
   if (flag_devirtualize)
     vec_safe_grow_cleared (args->polymorphic_call_contexts, arg_num, true);
 
-  if (gimple_call_internal_p (call))
-    return;
   if (ipa_func_spec_opts_forbid_analysis_p (cs->caller))
     return;
 
