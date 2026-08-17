@@ -334,8 +334,14 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 	    }
 	}
     }
+  else if (repr.repr_kind == TyTy::ADTType::ReprKind::SIMD)
+    {
+      TyTy::VariantDef &variant = *type.get_variants ().at (0);
+      auto element = variant.get_fields ().at (0)->get_field_type ();
+      auto inner_type = compile (ctx, element);
 
-  // compilation of non-transparent ADTs below
+      type_record = build_vector_type (inner_type, variant.num_fields ());
+    }
   else if (!type.is_enum ())
     {
       rust_assert (type.number_of_variants () == 1);

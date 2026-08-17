@@ -888,6 +888,18 @@ struct_field_expression (tree struct_tree, size_t index, location_t location)
 {
   if (error_operand_p (struct_tree))
     return error_mark_node;
+
+  if (VECTOR_TYPE_P (TREE_TYPE (struct_tree)))
+    {
+      tree vec_type = TREE_TYPE (struct_tree);
+      tree element_type = TREE_TYPE (vec_type);
+      tree part_width = TYPE_SIZE (element_type);
+      tree bit_offset = bitsize_int (index * tree_to_uhwi (part_width));
+
+      return fold_build3_loc (location, BIT_FIELD_REF, element_type,
+			      struct_tree, part_width, bit_offset);
+    }
+
   gcc_assert (TREE_CODE (TREE_TYPE (struct_tree)) == RECORD_TYPE
 	      || TREE_CODE (TREE_TYPE (struct_tree)) == UNION_TYPE);
   tree field = TYPE_FIELDS (TREE_TYPE (struct_tree));
@@ -1276,6 +1288,32 @@ constructor_expression (tree type_tree, bool is_variant,
 
   vec<constructor_elt, va_gc> *init;
   vec_alloc (init, union_index != -1 ? 1 : vals.size ());
+
+  if (VECTOR_TYPE_P (type_tree))
+    {
+      tree element_type = TREE_TYPE (type_tree);
+      bool is_constant = true;
+      for (size_t i = 0; i < vals.size (); ++i)
+	{
+	  tree val = vals[i];
+	  if (error_operand_p (val))
+	    return error_mark_node;
+
+	  constructor_elt empty = {NULL, NULL};
+	  constructor_elt *elt = init->quick_push (empty);
+	  elt->index = size_int (i);
+	  elt->value = convert_tree (element_type, val, location);
+
+	  if (!TREE_CONSTANT (elt->value))
+	    is_constant = false;
+	}
+
+      tree ret = build_constructor (type_tree, init);
+      if (is_constant)
+	TREE_CONSTANT (ret) = 1;
+
+      return ret;
+    }
 
   tree sink = NULL_TREE;
   bool is_constant = true;
@@ -1951,7 +1989,7 @@ convert_tree (tree type_tree, tree expr_tree, location_t location)
     return fold_convert_loc (location, type_tree, expr_tree);
   else if (TREE_CODE (type_tree) == RECORD_TYPE
 	   || TREE_CODE (type_tree) == UNION_TYPE
-	   || TREE_CODE (type_tree) == ARRAY_TYPE)
+	   || TREE_CODE (type_tree) == ARRAY_TYPE || VECTOR_TYPE_P (type_tree))
     {
       gcc_assert (int_size_in_bytes (type_tree)
 		  == int_size_in_bytes (TREE_TYPE (expr_tree)));
