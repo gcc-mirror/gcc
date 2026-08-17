@@ -1918,6 +1918,9 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
 			  bool *non_constant_p, bool *overflow_p,
 			  tree *jump_target)
 {
+  if (t == NULL_TREE)
+    return NULL_TREE;
+
   if (jump_target && *jump_target)
     {
       /* If we are jumping, ignore all statements/expressions except those
@@ -1950,9 +1953,6 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     }
 
   location_t loc = EXPR_LOCATION (t);
-
-  if (t == NULL_TREE)
-    return NULL_TREE;
 
   if (CONSTANT_CLASS_P (t))
     {
@@ -2388,6 +2388,29 @@ eval_constant_expression (const constexpr_ctx *ctx, tree t, bool lval,
     case FIXED_CONVERT_EXPR:
       r = eval_unary_expression (ctx, t, lval, non_constant_p, overflow_p,
 				 jump_target);
+      break;
+
+    case GOTO_EXPR:
+      {
+	tree target = TREE_OPERAND (t, 0);
+	if (breaks (&target) || continues (&target) || returns (&target)
+	    || (TREE_CODE (target) == LABEL_DECL && DECL_ARTIFICIAL (target)))
+	  {
+	    if (jump_target)
+	      *jump_target = target;
+	    else
+	      {
+		gcc_assert (ctx->quiet);
+		*non_constant_p = true;
+	      }
+	  }
+	else
+	  {
+	    if (!ctx->quiet)
+	      error_at (loc, "%<goto%> is not a constant expression");
+	    *non_constant_p = true;
+	  }
+      }
       break;
 
     case LOOP_EXPR:
@@ -6654,6 +6677,21 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case TYPE_DECL:
       /* We can see these in statement-expressions.  */
       return true;
+
+    case GOTO_EXPR:
+      {
+	tree *target = &TREE_OPERAND (t, 0);
+	if (breaks (target) || continues (target) || returns (target))
+	  {
+	    *jump_target = *target;
+	    return true;
+	  }
+	if (TREE_CODE (*target) == LABEL_DECL && DECL_ARTIFICIAL (*target))
+	  return true;
+	if (flags & tf_error)
+	  error_at (loc, "%<goto%> is not a constant expression");
+	return false;
+      }
 
     case LABEL_EXPR:
       t = LABEL_EXPR_LABEL (t);
