@@ -60,6 +60,9 @@ UrlSuffix(gcc/AVR-Options.html#index-msplit-bit-shift)
 msplit-ldst
 UrlSuffix(gcc/AVR-Options.html#index-msplit-ldst)
 
+mstrict-addr-space-subsets
+UrlSuffix(gcc/AVR-Options.html#index-mstrict-addr-space-subsets)
+
 mstrict-X
 UrlSuffix(gcc/AVR-Options.html#index-mstrict-X)
 
