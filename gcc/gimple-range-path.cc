@@ -156,7 +156,12 @@ path_range_query::internal_range_of_expr (vrange &r, tree name, gimple *stmt)
       return true;
     }
 
+  // We can be called from match.pd or elsewhere, with a context statement
+  // that can be anywhere on the path.  Since we can only compute ranges
+  // mid flight at the current path position, check that's the case,
+  // otherwise fall through to the global range.
   if (stmt
+      && gimple_bb (stmt) == curr_bb ()
       && range_defined_in_block (r, name, gimple_bb (stmt)))
     {
       if (TREE_CODE (name) == SSA_NAME)
@@ -290,6 +295,11 @@ path_range_query::ssa_range_in_phi (vrange &r, gphi *phi)
 bool
 path_range_query::range_defined_in_block (vrange &r, tree name, basic_block bb)
 {
+  // Ranges can only be calculated at the current path position, both
+  // while pre-computing the cache and when answering questions at the
+  // path exit afterwards.
+  gcc_assert (bb == curr_bb ());
+
   gimple *def_stmt = SSA_NAME_DEF_STMT (name);
   basic_block def_bb = gimple_bb (def_stmt);
 
