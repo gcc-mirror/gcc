@@ -24,5 +24,5 @@ foo ()
   s.[: (members_of (^^S, ctx) | std::views::filter (is_destructor) | std::ranges::to <std::vector> ())[0] :] ();		// { dg-error "cannot use constructor or destructor .constexpr S::~S\\(\\). in a splice expression" }
   [: annotations_of (^^foo)[0] :]; // { dg-error "cannot use an annotation .1. in a splice expression" }
   [: data_member_spec (^^S, { .name = "name" }) :]; // { dg-error "cannot use a data member specification in a splice expression" }
-  [: bases_of (^^T, ctx)[0] :];													// { dg-error "" "" { xfail *-*-* } }
+  [: bases_of (^^T, ctx)[0] :];	// { dg-error "cannot use a base class in a splice expression" }
 }

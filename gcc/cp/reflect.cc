@@ -9408,6 +9408,16 @@ check_splice_expr (location_t loc, location_t start_loc, tree t,
       return false;
     }
 
+  /* Like with NSDMs, a bare [:X:] designating a direct base class
+     relationship is ill-formed.  */
+  if (!member_access_p && TREE_CODE (t) == TREE_BINFO)
+    {
+      if (complain_p)
+	error_at (loc, "cannot use a base class in a splice expression "
+		  "without an object");
+      return false;
+    }
+
   if (template_p)
     {
       /* [expr.prim.splice] For a splice-expression of the form template

@@ -134,6 +134,9 @@ consteval auto f26 (typename [:^^T:] x) { return x; }
 template<info R>
 constexpr auto f27 (typename [:R:]::Alias x) { return x; }
 
+template<info M>
+constexpr auto f28 () -> decltype(S{}.[:M:].i) { return 42; }
+
 void
 g (int p)
 {
@@ -175,8 +178,6 @@ g (int p)
 // { dg-final { scan-assembler "_Z2f5ILDmvlLi42EEEDtDST_EEv" } }
   f5<std::meta::reflect_object (arr[1])>();
 // { dg-final { scan-assembler "_Z2f5ILDmobixL_Z3arrEL\[ilx]1EEEDtDST_EEv" } }
-  f5<bases_of (^^S, ctx)[0]>();
-// { dg-final { scan-assembler "_Z2f5ILDmba_1SEEDtDST_EEv" } }
   f6<Y>(Y{42});
 // { dg-final { scan-assembler "_Z2f6I1YEDaDSLDmtyT_EE" } }
   f7<^^TCls>(TCls<0>{});
@@ -236,4 +237,6 @@ g (int p)
   constexpr auto r = f26<std::meta::info>({});
   f27<^^::>(42);
 // { dg-final { scan-assembler "_Z3f27ILDmgsEEDaNDST_E5AliasE" } }
+  f28<bases_of (^^S, ctx)[0]>();
+// { dg-final { scan-assembler "_Z3f28ILDmba_1SEEDtdtdttlS0_EDST_E1iEv" } }
 }
