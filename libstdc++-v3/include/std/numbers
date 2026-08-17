@@ -222,7 +222,7 @@ __glibcxx_numbers (_Float64, F64);
 __glibcxx_numbers (_Float128, F128);
 #endif
 
-#ifdef __STDCPP_BFLOAT128_T__
+#ifdef __STDCPP_BFLOAT16_T__
 __glibcxx_numbers (__gnu_cxx::__bfloat16_t, BF16);
 #endif
 
