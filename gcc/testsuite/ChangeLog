@@ -1,3 +1,11 @@
+2026-08-16  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-03-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/114021
+	* gfortran.dg/pr114021.f90: New test.
+
 2026-08-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	Backported from master:
