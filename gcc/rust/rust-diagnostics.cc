@@ -398,11 +398,8 @@ rust_be_debug_p (void)
 }
 
 void
-rust_debug_loc (const location_t location, const char *fmt, ...)
+rust_debug_loc_internal (const location_t location, const char *fmt, ...)
 {
-  if (!rust_be_debug_p ())
-    return;
-
   va_list ap;
 
   va_start (ap, fmt);

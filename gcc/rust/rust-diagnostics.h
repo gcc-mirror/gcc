@@ -300,12 +300,26 @@ struct Error
 } // namespace Rust
 
 // rust_debug uses normal printf formatting, not GCC diagnostic formatting.
-#define rust_debug(...) rust_debug_loc (UNDEF_LOCATION, __VA_ARGS__)
+#define rust_debug(...)                                                        \
+  do                                                                           \
+    {                                                                          \
+      if (rust_be_debug_p ())                                                  \
+	rust_debug_loc_internal (UNDEF_LOCATION, __VA_ARGS__);                 \
+    }                                                                          \
+  while (0)
+
+#define rust_debug_loc(location, ...)                                          \
+  do                                                                           \
+    {                                                                          \
+      if (rust_be_debug_p ())                                                  \
+	rust_debug_loc_internal (location, __VA_ARGS__);                       \
+    }                                                                          \
+  while (0)
 
 #define rust_sorry_at(location, ...) sorry_at (location, __VA_ARGS__)
 
-void rust_debug_loc (const location_t location, const char *fmt,
-		     ...) ATTRIBUTE_PRINTF_2;
+void rust_debug_loc_internal (const location_t location, const char *fmt,
+			      ...) ATTRIBUTE_PRINTF_2;
 
 // like rust_debug, but has gcc diagnostic formatting
 #define rust_debug_fmt(...) rust_debug_fmt_at (UNDEF_LOCATION, __VA_ARGS__)
