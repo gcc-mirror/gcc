@@ -480,27 +480,27 @@ template <typename _Abi, typename>
       {
 	if constexpr (sizeof(_Tp) == 1)
 	  {
-	    const auto __s8 = __vector_bitcast<_SChar>(__k._M_data);
+	    const auto __s8 = __vector_bitcast<int8_t>(__k._M_data);
 	    int8x8_t __tmp = __lo64(__s8) + __hi64z(__s8);
 	    return -vpadd_s8(vpadd_s8(vpadd_s8(__tmp, int8x8_t()), int8x8_t()),
 			     int8x8_t())[0];
 	  }
 	else if constexpr (sizeof(_Tp) == 2)
 	  {
-	    const auto __s16 = __vector_bitcast<short>(__k._M_data);
+	    const auto __s16 = __vector_bitcast<int16_t>(__k._M_data);
 	    int16x4_t __tmp = __lo64(__s16) + __hi64z(__s16);
 	    return -vpadd_s16(vpadd_s16(__tmp, int16x4_t()), int16x4_t())[0];
 	  }
 	else if constexpr (sizeof(_Tp) == 4)
 	  {
-	    const auto __s32 = __vector_bitcast<int>(__k._M_data);
+	    const auto __s32 = __vector_bitcast<int32_t>(__k._M_data);
 	    int32x2_t __tmp = __lo64(__s32) + __hi64z(__s32);
 	    return -vpadd_s32(__tmp, int32x2_t())[0];
 	  }
 	else if constexpr (sizeof(_Tp) == 8)
 	  {
 	    static_assert(sizeof(__k) == 16);
-	    const auto __s64 = __vector_bitcast<long>(__k._M_data);
+	    const auto __s64 = __vector_bitcast<int64_t>(__k._M_data);
 	    return -(__s64[0] + __s64[1]);
 	  }
       }
