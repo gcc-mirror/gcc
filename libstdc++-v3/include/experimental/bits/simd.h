@@ -608,16 +608,14 @@ template <size_t _Bytes>
   __int_for_sizeof()
   {
     static_assert(_Bytes > 0);
-    if constexpr (_Bytes == sizeof(int))
-      return int();
-    else if constexpr (_Bytes == sizeof(_SChar))
-      return _SChar();
-    else if constexpr (_Bytes == sizeof(short))
-      return short();
-    else if constexpr (_Bytes == sizeof(long))
-      return long();
-    else if constexpr (_Bytes == sizeof(_LLong))
-      return _LLong();
+    if constexpr (_Bytes == sizeof(int32_t))
+      return int32_t();
+    else if constexpr (_Bytes == sizeof(int8_t))
+      return int8_t();
+    else if constexpr (_Bytes == sizeof(int16_t))
+      return int16_t();
+    else if constexpr (_Bytes == sizeof(int64_t))
+      return int64_t();
   #ifdef __SIZEOF_INT128__
     else if constexpr (_Bytes == sizeof(__int128))
       return __int128();
