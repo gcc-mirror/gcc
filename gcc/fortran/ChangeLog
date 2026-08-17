@@ -1,3 +1,19 @@
+2026-08-16  Christopher Albert  <albert@tugraz.at>
+
+	Backported from master:
+	2026-08-16  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/110626
+	* gfortran.h : Add finalize_only bitfield to gfc_expr.
+	* resolve.cc (generate_component_assignments): If the lhs has
+	no pointer or allocatable components, set use_finalize_only to
+	false. Otherwise it equals finalizable_lhs. Use the value to
+	set the expr1 finalize_only field and add the assignment to the
+	chain. If use_finalize_only is false, free the statements and
+	transfer the value to the final result.
+	* trans-expr.cc (gfc_trans_assignment_1): If expr1 is finalize_
+	only emit an empty statement.
+
 2026-08-14  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
