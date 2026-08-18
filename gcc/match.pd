@@ -4753,7 +4753,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& !TYPE_OVERFLOW_SANITIZED (type))
     (minus (minmax @0 @1) @2))))
 
-/* (type) minmax ((wide_type) a, (wide_type) b) -> minmax (a, b)
+/* minmax ((wide_type) a, (wide_type) b) -> (wide_type) minmax (a, b)
    when type matches the type of a and b, and wide_type is a wider
    type with the same signedness as type.  Extension is monotone, so it
    commutes with the comparison, and the truncation is then exact.  The
@@ -4763,18 +4763,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for minmax (min max)
      MINMAX (MIN_EXPR MAX_EXPR)
  (simplify
-  (convert (minmax:c@4 (convert@2 @0) (convert@3 @1)))
+  (minmax (convert @0) (convert @1))
   (if (ANY_INTEGRAL_TYPE_P (type)
-       && ANY_INTEGRAL_TYPE_P (TREE_TYPE (@2))
-       && types_match (type, TREE_TYPE (@0))
-       && types_match (type, TREE_TYPE (@1))
-       && types_match (TREE_TYPE (@2), TREE_TYPE (@3))
-       && element_precision (TREE_TYPE (@2)) > element_precision (type)
-       && TYPE_UNSIGNED (TREE_TYPE (@2)) == TYPE_UNSIGNED (type)
+       && ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && types_match (TREE_TYPE (@0), TREE_TYPE (@1))
+       && element_precision (TREE_TYPE (@0)) < element_precision (type)
+       && TYPE_UNSIGNED (TREE_TYPE (@0)) == TYPE_UNSIGNED (type)
        && (!VECTOR_TYPE_P (type)
-	   || (single_use (@4)
-	       && target_supports_op_p (type, MINMAX, optab_vector))))
-   (minmax @0 @1))))
+	   || target_supports_op_p (TREE_TYPE (@0), MINMAX, optab_vector)))
+   (convert (minmax @0 @1)))))
 
 /* max (a, a + CST) -> a + CST where CST is positive.  */
 /* max (a, a + CST) -> a where CST is negative.  */
