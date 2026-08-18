@@ -1,6 +1,6 @@
 /* Test that we generate xorps when the result is used in FP math.  */
 /* { dg-do compile } */
-/* { dg-options "-O -msse2 -mno-sse3" } */
+/* { dg-options "-O -msse2 -mno-sse3 -mtune-ctrl=^sse_packed_single_insn_optimal" } */
 /* { dg-final { scan-assembler "xorps\[ \t\]" } } */
 /* { dg-final { scan-assembler-not "pxor" } } */
 
