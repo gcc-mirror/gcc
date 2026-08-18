@@ -1383,7 +1383,7 @@
 
       /* Here we set VL = offset + 1.  */
       rtx length = gen_reg_rtx (Pmode);
-      operands[2] = gen_lowpart (Pmode, operands[2]);
+      operands[2] = convert_to_mode (Pmode, operands[2], true);
       if (CONST_INT_P (operands[2]))
 	  emit_move_insn (length, GEN_INT (INTVAL (operands[2]) + 1));
       else
@@ -1439,7 +1439,7 @@
 
     /* Emit the slide down to index 0 in a new vector.  */
     tmp = gen_reg_rtx (<MODE>mode);
-    operands[2] = gen_lowpart (Pmode, operands[2]);
+    operands[2] = convert_to_mode (Pmode, operands[2], true);
     rtx ops[] = {tmp, operands[1], operands[2]};
     riscv_vector::emit_vlmax_insn
       (code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode),
