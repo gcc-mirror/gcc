@@ -1,5 +1,5 @@
 /* { dg-do compile { target *-*-linux* } } */
-/* { dg-options "-O2 -fzero-call-used-regs=all" } */
+/* { dg-options "-O2 -fzero-call-used-regs=all -mtune-ctrl=^use_ffreep" } */
 
 long double ret_x87 (void)
 {
