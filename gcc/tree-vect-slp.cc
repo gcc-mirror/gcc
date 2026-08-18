@@ -346,10 +346,14 @@ vect_free_oprnd_info (vec<slp_oprnd_info> &oprnds_info)
    a "more important" node when optimizing for speed).  */
 
 static sreal
-vect_slp_node_weight (slp_tree node)
+vect_slp_node_weight (vec_info *vinfo, slp_tree node)
 {
-  stmt_vec_info stmt_info = vect_orig_stmt (SLP_TREE_REPRESENTATIVE (node));
-  basic_block bb = gimple_bb (stmt_info->stmt);
+  stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
+  basic_block bb;
+  if (!stmt_info)
+    bb = vinfo->bbs[0];
+  else
+    bb = gimple_bb (vect_orig_stmt (stmt_info)->stmt);
   return bb->count.to_sreal_scale (ENTRY_BLOCK_PTR_FOR_FN (cfun)->count);
 }
 
@@ -7440,10 +7444,10 @@ vect_optimize_slp_pass::start_choosing_layouts ()
       auto &partition = m_partitions[vertex.partition];
       slp_tree node = vertex.node;
 
+      vertex.weight = vect_slp_node_weight (m_vinfo, node);
+
       if (stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node))
 	{
-	  vertex.weight = vect_slp_node_weight (node);
-
 	  /* We do not handle stores with a permutation, so all
 	     incoming permutations must have been materialized.
 
