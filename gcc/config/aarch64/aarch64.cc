@@ -28772,6 +28772,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     {
       d->perm.rotate_inputs (1);
       std::swap (d->op0, d->op1);
+      std::swap (d->zero_op0_p, d->zero_op1_p);
     }
 
   if (((d->vec_flags == VEC_ADVSIMD && TARGET_SIMD)
