@@ -1,3 +1,16 @@
+2026-08-17  Robert Dubner  <rdubner@symas.com>
+
+	* cdf.y: Revert changes.
+	* lexio.cc (skip_quoted_literal): Likewise.
+	(remove_inline_comment): Likewise.
+	* parse.y: Likewise.
+	* scan.l: Likewise.
+	* scan_ante.h (skip_string): Likewise.
+	(yyinput): Likewise.
+	(yyunput): Likewise.
+	(is_refmod): Likewise.
+	* token_names.h: Likewise.
+
 2026-08-14  Robert Dubner  <rdubner@symas.com>
 
 	* move.cc (mh_binary_to_numdisp): Pass intermediates to __gg__move.

@@ -1,3 +1,140 @@
+2026-08-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/lto/pr108772_0.C: Allow undefined symbols on Darwin.
+	* g++.dg/lto/pr114790_0.C: Likewise.
+	* g++.dg/lto/pr119614_0.C: Likewise.
+	* g++.dg/lto/pr85405_0.C: Likewise.
+	* g++.dg/lto/pr85405b_0.C: Likewise.
+	* g++.dg/lto/pr85655_0.C: Likewise.
+	* g++.dg/lto/pr86523-3_0.C: Likewise.
+	* g++.dg/lto/pr86585_0.C: Likewise.
+	* g++.dg/lto/pr87906_0.C: Likewise.
+	* g++.dg/lto/pr88046_0.C: Likewise.
+	* g++.dg/lto/pr88758_0.C: Likewise.
+	* g++.dg/lto/pr89330_0.C: Likewise.
+	* g++.dg/lto/pr91574_0.C: Likewise.
+	* g++.dg/lto/pr92609_0.C: Likewise.
+	* g++.dg/lto/pr93166_0.C: Likewise.
+	* gcc.dg/lto/pr61526_0.c: Likewise.
+	* g++.dg/lto/pr87295_0.C: Skip on Darwin.
+
+2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/53800
+	* gfortran.dg/c_loc_test_22.f90: Update dump patterns for span
+	addressing.
+	* gfortran.dg/class_to_type_5.f90: New test.
+	* gfortran.dg/class_to_type_6.f90: New test.
+	* gfortran.dg/class_to_type_7.f90: New test.
+	* gfortran.dg/class_to_type_8.f90: New test.
+	* gfortran.dg/class_to_type_9.f90: New test.
+
+2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/95542
+	* gfortran.dg/pr95542.f90: New test.
+
+2026-08-17  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.dg/other/i386-2.C: Add tests for avx10v2aux.
+	* g++.dg/other/i386-3.C: Likewise.
+	* gcc.target/i386/avx-1.c: Likewise.
+	* gcc.target/i386/funcspec-56.inc: Likewise.
+	* gcc.target/i386/sse-12.c: Likewise.
+	* gcc.target/i386/sse-13.c: Likewise.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* lib/target-supports.exp: Add more checks for avx10v2aux.
+	* gcc.target/i386/avx10v2aux-convert-1i.c: New test.
+	* gcc.target/i386/avx10v2aux-convert-1j.c: New test.
+	* gcc.target/i386/avx10v2aux-convert-1k.c: New test.
+	* gcc.target/i386/avx10v2aux-convert-1l.c: New test.
+
+2026-08-17  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/86937
+	* gcc.dg/warn-strnlen-no-nul.c: warnings were
+	added/removed/changed due to the new STRNLEN folding.
+	* gcc.dg/tree-ssa/pr86937.c: New test.
+
+2026-08-17  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/126743
+	* gcc.dg/tree-ssa/pr126743.c: New test.
+
+2026-08-17  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/126748
+	* gcc.dg/tree-ssa/pr126748.c: New test.
+
+2026-08-17  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/124667
+	* gcc.dg/tree-ssa/pr124667-2.c: New test.
+	* gcc.dg/tree-ssa/pr124667.c: New test.
+
+2026-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/126788
+	* gcc.target/i386/pr126788.c: New testcase.
+
+2026-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126887
+	* gcc.dg/tree-ssa/ssa-thread-23.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-thread-24.c: Likewise.
+
+2026-08-17  Abhishek Kaushik  <abhishek.kaushik@arm.com>
+
+	* gcc.target/aarch64/sve2/acle/asm/abal_s16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/abal_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/abal_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/abal_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/abal_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/abal_u64.c: Likewise.
+
+2026-08-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/126895
+	* gfortran.dg/is_contiguous_7.f90: New test.
+
+2026-08-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-51.c: New test.
+
+2026-08-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-mf8.c: New test.
+
+2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126872
+	* gfortran.dg/bind_c_private_1.f90: New test.
+
+2026-08-17  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	PR c++/126324
+	* g++.dg/cpp2a/constexpr-virtual-pr126324.C: New test.
+
 2026-08-16  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* lib/target-supports.exp (pytest_invoke): New function.

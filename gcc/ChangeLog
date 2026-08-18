@@ -1,3 +1,136 @@
+2026-08-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Add mstrict-addr-space-subsets.
+
+2026-08-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt (-mstrict-addr-space-subsets): New
+	target option.
+	* config/avr/avr.cc (avr_addr_space_subset_p): Use it.
+	* doc/invoke.texi (AVR Options): Document it.
+
+2026-08-17  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+	    Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/avx10v2auxintrin.h (_mm_cvtss_epi32_epi8): New intrin.
+	(_mm_mask_cvtss_epi32_epi8): Ditto.
+	(_mm_maskz_cvtss_epi32_epi8): Ditto.
+	(_mm_mask_cvtss_epi32_storeu_epi8): Ditto.
+	(_mm256_cvtss_epi32_epi8): Ditto.
+	(_mm256_mask_cvtss_epi32_epi8): Ditto.
+	(_mm256_maskz_cvtss_epi32_epi8): Ditto.
+	(_mm256_mask_cvtss_epi32_storeu_epi8): Ditto.
+	(_mm512_cvtss_epi32_epi8): Ditto.
+	(_mm512_mask_cvtss_epi32_epi8): Ditto.
+	(_mm512_maskz_cvtss_epi32_epi8): Ditto.
+	(_mm512_mask_cvtss_epi32_storeu_epi8): Ditto.
+	(_mm_unpack_epi8): Ditto.
+	(_mm_mask_unpack_epi8): Ditto.
+	(_mm_maskz_unpack_epi8): Ditto.
+	(_mm256_unpack_epi8): Ditto.
+	(_mm256_mask_unpack_epi8): Ditto.
+	(_mm256_maskz_unpack_epi8): Ditto.
+	(_mm512_unpack_epi8): Ditto.
+	(_mm512_mask_unpack_epi8): Ditto.
+	(_mm512_maskz_unpack_epi8): Ditto.
+	* config/i386/i386-builtin-types.def: New function types.
+	* config/i386/i386-builtin.def (BDESC): New builtins.
+	* config/i386/i386-expand.cc (ix86_expand_args_builtin): Handle new function types
+	and reserved immediate check.
+	* config/i386/sse.md (vunpackb<mode><mask_name>): New.
+	(avx10v2aux_sym_truncatev4siv4qi2): Ditto.
+	(*avx10v2aux_sym_truncatev4siv4qi2): Ditto.
+	(avx10v2aux_sym_truncatev8siv8qi2): Ditto.
+	(*avx10v2aux_sym_truncatev8siv8qi2): Ditto.
+	(avx10v2aux_sym_truncatev4siv4qi2_mask): Ditto.
+	(*avx10v2aux_sym_truncatev4siv4qi2_mask): Ditto.
+	(avx10v2aux_sym_truncatev8siv8qi2_mask): Ditto.
+	(*avx10v2aux_sym_truncatev8siv8qi2_mask): Ditto.
+	(*avx10v2aux_sym_truncatev16siv16qi2): Ditto.
+	(avx10v2aux_sym_truncatev16siv16qi2_mask): Ditto.
+	(avx10v2aux_sym_truncatev16siv16qi2_mask_store): Ditto.
+	(*avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_store_1): Ditto.
+	(*avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_store_2): Ditto.
+	(avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_mask_store_1): Ditto.
+	(avx10v2aux_sym_truncate<mode>v<ssescalarnum>qi2_mask_store_2): Ditto.
+
+2026-08-17  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/86937
+	* fold-const-call.cc (fold_const_call): fold
+	CFN_BUILT_IN_STRNLEN calls.
+
+2026-08-17  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/126743
+	* range-op-mixed.h: declare.
+	* range-op.cc (operator_bitwise_or::op1_op2_relation_effect):
+	add op1 NE op2 relation range for op1 | op2 as nonzero.
+
+2026-08-17  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/126748
+	* range-op.cc (class operator_div): declarations.
+	(operator_div::op1_op2_relation_effect): add op1/op2 relation
+	range equal zero for op1/op2 if op1 < op2 and both op1 and op2
+	are positives.
+
+2026-08-17  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/124667
+	* match.pd(`(A & BIT) EQ|NE 0 ? A | BIT : A`): New
+	pattern.
+	(`(A & BIT) EQ|NE 0 ? A : A | BIT`): New pattern.
+	(`(A & MASK) EQ|NE MASK ? A : A | MASK`): New pattern.
+	(`(A & MASK) EQ|NE MASK ? A | MASK : A`): New pattern.
+	(`A | (((A >> N) & 1) << N)`): New pattern.
+
+2026-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/126788
+	* optabs-tree.cc (supportable_convert_operation): For same
+	modes allow NOP_EXPR and VIEW_CONVERT_EXPR.
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Avoid
+	converting the vector to be used for blending into the
+	result to the type of the permutation.
+	* tree-vect-stmts.cc (vectorizable_conversion): Leave
+	nop-conversions to vectorizable_assignment.
+
+2026-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126887
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Allow to search past a loop header in case we are threading a
+	loop exit test.
+	* tree-ssa-threadupdate.cc
+	(back_jt_path_registry::duplicate_thread_path): Properly
+	detect when a entered subloop is dissolved by threading,
+	but avoid creating new entries into the original loop.
+	(jt_path_registry::cancel_invalid_paths): Do not allow
+	peeling loops.
+
+2026-08-17  Abhishek Kaushik  <abhishek.kaushik@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svabal): Define.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svabal): New
+	function.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svabal): Declare.
+	* config/aarch64/iterators.md (UNSPEC_SABAL, UNSPEC_UABAL): New
+	unspecs.
+	(SVE2_INT_BINARY_LONG, SVE2_INT_ADD_BINARY_LONG): Add
+	UNSPEC_SABAL and UNSPEC_UABAL.
+	(sve_int_op, sve_int_add_op, sve_type_unspec): Handle them.
+
+2026-08-17  Josef Melcr  <josef.melcr@suse.com>
+
+	* gimple-low.cc (lower_assumption): Unset stdarg after
+	determining the body function's arguments.
+
+2026-08-17  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-08-16  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc: Fix typos in comments.

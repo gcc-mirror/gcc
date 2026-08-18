@@ -1,3 +1,11 @@
+2026-08-17  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	PR c++/126324
+	* constexpr.cc (cxx_eval_thunk_call): Preserve null pointer
+	results and adjust the result to the thunk's return type.
+	(cxx_eval_call_expression): Adjust covariant virtual-call results
+	to the static call type.
+
 2026-08-14  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-gimplify.cc (cp_fold_r) <case INIT_EXPR>: Add trial

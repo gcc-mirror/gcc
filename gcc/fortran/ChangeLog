@@ -1,3 +1,67 @@
+2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/53800
+	* gfortran.h (gfc_is_span_addressed_dummy): New prototype.
+	* symbol.cc (gfc_is_span_addressed_dummy): New function.
+	* expr.cc (is_subref_array): Return true for a span addressed dummy.
+	* trans.h (gfc_get_span_descriptor): New prototype.
+	* trans.cc (gfc_get_span_descriptor): New function returning the
+	descriptor that carries a pointer array decl's span.
+	(get_array_span): Use it, including for character types.
+	* trans-array.cc (is_pointer_array): Note in the comment that the
+	tree must be a descriptor.
+	(span_addressed_array): New function returning the decl that
+	provides the span of an array.
+	(gfc_get_array_span): Use it.
+	(gfc_conv_scalarized_array_ref, gfc_conv_array_ref): Likewise, so
+	that a descriptorless dummy is addressed by its span.
+	(gfc_get_dataptr_offset): Likewise and dereference a spanned
+	character element.
+	(gfc_conv_expr_descriptor): Describe a subobject of the array
+	elements by a new descriptor when no temporary is made.
+	* trans-decl.cc (gfc_build_dummy_array_decl): Use
+	gfc_is_span_addressed_dummy to mark the dummy as a pointer array.
+	(gfc_get_symbol_decl): Likewise.
+	* trans-expr.cc (is_subobject_ref): New function.
+	(copy_in_out_allowed): Take the actual argument.  Use
+	gfc_is_span_addressed_dummy and keep the copy for an actual
+	argument with a vector subscript.
+	(gfc_conv_gfc_desc_to_cfi_desc): Remove the now duplicate offsetting
+	of the data pointer for a subobject reference.
+	(gfc_class_array_data_assign): Also copy the span field.
+	(gfc_conv_procedure_call): Use copy_in_out_allowed to skip
+	copy-in/copy-out for a class array reference, a class array function
+	result and a subref array.  Pass a spanned descriptor instead and
+	make the copy of a span addressed dummy conditional on it not being
+	contiguous.
+	* trans-intrinsic.cc (gfc_conv_is_contiguous_expr): Check the span
+	of a span addressed dummy against the element length.
+
+2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/95542
+	* trans-decl.cc (gfc_get_symbol_decl): When checking that a
+	deferred-length string's length variable shares the symbol's
+	scope, special-case sym->backend_decl being a FUNCTION_DECL
+	(an implicit function-result variable): compare against
+	sym->backend_decl directly instead of its own DECL_CONTEXT.
+
+2026-08-17  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/126895
+	* trans-intrinsic.cc (gfc_conv_is_contiguous_expr): If the argument
+	to IS_CONTIGUOUS is an assumed-rank variable, add a conditional
+	making the value true if the runtime rank is zero.
+
+2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126872
+	* trans-decl.cc (gfc_finish_var_decl): Drop the unreachable
+	hidden-visibility case in the BIND(C) block.  Do not give hidden
+	visibility to a PRIVATE module variable with a binding label.
+	(build_function_decl): Do not give hidden visibility to a PRIVATE
+	module procedure with a binding label.
+
 2026-08-16  Christopher Albert  <albert@tugraz.at>
 
 	PR fortran/110626

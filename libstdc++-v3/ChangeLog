@@ -1,3 +1,32 @@
+2026-08-17  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* config/os/bsd/openbsd/ctype_base.h: Use static_cast when
+	setting the masks.
+
+2026-08-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/126849
+	* include/std/numbers: Fix preprocessor check for
+	std::bfloat16_t support.
+
+2026-08-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* src/Makefile.am (all-recursive): Depend on all-parallel-subdirs.
+	(all-parallel-subdirs, all-in-%): New targets.
+	(all-in-experimental): Depend on the directories whose convenience
+	archives it links.
+	* src/Makefile.in: Regenerate.
+	* src/experimental/Makefile.am: Add comment about keeping the
+	convenience library lists in sync with src/Makefile.am.
+
+2026-08-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/vector (formatter<_Bit_reference, _CharT>::format)
+	[__glibcxx_constexpr_format]: Declare as constexpr.
+	* testsuite/23_containers/vector/bool/format.cc
+	[__glibcxx_constexpr_format]: Run test suite at compile
+	time.
+
 2026-08-15  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* config/os/bsd/openbsd/ctype_base.h: Use _CTYPE prefixed

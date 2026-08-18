@@ -1,3 +1,9 @@
+2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/53800
+	* testsuite/libgomp.oacc-fortran/host_data-5.F90: Update the
+	privatization notes for the packing of a TARGET dummy.
+
 2026-08-14  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR libgomp/41418
