@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" }  */
+/* { dg-additional-options "-march=x86-64" } */
 
 void __attribute__ ((target("avx512vl"))) foo () {} /* { dg-error "ISA '\[^\n\r\]*' is not supported in 'target' attribute, use 'arch=' syntax" } */
 void __attribute__ ((target("avx512bw"))) foo () {} /* { dg-error "ISA '\[^\n\r\]*' is not supported in 'target' attribute, use 'arch=' syntax" } */
