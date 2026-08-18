@@ -10579,7 +10579,6 @@ static void
 resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 {
   gfc_expr* target;
-  bool parentheses = false;
 
   gcc_assert (sym->assoc);
   gcc_assert (sym->attr.flavor == FL_VARIABLE);
@@ -10609,16 +10608,6 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
     return;
   gcc_assert (!sym->assoc->dangling);
 
-  if (target->expr_type == EXPR_OP
-      && target->value.op.op == INTRINSIC_PARENTHESES
-      && target->value.op.op1->expr_type == EXPR_VARIABLE)
-    {
-      sym->assoc->target = gfc_copy_expr (target->value.op.op1);
-      gfc_free_expr (target);
-      target = sym->assoc->target;
-      parentheses = true;
-    }
-
   if (resolve_target && !gfc_resolve_expr (target))
     return;
 
@@ -10639,12 +10628,15 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
     }
 
   /* For variable targets, we get some attributes from the target.  */
-  if (target->expr_type == EXPR_VARIABLE)
+  if (target->expr_type == EXPR_VARIABLE
+      || (target->expr_type == EXPR_OP
+	  && target->value.op.op == INTRINSIC_PARENTHESES
+	  && target->value.op.op1->expr_type == EXPR_VARIABLE))
     {
       gfc_symbol *tsym, *dsym;
 
-      gcc_assert (target->symtree);
-      tsym = target->symtree->n.sym;
+      tsym = target->expr_type == EXPR_VARIABLE ? target->symtree->n.sym :
+				  target->value.op.op1->symtree->n.sym;
 
       if (gfc_expr_attr (target).proc_pointer)
 	{
@@ -10680,13 +10672,16 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	    }
 	}
 
-      sym->attr.asynchronous = tsym->attr.asynchronous;
-      sym->attr.volatile_ = tsym->attr.volatile_;
+      if (target->expr_type == EXPR_VARIABLE)
+	{
+	  sym->attr.asynchronous = tsym->attr.asynchronous;
+	  sym->attr.volatile_ = tsym->attr.volatile_;
 
-      sym->attr.target = tsym->attr.target
-			 || gfc_expr_attr (target).pointer;
-      if (is_subref_array (target))
-	sym->attr.subref_array_pointer = 1;
+	  sym->attr.target = tsym->attr.target
+			     || gfc_expr_attr (target).pointer;
+	  if (is_subref_array (target))
+	    sym->attr.subref_array_pointer = 1;
+	}
     }
   else if (target->ts.type == BT_PROCEDURE)
     {
@@ -10773,7 +10768,6 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 
   /* See if this is a valid association-to-variable.  */
   sym->assoc->variable = ((target->expr_type == EXPR_VARIABLE
-			   && !parentheses
 			   && !gfc_has_vector_subscript (target))
 			  || gfc_is_ptr_fcn (target));
 
