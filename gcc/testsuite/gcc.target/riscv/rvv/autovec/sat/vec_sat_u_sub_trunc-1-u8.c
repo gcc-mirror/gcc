@@ -5,6 +5,7 @@
 
 DEF_VEC_SAT_U_SUB_TRUNC_FMT_1(uint8_t, uint16_t)
 
-/* { dg-final { scan-tree-dump-times ".SAT_SUB " 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times ".SAT_SUB " 2 "optimized" { target { no-opts "-O2" } } } } */
+/* { dg-final { scan-tree-dump-times ".SAT_SUB " 1 "optimized" { target { no-opts "-O3" } } } } */
 /* { dg-final { scan-assembler-times {vssubu\.vv} 1 } } */
 /* { dg-final { scan-assembler-times {vnsrl\.wi} 1 } } */

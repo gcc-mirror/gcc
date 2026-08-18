@@ -5,6 +5,5 @@
 
 DEF_VEC_SAT_S_ADD_FMT_4(int8_t, uint8_t, INT8_MIN, INT8_MAX)
 
-/* { dg-final { scan-tree-dump-times ".SAT_ADD " 1 "optimized" { target { no-opts "-O2" } } } } */
-/* { dg-final { scan-tree-dump-times ".SAT_ADD " 2 "optimized" { target { no-opts "-O3" } } } } */
+/* { dg-final { scan-tree-dump-times ".SAT_ADD " 2 "optimized" } } */
 /* { dg-final { scan-assembler-times {vsadd\.vv} 1 } } */
