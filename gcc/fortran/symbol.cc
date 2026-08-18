@@ -3817,8 +3817,9 @@ restore_old_symbol (gfc_symbol *p)
   p->mark = 0;
   old = p->old_symbol;
 
-  p->ts.type = old->ts.type;
-  p->ts.kind = old->ts.kind;
+  /* Restore the whole typespec, not just type/kind, so ts.u.cl doesn't
+     dangle.  */
+  p->ts = old->ts;
 
   p->attr = old->attr;
 
