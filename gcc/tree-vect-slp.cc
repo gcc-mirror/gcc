@@ -12198,19 +12198,17 @@ vect_remove_slp_scalar_calls (vec_info *vinfo, slp_tree node)
 void
 vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance instance)
 {
-  gassign *rstmt = NULL;
-
   if (instance->kind == slp_inst_kind_ctor)
     {
+      tree new_def;
       if (SLP_TREE_VEC_DEFS (node).length () == 1)
 	{
-	  tree vect_lhs = SLP_TREE_VEC_DEFS (node)[0];
+	  new_def = SLP_TREE_VEC_DEFS (node)[0];
 	  tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
 	  if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
-					  TREE_TYPE (vect_lhs)))
-	    vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
-			       vect_lhs);
-	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
+					  TREE_TYPE (new_def)))
+	    new_def = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
+			       new_def);
 	}
       else
 	{
@@ -12225,12 +12223,15 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
 	     do not match.  */
 	  FOR_EACH_VEC_ELT (SLP_TREE_VEC_DEFS (node), j, child_def)
 	    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, child_def);
-	  tree lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
 	  tree rtype
 	    = TREE_TYPE (gimple_assign_rhs1 (instance->root_stmts[0]->stmt));
-	  tree r_constructor = build_constructor (rtype, v);
-	  rstmt = gimple_build_assign (lhs, r_constructor);
+	  new_def = build_constructor (rtype, v);
 	}
+
+      gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmts[0]->stmt);
+      gimple_assign_set_rhs_from_tree (&rgsi, new_def);
+      update_stmt (gsi_stmt (rgsi));
+      return;
     }
   else if (instance->kind == slp_inst_kind_bb_reduc)
     {
@@ -12316,11 +12317,6 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
     }
   else
     gcc_unreachable ();
-
-  gcc_assert (rstmt);
-
-  gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmts[0]->stmt);
-  gsi_replace (&rgsi, rstmt, true);
 }
 
 struct slp_scc_info
