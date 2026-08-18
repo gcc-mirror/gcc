@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-additional-options "-msse2" { target ia32 } } */
 
 /* Rounding up by adding the padding, spelled with vectors.  */
 

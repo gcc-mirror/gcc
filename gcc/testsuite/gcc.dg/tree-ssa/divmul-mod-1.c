@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized -Wno-psabi" } */
 
 typedef int v4si __attribute__ ((vector_size (16)));
 typedef unsigned int v4ui __attribute__ ((vector_size (16)));

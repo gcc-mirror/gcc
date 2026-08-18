@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fdump-tree-optimized" }
+// { dg-options "-O2 -fdump-tree-optimized -Wno-psabi" }
 
 typedef int v2si __attribute__((vector_size (8)));
 typedef long long v2di __attribute__((vector_size (16)));

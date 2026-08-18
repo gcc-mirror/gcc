@@ -1,5 +1,6 @@
-/* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-do compile { target vect_int } } */
+/* { dg-options "-O2 -fdump-tree-optimized -Wno-psabi" } */
+/* { dg-additional-options "-msse2" { target ia32 } } */
 /* Combine pairs of vector comparisons against zero or all-ones.  Use
    different signedness for the operands to exercise the view conversion.  */
 typedef int v4si __attribute__((vector_size (16)));
