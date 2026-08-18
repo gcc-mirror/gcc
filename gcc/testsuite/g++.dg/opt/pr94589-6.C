@@ -1,6 +1,7 @@
 // { dg-do run { target c++20 } }
 // { dg-require-effective-target inf }
 // { dg-options "-O2 -g" }
+// { dg-add-options ieee }
 
 #include "pr94589-5.C"
 

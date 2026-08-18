@@ -1,5 +1,6 @@
 /* PR tree-optimization/126576 */
 /* { dg-do run } */
+/* { dg-add-options ieee } */
 
 #if __DBL_MANT_DIG__ == 53 && __DBL_MAX_10_EXP__ == 308 \
     && __DBL_HAS_INFINITY__ && __FLT_EVAL_METHOD__ == 0

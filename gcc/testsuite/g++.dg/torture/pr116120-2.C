@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-add-options ieee }
 // PR tree-optimization/116120
 
 // The optimization for `(a ? x : y) == (b ? x : y)`

@@ -1,6 +1,7 @@
 /* PR target/91472 */
 /* Reported by John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de> */
 /* { dg-require-effective-target double64plus } */
+/* { dg-add-options ieee } */
 
 #if __SIZEOF_INT__ >= 4
 typedef unsigned int gmp_uint_least32_t;

@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-add-options ieee } */
 
 __attribute__((noipa)) int
 foo (float x, float y)
