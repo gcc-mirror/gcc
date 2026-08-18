@@ -5365,7 +5365,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 	      && !vec_safe_is_empty (*cleanup_flags))
 	    {
 	      auto l = (*cleanup_flags)->last ();
-	      gcc_assert (TREE_PURPOSE (l) == iterator);
+	      gcc_assert (TREE_PURPOSE (l) == rval);
 	      (*cleanup_flags)->pop ();
 	    }
 	  tree const_init = build_constructor (atype, const_vec);
