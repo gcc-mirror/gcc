@@ -2278,6 +2278,7 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup,
 	      for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
 		SET_PHI_ARG_DEF (phi, i, zero);
 	      update_stmt (phi);
+	      reset_flow_sensitive_info (def);
 	    }
 	  else
 	    remove_phi_node (&gsi, true);
@@ -2292,6 +2293,7 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup,
 	      tree zero = build_zero_cst (TREE_TYPE (def));
 	      gassign *new_stmt = gimple_build_assign (def, zero);
 	      gsi_replace (&gsi, new_stmt, true);
+	      reset_flow_sensitive_info (def);
 	    }
 	  else
 	    {

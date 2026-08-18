@@ -532,3 +532,34 @@ infer_range_manager::register_all_uses (tree name)
 	}
     }
 }
+
+// Clear all inferred ranges for NAME.
+
+void
+infer_range_manager::clear(tree name)
+{
+  if (!m_seen)
+    return;
+
+  // Check if this name has any inferred ranges.
+  unsigned v = SSA_NAME_VERSION (name);
+  if (!bitmap_bit_p (m_seen, v))
+     return;
+
+  // Check each basic block for an inferred range.
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      unsigned bbi = bb->index;
+      if (bbi >= m_on_exit.length ())
+	continue;
+      exit_range *ptr = m_on_exit[bbi].find_ptr (name);
+      if (ptr)
+	{
+	  bitmap_clear_bit (m_on_exit[bbi].m_names, v);
+	  ptr->name = NULL;
+	}
+    }
+
+  bitmap_clear_bit (m_seen, v);
+}

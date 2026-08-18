@@ -79,6 +79,8 @@ public:
   virtual void update_range_info (tree name);
   // Provide a specific range update to NAME.
   virtual void update_range_info (tree name, const vrange &r);
+  // Reset range information for NAME.
+  virtual void reset_range_info (tree name);
 
   inline class relation_oracle &relation () const  { return *m_relation; }
   void create_relation_oracle (bool do_trans_p = true);

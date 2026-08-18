@@ -295,6 +295,21 @@ range_def_chain::get_def_chain (tree name)
   return m_def_chain[v].bm;
 }
 
+// Clear def chain info for NAME.
+
+void
+range_def_chain::clear (tree name)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_def_chain.length ())
+    return;
+
+  m_def_chain[v].ssa1 = 0;
+  m_def_chain[v].ssa2 = 0;
+  m_def_chain[v].bm = NULL;
+  get_def_chain (name);
+}
+
 // Dump what we know for basic block BB to file F.
 
 void

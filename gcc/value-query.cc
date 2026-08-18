@@ -78,6 +78,17 @@ range_query::update_range_info (tree, const vrange &)
 {
 }
 
+// Default for resetting range info for NAME is to clear the oracles.
+
+void
+range_query::reset_range_info (tree name)
+{
+  relation ().clear (name);
+  if (gori_ssa ())
+    gori_ssa ()->clear (name);
+  infer_oracle ().clear (name);
+}
+
 // If the range of expr EXPR at STMT is a single value, return it.
 // Otherwise return NULL_TREE.
 

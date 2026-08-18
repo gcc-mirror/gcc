@@ -607,6 +607,15 @@ gimple_ranger::update_range_info (tree name, const vrange &r)
     }
 }
 
+// Reset range information for NAME.
+
+void
+gimple_ranger::reset_range_info (tree name)
+{
+  // Clearing the cache will also clear all the shared oracles.
+  m_cache.reset_range_info (name);
+}
+
 // This routine will export whatever global ranges are known to GCC
 // SSA_RANGE_NAME_INFO and SSA_NAME_PTR_INFO fields.
 

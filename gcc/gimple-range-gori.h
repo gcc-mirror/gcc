@@ -36,6 +36,7 @@ public:
   bool in_chain_p (tree name, tree def);
   bool chain_import_p (tree name, tree import);
   void register_dependency (tree name, tree ssa1, basic_block bb = NULL);
+  void clear (tree name);
   void dump (FILE *f, basic_block bb, const char *prefix = NULL);
 protected:
   bool has_def_chain (tree name);

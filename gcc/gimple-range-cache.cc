@@ -381,6 +381,17 @@ block_range_cache::~block_range_cache ()
   bitmap_obstack_release (&m_bitmaps);
 }
 
+// Clear block info for NAME.
+
+void
+block_range_cache::clear (tree name)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_ssa_ranges.length ())
+    return;
+  m_ssa_ranges[v] = NULL;
+}
+
 // Set the range for NAME on entry to block BB to R.
 // If it has not been accessed yet, allocate it first.
 
@@ -1981,4 +1992,14 @@ ranger_cache::apply_inferred_ranges (gimple *s)
   if (update)
     for (unsigned x = 0; x < infer.num (); x++)
       register_inferred_value (infer.range (x), infer.name (x), bb);
+}
+
+// Reset range info for NAME.
+
+void
+ranger_cache::reset_range_info (tree name)
+{
+  m_on_entry.clear (name);
+  m_globals.clear_range (name);
+  range_query::reset_range_info (name);
 }

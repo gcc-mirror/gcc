@@ -621,6 +621,38 @@ equiv_oracle::register_initial_def (tree ssa)
   add_equiv_to_block (bb, equiv_set);
 }
 
+// Clear the equivalence lists and partial equivalencs for NAME.
+
+void
+equiv_oracle::clear (tree name)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  // Remove v from any equivalences.
+  if (bitmap_bit_p (m_equiv_set, v))
+    {
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, cfun)
+	{
+	  unsigned bbi = bb->index;
+	  if (bbi >= m_equiv.length ())
+	    continue;
+	  if (!m_equiv[bbi])
+	    continue;
+	  equiv_chain *ptr = m_equiv[bbi]->find (v);
+	  if (ptr)
+	    {
+	      bitmap_clear_bit (ptr->m_names, v);
+	      bitmap_clear_bit (m_equiv[bbi]->m_names, v);
+	    }
+	}
+      bitmap_clear_bit (m_equiv_set, v);
+    }
+  // Eliminate any partial equivs.
+  if (v < m_partial.length ())
+    m_partial[v].members = NULL;
+}
+
+
 // Register an equivalence between SSA1 and SSA2 in block BB.
 // The equivalence oracle maintains a vector of equivalencies indexed by basic
 // block. When an equivalence between SSA1 and SSA2 is registered in block BB,
@@ -1076,6 +1108,56 @@ dom_oracle::dom_oracle (bool do_trans_p)
 dom_oracle::~dom_oracle ()
 {
   m_relations.release ();
+}
+
+// Remove any relations with NAME from this list.
+
+void
+relation_chain_head::clear (tree name)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (!m_names || !bitmap_bit_p (m_names, v))
+    return;
+
+  relation_chain *ptr, *last = NULL;;
+
+  for (ptr = m_head; ptr; ptr = ptr->m_next)
+    {
+      tree op1 = ptr->op1 ();
+      tree op2 = ptr->op2 ();
+      // Delink any elements with NAME.
+      if (op1 == name || op2 == name)
+	{
+	  if (!last)
+	    m_head = ptr->m_next;
+	  else
+	    last->m_next = ptr->m_next;
+	}
+      else
+	last = ptr;
+    }
+  // And remove name from the possible relations in this block bitfield.
+  bitmap_clear_bit (m_names, v);
+}
+
+// Remove any relations involving NAME from the DOM oracle
+
+void
+dom_oracle::clear (tree name)
+{
+  equiv_oracle::clear (name);
+  unsigned v = SSA_NAME_VERSION (name);
+  if (bitmap_bit_p (m_relation_set, v))
+    {
+      basic_block bb;
+      FOR_EACH_BB_FN (bb, cfun)
+	{
+	  if (bb->index >= (int)m_relations.length())
+	    continue;
+	  m_relations[bb->index].clear (name);
+	}
+      bitmap_clear_bit (m_relation_set, v);
+    }
 }
 
 // Register relation K between ssa_name OP1 and OP2 on STMT.
@@ -1726,6 +1808,22 @@ path_oracle::~path_oracle ()
 {
   obstack_free (&m_chain_obstack, NULL);
   bitmap_obstack_release (&m_bitmaps);
+}
+
+// Clear any range info and relations associated with NAME.
+
+void
+path_oracle::clear (tree name)
+{
+  if (m_root)
+    m_root->clear (name);
+
+  m_relations.clear (name);
+
+  unsigned v = SSA_NAME_VERSION (name);
+  equiv_chain *ptr = m_equiv.find (v);
+  if (ptr)
+    bitmap_clear_bit (ptr->m_names, v);
 }
 
 // Return the equiv set for SSA, and if there isn't one, check for equivs

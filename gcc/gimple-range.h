@@ -65,6 +65,7 @@ public:
   void register_inferred_ranges (gimple *s);
   void register_transitive_inferred_ranges (basic_block bb);
   range_query &const_query ();
+  void reset_range_info (tree name);
 protected:
   bool fold_range_internal (vrange &r, gimple *s, tree name);
   struct prefill_frame

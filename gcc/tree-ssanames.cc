@@ -927,6 +927,9 @@ reset_flow_sensitive_info (tree name)
     }
   else
     SSA_NAME_RANGE_INFO (name) = NULL;
+
+  // Clear range info in the current range query.
+  get_range_query (cfun)->reset_range_info (name);
 }
 
 /* Clear all flow sensitive data from all statements and PHI definitions

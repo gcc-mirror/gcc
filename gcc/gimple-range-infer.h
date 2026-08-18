@@ -89,6 +89,7 @@ public:
   virtual bool has_range_p (basic_block, tree = NULL_TREE) { return false; }
   virtual bool maybe_adjust_range (vrange &, tree, basic_block)
       { return false; }
+  virtual void clear (tree) { }
 };
 
 // This class manages a list of inferred ranges for each basic block.
@@ -115,6 +116,7 @@ public:
   virtual void add_ranges (gimple *s, gimple_infer_range &ir);
   virtual bool has_range_p (basic_block bb, tree name = NULL_TREE);
   virtual bool maybe_adjust_range (vrange &r, tree name, basic_block bb);
+  virtual void clear (tree name);
 private:
   void add_range (tree name, gimple *s, const vrange &r);
   void add_nonzero (tree name, gimple *s);

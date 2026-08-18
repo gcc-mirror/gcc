@@ -38,6 +38,7 @@ public:
   bool set_bb_range (tree name, const_basic_block bb, const vrange &v);
   bool get_bb_range (vrange &v, tree name, const_basic_block bb);
   bool bb_range_p (tree name, const_basic_block bb);
+  void clear (tree name);
 
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb, bool print_varying = true);
@@ -119,6 +120,8 @@ public:
 
   void register_inferred_value (const vrange &r, tree name, basic_block bb);
   void apply_inferred_ranges (gimple *s);
+
+  void reset_range_info (tree name);
 
   void dump_bb (FILE *f, basic_block bb);
   virtual void dump (FILE *f) override;
