@@ -1637,6 +1637,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& single_use (@3) && single_use (@4))
     (cmp (bit_and @0 (view_convert @1)) @2)))))
 
+/* Combine two single-bit tests of the same value X into one masked
+   compare.  For distinct single bits C1, C2 and M = C1 | C2:
+     (X & C1) != 0 & (X & C2) != 0  ->  (X & M) == M
+     (X & C1) == 0 | (X & C2) == 0  ->  (X & M) != M
+     (X & C1) != 0 & (X & C2) == 0  ->  (X & M) == C1
+     (X & C1) != 0 | (X & C2) == 0  ->  (X & M) != C2
+   The == 0 & == 0 and != 0 | != 0 cases are handled by the more general
+   rule above.  Restricted to single-bit masks: for a multi-bit mask
+   (X & C) != 0 is not a single-bit test.  */
+(for bitop (bit_and bit_ior)
+     cmp (ne eq)
+     rcmp (eq ne)
+ (simplify
+  (bitop (cmp:s (bit_and:s @0 INTEGER_CST@1) integer_zerop)
+	 (cmp:s (bit_and:s @0 INTEGER_CST@2) integer_zerop))
+  (if (integer_pow2p (@1) && integer_pow2p (@2)
+       && wi::to_wide (@1) != wi::to_wide (@2))
+   (with { tree m = wide_int_to_tree (TREE_TYPE (@0),
+				      wi::to_wide (@1) | wi::to_wide (@2)); }
+    (rcmp (bit_and @0 { m; }) { m; }))))
+ (simplify
+  (bitop:c (ne:s (bit_and:s @0 INTEGER_CST@1) integer_zerop)
+	   (eq:s (bit_and:s @0 INTEGER_CST@2) integer_zerop))
+  (if (integer_pow2p (@1) && integer_pow2p (@2)
+       && wi::to_wide (@1) != wi::to_wide (@2))
+   (with { tree m = wide_int_to_tree (TREE_TYPE (@0),
+				      wi::to_wide (@1) | wi::to_wide (@2)); }
+    (rcmp (bit_and @0 { m; })
+	  { bitop == BIT_AND_EXPR ? @1 : @2; })))))
+
 /* Fold (A & ~B) - (A & B) into (A ^ B) - B.  */
 (simplify
  (minus (bit_and:cs @0 (bit_not @1)) (bit_and:cs @0 @1))
