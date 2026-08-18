@@ -26310,10 +26310,17 @@ Chopped rounding mode.  Floating-point numbers are rounded towards zero.
 @item d
 Dynamic rounding mode.  A field in the floating-point control register
 (@var{fpcr}, see Alpha architecture reference manual) controls the
-rounding mode in effect.  The C library initializes this register for
-rounding towards plus infinity.  Thus, unless your program modifies the
-@var{fpcr}, @samp{d} corresponds to round towards plus infinity.
+rounding mode in effect.  The C library initializes this register, so
+unless your program modifies the @var{fpcr}, for example through
+@code{fesetround}, @samp{d} corresponds to the rounding mode the C
+library selected.
 @end table
+
+The default is @samp{n}, except that @samp{d} is the default when
+@option{-frounding-math} is in effect, since only dynamic rounding can
+honor a rounding mode chosen at run time.  This does not apply to
+@option{-mfloat-vax}, whose instructions have no dynamic rounding
+qualifier.
 
 @opindex mtrap-precision
 @item -mtrap-precision=@var{trap-precision}

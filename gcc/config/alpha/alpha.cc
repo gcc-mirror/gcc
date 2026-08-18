@@ -435,6 +435,12 @@ alpha_option_override (void)
 	error ("bad value %qs for %<-mfp-rounding-mode%> switch",
 	       alpha_fprm_string);
     }
+  else if (flag_rounding_math && !TARGET_FLOAT_VAX)
+    /* Honoring a rounding mode chosen at run time requires instructions
+       that take their rounding mode from the FPCR.  Without this, code
+       built with -frounding-math silently ignores fesetround.  The VAX
+       floating-point instructions have no dynamic rounding qualifier.  */
+    alpha_fprm = ALPHA_FPRM_DYN;
 
   if (alpha_fptm_string)
     {
