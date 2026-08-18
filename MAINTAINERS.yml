@@ -7,6 +7,8 @@ users:
   roles:
   - WriteAfter
   account: sabson
+  inactive_email:
+  - spencer.abson@arm.com
 - sn: Adams
   cn: Mark G. Adams
   email:
@@ -33,6 +35,8 @@ users:
   - WriteAfter
   account: palves
   inactive: true
+  inactive_email:
+  - pedro@codesourcery.com
 - sn: Anglin
   cn: John David Anglin
   email:
@@ -43,6 +47,10 @@ users:
   - Maintainer: hpux
   - WriteAfter
   account: danglin
+  inactive_email:
+  - dave.anglin@nrc-cnrc.gc.ca
+  - dave.anglin@nrc.ca
+  - dave@hiauly1.hia.nrc.ca
 - sn: Anlauf
   cn: Harald Anlauf
   email:
@@ -69,6 +77,8 @@ users:
   roles:
   - WriteAfter
   account: parras
+  inactive_email:
+  - pa@codesourcery.com
 - sn: Arsenović
   cn: Arsen Arsenović
   email:
@@ -77,6 +87,8 @@ users:
   roles:
   - WriteAfter
   account: arsen
+  inactive_email:
+  - arsen@aarsen.me
 - sn: Ashok
   cn: Raksit Ashok
   email:
@@ -95,6 +107,9 @@ users:
   - Maintainer: xtensa port
   - WriteAfter
   account: sterling
+  inactive_email:
+  - saugustine@google.com
+  - sterling@tensilica.com
 - sn: Austern
   cn: Matt Austern
   email:
@@ -104,6 +119,10 @@ users:
   - WriteAfter
   account: austern
   inactive: true
+  inactive_email:
+  - austern@apple.com
+  - austern@gmail.com
+  - austern@sgi.com
 - sn: Ayers
   cn: David Ayers
   email:
@@ -113,6 +132,8 @@ users:
   - WriteAfter
   account: ayers
   inactive: true
+  inactive_email:
+  - d.ayers@inode.at
 - sn: Bahuguna
   cn: Prakhar Bahuguna
   email:
@@ -130,6 +151,9 @@ users:
   - WriteAfter
   account: giovannibajo
   inactive: true
+  inactive_email:
+  - giovannibajo@libero.it
+  - rasky@develer.com
 - sn: Baldwin
   cn: Simon Baldwin
   email:
@@ -156,6 +180,8 @@ users:
   - WriteAfter
   account: scottb
   inactive: true
+  inactive_email:
+  - scottb@corelcomputer.com
 - sn: Bangerth
   cn: Wolfgang Bangerth
   email:
@@ -165,6 +191,10 @@ users:
   - WriteAfter
   account: bangerth
   inactive: true
+  inactive_email:
+  - bangerth@dealii.com
+  - bangerth@ticam.utexas.edu
+  - wolfgang.bangerth@iwr.uni-heidelberg.de
 - sn: Bantaloukas
   cn: Claudio Bantaloukas
   email:
@@ -205,6 +235,8 @@ users:
   roles:
   - WriteAfter
   account: bauermann
+  inactive_email:
+  - bauerman@br.ibm.com
 - sn: Baylis
   cn: Charles Baylis
   email:
@@ -232,6 +264,8 @@ users:
   roles:
   - WriteAfter
   account: belagod
+  inactive_email:
+  - tbelagod@arm.com
 - sn: Belevantsev
   cn: Andrey Belevantsev
   email:
@@ -251,6 +285,8 @@ users:
   - WriteAfter
   account: mbelivea
   inactive: true
+  inactive_email:
+  - mbelivea@redhat.com.com
 - sn: Belyshev
   cn: Serge Belyshev
   email:
@@ -260,6 +296,9 @@ users:
   - WriteAfter
   account: ssb
   inactive: true
+  inactive_email:
+  - 1319@bot.ru
+  - belyshev@lubercy.com
 - sn: Beniston
   cn: Jon Beniston
   email:
@@ -286,6 +325,8 @@ users:
   - WriteAfter
   account: abensonca
   inactive: true
+  inactive_email:
+  - abenson@carnegiescience.edu
 - sn: Bergner
   cn: Peter Bergner
   email:
@@ -296,6 +337,9 @@ users:
   - WriteAfter
   - DCO: bergner@tenstorrent.com
   account: bergner
+  inactive_email:
+  - bergner@linux.ibm.com
+  - bergner@vnet.ibm.com
 - sn: Berlin
   cn: Daniel Berlin
   email:
@@ -305,6 +349,10 @@ users:
   - WriteAfter
   account: dberlin
   inactive: true
+  inactive_email:
+  - dan@cgsoftware.com
+  - dan@dberlin.org
+  - dberlin@redhat.com
 - sn: Bernardi
   cn: Pat Bernardi
   email:
@@ -322,6 +370,8 @@ users:
   roles:
   - WriteAfter
   account: jbeulich
+  inactive_email:
+  - jbeulich@novell.com
 - sn: Bhagat
   cn: Indu Bhagat
   email:
@@ -343,6 +393,9 @@ users:
   - Reviewer: LTO
   - WriteAfter
   account: rguenth
+  inactive_email:
+  - rguenth@tat.physik.uni-tuebingen.de
+  - richard.guenther@uni-tuebingen.de
 - sn: Billinghurst
   cn: David Billinghurst
   email:
@@ -352,6 +405,8 @@ users:
   - WriteAfter
   account: billingd
   inactive: true
+  inactive_email:
+  - david.billinghurst@riotinto.com.au
 - sn: Bily
   cn: Tomas Bily
   email:
@@ -370,6 +425,9 @@ users:
   - WriteAfter
   account: lauras
   inactive: true
+  inactive_email:
+  - lauras@softhome.net
+  - laurynas.biveinis@mif.vu.lt
 - sn: Bizjak
   cn: Uros Bizjak
   email:
@@ -379,6 +437,8 @@ users:
   - Maintainer: i386 port
   - WriteAfter
   account: uros
+  inactive_email:
+  - uros@kss-loka.si
 - sn: Blackmore
   cn: Craig Blackmore
   email:
@@ -395,6 +455,8 @@ users:
   - WriteAfter
   account: ericb
   inactive: true
+  inactive_email:
+  - ebb9@email.byu.edu
 - sn: Blomqvist
   cn: Janne Blomqvist
   email:
@@ -404,6 +466,9 @@ users:
   - WriteAfter
   account: jb
   inactive: true
+  inactive_email:
+  - jblomqvi@cc.hut.fi
+  - jblomqvi@vipunen.hut.fi
 - sn: Blundell
   cn: Phil Blundell
   email:
@@ -421,6 +486,9 @@ users:
   - WriteAfter
   account: hboehm
   inactive: true
+  inactive_email:
+  - boehm@acm.org
+  - hans_boehm@hp.com
 - sn: Boessenkool
   cn: Segher Boessenkool
   email:
@@ -431,6 +499,9 @@ users:
   - Maintainer: instruction combiner
   - WriteAfter
   account: segher
+  inactive_email:
+  - boessen@de.ibm.com
+  - segher@koffie.nl
 - sn: Boger
   cn: Lynn Boger
   email:
@@ -468,6 +539,9 @@ users:
   - Reviewer: dataflow
   - WriteAfter
   account: bonzini
+  inactive_email:
+  - paolo.bonzini@lu.unisi.ch
+  - pbonzini@redhat.com
 - sn: Booth
   cn: Neil Booth
   email:
@@ -477,6 +551,12 @@ users:
   - WriteAfter
   account: neil
   inactive: true
+  inactive_email:
+  - neil@cat.daikokuya.co.uk
+  - neil@cat.daikokuya.demon.co.uk
+  - neil@daikokuya.demon.co.uk
+  - neil@duron.akihabara.co.uk
+  - neilb@earthling.net
 - sn: Bosscher
   cn: Steven Bosscher
   email:
@@ -486,6 +566,10 @@ users:
   - WriteAfter
   account: steven
   inactive: true
+  inactive_email:
+  - s.bosscher@student.tudelft.nl
+  - stevenb.gcc@gmail.com
+  - stevenb@suse.de
 - sn: Botcazou
   cn: Eric Botcazou
   email:
@@ -499,6 +583,11 @@ users:
   - Maintainer: RTL optimizers
   - WriteAfter
   account: ebotcazou
+  inactive_email:
+  - botcazou@adacore.com
+  - ebotcazou@act-europe.fr
+  - ebotcazou@adacore.come
+  - ebotcazou@multimania.com
 - sn: Bothner
   cn: Per Bothner
   email:
@@ -509,6 +598,12 @@ users:
   - WriteAfter
   account: bothner
   inactive: true
+  inactive_email:
+  - bothner@bothner.com
+  - bothner@cygnus.com
+  - bothner@kalessin.cygnus.com
+  - bothner@pbothner.com
+  - pbothner@apple.com
 - sn: Boucher
   cn: Antoni Boucher
   email:
@@ -555,6 +650,9 @@ users:
   - WriteAfter
   account: brobecke
   inactive: true
+  inactive_email:
+  - brobecke@adacore.com
+  - brobecker@adacore.com
 - sn: Brolley
   cn: Dave Brolley
   email:
@@ -564,6 +662,8 @@ users:
   - WriteAfter
   account: brolley
   inactive: true
+  inactive_email:
+  - brolley@cygnus.com
 - sn: Brown
   cn: Julian Brown
   email:
@@ -592,6 +692,8 @@ users:
   - Maintainer: libphobos
   - WriteAfter
   account: ibuclaw
+  inactive_email:
+  - ibuclaw@symmetryinvestments.com
 - sn: Buettner
   cn: Kevin Buettner
   email:
@@ -608,6 +710,9 @@ users:
   roles:
   - WriteAfter
   account: aburgess
+  inactive_email:
+  - aburgess@broadcom.com
+  - andrew.burgess@embecosm.com
 - sn: Burnus
   cn: Tobias Burnus
   email:
@@ -622,6 +727,8 @@ users:
   - Reviewer: Fortran
   - WriteAfter
   account: burnus
+  inactive_email:
+  - tobias@codesourcery.com
 - sn: Butcher
   cn: Adam Butcher
   email:
@@ -640,6 +747,10 @@ users:
   - WriteAfter
   account: cagney
   inactive: true
+  inactive_email:
+  - ac131313@redhat.com
+  - cagney@b1.cygnus.com
+  - cagney@redhat.com
 - sn: Carlini
   cn: Paolo Carlini
   email:
@@ -650,6 +761,10 @@ users:
   - WriteAfter
   account: paolo
   inactive: true
+  inactive_email:
+  - paolo.carlini@oracle.com
+  - pcarlini@suse.de
+  - pcarlini@unitus.it
 - sn: Carlotti
   cn: Alice Carlotti
   email:
@@ -659,6 +774,8 @@ users:
   - Reviewer: aarch64 port
   - WriteAfter
   account: acarlotti
+  inactive_email:
+  - andrew.carlotti@arm.com
 - sn: Carrera
   cn: Daniel Carrera
   email:
@@ -677,6 +794,11 @@ users:
   - WriteAfter
   account: ciceron
   inactive: true
+  inactive_email:
+  - stcarrez@worldnet.fr
+  - stephane.carrez@nerim.fr
+  - stephane.carrez@sun.com
+  - stephane.carrez@worldnet.fr
 - sn: Charette
   cn: Gabriel Charette
   email:
@@ -695,6 +817,9 @@ users:
   - Maintainer: Ada front end
   - WriteAfter
   account: charlet
+  inactive_email:
+  - charlet@act-europe.fr
+  - charlet@gnat.com
 - sn: Chavva
   cn: Chandra Chavva
   email:
@@ -704,6 +829,8 @@ users:
   - WriteAfter
   account: cchavva
   inactive: true
+  inactive_email:
+  - cchavva@cygnus.com
 - sn: Chawla
   cn: Dhruv Chawla
   email:
@@ -743,6 +870,8 @@ users:
   - WriteAfter
   account: fabien
   inactive: true
+  inactive_email:
+  - fabien.chene@gmail.com
 - sn: Cheng
   cn: Bin Cheng
   email:
@@ -754,6 +883,8 @@ users:
   - WriteAfter
   account: amker
   inactive: true
+  inactive_email:
+  - bin.cheng@arm.com
 - sn: Cheng
   cn: Kito Cheng
   email:
@@ -764,6 +895,9 @@ users:
   - Maintainer: riscv port
   - WriteAfter
   account: kito
+  inactive_email:
+  - kito@0xlab.org
+  - kito@andestech.com
 - sn: Cheng
   cn: Lulu Cheng
   email:
@@ -784,6 +918,8 @@ users:
   - Maintainer: avr port
   - WriteAfter
   account: denisc
+  inactive_email:
+  - denisc@overta.ru
 - sn: Chiang
   cn: Monk Chiang
   email:
@@ -793,6 +929,9 @@ users:
   roles:
   - WriteAfter
   account: monkc
+  inactive_email:
+  - 62004175+monkchiang@users.noreply.github.com
+  - sh.chiang04@gmail.com
 - sn: Chigot
   cn: Clément Chigot
   email:
@@ -801,6 +940,9 @@ users:
   roles:
   - WriteAfter
   account: helflym
+  inactive_email:
+  - chigot.c@gmail.com
+  - clement.chigot@atos.net
 - sn: Chopra
   cn: Harshit Chopra
   email:
@@ -838,6 +980,10 @@ users:
   - WriteAfter
   account: echristo
   inactive: true
+  inactive_email:
+  - echristo@apple.com
+  - echristo@cygnus.com
+  - echristo@redhat.com
 - sn: Clarke
   cn: Paul Clarke
   email:
@@ -865,6 +1011,11 @@ users:
   - Maintainer: xstormy16 port
   - WriteAfter
   account: nickc
+  inactive_email:
+  - nickc@cambridge.redhat.com
+  - nickc@cygnus.com
+  - niclc@cygnus.com
+  - niclc@redhat.com
 - sn: Cohen
   cn: Arthur Cohen
   email:
@@ -893,6 +1044,9 @@ users:
   - WriteAfter
   account: collison
   inactive: true
+  inactive_email:
+  - collison@rivosinc.com
+  - michael.collison@linaro.org
 - sn: Colomar
   cn: Alejandro Colomar
   email:
@@ -902,6 +1056,8 @@ users:
   - WriteAfter
   - DCO: alx@kernel.org
   account: alx
+  inactive_email:
+  - alx.manpages@gmail.com
 - sn: Conner
   cn: Josh Conner
   email:
@@ -911,6 +1067,8 @@ users:
   - WriteAfter
   account: jconner
   inactive: true
+  inactive_email:
+  - jconner@apple.com
 - sn: Cook
   cn: R. Kelley Cook
   email:
@@ -919,6 +1077,8 @@ users:
   - WriteAfter
   account: kcook
   inactive: true
+  inactive_email:
+  - kelleycook@attglobal.net
 - sn: Coplan
   cn: Alex Coplan
   email:
@@ -957,6 +1117,8 @@ users:
   - WriteAfter
   account: corsepiu
   inactive: true
+  inactive_email:
+  - corsepiu@faw.uni-ulm.de
 - sn: Coudert
   cn: François-Xavier Coudert
   email:
@@ -965,6 +1127,8 @@ users:
   - Reviewer: Fortran
   - WriteAfter
   account: fxcoudert
+  inactive_email:
+  - coudert@clipper.ens.fr
 - sn: Courtès
   cn: Ludovic Courtès
   email:
@@ -985,6 +1149,8 @@ users:
   - WriteAfter
   account: ccoutant
   inactive: true
+  inactive_email:
+  - ccoutant@google.com
 - sn: Crowl
   cn: Lawrence Crowl
   email:
@@ -1022,6 +1188,10 @@ users:
   - Maintainer: riscv port
   - WriteAfter
   account: palmer
+  inactive_email:
+  - palmer@rivosinc.com
+  - palmer@sifive.com
+  - palmerdabbelt@google.com
 - sn: Dall
   cn: Ian Dall
   email:
@@ -1031,6 +1201,9 @@ users:
   - WriteAfter
   account: iandall
   inactive: true
+  inactive_email:
+  - ian.dall@dsto.defence.gov.au
+  - ian@sibyl.beware.dropbear.id.au
 - sn: Daney
   cn: David Daney
   email:
@@ -1040,6 +1213,9 @@ users:
   - WriteAfter
   account: daney
   inactive: true
+  inactive_email:
+  - ddaney@avtrex.com
+  - ddaney@caviumnetworks.com
 - sn: Dapp
   cn: Robin Dapp
   email:
@@ -1056,6 +1232,10 @@ users:
   - DCO: rdapp@qti.qualcomm.com
   - DCO: rdapp@ventanamicro.com
   account: rdapp
+  inactive_email:
+  - rdapp@linux.ibm.com
+  - rdapp@linux.vnet.ibm.com
+  - rdapp@oss.qualcomm.com
 - sn: Dardis
   cn: Simon Dardis
   email:
@@ -1065,6 +1245,8 @@ users:
   - WriteAfter
   account: dardiss
   inactive: true
+  inactive_email:
+  - simon.dardis@imgtec.com
 - sn: Das
   cn: Sudakshina Das
   email:
@@ -1083,6 +1265,11 @@ users:
   - WriteAfter
   account: bdavis
   inactive: true
+  inactive_email:
+  - bdavis9659@comcast.net
+  - bdavis9659@sbcglobal.net
+  - bdavis@gfortran.org
+  - jimmied@smu.edu
 - sn: DeLisle
   cn: Jerry DeLisle
   email:
@@ -1091,6 +1278,9 @@ users:
   - Reviewer: Fortran
   - WriteAfter
   account: jvdelisle
+  inactive_email:
+  - jvdelisle2@gmail.com
+  - jvdelisle@verizon.net
 - sn: Delorie
   cn: DJ Delorie
   email:
@@ -1101,6 +1291,9 @@ users:
   - WriteAfter
   account: dj
   inactive: true
+  inactive_email:
+  - dj@cygnus.com
+  - dj@redhat.com
 - sn: Demetriou
   cn: Chris Demetriou
   email:
@@ -1110,6 +1303,10 @@ users:
   - WriteAfter
   account: cgd
   inactive: true
+  inactive_email:
+  - cgd@broadcom.com
+  - cgd@netbsd.org
+  - cgd@sibyte.com
 - sn: Dennett
   cn: James Dennett
   email:
@@ -1117,6 +1314,8 @@ users:
   roles:
   - BZ
   inactive: true
+  inactive_email:
+  - jdennett@google.com
 - sn: Deshpande
   cn: Sameera Deshpande
   email:
@@ -1126,6 +1325,9 @@ users:
   - WriteAfter
   account: sameerad
   inactive: true
+  inactive_email:
+  - sameera.deshpande@arm.com
+  - sameera.deshpande@imgtec.com
 - sn: Dijkstra
   cn: Wilco Dijkstra
   email:
@@ -1135,6 +1337,8 @@ users:
   - Reviewer: aarch64 port
   - WriteAfter
   account: wilco
+  inactive_email:
+  - wdijkstr@arm.com
 - sn: Dimitrov
   cn: Dimitar Dimitrov
   email:
@@ -1170,6 +1374,10 @@ users:
   - Maintainer: c++ runtime libs
   - WriteAfter
   account: drepper
+  inactive_email:
+  - drepper@cygnus.com
+  - drepper@redhat.com
+  - drepper@rtl.cygnus.com
 - sn: Dubner
   cn: Robert Dubner
   email:
@@ -1190,6 +1398,8 @@ users:
   - Maintainer: c++ runtime libs special modes
   - WriteAfter
   account: fdumont
+  inactive_email:
+  - francois.cppdevs@free.fr
 - sn: Dvorak
   cn: Zdenek Dvorak
   email:
@@ -1202,6 +1412,10 @@ users:
   - WriteAfter
   account: rakdver
   inactive: true
+  inactive_email:
+  - dvorakz@suse.cz
+  - rakdver@atrey.karlin.mff.cuni.cz
+  - rakdver@kam.uniff.cz
 - sn: Eager
   cn: Michael Eager
   email:
@@ -1213,6 +1427,8 @@ users:
   account: eager
   aliases:
   - Michael J. Eager
+  inactive_email:
+  - eager@mvista.com
 - sn: Earnshaw
   cn: Richard Earnshaw
   email:
@@ -1225,6 +1441,9 @@ users:
   - Maintainer: arm port
   - WriteAfter
   account: rearnsha
+  inactive_email:
+  - erich@gnu.org
+  - rwe11@cl.cam.ac.uk
 - sn: Eckhardt
   cn: Jason Eckhardt
   email:
@@ -1234,6 +1453,9 @@ users:
   - WriteAfter
   account: jle
   inactive: true
+  inactive_email:
+  - jle@cygnus.com
+  - jle@redhat.com
 - sn: Edelmann
   cn: Erik Edelmann
   email:
@@ -1244,6 +1466,8 @@ users:
   - WriteAfter
   account: eedelman
   inactive: true
+  inactive_email:
+  - eedelman@acclab.helsinki.fi
 - sn: Edelsohn
   cn: David Edelsohn
   email:
@@ -1254,6 +1478,10 @@ users:
   - Maintainer: aix
   - WriteAfter
   account: dje
+  inactive_email:
+  - dje@watson.ibm.com
+  - edelsohn@gnu.org
+  - edelsohn@mhpcc.edu
 - sn: Edlinger
   cn: Bernd Edlinger
   email:
@@ -1270,6 +1498,12 @@ users:
   - WriteAfter
   account: pme
   inactive: true
+  inactive_email:
+  - pedwards@disaster.jaj.com
+  - pedwards@jaj.com
+  - phil@codesourcery.com
+  - phil@jaj.com
+  - pme@sourceware.cygnus.com
 - sn: Eggleston
   cn: Mark Eggleston
   email:
@@ -1279,6 +1513,8 @@ users:
   - WriteAfter
   account: markeggleston
   inactive: true
+  inactive_email:
+  - mark.eggleston@codethink.com
 - sn: Ehrhardt
   cn: Christian Ehrhardt
   email:
@@ -1295,6 +1531,12 @@ users:
   - WriteAfter
   account: sje
   inactive: true
+  inactive_email:
+  - sellcey@cavium.com
+  - sellcey@imgtec.com
+  - sellcey@marvell.com
+  - sellcey@mips.com
+  - sje@cup.hp.com
 - sn: Elliston
   cn: Ben Elliston
   email:
@@ -1305,6 +1547,12 @@ users:
   - WriteAfter
   account: bje
   inactive: true
+  inactive_email:
+  - bje@au.ibm.com
+  - bje@cygnus.com
+  - bje@gnu.org
+  - bje@redhat.com
+  - bje@wasabisystems.com
 - sn: Embar
   cn: Mohan Embar
   email:
@@ -1322,6 +1570,8 @@ users:
   - Maintainer: sh port
   - WriteAfter
   account: olegendo
+  inactive_email:
+  - oleg.endo@t-online.de
 - sn: Eres
   cn: Revital Eres
   email:
@@ -1331,6 +1581,8 @@ users:
   - WriteAfter
   account: revitale
   inactive: true
+  inactive_email:
+  - revital.eres@linaro.org
 - sn: Espie
   cn: Marc Espie
   email:
@@ -1340,6 +1592,11 @@ users:
   - WriteAfter
   account: espie
   inactive: true
+  inactive_email:
+  - espie@openbsd.org
+  - espie@quatramaran.ens.fr
+  - marc.espie@liafa.jussieu.fr
+  - marc.espie@openbsd.org
 - sn: Esztermann
   cn: Ansgar Esztermann
   email:
@@ -1358,6 +1615,17 @@ users:
   - WriteAfter
   account: devans
   inactive: true
+  inactive_email:
+  - devans@canuck.cygnus.com
+  - devans@cygnus.com
+  - devans@egcs.cygnus.com
+  - devans@transmeta.com
+  - dje@canuck.cygnus.com
+  - dje@cygnus.com
+  - dje@gnu.org
+  - dje@seba.cygnus.com
+  - dje@sebabeach.org
+  - dje@transmeta.com
 - sn: Fairles
   cn: Chris Fairles
   email:
@@ -1366,6 +1634,8 @@ users:
   - WriteAfter
   account: cfairles
   inactive: true
+  inactive_email:
+  - chris.fairles@gmail.com
 - sn: Fanfarillo
   cn: Alessandro Fanfarillo
   email:
@@ -1375,6 +1645,8 @@ users:
   - WriteAfter
   account: afanfa
   inactive: true
+  inactive_email:
+  - alessandro.fanfarillo@gmail.com
 - sn: Fang
   cn: Changpeng Fang
   email:
@@ -1446,6 +1718,8 @@ users:
   - WriteAfter
   account: afomin
   inactive: true
+  inactive_email:
+  - alexander.fomin@intel.com
 - sn: Ford
   cn: Brian Ford
   email:
@@ -1464,6 +1738,8 @@ users:
   roles:
   - WriteAfter
   account: mpf
+  inactive_email:
+  - matthew.fortune@mips.com
 - sn: Franco
   cn: Kael Andrew Franco
   email:
@@ -1500,6 +1776,9 @@ users:
   - WriteAfter
   account: froydnj
   inactive: true
+  inactive_email:
+  - froydnj@codesourcery.com
+  - froydnj@cs.rice.edu
 - sn: Fu
   cn: Chao-ying Fu
   email:
@@ -1560,6 +1839,8 @@ users:
   - WriteAfter
   account: ghazi
   inactive: true
+  inactive_email:
+  - ghazi@caip.rutgers.edu
 - sn: Gilmore
   cn: Doug Gilmore
   email:
@@ -1578,6 +1859,8 @@ users:
   - WriteAfter
   account: gingell
   inactive: true
+  inactive_email:
+  - gingell@adacore.com
 - sn: Gingold
   cn: Tristan Gingold
   email:
@@ -1588,6 +1871,8 @@ users:
   - WriteAfter
   account: gingold
   inactive: true
+  inactive_email:
+  - gingold@adacore.com
 - sn: Glaw
   cn: Jan-Benedict Glaw
   email:
@@ -1596,6 +1881,10 @@ users:
   roles:
   - WriteAfter
   account: jbglaw
+  inactive_email:
+  - jbglaw@getslash.de
+  - jbglaw@owl.de
+  - jbglaw@ług-owl.de
 - sn: Glisse
   cn: Marc Glisse
   email:
@@ -1604,6 +1893,8 @@ users:
   roles:
   - WriteAfter
   account: glisse
+  inactive_email:
+  - marc.glisse@normalesup.org
 - sn: Godbole
   cn: Prachi Godbole
   email:
@@ -1613,6 +1904,9 @@ users:
   - WriteAfter
   - DCO: pgodbole@nvidia.com
   account: pgodbole
+  inactive_email:
+  - prachi.godbole@imgtec.com
+  - prachigodbole@gcc.gnu.org
 - sn: Granlund
   cn: Torbjorn Granlund
   email:
@@ -1620,6 +1914,10 @@ users:
   roles:
   - WriteAfter
   inactive: true
+  inactive_email:
+  - tege@gnu.org
+  - tege@matematik.su.se
+  - tege@pdc.kth.se
 - sn: Green
   cn: Anthony Green
   email:
@@ -1630,6 +1928,11 @@ users:
   - WriteAfter
   account: green
   inactive: true
+  inactive_email:
+  - green@cygnus.com
+  - green@localhost.localdomain
+  - green@redhat.com
+  - green@trip.cygnus.com
 - sn: Greenhalgh
   cn: James Greenhalgh
   email:
@@ -1648,6 +1951,8 @@ users:
   - WriteAfter
   account: dgregor
   inactive: true
+  inactive_email:
+  - dgregor@apple.com
 - sn: Gretton-Dann
   cn: Matthew Gretton-Dann
   email:
@@ -1657,6 +1962,8 @@ users:
   - WriteAfter
   account: mgretton
   inactive: true
+  inactive_email:
+  - matthew.gretton-dann@linaro.org
 - sn: Gribov
   cn: Yury Gribov
   email:
@@ -1666,6 +1973,8 @@ users:
   - WriteAfter
   account: ygribov
   inactive: true
+  inactive_email:
+  - y.gribov@samsung.com
 - sn: Grimm
   cn: Jon Grimm
   email:
@@ -1685,6 +1994,8 @@ users:
   - WriteAfter
   account: grosser
   inactive: true
+  inactive_email:
+  - tobias@grosser.es
 - sn: Guerby
   cn: Laurent Guerby
   email:
@@ -1694,6 +2005,8 @@ users:
   - WriteAfter
   account: guerby
   inactive: true
+  inactive_email:
+  - guerby@acm.org
 - sn: Gui
   cn: Haochen Gui
   email:
@@ -1719,6 +2032,9 @@ users:
   - WriteAfter
   account: xguo
   inactive: true
+  inactive_email:
+  - terry.guo@arm.com
+  - xuepeng.guo@intel.com
 - sn: Guozhi
   cn: Wei Guozhi
   email:
@@ -1737,6 +2053,8 @@ users:
   - WriteAfter
   - DCO: eikansh.gupta@oss.qualcomm.com
   account: eikansh
+  inactive_email:
+  - quic_eikagupt@quicinc.com
 - sn: Gupta
   cn: Vineet Gupta
   email:
@@ -1745,6 +2063,9 @@ users:
   roles:
   - WriteAfter
   account: vineetg
+  inactive_email:
+  - vgupta@synopsys.com
+  - vineetg@rivosinc.com
 - sn: H.S
   cn: Naveen H.S
   email:
@@ -1757,6 +2078,11 @@ users:
   aliases:
   - Naveen Gowda
   - Naveen
+  inactive_email:
+  - naveen.hurugalawadi@cavium.com
+  - naveen.hurugalawadi@caviumnetworks.com
+  - naveen.s@kpitcummins.com
+  - naveenh@marvell.com
 - sn: Hagog
   cn: Mostafa Hagog
   email:
@@ -1765,6 +2091,8 @@ users:
   - WriteAfter
   account: hagog
   inactive: true
+  inactive_email:
+  - mustafa@il.ibm.com
 - sn: Hainque
   cn: Olivier Hainque
   email:
@@ -1774,6 +2102,8 @@ users:
   - Maintainer: VxWorks ports
   - WriteAfter
   account: hainque
+  inactive_email:
+  - hainque@act-europe.fr
 - sn: Hakobyan
   cn: Jivan Hakobyan
   email:
@@ -1791,6 +2121,14 @@ users:
   - WriteAfter
   account: aph
   inactive: true
+  inactive_email:
+  - aph@cambridge.redhat.com
+  - aph@cygnus.co.uk
+  - aph@cygnus.com
+  - aph@emcee.cambridge.redhat.com
+  - aph@host240.cambridge.redhat.com
+  - aph@littlepinkcloud.com
+  - aph@viagra.cygnus.co.uk
 - sn: Han
   cn: Demin Han
   email:
@@ -1815,6 +2153,8 @@ users:
   roles:
   - WriteAfter
   account: frederik
+  inactive_email:
+  - frederik@codesourcery.com
 - sn: Hastings
   cn: Stuart Hastings
   email:
@@ -1833,6 +2173,8 @@ users:
   - WriteAfter
   account: haubi
   inactive: true
+  inactive_email:
+  - michael.haubenwallner@salomon.at
 - sn: Haugen
   cn: Pat Haugen
   email:
@@ -1842,6 +2184,8 @@ users:
   - WriteAfter
   account: pthaugen
   inactive: true
+  inactive_email:
+  - pthaugen@linux.ibm.com
 - sn: Hayes
   cn: Michael Hayes
   email:
@@ -1851,6 +2195,12 @@ users:
   - WriteAfter
   account: m.hayes
   inactive: true
+  inactive_email:
+  - mhayes@cygnus.com
+  - mhayes@redhat.com
+  - michaelh@ongaonga.chch.cri.nz
+  - mph@elec.canterbury.ac.nz
+  - mph@paradise.net.nz
 - sn: Hayward
   cn: Alan Hayward
   email:
@@ -1875,6 +2225,8 @@ users:
   - WriteAfter
   account: helijia
   inactive: true
+  inactive_email:
+  - helijia@linux.ibm.com
 - sn: Heffernan
   cn: Mark Heffernan
   email:
@@ -1892,6 +2244,10 @@ users:
   - WriteAfter
   account: george
   inactive: true
+  inactive_email:
+  - bugzilla@w170.uklinux.net
+  - george@geo.titech.ac.jp
+  - george@gly.bris.ac.uk
 - sn: Hellstrom
   cn: Daniel Hellstrom
   email:
@@ -1919,6 +2275,10 @@ users:
   - Maintainer: alpha port
   - WriteAfter
   account: rth
+  inactive_email:
+  - rth@cygnus.com
+  - rth@redhat.com
+  - rth@twiddle.net
 - sn: Henderson
   cn: Stuart Henderson
   email:
@@ -1939,6 +2299,9 @@ users:
   - WriteAfter
   - DCO: aldy@quesejoda.com
   account: aldyh
+  inactive_email:
+  - aldyh@cygnus.com
+  - aldyh@redhat.com
 - sn: Herron
   cn: Philip Herron
   email:
@@ -1949,6 +2312,8 @@ users:
   - Maintainer: libgrust
   - WriteAfter
   account: redbrain
+  inactive_email:
+  - philip.herron@embecosm.com
 - sn: Hillenbrand
   cn: Marius Hillenbrand
   email:
@@ -1976,6 +2341,9 @@ users:
   - WriteAfter
   account: kazu
   inactive: true
+  inactive_email:
+  - kazu@cs.umass.edu
+  - kazu@hxi.com
 - sn: Hollstein
   cn: Manfred Hollstein
   email:
@@ -1985,6 +2353,13 @@ users:
   - WriteAfter
   account: manfred
   inactive: true
+  inactive_email:
+  - manfred.h@gmx.net
+  - manfred@lts.sel.alcatel.de
+  - manfred@s-direktnet.de
+  - manfredh@redhat.com
+  - mhollstein@cygnus.com
+  - mhollstein@redhat.com
 - sn: Horne
   cn: Stafford Horne
   email:
@@ -2044,6 +2419,11 @@ users:
   - Maintainer: profile feedback
   - WriteAfter
   account: hubicka
+  inactive_email:
+  - hubicka@freesoft.cz
+  - hubicka@limax.paru.cas.cz
+  - hubicka@paru.cas.cz
+  - jh@suse.cz
 - sn: Hueffner
   cn: Falk Hueffner
   email:
@@ -2053,6 +2433,8 @@ users:
   - WriteAfter
   account: falk
   inactive: true
+  inactive_email:
+  - falk.hueffner@student.uni-tuebingen.de
 - sn: Hughes
   cn: Andrew John Hughes
   email:
@@ -2062,6 +2444,9 @@ users:
   - WriteAfter
   account: gandalf
   inactive: true
+  inactive_email:
+  - ahughes@redhat.com
+  - gnu.andrew@redhat.com
 - sn: Humieres
   cn: Dominique d'Humieres
   email:
@@ -2071,6 +2456,8 @@ users:
   - WriteAfter
   account: dominiq
   inactive: true
+  inactive_email:
+  - dominiq@lps.ens.fr
 - sn: Hutchinson
   cn: Andy Hutchinson
   email:
@@ -2080,6 +2467,9 @@ users:
   - WriteAfter
   account: hutchinsonandy
   inactive: true
+  inactive_email:
+  - hutchinsonamdy@aim.com
+  - hutchinsonandy@netscape.net
 - sn: Hutton
   cn: Joel Hutton
   email:
@@ -2159,6 +2549,8 @@ users:
   - WriteAfter
   account: aivchenk
   inactive: true
+  inactive_email:
+  - alexander.ivchenko@intel.com
 - sn: Iyer
   cn: Balaji V. Iyer
   email:
@@ -2168,6 +2560,8 @@ users:
   - WriteAfter
   account: bviyer
   inactive: true
+  inactive_email:
+  - balaji.v.iyer@intel.com
 - sn: Jääskeläinen
   cn: Pekka Jääskeläinen
   email:
@@ -2177,6 +2571,8 @@ users:
   - WriteAfter
   account: visit0r
   inactive: true
+  inactive_email:
+  - pekka@parmance.com
 - sn: Jacobowitz
   cn: Daniel Jacobowitz
   email:
@@ -2186,6 +2582,11 @@ users:
   - WriteAfter
   account: drow
   inactive: true
+  inactive_email:
+  - dan@codesourcery.com
+  - dan@debian.org
+  - drow@drow.them.org
+  - drow@mvista.com
 - sn: Jaeger
   cn: Andreas Jaeger
   email:
@@ -2195,6 +2596,8 @@ users:
   - WriteAfter
   account: aj
   inactive: true
+  inactive_email:
+  - aj@arthur.rhein-neckar.de
 - sn: Jagasia
   cn: Harsha Jagasia
   email:
@@ -2239,6 +2642,8 @@ users:
   - Reviewer: rs6000/powerpc port
   - WriteAfter
   account: jskumari
+  inactive_email:
+  - jskumari@linux.vnet.ibm.com
 - sn: Jayakar
   cn: Avinash Jayakar
   email:
@@ -2261,6 +2666,9 @@ users:
   - Reviewer: libsanitizer, asan.cc
   - WriteAfter
   account: jakub
+  inactive_email:
+  - jj@sunsite.ms.mff.cuni.cz
+  - jj@ultra.linux.cz
 - sn: Jenner
   cn: Andrew Jenner
   email:
@@ -2296,6 +2704,8 @@ users:
   - WriteAfter
   account: qianjh
   inactive: true
+  inactive_email:
+  - qianjh@cn.fujitsu.com
 - sn: Jires
   cn: Michal Jires
   email:
@@ -2314,6 +2724,11 @@ users:
   - WriteAfter
   account: janis
   inactive: true
+  inactive_email:
+  - janis187@us.ibm.com
+  - janis@us.ibm.com
+  - janisjo@codesourcery.com
+  - janosjo@codesourcery.com
 - sn: Johnson
   cn: Teresa Johnson
   email:
@@ -2375,6 +2790,10 @@ users:
   roles:
   - WriteAfter
   account: eukarpov
+  inactive_email:
+  - eukarpov@gmail.com
+  - evgeny.karpov@microsoft.com
+  - evgeny@kmaps.co
 - sn: Kastl
   cn: Filip Kastl
   email:
@@ -2383,6 +2802,8 @@ users:
   roles:
   - WriteAfter
   account: pheeck
+  inactive_email:
+  - filip.kastl@gmail.com
 - sn: Kaushik
   cn: Abhishek Kaushik
   email:
@@ -2400,6 +2821,11 @@ users:
   - WriteAfter
   account: geoffk
   inactive: true
+  inactive_email:
+  - geoffk@apple.com
+  - geoffk@cygnus.com
+  - geoffk@greed.local
+  - geoffk@redhat.com
 - sn: Kehoe
   cn: Brendan Kehoe
   email:
@@ -2409,6 +2835,12 @@ users:
   - WriteAfter
   account: brendan
   inactive: true
+  inactive_email:
+  - brendan@cygnus.com
+  - brendan@lasher.cygnus.com
+  - brendan@lisa.cygnus.com
+  - brendan@mole.gnu.ai.mit.edu
+  - brendan@redhat.com
 - sn: Kenner
   cn: Richard Kenner
   email:
@@ -2419,6 +2851,12 @@ users:
   - WriteAfter
   account: kenner
   inactive: true
+  inactive_email:
+  - kenner@adacore.com
+  - kenner@don.gnat.com
+  - kenner@gnat.com
+  - kenner@nyu.ede
+  - kenner@vlsi1.ultra.nyu.edu
 - sn: Khrustalev
   cn: Yury Khrustalev
   email:
@@ -2435,6 +2873,10 @@ users:
   roles:
   - WriteAfter
   account: ak
+  inactive_email:
+  - ak@linux.intel.com
+  - ak@muc.de
+  - ak@suse.de
 - sn: Klose
   cn: Matthias Klose
   email:
@@ -2443,6 +2885,10 @@ users:
   roles:
   - WriteAfter
   account: doko
+  inactive_email:
+  - doko@cs.tu-berlin.de
+  - doko@marvin.itso-berlin.de
+  - doko@ubuntu.com
 - sn: Knaggs
   cn: Jeff Knaggs
   email:
@@ -2515,6 +2961,10 @@ users:
   - WriteAfter
   account: pkoning
   inactive: true
+  inactive_email:
+  - paulkoning@comcast.net
+  - pkoning@equallogic.com
+  - pkoning@xedia.com
 - sn: Korb
   cn: Bruce Korb
   email:
@@ -2524,6 +2974,12 @@ users:
   - Maintainer: fixincludes
   - WriteAfter
   account: korbb
+  inactive_email:
+  - autogen@autogen.freeservers.com
+  - autogen@linuxbox.com
+  - ddsinc09@ix.netcom.com
+  - korb@datadesign.com
+  - korbb@datadesign.com
 - sn: Korn
   cn: Dave Korn
   email:
@@ -2533,6 +2989,8 @@ users:
   - WriteAfter
   account: davek
   inactive: true
+  inactive_email:
+  - dave.korn@artimi.com
 - sn: Kosnik
   cn: Benjamin De Kosnik
   email:
@@ -2561,6 +3019,9 @@ users:
   - WriteAfter
   account: kraai
   inactive: true
+  inactive_email:
+  - kraai@alumni.carnegiemellon.edu
+  - kraai@alumni.cmu.edu
 - sn: Kraft
   cn: Daniel Kraft
   email:
@@ -2589,6 +3050,10 @@ users:
   - Maintainer: s390 port
   - WriteAfter
   account: krebbel
+  inactive_email:
+  - andreas.krebbel@de.ibm.com
+  - krebbel1@de.ibm.com
+  - krebbel@linux.vnet.ibm.com
 - sn: Kretz
   cn: Matthias Kretz
   email:
@@ -2598,6 +3063,8 @@ users:
   - WriteAfter
   - DCO: m.kretz@gsi.de
   account: mkretz
+  inactive_email:
+  - kretz@kde.org
 - sn: Krupp
   cn: Louis Krupp
   email:
@@ -2616,6 +3083,9 @@ users:
   - WriteAfter
   - DCO: prathameshk@nvidia.com
   account: prathamesh3492
+  inactive_email:
+  - bilbotheelffriend@gmail.com
+  - prathamesh.kulkarni@linaro.org
 - sn: Kumar
   cn: Venkataramanan Kumar
   email:
@@ -2626,6 +3096,8 @@ users:
   account: vekumar
   aliases:
   - vekumar
+  inactive_email:
+  - venkataramanan.kumar@linaro.org
 - sn: Kuvyrkov
   cn: Maxim Kuvyrkov
   email:
@@ -2635,6 +3107,11 @@ users:
   - Maintainer: Android sub-port
   - WriteAfter
   account: mkuvyrkov
+  inactive_email:
+  - maxim.kuvyrkov@gmail.com
+  - maxim@codesourcery.com
+  - maxim@kugelworks.com
+  - mkuvyrkov@ispras.ru
 - sn: Kwan
   cn: Doug Kwan
   email:
@@ -2661,6 +3138,8 @@ users:
   - WriteAfter
   account: razya
   inactive: true
+  inactive_email:
+  - razya@il.ibm.com
 - sn: Lafage
   cn: Thierry Lafage
   email:
@@ -2679,6 +3158,9 @@ users:
   - WriteAfter
   account: aaronwl
   inactive: true
+  inactive_email:
+  - aaronraolete36@aaronwl.com
+  - awlaframboise@aol.com
 - sn: Lambertsen
   cn: Rask Ingemann Lambertsen
   email:
@@ -2688,6 +3170,8 @@ users:
   - WriteAfter
   account: rask
   inactive: true
+  inactive_email:
+  - rask@sygehus.dk
 - sn: Lambourg
   cn: Jerome Lambourg
   email:
@@ -2725,6 +3209,8 @@ users:
   - WriteAfter
   account: sabre
   inactive: true
+  inactive_email:
+  - sabre@gnu.org
 - sn: Laurenzo
   cn: Terry Laurenzo
   email:
@@ -2774,6 +3260,11 @@ users:
   account: law
   aliases:
   - jlaw
+  inactive_email:
+  - jlaw@localhost.localdomain
+  - law@cygnus.com
+  - law@redhat.com
+  - law@torsion.usersys.redhat.com
 - sn: Lawrence
   cn: Alan Lawrence
   email:
@@ -2792,6 +3283,9 @@ users:
   - WriteAfter
   account: jozefl
   inactive: true
+  inactive_email:
+  - jozef.l@somniumtech.com
+  - jozefl.gcc@gmail.com
 - sn: Lay
   cn: Georg-Johann Lay
   email:
@@ -2800,6 +3294,8 @@ users:
   roles:
   - WriteAfter
   account: gjl
+  inactive_email:
+  - georgjohann@web.de
 - sn: Lazar
   cn: Vlad Lazar
   email:
@@ -2836,6 +3332,12 @@ users:
   - WriteAfter
   account: jwlemke
   inactive: true
+  inactive_email:
+  - jim@wasabisystems.com
+  - jwlemke@codesourcery.com
+  - jwlemke@juniper.net
+  - jwlemke@specifix.com
+  - jwlemke@wasabisystems.com
 - sn: Leoshkevich
   cn: Ilya Leoshkevich
   email:
@@ -2853,6 +3355,9 @@ users:
   - WriteAfter
   account: lerdsuwa
   inactive: true
+  inactive_email:
+  - lerdsuwa@scf-fs.usc.edu
+  - lerdsuwa@scf.usc.edu
 - sn: Li
   cn: Pan Li
   email:
@@ -2901,6 +3406,9 @@ users:
   - Maintainer: rs6000/powerpc port
   - WriteAfter
   account: linkw
+  inactive_email:
+  - linkewen@hygon.cn
+  - linkw@linux.ibm.com
 - sn: Liqin
   cn: Chen Liqin
   email:
@@ -2910,6 +3418,9 @@ users:
   - WriteAfter
   account: liqin
   inactive: true
+  inactive_email:
+  - liqin.chen@sunplusct.com
+  - liqin@sunnorth.com.cn
 - sn: Liška
   cn: Martin Liška
   email:
@@ -2949,6 +3460,8 @@ users:
   - WriteAfter
   account: liujiangning
   inactive: true
+  inactive_email:
+  - jiangning.liu@amperecomputing.com
 - sn: Liu
   cn: Sa Liu
   email:
@@ -2967,6 +3480,8 @@ users:
   - WriteAfter
   account: ralph
   inactive: true
+  inactive_email:
+  - suckfish@ihug.co.nz
 - sn: Lobo
   cn: Sheldon Lobo
   email:
@@ -2976,6 +3491,8 @@ users:
   - WriteAfter
   account: smlobo
   inactive: true
+  inactive_email:
+  - smlobo@sheldon.us.oracle.com
 - sn: Loki
   cn: Gabor Loki
   email:
@@ -3002,6 +3519,8 @@ users:
   - Maintainer: docs co-maintainer
   - WriteAfter
   account: sandra
+  inactive_email:
+  - sandra@codesourcery.com
 - sn: López-Ibáñez
   cn: Manuel López-Ibáñez
   email:
@@ -3018,6 +3537,9 @@ users:
   roles:
   - WriteAfter
   account: carll
+  inactive_email:
+  - carll@us.ibm.com
+  - cel@us.ibm.com
 - sn: Lowden
   cn: James K. Lowden
   email:
@@ -3027,6 +3549,8 @@ users:
   - Maintainer: COBOL front end
   - WriteAfter
   account: jklowden
+  inactive_email:
+  - jklowden@symas.com
 - sn: Löwis
   cn: Martin v. Löwis
   email:
@@ -3053,6 +3577,12 @@ users:
   - WriteAfter
   - DCO: hjl.tools@gmail.com
   account: hjl
+  inactive_email:
+  - hjl@gnu.ai.mit.edu
+  - hjl@gnu.org
+  - hjl@lucon.org
+  - hjl@nynexst.com
+  - hongjiu.lu@intel.com
 - sn: Luo
   cn: Xiong Hu Luo
   email:
@@ -3061,6 +3591,9 @@ users:
   - WriteAfter
   account: luoxhu
   inactive: true
+  inactive_email:
+  - luoxhu@linux.ibm.com
+  - luoxhu@linux.vnet.ibm.com
 - sn: Lv
   cn: Bin Bin Lv
   email:
@@ -3079,6 +3612,10 @@ users:
   - Reviewer: arm port (MVE)
   - WriteAfter
   account: clyon
+  inactive_email:
+  - christophe.lyon@foss.st.com
+  - christophe.lyon@linaro.org
+  - christophe.lyon@st.com
 - sn: Ma
   cn: Jin Ma
   email:
@@ -3113,6 +3650,10 @@ users:
   roles:
   - WriteAfter
   account: luisgpm
+  inactive_email:
+  - luis.machado@arm.com
+  - luis.machado@linaro.org
+  - luisgpm@br.ibm.com
 - sn: MacLeod
   cn: Andrew MacLeod
   email:
@@ -3123,6 +3664,8 @@ users:
   - Maintainer: tree-ssa
   - WriteAfter
   account: amacleod
+  inactive_email:
+  - amacleod@cygnus.com
 - sn: Mahkovec
   cn: Ziga Mahkovec
   email:
@@ -3144,6 +3687,13 @@ users:
   account: vmakarov
   aliases:
   - Vladimir N. Makarov
+  inactive_email:
+  - vmakarov@cygnus.com
+  - vmakarov@loony.cygnus.com
+  - vmakarov@toad.to.cygnus.com
+  - vmakarov@tofu.to.cygnus.com
+  - vmakarov@toke.toronto.redhat.com
+  - vmakarov@touchme.toronto.redhat.com
 - sn: Malcolm
   cn: David Malcolm
   email:
@@ -3166,6 +3716,8 @@ users:
   - WriteAfter
   - DCO: mmalcomson@nvidia.com
   account: matmal01
+  inactive_email:
+  - matthew.malcomson@arm.com
 - sn: Maltsev
   cn: Mikhail Maltsev
   email:
@@ -3217,6 +3769,8 @@ users:
   roles:
   - WriteAfter
   account: simartin
+  inactive_email:
+  - simon-l.martin@laposte.net
 - sn: Martinez
   cn: Alejandro Martinez
   email:
@@ -3235,6 +3789,8 @@ users:
   - WriteAfter
   account: rmathew
   inactive: true
+  inactive_email:
+  - rmathew@gmail.com
 - sn: Matos
   cn: Paulo Matos
   email:
@@ -3244,6 +3800,9 @@ users:
   - WriteAfter
   account: pmatos
   inactive: true
+  inactive_email:
+  - paulo@matos-sorge.com
+  - pmatos@broadcom.com
 - sn: Matsui
   cn: Ken Matsui
   email:
@@ -3251,6 +3810,8 @@ users:
   roles:
   - WriteAfter
   account: kmatsui
+  inactive_email:
+  - kmatsui@cs.washington.edu
 - sn: Matz
   cn: Michael Matz
   email:
@@ -3259,6 +3820,8 @@ users:
   roles:
   - WriteAfter
   account: matz
+  inactive_email:
+  - matzmich@cs.tu-berlin.de
 - sn: McGary
   cn: Greg McGary
   email:
@@ -3268,6 +3831,10 @@ users:
   - WriteAfter
   account: gkm
   inactive: true
+  inactive_email:
+  - gkm@eng.ascend.com
+  - gkm@rivosinc.com
+  - greg@mcgary.org
 - sn: McGrath
   cn: Roland McGrath
   email:
@@ -3277,6 +3844,10 @@ users:
   roles:
   - WriteAfter
   account: roland
+  inactive_email:
+  - roland@frob.com
+  - roland@gnu.org
+  - roland@redhat.com
 - sn: McKinlay
   cn: Bryce McKinlay
   email:
@@ -3286,6 +3857,11 @@ users:
   - WriteAfter
   account: bryce
   inactive: true
+  inactive_email:
+  - bmckinlay@gmail.com
+  - bryce@albatross.co.nz
+  - bryce@mckinlay.net.nz
+  - bryce@waitaki.otago.ac.nz
 - sn: Meakin
   cn: Karl Meakin
   email:
@@ -3294,6 +3870,8 @@ users:
   roles:
   - WriteAfter
   account: karmea01
+  inactive_email:
+  - karlwfmeakin@gmail.com
 - sn: Megacz
   cn: Adam Megacz
   email:
@@ -3303,6 +3881,8 @@ users:
   - WriteAfter
   account: megacz
   inactive: true
+  inactive_email:
+  - megacz@cs.berkeley.edu
 - sn: Mei
   cn: Bingfeng Mei
   email:
@@ -3322,6 +3902,15 @@ users:
   - WriteAfter
   account: meissner
   inactive: true
+  inactive_email:
+  - gnu@the-meissners.org
+  - meissner@cygnus.com
+  - meissner@linux.ibm.com
+  - meissner@linux.vnet.ibm.com
+  - meissner@redhat.com
+  - meissner@the-meissners.org
+  - meissner@tiktok.cygnus.com
+  - michael.meissner@amd.com
 - sn: Melcr
   cn: Josef Melcr
   email:
@@ -3330,6 +3919,9 @@ users:
   roles:
   - WriteAfter
   account: jmelcr
+  inactive_email:
+  - jmelcr02@gmail.com
+  - melcrjos@fit.cvut.cz
 - sn: Merrill
   cn: Jason Merrill
   email:
@@ -3343,6 +3935,16 @@ users:
   - Maintainer: dwarf debugging code
   - WriteAfter
   account: jason
+  inactive_email:
+  - jason@casey.cygnus.com
+  - jason@casey.soma.redhat.com
+  - jason@cygnus.com
+  - jason@decepticon.cygnus.com
+  - jason@deneb.cygnus.com
+  - jason@lasher.cygnus.com
+  - jason@phydeaux.cygnus.com
+  - jason@yorick.cygnus.com
+  - merrill@gnu.org
 - sn: Meyering
   cn: Jim Meyering
   email:
@@ -3352,6 +3954,10 @@ users:
   - WriteAfter
   account: meyering
   inactive: true
+  inactive_email:
+  - meyering@ascend.com
+  - meyering@lucent.com
+  - meyering@redhat.com
 - sn: Michlmayr
   cn: Martin Michlmayr
   email:
@@ -3373,6 +3979,15 @@ users:
   - WriteAfter
   account: davem
   inactive: true
+  inactive_email:
+  - davem@davemloft.net
+  - davem@dm.cobaltmicro.com
+  - davem@nadzieja.rutgers.edu
+  - davem@nuts.davemloft.net
+  - davem@pierdol.cobaltmicro.com
+  - davem@pierdol.cobaltnet.com
+  - davem@sunset.davemloft.net
+  - davem@tanya.rutgers.edu
 - sn: Millward
   cn: Lee Millward
   email:
@@ -3382,6 +3997,8 @@ users:
   - WriteAfter
   account: lmillward
   inactive: true
+  inactive_email:
+  - lee.millward@codesourcery.com
 - sn: Mir
   cn: Immad Mir
   email:
@@ -3392,6 +4009,9 @@ users:
   - DCO: mir@sourceware.org
   account: mir
   inactive: true
+  inactive_email:
+  - mirimmad17@gmail.com
+  - mirimmad@outlook.com
 - sn: Miranda
   cn: Cupertino Miranda
   email:
@@ -3400,6 +4020,8 @@ users:
   roles:
   - WriteAfter
   account: cupermir
+  inactive_email:
+  - cmiranda@synopsys.com
 - sn: Mladjenovic
   cn: Dragan Mladjenovic
   email:
@@ -3409,6 +4031,10 @@ users:
   - WriteAfter
   account: draganm
   inactive: true
+  inactive_email:
+  - dmladjenovic@wavecomp.com
+  - dragan.mladjenovic@rt-rk.com
+  - ot_dragan.mladjenovic@mediatek.com
 - sn: Modra
   cn: Alan Modra
   email:
@@ -3417,6 +4043,11 @@ users:
   roles:
   - WriteAfter
   account: amodra
+  inactive_email:
+  - alan@linuxcare.com.au
+  - alan@spri.levels.unisa.edu.au
+  - amodra@bigpond.net.au
+  - amodra@one.net.au
 - sn: Moene
   cn: Toon Moene
   email:
@@ -3426,6 +4057,8 @@ users:
   - Reviewer: Fortran
   - WriteAfter
   account: toon
+  inactive_email:
+  - toon@moene.indiv.nluug.nl
 - sn: Monakov
   cn: Alexander Monakov
   email:
@@ -3452,6 +4085,10 @@ users:
   - WriteAfter
   account: clm
   inactive: true
+  inactive_email:
+  - clm@cm00re.com
+  - clm@cygnus.com
+  - clm@redhat.com
 - sn: Morin
   cn: Mikael Morin
   email:
@@ -3460,6 +4097,10 @@ users:
   - Reviewer: Fortran
   - WriteAfter
   account: mikael
+  inactive_email:
+  - mikael.morin@sfr.fr
+  - mikael.morin@tele2.fr
+  - morin-mikael@orange.fr
 - sn: Morrison
   cn: James A. Morrison
   email:
@@ -3468,6 +4109,8 @@ users:
   - WriteAfter
   account: phython
   inactive: true
+  inactive_email:
+  - ja2morri@uwaterloo.ca
 - sn: Moses
   cn: Brooks Moses
   email:
@@ -3477,6 +4120,9 @@ users:
   - WriteAfter
   account: brooks
   inactive: true
+  inactive_email:
+  - bmoses@stanford.edu
+  - brooks.moses@codesourcery.com
 - sn: Mueller
   cn: Dirk Mueller
   email:
@@ -3486,6 +4132,9 @@ users:
   - WriteAfter
   account: mueller
   inactive: true
+  inactive_email:
+  - dmuell@gmx.net
+  - dmueller@suse.com
 - sn: Muldoon
   cn: Phil Muldoon
   email:
@@ -3505,6 +4154,8 @@ users:
   - WriteAfter
   - DCO: gaiusmod2@gmail.com
   account: gaius
+  inactive_email:
+  - gaius.mulley@southwales.ac.uk
 - sn: Müllner
   cn: Christoph Müllner
   email:
@@ -3529,6 +4180,9 @@ users:
   roles:
   - WriteAfter
   account: munroesj
+  inactive_email:
+  - munroesj@linux.vnet.ibm.com
+  - sjmunroe@us.ibm.com
 - sn: Muyter
   cn: Philippe De Muyter
   email:
@@ -3539,6 +4193,8 @@ users:
   - WriteAfter
   account: phdm
   inactive: true
+  inactive_email:
+  - phdm@info.ucl.ac.be
 - sn: Myers
   cn: Joseph Myers
   email:
@@ -3556,6 +4212,10 @@ users:
   - Reviewer: driver
   - WriteAfter
   account: jsm28
+  inactive_email:
+  - joseph@codesourcery.com
+  - jsm28@cam.ac.uk
+  - jsm@polyomino.org.uk
 - sn: Myers
   cn: Nathan Myers
   email:
@@ -3564,6 +4224,8 @@ users:
   roles:
   - WriteAfter
   account: ncm
+  inactive_email:
+  - ncm-nospam@cantrip.org
 - sn: Nagy
   cn: Szabolcs Nagy
   email:
@@ -3573,6 +4235,8 @@ users:
   - DCO: nsz@gcc.gnu.org
   account: nsz
   inactive: true
+  inactive_email:
+  - szabolcs.nagy@arm.com
 - sn: Nascimento
   cn: Victor Do Nascimento
   email:
@@ -3590,6 +4254,8 @@ users:
   - WriteAfter
   account: qneill
   inactive: true
+  inactive_email:
+  - quentin.neill@amd.com
 - sn: Nemet
   cn: Adam Nemet
   email:
@@ -3599,6 +4265,9 @@ users:
   - WriteAfter
   account: nemet
   inactive: true
+  inactive_email:
+  - anemet@caviumnetworks.com
+  - anemet@lnxw.com
 - sn: Nerode
   cn: Nathanael Nerode
   email:
@@ -3608,6 +4277,10 @@ users:
   - WriteAfter
   account: neroden
   inactive: true
+  inactive_email:
+  - neroden@doctor.moo.mud.org
+  - neroden@doctormoo.dyndns.org
+  - neroden@twcny.rr.com
 - sn: Neumann
   cn: Thomas Neumann
   email:
@@ -3617,6 +4290,8 @@ users:
   - WriteAfter
   account: tneumann
   inactive: true
+  inactive_email:
+  - thomas.neumann@in.tum.de
 - sn: Nicolaescu
   cn: Dan Nicolaescu
   email:
@@ -3626,6 +4301,8 @@ users:
   - WriteAfter
   account: dann
   inactive: true
+  inactive_email:
+  - dann@godzilla.ics.uci.edu
 - sn: Nilsen
   cn: Kelvin Nilsen
   email:
@@ -3635,6 +4312,8 @@ users:
   - WriteAfter
   account: kelvin
   inactive: true
+  inactive_email:
+  - kdnilsen@linux.vnet.ibm.com
 - sn: Nilsson
   cn: Hans-Peter Nilsson
   email:
@@ -3647,6 +4326,9 @@ users:
     email: hp@bitrange.com
   - WriteAfter
   account: hp
+  inactive_email:
+  - hp@axis.se
+  - hp@dummer.localdomain
 - sn: Norris
   cn: James Norris
   email:
@@ -3654,6 +4336,8 @@ users:
   roles:
   - WriteAfter
   inactive: true
+  inactive_email:
+  - jnorris@gcc.gnu.org
 - sn: Novillo
   cn: Diego Novillo
   email:
@@ -3663,6 +4347,9 @@ users:
   - WriteAfter
   account: dnovillo
   inactive: true
+  inactive_email:
+  - dnovillo@cygnus.com
+  - dnovillo@redhat.com
 - sn: Nuzman
   cn: Dorit Nuzman
   email:
@@ -3681,6 +4368,10 @@ users:
   - WriteAfter
   account: obrien
   inactive: true
+  inactive_email:
+  - obrien@bsdi.com
+  - obrien@dragon.nuxi.com
+  - obrien@nuxi.com
 - sn: O'Donell
   cn: Carlos O'Donell
   email:
@@ -3689,6 +4380,8 @@ users:
   roles:
   - WriteAfter
   account: carlos
+  inactive_email:
+  - carlos@codesourcery.com
 - sn: O'Gorman
   cn: Peter O'Gorman
   email:
@@ -3698,6 +4391,8 @@ users:
   - WriteAfter
   account: pogma
   inactive: true
+  inactive_email:
+  - peter@pogma.com
 - sn: O'Neill
   cn: Patrick O'Neill
   email:
@@ -3735,6 +4430,16 @@ users:
   - Maintainer: build machinery (*.in)
   - WriteAfter
   account: aoliva
+  inactive_email:
+  - aoliva@acm.org
+  - aoliva@cygnus.com
+  - aoliva@oliva.athome.lsd.ic.unicamp.br
+  - aoliva@redhat.com
+  - oliva@dacore.com
+  - oliva@dcc.unicamp.br
+  - oliva@gcc.gnu.org
+  - oliva@gnu.org
+  - oliva@lsd.ic.unicamp.br
 - sn: Ornstein
   cn: Andrea Ornstein
   email:
@@ -3754,6 +4459,8 @@ users:
   - Maintainer: testsuite
   - WriteAfter
   account: ro
+  inactive_email:
+  - ro@techfak.uni-bielefeld.de
 - sn: Ostapenko
   cn: Maxim Ostapenko
   email:
@@ -3782,6 +4489,9 @@ users:
   - Reviewer: c++
   - WriteAfter
   account: ppalka
+  inactive_email:
+  - patrick@parcs.ath.cx
+  - ppalka007@gmail.com
 - sn: Park
   cn: Seongbae Park
   email:
@@ -3838,6 +4548,9 @@ users:
   - WriteAfter
   account: andris
   inactive: true
+  inactive_email:
+  - pavenis@lanet.lv
+  - pavenis@latnet.lv
 - sn: Pereira
   cn: Fernando Pereira
   email:
@@ -3847,6 +4560,8 @@ users:
   - WriteAfter
   account: pronesto
   inactive: true
+  inactive_email:
+  - fernando@cs.ucla.edu
 - sn: Pero
   cn: Nicola Pero
   email:
@@ -3857,6 +4572,10 @@ users:
   - WriteAfter
   account: nicola
   inactive: true
+  inactive_email:
+  - n.pero@mi.flashnet.it
+  - nicola@brainstorm.co.uk
+  - nicola@nicola.brainstorm.co.uk
 - sn: Perta
   cn: Sebastian Perta
   email:
@@ -3884,6 +4603,8 @@ users:
   - WriteAfter
   - DCO: mikpelinux@gmail.com
   account: mikpe
+  inactive_email:
+  - mikpe@it.uu.se
 - sn: Pfau
   cn: Johannes Pfau
   email:
@@ -3904,6 +4625,10 @@ users:
   - Maintainer: web pages
   - WriteAfter
   account: gerald
+  inactive_email:
+  - gerald@sourceware.org
+  - gp@suse.de
+  - pfeifer@dbai.tuwien.ac.at
 - sn: Phatak
   cn: Kaushik Phatak
   email:
@@ -3913,6 +4638,8 @@ users:
   - WriteAfter
   account: kaushikp
   inactive: true
+  inactive_email:
+  - kaushik.phatak@kpit.com
 - sn: Pinski
   cn: Andrea Pinski
   email:
@@ -3930,6 +4657,14 @@ users:
   - DCO: andrew.pinski@oss.qualcomm.com
   - DCO: quic_apinski@quicinc.com
   account: pinskia
+  inactive_email:
+  - andrew.pinski@caviumnetworks.com
+  - andrew.pinski@playstation.sony.com
+  - andrew_pinski@playstation.sony.com
+  - apinski@apple.com
+  - apinski@cavium.com
+  - apinski@marvell.com
+  - pinskia@physics.uc.edu
 - sn: Pitre
   cn: Nicolas Pitre
   email:
@@ -3939,6 +4674,8 @@ users:
   - WriteAfter
   account: nico
   inactive: true
+  inactive_email:
+  - nico@fluxnic.net
 - sn: Ploujnikov
   cn: Michael Ploujnikov
   email:
@@ -3987,6 +4724,13 @@ users:
   - Reviewer: Graphite
   - WriteAfter
   account: spop
+  inactive_email:
+  - pop@cri.ensmp.fr
+  - s.pop@laposte.net
+  - s.pop@samsung.com
+  - sebastian.pop@amd.com
+  - sebastian.pop@inria.fr
+  - spop@amazon.com
 - sn: Poulhiès
   cn: Marc Poulhiès
   email:
@@ -3996,6 +4740,8 @@ users:
   - Maintainer: Ada front end
   - WriteAfter
   account: dkm
+  inactive_email:
+  - dkm@kataplop.net
 - sn: Poyarekar
   cn: Siddhesh Poyarekar
   email:
@@ -4005,6 +4751,11 @@ users:
   - WriteAfter
   - DCO: siddhesh@gotplt.org
   account: siddhesh
+  inactive_email:
+  - siddhesh.poyarekar@gmail.com
+  - siddhesh.poyarekar@linaro.org
+  - siddhesh@redhat.com
+  - siddhesh@sourceware.org
 - sn: Praveen
   cn: Vidya Praveen
   email:
@@ -4014,6 +4765,8 @@ users:
   - WriteAfter
   account: vp
   inactive: true
+  inactive_email:
+  - vidya.praveen@atmel.com
 - sn: Preud'homme
   cn: Thomas Preud'homme
   email:
@@ -4023,6 +4776,9 @@ users:
   - WriteAfter
   account: thopre01
   inactive: true
+  inactive_email:
+  - thomas.preudhomme@arm.com
+  - thomas.preudhomme@linaro.org
 - sn: Priour
   cn: Benjamin Priour
   email:
@@ -4057,6 +4813,9 @@ users:
   - WriteAfter
   account: qiyao
   inactive: true
+  inactive_email:
+  - qiyaoltc@cn.ibm.com
+  - yao.qi@linaro.org
 - sn: Qu
   cn: Xianmiao Qu
   email:
@@ -4066,6 +4825,8 @@ users:
   - Maintainer: c-sky port
   - WriteAfter
   account: xianmiao
+  inactive_email:
+  - xianmiao_qu@c-sky.com
 - sn: Quinn
   cn: Jerry Quinn
   email:
@@ -4075,6 +4836,8 @@ users:
   - WriteAfter
   account: jlquinn
   inactive: true
+  inactive_email:
+  - jquinn@nortelnetworks.com
 - sn: Radhakrishnan
   cn: Ramana Radhakrishnan
   email:
@@ -4085,6 +4848,13 @@ users:
   - WriteAfter
   - DCO: ramanara@nvidia.com
   account: ramana
+  inactive_email:
+  - ramana.gcc@gmail.com
+  - ramana.r@gmail.com
+  - ramana.radhakrishnan@arm.com
+  - ramana.radhakrishnan@codito.com
+  - ramana.radhakrishnan@linaro.org
+  - ramana@codito.com
 - sn: Rahimi
   cn: Navid Rahimi
   email:
@@ -4094,6 +4864,8 @@ users:
   - DCO: navidr@gcc.gnu.org
   account: navidr
   inactive: true
+  inactive_email:
+  - navidrahimi@microsoft.com
 - sn: Raj
   cn: Rishi Raj
   email:
@@ -4129,6 +4901,8 @@ users:
   roles:
   - WriteAfter
   account: ninaranns
+  inactive_email:
+  - dinka.ranns@googlemail.com
 - sn: Rasmussen
   cn: Rolf Rasmussen
   email:
@@ -4146,6 +4920,8 @@ users:
   - WriteAfter
   account: foreese
   inactive: true
+  inactive_email:
+  - reese-fritz@zai.com
 - sn: Reichelt
   cn: Volker Reichelt
   email:
@@ -4155,6 +4931,9 @@ users:
   - WriteAfter
   account: reichelt
   inactive: true
+  inactive_email:
+  - reichelt@igpm.rwth-aachen.de
+  - reichelt@netcologne.de
 - sn: Rennecke
   cn: Joern Rennecke
   email:
@@ -4163,6 +4942,18 @@ users:
   roles:
   - WriteAfter
   account: amylaar
+  inactive_email:
+  - amylaar@cygnus.co.uk
+  - amylaar@cygnus.com
+  - amylaar@onetel.net.uk
+  - amylaar@redhat.co.uk
+  - amylaar@redhat.com
+  - amylaar@spamcop.net
+  - joern.rennecke@arc.com
+  - joern.rennecke@embecosm.com
+  - joern.rennecke@riscy-ip.com
+  - joern.rennecke@st.com
+  - joern.rennecke@superh.com
 - sn: Reutner-Fischer
   cn: Bernhard Reutner-Fischer
   email:
@@ -4207,6 +4998,8 @@ users:
   - WriteAfter
   account: trix
   inactive: true
+  inactive_email:
+  - trix@juniper.net
 - sn: Rodat
   cn: Pierre-Marie de Rodat
   email:
@@ -4226,6 +5019,9 @@ users:
   roles:
   - WriteAfter
   account: rodgertq
+  inactive_email:
+  - rodgert@appliantology.com
+  - rodgert@twrodgers.com
 - sn: Rodrigues
   cn: Craig Rodrigues
   email:
@@ -4234,6 +5030,9 @@ users:
   - WriteAfter
   account: rodrigc
   inactive: true
+  inactive_email:
+  - crodrigu@bbn.com
+  - rodrigc@mediaone.net
 - sn: Rohou
   cn: Erven Rohou
   email:
@@ -4243,6 +5042,8 @@ users:
   - WriteAfter
   account: erven
   inactive: true
+  inactive_email:
+  - erven.rohou@st.com
 - sn: Rosen
   cn: Ira Rosen
   email:
@@ -4252,6 +5053,8 @@ users:
   - WriteAfter
   account: irar
   inactive: true
+  inactive_email:
+  - ira.rosen@linaro.org
 - sn: Roux
   cn: Yvan Roux
   email:
@@ -4261,6 +5064,8 @@ users:
   - WriteAfter
   account: yroux
   inactive: true
+  inactive_email:
+  - yvan.roux@st.com
 - sn: Rozenfeld
   cn: Eugene Rozenfeld
   email:
@@ -4271,6 +5076,8 @@ users:
   - Maintainer: AutoFDO
   - WriteAfter
   account: erozen
+  inactive_email:
+  - eugene.rozenfeld@microsoft.com
 - sn: Rozycki
   cn: Maciej W. Rozycki
   email:
@@ -4280,6 +5087,15 @@ users:
   - Maintainer: vax port
   - WriteAfter
   account: macro
+  inactive_email:
+  - macro@codesourcery.com
+  - macro@ds2.pg.gda.pl
+  - macro@embecosm.com
+  - macro@imgtec.com
+  - macro@linux-mips.org
+  - macro@mips.com
+  - macro@redhat.com
+  - macro@wdc.com
 - sn: Rupp
   cn: Douglas Rupp
   email:
@@ -4290,6 +5106,10 @@ users:
   - WriteAfter
   account: rupp
   inactive: true
+  inactive_email:
+  - drupp@cs.washington.edu
+  - rupp@adacore.com
+  - rupp@gnat.com
 - sn: Rus
   cn: Silvius Rus
   email:
@@ -4299,6 +5119,8 @@ users:
   - WriteAfter
   account: rus
   inactive: true
+  inactive_email:
+  - silvius.rus@gmail.com
 - sn: Sachs
   cn: Matthew Sachs
   email:
@@ -4326,6 +5148,8 @@ users:
   - WriteAfter
   account: hariharans
   inactive: true
+  inactive_email:
+  - hariharan@picochip.com
 - sn: Sandiford
   cn: Richard Sandiford
   email:
@@ -4337,6 +5161,15 @@ users:
   - Reviewer: wide-int
   - WriteAfter
   account: rsandifo
+  inactive_email:
+  - r.sandiford@redhat.com
+  - r.sandiford@uk.ibm.com
+  - richard.sandiford@arm.com
+  - richard.sandiford@linaro.org
+  - richard@codesourcery.com
+  - rsandifo@linux.vnet.ibm.com
+  - rsandifo@nildram.co.uk
+  - rsandifo@redhat.com
 - sn: Sandoe
   cn: Iain Sandoe
   email:
@@ -4347,6 +5180,12 @@ users:
   - Maintainer: objective-c/c++
   - WriteAfter
   account: iains
+  inactive_email:
+  - iain.sandoe@sandoe-acoustics.co.uk
+  - iain@codesourcery.com
+  - iains.gcc@gmail.com
+  - iainsandoe@apollo-3-vm-lion-0-187.local
+  - iainsandoe@mini-05-seq.local
 - sn: Sands
   cn: Duncan Sands
   email:
@@ -4355,6 +5194,8 @@ users:
   - WriteAfter
   account: baldrick
   inactive: true
+  inactive_email:
+  - baldrick@free.fr
 - sn: Saraswati
   cn: Sujoy Saraswati
   email:
@@ -4374,6 +5215,9 @@ users:
   - DCO: tbsaunde+gcc@tbsaunde.org
   account: tbsaunde
   inactive: true
+  inactive_email:
+  - tbsaunde@tbsaunde.org
+  - tsaunders@mozilla.com
 - sn: Sawdey
   cn: Aaron Sawdey
   email:
@@ -4383,6 +5227,8 @@ users:
   - WriteAfter
   account: acsawdey
   inactive: true
+  inactive_email:
+  - acsawdey@linux.vnet.ibm.com
 - sn: Sayle
   cn: Roger Sayle
   email:
@@ -4391,6 +5237,8 @@ users:
   roles:
   - WriteAfter
   account: sayle
+  inactive_email:
+  - roger@eyesopen.com
 - sn: Schlüter
   cn: Tobias Schlüter
   email:
@@ -4412,6 +5260,17 @@ users:
   - WriteAfter
   account: bernds
   inactive: true
+  inactive_email:
+  - bernd.schmidt@analog.com
+  - bernd.schmidt@codesourcery.com
+  - bernds@codesourcery.com
+  - bernds@cygnus.co.uk
+  - bernds@redhat.co.uk
+  - bernds@redhat.com
+  - bschmidt@redhat.com
+  - crux@gcc.gnu.org
+  - crux@ohara.informatik.rwth-aachen.de
+  - crux@pool.informatik.rwth-aachen.de
 - sn: Schmidt
   cn: Bill Schmidt
   email:
@@ -4419,6 +5278,11 @@ users:
   roles:
   - DCO: bill.schmidt@fastmail.com
   inactive: true
+  inactive_email:
+  - wschmidt@linux.ibm.com
+  - wschmidt@linux.vnet.ibm.com
+  - wschmidt@vnet.ibm.com
+  - wschmidt@vnet.linux.ibm.com
 - sn: Schmidt
   cn: Will Schmidt
   email:
@@ -4428,6 +5292,8 @@ users:
   - WriteAfter
   account: willschm
   inactive: true
+  inactive_email:
+  - will_schmidt@linux.ibm.com
 - sn: Schmitz
   cn: Jennifer Schmitz
   email:
@@ -4446,6 +5312,8 @@ users:
   - Maintainer: s390 port
   - WriteAfter
   account: stefansf
+  inactive_email:
+  - xxschulz@de.ibm.com
 - sn: Schwab
   cn: Andreas Schwab
   email:
@@ -4456,6 +5324,11 @@ users:
   - Maintainer: m68k port
   - WriteAfter
   account: schwab
+  inactive_email:
+  - schwab@issan.cs.uni-dortmund.de
+  - schwab@issan.informatik.uni-dortmund.de
+  - schwab@redhat.com
+  - whitebox_@gmx.de
 - sn: Schwarz
   cn: Tilo Schwarz
   email:
@@ -4479,6 +5352,9 @@ users:
   - Maintainer: OpenACC
   - WriteAfter: thomas@schwinge.name
   account: tschwinge
+  inactive_email:
+  - thomas@codesourcery.com
+  - tschwinge@gnu.org
 - sn: Sebor
   cn: Martin Sebor
   email:
@@ -4487,6 +5363,9 @@ users:
   - WriteAfter
   account: msebor
   inactive: true
+  inactive_email:
+  - msebor@gmail.com
+  - msebor@redhat.com
 - sn: Seketeli
   cn: Dodji Seketeli
   email:
@@ -4499,6 +5378,8 @@ users:
   - WriteAfter
   account: dodji
   inactive: true
+  inactive_email:
+  - dseketel@redhat.com
 - sn: Seldal
   cn: Svein Seldal
   email:
@@ -4508,6 +5389,8 @@ users:
   - WriteAfter
   account: sveinse
   inactive: true
+  inactive_email:
+  - svein.seldal@solidas.com
 - sn: Selvaraj
   cn: Senthil Kumar Selvaraj
   email:
@@ -4515,6 +5398,9 @@ users:
   roles:
   - WriteAfter
   account: saaadhu
+  inactive_email:
+  - senthil_kumar.selvaraj@atmel.com
+  - senthilkumar.selvaraj@microchip.com
 - sn: Serebryany
   cn: Kostya Serebryany
   email:
@@ -4534,6 +5420,9 @@ users:
   - WriteAfter
   account: ths
   inactive: true
+  inactive_email:
+  - seufer@csv.ica.uni-stuttgart.de
+  - ths@mips.com
 - sn: Seurer
   cn: Bill Seurer
   email:
@@ -4553,6 +5442,8 @@ users:
   - WriteAfter
   account: shangyunhai
   inactive: true
+  inactive_email:
+  - yunhai_shang@c-sky.com
 - sn: Shead
   cn: Nathaniel Shead
   email:
@@ -4572,6 +5463,8 @@ users:
   - WriteAfter
   account: timshen
   inactive: true
+  inactive_email:
+  - timshen91@gmail.com
 - sn: Sherrill
   cn: Joel Sherrill
   email:
@@ -4582,6 +5475,8 @@ users:
   - Maintainer: RTEMS Ports
   - WriteAfter
   account: joel
+  inactive_email:
+  - joel.sherrill@oarcorp.com
 - sn: Sherwood
   cn: David Sherwood
   email:
@@ -4603,6 +5498,10 @@ users:
   - WriteAfter
   - DCO: nathan@acm.org
   account: nathan
+  inactive_email:
+  - nathan@codesourcery.com
+  - nathans@fb.com
+  - sidwell@codesourcery.com
 - sn: Singhai
   cn: Sharad Singhai
   email:
@@ -4621,6 +5520,8 @@ users:
   - WriteAfter
   account: singler
   inactive: true
+  inactive_email:
+  - singler@ira.uka.de
 - sn: Sirl
   cn: Franz Sirl
   email:
@@ -4657,6 +5558,8 @@ users:
   - DCO: esmithrowland@gmail.com
   account: emsr
   inactive: true
+  inactive_email:
+  - 3dw4rd@verizon.net
 - sn: Sokolov
   cn: Anatoly Sokolov
   email:
@@ -4666,6 +5569,8 @@ users:
   - WriteAfter
   account: aesok
   inactive: true
+  inactive_email:
+  - aesok@post.ru
 - sn: Sokolov
   cn: Michael Sokolov
   email:
@@ -4684,6 +5589,9 @@ users:
   - WriteAfter
   account: jayants
   inactive: true
+  inactive_email:
+  - jayant.sonar@kpitcummins.com
+  - jayants@kpitcummins.com
 - sn: Song
   cn: Fangrui Song
   email:
@@ -4692,6 +5600,8 @@ users:
   - WriteAfter
   - DCO: maskray@gcc.gnu.org
   account: maskray
+  inactive_email:
+  - maskray@google.com
 - sn: Stallman
   cn: Richard Stallman
   email:
@@ -4727,6 +5637,11 @@ users:
   - WriteAfter
   account: grahams
   inactive: true
+  inactive_email:
+  - grahams@btinternet.com
+  - grahams@cygnus.co.uk
+  - grahams@rcp.co.uk
+  - grahams@redhat.com
 - sn: Stubbs
   cn: Andrew Stubbs
   email:
@@ -4736,6 +5651,9 @@ users:
   - Maintainer: amdgcn port
   - WriteAfter
   account: ams
+  inactive_email:
+  - ams@codesourcery.com
+  - andrew.stubbs@st.com
 - sn: Stump
   cn: Mike Stump
   email:
@@ -4748,6 +5666,14 @@ users:
   - Reviewer: wide-int
   - WriteAfter
   account: mrs
+  inactive_email:
+  - mrs@apple.com
+  - mrs@cygnus.com
+  - mrs@kankakee.wrs.com
+  - mrs@mrs.kithrup.com
+  - mrs@windriver.com
+  - mrs@wombat.gnu.ai.mit.edu
+  - mrs@wrs.com
 - sn: Sturm
   cn: Jeff Sturm
   email:
@@ -4756,6 +5682,11 @@ users:
   - WriteAfter
   account: jsturm
   inactive: true
+  inactive_email:
+  - jeff.sturm@appnet.com
+  - jeff.sturm@commerceone.com
+  - jsturm@one-point.com
+  - jsturm@sigma6.com
 - sn: Su
   cn: YunQiang Su
   email:
@@ -4765,6 +5696,9 @@ users:
   - Maintainer: mips port
   - WriteAfter
   account: syq
+  inactive_email:
+  - syq@debian.org
+  - yunqiang.su@cipunited.com
 - sn: Suchanek
   cn: Robert Suchanek
   email:
@@ -4774,6 +5708,9 @@ users:
   - WriteAfter
   account: rts
   inactive: true
+  inactive_email:
+  - robert.suchanek@imgtec.com
+  - robert.suchanek@mips.com
 - sn: Supers1ngular
   cn: Supers1ngular
   email:
@@ -4791,6 +5728,8 @@ users:
   - WriteAfter
   account: asutton
   inactive: true
+  inactive_email:
+  - asutton@lock3software.com
 - sn: Svelto
   cn: Gabriele Svelto
   email:
@@ -4817,6 +5756,8 @@ users:
   - WriteAfter
   account: tomtab
   inactive: true
+  inactive_email:
+  - toma.tabacu@imgtec.com
 - sn: Tahir
   cn: Omar Tahir
   email:
@@ -4843,6 +5784,9 @@ users:
   roles:
   - WriteAfter
   account: cltang
+  inactive_email:
+  - cltang@codesourcery.com
+  - ctang@marvell.com
 - sn: Tardieu
   cn: Samuel Tardieu
   email:
@@ -4869,6 +5813,12 @@ users:
   - Maintainer: middle-end
   - WriteAfter
   account: ian
+  inactive_email:
+  - ian@c2micro.com
+  - ian@cygnus.com
+  - ian@wasabisystems.com
+  - ian@zembu.com
+  - iant@google.com
 - sn: Tebbs
   cn: Sam Tebbs
   email:
@@ -4878,6 +5828,8 @@ users:
   - WriteAfter
   account: samtebbs
   inactive: true
+  inactive_email:
+  - sam.tebbs@arm.com
 - sn: Telidevulapalli
   cn: Vijay Telidevulapalli
   email:
@@ -4897,6 +5849,8 @@ users:
   - WriteAfter
   account: dinar
   inactive: true
+  inactive_email:
+  - dinar@kugelworks.com
 - sn: Thomas
   cn: Matt Thomas
   email:
@@ -4915,6 +5869,10 @@ users:
   - Reviewer: Fortran
   - WriteAfter
   account: pault
+  inactive_email:
+  - paul.richard.thomas@gmail.com
+  - pault@pc30.home
+  - paulthomas2@wanadoo.fr
 - sn: Thomas
   cn: Philipp Thomas
   email:
@@ -4925,6 +5883,10 @@ users:
   - WriteAfter
   account: pthomas
   inactive: true
+  inactive_email:
+  - kthomas@gwdg.de
+  - kthomas@lxi165.gwdg.de
+  - pthomas@suse.de
 - sn: Thorpe
   cn: Jason Thorpe
   email:
@@ -4935,6 +5897,8 @@ users:
   - WriteAfter
   account: thorpej
   inactive: true
+  inactive_email:
+  - thorpej@wasabisystems.com
 - sn: Thorup
   cn: Kresten Krab Thorup
   email:
@@ -4943,6 +5907,9 @@ users:
   - WriteAfter
   account: krab
   inactive: true
+  inactive_email:
+  - krab@gnu.org
+  - krab@samam.daimi.au.dk
 - sn: Tice
   cn: Caroline Tice
   email:
@@ -4953,6 +5920,8 @@ users:
   - WriteAfter
   account: ctice
   inactive: true
+  inactive_email:
+  - ctice@apple.com
 - sn: Tietz
   cn: Kai Tietz
   email:
@@ -4962,6 +5931,10 @@ users:
   - WriteAfter
   account: ktietz
   inactive: true
+  inactive_email:
+  - kai.tietz@onevision.com
+  - kitetz@redhat.com
+  - ktietz@redhat.com
 - sn: Tkachov
   cn: Kyrylo Tkachov
   email:
@@ -4972,6 +5945,8 @@ users:
   - WriteAfter
   - DCO: ktkachov@nvidia.com
   account: ktkachov
+  inactive_email:
+  - kyrylo.tkachov@arm.com
 - sn: Tobler
   cn: Andreas Tobler
   email:
@@ -4981,6 +5956,12 @@ users:
   - WriteAfter
   account: andreast
   inactive: true
+  inactive_email:
+  - a.tobler@schweiz.ch
+  - a.tobler@schweiz.org
+  - andreast-list@fgznet.ch
+  - andreast@fgznet.ch
+  - toa@pop.agri.ch
 - sn: Tocar
   cn: Ilya Tocar
   email:
@@ -4990,6 +5971,8 @@ users:
   - WriteAfter
   account: tocarip
   inactive: true
+  inactive_email:
+  - ilya.tocar@intel.com
 - sn: Tomner
   cn: Petter Tomner
   email:
@@ -5000,6 +5983,8 @@ users:
   - DCO: tomner@bahnhof.se
   account: tomner
   inactive: true
+  inactive_email:
+  - tomner@kth.se
 - sn: Tomsich
   cn: Philipp Tomsich
   email:
@@ -5008,6 +5993,9 @@ users:
   roles:
   - WriteAfter
   account: ptomsich
+  inactive_email:
+  - philipp.tomsich@theobroma-systems.com
+  - ptomsich@theobroma-systems.com
 - sn: Towner
   cn: Daniel Towner
   email:
@@ -5026,6 +6014,8 @@ users:
   - WriteAfter
   account: trifunovic
   inactive: true
+  inactive_email:
+  - konrad.trifunovic@gmail.com
 - sn: Trippelsdorf
   cn: Markus Trippelsdorf
   email:
@@ -5043,6 +6033,8 @@ users:
   roles:
   - WriteAfter
   account: slyfox
+  inactive_email:
+  - slyfox@gentoo.org
 - sn: Tromey
   cn: Tom Tromey
   email:
@@ -5053,6 +6045,10 @@ users:
   - Reviewer: libcpp
   - WriteAfter
   account: tromey
+  inactive_email:
+  - tom@tromey.com
+  - tromey@cygnus.com
+  - tromey@ferrule.cygnus.com
 - sn: Tsimbalist
   cn: Igor Tsimbalist
   email:
@@ -5071,6 +6067,10 @@ users:
   - WriteAfter
   - DCO: uecker@gcc.gnu.org
   account: uecker
+  inactive_email:
+  - martin.uecker@med.uni-goettingen.de
+  - muecker@gwdg.de
+  - uecker@eecs.berkeley.edu
 - sn: Ung
   cn: David Ung
   email:
@@ -5089,6 +6089,8 @@ users:
   - WriteAfter
   account: nvachhar
   inactive: true
+  inactive_email:
+  - nvachhar@google.com
 - sn: Van Hees
   cn: Kris Van Hees
   email:
@@ -5133,6 +6135,8 @@ users:
   - WriteAfter
   account: iverbin
   inactive: true
+  inactive_email:
+  - ilya.verbin@intel.com
 - sn: Vieira
   cn: Andre Vieira
   email:
@@ -5151,6 +6155,8 @@ users:
   roles:
   - WriteAfter
   account: villemoes
+  inactive_email:
+  - rasmus.villemoes@prevas.dk
 - sn: Vivekanandarajah
   cn: Kugan Vivekanandarajah
   email:
@@ -5160,6 +6166,8 @@ users:
   - WriteAfter
   - DCO: kvivekananda@nvidia.com
   account: kugan
+  inactive_email:
+  - kuganv@linaro.org
 - sn: Volkov
   cn: Artemiy Volkov
   email:
@@ -5168,6 +6176,9 @@ users:
   roles:
   - WriteAfter
   account: artemiyv
+  inactive_email:
+  - artemiy.volkov@synopsys.com
+  - artemiyv@acm.org
 - sn: Vollweiler
   cn: Marcel Vollweiler
   email:
@@ -5194,6 +6205,10 @@ users:
   - Maintainer: nvptx port
   - WriteAfter
   account: vries
+  inactive_email:
+  - tjvries@xs4all.nl
+  - tom@codesourcery.com
+  - vries@codesourcery.com
 - sn: Vukicevic
   cn: Nenad Vukicevic
   email:
@@ -5221,6 +6236,8 @@ users:
   roles:
   - WriteAfter
   account: waffl3x
+  inactive_email:
+  - waffl3x@protonmail.com
 - sn: Wakely
   cn: Jonathan Wakely
   email:
@@ -5231,6 +6248,11 @@ users:
   - WriteAfter
   - DCO: jwakely@redhat.com
   account: redi
+  inactive_email:
+  - cow@compsoc.man.ac.uk
+  - jw@kayari.org
+  - jwakely.gcc@gmail.com
+  - redi@kayari.org
 - sn: Walfridsson
   cn: Krister Walfridsson
   email:
@@ -5240,6 +6262,8 @@ users:
   - Maintainer: netbsd
   - WriteAfter
   account: kristerw
+  inactive_email:
+  - cato@df.lth.se
 - sn: Wang
   cn: Feng Wang
   email:
@@ -5249,6 +6273,8 @@ users:
   - WriteAfter
   account: fengwang
   inactive: true
+  inactive_email:
+  - wangfeng@eswincomputing.com
 - sn: Wang
   cn: Feng Wang
   email:
@@ -5257,6 +6283,9 @@ users:
   roles:
   - WriteAfter
   account: fengwang1792
+  inactive_email:
+  - fengwang@gcc.gnu.org
+  - fengwang@nudt.edu.cn
 - sn: Wang
   cn: Hongyu Wang
   email:
@@ -5283,6 +6312,8 @@ users:
   - Maintainer: riscv port
   - WriteAfter
   account: aswaterman
+  inactive_email:
+  - waterman@cs.berkeley.edu
 - sn: Webb
   cn: Stephen M. Webb
   email:
@@ -5292,6 +6323,11 @@ users:
   - WriteAfter
   account: smw
   inactive: true
+  inactive_email:
+  - stephen.webb@bregmasoft.ca
+  - stephen.webb@cybersafe.com
+  - stephen@bregmasoft.com
+  - stephenw@xandros.com
 - sn: Wehle
   cn: John Wehle
   email:
@@ -5312,6 +6348,9 @@ users:
   - Maintainer: reload
   - WriteAfter
   account: uweigand
+  inactive_email:
+  - ulrich.weigand@linaro.org
+  - weigand@informatik.uni-erlangen.de
 - sn: Weil
   cn: Janus Weil
   email:
@@ -5321,6 +6360,8 @@ users:
   - WriteAfter
   account: janus
   inactive: true
+  inactive_email:
+  - jaydub66@gmail.com
 - sn: Weimer
   cn: Florian Weimer
   email:
@@ -5329,6 +6370,8 @@ users:
   roles:
   - WriteAfter
   account: fw
+  inactive_email:
+  - fw@deneb.enyo.de
 - sn: Weinberg
   cn: Zack Weinberg
   email:
@@ -5338,6 +6381,16 @@ users:
   - WriteAfter
   account: zack
   inactive: true
+  inactive_email:
+  - zack@bitmover.com
+  - zack@codesourcery.com
+  - zack@midnite.ec.rhno.columbia.edu
+  - zack@mrtock.ucsd.edu
+  - zack@rabi.columbia.edu
+  - zack@rabi.phys.columbia.edu
+  - zack@wolery.cumb.org
+  - zack@wolery.stanford.edu
+  - zackw@stanford.edu
 - sn: Westbrooks
   cn: Alexander Westbrooks
   email:
@@ -5355,6 +6408,8 @@ users:
   roles:
   - WriteAfter
   account: mark
+  inactive_email:
+  - mjw@redhat.com
 - sn: Wienskoski
   cn: Edmar Wienskoski
   email:
@@ -5407,6 +6462,14 @@ users:
   - WriteAfter: jim.wilson.gcc@gmail.com
   account: wilson
   inactive: true
+  inactive_email:
+  - jim.wilson@linaro.org
+  - jim.wilson@r3-a15.aus-colo
+  - jimw@sifive.com
+  - wilson@codesourcery.com
+  - wilson@cygnus.com
+  - wilson@redhat.com
+  - wilson@specifixinc.com
 - sn: Wirkus
   cn: Przemyslaw Wirkus
   email:
@@ -5425,6 +6488,9 @@ users:
   - WriteAfter
   account: carlo
   inactive: true
+  inactive_email:
+  - carlo@gnu.org
+  - carlo@runaway.xs4all.nl
 - sn: Woodruff
   cn: Jackson Woodruff
   email:
@@ -5473,6 +6539,8 @@ users:
   account: xry111
   aliases:
   - Xi Ruoyao
+  inactive_email:
+  - xry111@mengyan1223.wang
 - sn: Xing
   cn: Mingjie Xing
   email:
@@ -5546,6 +6614,8 @@ users:
   - WriteAfter
   account: jye2
   inactive: true
+  inactive_email:
+  - joey.ye@intel.com
 - sn: Yeung
   cn: Kwok Cheung Yeung
   email:
@@ -5554,6 +6624,8 @@ users:
   roles:
   - WriteAfter
   account: kcy
+  inactive_email:
+  - kcy@codesourcery.com
 - sn: Yong
   cn: Jonathan Yong
   email:
@@ -5563,6 +6635,8 @@ users:
   - Maintainer: cygwin, mingw-w64
   - WriteAfter
   account: jyong
+  inactive_email:
+  - jon_y@users.sourceforge.net
 - sn: Yorsh
   cn: Greta Yorsh
   email:
@@ -5582,6 +6656,8 @@ users:
   - WriteAfter
   account: kyukhin
   inactive: true
+  inactive_email:
+  - kirill.yukhin@intel.com
 - sn: Yuste
   cn: David Yuste
   email:
@@ -5603,6 +6679,8 @@ users:
   - WriteAfter
   account: zadeck
   inactive: true
+  inactive_email:
+  - kenneth.zadeck@naturalbridge.com
 - sn: Zanella
   cn: Adhemerval Zanella
   email:
@@ -5612,6 +6690,8 @@ users:
   - WriteAfter
   account: azanella
   inactive: true
+  inactive_email:
+  - adhemerval.zanella@linaro.org
 - sn: Zeng
   cn: Xiao Zeng
   email:
@@ -5629,6 +6709,9 @@ users:
   - WriteAfter
   account: xczhang
   inactive: true
+  inactive_email:
+  - dennis.zh@live.com
+  - denzha01@e124712.cambridge.arm.com
 - sn: Zhang
   cn: Jie Zhang
   email:
@@ -5639,6 +6722,10 @@ users:
   - WriteAfter
   account: jiez
   inactive: true
+  inactive_email:
+  - jie.zhang@analog.com
+  - jie@codesourcery.com
+  - zhangjie@magima.com.cn
 - sn: Zhang
   cn: Yufeng Zhang
   email:
@@ -5737,6 +6824,9 @@ users:
   - Maintainer: arc port
   - WriteAfter
   account: claziss
+  inactive_email:
+  - claudiu.zissulescu-ianculescu@oracle.com
+  - claziss@synopsys.com
 - sn: Zlomek
   cn: Josef Zlomek
   email:
@@ -5746,6 +6836,10 @@ users:
   - WriteAfter
   account: zlomek
   inactive: true
+  inactive_email:
+  - zlomek@matfyz.cz
+  - zlomekj@suse.cz
+  - zlomj9am@artax.karlin.mff.cuni.cz
 subsystems:
 - name: '*gimpl*'
   class: Subsystem

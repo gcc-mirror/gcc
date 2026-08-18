@@ -60,6 +60,13 @@ maintainer_schema = {
                             'format': 'email',
                         },
                     },
+                    'inactive_email': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'string',
+                            'format': 'email',
+                        },
+                    },
                     'roles': {
                         'type': 'array',
                         'items': {
