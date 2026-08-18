@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -march=x86-64 -fdump-tree-optimized" } */
 
 __attribute__ ((target ("default")))
 static unsigned foo(const char *buf, unsigned size) {
