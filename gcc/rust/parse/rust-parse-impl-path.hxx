@@ -389,8 +389,11 @@ Parser<ManagedTokenSource>::parse_path_in_expression ()
   AST::PathExprSegment initial_segment = parse_path_expr_segment ();
   if (initial_segment.is_error ())
     {
-      // skip after somewhere?
-      // don't necessarily throw error but yeah
+      if (has_opening_scope_resolution)
+	{
+	  Error error (locus, "expected identifier");
+	  add_error (std::move (error));
+	}
       return AST::PathInExpression::create_error ();
     }
   segments.push_back (std::move (initial_segment));

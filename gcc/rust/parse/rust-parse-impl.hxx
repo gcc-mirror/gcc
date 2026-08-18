@@ -7294,15 +7294,6 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
     case DOLLAR_SIGN:
       {
 	AST::PathInExpression path = parse_path_in_expression ();
-	if (path.is_error ())
-	  {
-	    Error error (t->get_locus (), "expected identifier");
-	    add_error (std::move (error));
-	    skip_after_semicolon ();
-	    return tl::unexpected<Parse::Error::Node> (
-	      Parse::Error::Node::CHILD_ERROR);
-	  }
-
 	tl::expected<std::unique_ptr<AST::Expr>, Parse::Error::Expr>
 	  null_denotation;
 
