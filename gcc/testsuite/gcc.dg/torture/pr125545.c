@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target asm_goto_with_outputs } } */
 
 int b(int c)
 {
