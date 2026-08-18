@@ -1,0 +1,81 @@
+# Copyright (C) 2026 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+# This pyproject.toml file is used to facilitate installation of all required
+# python dependencies.  It is not used to distribute gcc related packages.
+#
+# Users of uv can get all potentially needed with
+#   uv sync --all-groups
+# Whereas users of pip can use
+#   python -m pip install . --group all
+# Note that these include packages only used in a subset of projects.
+
+[build-system]
+requires = ["setuptools>=66.1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gcc"
+dynamic = ["version"]
+description = "Tools used when building and developing gcc"
+readme = "README"
+# As of August 2026, upstream python supports only versions from 3.10 and above.
+# Currently supported LTS distributions and unices all provide packages for
+# at least python 3.10.
+# pip added support for groups in 25.1 which requires python version 3.9
+# pytest-pyodide, used by libffi, requires python 3.10
+# black 26.0 requires python 3.10
+requires-python = ">=3.10"
+
+# Upper bounds below are conservative compatibility limits; not all projects
+# publish or strictly follow Semantic Versioning.
+dependencies = [
+	# we keep the black version pinned to an explicit calendar year
+	# in order to take advantage of black's stability policy.
+	"black ~= 26.0",
+	"GitPython<4",
+	"jsonschema<5",
+	"polib ~= 1.2.0",     # does not indicate use of semver
+	"pytest<10",
+	"python-dateutil<3",  # does not indicate use of semver
+	"PyYAML<7",           # does not indicate use of semver
+	"requests<3",
+	"semantic-version<3",
+	"Unidecode<2",        # does not indicate use of semver
+	"unidiff<2",          # does not indicate use of semver
+]
+
+[dependency-groups]
+ada = ["Pygments<3"]
+libffi = ["pytest-pyodide"]
+all = [
+	{ include-group = "ada" },
+	{ include-group = "libffi" },
+]
+
+[tool.setuptools]
+# Disable package discovery
+packages = []
+
+[tool.setuptools.dynamic]
+version = { file = ["gcc/BASE-VER"] }
+
+[tool.black]
+# target is same as requires-python
+target-version = ["py310"]

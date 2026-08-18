@@ -15,6 +15,7 @@
 *.lo
 *.o
 *.pyc
+*.egg-info
 *.tmp
 *.a
 
