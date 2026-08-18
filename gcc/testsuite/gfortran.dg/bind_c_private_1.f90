@@ -23,8 +23,8 @@ contains
   end subroutine plain_sub
 end module m
 
-! { dg-final { scan-assembler-not "\\.hidden\[ \t\]+bc_var" } }
-! { dg-final { scan-assembler-not "\\.hidden\[ \t\]+bc_named" } }
-! { dg-final { scan-assembler-not "\\.hidden\[ \t\]+bc_unnamed" } }
-! { dg-final { scan-assembler "\\.hidden\[ \t\]+__m_MOD_plain_var" } }
-! { dg-final { scan-assembler "\\.hidden\[ \t\]+__m_MOD_plain_sub" } }
+! { dg-final { scan-not-hidden "bc_var" } }
+! { dg-final { scan-not-hidden "bc_named" } }
+! { dg-final { scan-not-hidden "bc_unnamed" } }
+! { dg-final { scan-hidden "__m_MOD_plain_var" } }
+! { dg-final { scan-hidden "__m_MOD_plain_sub" } }
