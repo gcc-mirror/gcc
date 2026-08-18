@@ -244,8 +244,8 @@ template<template<size_t> typename Layout>
     (void) m;
     return true;
   }
-static_assert(test_from_samepad_sta<std::layout_left_padded>()); // { dg-error "expansion of" }
-static_assert(test_from_samepad_sta<std::layout_right_padded>()); // { dg-error "expansion of" }
+static_assert(test_from_samepad_sta<std::layout_left_padded>()); // { dg-error "required from" }
+static_assert(test_from_samepad_sta<std::layout_right_padded>()); // { dg-error "required from" }
 
 template<template<size_t> typename Layout>
   constexpr bool
@@ -295,11 +295,11 @@ template<template<size_t> typename Layout, size_t RunId>
       }
     return true;
   }
-static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 0>()); // { dg-error "expansion of" }
+static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 0>()); // { dg-error "required from" }
 static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 1>()); // { dg-error "expansion of" }
 static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 2>()); // { dg-error "expansion of" }
 static_assert(test_to_same_not_exhaustive<std::layout_left_padded, 3>()); // { dg-error "expansion of" }
-static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 0>()); // { dg-error "expansion of" }
+static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 0>()); // { dg-error "required from" }
 static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 1>()); // { dg-error "expansion of" }
 static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 2>()); // { dg-error "expansion of" }
 static_assert(test_to_same_not_exhaustive<std::layout_right_padded, 3>()); // { dg-error "expansion of" }

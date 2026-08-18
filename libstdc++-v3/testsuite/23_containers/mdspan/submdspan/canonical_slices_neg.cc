@@ -55,11 +55,11 @@ static_assert(test_over1(5, sta_sexts));   // { dg-error "expansion of" }
 static_assert(test_over1(5, sta_uexts));   // { dg-error "expansion of" }
 
 static_assert(test_over1(std::cw<0>, dyn_empty));   // { dg-error "expansion of" }
-static_assert(test_over1(std::cw<0>, sta_empty));   // { dg-error "expansion of" }
+static_assert(test_over1(std::cw<0>, sta_empty));   // { dg-error "required from" }
 static_assert(test_over1(std::cw<5>, dyn_sexts));   // { dg-error "expansion of" }
 static_assert(test_over1(std::cw<5>, dyn_uexts));   // { dg-error "expansion of" }
-static_assert(test_over1(std::cw<5>, sta_sexts));   // { dg-error "expansion of" }
-static_assert(test_over1(std::cw<5>, sta_uexts));   // { dg-error "expansion of" }
+static_assert(test_over1(std::cw<5>, sta_sexts));   // { dg-error "required from" }
+static_assert(test_over1(std::cw<5>, sta_uexts));   // { dg-error "required from" }
 
 template<typename Offset, typename Extent, typename Stride, typename Extents>
   constexpr bool
