@@ -10642,7 +10642,7 @@ matching @code{end} will suppress the rest of the file.
   #pragma GCC suppress_coverage begin
   if (cond)
     @{
-      /* Coverage is disbled for all statements in this block.  */
+      /* Coverage is disabled for all statements in this block.  */
       foo ();
     @}
   else
@@ -13624,7 +13624,7 @@ size of the @code{asm} --- or parts of it --- in units of 16-bit words:
 @item nl
 The number of lines in the code template, which is half the default size.
 It suits code templates that only use 1-word instructions with
-no superfuous physical @samp{\n} or logical @samp{$} line breaks.
+no superfluous physical @samp{\n} or logical @samp{$} line breaks.
 
 @item [0-9]+
 The decimal representation of a non-negative integer.
