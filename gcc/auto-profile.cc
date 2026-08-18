@@ -1764,7 +1764,8 @@ function_instance::match (cgraph_node *node,
 	  gcc_assert (!info);
 	  dump_stmt (phi, info, NULL, stack);
 	  counts.add (info);
-	  for (edge e : bb->succs)
+	  /* PHI arguments are indexed by incoming (predecessor) edges.  */
+	  for (edge e : bb->preds)
 	    {
 	      location_t phi_loc
 		= gimple_phi_arg_location_from_edge (phi, e);
