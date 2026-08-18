@@ -372,7 +372,7 @@ vector<class fn*> sysv_funcs;
 vector<class fn*> msabi_funcs;
 
 
-/* Emit extern for do_test_aligned and do_test_unaligned (defined in do_test.S)
+/* Emit extern for do_test_aligned and call_do_test_unaligned (defined in do_test.S)
    followed by all of the various do_test* function function pointers that
    are just aliases of them.  */
 static void make_do_tests_decl (const vector<class arg> &args, ostream &out)
@@ -381,7 +381,7 @@ static void make_do_tests_decl (const vector<class arg> &args, ostream &out)
   unsigned i, varargs, unaligned;
 
   out << "extern __attribute__ ((ms_abi)) long do_test_aligned ();" << endl
-      << "extern __attribute__ ((ms_abi)) long do_test_unaligned ();" << endl;
+      << "extern __attribute__ ((ms_abi)) long call_do_test_unaligned ();" << endl;
 
   list_delimiter comma (", ");
   for (i = extra_params_min; i <= args.size (); ++i)
@@ -402,8 +402,9 @@ static void make_do_tests_decl (const vector<class arg> &args, ostream &out)
 		<< ai->get_name ();
 	  if (varargs)
 	    out << comma.get () << "...";
-	  out << ") = (void*)do_test_" << (unaligned ? "un" : "")
-	      << "aligned;" << endl;
+	  out << ") = (void*)" << (unaligned
+				   ? "call_do_test_unaligned;"
+				   : "do_test_aligned;") << endl;
 	}
 }
 
@@ -510,10 +511,6 @@ void make_do_test (const vector<class arg> &args,
 	    out << ");" << endl;
 	    /* End if init_test call.  */
 
-	    if (f.get_realign () && unaligned == 1)
-	      out << "  __asm__ __volatile__ (\"subq $8,%%rsp\":::\"cc\");"
-		  << endl;
-
 	    out << "  ret = do_test_"
 		<< (f.get_realign () && unaligned == 1 ? "u" : "")
 		<< (f.get_varargs () ? "v" : "")
@@ -523,10 +520,6 @@ void make_do_test (const vector<class arg> &args,
 	    for (auto const &arg : fargs)
 	      out << comma.get () << arg.get_name ();
 	    out << ");" << endl;
-
-	    if (f.get_realign () && unaligned == 1)
-	      out << "  __asm__ __volatile__ (\"addq $8,%%rsp\":::\"cc\");"
-		  << endl;
 
 	    out << "  check_results (ret);" << endl;
 	  }

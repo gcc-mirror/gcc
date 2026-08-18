@@ -105,6 +105,19 @@ FUNC_BEGIN(mem_to_regs)
 	retq
 FUNC_END(mem_to_regs)
 
+FUNC_BEGIN(call_do_test_unaligned)
+	# Load the 5th argument to R10.
+	movq	0x28(%rsp), %r10
+	# Unalign stack.
+	subq	$8, %rsp
+	# Push the 5th argument.
+	pushq	%r10
+	subq	$32, %rsp
+	call	do_test_unaligned
+	addq	$48, %rsp
+	ret
+FUNC_END(call_do_test_unaligned)
+
 # NOTE: Not MT safe
 FUNC_BEGIN(do_test_unaligned)
 	# The below alignment checks are to verify correctness of the test
