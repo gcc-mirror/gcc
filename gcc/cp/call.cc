@@ -1734,21 +1734,16 @@ involves_qualification_conversion_p (tree to, tree from)
    per [except.handle]/3.  */
 
 bool
-handler_match_for_exception_type (tree handler, tree except_type)
+handler_match_for_exception_type (tree handler_type, tree except_type)
 {
-  tree handler_type = HANDLER_TYPE (handler);
+  if (handler_type && TREE_CODE (handler_type) == HANDLER)
+    handler_type = TREE_TYPE (handler_type);
   if (handler_type == NULL_TREE)
     return true; /* ... */
   if (same_type_ignoring_top_level_qualifiers_p (handler_type, except_type))
     return true;
   if (CLASS_TYPE_P (except_type) && CLASS_TYPE_P (handler_type))
-    {
-      base_kind b_kind;
-      tree binfo = lookup_base (except_type, handler_type, ba_check, &b_kind,
-				tf_none);
-      if (binfo && binfo != error_mark_node)
-	return true;
-    }
+    return publicly_uniquely_derived_p (handler_type, except_type);
   if (TYPE_PTR_P (handler_type) || TYPE_PTRMEM_P (handler_type))
     {
       if (TREE_CODE (except_type) == NULLPTR_TYPE)
@@ -1768,6 +1763,13 @@ handler_match_for_exception_type (tree handler, tree except_type)
 		switch (t->kind)
 		  {
 		  case ck_ptr:
+		    /* ...not involving conversions to pointers to private or
+		       protected or ambiguous classes, */
+		    if (CLASS_TYPE_P (TREE_TYPE (handler_type)))
+		      return (publicly_uniquely_derived_p
+			      (TREE_TYPE (handler_type),
+			       TREE_TYPE (except_type)));
+		    gcc_fallthrough ();
 		  case ck_fnptr:
 		  case ck_qual:
 		  case ck_identity:

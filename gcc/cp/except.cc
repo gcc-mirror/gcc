@@ -970,42 +970,6 @@ nothrow_libfn_p (const_tree fn)
     }
 }
 
-/* Returns nonzero if an exception of type FROM will be caught by a
-   handler for type TO, as per [except.handle].  */
-
-bool
-can_convert_eh (tree to, tree from)
-{
-  to = non_reference (to);
-  from = non_reference (from);
-
-  if (same_type_ignoring_top_level_qualifiers_p (to, from))
-    return true;
-
-  if (NULLPTR_TYPE_P (from) && TYPE_PTR_OR_PTRMEM_P (to))
-    return true;
-
-  if (TYPE_PTR_P (to) && TYPE_PTR_P (from))
-    {
-      to = TREE_TYPE (to);
-      from = TREE_TYPE (from);
-
-      if (! at_least_as_qualified_p (to, from))
-	return false;
-
-      if (VOID_TYPE_P (to))
-	return true;
-
-      /* Else fall through.  */
-    }
-
-  if (CLASS_TYPE_P (to) && CLASS_TYPE_P (from)
-      && publicly_uniquely_derived_p (to, from))
-    return true;
-
-  return false;
-}
-
 /* Check whether any of the handlers in I are shadowed by another handler
    accepting TYPE.  Note that the shadowing may not be complete; even if
    an exception of type B would be caught by a handler for A, there could
@@ -1020,7 +984,8 @@ check_handlers_1 (tree master, tree_stmt_iterator i)
   for (; !tsi_end_p (i); tsi_next (&i))
     {
       tree handler = tsi_stmt (i);
-      if (TREE_TYPE (handler) && can_convert_eh (type, TREE_TYPE (handler)))
+      if (TREE_TYPE (handler)
+	  && handler_match_for_exception_type (type, TREE_TYPE (handler)))
 	{
 	  auto_diagnostic_group d;
 	  if (warning_at (EXPR_LOCATION (handler), OPT_Wexceptions,
