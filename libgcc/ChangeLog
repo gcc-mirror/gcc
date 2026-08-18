@@ -1,3 +1,8 @@
+2026-08-17  Ramin Moussavi  <lordrasmus@gmail.com>
+
+	* config.host (microblaze*-linux*): Set md_unwind_header.
+	* config/microblaze/linux-unwind.h: New file.
+
 2026-08-12  Piotr Kubaj  <pkubaj@FreeBSD.org>
 
 	PR target/125803
