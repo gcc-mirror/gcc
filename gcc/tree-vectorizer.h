@@ -328,16 +328,18 @@ struct _slp_tree {
   /* Nodes that contain def-stmts of this node statements operands.  */
   vec<slp_tree> children;
 
-  /* A group of scalar stmts to be vectorized together.  */
+  /* A group of scalar stmts to be vectorized together.  Unused when
+     def_type is vect_external_def or vect_costant_def.  */
   vec<stmt_vec_info> stmts;
-  /* A group of scalar operands to be vectorized together.  */
+  /* A group of scalar operands to be vectorized together.  Unused
+     unless def_type is vect_external_def or vect_constant_def.  */
   vec<tree> ops;
   /* A set of lane indices that are live and to be code-generated from
      this SLP node.  */
   vec<unsigned> live_lanes;
 
   /* The representative that should be used for analysis and
-     code generation.  */
+     code generation.  NULL when code is VEC_PERM_EXPR.  */
   stmt_vec_info representative;
 
   struct {
@@ -347,12 +349,14 @@ struct _slp_tree {
       int reduc_idx;
   } cycle_info;
 
-  /* Load permutation relative to the stores, NULL if there is no
-     permutation.  */
+  /* Load permutation mapping outgoing vector lanes to lanes of
+     the single DR group the load accesses.  NULL if there is no
+     permutation.  Unused when this is not a load.  */
   load_permutation_t load_permutation;
   /* Lane permutation of the operands scalar lanes encoded as pairs
      of { operand number, lane number }.  The number of elements
-     denotes the number of output lanes.  */
+     denotes the number of output lanes.  Unused unless code is
+     VEC_PERM_EXPR.  */
   lane_permutation_t lane_permutation;
 
   tree vectype;
@@ -371,7 +375,7 @@ struct _slp_tree {
   enum vect_def_type def_type;
   /* The number of scalar lanes produced by this node.  */
   unsigned int lanes;
-  /* The operation of this node.  */
+  /* The operation of this node.  Either VEC_PERM_EXPR or ERROR_MARK.  */
   enum tree_code code;
   /* For gather/scatter memory operations the scale each offset element
      should be multiplied by before being added to the base.  */
@@ -385,6 +389,7 @@ struct _slp_tree {
      as to avoid STLF fails because of related stores.  */
   bool avoid_stlf_fail;
 
+  /* The vertex index of this node when a full graph is built.  */
   int vertex;
 
   /* The kind of operation as determined by analysis and optional
