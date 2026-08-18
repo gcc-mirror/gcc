@@ -224,7 +224,7 @@ ptr_deref_may_alias_global_p (tree ptr, bool escaped_local_p)
 
   /* If we end up with a pointer constant here that may point
      to global memory.  */
-  if (TREE_CODE (ptr) != SSA_NAME)
+  if (TREE_CODE (ptr) != SSA_NAME || !POINTER_TYPE_P (TREE_TYPE (ptr)))
     return true;
 
   pi = SSA_NAME_PTR_INFO (ptr);
@@ -248,7 +248,7 @@ ptr_deref_may_alias_auto_p (tree ptr)
 
   /* If we end up with a pointer constant here that may point
      to local stack memory.  */
-  if (TREE_CODE (ptr) != SSA_NAME)
+  if (TREE_CODE (ptr) != SSA_NAME || !POINTER_TYPE_P (TREE_TYPE (ptr)))
     return true;
 
   pi = SSA_NAME_PTR_INFO (ptr);
