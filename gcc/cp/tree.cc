@@ -5274,7 +5274,7 @@ record_has_unique_obj_representations (const_tree t, const_tree sz,
 	    inform (DECL_SOURCE_LOCATION (last_named_field),
 		    "padding occurs after %qD", last_named_field);
 	  else
-	    inform (DECL_SOURCE_LOCATION (t),
+	    inform (location_of (const_cast <tree> (t)),
 		    "%qT has padding and no data fields", t);
 	}
       return false;
