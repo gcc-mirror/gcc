@@ -1,6 +1,9 @@
 /* { dg-do compile { target gnu_retain } } */
 /* Prevent readonly data from being put in writable sdata for 32-bit powerpc. */
 /* { dg-options "-G0" { target { powerpc*-*-* && ilp32 } } } */
+/* Alpha places small objects in gp-relative sdata/sbss, which carry an
+   extra "s" section flag the scans do not match. */
+/* { dg-additional-options "-G0" { target alpha*-*-* } } */
 /* { dg-final { scan-assembler ".text.*,\"axR\"" } } */
 /* { dg-final { scan-assembler ".bss.*,\"awR\"" } } */
 /* { dg-final { scan-assembler ".data.*,\"awR\"" } } */
