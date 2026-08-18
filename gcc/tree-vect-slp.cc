@@ -2027,8 +2027,7 @@ vect_slp_build_two_operator_nodes (slp_tree perm, tree vectype,
   SLP_TREE_CODE (perm) = VEC_PERM_EXPR;
   SLP_TREE_VECTYPE (perm) = vectype;
   SLP_TREE_LANES (perm) = group_size;
-  /* ???  We should set this NULL but that's not expected.  */
-  SLP_TREE_REPRESENTATIVE (perm) = oper1;
+  SLP_TREE_REPRESENTATIVE (perm) = NULL;
   SLP_TREE_LANE_PERMUTATION (perm) = lperm;
   SLP_TREE_CHILDREN (perm).quick_push (child1);
   SLP_TREE_CHILDREN (perm).quick_push (child2);
@@ -2241,6 +2240,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		      SLP_TREE_CODE (node) = VEC_PERM_EXPR;
 		      SLP_TREE_CHILDREN (node).safe_push (unperm_load);
 		      SLP_TREE_LANE_PERMUTATION (node) = lperm;
+		      SLP_TREE_REPRESENTATIVE (node) = NULL;
 		      load_permutation.release ();
 		      return node;
 		    }
@@ -2318,6 +2318,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
       SLP_TREE_LANE_PERMUTATION (node) = lperm;
       SLP_TREE_VECTYPE (node) = vectype;
       SLP_TREE_CHILDREN (node).quick_push (vnode);
+      SLP_TREE_REPRESENTATIVE (node) = NULL;
       return node;
     }
   /* When discovery reaches an associatable operation see whether we can
@@ -3236,6 +3237,7 @@ fail:
 	      SLP_TREE_VECTYPE (pnode) = vectype;
 	      SLP_TREE_CHILDREN (pnode).quick_push (child);
 	      SLP_TREE_CHILDREN (pnode).quick_push (child);
+	      SLP_TREE_REPRESENTATIVE (pnode) = NULL;
 	      lane_permutation_t& perm = SLP_TREE_LANE_PERMUTATION (pnode);
 	      children.safe_push (pnode);
 
@@ -3265,6 +3267,7 @@ fail:
       SLP_TREE_CODE (node) = VEC_PERM_EXPR;
       SLP_TREE_CHILDREN (node).quick_push (one);
       SLP_TREE_CHILDREN (node).quick_push (two);
+      SLP_TREE_REPRESENTATIVE (node) = NULL;
       enum tree_code code0 = ERROR_MARK;
       enum tree_code ocode = ERROR_MARK;
       if (gassign *stmt = dyn_cast <gassign *> (stmts[0]->stmt))
@@ -4028,9 +4031,7 @@ vect_build_slp_store_interleaving (vec<slp_tree> &rhs_nodes,
       SLP_TREE_VECTYPE (perm) = SLP_TREE_VECTYPE (node);
       perm->max_nunits = max_nunits;
       SLP_TREE_LANES (perm) = group_size;
-      /* ???  We should set this NULL but that's not expected.  */
-      SLP_TREE_REPRESENTATIVE (perm)
-	= SLP_TREE_REPRESENTATIVE (SLP_TREE_CHILDREN (rhs_nodes[0])[l]);
+      SLP_TREE_REPRESENTATIVE (perm) = NULL;
       for (unsigned j = 0; j < rhs_nodes.length (); ++j)
 	{
 	  SLP_TREE_CHILDREN (perm)
@@ -5838,7 +5839,6 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	  SLP_TREE_LANE_PERMUTATION (p) = perm;
 	  SLP_TREE_VECTYPE (p) = SLP_TREE_VECTYPE (load);
 	  SLP_TREE_LANES (p) = perm.length ();
-	  SLP_TREE_REPRESENTATIVE (p) = SLP_TREE_REPRESENTATIVE (load);
 	  /* ???  As we have scalar stmts for this intermediate permute we
 	     could CSE it via bst_map but we do not want to pick up
 	     another SLP node with a load permutation.  We instead should
@@ -5857,6 +5857,7 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
       SLP_TREE_LANE_PERMUTATION (load) = final_perm;
       SLP_TREE_CHILDREN (load).create (1);
       SLP_TREE_CHILDREN (load).quick_push (l0);
+      SLP_TREE_REPRESENTATIVE (load) = NULL;
     }
 }
 
@@ -7997,7 +7998,6 @@ vect_optimize_slp_pass::get_result_with_layout (slp_tree node,
 	  if (to_layout_i != 0)
 	    vect_slp_permute (m_perms[to_layout_i], stmts, true);
 	}
-      SLP_TREE_REPRESENTATIVE (result) = SLP_TREE_REPRESENTATIVE (node);
       SLP_TREE_LANES (result) = num_lanes;
       SLP_TREE_VECTYPE (result) = SLP_TREE_VECTYPE (node);
       result->vertex = -1;
@@ -8579,7 +8579,8 @@ vect_cse_slp_node_parts (hash_set<slp_tree> &visited,
       && SLP_TREE_SCALAR_STMTS (node)[0]
       /* Avoid touching loads which need care with load permutations
 	 and specialities like load-lane representations.  */
-      && !STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node)))
+      && (SLP_TREE_PERMUTE_P (node)
+	  || !STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (node))))
     for (slp_tree cand
 	 : part_starts[gimple_uid (SLP_TREE_SCALAR_STMTS (node)[0]->stmt)])
       /* ???  There is a possible ordering/optimality problem in that
@@ -8880,6 +8881,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
   /* Handle purely internal nodes.  */
   if (SLP_TREE_PERMUTE_P (node))
     {
+      gcc_checking_assert (!SLP_TREE_REPRESENTATIVE (node));
       if (!vectorizable_slp_permutation (vinfo, NULL, node, cost_vec))
 	return false;
 

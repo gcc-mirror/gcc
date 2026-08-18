@@ -277,7 +277,6 @@ vect_build_swap_evenodd_node (slp_tree node)
   SLP_TREE_CHILDREN (vnode).quick_push (node);
   SLP_TREE_REF_COUNT (vnode) = 1;
   SLP_TREE_LANES (vnode) = SLP_TREE_LANES (node);
-  SLP_TREE_REPRESENTATIVE (vnode) = SLP_TREE_REPRESENTATIVE (node);
   SLP_TREE_REF_COUNT (node)++;
   return vnode;
 }
@@ -535,7 +534,7 @@ complex_pattern::build (vec_info *vinfo)
   FOR_EACH_VEC_ELT (this->m_workset, ix, node)
     {
       /* Calculate the location of the statement in NODE to replace.  */
-      stmt_info = SLP_TREE_REPRESENTATIVE (node);
+      stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
       gimple* old_stmt = STMT_VINFO_STMT (stmt_info);
       tree lhs_old_stmt = gimple_get_lhs (old_stmt);
       tree type = TREE_TYPE (lhs_old_stmt);
@@ -1006,10 +1005,6 @@ vect_build_combine_node (slp_tree even, slp_tree odd, slp_tree rep)
 
   SLP_TREE_LANES (vnode) = SLP_TREE_LANES (rep);
   gcc_assert (perm.length () == SLP_TREE_LANES (vnode));
-  /* Representation is set to that of the current node as the vectorizer
-     can't deal with VEC_PERMs with no representation, as would be the
-     case with invariants.  */
-  SLP_TREE_REPRESENTATIVE (vnode) = SLP_TREE_REPRESENTATIVE (rep);
   SLP_TREE_VECTYPE (vnode) = SLP_TREE_VECTYPE (rep);
   return vnode;
 }
