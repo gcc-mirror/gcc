@@ -2231,7 +2231,7 @@ struct processor_costs znver4_cost = {
   "16",					/* Func alignment.  */
   4,					/* Small unroll limit.  */
   2,					/* Small unroll factor.  */
-  COSTS_N_INSNS (2),			/* Branch mispredict scale.  */
+  COSTS_N_INSNS (2) + 3,		/* Branch mispredict scale.  */
 };
 
 /* This table currently replicates znver4_cost table. */
@@ -2399,7 +2399,7 @@ struct processor_costs znver5_cost = {
   "16",					/* Func alignment.  */
   4,					/* Small unroll limit.  */
   2,					/* Small unroll factor.  */
-  COSTS_N_INSNS (2),			/* Branch mispredict scale.  */
+  COSTS_N_INSNS (2) + 3,		/* Branch mispredict scale.  */
 };
 
 /* skylake_cost should produce code tuned for Skylake family of CPUs.  */
