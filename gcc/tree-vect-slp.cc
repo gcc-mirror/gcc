@@ -6823,7 +6823,7 @@ vect_optimize_slp_pass::containing_loop (slp_tree node)
 {
   stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
   if (!rep)
-    return ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father;
+    return m_vinfo->bbs[0]->loop_father;
   return gimple_bb (vect_orig_stmt (rep)->stmt)->loop_father;
 }
 
