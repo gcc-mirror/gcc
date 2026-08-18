@@ -7257,10 +7257,15 @@ create_new_iv (struct ivopts_data *data, struct iv_cand *cand)
       name_info (data, cand->var_before)->preserve_biv = true;
       name_info (data, cand->var_after)->preserve_biv = true;
 
-      /* Rewrite the increment so that it uses var_before directly.  */
+      /* Rewrite the increment so that it uses var_before directly.  Missed
+	 optimization can result in a use IV with zero step, avoid
+	 crashing in that case.  */
       use = find_interesting_uses_op (data, cand->var_after);
-      group = data->vgroups[use->group_id];
-      group->selected = cand;
+      if (use)
+	{
+	  group = data->vgroups[use->group_id];
+	  group->selected = cand;
+	}
       return;
     }
 
