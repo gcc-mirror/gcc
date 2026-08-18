@@ -4302,7 +4302,7 @@ write_reflection (tree refl)
 	   || strcmp (prefix, "ns") == 0)
     {
       write_prefix (decl_mangling_context (arg));
-      write_unqualified_name (arg);
+      write_unqualified_name (STRIP_TEMPLATE (arg));
     }
   else if (strcmp (prefix, "ba") == 0)
     {

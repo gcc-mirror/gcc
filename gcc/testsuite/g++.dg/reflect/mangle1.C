@@ -15,6 +15,10 @@ struct S : B {
   int : 0;
   static int var;
 };
+struct Q {
+  template <typename T>
+  operator T () { return T (); }
+};
 struct W { union {}; union {}; union {}; union {}; };
 template <auto> struct TCls {};
 template <auto> void TFn ();
@@ -65,6 +69,10 @@ namespace NS2 {
   struct Z {
   };
   struct AA { int a, b; };
+  struct Q {
+    template <int N>
+    operator int () { return N; }
+  };
 }
 
 constexpr auto ctx = std::meta::access_context::current ();
@@ -147,6 +155,8 @@ baz (int x)
   bar <241, ^^NS2::TCls> (); // class template
   bar <250, ^^TFn> (); // function template
   bar <251, ^^NS2::TFn> (); // function template
+  bar <252, members_of (^^Q, ctx)[0]> (); // function template
+  bar <253, members_of (^^NS2::Q, ctx)[0]> (); // function template
   bar <260, ^^TVar> (); // variable template
   bar <261, ^^NS2::TVar> (); // variable template
   bar <270, ^^TAlias> (); // alias template
@@ -239,6 +249,8 @@ baz (int x)
 // { dg-final { scan-assembler "_Z3barILi241ELDmct3NS24TClsEEvv" } }
 // { dg-final { scan-assembler "_Z3barILi250ELDmft3TFnEEvv" } }
 // { dg-final { scan-assembler "_Z3barILi251ELDmft3NS23TFnEEvv" } }
+// { dg-final { scan-assembler "_Z3barILi252ELDmft1QcvT_EEvv" } }
+// { dg-final { scan-assembler "_Z3barILi253ELDmft3NS21QcviEEvv" } }
 // { dg-final { scan-assembler "_Z3barILi260ELDmvt4TVarEEvv" } }
 // { dg-final { scan-assembler "_Z3barILi261ELDmvt3NS24TVarEEvv" } }
 // { dg-final { scan-assembler "_Z3barILi270ELDmat6TAliasEEvv" } }
