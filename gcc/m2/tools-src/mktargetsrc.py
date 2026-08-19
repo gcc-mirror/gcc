@@ -38,6 +38,12 @@ def printf (format, *args):
     print(str(format) % args, end=' ')
 
 
+def safeRemove(filename):
+    # Remove filename if the name is not None and the filename exists.
+    if (filename != None) and os.path.exists(filename):
+        os.remove(filename)
+
+
 def quietSystem(args, commandLine, temporaryFile):
     # Execute commandline and exit if unsuccessful.  It will run
     # gdb on the command line if --gdb is set in args.
@@ -46,9 +52,8 @@ def quietSystem(args, commandLine, temporaryFile):
     else:
         result = os.system(commandLine + " 2>&1 /dev/null")
     if result != 0:
-        os.remove(temporaryFile)
-        if (args.outputfile != None) and os.path.exists(args.outputfile):
-            os.remove(args.outputfile)
+        safeRemove(temporaryFile)
+        safeRemove(args.outputfile)
         printf("failed to execute: %s with an exit code: %d\n",
                commandLine, result)
         sys.exit(result)
