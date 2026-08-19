@@ -1167,16 +1167,31 @@ emit_mode_unit_size_inline (void)
   int c;
   struct mode_data *m;
 
+  unsigned int max_type_size = 0;
+  for_all_modes (c, m)
+    {
+      unsigned int type_size = (c != MODE_PARTIAL_INT && m->component)
+				? m->component->bytesize : m->bytesize;
+      if (max_type_size < type_size)
+	max_type_size = type_size;
+    }
+  if (max_type_size < (1 << 8))
+    puts ("#define MODE_UNIT_SIZE_TYPE unsigned char\n");
+  else if (max_type_size < (1 << 16))
+    puts ("#define MODE_UNIT_SIZE_TYPE unsigned short\n");
+  else
+    puts ("#define MODE_UNIT_SIZE_TYPE unsigned int\n");
+
   puts ("\
 #ifdef __cplusplus\n\
 inline __attribute__((__always_inline__))\n\
 #else\n\
 extern __inline__ __attribute__((__always_inline__, __gnu_inline__))\n\
 #endif\n\
-unsigned char\n\
+MODE_UNIT_SIZE_TYPE\n\
 mode_unit_size_inline (machine_mode mode)\n\
 {\n\
-  extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];\
+  extern CONST_MODE_UNIT_SIZE MODE_UNIT_SIZE_TYPE mode_unit_size[NUM_MACHINE_MODES];\
 \n\
   gcc_assert (mode >= 0 && mode < NUM_MACHINE_MODES);\n\
   switch (mode)\n\
@@ -1683,7 +1698,7 @@ emit_mode_unit_size (void)
   int c;
   struct mode_data *m;
 
-  print_maybe_const_decl ("%sunsigned char", "mode_unit_size",
+  print_maybe_const_decl ("%sMODE_UNIT_SIZE_TYPE", "mode_unit_size",
 			  "NUM_MACHINE_MODES", adj_bytesize);
 
   for_all_modes (c, m)

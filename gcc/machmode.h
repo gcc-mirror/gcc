@@ -26,7 +26,7 @@ extern CONST_MODE_SIZE poly_uint16 mode_size[NUM_MACHINE_MODES];
 extern CONST_MODE_PRECISION poly_uint16 mode_precision[NUM_MACHINE_MODES];
 extern const unsigned short mode_inner[NUM_MACHINE_MODES];
 extern CONST_MODE_NUNITS poly_uint16 mode_nunits[NUM_MACHINE_MODES];
-extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
+extern CONST_MODE_UNIT_SIZE MODE_UNIT_SIZE_TYPE mode_unit_size[NUM_MACHINE_MODES];
 extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
 extern const unsigned short mode_next[NUM_MACHINE_MODES];
 extern const unsigned short mode_wider[NUM_MACHINE_MODES];
@@ -611,7 +611,7 @@ mode_to_inner (machine_mode mode)
 
 /* Return the base GET_MODE_UNIT_SIZE value for MODE.  */
 
-ALWAYS_INLINE unsigned char
+ALWAYS_INLINE MODE_UNIT_SIZE_TYPE
 mode_to_unit_size (machine_mode mode)
 {
 #if GCC_VERSION >= 4001
