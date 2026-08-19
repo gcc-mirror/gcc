@@ -758,18 +758,19 @@ done:
    into a byte index, in place of the bitmask the Neon version has to
    build and move to a general register.
 
-   Unlike the Neon version this one needs neither alignment nor a
-   page-crossing test.  Full-vector loads run while S is at or below
-   END rounded down to a vector boundary, so they may extend a little
-   past *END into the tail padding; a single predicated vector then
-   covers any remainder.  The newline that _cpp_convert_input forces
-   at *END still terminates the scan.
+   Loop until a match is found even if the input pointer is unaligned
+   or close to the end.  Since this may overread, it relies on *end
+   containing a match and CPP_BUFFER_PADDING >= 256 (maximum SVE vector
+   length).
 
    The loop consumes svcntb () bytes per iteration, so it scales with the
    implemented vector length.  */
 
+/* Unaligned loads, potentially using padding after the final newline.  */
+static_assert (CPP_BUFFER_PADDING >= 256, "");
+
 static const uchar * __attribute__ ((target ("+sve2")))
-search_line_sve2 (const uchar *s, const uchar *end)
+search_line_sve2 (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {
   /* Order within a segment is irrelevant to MATCH, which tests set
      membership, so this needs no adjustment for big-endian.  */
@@ -777,34 +778,20 @@ search_line_sve2 (const uchar *s, const uchar *end)
 			  | ((uint32_t) '\\' << 16) | ((uint32_t) '?' << 24));
   const svuint8_t needles = svreinterpret_u8_u32 (svdup_n_u32 (chars));
   const svbool_t all = svptrue_b8 ();
-  const uint64_t vl = svcntb ();
-  svuint8_t data;
-  svbool_t match;
-  uintptr_t limit;
 
-  /* Unaligned loads, potentially using padding after the final newline.  */
-  static_assert (CPP_BUFFER_PADDING >= 256, "");
+  svuint8_t data = svld1_u8 (all, s);
+  svbool_t match = svmatch_u8 (all, data, needles);
+  if (__builtin_expect (svptest_any (all, match), 1))
+    return s + svcntp_b8 (all, svbrkb_b_z (all, match));
 
-  /* Align END down to a vector boundary so the loop can consume on
-     average half a vector more near the end.  */
-  limit = (uintptr_t) end & -vl;
-
-  while ((uintptr_t) s <= limit)
+  while (1)
     {
+      s += svcntb ();
       data = svld1_u8 (all, s);
       match = svmatch_u8 (all, data, needles);
-      if (svptest_any (all, match))
+      if (__builtin_expect (svptest_any (all, match), 1))
 	return s + svcntp_b8 (all, svbrkb_b_z (all, match));
-      s += vl;
     }
-
-  /* What is left, up to and including *END, which _cpp_convert_input
-     forces to a newline.  That guarantees a match, so no further test is
-     needed.  */
-  svbool_t pg = svwhilele_b8_u64 ((uintptr_t) s, (uintptr_t) end);
-  data = svld1_u8 (pg, s);
-  match = svmatch_u8 (pg, data, needles);
-  return s + svcntp_b8 (pg, svbrkb_b_z (pg, match));
 }
 
 static bool lexer_has_sve2;
