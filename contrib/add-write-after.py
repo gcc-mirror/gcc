@@ -82,6 +82,8 @@ def getuserdata():
     newuser['sn'] = ask("Your surname (only used for sorting entries)",
                         get_surname(newuser['cn']))
     account = ask("Your sourceware account", user.pw_name)
+    forgeid = ask("Your sourceware forge ID (if you have one)", None,
+                  required=False)
     while True:
         e = ask("Primary email address", None)
         if email_valid(e):
@@ -101,6 +103,8 @@ def getuserdata():
     newuser['roles'] = list()
     newuser['roles'].append('WriteAfter')
     newuser['account'] = account
+    if forgeid:
+        newuser['forgeid'] = forgeid
     print("If you are using a Developer Certificate of Origin (DCO)")
     print("you can add appropriate email addresses here")
     while (e := ask("DCO email (return to stop)", None, required=False)):
