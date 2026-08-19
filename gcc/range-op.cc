@@ -2647,10 +2647,10 @@ operator_div::op1_op2_relation_effect (irange &lhs_range,
     /* op1/op2 = 0 if op1 < op2 and both op1 and op2
        are known positives.  */
     case VREL_LT:
-      if (TYPE_UNSIGNED (type)
-	  || (wi::ge_p (op1_range.lower_bound (), 0, SIGNED)
-	      && wi::ge_p (op2_range.lower_bound (), 0, SIGNED)))
-	rel_range.set_zero (type);
+      if (!op1_range.nonnegative_p ()
+	   || !op2_range.nonnegative_p ())
+	return false;
+      rel_range.set_zero (type);
       break;
     default:
       return false;
