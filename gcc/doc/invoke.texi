@@ -31372,6 +31372,16 @@ passed.  This is useful for ensuring that the architecture is taken from the
 @option{-mcpu} option, and an error results if no @option{-mcpu} option
 is given when @option{-march=unset} is used.
 
+@option{-march=native} causes the compiler to work out the ISA of the
+machine it is running on.  It is only available on a native GNU/Linux
+compiler; anywhere else the value is rejected like any other unknown ISA
+string.  On a system whose cores are not all alike, such as one pairing
+fast and efficient cores, which of them the detected ISA describes is
+unspecified; write the ISA string out in full if it matters.  If the
+running machine cannot be identified the option is ignored, and the
+architecture is taken from @option{-mcpu} or from the configured default
+as usual.
+
 The syntax of the ISA string is defined as follows:
 
 @itemize @bullet{}

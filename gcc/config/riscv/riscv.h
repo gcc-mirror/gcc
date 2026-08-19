@@ -52,12 +52,26 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
 extern const char *riscv_multi_lib_check (int argc, const char **argv);
 extern const char *riscv_arch_help (int argc, const char **argv);
 
+#if defined (__riscv) && defined (__linux__)
+extern const char *host_detect_local_cpu (int argc, const char **argv);
+#define HAVE_LOCAL_CPU_DETECT
+# define RISCV_NATIVE_SPEC_FUNCTIONS					\
+  { "local_cpu_detect", host_detect_local_cpu },
+
+# define RISCV_NATIVE_SPECS						\
+  "%{march=native:%<march=native %:local_cpu_detect(arch)} "
+#else
+# define RISCV_NATIVE_SPEC_FUNCTIONS
+# define RISCV_NATIVE_SPECS ""
+#endif
+
 # define EXTRA_SPEC_FUNCTIONS						\
   { "riscv_expand_arch", riscv_expand_arch },				\
   { "riscv_expand_arch_from_cpu", riscv_expand_arch_from_cpu },		\
   { "riscv_default_mtune", riscv_default_mtune },			\
   { "riscv_multi_lib_check", riscv_multi_lib_check },			\
-  { "riscv_arch_help", riscv_arch_help },
+  { "riscv_arch_help", riscv_arch_help },				\
+  RISCV_NATIVE_SPEC_FUNCTIONS
 
 /* Support for a compile-time default CPU, et cetera.  The rules are:
    --with-cpu is ignored if -mcpu is specified.
@@ -119,8 +133,11 @@ ASM_MISA_SPEC
 #define ARCH_UNSET_CLEANUP_SPECS  \
   "%{march=unset:%<march=*} "  \
 
+/* RISCV_NATIVE_SPECS comes first so that the specs below, which expand and
+   validate -march=, see the option it produced.  */
 #undef DRIVER_SELF_SPECS
 #define DRIVER_SELF_SPECS					\
+RISCV_NATIVE_SPECS,						\
 ARCH_UNSET_CLEANUP_SPECS \
 "%{march=help:%:riscv_arch_help()} "				\
 "%{print-supported-extensions:%:riscv_arch_help()} "		\

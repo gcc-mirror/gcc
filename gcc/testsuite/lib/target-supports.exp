@@ -2064,6 +2064,20 @@ proc check_effective_target_rv_float_abi_soft { } {
     }]
 }
 
+# Return 1 if the compiler under test can work out the ISA of the machine
+# it is running on, 0 otherwise.  This is only true of a native RISC-V
+# Linux compiler; a cross compiler rejects -march=native outright.
+# Cache the result.
+
+proc check_effective_target_riscv_native_cpu_detect { } {
+    if { ![istarget riscv*-*-linux*] } {
+	return 0
+    }
+    return [check_no_compiler_messages riscv_native_cpu_detect object {
+	int dummy;
+    } "-march=native"]
+}
+
 # Return 1 if the target arch supports the atomic extension, 0 otherwise.
 # Cache the result.
 
