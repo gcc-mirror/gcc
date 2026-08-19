@@ -22554,6 +22554,96 @@ ix86_expand_truncdf_32 (rtx operand0, rtx operand1)
   emit_move_insn (operand0, res);
 }
 
+/* Expand truncsfbf2 like vcvtneps2bf16, which doesn't honor SNAN,
+   turns sNAN into qNAN quietly, it always rounds to nearest even
+   and flushes denormals to zero.  We can expand the conversion
+   inline as (fromi + 0x7fff + ((fromi >> 16) & 1)) >> 16, flushing
+   denormals to zero.  */
+
+void
+ix86_expand_truncsfbf2 (rtx op0, rtx op1)
+{
+  rtx set;
+
+  if (TARGET_AVXNECONVERT
+      || (TARGET_AVX512BF16 && TARGET_AVX512VL))
+    {
+      set = gen_truncsfbf2_vcvtneps2bf16 (op0, op1);
+      emit_insn (set);
+      return;
+    }
+
+  /* Convert OP1 to REG1_SI in SImode.  */
+  rtx reg1_si = gen_reg_rtx (SImode);
+  rtx op1_si = gen_lowpart (SImode, op1);
+  set = gen_rtx_SET (reg1_si, op1_si);
+  emit_insn (set);
+
+  /* Set TMP0 to REG1_SI >> 16. */
+  rtx tmp0 = expand_simple_binop (SImode, LSHIFTRT, reg1_si,
+				  GEN_INT(16), nullptr, 0,
+				  OPTAB_DIRECT);
+
+  rtx_code_label *zero_label = gen_label_rtx ();
+  rtx_code_label *cast_label = gen_label_rtx ();
+
+  rtx result = gen_reg_rtx (SImode);
+
+  /* OP1 is zero or denormal if (REG1_SI & 0x7f800000) == 0.  */
+  rtx tmp1 = expand_simple_binop (SImode, AND, reg1_si,
+				  GEN_INT(0x7f800000), nullptr, 0,
+				  OPTAB_DIRECT);
+
+  emit_cmp_and_jump_insns (tmp1, const0_rtx, EQ, nullptr, SImode,
+			   true, zero_label,
+			   profile_probability::unlikely ());
+
+  /* Set TMP1 to TMP0 & 1. */
+  tmp1 = expand_simple_binop (SImode, AND, tmp0, const1_rtx, nullptr,
+			      0, OPTAB_DIRECT);
+
+  /* Set TMP2 to REG1_SI + 0x7fff.  */
+  rtx tmp2 = expand_simple_binop (SImode, PLUS, reg1_si,
+				  GEN_INT (0x7fff), nullptr, 0,
+				  OPTAB_DIRECT);
+  /* Set TMP1 to TMP2 + TMP1.  */
+  tmp1 = expand_simple_binop (SImode, PLUS, tmp2, tmp1, nullptr, 0,
+			      OPTAB_DIRECT);
+
+  /* Set TMP1 to TMP1 >> 16. */
+  tmp1 = expand_simple_binop (SImode, LSHIFTRT, tmp1, GEN_INT(16),
+			      nullptr, 0, OPTAB_DIRECT);
+
+  /* Move TMP1 to RESULT.  */
+  emit_move_insn (result, tmp1);
+
+  emit_jump_insn (gen_jump (cast_label));
+  emit_barrier ();
+
+  emit_label (zero_label);
+
+  /* Flush TMP0 to zero while keeping the sign bit for zero and
+     denormal.  */
+  tmp1 = expand_simple_binop (SImode, AND, tmp0, GEN_INT(0x8000),
+			      nullptr, 0, OPTAB_DIRECT);
+
+  /* Move TMP1 to RESULT.  */
+  emit_move_insn (result, tmp1);
+
+  emit_label (cast_label);
+
+  /* Cast RESULT to TMP2 in HImode.  */
+  tmp2 = gen_reg_rtx (HImode);
+  tmp0 = gen_lowpart (HImode, result);
+  set = gen_rtx_SET (tmp2, tmp0);
+  emit_insn (set);
+
+  /* Convert TMP2 to OP0.  */
+  tmp0 = gen_lowpart (BFmode, tmp2);
+  set = gen_rtx_SET (op0, tmp0);
+  emit_insn (set);
+}
+
 /* Expand SSE sequence for computing round
    from OPERAND1 storing into OPERAND0.  */
 void
