@@ -18,5 +18,4 @@ foo (__float128 x)
   return __builtin_copysignq (0.0, x);
 }
 
-/* { dg-final { scan-assembler-times ".long	0" 3 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times ".long	-2147483648" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times {.long\s0[\n\r]+\s.long\s0[\n\r]+\s.long\s0[\n\r]+\s.long\s-2147483648} 1 { target { ! ia32 } } } } */

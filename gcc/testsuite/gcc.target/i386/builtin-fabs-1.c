@@ -19,5 +19,4 @@ foo (float x)
   return -__builtin_fabsf (x);
 }
 
-/* { dg-final { scan-assembler-times ".long	0" 3 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times ".long	-2147483648" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times {.long\s-2147483648[\n\r]+\s.long\s0[\n\r]+\s.long\s0[\n\r]+\s.long\s0} 1 { target { ! ia32 } } } } */
