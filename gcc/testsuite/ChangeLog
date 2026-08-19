@@ -1,3 +1,197 @@
+2026-08-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126856
+	* gcc.dg/pr126856.c: New test.
+
+2026-08-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* g++.target/i386/mv28.C (dg-additional-options): New.
+
+2026-08-18  Dylan Rees  <dylan.rees@arm.com>
+
+	* gcc.target/aarch64/sve/pr121604_brk.c: Test extended.
+	* gcc.target/aarch64/sve/acle/general/pfirst_2.c: New test.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126867
+	* g++.dg/cpp1z/has-unique-obj-representations6.C: New test.
+
+2026-08-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121683
+	* gfortran.dg/structure_constructor_18.f90: New test
+
+2026-08-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gfortran.dg/bind_c_private_1.f90: Use generic asm matchers for
+	hidden symbols.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126752
+	* g++.dg/cpp0x/initlist-array25.C: New test.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126093
+	* g++.dg/reflect/mangle1.C: Add 2 new tests for reflections of
+	conversion templates.
+
+2026-08-18  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add-3-s16.c: Adjust
+	expected output.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add-3-s32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add-3-s64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add-3-s8.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add-4-s16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add-4-s32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add-4-s64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add-4-s8.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-1-i16.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-1-i32.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-1-i64.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_s_add_imm-1-i8.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_trunc-1-u8.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-12.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-13.c: Likewise.
+
+2026-08-18  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-12.c: Disable
+	jump threading.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-13.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-14.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-15.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-48.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-49.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-50.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-52.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-54.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-55.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-57.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-58.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_back_prop-39.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_complex_loop-2.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_conflict-13.c: Likewise.
+
+2026-08-18  Matt Turner  <mattst88@gmail.com>
+
+	* g++.dg/eh/pr119507.C: Skip on alpha.
+
+2026-08-18  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.dg/cmp-mem-const-3.c: Skip on alpha.
+	* gcc.dg/cmp-mem-const-4.c: Likewise.
+	* gcc.dg/cmp-mem-const-5.c: Likewise.
+	* gcc.dg/cmp-mem-const-6.c: Likewise.
+
+2026-08-18  Matt Turner  <mattst88@gmail.com>
+
+	* c-c++-common/attr-retain-2.c: Also pass -G0 on alpha.
+	* c-c++-common/attr-retain-3.c: Likewise.
+	* c-c++-common/attr-retain-4.c: Likewise.
+	* gcc.c-torture/compile/attr-retain-1.c: Likewise.
+	* gcc.c-torture/compile/attr-retain-2.c: Likewise.
+
+2026-08-18  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.dg/torture/pr125545.c: Require asm_goto_with_outputs.
+
+2026-08-18  Matt Turner  <mattst88@gmail.com>
+
+	* g++.dg/opt/pr94589-6.C: Add dg-add-options ieee.
+	* g++.dg/torture/pr116120-2.C: Likewise.
+	* gcc.c-torture/execute/20190901-1.c: Likewise.
+	* gcc.dg/pr108447.c: Likewise.
+	* gcc.dg/pr94589-6.c: Likewise.
+	* gcc.dg/torture/pr126464.c: Likewise.
+	* gcc.dg/torture/pr126576.c: Likewise.
+
+2026-08-18  Matt Turner  <mattst88@gmail.com>
+
+	* g++.dg/no-stack-protector-attr.C: Remove the dead dg-do directive
+	and the hppa exclusion, and require fstack_protector.
+
+2026-08-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121384
+	* gfortran.dg/associate_83.f90: New test.
+	* gfortran.dg/associate_84.f90: New test.
+
+2026-08-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve/roundeven_1.c: New test.
+	* gcc.target/aarch64/sve/roundeven_2.c: New test.
+
+2026-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126926
+	* gcc.dg/vect/bb-slp-pr126926.c: New testcase.
+
+2026-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126925
+	* gcc.dg/torture/pr126925.c: New testcase.
+
+2026-08-18  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/fold-bit-test-combine-1.c: New test.
+
+2026-08-18  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR analyzer/110578
+	* g++.dg/analyzer/dyncast-1.C: Rewrite to cover
+	[expr.dynamic.cast]/9.1 and /9.2 over public, non-virtual
+	inheritance.
+	* g++.dg/analyzer/dyncast-2.C: New test.
+	* g++.dg/analyzer/dyncast-3.C: New test.
+	* g++.dg/analyzer/dyncast-4.C: New test.
+	* g++.dg/analyzer/dyncast-5.C: New test.
+
+2026-08-18  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126876
+	* gcc.dg/tree-ssa/pr126876.c: New test.
+
+2026-08-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/126784
+	* g++.target/i386/pr126784-1.C: New test.
+	* g++.target/i386/pr126784-2.C: Likewise.
+	* gcc.target/i386/pr126784-1.c: Likewise.
+	* gcc.target/i386/pr126784-2.c: Likewise.
+	* gcc.target/i386/pr126784-3.c: Likewise.
+	* gcc.target/i386/pr126784-4.c: Likewise.
+	* gcc.target/i386/pr126784-5.c: Likewise.
+	* gcc.target/i386/pr126784-6.c: Likewise.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/divmul-mod-1.c: Add -Wno-psabi to dg-options.
+	* gcc.dg/tree-ssa/round-up-ior-1.c: Likewise.
+	* gcc.dg/tree-ssa/vec-mask-zero-1.c: Require vect_int effective
+	target.  Add -Wno-psabi to dg-options and add -msse2 as
+	dg-additional-options on ia32.
+	* gcc.dg/tree-ssa/vector-alignup-1.c: Add -msse2 as
+	dg-additional-options on ia32.
+	* g++.dg/tree-ssa/vec-narrow-minmax-2.C: Add -Wno-psabi to dg-options.
+	* g++.dg/tree-ssa/vec-narrow-1.C: Likewise. Add -mmmx as
+	dg-additional-options on ia32.
+
+2026-08-18  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/fold-mod-mult-1.c: New test.
+
+2026-08-18  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/112533
+	* gcc.dg/tree-ssa/bool-eq-bitxor.c: New test.
+	* gcc.dg/tree-ssa/bool-eq-evenness.c: New test.
+	* gcc.dg/tree-ssa/bool-eq-pow2.c: New test.
+
 2026-08-17  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/lto/pr108772_0.C: Allow undefined symbols on Darwin.

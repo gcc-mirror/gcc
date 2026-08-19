@@ -1,3 +1,145 @@
+2026-08-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126856
+	* gimple-range-cache.cc (block_range_cache::clear): New.
+	(ranger_cache::reset_range_info): New.
+	* gimple-range-cache.h (block_range_cache::clear): Declare.
+	(ranger_cache::reset_range_info): Declare.
+	* gimple-range-gori.cc (range_def_chain::clear): New.
+	* gimple-range-gori.h (range_def_chain::clear): Declare.
+	* gimple-range-infer.cc (infer_range_manager::clear): New.
+	* gimple-range-infer.h (infer_oracle::clear): New virtual function.
+	(infer_range_manager::clear): Override.
+	* gimple-range.cc (gimple_ranger::reset_range_info): New.
+	* gimple-range.h (gimple_ranger::reset_range_info): Declare.
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Reset flow-sensitive
+	information when replacing a definition.
+	* tree-ssanames.cc (reset_flow_sensitive_info): Reset information
+	maintained by the current range query.
+	* value-query.cc (range_query::reset_range_info): New.
+	* value-query.h (range_query::reset_range_info): Declare.
+	* value-relation.cc (equiv_oracle::clear): New.
+	(relation_chain_head::clear): New.
+	(dom_oracle::clear): New.
+	(path_oracle::clear): New.
+	* value-relation.h (relation_oracle::clear): New virtual function.
+	(equiv_oracle::clear): Override.
+	(relation_chain_head::clear): Declare.
+	(dom_oracle::clear): Override.
+	(path_oracle::clear): Override.
+
+2026-08-18  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* auto-profile.cc (function_instance::match): Walk predecessor edges
+	for PHI arguments.
+
+2026-08-18  Dylan Rees  <dylan.rees@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc: fold method
+	created for 'svbrk_unary_impl'. Cases added for folding into
+	'ptrue' and 'pfalse' where appropriate and not folding where
+	unnecessary. Expand method of 'svpfirst_svpnext_impl' extended
+	to handle specific case where 'ptrue' should be emitted but in
+	a form where it can be recognised as a flag setting operation.
+
+2026-08-18  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* final.cc (notice_source_line): Remove dead condition
+	for override_filename.
+
+2026-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/extend.texi (Coverage Pragmas): Fix a typo.
+	(Size of an asm): Fix a typo.
+
+2026-08-18  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/alpha.cc (alpha_option_override): Set alpha_fprm to
+	ALPHA_FPRM_DYN when flag_rounding_math is set, -mfp-rounding-mode
+	was not given explicitly and -mfloat-vax is not in effect.
+	* doc/invoke.texi (Alpha Options): Document the default rounding
+	mode and its interaction with -frounding-math.
+
+2026-08-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* Makefile.in ($(lang_checks_parallelized)): Only merge summaries
+	from instances that produced one, and warn about the others.  Write
+	the merged files through a temporary and fail if the merge fails.
+
+2026-08-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/iterators.md (optab): Map UNSPEC_COND_FRINTN to
+	roundeven.
+
+2026-08-18  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): Sort alphabetically.
+
+2026-08-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (struct _slp_tree): Amend documentation.
+
+2026-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126926
+	* tree-vect-slp.cc (vectorize_slp_instance_root_stmt): Only
+	replace the RHS of the vector constructing scalar stmt.
+
+2026-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126925
+	* tree-ssa-loop-ivopts.cc (create_new_iv): Avoid crashing
+	if the use IV is invariant.
+
+2026-08-18  Dominic P  <gcc@gcc.dp11.uk>
+
+	* match.pd ((X & C1) cmp 0 op (X & C2) cmp 0): Combine pairs of
+	single-bit tests of the same operand into a single compare of
+	the union mask.
+
+2026-08-18  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126876
+	* gimple-range-path.cc
+	(path_range_query::internal_range_of_expr): Only call
+	range_defined_in_block at the current path position.
+	(path_range_query::range_defined_in_block): Assert the current
+	path position.
+
+2026-08-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/126784
+	* match.pd ((type) minmax ((wide_type) a, (wide_type) b)): Changed
+	to ...
+	(minmax ((wide_type) a, (wide_type) b)): This.
+
+2026-08-18  Dominic P  <gcc@gcc.dp11.uk>
+
+	* match.pd ((t * u) % u -> 0): New simplification.
+
+2026-08-18  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/112533
+	* match.pd: Canonicalize boolean comparisons of masked pow2
+	bits into xor-mask tests.
+
+2026-08-18  Josef Melcr  <josef.melcr@suse.com>
+
+	* ipa-prop.cc (ipa_compute_jump_functions_for_edge): Remove
+	dead if statement checking for internal calls.
+
+2026-08-18  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126906
+	* tree-ssa-threadupdate.h
+	(back_jt_path_registry::duplicate_thread_path): Add failure_reason
+	argument.
+	* tree-ssa-threadupdate.cc
+	(back_jt_path_registry::duplicate_thread_path): Set
+	FAILURE_REASON on the two failing exits.
+	(back_jt_path_registry::update_cfg): Cancel the path with the
+	reason when duplicate_thread_path fails.
+
 2026-08-17  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.opt.urls: Add mstrict-addr-space-subsets.

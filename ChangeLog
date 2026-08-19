@@ -1,3 +1,12 @@
+2026-08-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* MAINTAINERS.yml (users): Add forgeid for some users.
+	(subsystems): Add some labels and teams to the data.
+
+2026-08-18  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* MAINTAINERS.yml: Add inactive_email entries.
+
 2026-08-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* Makefile.def (dependencies): Remove the configure-target-libstdc++-v3

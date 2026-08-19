@@ -1,3 +1,22 @@
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126867
+	* tree.cc (record_has_unique_obj_representations): Use
+	location_of (const_cast <tree> (t)) rather than
+	DECL_SOURCE_LOCATION (t).
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126752
+	* init.cc (build_vec_init): Assert TREE_PURPOSE of the
+	last *cleanup_flags element is rval rather than iterator.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126093
+	* mangle.cc (write_reflection): Call write_unqualified_name on
+	STRIP_TEMPLATE (arg) rather than just arg.
+
 2026-08-17  Odysseas Georgoudis  <odygrd@hotmail.com>
 
 	PR c++/126324

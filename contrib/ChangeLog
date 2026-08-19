@@ -1,3 +1,16 @@
+2026-08-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* forge_teams.py: New file.
+
+2026-08-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* maintainer_utils.py (schema): Permit 'forgeid' on users
+	entries and 'teams' on subsystem entries.
+
+2026-08-18  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* maintainer_utils.py: Add inactive_email property.
+
 2026-08-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* unicode/README: Add another argument to makeucnid

@@ -1,3 +1,30 @@
+2026-08-18  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR analyzer/110578
+	* kf-lang-cp.cc: Include "cgraph.h" and "ipa-utils.h".
+	(struct dyncast_subobject): New struct.
+	(get_type_from_tinfo_arg): New function.
+	(lookup_binfo_at_same_offset): New function.
+	(lookup_subobject_matches): New function.
+	(evaluate_dyncast): New function.
+	(class kf_dynamic_cast): New class.
+	(register_known_functions_lang_cp): Register "__dynamic_cast".
+	* region-model.cc (region_model::get_vtable_from_obj): New function,
+	factored out of...
+	(region_model::get_fndecl_for_virtual_call): ...here.  Call it.
+	Update comment.
+	* region-model.h (region_model::get_vtable_from_obj): New decl.
+
+2026-08-18  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	* analyzer.cc (is_fndecl_in_toplevel_namespace_p): New function,
+	factored out of...
+	(is_std_function_p): ...here.  Call it.
+	(is_cxxabi_function_p): New function.
+	* common.h (is_cxxabi_function_p): New decl.
+	* known-function-manager.cc (known_function_manager::get_match):
+	Also match functions declared in namespace __cxxabiv1.
+
 2026-08-06  Aldy Hernandez  <aldy@quesejoda.com>
 
 	* region-model.cc (region_model::eval_condition): Likewise.

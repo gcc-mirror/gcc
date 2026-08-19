@@ -1,3 +1,33 @@
+2026-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/126786
+	* src/c++23/Makefile.am (empty.cc): New target.
+	(std.lo, std.o, std.compat.lo, std.compat.o): Use empty.cc as
+	fallback instead of overwriting original sources.
+	* src/c++23/Makefile.in: Regenerate.
+
+2026-08-18  Francisco Muniz  <munizfco@gmail.com>
+
+	* include/std/chrono (year::is_leap): Use Hueffner leap-year
+	test after biasing the year by a multiple of 400.
+
+2026-08-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/122981
+	* include/experimental/bits/simd.h (__int_for_sizeof): Return
+	int32_t, int8_t, int16_t, and int64_t, rather than int, signed
+	char, short, long, and long long.
+	* include/experimental/bits/simd_neon.h (_S_popcount): Cast
+	elements to int8_t, int16_t, int32_t, or int64_t, rather than
+	signed char, short, int, or long.
+
+2026-08-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/23_containers/mdspan/layouts/padded_neg.cc: Adjust
+	message pattern for test cases using static extents.
+	* testsuite/23_containers/mdspan/submdspan/canonical_slices_neg.cc:
+	Likewise.
+
 2026-08-17  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* config/os/bsd/openbsd/ctype_base.h: Use static_cast when
