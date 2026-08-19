@@ -4267,72 +4267,47 @@ vect_build_slp_instance (vec_info *vinfo,
       /* Calculate the unrolling factor based on the smallest type.  */
       poly_uint64 unrolling_factor
 	= calculate_unrolling_factor (max_nunits, group_size);
+      gcc_assert (!is_a <bb_vec_info> (vinfo)
+		  || known_eq (unrolling_factor, 1U));
 
-      if (maybe_ne (unrolling_factor, 1U)
-	  && is_a <bb_vec_info> (vinfo))
+      /* Create a new SLP instance.  */
+      slp_instance new_instance = XNEW (class _slp_instance);
+      SLP_INSTANCE_TREE (new_instance) = node;
+      SLP_INSTANCE_LOADS (new_instance) = vNULL;
+      SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
+      SLP_INSTANCE_REMAIN_DEFS (new_instance) = remain;
+      SLP_INSTANCE_KIND (new_instance) = kind;
+      new_instance->reduc_phis = NULL;
+      new_instance->cost_vec = vNULL;
+      new_instance->subgraph_entries = vNULL;
+
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "SLP size %u vs. limit %u.\n",
+			 tree_size, max_tree_size);
+
+      vinfo->slp_instances.safe_push (new_instance);
+
+      /* ???  We've replaced the old SLP_INSTANCE_GROUP_SIZE with
+	 the number of SLP lanes of the root in a few places.
+	 Verify that assumption holds.  */
+      gcc_assert (SLP_TREE_LANES (SLP_INSTANCE_TREE (new_instance))
+		  == group_size);
+
+      if (dump_enabled_p ())
 	{
-	  unsigned HOST_WIDE_INT const_max_nunits;
-	  if (!max_nunits.is_constant (&const_max_nunits)
-	      || const_max_nunits > group_size)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: store group "
-				 "size not a multiple of the vector size "
-				 "in basic block SLP\n");
-	      vect_free_slp_tree (node);
-	      return false;
-	    }
-	  /* Fatal mismatch.  */
-	  if (dump_enabled_p ())
+	  if (kind == slp_inst_kind_reduc_group)
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "SLP discovery succeeded but node needs "
-			     "splitting\n");
-	  memset (matches, true, group_size);
-	  matches[group_size / const_max_nunits * const_max_nunits] = false;
-	  vect_free_slp_tree (node);
+			     "SLP discovery of size %d reduction group "
+			     "succeeded\n", group_size);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Final SLP tree for instance %p:\n",
+			   (void *) new_instance);
+	  vect_print_slp_graph (MSG_NOTE, vect_location,
+				SLP_INSTANCE_TREE (new_instance));
 	}
-      else
-	{
-	  /* Create a new SLP instance.  */
-	  slp_instance new_instance = XNEW (class _slp_instance);
-	  SLP_INSTANCE_TREE (new_instance) = node;
-	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
-	  SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
-	  SLP_INSTANCE_REMAIN_DEFS (new_instance) = remain;
-	  SLP_INSTANCE_KIND (new_instance) = kind;
-	  new_instance->reduc_phis = NULL;
-	  new_instance->cost_vec = vNULL;
-	  new_instance->subgraph_entries = vNULL;
 
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "SLP size %u vs. limit %u.\n",
-			     tree_size, max_tree_size);
-
-	  vinfo->slp_instances.safe_push (new_instance);
-
-	  /* ???  We've replaced the old SLP_INSTANCE_GROUP_SIZE with
-	     the number of SLP lanes of the root in a few places.
-	     Verify that assumption holds.  */
-	  gcc_assert (SLP_TREE_LANES (SLP_INSTANCE_TREE (new_instance))
-		       == group_size);
-
-	  if (dump_enabled_p ())
-	    {
-	      if (kind == slp_inst_kind_reduc_group)
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "SLP discovery of size %d reduction group "
-				 "succeeded\n", group_size);
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "Final SLP tree for instance %p:\n",
-			       (void *) new_instance);
-	      vect_print_slp_graph (MSG_NOTE, vect_location,
-				    SLP_INSTANCE_TREE (new_instance));
-	    }
-
-	  return true;
-	}
+      return true;
     }
   /* Failed to SLP.  */
 
@@ -5177,68 +5152,42 @@ vect_analyze_slp_instance (vec_info *vinfo,
       /* Calculate the unrolling factor based on the smallest type.  */
       poly_uint64 unrolling_factor
 	= calculate_unrolling_factor (max_nunits, group_size);
+      gcc_assert (!is_a <bb_vec_info> (vinfo)
+		  || known_eq (unrolling_factor, 1U));
 
-      if (maybe_ne (unrolling_factor, 1U)
-	  && is_a <bb_vec_info> (vinfo))
+      /* Create a new SLP instance.  */
+      slp_instance new_instance = XNEW (class _slp_instance);
+      SLP_INSTANCE_TREE (new_instance) = node;
+      SLP_INSTANCE_LOADS (new_instance) = vNULL;
+      SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
+      SLP_INSTANCE_REMAIN_DEFS (new_instance) = remain;
+      SLP_INSTANCE_KIND (new_instance) = kind;
+      new_instance->reduc_phis = NULL;
+      new_instance->cost_vec = vNULL;
+      new_instance->subgraph_entries = vNULL;
+
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "SLP size %u vs. limit %u.\n",
+			 tree_size, max_tree_size);
+
+      vinfo->slp_instances.safe_push (new_instance);
+
+      /* ???  We've replaced the old SLP_INSTANCE_GROUP_SIZE with
+	 the number of SLP lanes of the root in a few places.
+	 Verify that assumption holds.  */
+      gcc_assert (SLP_TREE_LANES (SLP_INSTANCE_TREE (new_instance))
+		  == group_size);
+
+      if (dump_enabled_p ())
 	{
-	  unsigned HOST_WIDE_INT const_max_nunits;
-	  if (!max_nunits.is_constant (&const_max_nunits)
-	      || const_max_nunits > group_size)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: store group "
-				 "size not a multiple of the vector size "
-				 "in basic block SLP\n");
-	      vect_free_slp_tree (node);
-	      return false;
-	    }
-	  /* Fatal mismatch.  */
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "SLP discovery succeeded but node needs "
-			     "splitting\n");
-	  memset (matches, true, group_size);
-	  matches[group_size / const_max_nunits * const_max_nunits] = false;
-	  vect_free_slp_tree (node);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Final SLP tree for instance %p:\n",
+			   (void *) new_instance);
+	  vect_print_slp_graph (MSG_NOTE, vect_location,
+				SLP_INSTANCE_TREE (new_instance));
 	}
-      else
-	{
-	  /* Create a new SLP instance.  */
-	  slp_instance new_instance = XNEW (class _slp_instance);
-	  SLP_INSTANCE_TREE (new_instance) = node;
-	  SLP_INSTANCE_LOADS (new_instance) = vNULL;
-	  SLP_INSTANCE_ROOT_STMTS (new_instance) = root_stmt_infos;
-	  SLP_INSTANCE_REMAIN_DEFS (new_instance) = remain;
-	  SLP_INSTANCE_KIND (new_instance) = kind;
-	  new_instance->reduc_phis = NULL;
-	  new_instance->cost_vec = vNULL;
-	  new_instance->subgraph_entries = vNULL;
-
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "SLP size %u vs. limit %u.\n",
-			     tree_size, max_tree_size);
-
-	  vinfo->slp_instances.safe_push (new_instance);
-
-	  /* ???  We've replaced the old SLP_INSTANCE_GROUP_SIZE with
-	     the number of SLP lanes of the root in a few places.
-	     Verify that assumption holds.  */
-	  gcc_assert (SLP_TREE_LANES (SLP_INSTANCE_TREE (new_instance))
-		      == group_size);
-
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "Final SLP tree for instance %p:\n",
-			       (void *) new_instance);
-	      vect_print_slp_graph (MSG_NOTE, vect_location,
-				    SLP_INSTANCE_TREE (new_instance));
-	    }
-
-	  return true;
-	}
+      return true;
     }
   /* Failed to SLP.  */
 
