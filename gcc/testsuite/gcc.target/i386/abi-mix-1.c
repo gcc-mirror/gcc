@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! x32 } } } */
-/* { dg-options "-O2 -masm=att -mno-mmx -mno-80387 -msse" } */
+/* { dg-options "-O2 -masm=att -mno-avx -mno-mmx -mno-80387 -msse" } */
 
 extern void callee_clobbered () [[gnu::preserve_none]];
 extern void callee_preserved () [[gnu::no_caller_saved_registers]];
