@@ -6793,6 +6793,7 @@ proc check_effective_target_aarch64_sve2_hw { } {
 	return 0
     }
     return [check_runtime aarch64_sve2_hw_available {
+	#pragma GCC target "+sve2"
 	int
 	main (void)
 	{
