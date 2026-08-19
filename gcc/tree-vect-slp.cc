@@ -9320,7 +9320,10 @@ vect_bb_slp_mark_live_stmts (bb_vec_info bb_vinfo, slp_tree node,
 				       gimple_bb (last_stmt)))
 		    can_insert = false;
 		}
-	      else if (!vect_stmt_dominates_stmt_p (last_stmt, use_stmt))
+	      /* As we instert after last_stmt it may not be the use_stmt
+		 itself.  */
+	      else if (last_stmt == use_stmt
+		       || !vect_stmt_dominates_stmt_p (last_stmt, use_stmt))
 		can_insert = false;
 	      if (!can_insert)
 		{
@@ -12844,8 +12847,11 @@ vect_schedule_slp (vec_info *vinfo, vec<slp_instance> &slp_instances,
 	  if (place_only)
 	    {
 	      gimple *root_stmt = instance->root_stmts[0]->stmt;
-	      res &= (!node->si || vect_stmt_dominates_stmt_p (node->si,
-							       root_stmt));
+	      res &= (!node->si
+		      /* As we instert after node->si it may not be the
+			 root_stmt itself.  */
+		      || (node->si != root_stmt
+			  && vect_stmt_dominates_stmt_p (node->si, root_stmt)));
 	    }
 	  else
 	    vectorize_slp_instance_root_stmt (vinfo, node, instance);
