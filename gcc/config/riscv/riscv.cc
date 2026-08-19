@@ -13197,6 +13197,21 @@ riscv_scalar_mode_supported_p (scalar_mode mode)
     return default_scalar_mode_supported_p (mode);
 }
 
+/* Implement TARGET_OPTAB_SUPPORTED_P.  */
+
+static bool
+riscv_optab_supported_p (int op, machine_mode, machine_mode result_mode,
+			 optimization_type opt_type)
+{
+  /* The second CRC optab mode is the result mode.  The CLMUL expansion
+     requires room for a quotient wider than the CRC value itself.  */
+  if (op == crc_rev_optab && opt_type != OPTIMIZE_FOR_SPEED)
+    return ((TARGET_ZBKC || TARGET_ZBC || TARGET_ZVBC)
+	    && result_mode < word_mode);
+
+  return true;
+}
+
 /* Implement TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P - return TRUE
    if MODE is HFmode or BFmode, and punt to the generic implementation
    otherwise.  */
@@ -16858,6 +16873,9 @@ riscv_memtag_tag_bitsize ()
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P riscv_scalar_mode_supported_p
+
+#undef TARGET_OPTAB_SUPPORTED_P
+#define TARGET_OPTAB_SUPPORTED_P riscv_optab_supported_p
 
 #undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
 #define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P                                \
