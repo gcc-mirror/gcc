@@ -776,6 +776,11 @@ package body Sem_Ch12 is
    --  not done for the instantiation of the bodies, which only require the
    --  instances of the generic parents to be in scope.
 
+   function In_Local_Package_Of_Formal_Package (N : Node_Id) return Boolean;
+   --  Return whether N is present in the local package created during the
+   --  analysis of a formal package (see Analyze_Formal_Package_Declaration).
+   --  Used to avoid instantiating generic bodies in such a local package.
+
    function In_Main_Context (E : Entity_Id) return Boolean;
    --  Check whether an instantiation is in the context of the main unit.
    --  Used to determine whether its body should be elaborated to allow
@@ -5438,6 +5443,7 @@ package body Sem_Ch12 is
                and then Needs_Body_Instantiated (Gen_Unit)
                and then not Is_Abbrev
                and then not Inline_Now
+               and then not In_Local_Package_Of_Formal_Package (N)
                and then (Operating_Mode = Generate_Code
                           or else (Operating_Mode = Check_Semantics
                                     and then GNATprove_Mode));
@@ -6591,6 +6597,10 @@ package body Sem_Ch12 is
 
         and then (not Is_Generic_Unit (Cunit_Entity (Main_Unit))
                    or else Parent (N) = Aux_Decls_Node (Cunit (Main_Unit)))
+
+        --  Likewise in the local package built for formal packages
+
+        and then not In_Local_Package_Of_Formal_Package (N)
 
         --  Must be generating code or analyzing code in GNATprove mode
 
@@ -11284,6 +11294,26 @@ package body Sem_Ch12 is
       Current_Instantiated_Parent :=
         (Current_Scope, Current_Scope, Assoc_Null);
    end Init_Env;
+
+   ----------------------------------------
+   -- In_Local_Package_Of_Formal_Package --
+   ----------------------------------------
+
+   function In_Local_Package_Of_Formal_Package (N : Node_Id) return Boolean is
+      Par : Node_Id;
+
+   begin
+      Par := Parent (N);
+      while Present (Par) and then Nkind (Par) /= N_Compilation_Unit loop
+         if Nkind (Original_Node (Par)) = N_Formal_Package_Declaration then
+            return True;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      return False;
+   end In_Local_Package_Of_Formal_Package;
 
    ---------------------
    -- In_Main_Context --
