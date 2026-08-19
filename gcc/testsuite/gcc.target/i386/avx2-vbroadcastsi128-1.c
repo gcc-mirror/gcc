@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx2 -O2" } */
+/* { dg-options "-mavx2 -mno-avx512f -O2" } */
 /* { dg-final { scan-assembler-times "vbroadcasti128\[ \\t\]+\[^\n\]*%ymm\[0-9\]+" 2 } } */
 
 #include <immintrin.h>

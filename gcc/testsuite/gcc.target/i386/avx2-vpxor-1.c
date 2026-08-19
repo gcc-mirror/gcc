@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx2 -O2" } */
+/* { dg-options "-mavx2 -mno-avx512f -O2" } */
 /* { dg-final { scan-assembler "vpxor\[ \\t\]+\[^\n\]*%ymm\[0-9\]" } } */
 
 #include <immintrin.h>
