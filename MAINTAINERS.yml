@@ -3594,6 +3594,15 @@ users:
   - hjl@nynexst.com
   - hongjiu.lu@intel.com
 - sn: Luo
+  cn: Longjun Luo
+  email:
+  - luolongjuna@gmail.com
+  - anatasluo@gcc.gnu.org
+  roles:
+  - WriteAfter
+  - DCO: luolongjuna@gmail.com
+  account: anatasluo
+- sn: Luo
   cn: Xiong Hu Luo
   email:
   - luoxhu@gcc.gnu.org
