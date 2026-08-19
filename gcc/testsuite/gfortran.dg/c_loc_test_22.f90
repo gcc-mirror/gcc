@@ -17,9 +17,11 @@ end
 ! { dg-final { scan-tree-dump-not " _gfortran_internal_pack" "original" } }
 ! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void .\\) &\\(.xxx.\[0-9\]+\\)\\\[0\\\];" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void .\\) &\\(.xxx.\[0-9\]+\\)\\\[D.\[0-9\]+ \\* 4\\\];" 1 "original" } }
-! A TARGET assumed-shape dummy is addressed with the descriptor's runtime
-! span, so the element offset is span-scaled instead of a constant 16.
+! A TARGET assumed-shape dummy is addressed with the runtime span that is
+! loaded from the descriptor on entry, so the element offset is span-scaled
+! instead of a constant 16.
 ! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void .\\) &\\(.yyy.\[0-9\]+\\)\\\[0\\\];" 1 "original" } }
-! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void .\\) yyy.\[0-9\]+ \\+ \\(sizetype\\) \\(\\(yyy->span \\* D.\[0-9\]+\\) \\* 4\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "span.\[0-9\]+ = yyy->span;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void .\\) yyy.\[0-9\]+ \\+ \\(sizetype\\) \\(\\(D.\[0-9\]+ \\* span.\[0-9\]+\\) \\* 4\\);" 1 "original" } }
 
 ! { dg-final { scan-tree-dump-times "D.\[0-9\]+ = parm.\[0-9\]+.data;\[^;]+ptr\[1-4\] = D.\[0-9\]+;" 4 "original" } }

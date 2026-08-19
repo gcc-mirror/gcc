@@ -1055,6 +1055,8 @@ struct GTY(())	lang_type	 {
 struct GTY(()) lang_decl {
   /* Dummy variables.  */
   tree saved_descriptor;
+  /* Element spacing of a span addressed dummy, loaded once on entry.  */
+  tree span;
   /* Assigned integer nodes.  Stringlength is the IO format string's length.
      Addr is the address of the string or the target label. Stringlength is
      initialized to -2 and assigned to -1 when addr is assigned to the
@@ -1076,6 +1078,11 @@ struct GTY(()) lang_decl {
 #define GFC_DECL_CAF_OFFSET(node) DECL_LANG_SPECIFIC(node)->caf_offset
 #define GFC_DECL_SAVED_DESCRIPTOR(node) \
   (DECL_LANG_SPECIFIC(node)->saved_descriptor)
+#define GFC_DECL_SPAN(node) (DECL_LANG_SPECIFIC(node)->span)
+/* Return the cached span of a span addressed dummy, or NULL_TREE.  */
+#define GFC_DECL_GET_SPAN(node) \
+  (DECL_P (node) && DECL_LANG_SPECIFIC (node) \
+   ? GFC_DECL_SPAN (node) : NULL_TREE)
 #define GFC_DECL_SCALAR_ALLOCATABLE(node) \
   (DECL_LANG_SPECIFIC (node)->scalar_allocatable)
 #define GFC_DECL_SCALAR_POINTER(node) \

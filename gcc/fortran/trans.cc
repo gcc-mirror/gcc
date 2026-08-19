@@ -471,6 +471,9 @@ get_array_span (tree type, tree decl)
 	     to be multiplied with the size.  */
 	  span = gfc_resize_class_size_with_len (NULL, decl, span);
 	}
+      else if (tree cached = GFC_DECL_GET_SPAN (decl))
+	/* A span addressed dummy loaded its span on entry.  */
+	span = cached;
       else if (GFC_DECL_PTR_ARRAY_P (decl))
 	span = gfc_conv_descriptor_span_get (gfc_get_span_descriptor (decl));
       else

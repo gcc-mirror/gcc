@@ -578,11 +578,14 @@ gfc_get_array_span (tree desc, gfc_expr *expr)
   gfc_symbol *sym = (expr && expr->expr_type == EXPR_VARIABLE) ?
 		    expr->symtree->n.sym : NULL;
 
-  if (span_addressed_array (desc)
-      || (get_CFI_desc (NULL, expr, &desc, NULL)
-	  && (POINTER_TYPE_P (TREE_TYPE (desc))
-	      ? GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (desc)))
-	      : GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))))
+  if (tree span = GFC_DECL_GET_SPAN (desc))
+    /* A span addressed dummy loaded its span on entry.  */
+    tmp = span;
+  else if (span_addressed_array (desc)
+	   || (get_CFI_desc (NULL, expr, &desc, NULL)
+	       && (POINTER_TYPE_P (TREE_TYPE (desc))
+		   ? GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (desc)))
+		   : GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))))
     /* This will have the span field set.  */
     tmp = gfc_conv_descriptor_span_get (gfc_get_span_descriptor (desc));
   else if (expr->ts.type == BT_ASSUMED)
@@ -7519,6 +7522,13 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
   /* Set the offset.  */
   if (VAR_P (GFC_TYPE_ARRAY_OFFSET (type)))
     gfc_add_modify (&init, GFC_TYPE_ARRAY_OFFSET (type), offset);
+
+  /* Load the span once here, like the bounds above, so that element
+     addressing does not reload it from the descriptor.  The descriptor
+     itself is not available in an outlined region, such as an OpenMP
+     target region, whereas this local variable is.  */
+  if (tree span = GFC_DECL_GET_SPAN (tmpdesc))
+    gfc_add_modify (&init, span, gfc_conv_descriptor_span_get (dumdesc));
 
   gfc_trans_vla_type_sizes (sym, &init);
 
