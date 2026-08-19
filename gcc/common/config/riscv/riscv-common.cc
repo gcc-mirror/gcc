@@ -522,10 +522,11 @@ subset_cmp (const std::string &a, const std::string &b)
     }
 }
 
-/* Return true if EXT is a standard extension.  */
+/* Return true if EXT names an extension this compiler knows about, whether
+   standard or vendor defined.  */
 
-static bool
-standard_extensions_p (const char *ext)
+bool
+riscv_ext_is_known_p (const char *ext)
 {
   auto itr = riscv_ext_infos.find (ext);
   return itr != riscv_ext_infos.end ();
@@ -562,7 +563,7 @@ riscv_subset_list::add (const char *subset, int major_version,
 	}
       return;
     }
-  else if (strlen (subset) == 1 && !standard_extensions_p (subset))
+  else if (strlen (subset) == 1 && !riscv_ext_is_known_p (subset))
     {
       if (m_loc)
 	error_at (*m_loc,
@@ -571,7 +572,7 @@ riscv_subset_list::add (const char *subset, int major_version,
 		  m_arch, subset);
       return;
     }
-  else if (subset[0] == 'z' && !standard_extensions_p (subset))
+  else if (subset[0] == 'z' && !riscv_ext_is_known_p (subset))
     {
       if (m_loc)
 	error_at (*m_loc,
@@ -580,7 +581,7 @@ riscv_subset_list::add (const char *subset, int major_version,
 		  m_arch, subset);
       return;
     }
-  else if (subset[0] == 's' && !standard_extensions_p (subset))
+  else if (subset[0] == 's' && !riscv_ext_is_known_p (subset))
     {
       if (m_loc)
 	error_at (*m_loc,
@@ -589,7 +590,7 @@ riscv_subset_list::add (const char *subset, int major_version,
 		  m_arch, subset);
       return;
     }
-  else if (subset[0] == 'x' && !standard_extensions_p (subset))
+  else if (subset[0] == 'x' && !riscv_ext_is_known_p (subset))
     {
       if (m_loc)
 	error_at (*m_loc,

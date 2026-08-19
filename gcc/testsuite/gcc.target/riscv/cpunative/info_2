@@ -1,0 +1,39 @@
+processor	: 0
+hart		: 2
+isa		: rv64imafdc_zicntr_zicsr_zifencei_zihpm_zca_zcd_zba_zbb
+mmu		: sv39
+uarch		: sifive,u74-mc
+mvendorid	: 0x489
+marchid		: 0x8000000000000007
+mimpid		: 0x4210427
+hart isa	: rv64imafdc_zicntr_zicsr_zifencei_zihpm_zca_zcd_zba_zbb
+
+processor	: 1
+hart		: 1
+isa		: rv64imafdc_zicntr_zicsr_zifencei_zihpm_zca_zcd_zba_zbb
+mmu		: sv39
+uarch		: sifive,u74-mc
+mvendorid	: 0x489
+marchid		: 0x8000000000000007
+mimpid		: 0x4210427
+hart isa	: rv64imafdc_zicntr_zicsr_zifencei_zihpm_zca_zcd_zba_zbb
+
+processor	: 2
+hart		: 3
+isa		: rv64imafdc_zicntr_zicsr_zifencei_zihpm_zca_zcd_zba_zbb
+mmu		: sv39
+uarch		: sifive,u74-mc
+mvendorid	: 0x489
+marchid		: 0x8000000000000007
+mimpid		: 0x4210427
+hart isa	: rv64imafdc_zicntr_zicsr_zifencei_zihpm_zca_zcd_zba_zbb
+
+processor	: 3
+hart		: 4
+isa		: rv64imafdc_zicntr_zicsr_zifencei_zihpm_zca_zcd_zba_zbb
+mmu		: sv39
+uarch		: sifive,u74-mc
+mvendorid	: 0x489
+marchid		: 0x8000000000000007
+mimpid		: 0x4210427
+hart isa	: rv64imafdc_zicntr_zicsr_zifencei_zihpm_zca_zcd_zba_zbb

@@ -1,0 +1,10 @@
+processor	: 0
+hart		: 0
+model name	: Nonesuch
+isa		: rv64imafdc_znosuchext_zba_xmadeup_zbb
+mmu		: sv39
+mvendorid	: 0xdead
+marchid		: 0xbeef
+mimpid		: 0x1
+hart isa	: rv64imafdc_znosuchext_zba_xmadeup_zbb
+
