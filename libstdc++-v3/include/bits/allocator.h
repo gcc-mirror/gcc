@@ -46,6 +46,9 @@
 #include <bits/c++allocator.h> // Define the base class to std::allocator.
 #include <bits/memoryfwd.h>
 #if __cplusplus >= 201103L
+#if __cpp_exceptions
+#include <bits/stl_iterator.h> // for __make_move_if_noexcept_iterator, used by shrink_to_fit
+#endif
 #include <type_traits>
 #endif
 
