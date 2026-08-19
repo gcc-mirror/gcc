@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -dp -mavx -mavx256-split-unaligned-load -mtune=generic" } */
+/* { dg-options "-O3 -dp -mno-avx512f -mavx -mavx256-split-unaligned-load -mtune=generic" } */
 
 #define N 1024
 
