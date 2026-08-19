@@ -1,3 +1,30 @@
+2026-08-18  Yan Churkin  <yanchurkin@gmail.com>
+
+	Backported from master:
+	2026-07-23  Yan Churkin  <yanchurkin@gmail.com>
+
+	PR libstdc++/125981
+	* include/bits/stl_algobase.h (__find_if): Force the predicate
+	result to bool so that non-boolean_testable predicates cannot
+	cause a past-the-end iterator to be dereferenced.
+	(__mismatch): Likewise for both overloads.
+	* include/bits/stl_heap.h (__push_heap): Likewise for the
+	comparator result.
+	* testsuite/25_algorithms/find_if/overloaded_logical_ops.cc: New
+	test.
+	* testsuite/25_algorithms/mismatch/overloaded_logical_ops.cc:
+	New test.
+
+2026-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-07-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/126452
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Use LC_ALL_C and
+	match both "Warning" and "warning" in ld output.
+	* configure: Regenerate.
+
 2026-08-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

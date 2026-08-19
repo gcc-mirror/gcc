@@ -1,3 +1,13 @@
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126534
+	* gimple-range-op.cc (cfn_sqrt::op1_range): Widen lb or ub
+	by further 0.5ulp or 1ulp before squaring it.
+	* range-op-float.cc (float_widen_lhs_range): No longer static.
+
 2026-08-17  Ramin Moussavi  <lordrasmus@gmail.com>
 
 	* config/microblaze/microblaze.h (DWARF_ALT_FRAME_RETURN_COLUMN):

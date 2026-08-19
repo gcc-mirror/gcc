@@ -1,3 +1,44 @@
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126867
+	* g++.dg/cpp1z/has-unique-obj-representations6.C: New test.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126752
+	* g++.dg/cpp0x/initlist-array25.C: New test.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126093
+	* g++.dg/reflect/mangle1.C: Add 2 new tests for reflections of
+	conversion templates.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126534
+	* gcc.dg/pr126534.c: New test.
+
+2026-08-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126872
+	* gfortran.dg/bind_c_private_1.f90: New test.
+
 2026-08-16  Christopher Albert  <albert@tugraz.at>
 
 	Backported from master:
