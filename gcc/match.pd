@@ -246,18 +246,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    all possible spaceship combinations.  */
 #if GIMPLE
 (if (INTEGRAL_TYPE_P (type))
-  (for op (lt ne)
+ (for ltne (lt ne)
+      gtne (gt ne)
   (match (spaceship @0 @1)
-    (cond^ (le @0 @1) (negate (convert? (op @0 @1))) integer_onep)))
-  (for op (lt ne)
+   (cond^ (le @0 @1) (negate (convert? (ltne @0 @1))) integer_onep))
   (match (spaceship @0 @1)
-    (cond^ (le @1 @0) (convert? (op @1 @0)) integer_minus_onep)))
-  (for op (gt ne)
+    (cond^ (le @1 @0) (convert? (ltne @1 @0)) integer_minus_onep))
   (match (spaceship @0 @1)
-    (cond^ (ge @0 @1) (convert? (op @0 @1)) integer_minus_onep))))
-  (for op (gt ne)
+    (cond^ (ge @0 @1) (convert? (gtne @0 @1)) integer_minus_onep))
   (match (spaceship @0 @1)
-    (cond^ (ge @1 @0) (negate (convert? (op @1 @0))) integer_onep)))
+    (cond^ (ge @1 @0) (negate (convert? (gtne @1 @0))) integer_onep))))
 #endif
 
 /* Simplifications of operations with one constant operand and
