@@ -1,3 +1,7 @@
+# If you edit this file, please validate with:
+#    contrib/maintainer_utils.py <MAINTAINERS.yml>
+# before committing.
+
 users:
 - sn: Abson
   cn: Spencer Abson

@@ -141,13 +141,12 @@ def main():
     data['users'] = sorted(data['users'],
                            key = lambda k: (unilower(k['sn']),
                                             unilower(k['cn'])))
-    if opts.outfilename and opts.outfilename != '-':
-        outfd = open (opts.outfilename, "w", encoding="utf-8")
-    elif opts.outfilename and opts.outfilename == '-':
-        outfd = sys.stdout
+    if opts.outfilename and opts.outfilename == '-':
+        maintutils.store(data)
     else:
-        outfd = open (args[0], "w", encoding="utf-8")
-    yaml.dump (data, outfd, allow_unicode = True, sort_keys = False)
+        maintutils.store(
+            data,
+            file=opts.outfilename if opts.outfilename else args[0])
     return 0
 
 if __name__ == "__main__":

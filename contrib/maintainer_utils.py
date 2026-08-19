@@ -296,6 +296,20 @@ def load(file):
     return data
 
 
+def store(data, file=None, fd=sys.stdout):
+    # Make sure we don't write something that is not conformant
+    validate(data)
+    if file:
+        fd = open(file, "w", encoding="utf-8")
+    print("# If you edit this file, please validate with:",
+          file=fd)
+    print("#    contrib/maintainer_utils.py <MAINTAINERS.yml>",
+          file=fd)
+    print("# before committing.\n", file=fd)
+    yaml.dump(data, fd, allow_unicode=True, sort_keys=False)
+    if file:
+        fd.close()
+
 def main():
     if len(sys.argv) != 2:
         print(f"Usage: {sys.argv[0]} path-to-MAINTAINERS.yml")
