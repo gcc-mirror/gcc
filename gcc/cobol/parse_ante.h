@@ -256,16 +256,20 @@ is_cobol_charset( const char name[] ) {
 }
 
 bool
-in_procedure_division() {
-  return current_division == procedure_div_e;
+in_identification_division() {
+  return current_division == identification_div_e;
 }
 bool
 in_environment_division() {
   return current_division == environment_div_e;
 }
+bool
+in_procedure_division() {
+  return current_division == procedure_div_e;
+}
 
 static inline bool
-in_file_section(void) { return current_data_section == file_datasect_e; }
+in_file_section() { return current_data_section == file_datasect_e; }
 
 static cbl_refer_t *
 intrinsic_inconsistent_parameter( size_t n, cbl_refer_t *args );

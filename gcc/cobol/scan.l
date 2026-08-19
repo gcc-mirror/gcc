@@ -156,6 +156,8 @@ TIME_FMT   {TIME_FMT_B}|{TIME_FMT_E}
 
 DATETIME_FMT ({DATE_FMT_B}T{TIME_FMT_B})|({DATE_FMT_E}T{TIME_FMT_E})
 
+TITLE    TITLE({EOL}|[^\n[:alnum:]$_-].+)
+
 NAME      [[:alnum:]]+([_-]+[[:alnum:]]+)*
 SUBELEMS  {NAME}({SPC}{NAME})*
 
@@ -274,6 +276,23 @@ PROGRAM-ID{OSPC}{DOTSEP}?	{ yy_push_state(ident_state);
         	          	  yy_push_state(name_state); return PROGRAM_ID; }
 
 <*>{
+  {TITLE} 	{   // In Identification Section TITLE is commentary, else it's a name.
+		    if( in_identification_division() ) {
+                      if( ! dialect_ibm() ) {
+                        warn_msg(yylloc, "ignored TITLE: %qs", yytext);
+                      }
+                    } else {
+		      auto p = std::find_if( yytext, yytext + yyleng,
+		                        []( char ch ) {
+		                          return ! is_name_char(ch);
+		                        } );
+                      auto keep = p - yytext;
+                      myless(keep);
+                      auto s = xstrdup(yytext);
+                      ydflval.string = yylval.string = s;
+                      return NAME;
+                    }
+		}
   PROCEDURE{SPC}DIVISION	{ yy_push_state(procedure_div);
                                   return PROCEDURE_DIV; }
 }

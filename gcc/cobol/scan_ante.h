@@ -1140,8 +1140,10 @@ symbol_function_token( const char name[] ) {
   return 0;
 }
 
-bool in_procedure_division(void);
-bool in_environment_division(void );
+bool
+in_identification_division();
+bool in_procedure_division();
+bool in_environment_division();
 
 static const char *
 symbol_lower_name( const symbol_elem_t *e, cbl_name_t lname ) {
