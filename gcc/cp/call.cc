@@ -1749,13 +1749,15 @@ handler_match_for_exception_type (tree handler, tree except_type)
       if (binfo && binfo != error_mark_node)
 	return true;
     }
-  if (TYPE_PTR_P (handler_type) || TYPE_PTRDATAMEM_P (handler_type))
+  if (TYPE_PTR_P (handler_type) || TYPE_PTRMEM_P (handler_type))
     {
       if (TREE_CODE (except_type) == NULLPTR_TYPE)
 	return true;
       if ((TYPE_PTR_P (handler_type) && TYPE_PTR_P (except_type))
 	  || (TYPE_PTRDATAMEM_P (handler_type)
-	      && TYPE_PTRDATAMEM_P (except_type)))
+	      && TYPE_PTRDATAMEM_P (except_type))
+	  || (TYPE_PTRMEMFUNC_P (handler_type)
+ 	      && TYPE_PTRMEMFUNC_P (except_type)))
 	{
 	  conversion *conv
 	    = standard_conversion (handler_type, except_type, NULL_TREE,
