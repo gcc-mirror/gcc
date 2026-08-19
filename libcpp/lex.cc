@@ -740,6 +740,9 @@ done:
 #include <arm_sve.h>
 #include <sys/auxv.h>
 
+#ifndef HWCAP_SVE
+#define HWCAP_SVE (1 << 22)
+#endif
 #ifndef HWCAP2_SVE2
 #define HWCAP2_SVE2 (1 << 1)
 #endif
@@ -810,7 +813,11 @@ static bool lexer_has_sve2;
 static inline void
 init_vectorized_lexer (void)
 {
-  lexer_has_sve2 = (getauxval (AT_HWCAP2) & HWCAP2_SVE2) != 0;
+  /* MATCH aside, the scanner is built from base SVE instructions, so both
+     features have to be present.  Some virtual machines advertise SVE2
+     without SVE, and there even the leading CNTB traps.  */
+  lexer_has_sve2 = ((getauxval (AT_HWCAP) & HWCAP_SVE) != 0
+		    && (getauxval (AT_HWCAP2) & HWCAP2_SVE2) != 0);
 }
 
 #endif
