@@ -208,7 +208,11 @@ along with GCC; see the file COPYING3.  If not see
 	     (UT)X & ~(NT)(-1) ? (-X) >> TYPE_PRECISION(X) - 1 : X
 
      The gimple representation uses X > ~(NT)(-1) instead of
-     using & so match on gt instead of bit_and.  */
+     using & so match on gt instead of bit_and.
+
+     The two sides only agree when X is not the minimum of its type.  At
+     that value the negation is its own inverse, so the shift yields -1
+     and the expression gives NT_MAX where MAX (0, X) gives 0.  */
   (convert (cond^ (gt (nop_convert? @0) INTEGER_CST@1)
 	 (rshift:s (nop_convert? (negate (nop_convert? @0))) INTEGER_CST@2)
 	 @0))
@@ -225,8 +229,11 @@ along with GCC; see the file COPYING3.  If not see
      int cmp = 0;
      cmp = wi::cmp (int_cst_2, shift_amount, TYPE_SIGN (TREE_TYPE (@0)));
     }
-    (if (otype_precision < itype_precision && wi::eq_p (trunc_max,
-    int_cst_1) && (cmp >= 0)))))))
+    (if (otype_precision < itype_precision
+	 && wi::eq_p (trunc_max, int_cst_1)
+	 && cmp >= 0
+	 && expr_not_equal_to (@0, wi::min_value (itype_precision,
+						  SIGNED))))))))
 
 /* Saturation truncate for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
