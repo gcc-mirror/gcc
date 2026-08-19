@@ -1,6 +1,6 @@
 /* PR target/95524 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512bw" } */
+/* { dg-options "-O2 -mavx512bw -mno-gfni" } */
 /* { dg-final { scan-assembler-times "vpand\[^\n\]*%zmm" 2 } }  */
 /* { dg-final { scan-assembler-times "vpternlogd\[^\n\]*%zmm" 1 } }  */
 typedef char v64qi  __attribute__ ((vector_size (64)));
