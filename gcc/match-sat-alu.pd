@@ -434,7 +434,12 @@ along with GCC; see the file COPYING3.  If not see
 		     (negate (nop_convert? (convert (lt @0 integer_zerop)))))
 		    INTEGER_CST@3)
 	 (convert @0))
-  (if (!TYPE_UNSIGNED (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@4)))
+  /* The comparison has to be the unsigned reinterpretation of X, and the
+     conversion has to narrow, otherwise the constants below do not have the
+     precision the comparison is carried out at.  */
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@4))
+       && TYPE_PRECISION (TREE_TYPE (@4)) == TYPE_PRECISION (TREE_TYPE (@0))
+       && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@0)))
    (with
     {
      unsigned itype_prec = TYPE_PRECISION (TREE_TYPE (@0));
