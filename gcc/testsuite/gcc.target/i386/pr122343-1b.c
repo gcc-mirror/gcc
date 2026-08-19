@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fomit-frame-pointer -fno-fuse-ops-with-volatile-access" } */
+/* { dg-options "-O2 -mtune=generic -fomit-frame-pointer -fno-fuse-ops-with-volatile-access" } */
 /* { dg-additional-options "-mregparm=1" { target ia32 } } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "*#" "" { target { ! *-*-darwin* } } {^\t?\.} } } */

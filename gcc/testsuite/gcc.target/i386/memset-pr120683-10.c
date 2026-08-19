@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-sse -mmemset-strategy=unrolled_loop:256:noalign,libcall:-1:noalign" } */
+/* { dg-options "-O2 -mno-sse -mtune=generic -mmemset-strategy=unrolled_loop:256:noalign,libcall:-1:noalign" } */
 /* { dg-final { check-function-bodies "**" "*#" "" { target { lp64 && { ! *-*-darwin* } } } {^\t?\.} } } */
 /* { dg-final { check-function-bodies "*D" "*E" "" { target { lp64 && *-*-darwin* } } {^\t?\.} } } */
 
