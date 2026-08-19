@@ -3372,7 +3372,7 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
 		      ? " (constant)"
 		      : ""), (void *) node,
 		   estimated_poly_value (node->max_nunits),
-					 SLP_TREE_REF_COUNT (node));
+		   SLP_TREE_REF_COUNT (node));
   if (SLP_TREE_VECTYPE (node))
     dump_printf (metadata, " %T", SLP_TREE_VECTYPE (node));
   dump_printf (metadata, "%s",
@@ -3380,7 +3380,10 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
   if (node->cycle_info.id != -1 || node->cycle_info.reduc_idx != -1)
     dump_printf (metadata, " cycle %d, link %d", node->cycle_info.id,
 		 node->cycle_info.reduc_idx);
-  dump_printf (metadata, "\n");
+  if (node->si)
+    dump_printf (metadata, " @%G", node->si);
+  else
+    dump_printf (metadata, "\n");
   if (SLP_TREE_DEF_TYPE (node) == vect_internal_def)
     {
       if (SLP_TREE_PERMUTE_P (node))
