@@ -86,19 +86,16 @@ namespace __format
 
       _File(_File&&) = delete;
 
-      // Allocate FILE's output buffer if needed, and returns span
+      // Allocate FILE's output buffer if needed, and return a span
       // viewing unused portion of it.
       std::span<char>
       _M_init_write_buf()
       {
-        // After setvbuf glibc pre-allocates the buffer but _IO_write_ptr
+	// After setvbuf glibc pre-allocates the buffer but _IO_write_ptr
 	// remains null until the first write.
 	if (!_M_file->_IO_write_ptr || _M_write_buf().empty())
 	  if (::__overflow(_M_file, EOF) == EOF)
-	    {
-	      const int __err = errno;
-	      __throw_system_error(__err);
-	    }
+	    __throw_system_error(errno);
 	return _M_write_buf();
       }
 
