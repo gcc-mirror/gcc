@@ -5160,7 +5160,8 @@ vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
 /* Create vectorized promotion statements for vector operands from VEC_OPRNDS0
    and VEC_OPRNDS1, for a binary operation associated with scalar statement
    STMT_INFO.  For multi-step conversions store the resulting vectors and
-   call the function recursively.  */
+   call the function recursively.  When HALF is true only generate half
+   of the result.  */
 
 static void
 vect_create_vectorized_promotion_stmts (vec_info *vinfo,
@@ -5169,14 +5170,15 @@ vect_create_vectorized_promotion_stmts (vec_info *vinfo,
 					stmt_vec_info stmt_info, tree vec_dest,
 					gimple_stmt_iterator *gsi,
 					code_helper ch1,
-					code_helper ch2, int op_type)
+					code_helper ch2, int op_type,
+					bool half)
 {
   int i;
   tree vop0, vop1, new_tmp1, new_tmp2;
   gimple *new_stmt1, *new_stmt2;
   vec<tree> vec_tmp = vNULL;
 
-  vec_tmp.create (vec_oprnds0->length () * 2);
+  vec_tmp.create ((half ? 1 : 2) * vec_oprnds0->length ());
   FOR_EACH_VEC_ELT (*vec_oprnds0, i, vop0)
     {
       if (op_type == binary_op)
@@ -5188,23 +5190,20 @@ vect_create_vectorized_promotion_stmts (vec_info *vinfo,
       new_stmt1 = vect_gen_widened_results_half (vinfo, ch1, vop0, vop1,
 						 op_type, vec_dest, gsi,
 						 stmt_info);
-      new_stmt2 = vect_gen_widened_results_half (vinfo, ch2, vop0, vop1,
-						 op_type, vec_dest, gsi,
-						 stmt_info);
-      if (is_gimple_call (new_stmt1))
+      new_tmp1 = gimple_get_lhs (new_stmt1);
+      vec_tmp.quick_push (new_tmp1);
+
+      if (vec_tmp.space (1))
 	{
-	  new_tmp1 = gimple_call_lhs (new_stmt1);
-	  new_tmp2 = gimple_call_lhs (new_stmt2);
-	}
-      else
-	{
-	  new_tmp1 = gimple_assign_lhs (new_stmt1);
-	  new_tmp2 = gimple_assign_lhs (new_stmt2);
+	  new_stmt2 = vect_gen_widened_results_half (vinfo, ch2, vop0, vop1,
+						     op_type, vec_dest, gsi,
+						     stmt_info);
+	  new_tmp2 = gimple_get_lhs (new_stmt2);
+	  vec_tmp.quick_push (new_tmp2);
 	}
 
-      /* Store the results for the next step.  */
-      vec_tmp.quick_push (new_tmp1);
-      vec_tmp.quick_push (new_tmp2);
+      if (!vec_tmp.space (1))
+	break;
     }
 
   vec_oprnds0->release ();
@@ -5760,6 +5759,7 @@ vectorizable_conversion (vec_info *vinfo,
 					    widen_or_narrow_float_p
 					    ? vectype_out : cvt_type);
 
+  unsigned num_vectors = vect_get_num_copies (vinfo, slp_node);
   switch (modifier)
     {
     case NONE:
@@ -5843,10 +5843,17 @@ vectorizable_conversion (vec_info *vinfo,
 					     stmt_info, this_dest, gsi, c1,
 					     op_type);
 	  else
+	    /* ???  For constant/external inputs we can end up with
+	       excess lanes.  When the number of inputs already match
+	       the number of required outputs request half of the
+	       lanes (gcc.dg/vect/O3-vect-pr32243.c).  Low coverage
+	       makes this likely incomplete.  */
 	    vect_create_vectorized_promotion_stmts (vinfo, &vec_oprnds0,
 						    &vec_oprnds1, stmt_info,
 						    this_dest, gsi,
-						    c1, c2, op_type);
+						    c1, c2, op_type,
+						    vec_oprnds0.length ()
+						    == num_vectors);
 	}
 
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)

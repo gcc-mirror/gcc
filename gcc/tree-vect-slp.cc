@@ -8682,16 +8682,19 @@ vect_update_slp_vf_for_node (slp_tree node, poly_uint64 &vf,
     vect_update_slp_vf_for_node (child, vf, visited);
 
   /* We do not visit SLP nodes for constants or externals - those neither
-     have a vector type set yet (vectorizable_* does this) nor do they
-     have max_nunits set.  Instead we rely on internal nodes max_nunit
-     to cover constant/external operands.
+     have a vector type set yet (vectorizable_* does this).
      Note that when we stop using fixed size vectors externs and constants
      shouldn't influence the (minimum) vectorization factor, instead
      vectorizable_* should honor the vectorization factor when trying to
      assign vector types to constants and externals and cause iteration
      to a higher vectorization factor when required.  */
+  tree vectype = SLP_TREE_VECTYPE (node);
+  if (!vectype)
+    /* OMP SIMD calls w/o LHS have no SLP_TREE_VECTYPE set.  */
+    return;
   poly_uint64 node_vf
-    = calculate_unrolling_factor (node->max_nunits, SLP_TREE_LANES (node));
+    = calculate_unrolling_factor (TYPE_VECTOR_SUBPARTS (vectype),
+				  SLP_TREE_LANES (node));
   vf = force_common_multiple (vf, node_vf);
 
   /* For permute nodes that are fed from externs or constants we have to
@@ -8701,7 +8704,7 @@ vect_update_slp_vf_for_node (slp_tree node, poly_uint64 &vf,
       if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
 	{
 	  poly_uint64 child_vf
-	    = calculate_unrolling_factor (node->max_nunits,
+	    = calculate_unrolling_factor (TYPE_VECTOR_SUBPARTS (vectype),
 					  SLP_TREE_LANES (child));
 	  vf = force_common_multiple (vf, child_vf);
 	}
@@ -8998,11 +9001,33 @@ vect_scalar_ops_slice_hash::equal (const value_type &s1,
   return true;
 }
 
+/* Like vect_get_num_copies but N copies of the vector might have
+   excess elements in the last vector.  Returns false if *NVECTORS
+   cannot be computed.  */
+
+static bool
+vect_get_num_copies_for_invariant (vec_info *vinfo, slp_tree node,
+				   unsigned *nvectors)
+{
+  poly_uint64 vf;
+
+  if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+    vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  else
+    vf = 1;
+  vf *= SLP_TREE_LANES (node);
+
+  tree vectype = SLP_TREE_VECTYPE (node);
+  bool res = can_div_away_from_zero_p (vf, TYPE_VECTOR_SUBPARTS (vectype),
+				       nvectors);
+  return res;
+}
+
 /* Compute the prologue cost for invariant or constant operands represented
    by NODE.  */
 
 static void
-vect_prologue_cost_for_slp (vec_info *vinfo, slp_tree node,
+vect_prologue_cost_for_slp (slp_tree node, unsigned nvectors,
 			    stmt_vector_for_cost *cost_vec)
 {
   /* There's a special case of an existing vector, that costs nothing.  */
@@ -9016,7 +9041,6 @@ vect_prologue_cost_for_slp (vec_info *vinfo, slp_tree node,
   unsigned group_size = SLP_TREE_LANES (node);
   unsigned HOST_WIDE_INT const_nunits;
   unsigned nelt_limit;
-  unsigned nvectors = vect_get_num_copies (vinfo, node);
   auto ops = &SLP_TREE_SCALAR_OPS (node);
   auto_vec<unsigned int> starts (nvectors);
   if (TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
@@ -9075,7 +9099,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   int i, j;
   slp_tree child;
 
-  /* Assume we can code-generate all invariants.  */
+  /* Costing and analysis of invariants is delayed.  */
   if (!node
       || SLP_TREE_DEF_TYPE (node) == vect_constant_def
       || SLP_TREE_DEF_TYPE (node) == vect_external_def)
@@ -9178,8 +9202,11 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	      continue;
 	    }
 
-	  /* And cost them.  */
-	  vect_prologue_cost_for_slp (vinfo, child, cost_vec);
+	  /* Make sure we can generate them and then cost them.  */
+	  unsigned nvectors;
+	  if (!vect_get_num_copies_for_invariant (vinfo, node, &nvectors))
+	    return false;
+	  vect_prologue_cost_for_slp (child, nvectors, cost_vec);
 	}
 
   /* If this node or any of its children can't be vectorized, try pruning
@@ -10946,7 +10973,10 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
   /* We always want SLP_TREE_VECTYPE (op_node) here correctly set.  */
   vector_type = SLP_TREE_VECTYPE (op_node);
 
-  unsigned int number_of_vectors = vect_get_num_copies (vinfo, op_node);
+  unsigned int number_of_vectors;
+  bool res = vect_get_num_copies_for_invariant (vinfo, op_node,
+						&number_of_vectors);
+  gcc_assert (res);
   SLP_TREE_VEC_DEFS (op_node).create (number_of_vectors);
   auto_vec<tree> voprnds (number_of_vectors);
 
