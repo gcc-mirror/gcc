@@ -38,7 +38,7 @@ def printf (format, *args):
     print(str(format) % args, end=' ')
 
 
-def quietSystem(args, commandLine):
+def quietSystem(args, commandLine, temporaryFile):
     # Execute commandline and exit if unsuccessful.  It will run
     # gdb on the command line if --gdb is set in args.
     if args.gdb:
@@ -46,6 +46,9 @@ def quietSystem(args, commandLine):
     else:
         result = os.system(commandLine + " 2>&1 /dev/null")
     if result != 0:
+        os.remove(temporaryFile)
+        if (args.outputfile != None) and os.path.exists(args.outputfile):
+            os.remove(args.outputfile)
         printf("failed to execute: %s with an exit code: %d\n",
                commandLine, result)
         sys.exit(result)
@@ -397,14 +400,14 @@ def determineBuiltins(args, includePath):
     if args.fiso or (not args.fpim):
         dialect = '-fiso'
     compiler = stripBackslash(args.compiler)
-    commandLine = "%s %s %s %s -c -fdump-system-exports -o /dev/null %s > %s" % (
+    commandLine = "%s %s %s %s -S -fdump-system-exports -o /dev/null %s > %s" % (
         compiler, dialect, includePath, minimalCommandLine,
         args.modinputfile, temporaryFile)
-    quietSystem(args, commandLine)
-    commandLine = "%s %s %s %s -c -fdump-builtins %s >> %s" % (
+    quietSystem(args, commandLine, temporaryFile)
+    commandLine = "%s %s %s %s -S -fdump-builtins %s >> %s" % (
         compiler, dialect, includePath, minimalCommandLine,
         args.modinputfile, temporaryFile)
-    quietSystem(args, commandLine)
+    quietSystem(args, commandLine, temporaryFile)
     generateSource(args, temporaryFile)
     os.remove(temporaryFile)
 
