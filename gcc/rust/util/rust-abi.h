@@ -31,7 +31,9 @@ enum ABI
   STDCALL,
   FASTCALL,
   WIN_64,
-  SYSV64
+  SYSV64,
+  PLATFORM_INTRINSIC,
+  UNADJUSTED,
 };
 
 extern Rust::ABI get_abi_from_string (const std::string &abi);

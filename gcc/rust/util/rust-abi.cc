@@ -41,6 +41,10 @@ get_abi_from_string (const std::string &abi)
     return Rust::ABI::SYSV64;
   else if (abi.compare ("win64") == 0)
     return Rust::ABI::WIN_64;
+  else if (abi.compare ("platform-intrinsic") == 0)
+    return Rust::ABI::PLATFORM_INTRINSIC;
+  else if (abi.compare ("unadjusted") == 0)
+    return Rust::ABI::UNADJUSTED;
 
   return Rust::ABI::UNKNOWN;
 }
@@ -66,6 +70,10 @@ get_string_from_abi (Rust::ABI abi)
       return "sysv64";
     case Rust::ABI::WIN_64:
       return "win64";
+    case Rust::ABI::PLATFORM_INTRINSIC:
+      return "platform-intrinsic";
+    case Rust::ABI::UNADJUSTED:
+      return "unadjusted";
 
     case Rust::ABI::UNKNOWN:
       return "unknown";
