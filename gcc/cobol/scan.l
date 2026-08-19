@@ -79,6 +79,7 @@ nonseq    (([''][[:alnum:]]+][''])|([""][[:alnum:]]+[""]))
 INTEGER   0*[1-9][[:digit:]]*
 INTEGERZ  [[:digit:]]+
 
+NOTWORD   [^[:alnum:]$_-]
 NONWORD   [^[:alnum:]$_-]+
 
 SPC  [[:space:]]+
@@ -167,10 +168,9 @@ NAMEQUALS {NAMEQUAL}({SPC}{NAMEQUAL})*
 
 STRING   [^\r\n""]+
 STRING1  [^\r\n'']+
-
 QSTRING1 ['']{STRING1}(['']{2}{STRING1})*['']
 QSTRING2 [""]{STRING}([""]{2}{STRING})*[""]
-                        
+
 			/* comma & semicolon must be followed by a space */
 COMMA    [,;][[:blank:]]*
 
@@ -199,7 +199,7 @@ LINE_DIRECTIVE ^[#]line{SPC}[[:alnum:]]+{SPC}[""''].+\n
 
 %x procedure_div ident_state addr_of function classify
 %x program_id_state comment_entries
-%x date_state field_level field_state dot_state
+%x date_state field_state fd_state field_data_item dot_state
 %x numeric_state name_state
 %x quoted1 quoted2 quoteq
 %x picture picture_count integer_count
@@ -258,7 +258,7 @@ LOCAL-STORAGE{SPC}SECTION {
                   yy_push_state(field_state);
                   return LOCAL_STORAGE_SECT; }
 WORKING-STORAGE	{ return WORKING_STORAGE; }
-LOCAL-STORAGE 	{ return LOCAL_STORAGE; }
+LOCAL-STORAGE 		{ return LOCAL_STORAGE; }
 SCREEN 		{ return SCREEN; }
 
 LINKAGE{SPC}SECTION {
@@ -273,8 +273,11 @@ PROGRAM-ID{OSPC}{DOTSEP}?	{ yy_push_state(ident_state);
 	                  	  yy_push_state(program_id_state);
         	          	  yy_push_state(name_state); return PROGRAM_ID; }
 
-PROCEDURE{SPC}DIVISION	{ yy_push_state(procedure_div);
+<*>{
+  PROCEDURE{SPC}DIVISION	{ yy_push_state(procedure_div);
                                   return PROCEDURE_DIV; }
+}
+
 <comment_entries>{
   (ENVIRONMENT|DATA|PROCEDURE){SPC}DIVISION  { myless(0); yy_pop_state(); }
   {BLANK_EOL}
@@ -813,12 +816,9 @@ FINAL		{ return FINAL; }
 FILE-LIMIT	{ return FILE_LIMIT; }
 FILE-CONTROL	{ return FILE_CONTROL; }
 
-FILE{SPC}SECTION { return FILE_SECT; }
+FILE{SPC}SECTION { BEGIN(field_state); return FILE_SECT; }
 
 FILE		{ return FILE_KW; }
-
-FD		{ return FD; }
-SD		{ return SD; }
 
 EXTERNAL	{ return EXTERNAL; }
 EXIT		{ return EXIT; }
@@ -896,7 +896,10 @@ DATE-WRITTEN	{ return DATE_WRITTEN; }
 DATE-COMPILED	{ return DATE_COMPILED; }
 DAY-OF-WEEK	{ return DAY_OF_WEEK; }
 
-DATA{SPC}DIVISION{DOTEOL}		{ return DATA_DIV; }
+DATA{SPC}DIVISION{DOTEOL} {
+		  yy_push_state(field_state);
+                  return DATA_DIV; }
+
 DATA		{ return DATA; }
 
 CURRENCY	{ return CURRENCY; }
@@ -977,72 +980,221 @@ USE({SPC}FOR)?		{ return USE; }
 
 }
 
-<field_level>{
-  66/{SPC}(\f#)?{NAME} { yy_pop_state();
-                          if( !parsing.on() ) orig_picture[0] = '\0';
-                          if( level_needed() ) {
-                            level_found();
-                            yylval.number = level_of(yytext); return LEVEL66;
-                          } else {
-                            return numstr_of(yytext);
-                          }
-                        }
-  78/{SPC}(\f#)?{NAME} { yy_pop_state();
-                          if( !parsing.on() ) orig_picture[0] = '\0';
-                          if( level_needed() ) {
-                            level_found();
-                            yylval.number = level_of(yytext); return LEVEL78;
-                          } else {
-                            return numstr_of(yytext);
-                          }
-                        }
-  88/{SPC}(\f#)?{NAME} { yy_pop_state();
-                          if( !parsing.on() ) orig_picture[0] = '\0';
-                          if( level_needed() ) {
-                            level_found();
-                            yylval.number = level_of(yytext); return LEVEL88;
-                          } else {
-                            return numstr_of(yytext);
-                          }
-                        }
-  [[:digit:]]{1,2}/[[:space:]] { yy_pop_state();
-                          if( !parsing.on() ) orig_picture[0] = '\0';
-                          if( level_needed() ) {
-                            level_found();
-                            yylval.number = level_of(yytext); return LEVEL;
-                          } else {
-                            return numstr_of(yytext);
-                          }
-                        }
+<field_state,field_data_item>{
+  WORKING-STORAGE{SPC}SECTION { return WORKING_STORAGE_SECT; }
+  LOCAL-STORAGE{SPC}SECTION   { return LOCAL_STORAGE_SECT; }
+  LINKAGE{SPC}SECTION         { return LINKAGE_SECT; }
+  SCREEN{SPC}/SECTION	      { return SCREEN; }
+  SECTION{OSPC}/{DOTSEP}      { yylval.string = NULL; return SECTION; }
 
-  . { cbl_errx( "failed to parse field level on line %d", yylineno); }
+  ALL			{ return ALL; }
+  AS			{ return AS; }
+  ASCENDING		{ return ASCENDING; }
+  BLANK    		{ return BLANK; }
+  BLOCK			{ return BLOCK_kw; }
+  BY			{ return BY; }
+  BYTE-LENGTH		{ return BYTE_LENGTH; }
+  CHARACTER		{ return CHARACTER; }
+  CHARACTERS		{ return CHARACTERS; }
+  CODE-SET		{ return CODESET; }
+  CONSTANT		{ return CONSTANT; }
+  CONTAINS		{ return CONTAINS; }
+  DATA			{ return DATA; }
+  DEPENDING		{ return DEPENDING; }
+  DESCENDING		{ return DESCENDING; }
+  DISPLAY		{ return DISPLAY; }
+  EBCDIC		{ return EBCDIC; }
+  EJECT{DOTEOL}?  	{
+			  dialect_ok(yylloc, IbmEjectE, "EJECT"); 
+			  auto len = yyleng - 1;
+			  if( yytext[len] == '\f' ) myless(--len);
+			}
+  EXTERNAL		{ return EXTERNAL; }
+  FALSE			{ return FALSE_kw; }
+  FROM			{ return FROM; }
+  GLOBAL		{ return GLOBAL; }
+  IN			{ return IN; }
+  INDEXED		{ return INDEXED; }
+  IS			{ return IS; }
+  JUST(IFIED)?({SPC}RIGHT)?		{ return JUSTIFIED; }
+  KEY			{ return KEY; }
+  LABEL			{ return LABEL; }
+  LEADING		{ return LEADING; }
+  LEFT    		{ return LEFT; }
+  MODE			{ return MODE; }
+  NATIVE		{ return NATIVE; }
+  NO			{ return NO; }
+  OCCURS/{SPC}{NAME} 	{ return OCCURS; }
+  OCCURS		{ yy_push_state(integer_count);  return OCCURS; }
+  OF			{ return OF; }
+  OMITTED		{ return OMITTED; }
+  ON			{ return ON; }
+  RECORD		{ return RECORD; }
+  RECORDING		{ return RECORDING; }
+  RECORDS		{ return RECORDS; }
+  RECORDS{SPC}ARE	{ return RECORDS; }
+  RECORD{SPC}IS		{ return RECORD; }
+  REDEFINES		{ return REDEFINES; }
+  RENAMES		{ return RENAMES; }
+  RIGHT    		{ return RIGHT; }
+  SEPARATE		{ return SEPARATE; }
+  SET			{ return SET; }
+  SAME			{ return SAME; }
+  SIGN			{ return SIGN; }
+  SIZE			{ return SIZE; }
+  STANDARD		{ return STANDARD; }
+  STANDARD{SPC}ALPHABET		{ return STANDARD_ALPHABET; }
+  STRONG		{ return STRONG; }
+  SYNC(HRONIZED)?	{ return SYNCHRONIZED; }
+  TIMES			{ return TIMES; }
+  TIMES[[:space::]]+DEPENDING		{ return DEPENDING; }
+  TO			{ return TO; }
+  TRAILING		{ return TRAILING; }
+  TRUE			{ return TRUE_kw; }
+  TYPE			{ return TYPE; }
+  TYPEDEF		{ return TYPEDEF; }
+  VARYING		{ return VARYING; }
+  VOLATILE    		{ return VOLATILE; }
+  WHEN    		{ return WHEN; }
+  WITH			{ return WITH; }
+
+  COPY			{
+                	  yy_push_state(copy_state);
+                	  myless(0);
+                	}
+
+  PROCEDURE{SPC}DIVISION	{ BEGIN(procedure_div); return PROCEDURE_DIV; }
 }
 
+<fd_state>{
+  ALL			{ return ALL; }
+  AS			{ return AS; }
+  ASCENDING		{ return ASCENDING; }
+  BLANK    		{ return BLANK; }
+  BLOCK			{ return BLOCK_kw; }
+  BY			{ return BY; }
+  BYTE-LENGTH		{ return BYTE_LENGTH; }
+  CHARACTER		{ return CHARACTER; }
+  CHARACTERS		{ return CHARACTERS; }
+  CODE-SET		{ return CODESET; }
+  CONSTANT		{ return CONSTANT; }
+  CONTAINS		{ return CONTAINS; }
+  DATA			{ return DATA; }
+  DEPENDING		{ return DEPENDING; }
+  DESCENDING		{ return DESCENDING; }
+  DISPLAY		{ return DISPLAY; }
+  EBCDIC		{ return EBCDIC; }
+  EJECT{DOTEOL}?  	{
+			  dialect_ok(yylloc, IbmEjectE, "EJECT"); 
+			  auto len = yyleng - 1;
+			  if( yytext[len] == '\f' ) myless(--len);
+			}
+  EXTERNAL		{ return EXTERNAL; }
+  FALSE			{ return FALSE_kw; }
+  FROM			{ return FROM; }
+  GLOBAL		{ return GLOBAL; }
+  IN			{ return IN; }
+  INDEXED		{ return INDEXED; }
+  IS			{ return IS; }
+  JUST(IFIED)?({SPC}RIGHT)?		{ return JUSTIFIED; }
+  KEY			{ return KEY; }
+  LABEL			{ return LABEL; }
+  LEADING		{ return LEADING; }
+  LEFT    		{ return LEFT; }
+  MODE			{ return MODE; }
+  NATIVE		{ return NATIVE; }
+  NO			{ return NO; }
+  OCCURS		{ return OCCURS; }
+  OF			{ return OF; }
+  OMITTED		{ return OMITTED; }
+  ON			{ return ON; }
+  RECORD		{ return RECORD; }
+  RECORDING		{ return RECORDING; }
+  RECORDS		{ return RECORDS; }
+  RECORDS{SPC}ARE	{ return RECORDS; }
+  RECORD{SPC}IS		{ return RECORD; }
+  REDEFINES		{ return REDEFINES; }
+  RENAMES		{ return RENAMES; }
+  RIGHT    		{ return RIGHT; }
+  SEPARATE		{ return SEPARATE; }
+  SET			{ return SET; }
+  SAME			{ return SAME; }
+  SIGN			{ return SIGN; }
+  SIZE			{ return SIZE; }
+  STANDARD		{ return STANDARD; }
+  STANDARD{SPC}ALPHABET	{ return STANDARD_ALPHABET; }
+  STRONG		{ return STRONG; }
+  SYNC(HRONIZED)?	{ return SYNCHRONIZED; }
+  TIMES			{ return TIMES; }
+  TIMES[[:space::]]+DEPENDING		{ return DEPENDING; }
+  TO			{ return TO; }
+  TRAILING		{ return TRAILING; }
+  TRUE			{ return TRUE_kw; }
+  TYPE			{ return TYPE; }
+  TYPEDEF		{ return TYPEDEF; }
+  VARYING		{ return VARYING; }
+  VOLATILE    		{ return VOLATILE; }
+  WHEN    		{ return WHEN; }
+  WITH			{ return WITH; }
+
+  {INTEGERZ}	{ return numstr_of(yytext); }
+
+  {NAME}	{ 
+                  yylval.string = xstrdup(yytext);
+                  return NAME;
+                }
+  {QSTRING1} |
+  {QSTRING2}	{
+                  static const char prefix[] = "";
+		  char *s = unquote();
+                  yylval.literal.set(strlen(s), s, prefix);
+		  return LITERAL;
+		}
+
+  {DOTSEP}		{ BEGIN(field_state); return *yytext; }
+}
+
+
+	/*
+	 * Field state begins with a Data Division section and ends with
+	 * Procedure Division.  The work is done by field_data_item.
+	 */
 <field_state>{
-  ^[[:blank:]]*[[:digit:]]{1,2}{OSPC}/[.] {
-                              if( !parsing.on() ) orig_picture[0] = '\0';
-                              level_found();
-                              yylval.number = level_of(yytext);
-                              return LEVEL;
-                            }
+  FD		{ yy_push_state(fd_state); return FD; }
+  SD		{ yy_push_state(fd_state); return SD; }
+  {NAME}	{ 
+                  ydflval.string = yylval.string = xstrdup(yytext);
+                  return NAME;
+                }
 
-  ^[[:blank:]]+             {}
-               ^[[:digit:]]{1,2}[[:space:]]              { yy_push_state(field_level); }
-   [[:blank:]]*/[[:digit:]]{1,2}{SPC}(\f#)?{NAME} { yy_push_state(field_level); }
+  [[:digit:]]{1,2}/{NOTWORD} {
+      yy_push_state(field_data_item);
+      yylval.number = level_of(yytext); 
 
-  [+-]?{INTEGERZ}           { return numstr_of(yytext); }
-  [+-]?{dfc}                { char *s = xstrdup(yytext);
-                              // "The decimal point can appear anywhere within
-                              //  the literal except as the rightmost character."
-                              size_t len = strlen(s);
-                              assert(len);
-                              if( s[--len] == '.' ) {
-                                s[len] = '\0';
-                                myless(len);
-                              }
-                              numstr_of(s); free(s);
-                              return NUMSTR;
-                           }
+      switch(yylval.number) {
+      case 66: return LEVEL66;
+      case 78: return LEVEL78;
+      case 88: return LEVEL88;
+      }
+      return LEVEL;
+  }
+}
+<field_data_item>{
+  {DOTSEP}		{ yy_pop_state(); return '.'; }
+
+  [+-]?{INTEGERZ}	{ return numstr_of(yytext); }
+  [+-]?{dfc}		{ char *s = xstrdup(yytext);
+			  // "The decimal point can appear anywhere within
+			  //  the literal except as the rightmost character."
+			  size_t len = strlen(s);
+			  assert(len);
+			  if( s[--len] == '.' ) {
+			    s[len] = '\0';
+			    myless(len);
+			  }
+			  numstr_of(s); free(s);
+			  return NUMSTR;
+			}
 
   PIC(TURE)?({SPC}IS)?{SPC}{PICTURE} {
 				  auto pos = validate_picture();
@@ -1131,85 +1283,7 @@ USE({SPC}FOR)?		{ return USE; }
                           yy_push_state(numeric_state);
 			  return THRU; }
 
-  ALL			{ return ALL; }
-  AS			{ return AS; }
-  ASCENDING		{ return ASCENDING; }
-  BLANK    		{ return BLANK; }
-  BLOCK			{ return BLOCK_kw; }
-  BY			{ return BY; }
-  BYTE-LENGTH		{ return BYTE_LENGTH; }
-  CHARACTER		{ return CHARACTER; }
-  CHARACTERS		{ return CHARACTERS; }
-  CODE-SET		{ return CODESET; }
-  CONSTANT		{ return CONSTANT; }
-  CONTAINS		{ return CONTAINS; }
-  DATA			{ return DATA; }
-  DEPENDING		{ return DEPENDING; }
-  DESCENDING		{ return DESCENDING; }
-  DISPLAY		{ return DISPLAY; }
-  EBCDIC		{ return EBCDIC; }
-  EJECT{DOTEOL}?  	{
-			  dialect_ok(yylloc, IbmEjectE, "EJECT"); 
-			  auto len = yyleng - 1;
-			  if( yytext[len] == '\f' ) myless(--len);
-			}
-  EXTERNAL		{ return EXTERNAL; }
-  FALSE			{ return FALSE_kw; }
-  FROM			{ return FROM; }
-  GLOBAL		{ return GLOBAL; }
-  IN			{ return IN; }
-  INDEXED		{ return INDEXED; }
-  IS			{ return IS; }
-  JUST(IFIED)?({SPC}RIGHT)?		{ return JUSTIFIED; }
-  KEY			{ return KEY; }
-  LABEL			{ return LABEL; }
-  LEADING		{ return LEADING; }
-  LEFT    		{ return LEFT; }
-  MODE			{ return MODE; }
-  NATIVE		{ return NATIVE; }
-  NO			{ return NO; }
-  OCCURS/{SPC}{NAME} 	{ return OCCURS; }
-  OCCURS		{ yy_push_state(integer_count);  return OCCURS; }
-  OF			{ return OF; }
-  OMITTED		{ return OMITTED; }
-  ON			{ return ON; }
-  RECORD		{ return RECORD; }
-  RECORDING		{ return RECORDING; }
-  RECORDS		{ return RECORDS; }
-  RECORDS{SPC}ARE	{ return RECORDS; }
-  RECORD{SPC}IS		{ return RECORD; }
-  REDEFINES		{ return REDEFINES; }
-  RENAMES		{ return RENAMES; }
-  RIGHT    		{ return RIGHT; }
-  SEPARATE		{ return SEPARATE; }
-  SET			{ return SET; }
-  SAME			{ return SAME; }
-  SIGN			{ return SIGN; }
-  SIZE			{ return SIZE; }
-  STANDARD		{ return STANDARD; }
-  STANDARD{SPC}ALPHABET		{ return STANDARD_ALPHABET; }
-  STRONG		{ return STRONG; }
-  SYNC(HRONIZED)?	{ return SYNCHRONIZED; }
-  TIMES			{ return TIMES; }
-  TIMES[[:space::]]+DEPENDING		{ return DEPENDING; }
-  TO			{ return TO; }
-  TRAILING		{ return TRAILING; }
-  TRUE			{ return TRUE_kw; }
-  TYPE			{ return TYPE; }
-  TYPEDEF		{ return TYPEDEF; }
-  VARYING		{ return VARYING; }
-  VOLATILE    		{ return VOLATILE; }
-  WHEN    		{ return WHEN; }
-  WITH			{ return WITH; }
-
-  COPY			{
-                	  yy_push_state(copy_state);
-                	  myless(0);
-                	}
-
-  FD/[[:blank:]]+       { parsing.need_level(false); return FD; }
-  SD/[[:blank:]]+       { parsing.need_level(false); return SD; }
-
+  FILLER		{ return FILLER_kw; }
   {NAME}                { // NAME here might be a token alias
 		   	  int token;
 		          if( 0 != (token = binary_integer_usage(yytext)) ) {
@@ -1229,17 +1303,6 @@ USE({SPC}FOR)?		{ return USE; }
 	    		  yy_push_state(hex_state); }
   N?X{nonseq}		{ dbgmsg("invalid hexadecimal value: %s", yytext);
 			  return NO_CONDITION; }
-  [[:blank:]]*{EOL}     {}
-
-  WORKING-STORAGE{SPC}SECTION { return WORKING_STORAGE_SECT; }
-  LOCAL-STORAGE{SPC}SECTION   { return LOCAL_STORAGE_SECT; }
-  LINKAGE{SPC}SECTION         { return LINKAGE_SECT; }
-  SCREEN{SPC}/SECTION	      { return SCREEN; }
-  SECTION{OSPC}/{DOTSEP}      { yylval.string = NULL; return SECTION; }
-
-  PROCEDURE{SPC}DIVISION	{ BEGIN(procedure_div); return PROCEDURE_DIV; }
-
-  [*]>.*$ // ignore inline comment
 }
 
 <numstr_state>{
@@ -1287,9 +1350,8 @@ USE({SPC}FOR)?		{ return USE; }
   {COMMA} 			|
   [[:blank:]]*{EOL}		|
   [[:blank:]]+{EOL}?		{ yy_pop_state(); /* embedded/trailing blank */ }
-  {DOTSEP}[[:blank:].]+$	{ yy_pop_state(); return '.'; }
-  {DOTSEP}			{ yy_pop_state(); return '.'; }
-
+  {DOTSEP}[[:blank:].]+$	{ yy_pop_state(); myless(0); }
+  {DOTSEP}			{ yy_pop_state(); myless(0); }
 
   [[:blank:]]+[-+]/{EDITED} 	{ return picset(yytext[yyleng-1]); }
 
@@ -1749,6 +1811,14 @@ USE({SPC}FOR)?		{ return USE; }
   ZERO	|
   ZEROES	|
   ZEROS		{ return ZERO; }
+
+  CONFIGURATION{SPC}SECTION	{ return CONFIGURATION_SECT; }
+  FILE{SPC}SECTION 		{ return FILE_SECT; }
+  INPUT-OUTPUT{SPC}SECTION	{ return INPUT_OUTPUT_SECT; }
+  LINKAGE{SPC}SECTION 		{ return LINKAGE_SECT; }
+  LOCAL-STORAGE{SPC}SECTION 	{ return LOCAL_STORAGE_SECT; }
+  WORKING-STORAGE{SPC}SECTION 	{ return WORKING_STORAGE_SECT; }
+
 }
 
 <*>{
@@ -1787,13 +1857,16 @@ USE({SPC}FOR)?		{ return USE; }
   {NAME}	 	{ ydflval.string = yylval.string = xstrdup(yytext);
 			  return NAME;
 			}
+
+  {QSTRING1} |
+  {QSTRING2}		{ ydflval.string = unquote(); return LITERAL; }
+
   %EBCDIC-MODE		{ ydflval.number = feature_internal_ebcdic_e;
 			  return FEATURE; }
   %64-BIT-POINTER	{ ydflval.number = feature_embiggen_e;
 			  return FEATURE; }
   [[:blank:]]+
   {BLANK_EOL}
-  . 			{ myless(0); yy_pop_state(); } // not a CDF token
 }
 
 <program_id_state>{
@@ -2434,12 +2507,12 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 		  // If WITH DEBUGGING MODE, drop the D, else drop the line.
 		  if( include_debug() ) myless(7);
 		}
-  ^[ ]*>>{OBLANK}IF		{ yy_push_state(cdf_state); return CDF_IF; }
+  ^[ ]*>>{OBLANK}IF		{ PUSH_CDF_STATE; return CDF_IF; }
   ^[ ]*>>{OBLANK}ELSE	 	{ return CDF_ELSE; }
   ^[ ]*>>{OBLANK}END-IF	 	{ return CDF_END_IF; }
 
   ^[ ]*[$]{OBLANK}IF		{ dialect_ok(yylloc, MfCdfDollar, yytext); 
-				  yy_push_state(cdf_state); return CDF_IF; }
+				  PUSH_CDF_STATE; return CDF_IF; }
   ^[ ]*[$]{OBLANK}ELSE	 	{ dialect_ok(yylloc, MfCdfDollar, yytext); 
 				  return CDF_ELSE; }
   ^[ ]*[$]{OBLANK}END(-IF)? 	{ dialect_ok(yylloc, MfCdfDollar, yytext); 
@@ -2447,7 +2520,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 
   ^[ ]*[$]{OBLANK}SET({SPC}CONSTANT)? {
 				  dialect_ok(yylloc, MfCdfDollar, yytext); 
-				  yy_push_state(cdf_state); return CDF_DEFINE; }
+				  PUSH_CDF_STATE; return CDF_DEFINE; }
 
   ^[ ]*>>{OBLANK}EVALUATE		{ return CDF_EVALUATE; }
   ^[ ]*>>{OBLANK}WHEN		{ return CDF_WHEN; }
@@ -2457,9 +2530,10 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   ^[ ]*>>{OBLANK}CALL-CONVENTION{BLANK}COBOL	{ return CALL_COBOL; }
   ^[ ]*>>{OBLANK}CALL-CONVENTION{BLANK}VERBATIM	{ return CALL_VERBATIM; }
 
-  ^[ ]*>>{OBLANK}DEFINE	{ yy_push_state(cdf_state); return CDF_DEFINE; }
-  ^[ ]*>>{OBLANK}DISPLAY 	{ return CDF_DISPLAY; }
-  ^[ ]*>>{OBLANK}TURN 	{ yy_push_state(exception); return TURN; }
+  ^[ ]*>>{OBLANK}DEFINE		{ PUSH_CDF_STATE; return CDF_DEFINE; }
+  ^[ ]*>>{OBLANK}DISPLAY 	{ PUSH_CDF_STATE; return CDF_DISPLAY; }
+
+  ^[ ]*>>{OBLANK}TURN 		{ yy_push_state(exception); return TURN; }
   ^[ ]*>>{OBLANK}COBOL-WORDS	{ yy_push_state(cobol_words); return COBOL_WORDS; }
 
   ^[ ]*>>{OBLANK}SOURCE{BLANK}FORMAT	{ return SOURCE_FORMAT; }
@@ -2555,17 +2629,6 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 
 <*>{
    {NAME}       {
-                  int token = keyword_tok(yytext);
-                  if( token ) {
-		    if(yy_flex_debug && YY_START) {
-                       dbgmsg("missed token %s in start condition %d",
-			      yytext, YY_START);
-		    }
-		    // Do not return "token" because it may have been excluded
-		    // by a start condition.  For example, REM might be a name,
-		    // but is the name of an intrinsic function, which would
-		    // appear only after FUNCTION.
-		  }
                   if( is_integer_token() ) return numstr_of(yytext);
                   ydflval.string = yylval.string = xstrdup(yytext);
                   return typed_name(yytext);

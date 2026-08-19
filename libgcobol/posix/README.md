@@ -103,3 +103,44 @@ the OS, each in their own way. GnuCOBOL implements some of those functions.
 
 The UDF produced by `udf-gen` is pure ISO COBOL.  The code should be
 compilable by any ISO COBOL compiler.
+
+# TODO
+
+In the real world we know GnuCOBOL applications use:
+
+- clock_gettime
+- getgrnam
+- getpgid
+- getpid
+- getppid
+- getpwnam
+- getpwuid
+- getuid
+- gmtime_r
+- kill
+- localtime
+- localtime_r
+- MD5Final
+- MD5Init
+- MD5Update
+- memcpy
+- mktime
+- msgctl
+- msgget
+- msgrcv
+- msgsnd
+- nanosleep
+- rename
+- semctl
+- semget
+- semop
+- semtimedop
+- setsid
+- shmat
+- shmctl
+- shmdt
+- shmget
+- strftime
+- system
+
+- 

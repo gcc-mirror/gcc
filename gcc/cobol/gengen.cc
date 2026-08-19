@@ -918,9 +918,68 @@ gg_declare_variable(tree type_decl,
   return var_decl;
   }
 
+class DECL_COUNTER
+  {
+  public:
+    unsigned long total;
+    unsigned long artificial;
+    unsigned long addressable;
+    unsigned long art_addr;
+
+    DECL_COUNTER()
+      : total( 0 ),
+        artificial( 0 ),
+        addressable( 0 ),
+        art_addr( 0 )
+      {
+      }
+
+    void
+    count( tree var_decl )
+      {
+      if( TREE_CODE( var_decl ) == VAR_DECL )
+        {
+        total += 1;
+
+        bool is_artificial = DECL_ARTIFICIAL( var_decl );
+        bool is_addressable = TREE_ADDRESSABLE( var_decl );
+
+        if( is_artificial )
+          {
+          artificial += 1;
+          }
+
+        if( is_addressable )
+          {
+          addressable += 1;
+          }
+
+        if( is_artificial && is_addressable )
+          {
+          art_addr += 1;
+          }
+        }
+      }
+
+    ~DECL_COUNTER()
+      {
+      if( getenv("VAR_DECL_COUNT") )
+        {
+        fprintf( stderr, "decl_counter VAR_DECL    = %lu\n", total );
+        fprintf( stderr, "decl_counter ARTIFICIAL  = %lu\n", artificial );
+        fprintf( stderr, "decl_counter ADDRESSABLE = %lu\n", addressable );
+        fprintf( stderr, "decl_counter BOTH        = %lu\n", art_addr );
+        }
+      }
+  };
+  
+static DECL_COUNTER decl_counter;
+
 tree
 gg_define_from_declaration(tree var_decl)
   {
+  decl_counter.count(var_decl);
+
   // Append the var_decl to either the chain for the current function or for
   // the translation_unit, depending on the var_decl's context:
   gg_append_var_decl(var_decl);

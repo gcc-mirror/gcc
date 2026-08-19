@@ -345,12 +345,14 @@ cdf_file_name( const cbl_file_t *file ) {
   return file->name;
 }
 
-
 void
 cdf_field_add( const cbl_loc_t& loc, const std::string& name, const cdfval_t& value ) {
+  void scanner_cache_update( const symbol_elem_t *elem );
+
   if( symbols_begin() < symbols_end() ) {
     cbl_field_t field = cdf_literalize(loc, name, value);
-    symbol_field_add(current_program_index(), &field);                    
+    auto e = symbol_field_add(current_program_index(), &field);
+    scanner_cache_update( e );
   }
 }
 

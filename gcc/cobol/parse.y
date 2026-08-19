@@ -588,8 +588,8 @@ class locale_tgt_t {
 			MINN "Min" MULTIPLE MOD MODE
 			MODULE_NAME  "MODULE-NAME "
 
-			NAMED NAT NATIONAL
-			NATIONAL_EDITED "NATIONAL-EDITED"
+			NAMED NAMESPACE NAMESPACE_PREFIX "NAMESPACE-PREFIX"
+                        NAT NATIONAL NATIONAL_EDITED "NATIONAL-EDITED"
 			NATIONAL_OF "NATIONAL-OF"
 			NATIVE NESTED NEXT
 			NO NOTE
@@ -702,6 +702,7 @@ class locale_tgt_t {
 			UNDERLINE UNSIGNED_kw
 			UTF_16 "UTF-16"
 			UTF_8 "UTF-8"
+                        XML_DECLARATION "XML-DECLARATION"
                         XMLGENERATE "XML GENERATE"
                         XMLPARSE "XML PARSE"
 
@@ -737,7 +738,8 @@ class locale_tgt_t {
 %type   <number>        star_cbl_opt close_how
 
 %type   <number>        test_before usage_clause1 might_be alphanational
-%type   <boolean>       all optional sign_leading on_off initialized strong is_signed
+%type   <boolean>       all filler initialized is_signed
+                        on_off optional sign_leading strong 
 %type   <number>        count data_clauses data_clause
 %type   <number>        nine nines nps relop spaces_etc reserved_value signed
 %type   <number>        variable_type binary_type
@@ -1281,7 +1283,7 @@ class locale_tgt_t {
                         MIGHT_BE MINN MULTIPLE MOD MODE
 			MODULE_NAME
 
-                        NAMED NAMESPACE NAMESPACE_PREFIX "NAMESPACE-PREFIX"
+                        NAMED NAMESPACE NAMESPACE_PREFIX
                         NAT NATIONAL
 			NATIONAL_EDITED
 			NATIONAL_OF
@@ -1355,7 +1357,7 @@ class locale_tgt_t {
                         VALUE VARIANCE VARYING VOLATILE
 
                         WHEN_COMPILED WITH WORKING_STORAGE
-                        XML_DECLARATION "XML-DECLARATION"
+                        XML_DECLARATION
                         YEAR_TO_YYYY YYYYDDD YYYYMMDD
                         ZERO
 
@@ -4033,7 +4035,7 @@ level_name:     LEVEL ctx_name
                   }
                   current_field($$); // make available for data_clauses
                 }
-        |       LEVEL
+        |       LEVEL filler
                 {
                   switch($LEVEL) {
                   case 66:
@@ -4051,8 +4053,13 @@ level_name:     LEVEL ctx_name
                   struct cbl_field_t field = { FldInvalid, 
 		                               capacity_cast($LEVEL),
 		                               @LEVEL.first_line };
-
-                  $$ = field_add(@1, &field);
+                  cbl_loc_t loc(@LEVEL);
+                  if( $filler ) {
+                    loc.last_column += 7;
+                    field.set_attr(filler_e);
+                    strcpy(field.name, "FILLER");
+                  }
+                  $$ = field_add(loc, &field);
                   if( !$$ ) {
                     YYERROR;
                   }
@@ -12254,6 +12261,10 @@ file:           %empty
         |       FILE_KW
                 ;
 
+filler:         %empty      { $$ = false; }
+        |       FILLER_kw   { $$ = true; }
+                ;
+
 first_last:     %empty  { $$ = 0; }
         |       FIRST   { $$ = 'F'; }
         |       LAST    { $$ = 'L'; }
@@ -13095,10 +13106,11 @@ current_tokens_t::tokenset_t::find( const cbl_name_t name, bool include_intrinsi
    *  1. an intrinsic function name (OK if include_intrinsics)
    *  2. an ISO/GCC reserved word or context-sensitive word (OK)
    *  3. a token in our token list for convenience, such as BINARY_INTEGER (bzzt)
-   */
-  
+   */  
   cbl_name_t lname;
   std::transform(name, name + strlen(name) + 1, lname, ftolower);
+  dbgmsg("current_tokens_t::tokenset_t::find: scanning %lu tokens for '%s'",
+         (unsigned long)tokens.size(), lname);
   auto p = tokens.find(lname);
   if( p == tokens.end() ) return 0;
   int token = p->second;

@@ -104,7 +104,7 @@ static struct symbol_table_t {
 
   struct symbol_elem_t *elems;
 
-  std::map<elem_key_t, size_t> specials;
+  std::map<elem_key_t, size_t> specials, programs, functions;
   std::map<elem_key_t, std::list<size_t>> labels;
 
   std::vector<symbol_pair_t> mappings;
@@ -135,6 +135,15 @@ static struct symbol_table_t {
   void labelmap_add( const symbol_elem_t *e ) {
     const char *name = cbl_label_of(e)->name;
     labels[ elem_key_t(e->program, name) ].push_back( symbol_index(e) );
+  }
+  void program_add( size_t isym ) { label_add(programs, isym); }
+  void function_add( size_t isym ) { label_add(functions, isym); }
+ protected:
+  void label_add( std::map<elem_key_t, size_t>& M, size_t isym ) {
+    auto e = elems + isym;
+    auto L = cbl_label_of(e);
+    auto key( elem_key_t(e->program, L->name) );
+    M[key] = isym;
   }
 } symbols;
 
@@ -630,6 +639,13 @@ symbol_label_id( const cbl_label_t *label ) {
 struct cbl_label_t *
 symbol_program( size_t parent, const char name[], bool prototype )
 {
+#if 1
+  auto key( elem_key_t(parent, name) );
+  auto p = symbols.programs.find(key);
+  if( p == symbols.programs.end() ) return nullptr;
+  auto L = cbl_label_of(symbol_at(p->second));
+  return  L->prototype == prototype? L : nullptr;
+#else
   cbl_label_t label = {};
   label.type = LblProgram;
   label.parent = parent;
@@ -644,6 +660,7 @@ symbol_program( size_t parent, const char name[], bool prototype )
                                                  &symbols.nelem, sizeof(key),
                                                  symbol_elem_cmp ) );
   return e? cbl_label_of(e) : NULL;
+#endif
 }
 
 extern int yydebug;
@@ -660,6 +677,16 @@ enum protoreq_t {
 static struct symbol_elem_t *
 symbol_function_impl( size_t parent, const char name[], protoreq_t protoreq )
 {
+#if 1
+  auto key( elem_key_t(parent, name) );
+  auto p = symbols.functions.find(key);
+  if( p == symbols.functions.end() ) return nullptr;
+  auto e = symbol_at(p->second);
+  const cbl_label_t *L = cbl_label_of(e);
+  if( protoreq == proto_required_e   && !L->prototype ) return nullptr;
+  if( protoreq == proto_disallowed_e &&  L->prototype ) return nullptr;
+  return e;
+#else
   auto p = std::find_if( symbols_begin(), symbols_end(),
                          [parent, name, protoreq]( const auto& elem ) {
                            if( elem.type == SymLabel ) {
@@ -681,6 +708,7 @@ symbol_function_impl( size_t parent, const char name[], protoreq_t protoreq )
   if( yydebug && p == symbols_end() ) symbols_dump( symbols.first_program, true);
 
   return p == symbols_end()? NULL : p;
+#endif
 }
 
 struct symbol_elem_t *
@@ -3646,46 +3674,69 @@ cbl_alphabet_t::also( const cbl_loc_t& loc, size_t ch ) {
   error_msg(loc, "ALSO value %zu is unknown", ch);
 }
 
-static symbol_temporaries_t program_temporaries;
+static class program_temporaries_t : private symbol_temporaries_t {
+  std::vector<symbol_temporaries_t::iterator> alphas;
+  static bool is_alpha_intermediate( const cbl_field_t *f ) {
+    switch(f->type) {
+    case FldAlphaEdited:
+    case FldAlphanumeric:
+      return f->has_attr(intermediate_e);
+    default:
+      break;
+    }
+    return false;
+  }
+ public:
+  program_temporaries_t() {}
+  symbol_temporaries_t::iterator dnubegin() { return symbol_temporaries_t::begin(); }
+  symbol_temporaries_t::iterator dnuend() { return symbol_temporaries_t::end(); }
 
+  void push_back( cbl_field_t *field ) {
+    symbol_temporaries_t::push_back(field);
+    if( is_alpha_intermediate(field) ) {
+      auto p(end());
+      p--;
+      alphas.push_back(p);
+    }
+  }
+
+  // return the alphanumeric temporaries and remove them from the list
+  symbol_temporaries_t alphanumerics() {
+    symbol_temporaries_t output;
+
+    std::transform( alphas.begin(), alphas.end(),
+                    std::back_inserter(output),
+                    []( auto p ) {
+                      return *p;
+                    } );
+    erase_alphas();
+    return output;
+  }
+  symbol_temporaries_t& as_list() {
+    return *this;
+  }
+
+ protected:
+  void erase_alphas() {
+    for( auto p : alphas ) {
+      this->erase(p);
+    }
+    alphas.clear();
+  }
+} program_temporaries;
+        
 /*
  * Supply a reference to the current list of temporaries for use by codegen to free
  * the memory if it decides to return to the caller.
  */
 symbol_temporaries_t&
 symbol_temporaries() {
-  return program_temporaries;
+  return program_temporaries.as_list();
 }
 
 symbol_temporaries_t
 symbol_temporary_alphanumerics() {
-  symbol_temporaries_t output;
-  std::copy_if( program_temporaries.begin(),
-                program_temporaries.end(),
-                std::back_inserter(output),
-                []( auto f ) {
-                  switch(f->type) {
-                  case FldAlphaEdited:
-                  case FldAlphanumeric:
-                    return f->has_attr(intermediate_e);
-                  case FldFloat:
-                  case FldNumericBin5:
-                  case FldNumericBinary:
-                  case FldNumericDisplay:
-                  case FldNumericEdited:
-                  case FldPacked:
-                  default:
-                    break;
-                  }
-                  return false;
-                } );
-  for( cbl_field_t *f : output ) {
-    auto p = std::find( program_temporaries.begin(),
-                        program_temporaries.end(),
-                        f );
-    program_temporaries.erase(p);
-  }
-  return output;
+  return program_temporaries.alphanumerics();
 }
 
 /*
@@ -4646,6 +4697,17 @@ symbol_program_add( size_t program, cbl_label_t *input )
   if( e != symbols_end() ) return NULL;
 
   e = symbol_append(elem);
+
+  switch( input->type ) {
+  case LblProgram:
+    symbols.program_add( symbol_index(e) );
+    break;
+  case LblFunction:
+    symbols.function_add( symbol_index(e) );
+    break;
+  default:
+    gcc_unreachable();
+  }
 
   common_callables_update( symbol_index(e) );
 

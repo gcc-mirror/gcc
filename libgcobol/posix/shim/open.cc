@@ -35,7 +35,6 @@ posix_open(const char *pathname, int cbl_flags, int cbl_mode) {
     { cbl::PSX_O_APPEND, O_APPEND },
     { cbl::PSX_O_NONBLOCK, O_NONBLOCK },
     { cbl::PSX_O_DSYNC, O_DSYNC },
-    { cbl::PSX_O_LARGEFILE, O_LARGEFILE }, 
     { cbl::PSX_O_SYNC, O_SYNC }, 
     /*
      * The O_CLOEXEC, O_DIRECTORY, and O_NOFOLLOW flags are not specified in
@@ -56,11 +55,13 @@ posix_open(const char *pathname, int cbl_flags, int cbl_mode) {
      */
 #if defined(_GNU_SOURCE)
     { cbl::PSX_O_DIRECT, O_DIRECT }, 
+    { cbl::PSX_O_LARGEFILE, O_LARGEFILE }, 
     { cbl::PSX_O_NOATIME, O_NOATIME }, 
     { cbl::PSX_O_PATH, O_PATH }, 
     { cbl::PSX_O_TMPFILE, O_TMPFILE }, 
 #else
     { cbl::PSX_O_DIRECT, 0 }, 
+    { cbl::PSX_O_LARGEFILE, 0 }, 
     { cbl::PSX_O_NOATIME, 0 }, 
     { cbl::PSX_O_PATH, 0 }, 
     { cbl::PSX_O_TMPFILE, 0 }, 

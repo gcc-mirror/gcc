@@ -351,9 +351,7 @@ static bool level_needed() {
   return scanner_normal() && parsing.need_level();
 }
 
-static void level_found() {
-  if( scanner_normal() ) parsing.need_level(false);
-}
+#define PUSH_CDF_STATE if( YY_START != cdf_state ) yy_push_state(cdf_state)
 
 /*
  * Return all but the first N characters, to be rescanned by the nexst yylex.
@@ -539,7 +537,7 @@ trim_location( int nkeep) {
   gcc_assert( yylloc.first_line <= yylloc.last_line );    
   gcc_assert( 0 < yylloc.last_column );    
 
-  location_dump(__func__, __LINE__, "yylloc", yylloc, true);
+  ////location_dump(__func__, __LINE__, "yylloc", yylloc, true);
 }
 
 static void
@@ -1145,8 +1143,31 @@ symbol_function_token( const char name[] ) {
 bool in_procedure_division(void);
 bool in_environment_division(void );
 
+static const char *
+symbol_lower_name( const symbol_elem_t *e, cbl_name_t lname ) {
+  const char *pname = nullptr;
+
+  switch(e->type) {
+  case SymFile:
+    pname = cbl_file_of(e)->name;
+    break;
+  case SymField:
+    pname = cbl_field_of(e)->name;
+    break;
+  case SymLabel:
+    pname = cbl_label_of(e)->name;
+    break;
+  default:
+    return nullptr;
+  }
+  gcc_assert(pname);
+  std::fill(lname, lname + sizeof(cbl_name_t), '\0');
+  std::transform( pname, pname + strlen(pname) + 1, lname, tolower );
+  return lname;
+}
+
 static symbol_elem_t *
-symbol_exists( const char name[] ) {
+symbol_exists( const char name[], const symbol_elem_t *constant = nullptr ) {
   typedef std::map <std::string, size_t> name_cache_t;
   static std::map <size_t, name_cache_t> cachemap;
 
@@ -1154,33 +1175,40 @@ symbol_exists( const char name[] ) {
   std::transform( name, name + strlen(name) + 1, lname, tolower );
   auto& cache = cachemap[PROGRAM];
 
-  if( in_procedure_division() && cache.empty() ) {
-    for( auto e = symbols_begin(PROGRAM) + 1;
-         e < symbols_end() && PROGRAM == e->program; e++ ) {
-      if( e->type == SymFile ) {
-        cbl_file_t *f(cbl_file_of(e));
-        cbl_name_t lname;
-        std::transform( f->name, f->name + strlen(f->name) + 1, lname, tolower );
-        cache[lname] = symbol_index(e);
-        continue;
+  if( in_procedure_division() ) {
+    if( cache.empty() ) {
+      for( auto e = symbols_begin(PROGRAM) + 1;
+           e < symbols_end() && PROGRAM == e->program; e++ ) {
+        cbl_name_t name;
+        const char *pname = symbol_lower_name(e, name);
+        if( pname ) {
+          cache[pname] = symbol_index(e);
+        }
       }
-      if( e->type == SymField ) {
-        auto f(cbl_field_of(e));
-        cbl_name_t lname;
-        std::transform( f->name, f->name + strlen(f->name) + 1, lname, tolower );
-        cache[lname] = symbol_index(e);
-      }
+      cache.erase(""); // remove unnamed symbols
     }
-    cache.erase("");
+    if( constant ) { // Johnny-come-lately named literal from CDF.
+      gcc_assert(constant->type == SymField);
+      cache[lname] = symbol_index(constant);
+    }
+    auto p = cache.find(lname);
+    if( p == cache.end() ) return nullptr;
+    return symbol_at(p->second);
   }
-  auto p = cache.find(lname);
+  /*
+   * Before data division has been defined and the cache populated, search the
+   * symbol table in case of named literal.
+   */  
+  symbol_elem_t *e = symbol_field( PROGRAM, 0, name );
+  return e;
+}
 
-  if( p == cache.end() ) {
-    symbol_elem_t * e = symbol_field( PROGRAM, 0, name );
-    return e;
+void
+scanner_cache_update( const symbol_elem_t *elem ) {
+  if( elem->type == SymField ) {
+    auto f = cbl_field_of(elem);
+    symbol_exists(f->name, elem);
   }
-
-  return symbol_at(p->second);
 }
 
 static int
@@ -1419,3 +1447,29 @@ is_refmod() {
          int(yystr.size()), yystr.c_str(), colon_at_depth1? "" : "not ");
   return colon_at_depth1;
 }
+
+/*
+ * Given a QSTRING in yytext, remove leading and trailing quotes, and undouble
+ * any in the body of the string.
+ */
+static char*
+unquote() {
+  char *p = yytext, *pend = yytext + yyleng;
+  char *output = xstrdup(yytext), quote = *p;
+  char prior = '\0';
+
+  pend = std::copy_if( ++p, --pend, output, 
+                       [quote, &prior]( char ch ) {
+                         if( ch == quote ) {
+                           if( ch == prior ) {
+                             prior = '\0';
+                             return false;
+                           }
+                           prior = ch;
+                         }
+                         return true;
+                       } );
+  *pend = '\0';
+  return output;
+}
+
