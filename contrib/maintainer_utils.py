@@ -67,6 +67,14 @@ maintainer_schema = {
                             'format': 'email',
                         },
                     },
+                    'DCO': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'string',
+                            'format': 'email',
+                        },
+                        "minItems": 1,
+                    },
                     'roles': {
                         'type': 'array',
                         'items': {
@@ -79,10 +87,6 @@ maintainer_schema = {
                                     'type': 'object',
                                     'properties': {
                                         'WriteAfter': {
-                                            'type': 'string',
-                                            'format': 'email',
-                                        },
-                                        'DCO': {
                                             'type': 'string',
                                             'format': 'email',
                                         },
@@ -135,7 +139,11 @@ maintainer_schema = {
                     },
                 },
                 'additionalProperties': False,
-                'required': ['sn', 'cn', 'email', 'roles'],
+                'required': ['sn', 'cn', 'email'],
+                'anyOf': [
+                    {'required': ['roles']},
+                    {'required': ['DCO']},
+                ],
             },
         },
         'subsystems': {
@@ -236,6 +244,15 @@ def _check_schema(data):
     return
 
 
+def _check_dco(user):
+    # An email addrss in a DCO entry must also be listed in either the
+    # active emails list, or the inactive_emails list.
+    emails = set(user['email'] + user.get('inactive_email', []))
+    for dco in user['DCO']:
+        if dco not in emails:
+            _error(f"User: {user['cn']} DCO {dco} not listed in other emails")
+
+
 def validate(data):
     """Check the data against the schema and our own consistency checks"""
     _check_schema(data)
@@ -246,12 +263,17 @@ def validate(data):
     # subsystems list; Maintainer entires must also have a class entry, though
     # that is optional for Reviewers.
     for u in data['users']:
+        if 'DCO' in u:
+            _check_dco(u)
+        # The schema ensures that at least one of 'DCO' or 'roles'
+        # exists, so if roles is missing, we're done.
+        if 'roles' not in u:
+            continue
         # Users with the 'BZ' role should not have any other roles; we
         # can quickly skip the additional checks if that is the case.
         if len(u['roles']) == 1 and u['roles'][0] == 'BZ':
             continue
         seen_writeafter = False
-        only_dco = True
         for r in u['roles']:
             if isinstance(r, str):
                 if r == 'BZ':
@@ -260,14 +282,10 @@ def validate(data):
                     )
                 if r == 'WriteAfter':
                     seen_writeafter = True
-                only_dco = False
                 continue
             if 'WriteAfter' in r:
                 seen_writeafter = True
             need_class = True
-            if 'DCO' in r:
-                continue
-            only_dco = False
             n = r.get('Maintainer')
             if not n:
                 need_class = False
@@ -283,7 +301,7 @@ def validate(data):
                     _error(f"No subsystem entry for '{n}'.")
                 else:
                     _error(f"Multiple subsystem entries for '{n}'.")
-        if not seen_writeafter and not only_dco:
+        if not seen_writeafter:
             _error(f"User '{u['cn']}' lacks WriteAfter role.")
     if error_count:
         sys.exit(1)

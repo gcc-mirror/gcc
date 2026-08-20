@@ -71,8 +71,9 @@ users:
   - soumyaa@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: soumyaa@nvidia.com
   account: soumyaa
+  DCO:
+  - soumyaa@nvidia.com
 - sn: Arras
   cn: Paul-Antoine Arras
   email:
@@ -227,11 +228,12 @@ users:
   - dbarboza@ventanamicro.com
   roles:
   - WriteAfter
-  - DCO: dbarboza@qti.qualcomm.com
-  - DCO: dbarboza@ventanamicro.com
   account: dbarboza
   aliases:
   - Daniel Henrique Barboza
+  DCO:
+  - dbarboza@qti.qualcomm.com
+  - dbarboza@ventanamicro.com
 - sn: Bauermann
   cn: Thiago Jung Bauermann
   email:
@@ -340,11 +342,12 @@ users:
   roles:
   - Reviewer: register allocation
   - WriteAfter
-  - DCO: bergner@tenstorrent.com
   account: bergner
   inactive_email:
   - bergner@linux.ibm.com
   - bergner@vnet.ibm.com
+  DCO:
+  - bergner@tenstorrent.com
 - sn: Berlin
   cn: Daniel Berlin
   email:
@@ -845,8 +848,9 @@ users:
   - dhruvc@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: dhruvc@nvidia.com
   account: dhruvc
+  DCO:
+  - dhruvc@nvidia.com
 - sn: Chen
   cn: Dehao Chen
   email:
@@ -864,11 +868,12 @@ users:
   - chen.zhongyao@zte.com.cn
   roles:
   - WriteAfter
-  - DCO: chen.zhongyao@zte.com.cn
-  - DCO: chenzhongyao.hit@gmail.com
   account: zhongyao
   aliases:
   - zhongyao
+  DCO:
+  - chen.zhongyao@zte.com.cn
+  - chenzhongyao.hit@gmail.com
 - sn: Chêne
   cn: Fabien Chêne
   email:
@@ -966,8 +971,9 @@ users:
   - jchrist@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: jchrist@linux.ibm.com
   account: jchrist
+  DCO:
+  - jchrist@linux.ibm.com
 - sn: Christina
   cn: Tamar Christina
   email:
@@ -1063,10 +1069,11 @@ users:
   - alx@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: alx@kernel.org
   account: alx
   inactive_email:
   - alx.manpages@gmail.com
+  DCO:
+  - alx@kernel.org
 - sn: Conner
   cn: Josh Conner
   email:
@@ -1187,8 +1194,9 @@ users:
   - peppe@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: giuseppe.dangelo@kdab.com
   account: peppe
+  DCO:
+  - giuseppe.dangelo@kdab.com
 - sn: Dabbelt
   cn: Palmer Dabbelt
   email:
@@ -1238,14 +1246,15 @@ users:
   - Maintainer: riscv port
   - Reviewer: vectorizer (+ tree-if-conv)
   - WriteAfter
-  - DCO: rdapp.gcc@gmail.com
-  - DCO: rdapp@qti.qualcomm.com
-  - DCO: rdapp@ventanamicro.com
   account: rdapp
   inactive_email:
   - rdapp@linux.ibm.com
   - rdapp@linux.vnet.ibm.com
   - rdapp@oss.qualcomm.com
+  DCO:
+  - rdapp.gcc@gmail.com
+  - rdapp@qti.qualcomm.com
+  - rdapp@ventanamicro.com
 - sn: Dardis
   cn: Simon Dardis
   email:
@@ -1677,10 +1686,11 @@ users:
   roles:
   - Reviewer: CTF, BTF, bpf port
   - WriteAfter
-  - DCO: david.faust@oss.qualcomm.com
   account: dfaust
   inactive_email:
   - david.faust@oracle.com
+  DCO:
+  - david.faust@oss.qualcomm.com
 - sn: Feifer
   cn: Sam Feifer
   email:
@@ -1763,8 +1773,9 @@ users:
   - kaelfandrew@gmail.com
   roles:
   - WriteAfter
-  - DCO: kaelfandrew@gmail.com
   account: kael
+  DCO:
+  - kaelfandrew@gmail.com
 - sn: Franke
   cn: Daniel Franke
   email:
@@ -1918,11 +1929,12 @@ users:
   - pgodbole@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: pgodbole@nvidia.com
   account: pgodbole
   inactive_email:
   - prachi.godbole@imgtec.com
   - prachigodbole@gcc.gnu.org
+  DCO:
+  - pgodbole@nvidia.com
 - sn: Granlund
   cn: Torbjorn Granlund
   email:
@@ -2067,10 +2079,11 @@ users:
   - eikansh@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: eikansh.gupta@oss.qualcomm.com
   account: eikansh
   inactive_email:
   - quic_eikagupt@quicinc.com
+  DCO:
+  - eikansh.gupta@oss.qualcomm.com
 - sn: Gupta
   cn: Vineet Gupta
   email:
@@ -2089,7 +2102,6 @@ users:
   - naveenh@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: naveen.siddegowda@oss.qualcomm.com
   account: naveenh
   aliases:
   - Naveen Gowda
@@ -2099,6 +2111,8 @@ users:
   - naveen.hurugalawadi@caviumnetworks.com
   - naveen.s@kpitcummins.com
   - naveenh@marvell.com
+  DCO:
+  - naveen.siddegowda@oss.qualcomm.com
 - sn: Hagog
   cn: Mostafa Hagog
   email:
@@ -2313,11 +2327,12 @@ users:
   - Maintainer: '*gimpl*'
   - Maintainer: '*vrp, ranger'
   - WriteAfter
-  - DCO: aldy@quesejoda.com
   account: aldyh
   inactive_email:
   - aldyh@cygnus.com
   - aldyh@redhat.com
+  DCO:
+  - aldy@quesejoda.com
 - sn: Herron
   cn: Philip Herron
   email:
@@ -2730,8 +2745,9 @@ users:
   - mjires@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: mjires@suse.cz
   account: mjires
+  DCO:
+  - mjires@suse.cz
 - sn: Johnson
   cn: Janis Johnson
   email:
@@ -3078,10 +3094,11 @@ users:
   - mkretz@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: m.kretz@gsi.de
   account: mkretz
   inactive_email:
   - kretz@kde.org
+  DCO:
+  - m.kretz@gsi.de
 - sn: Krupp
   cn: Louis Krupp
   email:
@@ -3098,11 +3115,12 @@ users:
   - prathamesh3492@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: prathameshk@nvidia.com
   account: prathamesh3492
   inactive_email:
   - bilbotheelffriend@gmail.com
   - prathamesh.kulkarni@linaro.org
+  DCO:
+  - prathameshk@nvidia.com
 - sn: Kumar
   cn: Venkataramanan Kumar
   email:
@@ -3205,9 +3223,10 @@ users:
   - tlange@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: mail@tim-lange.me
   account: tlange
   inactive: true
+  DCO:
+  - mail@tim-lange.me
 - sn: Langton
   cn: Asher Langton
   email:
@@ -3269,11 +3288,6 @@ users:
   - Maintainer: scheduler (+ haifa)
     email: jeffreyalaw@gmail.com
   - WriteAfter: jeffreyalaw@gmail.com
-  - DCO: jefflaw@qti.qualcomm.com
-  - DCO: jeffrey.law@oss.qualcomm.com
-  - DCO: jeffreyalaw@gmail.com
-  - DCO: jlaw@tachyum.com
-  - DCO: jlaw@ventanamicro.com
   account: law
   aliases:
   - jlaw
@@ -3282,6 +3296,12 @@ users:
   - law@cygnus.com
   - law@redhat.com
   - law@torsion.usersys.redhat.com
+  DCO:
+  - jefflaw@qti.qualcomm.com
+  - jeffrey.law@oss.qualcomm.com
+  - jeffreyalaw@gmail.com
+  - jlaw@tachyum.com
+  - jlaw@ventanamicro.com
 - sn: Lawrence
   cn: Alan Lawrence
   email:
@@ -3338,8 +3358,9 @@ users:
   - garthlei@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: garthlei@linux.alibaba.com
   account: garthlei
+  DCO:
+  - garthlei@linux.alibaba.com
 - sn: Lemke
   cn: James Lemke
   email:
@@ -3413,8 +3434,8 @@ users:
   cn: Jim Lin
   email:
   - jim@andestech.com
-  roles:
-  - DCO: jim@andestech.com
+  DCO:
+  - jim@andestech.com
 - sn: Lin
   cn: Kewen Lin
   email:
@@ -3446,8 +3467,9 @@ users:
   - martin.liska@hey.com
   roles:
   - WriteAfter
-  - DCO: martin.liska@hey.com
   account: marxin
+  DCO:
+  - martin.liska@hey.com
 - sn: Liu
   cn: Hao Liu
   email:
@@ -3592,7 +3614,6 @@ users:
   - hjl@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: hjl.tools@gmail.com
   account: hjl
   inactive_email:
   - hjl@gnu.ai.mit.edu
@@ -3600,6 +3621,8 @@ users:
   - hjl@lucon.org
   - hjl@nynexst.com
   - hongjiu.lu@intel.com
+  DCO:
+  - hjl.tools@gmail.com
 - sn: Luo
   cn: Longjun Luo
   email:
@@ -3607,8 +3630,9 @@ users:
   - anatasluo@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: luolongjuna@gmail.com
   account: anatasluo
+  DCO:
+  - luolongjuna@gmail.com
 - sn: Luo
   cn: Xiong Hu Luo
   email:
@@ -3667,8 +3691,9 @@ users:
   - c8ef@outlook.com
   roles:
   - WriteAfter
-  - DCO: yuao@gcc.gnu.org
   account: yuao
+  DCO:
+  - yuao@gcc.gnu.org
 - sn: Machado
   cn: Luis Machado
   email:
@@ -3742,10 +3767,11 @@ users:
   - matmal01@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: mmalcomson@nvidia.com
   account: matmal01
   inactive_email:
   - matthew.malcomson@arm.com
+  DCO:
+  - mmalcomson@nvidia.com
 - sn: Maltsev
   cn: Mikhail Maltsev
   email:
@@ -3768,9 +3794,10 @@ users:
   - Maintainer: libga68
     email: jemarch@gnu.org
   - WriteAfter
-  - DCO: jemarch@gnu.org
   account: jemarch
   forgeid: jemarch
+  DCO:
+  - jemarch@gnu.org
 - sn: Markianos-Wright
   cn: Stamatis Markianos-Wright
   email:
@@ -4036,12 +4063,13 @@ users:
   - mir@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: mir@sourceware.org
   account: mir
   inactive: true
   inactive_email:
   - mirimmad17@gmail.com
   - mirimmad@outlook.com
+  DCO:
+  - mir@sourceware.org
 - sn: Miranda
   cn: Cupertino Miranda
   email:
@@ -4182,10 +4210,11 @@ users:
   roles:
   - Maintainer: Modula-2 front end
   - WriteAfter
-  - DCO: gaiusmod2@gmail.com
   account: gaius
   inactive_email:
   - gaius.mulley@southwales.ac.uk
+  DCO:
+  - gaiusmod2@gmail.com
 - sn: Müllner
   cn: Christoph Müllner
   email:
@@ -4199,9 +4228,9 @@ users:
   email:
   - smunnang@qti.qualcomm.com
   - smunnangi1@ventanamicro.com
-  roles:
-  - DCO: smunnang@qti.qualcomm.com
-  - DCO: smunnangi1@ventanamicro.com
+  DCO:
+  - smunnang@qti.qualcomm.com
+  - smunnangi1@ventanamicro.com
 - sn: Munroe
   cn: Steven Munroe
   email:
@@ -4263,11 +4292,12 @@ users:
   - nsz@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: nsz@gcc.gnu.org
   account: nsz
   inactive: true
   inactive_email:
   - szabolcs.nagy@arm.com
+  DCO:
+  - nsz@gcc.gnu.org
 - sn: Nascimento
   cn: Victor Do Nascimento
   email:
@@ -4568,11 +4598,12 @@ users:
   - Maintainer: Rust
   - Maintainer: libgrust
   - WriteAfter
-  - DCO: pierre.emmanuel.patry@opensrcsec.com
-  - DCO: pierre-emmanuel.patry@embecosm.com
   inactive_email:
   - pierre-emmanuel.patry@embecosm.com
   account: pep
+  DCO:
+  - pierre.emmanuel.patry@opensrcsec.com
+  - pierre-emmanuel.patry@embecosm.com
 - sn: Pavenis
   cn: Andris Pavenis
   email:
@@ -4635,10 +4666,11 @@ users:
   - mikpe@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: mikpelinux@gmail.com
   account: mikpe
   inactive_email:
   - mikpe@it.uu.se
+  DCO:
+  - mikpelinux@gmail.com
 - sn: Pfau
   cn: Johannes Pfau
   email:
@@ -4688,8 +4720,6 @@ users:
     email: pinskia@gmail.com
   - Reviewer: aarch64 port
   - WriteAfter: andrew.pinski@qualcomm.com
-  - DCO: andrew.pinski@oss.qualcomm.com
-  - DCO: quic_apinski@quicinc.com
   account: pinskia
   forgeid: pinskia
   inactive_email:
@@ -4700,6 +4730,9 @@ users:
   - apinski@cavium.com
   - apinski@marvell.com
   - pinskia@physics.uc.edu
+  DCO:
+  - andrew.pinski@oss.qualcomm.com
+  - quic_apinski@quicinc.com
 - sn: Pitre
   cn: Nicolas Pitre
   email:
@@ -4784,13 +4817,14 @@ users:
   - siddhesh@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: siddhesh@gotplt.org
   account: siddhesh
   inactive_email:
   - siddhesh.poyarekar@gmail.com
   - siddhesh.poyarekar@linaro.org
   - siddhesh@redhat.com
   - siddhesh@sourceware.org
+  DCO:
+  - siddhesh@gotplt.org
 - sn: Praveen
   cn: Vidya Praveen
   email:
@@ -4881,7 +4915,6 @@ users:
   roles:
   - Maintainer: arm port
   - WriteAfter
-  - DCO: ramanara@nvidia.com
   account: ramana
   inactive_email:
   - ramana.gcc@gmail.com
@@ -4890,17 +4923,20 @@ users:
   - ramana.radhakrishnan@codito.com
   - ramana.radhakrishnan@linaro.org
   - ramana@codito.com
+  DCO:
+  - ramanara@nvidia.com
 - sn: Rahimi
   cn: Navid Rahimi
   email:
   - navidr@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: navidr@gcc.gnu.org
   account: navidr
   inactive: true
   inactive_email:
   - navidrahimi@microsoft.com
+  DCO:
+  - navidr@gcc.gnu.org
 - sn: Raj
   cn: Rishi Raj
   email:
@@ -4908,9 +4944,10 @@ users:
   - rshraj45035@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: rishiraj45035@gmail.com
   account: rshraj45035
   inactive: true
+  DCO:
+  - rishiraj45035@gmail.com
 - sn: Raman
   cn: Easwaran Raman
   email:
@@ -5004,8 +5041,9 @@ users:
   - egas@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: egas.g.ribeiro@gmail.com
   account: egas
+  DCO:
+  - egas.g.ribeiro@gmail.com
 - sn: Richards
   cn: Alfie Richards
   email:
@@ -5249,12 +5287,13 @@ users:
   - tbsaunde@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: tbsaunde+gcc@tbsaunde.org
   account: tbsaunde
   inactive: true
   inactive_email:
   - tbsaunde@tbsaunde.org
   - tsaunders@mozilla.com
+  DCO:
+  - tbsaunde+gcc@tbsaunde.org
 - sn: Sawdey
   cn: Aaron Sawdey
   email:
@@ -5312,14 +5351,14 @@ users:
   cn: Bill Schmidt
   email:
   - bill.schmidt@fastmail.com
-  roles:
-  - DCO: bill.schmidt@fastmail.com
   inactive: true
   inactive_email:
   - wschmidt@linux.ibm.com
   - wschmidt@linux.vnet.ibm.com
   - wschmidt@vnet.ibm.com
   - wschmidt@vnet.linux.ibm.com
+  DCO:
+  - bill.schmidt@fastmail.com
 - sn: Schmidt
   cn: Will Schmidt
   email:
@@ -5490,8 +5529,9 @@ users:
   - nathanieloshead@gmail.org
   roles:
   - WriteAfter
-  - DCO: nathanieloshead@gmail.org
   account: nshead
+  DCO:
+  - nathanieloshead@gmail.org
 - sn: Shen
   cn: Tim Shen
   email:
@@ -5534,12 +5574,13 @@ users:
   - Maintainer: libcpp
   - Maintainer: gcov
   - WriteAfter
-  - DCO: nathan@acm.org
   account: nathan
   inactive_email:
   - nathan@codesourcery.com
   - nathans@fb.com
   - sidwell@codesourcery.com
+  DCO:
+  - nathan@acm.org
 - sn: Singhai
   cn: Sharad Singhai
   email:
@@ -5593,11 +5634,12 @@ users:
   - emsr@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: esmithrowland@gmail.com
   account: emsr
   inactive: true
   inactive_email:
   - 3dw4rd@verizon.net
+  DCO:
+  - esmithrowland@gmail.com
 - sn: Sokolov
   cn: Anatoly Sokolov
   email:
@@ -5636,10 +5678,11 @@ users:
   - maskray@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: maskray@gcc.gnu.org
   account: maskray
   inactive_email:
   - maskray@google.com
+  DCO:
+  - maskray@gcc.gnu.org
 - sn: Stallman
   cn: Richard Stallman
   email:
@@ -5981,11 +6024,12 @@ users:
   roles:
   - Maintainer: aarch64 port
   - WriteAfter
-  - DCO: ktkachov@nvidia.com
   account: ktkachov
   forgeid: ktkachov
   inactive_email:
   - kyrylo.tkachov@arm.com
+  DCO:
+  - ktkachov@nvidia.com
 - sn: Tobler
   cn: Andreas Tobler
   email:
@@ -6019,11 +6063,12 @@ users:
   - tomner@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: tomner@bahnhof.se
   account: tomner
   inactive: true
   inactive_email:
   - tomner@kth.se
+  DCO:
+  - tomner@bahnhof.se
 - sn: Tomsich
   cn: Philipp Tomsich
   email:
@@ -6104,12 +6149,13 @@ users:
   - uecker@tugraz.at
   roles:
   - WriteAfter
-  - DCO: uecker@gcc.gnu.org
   account: uecker
   inactive_email:
   - martin.uecker@med.uni-goettingen.de
   - muecker@gwdg.de
   - uecker@eecs.berkeley.edu
+  DCO:
+  - uecker@gcc.gnu.org
 - sn: Ung
   cn: David Ung
   email:
@@ -6203,10 +6249,11 @@ users:
   - kugan@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: kvivekananda@nvidia.com
   account: kugan
   inactive_email:
   - kuganv@linaro.org
+  DCO:
+  - kvivekananda@nvidia.com
 - sn: Volkov
   cn: Artemiy Volkov
   email:
@@ -6285,7 +6332,6 @@ users:
   roles:
   - Maintainer: c++ runtime libs
   - WriteAfter
-  - DCO: jwakely@redhat.com
   account: redi
   forgeid: redi
   inactive_email:
@@ -6293,6 +6339,8 @@ users:
   - jw@kayari.org
   - jwakely.gcc@gmail.com
   - redi@kayari.org
+  DCO:
+  - jwakely@redhat.com
 - sn: Walfridsson
   cn: Krister Walfridsson
   email:
@@ -6437,9 +6485,10 @@ users:
   - alexanderw@gcc.gnu.org
   roles:
   - WriteAfter
-  - DCO: alexanderw@gcc.gnu.org
   account: alexanderw
   inactive: true
+  DCO:
+  - alexanderw@gcc.gnu.org
 - sn: Wielaard
   cn: Mark Wielaard
   email:
@@ -6557,8 +6606,9 @@ users:
   roles:
   - Maintainer: nds32 port
   - WriteAfter
-  - DCO: jasonwucj@gmail.com
   account: jasonwucj
+  DCO:
+  - jasonwucj@gmail.com
 - sn: Wu
   cn: Le-Chun Wu
   email:
@@ -6801,9 +6851,10 @@ users:
   - quic_pzheng@quicinc.com
   roles:
   - WriteAfter
-  - DCO: pengxuan.zheng@oss.qualcomm.com
-  - DCO: quic_pzheng@quicinc.com
   account: pzheng
+  DCO:
+  - pengxuan.zheng@oss.qualcomm.com
+  - quic_pzheng@quicinc.com
 - sn: Zhong
   cn: Juzhe Zhong
   email:
@@ -6841,11 +6892,12 @@ users:
   - raphael.zinsly@oss.qualcomm.com
   roles:
   - WriteAfter
-  - DCO: rzinsly@qti.qualcomm.com
-  - DCO: rzinsly@ventanamicro.com
   account: rzinsly
   aliases:
   - Raphael Moreira Zinsly
+  DCO:
+  - rzinsly@qti.qualcomm.com
+  - rzinsly@ventanamicro.com
 - sn: Zippel
   cn: Roman Zippel
   email:

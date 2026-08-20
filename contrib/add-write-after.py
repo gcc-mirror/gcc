@@ -107,11 +107,21 @@ def getuserdata():
         newuser['forgeid'] = forgeid
     print("If you are using a Developer Certificate of Origin (DCO)")
     print("you can add appropriate email addresses here")
+    dco = []
+    inactive_emails = []
     while (e := ask("DCO email (return to stop)", None, required=False)):
         if email_valid(e):
-            newuser['roles'].append({'DCO': e})
+            dco.append(e)
+            if e not in newuser['email']:
+                print(f"<{e}> not mentioned in the above list of emails.")
+                print("Adding it to inactive_emails list.")
+                inactive_emails.append(e)
         else:
             print ("That address does not look valid.  Ignored.")
+    if len(inactive_emails) > 0:
+        newuser['inactive_email'] = inactive_emails
+    if len(dco) > 0:
+        newuser['DCO'] = dco
     return newuser
 
 def main():

@@ -211,6 +211,21 @@ def uni2alower(txt):
     return unidecode.unidecode(txt).lower()
 
 
+def paginate(data, widths):
+    """
+    Calculate the field widths for 'data', taking into account over-long
+    elements.
+    """
+    w = dict()
+    col = 0
+    overrun = 0
+    for field, width in widths:
+        width -= overrun
+        w[field] = max(width, 1)
+        overrun = max(len(data[field]) - width, 0)
+    return w
+
+
 def format_output(outfile, data):
     global active_only
     all_users = data['users']
@@ -229,7 +244,19 @@ def format_output(outfile, data):
             role = section['filter']['role']
             subclass = section['filter'].get('subclass')
             for u in all_users:
-                for r in filter(lambda x: role in x, u['roles']):
+                if role == 'DCO':
+                    for email in u.get('DCO', []):
+                        d = {
+                            'email': email,
+                            'account': u.get('account', '-'),
+                            'sn': u['sn'],
+                            'cn': u['cn'],
+                            'subsystem': None,
+                        }
+                        d['w'] = paginate(d, section['widths'])
+                        l.append(d)
+                    continue
+                for r in filter(lambda x: role in x, u.get('roles', [])):
                     if subclass:
                         sc = [
                             s
@@ -249,20 +276,11 @@ def format_output(outfile, data):
                         'cn': u['cn'],
                         'subsystem': r[role] if type(r) == dict else None,
                     }
-                    if role == 'DCO':
-                        d['email'] = r['DCO']
                     if role == 'WriteAfter' and type(r) == dict:
                         d['email'] = r['WriteAfter']
                     elif type(r) == dict and 'email' in r:
                         d['email'] = r['email']
-                    w = dict()
-                    col = 0
-                    overrun = 0
-                    for field, width in section['widths']:
-                        width -= overrun
-                        w[field] = max(width, 1)
-                        overrun = max(len(d[field]) - width, 0)
-                    d['w'] = w
+                    d['w'] = paginate(d, section['widths'])
                     l.append(d)
             kfn = itemgetter(*section['filter']['order'])
             for u in sorted(
