@@ -2177,7 +2177,7 @@ proc check_effective_target_riscv_v { } {
 proc check_effective_target_rvv_zvl128b_ok { } {
     # Check if the target has a VLENB of 16.
     set gcc_march [riscv_get_arch]
-    return [check_runtime ${gcc_march}_exec {
+    return [check_runtime ${gcc_march}_zvl128b_exec {
        int main()
        {
          int vlenb = 0;
@@ -2195,7 +2195,7 @@ proc check_effective_target_rvv_zvl128b_ok { } {
 proc check_effective_target_rvv_zvl256b_ok { } {
     # Check if the target has a VLENB of 32.
     set gcc_march [riscv_get_arch]
-    return [check_runtime ${gcc_march}_exec {
+    return [check_runtime ${gcc_march}_zvl256b_exec {
 	int main()
 	{
 	  int vlenb = 0;
@@ -2213,7 +2213,7 @@ proc check_effective_target_rvv_zvl256b_ok { } {
 proc check_effective_target_rvv_zvl_ge_256b_ok { } {
     # Check if the target has at least a VLENB of 32.
     set gcc_march [riscv_get_arch]
-    return [check_runtime ${gcc_march}_exec {
+    return [check_runtime ${gcc_march}_zvl_ge_256b_exec {
 	int main()
 	{
 	  int vlenb = 0;
@@ -2231,7 +2231,7 @@ proc check_effective_target_rvv_zvl_ge_256b_ok { } {
 proc check_effective_target_rvv_zvl512b_ok { } {
     # Check if the target has a VLENB of 64.
     set gcc_march [riscv_get_arch]
-    return [check_runtime ${gcc_march}_exec {
+    return [check_runtime ${gcc_march}_zvl512b_exec {
 	int main()
 	{
 	  int vlenb = 0;
