@@ -1,3 +1,235 @@
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/pr125436-1a.c (dg-options): Add -mno-avx.
+	* gcc.target/i386/pr125436-1b.c (dg-options): Likewise.
+	* gcc.target/i386/pr125436-2a.c (dg-options): Likewise.
+	* gcc.target/i386/pr125436-2b.c (dg-options): Likewise.
+	* gcc.target/i386/pr125436-3.c (dg-options): Likewise.
+	* gcc.target/i386/pr125436-4.c (dg-options): Likewise.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/builtin-copysign-4.c (dg-options): Add
+	-mtune-ctrl=^sse_packed_single_insn_optimal.
+	* gcc.target/i386/builtin-copysign-5.c (dg-options): Likewise.
+	* gcc.target/i386/builtin-copysign-6.c (dg-options): Likewise.
+	* gcc.target/i386/builtin-copysign-7.c (dg-options): Likewise.
+	* gcc.target/i386/builtin-copysign-8a.c (dg-options): Likewise.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/sse2-shiftqihi-constant-1.c (dg-options): Add
+	-mno-gfni.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/avx512bw-shiftqihi-constant-1.c (dg-options):
+	Add -mno-gfni.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/avx2-shiftqihi-constant-1.c (dg-options): Add
+	-mno-gfni.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/abi-mix-1.c (dg-options): Add -mno-avx.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/107090
+	PR tree-optimization/126642
+	* gcc.dg/torture/long-mul-64-run.c: Add near-miss variants of the
+	idiom, cross-checked against their literal meaning.
+	* gcc.dg/tree-ssa/long-mul-carry.c: Add scans for the high-part
+	chain lowering and its dump message. Exclude sparc/hppa from
+	the chain-lowering scan.
+	* gcc.dg/tree-ssa/long-mul-ladder.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_oi_mode): New;
+	enumerates targets whose mode table declares OImode.
+	* gcc.dg/long-mul-128-Og.c: New test.
+	* gcc.dg/torture/long-mul-128.c: New test.
+	* gcc.dg/tree-ssa/long-mul-chain-cse-128.c: New test.
+	* gcc.dg/tree-ssa/long-mul-chain-trunc-128.c: New test.
+	* gcc.target/arm/long-mul-thumb1-inline.c: New test.
+	* gcc.target/arm/long-mul-umull.c: New test.
+	* gcc.target/i386/long-mul-phi-split.c: New test.
+	* gcc.target/i386/long-mul-sweep.c: New test.
+	* gcc.target/i386/widen_mult_high_chain.c: New test.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/107090
+	* gcc.dg/tree-ssa/long-mul-carry.c: Add PHI-form CARRY_LOW_SUM,
+	CARRY_CROSS_SUM, and negated-branch compile variants; split the
+	forwprop1 high-part fold count into 10 on int128 and 8 on !int128.
+	* gcc.dg/tree-ssa/long-mul-two-carry.c: Add the
+	mulh_two_carry_low_phi function and its forwprop3 high-part
+	(carry PHI) fold scan.
+	* gcc.dg/tree-ssa/long-mul-boundary-64.c: New test.
+	* gcc.dg/tree-ssa/long-mul-boundary.c: New test.
+	* gcc.dg/tree-ssa/long-mul-partial.c: New test.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/107090
+	* gcc.dg/tree-ssa/long-mul-two-carry.c: Add a forwprop4 LOW
+	fold expectation for full_mul_two_carry, deferred from
+	forwprop3 by long_mul_check_low_plus_defer.
+	* gcc.dg/tree-ssa/long-mul-low-plus.c: New test.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/107090
+	* gcc.target/aarch64/long_mul.c: Add mulh_ladder and
+	mulh_ladder_32 functions; bump expected umulh / umull
+	scan counts from 1 to 2.
+	* gcc.target/i386/long_mul.c: Same for mulq / imulq.
+	* gcc.dg/tree-ssa/long-mul-ladder.c: New test.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/107090
+	* gcc.dg/tree-ssa/long-mul-two-carry.c: New test.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/107090
+	* gcc.dg/tree-ssa/long-mul-carry.c: Add carry-low-sum
+	coverage (mulh_carry_low_sum, full_mul_carry_low_sum,
+	mulh_carry_low_sum_comm, mulh_carry_low_sum_lohi,
+	mulh_carry_low_sum_128, mulh_carry_low_sum_v2i32) and
+	update fold counts.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/107090
+	* gcc.dg/torture/long-mul-64-run.c: New test.
+	* gcc.dg/tree-ssa/long-mul-carry.c: New test.
+	* gcc.dg/tree-ssa/long-mul-extra-addend.c: New test.
+	* gcc.target/aarch64/long_mul.c: New test.
+	* gcc.target/i386/long_mul.c: New test.
+
+2026-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/reflect/mangle3.C: Adjust.
+	* g++.dg/reflect/splice1.C: Remove XFAIL.
+
+2026-08-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/cmse/cmse-18.c: Use effective-target
+	arm_arch_v8m_main.
+	* gcc.target/arm/cmse/cmse-19.c: Use effective-target
+	arm_arch_v8_1m_mve.
+	* lib/target-supports.exp: Define effective-target
+	arm_arch_v8m_main.
+
+2026-08-19  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126934
+	* gcc.dg/torture/pr126934-1.c: New test.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/vect-sat-trunc-1.c: New test.
+	* gcc.target/aarch64/vect-sat-trunc-2.c: New test.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/cmpdi-neg-1.c: New test.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/125557
+	* gcc.target/i386/ifcvt-average-cost-1.c: New test.
+
+2026-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/generic_inst10.ads: New test.
+	* gnat.dg/specs/generic_inst10_g1.ads: New helper.
+	* gnat.dg/specs/generic_inst10_g2.ads: Likewise.
+	* gnat.dg/specs/generic_inst10_g3.ads: Likewise.
+	* gnat.dg/specs/generic_inst10_pkg.ads: Likewise.
+
+2026-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/reduce7.adb: New test.
+
+2026-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/ext/sync-4.C: Adjust XFAIL to reflect that this issue
+	is now fixed on modern Darwin.
+
+2026-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.dg/lto/pr86585_0.C: Add -dylib0.o for Darwin8/9.
+	* g++.dg/lto/pr87906_0.C: Likewise.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/126784
+	* g++.dg/tree-ssa/vec-narrow-1.C: Remove -Wno-psabi.  Add -msse4
+	and require int128 for x86.
+	* g++.dg/tree-ssa/vec-narrow-minmax-2.C: Likewise.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126936
+	* gcc.dg/vect/bb-slp-pr126936.c: New testcase.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126927
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S (call_do_test_unaligned):
+	New.
+	* gcc.target/x86_64/abi/ms-sysv/gen.cc (make_do_tests_decl):
+	Replace do_test_unaligned with call_do_test_unaligned.
+	(make_do_test): Remove asm statements with stack adjustment.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/xorps-sse2.c (dg-options): Add
+	-mtune-ctrl=^sse_packed_single_insn_optimal.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/xop-pcmov3.c (dg-options): Replace -mno-avx512vl
+	with -mno-avx512f.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/zero-scratch-regs-29.c (dg-options): Add
+	-mtune-ctrl=^use_ffreep.
+	* gcc.target/i386/zero-scratch-regs-30.c (dg-options): Likewise.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/126597
+	* gcc.target/aarch64/pr126597.c: New test.
+
+2026-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126918
+	* g++.dg/cpp26/constexpr-eh24.C: New test.
+	* g++.dg/cpp26/constexpr-eh25.C: New test.
+
+2026-08-19  Eczbek  <eczbek.void@gmail.com>
+
+	PR c++/70097
+	* g++.dg/cpp0x/ref-qual22.C: New test.
+
 2026-08-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/126856

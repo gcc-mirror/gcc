@@ -1,3 +1,312 @@
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/107090
+	PR tree-optimization/126642
+	* match.pd (long_mul_high_chain): New atom for the emitted high-part chain.
+	* tree-ssa-forwprop.cc (long_mul_classify_match): Gate the
+	HIGH_PART wide-chain emit on optimize_widening_mul_active_p
+	rather than on the target having a 2N multiply.
+	* tree-ssa-math-opts.cc (can_widen_to_narrow_p): New.
+	(build_long_mul_partials): New; emits the four partial products
+	using widening or plain multiplies.
+	(emit_long_mul_highpart): New; the high N bits of an N-bit
+	product, as a longhand over (N/2)-bit partials.
+	(combine_long_mul_halves): New; the high N bits of a product of
+	two 2N-bit values given as N-bit halves.
+	(long_mul_op_fits_p): New; true when an operand is provably
+	representable in narrow_prec unsigned bits.
+	(long_mul_split_operand): New; splits an operand into N-bit
+	halves using only N-bit operations.
+	(struct long_mul_halves): New; the halves an operand PHI was
+	split into.
+	(struct long_mul_arg_split): New; an argument of an operand PHI
+	with the statements that split it.
+	(long_mul_split_phi): New; splits an operand PHI by splitting its
+	arguments and merging the halves with two new PHIs. Record the
+	halves and reuse them for the next consumer of the same PHI.
+	(long_mul_high_half_uses): New; collects the `>> N' uses forming
+	a product's high half.
+	(long_mul_only_low_half_used_p): New.
+	(unexpandable_long_mul_p): New; true for a 2N multiply in a mode
+	the target cannot multiply.
+	(narrow_long_mul_low_half): New; narrow a 2N low-half-only mult
+	the target cannot expand to an N-bit mult.
+	(narrow_long_mul_operands): New; recurse into chained wide
+	products after a narrowing/lowering.
+	(finish_long_mul_low_half): New; narrows or removes a 2N mult
+	whose high half is synthesized elsewhere.
+	(narrow_long_mul_halves): New; rewrites a 2N multiply into the
+	N-bit halves its uses read.
+	(gimple_long_mul_high_chain): Declare.
+	(lower_long_mul_high_chain): New; lowers the high-part chain to a
+	longhand at narrow precision. Split each operand into N-bit
+	halves and combine, handling an operand wider than narrow_prec
+	instead of rejecting it. Narrow or drop the residual 2N mult via
+	the helpers and recurse into its operands.
+	(optimize_widening_mul_active_p): New; shared gate used by
+	pass_optimize_widening_mul::gate and by the forwprop long-multiply
+	recognizer. Return false when optimize_debug.
+	(math_opts_dom_walker::after_dom_children): Dispatch to
+	lower_long_mul_high_chain on the outer convert. Run
+	narrow_long_mul_low_half on MULT_EXPR before the widen/fma
+	conversion attempts.
+	(pass_optimize_widening_mul::execute): Sweep the function for
+	multiplies left in a mode the target cannot expand. Scope the
+	record of split operand PHIs to one run of the pass.
+	* tree-ssa-math-opts.h (optimize_widening_mul_active_p): Declare.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/107090
+	* match.pd: Add cond_carry_add and cond_carry_add_neg match
+	recognizers for the 2-arg PHI form PHI<base + pow2, base>,
+	one per gcond polarity.
+	* tree-ssa-forwprop.cc (gimple_cond_carry_add): Declare.
+	(gimple_cond_carry_add_neg): Likewise.
+	(long_mul_check_low_plus_defer): Note that the PHI entry commits
+	only to HIGH_PART rows.
+	(long_mul_classify_match): Take the candidate statement for the
+	per-row checks.
+	(long_mul_classify_chain): Take an optional pre-classified extra
+	summand, for the carry the PHI entry synthesizes.
+	(match_long_mul): Adjust.
+	(match_long_mul_phi): New PHI-driven entry; recognizes a
+	cond_carry_add(_neg) PHI and folds the long-multiply
+	when the rest of the high-part chain matches.
+	(pass_forwprop::execute): Call match_long_mul_phi on each
+	PHI in the degenerate-PHI walk.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/107090
+	* tree-ssa-forwprop.cc (long_mul_check_low_plus_defer): New
+	helper, defers the fold when any GT/LT/GE/LE use shares an
+	operand with the PLUS; gates the LOW_PART PLUS_EXPR row added
+	to long_mul_table.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/107090
+	* match.pd: Add mul_ladder_sum1, mul_ladder_sum2,
+	mul_ladder_sum3 and mul_ladder_part_sum atom recognizers.
+	* tree-ssa-forwprop.cc (gimple_mul_ladder_sum1): Declare.
+	(gimple_mul_ladder_sum2): Likewise.
+	(gimple_mul_ladder_sum3): Likewise.
+	(gimple_mul_ladder_part_sum): Likewise.
+	(enum long_mul_kind): Add LMK_LADDER_SUM1 / LMK_LADDER_SUM2
+	/ LMK_LADDER_SUM3 / LMK_LADDER_PART_SUM, with the
+	long_mul_table HIGH_PART and LOW_PART rows for each ladder
+	form.
+	(long_mul_set_summand): Handle the new kinds.
+	(long_mul_classify_carry): Update the specificity note above
+	long_mul_classify_plus_kinds.
+	(long_mul_classify_plus_kinds): Try mul_ladder_sum3 and
+	mul_ladder_sum1 before mul_low_sum (more-constrained
+	first); add mul_ladder_sum2.
+	(long_mul_classify_hi_extract): Add mul_ladder_part_sum
+	branch.
+	(long_mul_classify_lo_extract): Adjust.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/107090
+	* match.pd: Add mul_carry_low atom recognizer.
+	* tree-ssa-forwprop.cc (gimple_mul_carry_low): Declare.
+	(enum long_mul_kind): Add LMK_CARRY_LOW.
+	(struct long_mul_summand): Add carry_a / carry_b for the
+	LMK_CARRY_LOW summand's two operands.
+	(long_mul_set_summand): Handle LMK_CARRY_LOW.
+	(long_mul_classify_carry): Try mul_carry_low after the
+	more-constrained mul_carry_low_sum / mul_carry_cross_sum.
+	(long_mul_find_summand): New helper, find the first summand
+	with a given kind.
+	(long_mul_check_two_carries): New extra check, validates the
+	LMK_CARRY_LOW summand's operands against the canonical
+	(op0, op1); gates the two-carry HIGH_PART row added to
+	long_mul_table.
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/107090
+	* match.pd: Add mul_low_sum and mul_carry_low_sum atom
+	recognizers.
+	* tree-ssa-forwprop.cc (gimple_mul_low_sum): Declare.
+	(gimple_mul_carry_low_sum): Likewise.
+	(create_mul_low_seq): Update the widest-atom note above
+	LONG_MUL_MAX_CAPTURES to mul_carry_low_sum (7 captures).
+	(enum long_mul_kind): Add LMK_LOW_SUM and LMK_CARRY_LOW_SUM,
+	with the long_mul_table HIGH_PART and LOW_PART rows that
+	consume them.
+	(long_mul_set_summand): Handle the new kinds.
+	(long_mul_classify_carry): Try mul_carry_low_sum before
+	mul_carry_cross_sum (most-specific first).
+	(long_mul_classify_plus_kinds): Try mul_low_sum after
+	mul_low_accum (mul_low_sum's first arm is any plus and
+	mul_low_accum constrains both arms).
+
+2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR tree-optimization/107090
+	* match.pd: Add atom match recognizers for long-multiply
+	(mul_hi, mul_lo, mul_hilo, mul_lolo, mul_hihi, mul_cross_sum,
+	mul_low_accum, mul_carry_cross_sum).
+	* tree-ssa-forwprop.cc (gimple_mul_hi): Declare.
+	(gimple_mul_lo): Likewise.
+	(gimple_mul_hilo): Likewise.
+	(gimple_mul_lolo): Likewise.
+	(gimple_mul_hihi): Likewise.
+	(gimple_mul_cross_sum): Likewise.
+	(gimple_mul_low_accum): Likewise.
+	(gimple_mul_carry_cross_sum): Likewise.
+	(build_mul_high_seq): New, emits (N)(((2N) op1 * (2N) op2) >> N)
+	into a caller-supplied destination.
+	(long_mul_apply_extras): New, combines the preserved addends back
+	on top of the folded multiply.
+	(create_mul_high_seq): New, replaces the statement with the
+	high-part multiply plus any extras.
+	(create_mul_low_seq): New, likewise for the low part.
+	(enum long_mul_kind): New.
+	(enum long_mul_extract): New.
+	(struct long_mul_summand): New.
+	(long_mul_linearize_chain): New, walks the outer add/ior chain
+	into a multiset of leaves.
+	(long_mul_is_lshift_def): New.
+	(long_mul_set_summand): New.
+	(long_mul_classify_carry): New.
+	(long_mul_classify_plus_kinds): New.
+	(long_mul_classify_hi_extract): New.
+	(long_mul_classify_lo_extract): New.
+	(long_mul_classify_shl_extract): New.
+	(long_mul_classify_bare): New.
+	(long_mul_classify_summand): New, classify each summand via the
+	match.pd atoms.
+	(long_mul_summand_compare): New.
+	(struct long_mul_row): New.
+	(long_mul_same_ops): New.
+	(long_mul_is_cross_half): New.
+	(long_mul_hilo_orientation): New, orientation of a mul_hilo
+	capture relative to (op0, op1).
+	(long_mul_canonical_ops): New.
+	(long_mul_check_consistency): New, cross-summand consistency
+	check (operand pairing, half-width shifts, hilo cross-half).
+	(long_mul_signature_matches): New.
+	(long_mul_hint_shared_intermediate): New, dump-file hint
+	pointing at a shared inner addition.
+	(long_mul_classify_match): New, looks a summand multiset up in
+	long_mul_table and runs the per-row checks.
+	(long_mul_classify_chain): New, linearize plus classify plus
+	table lookup; sets aside leaves that classify as no summand.
+	(match_long_mul): New, top-level entry: starts only at a chain
+	end, classifies the chain, and dispatches to create_mul_high_seq
+	/ create_mul_low_seq with any preserved addends.
+	(pass_forwprop::execute): Call match_long_mul on PLUS_EXPR and
+	BIT_IOR_EXPR statements.
+
+2026-08-19  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126934
+	* range-op.cc (operator_div::op1_op2_relation_effect): Fix
+	for ops range being negative with VREL_LT.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/iterators.md (vnarrowq): New mode attribute.
+	(sat_trunc_op): New code attribute.
+	* config/aarch64/aarch64-simd.md (<sat_trunc_op>trunc<mode><vnarrowq>2):
+	New expander.
+
+2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Sync from Binutils.
+
+2026-08-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Synchronise the
+	options for coverage with gcc/gcc.cc.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_cm<optab>di): Accept a
+	zero second operand in the general register alternative.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/125557
+	* ifcvt.cc (average_cost): Scale a nonnegative cost difference using
+	the probability of the more expensive arm.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* profile-count.h (profile_probability::apply): Scale an unsigned
+	magnitude with safe_scale_64bit.
+	* profile-count.cc (test_profile_probability_apply): New.
+	(profile_count_cc_tests): New.
+	* selftest.h (profile_count_cc_tests): Declare.
+	* selftest-run-tests.cc (selftest::run_tests): Run it.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_instance): Remove dead code.
+	(vect_analyze_slp_instance): Likewise.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_print_slp_tree): Dump the scheduling
+	point, if set.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_optimize_slp_pass::containing_loop):
+	For nodes w/o representative use the region entry block
+	to indicate the containing loop.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126936
+	* tree-vect-slp.cc (vect_bb_slp_mark_live_stmts): Exclude
+	use_stmt from dominance check.
+	(vect_schedule_slp): Likewise for root.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_slp_build_two_operator_nodes):
+	Set SLP_TREE_REPRESENTATIVE to NULL for the permute nodes.
+	(vect_build_slp_tree_2): Likewise.
+	(vect_build_slp_store_interleaving): Likewise.
+	(vect_lower_load_permutations): Likewise.
+	(vect_optimize_slp_pass::get_result_with_layout): Likewise.
+	(vect_cse_slp_node_parts): Deal with NULL SLP_TREE_REPRESENTATIVE
+	for VEC_PERM nodes.
+	(vect_slp_analyze_node_operations_1): Assert permute nodes
+	do not have SLP_TREE_REPRESENTATIVE set.
+	* tree-vect-slp-patterns.cc (complex_pattern::build): Adjust.
+	(vect_build_swap_evenodd_node): Do not set SLP_TREE_REPRESENTATIVE.
+	(vect_build_combine_node): Likewise.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_slp_node_weight): Get vinfo as
+	context.  For nodes without representative use the
+	region entry block.
+	(vect_optimize_slp_pass::start_choosing_layouts): Always
+	assign vertex weight.
+
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/126597
+	* config/aarch64/aarch64.cc (aarch64_expand_vec_perm_const_1): Swap
+	zero_op0_p and zero_op1_p along with the operands.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/126930
+	* tree-ssa-alias.cc (ptr_deref_may_alias_global_p): Guard
+	against non-pointers.
+	(ptr_deref_may_alias_auto_p): Likewise.
+
 2026-08-18  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/126856

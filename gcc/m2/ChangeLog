@@ -1,3 +1,18 @@
+2026-08-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126911
+	* tools-src/mktargetsrc.py (safeRemove): New function.
+	(quietSystem): Call safeRemove for temporaryFile and
+	args.outputfile.
+
+2026-08-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126911
+	* tools-src/mktargetsrc.py (quietSystem): Add temporaryFile
+	parameter.
+	Tidy up if result is non zero by removing temporaryFile
+	and args.outputfile.
+
 2026-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/125129

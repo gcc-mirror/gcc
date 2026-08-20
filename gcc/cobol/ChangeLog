@@ -1,3 +1,47 @@
+2026-08-19  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse_ante.h (in_procedure_division): Position alphabetically.
+	(in_identification_division): New function.
+	(in_file_section): Remove void argument declaration.
+	* scan.l: Add TITLE pattern and accept as NAME outside ID Division.
+	* scan_ante.h (in_procedure_division): Remove void argument declaration.
+	(in_environment_division): Same.
+	(in_identification_division): Declare new function.
+
+2026-08-19  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* cdf.y: Revise debug message and token numbers.  Remove USED_TOKEN
+	macro, introduce SAVE_LOOKAHEAD.
+	* gengen.cc (class DECL_COUNTER): Add VAR_DECL creation counter.
+	(gg_define_from_declaration): Likewise.
+	* parse.y: Move named XML tokens to first token list and recognize
+	FILLER.
+	* scan.l: Eliminate scan used for debug message.
+	* scan_ante.h (level_found): Remove function.
+	(PUSH_CDF_STATE): Push cdf_state SC at most once.
+	(trim_location): Less verbose debug message.
+	(symbol_lower_name): New function.
+	(symbol_exists): Use symbol_lower_name and accept override parameter.
+	(scanner_cache_update):  New function.
+	(unquote):  New function for string literals.
+	* scan_post.h (start_condition_str):  Update with new SC names.
+	(run_cdf): Do not pop from cdf_state unconditionally.
+	(RECENT): Remove macro.
+	(same_end): Remove function.
+	(same_token): Same.
+	(next_token): Same.
+	(prelex): Use cdf::last_lexed and cdf::had_lookahead().
+	(yylex): Remove one early return.
+	* symbols.cc (symbol_program): Use new map of programs.
+	(symbol_function_impl): Use new map of functions.
+	(symbol_temporaries): Use new list of alphanumerics.
+	(symbol_temporary_alphanumerics): New class to house alphanumerics
+	list.
+	(symbol_program_add): Populate new maps.
+	* token_names.h: Regenerate.
+	* util.cc (cdf_field_add):  Use scanner_cache_update.
+
 2026-08-17  Robert Dubner  <rdubner@symas.com>
 
 	* cdf.y: Revert changes.

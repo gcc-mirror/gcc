@@ -1,3 +1,124 @@
+2026-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/stl_stack.h (std::stack): Declare members as
+	_GLIBCXX26_CONSTEXPR.
+	(std::operator==, std::operator!=, std::operator<, std::operator>)
+	(std::operator<=, std::operator>=, std::operator<=>, std::swap):
+	Declare as _GLIBCXX26_CONSTEXPR.
+	* include/bits/version.def (constexpr_stack): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/stack (__cpp_lib_constexpr_stack): Define.
+	* (formatter<stack<....>, _CharT>::format)
+	[__glibcxx_constexpr_format]: Declare as constexpr.
+	* testsuite/23_containers/headers/stack/synopsis.cc:
+	Update declarations.
+	* testsuite/std/format/ranges/adaptors.cc: Expand test to stack.
+	* testsuite/23_containers/stack/constexpr.cc: New test derived
+	from 23_containers/queue/constexpr.cc.
+
+2026-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/print.h (_File_sink::_File::_M_init_write_buf):
+	Fix whitespace and pass errno directly to __throw_system_error.
+
+2026-08-19  Anlai Lu  <agicy@qq.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/print.h (_File_sink::_File::_File)
+	[_GLIBCXX_USE_STDIO_LOCKING && _GLIBCXX_USE_GLIBC_STDIO_EXT]:
+	Move __overflow call to separate member function.
+	(_File_sink::_File::_M_init_write_buf)
+	[_GLIBCXX_USE_STDIO_LOCKING && _GLIBCXX_USE_GLIBC_STDIO_EXT]:
+	Extracted from constructor, call __overflow for null
+	_M_file->_IO_write_ptr.
+	(_File_sink::_File_sink)
+	[_GLIBCXX_USE_STDIO_LOCKING && _GLIBCXX_USE_GLIBC_STDIO_EXT]:
+	Call _M_init_write_buf instead of _M_write_buf.
+	* testsuite/27_io/print/1.cc: Add test_print_setvbuf.
+
+2026-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/random.h (std::__rotr, std::__rotl, std::__bit_ceil):
+	[__cplusplus >= 201103L]: Define as _GLIBCXX14_CONSTEXPR.
+	(std::__countl_zero, std::__countr_zero, std::__popcount)
+	[__cplusplus >= 201103L]: Split implementation using generic
+	builtin, define other as _GLIBCXX14_CONSTEXPR.
+	(std::__bit_width, std::__bit_floor) [__cplusplus >= 201103L]:
+	Modify to use single return statement.
+	* include/bits/random.tcc (std::__countl_zero, std::__countr_zero)
+	(std::__popcount, std::__bit_width): Define explicit specializations
+	for __detail::__rand_uint128.
+	* include/std/bit (std::__generate_canonical_pow2)
+	(std::__generate_canonical_any): Replace builtins call with
+	<bit> function calls.
+
+2026-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+	    Thor Preimesberger  <tcpreimesberger@gmail.com>
+
+	* include/bits/deque.tcc (deque): Declare out of line member
+	defintions as _GLIBCXX26_CONSTEXPR.
+	(std::__fill_a1, std::__copy_move_dit, std::__copy_move_a1)
+	(std::__copy_move_a2, std::__copy_n_a)
+	(std::__copy_move_backward_dit, std::__copy_move_backward_a1)
+	(std::__equal_dit, std::__equal_aux1, std::__lex_cmp_dit)
+	(std::__lexicographical_compare_aux1, std::__uninitialized_copy_a)
+	(std::__uninitialized_move_a): Declare as _GLIBCXX26_CONSTEXPR.
+	* include/bits/stl_algobase.h (std::__fill_a1, std::__copy_n_a)
+	(std::__copy_move_a1, std::__copy_move_backward_a1)
+	(std::__equal_aux1, __lexicographical_compare_aux1): Declare
+	overloads accepting _Deque_iterator as _GLIBCXX26_CONSTEXPR.
+	* include/bits/stl_deque.h (std::_Deque_iterator, std::_Deque_base)
+	(std::deque): Declare members as _GLIBCXX26_CONSTEXPR.
+	(std::operator==, std::operator<=>, std::swap): Declare as
+	_GLIBCXX26_CONSTEXPR.
+	* include/bits/stl_queue.h (std::queue): Declare members as
+	_GLIBCXX26_CONSTEXPR.
+	(std::priority_queue): Make _GLIBCXX26_CONSTEXPR placement
+	consistient.
+	(std::operator==, std::operator!=, std::operator<, std::operator>)
+	(std::operator<=, std::operator>=, std::operator<=>, std::swap):
+	Declare as _GLIBCXX26_CONSTEXPR.
+	* include/bits/stl_uninitialized.h (std::__uninitialized_copy_a):
+	Declare overloads accepting _Deque_iterator as _GLIBCXX26_CONSTEXPR.
+	(std::__uninitialized_default_a): Declare as _GLIBCXX20_CONSTEXPR.
+	* include/bits/version.def (constexpr_deque, constexpr_queue):
+	Define.
+	* include/bits/version.h: Regenerate.
+	* include/debug/deque (__debug::deque): Declare members as
+	_GLIBCXX26_CONSTEXPR.
+	(__debug::operator==, __debug::operator<=>, __debug::swap)
+	(__debug::erase, __debug::__erase_if): Declare as
+	_GLIBCXX26_CONSTEXPR.
+	* include/std/deque (__cpp_lib_constexpr_deque): Define.
+	(std::erase, std::erase_if): Declare as _GLIBCXX26_CONSTEXPR.
+	* include/std/queue (__cpp_lib_constexpr_queue): Define.
+	(_GLIBCXX_CONSTEXPR_FORMAT): Define locally.
+	(std::formatter<priority_queue<...>, _CharT>::format)
+	(std::formatter<queue<...>, _CharT>::format): Declare as
+	_GLIBCXX_CONSTEXPR_FORMAT.
+	* testsuite/23_containers/deque/constexpr.cc: New test.
+	* testsuite/23_containers/headers/deque/synopsis.cc: Update
+	declarations.
+	* testsuite/23_containers/headers/queue/synopsis.cc: Likewise.
+	* testsuite/23_containers/queue/constexpr.cc: New test.
+	* testsuite/23_containers/priority_queue/constexpr.cc: Replace
+	existing test with expanded suite.
+	* testsuite/std/format/ranges/adaptors.cc: Test at compile
+	time.
+
+2026-08-19  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/stl_algo.h (__for_each): Add segemented
+	iterators logic. Split out naive for-loop from ...
+	(for_each): ... here.
+	* testsuite/performance/25_algorithms/for_each.cc: New test.
+
+2026-08-19  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/bits/simd_vec.h (_M_elements_shifted_to_front): Remove
+	x86-specific implementation.
+	* testsuite/std/simd/traits_impl.cc: Fix incorrect macro name.
+
 2026-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/126786

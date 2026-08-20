@@ -1,3 +1,10 @@
+2026-08-19  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* posix/README.md: Updated documentation.
+	* posix/shim/open.cc (posix_open): Remove O_LARGEFILE from POSIX
+	mode flags.
+
 2026-08-12  Robert Dubner  <rdubner@symas.com>
 
 	* charmaps.h (ascii_at): New define for '@',

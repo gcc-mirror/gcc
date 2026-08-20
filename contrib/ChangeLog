@@ -1,3 +1,8 @@
+2026-08-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* add-write-after.py (getuserdata): Also capture an optional
+	forge ID.
+
 2026-08-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* forge_teams.py: New file.

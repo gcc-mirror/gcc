@@ -1,3 +1,10 @@
+2026-08-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/126935
+	* lex.cc (HWCAP_SVE): Define if not already defined.
+	(init_vectorized_lexer): Require HWCAP_SVE as well as
+	HWCAP2_SVE2.
+
 2026-08-13  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* configure.ac: Test whether the AArch64 SVE2 lexer can be built.

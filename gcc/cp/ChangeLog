@@ -1,3 +1,28 @@
+2026-08-19  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (check_splice_expr): Reject splicing a direct base
+	class relationship without an object.
+
+2026-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126918
+	* constexpr.cc (class constexpr_global_ctx): Extend description of
+	caught_exceptions vector.
+	(cxx_eval_cxa_builtin_fn): When catching a pointer-to-member and
+	the current exception is nullptr or pointer-to-member with different
+	type, create a temporary, initialize it from the exception value and
+	return address of it.  Make sure to free these temporaries at
+	__cxa_end_catch time.
+	* call.cc (handler_match_for_exception_type): Allow NULLPTR_TYPE
+	exception type or different pointer-to-member type even for
+	TYPE_PTRMEMFUNC_P types, not just TYPE_PTRDATAMEM_P types.
+
+2026-08-19  Eczbek  <eczbek.void@gmail.com>
+
+	PR c++/70097
+	* decl.cc (grokdeclarator): If rqual is REF_QUAL_NONE, set it to
+	result of type_memfn_rqual before passing to build_memfn_type.
+
 2026-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/126867

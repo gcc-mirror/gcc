@@ -1,3 +1,15 @@
+2026-08-19  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	PR other/126226
+	* .gitignore: Ignore python eggs.
+	* pyproject.toml: New file.
+
+2026-08-19  Longjun Luo  <luolongjuna@gmail.com>
+
+	* MAINTAINERS.yml: Add myself.
+	* MAINTAINERS (Write After Approval): Regenerate.
+	(Contributing under the DCO): Regenerate.
+
 2026-08-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* MAINTAINERS.yml (users): Add forgeid for some users.
