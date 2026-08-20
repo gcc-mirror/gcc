@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -msse2 -mno-avx2 -mno-avx512vl" } */
+/* { dg-options "-O2 -msse2 -mno-ssse3 -mtune=generic" } */
 
 #define N 8
 
