@@ -75,6 +75,7 @@
 /* Extended Features (%eax == 0x80000021) */
 /* %eax */
 #define bit_AMD_PREFETCHI (1 << 20)
+#define bit_AVX512BMM (1 << 23)
 
 /* Extended Features Leaf (%eax == 7, %ecx == 0) */
 /* %ebx */
@@ -166,9 +167,6 @@
 /* %ebx */
 #define bit_AESKLE	( 1<<0 )
 #define bit_WIDEKL	( 1<<2 )
-
-/* Sub leaf (%eax == 0x21) */
-#define bit_AVX512BMM	( 1<<23 )
 
 /* AVX10 sub leaf (%eax == 0x24, %ecx == 1) */
 /* %ecx */
