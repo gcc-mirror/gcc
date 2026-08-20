@@ -368,9 +368,6 @@ struct _slp_tree {
 
   /* Reference count in the SLP graph.  */
   unsigned int refcnt;
-  /* The maximum number of vector elements for the subtree rooted
-     at this node.  */
-  poly_uint64 max_nunits;
   /* The DEF type of this node.  */
   enum vect_def_type def_type;
   /* The number of scalar lanes produced by this node.  */
@@ -2362,28 +2359,6 @@ vect_get_num_copies (vec_info *vinfo, slp_tree node)
   tree vectype = SLP_TREE_VECTYPE (node);
 
   return vect_get_num_vectors (vf, vectype);
-}
-
-/* Update maximum unit count *MAX_NUNITS so that it accounts for
-   NUNITS.  *MAX_NUNITS can be 1 if we haven't yet recorded anything.  */
-
-inline void
-vect_update_max_nunits (poly_uint64 *max_nunits, poly_uint64 nunits)
-{
-  /* All unit counts have the form vec_info::vector_size * X for some
-     rational X, so two unit sizes must have a common multiple.
-     Everything is a multiple of the initial value of 1.  */
-  *max_nunits = force_common_multiple (*max_nunits, nunits);
-}
-
-/* Update maximum unit count *MAX_NUNITS so that it accounts for
-   the number of units in vector type VECTYPE.  *MAX_NUNITS can be 1
-   if we haven't yet recorded any vector types.  */
-
-inline void
-vect_update_max_nunits (poly_uint64 *max_nunits, tree vectype)
-{
-  vect_update_max_nunits (max_nunits, TYPE_VECTOR_SUBPARTS (vectype));
 }
 
 /* Return the vectorization factor that should be used for costing
