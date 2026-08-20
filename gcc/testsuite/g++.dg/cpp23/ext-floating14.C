@@ -2,6 +2,7 @@
 // PR target/107703
 // { dg-do run { target c++23 } }
 // { dg-options "-fexcess-precision=standard" }
+// { dg-additional-options "-mno-avx512bf16 -mno-avxneconvert" { target { i?86-*-* x86_64-*-* } } }
 
 #include "ext-floating.h"
 
