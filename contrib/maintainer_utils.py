@@ -253,6 +253,12 @@ def _check_schema(data):
     return
 
 
+def _unilower(txt):
+    """return a lower-case version of txt, mapping accented characters
+    onto their ASCII near equivalents."""
+    return unidecode.unidecode(txt).lower()
+
+
 def _check_dco(user):
     # An email addrss in a DCO entry must also be listed in either the
     # active emails list, or the inactive_emails list.
@@ -268,6 +274,19 @@ def _check_dco(user):
             )
         if dco in user.get('DCO', []):
             _error(f"User: {user['cn']} inactive_DCO {dco} also listed in DCO")
+
+
+def sort_users(user_data):
+    """Sort the user data into canonical order."""
+    return sorted(
+        user_data,
+        key = lambda k: (
+            _unilower(k['sn']),
+            _unilower(k['cn']),
+            k.get('account', ''),
+            k.get('forgeid', ''),
+        )
+    )
 
 
 def validate(data):
@@ -321,6 +340,17 @@ def validate(data):
                     _error(f"Multiple subsystem entries for '{n}'.")
         if not seen_writeafter:
             _error(f"User '{u['cn']}' lacks WriteAfter role.")
+
+    sorted = sort_users(data['users'])
+    if sorted != data['users']:
+        _error("User data is incorrectly sorted.")
+        for right, wrong in zip(sorted, data['users']):
+            if right != wrong:
+                print(
+                    f"First incorrect entry is for {wrong['cn']}",
+                    file=sys.stderr
+                )
+                break
     if error_count:
         sys.exit(1)
     return
@@ -333,6 +363,7 @@ def load(file):
 
 
 def store(data, file=None, fd=sys.stdout):
+    data['users'] = sort_users(data['users'])
     # Make sure we don't write something that is not conformant
     validate(data)
     if file:

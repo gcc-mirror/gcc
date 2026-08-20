@@ -25,17 +25,12 @@ import os
 import pwd
 import re
 import sys
-import unidecode
 import yaml
 
 from optparse import OptionParser
 
 import maintainer_utils as maintutils
 
-def unilower(txt):
-    """return a lower-case version of txt, mapping accented characters
-    onto their ASCII near equivalents."""
-    return unidecode.unidecode(txt).lower()
 
 def get_surname(name):
     parts = name.split()
@@ -148,9 +143,7 @@ def main():
         print("Note, this script can only be used to add new accounts.")
         return 1
     data['users'].append (newuser)
-    data['users'] = sorted(data['users'],
-                           key = lambda k: (unilower(k['sn']),
-                                            unilower(k['cn'])))
+
     if opts.outfilename and opts.outfilename == '-':
         maintutils.store(data)
     else:
