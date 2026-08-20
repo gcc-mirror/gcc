@@ -565,10 +565,14 @@ store_forwarding_analyzer::avoid_store_forwarding (basic_block bb)
       /* The mem RTX if INSN is a store, NULL_RTX otherwise.  */
       rtx store_mem = MEM_P (SET_DEST (set)) ? SET_DEST (set) : NULL_RTX;
 
-      /* We cannot analyze memory RTXs that have unknown size.	*/
-      if ((store_mem && (!MEM_SIZE_KNOWN_P (store_mem)
+      /* We cannot analyze memory RTXs that have unknown size.  BLKmode
+	 memory is rejected as well, as there is no mode for the forwarded
+	 value, even when its size is known.  */
+      if ((store_mem && (GET_MODE (store_mem) == BLKmode
+			 || !MEM_SIZE_KNOWN_P (store_mem)
 			 || !MEM_SIZE (store_mem).is_constant ()))
-	  || (load_mem && (!MEM_SIZE_KNOWN_P (load_mem)
+	  || (load_mem && (GET_MODE (load_mem) == BLKmode
+			   || !MEM_SIZE_KNOWN_P (load_mem)
 			   || !MEM_SIZE (load_mem).is_constant ())))
 	{
 	  store_exprs.truncate (0);
