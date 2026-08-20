@@ -30,6 +30,10 @@ particular CPU name.  Permissible values for this option are:
 
 @samp{sifive-p600-series},
 
+@samp{sifive-p550},
+
+@samp{sifive-p870-d},
+
 @samp{tt-ascalon-x},
 
 @samp{tt-ascalon-xg},
