@@ -1,4 +1,4 @@
-// { dg-do compile }
+// { dg-do compile { target { aarch64*-*-* i?86-*-* x86_64-*-* } } }
 // { dg-options "-O2 -fdump-tree-optimized" }
 // { dg-additional-options "-msse4" { target { i?86-*-* x86_64-*-* } } }
 // { dg-require-effective-target int128 { target { i?86-*-* x86_64-*-* } } }

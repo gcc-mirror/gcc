@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-O2 -fdump-tree-optimized" }
+// { dg-options "-O2 -fdump-tree-forwprop1" }
 // { dg-additional-options "-msse4" { target { i?86-*-* x86_64-*-* } } }
 // { dg-require-effective-target int128 { target { i?86-*-* x86_64-*-* } } }
 
@@ -17,4 +17,4 @@ f (v2si a, v2si b, v2di *p)
 }
 
 // A shared wide MIN must not gain a second narrow MIN.
-// { dg-final { scan-tree-dump-times "MIN_EXPR" 1 "optimized" } }
+// { dg-final { scan-tree-dump-times "MIN_EXPR" 1 "forwprop1" } }
