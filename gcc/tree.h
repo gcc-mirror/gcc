@@ -1005,7 +1005,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* True if an overflow is to be preserved for sanitization.  */
 #define TYPE_OVERFLOW_SANITIZED(TYPE)			\
-  (INTEGRAL_TYPE_P (TYPE)				\
+  (ANY_INTEGRAL_TYPE_P (TYPE)				\
    && !TYPE_OVERFLOW_WRAPS (TYPE)			\
    && (flag_sanitize & SANITIZE_SI_OVERFLOW))
 
