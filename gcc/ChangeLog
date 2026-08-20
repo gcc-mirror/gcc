@@ -1,3 +1,9 @@
+2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/124629
+	* config/aarch64/driver-aarch64.cc (AARCH64_ARCH):
+	Don't skip first character of #ARCH_IDENT.
+
 2026-08-14  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
