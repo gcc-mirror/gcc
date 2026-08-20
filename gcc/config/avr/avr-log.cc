@@ -20,6 +20,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_ALGORITHM
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -82,6 +83,10 @@ static void avr_log_vadump (FILE*, const char*, va_list);
    chars after a %-code, or 0 if unrecognized and nothing consumed.  */
 static int avr_forward_to_printf (FILE*, const char*, va_list);
 
+/* Helpers for avr_log_node to print TREE_OPERAND(s) of node.  */
+static void avr_log_operands (FILE*, tree, int n_operands, int tab);
+static void avr_log_operand (FILE*, tree, const char*, int num, int tab);
+
 /* Wrapper for avr_log_vadump.  If STREAM is NULL we are called by avr_dump,
    i.e. output to dump_file if available.  The 2nd argument is __FUNCTION__.
    The 3rd argument is the format string. */
@@ -109,14 +114,23 @@ static void
 avr_log_node (FILE *file, tree node, int tab, const char *tag = nullptr)
 {
   tab += 3;
-
-  auto code = TREE_CODE (node);
-
   fprintf (file, "%*s", tab, "");
+
+  if (node == NULL_TREE)
+    {
+      fprintf (file, "<NULL-TREE>");
+      if (tag)
+	fprintf (file, " %s", tag);
+      fprintf (file, "\n");
+      return;
+    }
 
   print_node_brief (file, "", node, 0);
   if (tag)
     fprintf (file, " %s", tag);
+
+  auto code = TREE_CODE (node);
+
   if (DECL_P (node) && DECL_ARTIFICIAL (node))
     fprintf (file, " artificial");
   if (code == VAR_DECL || code == PARM_DECL || code == FIELD_DECL)
@@ -124,6 +138,8 @@ avr_log_node (FILE *file, tree node, int tab, const char *tag = nullptr)
       fprintf (file, " read-only");
   if (TYPE_P (node) && TYPE_READONLY (node))
     fprintf (file, " read-only");
+  if (code == POINTER_TYPE)
+    fprintf (file, " %s", GET_MODE_NAME (SCALAR_INT_TYPE_MODE (node)));
 
   fprintf (file, "\n");
 
@@ -156,11 +172,64 @@ avr_log_node (FILE *file, tree node, int tab, const char *tag = nullptr)
       avr_log_node (file, TREE_TYPE (node), tab);
       break;
 
+    case ADDR_EXPR:
+      avr_log_operands (file, node, 1, tab);
+      break;
+
+    case POINTER_PLUS_EXPR:
+    case POINTER_DIFF_EXPR:
+      avr_log_operands (file, node, 2, tab);
+      break;
+
+    case ADDR_SPACE_CONVERT_EXPR:
+    case CONVERT_EXPR:
+    case NOP_EXPR:
+      avr_log_node (file, TREE_TYPE (node), tab);
+      avr_log_operands (file, node, 1, tab);
+      break;
+
+    case MEM_REF:
+      avr_log_node (file, TREE_TYPE (node), tab);
+      avr_log_operands (file, node, 2, tab);
+      break;
+
+    case CONSTRUCTOR:
+      {
+	unsigned HOST_WIDE_INT cnt;
+	tree index, value;
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node), cnt, index, value)
+	  {
+	    (void) index;
+	    avr_log_operand (file, value, "elt", (int) cnt, tab);
+	  }
+      }
+      break;
+
     default:
       if (DECL_P (node))
 	avr_log_node (file, TREE_TYPE (node), tab);
+      if (VAR_P (node)
+	  && DECL_INITIAL (node))
+	avr_log_node (file, DECL_INITIAL (node), tab, "initial");
       break;
     }
+}
+
+
+static void
+avr_log_operand (FILE *file, tree op, const char *name, int num, int tab)
+{
+  char s_op[20] = { '\0' };
+  if (name)
+    sprintf (s_op, "%s:%d", name, std::min (num, 999));
+  avr_log_node (file, op, tab, name ? s_op : nullptr);
+}
+
+static void
+avr_log_operands (FILE *file, tree node, int n_operands, int tab)
+{
+  for (int i = 0; i < n_operands; ++i)
+    avr_log_operand (file, TREE_OPERAND (node, i), "arg", i, tab);
 }
 
 
