@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -msse2 -mno-avx -fipa-ra -fomit-frame-pointer" } */
+/* { dg-options "-O2 -msse2 -mno-avx -mtune-ctrl=^sse_packed_single_insn_optimal -fipa-ra -fomit-frame-pointer" } */
 
 typedef double v2df __attribute__((vector_size (16)));
 
