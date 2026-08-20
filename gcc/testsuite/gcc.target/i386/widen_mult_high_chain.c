@@ -29,4 +29,4 @@ mulh_carry_128 (__uint128_t x, __uint128_t y)
 
 /* { dg-final { scan-assembler-not "__multi3" } } */
 /* { dg-final { scan-assembler-not "__mulOI3" } } */
-/* { dg-final { scan-assembler-times "\tmulq" 4 } } */
+/* { dg-final { scan-assembler-times "\tmul(q|x)" 4 } } */
