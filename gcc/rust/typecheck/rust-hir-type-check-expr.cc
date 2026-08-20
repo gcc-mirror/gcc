@@ -197,11 +197,8 @@ TypeCheckExpr::visit (HIR::BoxExpr &expr)
     = mappings.get_lang_item (LangItem::Kind::OWNED_BOX, expr.get_locus ());
 
   HIR::Item *item = mappings.lookup_defid (owned_box_defid).value ();
-  TyTy::BaseType *item_type = nullptr;
+  TyTy::BaseType *item_type = TypeCheckItem::Resolve (*item);
 
-  bool ok
-    = context->lookup_type (item->get_mappings ().get_hirid (), &item_type);
-  rust_assert (ok);
   if (item_type->get_kind () != TyTy::TypeKind::ADT)
     {
       rust_error_at (item->get_locus (), ErrorCode::E0718,
@@ -829,10 +826,7 @@ TypeCheckExpr::visit (HIR::RangeFromToExpr &expr)
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
-  TyTy::BaseType *item_type = nullptr;
-  bool ok
-    = context->lookup_type (item->get_mappings ().get_hirid (), &item_type);
-  rust_assert (ok);
+  TyTy::BaseType *item_type = TypeCheckItem::Resolve (*item);
   rust_assert (item_type->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (item_type);
 
@@ -880,10 +874,7 @@ TypeCheckExpr::visit (HIR::RangeFromExpr &expr)
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
-  TyTy::BaseType *item_type = nullptr;
-  bool ok
-    = context->lookup_type (item->get_mappings ().get_hirid (), &item_type);
-  rust_assert (ok);
+  TyTy::BaseType *item_type = TypeCheckItem::Resolve (*item);
   rust_assert (item_type->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (item_type);
 
@@ -924,10 +915,7 @@ TypeCheckExpr::visit (HIR::RangeToExpr &expr)
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
-  TyTy::BaseType *item_type = nullptr;
-  bool ok
-    = context->lookup_type (item->get_mappings ().get_hirid (), &item_type);
-  rust_assert (ok);
+  TyTy::BaseType *item_type = TypeCheckItem::Resolve (*item);
   rust_assert (item_type->get_kind () == TyTy::TypeKind::ADT);
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (item_type);
 
@@ -1065,10 +1053,7 @@ TypeCheckExpr::visit (HIR::RangeFullExpr &expr)
   // look it up and it _must_ be a struct definition
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();
 
-  TyTy::BaseType *item_type = nullptr;
-  bool ok
-    = context->lookup_type (item->get_mappings ().get_hirid (), &item_type);
-  rust_assert (ok);
+  TyTy::BaseType *item_type = TypeCheckItem::Resolve (*item);
   rust_assert (item_type->is_unit ());
 
   infered = item_type;
