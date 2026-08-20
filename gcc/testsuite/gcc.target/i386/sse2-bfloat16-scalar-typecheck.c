@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-msse2 -O2" } */
+/* { dg-options "-msse2 -mno-avx512bf16 -mno-avxneconvert -O2" } */
 
 
 __bf16 glob_bfloat;

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512fp16 -O2" } */
+/* { dg-options "-mavx512fp16 -mno-avx512bf16 -mno-avxneconvert -O2" } */
 
 #include <immintrin.h>
 
