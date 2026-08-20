@@ -1,3 +1,76 @@
+2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/124629
+	* config/aarch64/driver-aarch64.cc (AARCH64_ARCH):
+	Don't skip first character of #ARCH_IDENT.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126650
+	* tree-affine.cc (get_inner_reference_aff): Fixup rounding
+	of size.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-07-28  H.J. Lu  <hjl.tools@gmail.com>
+		    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/126410
+	* tree-vect-stmts.cc (vectorizable_store): Only commit to
+	recorded base alignment when transforming.
+	(vectorizable_load): Likewise.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/125786
+	* tree-ssa-reassoc.cc (optimize_vec_cond_expr): Create a new
+	stmt instead of rewriting an existing possibly multi-use one.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/125545
+	* tree-ssa-reassoc.cc (insert_stmt_after): Allow asm goto
+	with a single successor.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/125477
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Verify we
+	can duplicate an outer loop before considering to version it.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/125156
+	* tree-cfgcleanup.cc (cleanup_control_expr_graph): Clear
+	EDGE_TRUE_VALUE and EDGE_FALSE_VALUE edge flags only.
+
+2026-08-19  vekumar  <Venkataramanan.Kumar@amd.com>
+
+	Backported from master:
+	2026-06-26  vekumar  <Venkataramanan.Kumar@amd.com>
+
+	PR target/125949
+	* config/i386/i386.md ("isa"): Add avxvnniint8.
+	("enabled"): Adjust for avxvnniint8.
+	* config/i386/sse.md (vpdp<vpdotprodtype>_<mode>): Adjust for
+	AVXVNNIINT8.
+
 2026-08-14  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-cores.def (armagicpu): New.

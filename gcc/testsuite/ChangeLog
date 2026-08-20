@@ -1,3 +1,71 @@
+2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/124629
+	* gcc.target/aarch64/cpunative/info_36: New test file.
+	* gcc.target/aarch64/cpunative/native_cpu_36.c: New test.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126650
+	* gcc.dg/torture/pr126650.c: New testcase.
+
+2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2026-07-28  H.J. Lu  <hjl.tools@gmail.com>
+		    Richard Biener   <rguenther@suse.de>
+
+	PR middle-end/126410
+	* gcc.target/i386/pr126410-1a.c: New test.
+	* gcc.target/i386/pr126410-1b.c: Likewise.
+	* gcc.target/i386/pr126410-1c.c: Likewise.
+	* gcc.target/i386/pr126410-2a.c: Likewise.
+	* gcc.target/i386/pr126410-2b.c: Likewise.
+	* gcc.target/i386/pr126410-2c.c: Likewise.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/125786
+	* gcc.dg/torture/pr125786.c: New testcase.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-06-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/125545
+	* gcc.dg/torture/pr125545.c: New testcase.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-06-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/125477
+	* gcc.dg/torture/pr125477.c: New testcase.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/125156
+	* gcc.dg/torture/pr125156.c: New testcase.
+
+2026-08-19  vekumar  <Venkataramanan.Kumar@amd.com>
+
+	Backported from master:
+	2026-06-26  vekumar  <Venkataramanan.Kumar@amd.com>
+
+	PR target/125949
+	* gcc.target/i386/pr125949.c: New test.
+
 2026-08-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
