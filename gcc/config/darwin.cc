@@ -3576,12 +3576,13 @@ darwin_override_options (void)
       flag_asynchronous_unwind_tables = 0;
     }
 
-  if (flag_var_tracking_uninit == 0
+  if (!OPTION_SET_P (flag_var_tracking_uninit)
+      && flag_var_tracking_uninit == 0
       && generating_for_darwin_version >= 9
       && (flag_gtoggle ? (debug_info_level == DINFO_LEVEL_NONE)
-      : (debug_info_level >= DINFO_LEVEL_NORMAL))
+	  : (debug_info_level >= DINFO_LEVEL_NORMAL))
       && dwarf_debuginfo_p ())
-    flag_var_tracking_uninit = flag_var_tracking;
+    flag_var_tracking_uninit = 1;
 
   if (OPTION_SET_P (flag_pie) && flag_pie)
     {
