@@ -1137,6 +1137,8 @@ dom_oracle::dom_oracle (bool do_trans_p)
   m_relations.create (0);
   m_relations.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   m_relation_set = BITMAP_ALLOC (&m_bitmaps);
+  m_block_list.create (0);
+  m_block_list.safe_grow_cleared (num_ssa_names + 1);
   m_tmp = BITMAP_ALLOC (&m_bitmaps);
   m_tmp2 = BITMAP_ALLOC (&m_bitmaps);
 }
@@ -1145,6 +1147,7 @@ dom_oracle::dom_oracle (bool do_trans_p)
 
 dom_oracle::~dom_oracle ()
 {
+  m_block_list.release ();
   m_relations.release ();
 }
 
@@ -1170,6 +1173,7 @@ relation_chain_head::clear (tree name)
 	    m_head = ptr->m_next;
 	  else
 	    last->m_next = ptr->m_next;
+	  m_num_relations--;
 	}
       else
 	last = ptr;
@@ -1187,14 +1191,18 @@ dom_oracle::clear (tree name)
   unsigned v = SSA_NAME_VERSION (name);
   if (bitmap_bit_p (m_relation_set, v))
     {
-      basic_block bb;
-      FOR_EACH_BB_FN (bb, cfun)
+      gcc_checking_assert (m_block_list[v]);
+      bitmap_iterator bi;
+      unsigned bbi;
+
+      EXECUTE_IF_SET_IN_BITMAP (m_block_list[v], 0, bbi, bi)
 	{
-	  if (bb->index >= (int)m_relations.length())
-	    continue;
-	  m_relations[bb->index].clear (name);
+	  if (bbi >= m_relations.length())
+	    break;
+	  m_relations[bbi].clear (name);
 	}
       bitmap_clear_bit (m_relation_set, v);
+      bitmap_clear (m_block_list[v]);
     }
 }
 
@@ -1304,6 +1312,18 @@ dom_oracle::record (basic_block bb, relation_kind k, tree op1, tree op2)
     }
 }
 
+void
+dom_oracle::record_relation_block (unsigned v, unsigned bbi)
+{
+  if (v>= m_block_list.length ())
+    m_block_list.safe_grow_cleared (num_ssa_names + 1);
+
+  if (!m_block_list[v])
+    m_block_list[v] = BITMAP_ALLOC (&m_bitmaps);
+
+  bitmap_set_bit (m_block_list[v], bbi);
+}
+
 // Register relation K between OP1 and OP2 in block BB by creating a new
 // record.  It is an error for there to be an existing record.
 // Return the record, or NULL if no record was created.
@@ -1341,6 +1361,8 @@ dom_oracle::create_relation_in_bb (basic_block bb, relation_kind k, tree op1,
   bitmap_set_bit (bm, v2);
   bitmap_set_bit (m_relation_set, v1);
   bitmap_set_bit (m_relation_set, v2);
+  record_relation_block (v1, bbi);
+  record_relation_block (v2, bbi);
 
   ptr = (relation_chain *) obstack_alloc (&m_chain_obstack,
 					  sizeof (relation_chain));

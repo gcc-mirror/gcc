@@ -261,6 +261,7 @@ protected:
   bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists
   vec <relation_chain_head> m_relations;  // Index by BB, list of relations.
+  vec <bitmap> m_block_list;	// Index by ssa-name.  Blocks with relations.
   relation_kind find_relation_block (unsigned bb, const_bitmap b1,
 				     const_bitmap b2) const;
   relation_kind find_relation_block (int bb, tree ssa1, tree ssa2,
@@ -270,6 +271,7 @@ protected:
 					 tree op1, tree op2);
   relation_chain *search_and_merge_relation (basic_block bb, relation_kind k,
 					     tree op1, tree op2);
+  void record_relation_block (unsigned v, unsigned bbi);
   void register_transitives (basic_block, const class value_relation &);
   relation_kind recomputed_relation (basic_block, edge, tree, tree) const;
 };
