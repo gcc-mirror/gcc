@@ -1,3 +1,31 @@
+2026-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-12  Patrick Palka  <ppalka@redhat.com>
+		    Bernhard M. Wiedemann  <bwiedemann@suse.de>
+
+	PR c++/124811
+	* decl.cc (typename_hasher::hash): Instead of pointer hashing,
+	hash TYPE_HASH of context and use iterative_hash_template_arg
+	to hash fullname.
+
+2026-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126918
+	* constexpr.cc (class constexpr_global_ctx): Extend description of
+	caught_exceptions vector.
+	(cxx_eval_cxa_builtin_fn): When catching a pointer-to-member and
+	the current exception is nullptr or pointer-to-member with different
+	type, create a temporary, initialize it from the exception value and
+	return address of it.  Make sure to free these temporaries at
+	__cxa_end_catch time.
+	* call.cc (handler_match_for_exception_type): Allow NULLPTR_TYPE
+	exception type or different pointer-to-member type even for
+	TYPE_PTRMEMFUNC_P types, not just TYPE_PTRDATAMEM_P types.
+
 2026-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

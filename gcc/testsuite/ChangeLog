@@ -1,3 +1,54 @@
+2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
+
+	PR target/124629
+	* gcc.target/aarch64/cpunative/info_36: New test file.
+	* gcc.target/aarch64/cpunative/native_cpu_36.c: New test.
+
+2026-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/generic_inst10.ads: New test.
+	* gnat.dg/specs/generic_inst10_g1.ads: New helper.
+	* gnat.dg/specs/generic_inst10_g2.ads: Likewise.
+	* gnat.dg/specs/generic_inst10_g3.ads: Likewise.
+	* gnat.dg/specs/generic_inst10_pkg.ads: Likewise.
+
+2026-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/reduce7.adb: New test.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126925
+	* gcc.dg/torture/pr126925.c: New testcase.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126650
+	* gcc.dg/torture/pr126650.c: New testcase.
+
+2026-08-19  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126926
+	* gcc.dg/vect/bb-slp-pr126926.c: New testcase.
+
+2026-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126918
+	* g++.dg/cpp26/constexpr-eh24.C: New test.
+	* g++.dg/cpp26/constexpr-eh25.C: New test.
+
 2026-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

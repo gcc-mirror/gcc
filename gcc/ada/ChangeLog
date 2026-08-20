@@ -1,3 +1,17 @@
+2026-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126928
+	* sem_ch12.adb (In_Local_Package_Of_Formal_Package): New predicate.
+	(Analyze_Package_Instantiation): Do not register the instantiation
+	of the body if it is present in the local package of a formal one.
+	(Need_Subprogram_Instance_Body): Likewise.
+
+2026-08-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126907
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Reduce>: Do not call
+	Relocate_Node on nodes of the original unanalyzed tree.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.
