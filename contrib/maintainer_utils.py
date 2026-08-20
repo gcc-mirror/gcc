@@ -59,6 +59,7 @@ maintainer_schema = {
                             'type': 'string',
                             'format': 'email',
                         },
+                        'minItems': 1,
                     },
                     'inactive_email': {
                         'type': 'array',
@@ -66,6 +67,7 @@ maintainer_schema = {
                             'type': 'string',
                             'format': 'email',
                         },
+                        'minItems': 1,
                     },
                     'DCO': {
                         'type': 'array',
@@ -136,11 +138,11 @@ maintainer_schema = {
                     },
                     'aliases': {
                         'type': 'array',
-                        'minLength': 1,
                         'items': {
                             'type': 'string',
                             'minLength': 1,
                         },
+                        'minItems': 1,
                     },
                     'inactive': {
                         'type': 'boolean',
