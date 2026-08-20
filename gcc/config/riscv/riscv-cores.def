@@ -154,9 +154,9 @@ RISCV_CORE("sifive-u54",      "rv64imafdc", "sifive-5-series",
 			      /* MARCHID */ UNKNOWN_ID,
 			      /* MIMPID */ UNKNOWN_ID)
 RISCV_CORE("sifive-u74",      "rv64imafdc", "sifive-7-series",
-			      /* MVENDORID */ UNKNOWN_ID,
-			      /* MARCHID */ UNKNOWN_ID,
-			      /* MIMPID */ UNKNOWN_ID)
+			      /* MVENDORID */ 0x489,
+			      /* MARCHID */ 0x8000000000000007ULL,
+			      /* MIMPID */ 0x4210427ULL)
 RISCV_CORE("sifive-x280",     "rv64imafdcv_zfh_zba_zbb_zvfh_zvl512b",
 			      "sifive-7-series",
 			      /* MVENDORID */ UNKNOWN_ID,
@@ -171,9 +171,9 @@ RISCV_CORE("sifive-p450",     "rv64imafdc_za64rs_zic64b_zicbom_zicbop_zicboz_"
 			      /* MIMPID */ UNKNOWN_ID)
 RISCV_CORE("sifive-p550",     "rv64imafdc_zifencei_zfhmin_zba_zbb",
 			      "sifive-p550",
-			      /* MVENDORID */ UNKNOWN_ID,
-			      /* MARCHID */ UNKNOWN_ID,
-			      /* MIMPID */ UNKNOWN_ID)
+			      /* MVENDORID */ 0x489,
+			      /* MARCHID */ 0x8000000000000008ULL,
+			      /* MIMPID */ 0x6220425ULL)
 RISCV_CORE("sifive-p670",     "rv64imafdcv_za64rs_zic64b_zicbom_zicbop_zicboz_"
 			      "ziccamoa_ziccif_zicclsm_ziccrse_zicsr_zifencei_"
 			      "zihintntl_zihintpause_zihpm_zfhmin_zba_zbb_zbs_"
@@ -188,9 +188,9 @@ RISCV_CORE("sifive-p870-d",   "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_"
 			      "za64rs_zama16b_zawrs_zfa_zfh_zcb_zcmop_zkr_zkt_"
 			      "zvbb_zvfbfwma_zvfh_zvfhmin_zvknc_zvksg",
 			      "sifive-p870-d",
-			      /* MVENDORID */ UNKNOWN_ID,
-			      /* MARCHID */ UNKNOWN_ID,
-			      /* MIMPID */ UNKNOWN_ID)
+			      /* MVENDORID */ 0x489,
+			      /* MARCHID */ 0x8000000000000109ULL,
+			      /* MIMPID */ 0x14250606ULL)
 
 RISCV_CORE("thead-c906",      "rv64imafdc_xtheadba_xtheadbb_xtheadbs_xtheadcmo_"
 			      "xtheadcondmov_xtheadfmemidx_xtheadmac_"
@@ -391,26 +391,26 @@ RISCV_CORE("spacemit-x60",    "rva22u64_v_zicond_zifencei_zihintntl_zihpm_zfh_zb
 			      "zbkc_zvfh_zvfhmin_zvkt_zvl256b_smepmp_sscofpmf_sstc_"
 			      "svinval_svnapot_svpbmt_xsmtvdot",
 			      "spacemit-x60",
-			      /* MVENDORID */ UNKNOWN_ID,
-			      /* MARCHID */ UNKNOWN_ID,
-			      /* MIMPID */ UNKNOWN_ID)
+			      /* MVENDORID */ 0x710,
+			      /* MARCHID */ 0x8000000058000001ULL,
+			      /* MIMPID */ 0x1000000049772200ULL)
 
 RISCV_CORE("spacemit-x100",   "rva23s64_smepmp_smnpm_smstateen_sspm_zbc_zbkc_"
 			      "zfbfmin_zfh_zvbc_zvfbfwma_zvfh_zvknc_zvkng_zvknha_"
 			      "zvksc_zvksg_zvl256b_xsmtvdot",
 			      "spacemit-x100",
-			      /* MVENDORID */ UNKNOWN_ID,
-			      /* MARCHID */ UNKNOWN_ID,
-			      /* MIMPID */ UNKNOWN_ID)
+			      /* MVENDORID */ 0x710,
+			      /* MARCHID */ 0x8000000058000002ULL,
+			      /* MIMPID */ 0x33d8a600ULL)
 
 RISCV_CORE("spacemit-a100",   "rva23u64_zfh_zbc_zbkc_zfbfmin_smepmp_smnpm_"
 			      "smstateen_sscofpmf_ssnpm_sspm_ssstateen_sstc_svinval_"
 			      "svnapot_svpbmt_zifencei_zvfh_zvfbfwma_zvkng_zvknha_"
 			      "zvknc_zvksc_zvksg_zvl1024b_xsmtvdotii",
 			      "spacemit-a100",
-			      /* MVENDORID */ UNKNOWN_ID,
-			      /* MARCHID */ UNKNOWN_ID,
-			      /* MIMPID */ UNKNOWN_ID)
+			      /* MVENDORID */ 0x710,
+			      /* MARCHID */ 0x8000000041000002ULL,
+			      /* MIMPID */ 0x10000000d5686200ULL)
 
 #undef RISCV_CORE
 #undef RISCV_CORE_ALIAS
