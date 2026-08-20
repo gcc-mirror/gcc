@@ -298,7 +298,7 @@ static const riscv_cpu_alias_info riscv_cpu_alias_table[] =
 
 static const riscv_cpu_info riscv_cpu_tables[] =
 {
-#define RISCV_CORE(CORE_NAME, ARCH, TUNE) \
+#define RISCV_CORE(CORE_NAME, ARCH, TUNE, MVENDORID, MARCHID, MIMPID) \
     {CORE_NAME, ARCH, TUNE},
 #include "../../../config/riscv/riscv-cores.def"
     {NULL, NULL, NULL}

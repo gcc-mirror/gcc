@@ -40,6 +40,11 @@ enum {
 
 #define RISCV_HWPROBE_BASE_BEHAVIOR_IMA (1ULL << 0)
 
+/* What the MVENDORID, MARCHID and MIMPID keys answer with, and the type
+   riscv-cores.def records those registers in.  */
+
+typedef unsigned long long riscv_core_id_t;
+
 struct riscv_hwprobe {
   long long key;
   unsigned long long value;

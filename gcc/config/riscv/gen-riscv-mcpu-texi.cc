@@ -26,7 +26,7 @@ main ()
 
   std::vector<std::string> coreNames;
 
-#define RISCV_CORE(CORE_NAME, ARCH, MICRO_ARCH) \
+#define RISCV_CORE(CORE_NAME, ARCH, MICRO_ARCH, MVENDORID, MARCHID, MIMPID) \
   coreNames.push_back (CORE_NAME);
 #include "riscv-cores.def"
 #undef RISCV_CORE
