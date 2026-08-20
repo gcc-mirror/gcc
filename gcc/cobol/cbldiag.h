@@ -189,6 +189,7 @@ enum cbl_diag_id_t : uint64_t {
   IbmVolatileW,  // dialect warning for ignored syntax
 
   IsoAssignFile,
+  IsoRedefinesGrow,
   IsoResume,
 
   MfAssignExternal,

@@ -91,6 +91,7 @@
 	"%{Wprocedure-pointer} %{Wno-procedure-pointer} "
 	"%{Wreplace-error} %{Wno-replace-error} "
 	"%{Wredefines-first} %{Wno-redefines-first} "
+	"%{Wredefines-grow} %{Wno-redefines-grow} "
 	"%{Wreturning-number} %{Wno-returning-number} "
 	"%{Wsegment-error} %{Wno-segment-error} "
 	"%{Wsegment-negative} %{Wno-segment-negative} "

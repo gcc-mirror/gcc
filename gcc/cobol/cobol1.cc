@@ -645,6 +645,10 @@ cobol_langhook_handle_option (size_t scode,
           cobol_warning(MfRedefinesFirst, redefines_first, warning_as_error);
           return true;
 
+        case OPT_Wredefines_grow:
+          cobol_warning(IsoRedefinesGrow, redefines_grow, warning_as_error);
+          return true;
+
         case OPT_Wreturning_number:
           cobol_warning(MfReturningNum, returning_number, warning_as_error);
           return true;

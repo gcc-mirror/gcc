@@ -1443,12 +1443,11 @@ preprocess_filter_add( const char input[] ) {
   size_t pos = filter.find(",");
 
   if( pos != filter.npos ) {
-    std::vector<char> others( filter.size() - pos, '\0' );
-    std::copy( filter.begin() + pos + 1, filter.end(), others.begin() );
+    std::string args( filter.begin() + pos + 1, filter.end() );
     filter.resize(pos);
-    char *optstr = others.data();
-    for( char *opt = optstr + 1; (opt = strtok(opt, ",")); opt = NULL ) {
-      options.push_back(opt);
+
+    for( char *arg = xstrdup(args.c_str()); (arg = strtok(arg, ",")); arg = NULL ) {
+      options.push_back(arg);
     }
   }
 

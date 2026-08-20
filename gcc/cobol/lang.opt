@@ -274,6 +274,11 @@ Wsegment
 Cobol Warning Var(cobol_segment, 1) Init(1)
 Warn if SECTION segments are used.
 
+; IsoRedefinesGrow, "-Wredefines-grow"
+Wredefines-grow
+Cobol Warning Var(redefines_grow, 1) Init(1)
+Warn if REDEFINES data item is larger than the redefined.
+
 ; IsoResume
 Wcobol-resume
 Cobol Warning Var(cobol_resume, 1) Init(1)

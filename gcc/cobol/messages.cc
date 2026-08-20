@@ -137,10 +137,12 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { IbmVolatileE, "-Wcobol-volatile", diagnostics::kind::error, dialect_ibm_e },
   { IbmVolatileW, "-Wcobol-volatile", diagnostics::kind::warning, dialect_ibm_e },
 
-  // RESUME not supported by IBM
-  { IsoResume, "-Wcobol-resume", diagnostics::kind::error, dialect_ibm_e },
   // IBM, MF, and GNU all support ASSIGN TO filename, so we keep mum. 
   { IsoAssignFile, "-Wassign-file", diagnostics::kind::ignored, dialect_ibm_mf_gnu },
+  // ISO says for B REDEFINES A, Length(B) <= Length(A), others disagree
+  { IsoRedefinesGrow, "-Wredefines-grow", diagnostics::kind::error, dialect_ibm_mf_gnu },
+  // RESUME not supported by IBM
+  { IsoResume, "-Wcobol-resume", diagnostics::kind::error, dialect_ibm_e },
 
   { MfAnyLength, "-Wany-length", diagnostics::kind::error, dialect_mf_gnu },
   { MfAssignExternal, "-Wassign-external", diagnostics::kind::error, dialect_mf_gnu },

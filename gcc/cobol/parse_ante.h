@@ -3145,8 +3145,6 @@ valid_redefine( const cbl_loc_t& loc,
             orig->level_str(), orig->name);
     return false;
   }
-  // We don't know about the redefining group until it's completely defined.
-
   /*
    * 8) The storage area required for the subject of the entry
    * shall not be larger than the storage area required for the
@@ -3159,13 +3157,15 @@ valid_redefine( const cbl_loc_t& loc,
       if( orig->level > 1 || orig->has_attr(external_e) ) {
         dbgmsg( "size error orig:  %s", field_str(orig) );
         dbgmsg( "size error redef: %s", field_str(field) );
-        error_msg(loc, "%s (%s size %u) larger than REDEFINES %s (%s size %u)",
-                  field->name,
-                  3 + cbl_field_type_str(field->type),
-                  field->size()/field->codeset.stride(),
-                  orig->name,
-                  3 + cbl_field_type_str(orig->type),
-                  orig->size()/field->codeset.stride() );
+        if( ! dialect_ok(loc, IsoRedefinesGrow, "REDEFINES larger") ) {
+          error_msg(loc, "%qs (%s size %u) larger than REDEFINES %qs (%s size %u)",
+                    field->name,
+                    3 + cbl_field_type_str(field->type),
+                    field->size()/field->codeset.stride(),
+                    orig->name,
+                    3 + cbl_field_type_str(orig->type),
+                    orig->size()/field->codeset.stride() );
+        }
       }
     }
   }
