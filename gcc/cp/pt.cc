@@ -21538,8 +21538,8 @@ tsubst_copy_and_build (tree t,
 	    r = finish_non_static_data_member (member, object, NULL_TREE,
 					       complain);
 	    pop_deferring_access_checks ();
-	    if (TREE_CODE (r) == COMPONENT_REF)
-	      REF_PARENTHESIZED_P (r) = REF_PARENTHESIZED_P (t);
+	    if (REF_PARENTHESIZED_P (t))
+	      r = force_paren_expr (r);
 	    RETURN (r);
 	  }
 	else if (type_dependent_expression_p (object))
