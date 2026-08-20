@@ -1,7 +1,7 @@
 /* Test cond_vec_cbranch_any<mode> for the 128-bit V_ANY_CBRANCH modes
    (V4SI, V2DI, V4SF, V2DF).  */
 /* { dg-do compile } */
-/* { dg-options "-Ofast -mavx512f -mavx512vl -mavx512dq -mprefer-vector-width=128 -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2" } */
+/* { dg-options "-Ofast -mtune=generic -mavx512f -mavx512vl -mavx512dq -mprefer-vector-width=128 -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 int       a_int[5],    b_int[5],    c_int[5];
