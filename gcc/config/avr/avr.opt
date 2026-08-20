@@ -164,6 +164,10 @@ mfract-convert-truncate
 Target Mask(FRACT_CONV_TRUNC)
 Allow to use truncation instead of rounding towards zero for fractional fixed-point types.
 
+mfuse-ifelse
+Target Var(avropt_fuse_ifelse) Init(0) Optimization
+Optimize compare-branch-compare-branch sequences to compare-branch-branch.
+
 mfuse-move
 Target Alias(mfuse-move=, 23, 0) Optimization
 Optimization. Run a post-reload pass that tweaks move instructions.

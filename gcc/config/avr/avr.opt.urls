@@ -96,6 +96,9 @@ UrlSuffix(gcc/AVR-Options.html#index-Wmisspelled-isr)
 mfract-convert-truncate
 UrlSuffix(gcc/AVR-Options.html#index-mfract-convert-truncate)
 
+mfuse-ifelse
+UrlSuffix(gcc/AVR-Options.html#index-mfuse-ifelse)
+
 mfuse-move
 UrlSuffix(gcc/AVR-Options.html#index-mfuse-move)
 

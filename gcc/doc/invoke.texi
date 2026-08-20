@@ -986,8 +986,9 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options} (@ref{AVR Options})
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args -masm-len-notes
--mcvt  -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-move=@var{level}
--mfuse-move2  -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
+-mcvt  -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-ifelse
+-mfuse-move=@var{level}  -mfuse-move2
+-mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}  -mno-call-main
 -mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
 -mmain-is-OS_task  -mrelax  -mpmem-wrap-around
@@ -24618,6 +24619,12 @@ Optimize indirect memory accesses on reduced Tiny devices.
 The default uses @code{@var{level}=1} for optimizations @option{-Og}
 and @option{-O1}, and @code{@var{level}=2} for higher optimizations.
 Valid values for @var{level} are @code{0}, @code{1} and @code{2}.
+
+@opindex mfuse-ifelse
+@item -mfuse-ifelse
+Optimize compare-branch-compare-branch sequences to compare-branch-branch,
+which typically occurs in if-else trees generated from dense switch statements.
+This option is enabled per default if optimization is on.
 
 @opindex mfuse-move
 @item -mfuse-move

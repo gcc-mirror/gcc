@@ -3346,7 +3346,7 @@ public:
 
   bool gate (function *) final override
   {
-    return optimize > 0;
+    return optimize > 0 && avropt_fuse_ifelse;
   }
 
   unsigned int execute (function *func) final override;
