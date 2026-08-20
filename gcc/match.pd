@@ -6209,7 +6209,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && (!HONOR_SIGNED_ZEROS (type)
 	  || tree_expr_nonzero_p (@1)
 	  || (!flag_rounding_math
-	      && REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (@0)))))
+	      && real_negzerop (@0))))
   (negate @1)))
 
 /* Transform x * -1 into -x.  */

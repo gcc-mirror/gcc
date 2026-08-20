@@ -3326,6 +3326,29 @@ real_zerop (const_tree expr)
     }
 }
 
+/* Return true if EXPR is the real constant negative zero.  */
+
+bool
+real_negzerop (const_tree expr)
+{
+  STRIP_ANY_LOCATION_WRAPPER (expr);
+
+  if (TREE_CODE (expr) == VECTOR_CST)
+    {
+      expr = uniform_vector_p (expr);
+      if (!expr)
+	return false;
+    }
+
+  if (TREE_CODE (expr) == COMPLEX_CST)
+    return real_negzerop (TREE_REALPART (expr))
+	   && real_negzerop (TREE_IMAGPART (expr));
+
+  return TREE_CODE (expr) == REAL_CST
+	  && REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (expr))
+	  && !(DECIMAL_FLOAT_MODE_P (TYPE_MODE (TREE_TYPE (expr))));
+}
+
 /* Return true if EXPR is the real constant one in real or complex form.
    Trailing zeroes matter for decimal float constants, so don't return
    true for them.

@@ -5693,6 +5693,9 @@ extern tree decl_type_context (const_tree);
 /* Return true if EXPR is the real constant zero.  */
 extern bool real_zerop (const_tree);
 
+/* Return true if EXPR is the real constant negative zero.  */
+extern bool real_negzerop (const_tree);
+
 /* Initialize the iterator I with arguments from function FNDECL  */
 
 inline void
