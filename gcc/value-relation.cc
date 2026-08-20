@@ -317,8 +317,8 @@ equiv_oracle::equiv_oracle ()
   m_equiv_set = BITMAP_ALLOC (&m_bitmaps);
   bitmap_tree_view (m_equiv_set);
   obstack_init (&m_chain_obstack);
-  m_self_equiv.create (0);
-  m_self_equiv.safe_grow_cleared (num_ssa_names + 1);
+  m_name_info.create (0);
+  m_name_info.safe_grow_cleared (num_ssa_names + 1);
   m_partial.create (0);
   m_partial.safe_grow_cleared (num_ssa_names + 1);
   // Create a bitmap to avoid registering multiple equivalences from a LHS.
@@ -332,7 +332,7 @@ equiv_oracle::equiv_oracle ()
 equiv_oracle::~equiv_oracle ()
 {
   m_partial.release ();
-  m_self_equiv.release ();
+  m_name_info.release ();
   obstack_free (&m_chain_obstack, NULL);
   m_equiv.release ();
   bitmap_obstack_release (&m_bitmaps);
@@ -451,6 +451,27 @@ equiv_oracle::partial_equiv (tree ssa1, tree ssa2, tree *base) const
   return VREL_VARYING;
 }
 
+void
+equiv_oracle::register_equiv_block (unsigned v, unsigned bbi)
+{
+  if (v >= m_name_info.length ())
+    m_name_info.safe_grow_cleared (num_ssa_names + 1);
+
+  if (!m_name_info[v].m_block_list)
+    m_name_info[v].m_block_list = BITMAP_ALLOC (&m_bitmaps);
+
+  bitmap_set_bit (m_name_info[v].m_block_list, bbi);
+}
+
+void
+equiv_oracle::register_equiv_block (const_bitmap names, basic_block bb)
+{
+  bitmap_iterator bi;
+  unsigned v;
+
+  EXECUTE_IF_SET_IN_BITMAP (names, 0, v, bi)
+    register_equiv_block (v, bb->index);
+}
 
 // Find and return the equivalency set for SSA along the dominators of BB.
 // This is the external API.
@@ -465,15 +486,15 @@ equiv_oracle::equiv_set (tree ssa, basic_block bb)
 
   // Otherwise return a cached equiv set containing just this SSA.
   unsigned v = SSA_NAME_VERSION (ssa);
-  if (v >= m_self_equiv.length ())
-    m_self_equiv.safe_grow_cleared (num_ssa_names + 1);
+  if (v >= m_name_info.length ())
+    m_name_info.safe_grow_cleared (num_ssa_names + 1);
 
-  if (!m_self_equiv[v])
+  if (!m_name_info[v].m_self_equiv)
     {
-      m_self_equiv[v] = BITMAP_ALLOC (&m_bitmaps);
-      bitmap_set_bit (m_self_equiv[v], v);
+      m_name_info[v].m_self_equiv = BITMAP_ALLOC (&m_bitmaps);
+      bitmap_set_bit (m_name_info[v].m_self_equiv, v);
     }
-  return m_self_equiv[v];
+  return m_name_info[v].m_self_equiv;
 }
 
 // Query if there is a relation (equivalence) between 2 SSA_NAMEs.
@@ -549,6 +570,8 @@ equiv_oracle::register_equiv (basic_block bb, unsigned v, equiv_chain *equiv)
     {
       bitmap_set_bit (equiv->m_names, v);
       bitmap_set_bit (m_equiv[bb->index]->m_names, v);
+      // Add BB to V.
+      register_equiv_block (v, bb->index);
       return NULL;
     }
 
@@ -557,6 +580,8 @@ equiv_oracle::register_equiv (basic_block bb, unsigned v, equiv_chain *equiv)
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
   valid_equivs (b, equiv->m_names, bb);
   bitmap_set_bit (b, v);
+  // Add BB to the all the equiv names.
+  register_equiv_block (b, bb);
   return b;
 }
 
@@ -578,8 +603,12 @@ equiv_oracle::register_equiv (basic_block bb, equiv_chain *equiv_1,
       if (equiv_2->m_bb == bb)
 	bitmap_clear (equiv_2->m_names);
       else
-	// Ensure the new names are in the summary for BB.
-	bitmap_ior_into (m_equiv[bb->index]->m_names, equiv_1->m_names);
+	{
+	  // Ensure the new names are in the summary for BB.
+	  bitmap_ior_into (m_equiv[bb->index]->m_names, equiv_1->m_names);
+	  // Add BB to the names in equiv2.
+	  register_equiv_block (equiv_2->m_names, bb);
+	}
       return NULL;
     }
   // If equiv_2 is in BB, use it for the combined set.
@@ -588,6 +617,8 @@ equiv_oracle::register_equiv (basic_block bb, equiv_chain *equiv_1,
       valid_equivs (equiv_2->m_names, equiv_1->m_names, bb);
       // Ensure the new names are in the summary.
       bitmap_ior_into (m_equiv[bb->index]->m_names, equiv_2->m_names);
+      // Add BB to the names in equiv1.
+      register_equiv_block (equiv_1->m_names, bb);
       return NULL;
     }
 
@@ -595,6 +626,8 @@ equiv_oracle::register_equiv (basic_block bb, equiv_chain *equiv_1,
   bitmap b = BITMAP_ALLOC (&m_bitmaps);
   valid_equivs (b, equiv_1->m_names, bb);
   valid_equivs (b, equiv_2->m_names, bb);
+  // Add BB to the all the equiv names.
+  register_equiv_block (b, bb);
   return b;
 }
 
@@ -627,15 +660,17 @@ void
 equiv_oracle::clear (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
-  // Remove v from any equivalences.
+  // Remove NAME from any blocks it is an equivalence in.
   if (bitmap_bit_p (m_equiv_set, v))
     {
-      basic_block bb;
-      FOR_EACH_BB_FN (bb, cfun)
+      gcc_checking_assert (m_name_info[v].m_block_list);
+      bitmap_iterator bi;
+      unsigned bbi;
+
+      EXECUTE_IF_SET_IN_BITMAP (m_name_info[v].m_block_list, 0, bbi, bi)
 	{
-	  unsigned bbi = bb->index;
 	  if (bbi >= m_equiv.length ())
-	    continue;
+	    break;
 	  if (!m_equiv[bbi])
 	    continue;
 	  equiv_chain *ptr = m_equiv[bbi]->find (v);
@@ -646,6 +681,7 @@ equiv_oracle::clear (tree name)
 	    }
 	}
       bitmap_clear_bit (m_equiv_set, v);
+      bitmap_clear (m_name_info[v].m_block_list);
     }
   // Eliminate any partial equivs.
   if (v < m_partial.length ())
@@ -747,6 +783,8 @@ equiv_oracle::add_equiv_to_block (basic_block bb, bitmap equiv_set)
   ptr->m_next = m_equiv[bb->index]->m_next;
   m_equiv[bb->index]->m_next = ptr;
   bitmap_ior_into (m_equiv[bb->index]->m_names, equiv_set);
+  // Add BB to the equiv set.
+  register_equiv_block (equiv_set, bb);
 }
 
 // Make sure the BB vector is big enough and grow it if needed.

@@ -191,7 +191,13 @@ protected:
 private:
   bitmap m_equiv_set;	// Index by ssa-name. true if an equivalence exists.
   vec <equiv_chain *> m_equiv;	// Index by BB.  list of equivalences.
-  vec <bitmap> m_self_equiv;  // Index by ssa-name, self equivalency set.
+  class name_info
+  {
+  public:
+    bitmap m_self_equiv;	// Self equivalency set.
+    bitmap m_block_list;	// BB's name occurs in equivalencies.
+  };
+  vec <name_info> m_name_info;	// Index by ssa-name.
   vec <pe_slice> m_partial;  // Partial equivalencies.
 
   void limit_check (basic_block bb = NULL);
@@ -201,6 +207,10 @@ private:
   bitmap register_equiv (basic_block bb, unsigned v, equiv_chain *equiv_1);
   bitmap register_equiv (basic_block bb, equiv_chain *equiv_1,
 			 equiv_chain *equiv_2);
+
+  void register_equiv_block (unsigned v, unsigned bbi);
+  void register_equiv_block (const_bitmap equiv, basic_block bb);
+
   void register_initial_def (tree ssa);
   void add_equiv_to_block (basic_block bb, bitmap equiv);
 };
