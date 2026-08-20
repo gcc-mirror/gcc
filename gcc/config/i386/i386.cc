@@ -21077,14 +21077,21 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
   if (x == CONST0_RTX (mode))
     return regclass;
 
-  /* Force constants into memory if we are loading a (nonzero) constant into
-     an MMX, SSE or MASK register.  This is because there are no MMX/SSE/MASK
-     instructions to load from a constant.  */
-  if (CONSTANT_P (x)
-      && (MAYBE_MMX_CLASS_P (regclass)
-	  || MAYBE_SSE_CLASS_P (regclass)
-	  || MAYBE_MASK_CLASS_P (regclass)))
-    return NO_REGS;
+  /* Force constants into memory if we are loading a non-zero constant
+     into an MMX, SSE or MASK register.  This is because there are no
+     MMX/SSE/MASK instructions to load from a constant.  Exceptions are
+     minus ones for MASK register and standard SSE constants for SSE
+     register.  */
+  if (CONSTANT_P (x))
+    {
+      if (MAYBE_MMX_CLASS_P (regclass))
+	return NO_REGS;
+       if (MAYBE_MASK_CLASS_P (regclass))
+	 return x == constm1_rtx ? regclass : NO_REGS;
+       if (MAYBE_SSE_CLASS_P (regclass))
+	 return (mode != VOIDmode && standard_sse_constant_p (x, mode)
+		 ? regclass : NO_REGS);
+    }
 
   /* Floating-point constants need more complex checks.  */
   if (CONST_DOUBLE_P (x))
