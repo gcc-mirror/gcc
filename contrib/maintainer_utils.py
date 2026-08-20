@@ -47,11 +47,11 @@ maintainer_schema = {
                 'properties': {
                     'sn': {
                         'type': 'string',
-                        'minlength': 1,
+                        'minLength': 1,
                     },
                     'cn': {
                         'type': 'string',
-                        'minlength': 1,
+                        'minLength': 1,
                     },
                     'email': {
                         'type': 'array',
@@ -111,23 +111,23 @@ maintainer_schema = {
                                 },
                             ],
                         },
-                        'minlength': 1,
+                        'minItems': 1,
                     },
                     'account': {
                         'type': 'string',
-                        'minlength': 1,
+                        'minLength': 1,
                         'pattern': '[a-zA-Z][a-zA-Z0-9]*',
                     },
                     'forgeid': {
                         'type': 'string',
-                        'minlength': 1,
+                        'minLength': 1,
                     },
                     'aliases': {
                         'type': 'array',
-                        'minlength': 1,
+                        'minLength': 1,
                         'items': {
                             'type': 'string',
-                            'minlength': 1,
+                            'minLength': 1,
                         },
                     },
                     'inactive': {
@@ -145,28 +145,28 @@ maintainer_schema = {
                 'properties': {
                     'name': {
                         'type': 'string',
-                        'minlength': 1,
+                        'minLength': 1,
                     },
                     'class': {
                         'type': 'string',
-                        'minlength': 1,
+                        'minLength': 1,
                     },
                     'labels': {
                         'type': 'array',
                         # Disabled until we populate the labels
-                        # 'minlength': 1,
+                        # 'minItems': 1,
                         'items': {
                             'type': 'string',
-                            'minlength': 3,
+                            'minLength': 3,
                             'pattern': label_pattern,
                         },
                     },
                     'teams': {
                         'type': 'array',
-                        'minlength': 1,
+                        'minItems': 1,
                         'items': {
                             'type': 'string',
-                            'minlength': 3,
+                            'minLength': 3,
                         },
                     },
                 },
