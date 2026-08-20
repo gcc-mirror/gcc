@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-w" } */
+/* { dg-options "-mno-avx512f -w" } */
 
 __int128 test (__int128 a)
 {
