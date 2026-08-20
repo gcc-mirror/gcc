@@ -128,10 +128,16 @@ private:
     int m_num_ranges;
     exit_range *find_ptr (tree name);
   };
+  class ssa_name_link
+  {
+  public:
+    vrange *nonzero;
+    exit_range *name_link;
+  };
   void register_all_uses (tree name);
   vec <exit_range_head> m_on_exit;
+  vec <ssa_name_link> m_name_info;
   const vrange &get_nonzero (tree name);
-  vec <vrange *> m_nonzero;
   bitmap m_seen;
   bitmap_obstack m_bitmaps;
   struct obstack m_list_obstack;

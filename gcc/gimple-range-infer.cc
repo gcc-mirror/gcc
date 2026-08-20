@@ -311,6 +311,7 @@ public:
   gimple *stmt;
   vrange_storage *range;
   exit_range *next;
+  exit_range *name_link;
 };
 
 
@@ -353,8 +354,8 @@ infer_range_manager::infer_range_manager (bool do_search, range_query *q)
     m_seen = NULL;
   obstack_init (&m_list_obstack);
   // Non-zero elements are very common, so cache them for each ssa-name.
-  m_nonzero.create (0);
-  m_nonzero.safe_grow_cleared (num_ssa_names + 1);
+  m_name_info.create (0);
+  m_name_info.safe_grow_cleared (num_ssa_names + 1);
   m_range_allocator = new vrange_allocator;
 }
 
@@ -362,7 +363,7 @@ infer_range_manager::infer_range_manager (bool do_search, range_query *q)
 
 infer_range_manager::~infer_range_manager ()
 {
-  m_nonzero.release ();
+  m_name_info.release ();
   obstack_free (&m_list_obstack, NULL);
   m_on_exit.release ();
   bitmap_obstack_release (&m_bitmaps);
@@ -376,15 +377,15 @@ const vrange&
 infer_range_manager::get_nonzero (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
-  if (v >= m_nonzero.length ())
-    m_nonzero.safe_grow_cleared (num_ssa_names + 20);
-  if (!m_nonzero[v])
+  if (v >= m_name_info.length ())
+    m_name_info.safe_grow_cleared (num_ssa_names + 20);
+  if (!m_name_info[v].nonzero)
     {
-      m_nonzero[v]
+      m_name_info[v].nonzero
 	= (irange *) m_range_allocator->alloc (sizeof (int_range <2>));
-      m_nonzero[v]->set_nonzero (TREE_TYPE (name));
+      m_name_info[v].nonzero->set_nonzero (TREE_TYPE (name));
     }
-  return *(m_nonzero[v]);
+  return *(m_name_info[v].nonzero);
 }
 
 // Return TRUE if NAME has a range inference in block BB.  If NAME is NULL,
@@ -453,6 +454,9 @@ infer_range_manager::add_range (tree name, gimple *s, const vrange &r)
   if (bb->index >= (int)m_on_exit.length ())
     m_on_exit.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
 
+  if (SSA_NAME_VERSION (name) >= m_name_info.length ())
+    m_name_info.safe_grow_cleared (num_ssa_names + 20);
+
   // Create the summary list bitmap if it doesn't exist.
   if (!m_on_exit[bb->index].m_names)
       m_on_exit[bb->index].m_names = BITMAP_ALLOC (&m_bitmaps);
@@ -493,6 +497,8 @@ infer_range_manager::add_range (tree name, gimple *s, const vrange &r)
   ptr->name = name;
   ptr->stmt = s;
   ptr->next = m_on_exit[bb->index].head;
+  ptr->name_link = m_name_info[SSA_NAME_VERSION (name)].name_link;
+  m_name_info[SSA_NAME_VERSION (name)].name_link = ptr;
   m_on_exit[bb->index].head = ptr;
 }
 
@@ -538,28 +544,21 @@ infer_range_manager::register_all_uses (tree name)
 void
 infer_range_manager::clear(tree name)
 {
-  if (!m_seen)
-    return;
-
   // Check if this name has any inferred ranges.
   unsigned v = SSA_NAME_VERSION (name);
-  if (!bitmap_bit_p (m_seen, v))
-     return;
+  if (v >= m_name_info.length ())
+    return;
 
-  // Check each basic block for an inferred range.
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, cfun)
+  exit_range *ptr = m_name_info[v].name_link;
+  for ( ; ptr ; ptr = ptr->name_link)
     {
+      basic_block bb = gimple_bb (ptr->stmt);
       unsigned bbi = bb->index;
-      if (bbi >= m_on_exit.length ())
-	continue;
-      exit_range *ptr = m_on_exit[bbi].find_ptr (name);
-      if (ptr)
-	{
-	  bitmap_clear_bit (m_on_exit[bbi].m_names, v);
-	  ptr->name = NULL;
-	}
+      bitmap_clear_bit (m_on_exit[bbi].m_names, v);
+      ptr->name = NULL;
     }
 
-  bitmap_clear_bit (m_seen, v);
+  m_name_info[v].name_link = NULL;
+  if (m_seen)
+    bitmap_clear_bit (m_seen, v);
 }
