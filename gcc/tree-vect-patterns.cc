@@ -5274,7 +5274,8 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 
       /* Check if the target supports this internal function.  */
       internal_fn ifn = IFN_DIV_POW2;
-      if (direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_SPEED))
+      if (!TYPE_UNSIGNED (itype)
+	  && direct_internal_fn_supported_p (ifn, vectype, OPTIMIZE_FOR_SPEED))
 	{
 	  tree shift = build_int_cst (itype, tree_log2 (oprnd1));
 
@@ -5288,16 +5289,15 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	      def_stmt
 		= gimple_build_assign (t1, LSHIFT_EXPR, var_div, shift);
 	      append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
-	      pattern_stmt
-		= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
-				       MINUS_EXPR, oprnd0, t1);
+	      tree r = vect_recog_temp_ssa_var (itype, NULL);
+	      pattern_stmt = gimple_build_assign (r, MINUS_EXPR, oprnd0, t1);
 	      if (is_flclrd_moddiv_p)
 		{
 		  append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt);
 		  pattern_stmt
 		    = add_code_for_floorceilround_divmod (vectype, vinfo,
 							  stmt_vinfo, rhs_code,
-							  var_div, t1, oprnd0,
+							  var_div, r, oprnd0,
 							  oprnd1, itype);
 		  if (pattern_stmt == NULL)
 		    return NULL;
