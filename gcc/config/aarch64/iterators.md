@@ -2191,9 +2191,6 @@
 			    (DI   "v2si")])
 
 ;; Narrowed double-modes for VQN (Used for XTN).
-;; Lower case VNARROWQ, for the sstrunc and ustrunc optab names.
-(define_mode_attr vnarrowq [(V8HI "v8qi") (V4SI "v4hi") (V2DI "v2si")])
-
 (define_mode_attr VNARROWQ [(V8HI "V8QI") (V4SI "V4HI")
 			    (V2DI "V2SI")
 			    (DI	  "SI")	  (SI	"HI")

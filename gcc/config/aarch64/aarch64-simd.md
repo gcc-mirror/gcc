@@ -6173,7 +6173,7 @@
 
 ;; The saturating narrowing conversion that the vectoriser asks for through
 ;; IFN_SAT_TRUNC.  The RTL is what aarch64_<su>qmovn<mode> below matches.
-(define_expand "<sat_trunc_op>trunc<mode><vnarrowq>2"
+(define_expand "<sat_trunc_op>trunc<mode><Vnarrowq>2"
   [(set (match_operand:<VNARROWQ> 0 "register_operand")
 	(SAT_TRUNC:<VNARROWQ> (match_operand:VQN 1 "register_operand")))]
   "TARGET_SIMD"
