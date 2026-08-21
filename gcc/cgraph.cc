@@ -314,6 +314,7 @@ cgraph_node::scale_profile_to (profile_count ipa_count)
   profile_count num = count.combine_with_ipa_count (ipa_count);
   profile_count den = count;
   profile_count::adjust_for_ipa_scaling (&num, &den);
+  apply_scale (num, den);
 }
 
 /* Insert a new cgraph_function_version_info node into cgraph_fnver_htab
