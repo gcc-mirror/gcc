@@ -103,6 +103,9 @@ Leap	2120	Dec	30	23:59:59	-	S
 
 int main()
 {
+  // chrono::reload_tzdb() requires ./tzdata.zi to be present.
+  std::ofstream("tzdata.zi") << "# version empty\n";
+
   test_known_leaps();
   test_future_leaps();
 }
