@@ -1097,41 +1097,6 @@ compatible_calls_p (gcall *call1, gcall *call2, bool allow_two_operators)
   return true;
 }
 
-/* A subroutine of vect_build_slp_tree for checking VECTYPE, which is the
-   caller's attempt to find the vector type in STMT_INFO with the narrowest
-   element type.  Return true if VECTYPE is nonnull and if it is valid
-   for STMT_INFO.  GROUP_SIZE is as for vect_build_slp_tree.  */
-
-static bool
-vect_record_vectype (vec_info *vinfo, stmt_vec_info stmt_info,
-		     unsigned int group_size, tree vectype)
-{
-  if (!vectype)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Build SLP failed: unsupported data-type in %G\n",
-			 stmt_info->stmt);
-      /* Fatal mismatch.  */
-      return false;
-    }
-
-  /* If populating the vector type requires unrolling then fail
-     for basic-block vectorization.  */
-  if (is_a <bb_vec_info> (vinfo)
-      && !multiple_p (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Build SLP failed: unrolling required "
-			 "in basic block SLP\n");
-      /* Fatal mismatch.  */
-      return false;
-    }
-
-  return true;
-}
-
 /* Verify if the scalar stmts STMTS are isomorphic, require data
    permutation or are of unsupported types of operation.  Return
    true if they are, otherwise return false and indicate in *MATCHES
@@ -1183,17 +1148,20 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       matches[0] = false;
       return false;
     }
-  /* Record nunits required but continue analysis, producing matches[]
+  /* Check nunits required but continue analysis, producing matches[]
      as if nunits was not an issue.  This allows splitting of groups
      to happen.  */
   bool maybe_soft_fail = false;
   unsigned HOST_WIDE_INT const_nunits = 0;
-  if (nunits_vectype
-      && !vect_record_vectype (vinfo, first_stmt_info, group_size,
-			       nunits_vectype))
+  if (vectype
+      && is_a <bb_vec_info> (vinfo)
+      && !multiple_p (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
     {
-      gcc_assert (is_a <bb_vec_info> (vinfo));
-      if (!TYPE_VECTOR_SUBPARTS (nunits_vectype).is_constant (&const_nunits)
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Build SLP failed: unrolling required "
+			 "in basic block SLP\n");
+      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
 	  || const_nunits > group_size)
 	{
 	  /* Fatal mismatch.  */
@@ -2057,8 +2025,14 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	tree scalar_type = TREE_TYPE (PHI_RESULT (stmt));
 	tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
 						    group_size);
-	if (!vect_record_vectype (vinfo, stmt_info, group_size, vectype))
-	  return NULL;
+	if (!vectype)
+	  {
+	    if (dump_enabled_p ())
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			       "Build SLP failed: unsupported data-type in %G\n",
+			       stmt_info->stmt);
+	    return NULL;
+	  }
 
 	vect_def_type def_type = STMT_VINFO_DEF_TYPE (stmt_info);
 	if (def_type == vect_induction_def)
