@@ -211,6 +211,33 @@ namespace ranges
   template<typename _Iter, typename _Fp>
     using for_each_result = in_fun_result<_Iter, _Fp>;
 
+  // Apply __f to the result of applying __proj to each element in
+  // [__first, __last).
+  // Dispatches to __for_each_segment for segmented iterators
+  // (e.g. deque::iterator).
+  // Returns an iterator equal to __last.
+  template<typename _InputIterator, typename _Sentinel, typename _Function,
+	   typename _Proj>
+    constexpr _InputIterator
+    __for_each(_InputIterator __first, _Sentinel __last, _Function&& __f,
+	       _Proj& __proj)
+    {
+      if constexpr (__segmented_iterator<_InputIterator>
+		    && same_as<_InputIterator, _Sentinel>)
+	{
+	  std::__for_each_segment(__first, __last,
+	    [&](auto __lfirst, auto __llast)
+	    { return ranges::__for_each(__lfirst, __llast, __f, __proj); });
+	  return __last;
+	}
+      else
+	{
+	  for (; __first != __last; ++__first)
+	    std::__invoke(__f, std::__invoke(__proj, *__first));
+	  return __first;
+	}
+    }
+
   struct __for_each_fn
   {
     template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
@@ -219,9 +246,9 @@ namespace ranges
       constexpr for_each_result<_Iter, _Fun>
       operator()(_Iter __first, _Sent __last, _Fun __f, _Proj __proj = {}) const
       {
-	for (; __first != __last; ++__first)
-	  std::__invoke(__f, std::__invoke(__proj, *__first));
-	return { std::move(__first), std::move(__f) };
+	auto __end = ranges::__for_each(std::move(__first), std::move(__last), __f,
+					__proj);
+	return { std::move(__end), std::move(__f) };
       }
 
     template<input_range _Range, typename _Proj = identity,
