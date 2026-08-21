@@ -353,7 +353,15 @@ along with GCC; see the file COPYING3.  If not see
  (match (signed_integer_sat_val @0)
   (bit_xor:c (nop_convert? (negate
 			    (nop_convert? (convert (lt @0 integer_zerop)))))
-	     max_value)))
+	     max_value))
+ /* SAT_VAL = ((T)(X >> (PRECISION (X) - 1)) ^ MAX).
+    The shift produces zero or minus one.  A signed conversion can narrow or
+    extend either value exactly.  */
+ (match (signed_integer_sat_val @0)
+  (bit_xor:c (convert? (rshift @0 INTEGER_CST@1)) max_value)
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& (wi::to_wide (@1)
+	    == TYPE_PRECISION (TREE_TYPE (@0)) - 1)))))
 
 /* Saturation add for signed integer.  */
 (if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
@@ -573,9 +581,7 @@ along with GCC; see the file COPYING3.  If not see
  (match (signed_integer_sat_trunc @0)
   /* SAT_S_TRUNC(X) = (unsigned)X + NT_MAX + 1  > Unsigned_MAX ? (NT)X  */
   (cond^ (gt (plus:c (convert@4 @0) INTEGER_CST@1) INTEGER_CST@2)
-	 (bit_xor:c (nop_convert?
-		     (negate (nop_convert? (convert (lt @0 integer_zerop)))))
-		    INTEGER_CST@3)
+	 (signed_integer_sat_val @0)
 	 (convert @0))
   /* The comparison type has to be unsigned and at least as wide as X.  A
      narrower type would examine only the low bits of X.  The result
@@ -593,17 +599,58 @@ along with GCC; see the file COPYING3.  If not see
      wide_int limit_0 = wi::mask (otype_prec, false, range_prec); // Aka 255
      wide_int limit_1 = limit_0 - 2; // Aka 253
      wide_int limit_2 = limit_0 - 1; // Aka 254
-     wide_int otype_max = wi::mask (otype_prec - 1, false, otype_prec);
-     wide_int itype_max = wi::mask (otype_prec - 1, false, range_prec);
+     wide_int otype_max_in_range
+	= wi::mask (otype_prec - 1, false, range_prec);
      wide_int int_cst_1 = wi::to_wide (@1);
      wide_int int_cst_2 = wi::to_wide (@2);
-     wide_int int_cst_3 = wi::to_wide (@3);
     }
-    (if (((wi::eq_p (int_cst_1, offset) && wi::eq_p (int_cst_2, limit_0))
-	 || (wi::eq_p (int_cst_1, itype_max) && wi::eq_p (int_cst_2, limit_2))
+    (if ((wi::eq_p (int_cst_1, offset)
+	  && wi::eq_p (int_cst_2, limit_0))
+	 || (wi::eq_p (int_cst_1, otype_max_in_range)
+	     && wi::eq_p (int_cst_2, limit_2))
 	 || (wi::eq_p (int_cst_1, offset) && wi::eq_p (int_cst_2, limit_2))
-	 || (wi::eq_p (int_cst_1, itype_max) && wi::eq_p (int_cst_2, limit_1)))
-	 && wi::eq_p (int_cst_3, otype_max)))))))
+	 || (wi::eq_p (int_cst_1, otype_max_in_range)
+	     && wi::eq_p (int_cst_2, limit_1))))))))
+
+/* An arithmetic right shift preserves the sign of its signed input.  The
+   saturation value can therefore use the input sign while the range check
+   and truncated result use the shifted value.  */
+(if (INTEGRAL_TYPE_P (type) && !TYPE_UNSIGNED (type))
+ (match (signed_integer_sat_trunc @0)
+  (cond^ (gt (plus:c (convert@4
+		       (rshift@0 @5 INTEGER_CST@6)) INTEGER_CST@1)
+	     INTEGER_CST@2)
+	 (signed_integer_sat_val @5)
+	 (convert @0))
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& TYPE_UNSIGNED (TREE_TYPE (@4))
+	&& tree_fits_uhwi_p (@6)
+	&& TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (@0))
+	&& tree_to_uhwi (@6) < TYPE_PRECISION (TREE_TYPE (@0))
+	&& TYPE_PRECISION (TREE_TYPE (@4)) >= TYPE_PRECISION (type)
+	&& (TYPE_PRECISION (TREE_TYPE (@4))
+	    >= TYPE_PRECISION (TREE_TYPE (@0)) - tree_to_uhwi (@6)))
+   (with
+    {
+     unsigned otype_prec = TYPE_PRECISION (type);
+     unsigned range_prec = TYPE_PRECISION (TREE_TYPE (@4));
+     wide_int offset = wi::set_bit_in_zero (otype_prec - 1, range_prec);
+     wide_int limit_0 = wi::mask (otype_prec, false, range_prec); // Aka 255
+     wide_int limit_1 = limit_0 - 2; // Aka 253
+     wide_int limit_2 = limit_0 - 1; // Aka 254
+     wide_int otype_max_in_range
+	= wi::mask (otype_prec - 1, false, range_prec);
+     wide_int int_cst_1 = wi::to_wide (@1);
+     wide_int int_cst_2 = wi::to_wide (@2);
+    }
+    (if ((wi::eq_p (int_cst_1, offset)
+	      && wi::eq_p (int_cst_2, limit_0))
+	     || (wi::eq_p (int_cst_1, otype_max_in_range)
+		 && wi::eq_p (int_cst_2, limit_2))
+	     || (wi::eq_p (int_cst_1, offset)
+		 && wi::eq_p (int_cst_2, limit_2))
+	     || (wi::eq_p (int_cst_1, otype_max_in_range)
+		 && wi::eq_p (int_cst_2, limit_1))))))))
 
 /* Saturation mult for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
