@@ -1,14 +1,9 @@
 // PR c++/126472
 // { dg-do run { target c++11 } }
 
+#include <initializer_list>
+
 namespace std {
-template <class _E> struct initializer_list {
-  typedef const _E *const_iterator;
-  const _E *_M_array;
-  unsigned long _M_len;
-  const_iterator begin() const { return _M_array; }
-  const_iterator end() const { return begin() + _M_len; }
-};
 struct _Optional_payload_base {
   struct _Storage {
     constexpr _Storage() : _M_empty() {}
