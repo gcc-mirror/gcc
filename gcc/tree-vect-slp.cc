@@ -350,6 +350,8 @@ vect_slp_node_weight (vec_info *vinfo, slp_tree node)
 {
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
   basic_block bb;
+  /* ???  This is imprecise, VEC_PERM nodes do not have a representative
+     but are laid out close to their children.  */
   if (!stmt_info)
     bb = vinfo->bbs[0];
   else
@@ -6774,6 +6776,8 @@ struct loop *
 vect_optimize_slp_pass::containing_loop (slp_tree node)
 {
   stmt_vec_info rep = SLP_TREE_REPRESENTATIVE (node);
+  /* ???  This is imprecise, VEC_PERM nodes do not have a representative
+     but are laid out close to their children.  */
   if (!rep)
     return m_vinfo->bbs[0]->loop_father;
   return gimple_bb (vect_orig_stmt (rep)->stmt)->loop_father;
