@@ -305,6 +305,11 @@ struct riscv_tune_param
   unsigned short vec_reassoc_width = 1;
   unsigned int small_loop_unroll_ninsns = 4;
   unsigned int small_loop_unroll_factor = 2;
+  enum riscv_autoprefetch_model
+  {
+    AUTOPREFETCHER_OFF,
+    AUTOPREFETCHER_WEAK
+  } autoprefetcher_model = AUTOPREFETCHER_OFF;
 };
 
 
@@ -747,6 +752,7 @@ static const struct riscv_tune_param xt_c9501_tune_info = {
   1,						/* vec_reassoc_width.  */
   4,	/* small_loop_unroll_ninsns.  */
   8,	/* small_loop_unroll_factor.  */
+  riscv_tune_param::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model */
 };
 
 /* Costs to use when optimizing for Tenstorrent Ascalon 8 wide.  */
@@ -12195,6 +12201,22 @@ riscv_override_options_internal (struct gcc_options *opts)
       opts->x_flag_cf_protection
       = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
     }
+
+  int queue_depth = 0;
+  switch (cpu->tune_param->autoprefetcher_model)
+    {
+      case riscv_tune_param::AUTOPREFETCHER_OFF:
+       queue_depth = -1;
+       break;
+      case riscv_tune_param::AUTOPREFETCHER_WEAK:
+       queue_depth = 0;
+       break;
+      default:
+       gcc_unreachable ();
+    }
+
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       param_sched_autopref_queue_depth, queue_depth);
 }
 
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
