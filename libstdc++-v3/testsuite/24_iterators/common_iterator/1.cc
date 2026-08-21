@@ -18,6 +18,7 @@
 // { dg-do run { target c++20 } }
 
 #include <iterator>
+#include <ranges>
 #include <testsuite_hooks.h>
 
 void
@@ -192,6 +193,28 @@ test_pr103992()
 }
 
 static_assert( test_pr103992() );
+
+template<typename Iter>
+concept has_iter_cat = requires { typename std::iterator_traits<Iter>::iterator_category; };
+
+constexpr bool
+test_lwg3749()
+{
+  // LWG 3749 - common_iterator should handle integer-class difference types
+#if __SIZEOF_INT128__
+  auto v = std::views::iota(__int128(0));
+#else
+  auto v = std::views::iota(0ll);
+#endif
+
+  using Iter = decltype(v.begin());
+  static_assert( ! std::integral<std::iter_difference_t<Iter>> );
+  static_assert( ! has_iter_cat<std::common_iterator<Iter, std::unreachable_sentinel_t>> );
+
+  return true;
+}
+
+static_assert( test_lwg3749() );
 
 int
 main()

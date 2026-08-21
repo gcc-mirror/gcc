@@ -2297,8 +2297,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using difference_type = iter_difference_t<_It>;
     };
 
+  namespace __detail
+  {
+    template<typename _It, typename _Sent>
+      struct __common_iterator_iter_cat
+      { };
+
+    template<typename _It, typename _Sent>
+      requires integral<iter_difference_t<_It>>
+      struct __common_iterator_iter_cat<_It, _Sent>
+      {
+	static auto
+	_S_iter_cat()
+	{
+	  if constexpr (requires { requires derived_from<__iter_category_t<_It>,
+							 forward_iterator_tag>; })
+	    return forward_iterator_tag{};
+	  else
+	    return input_iterator_tag{};
+	}
+
+	using iterator_category = decltype(_S_iter_cat());
+      };
+  } // namespace __detail
+
   template<input_iterator _It, typename _Sent>
     struct iterator_traits<common_iterator<_It, _Sent>>
+    : __detail::__common_iterator_iter_cat<_It, _Sent>
     {
     private:
       template<typename _Iter>
@@ -2315,21 +2340,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using type = decltype(std::declval<const _CIter&>().operator->());
 	};
 
-      static auto
-      _S_iter_cat()
-      {
-	if constexpr (requires { requires derived_from<__iter_category_t<_It>,
-						       forward_iterator_tag>; })
-	  return forward_iterator_tag{};
-	else
-	  return input_iterator_tag{};
-      }
-
     public:
       using iterator_concept = __conditional_t<forward_iterator<_It>,
 					       forward_iterator_tag,
 					       input_iterator_tag>;
-      using iterator_category = decltype(_S_iter_cat());
+      // iterator_category defined in base __common_iterator_iter_cat
       using value_type = iter_value_t<_It>;
       using difference_type = iter_difference_t<_It>;
       using pointer = typename __ptr<_It>::type;
