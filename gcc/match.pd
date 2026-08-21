@@ -12916,17 +12916,7 @@ and,
     (plus:c
       (mul_lo @mul_hilo0 INTEGER_CST@0)
       (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1))
-    @mul_hilo1)
-  (with {
-    tree_code mul_hilo_code = TREE_CODE (@mul_hilo1);
-    tree_code rhs_code = ERROR_MARK;
-    if (mul_hilo_code == SSA_NAME)
-      {
-	gimple *def = SSA_NAME_DEF_STMT (@mul_hilo1);
-	if (def && gimple_code (def) == GIMPLE_ASSIGN)
-	  rhs_code = gimple_assign_rhs_code (def);
-      } }
-  (if (rhs_code == MULT_EXPR))))
+    (mult@mul_hilo1 @2 @3)))
 /* Partial ladder sum: (xl*yl >> N) + hilo.  */
 (match (mul_ladder_part_sum @op0 @op1 @mul_hilo0 @0 @1)
   (plus:c
