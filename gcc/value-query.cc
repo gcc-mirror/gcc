@@ -479,6 +479,8 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt,
 	      if (TYPE_OVERFLOW_WRAPS (type) && bound_ovf)
 		{
 		  r.set_varying (type);
+		  r.update_bitmask (irange_bitmask (wi::zero (precision),
+						    get_nonzero_bits (expr)));
 		  return true;
 		}
 
