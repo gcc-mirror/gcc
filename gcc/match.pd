@@ -12806,7 +12806,6 @@ and,
    INTEGER_CST@2) INTEGER_CST@3)
   (if (compare_tree_int (@sub1, 1) == 0)))
 
-#if GIMPLE
 /* Match low and high parts of longhand multiplication.
    Given a 2N-bit unsigned type, x = xh*2^N + xl and y = yh*2^N + yl,
    where xh, xl, yh, yl are N-bit halves extracted via shifts and masks.  */
@@ -12962,7 +12961,6 @@ and,
        && (TYPE_PRECISION (wide_type) & 3) == 0
        && tree_fits_uhwi_p (@2)
        && tree_to_uhwi (@2) * 2 == TYPE_PRECISION (wide_type)))))
-#endif
 
 /* Floatint point/integer comparison and integer->integer
    or floating point -> float point conversion.  */
