@@ -763,69 +763,76 @@ compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
       return true;
     }
 
-  auto a_stmt = STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (a));
-  auto b_stmt = STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (b));
-
-  if (gimple_code (a_stmt) != gimple_code (b_stmt))
+  if (SLP_TREE_PERMUTE_P (a) != SLP_TREE_PERMUTE_P (b))
     return false;
-
-  /* code, children, type, externals, loads, constants  */
-  if (gimple_num_args (a_stmt) != gimple_num_args (b_stmt))
-    return false;
-
-  /* At this point, a and b are known to be the same gimple operations.  */
-  if (is_gimple_call (a_stmt))
-    {
-	if (!compatible_calls_p (dyn_cast <gcall *> (a_stmt),
-				 dyn_cast <gcall *> (b_stmt), false))
-	  return false;
-    }
-  else if (!is_gimple_assign (a_stmt))
-    return false;
+  else if (SLP_TREE_PERMUTE_P (a))
+    ;
   else
     {
-      tree_code acode = gimple_assign_rhs_code (a_stmt);
-      tree_code bcode = gimple_assign_rhs_code (b_stmt);
-      if ((acode == REALPART_EXPR || acode == IMAGPART_EXPR)
-	  && (bcode == REALPART_EXPR || bcode == IMAGPART_EXPR)
-	  && operand_equal_p (TREE_OPERAND (gimple_assign_rhs1 (a_stmt), 0),
-			      TREE_OPERAND (gimple_assign_rhs1 (b_stmt), 0)))
-	return true;
+      auto a_stmt = STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (a));
+      auto b_stmt = STMT_VINFO_STMT (SLP_TREE_REPRESENTATIVE (b));
 
-      if (acode != bcode)
+      if (gimple_code (a_stmt) != gimple_code (b_stmt))
 	return false;
-    }
 
-  if (!STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (a))
-      || !STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (b)))
-    {
-      for (unsigned i = 0; i < gimple_num_args (a_stmt); i++)
+      /* code, children, type, externals, loads, constants  */
+      if (gimple_num_args (a_stmt) != gimple_num_args (b_stmt))
+	return false;
+
+      /* At this point, a and b are known to be the same gimple operations.  */
+      if (is_gimple_call (a_stmt))
 	{
-	  tree t1 = gimple_arg (a_stmt, i);
-	  tree t2 = gimple_arg (b_stmt, i);
-	  if (TREE_CODE (t1) != TREE_CODE (t2))
-	    return false;
-
-	  /* If SSA name then we will need to inspect the children
-	     so we can punt here.  */
-	  if (TREE_CODE (t1) == SSA_NAME)
-	    continue;
-
-	  if (!operand_equal_p (t1, t2, 0))
+	  if (!compatible_calls_p (dyn_cast <gcall *> (a_stmt),
+				   dyn_cast <gcall *> (b_stmt), false))
 	    return false;
 	}
-    }
-  else
-    {
-      auto dr1 = STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (a));
-      auto dr2 = STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (b));
-      /* Don't check the last dimension as that's checked by the lineary
-	 checks.  This check is also much stricter than what we need
-	 because it doesn't consider loading from adjacent elements
-	 in the same struct as loading from the same base object.
-	 But for now, I'll play it safe.  */
-      if (!same_data_refs (dr1, dr2, 1))
+      else if (!is_gimple_assign (a_stmt))
 	return false;
+      else
+	{
+	  tree_code acode = gimple_assign_rhs_code (a_stmt);
+	  tree_code bcode = gimple_assign_rhs_code (b_stmt);
+	  if ((acode == REALPART_EXPR || acode == IMAGPART_EXPR)
+	      && (bcode == REALPART_EXPR || bcode == IMAGPART_EXPR)
+	      && operand_equal_p (TREE_OPERAND (gimple_assign_rhs1 (a_stmt), 0),
+				  TREE_OPERAND (gimple_assign_rhs1 (b_stmt), 0)))
+	    return true;
+
+	  if (acode != bcode)
+	    return false;
+	}
+
+      if (!STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (a))
+	  || !STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (b)))
+	{
+	  for (unsigned i = 0; i < gimple_num_args (a_stmt); i++)
+	    {
+	      tree t1 = gimple_arg (a_stmt, i);
+	      tree t2 = gimple_arg (b_stmt, i);
+	      if (TREE_CODE (t1) != TREE_CODE (t2))
+		return false;
+
+	      /* If SSA name then we will need to inspect the children
+		 so we can punt here.  */
+	      if (TREE_CODE (t1) == SSA_NAME)
+		continue;
+
+	      if (!operand_equal_p (t1, t2, 0))
+		return false;
+	    }
+	}
+      else
+	{
+	  auto dr1 = STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (a));
+	  auto dr2 = STMT_VINFO_DATA_REF (SLP_TREE_REPRESENTATIVE (b));
+	  /* Don't check the last dimension as that's checked by the lineary
+	     checks.  This check is also much stricter than what we need
+	     because it doesn't consider loading from adjacent elements
+	     in the same struct as loading from the same base object.
+	     But for now, I'll play it safe.  */
+	  if (!same_data_refs (dr1, dr2, 1))
+	    return false;
+	}
     }
 
   for (unsigned i = 0; i < SLP_TREE_CHILDREN (a).length (); i++)
