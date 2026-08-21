@@ -3035,7 +3035,7 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
   gcc_assert (!value_id_constant_p (lookfor));
 
   /* It must be a complex expression, so generate it recursively.  Note
-     that this is only necessary to handle gcc.dg/tree-ssa/ssa-pre28.c
+     that this is only necessary to handle gcc.dg/tree-ssa/ssa-pre-28.c
      where the insert algorithm fails to insert a required expression.  */
   bitmap exprset = value_expressions[lookfor];
   bitmap_iterator bi;
@@ -3048,8 +3048,17 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
 	   places.  We can insert NARYs which eventually re-materializes
 	   its operand values.  */
 	if (temp->kind == NARY)
-	  return create_expression_by_pieces (block, temp, stmts,
-					      TREE_TYPE (op));
+	  {
+	    static int depth;
+	    if (depth > 8)
+	      return NULL_TREE;
+
+	    depth++;
+	    tree res = create_expression_by_pieces (block, temp, stmts,
+						    TREE_TYPE (op));
+	    depth--;
+	    return res;
+	  }
       }
 
   /* Defer.  */
