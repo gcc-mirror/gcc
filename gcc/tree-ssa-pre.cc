@@ -431,6 +431,8 @@ get_or_alloc_expr_for_nary (vn_nary_op_t nary, unsigned value_id,
   unsigned int result_id;
 
   gcc_assert (value_id == 0 || !value_id_constant_p (value_id));
+  gcc_assert (nary->opcode != SSA_NAME
+	      && TREE_CODE_CLASS (nary->opcode) != tcc_constant);
 
   expr.kind = NARY;
   expr.id = 0;
@@ -1626,6 +1628,12 @@ phi_translate_1 (bitmap_set_t dest,
 	  {
 	    unsigned int new_val_id;
 
+	    vn_nary_op_t saved_newnary
+	      = XALLOCAVAR (struct vn_nary_op_s,
+			    sizeof_vn_nary_op (newnary->length));
+	    memcpy (saved_newnary, newnary,
+		    sizeof_vn_nary_op (newnary->length));
+
 	    /* Try to simplify the new NARY.  */
 	    tree res = vn_nary_simplify (newnary);
 	    if (res)
@@ -1673,6 +1681,10 @@ phi_translate_1 (bitmap_set_t dest,
 			return constant;
 		      }
 		  }
+		/* Restore the unsimplified newnary, it was simplified
+		   to a NAME that we do not want (not as NARY anyway).  */
+		memcpy (newnary, saved_newnary,
+			sizeof_vn_nary_op (saved_newnary->length));
 	      }
 
 	    tree result = vn_nary_op_lookup_pieces (newnary->length,
