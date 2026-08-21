@@ -295,7 +295,7 @@ C front end             Marek Polacek           <polacek@redhat.com>
 c++                     Patrick Palka           <ppalka@gcc.gnu.org>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 CTF, BTF                Indu Bhagat             <indu.bhagat@oracle.com>
-CTF, BTF, bpf port      David Faust             <david.faust@oracle.com>
+CTF, BTF, bpf port      David Faust             <david.faust@oss.qualcomm.com>
 dataflow                Paolo Bonzini           <bonzini@gnu.org>
 dataflow                Seongbae Park           <seongbae.park@gmail.com>
 dataflow                Kenneth Zadeck          <zadeck@naturalbridge.com>
@@ -493,7 +493,7 @@ Doug Evans                      devans          <dje@google.com>
 Chris Fairles                   cfairles        <cfairles@gcc.gnu.org>
 Alessandro Fanfarillo           afanfa          <fanfarillo.gcc@gmail.com>
 Changpeng Fang                  cfang           <changpeng.fang@amd.com>
-David Faust                     dfaust          <david.faust@oracle.com>
+David Faust                     dfaust          <david.faust@oss.qualcomm.com>
 Sam Feifer                      sfeifer         <sfeifer@redhat.com>
 Eric Feng                       efric           <ef2648@columbia.edu>
 Li Feng                         lifeng          <nemokingdom@gmail.com>
@@ -993,6 +993,7 @@ Giuseppe D'Angelo                               <giuseppe.dangelo@kdab.com>
 Robin Dapp                                      <rdapp.gcc@gmail.com>
 Robin Dapp                                      <rdapp@qti.qualcomm.com>
 Robin Dapp                                      <rdapp@ventanamicro.com>
+David Faust                                     <david.faust@oss.qualcomm.com>
 Kael Andrew Franco                              <kaelfandrew@gmail.com>
 Prachi Godbole                                  <pgodbole@nvidia.com>
 Eikansh Gupta                                   <eikansh.gupta@oss.qualcomm.com>

@@ -1668,12 +1668,15 @@ users:
 - sn: Faust
   cn: David Faust
   email:
-  - david.faust@oracle.com
+  - david.faust@oss.qualcomm.com
   - dfaust@gcc.gnu.org
   roles:
   - Reviewer: CTF, BTF, bpf port
   - WriteAfter
+  - DCO: david.faust@oss.qualcomm.com
   account: dfaust
+  inactive_email:
+  - david.faust@oracle.com
 - sn: Feifer
   cn: Sam Feifer
   email:
