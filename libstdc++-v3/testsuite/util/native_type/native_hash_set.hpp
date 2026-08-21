@@ -50,7 +50,7 @@ namespace __gnu_pbds
   {
 #define PB_DS_BASE_C_DEC \
     std::tr1::__unordered_set<Key, Hash_Fn, Eq_Fn, \
-    typename _Alloc::template rebind<Key>::other, Cache_Hash>
+    typename __gnu_cxx::__alloc_traits<_Alloc>::template rebind<Key>::other, Cache_Hash>
 
     template<typename Key,
 	     size_t Init_Size = 8,

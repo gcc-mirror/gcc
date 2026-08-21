@@ -48,7 +48,7 @@ namespace __gnu_pbds
   {
 #define PB_DS_BASE_C_DEC \
     std::multimap<Key, Data, Less_Fn, \
-      typename _Alloc::template rebind<std::pair<const Key, Data> >::other>
+      typename __gnu_cxx::__alloc_traits<_Alloc>::template rebind<std::pair<const Key, Data> >::other>
 
     template<typename Key, typename Data, class Less_Fn = std::less<Key>,
 	     typename _Alloc = std::allocator<char> >
@@ -62,10 +62,7 @@ namespace __gnu_pbds
 
       typedef _Alloc allocator;
 
-      typedef
-      typename _Alloc::template rebind<
-	std::pair<Key, Data> >::other::const_reference
-      const_reference;
+      typedef const std::pair<Key, Data>& const_reference;
 
       typedef typename base_type::iterator iterator;
       typedef typename base_type::const_iterator const_iterator;

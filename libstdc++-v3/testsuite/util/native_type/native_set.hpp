@@ -48,7 +48,7 @@ namespace __gnu_pbds
   namespace test
   {
 #define PB_DS_BASE_C_DEC \
-    std::set<Key, Cmp_Fn, typename _Alloc::template rebind<Key>::other>
+    std::set<Key, Cmp_Fn, typename __gnu_cxx::__alloc_traits<_Alloc>::template rebind<Key>::other>
 
     template<typename Key, class Cmp_Fn = std::less<Key>,
 	     typename _Alloc = std::allocator<char> >

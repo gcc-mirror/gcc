@@ -50,7 +50,7 @@ namespace __gnu_pbds
   {
 #define PB_DS_BASE_C_DEC \
     std::tr1::__unordered_map<Key, Data, Hash_Fn, Eq_Fn, \
-    typename _Alloc::template rebind<std::pair<const Key, Data> >::other, Cache_Hash>
+    typename __gnu_cxx::__alloc_traits<_Alloc>::template rebind<std::pair<const Key, Data> >::other, Cache_Hash>
 
     template<typename Key,
 	     typename Data,

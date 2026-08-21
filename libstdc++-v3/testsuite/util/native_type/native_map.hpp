@@ -50,7 +50,7 @@ namespace __gnu_pbds
   {
 #define PB_DS_BASE_C_DEC \
     std::map<Key, Data, Cmp_Fn,	\
-typename _Alloc::template rebind<std::pair<const Key, Data > >::other >
+typename __gnu_cxx::__alloc_traits<_Alloc>::template rebind<std::pair<const Key, Data > >::other >
 
     template<typename Key, typename Data, class Cmp_Fn = std::less<Key>,
 	     typename _Alloc = std::allocator<char> >

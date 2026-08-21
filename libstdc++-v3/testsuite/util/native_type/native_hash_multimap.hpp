@@ -70,9 +70,7 @@ namespace __gnu_pbds
       typedef typename base_type::iterator 	iterator;
       typedef typename base_type::const_iterator const_iterator;
 
-      typedef
-      typename allocator::template rebind<pair_type>::other::const_reference
-      const_reference;
+      typedef const pair_type& const_reference;
 
       native_hash_multimap() : base_type(Init_Size)
       { }
