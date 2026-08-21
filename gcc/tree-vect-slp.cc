@@ -1130,9 +1130,9 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   bool first_stmt_phi_p = false;
   int first_reduc_idx = -1;
 
-  tree vectype, nunits_vectype;
+  tree vectype;
   if (!vect_get_vector_types_for_stmt (vinfo, first_stmt_info, &vectype,
-				       &nunits_vectype, group_size))
+				       group_size))
     {
       /* Fatal mismatch.  */
       matches[0] = false;

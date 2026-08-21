@@ -14490,16 +14490,11 @@ vect_gen_while_not (gimple_seq *seq, tree mask_type, tree start_index,
 
    - Set *STMT_VECTYPE_OUT to:
      - NULL_TREE if the statement doesn't need to be vectorized;
-     - the equivalent of STMT_VINFO_VECTYPE otherwise.
-
-   - Set *NUNITS_VECTYPE_OUT to the vector type that contains the maximum
-     number of units needed to vectorize STMT_INFO, or NULL_TREE if the
-     statement does not help to determine the overall number of units.  */
+     - the equivalent of STMT_VINFO_VECTYPE otherwise.  */
 
 opt_result
 vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
 				tree *stmt_vectype_out,
-				tree *nunits_vectype_out,
 				unsigned int group_size)
 {
   gimple *stmt = stmt_info->stmt;
@@ -14514,7 +14509,6 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
     group_size = 0;
 
   *stmt_vectype_out = NULL_TREE;
-  *nunits_vectype_out = NULL_TREE;
 
   if (gimple_get_lhs (stmt) == NULL_TREE
       /* Allow vector conditionals through here.  */
@@ -14602,50 +14596,6 @@ vect_get_vector_types_for_stmt (vec_info *vinfo, stmt_vec_info stmt_info,
 				   stmt);
 
   *stmt_vectype_out = vectype;
-
-  /* Don't try to compute scalar types if the stmt produces a boolean
-     vector; use the existing vector type instead.  */
-  tree nunits_vectype = vectype;
-  if (!VECTOR_BOOLEAN_TYPE_P (vectype))
-    {
-      /* The number of units is set according to the smallest scalar
-	 type (or the largest vector size, but we only support one
-	 vector size per vectorization).  */
-      scalar_type = vect_get_smallest_scalar_type (stmt_info,
-						   TREE_TYPE (vectype));
-      if (!types_compatible_p (scalar_type, TREE_TYPE (vectype)))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "get vectype for smallest scalar type: %T\n",
-			     scalar_type);
-	  nunits_vectype = get_vectype_for_scalar_type (vinfo, scalar_type,
-							group_size);
-	  if (!nunits_vectype)
-	    return opt_result::failure_at
-	      (stmt, "not vectorized: unsupported data-type %T\n",
-	       scalar_type);
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location, "nunits vectype: %T\n",
-			     nunits_vectype);
-	}
-    }
-
-  if (!multiple_p (TYPE_VECTOR_SUBPARTS (nunits_vectype),
-		   TYPE_VECTOR_SUBPARTS (*stmt_vectype_out)))
-    return opt_result::failure_at (stmt,
-				   "Not vectorized: Incompatible number "
-				   "of vector subparts between %T and %T\n",
-				   nunits_vectype, *stmt_vectype_out);
-
-  if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
-      dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (nunits_vectype));
-      dump_printf (MSG_NOTE, "\n");
-    }
-
-  *nunits_vectype_out = nunits_vectype;
   return opt_result::success ();
 }
 
