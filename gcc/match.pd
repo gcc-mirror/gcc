@@ -12813,8 +12813,7 @@ and,
   (if (INTEGRAL_TYPE_P (op_type)
        && TYPE_UNSIGNED (op_type)
        && TYPE_PRECISION (op_type) % 2 == 0
-       && tree_fits_uhwi_p (@0)
-       && tree_to_uhwi (@0) == TYPE_PRECISION (op_type) / 2))))
+       && wi::to_wide (@0) == TYPE_PRECISION (op_type) / 2))))
 /* Low half: op & mask.  */
 (match (mul_lo @op @0)
   (bit_and @op INTEGER_CST@0)
@@ -12822,8 +12821,7 @@ and,
   (if (INTEGRAL_TYPE_P (op_type)
        && TYPE_UNSIGNED (op_type)
        && TYPE_PRECISION (op_type) % 2 == 0
-       && tree_fits_uhwi_p (@0)
-       && (tree_to_uhwi (@0)
+       && (wi::to_wide (@0)
 	   == wi::mask (TYPE_PRECISION (op_type) / 2, false,
 			TYPE_PRECISION (op_type)))))))
 /* Cross product: high(op0) * low(op1).  */
