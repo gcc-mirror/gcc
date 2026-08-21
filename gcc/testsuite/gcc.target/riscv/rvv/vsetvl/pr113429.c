@@ -2,6 +2,7 @@
 /* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d -O3" } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-require-effective-target riscv_v } */
+/* { dg-require-effective-target rvv_zvl_ge_256b_ok } */
 
 long a;
 int b, c, d, e, f, g;
