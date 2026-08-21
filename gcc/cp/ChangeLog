@@ -1,3 +1,35 @@
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-07-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126335
+	* typeck2.cc (split_nonconstant_init): Assert that DECL_INITIAL
+	is initially null.  Don't clear DECL_INITIAL if build_vec_init
+	set it.  Only clear TREE_READONLY if CODE has side-effects.
+
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124794
+	* cp-tree.h (baselink_for_fns): Adjust declaration.
+	* parser.cc (cp_parser_reflect_expression): Adjust the call to
+	baselink_for_fns.
+	* reflect.cc (splice): Call baselink_for_fns.
+	* semantics.cc (baselink_for_fns): Add a bool parameter.  If
+	it's true, ignore currently_open_derived_class.
+
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126546
+	* reflect.cc (get_reflection): Check PACK_INDEX_EXPR instead of
+	PACK_INDEX_P.
+
 2026-08-19  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

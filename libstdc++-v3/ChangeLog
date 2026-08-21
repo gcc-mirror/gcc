@@ -1,3 +1,48 @@
+2026-08-20  Anlai Lu  <agicy@qq.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/print.h (_File_sink::_File::_File)
+	[_GLIBCXX_USE_STDIO_LOCKING && _GLIBCXX_USE_GLIBC_STDIO_EXT]:
+	Move __overflow call to separate member function.
+	(_File_sink::_File::_M_init_write_buf)
+	[_GLIBCXX_USE_STDIO_LOCKING && _GLIBCXX_USE_GLIBC_STDIO_EXT]:
+	Extracted from constructor, call __overflow for null
+	_M_file->_IO_write_ptr.
+	(_File_sink::_File_sink)
+	[_GLIBCXX_USE_STDIO_LOCKING && _GLIBCXX_USE_GLIBC_STDIO_EXT]:
+	Call _M_init_write_buf instead of _M_write_buf.
+	* testsuite/27_io/print/1.cc: Add test_print_setvbuf.
+	(cherry picked from commits 4cb7258da9bd637ccce023693ae6a167d179784d)
+	(74b3180bb616fbc35d1b655da75d8f6d8b39d368)
+
+2026-08-20  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-08-20  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/126731
+	* include/std/format (std::formatter<_Float16, _CharT>)
+	(std::formatter<__format::__bflt16_t, _CharT>): Remove
+	partial specializations.
+	* testsuite/std/format/formatter/ext_float.cc: Test output
+	for closest value to 1/10.
+
+2026-08-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	Backported from master:
+	2026-08-17  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* config/os/bsd/openbsd/ctype_base.h: Use static_cast when
+	setting the masks.
+
+2026-08-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	Backported from master:
+	2026-08-15  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* config/os/bsd/openbsd/ctype_base.h: Use _CTYPE prefixed
+	macros if available.
+
 2026-08-18  Yan Churkin  <yanchurkin@gmail.com>
 
 	Backported from master:
