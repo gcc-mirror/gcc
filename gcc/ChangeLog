@@ -1,3 +1,60 @@
+2026-08-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-08-12  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/126787
+	* config/i386/sse.md (*fma_fmadd_<mode>): Use the "jm" to replace
+	"m" constraint and set addr attribute to "gpr16" for vex only
+	alternatives.
+	(*fma_fmsub_<mode>): Likewise.
+	(*fma_fnmadd_<mode>): Likewise.
+	(*fma_fnmsub_<mode>): Likewise.
+	(*fma_fmaddsub_<mode>): Likewise.
+	(*fma_fmsubadd_<mode>): Likewise.
+	(xop_p<macs><ssemodesuffix><ssemodesuffix>): Likewise.
+	(xop_p<macs>dql): Likewise.
+	(xop_p<macs>dqh): Likewise.
+	(xop_p<macs>wd): Likewise.
+	(xop_p<madcs>wd): Likewise.
+	(xop_pcmov_<mode><avxsizesuffix>): Likewise.
+	(xop_phadd<u>bw): Likewise.
+	(xop_phadd<u>bd): Likewise.
+	(xop_phadd<u>bq): Likewise.
+	(xop_phadd<u>wd): Likewise.
+	(xop_phadd<u>wq): Likewise.
+	(xop_phadd<u>dq): Likewise.
+	(xop_phsubbw): Likewise.
+	(xop_phsubwd): Likewise.
+	(xop_phsubdq): Likewise.
+	(xop_pperm): Likewise.
+	(xop_pperm_pack_v2di_v4si): Likewise.
+	(xop_pperm_pack_v4si_v8hi): Likewise.
+	(xop_pperm_pack_v8hi_v16qi): Likewise.
+	(xop_rotl<mode>3): Likewise.
+	(xop_rotr<mode>3): Likewise.
+	(xop_vrotl<mode>3): Likewise.
+	(xop_sha<mode>3): Likewise.
+	(xop_shl<mode>3): Likewise.
+	(xop_frcz<mode>2): Likewise.
+	(*xop_vmfrcz<mode>2): Likewise.
+	(xop_maskcmp<mode>3): Likewise.
+	(xop_maskcmp_uns<mode>3): Likewise.
+	(xop_maskcmp_uns2<mode>3): Likewise.
+	(xop_pcom_tf<mode>3): Likewise.
+	(xop_vpermil2<mode>3): Likewise.
+
+2026-08-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	Backported from master:
+	2026-08-10  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/126513
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Allocate reg
+	if target is null or const0_rtx.
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin): Add
+	error handling for c1, c2 and c3 described in this commit.
+
 2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
 
 	PR target/124629

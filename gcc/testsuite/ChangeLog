@@ -1,3 +1,21 @@
+2026-08-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-08-12  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/126787
+	* gcc.target/i386/pr126787.c: New test.
+
+2026-08-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	Backported from master:
+	2026-08-10  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/126513
+	* gcc.target/powerpc/pr126513-acmp-tst-1.c: New test.
+	* gcc.target/powerpc/pr126513-acmp-tst-2.c: New test.
+	* gcc.target/powerpc/pr126513-acmp-tst-3.c: New test.
+
 2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
 
 	PR target/124629
