@@ -47,14 +47,12 @@ TEST_ALL (VEC_PERM)
 
 /* We should use WHILEs for all accesses.  */
 /* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.b} 20 } } */
-/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.h} 18 } } */
-/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.s} 27 } } */
-/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.d} 24 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.h} 16 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.s} 21 } } */
+/* { dg-final { scan-assembler-times {\twhilelo\tp[0-7]\.d} 15 } } */
 
 /* 6 for the 8-bit types and 2 for the 16-bit types.  */
 /* { dg-final { scan-assembler-times {\tuqdecb\t} 8 } } */
-/* 4 for the 16-bit types and 3 for the 32-bit types.  */
-/* { dg-final { scan-assembler-times {\tuqdech\t} 7 } } */
-/* 6 for the 32-bit types and 3 for the 64-bit types.  */
-/* { dg-final { scan-assembler-times {\tuqdecw\t} 9 } } */
-/* { dg-final { scan-assembler-times {\tuqdecd\t} 6 } } */
+/* { dg-final { scan-assembler-times {\tuqdech\t} 2 } } */
+/* { dg-final { scan-assembler-times {\tuqdecw\t} 3 } } */
+/* { dg-final { scan-assembler-not {\tuqdecd\t} } } */

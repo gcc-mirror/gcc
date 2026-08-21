@@ -31328,6 +31328,14 @@ aarch64_estimated_poly_value (poly_int64 val,
   return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
 }
 
+/* Implement TARGET_POLY_INT_INDETERMINATE_BOUND.  */
+
+static poly_uint64
+aarch64_poly_int_indeterminate_bound ()
+{
+  return poly_uint64 (0, 15);
+}
+
 
 /* Return true for types that could be supported as SIMD return or
    argument types.  */
@@ -34649,6 +34657,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_ESTIMATED_POLY_VALUE
 #define TARGET_ESTIMATED_POLY_VALUE aarch64_estimated_poly_value
+
+#undef TARGET_POLY_INT_INDETERMINATE_BOUND
+#define TARGET_POLY_INT_INDETERMINATE_BOUND aarch64_poly_int_indeterminate_bound
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE aarch64_attribute_table
