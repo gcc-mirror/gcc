@@ -4421,6 +4421,11 @@ afdo_calculate_branch_prob (bb_set *annotated_bb)
 	    }
       }
   afdo_adjust_guessed_profile (annotated_bb);
+  /* Avoid scaling with a zero entry count during IPA profile merging.  */
+  basic_block entry = ENTRY_BLOCK_PTR_FOR_FN (cfun);
+  if (!entry->count.nonzero_p ())
+    entry->count = profile_count::from_gcov_type
+      (MAX ((gcov_type) 1, autofdo::afdo_count_scale / 2)).afdo ();
   FOR_ALL_BB_FN (bb, cfun)
     {
       bb->aux = NULL;
