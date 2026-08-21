@@ -1,3 +1,13 @@
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116960
+	PR c++/119303
+	* diagnostic.cc (diagnostic_context::report_diagnostic): Check for
+	non-zero m_lock later, after checking diagnostic_enabled.
+
 2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
 
 	PR target/124629

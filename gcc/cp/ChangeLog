@@ -1,3 +1,17 @@
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118775
+	* constexpr.cc (cxx_eval_call_expression): Check tree_fits_uhwi_p.
+
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116379
+	* pt.cc (tsubst_expr) <COMPONENT_REF>: Use force_paren_expr to set
+	REF_PARENTHESIZED_P.
+
 2026-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

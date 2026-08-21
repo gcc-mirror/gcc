@@ -1,3 +1,27 @@
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-03-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/118775
+	* g++.dg/cpp2a/constexpr-new24.C: New test.
+	* g++.dg/cpp2a/constexpr-new25.C: New test.
+
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116379
+	* g++.dg/cpp1y/decltype-auto9.C: New test.
+
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-05-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/116960
+	PR c++/119303
+	* g++.dg/cpp2a/lambda-uneval26.C: New test.
+	* g++.dg/warn/undefined2.C: New test.
+
 2026-08-19  Alice Carlotti  <alice.carlotti@arm.com>
 
 	PR target/124629
