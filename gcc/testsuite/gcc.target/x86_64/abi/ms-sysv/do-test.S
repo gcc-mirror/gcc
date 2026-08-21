@@ -113,7 +113,7 @@ FUNC_BEGIN(call_do_test_unaligned)
 	# Push the 5th argument.
 	pushq	%r10
 	subq	$32, %rsp
-	call	do_test_unaligned
+	call	ASMNAME(do_test_unaligned)
 	addq	$48, %rsp
 	ret
 FUNC_END(call_do_test_unaligned)
