@@ -4217,6 +4217,16 @@ implementation returns the lowest possible value of @var{val}.",
  HOST_WIDE_INT, (poly_int64 val, poly_value_estimate_kind kind),
  default_estimated_poly_value)
 
+DEFHOOK
+(poly_int_indeterminate_bound,
+ "Return a @code{poly_uint64} whose coefficients give conservative\n\
+inclusive upper bounds for the corresponding @code{poly_int}\n\
+indeterminates.  The constant coefficient is ignored and should be zero.\n\
+This hook is used for correctness rather than for costing, so the returned\n\
+bounds must be safe for all architecturally-valid runtime values.",
+ poly_uint64, (void),
+ NULL)
+
 /* Permit speculative instructions in delay slots during delayed-branch
    scheduling.  */
 DEFHOOK

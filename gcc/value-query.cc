@@ -27,11 +27,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "ssa.h"
 #include "tree-pretty-print.h"
+#include "tree-ssanames.h"
 #include "fold-const.h"
 #include "value-query.h"
 #include "alloc-pool.h"
 #include "gimple-range.h"
 #include "value-range-storage.h"
+#include "target.h"
 
 // range_query default methods.
 
@@ -415,8 +417,92 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt,
       if (POLY_INT_CST_P (expr))
 	{
 	  unsigned int precision = TYPE_PRECISION (type);
-	  r.set_varying (type);
-	  r.update_bitmask ({ wi::zero (precision), get_nonzero_bits (expr) });
+	  signop sign = TYPE_SIGN (type);
+	  bool have_poly_bound = targetm.poly_int_indeterminate_bound;
+	  poly_uint64 indeterminate_bound;
+
+	  if (have_poly_bound)
+	    indeterminate_bound = targetm.poly_int_indeterminate_bound ();
+
+	  auto val = wi::to_poly_wide (expr);
+	  auto type_min = wi::to_wide (TYPE_MIN_VALUE (type));
+	  auto type_max = wi::to_wide (TYPE_MAX_VALUE (type));
+
+	  /* Start with the invariant part of the poly-int, then account
+	     for each coefficient below.
+
+	     The target hook gives a per-coefficient upper bound for the
+	     indeterminate.  Since those indeterminates are unsigned and
+	     nonnegative, a positive coefficient can only increase the upper
+	     bound and a negative coefficient can only decrease the lower
+	     bound.  The opposite bound is unaffected by that coefficient:
+
+		[A, +C] with C >= 0  => max += C * bound
+		[A, -C] with C >= 0  => min -= C * bound.  */
+	  wide_int bounds[2] = { val.coeffs[0], val.coeffs[0] };
+	  bool ovf[2] = { false, false };
+
+	  for (unsigned int i = 1; i < NUM_POLY_INT_COEFFS; ++i)
+	    {
+	      const auto &coeff = val.coeffs[i];
+	      if (wi::eq_p (coeff, 0))
+		continue;
+
+	      /* Select the only bound affected by this coefficient.  A
+		 negative coefficient contributes to the minimum and a positive
+		 coefficient contributes to the maximum.  */
+	      bool coeff_neg = wi::neg_p (coeff, sign);
+	      wide_int &bound = bounds[coeff_neg ? 0 : 1];
+	      bool &bound_ovf = ovf[coeff_neg ? 0 : 1];
+
+	      if (bound_ovf)
+		continue;
+
+	      /* A missing hook, or a -1 bound for this coefficient, means the
+		 indeterminate has no finite target-specific limit.  Treat that
+		 like an overflow of the affected bound.  */
+	      if (!have_poly_bound
+		  || indeterminate_bound.coeffs[i] == HOST_WIDE_INT_M1U)
+		bound_ovf = true;
+	      else
+		{
+		  auto indeterminate
+		    = wi::uhwi (indeterminate_bound.coeffs[i], precision);
+		  wi::overflow_type mul_ovf = wi::OVF_NONE;
+		  auto term = wi::mul (coeff, indeterminate, sign, &mul_ovf);
+		  wi::overflow_type add_ovf = wi::OVF_NONE;
+		  bound = wi::add (bound, term, sign, &add_ovf);
+		  bound_ovf = (mul_ovf != wi::OVF_NONE
+			       || add_ovf != wi::OVF_NONE);
+		}
+
+	      if (TYPE_OVERFLOW_WRAPS (type) && bound_ovf)
+		{
+		  r.set_varying (type);
+		  return true;
+		}
+
+	      if (bound_ovf)
+		{
+		  if (coeff_neg)
+		    bounds[0] = type_min;
+		  else
+		    bounds[1] = type_max;
+		}
+	    }
+
+	  /* Check that the target filled in sensible bounds information.  */
+	  gcc_assert (wi::le_p (bounds[0], bounds[1], sign));
+
+	  irange &ir = as_a <irange> (r);
+	  ir.set (type, bounds[0], bounds[1]);
+
+	  /* Preserve alignment/step information that is not visible in the
+	     intervals.  For example, a poly-int like [8, 8] can
+	     only produce multiples of 8, but the interval range might be
+	     [8, 136], which also contains values with low bits set.  */
+	  ir.update_bitmask (irange_bitmask (wi::zero (precision),
+					     get_nonzero_bits (expr)));
 	  return true;
 	}
       break;
