@@ -1,3 +1,12 @@
+2026-08-20  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/126731
+	* include/std/format (std::formatter<_Float16, _CharT>)
+	(std::formatter<__format::__bflt16_t, _CharT>): Remove
+	partial specializations.
+	* testsuite/std/format/formatter/ext_float.cc: Test output
+	for closest value to 1/10.
+
 2026-08-19  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/bits/stl_stack.h (std::stack): Declare members as

@@ -1,3 +1,112 @@
+2026-08-20  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	* doc/analyzer.texi (Region Model): Use malloc (n) in the
+	example to match the dump; fix the frame for the result_4
+	cluster; correct the heap region number; note that heap region
+	numbering depends on traversal order.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_evpc_splice): New function.
+	(aarch64_expand_vec_perm_const_1): Use it.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/122069
+	* tree-vect-patterns.cc (vect_recog_widen_sum_pattern): Try wider
+	intermediate input types.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/122069
+	* tree-vect-patterns.cc (vect_recog_widen_sum_pattern): Try wider
+	intermediate input types.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/122069
+	* tree-vect-patterns.cc (vect_recog_widen_sum_pattern): Try wider
+	intermediate input types.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (bitreverse<mode>2): New expander
+	for VDQHS.
+	(ctz<mode>2): Replace the VB and VS expanders with one for
+	VDQ_BHSI.
+
+2026-08-20  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126961
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Fix remainder use
+	and add signedness check.
+
+2026-08-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/126801
+	* opts.cc (finish_options): Don't set flag_var_tracking_uninit to
+	flag_var_tracking by default.  Instead, set flag_var_tracking to
+	flag_var_tracking_uninit if the latter was explicitly set.
+	* config/darwin.cc (darwin_override_options): Only set
+	flag_var_tracking_uninit if it wasn't explicitly set and set it to
+	1 rather than flag_var_tracking.  Formatting fix.
+
+2026-08-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* common.opt (fopenmp-ompt): Turn into an alias for
+	-fopenmp-ompt=basic.
+	(fopenmp-ompt=): New option, replacing fopenmp-ompt{,-detailed}.
+	* common.opt.urls: Regenerate.
+	* doc/invoke.texi (-fopenmp-ompt): Document the new levels and
+	drop -fopenmp-ompt-detailed.
+	* flag-types.h (enum omp_ompt_level): New.
+	* omp-expand.cc (expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk): Check flag_openmp_ompt against
+	OMP_OMPT_LEVEL_EXTENDED instead of flag_openmp_ompt_detailed.
+	* opts.cc (finish_options): Adjust diagnostic for the removal of
+	-fopenmp-ompt-detailed.
+
+2026-08-20  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-log.cc (INCLUDE_ALGORITHM): Define for std::min.
+	(avr_log_operands, avr_log_operand): New static functions.
+	(avr_log_node): Support ADDR_EXPR, POINTER_PLUS_EXPR,
+	POINTER_DIFF_EXPR, ADDR_SPACE_CONVERT_EXPR, CONVERT_EXPR,
+	NOP_EXPR, MEM_REF, CONSTRUCTOR.
+
+2026-08-20  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/126775
+	* match.pd (0.0 - x -> -x): Use new real_negzerop function.
+	* tree.cc (real_negzerop): New predicate function to test if
+	a tree expression is -0.0 or equivalent (like real_zerop).
+	* tree.h (real_negzerop): Prototype here.
+
+2026-08-20  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	* match.pd: Add simplifications for XORs and boolean
+	comparisons of zero_one_valued comparisons against zero.
+
+2026-08-20  Richard Biener  <rguenther@suse.de>
+
+	* tree.cc (tree_nop_conversion_p): Special case two BLKmode
+	types.
+
+2026-08-20  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/112104
+	* tree-scalar-evolution.cc (analyze_and_compute_bitop_with_inv_effect):
+	Handle BIT_XOR_EXPR with a variable trip count.
+
+2026-08-20  Manjunath Matti  <mmatti@linux.ibm.com>
+
+	PR middle-end/126939
+	* gimple-lower-bitint.cc (bitint_large_huge::finish_arith_overflow):
+	Take the address of the memmove source operand.
+
 2026-08-19  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
 	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
 

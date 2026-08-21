@@ -1,3 +1,10 @@
+2026-08-20  Odysseas Georgoudis  <odygrd@hotmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/124983
+	* search.cc (lookup_member): Skip access checks for declarations
+	from dependent scope.
+
 2026-08-19  Marek Polacek  <polacek@redhat.com>
 
 	* reflect.cc (check_splice_expr): Reject splicing a direct base

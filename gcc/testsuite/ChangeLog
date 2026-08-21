@@ -1,3 +1,163 @@
+2026-08-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126472
+	* g++.dg/cpp0x/initlist135.C: New test.
+
+2026-08-20  Odysseas Georgoudis  <odygrd@hotmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/124983
+	* g++.dg/template/pr124983.C: New test.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve/perm_splice_1.c: New test.
+	* gcc.target/aarch64/sve/perm_splice_1-run.c: Likewise.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/122069
+	* gcc.target/aarch64/sve/reduc_3_costly.c: Update the expected number
+	of horizontal reductions.
+	* gcc.target/aarch64/sve/widen_sum_1.c: New test.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Revert:
+	2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/122069
+	* gcc.target/aarch64/sve/reduc_3_costly.c: Update the expected number
+	of horizontal reductions.
+	* gcc.target/aarch64/sve/widen_sum_1.c: New test.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/122069
+	* gcc.target/aarch64/sve/reduc_3_costly.c: Update the expected number
+	of horizontal reductions.
+	* gcc.target/aarch64/sve/widen_sum_1.c: New test.
+
+2026-08-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/vect-ctz.h: New file.
+	* gcc.target/aarch64/vect-ctz-1.c: New test.
+	* gcc.target/aarch64/vect-ctz-2.c: New test.
+	* gcc.target/aarch64/vect-ctz-3.c: New test.
+
+2026-08-20  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-c++-common/gomp/for-static-3.c: Use -fopenmp-ompt=extended
+	instead of -fopenmp-ompt-detailed.
+	* c-c++-common/gomp/openmp-ompt-1.c: Adjust expected diagnostic.
+	* c-c++-common/gomp/openmp-ompt-2.c: Use -fopenmp-ompt=extended
+	and adjust expected diagnostic.
+	* c-c++-common/gomp/scan-8.c: Use -fopenmp-ompt=basic instead of
+	-fopenmp-ompt.
+	* c-c++-common/gomp/scope-7.c: Likewise.
+	* c-c++-common/gomp/single2.c: Likewise.
+	* c-c++-common/gomp/for-static-4.c: New test.
+	* c-c++-common/gomp/openmp-ompt-3.c: New test.
+	* c-c++-common/gomp/openmp-ompt-4.c: New test.
+
+2026-08-20  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/126775
+	* gcc.dg/pr126775.c: New test case.
+
+2026-08-20  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	* gcc.dg/tree-ssa/bool-eq-bitxor.c: Update expected number
+	of optimized XOR forms.
+	* gcc.dg/tree-ssa/bool-xor-zero-one-valued.c: New test.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/sse2-bfloat16-scalar-typecheck.c (dg-options):
+	Add -mno-avx512bf16 -mno-avxneconvert.
+	* gcc.target/i386/vect-bfloat16-typecheck_1.c (dg-options):
+	Likewise.
+	* gcc.target/i386/vect-bfloat16-typecheck_2.c (dg-options):
+	Likewise.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* g++.dg/cpp23/ext-floating14.C (dg-additional-options): Add
+	-mno-avx512bf16 -mno-avxneconvert for x86.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126959
+	* gcc.target/i386/uintr-4.c: Check SSE, AVX or AVX512 in the
+	expected error message.
+
+2026-08-20  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR tree-optimization/112104
+	* gcc.target/i386/pr105735-1.c: Bump final value replacement count
+	from 8 to 9.
+	* gcc.target/i386/pr105735-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr112104-1.c: New test.
+	* gcc.dg/tree-ssa/pr112104-2.c: New test.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/pr84876.c (dg-options): Add -mno-avx512f.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/pr70325.c (dg-options): Add -mno-avx512bw.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/fuse-caller-save-xmm.c (dg-options): Add
+	-mtune-ctrl=^sse_packed_single_insn_optimal.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/vect-shiftv4qi.c (dg-options): Replace
+	"-mno-avx2 -mno-avx512vl" with "-mno-ssse3 -mtune=generic".
+	* gcc.target/i386/vect-shiftv8qi.c (dg-options): Likewise.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/avx2-vbroadcastsi128-1.c (dg-options): Add
+	-mno-avx512f.
+	* gcc.target/i386/avx2-vbroadcastss_ps256-1.c (dg-options):
+	Likewise.
+	* gcc.target/i386/avx2-vextracti128-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx2-vinserti128-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx2-vpand-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx2-vpand-3.c (dg-options): Likewise.
+	* gcc.target/i386/avx2-vpandn-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx2-vpor-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx2-vpxor-1.c (dg-options): Likewise.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/fma4-256-vector.c (dg-options): Add
+	-mno-avx512f.
+	* gcc.target/i386/fma4-builtin-2.c (dg-options): Likewise.
+	* gcc.target/i386/fma4-vector-2.c (dg-options): Likewise.
+	* gcc.target/i386/fma4-vector.c (dg-options): Likewise.
+
+2026-08-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/memset-pr120683-10.c (dg-options): Add
+	-mtune=generic.
+	* gcc.target/i386/memset-pr120683-12.c (dg-options): Likewise.
+	* gcc.target/i386/pr122343-1b.c (dg-options): Likewise.
+	* gcc.target/i386/pr122343-5b.c (dg-options): Likewise.
+
 2026-08-19  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR testsuite/126923
