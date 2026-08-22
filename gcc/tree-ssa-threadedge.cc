@@ -900,12 +900,30 @@ jump_threader::thread_through_normal_block (vec<jump_thread_edge *> *path,
 
    Return true if E is (P0,X) or (P1,X)  */
 
-bool
+static bool
 edge_forwards_cmp_to_conditional_jump_through_empty_bb_p (edge e)
 {
-  /* See if there is only one stmt which is gcond.  */
   gcond *gs;
-  if (!(gs = safe_dyn_cast<gcond *> (last_and_only_stmt (e->dest))))
+  gphi *phi;
+  return (cond_on_phi_p (e->dest, &gs, &phi)
+	  && phi_arg_from_cmp_p (phi, e));
+}
+
+/* Return true if BB contains only a conditional jump on a PHI
+   defined in it, compared against 0 or 1:
+
+     <bb 5>:
+     # t_1 = PHI <t_9(3), t_6(4)>
+     if (t_1 != 0)
+
+   The conditional and the PHI are returned in *COND_OUT and
+   *PHI_OUT.  */
+
+bool
+cond_on_phi_p (basic_block bb, gcond **cond_out, gphi **phi_out)
+{
+  gcond *gs;
+  if (!(gs = safe_dyn_cast<gcond *> (last_and_only_stmt (bb))))
     return false;
 
   /* See if gcond's cond is "(phi !=/== 0/1)" in the basic block.  */
@@ -917,10 +935,28 @@ edge_forwards_cmp_to_conditional_jump_through_empty_bb_p (edge e)
       || (!integer_onep (rhs) && !integer_zerop (rhs)))
     return false;
   gphi *phi = dyn_cast <gphi *> (SSA_NAME_DEF_STMT (cond));
-  if (phi == NULL || gimple_bb (phi) != e->dest)
+  if (phi == NULL || gimple_bb (phi) != bb)
     return false;
 
-  /* Check if phi's incoming value is CMP.  */
+  *cond_out = gs;
+  *phi_out = phi;
+  return true;
+}
+
+/* Return true if PHI's incoming value on edge E is a single-use
+   comparison, possibly through a single-use conversion:
+
+     <bb 3>:
+     t_9 = a < b;
+     goto <bb 5>;
+
+     <bb 5>:
+     # t_1 = PHI <t_9(3), ...>
+*/
+
+bool
+phi_arg_from_cmp_p (gphi *phi, edge e)
+{
   gassign *def;
   tree value = PHI_ARG_DEF_FROM_EDGE (phi, e);
   if (TREE_CODE (value) != SSA_NAME
