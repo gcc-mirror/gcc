@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-dom2 -fdump-tree-optimized-details-blocks" } */
+/* { dg-options "-Ofast -fdump-tree-phiopt2-details -fdump-tree-optimized-details-blocks" } */
 
 void g (int);
 void g1 (int);
@@ -27,10 +27,5 @@ f (long a, long b, long c, long d, long x)
   g (a);
 }
 
-/* This is actually a regression.  The backward threader cannot thread
-   the above scenario, but it is being caught by the DOM threader
-   which still uses the forward threader.  We should implement this
-   optimization in the backward threader before killing the forward
-   threader.  Similarly for the other phi_on_compare-*.c tests.  */
-/* { dg-final { scan-tree-dump-times "Removing basic block" 1 "dom2" } } */
+/* { dg-final { scan-tree-dump-times "replicating conditional" 2 "phiopt2" } } */
 /* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

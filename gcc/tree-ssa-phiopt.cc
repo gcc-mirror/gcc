@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-niter.h"
 #include "gimple-predict.h"
 #include "alias.h"
+#include "tree-ssa-threadedge.h"
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
@@ -4871,6 +4872,117 @@ execute_over_cond_phis (func_type func)
 
    where left and right are typically adjacent pointers in a tree structure.  */
 
+/* Return TRUE if duplicating E's destination with E redirected to
+   the copy leaves the loop structure unchanged.  Requires
+   EDGE_DFS_BACK to be current.  */
+
+static bool
+preserves_loop_structure_p (edge e)
+{
+  basic_block bb = e->dest;
+
+  if ((e->flags & EDGE_DFS_BACK)
+      || e->src->loop_father != bb->loop_father)
+    return false;
+
+  edge s;
+  edge_iterator ei;
+  FOR_EACH_EDGE (s, ei, bb->succs)
+    if ((s->flags & EDGE_DFS_BACK)
+	|| s->dest->loop_father != bb->loop_father)
+      return false;
+
+  return true;
+}
+
+/* Replicate the join block at E's destination into E's source.  The copy's
+   PHIs degenerate to their argument on E, so the copied conditional tests the
+   predecessor's own value.  The net effect after cleanups, for edge (3, 5)
+   would be:
+
+     <bb 3>:				<bb 3>:
+     t_9 = a < b;			t_9 = a < b;
+     goto <bb 5>;			if (t_9 != 0)
+
+     <bb 4>:			->	<bb 4>:
+     t_6 = c < d;			t_6 = c < d;
+     goto <bb 5>;			goto <bb 5>;
+
+     <bb 5>:				<bb 5>:
+     # t_1 = PHI <t_9(3), t_6(4)>	# t_1 = PHI <t_6(4)>
+     if (t_1 != 0)			if (t_1 != 0)
+
+   Return TRUE if the replication was performed.  */
+
+static bool
+replicate_cond_into_pred (edge e)
+{
+  basic_block bb = e->dest;
+
+  if (!can_duplicate_block_on_edge_p (e)
+      || !preserves_loop_structure_p (e))
+    return false;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file,
+	     "replicating conditional in bb%d into predecessor bb%d\n",
+	     bb->index, e->src->index);
+
+  basic_block copy = duplicate_block (bb, e, e->src);
+  flush_pending_stmts (e);
+  add_phi_args_after_copy (&copy, 1, NULL);
+  return true;
+}
+
+/* Replicate conditionals over a PHI of comparisons into the
+   qualifying predecessors of every join block in the function, so
+   each arm branches directly on its own comparison instead of merging
+   into a boolean that is tested again:
+
+     <bb 3>:			<bb 3>:
+     t_9 = a < b;		t_9 = a < b;
+     goto <bb 5>;		if (t_9 != 0)
+
+     <bb 4>:		->	<bb 4>:
+     t_6 = c < d;		t_6 = c < d;
+     goto <bb 5>;		if (t_6 != 0)
+
+     <bb 5>:
+     # t_1 = PHI <t_9(3), t_6(4)>
+     if (t_1 != 0)
+*/
+
+static bool
+replicate_conds_over_phis (void)
+{
+  bool cfgchanged = false;
+  basic_block bb;
+
+  mark_dfs_back_edges ();
+  initialize_original_copy_tables ();
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      gcond *cond;
+      gphi *phi;
+      if (EDGE_COUNT (bb->preds) < 2
+	  || !cond_on_phi_p (bb, &cond, &phi))
+	continue;
+
+      edge e;
+      edge_iterator ei = ei_start (bb->preds);
+      while ((e = ei_safe_edge (ei)))
+	{
+	  if (phi_arg_from_cmp_p (phi, e)
+	      && replicate_cond_into_pred (e))
+	    cfgchanged = true;
+	  else
+	    ei_next (&ei);
+	}
+    }
+  free_original_copy_tables ();
+  return cfgchanged;
+}
+
 namespace {
 
 const pass_data pass_data_phiopt =
@@ -5009,6 +5121,12 @@ pass_phiopt::execute (function *)
     };
 
   execute_over_cond_phis (phiopt_exec);
+
+  if (!early_p && replicate_conds_over_phis ())
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      return TODO_cleanup_cfg | TODO_update_ssa;
+    }
 
   if (cfgchanged)
     return TODO_cleanup_cfg;
