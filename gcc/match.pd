@@ -12873,8 +12873,7 @@ and,
   (if (INTEGRAL_TYPE_P (op_type)
        && TYPE_UNSIGNED (op_type)
        && TYPE_PRECISION (op_type) % 2 == 0
-       && tree_fits_uhwi_p (@0)
-       && tree_to_uhwi (@0) == TYPE_PRECISION (op_type) / 2))))
+       && wi::to_wide (@0) == TYPE_PRECISION (op_type) / 2))))
 /* Carry from addition overflow: (cast?) (a > a + b).
    :c on gt also matches the LT form: (cast?) (a + b < a).  */
 (match (mul_carry_low @0 @1)
@@ -12950,9 +12949,8 @@ and,
        && type_has_mode_precision_p (wide_type)
        && TREE_CODE (wide_type) != BITINT_TYPE
        && TYPE_PRECISION (wide_type) >= 8
-       && (TYPE_PRECISION (wide_type) & 3) == 0
-       && tree_fits_uhwi_p (@2)
-       && tree_to_uhwi (@2) * 2 == TYPE_PRECISION (wide_type)))))
+       && TYPE_PRECISION (wide_type) % 4 == 0
+       && wi::to_wide (@2) == TYPE_PRECISION (wide_type) / 2))))
 
 /* Floatint point/integer comparison and integer->integer
    or floating point -> float point conversion.  */
