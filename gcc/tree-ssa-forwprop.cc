@@ -4700,8 +4700,8 @@ match_long_mul_phi (gphi *phi)
   unsigned HOST_WIDE_INT halfwidth = TYPE_PRECISION (lhs_type) / 2;
   carry.shift = shift_amt;
 
-  if (gimple_mul_low_sum (sum, sum_ops, NULL)
-      && shift_amt == halfwidth)
+  if (shift_amt == halfwidth
+      && gimple_mul_low_sum (sum, sum_ops, NULL))
     {
       /* mul_carry_low_sum's flat form ties the outer lshift amount to
 	 the inner mul_hi's INTEGER_CST@0 via match.pd capture re-use;
@@ -4713,8 +4713,8 @@ match_long_mul_phi (gphi *phi)
       carry.hilo1 = sum_ops[2];
       carry.hilo2 = sum_ops[3];
     }
-  else if (gimple_mul_cross_sum (sum, sum_ops, NULL)
-	   && shift_amt == halfwidth)
+  else if (shift_amt == halfwidth
+	   && gimple_mul_cross_sum (sum, sum_ops, NULL))
     {
       /* mul_cross_sum is just (plus:c @0 @1) with no half-width
 	 constraint.  Gate here to mirror mul_carry_cross_sum;
