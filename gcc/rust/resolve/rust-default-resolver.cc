@@ -91,8 +91,7 @@ DefaultResolver::visit (AST::Function &function)
 			     std::move (def_fn_1));
   };
 
-  ctx.scoped (Rib::Kind::Function, function.get_node_id (), def_fn_2,
-	      function.get_function_name ());
+  ctx.scoped (Rib::Kind::Function, function.get_node_id (), def_fn_2);
 }
 
 void
