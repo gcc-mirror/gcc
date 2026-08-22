@@ -1436,6 +1436,9 @@ struct cbl_ffi_arg_t {
     // Update Linkage Section data item.
     refer.field->set_linkage(crv, optional);
   }
+  bool by_content() const {
+    return crv == by_content_e;
+  }
 protected:
   bool by_value() const {
     if( crv == by_reference_e ) return false;

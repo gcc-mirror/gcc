@@ -126,6 +126,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
 
   { IbmCallFd, "-Wcall-fd", diagnostics::kind::error, dialect_ibm_e },
   { IbmCdf, "-Wibm-cdf", diagnostics::kind::error, dialect_ibm_e },
+  { IbmContentExpr, "-Wcontent-expr", diagnostics::kind::error, dialect_ibm_e },
   { IbmEjectE, "-Wcobol-eject", diagnostics::kind::error, dialect_ibm_e },
   { IbmLengthOf, "-Wlength-of", diagnostics::kind::error, dialect_ibm_mf_gnu },
   { IbmEqualAssignE, "-Wequal-assign", diagnostics::kind::error, dialect_ibm_e },

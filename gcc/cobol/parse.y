@@ -10642,6 +10642,7 @@ call_body:      ffi_name
                   $$.ffi_name = $ffi_name;
                   $$.using_params = $parameters;
                   $$.ffi_returning = cbl_refer_t::empty();
+                  by_content_ok(@parameters, $parameters->elems);
                 }
         |       ffi_name call_returning scalar[ret]
                 { statement_begin(@1, CALL);
@@ -10654,6 +10655,7 @@ call_body:      ffi_name
                   $$.ffi_name = $ffi_name;
                   $$.using_params = $parameters;
                   $$.ffi_returning = $ret;
+                  by_content_ok(@parameters, $parameters->elems);
                 }
                 ;
 call_returning:	RETURNING

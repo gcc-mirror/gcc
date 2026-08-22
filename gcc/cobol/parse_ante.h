@@ -3195,6 +3195,19 @@ valid_redefine( const cbl_loc_t& loc,
   return true;
 }
 
+void
+by_content_ok( const cbl_loc_t& loc,
+               const std::list<cbl_ffi_arg_t>& args ) {
+  for( const auto& arg : args ) {
+    if( arg.by_content() && arg.field()->has_attr(intermediate_e) ) {
+      auto e = symbol_program( 0, arg.field()->name, true ); // seek prototoype
+      if( ! e ) {
+        dialect_ok(loc, IbmContentExpr, "BY CONTENT expression");
+      }
+    }
+  }
+}
+
 static cbl_field_t *
 parent_has_picture( cbl_field_t *field ) {
   while( (field = parent_of(field)) != NULL ) {

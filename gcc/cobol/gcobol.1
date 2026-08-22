@@ -39,6 +39,7 @@
 .Op Fl fyacc-debug
 .\" warnings
 .Op Fl Wno-apply-commit
+.Op Fl Wno-content-expr
 .Op Fl Wno-file-code-set
 .Op Fl Wno-high-order-bit
 .Op Fl Wno-bad-line-directive
@@ -89,6 +90,7 @@
 .Op Fl Wno-stray-indicator
 .Op Fl Wno-usage-typename
 .Op Fl Wno-recording-mode
+.Op Fl Wno-redefines-grow
 .Op Fl Wno-set-locale-to
 .Op Fl Wno-set-to-locale
 .Ar filename Op ...
@@ -607,6 +609,8 @@ features may be enabled as a warning, or error, or suppressed.
 .Bl -tag -width Wno-cdf-name-not-found\0\0 -compact
 .It Fl Wno-apply-commit
 Warn if APPLY COMMIT is used.
+.It Fl Wno-content-expr
+Warn if an expression is a BY CONTENT parameter.
 .It Fl Wno-bad-line-directive
 Warn if malformed
 .Ql #line
@@ -716,6 +720,8 @@ Warn if a preprocessor fails  (instead of error).
 Warn if PROCEDURE POINTER is used.
 .It Fl Wno-procedure-not-found
 Warn if a referenced procedure is not found (instead of error).
+.It Fl Wno-redefines-grow
+Warn if REDEFINES data item is larger.
 .It Fl Wno-replace-error
 Warn if REPLACE cannot be processed (instead of error).
 .It Fl Wno-segment-error

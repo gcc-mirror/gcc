@@ -156,7 +156,7 @@ TIME_FMT   {TIME_FMT_B}|{TIME_FMT_E}
 
 DATETIME_FMT ({DATE_FMT_B}T{TIME_FMT_B})|({DATE_FMT_E}T{TIME_FMT_E})
 
-TITLE    TITLE({EOL}|[^\n[:alnum:]$_-].+)
+TITLE    TITLE
 
 NAME      [[:alnum:]]+([_-]+[[:alnum:]]+)*
 SUBELEMS  {NAME}({SPC}{NAME})*
@@ -281,15 +281,12 @@ PROGRAM-ID{OSPC}{DOTSEP}?	{ yy_push_state(ident_state);
                       if( ! dialect_ibm() ) {
                         warn_msg(yylloc, "ignored TITLE: %qs", yytext);
                       }
+                      int ch;  // consume characters to EOL
+                      while ((ch = yyinput()) != '\n' ) {
+                        if (ch == EOF) return YYEOF;
+                      }
                     } else {
-		      auto p = std::find_if( yytext, yytext + yyleng,
-		                        []( char ch ) {
-		                          return ! is_name_char(ch);
-		                        } );
-                      auto keep = p - yytext;
-                      myless(keep);
-                      auto s = xstrdup(yytext);
-                      ydflval.string = yylval.string = s;
+                      ydflval.string = yylval.string = xstrdup(yytext);
                       return NAME;
                     }
 		}

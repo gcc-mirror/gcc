@@ -259,6 +259,11 @@ Wibm-cdf
 Cobol Warning Var(cobol_ibmcdf, 1) Init(1)
 Warn if IBM-specific CDF directives are used.
 
+; IbmContentExpr
+Wcontent-expr
+Cobol Warning Var(content_expr, 1) Init(1)
+Warn if BY CONTENT parameter is expression without prototype.
+
 ; IbmLengthOf
 Wlength-of
 Cobol Warning Var(cobol_length_of, 1) Init(1)

@@ -71,6 +71,7 @@
 	"%{Wec-unknown} %{Wno-ec-unknown} "
 	"%{Wentry-convention} %{Wno-entry-convention} "
 	"%{Wibm-cdf} %{Wno-ibm-cdf} "
+	"%{Wcontent-expr} %{Wno-content-expr} "
 	"%{Wiconv-error} %{Wno-iconv-error} "
 	"%{Winclude-file-found} %{Wno-include-file-found} "
 	"%{Winclude-file-not-found} %{Wno-include-file-not-found} "

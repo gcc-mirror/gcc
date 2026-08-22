@@ -177,6 +177,7 @@ enum cbl_diag_id_t : uint64_t {
 
   IbmCallFd,
   IbmCdf,
+  IbmContentExpr,
   IbmEjectE,
   IbmEqualAssignE,
   IbmLengthOf, 

@@ -12841,15 +12841,7 @@ create_and_call(size_t narg,
 
       case by_content_e:
         {
-        if(    (args[i].refer.field->attr & intermediate_e)
-            && is_valuable(args[i].refer.field->type) )
-          {
-          cbl_unimplemented("CALL USING BY CONTENT <temporary> would require "
-                            "REPOSITORY PROTOTYPES.");
-          }
-
         // BY CONTENT means that the called program gets a copy of the data.
-
         // We'll free this copy after the called program returns.
 
         switch(args[i].attr)
