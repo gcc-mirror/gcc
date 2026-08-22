@@ -22,6 +22,7 @@
 #include "optional.h"
 #include "rust-tyty.h"
 #include "rust-hir-type-check.h"
+#include "rust-finalized-name-resolution-context.h"
 namespace Rust {
 namespace HIR {
 
@@ -55,34 +56,47 @@ PathPattern::is_refutable (const TyTy::BaseType &scrutinee) const
   rust_assert (kind != Kind::LangItem);
 
   auto &mappings = Analysis::Mappings::get ();
-  HirId hir_id = get_final_segment ().get_mappings ().get_hirid ();
-  if (hir_id)
+  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
+  // Resolve the path through name resolution because its final segment's
+  // HirId does not necessarily identify the referenced item directly.
+  if (auto def = nr_ctx.lookup (get_mappings ().get_nodeid (),
+				Resolver2_0::Namespace::Values,
+				Resolver2_0::Namespace::Types))
     {
-      auto item = mappings.hir.items.lookup (hir_id);
-      if (item && item.value ()->get_item_kind () == Item::ItemKind::Constant)
+      if (auto def_hir_id = mappings.lookup_node_to_hir (def->id))
 	{
-	  return true;
-	}
-      else
-	{
-	  rust_internal_error_at (
-	    get_locus (),
-	    "failed to lookup hir item during refutability checks");
-	  return true;
+	  auto item = mappings.hir.items.lookup (*def_hir_id);
+	  if (item
+	      && item.value ()->get_item_kind () == Item::ItemKind::Constant)
+	    return true;
+
+	  // Associated constants live in the impl-item and trait-item maps,
+	  // not the item map, so they need their own lookups.
+	  if (auto implitem = mappings.lookup_hir_implitem (*def_hir_id))
+	    if (implitem->first->get_impl_item_type ()
+		== ImplItem::ImplItemType::CONSTANT)
+	      return true;
+
+	  if (auto traititem = mappings.hir.trait_items.lookup (*def_hir_id))
+	    if (traititem.value ()->get_item_kind ()
+		== TraitItem::TraitItemKind::CONST)
+	      return true;
 	}
     }
 
-  // A path pattern is irrefutable if it corresponds to an enum with one variant
-  if (scrutinee.get_kind () == TyTy::TypeKind::ADT)
+  // A failed item lookup is fine since refutability can still be checked
+  // from the scrutinee's ADT type.
+  const auto *inner = scrutinee.destructure ();
+  if (inner->get_kind () == TyTy::TypeKind::ADT)
     {
-      const auto &adt = static_cast<const TyTy::ADTType &> (scrutinee);
+      const auto &adt = static_cast<const TyTy::ADTType &> (*inner);
       if (adt.is_enum ())
-	{
-	  return adt.number_of_variants () > 1;
-	}
+	return adt.number_of_variants () > 1;
+      return false;
     }
-  // cannot have a Path that is neither a constant or an enum-like ADT
-  rust_unreachable ();
+
+  // A failed lookup is fine since a non-ADT constant matches one value.
+  return true;
 }
 
 bool
