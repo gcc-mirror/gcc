@@ -3614,13 +3614,9 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
    up in a table.  On a hit, three cross-summand consistency checks
    decide whether the wide multiply is emitted.  */
 
-/* Match.pd recognizers for the conditional carry-add pattern.  The
-   two names split the gcond polarity: cond_carry_add matches when
-   the true edge selects (base + pow2), cond_carry_add_neg when the
-   true edge selects base.  */
+/* Match.pd recognizers for the conditional carry-add pattern. */
 
 extern bool gimple_cond_carry_add (tree, tree *, tree (*)(tree));
-extern bool gimple_cond_carry_add_neg (tree, tree *, tree (*)(tree));
 
 /* Match.pd functions to match long multiplication.  */
 
@@ -4689,8 +4685,7 @@ match_long_mul_phi (gphi *phi)
     return false;
 
   tree cca_ops[4];
-  if (!gimple_cond_carry_add (phi_res, cca_ops, NULL)
-      && !gimple_cond_carry_add_neg (phi_res, cca_ops, NULL))
+  if (!gimple_cond_carry_add (phi_res, cca_ops, NULL))
     return false;
   tree cmp_lhs = cca_ops[0];
   tree sum = cca_ops[1];
