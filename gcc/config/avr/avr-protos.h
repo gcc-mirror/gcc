@@ -194,12 +194,15 @@ extern void asm_output_float (FILE *file, REAL_VALUE_TYPE n);
 #endif
 
 extern bool avr_have_dimode;
+extern bool avr_uses_vtable_p;
 
 /* From avr-passes.cc */
 
 namespace gcc { class context; }
 class rtl_opt_pass;
+class gimple_opt_pass;
 
+extern gimple_opt_pass *make_avr_pass_has (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_fuse_add (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_fuse_move (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);

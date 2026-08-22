@@ -108,15 +108,22 @@
    enum from avr.h (or designated initialized must be used).  */
 const avr_addrspace_t avr_addrspace[ADDR_SPACE_COUNT] =
 {
-  { ADDR_SPACE_RAM,  0, 2, "", 0, nullptr },
-  { ADDR_SPACE_FLASH,  1, 2, "__flash",   0, ".progmem.data" },
-  { ADDR_SPACE_FLASH1, 1, 2, "__flash1",  1, ".progmem1.data" },
-  { ADDR_SPACE_FLASH2, 1, 2, "__flash2",  2, ".progmem2.data" },
-  { ADDR_SPACE_FLASH3, 1, 2, "__flash3",  3, ".progmem3.data" },
-  { ADDR_SPACE_FLASH4, 1, 2, "__flash4",  4, ".progmem4.data" },
-  { ADDR_SPACE_FLASH5, 1, 2, "__flash5",  5, ".progmem5.data" },
-  { ADDR_SPACE_FLASHX, 1, 3, "__flashx",  0, ".progmemx.data" },
-  { ADDR_SPACE_MEMX, 1, 3, "__memx",  0, ".progmemx.data" },
+  { ADDR_SPACE_RAM,  0, 2, "", 0, nullptr, Val_GNU_AVR_VTABLE_RAM },
+  { ADDR_SPACE_FLASH,  1, 2, "__flash",  0, ".progmem.data",
+					    Val_GNU_AVR_VTABLE_FLASH },
+  { ADDR_SPACE_FLASH1, 1, 2, "__flash1", 1, ".progmem1.data",
+					    Val_GNU_AVR_VTABLE_FLASH1 },
+  { ADDR_SPACE_FLASH2, 1, 2, "__flash2", 2, ".progmem2.data",
+					    Val_GNU_AVR_VTABLE_FLASH2 },
+  { ADDR_SPACE_FLASH3, 1, 2, "__flash3", 3, ".progmem3.data",
+					    Val_GNU_AVR_VTABLE_FLASH3 },
+  { ADDR_SPACE_FLASH4, 1, 2, "__flash4", 4, ".progmem4.data",
+					    Val_GNU_AVR_VTABLE_FLASH4 },
+  { ADDR_SPACE_FLASH5, 1, 2, "__flash5", 5, ".progmem5.data",
+					    Val_GNU_AVR_VTABLE_FLASH5 },
+  { ADDR_SPACE_FLASHX, 1, 3, "__flashx", 0, ".progmemx.data",
+					    Val_GNU_AVR_VTABLE_FLASHX },
+  { ADDR_SPACE_MEMX, 1, 3, "__memx", 0, ".progmemx.data", -1 },
 };
 
 
@@ -248,6 +255,8 @@ bool avr_have_dimode = true;
 bool avr_need_clear_bss_p = false;
 bool avr_need_copy_data_p = false;
 bool avr_has_rodata_p = false;
+
+bool avr_uses_vtable_p = false;
 
 /* Counts how often pass avr-fuse-add has been executed.  It is kept in
    sync with cfun->machine->n_avr_fuse_add_executed and serves as an
@@ -12805,6 +12814,24 @@ avr_file_end (void)
 
   if (avr_need_clear_bss_p)
     fputs (".global __do_clear_bss\n", asm_out_file);
+
+#ifdef HAVE_AS_AVR_GNU_ATTRIBUTE
+  /* Output .gnu_attribute to tag object files with aspects of the ABI.
+     .gnu_attribute 4: The named address space for C++ virtual tables.  */
+
+  varpool_node *vnode;
+
+  FOR_EACH_VARIABLE (vnode)
+    {
+      const char *id = IDENTIFIER_POINTER (DECL_NAME (vnode->decl));
+      avr_uses_vtable_p |= startswith (id, "_ZTV"); // vtable
+      avr_uses_vtable_p |= startswith (id, "_ZTT"); // vtable table
+    }
+
+  if (avr_uses_vtable_p)
+    fprintf (asm_out_file, ".gnu_attribute %d,%d\n",
+	     Tag_GNU_AVR_VTABLE_AS, Val_GNU_AVR_VTABLE_RAM);
+#endif // HAVE_AS_AVR_GNU_ATTRIBUTE
 }
 
 

@@ -4739,6 +4739,11 @@ AS_HELP_STRING([--disable-fix-cortex-a53-843419],
       [AC_DEFINE(HAVE_AS_AVR_MGCCISR_OPTION, 1,
 		[Define if your avr assembler supports -mgcc-isr option.])])
 
+    gcc_GAS_CHECK_FEATURE([.gnu_attribute], gcc_cv_as_avr_gnu_attribute,
+      [], [.gnu_attribute 4,1],,
+      [AC_DEFINE(HAVE_AS_AVR_GNU_ATTRIBUTE, 1,
+		[Define if your avr assembler supports .gnu_attribute.])])
+
     avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
     # Check how default linker description file implements .rodata for
     # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to

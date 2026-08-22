@@ -38,6 +38,9 @@ typedef struct
 
   /* Section prefix, e.g. ".progmem1.data"  */
   const char *section_name;
+
+  /* Value for Tag_GNU_AVR_VTABLE_AS (4) is 1 + id.  */
+  int gnu_attr_val;
 } avr_addrspace_t;
 
 extern const avr_addrspace_t avr_addrspace[];

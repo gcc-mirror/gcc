@@ -17,6 +17,12 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* A gimple pass that sets `avr_uses_vtable_p', i.e. whether the target
+   code is using vtables.  Where the pass is inserted doesn't really matter,
+   though it should be an SSA pass that runs after LTO streaming.  */
+
+INSERT_PASS_AFTER (pass_musttail, 1, avr_pass_has);
+
 /* A post reload optimization pass that fuses PLUS insns with CONST_INT
    addend with a load or store insn to get POST_INC or PRE_DEC addressing.
    It can also fuse two PLUSes to a single one, which may occur due to

@@ -30,6 +30,8 @@
 #include "rtl.h"
 #include "rtl-iter.h"
 #include "tree.h"
+#include "gimple.h"
+#include "gimple-iterator.h"
 #include "diagnostic-core.h"
 #include "cfghooks.h"
 #include "cfganal.h"
@@ -5555,6 +5557,65 @@ public:
   }
 }; // avr_pass_recompute_notes
 
+
+
+//////////////////////////////////////////////////////////////////////////////
+// Determine whether there are vtable calls, and set `avr_uses_vtable_p'.
+
+static const pass_data avr_pass_data_has =
+{
+  GIMPLE_PASS,   // type
+  "",            // name (will be patched)
+  OPTGROUP_NONE, // optinfo_flags
+  TV_NONE,       // tv_id
+  PROP_cfg | PROP_ssa, // properties_required
+  0,             // properties_provided
+  0,             // properties_destroyed
+  0,             // todo_flags_start
+  0              // todo_flags_finish
+};
+
+class avr_pass_has : public gimple_opt_pass
+{
+public:
+  avr_pass_has (gcc::context *ctxt, const char *name)
+    : gimple_opt_pass (avr_pass_data_has, ctxt)
+  {
+    this->name = name;
+  }
+
+  void scan_bb (basic_block bb)
+  {
+    gimple_stmt_iterator gsi;
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	tree fncall;
+	gimple *stmt = gsi_stmt (gsi);
+
+	if (is_gimple_call (stmt)
+	    && (fncall = gimple_call_fn (stmt))
+	    && TREE_CODE (fncall) == OBJ_TYPE_REF)
+	  avr_uses_vtable_p = true;
+      }
+  }
+
+#ifndef HAVE_AS_AVR_GNU_ATTRIBUTE
+  bool gate (function *) final override
+  {
+    return false;
+  }
+#endif // !HAVE_AS_AVR_GNU_ATTRIBUTE
+
+  unsigned int execute (function *func) final override
+  {
+    basic_block bb;
+    FOR_ALL_BB_FN (bb, func)
+      scan_bb (bb);
+
+    return 0;
+  }
+}; // avr_pass_has
+
 } // anonymous namespace
 
 
@@ -5849,6 +5910,14 @@ avr_split_ldst (rtx *xop)
 // Functions  make_<pass-name> (gcc::context*)  where <pass-name> is
 // according to the pass declaration in avr-passes.def.  GCC's pass
 // manager uses these function to create the respective pass object.
+
+// This pass sets `avr_uses_vtable_p'.
+
+gimple_opt_pass *
+make_avr_pass_has (gcc::context *ctxt)
+{
+  return new avr_pass_has (ctxt, "avr-has");
+}
 
 // Optimize results of the casesi expander for modes < SImode.
 

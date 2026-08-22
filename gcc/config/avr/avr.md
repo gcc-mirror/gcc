@@ -113,6 +113,20 @@
    (GASISR_Done     0)
    ])
 
+;; Vtables address space are hard-coded in Binutils include/elf/avr.h.
+(define_constants
+ [(Tag_GNU_AVR_VTABLE_AS 4)
+  (Val_GNU_AVR_VTABLE_NONE   0)
+  (Val_GNU_AVR_VTABLE_RAM    1)
+  (Val_GNU_AVR_VTABLE_FLASH  2)
+  (Val_GNU_AVR_VTABLE_FLASH1 3)
+  (Val_GNU_AVR_VTABLE_FLASH2 4)
+  (Val_GNU_AVR_VTABLE_FLASH3 5)
+  (Val_GNU_AVR_VTABLE_FLASH4 6)
+  (Val_GNU_AVR_VTABLE_FLASH5 7)
+  (Val_GNU_AVR_VTABLE_FLASHX 8)
+  ])
+
 (include "predicates.md")
 (include "constraints.md")
 
