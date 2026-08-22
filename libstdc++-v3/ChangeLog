@@ -1,3 +1,19 @@
+2026-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/utc/leap_second_info-2.cc: Create
+	empty ./tzdata.zi file.
+
+2026-08-21  Yuao Ma  <c8ef@outlook.com>
+
+	* scripts/check_performance: Remove gnu++11 flag.
+	* testsuite/util/native_type/native_hash_map.hpp: Adjust rebind
+	usage.
+	* testsuite/util/native_type/native_hash_multimap.hpp: Ditto.
+	* testsuite/util/native_type/native_hash_set.hpp: Ditto.
+	* testsuite/util/native_type/native_map.hpp: Ditto.
+	* testsuite/util/native_type/native_multimap.hpp: Ditto.
+	* testsuite/util/native_type/native_set.hpp: Ditto.
+
 2026-08-20  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/126731

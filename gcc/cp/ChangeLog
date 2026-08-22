@@ -1,3 +1,33 @@
+2026-08-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* contracts.cc: Replace use of attribute lists to hold
+	function contract specifiers with tree-vecs.
+	* contracts.h (CONTRACT_SOURCE_LOCATION_WRAPPER,
+	CONTRACT_SOURCE_LOCATION, CONTRACT_STATEMENT): Remove.
+	(finish_contract_specifier): Remove.
+	(build_contract_specifiers): Use tree-vec for contracts.
+	(contract_specifiers_concat): Likewise.
+	* decl.cc (start_decl): Use tree-vec for contracts.
+	(grokdeclarator): Likewise.
+	* module.cc (trees_out::fn_parms_init): Likewise.
+	* parser.cc (cp_parser_late_contracts): Likewise.
+	(cp_parser_function_contract_specifier_seq): Likewise.
+	* pt.cc (tsubst_contract_specifier): Likewise.
+	(tsubst_contract_specifiers): Likewise.
+
+2026-08-21  Jason Merrill  <jason@redhat.com>
+
+	* typeck.cc (lookup_destructor): Pass complain to lookup_member.
+
+2026-08-21  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (can_convert_eh): Remove declaration.
+	* except.cc (can_convert_eh): Remove.
+	(check_handlers_1): Use handler_match_for_exception_type instead.
+	* cp-lang.cc (LANG_HOOKS_EXCEPTION_MATCHES_TYPE_P): Likewise.
+	* call.cc (handler_match_for_exception_type): Allow type argument,
+	fix private base handling.
+
 2026-08-20  Odysseas Georgoudis  <odygrd@hotmail.com>
 	    Jason Merrill  <jason@redhat.com>
 

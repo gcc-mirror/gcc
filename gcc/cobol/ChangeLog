@@ -1,3 +1,13 @@
+2026-08-21  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): Define IsoRedefinesGrow.
+	* cobol1.cc (cobol_langhook_handle_option): Handle Wredefines-grow.
+	* lang-specs.h: Same.
+	* lang.opt: Same.
+	* lexio.cc (preprocess_filter_add): Use xstrdup, not std::vector.
+	* messages.cc: Quell Wredefines-grow with -dialect ibm.
+	* parse_ante.h (valid_redefine): Conditional message.
+
 2026-08-19  James K. Lowden  <jklowden@cobolworx.com>
 
 	* parse_ante.h (in_procedure_division): Position alphabetically.

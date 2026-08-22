@@ -1,3 +1,198 @@
+2026-08-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/126873
+	* gcc.target/riscv/pr126873.c: New test.
+
+2026-08-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/slp_12.c: Update testcases
+	* gcc.target/aarch64/sve/cnt_fold_7.c: New test.
+	* gcc.target/aarch64/sve/cnt_fold_7_run.c: New test.
+
+2026-08-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/no-callee-saved-15.c: Add -mdynamic-no-pic
+	for ia32 Darwin.
+	* gcc.target/i386/pr100865-1.c: Likewise.
+	* gcc.target/i386/pr100865-2.c: Likewise.
+	* gcc.target/i386/pr100865-3.c: Likewise.
+	* gcc.target/i386/pr100865-4a.c: Likewise.
+	* gcc.target/i386/pr100865-4b.c: Likewise.
+	* gcc.target/i386/pr100865-5a.c: Likewise.
+	* gcc.target/i386/pr100865-5b.c: Likewise.
+	* gcc.target/i386/pr100865-6a.c: Likewise.
+	* gcc.target/i386/pr100865-6b.c: Likewise.
+	* gcc.target/i386/pr100865-6c.c: Likewise.
+	* gcc.target/i386/pr100865-7a.c: Likewise.
+	* gcc.target/i386/pr100865-7b.c: Likewise.
+	* gcc.target/i386/pr100865-7c.c: Likewise.
+	* gcc.target/i386/pr101989-broadcast-1.c: Likewise.
+	* gcc.target/i386/pr102021.c: Likewise.
+	* gcc.target/i386/pr106060-2.c: Likewise.
+	* gcc.target/i386/pr106060-3.c: Likewise.
+	* gcc.target/i386/pr15184-1.c: Likewise.
+	* gcc.target/i386/pr15184-2.c: Likewise.
+	* gcc.target/i386/pr54855-3.c: Likewise.
+	* gcc.target/i386/pr54855-7.c: Likewise.
+	* gcc.target/i386/pr78035.c: Likewise.
+	* gcc.target/i386/pr81736-5.c: Likewise.
+	* gcc.target/i386/pr90773-17.c: Likewise.
+	* gcc.target/i386/preserve-none-20.c: Likewise.
+	* gcc.target/i386/sse2-stv-1.c: Likewise.
+	* gcc.target/i386/vect-shiftv4qi.c: Likewise.
+
+2026-08-21  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/sme/acle-asm/test_sme_acle.h
+	(TEST_UNIFORM_ZA, TEST_DUAL_ZA): Add new `fpm_t fpm0` arguments.
+	* gcc.target/aarch64/sve/acle/general-c/mop4_b16b16.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/mop4_base.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/mop4_f16f16.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/mop4_f64f64.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/mop4_f8f16.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/mop4_f8f32.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/mop4_i16i64.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za16_bf16_bf16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za16_f16_f16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za16_mf8_mf8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_bf16_bf16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_f16_f16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_f32_f32.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_mf8_mf8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_s16_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_s8_s8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_s8_u8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_u16_u16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_u8_s8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za32_u8_u8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za64_f64_f64.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za64_s16_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za64_s16_u16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za64_u16_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4a_za64_u16_u16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za16_bf16_bf16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za16_f16_f16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za32_bf16_bf16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za32_f16_f16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za32_s16_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za32_s8_s8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za32_s8_u8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za32_u16_u16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za32_u8_s8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za32_u8_u8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za64_f64_f64.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za64_s16_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za64_s16_u16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za64_u16_s16.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mop4s_za64_u16_u16.c: New test.
+
+2026-08-21  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Test that
+	`__ARM_FEATURE_SME_F8F16`, `__ARM_FEATURE_SME_F8F32`
+	and `__ARM_FEATURE_SME_MOP4` macros are defined when the
+	relevant extension is enabled.
+	* lib/target-supports.exp: Add `sme-mop4` to `exts`.
+
+2026-08-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/x86_64/abi/ms-sysv/do-test.S: Wrap call to
+	do_test_unaligned in the ASMNAME macro.
+
+2026-08-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/fwrite-1.c: New test.
+	* gcc.dg/fwrite-2.c: New test.
+	* gcc.dg/fwrite-3.c: New test.
+
+2026-08-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR sanitizer/88109
+	* c-c++-common/ubsan/overflow-vec-3.c: New test.
+
+2026-08-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_aarch64_sve2_hw): Add a target pragma to
+	the probe program.
+
+2026-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126965
+	* gcc.dg/tree-ssa/ssa-pre-37.c: New testcase.
+
+2026-08-21  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/126686
+	* gcc.dg/torture/pr126686.c: New test.
+
+2026-08-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126959
+	* gcc.target/i386/pr126959-1a.c: New test.
+	* gcc.target/i386/pr126959-1b.c: Likewise.
+	* gcc.target/i386/pr126959-2a.c: Likewise.
+	* gcc.target/i386/pr126959-2b.c: Likewise.
+
+2026-08-21  Jojo R  <rjiejie@linux.alibaba.com>
+
+	* gcc.target/riscv/crc-size-no-table.c: New test.
+
+2026-08-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/autovec/pr114734.c: Require rvv_zvl256b_ok.
+	* gcc.target/riscv/rvv/vsetvl/pr113429.c: Require rvv_zvl_ge_256b_ok.
+
+2026-08-21  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/vls-cc/empty-aggregate.c: New test.
+	* g++.target/riscv/vls-cc-empty-aggregate.C: New test.
+
+2026-08-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/avx256-unaligned-load-1.c (dg-options): Add
+	-mno-avx512f.
+	* gcc.target/i386/avx256-unaligned-load-2.c (dg-options): Likewise.
+	* gcc.target/i386/avx256-unaligned-load-3.c (dg-options): Likewise.
+	* gcc.target/i386/avx256-unaligned-store-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx256-unaligned-store-2.c (dg-options): Likewise.
+
+2026-08-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/widen_mult_high_chain.c: Scan both mulq and
+	mulx.
+
+2026-08-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126971
+	PR tree-optimization/112104
+	* gcc.target/i386/pr92080-12.c: Remove scan-assembler-times and
+	add check-function-bodies to check for optimized codegen.
+
+2026-08-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-cache-aligned-std.c: Remove.
+
+2026-08-21  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.target/riscv/amo/gcov-condition-coverage-split-ior.c: New
+	test.
+
+2026-08-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* lib/target-supports.exp (check_effective_target_rvv_zvl128b_ok):
+	Use a unique check_runtime property name.
+	(check_effective_target_rvv_zvl256b_ok): Likewise.
+	(check_effective_target_rvv_zvl_ge_256b_ok): Likewise.
+	(check_effective_target_rvv_zvl512b_ok): Likewise.
+
+2026-08-21  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp0x/initlist135.C: Include <initializer_list> and
+	remove the inline definition of std::initializer_list.
+
 2026-08-20  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/126472
