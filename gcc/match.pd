@@ -12825,18 +12825,18 @@ and,
 /* Cross product: high(op0) * low(op1).  */
 (match (mul_hilo @op0 @op1 @0 @1)
   (mult:c
-    (mul_hi @op0 INTEGER_CST@0)
-    (mul_lo @op1 INTEGER_CST@1)))
+    (mul_hi @op0 @0)
+    (mul_lo @op1 @1)))
 /* Low-low product: low(op0) * low(op1).  */
 (match (mul_lolo @op0 @op1 @0)
   (mult:c
-    (mul_lo @op0 INTEGER_CST@0)
-    (mul_lo @op1 INTEGER_CST@0)))
+    (mul_lo @op0 @0)
+    (mul_lo @op1 @0)))
 /* High-high product: high(op0) * high(op1).  */
 (match (mul_hihi @op0 @op1 @0)
   (mult:c
-    (mul_hi @op0 INTEGER_CST@0)
-    (mul_hi @op1 INTEGER_CST@0)))
+    (mul_hi @op0 @0)
+    (mul_hi @op1 @0)))
 /* Cross sum: xh*yl + xl*yh.
    Note: matches any PLUS; operands are validated as actual cross
    products by the forwprop consumer (long_mul_check_consistency).  */
@@ -12847,8 +12847,8 @@ and,
   (plus:c
     (mul_cross_sum @mul_hilo0 @mul_hilo1)
     (mul_hi
-      (mul_lolo @op0 @op1 INTEGER_CST@1)
-      INTEGER_CST@0)))
+      (mul_lolo @op0 @op1 @1)
+      @0)))
 /* Carry from low-sum overflow: (cast?) (hilo > low_sum) << N.
    No explicit type/width guard needed: mul_low_sum delegates to
    mul_cross_sum + mul_hi + mul_lolo, which provide deep structural
@@ -12857,9 +12857,9 @@ and,
   (lshift
     (convert (gt
       @mul_hilo0
-      (mul_low_sum @op0 @op1 @mul_hilo1 @mul_hilo2 INTEGER_CST@0
-       INTEGER_CST@1)))
-    INTEGER_CST@0))
+      (mul_low_sum @op0 @op1 @mul_hilo1 @mul_hilo2 @0
+       @1)))
+    @0))
 /* Carry from cross-sum overflow: (cast?) (hilo > cross_sum) << N.
    Explicit guard required because mul_cross_sum is just (plus:c @0 @1)
    with no inherent type or halfwidth constraint.  */
@@ -12886,9 +12886,9 @@ and,
 (match (mul_low_accum @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
   (plus:c
     (mul_hi
-      (mul_lolo @op0 @op1 INTEGER_CST@0)
-      INTEGER_CST@1)
-    (mul_lo (mul_cross_sum @mul_hilo0 @mul_hilo1) INTEGER_CST@0)))
+      (mul_lolo @op0 @op1 @0)
+      @1)
+    (mul_lo (mul_cross_sum @mul_hilo0 @mul_hilo1) @0)))
 /* Ladder sum form 1: (hilo0 & mask) + hilo1 + (xl*yl >> N).
    First variant: @mul_hilo1 is inside the inner plus:c alongside
    (mul_lo ...).  */
@@ -12897,42 +12897,42 @@ and,
     (plus:c
       (mul_lo
 	@mul_hilo0
-	INTEGER_CST@0)
+	@0)
       @mul_hilo1)
-    (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1)))
+    (mul_hi (mul_lolo @op0 @op1 @0) @1)))
 /* Second variant: @mul_hilo1 is the outermost addend and could match
    anything, so guard that its definition is a MULT_EXPR.  */
 (match (mul_ladder_sum1 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
   (plus:c
     (plus:c
-      (mul_lo @mul_hilo0 INTEGER_CST@0)
-      (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1))
+      (mul_lo @mul_hilo0 @0)
+      (mul_hi (mul_lolo @op0 @op1 @0) @1))
     (mult@mul_hilo1 @2 @3)))
 /* Partial ladder sum: (xl*yl >> N) + hilo.  */
 (match (mul_ladder_part_sum @op0 @op1 @mul_hilo0 @0 @1)
   (plus:c
-    (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1)
+    (mul_hi (mul_lolo @op0 @op1 @0) @1)
     @mul_hilo0))
 /* Ladder sum form 2: (ladder_part_sum & mask) + hilo.  */
 (match (mul_ladder_sum2 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
   (plus:c
     (mul_lo
-      (mul_ladder_part_sum @op0 @op1 @mul_hilo0 INTEGER_CST@0 INTEGER_CST@1)
-      INTEGER_CST@0)
+      (mul_ladder_part_sum @op0 @op1 @mul_hilo0 @0 @1)
+      @0)
     @mul_hilo1))
 /* Ladder sum form 3: (hilo0 & mask) + (hilo1 & mask) + (xl*yl >> N).  */
 (match (mul_ladder_sum3 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
   (plus:c
     (plus:c
-      (mul_lo @mul_hilo0 INTEGER_CST@0)
-      (mul_lo @mul_hilo1 INTEGER_CST@0))
-    (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1)))
+      (mul_lo @mul_hilo0 @0)
+      (mul_lo @mul_hilo1 @0))
+    (mul_hi (mul_lolo @op0 @op1 @0) @1)))
 (match (mul_ladder_sum3 @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
   (plus:c
     (plus:c
-      (mul_lo @mul_hilo0 INTEGER_CST@0)
-      (mul_hi (mul_lolo @op0 @op1 INTEGER_CST@0) INTEGER_CST@1))
-    (mul_lo @mul_hilo1 INTEGER_CST@0)))
+      (mul_lo @mul_hilo0 @0)
+      (mul_hi (mul_lolo @op0 @op1 @0) @1))
+    (mul_lo @mul_hilo1 @0)))
 /* Long-multiply high-part emit chain produced by forwprop's recognizer:
 
      (N) ((2N) op1 * (2N) op2) >> N
