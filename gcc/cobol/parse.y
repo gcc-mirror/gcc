@@ -746,7 +746,7 @@ class locale_tgt_t {
 %type   <number>        true_false posneg eval_posneg
 %type   <number>        open_io alphabet_etc
 %type   <special_type>  device_name
-%type   <string>        numed  context_word ctx_name locale_spec
+%type   <string>        numed  context_word ctx_name locale_spec selected_file
 %type   <char_class_locales> char_class_locales coll_alphanats 
 %type   <collating_name> coll_alphanat 
 %type   <literal>       namestr alphabet_lit program_as repo_as
@@ -792,7 +792,7 @@ class locale_tgt_t {
 %type   <min_max>       record_vary rec_contains from_to record_desc
 %type   <file_op>       read_file rewrite1 write_file
 %type   <field>         data_descr data_descr1 write_what file_record
-%type   <field>         name88 selected_name 
+%type   <field>         name88 selected_name
 %type   <refer>         advancing  advance_by
 %type   <refer>         alphaval alpha_val numeref scalar scalar88 scalar_any
 %type   <refer>         tableref tableish
@@ -2084,7 +2084,11 @@ selects:        select
         |       selects select
                 ;
 
-select:         SELECT optional NAME[name] select_clauses[clauses] '.'
+selected_file:  NAME
+        |       device_name { $$ = xstrdup(keyword_str($1.token)); }
+                ;
+
+select:         SELECT optional selected_file[name] select_clauses[clauses] '.'
                 {
                   assert($clauses.file);
                   cbl_file_t *file = $clauses.file;
@@ -2158,7 +2162,7 @@ select:         SELECT optional NAME[name] select_clauses[clauses] '.'
                     update_symbol_map(symbol_at(isym));
                   }
                 }
-        |       SELECT optional NAME[name] '.'
+        |       SELECT optional selected_file[name] '.'
                 {
                   cbl_file_t file = protofile;
 

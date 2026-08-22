@@ -168,10 +168,10 @@ SUBSCRIPT [(]{OSPC}{SUBELEMS}{OSPC}[)]
 NAMEQUAL  OF{SPC}{NAME}
 NAMEQUALS {NAMEQUAL}({SPC}{NAMEQUAL})*
 
-STRING   [^\r\n""]+
-STRING1  [^\r\n'']+
+STRING2  [^\n""]+
+STRING1  [^\n'']+
 QSTRING1 ['']{STRING1}(['']{2}{STRING1})*['']
-QSTRING2 [""]{STRING}([""]{2}{STRING})*[""]
+QSTRING2 [""]{STRING2}([""]{2}{STRING2})*[""]
 
 			/* comma & semicolon must be followed by a space */
 COMMA    [,;][[:blank:]]*
@@ -302,6 +302,7 @@ PROGRAM-ID{OSPC}{DOTSEP}?	{ yy_push_state(ident_state);
 
 <ident_state>{
   {BLANK_OEOL}
+  EJECT{DOTEOL}?			{ dialect_ok(yylloc, IbmEjectE, "EJECT"); }
   ID(ENTIFICATION)?{SPC}DIVISION	{ myless(0); yy_pop_state(); }
   (ENVIRONMENT|DATA|PROCEDURE){SPC}DIVISION {
 					  myless(0); yy_pop_state(); }
@@ -1464,7 +1465,7 @@ USE({SPC}FOR)?		{ return USE; }
 			  ydflval.string = s;
 			  update_location_col(s);
 			  return LITERAL; }
-  {PREFIX}?[""]{STRING}[""]    { ydflval.string = xstrdup(yytext);
+  {PREFIX}?[""]{STRING2}[""]    { ydflval.string = xstrdup(yytext);
 			  update_location_col(yytext);
 			  return LITERAL; }
   [=]{4}                { static char nullstring[] = "";
@@ -1500,10 +1501,10 @@ USE({SPC}FOR)?		{ return USE; }
 }
 
 <quoted2>{
-  {STRING}$           { tmpstring_append(yyleng); }
+  {STRING2}$           { tmpstring_append(yyleng); }
   ^-[ ]{4,}[""]/.+    /* ignore continuation mark */
-  {STRING}?[""]{2}    { tmpstring_append(yyleng - 1); }
-  {STRING}            { tmpstring_append(yyleng); }
+  {STRING2}?[""]{2}    { tmpstring_append(yyleng - 1); }
+  {STRING2}            { tmpstring_append(yyleng); }
   [""]{SPC}[&]{SPC}[""''] {
 		        if( yytext[yyleng - 1] == '\'' ) BEGIN(quoted1);
 		      }
@@ -1896,6 +1897,9 @@ USE({SPC}FOR)?		{ return USE; }
   PROGRAM 	{ return PROGRAM_kw; }
 
   {DOTSEP}	{ pop_return '.'; }
+  (ENVIRONMENT|DATA|PROCEDURE){SPC}DIVISION {	myless(0);
+						yy_pop_state();   // to ident_state
+						yy_pop_state(); } // to initial state
 }
 
 <name_state>{           /* Either pop from here, or let the quoted state pop */
@@ -1933,7 +1937,7 @@ USE({SPC}FOR)?		{ return USE; }
 			     yy_push_state(quoted1); }
   {PREFIX}?[""]                   { yylval.literal.set_prefix(yytext, yyleng-1);
 			     yy_push_state(quoted2); }
-  {PREFIX}?[""]/{STRING}[""]      { yylval.literal.set_prefix(yytext, yyleng-1);
+  {PREFIX}?[""]/{STRING2}[""]      { yylval.literal.set_prefix(yytext, yyleng-1);
 			     yy_push_state(quoted2); }
 
   {INTEGERZ}/[[:punct:]][[:space:]]{BLANK_OEOL} { return numstr_of(yytext); }
@@ -2433,7 +2437,8 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   [[:blank:]]+
   {BLANK_EOL}
 
-  {STRING}      { yy_pop_state();
+  {STRING1} |
+  {STRING2}     { yy_pop_state();
                   yypush_buffer_state( yy_create_buffer(yyin, YY_BUF_SIZE) );
                   if( (yyin = cdftext::lex_open(yytext)) == NULL ) {
                     cbl_message(yylloc, LexIncludeE,
