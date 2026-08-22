@@ -12841,7 +12841,7 @@ and,
    Note: matches any PLUS; operands are validated as actual cross
    products by the forwprop consumer (long_mul_check_consistency).  */
 (match (mul_cross_sum @mul_hilo0 @mul_hilo1)
-  (plus:c @mul_hilo0 @mul_hilo1))
+  (plus @mul_hilo0 @mul_hilo1))
 /* Low sum: cross_sum + (xl*yl >> N).  */
 (match (mul_low_sum @op0 @op1 @mul_hilo0 @mul_hilo1 @0 @1)
   (plus:c
