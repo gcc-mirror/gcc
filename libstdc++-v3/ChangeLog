@@ -1,3 +1,19 @@
+2026-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/clock/utc/leap_second_info-2.cc: Create
+	empty ./tzdata.zi file.
+
+2026-08-21  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2026-08-19  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/bits/simd_vec.h (_M_elements_shifted_to_front): Remove
+	x86-specific implementation.
+
 2026-08-20  Anlai Lu  <agicy@qq.com>
 	    Tomasz Kamiński  <tkaminsk@redhat.com>
 
