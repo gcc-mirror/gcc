@@ -5375,7 +5375,9 @@
 	 (match_operand:DI 5 "const_int_operand")))
    (clobber (match_operand:DI 6 "register_operand"))]
   "(TARGET_64BIT
+    && INTVAL (operands[3]) == 0
     && INTVAL (operands[2]) + INTVAL (operands[4]) == 32
+    && sext_hwi (INTVAL (operands[5]), 32) == INTVAL (operands[5])
     && SMALL_OPERAND (INTVAL (operands[5]) >> INTVAL (operands[4])))"
   [(set (match_dup 6) (and:DI (match_dup 1) (match_dup 5)))
    (set (match_dup 0) (sign_extend:DI (ashift:SI (match_dup 7) (match_dup 4))))]
