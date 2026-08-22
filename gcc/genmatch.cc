@@ -2450,11 +2450,11 @@ public:
 
   virtual void gen (FILE *, int, bool, int) {}
 
-  void gen_kids (FILE *, int, bool, int);
+  void gen_kids (FILE *, int, bool, int, bool);
   void gen_kids_1 (FILE *, int, bool, int,
 		   const vec<dt_operand *> &, const vec<dt_operand *> &,
 		   const vec<dt_operand *> &, const vec<dt_operand *> &,
-		   const vec<dt_operand *> &, const vec<dt_node *> &);
+		   const vec<dt_operand *> &, const vec<dt_node *> &, bool);
 
   void analyze (sinfo_map_t &);
 };
@@ -3845,7 +3845,7 @@ fns_cmp (const void *p1, const void *p2)
 /* Generate matching code for the children of the decision tree node.  */
 
 void
-dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
+dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth, bool in_gcond)
 {
   auto_vec<dt_operand *> gimple_exprs;
   auto_vec<dt_operand *> generic_exprs;
@@ -3918,7 +3918,7 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
 	  fns.qsort (fns_cmp);
 	  generic_fns.qsort (fns_cmp);
 	  gen_kids_1 (f, indent, gimple, depth, gimple_exprs, generic_exprs,
-		      fns, generic_fns, preds, others);
+		      fns, generic_fns, preds, others, in_gcond);
 	  /* And output the true operand itself.  */
 	  kids[i]->gen (f, indent, gimple, depth);
 	  gimple_exprs.truncate (0);
@@ -3936,7 +3936,7 @@ dt_node::gen_kids (FILE *f, int indent, bool gimple, int depth)
   fns.qsort (fns_cmp);
   generic_fns.qsort (fns_cmp);
   gen_kids_1 (f, indent, gimple, depth, gimple_exprs, generic_exprs,
-	      fns, generic_fns, preds, others);
+	      fns, generic_fns, preds, others, in_gcond);
 }
 
 /* Generate matching code for the children of the decision tree node.  */
@@ -3948,7 +3948,8 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 		     const vec<dt_operand *> &fns,
 		     const vec<dt_operand *> &generic_fns,
 		     const vec<dt_operand *> &preds,
-		     const vec<dt_node *> &others)
+		     const vec<dt_node *> &others,
+		     bool in_gcond)
 {
   char buf[128];
   char *kid_opname = buf;
@@ -3974,7 +3975,9 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
       indent += 2;
     }
 
-  if (exprs_len || fns_len)
+  // Don't emit the SSA name check for gcond case as
+  // it will not match ever.
+  if (!in_gcond && (exprs_len || fns_len))
     {
       depth++;
       fprintf_indent (f, indent,
@@ -4194,7 +4197,7 @@ dt_node::gen_kids_1 (FILE *f, int indent, bool gimple, int depth,
 	  fprintf_indent (f, indent + 4, "tree %s = %s_pops[%d];\n",
 			  child_opname, kid_opname, j);
 	}
-      preds[i]->gen_kids (f, indent + 4, gimple, depth);
+      preds[i]->gen_kids (f, indent + 4, gimple, depth, false);
       fprintf_indent (f, indent, "  }\n");
       indent -= 2;
       fprintf_indent (f, indent, "}\n");
@@ -4239,7 +4242,7 @@ dt_operand::gen (FILE *f, int indent, bool gimple, int depth)
     gcc_unreachable ();
 
   indent += 4 * n_braces;
-  gen_kids (f, indent, gimple, depth);
+  gen_kids (f, indent, gimple, depth, false);
 
   for (unsigned i = 0; i < n_braces; ++i)
     {
@@ -4285,7 +4288,7 @@ dt_operand::gen_phi_on_cond (FILE *f, int indent, int depth)
     "boolean_type_node, _cond_lhs_%d, _cond_rhs_%d);\n",
     opname_0, depth, depth, depth);
 
-  gen_kids (f, indent, true, depth);
+  gen_kids (f, indent, true, depth, true);
 
   indent -= 2;
   fprintf_indent (f, indent, "}\n");
@@ -4979,7 +4982,7 @@ decision_tree::gen (vec <FILE *> &files, bool gimple)
 	  fprintf (f, "{\n");
 	  fprintf_indent (f, 2, "const bool debug_dump = "
 				"dump_file && (dump_flags & TDF_FOLDING);\n");
-	  dop->gen_kids (f, 2, gimple, 0);
+	  dop->gen_kids (f, 2, gimple, 0, false);
 	  if (gimple)
 	    fprintf (f, "  return false;\n");
 	  else
@@ -5102,7 +5105,7 @@ write_predicate (FILE *f, predicate_id *p, decision_tree &dt, bool gimple)
 
   if (!gimple)
     fprintf_indent (f, 2, "if (TREE_SIDE_EFFECTS (t)) return false;\n");
-  dt.root->gen_kids (f, 2, gimple, 0);
+  dt.root->gen_kids (f, 2, gimple, 0, false);
 
   fprintf_indent (f, 2, "return false;\n"
 	   "}\n");
