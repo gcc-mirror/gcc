@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
 #include "predict.h"
@@ -1010,12 +1011,11 @@ jump_threader::thread_across_edge (edge e)
 
     /* If E->dest has abnormal outgoing edges, then there's no guarantee
        we can safely redirect any of the edges.  Just punt those cases.  */
-    FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)
-      if (taken_edge->flags & EDGE_COMPLEX)
-	{
-	  m_state->pop ();
-	  return;
-	}
+    if (!can_duplicate_block_on_edge_p (e))
+      {
+	m_state->pop ();
+	return;
+      }
 
     /* Look at each successor of E->dest to see if we can thread through it.  */
     FOR_EACH_EDGE (taken_edge, ei, e->dest->succs)

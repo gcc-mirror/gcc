@@ -252,6 +252,7 @@ extern void tidy_fallthru_edges (void);
 extern void predict_edge (edge e, enum br_predictor predictor, int probability);
 extern bool predicted_by_p (const_basic_block bb, enum br_predictor predictor);
 extern bool can_duplicate_block_p (const_basic_block);
+extern bool can_duplicate_block_on_edge_p (edge);
 extern basic_block duplicate_block (basic_block, edge, basic_block,
 				    copy_bb_data * = NULL);
 extern bool block_ends_with_call_p (basic_block bb);

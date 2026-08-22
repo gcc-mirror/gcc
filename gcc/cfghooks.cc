@@ -1141,6 +1141,29 @@ can_duplicate_block_p (const_basic_block bb)
   return cfg_hooks->can_duplicate_block_p (bb);
 }
 
+/* Returns true if we can duplicate E's destination with E redirected to the
+   copy.  */
+
+bool
+can_duplicate_block_on_edge_p (edge e)
+{
+  basic_block bb = e->dest;
+
+  if (!can_duplicate_block_p (bb))
+    return false;
+
+  if (e->flags & EDGE_COMPLEX)
+    return false;
+
+  edge s;
+  edge_iterator ei;
+  FOR_EACH_EDGE (s, ei, bb->succs)
+    if (s->flags & EDGE_COMPLEX)
+      return false;
+
+  return true;
+}
+
 /* Duplicate basic block BB, place it after AFTER (if non-null) and redirect
    edge E to it (if non-null).  Return the new basic block.
 
