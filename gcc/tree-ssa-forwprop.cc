@@ -3761,7 +3761,7 @@ struct long_mul_summand {
   long_mul_kind kind;
   long_mul_extract extract;
   tree op0, op1;
-  tree hilo0, hilo1, hilo2;
+  tree hilo[3];
   tree carry_a, carry_b;
   unsigned HOST_WIDE_INT shift;
 };
@@ -3886,12 +3886,9 @@ long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
     info->op0 = res_ops[0];
   if (n_ops >= 2)
     info->op1 = res_ops[1];
-  if (n_hilos >= 1)
-    info->hilo0 = res_ops[n_ops];
-  if (n_hilos >= 2)
-    info->hilo1 = res_ops[n_ops + 1];
-  if (n_hilos >= 3)
-    info->hilo2 = res_ops[n_ops + 2];
+  gcc_checking_assert (n_hilos <= 3);
+  for (unsigned i = 0; i < n_hilos; i++)
+    info->hilo[i] = res_ops[n_ops + i];
   if (shift_idx >= 0)
     /* The carry atoms (mul_carry_cross_sum, mul_carry_low_sum) capture the
        shift as an INTEGER_CST already checked with tree_fits_uhwi_p, so this
@@ -4225,8 +4222,7 @@ long_mul_check_consistency (const vec<long_mul_summand> &summands,
       if ((s.extract == LMX_HI || s.extract == LMX_SHL_N)
 	  && s.shift != halfwidth)
 	return false;
-      tree hilos[3] = { s.hilo0, s.hilo1, s.hilo2 };
-      for (tree h : hilos)
+      for (tree h : s.hilo)
 	if (h && !long_mul_is_cross_half (h, op0, op1))
 	  return false;
 
@@ -4234,20 +4230,20 @@ long_mul_check_consistency (const vec<long_mul_summand> &summands,
 	continue;
 
       /* The two cross-sum operands are the last two non-null hilos:
-	 (hilo1, hilo2) for the CARRY_*_SUM kinds, (hilo0, hilo1) for
+	 (hilo[1], hilo[2]) for the CARRY_*_SUM kinds, (hilo[0], hilo[1]) for
 	 the CROSS_SUM / SUM / ACCUM / LADDER_SUM kinds, none for the
 	 rest.  */
       tree a = NULL_TREE;
       tree b = NULL_TREE;
-      if (s.hilo2)
+      if (s.hilo[2])
 	{
-	  a = s.hilo1;
-	  b = s.hilo2;
+	  a = s.hilo[1];
+	  b = s.hilo[2];
 	}
-      else if (s.hilo1)
+      else if (s.hilo[1])
 	{
-	  a = s.hilo0;
-	  b = s.hilo1;
+	  a = s.hilo[0];
+	  b = s.hilo[1];
 	}
       if (a && b
 	  && (long_mul_hilo_orientation (a, op0, op1)
@@ -4709,9 +4705,9 @@ match_long_mul_phi (gphi *phi)
       carry.kind = LMK_CARRY_LOW_SUM;
       carry.op0 = sum_ops[0];
       carry.op1 = sum_ops[1];
-      carry.hilo0 = cmp_lhs;
-      carry.hilo1 = sum_ops[2];
-      carry.hilo2 = sum_ops[3];
+      carry.hilo[0] = cmp_lhs;
+      carry.hilo[1] = sum_ops[2];
+      carry.hilo[2] = sum_ops[3];
     }
   else if (shift_amt == halfwidth
 	   && gimple_mul_cross_sum (sum, sum_ops, NULL))
@@ -4720,9 +4716,9 @@ match_long_mul_phi (gphi *phi)
 	 constraint.  Gate here to mirror mul_carry_cross_sum;
 	 a mismatch falls through to the LMK_CARRY_LOW branch.  */
       carry.kind = LMK_CARRY_CROSS_SUM;
-      carry.hilo0 = cmp_lhs;
-      carry.hilo1 = sum_ops[0];
-      carry.hilo2 = sum_ops[1];
+      carry.hilo[0] = cmp_lhs;
+      carry.hilo[1] = sum_ops[0];
+      carry.hilo[2] = sum_ops[1];
     }
   else if (shift_amt == 0 && TREE_CODE (sum) == SSA_NAME)
     {
