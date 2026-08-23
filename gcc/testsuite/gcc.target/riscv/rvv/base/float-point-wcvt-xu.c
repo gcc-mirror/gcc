@@ -24,6 +24,6 @@ test_vfwcvt_xu_f_v_u64m2_m (vbool32_t mask, vfloat32m1_t op1, size_t vl) {
 }
 
 /* { dg-final { scan-assembler-times {vfwcvt\.xu\.f\.v\s+v[0-9]+,\s*v[0-9]+} 4 } } */
-/* { dg-final { scan-assembler-times {frrm\s+[axs][0-9]+} 2 } } */
-/* { dg-final { scan-assembler-times {fsrm\s+[axs][0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {frrm\s+[axst][0-9]+} 2 } } */
+/* { dg-final { scan-assembler-times {fsrm\s+[axst][0-9]+} 2 } } */
 /* { dg-final { scan-assembler-times {fsrmi\s+[01234]} 2 } } */

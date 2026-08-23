@@ -17,6 +17,6 @@ void e() {
   }
 }
 
-/* { dg-final { scan-assembler-not {frrm\s+[axs][0-9]+} } } */
+/* { dg-final { scan-assembler-not {frrm\s+[axst][0-9]+} } } */
 /* { dg-final { scan-assembler-not {fsrmi\s+[01234]} } } */
-/* { dg-final { scan-assembler-not {fsrm\s+[axs][0-9]+} } } */
+/* { dg-final { scan-assembler-not {fsrm\s+[axst][0-9]+} } } */

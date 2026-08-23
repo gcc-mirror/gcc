@@ -64,6 +64,6 @@ test_vfncvt_f_f_w_f32m1_m (vbool32_t mask, vfloat64m2_t op1, size_t vl) {
 }
 
 /* { dg-final { scan-assembler-times {vfncvt\.f\.[xuf]+\.w\s+v[0-9]+,\s*v[0-9]+} 12 } } */
-/* { dg-final { scan-assembler-times {frrm\s+[axs][0-9]+} 6 } } */
-/* { dg-final { scan-assembler-times {fsrm\s+[axs][0-9]+} 6 } } */
+/* { dg-final { scan-assembler-times {frrm\s+[axst][0-9]+} 6 } } */
+/* { dg-final { scan-assembler-times {fsrm\s+[axst][0-9]+} 6 } } */
 /* { dg-final { scan-assembler-times {fsrmi\s+[01234]} 6 } } */

@@ -22,6 +22,6 @@ int test_exampe () {
   return 0;
 }
 
-/* { dg-final { scan-assembler-times {frrm\s+[axs][0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {frrm\s+[axst][0-9]+} 1 } } */
 /* { dg-final { scan-assembler-times {fsrmi\s+[01234]} 1 } } */
-/* { dg-final { scan-assembler-times {fsrm\s+[axs][0-9]+} 1 } } */
+/* { dg-final { scan-assembler-times {fsrm\s+[axst][0-9]+} 1 } } */

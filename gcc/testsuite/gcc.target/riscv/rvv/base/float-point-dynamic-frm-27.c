@@ -24,7 +24,7 @@ test_float_point_dynamic_frm (vfloat32m1_t op1, vfloat32m1_t op2, size_t vl,
 }
 
 /* { dg-final { scan-assembler-times {vfadd\.v[vf]\s+v[0-9]+,\s*v[0-9]+,\s*[fav]+[0-9]+} 3 } } */
-/* { dg-final { scan-assembler-not {frrm\s+[axs][0-9]+} } } */
-/* { dg-final { scan-assembler-not {fsrmi\s+[axs][0-9]+,\s*[01234]} } } */
+/* { dg-final { scan-assembler-not {frrm\s+[axst][0-9]+} } } */
+/* { dg-final { scan-assembler-not {fsrmi\s+[axst][0-9]+,\s*[01234]} } } */
 /* { dg-final { scan-assembler-not {fsrmi\s+[01234]} } } */
-/* { dg-final { scan-assembler-not {fsrm\s+[axs][0-9]+} } } */
+/* { dg-final { scan-assembler-not {fsrm\s+[axst][0-9]+} } } */

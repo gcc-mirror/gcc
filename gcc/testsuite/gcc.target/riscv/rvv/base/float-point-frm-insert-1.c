@@ -28,6 +28,6 @@ test_vfadd_vf_f32m1_rm_m (vbool32_t mask, vfloat32m1_t op1, float32_t op2,
 }
 
 /* { dg-final { scan-assembler-times {vfadd\.v[vf]\s+v[0-9]+,\s*v[0-9]+,\s*[fav]+[0-9]+} 4 } } */
-/* { dg-final { scan-assembler-times {fsrm\s+[axs][0-9]+} 4 } } */
-/* { dg-final { scan-assembler-times {frrm\s+[axs][0-9]+} 4 } } */
+/* { dg-final { scan-assembler-times {fsrm\s+[axst][0-9]+} 4 } } */
+/* { dg-final { scan-assembler-times {frrm\s+[axst][0-9]+} 4 } } */
 /* { dg-final { scan-assembler-times {fsrmi\s+[01234]} 4 } } */
