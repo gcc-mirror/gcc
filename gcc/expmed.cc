@@ -1351,6 +1351,16 @@ store_fixed_bit_field_1 (rtx op0, scalar_int_mode mode,
   if (reverse)
     value = flip_storage_order (mode, value);
 
+  /* A field filling the whole of a MEM has no surrounding bits to preserve,
+     so store it directly: the read of a volatile OP0 cannot be removed later
+     and would be a spurious access with side effects (PR71048).  */
+  if (MEM_P (op0) && bitnum == 0 && bitsize == GET_MODE_BITSIZE (mode))
+    {
+      op0 = copy_rtx (op0);
+      emit_move_insn (op0, value);
+      return;
+    }
+
   /* Now clear the chosen bits in OP0,
      except that if VALUE is -1 we need not bother.  */
   /* We keep the intermediates in registers to allow CSE to combine
