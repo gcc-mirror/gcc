@@ -3761,12 +3761,24 @@ enum long_mul_extract : unsigned char  {
 };
 
 struct long_mul_summand {
-  long_mul_kind kind;
-  long_mul_extract extract;
-  tree op0, op1;
-  tree hilo[3];
-  tree carry_a, carry_b;
-  unsigned HOST_WIDE_INT shift;
+  long_mul_summand () {}
+  long_mul_summand (tree);
+  long_mul_summand (const long_mul_summand &) = default;
+  long_mul_kind kind = LMK_INVALID;
+  long_mul_extract extract = LMX_NONE;
+  tree op0 = NULL_TREE, op1 = NULL_TREE;
+  tree hilo[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
+  tree carry_a = NULL_TREE, carry_b = NULL_TREE;
+  unsigned HOST_WIDE_INT shift = 0;
+  operator bool () { return kind != LMK_INVALID; }
+private:
+  bool classify_carry (tree leaf);
+  bool classify_hi_extract (tree, unsigned HOST_WIDE_INT);
+  bool classify_lo_extract (tree);
+  bool classify_shl_extract (tree, unsigned HOST_WIDE_INT);
+  bool classify_plus_kinds (tree);
+  bool classify_bare (tree);
+  void set (long_mul_kind kind, const tree *res_ops);
 };
 
 }
@@ -3839,15 +3851,14 @@ long_mul_is_lshift_def (tree expr, tree *inner_out,
   return true;
 }
 
-/* Fill INFO's kind plus the captures from RES_OPS that the kind requires.
+/* Fill THIS's kind plus the captures from RES_OPS that the kind requires.
    The kind itself determines how many (op0, op1) and hilo captures to
    pick up from RES_OPS, and whether a baked-in shift is present.  */
 
-static void
-long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
-		      const tree *res_ops)
+void
+long_mul_summand::set (long_mul_kind kind, const tree *res_ops)
 {
-  info->kind = kind;
+  this->kind = kind;
   unsigned n_ops = 0;
   unsigned n_hilos = 0;
   int shift_idx = -1;
@@ -3885,29 +3896,29 @@ long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
       shift_idx = 5;
       break;
     case LMK_CARRY_LOW:
-      info->carry_a = res_ops[0];
-      info->carry_b = res_ops[1];
+      this->carry_a = res_ops[0];
+      this->carry_b = res_ops[1];
       return;
     }
   if (n_ops >= 1)
-    info->op0 = res_ops[0];
+    this->op0 = res_ops[0];
   if (n_ops >= 2)
-    info->op1 = res_ops[1];
+    this->op1 = res_ops[1];
   gcc_checking_assert (n_hilos <= 3);
   for (unsigned i = 0; i < n_hilos; i++)
-    info->hilo[i] = res_ops[n_ops + i];
+    this->hilo[i] = res_ops[n_ops + i];
   if (shift_idx >= 0)
     /* The carry atoms (mul_carry_cross_sum, mul_carry_low_sum) capture the
        shift since it is always less than TYPE_PRECISION, using tree_to_uhwi is safe.  */
-    info->shift = tree_to_uhwi (res_ops[shift_idx]);
+    this->shift = tree_to_uhwi (res_ops[shift_idx]);
 }
 
 /* Classify LEAF as a carry-kind summand.  The lshift amount is baked
    into mul_carry_cross_sum / mul_carry_low_sum, so they're tried before
    any branch that looks for a generic (X >> N) or (X << N) wrapper.  */
 
-static bool
-long_mul_classify_carry (tree leaf, long_mul_summand *info)
+bool
+long_mul_summand::classify_carry (tree leaf)
 {
   tree res_ops[LONG_MUL_MAX_CAPTURES];
   /* mul_carry_low_sum's inner is constrained to mul_low_sum (cross_sum
@@ -3917,17 +3928,17 @@ long_mul_classify_carry (tree leaf, long_mul_summand *info)
      less-constrained pattern doesn't shadow the more-constrained one.  */
   if (gimple_mul_carry_low_sum (leaf, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_CARRY_LOW_SUM, res_ops);
+      set (LMK_CARRY_LOW_SUM, res_ops);
       return true;
     }
   if (gimple_mul_carry_cross_sum (leaf, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_CARRY_CROSS_SUM, res_ops);
+      set (LMK_CARRY_CROSS_SUM, res_ops);
       return true;
     }
   if (gimple_mul_carry_low (leaf, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_CARRY_LOW, res_ops);
+      set (LMK_CARRY_LOW, res_ops);
       return true;
     }
   return false;
@@ -3939,33 +3950,33 @@ long_mul_classify_carry (tree leaf, long_mul_summand *info)
    containing a mul_lo) and mul_low_accum (which constrains both arms)
    shadow it and must come first.  */
 
-static bool
-long_mul_classify_plus_kinds (tree inner, long_mul_summand *info)
+bool
+long_mul_summand::classify_plus_kinds (tree inner)
 {
   tree res_ops[LONG_MUL_MAX_CAPTURES];
   if (gimple_mul_low_accum (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_LOW_ACCUM, res_ops);
+      set (LMK_LOW_ACCUM, res_ops);
       return true;
     }
   if (gimple_mul_ladder_sum3 (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_LADDER_SUM3, res_ops);
+      set (LMK_LADDER_SUM3, res_ops);
       return true;
     }
   if (gimple_mul_ladder_sum1 (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_LADDER_SUM1, res_ops);
+      set (LMK_LADDER_SUM1, res_ops);
       return true;
     }
   if (gimple_mul_low_sum (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_LOW_SUM, res_ops);
+      set (LMK_LOW_SUM, res_ops);
       return true;
     }
   if (gimple_mul_ladder_sum2 (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_LADDER_SUM2, res_ops);
+      set (LMK_LADDER_SUM2, res_ops);
       return true;
     }
   return false;
@@ -3977,28 +3988,27 @@ long_mul_classify_plus_kinds (tree inner, long_mul_summand *info)
    unconstrained) and mul_cross_sum (any plus) are the fallbacks after
    the shared plus-based ladder.  */
 
-static bool
-long_mul_classify_hi_extract (tree inner, unsigned HOST_WIDE_INT shift,
-			      long_mul_summand *info)
+bool
+long_mul_summand::classify_hi_extract (tree inner, unsigned HOST_WIDE_INT shift)
 {
   tree res_ops[LONG_MUL_MAX_CAPTURES];
-  info->extract = LMX_HI;
-  info->shift = shift;
+  this->extract = LMX_HI;
+  this->shift = shift;
   if (gimple_mul_hilo (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_MUL_HILO, res_ops);
+      set (LMK_MUL_HILO, res_ops);
       return true;
     }
-  if (long_mul_classify_plus_kinds (inner, info))
+  if (classify_plus_kinds (inner))
     return true;
   if (gimple_mul_ladder_part_sum (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_LADDER_PART_SUM, res_ops);
+      set (LMK_LADDER_PART_SUM, res_ops);
       return true;
     }
   if (gimple_mul_cross_sum (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_CROSS_SUM, res_ops);
+      set (LMK_CROSS_SUM, res_ops);
       return true;
     }
   return false;
@@ -4007,14 +4017,14 @@ long_mul_classify_hi_extract (tree inner, unsigned HOST_WIDE_INT shift,
 /* Classify INNER -- already unwrapped from an outer (X & MASK) -- as
    a low-half-masked summand.  */
 
-static bool
-long_mul_classify_lo_extract (tree inner, long_mul_summand *info)
+bool
+long_mul_summand::classify_lo_extract (tree inner)
 {
   tree res_ops[LONG_MUL_MAX_CAPTURES];
-  info->extract = LMX_LO;
+  this->extract = LMX_LO;
   if (gimple_mul_lolo (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_MUL_LOLO, res_ops);
+      set (LMK_MUL_LOLO, res_ops);
       return true;
     }
   return false;
@@ -4024,18 +4034,18 @@ long_mul_classify_lo_extract (tree inner, long_mul_summand *info)
    a left-shifted summand.  No mul_hilo / ladder_part_sum here -- those
    shapes appear only under (X >> SHIFT).  */
 
-static bool
-long_mul_classify_shl_extract (tree inner, unsigned HOST_WIDE_INT shift,
-			       long_mul_summand *info)
+bool
+long_mul_summand::classify_shl_extract (tree inner,
+					unsigned HOST_WIDE_INT shift)
 {
   tree res_ops[LONG_MUL_MAX_CAPTURES];
-  info->extract = LMX_SHL_N;
-  info->shift = shift;
-  if (long_mul_classify_plus_kinds (inner, info))
+  this->extract = LMX_SHL_N;
+  this->shift = shift;
+  if (classify_plus_kinds (inner))
     return true;
   if (gimple_mul_cross_sum (inner, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_CROSS_SUM, res_ops);
+      set (LMK_CROSS_SUM, res_ops);
       return true;
     }
   return false;
@@ -4044,18 +4054,18 @@ long_mul_classify_shl_extract (tree inner, unsigned HOST_WIDE_INT shift,
 /* Classify LEAF as one of the bare-kind summands (no extraction
    wrapper): mul_hihi or mul_lolo standing on their own.  */
 
-static bool
-long_mul_classify_bare (tree leaf, long_mul_summand *info)
+bool
+long_mul_summand::classify_bare (tree leaf)
 {
   tree res_ops[LONG_MUL_MAX_CAPTURES];
   if (gimple_mul_hihi (leaf, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_MUL_HIHI, res_ops);
+      set (LMK_MUL_HIHI, res_ops);
       return true;
     }
   if (gimple_mul_lolo (leaf, res_ops, NULL))
     {
-      long_mul_set_summand (info, LMK_MUL_LOLO, res_ops);
+      set (LMK_MUL_LOLO, res_ops);
       return true;
     }
   return false;
@@ -4067,28 +4077,35 @@ long_mul_classify_bare (tree leaf, long_mul_summand *info)
    carry kinds bake an lshift into the pattern and would otherwise be
    misread by the (X << N) branch.  */
 
-static bool
-long_mul_classify_summand (tree leaf, long_mul_summand *info)
+long_mul_summand::long_mul_summand (tree leaf)
+ : long_mul_summand()
 {
   tree res_ops[LONG_MUL_MAX_CAPTURES];
-  *info = {};
 
-  if (long_mul_classify_carry (leaf, info))
-    return true;
+  if (classify_carry (leaf))
+    return;
 
   if (gimple_mul_hi (leaf, res_ops, NULL))
-    return long_mul_classify_hi_extract (res_ops[0],
-					 tree_to_uhwi (res_ops[1]), info);
+    {
+      classify_hi_extract (res_ops[0], tree_to_uhwi (res_ops[1]));
+      return;
+    }
 
   if (gimple_mul_lo (leaf, res_ops, NULL))
-    return long_mul_classify_lo_extract (res_ops[0], info);
+    {
+      classify_lo_extract (res_ops[0]);
+      return;
+    }
 
   tree inner;
   unsigned HOST_WIDE_INT shift;
   if (long_mul_is_lshift_def (leaf, &inner, &shift))
-    return long_mul_classify_shl_extract (inner, shift, info);
+    {
+      classify_shl_extract (inner, shift);
+      return;
+    }
 
-  return long_mul_classify_bare (leaf, info);
+  classify_bare (leaf);
 }
 
 /* qsort comparator: sort summands by (kind, extract) to put a multiset
@@ -4590,8 +4607,7 @@ long_mul_classify_chain (gimple *stmt, tree_code outer, tree lhs_type,
 	   LONG_MUL_MAX_SUMMANDS + LONG_MUL_MAX_EXTRAS + 1> summands;
   for (tree leaf : leaves)
     {
-      long_mul_summand s{};
-      if (long_mul_classify_summand (leaf, &s))
+      if (long_mul_summand s{leaf})
 	{
 	  gcc_checking_assert (s.kind != LMK_INVALID);
 	  summands.quick_push (s);
