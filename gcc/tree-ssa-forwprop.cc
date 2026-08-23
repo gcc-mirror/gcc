@@ -3730,6 +3730,8 @@ static constexpr unsigned LONG_MUL_MAX_SUMMANDS = 4;
    arbitrarily long unrelated chain still bails early.  */
 static constexpr unsigned LONG_MUL_MAX_EXTRAS = 4;
 
+namespace {
+
 enum long_mul_kind {
   LMK_MUL_HIHI,
   LMK_MUL_LOLO,
@@ -3765,6 +3767,8 @@ struct long_mul_summand {
   tree carry_a, carry_b;
   unsigned HOST_WIDE_INT shift;
 };
+
+}
 
 /* Walk the OUTER addition or BIT_IOR chain rooted at STMT and collect
    the leaf operands into LEAVES.  Descends through single-use
