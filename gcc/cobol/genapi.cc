@@ -5617,6 +5617,7 @@ is_valuable( cbl_field_type_t type ) {
 
 void parser_sleep(const cbl_refer_t &seconds)
   {
+  RETURN_IF_PARSE_ONLY;
   if( seconds.field )
     {
     gg_get_address_of(seconds.field->var_decl_node);

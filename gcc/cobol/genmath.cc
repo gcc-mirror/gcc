@@ -2394,6 +2394,7 @@ parser_compute( cbl_refer_t *tgt,
                 const std::deque<rpn_t>& operations,
                 cbl_label_t * compute_error_label )
   {
+  RETURN_IF_PARSE_ONLY;
   CHECK_FIELD(tgt->field);
   gcc_assert(operations.size());
 
