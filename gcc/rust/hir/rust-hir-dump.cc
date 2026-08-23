@@ -406,7 +406,8 @@ void
 Dump::do_typepathfunction (TypePathFunction &e)
 {
   visit_collection ("params", e.get_params ());
-  visit_field ("return_type", e.get_return_type ());
+  if (e.has_return_type ())
+    visit_field ("return_type", e.get_return_type ());
 }
 
 void
