@@ -425,7 +425,7 @@ movement_possibility_1 (gimple *stmt)
 	   || code == RROTATE_EXPR)
 	  && (TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST
 	      /* We cannot use ranges at 'stmt' here.  */
-	      || wi::ltu_p (wi::to_wide (gimple_assign_rhs2 (stmt)),
+	      || wi::geu_p (wi::to_wide (gimple_assign_rhs2 (stmt)),
 			    element_precision (type))))
 	ret = MOVE_PRESERVE_EXECUTION;
     }
