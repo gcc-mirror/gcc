@@ -302,6 +302,30 @@ along with GCC; see the file COPYING3.  If not see
 	 && expr_not_equal_to (@0, wi::min_value (itype_precision,
 						  SIGNED)))))))
  (match (unsigned_integer_narrow_clip @0)
+  /* Use the sign of ~X for a source that avoids negating the minimum signed
+     value.  For a negative X, ~X is nonnegative and gives zero.  For a
+     positive X above the result range, ~X is negative and gives all ones.  */
+  (convert (cond^ (gt (nop_convert@3 @0) INTEGER_CST@1)
+	 (rshift:s (bit_not @0) INTEGER_CST@2)
+	 @0))
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@0))
+       && TYPE_UNSIGNED (TREE_TYPE (@3)))
+   (with
+    {
+     unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+     unsigned otype_precision = TYPE_PRECISION (type);
+     wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+     wide_int int_cst_1 = wi::to_wide (@1, itype_precision);
+     wide_int int_cst_2 = wi::to_wide (@2, itype_precision);
+     wide_int shift_amount = wi::uhwi (itype_precision - 1,
+				  itype_precision);
+     int cmp = wi::cmp (int_cst_2, shift_amount,
+		       TYPE_SIGN (TREE_TYPE (@0)));
+    }
+    (if (otype_precision < itype_precision
+	 && wi::eq_p (trunc_max, int_cst_1)
+	 && cmp >= 0)))))
+ (match (unsigned_integer_narrow_clip @0)
   /* SAT_US_TRUNC = (NT)MAX (MIN (X, NT_MAX), 0).  */
   (convert (integer_constant_clamp@3 @0 integer_zerop@1 @2))
   (if (!TYPE_UNSIGNED (TREE_TYPE (@0))
