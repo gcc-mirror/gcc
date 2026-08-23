@@ -3891,8 +3891,7 @@ long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
     info->hilo[i] = res_ops[n_ops + i];
   if (shift_idx >= 0)
     /* The carry atoms (mul_carry_cross_sum, mul_carry_low_sum) capture the
-       shift as an INTEGER_CST already checked with tree_fits_uhwi_p, so this
-       cannot overflow.  */
+       shift since it is always less than TYPE_PRECISION, using tree_to_uhwi is safe.  */
     info->shift = tree_to_uhwi (res_ops[shift_idx]);
 }
 
