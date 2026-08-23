@@ -464,17 +464,10 @@ PathProbeImplTrait::Probe (TyTy::BaseType *receiver,
 void
 PathProbeImplTrait::process_trait_impl_items_for_candidates ()
 {
-  mappings.iterate_impl_items (
+  NodeId trait_node_id = trait_reference->get_mappings ().get_nodeid ();
+  mappings.iterate_trait_impl_items (
+    trait_node_id,
     [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
-      // just need to check if this is an impl block for this trait the next
-      // function checks the receiver
-      if (!impl->has_trait_ref ())
-	return true;
-
-      TraitReference *resolved = TraitResolver::Lookup (impl->get_trait_ref ());
-      if (!trait_reference->is_equal (*resolved))
-	return true;
-
       process_impl_item_candidate (id, item, impl);
       return true;
     });

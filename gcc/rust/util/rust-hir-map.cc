@@ -830,6 +830,31 @@ Mappings::iterate_impl_items (
 }
 
 void
+Mappings::insert_trait_impl_mapping (NodeId trait_node_id, HIR::ImplBlock *impl)
+{
+  hirTraitImplMappings[trait_node_id].push_back (impl);
+}
+
+void
+Mappings::iterate_trait_impl_items (
+  NodeId trait_node_id,
+  std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb)
+{
+  auto trait_impls = hirTraitImplMappings.find (trait_node_id);
+  if (trait_impls == hirTraitImplMappings.end ())
+    return;
+
+  for (auto *impl : trait_impls->second)
+    for (auto &item : impl->get_impl_items ())
+      {
+	HIR::ImplItem *impl_item = item.get ();
+	HirId id = impl_item->get_impl_mappings ().get_hirid ();
+	if (!cb (id, impl_item, impl))
+	  return;
+      }
+}
+
+void
 Mappings::iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb)
 {
   for (auto it = hirImplBlockMappings.begin ();

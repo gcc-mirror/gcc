@@ -27,6 +27,7 @@
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"
 #include "rust-item.h"
+#include "rust-finalized-name-resolution-context.h"
 
 namespace Rust {
 namespace HIR {
@@ -765,6 +766,13 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
   translated = hir_impl_block;
 
   mappings.insert_hir_impl_block (hir_impl_block);
+
+  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
+  auto trait_node_id = nr_ctx.lookup (trait_ref->get_mappings ().get_nodeid (),
+				      Resolver2_0::Namespace::Types);
+  rust_assert (trait_node_id.has_value ());
+  mappings.insert_trait_impl_mapping (trait_node_id.value (), hir_impl_block);
+
   for (auto &impl_item_id : impl_item_ids)
     {
       mappings.insert_impl_item_mapping (impl_item_id, hir_impl_block);

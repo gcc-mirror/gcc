@@ -208,6 +208,12 @@ public:
   void iterate_impl_items (
     std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb);
 
+  void insert_trait_impl_mapping (NodeId trait_node_id, HIR::ImplBlock *impl);
+
+  void iterate_trait_impl_items (
+    NodeId trait_node_id,
+    std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb);
+
   void iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb);
 
   void iterate_trait_items (
@@ -396,6 +402,7 @@ private:
   std::map<HirId, HIR::ImplBlock *> hirImplItemsToImplMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplBlockMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplBlockTypeMappings;
+  std::map<NodeId, std::vector<HIR::ImplBlock *>> hirTraitImplMappings;
   std::map<HirId, HIR::TraitItem *> hirTraitItemMappings;
   std::map<HirId, HIR::ExternBlock *> hirExternBlockMappings;
   std::map<HirId, std::pair<HIR::ExternalItem *, HirId>> hirExternItemMappings;
