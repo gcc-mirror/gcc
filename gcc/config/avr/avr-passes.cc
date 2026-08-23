@@ -28,6 +28,7 @@
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "rtl-iter.h"
 #include "tree.h"
 #include "diagnostic-core.h"
 #include "cfghooks.h"
@@ -1053,6 +1054,28 @@ struct insninfo_t
     else
       gcc_unreachable ();
   }
+
+  gprmask_t scratch_mask () const
+  {
+    gprmask_t mask = m_scratch
+      ? regmask (m_scratch, 1)
+      : 0;
+
+    if (m_insn)
+      {
+	subrtx_iterator::array_type array;
+	FOR_EACH_SUBRTX (iter, array, PATTERN (m_insn), NONCONST)
+	  {
+	    rtx scratch_reg;
+	    if (GET_CODE (*iter) == CLOBBER
+		&& REG_P (scratch_reg = XEXP (*iter, 0))
+		&& END_REGNO (scratch_reg) <= REG_32)
+	      mask |= regmask (scratch_reg);
+	  }
+      }
+
+    return mask;
+  }
 }; // insninfo_t
 
 
@@ -1186,6 +1209,7 @@ optimize_data_t::emit_sequence (basic_block bb, rtx_insn *insns)
 	  avr_dump ("INCOMPLETE APPLICATION:\n");
 	  m2.dump ("regs old route=%s\n\n");
 	  n2.dump ("regs new route=%s\n\n");
+	  avr_dump ("ignore_mask = %08x\n\n", (unsigned) ignore_mask);
 	  avr_dump ("The new insns are:\n%L", insns);
 
 	  fatal_insn ("incomplete application of insn", insns);
@@ -2714,8 +2738,7 @@ optimize_data_t::try_split_ldi (bbinfo_t *bbi)
 
       n_new_insns = bbinfo_t::fpd->solution.emit_insns (curr.ii, curr.regs);
 
-      if (curr.ii.m_scratch)
-	ignore_mask = regmask (curr.ii.m_scratch, 1);
+      ignore_mask = curr.ii.scratch_mask ();
     }
 
   return found;
@@ -3056,8 +3079,7 @@ optimize_data_t::try_split_any (bbinfo_t *)
 	return fail ("too expensive");
     }
 
-  if (ii.m_scratch)
-    ignore_mask = regmask (ii.m_scratch, 1);
+  ignore_mask = ii.scratch_mask ();
 
   return true;
 }
