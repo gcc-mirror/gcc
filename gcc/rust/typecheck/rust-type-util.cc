@@ -382,7 +382,8 @@ lookup_associated_impl_block (const TyTy::TypeBoundPredicate &bound,
 
   // setup any associated type mappings for the specified bonds and this
   // type
-  auto candidates = TypeBoundsProbe::Probe (binding);
+  auto candidates
+    = TypeBoundsProbe::Probe (binding, bound.get ()->get_hir_trait_ref ());
   std::vector<AssociatedImplTrait *> associated_impl_traits;
   for (auto &probed_bound : candidates)
     {
@@ -669,7 +670,8 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
 	  && self->get_kind () != TyTy::TypeKind::INFER
 	  && self->get_kind () != TyTy::TypeKind::PROJECTION)
 	{
-	  auto candidates = TypeBoundsProbe::Probe (self);
+	  auto candidates = TypeBoundsProbe::Probe (
+	    self, proj->get_trait_ref ()->get_hir_trait_ref ());
 	  for (auto &probed : candidates)
 	    {
 	      HIR::ImplBlock *impl_block = probed.second;
