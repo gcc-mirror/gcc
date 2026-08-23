@@ -3253,8 +3253,32 @@ accept_statement (gfc_statement st)
     case ST_END_SUBROUTINE:
       if (gfc_statement_label != NULL)
 	{
-	  new_st.op = EXEC_RETURN;
-	  add_statement ();
+	  /* After a contains section, a new namespace is started together with
+	     a new state_stack. The statement label must be attached to the
+	     previous state after finding the label in its namespace.  */
+	  if (gfc_state_stack->head == NULL
+	      && gfc_state_stack->previous
+	      && gfc_state_stack->previous->sym
+	      && gfc_state_stack->previous->sym->ns
+	      && gfc_state_stack->previous->sym->ns->parent == NULL)
+	    {
+	      int value = gfc_current_ns->st_labels->value;
+	      gfc_state_data *previous_state = gfc_state_stack;
+	      gfc_namespace *old_ns = gfc_current_ns;
+	      gfc_current_ns = gfc_state_stack->previous->sym->ns;
+	      new_st.here = gfc_get_st_label (value);
+	      new_st.here->defined = ST_LABEL_TARGET;
+	      new_st.op = EXEC_RETURN;
+	      gfc_state_stack = gfc_state_stack->previous;
+	      add_statement ();
+	      gfc_state_stack = previous_state;
+	      gfc_current_ns = old_ns;
+	    }
+	  else
+	   {
+	     new_st.op = EXEC_RETURN;
+	     add_statement ();
+	   }
 	}
       else
 	{
