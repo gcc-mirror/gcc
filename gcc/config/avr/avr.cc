@@ -256,7 +256,16 @@ bool avr_need_clear_bss_p = false;
 bool avr_need_copy_data_p = false;
 bool avr_has_rodata_p = false;
 
+/* Features used by the target code that are affected by the chosen ABI.
+   Output as .gnu_attribute in order to guarantee that only compatible
+   objects files are linked together.
+      Notice that for the latter two cases, there are loop holes like
+   sizeof(double).  Just mapping -mdouble=X to a .gnu_attribute *,X
+   would be too strict since libgcc may reuse a multilib provided it
+   doesn't depend on -m[long-]double.  */
 bool avr_uses_vtable_p = false;
+static bool avr_uses_double_p = false;
+static bool avr_uses_long_double_p = false;
 
 /* Counts how often pass avr-fuse-add has been executed.  It is kept in
    sync with cfun->machine->n_avr_fuse_add_executed and serves as an
@@ -12795,6 +12804,41 @@ avr_file_start (void)
 }
 
 
+/* Scan TYP for the occurence of [long] double, and set `avr_uses_double_p'
+   and `avr_uses_long_double_p' accordingly.  This is used by avr_file_end()
+   and also by the avr_pass_has gimple pass.
+   walk_tree() doesn't quite fit the puropse, so cook our own.  */
+
+void
+avr_find_double (tree typ, hash_set<tree> *pset)
+{
+  if (typ == NULL_TREE
+      || typ == error_mark_node
+      || pset->add (typ))
+    return;
+
+  if (POINTER_TYPE_P (typ))
+    return avr_find_double (TREE_TYPE (typ), pset);
+
+  if (TREE_CODE (typ) == ARRAY_TYPE)
+    return avr_find_double (strip_array_types (typ), pset);
+
+  if (RECORD_OR_UNION_TYPE_P (typ))
+    {
+      for (tree fld = TYPE_FIELDS (typ); fld; fld = DECL_CHAIN (fld))
+	if (TREE_CODE (fld) == FIELD_DECL)
+	  avr_find_double (TREE_TYPE (fld), pset);
+      return;
+    }
+
+  if (VECTOR_FLOAT_TYPE_P (typ) || COMPLEX_FLOAT_TYPE_P (typ))
+    typ = TREE_TYPE (typ);
+
+  avr_uses_double_p |= TYPE_MAIN_VARIANT (typ) == double_type_node;
+  avr_uses_long_double_p |= TYPE_MAIN_VARIANT (typ) == long_double_type_node;
+}
+
+
 /* Implement `TARGET_ASM_FILE_END'.  */
 /* Outputs to the stdio stream FILE some
    appropriate text to go at the end of an assembler file.  */
@@ -12816,9 +12860,9 @@ avr_file_end (void)
     fputs (".global __do_clear_bss\n", asm_out_file);
 
 #ifdef HAVE_AS_AVR_GNU_ATTRIBUTE
-  /* Output .gnu_attribute to tag object files with aspects of the ABI.
-     .gnu_attribute 4: The named address space for C++ virtual tables.  */
+  /* Output .gnu_attribute to tag object files with aspects of the ABI. */
 
+  hash_set<tree> hset;
   varpool_node *vnode;
 
   FOR_EACH_VARIABLE (vnode)
@@ -12826,11 +12870,26 @@ avr_file_end (void)
       const char *id = IDENTIFIER_POINTER (DECL_NAME (vnode->decl));
       avr_uses_vtable_p |= startswith (id, "_ZTV"); // vtable
       avr_uses_vtable_p |= startswith (id, "_ZTT"); // vtable table
+
+      avr_find_double (TREE_TYPE (vnode->decl), &hset);
     }
 
+  // .gnu_attribute 4: The named address space for C++ virtual tables.
   if (avr_uses_vtable_p)
     fprintf (asm_out_file, ".gnu_attribute %d,%d\n",
 	     Tag_GNU_AVR_VTABLE_AS, Val_GNU_AVR_VTABLE_RAM);
+
+  // .gnu_attribute 8: The bitsize of double, or 0 if not used.
+  if (avr_uses_double_p)
+    fprintf (asm_out_file, ".gnu_attribute %d,%d\n",
+	     Tag_GNU_AVR_BITS_DOUBLE,
+	     (int) (CHAR_BIT * int_size_in_bytes (double_type_node)));
+
+  // .gnu_attribute 12: The bitsize of long double, or 0 if not used.
+  if (avr_uses_long_double_p)
+    fprintf (asm_out_file, ".gnu_attribute %d,%d\n",
+	     Tag_GNU_AVR_BITS_LONG_DOUBLE,
+	     (int) (CHAR_BIT * int_size_in_bytes (long_double_type_node)));
 #endif // HAVE_AS_AVR_GNU_ATTRIBUTE
 }
 

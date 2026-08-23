@@ -17,8 +17,11 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
-/* A gimple pass that sets `avr_uses_vtable_p', i.e. whether the target
-   code is using vtables.  Where the pass is inserted doesn't really matter,
+/* A gimple pass that sets
+   `avr_uses_vtable_p', i.e. whether the target code is using vtables.
+   `avr_uses_double_p', i.e. whether the target code is using double.
+   `avr_uses_long_double_p', i.e. whether the target code is using long double.
+   Where the pass is inserted doesn't really matter,
    though it should be an SSA pass that runs after LTO streaming.  */
 
 INSERT_PASS_AFTER (pass_musttail, 1, avr_pass_has);

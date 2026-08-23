@@ -38,6 +38,7 @@ extern void avr_declare_function_name (FILE *, const char *, tree);
 extern void asm_output_external (FILE *file, tree decl, char *name);
 extern int avr_progmem_p (tree decl, tree attributes);
 extern bool avr_addr_space_supported_p (addr_space_t, location_t loc = UNKNOWN_LOCATION);
+extern void avr_find_double (tree typ, hash_set<tree> *pset);
 
 #ifdef RTX_CODE /* inside TREE_CODE */
 extern void avr_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx, tree);

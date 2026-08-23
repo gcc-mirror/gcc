@@ -113,7 +113,7 @@
    (GASISR_Done     0)
    ])
 
-;; Vtables address space are hard-coded in Binutils include/elf/avr.h.
+;; Repeat values for .gnu_attribute from Binutils include/elf/avr.h.
 (define_constants
  [(Tag_GNU_AVR_VTABLE_AS 4)
   (Val_GNU_AVR_VTABLE_NONE   0)
@@ -125,6 +125,9 @@
   (Val_GNU_AVR_VTABLE_FLASH4 6)
   (Val_GNU_AVR_VTABLE_FLASH5 7)
   (Val_GNU_AVR_VTABLE_FLASHX 8)
+
+  (Tag_GNU_AVR_BITS_DOUBLE       8)
+  (Tag_GNU_AVR_BITS_LONG_DOUBLE 12)
   ])
 
 (include "predicates.md")
