@@ -38,6 +38,7 @@
 #include "optional.h"
 #include "rust-unicode.h"
 #include "rust-punycode.h"
+#include "rust-builtins.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -226,10 +227,11 @@ grs_langhook_type_for_mode (machine_mode mode, int unsignedp)
   return NULL;
 }
 
-// Record a builtin function. We just ignore builtin functions.
+// Record a builtin function.
 static tree
-grs_langhook_builtin_function (tree decl ATTRIBUTE_UNUSED)
+grs_langhook_builtin_function (tree decl)
 {
+  Rust::Compile::BuiltinsContext::get ().register_builtin (decl);
   return decl;
 }
 

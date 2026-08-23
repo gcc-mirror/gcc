@@ -26,6 +26,9 @@
 #include "rust-hir-full-decls.h"
 #include "rust-attributes.h"
 #include "rust-attribute-values.h"
+#include "rust-builtins.h"
+#include "rust-compile-fnparam.h"
+#include "fold-const.h"
 
 namespace Rust {
 namespace Compile {
@@ -127,6 +130,68 @@ public:
     std::string ir_symbol_name = function.get_item_name ().as_string ();
     GGC::Ident asm_name = get_link_name (function);
 
+    if (fntype->get_abi () == ABI::UNADJUSTED)
+      {
+	tree resolved;
+	LlvmBuiltinAdapter adapter;
+	auto mapping_res = BuiltinsContext::get ().map_llvm_to_gcc_builtin (
+	  asm_name.as_string (), &resolved, &adapter);
+
+	switch (mapping_res)
+	  {
+	  case LlvmBuiltinMappingResult::NOT_MAPPED:
+	    rust_error_at (function.get_locus (),
+			   "LLVM intrinsic %qs is not supported at the moment",
+			   asm_name.c_str ());
+	    reference = error_mark_node;
+	    return;
+	  case LlvmBuiltinMappingResult::TARGET_UNAVAILABLE:
+	    rust_error_at (
+	      function.get_locus (),
+	      "LLVM intrinsic %qs is not available for this target",
+	      asm_name.c_str ());
+	    reference = error_mark_node;
+	    return;
+	  case LlvmBuiltinMappingResult::RESOLVED:
+	    break;
+	  }
+
+	tree adapter_tree = error_mark_node;
+
+	switch (adapter)
+	  {
+	  case LlvmBuiltinAdapter::OUTPUT_POINTER_VALUE_STATUS:
+	    adapter_tree = compile_x86_output_pointer_adapter (
+	      ctx, fntype, resolved, OutputTupleOrder::VALUE_STATUS,
+	      function.get_locus ());
+	    break;
+	  case LlvmBuiltinAdapter::OUTPUT_POINTER_STATUS_VALUE:
+	    adapter_tree = compile_x86_output_pointer_adapter (
+	      ctx, fntype, resolved, OutputTupleOrder::STATUS_VALUE,
+	      function.get_locus ());
+	    break;
+	  case LlvmBuiltinAdapter::FORWARD_ARGUMENTS:
+	    // TODO placeholder
+	    adapter_tree = compile_x86_output_pointer_adapter (
+	      ctx, fntype, resolved, OutputTupleOrder::STATUS_VALUE,
+	      function.get_locus ());
+	    break;
+	  }
+
+	if (adapter_tree == error_mark_node)
+	  {
+	    rust_error_at (function.get_locus (),
+			   "Invalid signature for LLVM intrinsic %qs",
+			   asm_name.c_str ());
+	    reference = error_mark_node;
+	    return;
+	  }
+
+	ctx->insert_function_decl (fntype, adapter_tree);
+	reference = address_expression (adapter_tree, ref_locus);
+	return;
+      }
+
     const unsigned int flags = Backend::function_is_declaration;
     tree fndecl = Backend::function (compiled_fn_type, ir_symbol_name, asm_name,
 				     flags, function.get_locus ());
@@ -144,6 +209,12 @@ public:
   }
 
 private:
+  enum class OutputTupleOrder
+  {
+    VALUE_STATUS,
+    STATUS_VALUE,
+  };
+
   CompileExternItem (Context *ctx, TyTy::BaseType *concrete,
 		     location_t ref_locus)
     : HIRCompileBase (ctx), concrete (concrete), reference (error_mark_node),
@@ -178,6 +249,148 @@ private:
       }
 
     return obj.get_item_name ();
+  }
+
+  /**
+   * Compiles a wrapper that wraps around GCC built-ins for compatibility
+   * with LLVM built-ins function signatures returning a tuple with value +
+   * status.
+   *
+   * @param ctx
+   * @param fntype the LLVM built-in function type
+   * @param gcc_builtin the GCC built-in function
+   * @param order whether the LLVM built-in returns (value, status) or (status,
+   * value)
+   * @param locus
+   * @return tree
+   */
+  static tree compile_x86_output_pointer_adapter (Context *ctx,
+						  TyTy::FnType *fntype,
+						  tree gcc_builtin,
+						  OutputTupleOrder order,
+						  location_t locus)
+  {
+    // expect to be a 2-field tuple return type
+    TyTy::TupleType *tuple
+      = fntype->get_return_type ()->try_as<TyTy::TupleType> ();
+
+    if (tuple == nullptr || tuple->num_fields () != 2)
+      // TODO probably add error here
+      return error_mark_node;
+
+    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+
+    const auto &path = fntype->get_ident ().path;
+    std::string ir_name = path.get () + fntype->subst_as_string ();
+    std::string asm_name = ctx->mangle_item (fntype, path);
+
+    // start building the wrapper function
+    tree fndecl
+      = Backend::function (compiled_fn_type, ir_name, asm_name, 0, locus);
+
+    TREE_PUBLIC (fndecl) = 0;
+    DECL_ARTIFICIAL (fndecl) = 1;
+    DECL_EXTERNAL (fndecl) = 0;
+    DECL_DECLARED_INLINE_P (fndecl) = 1;
+
+    // compile params for the rust wrapper
+    std::vector<Bvariable *> param_vars;
+    param_vars.reserve (fntype->get_params ().size ());
+    for (auto &param : fntype->get_params ())
+      {
+	auto &pattern = param.get_pattern ();
+	tree type = TyTyResolveCompile::compile (ctx, param.get_type ());
+	Bvariable *variable
+	  = CompileFnParam::compile (ctx, fndecl, pattern, type,
+				     pattern.get_locus ());
+	param_vars.emplace_back (variable);
+      }
+
+    if (!Backend::function_set_parameters (fndecl, param_vars))
+      return error_mark_node;
+
+    // forward the rust params, convert each into the corresponding gcc
+    // built-in param type
+    std::vector<tree> call_arguments;
+    // +1 here because gcc built-in expects output pointer as param
+    call_arguments.reserve (param_vars.size () + 1);
+    tree gcc_argument_types = TYPE_ARG_TYPES (TREE_TYPE (gcc_builtin));
+    for (Bvariable *param : param_vars)
+      {
+	tree argument = param->get_tree (locus);
+	tree expected_type = TREE_VALUE (gcc_argument_types);
+	argument = Backend::convert_expression (expected_type, argument, locus);
+	call_arguments.emplace_back (argument);
+	gcc_argument_types = TREE_CHAIN (gcc_argument_types);
+      }
+
+    // the order of llvm built-ins' tuple return types' fields is not
+    // consistent, some are (value, status) and others are (status, value), so
+    // we need to reorder it...
+    tree tuple_type = TREE_TYPE (DECL_RESULT (fndecl));
+    tree first_field = TYPE_FIELDS (tuple_type);
+    tree second_field = DECL_CHAIN (first_field);
+
+    tree value_field
+      = order == OutputTupleOrder::VALUE_STATUS ? first_field : second_field;
+    tree status_field
+      = order == OutputTupleOrder::VALUE_STATUS ? second_field : first_field;
+
+    tree value_type = TREE_TYPE (value_field);
+    tree status_type = TREE_TYPE (status_field);
+
+    tree temporary_stmt = NULL_TREE;
+    Bvariable *value
+      = Backend::temporary_variable (fndecl, NULL_TREE, value_type, NULL_TREE,
+				     true, locus, &temporary_stmt);
+    Bvariable *status
+      = Backend::temporary_variable (fndecl, NULL_TREE, status_type, NULL_TREE,
+				     false, locus, &temporary_stmt);
+
+    // compile the final gcc built-in param which is the output value pointer,
+    // which llvm returns as part of the tuple return type
+    tree gcc_pointer_type = TREE_VALUE (gcc_argument_types);
+    tree block
+      = Backend::block (fndecl, NULL_TREE, {value, status}, locus, locus);
+    ctx->push_block (block);
+
+    tree value_decl = value->get_tree (locus);
+    tree status_decl = status->get_tree (locus);
+
+    tree value_address = build_fold_addr_expr_loc (locus, value_decl);
+    value_address
+      = Backend::convert_expression (gcc_pointer_type, value_address, locus);
+    call_arguments.emplace_back (value_address);
+
+    // call the gcc built-in with the params that were built and assign the
+    // returned val to the status temp var
+    tree builtin_call
+      = build_call_expr_loc_array (locus, gcc_builtin,
+				   static_cast<int> (call_arguments.size ()),
+				   call_arguments.data ());
+    builtin_call
+      = Backend::convert_expression (status_type, builtin_call, locus);
+    ctx->add_statement (
+      Backend::assignment_statement (status_decl, builtin_call, locus));
+
+    // finally compile and add the return statement
+    std::vector<tree> tuple_values;
+    if (order == OutputTupleOrder::VALUE_STATUS)
+      tuple_values = {value_decl, status_decl};
+    else
+      tuple_values = {status_decl, value_decl};
+
+    tree tuple_result
+      = Backend::constructor_expression (tuple_type, false, tuple_values, -1,
+					 locus);
+    ctx->add_statement (
+      Backend::return_statement (fndecl, tuple_result, locus));
+
+    tree body = ctx->pop_block ();
+    DECL_SAVED_TREE (fndecl) = body;
+
+    ctx->push_function (fndecl);
+    return fndecl;
   }
 
   TyTy::BaseType *concrete;

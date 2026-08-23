@@ -48,6 +48,25 @@ BuiltinsContext::lookup_simple_builtin (const std::string &name, tree *builtin)
   return lookup_gcc_builtin (*to_search, builtin);
 }
 
+LlvmBuiltinMappingResult
+BuiltinsContext::map_llvm_to_gcc_builtin (const std::string &name,
+					  tree *resolved,
+					  LlvmBuiltinAdapter *adapter)
+{
+  rust_assert (resolved != nullptr);
+
+  auto mapping = llvm_to_gcc_builtin.find (name);
+  if (mapping == llvm_to_gcc_builtin.end ())
+    return LlvmBuiltinMappingResult::NOT_MAPPED;
+
+  *resolved = NULL_TREE;
+  if (!lookup_gcc_builtin (mapping->second.gcc_name, resolved))
+    return LlvmBuiltinMappingResult::TARGET_UNAVAILABLE;
+
+  *adapter = mapping->second.adapter;
+  return LlvmBuiltinMappingResult::RESOLVED;
+}
+
 BuiltinsContext::BuiltinsContext () : setup_state (SetupState::UNINITIALIZED) {}
 
 /**
@@ -360,6 +379,57 @@ BuiltinsContext::register_rust_mappings ()
 }
 
 void
+BuiltinsContext::register_llvm_to_gcc_builtin ()
+{
+  llvm_to_gcc_builtin = {
+    {"llvm.x86.rdrand.16",
+     {"__builtin_ia32_rdrand16_step",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_VALUE_STATUS}},
+    {"llvm.x86.rdrand.32",
+     {"__builtin_ia32_rdrand32_step",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_VALUE_STATUS}},
+    {"llvm.x86.rdrand.64",
+     {"__builtin_ia32_rdrand64_step",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_VALUE_STATUS}},
+    {"llvm.x86.rdseed.16",
+     {"__builtin_ia32_rdseed_hi_step",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_VALUE_STATUS}},
+    {"llvm.x86.rdseed.32",
+     {"__builtin_ia32_rdseed_si_step",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_VALUE_STATUS}},
+    {"llvm.x86.rdseed.64",
+     {"__builtin_ia32_rdseed_di_step",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_VALUE_STATUS}},
+
+    {"llvm.x86.addcarry.32",
+     {"__builtin_ia32_addcarryx_u32",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_STATUS_VALUE}},
+    {"llvm.x86.addcarryx.u32",
+     {"__builtin_ia32_addcarryx_u32", LlvmBuiltinAdapter::FORWARD_ARGUMENTS}},
+    {"llvm.x86.subborrow.32",
+     {"__builtin_ia32_sbb_u32",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_STATUS_VALUE}},
+    {"llvm.x86.addcarry.64",
+     {"__builtin_ia32_addcarryx_u64",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_STATUS_VALUE}},
+    {"llvm.x86.addcarryx.u64",
+     {"__builtin_ia32_addcarryx_u64", LlvmBuiltinAdapter::FORWARD_ARGUMENTS}},
+    {"llvm.x86.subborrow.64",
+     {"__builtin_ia32_sbb_u64",
+      LlvmBuiltinAdapter::OUTPUT_POINTER_STATUS_VALUE}}};
+}
+
+void
+BuiltinsContext::register_builtin (tree decl)
+{
+  rust_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  rust_assert (DECL_NAME (decl));
+
+  const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+  builtin_functions.insert ({std::string (name), decl});
+}
+
+void
 BuiltinsContext::setup ()
 {
   rust_assert (setup_state == SetupState::UNINITIALIZED);
@@ -372,6 +442,7 @@ BuiltinsContext::setup ()
   targetm.init_builtins ();
 
   register_rust_mappings ();
+  register_llvm_to_gcc_builtin ();
 
   setup_state = SetupState::READY;
 }

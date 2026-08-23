@@ -79,12 +79,38 @@ namespace Compile {
 // };
 // Some(cx.get_intrinsic(&llvm_name))
 
+enum class LlvmBuiltinMappingResult
+{
+  NOT_MAPPED,
+  TARGET_UNAVAILABLE,
+  RESOLVED,
+};
+
+enum class LlvmBuiltinAdapter
+{
+  OUTPUT_POINTER_VALUE_STATUS,
+  OUTPUT_POINTER_STATUS_VALUE,
+  FORWARD_ARGUMENTS,
+};
+
+struct LlvmBuiltinMapping
+{
+  std::string gcc_name;
+  LlvmBuiltinAdapter adapter;
+};
+
 class BuiltinsContext
 {
 public:
   static BuiltinsContext &get ();
 
   bool lookup_simple_builtin (const std::string &name, tree *builtin);
+
+  LlvmBuiltinMappingResult
+  map_llvm_to_gcc_builtin (const std::string &name, tree *resolved,
+			   LlvmBuiltinAdapter *adapter);
+
+  void register_builtin (tree decl);
 
 private:
   enum Type
@@ -199,6 +225,7 @@ private:
   void define_builtins ();
 
   void register_rust_mappings ();
+  void register_llvm_to_gcc_builtin ();
 
   BuiltinsContext ();
 
@@ -213,6 +240,7 @@ private:
   // A mapping of the GCC built-ins exposed to GCC Rust.
   std::map<std::string, tree> builtin_functions;
   std::map<std::string, std::string> rust_intrinsic_to_gcc_builtin;
+  std::map<std::string, LlvmBuiltinMapping> llvm_to_gcc_builtin;
 };
 
 } // namespace Compile
