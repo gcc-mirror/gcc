@@ -563,7 +563,22 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
   ScopedPush<TyTy::ProjectionType *> guard (active_projections, proj);
 
   if (!proj->is_trait_position ())
-    return proj->get ();
+    {
+      TyTy::BaseType *base = proj->get ();
+      if (auto *param = base->try_as<TyTy::ParamType> ())
+	{
+	  if (param->can_resolve ())
+	    {
+	      TyTy::BaseType *resolved
+		= TyTy::TyVar (param->get_ty_ref ()).get_tyty ();
+	      if (!resolved->is<TyTy::ParamType> ())
+		base = resolved;
+	    }
+	}
+      if (auto *base_proj = base->try_as<TyTy::ProjectionType> ())
+	return normalize_projection (base_proj, locus, emit_errors, unify_self);
+      return base;
+    }
 
   // special case the discriminant_type lang item
   auto &mappings = Analysis::Mappings::get ();
