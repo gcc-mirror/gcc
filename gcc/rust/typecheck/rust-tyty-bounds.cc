@@ -26,14 +26,16 @@
 namespace Rust {
 namespace Resolver {
 
-TypeBoundsProbe::TypeBoundsProbe (TyTy::BaseType *receiver)
-  : TypeCheckBase (), receiver (receiver)
+TypeBoundsProbe::TypeBoundsProbe (TyTy::BaseType *receiver,
+				  const HIR::Trait *specified_trait)
+  : TypeCheckBase (), receiver (receiver), specified_trait (specified_trait)
 {}
 
 std::vector<std::pair<TraitReference *, HIR::ImplBlock *>>
-TypeBoundsProbe::Probe (TyTy::BaseType *receiver)
+TypeBoundsProbe::Probe (TyTy::BaseType *receiver,
+			const HIR::Trait *specified_trait)
 {
-  TypeBoundsProbe probe (receiver);
+  TypeBoundsProbe probe (receiver, specified_trait);
   probe.scan ();
   return probe.trait_references;
 }
@@ -50,7 +52,7 @@ TypeBoundsProbe::is_bound_satisfied_for_type (TyTy::BaseType *receiver,
     }
 
   std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> bounds
-    = Probe (receiver);
+    = Probe (receiver, ref->get_hir_trait_ref ());
   for (auto &bound : bounds)
     {
       const TraitReference *b = bound.first;
@@ -95,10 +97,15 @@ TypeBoundsProbe::scan ()
 {
   std::vector<std::pair<HIR::TypePath *, HIR::ImplBlock *>>
     possible_trait_paths;
-  mappings.iterate_impl_blocks (
-    [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
-      return process_impl_block (id, impl, possible_trait_paths);
-    });
+  auto process_impl = [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
+    return process_impl_block (id, impl, possible_trait_paths);
+  };
+
+  if (specified_trait == nullptr)
+    mappings.iterate_impl_blocks (process_impl);
+  else
+    mappings.iterate_trait_impl_blocks (
+      specified_trait->get_mappings ().get_nodeid (), process_impl);
 
   for (auto &path : possible_trait_paths)
     {
