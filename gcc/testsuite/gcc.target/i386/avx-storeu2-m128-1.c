@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx" } */
+/* { dg-options "-O2 -mavx -mno-avx512f" } */
 /* { dg-final { scan-assembler "\tvmovups\t" } } */
 /* { dg-final { scan-assembler "\tvextractf128\t" } } */
 
