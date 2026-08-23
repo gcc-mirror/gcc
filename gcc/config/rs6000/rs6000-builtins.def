@@ -842,12 +842,6 @@
   const vuc __builtin_altivec_vperm_16qi_uns (vuc, vuc, vuc);
     VPERM_16QI_UNS altivec_vperm_v16qi_uns {}
 
-  const vsq __builtin_altivec_vperm_1ti (vsq, vsq, vuc);
-    VPERM_1TI altivec_vperm_v1ti {}
-
-  const vuq __builtin_altivec_vperm_1ti_uns (vuq, vuq, vuc);
-    VPERM_1TI_UNS altivec_vperm_v1ti_uns {}
-
   const vf __builtin_altivec_vperm_4sf (vf, vf, vuc);
     VPERM_4SF altivec_vperm_v4sf {}
 
@@ -941,12 +935,6 @@
   const vuc __builtin_altivec_vsel_16qi_uns (vuc, vuc, vuc);
     VSEL_16QI_UNS vector_select_v16qi_uns {}
 
-  const vsq __builtin_altivec_vsel_1ti (vsq, vsq, vuq);
-    VSEL_1TI vector_select_v1ti {}
-
-  const vuq __builtin_altivec_vsel_1ti_uns (vuq, vuq, vuq);
-    VSEL_1TI_UNS vector_select_v1ti_uns {}
-
   const vf __builtin_altivec_vsel_4sf (vf, vf, vf);
     VSEL_4SF vector_select_v4sf {}
 
@@ -979,9 +967,6 @@
 
   const vss __builtin_altivec_vsldoi_8hi (vss, vss, const int<4>);
     VSLDOI_8HI altivec_vsldoi_v8hi {}
-
-  const vsq __builtin_altivec_vsldoi_v1ti (vsq, vsq, const int<4>);
-    VSLDOI_1TI altivec_vsldoi_v1ti {}
 
   const vss __builtin_altivec_vslh (vss, vus);
     VSLH vashlv8hi3 {}
@@ -1234,6 +1219,12 @@
   const vull __builtin_altivec_vor_v2di_uns (vull, vull);
     VOR_V2DI_UNS iorv2di3 {}
 
+  const vsq __builtin_altivec_vperm_1ti (vsq, vsq, vuc);
+    VPERM_1TI altivec_vperm_v1ti {}
+
+  const vuq __builtin_altivec_vperm_1ti_uns (vuq, vuq, vuc);
+    VPERM_1TI_UNS altivec_vperm_v1ti_uns {}
+
   const vd __builtin_altivec_vperm_2df (vd, vd, vuc);
     VPERM_2DF altivec_vperm_v2df {}
 
@@ -1249,6 +1240,12 @@
   const vsll __builtin_altivec_vreve_v2di (vsll);
     VREVE_V2DI altivec_vrevev2di2 {}
 
+  const vsq __builtin_altivec_vsel_1ti (vsq, vsq, vuq);
+    VSEL_1TI vector_select_v1ti {}
+
+  const vuq __builtin_altivec_vsel_1ti_uns (vuq, vuq, vuq);
+    VSEL_1TI_UNS vector_select_v1ti_uns {}
+
   const vd __builtin_altivec_vsel_2df (vd, vd, vd);
     VSEL_2DF vector_select_v2df {}
 
@@ -1263,6 +1260,9 @@
 
   const vsll __builtin_altivec_vsldoi_2di (vsll, vsll, const int<4>);
     VSLDOI_2DI altivec_vsldoi_v2di {}
+
+  const vsq __builtin_altivec_vsldoi_v1ti (vsq, vsq, const int<4>);
+    VSLDOI_1TI altivec_vsldoi_v1ti {}
 
   const vd __builtin_altivec_vxor_v2df (vd, vd);
     VXOR_V2DF xorv2df3 {}
