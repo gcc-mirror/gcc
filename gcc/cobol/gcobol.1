@@ -2093,6 +2093,85 @@ with
 .Sy "LINE SEQUENTIAL"
 files.
 .
+.Sh COMPUTATION POLICY
+Inputs to
+.Sy ADD ,
+.Sy SUBTRACT ,
+.Sy MULTIPLY ,
+.Sy DIVIDE ,
+and
+.Sy COMPUTE
+must be
+numeric, and outputs must be numeric or numeric-edited. Type-checking
+is done by the compiler.  However, the program may cause non-numeric
+data to be moved into those operands.  That situation is dealt with at
+runtime in the form of Exception Conditions.
+.Pp
+Per \*[isostd] 14.6.13.2 Incompatible data,
+.Sy EC-DATA-INCOMPATIBLE
+is raised when the receiving data item is numeric and the sending item
+is not. In addition to the above statements, that can occur with
+.Sy MOVE
+if the sending item cannot be interpreted as an integer.
+.Pp
+To the question,
+.Dq "How could that happen?"
+there are three answers: I/O,
+.Sy REDEFINES ,
+and
+.Sy MOVE .
+Unlike some languages, \*[lang] generally uses
+.Dq "late binding" ;
+errors are not raised until the last possible moment.  A
+.Sy READ
+populates a record, and nothing says the input record must match the
+\*[lang] record definition.  Similarly a
+.Em group
+.Sy MOVE
+is defined at copying one block of characters to another. \*[lang]
+does not require the fields to match up.  Even the most specific
+.Sy MOVE
+may still copy arbitrary data:
+.Bd -literal
+77 A PIC X VALUE 'a'.
+77 N PIC 9 VALUE  1.
+ ...
+MOVE A TO N.
+DISPLAY N.
+MOVE N TO A. 
+DISPLAY A.
+.Ed
+.Lp
+displays
+.Bd -literal
+a
+a
+.Ed
+.Pp
+The system will not raise
+.Sy EC-DATA-INCOMPATIBLE
+unless enabled.  When it is not enabled,
+.Nm
+interprets the data as best it can.  For numeric display and packed
+decimal, the values are masked against the ASCII digits 0-9, and
+computation proceeds apace.
+.Pp
+For something in between all-or-nothing checking, 
+.Nm
+supports an implementation-defined EC:
+.Sy EC-DATA-IMP-OC7 ,
+whose name in no way derives from the famous IBM error code.  This EC
+is enabled by default with
+.Sy "-dialect ibm"
+to emulate observed behavior of some IBM compilers.  If enabled,
+the runtime system verifies that numeric 
+.Sy "DISPLAY"
+and
+.Sy "PACKED-DECIMAL"
+data indeed contain valid values at point of computation. If the
+values are not in range, the EC is raised.  It is a fatal EC and, as
+with other fatal ECs causes process termination if not handled.
+.
 .\" .Sh SEE ALSO
 .
 .Sh STANDARDS
@@ -2134,12 +2213,14 @@ Inter-Program Communication
 .It ST 100%
 Sort-Merge
 .It SM 100%
-Source Text Manipulation RW \en Report Writer
-.It CM
+Source Text Manipulation
+.It RW \0\00%
+Report Writer
+.It CM \0\00%
 Communication
-.It DB to do?
+.It DB \0\00%
 Debug
-.It SG
+.It SG \0\00%
 Segmentation
 .It IF 100%
 Intrinsic Function
