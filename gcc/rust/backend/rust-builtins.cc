@@ -29,6 +29,10 @@ BuiltinsContext &
 BuiltinsContext::get ()
 {
   static BuiltinsContext instance;
+
+  if (instance.setup_state == SetupState::UNINITIALIZED)
+    instance.setup ();
+
   return instance;
 }
 
@@ -44,7 +48,7 @@ BuiltinsContext::lookup_simple_builtin (const std::string &name, tree *builtin)
   return lookup_gcc_builtin (*to_search, builtin);
 }
 
-BuiltinsContext::BuiltinsContext () { setup (); }
+BuiltinsContext::BuiltinsContext () : setup_state (SetupState::UNINITIALIZED) {}
 
 /**
  * Define a function type according to `builtin-types.def`
@@ -358,11 +362,18 @@ BuiltinsContext::register_rust_mappings ()
 void
 BuiltinsContext::setup ()
 {
+  rust_assert (setup_state == SetupState::UNINITIALIZED);
+  setup_state = SetupState::INITIALIZING;
+
   define_builtin_types ();
   define_builtin_attributes ();
   define_builtins ();
 
+  targetm.init_builtins ();
+
   register_rust_mappings ();
+
+  setup_state = SetupState::READY;
 }
 
 bool

@@ -333,6 +333,9 @@ init ()
   // this->define_builtin (BUILT_IN_ATOMIC_FETCH_OR_1, "__atomic_fetch_or_1",
   // NULL,
   //       		t, 0);
+
+  // eagerly initialize BuiltinsContext
+  (void) Rust::Compile::BuiltinsContext::get ();
 }
 
 void

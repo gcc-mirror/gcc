@@ -166,6 +166,15 @@ private:
     ATTR_LAST,
   };
 
+  enum class SetupState
+  {
+    UNINITIALIZED,
+    INITIALIZING,
+    READY,
+  };
+
+  SetupState setup_state;
+
   /**
    * All builtin types, as defined in `builtin-types.def`
    *
