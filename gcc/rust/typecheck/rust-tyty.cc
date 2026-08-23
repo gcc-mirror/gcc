@@ -395,7 +395,9 @@ BaseType::satisfies_bound (const TypeBoundPredicate &predicate, bool emit_error)
     return true;
 
   bool satisfied = false;
-  auto probed = Resolver::TypeBoundsProbe::Probe (this);
+  auto tref = predicate.get ();
+  auto probed
+    = Resolver::TypeBoundsProbe::Probe (this, tref->get_hir_trait_ref ());
   for (const auto &b : probed)
     {
       const Resolver::TraitReference *bound = b.first;

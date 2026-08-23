@@ -208,11 +208,28 @@ TypeCheckExpr::visit (HIR::PathInExpression &expr)
       else
 	{
 	  TyTy::BaseType *resolved = nullptr;
-	  context->lookup_type (*hir_id, &resolved);
+	  auto trait_item = mappings.lookup_hir_trait_item (*hir_id);
+	  if (trait_item.has_value ())
+	    {
+	      HIR::Trait *trait = mappings.lookup_trait_item_mapping (*hir_id);
+	      rust_assert (trait != nullptr);
 
-	  rust_assert (resolved);
+	      TraitReference *trait_ref = TraitResolver::Resolve (*trait);
+	      if (trait_ref->is_error ())
+		return;
 
-	  query_type (*hir_id, &infered);
+	      TraitItemReference *trait_item_ref = nullptr;
+	      bool ok = trait_ref->lookup_hir_trait_item (**trait_item,
+							  &trait_item_ref);
+	      rust_assert (ok);
+	      resolved = trait_item_ref->get_tyty ();
+	    }
+	  else if (!query_type (*hir_id, &resolved))
+	    return;
+
+	  if (resolved == nullptr
+	      || resolved->get_kind () == TyTy::TypeKind::ERROR)
+	    return;
 
 	  infered = SubstMapper::InferSubst (resolved, expr.get_locus ());
 	}
