@@ -855,6 +855,19 @@ Mappings::iterate_trait_impl_items (
 }
 
 void
+Mappings::iterate_trait_impl_blocks (
+  NodeId trait_node_id, std::function<bool (HirId, HIR::ImplBlock *)> cb)
+{
+  auto trait_impls = hirTraitImplMappings.find (trait_node_id);
+  if (trait_impls == hirTraitImplMappings.end ())
+    return;
+
+  for (auto *impl : trait_impls->second)
+    if (!cb (impl->get_mappings ().get_hirid (), impl))
+      return;
+}
+
+void
 Mappings::iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb)
 {
   for (auto it = hirImplBlockMappings.begin ();

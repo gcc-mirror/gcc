@@ -2046,7 +2046,7 @@ TypeCheckExpr::resolve_operator_overload (
   auto segment = specified_segment.is_error ()
 		   ? HIR::PathIdentSegment (associated_item_name)
 		   : specified_segment;
-  auto candidates = MethodResolver::Probe (lhs, segment);
+  auto candidates = MethodResolver::Probe (lhs, segment, false, &trait);
 
   // remove any recursive candidates
   std::set<MethodCandidate> resolved_candidates;

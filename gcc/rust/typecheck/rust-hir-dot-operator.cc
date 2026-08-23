@@ -27,16 +27,18 @@ namespace Rust {
 namespace Resolver {
 
 MethodResolver::MethodResolver (bool autoderef_flag,
-				const HIR::PathIdentSegment &segment_name)
-  : AutoderefCycle (autoderef_flag), segment_name (segment_name), result ()
+				const HIR::PathIdentSegment &segment_name,
+				const HIR::Trait *specified_trait)
+  : AutoderefCycle (autoderef_flag), segment_name (segment_name),
+    specified_trait (specified_trait), result ()
 {}
 
 std::set<MethodCandidate>
 MethodResolver::Probe (TyTy::BaseType *receiver,
 		       const HIR::PathIdentSegment &segment_name,
-		       bool autoderef_flag)
+		       bool autoderef_flag, const HIR::Trait *specified_trait)
 {
-  MethodResolver resolver (autoderef_flag, segment_name);
+  MethodResolver resolver (autoderef_flag, segment_name, specified_trait);
   resolver.cycle (receiver);
   return resolver.result;
 }
@@ -203,8 +205,7 @@ MethodResolver::assemble_trait_impl_candidates (
   bool receiver_is_raw_ptr = raw->get_kind () == TyTy::TypeKind::POINTER;
   bool receiver_is_ref = raw->get_kind () == TyTy::TypeKind::REF;
 
-  mappings.iterate_impl_blocks ([&] (HirId id,
-				     HIR::ImplBlock *impl) mutable -> bool {
+  auto process_impl = [&] (HirId id, HIR::ImplBlock *impl) mutable -> bool {
     bool is_trait_impl = impl->has_trait_ref ();
     if (!is_trait_impl)
       return true;
@@ -300,7 +301,13 @@ MethodResolver::assemble_trait_impl_candidates (
     trait_candidates.emplace_back (func, trait, fnty, trait_ref, item_ref);
 
     return true;
-  });
+  };
+
+  if (specified_trait == nullptr)
+    mappings.iterate_impl_blocks (process_impl);
+  else
+    mappings.iterate_trait_impl_blocks (
+      specified_trait->get_mappings ().get_nodeid (), process_impl);
 }
 
 bool
@@ -309,6 +316,14 @@ MethodResolver::try_select_predicate_candidates (TyTy::BaseType &receiver)
   bool found_possible_candidate = false;
   for (const auto &predicate : predicate_items)
     {
+      if (specified_trait != nullptr)
+	{
+	  const TraitReference *parent = predicate.lookup.get_parent ()->get ();
+	  if (parent->get_mappings ().get_nodeid ()
+	      != specified_trait->get_mappings ().get_nodeid ())
+	    continue;
+	}
+
       const TyTy::FnType *fn = predicate.fntype;
       if (!fn->is_method ())
 	continue;
@@ -434,8 +449,9 @@ MethodResolver::select (TyTy::BaseType &receiver)
 	      segment_name.to_string ().c_str ());
 
   // Assemble candidates
-  std::vector<impl_item_candidate> inherent_impl_fns
-    = assemble_inherent_impl_candidates (receiver);
+  std::vector<impl_item_candidate> inherent_impl_fns;
+  if (specified_trait == nullptr)
+    inherent_impl_fns = assemble_inherent_impl_candidates (receiver);
   std::vector<impl_item_candidate> trait_impl_fns;
   std::vector<trait_item_candidate> trait_fns;
   assemble_trait_impl_candidates (receiver, trait_impl_fns, trait_fns);

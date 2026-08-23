@@ -214,6 +214,10 @@ public:
     NodeId trait_node_id,
     std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb);
 
+  void
+  iterate_trait_impl_blocks (NodeId trait_node_id,
+			     std::function<bool (HirId, HIR::ImplBlock *)> cb);
+
   void iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb);
 
   void iterate_trait_items (
