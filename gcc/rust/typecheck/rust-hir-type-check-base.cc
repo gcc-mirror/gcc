@@ -101,6 +101,7 @@ walk_type_to_constrain (std::set<HirId> &constrained_symbols, TyTy::BaseType &r)
       {
 	auto &arr = static_cast<TyTy::ArrayType &> (r);
 	walk_type_to_constrain (constrained_symbols, *arr.get_element_type ());
+	walk_type_to_constrain (constrained_symbols, *arr.get_capacity ());
       }
       break;
     case TyTy::TypeKind::FNDEF:
@@ -115,6 +116,13 @@ walk_type_to_constrain (std::set<HirId> &constrained_symbols, TyTy::BaseType &r)
       {
 	auto &param = static_cast<TyTy::ParamType &> (r);
 	constrained_symbols.insert (param.get_ty_ref ());
+      }
+      break;
+    case TyTy::TypeKind::CONST:
+      {
+	auto *constant = r.as_const_type ();
+	if (constant->const_kind () == TyTy::BaseConstType::ConstKind::Decl)
+	  constrained_symbols.insert (r.get_ty_ref ());
       }
       break;
     case TyTy::SLICE:
