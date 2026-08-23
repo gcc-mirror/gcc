@@ -940,7 +940,8 @@ TypeBoundPredicate::validate_type_implements_this (TyTy::BaseType &self,
 						   HIR::Type &trait) const
 {
   const auto &ptref = *get ();
-  auto probed_bounds = Resolver::TypeBoundsProbe::Probe (&self);
+  auto probed_bounds
+    = Resolver::TypeBoundsProbe::Probe (&self, ptref.get_hir_trait_ref ());
   for (auto &elem : probed_bounds)
     {
       auto &tref = *(elem.first);
