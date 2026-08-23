@@ -3733,6 +3733,7 @@ static constexpr unsigned LONG_MUL_MAX_EXTRAS = 4;
 namespace {
 
 enum long_mul_kind : unsigned char {
+  LMK_INVALID,
   LMK_MUL_HIHI,
   LMK_MUL_LOLO,
   LMK_MUL_HILO,
@@ -3852,6 +3853,8 @@ long_mul_set_summand (long_mul_summand *info, long_mul_kind kind,
   int shift_idx = -1;
   switch (kind)
     {
+    default:
+      gcc_unreachable ();
     case LMK_MUL_HIHI:
     case LMK_MUL_LOLO:
     case LMK_MUL_HILO:
@@ -4099,6 +4102,8 @@ long_mul_summand_compare (const void *a, const void *b)
 {
   const long_mul_summand *sa = (const long_mul_summand *) a;
   const long_mul_summand *sb = (const long_mul_summand *) b;
+  gcc_checking_assert (sa->kind != LMK_INVALID);
+  gcc_checking_assert (sb->kind != LMK_INVALID);
   if (sa->kind != sb->kind)
     return (int) sa->kind - (int) sb->kind;
   return (int) sa->extract - (int) sb->extract;
@@ -4185,6 +4190,7 @@ static const long_mul_summand *
 long_mul_find_summand (const vec<long_mul_summand> &summands,
 		       long_mul_kind kind)
 {
+  gcc_checking_assert (kind != LMK_INVALID);
   for (const long_mul_summand &s : summands)
     if (s.kind == kind)
       return &s;
@@ -4584,9 +4590,12 @@ long_mul_classify_chain (gimple *stmt, tree_code outer, tree lhs_type,
 	   LONG_MUL_MAX_SUMMANDS + LONG_MUL_MAX_EXTRAS + 1> summands;
   for (tree leaf : leaves)
     {
-      long_mul_summand s;
+      long_mul_summand s{};
       if (long_mul_classify_summand (leaf, &s))
-	summands.quick_push (s);
+	{
+	  gcc_checking_assert (s.kind != LMK_INVALID);
+	  summands.quick_push (s);
+	}
       else if (extras_out && extras_out->length () < LONG_MUL_MAX_EXTRAS)
 	extras_out->safe_push (leaf);
       else
@@ -4596,7 +4605,10 @@ long_mul_classify_chain (gimple *stmt, tree_code outer, tree lhs_type,
 	}
     }
   if (extra)
-    summands.quick_push (*extra);
+    {
+      gcc_checking_assert (extra->kind != LMK_INVALID);
+      summands.quick_push (*extra);
+    }
   if (summands.length () < 2
       || summands.length () > LONG_MUL_MAX_SUMMANDS)
     return NULL;
@@ -4692,7 +4704,7 @@ match_long_mul_phi (gphi *phi)
 
   /* Classify sum and populate the carry summand directly.  Most
      specific first, mirroring long_mul_classify_carry's order.  */
-  long_mul_summand carry = {};
+  long_mul_summand carry{};
   tree sum_ops[LONG_MUL_MAX_CAPTURES];
   unsigned HOST_WIDE_INT shift_amt
     = wi::exact_log2 (wi::to_wide (cca_ops[3]));
