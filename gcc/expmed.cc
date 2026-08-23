@@ -55,6 +55,13 @@ static bool store_integral_bit_field (rtx, opt_scalar_int_mode,
 				      unsigned HOST_WIDE_INT,
 				      poly_uint64, poly_uint64,
 				      machine_mode, rtx, bool, bool);
+/* The constant divisor of the last division expanded, so that a modulo by
+   the same constant can reuse the quotient.  Reset for each function by
+   prepare_function_start: carrying it across functions would make a
+   function's code depend on what was expanded before it in the translation
+   unit.  */
+HOST_WIDE_INT last_div_const = 0;
+
 static void store_fixed_bit_field (rtx, opt_scalar_int_mode,
 				   unsigned HOST_WIDE_INT,
 				   unsigned HOST_WIDE_INT,
@@ -4370,7 +4377,6 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
   optab optab1, optab2;
   int op1_is_constant, op1_is_pow2 = 0;
   int max_cost, extra_cost;
-  static HOST_WIDE_INT last_div_const = 0;
   bool speed = optimize_insn_for_speed_p ();
 
   op1_is_constant = CONST_INT_P (op1);

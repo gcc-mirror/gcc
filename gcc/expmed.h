@@ -728,4 +728,8 @@ extern rtx expmed_mult_highpart_optab (scalar_int_mode, rtx, rtx, rtx,
 				       int, int);
 extern rtx expand_rotate_as_vec_perm (machine_mode, rtx, rtx, rtx);
 
+/* The constant divisor of the last division expanded, reset per function
+   by prepare_function_start.  */
+extern HOST_WIDE_INT last_div_const;
+
 #endif  // EXPMED_H

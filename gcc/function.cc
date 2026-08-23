@@ -4978,6 +4978,10 @@ prepare_function_start (void)
   /* Reset the cache of the "extended" flag in the target's
      _BitInt info struct.  */
   bitint_extended = -1;
+
+  /* Reset the divisor of the last division expanded, so that a function's
+     code does not depend on what was expanded before it.  */
+  last_div_const = 0;
 }
 
 void
