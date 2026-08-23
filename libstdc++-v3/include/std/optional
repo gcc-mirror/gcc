@@ -303,6 +303,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	_M_engaged = false;
 	_M_payload._M_value.~_Stored_type();
+	// After the destructor, _M_engaged should always be false, see PR 127005.
+	if (_M_engaged)
+	  __builtin_unreachable();
 #if defined(__clang__) && __cpp_lib_optional >= 202106L // full constexpr support
 	if (std::is_constant_evaluated())
 	  // Work around PR124910 for Clang.
