@@ -596,11 +596,15 @@ struct arith_t {
   list<cbl_refer_t> A, B;
   cbl_refer_t remainder;
   cbl_label_t *on_error, *not_error;
+  struct locs_t {
+    cbl_loc_t A, B, tgts, remainder;
+  } locs;
 
   explicit arith_t( cbl_arith_format_t format )
     : format(format), on_error(NULL), not_error(NULL)
   {}
-  arith_t( cbl_arith_format_t format, refer_list_t * refers );
+  arith_t( const cbl_loc_t& loc,
+           cbl_arith_format_t format, refer_list_t * refers );
 
   bool corresponding() const { return format == corresponding_e; }
 
@@ -632,6 +636,37 @@ struct arith_t {
     case corresponding_e: return "corresponding_e";
     }
     return "???";
+  }
+
+  void numeric_ok() {
+    are_numeric(locs.A, A);
+    are_numeric(locs.B, B);
+    are_numeric(locs.tgts, tgts);
+    is_numeric(locs.remainder, cbl_num_result_t{prohibited_e,remainder});
+  }
+
+ protected:
+  static bool is_numeric( const cbl_loc_t& loc, const cbl_refer_t& r ) {
+    if( r.field && ! ::is_numeric(r.field) ) {
+      error_msg(loc, "%qs (%s) is not numeric",
+                nice_name_of(r.field),
+                cbl_field_type_name(r.field->type));
+      return false;
+    }
+    return true;
+  }
+  static bool is_numeric( const cbl_loc_t& loc, const cbl_num_result_t& res ) {
+    // only targets have rounding, and may be numeric-edited
+    bool edited = res.refer.field && res.refer.field->type == FldNumericEdited;
+    return edited || is_numeric( loc, res.refer );
+  }
+  template <typename T>
+  static bool are_numeric( const cbl_loc_t& loc, const T& args ) {
+    bool ok = true;
+    for (const auto& elem : args) {
+      ok = ok && is_numeric(loc, elem);
+    }
+    return ok;
   }
 };
 

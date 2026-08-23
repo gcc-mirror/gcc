@@ -6139,24 +6139,27 @@ end_add:        %empty %prec ADD
 
 add_body:       sum TO rnames
                 {
-                  $$ = new arith_t(no_giving_e, $sum);
+                  $$ = new arith_t(@sum, no_giving_e, $sum);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
         |       sum TO num_operand[value] GIVING rnames
                 {
-                  $$ = new arith_t(giving_e, $sum);
+                  $$ = new arith_t(@$, giving_e, $sum);
                   $$->A.push_back(*$value);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
         |       sum GIVING rnames
                 { // implicit TO
-                  $$ = new arith_t(giving_e, $sum);
+                  $$ = new arith_t(@sum, giving_e, $sum);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
         |       CORRESPONDING sum TO rnames
@@ -6172,8 +6175,9 @@ add_body:       sum TO rnames
                     }
                   // First src/tgt elements are templates.
                   // Their subscripts apply to the correspondents.
-                  $$ = new arith_t(corresponding_e, $sum);
+                  $$ = new arith_t(@sum, corresponding_e, $sum);
                   $$->tgts.push_front(rhs.front());
+                  $$->locs.tgts = @rnames;
                   // use arith_t functor to populate A and tgts
                   *$$ = std::for_each( pairs.begin(), pairs.end(), *$$ );
                   $$->A.pop_front();
@@ -6477,6 +6481,8 @@ divide_body:    num_operand INTO rnames
                   $$->A.push_back(*$num_operand);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.A = @1;
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
         |       divide_into
@@ -6489,6 +6495,7 @@ divide_body:    num_operand INTO rnames
                   }
                   $$ = $1;
                   $$->remainder = *$rem;
+                  $$->locs.remainder = @rem;
                 }
         |       divide_by
         |       divide_by   REMAINDER scalar[rem]
@@ -6500,6 +6507,7 @@ divide_body:    num_operand INTO rnames
                   }
                   $$ = $1;
                   $$->remainder = *$rem;
+                  $$->locs.remainder = @rem;
                 }
                 ;
 
@@ -6510,6 +6518,9 @@ divide_into:    num_operand[b] INTO num_operand[a] GIVING rnames
                   $$->B.push_back(*$b);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.A = @a;
+                  $$->locs.B = @b;
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
                 ;
@@ -6520,6 +6531,9 @@ divide_by:      num_operand[a] BY num_operand[b] GIVING rnames
                   $$->B.push_back(*$b);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.A = @a;
+                  $$->locs.B = @b;
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
                 ;
@@ -7840,8 +7854,10 @@ multiply_body:  num_operand BY rnames
                 {
                   $$ = new arith_t(no_giving_e);
                   $$->A.push_back(*$num_operand);
+                  $$->locs.A = @1;
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
         |       num_operand BY signed_literal[lit]
@@ -7856,6 +7872,9 @@ multiply_body:  num_operand BY rnames
                   $$->B.push_back(*$b);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.A = @a;
+                  $$->locs.B = @b;
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
         |       num_operand[a] BY num_operand[b] GIVING signed_literal[lit]
@@ -8739,17 +8758,20 @@ end_subtract:   %empty %prec SUBTRACT
 
 subtract_body:  sum FROM rnames
                 {
-                  $$ = new arith_t(no_giving_e, $sum);
+                  $$ = new arith_t(@sum, no_giving_e, $sum);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
         |       sum FROM num_operand[input] GIVING rnames
                 {
-                  $$ = new arith_t(giving_e, $sum);
+                  $$ = new arith_t(@sum, giving_e, $sum);
                   $$->B.push_back(*$input);
+                  $$->locs.B = @input;
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
+                  $$->locs.tgts = @rnames;
                   rhs.clear();
                 }
         |       CORRESPONDING sum FROM rnames
@@ -8765,8 +8787,9 @@ subtract_body:  sum FROM rnames
                     }
                   // First src/tgt elements are templates.
                   // Their subscripts apply to the correspondents.
-                  $$ = new arith_t(corresponding_e, $sum);
+                  $$ = new arith_t(@sum, corresponding_e, $sum);
                   $$->tgts.push_front(rhs.front());
+                  $$->locs.tgts = @rnames;
                   // use arith_t functor to populate A and tgts
                   *$$ = std::for_each( pairs.begin(), pairs.end(), *$$ );
                   $$->A.pop_front();
@@ -13694,11 +13717,13 @@ valid_pointer_relop( const cbl_loc_t& lloc,
   return true; // no pointers
 }
 
-arith_t::arith_t( cbl_arith_format_t format, refer_list_t * refers )
+arith_t::arith_t( const cbl_loc_t& loc,
+                  cbl_arith_format_t format, refer_list_t * refers )
   : format(format), on_error(NULL), not_error(NULL)
 {
   std::copy( refers->refers.begin(), refers->refers.end(), back_inserter(A) );
   refers->refers.clear();
+  locs.A = loc;
   delete refers;
 }
 
@@ -13745,7 +13770,7 @@ ast_op_t::choose_intermediate_type::select_highest( const rpn_t& rpn ) {
 }
 
 bool
-ast_op_t::op_ok( const cbl_loc_t& loc, char op, const ast_op_t *rhstack )
+ast_op_t:: op_ok( const cbl_loc_t& loc, char op, const ast_op_t *rhstack )
 {
   assert(rhstack);
   
@@ -13798,6 +13823,7 @@ ast_relop( const cbl_loc_t& loc, cbl_field_t *tgt,
 
 static void
 ast_add( arith_t *arith ) {
+  arith->numeric_ok();
   size_t nC = arith->tgts.size(), nA = arith->A.size();
   std::vector <cbl_num_result_t> C(nC);
   cbl_num_result_t *pC;
@@ -13807,13 +13833,15 @@ ast_add( arith_t *arith ) {
   pC = use_any(arith->tgts, C);
   pA = use_any(arith->A, A);
 
-  parser_add( nC, pC, nA, pA, arith->format, arith->on_error, arith->not_error );
+  parser_add( nC, pC, nA, pA, arith->format,
+              arith->on_error, arith->not_error );
 
   current.declaratives_evaluate();
 }
 
 static bool
 ast_subtract( arith_t *arith ) {
+  arith->numeric_ok();
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
   std::vector <cbl_refer_t> A(nA);
   std::vector <cbl_refer_t> B(nB);
@@ -13823,7 +13851,8 @@ ast_subtract( arith_t *arith ) {
   cbl_refer_t *pB = use_any(arith->B, B);
   cbl_num_result_t *pC = use_any(arith->tgts, C);
 
-  parser_subtract( nC, pC, nA, pA, nB, pB, arith->format, arith->on_error, arith->not_error );
+  parser_subtract( nC, pC, nA, pA, nB, pB, arith->format,
+                   arith->on_error, arith->not_error );
 
   current.declaratives_evaluate();
   return true;
@@ -13831,6 +13860,7 @@ ast_subtract( arith_t *arith ) {
 
 static bool
 ast_multiply( arith_t *arith ) {
+  arith->numeric_ok();
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
   std::vector <cbl_refer_t> A(nA);
   std::vector <cbl_refer_t> B(nB);
@@ -13840,7 +13870,8 @@ ast_multiply( arith_t *arith ) {
   cbl_refer_t *pB = use_any(arith->B, B);
   cbl_num_result_t *pC = use_any(arith->tgts, C);
 
-  parser_multiply( nC, pC, nA, pA, nB, pB, arith->on_error, arith->not_error );
+  parser_multiply( nC, pC, nA, pA, nB, pB,
+                   arith->on_error, arith->not_error );
 
   current.declaratives_evaluate();
   return true;
@@ -13848,6 +13879,7 @@ ast_multiply( arith_t *arith ) {
 
 static bool
 ast_divide( arith_t *arith ) {
+  arith->numeric_ok();
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
   std::vector <cbl_refer_t> A(nA);
   std::vector <cbl_refer_t> B(nB);
@@ -13857,10 +13889,10 @@ ast_divide( arith_t *arith ) {
   cbl_refer_t *pB = use_any(arith->B, B);
   cbl_num_result_t *pC = use_any(arith->tgts, C);
 
-  parser_divide( nC, pC, nA, pA, nB, pB,
-                 arith->remainder, arith->on_error, arith->not_error );
+  arith->numeric_ok();
+  parser_divide( nC, pC, nA, pA, nB, pB, arith->remainder,
+                 arith->on_error, arith->not_error );
 
-  current.declaratives_evaluate();
   return true;
 }
 
