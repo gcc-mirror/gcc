@@ -1,3 +1,62 @@
+2026-08-22  Luke Zhuang  <luke.zhuang@linux.alibaba.com>
+
+	* config/riscv/riscv.md: Restrict slliw shifted bitfield split
+	to extractions starting at bit 0, and require the outer mask to
+	match slliw sign-extension.
+
+2026-08-22  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (struct long_mul_summand): Change
+	hilo{0,1,2} into an array.
+	(long_mul_set_summand): Use a copy loop instead of written out.
+	(long_mul_check_consistency): Use the array directly instead
+	of a local copy of the loop for the range for loop.
+	(match_long_mul_phi): Replace `hilo0` with `hilo[0]`.
+	Replace `hilo1` with `hilo[1]`. Replace `hilo2` with `hilo[2]`.
+
+2026-08-22  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (mul_carry_low_sum): Remove @1 from
+	the result captures. Rename @0 to @shift0.
+	(mul_low_accum): Likewise.
+	(mul_ladder_sum1): Likewise.
+	(mul_ladder_sum2): Likewise.
+	(mul_ladder_sum3): Likewise.
+
+2026-08-22  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (mul_carry_cross_sum): Use wi::to_wide instead
+	of tree_to_uhwi.
+	(long_mul_high_chain): Likewise and use `% 4`.
+
+2026-08-22  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (mul_hilo): Remove INTEGER_CST check on the operands.
+	(mul_lolo): Likewise.
+	(mul_hihi): Likewise.
+	(mul_low_accum): Likewise.
+	(mul_ladder_sum1): Likewise.
+	(mul_ladder_sum2): Likewise.
+	(mul_ladder_sum3): Likewise.
+	(mul_carry_low_sum): Likewise.
+
+2026-08-22  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (mul_cross_sum): Remove the `:c` from the plus.
+
+2026-08-22  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (match_long_mul_phi): Swap the shift
+	amount check with gimple_mul_low_sum/gimple_mul_cross_sum
+	checks.
+
+2026-08-22  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (cond_carry_add_neg): Rename to
+	cond_carry_add.
+	* tree-ssa-forwprop.cc (gimple_cond_carry_add_neg): Remove.
+	(match_long_mul_phi): Don't call gimple_cond_carry_add_neg.
+
 2026-08-21  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/126958

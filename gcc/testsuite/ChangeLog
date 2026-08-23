@@ -1,3 +1,13 @@
+2026-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/124888
+	* g++.dg/modules/typeid-2_a.C: New test.
+	* g++.dg/modules/typeid-2_b.C: New test.
+
+2026-08-22  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/arc/mulsi3_highpart-2.c: Disable -fexpensive-optimizations.
+
 2026-08-21  Jin Ma  <jinma@linux.alibaba.com>
 
 	PR target/126873

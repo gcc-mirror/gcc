@@ -1,3 +1,14 @@
+2026-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/124888
+	* pt.cc (tsubst_expr): Pass type to {get,build}_typeid.
+	* rtti.cc (build_typeid, get_typeid): Take it.
+	(type_info_ptr_type): Remove.
+	(get_tinfo_ptr): Take tinfo_ptr_type instead of voidp.
+	(get_tinfo_ptr_dynamic): Likewise.
+	(get_void_tinfo_ptr): Pass const_ptr_type_node.
+	* cp-tree.h (build_typeid, get_typeid): Adjust.
+
 2026-08-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* contracts.cc: Replace use of attribute lists to hold
