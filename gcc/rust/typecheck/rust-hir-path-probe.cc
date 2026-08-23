@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-path-probe.h"
+#include "rust-hir-item.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
@@ -151,6 +152,8 @@ PathProbeType::Probe (TyTy::BaseType *receiver,
 		      bool ignore_mandatory_trait_items,
 		      DefId specific_trait_id)
 {
+  Analysis::Mappings &mappings = Analysis::Mappings::get ();
+
   PathProbeType probe (receiver, segment_name, specific_trait_id);
   if (probe_impls)
     {
@@ -170,8 +173,20 @@ PathProbeType::Probe (TyTy::BaseType *receiver,
 
   if (!probe.is_receiver_generic ())
     {
-      std::vector<std::pair<TraitReference *, HIR::ImplBlock *>> probed_bounds
-	= TypeBoundsProbe::Probe (receiver);
+      HIR::Trait *associated_trait = nullptr;
+      if (specific_trait_id != UNKNOWN_DEFID)
+	{
+	  auto item_lookup = mappings.lookup_defid (specific_trait_id);
+	  if (item_lookup.has_value ())
+	    {
+	      HIR::Item *item = item_lookup.value ();
+	      rust_assert (item->get_item_kind ()
+			   == HIR::Item::ItemKind::Trait);
+	      associated_trait = static_cast<HIR::Trait *> (item);
+	    }
+	}
+
+      auto probed_bounds = TypeBoundsProbe::Probe (receiver, associated_trait);
       for (auto &candidate : probed_bounds)
 	{
 	  const TraitReference *trait_ref = candidate.first;
