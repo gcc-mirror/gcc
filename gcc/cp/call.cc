@@ -1016,6 +1016,9 @@ can_convert_array (tree atype, tree from, int flags, tsubst_flags_t complain)
       && TREE_CODE (tree_strip_any_location_wrapper (from)) == STRING_CST)
     return array_string_literal_compatible_p (atype, from);
 
+  if (tree vi = (get_vec_init_expr (from)))
+    return can_convert_array (atype, VEC_INIT_EXPR_INIT (vi), flags, complain);
+
   /* No other valid way to aggregate initialize an array.  */
   return false;
 }
