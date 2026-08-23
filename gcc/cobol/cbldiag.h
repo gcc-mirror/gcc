@@ -251,6 +251,8 @@ dialect_not_ok( const cbl_loc_t& loc, cbl_diag_id_t id, const char term[] ) {
   return dialect_ok(loc, id, term, false);
 }
 
+bool cbl_diagnostic_ignored( cbl_diag_id_t id );
+
 // Diagnostic format specifiers are documented in gcc/pretty-print.cc
 // an error at a location, called from the parser for semantic errors
 void error_msg( const cbl_loc_t& loc, const char gmsgid[], ... )

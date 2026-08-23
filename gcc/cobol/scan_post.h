@@ -45,6 +45,7 @@ start_condition_str( int sc ) {
   case datetime_fmt: state = "datetime_fmt"; break;
   case dot_state: state = "dot_state"; break;
   case exception: state = "exception"; break;
+  case fd_state: state = "fd_state"; break;
   case field_data_item: state = "field_data_item"; break;
   case field_state: state = "field_state"; break;
   case function: state = "function"; break;

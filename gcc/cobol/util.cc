@@ -438,7 +438,7 @@ cbl_field_type_str( enum cbl_field_type_t type )
   case FldPointer:
     return "FldPointer";
  }
-  cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
+  ////cbl_internal_error("%s:%d: invalid %<field_type_t%> %d", __func__, __LINE__, type);
   return "???";
 }
 
@@ -2261,10 +2261,9 @@ valid_move( const cbl_refer_t& tgt_ref, const cbl_refer_t& src_ref )
         { 0, 1, 6, 1, 1, 1, 1, 1, 1, 2, 0, 0, },  // FldNumericDisplay (numeric)
         { 0, 1, 4, 1, 1, 1, 1, 1, 1, 1, 0, 0, },  // FldNumericEdited
         { 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, },  // FldAlphaEdited
-        { 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, },  // FldLiteralA
+        { 0, 1, 1, 0, 0, 0, 0, 0, 8, 1, 0, 0, },  // FldLiteralA
         { 0, 1, 6, 1, 1, 1, 1, 1, 1, 2, 0, 0, },  // FldLiteralN       (numeric)
     };
-  /* Needs C++11 */
   static_assert(sizeof(matrix[0]) == COUNT_OF(matrix[0]),
                 "matrix should be square");
 
@@ -3627,35 +3626,19 @@ class temp_loc_t {
   }
 };
 
-/*
- * Both CDF and parser need to call error_msg, each with their own distinct
- * location type, not because they *need* to be different, but because they
- * are, as an artifact of using different prefixes.  Possibly a better plan
- * would be to convert cdf.y to a pure parser, using no global variables.  But
- * this is where we are.
- *
- * Because we can't reliably instantiate it as a forward-declared template
- * function, and because the parameters are variadic, we can't use a template
- * function or call one.  So, a macro.
- */
-
-#define ERROR_MSG_BODY                                                  \
-  temp_loc_t looker(loc);                                               \
-  verify_format(gmsgid);                                                \
-  parse_error_inc();                                                    \
-  global_dc->begin_group();                                             \
-  va_list ap;                                                           \
-  va_start (ap, gmsgid);                                                \
-  rich_location richloc (line_table, token_location);                   \
-  bool ret = global_dc->diagnostic_impl (&richloc, nullptr, option_zero,        \
-                                         gmsgid, &ap,                   \
-                                         diagnostics::kind::error);     \
-  va_end (ap);                                                          \
-  global_dc->end_group();
-
-
 void error_msg( const cbl_loc_t& loc, const char gmsgid[], ... ) {
-  ERROR_MSG_BODY
+  temp_loc_t looker(loc);
+  verify_format(gmsgid);
+  parse_error_inc();
+  global_dc->begin_group();
+  va_list ap;
+  va_start (ap, gmsgid);
+  rich_location richloc (line_table, token_location);
+  bool ret = global_dc->diagnostic_impl (&richloc, nullptr, option_zero,
+                                         gmsgid, &ap,
+                                         diagnostics::kind::error);
+  va_end (ap);
+  global_dc->end_group();
 }
 
 bool

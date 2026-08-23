@@ -1677,7 +1677,6 @@ program_id:     PROGRAM_ID dot namestr[name] program_as program_attrs[attr] dot
                              name, L->line);
                     YYERROR;
                   }
-                  if( ! successful_parse() ) YYABORT;
 
                   parser_division( identification_div_e, NULL, 0, NULL );
                   int main_error=0;

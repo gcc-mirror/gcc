@@ -3625,8 +3625,8 @@ parser_move_carefully( const char */*F*/, int /*L*/,
           dialect_ok(src.loc, MfMovePointer, "MOVE POINTER");
         } else {
           error_msg(src.loc, "cannot MOVE %qs (%s) TO %qs (%s)",
-                    nice_name_of(src.field), 3 + cbl_field_type_str(src.field->type),
-                    nice_name_of(tgt.field), 3 + cbl_field_type_str(tgt.field->type));
+                    nice_name_of(src.field), cbl_field_type_name(src.field->type),
+                    nice_name_of(tgt.field), cbl_field_type_name(tgt.field->type));
         }
       }
     }

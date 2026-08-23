@@ -1843,10 +1843,13 @@ cdftext::free_form_reference_format( int input,
         __attribute__ ((fallthrough));
       default: // flag other characters in indicator area
         if( ! ISSPACE(indcol[0]) ) {
-          yyerrorvl( mfile.lineno(), cobol_filename(),
-                     "error: stray indicator '%c' (0x%x): \"%.*s\"",
-                     indcol[0], indcol[0],
-                     int(mfile.line_length() - 1), mfile.cur );
+          // TODO: initialize diagnostic system earlier and use it here.
+          if( ! cbl_diagnostic_ignored(LexIndicatorE) ) {
+            yyerrorvl( mfile.lineno(), cobol_filename(),
+                       "error: stray indicator '%c' (0x%x): \"%.*s\"",
+                       indcol[0], indcol[0],
+                       int(mfile.line_length() - 1), mfile.cur );
+          }
           *indcol = SPACE;
         }
         break;

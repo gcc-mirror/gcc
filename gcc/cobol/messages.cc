@@ -250,6 +250,11 @@ cobol_warning( cbl_diag_id_t id, int yn, bool warning_as_error ) {
   cbl_diagnostic_kind(id, kind);
 }
 
+bool
+cbl_diagnostic_ignored( cbl_diag_id_t id ) {
+  return diagnostics::kind::ignored == kind_of(id);
+}
+
 /*
  * Set diagnostics associated with a dialog to be ignored, because the
  * constructs are valid for that dialog.  We cannot use cbl_diagnostic_kind()
