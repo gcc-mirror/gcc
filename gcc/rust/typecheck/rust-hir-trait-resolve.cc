@@ -561,17 +561,26 @@ AssociatedImplTrait::bind_impl_for_projection (TyTy::ProjectionType &proj,
   std::vector<TyTy::SubstitutionParamMapping> impl_substitutions;
   for (auto &generic_param : impl->get_generic_params ())
     {
-      if (generic_param->get_kind () != HIR::GenericParam::GenericKind::TYPE)
+      if (generic_param->get_kind () != HIR::GenericParam::GenericKind::TYPE
+	  && generic_param->get_kind ()
+	       != HIR::GenericParam::GenericKind::CONST)
 	continue;
       TyTy::BaseType *l = nullptr;
       bool ok
 	= context->lookup_type (generic_param->get_mappings ().get_hirid (),
 				&l);
-      if (!ok || l->get_kind () != TyTy::TypeKind::PARAM)
+      if (!ok)
 	continue;
-      impl_substitutions.emplace_back (static_cast<HIR::TypeParam &> (
-					 *generic_param),
-				       static_cast<TyTy::ParamType *> (l));
+
+      TyTy::BaseGeneric *param = nullptr;
+      if (l->get_kind () == TyTy::TypeKind::PARAM)
+	param = static_cast<TyTy::ParamType *> (l);
+      else if (l->get_kind () == TyTy::TypeKind::CONST
+	       && l->as_const_type ()->const_kind ()
+		    == TyTy::BaseConstType::ConstKind::Decl)
+	param = static_cast<TyTy::ConstParamType *> (l);
+      if (param != nullptr)
+	impl_substitutions.emplace_back (*generic_param, param);
     }
 
   // Build infer args for each impl param so we dont mutate the impls own
@@ -583,7 +592,11 @@ AssociatedImplTrait::bind_impl_for_projection (TyTy::ProjectionType &proj,
   for (auto &p : impl_substitutions)
     {
       const std::string &symbol = p.get_param_ty ()->get_symbol ();
-      TyTy::TyVar infer_var = TyTy::TyVar::get_implicit_infer_var (locus);
+      TyTy::TyVar infer_var
+	= p.get_generic_param ().get_kind ()
+	      == HIR::GenericParam::GenericKind::CONST
+	    ? TyTy::TyVar::get_implicit_const_infer_var (locus)
+	    : TyTy::TyVar::get_implicit_infer_var (locus);
       TyTy::BaseType *resolved = infer_var.get_tyty ();
       infer_arg_vec.emplace_back (&p, resolved);
       param_mappings[symbol] = resolved->get_ref ();
@@ -703,17 +716,26 @@ AssociatedImplTrait::bind_impl_for_bound (TyTy::BaseType *receiver,
   std::vector<TyTy::SubstitutionParamMapping> impl_substitutions;
   for (auto &generic_param : impl->get_generic_params ())
     {
-      if (generic_param->get_kind () != HIR::GenericParam::GenericKind::TYPE)
+      if (generic_param->get_kind () != HIR::GenericParam::GenericKind::TYPE
+	  && generic_param->get_kind ()
+	       != HIR::GenericParam::GenericKind::CONST)
 	continue;
       TyTy::BaseType *l = nullptr;
       bool ok
 	= context->lookup_type (generic_param->get_mappings ().get_hirid (),
 				&l);
-      if (!ok || l->get_kind () != TyTy::TypeKind::PARAM)
+      if (!ok)
 	continue;
-      impl_substitutions.emplace_back (static_cast<HIR::TypeParam &> (
-					 *generic_param),
-				       static_cast<TyTy::ParamType *> (l));
+
+      TyTy::BaseGeneric *param = nullptr;
+      if (l->get_kind () == TyTy::TypeKind::PARAM)
+	param = static_cast<TyTy::ParamType *> (l);
+      else if (l->get_kind () == TyTy::TypeKind::CONST
+	       && l->as_const_type ()->const_kind ()
+		    == TyTy::BaseConstType::ConstKind::Decl)
+	param = static_cast<TyTy::ConstParamType *> (l);
+      if (param != nullptr)
+	impl_substitutions.emplace_back (*generic_param, param);
     }
 
   std::vector<TyTy::SubstitutionArg> infer_arg_vec;
@@ -721,7 +743,11 @@ AssociatedImplTrait::bind_impl_for_bound (TyTy::BaseType *receiver,
   for (auto &p : impl_substitutions)
     {
       const std::string &symbol = p.get_param_ty ()->get_symbol ();
-      TyTy::TyVar infer_var = TyTy::TyVar::get_implicit_infer_var (locus);
+      TyTy::TyVar infer_var
+	= p.get_generic_param ().get_kind ()
+	      == HIR::GenericParam::GenericKind::CONST
+	    ? TyTy::TyVar::get_implicit_const_infer_var (locus)
+	    : TyTy::TyVar::get_implicit_infer_var (locus);
       TyTy::BaseType *resolved = infer_var.get_tyty ();
       infer_arg_vec.emplace_back (&p, resolved);
       param_mappings[symbol] = resolved->get_ref ();
