@@ -3732,7 +3732,7 @@ static constexpr unsigned LONG_MUL_MAX_EXTRAS = 4;
 
 namespace {
 
-enum long_mul_kind {
+enum long_mul_kind : unsigned char {
   LMK_MUL_HIHI,
   LMK_MUL_LOLO,
   LMK_MUL_HILO,
@@ -3752,7 +3752,7 @@ enum long_mul_kind {
    match.pd pattern bakes the lshift in, so the leaf is already the
    complete carry expression.  */
 
-enum long_mul_extract {
+enum long_mul_extract : unsigned char  {
   LMX_NONE,
   LMX_HI,
   LMX_LO,
