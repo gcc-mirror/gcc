@@ -1730,7 +1730,12 @@ timode_scalar_chain::compute_convert_gain ()
 
 	case AND:
 	  if (!MEM_P (dst))
-	    igain = COSTS_N_INSNS (1);
+	    {
+	      igain = COSTS_N_INSNS (1);
+	      if (MEM_P (XEXP (src, 0)) || MEM_P (XEXP (src, 1)))
+		/* One less load.  */
+		igain += COSTS_N_INSNS (1);
+	    }
 	  if (CONST_SCALAR_INT_P (XEXP (src, 1)))
 	    igain += timode_immed_const_gain (XEXP (src, 1), bb);
 	  break;
@@ -1745,7 +1750,12 @@ timode_scalar_chain::compute_convert_gain ()
 	      break;
 	    }
 	  if (!MEM_P (dst))
-	    igain = COSTS_N_INSNS (1);
+	    {
+	      igain = COSTS_N_INSNS (1);
+	      if (MEM_P (XEXP (src, 0)) || MEM_P (XEXP (src, 1)))
+		/* One less load.  */
+		igain += COSTS_N_INSNS (1);
+	    }
 	  if (CONST_SCALAR_INT_P (XEXP (src, 1)))
 	    igain += timode_immed_const_gain (XEXP (src, 1), bb);
 	  break;

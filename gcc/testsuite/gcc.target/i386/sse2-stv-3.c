@@ -25,7 +25,7 @@ void foo_fun()
   z = (fun() ^ a ^ b ^ c);
 }
 
-/* { dg-final { scan-assembler-times "punpcklqdq" 2 } } */
-/* { dg-final { scan-assembler-times "movhlps" 1 } } */
-/* { dg-final { scan-assembler-times "pxor" 9 } } */
-/* { dg-final { scan-assembler-times "xorq" 8 } } */
+/* { dg-final { scan-assembler-times "punpcklqdq" 3 } } */
+/* { dg-final { scan-assembler-times "movhlps" 2 } } */
+/* { dg-final { scan-assembler-times "pxor" 13 } } */
+/* { dg-final { scan-assembler-not "xorq" } } */
