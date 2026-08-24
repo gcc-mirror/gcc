@@ -12626,6 +12626,9 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 	 for only back-reachable nodes).  But it's simpler to just
 	 iterate and schedule those that are ready.  */
       unsigned todo = stack.length () - last_idx;
+      auto_vec<slp_tree, 4> saved_scc (todo);
+      memcpy (saved_scc.address (), stack.address ()[last_idx + 1],
+	      sizeof (slp_tree) * todo);
       do
 	{
 	  for (int idx = stack.length () - 1; idx >= last_idx; --idx)
@@ -12637,31 +12640,32 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 			  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (entry)->stmt));
 	      bool ready = !phi;
 	      FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (entry), i, child)
-		  if (!child)
-		    {
-		      gcc_assert (phi);
-		      ready = true;
-		      break;
-		    }
-		  else if (scc_info.get (child)->on_stack)
-		    {
-		      if (!phi)
-			{
-			  ready = false;
-			  break;
-			}
-		    }
-		  else
-		    {
-		      if (phi)
-			{
-			  ready = true;
-			  break;
-			}
-		    }
+		if (!child)
+		  {
+		    gcc_assert (phi);
+		    ready = true;
+		    break;
+		  }
+		else if (scc_info.get (child)->on_stack)
+		  {
+		    if (!phi)
+		      {
+			ready = false;
+			break;
+		      }
+		  }
+		else
+		  {
+		    if (phi)
+		      {
+			ready = true;
+			break;
+		      }
+		  }
 	      if (ready)
 		{
-		  vect_schedule_slp_node (vinfo, entry, instance, place_only);
+		  res &= vect_schedule_slp_node (vinfo, entry, instance,
+						 place_only);
 		  scc_info.get (entry)->on_stack = false;
 		  stack[idx] = NULL;
 		  todo--;
@@ -12671,6 +12675,10 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 	    }
 	}
       while (todo != 0);
+
+      /* Push the scheduling result to all of the SCC.  */
+      for (slp_tree entry : saved_scc)
+	scc_info.get (entry)->res = res;
 
       /* Pop the SCC.  */
       stack.truncate (last_idx);
