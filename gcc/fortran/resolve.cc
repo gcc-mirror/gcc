@@ -18884,22 +18884,40 @@ skip_interfaces:
   if (sym->attr.value && sym->ts.type == BT_CHARACTER)
     {
       gfc_charlen *cl = sym->ts.u.cl;
-      if (!cl || !cl->length || cl->length->expr_type != EXPR_CONSTANT)
+      if (!cl)
 	{
 	  gfc_error ("Character dummy variable %qs at %L with VALUE "
-		     "attribute must have constant length",
+		     "attribute must have a length specification",
 		     sym->name, &sym->declared_at);
 	  return;
 	}
 
+      /* C interoperable character dummies must have length one.  */
       if (sym->ts.is_c_interop
-	  && mpz_cmp_si (cl->length->value.integer, 1) != 0)
+	  && (!cl->length
+	      || cl->length->expr_type != EXPR_CONSTANT
+	      || mpz_cmp_si (cl->length->value.integer, 1) != 0))
 	{
 	  gfc_error ("C interoperable character dummy variable %qs at %L "
 		     "with VALUE attribute must have length one",
 		     sym->name, &sym->declared_at);
 	  return;
 	}
+
+      /* Assumed-length character dummy with VALUE, valid since F2008.  */
+      if (!cl->length
+	  && !gfc_notify_std (GFC_STD_F2008, "Assumed-length character "
+			      "dummy variable %qs at %L with VALUE attribute",
+			      sym->name, &sym->declared_at))
+	return;
+
+      /* Likewise for a specified but non-constant length.  */
+      if (cl->length && cl->length->expr_type != EXPR_CONSTANT
+	  && !gfc_notify_std (GFC_STD_F2008, "Character dummy variable "
+			      "%qs at %L with VALUE attribute and "
+			      "non-constant length",
+			      sym->name, &sym->declared_at))
+	return;
     }
 
   if (sym->ts.type == BT_DERIVED && !sym->attr.is_iso_c

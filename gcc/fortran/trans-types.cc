@@ -2521,7 +2521,11 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
   else
     type = gfc_typenode_for_spec (&sym->ts, sym->attr.codimension);
 
-  if (sym->attr.dummy && !sym->attr.function && !sym->attr.value
+  if (sym->attr.dummy && !sym->attr.function
+      && (!sym->attr.value
+	  || (sym->ts.type == BT_CHARACTER
+	      && (!sym->ts.u.cl || !sym->ts.u.cl->length
+		  || sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)))
       && !sym->pass_as_value)
     byref = 1;
   else

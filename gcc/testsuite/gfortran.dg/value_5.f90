@@ -1,8 +1,14 @@
 ! { dg-do compile }
+! { dg-options "-std=f2003" }
 ! Length of character dummy variable with VALUE attribute:
 ! - must be initialization expression or omitted
 ! - C interoperable: must be initialization expression of length one
 !   or omitted
+!
+! Compiled as -std=f2003 because Fortran 2008 relaxed C558 to allow
+! assumed-length character dummies with the VALUE attribute; that case
+! (foo4) and its rejection under -std=f2003 are exercised separately in
+! value_6.f90 and value_7.f90.
 !
 ! Contributed by Tobias Burnus
 program x
@@ -36,7 +42,7 @@ contains
     value :: a
   end subroutine foo3
 
-  subroutine foo4(a) ! { dg-error "VALUE attribute must have constant length" }
+  subroutine foo4(a) ! { dg-error "Assumed-length character" }
     character(*) :: a
     value :: a
   end subroutine foo4
@@ -60,7 +66,7 @@ contains
     value :: a
   end subroutine bar3
 
-  subroutine bar4(a) ! { dg-error "VALUE attribute must have constant length" }
+  subroutine bar4(a) ! { dg-error "VALUE attribute must have length one" }
     use iso_c_binding, only: c_char
     character(kind=c_char,len=*) :: a
     value :: a

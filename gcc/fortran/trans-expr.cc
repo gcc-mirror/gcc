@@ -6772,6 +6772,35 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
       return;
     }
 
+  /* Assumed-length or non-constant-length CHARACTER VALUE dummy: copy
+     the actual argument and pass the copy.  */
+  if (fsym->ts.type == BT_CHARACTER
+      && (!fsym->ts.u.cl || !fsym->ts.u.cl->length
+	  || fsym->ts.u.cl->length->expr_type != EXPR_CONSTANT))
+    {
+      gfc_conv_string_parameter (parmse);
+      tree len = fold_convert (gfc_charlen_type_node, parmse->string_length);
+      tree chartype = gfc_get_character_type_len (fsym->ts.kind, len);
+      tree val_copy = gfc_create_var (chartype, "val_copy");
+      tmp = fold_build1_loc (input_location, DECL_EXPR, chartype, val_copy);
+      gfc_add_expr_to_block (&parmse->pre, tmp);
+      /* The copy size is in bytes, not in characters.  */
+      tree bytes
+	= fold_build2_loc (input_location, MULT_EXPR, size_type_node,
+			   fold_convert (size_type_node, len),
+			   fold_convert (size_type_node,
+					 TYPE_SIZE_UNIT (gfc_get_char_type
+							 (fsym->ts.kind))));
+      tmp = gfc_build_memcpy_call (
+	fold_convert (pvoid_type_node,
+		      gfc_build_addr_expr (NULL_TREE, val_copy)),
+	fold_convert (pvoid_type_node, parmse->expr), bytes);
+      gfc_add_expr_to_block (&parmse->pre, tmp);
+      parmse->expr = fold_convert (
+	build_pointer_type (gfc_get_char_type (fsym->ts.kind)),
+	gfc_build_addr_expr (NULL_TREE, val_copy));
+    }
+
   /* Truncate a too long constant character actual argument.  */
   if (gfc_const_length_character_type_p (&fsym->ts)
       && e->expr_type == EXPR_CONSTANT
