@@ -308,7 +308,7 @@ class exit_range
 {
 public:
   tree name;
-  gimple *stmt;
+  unsigned bbi;
   vrange_storage *range;
   exit_range *next;
   exit_range *name_link;
@@ -486,7 +486,6 @@ infer_range_manager::add_range (tree name, gimple *s, const vrange &r)
 	ptr->range->set_vrange (cur);
       else
 	ptr->range = m_range_allocator->clone (cur);
-      ptr->stmt = s;
       return;
     }
 
@@ -495,7 +494,7 @@ infer_range_manager::add_range (tree name, gimple *s, const vrange &r)
   ptr = (exit_range *)obstack_alloc (&m_list_obstack, sizeof (exit_range));
   ptr->range = m_range_allocator->clone (r);
   ptr->name = name;
-  ptr->stmt = s;
+  ptr->bbi =  bb->index;
   ptr->next = m_on_exit[bb->index].head;
   ptr->name_link = m_name_info[SSA_NAME_VERSION (name)].name_link;
   m_name_info[SSA_NAME_VERSION (name)].name_link = ptr;
@@ -552,9 +551,7 @@ infer_range_manager::clear(tree name)
   exit_range *ptr = m_name_info[v].name_link;
   for ( ; ptr ; ptr = ptr->name_link)
     {
-      basic_block bb = gimple_bb (ptr->stmt);
-      unsigned bbi = bb->index;
-      bitmap_clear_bit (m_on_exit[bbi].m_names, v);
+      bitmap_clear_bit (m_on_exit[ptr->bbi].m_names, v);
       ptr->name = NULL;
     }
 
