@@ -5558,7 +5558,8 @@ void
 gfc_conv_subref_array_arg (gfc_se *se, gfc_expr * expr, int g77,
 			   sym_intent intent, bool formal_ptr,
 			   const gfc_symbol *fsym, const char *proc_name,
-			   gfc_symbol *sym, bool check_contiguous)
+			   gfc_symbol *sym, bool check_contiguous,
+			   bool deep_copy)
 {
   gfc_se lse;
   gfc_se rse;
@@ -5670,7 +5671,7 @@ gfc_conv_subref_array_arg (gfc_se *se, gfc_expr * expr, int g77,
 
   if (intent != INTENT_OUT)
     {
-      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, false, false);
+      tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts, deep_copy, false);
       gfc_add_expr_to_block (&body, tmp);
       gcc_assert (rse.ss == gfc_ss_terminator);
       gfc_trans_scalarizing_loops (&loop, &body);
@@ -5801,6 +5802,19 @@ gfc_conv_subref_array_arg (gfc_se *se, gfc_expr * expr, int g77,
     }
 
 class_array_fcn:
+
+  /* A deep copy allocated fresh components for the temporary; free them
+     again once the call has returned, before the temporary itself goes.
+     Only INTENT_IN is supported, as writing the temporary back would leave
+     the actual argument holding the freed component pointers.  */
+  gcc_assert (!deep_copy || intent == INTENT_IN);
+  if (deep_copy && expr->ts.type == BT_DERIVED
+      && expr->ts.u.derived->attr.alloc_comp)
+    {
+      tmp = gfc_deallocate_alloc_comp (expr->ts.u.derived, parmse->expr,
+				       dimen);
+      gfc_add_expr_to_block (&parmse->post, tmp);
+    }
 
   gfc_add_block_to_block (&parmse->post, &loop.post);
 
@@ -5967,8 +5981,11 @@ class_array_fcn:
 	}
       else
 	{
-	  /* pointer = pramse->expr;  .  */
-	  gfc_add_modify (&parmse->pre, pointer, parmse->expr);
+	  /* pointer = parmse->expr;  .  */
+	  tmp = (GFC_DESCRIPTOR_TYPE_P (type)
+		 ? build_fold_indirect_ref_loc (input_location, parmse->expr)
+		 : parmse->expr);
+	  gfc_add_modify (&parmse->pre, pointer, tmp);
 	  pre_stmts = gfc_finish_block (&parmse->pre);
 	}
 
@@ -6050,6 +6067,7 @@ class_array_fcn:
 	    gcc_assert (!pass_optional);
 	}
       se->expr = pointer;
+      se->string_length = parmse->string_length;
     }
 
   return;
