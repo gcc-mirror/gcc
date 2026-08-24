@@ -9928,7 +9928,7 @@ sort:           sort_table
         |       sort_file
                 ;
 
-sort_table:     SORT tableref[table] sort_keys sort_dup sort_seq {
+sort_table:     SORT tableish[table] sort_keys sort_dup sort_seq {
                   statement_begin(@1, SORT);
                   std::vector <cbl_key_t> keys($sort_keys->key_list.size());
 		  if( ! is_table($table->field) ) {
@@ -9947,21 +9947,22 @@ sort_table:     SORT tableref[table] sort_keys sort_dup sort_seq {
 
                   parser_sort( *$table, $sort_dup, $sort_seq, keys );
                 }
-        |       SORT tableref[table] sort_dup sort_seq {
+        |       SORT tableish[table] sort_dup sort_seq {
                   statement_begin(@1, SORT);
 		  if( ! is_table($table->field) ) {
-		    error_msg(@1, "%s has no OCCURS clause", $table->field->name);
+		    error_msg(@1, "%qs has no OCCURS clause", $table->field->name);
                     YYERROR;
 		  }
-		  if( !$table->field->occurs.keys ) {
-		    error_msg(@1, "%s: no key defined", $table->field->name);
-                    YYERROR;
-		  }
-                  cbl_key_t
-                    key = cbl_key_t($table->field->occurs.keys[0]),
-                    guess(1, &$table->field);
-                  
-                  if( key.fields.empty() ) key = guess;
+                  cbl_key_t key(1, &$table->field); // a key of 1 column by default
+                  if( $table->field->occurs.keys ) {
+                    // a key of N columns, if defined.
+                    key = cbl_key_t($table->field->occurs.keys[0]);
+                  } else {
+                    if( ! $sort_seq ) {
+                      error_msg(@1, "%s: no key defined", $table->field->name);
+                    }
+                  }
+                  // sort by 1 key
                   std::vector<cbl_key_t> keys(1, key);
                   parser_sort( *$table, $sort_dup, $sort_seq, keys );
                 }
@@ -10400,7 +10401,7 @@ nume:           qnume {
 		    auto nameloc = names.front();
                     if( (e = symbol_field(PROGRAM,
                                           index, nameloc.name)) == NULL ) {
-                      error_msg(nameloc.loc, "DATA-ITEM '%s' not found", nameloc.name );
+                      error_msg(nameloc.loc, "%qs not found", nameloc.name );
                       YYERROR;
                     }
                     $$ = cbl_field_of(e);

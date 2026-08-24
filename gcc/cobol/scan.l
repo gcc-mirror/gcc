@@ -2207,6 +2207,9 @@ USE({SPC}FOR)?		{ return USE; }
 }
 
 <sort_state>{
+  {NAME}{SPC}(IN|OF) |
+  {NAME}{OSPC}[(] { myless(0); yy_pop_state(); }
+
   {NAME} 	{ yylval.string = xstrdup(yytext);
 		  pop_return symbol_file(PROGRAM, yytext)? FILENAME : NAME;
 		}
