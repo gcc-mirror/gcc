@@ -259,8 +259,8 @@ LT_INIT
 AC_LIBTOOL_DLOPEN
 
 AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
-AC_PYTHON_DEVEL([>= '3.0'],[no],[no])
-AM_CONDITIONAL([HAVE_PYTHON_INTERPRETER], [test x$ax_python_interpreter = xyes])
+AC_PYTHON_INTERPRETER([>= '3.0'])
+AM_CONDITIONAL([HAVE_PYTHON_INTERPRETER], [test x$ax_python_interpreter_found = xyes])
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 

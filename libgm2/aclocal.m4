@@ -1187,7 +1187,7 @@ AC_SUBST([am__tar])
 AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
-m4_include([ax_python_devel.m4])
+m4_include([ax_python_interpreter.m4])
 m4_include([../config/acx.m4])
 m4_include([../config/clang-plugin.m4])
 m4_include([../config/depstand.m4])
