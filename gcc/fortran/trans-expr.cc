@@ -6717,6 +6717,176 @@ gfc_const_length_character_type_p (gfc_typespec *ts)
 }
 
 
+/* Returns true if FORMAL contains an explicit-shape array dummy with the
+   VALUE attribute.  The bounds of such a dummy may have to be evaluated
+   on the caller side, which needs an interface mapping.  */
+
+static bool
+has_value_array_dummy (gfc_formal_arglist *formal)
+{
+  for (; formal; formal = formal->next)
+    if (formal->sym && formal->sym->attr.value && formal->sym->attr.dimension
+	&& formal->sym->as && formal->sym->as->type == AS_EXPLICIT)
+      return true;
+
+  return false;
+}
+
+
+/* Sequence association (F2023, 15.5.2.12) of a scalar actual argument E with
+   an explicit-shape array dummy FSYM that has the VALUE attribute.  Copy as
+   many elements as the dummy declares into a temporary and pass that.
+   MAPPING supplies the caller-side values of any dummy arguments appearing
+   in the bounds or the character length of FSYM.  */
+
+static void
+conv_seq_assoc_value_arg (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym,
+			  gfc_interface_mapping *mapping)
+{
+  tree nelems, elem_type, elem_size, tmpvar, src, tmp;
+  gfc_se se;
+  int n;
+
+  gcc_assert (fsym->as && fsym->as->type == AS_EXPLICIT);
+
+  /* Address of the first element of the actual argument's sequence.  */
+  gfc_init_se (&se, NULL);
+  if (e->ts.type == BT_CHARACTER)
+    {
+      gfc_conv_expr (&se, e);
+      gfc_conv_string_parameter (&se);
+      /* The hidden length argument is that of the actual argument, as it
+	 is for a dummy that does not have the VALUE attribute.  */
+      parmse->string_length = se.string_length;
+    }
+  else
+    gfc_conv_expr_reference (&se, e);
+  gfc_add_block_to_block (&parmse->pre, &se.pre);
+  gfc_add_block_to_block (&parmse->post, &se.post);
+  src = se.expr;
+
+  /* Number of elements of the dummy.  */
+  nelems = gfc_index_one_node;
+  for (n = 0; n < fsym->as->rank; n++)
+    {
+      tree lbound, ubound, extent;
+
+      gfc_init_se (&se, NULL);
+      gfc_apply_interface_mapping (mapping, &se, fsym->as->upper[n]);
+      gfc_add_block_to_block (&parmse->pre, &se.pre);
+      gfc_add_block_to_block (&parmse->post, &se.post);
+      ubound = fold_convert (gfc_array_index_type, se.expr);
+
+      if (fsym->as->lower[n])
+	{
+	  gfc_init_se (&se, NULL);
+	  gfc_apply_interface_mapping (mapping, &se, fsym->as->lower[n]);
+	  gfc_add_block_to_block (&parmse->pre, &se.pre);
+	  gfc_add_block_to_block (&parmse->post, &se.post);
+	  lbound = fold_convert (gfc_array_index_type, se.expr);
+	}
+      else
+	lbound = gfc_index_one_node;
+
+      extent = fold_build2_loc (input_location, MINUS_EXPR,
+				gfc_array_index_type, ubound, lbound);
+      extent = fold_build2_loc (input_location, PLUS_EXPR,
+				gfc_array_index_type, extent,
+				gfc_index_one_node);
+      extent = fold_build2_loc (input_location, MAX_EXPR, gfc_array_index_type,
+				extent, gfc_index_zero_node);
+      nelems = fold_build2_loc (input_location, MULT_EXPR,
+				gfc_array_index_type, nelems, extent);
+    }
+  nelems = gfc_evaluate_now (nelems, &parmse->pre);
+
+  /* Element type and size of the dummy.  For characters the element
+     sequence is grouped by the character length of the dummy.  */
+  if (fsym->ts.type == BT_CHARACTER)
+    {
+      tree len;
+
+      if (fsym->ts.u.cl->length)
+	{
+	  gfc_init_se (&se, NULL);
+	  gfc_apply_interface_mapping (mapping, &se, fsym->ts.u.cl->length);
+	  gfc_add_block_to_block (&parmse->pre, &se.pre);
+	  gfc_add_block_to_block (&parmse->post, &se.post);
+	  len = fold_convert (gfc_charlen_type_node, se.expr);
+	}
+      else
+	len = fold_convert (gfc_charlen_type_node, parmse->string_length);
+
+      tree char_size = TYPE_SIZE_UNIT (gfc_get_char_type (fsym->ts.kind));
+
+      elem_type = gfc_get_character_type_len (fsym->ts.kind, len);
+      elem_size = fold_build2_loc (input_location, MULT_EXPR, size_type_node,
+				   fold_convert (size_type_node, len),
+				   fold_convert (size_type_node, char_size));
+    }
+  else
+    {
+      elem_type = gfc_typenode_for_spec (&fsym->ts);
+      elem_size = fold_convert (size_type_node, TYPE_SIZE_UNIT (elem_type));
+    }
+
+  /* The temporary holding the copy.  Allocate at least one element so that
+     a zero-sized dummy does not produce a degenerate array type.  */
+  tmp = fold_build2_loc (input_location, MAX_EXPR, gfc_array_index_type,
+			 nelems, gfc_index_one_node);
+  tmp = fold_build2_loc (input_location, MINUS_EXPR, gfc_array_index_type,
+			 tmp, gfc_index_one_node);
+  tmp = build_array_type (elem_type,
+			  build_range_type (gfc_array_index_type,
+					    gfc_index_zero_node, tmp));
+  tmpvar = gfc_create_var (tmp, "seq_copy");
+  gfc_add_expr_to_block (&parmse->pre,
+			 fold_build1_loc (input_location, DECL_EXPR, tmp,
+					  tmpvar));
+
+  tmp = fold_build2_loc (input_location, MULT_EXPR, size_type_node,
+			 fold_convert (size_type_node, nelems), elem_size);
+  tmp = gfc_build_memcpy_call (fold_convert (pvoid_type_node,
+					     gfc_build_addr_expr (NULL_TREE,
+								  tmpvar)),
+			       fold_convert (pvoid_type_node, src), tmp);
+  gfc_add_expr_to_block (&parmse->pre, tmp);
+
+  /* The memcpy also copied the component pointers of a derived type, which
+     would leave the temporary sharing the actual argument's allocatable
+     components.  Give the copy components of its own and free them again
+     once the call has returned.  */
+  if (fsym->ts.type == BT_DERIVED && fsym->ts.u.derived->attr.alloc_comp)
+    {
+      tree src_ptr = fold_convert (build_pointer_type (elem_type), src);
+      tree elem_idx = gfc_create_var (gfc_array_index_type, "elem");
+      tree dest_elem = gfc_build_array_ref (tmpvar, elem_idx, NULL_TREE);
+      tree src_offset = fold_build2_loc (input_location, MULT_EXPR, sizetype,
+					 fold_convert (sizetype, elem_idx),
+					 elem_size);
+      tree src_elem
+	= build_fold_indirect_ref_loc (input_location,
+				       fold_build_pointer_plus_loc
+				       (input_location, src_ptr, src_offset));
+
+      tmp = gfc_copy_alloc_comp (fsym->ts.u.derived, src_elem, dest_elem, 0, 0);
+      gfc_simple_for_loop (&parmse->pre, elem_idx, gfc_index_zero_node, nelems,
+			   LT_EXPR, gfc_index_one_node, tmp);
+
+      tmp = gfc_deallocate_alloc_comp (fsym->ts.u.derived, dest_elem, 0);
+      gfc_simple_for_loop (&parmse->post, elem_idx, gfc_index_zero_node, nelems,
+			   LT_EXPR, gfc_index_one_node, tmp);
+    }
+
+  if (fsym->ts.type == BT_CHARACTER)
+    parmse->expr
+      = gfc_build_addr_expr (build_pointer_type (gfc_get_char_type
+						 (fsym->ts.kind)), tmpvar);
+  else
+    parmse->expr = gfc_build_addr_expr (build_pointer_type (elem_type), tmpvar);
+}
+
+
 /* Helper function for the handling of (currently) scalar dummy variables
    with the VALUE attribute.  Argument parmse should already be set up.  */
 static void
@@ -7138,7 +7308,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			       (sym->ts.type == BT_CHARACTER
 				&& sym->ts.u.cl->length
 				&& sym->ts.u.cl->length->expr_type
-				   != EXPR_CONSTANT);
+				   != EXPR_CONSTANT)
+			       || has_value_array_dummy (formal);
     }
   else
     {
@@ -7147,7 +7318,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			       (comp->ts.type == BT_CHARACTER
 				&& comp->ts.u.cl->length
 				&& comp->ts.u.cl->length->expr_type
-				   != EXPR_CONSTANT);
+				   != EXPR_CONSTANT)
+			       || has_value_array_dummy (formal);
     }
 
   base_object = NULL_TREE;
@@ -7472,6 +7644,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      else if (sym->attr.is_bind_c && e && is_CFI_desc (fsym, NULL))
 		/* Implement F2018, 18.3.6, list item (5), bullet point 2.  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
+
+	      else if (fsym && fsym->attr.value && fsym->attr.dimension)
+		/* Scalar actual argument sequence associated with a VALUE
+		   array dummy.  */
+		conv_seq_assoc_value_arg (&parmse, e, fsym, &mapping);
 
 	      else if (fsym && fsym->attr.value)
 		{
