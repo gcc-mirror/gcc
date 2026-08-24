@@ -122,7 +122,7 @@ riscv_arch_from_hwprobe (std::string &isa, bool *vector_p)
 
   ima0 = riscv_hwprobe_value (pairs, npairs, RISCV_HWPROBE_KEY_IMA_EXT_0);
 
-  if (ima0 & (RISCV_HWPROBE_IMA_V
+  if (ima0 & (RISCV_HWPROBE_EXT_V
 	      | RISCV_HWPROBE_EXT_ZVE32X
 	      | RISCV_HWPROBE_EXT_ZVE64X))
     *vector_p = true;
