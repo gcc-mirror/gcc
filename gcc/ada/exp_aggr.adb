@@ -141,19 +141,22 @@ package body Exp_Aggr is
    --  constants that are done in place.
 
    function Must_Slide
-     (Aggr     : Node_Id;
-      Obj_Type : Entity_Id;
-      Typ      : Entity_Id) return Boolean;
+     (Aggr    : Node_Id;
+      Typ     : Entity_Id;
+      Obj_Typ : Entity_Id;
+      Assign  : Boolean) return Boolean;
+   --  Return whether an array aggregate Aggr whose subtype is Typ must slide
+   --  when assigned to an object whose (nominal) subtype is Obj_Typ. Assign
+   --  is True when the context is an assignment statement and False when it
+   --  is an object declaration or an allocator.
+
    --  A static array aggregate in an object declaration can in most cases be
    --  expanded in place. The one exception is when the aggregate is given
    --  with component associations that specify different bounds from those of
    --  the type definition in the object declaration. In this pathological
    --  case the aggregate must slide, and we must introduce an intermediate
-   --  temporary to hold it.
-   --
-   --  The same holds in an assignment to multi-dimensional arrays, when
-   --  components may be given with bounds that differ from those of the
-   --  component type.
+   --  temporary to hold it. The same holds in an assignment, when components
+   --  may be given with bounds that differ from those of the target.
 
    function Number_Of_Choices (N : Node_Id) return Nat;
    --  Returns the number of discrete choices (not including the others choice
@@ -1424,7 +1427,8 @@ package body Exp_Aggr is
                if Nkind (Parent (N)) = N_Assignment_Statement
                  and then Is_Array_Type (Comp_Typ)
                  and then Present (Component_Associations (Expr_Q))
-                 and then Must_Slide (N, Comp_Typ, Etype (Expr_Q))
+                 and then
+                   Must_Slide (N, Etype (Expr_Q), Comp_Typ, Assign => True)
                then
                   Set_Expansion_Delayed (Expr_Q, False);
                   Set_Analyzed (Expr_Q, False);
@@ -4145,7 +4149,8 @@ package body Exp_Aggr is
       --  statically equal to those of the target.
 
       if Is_Array
-        and then Must_Slide (N, Etype (Name (Parent_Node)), Etype (N))
+        and then
+          Must_Slide (N, Etype (N), Etype (Name (Parent_Node)), Assign => True)
       then
          return False;
       end if;
@@ -6171,8 +6176,9 @@ package body Exp_Aggr is
                        or else Needs_Finalization (Typ)
                        or else not Must_Slide
                                      (N,
+                                      Typ,
                                       Designated_Type (Etype (Parent_Node)),
-                                      Typ)))
+                                      Assign => False)))
 
          --  Object declaration (see Convert_Aggr_In_Object_Decl). Sliding
          --  cannot be done in place for the time being.
@@ -6186,9 +6192,10 @@ package body Exp_Aggr is
                                  (Defining_Identifier (Parent_Node))
                        or else not Must_Slide
                                      (N,
+                                      Typ,
                                       Etype
                                         (Defining_Identifier (Parent_Node)),
-                                      Typ)))
+                                      Assign => False)))
 
          --  Safe assignment (see Convert_Aggr_In_Assignment). So far only the
          --  assignments in init procs are taken into account, as well those
@@ -9377,9 +9384,10 @@ package body Exp_Aggr is
    ----------------
 
    function Must_Slide
-     (Aggr     : Node_Id;
-      Obj_Type : Entity_Id;
-      Typ      : Entity_Id) return Boolean
+     (Aggr    : Node_Id;
+      Typ     : Entity_Id;
+      Obj_Typ : Entity_Id;
+      Assign  : Boolean) return Boolean
    is
    begin
       --  No sliding if the type of the object is not established yet, if it is
@@ -9388,13 +9396,13 @@ package body Exp_Aggr is
       --  an Others_Clause it gets its type from the context and no sliding
       --  is involved either.
 
-      if not Is_Array_Type (Obj_Type) then
+      if not Is_Array_Type (Obj_Typ) then
          return False;
 
-      elsif not Is_Constrained (Obj_Type) then
-         return False;
+      elsif not Is_Constrained (Obj_Typ) then
+         return Assign;
 
-      elsif Typ = Obj_Type then
+      elsif Typ = Obj_Typ then
          return False;
 
       elsif Is_Others_Aggregate (Aggr) then
@@ -9404,7 +9412,7 @@ package body Exp_Aggr is
 
       else
          declare
-            Obj_Index  : Node_Id := First_Index (Obj_Type);
+            Obj_Index  : Node_Id := First_Index (Obj_Typ);
             Obj_Bounds : Range_Nodes;
             Typ_Index  : Node_Id := First_Index (Typ);
             Typ_Bounds : Range_Nodes;
