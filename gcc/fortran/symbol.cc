@@ -694,7 +694,6 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (value, subroutine)
   conf (value, function)
   conf (value, volatile_)
-  conf (value, dimension)
   conf (value, codimension)
   conf (value, external)
 

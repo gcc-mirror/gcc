@@ -8072,6 +8072,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		/* Implement F2018, 18.3.6, list item (5), bullet point 2.  */
 		gfc_conv_gfc_desc_to_cfi_desc (&parmse, e, fsym);
 
+	      else if (fsym && fsym->attr.value && fsym->attr.dimension
+		       && e->rank != -1)
+		/* VALUE array dummy: pass a private copy of the actual
+		   argument.  Allocatable components are copied deeply, so
+		   that the callee cannot reach the actual argument's data.  */
+		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg, INTENT_IN,
+					   false, fsym, sym->name, NULL,
+					   false, true);
+
 	      else if (e->expr_type == EXPR_VARIABLE
 		    && is_subref_array (e)
 		    && !(fsym && fsym->attr.pointer)

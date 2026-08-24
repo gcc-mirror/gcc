@@ -18861,6 +18861,42 @@ skip_interfaces:
 		     "CODIMENSION attribute", &sym->declared_at);
 	  return;
 	}
+
+      /* F2008, C557 (F2018, C862; F2023, C867).  Assumed-shape and
+	 explicit-shape array dummies may have the VALUE attribute, but
+	 assumed-size arrays may not.  */
+      if (as->type == AS_ASSUMED_SIZE && sym->attr.value)
+	{
+	  gfc_error ("Assumed-size array %qs at %L may not have the VALUE "
+		     "attribute", sym->name, &sym->declared_at);
+	  return;
+	}
+      else if (sym->attr.value && sym->attr.dummy
+	       && (as->type == AS_EXPLICIT || as->type == AS_ASSUMED_SHAPE))
+	{
+	  if (!gfc_notify_std (GFC_STD_F2008, "Array dummy argument %qs at "
+			       "%L with VALUE attribute", sym->name,
+			       &sym->declared_at))
+	    return;
+
+	  /* F2023, 18.3.6 (4): only a scalar VALUE dummy is interoperable
+	     with a formal parameter of the C prototype.  */
+	  if (sym->ns->proc_name && sym->ns->proc_name->attr.is_bind_c)
+	    {
+	      gfc_error ("Array dummy argument %qs at %L with VALUE attribute "
+			 "not allowed in BIND(C) procedure %qs", sym->name,
+			 &sym->declared_at, sym->ns->proc_name->name);
+	      return;
+	    }
+
+	  if (sym->ts.type == BT_CLASS)
+	    {
+	      gfc_error ("Sorry, polymorphic array dummy argument %qs at %L "
+			 "with VALUE attribute is not yet implemented",
+			 sym->name, &sym->declared_at);
+	      return;
+	    }
+	}
     }
 
   /* Make sure symbols with known intent or optional are really dummy

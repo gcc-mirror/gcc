@@ -71,8 +71,8 @@ subroutine s2 (b) ! { dg-error "has no IMPLICIT type" }
   integer, codimension[*] :: b(..) ! { dg-error "assumed-rank array" }
 end subroutine
 
-subroutine s5 (e) ! { dg-error "has no IMPLICIT type" }
+subroutine s5 (e) ! { dg-error "may not have the VALUE or CODIMENSION attribute" }
   implicit none
-  integer, value :: e(..) ! { dg-error "VALUE attribute conflicts with DIMENSION" }
+  integer, value :: e(..)
 end subroutine
 

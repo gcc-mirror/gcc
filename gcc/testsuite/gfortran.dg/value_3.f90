@@ -1,8 +1,14 @@
 ! { dg-do compile }
+! { dg-options "-std=f2003" }
 ! Tests the constraints in the patch for PR29642, which requested the
 ! implementation of the F2003 VALUE attribute for gfortran.
 !
-! Contributed by Paul Thomas  <pault@gcc.gnu.org> 
+! Compiled as -std=f2003 because Fortran 2008 relaxed C527 to allow the
+! VALUE attribute on explicit-shape and assumed-shape array dummies
+! (F2008, C557); bar_1 below exercises the resulting -std=f2003
+! rejection.  The acceptance case is covered separately by value_12.f90.
+!
+! Contributed by Paul Thomas  <pault@gcc.gnu.org>
 !
 program test_value
   integer(8) :: i = 42, j   ! { dg-error "not a dummy" }
@@ -10,10 +16,10 @@ program test_value
   value :: j
 
 contains
-  subroutine bar_1 (i)
+  subroutine bar_1 (i) ! { dg-error "Fortran 2008: Array dummy argument" }
     integer(8) :: i
     dimension i(8)
-    value :: i  ! { dg-error "conflicts with DIMENSION" }
+    value :: i
     i = 0
   end subroutine bar_1
 

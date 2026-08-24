@@ -42,11 +42,11 @@ subroutine orig(X) ! { dg-error "may not have the VALUE or CODIMENSION attribute
  integer :: x(..)[*]
 end
 
-subroutine val1(X)
- integer, value :: x(..)  ! { dg-error "VALUE attribute conflicts with DIMENSION attribute" }
+subroutine val1(X) ! { dg-error "may not have the VALUE or CODIMENSION attribute" }
+ integer, value :: x(..)
 end
 
-subroutine val2(X)
+subroutine val2(X) ! { dg-error "may not have the VALUE or CODIMENSION attribute" }
  integer, value :: x
- dimension :: x(..)  ! { dg-error "VALUE attribute conflicts with DIMENSION attribute" }
+ dimension :: x(..)
 end

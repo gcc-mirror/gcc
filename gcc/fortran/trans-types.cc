@@ -2523,6 +2523,7 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
 
   if (sym->attr.dummy && !sym->attr.function
       && (!sym->attr.value
+	  || sym->attr.dimension
 	  || (sym->ts.type == BT_CHARACTER
 	      && (!sym->ts.u.cl || !sym->ts.u.cl->length
 		  || sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)))
