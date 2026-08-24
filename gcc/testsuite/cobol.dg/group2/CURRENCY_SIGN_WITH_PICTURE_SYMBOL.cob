@@ -3,7 +3,6 @@
        *> { dg-output-file "group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.out" }
 
        PROGRAM-ID.   prog.
-
        ENVIRONMENT DIVISION.
        CONFIGURATION SECTION.
        SPECIAL-NAMES.
@@ -14,19 +13,19 @@
 
        DATA DIVISION.
        WORKING-STORAGE SECTION.
+       77  val      pic 99v99 value 12.34.
        77  EUROS    PIC U99v99.
        77  cents    PIC 9,999c.
        77  DOLLARS  Pic $$,$$9.99.
 
        PROCEDURE DIVISION.
-           MOVE 12.34 TO EUROS
-           MULTIPLY euros BY 100 GIVING cents.
+           MOVE val TO EUROS
+           MULTIPLY val BY 100 GIVING cents.
            DISPLAY "#" EUROS "# equal #" cents '#'.
            Move 1500 to DOLLARS
            Display "Invoice amount #1 is " DOLLARS '.'.
            Move 12.34 to DOLLARS
            Display "Invoice amount #2 is " DOLLARS '.'.
-
            GOBACK
            .
        END PROGRAM prog.
