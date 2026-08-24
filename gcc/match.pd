@@ -3561,14 +3561,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (ptr_difference_const (@0, @1, &diff))
     (minus { build_int_cst_type (type, diff); } (convert @2)))))
 
-/* Canonicalize (T *)(ptr - ptr-cst) to &MEM[ptr + -ptr-cst].  */
+/* Canonicalize (T *)(ptr - ptr-cst) to (T *)ptr + -ptr-cst.  */
 (simplify
  (convert (pointer_diff @0 INTEGER_CST@1))
  (if (POINTER_TYPE_P (type))
-  { build1 (ADDR_EXPR, type,
-	    build2 (MEM_REF, char_type_node, @0,
-		    wide_int_to_tree (ptr_type_node,
-				      wi::neg (wi::to_wide (@1))))); }))
+  (pointer_plus
+   (convert @0) { wide_int_to_tree (sizetype,
+				    wi::neg (wi::to_wide (@1))); })))
 
 /* If arg0 is derived from the address of an object or function, we may
    be able to fold this expression using the object or function's
