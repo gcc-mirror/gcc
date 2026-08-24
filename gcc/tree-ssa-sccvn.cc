@@ -2571,8 +2571,12 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
       tree val = vn_lookup_simplify_result (res_op);
       /* ???  In weird cases we can end up with internal-fn calls,
 	 but this isn't expected so throw the result away.  See
-	 PR123040 for an example.  */
-      if (!val && insert && res_op->code.is_tree_code ())
+	 PR123040 for an example.  Likewise we can end up with
+	 &MEM[ptr_1 + CST] which would be a vn_reference (PR127000).  */
+      if (!val
+	  && insert
+	  && res_op->code.is_tree_code ()
+	  && (tree_code) res_op->code != ADDR_EXPR)
 	{
 	  gimple_seq stmts = NULL;
 	  result = maybe_push_res_to_seq (res_op, &stmts);
