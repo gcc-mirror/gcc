@@ -454,7 +454,8 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
       && TREE_TYPE (cfun->decl) == fntype
       && (TYPE_MODE (type) == OOmode
 	   || TYPE_MODE (type) == XOmode
-	   || TYPE_MODE (type) == TDOmode))
+	   || TYPE_MODE (type) == TDOmode
+	   || TYPE_MODE (type) == QDOmode))
     {
       /* Record we have now handled function CFUN, so the next time we
 	 are called, we do not re-report the same error.  */
@@ -462,7 +463,8 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
       if (TYPE_CANONICAL (type) != NULL_TREE)
 	type = TYPE_CANONICAL (type);
       const char *type_class =
-	 (TYPE_MODE (type) == TDOmode) ? "Dense Math" : "MMA";
+	 (TYPE_MODE (type) == TDOmode || TYPE_MODE (type) == QDOmode)
+	 ? "Dense Math" : "MMA";
       error ("invalid use of %s type %qs as a function return value",
 	     type_class,
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
@@ -1660,12 +1662,12 @@ rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   int n_elts;
 
   /* We do not allow Dense Math/MMA types being used as function arguments.  */
-  if (mode == OOmode || mode == XOmode || mode == TDOmode)
+  if (mode == OOmode || mode == XOmode || mode == TDOmode || mode == QDOmode)
     {
       if (TYPE_CANONICAL (type) != NULL_TREE)
 	type = TYPE_CANONICAL (type);
       const char *type_class =
-	 (mode == TDOmode) ? "Dense Math" : "MMA";
+	(mode == TDOmode || mode == QDOmode) ? "Dense Math" : "MMA";
       error ("invalid use of %s operand of type %qs as a function parameter",
 	     type_class,
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));

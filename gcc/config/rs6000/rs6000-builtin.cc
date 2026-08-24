@@ -519,6 +519,8 @@ const char *rs6000_type_string (tree type_node)
     return "__vector_quad";
   else if (type_node == dmr1024_type_node)
     return "__dmr1024";
+  else if (type_node == dmr2048_type_node)
+    return "__dmr2048";
 
   return "unknown";
 }
@@ -834,6 +836,18 @@ rs6000_init_builtins (void)
   lang_hooks.types.register_builtin_type (dmr1024_type_node, "__dmr1024");
   t = build_qualified_type (dmr1024_type_node, TYPE_QUAL_CONST);
   ptr_dmr1024_type_node = build_pointer_type (t);
+
+  /* QDOmode (2048-bit dmr pair).  Use 512-bit alignment like dmr1024.  */
+  dmr2048_type_node = make_node (OPAQUE_TYPE);
+  SET_TYPE_MODE (dmr2048_type_node, QDOmode);
+  TYPE_SIZE (dmr2048_type_node) = bitsize_int (GET_MODE_BITSIZE (QDOmode));
+  TYPE_PRECISION (dmr2048_type_node) = GET_MODE_BITSIZE (QDOmode);
+  TYPE_SIZE_UNIT (dmr2048_type_node) = size_int (GET_MODE_SIZE (QDOmode));
+  SET_TYPE_ALIGN (dmr2048_type_node, 512);
+  TYPE_USER_ALIGN (dmr2048_type_node) = 0;
+  lang_hooks.types.register_builtin_type (dmr2048_type_node, "__dmr2048");
+  t = build_qualified_type (dmr2048_type_node, TYPE_QUAL_CONST);
+  ptr_dmr2048_type_node = build_pointer_type (t);
 
   tdecl = add_builtin_type ("__bool char", bool_char_type_node);
   TYPE_NAME (bool_char_type_node) = tdecl;
@@ -1330,6 +1344,9 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
     {
     case TDOmode:
       lhs_type = dmr1024_type_node;
+      break;
+    case QDOmode:
+      lhs_type = dmr2048_type_node;
       break;
     case XOmode:
       lhs_type = vector_quad_type_node;

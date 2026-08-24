@@ -662,6 +662,77 @@
   gcc_unreachable ();
 })
 
+;; QDO (2048-bit dense-math pair) move expander.
+;; Split into 2 TDO moves for the even and odd DMR.
+(define_expand "movqdo"
+  [(set (match_operand:QDO 0 "nonimmediate_operand")
+	(match_operand:QDO 1 "input_operand"))]
+  "TARGET_DMF"
+{
+  rs6000_emit_move (operands[0], operands[1], QDOmode);
+  DONE;
+})
+
+(define_insn_and_split "*movqdo"
+  [(set (match_operand:QDO 0 "nonimmediate_operand" "=wa,m,wa,wD,wa,wD")
+	(match_operand:QDO 1 "input_operand" "m,wa,wa,wD,wD,wa"))]
+  "TARGET_DMF
+   && (gpc_reg_operand (operands[0], QDOmode)
+       || gpc_reg_operand (operands[1], QDOmode))"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+{
+  rtx dst = operands[0];
+  rtx src = operands[1];
+
+  /* Of the two TDO halves, the first one holds the most significant part
+     of the value.  In little endian mode it lives at the higher address,
+     so the offsets of the two memory halves are swapped.  */
+  if (REG_P (dst) && MEM_P (src))
+    {
+      rtx tdo1 = gen_rtx_REG (TDOmode, REGNO (dst));
+      rtx tdo2 = gen_rtx_REG (TDOmode, REGNO (dst) + 8);
+      rtx mem1 = adjust_address (src, TDOmode, BYTES_BIG_ENDIAN ? 0 : 128);
+      rtx mem2 = adjust_address (src, TDOmode, BYTES_BIG_ENDIAN ? 128 : 0);
+      emit_insn (gen_move_insn (tdo1, mem1));
+      emit_insn (gen_move_insn (tdo2, mem2));
+      DONE;
+    }
+  else if (REG_P (src) && MEM_P (dst))
+    {
+      rtx tdo1 = gen_rtx_REG (TDOmode, REGNO (src));
+      rtx tdo2 = gen_rtx_REG (TDOmode, REGNO (src) + 8);
+      rtx mem1 = adjust_address (dst, TDOmode, BYTES_BIG_ENDIAN ? 0 : 128);
+      rtx mem2 = adjust_address (dst, TDOmode, BYTES_BIG_ENDIAN ? 128 : 0);
+      emit_insn (gen_move_insn (mem1, tdo1));
+      emit_insn (gen_move_insn (mem2, tdo2));
+      DONE;
+    }
+  else if (REG_P (src) && REG_P (dst))
+    {
+      bool is_src_vsx = VSX_REGNO_P (REGNO (src));
+      bool is_dst_vsx = VSX_REGNO_P (REGNO (dst));
+      rtx stdo1 = gen_rtx_REG (TDOmode, REGNO (src));
+      rtx stdo2 = gen_rtx_REG (TDOmode, REGNO (src) + (is_src_vsx ? 8 : 1));
+      rtx dtdo1 = gen_rtx_REG (TDOmode, REGNO (dst));
+      rtx dtdo2 = gen_rtx_REG (TDOmode, REGNO (dst) + (is_dst_vsx ? 8 : 1));
+
+      if (is_src_vsx && is_dst_vsx && REGNO (src) < REGNO (dst))
+	{
+	  emit_insn (gen_move_insn (dtdo2, stdo2));
+	  emit_insn (gen_move_insn (dtdo1, stdo1));
+	}
+      else
+	{
+	  emit_insn (gen_move_insn (dtdo1, stdo1));
+	  emit_insn (gen_move_insn (dtdo2, stdo2));
+	}
+      DONE;
+    }
+  gcc_unreachable ();
+})
+
 
 (define_insn_and_split "reload_tdo_load"
   [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")

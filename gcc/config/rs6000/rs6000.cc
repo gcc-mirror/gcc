@@ -1871,8 +1871,9 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
   if (COMPLEX_MODE_P (mode))
     mode = GET_MODE_INNER (mode);
 
-  /* No other types other than XOmode or TDOmode can go in DMRs.  */
-  if (DMR_REGNO_P (regno) && !(mode ==XOmode || mode == TDOmode))
+  /* No other types other than XOmode, TDOmode or QDOmode can go in DMRs.  */
+  if (DMR_REGNO_P (regno)
+      && !(mode ==XOmode || mode == TDOmode || mode == QDOmode))
     return 0;
 
   /* TDOmode value can be held in either 1 DMR register or 8 VSX
@@ -1881,6 +1882,21 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
     {
       if (TARGET_DMF)
 	return (DMR_REGNO_P (regno)
+		|| (VSX_REGNO_P (regno)
+		    && VSX_REGNO_P (last_regno)
+		    && (regno & 1) == 0));
+      else
+	return 0;
+    }
+
+  /* QDOmode value can be held in 2 consecutive DMR registers starting with
+     an even numbered DMR, or in 16 consecutive VSX registers.  */
+  if (mode == QDOmode)
+    {
+      if (TARGET_DMF)
+	return ((DMR_REGNO_P (regno)
+		 && DMR_REGNO_P (last_regno)
+		 && ((regno - FIRST_DMR_REGNO) % 2 == 0))
 		|| (VSX_REGNO_P (regno)
 		    && VSX_REGNO_P (last_regno)
 		    && (regno & 1) == 0));
@@ -2014,8 +2030,9 @@ static bool
 rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (mode1 == PTImode || mode1 == OOmode || mode1 == XOmode
-      || mode1 == TDOmode || mode2 == PTImode || mode2 == OOmode
-      || mode2 == XOmode || mode2 == TDOmode)
+      || mode1 == TDOmode || mode1 == QDOmode
+      || mode2 == PTImode || mode2 == OOmode
+      || mode2 == XOmode || mode2 == TDOmode || mode2 == QDOmode)
     return mode1 == mode2;
 
   if (ALTIVEC_OR_VSX_VECTOR_MODE (mode1))
@@ -2307,6 +2324,7 @@ rs6000_debug_reg_global (void)
     OOmode,
     XOmode,
     TDOmode,
+    QDOmode,
     CCmode,
     CCUNSmode,
     CCEQmode,
@@ -2671,7 +2689,8 @@ rs6000_setup_reg_addr_masks (void)
 
 	  if (rc == RELOAD_REG_DMR)
 	    {
-	      if (TARGET_DMF && (m2 == XOmode || m2 == TDOmode))
+	      if (TARGET_DMF
+		  && (m2 == XOmode || m2 == TDOmode || m2 == QDOmode))
 		{
 		  addr_mask = RELOAD_REG_VALID;
 		  reg_addr[m].addr_mask[rc] = addr_mask;
@@ -2782,8 +2801,9 @@ rs6000_setup_reg_addr_masks (void)
 	     dmr1024 type can only do offset loads.  */
 	  else if ((addr_mask != 0)
 		   && ((TARGET_MMA && (m2 == OOmode || m2 == XOmode))
-			|| (TARGET_DMF
-			    && (m2 == TDOmode || m2 == OOmode || m2 == XOmode))))
+		       || (TARGET_DMF
+			   && (m2 == TDOmode || m2 == QDOmode
+			       || m2 == OOmode || m2 == XOmode))))
 	    {
 	      addr_mask |= RELOAD_REG_OFFSET;
 	      if (rc == RELOAD_REG_FPR || rc == RELOAD_REG_VMX)
@@ -8756,6 +8776,7 @@ reg_offset_addressing_ok_p (machine_mode mode)
       return TARGET_MMA || TARGET_DMF;
 
     case E_TDOmode:
+    case E_QDOmode:
       return TARGET_DMF;
 
     case E_SDmode:
@@ -11317,6 +11338,12 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	       "__dmr1024");
       break;
 
+    case E_QDOmode:
+      if (CONST_INT_P (operands[1]))
+	error ("%qs is an opaque type, and you cannot set it to constants",
+	       "__dmr2048");
+      break;
+
     case E_SImode:
     case E_DImode:
       /* Use default pattern for address of ELF small data */
@@ -12789,7 +12816,7 @@ rs6000_secondary_reload_simple_move (enum rs6000_reg_type to_type,
     return true;
 
   /* DMRs can be copied to VSX register, and vice versa.  */
-  if (TARGET_DMF && (mode == XOmode || mode == TDOmode)
+  if (TARGET_DMF && (mode == XOmode || mode == TDOmode || mode == QDOmode)
       && ((to_type == DMR_REG_TYPE && from_type == VSX_REG_TYPE)
 	   || (to_type == VSX_REG_TYPE && from_type == DMR_REG_TYPE)))
     return true;
@@ -13591,6 +13618,9 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
 	return (TARGET_DMF ? VSX_REGS : FLOAT_REGS);
 
       if (mode == TDOmode)
+	return VSX_REGS;
+
+      if (mode == QDOmode)
 	return VSX_REGS;
 
       if (GET_MODE_CLASS (mode) == MODE_INT)
@@ -20821,6 +20851,8 @@ rs6000_mangle_type (const_tree type)
     return "u13__vector_quad";
   if (type == dmr1024_type_node)
     return "u9__dmr1024";
+  if (type == dmr2048_type_node)
+    return "u9__dmr2048";
 
   /* For all other types, use the default mangling.  */
   return NULL;
@@ -22950,6 +22982,10 @@ rs6000_dmr_register_move_cost (machine_mode mode, reg_class_t rclass)
       else if (mode == TDOmode)
 	return base_cost * 2;
 
+      /* QDOmode (dmr pair) can be copied in 4 instructions.  */
+      else if (mode == QDOmode)
+	return base_cost * 4;
+
       else
 	return base_cost * 2 * hard_regno_nregs (FIRST_DMR_REGNO, mode);
     }
@@ -22979,7 +23015,8 @@ rs6000_register_move_cost (machine_mode mode,
   to_vsx = reg_class_contents[to] & reg_class_contents[VSX_REGS];
   from_vsx = reg_class_contents[from] & reg_class_contents[VSX_REGS];
 
-  if ((mode == TDOmode || mode==XOmode) && from == DMR_REGS && to == DMR_REGS)
+  if ((mode == TDOmode || mode == XOmode || mode == QDOmode)
+      && from == DMR_REGS && to == DMR_REGS)
     ret = 2 * hard_regno_nregs (FIRST_DMR_REGNO, mode);
 
   else if (from == DMR_REGS)
@@ -29093,7 +29130,7 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 
   if (frommode != tomode)
     {
-      /* Do not allow conversions to/from XOmode, OOmode and TDOmode
+      /* Do not allow conversions to/from XOmode, OOmode, TDOmode and QDOmode
 	 types.  */
       if (frommode == XOmode)
 	return N_("invalid conversion from type %<__vector_quad%>");
@@ -29107,6 +29144,10 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 	return N_("invalid conversion from type %<__dmr1024%>");
       if (tomode == TDOmode)
 	return N_("invalid conversion to type %<__dmr1024%>");
+      if (frommode == QDOmode)
+	return N_("invalid conversion from type %<__dmr2048%>");
+      if (tomode == QDOmode)
+	return N_("invalid conversion to type %<__dmr2048%>");
     }
 
   /* Conversion allowed.  */
