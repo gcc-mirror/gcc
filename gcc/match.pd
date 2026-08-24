@@ -12244,10 +12244,18 @@ and,
 	   && !HONOR_SIGNED_ZEROS (type))
 	{ elt; }))))
 
-/* Fold REDUC (@0 op VECTOR_CST) as REDUC (@0) op REDUC (VECTOR_CST).  */
-(for reduc (IFN_REDUC_PLUS IFN_REDUC_MAX IFN_REDUC_MIN IFN_REDUC_FMAX
-	    IFN_REDUC_FMIN IFN_REDUC_AND IFN_REDUC_IOR IFN_REDUC_XOR)
-     op (plus max min IFN_FMAX IFN_FMIN bit_and bit_ior bit_xor)
+/* Fold REDUC (@0 op VECTOR_CST) as REDUC (@0) op REDUC (VECTOR_CST).
+   For operators with an inverse pair rule, require the constant reduction
+   to simplify to a scalar operand.  */
+(for reduc (IFN_REDUC_PLUS IFN_REDUC_MAX IFN_REDUC_MIN IFN_REDUC_AND
+	    IFN_REDUC_IOR IFN_REDUC_XOR)
+     op (plus max min bit_and bit_ior bit_xor)
+  (simplify (reduc (op @0 VECTOR_CST@1))
+    (op (reduc:type @0) (reduc!:type @1))))
+
+/* FMAX and FMIN do not have an inverse pair rule.  */
+(for reduc (IFN_REDUC_FMAX IFN_REDUC_FMIN)
+     op (IFN_FMAX IFN_FMIN)
   (simplify (reduc (op @0 VECTOR_CST@1))
     (op (reduc:type @0) (reduc:type @1))))
 
