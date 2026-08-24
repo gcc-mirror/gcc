@@ -38,13 +38,6 @@ GM2_1 = ./gm2 -B./m2/stage1 -g -fm2-g $(CM2DEP)
 
 GM2_FOR_TARGET = $(STAGE_CC_WRAPPER) ./gm2 -B./ -B$(build_tooldir)/bin/ -L$(objdir)/../ld $(TFLAGS)
 
-define escape_path
-$(shell echo "$(1)" | sed 's/ /\\ /g')
-endef
-
-GM2_FOR_TARGET_ESC := $(call escape_path,$(GM2_FOR_TARGET))
-
-
 # FIXME: Get from gcc-plugin.m4 instead of hardcoding.
 ifeq (,$(findstring darwin,$(host)))
   soext=.so
@@ -1723,7 +1716,7 @@ m2/gm2-libs/Builtins.def: $(GM2_PROG_DEP)
              -M=$(srcdir)/m2/gm2-libs-pim-common/Builtins.mod \
              -I=$(srcdir)/m2/gm2-libs \
              -I=$(srcdir)/m2/gm2-libs-pim-common \
-             -C=$(GM2_FOR_TARGET_ESC) -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 m2/gm2-libs/Builtins.def: $(GM2_PROG_DEP)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
@@ -1737,7 +1730,7 @@ m2/gm2-libs/Builtins.mod: $(GM2_PROG_DEP)
              -M=$(srcdir)/m2/gm2-libs-pim-common/Builtins.mod \
              -I=$(srcdir)/m2/gm2-libs \
              -I=$(srcdir)/m2/gm2-libs-pim-common \
-             -C=$(GM2_FOR_TARGET_ESC) -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 m2/gm2-libs/Builtins.mod: $(GM2_PROG_DEP)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
@@ -1752,7 +1745,7 @@ m2/gm2-libs/SYSTEM.def: $(GM2_PROG_DEP)
 	    -M=$(srcdir)/m2/gm2-libs-pim-common/SYSTEM.mod \
 	    -I=$(srcdir)/m2/gm2-libs \
 	    -I=$(srcdir)/m2/gm2-libs-pim-common \
-	    -C=$(GM2_FOR_TARGET_ESC) -o $@
+	    -C="$(GM2_FOR_TARGET)" -o $@
 else
 m2/gm2-libs/SYSTEM.def: $(GM2_PROG_DEP)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
@@ -1772,7 +1765,7 @@ m2/gm2-libs-iso/SYSTEM.def: $(GM2_PROG_DEP)
 	    -M=$(srcdir)/m2/gm2-libs-iso-common/SYSTEM.mod \
 	    -I=$(srcdir)/m2/gm2-libs \
             -I=$(srcdir)/m2/gm2-libs-iso-common \
-	    -C=$(GM2_FOR_TARGET_ESC) -o $@
+	    -C="$(GM2_FOR_TARGET)" -o $@
 else
 m2/gm2-libs-iso/SYSTEM.def: $(GM2_PROG_DEP)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
@@ -1793,7 +1786,7 @@ m2/gm2-libs-coroutines/SYSTEM.def: $(GM2_PROG_DEP)
 	    -I=$(srcdir)/m2/gm2-libs \
 	    -I=$(srcdir)/m2/gm2-libs-cor-common \
 	    -I=$(srcdir)/m2/gm2-libs-iso \
-	    -C=$(GM2_FOR_TARGET_ESC) -o $@
+	    -C="$(GM2_FOR_TARGET)" -o $@
 else
 m2/gm2-libs-coroutines/SYSTEM.def: $(GM2_PROG_DEP)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
