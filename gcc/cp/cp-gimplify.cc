@@ -507,9 +507,9 @@ immediate_escalating_function_p (tree fn)
 	 specifier  */
   if (LAMBDA_FUNCTION_P (fn))
     return true;
-  /* -- a defaulted function that is not declared with the
+  /* -- a non-user-provided defaulted function that is not declared with the
 	consteval specifier  */
-  if (DECL_DEFAULTED_FN (fn))
+  if (DECL_DEFAULTED_FN (fn) && !user_provided_p (fn))
     return true;
   /* -- a function that results from the instantiation of a templated entity
 	defined with the constexpr specifier.  */
