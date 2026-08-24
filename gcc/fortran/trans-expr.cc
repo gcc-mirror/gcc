@@ -6948,8 +6948,23 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
       && (!fsym->ts.u.cl || !fsym->ts.u.cl->length
 	  || fsym->ts.u.cl->length->expr_type != EXPR_CONSTANT))
     {
+      /* An optional actual argument that is absent has nothing to copy
+	 from; pass a null pointer and a length of zero instead.  */
+      tree present = NULL_TREE;
+      if (fsym->attr.optional && e->expr_type == EXPR_VARIABLE
+	  && e->symtree->n.sym->attr.optional)
+	present = gfc_conv_expr_present (e->symtree->n.sym);
+
       gfc_conv_string_parameter (parmse);
       tree len = fold_convert (gfc_charlen_type_node, parmse->string_length);
+      if (present)
+	{
+	  len = fold_build3_loc (input_location, COND_EXPR,
+				 gfc_charlen_type_node, present, len,
+				 build_zero_cst (gfc_charlen_type_node));
+	  len = gfc_evaluate_now (len, &parmse->pre);
+	  parmse->string_length = len;
+	}
       tree chartype = gfc_get_character_type_len (fsym->ts.kind, len);
       tree val_copy = gfc_create_var (chartype, "val_copy");
       tmp = fold_build1_loc (input_location, DECL_EXPR, chartype, val_copy);
@@ -6965,10 +6980,19 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 	fold_convert (pvoid_type_node,
 		      gfc_build_addr_expr (NULL_TREE, val_copy)),
 	fold_convert (pvoid_type_node, parmse->expr), bytes);
+      if (present)
+	tmp = build3_v (COND_EXPR, present, tmp,
+			build_empty_stmt (input_location));
       gfc_add_expr_to_block (&parmse->pre, tmp);
       parmse->expr = fold_convert (
 	build_pointer_type (gfc_get_char_type (fsym->ts.kind)),
 	gfc_build_addr_expr (NULL_TREE, val_copy));
+      if (present)
+	parmse->expr = fold_build3_loc (input_location, COND_EXPR,
+					TREE_TYPE (parmse->expr), present,
+					parmse->expr,
+					fold_convert (TREE_TYPE (parmse->expr),
+						      null_pointer_node));
     }
 
   /* Truncate a too long constant character actual argument.  */
@@ -8253,9 +8277,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		       && e->rank != -1)
 		/* VALUE array dummy: pass a private copy of the actual
 		   argument.  Allocatable components are copied deeply, so
-		   that the callee cannot reach the actual argument's data.  */
+		   that the callee cannot reach the actual argument's data.
+		   The symbol passed is that of the actual argument, so that
+		   the copy is suppressed and a null pointer passed when an
+		   optional actual argument is absent.  */
 		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg, INTENT_IN,
-					   false, fsym, sym->name, NULL,
+					   false, fsym, sym->name,
+					   e->expr_type == EXPR_VARIABLE
+					   ? e->symtree->n.sym : NULL,
 					   false, true);
 
 	      else if (e->expr_type == EXPR_VARIABLE
