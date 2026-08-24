@@ -1,3 +1,283 @@
+2026-08-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127004
+	* gcc.target/avr/torture/pr127004.c: New test.
+
+2026-08-23  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/base/float-point-cvt-f.c: Adjust expected output.
+	* gcc.target/riscv/rvv/base/float-point-cvt-x.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-cvt-xu.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-10.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-11.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-12.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-13.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-14.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-15.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-16.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-17.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-18.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-19.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-2.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-20.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-21.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-22.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-23.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-24.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-25.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-26.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-27.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-28.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-29.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-3.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-30.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-31.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-32.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-33.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-34.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-35.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-36.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-37.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-38.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-39.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-4.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-40.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-41.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-42.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-43.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-44.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-45.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-46.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-47.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-48.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-49.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-5.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-50.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-51.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-52.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-53.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-54.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-55.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-56.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-57.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-58.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-59.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-6.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-60.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-61.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-62.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-63.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-64.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-65.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-66.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-67.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-68.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-69.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-7.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-70.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-71.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-72.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-73.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-74.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-75.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-76.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-77.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-dynamic-frm-9.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-10.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-2.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-3.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-4.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-5.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-7.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-8.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-frm-insert-9.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-fwmacc.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-macc.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-madd.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-msac.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-msub.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-ncvt-f.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-ncvt-x.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-ncvt-xu.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-nmacc.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-nmadd.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-nmsac.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-nmsub.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-rec7.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-redosum.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-redusum.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-single-div.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-single-mul.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-single-rdiv.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-single-rsub.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-single-sub.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-sqrt.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-wcvt-x.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-wcvt-xu.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-widening-add.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-widening-mul.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-widening-sub.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-wmsac.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-wnmacc.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-wnmsac.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-wredosum.c: Likewise.
+	* gcc.target/riscv/rvv/base/float-point-wredusum.c: Likewise.
+	* gcc.target/riscv/rvv/base/no-honor-frm-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr118103-1.c: Likewise.
+	* gcc.target/riscv/rvv/base/pr119164.c: Likewise.
+
+2026-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/126909
+	* gfortran.dg/pr126909.f90: New test.
+
+2026-08-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/prefetch-extend-1.c: New test.
+
+2026-08-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126501
+	PR rtl-optimization/126747
+	* gcc.c-torture/execute/pr126501.c: New test.
+	* gcc.c-torture/execute/pr126747.c: New test.
+
+2026-08-23  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/autopref-xt-c9501fdvt.c: New test.
+
+2026-08-23  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126827
+	* gcc.dg/sinhatanh-3.c: Turn off jump threading.
+	* gcc.dg/tree-ssa/ceil-1.c: New test.
+
+2026-08-23  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR target/71048
+	* gcc.target/arm/pr71048.c: New test.
+
+2026-08-23  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.target/arm/divmod-order-1.c: New test.
+
+2026-08-23  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR tree-optimization/111000
+	* gcc.dg/tree-ssa/loop-im-shift-1.c: New test.
+
+2026-08-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulu_vx-u8-mf8.c: New test.
+
+2026-08-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmul_vx-i8-mf8.c: New test.
+
+2026-08-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_vx-u8-mf8.c: New test.
+
+2026-08-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_vx-i8-mf8.c: New test.
+
+2026-08-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_vx-u8-mf8.c: New test.
+
+2026-08-23  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_vx-i8-mf8.c: New test.
+
 2026-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/124888

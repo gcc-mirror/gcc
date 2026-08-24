@@ -1,3 +1,137 @@
+2026-08-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127004
+	* config/avr/avr-passes.cc (rtl-iter.h): Include.
+	(insninfo_t::scratch_mask): New method.
+	(optimize_data_t::try_split_ldi): Use it for ignore_mask.
+	(optimize_data_t::try_split_any): Same.
+	(optimize_data_t::emit_sequence): Dump ignore_mask prior to
+	calling fatal_insn.
+
+2026-08-23  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (struct long_mul_summand): Add
+	constructors and methods and operator bool.
+	(long_mul_set_summand): Rename to ...
+	(long_mul_summand::set): This. Remove the info argument.
+	(long_mul_classify_carry): Rename to ...
+	(long_mul_summand::classify_carry): This. Remove the
+	info argument.
+	(long_mul_classify_plus_kinds): Rename to ...
+	(long_mul_summand::classify_plus_kinds): This. Remove the
+	info argument.
+	(long_mul_classify_hi_extract): Rename to ...
+	(long_mul_summand::classify_hi_extract): This. Remove the
+	info argument.
+	(long_mul_classify_lo_extract): Rename to ...
+	(long_mul_summand::classify_lo_extract): This. Remove the
+	info argument.
+	(long_mul_classify_shl_extract): Rename to ...
+	(long_mul_summand::classify_shl_extract): This.  Remove the
+	info argument.
+	(long_mul_classify_bare): Rename to ...
+	(long_mul_summand::classify_bare): This.  Remove the
+	info argument.
+	(long_mul_classify_summand): Rename to ...
+	(long_mul_summand::long_mul_summand): This.  Remove the
+	info argument.
+	(long_mul_classify_chain): Update for the long_mul_summand
+	constructor.
+
+2026-08-23  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (enum long_mul_kind): Add LMK_INVALID.
+	(long_mul_set_summand): Add default case to switch.
+	(long_mul_summand_compare): Add checking to make sure
+	the kinds are not LMK_INVALID.
+	(long_mul_find_summand): Likewise.
+	(long_mul_classify_chain): Add checking right before
+	the push to check for LMK_INVALID.
+	(match_long_mul_phi): Simpilify stynx for initializing carry.
+
+2026-08-23  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/59429
+	* match.pd: Combine four loops into one loop for spaceship.
+
+2026-08-23  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (enum long_mul_kind): Fix to unsigned char.
+	(enum long_mul_extract): Likewise.
+
+2026-08-23  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (enum long_mul_kind): Put in an anonymous namespace.
+	(enum long_mul_extract): Likewise.
+	(struct long_mul_summand): Likewise.
+
+2026-08-23  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (long_mul_set_summand): Update
+	comment on the shift.
+
+2026-08-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* combine.cc (combine_simplify_rtx): Handle PREFETCH like MEM when
+	simplifying the address.
+
+2026-08-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/126501
+	PR rtl-optimization/126747
+	* ifcvt.cc (noce_cc_reg_set): New struct.
+	(noce_record_cc_reg_set): New function.
+	(noce_clobbers_live_cc_p): New function.
+	(end_ifcvt_sequence): Use it to reject sequences that clobber a
+	condition-code register that is live out of the test block.
+	(noce_convert_multiple_sets): Likewise.
+
+2026-08-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* compare-elim.cc (find_comparisons_in_bb): Test the live-in set
+	of the successor block rather than of the current block.
+
+2026-08-23  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (struct riscv_tune_param): New member.
+	(xt_c9501_tune_info): Set autoprefetcher model to weak.
+	(riscv_override_options_internal): Set
+	param_sched_autopref_queue_depth based on autoprefetcher model.
+
+2026-08-23  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/126827
+	* gimple-range-op.cc (class cfn_fp_nonnegative): New class.
+	(class cfn_fp_nonnegative_arg0): New class.
+	(gimple_range_op_handler::maybe_builtin_call): Handle some
+	functions which were handled in nonnegative.
+
+2026-08-23  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR target/71048
+	* expmed.cc (store_fixed_bit_field_1): When OP0 is a memory
+	reference that the field fills entirely, store VALUE directly
+	instead of doing a read-modify-write, so that no read of OP0 is
+	emitted.
+
+2026-08-23  Dominic P  <gcc@gcc.dp11.uk>
+
+	* expmed.cc (last_div_const): New variable, moved out of...
+	(expand_divmod): ...here.
+	* expmed.h (last_div_const): Declare.
+	* function.cc (prepare_function_start): Reset last_div_const.
+
+2026-08-23  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR tree-optimization/111000
+	* tree-ssa-loop-im.cc (movement_possibility_1): Require
+	MOVE_PRESERVE_EXECUTION for an out-of-range constant shift
+	count, not an in-range one.
+
+2026-08-23  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-08-22  Luke Zhuang  <luke.zhuang@linux.alibaba.com>
 
 	* config/riscv/riscv.md: Restrict slliw shifted bitfield split

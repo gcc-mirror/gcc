@@ -1,3 +1,13 @@
+2026-08-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/126909
+	* parse.cc (accept_statement): After a contains section, a new
+	namespace is started and, without correction, the new statement
+	the label, if there is one, would be stored there.Go back to
+	the containing namespace and store it there. Likewise add the
+	labelled return statement to the previous entry on the state
+	stack.
+
 2026-08-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/126816
