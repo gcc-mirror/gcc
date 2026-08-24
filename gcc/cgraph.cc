@@ -75,10 +75,6 @@ along with GCC; see the file COPYING3.  If not see
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
 
-/* Queue of cgraph nodes scheduled to be lowered.  */
-symtab_node *x_cgraph_nodes_queue;
-#define cgraph_nodes_queue ((cgraph_node *)x_cgraph_nodes_queue)
-
 /* Symbol table global context.  */
 symbol_table *symtab;
 
@@ -4720,8 +4716,6 @@ cgraph_cc_finalize (void)
   clone_info::release ();
   callback_info_sum_t::free_info_sum ();
   symtab = NULL;
-
-  x_cgraph_nodes_queue = NULL;
 
   cgraph_fnver_htab = NULL;
   version_info_node = NULL;
