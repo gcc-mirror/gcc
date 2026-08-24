@@ -10,7 +10,8 @@
 **func1:
 **.LFB[0-9]+:
 **	.cfi_startproc
-**	cvttss2sil	%xmm0, %eax
+**	cvttss2siq	%xmm0, %rax
+**	movl	%eax, %eax
 **	ret
 **	.cfi_endproc
 **...
@@ -26,7 +27,8 @@ func1 (float x)
 **func2:
 **.LFB[0-9]+:
 **	.cfi_startproc
-**	cvttsd2sil	%xmm0, %eax
+**	cvttsd2siq	%xmm0, %rax
+**	movl	%eax, %eax
 **	ret
 **	.cfi_endproc
 **...

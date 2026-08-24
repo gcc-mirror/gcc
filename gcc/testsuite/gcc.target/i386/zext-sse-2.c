@@ -30,9 +30,10 @@ struct bar2
 **.LFB[0-9]+:
 **	.cfi_startproc
 **	cvttsd2sil	16\(%rdi\), %ecx
-**	movupd	\(%rdi\), %xmm1
-**	cvttpd2dq	%xmm1, %xmm0
-**	movq	%xmm0, %rax
+**	movupd	\(%rdi\), %xmm0
+**	cvttpd2dq	%xmm0, %xmm1
+**	movq	%xmm1, %rax
+**	movl	%ecx, %ecx
 **	movq	%rcx, %rdx
 **	ret
 **	.cfi_endproc
@@ -53,6 +54,7 @@ func1 (struct bar1 *x)
 **	movq	\(%rdi\), %xmm0
 **	cvttps2dq	%xmm0, %xmm0
 **	movq	%xmm0, %rsi
+**	movl	%eax, %eax
 **	movq	%rax, %rdi
 **	movq	%rsi, %rax
 **	movq	%rdi, %rdx
