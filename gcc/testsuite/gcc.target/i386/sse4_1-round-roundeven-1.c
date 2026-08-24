@@ -13,5 +13,5 @@ f2 (float x)
   return __builtin_roundevenf (x);
 }
 
-/* { dg-final { scan-assembler-times "roundsd\[^\n\r\]*xmm" 1 } } */
-/* { dg-final { scan-assembler-times "roundss\[^\n\r\]*xmm" 1 } } */
+/* { dg-final { scan-assembler-times "(roundsd|vrndscalesd)\[^\n\r\]*xmm" 1 } } */
+/* { dg-final { scan-assembler-times "(roundss|vrndscaless)\[^\n\r\]*xmm" 1 } } */
