@@ -483,15 +483,23 @@ class complex_pattern : public vect_pattern
 {
   protected:
     auto_vec<slp_tree> m_workset;
+    stmt_vec_info m_rep;
+
     complex_pattern (slp_tree *node, vec<slp_tree> *m_ops, internal_fn ifn)
       : vect_pattern (node, m_ops, ifn)
     {
+      /* ???  We should not have to guess here, analysis should have
+	 it and pass it as CTOR argument.  */
+      if (SLP_TREE_PERMUTE_P (*node))
+	m_rep = SLP_TREE_REPRESENTATIVE (SLP_TREE_CHILDREN (*node)[0]);
+      else
+	m_rep = SLP_TREE_REPRESENTATIVE (*node);
       this->m_workset.safe_push (*node);
     }
 
-  public:
-    void build (vec_info *) override;
+    void build_common (vec_info *);
 
+  public:
     static internal_fn
     matches (complex_operation_t op, slp_tree_to_load_perm_map_t *, slp_tree *,
 	     vec<slp_tree> *);
@@ -518,10 +526,8 @@ class complex_pattern : public vect_pattern
 */
 
 void
-complex_pattern::build (vec_info *vinfo)
+complex_pattern::build_common (vec_info *vinfo)
 {
-  stmt_vec_info stmt_info;
-
   auto_vec<tree> args;
   args.create (this->m_num_args);
   args.quick_grow_cleared (this->m_num_args);
@@ -534,8 +540,7 @@ complex_pattern::build (vec_info *vinfo)
   FOR_EACH_VEC_ELT (this->m_workset, ix, node)
     {
       /* Calculate the location of the statement in NODE to replace.  */
-      stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
-      gimple* old_stmt = STMT_VINFO_STMT (stmt_info);
+      gimple* old_stmt = STMT_VINFO_STMT (m_rep);
       tree lhs_old_stmt = gimple_get_lhs (old_stmt);
       tree type = TREE_TYPE (lhs_old_stmt);
 
@@ -556,14 +561,14 @@ complex_pattern::build (vec_info *vinfo)
 	 the nodes as such we need to manually update them.  Any changes will be
 	 undone if SLP is cancelled.  */
       call_stmt_info
-	= vinfo->add_pattern_stmt (call_stmt, vect_orig_stmt (stmt_info));
+	= vinfo->add_pattern_stmt (call_stmt, vect_orig_stmt (m_rep));
 
       /* Make sure to mark the representative statement pure_slp and
 	 relevant and transfer reduction info. */
       STMT_VINFO_RELEVANT (call_stmt_info) = vect_used_in_scope;
       STMT_SLP_TYPE (call_stmt_info) = pure_slp;
 
-      gimple_set_bb (call_stmt, gimple_bb (stmt_info->stmt));
+      gimple_set_bb (call_stmt, gimple_bb (m_rep->stmt));
       STMT_VINFO_VECTYPE (call_stmt_info) = SLP_TREE_VECTYPE (node);
 
       /* Since we are replacing all the statements in the group with the same
@@ -626,7 +631,7 @@ complex_add_pattern::build (vec_info *vinfo)
   vect_free_slp_tree (this->m_ops[0]);
   vect_free_slp_tree (this->m_ops[1]);
 
-  complex_pattern::build (vinfo);
+  build_common (vinfo);
 }
 
 /* Pattern matcher for trying to match complex addition pattern in SLP tree.
@@ -1243,7 +1248,7 @@ complex_mul_pattern::build (vec_info *vinfo)
   }
 
   /* And then rewrite the node itself.  */
-  complex_pattern::build (vinfo);
+  build_common (vinfo);
 }
 
 /*******************************************************************************
@@ -1500,7 +1505,7 @@ complex_fms_pattern::build (vec_info *vinfo)
   SLP_TREE_CHILDREN (*this->m_node).quick_push (this->m_ops[0]);
 
   /* And then rewrite the node itself.  */
-  complex_pattern::build (vinfo);
+  build_common (vinfo);
 }
 
 /*******************************************************************************
