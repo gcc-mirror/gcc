@@ -1677,8 +1677,8 @@ timode_scalar_chain::compute_convert_gain ()
 	case REG:
 	  if (GENERAL_REGNO_P (REGNO (src)))
 	    {
-	      if (TARGET_AVX)
-		/* vmovq + vpinsrq */
+	      if (TARGET_SSE4_1)
+		/* movq + pinsrq */
 		igain = speed_p ? -ix86_cost->integer_to_sse
 				  - COSTS_N_INSNS (1)
 				: -COSTS_N_BYTES (11);
@@ -1690,8 +1690,8 @@ timode_scalar_chain::compute_convert_gain ()
 	    }
 	  else if (GENERAL_REG_P (dst))
 	    {
-	      if (TARGET_AVX)
-		/* vpextrq + vmovq */
+	      if (TARGET_SSE4_1)
+		/* pextrq + movq */
 		igain = speed_p ? -ix86_cost->sse_to_integer
 				  - COSTS_N_INSNS (1)
 				: -COSTS_N_BYTES (11);
