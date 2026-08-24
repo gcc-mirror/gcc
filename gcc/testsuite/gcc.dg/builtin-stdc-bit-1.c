@@ -891,7 +891,7 @@ main ()
       || __builtin_stdc_bit_floor (~(unsigned _BitInt(373)) 0) != ((unsigned _BitInt(373)) 1) << (373 - 1))
     __builtin_abort ();
   if (__builtin_stdc_bit_floor (((unsigned _BitInt(512)) 511) << 405) != (((unsigned _BitInt(512)) 256) << 405)
-      || __builtin_stdc_bit_floor (((unsigned _BitInt(373)) 512) << 242) != (((unsigned _BitInt(512)) 512) << 242))
+      || __builtin_stdc_bit_floor (((unsigned _BitInt(373)) 512) << 242) != (((unsigned _BitInt(373)) 512) << 242))
     __builtin_abort ();
   if (__builtin_stdc_bit_ceil ((unsigned _BitInt(512)) 0) != 1
       || !expr_has_type (__builtin_stdc_bit_ceil ((unsigned _BitInt(512)) 0), unsigned _BitInt(512))
@@ -905,7 +905,7 @@ main ()
       || __builtin_stdc_bit_ceil ((~(unsigned _BitInt(373)) 0) >> 1) != ((unsigned _BitInt(373)) 1) << (373 - 1))
     __builtin_abort ();
   if (__builtin_stdc_bit_ceil (((unsigned _BitInt(512)) 512) << 405) != (((unsigned _BitInt(512)) 512) << 405)
-      || __builtin_stdc_bit_ceil (((unsigned _BitInt(373)) 513) << 242) != (((unsigned _BitInt(512)) 1024) << 242))
+      || __builtin_stdc_bit_ceil (((unsigned _BitInt(373)) 513) << 242) != (((unsigned _BitInt(373)) 1024) << 242))
     __builtin_abort ();
   if (__builtin_stdc_bit_floor ((unsigned _BitInt(__BITINT_MAXWIDTH__)) 0) != 0)
     __builtin_abort ();
