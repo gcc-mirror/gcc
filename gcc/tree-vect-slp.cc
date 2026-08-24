@@ -12541,6 +12541,7 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
 struct slp_scc_info
 {
   bool on_stack;
+  bool res;
   int dfs;
   int lowlink;
 };
@@ -12566,10 +12567,12 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
       info->on_stack = false;
       bool res = vect_schedule_slp_node (vinfo, node, instance, place_only);
       gcc_assert (res);
-      return true;
+      info->res = res;
+      return res;
     }
 
   info->on_stack = true;
+  info->res = true;
   stack.safe_push (node);
 
   bool res = true;
@@ -12592,6 +12595,8 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 	}
       else if (child_info->on_stack)
 	info->lowlink = MIN (info->lowlink, child_info->dfs);
+      else
+	res &= child_info->res;
     }
   if (info->lowlink != info->dfs)
     return res;
@@ -12604,6 +12609,7 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
       stack.pop ();
       info->on_stack = false;
       res &= vect_schedule_slp_node (vinfo, node, instance, place_only);
+      info->res = res;
       if (!SLP_TREE_PERMUTE_P (node)
 	  && is_a <gphi *> (SLP_TREE_REPRESENTATIVE (node)->stmt))
 	phis_to_fixup.quick_push (node);
