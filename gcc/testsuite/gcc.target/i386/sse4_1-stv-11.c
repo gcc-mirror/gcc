@@ -11,4 +11,4 @@ void foo(unsigned long x)
     m3 = m;
 }
 
-/* { dg-final { scan-assembler-times "movaps" 4 } } */
+/* { dg-final { scan-assembler-times "(movaps|vmovdqa)" 4 } } */
