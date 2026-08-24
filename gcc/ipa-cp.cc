@@ -4620,25 +4620,43 @@ adjust_clone_incoming_counts (cgraph_node *node,
     if (cs->caller->thunk)
       {
 	adjust_clone_incoming_counts (cs->caller, desc);
-	profile_count sum = profile_count::zero ();
-	for (cgraph_edge *e = cs->caller->callers; e; e = e->next_caller)
-	  if (e->count.initialized_p ())
-	    sum += e->count.ipa ();
-	cs->count = cs->count.combine_with_ipa_count (sum);
+	/* Same rationale as commit 8c6b6adce45a550c52dc35e3df4e0c477f5404fa
+	   for scaling recursive edges in update_counts_for_self_gen_clones:
+	   adjusting non-IPA edge counts here does not update matching gimple
+	   BB frequencies and breaks verify_cgraph_node.  */
+	if (cs->count.ipa_p ())
+	  {
+	    profile_count sum = profile_count::zero ();
+	    for (cgraph_edge *e = cs->caller->callers; e; e = e->next_caller)
+	      if (e->count.initialized_p ())
+		sum += e->count.ipa ();
+	    cs->count = cs->count.combine_with_ipa_count (sum);
+	  }
+	else if (dump_file)
+	  fprintf (dump_file, "       Skipping adjustment of the count of an "
+		   "incoming edge of a clone %s -> %s\n",
+		   cs->caller->dump_name (), cs->callee->dump_name ());
       }
     else if (!desc->processed_edges->contains (cs)
 	     && cs->caller->clone_of == desc->orig
 	     && cs->count.compatible_p (desc->count))
       {
-	cs->count += desc->count;
-	if (dump_file)
+	if (cs->count.ipa_p ())
 	  {
-	    fprintf (dump_file, "       Adjusted count of an incoming edge of "
-		     "a clone %s -> %s to ", cs->caller->dump_name (),
-		     cs->callee->dump_name ());
-	    cs->count.dump (dump_file);
-	    fprintf (dump_file, "\n");
+	    cs->count += desc->count;
+	    if (dump_file)
+	      {
+		fprintf (dump_file, "       Adjusted count of an incoming edge "
+			 "of a clone %s -> %s to ", cs->caller->dump_name (),
+			 cs->callee->dump_name ());
+		cs->count.dump (dump_file);
+		fprintf (dump_file, "\n");
+	      }
 	  }
+	else if (dump_file)
+	  fprintf (dump_file, "       Skipping adjustment of the count of an "
+		   "incoming edge of a clone %s -> %s\n",
+		   cs->caller->dump_name (), cs->callee->dump_name ());
       }
 }
 
