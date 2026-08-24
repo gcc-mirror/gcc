@@ -343,7 +343,7 @@ template<typename _CharT, typename _Traits>
     basic_ospanstream(std::span<_CharT> __s,
 		      ios_base::openmode __which = ios_base::out)
     : __ostream_type(std::__addressof(_M_sb)),
-      _M_sb(__s, __which | ios_base::in)
+      _M_sb(__s, __which | ios_base::out)
     { }
 
     basic_ospanstream(const basic_ospanstream&) = delete;
