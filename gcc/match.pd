@@ -12536,6 +12536,20 @@ and,
    (if (elem)
     { build_vector_from_val (type, elem); }))))
 
+/* A reduction of a duplicate vector with an idempotent operation is the
+   duplicated element.  */
+(for reduc (IFN_REDUC_MAX IFN_REDUC_MIN IFN_REDUC_AND IFN_REDUC_IOR)
+ (simplify
+  (reduc (vec_duplicate @0))
+  (if (!tree_expr_maybe_signaling_nan_p (@0))
+   @0)))
+
+/* Fold an XOR reduction of an even-length duplicate vector to zero.  */
+(simplify
+ (IFN_REDUC_XOR (vec_duplicate@1 @0))
+ (if (multiple_p (TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1)), 2))
+  { build_zero_cst (type); }))
+
 /* Push VEC_PERM earlier if that may help FMA perception (PR101895).  */
 (simplify
  (plus:c (vec_perm:s (mult:c@0 @1 vec_same_elem_p@2) @0 @3) @4)

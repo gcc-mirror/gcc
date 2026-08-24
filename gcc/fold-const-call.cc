@@ -622,9 +622,39 @@ fold_const_builtin_nan (tree type, tree arg, bool quiet)
 static tree
 fold_const_reduction (tree type, tree arg, tree_code code)
 {
-  unsigned HOST_WIDE_INT nelts;
-  if (TREE_CODE (arg) != VECTOR_CST
-      || !VECTOR_CST_NELTS (arg).is_constant (&nelts))
+  if (TREE_CODE (arg) != VECTOR_CST)
+    return NULL_TREE;
+
+  bool idempotent_p = (code == MAX_EXPR
+		       || code == MIN_EXPR
+		       || code == BIT_AND_EXPR
+		       || code == BIT_IOR_EXPR);
+
+  unsigned HOST_WIDE_INT nelts = vector_cst_encoded_nelts (arg);
+  bool singleton_snan_p
+    = (nelts == 1
+	&& tree_expr_maybe_signaling_nan_p (VECTOR_CST_ELT (arg, 0)));
+
+  if (idempotent_p
+      && !VECTOR_CST_STEPPED_P (arg)
+      && multiple_p (VECTOR_CST_NELTS (arg), nelts)
+      && !singleton_snan_p)
+    /* Operating on the first NELTS elements is enough.  */
+    ;
+  else if (code == BIT_XOR_EXPR
+	   && !VECTOR_CST_STEPPED_P (arg)
+	   && multiple_p (VECTOR_CST_NELTS (arg), nelts * 2))
+    {
+      if (VECTOR_CST_DUPLICATE_P (arg))
+	{
+	  /* Process two copies of a one-element-per-pattern encoding.  */
+	  nelts *= 2;
+	}
+      else
+	gcc_checking_assert (VECTOR_CST_NELTS_PER_PATTERN (arg) == 2);
+    }
+
+  else if (!VECTOR_CST_NELTS (arg).is_constant (&nelts))
     return NULL_TREE;
 
   tree res = VECTOR_CST_ELT (arg, 0);
