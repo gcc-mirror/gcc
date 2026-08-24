@@ -2860,8 +2860,14 @@ pp_cxx_compound_requirement (cxx_pretty_printer *pp, tree t)
   pp->expression (TREE_OPERAND (t, 0));
   pp_cxx_right_brace (pp);
 
-  if (COMPOUND_REQ_NOEXCEPT_P (t))
+  if (TREE_OPERAND (t, 2) == boolean_true_node)
     pp_cxx_ws_string (pp, "noexcept");
+  else if (TREE_OPERAND (t, 2) != boolean_false_node)
+    {
+      pp_cxx_ws_string (pp, "noexcept(");
+      pp->expression (TREE_OPERAND (t, 2));
+      pp_cxx_right_paren (pp);
+    }
 
   if (tree type = TREE_OPERAND (t, 1))
     {

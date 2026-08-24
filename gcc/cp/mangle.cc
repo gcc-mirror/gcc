@@ -3214,15 +3214,23 @@ write_requirement (tree req)
   switch (tree_code code = TREE_CODE (req))
     {
       /* # simple-requirement or compound-requirement
-	 <requirement> ::= X <expression> [ N ] [ R <type-constraint> ] */
+	 <requirement> ::= X <expression> [ N ] [ R <type-constraint> ]
+			   X <expression> C <expression>
+			     [ R <type-constraint> ]  */
     case SIMPLE_REQ:
     case COMPOUND_REQ:
       write_char ('X');
       write_expression (op);
       if (code == SIMPLE_REQ)
 	break;
-      if (COMPOUND_REQ_NOEXCEPT_P (req))
+      if (operand_equal_p (TREE_OPERAND (req, 2), boolean_true_node))
 	write_char ('N');
+      else if (TREE_OPERAND (req, 2) != error_mark_node
+	       && !operand_equal_p (TREE_OPERAND (req, 2), boolean_false_node))
+	{
+	  write_char ('C');
+	  write_expression (TREE_OPERAND (req, 2));
+	}
       if (tree constr = TREE_OPERAND (req, 1))
 	{
 	  write_char ('R');

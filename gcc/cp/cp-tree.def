@@ -515,10 +515,9 @@ DEFTREECODE (SIMPLE_REQ, "simple_req", tcc_expression, 1)
 DEFTREECODE (TYPE_REQ, "type_req", tcc_expression, 1)
 
 /* A requirement for an expression and its properties. The
-   first operand is the expression, and the 2nd is its type.
-   The accessor COMPOUND_REQ_NOEXCEPT determines whether
-   the noexcept keyword was present. */
-DEFTREECODE (COMPOUND_REQ, "compound_req", tcc_expression, 2)
+   first operand is the expression, the 2nd is its type,
+   the third one is noexcept expression.   */
+DEFTREECODE (COMPOUND_REQ, "compound_req", tcc_expression, 3)
 
 /* A requires clause within a requires expression. */
 DEFTREECODE (NESTED_REQ, "nested_req", tcc_expression, 1)

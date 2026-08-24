@@ -1133,7 +1133,12 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_designated_initializers=202606L");
 	}
       if (flag_concepts && cxx_dialect > cxx14)
-	cpp_define (pfile, "__cpp_concepts=202002L");
+	{
+	  if (cxx_dialect > cxx26)
+	    cpp_define (pfile, "__cpp_concepts=202606L");
+	  else
+	    cpp_define (pfile, "__cpp_concepts=202002L");
+	}
       else if (cxx_dialect >= cxx20)
 	cpp_warn (pfile, "__cpp_concepts");
       if (flag_contracts)

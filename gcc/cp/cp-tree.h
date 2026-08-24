@@ -442,7 +442,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       PACK_EXPANSION_LOCAL_P (in *_PACK_EXPANSION)
       TINFO_HAS_ACCESS_ERRORS (in TEMPLATE_INFO)
       SIZEOF_EXPR_TYPE_P (in SIZEOF_EXPR)
-      COMPOUND_REQ_NOEXCEPT_P (in COMPOUND_REQ)
       BLOCK_OUTER_CURLY_BRACE_P (in BLOCK)
       FOLD_EXPR_MODIFY_P (*_FOLD_EXPR)
       IF_STMT_CONSTEXPR_P (IF_STMT)
@@ -1748,10 +1747,6 @@ check_constraint_info (tree t)
    indicated by NODE.  */
 #define TEMPLATE_PARM_CONSTRAINTS(NODE) \
   TREE_TYPE (TREE_LIST_CHECK (NODE))
-
-/* Non-zero if the noexcept is present in a compound requirement.  */
-#define COMPOUND_REQ_NOEXCEPT_P(NODE) \
-  TREE_LANG_FLAG_0 (TREE_CHECK (NODE, COMPOUND_REQ))
 
 /* A TREE_LIST whose TREE_VALUE is the constraints on the 'auto' placeholder
    type NODE, used in an argument deduction constraint.  The TREE_PURPOSE
@@ -9363,7 +9358,7 @@ extern tree finish_shorthand_constraint         (tree, tree, bool);
 extern tree finish_requires_expr                (location_t, tree, tree);
 extern tree finish_simple_requirement           (location_t, tree);
 extern tree finish_type_requirement             (location_t, tree);
-extern tree finish_compound_requirement         (location_t, tree, tree, bool);
+extern tree finish_compound_requirement         (location_t, tree, tree, tree);
 extern tree finish_nested_requirement           (location_t, tree);
 extern tree tsubst_requires_expr                (tree, tree, tsubst_flags_t, tree);
 extern tree evaluate_requires_expr		(tree);

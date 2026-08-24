@@ -35274,8 +35274,10 @@ cp_parser_type_requirement (cp_parser *parser)
 
 /* Parse a compound requirement
 
-     compound-requirement:
-         '{' expression '}' 'noexcept' [opt] trailing-return-type [opt] ';' */
+   compound-requirement:
+     '{' expression '}' 'noexcept' [opt] trailing-return-type [opt] ';'
+     '{' expression '}' noexcept-specifier [opt] trailing-return-type [opt]
+       ';' (C++29)  */
 
 static tree
 cp_parser_compound_requirement (cp_parser *parser)
@@ -35307,11 +35309,21 @@ cp_parser_compound_requirement (cp_parser *parser)
     }
 
   /* Parse the optional noexcept. */
-  bool noexcept_p = false;
+  tree noex = boolean_false_node;
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_NOEXCEPT))
     {
-      cp_lexer_consume_token (parser->lexer);
-      noexcept_p = true;
+      if (cxx_dialect < cxx29
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN))
+	pedwarn (cp_lexer_peek_nth_token (parser->lexer, 2)->location,
+		 OPT_Wc__29_extensions,
+		 "conditional %<noexcept%> in compound requirement only "
+		 "available with %<-std=c++2d%> or %<-std=gnu++2d%>");
+
+      noex = cp_parser_noexcept_specification_opt (parser,
+						   CP_PARSER_FLAGS_NONE,
+						   /*require_constexpr=*/true,
+						   /*consumed_expr=*/NULL,
+						   /*return_cond=*/true);
     }
 
   /* Parse the optional trailing return type. */
@@ -35363,7 +35375,7 @@ cp_parser_compound_requirement (cp_parser *parser)
   if (expr == error_mark_node || type == error_mark_node)
     return error_mark_node;
 
-  return finish_compound_requirement (loc, expr, type, noexcept_p);
+  return finish_compound_requirement (loc, expr, type, noex);
 }
 
 /* Parse a nested requirement. This is the same as a requires clause.

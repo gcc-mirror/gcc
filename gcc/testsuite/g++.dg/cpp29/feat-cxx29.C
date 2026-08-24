@@ -487,8 +487,8 @@
 
 #ifndef __cpp_concepts
 #  error "__cpp_concepts"
-#elif __cpp_concepts != 202002
-#  error "__cpp_concepts != 202002"
+#elif __cpp_concepts != 202606
+#  error "__cpp_concepts != 202606"
 #endif
 
 #ifndef __cpp_using_enum

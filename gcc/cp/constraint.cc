@@ -1507,6 +1507,7 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
 {
   tree t0 = TREE_OPERAND (t, 0);
   tree t1 = TREE_OPERAND (t, 1);
+  tree noex = TREE_OPERAND (t, 2);
   tree expr = tsubst_valid_expression_requirement (t0, args, info);
   if (expr == error_mark_node)
     return error_mark_node;
@@ -1516,8 +1517,17 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
   subst_info quiet (info.complain & ~tf_warning_or_error, info.in_decl);
 
   /* Check the noexcept condition.  */
-  bool noexcept_p = COMPOUND_REQ_NOEXCEPT_P (t);
-  if (noexcept_p && !processing_template_decl
+  noex = tsubst_expr (noex, args, info.complain, info.in_decl);
+  if (!instantiation_dependent_expression_p (noex))
+    {
+      noex = build_converted_constant_bool_expr (noex, info.complain);
+      noex = instantiate_non_dependent_expr (noex, info.complain);
+      noex = cxx_constant_value (noex, info.complain);
+    }
+  if (noex == error_mark_node)
+    return error_mark_node;
+  if (!processing_template_decl
+      && integer_nonzerop (noex)
       && !expr_noexcept_p (expr, quiet.complain))
     {
       if (info.diagnose_unsatisfaction_p ())
@@ -1573,8 +1583,7 @@ tsubst_compound_requirement (tree t, tree args, sat_info info)
     }
 
   if (processing_template_decl)
-    return finish_compound_requirement (EXPR_LOCATION (t),
-					expr, type, noexcept_p);
+    return finish_compound_requirement (EXPR_LOCATION (t), expr, type, noex);
   return boolean_true_node;
 }
 
@@ -2984,14 +2993,17 @@ finish_type_requirement (location_t loc, tree type)
    its properties.  If TYPE is non-null, then it specifies either
    an implicit conversion or argument deduction constraint,
    depending on whether any placeholders occur in the type name.
-   NOEXCEPT_P is true iff the noexcept keyword was specified.  */
+   NOEX is boolean_true_node iff the noexcept keyword was specified
+   or expression if noexcept (expr) was specified.  */
 
 tree
-finish_compound_requirement (location_t loc, tree expr, tree type, bool noexcept_p)
+finish_compound_requirement (location_t loc, tree expr, tree type,
+			     tree noex)
 {
-  tree req = build_nt (COMPOUND_REQ, expr, type);
+  if (check_for_bare_parameter_packs (noex))
+    noex = error_mark_node;
+  tree req = build_nt (COMPOUND_REQ, expr, type, noex);
   SET_EXPR_LOCATION (req, loc);
-  COMPOUND_REQ_NOEXCEPT_P (req) = noexcept_p;
   return req;
 }
 
