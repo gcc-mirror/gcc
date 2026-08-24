@@ -298,7 +298,10 @@ StructPattern::is_refutable (const TyTy::BaseType &scrutinee) const
   const auto *inner = scrutinee.destructure ();
   rust_assert (inner->get_kind () == TyTy::TypeKind::ADT);
   const auto &adt = static_cast<const TyTy::ADTType &> (*inner);
-  rust_assert (!adt.is_enum ());
+  // A struct pattern corresponding to an enum with multiple variants is
+  // always refutable; otherwise variant 0 is the only variant.
+  if (adt.is_enum () && adt.number_of_variants () > 1)
+    return true;
   TyTy::VariantDef *variant = adt.get_variants ().at (0);
 
   for (const auto &field : elems.get_struct_pattern_fields ())

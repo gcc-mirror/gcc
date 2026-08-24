@@ -8,16 +8,21 @@ struct T(i32, i32);
 enum E {
     T(i32, i32),
     U(i32),
+    V { x: i32 },
 }
 fn a(S { x, y: 1 }: S) {} // { dg-error "refutable pattern" }
 fn b(S { x: 1, y: _ }: S) {} // { dg-error "refutable pattern" }
 fn c(T(1, _): T) {} // { dg-error "refutable pattern" }
 fn d(T(1, ..): T) {} // { dg-error "refutable pattern" }
 fn e(E::T(_, _): E) {} // { dg-error "refutable pattern" }
+fn f(E::V { x }: E) {} // { dg-error "refutable pattern" }
+fn g(E::V { x: _ }: E) {} // { dg-error "refutable pattern" }
 fn main() {
     let S { x, y: 1 }: S; // { dg-error "refutable pattern" }
     let S { x: 1, y: _ }: S; // { dg-error "refutable pattern" }
     let T(1, _): T; // { dg-error "refutable pattern" }
     let T(1, ..): T; // { dg-error "refutable pattern" }
     let E::T(_, _): E; // { dg-error "refutable pattern" }
+    let E::V { x }: E; // { dg-error "refutable pattern" }
+    let E::V { x: _ }: E; // { dg-error "refutable pattern" }
 }
