@@ -59,7 +59,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   { "local_cpu_detect", host_detect_local_cpu },
 
 # define RISCV_NATIVE_SPECS						\
-  "%{march=native:%<march=native %:local_cpu_detect(arch)} "
+  "%{march=native:%<march=native %:local_cpu_detect(arch)} "		\
+  "%{mtune=native:%<mtune=native %:local_cpu_detect(tune)} "		\
+  "%{mcpu=native:%<mcpu=native "					\
+    "%{!march=*|march=unset:%<march=* %:local_cpu_detect(arch)} "	\
+    "%{!mtune=*:%:local_cpu_detect(tune)}} "
 #else
 # define RISCV_NATIVE_SPEC_FUNCTIONS
 # define RISCV_NATIVE_SPECS ""
@@ -82,15 +86,18 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    --with-tls is ignored if -mtls-dialect is specified.
    --with-cmodel is ignored if -mcmodel is specified.
 
+   -mcpu=native is defer to RISCV_NATIVE_SPECS to prevent disturb the option
+   order.
+
    Uses default values if -mcpu doesn't have a valid option.  */
 #define OPTION_DEFAULT_SPECS \
   {"cpu", "%{!mcpu=*:-mcpu=%(VALUE)}" },				\
-  {"tune", "%{!mtune=*:"						\
+  {"tune", "%{!mtune=*:%{!mcpu=native:"					\
 	   "  %{!mcpu=*:-mtune=%(VALUE)}"				\
-	   "  %{mcpu=*:-mtune=%:riscv_default_mtune(%* %(VALUE))}}" },	\
-  {"arch", "%{!march=*|march=unset:"					\
+	   "  %{mcpu=*:-mtune=%:riscv_default_mtune(%* %(VALUE))}}}" },	\
+  {"arch", "%{!march=*|march=unset:%{!mcpu=native:"			\
 	   "  %{!mcpu=*:-march=%(VALUE)}"				\
-	   "  %{mcpu=*:%:riscv_expand_arch_from_cpu(%* %(VALUE))}}" },	\
+	   "  %{mcpu=*:%:riscv_expand_arch_from_cpu(%* %(VALUE))}}}" },	\
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}" },				\
   {"isa_spec", "%{!misa-spec=*:-misa-spec=%(VALUE)}" },			\
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},         	\

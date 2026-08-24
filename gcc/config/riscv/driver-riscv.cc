@@ -27,7 +27,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "riscv-subset.h"
 
 #ifdef __linux__
+#include <sched.h>
 #include "common/config/riscv/riscv-hwprobe.h"
+
+/* Read for UNKNOWN_ID alone; the core table itself is built further down.  */
+#include "riscv-cores.def"
 
 #ifndef __NR_getcpu
 #define __NR_getcpu 168
@@ -49,6 +53,83 @@ static const struct riscv_hwprobe_ext riscv_hwprobe_exts[] = {
 #include "common/config/riscv/riscv-hwprobe.def"
 };
 
+/* What the mvendorid, marchid and mimpid CSRs read on one core.  */
+
+struct riscv_cpuid
+{
+  constexpr riscv_cpuid ()
+    : mvendorid (UNKNOWN_ID), marchid (UNKNOWN_ID), mimpid (UNKNOWN_ID)
+  {
+  }
+
+  constexpr riscv_cpuid (riscv_core_id_t vendor, riscv_core_id_t arch,
+			 riscv_core_id_t impl)
+    : mvendorid (vendor), marchid (arch), mimpid (impl)
+  {
+  }
+
+  bool valid_p () const;
+  bool match (const struct riscv_cpuid &other) const;
+
+  riscv_core_id_t mvendorid;
+  riscv_core_id_t marchid;
+  riscv_core_id_t mimpid;
+};
+
+/* True if all three registers have a value.  */
+
+bool
+riscv_cpuid::valid_p () const
+{
+  return (mvendorid != UNKNOWN_ID
+	  && marchid != UNKNOWN_ID
+	  && mimpid != UNKNOWN_ID);
+}
+
+/* True if OTHER is the same core.  All three registers have to agree, and
+   both sides have to have all three: most of riscv-cores.def records none
+   of them, and a detection that came back empty must not match those.  */
+
+bool
+riscv_cpuid::match (const struct riscv_cpuid &other) const
+{
+  return (valid_p ()
+	  && other.valid_p ()
+	  && mvendorid == other.mvendorid
+	  && marchid == other.marchid
+	  && mimpid == other.mimpid);
+}
+
+/* One entry per core, holding what it reports in its identification
+   registers.  */
+
+struct riscv_core_id
+{
+  const char *name;
+  struct riscv_cpuid id;
+};
+
+static const struct riscv_core_id riscv_core_ids[] = {
+#define RISCV_CORE(CORE_NAME, ARCH, MICRO_ARCH, MVENDORID, MARCHID, MIMPID) \
+  { CORE_NAME, { (riscv_core_id_t) (MVENDORID),				\
+		 (riscv_core_id_t) (MARCHID),				\
+		 (riscv_core_id_t) (MIMPID) } },
+#include "riscv-cores.def"
+};
+
+/* Return the name of the core whose identification registers read ID, or
+   NULL if riscv-cores.def describes no such core.  */
+
+static const char *
+riscv_core_from_cpuid (const struct riscv_cpuid &id)
+{
+  for (size_t i = 0; i < ARRAY_SIZE (riscv_core_ids); i++)
+    if (riscv_core_ids[i].id.match (id))
+      return riscv_core_ids[i].name;
+
+  return NULL;
+}
+
 /* Return the number of the CPU this process is currently running on, or -1
    if it cannot be determined.  */
 
@@ -61,6 +142,53 @@ riscv_current_cpu (void)
     return -1;
 
   return (int) cpu;
+}
+
+/* Ask hwprobe about the CPUs in CPUS.  */
+
+static bool
+riscv_hwprobe_cpus (struct riscv_hwprobe *pairs, size_t npairs,
+		    const cpu_set_t *cpus)
+{
+  return syscall_5_args (__NR_riscv_hwprobe, (long) pairs, (long) npairs,
+			 (long) sizeof (*cpus), (long) cpus, 0) == 0;
+}
+
+/* Ask hwprobe about the CPUs this process may run on rather than about the
+   whole machine: on a machine whose cores are not all alike, a query that
+   spans cores which disagree is answered with UNKNOWN_ID.
+
+   TODO: Cores that differ but share an ISA could still be described, once
+   we have -mcpu=A+B/-mtune=A+B.  */
+
+static bool
+riscv_hwprobe_affinity (struct riscv_hwprobe *pairs, size_t npairs)
+{
+  cpu_set_t cpus;
+
+  if (sched_getaffinity (0, sizeof (cpus), &cpus) != 0)
+    return false;
+
+  return riscv_hwprobe_cpus (pairs, npairs, &cpus);
+}
+
+/* Ask hwprobe about the one CPU this process is running on, for when the
+   CPUs it may run on do not agree and the wider query therefore answers
+   UNKNOWN_ID.  That is the core /proc/cpuinfo describes as well.  */
+
+static bool
+riscv_hwprobe_this_core (struct riscv_hwprobe *pairs, size_t npairs)
+{
+  cpu_set_t cpus;
+  int cpu = riscv_current_cpu ();
+
+  if (cpu < 0 || cpu >= CPU_SETSIZE)
+    return false;
+
+  CPU_ZERO (&cpus);
+  CPU_SET (cpu, &cpus);
+
+  return riscv_hwprobe_cpus (pairs, npairs, &cpus);
 }
 
 /* Append the Zvl extension for this machine's vector register width,
@@ -136,6 +264,7 @@ riscv_arch_from_hwprobe (std::string &isa, bool *vector_p)
 struct riscv_cpuinfo
 {
   std::string isa;
+  struct riscv_cpuid id;
 };
 
 /* GCC_CPUINFO names a file to read instead of /proc/cpuinfo, and
@@ -211,6 +340,7 @@ riscv_read_cpuinfo (int want, struct riscv_cpuinfo *out)
     return false;
 
   out->isa.clear ();
+  out->id = riscv_cpuid ();
 
   while (fgets (line, sizeof (line), f) != NULL)
     {
@@ -241,6 +371,12 @@ riscv_read_cpuinfo (int want, struct riscv_cpuinfo *out)
 	}
       else if (name == "isa" && !hart_isa_p)
 	out->isa = value;
+      else if (name == "mvendorid")
+	out->id.mvendorid = strtoull (value, NULL, 0);
+      else if (name == "marchid")
+	out->id.marchid = strtoull (value, NULL, 0);
+      else if (name == "mimpid")
+	out->id.mimpid = strtoull (value, NULL, 0);
     }
 
   fclose (f);
@@ -349,6 +485,78 @@ riscv_native_arch (void)
   return xstrdup (isa.c_str ());
 }
 
+/* Get mvendorid, marchid, mimpid out of what a hwprobe query wrote into
+   PAIRS.  Return false unless every register came back with a value.  */
+
+static bool
+riscv_cpuid_from_pairs (const struct riscv_hwprobe *pairs, size_t npairs,
+			struct riscv_cpuid &id)
+{
+  id = riscv_cpuid (riscv_hwprobe_value (pairs, npairs,
+					 RISCV_HWPROBE_KEY_MVENDORID),
+		    riscv_hwprobe_value (pairs, npairs,
+					 RISCV_HWPROBE_KEY_MARCHID),
+		    riscv_hwprobe_value (pairs, npairs,
+					 RISCV_HWPROBE_KEY_MIMPID));
+
+  return id.valid_p ();
+}
+
+/* Get mvendorid, marchid, mimpid by hwprobe.  Return false if the
+   kernel cannot describe the core.  */
+
+static bool
+riscv_cpuid_from_hwprobe (struct riscv_cpuid &id)
+{
+  struct riscv_hwprobe pairs[] = {
+    { RISCV_HWPROBE_KEY_MVENDORID, 0 },
+    { RISCV_HWPROBE_KEY_MARCHID, 0 },
+    { RISCV_HWPROBE_KEY_MIMPID, 0 }
+  };
+  size_t npairs = ARRAY_SIZE (pairs);
+
+  if (riscv_hwprobe_affinity (pairs, npairs)
+      && riscv_cpuid_from_pairs (pairs, npairs, id))
+    return true;
+
+  return (riscv_hwprobe_this_core (pairs, npairs)
+	  && riscv_cpuid_from_pairs (pairs, npairs, id));
+}
+
+/* Get mvendorid, marchid, mimpid by /proc/cpuinfo.  Return false if
+   it does not name all three.  */
+
+static bool
+riscv_cpuid_from_cpuinfo (struct riscv_cpuid &id)
+{
+  struct riscv_cpuinfo info;
+
+  if (!riscv_cpuinfo (&info))
+    return false;
+
+  id = info.id;
+
+  return id.valid_p ();
+}
+
+/* Return the name of the core this machine runs, or NULL if it is not one
+   riscv-cores.def has identification registers for.  */
+
+static const char *
+riscv_native_tune (void)
+{
+  struct riscv_cpuid id;
+  const char *core;
+
+  if ((riscv_cpuinfo_forced () || !riscv_cpuid_from_hwprobe (id))
+      && !riscv_cpuid_from_cpuinfo (id))
+    return NULL;
+
+  core = riscv_core_from_cpuid (id);
+
+  return core != NULL ? xstrdup (core) : NULL;
+}
+
 #else /* !__linux__ */
 
 static const char *
@@ -357,10 +565,16 @@ riscv_native_arch (void)
   return NULL;
 }
 
+static const char *
+riscv_native_tune (void)
+{
+  return NULL;
+}
+
 #endif /* __linux__ */
 
 /* Implement the local_cpu_detect spec function.  ARGV[0] selects what to
-   report: "arch" for an -march= option.  */
+   report: "arch" for an -march= option, "tune" for an -mtune= one.  */
 
 const char *
 host_detect_local_cpu (int argc, const char **argv)
@@ -376,6 +590,16 @@ host_detect_local_cpu (int argc, const char **argv)
 	return NULL;
 
       return concat ("-march=", isa, NULL);
+    }
+
+  if (strcmp (argv[0], "tune") == 0)
+    {
+      const char *core = riscv_native_tune ();
+
+      if (core == NULL)
+	return NULL;
+
+      return concat ("-mtune=", core, NULL);
     }
 
   return NULL;

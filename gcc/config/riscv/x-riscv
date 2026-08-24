@@ -1,6 +1,7 @@
 driver-riscv.o: $(srcdir)/config/riscv/driver-riscv.cc \
   $(CONFIG_H) $(SYSTEM_H) $(TM_H) $(CORETYPES_H) \
   $(srcdir)/config/riscv/riscv-subset.h \
+  $(srcdir)/config/riscv/riscv-cores.def \
   $(srcdir)/common/config/riscv/riscv-hwprobe.h \
   $(srcdir)/common/config/riscv/riscv-hwprobe.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

@@ -1,15 +1,11 @@
-/* A real /proc/cpuinfo, from a SiFive P870-D.  It is the last of the
-   thirty-two blocks that are asked for here, and the ISA string is the
-   longest and the most recent of any file in this directory, carrying
-   names -- zfbfmin, zvfbfwma, smmpm, ssnpm, svade -- that the others
-   do not.  */
+/* As native_cpu_6.c, but asking for both through -mcpu=native.  */
 
 /* { dg-do compile } */
 /* { dg-require-effective-target riscv_native_cpu_detect } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-set-compiler-env-var GCC_CPUINFO "$srcdir/gcc.target/riscv/cpunative/info_4" } */
 /* { dg-set-compiler-env-var GCC_CPUINFO_CPU "31" } */
-/* { dg-additional-options "-march=native -mtune=native -mabi=lp64d -fverbose-asm" } */
+/* { dg-additional-options "-march=unset -mcpu=native -mabi=lp64d -fverbose-asm" } */
 
 int
 main (void)
