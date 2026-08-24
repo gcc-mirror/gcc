@@ -101,9 +101,11 @@ struct algorithm
      word size, but the worst-case algorithms will be if we have few
      consecutive ones or zeros, i.e., a multiplicand like 10101010101...
      In that case we will generate shift-by-2, add, shift-by-2, add,...,
-     in total wordsize operations.  */
-  enum alg_code op[MAX_BITS_PER_WORD];
-  char log[MAX_BITS_PER_WORD];
+     in total wordsize operations.  One extra slot: synth_mult extends
+     a sub-algorithm of up to MAX_BITS_PER_WORD operations by one
+     before its length check discards the result.  */
+  enum alg_code op[MAX_BITS_PER_WORD + 1];
+  char log[MAX_BITS_PER_WORD + 1];
 };
 
 /* The entry for our multiplication cache/hash table.  */
