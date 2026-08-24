@@ -854,13 +854,17 @@ gcn_can_split_p (machine_mode, rtx op)
    if it is not possible or non-profitable.  */
 
 static reg_class_t
-gcn_spill_class (reg_class_t c, machine_mode /*mode */ )
+gcn_spill_class (reg_class_t c, machine_mode mode)
 {
   if (reg_classes_intersect_p (ALL_CONDITIONAL_REGS, c)
       || c == VCC_CONDITIONAL_REG || c == EXEC_MASK_REG)
     return SGPR_REGS;
+  else if (c == VGPR_REGS && !VECTOR_MODE_P (mode))
+    return SGPR_REGS;
+  else if (c == VGPR_REGS && TARGET_AVGPRS)
+    return AVGPR_REGS;
   else
-    return c == VGPR_REGS && TARGET_AVGPRS ? AVGPR_REGS : NO_REGS;
+    return NO_REGS;
 }
 
 /* Implement TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS.

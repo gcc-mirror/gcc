@@ -2,8 +2,9 @@
 /* { dg-additional-options "-march=gfx908 -O1" } */
 /* { dg-final { scan-assembler "accvgpr" } } */
 
+typedef int v32si __attribute__ ((__vector_size__ (sizeof(int)*32)));
 #ifndef TYPE
-#define TYPE int
+#define TYPE v32si
 #endif
 
 TYPE a[50];
