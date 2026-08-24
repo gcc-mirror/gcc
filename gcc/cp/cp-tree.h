@@ -8383,10 +8383,10 @@ extern tree convert_reflect_constant_arg	(tree, tree);
 extern GTY(()) vec<tree, va_gc> *unemitted_tinfo_decls;
 
 extern void init_rtti_processing		(void);
-extern tree build_typeid			(tree, tsubst_flags_t);
+extern tree build_typeid			(tree, tsubst_flags_t, tree = NULL_TREE);
 extern tree get_tinfo_decl_direct	        (tree, tree, int);
 extern tree get_tinfo_decl			(tree);
-extern tree get_typeid				(tree, tsubst_flags_t);
+extern tree get_typeid				(tree, tsubst_flags_t, tree = NULL_TREE);
 extern tree build_headof			(tree);
 extern tree build_dynamic_cast			(location_t, tree, tree,
 						 tsubst_flags_t);

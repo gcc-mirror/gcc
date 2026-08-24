@@ -22928,12 +22928,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (TYPE_P (operand_0))
 	  {
 	    operand_0 = tsubst (operand_0, args, complain, in_decl);
-	    RETURN (get_typeid (operand_0, complain));
+	    RETURN (get_typeid (operand_0, complain, TREE_TYPE (t)));
 	  }
 	else
 	  {
 	    operand_0 = RECUR (operand_0);
-	    RETURN (build_typeid (operand_0, complain));
+	    RETURN (build_typeid (operand_0, complain, TREE_TYPE (t)));
 	  }
       }
 
