@@ -12218,7 +12218,8 @@ vect_schedule_slp_node (vec_info *vinfo,
       if (is_a <bb_vec_info> (vinfo)
 	  && !SLP_TREE_PERMUTE_P (node)
 	  && (!last_stmt
-	      || gimple_bb (last_stmt) != gimple_bb (stmt_info->stmt))
+	      || !dominated_by_p (CDI_DOMINATORS, gimple_bb (last_stmt),
+				  gimple_bb (stmt_info->stmt)))
 	  && gimple_could_trap_p (stmt_info->stmt))
 	{
 	  /* We've constrained possibly trapping operations to all come
