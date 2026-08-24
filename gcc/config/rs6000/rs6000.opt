@@ -597,7 +597,7 @@ Target Undocumented Mask(POWER11) Var(rs6000_isa_flags) WarnRemoved
 
 ;; Potential future machine
 mfuture
-Target Undocumented Mask(FUTURE) Var(rs6000_isa_flags) Warn(Do not use %<-mfuture>, use %<-mcpu=future>)
+Target Undocumented Mask(FUTURE) Var(rs6000_isa_flags) Warn(Do not use %<-mfuture%>, use %<-mcpu=future%>)
 
 mdense-math
 Target Mask(DMF) Var(rs6000_isa_flags)
